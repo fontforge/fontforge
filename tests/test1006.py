@@ -18,30 +18,44 @@ if ( math.ScriptPercentScaleDown!=3 or math.SubscriptBaselineDropMin != 6) :
 
 # Test some default values for math constants
 math.clear()
+
+# Create a glyph for the 'x' letter, so that math->AccentBaseHeight is nonzero.
+accentBaseHeight = font.em * .75
+g = font.createChar(0x78)
+p = g.glyphPen();
+p.moveTo(0, 0);
+p.lineTo(accentBaseHeight, 0);
+p.lineTo(accentBaseHeight, accentBaseHeight);
+p.lineTo(0, accentBaseHeight)
+p.closePath();
+
 if ( math.ScriptPercentScaleDown != 80 or
      math.ScriptScriptPercentScaleDown != 60 or
-     math.DelimitedSubFormulaMinHeight != int(round(font.em*1.5)) or
-     math.SubSuperscriptGapMin != int(round(4*font.uwidth)) or
-     math.SpaceAfterScript != int(round(font.em/24)) or
-     math.StackGapMin != int(round(3*font.uwidth)) or
-     math.StackDisplayStyleGapMin != int(round(7*font.uwidth)) or
-     math.FractionNumeratorGapMin != int(round(font.uwidth)) or
-     math.FractionNumeratorDisplayStyleGapMin != int(round(3*font.uwidth)) or
-     math.FractionRuleThickness != int(round(font.uwidth)) or
-     math.FractionDenominatorGapMin != int(round(font.uwidth)) or
-     math.OverbarVerticalGap != int(round(3*font.uwidth)) or
-     math.OverbarRuleThickness != int(round(font.uwidth)) or
-     math.OverbarExtraAscender != int(round(font.uwidth)) or
-     math.UnderbarVerticalGap != int(round(3*font.uwidth)) or
-     math.UnderbarRuleThickness != int(round(font.uwidth)) or
-     math.UnderbarExtraDescender != int(round(font.uwidth)) or
-     math.RadicalVerticalGap != int(round(font.uwidth)) or
-     math.RadicalDisplayStyleVerticalGap != int(round(font.uwidth)) or
-     math.RadicalRuleThickness != int(round(font.uwidth)) or
-     math.RadicalRuleThickness != int(round(font.uwidth)) or
-     math.RadicalExtraAscender != int(round(font.uwidth)) or
-     math.RadicalKernBeforeDegree != int(round(5*font.em/18)) or
-     math.RadicalKernAfterDegree != -int(round(10*font.em/18)) or
+     math.DelimitedSubFormulaMinHeight != int(font.em*1.5) or
+     math.SubscriptTopMax != int(accentBaseHeight) or
+     math.SuperscriptBottomMin != int(accentBaseHeight) or
+     math.SubSuperscriptGapMin != int(4*font.uwidth) or
+     math.SuperscriptBottomMaxWithSubscript != int(accentBaseHeight) or
+     math.SpaceAfterScript != int(font.em/24) or
+     math.StackGapMin != int(3*font.uwidth) or
+     math.StackDisplayStyleGapMin != int(7*font.uwidth) or
+     math.FractionNumeratorGapMin != int(font.uwidth) or
+     math.FractionNumeratorDisplayStyleGapMin != int(3*font.uwidth) or
+     math.FractionRuleThickness != int(font.uwidth) or
+     math.FractionDenominatorGapMin != int(font.uwidth) or
+     math.OverbarVerticalGap != int(3*font.uwidth) or
+     math.OverbarRuleThickness != int(font.uwidth) or
+     math.OverbarExtraAscender != int(font.uwidth) or
+     math.UnderbarVerticalGap != int(3*font.uwidth) or
+     math.UnderbarRuleThickness != int(font.uwidth) or
+     math.UnderbarExtraDescender != int(font.uwidth) or
+     math.RadicalVerticalGap != int(font.uwidth) or
+     math.RadicalDisplayStyleVerticalGap != int(font.uwidth+.25*accentBaseHeight) or
+     math.RadicalRuleThickness != int(font.uwidth) or
+     math.RadicalRuleThickness != int(font.uwidth) or
+     math.RadicalExtraAscender != int(font.uwidth) or
+     math.RadicalKernBeforeDegree != int(5*font.em/18) or
+     math.RadicalKernAfterDegree != -int(10*font.em/18) or
      math.RadicalDegreeBottomRaisePercent != 60 ):
   raise ValueError("Unexpected default value for one math constant")
 
