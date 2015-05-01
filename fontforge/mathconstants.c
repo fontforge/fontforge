@@ -109,7 +109,14 @@ struct MATH *MathTableNew(SplineFont *sf) {
     math->DelimitedSubFormulaMinHeight	= emsize*1.5;
     /* No default given for math->DisplayOperatorMinHeight */
     /* No default given for math->MathLeading */
-    /* No default given for math->AxisHeight */
+    /* The OpenType MATH specification does not suggest any value for
+       math->AxisHeight. By default, we align the axis height with the middle
+       of the + sign. */
+    sc = SFGetChar(sf,'+',NULL);
+    if ( sc!=NULL ) {
+	SplineCharFindBounds(sc,&b);
+	math->AxisHeight = (b.maxy+b.miny)/2;
+    }
     sc = SFGetChar(sf,'x',NULL);
     if ( sc!=NULL ) {
 	SplineCharFindBounds(sc,&b);
