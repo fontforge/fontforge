@@ -148,9 +148,9 @@ static int PeekMatch(FILE *stream, const char * target) {
   while (target[pos1] != '\0' && lastread != EOF && lastread == target[pos1]) {
     pos1 ++; lastread = getc(stream);
   }
-  if (lastread != EOF) ungetc(lastread, stream);
-  int pos2 = pos1;
-  while (pos2 > 0) { ungetc(target[--pos2], stream); }
+  
+  int rewind_amount = pos1 + ((lastread == EOF) ? 0 : 1);
+  fseek(stream, -rewind_amount, SEEK_CUR);
   return (target[pos1] == '\0');
 }
 
