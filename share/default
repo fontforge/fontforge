@@ -32,7 +32,7 @@ CharView.Menu.File.Import...:Shift+Ctrl+I
 CharView.Menu.File.Revert File:Shift+Ctrl+R
 CharView.Menu.File.Revert Glyph:Alt+Ctrl+R
 CharView.Menu.File.Print...:Ctrl+P
-CharView.Menu.File.Execute Script...:Alt+Ctrl+r
+CharView.Menu.File.Execute Script...:Alt+Ctrl+R
 CharView.Menu.File.Quit:Ctrl+Q
 
 CharView.Menu.Edit.Undo:Ctrl+Z
@@ -76,20 +76,20 @@ CharView.Menu.Edit.Unlink Reference:Ctrl+U
 CharView.Menu.Edit.Remove Undoes:No Shortcut
 
 
-CharView.Menu.Point.Tools.Ruler:r
-CharView.Menu.Point.Tools.Pointer:v
-CharView.Menu.Point.Tools.Magnify:a
-CharView.Menu.Point.Tools.Freehand:f
-CharView.Menu.Point.Tools.Scroll:h
-CharView.Menu.Point.Tools.Pen:p
-CharView.Menu.Point.Tools.Knife:k
+CharView.Menu.Point.Tools.Ruler:R
+CharView.Menu.Point.Tools.Pointer:V
+CharView.Menu.Point.Tools.Magnify:A
+CharView.Menu.Point.Tools.Freehand:F
+CharView.Menu.Point.Tools.Scroll:H
+CharView.Menu.Point.Tools.Pen:P
+CharView.Menu.Point.Tools.Knife:K
 
 CharView.Menu.Point.Tools.Curve:2
 CharView.Menu.Point.Tools.Corner:3
 CharView.Menu.Point.Tools.Tangent:4
 CharView.Menu.Point.Tools.HVCurve:5
 
-CharView.Menu.Point.Tools.Toggle Spiro:s
+CharView.Menu.Point.Tools.Toggle Spiro:S
 +CharView.Menu.Point.Tools.G2:1
 +CharView.Menu.Point.Tools.G4:2
 +CharView.Menu.Point.Tools.Corner:3
@@ -213,8 +213,8 @@ CharView.Menu.View.Combinations.Anchor Glyph at Point.Detach:No Shortcut
 CharView.Menu.View.Combinations.Kern Pairs:No Shortcut
 CharView.Menu.View.Combinations.Anchored Pairs:No Shortcut
 CharView.Menu.View.Combinations.Ligatures:No Shortcut
-CharView.Menu.View.Number Points.None:Alt+n
-CharView.Menu.View.Number Points.TrueType:Alt+t
+CharView.Menu.View.Number Points.None:Alt+N
+CharView.Menu.View.Number Points.TrueType:Alt+T
 CharView.Menu.View.Number Points.PostScript:No Shortcut
 CharView.Menu.View.Number Points.SVG:No Shortcut
 CharView.Menu.View.Grid Fit.Show Grid Fit...:Shift+Ctrl+#
@@ -249,10 +249,10 @@ CharView.Menu.View.Show.Vertical Metric Lines:No Shortcut
 CharView.Menu.View.Show.Snap Outlines to Pixel Grid:No Shortcut
 CharView.Menu.View.Zoom out:Alt+Ctrl+-
 CharView.Menu.View.Zoom out:-
-CharView.Menu.View.Zoom out:x
+CharView.Menu.View.Zoom out:X
 CharView.Menu.View.Zoom in:Alt+Ctrl+=
 CharView.Menu.View.Zoom in:=
-CharView.Menu.View.Zoom in:z
+CharView.Menu.View.Zoom in:Z
 CharView.Menu.View.Next Line in Word List:Ctrl+.
 CharView.Menu.View.Previous Line in Word List:Ctrl+,
 
