@@ -208,9 +208,9 @@ static void _shorttext(int shortcut, int short_mask, unichar_t *buf) {
     unichar_t *pt = buf;
     static int initted = false;
     struct { int mask; char *modifier; } mods[8] = {
-	{ ksm_shift, H_("Shft+") },
+	{ ksm_shift, H_("Shift+") },
 	{ ksm_capslock, H_("CapsLk+") },
-	{ ksm_control, H_("Ctl+") },
+	{ ksm_control, H_("Ctrl+") },
 	{ ksm_meta, H_("Alt+") },
 	{ 0x10, H_("Flag0x10+") },
 	{ 0x20, H_("Flag0x20+") },
