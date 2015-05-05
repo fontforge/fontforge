@@ -115,6 +115,8 @@ return( ret );
     }
 }
 
+#endif /* _NO_FFSCRIPT */
+
 void arrayfree(Array *a) {
     int i;
 
@@ -127,9 +129,7 @@ void arrayfree(Array *a) {
     free(a->vals);
     free(a);
 }
-#endif /* _NO_FFSCRIPT */
 
-#ifndef _NO_FFSCRIPT
 static Array *arraycopy(Array *a) {
     int i;
     Array *c;
@@ -146,6 +146,8 @@ static Array *arraycopy(Array *a) {
     }
 return( c );
 }
+
+#ifndef _NO_FFSCRIPT
 
 static void array_copy_into(Array *dest,int offset,Array *src) {
     int i;
