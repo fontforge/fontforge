@@ -8,6 +8,8 @@ We recommend Homebrew, which can be installed by following the instructions at <
 
 With Homebrew installed, first install the dependencies, and then FontForge itself - either the most recent release, or the latest git source code.
 
+Run the following commands in sequence (that is, wait for each one to complete before running the next):
+
 ```sh
 # install dependencies;
 brew install python gettext libpng jpeg libtiff giflib cairo pango libspiro czmq fontconfig automake libtool pkg-config glib pango;
@@ -23,34 +25,81 @@ If this does not work, please [file an issue](When_Things_Go_Wrong_With_Fontforg
 
 ## Doing It By Hand
 
-First clone a copy of the Github source repository:
+Clone a copy of the Github source repository:
 
 ```sh
 mkdir -p ~/src/github.com/fontforge;
 cd ~/src/github.com/fontforge;
 git clone https://github.com/fontforge/fontforge.git;
-cd fontforge;
 ```
 
-Second, install all your typical build tools, build dependencies and runtime dependencies. 
+Install all your typical build tools, build dependencies and runtime dependencies - all the packages that allow you to build of software from source code.
 The exact method to do this depends on your OS distribution.
 You can see a list of the dependencies for Debian in the [debian/control](https://github.com/fontforge/fontforge/blob/master/debian/control) file, or to generate a list on Debian-like systems with `aptitude` installed, run `sudo ./debian/deb-build-dep`
 
 To download all dependencies on Ubuntu, run:
 
 ```sh
-sudo apt-get install packaging-dev pkg-config python-dev libpango1.0-dev libglib2.0-dev libxml2-dev giflib-dbg libjpeg-dev libtiff-dev uthash-dev libspiro-dev;
+sudo apt-get install packaging-dev pkg-config python-dev libpango1.0-dev libglib2.0-dev libxml2-dev giflib-dbg libjpeg-dev libtiff-dev uthash-dev libspiro-dev build-essential automake flex bison;
+```
+
+Install the *unifont* package to get a full display of the reference glyphs.
+[Unifont] (http://savannah.gnu.org/projects/unifont) includes glyphs for all Unicode codepoints, and FontForge will use it if it is installed.
+
+```sh
+sudo apt-get install unifont;
+```
+
+FontForge uses *[libspiro](http://github.com/fontforge/libspiro)* to simplify the drawing of curves.
+Download and install the latest code like this:
+
+```
+git clone https://github.com/fontforge/libspiro.git
+cd libspiro
+autoreconf -i
+automake --foreign -Wall
+./configure
+make
+sudo make install
+cd ..
+```
+
+Build *libuninameslist*
+
+FontForge uses [libuninameslist] (http://github.com/fontforge/libuninameslist) to access attribute data about each Unicode code point.
+
+Download the code:
+
+```
+git clone https://github.com/fontforge/libuninameslist.git
+```
+
+Run the following commands in sequence (that is, wait for each one to complete before running the next):
+
+```
+cd libuninameslist
+autoreconf -i
+automake --foreign
+./configure
+make
+sudo make install
+cd ..
 ```
 
 Now run the build and installation scripts, and ensure you can open shared object files:
 
 ```sh
+cd fontforge;
 ./bootstrap;
 ./configure;
 make;
 sudo make install;
 sudo ldconfig;
 ```
+
+**Attention, Designers Who Love TrueType Hinting:** 
+You like to run `./configure` with the `--with-freetype-source` option. 
+This option enables advanced features for debugging TrueType font hints, such as stepping through hinting instructions one by one.
 
 ## Common Problems
 
