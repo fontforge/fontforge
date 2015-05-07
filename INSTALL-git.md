@@ -1,6 +1,38 @@
 Installing FontForge
 ====================
 
+Mac Users:
+1. install Homebrew, or another package manager (MacPorts or Fink). 
+
+    a. To install Homebrew go to http://brew.sh and follow instructions to paste a line of text into terminal. 
+
+    b. Follow download instructions prompted in terminal 
+
+    c. After typing both of these into terminal install all of the dependencies by pasting them into terminal: 
+
+    brew install python gettext libpng jpeg libtiff giflib cairo pango libspiro czmq fontconfig automake libtool pkg-config glib pango 
+
+    brew install -v --debug fontforge --HEAD --with-giflib --with-x11 --with-libspiro
+
+2. After installing the dependencies make sure that the terminal command are in the fontforge folder by typing cd desktop(if this is where you placed it, if not, replace desktop with the correct location), and then cd fontforge. Then run each of the following commands seperatly:
+
+./bootstrap
+
+./configure
+
+make
+
+[sudo] make install
+
+./configure && make -j3 && sudo make install;
+
+
+3. You should be finished after the above step, however, make sure that you have Python 2.7 installed. If you do and an error message stating that python 2.7 is not installed presents itself, follow the instruction below.
+
+    1. Set the environment variables for PYTHON_LIBS and PYTHON_CFLAGS by entering the command: export PYTHON_LIBS=(location of python found by entering "which python" and pasting the output), do the same process but replace PYTHON_LIBS with PYTHON_CFLAGS. 
+
+
+
 1. Dependencies
 ---------------
 
@@ -8,17 +40,21 @@ Note that you should have build tools, build dependencies
 and runtime dependencies installed. The exact method to do this
 depends on your OS.
 
-On Ubuntu, for example, you should get:
+
+Then download all dependencies:
+
+On Ubuntu, for example, you should install these :
 
 ```
 sudo apt-get install packaging-dev pkg-config python-dev libpango1.0-dev libglib2.0-dev libxml2-dev giflib-dbg libjpeg-dev libtiff-dev uthash-dev
 libspiro-dev
+
 ```
 
 2. Installing
 -------------
 
-To install from a git checkout:
+To install from a git checkout: 
 
 ```
 ./bootstrap
