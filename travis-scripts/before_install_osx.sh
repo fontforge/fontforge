@@ -37,7 +37,8 @@ brew update
 brew config
 
 sed -i -e "s|{TRAVIS_PULL_REQUEST}|${TRAVIS_PULL_REQUEST}|g" ./travis-scripts/fontforge.rb
-sudo cp ./travis-scripts/fontforge.rb /usr/local/Library/Formula/fontforge.rb
+rm /usr/local/Library/Formula/fontforge.rb
+cp ./travis-scripts/fontforge.rb /usr/local/Library/Formula/fontforge.rb
 echo "*****"
 echo "*****"
 echo "***** using homebrew formula fontforge.rb:"
@@ -54,21 +55,19 @@ sudo installer -pkg /Volumes/XQuartz-*/XQuartz.pkg -target /
 popd 
 
 echo "doing an OSX before install step."
-# python may require a little force to install. In October 2014
-# there were issues with easy_install and pip not letting the install
-# step complete.
 set +ev
 brew install python
-brew link --overwrite python
 set -ev
 brew install cairo libspiro fontconfig
 
 #
 # this forces version 4.0.4 and 2.2.0 respectively.
 pushd .
-cd $( brew --prefix )
-git checkout ab7f37834a28b4d6f3c584f08e5b993d8c191653 Library/Formula/zeromq.rb
-git checkout 3ad14e1e3f7d0131b3eee7fb4ce38a65e22a5187 Library/Formula/czmq.rb
+cd $(brew --prefix)
+rm Library/Formula/zeromq.rb
+rm Library/Formula/czmq.rb
+wget https://raw.githubusercontent.com/Homebrew/homebrew/ab7f37834a28b4d6/Library/Formula/zeromq.rb -O Library/Formula/zeromq.rb
+wget https://raw.githubusercontent.com/Homebrew/homebrew/3ad14e1e3f7d0131b/Library/Formula/czmq.rb -O Library/Formula/czmq.rb
 brew install czmq zeromq
 popd
 
