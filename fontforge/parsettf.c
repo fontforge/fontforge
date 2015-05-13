@@ -6272,7 +6272,8 @@ SplineFont *_SFReadTTF(FILE *ttf, int flags,enum openflags openflags, char *file
     memset(&info,'\0',sizeof(struct ttfinfo));
     info.onlystrikes = (flags&ttf_onlystrikes)?1:0;
     info.onlyonestrike = (flags&ttf_onlyonestrike)?1:0;
-    info.use_typo_metrics = true;
+    info.use_typo_metrics = false;
+    info.weight_width_slope_only = false;
     info.openflags = openflags;
     info.fd = fd;
     ret = readttf(ttf,&info,filename);
