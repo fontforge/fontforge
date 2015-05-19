@@ -1085,7 +1085,9 @@ void _FVMenuOpen(FontView *fv) {
     
     free( NewDir );
     free( OpenDir );
-    free( DefaultDir );
+    if (OpenDir != DefaultDir) {
+        free( DefaultDir );
+    }
 }
 
 static void FVMenuOpen(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
