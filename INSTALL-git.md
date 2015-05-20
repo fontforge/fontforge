@@ -1,88 +1,109 @@
-Installing FontForge
-====================
+# Installing FontForge from Git Source Code
 
-Mac Users:
-1. install Homebrew, or another package manager (MacPorts or Fink). 
+## On Mac OS X with Homebrew
 
-    a. To install Homebrew go to http://brew.sh and follow instructions to paste a line of text into terminal. 
+You can install FontForge from the current github source code using a package manager, such as Homebrew, MacPorts or Fink
 
-    b. Follow download instructions prompted in terminal 
+We recommend Homebrew, which can be installed by following the instructions at <http://brew.sh>
 
-    c. After typing both of these into terminal install all of the dependencies by pasting them into terminal: 
+With Homebrew installed, first install the dependencies, and then FontForge itself - either the most recent release, or the latest git source code.
 
-    brew install python gettext libpng jpeg libtiff giflib cairo pango libspiro czmq fontconfig automake libtool pkg-config glib pango 
+Run the following commands in sequence (that is, wait for each one to complete before running the next):
 
-    brew install -v --debug fontforge --HEAD --with-giflib --with-x11 --with-libspiro
+```sh
+# install dependencies;
+brew install python gettext libpng jpeg libtiff giflib cairo pango libspiro czmq fontconfig automake libtool pkg-config glib pango;
 
-2. After installing the dependencies make sure that the terminal command are in the fontforge folder by typing cd desktop(if this is where you placed it, if not, replace desktop with the correct location), and then cd fontforge. Then run each of the following commands seperatly:
+# install fontforge release;
+brew install -v --debug --with-giflib --with-x11 --with-libspiro fontforge;
 
-./bootstrap
+# or, install fontforge source:
+brew install -v --debug --with-giflib --with-x11 --with-libspiro fontforge  --HEAD;
+```
 
+If this does not work, please [file an issue](When_Things_Go_Wrong_With_Fontforge_Itself)
+
+## Doing It By Hand
+
+Clone a copy of the Github source repository:
+
+```sh
+mkdir -p ~/src/github.com/fontforge;
+cd ~/src/github.com/fontforge;
+git clone https://github.com/fontforge/fontforge.git;
+```
+
+Install all your typical build tools, build dependencies and runtime dependencies - all the packages that allow you to build of software from source code.
+The exact method to do this depends on your OS distribution.
+You can see a list of the dependencies for Debian in the [debian/control](https://github.com/fontforge/fontforge/blob/master/debian/control) file, or to generate a list on Debian-like systems with `aptitude` installed, run `sudo ./debian/deb-build-dep`
+
+To download all dependencies on Ubuntu, run:
+
+```sh
+sudo apt-get install packaging-dev pkg-config python-dev libpango1.0-dev libglib2.0-dev libxml2-dev giflib-dbg libjpeg-dev libtiff-dev uthash-dev libspiro-dev build-essential automake flex bison;
+```
+
+Install the *unifont* package to get a full display of the reference glyphs.
+[Unifont] (http://savannah.gnu.org/projects/unifont) includes glyphs for all Unicode codepoints, and FontForge will use it if it is installed.
+
+```sh
+sudo apt-get install unifont;
+```
+
+FontForge uses *[libspiro](http://github.com/fontforge/libspiro)* to simplify the drawing of curves.
+Download and install the latest code like this:
+
+```
+git clone https://github.com/fontforge/libspiro.git
+cd libspiro
+autoreconf -i
+automake --foreign -Wall
 ./configure
-
 make
-
-[sudo] make install
-
-./configure && make -j3 && sudo make install;
-
-
-3. You should be finished after the above step, however, make sure that you have Python 2.7 installed. If you do and an error message stating that python 2.7 is not installed presents itself, follow the instruction below.
-
-    1. Set the environment variables for PYTHON_LIBS and PYTHON_CFLAGS by entering the command: export PYTHON_LIBS=(location of python found by entering "which python" and pasting the output), do the same process but replace PYTHON_LIBS with PYTHON_CFLAGS. 
-
-
-
-1. Dependencies
----------------
-
-Note that you should have build tools, build dependencies
-and runtime dependencies installed. The exact method to do this
-depends on your OS.
-
-
-Then download all dependencies:
-
-On Ubuntu, for example, you should install these :
-
-```
-sudo apt-get install packaging-dev pkg-config python-dev libpango1.0-dev libglib2.0-dev libxml2-dev giflib-dbg libjpeg-dev libtiff-dev uthash-dev
-libspiro-dev
-
+sudo make install
+cd ..
 ```
 
-2. Installing
--------------
+Build *libuninameslist*
 
-To install from a git checkout: 
+FontForge uses [libuninameslist] (http://github.com/fontforge/libuninameslist) to access attribute data about each Unicode code point.
+
+Download the code:
 
 ```
-./bootstrap
+git clone https://github.com/fontforge/libuninameslist.git
+```
+
+Run the following commands in sequence (that is, wait for each one to complete before running the next):
+
+```
+cd libuninameslist
+autoreconf -i
+automake --foreign
 ./configure
 make
-[sudo] make install
+sudo make install
+cd ..
 ```
 
-**Note:** you can see the build dependencies in the
-[debian/control](https://github.com/fontforge/fontforge/blob/master/debian/control)
-file (or you can run `sudo ./debian/deb-build-dep` if you have aptitude to automate
-this).
+Now run the build and installation scripts, and ensure you can open shared object files:
 
-3. Linking
-----------
-
-If after installation, running `fontforge` gives you some
-"*.so cannot open shared object file" style errors, you
-might have to run this as well:
-
-```
-sudo ldconfig
+```sh
+cd fontforge;
+./bootstrap;
+./configure;
+make;
+sudo make install;
+sudo ldconfig;
 ```
 
-4. Common Mac OS issues
-----------
+**Attention, Designers Who Love TrueType Hinting:** 
+You like to run `./configure` with the `--with-freetype-source` option. 
+This option enables advanced features for debugging TrueType font hints, such as stepping through hinting instructions one by one.
 
-* Problems with Python, run ```./configure``` line like this (paths may vary):
+## Common Problems
+
+* If you can not install due to problems with Python, run ```./configure``` line like this (paths may vary):
 ```
 PYTHON_CFLAGS="-I/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7" \
 PYTHON_LIBS="-L/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config" \
@@ -102,35 +123,29 @@ PYTHON_LIBS="-L/System/Library/Frameworks/Python.framework/Versions/2.7/lib/pyth
 --without-libzmq \
 --without-libreadline \
 --enable-python-scripting \
---enable-python-extension
-
-# Other solution
+--enable-python-extension;
+```
+Or try this:
+```sh
 PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig/ \
 PYTHON_CFLAGS="-I/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7" \
 PYTHON_LIBS="-L/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config" \
-./configure
+./configure;
 ```
 
-* Problems with lack of libs (homebrew needed for this code):
+* Problems with lack of libraries can be solved with Homebrew or similar systems:
 ```
-# Install if needed
-brew install autoconf
-brew install automake
-brew install glib
-brew install pango
-```
-
-* Make command replies ```no such file or directory msgfmt``` (homebrew needed for this code):
-```
-brew install gettext
+brew install autoconf;
+brew install automake;
+brew install glib;
+brew install pango;
 ```
 
-Edit then your ```.bash_profile``` or ```.zprofile``` (if you use zsh) and add:
+* If `make` fails with `no such file or directory msgfmt` then with Hhomebrew run:
+```
+brew install gettext;
+```
+Then edit then your shell profile (eg, `~/.bash_profile` or `~/.zprofile`) and add:
 ```
 export PATH=${PATH}:/usr/local/opt/gettext/bin
-```
-
-* You can't find the built FontForge app (paths may vary):
-```
-mv /usr/local/share/fontforge/osx/FontForge.app /Applications
 ```
