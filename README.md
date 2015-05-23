@@ -5,7 +5,7 @@ Use it to create, edit and convert fonts in OpenType, TrueType, UFO, CID-keyed, 
 
 [fontforge.org](http://fontforge.org) &mdash; homepage
 
-[designwithfontforge.com(http://designwithfontforge.com) &mdash; font creation manual
+[designwithfontforge.com](http://designwithfontforge.com) &mdash; font creation manual
 
 [`INSTALL-git.md`](INSTALL-git.md) &mdash; developer instructions to build from source
 
