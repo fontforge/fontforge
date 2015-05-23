@@ -1,5 +1,7 @@
 # FontForge [![Build Status](https://travis-ci.org/fontforge/fontforge.png)](https://travis-ci.org/fontforge/fontforge) [![Coverity Scan Build Status](https://scan.coverity.com/projects/792/badge.svg?flat=1)](https://scan.coverity.com/projects/792)
 
+![FontForge Logo](http://fontforge.github.io/assets/img/logo-transparent.png)
+
 FontForge is a free (libre) font editor for Windows, Mac OS X and GNU+Linux. 
 Use it to create, edit and convert fonts in OpenType, TrueType, UFO, CID-keyed, Multiple Master, and many other formats.
 
