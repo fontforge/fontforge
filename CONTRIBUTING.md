@@ -29,7 +29,8 @@ If you are reporting a crash, include a debugger backtrace report.
 Contributing Code
 ------------------------
 
-We request that all pull requests be actively reviewed by at least one other developer, and for 2014 Frank Trampe has volunteered to do that if no one else gets there first. He aims to review your PR within 1 week of your most recent commit.
+We request that all pull requests be actively reviewed by at least one other developer, and in 2014 and for 2015, Frank Trampe has volunteered to do that if no one else gets there first. 
+He aims to review your PR within 1 week of your most recent commit.
 
 ### How To Contribute, Step by Step
 
