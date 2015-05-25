@@ -27,4 +27,6 @@
 include $(top_srcdir)/mk/layout.am
 SUBDIRS = 
 EXTRA_DIST = package.json report-acceptor.js
+
+GITIGNOREFILES = node_modules uploads
 -include $(top_srcdir)/git.mk
