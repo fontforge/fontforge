@@ -18158,7 +18158,8 @@ static PyObject* CreatePyModule( module_definition *mdef ) {
     PyObject *module;
 
     if ( mdef->runtime.module != NULL )
-	return mdef->runtime.module;
+	if ( mdef->runtime.module == PyImport_AddModule(mdef->module_name) )
+            return mdef->runtime.module;
 
     if ( mdef->types != NULL && FinalizePythonTypes( mdef->types ) < 0 )
 	return NULL;
