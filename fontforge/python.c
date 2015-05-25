@@ -18229,6 +18229,16 @@ static void RegisterAllPyModules(void) {
     }
 }
 
+static void UnreferenceAllPyModules(void) {
+    /* This clears references to the previously created Python modules
+     * so that we avoid using them once they become invalid.
+     */
+
+    for ( unsigned i=0; i<NUM_MODULES; i++ ) {
+	all_modules[i]->runtime.module = NULL;
+    }
+}
+
 static int python_initialized = 0;
 
 void FontForge_FinalizeEmbeddedPython(void) {
@@ -18237,6 +18247,7 @@ void FontForge_FinalizeEmbeddedPython(void) {
 	return;
 
     Py_Finalize();
+    UnreferenceAllPyModules(); // We want to NULL old references.
     python_initialized = 0;
 }
 
