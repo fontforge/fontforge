@@ -34,6 +34,8 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <errno.h>
+#include <glib.h>
+#include <glib/gstdio.h>
 
 /* the initial space is so that these guys will come first in ordered error */
 /*  lists in the file chooser */
@@ -83,81 +85,124 @@ void _GIO_reporterror(GIOControl *gc, int errn) {
     (gc->receiveerror)(gc);
 }
 
-static void _gio_file_dir(GIOControl *gc,char *path) {
-    DIR *dir;
-    struct dirent *ent;
-    GDirEntry *head=NULL, *last=NULL, *cur;
-    char *buffer, *ept, *temp;
-    struct stat statb;
-
-    dir = opendir(path);
-    if ( dir==NULL ) {
-	_GIO_reporterror(gc,errno);
-return;
+/**
+ * Converts a GLib error code into the corresponding errno.
+ * 
+ * @param [in] error The GLib error struct.
+ * @return The converted errno value.
+ */
+static int _gio_gerror_to_errno(GError *error) {
+    if (error) {
+        if (error->domain == G_FILE_ERROR) {
+            switch(error->code) {
+                case G_FILE_ERROR_EXIST: return EEXIST;
+                case G_FILE_ERROR_ISDIR: return EISDIR;
+                case G_FILE_ERROR_ACCES: return EACCES;
+                case G_FILE_ERROR_NAMETOOLONG: return ENAMETOOLONG;
+                case G_FILE_ERROR_NOENT: return ENOENT;
+                case G_FILE_ERROR_NOTDIR: return ENOTDIR;
+                case G_FILE_ERROR_ROFS: return EROFS;
+                case G_FILE_ERROR_NOSPC: return ENOSPC;
+                case G_FILE_ERROR_INVAL: return EINVAL;
+                case G_FILE_ERROR_PERM: return EPERM;
+            }
+        }
+        return ENOENT;
     }
+    return 0;
+}
 
-    buffer = (char *) malloc(strlen(path)+FILENAME_MAX+3);
-    strcpy(buffer,path);
-    ept = buffer+strlen(buffer);
-    if ( ept[-1]!='/' )
-	*ept++ = '/';
-
-    while (( ent = readdir(dir))!=NULL ) {
-	cur = (GDirEntry *) calloc(1,sizeof(GDirEntry));
-	cur->name = def2u_copy(ent->d_name);
-	strcpy(ept,ent->d_name);
-	stat(buffer,&statb);
-	cur->hasdir = cur->hasexe = cur->hasmode = cur->hassize = cur->hastime = true;
-	cur->size    = statb.st_size;
-	cur->mode    = statb.st_mode;
-	cur->modtime = statb.st_mtime;
-	cur->isdir   = S_ISDIR(cur->mode);
-	cur->isexe   = !cur->isdir && (cur->mode & 0100);
-	temp = NULL;
-	// Things go badly if we open a pipe or a device. So we don't.
+/**
+ * Create a directory entry given the path and its name.
+ * 
+ * @param [in] path The path to the directory containing the item
+ * @param [in] name The item name within the directory specified by `path`.
+ * @return The newly allocated directory entry.
+ */
+static GDirEntry* _gio_create_dirent(const char *path, const char *name) {
+    GDirEntry *cur = (GDirEntry *) calloc(1, sizeof(GDirEntry));
+    gchar *ent_path = g_build_path("/", path, name, NULL);
+    GStatBuf statb;
+    
+    cur->name = fsys2u_copy(name);
+    if (!g_stat(ent_path, &statb)) {
+        cur->hasdir = cur->hasexe = cur->hasmode = cur->hassize = cur->hastime = true;
+        cur->size = statb.st_size;
+        cur->mode = statb.st_mode;
+        cur->modtime = statb.st_mtime;
+        cur->isdir = S_ISDIR(cur->mode);
+        cur->isexe = !cur->isdir && (!cur->mode & 0100);
+        
+        // Things go badly if we open a pipe or a device. So we don't.
 #ifdef __MINGW32__
-	//Symlinks behave differently on Windows and are transparent, so no S_ISLNK.
-	if (S_ISREG(statb.st_mode) || S_ISDIR(statb.st_mode)) {
+        //Symlinks behave differently on Windows and are transparent, so no S_ISLNK.
+        if (S_ISREG(statb.st_mode) || S_ISDIR(statb.st_mode)) {
 #else
-	if (S_ISREG(statb.st_mode) || S_ISDIR(statb.st_mode) || S_ISLNK(statb.st_mode)) {
+        if (S_ISREG(statb.st_mode) || S_ISDIR(statb.st_mode) || S_ISLNK(statb.st_mode)) {
 #endif
-	  // We look at the file and try to determine a MIME type.
-	  if ( (temp=GIOguessMimeType(buffer)) || (temp=GIOGetMimeType(buffer)) ) {
-	      cur->mimetype = u_copy(c_to_u(temp));
-	      free(temp);
-	  }
-	}
-	if ( last==NULL )
-	    head = last = cur;
-	else {
-	    last->next = cur;
-	    last = cur;
-	}
+            char *temp;
+            // We look at the file and try to determine a MIME type.
+            if ((temp=GIOguessMimeType(ent_path)) || (temp=GIOGetMimeType(ent_path))) {
+                cur->mimetype = u_copy(c_to_u(temp));
+                free(temp);
+            }
+        }
+    } //g_stat
+    
+    g_free(ent_path);
+    return cur;
+}
+
+/**
+ * Scans the specified directory and updates the GIOcontrol accordingly.
+ * 
+ * @param [in,out] gc The control to update
+ * @param [in] path The directory to scan
+ */
+static void _gio_file_dir(GIOControl *gc, char *path) {
+    GDirEntry *head=NULL, *last=NULL, *cur;
+    GDir *dir = NULL;
+    GError *error;
+    const gchar *ent_name;
+    
+    dir = g_dir_open(path, 0, &error);
+    if (dir == NULL) {
+        _GIO_reporterror(gc, _gio_gerror_to_errno(error));
+        g_error_free(error);
+        return;
     }
+    
+    //Only add the '..' if we're not at the root directory.
+    if (!(ent_name = g_path_skip_root(path)) || *ent_name != '\0') {
+        head = last = _gio_create_dirent(path, "..");
+    }
+    
+    while ((ent_name = g_dir_read_name(dir))) {
+        cur = _gio_create_dirent(path, ent_name);
+        if (last == NULL) {
+            head = last = cur;
+        } else {
+            last->next = cur;
+            last = cur;
+        }
+    }
+
 #if __CygWin
     /* Under cygwin we should give the user access to /cygdrive, even though */
     /*  a diropen("/") will not find it */
-    if ( strcmp(path,"/")==0 ) {
-	cur = (GDirEntry *) calloc(1,sizeof(GDirEntry));
-	cur->name = def2u_copy("cygdrive");
-	strcpy(ept,"cygdrive");
-	stat(buffer,&statb);
-	cur->hasdir = cur->hasexe = cur->hasmode = cur->hassize = cur->hastime = true;
-	cur->size    = statb.st_size;
-	cur->mode    = statb.st_mode;
-	cur->modtime = statb.st_mtime;
-	cur->isdir   = S_ISDIR(cur->mode);
-	cur->isexe   = !cur->isdir && (cur->mode & 0100);
-	if ( last==NULL )
-	    head = last = cur;
-	else {
-	    last->next = cur;
-	    last = cur;
-	}
+    if (strcmp(path, "/") == 0) {
+        cur = _gio_create_dirent("/", "cygdrive");
+        if (last == NULL) {
+            head = last = cur;
+        } else {
+            last->next = cur;
+            last = cur;
+        }
     }
 #endif
-    closedir(dir);
-    free(buffer);
+    
+    g_dir_close(dir);
+    
     gc->iodata = head;
     gc->direntrydata = true;
     gc->return_code = 200;
@@ -167,9 +212,9 @@ return;
 
 static void _gio_file_statfile(GIOControl *gc,char *path) {
     GDirEntry *cur;
-    struct stat statb;
+    GStatBuf statb;
 
-    if ( stat(path,&statb)==-1 ) {
+    if ( g_stat(path,&statb)==-1 ) {
 	_GIO_reporterror(gc,errno);
     } else {
 	cur = (GDirEntry *) calloc(1,sizeof(GDirEntry));
@@ -189,7 +234,7 @@ static void _gio_file_statfile(GIOControl *gc,char *path) {
 }
 
 static void _gio_file_delfile(GIOControl *gc,char *path) {
-    if ( unlink(path)==-1 ) {
+    if ( g_unlink(path)==-1 ) {
 	_GIO_reporterror(gc,errno);
     } else {
 	gc->return_code = 201;
@@ -199,7 +244,7 @@ static void _gio_file_delfile(GIOControl *gc,char *path) {
 }
 
 static void _gio_file_deldir(GIOControl *gc,char *path) {
-    if ( rmdir(path)==-1 ) {
+    if ( g_rmdir(path)==-1 ) {
 	_GIO_reporterror(gc,errno);
     } else {
 	gc->return_code = 201;
@@ -209,7 +254,7 @@ static void _gio_file_deldir(GIOControl *gc,char *path) {
 }
 
 static void _gio_file_renamefile(GIOControl *gc,char *path, char *topath) {
-    if ( rename(path,topath)==-1 ) {
+    if ( g_rename(path,topath)==-1 ) {
 	_GIO_reporterror(gc,errno);
     } else {
 	gc->return_code = 201;
@@ -229,7 +274,7 @@ static void _gio_file_mkdir(GIOControl *gc,char *path) {
 }
 
 void _GIO_localDispatch(GIOControl *gc) {
-    char *path = u2def_copy(gc->path);
+    char *path = u2fsys_copy(gc->path);
     char *topath;
 
     switch ( gc->gf ) {

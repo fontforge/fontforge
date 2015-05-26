@@ -858,6 +858,80 @@ void utf8_strncpy(register char *to, const char *from, int len) {
     to[old-from] = 0;
 }
 
+/* File system encoding functions */
+/**
+ * Converts from file system encoding to unichar_t encoding.
+ * 
+ * @param [out] uto The output buffer
+ * @param [in] from The input buffer.
+ * @param [in] n The number of characters to copy.
+ * @return The output buffer.
+ */
+unichar_t *fsys2u_strncpy(unichar_t *uto, const char *from, size_t n) {
+#ifdef __MINGW32__
+    return utf82u_strncpy(uto, from, n);
+#else
+    return def2u_strncpy(uto, from, n);
+#endif
+}
+
+//char *u2fsys_strncpy(char *to, const char *ufrom, size_t n)
+/**
+ * Creates a new buffer, converting from file system encoding to unichar_t.
+ * 
+ * @param [in] from The input buffer
+ * @return The output buffer (NULL on error). Must be freed by the caller.
+ */
+unichar_t *fsys2u_copy(const char *from) {
+#ifdef __MINGW32__
+    return utf82u_copy(from);
+#else
+    return def2u_copy(from);
+#endif
+}
+
+/**
+ * Creates a new buffer, converting from unichar_t to the file system encoding.
+ * 
+ * @param [in] ufrom The input buffer
+ * @return The output buffer (NULL on error). Must be freed by the caller.
+ */
+char *u2fsys_copy(const unichar_t *ufrom) {
+#ifdef __MINGW32__
+    return u2utf8_copy(ufrom);
+#else
+    return u2def_copy(ufrom);
+#endif
+}
+
+/**
+ * Creates a new file system buffer, converting from file system encoding to UTF-8.
+ * 
+ * @param [in] from The input buffer
+ * @return The output buffer (NULL on error). Must be freed by the caller.
+ */
+char *fsys2utf8_copy(const char *from) {
+#ifdef __MINGW32__
+    return copy(from);
+#else
+    return def2utf8_copy(from);
+#endif
+}
+
+/**
+ * Creates a new buffer, converting from UTF-8 to the file system encoding.
+ * 
+ * @param [in] ufrom The input buffer.
+ * @return The output buffer (NULL on error). Must be freed by the caller.
+ */
+char *utf82fsys_copy(const char *ufrom) {
+#ifdef __MINGW32__
+    return copy(ufrom);
+#else
+    return utf82def_copy(ufrom);
+#endif
+}
+
 #include <chardata.h>
 char *StripToASCII(const char *utf8_str) {
     /* Remove any non-ascii characters: Special case, convert the copyright symbol to (c) */
