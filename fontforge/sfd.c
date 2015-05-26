@@ -8022,9 +8022,10 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	      strmatch(tok,"KernClass3:")==0 || strmatch(tok,"VKernClass3:")==0 )
     {
 	int kernclassversion = 0;
-	if (tok[9] >= '0' && tok[9] <= '9') kernclassversion = tok[9] - '0';
-	int temp, classstart=1;
 	int isv = tok[0]=='V';
+	int kcvoffset = (isv ? 10 : 9); //Offset to read kerning class version
+	if (isdigit(tok[kcvoffset])) kernclassversion = tok[kcvoffset] - '0';
+	int temp, classstart=1;
 	int old = (kernclassversion == 0);
 
 	if ( (sf->sfd_version<2)!=old ) {
