@@ -70,10 +70,6 @@
 #include "gutils/unicodelibinfo.h"
 #include "sfundo.h"
 
-#if defined (__MINGW32__)
-#include <windows.h>
-#endif
-
 #include "xvasprintf.h"
 
 
@@ -5813,21 +5809,6 @@ static void FVMenuCollabCloseLocalServer(GWindow gw, struct gmenuitem *UNUSED(mi
 {
     AskAndMaybeCloseLocalCollabServers();
 }
-
-
-#if defined(__MINGW32__)
-//
-// This is an imperfect implemenation of kill() for windows.
-//
-static int kill( int pid, int sig )
-{
-    HANDLE hHandle;
-    hHandle = OpenProcess( PROCESS_ALL_ACCESS, 0, pid );
-    TerminateProcess( hHandle, 0 );
-}
-#endif
-
-
 
 static void collablistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e))
 {
