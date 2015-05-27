@@ -96,11 +96,6 @@ extern void setup_cocoa_app();
 //#  endif
 #endif
 
-#if defined(__MINGW32__)
-#include <windows.h>
-#define sleep(n) Sleep(1000 * (n))
-#endif
-
 #include "collabclientui.h"
 
 extern int AutoSaveFrequency;
@@ -793,11 +788,7 @@ static void ffensuredir( const char* basedir, const char* dirname, mode_t mode )
 
     snprintf(buffer,buffersz,"%s/%s", basedir, dirname );
     // ignore errors, this is just to help the user aftre all.
-#if !defined(__MINGW32__)
     mkdir( buffer, mode );
-#else
-    mkdir( buffer );
-#endif
 }
 
 static void ensureDotFontForgeIsSetup() {

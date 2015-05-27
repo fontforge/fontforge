@@ -37,12 +37,6 @@
 #include <glib.h>
 #include <errno.h>			/* for mkdir_p */
 
-#ifdef _WIN32
-#define MKDIR(A,B) mkdir(A)
-#else
-#define MKDIR(A,B) mkdir(A,B)
-#endif
-
 static char dirname_[MAXPATHLEN+1];
 #if !defined(__MINGW32__)
  #include <pwd.h>
@@ -134,14 +128,14 @@ return -ENOTDIR;
 	for(p = tmp + 1; *p; p++)
 	if(*p == '/') {
 		*p = 0;
-		r = MKDIR(tmp, mode);
+		r = mkdir(tmp, mode);
 		if (r < 0 && errno != EEXIST)
 return -errno;
 		*p = '/';
 	}
 
 	/* try to make the whole path */
-	r = MKDIR(tmp, mode);
+	r = mkdir(tmp, mode);
 	if(r < 0 && errno != EEXIST)
 return -errno;
 	/* creation successful or the file already exists */
@@ -420,7 +414,7 @@ return( access(file,04)==0 );
 }
 
 int GFileMkDir(const char *name) {
-return( MKDIR(name,0755));
+return( mkdir(name,0755));
 }
 
 int GFileRmDir(const char *name) {
@@ -714,7 +708,7 @@ return( access(buffer,04)==0 );
 int u_GFileMkDir(unichar_t *name) {
     char buffer[1024];
     u2def_strncpy(buffer,name,sizeof(buffer));
-return( MKDIR(buffer,0755));
+return( mkdir(buffer,0755));
 }
 
 int u_GFileRmDir(unichar_t *name) {
