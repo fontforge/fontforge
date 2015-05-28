@@ -906,9 +906,9 @@ return NULL;
 #if defined(__MINGW32__)
 	/* Allow for preferences to be saved locally in a 'portable' configuration. */ 
 	if (getenv("FF_PORTABLE") != NULL) {
-		buf = smprintf("%s/preferences/", getShareDir());
+		buf = smprintf("%s/preferences", getShareDir());
 	} else {
-		buf = smprintf("%s/FontForge/", home);
+		buf = smprintf("%s/FontForge", home);
 	}
 	return buf;
 #else
