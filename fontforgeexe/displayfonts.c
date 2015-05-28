@@ -254,12 +254,6 @@ return( tis );
     }
 }
 
-static int progexists(char *prog) {
-    char buffer[1025];
-
-return( ProgramExists(prog,buffer)!=NULL );
-}
-
 static int PageSetup(PD *pi) {
     GRect pos;
     GWindowAttrs wattrs;
@@ -294,38 +288,38 @@ static int PageSetup(PD *pi) {
     memset(&gcd,0,sizeof(gcd));
 
 /* program names also don't get translated */
-    label[0].text = (unichar_t *) "lp";
+    label[0].text = (unichar_t *) GFILE_PROGRAMIFY("lp");
     label[0].text_is_1byte = true;
     gcd[0].gd.label = &label[0];
     gcd[0].gd.mnemonic = 'l';
     gcd[0].gd.pos.x = 40; gcd[0].gd.pos.y = 6; 
-    gcd[0].gd.flags = progexists("lp")? (gg_visible | gg_enabled):gg_visible;
+    gcd[0].gd.flags = GFileProgramExists(GFILE_PROGRAMIFY("lp")) ? (gg_visible | gg_enabled):gg_visible;
     gcd[0].gd.cid = CID_lp;
     gcd[0].gd.handle_controlevent = PG_RadioSet;
     gcd[0].creator = GRadioCreate;
     radarray[0][0] = GCD_HPad10; radarray[0][1] = &gcd[0];
 
-    label[1].text = (unichar_t *) "lpr";
+    label[1].text = (unichar_t *) GFILE_PROGRAMIFY("lpr");
     label[1].text_is_1byte = true;
     gcd[1].gd.label = &label[1];
     gcd[1].gd.mnemonic = 'r';
     gcd[1].gd.pos.x = gcd[0].gd.pos.x; gcd[1].gd.pos.y = 18+gcd[0].gd.pos.y; 
-    gcd[1].gd.flags = progexists("lpr")? (gg_visible | gg_enabled):gg_visible;
+    gcd[1].gd.flags = GFileProgramExists(GFILE_PROGRAMIFY("lpr")) ? (gg_visible | gg_enabled):gg_visible;
     gcd[1].gd.cid = CID_lpr;
     gcd[1].gd.handle_controlevent = PG_RadioSet;
     gcd[1].creator = GRadioCreate;
     radarray[1][0] = GCD_HPad10; radarray[1][1] = &gcd[1];
 
     use_gv = false;
-    label[2].text = (unichar_t *) "ghostview";
+    label[2].text = (unichar_t *) GFILE_PROGRAMIFY("ghostview");
     label[2].text_is_1byte = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.mnemonic = 'g';
     gcd[2].gd.pos.x = gcd[0].gd.pos.x+50; gcd[2].gd.pos.y = gcd[0].gd.pos.y;
     gcd[2].gd.flags = gg_visible | gg_enabled | gg_rad_continueold;
-    if ( !progexists("ghostview") ) {
-	if ( progexists("gv") ) {
-	    label[2].text = (unichar_t *) "gv";
+    if ( !GFileProgramExists(GFILE_PROGRAMIFY("ghostview")) ) {
+	if ( GFileProgramExists(GFILE_PROGRAMIFY("gv")) ) {
+	    label[2].text = (unichar_t *) GFILE_PROGRAMIFY("gv");
 	    use_gv = true;
 	} else
 	    gcd[2].gd.flags = gg_visible;

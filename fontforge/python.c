@@ -7580,14 +7580,9 @@ Py_RETURN( self );
 static PyObject *PyFFGlyph_autoTrace(PyObject *self, PyObject *UNUSED(args)) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int layer = ((PyFF_Glyph *) self)->layer;
-    char **at_args;
-
-    at_args = AutoTraceArgs(false);
-    if ( at_args==(char **) -1 ) {
-	PyErr_Format(PyExc_EnvironmentError, "Bad autotrace args" );
-return(NULL);
+    if (!SCAutoTrace(sc, layer, false)) {
+        PyErr_Format(PyExc_EnvironmentError, "Autotrace failed");
     }
-    _SCAutoTrace(sc, layer, at_args);
 Py_RETURN( self );
 }
 

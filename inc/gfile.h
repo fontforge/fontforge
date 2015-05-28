@@ -27,6 +27,13 @@
 #ifndef _GFILE_H
 #define _GFILE_H
 
+/* Macro to add on '.exe' to a program name, if necessary. */
+#ifdef __MINGW32__
+# define GFILE_PROGRAMIFY(x) (x ".exe")
+#else
+# define GFILE_PROGRAMIFY(x) (x)
+#endif
+
 /* For mode_t */
 #include <sys/types.h>
 
@@ -67,6 +74,7 @@ extern int GFileIsDir(const char *file);
  * Returns true if the file exists
  */
 extern int GFileExists(const char *file);
+extern int GFileProgramExists(const char *prog);
 extern int GFileModifyable(const char *file);
 extern int GFileModifyableDir(const char *file);
 extern int GFileReadable(const char *file);

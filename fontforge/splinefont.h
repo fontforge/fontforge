@@ -2558,9 +2558,6 @@ extern int GenerateScript(SplineFont *sf,char *filename, const char *bitmaptype,
 	int fmflags,int res, char *subfontdirectory,struct sflist *sfs,
 	EncMap *map,NameList *rename_to,int layer);
 
-extern void _SCAutoTrace(SplineChar *sc, int layer, char **args);
-extern char **AutoTraceArgs(int ask);
-
 #define CURVATURE_ERROR	-1e9
 extern bigreal SplineCurvature(Spline *s, bigreal t);
 

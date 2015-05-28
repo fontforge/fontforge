@@ -29,7 +29,6 @@
 #include <ustring.h>
 #include <utype.h>
 #include "sd.h"
-#include "gfile.h"
 
 #include <sys/types.h>		/* for waitpid */
 #if !defined(__MINGW32__)
@@ -40,11 +39,15 @@
 #include <fcntl.h>		/* for open */
 #include <stdlib.h>		/* for getenv */
 #include <errno.h>		/* for errors */
-#include <dirent.h>		/* for opendir,etc. */
 
 #include "ffglib.h"
 
+/* Preference variables (Global) */
 int preferpotrace = false;
+int autotrace_ask=0, mf_ask=0, mf_clearbackgrounds=0, mf_showerrors=0;
+char *autotrace_args = NULL, *mf_args = NULL;
+/* Storing autotrace args */
+static gchar **g_args=NULL;
 
 /* Interface to Martin Weber's autotrace program   */
 /*  http://homepages.go.com/~martweb/AutoTrace.htm */
@@ -54,6 +57,78 @@ int preferpotrace = false;
 /*  and has a cleaner interface) */
 /* http://potrace.sf.net/ */
 
+static int mytempnam(char **path) {
+#if !defined(__MINGW32__)
+    int retval = g_file_open_tmp("PfaEdXXXXXX", path, NULL);
+# if defined (__CYGWIN__)
+    if (retval != -1) {
+        size_t r = cygwin_conv_path(CCP_POSIX_TO_WIN_W, *path, NULL, 0);
+        gchar *fret = NULL;
+        
+        if (r >= 0) {
+            wchar_t *tret = malloc(sizeof(wchar_t) * r);
+            
+            r = cygwin_conv_path(CCP_POSIX_TO_WIN_W, *path, tret, r);
+            if (r == 0) {
+                //It should work as long as a UTF-8 locale is selected...
+                fret = g_utf16_to_utf8(tret, -1, NULL, NULL, NULL);
+            }
+            free(tret);
+        }
+        g_free(*path);
+        *path = fret;
+        
+        if (fret == NULL) {
+            g_close(retval, NULL);
+            retval = -1;
+        } else {
+            GFileNormalizePath(fret);
+        }
+    }
+# endif
+    return retval;
+#else
+    *path = _tempnam(NULL, "PfaEd");
+    if (*path) {
+        GFileNormalizePath(*path);
+        return 1;
+    }
+    return -1;
+#endif
+}
+
+static void mytempnam_close(int fd, char **path) {
+#if !defined(__MINGW32__)
+    g_close(fd, NULL);
+    g_free(*path);
+#else
+    free(*path);
+#endif
+    *path = NULL;
+}
+
+static void cleantempdir(char *tempdir) {
+    GDir *dir;
+    const gchar *entry;
+    gchar *todelete[100];
+    size_t cnt = 0;
+
+    if ((dir = g_dir_open(tempdir, 0, NULL))) {
+        while ((entry = g_dir_read_name(dir)) && cnt < sizeof(todelete)) {
+            /* Hmm... doing an unlink right here means changing the dir file */
+            /*  which might mean we could not read it properly. So save up the*/
+            /*  things we need to delete and trash them later */
+            todelete[cnt++] = g_build_path("/", tempdir, entry, NULL);
+        }
+        g_dir_close(dir);
+        
+        for (size_t i = 0; i < cnt; i++) {
+            g_unlink(todelete[i]);
+            g_free(todelete[i]);
+        }
+    }
+    g_rmdir(tempdir);
+}
 
 static SplinePointList *localSplinesFromEntities(Entity *ent, Color bgcol, int ispotrace) {
     Entity *enext;
@@ -180,375 +255,153 @@ static SplinePointList *localSplinesFromEntities(Entity *ent, Color bgcol, int i
 return( head );
 }
 
-#if !defined(__MINGW32__)
-/* I think this is total paranoia. but it's annoying to have linker complaints... */
-static int mytempnam(char *buffer) {
-    char *dir;
-    int fd;
-    /* char *old; */
-
-    if ( (dir=getenv("TMPDIR"))!=NULL )
-	strcpy(buffer,dir);
-#ifndef P_tmpdir
-#define P_tmpdir	"/tmp"
-#endif
-    else
-	strcpy(buffer,P_tmpdir);
-    strcat(buffer,"/PfaEdXXXXXX");
-    fd = g_mkstemp(buffer);
-return( fd );
-}
-
-static char *mytempdir(void) {
-    char buffer[1025];
-    char *dir, *eon;
-    static int cnt=0;
-    int tries=0;
-
-    if ( (dir=getenv("TMPDIR"))!=NULL )
-	strncpy(buffer,dir,sizeof(buffer)-1-5);
-#ifndef P_tmpdir
-#define P_tmpdir	"/tmp"
-#endif
-    else
-	strcpy(buffer,P_tmpdir);
-    strcat(buffer,"/PfaEd");
-    eon = buffer+strlen(buffer);
-    while ( 1 ) {
-	sprintf( eon, "%04X_mf%d", getpid(), ++cnt );
-	if ( mkdir(buffer,0770)==0 )
-return( copy(buffer) );
-	else if ( errno!=EEXIST )
-return( NULL );
-	if ( ++tries>100 )
-return( NULL );
-    }
-}
-#endif
-
-
-#if defined(__MINGW32__)
-static char* add_arg(char* buffer, const char* s)
-{
-    while( *s ) *buffer++ = *s++;
-    *buffer = '\0';
-    return buffer;
-}
-void _SCAutoTrace(SplineChar *sc, int layer, char **args) {
+static void _SCAutoTrace(SplineChar *sc, int layer, char **args) {
     ImageList *images;
-    SplineSet *new, *last;
-    struct _GImage *ib;
-    Color bgcol;
-    int   ispotrace;
-    real  transform[6];
-    char  tempname_in[1025];
-    char  tempname_out[1025];
-    const char *prog;
-    char  *command, *cmd;
-    FILE  *ps;
-    int i, changed = false;
-
-    if ( sc->layers[ly_back].images==NULL )
-	return;
-    prog = FindAutoTraceName();
-    if ( prog==NULL )
-	return;
-    ispotrace = (strstrmatch(prog,"potrace")!=NULL );
-    for ( images = sc->layers[ly_back].images; images!=NULL; images=images->next ) {
-	ib = images->image->list_len==0 ? images->image->u.image : images->image->u.images[0];
-	if ( ib->width==0 || ib->height==0 ) {
-	    continue;
-	}
-
-	strcpy(tempname_in,  _tempnam(NULL, "FontForge_in_"));
-	strcpy(tempname_out, _tempnam(NULL, "FontForge_out_"));
-	GImageWriteBmp(images->image, tempname_in);
-
-	if ( ib->trans==-1 )
-	    bgcol = 0xffffff;		/* reasonable guess */
-	else if ( ib->image_type==it_true )
-	    bgcol = ib->trans;
-	else if ( ib->clut!=NULL )
-	    bgcol = ib->clut->clut[ib->trans];
-	else
-	    bgcol = 0xffffff;
-
-	command = malloc(32768);
-	cmd = add_arg(command, prog);
-	cmd = add_arg(cmd, " ");
-	if(args){
-	    for(i=0; args[i]; i++){
-		    cmd = add_arg(cmd, args[i]);
-		cmd = add_arg(cmd, " ");
-	    }
-	}
-	if ( ispotrace )
-		cmd = add_arg(cmd, "-c --eps -r 72 --output=\"");
-	else
-		cmd = add_arg(cmd, "--output-format=eps --input-format=BMP --output-file \"");
-
-	cmd = add_arg(cmd, tempname_out);
-	cmd = add_arg(cmd, "\" \"");
-	cmd = add_arg(cmd, tempname_in);
-	cmd = add_arg(cmd, "\"");
-	/*fprintf(stdout, "---EXEC---\n%s\n----------\n", command);fflush(stdout);*/
-	system(command);
-	free(command);
-
-	ps = fopen(tempname_out, "r");
-	if(ps){
-	    new = localSplinesFromEntities(EntityInterpretPS(ps,NULL),bgcol,ispotrace);
-	    transform[0] = images->xscale; transform[3] = images->yscale;
-	    transform[1] = transform[2] = 0;
-	    transform[4] = images->xoff;
-	    transform[5] = images->yoff - images->yscale*ib->height;
-	    new = SplinePointListTransform(new,transform,tpt_AllPoints);
-	    if ( sc->layers[layer].order2 ) {
-		SplineSet *o2 = SplineSetsTTFApprox(new);
-		SplinePointListsFree(new);
-		new = o2;
-	    }
-	    if ( new!=NULL ) {
-		sc->parent->onlybitmaps = false;
-		if ( !changed )
-		    SCPreserveLayer(sc,layer,false);
-		for ( last=new; last->next!=NULL; last=last->next );
-		last->next = sc->layers[layer].splines;
-		sc->layers[layer].splines = new;
-		changed = true;
-	    }
-	    fclose(ps);
-	}
-
-	unlink(tempname_in);
-	unlink(tempname_out);
-    }
-    if ( changed )
-	SCCharChangedUpdate(sc,layer);
-
-}
-#else
-void _SCAutoTrace(SplineChar *sc, int layer, char **args) {
-    ImageList *images;
-    const char *prog;
-    char *pt;
-    SplineSet *new, *last;
-    struct _GImage *ib;
-    Color bgcol;
-    real transform[6];
+    char prog[BUFSIZ];
     int changed = false;
-    char tempname[1025];
-    const char (* arglist[30]);
-    size_t ac,i;
-    FILE *ps;
-    int pid, status, fd;
     int ispotrace;
 
-    if ( sc->layers[ly_back].images==NULL )
-return;
-    prog = FindAutoTraceName();
-    if ( prog==NULL )
-return;
-    ispotrace = (strstrmatch(prog,"potrace")!=NULL );
-    for ( images = sc->layers[ly_back].images; images!=NULL; images=images->next ) {
-/* the linker tells me not to use tempnam(). Which does almost exactly what */
-/*  I want. So we go through a much more complex set of machinations to make */
-/*  it happy. */
-	ib = images->image->list_len==0 ? images->image->u.image : images->image->u.images[0];
-	if ( ib->width==0 || ib->height==0 ) {
-	    /* pk fonts can have 0 sized bitmaps for space characters */
-	    /*  but autotrace gets all snooty about being given an empty image */
-	    /*  so if we find one, then just ignore it. It won't produce any */
-	    /*  results anyway */
-    continue;
-	}
-	fd = mytempnam(tempname);
-	GImageWriteBmp(images->image,tempname);
-	if ( ib->trans==(Color)-1 )
-	    bgcol = 0xffffff;		/* reasonable guess */
-	else if ( ib->image_type==it_true )
-	    bgcol = ib->trans;
-	else if ( ib->clut!=NULL )
-	    bgcol = ib->clut->clut[ib->trans];
-	else
-	    bgcol = 0xffffff;
+    if (sc->layers[ly_back].images == NULL)
+        return;
+    if ((ispotrace = FindAutoTrace(prog, sizeof(prog))) < 0)
+        return;
 
-	ac = 0;
-	arglist[ac++] = prog;
-	if ( ispotrace ) {
-	    /* If I use the long names (--cleartext) potrace hangs) */
-	    /*  version 1.1 */
-	    arglist[ac++] = "-c";
-	    arglist[ac++] = "--output=-";		/* output to stdout */
-	    arglist[ac++] = "--eps";
-	    arglist[ac++] = "-r";
-	    arglist[ac++] = "72";
-	} else {
-	    arglist[ac++] = "--output-format=eps";
-	    arglist[ac++] = "--input-format=BMP";
-	}
-	if ( args ) {
-	    for ( i=0; args[i]!=NULL && ac<sizeof(arglist)/sizeof(arglist[0])-2; ++i )
-		arglist[ac++] = args[i];
-	}
-/* On windows potrace is now compiled with MinGW (whatever that is) which */
-/*  means it can't handle cygwin's idea of "/tmp". So cd to /tmp in the child */
-/*  and use the local filename rather than full pathspec. */
-	pt = strrchr(tempname,'/')==NULL?tempname:strrchr(tempname,'/')+1;
-	arglist[ac++] = pt;
-	arglist[ac] = NULL;
-	/* We can't use AutoTrace's own "background-color" ignorer because */
-	/*  it ignores counters as well as surrounds. So "O" would be a dark */
-	/*  oval, etc. */
-	ps = tmpfile();
-	if ( (pid=fork())==0 ) {
-	    /* Child */
-	    close(1);
-	    dup2(fileno(ps),1);
-	    if ( strrchr(tempname,'/')!=NULL ) {	/* See comment above */
-		*strrchr(tempname,'/') = '\0';
-		chdir(tempname);
-	    }
-	    exit(execvp(prog,(char * const *)arglist)==-1);	/* If exec fails, then die */
-	} else if ( pid!=-1 ) {
-	    waitpid(pid,&status,0);
-	    if ( WIFEXITED(status)) {
-		rewind(ps);
-		new = localSplinesFromEntities(EntityInterpretPS(ps,NULL),bgcol,ispotrace);
-		transform[0] = images->xscale; transform[3] = images->yscale;
-		transform[1] = transform[2] = 0;
-		transform[4] = images->xoff;
-		transform[5] = images->yoff - images->yscale*ib->height;
-		new = SplinePointListTransform(new,transform,tpt_AllPoints);
-		if ( sc->layers[layer].order2 ) {
-		    SplineSet *o2 = SplineSetsTTFApprox(new);
-		    SplinePointListsFree(new);
-		    new = o2;
-		}
-		if ( new!=NULL ) {
-		    sc->parent->onlybitmaps = false;
-		    if ( !changed )
-			SCPreserveLayer(sc,layer,false);
-		    for ( last=new; last->next!=NULL; last=last->next );
-		    last->next = sc->layers[layer].splines;
-		    sc->layers[layer].splines = new;
-		    changed = true;
-		}
-	    }
-	}
-	fclose(ps);
-	close(fd);
-	unlink(tempname);		/* Might not be needed, but probably is*/
+    for (images = sc->layers[ly_back].images; images!=NULL; images=images->next) {
+        Color bgcol;
+        const char (* arglist[30]);
+        char *tempname_input, *tempname_output;
+        struct _GImage *ib = images->image->list_len==0 ?
+                             images->image->u.image : images->image->u.images[0];
+        int fd_input, fd_output;
+        int status, exec_ret;
+        size_t ac,i;
+
+        if ( ib->width==0 || ib->height==0 ) {
+            /* pk fonts can have 0 sized bitmaps for space characters */
+            /*  but autotrace gets all snooty about being given an empty image */
+            /*  so if we find one, then just ignore it. It won't produce any */
+            /*  results anyway */
+            continue;
+        }
+        if ((fd_input = mytempnam(&tempname_input)) == -1) {
+            return;
+        }
+        if ((fd_output = mytempnam(&tempname_output)) == -1) {
+            mytempnam_close(fd_input, &tempname_input);
+            return;
+        }
+        GImageWriteBmp(images->image, tempname_input);
+        if ( ib->trans==(Color)-1 )
+            bgcol = 0xffffff;		/* reasonable guess */
+        else if ( ib->image_type==it_true )
+            bgcol = ib->trans;
+        else if ( ib->clut!=NULL )
+            bgcol = ib->clut->clut[ib->trans];
+        else
+            bgcol = 0xffffff;
+
+        ac = 0;
+        arglist[ac++] = prog;
+        if (ispotrace) {
+            /* If I use the long names (--cleartext) potrace hangs) */
+            /*  version 1.1 */
+            arglist[ac++] = "-c";
+            arglist[ac++] = "--eps";
+            arglist[ac++] = "-r";
+            arglist[ac++] = "72";
+            arglist[ac++] = "--output";
+        } else {
+            arglist[ac++] = "--output-format=eps";
+            arglist[ac++] = "--input-format=BMP";
+            arglist[ac++] = "--output-file";
+        }
+        arglist[ac++] = tempname_output;
+        if (args) {
+            for ( i=0; args[i] != NULL && ac < sizeof(arglist)/sizeof(arglist[0])-2; ++i)
+                arglist[ac++] = args[i];
+        }
+        arglist[ac++] = tempname_input;
+        arglist[ac] = NULL;
+        /* We can't use AutoTrace's own "background-color" ignorer because */
+        /*  it ignores counters as well as surrounds. So "O" would be a dark */
+        /*  oval, etc. */
+        GError *error;
+        exec_ret = g_spawn_sync(NULL, (gchar**)arglist, NULL,
+            G_SPAWN_SEARCH_PATH|G_SPAWN_STDOUT_TO_DEV_NULL|G_SPAWN_STDERR_TO_DEV_NULL,
+            NULL, NULL, NULL, NULL, &status, &error);
+        if (exec_ret && g_spawn_check_exit_status(status,NULL)) {
+            FILE *fpo = fopen(tempname_output, "r");
+            if (fpo) {
+                SplineSet *new, *last;
+                real transform[6];
+                new = localSplinesFromEntities(EntityInterpretPS(fpo,NULL),bgcol,ispotrace);
+                transform[0] = images->xscale; transform[3] = images->yscale;
+                transform[1] = transform[2] = 0;
+                transform[4] = images->xoff;
+                transform[5] = images->yoff - images->yscale*ib->height;
+                new = SplinePointListTransform(new,transform,tpt_AllPoints);
+                if (sc->layers[layer].order2) {
+                    SplineSet *o2 = SplineSetsTTFApprox(new);
+                    SplinePointListsFree(new);
+                    new = o2;
+                }
+                if (new != NULL) {
+                    sc->parent->onlybitmaps = false;
+                    if (!changed)
+                        SCPreserveLayer(sc,layer,false);
+                    for (last=new; last->next!=NULL; last=last->next);
+
+                    last->next = sc->layers[layer].splines;
+                    sc->layers[layer].splines = new;
+                    changed = true;
+                }
+            }
+            fclose(fpo);
+        }
+        unlink(tempname_input);		/* Might not be needed, but probably is*/
+        unlink(tempname_output);
+        mytempnam_close(fd_input, &tempname_input);
+        mytempnam_close(fd_output, &tempname_output);
     }
-    if ( changed )
-	SCCharChangedUpdate(sc,layer);
-}
-#endif
-
-static char **makevector(const char *str) {
-    char **vector;
-    const char *start, *pt;
-    int i,cnt;
-
-    if ( str==NULL )
-return( NULL );
-
-    vector = NULL;
-    for ( i=0; i<2; ++i ) {
-	cnt = 0;
-	for ( start=str; isspace(*start); ++start );
-	while ( *start ) {
-	    for ( pt=start; !isspace(*pt) && *pt!='\0'; ++pt );
-	    if ( vector!=NULL )
-		vector[cnt] = copyn(start,pt-start);
-	    ++cnt;
-	    for ( start=pt; isspace(*start); ++start);
-	}
-	if ( cnt==0 )
-return( NULL );
-	if ( vector ) {
-	    vector[cnt] = NULL;
-return( vector );
-	}
-	vector = malloc((cnt+1)*sizeof(char *));
+    if (changed) {
+        SCCharChangedUpdate(sc,layer);
     }
-return( NULL );
 }
 
-static char *flatten(char *const *args) {
-    char *ret, *rpt;
-    int j, i, len;
+static char **QueryAutoTraceArgs(int ask) {
+    if ((ask || autotrace_ask) && !no_windowing_ui) {
+        char *cret;
 
-    if ( args==NULL )
-return( NULL );
-
-    ret = rpt = NULL;
-    for ( i=0; i<2; ++i ) {
-	for ( j=0, len=0; args[j]!=NULL; ++j ) {
-	    if ( rpt!=NULL ) {
-		strcpy(rpt,args[j]);
-		rpt += strlen( args[j] );
-		*rpt++ = ' ';
-	    } else
-		len += strlen(args[j])+1;
-	}
-	if ( rpt ) {
-	    rpt[-1] = '\0';
-return( ret );
-	} else if ( len<=1 )
-return( NULL );
-	ret = rpt = malloc(len);
+        cret = ff_ask_string(_("Additional arguments for autotrace program:"),
+            autotrace_args,_("Additional arguments for autotrace program:"));
+        if (cret == NULL)
+            return (char **)-1;
+        SetAutoTraceArgs(cret);
+        SavePrefs(true);
+        free(cret);
     }
-return( NULL );
-}
-
-static char **args=NULL;
-int autotrace_ask=0, mf_ask=0, mf_clearbackgrounds=0, mf_showerrors=0;
-char *mf_args = NULL;
-
-void *GetAutoTraceArgs(void) {
-return( flatten(args));
+    return g_args;
 }
 
 void SetAutoTraceArgs(void *a) {
-    int i;
-
-    if ( args!=NULL ) {
-	for ( i=0; args[i]!=NULL; ++i )
-	    free(args[i]);
-	free(args);
+    free(autotrace_args);
+    g_strfreev(g_args);
+    if (!g_shell_parse_argv((char *)a, NULL, &g_args, NULL)) {
+        g_args = NULL;
     }
-    args = makevector((char *) a);
-}
-
-char **AutoTraceArgs(int ask) {
-
-    if (( ask || autotrace_ask ) && !no_windowing_ui ) {
-	char *cdef = flatten(args);
-	char *cret;
-
-	cret = ff_ask_string(_("Additional arguments for autotrace program:"),
-		cdef,_("Additional arguments for autotrace program:"));
-	free(cdef);
-	if ( cret==NULL )
-return( (char **) -1 );
-	args = makevector(cret);
-	free(cret);
-	SavePrefs(true);
-    }
-return( args );
+    autotrace_args = copy((char *)a);
 }
 
 void FVAutoTrace(FontViewBase *fv,int ask) {
     char **args;
     int i,cnt,gid;
 
-    if ( FindAutoTraceName()==NULL ) {
+    if ( FindAutoTrace(NULL, 0) < 0 ) {
 	ff_post_error(_("Can't find autotrace"),_("Can't find autotrace program (set AUTOTRACE environment variable) or download from:\n  http://sf.net/projects/autotrace/"));
 return;
     }
 
-    args = AutoTraceArgs(ask);
+    args = QueryAutoTraceArgs(ask);
     if ( args==(char **) -1 )
 return;
     for ( i=cnt=0; i<fv->map->enccount; ++i )
@@ -573,80 +426,62 @@ return;
     ff_progress_end_indicator();
 }
 
-void SCAutoTrace(SplineChar *sc,int layer, int ask) {
+int SCAutoTrace(SplineChar *sc,int layer, int ask) {
     char **args;
 
-    if ( sc->layers[ly_back].images==NULL ) {
-	ff_post_error(_("Nothing to trace"),_("Nothing to trace"));
-return;
-    } else if ( FindAutoTraceName()==NULL ) {
-	ff_post_error(_("Can't find autotrace"),_("Can't find autotrace program (set AUTOTRACE environment variable) or download from:\n  http://sf.net/projects/autotrace/"));
-return;
+    if (sc->layers[ly_back].images == NULL) {
+        ff_post_error(_("Nothing to trace"),_("Nothing to trace"));
+        return false;
+    } else if (FindAutoTrace(NULL, 0) < 0) {
+        ff_post_error(_("Can't find autotrace"),_("Can't find autotrace program (set AUTOTRACE environment variable) or download from:\n  http://sf.net/projects/autotrace/"));
+        return false;
     }
 
-    args = AutoTraceArgs(ask);
-    if ( args==(char **) -1 )
-return;
+    args = QueryAutoTraceArgs(ask);
+    if (args==(char **) -1)
+        return false;
     _SCAutoTrace(sc, layer, args);
+    return true;
 }
 
-char *ProgramExists(const char *prog,char *buffer) {
-    char *path, *pt;
-
-    if (( path = getenv("PATH"))==NULL )
-return( NULL );
-
-    while ( 1 ) {
-	pt = strchr(path,':');
-	if ( pt==NULL ) pt = path+strlen(path);
-	if ( pt-path<1000 ) {
-	    strncpy(buffer,path,pt-path);
-	    buffer[pt-path] = '\0';
-	    if ( pt!=path && buffer[pt-path-1]!='/' )
-		strcat(buffer,"/");
-	    strcat(buffer,prog);
-	    /* Under cygwin, applying access to "potrace" will find "potrace.exe" */
-	    /*  no need for special check to add ".exe" */
-	    if ( access(buffer,X_OK)!=-1 ) {
-return( buffer );
-	    }
-	}
-	if ( *pt=='\0' )
-    break;
-	path = pt+1;
+/**
+ * Finds the autotrace/potrace executable.
+ * 
+ * @param [out] path The buffer to store the location, or NULL if not required.
+ * @param [in] bufsiz The size of the output buffer.
+ * @return nonzero if potrace was found, zero if autotrace was found, negative
+ *         if none was found. Note previously, FontForge determined itself if
+ *         the resulting executable was potrace or autotrace, irrespective of
+ *         setting AUTOTRACE or POTRACE. (i.e. AUTOTRACE=potrace was possible).
+ */
+int FindAutoTrace(char *path, size_t bufsiz) {
+    const char * const envtraces[] = {"AUTOTRACE", "POTRACE"};
+    const char * const progtraces[] = {GFILE_PROGRAMIFY("autotrace"),
+                                       GFILE_PROGRAMIFY("potrace")};
+    const char *location;
+    int idx = (preferpotrace ? 1 : 0), ret = -1;
+    
+    location = g_getenv(envtraces[idx]);
+    if (!location) {
+        location = g_getenv(envtraces[1-idx]);
     }
-return( NULL );
-}
-
-const char *FindAutoTraceName(void) {
-    static int searched=0;
-    static int waspotraceprefered;
-    static const char *name = NULL;
-    char buffer[1025];
-
-    if ( searched && waspotraceprefered==preferpotrace )
-return( name );
-
-    searched = true;
-    waspotraceprefered = preferpotrace;
-    if ( preferpotrace ) {
-	if (( name = getenv("POTRACE"))!=NULL )
-return( name );
+    if (!location && GFileProgramExists(progtraces[idx])) {
+        location = progtraces[idx];
+        ret = idx;
     }
-    if (( name = getenv("AUTOTRACE"))!=NULL )
-return( name );
-    if (( name = getenv("POTRACE"))!=NULL )
-return( name );
-
-    if ( preferpotrace ) {
-	if ( ProgramExists("potrace",buffer)!=NULL )
-	    name = "potrace";
+    if (!location && GFileProgramExists(progtraces[1-idx])) {
+        location = progtraces[1-idx];
+        ret = 1-idx;
     }
-    if ( name==NULL && ProgramExists("autotrace",buffer)!=NULL )
-	name = "autotrace";
-    if ( name==NULL && ProgramExists("potrace",buffer)!=NULL )
-	name = "potrace";
-return( name );
+    
+    if (location) {
+        if (path) {
+            snprintf(path, bufsiz, "%s", location);
+        }
+        return ret >= 0 ?  ret : (strstrmatch(location, "potrace") != NULL);
+    }
+
+    return ret;
 }
 
 const char *FindMFName(void) {
@@ -660,64 +495,29 @@ return( name );
     searched = true;
     if (( name = getenv("MF"))!=NULL )
 return( name );
-    if ( ProgramExists("mf",buffer)!=NULL )
+    if ( GFileProgramExists(GFILE_PROGRAMIFY("mf")) )
 	name = "mf";
 return( name );
 }
 
 static char *FindGfFile(char *tempdir) {
-    DIR *temp;
-    struct dirent *ent;
+    GDir *dir;
+    const gchar *entry;
     char buffer[1025], *ret=NULL;
 
-    temp = opendir(tempdir);
-    if ( temp!=NULL ) {
-	while ( (ent=readdir(temp))!=NULL ) {
-	    if ( strcmp(ent->d_name,".")==0 || strcmp(ent->d_name,"..")==0 )
-	continue;
-	    if ( strlen(ent->d_name)>2 && strcmp(ent->d_name+strlen(ent->d_name)-2,"gf")==0 ) {
-		strcpy(buffer,tempdir);
-		strcat(buffer,"/");
-		strcat(buffer,ent->d_name);
-		ret = copy(buffer);
-	break;
-	    }
-	}
-	closedir(temp);
+    if ((dir = g_dir_open(tempdir, 0, NULL))) {
+        while ((entry = g_dir_read_name(dir)) != NULL) {
+            size_t elen = strlen(entry);
+            if (elen > 2 && !strcmp(entry+elen-2, "gf")) {
+                if (asprintf(&ret, "%s/%s", tempdir, entry) < 0) {
+                    ret = NULL;
+                }
+                break;
+            }
+        }
+        g_dir_close(dir);
     }
-return( ret );
-}
-
-static void cleantempdir(char *tempdir) {
-    DIR *temp;
-    struct dirent *ent;
-    char buffer[1025], *eod;
-    char *todelete[100];
-    int cnt=0;
-
-    temp = opendir(tempdir);
-    if ( temp!=NULL ) {
-	strcpy(buffer,tempdir);
-	strcat(buffer,"/");
-	eod = buffer+strlen(buffer);
-	while ( (ent=readdir(temp))!=NULL ) {
-	    if ( strcmp(ent->d_name,".")==0 || strcmp(ent->d_name,"..")==0 )
-	continue;
-	    strcpy(eod,ent->d_name);
-	    /* Hmm... doing an unlink right here means changing the dir file */
-	    /*  which might mean we could not read it properly. So save up the*/
-	    /*  things we need to delete and trash them later */
-	    if ( cnt<99 )
-		todelete[cnt++] = copy(buffer);
-	}
-	closedir(temp);
-	todelete[cnt] = NULL;
-	for ( cnt=0; todelete[cnt]!=NULL; ++cnt ) {
-	    unlink(todelete[cnt]);
-	    free(todelete[cnt]);
-	}
-    }
-    rmdir(tempdir);
+    return ret;
 }
 
 void MfArgsInit(void) {
@@ -745,7 +545,7 @@ SplineFont *SFFromMF(char *filename) {
 #if defined(__MINGW32__)
 return (NULL);
 #else
-    char *tempdir;
+    gchar *tempdir;
     char *arglist[8];
     int pid, status, ac, i;
     SplineFont *sf=NULL;
@@ -754,17 +554,17 @@ return (NULL);
     if ( FindMFName()==NULL ) {
 	ff_post_error(_("Can't find mf"),_("Can't find mf program -- metafont (set MF environment variable) or download from:\n  http://www.tug.org/\n  http://www.ctan.org/\nIt's part of the TeX distribution"));
 return( NULL );
-    } else if ( FindAutoTraceName()==NULL ) {
+    } else if ( FindAutoTrace(NULL, 0) < 0 ) {
 	ff_post_error(_("Can't find autotrace"),_("Can't find autotrace program (set AUTOTRACE environment variable) or download from:\n  http://sf.net/projects/autotrace/"));
 return( NULL );
     }
-    if ( MfArgs()==(char *) -1 || AutoTraceArgs(false)==(char **) -1 )
+    if ( MfArgs()==(char *) -1 || QueryAutoTraceArgs(false)==(char **) -1 )
 return( NULL );
 
     /* I don't know how to tell mf to put its files where I want them. */
     /*  so instead I create a temporary directory, cd mf there, and it */
     /*  will put the files there. */
-    tempdir = mytempdir();
+    tempdir = g_dir_make_tmp("PfaEdXXXXXX", NULL);
     if ( tempdir==NULL ) {
 	ff_post_error(_("Can't create temporary directory"),_("Can't create temporary directory"));
 return( NULL );
@@ -826,6 +626,7 @@ return( NULL );
 	ff_post_error(_("Can't run mf"),_("Can't run mf"));
     free(arglist[1]);
     cleantempdir(tempdir);
+    g_free(tempdir);
 return( sf );
 #endif
 }
