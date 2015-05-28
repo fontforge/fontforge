@@ -9142,63 +9142,81 @@ return( NULL );
 return( sf );
 }
 
-static int ask_about_file(FILE *asfd,int *state,char *filename) {
+/**
+ * Asks the user whether or not to recover, skip or delete an autosaved file.
+ * If requested by the user, this function will attempt to delete the file.
+ * @param [in] filename The path to the autosaved file.
+ * @param [in,out] state The current state.
+ *                 state&1: Recover all. state&2: Forget all.
+ * @param [out] asfd Location to store the file pointer to the autosaved file.
+ * @return true iff the file is to be recovered. If true, asfd will hold the
+ *         corresponding file pointer, which must be closed by the caller. If
+ *         false, asfd will hold NULL.
+ */
+static int ask_about_file(char *filename, int *state, FILE **asfd) {
     int ret;
     char *buts[6];
     char buffer[800], *pt;
 
-    if ( *state&1 )
-return( true );
-    else if ( *state&2 ) {
-	unlink(filename);
-return( false );
+    if ((*asfd = fopen(filename, "r")) == NULL) {
+        return false;
+    } else if (*state&1) { //Recover all
+        return true;
+    } else if (*state&2) { //Forget all
+        fclose(*asfd);
+        *asfd = NULL;
+        unlink(filename);
+        return false;
     }
 
-    fgets(buffer,sizeof(buffer),asfd);
-    rewind(asfd);
-    if ( strncmp(buffer,"Base: ",6)!=0 )
-	strcpy(buffer+6, "<New File>");
+    fgets(buffer,sizeof(buffer),*asfd);
+    rewind(*asfd);
+    if (strncmp(buffer,"Base: ",6) != 0) {
+        strcpy(buffer+6, "<New File>");
+    }
     pt = buffer+6;
-    if ( strlen(buffer+6)>70 ) {
-	pt = strrchr(buffer+6,'/');
-	if ( pt==NULL )
-	    pt = buffer+6;
+    if (strlen(buffer+6) > 70) {
+        pt = strrchr(buffer+6,'/');
+        if (pt == NULL)
+            pt = buffer+6;
     }
 
     buts[0] = _("Yes"); buts[1] = _("Yes to _All");
     buts[2] = _("_Skip for now");
     buts[3] = _("Forget _to All"); buts[4] = _("_Forget about it");
     buts[5] = NULL;
-    ret = ff_ask(_("Recover old edit"),(const char **) buts,0,3,_("You appear to have an old editing session on %s.\nWould you like to recover it?"), pt );
-    switch ( ret ) {
-      case 0:
-return( true );
-      case 1:
-	*state = 1;
-return( true );
-      case 2:
-return( false );
-      case 3:
-	*state = 2;
-	/* Fall through */
-      case 4:
-	unlink(filename);
-return( false );
-      default:
-      break;
+    ret = ff_ask(_("Recover old edit"),(const char **) buts,0,3,_("You appear to have an old editing session on %s.\nWould you like to recover it?"), pt);
+    switch (ret) {
+        case 1: //Recover all
+            *state = 1;
+            break;
+        case 2: //Skip one
+            fclose(*asfd);
+            *asfd = NULL;
+            return false;
+        case 3: //Forget all
+            *state = 2;
+            /* Fall through */
+        case 4: //Forget one
+            fclose(*asfd);
+            *asfd = NULL;
+            unlink(filename);
+            return false;
+        default: //Recover one
+            break;
     }
-return( true );
+    return true;
 }
 
 SplineFont *SFRecoverFile(char *autosavename,int inquire,int *state) {
-    FILE *asfd = fopen( autosavename,"r");
+    FILE *asfd;
     SplineFont *ret;
     char tok[1025];
 
-    if ( asfd==NULL )
-return(NULL);
-    if ( inquire && !ask_about_file(asfd,state,autosavename)) {
-	fclose( asfd );
+    if (!inquire) {
+        *state = 1; //Default to recover all
+    }
+    if (!ask_about_file(autosavename, state, &asfd)) {
 return( NULL );
     }
     locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
