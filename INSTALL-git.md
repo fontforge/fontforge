@@ -16,12 +16,13 @@ brew doctor
 ```
 brew install python gettext libpng jpeg libtiff giflib cairo pango libspiro czmq fontconfig automake libtool pkg-config glib pango
 ```
-**Install the latest release or build from source**
+**Install the latest release or build from source**  
+Release:
 ```
-# install fontforge release
 brew install -v --debug --with-giflib --with-x11 --with-libspiro fontforge
-
-# install fontforge source
+```
+Source:
+```
 brew install -v --debug --with-giflib --with-x11 --with-libspiro fontforge --HEAD
 ```
 
