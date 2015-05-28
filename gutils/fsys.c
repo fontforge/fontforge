@@ -30,6 +30,7 @@
 #include "ustring.h"
 #include "fileutil.h"
 #include "gfile.h"
+#include "xvasprintf.h"
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>		/* for mkdir */
@@ -99,69 +100,6 @@ unichar_t *u_GFileNormalizePath(unichar_t *path) {
     }
 #endif
     return path;
-}
-
-/* make directories.  make parent directories as needed,  with no error if
- * the path already exists */
-int mkdir_p(const char *path, mode_t mode) {
-	struct stat st;
-	const char *e;
-	char *p = NULL;
-	char tmp[1024];
-	size_t len;
-	int r;
-
-	/* ensure the path is valid */
-	if(!(e = strrchr(path, '/')))
-return -EINVAL;
-	/* ensure path is a directory */
-	r = stat(path, &st);
-	if (r == 0 && !S_ISDIR(st.st_mode))
-return -ENOTDIR;
-
-	/* copy the pathname */
-	snprintf(tmp, sizeof(tmp),"%s", path);
-	len = strlen(tmp);
-	if(tmp[len - 1] == '/')
-	tmp[len - 1] = 0;
-
-	/* iterate mkdir over the path */
-	for(p = tmp + 1; *p; p++)
-	if(*p == '/') {
-		*p = 0;
-		r = mkdir(tmp, mode);
-		if (r < 0 && errno != EEXIST)
-return -errno;
-		*p = '/';
-	}
-
-	/* try to make the whole path */
-	r = mkdir(tmp, mode);
-	if(r < 0 && errno != EEXIST)
-return -errno;
-	/* creation successful or the file already exists */
-return EXIT_SUCCESS;
-}
-
-/* Wrapper for formatted variable list printing. */
-char *smprintf(const char *fmt, ...) {
-	va_list fmtargs;
-	char *ret;
-	int len;
-
-	va_start(fmtargs, fmt);
-	len = vsnprintf(NULL, 0, fmt, fmtargs);
-	va_end(fmtargs);
-	ret = malloc(++len);
-	if (ret == NULL) {
-	perror("malloc");
-exit(EXIT_FAILURE);
-	}
-
-	va_start(fmtargs, fmt);
-	vsnprintf(ret, len, fmt, fmtargs);
-	va_end(fmtargs);
-return ret;
 }
 
 char *GFileGetHomeDir(void) {
@@ -938,9 +876,9 @@ return NULL;
 #ifdef _WIN32
 	/* Allow for preferences to be saved locally in a 'portable' configuration. */ 
 	if (getenv("FF_PORTABLE") != NULL) {
-		buf = smprintf("%s/preferences/", getShareDir());
+		buf = xasprintf("%s/preferences", getShareDir());
 	} else {
-		buf = smprintf("%s/FontForge/", home);
+		buf = xasprintf("%s/FontForge", home);
 	}
 	return buf;
 #else
@@ -968,15 +906,15 @@ return NULL;
 	if(xdg != NULL)
 	/* if, for example, XDG_CACHE_HOME exists, assign the value
 	 * "$XDG_CACHE_HOME/fontforge" */
-	buf = smprintf("%s/fontforge", xdg);
+	buf = xasprintf("%s/fontforge", xdg);
 	else
 	/* if, for example, XDG_CACHE_HOME does not exist, instead assign
 	 * the value "$HOME/.cache/fontforge" */
-	buf = smprintf("%s/%s/fontforge", home, def);
+	buf = xasprintf("%s/%s/fontforge", home, def);
 	if(buf != NULL) {
 	    /* try to create buf.  If creating the directory fails, return NULL
 	     * because nothing will get saved into an inaccessible directory.  */
-            if ( mkdir_p(buf, 0755) != EXIT_SUCCESS ) {
+            if ( g_mkdir_with_parents(buf, 0755) != 0 ) {
                 free(buf);
                 return NULL;
             }
