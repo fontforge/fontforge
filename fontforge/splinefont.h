@@ -2983,7 +2983,7 @@ extern int SFFindExistingSlot(SplineFont *sf, int unienc, const char *name );
 extern int SFCIDFindExistingChar(SplineFont *sf, int unienc, const char *name );
 extern int SFHasCID(SplineFont *sf, int cid);
 
-extern void _DoAutoSaves(struct fontviewbase *);
+extern void DoAutoSaves(void);
 extern void CleanAutoRecovery(void);
 extern int DoAutoRecovery(int);
 typedef void (*DoAutoRecoveryPostRecoverFunc)(SplineFont *sf);
@@ -3330,8 +3330,6 @@ extern void SCAppendPosSub(SplineChar *sc,enum possub_type type, char **d,Spline
 extern void SCClearBackground(SplineChar *sc);
 extern void BackgroundImageTransform(SplineChar *sc, ImageList *img,real transform[6]);
 extern int SFIsDuplicatable(SplineFont *sf, SplineChar *sc);
-
-extern void DoAutoSaves(void);
 
 extern void SCClearLayer(SplineChar *sc,int layer);
 extern void SCClearContents(SplineChar *sc,int layer);
