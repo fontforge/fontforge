@@ -329,6 +329,10 @@ void hotkeysSave() {
     // Atomic rename of new over the old.
     //
     char* newpath = getHotkeyFilename(0);
+#ifdef __MINGW32__
+    //Atomic rename doesn't exist on Windows.
+    unlink(newpath);
+#endif
     int rc = rename( fn, newpath );
     int e = errno;
     free(fn);
