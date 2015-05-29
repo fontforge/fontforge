@@ -37,6 +37,9 @@
 #include <unistd.h>
 #include <glib.h>
 #include <glib/gstdio.h>
+#ifndef __MINGW32__
+#include <sys/wait.h>
+#endif
 
 static char dirname_[MAXPATHLEN+1];
 #if !defined(__MINGW32__)
@@ -45,6 +48,24 @@ static char dirname_[MAXPATHLEN+1];
  #include <windows.h>
  #include <shlobj.h>
 #endif
+
+/**
+ * Checks the return status from the g_spawn family of functions.
+ * 
+ * @param [in] status The return status to check.
+ * @return true iff the status indicates the program exited normally. 
+ */
+int GFileCheckGlibSpawnStatus(int status) {
+#if GLIB_CHECK_VERSION(2,34,0)
+    return g_spawn_check_exit_status(status, NULL);
+#else
+# ifdef __MINGW32__
+    return status == 0;
+# else
+    return WIFEXITED(status);
+# endif
+#endif
+}
 
 /**
  * \brief Removes the extension from a file path, if it exists.

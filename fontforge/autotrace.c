@@ -25,28 +25,21 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgevw.h"
-#include <math.h>
-#include <ustring.h>
-#include <utype.h>
 #include "sd.h"
-
-#include <sys/types.h>		/* for waitpid */
-#if !defined(__MINGW32__)
-#include <sys/wait.h>		/* for waitpid */
-#endif
-#include <unistd.h>		/* for access, unlink, fork, execvp, getcwd */
-#include <sys/stat.h>		/* for open */
-#include <fcntl.h>		/* for open */
-#include <stdlib.h>		/* for getenv */
-#include <errno.h>		/* for errors */
-
+#include "xvasprintf.h"
 #include "ffglib.h"
+
+#include <unistd.h>
+#ifdef __CYGWIN__
+# include <sys/cygwin.h>
+#endif
 
 /* Preference variables (Global) */
 int preferpotrace = false;
 int autotrace_ask=0, mf_ask=0, mf_clearbackgrounds=0, mf_showerrors=0;
-char *autotrace_args = NULL, *mf_args = NULL;
+char *mf_args = NULL;
 /* Storing autotrace args */
+static char *g_autotrace_args;
 static gchar **g_args=NULL;
 
 /* Interface to Martin Weber's autotrace program   */
@@ -57,6 +50,16 @@ static gchar **g_args=NULL;
 /*  and has a cleaner interface) */
 /* http://potrace.sf.net/ */
 
+/**
+ * Generates a temporary name.
+ * On all platforms exept Windows (MINGW), this function behaves similar to
+ * mkstemp - the return value is the file descriptor to the temporary file.
+ * On Windows, the return value is non-meaningful, except to indicate success.
+ * The return value should be closed by mytempnam_close.  
+ * 
+ * @param [out] path The location to store the name of the temporary file.
+ * @return -1 on error, any other value otherwise.
+ */
 static int mytempnam(char **path) {
 #if !defined(__MINGW32__)
     int retval = g_file_open_tmp("PfaEdXXXXXX", path, NULL);
@@ -79,7 +82,7 @@ static int mytempnam(char **path) {
         *path = fret;
         
         if (fret == NULL) {
-            g_close(retval, NULL);
+            close(retval);
             retval = -1;
         } else {
             GFileNormalizePath(fret);
@@ -88,7 +91,9 @@ static int mytempnam(char **path) {
 # endif
     return retval;
 #else
-    *path = _tempnam(NULL, "PfaEd");
+    wchar_t *temp = _wtempnam(NULL, L"PfaEd");
+    *path = g_utf16_to_utf8(temp, -1, NULL, NULL, NULL);
+    free(temp);
     if (*path) {
         GFileNormalizePath(*path);
         return 1;
@@ -97,16 +102,33 @@ static int mytempnam(char **path) {
 #endif
 }
 
+/**
+ * Closes the file descriptor (if any) and frees the path as allocated by
+ * mytempnam. 
+ * 
+ * @param [in] fd The return value from mytempnam.
+ * @param [in] path The return value from mytempnam.
+ */
 static void mytempnam_close(int fd, char **path) {
+    if (fd != -1) {
 #if !defined(__MINGW32__)
-    g_close(fd, NULL);
-    g_free(*path);
-#else
-    free(*path);
+        close(fd);
 #endif
-    *path = NULL;
+        if (path && *path) {
+            g_unlink(*path);
+            g_free(*path);
+            *path = NULL;
+        }
+    }
 }
 
+/**
+ * Performs a shallow delete and removal of a temporary folder.
+ * This function will remove all top-level files within a folder before
+ * attempting to delete the folder itself. 
+ * 
+ * @param [in] tempdir The folder to be deleted.
+ */
 static void cleantempdir(char *tempdir) {
     GDir *dir;
     const gchar *entry;
@@ -325,11 +347,10 @@ static void _SCAutoTrace(SplineChar *sc, int layer, char **args) {
         /* We can't use AutoTrace's own "background-color" ignorer because */
         /*  it ignores counters as well as surrounds. So "O" would be a dark */
         /*  oval, etc. */
-        GError *error;
         exec_ret = g_spawn_sync(NULL, (gchar**)arglist, NULL,
             G_SPAWN_SEARCH_PATH|G_SPAWN_STDOUT_TO_DEV_NULL|G_SPAWN_STDERR_TO_DEV_NULL,
-            NULL, NULL, NULL, NULL, &status, &error);
-        if (exec_ret && g_spawn_check_exit_status(status,NULL)) {
+            NULL, NULL, NULL, NULL, &status, NULL);
+        if (exec_ret && GFileCheckGlibSpawnStatus(status)) {
             FILE *fpo = fopen(tempname_output, "r");
             if (fpo) {
                 SplineSet *new, *last;
@@ -358,8 +379,6 @@ static void _SCAutoTrace(SplineChar *sc, int layer, char **args) {
             }
             fclose(fpo);
         }
-        unlink(tempname_input);		/* Might not be needed, but probably is*/
-        unlink(tempname_output);
         mytempnam_close(fd_input, &tempname_input);
         mytempnam_close(fd_output, &tempname_output);
     }
@@ -368,12 +387,18 @@ static void _SCAutoTrace(SplineChar *sc, int layer, char **args) {
     }
 }
 
+/**
+ * Retrieves the argument list to pass to the autotracer, asking the user for
+ * extra parameters (if they have chosen to do so from preferences). 
+ * 
+ * @return The autotrace argument list.
+ */
 static char **QueryAutoTraceArgs(int ask) {
     if ((ask || autotrace_ask) && !no_windowing_ui) {
         char *cret;
 
         cret = ff_ask_string(_("Additional arguments for autotrace program:"),
-            autotrace_args,_("Additional arguments for autotrace program:"));
+            g_autotrace_args,_("Additional arguments for autotrace program:"));
         if (cret == NULL)
             return (char **)-1;
         SetAutoTraceArgs(cret);
@@ -383,15 +408,37 @@ static char **QueryAutoTraceArgs(int ask) {
     return g_args;
 }
 
-void SetAutoTraceArgs(void *a) {
-    free(autotrace_args);
-    g_strfreev(g_args);
-    if (!g_shell_parse_argv((char *)a, NULL, &g_args, NULL)) {
-        g_args = NULL;
-    }
-    autotrace_args = copy((char *)a);
+/**
+ * Retrieves a copy of the current autotrace arguments.
+ * This exists solely for the preferences system. 
+ * 
+ * @return The autotrace arguments, or NULL if none. Result must be freed.
+ */
+void *GetAutoTraceArgs(void) {
+    return copy(g_autotrace_args);
 }
 
+/**
+ * Updates the parameter list to pass to the autotrace program.
+ * This function prototype is necessary as it is used by the preferences system. 
+ * 
+ * @param [in] a The character string of arguments.
+ */
+void SetAutoTraceArgs(void *a) {
+    free(g_autotrace_args);
+    g_strfreev(g_args);
+    if (a == NULL || !g_shell_parse_argv((char *)a, NULL, &g_args, NULL)) {
+        g_args = NULL;
+    }
+    g_autotrace_args = copy((char *)a);
+}
+
+/**
+ * Traces all glyphs that have an associated image (from the font view).
+ * 
+ * @param [in] fv The font view to scan glyphs from.
+ * @param [in] ask Whether or not to ask for extra autotrace parameters. 
+ */
 void FVAutoTrace(FontViewBase *fv,int ask) {
     char **args;
     int i,cnt,gid;
@@ -426,6 +473,14 @@ return;
     ff_progress_end_indicator();
 }
 
+/**
+ * Performs an auto trace for a given character.
+ * 
+ * @param [in] sc The character to autotrace.
+ * @param [in] layer The layer to place the trace on.
+ * @param [in] ask Whether or not to ask for extra autotrace parameters.
+ * @return true if the autotrace was probably started.
+ */
 int SCAutoTrace(SplineChar *sc,int layer, int ask) {
     char **args;
 
@@ -443,6 +498,7 @@ int SCAutoTrace(SplineChar *sc,int layer, int ask) {
     _SCAutoTrace(sc, layer, args);
     return true;
 }
+
 
 /**
  * Finds the autotrace/potrace executable.
@@ -484,33 +540,48 @@ int FindAutoTrace(char *path, size_t bufsiz) {
     return ret;
 }
 
-const char *FindMFName(void) {
-    static int searched=0;
-    static const char *name = NULL;
-    char buffer[1025];
+/**
+ * Attempts to find the MetaFont executable.
+ * 
+ * @return The path to the MetaFont executable, or NULL if not found.
+ *         The return value should not be freed.
+ */
+static const char *FindMFName(void) {
+    static bool searched = false;
+    static char name[BUFSIZ];
+    const char *pt;
 
-    if ( searched )
-return( name );
-
-    searched = true;
-    if (( name = getenv("MF"))!=NULL )
-return( name );
-    if ( GFileProgramExists(GFILE_PROGRAMIFY("mf")) )
-	name = "mf";
-return( name );
+    if (!searched) {
+        searched = true;
+        if ((pt = g_getenv("MF")) != NULL) {
+            snprintf(name, sizeof(name), "%s", pt);
+        } else if (GFileProgramExists(GFILE_PROGRAMIFY("mf"))) {
+            snprintf(name, sizeof(name), GFILE_PROGRAMIFY("mf"));
+        }
+    }
+    return name;
 }
 
-static char *FindGfFile(char *tempdir) {
+/**
+ * Finds the output produced by running MetaFont.
+ * 
+ * @param [in] tempdir The directory to search.
+ * @param [out] buffer The buffer to store the file location.
+ * @param [in] bufsiz the size of the output buffer.
+ * @return true iff found.
+ */
+static bool FindGfFile(char *tempdir, char *buffer, size_t bufsiz) {
     GDir *dir;
     const gchar *entry;
-    char buffer[1025], *ret=NULL;
+    bool ret = false;
 
     if ((dir = g_dir_open(tempdir, 0, NULL))) {
         while ((entry = g_dir_read_name(dir)) != NULL) {
             size_t elen = strlen(entry);
             if (elen > 2 && !strcmp(entry+elen-2, "gf")) {
-                if (asprintf(&ret, "%s/%s", tempdir, entry) < 0) {
-                    ret = NULL;
+                elen = snprintf(buffer, bufsiz, "%s/%s", tempdir, entry);
+                if (elen >= 0 && elen < bufsiz) {
+                    ret = true;
                 }
                 break;
             }
@@ -520,113 +591,113 @@ static char *FindGfFile(char *tempdir) {
     return ret;
 }
 
-void MfArgsInit(void) {
-    if ( mf_args==NULL )
-	mf_args = copy("\\scrollmode; mode=proof ; mag=2; input");
-}
-
-static char *MfArgs(void) {
+/**
+ * Retrieves the argument string to pass to MetaFont, asking the user for
+ * extra parameters (if they have chosen to do so from preferences). 
+ * 
+ * @return The MetaFont argument string.
+ */
+static char *QueryMfArgs(void) {
     MfArgsInit();
 
-    if ( mf_ask && !no_windowing_ui ) {
-	char *ret;
+    if (mf_ask && !no_windowing_ui) {
+        char *ret;
 
-	ret = ff_ask_string(_("Additional arguments for autotrace program:"),
-		mf_args,_("Additional arguments for autotrace program:"));
-	if ( ret==NULL )
-return( (char *) -1 );
-	mf_args = ret;
-	SavePrefs(true);
+        ret = ff_ask_string(_("Additional arguments for autotrace program:"),
+            mf_args,_("Additional arguments for autotrace program:"));
+        if (ret == NULL)
+            return (char *) -1;
+
+        free(mf_args);
+        mf_args = ret;
+        SavePrefs(true);
     }
-return( mf_args );
+    return mf_args;
 }
 
+/**
+ * Initialises the MetaFont default arguments list, if necessary.
+ */
+void MfArgsInit(void) {
+    if (mf_args == NULL)
+        mf_args = copy("\\scrollmode; mode=proof ; mag=2; input");
+}
+
+/**
+ * Convert a MetaFont into a spline font.
+ * 
+ * @param [in] filename The path to the font.
+ * @return The spline font on success, or NULL otherwise.
+ */
 SplineFont *SFFromMF(char *filename) {
-#if defined(__MINGW32__)
-return (NULL);
-#else
     gchar *tempdir;
     char *arglist[8];
-    int pid, status, ac, i;
+    int status, ac, i, spawn_flags;
     SplineFont *sf=NULL;
     SplineChar *sc;
+    bool exec_ret;
 
-    if ( FindMFName()==NULL ) {
-	ff_post_error(_("Can't find mf"),_("Can't find mf program -- metafont (set MF environment variable) or download from:\n  http://www.tug.org/\n  http://www.ctan.org/\nIt's part of the TeX distribution"));
-return( NULL );
-    } else if ( FindAutoTrace(NULL, 0) < 0 ) {
-	ff_post_error(_("Can't find autotrace"),_("Can't find autotrace program (set AUTOTRACE environment variable) or download from:\n  http://sf.net/projects/autotrace/"));
-return( NULL );
+    if (FindMFName() == NULL) {
+        ff_post_error(_("Can't find mf"),_("Can't find mf program -- metafont (set MF environment variable) or download from:\n  http://www.tug.org/\n  http://www.ctan.org/\nIt's part of the TeX distribution"));
+        return NULL;
+    } else if (FindAutoTrace(NULL, 0) < 0) {
+        ff_post_error(_("Can't find autotrace"),_("Can't find autotrace program (set AUTOTRACE environment variable) or download from:\n  http://sf.net/projects/autotrace/"));
+        return NULL;
     }
-    if ( MfArgs()==(char *) -1 || QueryAutoTraceArgs(false)==(char **) -1 )
-return( NULL );
+    
+    if (QueryMfArgs()==(char *) -1 || QueryAutoTraceArgs(false)==(char **) -1)
+        return NULL;
 
     /* I don't know how to tell mf to put its files where I want them. */
     /*  so instead I create a temporary directory, cd mf there, and it */
     /*  will put the files there. */
     tempdir = g_dir_make_tmp("PfaEdXXXXXX", NULL);
-    if ( tempdir==NULL ) {
-	ff_post_error(_("Can't create temporary directory"),_("Can't create temporary directory"));
-return( NULL );
+    if (tempdir == NULL) {
+        ff_post_error(_("Can't create temporary directory"),_("Can't create temporary directory"));
+        return NULL;
     }
 
     ac = 0;
     arglist[ac++] = (char *)FindMFName();
-    arglist[ac++] = malloc(strlen(mf_args)+strlen(filename)+20);
+    arglist[ac++] = xasprintf("%s \"%s\"", mf_args, filename);
     arglist[ac] = NULL;
-    strcpy(arglist[1],mf_args);
-    strcat(arglist[1]," ");
-    strcat(arglist[1],filename);
-    if ( (pid=fork())==0 ) {
-	/* Child */
-	int fd;
-	chdir(tempdir);
-	if ( !mf_showerrors ) {
-	    close(1);		/* mf generates a lot of verbiage to stdout. Throw it away */
-	    fd = open("/dev/null",O_WRONLY);
-	    if ( fd!=1 )
-		dup2(fd,1);
-	    close(0);		/* mf sometimes asks the user questions, but I have no answers... */
-	    fd = open("/dev/null",O_RDONLY);
-	    if ( fd!=0 )
-		dup2(fd,0);
-	}
-	exit(execvp(arglist[0],arglist)==-1);	/* If exec fails, then die */
-    } else if ( pid!=-1 ) {
-	ff_progress_show();
-	waitpid(pid,&status,0);
-	if ( WIFEXITED(status)) {
-	    char *gffile = FindGfFile(tempdir);
-	    if ( gffile==NULL )
-		ff_post_error(_("Can't run mf"),_("Could not read (or perhaps find) mf output file"));
-	    else {
-		sf = SFFromBDF(gffile,3,true);
-		free(gffile);
-		if ( sf!=NULL ) {
-		    ff_progress_change_line1(_("Autotracing..."));
-		    ff_progress_change_total(sf->glyphcnt);
-		    for ( i=0; i<sf->glyphcnt; ++i ) {
-			if ( (sc = sf->glyphs[i])!=NULL && sc->layers[ly_back].images ) {
-			    _SCAutoTrace(sc, ly_fore, args);
-			    if ( mf_clearbackgrounds ) {
-				GImageDestroy(sc->layers[ly_back].images->image);
-			        free(sc->layers[ly_back].images);
-			        sc->layers[ly_back].images = NULL;
-			    }
-			}
-			if ( !ff_progress_next())
-		    break;
-		    }
-		} else
-		    ff_post_error(_("Can't run mf"),_("Could not read (or perhaps find) mf output file"));
-	    }
-	} else
-	    ff_post_error(_("Can't run mf"),_("MetaFont exited with an error"));
-    } else
-	ff_post_error(_("Can't run mf"),_("Can't run mf"));
+    
+    spawn_flags = mf_showerrors ? G_SPAWN_CHILD_INHERITS_STDIN :
+                  G_SPAWN_STDOUT_TO_DEV_NULL|G_SPAWN_STDERR_TO_DEV_NULL;
+    exec_ret = g_spawn_sync(tempdir, (gchar**)arglist, NULL,
+        G_SPAWN_SEARCH_PATH|spawn_flags, NULL, NULL, NULL, NULL, &status, NULL);
+    if (exec_ret && GFileCheckGlibSpawnStatus(status)) {
+        char gffile[BUFSIZ];
+        
+        if (!FindGfFile(tempdir, gffile, sizeof(gffile))) {
+            ff_post_error(_("Can't run mf"), _("Could not read (or perhaps find) mf output file"));
+        } else {
+            ff_progress_show();
+            sf = SFFromBDF(gffile, 3, true);
+            if (sf != NULL) {
+                ff_progress_change_line1(_("Autotracing..."));
+                ff_progress_change_total(sf->glyphcnt);
+                for (i=0; i<sf->glyphcnt; ++i) {
+                    if ((sc = sf->glyphs[i]) != NULL && sc->layers[ly_back].images) {
+                        _SCAutoTrace(sc, ly_fore, g_args);
+                        if (mf_clearbackgrounds) {
+                            GImageDestroy(sc->layers[ly_back].images->image);
+                            free(sc->layers[ly_back].images);
+                            sc->layers[ly_back].images = NULL;
+                        }
+                    }
+                    if (!ff_progress_next())
+                        break;
+                }
+            } else {
+                ff_post_error(_("Can't run mf"),_("Could not read (or perhaps find) mf output file"));
+            }
+        }
+    } else {
+        ff_post_error(_("Can't run mf"),_("Can't run mf"));
+    }
     free(arglist[1]);
     cleantempdir(tempdir);
     g_free(tempdir);
-return( sf );
-#endif
+    return sf;
 }
