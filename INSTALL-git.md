@@ -4,21 +4,26 @@
 
 You can install FontForge from the current github source code using a package manager, such as Homebrew, MacPorts or Fink
 
-We recommend Homebrew, which can be installed by following the instructions at <http://brew.sh>
-
-With Homebrew installed, first install the dependencies, and then FontForge itself - either the most recent release, or the latest git source code.
-
-Run the following commands in sequence (that is, wait for each one to complete before running the next):
-
-```sh
-# install dependencies;
-brew install python gettext libpng jpeg libtiff giflib cairo pango libspiro czmq fontconfig automake libtool pkg-config glib pango;
-
-# install fontforge release;
-brew install -v --debug --with-giflib --with-x11 --with-libspiro fontforge;
-
-# or, install fontforge source:
-brew install -v --debug --with-giflib --with-x11 --with-libspiro fontforge  --HEAD;
+**Install Homebrew**
+```
+ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+```
+**Check everything's ok** (fix any issues before moving on)
+```
+brew doctor
+```
+**Install dependencies**
+```
+brew install python gettext libpng jpeg libtiff giflib cairo pango libspiro czmq fontconfig automake libtool pkg-config glib pango
+```
+**Install the latest release or build from source**  
+Release:
+```
+brew install -v --debug --with-giflib --with-x11 --with-libspiro fontforge
+```
+Source:
+```
+brew install -v --debug --with-giflib --with-x11 --with-libspiro fontforge --HEAD
 ```
 
 If this does not work, please [file an issue](When_Things_Go_Wrong_With_Fontforge_Itself)
