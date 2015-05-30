@@ -6019,11 +6019,11 @@ return( NULL );
     }
     for ( i=0; i<new->first_cnt; ++i ) {
 	new->firsts[i] = copy(kc->firsts[i]);
-	if (kc->firsts_names[i]) new->firsts_names[i] = copy(kc->firsts_names[i]);
+	if (kc->firsts_names && kc->firsts_names[i]) new->firsts_names[i] = copy(kc->firsts_names[i]);
     }
     for ( i=0; i<new->second_cnt; ++i ) {
 	new->seconds[i] = copy(kc->seconds[i]);
-	if (kc->seconds_names[i]) new->seconds_names[i] = copy(kc->seconds_names[i]);
+	if (kc->seconds_names && kc->seconds_names[i]) new->seconds_names[i] = copy(kc->seconds_names[i]);
     }
     new->adjusts = calloc(new->first_cnt*new->second_cnt,sizeof(DeviceTable));
     memcpy(new->adjusts,kc->adjusts, new->first_cnt*new->second_cnt*sizeof(DeviceTable));
