@@ -335,8 +335,6 @@ return( -1 );
 /* ************************************************************************** */
 
 static GPtrArray *default_pyinit_dirs(void);
-static int dir_exists(const char* path);
-
 
 static void FreeStringArray( int cnt, char **names ) {
     int i;
@@ -19375,13 +19373,6 @@ return;
     g_ptr_array_free(filelist, true);
 }
 
-static int dir_exists(const char* path) {
-    struct stat st;
-    if ( stat(path,&st)==0 && S_ISDIR(st.st_mode) )
-	return 1;
-    return 0;
-}
-
 static GPtrArray *default_pyinit_dirs(void) {
     GPtrArray *pathlist;
     const char *sharedir;
@@ -19397,13 +19388,13 @@ static GPtrArray *default_pyinit_dirs(void) {
 
     if ( sharedir!=NULL ) {
         buffer = smprintf("%s/%s", sharedir, subdir);
-        if ( dir_exists(buffer) ) {
+        if ( GFileIsDir(buffer) ) {
             g_ptr_array_add(pathlist, buffer);
         }
         else { /* Fall back to version-less python */
             free(buffer);
             buffer = smprintf("%s/%s", sharedir, "python");
-            if ( dir_exists(buffer) ) {
+            if ( GFileIsDir(buffer) ) {
                 g_ptr_array_add(pathlist, buffer);
             } else {
                 free(buffer);
@@ -19413,13 +19404,13 @@ static GPtrArray *default_pyinit_dirs(void) {
 
     if ( userdir!=NULL ) {
         buffer = smprintf("%s/%s", userdir, subdir);
-        if ( dir_exists(buffer) ) {
+        if ( GFileIsDir(buffer) ) {
             g_ptr_array_add(pathlist, buffer);
         }
         else { /* Fall back to version-less python */
             free(buffer);
             buffer = smprintf("%s/%s", userdir, "python");
-            if ( dir_exists(buffer) ) {
+            if ( GFileIsDir(buffer) ) {
                 g_ptr_array_add(pathlist, buffer);
             } else {
                 free(buffer);
