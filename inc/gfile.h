@@ -74,8 +74,6 @@ extern int GFileIsDir(const char *file);
  */
 extern int GFileExists(const char *file);
 extern int GFileProgramExists(const char *prog);
-extern int GFileModifyable(const char *file);
-extern int GFileModifyableDir(const char *file);
 extern int GFileReadable(const char *file);
 extern int GFileRemove(const char *path, int recursive);
 extern int GFileMkDir(const char *name);
@@ -90,8 +88,6 @@ extern unichar_t *u_GFileAppendFile(unichar_t *dir,unichar_t *name,int isdir);
 extern int u_GFileIsAbsolute(const unichar_t *file);
 extern int u_GFileIsDir(const unichar_t *file);
 extern int u_GFileExists(const unichar_t *file);
-extern int u_GFileModifyable(const unichar_t *file);
-extern int u_GFileModifyableDir(const unichar_t *file);
 extern int u_GFileReadable(unichar_t *file);
 extern int u_GFileMkDir(unichar_t *name);
 extern int u_GFileRmDir(unichar_t *name);
