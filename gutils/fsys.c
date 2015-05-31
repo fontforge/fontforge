@@ -381,11 +381,7 @@ return( false );
 }
 
 int GFileIsDir(const char *file) {
-  struct stat info;
-  if ( stat(file, &info)==-1 )
-return 0;
-  else
-return( S_ISDIR(info.st_mode) );
+    return g_file_test(file, G_FILE_TEST_IS_DIR);
 }
 
 int GFileExists(const char *file) {
@@ -901,12 +897,11 @@ return NULL;
 
 off_t GFileGetSize(char *name) {
 /* Get the binary file size for file 'name'. Return -1 if error. */
-    struct stat buf;
-    long rc;
-
-    if ( (rc=stat(name,&buf)) )
-	return( -1 );
-    return( buf.st_size );
+    GStatBuf buf;
+    if (g_lstat(name, &buf) == -1) {
+        return -1;
+    }
+    return buf.st_size;
 }
 
 char *GFileReadAll(char *name) {
