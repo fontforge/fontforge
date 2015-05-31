@@ -8285,7 +8285,7 @@ return( NULL );
     PyMem_Free(filename);
 
     /* Check if the file exists and is readable */
-    if ( access(locfilename,R_OK)!=0 ) {
+    if ( !GFileReadable(locfilename) ) {
 	PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
 	free(locfilename);
 return( NULL );

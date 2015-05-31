@@ -4069,7 +4069,7 @@ static void fllistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 		    if ( fv->b.sf->compression!=0 )
 			strcat(buf,compressors[fv->b.sf->compression-1].ext);
 		    strcat(buf,"~");
-		    if ( access(buf,F_OK)==0 )
+		    if ( GFileExists(buf) )
 			fv->b.sf->backedup = bs_backedup;
 		    else
 			fv->b.sf->backedup = bs_not;
@@ -4915,7 +4915,7 @@ return;				/* Cancelled */
     else
 	++pt;
     snprintf(buffer,sizeof(buffer),"%s/%s", getFontForgeUserDir(Config), pt);
-    if ( access(buffer,F_OK)==0 ) {
+    if ( GFileExists(buffer) ) {
 	buts[0] = _("_Replace");
 	buts[1] = _("_Cancel");
 	buts[2] = NULL;

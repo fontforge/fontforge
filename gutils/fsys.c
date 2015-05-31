@@ -386,28 +386,11 @@ return( S_ISDIR(info.st_mode) );
 }
 
 int GFileExists(const char *file) {
-return( access(file,0)==0 );
-}
-
-int GFileModifyable(const char *file) {
-return( access(file,02)==0 );
-}
-
-int GFileModifyableDir(const char *file) {
-    char buffer[1025], *pt;
-
-    buffer[1024]=0;
-    strncpy(buffer,file,1024);
-    pt = strrchr(buffer,'/');
-    if ( pt==NULL )
-	strcpy(buffer,".");
-    else
-	*pt='\0';
-    return( GFileModifyable(buffer) );
+    return g_file_test(file, G_FILE_TEST_EXISTS);
 }
 
 int GFileReadable(const char *file) {
-return( access(file,04)==0 );
+    return (g_access(file, R_OK) == 0);
 }
 
 /**
@@ -466,7 +449,7 @@ char *_GFile_find_program_dir(char *prog) {
 	    pt1 = strchr(path, ';');
 	    if(pt1) *pt1 = '\0';
 	    sprintf(filename,"%s/%s", path, prog);
-	    if ( access(filename,1)!= -1 ) {
+	    if ( g_file_test(filename, G_FILE_TEST_IS_EXECUTABLE) ) {
 		program_dir = copy(path);
 		break;
 	    }
@@ -483,7 +466,7 @@ char *_GFile_find_program_dir(char *prog) {
 	  sprintf(filename,"%.*s/%s", (int)(pt-path), path, prog);
 	    /* Under cygwin, applying access to "potrace" will find "potrace.exe" */
 	    /*  no need for special check to add ".exe" */
-	    if ( access(filename,1)!= -1 ) {
+	    if ( g_file_test(filename, G_FILE_TEST_IS_EXECUTABLE) ) {
 		program_dir = copyn(path,pt-path);
 	break;
 	    }
@@ -491,7 +474,7 @@ char *_GFile_find_program_dir(char *prog) {
 	}
 	if ( program_dir==NULL ) {
 	    sprintf(filename,"%s/%s", path, prog);
-	    if ( access(filename,1)!= -1 )
+	    if ( g_file_test(filename, G_FILE_TEST_IS_EXECUTABLE) )
 		program_dir = copy(path);
 	}
     }
@@ -702,31 +685,13 @@ int u_GFileIsDir(const unichar_t *file) {
 int u_GFileExists(const unichar_t *file) {
     char buffer[1024];
     u2def_strncpy(buffer,file,sizeof(buffer));
-return( access(buffer,0)==0 );
-}
-
-int u_GFileModifyable(const unichar_t *file) {
-    char buffer[1024];
-    u2def_strncpy(buffer,file,sizeof(buffer));
-return( access(buffer,02)==0 );
-}
-
-int u_GFileModifyableDir(const unichar_t *file) {
-    char buffer[1024], *pt;
-
-    u2def_strncpy(buffer,file,sizeof(buffer));
-    pt = strrchr(buffer,'/');
-    if ( pt==NULL )
-	strcpy(buffer,".");
-    else
-	*pt='\0';
-return( GFileModifyable(buffer));
+return( g_file_test(buffer, G_FILE_TEST_EXISTS) );
 }
 
 int u_GFileReadable(unichar_t *file) {
     char buffer[1024];
     u2def_strncpy(buffer,file,sizeof(buffer));
-return( access(buffer,04)==0 );
+return( g_access(buffer, R_OK)==0 );
 }
 
 int u_GFileMkDir(unichar_t *name) {
