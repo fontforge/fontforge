@@ -1020,7 +1020,7 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
 		    char *spuriousname = ForceFileToHaveName(file,archivers[i].ext);
 		    strippedname = Unarchive(spuriousname,&archivedir);
 		    fclose(file); file = NULL;
-		    unlink(spuriousname); free(spuriousname);
+		    g_unlink(spuriousname); free(spuriousname);
 		} else
 		    strippedname = Unarchive(strippedname,&archivedir);
 		if ( strippedname==NULL )
@@ -1050,7 +1050,7 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
 	    char *spuriousname = ForceFileToHaveName(file,compressors[i].ext);
 	    tmpfn = Decompress(spuriousname,i);
 	    fclose(file); file = NULL;
-	    unlink(spuriousname); free(spuriousname);
+	    g_unlink(spuriousname); free(spuriousname);
 	} else
 	    tmpfn = Decompress(strippedname,i);
 	if ( tmpfn!=NULL ) {
@@ -1171,7 +1171,7 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
 	    else {
 		char *spuriousname = ForceFileToHaveName(file,NULL);
 		sf = SFReadSVG(spuriousname,0);
-		unlink(spuriousname); free(spuriousname);
+		g_unlink(spuriousname); free(spuriousname);
 	    }
 	    checked = 'S';
 	} else if ( ch1=='S' && ch2=='p' && ch3=='l' && ch4=='i' ) {
@@ -1298,7 +1298,7 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
     if ( chosenname!=NULL )
 	    free(chosenname);
     if ( tmpfn!=NULL ) {
-	    unlink(tmpfn);
+	    g_unlink(tmpfn);
 	    free(tmpfn);
     }
     if ( wasarchived )

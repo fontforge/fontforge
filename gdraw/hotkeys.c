@@ -27,6 +27,7 @@
 
 #include <fontforge-config.h>
 
+#include "ffglib.h"
 #include "gdraw.h"
 #include "gfile.h"
 #include "hotkeys.h"
@@ -333,7 +334,7 @@ void hotkeysSave() {
     char* newpath = getHotkeyFilename(0);
 #ifdef __MINGW32__
     //Atomic rename doesn't exist on Windows.
-    unlink(newpath);
+    g_unlink(newpath);
 #endif
     int rc = rename( fn, newpath );
     int e = errno;

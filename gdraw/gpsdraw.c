@@ -28,6 +28,7 @@
 #include <fontforge-config.h>
 
 #include "colorP.h"
+#include "ffglib.h"
 #include "fontP.h"
 #include "gfile.h"
 #include "gpsdrawP.h"
@@ -1119,7 +1120,7 @@ static int PSFinishJob(GPSWindow ps,int cancel) {
 	if ( !cancel )
 	    GDrawError("An error occurred while saving the print job to disk.\nNot printed." );
 	if ( gdisp->filename!=NULL )
-	    GFileUnlink(gdisp->filename);
+	    g_unlink(gdisp->filename);
 	fclose(ps->init_file);
 return(false);
     }

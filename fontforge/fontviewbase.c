@@ -1699,7 +1699,7 @@ return;
 		temp = NULL;
 	    else {
 		temp = ReadSplineFont(tmpf,0);
-		unlink(tmpf);
+		g_unlink(tmpf);
 		free(tmpf);
 	    }
 	} else {
@@ -1718,7 +1718,7 @@ return;
 		temp = NULL;
 	    else {
 		temp = ReadSplineFont(tmpf,0);
-		unlink(tmpf);
+		g_unlink(tmpf);
 		free(tmpf);
 	    }
 	} else
