@@ -331,7 +331,6 @@ return( -1 );
 /* ************************************************************************** */
 
 static struct string_list *default_pyinit_dirs(void);
-static int dir_exists(const char* path);
 
 
 static void FreeStringArray( int cnt, char **names ) {
@@ -18884,13 +18883,6 @@ return;
     delete_string_list( filelist );
 }
 
-static int dir_exists(const char* path) {
-    struct stat st;
-    if ( stat(path,&st)==0 && S_ISDIR(st.st_mode) )
-	return 1;
-    return 0;
-}
-
 static struct string_list *default_pyinit_dirs(void) {
     static struct string_list *pathlist = NULL;
     const char *sharedir;
@@ -18910,12 +18902,12 @@ static struct string_list *default_pyinit_dirs(void) {
 
     if ( sharedir!=NULL ) {
 	snprintf(buffer,sizeof(buffer),"%s/%s",sharedir,subdir);
-	if ( dir_exists(buffer) ) {
+	if ( GFileIsDir(buffer) ) {
 	    pathlist = append_string_list( pathlist, buffer );
 	}
 	else { /* Fall back to version-less python */
 	    snprintf(buffer,sizeof(buffer),"%s/%s",sharedir,"python");
-	    if ( dir_exists(buffer) ) {
+	    if ( GFileIsDir(buffer) ) {
 		pathlist = append_string_list( pathlist, buffer );
 	    }
 	}
@@ -18923,12 +18915,12 @@ static struct string_list *default_pyinit_dirs(void) {
 
     if ( userdir!=NULL ) {
 	snprintf(buffer,sizeof(buffer),"%s/%s",userdir,subdir);
-	if ( dir_exists(buffer) ) {
+	if ( GFileIsDir(buffer) ) {
 	    pathlist = append_string_list( pathlist, buffer );
 	}
 	else { /* Fall back to version-less python */
 	    snprintf(buffer,sizeof(buffer),"%s/%s",userdir,"python");
-	    if ( dir_exists(buffer) ) {
+	    if ( GFileIsDir(buffer) ) {
 		pathlist = append_string_list( pathlist, buffer );
 	    }
 	}
