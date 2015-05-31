@@ -890,7 +890,7 @@ int fontforge_main( int argc, char **argv ) {
 	    /* OK, I don't know what _-psn_ means, but to GW it means */
 	    /* we've been started on the mac from the FontForge.app   */
 	    /* structure, and the current directory is (shudder) "/"  */
-	    if (getenv("HOME")!=NULL) chdir(getenv("HOME"));
+	    if (g_getenv("HOME")!=NULL) g_chdir(g_getenv("HOME"));
 	    break;	/* Done - Unnecessary to check more arguments */
 	}
 	if (strcmp(pt,"-quiet")==0)
