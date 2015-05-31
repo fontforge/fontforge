@@ -3608,14 +3608,14 @@ return( NULL );
     xmlFreeDoc(doc);
 
     if ( sf!=NULL ) {
-	struct stat b;
+	GStatBuf b;
 	sf->layers[ly_fore].order2 = sf->layers[ly_back].order2 = sf->grid.order2 =
 		SFFindOrder(sf);
 	SFSetOrder(sf,sf->layers[ly_fore].order2);
 	sf->chosenname = chosenname;
-	if ( stat(filename,&b)!=-1 ) {
-	    sf->modificationtime = GetST_MTime(b);
-	    sf->creationtime = GetST_MTime(b);
+	if ( g_stat(filename,&b)!=-1 ) {
+	    sf->modificationtime = b.st_mtime; // FIXME: GetST_MTime
+	    sf->creationtime = b.st_mtime; // FIXME: GetST_MTime
 	}
     }
 return( sf );
