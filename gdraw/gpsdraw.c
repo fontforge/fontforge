@@ -42,6 +42,7 @@
 #include "fontP.h"
 #include "ustring.h"
 #include "gfile.h"
+#include "ffglib.h"
 
 /* ************************************************************************** */
 /* ********************** Noops & Meaningless functions ********************* */
@@ -1118,7 +1119,7 @@ static int PSFinishJob(GPSWindow ps,int cancel) {
 	if ( !cancel )
 	    GDrawError("An error occurred while saving the print job to disk.\nNot printed." );
 	if ( gdisp->filename!=NULL )
-	    GFileUnlink(gdisp->filename);
+	    g_unlink(gdisp->filename);
 	fclose(ps->init_file);
 return(false);
     }

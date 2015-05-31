@@ -3236,7 +3236,7 @@ int SFDWriteBak(char *filename,SplineFont *sf,EncMap *map,EncMap *normal) {
 	    }
 	    idx = prefRevisionsToRetain+1;
 	    snprintf( path, PATH_MAX, "%s-%02d", filename, idx );
-	    unlink(path);
+	    g_unlink(path);
 	}
 
     }
@@ -3244,7 +3244,7 @@ int SFDWriteBak(char *filename,SplineFont *sf,EncMap *map,EncMap *normal) {
 
     ret = SFDWrite(filename,sf,map,normal,false);
     if ( ret && sf->compression!=0 ) {
-	unlink(buf2);
+	g_unlink(buf2);
 	buf = malloc(strlen(filename)+40);
 	sprintf( buf, "%s %s", compressors[sf->compression-1].recomp, filename );
 	if ( system( buf )!=0 )
@@ -9221,7 +9221,7 @@ static int ask_about_file(char *filename, int *state, FILE **asfd) {
     } else if (*state&2) { //Forget all
         fclose(*asfd);
         *asfd = NULL;
-        unlink(filename);
+        g_unlink(filename);
         return false;
     }
 
@@ -9256,7 +9256,7 @@ static int ask_about_file(char *filename, int *state, FILE **asfd) {
         case 4: //Forget one
             fclose(*asfd);
             *asfd = NULL;
-            unlink(filename);
+            g_unlink(filename);
             return false;
         default: //Recover one
             break;
@@ -9282,7 +9282,7 @@ return( NULL );
 	const char *buts[3];
 	buts[0] = "_Forget It"; buts[1] = "_Try Again"; buts[2] = NULL;
 	if ( ff_ask(_("Recovery Failed"),(const char **) buts,0,1,_("Automagic recovery of changes to %.80s failed.\nShould FontForge try again to recover next time you start it?"),tok)==0 )
-	    unlink(autosavename);
+	    g_unlink(autosavename);
     }
     switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     fclose(asfd);
@@ -9353,14 +9353,14 @@ void SFClearAutoSave(SplineFont *sf) {
 	ssf = sf->subfonts[i];
 	ssf->changed_since_autosave = false;
 	if ( ssf->autosavename!=NULL ) {
-	    unlink( ssf->autosavename );
+	    g_unlink( ssf->autosavename );
 	    free( ssf->autosavename );
 	    ssf->autosavename = NULL;
 	}
     }
     if ( sf->autosavename==NULL )
 return;
-    unlink(sf->autosavename);
+    g_unlink(sf->autosavename);
     free(sf->autosavename);
     sf->autosavename = NULL;
 }
