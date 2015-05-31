@@ -114,7 +114,7 @@ void SaveGroupList(void) {
     if ( groupfilename==NULL )
 return;
     if ( group_root==NULL || (group_root->kid_cnt==0 && group_root->glyphs==NULL )) {
-	unlink(groupfilename);
+	g_unlink(groupfilename);
 return;
     }
     groups = fopen(groupfilename,"w");

@@ -666,7 +666,7 @@ void DumpPfaEditEncodings(void) {
 
     for ( item=enclist; item!=NULL && item->builtin; item=item->next );
     if ( item==NULL ) {
-	unlink(getPfaEditEncodings());
+	g_unlink(getPfaEditEncodings());
 return;
     }
 

@@ -952,7 +952,7 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
 	printf("connecting to server...4 sfd:%p\n", sfd );
 	collabclient_sendSFD( cc, sfd, fv->b.sf->collab_uuid, fv->b.sf->fontname );
     }
-    GFileUnlink(filename);
+    g_unlink(filename);
     printf("connecting to server...sent the sfd for session start.\n");
     fv->b.collabState = cs_server;
     FVTitleUpdate( &fv->b );

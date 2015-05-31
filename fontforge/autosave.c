@@ -135,7 +135,7 @@ void CleanAutoRecovery(void) {
 
     while ((entry = g_dir_read_name(dir)) != NULL) {
         snprintf(buffer, sizeof(buffer), "%s/%s", recoverdir, entry);
-        if (GFileUnlink(buffer) != 0) {
+        if (g_unlink(buffer) != 0) {
             fprintf(stderr, "Failed to clean ");
             perror(buffer);
         }
