@@ -2223,7 +2223,7 @@ return( NULL );
     }
     ret = SFImportBDF(sf, filename,ispk, toback, map);
     if ( temp!=NULL ) {
-	unlink(temp);
+	g_unlink(temp);
 	free(temp);
     } else if ( i!=-1 ) {
 	sprintf( buf, "%s %s", compressors[i].recomp, filename );
