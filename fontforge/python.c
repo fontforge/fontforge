@@ -18486,26 +18486,26 @@ extern void PyFF_FreePythonPersistent(void *python_persistent) {
 }
 
 static void LoadFilesInPythonInitDir(char *dir) {
-    DIR *diro;
-    struct dirent *ent;
+    GDir *diro;
+    const gchar *ent_name;
     struct string_list *filelist=NULL;
     struct string_list *item;
 
-    diro = opendir(dir);
+    diro = g_dir_open(dir, 0, NULL);
     if ( diro==NULL )		/* It's ok not to have any python init scripts */
 return;
 
-    while ( (ent = readdir(diro))!=NULL ) {
+    while ( (ent_name = g_dir_read_name(diro))!=NULL ) {
 	char buffer[PATH_MAX+2];
-	char *pt = strrchr(ent->d_name,'.');
+	char *pt = strrchr(ent_name,'.');
 	if ( pt==NULL )
     continue;
 	if ( strcmp(pt,".py")==0 ) {
-	    snprintf( buffer, sizeof(buffer), "%s/%s", dir, ent->d_name );
+	    snprintf( buffer, sizeof(buffer), "%s/%s", dir, ent_name );
 	    filelist = prepend_string_list( filelist, buffer );
 	}
     }
-    closedir(diro);
+    g_dir_close(diro);
 
     filelist = sort_string_list( filelist );
 

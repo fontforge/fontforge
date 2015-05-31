@@ -817,32 +817,34 @@ static char *SearchDirForCidMap(const char *dir,char *registry,char *ordering,
 	int supplement,char **maybefile) {
     char maybe[FILENAME_MAX+1];
     struct dirent *ent;
-    DIR *d;
+    GDir *d;
+    const gchar *ent_name;
     int len, rlen = strlen(registry), olen=strlen(ordering);
-    char *pt, *end, *ret;
+    const char *pt;
+    char *end, *ret;
     int test, best = -1;
 
     if ( dir==NULL )
 return( NULL );
 
     if ( *maybefile!=NULL ) {
-	char *pt = strrchr(*maybefile,'.');
+	pt = strrchr(*maybefile,'.');
 	while ( pt>*maybefile && isdigit(pt[-1]))
 	    --pt;
 	best = strtol(pt,NULL,10);
     }
 
-    d = opendir(dir);
+    d = g_dir_open(dir, 0, NULL);
     if ( d==NULL )
 return( NULL );
-    while ( (ent = readdir(d))!=NULL ) {
-	if ( (len = strlen(ent->d_name))<8 )
+    while ( (ent_name = g_dir_read_name(d))!=NULL ) {
+	if ( (len = strlen(ent_name))<8 )
     continue;
-	if ( strcmp(ent->d_name+len-7,".cidmap")!=0 )
+	if ( strcmp(ent_name+len-7,".cidmap")!=0 )
     continue;
-	if ( strncmp(ent->d_name,registry,rlen)!=0 || ent->d_name[rlen]!='-' )
+	if ( strncmp(ent_name,registry,rlen)!=0 || ent_name[rlen]!='-' )
     continue;
-	pt = ent->d_name+rlen+1;
+	pt = ent_name+rlen+1;
 	if ( strncmp(pt,ordering,olen)!=0 || pt[olen]!='-' )
     continue;
 	pt += olen+1;
@@ -855,15 +857,15 @@ return( NULL );
 	    ret = malloc(strlen(dir)+1+len+1);
 	    strcpy(ret,dir);
 	    strcat(ret,"/");
-	    strcat(ret,ent->d_name);
-	    closedir(d);
+	    strcat(ret,ent_name);
+	    g_dir_close(d);
 return( ret );
 	} else if ( test>best ) {
 	    best = test;
-	    strcpy(maybe,ent->d_name);
+	    strcpy(maybe,ent_name);
 	}
     }
-    closedir(d);
+    g_dir_close(d);
     if ( best>-1 ) {
 	ret = malloc(strlen(dir)+1+strlen(maybe)+1);
 	strcpy(ret,dir);
