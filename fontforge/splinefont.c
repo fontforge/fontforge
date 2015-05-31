@@ -921,7 +921,7 @@ static char *ForceFileToHaveName(FILE *file, char *exten) {
 	sprintf( tmpfilename, P_tmpdir "/fontforge%d-%d", getpid(), try++ );
 	if ( exten!=NULL )
 	    strcat(tmpfilename,exten);
-	if ( access( tmpfilename, F_OK )==-1 &&
+	if ( !GFileExists(tmpfilename) &&
 		(newfile = GFileFopen(tmpfilename,"w"))!=NULL ) {
 	    char buffer[1024];
 	    int len;
