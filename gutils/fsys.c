@@ -400,10 +400,6 @@ int GFileMkDir(const char *name) {
 return( mkdir(name,0755));
 }
 
-int GFileRmDir(const char *name) {
-return(rmdir(name));
-}
-
 char *_GFile_find_program_dir(char *prog) {
     char *pt, *path, *program_dir=NULL;
     char filename[2000];
@@ -670,12 +666,6 @@ int u_GFileMkDir(unichar_t *name) {
     char buffer[1024];
     u2def_strncpy(buffer,name,sizeof(buffer));
 return( mkdir(buffer,0755));
-}
-
-int u_GFileRmDir(unichar_t *name) {
-    char buffer[1024];
-    u2def_strncpy(buffer,name,sizeof(buffer));
-return(rmdir(buffer));
 }
 
 static char *GResourceProgramDir = 0;
