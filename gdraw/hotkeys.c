@@ -334,7 +334,7 @@ void hotkeysSave() {
     //Atomic rename doesn't exist on Windows.
     g_unlink(newpath);
 #endif
-    int rc = rename( fn, newpath );
+    int rc = g_rename( fn, newpath );
     int e = errno;
     free(fn);
     free(newpath);
