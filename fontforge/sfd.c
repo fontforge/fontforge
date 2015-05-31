@@ -3208,7 +3208,7 @@ int SFDWriteBak(char *filename,SplineFont *sf,EncMap *map,EncMap *normal) {
 	strcat(buf2,compressors[sf->compression-1].ext);
 	strcpy(buf,buf2);
 	strcat(buf,"~");
-	if ( rename(buf2,buf)==0 )
+	if ( g_rename(buf2,buf)==0 )
 	    sf->backedup = bs_backedup;
     }
     else
@@ -3223,14 +3223,14 @@ int SFDWriteBak(char *filename,SplineFont *sf,EncMap *map,EncMap *normal) {
 
 	    snprintf( path,    PATH_MAX, "%s", filename );
 	    snprintf( pathnew, PATH_MAX, "%s-%02d", filename, idx );
-	    (void)rename( path, pathnew );
+	    (void)g_rename( path, pathnew );
 
 	    for( idx=prefRevisionsToRetain; idx > 0; idx-- )
 	    {
 		snprintf( path, PATH_MAX, "%s-%02d", filename, idx-1 );
 		snprintf( pathnew, PATH_MAX, "%s-%02d", filename, idx );
 
-		int rc = rename( path, pathnew );
+		int rc = g_rename( path, pathnew );
 		if( !idx && !rc )
 		    sf->backedup = bs_backedup;
 	    }
