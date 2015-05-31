@@ -425,7 +425,7 @@ int GFileRemove(const char *path, int recursive) {
 }
 
 int GFileMkDir(const char *name) {
-return( mkdir(name,0755));
+return( g_mkdir(name,0755));
 }
 
 char *_GFile_find_program_dir(char *prog) {
