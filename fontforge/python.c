@@ -889,7 +889,7 @@ static PyObject *PyFF_OpenFont(PyObject *UNUSED(self), PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"es|i", "UTF-8", &filename, &openflags ))
 return( NULL );
-    locfilename = utf82def_copy(filename);
+    locfilename = utf82fsys_copy(filename);
     free(filename);
 
     /* The actual filename opened may be different from the one passed
@@ -916,7 +916,7 @@ static PyObject *PyFF_FontsInFile(PyObject *UNUSED(self), PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"es","UTF-8",&filename) )
 return( NULL );
-    locfilename = utf82def_copy(filename);
+    locfilename = utf82fsys_copy(filename);
     free(filename);
     ret = GetFontNames(locfilename, 1);
     free(locfilename);
@@ -3953,7 +3953,7 @@ static PyObject *PyFFLayer_export(PyFF_Layer *self, PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"es","UTF-8",&filename) )
 return( NULL );
-    locfilename = utf82def_copy(filename);
+    locfilename = utf82fsys_copy(filename);
     free(filename);
 
     pt = strrchr(locfilename,'.');
@@ -7602,7 +7602,7 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"es|O","UTF-8",&filename, &flags) )
 return( NULL );
-    locfilename = utf82def_copy(filename);
+    locfilename = utf82fsys_copy(filename);
     free(filename);
 
     /* Check if the file exists and is readable */
@@ -7671,7 +7671,7 @@ static PyObject *PyFFGlyph_export(PyObject *self, PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"es|OO","UTF-8",&filename,&foo,&bar) )
 return( NULL );
-    locfilename = utf82def_copy(filename);
+    locfilename = utf82fsys_copy(filename);
     free(filename);
 
     pt = strrchr(locfilename,'.');
@@ -13338,7 +13338,7 @@ return (NULL);
     if ( !PyArg_ParseTuple(args,"es|i","UTF-8",&filename,
 	    &to_background) )
 return( NULL );
-    locfilename = utf82def_copy(filename);
+    locfilename = utf82fsys_copy(filename);
     free(filename);
 
     ext = strrchr(locfilename,'.');
@@ -13412,7 +13412,7 @@ static PyObject *PyFFFont_compareFonts(PyFF_Font *self,PyObject *args) {
 return (NULL);
     if ( !PyArg_ParseTuple(args,"OesO", &other, "UTF-8", &filename, &flagstuple ))
 return( NULL );
-    locfilename = utf82def_copy(filename);
+    locfilename = utf82fsys_copy(filename);
     free(filename);
 
     if ( !PyType_IsSubtype(&PyFF_FontType, Py_TYPE(other)) ) {
@@ -15266,7 +15266,7 @@ static PyObject *PyFFFont_Save(PyFF_Font *self, PyObject *args) {
     if ( filename!=NULL )
     {
 	/* Save As - Filename was provided */
-	locfilename = utf82def_copy(filename);
+	locfilename = utf82fsys_copy(filename);
 	PyMem_Free(filename);
 
 	pt = strrchr(locfilename,'.');
@@ -15470,7 +15470,7 @@ return( NULL );
 return( NULL );
 	}
     }
-    locfilename = utf82def_copy(filename);
+    locfilename = utf82fsys_copy(filename);
     free(filename);
     if ( !GenerateScript(fv->sf,locfilename,bitmaptype,iflags,resolution,subfontdirectory,
 	    NULL,fv->normal==NULL?fv->map:fv->normal,rename_to,layer) ) {
@@ -15626,7 +15626,7 @@ return( NULL );
 return( NULL );
     }
 
-    locfilename = utf82def_copy(filename);
+    locfilename = utf82fsys_copy(filename);
     free(filename);
 
     if ( !WriteTTC(locfilename,head,ff_ttc,bf,iflags,layer,ittcflags)) {
@@ -15654,7 +15654,7 @@ return (NULL);
     fv = self->fv;
     if ( !PyArg_ParseTuple(args,"es|s","UTF-8",&filename,&lookup_name) )
 return( NULL );
-    locfilename = utf82def_copy(filename);
+    locfilename = utf82fsys_copy(filename);
     free(filename);
 
     if ( lookup_name!=NULL ) {
@@ -15694,7 +15694,7 @@ return (NULL);
     fv = self->fv;
     if ( !PyArg_ParseTuple(args,"es","UTF-8",&filename) )
 return( NULL );
-    locfilename = utf82def_copy(filename);
+    locfilename = utf82fsys_copy(filename);
     free(filename);
     if ( !LoadKerningDataFromMetricsFile(fv->sf,locfilename,fv->map)) {
 	PyErr_Format(PyExc_EnvironmentError, "No metrics data found");
@@ -15718,7 +15718,7 @@ return (NULL);
     if ( !PyArg_ParseTuple(args,"es|ii","UTF-8",&filename,
 	    &preserveCrossFontKerning, &openflags) )
 return( NULL );
-    locfilename = utf82def_copy(filename);
+    locfilename = utf82fsys_copy(filename);
     free(filename);
     sf = LoadSplineFont(locfilename,openflags);
     if ( sf==NULL ) {
@@ -15746,7 +15746,7 @@ return (NULL);
     fv = self->fv;
     if ( !PyArg_ParseTuple(args,"des|i",&fraction,"UTF-8",&filename, &openflags) )
 return( NULL );
-    locfilename = utf82def_copy(filename);
+    locfilename = utf82fsys_copy(filename);
     free(filename);
     sf = LoadSplineFont(locfilename,openflags);
     if ( sf==NULL ) {
@@ -15998,7 +15998,7 @@ static PyObject *PyFFFont_printSample(PyFF_Font *self, PyObject *args) {
             sample = utf82u_copy(sampleArg);
             samplefile = NULL;
         } else {
-            samplefile = utf82def_copy(sampleArg);
+            samplefile = utf82fsys_copy(sampleArg);
             sample = NULL;
         }
     }

@@ -699,11 +699,15 @@ static void GTextFieldPaste(GTextField *gt,enum selnames sel) {
     } else if ( GDrawSelectionHasType(gt->g.base,sel,"STRING")) {
 	unichar_t *temp; char *ctemp;
 	int32 len;
+    bool is_utf8 = false;
+
 	ctemp = GDrawRequestSelection(gt->g.base,sel,"STRING",&len);
-	if ( ctemp==NULL || len==0 )
+	if ( ctemp==NULL || len==0 ) {
 	    ctemp = GDrawRequestSelection(gt->g.base,sel,"text/plain;charset=UTF-8",&len);
+	    is_utf8 = true;
+    }
 	if ( ctemp!=NULL ) {
-	    temp = def2u_copy(ctemp);
+	    temp = is_utf8 ? utf82u_copy(ctemp) : def2u_copy(ctemp);
 	    GTextField_Replace(gt,temp);
 	    free(ctemp); free(temp);
 	}
@@ -890,7 +894,7 @@ static void GTextFieldImport(GTextField *gt) {
 
     if ( ret==NULL )
 return;
-    cret = u2def_copy(ret);
+    cret = u2fsys_copy(ret);
     free(ret);
     str = _GGadgetFileToUString(cret,65536);
     if ( str==NULL ) {
@@ -922,7 +926,7 @@ static void GTextFieldSave(GTextField *gt,int utf8) {
 
     if ( ret==NULL )
 return;
-    cret = u2def_copy(ret);
+    cret = u2fsys_copy(ret);
     free(ret);
     file = fopen(cret,"w");
     if ( file==NULL ) {

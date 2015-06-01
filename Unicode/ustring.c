@@ -572,6 +572,10 @@ char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf) {
     return( NULL );
 }
 
+char *u2utf8_strncpy(char *to, const unichar_t *ufrom, size_t n) {
+    return u2encoding_strncpy(to, ufrom, n, e_utf8); 
+}
+
 char *utf8_strchr(const char *str, int search) {
     int ch;
     const char *old = str;
@@ -875,7 +879,22 @@ unichar_t *fsys2u_strncpy(unichar_t *uto, const char *from, size_t n) {
 #endif
 }
 
-//char *u2fsys_strncpy(char *to, const char *ufrom, size_t n)
+/**
+ * Converts from unichar_t encoding to file system encoding.
+ * 
+ * @param [out] to The output buffer
+ * @param [in] ufrom The input buffer.
+ * @param [in] n The number of characters to copy.
+ * @return The output buffer.
+ */
+char *u2fsys_strncpy(char *to, const unichar_t *ufrom, size_t n) {
+#ifdef __MINGW32__
+    return u2utf8_strncpy(to, ufrom, n);
+#else
+    return u2def_strncpy(to, ufrom, n);
+#endif
+}
+
 /**
  * Creates a new buffer, converting from file system encoding to unichar_t.
  * 
