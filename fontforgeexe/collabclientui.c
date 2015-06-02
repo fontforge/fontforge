@@ -308,7 +308,7 @@ static void zeromq_beacon_show_peers( cloneclient_t* cc )
 	printf("mach:%s\n", ba->machinename );
 	printf("ip  :%s\n", ba->ip );
 	printf("port:%d\n", ba->port );
-	printf("seconds since last msg:%d\n", tt - ba->last_msg_from_peer_time );
+	printf("seconds since last msg:%d\n", (int)(tt - ba->last_msg_from_peer_time) );
 	
     }
     printf("--- zeromq_beacon_show_peers(end)\n" );
@@ -555,20 +555,18 @@ collabclient_remakeSockets( cloneclient_t *cc )
 {
     cc->snapshot = zsocket_new (cc->ctx, ZMQ_DEALER);
     zsocket_connect (cc->snapshot,
-	collabclient_makeAddressString( cc->address,
-	cc->port + socket_offset_snapshot));
+        "tcp://%s:%d", cc->address, cc->port+socket_offset_snapshot);
     
     cc->subscriber = zsocket_new (cc->ctx, ZMQ_SUB);
     zsocket_set_subscribe (cc->subscriber, "");
     zsocket_connect (cc->subscriber,
-	collabclient_makeAddressString( cc->address,
-	cc->port + socket_offset_subscriber));
+        "tcp://%s:%d", cc->address, cc->port+socket_offset_subscriber);
     zsocket_set_subscribe (cc->subscriber, SUBTREE);
 
     cc->publisher = zsocket_new (cc->ctx, ZMQ_PUSH);
     zsocket_connect (cc->publisher,
-	collabclient_makeAddressString( cc->address,
-	cc->port + socket_offset_publisher));
+        "tcp://%s:%d",
+        cc->address, cc->port+socket_offset_publisher);
 
     int fd = 0;
     size_t fdsz = sizeof(fd);
@@ -697,7 +695,7 @@ static void collabclient_sendSFD( void* ccvp, char* sfd, char* collab_uuid, char
 //    kvmsg_set_prop (kvmsg, "ttl", "%d", randof (30));
     kvmsg_send     (kvmsg, cc->publisher);
     kvmsg_destroy (&kvmsg);
-    DEBUG("Sent a SFD of %d bytes to the server\n",strlen(sfd));
+    DEBUG("Sent a SFD of %zu bytes to the server\n",strlen(sfd));
     free(sfd);
 }
 
@@ -764,7 +762,7 @@ collabclient_sendRedo_sfdfragment( cloneclient_t* cc,
     kvmsg_set_prop (kvmsg, "isLocalUndo", pos );
     kvmsg_send     (kvmsg, cc->publisher);
     kvmsg_destroy  (&kvmsg);
-    DEBUG("Sent a undo chunk of %d bytes to the server\n",strlen(sfd));
+    DEBUG("Sent a undo chunk of %zu bytes to the server\n",strlen(sfd));
     free(sfd);
 }
 
@@ -819,7 +817,7 @@ collabclient_sendRedo_Internal( FontViewBase *fv, SplineChar *sc, Undoes *undo, 
     kvmsg_set_prop (kvmsg, "isLocalUndo", pos );
     kvmsg_send     (kvmsg, cc->publisher);
     kvmsg_destroy (&kvmsg);
-    DEBUG("Sent a undo chunk of %d bytes to the server\n",strlen(sfd));
+    DEBUG("Sent a undo chunk of %zu bytes to the server\n",strlen(sfd));
     free(sfd);
 }
 
@@ -886,7 +884,7 @@ static void beacon_moon_bounce_timer_callback( void* ccvp )
 	if( !strcmp( ba->uuid, sought_uuid ))
 	{
 	    printf("it took %d seconds to get a beacon back from the server\n",
-		   tt - cc->unacknowledged_beacon_sendTime );
+		   (int)(tt - cc->unacknowledged_beacon_sendTime) );
 	    strcpy( cc->unacknowledged_beacon_uuid, "" );
 	    cc->unacknowledged_beacon_sendTime = 0;
 	    return;
@@ -1312,7 +1310,7 @@ void collabclient_sendFontLevelRedo( SplineFont* sf )
     
     if( sfdfrag )
     {
-	printf("have sfd frag len:%d\n", strlen(sfdfrag));
+	printf("have sfd frag len:%zu\n", strlen(sfdfrag));
 	printf("have sfd frag\n%s\n\n", sfdfrag);
 
 	FontViewBase* fv = sf->fv;
@@ -1378,8 +1376,7 @@ collabclient_sniffForLocalServer( void )
 
     cc->socket = zsocket_new ( ctx, ZMQ_REQ );
     zsocket_connect (cc->socket,
-		     collabclient_makeAddressString("localhost",
-						    port_default + socket_offset_ping));
+        "tcp://localhost:%d", port_default+socket_offset_ping);
     cc->timer = BackgroundTimer_new( 1000, collabclient_sniffForLocalServer_timer, cc );
     zstr_send  (cc->socket, "ping");
 
@@ -1397,11 +1394,10 @@ collabclient_closeLocalServer( int port )
     if( !port )
 	port = collabclient_getDefaultBasePort();
 
-    printf("collabclient_closeLocalServer() port:%d\n");
+    printf("collabclient_closeLocalServer() port:%d\n", port);
     void* socket = zsocket_new ( ctx, ZMQ_REQ );
     zsocket_connect ( socket,
-		      collabclient_makeAddressString("localhost",
-						     port + socket_offset_ping));
+        "tcp://localhost:%d", port+socket_offset_ping);
     zstr_send( socket, "quit" );
     cc->haveServer = 0;
 
@@ -1461,7 +1457,7 @@ void collabclient_trimOldBeaconInformation( int secondsCutOff )
 	beacon_announce_t* ba = (beacon_announce_t*)value;
 	int seconds_since_last_msg = tt - ba->last_msg_from_peer_time;
 	
-	printf("seconds since last msg:%d\n", tt - ba->last_msg_from_peer_time );
+	printf("seconds since last msg:%d\n", (int)(tt - ba->last_msg_from_peer_time) );
 	if( seconds_since_last_msg > secondsCutOff )
 	{
 	    g_hash_table_remove( peers, ba->uuid );
