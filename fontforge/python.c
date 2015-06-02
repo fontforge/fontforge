@@ -7876,6 +7876,7 @@ static char *GlyphNamesFromTuple(PyObject *glyphs) {
             Py_DECREF(aglyph);
         }
 	strcpy(pt,str);
+	free(str);
 	pt += strlen(pt);
 	*pt++ = ' ';
     }
@@ -7900,7 +7901,7 @@ return(NULL );
 	PyObject *aglyph = PySequence_GetItem(glyphs,i);
 	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(aglyph)) ) {
 	    SplineChar *sc = ((PyFF_Glyph *) aglyph)->sc;
-	    str = copy(sc->name);
+	    str = sc->name;
 	} else
 	    str = PyBytes_AsString(aglyph);
 	if ( str==NULL ) {
