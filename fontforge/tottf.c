@@ -6329,7 +6329,8 @@ return( false );
 		    sp->prevcp.x != sp2->prevcp.x ||
 		    sp->prevcp.y != sp2->prevcp.y )
 return( false );
-	    sp = sp->next->to; sp2 = sp2->next->to;
+	    sp = (sp->next ? sp->next->to : NULL);
+	    sp2 = (sp2->next ? sp2->next->to : NULL);
 	    if ( sp==ss->first ) {
 		if ( sp2==ss2->first )
 	break;
