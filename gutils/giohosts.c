@@ -196,7 +196,7 @@ return( NULL );
 return( NULL );
 	}
 	for ( i=0; he->h_addr_list[i]!=NULL; ++i );
-	memcpy(&cur->addr.sin_addr,he->h_addr_list[rand()%i],he->h_length);
+	memcpy(&cur->addr.sin_addr,he->h_addr_list[rand()%(i+1)],he->h_length);
     }
     cur->hostname = copy(host);
     cur->next = *base;

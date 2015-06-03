@@ -4900,10 +4900,6 @@ exit(1);
 			IError("'%s' in %s has a script index out of bounds: %d",
 				isv ? "vkrn" : "kern",
 				sc->name, sli );
-		    else
-			IError( "'%s' in %s has a script index out of bounds: %d",
-				isv ? "vkrn" : "kern",
-				sc->name, sli );
 		    sli = SFFindBiggestScriptLangIndex(sli_sf,
 			    SCScriptFromUnicode(sc),DEFAULT_LANG);
 		    complained = true;
@@ -5623,10 +5619,6 @@ exit(1);
 		    static int complained=false;
 		    if ( !complained )
 			IError("'%s' in %s has a script index out of bounds: %d",
-				isv ? "vkrn" : "kern",
-				sc->name, sli );
-		    else
-			IError( "'%s' in %s has a script index out of bounds: %d",
 				isv ? "vkrn" : "kern",
 				sc->name, sli );
 		    sli = SFFindBiggestScriptLangIndex(sli_sf,
