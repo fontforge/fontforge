@@ -2657,12 +2657,12 @@ static int CheckNames(struct gfi_data *d) {
     buts[0] = _("_OK"); buts[1] = _("_Cancel"); buts[2]=NULL;
 
     if ( u_strlen(ufont)>63 ) {
-	ff_post_error(_("Bad Font Name"),_("A Fontname should be ASCII\nand must not contain (){}[]<>%%/ or space\nand must be shorter than 63 characters"));
+	ff_post_error(_("Bad Font Name"),_("PostScript name should be ASCII\nand must not contain (){}[]<>%%/ or space\nand must be shorter than 63 characters"));
 return( false );
     }
 
     if ( *ufamily=='\0' ) {
-	ff_post_error(_("A Font Family name is required"),_("A Font Family name is required"));
+	ff_post_error(_("A Font Family name is required"),_("Font Family name is required"));
 return( false );
     }
     /* A postscript name cannot be a number. There are two ways it can be a */
@@ -2671,24 +2671,24 @@ return( false );
     /*  do a cursory test for that */
     u_strtod(ufamily,&end);
     if ( *end=='\0' || (isdigit(ufamily[0]) && u_strchr(ufamily,'#')!=NULL) ) {
-	ff_post_error(_("Bad Font Family Name"),_("A PostScript name may not be a number"));
+	ff_post_error(_("Bad Font Family Name"),_("Family name may not be a number"));
 return( false );
     }
     if ( u_strlen(ufamily)>31 ) {
-	if ( gwwv_ask(_("Bad Font Family Name"),(const char **) buts,0,1,_("Some versions of Windows will refuse to install postscript fonts if the familyname is longer than 31 characters. Do you want to continue anyway?"))==1 )
+	if ( gwwv_ask(_("Bad Font Family Name"),(const char **) buts,0,1,_("Some versions of Windows will refuse to install postscript fonts if the Family name is longer than 31 characters. Do you want to continue anyway?"))==1 )
 return( false );
     } else {
 	if ( u_strlen(ufont)>31 ) {
-	    if ( gwwv_ask(_("Bad Font Name"),(const char **) buts,0,1,_("Some versions of Windows will refuse to install postscript fonts if the fontname is longer than 31 characters. Do you want to continue anyway?"))==1 )
+	    if ( gwwv_ask(_("Bad Font Name"),(const char **) buts,0,1,_("Some versions of Windows will refuse to install postscript fonts if the PostScript name is longer than 31 characters. Do you want to continue anyway?"))==1 )
 return( false );
 	} else if ( u_strlen(ufont)>29 ) {
-	    if ( gwwv_ask(_("Bad Font Name"),(const char **) buts,0,1,_("Adobe's fontname spec (5088.FontNames.pdf) says that fontnames should not be longer than 29 characters. Do you want to continue anyway?"))==1 )
+	    if ( gwwv_ask(_("Bad Font Name"),(const char **) buts,0,1,_("Adobe's fontname spec (5088.FontNames.pdf) says that PostScript names should not be longer than 29 characters. Do you want to continue anyway?"))==1 )
 return( false );
 	}
     }
     while ( *ufamily ) {
 	if ( *ufamily<' ' || *ufamily>=0x7f ) {
-	    ff_post_error(_("Bad Font Family Name"),_("A Family Name should be ASCII\nand must not contain (){}[]<>%%/ or space"));
+	    ff_post_error(_("Bad Font Family Name"),_("Family Name should be ASCII\nand must not contain (){}[]<>%%/ or space"));
 return( false );
 	}
 	++ufamily;
@@ -2697,7 +2697,7 @@ return( false );
     u_strtod(ufont,&end);
     if ( (*end=='\0' || (isdigit(ufont[0]) && u_strchr(ufont,'#')!=NULL)) &&
 	    *ufont!='\0' ) {
-	ff_post_error(_("Bad Font Name"),_("A PostScript name may not be a number"));
+	ff_post_error(_("Bad Font Name"),_("PostScript name may not be a number"));
 return( false );
     }
     for ( pt=ufont; *pt; ++pt ) {
@@ -2705,7 +2705,7 @@ return( false );
 		*pt=='(' || *pt=='[' || *pt=='{' || *pt=='<' ||
 		*pt==')' || *pt==']' || *pt=='}' || *pt=='>' ||
 		*pt=='%' || *pt=='/' ) {
-	    ff_post_error(_("Bad Font Name"),_("A Fontname should be ASCII\nand must not contain (){}[]<>%%/ or space"));
+	    ff_post_error(_("Bad Font Name"),_("PostScript name should be ASCII\nand must not contain (){}[]<>%%/ or space"));
 return( false );
 	}
     }
