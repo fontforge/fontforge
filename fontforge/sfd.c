@@ -7505,8 +7505,8 @@ bool SFD_GetFontMetaData( FILE *sfd,
     /* Legacy attribute for StyleMapFamilyName. Deprecated. */
     else if ( strmatch(tok,"OS2FamilyName:")==0 )
     {
-    char* fname = SFDReadUTF7Str(sfd);
-    if (sf->styleMapFamilyName == NULL) sf->styleMapFamilyName = fname;
+    if (sf->styleMapFamilyName == NULL)
+        sf->styleMapFamilyName = SFDReadUTF7Str(sfd);
     }
     else if ( strmatch(tok,"FONDName:")==0 )
     {
