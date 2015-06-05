@@ -7817,7 +7817,7 @@ return( tuple );
 
 static char *GlyphNamesFromTuple(PyObject *glyphs) {
     int cnt, len, deltalen;
-    char *str, *ret, *pt;
+    char *str=NULL, *ret, *pt;
     int i;
 
     /* if called with a string, assume already in output format and return */
@@ -7846,7 +7846,9 @@ static char *GlyphNamesFromTuple(PyObject *glyphs) {
 	    deltalen = strlen(sc->name);
             Py_DECREF(aglyph);
 	} else if ( STRING_CHECK(aglyph)) {
+            free(str);
             PYGETSTR(aglyph, str, NULL);
+            str = copy(str);
             deltalen = strlen(str);
             ENDPYGETSTR();
             Py_DECREF(aglyph);
@@ -7867,9 +7869,11 @@ static char *GlyphNamesFromTuple(PyObject *glyphs) {
 	PyObject *aglyph = PySequence_GetItem(glyphs,i);
 	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(aglyph)) ) {
 	    SplineChar *sc = ((PyFF_Glyph *) aglyph)->sc;
+	    free(str);
 	    str = copy(sc->name);
             Py_DECREF(aglyph);
 	} else {
+            free(str);
             PYGETSTR(aglyph, str, NULL);
             str = copy(str);
             ENDPYGETSTR();
@@ -7882,6 +7886,7 @@ static char *GlyphNamesFromTuple(PyObject *glyphs) {
     if ( pt!=ret )
 	--pt;
     *pt = '\0';
+    free(str);
     return( ret );
 }
 
@@ -15330,6 +15335,7 @@ static PyObject *PyFFFont_Save(PyFF_Font *self, PyObject *args) {
 	if ( !rc )
 	{
 	    PyErr_Format(PyExc_EnvironmentError, "Save failed");
+        free(locfilename);
 	    return( NULL );
 	}
     }
