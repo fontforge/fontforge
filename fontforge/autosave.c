@@ -30,6 +30,12 @@
 
 int AutoSaveFrequency=5;
 
+/**
+ * Gets the autosave directory, attempting to create it if it does not exist.
+ * 
+ * @return The autosave directory, or NULL on error. The result must be freed
+ *         by the caller. 
+ */
 static char *GetAutoDirName() {
     char *userdir = getFontForgeUserDir(Config);
     char *autodir = NULL;
@@ -47,6 +53,13 @@ static char *GetAutoDirName() {
     return autodir;
 }
 
+/**
+ * Makes a unique autosave filename for a given spline font, if it does not
+ * have one already. 
+ * 
+ * @param [in] sf The font to create an autosave name for.
+ * @return true iff the font now has an autosave name.
+ */
 static bool MakeAutoSaveName(SplineFont *sf) {
     char buffer[1025];
     char *autosavedir;
@@ -68,6 +81,12 @@ static bool MakeAutoSaveName(SplineFont *sf) {
     return (sf->autosavename != NULL);
 }
 
+/**
+ * Performs an autosave on all open fonts in the provided linked list.
+ * An autosave will not be done if the autosave frequency (preference) is zero.
+ * 
+ * @param [in] fvs Linked list of fonts to autosave.
+ */
 static void _DoAutoSaves(FontViewBase *fvs) {
     FontViewBase *fv;
     SplineFont *sf;
@@ -83,10 +102,20 @@ static void _DoAutoSaves(FontViewBase *fvs) {
     }
 }
 
+/**
+ * Performs an autosave on all currently open fonts.
+ */
 void DoAutoSaves(void) {
     _DoAutoSaves(FontViewFirst());
 }
 
+/**
+ * Checks the autosave directory to recover autosaved fonts.
+ * 
+ * @param [in] inquire Boolean, indicates whether or not to ask the user for
+ *                     what action to take. 
+ * @return true iff any font was recovered.
+ */
 int DoAutoRecoveryExtended(int inquire) {
     char buffer[1025];
     char *recoverdir = GetAutoDirName();
@@ -122,6 +151,9 @@ int DoAutoRecovery(int inquire) {
     return DoAutoRecoveryExtended(inquire);
 }
 
+/**
+ * Attempts to remove all files within the autosave directory.
+ */
 void CleanAutoRecovery(void) {
     char buffer[1025];
     char *recoverdir = GetAutoDirName();
