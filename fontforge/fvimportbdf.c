@@ -2385,7 +2385,7 @@ int FVImportMult(FontViewBase *fv, char *filename, int toback, int bf) {
 	strikeholder = SFReadTTF(filename,toback?ttf_onlyonestrike|ttf_onlystrikes:ttf_onlystrikes,0);
     else if ( bf == bf_fon )
 	strikeholder = SFReadWinFON(filename,toback);
-    else if ( bf == bf_fon )
+    else if ( bf == bf_palm )
 	strikeholder = SFReadPalmPdb(filename);
     else
 	strikeholder = SFReadMacBinary(filename,toback?ttf_onlyonestrike|ttf_onlystrikes:ttf_onlystrikes,0);

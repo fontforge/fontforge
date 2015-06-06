@@ -81,11 +81,11 @@ return( 1 );
 return( 0 );
     }
     for ( i=0; hostent->h_addr_list[i]!=NULL; ++i );
-    memcpy(&addr->sin_addr,hostent->h_addr_list[rand()%i],hostent->h_length);
+    memcpy(&addr->sin_addr,hostent->h_addr_list[rand()%(i+1)],hostent->h_length);
     if ( hostent->h_length < sizeof(last_addr)) {	/* Cache the last hostname, in case they ask for it again */
 	free(last_host); last_host = copy(hostname);
 	last_len = hostent->h_length;
-	memcpy(last_addr,hostent->h_addr_list[rand()%i],hostent->h_length);
+	memcpy(last_addr,hostent->h_addr_list[rand()%(i+1)],hostent->h_length);
     }
     endhostent();
 return( 1 );
@@ -427,7 +427,6 @@ return( false );
 	ff_post_error(_("Could not send request"),_("Could not send request to \"%s\"."), host );
 	close( soc );
 	free( databuf );
-	free( host ); free( filename );
 	free( host ); free( filename );
 	if ( lock!=NULL )
 	    pthread_mutex_unlock(lock);

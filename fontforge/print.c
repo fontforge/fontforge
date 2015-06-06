@@ -2642,7 +2642,7 @@ return;
     sample[0].lang = _simplelatnlangs[simple_pos];
 
     for ( j=0; _simplecyrillchoices[j]!=NULL; ++j );
-    simple_pos = rand()%j;
+    simple_pos = rand()%(j+1);
     _simplecyrill[0] = _simplecyrillchoices[simple_pos];
     sample[1].lang = _simplecyrilliclangs[simple_pos];
 }
