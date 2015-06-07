@@ -1615,7 +1615,7 @@ static void GFileChooserCreateChildren(GFileChooser *gfc, int flags) {
     boxes[3].creator = GHBoxCreate;
     varray[l++] = &boxes[3];
 
-    gcd[k].gd.flags = gg_visible|gg_enabled;
+    gcd[k].gd.flags = gg_visible|gg_enabled|gg_text_xim;
     gcd[k].gd.handle_controlevent = GFileChooserTextChanged;
     textk = k;
     if ( flags&gg_file_pulldown )
