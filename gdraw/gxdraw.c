@@ -3805,6 +3805,11 @@ static void GXDrawGrabSelection(GWindow w,enum selnames sel) {
 	if ( gd->selinfo[sel].owner->eh!=NULL )
 	    (gd->selinfo[sel].owner->eh)((GWindow) gd->selinfo[sel].owner, &e);
     }
+    //Only one clipboard exists on Windows. Selectively set the selection owner
+    //as otherwise the Windows clipboard will be cleared.
+#ifdef _WIN32
+    if (sel == sn_clipboard)
+#endif
     XSetSelectionOwner(gd->display,gd->selinfo[sel].sel_atom,gw->w,gd->last_event_time);
     GXDrawClearSelData(gd,sel);
     gd->selinfo[sel].owner = gw;
