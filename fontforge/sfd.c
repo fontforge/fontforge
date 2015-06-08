@@ -1587,7 +1587,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 		SFDDumpPattern(sfd,"StrokePattern:", sc->layers[i].stroke_pen.brush.pattern );
 	} else {
 	    if ( sc->layers[i].images==NULL && sc->layers[i].splines==NULL &&
-		    sc->layers[i].refs==NULL && sc->layers[i].validation_state&vs_known == 0 &&
+		    sc->layers[i].refs==NULL && (sc->layers[i].validation_state&vs_known) == 0 &&
 		    sc->layers[i].python_persistent == NULL)
     continue;
 	    if ( i==ly_back )
