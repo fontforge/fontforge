@@ -10547,6 +10547,7 @@ void CVAddAnchor(CharView *cv) {
         if ( name==NULL )
 return;
         ac = SFFindOrAddAnchorClass(sf,name,NULL);
+        free(name);
 	if ( AnchorClassUnused(cv->b.sc,&waslig)==NULL )
 return;
     }
