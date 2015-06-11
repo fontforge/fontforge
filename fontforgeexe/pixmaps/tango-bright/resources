@@ -359,8 +359,10 @@ Gdraw.GScrollBarThumb.Box.Radius: 10
 
 Gdraw.GTabSet.Box.BorderShape: rect
 Gdraw.GTabSet.Box.BorderWidth: 0
-Gdraw.GTabSet.Box.BorderOuter: True
-Gdraw.GTabSet.Box.BorderOuterCol: #84898c
+Gdraw.GTabSet.Box.BorderInner: True
+Gdraw.GTabSet.Box.BorderInnerCol: #84898c
+Gdraw.GTabSet.Box.Radius: 0
+
 
 
 Gdraw.GVTabSet.Box.DoDepressedBackground: True

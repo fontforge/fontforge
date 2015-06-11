@@ -1,0 +1,400 @@
+fontforge.CharView.Hotkey.Tool.SpiroG4: '
+fontforge.CharView.Hotkey.Tool.SpiroCorner: \
+fontforge.CharView.Hotkey.Tool.SpiroLeft: [
+fontforge.CharView.Hotkey.Tool.SpiroRight: ]
+fontforge.CharView.Hotkey.Tool.Freehand:
+fontforge.CharView.Hotkey.Tool.Hand: h
+fontforge.CharView.Hotkey.Tool.Pen: p
+fontforge.CharView.Hotkey.Tool.PointCurve: q
+fontforge.CharView.Hotkey.Tool.PointHVCurve: w
+fontforge.CharView.Hotkey.Tool.PointTangent: t
+fontforge.CharView.Hotkey.Tool.PointCorner: a
+fontforge.CharView.Hotkey.Tool.Pointer: v
+fontforge.CharView.Hotkey.Tool.Ruler: m
+fontforge.CharView.Hotkey.Tool.Knife: k
+fontforge.CharView.Hotkey.Tool.Zoom: c
+fontforge.CharView.Hotkey.Zoom.Out: x
+fontforge.CharView.Hotkey.Zoom.In: z
+
+
+fontforge.CharView.Hotkey.Show.Tab0: 1
+fontforge.CharView.Hotkey.Show.Tab1: 2
+fontforge.CharView.Hotkey.Show.Tab2: 3
+fontforge.CharView.Hotkey.Show.Tab3: 4
+fontforge.CharView.Hotkey.Show.Tab4: 5
+fontforge.CharView.Hotkey.Show.Tab5: 6
+fontforge.CharView.Hotkey.Show.Tab6: 7
+fontforge.CharView.Hotkey.Show.Tab7: 8
+fontforge.CharView.Hotkey.Show.Tab8: 9
+fontforge.CharView.Hotkey.Show.Tab9: 0
+
+
+fontforge.CharView.PointColor: #3d4143
+fontforge.CharView.FirstPointColor: #3d4143
+fontforge.CharView.SelectedPointColor: #c0433e
+fontforge.CharView.SelectedPointWidth: 2
+fontforge.CharView.ExtremePointColor: #3d4143
+fontforge.CharView.PointOfInflectionColor: #3d4143
+fontforge.CharView.AlmostHVColor: #2aa198
+fontforge.CharView.NextCPColor: #52910d
+fontforge.CharView.PrevCPColor: #3d4143
+fontforge.CharView.SelectedCPColor: #ffffff
+fontforge.CharView.CoordinateLineColor: #808080
+fontforge.CharView.ItalicCoordColor: #969b9e
+fontforge.CharView.MetricsLabelColor: #969b9e
+fontforge.CharView.HintLabelColor: #c1e0f8
+fontforge.CharView.BlueValuesStippledColor: #feffffff
+fontforge.CharView.FamilyBlueStippledColor: #feffffff
+fontforge.CharView.DHintColor: #fec1e0f8
+fontforge.CharView.HHintColor: #feb5d6b2
+fontforge.CharView.VHintColor: #fec1e0f8
+fontforge.CharView.HFlexHintColor: #52910d
+fontforge.CharView.VFlexHintColor: #52910d
+fontforge.CharView.ConflictHintColor: #c0433e
+fontforge.CharView.HHintActiveColor: #52910d
+fontforge.CharView.VHintActiveColor: #3669a2
+fontforge.CharView.DraggingComparisonOutlineColor: #fec0433e
+fontforge.CharView.DraggingComparisonAlphaChannelOverride: #fec0433e
+
+
+fontforge.CharView.WidthColor: #969b9e
+fontforge.CharView.WidthSelColor: #c0433e
+fontforge.CharView.LBearingSelColor: #c0433e
+fontforge.CharView.GridFitWidthColor: #52910d
+fontforge.CharView.LigatureCaretColor: #c3971d
+fontforge.CharView.AnchorColor: #3d4143
+fontforge.CharView.AnchoredOutlineColor: #3d4143
+fontforge.CharView.TemplateOutlineColor: #3d4143
+fontforge.CharView.OldOutlineColor: #c0433e
+fontforge.CharView.TransformOriginColor: #c0433e
+fontforge.CharView.GuideOutlineColor: #969b9e
+fontforge.CharView.GridFitOutlineColor: #52910d
+fontforge.CharView.BackgroundOutlineColor: #52910d
+fontforge.CharView.ForegroundOutlineColor: #3d4143
+fontforge.CharView.BackgroundThickOutlineColor: #fe52910d
+fontforge.CharView.ForegroundThickOutlineColor: #fe3d4143
+fontforge.CharView.ClipPathColor: #3669a2
+fontforge.CharView.OpenPathColor: #c0433e
+fontforge.CharView.BackgroundImageColor: #fe3d4143
+fontforge.CharView.FillColor: #fe969b9e
+fontforge.CharView.PreviewFillColor: #fe0c0d0d
+fontforge.CharView.TraceColor: #c0433e
+fontforge.CharView.RasterColor: #fee6e6e6
+fontforge.CharView.RasterNewColor: #fee6e6e6
+fontforge.CharView.RasterOldColor: #fee6e6e6
+fontforge.CharView.RasterGridColor: #fee6e6e6
+fontforge.CharView.RasterDarkColor: #fe3d4143
+fontforge.CharView.DeltaGridColor: #e6e6e6
+fontforge.CharView.RulerBigTickColor: #52910d
+fontforge.CharView.MeasureToolLineColor: #3d4143
+fontforge.CharView.MeasureToolPointColor: #c0433e
+fontforge.CharView.MeasureToolPointSnappedColor: #52910d
+fontforge.CharView.MeasureToolCanvasNumbersColor: #3d4143
+fontforge.CharView.MeasureToolCanvasNumbersSnappedColor: #52910d
+fontforge.CharView.MeasureToolWindowForeground: #3d4143
+fontforge.CharView.MeasureToolWindowBackground: #e6e6e6
+
+
+Gdraw.Background: #000000
+Gdraw.Foreground: #FFFFFF
+
+
+Gdraw.GProgress.Background: #e6e6e6
+Gdraw.GProgress.FillColor: #3669a2
+Gdraw.GProgress.Foreground: #3d4143
+Gdraw.GProgress.Font: 400 10pt Clear Sans
+
+
+Gdraw.GGadget.Box.ActiveBorder: #c1e0f8
+Gdraw.GGadget.Box.ActiveInner: False
+Gdraw.GGadget.Box.BorderBrighter: #e6e6e6
+Gdraw.GGadget.Box.BorderBrightest: #e6e6e6
+Gdraw.GGadget.Box.BorderDarker: #e6e6e6
+Gdraw.GGadget.Box.BorderDarkest: #e6e6e6
+Gdraw.GGadget.Box.BorderInner: False
+Gdraw.GGadget.Box.BorderInnerCol: #e6e6e6
+Gdraw.GGadget.Box.BorderOuter: False
+Gdraw.GGadget.Box.BorderOuterCol: #84898c
+Gdraw.GGadget.Box.BorderShape: rect
+Gdraw.GGadget.Box.BorderType: none
+Gdraw.GGadget.Box.BorderWidth: 0
+Gdraw.GGadget.Box.DisabledBackground: #e6e6e6
+Gdraw.GGadget.Box.DisabledForeground: #949596
+Gdraw.GGadget.Box.DoDepressedBackground: False
+Gdraw.GGadget.Box.DrawDefault: False
+Gdraw.GGadget.Box.GradientBG: False
+Gdraw.GGadget.Box.GradientStartCol: #e6e6e6
+Gdraw.GGadget.Box.NormalBackground: #e6e6e6
+Gdraw.GGadget.Box.NormalForeground: #3d4143
+Gdraw.GGadget.Box.Padding: 2
+Gdraw.GGadget.Box.PressedBackground: #e6e6e6
+Gdraw.GGadget.Box.Radius: 0
+Gdraw.GGadget.Box.ShadowOuter: False
+
+
+Gdraw.GGadget.Font: 400 10pt Clear Sans
+Gdraw.GGadget.TextImageSkip: 4
+Gdraw.GGadget.ImagePath: ~/.FontForge/tango-ct.theme:~/.FontForge/tango-ct.theme/tango:/Applications/FontForge.app/Contents/Resources/opt/local/share/fontforge/pixmaps/:=
+
+
+Gdraw.GGadget.Popup.Background: #e6e6e6
+Gdraw.GGadget.Popup.Foreground: #3d4143
+Gdraw.GGadget.Popup.Delay: 600
+Gdraw.GGadget.Popup.LifeTime: 20000
+Gdraw.GGadget.Popup.Font: 400 10pt Clear Sans
+
+
+Gdraw.GButton.Box.BorderInner: False
+Gdraw.GButton.Box.BorderInnerCol: #e6e6e6
+Gdraw.GButton.Box.BorderOuter: True
+Gdraw.GButton.Box.BorderOuterCol: #84898c
+Gdraw.GButton.Box.BorderShape: rect
+Gdraw.GButton.Box.BorderType: none
+Gdraw.GButton.Box.BorderWidth: 0
+Gdraw.GButton.Box.DisabledBackground: #ffffff
+Gdraw.GButton.Box.DoDepressedBackground: True
+Gdraw.GButton.Box.DrawDefault: False
+Gdraw.GButton.Box.GradientBG: False
+Gdraw.GButton.Box.NormalBackground: #ffffff
+Gdraw.GButton.Box.Padding: 2
+Gdraw.GButton.Box.Radius: 3
+Gdraw.GButton.Font: 400 10pt Clear Sans
+Gdraw.GButton.ShiftOnPress: False
+
+
+Gdraw.GDefaultButton.Box.BorderOuter: True
+Gdraw.GDefaultButton.Box.BorderOuterCol: #132743
+Gdraw.GDefaultButton.Box.DoDepressedBackground: True
+Gdraw.GDefaultButton.Box.GradientBG: False
+Gdraw.GDefaultButton.Box.NormalBackground: #3669a2
+Gdraw.GDefaultButton.Box.NormalForeground: #ffffff
+Gdraw.GDefaultButton.Box.PressedBackground: #294f7a
+
+
+Gdraw.GCancelButton.Box.BorderOuter: True
+Gdraw.GCancelButton.Box.BorderOuterCol: #611a1a
+Gdraw.GCancelButton.Box.DoDepressedBackground: True
+Gdraw.GCancelButton.Box.GradientBG: False
+Gdraw.GCancelButton.Box.NormalForeground: #ffffff
+Gdraw.GCancelButton.Box.NormalBackground: #c0433e
+Gdraw.GCancelButton.Box.PressedBackground: #9a3532
+
+
+Gdraw.GColorButton.Box.BorderOuter: True
+Gdraw.GColorButton.Box.DoDepressedBackground: True
+
+
+Gdraw.GDropList.Box.BorderOuter: True
+Gdraw.GDropList.Box.DoDepressedBackground: True
+Gdraw.GDropList.Box.BorderShape: rect
+Gdraw.GDropList.Box.BorderType: none
+Gdraw.GDropList.Box.BorderWidth: 0
+
+
+Gdraw.GRadio.Box.BorderType: none
+Gdraw.GRadio.Box.Padding: 2
+Gdraw.GRadio.Font: 400 10pt Clear Sans
+
+
+Gdraw.GRadioOn.Box.BorderShape: rect
+Gdraw.GRadioOn.Box.BorderType: none
+Gdraw.GRadioOn.Box.BorderWidth: 0
+Gdraw.GRadioOn.Box.DoDepressedBackground: False
+Gdraw.GRadioOn.Box.Padding: 0
+Gdraw.GRadioOn.Image: radio_on.png
+Gdraw.GRadioOn.DisabledImage: radio_on.png
+
+
+Gdraw.GRadioOff.Box.BorderShape: rect
+Gdraw.GRadioOff.Box.BorderType: none
+Gdraw.GRadioOff.Box.BorderWidth: 0
+Gdraw.GRadioOff.Box.DoDepressedBackground: False
+Gdraw.GRadioOff.Box.Padding: 0
+Gdraw.GRadioOff.Image: radio_off.png
+Gdraw.GRadioOff.DisabledImage: radio_off.png
+
+
+Gdraw.GCheckBox.Box.BorderType: none
+Gdraw.GCheckBox.Box.Padding: 2
+Gdraw.GCheckBox.Font: 400 10pt Clear Sans
+
+
+Gdraw.GCheckBoxOn.Box.BorderShape: rect
+Gdraw.GCheckBoxOn.Box.BorderType: none
+Gdraw.GCheckBoxOn.Box.DoDepressedBackground: False
+Gdraw.GCheckBoxOn.Box.Padding: 0
+Gdraw.GCheckBoxOn.Image: check_on.png
+Gdraw.GCheckBoxOn.DisabledImage: check_on.png
+
+
+Gdraw.GCheckBoxOff.Box.BorderShape: rect
+Gdraw.GCheckBoxOff.Box.BorderType: none
+Gdraw.GCheckBoxOff.Box.DoDepressedBackground: False
+Gdraw.GCheckBoxOff.Box.Padding: 0
+Gdraw.GCheckBoxOff.DisabledImage: check_off.png
+Gdraw.GCheckBoxOff.Image: check_off.png
+
+
+Gdraw.GTextField.Box.BorderInner: False
+Gdraw.GTextField.Box.BorderOuter: True
+Gdraw.GTextField.Box.BorderShape: rect
+Gdraw.GTextField.Box.NormalBackground: #ffffff
+Gdraw.GTextField.Box.Padding: 2
+Gdraw.GTextField.Font: 400 10pt Clear Sans
+
+
+Gdraw.GComboBox.Box.BorderOuter: True
+
+
+Gdraw.GComboBoxMenu.Box.BorderOuter: True
+Gdraw.GComboBoxMenu.Box.Padding: 1
+
+
+Gdraw.GNumericFieldSpinner.Box.BorderType: none
+Gdraw.GNumericFieldSpinner.Box.BorderWidth: 0
+Gdraw.GNumericFieldSpinner.Box.Padding: 2
+
+
+Gdraw.GList.Box.BorderOuter: True
+Gdraw.GList.Box.NormalBackground: #ffffff
+Gdraw.GList.Font: 400 10pt Clear Sans
+
+
+Gdraw.GListMark.Box.BorderInner: True
+Gdraw.GListMark.Box.BorderInnerCol: #adacab
+Gdraw.GListMark.Box.BorderWidth: 0
+Gdraw.GListMark.Box.NormalBackground: #e5e4e3
+Gdraw.GListMark.Box.Padding: 2
+Gdraw.GListMark.DisabledImage: downarrow.png
+Gdraw.GListMark.Image: downarrow.png
+Gdraw.GListMark.Width: 8
+
+
+Gdraw.GDrawable.Box.BorderType: none
+Gdraw.GDrawable.Box.BorderWidth: 0
+Gdraw.GDrawable.Box.Padding: 2
+
+
+Gdraw.GGroup.Box.NormalBackground: #e6e6e6
+Gdraw.GGroup.Box.DisabledBackground: #ffffff
+Gdraw.GGroup.Box.BorderType: none
+Gdraw.GGroup.Box.BorderShape: rect
+Gdraw.GGroup.Box.Padding: 2
+
+
+Gdraw.GLabel.Box.BorderType: none
+Gdraw.GLabel.Box.BorderWidth: 0
+Gdraw.GLabel.Box.Padding: 2
+Gdraw.GLabel.Font: 400 10pt Clear Sans
+
+
+Gdraw.GLine.Box.NormalForeground: #e6e6e6
+Gdraw.GLine.Box.BorderType: none
+Gdraw.GLine.Box.BorderShape: rect
+Gdraw.GLine.Box.Padding: 2
+
+
+Gdraw.GMatrixEdit.ActiveBG: #88b2de
+Gdraw.GMatrixEdit.ActiveCol: #3465a4
+Gdraw.GMatrixEdit.Box.NormalBackground: #e6e6e6
+Gdraw.GMatrixEdit.Box.DisabledBackground: #ffffff
+Gdraw.GMatrixEdit.Box.BorderType: none
+Gdraw.GMatrixEdit.Box.BorderShape: rect
+Gdraw.GMatrixEdit.Box.BorderWidth: 0
+Gdraw.GMatrixEdit.Box.Padding: 2
+Gdraw.GMatrixEdit.Font: 400 10pt Clear Sans
+
+
+Gdraw.GMatrixEdit.TitleBG: #969b9e
+Gdraw.GMatrixEdit.TitleFG: #ffffff
+Gdraw.GMatrixEdit.TitleDivider: #969b9e
+Gdraw.GMatrixEdit.RuleCol: #969b9e
+Gdraw.GMatrixEdit.FrozenCol: #c0433e
+Gdraw.GMatrixEdit.ActiveCol: #3d4143
+Gdraw.GMatrixEdit.ActiveBG: #c1e0f8
+Gdraw.GMatrixEdit.TitleFont: 400 10pt Clear Sans
+
+
+Gdraw.GMenu.Box.BorderOuter: False
+Gdraw.GMenu.Box.DisabledForeground: #b2b3b3
+Gdraw.GMenu.Box.NormalBackground: #ffffff
+Gdraw.GMenu.Box.DisabledBackground: #f9f9f9
+Gdraw.GMenu.Box.BorderBrightest: #84898c
+Gdraw.GMenu.Box.BorderDarker: #84898c
+Gdraw.GMenu.Box.BorderDarkest: #84898c
+Gdraw.GMenu.Box.BorderType: raised
+Gdraw.GMenu.Box.BorderShape: roundrect
+Gdraw.GMenu.Box.BorderWidth: 1
+Gdraw.GMenu.Box.Padding: 2
+Gdraw.GMenu.Box.Radius: 1
+Gdraw.GMenu.Font: 400 10pt Clear Sans
+Gdraw.GMenu.MacIcons: False
+
+
+Gdraw.GMenuBar.Box.BorderOuter: False
+Gdraw.GMenuBar.Box.ActiveBorder: #ffffff
+Gdraw.GMenuBar.Box.BorderShape: rect
+Gdraw.GMenuBar.Box.BorderWidth: 0
+Gdraw.GMenuBar.Font: 400 10pt Clear Sans
+
+
+Gdraw.GScrollBar.Box.BorderOuter: False
+Gdraw.GScrollBar.Box.NormalBackground: #e6e6e6
+Gdraw.GScrollBar.Box.BorderOuterCol: #e6e6e6
+Gdraw.GScrollBar.Box.BorderType: none
+Gdraw.GScrollBar.Box.BorderWidth: 0
+Gdraw.GScrollBar.Box.Padding: 4
+
+
+Gdraw.GScrollBarThumb.Box.NormalBackground: #3d4143
+Gdraw.GScrollBarThumb.Box.BorderBrightest: #3d4143
+Gdraw.GScrollBarThumb.Box.BorderBrighter: #3d4143
+Gdraw.GScrollBarThumb.Box.BorderDarker: #3d4143
+Gdraw.GScrollBarThumb.Box.BorderDarkest: #3d4143
+Gdraw.GScrollBarThumb.Box.BorderShape: roundrect
+Gdraw.GScrollBarThumb.Box.BorderWidth: 0
+Gdraw.GScrollBarThumb.Box.Padding: 2
+Gdraw.GScrollBarThumb.Box.Radius: 10
+
+
+Gdraw.GTabSet.Box.BorderShape: rect
+Gdraw.GTabSet.Box.BorderWidth: 0
+Gdraw.GTabSet.Box.BorderInner: True
+Gdraw.GTabSet.Box.BorderInnerCol: #84898c
+Gdraw.GTabSet.Box.Radius: 0
+
+
+
+Gdraw.GVTabSet.Box.DoDepressedBackground: True
+Gdraw.GVTabSet.Box.PressedBackground: #ffffff
+Gdraw.GVTabSet.Box.Padding: 0
+
+
+fontforge.FontView.GlyphInfoColor: #3669a2
+fontforge.FontView.EmptySlotFgColor: #a0a6aa
+fontforge.FontView.SelectedColor: #c1e0f8
+fontforge.FontView.SelectedFgColor: #242728
+fontforge.FontView.ChangedColor: #a6cfa3
+fontforge.FontView.HintingNeededColor: #c0433e
+fontforge.FontView.FontSize: 12
+fontforge.FontView.FontFamily: Font View, DejaVu Sans, monospace, unifont
+fontforge.FontView.SerifFamily: dejavu serif,times,caslon,serif,clearlyu,unifont
+fontforge.FontView.ScriptFamily: script,formalscript,serif
+fontforge.FontView.DoubleStruckFamily: doublestruck,serif
+fontforge.FontView.FrakturFamily: fraktur,serif
+fontforge.FontView.MonoFamily: dejavu sans mono,courier,monospace,clearlyu,unifont
+fontforge.FontView.SansFamily: dejavu sans,helvetica,caliban,sans,clearlyu,unifont
+
+
+fontforge.MetricsView.AdvanceWidthColor: #3d4143
+fontforge.MetricsView.ItalicAdvanceColor: #3d4143
+fontforge.MetricsView.KernLineColor: #52910d
+fontforge.MetricsView.SideBearingLineColor: #3669a2
+fontforge.MetricsView.SelectedGlyphColor: #c1e0f8
+
+
+fontforge.View.Background: #ffffff
+
+
+Gdraw.GVisibilityBoxOn.Image:visiblility_on.png
+Gdraw.GVisibilityBoxOff.Image:visiblility_off.png
