@@ -1587,7 +1587,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 		SFDDumpPattern(sfd,"StrokePattern:", sc->layers[i].stroke_pen.brush.pattern );
 	} else {
 	    if ( sc->layers[i].images==NULL && sc->layers[i].splines==NULL &&
-		    sc->layers[i].refs==NULL && sc->layers[i].validation_state&vs_known == 0 &&
+		    sc->layers[i].refs==NULL && (sc->layers[i].validation_state&vs_known) == 0 &&
 		    sc->layers[i].python_persistent == NULL)
     continue;
 	    if ( i==ly_back )
@@ -7497,8 +7497,8 @@ bool SFD_GetFontMetaData( FILE *sfd,
     /* Legacy attribute for StyleMapFamilyName. Deprecated. */
     else if ( strmatch(tok,"OS2FamilyName:")==0 )
     {
-    char* fname = SFDReadUTF7Str(sfd);
-    if (sf->styleMapFamilyName == NULL) sf->styleMapFamilyName = fname;
+    if (sf->styleMapFamilyName == NULL)
+        sf->styleMapFamilyName = SFDReadUTF7Str(sfd);
     }
     else if ( strmatch(tok,"FONDName:")==0 )
     {
