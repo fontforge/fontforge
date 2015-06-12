@@ -129,7 +129,7 @@ export PATH=${PATH}:/usr/local/opt/gettext/bin
 
 ## On Mac OS X with Homebrew
 
-Homebrew no longer packages FontForge with a UI.
+Homebrew no longer packages FontForge with a UI, but the release GUI app bundles are available from Cask. 
 You can install FontForge from the current github source code using a package manager, such as MacPorts or Fink. 
 
 Here is how to install FontForge without a UI:
@@ -145,6 +145,7 @@ brew doctor
 ```
 brew install python gettext libpng jpeg libtiff giflib cairo pango libspiro czmq fontconfig automake libtool pkg-config glib pango
 ```
+
 **Install the latest release or build from source**  
 Release:
 ```
@@ -157,3 +158,9 @@ brew install -v --debug --with-giflib --with-libspiro fontforge --HEAD
 
 If this does not work, please [file an issue](When_Things_Go_Wrong_With_Fontforge_Itself)
 
+To install the UI with Cask:
+
+```
+brew tap caskroom/cask; # Install cask
+brew cask install fontforge; # Install fontforge
+```
