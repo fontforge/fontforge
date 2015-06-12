@@ -3581,12 +3581,12 @@ return( NULL );
     xmlFreeDoc(doc);
 
     if ( sf!=NULL ) {
-	struct stat b;
+	GStatBuf b;
 	sf->layers[ly_fore].order2 = sf->layers[ly_back].order2 = sf->grid.order2 =
 		SFFindOrder(sf);
 	SFSetOrder(sf,sf->layers[ly_fore].order2);
 	sf->chosenname = chosenname;
-	if ( stat(filename,&b)!=-1 ) {
+	if ( g_stat(filename,&b)!=-1 ) {
 	    sf->modificationtime = b.st_mtime;
 	    sf->creationtime = b.st_mtime;
 	}

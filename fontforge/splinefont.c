@@ -899,7 +899,7 @@ static char *ForceFileToHaveName(FILE *file, char *exten) {
 	sprintf( tmpfilename, P_tmpdir "/fontforge%d-%d", getpid(), try++ );
 	if ( exten!=NULL )
 	    strcat(tmpfilename,exten);
-	if ( access( tmpfilename, F_OK )==-1 &&
+	if ( !GFileExists(tmpfilename) &&
 		(newfile = fopen(tmpfilename,"w"))!=NULL ) {
 	    char buffer[1024];
 	    int len;
@@ -978,7 +978,7 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
 		    char *spuriousname = ForceFileToHaveName(file,archivers[i].ext);
 		    strippedname = Unarchive(spuriousname,&archivedir);
 		    fclose(file); file = NULL;
-		    unlink(spuriousname); free(spuriousname);
+		    g_unlink(spuriousname); free(spuriousname);
 		} else
 		    strippedname = Unarchive(strippedname,&archivedir);
 		if ( strippedname==NULL )
@@ -1008,7 +1008,7 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
 	    char *spuriousname = ForceFileToHaveName(file,compressors[i].ext);
 	    tmpfile = Decompress(spuriousname,i);
 	    fclose(file); file = NULL;
-	    unlink(spuriousname); free(spuriousname);
+	    g_unlink(spuriousname); free(spuriousname);
 	} else
 	    tmpfile = Decompress(strippedname,i);
 	if ( tmpfile!=NULL ) {
@@ -1032,9 +1032,9 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
     strncpy(ubuf,_("Loading font from "),sizeof(ubuf)-1);
     len = strlen(ubuf);
     if ( !wasurl || i==-1 )	/* If it wasn't compressed, or it wasn't an url, then the fullname is reasonable, else use the original name */
-	    strncat(ubuf,temp = def2utf8_copy(GFileNameTail(fullname)),100);
+	    strncat(ubuf,temp = fsys2utf8_copy(GFileNameTail(fullname)),100);
     else
-	    strncat(ubuf,temp = def2utf8_copy(GFileNameTail(fname)),100);
+	    strncat(ubuf,temp = fsys2utf8_copy(GFileNameTail(fname)),100);
     free(temp);
     ubuf[100+len] = '\0';
     ff_progress_start_indicator(FontViewFirst()==NULL?0:10,_("Loading..."),ubuf,_("Reading Glyphs"),0,1);
@@ -1124,7 +1124,7 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
 	    else {
 		char *spuriousname = ForceFileToHaveName(file,NULL);
 		sf = SFReadSVG(spuriousname,0);
-		unlink(spuriousname); free(spuriousname);
+		g_unlink(spuriousname); free(spuriousname);
 	    }
 	    checked = 'S';
 	} else if ( ch1=='S' && ch2=='p' && ch3=='l' && ch4=='i' ) {
@@ -1247,7 +1247,7 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
     if ( fullname!=fname && fullname!=strippedname )
 	    free(fullname);
     if ( tmpfile!=NULL ) {
-	    unlink(tmpfile);
+	    g_unlink(tmpfile);
 	    free(tmpfile);
     }
     if ( wasarchived )

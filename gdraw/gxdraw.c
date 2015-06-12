@@ -25,9 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if defined(__MINGW32__)
-#include <winsock2.h>
-#include <windows.h>
+#ifdef __MINGW32__
+# include <winsock2.h>
+# include <windows.h>
 #endif
  
 #include "gxdrawP.h"
@@ -35,19 +35,14 @@
 
 #include <stdlib.h>
 #include <math.h>
-
-#if !defined(__MINGW32__)
-#include <unistd.h>		/* for timers & select */
-#endif
-#include <sys/types.h>		/* for timers & select */
-#include <sys/time.h>		/* for timers & select */
 #include <signal.h>		/* error handler */
 #include <locale.h>		/* for setting the X locale properly */
 
-#ifdef HAVE_PTHREAD_H
-# ifndef __MINGW32__
+#include <sys/time.h>		/* for timers & select */
+#ifndef __MINGW32__
+# include <sys/select.h>	/* for timers & select */
+# ifdef HAVE_PTHREAD_H
 #  include <sys/socket.h>
-#  include <sys/un.h>
 # endif
 #endif
 
@@ -55,6 +50,12 @@
 #include <utype.h>
 #include "fontP.h"
 #include <gresource.h>
+
+/* Hack to get around gnulib. */
+#ifdef __MINGW32__
+# undef gettimeofday
+# undef timeval
+#endif
 
 enum cm_type { cmt_default=-1, cmt_current, cmt_copy, cmt_private };
 

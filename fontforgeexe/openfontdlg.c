@@ -544,7 +544,7 @@ return( pos!=-1 );
     ufile = GFileChooserFileNameOfPos(d->gfc,pos);
     if ( ufile==NULL )
 return( true );
-    file = u2def_copy(ufile);
+    file = u2fsys_copy(ufile);
     free(ufile);
 
     fontnames = GetFontNames(file, 0);

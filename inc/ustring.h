@@ -130,6 +130,7 @@ extern void       utf82u_strcat(unichar_t *ubuf,const char *utf8buf);
 extern unichar_t *utf82u_copyn(const char *utf8buf,int len);
 extern unichar_t *utf82u_copy(const char *utf8buf);
 extern char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf);
+extern char *u2utf8_strncpy(char *to, const unichar_t *ufrom, size_t n);
 extern char *u2utf8_copy(const unichar_t *ubuf);
 extern char *u2utf8_copyn(const unichar_t *ubuf,int len);
 extern unichar_t *encoding2u_strncpy(unichar_t *uto, const char *from, int n, enum encoding cs);
@@ -138,6 +139,13 @@ extern unichar_t *def2u_strncpy(unichar_t *uto, const char *from, size_t n);
 extern char *u2def_strncpy(char *to, const unichar_t *ufrom, size_t n);
 extern unichar_t *def2u_copy(const char *from);
 extern char *u2def_copy(const unichar_t *ufrom);
+
+extern unichar_t *fsys2u_strncpy(unichar_t *uto, const char *from, size_t n);
+extern char *u2fsys_strncpy(char *to, const unichar_t *ufrom, size_t n);
+extern unichar_t *fsys2u_copy(const char *from);
+extern char *u2fsys_copy(const unichar_t *ufrom);
+extern char *fsys2utf8_copy(const char *from);
+extern char *utf82fsys_copy(const char *ufrom);
 
 extern int uAllAscii(const unichar_t *str);
 extern int AllAscii(const char *);

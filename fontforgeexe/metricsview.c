@@ -3978,7 +3978,7 @@ static void ellistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    mi->ti.disabled = !anybuildable;
 	  break;
 	  case MID_Autotrace:
-	    mi->ti.disabled = !(FindAutoTraceName()!=NULL && sc!=NULL &&
+	    mi->ti.disabled = !(FindAutoTrace(NULL, 0) >= 0 && sc!=NULL &&
 		    sc->layers[ly_back].images!=NULL );
 	  break;
 	}

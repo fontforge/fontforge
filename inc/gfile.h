@@ -27,14 +27,20 @@
 #ifndef _GFILE_H
 #define _GFILE_H
 
+/* Macro to add on '.exe' to a program name, if necessary. */
+#ifdef __MINGW32__
+# define GFILE_PROGRAMIFY(x) (x ".exe")
+#else
+# define GFILE_PROGRAMIFY(x) (x)
+#endif
+
 /* For mode_t */
 #include <sys/types.h>
 
 /* home directories for fontforge */
 enum { Cache, Config, Data };
 
-int mkdir_p(const char *path, mode_t mode);
-char *smprintf(const char *fmt, ...);
+extern int GFileCheckGlibSpawnStatus(int status);
 
 extern char *GFileNormalizePath(char *path);
 extern unichar_t *u_GFileNormalizePath(unichar_t *path);
@@ -45,7 +51,7 @@ extern unichar_t* u_GFileGetHomeDir(void);
 extern char *GFileRemoveExtension(char *path);
 extern char *GFileGetAbsoluteName(const char *name, char *result, size_t rsiz);
 extern char *GFileMakeAbsoluteName(char *name);
-extern char *GFileBuildName(char *dir,char *fname,char *buffer,size_t size);
+extern char *GFileBuildName(const char *dir, const char *fname, char *buffer, size_t size);
 extern char *GFileReplaceName(char *oldname,char *fname,char *buffer,size_t size);
 /**
  * Return the file name for the full path 'path'. This is like the
@@ -67,12 +73,9 @@ extern int GFileIsDir(const char *file);
  * Returns true if the file exists
  */
 extern int GFileExists(const char *file);
-extern int GFileModifyable(const char *file);
-extern int GFileModifyableDir(const char *file);
+extern int GFileProgramExists(const char *prog);
 extern int GFileReadable(const char *file);
 extern int GFileMkDir(const char *name);
-extern int GFileRmDir(const char *name);
-extern int GFileUnlink(const char *name);
 extern char *_GFile_find_program_dir(char *prog);
 extern unichar_t *u_GFileGetAbsoluteName(unichar_t *name, unichar_t *result, int rsiz);
 extern unichar_t *u_GFileBuildName(unichar_t *dir,unichar_t *fname,unichar_t *buffer,int size);
@@ -83,12 +86,8 @@ extern unichar_t *u_GFileAppendFile(unichar_t *dir,unichar_t *name,int isdir);
 extern int u_GFileIsAbsolute(const unichar_t *file);
 extern int u_GFileIsDir(const unichar_t *file);
 extern int u_GFileExists(const unichar_t *file);
-extern int u_GFileModifyable(const unichar_t *file);
-extern int u_GFileModifyableDir(const unichar_t *file);
 extern int u_GFileReadable(unichar_t *file);
 extern int u_GFileMkDir(unichar_t *name);
-extern int u_GFileRmDir(unichar_t *name);
-extern int u_GFileUnlink(unichar_t *name);
 extern off_t GFileGetSize(char *name);
 extern char *GFileReadAll(char *name);
 extern int   GFileWriteAll(char *filepath, char *data);
@@ -136,9 +135,5 @@ extern char *GFileDirName(const char *path);
  * The return value must NOT be freed.
  **/
 extern char* getLibexecDir_NonWindows(void);
-
-
-
-
 
 #endif

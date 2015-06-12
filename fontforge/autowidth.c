@@ -1086,7 +1086,7 @@ int AW_ReadKernPairFile(char *fn,WidthInfo *wi) {
     unichar_t buffer[300];
     struct kernsets ks;
 
-    filename = utf82def_copy(fn);
+    filename = utf82fsys_copy(fn);
     file = fopen(filename,"r");
     free( filename );
     if ( file==NULL ) {

@@ -1466,7 +1466,7 @@ return( false );
     ((FInfo *) (info.finderInfo))->fdType = mb->type;
     ((FInfo *) (info.finderInfo))->fdCreator = mb->creator;
     pt = strrchr(fname,'/');
-    filename = def2u_copy(pt==NULL?fname:pt+1);
+    filename = fsys2u_copy(pt==NULL?fname:pt+1);
     { UniChar *ucs2fn = malloc((u_strlen(filename)+1) * sizeof(UniChar));
       int i;
 	for ( i=0; filename[i]!=0; ++i )

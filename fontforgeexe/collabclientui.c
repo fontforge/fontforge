@@ -432,9 +432,8 @@ static void collab_sessioncallbacks_init (CollabSessionCallbacks *self) {}
 
 static void
 collab_sessioncallbacks_class_init (CollabSessionCallbacksClass *klass)
-{
-    GType argtypes[] = { G_TYPE_POINTER, NULL };
-    
+{  
+    GType args[] = {G_TYPE_POINTER};
     g_signal_newv ("joining",
 		   (collab_sessioncallbacks_get_type ()),
 		   G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
@@ -444,7 +443,7 @@ collab_sessioncallbacks_class_init (CollabSessionCallbacksClass *klass)
 		   g_cclosure_marshal_VOID__POINTER,
 		   G_TYPE_NONE /* return_type */,
 		   1           /* n_params */,
-		   argtypes    /* param_types */);
+		   args        /* param_types */);
     g_signal_newv ("leaving",
 		   (collab_sessioncallbacks_get_type ()),
 		   G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
@@ -454,7 +453,7 @@ collab_sessioncallbacks_class_init (CollabSessionCallbacksClass *klass)
 		   g_cclosure_marshal_VOID__POINTER,
 			 G_TYPE_NONE /* return_type */,
 		   1           /* n_params */,
-		   argtypes    /* param_types */);
+		   args        /* param_types */);
 }
 
 G_DEFINE_TYPE (CollabSessionCallbacks, collab_sessioncallbacks, G_TYPE_OBJECT)
@@ -471,30 +470,31 @@ gpointer getSessionCallbacksObject()
 void collabclient_notifySessionJoining( cloneclient_t *cc, FontViewBase* fv )
 {
 #ifdef BUILD_COLLAB
-    
-    printf("AAA collabclient_notifySessionJoining() fv:%p\n", fv);
-    g_signal_emit_by_name( getSessionCallbacksObject(), "joining", fv );
-    
+    if (cc) {
+        printf("AAA collabclient_notifySessionJoining() fv:%p\n", fv);
+        g_signal_emit_by_name( getSessionCallbacksObject(), "joining", fv );
+    }
 #endif    
 }
 void collabclient_notifySessionLeaving( cloneclient_t *cc, FontViewBase* fv )
 {
 #ifdef BUILD_COLLAB
-    
-    cc->sessionIsClosing = 1;
-    g_signal_emit_by_name( getSessionCallbacksObject(), "leaving", fv );
+    if (cc) {
+        cc->sessionIsClosing = 1;
+        g_signal_emit_by_name( getSessionCallbacksObject(), "leaving", fv );
+    }
 
 #endif
 }
 void collabclient_addSessionJoiningCallback( collabclient_notification_cb func )
 {
     void* data = 0;
-    g_signal_connect( getSessionCallbacksObject(), "joining", (GCallback)func, data );
+    g_signal_connect( getSessionCallbacksObject(), "joining", G_CALLBACK(func), data );
 }
 void collabclient_addSessionLeavingCallback( collabclient_notification_cb func )
 {
     void* data = 0;
-    g_signal_connect( getSessionCallbacksObject(), "leaving", (GCallback)func, data );
+    g_signal_connect( getSessionCallbacksObject(), "leaving", G_CALLBACK(func), data );
 }
 
 
@@ -950,7 +950,7 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
 	printf("connecting to server...4 sfd:%p\n", sfd );
 	collabclient_sendSFD( cc, sfd, fv->b.sf->collab_uuid, fv->b.sf->fontname );
     }
-    GFileUnlink(filename);
+    g_unlink(filename);
     printf("connecting to server...sent the sfd for session start.\n");
     fv->b.collabState = cs_server;
     FVTitleUpdate( &fv->b );

@@ -2086,7 +2086,7 @@ FILE* MakeTemporaryFile(void) {
     fd = g_mkstemp( template );
     printf("MakeTemporaryFile() fd:%d template:%s\n", fd, template );
     if ( (ret=fdopen(fd,"rw+"))==NULL ) ret=0;
-    unlink( template );
+    g_unlink( template );
     return ret;
 }
 
@@ -2983,26 +2983,24 @@ return( err );
 }
 
 static void SFDirClean(char *filename) {
-    DIR *dir;
-    struct dirent *ent;
+    GDir *dir;
+    const gchar *ent_name;
     char *buffer, *pt;
 
-    unlink(filename);		/* Just in case it's a normal file, it shouldn't be, but just in case... */
-    dir = opendir(filename);
+    g_unlink(filename);		/* Just in case it's a normal file, it shouldn't be, but just in case... */
+    dir = g_dir_open(filename, 0, NULL);
     if ( dir==NULL )
 return;
     buffer = malloc(strlen(filename)+1+NAME_MAX+1);
-    while ( (ent = readdir(dir))!=NULL ) {
-	if ( strcmp(ent->d_name,".")==0 || strcmp(ent->d_name,"..")==0 )
-    continue;
-	pt = strrchr(ent->d_name,EXT_CHAR);
+    while ( (ent_name = g_dir_read_name(dir))!=NULL ) {
+	pt = strrchr(ent_name,EXT_CHAR);
 	if ( pt==NULL )
     continue;
-	sprintf( buffer,"%s/%s", filename, ent->d_name );
+	sprintf( buffer,"%s/%s", filename, ent_name );
 	if ( strcmp(pt,".props")==0 ||
 		strcmp(pt,GLYPH_EXT)==0 ||
 		strcmp(pt,BITMAP_EXT)==0 )
-	    unlink( buffer );
+	    g_unlink( buffer );
 	else if ( strcmp(pt,STRIKE_EXT)==0 ||
 		strcmp(pt,SUBFONT_EXT)==0 ||
 		strcmp(pt,INSTANCE_EXT)==0 )
@@ -3010,12 +3008,12 @@ return;
 	/* If there are filenames we don't recognize, leave them. They might contain version control info */
     }
     free(buffer);
-    closedir(dir);
+    g_dir_close(dir);
 }
 
 static void SFFinalDirClean(char *filename) {
-    DIR *dir;
-    struct dirent *ent;
+    GDir *dir;
+    const gchar *ent_name;
     char *buffer, *markerfile, *pt;
 
     /* we did not unlink sub-directories in case they contained version control */
@@ -3023,18 +3021,16 @@ static void SFFinalDirClean(char *filename) {
     /*  removed a bitmap strike or a cid-subfont those sub-dirs will now be */
     /*  empty. If the user didn't remove them then they will contain our marker */
     /*  files. So if we find a subdir with no marker files in it, remove it */
-    dir = opendir(filename);
+    dir = g_dir_open(filename, 0, NULL);
     if ( dir==NULL )
 return;
     buffer = malloc(strlen(filename)+1+NAME_MAX+1);
     markerfile = malloc(strlen(filename)+2+2*NAME_MAX+1);
-    while ( (ent = readdir(dir))!=NULL ) {
-	if ( strcmp(ent->d_name,".")==0 || strcmp(ent->d_name,"..")==0 )
-    continue;
-	pt = strrchr(ent->d_name,EXT_CHAR);
+    while ( (ent_name = g_dir_read_name(dir))!=NULL ) {
+	pt = strrchr(ent_name,EXT_CHAR);
 	if ( pt==NULL )
     continue;
-	sprintf( buffer,"%s/%s", filename, ent->d_name );
+	sprintf( buffer,"%s/%s", filename, ent_name );
 	if ( strcmp(pt,".strike")==0 ||
 		strcmp(pt,SUBFONT_EXT)==0 ||
 		strcmp(pt,INSTANCE_EXT)==0 ) {
@@ -3050,7 +3046,7 @@ return;
     }
     free(buffer);
     free(markerfile);
-    closedir(dir);
+    g_dir_close(dir);
 }
 
 int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal,int todir) {
@@ -3179,7 +3175,7 @@ int SFDWriteBak(char *filename,SplineFont *sf,EncMap *map,EncMap *normal) {
 	strcat(buf2,compressors[sf->compression-1].ext);
 	strcpy(buf,buf2);
 	strcat(buf,"~");
-	if ( rename(buf2,buf)==0 )
+	if ( g_rename(buf2,buf)==0 )
 	    sf->backedup = bs_backedup;
     }
     else
@@ -3194,20 +3190,20 @@ int SFDWriteBak(char *filename,SplineFont *sf,EncMap *map,EncMap *normal) {
 
 	    snprintf( path,    PATH_MAX, "%s", filename );
 	    snprintf( pathnew, PATH_MAX, "%s-%02d", filename, idx );
-	    (void)rename( path, pathnew );
+	    (void)g_rename( path, pathnew );
 
 	    for( idx=prefRevisionsToRetain; idx > 0; idx-- )
 	    {
 		snprintf( path, PATH_MAX, "%s-%02d", filename, idx-1 );
 		snprintf( pathnew, PATH_MAX, "%s-%02d", filename, idx );
 
-		int rc = rename( path, pathnew );
+		int rc = g_rename( path, pathnew );
 		if( !idx && !rc )
 		    sf->backedup = bs_backedup;
 	    }
 	    idx = prefRevisionsToRetain+1;
 	    snprintf( path, PATH_MAX, "%s-%02d", filename, idx );
-	    unlink(path);
+	    g_unlink(path);
 	}
 
     }
@@ -3215,7 +3211,7 @@ int SFDWriteBak(char *filename,SplineFont *sf,EncMap *map,EncMap *normal) {
 
     ret = SFDWrite(filename,sf,map,normal,false);
     if ( ret && sf->compression!=0 ) {
-	unlink(buf2);
+	g_unlink(buf2);
 	buf = malloc(strlen(filename)+40);
 	sprintf( buf, "%s %s", compressors[sf->compression-1].recomp, filename );
 	if ( system( buf )!=0 )
@@ -6036,22 +6032,20 @@ return( 0 );
     break;
     }
     if ( fromdir ) {
-	DIR *dir;
-	struct dirent *ent;
+	GDir *dir;
+	const gchar *ent_name;
 	char *name;
 
-	dir = opendir(dirname);
+	dir = g_dir_open(dirname, 0, NULL);
 	if ( dir==NULL )
 return( 0 );
 	name = malloc(strlen(dirname)+NAME_MAX+3);
 
-	while ( (ent=readdir(dir))!=NULL ) {
-	    char *pt = strrchr(ent->d_name,EXT_CHAR);
-	    if ( pt==NULL )
-		/* Nothing interesting */;
-	    else if ( strcmp(pt,BITMAP_EXT)==0 ) {
+	while ( (ent_name=g_dir_read_name(dir))!=NULL ) {
+	    char *pt = strrchr(ent_name,EXT_CHAR);
+	    if ( pt != NULL && strcmp(pt,BITMAP_EXT)==0 ) {
 		FILE *gsfd;
-		sprintf(name,"%s/%s", dirname, ent->d_name);
+		sprintf(name,"%s/%s", dirname, ent_name);
 		gsfd = fopen(name,"r");
 		if ( gsfd!=NULL ) {
 		    if ( getname(gsfd,tok) && strcmp(tok,"BDFChar:")==0)
@@ -6061,7 +6055,7 @@ return( 0 );
 		}
 	    }
 	}
-	closedir(dir);
+	g_dir_close(dir);
     }
     SFDFixupBitmapRefs( bdf );
 return( 1 );
@@ -6889,16 +6883,16 @@ static SplineFont *SFD_FigureDirType(SplineFont *sf,char *tok, char *dirname,
     /* (or bitmap files, but we don't care about them here */
     /* It will not contain some glyph and some subfont nor instance files */
     int gc=0, sc=0, ic=0, bc=0;
-    DIR *dir;
-    struct dirent *ent;
+    GDir *dir;
+    const gchar *ent_name;
     char *name, *props, *pt;
 
-    dir = opendir(dirname);
+    dir = g_dir_open(dirname, 0, NULL);
     if ( dir==NULL )
 return( sf );
     sf->save_to_dir = true;
-    while ( (ent=readdir(dir))!=NULL ) {
-	pt = strrchr(ent->d_name,EXT_CHAR);
+    while ( (ent_name=g_dir_read_name(dir))!=NULL ) {
+	pt = strrchr(ent_name,EXT_CHAR);
 	if ( pt==NULL )
 	    /* Nothing interesting */;
 	else if ( strcmp(pt,GLYPH_EXT)==0 )
@@ -6910,7 +6904,7 @@ return( sf );
 	else if ( strcmp(pt,STRIKE_EXT)==0 )
 	    ++bc;
     }
-    rewinddir(dir);
+    g_dir_rewind(dir);
     name = malloc(strlen(dirname)+NAME_MAX+3);
     props = malloc(strlen(dirname)+2*NAME_MAX+4);
     if ( gc!=0 ) {
@@ -6926,13 +6920,13 @@ return( sf );
 	}
 	SFDSizeMap(sf->map,sf->glyphcnt,enc->char_cnt>gc?enc->char_cnt:gc);
 
-	while ( (ent=readdir(dir))!=NULL ) {
-	    pt = strrchr(ent->d_name,EXT_CHAR);
+	while ( (ent_name=g_dir_read_name(dir))!=NULL ) {
+	    pt = strrchr(ent_name,EXT_CHAR);
 	    if ( pt==NULL )
 		/* Nothing interesting */;
 	    else if ( strcmp(pt,GLYPH_EXT)==0 ) {
 		FILE *gsfd;
-		sprintf(name,"%s/%s", dirname, ent->d_name);
+		sprintf(name,"%s/%s", dirname, ent_name);
 		gsfd = fopen(name,"r");
 		if ( gsfd!=NULL ) {
 		    SFDGetChar(gsfd,sf,had_layer_cnt);
@@ -6949,13 +6943,13 @@ return( sf );
 	sf->map = EncMap1to1(1000);
 	ff_progress_change_stages(2*sc);
 
-	while ( (ent=readdir(dir))!=NULL ) {
-	    pt = strrchr(ent->d_name,EXT_CHAR);
+	while ( (ent_name=g_dir_read_name(dir))!=NULL ) {
+	    pt = strrchr(ent_name,EXT_CHAR);
 	    if ( pt==NULL )
 		/* Nothing interesting */;
 	    else if ( strcmp(pt,SUBFONT_EXT)==0 && i<sc ) {
 		FILE *ssfd;
-		sprintf(name,"%s/%s", dirname, ent->d_name);
+		sprintf(name,"%s/%s", dirname, ent_name);
 		sprintf(props,"%s/" FONT_PROPS, name);
 		ssfd = fopen(props,"r");
 		if ( ssfd!=NULL ) {
@@ -6972,15 +6966,15 @@ return( sf );
 
 	MMInferStuff(sf->mm);
 	ff_progress_change_stages(2*(mm->instance_count+1));
-	while ( (ent=readdir(dir))!=NULL ) {
-	    pt = strrchr(ent->d_name,EXT_CHAR);
+	while ( (ent_name=g_dir_read_name(dir))!=NULL ) {
+	    pt = strrchr(ent_name,EXT_CHAR);
 	    if ( pt==NULL )
 		/* Nothing interesting */;
-	    else if ( strcmp(pt,INSTANCE_EXT)==0 && sscanf( ent->d_name, "mm%d", &ipos)==1 ) {
+	    else if ( strcmp(pt,INSTANCE_EXT)==0 && sscanf( ent_name, "mm%d", &ipos)==1 ) {
 		FILE *ssfd;
 		if ( i!=0 )
 		    ff_progress_next_stage();
-		sprintf(name,"%s/%s", dirname, ent->d_name);
+		sprintf(name,"%s/%s", dirname, ent_name);
 		sprintf(props,"%s/" FONT_PROPS, name);
 		ssfd = fopen(props,"r");
 		if ( ssfd!=NULL ) {
@@ -7013,14 +7007,14 @@ return( sf );
     }
 
     if ( bc!=0 ) {
-	rewinddir(dir);
-	while ( (ent=readdir(dir))!=NULL ) {
-	    pt = strrchr(ent->d_name,EXT_CHAR);
+	g_dir_rewind(dir);
+	while ( (ent_name=g_dir_read_name(dir))!=NULL ) {
+	    pt = strrchr(ent_name,EXT_CHAR);
 	    if ( pt==NULL )
 		/* Nothing interesting */;
 	    else if ( strcmp(pt,STRIKE_EXT)==0 ) {
 		FILE *ssfd;
-		sprintf(name,"%s/%s", dirname, ent->d_name);
+		sprintf(name,"%s/%s", dirname, ent_name);
 		sprintf(props,"%s/" STRIKE_PROPS, name);
 		ssfd = fopen(props,"r");
 		if ( ssfd!=NULL ) {
@@ -7032,7 +7026,7 @@ return( sf );
 	}
 	SFOrderBitmapList(sf);
     }
-    closedir(dir);
+    g_dir_close(dir);
     free(name);
     free(props);
 return( sf );
@@ -9147,47 +9141,49 @@ static int ask_about_file(FILE *asfd,int *state,char *filename) {
     char *buts[6];
     char buffer[800], *pt;
 
-    if ( *state&1 )
-return( true );
-    else if ( *state&2 ) {
-	unlink(filename);
-return( false );
+    if (*state&1) {
+        return true;
+    } else if (*state&2) {
+        fclose(asfd);
+        g_unlink(filename);
+        return false;
     }
 
     fgets(buffer,sizeof(buffer),asfd);
     rewind(asfd);
-    if ( strncmp(buffer,"Base: ",6)!=0 )
-	strcpy(buffer+6, "<New File>");
+    if (strncmp(buffer,"Base: ",6) != 0) {
+        strcpy(buffer+6, "<New File>");
+    }
     pt = buffer+6;
-    if ( strlen(buffer+6)>70 ) {
-	pt = strrchr(buffer+6,'/');
-	if ( pt==NULL )
-	    pt = buffer+6;
+    if (strlen(buffer+6) > 70) {
+        pt = strrchr(buffer+6,'/');
+        if (pt == NULL)
+            pt = buffer+6;
     }
 
     buts[0] = _("Yes"); buts[1] = _("Yes to _All");
     buts[2] = _("_Skip for now");
     buts[3] = _("Forget _to All"); buts[4] = _("_Forget about it");
     buts[5] = NULL;
-    ret = ff_ask(_("Recover old edit"),(const char **) buts,0,3,_("You appear to have an old editing session on %s.\nWould you like to recover it?"), pt );
-    switch ( ret ) {
-      case 0:
-return( true );
-      case 1:
-	*state = 1;
-return( true );
-      case 2:
-return( false );
-      case 3:
-	*state = 2;
-	/* Fall through */
-      case 4:
-	unlink(filename);
-return( false );
-      default:
-      break;
+    ret = ff_ask(_("Recover old edit"),(const char **) buts,0,3,_("You appear to have an old editing session on %s.\nWould you like to recover it?"), pt);
+    switch (ret) {
+        case 1:
+            *state = 1;
+            break;
+        case 2:
+            fclose(asfd);
+            return false;
+        case 3:
+            *state = 2;
+            /* Fall through */
+        case 4:
+            fclose(asfd);
+            g_unlink(filename);
+            return false;
+        default:
+            break;
     }
-return( true );
+    return true;
 }
 
 SplineFont *SFRecoverFile(char *autosavename,int inquire,int *state) {
@@ -9198,7 +9194,6 @@ SplineFont *SFRecoverFile(char *autosavename,int inquire,int *state) {
     if ( asfd==NULL )
 return(NULL);
     if ( inquire && !ask_about_file(asfd,state,autosavename)) {
-	fclose( asfd );
 return( NULL );
     }
     locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
@@ -9208,7 +9203,7 @@ return( NULL );
 	const char *buts[3];
 	buts[0] = "_Forget It"; buts[1] = "_Try Again"; buts[2] = NULL;
 	if ( ff_ask(_("Recovery Failed"),(const char **) buts,0,1,_("Automagic recovery of changes to %.80s failed.\nShould FontForge try again to recover next time you start it?"),tok)==0 )
-	    unlink(autosavename);
+	    g_unlink(autosavename);
     }
     switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     fclose(asfd);
@@ -9279,14 +9274,14 @@ void SFClearAutoSave(SplineFont *sf) {
 	ssf = sf->subfonts[i];
 	ssf->changed_since_autosave = false;
 	if ( ssf->autosavename!=NULL ) {
-	    unlink( ssf->autosavename );
+	    g_unlink( ssf->autosavename );
 	    free( ssf->autosavename );
 	    ssf->autosavename = NULL;
 	}
     }
     if ( sf->autosavename==NULL )
 return;
-    unlink(sf->autosavename);
+    g_unlink(sf->autosavename);
     free(sf->autosavename);
     sf->autosavename = NULL;
 }

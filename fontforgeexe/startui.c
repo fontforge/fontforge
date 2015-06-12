@@ -96,11 +96,6 @@ extern void setup_cocoa_app();
 //#  endif
 #endif
 
-#if defined(__MINGW32__)
-#include <windows.h>
-#define sleep(n) Sleep(1000 * (n))
-#endif
-
 #include "collabclientui.h"
 
 extern int AutoSaveFrequency;
@@ -793,11 +788,7 @@ static void ffensuredir( const char* basedir, const char* dirname, mode_t mode )
 
     snprintf(buffer,buffersz,"%s/%s", basedir, dirname );
     // ignore errors, this is just to help the user aftre all.
-#if !defined(__MINGW32__)
-    mkdir( buffer, mode );
-#else
-    mkdir( buffer );
-#endif
+    g_mkdir( buffer, mode );
 }
 
 static void ensureDotFontForgeIsSetup() {
@@ -896,7 +887,7 @@ int fontforge_main( int argc, char **argv ) {
 	    /* OK, I don't know what _-psn_ means, but to GW it means */
 	    /* we've been started on the mac from the FontForge.app   */
 	    /* structure, and the current directory is (shudder) "/"  */
-	    if (getenv("HOME")!=NULL) chdir(getenv("HOME"));
+	    if (g_getenv("HOME")!=NULL) g_chdir(g_getenv("HOME"));
 	    break;	/* Done - Unnecessary to check more arguments */
 	}
 	if (strcmp(pt,"-quiet")==0)
