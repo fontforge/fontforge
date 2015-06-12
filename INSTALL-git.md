@@ -1,33 +1,5 @@
 # Installing FontForge from Git Source Code
 
-## On Mac OS X with Homebrew
-
-You can install FontForge from the current github source code using a package manager, such as Homebrew, MacPorts or Fink
-
-**Install Homebrew**
-```
-ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-```
-**Check everything's ok** (fix any issues before moving on)
-```
-brew doctor
-```
-**Install dependencies**
-```
-brew install python gettext libpng jpeg libtiff giflib cairo pango libspiro czmq fontconfig automake libtool pkg-config glib pango
-```
-**Install the latest release or build from source**  
-Release:
-```
-brew install -v --debug --with-giflib --with-x11 --with-libspiro fontforge
-```
-Source:
-```
-brew install -v --debug --with-giflib --with-x11 --with-libspiro fontforge --HEAD
-```
-
-If this does not work, please [file an issue](When_Things_Go_Wrong_With_Fontforge_Itself)
-
 ## Doing It By Hand
 
 Clone a copy of the Github source repository:
@@ -153,4 +125,42 @@ brew install gettext;
 Then edit then your shell profile (eg, `~/.bash_profile` or `~/.zprofile`) and add:
 ```
 export PATH=${PATH}:/usr/local/opt/gettext/bin
+```
+
+## On Mac OS X with Homebrew
+
+Homebrew no longer packages FontForge with a UI, but the release GUI app bundles are available from Cask. 
+You can install FontForge from the current github source code using a package manager, such as MacPorts or Fink. 
+
+Here is how to install FontForge without a UI:
+
+```
+ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+```
+**Check everything's ok** (fix any issues before moving on)
+```
+brew doctor
+```
+**Install dependencies**
+```
+brew install python gettext libpng jpeg libtiff giflib cairo pango libspiro czmq fontconfig automake libtool pkg-config glib pango
+```
+
+**Install the latest release or build from source**  
+Release:
+```
+brew install -v --debug --with-giflib --with-libspiro fontforge
+```
+Source:
+```
+brew install -v --debug --with-giflib --with-libspiro fontforge --HEAD
+```
+
+If this does not work, please [file an issue](When_Things_Go_Wrong_With_Fontforge_Itself)
+
+To install the UI with Cask:
+
+```
+brew tap caskroom/cask; # Install cask
+brew cask install fontforge; # Install fontforge
 ```
