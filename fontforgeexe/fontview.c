@@ -652,7 +652,7 @@ int _FVMenuSaveAs(FontView *fv) {
     //
     if( !GFileIsAbsolute(temp) )
     {
-    	char* defaultSaveDir = GFileGetHomeDocumentsDir();
+    	const char* defaultSaveDir = GFileGetHomeDocumentsDir();
 	printf("save-as:%s\n", temp );
     	char* temp2 = GFileAppendFile( defaultSaveDir, temp, 0 );
     	free(temp);
