@@ -118,45 +118,24 @@ unichar_t *u_GFileNormalizePath(unichar_t *path) {
     return path;
 }
 
-char *GFileGetHomeDir(void) {
-#if defined(__MINGW32__)
-    char* dir = getenv("HOME");
-    if(!dir)
-	dir = getenv("USERPROFILE");
-    if(dir){
-	char* buffer = copy(dir);
-	GFileNormalizePath(buffer);
-return buffer;
+const char *GFileGetHomeDir(void) {
+    static gchar *home_dir = NULL;
+    
+    if (g_once_init_enter(&home_dir)) {
+        gchar *tmp = g_strdup(g_get_home_dir());
+        if (tmp) {
+            GFileNormalizePath(tmp);
+        }
+        g_once_init_leave(&home_dir, tmp);
     }
-return NULL;
-#else
-    static char *dir;
-    uid_t uid;
-    struct passwd *pw;
-
-    dir = getenv("HOME");
-    if ( dir!=NULL )
-	return( copy(dir) );
-
-    uid = getuid();
-    while ( (pw=getpwent())!=NULL ) {
-	if ( pw->pw_uid==uid ) {
-	    dir = copy(pw->pw_dir);
-	    endpwent();
-return( dir );
-	}
-    }
-    endpwent();
-return( NULL );
-#endif
+    return home_dir;
 }
 
 unichar_t *u_GFileGetHomeDir(void) {
     unichar_t* dir = NULL;
-    char* tmp = GFileGetHomeDir();
+    const char* tmp = GFileGetHomeDir();
     if( tmp ) {
-	dir = uc_copy(tmp);
-	free(tmp);
+	dir = fsys2u_copy(tmp);
     }
 return dir;
 }
@@ -425,7 +404,8 @@ return( g_mkdir(name,0755));
 }
 
 char *_GFile_find_program_dir(char *prog) {
-    char *pt, *path, *program_dir=NULL;
+    char *pt, *program_dir=NULL;
+    const char *path;
     char filename[2000];
 
 #if defined(__MINGW32__)
@@ -434,7 +414,7 @@ char *_GFile_find_program_dir(char *prog) {
     if(pt1<pt2) pt1=pt2;
     if(pt1)
 	program_dir = copyn(prog, pt1-prog);
-    else if( (path = getenv("PATH")) != NULL ){
+    else if( (path = g_getenv("PATH")) != NULL ){
 	char* tmppath = copy(path);
 	path = tmppath;
 	for(;;){
@@ -453,7 +433,7 @@ char *_GFile_find_program_dir(char *prog) {
 #else
     if ( (pt = strrchr(prog,'/'))!=NULL )
 	program_dir = copyn(prog,pt-prog);
-    else if ( (path = getenv("PATH"))!=NULL ) {
+    else if ( (path = g_getenv("PATH"))!=NULL ) {
 	while ((pt = strchr(path,':'))!=NULL ) {
 	  sprintf(filename,"%.*s/%s", (int)(pt-path), path, prog);
 	    /* Under cygwin, applying access to "potrace" will find "potrace.exe" */
@@ -712,28 +692,37 @@ char* getLibexecDir_NonWindows(void)
 
 
 void FindProgDir(char *prog) {
+    static gchar *program_dir = NULL;
+    
+    if (g_once_init_enter(&program_dir)) {
+        gchar *ret = NULL;
 #if defined(__MINGW32__)
-    char  path[MAX_PATH+4];
-    char* c = path;
-    char* tail = 0;
-    unsigned int  len = GetModuleFileNameA(NULL, path, MAX_PATH);
-    path[len] = '\0';
-    for(; *c; *c++){
-    	if(*c == '\\'){
-    	    tail=c;
-    	    *c = '/';
-    	}
-    }
-    if(tail) *tail='\0';
-    GResourceProgramDir = copy(path);
+        wchar_t path[MAX_PATH];
+        DWORD len = GetModuleFileNameW(NULL, path, MAX_PATH);
+        
+        if (len < MAX_PATH) {
+            gchar *ptr;
+            
+            ret = g_utf16_to_utf8(path, -1, NULL, NULL, NULL);
+            GFileNormalizePath(ret);
+            ptr = strrchr(ret, '/');
+            if (ptr) {
+                *ptr = '\0';
+            }
+        }
 #else
-    GResourceProgramDir = _GFile_find_program_dir(prog);
-    if ( GResourceProgramDir==NULL ) {
-	char filename[1025];
-	GFileGetAbsoluteName(".",filename,sizeof(filename));
-	GResourceProgramDir = copy(filename);
+        ret = _GFile_find_program_dir(prog);
+        if (ret == NULL) {
+            char filename[1025];
+            GFileGetAbsoluteName(".", filename, sizeof(filename));
+            ret = copy(filename);
+        }
+#endif        
+        g_once_init_leave(&program_dir, ret);
     }
-#endif
+    
+    GResourceProgramDir = program_dir;
+    //return program_dir;
 }
 
 char *getShareDir(void) {
@@ -818,44 +807,11 @@ char *getHelpDir(void) {
     return sharedir;
 }
 
-/* reimplementation of GFileGetHomeDir, avoiding copy().  Returns NULL if home
- * directory cannot be found */
-char *getUserHomeDir(void) {
-#if defined(__MINGW32__)
-	char* dir = getenv("APPDATA");
-	if( dir==NULL )
-	dir = getenv("USERPROFILE");
-	if( dir!=NULL ) {
-	GFileNormalizePath(dir);
-return dir;
-	}
-return NULL;
-#else
-	uid_t uid;
-	struct passwd *pw;
-	char *home = getenv("HOME");
-
-	if( home!=NULL )
-return home;
-
-	uid = getuid();
-	while( (pw=getpwent())!=NULL ) {
-	if ( pw->pw_uid==uid ) {
-		home = pw->pw_dir;
-		endpwent();
-return home;
-	}
-	}
-	endpwent();
-return NULL;
-#endif
-}
-
 /* Find the directory in which FontForge places all of its configurations and
  * save files.  On Unix-likes, the argument `dir` (see the below case switch,
  * enum in inc/gfile.h) determines which directory is returned according to the
  * XDG Base Directory Specification.  On Windows, the argument is ignored--the
- * home directory as obtained by getUserHomeDir() appended with "/FontForge" is
+ * home directory as obtained by GFileGetHomeDir() appended with "/FontForge" is
  * returned. On error, NULL is returned.
  *
  * http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
@@ -867,17 +823,22 @@ char *getFontForgeUserDir(int dir) {
 
 	/* find home directory first, it is needed if any of the xdg env vars are
 	 * not set */
-	if (!(home = getUserHomeDir())) {
-	/* if getUserHomeDir returns NULL, pass NULL to calling function */
+	if (!(home = GFileGetHomeDir())) {
+	/* if GFileGetHomeDir returns NULL, pass NULL to calling function */
 	fprintf(stderr, "%s\n", "cannot find home directory");
 return NULL;
 	}
 #ifdef _WIN32
 	/* Allow for preferences to be saved locally in a 'portable' configuration. */ 
-	if (getenv("FF_PORTABLE") != NULL) {
+	if (g_getenv("FF_PORTABLE") != NULL) {
 		buf = xasprintf("%s/preferences", getShareDir());
 	} else {
-		buf = xasprintf("%s/FontForge", home);
+        const char *appdata = g_getenv("APPDATA");
+        if (appdata) {
+            buf = xasprintf("%s/FontForge", appdata);
+        } else {
+            buf = xasprintf("%s/FontForge", home);
+        }
 	}
 	return buf;
 #else
@@ -886,15 +847,15 @@ return NULL;
 	 * for if the environment variable does not exist. */
 	switch(dir) {
 	  case Cache:
-	xdg = getenv("XDG_CACHE_HOME");
+	xdg = g_getenv("XDG_CACHE_HOME");
 	def = ".cache";
 	  break;
 	  case Config:
-	xdg = getenv("XDG_CONFIG_HOME");
+	xdg = g_getenv("XDG_CONFIG_HOME");
 	def = ".config";
 	  break;
 	  case Data:
-	xdg = getenv("XDG_DATA_HOME");
+	xdg = g_getenv("XDG_DATA_HOME");
 	def = ".local/share";
 	  break;
 	  default:
@@ -977,40 +938,28 @@ const char *getTempDir(void)
     return g_get_tmp_dir();
 }
 
-char *GFileGetHomeDocumentsDir(void)
+const char *GFileGetHomeDocumentsDir(void)
 {
-    static char* ret = 0;
-    if( ret )
-	return ret;
-
-#if defined(__MINGW32__)
-
-    CHAR my_documents[MAX_PATH+2];
-    HRESULT result = SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents );
-    if (result != S_OK)
-    {
-    	fprintf(stderr,"Error: Can't get My Documents path!'\n");
-        return ret;
+    static gchar *documents_dir = NULL;
+    
+    if (g_once_init_enter(&documents_dir)) {
+        gchar *tmp = g_strconcat(g_get_user_special_dir(G_USER_DIRECTORY_DOCUMENTS),"/",NULL);
+        if (tmp == NULL) {
+            //The result of GFileGetHomeDir should not be freed, so no strdup.
+            tmp = (gchar*)GFileGetHomeDir();
+        } else {
+            GFileNormalizePath(tmp);
+        }
+        g_once_init_leave(&documents_dir, tmp);
     }
-    int pos = strlen(my_documents);
-    my_documents[ pos++ ] = '\\';
-    my_documents[ pos++ ] = '\0';
-    ret = copy( my_documents );
-	GFileNormalizePath(ret);
-    return ret;
-#endif
-
-    // On GNU/Linux and OSX it was decided that this should be just the
-    // home directory itself.
-    ret = GFileGetHomeDir();
-    return ret;
+    return documents_dir;
 }
 
 unichar_t *u_GFileGetHomeDocumentsDir(void) {
     unichar_t* dir = NULL;
-    char* tmp = GFileGetHomeDocumentsDir();
+    const char* tmp = GFileGetHomeDocumentsDir();
     if(tmp) {
-        dir = uc_copy(tmp);
+        dir = fsys2u_copy(tmp);
     }
     return dir;
 }
