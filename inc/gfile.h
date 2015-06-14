@@ -45,7 +45,7 @@ extern int GFileCheckGlibSpawnStatus(int status);
 extern char *GFileNormalizePath(char *path);
 extern unichar_t *u_GFileNormalizePath(unichar_t *path);
 
-extern char* GFileGetHomeDir(void);
+extern const char* GFileGetHomeDir(void);
 extern unichar_t* u_GFileGetHomeDir(void);
 
 extern char *GFileRemoveExtension(char *path);
@@ -106,7 +106,7 @@ extern const char *getTempDir(void);
  * This is the full path of ~ on OSX and Linux
  * and something like c:\Users\foo\Documents on windows
  */
-extern char *GFileGetHomeDocumentsDir(void);
+extern const char *GFileGetHomeDocumentsDir(void);
 extern unichar_t* u_GFileGetHomeDocumentsDir(void); 
 
 /**
