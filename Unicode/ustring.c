@@ -26,6 +26,8 @@
  */
 #include <fontforge-config.h>
 
+#include <glib.h>
+#include <glib/gprintf.h>
 #include <stddef.h>
 #include "ustring.h"
 #include "utype.h"
@@ -1043,17 +1045,6 @@ char* chomp( char* line ) {
     return line;
 }
 
-char *copytolower(const char *input)
-{
-    char* ret = copy(input);
-    char* p = ret;
-    for( ; *p; ++p ) {
-	*p = tolower(*p);
-    }
-    return ret;
-}
-
-
 int endswith(const char *haystack,const char *needle) {
     int haylen = strlen( haystack );
     int nedlen = strlen( needle );
@@ -1064,11 +1055,11 @@ int endswith(const char *haystack,const char *needle) {
 }
 
 int endswithi(const char *haystackZ,const char *needleZ) {
-    char* haystack = copytolower(haystackZ);
-    char* needle   = copytolower(needleZ);
+    gchar* haystack = g_ascii_strdown(haystackZ,-1);
+    gchar* needle   = g_ascii_strdown(needleZ,-1);
     int ret = endswith( haystack, needle );
-    free( haystack );
-    free( needle );
+    g_free( haystack );
+    g_free( needle );
     return ret;
 }
 
@@ -1077,8 +1068,8 @@ int endswithi_partialExtension( const char *haystackZ,const char *needleZ) {
     if( nedlen == 0 ) {
 	return 0;
     }
-    char* haystack = copytolower(haystackZ);
-    char* needle   = copytolower(needleZ);
+    gchar* haystack = g_ascii_strdown(haystackZ,-1);
+    gchar* needle   = g_ascii_strdown(needleZ,-1);
     int ret = 0;
     int i = nedlen-1;
     ret |= endswith( haystack, needle );
@@ -1086,8 +1077,8 @@ int endswithi_partialExtension( const char *haystackZ,const char *needleZ) {
 	needle[i] = '\0';
 	ret |= endswith( haystack, needle );
     }
-    free( haystack );
-    free( needle );
+    g_free( haystack );
+    g_free( needle );
     return ret;
 }
 
