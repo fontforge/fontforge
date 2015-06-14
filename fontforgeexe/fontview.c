@@ -5272,6 +5272,515 @@ static GMenuItem2 pointlist[] = {
 	GMENUITEM2_EMPTY
 };
 
+#define BUILD_COLLAB
+
+#ifdef BUILD_COLLAB
+static void FVMenuCollabStart(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
+{
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    printf("connecting to server and sending initial SFD to it...\n");
+
+    int port_default = 5556;
+    int port = port_default;
+    char address[IPADDRESS_STRING_LENGTH_T];
+    if( !getNetworkAddress( address ))
+    {
+	snprintf( address, IPADDRESS_STRING_LENGTH_T-1,
+		  "%s", HostPortPack( "127.0.0.1", port ));
+    }
+    else
+    {
+	snprintf( address, IPADDRESS_STRING_LENGTH_T-1,
+		  "%s", HostPortPack( address, port ));
+    }
+
+    printf("host address:%s\n",address);
+
+    char* res = gwwv_ask_string(
+	"Starting Collab Server",
+	address,
+	"FontForge has determined that your computer can be accessed"
+	" using the below address. Share that address with other people"
+	" who you wish to collaborate with...\n\nPress OK to start the collaboration server...");
+
+    if( res )
+    {
+	printf("res:%s\n", res );
+	strncpy( address, res, IPADDRESS_STRING_LENGTH_T );
+	HostPortUnpack( address, &port, port_default );
+
+	printf("address:%s\n", address );
+	printf("port:%d\n", port );
+
+	void* cc = collabclient_new( address, port );
+	fv->b.collabClient = cc;
+	collabclient_sessionStart( cc, fv );
+	printf("connecting to server...sent the sfd for session start.\n");
+    }
+}
+#endif
+
+static int collab_MakeChoicesArray( GHashTable* peers, char** choices, int choices_sz, int localOnly )
+{
+    GHashTableIter iter;
+    gpointer key, value;
+    int lastidx = 0;
+    memset( choices, 0, sizeof(char*) * choices_sz );
+
+    int i=0;
+    int maxUserNameLength = 1;
+    g_hash_table_iter_init (&iter, peers);
+    for( i=0; g_hash_table_iter_next (&iter, &key, &value); i++ )
+    {
+	beacon_announce_t* ba = (beacon_announce_t*)value;
+	maxUserNameLength = imax( maxUserNameLength, strlen(ba->username) );
+    }
+
+    g_hash_table_iter_init (&iter, peers);
+    for( i=0; g_hash_table_iter_next (&iter, &key, &value); i++ )
+    {
+	beacon_announce_t* ba = (beacon_announce_t*)value;
+	if( localOnly && !collabclient_isAddressLocal( ba->ip ))
+	    continue;
+
+	printf("user:%s\n", ba->username );
+	printf("mach:%s\n", ba->machinename );
+
+	char buf[101];
+	if( localOnly )
+	{
+	    snprintf( buf, 100, "%s", ba->fontname );
+	}
+	else
+	{
+	    char format[50];
+	    sprintf( format, "%s %%%d", "%s", maxUserNameLength );
+	    strcat( format, "s %s");
+	    snprintf( buf, 100, format, ba->fontname, ba->username, ba->machinename );
+	}
+	choices[i] = copy( buf );
+	if( i >= choices_sz )
+	    break;
+	lastidx++;
+    }
+
+    return lastidx;
+}
+
+static beacon_announce_t* collab_getBeaconFromChoicesArray( GHashTable* peers, int choice, int localOnly )
+{
+    GHashTableIter iter;
+    gpointer key, value;
+    int i=0;
+
+    g_hash_table_iter_init (&iter, peers);
+    for( i=0; g_hash_table_iter_next (&iter, &key, &value); i++ )
+    {
+	beacon_announce_t* ba = (beacon_announce_t*)value;
+	if( localOnly && !collabclient_isAddressLocal( ba->ip ))
+	    continue;
+	if( i != choice )
+	    continue;
+	return ba;
+    }
+    return 0;
+}
+
+#ifdef BUILD_COLLAB
+static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
+{
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    printf("connecting to server...\n");
+
+    {
+	int choices_sz = 100;
+	char* choices[101];
+	memset( choices, 0, sizeof(choices));
+
+	collabclient_trimOldBeaconInformation( 0 );
+	GHashTable* peers = collabclient_getServersFromBeaconInfomration();
+	int localOnly = 0;
+	int max = collab_MakeChoicesArray( peers, choices, choices_sz, localOnly );
+	int choice = gwwv_choose(_("Connect to Collab Server"),(const char **) choices, max,
+				 0,_("Select a collab server to connect to..."));
+	printf("you wanted %d\n", choice );
+	if( choice <= max )
+	{
+	    beacon_announce_t* ba = collab_getBeaconFromChoicesArray( peers, choice, localOnly );
+
+	    if( ba )
+	    {
+		int port = ba->port;
+		char address[IPADDRESS_STRING_LENGTH_T];
+		strncpy( address, ba->ip, IPADDRESS_STRING_LENGTH_T-1 );
+		void* cc = collabclient_new( address, port );
+		fv->b.collabClient = cc;
+		collabclient_sessionJoin( cc, fv );
+	    }
+	}
+    }
+
+    printf("FVMenuCollabConnect(done)\n");
+}
+
+static void FVMenuCollabConnectToExplicitAddress(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
+{
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    printf("********** connecting to server... explicit address... p:%p\n", pref_collab_last_server_connected_to);
+
+    char* default_server = "localhost";
+    if( pref_collab_last_server_connected_to ) {
+	default_server = pref_collab_last_server_connected_to;
+    }
+    
+    char* res = gwwv_ask_string(
+    	"Connect to Collab Server",
+    	default_server,
+    	"Please enter the network location of the Collab server you wish to connect to...");
+    if( res )
+    {
+	if( pref_collab_last_server_connected_to ) {
+	    free( pref_collab_last_server_connected_to );
+	}
+	pref_collab_last_server_connected_to = copy( res );
+	SavePrefs(true);
+	
+    	int port_default = 5556;
+    	int port = port_default;
+    	char address[IPADDRESS_STRING_LENGTH_T];
+    	strncpy( address, res, IPADDRESS_STRING_LENGTH_T-1 );
+    	HostPortUnpack( address, &port, port_default );
+
+    	void* cc = collabclient_new( address, port );
+    	fv->b.collabClient = cc;
+    	collabclient_sessionJoin( cc, fv );
+    }
+
+    printf("FVMenuCollabConnect(done)\n");
+}
+
+static void FVMenuCollabDisconnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
+{
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    collabclient_sessionDisconnect( &fv->b );
+}
+#endif
+
+static void AskAndMaybeCloseLocalCollabServers()
+{
+    char *buts[3];
+    buts[0] = _("_OK");
+    buts[1] = _("_Cancel");
+    buts[2] = NULL;
+
+    int i=0;
+    int choices_sz = 100;
+    char* choices[101];
+    collabclient_trimOldBeaconInformation( 0 );
+    GHashTable* peers = collabclient_getServersFromBeaconInfomration();
+    if( !peers )
+	return;
+    
+    int localOnly = 1;
+    int max = collab_MakeChoicesArray( peers, choices, choices_sz, localOnly );
+    if( !max )
+	return;
+
+    char sel[101];
+    memset( sel, 1, max );
+    int choice = gwwv_choose_multiple(_("Close Collab Server(s)"),
+				      (const char **) choices, sel, max,
+				      buts, _("Select which servers you wish to close..."));
+
+    int allServersSelected = 1;
+    printf("you wanted %d\n", choice );
+    for( i=0; i < max; i++ )
+    {
+	printf("sel[%d] is %d\n", i, sel[i] );
+	beacon_announce_t* ba = collab_getBeaconFromChoicesArray( peers, choice, localOnly );
+
+	if( sel[i] && ba )
+	{
+	    int port = ba->port;
+
+	    if( sel[i] )
+	    {
+		FontViewBase* fv = FontViewFind( FontViewFind_byCollabBasePort, (void*)(intptr_t)port );
+		if( fv )
+		    collabclient_sessionDisconnect( fv );
+		printf("CLOSING port:%d fv:%p\n", port, fv );
+		collabclient_closeLocalServer( port );
+	    }
+	}
+	else
+	{
+	    allServersSelected = 0;
+	}
+    }
+
+    printf("allServersSelected:%d\n", allServersSelected );
+    if( allServersSelected )
+	collabclient_closeAllLocalServersForce();
+}
+
+static void FVMenuCollabCloseLocalServer(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
+{
+    AskAndMaybeCloseLocalCollabServers();
+}
+
+#if defined(__MINGW32__)
+//
+// This is an imperfect implemenation of kill() for windows.
+//
+static int kill( int pid, int sig )
+{
+    HANDLE hHandle;
+    hHandle = OpenProcess( PROCESS_ALL_ACCESS, 0, pid );
+    TerminateProcess( hHandle, 0 );
+}
+#endif
+
+static void collablistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e))
+{
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi )
+    {
+	switch ( mi->mid )
+	{
+	case MID_CollabDisconnect:
+	{
+	    enum collabState_t st = collabclient_getState( &fv->b );
+	    mi->ti.disabled = ( st < cs_server );
+	    break;
+	}
+	case MID_CollabCloseLocalServer:
+	    printf("can close local server: %d\n", collabclient_haveLocalServer() );
+	    mi->ti.disabled = !collabclient_haveLocalServer();
+	    break;
+	}
+    }
+}
+
+#ifdef BUILD_COLLAB
+
+static GMenuItem2 collablist[] = {
+    { { (unichar_t *) N_("_Start Session..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Start Session...|No Shortcut"), NULL, NULL, FVMenuCollabStart, MID_CollabStart },
+    { { (unichar_t *) N_("_Connect to Session..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Connect to Session...|No Shortcut"), NULL, NULL, FVMenuCollabConnect, MID_CollabConnect },
+    { { (unichar_t *) N_("_Connect to Session (ip:port)..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Connect to Session (ip:port)...|No Shortcut"), NULL, NULL, FVMenuCollabConnectToExplicitAddress, MID_CollabConnectToExplicitAddress },
+    { { (unichar_t *) N_("_Disconnect"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Disconnect|No Shortcut"), NULL, NULL, FVMenuCollabDisconnect, MID_CollabDisconnect },
+    GMENUITEM2_LINE,
+    { { (unichar_t *) N_("Close local server"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Close local server|No Shortcut"), NULL, NULL, FVMenuCollabCloseLocalServer, MID_CollabCloseLocalServer },
+    GMENUITEM2_EMPTY,				/* Extra room to show sub-font names */
+};
+#endif
+
+void FVChar(FontView *fv, GEvent *event) {
+    int i,pos, cnt, gid;
+    extern int navigation_mask;
+
+#if MyMemory
+    if ( event->u.chr.keysym == GK_F2 ) {
+	fprintf( stderr, "Malloc debug on\n" );
+	__malloc_debug(5);
+    } else if ( event->u.chr.keysym == GK_F3 ) {
+	fprintf( stderr, "Malloc debug off\n" );
+	__malloc_debug(0);
+    }
+#endif
+
+    if ( event->u.chr.keysym=='s' &&
+	    (event->u.chr.state&ksm_control) &&
+	    (event->u.chr.state&ksm_meta) )
+	MenuSaveAll(NULL,NULL,NULL);
+    else if ( event->u.chr.keysym=='q' &&
+	    (event->u.chr.state&ksm_control) &&
+	    (event->u.chr.state&ksm_meta) )
+	MenuExit(NULL,NULL,NULL);
+    else if ( event->u.chr.keysym=='I' &&
+	    (event->u.chr.state&ksm_shift) &&
+	    (event->u.chr.state&ksm_meta) )
+	FVMenuCharInfo(fv->gw,NULL,NULL);
+    else if ( (event->u.chr.keysym=='[' || event->u.chr.keysym==']') &&
+	    (event->u.chr.state&ksm_control) ) {
+	_FVMenuChangeChar(fv,event->u.chr.keysym=='['?MID_Prev:MID_Next);
+    } else if ( (event->u.chr.keysym=='{' || event->u.chr.keysym=='}') &&
+	    (event->u.chr.state&ksm_control) ) {
+	_FVMenuChangeChar(fv,event->u.chr.keysym=='{'?MID_PrevDef:MID_NextDef);
+    } else if ( event->u.chr.keysym=='\\' && (event->u.chr.state&ksm_control) ) {
+	/* European keyboards need a funky modifier to get \ */
+	FVDoTransform(fv);
+#if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
+    } else if ( isdigit(event->u.chr.keysym) && (event->u.chr.state&ksm_control) &&
+	    (event->u.chr.state&ksm_meta) ) {
+	/* The Script menu isn't always up to date, so we might get one of */
+	/*  the shortcuts here */
+	int index = event->u.chr.keysym-'1';
+	if ( index<0 ) index = 9;
+	if ( script_filenames[index]!=NULL )
+	    ExecuteScriptFile((FontViewBase *) fv,NULL,script_filenames[index]);
+#endif
+    } else if ( event->u.chr.keysym == GK_Left ||
+	    event->u.chr.keysym == GK_Tab ||
+	    event->u.chr.keysym == GK_BackTab ||
+	    event->u.chr.keysym == GK_Up ||
+	    event->u.chr.keysym == GK_Right ||
+	    event->u.chr.keysym == GK_Down ||
+	    event->u.chr.keysym == GK_KP_Left ||
+	    event->u.chr.keysym == GK_KP_Up ||
+	    event->u.chr.keysym == GK_KP_Right ||
+	    event->u.chr.keysym == GK_KP_Down ||
+	    event->u.chr.keysym == GK_Home ||
+	    event->u.chr.keysym == GK_KP_Home ||
+	    event->u.chr.keysym == GK_End ||
+	    event->u.chr.keysym == GK_KP_End ||
+	    event->u.chr.keysym == GK_Page_Up ||
+	    event->u.chr.keysym == GK_KP_Page_Up ||
+	    event->u.chr.keysym == GK_Prior ||
+	    event->u.chr.keysym == GK_Page_Down ||
+	    event->u.chr.keysym == GK_KP_Page_Down ||
+	    event->u.chr.keysym == GK_Next ) {
+	int end_pos = fv->end_pos;
+	/* We move the currently selected char. If there is none, then pick */
+	/*  something on the screen */
+	if ( end_pos==-1 )
+	    end_pos = (fv->rowoff+fv->rowcnt/2)*fv->colcnt;
+	switch ( event->u.chr.keysym ) {
+	  case GK_Tab:
+	    pos = end_pos;
+	    do {
+		if ( event->u.chr.state&ksm_shift )
+		    --pos;
+		else
+		    ++pos;
+		if ( pos>=fv->b.map->enccount ) pos = 0;
+		else if ( pos<0 ) pos = fv->b.map->enccount-1;
+	    } while ( pos!=end_pos &&
+		    ((gid=fv->b.map->map[pos])==-1 || !SCWorthOutputting(fv->b.sf->glyphs[gid])));
+	    if ( pos==end_pos ) ++pos;
+	    if ( pos>=fv->b.map->enccount ) pos = 0;
+	  break;
+#if GK_Tab!=GK_BackTab
+	  case GK_BackTab:
+	    pos = end_pos;
+	    do {
+		--pos;
+		if ( pos<0 ) pos = fv->b.map->enccount-1;
+	    } while ( pos!=end_pos &&
+		    ((gid=fv->b.map->map[pos])==-1 || !SCWorthOutputting(fv->b.sf->glyphs[gid])));
+	    if ( pos==end_pos ) --pos;
+	    if ( pos<0 ) pos = 0;
+	  break;
+#endif
+	  case GK_Left: case GK_KP_Left:
+	    pos = end_pos-1;
+	  break;
+	  case GK_Right: case GK_KP_Right:
+	    pos = end_pos+1;
+	  break;
+	  case GK_Up: case GK_KP_Up:
+	    pos = end_pos-fv->colcnt;
+	  break;
+	  case GK_Down: case GK_KP_Down:
+	    pos = end_pos+fv->colcnt;
+	  break;
+	  case GK_End: case GK_KP_End:
+	    pos = fv->b.map->enccount;
+	  break;
+	  case GK_Home: case GK_KP_Home:
+	    pos = 0;
+	    if ( fv->b.sf->top_enc!=-1 && fv->b.sf->top_enc<fv->b.map->enccount )
+		pos = fv->b.sf->top_enc;
+	    else {
+		pos = SFFindSlot(fv->b.sf,fv->b.map,home_char,NULL);
+		if ( pos==-1 ) pos = 0;
+	    }
+	  break;
+	  case GK_Page_Up: case GK_KP_Page_Up:
+#if GK_Prior!=GK_Page_Up
+	  case GK_Prior:
+#endif
+	    pos = (fv->rowoff-fv->rowcnt+1)*fv->colcnt;
+	  break;
+	  case GK_Page_Down: case GK_KP_Page_Down:
+#if GK_Next!=GK_Page_Down
+	  case GK_Next:
+#endif
+	    pos = (fv->rowoff+fv->rowcnt+1)*fv->colcnt;
+	  break;
+	}
+	if ( pos<0 ) pos = 0;
+	if ( pos>=fv->b.map->enccount ) pos = fv->b.map->enccount-1;
+	if ( event->u.chr.state&ksm_shift && event->u.chr.keysym!=GK_Tab && event->u.chr.keysym!=GK_BackTab ) {
+	    FVReselect(fv,pos);
+	} else {
+	    FVDeselectAll(fv);
+	    fv->b.selected[pos] = true;
+	    FVToggleCharSelected(fv,pos);
+	    fv->pressed_pos = pos;
+	    fv->sel_index = 1;
+	}
+	fv->end_pos = pos;
+	FVShowInfo(fv);
+	FVScrollToChar(fv,pos);
+    } else if ( event->u.chr.keysym == GK_Help ) {
+	MenuHelp(NULL,NULL,NULL);	/* Menu does F1 */
+    } else if ( event->u.chr.keysym == GK_Escape ) {
+	FVDeselectAll(fv);
+    } else if ( event->u.chr.chars[0]=='\r' || event->u.chr.chars[0]=='\n' ) {
+	if ( fv->b.container!=NULL && fv->b.container->funcs->is_modal )
+return;
+	for ( i=cnt=0; i<fv->b.map->enccount && cnt<10; ++i ) if ( fv->b.selected[i] ) {
+	    SplineChar *sc = SFMakeChar(fv->b.sf,fv->b.map,i);
+	    if ( fv->show==fv->filled ) {
+		CharViewCreate(sc,fv,i);
+	    } else {
+		BDFFont *bdf = fv->show;
+		BitmapViewCreate(BDFMakeGID(bdf,sc->orig_pos),bdf,fv,i);
+	    }
+	    ++cnt;
+	}
+    } else if ( (event->u.chr.state&((GMenuMask()|navigation_mask)&~(ksm_shift|ksm_capslock)))==navigation_mask &&
+	    event->type == et_char &&
+	    event->u.chr.keysym!=0 &&
+	    (event->u.chr.keysym<GK_Special/* || event->u.chr.keysym>=0x10000*/)) {
+	SplineFont *sf = fv->b.sf;
+	int enc = EncFromUni(event->u.chr.keysym,fv->b.map->enc);
+	if ( enc==-1 ) {
+	    for ( i=0; i<sf->glyphcnt; ++i ) {
+		if ( sf->glyphs[i]!=NULL )
+		    if ( sf->glyphs[i]->unicodeenc==event->u.chr.keysym )
+	    break;
+	    }
+	    if ( i!=-1 )
+		enc = fv->b.map->backmap[i];
+	}
+	if ( enc<fv->b.map->enccount && enc!=-1 )
+	    FVChangeChar(fv,enc);
+    }
+}
+
+static GMenuItem2 extlist[] = {
+#ifndef _NO_PYTHON
+    { { (unichar_t *) N_("_Tools"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Tools|No Shortcut"), NULL, fvpy_tllistcheck, NULL, 0 },
+#endif
+#ifdef NATIVE_CALLBACKS
+    { { (unichar_t *) N_("Tools_2"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Tools 2|No Shortcut"), NULL, fv_tl2listcheck, NULL, 0 },
+#endif
+#ifdef BUILD_COLLAB
+    { { (unichar_t *) N_("C_ollaborate"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Collaborate|No Shortcut"), collablist, collablistcheck, NULL, 0 },
+#endif
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
+#if !defined(_NO_FFSCRIPT)
+    { { (unichar_t *) N_("Script Menu"), (GImage *) "fileexecute.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'r' }, H_("Script Menu|No Shortcut"), dummyitem, MenuScriptsBuild, NULL, MID_ScriptMenu },
+#endif
+    { { (unichar_t *) N_("E_xecute Script"), (GImage *) "python.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Execute Script|No Shortcut"), NULL, NULL, NULL, NULL },
+	GMENUITEM2_EMPTY
+};
+
 static GMenuItem2 dummyall[] = {
     { { (unichar_t *) N_("All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'K' }, H_("All|No Shortcut"), NULL, NULL, NULL, 0 },
     GMENUITEM2_EMPTY
@@ -5535,25 +6044,24 @@ static void vwlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 }
 
 static GMenuItem2 mtlist[] = {
-    { { (unichar_t *) N_("New _Metrics Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("New Metrics Window|No Shortcut"), NULL, NULL, FVMenuOpenMetrics, MID_OpenMetrics },
+    { { (unichar_t *) N_("Set _Width..."), (GImage *) "metricssetwidth.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Set Width...|No Shortcut"), NULL, NULL, FVMenuSetWidth, MID_SetWidth },
+    { { (unichar_t *) N_("Set _LBearing"), (GImage *) "metricssetlbearing.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'L' }, H_("Set LBearing...|No Shortcut"), NULL, NULL, FVMenuSetWidth, MID_SetLBearing },
+    { { (unichar_t *) N_("Set _RBearing"), (GImage *) "metricssetrbearing.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Set RBearing...|No Shortcut"), NULL, NULL, FVMenuSetWidth, MID_SetRBearing },
+    { { (unichar_t *) N_("Set Both Bearings"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Set Both Bearings...|No Shortcut"), NULL, NULL, FVMenuSetWidth, MID_SetBearings },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("_Center in Width"), (GImage *) "metricscenter.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Center in Width|No Shortcut"), NULL, NULL, FVMenuCenter, MID_Center },
     { { (unichar_t *) N_("_Thirds in Width"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Thirds in Width|No Shortcut"), NULL, NULL, FVMenuCenter, MID_Thirds },
-    { { (unichar_t *) N_("Set _Width..."), (GImage *) "metricssetwidth.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Set Width...|No Shortcut"), NULL, NULL, FVMenuSetWidth, MID_SetWidth },
-    { { (unichar_t *) N_("Set _LBearing..."), (GImage *) "metricssetlbearing.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'L' }, H_("Set LBearing...|No Shortcut"), NULL, NULL, FVMenuSetWidth, MID_SetLBearing },
-    { { (unichar_t *) N_("Set _RBearing..."), (GImage *) "metricssetrbearing.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Set RBearing...|No Shortcut"), NULL, NULL, FVMenuSetWidth, MID_SetRBearing },
-    { { (unichar_t *) N_("Set Both Bearings..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Set Both Bearings...|No Shortcut"), NULL, NULL, FVMenuSetWidth, MID_SetBearings },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("Set _Vertical Advance..."), (GImage *) "metricssetvwidth.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("Set Vertical Advance...|No Shortcut"), NULL, NULL, FVMenuSetWidth, MID_SetVWidth },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("_Auto Width..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Auto Width...|No Shortcut"), NULL, NULL, FVMenuAutoWidth, 0 },
-    { { (unichar_t *) N_("Ker_n By Classes..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'K' }, H_("Kern By Classes...|No Shortcut"), NULL, NULL, FVMenuKernByClasses, 0 },
-    { { (unichar_t *) N_("Remove All Kern _Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Remove All Kern Pairs|No Shortcut"), NULL, NULL, FVMenuRemoveKern, MID_RmHKern },
-    { { (unichar_t *) N_("Kern Pair Closeup..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Kern Pair Closeup...|No Shortcut"), NULL, NULL, FVMenuKPCloseup, 0 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("VKern By Classes..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'K' }, H_("VKern By Classes...|No Shortcut"), NULL, NULL, FVMenuVKernByClasses, MID_VKernByClass },
+    { { (unichar_t *) N_("Ker_n By Classes"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'K' }, H_("Kern By Classes...|No Shortcut"), NULL, NULL, FVMenuKernByClasses, 0 },
+    { { (unichar_t *) N_("Kern Pair Closeup"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Kern Pair Closeup...|No Shortcut"), NULL, NULL, FVMenuKPCloseup, 0 },
+    { { (unichar_t *) N_("Remove All Kern _Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Remove All Kern Pairs|No Shortcut"), NULL, NULL, FVMenuRemoveKern, MID_RmHKern },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
+    { { (unichar_t *) N_("VKern By Classes"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'K' }, H_("VKern By Classes...|No Shortcut"), NULL, NULL, FVMenuVKernByClasses, MID_VKernByClass },
     { { (unichar_t *) N_("VKern From HKern"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("VKern From HKern|No Shortcut"), NULL, NULL, FVMenuVKernFromHKern, MID_VKernFromH },
     { { (unichar_t *) N_("Remove All VKern Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Remove All VKern Pairs|No Shortcut"), NULL, NULL, FVMenuRemoveVKern, MID_RmVKern },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
+    { { (unichar_t *) N_("Set _Vertical Advance..."), (GImage *) "metricssetvwidth.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("Set Vertical Advance...|No Shortcut"), NULL, NULL, NULL, NULL },
     GMENUITEM2_EMPTY
 };
 
@@ -5591,315 +6099,6 @@ static void FVWindowMenuBuild(GWindow gw, struct gmenuitem *mi, GEvent *e) {
 	}
     }
 }
-
-#ifdef BUILD_COLLAB
-static void FVMenuCollabStart(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
-{
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
-    printf("connecting to server and sending initial SFD to it...\n");
-
-    int port_default = 5556;
-    int port = port_default;
-    char address[IPADDRESS_STRING_LENGTH_T];
-    if( !getNetworkAddress( address ))
-    {
-	snprintf( address, IPADDRESS_STRING_LENGTH_T-1,
-		  "%s", HostPortPack( "127.0.0.1", port ));
-    }
-    else
-    {
-	snprintf( address, IPADDRESS_STRING_LENGTH_T-1,
-		  "%s", HostPortPack( address, port ));
-    }
-
-    printf("host address:%s\n",address);
-
-    char* res = gwwv_ask_string(
-	"Starting Collab Server",
-	address,
-	"FontForge has determined that your computer can be accessed"
-	" using the below address. Share that address with other people"
-	" who you wish to collaborate with...\n\nPress OK to start the collaboration server...");
-
-    if( res )
-    {
-	printf("res:%s\n", res );
-	strncpy( address, res, IPADDRESS_STRING_LENGTH_T );
-	HostPortUnpack( address, &port, port_default );
-
-	printf("address:%s\n", address );
-	printf("port:%d\n", port );
-
-	void* cc = collabclient_new( address, port );
-	fv->b.collabClient = cc;
-	collabclient_sessionStart( cc, fv );
-	printf("connecting to server...sent the sfd for session start.\n");
-    }
-}
-#endif
-
-static int collab_MakeChoicesArray( GHashTable* peers, char** choices, int choices_sz, int localOnly )
-{
-    GHashTableIter iter;
-    gpointer key, value;
-    int lastidx = 0;
-    memset( choices, 0, sizeof(char*) * choices_sz );
-
-    int i=0;
-    int maxUserNameLength = 1;
-    g_hash_table_iter_init (&iter, peers);
-    for( i=0; g_hash_table_iter_next (&iter, &key, &value); i++ )
-    {
-	beacon_announce_t* ba = (beacon_announce_t*)value;
-	maxUserNameLength = imax( maxUserNameLength, strlen(ba->username) );
-    }
-
-    g_hash_table_iter_init (&iter, peers);
-    for( i=0; g_hash_table_iter_next (&iter, &key, &value); i++ )
-    {
-	beacon_announce_t* ba = (beacon_announce_t*)value;
-	if( localOnly && !collabclient_isAddressLocal( ba->ip ))
-	    continue;
-
-	printf("user:%s\n", ba->username );
-	printf("mach:%s\n", ba->machinename );
-
-	char buf[101];
-	if( localOnly )
-	{
-	    snprintf( buf, 100, "%s", ba->fontname );
-	}
-	else
-	{
-	    char format[50];
-	    sprintf( format, "%s %%%d", "%s", maxUserNameLength );
-	    strcat( format, "s %s");
-	    snprintf( buf, 100, format, ba->fontname, ba->username, ba->machinename );
-	}
-	choices[i] = copy( buf );
-	if( i >= choices_sz )
-	    break;
-	lastidx++;
-    }
-
-    return lastidx;
-}
-
-static beacon_announce_t* collab_getBeaconFromChoicesArray( GHashTable* peers, int choice, int localOnly )
-{
-    GHashTableIter iter;
-    gpointer key, value;
-    int i=0;
-
-    g_hash_table_iter_init (&iter, peers);
-    for( i=0; g_hash_table_iter_next (&iter, &key, &value); i++ )
-    {
-	beacon_announce_t* ba = (beacon_announce_t*)value;
-	if( localOnly && !collabclient_isAddressLocal( ba->ip ))
-	    continue;
-	if( i != choice )
-	    continue;
-	return ba;
-    }
-    return 0;
-}
-
-
-#ifdef BUILD_COLLAB
-static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
-{
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
-    printf("connecting to server...\n");
-
-    {
-	int choices_sz = 100;
-	char* choices[101];
-	memset( choices, 0, sizeof(choices));
-
-	collabclient_trimOldBeaconInformation( 0 );
-	GHashTable* peers = collabclient_getServersFromBeaconInfomration();
-	int localOnly = 0;
-	int max = collab_MakeChoicesArray( peers, choices, choices_sz, localOnly );
-	int choice = gwwv_choose(_("Connect to Collab Server"),(const char **) choices, max,
-				 0,_("Select a collab server to connect to..."));
-	printf("you wanted %d\n", choice );
-	if( choice <= max )
-	{
-	    beacon_announce_t* ba = collab_getBeaconFromChoicesArray( peers, choice, localOnly );
-
-	    if( ba )
-	    {
-		int port = ba->port;
-		char address[IPADDRESS_STRING_LENGTH_T];
-		strncpy( address, ba->ip, IPADDRESS_STRING_LENGTH_T-1 );
-		void* cc = collabclient_new( address, port );
-		fv->b.collabClient = cc;
-		collabclient_sessionJoin( cc, fv );
-	    }
-	}
-    }
-
-    printf("FVMenuCollabConnect(done)\n");
-}
-
-static void FVMenuCollabConnectToExplicitAddress(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
-{
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
-    printf("********** connecting to server... explicit address... p:%p\n", pref_collab_last_server_connected_to);
-
-    char* default_server = "localhost";
-    if( pref_collab_last_server_connected_to ) {
-	default_server = pref_collab_last_server_connected_to;
-    }
-    
-    char* res = gwwv_ask_string(
-    	"Connect to Collab Server",
-    	default_server,
-    	"Please enter the network location of the Collab server you wish to connect to...");
-    if( res )
-    {
-	if( pref_collab_last_server_connected_to ) {
-	    free( pref_collab_last_server_connected_to );
-	}
-	pref_collab_last_server_connected_to = copy( res );
-	SavePrefs(true);
-	
-    	int port_default = 5556;
-    	int port = port_default;
-    	char address[IPADDRESS_STRING_LENGTH_T];
-    	strncpy( address, res, IPADDRESS_STRING_LENGTH_T-1 );
-    	HostPortUnpack( address, &port, port_default );
-
-    	void* cc = collabclient_new( address, port );
-    	fv->b.collabClient = cc;
-    	collabclient_sessionJoin( cc, fv );
-    }
-
-    printf("FVMenuCollabConnect(done)\n");
-}
-
-static void FVMenuCollabDisconnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
-{
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    collabclient_sessionDisconnect( &fv->b );
-}
-#endif
-
-static void AskAndMaybeCloseLocalCollabServers()
-{
-    char *buts[3];
-    buts[0] = _("_OK");
-    buts[1] = _("_Cancel");
-    buts[2] = NULL;
-
-    int i=0;
-    int choices_sz = 100;
-    char* choices[101];
-    collabclient_trimOldBeaconInformation( 0 );
-    GHashTable* peers = collabclient_getServersFromBeaconInfomration();
-    if( !peers )
-	return;
-    
-    int localOnly = 1;
-    int max = collab_MakeChoicesArray( peers, choices, choices_sz, localOnly );
-    if( !max )
-	return;
-
-    char sel[101];
-    memset( sel, 1, max );
-    int choice = gwwv_choose_multiple(_("Close Collab Server(s)"),
-				      (const char **) choices, sel, max,
-				      buts, _("Select which servers you wish to close..."));
-
-    int allServersSelected = 1;
-    printf("you wanted %d\n", choice );
-    for( i=0; i < max; i++ )
-    {
-	printf("sel[%d] is %d\n", i, sel[i] );
-	beacon_announce_t* ba = collab_getBeaconFromChoicesArray( peers, choice, localOnly );
-
-	if( sel[i] && ba )
-	{
-	    int port = ba->port;
-
-	    if( sel[i] )
-	    {
-		FontViewBase* fv = FontViewFind( FontViewFind_byCollabBasePort, (void*)(intptr_t)port );
-		if( fv )
-		    collabclient_sessionDisconnect( fv );
-		printf("CLOSING port:%d fv:%p\n", port, fv );
-		collabclient_closeLocalServer( port );
-	    }
-	}
-	else
-	{
-	    allServersSelected = 0;
-	}
-    }
-
-    printf("allServersSelected:%d\n", allServersSelected );
-    if( allServersSelected )
-	collabclient_closeAllLocalServersForce();
-}
-
-static void FVMenuCollabCloseLocalServer(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
-{
-    AskAndMaybeCloseLocalCollabServers();
-}
-
-
-#if defined(__MINGW32__)
-//
-// This is an imperfect implemenation of kill() for windows.
-//
-static int kill( int pid, int sig )
-{
-    HANDLE hHandle;
-    hHandle = OpenProcess( PROCESS_ALL_ACCESS, 0, pid );
-    TerminateProcess( hHandle, 0 );
-}
-#endif
-
-
-
-static void collablistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e))
-{
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi )
-    {
-	switch ( mi->mid )
-	{
-	case MID_CollabDisconnect:
-	{
-	    enum collabState_t st = collabclient_getState( &fv->b );
-	    mi->ti.disabled = ( st < cs_server );
-	    break;
-	}
-	case MID_CollabCloseLocalServer:
-	    printf("can close local server: %d\n", collabclient_haveLocalServer() );
-	    mi->ti.disabled = !collabclient_haveLocalServer();
-	    break;
-	}
-    }
-}
-
-#ifdef BUILD_COLLAB
-
-static GMenuItem2 collablist[] = {
-    { { (unichar_t *) N_("_Start Session..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Start Session...|No Shortcut"), NULL, NULL, FVMenuCollabStart, MID_CollabStart },
-    { { (unichar_t *) N_("_Connect to Session..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Connect to Session...|No Shortcut"), NULL, NULL, FVMenuCollabConnect, MID_CollabConnect },
-    { { (unichar_t *) N_("_Connect to Session (ip:port)..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Connect to Session (ip:port)...|No Shortcut"), NULL, NULL, FVMenuCollabConnectToExplicitAddress, MID_CollabConnectToExplicitAddress },
-    { { (unichar_t *) N_("_Disconnect"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Disconnect|No Shortcut"), NULL, NULL, FVMenuCollabDisconnect, MID_CollabDisconnect },
-    GMENUITEM2_LINE,
-    { { (unichar_t *) N_("Close local server"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Close local server|No Shortcut"), NULL, NULL, FVMenuCollabCloseLocalServer, MID_CollabCloseLocalServer },
-
-    GMENUITEM2_EMPTY,				/* Extra room to show sub-font names */
-};
-#endif
 
 GMenuItem2 helplist[] = {
     { { (unichar_t *) N_("_Help"), (GImage *) "helphelp.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Help|F1"), NULL, NULL, FVMenuContextualHelp, 0 },
@@ -5941,17 +6140,18 @@ static GMenuItem2 mblist[] = {
     { { (unichar_t *) N_("_Edit"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'E' }, H_("Edit|No Shortcut"), edlist, edlistcheck, NULL, 0 },
     { { (unichar_t *) N_("F_ont"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Font|No Shortcut"), fontlist, fontlistcheck, NULL, 0 },
 #ifndef _NO_PYTHON
-    { { (unichar_t *) N_("_Tools"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Tools|No Shortcut"), glyphlist, NULL, NULL, 0 },
+    { { (unichar_t *) N_("_Tools"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Tools|No Shortcut"), NULL, fvpy_tllistcheck, NULL, 0 },
 #endif
+#ifdef NATIVE_CALLBACKS
+    { { (unichar_t *) N_("Tools_2"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Tools 2|No Shortcut"), NULL, fv_tl2listcheck, NULL, 0 },
+#endif	
 	{ { (unichar_t *) N_("_Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Glyph|No Shortcut"), glyphlist, NULL, NULL, 0 },
     { { (unichar_t *) N_("_Path"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Path|No Shortcut"), pathlist, NULL, NULL, 0 },
     { { (unichar_t *) N_("_Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Point|No Shortcut"), pointlist, NULL, NULL, 0 },
-    { { (unichar_t *) N_("_View"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("View|No Shortcut"), vwlist, vwlistcheck, NULL, 0 },
     { { (unichar_t *) N_("_Metrics"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Metrics|No Shortcut"), mtlist, mtlistcheck, NULL, 0 },
+    { { (unichar_t *) N_("_Extensions"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Extensions|No Shortcut"), extlist, NULL, NULL, 0 },
+    { { (unichar_t *) N_("_View"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("View|No Shortcut"), vwlist, vwlistcheck, NULL, 0 },
     { { (unichar_t *) N_("_Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Window|No Shortcut"), wnmenu, FVWindowMenuBuild, NULL, 0 },
-#ifdef BUILD_COLLAB
-    { { (unichar_t *) N_("C_ollaborate"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Collaborate|No Shortcut"), collablist, collablistcheck, NULL, 0 },
-#endif
     { { (unichar_t *) N_("_Help"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Help|No Shortcut"), helplist, NULL, NULL, 0 },
     GMENUITEM2_EMPTY
 };
@@ -6485,191 +6685,6 @@ return;
 
     r.x = 0; r.width = fv->width; r.y = fv->mbh; r.height = fv->infoh;
     GDrawRequestExpose(fv->gw,&r,false);
-}
-
-void FVChar(FontView *fv, GEvent *event) {
-    int i,pos, cnt, gid;
-    extern int navigation_mask;
-
-#if MyMemory
-    if ( event->u.chr.keysym == GK_F2 ) {
-	fprintf( stderr, "Malloc debug on\n" );
-	__malloc_debug(5);
-    } else if ( event->u.chr.keysym == GK_F3 ) {
-	fprintf( stderr, "Malloc debug off\n" );
-	__malloc_debug(0);
-    }
-#endif
-
-    if ( event->u.chr.keysym=='s' &&
-	    (event->u.chr.state&ksm_control) &&
-	    (event->u.chr.state&ksm_meta) )
-	MenuSaveAll(NULL,NULL,NULL);
-    else if ( event->u.chr.keysym=='q' &&
-	    (event->u.chr.state&ksm_control) &&
-	    (event->u.chr.state&ksm_meta) )
-	MenuExit(NULL,NULL,NULL);
-    else if ( event->u.chr.keysym=='I' &&
-	    (event->u.chr.state&ksm_shift) &&
-	    (event->u.chr.state&ksm_meta) )
-	FVMenuCharInfo(fv->gw,NULL,NULL);
-    else if ( (event->u.chr.keysym=='[' || event->u.chr.keysym==']') &&
-	    (event->u.chr.state&ksm_control) ) {
-	_FVMenuChangeChar(fv,event->u.chr.keysym=='['?MID_Prev:MID_Next);
-    } else if ( (event->u.chr.keysym=='{' || event->u.chr.keysym=='}') &&
-	    (event->u.chr.state&ksm_control) ) {
-	_FVMenuChangeChar(fv,event->u.chr.keysym=='{'?MID_PrevDef:MID_NextDef);
-    } else if ( event->u.chr.keysym=='\\' && (event->u.chr.state&ksm_control) ) {
-	/* European keyboards need a funky modifier to get \ */
-	FVDoTransform(fv);
-#if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
-    } else if ( isdigit(event->u.chr.keysym) && (event->u.chr.state&ksm_control) &&
-	    (event->u.chr.state&ksm_meta) ) {
-	/* The Script menu isn't always up to date, so we might get one of */
-	/*  the shortcuts here */
-	int index = event->u.chr.keysym-'1';
-	if ( index<0 ) index = 9;
-	if ( script_filenames[index]!=NULL )
-	    ExecuteScriptFile((FontViewBase *) fv,NULL,script_filenames[index]);
-#endif
-    } else if ( event->u.chr.keysym == GK_Left ||
-	    event->u.chr.keysym == GK_Tab ||
-	    event->u.chr.keysym == GK_BackTab ||
-	    event->u.chr.keysym == GK_Up ||
-	    event->u.chr.keysym == GK_Right ||
-	    event->u.chr.keysym == GK_Down ||
-	    event->u.chr.keysym == GK_KP_Left ||
-	    event->u.chr.keysym == GK_KP_Up ||
-	    event->u.chr.keysym == GK_KP_Right ||
-	    event->u.chr.keysym == GK_KP_Down ||
-	    event->u.chr.keysym == GK_Home ||
-	    event->u.chr.keysym == GK_KP_Home ||
-	    event->u.chr.keysym == GK_End ||
-	    event->u.chr.keysym == GK_KP_End ||
-	    event->u.chr.keysym == GK_Page_Up ||
-	    event->u.chr.keysym == GK_KP_Page_Up ||
-	    event->u.chr.keysym == GK_Prior ||
-	    event->u.chr.keysym == GK_Page_Down ||
-	    event->u.chr.keysym == GK_KP_Page_Down ||
-	    event->u.chr.keysym == GK_Next ) {
-	int end_pos = fv->end_pos;
-	/* We move the currently selected char. If there is none, then pick */
-	/*  something on the screen */
-	if ( end_pos==-1 )
-	    end_pos = (fv->rowoff+fv->rowcnt/2)*fv->colcnt;
-	switch ( event->u.chr.keysym ) {
-	  case GK_Tab:
-	    pos = end_pos;
-	    do {
-		if ( event->u.chr.state&ksm_shift )
-		    --pos;
-		else
-		    ++pos;
-		if ( pos>=fv->b.map->enccount ) pos = 0;
-		else if ( pos<0 ) pos = fv->b.map->enccount-1;
-	    } while ( pos!=end_pos &&
-		    ((gid=fv->b.map->map[pos])==-1 || !SCWorthOutputting(fv->b.sf->glyphs[gid])));
-	    if ( pos==end_pos ) ++pos;
-	    if ( pos>=fv->b.map->enccount ) pos = 0;
-	  break;
-#if GK_Tab!=GK_BackTab
-	  case GK_BackTab:
-	    pos = end_pos;
-	    do {
-		--pos;
-		if ( pos<0 ) pos = fv->b.map->enccount-1;
-	    } while ( pos!=end_pos &&
-		    ((gid=fv->b.map->map[pos])==-1 || !SCWorthOutputting(fv->b.sf->glyphs[gid])));
-	    if ( pos==end_pos ) --pos;
-	    if ( pos<0 ) pos = 0;
-	  break;
-#endif
-	  case GK_Left: case GK_KP_Left:
-	    pos = end_pos-1;
-	  break;
-	  case GK_Right: case GK_KP_Right:
-	    pos = end_pos+1;
-	  break;
-	  case GK_Up: case GK_KP_Up:
-	    pos = end_pos-fv->colcnt;
-	  break;
-	  case GK_Down: case GK_KP_Down:
-	    pos = end_pos+fv->colcnt;
-	  break;
-	  case GK_End: case GK_KP_End:
-	    pos = fv->b.map->enccount;
-	  break;
-	  case GK_Home: case GK_KP_Home:
-	    pos = 0;
-	    if ( fv->b.sf->top_enc!=-1 && fv->b.sf->top_enc<fv->b.map->enccount )
-		pos = fv->b.sf->top_enc;
-	    else {
-		pos = SFFindSlot(fv->b.sf,fv->b.map,home_char,NULL);
-		if ( pos==-1 ) pos = 0;
-	    }
-	  break;
-	  case GK_Page_Up: case GK_KP_Page_Up:
-#if GK_Prior!=GK_Page_Up
-	  case GK_Prior:
-#endif
-	    pos = (fv->rowoff-fv->rowcnt+1)*fv->colcnt;
-	  break;
-	  case GK_Page_Down: case GK_KP_Page_Down:
-#if GK_Next!=GK_Page_Down
-	  case GK_Next:
-#endif
-	    pos = (fv->rowoff+fv->rowcnt+1)*fv->colcnt;
-	  break;
-	}
-	if ( pos<0 ) pos = 0;
-	if ( pos>=fv->b.map->enccount ) pos = fv->b.map->enccount-1;
-	if ( event->u.chr.state&ksm_shift && event->u.chr.keysym!=GK_Tab && event->u.chr.keysym!=GK_BackTab ) {
-	    FVReselect(fv,pos);
-	} else {
-	    FVDeselectAll(fv);
-	    fv->b.selected[pos] = true;
-	    FVToggleCharSelected(fv,pos);
-	    fv->pressed_pos = pos;
-	    fv->sel_index = 1;
-	}
-	fv->end_pos = pos;
-	FVShowInfo(fv);
-	FVScrollToChar(fv,pos);
-    } else if ( event->u.chr.keysym == GK_Help ) {
-	MenuHelp(NULL,NULL,NULL);	/* Menu does F1 */
-    } else if ( event->u.chr.keysym == GK_Escape ) {
-	FVDeselectAll(fv);
-    } else if ( event->u.chr.chars[0]=='\r' || event->u.chr.chars[0]=='\n' ) {
-	if ( fv->b.container!=NULL && fv->b.container->funcs->is_modal )
-return;
-	for ( i=cnt=0; i<fv->b.map->enccount && cnt<10; ++i ) if ( fv->b.selected[i] ) {
-	    SplineChar *sc = SFMakeChar(fv->b.sf,fv->b.map,i);
-	    if ( fv->show==fv->filled ) {
-		CharViewCreate(sc,fv,i);
-	    } else {
-		BDFFont *bdf = fv->show;
-		BitmapViewCreate(BDFMakeGID(bdf,sc->orig_pos),bdf,fv,i);
-	    }
-	    ++cnt;
-	}
-    } else if ( (event->u.chr.state&((GMenuMask()|navigation_mask)&~(ksm_shift|ksm_capslock)))==navigation_mask &&
-	    event->type == et_char &&
-	    event->u.chr.keysym!=0 &&
-	    (event->u.chr.keysym<GK_Special/* || event->u.chr.keysym>=0x10000*/)) {
-	SplineFont *sf = fv->b.sf;
-	int enc = EncFromUni(event->u.chr.keysym,fv->b.map->enc);
-	if ( enc==-1 ) {
-	    for ( i=0; i<sf->glyphcnt; ++i ) {
-		if ( sf->glyphs[i]!=NULL )
-		    if ( sf->glyphs[i]->unicodeenc==event->u.chr.keysym )
-	    break;
-	    }
-	    if ( i!=-1 )
-		enc = fv->b.map->backmap[i];
-	}
-	if ( enc<fv->b.map->enccount && enc!=-1 )
-	    FVChangeChar(fv,enc);
-    }
 }
 
 static void utf82u_annot_strncat(unichar_t *to, const char *from, int len) {
