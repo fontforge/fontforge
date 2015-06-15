@@ -5125,7 +5125,7 @@ MinimumDistance *MinimumDistanceCopy(MinimumDistance *md) {
     MinimumDistance *head=NULL, *last=NULL, *cur;
 
     for ( ; md!=NULL; md = md->next ) {
-	cur = chunkalloc(sizeof(DStemInfo));
+	cur = chunkalloc(sizeof(MinimumDistance));
 	*cur = *md;
 	cur->next = NULL;
 	if ( head==NULL )
