@@ -3184,6 +3184,7 @@ static SplineFont *SVGParseFont(xmlNodePtr font) {
     int cnt, flags = -1;
     xmlNodePtr kids;
     int defh=0, defv=0;
+    int has_font_face = false;
     xmlChar *name;
     SplineFont *sf;
     EncMap *map;
@@ -3211,6 +3212,7 @@ static SplineFont *SVGParseFont(xmlNodePtr font) {
     for ( kids = font->children; kids!=NULL; kids=kids->next ) {
 	int ascent=0, descent=0;
 	if ( xmlStrcmp(kids->name,(const xmlChar *) "font-face")==0 ) {
+	    has_font_face = true;
 	    name = xmlGetProp(kids,(xmlChar *) "units-per-em");
 	    if ( name!=NULL ) {
 		int val = rint(strtod((char *) name,NULL));
@@ -3356,7 +3358,7 @@ return( NULL );
 		xmlStrcmp(kids->name,(const xmlChar *) "missing-glyph")==0 )
 	    ++cnt;
     }
-    if ( sf->descent==0 ) {
+    if ( !has_font_face ) {
 	LogError( _("This font does not specify font-face\n") );
 	SplineFontFree(sf);
 return( NULL );
