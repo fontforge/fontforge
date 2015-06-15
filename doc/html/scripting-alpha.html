@@ -494,11 +494,14 @@ a[4][0] = "Nested array";
 	    <A NAME="Chr">C</A>hr(int)<BR>
 	    Chr(array)
 	  <DD>
-	    Takes an integer [0,255] and returns a single character string containing
-	    that code point. Internally FontForge interprets strings as if they were
-	    in utf8 (well really, FontForge almost always just uses ASCII-US internally).
-	    If passed an array, it should be an array of integers and the result is the
-	    string. It can execute with no current font.
+	    Takes an integer [-128,255] and returns a single character
+	    string containing that byte.  Negative numbers are treated as
+	    signed bytes in two's complement.  Internally FontForge interprets
+	    strings as if they were in UTF-8, so it is possible to construct
+	    higher code points and strings that are not valid UTF-8 by
+	    passing in appropriate values.  If passed an array, it
+	    should be an array of integers and the result is the string.  It
+	    can execute with no current font.
 	  <DT>
 	    <A NAME="CIDChangeSubFont">C</A>IDChangeSubFont(new-sub-font-name)
 	  <DD>
