@@ -176,7 +176,7 @@ static GTextInfo **AnchorD_GlyphsInClass(AnchorDlg *a) {
 	} while ( k<_sf->subfontcnt );
 	if ( !j ) {
 	    btot = bcnt;
-	    ti = calloc(bcnt+mcnt+5,sizeof(GTextInfo));
+	    ti = calloc(bcnt+mcnt+5,sizeof(GTextInfo*));
 	    ti[0] = calloc(1,sizeof(GTextInfo));
 	    ti[0]->text = utf82u_copy(ac->type==act_curs ? _("Exits") : _("Bases"));
 	    ti[0]->fg = ti[0]->bg = COLOR_DEFAULT;
