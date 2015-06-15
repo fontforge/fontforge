@@ -112,7 +112,7 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
     gcd[2].creator = GLabelCreate;
     hvarray[1][0] = &gcd[2];
 
-    if ( lastx!=NULL )
+    if ( lasty!=NULL )
 	label[3].text = lasty;
     else {
 	label[3].text = (unichar_t *) "y";
