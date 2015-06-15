@@ -755,7 +755,7 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid, int encuni, int vs
 	c = LigCnt(sc->parent,best,univals,sizeof(univals)/sizeof(univals[0]));
 	fputs("unicode=\"",file);
 	for ( i=0; i<c; ++i )
-	    if ( univals[i]>='A' && univals[i]<'z' )
+	    if ( univals[i]>='A' && univals[i]<='z' )
 		putc(univals[i],file);
 	    else
 		fprintf(file,"&#x%x;", (unsigned int) univals[i]);
