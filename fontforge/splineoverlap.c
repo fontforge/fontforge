@@ -1190,7 +1190,7 @@ static void SplitMonotonicAtFlex(Monotonic *m,int which,bigreal coord,
       if (t == 0) {
         id->inter.x = m->s->from->me.x;
         id->inter.y = m->s->from->me.y;
-      } else if (m->end != NULL) {
+      } else if (m->start != NULL) {
         id->inter.x = m->start->inter.x;
         id->inter.y = m->start->inter.y;
       } else {
