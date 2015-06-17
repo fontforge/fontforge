@@ -837,7 +837,7 @@ return;
 	    Monotonic *m2 = chunkalloc(sizeof(Monotonic));
 	    BasePoint pt, inter;
             BasePoint oldend;
-            if (m->end != NULL) m->end->inter;
+            if (m->end != NULL) oldend = m->end->inter;
             else {
               oldend.x = 0.0;
               oldend.y = 0.0;
