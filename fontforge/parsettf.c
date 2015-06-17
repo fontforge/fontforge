@@ -4426,6 +4426,7 @@ static void ApplyVariationSequenceSubtable(FILE *ttf,uint32 vs_map,
 	    }
 	}
     }
+    free(vs_data);
 }
 
 static enum uni_interp amscheck(struct ttfinfo *info, EncMap *map) {
