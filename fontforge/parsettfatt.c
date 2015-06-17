@@ -1624,7 +1624,7 @@ return;
 	fpst->rules = rule = calloc(1,sizeof(struct fpst_rule));
 	fpst->rule_cnt = 1;
 	rule->u.coverage.ncnt = gcnt;
-	rule->u.coverage.ncovers = malloc(gcnt*sizeof(char **));
+	rule->u.coverage.ncovers = malloc(gcnt*sizeof(char *));
 	for ( i=0; i<gcnt; ++i ) {
 	    glyphs =  getCoverageTable(ttf,stoffset+coverage[i],info);
 	    rule->u.coverage.ncovers[i] = GlyphsToNames(info,glyphs,true);
@@ -1711,7 +1711,7 @@ return;
 	fpst->rule_cnt = 1;
 
 	rule->u.coverage.bcnt = bcnt;
-	rule->u.coverage.bcovers = malloc(bcnt*sizeof(char **));
+	rule->u.coverage.bcovers = malloc(bcnt*sizeof(char *));
 	for ( i=0; i<bcnt; ++i ) {
 	    glyphs =  getCoverageTable(ttf,stoffset+bcoverage[i],info);
 	    rule->u.coverage.bcovers[i] = GlyphsToNames(info,glyphs,true);
@@ -1719,7 +1719,7 @@ return;
 	}
 
 	rule->u.coverage.ncnt = gcnt;
-	rule->u.coverage.ncovers = malloc(gcnt*sizeof(char **));
+	rule->u.coverage.ncovers = malloc(gcnt*sizeof(char *));
 	for ( i=0; i<gcnt; ++i ) {
 	    glyphs =  getCoverageTable(ttf,stoffset+coverage[i],info);
 	    rule->u.coverage.ncovers[i] = GlyphsToNames(info,glyphs,true);
@@ -1727,7 +1727,7 @@ return;
 	}
 
 	rule->u.coverage.fcnt = fcnt;
-	rule->u.coverage.fcovers = malloc(fcnt*sizeof(char **));
+	rule->u.coverage.fcovers = malloc(fcnt*sizeof(char *));
 	for ( i=0; i<fcnt; ++i ) {
 	    glyphs =  getCoverageTable(ttf,stoffset+fcoverage[i],info);
 	    rule->u.coverage.fcovers[i] = GlyphsToNames(info,glyphs,true);
