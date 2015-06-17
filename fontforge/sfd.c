@@ -4813,9 +4813,11 @@ static void SFDConsumeUntil( FILE *sfd, const char** terminators ) {
         const char** tp = terminators;
         for( ; tp && *tp; ++tp ) {
             if( !strnmatch( line, *tp, strlen( *tp ))) {
+                free(line);
                 return;
             }
         }
+        free(line);
     }
 }
 
@@ -4855,8 +4857,7 @@ void SFDGetKerns( FILE *sfd, SplineChar *sc, char* ttok ) {
 		while ( (ch=nlgetc(sfd))==' ' );
 		ungetc(ch,sfd);
 		if ( ch=='{' ) {
-		    kp->adjust=chunkalloc(sizeof(DeviceTable));
-		    SFDReadDeviceTable(sfd,kp->adjust);
+		    kp->adjust = SFDReadDeviceTable(sfd, NULL);
 		}
 		if ( last != NULL )
 		    last->next = kp;
@@ -4914,8 +4915,7 @@ exit(1);
 		while ( (ch=nlgetc(sfd))==' ' );
 		ungetc(ch,sfd);
 		if ( ch=='{' ) {
-		    kp->kp.adjust=chunkalloc(sizeof(DeviceTable));
-		    SFDReadDeviceTable(sfd,kp->kp.adjust);
+		    kp->kp.adjust = SFDReadDeviceTable(sfd, NULL);
 		}
 		if ( last != NULL )
 		    last->kp.next = (KernPair *) kp;
@@ -5105,8 +5105,10 @@ char* SFDMoveToNextStartChar( FILE* sfd ) {
 	    while( line[len] && line[len] == ' ' )
 		len++;
 	    strcpy( ret, line+len );
+	    free(line);
 	    return copy(ret);
 	}
+	free(line);
 	if(feof( sfd ))
 	    break;
 
@@ -5580,8 +5582,7 @@ return( NULL );
 		while ( (ch=nlgetc(sfd))==' ' );
 		ungetc(ch,sfd);
 		if ( ch=='{' ) {
-		    kp->adjust=chunkalloc(sizeof(DeviceTable));
-		    SFDReadDeviceTable(sfd,kp->adjust);
+		    kp->adjust = SFDReadDeviceTable(sfd, NULL);
 		}
 		if ( last != NULL )
 		    last->next = kp;
@@ -5635,8 +5636,7 @@ exit(1);
 		while ( (ch=nlgetc(sfd))==' ' );
 		ungetc(ch,sfd);
 		if ( ch=='{' ) {
-		    kp->kp.adjust=chunkalloc(sizeof(DeviceTable));
-		    SFDReadDeviceTable(sfd,kp->kp.adjust);
+		    kp->kp.adjust = SFDReadDeviceTable(sfd, NULL);
 		}
 		if ( last != NULL )
 		    last->kp.next = (KernPair *) kp;
@@ -5848,8 +5848,6 @@ static int SFDGetBitmapChar(FILE *sfd,BDFFont *bdf) {
     EncMap *map;
     int ch;
 
-    bfc = chunkalloc(sizeof(BDFChar));
-    memset( bfc,'\0',sizeof( BDFChar ));
     map = bdf->sf->map;
 
     if ( getint(sfd,&orig)!=1 || orig<0 )
@@ -5883,6 +5881,11 @@ return( 0 );
     }
     if ( enc<0 ||xmax<xmin || ymax<ymin )
 return( 0 );
+
+    bfc = chunkalloc(sizeof(BDFChar));
+    if (bfc == NULL)
+        return 0;
+
     if ( orig==-1 ) {
 	bfc->sc = SFMakeChar(bdf->sf,map,enc);
 	orig = bfc->sc->orig_pos;
@@ -5985,8 +5988,6 @@ static int SFDGetBitmapFont(FILE *sfd,SplineFont *sf,int fromdir,char *dirname) 
     int pixelsize, ascent, descent, depth=1;
     int ch, enccount;
 
-    bdf = calloc(1,sizeof(BDFFont));
-
     if ( getint(sfd,&pixelsize)!=1 || pixelsize<=0 )
 return( 0 );
     if ( getint(sfd,&enccount)!=1 || enccount<0 )
@@ -6001,6 +6002,11 @@ return( 0 );
 return( 0 );
     while ( (ch = nlgetc(sfd))==' ' );
     ungetc(ch,sfd);		/* old sfds don't have a foundry */
+
+    bdf = calloc(1,sizeof(BDFFont));
+    if (bdf == NULL)
+        return 0;
+
     if ( ch!='\n' && ch!='\r' ) {
 	getname(sfd,tok);
 	bdf->foundry = copy(tok);
@@ -6061,6 +6067,7 @@ return( 0 );
 		}
 	    }
 	}
+	free(name);
 	closedir(dir);
     }
     SFDFixupBitmapRefs( bdf );
