@@ -468,10 +468,13 @@ case $host in
       ;;
    *-apple-darwin*)
       ;;
-   *mingw* | *cygwin*)
+   *mingw*)
       dnl Explicitly export all symbols on Windows, since FontForge lacks an export table
 	  dnl See issue #1238 on GitHub for more information.
 	  my_lib_ldflags="${my_lib_ldflags} -no-undefined -Wl,--export-all-symbols"
+      ;;
+   *cygwin*)
+	  my_lib_ldflags="${my_lib_ldflags} -Wl,-no-undefined -Wl,--export-all-symbols"
       ;;
    *) saved_LDFLAGS=$LDFLAGS
       AC_MSG_CHECKING([whether the linker supports --no-undefined])
