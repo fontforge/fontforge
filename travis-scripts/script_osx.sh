@@ -9,7 +9,7 @@ rm -f /Users/travis/build/fontforge/fontforge/.git/shallow
 set +e
 mkdir -p /tmp/fontforge-source-tree
 echo "brew build starting..."
-brew install --verbose fontforge --HEAD --with-x11 --with-libspiro
+brew install --verbose fontforge --HEAD --with-libspiro
 echo "brew build complete..."
 PR=$TRAVIS_PULL_REQUEST
 chmod +x ./travis-scripts/create-osx-app-bundle-homebrew.sh
