@@ -4289,16 +4289,31 @@ static void PerGlyphInit(SplineChar *sc, struct lcg_zones *zones,
 }
 
 void FVEmbolden(FontViewBase *fv,enum embolden_type type,struct lcg_zones *zones) {
-    int i, gid;
+    int i, gid, cnt;
     SplineChar *sc;
 
     LCG_ZoneInit(fv->sf,fv->active_layer,zones,type);
+
+    for (i=0, cnt=0; i < fv->map->enccount; ++i) {
+        if (fv->selected[i] && (gid = fv->map->map[i]) != -1 &&
+            (sc=fv->sf->glyphs[gid]) != NULL) {
+
+            cnt++;
+        }
+    }
+
+    ff_progress_start_indicator(10, _("Change Weight"),
+        _("Changing glyph weights"), NULL, cnt, 1);
 
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
 	    (gid = fv->map->map[i])!=-1 && (sc=fv->sf->glyphs[gid])!=NULL ) {
 	PerGlyphInit(sc,zones,type);
 	SCEmbolden(sc, zones, -2);		/* -2 => all foreground layers */
+    if (!ff_progress_next()) {
+        break;
     }
+    }
+    ff_progress_end_indicator();
 }
 
 void CVEmbolden(CharViewBase *cv,enum embolden_type type,struct lcg_zones *zones) {
