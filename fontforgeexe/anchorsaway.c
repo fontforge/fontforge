@@ -117,8 +117,10 @@ static void AnchorD_FreeChar(AnchorDlg *a) {
     for ( i=0; i<a->cnt; ++i )
 	BDFCharFree(a->apmatch[i].bdfc);
     free(a->apmatch); a->apmatch = NULL;
-    if ( a->freetypecontext!=NULL )
-	FreeTypeFreeContext(a->freetypecontext);
+    if ( a->freetypecontext!=NULL ) {
+        FreeTypeFreeContext(a->freetypecontext);
+        a->freetypecontext = NULL;
+    }
 }
 
 static void AnchorD_FreeAll(AnchorDlg *a) {
