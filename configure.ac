@@ -220,7 +220,7 @@ if test "y$HOMEBREW_BREW_FILE" != "y"; then
    PYPKGCONFIG="$( cd "$PYLIBDIR/../../pkgconfig" && pwd )"
    export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$PYPKGCONFIG"
    echo "found python pkg_config information: $PYPKGCONFIG"
-   if [ "y$PYTHON" = y ] ; then 
+   if test "y$PYTHON" = "y"; then 
      export PYTHON="${HOMEBREW_PREFIX}/bin/python"
    fi
 fi
