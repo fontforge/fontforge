@@ -3933,7 +3933,7 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 	    TRACE("was on charselector\n");
 	    GWidgetIndicateFocusGadget( cv->hsb );
 	}
-	else
+	else if ( cv->charselector != NULL )
 	{
 	    TRACE("was on NOT charselector\n");
 	    GWidgetIndicateFocusGadget( cv->charselector );
