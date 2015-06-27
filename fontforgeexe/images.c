@@ -12219,7 +12219,7 @@ void InitToolIcons(void) {
         done = true;
         GGadgetInit();
 
-        /* Large 24x24 icons for CharView tool palettes */
+        /* Large 26x26 icons for CharView tool palettes */
         TryGGadgetImageCache(&GIcon_hand, "palettehand.png");
         TryGGadgetImageCache(&GIcon_line, "paletteline.png");
         TryGGadgetImageCache(&GIcon_pencil, "palettepencil.png");
@@ -12254,7 +12254,7 @@ void InitToolIcons(void) {
         TryGGadgetImageCache(&GIcon_pointer, "palettepointer.png");
         TryGGadgetImageCache(&GIcon_magnify, "palettemagnify.png");
 
-        /* Small 16x12 icons for CharView tool palettes */
+        /* Small 22x22 icons for CharView tool palettes */
         TryGGadgetImageCache(&GIcon_small3drotate, "palettesmall3drotate.png");
         TryGGadgetImageCache(&GIcon_smallperspective, "palettesmallperspective.png");
         TryGGadgetImageCache(&GIcon_smallskew, "palettesmallskew.png");
@@ -12282,7 +12282,7 @@ void InitToolIcons(void) {
         TryGGadgetImageCache(&GIcon_smallpoly, "palettesmallpoly.png");
         TryGGadgetImageCache(&GIcon_smallstar, "palettesmallstar.png");
 
-        /* 16x16 icons for point types in point info window */
+        /* 26x26 icons for point types in point info window */
         /* Note: I've updated it so it uses the same as palette - no reason for seperate icon files */
         TryGGadgetImageCache(&GIcon_midtangent, "palettetangent.png");
         TryGGadgetImageCache(&GIcon_midcurve, "palettecurve.png");
@@ -12301,4 +12301,3 @@ void InitToolIcons(void) {
         TryGGadgetImageCache(&GIcon_Stop, "ttdebugstop.png");
     }
 }
-
