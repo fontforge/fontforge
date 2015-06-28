@@ -313,10 +313,10 @@ static uint16 *getClassDefTable(FILE *ttf, int classdef_offset, struct ttfinfo *
     uint32 g_bounds = info->g_bounds;
 
     fseek(ttf, classdef_offset, SEEK_SET);
+    glist = calloc(cnt,sizeof(uint16));	/* Class 0 is default */
     format = getushort(ttf);
     if ( format==1 ) {
 	start = getushort(ttf);
-	glist = calloc(start+cnt,sizeof(uint16));
 	glyphcnt = getushort(ttf);
 	if ( start+(int) glyphcnt>cnt ) {
 	    LogError( _("Bad class def table. start=%d cnt=%d, max glyph=%d\n"), start, glyphcnt, cnt );
@@ -330,7 +330,6 @@ static uint16 *getClassDefTable(FILE *ttf, int classdef_offset, struct ttfinfo *
 	for ( i=0; i<glyphcnt; ++i )
 	    glist[start+i] = getushort(ttf);
     } else if ( format==2 ) {
-    	glist = calloc(cnt,sizeof(uint16));
 	rangecnt = getushort(ttf);
 	if ( ftell(ttf)+6*rangecnt > g_bounds ) {
 	    LogError( _("Class definition sub-table extends beyond end of table\n") );
@@ -349,7 +348,6 @@ static uint16 *getClassDefTable(FILE *ttf, int classdef_offset, struct ttfinfo *
 		glist[j] = class;
 	}
     } else {
-    	glist = calloc(cnt,sizeof(uint16));	/* Class 0 is default */
 	LogError( _("Unknown class table format: %d\n"), format );
 	info->bad_ot = true;
 	/* Put everything in class 0 and return that */
