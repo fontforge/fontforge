@@ -3548,7 +3548,7 @@ char * delimit_null(const char * input, char delimiter);
 
 #include "ustring.h"
 
-#ifdef __MINGW32__
+#ifdef _WIN32
 #define BAD_LOCALE_HACK
 typedef char* locale_t;
 #define LC_GLOBAL_LOCALE ((locale_t)-1)

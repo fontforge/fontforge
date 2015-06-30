@@ -39,10 +39,6 @@ extern const void *gwwv_NSAddImage(char *name,uint32_t options);
 #  elif defined(__MINGW32__)
 #  else
 #   include <dlfcn.h>
-#   ifdef __CygWin
-#    define dlopen(name,foo) libtool_laopen(name,foo)
-void *libtool_laopen(const char *filename, int flags);
-#   endif
 #define SO_EXT		".so"
 #define SO_0_EXT	".so.0"
 #define SO_1_EXT	".so.1"

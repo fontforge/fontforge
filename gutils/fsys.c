@@ -909,7 +909,7 @@ char *getFontForgeUserDir(int dir) {
 	fprintf(stderr, "%s\n", "cannot find home directory");
 return NULL;
 	}
-#if defined(__MINGW32__)
+#ifdef _WIN32
 	/* Allow for preferences to be saved locally in a 'portable' configuration. */ 
 	if (getenv("FF_PORTABLE") != NULL) {
 		buf = smprintf("%s/preferences/", getShareDir());
