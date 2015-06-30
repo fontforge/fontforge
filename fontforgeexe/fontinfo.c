@@ -4451,7 +4451,7 @@ return(true);
 	    else
 		sf->pfminfo.pfmfamily = 0x11;
 	    ibmfam = GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_IBMFamily));
-	    if ( pfmfam!=NULL )
+	    if ( ibmfam!=NULL )
 		sf->pfminfo.os2_family_class = (intpt) (ibmfam->userdata);
 	    else
 		sf->pfminfo.os2_family_class = 0x00;
@@ -6479,7 +6479,7 @@ static int GFI_LookupImportLookup(GGadget *g, GEvent *e) {
 	if ( done==2 ) {
 	    int32 len;
 	    GTextInfo **ti = GGadgetGetList(gcd[1].ret,&len);
-	    OTLookup **list = malloc((len+1)*sizeof(OTLookup));
+	    OTLookup **list = malloc((len+1)*sizeof(OTLookup*));
 	    struct lkdata *lk = &gfi->tables[isgpos];
 	    OTLookup *before = NULL;
 

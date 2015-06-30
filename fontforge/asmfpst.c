@@ -998,9 +998,10 @@ ASM *ASMFromFPST(SplineFont *sf,FPST *fpst,int ordered) {
 	    TreeFree(tree);
 	} else
 	    sm = NULL;
-	if ( tempfpst!=fpst )
-	    FPSTFree(tempfpst);
     }
+
+    if ( tempfpst!=fpst )
+	FPSTFree(tempfpst);
 	/* This is a temporary value. It should be replaced if we plan to */
 	/*  retain this state machine */
     if ( sm!=NULL )

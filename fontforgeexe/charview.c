@@ -1839,7 +1839,7 @@ return;		/* Offscreen */
 	} else {
 	    ip[j].y = cv->height-1;
 	    ip[j++].x = ip2[last].x + (cv->height-1- ip2[last].y) * ((real) (ip2[i].x-ip2[last].x))/(ip2[i].y-ip2[last].y);
-	    if ( ip2[i].y<cv->width )
+	    if ( ip2[i].y<cv->height )
 		ip[j++] = ip2[i];
 	    else {
 		ip[j].y = cv->height-1;
@@ -2414,7 +2414,7 @@ static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
 			i = cv->oldraster->as-ii; j = jj-cv->oldraster->lb;
 			if ( i<0 || i>=cv->oldraster->rows || j<0 || j>=cv->oldraster->cols )
 			    or = 0;
-			else if ( cv->raster->num_greys<=2 )
+			else if ( cv->oldraster->num_greys<=2 )
 			    or = cv->oldraster->bitmap[i*cv->oldraster->bytes_per_row+(j>>3)] & (1<<(7-(j&7)));
 			else
 			    or = cv->oldraster->bitmap[i*cv->oldraster->bytes_per_row+j];

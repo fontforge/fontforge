@@ -227,8 +227,10 @@ static uint16 *getCoverageTable(FILE *ttf, int coverage_offset, struct ttfinfo *
 	if ( ftell(ttf)+2*cnt > info->g_bounds ) {
 	    LogError( _("coverage table extends beyond end of table\n") );
 	    info->bad_ot = true;
-	    if ( ftell(ttf)>info->g_bounds )
+	    if ( ftell(ttf)>info->g_bounds ) {
+            free(glyphs);
 return( NULL );
+        }
 	    cnt = (info->g_bounds-ftell(ttf))/2;
 	}
 	for ( i=0; i<cnt; ++i ) {
@@ -555,6 +557,7 @@ return;
 	if ( glyphs==NULL ) {
 /* GT: This continues a multi-line error message, hence the leading space */
 	    LogError( _(" Bad pairwise kerning table, ignored\n") );
+	    free(ps_offsets);
 return;
 	}
 	for ( i=0; i<cnt; ++i ) if ( glyphs[i]<info->glyph_cnt ) {
@@ -598,6 +601,8 @@ return;
 	if ( glyphs==NULL ) {
 /* GT: This continues a multi-line error message, hence the leading space */
 	    LogError( _(" Bad kerning class table, ignored\n") );
+        free(class1);
+        free(class2);
 return;
 	}
 	fseek(ttf, foffset, SEEK_SET);	/* come back */
@@ -918,8 +923,11 @@ return;
 	/* as is the (first) mark table */
     classes = MarkGlyphsProcessMarks(ttf,stoffset+markoffset,
 	    info,l,subtable,markglyphs,classcnt);
-    if ( classes==NULL )
+    if ( classes==NULL ) {
+        free(baseglyphs);
+        free(markglyphs);
 return;
+    }
     switch ( l->otlookup->lookup_type ) {
       case gpos_mark2base:
       case gpos_mark2mark:
@@ -1610,6 +1618,7 @@ return;
     if ( justinuse==git_justinuse ) {
 	/* Nothing to do. This lookup doesn't really reference any glyphs */
 	/*  any lookups it invokes will be processed on their own */
+        free(sl);
     } else {
 	fpst = chunkalloc(sizeof(FPST));
 	fpst->type = gpos ? pst_contextpos : pst_contextsub;
@@ -1622,7 +1631,7 @@ return;
 	fpst->rules = rule = calloc(1,sizeof(struct fpst_rule));
 	fpst->rule_cnt = 1;
 	rule->u.coverage.ncnt = gcnt;
-	rule->u.coverage.ncovers = malloc(gcnt*sizeof(char **));
+	rule->u.coverage.ncovers = malloc(gcnt*sizeof(char *));
 	for ( i=0; i<gcnt; ++i ) {
 	    glyphs =  getCoverageTable(ttf,stoffset+coverage[i],info);
 	    rule->u.coverage.ncovers[i] = GlyphsToNames(info,glyphs,true);
@@ -1696,6 +1705,7 @@ return;
     if ( justinuse==git_justinuse ) {
 	/* Nothing to do. This lookup doesn't really reference any glyphs */
 	/*  any lookups it invokes will be processed on their own */
+        free(sl);
     } else {
 	fpst = chunkalloc(sizeof(FPST));
 	fpst->type = gpos ? pst_chainpos : pst_chainsub;
@@ -1709,7 +1719,7 @@ return;
 	fpst->rule_cnt = 1;
 
 	rule->u.coverage.bcnt = bcnt;
-	rule->u.coverage.bcovers = malloc(bcnt*sizeof(char **));
+	rule->u.coverage.bcovers = malloc(bcnt*sizeof(char *));
 	for ( i=0; i<bcnt; ++i ) {
 	    glyphs =  getCoverageTable(ttf,stoffset+bcoverage[i],info);
 	    rule->u.coverage.bcovers[i] = GlyphsToNames(info,glyphs,true);
@@ -1717,7 +1727,7 @@ return;
 	}
 
 	rule->u.coverage.ncnt = gcnt;
-	rule->u.coverage.ncovers = malloc(gcnt*sizeof(char **));
+	rule->u.coverage.ncovers = malloc(gcnt*sizeof(char *));
 	for ( i=0; i<gcnt; ++i ) {
 	    glyphs =  getCoverageTable(ttf,stoffset+coverage[i],info);
 	    rule->u.coverage.ncovers[i] = GlyphsToNames(info,glyphs,true);
@@ -1725,7 +1735,7 @@ return;
 	}
 
 	rule->u.coverage.fcnt = fcnt;
-	rule->u.coverage.fcovers = malloc(fcnt*sizeof(char **));
+	rule->u.coverage.fcovers = malloc(fcnt*sizeof(char *));
 	for ( i=0; i<fcnt; ++i ) {
 	    glyphs =  getCoverageTable(ttf,stoffset+fcoverage[i],info);
 	    rule->u.coverage.fcovers[i] = GlyphsToNames(info,glyphs,true);
@@ -2051,7 +2061,7 @@ return;
 	    if ( cc<0 || cc>100 ) {
 		LogError( _("Unlikely count of ligature components (%d), I suspect this ligature sub-\n table is garbage, I'm giving up on it.\n"), cc );
 		info->bad_ot = true;
-		free(glyphs); free(lig_offsets);
+		free(glyphs); free(lig_offsets); free(ls_offsets);
 return;
 	    }
 	    lig_glyphs = malloc(cc*sizeof(uint16));
@@ -3018,8 +3028,10 @@ return;
 	for ( i=0; i<cnt; ++i )
 	    lc_offsets[i]=getushort(ttf);
 	glyphs = getCoverageTable(ttf,lclo+coverage,info);
-	if ( glyphs==NULL )
-return;
+	if ( glyphs==NULL ) {
+        free(lc_offsets);
+        return;
+    }
 	for ( i=0; i<cnt; ++i ) if ( glyphs[i]<info->glyph_cnt && (sc = info->chars[glyphs[i]])!=NULL ) {
 	    fseek(ttf,lclo+lc_offsets[i],SEEK_SET);
 	    for ( pst=sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next );
@@ -5818,12 +5830,14 @@ return( NULL );
 	    if ( index<0 ) {
 		LogError( _("JSTF table is too long.\n") );
 		info->bad_ot = true;
+		free(ret);
 return( NULL );
 	    }
 	    ret[i] = findLookupByIndex(info->gsub_lookups,index);
 	    if ( ret[i]==NULL ) {
 		LogError( _("Lookup index (%d) out of bounds in GSUB from JSTF table.\n"), index );
 		info->bad_ot = true;
+		free(ret);
 return( NULL );
 	    }
 	}
@@ -5836,12 +5850,14 @@ return( NULL );
 	    if ( index<0 ) {
 		LogError( _("JSTF table is too long.\n") );
 		info->bad_ot = true;
+		free(ret);
 return( NULL );
 	    }
 	    ret[i+scnt] = findLookupByIndex(info->gpos_lookups,index);
 	    if ( ret[i+scnt]==NULL ) {
 		LogError( _("Lookup index (%d) out of bounds in GPOS from JSTF table.\n"), index );
 		info->bad_ot = true;
+		free(ret);
 return( NULL );
 	    }
 	}
@@ -6015,12 +6031,14 @@ return;
 	if ( soff[i].offset<0 ) {
 	    LogError( _("End of file found in JSTF table.\n") );
 	    info->bad_ot = true;
+	    free(soff);
 return;
 	}
     }
     if ( ftell(ttf)>info->g_bounds ) {
 	LogError( _("JSTF table is too long.\n") );
 	info->bad_ot = true;
+	free(soff);
 return;
     }
     lmax = 0; loff = NULL;
@@ -6032,6 +6050,7 @@ return;
 	if ( info->jstf_start+soff[i].offset > info->g_bounds-6-6*lcnt || lcnt<0 ) {
 	    LogError( _("JSTF table is too long.\n") );
 	    info->bad_ot = true;
+	    free(soff);
 return;
 	}
 
@@ -6043,6 +6062,8 @@ return;
 	    if ( loff[j].offset<0 ) {
 		LogError( _("End of file found in JSTF table.\n") );
 		info->bad_ot = true;
+		free(soff);
+		free(loff);
 return;
 	    }
 	}

@@ -867,7 +867,7 @@ static void InterpolateWeak( GlyphData *gd, DBounds *orig_b, DBounds *new_b, dou
 		    fpd = &gd->points[fpd->sp->prev->from->ptindex];
 
 		tpd = &gd->points[pd->sp->next->to->ptindex];
-		while ( !(tpd->touched & mask) && tpd != pd && fpd->sp->next != NULL )
+		while ( !(tpd->touched & mask) && tpd != pd && tpd->sp->next != NULL )
 		    tpd = &gd->points[tpd->sp->next->to->ptindex];
 
 		if (( fpd->touched & mask ) && ( tpd->touched & mask ) &&
@@ -4885,7 +4885,7 @@ static void FindBottomSerifOnStem(SplineChar *sc,int layer,StemInfo *h,
     SplinePoint *start=NULL, *end=NULL, *sp;
     SplinePointList *ss;
     double sdiff, ediff;
-    double fuzz = (sc->parent->ascent+sc->parent->descent)/100;
+    double fuzz = (sc->parent->ascent+sc->parent->descent)/100.0;
 
     for ( ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
 	start=end=NULL;
@@ -5050,7 +5050,7 @@ static void FindBottomSerifOnDStem(SplineChar *sc,int layer,DStemInfo *d,
     SplinePointList *ss;
     double sdiff, ediff;
     double pos;
-    double fuzz = (sc->parent->ascent+sc->parent->descent)/100;
+    double fuzz = (sc->parent->ascent+sc->parent->descent)/100.0;
 
     for ( ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
 	start=end=NULL;
@@ -5104,7 +5104,7 @@ static void FindTopSerifOnDStem(SplineChar *sc,int layer,DStemInfo *d,
     SplinePointList *ss;
     double sdiff, ediff;
     double pos;
-    double fuzz = (sc->parent->ascent+sc->parent->descent)/100;
+    double fuzz = (sc->parent->ascent+sc->parent->descent)/100.0;
 
     for ( ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
 	start=end=NULL;
@@ -5447,7 +5447,7 @@ static void FindTopSerifOnStem(SplineChar *sc,int layer,StemInfo *h,
     SplinePoint *start=NULL, *end=NULL, *sp;
     SplinePointList *ss;
     double sdiff, ediff;
-    double fuzz = (sc->parent->ascent+sc->parent->descent)/100;
+    double fuzz = (sc->parent->ascent+sc->parent->descent)/100.0;
 
     for ( ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
 	start=end=NULL;

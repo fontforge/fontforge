@@ -4003,7 +4003,7 @@ void BVToolsSetCursor(BitmapView *bv, int state,char *device) {
 	shouldshow = bvt_minify;
     if ( (shouldshow==bvt_pencil || shouldshow==bvt_line) && (state&ksm_meta) && bv->bdf->clut!=NULL )
 	shouldshow = bvt_eyedropper;
-    if ( shouldshow!=bv->showing_tool ) {
+    if ( shouldshow!=bvt_none && shouldshow!=bv->showing_tool ) {
 	GDrawSetCursor(bv->v,tools[shouldshow]);
 	if ( bvtools != NULL )
 	    GDrawSetCursor(bvtools,tools[shouldshow]);

@@ -471,7 +471,7 @@ return( false );
 	widbytes += (font->glyphs[gid]->width+7)>>3;
 	if ( font->glyphs[gid]->ymax>maxy ) maxy = font->glyphs[gid]->ymax;
 	if ( font->glyphs[gid]->ymin<miny ) miny = font->glyphs[gid]->ymin;
-	if ( font->glyphs[gid]->width>maxy ) maxwid = font->glyphs[gid]->width;
+	if ( font->glyphs[gid]->width>maxwid ) maxwid = font->glyphs[gid]->width;
 	if ( font->glyphs[gid]->width<font->glyphs[gid]->xmax || font->glyphs[gid]->xmin<0 )
 	    badch = gid;
 	if ( samewid==-1 ) samewid = font->glyphs[gid]->width;
@@ -497,6 +497,7 @@ return( false );
 	switch ( font->pixelsize ) {
 	  case 13: case 16: case 32:
 	    res = 96;
+	  break;
 	  default:
 	    res = 120;
 	  break;

@@ -175,6 +175,7 @@ return;
 	    arrayfree( dica->entries[i].val.u.aval );
     }
     free( dica->entries );
+    dica->entries = NULL;
 }
 
 static int DicaLookup(struct dictionary *dica,char *name,Val *val) {
@@ -218,8 +219,10 @@ static void calldatafree(Context *c) {
             free( c->a.vals[i].u.sval );
             c->a.vals[i].u.sval = NULL;
         }
-	if ( c->a.vals[i].type == v_arrfree || (c->a.vals[i].type == v_arr && c->dontfree[i]!=c->a.vals[i].u.aval ))
+	if ( c->a.vals[i].type == v_arrfree || (c->a.vals[i].type == v_arr && c->dontfree[i]!=c->a.vals[i].u.aval )) {
 	    arrayfree( c->a.vals[i].u.aval );
+	    c->a.vals[i].u.aval = NULL;
+    }
 	c->a.vals[i].type = v_void;
     }
     DictionaryFree(&c->locals);
@@ -630,7 +633,7 @@ static void bStrSplit(Context *c) {
 	    c->return_val.u.aval->argc = cnt;
 	    c->return_val.u.aval->vals = malloc(cnt*sizeof(Val));
 	} else {
-	    if ( *pt!='\0' ) {
+	    if ( *pt!='\0' && cnt < max ) {
 		c->return_val.u.aval->vals[cnt].type = v_str;
 		c->return_val.u.aval->vals[cnt].u.sval = copy(pt);
 	    }
@@ -3242,7 +3245,6 @@ static void bLoadTableFromFile(Context *c) {
     char *tstr, *end;
     struct ttf_table *tab;
     FILE *file;
-    int len;
     struct stat statb;
     char *t; char *locfilename;
 
@@ -3268,7 +3270,6 @@ static void bLoadTableFromFile(Context *c) {
 	ScriptErrorString(c,"Could not open file: ", c->a.vals[2].u.sval );
     if ( fstat(fileno(file),&statb)==-1 )
 	ScriptErrorString(c,"fstat() failed on: ", c->a.vals[2].u.sval );
-    len = statb.st_size;
 
     for ( tab=sf->ttf_tab_saved; tab!=NULL && tab->tag!=tag; tab=tab->next );
     if ( tab==NULL ) {
@@ -3278,9 +3279,8 @@ static void bLoadTableFromFile(Context *c) {
 	sf->ttf_tab_saved = tab;
     } else
 	free(tab->data);
-    tab->len = len;
-    tab->data = malloc(len);
-    fread(tab->data,1,len,file);
+    tab->data = malloc(statb.st_size);
+    tab->len = fread(tab->data,1,statb.st_size,file);
     fclose(file);
 }
 
@@ -5346,7 +5346,7 @@ static void SCMakeLine(SplineChar *sc) {
 		if (!sp->nonextcp || !sp->noprevcp ) {
 		    if ( !changed ) {
 			SCPreserveState( sc,false );
-			changed = false;
+			changed = true;
 		    }
 		    sp->prevcp = sp->me;
 		    sp->noprevcp = true;

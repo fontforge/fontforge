@@ -2042,7 +2042,7 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont,
     if ( !hash ) {
 	FindHStems(sf,stemsnaph,snapcnt);
 	mi = -1;
-	for ( i=0; stemsnaph[i]!=0 && i<12; ++i )
+	for ( i=0; i<12 && stemsnaph[i]!=0; ++i )
 	    if ( mi==-1 ) mi = i;
 	    else if ( snapcnt[i]>snapcnt[mi] ) mi = i;
 	if ( mi!=-1 ) stdhw[0] = stemsnaph[mi];
@@ -2051,7 +2051,7 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont,
     if ( !hasv ) {
 	FindVStems(sf,stemsnapv,snapcnt);
 	mi = -1;
-	for ( i=0; stemsnapv[i]!=0 && i<12; ++i )
+	for ( i=0; i<12 && stemsnapv[i]!=0; ++i )
 	    if ( mi==-1 ) mi = i;
 	    else if ( snapcnt[i]>snapcnt[mi] ) mi = i;
 	if ( mi!=-1 ) stdvw[0] = stemsnapv[mi];

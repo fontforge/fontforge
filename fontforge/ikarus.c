@@ -635,7 +635,7 @@ return( NULL );
 return( NULL );
     }
     if ( jlen!=12 )
-	LogError( _("Unexpected size for font info section of URW font (expected 12, got %d)\n"), ilen );
+	LogError( _("Unexpected size for font info section of URW font (expected 12, got %d)\n"), jlen );
     if ( getushort(file)!=1 ) {		/* 1=> typeface */
 	fclose(file);
 return( NULL );

@@ -702,7 +702,7 @@ static int FindOrBuildHintSubr(struct hintdb *hdb, uint8 mask[12], int round) {
     GrowBuf gb;
 
     for ( mh=hdb->sublist; mh!=NULL; mh=mh->next ) {
-	if ( memcmp(mask,mh->mask,sizeof(mask))==0 )
+	if ( memcmp(mask,mh->mask,sizeof(uint8)*12)==0 )
 return( mh->subr );
     }
     SubrsCheck(hdb->subrs);

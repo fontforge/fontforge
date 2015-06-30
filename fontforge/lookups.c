@@ -1107,7 +1107,7 @@ void SFRemoveLookupSubTable(SplineFont *sf,struct lookup_subtable *sub, int remo
 	KernPair *kp, *kpprev, *kpnext;
 	k=0;
 	do {
-	    _sf = sf->subfontcnt==0 ? sf : sf->subfonts[i];
+	    _sf = sf->subfontcnt==0 ? sf : sf->subfonts[k];
 	    for ( i=0; i<_sf->glyphcnt; ++i ) if ( (sc=_sf->glyphs[i])!=NULL ) {
 		for ( pst=sc->possub, prev=NULL ; pst!=NULL; pst=next ) {
 		    next = pst->next;
