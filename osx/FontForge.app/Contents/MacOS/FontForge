@@ -123,5 +123,5 @@ cd ~/ || true
 /Applications/FontForge.app/Contents/MacOS/fontforge-crash-reporter.py &
 
 export PATH="$PATH:$bundle_bin"
-echo $WRAPPER $bundle_bin/fontforge -new "$@" > /tmp/oo
+echo $WRAPPER $bundle_bin/fontforge > /tmp/oo
 $WRAPPER $bundle_bin/fontforge -new "$@" &
