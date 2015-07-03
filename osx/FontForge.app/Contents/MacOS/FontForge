@@ -124,4 +124,9 @@ cd ~/ || true
 
 export PATH="$PATH:$bundle_bin"
 echo $WRAPPER $bundle_bin/fontforge > /tmp/oo
-$WRAPPER $bundle_bin/fontforge -new "$@" &
+
+if [ $# -eq 0 ] ; then
+    ( exec $WRAPPER $bundle_bin/fontforge -new )
+else
+    ( exec $WRAPPER $bundle_bin/fontforge "$@" )
+fi
