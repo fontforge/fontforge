@@ -117,7 +117,13 @@ export LD_LIBRARY_PATH="$bundle_lib"
 $scriptdir/fcprogress.pl >|/tmp/zz 2>&1
 
 # This ensures that File Open and File Save (etc) dialogs open in Home
-cd ~/ || true
+# when FontForge is launched via normal OS X methods (double-clicking
+# on the application or a SFD file, spotlight, etc.). If this script is
+# invoked via command line, assume the user knows what they are doing,
+# and don't change the current directory.
+if [ "$( ps -o comm= $PPID)" = "/sbin/launchd" ] ; then
+    cd ~/ || true
+fi
 
 # starting more than one does nothing, and it will close itself.
 /Applications/FontForge.app/Contents/MacOS/fontforge-crash-reporter.py &
