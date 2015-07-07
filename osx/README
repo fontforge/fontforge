@@ -22,7 +22,7 @@ cd /usr/local/src/github-fontforge
 sudo portindex
 cd fontforge/osx
 ./force-rebuild.sh
-cd /opt/local/var/macports/build/_usr_local_src_github-fontforge_fontforge_osx/
+cd /opt/local/var/macports/build/_usr_local_src_github-fontforge_fontforge_osx/fontforge/work/fontforge-2.0.0_beta1
 bash ./osx/create-osx-app-bundle.sh
 
 As you can see in the post-extract of the Portfile a copy of gnulib is
