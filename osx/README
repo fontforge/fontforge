@@ -12,15 +12,17 @@ specific to the current distribution site.
 
 Before this starts, change to the directory
 /usr/local/src/github-fontforge
-and clone the fontforge sources into there.
+and clone the fontforge sources into there:
+git clone git@github.com:fontforge/fontforge.git fontforge
 Add the aforementioned path to /opt/local/etc/macports/sources.conf as
 file:///usr/local/src/github-fontforge
 above the default MacPorts sources.
 
-portindex
+cd /usr/local/src/github-fontforge
+sudo portindex
 cd fontforge/osx
 ./force-rebuild.sh
-cd /opt/local/var/macports/build/_usr_local_src_github-fontforge_fontforge_osx/
+cd /opt/local/var/macports/build/_usr_local_src_github-fontforge_fontforge_osx/fontforge/work/fontforge-2.0.0_beta1
 bash ./osx/create-osx-app-bundle.sh
 
 As you can see in the post-extract of the Portfile a copy of gnulib is
