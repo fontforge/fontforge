@@ -3259,7 +3259,7 @@ return( end_pos-start_pos );
 	}
 	for ( i=0; i<5; ++i ) {
 	    c->tpt[i].x = me.x + slope.x*(i+1);
-	    c->tpt[i].x = me.y + slope.y*(i+1);
+	    c->tpt[i].y = me.y + slope.y*(i+1);
 	    c->tpt[i].t = (i+1)/6.0;
 	}
 return( 5 );
