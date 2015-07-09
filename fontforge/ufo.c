@@ -3199,24 +3199,24 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
         if (group_type & GROUP_NAME_RIGHT) {
           sf->vkerns->seconds[below_start + below_count] = copy(current_group->glyphs);
           sf->vkerns->seconds_names[below_start + below_count] = copy(current_group->classname);
-          sf->vkerns->seconds_flags[below_start + below_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type | GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
+          sf->vkerns->seconds_flags[below_start + below_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type & GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
           below_count++;
         } else {
           sf->vkerns->firsts[above_start + above_count] = copy(current_group->glyphs);
           sf->vkerns->firsts_names[above_start + above_count] = copy(current_group->classname);
-          sf->vkerns->firsts_flags[above_start + above_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type | GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
+          sf->vkerns->firsts_flags[above_start + above_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type & GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
           above_count++;
         }
       } else {
         if (group_type & GROUP_NAME_RIGHT) {
           sf->kerns->seconds[right_start + right_count] = copy(current_group->glyphs);
           sf->kerns->seconds_names[right_start + right_count] = copy(current_group->classname);
-          sf->kerns->seconds_flags[right_start + right_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type | GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
+          sf->kerns->seconds_flags[right_start + right_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type & GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
           right_count++;
         } else {
           sf->kerns->firsts[left_start + left_count] = copy(current_group->glyphs);
           sf->kerns->firsts_names[left_start + left_count] = copy(current_group->classname);
-          sf->kerns->firsts_flags[left_start + left_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type | GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
+          sf->kerns->firsts_flags[left_start + left_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type & GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
           left_count++;
         }
       }
