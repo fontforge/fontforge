@@ -3328,7 +3328,7 @@ return;
 		}
 	    }
 	    if (member_list_length == 0) member_list_length++; // We must have space for a zero-terminator even if the list is empty. A non-empty list has space for a space at the end that we can use.
-	    current_group->glyphs = malloc(member_list_length ? member_list_length : 1); // We allocate space for the list.
+	    current_group->glyphs = malloc(member_list_length); // We allocate space for the list.
 	    current_group->glyphs[0] = '\0';
 	    for (member_native_current = members_native; member_native_current != NULL; member_native_current = member_native_current->next) {
                 if (member_native_current != members_native) strcat(current_group->glyphs, " ");
