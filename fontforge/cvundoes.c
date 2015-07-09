@@ -1426,7 +1426,7 @@ return( copy(""));
 
     for ( lcnt = ly_fore; lcnt<dummy.layer_cnt; ++lcnt )
 	RefCharsFree(dummy.layers[lcnt].refs);
-    if ( dummy.layer_cnt!=2 )
+    if ( dummy.layer_cnt!=2 && dummy.layers != layers )
 	free( dummy.layers );
 
     fseek(svg,0,SEEK_END);
