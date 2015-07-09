@@ -1378,7 +1378,6 @@ static SplinePointList *SplinePointListCopySpiroSelected1(SplinePointList *spl) 
 	memset(temp+(j-i),0,sizeof(spiro_cp));
 	temp[j-i].ty = SPIRO_END;
 	cur = SpiroCP2SplineSet( temp );
-	free( temp ); temp = NULL;
 	if ( head==NULL )
 	    head = cur;
 	else
@@ -1494,7 +1493,6 @@ static SplinePointList *SplinePointListSplitSpiros(SplineChar *sc,SplinePointLis
 	    memset(temp+(i-start),0,sizeof(spiro_cp));
 	    temp[i-start].ty = SPIRO_END;
 	    cur = SpiroCP2SplineSet( temp );
-	    free( temp ); temp = NULL;
 	    if ( head==NULL )
 		head = cur;
 	    else
