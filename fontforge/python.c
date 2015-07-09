@@ -7880,7 +7880,6 @@ static char *GlyphNamesFromTuple(PyObject *glyphs) {
             Py_DECREF(aglyph);
         }
 	strcpy(pt,str);
-	free(str);
 	pt += strlen(pt);
 	*pt++ = ' ';
     }
