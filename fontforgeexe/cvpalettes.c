@@ -154,7 +154,7 @@ static void ReparentFixup(GWindow child,GWindow parent, int x, int y, int width,
     GDrawSetWindowBorder(child,1,GDrawGetDefaultForeground(NULL));
 }
 
-void onCollabSessionStateChanged( GObject* gobj, FontViewBase* fv )
+void onCollabSessionStateChanged( gpointer instance, FontViewBase* fv, gpointer user_data )
 {
     bool inCollab = collabclient_inSessionFV( fv );
 
@@ -1955,7 +1955,7 @@ static void CVLayers1Set(CharView *cv) {
  * New layer gadgets are created in CVLCheckLayerCount(). */
 void CVLayersSet(CharView *cv) {
     if( cv )
-	onCollabSessionStateChanged( 0, cv->b.fv );
+	onCollabSessionStateChanged( NULL, cv->b.fv, NULL );
     
     if ( cv->b.sc->parent->multilayer ) {
 	CVLayers2Set(cv);
