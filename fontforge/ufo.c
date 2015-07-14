@@ -1935,16 +1935,15 @@ int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer) {
 
 int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int flags,
 	const EncMap *map,int layer, int all_layers) {
-    char *foo = NULL, *glyphdir, *gfname;
+    char *glyphdir, *gfname;
     int err;
     FILE *plist;
     int i;
     SplineChar *sc;
 
     /* Clean it out, if it exists */
-    if (asprintf(&foo, "rm -rf %s", basedir) >= 0) {
-      if (system( foo ) == -1) fprintf(stderr, "Error clearing %s.\n", basedir);
-      free( foo ); foo = NULL;
+    if (!GFileRemove(basedir, true)) {
+        LogError(_("Error clearing %s."), basedir);
     }
 
     /* Create it */
