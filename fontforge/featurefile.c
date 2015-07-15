@@ -409,7 +409,7 @@ int kernclass_for_feature_file(struct splinefont *sf, struct kernclass *kc, int 
 static void dump_kernclass(FILE *out,SplineFont *sf,struct lookup_subtable *sub) {
     int i,j;
     KernClass *kc = sub->kc;
-    
+
     // We only export classes and rules here that have not been emitted in groups.plist and kerning.plist.
     // The feature file can reference classes from groups.plist, but kerning.plist cannot reference groups from the feature file.
 
@@ -4546,7 +4546,12 @@ static FPST *fea_markedglyphs_to_fpst(struct parseState *tok,struct markedglyphs
 	r->lookups[i].seq = i;
 
     if ( all_single ) {
-	g = fea_glyphs_to_names(glyphs,bcnt,&r->u.glyph.back);
+	char *temp = NULL;
+	// backtrack glyphs should be in reverse order, but they are in
+	// natural order in the feature file, so we reverse them
+	g = fea_glyphs_to_names(glyphs,bcnt,&temp);
+	r->u.glyph.back = reverseGlyphNames (temp);
+	free (temp);
 	g = fea_glyphs_to_names(g,ncnt,&r->u.glyph.names);
 	g = fea_glyphs_to_names(g,fcnt,&r->u.glyph.fore);
     } else {
