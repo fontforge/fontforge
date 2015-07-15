@@ -592,7 +592,9 @@ static void dump_contextpstglyphs(FILE *out,SplineFont *sf,
     space.u.pair.vr = pairvr;
 
     if ( r->u.glyph.back!=NULL ) {
-	dump_glyphnamelist(out,sf,r->u.glyph.back );
+	char *temp = reverseGlyphNames(r->u.glyph.back);
+	dump_glyphnamelist(out,sf,temp);
+	free (temp);
 	putc(' ',out);
     }
     last_start = last_end = NULL;
