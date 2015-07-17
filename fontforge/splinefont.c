@@ -635,12 +635,8 @@ struct archivers archivers[] = {
 
 void ArchiveCleanup(char *archivedir) {
     /* Free this directory and all files within it */
-    char *cmd;
-
-    cmd = malloc(strlen(archivedir) + 20);
-    sprintf( cmd, "rm -rf %s", archivedir );
-    system( cmd );
-    free( cmd ); free(archivedir);
+    GFileRemove(archivedir, true);
+    free(archivedir);
 }
 
 static char *ArchiveParseTOC(char *listfile, enum archive_list_style ars, int *doall) {

@@ -3043,8 +3043,7 @@ return;
 	    else
 		sprintf( markerfile,"%s/" FONT_PROPS, buffer );
 	    if ( !GFileExists(markerfile)) {
-		sprintf( markerfile, "rm -rf %s", buffer );
-		system( buffer );
+		GFileRemove(buffer, false);
 	    }
 	}
     }
