@@ -4403,10 +4403,12 @@ static void infolistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     }
 }
 
+
 static GMenuItem2 dummyitem[] = {
     { { (unichar_t *) N_("Font|_New"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'N' }, NULL, NULL, NULL, 0, 0 },
     GMENUITEM2_EMPTY
 };
+
 
 static GMenuItem2 exportlist[] = {
 	{ { (unichar_t *) N_("Font..."), (GImage *) "filegenerate.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'G' }, H_("Font...|No Shortcut"), NULL, NULL, FVMenuGenerate, 0 },
@@ -4431,6 +4433,7 @@ static GMenuItem2 fllist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, 0, 0 }, /* line */
     { { (unichar_t *) N_("Print..."), (GImage *) "fileprint.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Print|No Shortcut"), NULL, NULL, FVMenuPrint, MID_Print },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, 0, 0 }, /* line */
+    { { (unichar_t *) N_("_Themes Editor..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Themes Editor...|No Shortcut"), NULL, NULL, MenuXRes, 0 },
     { { (unichar_t *) N_("Preferences..."), (GImage *) "fileprefs.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Preferences...|No Shortcut"), NULL, NULL, MenuPrefs, 0 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, 0, 0 }, /* line */
     { { (unichar_t *) N_("C_lose Tab"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Close Tab|No Shortcut"), NULL, NULL, NULL, 0 },
@@ -6146,19 +6149,28 @@ GMenuItem fvpopupmenu[] = {
     GMENUITEM_EMPTY
 };
 
-#define _NO_PYTHON
+//#define _NO_PYTHON
 
 static GMenuItem2 mblist[] = {
     { { (unichar_t *) N_("_File"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("File|No Shortcut"), fllist, fllistcheck, NULL, 0 },
     { { (unichar_t *) N_("_Edit"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'E' }, H_("Edit|No Shortcut"), edlist, edlistcheck, NULL, 0 },
     { { (unichar_t *) N_("_Font"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Font|No Shortcut"), fontlist, fontlistcheck, NULL, 0 },
+#ifndef _NO_PYTHON
+    { { (unichar_t *) N_("_Extensions"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Extensions|No Shortcut"), NULL, fvpy_tllistcheck, NULL, 0 },
+#endif
+#ifdef NATIVE_CALLBACKS
+    { { (unichar_t *) N_("Extensions_2"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Extension 2|No Shortcut"), NULL, fv_tl2listcheck, NULL, 0 },
+#endif    
 	{ { (unichar_t *) N_("_Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Glyph|No Shortcut"), glyphlist, cblistcheck, NULL, 0 },
-    { { (unichar_t *) N_("_Path"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Path|No Shortcut"), pathlist, NULL, NULL, 0 },
+	{ { (unichar_t *) N_("_Path"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Path|No Shortcut"), pathlist, NULL, NULL, 0 },
     { { (unichar_t *) N_("_Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Point|No Shortcut"), pointlist, NULL, NULL, 0 },
     { { (unichar_t *) N_("_Metrics"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Metrics|No Shortcut"), mtlist, mtlistcheck, NULL, 0 },
-    { { (unichar_t *) N_("_Extensions"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Extensions|No Shortcut"), emptylist, NULL, NULL, 0 },
+//    { { (unichar_t *) N_("_Extensions"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Extensions|No Shortcut"), emptylist, NULL, NULL, 0 },
     { { (unichar_t *) N_("_View"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("View|No Shortcut"), vwlist, NULL, NULL, 0 },
     { { (unichar_t *) N_("_Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Window|No Shortcut"), wnmenu, FVWindowMenuBuild, NULL, 0 },
+#ifdef BUILD_COLLAB
+    { { (unichar_t *) N_("C_ollaborate"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Collaborate|No Shortcut"), collablist, collablistcheck, NULL, 0 },
+#endif
     { { (unichar_t *) N_("_Help"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Help|No Shortcut"), helplist, NULL, NULL, 0 },
     GMENUITEM2_EMPTY
 };
