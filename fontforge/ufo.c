@@ -1935,16 +1935,15 @@ int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer) {
 
 int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int flags,
 	const EncMap *map,int layer, int all_layers) {
-    char *foo = NULL, *glyphdir, *gfname;
+    char *glyphdir, *gfname;
     int err;
     FILE *plist;
     int i;
     SplineChar *sc;
 
     /* Clean it out, if it exists */
-    if (asprintf(&foo, "rm -rf %s", basedir) >= 0) {
-      if (system( foo ) == -1) fprintf(stderr, "Error clearing %s.\n", basedir);
-      free( foo ); foo = NULL;
+    if (!GFileRemove(basedir, true)) {
+        LogError(_("Error clearing %s."), basedir);
     }
 
     /* Create it */
@@ -3199,24 +3198,24 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
         if (group_type & GROUP_NAME_RIGHT) {
           sf->vkerns->seconds[below_start + below_count] = copy(current_group->glyphs);
           sf->vkerns->seconds_names[below_start + below_count] = copy(current_group->classname);
-          sf->vkerns->seconds_flags[below_start + below_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type | GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
+          sf->vkerns->seconds_flags[below_start + below_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type & GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
           below_count++;
         } else {
           sf->vkerns->firsts[above_start + above_count] = copy(current_group->glyphs);
           sf->vkerns->firsts_names[above_start + above_count] = copy(current_group->classname);
-          sf->vkerns->firsts_flags[above_start + above_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type | GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
+          sf->vkerns->firsts_flags[above_start + above_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type & GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
           above_count++;
         }
       } else {
         if (group_type & GROUP_NAME_RIGHT) {
           sf->kerns->seconds[right_start + right_count] = copy(current_group->glyphs);
           sf->kerns->seconds_names[right_start + right_count] = copy(current_group->classname);
-          sf->kerns->seconds_flags[right_start + right_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type | GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
+          sf->kerns->seconds_flags[right_start + right_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type & GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
           right_count++;
         } else {
           sf->kerns->firsts[left_start + left_count] = copy(current_group->glyphs);
           sf->kerns->firsts_names[left_start + left_count] = copy(current_group->classname);
-          sf->kerns->firsts_flags[left_start + left_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type | GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
+          sf->kerns->firsts_flags[left_start + left_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type & GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
           left_count++;
         }
       }
@@ -3328,7 +3327,7 @@ return;
 		}
 	    }
 	    if (member_list_length == 0) member_list_length++; // We must have space for a zero-terminator even if the list is empty. A non-empty list has space for a space at the end that we can use.
-	    current_group->glyphs = malloc(member_list_length ? member_list_length : 1); // We allocate space for the list.
+	    current_group->glyphs = malloc(member_list_length); // We allocate space for the list.
 	    current_group->glyphs[0] = '\0';
 	    for (member_native_current = members_native; member_native_current != NULL; member_native_current = member_native_current->next) {
                 if (member_native_current != members_native) strcat(current_group->glyphs, " ");

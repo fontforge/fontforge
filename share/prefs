@@ -12,3 +12,4 @@ SnapOutlines: 0
 SnapDistance: 2
 MarkExtrema: 1
 OutlineThickness: 3
+RevisionsToRetain: 0

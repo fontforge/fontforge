@@ -154,7 +154,7 @@ static void ReparentFixup(GWindow child,GWindow parent, int x, int y, int width,
     GDrawSetWindowBorder(child,1,GDrawGetDefaultForeground(NULL));
 }
 
-void onCollabSessionStateChanged( GObject* gobj, FontViewBase* fv )
+void onCollabSessionStateChanged( gpointer instance, FontViewBase* fv, gpointer user_data )
 {
     bool inCollab = collabclient_inSessionFV( fv );
 
@@ -1955,7 +1955,7 @@ static void CVLayers1Set(CharView *cv) {
  * New layer gadgets are created in CVLCheckLayerCount(). */
 void CVLayersSet(CharView *cv) {
     if( cv )
-	onCollabSessionStateChanged( 0, cv->b.fv );
+	onCollabSessionStateChanged( NULL, cv->b.fv, NULL );
     
     if ( cv->b.sc->parent->multilayer ) {
 	CVLayers2Set(cv);
@@ -4003,7 +4003,7 @@ void BVToolsSetCursor(BitmapView *bv, int state,char *device) {
 	shouldshow = bvt_minify;
     if ( (shouldshow==bvt_pencil || shouldshow==bvt_line) && (state&ksm_meta) && bv->bdf->clut!=NULL )
 	shouldshow = bvt_eyedropper;
-    if ( shouldshow!=bv->showing_tool ) {
+    if ( shouldshow!=bvt_none && shouldshow!=bv->showing_tool ) {
 	GDrawSetCursor(bv->v,tools[shouldshow]);
 	if ( bvtools != NULL )
 	    GDrawSetCursor(bvtools,tools[shouldshow]);

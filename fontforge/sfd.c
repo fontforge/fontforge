@@ -3043,8 +3043,7 @@ return;
 	    else
 		sprintf( markerfile,"%s/" FONT_PROPS, buffer );
 	    if ( !GFileExists(markerfile)) {
-		sprintf( markerfile, "rm -rf %s", buffer );
-		system( buffer );
+		GFileRemove(buffer, false);
 	    }
 	}
     }
@@ -4813,9 +4812,11 @@ static void SFDConsumeUntil( FILE *sfd, const char** terminators ) {
         const char** tp = terminators;
         for( ; tp && *tp; ++tp ) {
             if( !strnmatch( line, *tp, strlen( *tp ))) {
+                free(line);
                 return;
             }
         }
+        free(line);
     }
 }
 
@@ -4855,8 +4856,7 @@ void SFDGetKerns( FILE *sfd, SplineChar *sc, char* ttok ) {
 		while ( (ch=nlgetc(sfd))==' ' );
 		ungetc(ch,sfd);
 		if ( ch=='{' ) {
-		    kp->adjust=chunkalloc(sizeof(DeviceTable));
-		    SFDReadDeviceTable(sfd,kp->adjust);
+		    kp->adjust = SFDReadDeviceTable(sfd, NULL);
 		}
 		if ( last != NULL )
 		    last->next = kp;
@@ -4914,8 +4914,7 @@ exit(1);
 		while ( (ch=nlgetc(sfd))==' ' );
 		ungetc(ch,sfd);
 		if ( ch=='{' ) {
-		    kp->kp.adjust=chunkalloc(sizeof(DeviceTable));
-		    SFDReadDeviceTable(sfd,kp->kp.adjust);
+		    kp->kp.adjust = SFDReadDeviceTable(sfd, NULL);
 		}
 		if ( last != NULL )
 		    last->kp.next = (KernPair *) kp;
@@ -5105,8 +5104,10 @@ char* SFDMoveToNextStartChar( FILE* sfd ) {
 	    while( line[len] && line[len] == ' ' )
 		len++;
 	    strcpy( ret, line+len );
+	    free(line);
 	    return copy(ret);
 	}
+	free(line);
 	if(feof( sfd ))
 	    break;
 
@@ -5580,8 +5581,7 @@ return( NULL );
 		while ( (ch=nlgetc(sfd))==' ' );
 		ungetc(ch,sfd);
 		if ( ch=='{' ) {
-		    kp->adjust=chunkalloc(sizeof(DeviceTable));
-		    SFDReadDeviceTable(sfd,kp->adjust);
+		    kp->adjust = SFDReadDeviceTable(sfd, NULL);
 		}
 		if ( last != NULL )
 		    last->next = kp;
@@ -5635,8 +5635,7 @@ exit(1);
 		while ( (ch=nlgetc(sfd))==' ' );
 		ungetc(ch,sfd);
 		if ( ch=='{' ) {
-		    kp->kp.adjust=chunkalloc(sizeof(DeviceTable));
-		    SFDReadDeviceTable(sfd,kp->kp.adjust);
+		    kp->kp.adjust = SFDReadDeviceTable(sfd, NULL);
 		}
 		if ( last != NULL )
 		    last->kp.next = (KernPair *) kp;
@@ -5848,8 +5847,6 @@ static int SFDGetBitmapChar(FILE *sfd,BDFFont *bdf) {
     EncMap *map;
     int ch;
 
-    bfc = chunkalloc(sizeof(BDFChar));
-    memset( bfc,'\0',sizeof( BDFChar ));
     map = bdf->sf->map;
 
     if ( getint(sfd,&orig)!=1 || orig<0 )
@@ -5883,6 +5880,11 @@ return( 0 );
     }
     if ( enc<0 ||xmax<xmin || ymax<ymin )
 return( 0 );
+
+    bfc = chunkalloc(sizeof(BDFChar));
+    if (bfc == NULL)
+        return 0;
+
     if ( orig==-1 ) {
 	bfc->sc = SFMakeChar(bdf->sf,map,enc);
 	orig = bfc->sc->orig_pos;
@@ -5985,8 +5987,6 @@ static int SFDGetBitmapFont(FILE *sfd,SplineFont *sf,int fromdir,char *dirname) 
     int pixelsize, ascent, descent, depth=1;
     int ch, enccount;
 
-    bdf = calloc(1,sizeof(BDFFont));
-
     if ( getint(sfd,&pixelsize)!=1 || pixelsize<=0 )
 return( 0 );
     if ( getint(sfd,&enccount)!=1 || enccount<0 )
@@ -6001,6 +6001,11 @@ return( 0 );
 return( 0 );
     while ( (ch = nlgetc(sfd))==' ' );
     ungetc(ch,sfd);		/* old sfds don't have a foundry */
+
+    bdf = calloc(1,sizeof(BDFFont));
+    if (bdf == NULL)
+        return 0;
+
     if ( ch!='\n' && ch!='\r' ) {
 	getname(sfd,tok);
 	bdf->foundry = copy(tok);
@@ -6061,6 +6066,7 @@ return( 0 );
 		}
 	    }
 	}
+	free(name);
 	closedir(dir);
     }
     SFDFixupBitmapRefs( bdf );
@@ -9142,63 +9148,81 @@ return( NULL );
 return( sf );
 }
 
-static int ask_about_file(FILE *asfd,int *state,char *filename) {
+/**
+ * Asks the user whether or not to recover, skip or delete an autosaved file.
+ * If requested by the user, this function will attempt to delete the file.
+ * @param [in] filename The path to the autosaved file.
+ * @param [in,out] state The current state.
+ *                 state&1: Recover all. state&2: Forget all.
+ * @param [out] asfd Location to store the file pointer to the autosaved file.
+ * @return true iff the file is to be recovered. If true, asfd will hold the
+ *         corresponding file pointer, which must be closed by the caller. If
+ *         false, asfd will hold NULL.
+ */
+static int ask_about_file(char *filename, int *state, FILE **asfd) {
     int ret;
     char *buts[6];
     char buffer[800], *pt;
 
-    if ( *state&1 )
-return( true );
-    else if ( *state&2 ) {
-	unlink(filename);
-return( false );
+    if ((*asfd = fopen(filename, "r")) == NULL) {
+        return false;
+    } else if (*state&1) { //Recover all
+        return true;
+    } else if (*state&2) { //Forget all
+        fclose(*asfd);
+        *asfd = NULL;
+        unlink(filename);
+        return false;
     }
 
-    fgets(buffer,sizeof(buffer),asfd);
-    rewind(asfd);
-    if ( strncmp(buffer,"Base: ",6)!=0 )
-	strcpy(buffer+6, "<New File>");
+    fgets(buffer,sizeof(buffer),*asfd);
+    rewind(*asfd);
+    if (strncmp(buffer,"Base: ",6) != 0) {
+        strcpy(buffer+6, "<New File>");
+    }
     pt = buffer+6;
-    if ( strlen(buffer+6)>70 ) {
-	pt = strrchr(buffer+6,'/');
-	if ( pt==NULL )
-	    pt = buffer+6;
+    if (strlen(buffer+6) > 70) {
+        pt = strrchr(buffer+6,'/');
+        if (pt == NULL)
+            pt = buffer+6;
     }
 
     buts[0] = _("Yes"); buts[1] = _("Yes to _All");
     buts[2] = _("_Skip for now");
     buts[3] = _("Forget _to All"); buts[4] = _("_Forget about it");
     buts[5] = NULL;
-    ret = ff_ask(_("Recover old edit"),(const char **) buts,0,3,_("You appear to have an old editing session on %s.\nWould you like to recover it?"), pt );
-    switch ( ret ) {
-      case 0:
-return( true );
-      case 1:
-	*state = 1;
-return( true );
-      case 2:
-return( false );
-      case 3:
-	*state = 2;
-	/* Fall through */
-      case 4:
-	unlink(filename);
-return( false );
-      default:
-      break;
+    ret = ff_ask(_("Recover old edit"),(const char **) buts,0,3,_("You appear to have an old editing session on %s.\nWould you like to recover it?"), pt);
+    switch (ret) {
+        case 1: //Recover all
+            *state = 1;
+            break;
+        case 2: //Skip one
+            fclose(*asfd);
+            *asfd = NULL;
+            return false;
+        case 3: //Forget all
+            *state = 2;
+            /* Fall through */
+        case 4: //Forget one
+            fclose(*asfd);
+            *asfd = NULL;
+            unlink(filename);
+            return false;
+        default: //Recover one
+            break;
     }
-return( true );
+    return true;
 }
 
 SplineFont *SFRecoverFile(char *autosavename,int inquire,int *state) {
-    FILE *asfd = fopen( autosavename,"r");
+    FILE *asfd;
     SplineFont *ret;
     char tok[1025];
 
-    if ( asfd==NULL )
-return(NULL);
-    if ( inquire && !ask_about_file(asfd,state,autosavename)) {
-	fclose( asfd );
+    if (!inquire) {
+        *state = 1; //Default to recover all
+    }
+    if (!ask_about_file(autosavename, state, &asfd)) {
 return( NULL );
     }
     locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.

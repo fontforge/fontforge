@@ -1426,7 +1426,7 @@ return( copy(""));
 
     for ( lcnt = ly_fore; lcnt<dummy.layer_cnt; ++lcnt )
 	RefCharsFree(dummy.layers[lcnt].refs);
-    if ( dummy.layer_cnt!=2 )
+    if ( dummy.layer_cnt!=2 && dummy.layers != layers )
 	free( dummy.layers );
 
     fseek(svg,0,SEEK_END);
@@ -2676,7 +2676,7 @@ static void APInto(SplineChar *sc,AnchorPoint *ap,AnchorPoint *fromap,
     }
     if ( fromap->yadjust.corrections!=NULL ) {
 	ap->yadjust.corrections = malloc(ap->yadjust.last_pixel_size-ap->yadjust.first_pixel_size+1);
-	memcpy(ap->yadjust.corrections,fromap->yadjust.corrections,ap->yadjust.last_pixel_size-ap->xadjust.first_pixel_size+1);
+	memcpy(ap->yadjust.corrections,fromap->yadjust.corrections,ap->yadjust.last_pixel_size-ap->yadjust.first_pixel_size+1);
     }
 }
 

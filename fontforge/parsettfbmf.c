@@ -528,8 +528,10 @@ void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info,int onlyone) {
 	j += good;
     }
     cnt = j;
-    if ( cnt==0 )
-return;
+    if ( cnt==0 ) {
+        free(sizes);
+        return;
+    }
 
     /* Ask user which (if any) s/he is interested in */
     choices = calloc(cnt+1,sizeof(char *));
@@ -1034,6 +1036,8 @@ static struct bitmapSizeTable *ttfdumpstrikelocs(FILE *bloc,FILE *bdat,
 	    (gi->bygid[j]==-1 || gi->bygid[j]>=bdf->glyphcnt || bdf->glyphs[gi->bygid[j]]==NULL); --j );
     if ( j==-1 ) {
 	IError("No characters to output in strikes");
+	free(size);
+	fclose(subtables);
 return(NULL);
     }
 

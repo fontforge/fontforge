@@ -433,8 +433,8 @@ static void collab_sessioncallbacks_init (CollabSessionCallbacks *self) {}
 static void
 collab_sessioncallbacks_class_init (CollabSessionCallbacksClass *klass)
 {
-    GType argtypes[] = { G_TYPE_POINTER, NULL };
-    
+    GType argtypes[] = {G_TYPE_POINTER};
+
     g_signal_newv ("joining",
 		   (collab_sessioncallbacks_get_type ()),
 		   G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
@@ -471,30 +471,34 @@ gpointer getSessionCallbacksObject()
 void collabclient_notifySessionJoining( cloneclient_t *cc, FontViewBase* fv )
 {
 #ifdef BUILD_COLLAB
-    
-    printf("AAA collabclient_notifySessionJoining() fv:%p\n", fv);
+
+    printf("AAA collabclient_notifySessionJoining() cc: %p, fv:%p\n", cc, fv);
     g_signal_emit_by_name( getSessionCallbacksObject(), "joining", fv );
-    
+
 #endif    
 }
 void collabclient_notifySessionLeaving( cloneclient_t *cc, FontViewBase* fv )
 {
 #ifdef BUILD_COLLAB
-    
-    cc->sessionIsClosing = 1;
-    g_signal_emit_by_name( getSessionCallbacksObject(), "leaving", fv );
+
+    if (cc) {
+        cc->sessionIsClosing = 1;
+        g_signal_emit_by_name( getSessionCallbacksObject(), "leaving", fv );
+    } else {
+        LogError(_("collabclient_notifySessionLeaving: cc was NULL"));
+    }
 
 #endif
 }
 void collabclient_addSessionJoiningCallback( collabclient_notification_cb func )
 {
     void* data = 0;
-    g_signal_connect( getSessionCallbacksObject(), "joining", (GCallback)func, data );
+    g_signal_connect( getSessionCallbacksObject(), "joining", G_CALLBACK(func), data );
 }
 void collabclient_addSessionLeavingCallback( collabclient_notification_cb func )
 {
     void* data = 0;
-    g_signal_connect( getSessionCallbacksObject(), "leaving", (GCallback)func, data );
+    g_signal_connect( getSessionCallbacksObject(), "leaving", G_CALLBACK(func), data );
 }
 
 

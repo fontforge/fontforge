@@ -35,7 +35,8 @@ GITIGNOREFILES = \
 	config/ \
 	gnulib/ \
 	lib/ \
-	libltdl/
+	libltdl/ \
+	uthash/
 
 
 #--------------------------------------------------------------------------

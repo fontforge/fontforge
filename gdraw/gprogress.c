@@ -260,6 +260,8 @@ return;
 	rq.point_size = 12;
 	rq.weight = 400;
 	progress_font = GDrawAttachFont(root,&rq);
+    } else {
+        GDrawSetFont(root, progress_font);
     }
     GDrawWindowFontMetrics(root,new->font = progress_font,&as,&ds,&ld);
 

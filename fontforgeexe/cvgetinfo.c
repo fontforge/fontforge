@@ -1870,8 +1870,8 @@ static void PI_Close(GGadget *g) {
 static int PI_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	PI_DoCancel( GDrawGetUserData(GGadgetGetWindow(g)));
+	PI_Close(g);
     }
-    PI_Close(g);
 return( true );
 }
 
@@ -1884,8 +1884,8 @@ static int PI_Ok(GGadget *g, GEvent *e) {
 
 	ci->done = true;
 	/* All the work has been done as we've gone along */
+	PI_Close(g);
     }
-    PI_Close(g);
 
 return( true );
 }
@@ -3459,6 +3459,7 @@ static int PI_SpiroOk(GGadget *g, GEvent *e) {
 
 	ci->done = true;
 	/* All the work has been done as we've gone along */
+	PI_Close(g);
     }
 return( true );
 }

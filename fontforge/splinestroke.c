@@ -3259,7 +3259,7 @@ return( end_pos-start_pos );
 	}
 	for ( i=0; i<5; ++i ) {
 	    c->tpt[i].x = me.x + slope.x*(i+1);
-	    c->tpt[i].x = me.y + slope.y*(i+1);
+	    c->tpt[i].y = me.y + slope.y*(i+1);
 	    c->tpt[i].t = (i+1)/6.0;
 	}
 return( 5 );
@@ -3682,6 +3682,10 @@ SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
 	}
 	if ( si->resolution==0 && c.resolution>c.radius/3 )
 	    c.resolution = c.radius/3;
+    if (c.resolution == 0) {
+        ff_post_notice(_("Invalid stroke parameters"), _("Stroke resolution is zero"));
+        return SplinePointListCopy(ss);
+    }
 	ret = SplineSets_Stroke(ss,&c,order2);
     } else {
 	first = last = NULL;
@@ -3750,6 +3754,10 @@ return( NULL );				/* That's an error, must be closed */
 	    c.radius2 = maxd2;
 	    if ( si->resolution==0 && c.resolution>c.radius/3 )
 		c.resolution = c.radius/3;
+        if (c.resolution == 0) {
+            ff_post_notice(_("Invalid stroke parameters"), _("Stroke resolution is zero"));
+            return SplinePointListCopy(ss);
+        }
 	    cur = SplineSets_Stroke(ss,&c,order2);
 	    if ( !c.scaled_or_rotated ) {
 		trans[4] = -trans[4]; trans[5] = -trans[5];

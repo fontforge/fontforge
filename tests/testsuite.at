@@ -95,6 +95,7 @@ check_pedit([Check that detach glyph works #2],[test125.pe],[MinionPro-Regular.f
 check_pedit([Try SVG and PT3],[test126.pe],[DataURI.sfd])
 check_pedit([Test generation of TrueType instructions],[test127.pe],[Ambrosia.sfd])
 #check_pedit([],[svg2ttf.pe])
+check_pedit([Test StrSplit overrun],[test128.pe])
 
 AT_BANNER([FontForge Python Scripting Tests])
 

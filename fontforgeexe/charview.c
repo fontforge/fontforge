@@ -272,7 +272,7 @@ static struct resed charview2_re[] = {
 };
 
 /* return 1 if anything changed */
-static int update_spacebar_hand_tool(CharView *cv) {
+static void update_spacebar_hand_tool(CharView *cv) {
     if ( GDrawKeyState(' ') ) {
 	if ( !cv->spacebar_hold  && !cv_auto_goto ) {
 	    cv->spacebar_hold = 1;
@@ -280,7 +280,6 @@ static int update_spacebar_hand_tool(CharView *cv) {
 	    cv->b1_tool = cvt_hand;
 	    cv->active_tool = cvt_hand;
 	    CVMouseDownHand(cv);
-return 1;
 	}
     } else {
 	if ( cv->spacebar_hold ) {
@@ -288,10 +287,8 @@ return 1;
 	    cv->b1_tool = cv->b1_tool_old;
 	    cv->active_tool = cvt_none;
 	    cv->b1_tool_old = cvt_none;
-return 1;
 	}
     }
-return 0;
 }
 
 /**
@@ -1842,7 +1839,7 @@ return;		/* Offscreen */
 	} else {
 	    ip[j].y = cv->height-1;
 	    ip[j++].x = ip2[last].x + (cv->height-1- ip2[last].y) * ((real) (ip2[i].x-ip2[last].x))/(ip2[i].y-ip2[last].y);
-	    if ( ip2[i].y<cv->width )
+	    if ( ip2[i].y<cv->height )
 		ip[j++] = ip2[i];
 	    else {
 		ip[j].y = cv->height-1;
@@ -2417,7 +2414,7 @@ static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
 			i = cv->oldraster->as-ii; j = jj-cv->oldraster->lb;
 			if ( i<0 || i>=cv->oldraster->rows || j<0 || j>=cv->oldraster->cols )
 			    or = 0;
-			else if ( cv->raster->num_greys<=2 )
+			else if ( cv->oldraster->num_greys<=2 )
 			    or = cv->oldraster->bitmap[i*cv->oldraster->bytes_per_row+(j>>3)] & (1<<(7-(j&7)));
 			else
 			    or = cv->oldraster->bitmap[i*cv->oldraster->bytes_per_row+j];
@@ -3933,7 +3930,7 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 	    TRACE("was on charselector\n");
 	    GWidgetIndicateFocusGadget( cv->hsb );
 	}
-	else
+	else if ( cv->charselector != NULL )
 	{
 	    TRACE("was on NOT charselector\n");
 	    GWidgetIndicateFocusGadget( cv->charselector );
@@ -4758,7 +4755,7 @@ return;		/* I treat this more like a modifier key change than a button press */
     if( cv->charselector && cv->charselector == GWindowGetFocusGadgetOfWindow(cv->gw))
 	GWindowClearFocusGadgetOfWindow(cv->gw);
 
-    update_spacebar_hand_tool(cv); /* needed?  (left from MINGW) */
+    update_spacebar_hand_tool(cv);
 
     CVToolsSetCursor(cv,event->u.mouse.state|(1<<(7+event->u.mouse.button)), event->u.mouse.device );
     if( override_showing_tool != cvt_none )
@@ -5246,18 +5243,15 @@ static void CVMouseMove(CharView *cv, GEvent *event ) {
     GEvent fake;
     int stop_motion = false;
     int has_spiro = hasspiro();
-    int spacebar_changed;
 
 		/* Debug wacom !!!! */
  /* TRACE( "dev=%s (%d,%d) 0x%x\n", event->u.mouse.device!=NULL?event->u.mouse.device:"<None>", */
  /*     event->u.mouse.x, event->u.mouse.y, event->u.mouse.state); */
 
-    spacebar_changed = update_spacebar_hand_tool(cv);
-
-    if ( event->u.mouse.device!=NULL || spacebar_changed )
+    if ( event->u.mouse.device!=NULL )
 	CVToolsSetCursor(cv,event->u.mouse.state,event->u.mouse.device);
 
-    if ( !cv->p.pressed && !cv->spacebar_hold ) {
+    if ( !cv->p.pressed ) {
 	CVUpdateInfo(cv, event);
 	if ( cv->showing_tool==cvt_pointer ) {
 	    CVCheckResizeCursors(cv);
@@ -5506,7 +5500,7 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
     }
     cv->p.pressed = false;
     CVFreePreTransformSPL( cv );
-    update_spacebar_hand_tool(cv); /* needed? (left from MINGW) */
+    update_spacebar_hand_tool(cv);
 
     if ( cv->p.rubberbanding ) {
 	CVDrawRubberRect(cv->v,cv);

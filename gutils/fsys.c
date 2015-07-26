@@ -35,6 +35,7 @@
 #include <sys/stat.h>		/* for mkdir */
 #include <unistd.h>
 #include <glib.h>
+#include <glib/gstdio.h>
 #include <errno.h>			/* for mkdir_p */
 
 #ifdef _WIN32
@@ -417,6 +418,37 @@ int GFileModifyableDir(const char *file) {
 
 int GFileReadable(const char *file) {
 return( access(file,04)==0 );
+}
+
+/**
+ * Removes a file or folder.
+ *
+ * @param [in] path The path to be removed.
+ * @param [in] recursive Specify true to remove a folder and all of its
+ *                       sub-contents.
+ * @return true if the deletion was successful or the path does not exist. It
+ *         will fail if trying to remove a directory that is not empty and
+ *         where `recursive` is false.
+ */
+int GFileRemove(const char *path, int recursive) {
+    GDir *dir;
+    const gchar *entry;
+
+    if (g_remove(path) != 0) {
+        if (recursive && (dir = g_dir_open(path, 0, NULL))) {
+            while ((entry = g_dir_read_name(dir))) {
+                gchar *fpath = g_build_filename(path, entry, NULL);
+                if (g_remove(fpath) != 0 && GFileIsDir(fpath)) {
+                    GFileRemove(fpath, recursive);
+                }
+                g_free(fpath);
+            }
+            g_dir_close(dir);
+        }
+        return (g_remove(path) == 0 || !GFileExists(path));
+    }
+
+    return true;
 }
 
 int GFileMkDir(const char *name) {
@@ -909,7 +941,7 @@ char *getFontForgeUserDir(int dir) {
 	fprintf(stderr, "%s\n", "cannot find home directory");
 return NULL;
 	}
-#if defined(__MINGW32__)
+#ifdef _WIN32
 	/* Allow for preferences to be saved locally in a 'portable' configuration. */ 
 	if (getenv("FF_PORTABLE") != NULL) {
 		buf = smprintf("%s/preferences/", getShareDir());

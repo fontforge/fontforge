@@ -121,7 +121,7 @@ post-extract {
     foreach file [ exec grep -R --include "*.c" "Python\.h" ${worksrcpath} | cut -d: -f1 | sort | uniq ] {
         system "sed -i -e 's|Python\.h|python2.7/Python\.h|g' ${file}"
     }
-    set xcodebase    [ exec xcode-select -print-path . ]
+    set xcodebase    [ exec xcode-select -print-path ]
     set xcodesdkpath [ exec ls -rv1 "${xcodebase}/Platforms/MacOSX.platform/Developer/SDKs/" | head -1 ]
     system "ln -s ${xcodesdkpath}/Developer ${worksrcpath}/. "
 }

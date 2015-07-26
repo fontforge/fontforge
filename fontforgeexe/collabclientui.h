@@ -165,7 +165,11 @@ extern int Collab_getLastChangedPos( void );
 extern int Collab_getLastChangedCodePoint( void );
 
 
-typedef void (*collabclient_notification_cb)( FontViewBase* fv );
+/**
+ * See https://developer.gnome.org/gobject/stable/signal.html
+ * for implied parameters in GLib callback functions.
+ */
+typedef void (*collabclient_notification_cb)( gpointer instance, FontViewBase* fv, gpointer user_data );
 extern void collabclient_addSessionJoiningCallback( collabclient_notification_cb func );
 extern void collabclient_addSessionLeavingCallback( collabclient_notification_cb func );
 
