@@ -611,7 +611,7 @@ else
       [pythonbinary="${withval}"])
 
    have_ipython=no
-   if $( $pythonbinary -c 'import IPython' ); then
+   if $( $pythonbinary -c 'import IPython' 2> /dev/null ); then
       have_ipython=yes;
       AC_DEFINE([HAVE_IPYTHON],[1],[have ipython])
    fi
