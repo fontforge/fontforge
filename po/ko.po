@@ -2,20 +2,21 @@
 # Copyright (C) 2000-2006 by George Williams
 # This file is distributed under the same license as the FontForge package.
 # George Williams, <pfaedit@users.sourceforge.net>, 2006.
-#and
-#, fuzzy
+# Pioneer attempt for korean translation based on japanese version
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: fontforge-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2015-08-16 \n"
 "PO-Revision-Date: 2015-08-16 \n"
 "Last-Translator: Woensug Eric Choi <Woensug.Eric.Choi@gmail.com>\n"
+"Language-Team: \n"
+"Language: ko\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-
-# Pioneer attemp for korean translation based on japanese version
 
 msgid "_OK"
 msgstr "_OK"
@@ -1691,7 +1692,7 @@ msgstr "스트로크 폰트(_S)"
 
 msgid "_Outline Font"
 msgstr "아웃라인 폰트(_O)"
-다
+
 msgid ""
 "Allow editing of multiple colors and shades, fills and strokes.\n"
 "Multi layered fonts can only be output as type3 or svg fonts."
@@ -6199,7 +6200,7 @@ msgid "Palaung"
 msgstr "파라웅어"
 
 msgid "Provencal"
-msgstr "프로방스어
+msgstr "프로방스어"
 
 msgid "Chin"
 msgstr "친어"
@@ -6313,7 +6314,7 @@ msgid "Tabasaran"
 msgstr "사바사란어"
 
 msgid "TH-Cree"
-msgstr "TH-크리어:
+msgstr "TH-크리어:"
 
 msgid "Tigre"
 msgstr "티그리어"
@@ -7926,7 +7927,7 @@ msgid "The only valid values for bits/pixel are 1, 2, 4 or 8"
 msgstr "픽셀쉐이드 비트수로 사용가능한 값은  1, 2, 4, 8 뿐입니다."
 
 # The following strings should be concatenated together, the result */
-# translated, and then broken into lines by hand. 
+# translated, and then broken into lines by hand.
 msgid "FontForge has some bugs in its remove overlap"
 msgstr "FontForge의 중복제거특성에서, 문제를 야기"
 
@@ -12288,10 +12289,9 @@ msgid "Syntax error while parsing type3 glyph: %s"
 msgstr "Type3 글리프 %s 의 분석 중에 구문 에러가 발생"
 
 msgid "Syntax errors while parsing Type3 font headers"
-msgstr "Type3폰트 헤더를 해석 중에 구문 에러가 발생""
+msgstr "Type3폰트 헤더를 해석 중에 구문 에러가 발생"
 
-msgid ""
-"The font %s is one of the standard fonts. It isn't actually in the file."
+msgid "The font %s is one of the standard fonts. It isn't actually in the file."
 msgstr "폰트 %s는 표준폰트의 하나 입니다. 실제로는 파일내에 포함되어 있지 않습니다."
 
 msgid "Unable to parse the pdf objects that make up %s"
@@ -12327,12 +12327,8 @@ msgstr "/CharStrings의 중복되는 항목을 무시합니다\n"
 msgid "Ignoring duplicate /Subrs entry\n"
 msgstr "/Subrs의 중복되는 항목을 무시합니다\n"
 
-msgid ""
-"This font contains a \"UniqueId\" variable, but the correct name for it is\n"
-"\t\"UniqueID\" (PostScript is case concious)\n"
-msgstr ""
-"이 폰트에서 \"UniqueId\" 라고하는 변수가 있습니다만, 올바르게는"
-"\t\"UniqueID\" 입니다 (PostScript에서는 대문자와 소문자가 구별됩니다)\n"
+msgid "This font contains a \"UniqueId\" variable, but the correct name for it is\n\t\"UniqueID\" (PostScript is case concious)\n"
+msgstr "이 폰트에서 \"UniqueId\" 라고하는 변수가 있습니다만, 올바르게는\t\"UniqueID\" 입니다 (PostScript에서는 대문자와 소문자가 구별됩니다)\n"
 
 msgid "Bad CharString. Does not include lenIV bytes.\n"
 msgstr "CharString이 부적합합니다. lenIV 의 바이트수가 포함되어있지 않습니다\n"
@@ -12361,54 +12357,34 @@ msgstr "임시파일을 열 수 없습니다\n"
 msgid "Cannot open %s\n"
 msgstr "%s를 열 수 없습니다\n"
 
-msgid ""
-"The truetype encoding specified by platform=%d specific=%d (which we map to %"
-"s) is not supported by your version of iconv(3).\n"
-msgstr ""
-"플랫폼 ID=%d, 고유ID=%d 로 지정된 TrueType 인코딩 (%s 에 "
-"변환됩니다) 은 설치된  iconv(3) 에서 지원하지 않습니다\n"
+msgid "The truetype encoding specified by platform=%d specific=%d (which we map to %s) is not supported by your version of iconv(3).\n"
+msgstr "플랫폼 ID=%d, 고유ID=%d 로 지정된 TrueType 인코딩 (%s 에 변환됩니다) 은 설치된  iconv(3) 에서 지원하지 않습니다\n"
 
-msgid ""
-"Interesting, I've never seen an example of this type of font, could you\n"
-"send me a copy of %s?\n"
-"Thanks\n"
-"  gww@silcom.com\n"
-msgstr ""
-"흠... 이런 타입의 폰트를 본적이 없습니다.\n"
-"%s 를 복사해 메일로 보내주시겠습니까?\n"
-"                                                     \n"
-"                                                     gww@silcom.com\n"
+msgid "Interesting, I've never seen an example of this type of font, could you\nsend me a copy of %s?\nThanks\n  gww@silcom.com\n"
+msgstr "흠... 이런 타입의 폰트를 본적이 없습니다.\n%s 를 복사해 메일로 보내주시겠습니까?\n                                                     \n                                                     gww@silcom.com\n"
 
-msgid ""
-"The fontname begins with the utf8 byte order sequence. This is illegal. %s"
-msgstr ""
-"폰트명 %s 의 선두에  UTF-8 의 바이트 순서 마크가 붙어있습니다. 올바르지 않습니다."
+msgid "The fontname begins with the utf8 byte order sequence. This is illegal. %s"
+msgstr "폰트명 %s 의 선두에  UTF-8 의 바이트 순서 마크가 붙어있습니다. 올바르지 않습니다."
 
-msgid ""
-"Warning: Mac and Unicode entries in the 'name' table differ for the\n"
+msgid "Warning: Mac and Unicode entries in the 'name' table differ for the\n"
 " %s string in the language %s\n"
 " Mac String: %s\n"
 "Mac Unicode String: %s\n"
-msgstr ""
-"경고: 'name' 테이블의 Mac과  Unicode의 항목에 문자열 %s이 언어 %s\n"
+msgstr "경고: 'name' 테이블의 Mac과  Unicode의 항목에 문자열 %s이 언어 %s\n"
 "      버전에 대해 일치하지 않습니다.\n"
 " Mac 의 문자열: %s\n"
 " Mac Unicode 의 문자열: %s\n"
 
-msgid ""
-"Warning: Mac string is a subset of the Windows string in the 'name' table\n"
+msgid "Warning: Mac string is a subset of the Windows string in the 'name' table\n"
 " for the %s string in the %s language.\n"
-msgstr ""
-"경고: 'name' 테이블 문자열 %s 의 %s 언어버전에 대해,\n"
+msgstr "경고: 'name' 테이블 문자열 %s 의 %s 언어버전에 대해,\n"
 "Mac 문자열은 Windows 문자열의 서브세트입니다\n"
 
-msgid ""
-"Warning: Mac and Windows entries in the 'name' table differ for the\n"
+msgid "Warning: Mac and Windows entries in the 'name' table differ for the\n"
 " %s string in the language %s\n"
 " Mac String: %s\n"
 "Windows String: %s\n"
-msgstr ""
-"경고: 'name' 테이블의 Mac 과  Windows 항목에서 문자열 %s 이 언어 %s\n"
+msgstr "경고: 'name' 테이블의 Mac 과  Windows 항목에서 문자열 %s 이 언어 %s\n"
 "      버전에 대해 일치하지 않습니다.\n"
 " Mac 의 문자열: %s\n"
 " Windows 의 문자열: %s\n"
@@ -12426,7 +12402,7 @@ msgid "Reached end of file when reading simple glyph\n"
 msgstr "단순글리프 불러오기 중에 파일이 끝났습니다.\n"
 
 msgid "Empty composite %d\n"
-msgstr "복합자 %d 가 비어있습니다n"
+msgstr "복합자 %d 가 비어있습니다\n"
 
 msgid "Bad flags value, implied MORE components at end of glyph %d\n"
 msgstr "플래그의 값이 부적합합니다. 글리프 %d 의 말미에 아직 구성요소가 남아 있습니다\n"
@@ -12440,8 +12416,7 @@ msgstr "글리프 %d가 폰트글리프수를 넘는 글리프 %d를 참조하�
 msgid "Reached end of file when reading composite glyph\n"
 msgstr "합성글리프의 불러오기 중에 파일이 끝났습니다.\n"
 
-msgid ""
-"Bad glyph (%d), its definition extends beyond the end of the glyf table\n"
+msgid "Bad glyph (%d), its definition extends beyond the end of the glyf table\n"
 msgstr "올바르지 않은 글리프(%d)가 있습니다. 정의 glyf테이블 의 말미를 넘어섭니다\n"
 
 msgid "Bad glyph (%d), disordered 'loca' table (start comes after end)\n"
@@ -12456,10 +12431,8 @@ msgstr "CFF의 name INDEX가 부적합합니다\n"
 msgid "Unexpected value in dictionary %d\n"
 msgstr "사전 %d에 올바르지 않은 값이 포함되어 있습니다\n"
 
-msgid ""
-"FontForge does not support type2 programs embedded in CFF DICT INDICES.\n"
-msgstr ""
-"FontForge는 CFF DICT INDEX에 내장된 Type2 프로그램을 지원하지 않습니다\n"
+msgid "FontForge does not support type2 programs embedded in CFF DICT INDICES.\n"
+msgstr "FontForge는 CFF DICT INDEX에 내장된 Type2 프로그램을 지원하지 않습니다\n"
 
 msgid "Bad subroutine INDEX in cff font.\n"
 msgstr "CFF 폰트 내에 올바르지 않은 서브루틴 인덱스가 있습니다.\n"
@@ -12500,11 +12473,9 @@ msgstr "fdselect %d의 포맷을 이해 할 수 없습니다 \n"
 msgid "CFF version mismatch\n"
 msgstr "CFF의 버전이 맞지 않습니다\n"
 
-msgid ""
-"In %s, in glyph %s, 'CFF ' advance width (%d) and\n"
+msgid "In %s, in glyph %s, 'CFF ' advance width (%d) and\n"
 "  'hmtx' width (%d) do not match. (Subsequent mismatches will not be reported)\n"
-msgstr ""
-"%2$s글리프%1$s로, 'CFF '의 글자붙이기 폭(%3$d)과 'hmtx'의 폭(%4$d)\n"
+msgstr "%2$s글리프%1$s로, 'CFF '의 글자붙이기 폭(%3$d)과 'hmtx'의 폭(%4$d)\n"
 "  이 일치하지 않습니다. (이후, 불일치가 발견되어도 보고하지 않습니다)\n"
 
 msgid ""
@@ -12525,11 +12496,8 @@ msgstr ""
 "플랫폼 ID=%d, 고유 ID=%d 의 인코딩 서브테이블이,"
 "지원하지 않는 포맷 %d로 쓰여져 있습니다.\n"
 
-msgid ""
-"Encoding subtable for platform=%d, specific=%d has a 0 length subtable.\n"
-msgstr ""
-"플랫폼ID=%d, 고유ID=%d 의 인코딩 서브 테이블에 ,"
-"길이가 0 인 서브테이블이 포함되어 있습니다.\n"
+msgid "Encoding subtable for platform=%d, specific=%d has a 0 length subtable.\n"
+msgstr "플랫폼ID=%d, 고유ID=%d 의 인코딩 서브 테이블에 , 길이가 0 인 서브테이블이 포함되어 있습니다.\n"
 
 msgid "Attempt to encode missing glyph %d to %d (0x%x)\n"
 msgstr "존재하지 않는 글리프 %d 를  %d (0x%x) 에 부호화 하려고 합니다\n"
