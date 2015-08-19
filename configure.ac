@@ -377,6 +377,7 @@ AC_CHECK_HEADERS([strings.h sys/ioctl.h sys/socket.h sys/time.h unistd.h])
 if test x"${i_do_want_iconv}" = xyes; then
    AC_CHECK_HEADERS([iconv.h])
 fi
+AC_CHECK_HEADERS([execinfo.h])
 gl_INIT
 
 #--------------------------------------------------------------------------
