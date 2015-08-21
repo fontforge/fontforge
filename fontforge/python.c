@@ -17736,6 +17736,8 @@ static void AddSpiroConstants( PyObject *module );
 static void FinalizeFontforgeModule( PyObject* module ) {
     AddHookDictionary( module );
     AddSpiroConstants( module );
+    PyModule_AddObject( module, "unspecifiedMathValue",
+                        Py_BuildValue("i", TEX_UNDEF) );
 }
 
 static module_definition module_def_fontforge = {

@@ -29,6 +29,13 @@ p.lineTo(accentBaseHeight, accentBaseHeight);
 p.lineTo(0, accentBaseHeight)
 p.closePath();
 
+# Verify whether some glyph constants are unspecified by default.
+if ( g.texheight != fontforge.unspecifiedMathValue or
+     g.texdepth != fontforge.unspecifiedMathValue or
+     g.topaccent != fontforge.unspecifiedMathValue or
+     g.italicCorrection != fontforge.unspecifiedMathValue ):
+  raise ValueError("Unexpected default value for a glyph constant")
+
 # Create a glyph for the '+' letter, so that math->AxisHeight is nonzero.
 axisHeight = font.em * .3
 g = font.createChar(0x2B)
