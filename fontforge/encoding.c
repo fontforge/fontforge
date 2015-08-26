@@ -574,12 +574,13 @@ return( item );
 void RemoveMultiples(Encoding *item) {
     Encoding *test;
 
-    for ( test=enclist; test!=NULL; test = test->next ) {
-	if ( strcmp(test->enc_name,item->enc_name)==0 )
-    break;
+    for (test=enclist; test!=NULL; test=test->next) {
+        if ( strcmp(test->enc_name, item->enc_name)==0 )
+            break;
     }
-    if ( test!=NULL )
-	DeleteEncoding(test);
+
+    if (test)
+        DeleteEncoding(test);
 }
 
 char *ParseEncodingFile(char *filename, char *encodingname) {
@@ -589,69 +590,88 @@ char *ParseEncodingFile(char *filename, char *encodingname) {
     char *buf, *name;
     int i,ch;
 
-    if ( filename==NULL ) filename = getPfaEditEncodings();
+    if (!filename)
+        filename = getPfaEditEncodings();
+
     file = fopen(filename,"r");
-    if ( file==NULL ) {
-	if ( orig!=NULL )
-	    ff_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), orig);
-return( NULL );
+    if (!file) {
+        if (orig)
+            ff_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), orig);
+        return(NULL);
     }
+
+    /* An empty file is surely an invalid file */
     ch = getc(file);
-    if ( ch==EOF ) {
-	fclose(file);
-return( NULL );
+    if (ch==EOF) {
+        fclose(file);
+        /* TODO: Shouldn't we complain to the user about it here ? */
+        return(NULL);
     }
-    ungetc(ch,file);
-    if ( ch=='#' || ch=='0' )
-    {
+
+    /* Here we detect file format and decide which format
+       parsing routine to actually use.
+
+       TODO: Support parsing the file format of GlyphOrderAndAliasDB as well
+    */
+    ungetc(ch, file);
+    if (ch=='#' || ch=='0') {
         head = ParseConsortiumEncodingFile(file);
         if(encodingname)
             head->enc_name = copy(encodingname);
+    } else {
+        head = PSSlurpEncodings(file);
     }
-    else
-	head = PSSlurpEncodings(file);
     fclose(file);
-    if ( head==NULL ) {
-	ff_post_error(_("Bad encoding file format"),_("Bad encoding file format") );
-	return( NULL );
+
+    if (!head) {
+        ff_post_error(_("Bad encoding file format"),_("Bad encoding file format") );
+        return(NULL);
     }
 
-    for ( i=0, prev=NULL, item=head; item!=NULL; prev = item, item=next, ++i ) {
-	next = item->next;
-	if ( item->enc_name==NULL ) {
-	    if ( no_windowing_ui ) {
-		ff_post_error(_("Bad encoding file format"),_("This file contains an unnamed encoding, which cannot be named in a script"));
-		return( NULL );
-	    }
-	    if ( item==head && item->next==NULL )
-		buf = strdup(_( "Please name this encoding" ));
-	    else
-		buf = xasprintf(_( "Please name encoding %d in this file" ), i );
+    for (i=0, prev=NULL, item=head; item!=NULL; prev=item, item=next, ++i) {
+        next = item->next;
+        if (item->enc_name==NULL) {
+            if (no_windowing_ui) {
+                ff_post_error(_("Bad encoding file format"),_("This file contains an unnamed encoding, which cannot be named in a script"));
+                return(NULL);
+            }
 
-	    name = ff_ask_string( buf, NULL, buf );
+            if (item==head && item->next==NULL)
+                buf = strdup(_("Please name this encoding"));
+            else
+                buf = xasprintf(_("Please name encoding %d in this file"), i);
 
-	    if ( name!=NULL ) {
-		item->enc_name = copy(name);
-		free(name);
-	    } else {
-		if ( prev==NULL )
-		    head = item->next;
-		else
-		    prev->next = item->next;
-		EncodingFree(item);
-	    }
-	}
+            name = ff_ask_string(buf, NULL, buf);
+
+            if (name) {
+                item->enc_name = copy(name);
+                free(name);
+            } else {
+                if (prev==NULL)
+                    head = item->next;
+                else
+                    prev->next = item->next;
+
+                EncodingFree(item);
+            }
+        }
     }
-    for ( item=head; item!=NULL; item=item->next )
-	RemoveMultiples(item);
 
-    if ( enclist == NULL )
-	enclist = head;
-    else {
-	for ( item=enclist; item->next!=NULL; item=item->next );
-	item->next = head;
+    for (item=head; item!=NULL; item=item->next) {
+        RemoveMultiples(item);
     }
-return( copy( head->enc_name ) );
+
+    if (!enclist) {
+        enclist = head;
+    } else {
+        for (item=enclist; item->next!=NULL; item=item->next ){
+            /* Run to the end of the linked list */
+        };
+        /* And append there the encodings we just loaded */
+        item->next = head;
+    }
+
+    return( copy( head->enc_name ) );
 }
 
 void LoadPfaEditEncodings(void) {
