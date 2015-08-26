@@ -548,27 +548,34 @@ static Encoding *ParseConsortiumEncodingFile(FILE *file) {
     memset(encs, 0, sizeof(encs));
     max = -1;
 
-    while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
-	if ( ishexdigit(buffer[0]) ) {
-	    if ( sscanf(buffer, "%x %x", (unsigned *) &enc, (unsigned *) &unienc)==2 &&
-		    enc<0x10000 && enc>=0 ) {
-		encs[enc] = unienc;
-		if ( enc>max ) max = enc;
-	    }
-	}
+    while (fgets(buffer, sizeof(buffer), file) != NULL) {
+        if (ishexdigit(buffer[0])) {
+            if (sscanf(buffer, "%x %x", (unsigned *) &enc, (unsigned *) &unienc)==2
+                && enc < 0x10000
+                && enc >= 0) {
+                encs[enc] = unienc;
+                if ( enc>max ) max = enc;
+            }
+        }
     }
 
-    if ( max==-1 )
-return( NULL );
+    if (max==-1)
+        return NULL;
 
     ++max;
-    if ( max<256 ) max = 256;
-    item = calloc(1,sizeof(Encoding));
+    if (max<256) max = 256;
+    item = calloc(1, sizeof(Encoding));
     item->only_1byte = item->has_1byte = true;
     item->char_cnt = max;
     item->unicode = malloc(max*sizeof(int32));
-    memcpy(item->unicode,encs,max*sizeof(int32));
-return( item );
+    memcpy(item->unicode, encs, max*sizeof(int32));
+    return item;
+}
+
+/* Parse the GlyphOrderAndAliasDB file format */
+static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
+    /* TODO: Implement-me! */
+    return NULL;
 }
 
 void RemoveMultiples(Encoding *item) {
@@ -597,7 +604,7 @@ char *ParseEncodingFile(char *filename, char *encodingname) {
     if (!file) {
         if (orig)
             ff_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), orig);
-        return(NULL);
+        return NULL;
     }
 
     /* An empty file is surely an invalid file */
@@ -605,16 +612,19 @@ char *ParseEncodingFile(char *filename, char *encodingname) {
     if (ch==EOF) {
         fclose(file);
         /* TODO: Shouldn't we complain to the user about it here ? */
-        return(NULL);
+        return NULL;
     }
 
     /* Here we detect file format and decide which format
        parsing routine to actually use.
-
-       TODO: Support parsing the file format of GlyphOrderAndAliasDB as well
     */
     ungetc(ch, file);
-    if (ch=='#' || ch=='0') {
+
+
+    if(strlen(filename) >= 20
+       && !strcmp(filename + strlen(filename) - 20, "GlyphOrderAndAliasDB")){
+        head = ParseGlyphOrderAndAliasDB(file);
+    } else if (ch=='#' || ch=='0') {
         head = ParseConsortiumEncodingFile(file);
         if(encodingname)
             head->enc_name = copy(encodingname);
@@ -625,7 +635,7 @@ char *ParseEncodingFile(char *filename, char *encodingname) {
 
     if (!head) {
         ff_post_error(_("Bad encoding file format"),_("Bad encoding file format") );
-        return(NULL);
+        return NULL;
     }
 
     for (i=0, prev=NULL, item=head; item!=NULL; prev=item, item=next, ++i) {
@@ -633,7 +643,7 @@ char *ParseEncodingFile(char *filename, char *encodingname) {
         if (item->enc_name==NULL) {
             if (no_windowing_ui) {
                 ff_post_error(_("Bad encoding file format"),_("This file contains an unnamed encoding, which cannot be named in a script"));
-                return(NULL);
+                return NULL;
             }
 
             if (item==head && item->next==NULL)
@@ -671,7 +681,7 @@ char *ParseEncodingFile(char *filename, char *encodingname) {
         item->next = head;
     }
 
-    return( copy( head->enc_name ) );
+    return copy(head->enc_name);
 }
 
 void LoadPfaEditEncodings(void) {
