@@ -706,8 +706,8 @@ static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
 void RemoveMultiples(Encoding *item) {
     Encoding *test;
 
-    for (test=enclist; test!=NULL; test=test->next) {
-        if ( strcmp(test->enc_name, item->enc_name)==0 )
+    for (test = enclist; test != NULL; test = test->next) {
+        if (strcmp(test->enc_name, item->enc_name) == 0)
             break;
     }
 
