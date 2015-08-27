@@ -541,16 +541,18 @@ int AddEncoding(char *name, EncFunc enc_to_uni, EncFunc uni_to_enc, int max) {
 }
 
 static char *getPfaEditEncodings(void) {
-    static char *encfile=NULL;
+    static char *encfile = NULL;
     char buffer[1025];
     char *ffdir;
 
-    if ( encfile!=NULL )
+    if (encfile)
         return encfile;
+
     ffdir = getFontForgeUserDir(Config);
-    if ( ffdir==NULL )
+    if (!ffdir)
         return NULL;
-    sprintf(buffer,"%s/Encodings.ps", ffdir);
+
+    sprintf(buffer, "%s/Encodings.ps", ffdir);
     free(ffdir);
     encfile = copy(buffer);
     return encfile;
@@ -560,8 +562,11 @@ static void EncodingFree(Encoding *item) {
     int i;
 
     free(item->enc_name);
-    if ( item->psnames!=NULL ) for ( i=0; i<item->char_cnt; ++i )
-	free(item->psnames[i]);
+    if (item->psnames) {
+        for (i=0; i < item->char_cnt; ++i) {
+            free(item->psnames[i]);
+        }
+    }
     free(item->psnames);
     free(item->unicode);
     free(item);
@@ -571,24 +576,29 @@ void DeleteEncoding(Encoding *me) {
     FontViewBase *fv;
     Encoding *prev;
 
-    if ( me->builtin )
-return;
+    if (me->builtin)
+        return;
 
-    for ( fv = FontViewFirst(); fv!=NULL; fv = fv->next ) {
-	if ( fv->map->enc==me )
-	    fv->map->enc = &custom;
+    for (fv = FontViewFirst(); fv != NULL; fv = fv->next) {
+        if (fv->map->enc == me)
+            fv->map->enc = &custom;
     }
-    if ( me==enclist )
-	enclist = me->next;
-    else {
-	for ( prev = enclist; prev!=NULL && prev->next!=me; prev=prev->next );
-	if ( prev!=NULL ) prev->next = me->next;
+
+    if (me == enclist) {
+        enclist = me->next;
+    } else {
+        for (prev = enclist; prev != NULL && prev->next != me; prev = prev->next);
+        if (prev)
+            prev->next = me->next;
     }
     EncodingFree(me);
-    if ( default_encoding == me )
-	default_encoding = FindOrMakeEncoding("ISO8859-1");
-    if ( default_encoding == NULL )
-	default_encoding = &custom;
+
+    if (default_encoding == me)
+        default_encoding = FindOrMakeEncoding("ISO8859-1");
+
+    if (!default_encoding)
+        default_encoding = &custom;
+
     DumpPfaEditEncodings();
 }
 
