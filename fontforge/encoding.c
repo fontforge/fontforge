@@ -238,7 +238,7 @@ static int TryEscape(Encoding *enc, const char *escape_sequence) {
     return enc->has_2byte;
 }
 
-Encoding *_FindOrMakeEncoding(const char *name,int make_it) {
+Encoding *_FindOrMakeEncoding(const char *name, int make_it) {
     Encoding *enc;
     char buffer[20];
     const char *iconv_name;
@@ -251,201 +251,242 @@ Encoding *_FindOrMakeEncoding(const char *name,int make_it) {
     char *upt;
     /* iconv is not case sensitive */
 
-    if ( strncasecmp(name,"iso8859_",8)==0 || strncasecmp(name,"koi8_",5)==0 ) {
-	    /* Fixup for old naming conventions */
-	    strncpy(buffer,name,sizeof(buffer));
-        buffer[sizeof(buffer)-1] = '\0';
-	    *strchr(buffer,'_') = '-';
-	    name = buffer;
-    } else if ( strcasecmp(name,"iso-8859")==0 ) {
-	    /* Fixup for old naming conventions */
-	    strncpy(buffer,name,3);
-	    strncpy(buffer+3,name+4,sizeof(buffer)-3);
-        buffer[sizeof(buffer)-1] = '\0';
-	    name = buffer;
-    } else if ( strcasecmp(name,"isolatin1")==0 ) {
+    if (strncasecmp(name, "iso8859_", 8) == 0 ||
+        strncasecmp(name, "koi8_", 5) == 0) {
+        /* Fixup for old naming conventions */
+        strncpy(buffer, name, sizeof(buffer));
+        buffer[sizeof(buffer) - 1] = '\0';
+        *strchr(buffer, '_') = '-';
+        name = buffer;
+    } else if (strcasecmp(name, "iso-8859") == 0) {
+        /* Fixup for old naming conventions */
+        strncpy(buffer, name, 3);
+        strncpy(buffer + 3, name + 4, sizeof(buffer) - 3);
+        buffer[sizeof(buffer) - 1] = '\0';
+        name = buffer;
+    } else if (strcasecmp(name, "isolatin1") == 0) {
         name = "iso8859-1";
-    } else if ( strcasecmp(name,"isocyrillic")==0 ) {
+    } else if (strcasecmp(name, "isocyrillic") == 0) {
         name = "iso8859-5";
-    } else if ( strcasecmp(name,"isoarabic")==0 ) {
+    } else if (strcasecmp(name, "isoarabic") == 0) {
         name = "iso8859-6";
-    } else if ( strcasecmp(name,"isogreek")==0 ) {
+    } else if (strcasecmp(name, "isogreek") == 0) {
         name = "iso8859-7";
-    } else if ( strcasecmp(name,"isohebrew")==0 ) {
+    } else if (strcasecmp(name, "isohebrew") == 0) {
         name = "iso8859-8";
-    } else if ( strcasecmp(name,"isothai")==0 ) {
-        name = "tis-620";	/* TIS doesn't define non-breaking space in 0xA0 */ 
-    } else if ( strcasecmp(name,"latin0")==0 || strcasecmp(name,"latin9")==0 ) {
-        name = "iso8859-15";	/* "latin-9" is supported (libiconv bug?) */ 
-    } else if ( strcasecmp(name,"koi8r")==0 ) {
+    } else if (strcasecmp(name, "isothai") == 0) {
+        name = "tis-620"; /* TIS doesn't define non-breaking space in 0xA0 */
+    } else if (strcasecmp(name, "latin0") == 0 || strcasecmp(name, "latin9") == 0) {
+        name = "iso8859-15"; /* "latin-9" is supported (libiconv bug?) */
+    } else if (strcasecmp(name, "koi8r") == 0) {
         name = "koi8-r";
-    } else if ( strncasecmp(name,"jis201",6)==0 || strncasecmp(name,"jisx0201",8)==0 ) {
+    } else if (strncasecmp(name, "jis201", 6) == 0 || strncasecmp(name, "jisx0201", 8) == 0) {
         name = "jis_x0201";
-    } else if ( strcasecmp(name,"AdobeStandardEncoding")==0 || strcasecmp(name,"Adobe")==0 )
-	name = "AdobeStandard";
-    for ( enc=enclist; enc!=NULL; enc=enc->next )
-	if ( strmatch(name,enc->enc_name)==0 ||
-		(enc->iconv_name!=NULL && strmatch(name,enc->iconv_name)==0))
-return( enc );
-    if ( strmatch(name,"unicode")==0 || strmatch(name,"iso10646")==0 || strmatch(name,"iso10646-1")==0 )
-return( &unicodebmp );
-    if ( strmatch(name,"unicode4")==0 || strmatch(name,"ucs4")==0 )
-return( &unicodefull );
+    } else if (strcasecmp(name, "AdobeStandardEncoding") == 0 || strcasecmp(name, "Adobe") == 0) {
+        name = "AdobeStandard";
+    }
+
+    for (enc=enclist; enc != NULL; enc=enc->next) {
+        if (strmatch(name, enc->enc_name) == 0
+            || (enc->iconv_name != NULL && strmatch(name, enc->iconv_name) == 0)) {
+                return enc;
+        }
+    }
+
+    if (strmatch(name, "unicode") == 0 ||
+        strmatch(name, "iso10646") == 0 ||
+        strmatch(name, "iso10646-1") == 0) {
+        return &unicodebmp;
+    }
+
+    if (strmatch(name, "unicode4") == 0 ||
+        strmatch(name, "ucs4") == 0) {
+        return &unicodefull;
+    }
 
     iconv_name = name;
     /* Mac seems to work ok */
-    if ( strcasecmp(name,"win")==0 || strcasecmp(name,"ansi")==0 )
-	iconv_name = "MS-ANSI";		/* "WINDOWS-1252";*/
-    else if ( strncasecmp(name,"jis208",6)==0 || strncasecmp(name,"jisx0208",8)==0 )
-	iconv_name = "ISO-2022-JP";
-    else if ( strncasecmp(name,"jis212",6)==0 || strncasecmp(name,"jisx0212",8)==0 )
-	iconv_name = "ISO-2022-JP-2";
-    else if ( strncasecmp(name,"ksc5601",7)==0 )
-	iconv_name = "ISO-2022-KR";
-    else if ( strcasecmp(name,"gb2312pk")==0 || strcasecmp(name,"gb2312packed")==0 )
-	iconv_name = "EUC-CN";
-    else if ( strncasecmp(name,"gb2312",6)==0 )
-	iconv_name = "ISO-2022-CN";
-    else if ( strcasecmp(name,"wansung")==0 )
-	iconv_name = "EUC-KR";
-    else if ( strcasecmp(name,"EUC-CN")==0 ) {
-	iconv_name = name;
-	name = "gb2312pk";
-    } else if ( strcasecmp(name,"EUC-KR")==0 ) {
-	iconv_name = name;
-	name = "wansung";
+    if (strcasecmp(name, "win") == 0 ||
+        strcasecmp(name, "ansi") == 0) {
+        iconv_name = "MS-ANSI"; /* "WINDOWS-1252"; */
+    } else if (strncasecmp(name, "jis208", 6) == 0 ||
+               strncasecmp(name, "jisx0208", 8) == 0) {
+        iconv_name = "ISO-2022-JP";
+    } else if (strncasecmp(name, "jis212", 6) == 0 ||
+               strncasecmp(name, "jisx0212", 8) == 0) {
+        iconv_name = "ISO-2022-JP-2";
+    } else if (strncasecmp(name, "ksc5601", 7) == 0) {
+        iconv_name = "ISO-2022-KR";
+    } else if (strcasecmp(name, "gb2312pk") == 0 ||
+               strcasecmp(name, "gb2312packed") == 0) {
+        iconv_name = "EUC-CN";
+    } else if (strncasecmp(name, "gb2312", 6) == 0) {
+        iconv_name = "ISO-2022-CN";
+    } else if (strcasecmp(name, "wansung") == 0) {
+        iconv_name = "EUC-KR";
+    } else if (strcasecmp(name, "EUC-CN") == 0) {
+        iconv_name = name;
+        name = "gb2312pk";
+    } else if (strcasecmp(name, "EUC-KR") == 0) {
+        iconv_name = name;
+        name = "wansung";
     }
 
-/* Escape sequences:					*/
-/*	ISO-2022-CN:     \e $ ) A ^N			*/
-/*	ISO-2022-KR:     \e $ ) C ^N			*/
-/*	ISO-2022-JP:     \e $ B				*/
-/*	ISO-2022-JP-2:   \e $ ( D			*/
-/*	ISO-2022-JP-3:   \e $ ( O			*/ /* Capital "O", not zero */
-/*	ISO-2022-CN-EXT: \e $ ) E ^N			*/ /* Not sure about this, also uses CN escape */
+    /* Escape sequences:                */
+    /*	ISO-2022-CN:     \e $ ) A ^N    */
+    /*	ISO-2022-KR:     \e $ ) C ^N    */
+    /*	ISO-2022-JP:     \e $ B         */
+    /*	ISO-2022-JP-2:   \e $ ( D       */
+    /*	ISO-2022-JP-3:   \e $ ( O       */  /* Capital "O", not zero */
+    /*	ISO-2022-CN-EXT: \e $ ) E ^N    */  /* Not sure about this, also uses CN escape */
 
-    memset(&temp,0,sizeof(temp));
+    memset(&temp, 0, sizeof(temp));
     temp.builtin = true;
-    temp.tounicode = iconv_open(FindUnicharName(),iconv_name);
-    if ( temp.tounicode==(iconv_t) -1 || temp.tounicode==NULL )
-return( NULL );			/* Iconv doesn't recognize this name */
-    temp.fromunicode = iconv_open(iconv_name,FindUnicharName());
-    if ( temp.fromunicode==(iconv_t) -1 || temp.fromunicode==NULL ) {
-	/* This should never happen, but if it does... */
-	iconv_close(temp.tounicode);
-return( NULL );
+    temp.tounicode = iconv_open(FindUnicharName(), iconv_name);
+    if (temp.tounicode == (iconv_t) -1 ||
+        temp.tounicode == NULL) {
+        return NULL; /* Iconv doesn't recognize this name */
     }
 
-    memset(good,0,sizeof(good));
-    any = false; all = true;
-    for ( i=1; i<256; ++i ) {
-	from[0] = i; from[1] = 0;
-	fromlen = 1;
-	fpt = from;
-	upt = ucs;
-	tolen = sizeof(ucs);
-	if ( iconv( temp.tounicode , &fpt, &fromlen, &upt, &tolen )!= (size_t) (-1)) {
-	    good[i] = true;
-	    any = true;
-	} else
-	    all = false;
+    temp.fromunicode = iconv_open(iconv_name, FindUnicharName());
+    if (temp.fromunicode == (iconv_t) -1 ||
+        temp.fromunicode == NULL) {
+        /* This should never happen, but if it does... */
+        iconv_close(temp.tounicode);
+        return NULL;
     }
-    if ( any )
-	temp.has_1byte = true;
-    if ( all )
-	temp.only_1byte = true;
 
-    if ( !all ) {
-	if ( strstr(iconv_name,"2022")==NULL ) {
-	    for ( i=temp.has_1byte; i<256; ++i ) if ( !good[i] ) {
-		for ( j=0; j<256; ++j ) {
-		    from[0] = i; from[1] = j; from[2] = 0;
-		    fromlen = 2;
-		    fpt = from;
-		    upt = ucs;
-		    tolen = sizeof(ucs);
-		    if ( iconv( temp.tounicode , &fpt, &fromlen, &upt, &tolen )!= (size_t) (-1) &&
-			    upt-ucs==sizeof(unichar_t) /* Exactly one character */ ) {
-			if ( temp.low_page==-1 )
-			    temp.low_page = i;
-			temp.high_page = i;
-			temp.has_2byte = true;
-		break;
-		    }
-		}
-	    }
-	    if ( temp.low_page==temp.high_page ) {
-		temp.has_2byte = false;
-		temp.low_page = temp.high_page = -1;
-	    }
-	}
-	if ( !temp.has_2byte && !good[033]/* escape */ ) {
-	    if ( strstr(iconv_name,"2022")!=NULL &&
-		    strstr(iconv_name,"JP3")!=NULL &&
-		    TryEscape( &temp,"\33$(O" )) {
-		;
-	    } else if ( strstr(iconv_name,"2022")!=NULL &&
-		    strstr(iconv_name,"JP2")!=NULL &&
-		    TryEscape( &temp,"\33$(D" )) {
-		;
-	    } else if ( strstr(iconv_name,"2022")!=NULL &&
-		    strstr(iconv_name,"JP")!=NULL &&
-		    TryEscape( &temp,"\33$B" )) {
-		;
-	    } else if ( strstr(iconv_name,"2022")!=NULL &&
-		    strstr(iconv_name,"KR")!=NULL &&
-		    TryEscape( &temp,"\33$)C\16" )) {
-		;
-	    } else if ( strstr(iconv_name,"2022")!=NULL &&
-		    strstr(iconv_name,"CN")!=NULL &&
-		    TryEscape( &temp,"\33$)A\16" )) {
-		;
-	    }
-	}
+    memset(good, 0, sizeof(good));
+    any = false;
+    all = true;
+    for (i=1; i < 256; ++i) {
+        from[0] = i;
+        from[1] = 0;
+        fromlen = 1;
+        fpt = from;
+        upt = ucs;
+        tolen = sizeof(ucs);
+        if (iconv(temp.tounicode, &fpt, &fromlen, &upt, &tolen) != (size_t) (-1)) {
+            good[i] = true;
+            any = true;
+        } else {
+            all = false;
+        }
     }
-    if ( !temp.has_1byte && !temp.has_2byte )
-return( NULL );
-    if ( !make_it )
-return( NULL );
+
+    if (any)
+        temp.has_1byte = true;
+
+    if (all) {
+        temp.only_1byte = true;
+    } else {
+        if (strstr(iconv_name, "2022") == NULL) {
+            for (i=temp.has_1byte; i < 256; ++i) {
+                if (!good[i]) {
+                    for (j=0; j < 256; ++j) {
+                        from[0] = i;
+                        from[1] = j;
+                        from[2] = 0;
+                        fromlen = 2;
+                        fpt = from;
+                        upt = ucs;
+                        tolen = sizeof(ucs);
+                        if (iconv(temp.tounicode, &fpt, &fromlen, &upt, &tolen) != (size_t) (-1) &&
+                            upt - ucs == sizeof(unichar_t) /* Exactly one character */) {
+                            if (temp.low_page == -1) {
+                                temp.low_page = i;
+                            }
+                            temp.high_page = i;
+                            temp.has_2byte = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (temp.low_page == temp.high_page) {
+                temp.has_2byte = false;
+                temp.low_page = temp.high_page = -1;
+            }
+        }
+
+        if (!temp.has_2byte && !good[033] /* escape */) {
+            if (strstr(iconv_name, "2022") != NULL &&
+                strstr(iconv_name, "JP3") != NULL &&
+                TryEscape(&temp, "\33$(O")) {
+                /* do nothing */;
+            } else if (strstr(iconv_name, "2022") != NULL &&
+                       strstr(iconv_name, "JP2") != NULL &&
+                       TryEscape(&temp, "\33$(D")) {
+                /* do nothing */;
+            } else if (strstr(iconv_name, "2022") != NULL &&
+                       strstr(iconv_name, "JP") != NULL &&
+                       TryEscape(&temp, "\33$B")) {
+                /* do nothing */;
+            } else if (strstr(iconv_name, "2022") != NULL &&
+                       strstr(iconv_name, "KR") != NULL &&
+                       TryEscape(&temp, "\33$)C\16")) {
+                /* do nothing */;
+            } else if (strstr(iconv_name, "2022") != NULL &&
+                       strstr(iconv_name, "CN") != NULL &&
+                       TryEscape(&temp, "\33$)A\16")) {
+                /* do nothing */;
+            }
+        }
+    }
+
+    if (!temp.has_1byte && !temp.has_2byte)
+        return NULL;
+
+    if (!make_it)
+        return NULL;
 
     enc = chunkalloc(sizeof(Encoding));
     *enc = temp;
     enc->enc_name = copy(name);
-    if ( iconv_name!=name )
-	enc->iconv_name = copy(iconv_name);
+    if (iconv_name != name) {
+        enc->iconv_name = copy(iconv_name);
+    }
     enc->next = enclist;
     enc->builtin = true;
     enclist = enc;
-    if ( enc->has_2byte )
-	enc->char_cnt = (enc->high_page<<8) + 256;
-    else {
-	enc->char_cnt = 256;
-	enc->only_1byte = true;
+    if (enc->has_2byte) {
+        enc->char_cnt = (enc->high_page << 8) + 256;
+    } else {
+        enc->char_cnt = 256;
+        enc->only_1byte = true;
     }
-    if ( strstrmatch(iconv_name,"JP")!=NULL ||
-	    strstrmatch(iconv_name,"sjis")!=NULL ||
-	    strstrmatch(iconv_name,"cp932")!=NULL )
-	enc->is_japanese = true;
-    else if ( strstrmatch(iconv_name,"KR")!=NULL )
-	enc->is_korean = true;
-    else if ( strstrmatch(iconv_name,"CN")!=NULL )
-	enc->is_simplechinese = true;
-    else if ( strstrmatch(iconv_name,"BIG")!=NULL && strstrmatch(iconv_name,"5")!=NULL )
-	enc->is_tradchinese = true;
 
-    if ( strstrmatch(name,"ISO8859")!=NULL &&
-	    strtol(name+strlen(name)-2,NULL,10)>=16 )
-	/* Not in our menu, don't hide */;
-    else if ( iconv_name!=name || strmatch(name,"mac")==0 || strstrmatch(name,"ISO8859")!=NULL ||
-	    strmatch(name,"koi8-r")==0 || strmatch(name,"sjis")==0 ||
-	    strmatch(name,"big5")==0 || strmatch(name,"big5hkscs")==0 )
-	enc->hidden = true;
+    if (strstrmatch(iconv_name, "JP") != NULL ||
+        strstrmatch(iconv_name, "sjis") != NULL ||
+        strstrmatch(iconv_name, "cp932") != NULL) {
+        enc->is_japanese = true;
+    } else if (strstrmatch(iconv_name, "KR") != NULL) {
+        enc->is_korean = true;
+    } else if (strstrmatch(iconv_name, "CN") != NULL ) {
+        enc->is_simplechinese = true;
+    } else if (strstrmatch(iconv_name, "BIG") != NULL &&
+               strstrmatch(iconv_name, "5") != NULL) {
+        enc->is_tradchinese = true;
+    }
 
-return( enc );
+    if (strstrmatch(name, "ISO8859") != NULL &&
+        strtol(name + strlen(name) - 2, NULL, 10) >= 16) {
+        /* Not in our menu, don't hide */;
+    } else if (iconv_name != name || strmatch(name, "mac") == 0
+               || strstrmatch(name, "ISO8859") != NULL
+               || strmatch(name, "koi8-r") == 0
+               || strmatch(name, "sjis") == 0
+               || strmatch(name, "big5") == 0
+               || strmatch(name, "big5hkscs") == 0) {
+        enc->hidden = true;
+    }
+
+    return enc;
 }
 
 Encoding *FindOrMakeEncoding(const char *name) {
-return( _FindOrMakeEncoding(name,true));
+    return _FindOrMakeEncoding(name, true);
 }
 
 /* Plugin API */
