@@ -746,8 +746,8 @@ char *ParseEncodingFile(char *filename, char *encodingname) {
     ungetc(ch, file);
 
 
-    if(strlen(filename) >= 20
-       && !strcmp(filename + strlen(filename) - 20, "GlyphOrderAndAliasDB")){
+    if(strlen(filename) >= 20 &&
+       !strcmp(filename + strlen(filename) - 20, "GlyphOrderAndAliasDB")){
         head = ParseGlyphOrderAndAliasDB(file);
     } else if (ch=='#' || ch=='0') {
         head = ParseConsortiumEncodingFile(file);
@@ -759,19 +759,19 @@ char *ParseEncodingFile(char *filename, char *encodingname) {
     fclose(file);
 
     if (!head) {
-        ff_post_error(_("Bad encoding file format"),_("Bad encoding file format") );
+        ff_post_error(_("Bad encoding file format"), _("Bad encoding file format") );
         return NULL;
     }
 
-    for (i=0, prev=NULL, item=head; item!=NULL; prev=item, item=next, ++i) {
+    for (i=0, prev = NULL, item = head; item != NULL; prev = item, item = next, ++i) {
         next = item->next;
-        if (item->enc_name==NULL) {
+        if (item->enc_name == NULL) {
             if (no_windowing_ui) {
-                ff_post_error(_("Bad encoding file format"),_("This file contains an unnamed encoding, which cannot be named in a script"));
+                ff_post_error(_("Bad encoding file format"), _("This file contains an unnamed encoding, which cannot be named in a script"));
                 return NULL;
             }
 
-            if (item==head && item->next==NULL)
+            if (item == head && item->next == NULL)
                 buf = strdup(_("Please name this encoding"));
             else
                 buf = xasprintf(_("Please name encoding %d in this file"), i);
@@ -782,24 +782,25 @@ char *ParseEncodingFile(char *filename, char *encodingname) {
                 item->enc_name = copy(name);
                 free(name);
             } else {
-                if (prev==NULL)
+                if (!prev) {
                     head = item->next;
-                else
+                } else {
                     prev->next = item->next;
+                }
 
                 EncodingFree(item);
             }
         }
     }
 
-    for (item=head; item!=NULL; item=item->next) {
+    for (item = head; item != NULL; item = item->next) {
         RemoveMultiples(item);
     }
 
     if (!enclist) {
         enclist = head;
     } else {
-        for (item=enclist; item->next!=NULL; item=item->next ){
+        for (item = enclist; item->next != NULL; item = item->next){
             /* Run to the end of the linked list */
         };
         /* And append there the encodings we just loaded */
@@ -819,35 +820,42 @@ void DumpPfaEditEncodings(void) {
     int i;
     char buffer[80];
 
-    for ( item=enclist; item!=NULL && item->builtin; item=item->next );
-    if ( item==NULL ) {
-	unlink(getPfaEditEncodings());
-return;
+    for (item = enclist; item != NULL && item->builtin; item = item->next);
+    if (item == NULL) {
+        unlink(getPfaEditEncodings());
+        return;
     }
 
-    file = fopen( getPfaEditEncodings(), "w");
-    if ( file==NULL ) {
-	LogError( _("couldn't write encodings file\n") );
-return;
+    file = fopen(getPfaEditEncodings(), "w");
+    if (file == NULL) {
+        LogError(_("couldn't write encodings file\n"));
+        return;
     }
 
-    for ( item=enclist; item!=NULL; item = item->next ) if ( !item->builtin && item->tounicode_func==NULL ) {
-	fprintf( file, "/%s [\n", item->enc_name );
-	if ( item->psnames==NULL )
-	    fprintf( file, "%% Use codepoints.\n" );
-	for ( i=0; i<item->char_cnt; ++i ) {
-	    if ( item->psnames!=NULL && item->psnames[i]!=NULL )
-		fprintf( file, " /%s", item->psnames[i]);
-	    else if ( item->unicode[i]<' ' || (item->unicode[i]>=0x7f && item->unicode[i]<0xa0))
-		fprintf( file, " /.notdef" );
-	    else
-		fprintf( file, " /%s", StdGlyphName(buffer,item->unicode[i],ui_none,(NameList *) -1));
-	    if ( (i&0xf)==0 )
-		fprintf( file, "\t\t%% 0x%02x\n", i );
-	    else
-		putc('\n',file);
-	}
-	fprintf( file, "] def\n\n" );
+    for (item = enclist; item != NULL; item = item->next) {
+        if (!item->builtin && item->tounicode_func == NULL) {
+            fprintf(file, "/%s [\n", item->enc_name);
+            if (item->psnames == NULL)
+                fprintf(file, "%% Use codepoints.\n");
+
+            for (i = 0; i < item->char_cnt; ++i) {
+                if (item->psnames != NULL && item->psnames[i] != NULL) {
+                    fprintf(file, " /%s", item->psnames[i]);
+                } else if (item->unicode[i] < ' ' ||
+                         (item->unicode[i] >= 0x7f && item->unicode[i] < 0xa0)) {
+                    fprintf(file, " /.notdef");
+                } else {
+                    fprintf(file, " /%s", StdGlyphName(buffer, item->unicode[i], ui_none, (NameList *) -1));
+                }
+
+                if ((i & 0xf) == 0) {
+                    fprintf(file, "\t\t%% 0x%02x\n", i);
+                } else {
+                    putc('\n',file);
+                }
+            }
+            fprintf(file, "] def\n\n");
+        }
     }
     fclose(file);
 }
