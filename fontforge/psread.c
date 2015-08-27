@@ -424,7 +424,7 @@ return( false );
 }
 
 static int nextpstoken(IO *wrapper, real *val, char *tokbuf, int tbsize) {
-    int ch, r, i;
+    int ch, r, i, nest, quote;
     char *pt, *end;
     float mf2pt_advance_width;
 
@@ -464,113 +464,111 @@ static int nextpstoken(IO *wrapper, real *val, char *tokbuf, int tbsize) {
     *pt++ = ch;
     *pt = '\0';
 
-    if (ch == '(') {
-        int nest=1, quote=0;
-        while ((ch = nextch(wrapper)) != EOF) {
-            if (pt < end)
-                *pt++ = ch;
+    switch(ch) {
+        case '{': return pt_opencurly;
+        case '}': return pt_closecurly;
+        case '[': return pt_openarray;
+        case ']': return pt_closearray;
+        case ')': return pt_unknown; /* single character token */
+        case '>': return pt_unknown; /* single character token */
 
-            if (quote) {
-                quote=0;
-            } else if (ch == '(') {
-                ++nest;
-            } else if (ch == ')') {
-                if (--nest == 0)
-                    break;
-            } else if (ch == '\\'){
-                quote = 1;
-            }
-        }
-        *pt = '\0';
-
-        return pt_string;
-    } else if (ch == '<') {
-        ch = nextch(wrapper);
-        if (pt < end)
-            *pt++ = ch;
-        if (ch == '>'){
-            /* Done */;
-        } else if (ch != '~') {
-            while ((ch = nextch(wrapper)) != EOF && ch != '>') {
-                if ( pt<end )
-                    *pt++ = ch;
-            }
-        } else {
-            int twiddle=0;
+        case '(':
+            nest=1;
+            quote=0;
             while ((ch = nextch(wrapper)) != EOF) {
                 if (pt < end)
                     *pt++ = ch;
-                if (ch == '~')
-                    twiddle = 1;
-                else if (twiddle && ch == '>')
-                    break;
-                else
-                    twiddle = 0;
-            }
-	    }
-        *pt = '\0';
-        return pt_string;
-    } else if (ch==')' || ch=='>' || ch=='[' || ch==']' || ch=='{' || ch=='}') {
-        if (ch == '{')
-            return(pt_opencurly);
-        else if (ch == '}')
-            return(pt_closecurly);
-        if (ch == '[')
-            return(pt_openarray);
-        else if (ch == ']')
-            return(pt_closearray);
 
-        return(pt_unknown); /* single character token */
-    } else if (ch == '/') {
-        pt = tokbuf;
-        while ((ch = nextch(wrapper)) != EOF && !isspace(ch) && ch != '%' &&
-                ch != '(' && ch != ')' && ch != '<' && ch != '>' && ch != '[' && ch != ']' &&
-                ch != '{' && ch != '}' && ch != '/' ) {
-            if (pt < tokbuf + tbsize - 2)
+                if (quote) {
+                    quote = 0;
+                } else if (ch == '(') {
+                    ++nest;
+                } else if (ch == ')') {
+                    if (--nest == 0)
+                        break;
+                } else if (ch == '\\'){
+                    quote = 1;
+                }
+            }
+            *pt = '\0';
+
+            return pt_string;
+        case '<':
+            ch = nextch(wrapper);
+            if (pt < end)
                 *pt++ = ch;
-        }
-        *pt = '\0';
-        unnextch(ch, wrapper);
-        return pt_namelit; /* name literal */
-    } else {
-        while ((ch = nextch(wrapper)) != EOF && !isspace(ch) && ch != '%' &&
-                ch != '(' && ch != ')' && ch != '<' && ch != '>' && ch != '[' && ch != ']' &&
-                ch != '{' && ch != '}' && ch != '/' ) {
-            if (pt < tokbuf + tbsize - 2)
-                *pt++ = ch;
-        }
-        *pt = '\0';
-        unnextch(ch, wrapper);
-        r = strtol(tokbuf, &end, 10);
-        pt = end;
-        if (*pt == '\0') { /* It's a normal integer */
-            *val = r;
-            return pt_number;
-        } else if (*pt == '#') {
-            r = strtol(pt + 1, &end, r);
-            if (*end == '\0') { /* It's a radix integer */
+            if (ch == '>'){
+                /* Done */;
+            } else if (ch != '~') {
+                while ((ch = nextch(wrapper)) != EOF && ch != '>') {
+                    if ( pt<end )
+                        *pt++ = ch;
+                }
+            } else {
+                int twiddle=0;
+                while ((ch = nextch(wrapper)) != EOF) {
+                    if (pt < end)
+                        *pt++ = ch;
+                    if (ch == '~')
+                        twiddle = 1;
+                    else if (twiddle && ch == '>')
+                        break;
+                    else
+                        twiddle = 0;
+                }
+	        }
+            *pt = '\0';
+            return pt_string;
+        case '/':
+            pt = tokbuf;
+            while ((ch = nextch(wrapper)) != EOF && !isspace(ch) && ch != '%' &&
+                    ch != '(' && ch != ')' && ch != '<' && ch != '>' && ch != '[' && ch != ']' &&
+                    ch != '{' && ch != '}' && ch != '/' ) {
+                if (pt < tokbuf + tbsize - 2)
+                    *pt++ = ch;
+            }
+            *pt = '\0';
+            unnextch(ch, wrapper);
+            return pt_namelit; /* name literal */
+        default:
+            while ((ch = nextch(wrapper)) != EOF && !isspace(ch) && ch != '%' &&
+                    ch != '(' && ch != ')' && ch != '<' && ch != '>' && ch != '[' && ch != ']' &&
+                    ch != '{' && ch != '}' && ch != '/' ) {
+                if (pt < tokbuf + tbsize - 2)
+                    *pt++ = ch;
+            }
+            *pt = '\0';
+            unnextch(ch, wrapper);
+            r = strtol(tokbuf, &end, 10);
+            pt = end;
+            if (*pt == '\0') { /* It's a normal integer */
                 *val = r;
                 return pt_number;
+            } else if (*pt == '#') {
+                r = strtol(pt + 1, &end, r);
+                if (*end == '\0') { /* It's a radix integer */
+                    *val = r;
+                    return pt_number;
+                }
+            } else {
+                *val = strtod(tokbuf, &end);
+                if (!finite(*val)) {
+                    /* GT: NaN is a concept in IEEE floating point which means "Not a Number" */
+                    /* GT: it is used to represent errors like 0/0 or sqrt(-1). */
+                    LogError(_("Bad number, infinity or NaN: %s\n"), tokbuf);
+                    *val = 0;
+                }
+                if (*end == '\0') /* It's a real */
+                    return pt_number;
             }
-        } else {
-            *val = strtod(tokbuf, &end);
-            if (!finite(*val)) {
-                /* GT: NaN is a concept in IEEE floating point which means "Not a Number" */
-                /* GT: it is used to represent errors like 0/0 or sqrt(-1). */
-                LogError(_("Bad number, infinity or NaN: %s\n"), tokbuf);
-                *val = 0;
+
+            /* It's not a number */
+            for (i=0; toknames[i] != NULL; ++i) {
+                if (strcmp(tokbuf, toknames[i]) == 0)
+                    return i;
             }
-            if (*end == '\0') /* It's a real */
-                return pt_number;
-        }
 
-        /* It's not a number */
-        for (i=0; toknames[i] != NULL; ++i) {
-            if (strcmp(tokbuf, toknames[i]) == 0)
-                return i;
-        }
-
-        return pt_unknown;
+            return pt_unknown;
     }
 }
 
