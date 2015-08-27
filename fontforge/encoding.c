@@ -192,7 +192,7 @@ const char *FindUnicharName(void) {
     return goodname;
 }
 
-static int TryEscape( Encoding *enc, const char *escape_sequence ) {
+static int TryEscape(Encoding *enc, const char *escape_sequence) {
     char from[20], ucs[20];
     size_t fromlen, tolen;
     ICONV_CONST char *fpt;
@@ -200,35 +200,42 @@ static int TryEscape( Encoding *enc, const char *escape_sequence ) {
     int i, j, low;
     int esc_len = strlen(escape_sequence);
 
-    strcpy(from,escape_sequence);
+    strcpy(from, escape_sequence);
 
     enc->has_2byte = false;
     low = -1;
-    for ( i=0; i<256; ++i ) if ( i!=escape_sequence[0] ) {
-	for ( j=0; j<256; ++j ) {
-	    from[esc_len] = i; from[esc_len+1] = j; from[esc_len+2] = 0;
-	    fromlen = esc_len+2;
-	    fpt = from;
-	    upt = ucs;
-	    tolen = sizeof(ucs);
-	    if ( iconv( enc->tounicode , &fpt, &fromlen, &upt, &tolen )!= (size_t) (-1) &&
-		    upt-ucs==sizeof(unichar_t) /* Exactly one character */ ) {
-		if ( low==-1 ) {
-		    enc->low_page = low = i;
-		    enc->has_2byte = true;
-		}
-		enc->high_page = i;
-	break;
-	    }
-	}
+    for (i=0; i < 256; ++i) {
+        if (i != escape_sequence[0]) {
+            for (j=0; j < 256; ++j) {
+                from[esc_len + 0] = i;
+                from[esc_len + 1] = j;
+                from[esc_len + 2] = 0;
+                fromlen = esc_len + 2;
+                fpt = from;
+                upt = ucs;
+                tolen = sizeof(ucs);
+                if (iconv(enc->tounicode, &fpt, &fromlen, &upt, &tolen) != (size_t)(-1) &&
+                    upt - ucs == sizeof(unichar_t) /* Exactly one character */) {
+                    if (low == -1) {
+                        enc->low_page = low = i;
+                        enc->has_2byte = true;
+                    }
+                    enc->high_page = i;
+                    break;
+                }
+            }
+        }
     }
-    if ( enc->low_page==enc->high_page )
-	enc->has_2byte = false;
-    if ( enc->has_2byte ) {
-	strcpy(enc->iso_2022_escape, escape_sequence);
-	enc->iso_2022_escape_len = esc_len;
+
+    if (enc->low_page == enc->high_page)
+        enc->has_2byte = false;
+
+    if (enc->has_2byte) {
+        strcpy(enc->iso_2022_escape, escape_sequence);
+        enc->iso_2022_escape_len = esc_len;
     }
-return( enc->has_2byte );
+
+    return enc->has_2byte;
 }
 
 Encoding *_FindOrMakeEncoding(const char *name,int make_it) {
