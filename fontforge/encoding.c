@@ -140,53 +140,56 @@ const char *FindUnicharName(void) {
     const char **testnames;
     int i;
     union {
-	short s;
-	char c[2];
+        short s;
+        char c[2];
     } u;
 
-    if ( goodname!=NULL )
-return( goodname );
+    if (goodname != NULL)
+        return goodname;
 
-    u.c[0] = 0x1; u.c[1] = 0x2;
-    if ( u.s==0x201 ) {		/* Little endian */
-	testnames = namesle;
+    u.c[0] = 0x1;
+    u.c[1] = 0x2;
+    if (u.s == 0x201) {		/* Little endian */
+        testnames = namesle;
     } else {
-	testnames = namesbe;
-    }
-    for ( i=0; testnames[i]!=NULL; ++i ) {
-	test = iconv_open(testnames[i],"ISO-8859-1");
-	if ( test!=(iconv_t) -1 && test!=NULL ) {
-	    iconv_close(test);
-	    goodname = testnames[i];
-    break;
-	}
+        testnames = namesbe;
     }
 
-    if ( goodname==NULL ) {
-	for ( i=0; names[i]!=NULL; ++i ) {
-	    test = iconv_open(names[i],"ISO-8859-1");
-	    if ( test!=(iconv_t) -1 && test!=NULL ) {
-		iconv_close(test);
-		goodname = names[i];
-	break;
-	    }
-	}
+    for (i=0; testnames[i] != NULL; ++i) {
+        test = iconv_open(testnames[i], "ISO-8859-1");
+        if (test != (iconv_t) -1 && test != NULL) {
+            iconv_close(test);
+            goodname = testnames[i];
+            break;
+        }
     }
 
-    if ( goodname==NULL ) {
-	IError( "I can't figure out your version of iconv(). I need a name for the UCS-4 encoding and I can't find one. Reconfigure --without-iconv. Bye.");
-	exit( 1 );
+    if (goodname == NULL) {
+        for (i=0; names[i] != NULL; ++i) {
+            test = iconv_open(names[i], "ISO-8859-1");
+            if (test != (iconv_t) -1 && test != NULL) {
+                iconv_close(test);
+                goodname = names[i];
+                break;
+            }
+        }
     }
 
-    test = iconv_open(goodname,"Mac");
-    if ( test==(iconv_t) -1 || test==NULL ) {
-	IError( "Your version of iconv does not support the \"Mac Roman\" encoding.\nIf this causes problems, reconfigure --without-iconv." );
-    } else
-	iconv_close(test);
+    if (goodname == NULL) {
+        IError("I can't figure out your version of iconv(). I need a name for the UCS-4 encoding and I can't find one. Reconfigure --without-iconv. Bye.");
+        exit(1);
+    }
+
+    test = iconv_open(goodname, "Mac");
+    if (test == (iconv_t) -1 || test == NULL ) {
+        IError("Your version of iconv does not support the \"Mac Roman\" encoding.\nIf this causes problems, reconfigure --without-iconv.");
+    } else {
+        iconv_close(test);
+    }
 
     /* I really should check for ISO-2022-JP, KR, CN, and all the other encodings */
     /*  I might find in a ttf 'name' table. But those tables take too long to build */
-return( goodname );
+    return goodname;
 }
 
 static int TryEscape( Encoding *enc, const char *escape_sequence ) {
