@@ -872,40 +872,48 @@ int CIDFromName(char *name,SplineFont *cidmaster) {
     /* which tells me that the current glyph is the rotated version of */
     /*  cid 504 */
     /* Other convention "cid-504.vert" */
-    int len = strlen( cidmaster->ordering );
+    int len = strlen(cidmaster->ordering);
     int cid;
     char *end;
 
-    if ( strncmp(name,cidmaster->ordering,len)==0 ) {
-	if ( name[len]=='.' ) ++len;
-    } else if ( strncmp(name,"cid-",4)==0 ) {
-	len = 4;
-    } else
-	len = 0;
-    cid = strtol(name+len,&end,10);
-    if ( end==name+len )
-return( -1 );
-    if ( *end!='.' && *end!='\0' )
-return( -1 );
+    if (strncmp(name, cidmaster->ordering, len) == 0) {
+        if (name[len] == '.')
+            len++;
+    } else if (strncmp(name, "cid-", 4) == 0) {
+        len = 4;
+    } else {
+        len = 0;
+    }
+    cid = strtol(name + len, &end, 10);
 
-return ( cid );
+    if (end == name + len)
+        return -1;
+
+    if (*end != '.' && *end != '\0')
+        return -1;
+
+    return cid;
 }
 
 int CID2Uni(struct cidmap *map,int cid) {
     unsigned int uni;
 
-    if ( map==NULL )
-return( -1 );
-    else if ( cid==0 )
-return( 0 );
-    else if ( cid<map->namemax && map->unicode[cid]!=0 )
-return( map->unicode[cid] );
-    else if ( cid<map->namemax && map->name[cid]!=NULL ) {
-	if ( sscanf(map->name[cid],"uni%x", &uni )==1 )
-return( uni );
-    }
+    if (map == NULL)
+        return -1;
 
-return( -1 );
+    if (cid == 0)
+        return 0;
+
+    if (cid < map->namemax &&
+        map->unicode[cid] != 0)
+        return map->unicode[cid];
+
+    if (cid < map->namemax &&
+        map->name[cid] != NULL &&
+        sscanf(map->name[cid], "uni%x", &uni) == 1)
+            return uni;
+
+    return -1;
 }
 
 int CID2NameUni(struct cidmap *map,int cid, char *buffer, int len) {
