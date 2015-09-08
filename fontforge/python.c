@@ -1140,6 +1140,15 @@ static PyObject *PyFF_hasSpiro(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
 return( ret );
 }
 
+static PyObject *PyFF_SpiroVersion(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
+    char *temp;
+
+    temp=libspiro_version();	/* Return libspiro Version number */
+
+    PyObject *ret=Py_BuildValue("s",temp); free(temp);
+    return( ret );
+}
+
 GList_Glib* closingFunctionList = 0;
 
 static PyObject *PyFF_onAppClosing(PyObject *self, PyObject *args) {
@@ -1158,7 +1167,7 @@ static PyObject *PyFF_onAppClosing(PyObject *self, PyObject *args) {
     PyObject *func = PyTuple_GetItem(args,0);
     Py_INCREF(func);
     closingFunctionList = g_list_prepend( closingFunctionList, func );
-    
+
     PyObject *ret = Py_True;
     Py_INCREF(ret);
     return( ret );
@@ -1174,7 +1183,7 @@ static void python_call_onClosingFunctions_fe( gpointer data, gpointer udata )
 	arglist = PyTuple_New(0);
 	result = PyEval_CallObject( func, arglist);
 	if ( !result )
-	{ // error 
+	{ // error
 	}
     }
 }
@@ -2863,8 +2872,8 @@ return( NULL );
 		pnum = 0;
 	    if ( self->points[pnum]->on_curve ) {
 		end.x = self->points[pnum]->x; end.y = self->points[pnum]->y;
-                return( Py_BuildValue("((dddd)(dddd))", 
-                                        0.0, 0.0,end.x-start.x,start.x, 
+                return( Py_BuildValue("((dddd)(dddd))",
+                                        0.0, 0.0,end.x-start.x,start.x,
                                         0.0, 0.0,end.y-start.y,start.y ));
 	    } else {
 		ncp.x = self->points[pnum]->x; ncp.y = self->points[pnum]->y;
@@ -4559,7 +4568,7 @@ static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
 		if ( !sp->nonextcp && sp!=skip ) {
 		    if ( k )
 			ret->points[cnt] = PyFFPoint_CNew(sp->nextcp.x,sp->nextcp.y,false,
-							  sp->selected && SPInterpolate(sp), 
+							  sp->selected && SPInterpolate(sp),
 							  sp->name);
 		    ++cnt;
 		}
@@ -10179,12 +10188,12 @@ static int PyFF_PrivateIndexAssign( PyObject *self, PyObject *index, PyObject *v
 	PSDictChangeEntry(private,name,string);
 	ENDPYGETSTR();
     } else {
-        if ( freeme!=NULL) 
+        if ( freeme!=NULL)
             free(freeme);
 	PyErr_Format(PyExc_TypeError, "Private dictionary index must be a string" );
         return( -1 );
     }
-    if ( freeme!=NULL) 
+    if ( freeme!=NULL)
         free(freeme);
     return( 0 );
 }
@@ -12283,7 +12292,7 @@ return( -1 );
 	int lang;
 
         if ( (!PyTuple_Check(subtuple) && !PyList_Check(subtuple)) ||
-	         (PySequence_Size(subtuple) != 2) ) { 
+	         (PySequence_Size(subtuple) != 2) ) {
 	    PyErr_Format(PyExc_TypeError, "Value must be a tuple of a language name and string" );
 	    OtfNameListFree(head);
 return( -1 );
@@ -15975,7 +15984,7 @@ static PyObject *PyFFFont_printSample(PyFF_Font *self, PyObject *args) {
         if ( PySequence_Size(pointsizeTuple) < 1 ) {
             PyErr_Format(PyExc_TypeError, "Second arg must be an integer, or a tuple or list of integers" );
             return( NULL );
-        } 
+        }
     }
 
     type = FlagsFromString(typeArg,printflags,"print sample type");
@@ -17631,7 +17640,8 @@ PyMethodDef module_fontforge_methods[] = {
     { "savePrefs", PyFF_SavePrefs, METH_NOARGS, "Save FontForge preference items" },
     { "loadPrefs", PyFF_LoadPrefs, METH_NOARGS, "Load FontForge preference items" },
     { "hasSpiro", PyFF_hasSpiro, METH_NOARGS, "Returns whether this fontforge has access to Raph Levien's spiro package"},
-    { "onAppClosing", PyFF_onAppClosing, METH_VARARGS, "add a python function which is called when fontforge is closing down"},    
+    { "SpiroVersion", PyFF_SpiroVersion, METH_NOARGS, "Return Spiro Library Version" },
+    { "onAppClosing", PyFF_onAppClosing, METH_VARARGS, "add a python function which is called when fontforge is closing down"},
     { "defaultOtherSubrs", PyFF_DefaultOtherSubrs, METH_NOARGS, "Use FontForge's default \"othersubrs\" functions for Type1 fonts" },
     { "readOtherSubrsFile", PyFF_ReadOtherSubrsFile, METH_VARARGS, "Read from a file, \"othersubrs\" functions for Type1 fonts" },
     { "loadEncodingFile", PyFF_LoadEncodingFile, METH_VARARGS, "Load an encoding file into the list of encodings" },

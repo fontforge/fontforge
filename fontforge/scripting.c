@@ -212,9 +212,9 @@ static void DicaNewEntry(struct dictionary *dica,char *name,Val *val) {
 static void calldatafree(Context *c) {
     int i;
 
-    /* child may have freed some args itself by shifting, 
+    /* child may have freed some args itself by shifting,
        but argc will reflect the proper values none the less */
-    for ( i=1; i<c->a.argc; ++i ) {     
+    for ( i=1; i<c->a.argc; ++i ) {
         if ( c->a.vals[i].type == v_str ) {
             free( c->a.vals[i].u.sval );
             c->a.vals[i].u.sval = NULL;
@@ -1072,6 +1072,27 @@ static void bGetEnv(Context *c) {
 	ScriptErrorString( c, "Unknown Preference variable", c->a.vals[1].u.sval );
     c->return_val.type = v_str;
     c->return_val.u.sval = strdup(env);
+}
+
+static void bHasSpiro(Context *c) {
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments" );
+
+    c->return_val.type=v_int;
+    c->return_val.u.ival=hasspiro();
+}
+
+static void bSpiroVersion(Context *c) {
+/* Return libspiro Version number */
+    char *temp;
+
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments" );
+
+    temp=libspiro_version();	/* Return libspiro Version number */
+
+    c->return_val.type = v_str;
+    c->return_val.u.sval = temp;
 }
 
 static void bUnicodeFromName(Context *c) {
@@ -8437,6 +8458,8 @@ static struct builtins { const char *name; void (*func)(Context *); int nofontok
     { "DefaultOtherSubrs", bDefaultOtherSubrs, 1 },
     { "ReadOtherSubrsFile", bReadOtherSubrsFile, 1 },
     { "GetEnv", bGetEnv, 1 },
+    { "HasSpiro", bHasSpiro, 1 },
+    { "SpiroVersion", bSpiroVersion, 1 },
     { "UnicodeFromName", bUnicodeFromName, 1 },
     { "NameFromUnicode", bNameFromUnicode, 1 },
     { "UnicodeBlockCountFromLib", bUnicodeBlockCountFromLib, 1 },

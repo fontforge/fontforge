@@ -3392,6 +3392,7 @@ extern int SFValidate(SplineFont *sf, int layer, int force);
 extern int VSMaskFromFormat(SplineFont *sf, int layer, enum fontformat format);
 
 extern int hasspiro(void);
+extern char *libspiro_version(void);
 extern SplineSet *SpiroCP2SplineSet(spiro_cp *spiros);
 extern spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *_cnt);
 extern spiro_cp *SpiroCPCopy(spiro_cp *spiros,uint16 *_cnt);
