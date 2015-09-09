@@ -6993,7 +6993,7 @@ static void bAddPosSub(Context *c) {
 
     sub = SFFindLookupSubtable(c->curfv->sf,c->a.vals[1].u.sval);
     if ( sub==NULL )
-	ScriptErrorString(c,"Unknown lookup subtable",c->a.vals[2].u.sval);
+	ScriptErrorString(c,"Unknown lookup subtable",c->a.vals[1].u.sval);
 
     if ( sub->lookup->lookup_type==gpos_single ) {
 	temp.type = pst_position;
