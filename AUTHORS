@@ -2,10 +2,14 @@ George Williams
 10 years and approximately 600,000 lines of code.
 
 Abel Cheung
+Adolfo Jayme Barrientos
 Adrien Tétar
 Aktado <aktado@users.sourceforge.jp>
 Alex Raftis
 Anand
+Andreas Larsen
+Andrew Janke
+Anthony G. Basile
 Arthaey Angosii
 Alexey Kryukov - nowakowskittfinstr.c
 Alexandre Prokoudine
@@ -15,17 +19,22 @@ Baruch Even - (debian upstream) baruch
 Bastien Dejean
 Behnam Esfahbod
 Ben Martin - hotkeys.c, hotkeys.h
+BensongChen, bungeman
+catharanthus
 Claudio Beccari
 Craig Lennox
 Dave Crossland (dave@lab6.com)
 Deron Meranda
 Dave Levine
+Dominyk Tiller
 Dong Yang
 Dražen Lučanin
 Duane Moody
 Eddie Yuen
 Edward Lee
+Eva Denman
 Frank Trampe
+Frédéric Wang
 Georg A. Duffner
 Giuseppe Bilotta
 Giuseppe Ghibo
@@ -40,7 +49,10 @@ James Crippen
 Jason Pagura
 Jeremy Tan
 Jim Killock
+Jiwon Choi
+Joel Santos
 Johannes Plass - gv = ANALYZE_MAP.COM
+Johan Winge
 Jon Banquer
 Jonathan Hanna
 Jonathan Hue
@@ -52,14 +64,17 @@ Just Fill Bugs <mozbugbox>
 Kartik Mistry
 KANOU Hiroki
 Kauzuyuki
+Kelvinsong
 Kemie Guaida - Tango PixMaps
 Kevin Fenzi
 Khaled Hosny
+Koki Takahashi
 Lasse Fister
 Lu Wang <coolwanglu@gmail.com>
 Mark Oteiza
 Martin Hosken
 Mathias Wollin
+Matt Chisholm
 Matthew Petroff
 Matthew Skala
 Mayank Jha
@@ -67,6 +82,8 @@ Max Rabkin - excepthook.py
 Maxim Iorsh
 Michal Mazurek
 Michal Nowakowski - nowakowskittfinstr.c
+Nicolas Spalinger
+Parag Nemade
 Phil Krylov
 Phil Lindsay
 Primoz PETERLIN
@@ -95,8 +112,10 @@ Valek Filippov
 Vernon Adams
 Ville Skytta
 Werner Lemberg
-Woensug.Eric.Choi
+Woensug Eric Choi
+贤哲 <xiaozhe.hxz@alibaba-inc.com>
 Yannis Haralambous
+Yao Wei (魏銘廷)
 Yuri Chornoivan
 Yi Yang (ahyangyi)
 
@@ -115,7 +134,7 @@ Claudio Beccari, it - Italian
 KANOU Hiroki, ja - Japanese
 TANIGAWA Takashi, ja - Japanese
 OKANO Takayoshi, ja - Japanese
-Woensug.Eric.Choi - ko - Korean
+Woensug Eric Choi - ko - Korean
 Hiran - ml - Malayalam
 Michal Nowakowski - po - Polish
 Jose Da Silva - pt - Portuguese
