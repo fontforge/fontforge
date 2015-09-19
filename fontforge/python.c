@@ -11565,6 +11565,7 @@ ff_gs_int2(gasp_version)
 
 ff_gs_os2int2(weight)
 ff_gs_os2int2(width)
+ff_gs_os2int2(stylemap)
 ff_gs_os2int2(fstype)
 ff_gs_os2int2(linegap)
 ff_gs_os2int2(vlinegap)
