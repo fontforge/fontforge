@@ -5562,10 +5562,10 @@ static void fea_ParseTableKeywords(struct parseState *tok, struct tablekeywords 
 	    tv->index = index;
 	} else
 	    tv = NULL;
-	fea_ParseTok(tok);
 	if ( strcmp(tok->tokbuf,"Vendor")==0 && tv!=NULL) {
 	    /* This takes a 4 character string */
 	    /* of course strings aren't part of the syntax, but it takes one anyway */
+	    fea_ParseTok(tok);
 	    if ( tok->type==tk_name && tok->could_be_tag )
 		/* Accept a normal tag, since that's what it really is */
 		tv->value = tok->tag;
@@ -5594,6 +5594,7 @@ static void fea_ParseTableKeywords(struct parseState *tok, struct tablekeywords 
 	    }
 	    fea_ParseTok(tok);
 	} else {
+	    fea_ParseTok(tok);
 	    if ( tok->type!=tk_int ) {
 		LogError(_("Expected integer on line %d of %s"),
 			tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
