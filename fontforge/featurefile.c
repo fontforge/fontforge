@@ -2720,7 +2720,7 @@ static int fea_ParseDeciPoints(struct parseState *tok) {
 	if ( ch!=EOF )
 	    ungetc(ch,in);
     } else {
-	LogError(_("Expected '%s' on line %d of %s"), fea_keywords[tk_int],
+	LogError(_("Expected '%s' on line %d of %s"), fea_keywords[tk_int].name,
 		tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	++tok->err_count;
 	tok->value = -1;
