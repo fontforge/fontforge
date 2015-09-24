@@ -65,6 +65,9 @@
 /*  "<contourpoint 2>", but in v1.8 it is "contourpoint 2". Yet this change */
 /*  is not mentioned in the v1.8 changelog, was it intentional? */
 
+/* Adobe says glyph names are 31 chars, but Mangal and Source Code Sans use longer names. */
+#define MAXG	63
+
 /* ************************************************************************** */
 /* ******************************* Output feat ****************************** */
 /* ************************************************************************** */
@@ -333,12 +336,12 @@ static void dump_fpst_everythingelse(FILE *out, SplineFont *sf,char **classes,
 
 static char *lookupname(OTLookup *otl) {
     char *pt1, *pt2;
-    static char space[32];
+    static char space[MAXG+1];
 
     if ( otl->tempname != NULL )
 return( otl->tempname );
 
-    for ( pt1=otl->lookup_name,pt2=space; *pt1 && pt2<space+31; ++pt1 ) {
+    for ( pt1=otl->lookup_name,pt2=space; *pt1 && pt2<space+MAXG; ++pt1 ) {
 	if ( !(*pt1&0x80) && (isalpha(*pt1) || *pt1=='_' || *pt1=='.' ||
 		(pt1!=otl->lookup_name && isdigit(*pt1))))
 	    *pt2++ = *pt1;
@@ -1898,7 +1901,7 @@ static void preparenames(SplineFont *sf) {
     int isgpos, cnt, try, i;
     OTLookup *otl;
     char **names, *name;
-    char namebuf[32], featbuf[8], scriptbuf[8], *feat, *script;
+    char namebuf[MAXG+1], featbuf[8], scriptbuf[8], *feat, *script;
     struct scriptlanglist *sl;
 
     cnt = 0;
@@ -2600,8 +2603,8 @@ return;
 		++tok->err_count;
 	    }
 	} else {
-		if ( pt>start+31 ) {
-		    /* Adobe says glyphnames are 31 chars, but Mangal uses longer names */
+		/* Adobe says glyphnames are 31 chars, but Mangal uses longer names */
+		if ( pt>start+MAXG ) {
 		    LogError(_("Name, %s%s, too long on line %d of %s"),
 			    tok->tokbuf, pt>=tok->tokbuf+MAXT?"...":"",
 			    tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
