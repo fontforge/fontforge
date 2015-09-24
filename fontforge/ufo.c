@@ -4108,8 +4108,10 @@ return( NULL );
 							layernames[2*layerdest] = copy((char*)(layerlabel));
 							if (layernames[2*layerdest]) {
 								layernames[(2*layerdest)+1] = copy((char*)(layerglyphdirname));
-								if (!layernames[(2*layerdest)+1])
+								if (!layernames[(2*layerdest)+1]) {
 									free(layernames[2*layerdest]);
+									layernames[2*layerdest] = NULL;
+								}
 							}
 						}
 						if (layerlabel != NULL) { xmlFree(layerlabel); layerlabel = NULL; }
@@ -4143,8 +4145,10 @@ return( NULL );
 							layernames[2*layerdest] = copy((char*)(layerlabel));
 							if (layernames[2*layerdest]) {
 								layernames[(2*layerdest)+1] = copy((char*)(layerglyphdirname));
-								if (!layernames[(2*layerdest)+1])
+								if (!layernames[(2*layerdest)+1]) {
 									free(layernames[2*layerdest]);
+									layernames[2*layerdest] = NULL;
+								}
 							}
 						}
 					}
