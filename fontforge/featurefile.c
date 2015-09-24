@@ -5453,6 +5453,10 @@ return;
 	      break;
 		}
 		/* Fall on through */
+	      case tk_char:
+		/* Ignore blank statement. */
+		if (tok->tokbuf[0]==';')
+		  break;
 	      default:
 		LogError(_("Unexpected token, %s, in feature definition on line %d of %s"), tok->tokbuf, tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 		++tok->err_count;
@@ -6101,6 +6105,10 @@ static void fea_ParseFeatureFile(struct parseState *tok) {
 	  break;
 	  case tk_eof:
   goto end_loop;
+	  case tk_char:
+	    /* Ignore blank statement. */
+	    if (tok->tokbuf[0]==';')
+	      break;
 	  default:
 	    LogError(_("Unexpected token, %s, on line %d of %s"), tok->tokbuf, tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	    ++tok->err_count;
