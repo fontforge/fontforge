@@ -3056,7 +3056,9 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
   // Allocate lookups if needed.
   if (sf->kerns == NULL && (left_count || right_count)) {
     sf->kerns = calloc(1, sizeof(struct kernclass));
-    sf->kerns->subtable = SFSubTableFindOrMake(sf, CHR('k','e','r','n'), DEFAULT_SCRIPT, gpos_pair);
+    sf->kerns->subtable = SFSubTableMake(sf, CHR('k','e','r','n'), DEFAULT_SCRIPT, gpos_pair);
+    sf->kerns->subtable->kc = sf->kerns;
+    sf->kerns->subtable->subtable_name = NULL; /* hack: fix later */
     sf->kerns->firsts = calloc(1, sizeof(char *));
     sf->kerns->firsts_names = calloc(1, sizeof(char *));
     sf->kerns->firsts_flags = calloc(1, sizeof(int));
@@ -3070,7 +3072,9 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
   }
   if (sf->vkerns == NULL && (above_count || below_count)) {
     sf->vkerns = calloc(1, sizeof(struct kernclass));
-    sf->vkerns->subtable = SFSubTableFindOrMake(sf, CHR('v','k','r','n'), DEFAULT_SCRIPT, gpos_pair);
+    sf->vkerns->subtable = SFSubTableMake(sf, CHR('v','k','r','n'), DEFAULT_SCRIPT, gpos_pair);
+    sf->vkerns->subtable->kc = sf->vkerns;
+    sf->vkerns->subtable->subtable_name = NULL;        /* hack: fix later */
     sf->vkerns->firsts = calloc(1, sizeof(char *));
     sf->vkerns->firsts_names = calloc(1, sizeof(char *));
     sf->vkerns->firsts_flags = calloc(1, sizeof(int));
@@ -3236,7 +3240,10 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
       if (sf->kerns->seconds[class_index] != NULL) script = script_from_glyph_list(sf, sf->kerns->seconds[class_index]);
       class_index++;
     }
-    sf->kerns->subtable = SFSubTableFindOrMake(sf, CHR('k','e','r','n'), script, gpos_pair);
+    /* XXX THIS MAKES NO SENSE AT ALL!  We leave the kerning groups behind on the other
+       KernClass. */
+    if (script != DEFAULT_SCRIPT)
+        sf->kerns->subtable = SFSubTableMake(sf, CHR('k','e','r','n'), script, gpos_pair);
   }
   if (sf->vkerns != NULL) {
     uint32 script = DEFAULT_SCRIPT;
@@ -3251,19 +3258,14 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
       if (sf->vkerns->seconds[class_index] != NULL) script = script_from_glyph_list(sf, sf->vkerns->seconds[class_index]);
       class_index++;
     }
-    sf->vkerns->subtable = SFSubTableFindOrMake(sf, CHR('v','k','r','n'), script, gpos_pair);
+    /* XXX THIS MAKES NO SENSE AT ALL!  We leave the kerning groups behind on the other
+       KernClass. */
+    if (script != DEFAULT_SCRIPT)
+        sf->vkerns->subtable = SFSubTableMake(sf, CHR('v','k','r','n'), script, gpos_pair);
   }
 #else
   // Some test cases have proven that FontForge would do best to avoid classifying these.
-  uint32 script = DEFAULT_SCRIPT;
-  if (sf->kerns != NULL) {
-    sf->kerns->subtable = SFSubTableFindOrMake(sf, CHR('k','e','r','n'), script, gpos_pair);
-  }
-  if (sf->vkerns != NULL) {
-    sf->vkerns->subtable = SFSubTableFindOrMake(sf, CHR('v','k','r','n'), script, gpos_pair);
-  }
 #endif // UFO_GUESS_SCRIPTS
-
 }
 
 static void UFOHandleGroups(SplineFont *sf, char *basedir) {
@@ -4239,6 +4241,10 @@ return( NULL );
 
     UFOHandleKern3(sf,basedir,0);
     UFOHandleKern3(sf,basedir,1);
+
+    /* hack: fix name of kern class subtable */
+    if (sf->gpos_lookups)
+        NameOTLookup(sf->gpos_lookups, sf);
 
     /* Might as well check for feature files even if version 1 */
     temp = buildname(basedir,"features.fea");
