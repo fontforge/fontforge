@@ -4064,15 +4064,19 @@ return( NULL );
 		xmlNodePtr layercontentsdict = NULL;
 		xmlNodePtr layercontentslayer = NULL;
 		xmlNodePtr layercontentsvalue = NULL;
-		int layercontentslayercount = 0;
-		int layernamesbuffersize = 0;
+		int layercountestimate = 0;
 		int layercontentsvaluecount = 0;
 		if ( (layercontentsdoc = xmlParseFile(layercontentsname)) ) {
 			// The layercontents plist contains an array of double-element arrays. There is no top-level dict. Note that the indices in the layercontents array may not match those in the Fontforge layers array due to reserved spaces.
 			if ( ( layercontentsplist = xmlDocGetRootElement(layercontentsdoc) ) && ( layercontentsdict = FindNode(layercontentsplist->children,"array") ) ) {
-				layercontentslayercount = 0;
-				layernamesbuffersize = 2;
-				layernames = malloc(2*sizeof(char*)*layernamesbuffersize);
+				int auxpos = 2;
+				int layerdest = 0;
+				// Estimate the number of layers.
+				layercountestimate = 2;
+				for ( layercontentslayer = layercontentsdict->children ; ( layercontentslayer != NULL ) ; layercontentslayer = layercontentslayer->next )
+					if ( xmlStrcmp(layercontentslayer->name,(const xmlChar *) "array")==0 )
+						layercountestimate++;
+				layernames = calloc(2*layercountestimate, sizeof(char*));
 				// Look through the children of the top-level array. Stop if one of them is not an array. (Ignore text objects since these probably just have whitespace.)
 				for ( layercontentslayer = layercontentsdict->children ;
 				( layercontentslayer != NULL ) && ( ( xmlStrcmp(layercontentslayer->name,(const xmlChar *) "array")==0 ) || ( xmlStrcmp(layercontentslayer->name,(const xmlChar *) "text")==0 ) ) ;
@@ -4091,23 +4095,21 @@ return( NULL );
 								layercontentsvaluecount++;
 								}
 						}
+						// public.default and public.background have fixed mappings. Other layers start at 2.
+						if (xmlStrcmp(layerlabel,(const xmlChar *) "public.default")==0)
+							layerdest = ly_fore;
+						else if (xmlStrcmp(layerlabel,(const xmlChar *) "public.background")==0)
+							layerdest = ly_back;
+						else
+							layerdest = auxpos++;
 						// We need two values (as noted above) per layer entry and ignore any layer lacking those.
-						if ((layercontentsvaluecount > 1) && (layernamesbuffersize < INT_MAX/2)) {
-							// Resize the layer names array as necessary.
-							if (layercontentslayercount >= layernamesbuffersize) {
-								layernamesbuffersize *= 2;
-								layernames = realloc(layernames, 2*sizeof(char*)*layernamesbuffersize);
-							}
+						if ((layercontentsvaluecount > 1) && (layerdest < layercountestimate)) {
 							// Fail silently on allocation failure; it's highly unlikely.
-							if (layernames != NULL) {
-								layernames[2*layercontentslayercount] = copy((char*)(layerlabel));
-								if (layernames[2*layercontentslayercount]) {
-									layernames[(2*layercontentslayercount)+1] = copy((char*)(layerglyphdirname));
-									if (layernames[(2*layercontentslayercount)+1])
-										layercontentslayercount++; // We increment only if both pointers are valid so as to avoid read problems later.
-									else
-										free(layernames[2*layercontentslayercount]);
-								}
+							layernames[2*layerdest] = copy((char*)(layerlabel));
+							if (layernames[2*layerdest]) {
+								layernames[(2*layerdest)+1] = copy((char*)(layerglyphdirname));
+								if (!layernames[(2*layerdest)+1])
+									free(layernames[2*layerdest]);
 							}
 						}
 						if (layerlabel != NULL) { xmlFree(layerlabel); layerlabel = NULL; }
@@ -4122,33 +4124,27 @@ return( NULL );
 					// Note that FontForge cannot round-trip this anomaly at present and shall include the foreground in
 					// layercontents.plist in any exported U. F. O..
 					int tmply = 0; // Temporary layer index.
-					while (tmply < layercontentslayercount && strcmp(layernames[2*tmply], "public.default") &&
-					  strcmp(layernames[2*tmply+1], "glyphs")) tmply ++;
-					// If tmply == layercontentslayercount then we know that no layer was named public.default and that no layer
+					for (tmply = 0; tmply < layercountestimate; tmply++)
+						if (layernames[2*tmply] && (!strcmp(layernames[2*tmply], "public.default") ||
+									    !strcmp(layernames[2*tmply+1], "glyphs")))
+							break;
+					// If tmply == layercountestimate then we know that no layer was named public.default and that no layer
 					// used the glyphs directory.
 					char * layerpath = buildname(basedir, "glyphs");
-					if (tmply == layercontentslayercount && layerpath != NULL && GFileExists(layerpath)) {
+					if (tmply == layercountestimate && layerpath != NULL && GFileExists(layerpath)) {
 						layercontentsvaluecount = 2;
+						layerdest = 1;
 						// Note the copying here.
 						xmlChar * layerlabel = (xmlChar*)"public.default";
 						xmlChar * layerglyphdirname = (xmlChar*)"glyphs";
 						// We need two values (as noted above) per layer entry and ignore any layer lacking those.
-						if ((layercontentsvaluecount > 1) && (layernamesbuffersize < INT_MAX/2)) {
-							// Resize the layer names array as necessary.
-							if (layercontentslayercount >= layernamesbuffersize) {
-								layernamesbuffersize *= 2;
-								layernames = realloc(layernames, 2*sizeof(char*)*layernamesbuffersize);
-							}
+						if ((layercontentsvaluecount > 1) && (layerdest < layercountestimate)) {
 							// Fail silently on allocation failure; it's highly unlikely.
-							if (layernames != NULL) {
-								layernames[2*layercontentslayercount] = copy((char*)(layerlabel));
-								if (layernames[2*layercontentslayercount]) {
-									layernames[(2*layercontentslayercount)+1] = copy((char*)(layerglyphdirname));
-									if (layernames[(2*layercontentslayercount)+1])
-										layercontentslayercount++; // We increment only if both pointers are valid so as to avoid read problems later.
-									else
-										free(layernames[2*layercontentslayercount]);
-								}
+							layernames[2*layerdest] = copy((char*)(layerlabel));
+							if (layernames[2*layerdest]) {
+								layernames[(2*layerdest)+1] = copy((char*)(layerglyphdirname));
+								if (!layernames[(2*layerdest)+1])
+									free(layernames[2*layerdest]);
 							}
 						}
 					}
@@ -4156,36 +4152,22 @@ return( NULL );
 				}
 
 				if (layernames != NULL) {
-					int lcount = 0;
-					int auxpos = 2;
-					int layerdest = 0;
-					int bg = 1;
-					if (layercontentslayercount > 0) {
-						// Start reading layers.
-						for (lcount = 0; lcount < layercontentslayercount; lcount++) {
+					// Start reading layers.
+					for (int layerdest = 0; layerdest < layercountestimate; layerdest++) {
+						if (layernames[2*layerdest]) {
 							// We refuse to load a layer with an incorrect prefix.
                                                 	if (
-							(((strcmp(layernames[2*lcount],"public.default")==0) &&
-							(strcmp(layernames[2*lcount+1],"glyphs") == 0)) ||
-							(strstr(layernames[2*lcount+1],"glyphs.") == layernames[2*lcount+1])) &&
-							(glyphdir = buildname(basedir,layernames[2*lcount+1]))) {
+							(((strcmp(layernames[2*layerdest],"public.default")==0) &&
+							(strcmp(layernames[2*layerdest+1],"glyphs") == 0)) ||
+							(strstr(layernames[2*layerdest+1],"glyphs.") == layernames[2*layerdest+1])) &&
+							(glyphdir = buildname(basedir,layernames[2*layerdest+1]))) {
                                                         	if ((glyphlist = buildname(glyphdir,"contents.plist"))) {
 									if ( !GFileExists(glyphlist)) {
 										LogError(_("No glyphs directory or no contents file"));
 									} else {
 										// Only public.default gets mapped as a foreground layer.
-										bg = 1;
-										// public.default and public.background have fixed mappings. Other layers start at 2.
-										if (strcmp(layernames[2*lcount],"public.default")==0) {
-											layerdest = ly_fore;
-											bg = 0;
-										} else if (strcmp(layernames[2*lcount],"public.background")==0) {
-											layerdest = ly_back;
-											sf->multilayer |= 1;
-										} else {
-											layerdest = auxpos++;
-											sf->multilayer |= 1;
-										}
+										int bg = layerdest != ly_fore;
+										sf->multilayer |= bg;
 
 										// We ensure that the splinefont layer list has sufficient space.
 										if ( layerdest+1>sf->layer_cnt ) {
@@ -4198,10 +4180,10 @@ return( NULL );
 										if (( layerdest<sf->layer_cnt ) && sf->layers) {
 											if (sf->layers[layerdest].name)
 												free(sf->layers[layerdest].name);
-											sf->layers[layerdest].name = strdup(layernames[2*lcount]);
+											sf->layers[layerdest].name = strdup(layernames[2*layerdest]);
 											if (sf->layers[layerdest].ufo_path)
 												free(sf->layers[layerdest].ufo_path);
-											sf->layers[layerdest].ufo_path = strdup(layernames[2*lcount+1]);
+											sf->layers[layerdest].ufo_path = strdup(layernames[2*layerdest+1]);
 											sf->layers[layerdest].background = bg;
 											// Fetch glyphs.
 											UFOLoadGlyphs(sf,glyphdir,layerdest);
@@ -4218,13 +4200,13 @@ return( NULL );
 								free(glyphdir);
 							}
 						}
-					} else {
-						LogError(_("layercontents.plist lists no valid layers."));
 					}
+					if (sf->layer_cnt == 0)
+						LogError(_("layercontents.plist lists no valid layers."));
 					// Free layer names.
-					for (lcount = 0; lcount < layercontentslayercount; lcount++) {
-						if (layernames[2*lcount]) free(layernames[2*lcount]);
-						if (layernames[2*lcount+1]) free(layernames[2*lcount+1]);
+					for (int layerdest = 0; layerdest < layercountestimate; layerdest++) {
+						if (layernames[2*layerdest]) free(layernames[2*layerdest]);
+						if (layernames[2*layerdest+1]) free(layernames[2*layerdest+1]);
 					}
 					free(layernames);
 				}
