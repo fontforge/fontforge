@@ -46,7 +46,7 @@ bundle_data="$bundle_res"/opt/local/share
 bundle_etc="$bundle_res"/opt/local/etc
 bundle_share="$bundle_res"/opt/local/share
 
-#export DYLD_LIBRARY_PATH="$bundle_lib"
+export DYLD_LIBRARY_PATH="$bundle_lib"
 export XDG_CONFIG_DIRS="$bundle_etc"/xdg
 export XDG_DATA_DIRS="$bundle_data"
 export GTK_DATA_PREFIX="$bundle_res"
