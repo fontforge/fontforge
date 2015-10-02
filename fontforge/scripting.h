@@ -68,6 +68,18 @@ enum token_type { tt_name, tt_string, tt_number, tt_unicode, tt_real,
 	tt_error = -1
 };
 
+enum ce_type { /* (found->func)(&sub) context err codes */
+	ce_false,	/* 0=false = no error, all okay */
+	ce_true,	/* 1=true = error (found->func) */
+	ce_quit,	/* not error, but want to exit! */
+	ce_funcfail, ce_silent,
+	ce_wrongnumarg,	/* wrong number of arguments	*/
+	ce_badargtype,	/* argtype has bad arg types	*/
+	ce_expectstr,	/* expected argument as string	*/
+	ce_expectint,	/* expected argument as integer	*/
+	ce_notanint	/* argtype not an int		*/
+};
+
 typedef struct context {
     struct context *caller;		/* The context of the script that called us */
     Array a;				/* The argument array */
@@ -79,7 +91,7 @@ typedef struct context {
     unsigned int returned: 1;		/* Irrelevant for user defined funcs */
     unsigned int broken: 1;		/* Irrelevant for user defined funcs */
     unsigned int interactive: 1;	/* Irrelevant for user defined funcs */
-    unsigned int error: 1;
+    unsigned int error: 5;
     char tok_text[TOK_MAX+1];		/* Irrelevant for user defined funcs */
     enum token_type tok;		/* Irrelevant for user defined funcs */
     Val tok_val;			/* Irrelevant for user defined funcs */
