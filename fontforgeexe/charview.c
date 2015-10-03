@@ -79,6 +79,7 @@ int DrawOpenPathsWithHighlight = 1;
 #define default_cv_height 540
 int cv_width = default_cv_width;
 int cv_height = default_cv_height;
+int cv_show_fill_with_space = 1;
 
 #define prefs_cvEditHandleSize_default 5.0
 float prefs_cvEditHandleSize = prefs_cvEditHandleSize_default;
@@ -196,6 +197,16 @@ static void isAnyControlPointSelectedVisitor(SplinePoint* splfirst, Spline* s, S
 static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e );
 static void CVHScrollSetPos( CharView *cv, int newpos );
 
+static void CVClear(GWindow,GMenuItem *mi, GEvent *);
+static void CVMouseMove(CharView *cv, GEvent *event );
+static void CVMouseUp(CharView *cv, GEvent *event );
+static void CVHScroll(CharView *cv,struct sbevent *sb);
+static void CVVScroll(CharView *cv,struct sbevent *sb);
+/*static void CVElide(GWindow gw,struct gmenuitem *mi,GEvent *e);*/
+static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e);
+static void CVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e);
+static void CVPreviewModeSet(GWindow gw, int checked);
+
 static int cvcolsinited = false;
 
 // Note that the GResource names for these preferences are defined separately in CVColInit.
@@ -280,6 +291,7 @@ static void update_spacebar_hand_tool(CharView *cv) {
 	    cv->b1_tool = cvt_hand;
 	    cv->active_tool = cvt_hand;
 	    CVMouseDownHand(cv);
+	    CVPreviewModeSet(cv->gw, cv_show_fill_with_space);
 	}
     } else {
 	if ( cv->spacebar_hold ) {
@@ -287,6 +299,7 @@ static void update_spacebar_hand_tool(CharView *cv) {
 	    cv->b1_tool = cv->b1_tool_old;
 	    cv->active_tool = cvt_none;
 	    cv->b1_tool_old = cvt_none;
+	    CVPreviewModeSet(cv->gw, false);
 	}
     }
 }
@@ -3816,17 +3829,6 @@ return( true );
 return( true );
 }
 
-static void CVClear(GWindow,GMenuItem *mi, GEvent *);
-static void CVMouseMove(CharView *cv, GEvent *event );
-static void CVMouseUp(CharView *cv, GEvent *event );
-static void CVHScroll(CharView *cv,struct sbevent *sb);
-static void CVVScroll(CharView *cv,struct sbevent *sb);
-/*static void CVElide(GWindow gw,struct gmenuitem *mi,GEvent *e);*/
-static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e);
-static void CVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e);
-static void CVPreviewModeSet(GWindow gw, int checked);
-
-
 static void CVFakeMove(CharView *cv, GEvent *event) {
     GEvent e;
 
@@ -7187,7 +7189,7 @@ static CharView* cvshowsCopyFrom( CharView* dst, struct cvshows* src )
 
 static void CVPreviewModeSet(GWindow gw, int checked ) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    if( checked && cv->inPreviewMode )
+    if( checked == cv->inPreviewMode )
         return;
 
     cv->inPreviewMode = checked;

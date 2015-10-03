@@ -345,6 +345,18 @@
 	This can execute with no current font.</TD>
     </TR>
     <TR>
+      <TD><CODE>SpiroVersion</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns the version of LibSpiro available to FontForge.<BR>
+	Versions 0.1 to 0.5 do not have a method to indicate version numbers,
+	but there is a limited method to estimate versions {'0.0'..'0.5'}.
+	<P>
+	'0.0' if FontForge has no LibSpiro available.<BR>
+	'0.1' if LibSpiro 20071029 is available.<BR>
+	'0.2' if LibSpiro 0.2 to 0.5 is available.<BR>
+	LibSpiro 0.6 and higher reports back it's version available.</TD>
+    </TR>
+    <TR>
       <TD><CODE>version</CODE></TD>
       <TD><CODE>()</CODE></TD>
       <TD>Returns fontforge's version number. This will be a large number like
@@ -1707,7 +1719,7 @@ pen = None;				# Finalize the pen. This tells FontForge
         if not used. The third is an empty field reserved for future use
         and currently must be set to zero.
         <P>
-        <CODE>glyph.altuni<?CODE> can be set to None to clear all alternates,
+        <CODE>glyph.altuni</CODE> can be set to None to clear all alternates,
         or to a tuple. The elements of the tuple may be either integers
     	(an alternate unicode value with no variation selector)
 	or a tuple with up to 3 values in it as explained above.</TD>
@@ -1858,7 +1870,7 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TD><CODE>italicCorrection</CODE></TD>
       <TD colspan=2>The glyph's italic correction field. Used by both TeX and MATH.
-	The special value of -32768 (0x8000) means the value is unspecified (An
+	The special value fontforge.unspecifiedMathValue means the value is unspecified (An
 	unspecified value will not go into the output tables, a value of 0 will)</TD>
     </TR>
     <TR>
@@ -1958,20 +1970,20 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD><CODE>texheight</CODE></TD>
-      <TD colspan=2>The Tex height. The special value of -32768 (0x8000) means
+      <TD colspan=2>The Tex height. The special value fontforge.unspecifiedMathValue means
 	the field is unspecified (An unspecified value will not go into the output
 	tables, a value of 0 will)</TD>
     </TR>
     <TR>
       <TD><CODE>texdepth</CODE></TD>
-      <TD colspan=2>The Tex depth. The special value of -32768 (0x8000) means the
+      <TD colspan=2>The Tex depth. The special value fontforge.unspecifiedMathValue means the
 	field is unspecified (An unspecified value will not go into the output tables,
 	a value of 0 will)</TD>
     </TR>
     <TR>
       <TD><CODE>topaccent</CODE></TD>
       <TD colspan=2>The glyph's top accent position field. Used by MATH. The special
-	value of -32768 (0x8000) means the field is unspecified (An unspecified value
+	value fontforge.unspecifiedMathValue means the field is unspecified (An unspecified value
 	will not go into the output tables, a value of 0 will)</TD>
     </TR>
     <TR>

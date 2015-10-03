@@ -5100,7 +5100,7 @@ static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
 	info->weight_width_slope_only = (sel&256)?1:0;
     }
     /* Clear the bits we don't support in stylemap and set it. */
-    info->pfminfo.stylemap = sel & 0x0001100001;
+    info->pfminfo.stylemap = sel & 0x61;
     /* firstchar */ getushort(ttf);
     /* lastchar */ getushort(ttf);
     info->pfminfo.os2_typoascent = getushort(ttf);

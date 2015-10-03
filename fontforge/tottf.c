@@ -3359,8 +3359,8 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
         int changed = 0;
         os2->fsSel = sf->pfminfo.stylemap;
         /* Make sure fsSel and macStyle don't contradict */
-        if (at->head.macstyle&1 && !(os2->fsSel&32)) {at->head.macstyle &= 1111110; changed=1;}
-        if (at->head.macstyle&2 && !(os2->fsSel&1)) {at->head.macstyle &= 1111101; changed=1;}
+        if (at->head.macstyle&1 && !(os2->fsSel&32)) {at->head.macstyle &= 0x7E; changed=1;}
+        if (at->head.macstyle&2 && !(os2->fsSel&1)) {at->head.macstyle &= 0x7D; changed=1;}
         if (changed) redohead(at);
     } else {
         os2->fsSel = (at->head.macstyle&1?32:0)|(at->head.macstyle&2?1:0);

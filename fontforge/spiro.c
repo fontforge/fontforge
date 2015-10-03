@@ -228,6 +228,29 @@ int hasspiro(void) {
     return has_spiro;
 }
 
+char *libspiro_version(void){
+/* Return Spiro library version. If there is no library, return "0.0" for */
+/* the internal built-in spiro generator, "0.1" for library ver 20071029, */
+/* "0.2" for libspiro {0.2...0.5} which did not have LibSpiroGetVersion() */
+/* and "0.6" or higher for Libspiro 0.6.2015xxxx or more recent versions. */
+    char *version_str;
+
+#if defined(_NO_LIBSPIRO)
+    version_str=copy("0.0");
+#else
+#ifndef _LIBSPIRO_FUN
+    version_str=copy("0.1");
+#else
+#if (_LIBSPIRO_FUN < 2)
+    version_str=copy("0.2");
+#else
+    version_str=copy(LibSpiroVersion());
+#endif
+#endif
+#endif
+    return( version_str ); /* free this string when you are done. */
+}
+
 spiro_cp *SpiroCPCopy(spiro_cp *spiros,uint16 *_cnt) {
 /* Make a copy of a (closed='z' or open='{}') spiro */
     int ch, n = 0;
