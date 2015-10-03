@@ -42,14 +42,25 @@
   <p xml:lang="zh_CN">
   学习使用FontForge并不难，有各种各样的教程涵盖了基础知识到更高级的特性，比如制作和使用脚本。</p>
   <p xml:lang="ko">
-  폰트포지는 외곽선 및 비트맵 글꼴 편집기입니다. 포스트스크립트, 트루타입, 오픈타입, CID 폰트, 
+  폰트포지는 외곽선 및 비트맵 글꼴 편집기입니다. 포스트스크립트, 트루타입, 오픈타입, CID 폰트,
   멀티마스터, CFF, SVG 그리고 비트맵(bdf, FON, NFNT) 글꼴을 제작, 편집, 변환할 수 있습니다.</p>
   <p xml:lang="ko">
-  폰트포지는 여러 컴퓨터 운영체제에서 작동하도록 쓰여진 오픈소스 소프트웨어입니다. 
+  폰트포지는 여러 컴퓨터 운영체제에서 작동하도록 쓰여진 오픈소스 소프트웨어입니다.
   명령어 인터페이스 또는 GUI로 사용할 수 있습니다.</p>
   <p xml:lang="ko">
-  폰트포지는 배우기 쉽습니다. 기본적인 것부터 시작해서, 스크립트를 짜서 쓰는 고급 기능까지 
+  폰트포지는 배우기 쉽습니다. 기본적인 것부터 시작해서, 스크립트를 짜서 쓰는 고급 기능까지
   다양한 튜토리얼들이 준비되어 있습니다.</p>
+ <p xml:lang="ca">
+  El FontForge és un editor de tipus de lletra, tant vectorials com de mapa de bits,
+  que permet crear, editar o convertir tipus de diferents formats, com ara PostScript,
+  TrueType, OpenType, CID, MM, CFF, SVG i BitMap (BDF, FON, NFNT).</p>
+ <p xml:lang="ca">
+  El FontForge és programari lliure dissenyat per poder ser utilitzat en diversos
+  sistemes operatius, tant des de la interfície gràfica com des de la línia d'ordres.</p>
+ <p xml:lang="ca">
+  Aprendre a utilitzar el FontForge és senzill; podeu consultar els tutorials
+  existents que van de les funcions més bàsiques del programa fins a les més complicades,
+  com ara escriure i usar scripts.</p>
  </description>
  <screenshots>
   <screenshot type="default" width="1200" height="675">https://github.com/fontforge/fontforge/raw/master/doc/html/ff-screenshot.png</screenshot>
