@@ -1095,6 +1095,14 @@ static void FVMenuOpen(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(
     _FVMenuOpen(fv);
 }
 
+void MenuLicense(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+    help("license.html");
+}
+
+void MenuIndex(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+    help("IndexFS.html");
+}
+
 static void FVMenuContextualHelp(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     help("fontview.html");
 }
@@ -1103,13 +1111,7 @@ void MenuHelp(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED
     help("overview.html");
 }
 
-void MenuIndex(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    help("IndexFS.html");
-}
 
-void MenuLicense(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    help("license.html");
-}
 
 void MenuAbout(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     ShowAboutScreen();
@@ -6115,11 +6117,15 @@ static void FVWindowMenuBuild(GWindow gw, struct gmenuitem *mi, GEvent *e) {
 }
 
 GMenuItem2 helplist[] = {
-    { { (unichar_t *) N_("_Help"), (GImage *) "helphelp.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Help|F1"), NULL, NULL, FVMenuContextualHelp, 0 },
-    { { (unichar_t *) N_("_Overview"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Overview|Shft+F1"), NULL, NULL, MenuHelp, 0 },
-    { { (unichar_t *) N_("_Index"), (GImage *) "helpindex.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Index|No Shortcut"), NULL, NULL, MenuIndex, 0 },
-    { { (unichar_t *) N_("_About..."), (GImage *) "helpabout.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("About...|No Shortcut"), NULL, NULL, MenuAbout, 0 },
-    { { (unichar_t *) N_("_License..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("License...|No Shortcut"), NULL, NULL, MenuLicense, 0 },
+    { { (unichar_t *) N_("_About"), (GImage *) "helpabout.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("About|No Shortcut"), NULL, NULL, MenuAbout, 0 },
+    { { (unichar_t *) N_("_License"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("License|No Shortcut"), NULL, NULL, MenuLicense, 0 },
+    { { (unichar_t *) N_("_Version"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Version|No Shortcut"), NULL, NULL, NULL, 0 },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, 0, 0 }, /* line */
+    { { (unichar_t *) N_("@Follow for Updates"), (GImage *) "helpindex.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Follow for Updates|No Shortcut"), NULL, NULL, MenuIndex, 0 },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, 0, 0 }, /* line */
+    { { (unichar_t *) N_("_Help and Tutorials"), (GImage *) "helphelp.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Help and Tutorials|F1"), NULL, NULL, FVMenuContextualHelp, 0 },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, 0, 0 }, /* line */
+    { { (unichar_t *) N_("_Bugs, Questions and Requests"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Bugs, Questions and Requests|Shft+F1"), NULL, NULL, MenuHelp, 0 },
     GMENUITEM2_EMPTY
 };
 
@@ -7558,7 +7564,7 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
 
     memset(&gd,0,sizeof(gd));
     gd.flags = gg_visible | gg_enabled;
-    helplist[0].invoke = FVMenuContextualHelp;
+    helplist[6].invoke = FVMenuContextualHelp;
 #ifndef _NO_PYTHON
     if ( fvpy_menu!=NULL )
 	mblist[3].ti.disabled = false;
@@ -7812,7 +7818,7 @@ void KFFontViewInits(struct kf_dlg *kf,GGadget *drawable) {
 
     memset(&gd,0,sizeof(gd));
     gd.flags = gg_visible | gg_enabled;
-    helplist[0].invoke = FVMenuContextualHelp;
+    helplist[6].invoke = FVMenuContextualHelp;
     gd.u.menu2 = mblist;
     kf->mb = GMenu2BarCreate( dw, &gd, NULL);
     GGadgetGetSize(kf->mb,&gsize);
@@ -8107,7 +8113,7 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
 
     memset(&gd,0,sizeof(gd));
     gd.flags = gg_visible | gg_enabled;
-    helplist[0].invoke = FVMenuContextualHelp;
+    helplist[6].invoke = FVMenuContextualHelp;
     gd.u.menu2 = mblist;
     mb = GMenu2BarCreate( dw, &gd, NULL);
     GGadgetGetSize(mb,&gsize);
