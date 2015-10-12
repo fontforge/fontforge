@@ -2752,10 +2752,7 @@ def validateFont(path, options, writeFile=True):
 ################################################################################
 # Fontforge test: convert a font into WOFF and verify it using W3C's WOFF
 # validator (cf above).
-if len(sys.argv) > 1:
-    fontname=sys.argv[1]
-else:
-    fontname="fonts/DejaVuSerif.sfd"
+fontname=sys.argv[1]
 woffname = "%s.woff" % fontname
 font=fontforge.open(fontname)
 font.generate(woffname)
