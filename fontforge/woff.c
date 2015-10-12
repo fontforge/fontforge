@@ -373,6 +373,8 @@ int _WriteWOFFFont(FILE *woff,SplineFont *sf, enum fontformat format,
     int compLen, uncompLen, newoffset;
     int tag, checksum, offset;
     int tab_start, here;
+    int head_pos;
+    int checkSumAdjustment;
 
     if ( major==woffUnset ) {
 	struct ttflangname *useng;
@@ -416,6 +418,59 @@ return( ret );
     /*  test flavour to make sure we've got a valid sfnt */
     /* But we can test the rest of the header for consistancy */
     num_tabs = getushort(sfnt);
+
+    /* At this point _WriteTTFFont should have generated a valid sfnt file and
+     * in particular correct checksum for each font table. However when we
+     * generate the WOFF file below we put the font tables in the order of the
+     * table directory. WOFF extractor will decompress the tables in that new
+     * order, with padding and no extra gaps. This is likely to provide
+     * different table offsets and so we must recalculate the
+     * checkSumAdjustment with these expected values.
+     * See https://github.com/fontforge/fontforge/issues/926
+     */
+    rewind(sfnt);
+    newoffset = (3 + 4 * num_tabs) * sizeof(int32);
+    checkSumAdjustment = 0;
+
+    /* add the checksum for the header data */
+    checkSumAdjustment += getlong(sfnt);
+    checkSumAdjustment += getlong(sfnt);
+    checkSumAdjustment += getlong(sfnt);
+
+    head_pos = -1;
+    for ( i=0; i<num_tabs; ++i ) {
+        tag = getlong(sfnt);
+        checksum = getlong(sfnt);
+        offset = getlong(sfnt);
+        uncompLen = getlong(sfnt);
+        if (tag == CHR('h','e','a','d'))
+            head_pos = offset;
+
+        /* add the checksum for the data read */
+        checkSumAdjustment += tag;
+        checkSumAdjustment += checksum;
+        checkSumAdjustment += newoffset;
+        checkSumAdjustment += uncompLen;
+
+        /* add the checksum for the corresponding table data */
+        checkSumAdjustment += checksum;
+
+        newoffset += uncompLen;
+        if (uncompLen % 4) {
+	    /* Pad to a 4 byte boundary */
+            newoffset += 4-uncompLen%4;
+        }
+    }
+    if (head_pos != -1) {
+        checkSumAdjustment = 0xb1b0afba-checkSumAdjustment;
+        fseek(sfnt,head_pos+8,SEEK_SET);
+        putlong(sfnt,checkSumAdjustment);
+    }
+
+    /* Now generate the WOFF file */
+    rewind(sfnt);
+    (void) getlong(sfnt);
+    (void) getushort(sfnt);
     (void) getushort(sfnt);
     (void) getushort(sfnt);
     (void) getushort(sfnt);
