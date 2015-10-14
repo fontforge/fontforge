@@ -489,7 +489,7 @@ return( false );
     widbytes = avgwid+spacesize;
     if ( cnt!=0 ) avgwid = rint(avgwid/(bigreal) cnt);
     gid = map->map['X'];
-    if ( font->glyphs[gid]!=NULL && font->glyphs[gid]->sc!=NULL &&
+    if ( gid!=-1 && font->glyphs[gid]!=NULL && font->glyphs[gid]->sc!=NULL &&
 	    font->glyphs[gid]->sc->unicodeenc == 'X' )
 	avgwid = font->glyphs[gid]->width;
 
