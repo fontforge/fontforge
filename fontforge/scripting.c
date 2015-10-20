@@ -1163,7 +1163,7 @@ static void bChr(Context *c) {
 	for ( i=0; i<arr->argc; ++i ) {
 	    if ( arr->vals[i].type!=v_int )
 		ScriptError( c, "Bad type for argument" );
-	    else if ( c->a.vals[1].u.ival<-128 || c->a.vals[1].u.ival>255 )
+	    else if ( arr->vals[i].u.ival<-128 || arr->vals[i].u.ival>255 )
 		ScriptError( c, "Bad value for argument" );
 	    temp[i] = arr->vals[i].u.ival;
 	}
