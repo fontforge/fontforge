@@ -140,56 +140,59 @@ const char *FindUnicharName(void) {
     const char **testnames;
     int i;
     union {
-	short s;
-	char c[2];
+        short s;
+        char c[2];
     } u;
 
-    if ( goodname!=NULL )
-return( goodname );
+    if (goodname != NULL)
+        return goodname;
 
-    u.c[0] = 0x1; u.c[1] = 0x2;
-    if ( u.s==0x201 ) {		/* Little endian */
-	testnames = namesle;
+    u.c[0] = 0x1;
+    u.c[1] = 0x2;
+    if (u.s == 0x201) {		/* Little endian */
+        testnames = namesle;
     } else {
-	testnames = namesbe;
-    }
-    for ( i=0; testnames[i]!=NULL; ++i ) {
-	test = iconv_open(testnames[i],"ISO-8859-1");
-	if ( test!=(iconv_t) -1 && test!=NULL ) {
-	    iconv_close(test);
-	    goodname = testnames[i];
-    break;
-	}
+        testnames = namesbe;
     }
 
-    if ( goodname==NULL ) {
-	for ( i=0; names[i]!=NULL; ++i ) {
-	    test = iconv_open(names[i],"ISO-8859-1");
-	    if ( test!=(iconv_t) -1 && test!=NULL ) {
-		iconv_close(test);
-		goodname = names[i];
-	break;
-	    }
-	}
+    for (i=0; testnames[i] != NULL; ++i) {
+        test = iconv_open(testnames[i], "ISO-8859-1");
+        if (test != (iconv_t) -1 && test != NULL) {
+            iconv_close(test);
+            goodname = testnames[i];
+            break;
+        }
     }
 
-    if ( goodname==NULL ) {
-	IError( "I can't figure out your version of iconv(). I need a name for the UCS-4 encoding and I can't find one. Reconfigure --without-iconv. Bye.");
-	exit( 1 );
+    if (goodname == NULL) {
+        for (i=0; names[i] != NULL; ++i) {
+            test = iconv_open(names[i], "ISO-8859-1");
+            if (test != (iconv_t) -1 && test != NULL) {
+                iconv_close(test);
+                goodname = names[i];
+                break;
+            }
+        }
     }
 
-    test = iconv_open(goodname,"Mac");
-    if ( test==(iconv_t) -1 || test==NULL ) {
-	IError( "Your version of iconv does not support the \"Mac Roman\" encoding.\nIf this causes problems, reconfigure --without-iconv." );
-    } else
-	iconv_close(test);
+    if (goodname == NULL) {
+        IError("I can't figure out your version of iconv(). I need a name for the UCS-4 encoding and I can't find one. Reconfigure --without-iconv. Bye.");
+        exit(1);
+    }
+
+    test = iconv_open(goodname, "Mac");
+    if (test == (iconv_t) -1 || test == NULL ) {
+        IError("Your version of iconv does not support the \"Mac Roman\" encoding.\nIf this causes problems, reconfigure --without-iconv.");
+    } else {
+        iconv_close(test);
+    }
 
     /* I really should check for ISO-2022-JP, KR, CN, and all the other encodings */
     /*  I might find in a ttf 'name' table. But those tables take too long to build */
-return( goodname );
+    return goodname;
 }
 
-static int TryEscape( Encoding *enc, const char *escape_sequence ) {
+static int TryEscape(Encoding *enc, const char *escape_sequence) {
     char from[20], ucs[20];
     size_t fromlen, tolen;
     ICONV_CONST char *fpt;
@@ -197,38 +200,45 @@ static int TryEscape( Encoding *enc, const char *escape_sequence ) {
     int i, j, low;
     int esc_len = strlen(escape_sequence);
 
-    strcpy(from,escape_sequence);
+    strcpy(from, escape_sequence);
 
     enc->has_2byte = false;
     low = -1;
-    for ( i=0; i<256; ++i ) if ( i!=escape_sequence[0] ) {
-	for ( j=0; j<256; ++j ) {
-	    from[esc_len] = i; from[esc_len+1] = j; from[esc_len+2] = 0;
-	    fromlen = esc_len+2;
-	    fpt = from;
-	    upt = ucs;
-	    tolen = sizeof(ucs);
-	    if ( iconv( enc->tounicode , &fpt, &fromlen, &upt, &tolen )!= (size_t) (-1) &&
-		    upt-ucs==sizeof(unichar_t) /* Exactly one character */ ) {
-		if ( low==-1 ) {
-		    enc->low_page = low = i;
-		    enc->has_2byte = true;
-		}
-		enc->high_page = i;
-	break;
-	    }
-	}
+    for (i=0; i < 256; ++i) {
+        if (i != escape_sequence[0]) {
+            for (j=0; j < 256; ++j) {
+                from[esc_len + 0] = i;
+                from[esc_len + 1] = j;
+                from[esc_len + 2] = 0;
+                fromlen = esc_len + 2;
+                fpt = from;
+                upt = ucs;
+                tolen = sizeof(ucs);
+                if (iconv(enc->tounicode, &fpt, &fromlen, &upt, &tolen) != (size_t)(-1) &&
+                    upt - ucs == sizeof(unichar_t) /* Exactly one character */) {
+                    if (low == -1) {
+                        enc->low_page = low = i;
+                        enc->has_2byte = true;
+                    }
+                    enc->high_page = i;
+                    break;
+                }
+            }
+        }
     }
-    if ( enc->low_page==enc->high_page )
-	enc->has_2byte = false;
-    if ( enc->has_2byte ) {
-	strcpy(enc->iso_2022_escape, escape_sequence);
-	enc->iso_2022_escape_len = esc_len;
+
+    if (enc->low_page == enc->high_page)
+        enc->has_2byte = false;
+
+    if (enc->has_2byte) {
+        strcpy(enc->iso_2022_escape, escape_sequence);
+        enc->iso_2022_escape_len = esc_len;
     }
-return( enc->has_2byte );
+
+    return enc->has_2byte;
 }
 
-Encoding *_FindOrMakeEncoding(const char *name,int make_it) {
+Encoding *_FindOrMakeEncoding(const char *name, int make_it) {
     Encoding *enc;
     char buffer[20];
     const char *iconv_name;
@@ -241,226 +251,270 @@ Encoding *_FindOrMakeEncoding(const char *name,int make_it) {
     char *upt;
     /* iconv is not case sensitive */
 
-    if ( strncasecmp(name,"iso8859_",8)==0 || strncasecmp(name,"koi8_",5)==0 ) {
-	    /* Fixup for old naming conventions */
-	    strncpy(buffer,name,sizeof(buffer));
-        buffer[sizeof(buffer)-1] = '\0';
-	    *strchr(buffer,'_') = '-';
-	    name = buffer;
-    } else if ( strcasecmp(name,"iso-8859")==0 ) {
-	    /* Fixup for old naming conventions */
-	    strncpy(buffer,name,3);
-	    strncpy(buffer+3,name+4,sizeof(buffer)-3);
-        buffer[sizeof(buffer)-1] = '\0';
-	    name = buffer;
-    } else if ( strcasecmp(name,"isolatin1")==0 ) {
+    if (strncasecmp(name, "iso8859_", 8) == 0 ||
+        strncasecmp(name, "koi8_", 5) == 0) {
+        /* Fixup for old naming conventions */
+        strncpy(buffer, name, sizeof(buffer));
+        buffer[sizeof(buffer) - 1] = '\0';
+        *strchr(buffer, '_') = '-';
+        name = buffer;
+    } else if (strcasecmp(name, "iso-8859") == 0) {
+        /* Fixup for old naming conventions */
+        strncpy(buffer, name, 3);
+        strncpy(buffer + 3, name + 4, sizeof(buffer) - 3);
+        buffer[sizeof(buffer) - 1] = '\0';
+        name = buffer;
+    } else if (strcasecmp(name, "isolatin1") == 0) {
         name = "iso8859-1";
-    } else if ( strcasecmp(name,"isocyrillic")==0 ) {
+    } else if (strcasecmp(name, "isocyrillic") == 0) {
         name = "iso8859-5";
-    } else if ( strcasecmp(name,"isoarabic")==0 ) {
+    } else if (strcasecmp(name, "isoarabic") == 0) {
         name = "iso8859-6";
-    } else if ( strcasecmp(name,"isogreek")==0 ) {
+    } else if (strcasecmp(name, "isogreek") == 0) {
         name = "iso8859-7";
-    } else if ( strcasecmp(name,"isohebrew")==0 ) {
+    } else if (strcasecmp(name, "isohebrew") == 0) {
         name = "iso8859-8";
-    } else if ( strcasecmp(name,"isothai")==0 ) {
-        name = "tis-620";	/* TIS doesn't define non-breaking space in 0xA0 */ 
-    } else if ( strcasecmp(name,"latin0")==0 || strcasecmp(name,"latin9")==0 ) {
-        name = "iso8859-15";	/* "latin-9" is supported (libiconv bug?) */ 
-    } else if ( strcasecmp(name,"koi8r")==0 ) {
+    } else if (strcasecmp(name, "isothai") == 0) {
+        name = "tis-620"; /* TIS doesn't define non-breaking space in 0xA0 */
+    } else if (strcasecmp(name, "latin0") == 0 || strcasecmp(name, "latin9") == 0) {
+        name = "iso8859-15"; /* "latin-9" is supported (libiconv bug?) */
+    } else if (strcasecmp(name, "koi8r") == 0) {
         name = "koi8-r";
-    } else if ( strncasecmp(name,"jis201",6)==0 || strncasecmp(name,"jisx0201",8)==0 ) {
+    } else if (strncasecmp(name, "jis201", 6) == 0 || strncasecmp(name, "jisx0201", 8) == 0) {
         name = "jis_x0201";
-    } else if ( strcasecmp(name,"AdobeStandardEncoding")==0 || strcasecmp(name,"Adobe")==0 )
-	name = "AdobeStandard";
-    for ( enc=enclist; enc!=NULL; enc=enc->next )
-	if ( strmatch(name,enc->enc_name)==0 ||
-		(enc->iconv_name!=NULL && strmatch(name,enc->iconv_name)==0))
-return( enc );
-    if ( strmatch(name,"unicode")==0 || strmatch(name,"iso10646")==0 || strmatch(name,"iso10646-1")==0 )
-return( &unicodebmp );
-    if ( strmatch(name,"unicode4")==0 || strmatch(name,"ucs4")==0 )
-return( &unicodefull );
+    } else if (strcasecmp(name, "AdobeStandardEncoding") == 0 || strcasecmp(name, "Adobe") == 0) {
+        name = "AdobeStandard";
+    }
+
+    for (enc=enclist; enc != NULL; enc=enc->next) {
+        if (strmatch(name, enc->enc_name) == 0
+            || (enc->iconv_name != NULL && strmatch(name, enc->iconv_name) == 0)) {
+                return enc;
+        }
+    }
+
+    if (strmatch(name, "unicode") == 0 ||
+        strmatch(name, "iso10646") == 0 ||
+        strmatch(name, "iso10646-1") == 0) {
+        return &unicodebmp;
+    }
+
+    if (strmatch(name, "unicode4") == 0 ||
+        strmatch(name, "ucs4") == 0) {
+        return &unicodefull;
+    }
 
     iconv_name = name;
     /* Mac seems to work ok */
-    if ( strcasecmp(name,"win")==0 || strcasecmp(name,"ansi")==0 )
-	iconv_name = "MS-ANSI";		/* "WINDOWS-1252";*/
-    else if ( strncasecmp(name,"jis208",6)==0 || strncasecmp(name,"jisx0208",8)==0 )
-	iconv_name = "ISO-2022-JP";
-    else if ( strncasecmp(name,"jis212",6)==0 || strncasecmp(name,"jisx0212",8)==0 )
-	iconv_name = "ISO-2022-JP-2";
-    else if ( strncasecmp(name,"ksc5601",7)==0 )
-	iconv_name = "ISO-2022-KR";
-    else if ( strcasecmp(name,"gb2312pk")==0 || strcasecmp(name,"gb2312packed")==0 )
-	iconv_name = "EUC-CN";
-    else if ( strncasecmp(name,"gb2312",6)==0 )
-	iconv_name = "ISO-2022-CN";
-    else if ( strcasecmp(name,"wansung")==0 )
-	iconv_name = "EUC-KR";
-    else if ( strcasecmp(name,"EUC-CN")==0 ) {
-	iconv_name = name;
-	name = "gb2312pk";
-    } else if ( strcasecmp(name,"EUC-KR")==0 ) {
-	iconv_name = name;
-	name = "wansung";
+    if (strcasecmp(name, "win") == 0 ||
+        strcasecmp(name, "ansi") == 0) {
+        iconv_name = "MS-ANSI"; /* "WINDOWS-1252"; */
+    } else if (strncasecmp(name, "jis208", 6) == 0 ||
+               strncasecmp(name, "jisx0208", 8) == 0) {
+        iconv_name = "ISO-2022-JP";
+    } else if (strncasecmp(name, "jis212", 6) == 0 ||
+               strncasecmp(name, "jisx0212", 8) == 0) {
+        iconv_name = "ISO-2022-JP-2";
+    } else if (strncasecmp(name, "ksc5601", 7) == 0) {
+        iconv_name = "ISO-2022-KR";
+    } else if (strcasecmp(name, "gb2312pk") == 0 ||
+               strcasecmp(name, "gb2312packed") == 0) {
+        iconv_name = "EUC-CN";
+    } else if (strncasecmp(name, "gb2312", 6) == 0) {
+        iconv_name = "ISO-2022-CN";
+    } else if (strcasecmp(name, "wansung") == 0) {
+        iconv_name = "EUC-KR";
+    } else if (strcasecmp(name, "EUC-CN") == 0) {
+        iconv_name = name;
+        name = "gb2312pk";
+    } else if (strcasecmp(name, "EUC-KR") == 0) {
+        iconv_name = name;
+        name = "wansung";
     }
 
-/* Escape sequences:					*/
-/*	ISO-2022-CN:     \e $ ) A ^N			*/
-/*	ISO-2022-KR:     \e $ ) C ^N			*/
-/*	ISO-2022-JP:     \e $ B				*/
-/*	ISO-2022-JP-2:   \e $ ( D			*/
-/*	ISO-2022-JP-3:   \e $ ( O			*/ /* Capital "O", not zero */
-/*	ISO-2022-CN-EXT: \e $ ) E ^N			*/ /* Not sure about this, also uses CN escape */
+    /* Escape sequences:                */
+    /*	ISO-2022-CN:     \e $ ) A ^N    */
+    /*	ISO-2022-KR:     \e $ ) C ^N    */
+    /*	ISO-2022-JP:     \e $ B         */
+    /*	ISO-2022-JP-2:   \e $ ( D       */
+    /*	ISO-2022-JP-3:   \e $ ( O       */  /* Capital "O", not zero */
+    /*	ISO-2022-CN-EXT: \e $ ) E ^N    */  /* Not sure about this, also uses CN escape */
 
-    memset(&temp,0,sizeof(temp));
+    memset(&temp, 0, sizeof(temp));
     temp.builtin = true;
-    temp.tounicode = iconv_open(FindUnicharName(),iconv_name);
-    if ( temp.tounicode==(iconv_t) -1 || temp.tounicode==NULL )
-return( NULL );			/* Iconv doesn't recognize this name */
-    temp.fromunicode = iconv_open(iconv_name,FindUnicharName());
-    if ( temp.fromunicode==(iconv_t) -1 || temp.fromunicode==NULL ) {
-	/* This should never happen, but if it does... */
-	iconv_close(temp.tounicode);
-return( NULL );
+    temp.tounicode = iconv_open(FindUnicharName(), iconv_name);
+    if (temp.tounicode == (iconv_t) -1 ||
+        temp.tounicode == NULL) {
+        return NULL; /* Iconv doesn't recognize this name */
     }
 
-    memset(good,0,sizeof(good));
-    any = false; all = true;
-    for ( i=1; i<256; ++i ) {
-	from[0] = i; from[1] = 0;
-	fromlen = 1;
-	fpt = from;
-	upt = ucs;
-	tolen = sizeof(ucs);
-	if ( iconv( temp.tounicode , &fpt, &fromlen, &upt, &tolen )!= (size_t) (-1)) {
-	    good[i] = true;
-	    any = true;
-	} else
-	    all = false;
+    temp.fromunicode = iconv_open(iconv_name, FindUnicharName());
+    if (temp.fromunicode == (iconv_t) -1 ||
+        temp.fromunicode == NULL) {
+        /* This should never happen, but if it does... */
+        iconv_close(temp.tounicode);
+        return NULL;
     }
-    if ( any )
-	temp.has_1byte = true;
-    if ( all )
-	temp.only_1byte = true;
 
-    if ( !all ) {
-	if ( strstr(iconv_name,"2022")==NULL ) {
-	    for ( i=temp.has_1byte; i<256; ++i ) if ( !good[i] ) {
-		for ( j=0; j<256; ++j ) {
-		    from[0] = i; from[1] = j; from[2] = 0;
-		    fromlen = 2;
-		    fpt = from;
-		    upt = ucs;
-		    tolen = sizeof(ucs);
-		    if ( iconv( temp.tounicode , &fpt, &fromlen, &upt, &tolen )!= (size_t) (-1) &&
-			    upt-ucs==sizeof(unichar_t) /* Exactly one character */ ) {
-			if ( temp.low_page==-1 )
-			    temp.low_page = i;
-			temp.high_page = i;
-			temp.has_2byte = true;
-		break;
-		    }
-		}
-	    }
-	    if ( temp.low_page==temp.high_page ) {
-		temp.has_2byte = false;
-		temp.low_page = temp.high_page = -1;
-	    }
-	}
-	if ( !temp.has_2byte && !good[033]/* escape */ ) {
-	    if ( strstr(iconv_name,"2022")!=NULL &&
-		    strstr(iconv_name,"JP3")!=NULL &&
-		    TryEscape( &temp,"\33$(O" )) {
-		;
-	    } else if ( strstr(iconv_name,"2022")!=NULL &&
-		    strstr(iconv_name,"JP2")!=NULL &&
-		    TryEscape( &temp,"\33$(D" )) {
-		;
-	    } else if ( strstr(iconv_name,"2022")!=NULL &&
-		    strstr(iconv_name,"JP")!=NULL &&
-		    TryEscape( &temp,"\33$B" )) {
-		;
-	    } else if ( strstr(iconv_name,"2022")!=NULL &&
-		    strstr(iconv_name,"KR")!=NULL &&
-		    TryEscape( &temp,"\33$)C\16" )) {
-		;
-	    } else if ( strstr(iconv_name,"2022")!=NULL &&
-		    strstr(iconv_name,"CN")!=NULL &&
-		    TryEscape( &temp,"\33$)A\16" )) {
-		;
-	    }
-	}
+    memset(good, 0, sizeof(good));
+    any = false;
+    all = true;
+    for (i=1; i < 256; ++i) {
+        from[0] = i;
+        from[1] = 0;
+        fromlen = 1;
+        fpt = from;
+        upt = ucs;
+        tolen = sizeof(ucs);
+        if (iconv(temp.tounicode, &fpt, &fromlen, &upt, &tolen) != (size_t) (-1)) {
+            good[i] = true;
+            any = true;
+        } else {
+            all = false;
+        }
     }
-    if ( !temp.has_1byte && !temp.has_2byte )
-return( NULL );
-    if ( !make_it )
-return( NULL );
+
+    if (any)
+        temp.has_1byte = true;
+
+    if (all) {
+        temp.only_1byte = true;
+    } else {
+        if (strstr(iconv_name, "2022") == NULL) {
+            for (i=temp.has_1byte; i < 256; ++i) {
+                if (!good[i]) {
+                    for (j=0; j < 256; ++j) {
+                        from[0] = i;
+                        from[1] = j;
+                        from[2] = 0;
+                        fromlen = 2;
+                        fpt = from;
+                        upt = ucs;
+                        tolen = sizeof(ucs);
+                        if (iconv(temp.tounicode, &fpt, &fromlen, &upt, &tolen) != (size_t) (-1) &&
+                            upt - ucs == sizeof(unichar_t) /* Exactly one character */) {
+                            if (temp.low_page == -1) {
+                                temp.low_page = i;
+                            }
+                            temp.high_page = i;
+                            temp.has_2byte = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (temp.low_page == temp.high_page) {
+                temp.has_2byte = false;
+                temp.low_page = temp.high_page = -1;
+            }
+        }
+
+        if (!temp.has_2byte && !good[033] /* escape */) {
+            if (strstr(iconv_name, "2022") != NULL &&
+                strstr(iconv_name, "JP3") != NULL &&
+                TryEscape(&temp, "\33$(O")) {
+                /* do nothing */;
+            } else if (strstr(iconv_name, "2022") != NULL &&
+                       strstr(iconv_name, "JP2") != NULL &&
+                       TryEscape(&temp, "\33$(D")) {
+                /* do nothing */;
+            } else if (strstr(iconv_name, "2022") != NULL &&
+                       strstr(iconv_name, "JP") != NULL &&
+                       TryEscape(&temp, "\33$B")) {
+                /* do nothing */;
+            } else if (strstr(iconv_name, "2022") != NULL &&
+                       strstr(iconv_name, "KR") != NULL &&
+                       TryEscape(&temp, "\33$)C\16")) {
+                /* do nothing */;
+            } else if (strstr(iconv_name, "2022") != NULL &&
+                       strstr(iconv_name, "CN") != NULL &&
+                       TryEscape(&temp, "\33$)A\16")) {
+                /* do nothing */;
+            }
+        }
+    }
+
+    if (!temp.has_1byte && !temp.has_2byte)
+        return NULL;
+
+    if (!make_it)
+        return NULL;
 
     enc = chunkalloc(sizeof(Encoding));
     *enc = temp;
     enc->enc_name = copy(name);
-    if ( iconv_name!=name )
-	enc->iconv_name = copy(iconv_name);
+    if (iconv_name != name) {
+        enc->iconv_name = copy(iconv_name);
+    }
     enc->next = enclist;
     enc->builtin = true;
     enclist = enc;
-    if ( enc->has_2byte )
-	enc->char_cnt = (enc->high_page<<8) + 256;
-    else {
-	enc->char_cnt = 256;
-	enc->only_1byte = true;
+    if (enc->has_2byte) {
+        enc->char_cnt = (enc->high_page << 8) + 256;
+    } else {
+        enc->char_cnt = 256;
+        enc->only_1byte = true;
     }
-    if ( strstrmatch(iconv_name,"JP")!=NULL ||
-	    strstrmatch(iconv_name,"sjis")!=NULL ||
-	    strstrmatch(iconv_name,"cp932")!=NULL )
-	enc->is_japanese = true;
-    else if ( strstrmatch(iconv_name,"KR")!=NULL )
-	enc->is_korean = true;
-    else if ( strstrmatch(iconv_name,"CN")!=NULL )
-	enc->is_simplechinese = true;
-    else if ( strstrmatch(iconv_name,"BIG")!=NULL && strstrmatch(iconv_name,"5")!=NULL )
-	enc->is_tradchinese = true;
 
-    if ( strstrmatch(name,"ISO8859")!=NULL &&
-	    strtol(name+strlen(name)-2,NULL,10)>=16 )
-	/* Not in our menu, don't hide */;
-    else if ( iconv_name!=name || strmatch(name,"mac")==0 || strstrmatch(name,"ISO8859")!=NULL ||
-	    strmatch(name,"koi8-r")==0 || strmatch(name,"sjis")==0 ||
-	    strmatch(name,"big5")==0 || strmatch(name,"big5hkscs")==0 )
-	enc->hidden = true;
+    if (strstrmatch(iconv_name, "JP") != NULL ||
+        strstrmatch(iconv_name, "sjis") != NULL ||
+        strstrmatch(iconv_name, "cp932") != NULL) {
+        enc->is_japanese = true;
+    } else if (strstrmatch(iconv_name, "KR") != NULL) {
+        enc->is_korean = true;
+    } else if (strstrmatch(iconv_name, "CN") != NULL ) {
+        enc->is_simplechinese = true;
+    } else if (strstrmatch(iconv_name, "BIG") != NULL &&
+               strstrmatch(iconv_name, "5") != NULL) {
+        enc->is_tradchinese = true;
+    }
 
-return( enc );
+    if (strstrmatch(name, "ISO8859") != NULL &&
+        strtol(name + strlen(name) - 2, NULL, 10) >= 16) {
+        /* Not in our menu, don't hide */;
+    } else if (iconv_name != name || strmatch(name, "mac") == 0
+               || strstrmatch(name, "ISO8859") != NULL
+               || strmatch(name, "koi8-r") == 0
+               || strmatch(name, "sjis") == 0
+               || strmatch(name, "big5") == 0
+               || strmatch(name, "big5hkscs") == 0) {
+        enc->hidden = true;
+    }
+
+    return enc;
 }
 
 Encoding *FindOrMakeEncoding(const char *name) {
-return( _FindOrMakeEncoding(name,true));
+    return _FindOrMakeEncoding(name, true);
 }
 
 /* Plugin API */
-int AddEncoding(char *name,EncFunc enc_to_uni,EncFunc uni_to_enc,int max) {
+int AddEncoding(char *name, EncFunc enc_to_uni, EncFunc uni_to_enc, int max) {
     Encoding *enc;
     int i;
 
-    for ( enc=enclist; enc!=NULL; enc=enc->next ) {
-	if ( strmatch(name,enc->enc_name)==0 ||
-		(enc->iconv_name!=NULL && strmatch(name,enc->iconv_name)==0)) {
-	    if ( enc->tounicode_func==NULL )
-return( 0 );			/* Failure */
-	    else {
-		enc->tounicode_func   = enc_to_uni;
-		enc->fromunicode_func = uni_to_enc;
-		enc->char_cnt	      = max;
-return( 2 );
-	    }
-	}
+    for (enc=enclist; enc != NULL; enc=enc->next) {
+        if (strmatch(name, enc->enc_name) == 0 ||
+            (enc->iconv_name != NULL && strmatch(name, enc->iconv_name) == 0)) {
+            if (enc->tounicode_func == NULL) {
+                return 0; /* Failure */
+            } else {
+                enc->tounicode_func   = enc_to_uni;
+                enc->fromunicode_func = uni_to_enc;
+                enc->char_cnt         = max;
+                return 2;
+            }
+        }
     }
 
-    if ( strmatch(name,"unicode")==0 || strmatch(name,"iso10646")==0 || strmatch(name,"iso10646-1")==0 )
-return( 0 );			/* Failure */
-    if ( strmatch(name,"unicode4")==0 || strmatch(name,"ucs4")==0 )
-return( 0 );			/* Failure */
+    if (strmatch(name, "unicode") == 0 ||
+        strmatch(name, "iso10646") == 0 ||
+        strmatch(name, "iso10646-1") == 0 ||
+        strmatch(name, "unicode4") == 0 ||
+        strmatch(name, "ucs4") == 0) {
+        return 0; /* Failure */
+    }
 
     enc = chunkalloc(sizeof(Encoding));
     enc->enc_name = copy(name);
@@ -468,31 +522,37 @@ return( 0 );			/* Failure */
     enclist = enc;
     enc->tounicode_func   = enc_to_uni;
     enc->fromunicode_func = uni_to_enc;
-    enc->char_cnt	      = max;
-    for ( i=0; i<256 && i<max; ++i )
-	if ( enc_to_uni(i)!=-1 )
-    break;
+    enc->char_cnt         = max;
+    for (i=0; i < 256 && i < max; ++i) {
+        if (enc_to_uni(i) != -1)
+            break;
+    }
 
-    if ( i<256 && i<max )
-	enc->has_1byte = true;
-    if ( max<256 )
-	enc->only_1byte = true;
-    else
-	enc->has_2byte = true;
-return( 1 );
+    if (i < 256 && i < max)
+        enc->has_1byte = true;
+
+    if (max < 256) {
+        enc->only_1byte = true;
+    } else {
+        enc->has_2byte = true;
+    }
+
+    return 1;
 }
 
 static char *getPfaEditEncodings(void) {
-    static char *encfile=NULL;
+    static char *encfile = NULL;
     char buffer[1025];
     char *ffdir;
 
-    if ( encfile!=NULL )
+    if (encfile)
         return encfile;
+
     ffdir = getFontForgeUserDir(Config);
-    if ( ffdir==NULL )
+    if (!ffdir)
         return NULL;
-    sprintf(buffer,"%s/Encodings.ps", ffdir);
+
+    sprintf(buffer, "%s/Encodings.ps", ffdir);
     free(ffdir);
     encfile = copy(buffer);
     return encfile;
@@ -502,8 +562,11 @@ static void EncodingFree(Encoding *item) {
     int i;
 
     free(item->enc_name);
-    if ( item->psnames!=NULL ) for ( i=0; i<item->char_cnt; ++i )
-	free(item->psnames[i]);
+    if (item->psnames) {
+        for (i=0; i < item->char_cnt; ++i) {
+            free(item->psnames[i]);
+        }
+    }
     free(item->psnames);
     free(item->unicode);
     free(item);
@@ -513,24 +576,29 @@ void DeleteEncoding(Encoding *me) {
     FontViewBase *fv;
     Encoding *prev;
 
-    if ( me->builtin )
-return;
+    if (me->builtin)
+        return;
 
-    for ( fv = FontViewFirst(); fv!=NULL; fv = fv->next ) {
-	if ( fv->map->enc==me )
-	    fv->map->enc = &custom;
+    for (fv = FontViewFirst(); fv != NULL; fv = fv->next) {
+        if (fv->map->enc == me)
+            fv->map->enc = &custom;
     }
-    if ( me==enclist )
-	enclist = me->next;
-    else {
-	for ( prev = enclist; prev!=NULL && prev->next!=me; prev=prev->next );
-	if ( prev!=NULL ) prev->next = me->next;
+
+    if (me == enclist) {
+        enclist = me->next;
+    } else {
+        for (prev = enclist; prev != NULL && prev->next != me; prev = prev->next);
+        if (prev)
+            prev->next = me->next;
     }
     EncodingFree(me);
-    if ( default_encoding == me )
-	default_encoding = FindOrMakeEncoding("ISO8859-1");
-    if ( default_encoding == NULL )
-	default_encoding = &custom;
+
+    if (default_encoding == me)
+        default_encoding = FindOrMakeEncoding("ISO8859-1");
+
+    if (!default_encoding)
+        default_encoding = &custom;
+
     DumpPfaEditEncodings();
 }
 
@@ -548,38 +616,103 @@ static Encoding *ParseConsortiumEncodingFile(FILE *file) {
     memset(encs, 0, sizeof(encs));
     max = -1;
 
-    while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
-	if ( ishexdigit(buffer[0]) ) {
-	    if ( sscanf(buffer, "%x %x", (unsigned *) &enc, (unsigned *) &unienc)==2 &&
-		    enc<0x10000 && enc>=0 ) {
-		encs[enc] = unienc;
-		if ( enc>max ) max = enc;
-	    }
-	}
+    while (fgets(buffer, sizeof(buffer), file) != NULL) {
+        if (ishexdigit(buffer[0])) {
+            if (sscanf(buffer, "%x %x", (unsigned *) &enc, (unsigned *) &unienc)==2
+                && enc < 0x10000
+                && enc >= 0) {
+                encs[enc] = unienc;
+                if ( enc>max ) max = enc;
+            }
+        }
     }
 
-    if ( max==-1 )
-return( NULL );
+    if (max==-1)
+        return NULL;
 
     ++max;
-    if ( max<256 ) max = 256;
-    item = calloc(1,sizeof(Encoding));
+    if (max<256) max = 256;
+    item = calloc(1, sizeof(Encoding));
     item->only_1byte = item->has_1byte = true;
     item->char_cnt = max;
     item->unicode = malloc(max*sizeof(int32));
-    memcpy(item->unicode,encs,max*sizeof(int32));
-return( item );
+    memcpy(item->unicode, encs, max*sizeof(int32));
+    return item;
+}
+
+/* Parse the GlyphOrderAndAliasDB file format */
+static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
+    char* names[1024];
+    char buffer[256];
+    int32 encs[1024];
+    Encoding* item = NULL;
+    size_t i, any;
+    int max, enc;
+
+    for (i=0; i < sizeof(names)/sizeof(names[0]); ++i) {
+        encs[i] = -1;
+        names[i] = NULL;
+    }
+
+    max = -1; any = 0;
+    i = 0;
+    while (fgets(buffer, sizeof(buffer), file) != NULL) {
+        max = i;
+
+        int tab, tab2;
+        for (tab = 0; tab < sizeof(buffer) && buffer[tab] != '\t'; tab++);
+        if (tab < sizeof(buffer))
+            buffer[tab]='\0';
+
+        for (tab2 = tab+1; tab2 < sizeof(buffer) && buffer[tab2] != '\t'; tab2++);
+        if (tab2 < sizeof(buffer))
+            buffer[tab2]='\0';
+
+        if (strcmp(buffer, ".notdef") == 0) {
+            encs[i] = -1;
+        } else if ((enc = UniFromName(buffer, ui_none, &custom)) != -1) {
+            encs[i] = enc;
+
+            /* Used not to do this, but there are several legal names */
+            /*  for some slots and people get unhappy (rightly) if we */
+            /*  use the wrong one */
+            names[i] = copy(&buffer[tab+1]);
+            any = 1;
+        } else {
+            names[i] = copy(&buffer[tab+1]);
+            any = 1;
+        }
+        i++;
+    }
+
+    if (max != -1) {
+        if (++max < 256) max = 256;
+        item = calloc(1,sizeof(Encoding));
+        char* buf = strdup(_("Please name this encoding"));
+        item->enc_name = ff_ask_string(buf, "GlyphOrderAndAliasDB", buf);
+        item->char_cnt = max;
+        item->unicode = malloc(max*sizeof(int32));
+        memcpy(item->unicode, encs, max*sizeof(int32));
+
+        if (any) {
+            item->psnames = calloc(max, sizeof(char *));
+            memcpy(item->psnames, names, max*sizeof(char *));
+        }
+    }
+
+    return item;
 }
 
 void RemoveMultiples(Encoding *item) {
     Encoding *test;
 
-    for ( test=enclist; test!=NULL; test = test->next ) {
-	if ( strcmp(test->enc_name,item->enc_name)==0 )
-    break;
+    for (test = enclist; test != NULL; test = test->next) {
+        if (strcmp(test->enc_name, item->enc_name) == 0)
+            break;
     }
-    if ( test!=NULL )
-	DeleteEncoding(test);
+
+    if (test)
+        DeleteEncoding(test);
 }
 
 char *ParseEncodingFile(char *filename, char *encodingname) {
@@ -589,69 +722,92 @@ char *ParseEncodingFile(char *filename, char *encodingname) {
     char *buf, *name;
     int i,ch;
 
-    if ( filename==NULL ) filename = getPfaEditEncodings();
+    if (!filename)
+        filename = getPfaEditEncodings();
+
     file = fopen(filename,"r");
-    if ( file==NULL ) {
-	if ( orig!=NULL )
-	    ff_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), orig);
-return( NULL );
+    if (!file) {
+        if (orig)
+            ff_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), orig);
+        return NULL;
     }
+
+    /* An empty file is surely an invalid file */
     ch = getc(file);
-    if ( ch==EOF ) {
-	fclose(file);
-return( NULL );
+    if (ch==EOF) {
+        fclose(file);
+        /* TODO: Shouldn't we complain to the user about it here ? */
+        return NULL;
     }
-    ungetc(ch,file);
-    if ( ch=='#' || ch=='0' )
-    {
+
+    /* Here we detect file format and decide which format
+       parsing routine to actually use.
+    */
+    ungetc(ch, file);
+
+
+    if(strlen(filename) >= 20 &&
+       !strcmp(filename + strlen(filename) - 20, "GlyphOrderAndAliasDB")){
+        head = ParseGlyphOrderAndAliasDB(file);
+    } else if (ch=='#' || ch=='0') {
         head = ParseConsortiumEncodingFile(file);
         if(encodingname)
             head->enc_name = copy(encodingname);
+    } else {
+        head = PSSlurpEncodings(file);
     }
-    else
-	head = PSSlurpEncodings(file);
     fclose(file);
-    if ( head==NULL ) {
-	ff_post_error(_("Bad encoding file format"),_("Bad encoding file format") );
-	return( NULL );
+
+    if (!head) {
+        ff_post_error(_("Bad encoding file format"), _("Bad encoding file format") );
+        return NULL;
     }
 
-    for ( i=0, prev=NULL, item=head; item!=NULL; prev = item, item=next, ++i ) {
-	next = item->next;
-	if ( item->enc_name==NULL ) {
-	    if ( no_windowing_ui ) {
-		ff_post_error(_("Bad encoding file format"),_("This file contains an unnamed encoding, which cannot be named in a script"));
-		return( NULL );
-	    }
-	    if ( item==head && item->next==NULL )
-		buf = strdup(_( "Please name this encoding" ));
-	    else
-		buf = xasprintf(_( "Please name encoding %d in this file" ), i );
+    for (i=0, prev = NULL, item = head; item != NULL; prev = item, item = next, ++i) {
+        next = item->next;
+        if (item->enc_name == NULL) {
+            if (no_windowing_ui) {
+                ff_post_error(_("Bad encoding file format"), _("This file contains an unnamed encoding, which cannot be named in a script"));
+                return NULL;
+            }
 
-	    name = ff_ask_string( buf, NULL, buf );
+            if (item == head && item->next == NULL)
+                buf = strdup(_("Please name this encoding"));
+            else
+                buf = xasprintf(_("Please name encoding %d in this file"), i);
 
-	    if ( name!=NULL ) {
-		item->enc_name = copy(name);
-		free(name);
-	    } else {
-		if ( prev==NULL )
-		    head = item->next;
-		else
-		    prev->next = item->next;
-		EncodingFree(item);
-	    }
-	}
+            name = ff_ask_string(buf, NULL, buf);
+
+            if (name) {
+                item->enc_name = copy(name);
+                free(name);
+            } else {
+                if (!prev) {
+                    head = item->next;
+                } else {
+                    prev->next = item->next;
+                }
+
+                EncodingFree(item);
+            }
+        }
     }
-    for ( item=head; item!=NULL; item=item->next )
-	RemoveMultiples(item);
 
-    if ( enclist == NULL )
-	enclist = head;
-    else {
-	for ( item=enclist; item->next!=NULL; item=item->next );
-	item->next = head;
+    for (item = head; item != NULL; item = item->next) {
+        RemoveMultiples(item);
     }
-return( copy( head->enc_name ) );
+
+    if (!enclist) {
+        enclist = head;
+    } else {
+        for (item = enclist; item->next != NULL; item = item->next){
+            /* Run to the end of the linked list */
+        };
+        /* And append there the encodings we just loaded */
+        item->next = head;
+    }
+
+    return copy(head->enc_name);
 }
 
 void LoadPfaEditEncodings(void) {
@@ -664,35 +820,42 @@ void DumpPfaEditEncodings(void) {
     int i;
     char buffer[80];
 
-    for ( item=enclist; item!=NULL && item->builtin; item=item->next );
-    if ( item==NULL ) {
-	unlink(getPfaEditEncodings());
-return;
+    for (item = enclist; item != NULL && item->builtin; item = item->next);
+    if (item == NULL) {
+        unlink(getPfaEditEncodings());
+        return;
     }
 
-    file = fopen( getPfaEditEncodings(), "w");
-    if ( file==NULL ) {
-	LogError( _("couldn't write encodings file\n") );
-return;
+    file = fopen(getPfaEditEncodings(), "w");
+    if (file == NULL) {
+        LogError(_("couldn't write encodings file\n"));
+        return;
     }
 
-    for ( item=enclist; item!=NULL; item = item->next ) if ( !item->builtin && item->tounicode_func==NULL ) {
-	fprintf( file, "/%s [\n", item->enc_name );
-	if ( item->psnames==NULL )
-	    fprintf( file, "%% Use codepoints.\n" );
-	for ( i=0; i<item->char_cnt; ++i ) {
-	    if ( item->psnames!=NULL && item->psnames[i]!=NULL )
-		fprintf( file, " /%s", item->psnames[i]);
-	    else if ( item->unicode[i]<' ' || (item->unicode[i]>=0x7f && item->unicode[i]<0xa0))
-		fprintf( file, " /.notdef" );
-	    else
-		fprintf( file, " /%s", StdGlyphName(buffer,item->unicode[i],ui_none,(NameList *) -1));
-	    if ( (i&0xf)==0 )
-		fprintf( file, "\t\t%% 0x%02x\n", i );
-	    else
-		putc('\n',file);
-	}
-	fprintf( file, "] def\n\n" );
+    for (item = enclist; item != NULL; item = item->next) {
+        if (!item->builtin && item->tounicode_func == NULL) {
+            fprintf(file, "/%s [\n", item->enc_name);
+            if (item->psnames == NULL)
+                fprintf(file, "%% Use codepoints.\n");
+
+            for (i = 0; i < item->char_cnt; ++i) {
+                if (item->psnames != NULL && item->psnames[i] != NULL) {
+                    fprintf(file, " /%s", item->psnames[i]);
+                } else if (item->unicode[i] < ' ' ||
+                         (item->unicode[i] >= 0x7f && item->unicode[i] < 0xa0)) {
+                    fprintf(file, " /.notdef");
+                } else {
+                    fprintf(file, " /%s", StdGlyphName(buffer, item->unicode[i], ui_none, (NameList *) -1));
+                }
+
+                if ((i & 0xf) == 0) {
+                    fprintf(file, "\t\t%% 0x%02x\n", i);
+                } else {
+                    putc('\n',file);
+                }
+            }
+            fprintf(file, "] def\n\n");
+        }
     }
     fclose(file);
 }
@@ -709,40 +872,48 @@ int CIDFromName(char *name,SplineFont *cidmaster) {
     /* which tells me that the current glyph is the rotated version of */
     /*  cid 504 */
     /* Other convention "cid-504.vert" */
-    int len = strlen( cidmaster->ordering );
+    int len = strlen(cidmaster->ordering);
     int cid;
     char *end;
 
-    if ( strncmp(name,cidmaster->ordering,len)==0 ) {
-	if ( name[len]=='.' ) ++len;
-    } else if ( strncmp(name,"cid-",4)==0 ) {
-	len = 4;
-    } else
-	len = 0;
-    cid = strtol(name+len,&end,10);
-    if ( end==name+len )
-return( -1 );
-    if ( *end!='.' && *end!='\0' )
-return( -1 );
+    if (strncmp(name, cidmaster->ordering, len) == 0) {
+        if (name[len] == '.')
+            len++;
+    } else if (strncmp(name, "cid-", 4) == 0) {
+        len = 4;
+    } else {
+        len = 0;
+    }
+    cid = strtol(name + len, &end, 10);
 
-return ( cid );
+    if (end == name + len)
+        return -1;
+
+    if (*end != '.' && *end != '\0')
+        return -1;
+
+    return cid;
 }
 
 int CID2Uni(struct cidmap *map,int cid) {
     unsigned int uni;
 
-    if ( map==NULL )
-return( -1 );
-    else if ( cid==0 )
-return( 0 );
-    else if ( cid<map->namemax && map->unicode[cid]!=0 )
-return( map->unicode[cid] );
-    else if ( cid<map->namemax && map->name[cid]!=NULL ) {
-	if ( sscanf(map->name[cid],"uni%x", &uni )==1 )
-return( uni );
-    }
+    if (map == NULL)
+        return -1;
 
-return( -1 );
+    if (cid == 0)
+        return 0;
+
+    if (cid < map->namemax &&
+        map->unicode[cid] != 0)
+        return map->unicode[cid];
+
+    if (cid < map->namemax &&
+        map->name[cid] != NULL &&
+        sscanf(map->name[cid], "uni%x", &uni) == 1)
+            return uni;
+
+    return -1;
 }
 
 int CID2NameUni(struct cidmap *map,int cid, char *buffer, int len) {

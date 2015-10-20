@@ -424,131 +424,151 @@ return( false );
 }
 
 static int nextpstoken(IO *wrapper, real *val, char *tokbuf, int tbsize) {
-    int ch, r, i;
+    int ch, r, i, nest, quote;
     char *pt, *end;
     float mf2pt_advance_width;
 
     pt = tokbuf;
-    end = pt+tbsize-1;
+    end = pt + tbsize - 1;
 
     /* Eat whitespace and comments. Comments last to eol (or formfeed) */
-    while ( 1 ) {
-	while ( isspace(ch = nextch(wrapper)) );
-	if ( ch!='%' )
-    break;
-	while ( (ch=nextch(wrapper))!=EOF && ch!='\r' && ch!='\n' && ch!='\f' )
-	    if ( pt<end )
-		*pt++ = ch;
-	*pt='\0';
-	/* Some comments have meanings (that we care about) */
-	if ( sscanf( tokbuf, " MF2PT1: bbox %*g %*g %g %*g", &mf2pt_advance_width )==1 )
-	    wrapper->advance_width = mf2pt_advance_width;
-	else if ( sscanf( tokbuf, " MF2PT1: glyph_dimensions %*g %*g %g %*g", &mf2pt_advance_width )==1 )
-	    wrapper->advance_width = mf2pt_advance_width;
-	pt = tokbuf;
+    while (true) {
+        while (isspace(ch = nextch(wrapper)));
+
+        if (ch != '%')
+            break;
+
+        while ((ch = nextch(wrapper)) != EOF
+               && ch != '\r'
+               && ch != '\n'
+               && ch != '\f') {
+            if (pt < end)
+                *pt++ = ch;
+        }
+        *pt='\0';
+
+        /* Some comments have meanings (that we care about) */
+        if (sscanf(tokbuf, " MF2PT1: bbox %*g %*g %g %*g", &mf2pt_advance_width) == 1) {
+            wrapper->advance_width = mf2pt_advance_width;
+        } else if (sscanf(tokbuf, " MF2PT1: glyph_dimensions %*g %*g %g %*g", &mf2pt_advance_width) == 1) {
+            wrapper->advance_width = mf2pt_advance_width;
+        }
+        pt = tokbuf;
     }
 
-    if ( ch==EOF )
-return( pt_eof );
+    if (ch == EOF)
+        return pt_eof;
 
     pt = tokbuf;
-    end = pt+tbsize-1;
-    *pt++ = ch; *pt='\0';
+    end = pt + tbsize - 1;
+    *pt++ = ch;
+    *pt = '\0';
 
-    if ( ch=='(' ) {
-	int nest=1, quote=0;
-	while ( (ch=nextch(wrapper))!=EOF ) {
-	    if ( pt<end ) *pt++ = ch;
-	    if ( quote )
-		quote=0;
-	    else if ( ch=='(' )
-		++nest;
-	    else if ( ch==')' ) {
-		if ( --nest==0 )
-	break;
-	    } else if ( ch=='\\' )
-		quote = 1;
-	}
-	*pt='\0';
-return( pt_string );
-    } else if ( ch=='<' ) {
-	ch = nextch(wrapper);
-	if ( pt<end ) *pt++ = ch;
-	if ( ch=='>' )
-	    /* Done */;
-	else if ( ch!='~' ) {
-	    while ( (ch=nextch(wrapper))!=EOF && ch!='>' )
-		if ( pt<end ) *pt++ = ch;
-	} else {
-	    int twiddle=0;
-	    while ( (ch=nextch(wrapper))!=EOF ) {
-		if ( pt<end ) *pt++ = ch;
-		if ( ch=='~' ) twiddle = 1;
-		else if ( twiddle && ch=='>' )
-	    break;
-		else twiddle = 0;
-	    }
-	}
-	*pt='\0';
-return( pt_string );
-    } else if ( ch==')' || ch=='>' || ch=='[' || ch==']' || ch=='{' || ch=='}' ) {
-	if ( ch=='{' )
-return( pt_opencurly );
-	else if ( ch=='}' )
-return( pt_closecurly );
-	if ( ch=='[' )
-return( pt_openarray );
-	else if ( ch==']' )
-return( pt_closearray );
+    switch(ch) {
+        case '{': return pt_opencurly;
+        case '}': return pt_closecurly;
+        case '[': return pt_openarray;
+        case ']': return pt_closearray;
+        case ')': return pt_unknown; /* single character token */
+        case '>': return pt_unknown; /* single character token */
 
-return( pt_unknown );	/* single character token */
-    } else if ( ch=='/' ) {
-	pt = tokbuf;
-	while ( (ch=nextch(wrapper))!=EOF && !isspace(ch) && ch!='%' &&
-		ch!='(' && ch!=')' && ch!='<' && ch!='>' && ch!='[' && ch!=']' &&
-		ch!='{' && ch!='}' && ch!='/' )
-	    if ( pt<tokbuf+tbsize-2 )
-		*pt++ = ch;
-	*pt = '\0';
-	unnextch(ch,wrapper);
-return( pt_namelit );	/* name literal */
-    } else {
-	while ( (ch=nextch(wrapper))!=EOF && !isspace(ch) && ch!='%' &&
-		ch!='(' && ch!=')' && ch!='<' && ch!='>' && ch!='[' && ch!=']' &&
-		ch!='{' && ch!='}' && ch!='/' ) {
-	    if ( pt<tokbuf+tbsize-2 )
-		*pt++ = ch;
-	}
-	*pt = '\0';
-	unnextch(ch,wrapper);
-	r = strtol(tokbuf,&end,10);
-	pt = end;
-	if ( *pt=='\0' ) {		/* It's a normal integer */
-	    *val = r;
-return( pt_number );
-	} else if ( *pt=='#' ) {
-	    r = strtol(pt+1,&end,r);
-	    if ( *end=='\0' ) {		/* It's a radix integer */
-		*val = r;
-return( pt_number );
-	    }
-	} else {
-	    *val = strtod(tokbuf,&end);
-	    if ( !finite(*val) ) {
-/* GT: NaN is a concept in IEEE floating point which means "Not a Number" */
-/* GT: it is used to represent errors like 0/0 or sqrt(-1). */
-		LogError( _("Bad number, infinity or nan: %s\n"), tokbuf );
-		*val = 0;
-	    }
-	    if ( *end=='\0' )		/* It's a real */
-return( pt_number );
-	}
-	/* It's not a number */
-	for ( i=0; toknames[i]!=NULL; ++i )
-	    if ( strcmp(tokbuf,toknames[i])==0 )
-return( i );
+        case '(':
+            nest=1;
+            quote=0;
+            while ((ch = nextch(wrapper)) != EOF) {
+                if (pt < end)
+                    *pt++ = ch;
 
-return( pt_unknown );
+                if (quote) {
+                    quote = 0;
+                } else if (ch == '(') {
+                    ++nest;
+                } else if (ch == ')') {
+                    if (--nest == 0)
+                        break;
+                } else if (ch == '\\'){
+                    quote = 1;
+                }
+            }
+            *pt = '\0';
+
+            return pt_string;
+        case '<':
+            ch = nextch(wrapper);
+            if (pt < end)
+                *pt++ = ch;
+            if (ch == '>'){
+                /* Done */;
+            } else if (ch != '~') {
+                while ((ch = nextch(wrapper)) != EOF && ch != '>') {
+                    if ( pt<end )
+                        *pt++ = ch;
+                }
+            } else {
+                int twiddle=0;
+                while ((ch = nextch(wrapper)) != EOF) {
+                    if (pt < end)
+                        *pt++ = ch;
+                    if (ch == '~')
+                        twiddle = 1;
+                    else if (twiddle && ch == '>')
+                        break;
+                    else
+                        twiddle = 0;
+                }
+	        }
+            *pt = '\0';
+            return pt_string;
+        case '/':
+            pt = tokbuf;
+            while ((ch = nextch(wrapper)) != EOF && !isspace(ch) && ch != '%' &&
+                    ch != '(' && ch != ')' && ch != '<' && ch != '>' && ch != '[' && ch != ']' &&
+                    ch != '{' && ch != '}' && ch != '/' ) {
+                if (pt < tokbuf + tbsize - 2)
+                    *pt++ = ch;
+            }
+            *pt = '\0';
+            unnextch(ch, wrapper);
+            return pt_namelit; /* name literal */
+        default:
+            while ((ch = nextch(wrapper)) != EOF && !isspace(ch) && ch != '%' &&
+                    ch != '(' && ch != ')' && ch != '<' && ch != '>' && ch != '[' && ch != ']' &&
+                    ch != '{' && ch != '}' && ch != '/' ) {
+                if (pt < tokbuf + tbsize - 2)
+                    *pt++ = ch;
+            }
+            *pt = '\0';
+            unnextch(ch, wrapper);
+            r = strtol(tokbuf, &end, 10);
+            pt = end;
+            if (*pt == '\0') { /* It's a normal integer */
+                *val = r;
+                return pt_number;
+            } else if (*pt == '#') {
+                r = strtol(pt + 1, &end, r);
+                if (*end == '\0') { /* It's a radix integer */
+                    *val = r;
+                    return pt_number;
+                }
+            } else {
+                *val = strtod(tokbuf, &end);
+                if (!finite(*val)) {
+                    /* GT: NaN is a concept in IEEE floating point which means "Not a Number" */
+                    /* GT: it is used to represent errors like 0/0 or sqrt(-1). */
+                    LogError(_("Bad number, infinity or NaN: %s\n"), tokbuf);
+                    *val = 0;
+                }
+                if (*end == '\0') /* It's a real */
+                    return pt_number;
+            }
+
+            /* It's not a number */
+            for (i=0; toknames[i] != NULL; ++i) {
+                if (strcmp(tokbuf, toknames[i]) == 0)
+                    return i;
+            }
+
+            return pt_unknown;
     }
 }
 
@@ -3350,73 +3370,81 @@ Encoding *PSSlurpEncodings(FILE *file) {
     wrapper.advance_width = UNDEFINED_WIDTH;
     pushio(&wrapper,file,NULL,0);
 
-    while ( (tok = nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf)))!=pt_eof ) {
-	encname = NULL;
-	if ( tok==pt_namelit ) {
-	    encname = copy(tokbuf);
-	    tok = nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf));
-	}
-	if ( tok!=pt_openarray && tok!=pt_opencurly )
-return( head );
-	for ( i=0; i<sizeof(names)/sizeof(names[0]); ++i ) {
-	    encs[i] = -1;
-	    names[i]=NULL;
-	}
-	codepointsonly = CheckCodePointsComment(&wrapper);
+    while ((tok = nextpstoken(&wrapper, &dval, tokbuf, sizeof(tokbuf))) != pt_eof) {
+        encname = NULL;
+        if (tok == pt_namelit) {
+            encname = copy(tokbuf);
+            tok = nextpstoken(&wrapper, &dval, tokbuf, sizeof(tokbuf));
+        }
 
-	max = -1; any = 0;
-	for (i = 0; (tok = nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf)))!=pt_eof &&
-                 tok!=pt_closearray && tok!=pt_closecurly;
-             i++) {
-	    if ( tok==pt_namelit && i<sizeof(names)/sizeof(names[0]) ) {
-		max = i;
-		if ( strcmp(tokbuf,".notdef")==0 ) {
-		    encs[i] = -1;
-		} else if ( (enc=UniFromName(tokbuf,ui_none,&custom))!=-1 ) {
-		    encs[i] = enc;
-		    /* Used not to do this, but there are several legal names */
-		    /*  for some slots and people get unhappy (rightly) if we */
-		    /*  use the wrong one */
-		    names[i] = copy(tokbuf);
-		    any = 1;
-		} else {
-		    names[i] = copy(tokbuf);
-		    any = 1;
-		}
-	    }
-	}
-	if ( encname!=NULL ) {
-	    tok = nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf));
-	    if ( tok==pt_def ) {
-		/* Good */
-	    } else {
-        	/* TODO! */
-        	/* I guess it's not good... */
-	    }
-	}
-	if ( max!=-1 ) {
-	    if ( ++max<256 ) max = 256;
-	    item = calloc(1,sizeof(Encoding));
-	    item->enc_name = encname;
-	    item->char_cnt = max;
-	    item->unicode = malloc(max*sizeof(int32));
-	    memcpy(item->unicode,encs,max*sizeof(int32));
-	    if ( any && !codepointsonly ) {
-		item->psnames = calloc(max,sizeof(char *));
-		memcpy(item->psnames,names,max*sizeof(char *));
-	    } else {
-		for ( i=0; i<max; ++i )
-		    free(names[i]);
-	    }
-	    if ( head==NULL )
-		head = item;
-	    else
-		last->next = item;
-	    last = item;
-	}
+        if (tok != pt_openarray && tok != pt_opencurly)
+            return head;
+
+        for (i=0; i < sizeof(names)/sizeof(names[0]); ++i) {
+            encs[i] = -1;
+            names[i]=NULL;
+        }
+
+        codepointsonly = CheckCodePointsComment(&wrapper);
+
+        max = -1; any = 0;
+        for (i=0; (tok = nextpstoken(&wrapper, &dval, tokbuf, sizeof(tokbuf))) != pt_eof &&
+                  tok != pt_closearray && tok != pt_closecurly; i++) {
+            if (tok == pt_namelit && i < sizeof(names)/sizeof(names[0])) {
+                max = i;
+                if (strcmp(tokbuf, ".notdef") == 0) {
+                    encs[i] = -1;
+                } else if ((enc = UniFromName(tokbuf, ui_none, &custom)) != -1) {
+                    encs[i] = enc;
+
+                    /* Used not to do this, but there are several legal names */
+                    /*  for some slots and people get unhappy (rightly) if we */
+                    /*  use the wrong one */
+                    names[i] = copy(tokbuf);
+                    any = 1;
+                } else {
+                    names[i] = copy(tokbuf);
+                    any = 1;
+                }
+            }
+        }
+
+        if (encname) {
+            tok = nextpstoken(&wrapper, &dval, tokbuf, sizeof(tokbuf));
+            if (tok == pt_def) {
+                /* Good */
+            } else {
+                /* TODO! */
+                /* I guess it's not good... */
+            }
+        }
+
+        if (max != -1) {
+            if (++max < 256) max = 256;
+            item = calloc(1,sizeof(Encoding));
+            item->enc_name = encname;
+            item->char_cnt = max;
+            item->unicode = malloc(max*sizeof(int32));
+            memcpy(item->unicode,encs,max*sizeof(int32));
+
+            if (any && !codepointsonly) {
+                item->psnames = calloc(max, sizeof(char *));
+                memcpy(item->psnames, names, max*sizeof(char *));
+            } else {
+                for (i=0; i < max; ++i)
+                    free(names[i]);
+            }
+
+            if (!head) {
+                head = item;
+            } else {
+                last->next = item;
+            }
+            last = item;
+        }
     }
 
-return( head );
+    return head;
 }
 
 int EvaluatePS(char *str,real *stack,int size) {
