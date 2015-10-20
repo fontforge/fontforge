@@ -3310,6 +3310,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 
 	GGadgetsCreate(gi->gw,mb);
 	gi->group1ret = pb[4].ret; gi->group2ret = pb[5].ret;
+	memcpy( gi->gcd, gcd, gcdcount*sizeof(GGadgetCreateData) ); // This copies pointers, but only to static things.
 	GTextInfoListFree(hgcd[0].gd.u.list);
 	GTextInfoListFree(h2gcd[0].gd.u.list);
 
