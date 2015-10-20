@@ -3309,7 +3309,12 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	mb[4].creator = GHBoxCreate;
 
 	GGadgetsCreate(gi->gw,mb);
-	gi->group1ret = pb[4].ret; gi->group2ret = pb[5].ret;
+
+	gi->group1ret = pb[4].ret;
+	gi->group2ret = pb[5].ret;
+	for ( j=0; j<gcdcount; ++j )
+	    gi->gcd[j].ret = gcd[j].ret;
+
 	GTextInfoListFree(hgcd[0].gd.u.list);
 	GTextInfoListFree(h2gcd[0].gd.u.list);
 
