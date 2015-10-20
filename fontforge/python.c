@@ -11565,6 +11565,7 @@ ff_gs_int2(gasp_version)
 
 ff_gs_os2int2(weight)
 ff_gs_os2int2(width)
+ff_gs_os2int2(stylemap)
 ff_gs_os2int2(fstype)
 ff_gs_os2int2(linegap)
 ff_gs_os2int2(vlinegap)
@@ -13078,6 +13079,9 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {(char *)"os2_width",
      (getter)PyFF_Font_get_OS2_width, (setter)PyFF_Font_set_OS2_width,
      (char *)"OS/2 width", NULL},
+    {(char *)"os2_stylemap",
+     (getter)PyFF_Font_get_OS2_stylemap, (setter)PyFF_Font_set_OS2_stylemap,
+     (char *)"OS/2 stylemap", NULL},
     {(char *)"os2_fstype",
      (getter)PyFF_Font_get_OS2_fstype, (setter)PyFF_Font_set_OS2_fstype,
      (char *)"OS/2 fstype", NULL},
