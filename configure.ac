@@ -220,7 +220,7 @@ if test "y$HOMEBREW_BREW_FILE" != "y"; then
    PYPKGCONFIG="$( cd "$PYLIBDIR/../../pkgconfig" && pwd )"
    export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$PYPKGCONFIG"
    echo "found python pkg_config information: $PYPKGCONFIG"
-   if test "y$PYTHON" = "y"; then 
+   if test "y$PYTHON" = "y"; then
      export PYTHON="${HOMEBREW_PREFIX}/bin/python"
    fi
 fi
@@ -327,9 +327,21 @@ dnl AC_SEARCH_LIBS([dlopen], [dl dld])
 
 FONTFORGE_CONFIG_X_LIBRARIES
 
-# zlib is a requirement. It is too commonly available to bother
-# leaving out.
-PKG_CHECK_MODULES([ZLIB],[zlib])
+# zlib is a requirement. It is too commonly available to bother leaving out.
+# Try package first, if failed then try library searches and a header check.
+PKG_CHECK_MODULES([ZLIB],[zlib],[have_zlib=yes],[have_zlib=no])
+if test x"${have_zlib}" != xyes; then
+   AC_SEARCH_LIBS([inflate],[z zlib zdll],[have_zlib=yes],[
+      AC_CHECK_LIB([z],[inflate],[have_zlib=yes],[
+      AC_CHECK_LIB([zlib],[inflate],[have_zlib=yes],[
+      AC_CHECK_LIB([zdll],[inflate],[have_zlib=yes])])])],)
+   if test x"${have_zlib}" == xyes; then
+      AC_CHECK_HEADER([zlib.h],[],[have_zlib=no])
+   fi
+fi
+if test x"${have_zlib}" != xyes; then
+   AC_MSG_FAILURE([ERROR: Please install ZLIB library and zlib.h include file],[1])
+fi
 PKG_CHECK_MODULES([GLIB],[glib-2.0 >= 2.6 gio-2.0])
 
 if test x"${i_do_have_gui}" = xyes; then
