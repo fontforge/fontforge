@@ -220,7 +220,7 @@ if test "y$HOMEBREW_BREW_FILE" != "y"; then
    PYPKGCONFIG="$( cd "$PYLIBDIR/../../pkgconfig" && pwd )"
    export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$PYPKGCONFIG"
    echo "found python pkg_config information: $PYPKGCONFIG"
-   if test "y$PYTHON" = "y"; then 
+   if test "y$PYTHON" = "y"; then
      export PYTHON="${HOMEBREW_PREFIX}/bin/python"
    fi
 fi
@@ -319,7 +319,14 @@ AC_SUBST([MAINTAINER_TOOLS],["${i_do_have_maintainer_tools}"])
 #
 # Checks for libraries.
 
-AC_SEARCH_LIBS([cos],[m])
+# Check for math.h include and math library.
+AC_CHECK_HEADER([math.h],
+   AC_SEARCH_LIBS([cos],[m],[have_libm=yes],
+      AC_CHECK_LIB([m],[cos],[have_libm=yes],
+         AC_CHECK_FUNC([cos],[have_libm=yes]))))
+if test x"${have_libm}" != xyes; then
+    AC_MSG_FAILURE([ERROR: Please install Math library and math.h],[1])
+fi
 
 dnl FIXME: Is this needed, given we are using libltdl?
 dnl The dlopen() function is in the C library for *BSD and in libdl on GLIBC-based systems
