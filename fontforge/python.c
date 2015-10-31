@@ -18190,7 +18190,11 @@ static PyObject* CreatePyModule( module_definition *mdef ) {
     mdef->runtime.pymod_def.m_doc = mdef->docstring;
     mdef->runtime.pymod_def.m_methods = mdef->methods;
     mdef->runtime.pymod_def.m_size = -1;
+#if PY_MAJOR_VERSION > 3 || PY_MINOR_VERSION >= 5
+    mdef->runtime.pymod_def.m_slots = NULL;
+#else
     mdef->runtime.pymod_def.m_reload = NULL;
+#endif
     mdef->runtime.pymod_def.m_traverse = NULL;
     mdef->runtime.pymod_def.m_clear = NULL;
     mdef->runtime.pymod_def.m_free = NULL;
