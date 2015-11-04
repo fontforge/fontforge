@@ -2364,7 +2364,7 @@ gnulib_non_module_files="
 # git repository. If you have a gnulib entry in your .gitmodules file,
 # these values are ignored.
 gnulib_path=
-gnulib_url=
+gnulib_url=http://git.savannah.gnu.org/r/gnulib.git
 
 # Additional gnulib-tool options to use.
 gnulib_tool_options="
@@ -3428,7 +3428,7 @@ func_require_dotgitmodules ()
         # If the .gitmodules file doesn't exist, create it now, and mark
         # it as ignored for the VCS.
         test -n "$gnulib_path" || gnulib_path=gnulib
-        test -n "$gnulib_url"  || gnulib_url=git://git.sv.gnu.org/gnulib
+        test -n "$gnulib_url"  || gnulib_url=http://git.savannah.gnu.org/r/gnulib.git
 
         {
           echo '[submodule "gnulib"]'
