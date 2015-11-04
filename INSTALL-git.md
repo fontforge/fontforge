@@ -126,6 +126,15 @@ Then edit then your shell profile (eg, `~/.bash_profile` or `~/.zprofile`) and a
 ```
 export PATH=${PATH}:/usr/local/opt/gettext/bin
 ```
+## On Alpine Linux (test in v3.2)
+```
+apk add xz poppler pango m4 libtool perl autoconf automake coreutils python-dev zlib-dev freetype-dev glib-dev
+curl --insecure -R -L -o fontforge-fontforge.tar.gz https://github.com/fontforge/fontforge/tarball/master
+./bootstrap --force
+./configure
+make
+make install
+```
 
 ## On Mac OS X with Homebrew
 
