@@ -67,6 +67,21 @@ static int r_getint(FILE *file) {
 return( (((((getc(file)<<8)|ch3)<<8)|ch2)<<8)|ch1 );
 }
 
+static char *get_font_filename(const char *str)
+{
+    char *fname = copy(str);
+    char *c;
+
+    for (c = fname; *c; c++) {
+	/* Change non-breaking space into a normal space */
+	if ((*c & 0xff) == 0xa0) {
+	    *c = ' ';
+	}
+    }
+
+    return fname;
+}
+
 static const char *modifierlist[] = { "Ital", "Obli", "Kursive", "Cursive",
 	"Slanted", "Expa", "Cond", NULL };
 static const char **mods[] = { knownweights, modifierlist, NULL };
@@ -806,7 +821,7 @@ return( NULL );
 	outline.sf->copyright = copy(buffer);
     strcpy(buffer,outline.fontname);
     strcat(buffer,".sfd");
-    outline.sf->filename = copy(buffer);
+    outline.sf->filename = get_font_filename(buffer);
 
     outline.sf->top_enc = -1;
 
