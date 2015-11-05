@@ -645,7 +645,7 @@ static void FindEncoding(SplineFont *sf,char *filename) {
     char pattern[12];
     char *otherdir;
     char *encfilename;
-    FILE *file;
+    FILE *file=NULL;
     char buffer[200];
     int pos, gid;
 
