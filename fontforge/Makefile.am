@@ -123,7 +123,7 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 		splinerefigure.lo $(AM_CPPFLAGS) $(srcdir)/splinerefigure.c
 
 #--------------------------------------------------------------------------
-EXTRA_DIST = acorn2sfd.c generate_codepoint_selector.py threaddummy.c
+EXTRA_DIST = generate_codepoint_selector.py threaddummy.c
 
 if MACINTOSH
 EXTRA_DIST += MacFontForgeApp.zip
