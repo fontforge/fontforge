@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+#include <fontforge-config.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -66,15 +67,9 @@ static int r_getint(FILE *file) {
 return( (((((getc(file)<<8)|ch3)<<8)|ch2)<<8)|ch1 );
 }
 
-static char *knownweights[] = { "Demi", "Bold", "Regu", "Medi", "Book", "Thin",
-	"Ligh", "Heav", "Blac", "Ultr", "Nord", "Norm", "Gras", "Stan", "Halb",
-	"Fett", "Mage", "Mitt", "Buch", NULL };
-static char *realweights[] = { "Demi", "Bold", "Regular", "Medium", "Book", "Thin",
-	"Light", "Heavy", "Black", "Ultra", "Nord", "Normal", "Gras", "Standard", "Halbfett",
-	"Fett", "Mager", "Mittel", "Buchschrift", NULL};
-static char *modifierlist[] = { "Ital", "Obli", "Kursive", "Cursive", "Slanted",
-	"Expa", "Cond", NULL };
-static char **mods[] = { knownweights, modifierlist, NULL };
+static const char *modifierlist[] = { "Ital", "Obli", "Kursive", "Cursive",
+	"Slanted", "Expa", "Cond", NULL };
+static const char **mods[] = { knownweights, modifierlist, NULL };
 
 
 static char *GuessFamily(char *fontname) {
