@@ -599,12 +599,17 @@ return;
 
     for ( i=0; i<outline->metrics_n; ++i ) {
 	gid1 = sf->map->map[i];
+	if (gid1 == -1) {
+	    continue;
+	}
 	for ( kern = outline->kerns[i]; kern!=NULL; kern=kern->next ) {
 	    kp = calloc(1,sizeof(KernPair));
 	    kp->off = em*kern->amount/1000;
 	    kp->subtable = subtable;
 	    gid2 = sf->map->map[kern->right];
-	    kp->sc = sf->glyphs[gid2];
+	    if (gid2 != -1) {
+		kp->sc = sf->glyphs[gid2];
+	    }
 	    kp->next = sf->glyphs[gid1]->kerns;
 	    sf->glyphs[gid1]->kerns = kp;
 	}
