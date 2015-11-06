@@ -1,3 +1,20 @@
+/* acorn2sfd.c.
+ * This program converts outline fonts used with RISC OS (from
+ * http://www.riscosopen.org or http://riscos.com) to .sfd files.
+ *
+ * To build, run:
+ *  make acorn2sfd
+ * in the fontforgeexe directory.  It has been tested on Linux. I have
+ * not tried compiling it on Windows.
+ *
+ * To use:
+ *  acorn2sfd [path_to_font_directory]
+ * eg:
+ *  acorn2sfd \!Fonts/NewHall/Medium/Italic
+ *
+ * remove any ,ff6 suffix on any files in the font directory before running
+ * acorn2sfd.
+ */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
