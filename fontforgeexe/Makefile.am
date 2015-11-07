@@ -58,6 +58,8 @@ if LIBZMQ
 SUBDIRS += collab
 endif LIBZMQ
 
+ACORNOBJS = acorn2sfd.o
+
 FFSCRIPT_HEADER = "\#!$(bindir)/fontforge -lang=ff"
 
 fontimage: fontimage.pe
@@ -71,6 +73,9 @@ fontlint: fontlint.pe
 sfddiff: sfddiff.pe
 	echo "${FFSCRIPT_HEADER}" | cat - "${srcdir}/sfddiff.pe" > sfddiff
 	chmod +x sfddiff
+
+acorn2sfd: $(ACORNOBJS)
+	$(LIBTOOL) --mode=link $(CC) -o acorn2sfd $(ACORNOBJS) libfontforgeexe.la $(LDADD)
 
 #--------------------------------------------------------------------------
 
@@ -156,7 +161,7 @@ endif
 
 EXTRA_DIST = fontimage.pe fontlint.pe sfddiff.pe	\
 	fontimage.1 fontlint.1 sfddiff.1		\
-	darwinsetup.in macobjective.m
+	acorn2sfd.c darwinsetup.in macobjective.m
 # MacFontForgeApp.zip
 MOSTLYCLEANFILES = fontimage fontlint sfddiff
 DISTCLEANFILES = $(MOSTLYCLEANFILES)
