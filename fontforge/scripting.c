@@ -613,7 +613,7 @@ static void bStrSplit(Context *c) {
 	    c->return_val.u.aval->argc = cnt;
 	    c->return_val.u.aval->vals = malloc(cnt*sizeof(Val));
 	} else {
-	    if ( *pt!='\0' && cnt < max ) {
+	    if ((*pt!='\0') && ((max==-1) || (cnt<max))) {
 		c->return_val.u.aval->vals[cnt].type = v_str;
 		c->return_val.u.aval->vals[cnt].u.sval = copy(pt);
 	    }
