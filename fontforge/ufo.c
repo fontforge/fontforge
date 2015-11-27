@@ -2364,8 +2364,8 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
     glyph = xmlDocGetRootElement(doc);
     format = xmlGetProp(glyph,(xmlChar *) "format");
     if ( xmlStrcmp(glyph->name,(const xmlChar *) "glyph")!=0 ||
-	    (format!=NULL && xmlStrcmp(format,(xmlChar *) "1")!=0)) {
-		LogError(_("Expected glyph file with format==1"));
+	    (format!=NULL && xmlStrcmp(format,(xmlChar *) "1")!=0 && xmlStrcmp(format,(xmlChar *) "2")!=0)) {
+		LogError(_("Expected glyph file with format==1 or 2"));
 		xmlFreeDoc(doc);
 		free(format);
 		return( NULL );
