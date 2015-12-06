@@ -1429,7 +1429,7 @@ return( -1 );
     if ( 1/max_diff > .039625 )
 return( -1 );
 
-return( .99/max_diff );
+    return rint(240.0*0.99/max_diff)/240.0;
 }
 
 double BlueScaleFigure(struct psdict *private_,real bluevalues[], real otherblues[]) {
