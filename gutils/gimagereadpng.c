@@ -96,8 +96,7 @@ return( NULL );
 #else
     test = setjmp(*png_set_longjmp_fn(png_ptr, longjmp, sizeof (jmp_buf)));
 #endif
-    {
-    if (test)
+    if (test) {
       /* Free all of the memory associated with the png_ptr and info_ptr */
       png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
       if ( ret!=NULL ) {
