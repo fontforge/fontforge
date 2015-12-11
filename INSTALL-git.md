@@ -118,7 +118,7 @@ brew install glib;
 brew install pango;
 ```
 
-* If `make` fails with `no such file or directory msgfmt` then with Hhomebrew run:
+* If `make` fails with `no such file or directory msgfmt` then with Homebrew run:
 ```
 brew install gettext;
 ```
