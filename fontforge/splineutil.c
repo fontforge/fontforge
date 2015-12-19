@@ -4251,7 +4251,7 @@ return( 0 );
     t1min = ISolveWithin(s1,major,(&min.x)[major],lowt1,hight1);
     t2max = ISolveWithin(s2,major,(&max.x)[major],lowt2,hight2);
     t2min = ISolveWithin(s2,major,(&min.x)[major],lowt2,hight2);
-    if ( t1max==-1 || t1min==-1 || t2max==-1 || t1min==-1 )
+    if ( t1max==-1 || t1min==-1 || t2max==-1 || t2min==-1 )
 return( 0 );
     t1diff = (t1max-t1min)/64.0;
     if (RealNear(t1diff,0))
