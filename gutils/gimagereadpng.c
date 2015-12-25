@@ -73,6 +73,7 @@ GImage *GImageRead_Png(FILE *fp) {
     int num_trans;
     png_color_16p trans_color;
     unsigned i;
+    int test;
 
     if ( libpng==NULL )
 	if ( !loadpng())
@@ -91,11 +92,11 @@ return( NULL );
     }
 
 #if (PNG_LIBPNG_VER < 10500)
-    if (setjmp(png_ptr->jmpbuf))
+    test = setjmp(png_ptr->jmpbuf);
 #else
-    if (setjmp(*png_set_longjmp_fn(png_ptr, longjmp, sizeof (jmp_buf))))
+    test = setjmp(*png_set_longjmp_fn(png_ptr, longjmp, sizeof (jmp_buf)));
 #endif
-    {
+    if (test) {
       /* Free all of the memory associated with the png_ptr and info_ptr */
       png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
       if ( ret!=NULL ) {
