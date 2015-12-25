@@ -1876,7 +1876,7 @@ static void FVSelectByScript(FontView *fv,int merge) {
     memset(&label,0,sizeof(label));
     memset(&boxes,0,sizeof(boxes));
 
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict|wam_isdlg;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = false;
     wattrs.is_dlg = 1;

@@ -947,9 +947,9 @@ return( event->u.chr.state & ~ksm_capslock );
 	bit = ksm_shift;
     else if ( keysym == GK_Control_L || keysym == GK_Control_R )
 	bit = ksm_control;
-    else if ( keysym == GK_Super_L || keysym == GK_Super_L )
+    else if ( keysym == GK_Super_L || keysym == GK_Super_R )
 	bit = ksm_super;
-    else if ( keysym == GK_Hyper_L || keysym == GK_Hyper_L )
+    else if ( keysym == GK_Hyper_L || keysym == GK_Hyper_R )
 	bit = ksm_hyper;
     else
 return( event->u.chr.state );
