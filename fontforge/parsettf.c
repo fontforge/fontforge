@@ -3999,7 +3999,7 @@ return( 0 );
 	    SCConvertToOrder2(info->chars[i]);
     }
 
-    for ( i=0; fontnames[i]!=NULL && i<1; ++i ) {
+    for ( i=0; i<1 && fontnames[i]!=NULL ; ++i ) {
 	free(fontnames[i]);
 	TopDictFree(dicts[i]);
     }
