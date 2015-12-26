@@ -3999,10 +3999,11 @@ return( 0 );
 	    SCConvertToOrder2(info->chars[i]);
     }
 
-    for ( i=0; i<1 && fontnames[i]!=NULL ; ++i ) {
-	free(fontnames[i]);
-	TopDictFree(dicts[i]);
+    if (fontnames[0] != NULL) {
+	free(fontnames[0]);
+	TopDictFree(dicts[0]);
     }
+
     free(fontnames); free(dicts);
     if ( strings!=NULL ) {
 	for ( i=0; strings[i]!=NULL; ++i )
