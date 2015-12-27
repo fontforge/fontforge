@@ -1413,6 +1413,8 @@ return( reto );
 /* ************************************************************************** */
 static PyObject *PyFFPoint_dup(PyFF_Point *self) {
     PyFF_Point *ret = (PyFF_Point *)PyFF_PointType.tp_alloc(&PyFF_PointType, 0);
+    if ( ret==NULL )
+	return( NULL );
     ret->x = self->x;
     ret->y = self->y;
     ret->on_curve = self->on_curve;
@@ -1551,21 +1553,22 @@ static PyGetSetDef FFPoint_getset[] = {
 };
 
 static PyObject *PyFFPoint_New(PyTypeObject *type, PyObject *args, PyObject *UNUSED(kwds)) {
+    double x,y;
+    int on, sel;
     PyFF_Point *self;
+
+    x = y = 0.0; on = 1; sel = 0;
+    if ( args!=NULL && !PyArg_ParseTuple(args, "|ffii", &x, &y, &on, &sel) )
+	return( NULL );
 
     self = (PyFF_Point *)type->tp_alloc(type, 0);
     if ( self!=NULL ) {
-	int on, sel;
-	self->x = self->y = 0;
-	on = 1; sel = 0;
-	if ( args!=NULL && !PyArg_ParseTuple(args, "|ffii",
-		    &self->x, &self->y, &on, &sel))
-return( NULL );
+	self->x = x; self->y = y;
 	self->on_curve = on;
 	self->selected = sel;
     }
 
-    return (PyObject *)self;
+    return( (PyObject *)self );
 }
 
 static PyTypeObject PyFF_PointType = {
@@ -1621,12 +1624,14 @@ static PyTypeObject PyFF_PointType = {
 static PyFF_Point *PyFFPoint_CNew(double x, double y, int on_curve, int sel, char *name) {
     /* Convenience routine for creating a new point from C */
     PyFF_Point *self = (PyFF_Point *) PyFFPoint_New(&PyFF_PointType,NULL,NULL);
+    if ( self==NULL )
+	return( NULL );
     self->x = x;
     self->y = y;
     self->on_curve = on_curve;
     self->selected = sel;
     self->name = copy(name);
-return( self );
+    return( self );
 }
 
 /* ************************************************************************** */
@@ -2474,9 +2479,9 @@ Py_RETURN( self );
 static PyObject *PyFFContour_InsertPoint(PyFF_Contour *self, PyObject *args) {
     double x,y;
     PyFF_Point *p=NULL;
-    int pos = -1, i;
-    int on = true;
+    int i, on, pos;
 
+    x = y = 0.0; pos = -1; on = true;
     if ( !PyArg_ParseTuple( args, "(ddi)|i", &x, &y, &on, &pos )) {
 	PyErr_Clear();
 	if ( !PyArg_ParseTuple( args, "(dd)|ii", &x, &y, &on, &pos )) {
@@ -2485,7 +2490,7 @@ static PyObject *PyFFContour_InsertPoint(PyFF_Contour *self, PyObject *args) {
 		PyErr_Clear();
 		if ( !PyArg_ParseTuple( args, "O|i", &p, &pos ) ||
 		     !PyType_IsSubtype(&PyFF_PointType, Py_TYPE(p)) )
-return( NULL );
+		    return( NULL );
 	    }
 	}
     }
@@ -2498,16 +2503,19 @@ return( NULL );
     }
     for ( i=self->pt_cnt-1; i>pos; --i )
 	self->points[i+1] = self->points[i];
-    if ( p==NULL )
-	self->points[pos+1] = PyFFPoint_CNew(x,y,on,false,NULL);
-    else {
+    if ( p==NULL ) {
+	p = PyFFPoint_CNew(x,y,on,false,NULL);
+	if ( p==NULL )
+	    return( NULL );
+	self->points[pos+1] = p;
+    } else {
 	self->points[pos+1] = p;
 	Py_INCREF( (PyObject *) p);
     }
     PyFFContour_ClearSpiros((PyFF_Contour *) self);
     ++self->pt_cnt;
 
-Py_RETURN( self );
+    Py_RETURN( self );
 }
 
 static PyObject *PyFFContour_MakeFirst(PyFF_Contour *self, PyObject *args) {
@@ -4370,6 +4378,8 @@ return( NULL );
     next = start;
 
     ss = chunkalloc(sizeof(SplineSet));
+    if ( ss==NULL )
+	return( NULL );
     if ( c->spiro_cnt!=0 ) {
 	ss->spiro_cnt = ss->spiro_max = c->spiro_cnt;
 	ss->spiros = SpiroCPCopy(c->spiros,NULL);

@@ -264,9 +264,9 @@ Encoding *_FindOrMakeEncoding(const char *name,int make_it) {
     } else if ( strcasecmp(name,"isohebrew")==0 ) {
         name = "iso8859-8";
     } else if ( strcasecmp(name,"isothai")==0 ) {
-        name = "tis-620";	/* TIS doesn't define non-breaking space in 0xA0 */ 
+	name = "tis-620";	/* TIS doesn't define non-breaking space in 0xA0 */
     } else if ( strcasecmp(name,"latin0")==0 || strcasecmp(name,"latin9")==0 ) {
-        name = "iso8859-15";	/* "latin-9" is supported (libiconv bug?) */ 
+	name = "iso8859-15";	/* "latin-9" is supported (libiconv bug?) */
     } else if ( strcasecmp(name,"koi8r")==0 ) {
         name = "koi8-r";
     } else if ( strncasecmp(name,"jis201",6)==0 || strncasecmp(name,"jisx0201",8)==0 ) {
@@ -784,10 +784,11 @@ int NameUni2CID(struct cidmap *map, int uni, const char *name) {
 		    if ( alts->uni==uni )
 				return( alts->cid );
     } else {
-		// Search for a matching name.
-		for ( i=0; i<map->namemax; ++i )
-	    	if ( map->name[i]!=NULL && strcmp(map->name[i],name)==0 )
-				return( i );
+	// Search for a matching name.
+	if ( name!=NULL )
+	    for ( i=0; i<map->namemax; ++i )
+		if ( map->name[i]!=NULL && strcmp(map->name[i],name)==0 )
+		    return( i );
     }
 	return( -1 );
 }
@@ -1176,7 +1177,7 @@ static char *readpsstr(char *str) {
     for ( eos = str; *eos!=')' && *eos!='\0'; ++eos );
 return( copyn(str,eos-str));
 }
-    
+
 static struct cmap *ParseCMap(char *filename) {
     char buf2[200];
     FILE *file;
@@ -2120,7 +2121,7 @@ return;
 	    /* Suppose we have deleted a reference from a composite glyph and than
 	     * going to remove the previously referenced glyph from the font. The
 	     * void reference still remains in the undoes stack, so that executing Undo/Redo
-	     * on the first glyph may lead to unpredictable effects. It is also 
+	     * on the first glyph may lead to unpredictable effects. It is also
 	     * impossible to detect such problematic undoes checking just our
 	     * going-to-be-deleted glyph's dependents, because the composite character
 	     * no longer contains the problematic reference and so is not listed
@@ -2438,7 +2439,7 @@ return( -1 );
 return( -1 );
 	}
 	if ( tpt-(char *) to == sizeof(unichar_t) )
-	{	    
+	{
 	    return( to[0] );
 	}
     } else if ( encname->tounicode_func!=NULL ) {
