@@ -20,7 +20,10 @@ Bastien Dejean
 Behnam Esfahbod
 Ben Martin - hotkeys.c, hotkeys.h
 BensongChen, bungeman
+Ben Wagner
+Bill Wang
 catharanthus
+Christopher Meng
 Claudio Beccari
 Craig Lennox
 Dave Crossland (dave@lab6.com)
@@ -46,6 +49,7 @@ J. Jansen - gv - ANALYZE_MAP.COM
 Jacob Jansen
 James Cloos
 James Crippen
+James Woodcock
 Jason Pagura
 Jeremy Tan
 Jim Killock
@@ -60,6 +64,7 @@ Jose Da Silva
 Joshua Richardson
 Jouk Jansen
 Juergen Buntrock
+Julien Nabet <serval2412>
 Just Fill Bugs <mozbugbox>
 Kartik Mistry
 KANOU Hiroki
@@ -71,6 +76,7 @@ Khaled Hosny
 Koki Takahashi
 Lasse Fister
 Lu Wang <coolwanglu@gmail.com>
+Luiz Matheus <lzmths>
 Mark Oteiza
 Martin Hosken
 Mathias Wollin
@@ -83,23 +89,26 @@ Maxim Iorsh
 Michal Mazurek
 Michal Nowakowski - nowakowskittfinstr.c
 Nicolas Spalinger
+Ondřej Hošek
 Parag Nemade
 Phil Krylov
 Phil Lindsay
 Primoz PETERLIN
 Qmpel
 R.L. Horn
-Richard Hughes
-Rogier van Dalen
 R.P.C. Rodgers - standard man macros
+Rafael Ferran i Peralta
 Rajeesh K Nambiar
 Reuben Thomas
+Richard Hughes
+Rogier van Dalen
 Ryusei Yamaguchi
 Scott Pakin - Packaging
-serval2412
+Scott Romack
 Silvan Toledo
 Steve White - ASMO 708 codepage, & more
 TANIGAWA Takashi
+Thayne McCombs
 Thomas Shinnick
 Tim Heilig
 Timothy O. Theisen - gv = ANALYZE_MAP.COM
