@@ -38,7 +38,7 @@ This minimizes the impact of non-standard types and functions.
 Various areas of the codebase have been worked on by different people in recent years, so if you are unfamiliar with the general area you're working in, please feel free to chat with people who have experience in that area:
 
 * Build System: Debian - Frank Trampe (frank-trampe)
-* Build System: OS X (Applicatoin bundle, Homebrew) - Dr Ben Martin (monkeyiq)
+* Build System: OS X (Application bundle, Homebrew) - Dr Ben Martin (monkeyiq)
 * Build System: Windows - Jeremie Tan (jtanx)
 * Feature: Collab - Dr Ben Martin
 * Feature: Multi Glyph CharView - Dr Ben Martin
@@ -67,7 +67,7 @@ as the first part and push it to the main repository using the following setup:
 That will make a branch this-will-help-because-of-yyy in the
 fontforge/fontforge repository which you can then create a pull
 request from. Because that pull request is coming from the
-fontforge/fontforge repository repository, Travis CI will allow secure
+fontforge/fontforge repository, Travis CI will allow secure
 environment variables to be used and an OSX bundle will be created for
 the pull request.
 
@@ -213,7 +213,7 @@ You should make sure that the xset line happens whenever X is started on your ma
 A Debian source package consists of a source tarball (with specific metadata) and several accompanying files and allows one to build a product in a neutral build environment.
 
 A source package is specific to the distribution (but not the architecture) that it targets. 
-The most common build target is currely Ubuntu Precise, a long-term support release with Launchpad build support. 
+The most common build target is currently Ubuntu Precise, a long-term support release with Launchpad build support. 
 A binary package built on and for Precise also installs and functions correctly on Debian testing and on Ubuntu Trusty.
 
 After downloading the FontForge source, change into the source directory and run
