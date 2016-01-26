@@ -5185,7 +5185,10 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	    /* the index table is backwards from the way I want to use it */
 	    gcbig = 0;
 	    for ( i=0; i<gc; ++i ) {
-		indexes[val = getushort(ttf)] = i;
+		val = getushort(ttf);
+		if ( val<0 )		/* Don't crash on EOF */
+	    break;
+		indexes[val] = i;
 		if ( val>=258 ) ++gcbig;
 	    }
 
