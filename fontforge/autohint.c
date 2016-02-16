@@ -3128,7 +3128,7 @@ static void FigureStems( SplineFont *sf, real snaps[12], real cnts[12],
 	}
 	/* Merge adjacent widths */
 	for ( i=smin; i<=smax; ++i ) {
-	    if ( stemwidths[i]!=0 && i<=smax-1 && stemwidths[i+1]!=0 ) {
+	    if ( i<=smax-1 && stemwidths[i]!=0 && stemwidths[i+1]!=0 ) {
 		if ( stemwidths[i]>stemwidths[i+1] ) {
 		    stemwidths[i] += stemwidths[i+1];
 		    stemwidths[i+1] = 0;

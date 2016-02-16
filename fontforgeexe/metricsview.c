@@ -953,7 +953,7 @@ static void MVRemetric(MetricsView *mv) {
 
     anysc = goodsc = NULL; goodpos = -1;
     // We recurse through all of the characters in the metrics view.
-    for ( i=0; mv->chars[i] && i<mv->clen; ++i ) {
+    for ( i=0; i<mv->clen && mv->chars[i] ; ++i ) {
         // We assign the first splinechar to anysc.
 	if ( anysc==NULL ) anysc = mv->chars[i];
         // We assign the first splinechar of a non-default script to goodsc.

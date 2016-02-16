@@ -410,7 +410,7 @@ static bigreal IntersectLine(Spline *spline1,Spline *spline2) {
     if ( !SplinesIntersect(spline1,spline2,pts,t1s,t2s))
 return( -1 );
     for ( i=0; i<10 && t1s[i]!=-1; ++i ) {
-	if ( t1s[i]<.001 && t1s[i]>.999 )
+	if ( t1s[i]<.001 || t1s[i]>.999 )
 	    /* Too close to end point, ignore it */;
 	else if ( t1s[i]<mint )
 	    mint = t1s[i];

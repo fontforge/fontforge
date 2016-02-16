@@ -2887,6 +2887,7 @@ static void gdefshowligcaretlist(FILE *ttf,int offset,struct ttfinfo *info) {
 		printf( "!!!! Unknown caret format %d !!!!\n", format );
 	    }
 	}
+	free(offsets);
     }
     free(lc_offsets);
     free(glyphs);

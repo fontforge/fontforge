@@ -1490,7 +1490,10 @@ return( false );
 	SplineFontAutoHint(sf,layer);
     }
     if ( !ff_progress_next_stage())
-return( false );
+    {
+        PSCharsFree(subrs);
+        return( false );
+    }
 
     otherblues[0] = otherblues[1] = bluevalues[0] = bluevalues[1] = 0;
     if ( !hasblue ) {
@@ -1514,7 +1517,7 @@ return( false );
     if ( !hasv ) {
 	FindVStems(sf,stemsnapv,snapcnt);
 	mi = -1;
-	for ( i=0; stemsnapv[i]!=0 && i<12; ++i )
+	for ( i=0; i<12 && stemsnapv[i]!=0 ; ++i )
 	    if ( mi==-1 ) mi = i;
 	    else if ( snapcnt[i]>snapcnt[mi] ) mi = i;
 	if ( mi!=-1 ) stdvw[0] = stemsnapv[mi];
@@ -1524,7 +1527,10 @@ return( false );
 	ff_progress_next_stage();
 	ff_progress_change_line1(_("Converting PostScript"));
 	if ( (chars = SplineFont2ChrsSubrs(sf,iscjk,subrs,flags,format,layer))==NULL )
-return( false );
+        {
+            PSCharsFree(subrs);
+            return( false );
+        }
 	ff_progress_next_stage();
 	ff_progress_change_line1(_("Saving PostScript Font"));
     }
