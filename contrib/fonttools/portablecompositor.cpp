@@ -98,7 +98,7 @@ fontfile.open (FileName);
     while ( getline (fontfile,line) )
     {
 
-	if (line.substr(0,10) == "Encoding: " && ( line.substr(0,20) != "Encoding: Custom")) {
+	if (line.substr(0,10) == "Encoding: " && ( line.substr(0,16) != "Encoding: Custom")) {
 		encoding = line;
 		&split(encoding, ' ', encodings);
 

@@ -2096,7 +2096,7 @@ uint16 *props_array(SplineFont *sf,struct glyphinfo *gi) {
 	    dir = 0;
 	    if ( sc->unicodeenc>=0x10300 && sc->unicodeenc<=0x103ff )
 		dir = 0;
-	    else if ( sc->unicodeenc>=0x10800 && sc->unicodeenc<=0x103ff )
+	    else if ( sc->unicodeenc>=0x10800 && sc->unicodeenc<=0x10fff )
 		dir = 1;
 	    else if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10fff ) {
 		if ( iseuronumeric(sc->unicodeenc) )
