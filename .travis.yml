@@ -1,5 +1,7 @@
 language: c
 compiler: gcc
+sudo: required
+dist: trusty
 branches:
   only:
     - master
