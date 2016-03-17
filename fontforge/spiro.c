@@ -35,6 +35,10 @@
 
 static int has_spiro = false;
 
+static SplineSet *_SpiroCP2SplineSet(spiro_cp *spiros) {
+	return NULL;
+}
+
 SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
     return( NULL );
 }

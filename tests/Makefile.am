@@ -111,7 +111,7 @@ fonts/Ambrosia.pt3: fonts/Ambrosia.sfd
 # Inputs we can download
 $(srcdir)/fetched-fonts/MunhwaGothic-Bold:
 	$(MKDIR_P) $(srcdir)/fetched-fonts
-	if [ ! -e $@ ] ; then $(WGET) http://ftp.netbsd.org/pub/pkgsrc/distfiles/adobe-cidfonts/MunhwaGothic-Bold -O $@ ; fi ;
+	if [ ! -e $@ ] ; then $(WGET) https://github.com/fontforge/debugfonts/raw/master/MunhwaGothic-Bold -O $@ ; fi ;
 
 fonts/MunhwaGothic-Bold:
 	$(MKDIR_P) $(builddir)/fonts
@@ -119,7 +119,7 @@ fonts/MunhwaGothic-Bold:
 	if [ -e $(srcdir)/fetched-fonts/MunhwaGothic-Bold ]; then \
 	cp -pRP $(srcdir)/fetched-fonts/MunhwaGothic-Bold $@ ; \
 	else \
-	$(WGET) http://ftp.netbsd.org/pub/pkgsrc/distfiles/adobe-cidfonts/MunhwaGothic-Bold -O $@ ; \
+	$(WGET) https://github.com/fontforge/debugfonts/raw/master/MunhwaGothic-Bold -O $@ ; \
 	fi ; \
 	fi ;
 
