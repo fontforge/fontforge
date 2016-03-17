@@ -4971,7 +4971,7 @@ static void bShadow(Context *c) {
     double a;
 
     if ( (c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_real ) || c->a.vals[2].type!=v_int ||
-	    c->a.vals[2].type!=v_int )
+	    c->a.vals[3].type!=v_int )
 	ScriptError(c,"Bad argument type");
     if ( c->a.vals[1].type == v_int ) a = c->a.vals[1].u.ival;
     else a = c->a.vals[1].u.fval;
@@ -4984,7 +4984,7 @@ static void bWireframe(Context *c) {
     double a;
 
     if ( (c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_real ) || c->a.vals[2].type!=v_int ||
-	    c->a.vals[2].type!=v_int )
+	    c->a.vals[3].type!=v_int )
 	ScriptError(c,"Bad argument type");
     if ( c->a.vals[1].type == v_int ) a = c->a.vals[1].u.ival;
     else a = c->a.vals[1].u.fval;

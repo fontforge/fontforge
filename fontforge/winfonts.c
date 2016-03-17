@@ -269,7 +269,7 @@ return( false );
     sf->familyname[i] = '\0';
     temp = malloc(i+50);
     strcpy(temp,sf->familyname);
-    if ( fntheader.weight<=300 && fntheader.weight>500 ) {
+    if ( fntheader.weight<=300 || fntheader.weight>500 ) {
 	strcat(temp," ");
 	strcat(temp,sf->weight);
     }

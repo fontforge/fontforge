@@ -1683,7 +1683,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 	  case pt_and:
 	    if ( sp>=2 ) {
 		if ( stack[sp-2].type == ps_num )
-		    stack[sp-2].u.val = ((int) stack[sp-1].u.val) & (int) stack[sp-1].u.val;
+		    stack[sp-2].u.val = ((int) stack[sp-2].u.val) & (int) stack[sp-1].u.val;
 		else if ( stack[sp-2].type == ps_bool )
 		    stack[sp-2].u.tf &= stack[sp-1].u.tf;
 		--sp;
@@ -1692,7 +1692,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 	  case pt_or:
 	    if ( sp>=2 ) {
 		if ( stack[sp-2].type == ps_num )
-		    stack[sp-2].u.val = ((int) stack[sp-1].u.val) | (int) stack[sp-1].u.val;
+		    stack[sp-2].u.val = ((int) stack[sp-2].u.val) | (int) stack[sp-1].u.val;
 		else if ( stack[sp-2].type == ps_bool )
 		    stack[sp-2].u.tf |= stack[sp-1].u.tf;
 		--sp;
@@ -1701,7 +1701,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 	  case pt_xor:
 	    if ( sp>=2 ) {
 		if ( stack[sp-2].type == ps_num )
-		    stack[sp-2].u.val = ((int) stack[sp-1].u.val) ^ (int) stack[sp-1].u.val;
+		    stack[sp-2].u.val = ((int) stack[sp-2].u.val) ^ (int) stack[sp-1].u.val;
 		else if ( stack[sp-2].type == ps_bool )
 		    stack[sp-2].u.tf ^= stack[sp-1].u.tf;
 		--sp;
