@@ -1787,7 +1787,7 @@ BDFFont *SplineFontPieceMeal(SplineFont *sf,int layer,int ptsize,int dpi,
 	bdf->recontext_freetype = bdf->unhinted_freetype = false;
     }
     
-    if ( (ftc || bdf->recontext_freetype || bdf->recontext_freetype) && (flags&pf_antialias) )
+    if ( (ftc || bdf->recontext_freetype || bdf->unhinted_freetype) && (flags&pf_antialias) )
 	BDFClut(bdf,16);
     else if ( flags&pf_antialias )
 	BDFClut(bdf,4);

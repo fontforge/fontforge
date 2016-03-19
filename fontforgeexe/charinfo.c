@@ -3251,8 +3251,11 @@ return( NULL );
 
     if ( ymax<=ICON_WIDTH ) ymax = ICON_WIDTH;
     if ( ymin>0 ) ymin = 0;
-    if ( xmax<xmin )
+    if ( xmax<xmin ) {
+        free(extras);
 return( NULL );
+    }
+
     if ( xmin>0 ) xmin = 0;
 
     img = GImageCreate(it_index,xmax - xmin + 2,ymax-ymin+2);

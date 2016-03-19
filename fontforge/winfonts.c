@@ -831,6 +831,7 @@ int FONFontDump(char *filename,SplineFont *sf, int32 *sizes,int resol,
 		    sizes[i]&0xffff, sizes[i]>>16);
 	    for ( j=0; j<i; ++j )
 		fclose(fntarray[j]);
+            free(file_lens);
 	    free(fntarray);
 return( false );
 	}

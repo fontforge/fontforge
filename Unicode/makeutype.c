@@ -602,7 +602,7 @@ static void dumparabicdata(FILE *header) {
     fprintf(header,"} ArabicForms[256];\t/* for chars 0x600-0x6ff, subtract 0x600 to use array */\n" );
 
     data = fopen( "ArabicForms.c","w");
-    if ( data==NULL || data==NULL ) {
+    if (data==NULL) {
 	fprintf( stderr, CantSaveFile, "ArabicForms.c" );
 	FreeNamesMemorySpace();
 	exit(2);

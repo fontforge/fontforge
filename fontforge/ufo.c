@@ -774,7 +774,10 @@ xmlNodePtr _GlifToXML(const SplineChar *sc,int layer) {
 static int GlifDump(const char *glyphdir, const char *gfname, const SplineChar *sc, int layer) {
     char *gn = buildname(glyphdir,gfname);
     xmlDocPtr doc = xmlNewDoc(BAD_CAST "1.0");
-    if (doc == NULL) return 0;
+    if (doc == NULL) {
+        free(gn);
+        return 0;
+    }
     xmlNodePtr root_node = _GlifToXML(sc, layer);
     if (root_node == NULL) {xmlFreeDoc(doc); doc = NULL; return 0;}
     xmlDocSetRootElement(doc, root_node);
@@ -1319,7 +1322,6 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
     xmlFreeDoc(plistdoc); // Free the memory.
     xmlCleanupParser();
     return true;
-return true;
 }
 
 int kernclass_for_groups_plist(struct splinefont *sf, struct kernclass *kc, int flags) {
