@@ -65,6 +65,9 @@
 /*  "<contourpoint 2>", but in v1.8 it is "contourpoint 2". Yet this change */
 /*  is not mentioned in the v1.8 changelog, was it intentional? */
 
+/* Adobe says glyph names are 31 chars, but Mangal and Source Code Sans use longer names. */
+#define MAXG	63
+
 /* ************************************************************************** */
 /* ******************************* Output feat ****************************** */
 /* ************************************************************************** */
@@ -333,12 +336,12 @@ static void dump_fpst_everythingelse(FILE *out, SplineFont *sf,char **classes,
 
 static char *lookupname(OTLookup *otl) {
     char *pt1, *pt2;
-    static char space[32];
+    static char space[MAXG+1];
 
     if ( otl->tempname != NULL )
 return( otl->tempname );
 
-    for ( pt1=otl->lookup_name,pt2=space; *pt1 && pt2<space+31; ++pt1 ) {
+    for ( pt1=otl->lookup_name,pt2=space; *pt1 && pt2<space+MAXG; ++pt1 ) {
 	if ( !(*pt1&0x80) && (isalpha(*pt1) || *pt1=='_' || *pt1=='.' ||
 		(pt1!=otl->lookup_name && isdigit(*pt1))))
 	    *pt2++ = *pt1;
@@ -1898,7 +1901,7 @@ static void preparenames(SplineFont *sf) {
     int isgpos, cnt, try, i;
     OTLookup *otl;
     char **names, *name;
-    char namebuf[32], featbuf[8], scriptbuf[8], *feat, *script;
+    char namebuf[MAXG+1], featbuf[8], scriptbuf[8], *feat, *script;
     struct scriptlanglist *sl;
 
     cnt = 0;
@@ -2600,8 +2603,8 @@ return;
 		++tok->err_count;
 	    }
 	} else {
-		if ( pt>start+31 ) {
-		    /* Adobe says glyphnames are 31 chars, but Mangal uses longer names */
+		/* Adobe says glyphnames are 31 chars, but Mangal uses longer names */
+		if ( pt>start+MAXG ) {
 		    LogError(_("Name, %s%s, too long on line %d of %s"),
 			    tok->tokbuf, pt>=tok->tokbuf+MAXT?"...":"",
 			    tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
@@ -2720,7 +2723,7 @@ static int fea_ParseDeciPoints(struct parseState *tok) {
 	if ( ch!=EOF )
 	    ungetc(ch,in);
     } else {
-	LogError(_("Expected '%s' on line %d of %s"), fea_keywords[tk_int],
+	LogError(_("Expected '%s' on line %d of %s"), fea_keywords[tk_int].name,
 		tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	++tok->err_count;
 	tok->value = -1;
@@ -5453,6 +5456,10 @@ return;
 	      break;
 		}
 		/* Fall on through */
+	      case tk_char:
+		/* Ignore blank statement. */
+		if (tok->tokbuf[0]==';')
+		  break;
 	      default:
 		LogError(_("Unexpected token, %s, in feature definition on line %d of %s"), tok->tokbuf, tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 		++tok->err_count;
@@ -5555,10 +5562,10 @@ static void fea_ParseTableKeywords(struct parseState *tok, struct tablekeywords 
 	    tv->index = index;
 	} else
 	    tv = NULL;
-	fea_ParseTok(tok);
 	if ( strcmp(tok->tokbuf,"Vendor")==0 && tv!=NULL) {
 	    /* This takes a 4 character string */
 	    /* of course strings aren't part of the syntax, but it takes one anyway */
+	    fea_ParseTok(tok);
 	    if ( tok->type==tk_name && tok->could_be_tag )
 		/* Accept a normal tag, since that's what it really is */
 		tv->value = tok->tag;
@@ -5587,6 +5594,7 @@ static void fea_ParseTableKeywords(struct parseState *tok, struct tablekeywords 
 	    }
 	    fea_ParseTok(tok);
 	} else {
+	    fea_ParseTok(tok);
 	    if ( tok->type!=tk_int ) {
 		LogError(_("Expected integer on line %d of %s"),
 			tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
@@ -6101,6 +6109,10 @@ static void fea_ParseFeatureFile(struct parseState *tok) {
 	  break;
 	  case tk_eof:
   goto end_loop;
+	  case tk_char:
+	    /* Ignore blank statement. */
+	    if (tok->tokbuf[0]==';')
+	      break;
 	  default:
 	    LogError(_("Unexpected token, %s, on line %d of %s"), tok->tokbuf, tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	    ++tok->err_count;
