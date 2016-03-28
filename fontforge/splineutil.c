@@ -6189,30 +6189,39 @@ void OtfFeatNameListFree(struct otffeatname *fn) {
 }
 
 EncMap *EncMapNew(int enccount,int backmax,Encoding *enc) {
-    EncMap *map = chunkalloc(sizeof(EncMap));
+/* NOTE: 'enccount' and 'backmax' can sometimes be different map sizes */
+    EncMap *map;
 
-    map->enccount = map->encmax = enccount;
-    map->backmax = backmax;
-    map->map = malloc(enccount*sizeof(int));
-    memset(map->map,-1,enccount*sizeof(int));
-    map->backmap = malloc(backmax*sizeof(int));
-    memset(map->backmap,-1,backmax*sizeof(int));
-    map->enc = enc;
-return(map);
+    /* Ensure all memory available, otherwise cleanup and exit as NULL */
+    if ( (map=chunkalloc(sizeof(EncMap)))!=NULL ) {
+	if ( (map->map=malloc(enccount*sizeof(int32)))!=NULL ) {
+	    if ( (map->backmap=malloc(backmax*sizeof(int32)))!=NULL ) {
+		map->enccount = map->encmax = enccount;
+		map->backmax = backmax;
+		memset(map->map,-1,enccount*sizeof(int32));
+		memset(map->backmap,-1,backmax*sizeof(int32));
+		map->enc = enc;
+		return( map );
+	    }
+	    free(map->map);
+	}
+	free(map);
+    }
+    return( NULL );
 }
 
 EncMap *EncMap1to1(int enccount) {
-    EncMap *map = chunkalloc(sizeof(EncMap));
-    /* Used for CID fonts where CID is same as orig_pos */
+/* Used for CID fonts where CID is same as orig_pos */
+/* NOTE: map-enc point to a global variable custom. */
+/* TODO: avoid global custom and use passed pointer */
+    EncMap *map;
     int i;
 
-    map->enccount = map->encmax = map->backmax = enccount;
-    map->map = malloc(enccount*sizeof(int));
-    map->backmap = malloc(enccount*sizeof(int));
-    for ( i=0; i<enccount; ++i )
-	map->map[i] = map->backmap[i] = i;
-    map->enc = &custom;
-return(map);
+    if ( (map=EncMapNew(enccount,enccount,&custom))!=NULL ) {
+	for ( i=0; i<enccount; ++i )
+	    map->map[i] = map->backmap[i] = i;
+    }
+    return( map );
 }
 
 static void EncodingFree(Encoding *enc) {
@@ -6243,21 +6252,33 @@ return;
 }
 
 EncMap *EncMapCopy(EncMap *map) {
+/* Make a duplicate 'new' copy of EncMap 'map', Return a NULL if error */
+/* NOTE: new-enc also shares map->enc, so be careful if freeing either */
     EncMap *new;
+    int n;
 
-    new = chunkalloc(sizeof(EncMap));
-    *new = *map;
-    new->map = malloc(new->encmax*sizeof(int));
-    new->backmap = malloc(new->backmax*sizeof(int));
-    memcpy(new->map,map->map,new->enccount*sizeof(int));
-    memcpy(new->backmap,map->backmap,new->backmax*sizeof(int));
-    if ( map->remap ) {
-	int n;
-	for ( n=0; map->remap[n].infont!=-1; ++n );
-	new->remap = malloc(n*sizeof(struct remap));
-	memcpy(new->remap,map->remap,n*sizeof(struct remap));
-    }
-return( new );
+    /* Ensure all memory available, otherwise cleanup and exit as NULL */
+    if ( (new=chunkalloc(sizeof(EncMap)))!=NULL ) {
+	*new = *map;
+	if ( (new->map=malloc(map->enccount*sizeof(int32)))!=NULL ) {
+	    if ( (new->backmap=malloc(map->backmax*sizeof(int32)))!=NULL ) {
+		memcpy(new->map,map->map,map->enccount*sizeof(int32));
+		memcpy(new->backmap,map->backmap,map->backmax*sizeof(int32));
+		/* NOTE: This new->enc 'also' points to same map->enc. */
+		if ( map->remap==NULL )
+		    return( new );
+		for ( n=0; map->remap[n].infont!=-1; ++n );
+		if ( (new->remap=malloc(n*sizeof(struct remap)))!=NULL ) {
+		    memcpy(new->remap,map->remap,n*sizeof(struct remap));
+		    return( new );
+		}
+		free(new->backmap);
+	    }
+	    free(new->map);
+	}
+	free(new);
+     }
+    return( NULL );
 }
 
 void MarkClassFree(int cnt,char **classes,char **names) {
