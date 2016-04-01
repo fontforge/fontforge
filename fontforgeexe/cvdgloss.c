@@ -88,6 +88,7 @@ static void scrprintf(struct scr *scr, char *format, ... ) {
     GDrawDrawText8(scr->pixmap,3,scr->y,buffer,-1,MAIN_FOREGROUND);
     scr->y += scr->fh;
     ++scr->lines;
+    va_end(ap);
 }
 
 static void scrrounding(struct scr *scr, TT_ExecContext exc ) {

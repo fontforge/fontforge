@@ -756,8 +756,10 @@ static void PfEd_Layers(SplineFont *sf, struct PfEd_subtabs *pfed,
 	if ( otherlayers[l] )
 	    ++cnt;
     cnt += has_spiro;
-    if ( cnt==0 )
+    if ( cnt==0 ) {
+    free(otherlayers);
 return;
+    }
 
     pfed->subtabs[pfed->next].tag = layr_TAG;
     pfed->subtabs[pfed->next++].data = layr = tmpfile();

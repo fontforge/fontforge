@@ -4898,8 +4898,10 @@ return;
     }
     cnt = i;
     free( cnames );
-    if ( cnt==0 )
+    if ( cnt==0 ) {
+        free(founds);
 return;
+    }
     if ( within<mv->glyphcnt )
 	within = mv->glyphs[within].orig_index;
     else

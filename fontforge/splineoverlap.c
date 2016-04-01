@@ -2058,7 +2058,7 @@ return( false );	/* But otherwise, don't create a new tiny spline */
     /* Ok, if we've gotten this far we know that two of the end points are  */
     /*  on both splines.                                                    */
     t1s[2] = t2s[2] = -1;
-    if ( !m1->s->knownlinear || !m1->s->knownlinear ) {
+    if ( !m1->s->knownlinear || !m2->s->knownlinear ) {
 	if ( t1s[1]<t1s[0] ) {
 	    extended temp = t1s[1]; t1s[1] = t1s[0]; t1s[0] = temp;
 	    temp = t2s[1]; t2s[1] = t2s[0]; t2s[0] = temp;

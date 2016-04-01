@@ -635,7 +635,10 @@ static void BVDrawRefName(BitmapView *bv,GWindow pixmap,BDFRefChar *ref,int fg) 
     y = bv->height - bv->yoff - (bb.maxy + 1)*bv->scale;
     y -= 5;
     if ( x<-400 || y<-40 || x>bv->width+400 || y>bv->height )
+    {
+        free(refinfo);
 return;
+    }
 
     GDrawLayoutInit(pixmap,refinfo,-1,bv->small);
     GDrawLayoutExtents(pixmap,&size);

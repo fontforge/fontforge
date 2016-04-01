@@ -3880,7 +3880,6 @@ return( true );
       case et_mousedown:
 	BVShadesMouse(bv,event);
       break;
-      break;
       case et_char: case et_charup:
 	PostCharToWindow(bv->gw,event);
       break;
