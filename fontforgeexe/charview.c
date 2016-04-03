@@ -89,7 +89,6 @@ float arrowAmount=1;
 float arrowAccelFactor=10.;
 float snapdistance=3.5;
 float snapdistancemeasuretool=3.5;
-int xorrubberlines=false;
 int updateflex = false;
 extern int clear_tt_instructions_when_needed;
 int use_freetype_with_aa_fill_cv = 1;
@@ -226,6 +225,7 @@ static void CVVScroll(CharView *cv,struct sbevent *sb);
 static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e);
 static void CVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e);
 static void CVPreviewModeSet(GWindow gw, int checked);
+static void CVExposeRulers(CharView *cv, GWindow pixmap);
 
 static int cvcolsinited = false;
 
@@ -505,10 +505,7 @@ return;
     }
     GDrawSetDashedLine(pixmap,2,2,0);
     GDrawSetLineWidth(pixmap,0);
-    GDrawSetXORMode(pixmap);
-    GDrawSetXORBase(pixmap,view_bgcol);
     GDrawDrawRect(pixmap,&r,oldoutlinecol);
-    GDrawSetCopyMode(pixmap);
     GDrawSetDashedLine(pixmap,0,0,0);
 }
 
@@ -521,16 +518,8 @@ return;
     y = -cv->yoff + cv->height - rint(cv->p.cy*cv->scale);
     xend =  cv->xoff + rint(cv->info.x*cv->scale);
     yend = -cv->yoff + cv->height - rint(cv->info.y*cv->scale);
-    if ( xorrubberlines ) {		/* XOR prevents use of CAIRO for these lines */
-	GDrawSetXORMode(pixmap);
 	GDrawSetLineWidth(pixmap,0);
-	GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(NULL));
-    } else {
-	GDrawSetCopyMode(pixmap);
-	GDrawSetLineWidth(pixmap,0);
-    }
     GDrawDrawLine(pixmap,x,y,xend,yend,col);
-    GDrawSetCopyMode(pixmap);
 }
 
 static void CVDrawBB(CharView *cv, GWindow pixmap, DBounds *bb) {
@@ -4160,17 +4149,23 @@ return;
 
 static void CVInfoDrawRulers(CharView *cv, GWindow pixmap ) {
     int rstart = cv->mbh+cv->charselectorh+cv->infoh;
-    GDrawSetXORMode(pixmap);
-    GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(NULL));
+    GRect rh, rv, oldrh, oldrv;
+    rh.y = cv->infoh+cv->mbh+cv->charselectorh; rh.height = cv->rulerh; rh.x = 0; rh.width = cv->rulerh+cv->width;
+    rv.x = 0; rv.width = cv->rulerh; rv.y = cv->infoh+cv->charselectorh+cv->mbh; rv.height = cv->rulerh+cv->height;
+
     GDrawSetLineWidth(pixmap,0);
-    if ( cv->olde.x!=-1 ) {
-	GDrawDrawLine(pixmap,cv->olde.x+cv->rulerh,rstart,cv->olde.x+cv->rulerh,rstart+cv->rulerh,0xff0000);
-	GDrawDrawLine(pixmap,0,cv->olde.y+rstart+cv->rulerh,cv->rulerh,cv->olde.y+rstart+cv->rulerh,0xff0000);
-    }
+    // Draw the new rulers
+    GDrawPushClip(pixmap, &rh, &oldrh);
+    GDrawRequestExpose(pixmap, &rh, false);
     GDrawDrawLine(pixmap,cv->e.x+cv->rulerh,rstart,cv->e.x+cv->rulerh,rstart+cv->rulerh,0xff0000);
+    GDrawPopClip(pixmap, &oldrh);
+
+    GDrawPushClip(pixmap, &rv, &oldrv);
+    GDrawRequestExpose(pixmap, &rv, false);
     GDrawDrawLine(pixmap,0,cv->e.y+rstart+cv->rulerh,cv->rulerh,cv->e.y+rstart+cv->rulerh,0xff0000);
+    GDrawPopClip(pixmap, &oldrv);
+
     cv->olde = cv->e;
-    GDrawSetCopyMode(pixmap);
 }
 
 void CVInfoDraw(CharView *cv, GWindow pixmap ) {
@@ -6185,21 +6180,27 @@ static void CVLogoExpose(CharView *cv,GWindow pixmap,GEvent *event) {
 	    cv->b.layerheads[cv->b.drawmode]->background ? dm_back : dm_fore );
 }
 
-static void CVDrawGuideLine(CharView *cv,int guide_pos) {
+static void CVDrawGuideLine(CharView *cv, int old_guide_pos, int guide_pos) {
     GWindow pixmap = cv->v;
 
     if ( guide_pos<0 )
 return;
     GDrawSetDashedLine(pixmap,2,2,0);
     GDrawSetLineWidth(pixmap,0);
-    GDrawSetXORMode(pixmap);
-    GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(NULL));
+
     if ( cv->ruler_pressedv ) {
+        if (old_guide_pos >= 0) {
+            GRect r = {.x = old_guide_pos, .y = 0, .width = 1, .height = cv->height};
+            GDrawRequestExpose(pixmap,&r,false);
+        }
 	GDrawDrawLine(pixmap,guide_pos,0,guide_pos,cv->height,0x000000);
     } else {
+        if (old_guide_pos >= 0) {
+            GRect r = {.x = 0, .y = old_guide_pos, .width = cv->width, .height = 1};
+            GDrawRequestExpose(pixmap,&r,false);
+        }
 	GDrawDrawLine(pixmap,0,guide_pos,cv->width,guide_pos,0x000000);
     }
-    GDrawSetCopyMode(pixmap);
     GDrawSetDashedLine(pixmap,0,0,0);
 }
 
@@ -6334,7 +6335,7 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 		}
 		cv->guide_pos = -1;
 	    } else if ( event->type==et_mouseup && cv->ruler_pressed ) {
-		CVDrawGuideLine(cv,cv->guide_pos);
+		CVDrawGuideLine(cv,-1,cv->guide_pos);
 		cv->guide_pos = -1;
 		cv->showing_tool = cvt_none;
 		CVToolsSetCursor(cv,event->u.mouse.state&~(1<<(7+event->u.mouse.button)),event->u.mouse.device);		/* X still has the buttons set in the state, even though we just released them. I don't want em */
@@ -6351,7 +6352,7 @@ return( GGadgetDispatchEvent(cv->vsb,event));
       break;
       case et_mousemove:
 	if ( cv->ruler_pressed ) {
-	    CVDrawGuideLine(cv,cv->guide_pos);
+        int old_pos = cv->guide_pos;
 	    cv->e.x = event->u.mouse.x - cv->rulerh;
 	    cv->e.y = event->u.mouse.y-(cv->mbh+cv->charselectorh+cv->infoh+cv->rulerh);
 	    cv->info.x = (cv->e.x-cv->xoff)/cv->scale;
@@ -6360,7 +6361,7 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 		cv->guide_pos = cv->e.x;
 	    else
 		cv->guide_pos = cv->e.y;
-	    CVDrawGuideLine(cv,cv->guide_pos);
+	    CVDrawGuideLine(cv,old_pos,cv->guide_pos);
 	    CVInfoDraw(cv,cv->gw);
 	}
     else if ( event->u.mouse.y > cv->mbh )
