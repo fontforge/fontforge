@@ -15,6 +15,7 @@ extern void _GXCDraw_ClipPreserve(GXWindow gw);
 
 extern void _GXCDraw_Clear(GXWindow gw, GRect *rect);
 extern void _GXCDraw_DrawLine(GXWindow gw, int32 x,int32 y, int32 xend,int32 yend);
+extern void _GXCDraw_DrawArc(GXWindow gw, GRect *rect, double start_angle, double end_angle);
 extern void _GXCDraw_DrawRect(GXWindow gw, GRect *rect);
 extern void _GXCDraw_FillRect(GXWindow gw, GRect *rect);
 extern void _GXCDraw_FillRoundRect(GXWindow gw, GRect *rect, int radius);

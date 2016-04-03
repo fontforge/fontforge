@@ -232,6 +232,31 @@ void _GXCDraw_DrawLine(GXWindow gw, int32 x,int32 y, int32 xend,int32 yend) {
     cairo_stroke(gw->cc);
 }
 
+/**
+ *  \brief Draws an arc (circular and elliptical).
+ *
+ *  \param [in] gw The window to draw on.
+ *  \param [in] rect The bounding box of the arc. If width!=height, then
+ *                   an elliptical arc will be drawn.
+ *  \param [in] start_angle The start angle in radians (Cairo coordinates)
+ *  \param [in] end_angle The end angle in radians (Cairo coordinates)
+ */
+void _GXCDraw_DrawArc(GXWindow gw, GRect *rect, double start_angle, double end_angle) {
+    int width = GXCDrawSetline(gw, gw->ggc);
+
+    cairo_new_path(gw->cc);
+    cairo_save(gw->cc);
+    if (width&1) {
+        cairo_translate(gw->cc, rect->x+.5 + rect->width / 2., rect->y+.5 + rect->height / 2.);
+    } else {
+        cairo_translate(gw->cc, rect->x + rect->width / 2., rect->y + rect->height / 2.);
+    }
+    cairo_scale(gw->cc, rect->width / 2., rect->height / 2.);
+    cairo_arc(gw->cc, 0., 0., 1., start_angle, end_angle);
+    cairo_restore(gw->cc);
+    cairo_stroke(gw->cc);
+}
+
 void _GXCDraw_DrawRect(GXWindow gw, GRect *rect) {
     int width = GXCDrawSetline(gw,gw->ggc);
 
