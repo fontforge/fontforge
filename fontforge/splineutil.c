@@ -1833,7 +1833,7 @@ SplinePointList *SplinePointListTransformExtended(SplinePointList *base, real tr
 		lastpointorig = orig;
 		if ( spline->to->selected ) anysel = true; else allsel = false;
 	    }
-	    
+
 	} else {
 	    for ( spt = spl->first ; spt!=pfirst; spt = spt->next->to ) {
 		if ( pfirst==NULL ) pfirst = spt;
@@ -6541,7 +6541,7 @@ return;
         }
       }
       free(sf->layers); sf->layers = NULL;
-    }   
+    }
     free(sf);
 }
 
@@ -6581,7 +6581,7 @@ return;
           sf->layers[layer].ufo_path = NULL;
         }
       }
-    }   
+    }
 }
 
 #if 0
@@ -7813,7 +7813,7 @@ bigreal DistanceBetweenPoints( BasePoint *p1, BasePoint *p2 )
     bigreal t = pow(p1->x - p2->x,2) + pow(p1->y - p2->y,2);
     if( !t )
 	return t;
-    
+
     t = sqrt( t );
     return t;
 }
