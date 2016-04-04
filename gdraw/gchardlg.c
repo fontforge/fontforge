@@ -350,14 +350,14 @@ static void InsChrRedraw(void) {
 }
 
 static void InsChrXorChar(GWindow pixmap, int x, int y) {
-    GRect rct;
+    GRect rct, old;
 
     rct.x = x*inschr.spacing+1; rct.width = inschr.spacing-1;
     rct.y = inschr.ybase+y*inschr.spacing+1; rct.height = inschr.spacing-1;
-    GDrawSetXORMode(pixmap);
-    GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap)));
-    GDrawFillRect(pixmap,&rct,0x000000);
-    GDrawSetCopyMode(pixmap);
+    GDrawPushClip(pixmap, &rct, &old);
+    GDrawSetDifferenceMode(pixmap);
+    GDrawFillRect(pixmap, &rct, COLOR_WHITE);
+    GDrawPopClip(pixmap, &old);
 }
 
 static void InsChrSetNextPrev() {

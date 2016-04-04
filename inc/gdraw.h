@@ -46,15 +46,12 @@ typedef struct font_instance FontInstance, GFont;
 enum gic_style { gic_overspot=2, gic_root=1, gic_hidden=0, gic_orlesser=4, gic_type=3 };
 typedef struct ginput_context GIC;
 
-enum draw_func { df_copy, df_xor };
-
 typedef struct ggc {
     struct gwindow *w;
     int32 xor_base;
     Color fg;
     Color bg;
     GRect clip;
-    enum draw_func func;
     unsigned int copy_through_sub_windows: 1;
     unsigned int bitmap_col: 1;			/* window is mapped for bitmap */
     int16 skip_len, dash_len;
@@ -397,9 +394,8 @@ extern void GDrawPopClip(GWindow w, GRect *old);
 extern void GDrawPushClipOnly(GWindow w);
 extern void GDrawClipPreserve(GWindow w);
 extern GGC *GDrawGetWindowGGC(GWindow w);
-extern void GDrawSetXORBase(GWindow w,Color col);
-extern void GDrawSetXORMode(GWindow w);
 extern void GDrawSetCopyMode(GWindow w);
+extern void GDrawSetDifferenceMode(GWindow w);
 extern void GDrawSetCopyThroughSubWindows(GWindow w,int16 through);
 extern void GDrawSetDashedLine(GWindow w,int16 dash_len, int16 skip_len, int16 off);
 extern void GDrawSetStippled(GWindow w,int16 ts, int32 yoff,int32 xoff);

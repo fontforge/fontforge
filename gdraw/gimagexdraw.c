@@ -2024,7 +2024,6 @@ return;
 		x,y, src->width, src->height );
 	XSetFunction(display,gc,GXcopy);
 	gdisp->gcstate[gw->ggc->bitmap_col].fore_col = COLOR_UNKNOWN;
-	gdisp->gcstate[gw->ggc->bitmap_col].func = df_copy;
     } else { /* no mask */
 	XPutImage(display,w,gc,gdisp->gg.img,0,0,
 		x,y, src->width, src->height );
@@ -2126,7 +2125,6 @@ return;
 	GDrawDestroyWindow(maskmap);
 	XSetFunction(display,gc,GXcopy);
 	gdisp->gcstate[gw->ggc->bitmap_col].fore_col = COLOR_UNKNOWN;
-	gdisp->gcstate[gw->ggc->bitmap_col].func = df_copy;
     }
 }
 

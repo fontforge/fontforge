@@ -629,6 +629,10 @@ static void PSDrawPopClip(GWindow w,GRect *old) {
     ps->ggc->clip = *old;
 }
 
+static void PSDrawSetDifferenceMode(GWindow UNUSED(w)) {
+    fprintf(stderr, "PSDrawSetDifferenceMode not implemented for postscript\n" );
+}
+
 static void PSDrawDrawLine(GWindow w, int32 x,int32 y,int32 xend,int32 yend,Color col) {
     GPSWindow ps = (GPSWindow ) w;
 
@@ -1345,6 +1349,8 @@ static struct displayfuncs psfuncs = {
 
     PSDrawPushClip,
     PSDrawPopClip,
+
+    PSDrawSetDifferenceMode,
 
     PSDrawClear,
     PSDrawDrawLine,

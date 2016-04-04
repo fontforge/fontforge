@@ -12,6 +12,7 @@ extern void _GXCDraw_PushClip(GXWindow gw);
 extern void _GXCDraw_PopClip(GXWindow gw);
 extern void _GXCDraw_PushClipOnly(GXWindow gw);
 extern void _GXCDraw_ClipPreserve(GXWindow gw);
+extern void _GXCDraw_SetDifferenceMode(GXWindow gw);
 
 extern void _GXCDraw_Clear(GXWindow gw, GRect *rect);
 extern void _GXCDraw_DrawLine(GXWindow gw, int32 x,int32 y, int32 xend,int32 yend);

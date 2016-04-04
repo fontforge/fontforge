@@ -365,16 +365,8 @@ GGC *GDrawGetWindowGGC(GWindow w) {
 return( w->ggc );
 }
 
-void GDrawSetXORBase(GWindow w,Color col) {
-    w->ggc->xor_base = col;
-}
-
-void GDrawSetXORMode(GWindow w) {
-    w->ggc->func = df_xor;
-}
-
-void GDrawSetCopyMode(GWindow w) {
-    w->ggc->func = df_copy;
+void GDrawSetDifferenceMode(GWindow w) {
+    (w->display->funcs->setDifferenceMode)(w);
 }
 
 void GDrawSetCopyThroughSubWindows(GWindow w,int16 through) {

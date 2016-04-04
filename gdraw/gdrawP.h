@@ -228,6 +228,8 @@ struct displayfuncs {
     void (*pushClip)(GWindow, GRect *rct, GRect *old);
     void (*popClip)(GWindow, GRect *old);
 
+    void (*setDifferenceMode)(GWindow);
+
     void (*clear)(GWindow,GRect *);
     void (*drawLine)(GWindow, int32 x,int32 y, int32 xend,int32 yend, Color col);
     void (*drawArrow)(GWindow, int32 x,int32 y, int32 xend,int32 yend, int16 arrows, Color col); /* arrows&1 => arrow at start, &2 => at end */
