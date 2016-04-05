@@ -28,6 +28,29 @@ static GGC *_GGDKDrawNewGGC() {
     return ggc;
 }
 
+static bool _GGDKDraw_InitPangoCairo(GGDKWindow gw) {
+    if (gw->is_pixmap) {
+        gw->cc = cairo_create(gw->cs);
+    } else {
+        gw->cc = gdk_cairo_create(gw->w);
+    }
+
+    if (gw->cc == NULL) {
+        fprintf(stderr, "GGDKDRAW: Cairo context creation failed!\n");
+        return false;
+    }
+
+    // Establish Pango layout context
+    gw->pango_layout = pango_layout_new(gw->display->pangoc_context);
+    if (gw->pango_layout == NULL) {
+        fprintf(stderr, "GGDKDRAW: Pango layout creation failed!\n");
+        cairo_destroy(gw->cc);
+        return false;
+    }
+
+    return true;
+}
+
 static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *pos,
     int (*eh)(GWindow, GEvent *), void *user_data, GWindowAttrs *wattrs) {
 
@@ -183,21 +206,8 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
 
     //TODO: Set window sizing/transient hints
 
-    // Establish Cairo context
-    gw->cc = gdk_cairo_create(nw->w);
-    if (gw->cc == NULL) {
-        fprintf(stderr, "GGDKDRAW: Cairo context creation failed!\n");
-        gdk_window_destroy(nw->w);
-        free(nw->ggc);
-        free(nw);
-        return NULL;
-    }
-
-    // Establish Pango layout context
-    gw->pango_layout = pango_layout_new(gdisp->pangoc_context);
-    if (gw->pango_layout == NULL) {
-        fprintf(stderr, "GGDKDRAW: Pango layout creation failed!\n");
-        cairo_destroy(gw->cc);
+    // Establish Pango/Cairo context
+    if (!_GGDKDraw_InitPangoCairo(gw)) {
         gdk_window_destroy(nw->w);
         free(nw->ggc);
         free(nw);
@@ -213,8 +223,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
         (eh)((GWindow) nw, &e);
     }
 
-    // Cairo...
-    //_GXCDraw_NewWindow(nw);
+    // This should not be here. Debugging purposes only.
     gdk_window_show(nw->w);
     return (GWindow)nw;
 }
@@ -265,24 +274,96 @@ static GWindow _GGDKDraw_NewPixmap(GDisplay *gdisp, uint16 width, uint16 height,
         free(gw);
         return NULL;
     }
-    gw->cc = cairo_create(gw->cs);
-    if (gw->cc == NULL) {
-        fprintf(stderr, "GGDKDRAW: Cairo context creation failed!\n");
+
+    if (!_GGDKDraw_InitPangoCairo(gw)) {
         cairo_surface_destroy(gw->cs);
         free(gw->ggc);
         free(gw);
         return NULL;
-    }
-    gw->pango_layout = pango_layout_new(((GGDKDisplay*)gdisp)->pangoc_context);
-    if (gw->pango_layout == NULL) {
-        fprintf(stderr, "GGDKDRAW: Pango layout context creation failed!\n");
-        cairo_destroy(gw->cc);
-        cairo_surface_destroy(gw->cs);
-        free(gw->ggc);
-        free(gw);
-        return NULL;
+
     }
     return (GWindow)gw;
+}
+
+// Pango text
+PangoFontDescription *_GGDKDraw_configfont(GWindow w, GFont *font) {
+    GGDKWindow gw = (GGDKWindow) w;
+    PangoFontDescription *fd;
+
+    // Initialize Cairo and Pango if not initialized, e.g. root window
+    if (gw->pango_layout == NULL && !_GGDKDraw_InitPangoCairo(gw)){
+        return NULL;
+    }
+
+    PangoFontDescription **fdbase = &font->pangoc_fd;
+    if (*fdbase != NULL) {
+        return *fdbase;
+    }
+    *fdbase = fd = pango_font_description_new();
+    if (*fdbase == NULL) {
+        return NULL;
+    }
+
+    if (font->rq.utf8_family_name != NULL) {
+        pango_font_description_set_family(fd, font->rq.utf8_family_name);
+    } else {
+        char *temp = u2utf8_copy(font->rq.family_name);
+        pango_font_description_set_family(fd, temp);
+        free(temp);
+    }
+
+    pango_font_description_set_style(fd, (font->rq.style & fs_italic)?
+        PANGO_STYLE_ITALIC : PANGO_STYLE_NORMAL);
+    pango_font_description_set_variant(fd, (font->rq.style & fs_smallcaps)?
+        PANGO_VARIANT_SMALL_CAPS : PANGO_VARIANT_NORMAL);
+    pango_font_description_set_weight(fd, font->rq.weight);
+    pango_font_description_set_stretch(fd,
+        (font->rq.style&fs_condensed)? PANGO_STRETCH_CONDENSED :
+        (font->rq.style&fs_extended )? PANGO_STRETCH_EXPANDED  :
+            PANGO_STRETCH_NORMAL);
+
+    if (font->rq.style & fs_vertical) {
+        //FIXME: not sure this is the right thing
+        pango_font_description_set_gravity(fd, PANGO_GRAVITY_WEST);
+    }
+
+    if (font->rq.point_size <= 0) {
+        // Any negative (pixel) values should be converted when font opened
+        GDrawIError("Bad point size for Pango");
+    }
+
+    // Pango doesn't give me any control over the resolution on X, so I do my
+    //  own conversion from points to pixels
+    // But under pangocairo I can set the resolution, so behavior is different
+    pango_font_description_set_absolute_size(fd,
+        GDrawPointsToPixels(NULL, font->rq.point_size * PANGO_SCALE));
+    return fd;
+}
+
+// Strangely the equivalent routine was not part of the pangocairo library
+// Oh there's pango_cairo_layout_path but that's more restrictive and probably
+// less efficient
+static void _GGDKDraw_MyCairoRenderLayout(cairo_t *cc, Color fg, PangoLayout *layout,int x,int y) {
+    PangoRectangle rect, r2;
+    PangoLayoutIter *iter;
+
+    iter = pango_layout_get_iter(layout);
+    do {
+        PangoLayoutRun *run = pango_layout_iter_get_run(iter);
+        if (run != NULL) { // NULL runs mark end of line
+            pango_layout_iter_get_run_extents(iter, &r2, &rect);
+            cairo_move_to(cc, x + (rect.x + PANGO_SCALE/2)/PANGO_SCALE, y + (rect.y + PANGO_SCALE/2)/PANGO_SCALE);
+            if (COLOR_ALPHA(fg) == 0) {
+                cairo_set_source_rgba(cc, COLOR_RED(fg)/255.0,
+                    COLOR_GREEN(fg)/255.0, COLOR_BLUE(fg)/255.0, 1.0);
+            } else {
+                cairo_set_source_rgba(cc, COLOR_RED(fg)/255.0,
+                    COLOR_GREEN(fg)/255.0, COLOR_BLUE(fg)/255.0, COLOR_ALPHA(fg)/255.);
+            }
+            pango_cairo_show_glyph_string(cc, run->item->analysis.font, run->glyphs);
+        }
+    } while (pango_layout_iter_next_run(iter));
+    pango_layout_iter_free(iter);
 }
 
 static void GGDKDrawInit(GDisplay *gdisp) {
@@ -352,6 +433,7 @@ static void GGDKDrawDestroyWindow(GWindow w){
     gw->cc = NULL;
     if (gw->cs != NULL) {
         cairo_surface_destroy(gw->cs);
+        gw->cs = NULL;
     }
 
     if (!gw->is_pixmap) {
@@ -367,81 +449,130 @@ static void GGDKDrawDestroyCursor(GDisplay *gdisp, GCursor gcursor){
     fprintf(stderr, "GDKCALL: GGDKDrawDestroyCursor\n"); assert(false);
 }
 
+// Some hack to see if the window has been created(???)
 static int GGDKDrawNativeWindowExists(GDisplay *gdisp, void *native_window){
-    fprintf(stderr, "GDKCALL: GGDKDrawNativeWindowExists\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawNativeWindowExists\n"); //assert(false);
+    return true;
 }
 
 static void GGDKDrawSetZoom(GWindow gw, GRect *size, enum gzoom_flags flags){
     fprintf(stderr, "GDKCALL: GGDKDrawSetZoom\n"); assert(false);
 }
 
+// Not possible?
 static void GGDKDrawSetWindowBorder(GWindow gw, int width, Color gcol){
-    fprintf(stderr, "GDKCALL: GGDKDrawSetWindowBorder\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawSetWindowBorder\n"); //assert(false);
 }
 
 static void GGDKDrawSetWindowBackground(GWindow gw, Color gcol){
-    fprintf(stderr, "GDKCALL: GGDKDrawSetWindowBackground\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawSetWindowBackground\n"); //assert(false);
+    GdkRGBA col = {
+        .red = COLOR_RED(gcol)/255.,
+        .green = COLOR_GREEN(gcol)/255.,
+        .blue = COLOR_BLUE(gcol)/255.,
+        .alpha = 1.
+    };
+    gdk_window_set_background_rgba(((GGDKWindow)gw)->w, &col);
 }
 
+// How about NO
 static int GGDKDrawSetDither(GDisplay *gdisp, int set){
-    fprintf(stderr, "GDKCALL: GGDKDrawSetDither\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawSetDither\n"); //assert(false);
+    return false;
 }
 
 
-static void GGDKDrawReparentWindow(GWindow gw1, GWindow gw2, int x, int y){
-    fprintf(stderr, "GDKCALL: GGDKDrawReparentWindow\n"); assert(false);
+static void GGDKDrawReparentWindow(GWindow child, GWindow newparent, int x, int y){
+    fprintf(stderr, "GDKCALL: GGDKDrawReparentWindow\n");
+    gdk_window_reparent(((GGDKWindow)child)->w, ((GGDKWindow)newparent)->w, x, y);
 }
 
-static void GGDKDrawSetVisible(GWindow gw, int set){
-    fprintf(stderr, "GDKCALL: GGDKDrawSetVisible\n"); assert(false);
+static void GGDKDrawSetVisible(GWindow gw, int show){
+    fprintf(stderr, "GDKCALL: GGDKDrawSetVisible\n"); //assert(false);
+    if (show) {
+        gdk_window_show(((GGDKWindow)gw)->w);
+    } else {
+        gdk_window_hide(((GGDKWindow)gw)->w);
+    }
 }
 
 static void GGDKDrawMove(GWindow gw, int32 x, int32 y){
-    fprintf(stderr, "GDKCALL: GGDKDrawMove\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawMove\n"); //assert(false);
+    gdk_window_move(((GGDKWindow)gw)->w, x, y);
 }
 
-static void GGDKDrawTrueMove(GWindow gw, int32 x, int32 y){
-    fprintf(stderr, "GDKCALL: GGDKDrawTrueMove\n"); assert(false);
+static void GGDKDrawTrueMove(GWindow w, int32 x, int32 y){
+    fprintf(stderr, "GDKCALL: GGDKDrawTrueMove\n");
+    GGDKDrawMove(w, x, y);
+    //GGDKWindow gw = (GGDKWindow)w;
+
+    //if (gw->is_toplevel && !gw->is_popup && !gw->istransient) {
+    //    x -= gw->display->off_x;
+    //    y -= gw->display->off_y;
+    //}
 }
 
 static void GGDKDrawResize(GWindow gw, int32 w, int32 h){
-    fprintf(stderr, "GDKCALL: GGDKDrawResize\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawResize\n"); //assert(false);
+    gdk_window_resize(((GGDKWindow)gw)->w, w, h);
 }
 
 static void GGDKDrawMoveResize(GWindow gw, int32 x, int32 y, int32 w, int32 h){
-    fprintf(stderr, "GDKCALL: GGDKDrawMoveResize\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawMoveResize\n"); //assert(false);
+    gdk_window_move_resize(((GGDKWindow)gw)->w, x, y, w, h);
 }
 
 static void GGDKDrawRaise(GWindow gw){
-    fprintf(stderr, "GDKCALL: GGDKDrawRaise\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawRaise\n"); //assert(false);
+    gdk_window_raise(((GGDKWindow)gw)->w);
 }
 
 static void GGDKDrawRaiseAbove(GWindow gw1, GWindow gw2){
-    fprintf(stderr, "GDKCALL: GGDKDrawRaiseAbove\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawRaiseAbove\n"); //assert(false);
+    gdk_window_restack(((GGDKWindow)gw1)->w, ((GGDKWindow)gw2)->w, true);
 }
 
+// Only used once in gcontainer - force it to call GDrawRaiseAbove
 static int GGDKDrawIsAbove(GWindow gw1, GWindow gw2){
-    fprintf(stderr, "GDKCALL: GGDKDrawIsAbove\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawIsAbove\n"); //assert(false);
+    return false;
 }
 
 static void GGDKDrawLower(GWindow gw){
-    fprintf(stderr, "GDKCALL: GGDKDrawLower\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawLower\n"); //assert(false);
+    gdk_window_lower(((GGDKWindow)gw)->w);
+}
+
+// Icon title is ignored.
+static void GGDKDrawSetWindowTitles8(GWindow w, const char *title, const char *icontitle){
+    fprintf(stderr, "GDKCALL: GGDKDrawSetWindowTitles8\n");// assert(false);
+    GGDKWindow gw = (GGDKWindow)w;
+    free(gw->window_title);
+    gw->window_title = copy(title);
+
+    if (title != NULL && gw->is_toplevel) {
+        gdk_window_set_title(gw->w, title);
+    }
 }
 
 static void GGDKDrawSetWindowTitles(GWindow gw, const unichar_t *title, const unichar_t *icontitle){
-    fprintf(stderr, "GDKCALL: GGDKDrawSetWindowTitles\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawSetWindowTitles\n"); //assert(false);
+    char *str = u2utf8_copy(title);
+    if (str != NULL) {
+        GGDKDrawSetWindowTitles8(gw, str, NULL);
+        free(str);
+    }
 }
 
-static void GGDKDrawSetWindowTitles8(GWindow gw, const char *title, const char *icontitle){
-    fprintf(stderr, "GDKCALL: GGDKDrawSetWindowTitles8\n"); assert(false);
-}
-
+// Sigh. GDK doesn't provide a way to get the window title...
 static unichar_t* GGDKDrawGetWindowTitle(GWindow gw){
-    fprintf(stderr, "GDKCALL: GGDKDrawGetWindowTitle\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawGetWindowTitle\n"); // assert(false);
+    return utf82u_copy(((GGDKWindow)gw)->window_title);
 }
 
 static char* GGDKDrawGetWindowTitle8(GWindow gw){
-    fprintf(stderr, "GDKCALL: GGDKDrawGetWindowTitle8\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawGetWindowTitle8\n"); //assert(false);
+    return copy(((GGDKWindow)gw)->window_title);
 }
 
 static void GGDKDrawSetTransientFor(GWindow gw1, GWindow gw2){
@@ -584,19 +715,19 @@ static void GGDKDrawSetGIC(GWindow gw, GIC *gic, int x, int y){
 
 
 static void GGDKDrawGrabSelection(GWindow w, enum selnames sel){
-    fprintf(stderr, "GDKCALL: GGDKDrawGrabSelection\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawGrabSelection\n"); //assert(false);
 }
 
 static void GGDKDrawAddSelectionType(GWindow w, enum selnames sel, char *type, void *data, int32 cnt, int32 unitsize, void *gendata(void *, int32 *len), void freedata(void *)){
-    fprintf(stderr, "GDKCALL: GGDKDrawAddSelectionType\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawAddSelectionType\n"); //assert(false);
 }
 
 static void* GGDKDrawRequestSelection(GWindow w, enum selnames sn, char *typename, int32 *len){
-    fprintf(stderr, "GDKCALL: GGDKDrawRequestSelection\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawRequestSelection\n"); //assert(false);
 }
 
 static int GGDKDrawSelectionHasType(GWindow w, enum selnames sn, char *typename){
-    fprintf(stderr, "GDKCALL: GGDKDrawSelectionHasType\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawSelectionHasType\n"); //assert(false);
 }
 
 static void GGDKDrawBindSelection(GDisplay *gdisp, enum selnames sn, char *atomname){
@@ -625,7 +756,8 @@ static void GGDKDrawForceUpdate(GWindow gw){
 }
 
 static void GGDKDrawSync(GDisplay *gdisp){
-    fprintf(stderr, "GDKCALL: GGDKDrawSync\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawSync\n");
+    gdk_display_sync(((GGDKDisplay*)gdisp)->display);
 }
 
 static void GGDKDrawSkipMouseMoveEvents(GWindow gw, GEvent *gevent){
@@ -662,16 +794,17 @@ static int GGDKDrawRequestDeviceEvents(GWindow w, int devcnt, struct gdeveventma
 
 
 static GTimer* GGDKDrawRequestTimer(GWindow w, int32 time_from_now, int32 frequency, void *userdata){
-    fprintf(stderr, "GDKCALL: GGDKDrawRequestTimer\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawRequestTimer\n"); //assert(false);
+    return NULL;
 }
 
 static void GGDKDrawCancelTimer(GTimer *timer){
-    fprintf(stderr, "GDKCALL: GGDKDrawCancelTimer\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawCancelTimer\n"); //assert(false);
 }
 
 
 static void GGDKDrawSyncThread(GDisplay *gdisp, void (*func)(void *), void *data){
-    fprintf(stderr, "GDKCALL: GGDKDrawSyncThread\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawSyncThread\n"); //assert(false); // For some shitty gio impl. Ignore ignore ignore!
 }
 
 
@@ -688,8 +821,23 @@ static int GGDKDrawPrinterEndJob(GWindow w, int cancel){
 }
 
 
-static void GGDKDrawGetFontMetrics(GWindow gw, GFont *gfont, int *as, int *ds, int *ld){
-    fprintf(stderr, "GDKCALL: GGDKDrawGetFontMetrics\n"); assert(false);
+static void GGDKDrawGetFontMetrics(GWindow gw, GFont *fi, int *as, int *ds, int *ld){
+    fprintf(stderr, "GDKCALL: GGDKDrawGetFontMetrics\n");
+
+    GGDKDisplay *gdisp = ((GGDKWindow) gw)->display;
+    PangoFont *pfont;
+    PangoFontMetrics *fm;
+    PangoFontMap *pfm;
+
+    _GGDKDraw_configfont(gw, fi);
+    pfm = pango_context_get_font_map(gdisp->pangoc_context);
+    pfont = pango_font_map_load_font(pfm, gdisp->pangoc_context, fi->pangoc_fd);
+    fm = pango_font_get_metrics(pfont, NULL);
+    *as = pango_font_metrics_get_ascent(fm)/PANGO_SCALE;
+    *ds = pango_font_metrics_get_descent(fm)/PANGO_SCALE;
+    *ld = 0;
+    pango_font_metrics_unref(fm);
+    //g_object_unref(pfont);
 }
 
 
@@ -732,35 +880,100 @@ static void GGDKDrawPathFillAndStroke(GWindow w, Color fillcol, Color strokecol)
 
 
 static void GGDKDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi){
-    fprintf(stderr, "GDKCALL: GGDKDrawLayoutInit\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawLayoutInit\n");
+    GGDKWindow gw = (GGDKWindow) w;
+    PangoFontDescription *fd;
+
+    if (fi == NULL) {
+        fi = gw->ggc->fi;
+    }
+
+    fd = _GGDKDraw_configfont(w, fi);
+    pango_layout_set_font_description(gw->pango_layout, fd);
+    pango_layout_set_text(gw->pango_layout, text, cnt);
 }
 
 static void GGDKDrawLayoutDraw(GWindow w, int32 x, int32 y, Color fg){
-    fprintf(stderr, "GDKCALL: GGDKDrawLayoutDraw\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawLayoutDraw\n");
+    GGDKWindow gw = (GGDKWindow)w;
+
+    _GGDKDraw_MyCairoRenderLayout(gw->cc, fg, gw->pango_layout, x, y);
 }
 
 static void GGDKDrawLayoutIndexToPos(GWindow w, int index, GRect *pos){
-    fprintf(stderr, "GDKCALL: GGDKDrawLayoutIndexToPos\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawLayoutIndexToPos\n");
+    GGDKWindow gw = (GGDKWindow)w;
+    PangoRectangle rect;
+
+    pango_layout_index_to_pos(gw->pango_layout, index, &rect);
+    pos->x = rect.x/PANGO_SCALE;
+    pos->y = rect.y/PANGO_SCALE;
+    pos->width  = rect.width/PANGO_SCALE;
+    pos->height = rect.height/PANGO_SCALE;
 }
 
 static int GGDKDrawLayoutXYToIndex(GWindow w, int x, int y){
-    fprintf(stderr, "GDKCALL: GGDKDrawLayoutXYToIndex\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawLayoutXYToIndex\n");
+    GGDKWindow gw = (GGDKWindow)w;
+    int trailing, index;
+
+    // Pango retuns the last character if x is negative, not the first.
+    if (x < 0) {
+        x = 0;
+    }
+    pango_layout_xy_to_index(gw->pango_layout, x * PANGO_SCALE, y * PANGO_SCALE, &index, &trailing);
+
+    // If I give Pango a position after the last character on a line, it
+    // returns to me the first character. Strange. And annoying -- you click
+    // at the end of a line and the cursor moves to the start
+    // Of course in right to left text an initial position is correct...
+    if ((index + trailing) == 0 && x > 0 ) {
+        PangoRectangle rect;
+        pango_layout_get_pixel_extents(gw->pango_layout, &rect, NULL);
+        if (x >= rect.width) {
+            x = rect.width - 1;
+            pango_layout_xy_to_index(gw->pango_layout, x * PANGO_SCALE, y * PANGO_SCALE, &index, &trailing);
+        }
+    }
+    return index + trailing;
 }
 
 static void GGDKDrawLayoutExtents(GWindow w, GRect *size){
-    fprintf(stderr, "GDKCALL: GGDKDrawLayoutExtents\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawLayoutExtents\n");
+    GGDKWindow gw = (GGDKWindow)w;
+    PangoRectangle rect;
+
+    pango_layout_get_pixel_extents(gw->pango_layout,NULL,&rect);
+    size->x = rect.x;
+    size->y = rect.y;
+    size->width  = rect.width;
+    size->height = rect.height;
 }
 
 static void GGDKDrawLayoutSetWidth(GWindow w, int width){
-    fprintf(stderr, "GDKCALL: GGDKDrawLayoutSetWidth\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawLayoutSetWidth\n");
+    GGDKWindow gw = (GGDKWindow)w;
+
+    pango_layout_set_width(gw->pango_layout, (width == -1) ? -1 : width * PANGO_SCALE);
 }
 
 static int GGDKDrawLayoutLineCount(GWindow w){
-    fprintf(stderr, "GDKCALL: GGDKDrawLayoutLineCount\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawLayoutLineCount\n");
+    GGDKWindow gw = (GGDKWindow)w;
+
+    return pango_layout_get_line_count(gw->pango_layout);
 }
 
-static int GGDKDrawLayoutLineStart(GWindow w, int line){
-    fprintf(stderr, "GDKCALL: GGDKDrawLayoutLineStart\n"); assert(false);
+static int GGDKDrawLayoutLineStart(GWindow w, int l){
+    fprintf(stderr, "GDKCALL: GGDKDrawLayoutLineStart\n");
+    GGDKWindow gw = (GGDKWindow)w;
+    PangoLayoutLine *line = pango_layout_get_line(gw->pango_layout, l);
+
+    if (line == NULL) {
+        return -1;
+    }
+
+    return line->start_index;
 }
 
 static void GGDKDrawStartNewSubPath(GWindow w){
@@ -771,6 +984,68 @@ static int GGDKDrawFillRuleSetWinding(GWindow w){
     fprintf(stderr, "GDKCALL: GGDKDrawFillRuleSetWinding\n"); assert(false);
 }
 
+static int GGDKDrawDoText8(GWindow w, int32 x, int32 y, const char *text, int32 cnt, Color col, enum text_funcs drawit, struct tf_arg *arg) {
+    fprintf(stderr, "GDKCALL: GGDKDrawDoText8\n");
+
+    GGDKWindow gw = (GGDKWindow) w;
+    GGDKDisplay *gdisp = gw->display;
+    struct font_instance *fi = gw->ggc->fi;
+    PangoRectangle rect, ink;
+    PangoFontDescription *fd;
+
+    if (fi == NULL) {
+        return 0;
+    }
+
+    fd = _GGDKDraw_configfont(w, fi);
+    if (fd == NULL) {
+        return 0;
+    }
+
+    pango_layout_set_font_description(gw->pango_layout, fd);
+    pango_layout_set_text(gw->pango_layout, (char *)text, cnt);
+    pango_layout_get_pixel_extents(gw->pango_layout, NULL, &rect);
+
+    if (drawit == tf_drawit) {
+        _GGDKDraw_MyCairoRenderLayout(gw->cc, col, gw->pango_layout, x, y);
+    } else if (drawit == tf_rect) {
+        PangoLayoutIter *iter;
+        PangoLayoutRun *run;
+        PangoFontMetrics *fm;
+
+        pango_layout_get_pixel_extents(gw->pango_layout, &ink, &rect);
+        arg->size.lbearing = ink.x - rect.x;
+        arg->size.rbearing = ink.x+ink.width - rect.x;
+        arg->size.width = rect.width;
+        if ( *text=='\0' ) {
+            // There are no runs if there are no characters
+            memset(&arg->size,0,sizeof(arg->size));
+        } else {
+            iter = pango_layout_get_iter(gw->pango_layout);
+            run = pango_layout_iter_get_run(iter);
+            if (run == NULL) {
+                // Pango doesn't give us runs in a couple of other places
+                // surrogates, not unicode (0xfffe, 0xffff), etc.
+                memset(&arg->size, 0, sizeof(arg->size));
+            } else {
+                fm = pango_font_get_metrics(run->item->analysis.font, NULL);
+                arg->size.fas = pango_font_metrics_get_ascent(fm)/PANGO_SCALE;
+                arg->size.fds = pango_font_metrics_get_descent(fm)/PANGO_SCALE;
+                arg->size.as = ink.y + ink.height - arg->size.fds;
+                arg->size.ds = arg->size.fds - ink.y;
+                if (arg->size.ds < 0) {
+                    --arg->size.as;
+                    arg->size.ds = 0;
+                }
+                // In the one case I've looked at fds is one pixel off from rect.y
+                //  I don't know what to make of that
+                pango_font_metrics_unref(fm);
+            }
+            pango_layout_iter_free(iter);
+        }
+    }
+    return rect.width;
+}
 
 static void GGDKDrawPushClipOnly(GWindow w){
     fprintf(stderr, "GDKCALL: GGDKDrawPushClipOnly\n"); assert(false);
@@ -908,6 +1183,8 @@ static struct displayfuncs gdkfuncs = {
     GGDKDrawLayoutLineStart,
     GGDKDrawStartNewSubPath,
     GGDKDrawFillRuleSetWinding,
+
+    GGDKDrawDoText8,
 
     GGDKDrawPushClipOnly,
     GGDKDrawClipPreserve

@@ -84,6 +84,9 @@ struct ggdkwindow /* :GWindow */ {
     unsigned int is_dlg: 1;
     unsigned int not_restricted: 1;
     unsigned int was_positioned: 1;
+
+    char *window_title;
+
     cairo_surface_t *cs;
     cairo_t *cc;
     PangoLayout *pango_layout;
