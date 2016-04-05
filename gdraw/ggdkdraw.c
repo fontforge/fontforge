@@ -225,6 +225,11 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
 
     // This should not be here. Debugging purposes only.
     gdk_window_show(nw->w);
+
+    // Set the user data to the GWindow
+    // Although there is gdk_window_set_user_data, if non-NULL,
+    // GTK assumes it's a GTKWindow.
+    g_object_set_data(G_OBJECT(nw->w), "GGDKWindow", nw);
     return (GWindow)nw;
 }
 
@@ -364,6 +369,38 @@ static void _GGDKDraw_MyCairoRenderLayout(cairo_t *cc, Color fg, PangoLayout *la
         }
     } while (pango_layout_iter_next_run(iter));
     pango_layout_iter_free(iter);
+}
+
+static int16 _GGDKDraw_GdkModifierToKsm(GdkModifierType mask) {
+    int16 state = 0;
+    //Translate from mask to X11 state
+    if (mask & GDK_SHIFT_MASK)
+        state |= ksm_shift;
+    if (mask & GDK_LOCK_MASK)
+        state |= ksm_capslock;
+    if (mask & GDK_CONTROL_MASK)
+        state |= ksm_control;
+    if (mask & GDK_MOD1_MASK) //Guess
+        state |= ksm_meta;
+    if (mask & GDK_MOD2_MASK) //Guess
+        state |= ksm_cmdmacosx;
+    if (mask & GDK_SUPER_MASK)
+        state |= ksm_super;
+    if (mask * GDK_HYPER_MASK)
+        state |= ksm_hyper;
+    //ksm_option?
+    if (mask & GDK_BUTTON1_MASK)
+        state |= ksm_button1;
+    if (mask & GDK_BUTTON2_MASK)
+        state |= ksm_button2;
+    if (mask & GDK_BUTTON3_MASK)
+        state |= ksm_button3;
+    if (mask & GDK_BUTTON4_MASK)
+        state |= ksm_button4;
+    if (mask & GDK_BUTTON5_MASK)
+        state |= ksm_button5;
+
+    return state;
 }
 
 static void GGDKDrawInit(GDisplay *gdisp) {
@@ -575,16 +612,70 @@ static char* GGDKDrawGetWindowTitle8(GWindow gw){
     return copy(((GGDKWindow)gw)->window_title);
 }
 
-static void GGDKDrawSetTransientFor(GWindow gw1, GWindow gw2){
-    fprintf(stderr, "GDKCALL: GGDKDrawSetTransientFor\n"); assert(false);
+static void GGDKDrawSetTransientFor(GWindow transient, GWindow owner){
+    fprintf(stderr, "GDKCALL: GGDKDrawSetTransientFor\n"); //assert(false);
+    /*GGDKWindow gw = (GGDKWindow) transient;
+    GGDKDisplay *gdisp = gw->display;
+    GdkWindow *ow;
+
+    if (owner == (GWindow)-1) {
+        ow = gdisp->last_nontransient_window;
+    } else if (owner == NULL) {
+        ow = NULL; // Does this work with GDK?
+    } else {
+        ow = ((GGDKWindow)owner)->w;
+    }
+
+    gdk_window_set_transient_for(gdisp->display, gw->w, ow);
+    gw->transient_owner = ow;
+    gw->istransient = (ow != NULL);*/
 }
 
-static void GGDKDrawGetPointerPosition(GWindow gw, GEvent *gevent){
-    fprintf(stderr, "GDKCALL: GGDKDrawGetPointerPos\n"); assert(false);
+static void GGDKDrawGetPointerPosition(GWindow w, GEvent *ret){
+    fprintf(stderr, "GDKCALL: GGDKDrawGetPointerPos\n"); //assert(false);
+    GGDKWindow gw = (GGDKWindow)w;
+
+    // Well GDK likes deprecating everything...
+    // This is the latest 'non-deprecated' version.
+    // But it's only available in GDK 3.2...
+    // Might need to write a version using 'deprecated' functions...
+    GdkSeat *seat = gdk_display_get_default_seat(((GGDKWindow)gw)->display->display);
+    if (seat == NULL) {
+        return;
+    }
+
+    GdkDevice *pointer = gdk_seat_get_pointer(seat);
+    if (pointer == NULL) {
+        return;
+    }
+
+    int x, y;
+    GdkModifierType mask;
+    gdk_window_get_device_position(gw->w, pointer, &x, &y, &mask);
+    ret->u.mouse.x = x;
+    ret->u.mouse.y = y;
+    ret->u.mouse.state = _GGDKDraw_GdkModifierToKsm(mask);
 }
 
 static GWindow GGDKDrawGetPointerWindow(GWindow gw){
-    fprintf(stderr, "GDKCALL: GGDKDrawGetPointerWindow\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawGetPointerWindow\n");  //assert(false);
+
+    GdkSeat *seat = gdk_display_get_default_seat(((GGDKWindow)gw)->display->display);
+    if (seat == NULL) {
+        return NULL;
+    }
+
+    GdkDevice *pointer = gdk_seat_get_pointer(seat);
+    if (pointer == NULL) {
+        return NULL;
+    }
+
+    // Do I need to unref this?
+    GdkWindow *window = gdk_device_get_window_at_position(pointer, NULL, NULL);
+    if (window != NULL) {
+        return (GWindow)g_object_get_data(G_OBJECT(window), "GGDKWindow");
+    }
+    return NULL;
 }
 
 static void GGDKDrawSetCursor(GWindow gw, GCursor gcursor){
@@ -597,19 +688,40 @@ static GCursor GGDKDrawGetCursor(GWindow gw){
 
 static GWindow GGDKDrawGetRedirectWindow(GDisplay *gdisp){
     fprintf(stderr, "GDKCALL: GGDKDrawGetRedirectWindow\n"); assert(false);
+    // Sigh... I don't know...
+    /*
+    GGDKDisplay *gdisp = (GGDKDisplay *) gd;
+    if (gdisp->input == NULL) {
+        return NULL;
+    }
+    return gdisp->input->cur_dlg;
+    */
 }
 
 static void GGDKDrawTranslateCoordinates(GWindow from, GWindow to, GPoint *pt){
     fprintf(stderr, "GDKCALL: GGDKDrawTranslateCoordinates\n"); assert(false);
+    // Looks like i need to walk up the stack to find the parent and translate along the way...
+    /*
+    GXDisplay *gd = (GXDisplay *) ((_from!=NULL)?_from->display:_to->display);
+    Window from = (_from==NULL)?gd->root:((GXWindow) _from)->w;
+    Window to = (_to==NULL)?gd->root:((GXWindow) _to)->w;
+    int x,y;
+    Window child;
+
+    XTranslateCoordinates(gd->display,from,to,pt->x,pt->y,&x,&y,&child);
+    pt->x = x; pt->y = y;
+    */
 }
 
 
 static void GGDKDrawBeep(GDisplay *gdisp){
-    fprintf(stderr, "GDKCALL: GGDKDrawBeep\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawBeep\n"); //assert(false);
+    gdk_display_beep(((GGDKDisplay*)gdisp)->display);
 }
 
 static void GGDKDrawFlush(GDisplay *gdisp){
-    fprintf(stderr, "GDKCALL: GGDKDrawFlush\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawFlush\n"); //assert(false);
+    gdk_display_flush(((GGDKDisplay*)gdisp)->display);
 }
 
 
@@ -740,11 +852,16 @@ static int GGDKDrawSelectionHasOwner(GDisplay *gdisp, enum selnames sn){
 
 
 static void GGDKDrawPointerUngrab(GDisplay *gdisp){
-    fprintf(stderr, "GDKCALL: GGDKDrawPointerUngrab\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawPointerUngrab\n"); //assert(false);
+    //Supposedly deprecated but I don't care
+    //gdk_display_pointer_ungrab(((GGDKDisplay*)gdisp)->display, GDK_CURRENT_TIME);
 }
 
 static void GGDKDrawPointerGrab(GWindow gw){
-    fprintf(stderr, "GDKCALL: GGDKDrawPointerGrab\n"); assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawPointerGrab\n"); //assert(false);
+    //Supposedly deprecated but I don't care
+    //WTF? don't exist? sigh. Have to use the seat/device/...
+    //gdk_display_pointer_grab(((GGDKDisplay*)gdisp)->display, GDK_CURRENT_TIME);
 }
 
 static void GGDKDrawRequestExpose(GWindow gw, GRect *gr, int set){
@@ -1233,6 +1350,7 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *programname) {
     groot->pos.height = gdk_screen_get_height(gdisp->screen);
     groot->is_toplevel = true;
     groot->is_visible = true;
+    g_object_set_data(G_OBJECT(gdisp->root), "GGDKWindow", groot);
 
     //GGDKResourceInit(gdisp,programname);
 
