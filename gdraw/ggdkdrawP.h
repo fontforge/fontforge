@@ -97,10 +97,6 @@ struct ggdkwindow { /* :GWindow */
 // Functions in ggdkcdraw.c
 
 bool _GGDKDraw_InitPangoCairo(GGDKWindow gw);
-PangoFontDescription *_GGDKDraw_configfont(GWindow w, GFont *font);
-void _GGDKDraw_MyCairoRenderLayout(cairo_t *cc, Color fg, PangoLayout *layout, int x, int y);
-void _GGDKDraw_PushClip(GGDKWindow gw);
-void _GGDKDraw_PopClip(GGDKWindow gw);
 
 void GGDKDrawPushClip(GWindow w, GRect *rct, GRect *old);
 void GGDKDrawPopClip(GWindow gw, GRect *old);
@@ -116,7 +112,6 @@ void GGDKDrawFillEllipse(GWindow gw, GRect *rect, Color col);
 void GGDKDrawDrawArc(GWindow gw, GRect *rect, int32 sangle, int32 eangle, Color col);
 void GGDKDrawDrawPoly(GWindow gw, GPoint *pts, int16 cnt, Color col);
 void GGDKDrawFillPoly(GWindow gw, GPoint *pts, int16 cnt, Color col);
-void GGDKDrawScroll(GWindow gw, GRect *rect, int32 hor, int32 vert);
 void GGDKDrawDrawImage(GWindow gw, GImage *gimg, GRect *src, int32 x, int32 y);
 void GGDKDrawTileImage(GWindow gw, GImage *gimg, GRect *src, int32 x, int32 y);
 void GGDKDrawDrawGlyph(GWindow gw, GImage *gimg, GRect *src, int32 x, int32 y);

@@ -1,16 +1,18 @@
 /**
  *  \file ggdkcdraw.c
  *  \brief Cairo drawing functionality
+ *  This is basically the same as gxcdraw.c.
  */
 
 #include "ggdkdrawP.h"
 #include "ustring.h"
 #include <assert.h>
 #include <string.h>
+#include <math.h>
 
 // Private member functions
 
-static void GXCDraw_StippleMePink(GXWindow gw, int ts, Color fg) {
+static void GGDKDraw_StippleMePink(GGDKWindow gw, int ts, Color fg) {
     static unsigned char grey_init[8] = {0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa};
     static unsigned char fence_init[8] = {0x55, 0x22, 0x55, 0x88, 0x55, 0x22, 0x55, 0x88};
     uint8 *spt;
@@ -28,7 +30,7 @@ static void GXCDraw_StippleMePink(GXWindow gw, int ts, Color fg) {
         fg = (alpha << 24) | (r << 16) | (g << 8) | b;
     }
 
-    spt = ts == 2 ? fence_init : grey_init;
+    spt = (ts == 2) ? fence_init : grey_init;
     for (i = 0; i < 8; ++i) {
         data = space + 8 * i;
         for (j = 0, bit = 0x80; bit != 0; ++j, bit >>= 1) {
@@ -48,8 +50,7 @@ static void GXCDraw_StippleMePink(GXWindow gw, int ts, Color fg) {
     cairo_set_source(gw->cc, pat);
 }
 
-static int GXCDrawSetcolfunc(GXWindow gw, GGC *mine) {
-    /*GCState *gcs = &gw->cairo_state;*/
+static int GGDKDrawSetcolfunc(GGDKWindow gw, GGC *mine) {
     Color fg = mine->fg;
 
     if ((fg >> 24) == 0) {
@@ -57,17 +58,17 @@ static int GXCDrawSetcolfunc(GXWindow gw, GGC *mine) {
     }
 
     if (mine->ts != 0) {
-        GXCDraw_StippleMePink(gw, mine->ts, fg);
+        GGDKDraw_StippleMePink(gw, mine->ts, fg);
     } else {
-        cairo_set_source_rgba(gw->cc, COLOR_RED(fg) / 255.0, COLOR_GREEN(fg) / 255.0, COLOR_BLUE(fg) / 255.0,
-                              (fg >> 24) / 255.);
+        cairo_set_source_rgba(gw->cc, COLOR_RED(fg) / 255.0,
+                              COLOR_GREEN(fg) / 255.0, COLOR_BLUE(fg) / 255.0, (fg >> 24) / 255.);
     }
     return true;
 }
 
-static int GXCDrawSetline(GXWindow gw, GGC *mine) {
-    GCState *gcs = &gw->cairo_state;
+static int GGDKDrawSetline(GGDKWindow gw, GGC *mine) {
     Color fg = mine->fg;
+    double dashes[2] = {mine->dash_len, mine->skip_len};
 
     if ((fg >> 24) == 0) {
         fg |= 0xff000000;
@@ -76,24 +77,16 @@ static int GXCDrawSetline(GXWindow gw, GGC *mine) {
     if (mine->line_width <= 0) {
         mine->line_width = 1;
     }
-    if (mine->line_width != gcs->line_width || mine->line_width != 2) {
-        cairo_set_line_width(gw->cc, mine->line_width);
-        gcs->line_width = mine->line_width;
-    }
-    if (mine->dash_len != gcs->dash_len || mine->skip_len != gcs->skip_len ||
-            mine->dash_offset != gcs->dash_offset) {
-        double dashes[2];
-        dashes[0] = mine->dash_len;
-        dashes[1] = mine->skip_len;
-        cairo_set_dash(gw->cc, dashes, 0, mine->dash_offset);
-        gcs->dash_offset = mine->dash_offset;
-        gcs->dash_len = mine->dash_len;
-        gcs->skip_len = mine->skip_len;
-    }
-    /* I don't use line join/cap. On a screen with small line_width they are irrelevant */
+    cairo_set_line_width(gw->cc, mine->line_width);
+    //JT: This is from the original gxcdraw. But this looks like a bug?
+    //JT: Dashes will always be dis     abled as is.
+    //cairo_set_dash(gw->cc, dashes, 0, mine->dash_offset);
+    cairo_set_dash(gw->cc, dashes, (mine->dash_len == 0) ? 0 : 2, mine->dash_offset);
+
+    // I don't use line join/cap. On a screen with small line_width they are irrelevant
 
     if (mine->ts != 0) {
-        GXCDraw_StippleMePink(gw, mine->ts, fg);
+        GGDKDraw_StippleMePink(gw, mine->ts, fg);
     } else {
         cairo_set_source_rgba(gw->cc, COLOR_RED(fg) / 255.0, COLOR_GREEN(fg) / 255.0, COLOR_BLUE(fg) / 255.0,
                               (fg >> 24) / 255.0);
@@ -101,33 +94,8 @@ static int GXCDrawSetline(GXWindow gw, GGC *mine) {
     return mine->line_width;
 }
 
-// Protected member functions
-
-bool _GGDKDraw_InitPangoCairo(GGDKWindow gw) {
-    if (gw->is_pixmap) {
-        gw->cc = cairo_create(gw->cs);
-    } else {
-        gw->cc = gdk_cairo_create(gw->w);
-    }
-
-    if (gw->cc == NULL) {
-        fprintf(stderr, "GGDKDRAW: Cairo context creation failed!\n");
-        return false;
-    }
-
-    // Establish Pango layout context
-    gw->pango_layout = pango_layout_new(gw->display->pangoc_context);
-    if (gw->pango_layout == NULL) {
-        fprintf(stderr, "GGDKDRAW: Pango layout creation failed!\n");
-        cairo_destroy(gw->cc);
-        return false;
-    }
-
-    return true;
-}
-
 // Pango text
-PangoFontDescription *_GGDKDraw_configfont(GWindow w, GFont *font) {
+static PangoFontDescription *_GGDKDraw_configfont(GWindow w, GFont *font) {
     GGDKWindow gw = (GGDKWindow) w;
     PangoFontDescription *fd;
 
@@ -184,7 +152,7 @@ PangoFontDescription *_GGDKDraw_configfont(GWindow w, GFont *font) {
 // Strangely the equivalent routine was not part of the pangocairo library
 // Oh there's pango_cairo_layout_path but that's more restrictive and probably
 // less efficient
-void _GGDKDraw_MyCairoRenderLayout(cairo_t *cc, Color fg, PangoLayout *layout, int x, int y) {
+static void _GGDKDraw_MyCairoRenderLayout(cairo_t *cc, Color fg, PangoLayout *layout, int x, int y) {
     PangoRectangle rect, r2;
     PangoLayoutIter *iter;
 
@@ -207,19 +175,292 @@ void _GGDKDraw_MyCairoRenderLayout(cairo_t *cc, Color fg, PangoLayout *layout, i
     pango_layout_iter_free(iter);
 }
 
-
-void _GGDKDraw_PushClip(GGDKWindow gw) {
-    cairo_save(gw->cc);
-    cairo_new_path(gw->cc);
-    cairo_rectangle(gw->cc, gw->ggc->clip.x, gw->ggc->clip.y,
-                    gw->ggc->clip.width, gw->ggc->clip.height);
-    cairo_clip(gw->cc);
+static void _GGDKDraw_EllipsePath(cairo_t *cc, double cx, double cy, double width, double height) {
+    cairo_new_path(cc);
+    cairo_move_to(cc, cx, cy + height);
+    cairo_curve_to(cc,
+                   cx + .552 * width, cy + height,
+                   cx + width, cy + .552 * height,
+                   cx + width, cy);
+    cairo_curve_to(cc,
+                   cx + width, cy - .552 * height,
+                   cx + .552 * width, cy - height,
+                   cx, cy - height);
+    cairo_curve_to(cc,
+                   cx - .552 * width, cy - height,
+                   cx - width, cy - .552 * height,
+                   cx - width, cy);
+    cairo_curve_to(cc,
+                   cx - width, cy + .552 * height,
+                   cx - .552 * width, cy + height,
+                   cx, cy + height);
+    cairo_close_path(cc);
 }
 
-void _GGDKDraw_PopClip(GGDKWindow gw) {
-    cairo_restore(gw->cc);
+static cairo_surface_t *_GGDKDraw_GImage2Surface(GImage *image, GRect *src, uint8 **_data) {
+    struct _GImage *base = (image->list_len == 0) ? image->u.image : image->u.images[0];
+    cairo_format_t type;
+    uint8 *data, *pt;
+    uint32 *idata, *ipt, *ito;
+    int i, j, jj, tjj, stride;
+    int bit, tobit;
+    cairo_surface_t *cs;
+
+    if (base->image_type == it_rgba) {
+        type = CAIRO_FORMAT_ARGB32;
+    } else if (base->image_type == it_true && base->trans != COLOR_UNKNOWN) {
+        type = CAIRO_FORMAT_ARGB32;
+    } else if (base->image_type == it_index && base->clut->trans_index != COLOR_UNKNOWN) {
+        type = CAIRO_FORMAT_ARGB32;
+    } else if (base->image_type == it_true) {
+        type = CAIRO_FORMAT_RGB24;
+    } else if (base->image_type == it_index) {
+        type = CAIRO_FORMAT_RGB24;
+    } else if (base->image_type == it_mono && base->clut != NULL &&
+               base->clut->trans_index != COLOR_UNKNOWN) {
+        type = CAIRO_FORMAT_A1;
+    } else {
+        type = CAIRO_FORMAT_RGB24;
+    }
+
+    /* We can't reuse the image's data for alpha images because we must */
+    /*  premultiply each channel by alpha. We can reuse it for non-transparent*/
+    /*  rgb images */
+    if (base->image_type == it_true && type == CAIRO_FORMAT_RGB24) {
+        idata = ((uint32 *)(base->data)) + src->y * base->bytes_per_line + src->x;
+        *_data = NULL;		/* We can reuse the image's own data, don't need a copy */
+        return cairo_image_surface_create_for_data((uint8 *) idata, type,
+                src->width, src->height,
+                base->bytes_per_line);
+    }
+
+    stride = cairo_format_stride_for_width(type, src->width);
+    *_data = data = malloc(stride * src->height);
+    cs = cairo_image_surface_create_for_data(data, type,
+            src->width, src->height,   stride);
+    idata = (uint32 *) data;
+
+    if (base->image_type == it_rgba) {
+        ipt = ((uint32 *)(base->data + src->y * base->bytes_per_line)) + src->x;
+        ito = idata;
+        for (i = 0; i < src->height; ++i) {
+            for (j = 0; j < src->width; ++j) {
+                uint32 orig = ipt[j];
+                int alpha = orig >> 24;
+                if (alpha == 0xff) {
+                    ito[j] = orig;
+                } else if (alpha == 0) {
+                    ito[j] = 0x00000000;
+                } else
+                    ito[j] = (alpha << 24) |
+                             ((COLOR_RED(orig) * alpha / 255) << 16) |
+                             ((COLOR_GREEN(orig) * alpha / 255) << 8) |
+                             ((COLOR_BLUE(orig) * alpha / 255));
+            }
+            ipt = (uint32 *)(((uint8 *) ipt) + base->bytes_per_line);
+            ito = (uint32 *)(((uint8 *) ito) + stride);
+        }
+    } else if (base->image_type == it_true && base->trans != COLOR_UNKNOWN) {
+        Color trans = base->trans;
+        ipt = ((uint32 *)(base->data + src->y * base->bytes_per_line)) + src->x;
+        ito = idata;
+        for (i = 0; i < src->height; ++i) {
+            for (j = 0; j < src->width; ++j) {
+                if (ipt[j] == trans) {
+                    ito[j] = 0x00000000;
+                } else {
+                    ito[j] = ipt[j] | 0xff000000;
+                }
+            }
+            ipt = (uint32 *)(((uint8 *) ipt) + base->bytes_per_line);
+            ito = (uint32 *)(((uint8 *) ito) + stride);
+        }
+    } else if (base->image_type == it_true) {
+        ipt = ((uint32 *)(base->data + src->y * base->bytes_per_line)) + src->x;
+        ito = idata;
+        for (i = 0; i < src->height; ++i) {
+            for (j = 0; j < src->width; ++j) {
+                ito[j] = ipt[j] | 0xff000000;
+            }
+            ipt = (uint32 *)(((uint8 *) ipt) + base->bytes_per_line);
+            ito = (uint32 *)(((uint8 *) ito) + stride);
+        }
+    } else if (base->image_type == it_index && base->clut->trans_index != COLOR_UNKNOWN) {
+        int trans = base->clut->trans_index;
+        Color *clut = base->clut->clut;
+        pt = base->data + src->y * base->bytes_per_line + src->x;
+        ito = idata;
+        for (i = 0; i < src->height; ++i) {
+            for (j = 0; j < src->width; ++j) {
+                int index = pt[j];
+                if (index == trans) {
+                    ito[j] = 0x00000000;
+                } else
+                    /* In theory RGB24 images don't need the alpha channel set*/
+                    /*  but there is a bug in Cairo 1.2, and they do. */
+                {
+                    ito[j] = clut[index] | 0xff000000;
+                }
+            }
+            pt += base->bytes_per_line;
+            ito = (uint32 *)(((uint8 *) ito) + stride);
+        }
+    } else if (base->image_type == it_index) {
+        Color *clut = base->clut->clut;
+        pt = base->data + src->y * base->bytes_per_line + src->x;
+        ito = idata;
+        for (i = 0; i < src->height; ++i) {
+            for (j = 0; j < src->width; ++j) {
+                int index = pt[j];
+                ito[j] = clut[index] | 0xff000000;
+            }
+            pt += base->bytes_per_line;
+            ito = (uint32 *)(((uint8 *) ito) + stride);
+        }
+#ifdef WORDS_BIGENDIAN
+    } else if (base->image_type == it_mono && base->clut != NULL &&
+               base->clut->trans_index != COLOR_UNKNOWN) {
+        pt = base->data + src->y * base->bytes_per_line + (src->x >> 3);
+        ito = idata;
+        memset(data, 0, src->height * stride);
+        if (base->clut->trans_index == 0) {
+            for (i = 0; i < src->height; ++i) {
+                bit = (0x80 >> (src->x & 0x7));
+                tobit = 0x80000000;
+                for (j = jj = tjj = 0; j < src->width; ++j) {
+                    if (pt[jj]&bit) {
+                        ito[tjj] |= tobit;
+                    }
+                    if ((bit >>= 1) == 0) {
+                        bit = 0x80;
+                        ++jj;
+                    }
+                    if ((tobit >>= 1) == 0) {
+                        tobit = 0x80000000;
+                        ++tjj;
+                    }
+                }
+                pt += base->bytes_per_line;
+                ito = (uint32 *)(((uint8 *) ito) + stride);
+            }
+        } else {
+            for (i = 0; i < src->height; ++i) {
+                bit = (0x80 >> (src->x & 0x7));
+                tobit = 0x80000000;
+                for (j = jj = tjj = 0; j < src->width; ++j) {
+                    if (!(pt[jj]&bit)) {
+                        ito[tjj] |= tobit;
+                    }
+                    if ((bit >>= 1) == 0) {
+                        bit = 0x80;
+                        ++jj;
+                    }
+                    if ((tobit >>= 1) == 0) {
+                        tobit = 0x80000000;
+                        ++tjj;
+                    }
+                }
+                pt += base->bytes_per_line;
+                ito = (uint32 *)(((uint8 *) ito) + stride);
+            }
+        }
+#else
+    } else if (base->image_type == it_mono && base->clut != NULL &&
+               base->clut->trans_index != COLOR_UNKNOWN) {
+        pt = base->data + src->y * base->bytes_per_line + (src->x >> 3);
+        ito = idata;
+        memset(data, 0, src->height * stride);
+        if (base->clut->trans_index == 0) {
+            for (i = 0; i < src->height; ++i) {
+                bit = (0x80 >> (src->x & 0x7));
+                tobit = 1;
+                for (j = jj = tjj = 0; j < src->width; ++j) {
+                    if (pt[jj]&bit) {
+                        ito[tjj] |= tobit;
+                    }
+                    if ((bit >>= 1) == 0) {
+                        bit = 0x80;
+                        ++jj;
+                    }
+                    if ((tobit <<= 1) == 0) {
+                        tobit = 0x1;
+                        ++tjj;
+                    }
+                }
+                pt += base->bytes_per_line;
+                ito = (uint32 *)(((uint8 *) ito) + stride);
+            }
+        } else {
+            for (i = 0; i < src->height; ++i) {
+                bit = (0x80 >> (src->x & 0x7));
+                tobit = 1;
+                for (j = jj = tjj = 0; j < src->width; ++j) {
+                    if (!(pt[jj]&bit)) {
+                        ito[tjj] |= tobit;
+                    }
+                    if ((bit >>= 1) == 0) {
+                        bit = 0x80;
+                        ++jj;
+                    }
+                    if ((tobit <<= 1) == 0) {
+                        tobit = 0x1;
+                        ++tjj;
+                    }
+                }
+                pt += base->bytes_per_line;
+                ito = (uint32 *)(((uint8 *) ito) + stride);
+            }
+        }
+#endif
+    } else {
+        Color fg = base->clut == NULL ? 0xffffff : base->clut->clut[1];
+        Color bg = base->clut == NULL ? 0x000000 : base->clut->clut[0];
+        /* In theory RGB24 images don't need the alpha channel set*/
+        /*  but there is a bug in Cairo 1.2, and they do. */
+        fg |= 0xff000000;
+        bg |= 0xff000000;
+        pt = base->data + src->y * base->bytes_per_line + (src->x >> 3);
+        ito = idata;
+        for (i = 0; i < src->height; ++i) {
+            bit = (0x80 >> (src->x & 0x7));
+            for (j = jj = 0; j < src->width; ++j) {
+                ito[j] = (pt[jj] & bit) ? fg : bg;
+                if ((bit >>= 1) == 0) {
+                    bit = 0x80;
+                    ++jj;
+                }
+            }
+            pt += base->bytes_per_line;
+            ito = (uint32 *)(((uint8 *) ito) + stride);
+        }
+    }
+    return cs;
 }
 
+// Protected member functions
+
+bool _GGDKDraw_InitPangoCairo(GGDKWindow gw) {
+    if (gw->is_pixmap) {
+        gw->cc = cairo_create(gw->cs);
+    } else {
+        gw->cc = gdk_cairo_create(gw->w);
+    }
+
+    if (gw->cc == NULL) {
+        fprintf(stderr, "GGDKDRAW: Cairo context creation failed!\n");
+        return false;
+    }
+
+    // Establish Pango layout context
+    gw->pango_layout = pango_layout_new(gw->display->pangoc_context);
+    if (gw->pango_layout == NULL) {
+        fprintf(stderr, "GGDKDRAW: Pango layout creation failed!\n");
+        cairo_destroy(gw->cc);
+        return false;
+    }
+
+    return true;
+}
 
 void GGDKDrawPushClip(GWindow w, GRect *rct, GRect *old) {
     fprintf(stderr, "GDKCALL: GGDKDrawPushClip\n"); //assert(false);
@@ -257,13 +498,19 @@ void GGDKDrawPushClip(GWindow w, GRect *rct, GRect *old) {
         w->ggc->clip.x = w->ggc->clip.y = -100;
         w->ggc->clip.height = w->ggc->clip.width = 1;
     }
-    _GGDKDraw_PushClip((GGDKWindow)w);
+
+    GGDKWindow gw = (GGDKWindow)w;
+    cairo_save(gw->cc);
+    cairo_new_path(gw->cc);
+    cairo_rectangle(gw->cc, gw->ggc->clip.x, gw->ggc->clip.y,
+                    gw->ggc->clip.width, gw->ggc->clip.height);
+    cairo_clip(gw->cc);
 }
 
 void GGDKDrawPopClip(GWindow gw, GRect *old) {
     fprintf(stderr, "GDKCALL: GGDKDrawPopClip\n"); //assert(false);
     gw->ggc->clip = *old;
-    _GGDKDraw_PopClip((GGDKWindow)gw);
+    cairo_restore(((GGDKWindow)gw)->cc);
 }
 
 
@@ -296,7 +543,7 @@ void GGDKDrawDrawLine(GWindow w, int32 x, int32 y, int32 xend, int32 yend, Color
 
     w->ggc->fg = col;
 
-    int width = GXCDrawSetline(gw, gw->ggc);
+    int width = GGDKDrawSetline(gw, gw->ggc);
     cairo_new_path(gw->cc);
     if (width & 1) {
         cairo_move_to(gw->cc, x + .5, y + .5);
@@ -308,85 +555,358 @@ void GGDKDrawDrawLine(GWindow w, int32 x, int32 y, int32 xend, int32 yend, Color
     cairo_stroke(gw->cc);
 }
 
-void GGDKDrawDrawArrow(GWindow gw, int32 x, int32 y, int32 xend, int32 yend, int16 arrows, Color col) {
-    fprintf(stderr, "GDKCALL: GGDKDrawDrawArrow\n");
-    assert(false);
+void GGDKDrawDrawArrow(GWindow w, int32 x, int32 y, int32 xend, int32 yend, int16 arrows, Color col) {
+    fprintf(stderr, "GDKCALL: GGDKDrawDrawArrow\n"); //assert(false);
+    GGDKWindow gw = (GGDKWindow)w;
+    gw->ggc->fg = col;
+
+    int width = GGDKDrawSetline(gw, gw->ggc);
+    if (width & 1) {
+        x += .5;
+        y += .5;
+        xend += .5;
+        yend += .5;
+    }
+
+    const double head_angle = 0.5;
+    double angle = atan2(yend - y, xend - x) + M_PI;
+    double length = sqrt((x - xend) * (x - xend) + (y - yend) * (y - yend));
+
+    cairo_new_path(gw->cc);
+    cairo_move_to(gw->cc, x, y);
+    cairo_line_to(gw->cc, xend, yend);
+    cairo_stroke(gw->cc);
+
+    if (length < 2) { //No point arrowing something so small
+        return;
+    } else if (length > 20) {
+        length = 10;
+    } else {
+        length *= 2. / 3.;
+    }
+    cairo_new_path(gw->cc);
+    cairo_move_to(gw->cc, xend, yend);
+    cairo_line_to(gw->cc, xend + length * cos(angle - head_angle), yend + length * sin(angle - head_angle));
+    cairo_line_to(gw->cc, xend + length * cos(angle + head_angle), yend + length * sin(angle + head_angle));
+    cairo_close_path(gw->cc);
+    cairo_fill(gw->cc);
 }
 
-void GGDKDrawDrawRect(GWindow gw, GRect *rect, Color col) {
-    fprintf(stderr, "GDKCALL: GGDKDrawDrawRect\n");
-    assert(false);
+void GGDKDrawDrawRect(GWindow w, GRect *rect, Color col) {
+    fprintf(stderr, "GDKCALL: GGDKDrawDrawRect\n"); //assert(false);
+    GGDKWindow gw = (GGDKWindow)w;
+    gw->ggc->fg = col;
+
+    int width = GGDKDrawSetline(gw, gw->ggc);
+    cairo_new_path(gw->cc);
+    if (width & 1) {
+        cairo_rectangle(gw->cc, rect->x + .5, rect->y + .5, rect->width, rect->height);
+    } else {
+        cairo_rectangle(gw->cc, rect->x, rect->y, rect->width, rect->height);
+    }
+    cairo_stroke(gw->cc);
 }
 
-void GGDKDrawFillRect(GWindow gw, GRect *rect, Color col) {
-    fprintf(stderr, "GDKCALL: GGDKDrawFillRect\n");
-    assert(false);
+void GGDKDrawFillRect(GWindow w, GRect *rect, Color col) {
+    fprintf(stderr, "GDKCALL: GGDKDrawFillRect\n"); //assert(false);
+    GGDKWindow gw = (GGDKWindow)w;
+    gw->ggc->fg = col;
+
+    GGDKDrawSetcolfunc(gw, gw->ggc);
+
+    cairo_new_path(gw->cc);
+    cairo_rectangle(gw->cc, rect->x, rect->y, rect->width, rect->height);
+    cairo_fill(gw->cc);
 }
 
-void GGDKDrawFillRoundRect(GWindow gw, GRect *rect, int radius, Color col) {
-    fprintf(stderr, "GDKCALL: GGDKDrawFillRoundRect\n");
-    assert(false);
+void GGDKDrawFillRoundRect(GWindow w, GRect *rect, int radius, Color col) {
+    fprintf(stderr, "GDKCALL: GGDKDrawFillRoundRect\n"); //assert(false);
+    GGDKWindow gw = (GGDKWindow)w;
+    gw->ggc->fg = col;
+
+    GGDKDrawSetcolfunc(gw, gw->ggc);
+
+    double degrees = M_PI / 180.0;
+    int rr = (radius <= (rect->height + 1) / 2) ? (radius > 0 ? radius : 0) : (rect->height + 1) / 2;
+    cairo_new_path(gw->cc);
+    cairo_arc(gw->cc, rect->x + rect->width - rr, rect->y + rr, rr, -90 * degrees, 0 * degrees);
+    cairo_arc(gw->cc, rect->x + rect->width - rr, rect->y + rect->height - rr, rr, 0 * degrees, 90 * degrees);
+    cairo_arc(gw->cc, rect->x + rr, rect->y + rect->height - rr, rr, 90 * degrees, 180 * degrees);
+    cairo_arc(gw->cc, rect->x + rr, rect->y + rr, rr, 180 * degrees, 270 * degrees);
+    cairo_close_path(gw->cc);
+    cairo_fill(gw->cc);
 }
 
-void GGDKDrawDrawEllipse(GWindow gw, GRect *rect, Color col) {
-    fprintf(stderr, "GDKCALL: GGDKDrawDrawEllipse\n");
-    assert(false);
+void GGDKDrawDrawEllipse(GWindow w, GRect *rect, Color col) {
+    fprintf(stderr, "GDKCALL: GGDKDrawDrawEllipse\n"); //assert(false);
+    GGDKWindow gw = (GGDKWindow)w;
+    gw->ggc->fg = col;
+
+    // It is tempting to use the cairo arc command and scale the
+    //  coordinates to get an ellipse, but that distorts the stroke width.
+    int lwidth = GGDKDrawSetline(gw, gw->ggc);
+    double cx, cy, width, height;
+
+    width = rect->width / 2.0;
+    height = rect->height / 2.0;
+    cx = rect->x + width;
+    cy = rect->y + height;
+    if (lwidth & 1) {
+        if (rint(width) == width) {
+            cx += .5;
+        }
+        if (rint(height) == height) {
+            cy += .5;
+        }
+    }
+    _GGDKDraw_EllipsePath(gw->cc, cx, cy, width, height);
+    cairo_stroke(gw->cc);
 }
 
-void GGDKDrawFillEllipse(GWindow gw, GRect *rect, Color col) {
-    fprintf(stderr, "GDKCALL: GGDKDrawFillEllipse\n");
-    assert(false);
+void GGDKDrawFillEllipse(GWindow w, GRect *rect, Color col) {
+    fprintf(stderr, "GDKCALL: GGDKDrawFillEllipse\n"); //assert(false);
+    GGDKWindow gw = (GGDKWindow)w;
+
+    gw->ggc->fg = col;
+    GGDKDrawSetcolfunc(gw, gw->ggc);
+
+    // It is tempting to use the cairo arc command and scale the
+    //  coordinates to get an ellipse, but that distorts the stroke width.
+    double cx, cy, width, height;
+    width = rect->width / 2.0;
+    height = rect->height / 2.0;
+    cx = rect->x + width;
+    cy = rect->y + height;
+    _GGDKDraw_EllipsePath(gw->cc, cx, cy, width, height);
+    cairo_fill(gw->cc);
 }
 
-void GGDKDrawDrawArc(GWindow gw, GRect *rect, int32 sangle, int32 eangle, Color col) {
-    fprintf(stderr, "GDKCALL: GGDKDrawDrawArc\n");
-    assert(false);
+/**
+ *  \brief Draws an arc (circular and elliptical).
+ *
+ *  \param [in] gw The window to draw on.
+ *  \param [in] rect The bounding box of the arc. If width!=height, then
+ *                   an elliptical arc will be drawn.
+ *  \param [in] sangle The start angle in degrees * 64 (Cartesian)
+ *  \param [in] eangle The angle offset from the start in degrees * 64 (positive CCW)
+ */
+void GGDKDrawDrawArc(GWindow w, GRect *rect, int32 sangle, int32 eangle, Color col) {
+    fprintf(stderr, "GDKCALL: GGDKDrawDrawArc\n"); //assert(false);
+    GGDKWindow gw = (GGDKWindow)w;
+    gw->ggc->fg = col;
+
+    // Leftover from XDrawArc: sangle/eangle in degrees*64.
+    double start = -(sangle + eangle) * M_PI / 11520., end = -sangle * M_PI / 11520.;
+    int width = GGDKDrawSetline(gw, gw->ggc);
+
+    cairo_new_path(gw->cc);
+    cairo_save(gw->cc);
+    if (width & 1) {
+        cairo_translate(gw->cc, rect->x + .5 + rect->width / 2., rect->y + .5 + rect->height / 2.);
+    } else {
+        cairo_translate(gw->cc, rect->x + rect->width / 2., rect->y + rect->height / 2.);
+    }
+    cairo_scale(gw->cc, rect->width / 2., rect->height / 2.);
+    cairo_arc(gw->cc, 0., 0., 1., start, end);
+    cairo_restore(gw->cc);
+    cairo_stroke(gw->cc);
 }
 
-void GGDKDrawDrawPoly(GWindow gw, GPoint *pts, int16 cnt, Color col) {
-    fprintf(stderr, "GDKCALL: GGDKDrawDrawPoly\n");
-    assert(false);
+void GGDKDrawDrawPoly(GWindow w, GPoint *pts, int16 cnt, Color col) {
+    fprintf(stderr, "GDKCALL: GGDKDrawDrawPoly\n"); //assert(false);
+    GGDKWindow gw = (GGDKWindow)w;
+    gw->ggc->fg = col;
+
+    int width = GGDKDrawSetline(gw, gw->ggc);
+    double off = (width & 1) ? .5 : 0;
+
+    cairo_new_path(gw->cc);
+    cairo_move_to(gw->cc, pts[0].x + off, pts[0].y + off);
+    for (int i = 1; i < cnt; ++i) {
+        cairo_line_to(gw->cc, pts[i].x + off, pts[i].y + off);
+    }
+    cairo_stroke(gw->cc);
 }
 
-void GGDKDrawFillPoly(GWindow gw, GPoint *pts, int16 cnt, Color col) {
-    fprintf(stderr, "GDKCALL: GGDKDrawFillPoly\n");
-    assert(false);
+void GGDKDrawFillPoly(GWindow w, GPoint *pts, int16 cnt, Color col) {
+    fprintf(stderr, "GDKCALL: GGDKDrawFillPoly\n"); //assert(false);
+    GGDKWindow gw = (GGDKWindow)w;
+    gw->ggc->fg = col;
+
+    GGDKDrawSetcolfunc(gw, gw->ggc);
+
+    cairo_new_path(gw->cc);
+    cairo_move_to(gw->cc, pts[0].x, pts[0].y);
+    for (int i = 1; i < cnt; ++i) {
+        cairo_line_to(gw->cc, pts[i].x, pts[i].y);
+    }
+    cairo_close_path(gw->cc);
+    cairo_fill(gw->cc);
+
+    cairo_set_line_width(gw->cc, 1);
+    cairo_new_path(gw->cc);
+    cairo_move_to(gw->cc, pts[0].x + .5, pts[0].y + .5);
+    for (int i = 1; i < cnt; ++i) {
+        cairo_line_to(gw->cc, pts[i].x + .5, pts[i].y + .5);
+    }
+    cairo_close_path(gw->cc);
+    cairo_stroke(gw->cc);
 }
 
-void GGDKDrawScroll(GWindow gw, GRect *rect, int32 hor, int32 vert) {
-    fprintf(stderr, "GDKCALL: GGDKDrawScroll\n");
-    assert(false);
-}
+void GGDKDrawDrawImage(GWindow w, GImage *image, GRect *src, int32 x, int32 y) {
+    fprintf(stderr, "GDKCALL: GGDKDrawDrawImage\n"); //assert(false);
+    GGDKWindow gw = (GGDKWindow)w;
 
+    uint8 *data;
+    cairo_surface_t *is = _GGDKDraw_GImage2Surface(image, src, &data);
+    struct _GImage *base = (image->list_len == 0) ? image->u.image : image->u.images[0];
 
-void GGDKDrawDrawImage(GWindow gw, GImage *gimg, GRect *src, int32 x, int32 y) {
-    fprintf(stderr, "GDKCALL: GGDKDrawDrawImage\n");
-    assert(false);
+    if (cairo_image_surface_get_format(is) == CAIRO_FORMAT_A1) {
+        /* No color info, just alpha channel */
+        Color fg = base->clut->trans_index == 0 ? base->clut->clut[1] : base->clut->clut[0];
+        cairo_set_source_rgba(gw->cc, COLOR_RED(fg) / 255.0, COLOR_GREEN(fg) / 255.0, COLOR_BLUE(fg) / 255.0, 1.0);
+        cairo_mask_surface(gw->cc, is, x, y);
+    } else {
+        cairo_set_source_surface(gw->cc, is, x, y);
+        cairo_rectangle(gw->cc, x, y, src->width, src->height);
+        cairo_fill(gw->cc);
+    }
+    /* Clear source and mask, in case we need to */
+    cairo_new_path(gw->cc);
+    cairo_set_source_rgba(gw->cc, 0, 0, 0, 0);
+
+    cairo_surface_destroy(is);
+    free(data);
 }
 
 void GGDKDrawTileImage(GWindow gw, GImage *gimg, GRect *src, int32 x, int32 y) {
     fprintf(stderr, "GDKCALL: GGDKDrawTileImage\n");
-    assert(false);
+    assert(false); // Huh. This is actually not implemented.
 }
 
-void GGDKDrawDrawGlyph(GWindow gw, GImage *gimg, GRect *src, int32 x, int32 y) {
-    fprintf(stderr, "GDKCALL: GGDKDrawDrawGlyph\n");
-    assert(false);
+// What we really want to do is use the grey levels as an alpha channel
+void GGDKDrawDrawGlyph(GWindow w, GImage *image, GRect *src, int32 x, int32 y) {
+    fprintf(stderr, "GDKCALL: GGDKDrawDrawGlyph\n"); //assert(false);
+    GGDKWindow gw = (GGDKWindow)w;
+
+    struct _GImage *base = (image->list_len) == 0 ? image->u.image : image->u.images[0];
+    cairo_surface_t *is;
+
+    if (base->image_type != it_index) {
+        GGDKDrawDrawImage(w, image, src, x, y);
+    } else {
+        int stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, src->width);
+        uint8 *basedata = malloc(stride * src->height),
+               *data = basedata,
+                *srcd = base->data + src->y * base->bytes_per_line + src->x;
+        int factor = base->clut->clut_len == 256 ? 1 :
+                     base->clut->clut_len == 16 ? 17 :
+                     base->clut->clut_len == 4 ? 85 : 255;
+        int i, j;
+        Color fg = base->clut->clut[base->clut->clut_len - 1];
+
+        for (i = 0; i < src->height; ++i) {
+            for (j = 0; j < src->width; ++j) {
+                data[j] = factor * srcd[j];
+            }
+            srcd += base->bytes_per_line;
+            data += stride;
+        }
+        is = cairo_image_surface_create_for_data(basedata, CAIRO_FORMAT_A8,
+                src->width, src->height, stride);
+        cairo_set_source_rgba(gw->cc, COLOR_RED(fg) / 255.0, COLOR_GREEN(fg) / 255.0, COLOR_BLUE(fg) / 255.0, 1.0);
+        cairo_mask_surface(gw->cc, is, x, y);
+        /* I think the mask is sufficient, setting a rectangle would provide */
+        /*  a new mask? */
+        /*cairo_rectangle(gw->cc,x,y,src->width,src->height);*/
+        /* I think setting the mask also draws... at least so the tutorial implies */
+        /* cairo_fill(gw->cc);*/
+        /* Presumably that doesn't leave the mask surface pattern lying around */
+        /* but dereferences it so we can free it */
+        cairo_surface_destroy(is);
+        free(basedata);
+    }
 }
 
-void GGDKDrawDrawImageMagnified(GWindow gw, GImage *gimg, GRect *src, int32 x, int32 y, int32 width, int32 height) {
-    fprintf(stderr, "GDKCALL: GGDKDrawDrawImageMag\n");
-    assert(false);
+void GGDKDrawDrawImageMagnified(GWindow w, GImage *image, GRect *src, int32 x, int32 y, int32 width, int32 height) {
+    fprintf(stderr, "GDKCALL: GGDKDrawDrawImageMag\n"); //assert(false);
+    GGDKWindow gw = (GGDKWindow)w;
+    struct _GImage *base = (image->list_len == 0) ? image->u.image : image->u.images[0];
+    GRect full;
+    double xscale, yscale;
+    GRect viewable;
+
+    viewable = gw->ggc->clip;
+    if (viewable.width > gw->pos.width - viewable.x) {
+        viewable.width = gw->pos.width - viewable.x;
+    }
+    if (viewable.height > gw->pos.height - viewable.y) {
+        viewable.height = gw->pos.height - viewable.y;
+    }
+
+    xscale = (base->width >= 1) ? ((double)(width)) / (base->width) : 1;
+    yscale = (base->height >= 1) ? ((double)(height)) / (base->height) : 1;
+    /* Intersect the clip rectangle with the scaled image to find the */
+    /*  portion of screen that we want to draw */
+    if (viewable.x < x) {
+        viewable.width -= (x - viewable.x);
+        viewable.x = x;
+    }
+    if (viewable.y < y) {
+        viewable.height -= (y - viewable.y);
+        viewable.y = y;
+    }
+    if (viewable.x + viewable.width > x + width) {
+        viewable.width = x + width - viewable.x;
+    }
+    if (viewable.y + viewable.height > y + height) {
+        viewable.height = y + height - viewable.y;
+    }
+    if (viewable.height < 0 || viewable.width < 0) {
+        return;
+    }
+
+    /* Now find that same rectangle in the coordinates of the unscaled image */
+    /* (translation & scale) */
+    viewable.x -= x;
+    viewable.y -= y;
+    full.x = viewable.x / xscale;
+    full.y = viewable.y / yscale;
+    full.width = viewable.width / xscale;
+    full.height = viewable.height / yscale;
+    if (full.x + full.width > base->width) {
+        full.width = base->width - full.x;    /* Rounding errors */
+    }
+    if (full.y + full.height > base->height) {
+        full.height = base->height - full.y;    /* Rounding errors */
+    }
+    /* Rounding errors */
+    {
+        GImage *temp = _GImageExtract(base, &full, &viewable, xscale, yscale);
+        GRect src;
+        src.x = src.y = 0;
+        src.width = viewable.width;
+        src.height = viewable.height;
+        GGDKDrawDrawImage(w, temp, &src, x + viewable.x, y + viewable.y);
+    }
 }
 
 GImage *GGDKDrawCopyScreenToImage(GWindow gw, GRect *rect) {
     fprintf(stderr, "GDKCALL: GGDKDrawCopyScreenToImage\n");
-    assert(false);
+    assert(false); // No Cairo impl. Leave for now...
 }
 
-void GGDKDrawDrawPixmap(GWindow gw1, GWindow gw2, GRect *src, int32 x, int32 y) {
-    fprintf(stderr, "GDKCALL: GGDKDrawDrawPixmap\n");
-    assert(false);
+void GGDKDrawDrawPixmap(GWindow w, GWindow pixmap, GRect *src, int32 x, int32 y) {
+    fprintf(stderr, "GDKCALL: GGDKDrawDrawPixmap\n"); //assert(false);
+    GGDKWindow gw = (GGDKWindow)w, gpixmap = (GGDKWindow)pixmap;
+
+    if (!gpixmap->is_pixmap) {
+        return;
+    }
+
+    cairo_set_source_surface(gw->cc, gpixmap->cs, x - src->x, y - src->y);
+    cairo_rectangle(gw->cc, x, y, src->width, src->height);
+    cairo_fill(gw->cc);
 }
 
 void GGDKDrawTilePixmap(GWindow gw1, GWindow gw2, GRect *src, int32 x, int32 y) {
@@ -396,58 +916,75 @@ void GGDKDrawTilePixmap(GWindow gw1, GWindow gw2, GRect *src, int32 x, int32 y) 
 
 enum gcairo_flags GGDKDrawHasCairo(GWindow w) {
     fprintf(stderr, "GDKCALL: gcairo_flags GGDKDrawHasCairo\n");
-    assert(false);
+    //assert(false);
+    return gc_all;
 }
 
 
 void GGDKDrawPathStartNew(GWindow w) {
-    fprintf(stderr, "GDKCALL: GGDKDrawStartNewPath\n");
-    assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawStartNewPath\n"); //assert(false);
+    cairo_new_path(((GGDKWindow)w)->cc);
 }
 
 void GGDKDrawPathClose(GWindow w) {
-    fprintf(stderr, "GDKCALL: GGDKDrawClosePath\n");
-    assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawClosePath\n"); //assert(false);
+    cairo_close_path(((GGDKWindow)w)->cc);
 }
 
 void GGDKDrawPathMoveTo(GWindow w, double x, double y) {
-    fprintf(stderr, "GDKCALL: GGDKDrawMoveto\n");
-    assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawMoveto\n"); //assert(false);
+    cairo_move_to(((GGDKWindow)w)->cc, x, y);
 }
 
 void GGDKDrawPathLineTo(GWindow w, double x, double y) {
-    fprintf(stderr, "GDKCALL: GGDKDrawLineto\n");
-    assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawLineto\n"); //assert(false);
+    cairo_line_to(((GGDKWindow)w)->cc, x, y);
 }
 
 void GGDKDrawPathCurveTo(GWindow w, double cx1, double cy1, double cx2, double cy2, double x, double y) {
-    fprintf(stderr, "GDKCALL: GGDKDrawCurveto\n");
-    assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawCurveto\n"); //assert(false);
+    cairo_curve_to(((GGDKWindow)w)->cc, cx1, cy1, cx2, cy2, x, y);
 }
 
 void GGDKDrawPathStroke(GWindow w, Color col) {
-    fprintf(stderr, "GDKCALL: GGDKDrawStroke\n");
-    assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawStroke\n"); //assert(false);
+    w->ggc->fg = col;
+    GGDKDrawSetline((GGDKWindow) w, w->ggc);
+    cairo_stroke(((GGDKWindow)w)->cc);
 }
 
 void GGDKDrawPathFill(GWindow w, Color col) {
-    fprintf(stderr, "GDKCALL: GGDKDrawFill\n");
-    assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawFill\n"); //assert(false);
+    cairo_set_source_rgba(((GGDKWindow) w)->cc, COLOR_RED(col) / 255.0, COLOR_GREEN(col) / 255.0, COLOR_BLUE(col) / 255.0,
+                          (col >> 24) / 255.0);
+    cairo_fill(((GGDKWindow) w)->cc);
 }
 
 void GGDKDrawPathFillAndStroke(GWindow w, Color fillcol, Color strokecol) {
-    fprintf(stderr, "GDKCALL: GGDKDrawFillAndStroke\n");
-    assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawFillAndStroke\n"); //assert(false);
+    GGDKWindow gw = (GGDKWindow) w;
+
+    cairo_save(gw->cc);
+    cairo_set_source_rgba(gw->cc, COLOR_RED(fillcol) / 255.0, COLOR_GREEN(fillcol) / 255.0, COLOR_BLUE(fillcol) / 255.0,
+                          (fillcol >> 24) / 255.0);
+    cairo_fill(gw->cc);
+    cairo_restore(gw->cc);
+    w->ggc->fg = strokecol;
+    GGDKDrawSetline(gw, gw->ggc);
+    //JT: Surely this should be cairo_stroke...
+    //cairo_fill( gw->cc );
+    cairo_stroke(gw->cc);
 }
 
 void GGDKDrawStartNewSubPath(GWindow w) {
-    fprintf(stderr, "GDKCALL: GGDKDrawStartNewSubPath\n");
-    assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawStartNewSubPath\n"); //assert(false);
+    cairo_new_sub_path(((GGDKWindow)w)->cc);
 }
 
 int GGDKDrawFillRuleSetWinding(GWindow w) {
-    fprintf(stderr, "GDKCALL: GGDKDrawFillRuleSetWinding\n");
-    assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawFillRuleSetWinding\n"); //assert(false);
+    cairo_set_fill_rule(((GGDKWindow)w)->cc, CAIRO_FILL_RULE_WINDING);
+    return 1;
 }
 
 int GGDKDrawDoText8(GWindow w, int32 x, int32 y, const char *text, int32 cnt, Color col, enum text_funcs drawit,
@@ -515,17 +1052,14 @@ int GGDKDrawDoText8(GWindow w, int32 x, int32 y, const char *text, int32 cnt, Co
 }
 
 void GGDKDrawPushClipOnly(GWindow w) {
-    fprintf(stderr, "GDKCALL: GGDKDrawPushClipOnly\n");
-    assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawPushClipOnly\n"); //assert(false);
+    cairo_save( ((GGDKWindow)w)->cc );
 }
 
 void GGDKDrawClipPreserve(GWindow w) {
-    fprintf(stderr, "GDKCALL: GGDKDrawClipPreserve\n");
-    assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawClipPreserve\n"); //assert(false);
+    cairo_clip_preserve( ((GGDKWindow)w)->cc );
 }
-
-
-
 
 // PANGO LAYOUT
 
@@ -545,7 +1079,9 @@ void GGDKDrawGetFontMetrics(GWindow gw, GFont *fi, int *as, int *ds, int *ld) {
     *ds = pango_font_metrics_get_descent(fm) / PANGO_SCALE;
     *ld = 0;
     pango_font_metrics_unref(fm);
-    //g_object_unref(pfont);
+    // pango_font_unref(pfont);
+    // This function has disappeared from Pango with no explanation.
+    // But we still leak memory here.
 }
 
 void GGDKDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
