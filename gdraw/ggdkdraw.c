@@ -13,6 +13,9 @@
 #include <assert.h>
 #include <string.h>
 
+static void GGDKDrawSetCursor(GWindow w, GCursor gcursor);
+static void GGDKDrawTranslateCoordinates(GWindow from, GWindow to, GPoint *pt);
+
 // Private member functions (file-level)
 
 static GGC *_GGDKDraw_NewGGC() {
@@ -28,6 +31,18 @@ static GGC *_GGDKDraw_NewGGC() {
     return ggc;
 }
 
+static cairo_surface_t *_GGDKDraw_OnGdkCreateSurface(GdkWindow *w, gint width, gint height, gpointer user_data) {
+    GGDKWindow gw = g_object_get_data(G_OBJECT(w), "GGDKWindow");
+    fprintf(stderr, "GDKCALL _GGDKDraw_OnGdkCreateSurface\n");
+    if (gw == NULL) {
+        fprintf(stderr, "NO GGDKWindow attached to GdkWindow!\n");
+    }
+
+    cairo_destroy(gw->cc);
+    gw->cc = NULL;
+    return NULL;
+}
+
 static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *pos,
                                       int (*eh)(GWindow, GEvent *), void *user_data, GWindowAttrs *wattrs) {
 
@@ -37,7 +52,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     GGDKWindow nw = (GGDKWindow)calloc(1, sizeof(struct ggdkwindow));
 
     if (nw == NULL) {
-        fprintf(stderr, "_GFDKDraw_CreateWindow: GGDKWindow calloc failed.\n");
+        fprintf(stderr, "_GGDKDraw_CreateWindow: GGDKWindow calloc failed.\n");
         return NULL;
     }
     if (wattrs == NULL) {
@@ -52,7 +67,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
 
     nw->ggc = _GGDKDraw_NewGGC();
     if (nw->ggc == NULL) {
-        fprintf(stderr, "_GFDKDraw_CreateWindow: _GGDKDraw_NewGGC returned NULL\n");
+        fprintf(stderr, "_GGDKDraw_CreateWindow: _GGDKDraw_NewGGC returned NULL\n");
         free(nw);
         return NULL;
     }
@@ -96,7 +111,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     }
 
     // Event mask
-    attribs.event_mask = GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK;
+    attribs.event_mask = GDK_ALL_EVENTS_MASK | GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK;
     if (attribs.window_type == GDK_WINDOW_TOPLEVEL) {
         attribs.event_mask |= GDK_FOCUS_CHANGE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK;
     }
@@ -152,10 +167,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     // attribs.window_type = ...;
 
     // Window cursor
-    if ((wattrs->mask & wam_cursor) && wattrs->cursor != ct_default) {
-        //SET CURSOR (UNHANDLED)
-        //attribs_mask |= GDK_WA_CURSOR;
-    }
+    // Set below.
 
     // Window manager name and class
     // GDK docs say to not use this. But that's because it's done by GTK...
@@ -186,7 +198,61 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     };
     gdk_window_set_background_rgba(nw->w, &col);
 
-    //TODO: Set window sizing/transient hints
+    if (attribs.window_type == GDK_WINDOW_TOPLEVEL) {
+        // Set icon
+        GGDKWindow icon = gdisp->default_icon;
+        if (((wattrs->mask & wam_icon) && wattrs->icon != NULL) && ((GGDKWindow)wattrs->icon)->is_pixmap) {
+            icon = (GGDKWindow) wattrs->icon;
+        }
+        if (icon != NULL) {
+            GList_Glib *icon_list = NULL;
+            GdkPixbuf *pb = gdk_pixbuf_get_from_surface(icon->cs, 0, 0, icon->pos.width, icon->pos.height);
+            if (pb != NULL) {
+                icon_list = g_list_append(icon_list, pb);
+                gdk_window_set_icon_list(nw->w, icon_list);
+                g_list_free(icon_list);
+                g_object_unref(pb);
+            }
+        }
+
+        GdkGeometry geom = {0};
+        GdkWindowHints hints = GDK_HINT_MIN_SIZE /* | GDK_HINT_MAX_SIZE*/ | GDK_HINT_BASE_SIZE;
+
+        // Hmm does this seem right?
+        geom.base_width = geom.min_width = geom.max_width = pos->width;
+        geom.base_height = geom.min_height = geom.max_height = pos->height;
+
+        if (((wattrs->mask & wam_positioned) && wattrs->positioned) ||
+                ((wattrs->mask & wam_centered) && wattrs->centered) ||
+                ((wattrs->mask & wam_undercursor) && wattrs->undercursor)) {
+            hints |= GDK_HINT_POS;
+            nw->was_positioned = true;
+        }
+
+        gdk_window_set_geometry_hints(nw->w, &geom, hints);
+
+        if (wattrs->mask & wam_restrict) {
+            nw->restrict_input_to_me = wattrs->restrict_input_to_me;
+        }
+        if (wattrs->mask & wam_redirect) {
+            nw->redirect_chars_to_me = wattrs->redirect_chars_to_me;
+            nw->redirect_from = wattrs->redirect_from;
+        }
+        if ((wattrs->mask & wam_transient) && wattrs->transient != NULL) {
+            gdk_window_set_transient_for(nw->w, ((GGDKWindow)(wattrs->transient))->w);
+            nw->istransient = true;
+            nw->transient_owner = ((GGDKWindow)(wattrs->transient))->w;
+            nw->is_dlg = true;
+        } else if (!nw->is_dlg) {
+            //++gdisp->top_window_count;
+        } else if (nw->restrict_input_to_me && gdisp->last_nontransient_window != NULL) {
+            gdk_window_set_transient_for(nw->w, gdisp->last_nontransient_window);
+            nw->transient_owner = gdisp->last_nontransient_window;
+            nw->istransient = true;
+        }
+        nw->isverytransient = (wattrs->mask & wam_verytransient) ? 1 : 0;
+        nw->is_toplevel = true;
+    }
 
     // Establish Pango/Cairo context
     if (!_GGDKDraw_InitPangoCairo(gw)) {
@@ -196,6 +262,14 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
         free(nw);
         return NULL;
     }
+
+    if ((wattrs->mask & wam_cursor) && wattrs->cursor != ct_default) {
+        GGDKDrawSetCursor((GWindow)nw, wattrs->cursor);
+    }
+
+    // Determine when we need to refresh the Cairo context
+    //g_signal_connect(nw->w, "create-surface",
+    //                G_CALLBACK (_GGDKDraw_OnGdkCreateSurface), NULL);
 
     // Event handler
     if (eh != NULL) {
@@ -207,7 +281,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     }
 
     // This should not be here. Debugging purposes only.
-    gdk_window_show(nw->w);
+    // gdk_window_show(nw->w);
 
     // Set the user data to the GWindow
     // Although there is gdk_window_set_user_data, if non-NULL,
@@ -319,6 +393,417 @@ static int16 _GGDKDraw_GdkModifierToKsm(GdkModifierType mask) {
     return state;
 }
 
+static enum visibility_state _GGDKDraw_GdkVisibilityStateToVS(GdkVisibilityState state) {
+    switch (state) {
+    case GDK_VISIBILITY_FULLY_OBSCURED:
+                return vs_obscured;
+        case GDK_VISIBILITY_PARTIAL:
+            return vs_partially;
+        case GDK_VISIBILITY_UNOBSCURED:
+            return vs_unobscured;
+        }
+        return vs_unobscured;
+    }
+
+    int _GGDKDraw_WindowOrParentsDying(GGDKWindow gw) {
+    while (gw != NULL) {
+        if (gw->is_dying) {
+            return true;
+        }
+        if (gw->is_toplevel) {
+            return false;
+        }
+        gw = gw->parent;
+    }
+    return false;
+}
+
+static void _GGDKDraw_CleanUpWindow(GGDKWindow gw) {
+
+}
+
+static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
+    struct gevent gevent = {0};
+    GGDKDisplay *gdisp = (GGDKDisplay *)data;
+    GdkWindow *w = gdk_event_get_window(event);
+    GGDKWindow gw;
+
+    fprintf(stderr, "RECEIVED GDK EVENT %d\n", event->type);
+    fflush(stderr);
+
+    if (event->type == GDK_DELETE) {
+        event->type = GDK_DESTROY;
+    }
+
+    if (w == NULL) {
+        return;
+    } else if ((gw = g_object_get_data(G_OBJECT(w), "GGDKWindow")) == NULL) {
+        fprintf(stderr, "MISSING GW!\n");
+        assert(false);
+        return;
+    } else if (_GGDKDraw_WindowOrParentsDying(gw) && event->type != GDK_DESTROY) {
+        fprintf(stderr, "DYING!\n");
+        return;
+    }
+
+    gevent.w = (GWindow)gw;
+    gevent.native_window = (void *)gw->w;
+    gevent.type = -1;
+    if (event->type == GDK_KEY_PRESS || event->type == GDK_BUTTON_PRESS || event->type == GDK_BUTTON_RELEASE) {
+        if (gw->transient_owner != 0 && gw->isverytransient) {
+            gdisp->last_nontransient_window = gw->transient_owner;
+        } else {
+            gdisp->last_nontransient_window = gw->w;
+        }
+    }
+
+    switch (event->type) {
+    /*
+    case GDK_KEY_PRESS:
+    case GDK_KEY_RELEASE:
+        gdisp->last_event_time = gdk_event_get_time(event);
+        gevent.type = event->type == GDK_KEY_PRESS ? et_char : et_charup;
+        gevent.u.chr.time = gdisp->last_event_time;
+        gevent.u.chr.state = _GGDKDraw_GdkModifierToKsm(((GdkEventKey*)event)->state); //event->xkey.state;
+        gevent.u.chr.autorepeat = 0;
+        // Mumble mumble Mac
+        //if ((event->xkey.state & ksm_option) && gdisp->macosx_cmd) {
+        //    gevent.u.chr.state |= ksm_meta;
+        //}
+
+        //TODO: GDK doesn't send x/y pos when key was pressed...
+        //gevent.u.chr.x = event->xkey.x;
+        //gevent.u.chr.y = event->xkey.y;
+
+        if ((redirect = InputRedirection(gdisp->input, gw)) == (GWindow)(-1)) {
+            len = XLookupString((XKeyEvent *) event, charbuf, sizeof(charbuf), &keysym, &gdisp->buildingkeys);
+            if (event->type == KeyPress && len != 0) {
+                GXDrawBeep((GDisplay *) gdisp);
+            }
+            return;
+        } else if (redirect != NULL) {
+            GPoint pt;
+            gevent.w = redirect;
+            pt.x = event->xkey.x;
+            pt.y = event->xkey.y;
+            GXDrawTranslateCoordinates(gw, redirect, &pt);
+            gevent.u.chr.x = pt.x;
+            gevent.u.chr.y = pt.y;
+            gw = redirect;
+        }
+        */
+    /*
+    if (gevent.type == et_char) {
+        // The state may be modified in the gevent where a mac command key
+        //  entry gets converted to control, etc.
+        if (((GGDKWindow) gw)->gic == NULL) {
+            len = XLookupString((XKeyEvent *) event, charbuf, sizeof(charbuf), &keysym, &gdisp->buildingkeys);
+            charbuf[len] = '\0';
+            gevent.u.chr.keysym = keysym;
+            def2u_strncpy(gevent.u.chr.chars, charbuf,
+                          sizeof(gevent.u.chr.chars) / sizeof(gevent.u.chr.chars[0]));
+        } else {
+    #ifdef X_HAVE_UTF8_STRING
+            // I think there's a bug in SCIM. If I leave the meta(alt/option) modifier
+            //  bit set, then scim returns no keysym and no characters. On the other hand,
+            //  if I don't leave that bit set, then the default input method on the mac
+            //  will not do the Option key transformations properly. What I pass should
+            //  be IM independent. So I don't think I should have to do the next line
+            event->xkey.state &= ~Mod2Mask;
+            // But I do
+            len = Xutf8LookupString(((GGDKWindow) gw)->gic->ic, (XKeyPressedEvent *)event,
+                                    charbuf, sizeof(charbuf), &keysym, &status);
+            pt = charbuf;
+            if (status == XBufferOverflow) {
+                pt = malloc(len + 1);
+                len = Xutf8LookupString(((GGDKWindow) gw)->gic->ic, (XKeyPressedEvent *)&event,
+                                        pt, len, &keysym, &status);
+            }
+            if (status != XLookupChars && status != XLookupBoth) {
+                len = 0;
+            }
+            if (status != XLookupKeySym && status != XLookupBoth) {
+                keysym = 0;
+            }
+            pt[len] = '\0';
+            gevent.u.chr.keysym = keysym;
+            utf82u_strncpy(gevent.u.chr.chars, pt,
+                           sizeof(gevent.u.chr.chars) / sizeof(gevent.u.chr.chars[0]));
+            if (pt != charbuf) {
+                free(pt);
+            }
+    #else
+            gevent.u.chr.keysym = keysym = 0;
+            gevent.u.chr.chars[0] = 0;
+    #endif
+        }
+        // Convert X11 keysym values to unicode
+        if (keysym >= XKeysym_Mask) {
+            keysym -= XKeysym_Mask;
+        } else if (keysym <= XKEYSYM_TOP && keysym >= 0) {
+            keysym = gdraw_xkeysym_2_unicode[keysym];
+        }
+        gevent.u.chr.keysym = keysym;
+        if (keysym == gdisp->mykey_keysym &&
+                (event->xkey.state & (ControlMask | Mod1Mask)) == gdisp->mykey_mask) {
+            gdisp->mykeybuild = !gdisp->mykeybuild;
+            gdisp->mykey_state = 0;
+            gevent.u.chr.chars[0] = '\0';
+            gevent.u.chr.keysym = '\0';
+            if (!gdisp->mykeybuild && _GDraw_BuildCharHook != NULL) {
+                (_GDraw_BuildCharHook)((GDisplay *) gdisp);
+            }
+        } else if (gdisp->mykeybuild) {
+            _GDraw_ComposeChars((GDisplay *) gdisp, &gevent);
+        }
+    } else {
+        // XLookupKeysym doesn't do shifts for us (or I don't know how to use the index arg to make it)
+        len = XLookupString((XKeyEvent *) event, charbuf, sizeof(charbuf), &keysym, &gdisp->buildingkeys);
+        gevent.u.chr.keysym = keysym;
+        gevent.u.chr.chars[0] = '\0';
+    }
+
+    //
+    // If we are a charup, but the very next XEvent is a chardown
+    // on the same key, then we are just an autorepeat XEvent which
+    // other code might like to ignore
+    //
+    if (gevent.type == et_charup && XEventsQueued(gdisp->display, QueuedAfterReading)) {
+        XEvent nev;
+        XPeekEvent(gdisp->display, &nev);
+        if (nev.type == KeyPress && nev.xkey.time == event->xkey.time &&
+                nev.xkey.keycode == event->xkey.keycode) {
+            gevent.u.chr.autorepeat = 1;
+        }
+    }
+    break;
+    case ButtonPress:
+    case ButtonRelease:
+    case MotionNotify:
+    if (event->type == ButtonPress) {
+        gdisp->grab_window = gw;
+    } else if (gdisp->grab_window != NULL) {
+        if (gw != gdisp->grab_window) {
+            Window wjunk;
+            gevent.w = gw = gdisp->grab_window;
+            XTranslateCoordinates(gdisp->display,
+                                  event->xbutton.window, ((GGDKWindow) gw)->w,
+                                  event->xbutton.x, event->xbutton.y,
+                                  &event->xbutton.x, &event->xbutton.y,
+                                  &wjunk);
+        }
+        if (event->type == ButtonRelease) {
+            gdisp->grab_window = NULL;
+        }
+    }
+
+    gdisp->last_event_time = event->xbutton.time;
+    gevent.u.mouse.time = event->xbutton.time;
+    if (event->type == MotionNotify && gdisp->grab_window == NULL)
+        // Allow simple motion events to go through
+    else if ((redirect = InputRedirection(gdisp->input, gw)) != NULL) {
+        if (event->type == ButtonPress) {
+            GXDrawBeep((GDisplay *) gdisp);
+        }
+        return;
+    }
+    gevent.u.mouse.state = event->xbutton.state;
+    gevent.u.mouse.x = event->xbutton.x;
+    gevent.u.mouse.y = event->xbutton.y;
+    gevent.u.mouse.button = event->xbutton.button;
+    gevent.u.mouse.device = NULL;
+    gevent.u.mouse.pressure = gevent.u.mouse.xtilt = gevent.u.mouse.ytilt = gevent.u.mouse.separation = 0;
+    if ((event->xbutton.state & 0x40) && gdisp->twobmouse_win) {
+        gevent.u.mouse.button = 2;
+    }
+    if (event->type == MotionNotify) {
+    #if defined (__MINGW32__) || __CygWin
+        //For some reason, a mouse move event is triggered even if it hasn't moved.
+        if (gdisp->mousemove_last_x == event->xbutton.x &&
+                gdisp->mousemove_last_y == event->xbutton.y) {
+            return;
+        }
+        gdisp->mousemove_last_x = event->xbutton.x;
+        gdisp->mousemove_last_y = event->xbutton.y;
+    #endif
+        gevent.type = et_mousemove;
+        gevent.u.mouse.button = 0;
+        gevent.u.mouse.clicks = 0;
+    } else if (event->type == ButtonPress) {
+        int diff, temp;
+        gevent.type = et_mousedown;
+        if ((diff = event->xbutton.x - gdisp->bs.release_x) < 0) {
+            diff = -diff;
+        }
+        if ((temp = event->xbutton.y - gdisp->bs.release_y) < 0) {
+            temp = -temp;
+        }
+        if (diff + temp < gdisp->bs.double_wiggle &&
+                event->xbutton.window == gdisp->bs.release_w &&
+                event->xbutton.button == gdisp->bs.release_button &&
+                event->xbutton.time - gdisp->bs.release_time < gdisp->bs.double_time &&
+                event->xbutton.time >= gdisp->bs.release_time) {	// Time can wrap
+            ++ gdisp->bs.cur_click;
+        } else {
+            gdisp->bs.cur_click = 1;
+        }
+        gevent.u.mouse.clicks = gdisp->bs.cur_click;
+    } else {
+        gevent.type = et_mouseup;
+        gdisp->bs.release_time = event->xbutton.time;
+        gdisp->bs.release_w = event->xbutton.window;
+        gdisp->bs.release_x = event->xbutton.x;
+        gdisp->bs.release_y = event->xbutton.y;
+        gdisp->bs.release_button = event->xbutton.button;
+        gevent.u.mouse.clicks = gdisp->bs.cur_click;
+    }
+    break;
+    */
+    case GDK_EXPOSE:
+        cairo_destroy(gw->cc);
+        gw->cc = gdk_cairo_create(gw->w);
+        gevent.type = et_expose;
+        gevent.u.expose.rect.x = ((GdkEventExpose *)event)->area.x;
+        gevent.u.expose.rect.y = ((GdkEventExpose *)event)->area.y;
+        gevent.u.expose.rect.width = ((GdkEventExpose *)event)->area.width;
+        gevent.u.expose.rect.height = ((GdkEventExpose *)event)->area.height;
+        /* X11 does this automatically. but cairo won't get the event */
+        GGDKDrawClear((GWindow)gw, &gevent.u.expose.rect);
+        break;
+    case GDK_VISIBILITY_NOTIFY:
+        gevent.type = et_visibility;
+        gevent.u.visibility.state = _GGDKDraw_GdkVisibilityStateToVS(((GdkEventVisibility *)event)->state);
+        break;
+    case GDK_FOCUS_CHANGE:
+        gevent.type = et_focus;
+        gevent.u.focus.gained_focus = ((GdkEventFocus *)event)->in;
+        gevent.u.focus.mnemonic_focus = false;
+        break;
+    case GDK_ENTER_NOTIFY:
+    case GDK_LEAVE_NOTIFY: { // Should only get this on top level
+        GdkEventCrossing *crossing = (GdkEventCrossing *)event;
+        if (crossing->focus) { //Focus or inferior
+            break;
+        }
+        if (gdisp->focusfollowsmouse && gw != NULL && gw->eh != NULL) {
+            gevent.type = et_focus;
+            gevent.u.focus.gained_focus = crossing->type == GDK_ENTER_NOTIFY;
+            gevent.u.focus.mnemonic_focus = false;
+            (gw->eh)((GWindow) gw, &gevent);
+        }
+        gevent.type = et_crossing;
+        gevent.u.crossing.x = crossing->x;
+        gevent.u.crossing.y = crossing->y;
+        gevent.u.crossing.state = _GGDKDraw_GdkModifierToKsm(crossing->state);
+        gevent.u.crossing.entered = crossing->type == GDK_ENTER_NOTIFY;
+        gevent.u.crossing.device = NULL;
+        gevent.u.crossing.time = crossing->time;
+    }
+    break;
+    case GDK_CONFIGURE: {
+        // We need to recreate our Cairo context here.
+        cairo_destroy(gw->cc);
+        gw->cc = gdk_cairo_create(gw->w);
+
+        GdkEventConfigure *configure = (GdkEventConfigure *)event;
+        gevent.type = et_resize;
+        gevent.u.resize.size.x = configure->x;
+        gevent.u.resize.size.y = configure->y;
+        gevent.u.resize.size.width = configure->width;
+        gevent.u.resize.size.height = configure->height;
+        if (gw->is_toplevel) {
+            GPoint p = {0};
+            GGDKDrawTranslateCoordinates((GWindow)gw, (GWindow)(gdisp->groot), &p);
+            gevent.u.resize.size.x = p.x;
+            gevent.u.resize.size.y = p.y;
+        }
+        gevent.u.resize.dx = gevent.u.resize.size.x - gw->pos.x;
+        gevent.u.resize.dy = gevent.u.resize.size.y - gw->pos.y;
+        gevent.u.resize.dwidth = gevent.u.resize.size.width - gw->pos.width;
+        gevent.u.resize.dheight = gevent.u.resize.size.height - gw->pos.height;
+        gevent.u.resize.moved = gevent.u.resize.sized = false;
+        if (gevent.u.resize.dx != 0 || gevent.u.resize.dy != 0) {
+            gevent.u.resize.moved = true;
+        }
+
+        gw->pos = gevent.u.resize.size;
+        if (!gdisp->top_offsets_set && ((GGDKWindow) gw)->was_positioned &&
+                gw->is_toplevel && !((GGDKWindow) gw)->is_popup &&
+                !((GGDKWindow) gw)->istransient) {
+            /* I don't know why I need a fudge factor here, but I do */
+            //gdisp->off_x = gevent.u.resize.dx - 2; //TODO: FIXME!
+            //gdisp->off_y = gevent.u.resize.dy - 1;
+            gdisp->top_offsets_set = true;
+        }
+    }
+    break;
+    case GDK_MAP:
+        gevent.type = et_map;
+        gevent.u.map.is_visible = true;
+        gw->is_visible = true;
+        break;
+    case GDK_UNMAP:
+        gevent.type = et_map;
+        gevent.u.map.is_visible = false;
+        gw->is_visible = false;
+        break;
+    case GDK_DESTROY:
+        gevent.type = et_destroy;
+        break;
+    case GDK_CLIENT_EVENT:
+        /*
+            if ((redirect = InputRedirection(gdisp->input, gw)) != NULL) {
+                GXDrawBeep((GDisplay *) gdisp);
+                return;
+            }
+            if (event->xclient.message_type == gdisp->atoms.wm_protocols &&
+                    event->xclient.data.l[0] == gdisp->atoms.wm_del_window) {
+                gevent.type = et_close;
+            } else if (event->xclient.message_type == gdisp->atoms.drag_and_drop) {
+                gevent.type = event->xclient.data.l[0];
+                gevent.u.drag_drop.x = event->xclient.data.l[1];
+                gevent.u.drag_drop.y = event->xclient.data.l[2];
+            }*/
+        break;
+    case GDK_SELECTION_CLEAR: /*{
+        int i;
+        gdisp->last_event_time = event->xselectionclear.time;
+        gevent.type = et_selclear;
+        gevent.u.selclear.sel = sn_primary;
+        for (i = 0; i < sn_max; ++i) {
+            if (event->xselectionclear.selection == gdisp->selinfo[i].sel_atom) {
+                gevent.u.selclear.sel = i;
+                break;
+            }
+        }
+        GXDrawClearSelData(gdisp, gevent.u.selclear.sel);
+    }*/
+        break;
+    case GDK_SELECTION_REQUEST:
+        /*
+            gdisp->last_event_time = event->xselectionrequest.time;
+            GXDrawTransmitSelection(gdisp, event);*/
+        break;
+    case GDK_SELECTION_NOTIFY:		// Paste
+        /*gdisp->last_event_time = event->xselection.time;*/ /* it's the request's time not the current? */
+        break;
+    case GDK_PROPERTY_NOTIFY:
+        gdisp->last_event_time = gdk_event_get_time(event);
+        break;
+    default:
+        fprintf(stderr, "UNPROCESSED GDK EVENT %d\n", event->type);
+        fflush(stderr);
+        break;
+    }
+
+    if (gevent.type != et_noevent && gw != NULL && gw->eh != NULL) {
+        (gw->eh)((GWindow) gw, &gevent);
+    }
+    if (event->type == DestroyNotify && gw != NULL) {
+        _GGDKDraw_CleanUpWindow(gw);
+    }
+}
+
 static void GGDKDrawInit(GDisplay *gdisp) {
     _GGDKDraw_InitFonts((GGDKDisplay *) gdisp);
 }
@@ -327,8 +812,10 @@ static void GGDKDrawInit(GDisplay *gdisp) {
 //static void* GGDKDrawNativeDisplay(GDisplay *gdisp){}
 
 static void GGDKDrawSetDefaultIcon(GWindow icon) {
-    // Closest is: gdk_window_set_icon_list
-    // Store an icon list???
+    GGDKWindow gicon = (GGDKWindow)icon;
+    if (gicon->is_pixmap) {
+        gicon->display->default_icon = gicon;
+    }
 }
 
 static GWindow GGDKDrawCreateTopWindow(GDisplay *gdisp, GRect *pos, int (*eh)(GWindow gw, GEvent *), void *user_data,
@@ -538,11 +1025,11 @@ static char *GGDKDrawGetWindowTitle8(GWindow gw) {
 
 static void GGDKDrawSetTransientFor(GWindow transient, GWindow owner) {
     fprintf(stderr, "GDKCALL: GGDKDrawSetTransientFor\n"); //assert(false);
-    /*GGDKWindow gw = (GGDKWindow) transient;
+    GGDKWindow gw = (GGDKWindow) transient;
     GGDKDisplay *gdisp = gw->display;
     GdkWindow *ow;
 
-    if (owner == (GWindow)-1) {
+    if (owner == (GWindow) - 1) {
         ow = gdisp->last_nontransient_window;
     } else if (owner == NULL) {
         ow = NULL; // Does this work with GDK?
@@ -550,9 +1037,9 @@ static void GGDKDrawSetTransientFor(GWindow transient, GWindow owner) {
         ow = ((GGDKWindow)owner)->w;
     }
 
-    gdk_window_set_transient_for(gdisp->display, gw->w, ow);
+    gdk_window_set_transient_for(gw->w, ow);
     gw->transient_owner = ow;
-    gw->istransient = (ow != NULL);*/
+    gw->istransient = (ow != NULL);
 }
 
 static void GGDKDrawGetPointerPosition(GWindow w, GEvent *ret) {
@@ -602,14 +1089,54 @@ static GWindow GGDKDrawGetPointerWindow(GWindow gw) {
     return NULL;
 }
 
-static void GGDKDrawSetCursor(GWindow gw, GCursor gcursor) {
-    fprintf(stderr, "GDKCALL: GGDKDrawSetCursor\n");
-    assert(false);
+static void GGDKDrawSetCursor(GWindow w, GCursor gcursor) {
+    fprintf(stderr, "GDKCALL: GGDKDrawSetCursor\n"); //assert(false);
+    GGDKWindow gw = (GGDKWindow)w;
+    GdkCursor *cursor = NULL;
+
+    switch (gcursor) {
+    case ct_default:
+    case ct_backpointer:
+        cursor = gdk_cursor_new_from_name(gw->display->display, "default");
+        break;
+    case ct_pointer:
+        cursor = gdk_cursor_new_from_name(gw->display->display, "pointer");
+        break;
+    case ct_hand:
+        cursor = gdk_cursor_new_from_name(gw->display->display, "hand");
+        break;
+    case ct_question:
+        cursor = gdk_cursor_new_from_name(gw->display->display, "help");
+        break;
+    case ct_cross:
+        cursor = gdk_cursor_new_from_name(gw->display->display, "crosshair");
+        break;
+    case ct_4way:
+        cursor = gdk_cursor_new_from_name(gw->display->display, "move");
+        break;
+    case ct_text:
+        cursor = gdk_cursor_new_from_name(gw->display->display, "text");
+        break;
+    case ct_watch:
+        cursor = gdk_cursor_new_from_name(gw->display->display, "wait");
+        break;
+    case ct_draganddrop:
+        cursor = gdk_cursor_new_from_name(gw->display->display, "context-menu");
+        break;
+    case ct_invisible:
+        cursor = gdk_cursor_new_from_name(gw->display->display, "none");
+        break;
+    default:
+        fprintf(stderr, "UNSUPPORTED CURSOR!\n");
+    }
+
+    gdk_window_set_cursor(gw->w, cursor);
 }
 
 static GCursor GGDKDrawGetCursor(GWindow gw) {
     fprintf(stderr, "GDKCALL: GGDKDrawGetCursor\n");
-    assert(false);
+    //assert(false);
+    return ct_default;
 }
 
 static GWindow GGDKDrawGetRedirectWindow(GDisplay *gdisp) {
@@ -627,18 +1154,13 @@ static GWindow GGDKDrawGetRedirectWindow(GDisplay *gdisp) {
 
 static void GGDKDrawTranslateCoordinates(GWindow from, GWindow to, GPoint *pt) {
     fprintf(stderr, "GDKCALL: GGDKDrawTranslateCoordinates\n");
-    assert(false);
-    // Looks like i need to walk up the stack to find the parent and translate along the way...
-    /*
-    GXDisplay *gd = (GXDisplay *) ((_from!=NULL)?_from->display:_to->display);
-    Window from = (_from==NULL)?gd->root:((GXWindow) _from)->w;
-    Window to = (_to==NULL)?gd->root:((GXWindow) _to)->w;
-    int x,y;
-    Window child;
+    GdkPoint from_root, to_root;
 
-    XTranslateCoordinates(gd->display,from,to,pt->x,pt->y,&x,&y,&child);
-    pt->x = x; pt->y = y;
-    */
+    gdk_window_get_root_origin(((GGDKWindow)from)->w, &from_root.x, &from_root.y);
+    gdk_window_get_root_origin(((GGDKWindow)to)->w, &to_root.x, &to_root.y);
+
+    pt->x = to_root.x - from_root.x + pt->x;
+    pt->y = to_root.y - from_root.y + pt->y;
 }
 
 
@@ -652,9 +1174,31 @@ static void GGDKDrawFlush(GDisplay *gdisp) {
     gdk_display_flush(((GGDKDisplay *)gdisp)->display);
 }
 
-static void GGDKDrawScroll(GWindow gw, GRect *rect, int32 hor, int32 vert) {
+static void GGDKDrawScroll(GWindow w, GRect *rect, int32 hor, int32 vert) {
     fprintf(stderr, "GDKCALL: GGDKDrawScroll\n");
     assert(false);
+    /*
+    GGDKWindow gw = (GGDKWindow) w;
+    GGDKDisplay *gdisp = gw->display;
+    GRect temp, old;
+
+    vert = -vert;
+
+    if (rect == NULL) {
+        temp.x = temp.y = 0;
+        temp.width = gw->pos.width;
+        temp.height = gw->pos.height;
+        rect = &temp;
+    }
+
+    GDrawPushClip(w, rect, &old);
+
+    // Cairo can happily scroll the window -- except it doesn't know about
+    //  child windows, and so we don't get the requisit events to redraw
+    //  areas covered by children. Rats.
+    GXDrawSendExpose(gw, rect->x, rect->y, rect->x + rect->width, rect->y + rect->height);
+    GDrawPopClip(w, &old);
+    */
 }
 
 
@@ -709,9 +1253,61 @@ static void GGDKDrawPointerGrab(GWindow gw) {
     //gdk_display_pointer_grab(((GGDKDisplay*)gdisp)->display, GDK_CURRENT_TIME);
 }
 
-static void GGDKDrawRequestExpose(GWindow gw, GRect *gr, int set) {
-    fprintf(stderr, "GDKCALL: GGDKDrawRequestExpose\n");
-    assert(false);
+static void GGDKDrawRequestExpose(GWindow w, GRect *rect, int doclear) {
+    fprintf(stderr, "GDKCALL: GGDKDrawRequestExpose\n"); // assert(false);
+
+    GGDKWindow gw = (GGDKWindow) w;
+    GGDKDisplay *display = gw->display;
+    GRect temp;
+
+    if (!gw->is_visible || _GGDKDraw_WindowOrParentsDying(gw)) {
+        return;
+    }
+    if (rect == NULL) {
+        temp.x = temp.y = 0;
+        temp.width = gw->pos.width;
+        temp.height = gw->pos.height;
+        rect = &temp;
+    } else if (rect->x < 0 || rect->y < 0 || rect->x + rect->width > gw->pos.width ||
+               rect->y + rect->height > gw->pos.height) {
+        temp = *rect;
+        if (temp.x < 0) {
+            temp.width += temp.x;
+            temp.x = 0;
+        }
+        if (temp.y < 0) {
+            temp.height += temp.y;
+            temp.y = 0;
+        }
+        if (temp.x + temp.width > gw->pos.width) {
+            temp.width = gw->pos.width - temp.x;
+        }
+        if (temp.y + temp.height > gw->pos.height) {
+            temp.height = gw->pos.height - temp.y;
+        }
+        if (temp.height <= 0 || temp.width <= 0) {
+            return;
+        }
+        rect = &temp;
+    }
+
+    GdkRectangle rct = {.x = rect->x, .y = rect->y, .width = rect->width, .height = rect->height};
+    gdk_window_begin_paint_rect(gw->w, &rct);
+
+    if (doclear) {
+        GDrawClear(w, rect);
+    }
+
+    if (gw->eh != NULL) {
+        struct gevent event;
+        memset(&event, 0, sizeof(event));
+        event.type = et_expose;
+        event.u.expose.rect = *rect;
+        event.w = w;
+        event.native_window = gw->w;
+        (gw->eh)(w, &event);
+    }
+    gdk_window_end_paint(gw->w);
 }
 
 static void GGDKDrawForceUpdate(GWindow gw) {
@@ -720,7 +1316,7 @@ static void GGDKDrawForceUpdate(GWindow gw) {
 }
 
 static void GGDKDrawSync(GDisplay *gdisp) {
-    fprintf(stderr, "GDKCALL: GGDKDrawSync\n");
+    fprintf(stderr, "GDKCALL: GGDKDrawSync\n"); //assert(false)
     gdk_display_sync(((GGDKDisplay *)gdisp)->display);
 }
 
@@ -731,22 +1327,34 @@ static void GGDKDrawSkipMouseMoveEvents(GWindow gw, GEvent *gevent) {
 
 static void GGDKDrawProcessPendingEvents(GDisplay *gdisp) {
     fprintf(stderr, "GDKCALL: GGDKDrawProcessPendingEvents\n");
-    assert(false);
+    //assert(false);
+    GMainContext *ctx = g_main_loop_get_context(((GGDKDisplay *)gdisp)->main_loop);
+    if (ctx != NULL) {
+        while (g_main_context_iteration(ctx, false));
+    }
 }
 
 static void GGDKDrawProcessWindowEvents(GWindow gw) {
-    fprintf(stderr, "GDKCALL: GGDKDrawProcessWindowEvents\n");
-    assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawProcessWindowEvents\n"); //assert(false);
+    GGDKDrawProcessPendingEvents((GDisplay *)((GGDKWindow)gw)->display);
 }
 
 static void GGDKDrawProcessOneEvent(GDisplay *gdisp) {
-    fprintf(stderr, "GDKCALL: GGDKDrawProcessOneEvent\n");
-    assert(false);
+    //fprintf(stderr, "GDKCALL: GGDKDrawProcessOneEvent\n"); //assert(false);
+    GMainContext *ctx = g_main_loop_get_context(((GGDKDisplay *)gdisp)->main_loop);
+    if (ctx != NULL) {
+        g_main_context_iteration(ctx, true);
+    }
 }
 
 static void GGDKDrawEventLoop(GDisplay *gdisp) {
     fprintf(stderr, "GDKCALL: GGDKDrawEventLoop\n");
-    assert(false);
+    //assert(false);
+    GMainContext *ctx = g_main_loop_get_context(((GGDKDisplay *)gdisp)->main_loop);
+    if (ctx != NULL) {
+        while (g_main_context_iteration(ctx, true))
+            ;
+    }
 }
 
 static void GGDKDrawPostEvent(GEvent *e) {
@@ -953,6 +1561,7 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *programname) {
     gdisp->screen = gdk_display_get_default_screen(display);
     gdisp->root = gdk_screen_get_root_window(gdisp->screen);
     gdisp->res = gdk_screen_get_resolution(gdisp->screen);
+    gdisp->main_loop = g_main_loop_new(NULL, true);
     gdisp->scale_screen_by = 1;
 
     gdisp->pangoc_context = gdk_pango_context_get_for_screen(gdisp->screen);
@@ -985,6 +1594,8 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *programname) {
 
     (gdisp->funcs->init)((GDisplay *) gdisp);
     //gdisp->top_window_count = 0; //Reference counting toplevel windows?
+
+    gdk_event_handler_set(_GGDKDraw_DispatchEvent, (gpointer)gdisp, NULL);
 
     _GDraw_InitError((GDisplay *) gdisp);
 

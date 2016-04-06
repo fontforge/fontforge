@@ -57,6 +57,12 @@ typedef struct ggdkdisplay { /* :GDisplay */
     char *err_report;
     // Inherit GDisplay end
 
+    guint32 last_event_time;
+
+    GGDKWindow default_icon;
+    GdkWindow *last_nontransient_window;
+
+    GMainLoop  *main_loop;
     GdkDisplay *display;
     GdkScreen  *screen;
     GdkWindow  *root;
@@ -86,6 +92,14 @@ struct ggdkwindow { /* :GWindow */
     unsigned int is_dlg: 1;
     unsigned int not_restricted: 1;
     unsigned int was_positioned: 1;
+    unsigned int restrict_input_to_me: 1;/* for dialogs, no input outside of dlg */
+    unsigned int redirect_chars_to_me: 1;/* ditto, we get any input outside of us */
+    unsigned int istransient: 1;	/* has transient for hint set */
+    unsigned int isverytransient: 1;
+
+    GWindow redirect_from;		/* only redirect input from this window and its children */
+
+    GdkWindow *transient_owner;
 
     char *window_title;
 
