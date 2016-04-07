@@ -2057,36 +2057,31 @@ static void SFDFpstClassNamesOut(FILE *sfd,int class_cnt,char **classnames,const
     }
 }
 
-/**
- * Get the path name of /tmp or equivalent on the current system.
- * The return value should not be freed by the caller
- */
-static const char* getSlashTempName(void) {
-    char* t = 0;
-
-    if((t=getenv("TMPDIR"))) {
-	return t;
-    }
-
-#ifndef P_tmpdir
-#define P_tmpdir	"/tmp"
-#endif
-    return P_tmpdir;
-}
-
-
 FILE* MakeTemporaryFile(void) {
-    FILE * ret;
-    char template[PATH_MAX+1];
-    int fd;
+    FILE *ret = NULL;
 
-    strncpy( template, getSlashTempName(), PATH_MAX-2-strlen("fontforge-stemp-XXXXXX") );
-    strcat( template, "/" );
-    strcat( template, "fontforge-stemp-XXXXXX" );
-    fd = g_mkstemp( template );
-    printf("MakeTemporaryFile() fd:%d template:%s\n", fd, template );
-    if ( (ret=fdopen(fd,"rw+"))==NULL ) ret=0;
-    unlink( template );
+#ifndef __MINGW32__
+    gchar *loc;
+    int fd = g_file_open_tmp("fontforge-XXXXXX", &loc, NULL);
+
+    if (fd != -1) {
+        ret = fdopen(fd, "w+");
+        g_unlink(loc);
+        g_free(loc);
+    }
+#else
+    HANDLE hFile = INVALID_HANDLE_VALUE;
+    for (int retries = 0; hFile == INVALID_HANDLE_VALUE && retries < 10; retries++) {
+        wchar_t *temp = _wtempnam(NULL, L"FontForge");
+        hFile = CreateFileW(temp, GENERIC_READ|GENERIC_WRITE, 0, NULL,
+            CREATE_NEW, FILE_ATTRIBUTE_TEMPORARY|FILE_FLAG_DELETE_ON_CLOSE, NULL);
+        free(temp);
+    }
+    ret = _fdopen(_open_osfhandle((intptr_t)hFile, 0), "wb+");
+    if (ret == NULL && hFile != INVALID_HANDLE_VALUE) {
+        CloseHandle(hFile);
+    }
+#endif
     return ret;
 }
 
