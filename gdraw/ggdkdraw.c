@@ -31,18 +31,6 @@ static GGC *_GGDKDraw_NewGGC() {
     return ggc;
 }
 
-static cairo_surface_t *_GGDKDraw_OnGdkCreateSurface(GdkWindow *w, gint width, gint height, gpointer user_data) {
-    GGDKWindow gw = g_object_get_data(G_OBJECT(w), "GGDKWindow");
-    fprintf(stderr, "GDKCALL _GGDKDraw_OnGdkCreateSurface\n");
-    if (gw == NULL) {
-        fprintf(stderr, "NO GGDKWindow attached to GdkWindow!\n");
-    }
-
-    cairo_destroy(gw->cc);
-    gw->cc = NULL;
-    return NULL;
-}
-
 static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *pos,
                                       int (*eh)(GWindow, GEvent *), void *user_data, GWindowAttrs *wattrs) {
 
@@ -111,7 +99,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     }
 
     // Event mask
-    attribs.event_mask = GDK_ALL_EVENTS_MASK | GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK;
+    attribs.event_mask = GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK;
     if (attribs.window_type == GDK_WINDOW_TOPLEVEL) {
         attribs.event_mask |= GDK_FOCUS_CHANGE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK;
     }
@@ -422,6 +410,35 @@ static void _GGDKDraw_CleanUpWindow(GGDKWindow gw) {
 
 }
 
+static gboolean _GGDKDraw_ProcessTimerEvent(gpointer user_data) {
+    GGDKTimer *timer = (GGDKTimer *)user_data;
+    GEvent e = {0};
+    GGDKDisplay *gdisp = ((GGDKWindow)timer->owner)->display;
+    
+    if (!timer->active) {
+        gdisp->timers = g_list_remove(gdisp->timers, timer);
+        return false;
+    }
+
+    e.type = et_timer;
+    e.w = timer->owner;
+    e.native_window = timer->owner->native_window;
+    e.u.timer.timer = (GTimer*)timer;
+    e.u.timer.userdata = timer->userdata;
+    (timer->owner->eh)(timer->owner, &e);
+    
+    if (timer->repeat_time == 0) {
+        gdisp->timers = g_list_remove(gdisp->timers, timer);
+        return false;
+    } else if (timer->has_differing_repeat_time) {
+        timer->has_differing_repeat_time = false;
+        timer->glib_timeout_id = g_timeout_add(timer->repeat_time, _GGDKDraw_ProcessTimerEvent, timer);
+        return false;
+    }
+
+    return true;
+}
+
 static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
     struct gevent gevent = {0};
     GGDKDisplay *gdisp = (GGDKDisplay *)data;
@@ -430,10 +447,6 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
 
     fprintf(stderr, "RECEIVED GDK EVENT %d\n", event->type);
     fflush(stderr);
-
-    if (event->type == GDK_DELETE) {
-        event->type = GDK_DESTROY;
-    }
 
     if (w == NULL) {
         return;
@@ -660,8 +673,10 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
     break;
     */
     case GDK_EXPOSE:
-        cairo_destroy(gw->cc);
+        assert(gw->cc == NULL);
+        gdk_window_begin_paint_region(gw->w, ((GdkEventExpose *)event)->region);
         gw->cc = gdk_cairo_create(gw->w);
+
         gevent.type = et_expose;
         gevent.u.expose.rect.x = ((GdkEventExpose *)event)->area.x;
         gevent.u.expose.rect.y = ((GdkEventExpose *)event)->area.y;
@@ -702,8 +717,8 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
     break;
     case GDK_CONFIGURE: {
         // We need to recreate our Cairo context here.
-        cairo_destroy(gw->cc);
-        gw->cc = gdk_cairo_create(gw->w);
+        //cairo_destroy(gw->cc);
+        //gw->cc = gdk_cairo_create(gw->w);
 
         GdkEventConfigure *configure = (GdkEventConfigure *)event;
         gevent.type = et_resize;
@@ -711,12 +726,12 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         gevent.u.resize.size.y = configure->y;
         gevent.u.resize.size.width = configure->width;
         gevent.u.resize.size.height = configure->height;
-        if (gw->is_toplevel) {
-            GPoint p = {0};
-            GGDKDrawTranslateCoordinates((GWindow)gw, (GWindow)(gdisp->groot), &p);
-            gevent.u.resize.size.x = p.x;
-            gevent.u.resize.size.y = p.y;
-        }
+        //if (gw->is_toplevel) {
+        //    GPoint p = {0};
+        //    GGDKDrawTranslateCoordinates((GWindow)gw, (GWindow)(gdisp->groot), &p);
+        //    gevent.u.resize.size.x = p.x;
+        //    gevent.u.resize.size.y = p.y;
+        //}
         gevent.u.resize.dx = gevent.u.resize.size.x - gw->pos.x;
         gevent.u.resize.dy = gevent.u.resize.size.y - gw->pos.y;
         gevent.u.resize.dwidth = gevent.u.resize.size.width - gw->pos.width;
@@ -725,12 +740,19 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         if (gevent.u.resize.dx != 0 || gevent.u.resize.dy != 0) {
             gevent.u.resize.moved = true;
         }
+        if (gevent.u.resize.dwidth != 0 || gevent.u.resize.dheight != 0) {
+            gevent.u.resize.sized = true;
+        }
+
+        if (!gevent.u.resize.sized && gevent.u.resize.moved) {
+            gevent.type = et_noevent;
+        }
 
         gw->pos = gevent.u.resize.size;
         if (!gdisp->top_offsets_set && ((GGDKWindow) gw)->was_positioned &&
                 gw->is_toplevel && !((GGDKWindow) gw)->is_popup &&
                 !((GGDKWindow) gw)->istransient) {
-            /* I don't know why I need a fudge factor here, but I do */
+            // I don't know why I need a fudge factor here, but I do
             //gdisp->off_x = gevent.u.resize.dx - 2; //TODO: FIXME!
             //gdisp->off_y = gevent.u.resize.dy - 1;
             gdisp->top_offsets_set = true;
@@ -748,6 +770,8 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         gw->is_visible = false;
         break;
     case GDK_DESTROY:
+    case GDK_DELETE:
+        gdk_window_destroy(gw->w);
         gevent.type = et_destroy;
         break;
     case GDK_CLIENT_EVENT:
@@ -798,6 +822,11 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
 
     if (gevent.type != et_noevent && gw != NULL && gw->eh != NULL) {
         (gw->eh)((GWindow) gw, &gevent);
+        if (gevent.type == et_expose) {
+            gdk_window_end_paint(gw->w);
+            cairo_destroy(gw->cc);
+            gw->cc = NULL;
+        }
     }
     if (event->type == DestroyNotify && gw != NULL) {
         _GGDKDraw_CleanUpWindow(gw);
@@ -871,11 +900,11 @@ static void GGDKDrawDestroyWindow(GWindow w) {
     GGDKWindow gw = (GGDKWindow) w;
 
     g_object_unref(gw->pango_layout);
-    cairo_destroy(gw->cc);
+    //cairo_destroy(gw->cc);
     free(gw->window_title);
     gw->window_title = NULL;
 
-    gw->cc = NULL;
+    //gw->cc = NULL;
     if (gw->cs != NULL) {
         cairo_surface_destroy(gw->cs);
         gw->cs = NULL;
@@ -1140,8 +1169,8 @@ static GCursor GGDKDrawGetCursor(GWindow gw) {
 }
 
 static GWindow GGDKDrawGetRedirectWindow(GDisplay *gdisp) {
-    fprintf(stderr, "GDKCALL: GGDKDrawGetRedirectWindow\n");
-    assert(false);
+    fprintf(stderr, "GDKCALL: GGDKDrawGetRedirectWindow\n"); //assert(false);
+    return NULL;
     // Sigh... I don't know...
     /*
     GGDKDisplay *gdisp = (GGDKDisplay *) gd;
@@ -1156,11 +1185,11 @@ static void GGDKDrawTranslateCoordinates(GWindow from, GWindow to, GPoint *pt) {
     fprintf(stderr, "GDKCALL: GGDKDrawTranslateCoordinates\n");
     GdkPoint from_root, to_root;
 
-    gdk_window_get_root_origin(((GGDKWindow)from)->w, &from_root.x, &from_root.y);
-    gdk_window_get_root_origin(((GGDKWindow)to)->w, &to_root.x, &to_root.y);
+    gdk_window_get_origin(((GGDKWindow)from)->w, &from_root.x, &from_root.y);
+    gdk_window_get_origin(((GGDKWindow)to)->w, &to_root.x, &to_root.y);
 
-    pt->x = to_root.x - from_root.x + pt->x;
-    pt->y = to_root.y - from_root.y + pt->y;
+    pt->x = from_root.x - to_root.x  + pt->x;
+    pt->y = from_root.y - to_root.y + pt->y;
 }
 
 
@@ -1257,57 +1286,45 @@ static void GGDKDrawRequestExpose(GWindow w, GRect *rect, int doclear) {
     fprintf(stderr, "GDKCALL: GGDKDrawRequestExpose\n"); // assert(false);
 
     GGDKWindow gw = (GGDKWindow) w;
-    GGDKDisplay *display = gw->display;
-    GRect temp;
+    GdkRectangle clip;
 
     if (!gw->is_visible || _GGDKDraw_WindowOrParentsDying(gw)) {
         return;
     }
     if (rect == NULL) {
-        temp.x = temp.y = 0;
-        temp.width = gw->pos.width;
-        temp.height = gw->pos.height;
-        rect = &temp;
-    } else if (rect->x < 0 || rect->y < 0 || rect->x + rect->width > gw->pos.width ||
-               rect->y + rect->height > gw->pos.height) {
-        temp = *rect;
-        if (temp.x < 0) {
-            temp.width += temp.x;
-            temp.x = 0;
+        clip.x = clip.y = 0;
+        clip.width = gw->pos.width;
+        clip.height = gw->pos.height;
+    } else {
+        clip.x = rect->x;
+        clip.y = rect->y;
+        clip.width = rect->width;
+        clip.height = rect->height;
+
+        if (rect->x < 0 || rect->y < 0 || rect->x + rect->width > gw->pos.width ||
+                rect->y + rect->height > gw->pos.height) {
+
+            if (clip.x < 0) {
+                clip.width += clip.x;
+                clip.x = 0;
+            }
+            if (clip.y < 0) {
+                clip.height += clip.y;
+                clip.y = 0;
+            }
+            if (clip.x + clip.width > gw->pos.width) {
+                clip.width = gw->pos.width - clip.x;
+            }
+            if (clip.y + clip.height > gw->pos.height) {
+                clip.height = gw->pos.height - clip.y;
+            }
+            if (clip.height <= 0 || clip.width <= 0) {
+                return;
+            }
         }
-        if (temp.y < 0) {
-            temp.height += temp.y;
-            temp.y = 0;
-        }
-        if (temp.x + temp.width > gw->pos.width) {
-            temp.width = gw->pos.width - temp.x;
-        }
-        if (temp.y + temp.height > gw->pos.height) {
-            temp.height = gw->pos.height - temp.y;
-        }
-        if (temp.height <= 0 || temp.width <= 0) {
-            return;
-        }
-        rect = &temp;
     }
 
-    GdkRectangle rct = {.x = rect->x, .y = rect->y, .width = rect->width, .height = rect->height};
-    gdk_window_begin_paint_rect(gw->w, &rct);
-
-    if (doclear) {
-        GDrawClear(w, rect);
-    }
-
-    if (gw->eh != NULL) {
-        struct gevent event;
-        memset(&event, 0, sizeof(event));
-        event.type = et_expose;
-        event.u.expose.rect = *rect;
-        event.w = w;
-        event.native_window = gw->w;
-        (gw->eh)(w, &event);
-    }
-    gdk_window_end_paint(gw->w);
+    gdk_window_invalidate_rect(gw->w, &clip, true);
 }
 
 static void GGDKDrawForceUpdate(GWindow gw) {
@@ -1375,11 +1392,32 @@ static int GGDKDrawRequestDeviceEvents(GWindow w, int devcnt, struct gdeveventma
 
 static GTimer *GGDKDrawRequestTimer(GWindow w, int32 time_from_now, int32 frequency, void *userdata) {
     fprintf(stderr, "GDKCALL: GGDKDrawRequestTimer\n"); //assert(false);
-    return NULL;
+    GGDKTimer *timer = calloc(1, sizeof(GGDKTimer));
+    GGDKWindow gw = (GGDKWindow)w;
+    if (timer == NULL)  {
+        return NULL;
+    }
+
+    gw->display->timers = g_list_append(gw->display->timers, timer);
+
+    timer->owner = w;
+    timer->repeat_time = frequency;
+    timer->userdata = userdata;
+    timer->active = true;
+    timer->has_differing_repeat_time = (time_from_now != frequency);
+    timer->glib_timeout_id = g_timeout_add(time_from_now, _GGDKDraw_ProcessTimerEvent, timer);
+    return (GTimer *)timer;
 }
 
 static void GGDKDrawCancelTimer(GTimer *timer) {
     fprintf(stderr, "GDKCALL: GGDKDrawCancelTimer\n"); //assert(false);
+    GGDKTimer *gtimer = (GGDKTimer *)timer;
+    GGDKDisplay *gdisp = ((GGDKWindow)(gtimer->owner))->display;
+
+    g_source_remove(gtimer->glib_timeout_id);
+    gtimer->active = false;
+    gdisp->timers = g_list_remove(gdisp->timers, gtimer);
+    free(timer);
 }
 
 
@@ -1599,6 +1637,8 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *programname) {
 
     _GDraw_InitError((GDisplay *) gdisp);
 
+    //DEBUG
+    gdk_window_set_debug_updates(true);
     return (GDisplay *)gdisp;
 }
 
