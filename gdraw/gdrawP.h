@@ -322,6 +322,9 @@ struct displayfuncs {
 
 extern int16 div_tables[257][2]; // in div_tables.c
 
+extern void GDrawIErrorRun(const char *fmt,...);
+extern void GDrawIError(const char *fmt,...);
+
 extern void _GXDraw_DestroyDisplay(GDisplay * gdisp);
 extern GDisplay *_GXDraw_CreateDisplay(char *displayname,char *programname);
 extern void _GGDKDraw_DestroyDisplay(GDisplay *disp);

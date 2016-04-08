@@ -89,6 +89,7 @@ typedef struct ggdkdisplay { /* :GDisplay */
     char *err_report;
     // Inherit GDisplay end
 
+    int     top_window_count;
     guint32 last_event_time;
 
     GList_Glib *timers; //List of GGDKTimer's
