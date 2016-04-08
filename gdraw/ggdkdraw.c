@@ -12,6 +12,7 @@
 #include "ustring.h"
 #include <assert.h>
 #include <string.h>
+#include <math.h>
 
 static void GGDKDrawSetCursor(GWindow w, GCursor gcursor);
 static void GGDKDrawTranslateCoordinates(GWindow from, GWindow to, GPoint *pt);
@@ -115,10 +116,10 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
             attribs.event_mask |= GDK_POINTER_MOTION_MASK;
         }
         if (wattrs->event_masks & (1 << et_mousedown)) {
-            attribs.event_mask |= GDK_BUTTON_PRESS_MASK;
+            attribs.event_mask |= GDK_BUTTON_PRESS_MASK | GDK_SCROLL_MASK;
         }
         if (wattrs->event_masks & (1 << et_mouseup)) {
-            attribs.event_mask |= GDK_BUTTON_RELEASE_MASK;
+            attribs.event_mask |= GDK_BUTTON_RELEASE_MASK | GDK_SCROLL_MASK;
         }
         //if ((wattrs->event_masks & (1 << et_mouseup)) && (wattrs->event_masks & (1 << et_mousedown)))
         //    attribs.event_mask |= OwnerGrabButtonMask;
@@ -409,19 +410,22 @@ static int16 _GGDKDraw_GdkModifierToKsm(GdkModifierType mask) {
     return state;
 }
 
-static enum visibility_state _GGDKDraw_GdkVisibilityStateToVS(GdkVisibilityState state) {
+static VisibilityState _GGDKDraw_GdkVisibilityStateToVS(GdkVisibilityState state) {
     switch (state) {
-    case GDK_VISIBILITY_FULLY_OBSCURED:
-                return vs_obscured;
+        case GDK_VISIBILITY_FULLY_OBSCURED:
+            return vs_obscured;
+            break;
         case GDK_VISIBILITY_PARTIAL:
             return vs_partially;
+            break;
         case GDK_VISIBILITY_UNOBSCURED:
             return vs_unobscured;
-        }
-        return vs_unobscured;
+            break;
     }
+    return vs_unobscured;
+}
 
-    int _GGDKDraw_WindowOrParentsDying(GGDKWindow gw) {
+int _GGDKDraw_WindowOrParentsDying(GGDKWindow gw) {
     while (gw != NULL) {
         if (gw->is_dying) {
             return true;
@@ -499,285 +503,328 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
     }
 
     switch (event->type) {
-    /*
-    case GDK_KEY_PRESS:
-    case GDK_KEY_RELEASE:
-        gdisp->last_event_time = gdk_event_get_time(event);
-        gevent.type = event->type == GDK_KEY_PRESS ? et_char : et_charup;
-        gevent.u.chr.time = gdisp->last_event_time;
-        gevent.u.chr.state = _GGDKDraw_GdkModifierToKsm(((GdkEventKey*)event)->state); //event->xkey.state;
-        gevent.u.chr.autorepeat = 0;
-        // Mumble mumble Mac
-        //if ((event->xkey.state & ksm_option) && gdisp->macosx_cmd) {
-        //    gevent.u.chr.state |= ksm_meta;
-        //}
-
-        //TODO: GDK doesn't send x/y pos when key was pressed...
-        //gevent.u.chr.x = event->xkey.x;
-        //gevent.u.chr.y = event->xkey.y;
-
-        if ((redirect = InputRedirection(gdisp->input, gw)) == (GWindow)(-1)) {
-            len = XLookupString((XKeyEvent *) event, charbuf, sizeof(charbuf), &keysym, &gdisp->buildingkeys);
-            if (event->type == KeyPress && len != 0) {
-                GXDrawBeep((GDisplay *) gdisp);
-            }
-            return;
-        } else if (redirect != NULL) {
-            GPoint pt;
-            gevent.w = redirect;
-            pt.x = event->xkey.x;
-            pt.y = event->xkey.y;
-            GXDrawTranslateCoordinates(gw, redirect, &pt);
-            gevent.u.chr.x = pt.x;
-            gevent.u.chr.y = pt.y;
-            gw = redirect;
-        }
-        */
-    /*
-    if (gevent.type == et_char) {
-        // The state may be modified in the gevent where a mac command key
-        //  entry gets converted to control, etc.
-        if (((GGDKWindow) gw)->gic == NULL) {
-            len = XLookupString((XKeyEvent *) event, charbuf, sizeof(charbuf), &keysym, &gdisp->buildingkeys);
-            charbuf[len] = '\0';
-            gevent.u.chr.keysym = keysym;
-            def2u_strncpy(gevent.u.chr.chars, charbuf,
-                          sizeof(gevent.u.chr.chars) / sizeof(gevent.u.chr.chars[0]));
-        } else {
-    #ifdef X_HAVE_UTF8_STRING
-            // I think there's a bug in SCIM. If I leave the meta(alt/option) modifier
-            //  bit set, then scim returns no keysym and no characters. On the other hand,
-            //  if I don't leave that bit set, then the default input method on the mac
-            //  will not do the Option key transformations properly. What I pass should
-            //  be IM independent. So I don't think I should have to do the next line
-            event->xkey.state &= ~Mod2Mask;
-            // But I do
-            len = Xutf8LookupString(((GGDKWindow) gw)->gic->ic, (XKeyPressedEvent *)event,
-                                    charbuf, sizeof(charbuf), &keysym, &status);
-            pt = charbuf;
-            if (status == XBufferOverflow) {
-                pt = malloc(len + 1);
-                len = Xutf8LookupString(((GGDKWindow) gw)->gic->ic, (XKeyPressedEvent *)&event,
-                                        pt, len, &keysym, &status);
-            }
-            if (status != XLookupChars && status != XLookupBoth) {
-                len = 0;
-            }
-            if (status != XLookupKeySym && status != XLookupBoth) {
-                keysym = 0;
-            }
-            pt[len] = '\0';
-            gevent.u.chr.keysym = keysym;
-            utf82u_strncpy(gevent.u.chr.chars, pt,
-                           sizeof(gevent.u.chr.chars) / sizeof(gevent.u.chr.chars[0]));
-            if (pt != charbuf) {
-                free(pt);
-            }
-    #else
-            gevent.u.chr.keysym = keysym = 0;
-            gevent.u.chr.chars[0] = 0;
-    #endif
-        }
-        // Convert X11 keysym values to unicode
-        if (keysym >= XKeysym_Mask) {
-            keysym -= XKeysym_Mask;
-        } else if (keysym <= XKEYSYM_TOP && keysym >= 0) {
-            keysym = gdraw_xkeysym_2_unicode[keysym];
-        }
-        gevent.u.chr.keysym = keysym;
-        if (keysym == gdisp->mykey_keysym &&
-                (event->xkey.state & (ControlMask | Mod1Mask)) == gdisp->mykey_mask) {
-            gdisp->mykeybuild = !gdisp->mykeybuild;
-            gdisp->mykey_state = 0;
-            gevent.u.chr.chars[0] = '\0';
-            gevent.u.chr.keysym = '\0';
-            if (!gdisp->mykeybuild && _GDraw_BuildCharHook != NULL) {
-                (_GDraw_BuildCharHook)((GDisplay *) gdisp);
-            }
-        } else if (gdisp->mykeybuild) {
-            _GDraw_ComposeChars((GDisplay *) gdisp, &gevent);
-        }
-    } else {
-        // XLookupKeysym doesn't do shifts for us (or I don't know how to use the index arg to make it)
-        len = XLookupString((XKeyEvent *) event, charbuf, sizeof(charbuf), &keysym, &gdisp->buildingkeys);
-        gevent.u.chr.keysym = keysym;
-        gevent.u.chr.chars[0] = '\0';
-    }
-
-    //
-    // If we are a charup, but the very next XEvent is a chardown
-    // on the same key, then we are just an autorepeat XEvent which
-    // other code might like to ignore
-    //
-    if (gevent.type == et_charup && XEventsQueued(gdisp->display, QueuedAfterReading)) {
-        XEvent nev;
-        XPeekEvent(gdisp->display, &nev);
-        if (nev.type == KeyPress && nev.xkey.time == event->xkey.time &&
-                nev.xkey.keycode == event->xkey.keycode) {
-            gevent.u.chr.autorepeat = 1;
-        }
-    }
-    break;
-    */
-    case GDK_MOTION_NOTIFY: {
-        GdkEventMotion *evt = (GdkEventMotion *)event;
-        gevent.type = et_mousemove;
-        gdisp->last_event_time = gdk_event_get_time(event);
-        gevent.u.mouse.time = gdisp->last_event_time;
-        gevent.u.mouse.state = _GGDKDraw_GdkModifierToKsm(evt->state);
-        gevent.u.mouse.x = evt->x;
-        gevent.u.mouse.y = evt->y;
-    }
-    break;
-    case GDK_BUTTON_PRESS:
-    case GDK_2BUTTON_PRESS:
-    case GDK_3BUTTON_PRESS:
-    case GDK_BUTTON_RELEASE: {
-        GdkEventButton *evt = (GdkEventButton *)event;
-        gdisp->last_event_time = gdk_event_get_time(event);
-        gevent.u.mouse.time = gdisp->last_event_time;
-        /*if ((redirect = InputRedirection(gdisp->input, gw)) != NULL) {
-            if (event->type == ButtonPress) {
-                GXDrawBeep((GDisplay *) gdisp);
-            }
-            return;
-        }*/
-        gevent.u.mouse.state = _GGDKDraw_GdkModifierToKsm(evt->state);
-        gevent.u.mouse.x = evt->x;
-        gevent.u.mouse.y = evt->y;
-        gevent.u.mouse.button = evt->button;
-        gevent.type = et_mousedown;
-
-        if (event->type == GDK_BUTTON_PRESS) {
-            gevent.u.mouse.clicks = 1;
-        } else if (event->type == GDK_2BUTTON_PRESS) {
-            gevent.u.mouse.clicks = 2;
-        } else if (event->type == GDK_3BUTTON_PRESS) {
-            gevent.u.mouse.clicks = 3;
-        } else {
-            gevent.type = et_mouseup;
-            gevent.u.mouse.clicks = 1;
-        }
-    }
-    break;
-    case GDK_EXPOSE:
-        assert(gw->cc == NULL);
-        gdk_window_begin_paint_region(gw->w, ((GdkEventExpose *)event)->region);
-        gw->cc = gdk_cairo_create(gw->w);
-
-        gevent.type = et_expose;
-        gevent.u.expose.rect.x = ((GdkEventExpose *)event)->area.x;
-        gevent.u.expose.rect.y = ((GdkEventExpose *)event)->area.y;
-        gevent.u.expose.rect.width = ((GdkEventExpose *)event)->area.width;
-        gevent.u.expose.rect.height = ((GdkEventExpose *)event)->area.height;
-        /* X11 does this automatically. but cairo won't get the event */
-        GGDKDrawClear((GWindow)gw, &gevent.u.expose.rect);
-        break;
-    case GDK_VISIBILITY_NOTIFY:
-        gevent.type = et_visibility;
-        gevent.u.visibility.state = _GGDKDraw_GdkVisibilityStateToVS(((GdkEventVisibility *)event)->state);
-        break;
-    case GDK_FOCUS_CHANGE:
-        gevent.type = et_focus;
-        gevent.u.focus.gained_focus = ((GdkEventFocus *)event)->in;
-        gevent.u.focus.mnemonic_focus = false;
-        break;
-    case GDK_ENTER_NOTIFY:
-    case GDK_LEAVE_NOTIFY: { // Should only get this on top level
-        GdkEventCrossing *crossing = (GdkEventCrossing *)event;
-        if (crossing->focus) { //Focus or inferior
-            break;
-        }
-        if (gdisp->focusfollowsmouse && gw != NULL && gw->eh != NULL) {
-            gevent.type = et_focus;
-            gevent.u.focus.gained_focus = crossing->type == GDK_ENTER_NOTIFY;
-            gevent.u.focus.mnemonic_focus = false;
-            (gw->eh)((GWindow) gw, &gevent);
-        }
-        gevent.type = et_crossing;
-        gevent.u.crossing.x = crossing->x;
-        gevent.u.crossing.y = crossing->y;
-        gevent.u.crossing.state = _GGDKDraw_GdkModifierToKsm(crossing->state);
-        gevent.u.crossing.entered = crossing->type == GDK_ENTER_NOTIFY;
-        gevent.u.crossing.device = NULL;
-        gevent.u.crossing.time = crossing->time;
-    }
-    break;
-    case GDK_CONFIGURE: {
-        // We need to recreate our Cairo context here.
-        //cairo_destroy(gw->cc);
-        //gw->cc = gdk_cairo_create(gw->w);
-
-        GdkEventConfigure *configure = (GdkEventConfigure *)event;
-        gevent.type = et_resize;
-        gevent.u.resize.size.x = configure->x;
-        gevent.u.resize.size.y = configure->y;
-        gevent.u.resize.size.width = configure->width;
-        gevent.u.resize.size.height = configure->height;
-        //if (gw->is_toplevel) {
-        //    GPoint p = {0};
-        //    GGDKDrawTranslateCoordinates((GWindow)gw, (GWindow)(gdisp->groot), &p);
-        //    gevent.u.resize.size.x = p.x;
-        //    gevent.u.resize.size.y = p.y;
-        //}
-        gevent.u.resize.dx = gevent.u.resize.size.x - gw->pos.x;
-        gevent.u.resize.dy = gevent.u.resize.size.y - gw->pos.y;
-        gevent.u.resize.dwidth = gevent.u.resize.size.width - gw->pos.width;
-        gevent.u.resize.dheight = gevent.u.resize.size.height - gw->pos.height;
-        gevent.u.resize.moved = gevent.u.resize.sized = false;
-        if (gevent.u.resize.dx != 0 || gevent.u.resize.dy != 0) {
-            gevent.u.resize.moved = true;
-        }
-        if (gevent.u.resize.dwidth != 0 || gevent.u.resize.dheight != 0) {
-            gevent.u.resize.sized = true;
-        }
-
-        if (!gevent.u.resize.sized && gevent.u.resize.moved) {
-            gevent.type = et_noevent;
-        }
-
-        gw->pos = gevent.u.resize.size;
-        if (!gdisp->top_offsets_set && ((GGDKWindow) gw)->was_positioned &&
-                gw->is_toplevel && !((GGDKWindow) gw)->is_popup &&
-                !((GGDKWindow) gw)->istransient) {
-            // I don't know why I need a fudge factor here, but I do
-            //gdisp->off_x = gevent.u.resize.dx - 2; //TODO: FIXME!
-            //gdisp->off_y = gevent.u.resize.dy - 1;
-            gdisp->top_offsets_set = true;
-        }
-    }
-    break;
-    case GDK_MAP:
-        gevent.type = et_map;
-        gevent.u.map.is_visible = true;
-        gw->is_visible = true;
-        break;
-    case GDK_UNMAP:
-        gevent.type = et_map;
-        gevent.u.map.is_visible = false;
-        gw->is_visible = false;
-        break;
-    case GDK_DESTROY:
-    case GDK_DELETE:
-        gdk_window_destroy(gw->w);
-        gevent.type = et_destroy;
-        break;
-    case GDK_CLIENT_EVENT:
         /*
-            if ((redirect = InputRedirection(gdisp->input, gw)) != NULL) {
-                GXDrawBeep((GDisplay *) gdisp);
+        case GDK_KEY_PRESS:
+        case GDK_KEY_RELEASE:
+            gdisp->last_event_time = gdk_event_get_time(event);
+            gevent.type = event->type == GDK_KEY_PRESS ? et_char : et_charup;
+            gevent.u.chr.time = gdisp->last_event_time;
+            gevent.u.chr.state = _GGDKDraw_GdkModifierToKsm(((GdkEventKey*)event)->state); //event->xkey.state;
+            gevent.u.chr.autorepeat = 0;
+            // Mumble mumble Mac
+            //if ((event->xkey.state & ksm_option) && gdisp->macosx_cmd) {
+            //    gevent.u.chr.state |= ksm_meta;
+            //}
+
+            //TODO: GDK doesn't send x/y pos when key was pressed...
+            //gevent.u.chr.x = event->xkey.x;
+            //gevent.u.chr.y = event->xkey.y;
+
+            if ((redirect = InputRedirection(gdisp->input, gw)) == (GWindow)(-1)) {
+                len = XLookupString((XKeyEvent *) event, charbuf, sizeof(charbuf), &keysym, &gdisp->buildingkeys);
+                if (event->type == KeyPress && len != 0) {
+                    GXDrawBeep((GDisplay *) gdisp);
+                }
                 return;
+            } else if (redirect != NULL) {
+                GPoint pt;
+                gevent.w = redirect;
+                pt.x = event->xkey.x;
+                pt.y = event->xkey.y;
+                GXDrawTranslateCoordinates(gw, redirect, &pt);
+                gevent.u.chr.x = pt.x;
+                gevent.u.chr.y = pt.y;
+                gw = redirect;
             }
-            if (event->xclient.message_type == gdisp->atoms.wm_protocols &&
-                    event->xclient.data.l[0] == gdisp->atoms.wm_del_window) {
-                gevent.type = et_close;
-            } else if (event->xclient.message_type == gdisp->atoms.drag_and_drop) {
-                gevent.type = event->xclient.data.l[0];
-                gevent.u.drag_drop.x = event->xclient.data.l[1];
-                gevent.u.drag_drop.y = event->xclient.data.l[2];
-            }*/
+            */
+        /*
+        if (gevent.type == et_char) {
+            // The state may be modified in the gevent where a mac command key
+            //  entry gets converted to control, etc.
+            if (((GGDKWindow) gw)->gic == NULL) {
+                len = XLookupString((XKeyEvent *) event, charbuf, sizeof(charbuf), &keysym, &gdisp->buildingkeys);
+                charbuf[len] = '\0';
+                gevent.u.chr.keysym = keysym;
+                def2u_strncpy(gevent.u.chr.chars, charbuf,
+                              sizeof(gevent.u.chr.chars) / sizeof(gevent.u.chr.chars[0]));
+            } else {
+        #ifdef X_HAVE_UTF8_STRING
+                // I think there's a bug in SCIM. If I leave the meta(alt/option) modifier
+                //  bit set, then scim returns no keysym and no characters. On the other hand,
+                //  if I don't leave that bit set, then the default input method on the mac
+                //  will not do the Option key transformations properly. What I pass should
+                //  be IM independent. So I don't think I should have to do the next line
+                event->xkey.state &= ~Mod2Mask;
+                // But I do
+                len = Xutf8LookupString(((GGDKWindow) gw)->gic->ic, (XKeyPressedEvent *)event,
+                                        charbuf, sizeof(charbuf), &keysym, &status);
+                pt = charbuf;
+                if (status == XBufferOverflow) {
+                    pt = malloc(len + 1);
+                    len = Xutf8LookupString(((GGDKWindow) gw)->gic->ic, (XKeyPressedEvent *)&event,
+                                            pt, len, &keysym, &status);
+                }
+                if (status != XLookupChars && status != XLookupBoth) {
+                    len = 0;
+                }
+                if (status != XLookupKeySym && status != XLookupBoth) {
+                    keysym = 0;
+                }
+                pt[len] = '\0';
+                gevent.u.chr.keysym = keysym;
+                utf82u_strncpy(gevent.u.chr.chars, pt,
+                               sizeof(gevent.u.chr.chars) / sizeof(gevent.u.chr.chars[0]));
+                if (pt != charbuf) {
+                    free(pt);
+                }
+        #else
+                gevent.u.chr.keysym = keysym = 0;
+                gevent.u.chr.chars[0] = 0;
+        #endif
+            }
+            // Convert X11 keysym values to unicode
+            if (keysym >= XKeysym_Mask) {
+                keysym -= XKeysym_Mask;
+            } else if (keysym <= XKEYSYM_TOP && keysym >= 0) {
+                keysym = gdraw_xkeysym_2_unicode[keysym];
+            }
+            gevent.u.chr.keysym = keysym;
+            if (keysym == gdisp->mykey_keysym &&
+                    (event->xkey.state & (ControlMask | Mod1Mask)) == gdisp->mykey_mask) {
+                gdisp->mykeybuild = !gdisp->mykeybuild;
+                gdisp->mykey_state = 0;
+                gevent.u.chr.chars[0] = '\0';
+                gevent.u.chr.keysym = '\0';
+                if (!gdisp->mykeybuild && _GDraw_BuildCharHook != NULL) {
+                    (_GDraw_BuildCharHook)((GDisplay *) gdisp);
+                }
+            } else if (gdisp->mykeybuild) {
+                _GDraw_ComposeChars((GDisplay *) gdisp, &gevent);
+            }
+        } else {
+            // XLookupKeysym doesn't do shifts for us (or I don't know how to use the index arg to make it)
+            len = XLookupString((XKeyEvent *) event, charbuf, sizeof(charbuf), &keysym, &gdisp->buildingkeys);
+            gevent.u.chr.keysym = keysym;
+            gevent.u.chr.chars[0] = '\0';
+        }
+
+        //
+        // If we are a charup, but the very next XEvent is a chardown
+        // on the same key, then we are just an autorepeat XEvent which
+        // other code might like to ignore
+        //
+        if (gevent.type == et_charup && XEventsQueued(gdisp->display, QueuedAfterReading)) {
+            XEvent nev;
+            XPeekEvent(gdisp->display, &nev);
+            if (nev.type == KeyPress && nev.xkey.time == event->xkey.time &&
+                    nev.xkey.keycode == event->xkey.keycode) {
+                gevent.u.chr.autorepeat = 1;
+            }
+        }
         break;
-    case GDK_SELECTION_CLEAR: /*{
+        */
+        case GDK_MOTION_NOTIFY: {
+            GdkEventMotion *evt = (GdkEventMotion *)event;
+            gevent.type = et_mousemove;
+            gdisp->last_event_time = gdk_event_get_time(event);
+            gevent.u.mouse.time = gdisp->last_event_time;
+            gevent.u.mouse.state = _GGDKDraw_GdkModifierToKsm(evt->state);
+            gevent.u.mouse.x = evt->x;
+            gevent.u.mouse.y = evt->y;
+        }
+        break;
+        case GDK_SCROLL: { //Synthesize a button press
+            GdkEventScroll *evt = (GdkEventScroll *)event;
+            gdisp->last_event_time = gdk_event_get_time(event);
+            gevent.u.mouse.time = gdisp->last_event_time;
+            gevent.u.mouse.state = _GGDKDraw_GdkModifierToKsm(evt->state);
+            gevent.u.mouse.x = evt->x;
+            gevent.u.mouse.y = evt->y;
+            gevent.u.mouse.clicks = gdisp->bs.cur_click = 1;
+
+            switch (evt->direction) {
+                case GDK_SCROLL_UP:
+                default:
+                    gevent.u.mouse.button = 4;
+                    break;
+                case GDK_SCROLL_DOWN:
+                    gevent.u.mouse.button = 5;
+                    break;
+                case GDK_SCROLL_LEFT:
+                    gevent.u.mouse.button = 6;
+                    break;
+                case GDK_SCROLL_RIGHT:
+                    gevent.u.mouse.button = 7;
+                    break;
+            }
+            // We need to simulate two events... I think.
+            gevent.type = et_mousedown;
+            GDrawPostEvent(&gevent);
+            gevent.type = et_mouseup;
+        }
+        break;
+        case GDK_BUTTON_PRESS:
+        case GDK_BUTTON_RELEASE: {
+            GdkEventButton *evt = (GdkEventButton *)event;
+            gdisp->last_event_time = gdk_event_get_time(event);
+            gevent.u.mouse.time = gdisp->last_event_time;
+            /*if ((redirect = InputRedirection(gdisp->input, gw)) != NULL) {
+                if (event->type == ButtonPress) {
+                    GXDrawBeep((GDisplay *) gdisp);
+                }
+                return;
+            }*/
+            gevent.u.mouse.state = _GGDKDraw_GdkModifierToKsm(evt->state);
+            gevent.u.mouse.x = evt->x;
+            gevent.u.mouse.y = evt->y;
+            gevent.u.mouse.button = evt->button;
+
+            if (event->type == GDK_BUTTON_PRESS) {
+                int xdiff, ydiff;
+                gevent.type = et_mousedown;
+
+                xdiff = abs(evt->x - gdisp->bs.release_x);
+                ydiff = abs(evt->y - gdisp->bs.release_y);
+
+                if (xdiff + ydiff < gdisp->bs.double_wiggle &&
+                        gw == gdisp->bs.release_w &&
+                        evt->button == gdisp->bs.release_button &&
+                        gevent.u.mouse.time - gdisp->bs.release_time < gdisp->bs.double_time &&
+                        gevent.u.mouse.time >= gdisp->bs.release_time) {	// Time can wrap
+
+                    gdisp->bs.cur_click++;
+                } else {
+                    gdisp->bs.cur_click = 1;
+                }
+            } else {
+                gevent.type = et_mouseup;
+                gdisp->bs.release_time = gevent.u.mouse.time;
+                gdisp->bs.release_w = gw;
+                gdisp->bs.release_x = evt->x;
+                gdisp->bs.release_y = evt->y;
+                gdisp->bs.release_button = evt->button;
+            }
+            gevent.u.mouse.clicks = gdisp->bs.cur_click;
+        }
+        break;
+        case GDK_EXPOSE:
+            assert(gw->cc == NULL);
+            gdk_window_begin_paint_region(gw->w, ((GdkEventExpose *)event)->region);
+            gw->cc = gdk_cairo_create(gw->w);
+
+            gevent.type = et_expose;
+            gevent.u.expose.rect.x = ((GdkEventExpose *)event)->area.x;
+            gevent.u.expose.rect.y = ((GdkEventExpose *)event)->area.y;
+            gevent.u.expose.rect.width = ((GdkEventExpose *)event)->area.width;
+            gevent.u.expose.rect.height = ((GdkEventExpose *)event)->area.height;
+            /* X11 does this automatically. but cairo won't get the event */
+            GGDKDrawClear((GWindow)gw, &gevent.u.expose.rect);
+            break;
+        case GDK_VISIBILITY_NOTIFY:
+            gevent.type = et_visibility;
+            gevent.u.visibility.state = _GGDKDraw_GdkVisibilityStateToVS(((GdkEventVisibility *)event)->state);
+            break;
+        case GDK_FOCUS_CHANGE:
+            gevent.type = et_focus;
+            gevent.u.focus.gained_focus = ((GdkEventFocus *)event)->in;
+            gevent.u.focus.mnemonic_focus = false;
+            break;
+        case GDK_ENTER_NOTIFY:
+        case GDK_LEAVE_NOTIFY: { // Should only get this on top level
+            GdkEventCrossing *crossing = (GdkEventCrossing *)event;
+            if (crossing->focus) { //Focus or inferior
+                break;
+            }
+            if (gdisp->focusfollowsmouse && gw != NULL && gw->eh != NULL) {
+                gevent.type = et_focus;
+                gevent.u.focus.gained_focus = crossing->type == GDK_ENTER_NOTIFY;
+                gevent.u.focus.mnemonic_focus = false;
+                (gw->eh)((GWindow) gw, &gevent);
+            }
+            gevent.type = et_crossing;
+            gevent.u.crossing.x = crossing->x;
+            gevent.u.crossing.y = crossing->y;
+            gevent.u.crossing.state = _GGDKDraw_GdkModifierToKsm(crossing->state);
+            gevent.u.crossing.entered = crossing->type == GDK_ENTER_NOTIFY;
+            gevent.u.crossing.device = NULL;
+            gevent.u.crossing.time = crossing->time;
+        }
+        break;
+        case GDK_CONFIGURE: {
+            // We need to recreate our Cairo context here.
+            //cairo_destroy(gw->cc);
+            //gw->cc = gdk_cairo_create(gw->w);
+
+            GdkEventConfigure *configure = (GdkEventConfigure *)event;
+            gevent.type = et_resize;
+            gevent.u.resize.size.x = configure->x;
+            gevent.u.resize.size.y = configure->y;
+            gevent.u.resize.size.width = configure->width;
+            gevent.u.resize.size.height = configure->height;
+            //if (gw->is_toplevel) {
+            //    GPoint p = {0};
+            //    GGDKDrawTranslateCoordinates((GWindow)gw, (GWindow)(gdisp->groot), &p);
+            //    gevent.u.resize.size.x = p.x;
+            //    gevent.u.resize.size.y = p.y;
+            //}
+            gevent.u.resize.dx = gevent.u.resize.size.x - gw->pos.x;
+            gevent.u.resize.dy = gevent.u.resize.size.y - gw->pos.y;
+            gevent.u.resize.dwidth = gevent.u.resize.size.width - gw->pos.width;
+            gevent.u.resize.dheight = gevent.u.resize.size.height - gw->pos.height;
+            gevent.u.resize.moved = gevent.u.resize.sized = false;
+            if (gevent.u.resize.dx != 0 || gevent.u.resize.dy != 0) {
+                gevent.u.resize.moved = true;
+            }
+            if (gevent.u.resize.dwidth != 0 || gevent.u.resize.dheight != 0) {
+                gevent.u.resize.sized = true;
+            }
+
+            if (!gevent.u.resize.sized && gevent.u.resize.moved) {
+                gevent.type = et_noevent;
+            }
+
+            gw->pos = gevent.u.resize.size;
+            if (!gdisp->top_offsets_set && ((GGDKWindow) gw)->was_positioned &&
+                    gw->is_toplevel && !((GGDKWindow) gw)->is_popup &&
+                    !((GGDKWindow) gw)->istransient) {
+                // I don't know why I need a fudge factor here, but I do
+                //gdisp->off_x = gevent.u.resize.dx - 2; //TODO: FIXME!
+                //gdisp->off_y = gevent.u.resize.dy - 1;
+                gdisp->top_offsets_set = true;
+            }
+        }
+        break;
+        case GDK_MAP:
+            gevent.type = et_map;
+            gevent.u.map.is_visible = true;
+            gw->is_visible = true;
+            break;
+        case GDK_UNMAP:
+            gevent.type = et_map;
+            gevent.u.map.is_visible = false;
+            gw->is_visible = false;
+            break;
+        case GDK_DESTROY:
+        case GDK_DELETE:
+            gdk_window_destroy(gw->w);
+            gevent.type = et_destroy;
+            break;
+        case GDK_CLIENT_EVENT:
+            /*
+                if ((redirect = InputRedirection(gdisp->input, gw)) != NULL) {
+                    GXDrawBeep((GDisplay *) gdisp);
+                    return;
+                }
+                if (event->xclient.message_type == gdisp->atoms.wm_protocols &&
+                        event->xclient.data.l[0] == gdisp->atoms.wm_del_window) {
+                    gevent.type = et_close;
+                } else if (event->xclient.message_type == gdisp->atoms.drag_and_drop) {
+                    gevent.type = event->xclient.data.l[0];
+                    gevent.u.drag_drop.x = event->xclient.data.l[1];
+                    gevent.u.drag_drop.y = event->xclient.data.l[2];
+                }*/
+            break;
+        case GDK_SELECTION_CLEAR: /*{
         int i;
         gdisp->last_event_time = event->xselectionclear.time;
         gevent.type = et_selclear;
@@ -790,22 +837,22 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         }
         GXDrawClearSelData(gdisp, gevent.u.selclear.sel);
     }*/
-        break;
-    case GDK_SELECTION_REQUEST:
-        /*
-            gdisp->last_event_time = event->xselectionrequest.time;
-            GXDrawTransmitSelection(gdisp, event);*/
-        break;
-    case GDK_SELECTION_NOTIFY:		// Paste
-        /*gdisp->last_event_time = event->xselection.time;*/ /* it's the request's time not the current? */
-        break;
-    case GDK_PROPERTY_NOTIFY:
-        gdisp->last_event_time = gdk_event_get_time(event);
-        break;
-    default:
-        fprintf(stderr, "UNPROCESSED GDK EVENT %d\n", event->type);
-        fflush(stderr);
-        break;
+            break;
+        case GDK_SELECTION_REQUEST:
+            /*
+                gdisp->last_event_time = event->xselectionrequest.time;
+                GXDrawTransmitSelection(gdisp, event);*/
+            break;
+        case GDK_SELECTION_NOTIFY:		// Paste
+            /*gdisp->last_event_time = event->xselection.time;*/ /* it's the request's time not the current? */
+            break;
+        case GDK_PROPERTY_NOTIFY:
+            gdisp->last_event_time = gdk_event_get_time(event);
+            break;
+        default:
+            fprintf(stderr, "UNPROCESSED GDK EVENT %d\n", event->type);
+            fflush(stderr);
+            break;
     }
 
     if (gevent.type != et_noevent && gw != NULL && gw->eh != NULL) {
@@ -1106,39 +1153,39 @@ static void GGDKDrawSetCursor(GWindow w, GCursor gcursor) {
     GdkCursor *cursor = NULL;
 
     switch (gcursor) {
-    case ct_default:
-    case ct_backpointer:
-        cursor = gdk_cursor_new_from_name(gw->display->display, "default");
-        break;
-    case ct_pointer:
-        cursor = gdk_cursor_new_from_name(gw->display->display, "pointer");
-        break;
-    case ct_hand:
-        cursor = gdk_cursor_new_from_name(gw->display->display, "hand");
-        break;
-    case ct_question:
-        cursor = gdk_cursor_new_from_name(gw->display->display, "help");
-        break;
-    case ct_cross:
-        cursor = gdk_cursor_new_from_name(gw->display->display, "crosshair");
-        break;
-    case ct_4way:
-        cursor = gdk_cursor_new_from_name(gw->display->display, "move");
-        break;
-    case ct_text:
-        cursor = gdk_cursor_new_from_name(gw->display->display, "text");
-        break;
-    case ct_watch:
-        cursor = gdk_cursor_new_from_name(gw->display->display, "wait");
-        break;
-    case ct_draganddrop:
-        cursor = gdk_cursor_new_from_name(gw->display->display, "context-menu");
-        break;
-    case ct_invisible:
-        cursor = gdk_cursor_new_from_name(gw->display->display, "none");
-        break;
-    default:
-        fprintf(stderr, "UNSUPPORTED CURSOR!\n");
+        case ct_default:
+        case ct_backpointer:
+            cursor = gdk_cursor_new_from_name(gw->display->display, "default");
+            break;
+        case ct_pointer:
+            cursor = gdk_cursor_new_from_name(gw->display->display, "pointer");
+            break;
+        case ct_hand:
+            cursor = gdk_cursor_new_from_name(gw->display->display, "hand");
+            break;
+        case ct_question:
+            cursor = gdk_cursor_new_from_name(gw->display->display, "help");
+            break;
+        case ct_cross:
+            cursor = gdk_cursor_new_from_name(gw->display->display, "crosshair");
+            break;
+        case ct_4way:
+            cursor = gdk_cursor_new_from_name(gw->display->display, "move");
+            break;
+        case ct_text:
+            cursor = gdk_cursor_new_from_name(gw->display->display, "text");
+            break;
+        case ct_watch:
+            cursor = gdk_cursor_new_from_name(gw->display->display, "wait");
+            break;
+        case ct_draganddrop:
+            cursor = gdk_cursor_new_from_name(gw->display->display, "context-menu");
+            break;
+        case ct_invisible:
+            cursor = gdk_cursor_new_from_name(gw->display->display, "none");
+            break;
+        default:
+            fprintf(stderr, "UNSUPPORTED CURSOR!\n");
     }
 
     gdk_window_set_cursor(gw->w, cursor);
@@ -1187,14 +1234,10 @@ static void GGDKDrawFlush(GDisplay *gdisp) {
 
 static void GGDKDrawScroll(GWindow w, GRect *rect, int32 hor, int32 vert) {
     fprintf(stderr, "GDKCALL: GGDKDrawScroll\n");
-    assert(false);
-    /*
     GGDKWindow gw = (GGDKWindow) w;
-    GGDKDisplay *gdisp = gw->display;
     GRect temp, old;
 
     vert = -vert;
-
     if (rect == NULL) {
         temp.x = temp.y = 0;
         temp.width = gw->pos.width;
@@ -1202,14 +1245,7 @@ static void GGDKDrawScroll(GWindow w, GRect *rect, int32 hor, int32 vert) {
         rect = &temp;
     }
 
-    GDrawPushClip(w, rect, &old);
-
-    // Cairo can happily scroll the window -- except it doesn't know about
-    //  child windows, and so we don't get the requisit events to redraw
-    //  areas covered by children. Rats.
-    GXDrawSendExpose(gw, rect->x, rect->y, rect->x + rect->width, rect->y + rect->height);
-    GDrawPopClip(w, &old);
-    */
+    GDrawRequestExpose(w, rect, false);
 }
 
 
@@ -1251,20 +1287,28 @@ static int GGDKDrawSelectionHasOwner(GDisplay *gdisp, enum selnames sn) {
 
 static void GGDKDrawPointerUngrab(GDisplay *gdisp) {
     fprintf(stderr, "GDKCALL: GGDKDrawPointerUngrab\n"); //assert(false);
-    //Supposedly deprecated but I don't care
-    //gdk_display_pointer_ungrab(((GGDKDisplay*)gdisp)->display, GDK_CURRENT_TIME);
 
+#ifndef GGDKDRAW_GDK_3_20
     GdkDevice *pointer = _GGDKDraw_GetPointer((GGDKDisplay *)gdisp);
     if (pointer == NULL) {
         return;
     }
 
     gdk_device_ungrab(pointer, GDK_CURRENT_TIME);
+#else
+    GdkSeat *seat = gdk_display_get_default_seat(((GGDKDisplay *)gdisp)->display);
+    if (seat == NULL) {
+        return;
+    }
+
+    gdk_seat_ungrab(seat);
+#endif
 }
 
 static void GGDKDrawPointerGrab(GWindow w) {
     fprintf(stderr, "GDKCALL: GGDKDrawPointerGrab\n"); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
+#ifndef GGDKDRAW_GDK_3_20
     GdkDevice *pointer = _GGDKDraw_GetPointer(gw->display);
     if (pointer == NULL) {
         return;
@@ -1275,6 +1319,16 @@ static void GGDKDrawPointerGrab(GWindow w) {
                     false,
                     GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK,
                     NULL, GDK_CURRENT_TIME);
+#else
+    GdkSeat *seat = gdk_display_get_default_seat(gw->display->display);
+    if (seat == NULL) {
+        return;
+    }
+
+    gdk_seat_grab(seat, gw->w,
+                  GDK_SEAT_CAPABILITY_ALL_POINTING,
+                  false, NULL, NULL, NULL, NULL);
+#endif
 }
 
 static void GGDKDrawRequestExpose(GWindow w, GRect *rect, int doclear) {
@@ -1334,7 +1388,7 @@ static void GGDKDrawSync(GDisplay *gdisp) {
 
 static void GGDKDrawSkipMouseMoveEvents(GWindow gw, GEvent *gevent) {
     fprintf(stderr, "GDKCALL: GGDKDrawSkipMouseMoveEvents\n");
-    assert(false);
+    //assert(false);
 }
 
 static void GGDKDrawProcessPendingEvents(GDisplay *gdisp) {
@@ -1598,6 +1652,8 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *programname) {
     gdisp->res = gdk_screen_get_resolution(gdisp->screen);
     gdisp->main_loop = g_main_loop_new(NULL, true);
     gdisp->scale_screen_by = 1;
+    gdisp->bs.double_time = 200;
+    gdisp->bs.double_wiggle = 3;
 
     gdisp->pangoc_context = gdk_pango_context_get_for_screen(gdisp->screen);
 
@@ -1635,7 +1691,9 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *programname) {
     _GDraw_InitError((GDisplay *) gdisp);
 
     //DEBUG
-    gdk_window_set_debug_updates(true);
+    if (!getenv("GDK_DEBUG_OFF")) {
+        gdk_window_set_debug_updates(true);
+    }
     return (GDisplay *)gdisp;
 }
 
