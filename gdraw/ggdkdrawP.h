@@ -11,12 +11,17 @@
 
 #include "gdrawP.h"
 
+
 // Le sigh
 #define GTimer GTimer_GTK
 #define GList  GList_Glib
 #include <gdk/gdk.h>
 #undef GTimer
 #undef GList
+
+#if (((GDK_MAJOR_VERSION == 3) && (GDK_MINOR_VERSION >= 20)) || (GDK_MAJOR_VERSION > 3))
+#    define GGDKDRAW_GDK_3_20
+#endif
 
 #include "fontP.h"
 
@@ -36,7 +41,7 @@ typedef struct ggdktimer { // :GTimer
     // Extensions below
     unsigned int has_differing_repeat_time: 1;
     guint glib_timeout_id;
-    
+
 } GGDKTimer;
 
 typedef struct ggdkbuttonstate {
@@ -83,7 +88,7 @@ typedef struct ggdkdisplay { /* :GDisplay */
     guint32 last_event_time;
 
     GList_Glib *timers; //List of GGDKTimer's
-    
+
     GGDKWindow default_icon;
     GdkWindow *last_nontransient_window;
 
@@ -127,9 +132,9 @@ struct ggdkwindow { /* :GWindow */
     GdkWindow *transient_owner;
 
     char *window_title;
-    
+
     int autopaint_depth;
-    
+
     cairo_surface_t *cs;
     cairo_t *cc;
     PangoLayout *pango_layout;

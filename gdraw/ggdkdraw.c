@@ -340,6 +340,31 @@ static GWindow _GGDKDraw_NewPixmap(GDisplay *gdisp, uint16 width, uint16 height,
     return (GWindow)gw;
 }
 
+static GdkDevice *_GGDKDraw_GetPointer(GGDKDisplay *gdisp) {
+#ifdef GGDKDRAW_GDK_3_20
+    GdkSeat *seat = gdk_display_get_default_seat(gdisp->display);
+    if (seat == NULL) {
+        return NULL;
+    }
+
+    GdkDevice *pointer = gdk_seat_get_pointer(seat);
+    if (pointer == NULL) {
+        return NULL;
+    }
+#else
+    GdkDeviceManager *manager = gdk_display_get_device_manager(gdisp->display);
+    if (manager == NULL) {
+        return NULL;
+    }
+
+    GdkDevice *pointer = gdk_device_manager_get_client_pointer(manager);
+    if (pointer == NULL) {
+        return NULL;
+    }
+#endif
+    return pointer;
+}
+
 static int16 _GGDKDraw_GdkModifierToKsm(GdkModifierType mask) {
     int16 state = 0;
     //Translate from mask to X11 state
@@ -1047,18 +1072,11 @@ static void GGDKDrawSetTransientFor(GWindow transient, GWindow owner) {
 static void GGDKDrawGetPointerPosition(GWindow w, GEvent *ret) {
     fprintf(stderr, "GDKCALL: GGDKDrawGetPointerPos\n"); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
-
-    // Well GDK likes deprecating everything...
-    // This is the latest 'non-deprecated' version.
-    // But it's only available in GDK 3.2...
-    // Might need to write a version using 'deprecated' functions...
-    GdkSeat *seat = gdk_display_get_default_seat(((GGDKWindow)gw)->display->display);
-    if (seat == NULL) {
-        return;
-    }
-
-    GdkDevice *pointer = gdk_seat_get_pointer(seat);
+    GdkDevice *pointer = _GGDKDraw_GetPointer(gw->display);
     if (pointer == NULL) {
+        ret->u.mouse.x = 0;
+        ret->u.mouse.y = 0;
+        ret->u.mouse.state = 0;
         return;
     }
 
@@ -1072,16 +1090,7 @@ static void GGDKDrawGetPointerPosition(GWindow w, GEvent *ret) {
 
 static GWindow GGDKDrawGetPointerWindow(GWindow gw) {
     fprintf(stderr, "GDKCALL: GGDKDrawGetPointerWindow\n");  //assert(false);
-
-    GdkSeat *seat = gdk_display_get_default_seat(((GGDKWindow)gw)->display->display);
-    if (seat == NULL) {
-        return NULL;
-    }
-
-    GdkDevice *pointer = gdk_seat_get_pointer(seat);
-    if (pointer == NULL) {
-        return NULL;
-    }
+    GdkDevice *pointer = _GGDKDraw_GetPointer(((GGDKWindow)gw)->display);
 
     // Do I need to unref this?
     GdkWindow *window = gdk_device_get_window_at_position(pointer, NULL, NULL);
@@ -1245,13 +1254,7 @@ static void GGDKDrawPointerUngrab(GDisplay *gdisp) {
     //Supposedly deprecated but I don't care
     //gdk_display_pointer_ungrab(((GGDKDisplay*)gdisp)->display, GDK_CURRENT_TIME);
 
-
-    GdkSeat *seat = gdk_display_get_default_seat(((GGDKDisplay *)gdisp)->display);
-    if (seat == NULL) {
-        return;
-    }
-
-    GdkDevice *pointer = gdk_seat_get_pointer(seat);
+    GdkDevice *pointer = _GGDKDraw_GetPointer((GGDKDisplay *)gdisp);
     if (pointer == NULL) {
         return;
     }
@@ -1262,12 +1265,7 @@ static void GGDKDrawPointerUngrab(GDisplay *gdisp) {
 static void GGDKDrawPointerGrab(GWindow w) {
     fprintf(stderr, "GDKCALL: GGDKDrawPointerGrab\n"); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
-    GdkSeat *seat = gdk_display_get_default_seat(gw->display->display);
-    if (seat == NULL) {
-        return;
-    }
-
-    GdkDevice *pointer = gdk_seat_get_pointer(seat);
+    GdkDevice *pointer = _GGDKDraw_GetPointer(gw->display);
     if (pointer == NULL) {
         return;
     }
@@ -1277,10 +1275,6 @@ static void GGDKDrawPointerGrab(GWindow w) {
                     false,
                     GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK,
                     NULL, GDK_CURRENT_TIME);
-
-    //Supposedly deprecated but I don't care
-    //WTF? don't exist? sigh. Have to use the seat/device/...
-    //gdk_display_pointer_grab(((GGDKDisplay*)gdisp)->display, GDK_CURRENT_TIME);
 }
 
 static void GGDKDrawRequestExpose(GWindow w, GRect *rect, int doclear) {
