@@ -442,10 +442,10 @@ static cairo_surface_t *_GGDKDraw_GImage2Surface(GImage *image, GRect *src, uint
 bool _GGDKDraw_InitPangoCairo(GGDKWindow gw) {
     if (gw->is_pixmap) {
         gw->cc = cairo_create(gw->cs);
-    if (gw->cc == NULL) {
-        fprintf(stderr, "GGDKDRAW: Cairo context creation failed!\n");
-        return false;
-    }
+        if (gw->cc == NULL) {
+            fprintf(stderr, "GGDKDRAW: Cairo context creation failed!\n");
+            return false;
+        }
     //} else {
     //    gw->cc = gdk_cairo_create(gw->w);
     }

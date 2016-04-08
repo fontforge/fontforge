@@ -39,6 +39,14 @@ typedef struct ggdktimer { // :GTimer
     
 } GGDKTimer;
 
+typedef struct ggdkbuttonstate {
+    int32 release_time;
+    GdkWindow *release_w;
+    int16 release_x, release_y;
+    int16 release_button;
+    int16 cur_click;
+} GGDKButtonState;
+
 typedef struct ggdkdisplay { /* :GDisplay */
     // Inherit GDisplay start
     struct displayfuncs *funcs;
