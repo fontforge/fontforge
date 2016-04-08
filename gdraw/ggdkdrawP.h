@@ -135,6 +135,7 @@ struct ggdkwindow { /* :GWindow */
 
     GWindow redirect_from;		/* only redirect input from this window and its children */
     GdkWindow *transient_owner;
+    GdkEventSelection *received_selection;
 
     char *window_title;
 

@@ -465,6 +465,31 @@ bool _GGDKDraw_InitPangoCairo(GGDKWindow gw) {
     return true;
 }
 
+static void _GGDKDraw_CheckAutoPaint(GGDKWindow gw) {
+    if (gw->cc == NULL) {
+        assert(!gw->is_pixmap);
+        assert(gw->autopaint_depth == 0);
+        
+        gw->cc = gdk_cairo_create(gw->w);
+        gw->autopaint_depth++;
+    } else if (gw->autopaint_depth > 0) {
+        gw->autopaint_depth++;
+    }
+}
+
+static void _GGDKDraw_EndAutoPaint(GGDKWindow gw) {
+    if (gw->autopaint_depth > 0) {
+        assert(!gw->is_pixmap);
+        assert(gw->cc != NULL);
+        
+        gw->autopaint_depth--;
+        if (gw->autopaint_depth == 0) {
+            cairo_destroy(gw->cc);
+            gw->cc = NULL;
+        }
+    }
+}
+
 void GGDKDrawPushClip(GWindow w, GRect *rct, GRect *old) {
     //fprintf(stderr, "GDKCALL: GGDKDrawPushClip\n"); //assert(false);
 
@@ -503,14 +528,7 @@ void GGDKDrawPushClip(GWindow w, GRect *rct, GRect *old) {
     }
 
     GGDKWindow gw = (GGDKWindow)w;
-    if (!gw->is_pixmap && gw->cc == NULL) {
-        //GdkRectangle gr = {w->ggc->clip.x, w->ggc->clip.y, w->ggc->clip.width, w->ggc->clip.height};
-        //gdk_window_begin_paint_rect(gw->w, &gr);
-        gw->cc = gdk_cairo_create(gw->w);
-        gw->autopaint_depth++;
-    } else if (gw->autopaint_depth > 0) {
-        gw->autopaint_depth++;
-    }
+    _GGDKDraw_CheckAutoPaint(gw);
     cairo_save(gw->cc);
     cairo_new_path(gw->cc);
     cairo_rectangle(gw->cc, gw->ggc->clip.x, gw->ggc->clip.y,
@@ -524,14 +542,7 @@ void GGDKDrawPopClip(GWindow w, GRect *old) {
     gw->ggc->clip = *old;
     cairo_restore(((GGDKWindow)gw)->cc);
     
-    if (gw->autopaint_depth > 0) {
-        if (gw->autopaint_depth == 1) {
-            //gdk_window_end_paint(gw->w);
-            cairo_destroy(gw->cc);
-            gw->cc = NULL;
-        }
-        gw->autopaint_depth--;
-    }
+    _GGDKDraw_EndAutoPaint(gw);
 }
 
 
@@ -561,6 +572,7 @@ void GGDKDrawClear(GWindow w, GRect *rect) {
 void GGDKDrawDrawLine(GWindow w, int32 x, int32 y, int32 xend, int32 yend, Color col) {
     //fprintf(stderr, "GDKCALL: GGDKDrawDrawLine\n"); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
+    _GGDKDraw_CheckAutoPaint(gw);
 
     w->ggc->fg = col;
 
@@ -574,11 +586,13 @@ void GGDKDrawDrawLine(GWindow w, int32 x, int32 y, int32 xend, int32 yend, Color
         cairo_line_to(gw->cc, xend, yend);
     }
     cairo_stroke(gw->cc);
+    _GGDKDraw_EndAutoPaint(gw);
 }
 
 void GGDKDrawDrawArrow(GWindow w, int32 x, int32 y, int32 xend, int32 yend, int16 arrows, Color col) {
     //fprintf(stderr, "GDKCALL: GGDKDrawDrawArrow\n"); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
+    _GGDKDraw_CheckAutoPaint(gw);
     gw->ggc->fg = col;
 
     int width = GGDKDrawSetline(gw, gw->ggc);
@@ -599,6 +613,7 @@ void GGDKDrawDrawArrow(GWindow w, int32 x, int32 y, int32 xend, int32 yend, int1
     cairo_stroke(gw->cc);
 
     if (length < 2) { //No point arrowing something so small
+        _GGDKDraw_EndAutoPaint(gw);
         return;
     } else if (length > 20) {
         length = 10;
@@ -611,11 +626,13 @@ void GGDKDrawDrawArrow(GWindow w, int32 x, int32 y, int32 xend, int32 yend, int1
     cairo_line_to(gw->cc, xend + length * cos(angle + head_angle), yend + length * sin(angle + head_angle));
     cairo_close_path(gw->cc);
     cairo_fill(gw->cc);
+    _GGDKDraw_EndAutoPaint(gw);
 }
 
 void GGDKDrawDrawRect(GWindow w, GRect *rect, Color col) {
     //fprintf(stderr, "GDKCALL: GGDKDrawDrawRect\n"); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
+    _GGDKDraw_CheckAutoPaint(gw);
     gw->ggc->fg = col;
 
     int width = GGDKDrawSetline(gw, gw->ggc);
@@ -626,11 +643,13 @@ void GGDKDrawDrawRect(GWindow w, GRect *rect, Color col) {
         cairo_rectangle(gw->cc, rect->x, rect->y, rect->width, rect->height);
     }
     cairo_stroke(gw->cc);
+    _GGDKDraw_EndAutoPaint(gw);
 }
 
 void GGDKDrawFillRect(GWindow w, GRect *rect, Color col) {
     //fprintf(stderr, "GDKCALL: GGDKDrawFillRect\n"); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
+    _GGDKDraw_CheckAutoPaint(gw);
     gw->ggc->fg = col;
 
     GGDKDrawSetcolfunc(gw, gw->ggc);
@@ -638,11 +657,13 @@ void GGDKDrawFillRect(GWindow w, GRect *rect, Color col) {
     cairo_new_path(gw->cc);
     cairo_rectangle(gw->cc, rect->x, rect->y, rect->width, rect->height);
     cairo_fill(gw->cc);
+    _GGDKDraw_EndAutoPaint(gw);
 }
 
 void GGDKDrawFillRoundRect(GWindow w, GRect *rect, int radius, Color col) {
     //fprintf(stderr, "GDKCALL: GGDKDrawFillRoundRect\n"); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
+    _GGDKDraw_CheckAutoPaint(gw);
     gw->ggc->fg = col;
 
     GGDKDrawSetcolfunc(gw, gw->ggc);
@@ -656,11 +677,13 @@ void GGDKDrawFillRoundRect(GWindow w, GRect *rect, int radius, Color col) {
     cairo_arc(gw->cc, rect->x + rr, rect->y + rr, rr, 180 * degrees, 270 * degrees);
     cairo_close_path(gw->cc);
     cairo_fill(gw->cc);
+    _GGDKDraw_EndAutoPaint(gw);
 }
 
 void GGDKDrawDrawEllipse(GWindow w, GRect *rect, Color col) {
     //fprintf(stderr, "GDKCALL: GGDKDrawDrawEllipse\n"); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
+    _GGDKDraw_CheckAutoPaint(gw);
     gw->ggc->fg = col;
 
     // It is tempting to use the cairo arc command and scale the
@@ -682,11 +705,13 @@ void GGDKDrawDrawEllipse(GWindow w, GRect *rect, Color col) {
     }
     _GGDKDraw_EllipsePath(gw->cc, cx, cy, width, height);
     cairo_stroke(gw->cc);
+    _GGDKDraw_EndAutoPaint(gw);
 }
 
 void GGDKDrawFillEllipse(GWindow w, GRect *rect, Color col) {
     //fprintf(stderr, "GDKCALL: GGDKDrawFillEllipse\n"); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
+    _GGDKDraw_CheckAutoPaint(gw);
 
     gw->ggc->fg = col;
     GGDKDrawSetcolfunc(gw, gw->ggc);
@@ -700,6 +725,7 @@ void GGDKDrawFillEllipse(GWindow w, GRect *rect, Color col) {
     cy = rect->y + height;
     _GGDKDraw_EllipsePath(gw->cc, cx, cy, width, height);
     cairo_fill(gw->cc);
+    _GGDKDraw_EndAutoPaint(gw);
 }
 
 /**
@@ -714,6 +740,7 @@ void GGDKDrawFillEllipse(GWindow w, GRect *rect, Color col) {
 void GGDKDrawDrawArc(GWindow w, GRect *rect, int32 sangle, int32 eangle, Color col) {
     //fprintf(stderr, "GDKCALL: GGDKDrawDrawArc\n"); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
+    _GGDKDraw_CheckAutoPaint(gw);
     gw->ggc->fg = col;
 
     // Leftover from XDrawArc: sangle/eangle in degrees*64.
@@ -731,11 +758,13 @@ void GGDKDrawDrawArc(GWindow w, GRect *rect, int32 sangle, int32 eangle, Color c
     cairo_arc(gw->cc, 0., 0., 1., start, end);
     cairo_restore(gw->cc);
     cairo_stroke(gw->cc);
+    _GGDKDraw_EndAutoPaint(gw);
 }
 
 void GGDKDrawDrawPoly(GWindow w, GPoint *pts, int16 cnt, Color col) {
     //fprintf(stderr, "GDKCALL: GGDKDrawDrawPoly\n"); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
+    _GGDKDraw_CheckAutoPaint(gw);
     gw->ggc->fg = col;
 
     int width = GGDKDrawSetline(gw, gw->ggc);
@@ -747,11 +776,13 @@ void GGDKDrawDrawPoly(GWindow w, GPoint *pts, int16 cnt, Color col) {
         cairo_line_to(gw->cc, pts[i].x + off, pts[i].y + off);
     }
     cairo_stroke(gw->cc);
+    _GGDKDraw_EndAutoPaint(gw);
 }
 
 void GGDKDrawFillPoly(GWindow w, GPoint *pts, int16 cnt, Color col) {
     //fprintf(stderr, "GDKCALL: GGDKDrawFillPoly\n"); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
+    _GGDKDraw_CheckAutoPaint(gw);
     gw->ggc->fg = col;
 
     GGDKDrawSetcolfunc(gw, gw->ggc);
@@ -772,11 +803,13 @@ void GGDKDrawFillPoly(GWindow w, GPoint *pts, int16 cnt, Color col) {
     }
     cairo_close_path(gw->cc);
     cairo_stroke(gw->cc);
+    _GGDKDraw_EndAutoPaint(gw);
 }
 
 void GGDKDrawDrawImage(GWindow w, GImage *image, GRect *src, int32 x, int32 y) {
     //fprintf(stderr, "GDKCALL: GGDKDrawDrawImage\n"); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
+    _GGDKDraw_CheckAutoPaint(gw);
 
     uint8 *data;
     cairo_surface_t *is = _GGDKDraw_GImage2Surface(image, src, &data);
@@ -798,6 +831,7 @@ void GGDKDrawDrawImage(GWindow w, GImage *image, GRect *src, int32 x, int32 y) {
 
     cairo_surface_destroy(is);
     free(data);
+    _GGDKDraw_EndAutoPaint(gw);
 }
 
 void GGDKDrawTileImage(GWindow gw, GImage *gimg, GRect *src, int32 x, int32 y) {
@@ -809,6 +843,7 @@ void GGDKDrawTileImage(GWindow gw, GImage *gimg, GRect *src, int32 x, int32 y) {
 void GGDKDrawDrawGlyph(GWindow w, GImage *image, GRect *src, int32 x, int32 y) {
     //fprintf(stderr, "GDKCALL: GGDKDrawDrawGlyph\n"); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
+    _GGDKDraw_CheckAutoPaint(gw);
 
     struct _GImage *base = (image->list_len) == 0 ? image->u.image : image->u.images[0];
     cairo_surface_t *is;
@@ -847,11 +882,13 @@ void GGDKDrawDrawGlyph(GWindow w, GImage *image, GRect *src, int32 x, int32 y) {
         cairo_surface_destroy(is);
         free(basedata);
     }
+    _GGDKDraw_EndAutoPaint(gw);
 }
 
 void GGDKDrawDrawImageMagnified(GWindow w, GImage *image, GRect *src, int32 x, int32 y, int32 width, int32 height) {
     //fprintf(stderr, "GDKCALL: GGDKDrawDrawImageMag\n"); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
+    _GGDKDraw_CheckAutoPaint(gw);
     struct _GImage *base = (image->list_len == 0) ? image->u.image : image->u.images[0];
     GRect full;
     double xscale, yscale;
@@ -884,6 +921,7 @@ void GGDKDrawDrawImageMagnified(GWindow w, GImage *image, GRect *src, int32 x, i
         viewable.height = y + height - viewable.y;
     }
     if (viewable.height < 0 || viewable.width < 0) {
+        _GGDKDraw_EndAutoPaint(gw);
         return;
     }
 
@@ -910,6 +948,7 @@ void GGDKDrawDrawImageMagnified(GWindow w, GImage *image, GRect *src, int32 x, i
         src.height = viewable.height;
         GGDKDrawDrawImage(w, temp, &src, x + viewable.x, y + viewable.y);
     }
+    _GGDKDraw_EndAutoPaint(gw);
 }
 
 GImage *GGDKDrawCopyScreenToImage(GWindow gw, GRect *rect) {
@@ -925,9 +964,11 @@ void GGDKDrawDrawPixmap(GWindow w, GWindow pixmap, GRect *src, int32 x, int32 y)
         return;
     }
 
+    _GGDKDraw_CheckAutoPaint(gw);
     cairo_set_source_surface(gw->cc, gpixmap->cs, x - src->x, y - src->y);
     cairo_rectangle(gw->cc, x, y, src->width, src->height);
     cairo_fill(gw->cc);
+    _GGDKDraw_EndAutoPaint(gw);
 }
 
 void GGDKDrawTilePixmap(GWindow gw1, GWindow gw2, GRect *src, int32 x, int32 y) {

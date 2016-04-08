@@ -101,7 +101,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     }
 
     // Event mask
-    attribs.event_mask = GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK;
+    attribs.event_mask = GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK | GDK_ALL_EVENTS_MASK;
     if (attribs.window_type == GDK_WINDOW_TOPLEVEL) {
         attribs.event_mask |= GDK_FOCUS_CHANGE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK;
     }
@@ -273,7 +273,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     }
 
     // This should not be here. Debugging purposes only.
-    gdk_window_show(nw->w);
+    // gdk_window_show(nw->w);
 
     // Set the user data to the GWindow
     // Although there is gdk_window_set_user_data, if non-NULL,
@@ -339,6 +339,67 @@ static GWindow _GGDKDraw_NewPixmap(GDisplay *gdisp, uint16 width, uint16 height,
 
     }
     return (GWindow)gw;
+}
+
+static gboolean _GGDKDraw_OnWindowDestroyed(gpointer data) {
+    GGDKWindow gw = (GGDKWindow)data;
+
+    fprintf(stderr, "OnWindowDestroyed!\n");
+    if (!gw->is_pixmap) {
+        struct gevent die = {0};
+
+        fprintf(stderr, "Attempting clean of window!\n");
+        // If the window's not destroyed yet, then try again...
+        if (!gdk_window_is_destroyed(gw->w)) {
+            fprintf(stderr, "IT'S NOT DEAD JIM\n");
+            return true;
+        }
+
+
+        // Send death threat
+        die.w = (GWindow)gw;
+        die.native_window = gw->w;
+        die.type = et_destroy;
+        GDrawPostEvent(&die);
+        GDrawProcessPendingEvents((GDisplay *)(gw->display));
+
+        // Remove all relevant timers that haven't been cleaned up by the user
+        // This must come after the death threat because users may try to cancel the timers themselves.
+        GList_Glib *ent = gw->display->timers;
+        while (ent != NULL) {
+            GList_Glib *next = ent->next;
+            GGDKTimer *timer = (GGDKTimer *)ent->data;
+            if (timer->owner == (GWindow)gw) {
+                //Since we update the timer list ourselves, don't all GDrawCancelTimer.
+                fprintf(stderr, "WARNING: We're cleaning up after you!!! %x -> %x\n", gw, timer);
+                timer->active = false;
+                g_source_remove(timer->glib_timeout_id);
+                gw->display->timers = g_list_delete_link(gw->display->timers, ent);
+                GDrawProcessPendingEvents((GDisplay *)gw->display);
+                free(timer);
+            }
+            ent = next;
+        }
+
+        if (gw->display->groot == gw->parent && !gw->is_dlg) {
+            gw->display->top_window_count--;
+        }
+
+        free(gw->window_title);
+    }
+
+    g_object_unref(gw->pango_layout);
+
+    if (gw->cc != NULL) {
+        cairo_destroy(gw->cc);;
+    }
+    if (gw->cs != NULL) {
+        cairo_surface_destroy(gw->cs);
+    }
+    free(gw->ggc);
+    memset(gw, 0, sizeof(struct ggdkwindow));
+    free(gw);
+    return false; // Don't repeat timeout
 }
 
 static GdkDevice *_GGDKDraw_GetPointer(GGDKDisplay *gdisp) {
@@ -484,9 +545,9 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         return;
     } else if ((gw = g_object_get_data(G_OBJECT(w), "GGDKWindow")) == NULL) {
         fprintf(stderr, "MISSING GW!\n");
-        assert(false);
+        //assert(false);
         return;
-    } else if (_GGDKDraw_WindowOrParentsDying(gw)) {
+    } else if (_GGDKDraw_WindowOrParentsDying(gw) || gdk_window_is_destroyed(w)) {
         fprintf(stderr, "DYING!\n");
         return;
     }
@@ -804,6 +865,7 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             gevent.u.map.is_visible = false;
             gw->is_visible = false;
             break;
+        case GDK_DESTROY:
         case GDK_DELETE:
             gevent.type = et_close;
             break;
@@ -841,8 +903,12 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
                 gdisp->last_event_time = event->xselectionrequest.time;
                 GXDrawTransmitSelection(gdisp, event);*/
             break;
-        case GDK_SELECTION_NOTIFY:		// Paste
-            /*gdisp->last_event_time = event->xselection.time;*/ /* it's the request's time not the current? */
+        case GDK_SELECTION_NOTIFY: // paste
+            if (gw->received_selection != NULL) {
+                fprintf(stderr, "WARNING: Discarding unused selection!\n");
+                gdk_event_free((GdkEvent *)(gw->received_selection));
+            }
+            gw->received_selection = (GdkEventSelection *)gdk_event_copy(event);
             break;
         case GDK_PROPERTY_NOTIFY:
             gdisp->last_event_time = gdk_event_get_time(event);
@@ -934,58 +1000,16 @@ static void GGDKDrawDestroyWindow(GWindow w) {
 
     gw->is_dying = true;
     if (!gw->is_pixmap) {
-        struct gevent die = {0};
-        gdk_window_destroy(gw->w);
-
         if (gw->display->last_nontransient_window == gw->w) {
             gw->display->last_nontransient_window = NULL;
         }
-
-        // Send death threat
-        die.w = w;
-        die.native_window = w->native_window;
-        die.type = et_destroy;
-        GDrawPostEvent(&die);
-        GDrawProcessPendingEvents((GDisplay *)(gw->display));
-
-        // Remove all relevant timers that haven't been cleaned up by the user
-        // This must come after the death threat because users may try to cancel the timers themselves.
-        GList_Glib *ent = gw->display->timers;
-        while (ent != NULL) {
-            GList_Glib *next = ent->next;
-            GGDKTimer *timer = (GGDKTimer *)ent->data;
-            if (timer->owner == w) {
-                //Since we update the timer list ourselves, don't all GDrawCancelTimer.
-                timer->active = false;
-                g_source_remove(timer->glib_timeout_id);
-                gw->display->timers = g_list_delete_link(gw->display->timers, ent);
-                GDrawProcessPendingEvents((GDisplay *)gw->display);
-                free(timer);
-            }
-            ent = next;
-        }
-
-        if (gw->display->groot == gw->parent && !gw->is_dlg) {
-            gw->display->top_window_count--;
-        }
-
-        free(gw->window_title);
+        g_object_set_data(G_OBJECT(gw->w), "GGDKWindow", NULL);
+        gdk_window_destroy(gw->w);
+        GDrawProcessPendingEvents((GDisplay *)gw->display);
+        g_timeout_add(200, _GGDKDraw_OnWindowDestroyed, gw);
+    } else {
+        _GGDKDraw_OnWindowDestroyed(gw);
     }
-
-    g_object_unref(gw->pango_layout);
-    gw->pango_layout = NULL;
-    gw->window_title = NULL;
-
-    if (gw->cc != NULL) {
-        cairo_destroy(gw->cc);
-        gw->cc = NULL;
-    }
-    if (gw->cs != NULL) {
-        cairo_surface_destroy(gw->cs);
-        gw->cs = NULL;
-    }
-    free(gw->ggc);
-    free(gw);
 }
 
 static void GGDKDrawDestroyCursor(GDisplay *gdisp, GCursor gcursor) {
@@ -1002,7 +1026,7 @@ static int GGDKDrawNativeWindowExists(GDisplay *gdisp, void *native_window) {
 
 static void GGDKDrawSetZoom(GWindow gw, GRect *size, enum gzoom_flags flags) {
     fprintf(stderr, "GDKCALL: GGDKDrawSetZoom\n");
-    assert(false);
+    //assert(false);
 }
 
 // Not possible?
@@ -1303,10 +1327,46 @@ static void GGDKDrawAddSelectionType(GWindow w, enum selnames sel, char *type, v
 
 static void *GGDKDrawRequestSelection(GWindow w, enum selnames sn, char *typename, int32 *len) {
     fprintf(stderr, "GDKCALL: GGDKDrawRequestSelection\n"); //assert(false);
+    GGDKWindow gw = (GGDKWindow)w;
+    GdkAtom sel, received_type = 0;
+    guchar *data;
+    gint received_format;
+
+    switch (sn) {
+        case sn_primary:
+            sel = GDK_SELECTION_PRIMARY;
+            break;
+        case sn_clipboard:
+            sel = GDK_SELECTION_CLIPBOARD;
+            break;
+        default:
+            return NULL;
+    }
+
+    gdk_selection_convert(gw->w, sel, GDK_TARGET_STRING, GDK_CURRENT_TIME);
+    while (gw->received_selection == NULL) {
+        GDrawProcessOneEvent((GDisplay *)(gw->display));
+    }
+    // This is broken.
+    gdk_selection_property_get(gw->w, &data, &received_type, &received_format);
+    if (received_type == GDK_SELECTION_TYPE_STRING) {
+        char *ret = copy(data);
+        g_free(data);
+        return ret;
+    }
+    return NULL;
 }
 
 static int GGDKDrawSelectionHasType(GWindow w, enum selnames sn, char *typename) {
     fprintf(stderr, "GDKCALL: GGDKDrawSelectionHasType\n"); //assert(false);
+    switch (sn) {
+        case sn_primary:
+        case sn_clipboard:
+            if (!strcmp(typename, "UTF8_STRING")) {
+                return true;
+            }
+    }
+    return false;
 }
 
 static void GGDKDrawBindSelection(GDisplay *gdisp, enum selnames sn, char *atomname) {
