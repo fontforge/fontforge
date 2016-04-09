@@ -213,7 +213,10 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
         }
 
         GdkGeometry geom = {0};
-        GdkWindowHints hints = GDK_HINT_MIN_SIZE /* | GDK_HINT_MAX_SIZE*/ | GDK_HINT_BASE_SIZE;
+        GdkWindowHints hints = GDK_HINT_BASE_SIZE;
+        if ((wattrs->mask & wam_noresize) && wattrs->noresize) {
+            hints |= GDK_HINT_MIN_SIZE;
+        }
 
         // Hmm does this seem right?
         geom.base_width = geom.min_width = geom.max_width = pos->width;
@@ -776,17 +779,11 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         }
         break;
         case GDK_EXPOSE:
-            assert(gw->cc == NULL);
-            gdk_window_begin_paint_region(gw->w, ((GdkEventExpose *)event)->region);
-            gw->cc = gdk_cairo_create(gw->w);
-
             gevent.type = et_expose;
             gevent.u.expose.rect.x = ((GdkEventExpose *)event)->area.x;
             gevent.u.expose.rect.y = ((GdkEventExpose *)event)->area.y;
             gevent.u.expose.rect.width = ((GdkEventExpose *)event)->area.width;
             gevent.u.expose.rect.height = ((GdkEventExpose *)event)->area.height;
-            /* X11 does this automatically. but cairo won't get the event */
-            GGDKDrawClear((GWindow)gw, &gevent.u.expose.rect);
             break;
         case GDK_VISIBILITY_NOTIFY:
             gevent.type = et_visibility;
@@ -819,10 +816,6 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         }
         break;
         case GDK_CONFIGURE: {
-            // We need to recreate our Cairo context here.
-            //cairo_destroy(gw->cc);
-            //gw->cc = gdk_cairo_create(gw->w);
-
             GdkEventConfigure *configure = (GdkEventConfigure *)event;
             gevent.type = et_resize;
             gevent.u.resize.size.x = configure->x;
@@ -859,6 +852,13 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
                 //gdisp->off_x = gevent.u.resize.dx - 2; //TODO: FIXME!
                 //gdisp->off_y = gevent.u.resize.dy - 1;
                 gdisp->top_offsets_set = true;
+            }
+
+            if (gw->pos.width > 0 && gw->pos.height > 0) {
+                cairo_destroy(gw->cc);
+                cairo_surface_destroy(gw->cs);
+                gw->cs = gdk_window_create_similar_surface(gw->w, CAIRO_CONTENT_COLOR_ALPHA, gw->pos.width, gw->pos.height);
+                gw->cc = cairo_create(gw->cs);
             }
         }
         break;
@@ -929,9 +929,16 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
     if (gevent.type != et_noevent && gw != NULL && gw->eh != NULL) {
         (gw->eh)((GWindow) gw, &gevent);
         if (gevent.type == et_expose) {
+            GdkEventExpose *evt = (GdkEventExpose*)event;
+            gdk_window_begin_paint_region(gw->w, evt->region);
+            cairo_t *cr = gdk_cairo_create(gw->w);
+            cairo_set_source_surface(cr, gw->cs, 0, 0);
+            cairo_paint(cr);
+            cairo_destroy(cr);
             gdk_window_end_paint(gw->w);
-            cairo_destroy(gw->cc);
-            gw->cc = NULL;
+            //if (evt->send_event) {
+            //    cairo_region_destroy(evt->region);
+            //}
         }
     }
     Log(LOGDEBUG, "[%d] Finished processing %d(%s)", request_id++, event->type, GdkEventName(event->type));
@@ -1476,7 +1483,25 @@ static void GGDKDrawRequestExpose(GWindow w, GRect *rect, int doclear) {
         }
     }
 
-    gdk_window_invalidate_rect(gw->w, &clip, true);
+    if (!gw->is_toplevel) {
+        //Eugh
+        // So if you try to invalidate a child window,
+        // GDK will also invalidate the parent window over the child window's area.
+        // This causes noticable flickering. So synthesise the expose event ourselves...
+        GdkEventExpose expose = {0};
+        expose.type = GDK_EXPOSE;
+        expose.window = gw->w;
+        expose.send_event = true;
+        expose.area.x = clip.x;
+        expose.area.y = clip.y;
+        expose.area.width = clip.width;
+        expose.area.height = clip.height;
+        expose.region = cairo_region_create_rectangle(&expose.area);
+        gdk_event_put((GdkEvent*)&expose);
+        cairo_region_destroy(expose.region);
+    } else {
+        gdk_window_invalidate_rect(gw->w, &clip, false);
+    }
 }
 
 static void GGDKDrawForceUpdate(GWindow gw) {
