@@ -101,7 +101,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     }
 
     // Event mask
-    attribs.event_mask = GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK | GDK_ALL_EVENTS_MASK;
+    attribs.event_mask = GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK;
     if (attribs.window_type == GDK_WINDOW_TOPLEVEL) {
         attribs.event_mask |= GDK_FOCUS_CHANGE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK;
     }

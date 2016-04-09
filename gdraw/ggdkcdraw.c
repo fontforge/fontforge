@@ -473,10 +473,10 @@ static void _GGDKDraw_CheckAutoPaint(GGDKWindow gw) {
 
         gw->cc = gdk_cairo_create(gw->w);
         gw->autopaint_depth++;
-        Log(LOGDEBUG, "Autopaint [NEW] %d", gw->autopaint_depth);
+        //Log(LOGDEBUG, "Autopaint [NEW] %d", gw->autopaint_depth);
     } else if (gw->autopaint_depth > 0) {
         gw->autopaint_depth++;
-        Log(LOGDEBUG, "Autopaint [INC] %d", gw->autopaint_depth);
+        //Log(LOGDEBUG, "Autopaint [INC] %d", gw->autopaint_depth);
     }
 }
 
@@ -487,11 +487,11 @@ static void _GGDKDraw_EndAutoPaint(GGDKWindow gw) {
         assert(gw->cc != NULL);
 
         gw->autopaint_depth--;
-        Log(LOGDEBUG, "Autopaint [DEC] %d", gw->autopaint_depth);
+        //Log(LOGDEBUG, "Autopaint [DEC] %d", gw->autopaint_depth);
         if (gw->autopaint_depth == 0) {
             cairo_destroy(gw->cc);
             gw->cc = NULL;
-            Log(LOGDEBUG, "Autopaint [CLR]");
+            //Log(LOGDEBUG, "Autopaint [CLR]");
         }
     }
 }
