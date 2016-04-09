@@ -32,6 +32,16 @@ static GGC *_GGDKDraw_NewGGC() {
     return ggc;
 }
 
+static void _GGDKDraw_CallEHChecked(GGDKWindow gw, GEvent *event, int (*eh)(GWindow gw, GEvent *)) {
+    if (eh) {
+        (eh)((GWindow)gw, event);
+        if (gw->cc != NULL) {
+            cairo_destroy(gw->cc);
+            gw->cc = NULL;
+        }
+    }
+}
+
 static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *pos,
                                       int (*eh)(GWindow, GEvent *), void *user_data, GWindowAttrs *wattrs) {
 
@@ -273,7 +283,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
         e.type = et_create;
         e.w = (GWindow) nw;
         e.native_window = (void *)(intpt) nw->w;
-        (eh)((GWindow) nw, &e);
+        _GGDKDraw_CallEHChecked(nw, &e, eh);
     }
 
     // This should not be here. Debugging purposes only.
@@ -407,8 +417,10 @@ static gboolean _GGDKDraw_OnWindowDestroyed(gpointer data) {
         cairo_surface_destroy(gw->cs);
     }
     free(gw->ggc);
-    memset(gw, 0, sizeof(struct ggdkwindow));
-    free(gw);
+    //ffs for some reason gdk doesn't pop events of dead windows.
+    //this means we could end up with an event that is dead...
+    //memset(gw, 0, sizeof(struct ggdkwindow));
+    //free(gw);
     return false; // Don't repeat timeout
 }
 
@@ -524,7 +536,7 @@ static gboolean _GGDKDraw_ProcessTimerEvent(gpointer user_data) {
     e.native_window = timer->owner->native_window;
     e.u.timer.timer = (GTimer *)timer;
     e.u.timer.userdata = timer->userdata;
-    (timer->owner->eh)(timer->owner, &e);
+    _GGDKDraw_CallEHChecked((GGDKWindow)timer->owner, &e, timer->owner->eh);
 
     if (timer->repeat_time == 0) {
         gdisp->timers = g_list_remove(gdisp->timers, timer);
@@ -784,6 +796,10 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             gevent.u.expose.rect.y = ((GdkEventExpose *)event)->area.y;
             gevent.u.expose.rect.width = ((GdkEventExpose *)event)->area.width;
             gevent.u.expose.rect.height = ((GdkEventExpose *)event)->area.height;
+
+            assert(gw->cc == NULL);
+            gdk_window_begin_paint_region(w, ((GdkEventExpose *)event)->region);
+            gw->cc = gdk_cairo_create(w);
             break;
         case GDK_VISIBILITY_NOTIFY:
             gevent.type = et_visibility;
@@ -804,7 +820,7 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
                 gevent.type = et_focus;
                 gevent.u.focus.gained_focus = crossing->type == GDK_ENTER_NOTIFY;
                 gevent.u.focus.mnemonic_focus = false;
-                (gw->eh)((GWindow) gw, &gevent);
+                _GGDKDraw_CallEHChecked(gw, &gevent, gw->eh);
             }
             gevent.type = et_crossing;
             gevent.u.crossing.x = crossing->x;
@@ -852,13 +868,6 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
                 //gdisp->off_x = gevent.u.resize.dx - 2; //TODO: FIXME!
                 //gdisp->off_y = gevent.u.resize.dy - 1;
                 gdisp->top_offsets_set = true;
-            }
-
-            if (gw->pos.width > 0 && gw->pos.height > 0) {
-                cairo_destroy(gw->cc);
-                cairo_surface_destroy(gw->cs);
-                gw->cs = gdk_window_create_similar_surface(gw->w, CAIRO_CONTENT_COLOR_ALPHA, gw->pos.width, gw->pos.height);
-                gw->cc = cairo_create(gw->cs);
             }
         }
         break;
@@ -927,18 +936,9 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
     }
 
     if (gevent.type != et_noevent && gw != NULL && gw->eh != NULL) {
-        (gw->eh)((GWindow) gw, &gevent);
+        _GGDKDraw_CallEHChecked(gw, &gevent, gw->eh);
         if (gevent.type == et_expose) {
-            GdkEventExpose *evt = (GdkEventExpose*)event;
-            gdk_window_begin_paint_region(gw->w, evt->region);
-            cairo_t *cr = gdk_cairo_create(gw->w);
-            cairo_set_source_surface(cr, gw->cs, 0, 0);
-            cairo_paint(cr);
-            cairo_destroy(cr);
-            gdk_window_end_paint(gw->w);
-            //if (evt->send_event) {
-            //    cairo_region_destroy(evt->region);
-            //}
+            gdk_window_end_paint(w);
         }
     }
     Log(LOGDEBUG, "[%d] Finished processing %d(%s)", request_id++, event->type, GdkEventName(event->type));
@@ -1497,7 +1497,7 @@ static void GGDKDrawRequestExpose(GWindow w, GRect *rect, int doclear) {
         expose.area.width = clip.width;
         expose.area.height = clip.height;
         expose.region = cairo_region_create_rectangle(&expose.area);
-        gdk_event_put((GdkEvent*)&expose);
+        gdk_event_put((GdkEvent *)&expose);
         cairo_region_destroy(expose.region);
     } else {
         gdk_window_invalidate_rect(gw->w, &clip, false);
@@ -1569,7 +1569,7 @@ static void GGDKDrawPostEvent(GEvent *e) {
     Log(LOGDEBUG, ""); //assert(false);
     GGDKWindow gw = (GGDKWindow)(e->w);
     e->native_window = ((GWindow) gw)->native_window;
-    (gw->eh)((GWindow) gw, e);
+    _GGDKDraw_CallEHChecked(gw, e, gw->eh);
 }
 
 static void GGDKDrawPostDragEvent(GWindow w, GEvent *mouse, enum event_type et) {

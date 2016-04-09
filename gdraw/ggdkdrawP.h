@@ -150,7 +150,6 @@ struct ggdkwindow { /* :GWindow */
 
     char *window_title;
 
-    int autopaint_depth;
     cairo_surface_t *cs;
     cairo_t *cc;
     PangoLayout *pango_layout;
