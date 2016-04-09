@@ -2418,6 +2418,21 @@ static void GXDrawSetGIC(GWindow w, GIC *_gic, int x, int y) {
     ((GXWindow) w)->gic = gic;
 }
 
+static int GXDrawKeyState(int keysym) {
+    char key_map_stat[32];
+    Display *xdisplay = ((GXDisplay *)screen_display)->display;
+    KeyCode code;
+
+    XQueryKeymap(xdisplay, key_map_stat);
+
+    code = XKeysymToKeycode(xdisplay, GDrawKeyToXK(keysym));
+    if ( !code ) {
+abort();
+return 0;
+    }
+return ((key_map_stat[code >> 3] >> (code & 7)) & 1);
+}
+
 int _GXDraw_WindowOrParentsDying(GXWindow gw) {
     while ( gw!=NULL ) {
 	if ( gw->is_dying )
@@ -4284,6 +4299,7 @@ static struct displayfuncs xfuncs = {
 
     GXDrawCreateInputContext,
     GXDrawSetGIC,
+    GXDrawKeyState,
 
     GXDrawGrabSelection,
     GXDrawAddSelectionType,
@@ -4519,21 +4535,6 @@ return( keysym );
     }
     abort();
 return( 0 );
-}
-
-int GDrawKeyState(int keysym) {
-    char key_map_stat[32];
-    Display *xdisplay = ((GXDisplay *)screen_display)->display;
-    KeyCode code;
-
-    XQueryKeymap(xdisplay, key_map_stat);
-
-    code = XKeysymToKeycode(xdisplay, GDrawKeyToXK(keysym));
-    if ( !code ) {
-abort();
-return 0;
-    }
-return ((key_map_stat[code >> 3] >> (code & 7)) & 1);
 }
 
 #else	/* NO X */

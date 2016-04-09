@@ -691,6 +691,10 @@ void GDrawSetGIC(GWindow w, GIC *gic, int x, int y) {
     (w->display->funcs->setGIC)(w,gic,x,y);
 }
 
+int GDrawKeyState(GWindow w, int keysym) {
+    (w->display->funcs->keyState)(keysym);
+}
+
 void GDrawGrabSelection(GWindow w,enum selnames sel) {
     (w->display->funcs->grabSelection)(w,sel);
 }

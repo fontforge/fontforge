@@ -232,6 +232,11 @@ static void PSDrawSetGIC(GWindow UNUSED(w), GIC *UNUSED(gic),
     /* Not meaningful */
 }
 
+static int PSDrawKeyState(int UNUSED(keysym)) {
+    /* Not meaningful */
+    return 0;
+}
+
 static void PSDrawPointerUngrab(GDisplay *UNUSED(gdisp)) {
     /* Not meaningful */
 }
@@ -1375,6 +1380,7 @@ static struct displayfuncs psfuncs = {
 
     PSDrawCreateInputContext,
     PSDrawSetGIC,
+    PSDrawKeyState,
 
     PSDrawGrabSelection,
     PSDrawAddSelectionType,

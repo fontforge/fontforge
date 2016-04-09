@@ -256,6 +256,7 @@ struct displayfuncs {
 
     GIC *(*createInputContext)(GWindow, enum gic_style);
     void (*setGIC)(GWindow, GIC *, int x, int y);
+    int (*keyState)(int keysym);
 
     void (*grabSelection)(GWindow w,enum selnames sel);
     void (*addSelectionType)(GWindow w,enum selnames sel,char *type,

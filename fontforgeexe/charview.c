@@ -304,7 +304,7 @@ static struct resed charview2_re[] = {
 
 /* return 1 if anything changed */
 static void update_spacebar_hand_tool(CharView *cv) {
-    if ( GDrawKeyState(' ') ) {
+    if ( GDrawKeyState(cv->v, ' ') ) {
 	if ( !cv->spacebar_hold  && !cv_auto_goto ) {
 	    cv->spacebar_hold = 1;
 	    cv->b1_tool_old = cv->b1_tool;

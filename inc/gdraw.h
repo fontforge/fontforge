@@ -422,6 +422,7 @@ extern int32 GDrawDrawText8(GWindow gw, int32 x, int32 y, const char *txt, int32
 
 extern GIC *GDrawCreateInputContext(GWindow w,enum gic_style def_style);
 extern void GDrawSetGIC(GWindow w,GIC *gic,int x, int y);
+extern int GDrawKeyState(GWindow w, int keysym);
 
 extern void GDrawClear(GWindow w, GRect *rect);
 extern void GDrawDrawLine(GWindow w, int32 x,int32 y, int32 xend,int32 yend, Color col);
@@ -580,7 +581,6 @@ extern int  GDrawLayoutLineStart(GWindow w,int line);
 extern void GDrawFatalError(const char *fmt,...);
 extern void GDrawIError(const char *fmt,...);
 extern void GDrawError(const char *fmt,...);
-extern int GDrawKeyState(int keysym);
 
 extern int GImageGetScaledWidth(GWindow gw, GImage *img);
 extern int GImageGetScaledHeight(GWindow gw, GImage *img);
