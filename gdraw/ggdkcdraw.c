@@ -443,18 +443,18 @@ bool _GGDKDraw_InitPangoCairo(GGDKWindow gw) {
     if (gw->is_pixmap) {
         gw->cc = cairo_create(gw->cs);
         if (gw->cc == NULL) {
-            fprintf(stderr, "GGDKDRAW: Cairo context creation failed!\n");
+            Log(LOGDEBUG, "GGDKDRAW: Cairo context creation failed!");
             return false;
         }
-    //} else {
-    //    gw->cc = gdk_cairo_create(gw->w);
+        //} else {
+        //    gw->cc = gdk_cairo_create(gw->w);
     }
 
-    
+
     // Establish Pango layout context
     gw->pango_layout = pango_layout_new(gw->display->pangoc_context);
     if (gw->pango_layout == NULL) {
-        fprintf(stderr, "GGDKDRAW: Pango layout creation failed!\n");
+        Log(LOGDEBUG, "GGDKDRAW: Pango layout creation failed!");
         if (gw->cc != NULL) {
             cairo_destroy(gw->cc);
             gw->cc = NULL;
@@ -469,7 +469,7 @@ static void _GGDKDraw_CheckAutoPaint(GGDKWindow gw) {
     if (gw->cc == NULL) {
         assert(!gw->is_pixmap);
         assert(gw->autopaint_depth == 0);
-        
+
         gw->cc = gdk_cairo_create(gw->w);
         gw->autopaint_depth++;
     } else if (gw->autopaint_depth > 0) {
@@ -481,7 +481,7 @@ static void _GGDKDraw_EndAutoPaint(GGDKWindow gw) {
     if (gw->autopaint_depth > 0) {
         assert(!gw->is_pixmap);
         assert(gw->cc != NULL);
-        
+
         gw->autopaint_depth--;
         if (gw->autopaint_depth == 0) {
             cairo_destroy(gw->cc);
@@ -491,7 +491,7 @@ static void _GGDKDraw_EndAutoPaint(GGDKWindow gw) {
 }
 
 void GGDKDrawPushClip(GWindow w, GRect *rct, GRect *old) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawPushClip\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
 
     // Return the current clip, and intersect the current clip with the desired
     // clip to get the new clip.
@@ -537,17 +537,17 @@ void GGDKDrawPushClip(GWindow w, GRect *rct, GRect *old) {
 }
 
 void GGDKDrawPopClip(GWindow w, GRect *old) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawPopClip\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
     gw->ggc->clip = *old;
     cairo_restore(((GGDKWindow)gw)->cc);
-    
+
     _GGDKDraw_EndAutoPaint(gw);
 }
 
 
 void GGDKDrawSetDifferenceMode(GWindow w) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawSetDifferenceMode\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
     cairo_set_operator(gw->cc, CAIRO_OPERATOR_DIFFERENCE);
     cairo_set_antialias(gw->cc, CAIRO_ANTIALIAS_NONE);
@@ -555,7 +555,7 @@ void GGDKDrawSetDifferenceMode(GWindow w) {
 
 
 void GGDKDrawClear(GWindow w, GRect *rect) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawClear\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
     GRect temp, *r = rect, old;
     if (r == NULL) {
@@ -570,7 +570,7 @@ void GGDKDrawClear(GWindow w, GRect *rect) {
 }
 
 void GGDKDrawDrawLine(GWindow w, int32 x, int32 y, int32 xend, int32 yend, Color col) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawDrawLine\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
 
@@ -590,7 +590,7 @@ void GGDKDrawDrawLine(GWindow w, int32 x, int32 y, int32 xend, int32 yend, Color
 }
 
 void GGDKDrawDrawArrow(GWindow w, int32 x, int32 y, int32 xend, int32 yend, int16 arrows, Color col) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawDrawArrow\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
     gw->ggc->fg = col;
@@ -630,7 +630,7 @@ void GGDKDrawDrawArrow(GWindow w, int32 x, int32 y, int32 xend, int32 yend, int1
 }
 
 void GGDKDrawDrawRect(GWindow w, GRect *rect, Color col) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawDrawRect\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
     gw->ggc->fg = col;
@@ -647,7 +647,7 @@ void GGDKDrawDrawRect(GWindow w, GRect *rect, Color col) {
 }
 
 void GGDKDrawFillRect(GWindow w, GRect *rect, Color col) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawFillRect\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
     gw->ggc->fg = col;
@@ -661,7 +661,7 @@ void GGDKDrawFillRect(GWindow w, GRect *rect, Color col) {
 }
 
 void GGDKDrawFillRoundRect(GWindow w, GRect *rect, int radius, Color col) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawFillRoundRect\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
     gw->ggc->fg = col;
@@ -681,7 +681,7 @@ void GGDKDrawFillRoundRect(GWindow w, GRect *rect, int radius, Color col) {
 }
 
 void GGDKDrawDrawEllipse(GWindow w, GRect *rect, Color col) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawDrawEllipse\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
     gw->ggc->fg = col;
@@ -709,7 +709,7 @@ void GGDKDrawDrawEllipse(GWindow w, GRect *rect, Color col) {
 }
 
 void GGDKDrawFillEllipse(GWindow w, GRect *rect, Color col) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawFillEllipse\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
 
@@ -738,7 +738,7 @@ void GGDKDrawFillEllipse(GWindow w, GRect *rect, Color col) {
  *  \param [in] eangle The angle offset from the start in degrees * 64 (positive CCW)
  */
 void GGDKDrawDrawArc(GWindow w, GRect *rect, int32 sangle, int32 eangle, Color col) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawDrawArc\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
     gw->ggc->fg = col;
@@ -762,7 +762,7 @@ void GGDKDrawDrawArc(GWindow w, GRect *rect, int32 sangle, int32 eangle, Color c
 }
 
 void GGDKDrawDrawPoly(GWindow w, GPoint *pts, int16 cnt, Color col) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawDrawPoly\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
     gw->ggc->fg = col;
@@ -780,7 +780,7 @@ void GGDKDrawDrawPoly(GWindow w, GPoint *pts, int16 cnt, Color col) {
 }
 
 void GGDKDrawFillPoly(GWindow w, GPoint *pts, int16 cnt, Color col) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawFillPoly\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
     gw->ggc->fg = col;
@@ -807,7 +807,7 @@ void GGDKDrawFillPoly(GWindow w, GPoint *pts, int16 cnt, Color col) {
 }
 
 void GGDKDrawDrawImage(GWindow w, GImage *image, GRect *src, int32 x, int32 y) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawDrawImage\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
 
@@ -835,13 +835,13 @@ void GGDKDrawDrawImage(GWindow w, GImage *image, GRect *src, int32 x, int32 y) {
 }
 
 void GGDKDrawTileImage(GWindow gw, GImage *gimg, GRect *src, int32 x, int32 y) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawTileImage\n");
+    //Log(LOGDEBUG, "");
     assert(false); // Huh. This is actually not implemented.
 }
 
 // What we really want to do is use the grey levels as an alpha channel
 void GGDKDrawDrawGlyph(GWindow w, GImage *image, GRect *src, int32 x, int32 y) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawDrawGlyph\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
 
@@ -886,7 +886,7 @@ void GGDKDrawDrawGlyph(GWindow w, GImage *image, GRect *src, int32 x, int32 y) {
 }
 
 void GGDKDrawDrawImageMagnified(GWindow w, GImage *image, GRect *src, int32 x, int32 y, int32 width, int32 height) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawDrawImageMag\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
     struct _GImage *base = (image->list_len == 0) ? image->u.image : image->u.images[0];
@@ -952,12 +952,12 @@ void GGDKDrawDrawImageMagnified(GWindow w, GImage *image, GRect *src, int32 x, i
 }
 
 GImage *GGDKDrawCopyScreenToImage(GWindow gw, GRect *rect) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawCopyScreenToImage\n");
+    //Log(LOGDEBUG, "");
     assert(false); // No Cairo impl. Leave for now...
 }
 
 void GGDKDrawDrawPixmap(GWindow w, GWindow pixmap, GRect *src, int32 x, int32 y) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawDrawPixmap\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     GGDKWindow gw = (GGDKWindow)w, gpixmap = (GGDKWindow)pixmap;
 
     if (!gpixmap->is_pixmap) {
@@ -972,58 +972,58 @@ void GGDKDrawDrawPixmap(GWindow w, GWindow pixmap, GRect *src, int32 x, int32 y)
 }
 
 void GGDKDrawTilePixmap(GWindow gw1, GWindow gw2, GRect *src, int32 x, int32 y) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawTilePixmap\n");
+    //Log(LOGDEBUG, "");
     assert(false);
 }
 
 enum gcairo_flags GGDKDrawHasCairo(GWindow w) {
-    //fprintf(stderr, "GDKCALL: gcairo_flags GGDKDrawHasCairo\n");
+    //Log(LOGDEBUG, "");
     //assert(false);
     return gc_all;
 }
 
 
 void GGDKDrawPathStartNew(GWindow w) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawStartNewPath\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     cairo_new_path(((GGDKWindow)w)->cc);
 }
 
 void GGDKDrawPathClose(GWindow w) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawClosePath\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     cairo_close_path(((GGDKWindow)w)->cc);
 }
 
 void GGDKDrawPathMoveTo(GWindow w, double x, double y) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawMoveto\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     cairo_move_to(((GGDKWindow)w)->cc, x, y);
 }
 
 void GGDKDrawPathLineTo(GWindow w, double x, double y) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawLineto\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     cairo_line_to(((GGDKWindow)w)->cc, x, y);
 }
 
 void GGDKDrawPathCurveTo(GWindow w, double cx1, double cy1, double cx2, double cy2, double x, double y) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawCurveto\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     cairo_curve_to(((GGDKWindow)w)->cc, cx1, cy1, cx2, cy2, x, y);
 }
 
 void GGDKDrawPathStroke(GWindow w, Color col) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawStroke\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     w->ggc->fg = col;
     GGDKDrawSetline((GGDKWindow) w, w->ggc);
     cairo_stroke(((GGDKWindow)w)->cc);
 }
 
 void GGDKDrawPathFill(GWindow w, Color col) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawFill\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     cairo_set_source_rgba(((GGDKWindow) w)->cc, COLOR_RED(col) / 255.0, COLOR_GREEN(col) / 255.0, COLOR_BLUE(col) / 255.0,
                           (col >> 24) / 255.0);
     cairo_fill(((GGDKWindow) w)->cc);
 }
 
 void GGDKDrawPathFillAndStroke(GWindow w, Color fillcol, Color strokecol) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawFillAndStroke\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     GGDKWindow gw = (GGDKWindow) w;
 
     cairo_save(gw->cc);
@@ -1039,19 +1039,19 @@ void GGDKDrawPathFillAndStroke(GWindow w, Color fillcol, Color strokecol) {
 }
 
 void GGDKDrawStartNewSubPath(GWindow w) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawStartNewSubPath\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     cairo_new_sub_path(((GGDKWindow)w)->cc);
 }
 
 int GGDKDrawFillRuleSetWinding(GWindow w) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawFillRuleSetWinding\n"); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     cairo_set_fill_rule(((GGDKWindow)w)->cc, CAIRO_FILL_RULE_WINDING);
     return 1;
 }
 
 int GGDKDrawDoText8(GWindow w, int32 x, int32 y, const char *text, int32 cnt, Color col, enum text_funcs drawit,
                     struct tf_arg *arg) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawDoText8\n");
+    //Log(LOGDEBUG, "");
 
     GGDKWindow gw = (GGDKWindow) w;
     GGDKDisplay *gdisp = gw->display;
@@ -1114,19 +1114,19 @@ int GGDKDrawDoText8(GWindow w, int32 x, int32 y, const char *text, int32 cnt, Co
 }
 
 void GGDKDrawPushClipOnly(GWindow w) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawPushClipOnly\n"); //assert(false);
-    cairo_save( ((GGDKWindow)w)->cc );
+    //Log(LOGDEBUG, ""); //assert(false);
+    cairo_save(((GGDKWindow)w)->cc);
 }
 
 void GGDKDrawClipPreserve(GWindow w) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawClipPreserve\n"); //assert(false);
-    cairo_clip_preserve( ((GGDKWindow)w)->cc );
+    //Log(LOGDEBUG, ""); //assert(false);
+    cairo_clip_preserve(((GGDKWindow)w)->cc);
 }
 
 // PANGO LAYOUT
 
 void GGDKDrawGetFontMetrics(GWindow gw, GFont *fi, int *as, int *ds, int *ld) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawGetFontMetrics\n");
+    //Log(LOGDEBUG, "");
 
     GGDKDisplay *gdisp = ((GGDKWindow) gw)->display;
     PangoFont *pfont;
@@ -1147,7 +1147,7 @@ void GGDKDrawGetFontMetrics(GWindow gw, GFont *fi, int *as, int *ds, int *ld) {
 }
 
 void GGDKDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawLayoutInit\n");
+    //Log(LOGDEBUG, "");
     GGDKWindow gw = (GGDKWindow) w;
     PangoFontDescription *fd;
 
@@ -1161,14 +1161,14 @@ void GGDKDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
 }
 
 void GGDKDrawLayoutDraw(GWindow w, int32 x, int32 y, Color fg) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawLayoutDraw\n");
+    //Log(LOGDEBUG, "");
     GGDKWindow gw = (GGDKWindow)w;
 
     _GGDKDraw_MyCairoRenderLayout(gw->cc, fg, gw->pango_layout, x, y);
 }
 
 void GGDKDrawLayoutIndexToPos(GWindow w, int index, GRect *pos) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawLayoutIndexToPos\n");
+    //Log(LOGDEBUG, "");
     GGDKWindow gw = (GGDKWindow)w;
     PangoRectangle rect;
 
@@ -1180,7 +1180,7 @@ void GGDKDrawLayoutIndexToPos(GWindow w, int index, GRect *pos) {
 }
 
 int GGDKDrawLayoutXYToIndex(GWindow w, int x, int y) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawLayoutXYToIndex\n");
+    //Log(LOGDEBUG, "");
     GGDKWindow gw = (GGDKWindow)w;
     int trailing, index;
 
@@ -1206,7 +1206,7 @@ int GGDKDrawLayoutXYToIndex(GWindow w, int x, int y) {
 }
 
 void GGDKDrawLayoutExtents(GWindow w, GRect *size) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawLayoutExtents\n");
+    //Log(LOGDEBUG, "");
     GGDKWindow gw = (GGDKWindow)w;
     PangoRectangle rect;
 
@@ -1218,21 +1218,21 @@ void GGDKDrawLayoutExtents(GWindow w, GRect *size) {
 }
 
 void GGDKDrawLayoutSetWidth(GWindow w, int width) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawLayoutSetWidth\n");
+    //Log(LOGDEBUG, "");
     GGDKWindow gw = (GGDKWindow)w;
 
     pango_layout_set_width(gw->pango_layout, (width == -1) ? -1 : width * PANGO_SCALE);
 }
 
 int GGDKDrawLayoutLineCount(GWindow w) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawLayoutLineCount\n");
+    //Log(LOGDEBUG, "");
     GGDKWindow gw = (GGDKWindow)w;
 
     return pango_layout_get_line_count(gw->pango_layout);
 }
 
 int GGDKDrawLayoutLineStart(GWindow w, int l) {
-    //fprintf(stderr, "GDKCALL: GGDKDrawLayoutLineStart\n");
+    //Log(LOGDEBUG, "");
     GGDKWindow gw = (GGDKWindow)w;
     PangoLayoutLine *line = pango_layout_get_line(gw->pango_layout, l);
 

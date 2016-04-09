@@ -27,6 +27,17 @@
 
 #define GColorToGDK(col) COLOR_RED(col)/255., COLOR_GREEN(col)/255., COLOR_BLUE(col)/255.
 
+// Logging
+//To get around a 'pedantic' C99 rule that you must have at least 1 variadic arg, combine fmt into that.
+#define Log(level, ...) LogEx(level, __func__, __FILE__, __LINE__, __VA_ARGS__)
+
+/** An enum to make the severity of log messages human readable in code **/
+enum {LOGERR = 0, LOGWARN = 1, LOGNOTE = 2, LOGINFO = 3, LOGDEBUG = 4};
+
+extern void LogEx(int level, const char *funct, const char *file, int line,  ...);   // General function for printing log messages to stderr
+extern const char *GdkEventName(int code);
+// End logging
+
 // Astyle has issues with having 'enum visibility_state' in the function definition...
 typedef enum visibility_state VisibilityState;
 typedef struct ggdkwindow *GGDKWindow;
