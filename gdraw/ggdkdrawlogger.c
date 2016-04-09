@@ -66,7 +66,7 @@ void LogEx(int level, const char *funct, const char *file, int line, ...) {
             g_date_time_get_hour(now), g_date_time_get_minute(now),
             g_date_time_get_seconds(now),
             severity, funct, file, line, buffer);
-    fflush(stdout);
+    fflush(stderr);
     g_date_time_unref(now);
 }
 
