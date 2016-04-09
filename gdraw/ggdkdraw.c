@@ -705,10 +705,10 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             gevent.u.mouse.x = evt->x;
             gevent.u.mouse.y = evt->y;
             gevent.u.mouse.clicks = gdisp->bs.cur_click = 1;
+            gevent.type = et_mousedown;
 
             switch (evt->direction) {
                 case GDK_SCROLL_UP:
-                default:
                     gevent.u.mouse.button = 4;
                     break;
                 case GDK_SCROLL_DOWN:
@@ -720,11 +720,14 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
                 case GDK_SCROLL_RIGHT:
                     gevent.u.mouse.button = 7;
                     break;
+                default: // Ignore GDK_SCROLL_SMOOTH
+                    gevent.type = et_noevent;
             }
             // We need to simulate two events... I think.
-            gevent.type = et_mousedown;
-            GDrawPostEvent(&gevent);
-            gevent.type = et_mouseup;
+            if (gevent.type != et_noevent) {
+                GDrawPostEvent(&gevent);
+                gevent.type = et_mouseup;
+            }
         }
         break;
         case GDK_BUTTON_PRESS:
