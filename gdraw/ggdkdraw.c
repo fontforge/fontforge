@@ -73,6 +73,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
         nw->is_popup = true;
         nw->is_dlg = true;
         nw->not_restricted = true;
+        attribs.window_type = GDK_WINDOW_TEMP;
     }
     if ((wattrs->mask & wam_isdlg) && wattrs->is_dlg) {
         nw->is_dlg = true;
@@ -82,7 +83,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     }
 
     // Window title and hints
-    if (attribs.window_type == GDK_WINDOW_TOPLEVEL) {
+    if (attribs.window_type != GDK_WINDOW_CHILD) {
         // Icon titles are ignored.
         if ((wattrs->mask & wam_utf8_wtitle) && (wattrs->utf8_window_title != NULL)) {
             nw->window_title = copy(wattrs->utf8_window_title);
@@ -194,7 +195,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
         gdk_window_move_resize(nw->w, attribs.x, attribs.y, attribs.width, attribs.height);
     }
 
-    if (attribs.window_type == GDK_WINDOW_TOPLEVEL) {
+    if (attribs.window_type != GDK_WINDOW_CHILD) {
         // Set icon
         GGDKWindow icon = gdisp->default_icon;
         if (((wattrs->mask & wam_icon) && wattrs->icon != NULL) && ((GGDKWindow)wattrs->icon)->is_pixmap) {
@@ -378,7 +379,6 @@ static gboolean _GGDKDraw_OnWindowDestroyed(gpointer data) {
                 timer->active = false;
                 g_source_remove(timer->glib_timeout_id);
                 gw->display->timers = g_list_delete_link(gw->display->timers, ent);
-                GDrawProcessPendingEvents((GDisplay *)gw->display);
                 free(timer);
             }
             ent = next;
@@ -536,12 +536,13 @@ static gboolean _GGDKDraw_ProcessTimerEvent(gpointer user_data) {
 }
 
 static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
+    static int request_id = 0;
     struct gevent gevent = {0};
     GGDKDisplay *gdisp = (GGDKDisplay *)data;
     GdkWindow *w = gdk_event_get_window(event);
     GGDKWindow gw;
 
-    Log(LOGDEBUG, "Received event %d(%s) %x", event->type, GdkEventName(event->type), w);
+    Log(LOGDEBUG, "[%d] Received event %d(%s) %x", request_id, event->type, GdkEventName(event->type), w);
     fflush(stderr);
 
     if (w == NULL) {
@@ -933,7 +934,7 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             gw->cc = NULL;
         }
     }
-    Log(LOGDEBUG, "Finished processing %d(%s)", event->type, GdkEventName(event->type));
+    Log(LOGDEBUG, "[%d] Finished processing %d(%s)", request_id++, event->type, GdkEventName(event->type));
 }
 
 static void GGDKDrawInit(GDisplay *gdisp) {
@@ -1008,7 +1009,6 @@ static void GGDKDrawDestroyWindow(GWindow w) {
             gw->display->last_nontransient_window = NULL;
         }
         gdk_window_destroy(gw->w);
-        GDrawProcessPendingEvents((GDisplay *)gw->display);
         g_timeout_add(200, _GGDKDraw_OnWindowDestroyed, gw);
     } else {
         _GGDKDraw_OnWindowDestroyed(gw);
@@ -1587,7 +1587,6 @@ static void GGDKDrawCancelTimer(GTimer *timer) {
         gtimer->active = false;
         g_source_remove(gtimer->glib_timeout_id);
         gdisp->timers = g_list_remove(gdisp->timers, gtimer);
-        GDrawProcessPendingEvents((GDisplay *)gdisp); //Ensure that the timer won't fire again before our free...
         free(timer);
     }
 }
