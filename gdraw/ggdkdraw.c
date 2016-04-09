@@ -279,6 +279,10 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     // Although there is gdk_window_set_user_data, if non-NULL,
     // GTK assumes it's a GTKWindow.
     g_object_set_data(G_OBJECT(nw->w), "GGDKWindow", nw);
+
+    // Add our reference to the window
+    // This will be unreferenced in _GGDKDraw_OnWindowDestroyed
+    g_object_ref(G_OBJECT(nw->w));
     return (GWindow)nw;
 }
 
@@ -355,7 +359,6 @@ static gboolean _GGDKDraw_OnWindowDestroyed(gpointer data) {
             return true;
         }
 
-
         // Send death threat
         die.w = (GWindow)gw;
         die.native_window = gw->w;
@@ -385,7 +388,11 @@ static gboolean _GGDKDraw_OnWindowDestroyed(gpointer data) {
             gw->display->top_window_count--;
         }
 
+        // Ensure an invalid value is returned if someone tries to get this value again.
+        g_object_set_data(G_OBJECT(gw->w), "GGDKWindow", NULL);
         free(gw->window_title);
+        // Unreference our reference to the window
+        g_object_unref(G_OBJECT(gw->w));
     }
 
     g_object_unref(gw->pango_layout);
@@ -1003,7 +1010,6 @@ static void GGDKDrawDestroyWindow(GWindow w) {
         if (gw->display->last_nontransient_window == gw->w) {
             gw->display->last_nontransient_window = NULL;
         }
-        g_object_set_data(G_OBJECT(gw->w), "GGDKWindow", NULL);
         gdk_window_destroy(gw->w);
         GDrawProcessPendingEvents((GDisplay *)gw->display);
         g_timeout_add(200, _GGDKDraw_OnWindowDestroyed, gw);
@@ -1017,11 +1023,18 @@ static void GGDKDrawDestroyCursor(GDisplay *gdisp, GCursor gcursor) {
     assert(false);
 }
 
-// Some hack to see if the window has been created(???)
 static int GGDKDrawNativeWindowExists(GDisplay *gdisp, void *native_window) {
     fprintf(stderr, "GDKCALL: GGDKDrawNativeWindowExists\n"); //assert(false);
-    //gdk_window_is_viewable((GdkWindow*)native_window);
-    return true;
+    GdkWindow *w = (GdkWindow *)native_window;
+
+    if (!gdk_window_is_destroyed(w) && gdk_window_is_visible(w)) {
+        return true;
+    } else {
+        // So if the window is dying, the gdk window is already gone.
+        // But gcontainer.c expects this to return true on et_destroy...
+        GGDKWindow gw = g_object_get_data(G_OBJECT(w), "GGDKWindow");
+        return gw != NULL && gw->is_dying;
+    }
 }
 
 static void GGDKDrawSetZoom(GWindow gw, GRect *size, enum gzoom_flags flags) {
@@ -1381,7 +1394,6 @@ static int GGDKDrawSelectionHasOwner(GDisplay *gdisp, enum selnames sn) {
 
 static void GGDKDrawPointerUngrab(GDisplay *gdisp) {
     fprintf(stderr, "GDKCALL: GGDKDrawPointerUngrab\n"); //assert(false);
-
 #ifndef GGDKDRAW_GDK_3_20
     GdkDevice *pointer = _GGDKDraw_GetPointer((GGDKDisplay *)gdisp);
     if (pointer == NULL) {
@@ -1420,7 +1432,7 @@ static void GGDKDrawPointerGrab(GWindow w) {
     }
 
     gdk_seat_grab(seat, gw->w,
-                  GDK_SEAT_CAPABILITY_ALL_POINTING,
+                  GDK_SEAT_CAPABILITY_POINTER,
                   false, NULL, NULL, NULL, NULL);
 #endif
 }
@@ -1482,6 +1494,7 @@ static void GGDKDrawSync(GDisplay *gdisp) {
 
 static void GGDKDrawSkipMouseMoveEvents(GWindow gw, GEvent *gevent) {
     fprintf(stderr, "GDKCALL: GGDKDrawSkipMouseMoveEvents\n");
+
     //assert(false);
 }
 
