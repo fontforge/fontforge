@@ -797,7 +797,9 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             gevent.u.expose.rect.width = ((GdkEventExpose *)event)->area.width;
             gevent.u.expose.rect.height = ((GdkEventExpose *)event)->area.height;
 
-            assert(gw->cc == NULL);
+            if (gw->cc != NULL) {
+                cairo_destroy(gw->cc);
+            }
             gdk_window_begin_paint_region(w, ((GdkEventExpose *)event)->region);
             gw->cc = gdk_cairo_create(w);
             break;
