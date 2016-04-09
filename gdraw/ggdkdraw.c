@@ -1553,8 +1553,8 @@ static void GGDKDrawPostDragEvent(GWindow w, GEvent *mouse, enum event_type et) 
 }
 
 static int GGDKDrawRequestDeviceEvents(GWindow w, int devcnt, struct gdeveventmask *de) {
-    Log(LOGDEBUG, "");
-    assert(false);
+    Log(LOGDEBUG, ""); //assert(false);
+    return 0; //Not sure how to handle... For tablets...
 }
 
 
