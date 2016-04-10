@@ -166,6 +166,7 @@ libspiro_url="https://github.com/fontforge/libspiro"
 libuninameslist_url="https://github.com/fontforge/libuninameslist"
 libzmq_url="http://www.zeromq.org/"
 libreadline_url="http://www.gnu.org/software/readline"
+libxorg_url="http://www.x.org/"
 
 # Point to the Wikipedia page, primarily because one may want
 # libjpeg-turbo rather than the reference implementation.
@@ -844,7 +845,7 @@ Optional Library	UseIt?	HaveIt?	WebsiteURL
   libtiff		${with_libtiff}	${i_do_have_libtiff}	${libtiff_url}
   libuninameslist	${with_libuninameslist}	${i_do_have_libuninameslist}	${libuninameslist_url}
   zeromq (libzmq)		${i_do_have_libzmq}	${libzmq_url}
-  X Window System		${i_do_have_x}
+  X Window System		${i_do_have_x}	${libxorg_url}
 ])
 
 #--------------------------------------------------------------------------
