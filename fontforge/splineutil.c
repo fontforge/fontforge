@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgevw.h"
+#include "encoding.h"
 #include <math.h>
 #include "psfont.h"
 #include "ustring.h"
@@ -6222,21 +6223,6 @@ EncMap *EncMap1to1(int enccount) {
 	    map->map[i] = map->backmap[i] = i;
     }
     return( map );
-}
-
-static void EncodingFree(Encoding *enc) {
-    int i;
-
-    if ( enc==NULL )
-return;
-    free(enc->enc_name);
-    free(enc->unicode);
-    if ( enc->psnames!=NULL ) {
-	for ( i=0; i<enc->char_cnt; ++i )
-	    free(enc->psnames[i]);
-	free(enc->psnames);
-    }
-    free(enc);
 }
 
 void EncMapFree(EncMap *map) {
