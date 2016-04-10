@@ -53,18 +53,17 @@ static void _GGDKDraw_OnWindowDestroyed(gpointer data) {
         GDrawPostEvent(&die);
 
         // Remove all relevant timers that haven't been cleaned up by the user
-        // This must come after the death threat because users may try to cancel the timers themselves.
+        // Note: We do not free the GTimer struct as the user may then call DestroyTimer themselves...
         GList_Glib *ent = gw->display->timers;
         while (ent != NULL) {
             GList_Glib *next = ent->next;
             GGDKTimer *timer = (GGDKTimer *)ent->data;
             if (timer->owner == (GWindow)gw) {
                 //Since we update the timer list ourselves, don't all GDrawCancelTimer.
-                Log(LOGDEBUG, "WARNING: We're cleaning up after you!!! %x -> %x", gw, timer);
+                Log(LOGDEBUG, "WARNING: Unstopped timer on window destroy!!! %x -> %x", gw, timer);
                 timer->active = false;
                 g_source_remove(timer->glib_timeout_id);
                 gw->display->timers = g_list_delete_link(gw->display->timers, ent);
-                free(timer);
             }
             ent = next;
         }
@@ -1660,8 +1659,8 @@ static void GGDKDrawCancelTimer(GTimer *timer) {
         gtimer->active = false;
         g_source_remove(gtimer->glib_timeout_id);
         gdisp->timers = g_list_remove(gdisp->timers, gtimer);
-        free(timer);
     }
+    free(timer);
 }
 
 
