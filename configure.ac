@@ -317,6 +317,20 @@ AM_CONDITIONAL([MAINTAINER_TOOLS],[test x"${i_do_have_maintainer_tools}" = xyes]
 AC_SUBST([MAINTAINER_TOOLS],["${i_do_have_maintainer_tools}"])
 
 #--------------------------------------------------------------------------
+# Check for autotrace and potrace (don't do anything with this yet)
+dnl check for autotrace (v0.31-1) commented-out due to bug in autotrace.m4
+dnl which requires brackets around [AUTOTRACE] on line 7.
+i_do_find_auto_po_trace="no"
+dnl AC_PATH_PROG([AUTO_TRACE],[autotrace],[no])
+AC_PATH_PROG([PO_TRACE],[potrace],[no])
+if test x"${PO_TRACE}" != xno; then
+    i_do_find_auto_po_trace="yes"
+fi
+dnl if test x"${AUTO_TRACE}" != xno; then
+dnl     i_do_find_auto_po_trace="yes"
+dnl fi
+
+#--------------------------------------------------------------------------
 #
 # Checks for libraries.
 
@@ -832,6 +846,7 @@ Summary of optional features:
   raw points mode	${i_do_have_debug_raw_points}
   tile path		${i_do_have_tile_path}
   gb12345 encoding	${i_do_have_gb12345}
+  potrace or autotrace	${i_do_find_auto_po_trace}
 
 Summary of optional dependencies:
 
