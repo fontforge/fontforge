@@ -27,6 +27,19 @@
 
 #define GColorToGDK(col) COLOR_RED(col)/255., COLOR_GREEN(col)/255., COLOR_BLUE(col)/255.
 
+#define GGDKDRAW_ADDREF(x) do { \
+    assert((x)->reference_count >= 0); \
+    (x)->reference_count++; \
+} while(0)
+
+#define GGDKDRAW_DECREF(x,y) do { \
+    assert((x)->reference_count > 0); \
+    (x)->reference_count--; \
+    if ((x)->reference_count == 0) { \
+        y(x); \
+    } \
+} while(0)
+
 // Logging
 //To get around a 'pedantic' C99 rule that you must have at least 1 variadic arg, combine fmt into that.
 #define Log(level, ...) LogEx(level, __func__, __FILE__, __LINE__, __VA_ARGS__)
@@ -53,6 +66,7 @@ typedef struct ggdktimer { // :GTimer
     unsigned int active: 1;
     // Extensions below
     unsigned int has_differing_repeat_time: 1;
+    int reference_count;
     guint glib_timeout_id;
 
 } GGDKTimer;

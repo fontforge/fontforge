@@ -34,6 +34,9 @@ static GGC *_GGDKDraw_NewGGC() {
 
 static void _GGDKDraw_OnWindowDestroyed(gpointer data) {
     GGDKWindow gw = (GGDKWindow)data;
+    if (gw->is_cleaning_up) { // Nested call - we're already being destroyed.
+        return;
+    }
     gw->is_cleaning_up = true; // We're in the process of destroying it.
 
     Log(LOGDEBUG, "OnWindowDestroyed!");
@@ -91,24 +94,18 @@ static void _GGDKDraw_OnWindowDestroyed(gpointer data) {
     free(gw);
 }
 
-static void _GGDKDraw_AddRef(GGDKWindow gw) {
-    assert(gw->reference_count >= 0);
-    gw->reference_count++;
-}
+static void _GGDKDraw_OnTimerDestroyed(GGDKTimer *timer) {
+    GGDKDisplay *gdisp = ((GGDKWindow)(timer->owner))->display;
 
-static void _GGDKDraw_UnRef(GGDKWindow gw) {
-    gw->reference_count--;
-    assert(gw->reference_count >= 0);
-
-    if (gw->reference_count == 0 && !gw->is_cleaning_up) {
-        _GGDKDraw_OnWindowDestroyed(gw);
-    }
+    g_source_remove(timer->glib_timeout_id);
+    gdisp->timers = g_list_remove(gdisp->timers, timer);
+    free(timer);
 }
 
 static void _GGDKDraw_CallEHChecked(GGDKWindow gw, GEvent *event, int (*eh)(GWindow gw, GEvent *)) {
     if (eh) {
         // Increment reference counter
-        _GGDKDraw_AddRef(gw);
+        GGDKDRAW_ADDREF(gw);
         (eh)((GWindow)gw, event);
 
         // Cleanup after our user...
@@ -125,7 +122,7 @@ static void _GGDKDraw_CallEHChecked(GGDKWindow gw, GEvent *event, int (*eh)(GWin
         }
         gw->display->dirty_windows = NULL;
         // Decrement reference counter
-        _GGDKDraw_UnRef(gw);
+        GGDKDRAW_DECREF(gw, _GGDKDraw_OnWindowDestroyed);
     }
 }
 
@@ -365,7 +362,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     }
 
     // Add a reference to our own structure.
-    _GGDKDraw_AddRef(nw);
+    GGDKDRAW_ADDREF(nw);
 
     // Event handler
     if (eh != NULL) {
@@ -447,7 +444,7 @@ static GWindow _GGDKDraw_NewPixmap(GDisplay *gdisp, uint16 width, uint16 height,
 
     }
     // Add a reference to ourselves
-    _GGDKDraw_AddRef(gw);
+    GGDKDRAW_ADDREF(gw);
     return (GWindow)gw;
 }
 
@@ -564,17 +561,22 @@ static gboolean _GGDKDraw_ProcessTimerEvent(gpointer user_data) {
     e.native_window = timer->owner->native_window;
     e.u.timer.timer = (GTimer *)timer;
     e.u.timer.userdata = timer->userdata;
-    _GGDKDraw_CallEHChecked((GGDKWindow)timer->owner, &e, timer->owner->eh);
 
-    if (timer->repeat_time == 0) {
-        gdisp->timers = g_list_remove(gdisp->timers, timer);
-        return false;
-    } else if (timer->has_differing_repeat_time) {
-        timer->has_differing_repeat_time = false;
-        timer->glib_timeout_id = g_timeout_add(timer->repeat_time, _GGDKDraw_ProcessTimerEvent, timer);
-        return false;
+    GGDKDRAW_ADDREF(timer);
+    _GGDKDraw_CallEHChecked((GGDKWindow)timer->owner, &e, timer->owner->eh);
+    if (timer->active) {
+        if (timer->repeat_time == 0) {
+            GDrawCancelTimer((GTimer *)timer);
+            gdisp->timers = g_list_remove(gdisp->timers, timer);
+            return false;
+        } else if (timer->has_differing_repeat_time) {
+            timer->has_differing_repeat_time = false;
+            timer->glib_timeout_id = g_timeout_add(timer->repeat_time, _GGDKDraw_ProcessTimerEvent, timer);
+            return false;
+        }
     }
 
+    GGDKDRAW_DECREF(timer, _GGDKDraw_OnTimerDestroyed);
     return true;
 }
 
@@ -1061,7 +1063,7 @@ static void GGDKDrawDestroyWindow(GWindow w) {
         // Ensure an invalid value is returned if someone tries to get this value again.
         g_object_set_data(G_OBJECT(gw->w), "GGDKWindow", NULL);
     }
-    _GGDKDraw_UnRef(gw);
+    GGDKDRAW_DECREF(gw, _GGDKDraw_OnWindowDestroyed);
 }
 
 static void GGDKDrawDestroyCursor(GDisplay *gdisp, GCursor gcursor) {
@@ -1646,21 +1648,16 @@ static GTimer *GGDKDrawRequestTimer(GWindow w, int32 time_from_now, int32 freque
     timer->active = true;
     timer->has_differing_repeat_time = (time_from_now != frequency);
     timer->glib_timeout_id = g_timeout_add(time_from_now, _GGDKDraw_ProcessTimerEvent, timer);
+
+    GGDKDRAW_ADDREF(timer);
     return (GTimer *)timer;
 }
 
 static void GGDKDrawCancelTimer(GTimer *timer) {
     Log(LOGDEBUG, ""); //assert(false);
     GGDKTimer *gtimer = (GGDKTimer *)timer;
-    // If it's not active, then something else is already trying to cancel this timer.
-    if (gtimer->active) {
-        GGDKDisplay *gdisp = ((GGDKWindow)(gtimer->owner))->display;
-
-        gtimer->active = false;
-        g_source_remove(gtimer->glib_timeout_id);
-        gdisp->timers = g_list_remove(gdisp->timers, gtimer);
-    }
-    free(timer);
+    gtimer->active = false;
+    GGDKDRAW_DECREF(gtimer, _GGDKDraw_OnTimerDestroyed);
 }
 
 
