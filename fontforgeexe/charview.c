@@ -2385,7 +2385,7 @@ static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
 	real ygrid_spacing = (cv->b.sc->parent->ascent+cv->b.sc->parent->descent) / (real) cv->ft_ppemy;
 	real xgrid_spacing = (cv->b.sc->parent->ascent+cv->b.sc->parent->descent) / (real) cv->ft_ppemx;
 	int max,jmax,ii,i,jj,j;
-	int minx, maxx, miny, maxy, r,or;
+	int minx, maxx, miny, maxy, r,or=0;
 	Color clut[256];
 
 	pixel.width = xgrid_spacing*cv->scale+1;
@@ -8197,7 +8197,7 @@ static void CVNextPrevSpiroPt(CharView *cv, struct gmenuitem *mi) {
     SplineSet *spl, *ss;
     SplinePoint *junk;
     int x, y;
-    spiro_cp *selcp, *other;
+    spiro_cp *selcp = NULL, *other;
     int index;
 
     if ( mi->mid == MID_FirstPt ) {

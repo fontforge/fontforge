@@ -1466,8 +1466,6 @@ static int UFOOutputGroups(const char *basedir, SplineFont *sf) {
                 xmlNodePtr grouparray = xmlNewChild(dictnode, NULL, BAD_CAST "array", NULL);
                 // We use the results of the preceding search in order to get the list.
                 char *rawglyphlist = (
-                  isv ?
-                  (isr ? kc->seconds[offset] : kc->firsts[offset]) :
                   (isr ? kc->seconds[offset] : kc->firsts[offset])
                 );
                 // We need to convert from the space-delimited string to something more easily accessed on a per-item basis.

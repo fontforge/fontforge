@@ -731,7 +731,7 @@ return( NULL );
 	for ( i=0; i<len && array[i]!=NULL; ++i );
 	len = i;
     }
-    ti = malloc((i+1)*sizeof(GTextInfo *));
+    ti = malloc((len+1)*sizeof(GTextInfo *));
     for ( i=0; i<len; ++i ) {
 	ti[i] = calloc(1,sizeof(GTextInfo));
 	ti[i]->text = uc_copy(array[i]);

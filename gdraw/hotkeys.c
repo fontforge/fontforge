@@ -386,7 +386,7 @@ Hotkey* isImmediateKey( GWindow w, char* path, GEvent *event )
     Hotkey* hk = hotkeyFindByAction( line );
     if( !hk )
 	return 0;
-    if( hk && !hk->action )
+    if( !hk->action )
 	return 0;
     
     if( event->u.chr.keysym == hk->keysym )

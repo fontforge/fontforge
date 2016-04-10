@@ -265,7 +265,7 @@ static int last_format = 0;
 
 static void DoExport(struct gfc_data *d,unichar_t *path) {
     char *temp;
-    int format, good;
+    int format, good = 0;
 
     temp = cu_copy(path);
     last_format = format = (intpt) (GGadgetGetListItemSelected(d->format)->userdata);

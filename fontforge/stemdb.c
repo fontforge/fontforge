@@ -5663,7 +5663,7 @@ return( len );
 static int StemPairsSimilar( struct stemdata *s1, struct stemdata *s2,
     struct stemdata *ts1, struct stemdata *ts2 ) {
     
-    int normal, reversed, ret;
+    int normal, reversed, ret = 0;
     double olen1, olen2;
     
     /* Stem widths in the second pair should be nearly the same as */

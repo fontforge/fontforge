@@ -432,7 +432,7 @@ static void Base_FinishEdit(GGadget *g, int r, int c, int wasnew) {
 	struct matrix_data *md = GMatrixEditGet(g,&rows);
 	uint32 script = TagFromString(md[r*cols+0].u.md_str);
 	uint32 bsln;
-	int i,j,k;
+	int i=0,j,k;
 
 /* This if is duplicated (almost) in tottfaat.c: PerGlyphDefBaseline */
 	if ( script==CHR('k','a','n','a') || script==CHR('h','a','n','g') ||
