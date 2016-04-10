@@ -103,6 +103,7 @@ typedef struct ggdkdisplay { /* :GDisplay */
     int     top_window_count;
     guint32 last_event_time;
 
+    GSList *dirty_windows; //List of GGDKWindows which called drawing functions outside of an expose event.
     GList_Glib *timers; //List of GGDKTimer's
 
     GGDKButtonState bs;
@@ -135,6 +136,8 @@ struct ggdkwindow { /* :GWindow */
     unsigned int is_popup: 1;
     unsigned int disable_expose_requests: 1;
     unsigned int usecairo: 1;
+    char *window_type_name;
+    //char pad[4];
     // Inherit GWindow end
     unsigned int is_dlg: 1;
     unsigned int not_restricted: 1;
@@ -143,6 +146,9 @@ struct ggdkwindow { /* :GWindow */
     unsigned int redirect_chars_to_me: 1;/* ditto, we get any input outside of us */
     unsigned int istransient: 1;	/* has transient for hint set */
     unsigned int isverytransient: 1;
+    unsigned int is_cleaning_up: 1; //Are we running cleanup?
+
+    int reference_count; // Knowing when to destroy is tricky...
 
     GWindow redirect_from;		/* only redirect input from this window and its children */
     GdkWindow *transient_owner;

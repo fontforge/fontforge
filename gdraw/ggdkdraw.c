@@ -32,13 +32,101 @@ static GGC *_GGDKDraw_NewGGC() {
     return ggc;
 }
 
+static void _GGDKDraw_OnWindowDestroyed(gpointer data) {
+    GGDKWindow gw = (GGDKWindow)data;
+    gw->is_cleaning_up = true; // We're in the process of destroying it.
+
+    Log(LOGDEBUG, "OnWindowDestroyed!");
+    if (!gw->is_pixmap) {
+        gdk_window_destroy(gw->w);
+
+        // Wait for it to die
+        while (!gdk_window_is_destroyed(gw->w)) {
+            GDrawProcessPendingEvents((GDisplay *)gw->display);
+        }
+
+        // Signal that it has been destroyed
+        struct gevent die = {0};
+        die.w = (GWindow)gw;
+        die.native_window = gw->w;
+        die.type = et_destroy;
+        GDrawPostEvent(&die);
+
+        // Remove all relevant timers that haven't been cleaned up by the user
+        // This must come after the death threat because users may try to cancel the timers themselves.
+        GList_Glib *ent = gw->display->timers;
+        while (ent != NULL) {
+            GList_Glib *next = ent->next;
+            GGDKTimer *timer = (GGDKTimer *)ent->data;
+            if (timer->owner == (GWindow)gw) {
+                //Since we update the timer list ourselves, don't all GDrawCancelTimer.
+                Log(LOGDEBUG, "WARNING: We're cleaning up after you!!! %x -> %x", gw, timer);
+                timer->active = false;
+                g_source_remove(timer->glib_timeout_id);
+                gw->display->timers = g_list_delete_link(gw->display->timers, ent);
+                free(timer);
+            }
+            ent = next;
+        }
+
+        // Decrement the toplevel window count
+        if (gw->display->groot == gw->parent && !gw->is_dlg) {
+            gw->display->top_window_count--;
+        }
+
+        Log(LOGDEBUG, "Window destroyed: %p[%p][%s][%d]", gw, gw->w, gw->window_title, gw->is_toplevel);
+        free(gw->window_title);
+        // Unreference our reference to the window
+        g_object_unref(G_OBJECT(gw->w));
+    }
+
+    g_object_unref(gw->pango_layout);
+
+    if (gw->cc != NULL) {
+        cairo_destroy(gw->cc);
+    }
+    if (gw->cs != NULL) {
+        cairo_surface_destroy(gw->cs);
+    }
+    free(gw->ggc);
+    free(gw);
+}
+
+static void _GGDKDraw_AddRef(GGDKWindow gw) {
+    assert(gw->reference_count >= 0);
+    gw->reference_count++;
+}
+
+static void _GGDKDraw_UnRef(GGDKWindow gw) {
+    gw->reference_count--;
+    assert(gw->reference_count >= 0);
+
+    if (gw->reference_count == 0 && !gw->is_cleaning_up) {
+        _GGDKDraw_OnWindowDestroyed(gw);
+    }
+}
+
 static void _GGDKDraw_CallEHChecked(GGDKWindow gw, GEvent *event, int (*eh)(GWindow gw, GEvent *)) {
     if (eh) {
+        // Increment reference counter
+        _GGDKDraw_AddRef(gw);
         (eh)((GWindow)gw, event);
-        if (gw->cc != NULL) {
-            cairo_destroy(gw->cc);
-            gw->cc = NULL;
+
+        // Cleanup after our user...
+        GSList *dirty = gw->display->dirty_windows;
+        while (dirty) {
+            GSList *next = dirty->next;
+            GGDKWindow dw = (GGDKWindow)dirty->data;
+            if (dw->cc != NULL) {
+                cairo_destroy(dw->cc);
+                dw->cc = NULL;
+            }
+            g_slist_free_1(dirty);
+            dirty = next;
         }
+        gw->display->dirty_windows = NULL;
+        // Decrement reference counter
+        _GGDKDraw_UnRef(gw);
     }
 }
 
@@ -277,6 +365,9 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
         GGDKDrawSetCursor((GWindow)nw, wattrs->cursor);
     }
 
+    // Add a reference to our own structure.
+    _GGDKDraw_AddRef(nw);
+
     // Event handler
     if (eh != NULL) {
         GEvent e = {0};
@@ -293,10 +384,10 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     // Although there is gdk_window_set_user_data, if non-NULL,
     // GTK assumes it's a GTKWindow.
     g_object_set_data(G_OBJECT(nw->w), "GGDKWindow", nw);
-
     // Add our reference to the window
-    // This will be unreferenced in _GGDKDraw_OnWindowDestroyed
+    // This will be unreferenced when the window is destroyed.
     g_object_ref(G_OBJECT(nw->w));
+    Log(LOGDEBUG, "Window created: %p[%p][%s][%d]", nw, nw->w, nw->window_title, nw->is_toplevel);
     return (GWindow)nw;
 }
 
@@ -356,72 +447,9 @@ static GWindow _GGDKDraw_NewPixmap(GDisplay *gdisp, uint16 width, uint16 height,
         return NULL;
 
     }
+    // Add a reference to ourselves
+    _GGDKDraw_AddRef(gw);
     return (GWindow)gw;
-}
-
-static gboolean _GGDKDraw_OnWindowDestroyed(gpointer data) {
-    GGDKWindow gw = (GGDKWindow)data;
-
-    Log(LOGDEBUG, "OnWindowDestroyed!");
-    if (!gw->is_pixmap) {
-        struct gevent die = {0};
-
-        Log(LOGDEBUG, "Attempting clean of window!");
-        // If the window's not destroyed yet, then try again...
-        if (!gdk_window_is_destroyed(gw->w)) {
-            Log(LOGDEBUG, "IT'S NOT DEAD JIM");
-            return true;
-        }
-
-        // Send death threat
-        die.w = (GWindow)gw;
-        die.native_window = gw->w;
-        die.type = et_destroy;
-        GDrawPostEvent(&die);
-        GDrawProcessPendingEvents((GDisplay *)(gw->display));
-
-        // Remove all relevant timers that haven't been cleaned up by the user
-        // This must come after the death threat because users may try to cancel the timers themselves.
-        GList_Glib *ent = gw->display->timers;
-        while (ent != NULL) {
-            GList_Glib *next = ent->next;
-            GGDKTimer *timer = (GGDKTimer *)ent->data;
-            if (timer->owner == (GWindow)gw) {
-                //Since we update the timer list ourselves, don't all GDrawCancelTimer.
-                Log(LOGDEBUG, "WARNING: We're cleaning up after you!!! %x -> %x", gw, timer);
-                timer->active = false;
-                g_source_remove(timer->glib_timeout_id);
-                gw->display->timers = g_list_delete_link(gw->display->timers, ent);
-                free(timer);
-            }
-            ent = next;
-        }
-
-        if (gw->display->groot == gw->parent && !gw->is_dlg) {
-            gw->display->top_window_count--;
-        }
-
-        // Ensure an invalid value is returned if someone tries to get this value again.
-        g_object_set_data(G_OBJECT(gw->w), "GGDKWindow", NULL);
-        free(gw->window_title);
-        // Unreference our reference to the window
-        g_object_unref(G_OBJECT(gw->w));
-    }
-
-    g_object_unref(gw->pango_layout);
-
-    if (gw->cc != NULL) {
-        cairo_destroy(gw->cc);
-    }
-    if (gw->cs != NULL) {
-        cairo_surface_destroy(gw->cs);
-    }
-    free(gw->ggc);
-    //ffs for some reason gdk doesn't pop events of dead windows.
-    //this means we could end up with an event that is dead...
-    //memset(gw, 0, sizeof(struct ggdkwindow));
-    //free(gw);
-    return false; // Don't repeat timeout
 }
 
 static GdkDevice *_GGDKDraw_GetPointer(GGDKDisplay *gdisp) {
@@ -526,7 +554,8 @@ static gboolean _GGDKDraw_ProcessTimerEvent(gpointer user_data) {
     GEvent e = {0};
     GGDKDisplay *gdisp;
 
-    if (!timer->active) {
+    if (!timer->active || _GGDKDraw_WindowOrParentsDying((GGDKWindow)timer->owner)) {
+        timer->active = false;
         return false;
     }
 
@@ -567,7 +596,7 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         //assert(false);
         return;
     } else if (_GGDKDraw_WindowOrParentsDying(gw) || gdk_window_is_destroyed(w)) {
-        Log(LOGDEBUG, "DYING!");
+        Log(LOGDEBUG, "DYING! %x", w);
         return;
     }
 
@@ -801,7 +830,6 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
                 cairo_destroy(gw->cc);
             }
             gdk_window_begin_paint_region(w, ((GdkEventExpose *)event)->region);
-            gw->cc = gdk_cairo_create(w);
             break;
         case GDK_VISIBILITY_NOTIFY:
             gevent.type = et_visibility;
@@ -1012,16 +1040,29 @@ static void GGDKDrawDestroyWindow(GWindow w) {
     Log(LOGDEBUG, "");
     GGDKWindow gw = (GGDKWindow) w;
 
+    if (gw->is_dying) {
+        return;
+    }
+
     gw->is_dying = true;
     if (!gw->is_pixmap) {
+        GList_Glib *list = gdk_window_get_children(gw->w);
+        GList_Glib *child = list;
+        while (child != NULL) {
+            GWindow c = g_object_get_data(child->data, "GGDKWindow");
+            assert(c != NULL);
+            GGDKDrawDestroyWindow(c);
+            child = child->next;
+        }
+        g_list_free(list);
+
         if (gw->display->last_nontransient_window == gw->w) {
             gw->display->last_nontransient_window = NULL;
         }
-        gdk_window_destroy(gw->w);
-        g_timeout_add(200, _GGDKDraw_OnWindowDestroyed, gw);
-    } else {
-        _GGDKDraw_OnWindowDestroyed(gw);
+        // Ensure an invalid value is returned if someone tries to get this value again.
+        g_object_set_data(G_OBJECT(gw->w), "GGDKWindow", NULL);
     }
+    _GGDKDraw_UnRef(gw);
 }
 
 static void GGDKDrawDestroyCursor(GDisplay *gdisp, GCursor gcursor) {
