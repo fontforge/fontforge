@@ -349,7 +349,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     }
 
     // Establish Pango/Cairo context
-    if (!_GGDKDraw_InitPangoCairo(gw)) {
+    if (!_GGDKDraw_InitPangoCairo(nw)) {
         gdk_window_destroy(nw->w);
         free(nw->window_title);
         free(nw->ggc);
