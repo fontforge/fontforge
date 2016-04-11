@@ -86,6 +86,7 @@ static void _GGDKDraw_OnWindowDestroyed(gpointer data) {
 
     if (gw->cc != NULL) {
         cairo_destroy(gw->cc);
+        gw->cc = NULL;
     }
     if (gw->cs != NULL) {
         cairo_surface_destroy(gw->cs);
@@ -186,8 +187,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
         }
 
         attribs.title = nw->window_title;
-        attribs.type_hint = nw->is_popup ? GDK_WINDOW_TYPE_HINT_UTILITY :
-                            nw->is_dlg ? GDK_WINDOW_TYPE_HINT_DIALOG : GDK_WINDOW_TYPE_HINT_NORMAL;
+        attribs.type_hint = nw->is_popup ? GDK_WINDOW_TYPE_HINT_UTILITY : GDK_WINDOW_TYPE_HINT_NORMAL;
 
         if (attribs.title != NULL) {
             attribs_mask |= GDK_WA_TITLE;
@@ -225,7 +225,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
 
     // Window position and size
     // I hate it placing stuff under the cursor...
-    if (gw == gdisp->groot &&
+    /*if (gw == gdisp->groot &&
             ((((wattrs->mask & wam_centered) && wattrs->centered)) ||
              ((wattrs->mask & wam_undercursor) && wattrs->undercursor))) {
         pos->x = (gdisp->groot->pos.width - pos->width) / 2;
@@ -234,7 +234,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
             pos->y = (gdisp->groot->pos.height - pos->height) / 3;
         }
         nw->pos = *pos;
-    }
+    }*/
 
     attribs.x = pos->x;
     attribs.y = pos->y;
@@ -316,12 +316,12 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
         geom.base_width = geom.min_width = geom.max_width = pos->width;
         geom.base_height = geom.min_height = geom.max_height = pos->height;
 
-        if (((wattrs->mask & wam_positioned) && wattrs->positioned) ||
+        /*if (((wattrs->mask & wam_positioned) && wattrs->positioned) ||
                 ((wattrs->mask & wam_centered) && wattrs->centered) ||
                 ((wattrs->mask & wam_undercursor) && wattrs->undercursor)) {
             hints |= GDK_HINT_POS;
             nw->was_positioned = true;
-        }
+        }*/
 
         gdk_window_set_geometry_hints(nw->w, &geom, hints);
 
@@ -829,6 +829,7 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
 
             if (gw->cc != NULL) {
                 cairo_destroy(gw->cc);
+                gw->cc = NULL;
             }
             gdk_window_begin_paint_region(w, ((GdkEventExpose *)event)->region);
             break;
