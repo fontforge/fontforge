@@ -603,7 +603,7 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
 
     gevent.w = (GWindow)gw;
     gevent.native_window = (void *)gw->w;
-    gevent.type = -1;
+    gevent.type = et_noevent;
     if (event->type == GDK_KEY_PRESS || event->type == GDK_BUTTON_PRESS || event->type == GDK_BUTTON_RELEASE) {
         if (gw->transient_owner != NULL && gw->isverytransient) {
             gdisp->last_nontransient_window = gw->transient_owner;
@@ -913,6 +913,8 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             gw->is_visible = false;
             break;
         case GDK_DESTROY:
+            GDrawDestroyWindow((GWindow)gw);
+            break;
         case GDK_DELETE:
             gevent.type = et_close;
             break;
@@ -1074,14 +1076,14 @@ static void GGDKDrawDestroyCursor(GDisplay *gdisp, GCursor gcursor) {
 static int GGDKDrawNativeWindowExists(GDisplay *gdisp, void *native_window) {
     Log(LOGDEBUG, ""); //assert(false);
     GdkWindow *w = (GdkWindow *)native_window;
+    GGDKWindow gw = g_object_get_data(G_OBJECT(w), "GGDKWindow");
 
-    if (!gdk_window_is_destroyed(w) && gdk_window_is_visible(w)) {
+    // So if the window is dying, the gdk window is already gone.
+    // But gcontainer.c expects this to return true on et_destroy...
+    if (gw == NULL || gw->is_dying) {
         return true;
     } else {
-        // So if the window is dying, the gdk window is already gone.
-        // But gcontainer.c expects this to return true on et_destroy...
-        GGDKWindow gw = g_object_get_data(G_OBJECT(w), "GGDKWindow");
-        return gw != NULL && gw->is_dying;
+        return !gdk_window_is_destroyed(w) && gdk_window_is_visible(w);
     }
 }
 
