@@ -1115,7 +1115,10 @@ static int GGDKDrawSetDither(GDisplay *gdisp, int set) {
 
 static void GGDKDrawReparentWindow(GWindow child, GWindow newparent, int x, int y) {
     Log(LOGDEBUG, "");
-    gdk_window_reparent(((GGDKWindow)child)->w, ((GGDKWindow)newparent)->w, x, y);
+    GGDKWindow gchild = (GGDKWindow)child, gparent = (GGDKWindow)newparent;
+    gchild->parent = gparent;
+    gchild->is_toplevel = gchild->display->groot == gparent;
+    gdk_window_reparent(gchild->w, gparent->w, x, y);
 }
 
 static void GGDKDrawSetVisible(GWindow w, int show) {
