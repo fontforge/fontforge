@@ -65,6 +65,7 @@ static void _GGDKDraw_OnWindowDestroyed(gpointer data) {
                 //Since we update the timer list ourselves, don't all GDrawCancelTimer.
                 Log(LOGDEBUG, "WARNING: Unstopped timer on window destroy!!! %x -> %x", gw, timer);
                 timer->active = false;
+                timer->stopped = true;
                 g_source_remove(timer->glib_timeout_id);
                 gw->display->timers = g_list_delete_link(gw->display->timers, ent);
             }
@@ -98,7 +99,11 @@ static void _GGDKDraw_OnWindowDestroyed(gpointer data) {
 static void _GGDKDraw_OnTimerDestroyed(GGDKTimer *timer) {
     GGDKDisplay *gdisp = ((GGDKWindow)(timer->owner))->display;
 
-    g_source_remove(timer->glib_timeout_id);
+    // We may stop the timer without destroying it -
+    // e.g. if the user doesn't cancel the timer before a window is destroyed.
+    if (!timer->stopped) {
+        g_source_remove(timer->glib_timeout_id);
+    }
     gdisp->timers = g_list_remove(gdisp->timers, timer);
     free(timer);
 }
@@ -110,18 +115,15 @@ static void _GGDKDraw_CallEHChecked(GGDKWindow gw, GEvent *event, int (*eh)(GWin
         (eh)((GWindow)gw, event);
 
         // Cleanup after our user...
-        GSList *dirty = gw->display->dirty_windows;
-        while (dirty) {
-            GSList *next = dirty->next;
-            GGDKWindow dw = (GGDKWindow)dirty->data;
+        GPtrArray *dirty = gw->display->dirty_windows;
+        while (dirty->len > 0) {
+            GGDKWindow dw = (GGDKWindow)g_ptr_array_remove_index_fast(dirty, dirty->len - 1);
+            assert(dw != NULL);
             if (dw->cc != NULL) {
                 cairo_destroy(dw->cc);
                 dw->cc = NULL;
             }
-            g_slist_free_1(dirty);
-            dirty = next;
         }
-        gw->display->dirty_windows = NULL;
         // Decrement reference counter
         GGDKDRAW_DECREF(gw, _GGDKDraw_OnWindowDestroyed);
     }
@@ -1841,6 +1843,14 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *programname) {
         return NULL;
     }
 
+    // 15 Dirty windows/eh call?
+    gdisp->dirty_windows = g_ptr_array_sized_new(15);
+    if (gdisp->dirty_windows == NULL) {
+        free(gdisp);
+        gdk_display_close(display);
+        return NULL;
+    }
+
     gdisp->funcs = &gdkfuncs;
     gdisp->display = display;
     gdisp->screen = gdk_display_get_default_screen(display);
@@ -1860,6 +1870,7 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *programname) {
     groot = (GGDKWindow)calloc(1, sizeof(struct ggdkwindow));
     if (groot == NULL) {
         g_object_unref(gdisp->pangoc_context);
+        g_ptr_array_free(gdisp->dirty_windows, false);
         free(gdisp);
         gdk_display_close(display);
         return NULL;

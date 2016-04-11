@@ -64,6 +64,7 @@ typedef struct ggdktimer { // :GTimer
     void *userdata;
     struct gtimer *next;       // Unused in favour of a GLib list
     unsigned int active: 1;
+    unsigned int stopped: 1;
     // Extensions below
     unsigned int has_differing_repeat_time: 1;
     int reference_count;
@@ -117,7 +118,7 @@ typedef struct ggdkdisplay { /* :GDisplay */
     int     top_window_count;
     guint32 last_event_time;
 
-    GSList *dirty_windows; //List of GGDKWindows which called drawing functions outside of an expose event.
+    GPtrArray *dirty_windows; //List of GGDKWindows which called drawing functions outside of an expose event.
     GList_Glib *timers; //List of GGDKTimer's
 
     GGDKButtonState bs;
