@@ -76,21 +76,15 @@ return( rq );
 
 /* ************************************************************************** */
 
-static char *u2utf8_bounded(const unichar_t *text, int32 cnt) {
-    if (cnt >= 0) {
-        return u2utf8_copyn(text, cnt);
-    }
-    return u2utf8_copy(text);
-}
-
 int32 GDrawDrawText(GWindow gw, int32 x, int32 y, const unichar_t *text, int32 cnt, Color col) {
     struct tf_arg arg;
-    char *temp = u2utf8_bounded(text, cnt);
+    glong realcnt;
+    gchar *temp = g_ucs4_to_utf8((gunichar*)text, cnt, NULL, &realcnt, NULL);
     int width = 0;
 
     if (temp != NULL) {
-        width = gw->display->funcs->doText8(gw,x,y,temp,cnt,col,tf_drawit,&arg);
-        free(temp);
+        width = gw->display->funcs->doText8(gw,x,y,temp,realcnt,col,tf_drawit,&arg);
+        g_free(temp);
     }
 
     return width;
@@ -98,12 +92,13 @@ int32 GDrawDrawText(GWindow gw, int32 x, int32 y, const unichar_t *text, int32 c
 
 int32 GDrawGetTextWidth(GWindow gw,const unichar_t *text, int32 cnt) {
     struct tf_arg arg;
-    char *temp = u2utf8_bounded(text, cnt);
+    glong realcnt;
+    gchar *temp = g_ucs4_to_utf8((gunichar*)text, cnt, NULL, &realcnt, NULL);
     int width = 0;
 
     if (temp != NULL) {
-        width = gw->display->funcs->doText8(gw,0,0,temp,cnt,0x0,tf_width,&arg);
-        free(temp);
+        width = gw->display->funcs->doText8(gw,0,0,temp,realcnt,0x0,tf_width,&arg);
+        g_free(temp);
     }
     return width;
 }
@@ -111,13 +106,14 @@ int32 GDrawGetTextWidth(GWindow gw,const unichar_t *text, int32 cnt) {
 int32 GDrawGetTextBounds(GWindow gw,const unichar_t *text, int32 cnt, GTextBounds *bounds) {
     int ret = 0;
     struct tf_arg arg = {0};
-    char *temp = u2utf8_bounded(text, cnt);
+    glong realcnt;
+    gchar *temp = g_ucs4_to_utf8((gunichar*)text, cnt, NULL, &realcnt, NULL);
 
     if (temp != NULL) {
         arg.first = true;
-        ret = gw->display->funcs->doText8(gw,0,0,temp,cnt,0x0,tf_rect,&arg);
+        ret = gw->display->funcs->doText8(gw,0,0,temp,realcnt,0x0,tf_rect,&arg);
         *bounds = arg.size;
-        free(temp);
+        g_free(temp);
     }
     return ret;
 }
