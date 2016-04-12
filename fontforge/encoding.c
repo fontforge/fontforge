@@ -498,13 +498,18 @@ static char *getPfaEditEncodings(void) {
     return encfile;
 }
 
-static void EncodingFree(Encoding *item) {
+void EncodingFree(Encoding *item) {
     int i;
 
+    if ( item==NULL )
+	return;
+
     free(item->enc_name);
-    if ( item->psnames!=NULL ) for ( i=0; i<item->char_cnt; ++i )
-	free(item->psnames[i]);
-    free(item->psnames);
+    if ( item->psnames!=NULL ) {
+	for ( i=0; i<item->char_cnt; ++i )
+	    free(item->psnames[i]);
+	free(item->psnames);
+    }
     free(item->unicode);
     free(item);
 }

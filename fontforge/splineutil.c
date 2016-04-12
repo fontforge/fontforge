@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgevw.h"
+#include "encoding.h"
 #include <math.h>
 #include "psfont.h"
 #include "ustring.h"
@@ -1833,7 +1834,7 @@ SplinePointList *SplinePointListTransformExtended(SplinePointList *base, real tr
 		lastpointorig = orig;
 		if ( spline->to->selected ) anysel = true; else allsel = false;
 	    }
-	    
+
 	} else {
 	    for ( spt = spl->first ; spt!=pfirst; spt = spt->next->to ) {
 		if ( pfirst==NULL ) pfirst = spt;
@@ -6224,21 +6225,6 @@ EncMap *EncMap1to1(int enccount) {
     return( map );
 }
 
-static void EncodingFree(Encoding *enc) {
-    int i;
-
-    if ( enc==NULL )
-return;
-    free(enc->enc_name);
-    free(enc->unicode);
-    if ( enc->psnames!=NULL ) {
-	for ( i=0; i<enc->char_cnt; ++i )
-	    free(enc->psnames[i]);
-	free(enc->psnames);
-    }
-    free(enc);
-}
-
 void EncMapFree(EncMap *map) {
     if ( map==NULL )
 return;
@@ -6541,7 +6527,7 @@ return;
         }
       }
       free(sf->layers); sf->layers = NULL;
-    }   
+    }
     free(sf);
 }
 
@@ -6581,7 +6567,7 @@ return;
           sf->layers[layer].ufo_path = NULL;
         }
       }
-    }   
+    }
 }
 
 #if 0
@@ -7813,7 +7799,7 @@ bigreal DistanceBetweenPoints( BasePoint *p1, BasePoint *p2 )
     bigreal t = pow(p1->x - p2->x,2) + pow(p1->y - p2->y,2);
     if( !t )
 	return t;
-    
+
     t = sqrt( t );
     return t;
 }

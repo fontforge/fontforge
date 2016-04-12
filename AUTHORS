@@ -2,6 +2,7 @@ George Williams
 10 years and approximately 600,000 lines of code.
 
 Abel Cheung
+Adam Goode
 Adolfo Jayme Barrientos
 Adrien Tétar
 Aktado <aktado@users.sourceforge.jp>
@@ -9,6 +10,7 @@ Alex Raftis
 Anand
 Andreas Larsen
 Andrew Janke
+Andrey Panov
 Anthony G. Basile
 Arthaey Angosii
 Alexey Kryukov - nowakowskittfinstr.c
@@ -23,12 +25,17 @@ BensongChen, bungeman
 Ben Wagner
 Bill Wang
 catharanthus
+Charles M. Hannum
 Christopher Meng
 Claudio Beccari
 Craig Lennox
 Dave Crossland (dave@lab6.com)
 Deron Meranda
 Dave Levine
+David Lemon
+David Opstad
+David Shaal
+Divay Prakash
 Dominyk Tiller
 Dong Yang
 Dražen Lučanin
@@ -40,7 +47,7 @@ Frank Trampe
 Frédéric Wang
 Georg A. Duffner
 Giuseppe Bilotta
-Giuseppe Ghibo
+Giuseppe Ghibò
 Greg Ford
 Grzegorz
 Harald Harders
@@ -51,6 +58,7 @@ James Cloos
 James Crippen
 James Woodcock
 Jason Pagura
+Jérémy Bobbio
 Jeremy Tan
 Jim Killock
 Jiwon Choi
@@ -68,15 +76,19 @@ Julien Nabet <serval2412>
 Just Fill Bugs <mozbugbox>
 Kartik Mistry
 KANOU Hiroki
-Kauzuyuki
+Kazuki Ohta (Kauzuyuki, Kazuyuki)
 Kelvinsong
 Kemie Guaida - Tango PixMaps
+Kengo Ichiki
 Kevin Fenzi
 Khaled Hosny
 Koki Takahashi
 Lasse Fister
+László Károly
 Lu Wang <coolwanglu@gmail.com>
 Luiz Matheus <lzmths>
+Markus Schwarzenberg
+Marius Larsen
 Mark Oteiza
 Martin Hosken
 Mathias Wollin
@@ -88,11 +100,15 @@ Max Rabkin - excepthook.py
 Maxim Iorsh
 Michal Mazurek
 Michal Nowakowski - nowakowskittfinstr.c
+midzer <midzer@gmail.com>
+Nicolas Kaiser
 Nicolas Spalinger
 Ondřej Hošek
 Parag Nemade
+Petr Gajdos
 Phil Krylov
 Phil Lindsay
+Pierre Hanser
 Primoz PETERLIN
 Qmpel
 R.L. Horn
@@ -103,6 +119,7 @@ Reuben Thomas
 Richard Hughes
 Rogier van Dalen
 Ryusei Yamaguchi
+Saeed Rasooli
 Scott Pakin - Packaging
 Scott Romack
 Silvan Toledo
