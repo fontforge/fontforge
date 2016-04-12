@@ -4141,7 +4141,7 @@ return( true );
 	} else if ( styleid!=0 && fontstyle_name==NULL ) {
 	    ff_post_error(_("Bad Design Size Info"),_("If you specify a style id for the design size, then you must specify a style name"));
 return( true );
-	} else if ( fontstyle_name==NULL && styleid!=0 ) {
+	} else if ( fontstyle_name!=NULL && styleid==0 ) {
 	    ff_post_error(_("Bad Design Size Info"),_("If you specify a style name for the design size, then you must specify a style id"));
 return( true );
 	} else if ( design_size<0 ) {

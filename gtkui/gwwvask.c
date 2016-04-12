@@ -316,7 +316,7 @@ static int _gwwv_choose_with_buttons(const char *title,
 	ret = -1;
     else {
 	GList *endsel = gtk_tree_selection_get_selected_rows(select,NULL);
-	if ( sel==NULL )
+	if ( endsel==NULL )
 	    ret = -1;
 	else {
 	    if ( sel==NULL ) {

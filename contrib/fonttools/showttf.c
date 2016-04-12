@@ -5637,7 +5637,7 @@ return;
 static void readcffset(FILE *ttf,struct topdicts *dict,char **strings,int smax,
 	struct ttfinfo *info) {
     int len = dict->glyphs.cnt;
-    int i;
+    int i=0;
     int format, cnt, j, first;
 
     if ( dict->charsetoff==0 ) {

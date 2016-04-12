@@ -1475,14 +1475,14 @@ StemInfo *SCHintOverlapInMask(SplineChar *sc,HintMask *hm) {
 			    end1 = start1+h1->width;
 			} else {
 			    end1 = h1->start;
-			    start1 = start1+h1->width;
+			    start1 = end1+h1->width;
 			}
 			if ( h2->width>0 ) {
 			    start2 = h2->start;
 			    end2 = start2+h2->width;
 			} else {
 			    end2 = h2->start;
-			    start2 = start2+h2->width;
+			    start2 = end2+h2->width;
 			}
 			if ( end1<start2 || start1>end2 )
 			    /* No overlap */;
