@@ -64,8 +64,8 @@ typedef struct ggdktimer { // :GTimer
     void *userdata;
     struct gtimer *next;       // Unused in favour of a GLib list
     unsigned int active: 1;
-    unsigned int stopped: 1;
     // Extensions below
+    unsigned int stopped: 1;
     unsigned int has_differing_repeat_time: 1;
     int reference_count;
     guint glib_timeout_id;

@@ -151,6 +151,9 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     if (gw == NULL) { // Creating a top-level window. Set parent as default root.
         gw = gdisp->groot;
         attribs.window_type = GDK_WINDOW_TOPLEVEL;
+        // Center windows by default. I hate stuff next to cursor.
+        pos->x = (gdisp->groot->pos.width - pos->width) / 2;
+        pos->y = (gdisp->groot->pos.height - pos->height) / 2;
     } else {
         attribs.window_type = GDK_WINDOW_CHILD;
     }
@@ -222,25 +225,10 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
         if (wattrs->event_masks & (1 << et_mouseup)) {
             attribs.event_mask |= GDK_BUTTON_RELEASE_MASK | GDK_SCROLL_MASK;
         }
-        //if ((wattrs->event_masks & (1 << et_mouseup)) && (wattrs->event_masks & (1 << et_mousedown)))
-        //    attribs.event_mask |= OwnerGrabButtonMask;
         if (wattrs->event_masks & (1 << et_visibility)) {
             attribs.event_mask |= GDK_VISIBILITY_NOTIFY_MASK;
         }
     }
-
-    // Window position and size
-    // I hate it placing stuff under the cursor...
-    /*if (gw == gdisp->groot &&
-            ((((wattrs->mask & wam_centered) && wattrs->centered)) ||
-             ((wattrs->mask & wam_undercursor) && wattrs->undercursor))) {
-        pos->x = (gdisp->groot->pos.width - pos->width) / 2;
-        pos->y = (gdisp->groot->pos.height - pos->height) / 2;
-        if (wattrs->centered == 2) {
-            pos->y = (gdisp->groot->pos.height - pos->height) / 3;
-        }
-        nw->pos = *pos;
-    }*/
 
     attribs.x = pos->x;
     attribs.y = pos->y;
@@ -249,18 +237,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     attribs_mask |= GDK_WA_X | GDK_WA_Y;
 
     // Window class
-    attribs.wclass = GDK_INPUT_OUTPUT; // No hidden windows
-
-    // Just use default GDK visual
-    // attribs.visual = NULL;
-
-    // Window type already set
-    // attribs.window_type = ...;
-
-    // Window cursor
-    // Set below.
-
-    // Window manager name and class
+    attribs.wclass = GDK_INPUT_OUTPUT;
     // GDK docs say to not use this. But that's because it's done by GTK...
     attribs.wmclass_name = GResourceProgramName;
     attribs.wmclass_class = GResourceProgramName;
@@ -289,12 +266,6 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     };
     gdk_window_set_background_rgba(nw->w, &col);
 
-    // Decor
-    if (nw->is_popup) {
-        gdk_window_set_decorations(nw->w, 0);
-        gdk_window_move_resize(nw->w, attribs.x, attribs.y, attribs.width, attribs.height);
-    }
-
     if (attribs.window_type != GDK_WINDOW_CHILD) {
         // Set icon
         GGDKWindow icon = gdisp->default_icon;
@@ -322,12 +293,8 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
         geom.base_width = geom.min_width = geom.max_width = pos->width;
         geom.base_height = geom.min_height = geom.max_height = pos->height;
 
-        /*if (((wattrs->mask & wam_positioned) && wattrs->positioned) ||
-                ((wattrs->mask & wam_centered) && wattrs->centered) ||
-                ((wattrs->mask & wam_undercursor) && wattrs->undercursor)) {
-            hints |= GDK_HINT_POS;
-            nw->was_positioned = true;
-        }*/
+        hints |= GDK_HINT_POS;
+        nw->was_positioned = true;
 
         gdk_window_set_geometry_hints(nw->w, &geom, hints);
 
@@ -389,6 +356,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     // Add our reference to the window
     // This will be unreferenced when the window is destroyed.
     g_object_ref(G_OBJECT(nw->w));
+    gdk_window_move_resize(nw->w, nw->pos.x, nw->pos.y, nw->pos.width, nw->pos.height);
     Log(LOGDEBUG, "Window created: %p[%p][%s][%d]", nw, nw->w, nw->window_title, nw->is_toplevel);
     return (GWindow)nw;
 }
@@ -555,6 +523,7 @@ static gboolean _GGDKDraw_ProcessTimerEvent(gpointer user_data) {
     GGDKTimer *timer = (GGDKTimer *)user_data;
     GEvent e = {0};
     GGDKDisplay *gdisp;
+    bool ret = true;
 
     if (!timer->active || _GGDKDraw_WindowOrParentsDying((GGDKWindow)timer->owner)) {
         timer->active = false;
@@ -573,17 +542,16 @@ static gboolean _GGDKDraw_ProcessTimerEvent(gpointer user_data) {
     if (timer->active) {
         if (timer->repeat_time == 0) {
             GDrawCancelTimer((GTimer *)timer);
-            gdisp->timers = g_list_remove(gdisp->timers, timer);
-            return false;
+            ret = false;
         } else if (timer->has_differing_repeat_time) {
             timer->has_differing_repeat_time = false;
             timer->glib_timeout_id = g_timeout_add(timer->repeat_time, _GGDKDraw_ProcessTimerEvent, timer);
-            return false;
+            ret = false;
         }
     }
 
     GGDKDRAW_DECREF(timer, _GGDKDraw_OnTimerDestroyed);
-    return true;
+    return ret;
 }
 
 // In their infinite wisdom, GDK does not send configure events for child windows.
@@ -1168,12 +1136,6 @@ static void GGDKDrawMove(GWindow gw, int32 x, int32 y) {
 static void GGDKDrawTrueMove(GWindow w, int32 x, int32 y) {
     Log(LOGDEBUG, "");
     GGDKDrawMove(w, x, y);
-    //GGDKWindow gw = (GGDKWindow)w;
-
-    //if (gw->is_toplevel && !gw->is_popup && !gw->istransient) {
-    //    x -= gw->display->off_x;
-    //    y -= gw->display->off_y;
-    //}
 }
 
 static void GGDKDrawResize(GWindow gw, int32 w, int32 h) {
