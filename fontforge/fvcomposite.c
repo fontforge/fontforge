@@ -2519,7 +2519,7 @@ static void DoRules(SplineFont *sf,SplineChar *sc,int layer,BDFFont *bdf,int dis
 static void BCDoRotation(BDFFont *bdf, int gid) {
     BDFChar *from, *to;
 
-    if ( gid>=bdf->glyphcnt || gid>=bdf->glyphcnt || bdf->glyphs[gid]==NULL )
+    if ( gid>=bdf->glyphcnt || bdf->glyphs[gid]==NULL )
 return;
     from = bdf->glyphs[gid];
     to = BDFMakeGID(bdf,gid);

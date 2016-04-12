@@ -2784,8 +2784,8 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
     GTabInfo aspects[TOPICS+5], subaspects[3];
     GGadgetCreateData **hvarray, boxes[2*TOPICS];
     struct pref_data p;
-    int line,line_max = 3;
-    int i = 0, gc = 0, ii, y, si=0, k=0;
+    int line = 0,line_max = 3;
+    int i = 0, gc = 0, ii, y=0, si=0, k=0;
     char buf[20];
     char *tempstr;
 

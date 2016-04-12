@@ -1073,7 +1073,7 @@ static int RealCloser(extended ref0, extended ref1, extended queryval) {
 
 static void SplitMonotonicAtFlex(Monotonic *m,int which,bigreal coord,
 	struct inter_data *id, int doit) {
-    bigreal t;
+    bigreal t=0;
     int low=0, high=0;
     extended startx, starty, endx, endy;
     {
