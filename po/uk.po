@@ -1,13 +1,13 @@
 # Ukrainian translation for fontforge
 # This file is distributed under the same license as the fontforge package.
 #
-# Yuri Chornoivan <yurchor@ukr.net>, 2010, 2011, 2012, 2013, 2014, 2015.
+# Yuri Chornoivan <yurchor@ukr.net>, 2010, 2011, 2012, 2013, 2014, 2015, 2016.
 msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-11-22 10:23+0200\n"
-"PO-Revision-Date: 2015-11-22 11:14+0200\n"
+"POT-Creation-Date: 2016-04-11 09:58+0300\n"
+"PO-Revision-Date: 2016-04-11 10:05+0300\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <kde-i18n-uk@kde.org>\n"
 "Language: uk\n"
@@ -105,7 +105,7 @@ msgstr "Помилка AutoWidth у %s\n"
 
 #: ../fontforge/autowidth.c:1093 ../fontforge/encoding.c:596
 #: ../fontforge/fvimportbdf.c:2032 ../fontforge/palmfonts.c:395
-#: ../fontforge/winfonts.c:910
+#: ../fontforge/winfonts.c:911
 msgid "Couldn't open file"
 msgstr "Не вдалося відкрити файл"
 
@@ -304,8 +304,8 @@ msgstr "Більше не попереджати"
 #: ../fontforgeexe/basedlg.c:342 ../fontforgeexe/basedlg.c:852
 #: ../fontforgeexe/bdfinfo.c:863 ../fontforgeexe/bitmapdlg.c:525
 #: ../fontforgeexe/charinfo.c:329 ../fontforgeexe/charinfo.c:1096
-#: ../fontforgeexe/charinfo.c:2296 ../fontforgeexe/charinfo.c:4959
-#: ../fontforgeexe/charinfo.c:5238 ../fontforgeexe/charview.c:8928
+#: ../fontforgeexe/charinfo.c:2296 ../fontforgeexe/charinfo.c:4964
+#: ../fontforgeexe/charinfo.c:5243 ../fontforgeexe/charview.c:8928
 #: ../fontforgeexe/charview.c:10369 ../fontforgeexe/combinations.c:1184
 #: ../fontforgeexe/contextchain.c:2117 ../fontforgeexe/cvexportdlg.c:154
 #: ../fontforgeexe/cvgetinfo.c:590 ../fontforgeexe/cvgetinfo.c:703
@@ -327,7 +327,7 @@ msgstr "Більше не попереджати"
 #: ../fontforgeexe/fvfontsdlg.c:220 ../fontforgeexe/fvfontsdlg.c:399
 #: ../fontforgeexe/fvmetricsdlg.c:211 ../fontforgeexe/gotodlg.c:244
 #: ../fontforgeexe/groupsdlg.c:1314 ../fontforgeexe/groupsdlg.c:1549
-#: ../fontforgeexe/histograms.c:955 ../fontforgeexe/justifydlg.c:251
+#: ../fontforgeexe/histograms.c:958 ../fontforgeexe/justifydlg.c:251
 #: ../fontforgeexe/justifydlg.c:458 ../fontforgeexe/justifydlg.c:774
 #: ../fontforgeexe/justifydlg.c:970 ../fontforgeexe/kernclass.c:2694
 #: ../fontforgeexe/kernclass.c:3093 ../fontforgeexe/layer2layer.c:292
@@ -342,8 +342,8 @@ msgstr "Більше не попереджати"
 #: ../fontforgeexe/mmdlg.c:747 ../fontforgeexe/mmdlg.c:1044
 #: ../fontforgeexe/mmdlg.c:2543 ../fontforgeexe/nonlineartransui.c:137
 #: ../fontforgeexe/nonlineartransui.c:540 ../fontforgeexe/openfontdlg.c:383
-#: ../fontforgeexe/openfontdlg.c:722 ../fontforgeexe/prefs.c:1676
-#: ../fontforgeexe/prefs.c:2504 ../fontforgeexe/prefs.c:3008
+#: ../fontforgeexe/openfontdlg.c:722 ../fontforgeexe/prefs.c:1684
+#: ../fontforgeexe/prefs.c:2512 ../fontforgeexe/prefs.c:3016
 #: ../fontforgeexe/problems.c:2610 ../fontforgeexe/problems.c:4105
 #: ../fontforgeexe/problems.c:5408 ../fontforgeexe/savefontdlg.c:866
 #: ../fontforgeexe/savefontdlg.c:1052 ../fontforgeexe/scriptingdlg.c:285
@@ -351,7 +351,7 @@ msgstr "Більше не попереджати"
 #: ../fontforgeexe/scstylesui.c:2212 ../fontforgeexe/scstylesui.c:2824
 #: ../fontforgeexe/scstylesui.c:2995 ../fontforgeexe/showatt.c:2837
 #: ../fontforgeexe/showatt.c:3324 ../fontforgeexe/simplifydlg.c:418
-#: ../fontforgeexe/startui.c:817 ../fontforgeexe/statemachine.c:736
+#: ../fontforgeexe/startui.c:813 ../fontforgeexe/statemachine.c:736
 #: ../fontforgeexe/statemachine.c:1437 ../fontforgeexe/tilepath.c:1211
 #: ../fontforgeexe/tilepath.c:1875 ../fontforgeexe/transform.c:725
 #: ../fontforgeexe/ttfinstrsui.c:732 ../fontforgeexe/ttfinstrsui.c:1430
@@ -387,7 +387,7 @@ msgstr ""
 #: ../fontforge/fontviewbase.c:1414 ../fontforge/parsettfbmf.c:485
 #: ../fontforge/savefont.c:744 ../fontforge/splinechar.c:1014
 #: ../fontforge/splinechar.c:1023 ../fontforge/splinefont.c:1255
-#: ../fontforge/tottf.c:1464 ../fontforge/tottf.c:6090
+#: ../fontforge/tottf.c:1464 ../fontforge/tottf.c:6087
 #: ../fontforgeexe/charinfo.c:501 ../fontforgeexe/charinfo.c:887
 #: ../fontforgeexe/charinfo.c:897 ../fontforgeexe/charinfo.c:1299
 #: ../fontforgeexe/charview.c:3567 ../fontforgeexe/contextchain.c:661
@@ -396,7 +396,7 @@ msgstr ""
 #: ../fontforgeexe/cvpalettes.c:2653 ../fontforgeexe/cvpointer.c:1628
 #: ../fontforgeexe/fvfontsdlg.c:60 ../fontforgeexe/fvmetricsdlg.c:59
 #: ../fontforgeexe/lookupui.c:4013 ../fontforgeexe/metricsview.c:2457
-#: ../fontforgeexe/mmdlg.c:1978 ../fontforgeexe/prefs.c:1563
+#: ../fontforgeexe/mmdlg.c:1978 ../fontforgeexe/prefs.c:1571
 #: ../fontforgeexe/problems.c:2718 ../fontforgeexe/savefontdlg.c:1311
 #: ../fontforgeexe/savefontdlg.c:1410
 msgid "_Yes"
@@ -418,7 +418,7 @@ msgstr "«Ні» _для всіх"
 #: ../fontforge/cvundoes.c:3557 ../fontforge/fontviewbase.c:108
 #: ../fontforge/fontviewbase.c:1415 ../fontforge/parsettfbmf.c:486
 #: ../fontforge/splinechar.c:1014 ../fontforge/splinefont.c:1255
-#: ../fontforge/tottf.c:1467 ../fontforge/tottf.c:6090
+#: ../fontforge/tottf.c:1467 ../fontforge/tottf.c:6087
 #: ../fontforgeexe/charinfo.c:501 ../fontforgeexe/charview.c:3568
 #: ../fontforgeexe/charview.c:10624 ../fontforgeexe/contextchain.c:661
 #: ../fontforgeexe/contextchain.c:983 ../fontforgeexe/cvgetinfo.c:983
@@ -426,7 +426,7 @@ msgstr "«Ні» _для всіх"
 #: ../fontforgeexe/cvpalettes.c:2653 ../fontforgeexe/cvpointer.c:1629
 #: ../fontforgeexe/fvfontsdlg.c:60 ../fontforgeexe/fvmetricsdlg.c:60
 #: ../fontforgeexe/metricsview.c:2874 ../fontforgeexe/mmdlg.c:1978
-#: ../fontforgeexe/prefs.c:1564 ../fontforgeexe/problems.c:2719
+#: ../fontforgeexe/prefs.c:1572 ../fontforgeexe/problems.c:2719
 #: ../fontforgeexe/savefontdlg.c:1312
 msgid "_No"
 msgstr "_Ні"
@@ -525,7 +525,7 @@ msgstr "Не вдалося знайти початкового гліфа"
 
 #: ../fontforge/cvundoes.c:2840 ../fontforge/fontviewbase.c:1001
 #: ../fontforge/fontviewbase.c:1647 ../fontforge/fvimportbdf.c:1875
-#: ../fontforge/parsettf.c:5517 ../fontforge/savefont.c:745
+#: ../fontforge/parsettf.c:5521 ../fontforge/savefont.c:745
 #: ../fontforge/splinechar.c:1023 ../fontforgeexe/alignment.c:208
 #: ../fontforgeexe/alignment.c:273 ../fontforgeexe/alignment.c:486
 #: ../fontforgeexe/anchorsaway.c:1383 ../fontforgeexe/autowidth2dlg.c:290
@@ -534,7 +534,7 @@ msgstr "Не вдалося знайти початкового гліфа"
 #: ../fontforgeexe/charinfo.c:340 ../fontforgeexe/charinfo.c:888
 #: ../fontforgeexe/charinfo.c:898 ../fontforgeexe/charinfo.c:1096
 #: ../fontforgeexe/charinfo.c:1299 ../fontforgeexe/charinfo.c:2305
-#: ../fontforgeexe/charinfo.c:4970 ../fontforgeexe/charinfo.c:5249
+#: ../fontforgeexe/charinfo.c:4975 ../fontforgeexe/charinfo.c:5254
 #: ../fontforgeexe/charview.c:8945 ../fontforgeexe/charview.c:10380
 #: ../fontforgeexe/charview.c:10625 ../fontforgeexe/combinations.c:1195
 #: ../fontforgeexe/contextchain.c:2147 ../fontforgeexe/cvexportdlg.c:166
@@ -564,7 +564,7 @@ msgstr "Не вдалося знайти початкового гліфа"
 #: ../fontforgeexe/fvfontsdlg.c:60 ../fontforgeexe/fvfontsdlg.c:231
 #: ../fontforgeexe/fvfontsdlg.c:410 ../fontforgeexe/fvmetricsdlg.c:220
 #: ../fontforgeexe/gotodlg.c:253 ../fontforgeexe/groupsdlg.c:1324
-#: ../fontforgeexe/groupsdlg.c:1559 ../fontforgeexe/histograms.c:964
+#: ../fontforgeexe/groupsdlg.c:1559 ../fontforgeexe/histograms.c:967
 #: ../fontforgeexe/justifydlg.c:262 ../fontforgeexe/justifydlg.c:469
 #: ../fontforgeexe/justifydlg.c:785 ../fontforgeexe/justifydlg.c:981
 #: ../fontforgeexe/kernclass.c:2706 ../fontforgeexe/kernclass.c:3104
@@ -582,8 +582,8 @@ msgstr "Не вдалося знайти початкового гліфа"
 #: ../fontforgeexe/mmdlg.c:1054 ../fontforgeexe/mmdlg.c:2577
 #: ../fontforgeexe/nonlineartransui.c:148
 #: ../fontforgeexe/nonlineartransui.c:551 ../fontforgeexe/openfontdlg.c:394
-#: ../fontforgeexe/openfontdlg.c:759 ../fontforgeexe/prefs.c:1686
-#: ../fontforgeexe/prefs.c:2516 ../fontforgeexe/problems.c:4117
+#: ../fontforgeexe/openfontdlg.c:759 ../fontforgeexe/prefs.c:1694
+#: ../fontforgeexe/prefs.c:2524 ../fontforgeexe/problems.c:4117
 #: ../fontforgeexe/savefontdlg.c:877 ../fontforgeexe/savefontdlg.c:1064
 #: ../fontforgeexe/savefontdlg.c:1411 ../fontforgeexe/savefontdlg.c:1592
 #: ../fontforgeexe/savefontdlg.c:2172 ../fontforgeexe/scriptingdlg.c:297
@@ -616,7 +616,7 @@ msgstr "_Скасувати"
 msgid "Second glyph of %s"
 msgstr "Другий гліф %s"
 
-#: ../fontforge/cvundoes.c:2886 ../fontforgeexe/charinfo.c:5160
+#: ../fontforge/cvundoes.c:2886 ../fontforgeexe/charinfo.c:5165
 msgid "No Lookups"
 msgstr "Немає фільтрів"
 
@@ -652,7 +652,7 @@ msgstr "Вставка растру"
 msgid "Pasting..."
 msgstr "Вставка…"
 
-#: ../fontforge/dumpbdf.c:431 ../fontforge/dumppfa.c:2709
+#: ../fontforge/dumpbdf.c:431 ../fontforge/dumppfa.c:2715
 #: ../fontforge/winfonts.c:637
 #, c-format
 msgid "Can't open %s\n"
@@ -663,7 +663,7 @@ msgstr "Не вдалося відкрити %s\n"
 msgid "Failed to write %s\n"
 msgstr "Не вдалося записати %s\n"
 
-#: ../fontforge/dumppfa.c:599 ../fontforge/print.c:553 ../fontforge/svg.c:498
+#: ../fontforge/dumppfa.c:599 ../fontforge/print.c:553 ../fontforge/svg.c:502
 #, c-format
 msgid "No glyph named %s, used as a pattern in %s\n"
 msgstr "Немає гліфа з назвою %s, використаного як шаблон у %s\n"
@@ -673,11 +673,11 @@ msgstr "Немає гліфа з назвою %s, використаного я�
 msgid "Auto Hinting Font..."
 msgstr "Автоматичне гінтування шрифту…"
 
-#: ../fontforge/dumppfa.c:1525 ../fontforge/dumppfa.c:2415
+#: ../fontforge/dumppfa.c:1528 ../fontforge/dumppfa.c:2421
 msgid "Converting PostScript"
 msgstr "Перетворення Postscript"
 
-#: ../fontforge/dumppfa.c:1529 ../fontforge/dumppfa.c:2419
+#: ../fontforge/dumppfa.c:1535 ../fontforge/dumppfa.c:2425
 #: ../fontforge/savefont.c:795
 msgid "Saving PostScript Font"
 msgstr "Збереження шрифту PostScript"
@@ -718,20 +718,20 @@ msgstr "Будь ласка, вкажіть назву кодування %d у 
 msgid "couldn't write encodings file\n"
 msgstr "не вдалося записати файл кодувань\n"
 
-#: ../fontforge/encoding.c:914
+#: ../fontforge/encoding.c:915
 msgid "Missing cidmap file"
 msgstr "Не виявлено файла cidmap"
 
-#: ../fontforge/encoding.c:914
+#: ../fontforge/encoding.c:915
 #, c-format
 msgid "Couldn't open cidmap file: %s"
 msgstr "Не вдалося відкрити файл cidmap: %s"
 
-#: ../fontforge/encoding.c:916
+#: ../fontforge/encoding.c:917
 msgid "Bad cidmap file"
 msgstr "Помилковий файл cidmap"
 
-#: ../fontforge/encoding.c:916 ../fontforge/encoding.c:917
+#: ../fontforge/encoding.c:917 ../fontforge/encoding.c:918
 #, c-format
 msgid ""
 "%s is not a cidmap file, please download\n"
@@ -740,19 +740,19 @@ msgstr ""
 "%s не є файлом cidmap, будь ласка, звантажте файл за адресою\n"
 "http://fontforge.sourceforge.net/cidmaps.tgz"
 
-#: ../fontforge/encoding.c:998
+#: ../fontforge/encoding.c:999
 msgid "_Use It"
 msgstr "Ви_користати"
 
-#: ../fontforge/encoding.c:998
+#: ../fontforge/encoding.c:999
 msgid "_Search"
 msgstr "_Шукати"
 
-#: ../fontforge/encoding.c:999 ../fontforge/encoding.c:1040
+#: ../fontforge/encoding.c:1000 ../fontforge/encoding.c:1041
 msgid "Use CID Map"
 msgstr "Використати карту CID"
 
-#: ../fontforge/encoding.c:999
+#: ../fontforge/encoding.c:1000
 #, c-format
 msgid ""
 "This font is based on the charset %1$.20s-%2$.20s-%3$d, but the best I've "
@@ -763,19 +763,19 @@ msgstr ""
 "що вдалося знайти, це %1$.20s-%2$.20s-%4$d.\n"
 "Використати знайдене, чи ви знайдете самі?"
 
-#: ../fontforge/encoding.c:1017
+#: ../fontforge/encoding.c:1018
 msgid "_Browse"
 msgstr "Ви_брати"
 
-#: ../fontforge/encoding.c:1017
+#: ../fontforge/encoding.c:1018
 msgid "_Give Up"
 msgstr "Ві_дмовитися"
 
-#: ../fontforge/encoding.c:1018
+#: ../fontforge/encoding.c:1019
 msgid "No cidmap file..."
 msgstr "Немає файла cidmap…"
 
-#: ../fontforge/encoding.c:1018
+#: ../fontforge/encoding.c:1019
 #, c-format
 msgid ""
 "FontForge was unable to find a cidmap file for this font. It is not "
@@ -797,33 +797,33 @@ msgstr ""
 "Хочете наказати програмі пошукати відповідний файл на вашому локальному "
 "диску?"
 
-#: ../fontforge/encoding.c:1027 ../fontforgeexe/encodingui.c:385
+#: ../fontforge/encoding.c:1028 ../fontforgeexe/encodingui.c:385
 #: ../fontforgeexe/encodingui.c:390
 msgid "Find a cidmap file..."
 msgstr "Знайти файл cidmap…"
 
-#: ../fontforge/encoding.c:1040
+#: ../fontforge/encoding.c:1041
 msgid "Are you sure you don't want to use the cidmap I found?"
 msgstr "Впевнені, що не бажаєте скористатися знайденими даними cidmap?"
 
-#: ../fontforge/encoding.c:1121 ../fontforge/encoding.c:1557
-#: ../fontforgeexe/charinfo.c:4409 ../fontforgeexe/cvgetinfo.c:1596
+#: ../fontforge/encoding.c:1122 ../fontforge/encoding.c:1558
+#: ../fontforgeexe/charinfo.c:4414 ../fontforgeexe/cvgetinfo.c:1596
 #: ../fontforgeexe/encodingui.c:163 ../fontforgeexe/groupsdlg.c:1202
 #: ../fontforgeexe/kernclass.c:3376 ../fontforgeexe/macencui.c:665
 #: ../fontforgeexe/macencui.c:1183 ../fontforgeexe/macencui.c:1377
-#: ../fontforgeexe/mmdlg.c:2974 ../fontforgeexe/prefs.c:2123
+#: ../fontforgeexe/mmdlg.c:2974 ../fontforgeexe/prefs.c:2131
 msgid "_Delete"
 msgstr "В_илучити"
 
-#: ../fontforge/encoding.c:1121 ../fontforge/encoding.c:1558
+#: ../fontforge/encoding.c:1122 ../fontforge/encoding.c:1559
 msgid "_Add"
 msgstr "_Додати"
 
-#: ../fontforge/encoding.c:1122 ../fontforge/encoding.c:1560
+#: ../fontforge/encoding.c:1123 ../fontforge/encoding.c:1561
 msgid "Extraneous glyphs"
 msgstr "Сторонні гліфи"
 
-#: ../fontforge/encoding.c:1122 ../fontforge/encoding.c:1560
+#: ../fontforge/encoding.c:1123 ../fontforge/encoding.c:1561
 msgid ""
 "The current encoding contains glyphs which I cannot map to CIDs.\n"
 "Should I delete them or add them to the end (where they may conflict with "
@@ -833,19 +833,19 @@ msgstr ""
 "Що слід робити: вилучити їх чи додати наприкінці (де вони можуть "
 "конфліктувати з наступними визначеннями розширень)?"
 
-#: ../fontforge/encoding.c:1418
+#: ../fontforge/encoding.c:1419
 msgid "Not a CID-keyed font"
 msgstr "Шрифт без ключів CID"
 
-#: ../fontforge/encoding.c:1432 ../fontforgeexe/savefontdlg.c:1413
+#: ../fontforge/encoding.c:1433 ../fontforgeexe/savefontdlg.c:1413
 msgid "Encoding Too Large"
 msgstr "Занадто велике кодування"
 
-#: ../fontforge/encoding.c:1472
+#: ../fontforge/encoding.c:1473
 msgid "MultipleEncodingIgnored"
 msgstr "Ігнорування зайвих кодувань"
 
-#: ../fontforge/encoding.c:1473
+#: ../fontforge/encoding.c:1474
 #, c-format
 msgid ""
 "The glyph at CID %d is mapped to more than %d encodings. Only the first %d "
@@ -854,233 +854,233 @@ msgstr ""
 "Гліф CID %d відображено на більше ніж %d кодувань. Обробка виконуватиметься "
 "лише для перших %d кодувань."
 
-#: ../fontforge/featurefile.c:98
+#: ../fontforge/featurefile.c:101
 #, c-format
 msgid "No glyph named %s."
 msgstr "Немає гліфа з назвою %s."
 
-#: ../fontforge/featurefile.c:136
+#: ../fontforge/featurefile.c:139
 #, c-format
 msgid "No CID named %s"
 msgstr "Немає CID з назвою %s"
 
-#: ../fontforge/featurefile.c:2434
+#: ../fontforge/featurefile.c:2437
 #, c-format
 msgid "Unparseable include on line %d of %s"
 msgstr "Непридатне для обробки включення у рядку %d %s"
 
-#: ../fontforge/featurefile.c:2451
+#: ../fontforge/featurefile.c:2454
 #, c-format
 msgid "Include filename too long on line %d of %s"
 msgstr "Занадто довга назва файла у рядку %d %s"
 
-#: ../fontforge/featurefile.c:2459
+#: ../fontforge/featurefile.c:2462
 #, c-format
 msgid "End of file in include on line %d of %s"
 msgstr "Символ кінця файла у включенні у рядку %d %s"
 
-#: ../fontforge/featurefile.c:2461
+#: ../fontforge/featurefile.c:2464
 #, c-format
 msgid "Missing close parenthesis in include on line %d of %s"
 msgstr "Не вистачає правої круглої дужки у включенні, рядок %d %s"
 
-#: ../fontforge/featurefile.c:2467
+#: ../fontforge/featurefile.c:2470
 #, c-format
 msgid "No filename specified in include on line %d of %s"
 msgstr "Не вказано назви файла у включенні, рядок %d %s"
 
-#: ../fontforge/featurefile.c:2473
+#: ../fontforge/featurefile.c:2476
 #, c-format
 msgid "Includes nested too deeply on line %d of %s"
 msgstr "Занадто великий рівень вкладеності включення у рядку %d %s"
 
-#: ../fontforge/featurefile.c:2488
+#: ../fontforge/featurefile.c:2491
 #, c-format
 msgid "Could not open include file (%s) on line %d of %s"
 msgstr "Не вдалося відкрити файл включення (%s), рядок %d %s"
 
-#: ../fontforge/featurefile.c:2566
+#: ../fontforge/featurefile.c:2569
 #, c-format
 msgid "Number too long on line %d of %s"
 msgstr "Занадто довге число, рядок %d %s"
 
-#: ../fontforge/featurefile.c:2569
+#: ../fontforge/featurefile.c:2572
 #, c-format
 msgid "Missing number on line %d of %s"
 msgstr "Не вистачає числа у рядку %d %s"
 
-#: ../fontforge/featurefile.c:2599 ../fontforge/featurefile.c:2655
+#: ../fontforge/featurefile.c:2602 ../fontforge/featurefile.c:2658
 #, c-format
 msgid "Unexpected character (0x%02X) on line %d of %s"
 msgstr "Неочікуваний символ (0x%02X), рядок %d %s"
 
-#: ../fontforge/featurefile.c:2605
+#: ../fontforge/featurefile.c:2608
 #, c-format
 msgid "Name, %s%s, too long on line %d of %s"
 msgstr "Назва, %s%s, є занадто довгою, рядок %d %s"
 
-#: ../fontforge/featurefile.c:2611
+#: ../fontforge/featurefile.c:2614
 #, c-format
 msgid "Missing name on line %d of %s"
 msgstr "Не вказано назви у рядку %d %s"
 
-#: ../fontforge/featurefile.c:2723 ../fontforge/featurefile.c:2743
+#: ../fontforge/featurefile.c:2726 ../fontforge/featurefile.c:2746
 #, c-format
 msgid "Expected '%s' on line %d of %s"
 msgstr "Мало бути «%s», рядок %d %s"
 
-#: ../fontforge/featurefile.c:2736
+#: ../fontforge/featurefile.c:2739
 #, c-format
 msgid "Expected '%c' on line %d of %s"
 msgstr "Не вистачає «%c», рядок %d %s"
 
-#: ../fontforge/featurefile.c:2746
+#: ../fontforge/featurefile.c:2749
 #, c-format
 msgid "Expected unknown token (internal error) on line %d of %s"
 msgstr "Не вистачає невідомого елемента (внутрішня помилка), рядок %d %s"
 
-#: ../fontforge/featurefile.c:2789
+#: ../fontforge/featurefile.c:2792
 #, c-format
 msgid "Expected ';' at statement end on line %d of %s"
 msgstr "Не вистачає «;» наприкінці команди, рядок %d %s"
 
-#: ../fontforge/featurefile.c:2839
+#: ../fontforge/featurefile.c:2842
 #, c-format
 msgid "Use of undefined glyph class, %s, on line %d of %s"
 msgstr "Використання невизначеного класу гліфів, %s, рядок %d %s"
 
-#: ../fontforge/featurefile.c:2851
+#: ../fontforge/featurefile.c:2854
 #, c-format
 msgid "Use of undefined mark class, %s, on line %d of %s"
 msgstr "Використання невизначеного класу позначок, %s, рядок %d %s"
 
-#: ../fontforge/featurefile.c:2900
+#: ../fontforge/featurefile.c:2903
 #, c-format
 msgid "Reference to a CID in a non-CID-keyed font on line %d of %s"
 msgstr "Посилання на CID у шрифті без ключів CID, рядок %d %s"
 
-#: ../fontforge/featurefile.c:2942
+#: ../fontforge/featurefile.c:2945
 #, c-format
 msgid "Reference to a glyph name in a CID-keyed font on line %d of %s"
 msgstr "Посилання на назву гліфа у шрифті з ключами CID, рядок %d %s"
 
-#: ../fontforge/featurefile.c:2984
+#: ../fontforge/featurefile.c:2987
 #, c-format
 msgid "Reference to a non-existent glyph name on line %d of %s."
 msgstr "Посилання на назву гліфа, якої не існує, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3006
+#: ../fontforge/featurefile.c:3009
 #, c-format
 msgid "Expected '[' in glyph class definition on line %d of %s"
 msgstr "Не вистачає «[» у визначенні класу гліфів, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3038
+#: ../fontforge/featurefile.c:3041
 #, c-format
 msgid "Invalid CID range in glyph class on line %d of %s"
 msgstr "Некоректний діапазон CID у класі гліфів, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3075
+#: ../fontforge/featurefile.c:3078
 #, c-format
 msgid "Invalid glyph name range in glyph class on line %d of %s"
 msgstr "Некоректний діапазон назв гліфів у класі гліфів, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3109
+#: ../fontforge/featurefile.c:3112
 #, c-format
 msgid "Unexpected token in glyph class range on line %d of %s"
 msgstr "Неочікуваний елемент у діапазоні класу гліфів, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3118
+#: ../fontforge/featurefile.c:3121
 #, c-format
 msgid ""
 "Expected glyph name, cid, or class in glyph class definition on line %d of %s"
 msgstr ""
 "Не вистачає назви гліфа, cid або класу у визначенні класу гліфів, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3217
+#: ../fontforge/featurefile.c:3220
 #, c-format
 msgid "Expected ';' in lookupflags on line %d of %s"
 msgstr "Не вистачає «;» у прапорцях фільтрування, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3225
+#: ../fontforge/featurefile.c:3228
 #, c-format
 msgid "Unexpected token in lookupflags on line %d of %s"
 msgstr "Неочікуваний елемент у прапорцях фільтрування, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3229
+#: ../fontforge/featurefile.c:3232
 #, c-format
 msgid "No flags specified in lookupflags on line %d of %s"
 msgstr "У прапорцях фільтрування не вказано прапорців, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3247
+#: ../fontforge/featurefile.c:3250
 #, c-format
 msgid "Expected '=' in glyph class definition on line %d of %s"
 msgstr "Не вистачає «=» у визначенні класу гліфів, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3269 ../fontforge/featurefile.c:3278
+#: ../fontforge/featurefile.c:3272 ../fontforge/featurefile.c:3281
 #, c-format
 msgid "Expected tag in languagesystem on line %d of %s"
 msgstr "Не вистачає теґу у системі мов (languagesystem), рядок %d %s"
 
-#: ../fontforge/featurefile.c:3372
+#: ../fontforge/featurefile.c:3375
 #, c-format
 msgid "Expected integer in device table on line %d of %s"
 msgstr "Не вистачає цілого значення у таблиці пристроїв, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3378
+#: ../fontforge/featurefile.c:3381
 #, c-format
 msgid "Pixel size too big in device table on line %d of %s"
 msgstr "Занадто великий розмір у пікселях у таблиці пристроїв, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3392
+#: ../fontforge/featurefile.c:3395
 #, c-format
 msgid "Expected comma in device table on line %d of %s"
 msgstr "Не вистачає коми у таблиці пристроїв, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3416
+#: ../fontforge/featurefile.c:3419
 #, c-format
 msgid "Expected integer in caret on line %d of %s"
 msgstr "Слід використовувати ціле число у вставці, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3422
+#: ../fontforge/featurefile.c:3425
 #, c-format
 msgid "Expected '>' in caret on line %d of %s"
 msgstr "Не вистачає «>» у вставці, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3445
+#: ../fontforge/featurefile.c:3448
 #, c-format
 msgid "\"%s\" is not the name of a known named anchor on line %d of %s."
 msgstr "«%s» не є назвою відомого іменованої прив’язки, рядок %d %s."
 
-#: ../fontforge/featurefile.c:3479
+#: ../fontforge/featurefile.c:3482
 #, c-format
 msgid "Expected integer in anchor on line %d of %s"
 msgstr "Не вистачає цілого значення у прив’язці, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3483
+#: ../fontforge/featurefile.c:3486
 #, c-format
 msgid "Expected 'anchor' keyword in anchor on line %d of %s"
 msgstr "Зайве ключове слово «anchor» у прив’язці, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3493
+#: ../fontforge/featurefile.c:3496
 #, c-format
 msgid "Expected '>' in anchor on line %d of %s"
 msgstr "Не вистачає «>» у прив’язці, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3505
+#: ../fontforge/featurefile.c:3508
 #, c-format
 msgid "Expected name in anchor definition on line %d of %s"
 msgstr "Слід вказати назву у визначенні прив’язки, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3514
+#: ../fontforge/featurefile.c:3517
 #, c-format
 msgid "Attempt to redefine anchor definition of \"%s\" on line %d of %s"
 msgstr "Спроба перевизначення прив’язки «%s», рядок %d %s"
 
-#: ../fontforge/featurefile.c:3537
+#: ../fontforge/featurefile.c:3540
 msgid "Refers to Font"
 msgstr "Посилається на шрифт"
 
-#: ../fontforge/featurefile.c:3537
+#: ../fontforge/featurefile.c:3540
 #, c-format
 msgid ""
 "Reference to a lookup which is not in the feature file but which is in the "
@@ -1089,93 +1089,93 @@ msgstr ""
 "Посилання на фільтрування, якого немає у файлі модифікацій, але яке є у "
 "шрифті, %.50s"
 
-#: ../fontforge/featurefile.c:3567
+#: ../fontforge/featurefile.c:3570
 #, c-format
 msgid "\"%s\" is not the name of a known named value record on line %d of %s."
 msgstr "«%s» не є назвою відомого іменованого запису значень, рядок %d %s."
 
-#: ../fontforge/featurefile.c:3602 ../fontforge/featurefile.c:3726
+#: ../fontforge/featurefile.c:3605 ../fontforge/featurefile.c:3729
 #, c-format
 msgid "Unexpected token in value record on line %d of %s"
 msgstr "Неочікуваний елемент у запису значень, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3615
+#: ../fontforge/featurefile.c:3618
 #, c-format
 msgid "Expected name in value record definition on line %d of %s"
 msgstr "Слід вказати назву у визначенні запису значень, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3624
+#: ../fontforge/featurefile.c:3627
 #, c-format
 msgid "Attempt to redefine value record definition of \"%s\" on line %d of %s"
 msgstr "Спроба перевизначення визначення запису значень «%s» у рядку %d %s"
 
-#: ../fontforge/featurefile.c:3651 ../fontforge/featurefile.c:5669
-#: ../fontforge/featurefile.c:5697 ../fontforge/featurefile.c:5731
+#: ../fontforge/featurefile.c:3654 ../fontforge/featurefile.c:5677
+#: ../fontforge/featurefile.c:5705 ../fontforge/featurefile.c:5739
 #, c-format
 msgid "Expected name or class on line %d of %s"
 msgstr "Потрібна назва або клас у рядку %d %s"
 
-#: ../fontforge/featurefile.c:3659
+#: ../fontforge/featurefile.c:3662
 #, c-format
 msgid "Expected anchor in mark class definition on line %d of %s"
 msgstr "У визначені класу позначок слід вказати прив’язку, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3669
+#: ../fontforge/featurefile.c:3672
 #, c-format
 msgid "Expected class name in mark class definition on line %d of %s"
 msgstr "У визначені класу позначок слід вказати назву класу, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3703 ../fontforge/featurefile.c:3997
+#: ../fontforge/featurefile.c:3706 ../fontforge/featurefile.c:4000
 #, c-format
 msgid "Lookups may only be specified after marked glyphs on line %d of %s"
 msgstr "Фільтрування можна вказувати лише після позначених гліфів, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3707 ../fontforge/featurefile.c:4001
+#: ../fontforge/featurefile.c:3710 ../fontforge/featurefile.c:4004
 #, c-format
 msgid "Lookups must be defined before being used on line %d of %s"
 msgstr "Фільтрування слід вказувати до їх використання, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3722
+#: ../fontforge/featurefile.c:3725
 #, c-format
 msgid "Expected '>' in value record on line %d of %s"
 msgstr "Не вистачає «>» у записі значень, рядок %d %s"
 
-#: ../fontforge/featurefile.c:3753
+#: ../fontforge/featurefile.c:3756
 #, c-format
 msgid "Expected a valid glyph/CID name on line %d of %s"
 msgstr "У рядку %d %s мало бути вказано коректну назву гліфа або CID"
 
-#: ../fontforge/featurefile.c:3763 ../fontforge/featurefile.c:3814
+#: ../fontforge/featurefile.c:3766 ../fontforge/featurefile.c:3817
 #, c-format
 msgid "Expected glyph or glyphclass (after cursive) on line %d of %s"
 msgstr "Слід вказати гліф або клас гліфів (після cursive) у рядку %d %s"
 
-#: ../fontforge/featurefile.c:3779
+#: ../fontforge/featurefile.c:3782
 #, c-format
 msgid "Expected two anchors (after cursive) on line %d of %s"
 msgstr "Слід вказати дві прив’язки (після cursive) у рядку %d %s"
 
-#: ../fontforge/featurefile.c:3829
+#: ../fontforge/featurefile.c:3832
 #, c-format
 msgid "Expected an anchor (after base/mark) on line %d of %s"
 msgstr "Слід вказати прив’язку (після base/mark) у рядку %d %s"
 
-#: ../fontforge/featurefile.c:3878
+#: ../fontforge/featurefile.c:3881
 #, c-format
 msgid "Expected glyph or glyphclass (after ligature) on line %d of %s"
 msgstr "Слід вказати гліф або клас гліфів (після ligature) у рядку %d %s"
 
-#: ../fontforge/featurefile.c:3892
+#: ../fontforge/featurefile.c:3895
 #, c-format
 msgid "Expected an anchor (after ligature) on line %d of %s"
 msgstr "Слід вказати прив’язку (після ligature) у рядку %d %s"
 
-#: ../fontforge/featurefile.c:4349
+#: ../fontforge/featurefile.c:4352
 #, c-format
 msgid "Internal state messed up on line %d of %s"
 msgstr "Плутанина з внутрішнім станом, рядок %d %s"
 
-#: ../fontforge/featurefile.c:4382
+#: ../fontforge/featurefile.c:4385
 #, c-format
 msgid ""
 "When a single substitution is specified by glyph classes, those classes must "
@@ -1184,7 +1184,7 @@ msgstr ""
 "Якщо класами гліфів визначається єдина підстановка, ці класи мають бути "
 "однакової довжини у рядку %d %s"
 
-#: ../fontforge/featurefile.c:4406
+#: ../fontforge/featurefile.c:4409
 #, c-format
 msgid ""
 "When a single substitution's replacement is specified by a glyph class, the "
@@ -1193,18 +1193,18 @@ msgstr ""
 "Якщо класом гліфів задається окрема заміна підстановки, замінений елемент "
 "має також бути класом у рядку %d %s"
 
-#: ../fontforge/featurefile.c:4599
+#: ../fontforge/featurefile.c:4602
 #, c-format
 msgid "Lookup information attached to unmarked glyph on line %d of %s"
 msgstr ""
 "До непозначеного гліфа долучено відомості щодо фільтрування, рядок %d %s"
 
-#: ../fontforge/featurefile.c:4620 ../fontforge/featurefile.c:4819
+#: ../fontforge/featurefile.c:4623 ../fontforge/featurefile.c:4822
 #, c-format
 msgid "Unparseable contextual sequence on line %d of %s"
 msgstr "Непридатна до обробки контекстуальна послідовність, рядок %d %s"
 
-#: ../fontforge/featurefile.c:4647
+#: ../fontforge/featurefile.c:4650
 #, c-format
 msgid ""
 "The ignore keyword must be followed by either position or substitute on line "
@@ -1213,12 +1213,12 @@ msgstr ""
 "За ключовим словом ignore має бути вказано позицію або підстановку, рядок %d "
 "%s"
 
-#: ../fontforge/featurefile.c:4707
+#: ../fontforge/featurefile.c:4710
 #, c-format
 msgid "Empty substitute on line %d of %s"
 msgstr "Порожня підстановка, рядок %d %s"
 
-#: ../fontforge/featurefile.c:4710
+#: ../fontforge/featurefile.c:4713
 #, c-format
 msgid ""
 "Reverse substitute must have exactly one marked glyph and no lookups on line "
@@ -1227,124 +1227,124 @@ msgstr ""
 "У зворотній підстановці має бути точно один позначений гліф і жодного "
 "фільтрування, рядок %d %s"
 
-#: ../fontforge/featurefile.c:4733 ../fontforge/featurefile.c:4805
+#: ../fontforge/featurefile.c:4736 ../fontforge/featurefile.c:4808
 #, c-format
 msgid "No substitution specified on line %d of %s"
 msgstr "Не визначено підстановки, рядок %d %s"
 
-#: ../fontforge/featurefile.c:4736
+#: ../fontforge/featurefile.c:4739
 #, c-format
 msgid "No marked glyphs allowed in replacement on line %d of %s"
 msgstr "У підстановці не можна використовувати позначених гліфів, рядок %d %s"
 
-#: ../fontforge/featurefile.c:4770
+#: ../fontforge/featurefile.c:4773
 #, c-format
 msgid "Unparseable glyph sequence in substitution on line %d of %s"
 msgstr "Непридатна для обробки послідовність гліфів у підстановці, рядок %d %s"
 
-#: ../fontforge/featurefile.c:4776
+#: ../fontforge/featurefile.c:4779
 #, c-format
 msgid "Expected 'by' or 'from' keywords in substitution on line %d of %s"
 msgstr ""
 "Слід використовувати ключове слово «by» або «from» у підстановці, рядок %d %s"
 
-#: ../fontforge/featurefile.c:4787
+#: ../fontforge/featurefile.c:4790
 #, c-format
 msgid "Expected 'by' keyword in substitution on line %d of %s"
 msgstr "Слід використовувати ключове слово «by» у підстановці, рядок %d %s"
 
-#: ../fontforge/featurefile.c:4798
+#: ../fontforge/featurefile.c:4801
 #, c-format
 msgid "Expected a single glyph name in reverse substitution on line %d of %s"
 msgstr ""
 "Не вистачає назви одинарного гліфа у зворотній підстановці, рядок %d %s"
 
-#: ../fontforge/featurefile.c:4865
+#: ../fontforge/featurefile.c:4868
 #, c-format
 msgid "Empty position on line %d of %s"
 msgstr "Порожня позиція у рядку %d %s"
 
-#: ../fontforge/featurefile.c:4871
+#: ../fontforge/featurefile.c:4874
 #, c-format
 msgid "Invalid cursive position on line %d of %s"
 msgstr "Некоректна позиція курсиву, рядок %d %s"
 
-#: ../fontforge/featurefile.c:4886
+#: ../fontforge/featurefile.c:4889
 #, c-format
 msgid "Unparseable glyph sequence in position on line %d of %s"
 msgstr "Непридатна для обробки послідовність гліфів у позиції, рядок %d %s"
 
-#: ../fontforge/featurefile.c:5018
+#: ../fontforge/featurefile.c:5021
 #, c-format
 msgid "Expected name in lookup on line %d of %s"
 msgstr "Слід вказати назву у фільтруванні, рядок %d %s"
 
-#: ../fontforge/featurefile.c:5035 ../fontforge/featurefile.c:5371
+#: ../fontforge/featurefile.c:5038 ../fontforge/featurefile.c:5374
 #, c-format
 msgid "Expected '{' in feature definition on line %d of %s"
 msgstr "Потрібна дужка «{» у визначенні можливості, рядок %d %s"
 
-#: ../fontforge/featurefile.c:5053
+#: ../fontforge/featurefile.c:5056
 #, c-format
 msgid "Unexpected end of file in lookup definition on line %d of %s"
 msgstr "Неочікуваний кінець рядка у визначенні фільтрування, рядок %d %s"
 
-#: ../fontforge/featurefile.c:5057
+#: ../fontforge/featurefile.c:5060
 #, c-format
 msgid "Unexpected token, %s, in lookup definition on line %d of %s"
 msgstr "Неочікуваний елемент, %s, у визначенні фільтрування, рядок %d %s"
 
-#: ../fontforge/featurefile.c:5059
+#: ../fontforge/featurefile.c:5062
 msgid " Perhaps you meant to use the keyword 'sub' rather than 'subs'?"
 msgstr " Можливо, вам слід скористатися ключовим словом «sub», а не «subs»?"
 
-#: ../fontforge/featurefile.c:5093
+#: ../fontforge/featurefile.c:5096
 #, c-format
 msgid "Expected %s in lookup definition on line %d of %s"
 msgstr "Слід використовувати %s у визначенні фільтрування, рядок %d %s"
 
-#: ../fontforge/featurefile.c:5128
+#: ../fontforge/featurefile.c:5131
 #, c-format
 msgid "All entries in a lookup must have the same type on line %d of %s"
 msgstr "Всі записи фільтрування мають належати до одного типу у рядку %d %s"
 
-#: ../fontforge/featurefile.c:5135
+#: ../fontforge/featurefile.c:5138
 #, c-format
 msgid "This lookup has no effect, I can't figure out its type on line %d of %s"
 msgstr ""
 "Це фільтрування недієздатне, неможливо визначити його тип у рядку %d %s"
 
-#: ../fontforge/featurefile.c:5165
+#: ../fontforge/featurefile.c:5168
 #, c-format
 msgid "Invalid platform for string on line %d of %s"
 msgstr "Некоректна платформа для значення типу string у рядку %d %s"
 
-#: ../fontforge/featurefile.c:5182 ../fontforge/featurefile.c:5582
+#: ../fontforge/featurefile.c:5185 ../fontforge/featurefile.c:5589
 #, c-format
 msgid "Expected string on line %d of %s"
 msgstr "Потрібне значення типу string у рядку %d %s"
 
-#: ../fontforge/featurefile.c:5240
+#: ../fontforge/featurefile.c:5243
 #, c-format
 msgid "End of file found in string on line %d of %s"
 msgstr "Виявлено кінець файла у рядку (значенні типу string), рядок %d %s"
 
-#: ../fontforge/featurefile.c:5334 ../fontforge/featurefile.c:5529
+#: ../fontforge/featurefile.c:5337 ../fontforge/featurefile.c:5536
 #, c-format
 msgid "Expected closing curly brace on line %d of %s"
 msgstr "Потрібна дужка «}» у рядку %d %s"
 
-#: ../fontforge/featurefile.c:5347
+#: ../fontforge/featurefile.c:5350
 #, c-format
 msgid "Expected tag in feature on line %d of %s"
 msgstr "Потрібен теґ у модифікації, рядок %d %s"
 
-#: ../fontforge/featurefile.c:5382
+#: ../fontforge/featurefile.c:5385
 #, c-format
 msgid "Unexpected end of file in feature definition on line %d of %s"
 msgstr "Неочікуваний кінець рядка у визначенні модифікації, рядок %d %s"
 
-#: ../fontforge/featurefile.c:5397
+#: ../fontforge/featurefile.c:5400
 #, c-format
 msgid ""
 "Features inside of other features are only permitted for 'aalt' features on "
@@ -1353,75 +1353,75 @@ msgstr ""
 "Не можна використовувати модифікації у межах інших модифікаціях для "
 "модифікацій «aalt», рядок %d %s"
 
-#: ../fontforge/featurefile.c:5402 ../fontforge/featurefile.c:5413
+#: ../fontforge/featurefile.c:5405 ../fontforge/featurefile.c:5416
 #, c-format
 msgid "Expected tag on line %d of %s"
 msgstr "Потрібен теґ у рядку %d %s"
 
-#: ../fontforge/featurefile.c:5429
+#: ../fontforge/featurefile.c:5432
 #, c-format
 msgid "Expected ';' on line %d of %s"
 msgstr "Потрібен символ «;» у рядку %d %s"
 
-#: ../fontforge/featurefile.c:5457
+#: ../fontforge/featurefile.c:5464
 #, c-format
 msgid "Unexpected token, %s, in feature definition on line %d of %s"
 msgstr "Неочікуваний елемент, %s, у визначенні модифікації, рядок %d %s"
 
-#: ../fontforge/featurefile.c:5467
+#: ../fontforge/featurefile.c:5474
 #, c-format
 msgid "Expected '%c%c%c%c' in lookup definition on line %d of %s"
 msgstr "Слід використовувати «%c%c%c%c» у визначенні фільтрування, рядок %d %s"
 
-#: ../fontforge/featurefile.c:5549
+#: ../fontforge/featurefile.c:5556
 #, c-format
 msgid "Unknown field %s on line %d of %s"
 msgstr "Невідоме поле %s у рядку %d %s"
 
-#: ../fontforge/featurefile.c:5591
+#: ../fontforge/featurefile.c:5599
 #, c-format
 msgid "Expected integer on line %d of %s"
 msgstr "Слід використовувати ціле число у рядку %d %s"
 
-#: ../fontforge/featurefile.c:5624 ../fontforge/featurefile.c:5714
+#: ../fontforge/featurefile.c:5632 ../fontforge/featurefile.c:5722
 #, c-format
 msgid "Expected semicolon on line %d of %s"
 msgstr "Потрібна крапка з комою у рядку %d %s"
 
-#: ../fontforge/featurefile.c:5637
+#: ../fontforge/featurefile.c:5645
 #, c-format
 msgid "Expected '}' on line %d of %s"
 msgstr "Потрібна дужка «}» у рядку %d %s"
 
-#: ../fontforge/featurefile.c:5723
+#: ../fontforge/featurefile.c:5731
 #, c-format
 msgid "Expected integer or list of integers after %s on line %d of %s"
 msgstr ""
 "Після %s у рядку %d %s мало бути вказано ціле значення або список цілих "
 "значень"
 
-#: ../fontforge/featurefile.c:5760
+#: ../fontforge/featurefile.c:5768
 #, c-format
 msgid "Expected comma or semicolon on line %d of %s"
 msgstr "Потрібна кома або крапка з комою у рядку %d %s"
 
-#: ../fontforge/featurefile.c:5762
+#: ../fontforge/featurefile.c:5770
 #, c-format
 msgid "Expected class on line %d of %s"
 msgstr "Потрібен клас у рядку %d %s"
 
-#: ../fontforge/featurefile.c:5765
+#: ../fontforge/featurefile.c:5773
 #, c-format
 msgid "Expected Attach or LigatureCaret or GlyphClassDef on line %d of %s"
 msgstr ""
 "Слід вказати Attach, або LigatureCaret, або GlyphClassDef у рядку %d %s"
 
-#: ../fontforge/featurefile.c:5771
+#: ../fontforge/featurefile.c:5779
 #, c-format
 msgid "Unexpected token in GDEF on line %d of %s"
 msgstr "Неочікуваний елемент у GDEF, рядок %d %s"
 
-#: ../fontforge/featurefile.c:5809
+#: ../fontforge/featurefile.c:5817
 #, c-format
 msgid ""
 "Expected either \"HorizAxis\" or \"VertAxis\" in BASE table on line %d of %s"
@@ -1429,12 +1429,12 @@ msgstr ""
 "Слід використовувати \"HorizAxis\" або \"VertAxis\" у таблиці BASE, рядок %d "
 "%s"
 
-#: ../fontforge/featurefile.c:5835
+#: ../fontforge/featurefile.c:5843
 #, c-format
 msgid "Expected baseline tag in BASE table on line %d of %s"
 msgstr "Слід використати теґ baseline у таблиці BASE, рядок %d %s"
 
-#: ../fontforge/featurefile.c:5843
+#: ../fontforge/featurefile.c:5851
 #, c-format
 msgid ""
 "Expected an integer specifying baseline positions in BASE table on line %d "
@@ -1443,72 +1443,72 @@ msgstr ""
 "Не вистачає цілого числа, що задає позиції ліній шрифту у таблиці BASE, "
 "рядок %d %s"
 
-#: ../fontforge/featurefile.c:5870
+#: ../fontforge/featurefile.c:5878
 #, c-format
 msgid "Expected comma or semicolon in BASE table on line %d of %s"
 msgstr "Потрібна кома або крапка з комою у рядку таблиці BASE %d %s"
 
-#: ../fontforge/featurefile.c:5876
+#: ../fontforge/featurefile.c:5884
 #, c-format
 msgid "Unexpected token, %s, in BASE table on line %d of %s"
 msgstr "Неочікуваний елемент, %s, у таблиці BASE, рядок %d %s"
 
-#: ../fontforge/featurefile.c:5882
+#: ../fontforge/featurefile.c:5890
 #, c-format
 msgid "Expected semicolon in BASE table on line %d of %s"
 msgstr "Потрібна крапка з комою у рядку таблиці BASE %d %s"
 
-#: ../fontforge/featurefile.c:5909
+#: ../fontforge/featurefile.c:5917
 #, c-format
 msgid "Expected tag in table on line %d of %s"
 msgstr "Потрібен теґ у таблиці, рядок %d %s"
 
-#: ../fontforge/featurefile.c:5955
+#: ../fontforge/featurefile.c:5963
 #, c-format
 msgid "Expected matching tag in table on line %d of %s"
 msgstr "Потрібен відповідний теґ у таблиці, рядок %d %s"
 
-#: ../fontforge/featurefile.c:6099
+#: ../fontforge/featurefile.c:6107
 #, c-format
 msgid "FontForge does not support anonymous tables on line %d of %s"
 msgstr "FontForge не підтримує таблиць без назви у рядку %d %s"
 
-#: ../fontforge/featurefile.c:6105
+#: ../fontforge/featurefile.c:6117
 #, c-format
 msgid "Unexpected token, %s, on line %d of %s"
 msgstr "Неочікуваний елемент, %s, рядок %d %s"
 
-#: ../fontforge/featurefile.c:6635
+#: ../fontforge/featurefile.c:6647
 msgid "Discarding a duplicate kerning pair."
 msgstr "Відкидаємо дублікат кернінґової пари."
 
-#: ../fontforge/featurefile.c:6732
+#: ../fontforge/featurefile.c:6744
 #, c-format
 msgid "No lookup named %s"
 msgstr "На знайдено фільтрування з назвою %s"
 
-#: ../fontforge/featurefile.c:6763
+#: ../fontforge/featurefile.c:6775
 msgid "Mismatch lookup types inside a parsed lookup"
 msgstr "Невідповідні типи фільтрування у фільтруванні, яке обробляється"
 
-#: ../fontforge/featurefile.c:6766
+#: ../fontforge/featurefile.c:6778
 msgid "Could not figure out a lookup type"
 msgstr "Не вдалося визначити тип фільтрування"
 
-#: ../fontforge/featurefile.c:6772
+#: ../fontforge/featurefile.c:6784
 msgid "Mark anchors provided when nothing can use them"
 msgstr "Позначати прив’язки, якщо їх не може бути використано"
 
-#: ../fontforge/featurefile.c:7187 ../fontforge/parsettfatt.c:780
+#: ../fontforge/featurefile.c:7199 ../fontforge/parsettfatt.c:780
 #, c-format
 msgid "Anchor-%d"
 msgstr "Прив’язка-%d"
 
-#: ../fontforge/featurefile.c:7355 ../fontforgeexe/fontinfo.c:6820
+#: ../fontforge/featurefile.c:7367 ../fontforgeexe/fontinfo.c:6820
 msgid "Cannot open file"
 msgstr "Не вдалося відкрити файл"
 
-#: ../fontforge/featurefile.c:7355
+#: ../fontforge/featurefile.c:7367
 #, c-format
 msgid "Cannot open feature file %.120s"
 msgstr "Не вдалося відкрити файл модифікацій %.120s"
@@ -1938,14 +1938,14 @@ msgid "What is the pixel size of the font in this file?"
 msgstr "Яким є розмір пікселя для шрифту у цьому файлі?"
 
 #: ../fontforge/fvimportbdf.c:1864 ../fontforgeexe/bdfinfo.c:178
-#: ../fontforgeexe/bitmapview.c:1942 ../fontforgeexe/cvstroke.c:2354
+#: ../fontforgeexe/bitmapview.c:1945 ../fontforgeexe/cvstroke.c:2354
 #: ../fontforgeexe/deltaui.c:67 ../fontforgeexe/deltaui.c:98
 #: ../fontforgeexe/deltaui.c:101 ../fontforgeexe/deltaui.c:104
 #: ../fontforgeexe/fontview.c:1243 ../fontforgeexe/fontview.c:2115
 #: ../fontforgeexe/fontview.c:3339 ../fontforgeexe/fontview.c:3843
 #: ../fontforgeexe/fontview.c:4773 ../fontforgeexe/kernclass.c:375
 #: ../fontforgeexe/macencui.c:726 ../fontforgeexe/macencui.c:1026
-#: ../fontforgeexe/prefs.c:1548 ../fontforgeexe/prefs.c:1554
+#: ../fontforgeexe/prefs.c:1556 ../fontforgeexe/prefs.c:1562
 #: ../fontforgeexe/scstylesui.c:2301 ../fontforgeexe/ttfinstrsui.c:1008
 #: ../fontforgeexe/ttfinstrsui.c:1051 ../gdraw/gresedit.c:756
 #: ../gdraw/gresedit.c:788 ../gdraw/gresedit.c:800 ../gdraw/gresedit.c:880
@@ -3381,7 +3381,7 @@ msgstr "Контекстуальне ланцюгове розташування
 
 #. GT: See the long comment at "Property|New"
 #. GT: The msgstr should contain a translation of "Arabic", ignore "Script|"
-#: ../fontforge/lookups.c:1313 ../fontforge/parsettf.c:4462
+#: ../fontforge/lookups.c:1313 ../fontforge/parsettf.c:4463
 #: ../fontforgeexe/lookupui.c:176
 msgid "Script|Arabic"
 msgstr "Арабська"
@@ -3534,12 +3534,12 @@ msgstr "Глаголиця"
 msgid "Gothic"
 msgstr "Готична"
 
-#: ../fontforge/lookups.c:1354 ../fontforge/parsettf.c:4462
+#: ../fontforge/lookups.c:1354 ../fontforge/parsettf.c:4463
 #: ../fontforgeexe/lookupui.c:215
 msgid "Script|Greek"
 msgstr "Грецька"
 
-#: ../fontforge/lookups.c:1355 ../fontforge/parsettf.c:4466
+#: ../fontforge/lookups.c:1355 ../fontforge/parsettf.c:4467
 #: ../fontforgeexe/lookupui.c:216
 msgid "Script|Gujarati"
 msgstr "Гуджараті"
@@ -3570,7 +3570,7 @@ msgstr "Хангиль"
 msgid "Script|Hanunóo"
 msgstr "Ханунно"
 
-#: ../fontforge/lookups.c:1362 ../fontforge/parsettf.c:4462
+#: ../fontforge/lookups.c:1362 ../fontforge/parsettf.c:4463
 #: ../fontforgeexe/lookupui.c:223
 msgid "Script|Hebrew"
 msgstr "Іврит"
@@ -3821,7 +3821,7 @@ msgstr "Тенгварська"
 msgid "Thaana"
 msgstr "Таана"
 
-#: ../fontforge/lookups.c:1424 ../fontforge/parsettf.c:4468
+#: ../fontforge/lookups.c:1424 ../fontforge/parsettf.c:4469
 #: ../fontforgeexe/lookupui.c:278
 msgid "Script|Thai"
 msgstr "Тайська"
@@ -4166,26 +4166,26 @@ msgstr "Не вистачає пам'яті\n"
 
 #: ../fontforge/macbinary.c:2113 ../fontforge/macbinary.c:2613
 #: ../fontforge/parsepdf.c:2108 ../fontforge/parsettf.c:671
-#: ../fontforge/svg.c:1184
+#: ../fontforge/svg.c:1188
 msgid "Not in Collection"
 msgstr "Немає у збірці"
 
 #: ../fontforge/macbinary.c:2113 ../fontforge/macbinary.c:2613
-#: ../fontforge/parsepdf.c:2108 ../fontforge/svg.c:1184
+#: ../fontforge/parsepdf.c:2108 ../fontforge/svg.c:1188
 #, c-format
 msgid "%s is not in %.100s"
 msgstr "%s немає у %.100s"
 
 #: ../fontforge/macbinary.c:2120 ../fontforge/macbinary.c:2622
 #: ../fontforge/parsepdf.c:2120 ../fontforge/parsettf.c:682
-#: ../fontforge/parsettf.c:709 ../fontforge/parsettf.c:5519
-#: ../fontforge/svg.c:1191
+#: ../fontforge/parsettf.c:709 ../fontforge/parsettf.c:5523
+#: ../fontforge/svg.c:1195
 msgid "Pick a font, any font..."
 msgstr "Вкажіть шрифт, будь-який шрифт…"
 
 #: ../fontforge/macbinary.c:2120 ../fontforge/macbinary.c:2623
 #: ../fontforge/parsepdf.c:2120 ../fontforge/parsettf.c:682
-#: ../fontforge/parsettf.c:710 ../fontforge/svg.c:1191
+#: ../fontforge/parsettf.c:710 ../fontforge/svg.c:1195
 msgid "There are multiple fonts in this file, pick one"
 msgstr "У цьому файлі міститься декілька шрифтів, вкажіть один з них"
 
@@ -4612,7 +4612,7 @@ msgstr "Баскська"
 #: ../fontforge/macenc.c:2325 ../fontforgeexe/fontinfo.c:829
 #: ../fontforgeexe/lookupui.c:343 ../fontforgeexe/macencui.c:177
 msgid "Catalan"
-msgstr "Каталонська"
+msgstr "Каталанська"
 
 #: ../fontforge/macenc.c:2326 ../fontforgeexe/fontinfo.c:921
 #: ../fontforgeexe/lookupui.c:502 ../fontforgeexe/macencui.c:178
@@ -5792,7 +5792,7 @@ msgstr ""
 
 #: ../fontforge/nonlineartrans.c:405 ../fontforge/nonlineartrans.c:412
 #: ../fontforge/nonlineartrans.c:445 ../fontforgeexe/cvstroke.c:237
-#: ../fontforgeexe/cvstroke.c:256 ../fontforgeexe/histograms.c:374
+#: ../fontforgeexe/cvstroke.c:256 ../fontforgeexe/histograms.c:377
 msgid "Bad Value"
 msgstr "Помилкове значення"
 
@@ -5962,11 +5962,11 @@ msgstr ""
 "У режимі перегляду обрисів натискання клавіші Shift обмежить рух напрямком, "
 "паралельним до кута курсиву, а не вертикальним напрямком."
 
-#: ../fontforge/noprefs.c:187 ../fontforgeexe/prefs.c:346
+#: ../fontforge/noprefs.c:187 ../fontforgeexe/prefs.c:341
 msgid "SnapToInt"
 msgstr "Округляти до цілого"
 
-#: ../fontforge/noprefs.c:187 ../fontforgeexe/prefs.c:346
+#: ../fontforge/noprefs.c:187 ../fontforgeexe/prefs.c:341
 msgid ""
 "When the user clicks in the editing window, round the location to the "
 "nearest integers."
@@ -5974,11 +5974,11 @@ msgstr ""
 "Коли користувач клацання кнопкою миші у вікні редагування, округлювати "
 "значення позиції до найближчих цілих чисел."
 
-#: ../fontforge/noprefs.c:188 ../fontforgeexe/prefs.c:347
+#: ../fontforge/noprefs.c:188 ../fontforgeexe/prefs.c:343
 msgid "JoinSnap"
 msgstr "Об’єднання близьких"
 
-#: ../fontforge/noprefs.c:188 ../fontforgeexe/prefs.c:347
+#: ../fontforge/noprefs.c:188 ../fontforgeexe/prefs.c:343
 msgid ""
 "The Edit->Join command will join points which are this close together\n"
 "A value of 0 means they must be coincident"
@@ -5987,12 +5987,12 @@ msgstr ""
 "вказаній відстані.\n"
 "Значення 0 означає, що розташування точок має збігатися."
 
-#: ../fontforge/noprefs.c:189 ../fontforgeexe/prefs.c:349
+#: ../fontforge/noprefs.c:189 ../fontforgeexe/prefs.c:344
 msgid "CopyMetaData"
 msgstr "Копіювати метадані"
 
 #: ../fontforge/noprefs.c:189 ../fontforge/noprefs.c:194
-#: ../fontforgeexe/prefs.c:349
+#: ../fontforgeexe/prefs.c:344
 msgid ""
 "When copying glyphs from the font view, also copy the\n"
 "glyphs' metadata (name, encoding, comment, etc)."
@@ -6000,7 +6000,7 @@ msgstr ""
 "Під час копіювання гліфів з панелі перегляду шрифту також копіювати\n"
 "метадані гліфів (назву, кодування, коментар тощо)."
 
-#: ../fontforge/noprefs.c:190 ../fontforgeexe/prefs.c:350
+#: ../fontforge/noprefs.c:190 ../fontforgeexe/prefs.c:345
 msgid "UndoDepth"
 msgstr "Глибина стеку команд"
 
@@ -6010,11 +6010,11 @@ msgstr ""
 "Максимальна кількість дій для скасування/повернення, які зберігатимуть у "
 "гліфі"
 
-#: ../fontforge/noprefs.c:191 ../fontforgeexe/prefs.c:365
+#: ../fontforge/noprefs.c:191 ../fontforgeexe/prefs.c:366
 msgid "AutoWidthSync"
 msgstr "Автосинхр. ширин"
 
-#: ../fontforge/noprefs.c:191 ../fontforgeexe/prefs.c:365
+#: ../fontforge/noprefs.c:191 ../fontforgeexe/prefs.c:366
 msgid ""
 "Changing the width of a glyph\n"
 "changes the widths of all accented\n"
@@ -6024,11 +6024,11 @@ msgstr ""
 "зміни всіх акцентованих гліфів,\n"
 "заснованих на ньому."
 
-#: ../fontforge/noprefs.c:192 ../fontforgeexe/prefs.c:366
+#: ../fontforge/noprefs.c:192 ../fontforgeexe/prefs.c:367
 msgid "AutoLBearingSync"
 msgstr "АвтоСинхрЛівоїОпори"
 
-#: ../fontforge/noprefs.c:192 ../fontforgeexe/prefs.c:366
+#: ../fontforge/noprefs.c:192 ../fontforgeexe/prefs.c:367
 msgid ""
 "Changing the left side bearing\n"
 "of a glyph adjusts the lbearing\n"
@@ -6040,11 +6040,11 @@ msgstr ""
 "у всіх акцентованих гліфах,\n"
 "заснованих на ньому."
 
-#: ../fontforge/noprefs.c:193 ../fontforgeexe/prefs.c:370
+#: ../fontforge/noprefs.c:193 ../fontforgeexe/prefs.c:371
 msgid "ClearInstrsBigChanges"
 msgstr "СпорожнІнстрВелЗмін"
 
-#: ../fontforge/noprefs.c:193 ../fontforgeexe/prefs.c:370
+#: ../fontforge/noprefs.c:193 ../fontforgeexe/prefs.c:371
 msgid ""
 "Instructions in a TrueType font refer to\n"
 "points by number, so if you edit a glyph\n"
@@ -6069,15 +6069,15 @@ msgstr ""
 "вимкнути вилучення інструкцій, але у такому\n"
 "разі слід бути надзвичайно обережними!"
 
-#: ../fontforge/noprefs.c:194 ../fontforgeexe/prefs.c:371
+#: ../fontforge/noprefs.c:194 ../fontforgeexe/prefs.c:372
 msgid "CopyTTFInstrs"
 msgstr "КопіюватиІнстрTTF"
 
-#: ../fontforge/noprefs.c:195 ../fontforgeexe/prefs.c:375
+#: ../fontforge/noprefs.c:195 ../fontforgeexe/prefs.c:376
 msgid "AccentOffsetPercent"
 msgstr "ВідсотокВідступуАкцентів"
 
-#: ../fontforge/noprefs.c:195 ../fontforgeexe/prefs.c:375
+#: ../fontforge/noprefs.c:195 ../fontforgeexe/prefs.c:376
 msgid ""
 "The percentage of an em by which an accent is offset from its base glyph in "
 "Build Accent"
@@ -6085,12 +6085,12 @@ msgstr ""
 "Значення у відсотках від em, на яке слід зсунути акцент від базового гліфа "
 "під час побудови акцентованих символів."
 
-#: ../fontforge/noprefs.c:196 ../fontforgeexe/prefs.c:376
+#: ../fontforge/noprefs.c:196 ../fontforgeexe/prefs.c:377
 msgid "AccentCenterLowest"
 msgstr "АкцентУЦентріВнизу"
 
-#: ../fontforge/noprefs.c:196 ../fontforgeexe/prefs.c:376
-#: ../fontforgeexe/prefs.c:527
+#: ../fontforge/noprefs.c:196 ../fontforgeexe/prefs.c:377
+#: ../fontforgeexe/prefs.c:530
 msgid ""
 "When placing grave and acute accents above letters, should\n"
 "FontForge center them based on their full width, or\n"
@@ -6101,11 +6101,11 @@ msgstr ""
 "FontForge може використовувати центр їхньої повної\n"
 "ширини або центр на основі нижньої точки акценту."
 
-#: ../fontforge/noprefs.c:197 ../fontforgeexe/prefs.c:377
+#: ../fontforge/noprefs.c:197 ../fontforgeexe/prefs.c:378
 msgid "CharCenterHighest"
 msgstr "Центр за найв. точкою символу"
 
-#: ../fontforge/noprefs.c:197 ../fontforgeexe/prefs.c:377
+#: ../fontforge/noprefs.c:197 ../fontforgeexe/prefs.c:378
 msgid ""
 "When centering an accent over a glyph, should the accent\n"
 "be centered on the highest point(s) of the glyph,\n"
@@ -6115,11 +6115,11 @@ msgstr ""
 "можна використовувати найвищу точку гліфа або\n"
 "середину гліфа?"
 
-#: ../fontforge/noprefs.c:198 ../fontforgeexe/prefs.c:378
+#: ../fontforge/noprefs.c:198 ../fontforgeexe/prefs.c:379
 msgid "PreferSpacingAccents"
 msgstr "Перевага інтервальних акцентів"
 
-#: ../fontforge/noprefs.c:198 ../fontforgeexe/prefs.c:378
+#: ../fontforge/noprefs.c:198 ../fontforgeexe/prefs.c:379
 msgid ""
 "Use spacing accents (Unicode: 02C0-02FF) rather than\n"
 "combining accents (Unicode: 0300-036F) when\n"
@@ -6129,11 +6129,11 @@ msgstr ""
 "а не комбіновані акценти (Unicode: 0300-036F) під час\n"
 "побудови акцентованих гліфів."
 
-#: ../fontforge/noprefs.c:199 ../fontforgeexe/prefs.c:382
+#: ../fontforge/noprefs.c:199 ../fontforgeexe/prefs.c:383
 msgid "PreferPotrace"
 msgstr "ПеревагаPotrace"
 
-#: ../fontforge/noprefs.c:199 ../fontforgeexe/prefs.c:382
+#: ../fontforge/noprefs.c:199 ../fontforgeexe/prefs.c:383
 msgid ""
 "FontForge supports two different helper applications to do autotracing\n"
 " autotrace and potrace\n"
@@ -6146,11 +6146,11 @@ msgstr ""
 "Якщо у системі є обидві програми, за допомогою цього параметра\n"
 "можна вказати, яку саме програму слід використовувати FontForge."
 
-#: ../fontforge/noprefs.c:200 ../fontforgeexe/prefs.c:383
+#: ../fontforge/noprefs.c:200 ../fontforgeexe/prefs.c:384
 msgid "AutotraceArgs"
 msgstr "ПарамАвтотрасування"
 
-#: ../fontforge/noprefs.c:200 ../fontforgeexe/prefs.c:383
+#: ../fontforge/noprefs.c:200 ../fontforgeexe/prefs.c:384
 msgid ""
 "Extra arguments for configuring the autotrace program\n"
 "(either autotrace or potrace)"
@@ -6158,40 +6158,40 @@ msgstr ""
 "Додаткові параметри налаштовування програми автотрасування\n"
 "(autotrace або potrace)"
 
-#: ../fontforge/noprefs.c:201 ../fontforgeexe/prefs.c:384
+#: ../fontforge/noprefs.c:201 ../fontforgeexe/prefs.c:385
 msgid "AutotraceAsk"
 msgstr "ЗапитЩодоАвтотрасування"
 
-#: ../fontforge/noprefs.c:201 ../fontforgeexe/prefs.c:384
+#: ../fontforge/noprefs.c:201 ../fontforgeexe/prefs.c:385
 msgid "Ask the user for autotrace arguments each time autotrace is invoked"
 msgstr ""
 "Запитувати у користувача про параметри автотрасування кожного разу, коли "
 "викликається автотрасування"
 
-#: ../fontforge/noprefs.c:202 ../fontforgeexe/prefs.c:385
+#: ../fontforge/noprefs.c:202 ../fontforgeexe/prefs.c:386
 msgid "MfArgs"
 msgstr "АргMf"
 
-#: ../fontforge/noprefs.c:202 ../fontforgeexe/prefs.c:385
+#: ../fontforge/noprefs.c:202 ../fontforgeexe/prefs.c:386
 msgid ""
 "Commands to pass to mf (metafont) program, the filename will follow these"
 msgstr ""
 "Команди, які слід передати програмі mf (metafont), за ними буде вказано "
 "назву файла"
 
-#: ../fontforge/noprefs.c:203 ../fontforgeexe/prefs.c:386
+#: ../fontforge/noprefs.c:203 ../fontforgeexe/prefs.c:387
 msgid "MfAsk"
 msgstr "ЗапитMf"
 
-#: ../fontforge/noprefs.c:203 ../fontforgeexe/prefs.c:386
+#: ../fontforge/noprefs.c:203 ../fontforgeexe/prefs.c:387
 msgid "Ask the user for mf commands each time mf is invoked"
 msgstr "Запитати користувача для команд mf кожного разу, коли викликається mf"
 
-#: ../fontforge/noprefs.c:204 ../fontforgeexe/prefs.c:387
+#: ../fontforge/noprefs.c:204 ../fontforgeexe/prefs.c:388
 msgid "MfClearBg"
 msgstr "MfПорТло"
 
-#: ../fontforge/noprefs.c:204 ../fontforgeexe/prefs.c:387
+#: ../fontforge/noprefs.c:204 ../fontforgeexe/prefs.c:388
 msgid ""
 "FontForge loads large images into the background of each glyph\n"
 "prior to autotracing them. You may retain those\n"
@@ -6203,11 +6203,11 @@ msgstr ""
 "зберігати ці зображення після завершення обробки за допомогою\n"
 "mf або вилучити зображення з метою економії місця."
 
-#: ../fontforge/noprefs.c:205 ../fontforgeexe/prefs.c:388
+#: ../fontforge/noprefs.c:205 ../fontforgeexe/prefs.c:389
 msgid "MfShowErr"
 msgstr "ПоказПомилокMf"
 
-#: ../fontforge/noprefs.c:205 ../fontforgeexe/prefs.c:388
+#: ../fontforge/noprefs.c:205 ../fontforgeexe/prefs.c:389
 msgid ""
 "MetaFont (mf) generates lots of verbiage to stdout.\n"
 "Most of the time I find it an annoyance but it is\n"
@@ -6217,11 +6217,11 @@ msgstr ""
 "Здебільшого, ці дані є набридливими, але іноді\n"
 "важливо бачити, чи все іде належним чином."
 
-#: ../fontforge/noprefs.c:206 ../fontforgeexe/prefs.c:392
+#: ../fontforge/noprefs.c:206 ../fontforgeexe/prefs.c:393
 msgid "FoundryName"
 msgstr "Назва ливарні"
 
-#: ../fontforge/noprefs.c:206 ../fontforgeexe/prefs.c:392
+#: ../fontforge/noprefs.c:206 ../fontforgeexe/prefs.c:393
 msgid ""
 "Name used for foundry field in bdf\n"
 "font generation"
@@ -6229,11 +6229,11 @@ msgstr ""
 "Назва у полі ливарні під час\n"
 "створення шрифту bdf"
 
-#: ../fontforge/noprefs.c:207 ../fontforgeexe/prefs.c:393
+#: ../fontforge/noprefs.c:207 ../fontforgeexe/prefs.c:394
 msgid "TTFFoundry"
 msgstr "Ливарня TTF"
 
-#: ../fontforge/noprefs.c:207 ../fontforgeexe/prefs.c:393
+#: ../fontforge/noprefs.c:207 ../fontforgeexe/prefs.c:394
 msgid ""
 "Name used for Vendor ID field in\n"
 "ttf (OS/2 table) font generation.\n"
@@ -6243,11 +6243,11 @@ msgstr ""
 "під час створення шрифту ttf (таблиця OS/2).\n"
 "Має не перевищувати у довжину 4 символи."
 
-#: ../fontforge/noprefs.c:208 ../fontforgeexe/prefs.c:394
+#: ../fontforge/noprefs.c:208 ../fontforgeexe/prefs.c:395
 msgid "NewFontNameList"
 msgstr "Список назв нового шрифту"
 
-#: ../fontforge/noprefs.c:208 ../fontforgeexe/prefs.c:394
+#: ../fontforge/noprefs.c:208 ../fontforgeexe/prefs.c:395
 msgid ""
 "FontForge will use this namelist when assigning\n"
 "glyph names to code points in a new font."
@@ -6255,11 +6255,11 @@ msgstr ""
 "FontForge використає цей список назв під час призначення\n"
 "назв гліфів для діапазонів символів у новому шрифті."
 
-#: ../fontforge/noprefs.c:209 ../fontforgeexe/prefs.c:395
+#: ../fontforge/noprefs.c:209 ../fontforgeexe/prefs.c:396
 msgid "RecognizePUANames"
 msgstr "РозпізнНазвPUA"
 
-#: ../fontforge/noprefs.c:209 ../fontforgeexe/prefs.c:395
+#: ../fontforge/noprefs.c:209 ../fontforgeexe/prefs.c:396
 msgid ""
 "Once upon a time, Adobe assigned PUA (public use area) encodings\n"
 "for many stylistic variants of characters (small caps, old style\n"
@@ -6293,11 +6293,11 @@ msgstr ""
 "unicode на основі кодувань шрифту, вона просто керує визначенням\n"
 "позиції unicode за назвою."
 
-#: ../fontforge/noprefs.c:210 ../fontforgeexe/prefs.c:396
+#: ../fontforge/noprefs.c:210 ../fontforgeexe/prefs.c:397
 msgid "UnicodeGlyphNames"
 msgstr "Назви гліфів Unicode"
 
-#: ../fontforge/noprefs.c:210 ../fontforgeexe/prefs.c:396
+#: ../fontforge/noprefs.c:210 ../fontforgeexe/prefs.c:397
 msgid ""
 "Allow the full unicode character set in glyph names.\n"
 "This does not conform to adobe's glyph name standard.\n"
@@ -6314,7 +6314,7 @@ msgstr ""
 msgid "XUID-Base"
 msgstr "Основа XUID"
 
-#: ../fontforge/noprefs.c:211 ../fontforgeexe/prefs.c:520
+#: ../fontforge/noprefs.c:211 ../fontforgeexe/prefs.c:523
 msgid ""
 "If specified this should be a space separated list of integers each\n"
 "less than 16777216 which uniquely identify your organization\n"
@@ -6327,12 +6327,12 @@ msgstr ""
 "остаточного компонента."
 
 #: ../fontforge/noprefs.c:212 ../fontforge/noprefs.c:250
-#: ../fontforgeexe/prefs.c:401
+#: ../fontforgeexe/prefs.c:402
 msgid "AskBDFResolution"
 msgstr "Запитувати щодо роздільності BDF"
 
 #: ../fontforge/noprefs.c:212 ../fontforge/noprefs.c:250
-#: ../fontforgeexe/prefs.c:401
+#: ../fontforgeexe/prefs.c:402
 msgid ""
 "When generating a set of BDF fonts ask the user\n"
 "to specify the screen resolution of the fonts\n"
@@ -6342,20 +6342,20 @@ msgstr ""
 "вказати роздільну здатність екрана для шрифтів, інакше\n"
 "FontForge вгадуватиме її за розміром пікселів."
 
-#: ../fontforge/noprefs.c:213 ../fontforgeexe/prefs.c:402
+#: ../fontforge/noprefs.c:213 ../fontforgeexe/prefs.c:403
 msgid "AutoHint"
 msgstr "Автогінтування"
 
-#: ../fontforge/noprefs.c:213 ../fontforgeexe/prefs.c:402
+#: ../fontforge/noprefs.c:213 ../fontforgeexe/prefs.c:403
 msgid "AutoHint changed glyphs before generating a font"
 msgstr ""
 "Автоматично визначати гінти для змінених шрифтів перед створенням шрифту"
 
-#: ../fontforge/noprefs.c:214 ../fontforgeexe/prefs.c:411
+#: ../fontforge/noprefs.c:214 ../fontforgeexe/prefs.c:412
 msgid "HintBoundingBoxes"
 msgstr "Гінти для обмежувальних рамок"
 
-#: ../fontforge/noprefs.c:214 ../fontforgeexe/prefs.c:411
+#: ../fontforge/noprefs.c:214 ../fontforgeexe/prefs.c:412
 msgid ""
 "FontForge will place vertical or horizontal hints to describe the bounding "
 "boxes of suitable glyphs."
@@ -6363,11 +6363,11 @@ msgstr ""
 "FontForge розташує вертикальні або горизонтальні для опису обмежувальних "
 "рамок відповідних гліфів."
 
-#: ../fontforge/noprefs.c:215 ../fontforgeexe/prefs.c:412
+#: ../fontforge/noprefs.c:215 ../fontforgeexe/prefs.c:413
 msgid "HintDiagonalEnds"
 msgstr "Гінти для діагональних кінців"
 
-#: ../fontforge/noprefs.c:215 ../fontforgeexe/prefs.c:412
+#: ../fontforge/noprefs.c:215 ../fontforgeexe/prefs.c:413
 msgid ""
 "FontForge will place vertical or horizontal hints at the ends of diagonal "
 "stems."
@@ -6375,11 +6375,11 @@ msgstr ""
 "FontForge розташує вертикальні або горизонтальні гінти на кінцях "
 "діагональних штрихів."
 
-#: ../fontforge/noprefs.c:216 ../fontforgeexe/prefs.c:413
+#: ../fontforge/noprefs.c:216 ../fontforgeexe/prefs.c:414
 msgid "HintDiagonalInter"
 msgstr "Гінти для діагональних перетинів"
 
-#: ../fontforge/noprefs.c:216 ../fontforgeexe/prefs.c:413
+#: ../fontforge/noprefs.c:216 ../fontforgeexe/prefs.c:414
 msgid ""
 "FontForge will place vertical or horizontal hints at the intersections of "
 "diagonal stems."
@@ -6387,11 +6387,11 @@ msgstr ""
 "FontForge розташує вертикальні або горизонтальні гінти на перетинах "
 "діагональних штрихів."
 
-#: ../fontforge/noprefs.c:217 ../fontforgeexe/prefs.c:414
+#: ../fontforge/noprefs.c:217 ../fontforgeexe/prefs.c:415
 msgid "DetectDiagonalStems"
 msgstr "Виявляти діагональні основні штрихи"
 
-#: ../fontforge/noprefs.c:217 ../fontforgeexe/prefs.c:414
+#: ../fontforge/noprefs.c:217 ../fontforgeexe/prefs.c:415
 msgid ""
 "FontForge will generate diagonal stem hints, which then can be used by the "
 "AutoInstr command."
@@ -6399,11 +6399,11 @@ msgstr ""
 "FontForge створюватиме гінти для діагональних штрихів, які потім може бути "
 "використано програмою автоматичного визначення інструкцій."
 
-#: ../fontforge/noprefs.c:218 ../fontforgeexe/prefs.c:426
+#: ../fontforge/noprefs.c:218 ../fontforgeexe/prefs.c:427
 msgid "UseNewIndicScripts"
 msgstr "Нові індійські писемності"
 
-#: ../fontforge/noprefs.c:218 ../fontforgeexe/prefs.c:426
+#: ../fontforge/noprefs.c:218 ../fontforgeexe/prefs.c:427
 msgid ""
 "MS has changed (in August 2006) the inner workings of their Indic shaping\n"
 "engine, and to disambiguate this change has created a parallel set of "
@@ -6476,36 +6476,36 @@ msgstr ""
 "вимкнено, символ буде відкрито у вже створеному\n"
 "вікні."
 
-#: ../fontforge/noprefs.c:245 ../fontforgeexe/prefs.c:338
-#: ../fontforgeexe/prefs.c:2684
+#: ../fontforge/noprefs.c:245 ../fontforgeexe/prefs.c:353
+#: ../fontforgeexe/prefs.c:2692
 msgid "ArrowMoveSize"
 msgstr "Крок пересування стрілкою"
 
-#: ../fontforge/noprefs.c:245 ../fontforgeexe/prefs.c:338
-#: ../fontforgeexe/prefs.c:2684
+#: ../fontforge/noprefs.c:245 ../fontforgeexe/prefs.c:353
+#: ../fontforgeexe/prefs.c:2692
 msgid "The number of em-units by which an arrow key will move a selected point"
 msgstr ""
 "Кількість одиниць em, на які натискання клавіші зі стрілкою пересуватиме "
 "позначену точку"
 
-#: ../fontforge/noprefs.c:246 ../fontforgeexe/prefs.c:339
-#: ../fontforgeexe/prefs.c:2685
+#: ../fontforge/noprefs.c:246 ../fontforgeexe/prefs.c:354
+#: ../fontforgeexe/prefs.c:2693
 msgid "ArrowAccelFactor"
 msgstr "Коефіцієнт прискорення стрілки"
 
-#: ../fontforge/noprefs.c:246 ../fontforgeexe/prefs.c:339
-#: ../fontforgeexe/prefs.c:2685
+#: ../fontforge/noprefs.c:246 ../fontforgeexe/prefs.c:354
+#: ../fontforgeexe/prefs.c:2693
 msgid ""
 "Holding down the Shift key will speed up arrow key motion by this factor"
 msgstr ""
 "Утримування натиснутою клавіші Shift збільшить швидкість руху за допомогою "
 "клавіш зі стрілками у вказану кількість разів."
 
-#: ../fontforge/noprefs.c:247 ../fontforgeexe/prefs.c:342
+#: ../fontforge/noprefs.c:247 ../fontforgeexe/prefs.c:339
 msgid "SnapDistance"
 msgstr "Відстань прилипання"
 
-#: ../fontforge/noprefs.c:247 ../fontforgeexe/prefs.c:342
+#: ../fontforge/noprefs.c:247 ../fontforgeexe/prefs.c:339
 msgid ""
 "When the mouse pointer is within this many pixels\n"
 "of one of the various interesting features (baseline,\n"
@@ -6517,11 +6517,11 @@ msgstr ""
 "гліфів (основної лінії, сплайнів ґратки тощо)\n"
 "вказівник прилипне до цієї особливої точки."
 
-#: ../fontforge/noprefs.c:248 ../fontforgeexe/prefs.c:348
+#: ../fontforge/noprefs.c:248 ../fontforgeexe/prefs.c:342
 msgid "StopAtJoin"
 msgstr "Зупиняти на з’єднаннях"
 
-#: ../fontforge/noprefs.c:248 ../fontforgeexe/prefs.c:348
+#: ../fontforge/noprefs.c:248 ../fontforgeexe/prefs.c:342
 msgid ""
 "When dragging points in the outline view a join may occur\n"
 "(two open contours may connect at their endpoints). When\n"
@@ -6537,15 +6537,15 @@ msgstr ""
 "кнопку миші). Ця можливість, якщо ваші пальці трохи\n"
 "тремтять."
 
-#: ../fontforge/noprefs.c:249 ../fontforgeexe/prefs.c:351
+#: ../fontforge/noprefs.c:249 ../fontforgeexe/prefs.c:346
 msgid "UpdateFlex"
 msgstr "Оновлювати флекси"
 
-#: ../fontforge/noprefs.c:249 ../fontforgeexe/prefs.c:351
+#: ../fontforge/noprefs.c:249 ../fontforgeexe/prefs.c:346
 msgid "Figure out flex hints after every change"
 msgstr "Визначати підказки флексів після будь-якої зміни."
 
-#: ../fontforge/noprefs.c:264 ../fontforgeexe/prefs.c:457
+#: ../fontforge/noprefs.c:264 ../fontforgeexe/prefs.c:460
 msgid "Display rulers in the Outline Glyph View"
 msgstr "Показувати лінійки на панелі обрисів гліфів"
 
@@ -8369,7 +8369,7 @@ msgid "A point in GID %d is outside the glyph bounding box\n"
 msgstr "Точка у гліфі GID %d поза межами обмежувальної рамки гліфа\n"
 
 #: ../fontforge/parsettf.c:2048 ../fontforge/parsettf.c:2071
-#: ../fontforge/parsettf.c:2274 ../fontforge/parsettf.c:4104
+#: ../fontforge/parsettf.c:2274 ../fontforge/parsettf.c:4105
 msgid "  Subsequent errors will not be reported.\n"
 msgstr "  Наступні помилки буде пропущено.\n"
 
@@ -8525,18 +8525,18 @@ msgstr "Помилковий fdselect\n"
 msgid "Didn't understand format for fdselect %d\n"
 msgstr "Не вдалося розпізнати формат для fdselect %d\n"
 
-#: ../fontforge/parsettf.c:3937 ../fontforge/parsettf.c:6345
+#: ../fontforge/parsettf.c:3937 ../fontforge/parsettf.c:6349
 msgid "CFF version mismatch\n"
 msgstr "Невідповідність версій CFF\n"
 
-#: ../fontforge/parsettf.c:4098
+#: ../fontforge/parsettf.c:4099
 #, c-format
 msgid ""
 "In %s, the advance width (%d) for glyph %s is greater than the maximum (%d)\n"
 msgstr ""
 "У %s додаткова ширина (%d) гліфа %s перевищує максимальне значення (%d)\n"
 
-#: ../fontforge/parsettf.c:4101
+#: ../fontforge/parsettf.c:4102
 #, c-format
 msgid ""
 "In GID %d the advance width (%d) is greater than the stated maximum (%d)\n"
@@ -8544,7 +8544,7 @@ msgstr ""
 "У GID %d додаткова ширина (%d) перевищує встановлене максимальне значення "
 "(%d)\n"
 
-#: ../fontforge/parsettf.c:4110
+#: ../fontforge/parsettf.c:4111
 #, c-format
 msgid ""
 "In %s, in glyph %s, 'CFF ' advance width (%d) and\n"
@@ -8555,7 +8555,7 @@ msgstr ""
 "  «hmtx» (%d) не збігаються (надалі повідомлення про цю розбіжність "
 "пропущено).\n"
 
-#: ../fontforge/parsettf.c:4113
+#: ../fontforge/parsettf.c:4114
 #, c-format
 msgid ""
 "In GID %d, 'CFF ' advance width (%d) and 'hmtx' width (%d) do not match.\n"
@@ -8564,20 +8564,20 @@ msgstr ""
 "У GID %d додаткова ширина «CFF » (%d) і ширина «hmtx» (%d) не збігаються.\n"
 "  (надалі повідомлення про цю розбіжність пропущено)\n"
 
-#: ../fontforge/parsettf.c:4129
+#: ../fontforge/parsettf.c:4130
 msgid "Invalid ttf hmtx table (or hhea), numOfLongMetrics is 0\n"
 msgstr "Некоректна таблиця hmtx (або hhea) ttf, numOfLongMetrics дорівнює 0\n"
 
-#: ../fontforge/parsettf.c:4191
+#: ../fontforge/parsettf.c:4192
 msgid "Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0\n"
 msgstr ""
 "Некоректна таблиця vmtx (або vhea) ttf, numOfLongVerMetrics дорівнює 0\n"
 
-#: ../fontforge/parsettf.c:4208
+#: ../fontforge/parsettf.c:4209
 msgid "Bad encoding information in 'cmap' table."
 msgstr "Помилкові дані щодо кодування у таблиці «cmap»."
 
-#: ../fontforge/parsettf.c:4299
+#: ../fontforge/parsettf.c:4300
 #, c-format
 msgid ""
 "Encoding subtable for platform=%d, specific=%d has an unsupported format "
@@ -8586,7 +8586,7 @@ msgstr ""
 "Підтаблиця кодування для платформи=%d, специфіка=%d має непідтримуваний "
 "формат %d.\n"
 
-#: ../fontforge/parsettf.c:4314
+#: ../fontforge/parsettf.c:4315
 #, c-format
 msgid ""
 "Encoding subtable for platform=%d, specific=%d has a 0 length subtable.\n"
@@ -8594,7 +8594,7 @@ msgstr ""
 "Підтаблиця кодування для платформи=%d, специфіка=%d містить підтаблицю "
 "нульового розміру.\n"
 
-#: ../fontforge/parsettf.c:4331
+#: ../fontforge/parsettf.c:4332
 #, c-format
 msgid ""
 "Encoding subtable for platform=%d, specific=%d (which must be 14)\n"
@@ -8603,134 +8603,134 @@ msgstr ""
 "Підтаблиця кодування для платформи=%d, специфіка=%d (має бути 14)\n"
 "має непідтримуваний формат %d.\n"
 
-#: ../fontforge/parsettf.c:4380
+#: ../fontforge/parsettf.c:4381
 #, c-format
 msgid "No glyph with unicode U+%05x in font\n"
 msgstr "У шрифті немає гліфа з кодом Unicode U+%05x\n"
 
-#: ../fontforge/parsettf.c:4413
+#: ../fontforge/parsettf.c:4414
 #, c-format
 msgid "GID out of range (%d) in format 14 'cmap' subtable\n"
 msgstr "GID поза межами діапазону (%d) у форматі 14 підтаблиці «cmap»\n"
 
-#: ../fontforge/parsettf.c:4461
+#: ../fontforge/parsettf.c:4462
 msgid "Script|Roman"
 msgstr "Романська"
 
-#: ../fontforge/parsettf.c:4461
+#: ../fontforge/parsettf.c:4462
 msgid "Script|Japanese"
 msgstr "Японська"
 
-#: ../fontforge/parsettf.c:4461
+#: ../fontforge/parsettf.c:4462
 msgid "Script|Traditional Chinese"
 msgstr "Традиційна китайська"
 
-#: ../fontforge/parsettf.c:4461
+#: ../fontforge/parsettf.c:4462
 msgid "Script|Korean"
 msgstr "Корейська"
 
 #. GT: Don't ask me what RSymbol means, I don't know either. It's in apple's
 #. GT:  docs though
-#: ../fontforge/parsettf.c:4465
+#: ../fontforge/parsettf.c:4466
 msgid "Script|Cyrillic"
 msgstr "Кирилиця"
 
-#: ../fontforge/parsettf.c:4465
+#: ../fontforge/parsettf.c:4466
 msgid "Script|RSymbol"
 msgstr "RSymbol"
 
-#: ../fontforge/parsettf.c:4465
+#: ../fontforge/parsettf.c:4466
 msgid "Script|Devanagari"
 msgstr "Деванагарі"
 
-#: ../fontforge/parsettf.c:4466
+#: ../fontforge/parsettf.c:4467
 msgid "Script|Gurmukhi"
 msgstr "Гурмухі"
 
-#: ../fontforge/parsettf.c:4468
+#: ../fontforge/parsettf.c:4469
 msgid "Script|Simplified Chinese"
 msgstr "Спрощена китайська"
 
-#: ../fontforge/parsettf.c:4469
+#: ../fontforge/parsettf.c:4470
 msgid "Script|Central European"
 msgstr "Центральноєвропейська"
 
-#: ../fontforge/parsettf.c:4482
+#: ../fontforge/parsettf.c:4483
 msgid "Unicode 1.0"
 msgstr "Unicode 1.0"
 
-#: ../fontforge/parsettf.c:4485
+#: ../fontforge/parsettf.c:4486
 msgid "Unicode 1.1"
 msgstr "Unicode 1.1"
 
-#: ../fontforge/parsettf.c:4488
+#: ../fontforge/parsettf.c:4489
 msgid "ISO 10646:1993"
 msgstr "ISO 10646:1993"
 
-#: ../fontforge/parsettf.c:4491
+#: ../fontforge/parsettf.c:4492
 msgid "Unicode 2.0+, BMP only"
 msgstr "Unicode 2.0+, лише BMP"
 
-#: ../fontforge/parsettf.c:4494
+#: ../fontforge/parsettf.c:4495
 msgid "Unicode 2.0+, all planes"
 msgstr "Unicode 2.0+, всі частини"
 
-#: ../fontforge/parsettf.c:4498
+#: ../fontforge/parsettf.c:4499
 msgid "\"Symbol\""
 msgstr "\"Symbol\""
 
-#: ../fontforge/parsettf.c:4504 ../fontforgeexe/charinfo.c:3567
-#: ../fontforgeexe/charinfo.c:4846 ../fontforgeexe/deltaui.c:404
+#: ../fontforge/parsettf.c:4505 ../fontforgeexe/charinfo.c:3572
+#: ../fontforgeexe/charinfo.c:4851 ../fontforgeexe/deltaui.c:404
 #: ../fontforgeexe/groupsdlg.c:1260
 msgid "Unicode"
 msgstr "Unicode"
 
-#: ../fontforge/parsettf.c:4505 ../fontforgeexe/mmdlg.c:2623
+#: ../fontforge/parsettf.c:4506 ../fontforgeexe/mmdlg.c:2623
 #: ../fontforgeexe/savefontdlg.c:674
 msgid "Apple"
 msgstr "Apple"
 
-#: ../fontforge/parsettf.c:4506
+#: ../fontforge/parsettf.c:4507
 msgid "ISO (Deprecated)"
 msgstr "ISO (застаріла)"
 
-#: ../fontforge/parsettf.c:4507
+#: ../fontforge/parsettf.c:4508
 msgid "MicroSoft"
 msgstr "MicroSoft"
 
-#: ../fontforge/parsettf.c:4508 ../fontforgeexe/encodingui.c:447
+#: ../fontforge/parsettf.c:4509 ../fontforgeexe/encodingui.c:447
 msgid "Custom"
 msgstr "Нетиповий"
 
-#: ../fontforge/parsettf.c:4509
+#: ../fontforge/parsettf.c:4510
 msgid "FreeType internals"
 msgstr "Внутрішні функції FreeType"
 
-#: ../fontforge/parsettf.c:4510 ../fontforge/python.c:19008
-#: ../fontforge/python.c:19023 ../fontforgeexe/fontinfo.c:1791
+#: ../fontforge/parsettf.c:4511 ../fontforge/python.c:19018
+#: ../fontforge/python.c:19033 ../fontforgeexe/fontinfo.c:1791
 #: ../fontforgeexe/fontinfo.c:1807
 msgid "Unknown"
 msgstr "Невідомо"
 
-#: ../fontforge/parsettf.c:4524 ../fontforge/parsettf.c:4525
+#: ../fontforge/parsettf.c:4525 ../fontforge/parsettf.c:4526
 msgid "Pick a CMap subtable"
 msgstr "Вибір підтаблиці CMap"
 
-#: ../fontforge/parsettf.c:4585
+#: ../fontforge/parsettf.c:4586
 msgid "Could not find any valid encoding tables"
 msgstr "Не вдалося знайти одної коректної таблиці кодування"
 
-#: ../fontforge/parsettf.c:4646
+#: ../fontforge/parsettf.c:4647
 msgid "Could not find a usable encoding table"
 msgstr "Не вдалося знайти придатну до використання таблицю кодування"
 
-#: ../fontforge/parsettf.c:4775 ../fontforge/parsettf.c:4819
-#: ../fontforge/parsettf.c:4825
+#: ../fontforge/parsettf.c:4776 ../fontforge/parsettf.c:4820
+#: ../fontforge/parsettf.c:4826
 #, c-format
 msgid "Attempt to encode missing glyph %d to %d (0x%x)\n"
 msgstr "Спроба визначення кодування пропущеного гліфа %d з %d (0x%x)\n"
 
-#: ../fontforge/parsettf.c:4783 ../fontforge/parsettf.c:4833
+#: ../fontforge/parsettf.c:4784 ../fontforge/parsettf.c:4834
 #, c-format
 msgid ""
 "Multiple glyphs map to the same unicode encoding U+%04X, only one will be "
@@ -8739,7 +8739,7 @@ msgstr ""
 "На одне кодування Unicode U+%04X відображено декілька гліфів. Буде "
 "використано лише один з них.\n"
 
-#: ../fontforge/parsettf.c:4806
+#: ../fontforge/parsettf.c:4807
 #, c-format
 msgid ""
 "Glyph index out of bounds. Was %d, must be less than %d.\n"
@@ -8750,29 +8750,29 @@ msgstr ""
 " має бути менше за %d. У спробі пов’язати гліф з кодуванням %x\n"
 " у сегменті %d зі значеннями платформа=%d, специфіка=%d (у «cmap»)\n"
 
-#: ../fontforge/parsettf.c:4848
+#: ../fontforge/parsettf.c:4849
 msgid "Use of a range offset of 0xffff to mean a missing glyph in cmap table\n"
 msgstr ""
 "Використати відступ діапазону 0xffff для осереднення гліфа у таблиці cmap\n"
 
-#: ../fontforge/parsettf.c:5033
+#: ../fontforge/parsettf.c:5034
 msgid "Bad font: Encoding data out of range.\n"
 msgstr "Помилка у шрифті: дані кодування поза межами діапазону.\n"
 
-#: ../fontforge/parsettf.c:5131
+#: ../fontforge/parsettf.c:5132
 msgid "Windows will reject fonts with an OS/2 version number of 0\n"
 msgstr "Windows не сприйматиме шрифти з номером версії для OS/2 рівним 0\n"
 
-#: ../fontforge/parsettf.c:5134
+#: ../fontforge/parsettf.c:5135
 msgid "Windows will reject otf (cff) fonts with an OS/2 version number of 1\n"
 msgstr ""
 "Windows не сприйматиме шрифти otf (cff) з номером версії OS/2 рівним 1\n"
 
-#: ../fontforge/parsettf.c:5149
+#: ../fontforge/parsettf.c:5150
 msgid "Reading Names"
 msgstr "Читання назв"
 
-#: ../fontforge/parsettf.c:5245
+#: ../fontforge/parsettf.c:5249
 #, c-format
 msgid ""
 "Glyph %d is called \".notdef\", a singularly inept choice of name (only "
@@ -8784,13 +8784,13 @@ msgstr ""
 " може називатися .notdef)\n"
 "FontForge виконає перейменування гліфа.\n"
 
-#: ../fontforge/parsettf.c:5374
+#: ../fontforge/parsettf.c:5378
 msgid "Invalid point match. Point would be after this reference.\n"
 msgstr ""
 "Некоректна відповідність точок. Точку має бути вказано після цього "
 "посилання.\n"
 
-#: ../fontforge/parsettf.c:5399
+#: ../fontforge/parsettf.c:5403
 #, c-format
 msgid ""
 "Could not match points in composite glyph (%d to %d) when adding %s to %s\n"
@@ -8798,24 +8798,24 @@ msgstr ""
 "Не вдалося встановити відповідність точок складеного гліфа (%d на %d) під "
 "час додавання %s до %s\n"
 
-#: ../fontforge/parsettf.c:5443
+#: ../fontforge/parsettf.c:5447
 msgid "Fixing up References"
 msgstr "Виправлення посилань"
 
-#: ../fontforge/parsettf.c:5460
+#: ../fontforge/parsettf.c:5464
 #, c-format
 msgid "Unlikely length for table, so I'm ignoring it. %u\n"
 msgstr "Неймовірна довжина таблиці. Її значення буде проігноровано. %u\n"
 
-#: ../fontforge/parsettf.c:5515
+#: ../fontforge/parsettf.c:5519
 msgid "TTF 'glyf'"
 msgstr "TTF «glyf»"
 
-#: ../fontforge/parsettf.c:5516
+#: ../fontforge/parsettf.c:5520
 msgid "OTF 'CFF '"
 msgstr "OTF «CFF »"
 
-#: ../fontforge/parsettf.c:5519
+#: ../fontforge/parsettf.c:5523
 msgid ""
 "This font contains both a TrueType 'glyf' table and an OpenType 'CFF ' "
 "table. FontForge can only deal with one at a time, please pick which one you "
@@ -8825,17 +8825,17 @@ msgstr ""
 "OpenType 'CFF '. FontForge може працювати лише з однією таблицею одночасно, "
 "будь ласка, виберіть ту з них, яку бажаєте використовувати."
 
-#: ../fontforge/parsettf.c:5557
+#: ../fontforge/parsettf.c:5561
 msgid "No Bitmap Strikes"
 msgstr "Немає растрових розмірів"
 
-#: ../fontforge/parsettf.c:5557
+#: ../fontforge/parsettf.c:5561
 #, c-format
 msgid "No (useable) bitmap strikes in this TTF font: %s"
 msgstr ""
 "Немає (придатних для використання) растрових розмірів у цьому шрифті TTF: %s"
 
-#: ../fontforge/parsettf.c:5702
+#: ../fontforge/parsettf.c:5706
 msgid ""
 "The names 'alefmaksurainitialarabic' and 'alefmaksuramedialarabic' in the "
 "Adobe Glyph List disagree with Unicode.  The use of these glyph names is "
@@ -8845,7 +8845,7 @@ msgstr ""
 "гліфів Adobe не узгоджуються з Unicode. Через це, такими назвами не слід "
 "користуватися.\n"
 
-#: ../fontforge/parsettf.c:5704
+#: ../fontforge/parsettf.c:5708
 #, c-format
 msgid ""
 "The glyph named %.30s is mapped to U+%04X.\n"
@@ -8854,13 +8854,13 @@ msgstr ""
 "Гліф з назвою %.30s відображено до U+%04X.\n"
 "Втім, відповідно до його назви, гліф слід відобразити до U+%04X.\n"
 
-#: ../fontforge/parsettf.c:6243
+#: ../fontforge/parsettf.c:6247
 #, c-format
 msgid "A point in %s is outside the font bounding box data.\n"
 msgstr ""
 "Точка у %s лежить поза межами даних обмежувальної рамки даних шрифту.\n"
 
-#: ../fontforge/parsettf.c:6247
+#: ../fontforge/parsettf.c:6251
 #, c-format
 msgid ""
 "The advance width of %s (%d) does not match the font's advanceWidthMax (%d) "
@@ -8869,7 +8869,7 @@ msgstr ""
 "Додаткова ширина %s (%d) не відповідає значенню advanceWidthMax шрифту (%d), "
 "а цей шрифт є шрифтом з фіксованою шириною\n"
 
-#: ../fontforge/parsettf.c:6385
+#: ../fontforge/parsettf.c:6389
 #, c-format
 msgid "Invalid font count in TTC %s."
 msgstr "Некоректний лічильник шрифту у TTC %s."
@@ -9028,7 +9028,7 @@ msgstr "Не вдалося створити шрифт postscript"
 msgid "Print Failed"
 msgstr "Спроба друку зазнала невдачі"
 
-#: ../fontforge/print.c:1778 ../fontforge/tottf.c:6084
+#: ../fontforge/print.c:1778 ../fontforge/tottf.c:6081
 msgid "Warning: Font contained no glyphs"
 msgstr "Попередження: у шрифті немає жодного гліфа"
 
@@ -9419,30 +9419,30 @@ msgstr "Непридатний для інтерпретації код опер
 msgid "end of subroutine reached with no return in %s\n"
 msgstr "підпрограму завершено без інструкції return у %s\n"
 
-#: ../fontforge/python.c:4120
+#: ../fontforge/python.c:4128
 msgid "<no glyph>"
 msgstr "<немає гліфа>"
 
-#: ../fontforge/python.c:6541
+#: ../fontforge/python.c:6551
 msgid "Invalid unit vector has been specified. The hint is ignored.\n"
 msgstr "Вказано некоректний одиничний вектор. Гінт проігноровано.\n"
 
-#: ../fontforge/python.c:6544
+#: ../fontforge/python.c:6554
 msgid "Use the 'vhint' property to specify a vertical hint.\n"
 msgstr ""
 "Для визначення вертикального гінту скористайтеся властивістю «vhint».\n"
 
-#: ../fontforge/python.c:6547
+#: ../fontforge/python.c:6557
 msgid "Use the 'hhint' property to specify a horizontal hint.\n"
 msgstr ""
 "Для визначення горизонтального гінту скористайтеся властивістю «hhint».\n"
 
-#: ../fontforge/python.c:8049 ../fontforge/scripting.c:7821
+#: ../fontforge/python.c:8059 ../fontforge/scripting.c:7821
 #, c-format
 msgid "Unexpected PST type in GetPosSub (%d).\n"
 msgstr "Неочікуваний тип PST у GetPosSub (%d).\n"
 
-#: ../fontforge/python.c:16528 ../fontforgeexe/scstylesui.c:477
+#: ../fontforge/python.c:16538 ../fontforgeexe/scstylesui.c:477
 msgid ""
 "The horizontal and vertical stem add amounts must either both be zero, or "
 "neither may be 0"
@@ -9450,7 +9450,7 @@ msgstr ""
 "Розміри додавання горизонтальних і вертикальних штрихів можуть бути або "
 "обидва нульовими або обидва ненульовими"
 
-#: ../fontforge/python.c:16535 ../fontforgeexe/scstylesui.c:484
+#: ../fontforge/python.c:16545 ../fontforgeexe/scstylesui.c:484
 msgid ""
 "The horizontal and vertical stem add amounts may not differ by more than a "
 "factor of 4"
@@ -9458,17 +9458,17 @@ msgstr ""
 "Розміри додавання горизонтальних і вертикальних штрихів можуть відрізнятися "
 "не більше, ніж у 4 рази"
 
-#: ../fontforge/python.c:18472
+#: ../fontforge/python.c:18482
 #, c-format
 msgid "Can't open %s"
 msgstr "Не вдалося відкрити %s"
 
-#: ../fontforge/python.c:18484
+#: ../fontforge/python.c:18494
 #, c-format
 msgid "Execution of script %s failed"
 msgstr "Спроба виконати скрипт %s зазнала невдачі"
 
-#: ../fontforge/python.c:18646
+#: ../fontforge/python.c:18656
 #, c-format
 msgid "%s: Is not callable"
 msgstr "%s: непридатне до викликання"
@@ -10292,76 +10292,76 @@ msgstr "Не вдалося обробити шрифт CID, %sCIDFontType %d, %
 msgid "CID format doesn't contain what we expected it to.\n"
 msgstr "Формат CID не містить даних, на які очікувала програма.\n"
 
-#: ../fontforge/svg.c:1580
+#: ../fontforge/svg.c:1584
 #, c-format
 msgid "Unknown type '%c' found in path specification\n"
 msgstr "У специфікації контурів виявлено невідомий тип «%c»\n"
 
-#: ../fontforge/svg.c:2044
+#: ../fontforge/svg.c:2048
 #, c-format
 msgid "Could not find Color Source with id %s."
 msgstr "Не вдалося знайти джерело кольору з ідентифікатором %s."
 
-#: ../fontforge/svg.c:2185
+#: ../fontforge/svg.c:2189
 #, c-format
 msgid "FontForge does not currently parse pattern Color Sources (%s)."
 msgstr ""
 "FontForge у поточній версії не може обробляти шаблон джерел кольорів (%s)."
 
-#: ../fontforge/svg.c:2188
+#: ../fontforge/svg.c:2192
 #, c-format
 msgid "Color Source with id %s had an unexpected type %s."
 msgstr ""
 "Джерело кольору з ідентифікатором %s належало до неочікуваного типу %s."
 
-#: ../fontforge/svg.c:2291
+#: ../fontforge/svg.c:2295
 #, c-format
 msgid "Bad hex color spec: %s\n"
 msgstr "Помилкова шістнадцяткова специфікація кольорів: %s\n"
 
-#: ../fontforge/svg.c:2303
+#: ../fontforge/svg.c:2307
 #, c-format
 msgid "Bad RGB color spec: %s\n"
 msgstr "Помилкова специфікація кольорів RGB: %s\n"
 
-#: ../fontforge/svg.c:2323
+#: ../fontforge/svg.c:2327
 #, c-format
 msgid "Failed to parse color %s\n"
 msgstr "Не вдалося обробити колір %s\n"
 
-#: ../fontforge/svg.c:2401
+#: ../fontforge/svg.c:2405
 #, c-format
 msgid "Unsupported mime type in data URI: %s\n"
 msgstr "Непідтримуваний тип MIME у адресі даних: %s\n"
 
-#: ../fontforge/svg.c:2465
+#: ../fontforge/svg.c:2469
 msgid "FontForge only supports embedded images in data: URIs\n"
 msgstr ""
 "У FontForge передбачено підтримку лише вбудованих у дані зображень: адреси\n"
 
-#: ../fontforge/svg.c:2712
+#: ../fontforge/svg.c:2716
 #, c-format
 msgid "Could not find clippath named %s."
 msgstr "Не вдалося знайти контуру обрізання з назвою %s."
 
-#: ../fontforge/svg.c:3227
+#: ../fontforge/svg.c:3231
 msgid "This font does not specify units-per-em\n"
 msgstr "У цьому шрифті не вказано кількість одиниць на em\n"
 
-#: ../fontforge/svg.c:3362
+#: ../fontforge/svg.c:3366
 msgid "This font does not specify font-face\n"
 msgstr "У цьому шрифті не вказано нарису шрифту\n"
 
-#: ../fontforge/svg.c:3564
+#: ../fontforge/svg.c:3568
 msgid "This file contains no SVG fonts.\n"
 msgstr "У цьому файлі не міститься шрифтів SVG.\n"
 
-#: ../fontforge/svg.c:3604 ../fontforge/svg.c:3629 ../fontforge/svg.c:3649
-#: ../fontforge/svg.c:3692
+#: ../fontforge/svg.c:3608 ../fontforge/svg.c:3633 ../fontforge/svg.c:3653
+#: ../fontforge/svg.c:3696
 msgid "Can't find libxml2.\n"
 msgstr "Не вдалося знайти libxml2.\n"
 
-#: ../fontforge/svg.c:3706
+#: ../fontforge/svg.c:3710
 #, c-format
 msgid "%s does not contain an <svg> element at the top\n"
 msgstr "%s не містить елемента <svg> у верхній частині\n"
@@ -10417,15 +10417,15 @@ msgstr ""
 "ймовірно, пересунуть не ті точки і не у те місце.\n"
 "Бажаєте, щоб інструкції було вилучено?"
 
-#: ../fontforge/tottf.c:4268 ../fontforge/tottf.c:4274
-#: ../fontforge/tottf.c:4280 ../fontforge/tottf.c:4286
-#: ../fontforge/tottf.c:4292 ../fontforge/tottf.c:4323
-#: ../fontforge/tottf.c:4331 ../fontforgeexe/encodingui.c:614
+#: ../fontforge/tottf.c:4265 ../fontforge/tottf.c:4271
+#: ../fontforge/tottf.c:4277 ../fontforge/tottf.c:4283
+#: ../fontforge/tottf.c:4289 ../fontforge/tottf.c:4320
+#: ../fontforge/tottf.c:4328 ../fontforgeexe/encodingui.c:614
 msgid "Bad Encoding"
 msgstr "Помилкове кодування"
 
-#: ../fontforge/tottf.c:4268 ../fontforge/tottf.c:4274
-#: ../fontforge/tottf.c:4280
+#: ../fontforge/tottf.c:4265 ../fontforge/tottf.c:4271
+#: ../fontforge/tottf.c:4277
 #, c-format
 msgid ""
 "There is a single byte character (%d) using one of the slots needed for "
@@ -10434,34 +10434,34 @@ msgstr ""
 "Виявлено однобайтовий символ (%d), що використовує один зі слотів, потрібних "
 "для двобайтових символів."
 
-#: ../fontforge/tottf.c:4286 ../fontforge/tottf.c:4292
+#: ../fontforge/tottf.c:4283 ../fontforge/tottf.c:4289
 #, c-format
 msgid "There is a character (%d) which cannot be encoded"
 msgstr "Виявлено символ (%d), який не можна закодувати"
 
-#: ../fontforge/tottf.c:4323 ../fontforge/tottf.c:4331
+#: ../fontforge/tottf.c:4320 ../fontforge/tottf.c:4328
 #, c-format
 msgid "There is a character (%d) which is not normally in the encoding"
 msgstr "Виявлено символ (%d), якого зазвичай немає у кодуванні"
 
-#: ../fontforge/tottf.c:5681
+#: ../fontforge/tottf.c:5678
 msgid "Missing bitmap strike"
 msgstr "Немає растрового розміру"
 
-#: ../fontforge/tottf.c:5681
+#: ../fontforge/tottf.c:5678
 #, c-format
 msgid "The font database does not contain a bitmap of size %d and depth %d"
 msgstr "У базі даних шрифтів не міститься растру розміру %d з глибиною %d"
 
-#: ../fontforge/tottf.c:5695
+#: ../fontforge/tottf.c:5692
 msgid "No bitmap strikes"
 msgstr "Немає растрових розмірів"
 
-#: ../fontforge/tottf.c:5702
+#: ../fontforge/tottf.c:5699
 msgid "Too many glyphs"
 msgstr "Занадто багато гліфів"
 
-#: ../fontforge/tottf.c:5702
+#: ../fontforge/tottf.c:5699
 #, c-format
 msgid ""
 "The 'sfnt' format is currently limited to 65535 glyphs, and your font has %d "
@@ -10470,7 +10470,7 @@ msgstr ""
 "Поточну версію формату «sfnt» обмежено 65535 гліфами, а у вашому шрифті їх "
 "%d."
 
-#: ../fontforge/tottf.c:5708
+#: ../fontforge/tottf.c:5705
 msgid ""
 "Your font has exactly 65535 glyphs. Encoding 65535 is the limit and is often "
 "used as a magic             value, so it may cause quirks.\n"
@@ -10479,18 +10479,18 @@ msgstr ""
 "використовується як контрольне значення, отже його використання може "
 "призвести до непередбачуваних наслідків.\n"
 
-#: ../fontforge/tottf.c:5945
+#: ../fontforge/tottf.c:5942
 #, c-format
 msgid "Failed to open glyph to name map file for writing: %s\n"
 msgstr ""
 "Не вдалося відкрити гліф для визначення назви файла карти для запису: %s\n"
 
-#: ../fontforge/tottf.c:6084 ../fontforge/tottf.c:6091
-#: ../fontforge/tottf.c:6094
+#: ../fontforge/tottf.c:6081 ../fontforge/tottf.c:6088
+#: ../fontforge/tottf.c:6091
 msgid "No Encoded Glyphs"
 msgstr "Немає закодованих гліфів"
 
-#: ../fontforge/tottf.c:6091
+#: ../fontforge/tottf.c:6088
 msgid ""
 "This font contains no glyphs with unicode encodings.\n"
 "Would you like to use a \"Symbol\" encoding instead of Unicode?"
@@ -10498,7 +10498,7 @@ msgstr ""
 "У цьому шрифті не міститься гліфів з кодуваннями Unicode.\n"
 "Бажаєте скористатися кодуванням «Символи» замість Unicode?"
 
-#: ../fontforge/tottf.c:6094
+#: ../fontforge/tottf.c:6091
 msgid ""
 "This font contains no glyphs with unicode encodings.\n"
 "You will probably not be able to use the output."
@@ -10506,11 +10506,11 @@ msgstr ""
 "У цьому шрифті не міститься гліфів з кодуваннями Unicode.\n"
 "Ймовірно ви не зможете скористатися виведеними даними."
 
-#: ../fontforge/tottf.c:6164
+#: ../fontforge/tottf.c:6161
 msgid "Table length should not be odd\n"
 msgstr "Довжина таблиці має бути парним числом\n"
 
-#: ../fontforge/tottf.c:7013
+#: ../fontforge/tottf.c:7010
 msgid "Something went wrong"
 msgstr "Виникли якісь проблеми"
 
@@ -10637,178 +10637,178 @@ msgstr ""
 msgid "Bracketted value is too large"
 msgstr "Значення у дужках є занадто великим"
 
-#: ../fontforge/ttfspecial.c:1001
+#: ../fontforge/ttfspecial.c:1003
 msgid "Bad glyph range specified in glyph comment subtable of PfEd table\n"
 msgstr ""
 "У підтаблиці коментарів до гліфів таблиці PfEd вказано помилковий діапазон "
 "гліфів\n"
 
-#: ../fontforge/ttfspecial.c:1015
+#: ../fontforge/ttfspecial.c:1017
 #, c-format
 msgid "Invalid comment string (negative length?) in 'PfEd' table for glyph %s."
 msgstr ""
 "Некоректний рядок коментаря (від’ємна довжина?) у таблиці «PfEd» для гліфа "
 "%s."
 
-#: ../fontforge/ttfspecial.c:1035
+#: ../fontforge/ttfspecial.c:1037
 msgid "Bad glyph range specified in color subtable of PfEd table\n"
 msgstr ""
 "У підтаблиці кольорів таблиці PfEd вказано помилковий діапазон гліфів\n"
 
-#: ../fontforge/ttfspecial.c:1080
+#: ../fontforge/ttfspecial.c:1082
 msgid ""
 "Whoops, attempt to name anchors in a subtable which doesn't contain any\n"
 msgstr "Ой, спроба назвати прив’язки у підтаблиці, у якій немає прив’язок\n"
 
-#: ../fontforge/ttfspecial.c:1104
+#: ../fontforge/ttfspecial.c:1106
 #, c-format
 msgid "Whoops, more names than subtables of lookup %s\n"
 msgstr "Ой, більше назв, ніжу підтаблицях фільтрування %s\n"
 
-#: ../fontforge/ttfspecial.c:1110
+#: ../fontforge/ttfspecial.c:1112
 msgid "Whoops, more names than lookups\n"
 msgstr "Ой, назв більше ніж фільтрувань.\n"
 
-#: ../fontforge/ttfspecial.c:1122
+#: ../fontforge/ttfspecial.c:1124
 msgid "Bad data type in contour verb in 'PfEd'\n"
 msgstr "Помилковий тип даних у verb контуру у «PfEd»\n"
 
-#: ../fontforge/ttfspecial.c:1138
+#: ../fontforge/ttfspecial.c:1140
 msgid "Whoops, contours must begin with a move to\n"
 msgstr "Ой, контури мають починатися з команди пересування до\n"
 
-#: ../fontforge/ttfspecial.c:1151
+#: ../fontforge/ttfspecial.c:1153
 msgid "Bad data modifier in contour command in 'PfEd'\n"
 msgstr "Помилковий модифікатор даних у команді контуру у «PfEd»\n"
 
-#: ../fontforge/ttfspecial.c:1224
+#: ../fontforge/ttfspecial.c:1226
 #, c-format
 msgid "Whoops, unexpected verb in contour %d.%d\n"
 msgstr "Ой, неочікуване verb у контурі %d.%d\n"
 
-#: ../fontforge/ttfspecial.c:1261
+#: ../fontforge/ttfspecial.c:1263
 #, c-format
 msgid "Whoops, bad spiro command %d\n"
 msgstr "Ой, помилкова команда spiro, %d\n"
 
-#: ../fontforge/ttfspecial.c:1315
+#: ../fontforge/ttfspecial.c:1317
 msgid "Bad glyph reference in layer info.\n"
 msgstr "Помилкове посилання на гліф у відомостях щодо шару.\n"
 
-#: ../fontforge/ttfspecial.c:1345
+#: ../fontforge/ttfspecial.c:1347
 msgid "Whoops, Ran out of spiros\n"
 msgstr "Ой, занадто багато spiro\n"
 
-#: ../fontforge/ttfspecial.c:1579
+#: ../fontforge/ttfspecial.c:1581
 #, c-format
 msgid "Unknown subtable '%c%c%c%c' in 'PfEd' table, ignored\n"
 msgstr "Невідома підтаблиця «%c%c%c%c» у таблиці «PfEd», проігноровано\n"
 
-#: ../fontforge/ttfspecial.c:1909
+#: ../fontforge/ttfspecial.c:1911
 #, c-format
 msgid "Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored\n"
 msgstr "Невідома підтаблиця «%c%c%c%c» у таблиці «TeX », проігноровано\n"
 
-#: ../fontforge/ufo.c:1946
+#: ../fontforge/ufo.c:1948
 #, c-format
 msgid "Error clearing %s."
 msgstr "Під час спроби спорожнення %s сталася помилка."
 
-#: ../fontforge/ufo.c:2282
+#: ../fontforge/ufo.c:2284
 #, c-format
 msgid "Unknown python type <%s> when reading UFO/GLIF lib data."
 msgstr ""
 "Під час читання даних бібліотеки UFO/GLIF виявлено невідомий програмі тип "
 "python, <%s>."
 
-#: ../fontforge/ufo.c:2368
-msgid "Expected glyph file with format==1"
-msgstr "Не вистачає файла гліфів з format==1"
+#: ../fontforge/ufo.c:2370
+msgid "Expected glyph file with format==1 or 2"
+msgstr "Не вистачає файла гліфів з format==1 або 2"
 
-#: ../fontforge/ufo.c:2380
+#: ../fontforge/ufo.c:2382
 msgid "Bad glyph name."
 msgstr "Помилкова назва гліфа."
 
-#: ../fontforge/ufo.c:2476
+#: ../fontforge/ufo.c:2478
 msgid "component with no base glyph"
 msgstr "компонент без базового гліфа"
 
-#: ../fontforge/ufo.c:2618
+#: ../fontforge/ufo.c:2620
 msgid "We cannot have lead-in points for an open curve.\n"
 msgstr "На незамкненій кривій не може бути вхідних точок.\n"
 
-#: ../fontforge/ufo.c:2624
+#: ../fontforge/ufo.c:2626
 msgid "The move point must be at the beginning of the contour.\n"
 msgstr "Точка пересування має перебувати на початку контуру.\n"
 
-#: ../fontforge/ufo.c:2783
+#: ../fontforge/ufo.c:2785
 msgid "This spline set has no points.\n"
 msgstr "У цьому наборі сплайнів не має точок.\n"
 
-#: ../fontforge/ufo.c:2829
+#: ../fontforge/ufo.c:2831
 msgid "Duplicate lib data.\n"
 msgstr "Дублювання бібліотечних даних.\n"
 
-#: ../fontforge/ufo.c:2844
+#: ../fontforge/ufo.c:2846
 #, c-format
 msgid "Bad glif file %s"
 msgstr "Помилковий файл glif %s"
 
-#: ../fontforge/ufo.c:2864
+#: ../fontforge/ufo.c:2866
 msgid "There's a reference to a glyph with no name."
 msgstr "Посилання на гліф без назви."
 
-#: ../fontforge/ufo.c:2874
+#: ../fontforge/ufo.c:2876
 #, c-format
 msgid "Invalid glyph for %s when fixing up references."
 msgstr "Некоректний гліф %s під час виправлення посилань."
 
-#: ../fontforge/ufo.c:2876
+#: ../fontforge/ufo.c:2878
 #, c-format
 msgid "Failed to find glyph %s when fixing up references."
 msgstr "Не вдалося знайти гліф %s під час виправлення посилань."
 
-#: ../fontforge/ufo.c:2910
+#: ../fontforge/ufo.c:2912
 msgid "Bad contents.plist"
 msgstr "Помилковий файл contents.plist"
 
-#: ../fontforge/ufo.c:2916 ../fontforge/ufo.c:3288 ../fontforge/ufo.c:3369
-#: ../fontforge/ufo.c:3478 ../fontforge/ufo.c:3756 ../fontforge/ufo.c:4277
+#: ../fontforge/ufo.c:2918 ../fontforge/ufo.c:3290 ../fontforge/ufo.c:3371
+#: ../fontforge/ufo.c:3480 ../fontforge/ufo.c:3758 ../fontforge/ufo.c:4279
 msgid "Expected property list file"
 msgstr "Мало бути вказано файл списку властивостей"
 
-#: ../fontforge/ufo.c:3300
+#: ../fontforge/ufo.c:3302
 #, c-format
 msgid "Skipping group %s with same name as a glyph.\n"
 msgstr "Пропускаємо групу %s із тією ж назвою, що і гліф.\n"
 
-#: ../fontforge/ufo.c:3302
+#: ../fontforge/ufo.c:3304
 #, c-format
 msgid "Skipping duplicate group %s.\n"
 msgstr "Пропускаємо дублікат групи %s.\n"
 
-#: ../fontforge/ufo.c:3319
+#: ../fontforge/ufo.c:3321
 #, c-format
 msgid "Skipping non-existent glyph %s in group %s.\n"
 msgstr "Пропускаємо гліф %s у групі %s, якого не існує.\n"
 
-#: ../fontforge/ufo.c:3522 ../fontforge/ufo.c:3544
+#: ../fontforge/ufo.c:3524 ../fontforge/ufo.c:3546
 msgid "kerning.plist references an entity that is neither a glyph nor a group."
 msgstr "kerning.plist посилається на запис, який не є ні гліфом, ні групою."
 
-#: ../fontforge/ufo.c:3536
+#: ../fontforge/ufo.c:3538
 msgid "kerning.plist has a non-numeric offset."
 msgstr "kerning.plist має нечисловий відступ."
 
-#: ../fontforge/ufo.c:3549
+#: ../fontforge/ufo.c:3551
 msgid ""
 "kerning.plist defines kerning between two glyphs that are already kerned."
 msgstr ""
 "kerning.plist визначає кернінґ між двома гліфами, кернінґ між якими вже "
 "визначено."
 
-#: ../fontforge/ufo.c:3552 ../fontforge/ufo.c:3585 ../fontforge/ufo.c:3589
-#: ../fontforge/ufo.c:3602
+#: ../fontforge/ufo.c:3554 ../fontforge/ufo.c:3587 ../fontforge/ufo.c:3591
+#: ../fontforge/ufo.c:3604
 msgid ""
 "kerning.plist defines kerning between two glyphs that are already partially "
 "kerned."
@@ -10816,41 +10816,41 @@ msgstr ""
 "kerning.plist визначає кернінґ між двома гліфами, кернінґ між якими вже "
 "частково визначено."
 
-#: ../fontforge/ufo.c:3596
+#: ../fontforge/ufo.c:3598
 msgid "kerning.plist references a missing kerning class."
 msgstr "kerning.plist посилається на клас кернінґу, якого немає."
 
-#: ../fontforge/ufo.c:3597
+#: ../fontforge/ufo.c:3599
 msgid "kerning.plist defines an offset between classes in different lookups."
 msgstr "kerning.plist визначає відступ між класами у різних фільтрах."
 
-#: ../fontforge/ufo.c:3598
+#: ../fontforge/ufo.c:3600
 msgid "There is a kerning class index error."
 msgstr "Помилка індексування класу кернінґу."
 
-#: ../fontforge/ufo.c:3599
+#: ../fontforge/ufo.c:3601
 msgid "kerning.plist attempts to redefine a class kerning offset."
 msgstr "kerning.plist намагається перевизначити відступ класу кернінґу."
 
-#: ../fontforge/ufo.c:3735 ../fontforge/ufo.c:4296
+#: ../fontforge/ufo.c:3737 ../fontforge/ufo.c:4298
 msgid "Can't find libxml2."
 msgstr "Не вдалося знайти libxml2."
 
-#: ../fontforge/ufo.c:3875
+#: ../fontforge/ufo.c:3877
 msgid "Bad openTypeOS2type key: all bits are set. It will be ignored"
 msgstr ""
 "Помилковий ключ openTypeOS2type: встановлено всі біти. Ключ буде "
 "проігноровано."
 
-#: ../fontforge/ufo.c:4026
+#: ../fontforge/ufo.c:4028
 msgid "This font does not specify unitsPerEm, so we guess 1000."
 msgstr "У цьому шрифті не вказано unitsPerEm, припускаємо 1000."
 
-#: ../fontforge/ufo.c:4174 ../fontforge/ufo.c:4238
+#: ../fontforge/ufo.c:4176 ../fontforge/ufo.c:4240
 msgid "No glyphs directory or no contents file"
 msgstr "Немає каталогу з гліфами або файла вмісту"
 
-#: ../fontforge/ufo.c:4222
+#: ../fontforge/ufo.c:4224
 msgid "layercontents.plist lists no valid layers."
 msgstr "У layercontents.plist немає коректних шарів."
 
@@ -11915,7 +11915,7 @@ msgstr ""
 "Внутрішня помилка під час створення FNT. Помилковий відступ у файлі для "
 "растрових даних\n"
 
-#: ../fontforge/winfonts.c:910
+#: ../fontforge/winfonts.c:911
 #, c-format
 msgid "Could not open output file: %s"
 msgstr "Не вдалося відкрити файл вихідних даних: %s"
@@ -12311,13 +12311,13 @@ msgid "Language"
 msgstr "Мова"
 
 #: ../fontforgeexe/basedlg.c:72 ../fontforgeexe/basedlg.c:78
-#: ../fontforgeexe/basedlg.c:154 ../fontforgeexe/charinfo.c:4796
+#: ../fontforgeexe/basedlg.c:154 ../fontforgeexe/charinfo.c:4801
 #: ../fontforgeexe/cvgetinfo.c:513
 msgid "Min"
 msgstr "Мінімум"
 
 #: ../fontforgeexe/basedlg.c:73 ../fontforgeexe/basedlg.c:79
-#: ../fontforgeexe/basedlg.c:155 ../fontforgeexe/charinfo.c:4813
+#: ../fontforgeexe/basedlg.c:155 ../fontforgeexe/charinfo.c:4818
 #: ../fontforgeexe/cvgetinfo.c:520
 msgid "Max"
 msgstr "Максимум"
@@ -12629,7 +12629,7 @@ msgid "Win"
 msgstr "Win"
 
 #: ../fontforgeexe/bitmapdlg.c:396 ../fontforgeexe/fontinfo.c:10641
-#: ../fontforgeexe/prefs.c:2480
+#: ../fontforgeexe/prefs.c:2488
 msgid "Mac"
 msgstr "Mac"
 
@@ -12653,72 +12653,72 @@ msgstr "Створити растеризовані розміри (не пор�
 msgid "%1$.80s at %2$d size %3$d from %4$.80s"
 msgstr "%1$.80s у %2$d кеглем %3$d з %4$.80s"
 
-#: ../fontforgeexe/bitmapview.c:1762 ../fontforgeexe/fvmetricsdlg.c:127
+#: ../fontforgeexe/bitmapview.c:1765 ../fontforgeexe/fvmetricsdlg.c:127
 msgid "Set Width..."
 msgstr "Встановити ширину…"
 
-#: ../fontforgeexe/bitmapview.c:1765
+#: ../fontforgeexe/bitmapview.c:1768
 msgid "Set Vertical Width..."
 msgstr "Встановити вертикальну ширину…"
 
-#: ../fontforgeexe/bitmapview.c:1936 ../fontforgeexe/cvstroke.c:1879
+#: ../fontforgeexe/bitmapview.c:1939 ../fontforgeexe/cvstroke.c:1879
 msgid "Skew"
 msgstr "Нахилити"
 
-#: ../fontforgeexe/bitmapview.c:1936
+#: ../fontforgeexe/bitmapview.c:1939
 msgid "Skew Ratio"
 msgstr "Коефіцієї перекошування"
 
-#: ../fontforgeexe/bitmapview.c:2075 ../fontforgeexe/charview.c:11634
+#: ../fontforgeexe/bitmapview.c:2078 ../fontforgeexe/charview.c:11634
 #: ../fontforgeexe/fontview.c:5504 ../fontforgeexe/fontview.c:5857
 #: ../fontforgeexe/metricsview.c:3486
 msgid "New O_utline Window"
 msgstr "Нове вікно _обрису"
 
-#: ../fontforgeexe/bitmapview.c:2076 ../fontforgeexe/charview.c:11635
+#: ../fontforgeexe/bitmapview.c:2079 ../fontforgeexe/charview.c:11635
 #: ../fontforgeexe/fontview.c:5505 ../fontforgeexe/metricsview.c:3487
 msgid "New _Bitmap Window"
 msgstr "Нове вікно _растру"
 
-#: ../fontforgeexe/bitmapview.c:2077 ../fontforgeexe/charview.c:11636
+#: ../fontforgeexe/bitmapview.c:2080 ../fontforgeexe/charview.c:11636
 #: ../fontforgeexe/charview.c:12072 ../fontforgeexe/fontview.c:5318
 #: ../fontforgeexe/fontview.c:5506 ../fontforgeexe/metricsview.c:3488
 msgid "New _Metrics Window"
 msgstr "Нове вікно _метрик"
 
-#: ../fontforgeexe/bitmapview.c:2079 ../fontforgeexe/charview.c:11638
+#: ../fontforgeexe/bitmapview.c:2082 ../fontforgeexe/charview.c:11638
 #: ../fontforgeexe/fontview.c:5508 ../fontforgeexe/metricsview.c:3490
 #: ../fontforgeexe/uiutil.c:636
 msgid "Warnings"
 msgstr "Попередження"
 
-#: ../fontforgeexe/bitmapview.c:2100
+#: ../fontforgeexe/bitmapview.c:2103
 msgid "Flip Horizontally"
 msgstr "Віддзеркалити горизонтально"
 
-#: ../fontforgeexe/bitmapview.c:2100
+#: ../fontforgeexe/bitmapview.c:2103
 msgid "Flip Vertically"
 msgstr "Віддзеркалити вертикально"
 
 #. GT: "CW" means Clockwise
-#: ../fontforgeexe/bitmapview.c:2102
+#: ../fontforgeexe/bitmapview.c:2105
 msgid "Rotate 90° CW"
 msgstr "Обернути на 90° за годинниковою стрілкою"
 
 #. GT: "CW" means Counter-Clockwise
-#: ../fontforgeexe/bitmapview.c:2104
+#: ../fontforgeexe/bitmapview.c:2107
 msgid "Rotate 90° CCW"
 msgstr "Обернути на 90° проти годинникової стрілки"
 
-#: ../fontforgeexe/bitmapview.c:2105
+#: ../fontforgeexe/bitmapview.c:2108
 msgid "Rotate 180°"
 msgstr "Обернути 180°"
 
-#: ../fontforgeexe/bitmapview.c:2106 ../fontforgeexe/transform.c:103
+#: ../fontforgeexe/bitmapview.c:2109 ../fontforgeexe/transform.c:103
 msgid "Skew..."
 msgstr "Нахилити…"
 
-#: ../fontforgeexe/bitmapview.c:2109 ../fontforgeexe/bitmapview.c:2113
+#: ../fontforgeexe/bitmapview.c:2112 ../fontforgeexe/bitmapview.c:2116
 #: ../fontforgeexe/charview.c:11669 ../fontforgeexe/charview.c:11673
 #: ../fontforgeexe/fontview.c:4407 ../fontforgeexe/fontview.c:4412
 #: ../fontforgeexe/metricsview.c:3524 ../fontforgeexe/metricsview.c:3528
@@ -12726,323 +12726,323 @@ msgstr "Нахилити…"
 msgid "Font|_New"
 msgstr "Ств_орити"
 
-#: ../fontforgeexe/bitmapview.c:2114 ../fontforgeexe/charview.c:11674
+#: ../fontforgeexe/bitmapview.c:2117 ../fontforgeexe/charview.c:11674
 #: ../fontforgeexe/fontview.c:4416 ../fontforgeexe/metricsview.c:3529
 msgid "_Open"
 msgstr "_Відкрити"
 
-#: ../fontforgeexe/bitmapview.c:2115 ../fontforgeexe/charview.c:11675
+#: ../fontforgeexe/bitmapview.c:2118 ../fontforgeexe/charview.c:11675
 #: ../fontforgeexe/fontview.c:4417 ../fontforgeexe/metricsview.c:3530
 msgid "Recen_t"
 msgstr "_Останні файли"
 
-#: ../fontforgeexe/bitmapview.c:2116 ../fontforgeexe/charview.c:11676
+#: ../fontforgeexe/bitmapview.c:2119 ../fontforgeexe/charview.c:11676
 #: ../fontforgeexe/fontview.c:4418 ../fontforgeexe/metricsview.c:3531
 msgid "_Close"
 msgstr "_Закрити"
 
-#: ../fontforgeexe/bitmapview.c:2118 ../fontforgeexe/charview.c:11679
+#: ../fontforgeexe/bitmapview.c:2121 ../fontforgeexe/charview.c:11679
 #: ../fontforgeexe/cvexportdlg.c:552 ../fontforgeexe/fontview.c:515
 #: ../fontforgeexe/fontview.c:4420 ../fontforgeexe/metricsview.c:3533
 #: ../gdraw/gsavefiledlg.c:242
 msgid "_Save"
 msgstr "З_берегти"
 
-#: ../fontforgeexe/bitmapview.c:2119 ../fontforgeexe/charview.c:11680
+#: ../fontforgeexe/bitmapview.c:2122 ../fontforgeexe/charview.c:11680
 #: ../fontforgeexe/fontview.c:4421 ../fontforgeexe/metricsview.c:3534
 msgid "S_ave as..."
 msgstr "Зберегти _як…"
 
-#: ../fontforgeexe/bitmapview.c:2120 ../fontforgeexe/charview.c:11681
+#: ../fontforgeexe/bitmapview.c:2123 ../fontforgeexe/charview.c:11681
 #: ../fontforgeexe/fontview.c:4423 ../fontforgeexe/metricsview.c:3535
 msgid "_Generate Fonts..."
 msgstr "С_творити шрифти…"
 
-#: ../fontforgeexe/bitmapview.c:2121 ../fontforgeexe/charview.c:11682
+#: ../fontforgeexe/bitmapview.c:2124 ../fontforgeexe/charview.c:11682
 #: ../fontforgeexe/fontview.c:4424 ../fontforgeexe/metricsview.c:3536
 msgid "Generate Mac _Family..."
 msgstr "Створити _гарнітуру Mac…"
 
-#: ../fontforgeexe/bitmapview.c:2122 ../fontforgeexe/charview.c:11683
+#: ../fontforgeexe/bitmapview.c:2125 ../fontforgeexe/charview.c:11683
 #: ../fontforgeexe/fontview.c:4425 ../fontforgeexe/metricsview.c:3537
 msgid "Generate TTC..."
 msgstr "Створити TTC…"
 
-#: ../fontforgeexe/bitmapview.c:2123
+#: ../fontforgeexe/bitmapview.c:2126
 msgid "Expor_t..."
 msgstr "Е_кспортувати…"
 
-#: ../fontforgeexe/bitmapview.c:2125 ../fontforgeexe/charview.c:11686
+#: ../fontforgeexe/bitmapview.c:2128 ../fontforgeexe/charview.c:11686
 #: ../fontforgeexe/fontinfo.c:6954 ../fontforgeexe/fontview.c:4427
 #: ../fontforgeexe/sftextfield.c:910
 msgid "_Import..."
 msgstr "_Імпортувати…"
 
-#: ../fontforgeexe/bitmapview.c:2126 ../fontforgeexe/charview.c:11687
+#: ../fontforgeexe/bitmapview.c:2129 ../fontforgeexe/charview.c:11687
 #: ../fontforgeexe/fontview.c:4429
 msgid "_Revert File"
 msgstr "Ві_дновити файл"
 
-#: ../fontforgeexe/bitmapview.c:2128 ../fontforgeexe/charview.c:11698
+#: ../fontforgeexe/bitmapview.c:2131 ../fontforgeexe/charview.c:11698
 #: ../fontforgeexe/fontview.c:4447 ../fontforgeexe/metricsview.c:3544
 msgid "Pr_eferences..."
 msgstr "П_араметри…"
 
-#: ../fontforgeexe/bitmapview.c:2129 ../fontforgeexe/charview.c:11699
+#: ../fontforgeexe/bitmapview.c:2132 ../fontforgeexe/charview.c:11699
 #: ../fontforgeexe/fontview.c:4448 ../fontforgeexe/metricsview.c:3545
 msgid "_X Resource Editor..."
 msgstr "_Редактор файла ресурсів X…"
 
-#: ../fontforgeexe/bitmapview.c:2131 ../fontforgeexe/charview.c:11701
+#: ../fontforgeexe/bitmapview.c:2134 ../fontforgeexe/charview.c:11701
 #: ../fontforgeexe/fontview.c:4450 ../fontforgeexe/metricsview.c:3547
 msgid "_Quit"
 msgstr "Ви_йти"
 
-#: ../fontforgeexe/bitmapview.c:2136 ../fontforgeexe/charview.c:11730
+#: ../fontforgeexe/bitmapview.c:2139 ../fontforgeexe/charview.c:11730
 #: ../fontforgeexe/fontview.c:4504 ../fontforgeexe/metricsview.c:3552
 #: ../fontforgeexe/sftextfield.c:903 ../gdraw/gtextfield.c:1038
 msgid "_Undo"
 msgstr "В_ернути"
 
-#: ../fontforgeexe/bitmapview.c:2137 ../fontforgeexe/charview.c:11731
+#: ../fontforgeexe/bitmapview.c:2140 ../fontforgeexe/charview.c:11731
 #: ../fontforgeexe/fontview.c:4505 ../fontforgeexe/metricsview.c:3553
 msgid "_Redo"
 msgstr "Повт_орити"
 
-#: ../fontforgeexe/bitmapview.c:2139 ../fontforgeexe/charview.c:11733
+#: ../fontforgeexe/bitmapview.c:2142 ../fontforgeexe/charview.c:11733
 #: ../fontforgeexe/fontview.c:4508 ../fontforgeexe/fontview.c:5859
 #: ../fontforgeexe/metricsview.c:3555 ../fontforgeexe/sftextfield.c:905
 #: ../fontforgeexe/uiutil.c:522 ../gdraw/gtextfield.c:1039
 msgid "Cu_t"
 msgstr "Ви_різати"
 
-#: ../fontforgeexe/bitmapview.c:2140 ../fontforgeexe/charview.c:11734
+#: ../fontforgeexe/bitmapview.c:2143 ../fontforgeexe/charview.c:11734
 #: ../fontforgeexe/fontview.c:4509 ../fontforgeexe/fontview.c:5860
 #: ../fontforgeexe/metricsview.c:3556 ../fontforgeexe/sftextfield.c:906
 #: ../fontforgeexe/uiutil.c:523 ../gdraw/gtextfield.c:1040
 msgid "_Copy"
 msgstr "_Копіювати"
 
-#: ../fontforgeexe/bitmapview.c:2141 ../fontforgeexe/charview.c:11735
+#: ../fontforgeexe/bitmapview.c:2144 ../fontforgeexe/charview.c:11735
 #: ../fontforgeexe/fontview.c:4510 ../fontforgeexe/fontview.c:5861
 #: ../fontforgeexe/metricsview.c:3557
 msgid "C_opy Reference"
 msgstr "Ко_піювати посилання"
 
-#: ../fontforgeexe/bitmapview.c:2142 ../fontforgeexe/charview.c:11740
+#: ../fontforgeexe/bitmapview.c:2145 ../fontforgeexe/charview.c:11740
 #: ../fontforgeexe/fontview.c:4516 ../fontforgeexe/fontview.c:5863
 #: ../fontforgeexe/metricsview.c:3562 ../fontforgeexe/sftextfield.c:907
 #: ../fontforgeexe/uiutil.c:524 ../gdraw/gtextfield.c:1041
 msgid "_Paste"
 msgstr "Вст_авити"
 
-#: ../fontforgeexe/bitmapview.c:2143 ../fontforgeexe/combinations.c:900
+#: ../fontforgeexe/bitmapview.c:2146 ../fontforgeexe/combinations.c:900
 #: ../fontforgeexe/fontview.c:4520 ../fontforgeexe/fontview.c:5864
 #: ../fontforgeexe/metricsview.c:3563 ../fontforgeexe/uiutil.c:525
 msgid "C_lear"
 msgstr "Сп_орожнити"
 
-#: ../fontforgeexe/bitmapview.c:2145 ../fontforgeexe/charview.c:11706
+#: ../fontforgeexe/bitmapview.c:2148 ../fontforgeexe/charview.c:11706
 #: ../fontforgeexe/fontview.c:4479 ../fontforgeexe/metricsview.c:3566
 #: ../gdraw/gaskdlg.c:974
 msgid "Select _All"
 msgstr "Позначити _все"
 
-#: ../fontforgeexe/bitmapview.c:2147 ../fontforgeexe/fontview.c:4535
+#: ../fontforgeexe/bitmapview.c:2150 ../fontforgeexe/fontview.c:4535
 msgid "Remo_ve Undoes"
 msgstr "Спо_рожнити журнал дій"
 
-#: ../fontforgeexe/bitmapview.c:2149 ../fontforgeexe/charview.c:11753
+#: ../fontforgeexe/bitmapview.c:2152 ../fontforgeexe/charview.c:11753
 #: ../fontforgeexe/fontview.c:4531 ../fontforgeexe/fontview.c:5866
 #: ../fontforgeexe/metricsview.c:3569
 msgid "U_nlink Reference"
 msgstr "Від’_єднати посилання"
 
-#: ../fontforgeexe/bitmapview.c:2154
+#: ../fontforgeexe/bitmapview.c:2157
 msgid "Flip _Horizontally"
 msgstr "Віддзеркалити _горизонтально"
 
-#: ../fontforgeexe/bitmapview.c:2155
+#: ../fontforgeexe/bitmapview.c:2158
 msgid "Flip _Vertically"
 msgstr "Віддзеркалити ве_ртикально"
 
-#: ../fontforgeexe/bitmapview.c:2156
+#: ../fontforgeexe/bitmapview.c:2159
 msgid "_Rotate 90° CW"
 msgstr "Обернути на _90° за годинниковою стрілкою"
 
-#: ../fontforgeexe/bitmapview.c:2157
+#: ../fontforgeexe/bitmapview.c:2160
 msgid "Rotate _90° CCW"
 msgstr "Обернути на 9_0° проти годинникової стрілки"
 
-#: ../fontforgeexe/bitmapview.c:2158
+#: ../fontforgeexe/bitmapview.c:2161
 msgid "Rotate _180°"
 msgstr "Обернути на _180°"
 
-#: ../fontforgeexe/bitmapview.c:2159
+#: ../fontforgeexe/bitmapview.c:2162
 msgid "_Skew..."
 msgstr "На_хилити…"
 
-#: ../fontforgeexe/bitmapview.c:2164 ../fontforgeexe/charview.c:11940
+#: ../fontforgeexe/bitmapview.c:2167 ../fontforgeexe/charview.c:11940
 #: ../fontforgeexe/fontview.c:4638 ../fontforgeexe/metricsview.c:3624
 msgid "_Font Info..."
 msgstr "Відомості щодо _шрифту…"
 
-#: ../fontforgeexe/bitmapview.c:2165 ../fontforgeexe/fontview.c:5868
+#: ../fontforgeexe/bitmapview.c:2168 ../fontforgeexe/fontview.c:5868
 #: ../fontforgeexe/metricsview.c:3625
 msgid "Glyph _Info..."
 msgstr "_Відомості щодо гліфа…"
 
-#: ../fontforgeexe/bitmapview.c:2166
+#: ../fontforgeexe/bitmapview.c:2169
 msgid "BDF Info..."
 msgstr "Відомості щодо BDF…"
 
-#: ../fontforgeexe/bitmapview.c:2168 ../fontforgeexe/fontview.c:4643
+#: ../fontforgeexe/bitmapview.c:2171 ../fontforgeexe/fontview.c:4643
 #: ../fontforgeexe/metricsview.c:3629
 msgid "Bitm_ap Strikes Available..."
 msgstr "Д_оступні растрові розміри…"
 
-#: ../fontforgeexe/bitmapview.c:2169 ../fontforgeexe/charview.c:11947
+#: ../fontforgeexe/bitmapview.c:2172 ../fontforgeexe/charview.c:11947
 #: ../fontforgeexe/fontview.c:4644 ../fontforgeexe/metricsview.c:3630
 msgid "Regenerate _Bitmap Glyphs..."
 msgstr "Повторно створити _растрові гліфи…"
 
-#: ../fontforgeexe/bitmapview.c:2170
+#: ../fontforgeexe/bitmapview.c:2173
 msgid "Remove This Glyph"
 msgstr "Вилучити цей гліф"
 
-#: ../fontforgeexe/bitmapview.c:2172 ../fontforgeexe/charview.c:11951
+#: ../fontforgeexe/bitmapview.c:2175 ../fontforgeexe/charview.c:11951
 #: ../fontforgeexe/fontview.c:4648
 msgid "_Transformations"
 msgstr "_Перетворення"
 
-#: ../fontforgeexe/bitmapview.c:2177 ../fontforgeexe/charview.c:12093
+#: ../fontforgeexe/bitmapview.c:2180 ../fontforgeexe/charview.c:12093
 #: ../fontforgeexe/charview.c:12411 ../fontforgeexe/charview.c:12432
 #: ../fontforgeexe/fontview.c:5887
 msgid "_Tools"
 msgstr "_Інструменти"
 
-#: ../fontforgeexe/bitmapview.c:2178 ../fontforgeexe/charview.c:12094
+#: ../fontforgeexe/bitmapview.c:2181 ../fontforgeexe/charview.c:12094
 #: ../fontforgeexe/fontview.c:5131 ../fontforgeexe/metricsview.c:3773
 msgid "_Layers"
 msgstr "_Шари"
 
-#: ../fontforgeexe/bitmapview.c:2179
+#: ../fontforgeexe/bitmapview.c:2182
 msgid "_Shades"
 msgstr "_Тіні"
 
-#: ../fontforgeexe/bitmapview.c:2181 ../fontforgeexe/charview.c:12096
+#: ../fontforgeexe/bitmapview.c:2184 ../fontforgeexe/charview.c:12096
 msgid "_Docked Palettes"
 msgstr "В_будовані палітри"
 
-#: ../fontforgeexe/bitmapview.c:2186 ../fontforgeexe/charview.c:12237
+#: ../fontforgeexe/bitmapview.c:2189 ../fontforgeexe/charview.c:12237
 msgid "_Fit"
 msgstr "_Заповнити"
 
-#: ../fontforgeexe/bitmapview.c:2187 ../fontforgeexe/charview.c:12238
+#: ../fontforgeexe/bitmapview.c:2190 ../fontforgeexe/charview.c:12238
 #: ../fontforgeexe/metricsview.c:3761
 msgid "Z_oom out"
 msgstr "З_меншити"
 
-#: ../fontforgeexe/bitmapview.c:2188 ../fontforgeexe/charview.c:12239
+#: ../fontforgeexe/bitmapview.c:2191 ../fontforgeexe/charview.c:12239
 #: ../fontforgeexe/metricsview.c:3762
 msgid "Zoom _in"
 msgstr "З_більшити"
 
-#: ../fontforgeexe/bitmapview.c:2190 ../fontforgeexe/charview.c:12245
+#: ../fontforgeexe/bitmapview.c:2193 ../fontforgeexe/charview.c:12245
 #: ../fontforgeexe/fontview.c:5125 ../fontforgeexe/metricsview.c:3767
 msgid "_Next Glyph"
 msgstr "_Наступний гліф"
 
-#: ../fontforgeexe/bitmapview.c:2191 ../fontforgeexe/charview.c:12246
+#: ../fontforgeexe/bitmapview.c:2194 ../fontforgeexe/charview.c:12246
 #: ../fontforgeexe/fontview.c:5126 ../fontforgeexe/metricsview.c:3768
 msgid "_Prev Glyph"
 msgstr "_Попередній гліф"
 
-#: ../fontforgeexe/bitmapview.c:2192 ../fontforgeexe/charview.c:12247
+#: ../fontforgeexe/bitmapview.c:2195 ../fontforgeexe/charview.c:12247
 #: ../fontforgeexe/fontview.c:5127 ../fontforgeexe/metricsview.c:3769
 msgid "Next _Defined Glyph"
 msgstr "Наступний _визначений гліф"
 
-#: ../fontforgeexe/bitmapview.c:2193 ../fontforgeexe/charview.c:12248
+#: ../fontforgeexe/bitmapview.c:2196 ../fontforgeexe/charview.c:12248
 #: ../fontforgeexe/fontview.c:5128 ../fontforgeexe/metricsview.c:3770
 msgid "Prev Defined Gl_yph"
 msgstr "Попередній визначений г_ліф"
 
-#: ../fontforgeexe/bitmapview.c:2194 ../fontforgeexe/charview.c:12250
+#: ../fontforgeexe/bitmapview.c:2197 ../fontforgeexe/charview.c:12250
 #: ../fontforgeexe/fontview.c:5129
 msgid "_Goto"
 msgstr "Пере_йти до"
 
-#: ../fontforgeexe/bitmapview.c:2195 ../fontforgeexe/charview.c:12251
+#: ../fontforgeexe/bitmapview.c:2198 ../fontforgeexe/charview.c:12251
 #: ../fontforgeexe/metricsview.c:3771
 msgid "Find In Font _View"
 msgstr "Знайти у в_ікні шрифту"
 
-#: ../fontforgeexe/bitmapview.c:2197
+#: ../fontforgeexe/bitmapview.c:2200
 msgid "_Bigger Pixel Size"
 msgstr "_Більший розмір пікселя"
 
-#: ../fontforgeexe/bitmapview.c:2198
+#: ../fontforgeexe/bitmapview.c:2201
 msgid "_Smaller Pixel Size"
 msgstr "_Менший розмір пікселя"
 
-#: ../fontforgeexe/bitmapview.c:2200
+#: ../fontforgeexe/bitmapview.c:2203
 msgid "_Palettes"
 msgstr "_Палітри"
 
-#: ../fontforgeexe/bitmapview.c:2205 ../fontforgeexe/charview.c:12076
-#: ../fontforgeexe/cvpalettes.c:4226 ../fontforgeexe/fontview.c:5322
+#: ../fontforgeexe/bitmapview.c:2208 ../fontforgeexe/charview.c:12076
+#: ../fontforgeexe/cvpalettes.c:4225 ../fontforgeexe/fontview.c:5322
 #: ../fontforgeexe/fontview.c:5877 ../fontforgeexe/metricsview.c:3867
 msgid "Set _Width..."
 msgstr "Встановити _ширину…"
 
-#: ../fontforgeexe/bitmapview.c:2206
+#: ../fontforgeexe/bitmapview.c:2209
 msgid "Set _Vertical Width..."
 msgstr "Встановити _вертикальну ширину…"
 
-#: ../fontforgeexe/bitmapview.c:2211 ../fontforgeexe/charview.c:12406
+#: ../fontforgeexe/bitmapview.c:2214 ../fontforgeexe/charview.c:12406
 #: ../fontforgeexe/charview.c:12427 ../fontforgeexe/fontview.c:5883
 #: ../fontforgeexe/metricsview.c:4092
 msgid "_File"
 msgstr "_Файл"
 
-#: ../fontforgeexe/bitmapview.c:2212 ../fontforgeexe/charview.c:12407
+#: ../fontforgeexe/bitmapview.c:2215 ../fontforgeexe/charview.c:12407
 #: ../fontforgeexe/charview.c:12428 ../fontforgeexe/fontview.c:5884
 #: ../fontforgeexe/metricsview.c:4093 ../fontforgeexe/ttfinstrsui.c:751
 msgid "_Edit"
 msgstr "_Зміни"
 
-#: ../fontforgeexe/bitmapview.c:2213 ../fontforgeexe/charview.c:12409
+#: ../fontforgeexe/bitmapview.c:2216 ../fontforgeexe/charview.c:12409
 #: ../fontforgeexe/charview.c:12430 ../fontforgeexe/fontview.c:5885
 #: ../fontforgeexe/metricsview.c:4094
 msgid "E_lement"
 msgstr "Е_лемент"
 
-#: ../fontforgeexe/bitmapview.c:2214 ../fontforgeexe/charview.c:12350
+#: ../fontforgeexe/bitmapview.c:2217 ../fontforgeexe/charview.c:12350
 #: ../fontforgeexe/charview.c:12417 ../fontforgeexe/charview.c:12438
 #: ../fontforgeexe/fontview.c:5894 ../fontforgeexe/metricsview.c:4095
 msgid "_View"
 msgstr "П_ерегляд"
 
-#: ../fontforgeexe/bitmapview.c:2215 ../fontforgeexe/charview.c:12418
+#: ../fontforgeexe/bitmapview.c:2218 ../fontforgeexe/charview.c:12418
 #: ../fontforgeexe/charview.c:12439 ../fontforgeexe/fontview.c:5895
 #: ../fontforgeexe/metricsview.c:4096
 msgid "_Metrics"
 msgstr "_Метрика"
 
-#: ../fontforgeexe/bitmapview.c:2216 ../fontforgeexe/charview.c:12421
+#: ../fontforgeexe/bitmapview.c:2219 ../fontforgeexe/charview.c:12421
 #: ../fontforgeexe/charview.c:12440 ../fontforgeexe/fontview.c:5899
 #: ../fontforgeexe/metricsview.c:4097
 msgid "_Window"
 msgstr "_Вікно"
 
-#: ../fontforgeexe/bitmapview.c:2217 ../fontforgeexe/charview.c:12422
+#: ../fontforgeexe/bitmapview.c:2220 ../fontforgeexe/charview.c:12422
 #: ../fontforgeexe/charview.c:12441 ../fontforgeexe/fontview.c:5848
 #: ../fontforgeexe/fontview.c:5903 ../fontforgeexe/metricsview.c:4098
 msgid "_Help"
 msgstr "_Довідка"
 
-#: ../fontforgeexe/bitmapview.c:2342
+#: ../fontforgeexe/bitmapview.c:2345
 msgid "Recalculate Bitmaps"
 msgstr "Переобчислити растри"
 
@@ -13118,7 +13118,7 @@ msgstr "Змінити маску прогалин"
 msgid "Select hints between which counters are formed"
 msgstr "Виберіть гінти, між якими буде сформовано прогалини"
 
-#: ../fontforgeexe/charinfo.c:476 ../fontforgeexe/charinfo.c:4187
+#: ../fontforgeexe/charinfo.c:476 ../fontforgeexe/charinfo.c:4192
 msgid "Unicode _Value:"
 msgstr "_Значення Unicode:"
 
@@ -13486,15 +13486,15 @@ msgstr "∆x_дод №2"
 msgid "∆y_adv #2"
 msgstr "∆y_дод №2"
 
-#: ../fontforgeexe/charinfo.c:3437 ../fontforgeexe/math.c:57
+#: ../fontforgeexe/charinfo.c:3442 ../fontforgeexe/math.c:57
 msgid "false"
 msgstr "ні"
 
-#: ../fontforgeexe/charinfo.c:3438 ../fontforgeexe/math.c:58
+#: ../fontforgeexe/charinfo.c:3443 ../fontforgeexe/math.c:58
 msgid "true"
 msgstr "так"
 
-#: ../fontforgeexe/charinfo.c:3443 ../fontforgeexe/charview.c:4056
+#: ../fontforgeexe/charinfo.c:3448 ../fontforgeexe/charview.c:4056
 #: ../fontforgeexe/math.c:63 ../fontforgeexe/math.c:69
 #: ../fontforgeexe/math.c:76 ../fontforgeexe/math.c:83
 #: ../fontforgeexe/math.c:89 ../fontforgeexe/math.c:98
@@ -13502,79 +13502,79 @@ msgstr "так"
 msgid "Glyph"
 msgstr "Гліф"
 
-#: ../fontforgeexe/charinfo.c:3444 ../fontforgeexe/math.c:117
+#: ../fontforgeexe/charinfo.c:3449 ../fontforgeexe/math.c:117
 msgid "Extender"
 msgstr "Розширювач"
 
 #. GT: "Len" is an abreviation for "Length"
-#: ../fontforgeexe/charinfo.c:3446 ../fontforgeexe/math.c:119
+#: ../fontforgeexe/charinfo.c:3451 ../fontforgeexe/math.c:119
 msgid "StartLen"
 msgstr "Поч. довжина"
 
-#: ../fontforgeexe/charinfo.c:3447 ../fontforgeexe/math.c:120
+#: ../fontforgeexe/charinfo.c:3452 ../fontforgeexe/math.c:120
 msgid "EndLen"
 msgstr "Кінц. довжина"
 
-#: ../fontforgeexe/charinfo.c:3448 ../fontforgeexe/math.c:121
+#: ../fontforgeexe/charinfo.c:3453 ../fontforgeexe/math.c:121
 msgid "FullLen"
 msgstr "Повна довжина"
 
-#: ../fontforgeexe/charinfo.c:3568
+#: ../fontforgeexe/charinfo.c:3573
 msgid "Variation Selector (or 0)"
 msgstr "Вибір варіанта (або 0)"
 
-#: ../fontforgeexe/charinfo.c:3765 ../fontforgeexe/cvstroke.c:2431
+#: ../fontforgeexe/charinfo.c:3770 ../fontforgeexe/cvstroke.c:2431
 #: ../fontforgeexe/fontview.c:2083 ../fontforgeexe/fontview.c:2499
 #: ../fontforgeexe/groupsdlg.c:1006 ../gdraw/gbuttons.c:234
 msgid "Pick a color"
 msgstr "Взяти колір"
 
-#: ../fontforgeexe/charinfo.c:3798
+#: ../fontforgeexe/charinfo.c:3803
 #, c-format
 msgid "Glyph Info for %.40s"
 msgstr "Відомості щодо гліфа %.40s"
 
-#: ../fontforgeexe/charinfo.c:3799
+#: ../fontforgeexe/charinfo.c:3804
 msgid "Glyph Info..."
 msgstr "Відомості щодо гліфа…"
 
-#: ../fontforgeexe/charinfo.c:3893
+#: ../fontforgeexe/charinfo.c:3898
 msgid "No components"
 msgstr "Немає компонентів"
 
-#: ../fontforgeexe/charinfo.c:3894 ../fontforgeexe/charinfo.c:4445
+#: ../fontforgeexe/charinfo.c:3899 ../fontforgeexe/charinfo.c:4450
 msgid "Accented glyph composed of:"
 msgstr "Акцентований гліф складається з:"
 
-#: ../fontforgeexe/charinfo.c:3895
+#: ../fontforgeexe/charinfo.c:3900
 msgid "Glyph composed of:"
 msgstr "Гліф складається з:"
 
-#: ../fontforgeexe/charinfo.c:4158
+#: ../fontforgeexe/charinfo.c:4163
 msgid "Glyph Info"
 msgstr "Відомості щодо гліфа"
 
-#: ../fontforgeexe/charinfo.c:4169
+#: ../fontforgeexe/charinfo.c:4174
 msgid "Gl_yph Name:"
 msgstr "Назва _гліфа:"
 
-#: ../fontforgeexe/charinfo.c:4205
+#: ../fontforgeexe/charinfo.c:4210
 msgid "Unicode C_har:"
 msgstr "Си_мвол Unicode:"
 
-#: ../fontforgeexe/charinfo.c:4225
+#: ../fontforgeexe/charinfo.c:4230
 msgid "Set From N_ame"
 msgstr "За _назвою"
 
-#: ../fontforgeexe/charinfo.c:4236
+#: ../fontforgeexe/charinfo.c:4241
 msgid "Set From Val_ue"
 msgstr "За _значенням"
 
-#: ../fontforgeexe/charinfo.c:4251
+#: ../fontforgeexe/charinfo.c:4256
 msgid "Alternate Unicode Encodings / Variation Selectors"
 msgstr "Альтернативні кодування Unicode/Вибір варіанта"
 
-#: ../fontforgeexe/charinfo.c:4255
+#: ../fontforgeexe/charinfo.c:4260
 msgid ""
 "Some glyphs may be used for more than one\n"
 "unicode code point -- I don't recommend\n"
@@ -13606,15 +13606,15 @@ msgstr ""
 "0, у другому — використовуйте відповідний\n"
 "діапазон."
 
-#: ../fontforgeexe/charinfo.c:4279
+#: ../fontforgeexe/charinfo.c:4284
 msgid "OT _Glyph Class:"
 msgstr "_Клас гліфів OT:"
 
-#: ../fontforgeexe/charinfo.c:4294
+#: ../fontforgeexe/charinfo.c:4299
 msgid "Mark for Unlink, Remove Overlap before Generating"
 msgstr "Позначити для від’єднання, вилучити перетин перед створенням"
 
-#: ../fontforgeexe/charinfo.c:4299
+#: ../fontforgeexe/charinfo.c:4304
 msgid ""
 "A few glyphs, like Aring, Ccedilla, Eogonek\n"
 "are composed of two overlapping references.\n"
@@ -13638,21 +13638,21 @@ msgstr ""
 "від’єднає посилання та виконає вилучення перекриттів\n"
 "на них, зберігши посилання у SFD."
 
-#: ../fontforgeexe/charinfo.c:4314 ../fontforgeexe/charinfo.c:4851
+#: ../fontforgeexe/charinfo.c:4319 ../fontforgeexe/charinfo.c:4856
 #: ../fontforgeexe/fontinfo.c:10610 ../fontforgeexe/ttfinstrsui.c:1334
 msgid "Comment"
 msgstr "Коментар"
 
-#: ../fontforgeexe/charinfo.c:4330 ../fontforgeexe/cvstroke.c:2512
+#: ../fontforgeexe/charinfo.c:4335 ../fontforgeexe/cvstroke.c:2512
 #: ../fontforgeexe/cvstroke.c:2707
 msgid "Color:"
 msgstr "Колір:"
 
-#: ../fontforgeexe/charinfo.c:4369 ../fontforgeexe/lookupui.c:4607
+#: ../fontforgeexe/charinfo.c:4374 ../fontforgeexe/lookupui.c:4607
 msgid "_Hide Unused Columns"
 msgstr "С_ховати невикористані стовпчики"
 
-#: ../fontforgeexe/charinfo.c:4375
+#: ../fontforgeexe/charinfo.c:4380
 msgid ""
 "Don't display columns of 0s.\n"
 "The OpenType lookup allows for up to 8 kinds\n"
@@ -13665,23 +13665,23 @@ msgstr ""
 "лише один. Якщо пропускати нульові стовпчики\n"
 "інтерфейс стане простішим."
 
-#: ../fontforgeexe/charinfo.c:4397
+#: ../fontforgeexe/charinfo.c:4402
 msgid "CounterHint|_New..."
 msgstr "С_творити…"
 
-#: ../fontforgeexe/charinfo.c:4421 ../fontforgeexe/kernclass.c:3388
+#: ../fontforgeexe/charinfo.c:4426 ../fontforgeexe/kernclass.c:3388
 #: ../fontforgeexe/macencui.c:676 ../fontforgeexe/macencui.c:1194
 #: ../fontforgeexe/macencui.c:1389 ../fontforgeexe/mmdlg.c:2985
-#: ../fontforgeexe/prefs.c:2135
+#: ../fontforgeexe/prefs.c:2143
 msgid "_Edit..."
 msgstr "З_мінити…"
 
-#: ../fontforgeexe/charinfo.c:4469 ../fontforgeexe/cvstroke.c:2068
+#: ../fontforgeexe/charinfo.c:4474 ../fontforgeexe/cvstroke.c:2068
 #: ../fontforgeexe/metricsview.c:813 ../fontforgeexe/tilepath.c:1806
 msgid "Height:"
 msgstr "Висота:"
 
-#: ../fontforgeexe/charinfo.c:4474
+#: ../fontforgeexe/charinfo.c:4479
 msgid ""
 "The height and depth fields are the metrics fields used\n"
 "by TeX, they are corrected for optical distortion.\n"
@@ -13691,20 +13691,20 @@ msgstr ""
 "TeX, їх значення виправляють оптичне викривлення.\n"
 "Їх використання надає «x» і «o» однакової висоти."
 
-#: ../fontforgeexe/charinfo.c:4486 ../fontforgeexe/charinfo.c:4513
-#: ../fontforgeexe/charinfo.c:4540 ../fontforgeexe/charinfo.c:4574
+#: ../fontforgeexe/charinfo.c:4491 ../fontforgeexe/charinfo.c:4518
+#: ../fontforgeexe/charinfo.c:4545 ../fontforgeexe/charinfo.c:4579
 msgid "Guess"
 msgstr "Вгадати"
 
-#: ../fontforgeexe/charinfo.c:4496
+#: ../fontforgeexe/charinfo.c:4501
 msgid "Depth:"
 msgstr "Глибина:"
 
-#: ../fontforgeexe/charinfo.c:4523
+#: ../fontforgeexe/charinfo.c:4528
 msgid "Italic Correction:"
 msgstr "Виправлення курсиву:"
 
-#: ../fontforgeexe/charinfo.c:4529
+#: ../fontforgeexe/charinfo.c:4534
 msgid ""
 "The Italic correction field is used by both TeX and the MS 'MATH'\n"
 "table. It is used when joining slanted text (italic) to upright.\n"
@@ -13716,7 +13716,7 @@ msgstr ""
 "з прямими. Значення поля — ширина додаткового пробілу, потрібного для того,\n"
 "щоб курсив не перекривався з прямим текстом."
 
-#: ../fontforgeexe/charinfo.c:4553
+#: ../fontforgeexe/charinfo.c:4558
 msgid ""
 "A device table for italic correction.\n"
 "Expects a comma separated list of <pixelsize>\":\"<adjustment>\n"
@@ -13727,11 +13727,11 @@ msgstr ""
 "<коригування>\n"
 "Приклад: \"9:-1,12:1,13:1\""
 
-#: ../fontforgeexe/charinfo.c:4556
+#: ../fontforgeexe/charinfo.c:4561
 msgid "Top Accent Pos:"
 msgstr "Розташування верхнього акценту:"
 
-#: ../fontforgeexe/charinfo.c:4563
+#: ../fontforgeexe/charinfo.c:4568
 msgid ""
 "In the MS 'MATH' table this value specifies where (horizontally)\n"
 "an accent should be placed above the glyph. Vertical placement\n"
@@ -13741,7 +13741,7 @@ msgstr ""
 "розташування акценту над гліфом. Вертикальне розташування\n"
 "визначається іншим параметром."
 
-#: ../fontforgeexe/charinfo.c:4587
+#: ../fontforgeexe/charinfo.c:4592
 msgid ""
 "A device table for horizontal accent positioning.\n"
 "Expects a comma separated list of <pixelsize>\":\"<adjustment>\n"
@@ -13752,11 +13752,11 @@ msgstr ""
 "<коригування>\n"
 "Приклад: \"9:-1,12:1,13:1\""
 
-#: ../fontforgeexe/charinfo.c:4590 ../fontforgeexe/math.c:64
+#: ../fontforgeexe/charinfo.c:4595 ../fontforgeexe/math.c:64
 msgid "Is Extended Shape"
 msgstr "Є розширеною формою"
 
-#: ../fontforgeexe/charinfo.c:4597
+#: ../fontforgeexe/charinfo.c:4602
 msgid ""
 "Is this an extended shape (like a tall parenthesis)?\n"
 "Extended shapes need special attention for vertical\n"
@@ -13766,11 +13766,11 @@ msgstr ""
 "Розширені форми потребують особливої уваги під час визначення\n"
 "розташування за вертикаллю верхніх індексів."
 
-#: ../fontforgeexe/charinfo.c:4601 ../fontforgeexe/math.c:1856
+#: ../fontforgeexe/charinfo.c:4606 ../fontforgeexe/math.c:1856
 msgid "Math Kerning"
 msgstr "Математичний кернінґ"
 
-#: ../fontforgeexe/charinfo.c:4607
+#: ../fontforgeexe/charinfo.c:4612
 msgid ""
 "Brings up a dialog which gives fine control over\n"
 "horizontal positioning of subscripts and superscripts\n"
@@ -13780,12 +13780,12 @@ msgstr ""
 "керувати горизонтальною позицією нижніх і верхніх індексів,\n"
 "залежно від їх вертикального розташування."
 
-#: ../fontforgeexe/charinfo.c:4628
+#: ../fontforgeexe/charinfo.c:4633
 msgid "Default Ligature Caret Count"
 msgstr "Типова кількість прогалин лігатури"
 
-#: ../fontforgeexe/charinfo.c:4634 ../fontforgeexe/charinfo.c:4646
-#: ../fontforgeexe/charinfo.c:4653
+#: ../fontforgeexe/charinfo.c:4639 ../fontforgeexe/charinfo.c:4651
+#: ../fontforgeexe/charinfo.c:4658
 msgid ""
 "Ligature caret locations are used by a text editor\n"
 "when it needs to draw a text edit caret inside a\n"
@@ -13806,15 +13806,15 @@ msgstr ""
 "ескізу гліфа (перетягніть їх з початку координат до\n"
 "відповідного місця)."
 
-#: ../fontforgeexe/charinfo.c:4640
+#: ../fontforgeexe/charinfo.c:4645
 msgid "Ligature Caret Count:"
 msgstr "Кількість прогалин лігатури:"
 
-#: ../fontforgeexe/charinfo.c:4669
+#: ../fontforgeexe/charinfo.c:4674
 msgid "Variant Glyphs:"
 msgstr "Гліфи-варіанти:"
 
-#: ../fontforgeexe/charinfo.c:4675
+#: ../fontforgeexe/charinfo.c:4680
 msgid ""
 "A list of the names of pre defined glyphs which represent\n"
 "bigger versions of the current glyph."
@@ -13822,11 +13822,11 @@ msgstr ""
 "Список назв попередньо визначених гліфів, які відповідають\n"
 "збільшеним версіям поточного гліфа."
 
-#: ../fontforgeexe/charinfo.c:4684
+#: ../fontforgeexe/charinfo.c:4689
 msgid "Glyph Extension Components"
 msgstr "Компоненти розширення гліфа"
 
-#: ../fontforgeexe/charinfo.c:4689
+#: ../fontforgeexe/charinfo.c:4694
 msgid ""
 "A really big version of this glyph may be made up of the\n"
 "following component glyphs. They will be stacked either\n"
@@ -13848,18 +13848,18 @@ msgstr ""
 "довжина гліфа."
 
 #. GT: "Cor" is an abbreviation for correction
-#: ../fontforgeexe/charinfo.c:4694
+#: ../fontforgeexe/charinfo.c:4699
 msgid "Italic Cor:"
 msgstr "Випр. курсиву:"
 
-#: ../fontforgeexe/charinfo.c:4699
+#: ../fontforgeexe/charinfo.c:4704
 msgid ""
 "The italic correction of the composed glyph. Should be independent of glyph "
 "size"
 msgstr ""
 "Виправлення курсиву складеного гліфа. Має бути незалежним від розміру гліфа."
 
-#: ../fontforgeexe/charinfo.c:4737
+#: ../fontforgeexe/charinfo.c:4742
 msgid ""
 "If this glyph is used as a pattern to tile\n"
 "some other glyph then it is useful to specify\n"
@@ -13874,118 +13874,118 @@ msgstr ""
 "розширення рамки навколо вмісту або вкажіть\n"
 "межі явним чином."
 
-#: ../fontforgeexe/charinfo.c:4750
+#: ../fontforgeexe/charinfo.c:4755
 msgid "Tile Margin:"
 msgstr "Поле плитки:"
 
-#: ../fontforgeexe/charinfo.c:4771
+#: ../fontforgeexe/charinfo.c:4776
 msgid "Tile Bounding Box:"
 msgstr "Обмежувальна рамка плитки:"
 
 #. GT: X is a coordinate, the leading spaces help to align it
-#: ../fontforgeexe/charinfo.c:4782 ../fontforgeexe/fontinfo.c:8896
+#: ../fontforgeexe/charinfo.c:4787 ../fontforgeexe/fontinfo.c:8896
 msgid "  X"
 msgstr "  X"
 
-#: ../fontforgeexe/charinfo.c:4789
+#: ../fontforgeexe/charinfo.c:4794
 msgid "  Y"
 msgstr "  Y"
 
-#: ../fontforgeexe/charinfo.c:4855
+#: ../fontforgeexe/charinfo.c:4860
 msgid "Positionings"
 msgstr "Розташування"
 
-#: ../fontforgeexe/charinfo.c:4859
+#: ../fontforgeexe/charinfo.c:4864
 msgid "Pairwise Pos"
 msgstr "Парне розташування"
 
-#: ../fontforgeexe/charinfo.c:4863
+#: ../fontforgeexe/charinfo.c:4868
 msgid "Substitutions"
 msgstr "Підстановки"
 
-#: ../fontforgeexe/charinfo.c:4867
+#: ../fontforgeexe/charinfo.c:4872
 msgid "Alt Subs"
 msgstr "Альтернативні"
 
-#: ../fontforgeexe/charinfo.c:4871
+#: ../fontforgeexe/charinfo.c:4876
 msgid "Mult Subs"
 msgstr "Множинні"
 
-#: ../fontforgeexe/charinfo.c:4875 ../fontforgeexe/combinations.c:117
+#: ../fontforgeexe/charinfo.c:4880 ../fontforgeexe/combinations.c:117
 #: ../fontforgeexe/showatt.c:658
 msgid "Ligatures"
 msgstr "Лігатури"
 
-#: ../fontforgeexe/charinfo.c:4879
+#: ../fontforgeexe/charinfo.c:4884
 msgid "Components"
 msgstr "Компоненти"
 
-#: ../fontforgeexe/charinfo.c:4885
+#: ../fontforgeexe/charinfo.c:4890
 msgid "Lig. Carets"
 msgstr "Прогалини лігатури"
 
-#: ../fontforgeexe/charinfo.c:4890 ../fontforgeexe/scstylesui.c:2684
+#: ../fontforgeexe/charinfo.c:4895 ../fontforgeexe/scstylesui.c:2684
 msgid "Counters"
 msgstr "Прогалини"
 
-#: ../fontforgeexe/charinfo.c:4894
+#: ../fontforgeexe/charinfo.c:4899
 msgid "ΤεΧ & Math"
 msgstr "ΤεΧ і математика"
 
 #. GT: "Vert." is an abbreviation for Vertical
-#: ../fontforgeexe/charinfo.c:4900 ../fontforgeexe/math.c:152
+#: ../fontforgeexe/charinfo.c:4905 ../fontforgeexe/math.c:152
 msgid "Vert. Variants"
 msgstr "Верт. варіанти"
 
 #. GT: "Horiz." is an abbreviation for Horizontal
-#: ../fontforgeexe/charinfo.c:4906
+#: ../fontforgeexe/charinfo.c:4911
 msgid "Horiz. Variants"
 msgstr "Гор. варіанти"
 
-#: ../fontforgeexe/charinfo.c:4912
+#: ../fontforgeexe/charinfo.c:4917
 msgid "Tile Size"
 msgstr "Розмір плитки"
 
-#: ../fontforgeexe/charinfo.c:4930 ../fontforgeexe/contextchain.c:2127
+#: ../fontforgeexe/charinfo.c:4935 ../fontforgeexe/contextchain.c:2127
 #: ../fontforgeexe/cvgetinfo.c:1614 ../fontforgeexe/cvgetinfo.c:3211
 #: ../fontforgeexe/cvgetinfo.c:3631 ../fontforgeexe/cvhints.c:534
 #: ../fontforgeexe/mmdlg.c:2555
 msgid "< _Prev"
 msgstr "< _Назад"
 
-#: ../fontforgeexe/charinfo.c:4942 ../fontforgeexe/contextchain.c:2137
+#: ../fontforgeexe/charinfo.c:4947 ../fontforgeexe/contextchain.c:2137
 #: ../fontforgeexe/cvgetinfo.c:1627 ../fontforgeexe/cvgetinfo.c:3223
 #: ../fontforgeexe/cvgetinfo.c:3642 ../fontforgeexe/cvhints.c:545
 #: ../fontforgeexe/mmdlg.c:2566
 msgid "_Next >"
 msgstr "_Далі >"
 
-#: ../fontforgeexe/charinfo.c:5083
+#: ../fontforgeexe/charinfo.c:5088
 msgid "Select By ATT..."
 msgstr "Вибрати за ATT…"
 
-#: ../fontforgeexe/charinfo.c:5083
+#: ../fontforgeexe/charinfo.c:5088
 msgid "No glyphs matched"
 msgstr "Не виявлено відповідних гліфів"
 
-#: ../fontforgeexe/charinfo.c:5160
+#: ../fontforgeexe/charinfo.c:5165
 msgid "No applicable lookup subtables"
 msgstr "Немає відповідних підтаблиць фільтрування"
 
-#: ../fontforgeexe/charinfo.c:5177
+#: ../fontforgeexe/charinfo.c:5182
 msgid "Select By Lookup Subtable"
 msgstr "Вибрати за підтаблицею фільтрування"
 
-#: ../fontforgeexe/charinfo.c:5189
+#: ../fontforgeexe/charinfo.c:5194
 msgid "Select Glyphs in lookup subtable"
 msgstr "Вибрати гліфи у підтаблиці фільтрування"
 
-#: ../fontforgeexe/charinfo.c:5205 ../fontforgeexe/fontview.c:1929
+#: ../fontforgeexe/charinfo.c:5210 ../fontforgeexe/fontview.c:1929
 #: ../fontforgeexe/fontview.c:2191
 msgid "Select Results"
 msgstr "Вибрати результати"
 
-#: ../fontforgeexe/charinfo.c:5210
+#: ../fontforgeexe/charinfo.c:5215
 msgid ""
 "Set the selection of the font view to the glyphs\n"
 "found by this search"
@@ -13993,12 +13993,12 @@ msgstr ""
 "Обмежити позначення гліфів на панелі перегляду шрифту\n"
 "гліфами, знайденими у результаті цього пошуку"
 
-#: ../fontforgeexe/charinfo.c:5215 ../fontforgeexe/fontview.c:1937
+#: ../fontforgeexe/charinfo.c:5220 ../fontforgeexe/fontview.c:1937
 #: ../fontforgeexe/fontview.c:2199
 msgid "Merge Results"
 msgstr "Об’єднати результати"
 
-#: ../fontforgeexe/charinfo.c:5220
+#: ../fontforgeexe/charinfo.c:5225
 msgid ""
 "Expand the selection of the font view to include\n"
 "all the glyphs found by this search"
@@ -14006,12 +14006,12 @@ msgstr ""
 "Розширити область позначення гліфів на панелі перегляду шрифту\n"
 "всіма гліфами, знайденими у результаті цього пошуку"
 
-#: ../fontforgeexe/charinfo.c:5225 ../fontforgeexe/fontview.c:1945
+#: ../fontforgeexe/charinfo.c:5230 ../fontforgeexe/fontview.c:1945
 #: ../fontforgeexe/fontview.c:2207
 msgid "Restrict Selection"
 msgstr "Обмежити позначеним"
 
-#: ../fontforgeexe/charinfo.c:5230
+#: ../fontforgeexe/charinfo.c:5235
 msgid ""
 "Only search the selected glyphs, and unselect\n"
 "any characters which do not match this search"
@@ -16301,7 +16301,7 @@ msgstr "Вікно"
 msgid "Exit Debugger"
 msgstr "Вийти з режиму зневаджування"
 
-#: ../fontforgeexe/cvdgloss.c:1208
+#: ../fontforgeexe/cvdgloss.c:1209
 msgid "Instruction Gloss (TrueType)"
 msgstr "Глосарій інструкцій (TrueType)"
 
@@ -16775,8 +16775,8 @@ msgstr "Відст."
 
 #: ../fontforgeexe/cvgetinfo.c:2884 ../fontforgeexe/cvgetinfo.c:2991
 #: ../fontforgeexe/nonlineartransui.c:473
-#: ../fontforgeexe/nonlineartransui.c:505 ../fontforgeexe/prefs.c:2407
-#: ../fontforgeexe/prefs.c:2982 ../fontforgeexe/transform.c:492
+#: ../fontforgeexe/nonlineartransui.c:505 ../fontforgeexe/prefs.c:2415
+#: ../fontforgeexe/prefs.c:2990 ../fontforgeexe/transform.c:492
 #: ../fontforgeexe/transform.c:501
 msgid "°"
 msgstr "°"
@@ -17089,11 +17089,11 @@ msgstr "_Імпортувати"
 msgid "As Background"
 msgstr "Як тло"
 
-#: ../fontforgeexe/cvpalettes.c:295 ../fontforgeexe/cvpalettes.c:3925
+#: ../fontforgeexe/cvpalettes.c:295 ../fontforgeexe/cvpalettes.c:3924
 msgid "Pointer"
 msgstr "Вказівник"
 
-#: ../fontforgeexe/cvpalettes.c:295 ../fontforgeexe/cvpalettes.c:3925
+#: ../fontforgeexe/cvpalettes.c:295 ../fontforgeexe/cvpalettes.c:3924
 msgid "Magnify (Minify with alt)"
 msgstr "Збільшити (з Alt — Зменшити)"
 
@@ -17241,7 +17241,7 @@ msgstr "_Багатокутник"
 
 #: ../fontforgeexe/cvpalettes.c:330 ../fontforgeexe/cvpalettes.c:362
 #: ../fontforgeexe/cvpalettes.c:803 ../fontforgeexe/cvpalettes.c:809
-#: ../fontforgeexe/cvpalettes.c:4200
+#: ../fontforgeexe/cvpalettes.c:4199
 msgid "Ellipse"
 msgstr "Еліпс"
 
@@ -17333,7 +17333,7 @@ msgid "Center Out"
 msgstr "Центрувати"
 
 #: ../fontforgeexe/cvpalettes.c:803 ../fontforgeexe/cvpalettes.c:809
-#: ../fontforgeexe/cvpalettes.c:4189
+#: ../fontforgeexe/cvpalettes.c:4188
 msgid "Rectangle"
 msgstr "Прямокутник"
 
@@ -17375,7 +17375,7 @@ msgstr "Додати попередню точку обмеження (інод�
 msgid "Add a next constraint point (sometimes like a tangent)"
 msgstr "Додати наступну точку обмеження (іноді подібне до дотичної)"
 
-#: ../fontforgeexe/cvpalettes.c:1304 ../fontforgeexe/cvpalettes.c:4143
+#: ../fontforgeexe/cvpalettes.c:1304 ../fontforgeexe/cvpalettes.c:4142
 msgid "Tools"
 msgstr "Інструменти"
 
@@ -17575,27 +17575,27 @@ msgstr "Растр"
 msgid "Outline"
 msgstr "Обрис"
 
-#: ../fontforgeexe/cvpalettes.c:3909
+#: ../fontforgeexe/cvpalettes.c:3908
 msgid "Shades"
 msgstr "Тіні"
 
-#: ../fontforgeexe/cvpalettes.c:3926
+#: ../fontforgeexe/cvpalettes.c:3925
 msgid "Set/Clear Pixels"
 msgstr "Встановити/Вилучити пікселі"
 
-#: ../fontforgeexe/cvpalettes.c:3926
+#: ../fontforgeexe/cvpalettes.c:3925
 msgid "Draw a Line"
 msgstr "Намалювати пряму"
 
-#: ../fontforgeexe/cvpalettes.c:3927
+#: ../fontforgeexe/cvpalettes.c:3926
 msgid "Shift Entire Bitmap"
 msgstr "Зсунути весь растр"
 
-#: ../fontforgeexe/cvpalettes.c:3927
+#: ../fontforgeexe/cvpalettes.c:3926
 msgid "Scroll Bitmap"
 msgstr "Гортати растр"
 
-#: ../fontforgeexe/cvpalettes.c:4049
+#: ../fontforgeexe/cvpalettes.c:4048
 msgid ""
 "Set/Clear Pixels\n"
 "(Eyedropper with alt)"
@@ -17603,11 +17603,11 @@ msgstr ""
 "Встановити/Вилучити пікселі\n"
 "(Піпетка, якщо натиснуто Alt)"
 
-#: ../fontforgeexe/cvpalettes.c:4195
+#: ../fontforgeexe/cvpalettes.c:4194
 msgid "Filled Rectangle"
 msgstr "Заповнений прямокутник"
 
-#: ../fontforgeexe/cvpalettes.c:4205
+#: ../fontforgeexe/cvpalettes.c:4204
 msgid "Filled Ellipse"
 msgstr "Заповнений еліпс"
 
@@ -22461,8 +22461,8 @@ msgstr ""
 "розтягненим (це не має сенсу)"
 
 #: ../fontforgeexe/fontinfo.c:4289 ../fontforgeexe/fontview.c:4962
-#: ../fontforgeexe/openfontdlg.c:456 ../fontforgeexe/prefs.c:1896
-#: ../fontforgeexe/prefs.c:2737 ../fontforgeexe/savefontdlg.c:1320
+#: ../fontforgeexe/openfontdlg.c:456 ../fontforgeexe/prefs.c:1904
+#: ../fontforgeexe/prefs.c:2745 ../fontforgeexe/savefontdlg.c:1320
 msgid "Namelist contains non-ASCII names"
 msgstr "У списку назв містяться назви, що складаються не з символів ASCII"
 
@@ -23980,7 +23980,7 @@ msgstr ""
 "Будь ласка, скористайтеся пунктом меню «Файл → Створити шрифти» для "
 "збереження у інших форматах."
 
-#: ../fontforgeexe/fontview.c:993 ../fontforgeexe/prefs.c:544
+#: ../fontforgeexe/fontview.c:993 ../fontforgeexe/prefs.c:551
 msgid "Open Font"
 msgstr "Відкриття шрифту"
 
@@ -24269,7 +24269,7 @@ msgstr "Відн_овити з резервної копії"
 msgid "Clear Special Data"
 msgstr "Вилучити спеціальні дані"
 
-#: ../fontforgeexe/fontview.c:4442 ../fontforgeexe/prefs.c:2461
+#: ../fontforgeexe/fontview.c:4442 ../fontforgeexe/prefs.c:2469
 msgid "Script Menu"
 msgstr "Меню скриптів"
 
@@ -24601,7 +24601,7 @@ msgid ""
 msgstr "Перейменувати гліфи цього шрифту за назвами з вибраного списку назв"
 
 #: ../fontforgeexe/fontview.c:4962 ../fontforgeexe/openfontdlg.c:456
-#: ../fontforgeexe/prefs.c:1896 ../fontforgeexe/prefs.c:2737
+#: ../fontforgeexe/prefs.c:1904 ../fontforgeexe/prefs.c:2745
 #: ../fontforgeexe/savefontdlg.c:1320
 msgid ""
 "Glyph names should be limited to characters in the ASCII character set, but "
@@ -25411,15 +25411,15 @@ msgstr ""
 "Кількість: %d (%d)\n"
 "Відсоток максимуму: %d%%\n"
 
-#: ../fontforgeexe/histograms.c:374
+#: ../fontforgeexe/histograms.c:377
 msgid "The smaller number must be selected first in a pair of bluevalues"
 msgstr "У парі «синіх» значень менше значення має бути вибрано першим"
 
-#: ../fontforgeexe/histograms.c:722
+#: ../fontforgeexe/histograms.c:725
 msgid "Tiny Selection"
 msgstr "Занадто мало вибрано"
 
-#: ../fontforgeexe/histograms.c:722
+#: ../fontforgeexe/histograms.c:725
 msgid ""
 "There are so few glyphs selected that it seems unlikely to me that you will "
 "get a representative sample of this aspect of your font. If you deselect "
@@ -25429,27 +25429,27 @@ msgstr ""
 "би бути образом вашого шрифту. Якщо ви знімете позначення, команду буде "
 "застосовано до всіх гліфів зі шрифту."
 
-#: ../fontforgeexe/histograms.c:771
+#: ../fontforgeexe/histograms.c:774
 msgid "HStem"
 msgstr "Гор. штрих"
 
-#: ../fontforgeexe/histograms.c:772
+#: ../fontforgeexe/histograms.c:775
 msgid "VStem"
 msgstr "Верт. штрих"
 
-#: ../fontforgeexe/histograms.c:773
+#: ../fontforgeexe/histograms.c:776
 msgid "Blues"
 msgstr "Сині зони"
 
-#: ../fontforgeexe/histograms.c:839
+#: ../fontforgeexe/histograms.c:842
 msgid "Sum Around:"
 msgstr "Сума:"
 
-#: ../fontforgeexe/histograms.c:857
+#: ../fontforgeexe/histograms.c:860
 msgid "Bar Width:"
 msgstr "Ширина рисок:"
 
-#: ../fontforgeexe/histograms.c:876
+#: ../fontforgeexe/histograms.c:879
 msgid "BlueValues come in pairs. Select another."
 msgstr "BlueValues слід вказувати парами. Виберіть парне значення."
 
@@ -26155,7 +26155,7 @@ msgstr "Карієр"
 
 #: ../fontforgeexe/lookupui.c:358
 msgid "Crimean Tatar"
-msgstr "Кримсько-татарська"
+msgstr "Кримськотатарська"
 
 #: ../fontforgeexe/lookupui.c:359
 msgid "Church Slavonic"
@@ -27875,7 +27875,7 @@ msgid "This feature code is already used"
 msgstr "Код цієї модифікації вже використано"
 
 #: ../fontforgeexe/macencui.c:453 ../fontforgeexe/macencui.c:810
-#: ../fontforgeexe/prefs.c:1642
+#: ../fontforgeexe/prefs.c:1650
 msgid "Setting"
 msgstr "Параметр"
 
@@ -28280,51 +28280,51 @@ msgstr "_Обидва"
 msgid "_Window Type"
 msgstr "Тип _вікна"
 
-#: ../fontforgeexe/metricsview.c:5477
+#: ../fontforgeexe/metricsview.c:5479
 msgid "Advance Width Col"
 msgstr "Колір додаткової ширини"
 
-#: ../fontforgeexe/metricsview.c:5477
+#: ../fontforgeexe/metricsview.c:5479
 msgid "Color used to draw the advance width line of a glyph"
 msgstr "Колір, яким буде намальовано лінію додаткової ширини гліфа"
 
-#: ../fontforgeexe/metricsview.c:5478
+#: ../fontforgeexe/metricsview.c:5480
 msgid "Italic Advance Col"
 msgstr "Колір додаткової курсиву"
 
-#: ../fontforgeexe/metricsview.c:5478
+#: ../fontforgeexe/metricsview.c:5480
 msgid "Color used to draw the italic advance width line of a glyph"
 msgstr "Колір, яким буде намальовано лінію додаткової курсивної ширини гліфа"
 
-#: ../fontforgeexe/metricsview.c:5479
+#: ../fontforgeexe/metricsview.c:5481
 msgid "Kern Line Color"
 msgstr "Колір лінії кернінґу"
 
-#: ../fontforgeexe/metricsview.c:5479
+#: ../fontforgeexe/metricsview.c:5481
 msgid "Color used to draw the kerning line"
 msgstr "Колір, який буде використано для малювання лінії кернінґу"
 
-#: ../fontforgeexe/metricsview.c:5480
+#: ../fontforgeexe/metricsview.c:5482
 msgid "Side Bearing Color"
 msgstr "Колір бічних опор"
 
-#: ../fontforgeexe/metricsview.c:5480
+#: ../fontforgeexe/metricsview.c:5482
 msgid "Color used to draw the left side bearing"
 msgstr "Колір, який буде використано для малювання лівої опори"
 
-#: ../fontforgeexe/metricsview.c:5481
+#: ../fontforgeexe/metricsview.c:5483
 msgid "Selected Glyph Col"
 msgstr "Колір позначеного гліфа"
 
-#: ../fontforgeexe/metricsview.c:5481
+#: ../fontforgeexe/metricsview.c:5483
 msgid "Color used to mark the selected glyph"
 msgstr "Колір, який буде використано для виокремлення позначеного гліфа"
 
-#: ../fontforgeexe/metricsview.c:5491
+#: ../fontforgeexe/metricsview.c:5493
 msgid "MetricsView"
 msgstr "Вікно метрики"
 
-#: ../fontforgeexe/metricsview.c:5492
+#: ../fontforgeexe/metricsview.c:5494
 msgid "This window displays metrics information about a font"
 msgstr "У цьому вікні показано параметри метрики цього шрифту"
 
@@ -28715,7 +28715,7 @@ msgid "TrueType"
 msgstr "TrueType"
 
 #: ../fontforgeexe/openfontdlg.c:136 ../fontforgeexe/openfontdlg.c:138
-#: ../fontforgeexe/prefs.c:555 ../fontforgeexe/savefontdlg.c:685
+#: ../fontforgeexe/prefs.c:563 ../fontforgeexe/savefontdlg.c:685
 msgid "OpenType"
 msgstr "OpenType"
 
@@ -28813,7 +28813,7 @@ msgstr ""
 msgid "UseCairoDrawing"
 msgstr "Використовувати можливості Cairo"
 
-#: ../fontforgeexe/prefs.c:306 ../fontforgeexe/prefs.c:514
+#: ../fontforgeexe/prefs.c:306 ../fontforgeexe/prefs.c:517
 msgid ""
 "Use the cairo library for drawing (if available)\n"
 "This makes for prettier (anti-aliased) but slower drawing\n"
@@ -28970,23 +28970,11 @@ msgstr ""
 "скорочення, за допомогою якого натискаючи клавішу «`» ви могли увімкнути "
 "режим попереднього перегляду на час утримування цієї клавіші натисненою."
 
-#: ../fontforgeexe/prefs.c:340
-msgid "DrawOpenPathsWithHighlight"
-msgstr "Малювати незамкнені контури з підсвічуванням"
-
-#: ../fontforgeexe/prefs.c:340
-msgid ""
-"Open paths should be drawn in a special highlight color to make them more "
-"apparent."
-msgstr ""
-"Незамкнені контури має бути намальовано спеціальним кольором підсвічування, "
-"щоб зробити їх помітнішими."
-
-#: ../fontforgeexe/prefs.c:341 ../fontforgeexe/prefs.c:2686
+#: ../fontforgeexe/prefs.c:338 ../fontforgeexe/prefs.c:2694
 msgid "InterpolateCPsOnMotion"
 msgstr "Інтерполювати контрольні точки під час руху"
 
-#: ../fontforgeexe/prefs.c:341 ../fontforgeexe/prefs.c:2686
+#: ../fontforgeexe/prefs.c:338 ../fontforgeexe/prefs.c:2694
 msgid ""
 "When moving one end point of a spline but not the other\n"
 "interpolate the control points between the two."
@@ -28994,11 +28982,11 @@ msgstr ""
 "Під час пересування лише однієї з кінцевих точок сплайна\n"
 "інтерполювати розташування контрольних точок між кінцями."
 
-#: ../fontforgeexe/prefs.c:343 ../fontforgeexe/prefs.c:2691
+#: ../fontforgeexe/prefs.c:340 ../fontforgeexe/prefs.c:2699
 msgid "SnapDistanceMeasureTool"
 msgstr "Відстань прилипання для інструмента вимірювання"
 
-#: ../fontforgeexe/prefs.c:343 ../fontforgeexe/prefs.c:2691
+#: ../fontforgeexe/prefs.c:340 ../fontforgeexe/prefs.c:2699
 msgid ""
 "When the measure tool is active and when the mouse pointer is within this "
 "many pixels\n"
@@ -29012,26 +29000,7 @@ msgstr ""
 "гліфів (основної лінії, сплайнів ґратки тощо)\n"
 "вказівник прилипне до цієї особливої точки."
 
-#: ../fontforgeexe/prefs.c:344 ../fontforgeexe/prefs.c:2692
-msgid "MeasureToolShowHorizontalVertical"
-msgstr "Показ гор./верт. відстаней інструментом вимірювання"
-
-#: ../fontforgeexe/prefs.c:344 ../fontforgeexe/prefs.c:2692
-msgid ""
-"Have the measure tool show horizontal and vertical distances on the canvas."
-msgstr ""
-"Наказати інструменту вимірювання показувати горизонтальні і вертикальні "
-"відстані на полотні."
-
 #: ../fontforgeexe/prefs.c:345
-msgid "XORRubberLines"
-msgstr "XOR-лінії змінної довжини"
-
-#: ../fontforgeexe/prefs.c:345
-msgid "Use XOR based rubber lines."
-msgstr "Лінії змінної довжини на основі XOR."
-
-#: ../fontforgeexe/prefs.c:350
 msgid ""
 "The maximum number of Undoes/Redoes stored in a glyph. Use -1 for infinite "
 "Undoes\n"
@@ -29042,21 +29011,21 @@ msgstr ""
 "(Стежте за споживанням оперативної пам’яті і користуйтеся пунктом "
 "«Спорожнити журнал дій» меню «Зміни», якщо потрібно)"
 
-#: ../fontforgeexe/prefs.c:352
+#: ../fontforgeexe/prefs.c:347
 msgid "AutoKernDialog"
 msgstr "Вікно автокернінґу"
 
-#: ../fontforgeexe/prefs.c:352
+#: ../fontforgeexe/prefs.c:347
 msgid "Open AutoKern dialog for new kerning subtables"
 msgstr ""
 "Відкривати вікно автоматичного визначення кернінґу для нових підтаблиць "
 "кернінґу."
 
-#: ../fontforgeexe/prefs.c:353
+#: ../fontforgeexe/prefs.c:348
 msgid "MetricsShiftSkip"
 msgstr "Зсув метрики з Shift"
 
-#: ../fontforgeexe/prefs.c:353
+#: ../fontforgeexe/prefs.c:348
 msgid ""
 "Number of units to increment/decrement a table value by in the metrics "
 "window when shift is held"
@@ -29064,11 +29033,11 @@ msgstr ""
 "Кількість одиниць вимірювання, на які збільшуватиметься або зменшуватиметься "
 "табличне значення у вікні метрики, якщо натиснуто клавішу Shift"
 
-#: ../fontforgeexe/prefs.c:354
+#: ../fontforgeexe/prefs.c:349
 msgid "MetricsControlShiftSkip"
 msgstr "Зсув метрики з Ctrl і Shift"
 
-#: ../fontforgeexe/prefs.c:354
+#: ../fontforgeexe/prefs.c:349
 msgid ""
 "Number of units to increment/decrement a table value by in the metrics "
 "window when both control and shift is held"
@@ -29078,10 +29047,41 @@ msgstr ""
 "Shift"
 
 #: ../fontforgeexe/prefs.c:355
+msgid "DrawOpenPathsWithHighlight"
+msgstr "Малювати незамкнені контури з підсвічуванням"
+
+#: ../fontforgeexe/prefs.c:355
+msgid ""
+"Open paths should be drawn in a special highlight color to make them more "
+"apparent."
+msgstr ""
+"Незамкнені контури має бути намальовано спеціальним кольором підсвічування, "
+"щоб зробити їх помітнішими."
+
+#: ../fontforgeexe/prefs.c:356 ../fontforgeexe/prefs.c:2700
+msgid "MeasureToolShowHorizontalVertical"
+msgstr "Показ гор./верт. відстаней інструментом вимірювання"
+
+#: ../fontforgeexe/prefs.c:356 ../fontforgeexe/prefs.c:2700
+msgid ""
+"Have the measure tool show horizontal and vertical distances on the canvas."
+msgstr ""
+"Наказати інструменту вимірювання показувати горизонтальні і вертикальні "
+"відстані на полотні."
+
+#: ../fontforgeexe/prefs.c:357
+msgid "XORRubberLines"
+msgstr "XOR-лінії змінної довжини"
+
+#: ../fontforgeexe/prefs.c:357
+msgid "Use XOR based rubber lines."
+msgstr "Лінії змінної довжини на основі XOR."
+
+#: ../fontforgeexe/prefs.c:358
 msgid "EditHandleSize"
 msgstr "Розмір ел. керування редактора"
 
-#: ../fontforgeexe/prefs.c:355
+#: ../fontforgeexe/prefs.c:358
 msgid ""
 "The size of the handles showing control points and other interesting points "
 "in the glyph editor (default is 5)."
@@ -29089,11 +29089,11 @@ msgstr ""
 "Розмір елементів керування, що позначають контрольні точки та інші цікаві "
 "точки у редакторі гліфів (типовим є значення 5)."
 
-#: ../fontforgeexe/prefs.c:356
+#: ../fontforgeexe/prefs.c:359
 msgid "InactiveHandleAlpha"
 msgstr "Прозорість неактивного ел. керування"
 
-#: ../fontforgeexe/prefs.c:356
+#: ../fontforgeexe/prefs.c:359
 msgid ""
 "Inactive handles in the glyph editor will be drawn with this alpha value "
 "(range: 0-255 default is 255)."
@@ -29101,11 +29101,11 @@ msgstr ""
 "Неактивні елементи керування у вікні редактора гліфів буде показано з цим "
 "значенням прозорості (діапазон: 0-255, типове значення — 255)."
 
-#: ../fontforgeexe/prefs.c:357
+#: ../fontforgeexe/prefs.c:360
 msgid "ShowControlPointsAlways"
 msgstr "Завжди показувати контрольні точки"
 
-#: ../fontforgeexe/prefs.c:357
+#: ../fontforgeexe/prefs.c:360
 msgid ""
 "Always show the control points when editing a glyph.\n"
 "This can be turned off in the menu View/Show, this setting will effect if "
@@ -29118,19 +29118,19 @@ msgstr ""
 "початку.\n"
 "Щоб зміни набули чинності, слід перезапустити fontforge."
 
-#: ../fontforgeexe/prefs.c:358
+#: ../fontforgeexe/prefs.c:361
 msgid "ShowFillWithSpace"
 msgstr "Показувати заповнення з натиснутим пробілом"
 
-#: ../fontforgeexe/prefs.c:358
+#: ../fontforgeexe/prefs.c:361
 msgid "Also enable preview mode when the space bar is pressed."
 msgstr "Уможливити попередній перегляд, якщо натиснуто пробіл."
 
-#: ../fontforgeexe/prefs.c:359
+#: ../fontforgeexe/prefs.c:362
 msgid "OutlineThickness"
 msgstr "Товщина обрису"
 
-#: ../fontforgeexe/prefs.c:359
+#: ../fontforgeexe/prefs.c:362
 msgid ""
 "Setting above 1 will cause a thick outline to be drawn for glyph paths\n"
 " which is only extended inwards from the edge of the glyph.\n"
@@ -29143,7 +29143,7 @@ msgstr ""
 " Колір обрису можна визначити за допомогою ресурсу «Колір активного товстого "
 "контуру шару»."
 
-#: ../fontforgeexe/prefs.c:371
+#: ../fontforgeexe/prefs.c:372
 msgid ""
 "When copying glyphs from the font view, also copy the\n"
 "glyphs' truetype instructions."
@@ -29151,11 +29151,11 @@ msgstr ""
 "Під час копіювання гліфів з панелі перегляду шрифту також копіювати\n"
 "інструкції truetype гліфів."
 
-#: ../fontforgeexe/prefs.c:397
+#: ../fontforgeexe/prefs.c:398
 msgid "AddCharToNameList"
 msgstr "Додавати символи до списку назв"
 
-#: ../fontforgeexe/prefs.c:397
+#: ../fontforgeexe/prefs.c:398
 msgid ""
 "When displaying a list of glyph names\n"
 "(or sometimes just a single glyph name)\n"
@@ -29177,11 +29177,11 @@ msgstr ""
 "показу. За допомогою цього пункту можна\n"
 "вимкнути показ символів Unicode."
 
-#: ../fontforgeexe/prefs.c:404
+#: ../fontforgeexe/prefs.c:405
 msgid "GenerateHintWidthEqualityTolerance"
 msgstr "Похибка ширини для гінтів під час створення"
 
-#: ../fontforgeexe/prefs.c:404
+#: ../fontforgeexe/prefs.c:405
 msgid ""
 "When generating a font, ignore slight rounding errors for hints that should "
 "be at the top or bottom of the glyph. For example, you might like to set "
@@ -29193,11 +29193,11 @@ msgstr ""
 "можете встановити значення 0,02, щоб число 19,999 вважалося рівним 20. Цей "
 "параметр стосується лише значення ширини гінтів."
 
-#: ../fontforgeexe/prefs.c:409
+#: ../fontforgeexe/prefs.c:410
 msgid "StandardSlopeError"
 msgstr "Помилка стандартного нахилу"
 
-#: ../fontforgeexe/prefs.c:409
+#: ../fontforgeexe/prefs.c:410
 msgid ""
 "The maximum slope difference which still allows to consider two points "
 "\"parallel\".\n"
@@ -29210,11 +29210,11 @@ msgstr ""
 "поблажливіше ставився до відхилень у прямовисності ліній під час визначення "
 "границь основних штрихів."
 
-#: ../fontforgeexe/prefs.c:410
+#: ../fontforgeexe/prefs.c:411
 msgid "SerifSlopeError"
 msgstr "Помилка нахилу засічок"
 
-#: ../fontforgeexe/prefs.c:410
+#: ../fontforgeexe/prefs.c:411
 msgid ""
 "Same as above, but for terminals of small features (e. g. serifs), which can "
 "deviate more significantly from the horizontal or vertical direction."
@@ -29223,19 +29223,19 @@ msgstr ""
 "засічками), відхилення яких від горизонтального або вертикального напрямку є "
 "значнішим."
 
-#: ../fontforgeexe/prefs.c:418
+#: ../fontforgeexe/prefs.c:419
 msgid "InstructDiagonalStems"
 msgstr "Інструкції для діагональних штрихів"
 
-#: ../fontforgeexe/prefs.c:418
+#: ../fontforgeexe/prefs.c:419
 msgid "Generate instructions for diagonal stem hints."
 msgstr "Створити інструкції для гінтів діагональних штрихів."
 
-#: ../fontforgeexe/prefs.c:419
+#: ../fontforgeexe/prefs.c:420
 msgid "InstructSerifs"
 msgstr "Інструкції для засічок"
 
-#: ../fontforgeexe/prefs.c:419
+#: ../fontforgeexe/prefs.c:420
 msgid ""
 "Try to detect serifs and other elements protruding from base stems and "
 "generate instructions for them."
@@ -29243,19 +29243,19 @@ msgstr ""
 "Спробувати виявити засічки та інші елементи, що виступають з основних "
 "штрихів, і створити інструкції для них."
 
-#: ../fontforgeexe/prefs.c:420
+#: ../fontforgeexe/prefs.c:421
 msgid "InstructBallTerminals"
 msgstr "Інструкції терміналів Ball"
 
-#: ../fontforgeexe/prefs.c:420
+#: ../fontforgeexe/prefs.c:421
 msgid "Generate instructions for ball terminals."
 msgstr "Створити інструкції для терміналів ball."
 
-#: ../fontforgeexe/prefs.c:421
+#: ../fontforgeexe/prefs.c:422
 msgid "InterpolateStrongPoints"
 msgstr "Інтерполяція сильних точок"
 
-#: ../fontforgeexe/prefs.c:421
+#: ../fontforgeexe/prefs.c:422
 msgid ""
 "Interpolate between stem edges some important points, not affected by other "
 "instructions."
@@ -29263,11 +29263,11 @@ msgstr ""
 "Інтерполювати деякі важливі точки між краями штриха, на які не впливають "
 "інші інструкції."
 
-#: ../fontforgeexe/prefs.c:422
+#: ../fontforgeexe/prefs.c:423
 msgid "CounterControl"
 msgstr "Керування прогалинами"
 
-#: ../fontforgeexe/prefs.c:422
+#: ../fontforgeexe/prefs.c:423
 msgid ""
 "Make sure similar or equal counters remain the same in gridfitted outlines.\n"
 "Enabling this option may result in glyph advance widths being\n"
@@ -29278,11 +29278,11 @@ msgstr ""
 "до ґратки. Позначення цього пункту може призвести до різнорідності у\n"
 "масштабуванні ширин гліфів певними PPEM."
 
-#: ../fontforgeexe/prefs.c:430
+#: ../fontforgeexe/prefs.c:432
 msgid "SessionJoinTimeout"
 msgstr "Час очікування на долучення до сеансу"
 
-#: ../fontforgeexe/prefs.c:430
+#: ../fontforgeexe/prefs.c:432
 msgid ""
 "The number of milliseconds to wait for a connection to the collaboration "
 "server to happen. FontForge may be unresponsive during this session "
@@ -29292,11 +29292,11 @@ msgstr ""
 "роботи. Протягом встановлення з’єднання інтерфейс FontForge може бути "
 "заморожено. (Типове значення — 1000 або 1 секунда)"
 
-#: ../fontforgeexe/prefs.c:431
+#: ../fontforgeexe/prefs.c:433
 msgid "RoundTripMessageMaxTime"
 msgstr "Макс. час розсилання повідомлення"
 
-#: ../fontforgeexe/prefs.c:431
+#: ../fontforgeexe/prefs.c:433
 msgid ""
 "The number of milliseconds that are allowed to pass between sending an "
 "update to the server and hearing it sent back as a message to all clients. "
@@ -29309,7 +29309,7 @@ msgstr ""
 "значенням слід перезапустити FontForge. (Типове значення — 2000 або 2 "
 "секунди)"
 
-#: ../fontforgeexe/prefs.c:525 ../fontforgeexe/savefontdlg.c:721
+#: ../fontforgeexe/prefs.c:528 ../fontforgeexe/savefontdlg.c:721
 msgid ""
 "When generating a truetype or opentype font it is occasionally\n"
 "useful to know the mapping between truetype glyph ids and\n"
@@ -29322,7 +29322,7 @@ msgstr ""
 "Позначення цього пункту накаже FontForge створити файл\n"
 "(з суфіксом назви .g2n), що міститиме ці дані."
 
-#: ../fontforgeexe/prefs.c:528
+#: ../fontforgeexe/prefs.c:531
 msgid ""
 "Apple and MS/Adobe differ about the format of truetype and opentype files.\n"
 "This controls the default setting of the Apple checkbox in the\n"
@@ -29350,7 +29350,7 @@ msgstr ""
 "обох\n"
 "форматах."
 
-#: ../fontforgeexe/prefs.c:529
+#: ../fontforgeexe/prefs.c:532
 msgid ""
 "Apple and MS/Adobe differ about the format of truetype and opentype files.\n"
 "This controls the default setting of the OpenType checkbox in the\n"
@@ -29377,67 +29377,71 @@ msgstr ""
 "обох\n"
 "форматах."
 
-#: ../fontforgeexe/prefs.c:542
+#: ../fontforgeexe/prefs.c:549
 msgid "Generic"
 msgstr "Загальне"
 
-#: ../fontforgeexe/prefs.c:543
+#: ../fontforgeexe/prefs.c:550
 msgid "New Font"
 msgstr "Новий шрифт"
 
-#: ../fontforgeexe/prefs.c:545
+#: ../fontforgeexe/prefs.c:552
 msgid "Navigation"
 msgstr "Навігація"
 
-#: ../fontforgeexe/prefs.c:546
+#: ../fontforgeexe/prefs.c:553
 msgid "Editing"
 msgstr "Редагування"
 
-#: ../fontforgeexe/prefs.c:547
+#: ../fontforgeexe/prefs.c:554
+msgid "Interface"
+msgstr "Інтерфейс"
+
+#: ../fontforgeexe/prefs.c:555
 msgid "Synchronize"
 msgstr "Синхронізація"
 
-#: ../fontforgeexe/prefs.c:548
+#: ../fontforgeexe/prefs.c:556
 msgid "TT"
 msgstr "TT"
 
-#: ../fontforgeexe/prefs.c:549
+#: ../fontforgeexe/prefs.c:557
 msgid "Accents"
 msgstr "Акценти"
 
-#: ../fontforgeexe/prefs.c:550
+#: ../fontforgeexe/prefs.c:558
 msgid "Apps"
 msgstr "Програми"
 
-#: ../fontforgeexe/prefs.c:551
+#: ../fontforgeexe/prefs.c:559
 msgid "Font Info"
 msgstr "Про шрифт"
 
-#: ../fontforgeexe/prefs.c:552
+#: ../fontforgeexe/prefs.c:560
 msgid "Generate"
 msgstr "Створення"
 
-#: ../fontforgeexe/prefs.c:553
+#: ../fontforgeexe/prefs.c:561
 msgid "PS Hints"
 msgstr "Гінти PS"
 
-#: ../fontforgeexe/prefs.c:554
+#: ../fontforgeexe/prefs.c:562
 msgid "TT Instrs"
 msgstr "Інструкції TT"
 
-#: ../fontforgeexe/prefs.c:557
+#: ../fontforgeexe/prefs.c:565
 msgid "Collaboration"
 msgstr "Спільна робота"
 
-#: ../fontforgeexe/prefs.c:1427 ../fontforgeexe/scriptingdlg.c:62
+#: ../fontforgeexe/prefs.c:1435 ../fontforgeexe/scriptingdlg.c:62
 msgid "Call Script"
 msgstr "Викликати скрипт"
 
-#: ../fontforgeexe/prefs.c:1566
+#: ../fontforgeexe/prefs.c:1574
 msgid "This feature, setting combination is already used"
 msgstr "Ця модифікація, поєднання параметрів вже використано."
 
-#: ../fontforgeexe/prefs.c:1567
+#: ../fontforgeexe/prefs.c:1575
 msgid ""
 "This feature, setting combination is already used\n"
 "Do you really wish to reuse it?"
@@ -29445,51 +29449,51 @@ msgstr ""
 "Ця модифікація, поєднання параметрів вже використано.\n"
 "Бажаєте повторно використати його?"
 
-#: ../fontforgeexe/prefs.c:1583
+#: ../fontforgeexe/prefs.c:1591
 msgid "Tag too long"
 msgstr "Занадто довгий теґ"
 
-#: ../fontforgeexe/prefs.c:1583
+#: ../fontforgeexe/prefs.c:1591
 msgid "Feature tags must be exactly 4 ASCII characters"
 msgstr "Теґи модифікацій мають складатися точно з 4 символів ASCII"
 
-#: ../fontforgeexe/prefs.c:1620 ../fontforgeexe/prefs.c:2469
+#: ../fontforgeexe/prefs.c:1628 ../fontforgeexe/prefs.c:2477
 msgid "Mapping"
 msgstr "Відповідність"
 
-#: ../fontforgeexe/prefs.c:1630
+#: ../fontforgeexe/prefs.c:1638
 msgid "_Feature:"
 msgstr "_Модифікація:"
 
-#: ../fontforgeexe/prefs.c:1657
+#: ../fontforgeexe/prefs.c:1665
 msgid "_Tag:"
 msgstr "М_ітка:"
 
-#: ../fontforgeexe/prefs.c:1826
+#: ../fontforgeexe/prefs.c:1834
 msgid "Menu name with no associated script"
 msgstr "Пункт меню без пов’язаного скрипту"
 
-#: ../fontforgeexe/prefs.c:1829
+#: ../fontforgeexe/prefs.c:1837
 msgid "Script with no associated menu name"
 msgstr "Скрипт без пов’язаного пункту меню"
 
-#: ../fontforgeexe/prefs.c:2080
+#: ../fontforgeexe/prefs.c:2088
 msgid "Preferences"
 msgstr "Налаштування"
 
-#: ../fontforgeexe/prefs.c:2112
+#: ../fontforgeexe/prefs.c:2120
 msgid "MacMap|_New..."
 msgstr "С_творити…"
 
-#: ../fontforgeexe/prefs.c:2147
+#: ../fontforgeexe/prefs.c:2155
 msgid "MacMapping|Default"
 msgstr "Типове"
 
-#: ../fontforgeexe/prefs.c:2171
+#: ../fontforgeexe/prefs.c:2179
 msgid "Menu Name"
 msgstr "Назва меню"
 
-#: ../fontforgeexe/prefs.c:2174
+#: ../fontforgeexe/prefs.c:2182
 msgid ""
 "You may create a script menu containing up to 10 frequently used scripts.\n"
 "Each entry in the menu needs both a name to display in the menu and\n"
@@ -29503,11 +29507,11 @@ msgstr ""
 "будь-які символи unicode. За допомогою натискання кнопки «…»\n"
 "ви зможете вибрати файл скрипту на диску."
 
-#: ../fontforgeexe/prefs.c:2181
+#: ../fontforgeexe/prefs.c:2189
 msgid "Script File"
 msgstr "Файл скрипту"
 
-#: ../fontforgeexe/prefs.c:2184
+#: ../fontforgeexe/prefs.c:2192
 msgid ""
 "You may create a script menu containing up to 10 frequently used scripts\n"
 "Each entry in the menu needs both a name to display in the menu and\n"
@@ -29521,15 +29525,15 @@ msgstr ""
 "будь-які символи unicode. За допомогою натискання кнопки «…»\n"
 "ви зможете вибрати файл скрипту на диску."
 
-#: ../fontforgeexe/prefs.c:2215
+#: ../fontforgeexe/prefs.c:2223
 msgid "..."
 msgstr "…"
 
-#: ../fontforgeexe/prefs.c:2280 ../fontforgeexe/prefs.c:2855
+#: ../fontforgeexe/prefs.c:2288 ../fontforgeexe/prefs.c:2863
 msgid "On"
 msgstr "Увмкн."
 
-#: ../fontforgeexe/prefs.c:2288 ../fontforgeexe/prefs.c:2863
+#: ../fontforgeexe/prefs.c:2296 ../fontforgeexe/prefs.c:2871
 msgid "Off"
 msgstr "Вмкн."
 
@@ -29539,39 +29543,39 @@ msgstr "Вмкн."
 #. GT: (after striping off "Prefs_App|") together, translated, and then broken up
 #. GT: to fit the dialog. There is an extra blank line, not used in English,
 #. GT: into which your text may extend if needed.
-#: ../fontforgeexe/prefs.c:2429
+#: ../fontforgeexe/prefs.c:2437
 msgid "Prefs_App|Normally FontForge will find applications by searching for"
 msgstr "Зазвичай, FontForge шукатиме програми у каталогах,"
 
-#: ../fontforgeexe/prefs.c:2430
+#: ../fontforgeexe/prefs.c:2438
 msgid "Prefs_App|them in your PATH environment variable, if you want"
 msgstr "вказаних за допомогою змінної середовища PATH, якщо ви бажаєте"
 
-#: ../fontforgeexe/prefs.c:2431
+#: ../fontforgeexe/prefs.c:2439
 msgid "Prefs_App|to alter that behavior you may set an environment"
 msgstr "змінити таку поведінку, вам варто встановити змінну"
 
-#: ../fontforgeexe/prefs.c:2432
+#: ../fontforgeexe/prefs.c:2440
 msgid "Prefs_App|variable giving the full path spec of the application."
 msgstr "середовища так, щоб у ній було вказано повну адресу каталогу програми."
 
-#: ../fontforgeexe/prefs.c:2433
+#: ../fontforgeexe/prefs.c:2441
 msgid "Prefs_App|FontForge recognizes BROWSER, MF and AUTOTRACE."
 msgstr "FontForge визначає BROWSER, MF і AUTOTRACE."
 
-#: ../fontforgeexe/prefs.c:2434
+#: ../fontforgeexe/prefs.c:2442
 msgid "Prefs_App| "
 msgstr "Prefs_App| "
 
-#: ../fontforgeexe/prefs.c:2465
+#: ../fontforgeexe/prefs.c:2473
 msgid "Features"
 msgstr "Модифікації"
 
-#: ../fontforgeexe/prefs.c:3061
+#: ../fontforgeexe/prefs.c:3069
 msgid "Arrow Options"
 msgstr "Параметри стрілок"
 
-#: ../fontforgeexe/prefs.c:3065
+#: ../fontforgeexe/prefs.c:3073
 msgid "Ruler Options"
 msgstr "Параметри лінійки"
 
@@ -33808,11 +33812,11 @@ msgstr "На початку була літера…"
 msgid "fontology recapitulates file-ogeny"
 msgstr "Шрифтологія є квінтесенцією файлогенезу"
 
-#: ../fontforgeexe/startui.c:819
+#: ../fontforgeexe/startui.c:815
 msgid "Recovery Complete"
 msgstr "Відновлення завершено"
 
-#: ../fontforgeexe/startui.c:819
+#: ../fontforgeexe/startui.c:815
 #, c-format
 msgid ""
 "Your file %s has been recovered.\n"
@@ -33821,7 +33825,7 @@ msgstr ""
 "Ваш файл %s відновлено.\n"
 "Щоб продовжити над ним роботу, вам слід зберегти ваш файл."
 
-#: ../fontforgeexe/startui.c:1017
+#: ../fontforgeexe/startui.c:1013
 msgid "Flag0x10+"
 msgstr "Flag0x10+"
 
