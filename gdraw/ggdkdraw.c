@@ -43,11 +43,12 @@ static void _GGDKDraw_OnWindowDestroyed(gpointer data) {
     }
 
     if (!gw->is_pixmap) {
-        gdk_window_destroy(gw->w);
-
-        // Wait for it to die
-        while (!gdk_window_is_destroyed(gw->w)) {
-            GDrawProcessPendingEvents((GDisplay *)gw->display);
+        if (!gdk_window_is_destroyed(gw->w)) {
+            gdk_window_destroy(gw->w);
+            // Wait for it to die
+            while (!gdk_window_is_destroyed(gw->w)) {
+                GDrawProcessPendingEvents((GDisplay *)gw->display);
+            }
         }
 
         // Signal that it has been destroyed
@@ -903,8 +904,6 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             gw->is_visible = false;
             break;
         case GDK_DESTROY:
-            GDrawDestroyWindow((GWindow)gw);
-            break;
         case GDK_DELETE:
             gevent.type = et_close;
             break;
