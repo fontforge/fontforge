@@ -129,6 +129,58 @@ static void _GGDKDraw_CallEHChecked(GGDKWindow gw, GEvent *event, int (*eh)(GWin
     }
 }
 
+static GdkDevice *_GGDKDraw_GetPointer(GGDKDisplay *gdisp) {
+#ifdef GGDKDRAW_GDK_3_20
+    GdkSeat *seat = gdk_display_get_default_seat(gdisp->display);
+    if (seat == NULL) {
+        return NULL;
+    }
+
+    GdkDevice *pointer = gdk_seat_get_pointer(seat);
+    if (pointer == NULL) {
+        return NULL;
+    }
+#else
+    GdkDeviceManager *manager = gdk_display_get_device_manager(gdisp->display);
+    if (manager == NULL) {
+        return NULL;
+    }
+
+    GdkDevice *pointer = gdk_device_manager_get_client_pointer(manager);
+    if (pointer == NULL) {
+        return NULL;
+    }
+#endif
+    return pointer;
+}
+
+static void _GGDKDraw_CenterWindowOnScreen(GGDKWindow gw) {
+    GGDKDisplay *gdisp = gw->display;
+    GdkRectangle work_area, window_size;
+    GdkDevice *pointer = _GGDKDraw_GetPointer(gdisp);
+    GdkScreen *pointer_screen;
+    int x, y, monitor = 0;
+
+    gdk_window_get_frame_extents(gw->w, &window_size);
+    gdk_device_get_position(pointer, &pointer_screen, &x, &y);
+    if (pointer_screen == gdisp->screen) { // Ensure it's on the same screen
+        monitor = gdk_screen_get_monitor_at_point(gdisp->screen, x, y);
+    }
+
+    gdk_screen_get_monitor_workarea(gdisp->screen, monitor, &work_area);
+    gw->pos.x = (work_area.width - window_size.width) / 2 + work_area.x;
+    gw->pos.y = (work_area.height - window_size.height) / 2 + work_area.y;
+
+    if (gw->pos.x < work_area.x) {
+        gw->pos.x = work_area.x;
+    }
+
+    if (gw->pos.y < work_area.y) {
+        gw->pos.y = work_area.y;
+    }
+    gdk_window_move(gw->w, gw->pos.x, gw->pos.y);
+}
+
 static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *pos,
                                       int (*eh)(GWindow, GEvent *), void *user_data, GWindowAttrs *wattrs) {
 
@@ -251,6 +303,12 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
         free(nw->ggc);
         free(nw);
         return NULL;
+    }
+
+    // We center windows here because we need to know the window size+decor
+    if (attribs.window_type == GDK_WINDOW_TOPLEVEL) {
+        nw->is_centered = true;
+        _GGDKDraw_CenterWindowOnScreen(nw);
     }
 
     // Set background
@@ -404,31 +462,6 @@ static GWindow _GGDKDraw_NewPixmap(GDisplay *gdisp, uint16 width, uint16 height,
     // Add a reference to ourselves
     GGDKDRAW_ADDREF(gw);
     return (GWindow)gw;
-}
-
-static GdkDevice *_GGDKDraw_GetPointer(GGDKDisplay *gdisp) {
-#ifdef GGDKDRAW_GDK_3_20
-    GdkSeat *seat = gdk_display_get_default_seat(gdisp->display);
-    if (seat == NULL) {
-        return NULL;
-    }
-
-    GdkDevice *pointer = gdk_seat_get_pointer(seat);
-    if (pointer == NULL) {
-        return NULL;
-    }
-#else
-    GdkDeviceManager *manager = gdk_display_get_device_manager(gdisp->display);
-    if (manager == NULL) {
-        return NULL;
-    }
-
-    GdkDevice *pointer = gdk_device_manager_get_client_pointer(manager);
-    if (pointer == NULL) {
-        return NULL;
-    }
-#endif
-    return pointer;
 }
 
 static int16 _GGDKDraw_GdkModifierToKsm(GdkModifierType mask) {
@@ -1121,6 +1154,7 @@ static void GGDKDrawMove(GWindow gw, int32 x, int32 y) {
     if (!gw->is_toplevel) {
         _GGDKDraw_FakeConfigureEvent((GGDKWindow)gw, x, y, -1, -1);
     }
+    ((GGDKWindow)gw)->is_centered = false;
 }
 
 static void GGDKDrawTrueMove(GWindow w, int32 x, int32 y) {
@@ -1131,6 +1165,9 @@ static void GGDKDrawTrueMove(GWindow w, int32 x, int32 y) {
 static void GGDKDrawResize(GWindow gw, int32 w, int32 h) {
     Log(LOGDEBUG, ""); //assert(false);
     gdk_window_resize(((GGDKWindow)gw)->w, w, h);
+    if (gw->is_toplevel && ((GGDKWindow)gw)->is_centered) {
+        _GGDKDraw_CenterWindowOnScreen((GGDKWindow)gw);
+    }
     if (!gw->is_toplevel) {
         _GGDKDraw_FakeConfigureEvent((GGDKWindow)gw, -1, -1, w, h);
     }
@@ -1327,13 +1364,23 @@ static GWindow GGDKDrawGetRedirectWindow(GDisplay *gdisp) {
 
 static void GGDKDrawTranslateCoordinates(GWindow from, GWindow to, GPoint *pt) {
     Log(LOGDEBUG, "");
-    GdkPoint from_root, to_root;
+    GGDKWindow gfrom = (GGDKWindow)from, gto = (GGDKWindow)to;
+    GGDKDisplay *gdisp = gfrom->display;
 
-    gdk_window_get_origin(((GGDKWindow)from)->w, &from_root.x, &from_root.y);
-    gdk_window_get_origin(((GGDKWindow)to)->w, &to_root.x, &to_root.y);
 
-    pt->x = from_root.x - to_root.x  + pt->x;
-    pt->y = from_root.y - to_root.y + pt->y;
+    if (gto == gdisp->groot) {
+        // The actual meaning of this command...
+        int x, y;
+        gdk_window_get_root_coords(gfrom->w, pt->x, pt->y, &x, &y);
+        pt->x = x;
+        pt->y = y;
+    } else {
+        GdkPoint from_root, to_root;
+        gdk_window_get_origin(gfrom->w, &from_root.x, &from_root.y);
+        gdk_window_get_origin(gto->w, &to_root.x, &to_root.y);
+        pt->x = from_root.x - to_root.x  + pt->x;
+        pt->y = from_root.y - to_root.y + pt->y;
+    }
 }
 
 

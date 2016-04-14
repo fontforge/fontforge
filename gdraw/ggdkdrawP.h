@@ -155,6 +155,7 @@ struct ggdkwindow { /* :GWindow */
     unsigned int istransient: 1;	/* has transient for hint set */
     unsigned int isverytransient: 1;
     unsigned int is_cleaning_up: 1; //Are we running cleanup?
+    unsigned int is_centered: 1;
 
     int reference_count; // Knowing when to destroy is tricky...
 
