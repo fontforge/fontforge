@@ -582,7 +582,6 @@ return( true );
 	}
 return( false );
     } else if ( event->type == et_mousemove ) {
-    } else if ( event->type == et_expose ) {
     } else if ( event->type == et_map ) {
 	/* Above palettes */
 	GDrawRaise(gw);

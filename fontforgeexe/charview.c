@@ -5831,7 +5831,7 @@ static void CVExposeRulers(CharView *cv, GWindow pixmap ) {
 	units = 1000; littleunits=200;
     } else if ( onehundred<10000/2 ) {
 	units = 2500; littleunits=500;
-    } else if ( onehundred<10000/2 ) {
+    } else if ( onehundred<50000/2 ) {
 	units = 10000; littleunits=2000;
     } else {
 	for ( units=1 ; units<onehundred*2; units *= 10 );

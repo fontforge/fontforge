@@ -1207,7 +1207,7 @@ return( NULL );
 		    cmap->registry = readpsstr(pt+strlen(reg));
 		else if ( strncmp(pt,ord,strlen(ord))==0 )
 		    cmap->ordering = readpsstr(pt+strlen(ord));
-		else if ( strncmp(pt,ord,strlen(ord))==0 ) {
+		else if ( strncmp(pt,sup,strlen(sup))==0 ) {
 		    for ( pt += strlen(sup); isspace(*pt); ++pt );
 		    cmap->supplement = strtol(pt,NULL,10);
 		}
