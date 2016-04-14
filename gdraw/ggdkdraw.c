@@ -1221,10 +1221,14 @@ static void GGDKDrawSetTransientFor(GWindow transient, GWindow owner) {
         gdk_window_set_transient_for(gw->w, ow);
         gdk_window_set_modal_hint(gw->w, true);
         gw->istransient = true;
-        gdisp->transients = g_list_prepend(gdisp->transients, gw);
+        if (gw->restrict_input_to_me) {
+            gdisp->transients = g_list_prepend(gdisp->transients, gw);
+        }
     } else {
         gw->istransient = false;
-        gdisp->transients = g_list_remove(gdisp->transients, gw);
+        if (gw->restrict_input_to_me) {
+            gdisp->transients = g_list_remove(gdisp->transients, gw);
+        }
     }
     gw->transient_owner = ow;
 }
