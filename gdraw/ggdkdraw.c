@@ -311,7 +311,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
         } else if (!nw->is_dlg) {
             ++gdisp->top_window_count;
         } else if (nw->restrict_input_to_me && gdisp->last_nontransient_window != NULL) {
-            GDrawSetTransientFor((GWindow)nw, (GWindow)-1);
+            GDrawSetTransientFor((GWindow)nw, (GWindow) - 1);
         }
         nw->isverytransient = (wattrs->mask & wam_verytransient) ? 1 : 0;
         nw->is_toplevel = true;
@@ -489,7 +489,7 @@ static VisibilityState _GGDKDraw_GdkVisibilityStateToVS(GdkVisibilityState state
     return vs_unobscured;
 }
 
-int _GGDKDraw_WindowOrParentsDying(GGDKWindow gw) {
+static int _GGDKDraw_WindowOrParentsDying(GGDKWindow gw) {
     while (gw != NULL) {
         if (gw->is_dying) {
             return true;
@@ -500,6 +500,36 @@ int _GGDKDraw_WindowOrParentsDying(GGDKWindow gw) {
         gw = gw->parent;
     }
     return false;
+}
+
+static bool _GGDKDraw_FilterByModal(GdkEvent *event, GGDKWindow gw) {
+    GGDKDisplay *gdisp = gw->display;
+    switch (event->type) {
+        case GDK_KEY_PRESS:
+        case GDK_KEY_RELEASE:
+        case GDK_BUTTON_PRESS:
+        case GDK_BUTTON_RELEASE:
+        case GDK_SCROLL:
+        case GDK_MOTION_NOTIFY:
+        case GDK_DELETE:
+            break;
+        default:
+            return false;
+            break;
+    }
+    if (gdisp->transients == NULL) {
+        return false;
+    }
+
+    GGDKWindow other = (GGDKWindow)gdisp->transients->data;
+    if (gw == other || gw->transient_owner == other->transient_owner || GDrawWindowIsAncestor((GWindow)other, (GWindow)gw)) {
+        return false;
+    }
+
+    if (event->type != GDK_MOTION_NOTIFY) {
+        GDrawBeep((GDisplay *)gdisp);
+    }
+    return true;
 }
 
 static gboolean _GGDKDraw_ProcessTimerEvent(gpointer user_data) {
@@ -568,6 +598,9 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         return;
     } else if (_GGDKDraw_WindowOrParentsDying(gw) || gdk_window_is_destroyed(w)) {
         Log(LOGDEBUG, "DYING! %x", w);
+        return;
+    } else if (_GGDKDraw_FilterByModal(event, gw)) {
+        Log(LOGDEBUG, "Discarding event - has modals!");
         return;
     }
 
@@ -1011,6 +1044,7 @@ static void GGDKDrawDestroyWindow(GWindow w) {
         if (gw->display->last_nontransient_window == gw->w) {
             gw->display->last_nontransient_window = NULL;
         }
+        GDrawSetTransientFor(w, NULL);
         // Ensure an invalid value is returned if someone tries to get this value again.
         g_object_set_data(G_OBJECT(gw->w), "GGDKWindow", NULL);
     }
@@ -1183,9 +1217,16 @@ static void GGDKDrawSetTransientFor(GWindow transient, GWindow owner) {
         ow = ((GGDKWindow)owner)->w;
     }
 
-    gdk_window_set_transient_for(gw->w, ow);
+    if (ow != NULL) {
+        gdk_window_set_transient_for(gw->w, ow);
+        gdk_window_set_modal_hint(gw->w, true);
+        gw->istransient = true;
+        gdisp->transients = g_list_prepend(gdisp->transients, gw);
+    } else {
+        gw->istransient = false;
+        gdisp->transients = g_list_remove(gdisp->transients, gw);
+    }
     gw->transient_owner = ow;
-    gw->istransient = (ow != NULL);
 }
 
 static void GGDKDrawGetPointerPosition(GWindow w, GEvent *ret) {

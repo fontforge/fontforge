@@ -112,6 +112,7 @@ typedef struct ggdkdisplay { /* :GDisplay */
 
     GPtrArray *dirty_windows; //List of GGDKWindows which called drawing functions outside of an expose event.
     GList_Glib *timers; //List of GGDKTimer's
+    GList_Glib *transients; //List of transient windows
 
     GGDKButtonState bs;
     GGDKWindow default_icon;
