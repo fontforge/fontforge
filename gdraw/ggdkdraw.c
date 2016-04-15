@@ -1136,6 +1136,9 @@ static void GGDKDrawReparentWindow(GWindow child, GWindow newparent, int x, int 
     gchild->parent = gparent;
     gchild->is_toplevel = gchild->display->groot == gparent;
     gdk_window_reparent(gchild->w, gparent->w, x, y);
+    // Hack to position it correctly on Windows
+    // https://bugzilla.gnome.org/show_bug.cgi?id=765100
+    gdk_window_move(gchild->w, x, y);
 }
 
 static void GGDKDrawSetVisible(GWindow w, int show) {
