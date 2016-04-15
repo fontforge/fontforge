@@ -27,7 +27,6 @@
 #include "fontforgevw.h"
 #include <unistd.h>
 #include <math.h>
-#include <time.h>
 #include <locale.h>
 #include <utype.h>
 #include <chardata.h>
@@ -62,7 +61,6 @@ static int svg_outfontheader(FILE *file, SplineFont *sf,int layer) {
     BlueData bd;
     char *hash, *hasv, ch;
     int minu, maxu, i;
-    time_t now;
     const char *author = GetAuthor();
 
     memset(&info,0,sizeof(info));
@@ -78,9 +76,8 @@ static int svg_outfontheader(FILE *file, SplineFont *sf,int layer) {
 	fprintf( file, "\n-->\n" );
     }
     fprintf( file, "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\">\n" );
-    time(&now);
     fprintf( file, "<metadata>\nCreated by FontForge %d at %s",
-	    FONTFORGE_VERSIONDATE_RAW, ctime(&now) );
+	    FONTFORGE_VERSIONDATE_RAW, ctime((time_t*)&sf->modificationtime) );
     if ( author!=NULL )
 	fprintf(file," By %s\n", author);
     else
