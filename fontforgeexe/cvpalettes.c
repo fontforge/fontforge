@@ -210,9 +210,12 @@ static GWindow CreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *),
     newpos.x = pt.x; newpos.y = pt.y; newpos.width = pos->width; newpos.height = pos->height;
     wattrs->mask|= wam_positioned;
     wattrs->positioned = true;
-    gw = GDrawCreateTopWindow(NULL,&newpos,eh,user_data,wattrs);
-    if ( palettes_docked )
-	ReparentFixup(gw,v,0,pos->y,pos->width,pos->height);
+    if (palettes_docked) {
+        pos->x = 0;
+        gw = GDrawCreateSubWindow(v, pos, eh, user_data, wattrs);
+    } else {
+        gw = GDrawCreateTopWindow(NULL,&newpos,eh,user_data,wattrs);
+    }
 
     collabclient_addSessionJoiningCallback( onCollabSessionStateChanged );
     collabclient_addSessionLeavingCallback( onCollabSessionStateChanged );
@@ -3810,13 +3813,16 @@ void _CVPaletteActivate(CharView *cv,int force) {
 	    GDrawSetUserData(cvlayers,cv);
             CVLCheckLayerCount(cv,true);
 	}
-	if ( palettes_docked ) {
-	    ReparentFixup(cvtools,cv->v,0,0,getToolbarWidth(cv),getToolbarHeight(cv));
-	    if ( cv->b.sc->parent->multilayer )
-		ReparentFixup(cvlayers2,cv->v,0,getToolbarHeight(cv)+2,0,0);
-	    else
-		ReparentFixup(cvlayers,cv->v,0,getToolbarHeight(cv)+2,0,0);
-	} else {
+    if (palettes_docked) {
+        if (cvvisible[1])
+            GDrawRequestExpose(cvtools, NULL, false);
+        if (cvvisible[0]) {
+            if (cv->b.sc->parent->multilayer)
+                GDrawRequestExpose(cvlayers2, NULL, false);
+            else
+                GDrawRequestExpose(cvlayers, NULL, false);
+        }
+    } else {
 	    if ( cvvisible[0]) {
 		if ( cv->b.sc->parent->multilayer )
 		    RestoreOffsets(cv->gw,cvlayers2,&cvlayersoff);
@@ -4577,11 +4583,14 @@ void BVPaletteActivate(BitmapView *bv) {
 	GDrawSetUserData(bvtools,bv);
 	GDrawSetUserData(bvlayers,bv);
 	GDrawSetUserData(bvshades,bv);
-	if ( palettes_docked ) {
-	    ReparentFixup(bvtools,bv->v,0,0,BV_TOOLS_WIDTH,BV_TOOLS_HEIGHT);
-	    ReparentFixup(bvlayers,bv->v,0,BV_TOOLS_HEIGHT+2,0,0);
-	    ReparentFixup(bvshades,bv->v,0,BV_TOOLS_HEIGHT+BV_TOOLS_HEIGHT+4,0,0);
-	} else {
+    if (palettes_docked) {
+        if (bvvisible[0])
+            GDrawRequestExpose(bvlayers, NULL, false);
+        if (bvvisible[1])
+            GDrawRequestExpose(bvtools, NULL, false);
+        if (bvvisible[2])
+            GDrawRequestExpose(bvshades, NULL, false);
+    } else {
 	    if ( bvvisible[0])
 		RestoreOffsets(bv->gw,bvlayers,&bvlayersoff);
 	    if ( bvvisible[1])
@@ -4701,40 +4710,30 @@ void BVPaletteChangedChar(BitmapView *bv) {
 void PalettesChangeDocking() {
 
     palettes_docked = !palettes_docked;
-    if ( palettes_docked ) {
 	if ( cvtools!=NULL ) {
 	    CharView *cv = GDrawGetUserData(cvtools);
 	    if ( cv!=NULL ) {
-		ReparentFixup(cvtools,cv->v,0,0,getToolbarWidth(cv),getToolbarHeight(cv));
+            GDrawDestroyWindow(cvtools);
+
 		if ( cvlayers!=NULL )
-		    ReparentFixup(cvlayers,cv->v,0,getToolbarHeight(cv)+2,0,0);
+            GDrawDestroyWindow(cvlayers);
 		if ( cvlayers2!=NULL )
-		    ReparentFixup(cvlayers2,cv->v,0,getToolbarHeight(cv)+2,0,0);
+            GDrawDestroyWindow(cvlayers2);
+
+            cvtools = cvlayers = cvlayers2 = NULL;
+            CVPaletteActivate(cv);
 	    }
 	}
 	if ( bvtools!=NULL ) {
 	    BitmapView *bv = GDrawGetUserData(bvtools);
 	    if ( bv!=NULL ) {
-		ReparentFixup(bvtools,bv->v,0,0,BV_TOOLS_WIDTH,BV_TOOLS_HEIGHT);
-		ReparentFixup(bvlayers,bv->v,0,BV_TOOLS_HEIGHT+2,0,0);
-		ReparentFixup(bvshades,bv->v,0,BV_TOOLS_HEIGHT+BV_LAYERS_HEIGHT+4,0,0);
+            GDrawDestroyWindow(bvtools);
+            GDrawDestroyWindow(bvlayers);
+            GDrawDestroyWindow(bvshades);
+            bvtools = bvlayers = bvshades = NULL;
+            BVPaletteActivate(bv);
 	    }
 	}
-    } else {
-	if ( cvtools!=NULL ) {
-	    CharView *cv = GDrawGetUserData(cvtools);
-	    GDrawReparentWindow(cvtools,GDrawGetRoot(NULL),0,0);
-	    if ( cvlayers!=NULL )
-		GDrawReparentWindow(cvlayers,GDrawGetRoot(NULL),0,getToolbarHeight(cv)+2+45);
-	    if ( cvlayers2!=NULL )
-		GDrawReparentWindow(cvlayers2,GDrawGetRoot(NULL),0,getToolbarHeight(cv)+2+45);
-	}
-	if ( bvtools!=NULL ) {
-	    GDrawReparentWindow(bvtools,GDrawGetRoot(NULL),0,0);
-	    GDrawReparentWindow(bvlayers,GDrawGetRoot(NULL),0,BV_TOOLS_HEIGHT+2+45);
-	    GDrawReparentWindow(bvshades,GDrawGetRoot(NULL),0,BV_TOOLS_HEIGHT+BV_LAYERS_HEIGHT+4+90);
-	}
-    }
     SavePrefs(true);
 }
 
