@@ -313,7 +313,7 @@ static int wheel_e_h(GWindow gw, GEvent *event) {
 	    int x = (int) rint(d->col.s*(size.width-1)*c/2.0) + size.width/2;
 	    circle.x = x-3; circle.y = y-3;
 	    circle.width = circle.height = 7;
-	    GDrawDrawElipse(gw,&circle,0x000000);
+	    GDrawDrawEllipse(gw,&circle,0x000000);
 	}
     } else if ( event->type == et_mousedown ||
 	    (event->type==et_mousemove && d->pressed) ||

@@ -702,7 +702,7 @@ static int GBoxRoundRectBorder(GWindow gw,GRect *pos,GBox *design,
 return( inset );
 }
 
-static int GBoxElipseBorder(GWindow gw,GRect *pos,GBox *design,
+static int GBoxEllipseBorder(GWindow gw,GRect *pos,GBox *design,
 	enum gadget_state state, int is_def) {
     int bw = GDrawPointsToPixels(gw,design->border_width);
     int inset = 0;
@@ -742,7 +742,7 @@ static int GBoxElipseBorder(GWindow gw,GRect *pos,GBox *design,
 	    cur.width -= scale; cur.height -= scale;
 	}
 	--cur.width; --cur.height;
-	GDrawDrawElipse(gw,&cur,color_outer);
+	GDrawDrawEllipse(gw,&cur,color_outer);
 	inset += scale;
     }
 
@@ -827,7 +827,7 @@ static int GBoxElipseBorder(GWindow gw,GRect *pos,GBox *design,
 	    cur.width -= scale; cur.height -= scale;
 	}
 	--cur.width; --cur.height;
-	GDrawDrawElipse(gw,&cur,
+	GDrawDrawEllipse(gw,&cur,
 		state == gs_active && (design->flags & box_active_border_inner) ?
 			design->active_border : color_inner);
 	inset += scale;
@@ -945,8 +945,8 @@ int GBoxDrawBorder(GWindow gw,GRect *pos,GBox *design,enum gadget_state state,
       case bs_roundrect:
 	ret = GBoxRoundRectBorder(gw,pos,design,state,is_default);
       break;
-      case bs_elipse:
-	ret = GBoxElipseBorder(gw,pos,design,state,is_default);
+      case bs_ellipse:
+	ret = GBoxEllipseBorder(gw,pos,design,state,is_default);
       break;
       case bs_diamond:
 	ret = GBoxDiamondBorder(gw,pos,design,state,is_default);
@@ -979,7 +979,7 @@ return;
 		bstart + bdiff * i / r->height ));
 }
 
-static void BoxGradientElipse(GWindow gw, GRect *r, Color start, Color end)
+static void BoxGradientEllipse(GWindow gw, GRect *r, Color start, Color end)
 {
     /*
      * Ellipse borders are 1 unit wider and 1 unit higher than the passed GRect.
@@ -1090,16 +1090,16 @@ void GBoxDrawBackground(GWindow gw,GRect *pos,GBox *design,
 		BoxGradientRect(gw,&cur,ibg,design->gradient_bg_end);
 	    else
 		GDrawFillRect(gw,&cur,ibg);
-	} else if ( design->border_shape==bs_elipse ) {
+	} else if ( design->border_shape==bs_ellipse ) {
 	    GRect cur;
 	    cur = *pos; --cur.width; --cur.height;
 	    if ( def_off ) {
 		cur.x += def_off; cur.y += def_off; cur.width -= 2*def_off; cur.height -= 2*def_off;
 	    }
 	    if ( design->flags & box_gradient_bg )
-		BoxGradientElipse(gw,&cur,ibg,design->gradient_bg_end);
+		BoxGradientEllipse(gw,&cur,ibg,design->gradient_bg_end);
 	    else
-		GDrawFillElipse(gw,&cur,ibg);
+		GDrawFillEllipse(gw,&cur,ibg);
 	} else if ( design->border_shape==bs_diamond ) {
 	    GPoint pts[5];
 	    pts[0].x = pos->x+pos->width/2;	    pts[0].y = pos->y+def_off;

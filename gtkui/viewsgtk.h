@@ -617,7 +617,7 @@ extern void FVDelay(FontView *fv,int (*func)(FontView *));
 extern void SCPreparePopup(GtkTooltips *tip,GtkWidget *v,SplineChar *sc,struct remap *remap,
 	int localenc, int actualuni);
 extern real CVRoundRectRadius(void);
-extern int CVRectElipseCenter(void);
+extern int CVRectEllipseCenter(void);
 extern void CVRectEllipsePosDlg(CharView *cv);
 extern real CVStarRatio(void);
 extern int CVPolyStarPoints(void);

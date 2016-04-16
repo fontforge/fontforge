@@ -28,7 +28,7 @@
 #include "collabclientui.h"
 
 int palettes_docked=1;
-int rectelipse=0, polystar=0, regular_star=1;
+int rectellipse=0, polystar=0, regular_star=1;
 int center_out[2] = { false, true };
 float rr_radius=0;
 int ps_pointcnt=6;
@@ -327,7 +327,7 @@ GMenuItem2 cvtoollist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Rectan_gle"), (GImage *) "toolsrect.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Rectangle|No Shortcut"), NULL, NULL, CVMenuTool, cvt_rect },
     { { (unichar_t *) N_("Pol_ygon"), (GImage *) "toolspolygon.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Polygon|No Shortcut"), NULL, NULL, CVMenuTool, cvt_poly },
-    { { (unichar_t *) N_("Ellipse"), (GImage *) "toolselipse.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Ellipse|No Shortcut"), NULL, NULL, CVMenuTool, cvt_elipse },
+    { { (unichar_t *) N_("Ellipse"), (GImage *) "toolsellipse.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Ellipse|No Shortcut"), NULL, NULL, CVMenuTool, cvt_ellipse },
     { { (unichar_t *) N_("Star"), (GImage *) "toolsstar.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Star|No Shortcut"), NULL, NULL, CVMenuTool, cvt_star },
     GMENUITEM2_EMPTY
 };
@@ -359,7 +359,7 @@ GMenuItem2 cvspirotoollist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Rectan_gle"), (GImage *) "toolsrect.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Rectangle|No Shortcut"), NULL, NULL, CVMenuTool, cvt_rect },
     { { (unichar_t *) N_("Pol_ygon"), (GImage *) "toolspolygon.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Polygon|No Shortcut"), NULL, NULL, CVMenuTool, cvt_poly },
-    { { (unichar_t *) N_("Ellipse"), (GImage *) "toolselipse.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Ellipse|No Shortcut"), NULL, NULL, CVMenuTool, cvt_elipse },
+    { { (unichar_t *) N_("Ellipse"), (GImage *) "toolsellipse.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Ellipse|No Shortcut"), NULL, NULL, CVMenuTool, cvt_ellipse },
     { { (unichar_t *) N_("Star"), (GImage *) "toolsstar.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Star|No Shortcut"), NULL, NULL, CVMenuTool, cvt_star },
     GMENUITEM2_EMPTY
 };
@@ -386,8 +386,8 @@ real CVRoundRectRadius(void) {
 return( rr_radius );
 }
 
-int CVRectElipseCenter(void) {
-return( center_out[rectelipse] );
+int CVRectEllipseCenter(void) {
+return( center_out[rectellipse] );
 }
 
 int CVPolyStarPoints(void) {
@@ -433,7 +433,7 @@ static void FakeShapeEvents(CharView *cv) {
     GEvent event;
     real trans[6];
 
-    cv->active_tool = rectelipse ? cvt_elipse : cvt_rect;
+    cv->active_tool = rectellipse ? cvt_ellipse : cvt_rect;
     if ( cv->b.sc->inspiro && hasspiro() ) {
 	GDrawSetCursor(cv->v,spirotools[cv->active_tool]);
 	GDrawSetCursor(cvtools,spirotools[cv->active_tool]);
@@ -492,7 +492,7 @@ return( true );
 	    d->cv->p.y = d->cv->info.y = y;
 	    raddiam_x = radx; raddiam_y = rady;
 	    rotate_by = ang;
-	    rectelipse = re;
+	    rectellipse = re;
 	    *d->val = val;
 	    FakeShapeEvents(d->cv);
 	}
@@ -799,14 +799,14 @@ static int Ask(char *rb1, char *rb2, int rb, char *lab, float *val, int *co,
 return( d.ret );
 }
 
-static void CVRectElipse(CharView *cv) {
-    rectelipse = Ask(_("Rectangle"),_("Ellipse"),rectelipse,
+static void CVRectEllipse(CharView *cv) {
+    rectellipse = Ask(_("Rectangle"),_("Ellipse"),rectellipse,
 	    _("Round Rectangle Radius"),&rr_radius,center_out,false, cv);
     GDrawRequestExpose(cvtools,NULL,false);
 }
 
 void CVRectEllipsePosDlg(CharView *cv) {
-    rectelipse = Ask(_("Rectangle"),_("Ellipse"),rectelipse,
+    rectellipse = Ask(_("Rectangle"),_("Ellipse"),rectellipse,
 	    _("Round Rectangle Radius"),&rr_radius,center_out,2, cv);
     GDrawRequestExpose(cvtools,NULL,false);
 }
@@ -832,7 +832,7 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
 			            { &GIcon_flip, &GIcon_skew },
 			            { &GIcon_3drotate, &GIcon_perspective },
 			            { &GIcon_rect, &GIcon_poly},
-			            { &GIcon_elipse, &GIcon_star}};
+			            { &GIcon_ellipse, &GIcon_star}};
     static GImage *spirobuttons[][2] = { { &GIcon_pointer, &GIcon_magnify },
 				    { &GIcon_freehand, &GIcon_hand },
 			            { &GIcon_knife, &GIcon_ruler },
@@ -843,7 +843,7 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
 			            { &GIcon_flip, &GIcon_skew },
 			            { &GIcon_3drotate, &GIcon_perspective },
 			            { &GIcon_rect, &GIcon_poly},
-			            { &GIcon_elipse, &GIcon_star}};
+			            { &GIcon_ellipse, &GIcon_star}};
     static GImage *normsmalls[] = { &GIcon_smallpointer, &GIcon_smallmag,
 				    &GIcon_smallpencil, &GIcon_smallhand,
 			            &GIcon_smallknife, &GIcon_smallruler,
@@ -854,7 +854,7 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
 			            &GIcon_smallflip, &GIcon_smallskew,
 			            &GIcon_small3drotate, &GIcon_smallperspective,
 			            &GIcon_smallrect, &GIcon_smallpoly,
-			            &GIcon_smallelipse, &GIcon_smallstar };
+			            &GIcon_smallellipse, &GIcon_smallstar };
     static GImage *spirosmalls[] = { &GIcon_smallpointer, &GIcon_smallmag,
 				    &GIcon_smallpencil, &GIcon_smallhand,
 			            &GIcon_smallknife, &GIcon_smallruler,
@@ -865,7 +865,7 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
 			            &GIcon_smallflip, &GIcon_smallskew,
 			            &GIcon_small3drotate, &GIcon_smallperspective,
 			            &GIcon_smallrect, &GIcon_smallpoly,
-			            &GIcon_smallelipse, &GIcon_smallstar };
+			            &GIcon_smallellipse, &GIcon_smallstar };
     static const unichar_t _Mouse[][9] = {
 	    { 'M', 's', 'e', '1',  '\0' },
 	    { '^', 'M', 's', 'e', '1',  '\0' },
@@ -886,7 +886,7 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
     GDrawSetLineWidth(pixmap,0);
     for ( i=0; i<sizeof(normbuttons)/sizeof(normbuttons[0])-1; ++i ) for ( j=0; j<2; ++j ) {
 	mi = i;
-	if ( i==(cvt_rect)/2 && ((j==0 && rectelipse) || (j==1 && polystar)) )
+	if ( i==(cvt_rect)/2 && ((j==0 && rectellipse) || (j==1 && polystar)) )
 	    ++mi;
 /*	if ( cv->b.sc->parent->order2 && buttons[mi][j]==&GIcon_freehand ) */
 /*	    GDrawDrawImage(pixmap,&GIcon_greyfree,NULL,j*27+1,i*27+1);	 */
@@ -984,7 +984,7 @@ void CVToolsSetCursor(CharView *cv, int state, char *device) {
 	tools[cvt_perspective] = ct_perspective;
 	tools[cvt_rect] = ct_rect;
 	tools[cvt_poly] = ct_poly;
-	tools[cvt_elipse] = ct_elipse;
+	tools[cvt_ellipse] = ct_ellipse;
 	tools[cvt_star] = ct_star;
 	tools[cvt_minify] = ct_magminus;
 	memcpy(spirotools,tools,sizeof(tools));
@@ -1120,13 +1120,13 @@ return;			/* If the wm gave me a window the wrong size */
 	int current = CVCurrentTool(cv,event);
 	int changed = false;
 	if ( event->type == et_mousedown && event->u.mouse.clicks>=2 ) {
-	    rectelipse = settings[0];
+	    rectellipse = settings[0];
 	    polystar = settings[1];
 	} else if ( event->type == et_mousedown ) {
-	    settings[0] = rectelipse; settings[1] = polystar;
+	    settings[0] = rectellipse; settings[1] = polystar;
 	    /* A double click will change the type twice, which leaves it where it was, which is desired */
-	    if ( j==0 && ((!rectelipse && current==cvt_rect) || (rectelipse && current==cvt_elipse)) ) {
-		rectelipse = !rectelipse;
+	    if ( j==0 && ((!rectellipse && current==cvt_rect) || (rectellipse && current==cvt_ellipse)) ) {
+		rectellipse = !rectellipse;
 		changed = true;
 	    } else if (j==1 && ((!polystar && current==cvt_poly) || (polystar && current==cvt_star)) ) {
 		polystar = !polystar;
@@ -1137,7 +1137,7 @@ return;			/* If the wm gave me a window the wrong size */
 		GDrawRequestExpose(cvtools,NULL,false);
 	    }
 	}
-	if ( (j==0 && rectelipse) || (j==1 && polystar) )
+	if ( (j==0 && rectellipse) || (j==1 && polystar) )
 	    ++mi;
     }
     pos = mi*2 + j;
@@ -1199,9 +1199,9 @@ return;			/* If the wm gave me a window the wrong size */
 	} else if ( pos==cvt_ruler && event->u.mouse.clicks==2 ) {
 	    RulerDlg(cv);
 	} else if ( i==cvt_rect/2 && event->u.mouse.clicks==2 ) {
-	    ((j==0)?CVRectElipse:CVPolyStar)(cv);
+	    ((j==0)?CVRectEllipse:CVPolyStar)(cv);
 	    mi = i;
-	    if ( (j==0 && rectelipse) || (j==1 && polystar) )
+	    if ( (j==0 && rectellipse) || (j==1 && polystar) )
 		++mi;
 	    pos = mi*2 + j;
 	    cv->pressed_tool = cv->pressed_display = pos;
@@ -3967,8 +3967,8 @@ void BVToolsSetCursor(BitmapView *bv, int state,char *device) {
 	tools[bvt_setvwidth] = ct_updown;
 	tools[bvt_rect] = ct_rect;
 	tools[bvt_filledrect] = ct_filledrect;
-	tools[bvt_elipse] = ct_elipse;
-	tools[bvt_filledelipse] = ct_filledelipse;
+	tools[bvt_ellipse] = ct_ellipse;
+	tools[bvt_filledellipse] = ct_filledellipse;
     }
 
     shouldshow = bvt_none;
@@ -4199,12 +4199,12 @@ void BVToolsPopup(BitmapView *bv, GEvent *event) {
     mi[i].ti.text = (unichar_t *) _("Ellipse"); mi[i].ti.text_is_1byte = true;
     mi[i].ti.fg = COLOR_DEFAULT;
     mi[i].ti.bg = COLOR_DEFAULT;
-    mi[i].mid = bvt_elipse;
+    mi[i].mid = bvt_ellipse;
     mi[i++].invoke = BVPopupInvoked;
     mi[i].ti.text = (unichar_t *) _("Filled Ellipse"); mi[i].ti.text_is_1byte = true;
     mi[i].ti.fg = COLOR_DEFAULT;
     mi[i].ti.bg = COLOR_DEFAULT;
-    mi[i].mid = bvt_filledelipse;
+    mi[i].mid = bvt_filledellipse;
     mi[i++].invoke = BVPopupInvoked;
 
     mi[i].ti.fg = COLOR_DEFAULT;

@@ -997,7 +997,7 @@ return;
 	    rect.width = 3;
 	    rect.height = 3;
 
-	    GDrawFillElipse(pixmap,&rect,((i==(cv->num_ruler_intersections-1) && cv->info_sp) || (i==0 && cv->p.sp)) ? measuretoolpointsnappedcol : measuretoolpointcol);
+	    GDrawFillEllipse(pixmap,&rect,((i==(cv->num_ruler_intersections-1) && cv->info_sp) || (i==0 && cv->p.sp)) ? measuretoolpointsnappedcol : measuretoolpointcol);
 	    if ( i>0 && (cv->num_ruler_intersections<6 || (prev_rect.x + 10)<rect.x || (prev_rect.y + 10)<rect.y || (prev_rect.y - 10)>rect.y) ) {
 		real xoff = cv->ruler_intersections[i].x - cv->ruler_intersections[i-1].x;
 		real yoff = cv->ruler_intersections[i].y - cv->ruler_intersections[i-1].y;

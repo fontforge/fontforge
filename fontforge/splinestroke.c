@@ -127,7 +127,7 @@ static char *glyphname=NULL;
 /*  and triangle for the miter) and do a polygon hit test with those. */
 
 /* OK, that's a circular pen. Now by scaling we can turn a circle into an */
-/*  elipse, and by rotating we can orient the main axis how we like */
+/*  ellipse, and by rotating we can orient the main axis how we like */
 /*  (we actually scale the splines by a transform that turns the ellipse into */
 /*   a circle, do the stroking with a circle, and then do the inverse trans-  */
 /*   form (on the splines) that turns the circle into the ellipse) */
@@ -3665,7 +3665,7 @@ SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
 	if ( si->minorradius==0 )
 	    si->minorradius = si->radius;
 	if ( si->minorradius!=si->radius ||
-		(si->penangle!=0 && si->stroke_type!=si_std) ) {	/* rotating a circle is irrelevant (rotating an elipse means something) */
+		(si->penangle!=0 && si->stroke_type!=si_std) ) {	/* rotating a circle is irrelevant (rotating an ellipse means something) */
 	    bigreal sn,co,factor;
 	    c.transform_needed = true;
 	    sn = sin(si->penangle);

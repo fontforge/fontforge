@@ -16569,7 +16569,7 @@ msgstr "Rectangle ple"
 
 #: ../fontforgeexe/cvpalettes.c:4069
 msgid "Filled Ellipse"
-msgstr "Elipse plena"
+msgstr "Ellipse plena"
 
 #: ../fontforgeexe/cvpointer.c:1597 ../fontforgeexe/cvpointer.c:1613
 #: ../fontforgeexe/fvmetricsdlg.c:62

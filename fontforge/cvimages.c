@@ -461,7 +461,7 @@ static SplineSet * slurparc(FILE *fig,SplineChar *sc, SplineSet *sofar) {
 return( spl );
 }
 
-static SplineSet * slurpelipse(FILE *fig,SplineChar *sc, SplineSet *sofar) {
+static SplineSet * slurpellipse(FILE *fig,SplineChar *sc, SplineSet *sofar) {
     int ch;
     int sub, dir, cx, cy, rx, ry;
     float angle;
@@ -789,7 +789,7 @@ return(sofar);
 	    sofar = slurpcolor(fig,sofar);
 	  break;
 	  case 1:
-	    sofar = slurpelipse(fig,sc,sofar);
+	    sofar = slurpellipse(fig,sc,sofar);
 	  break;
 	  case 5:
 	    sofar = slurparc(fig,sc,sofar);

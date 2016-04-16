@@ -284,7 +284,7 @@ int clear_tt_instructions_when_needed;
 int ask_user_for_resolution;
 int cvvisible, bvvisible;
 int oldsystem, old_validate, old_fontlog;
-int regular_star, polystar, rectelipse, center_out, ps_pointcnt, rr_radius, star_percent, debug_wins, gridfit_dpi, gridfit_depth;
+int regular_star, polystar, rectellipse, center_out, ps_pointcnt, rr_radius, star_percent, debug_wins, gridfit_dpi, gridfit_depth;
 int gridfit_pointsize;
 int default_font_filter_index;
 int cv_auto_goto;

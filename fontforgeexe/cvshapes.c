@@ -59,7 +59,7 @@ void CVMouseDownShape(CharView *cv,GEvent *event) {
     struct shapedescrip *ellipse;
 
     if ( event->u.mouse.clicks==2 &&
-	    (cv->active_tool == cvt_rect || cv->active_tool == cvt_elipse)) {
+	    (cv->active_tool == cvt_rect || cv->active_tool == cvt_ellipse)) {
 	CVRectEllipsePosDlg(cv);
 return;
     }
@@ -91,7 +91,7 @@ return;
 	    last = SPMakeTo(&cv->info,pt_tangent,last);
 	}
       break;
-      case cvt_elipse:
+      case cvt_ellipse:
 	ellipse = /*order2 ? ellipse2 :*/ ellipse3;
 	last->pointtype = pt_curve;
 	for ( i=1; ellipse[i].me.x!=0 || ellipse[i].me.y!=0 ; ++i ) {
@@ -165,7 +165,7 @@ static void RedoActiveSplineSet(SplineSet *ss) {
 
 void CVMouseMoveShape(CharView *cv) {
     real radius = CVRoundRectRadius(); int points = CVPolyStarPoints();
-    int center_out = CVRectElipseCenter();
+    int center_out = CVRectEllipseCenter();
     real xrad,yrad, xrr, yrr;
     real r2;
     SplinePoint *sp;
@@ -242,7 +242,7 @@ return;
 	    }
 	}
       break;
-      case cvt_elipse:
+      case cvt_ellipse:
 	if ( !center_out ) {
 	    center.x = (cv->p.cx+cv->info.x)/2; center.y = (cv->p.cy+cv->info.y)/2;
 	    if (( xrad = (cv->p.cx-cv->info.x)/2 )<0 ) xrad = -xrad;
@@ -324,7 +324,7 @@ return;
 	/* Remove this shape, it will be selected */
 	cv->b.layerheads[cv->b.drawmode]->splines = SplinePointListRemoveSelected(cv->b.sc,
 		cv->b.layerheads[cv->b.drawmode]->splines);
-    } else if ( cv->active_tool==cvt_rect || cv->active_tool==cvt_elipse ) {
+    } else if ( cv->active_tool==cvt_rect || cv->active_tool==cvt_ellipse ) {
 	if ( SplinePointListIsClockwise(cv->active_shape)==0 )
 	    SplineSetReverse(cv->active_shape);
 	if ( snaptoint ) {

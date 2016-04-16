@@ -125,7 +125,7 @@ static int loacal_markextrema, loacal_markpoi, loacal_showrulers,
     loacal_showcpinfo, loacal_showsidebearings, loacal_showpoints,
     loacal_showfilled, loacal_showtabs, loacal_showrefnames;
 static int oldsystem=100;
-static int rectelipse=0, polystar=0, regular_star=0;	/* from cvpalettes.c */
+static int rectellipse=0, polystar=0, regular_star=0;	/* from cvpalettes.c */
 static int center_out[2]={0,0};			/* from cvpalettes.c */
 static float rr_radius=0;				/* from cvpalettes.c */
 static int ps_pointcnt=5;				/* from cvpalettes.c */
@@ -271,7 +271,7 @@ extras[] = {
     { "DefaultScreenDpiSystem", pr_int, &oldsystem, NULL, NULL, '\0', NULL, 1, NULL },
     { "RegularStar", pr_bool, &regular_star, NULL, NULL, '\0', NULL, 1, NULL },
     { "PolyStar", pr_bool, &polystar, NULL, NULL, '\0', NULL, 1, NULL },
-    { "RectEllipse", pr_bool, &rectelipse, NULL, NULL, '\0', NULL, 1, NULL },
+    { "RectEllipse", pr_bool, &rectellipse, NULL, NULL, '\0', NULL, 1, NULL },
     { "RectCenterOut", pr_bool, &center_out[0], NULL, NULL, '\0', NULL, 1, NULL },
     { "EllipseCenterOut", pr_bool, &center_out[1], NULL, NULL, '\0', NULL, 1, NULL },
     { "PolyStartPointCnt", pr_int, &ps_pointcnt, NULL, NULL, '\0', NULL, 1, NULL },

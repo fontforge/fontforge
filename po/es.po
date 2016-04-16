@@ -16819,7 +16819,7 @@ msgstr ""
 
 #: ../fontforgeexe/cvpalettes.c:258 ../fontforgeexe/cvpalettes.c:259
 msgid "Rectangle or Ellipse"
-msgstr "Rectángulo o elipse"
+msgstr "Rectángulo o ellipse"
 
 #: ../fontforgeexe/cvpalettes.c:258 ../fontforgeexe/cvpalettes.c:259
 msgid "Polygon or Star"
@@ -16905,7 +16905,7 @@ msgstr "Polígono"
 #: ../fontforgeexe/cvpalettes.c:757 ../fontforgeexe/cvpalettes.c:763
 #: ../fontforgeexe/cvpalettes.c:4064
 msgid "Ellipse"
-msgstr "Elipse"
+msgstr "Ellipse"
 
 #: ../fontforgeexe/cvpalettes.c:285 ../fontforgeexe/cvpalettes.c:317
 #: ../fontforgeexe/cvpalettes.c:771
@@ -17283,7 +17283,7 @@ msgstr "Rectángulo relleno"
 
 #: ../fontforgeexe/cvpalettes.c:4069
 msgid "Filled Ellipse"
-msgstr "Elipse rellena"
+msgstr "Ellipse rellena"
 
 #: ../fontforgeexe/cvpointer.c:1597 ../fontforgeexe/cvpointer.c:1613
 #: ../fontforgeexe/fvmetricsdlg.c:62
@@ -37027,7 +37027,7 @@ msgstr ""
 #~ msgstr "Si 'Off-Name' está vacío, 'Off-Code' debe valer -1"
 
 #~ msgid "_Ellipse"
-#~ msgstr "_Elipse"
+#~ msgstr "_Ellipse"
 
 #~ msgid ""
 #~ "A caligraphic pen's nib has two dimensions, the width\n"

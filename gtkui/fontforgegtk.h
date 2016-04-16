@@ -42,7 +42,7 @@ extern GdkCursor *ct_magplus, *ct_magminus, *ct_mypointer,
 	*ct_ruler, *ct_knife, *ct_rotate, *ct_skew, *ct_scale, *ct_flip,
 	*ct_3drotate, *ct_perspective,
 	*ct_updown, *ct_leftright, *ct_nesw, *ct_nwse,
-	*ct_rect, *ct_elipse, *ct_poly, *ct_star, *ct_filledrect, *ct_filledelipse,
+	*ct_rect, *ct_ellipse, *ct_poly, *ct_star, *ct_filledrect, *ct_filledellipse,
 	*ct_pencil, *ct_shift, *ct_line, *ct_myhand, *ct_setwidth,
 	*ct_kerning, *ct_rbearing, *ct_lbearing, *ct_eyedropper,
 	*ct_prohibition, *ct_ddcursor, *ct_spiroright, *ct_spiroleft;

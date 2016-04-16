@@ -127,7 +127,7 @@ extern int allow_utf8_glyphnames;		/* in charinfo.c */
 extern int clear_tt_instructions_when_needed;	/* in charview.c */
 extern int ask_user_for_cmap;			/* in parsettf.c */
 
-extern int rectelipse, polystar, regular_star;	/* from cvpalettes.c */
+extern int rectellipse, polystar, regular_star;	/* from cvpalettes.c */
 extern int center_out[2];			/* from cvpalettes.c */
 extern float rr_radius;				/* from cvpalettes.c */
 extern int ps_pointcnt;				/* from cvpalettes.c */
@@ -352,7 +352,7 @@ static struct prefs_list {
 	{ "PageLazyPrinter", pr_string, &printlazyprinter, NULL, NULL, '\0', NULL, 1 },
 	{ "RegularStar", pr_bool, &regular_star, NULL, NULL, '\0', NULL, 1 },
 	{ "PolyStar", pr_bool, &polystar, NULL, NULL, '\0', NULL, 1 },
-	{ "RectEllipse", pr_bool, &rectelipse, NULL, NULL, '\0', NULL, 1 },
+	{ "RectEllipse", pr_bool, &rectellipse, NULL, NULL, '\0', NULL, 1 },
 	{ "RectCenterOut", pr_bool, &center_out[0], NULL, NULL, '\0', NULL, 1 },
 	{ "EllipseCenterOut", pr_bool, &center_out[1], NULL, NULL, '\0', NULL, 1 },
 	{ "PolyStartPointCnt", pr_int, &ps_pointcnt, NULL, NULL, '\0', NULL, 1 },

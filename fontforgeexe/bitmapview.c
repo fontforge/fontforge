@@ -518,7 +518,7 @@ static void BCBresenhamLine(BitmapView *bv,
 static void CirclePoints(BitmapView *bv,int x, int y, int ox, int oy, int xmod, int ymod,
 	void (*SetPoint)(BitmapView *,int x, int y, void *data),void *data) {
     /* we draw the quadrant between Pi/2 and 0 */
-    if ( bv->active_tool == bvt_filledelipse ) {
+    if ( bv->active_tool == bvt_filledellipse ) {
 	int j;
 	for ( j=2*oy+ymod-y; j<=y; ++j ) {
 	    SetPoint(bv,x,j,data);
@@ -571,7 +571,7 @@ void BCGeneralFunction(BitmapView *bv,
 		SetPoint(bv,i,j,data);
 	}
       break;
-      case bvt_elipse: case bvt_filledelipse:
+      case bvt_ellipse: case bvt_filledellipse:
 	if ( xmax==xmin || ymax==ymin )		/* degenerate case */
 	    BCBresenhamLine(bv,SetPoint,data);
 	else {
@@ -602,7 +602,7 @@ void BCGeneralFunction(BitmapView *bv,
 	    break;
 		CirclePoints(bv,x,y,ox,oy,modx,mody,SetPoint,data);
 	    }
-	    if ( bv->active_tool==bvt_elipse ) {
+	    if ( bv->active_tool==bvt_ellipse ) {
 		/* there may be quite a gap between the two semi-circles */
 		/*  because the tangent is nearly vertical here. So just fill */
 		/*  it in */
@@ -1159,7 +1159,7 @@ return;
 	    BCSetPoint(bc,x,y,bc->byte_data?BVColor(bv):!bv->clearing);
 	BCCharChangedUpdate(bc);
       break;
-      case bvt_elipse: case bvt_filledelipse:
+      case bvt_ellipse: case bvt_filledellipse:
 	BCPreserveState(bc);
 	BCFlattenFloat(bc);
 	BCCharChangedUpdate(bc);
@@ -1232,7 +1232,7 @@ return;			/* Not pressed */
 	BCCharChangedUpdate(bc);
       break;
       case bvt_line: case bvt_rect: case bvt_filledrect:
-      case bvt_elipse: case bvt_filledelipse:
+      case bvt_ellipse: case bvt_filledellipse:
 	BCCharChangedUpdate(bc);
       break;
       case bvt_hand:
@@ -1335,7 +1335,7 @@ static void BVMouseUp(BitmapView *bv, GEvent *event) {
 	BVMagnify(bv,x,y,bv->active_tool==bvt_magnify?1:-1);
       break;
       case bvt_line: case bvt_rect: case bvt_filledrect:
-      case bvt_elipse: case bvt_filledelipse:
+      case bvt_ellipse: case bvt_filledellipse:
 	if ( refsel == NULL ) {
 	    BCGeneralFunction(bv,BVSetPoint,NULL);
 	    bv->active_tool = bvt_none;
