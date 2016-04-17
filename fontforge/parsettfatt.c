@@ -776,6 +776,14 @@ static AnchorClass **MarkGlyphsProcessMarks(FILE *ttf,int markoffset,
     struct mr { uint16 class, offset; } *at_offsets;
     SplineChar *sc;
 
+    fseek(ttf,markoffset,SEEK_SET);
+    cnt = getushort(ttf);
+    if ( feof(ttf) ) {
+	LogError( _("Bad mark table.\n") );
+	info->bad_ot = true;
+return( NULL );
+    }
+
     for ( i=0; i<classcnt; ++i ) {
 	snprintf(buf,sizeof(buf),_("Anchor-%d"),
 		info->anchor_class_cnt+i );
@@ -793,13 +801,6 @@ static AnchorClass **MarkGlyphsProcessMarks(FILE *ttf,int markoffset,
 	info->alast = ac;
     }
 
-    fseek(ttf,markoffset,SEEK_SET);
-    cnt = getushort(ttf);
-    if ( feof(ttf) ) {
-	LogError( _("Bad mark table.\n") );
-	info->bad_ot = true;
-return( NULL );
-    }
     at_offsets = malloc(cnt*sizeof(struct mr));
     for ( i=0; i<cnt; ++i ) {
 	at_offsets[i].class = getushort(ttf);
@@ -1039,6 +1040,7 @@ static void g___ContextSubTable1(FILE *ttf, int stoffset,
     if ( glyphs==NULL ) {
 /* GT: This continues a multi-line error message, hence the leading space */
 	LogError( _(" Bad contextual table, ignored\n") );
+        free(rules);
 return;
     }
     cnt = 0;
@@ -1309,6 +1311,7 @@ static void g___ContextSubTable2(FILE *ttf, int stoffset,
 	if ( rules[i].scnt<0 ) {
 	    LogError( _("Bad count in context chaining sub-table.\n") );
 	    info->bad_ot = true;
+            free(rules);
 return;
 	}
 	cnt += rules[i].scnt;
@@ -1374,6 +1377,7 @@ return;
 	if ( glyphs==NULL ) {
 /* GT: This continues a multi-line error message, hence the leading space */
 	    LogError( _(" Bad contextual substitution table, ignored\n") );
+            free(rules);
 return;
 	}
 	fpst->nclass[0] = CoverageMinusClasses(glyphs,class,info);
@@ -1443,6 +1447,7 @@ static void g___ChainingSubTable2(FILE *ttf, int stoffset,
 	if ( rules[i].scnt<0 ) {
 	    LogError( _("Bad count in context chaining sub-table.\n") );
 	    info->bad_ot = true;
+            free(rules);
 return;
 	}
 	cnt += rules[i].scnt;
@@ -1529,6 +1534,7 @@ return;
 	if ( glyphs==NULL ) {
 /* GT: This continues a multi-line error message, hence the leading space */
 	    LogError( _(" Bad contextual chaining substitution table, ignored\n") );
+            free(rules);
 return;
 	}
 	fpst->nclass[0] = CoverageMinusClasses(glyphs,class,info);
@@ -1670,6 +1676,7 @@ return;
     if ( feof(ttf)) {
 	LogError( _("End of file in context chaining subtable.\n") );
 	info->bad_ot = true;
+        free(bcoverage);
 return;
     }
     coverage = malloc(gcnt*sizeof(uint16));
@@ -1679,6 +1686,8 @@ return;
     if ( feof(ttf)) {
 	LogError( _("End of file in context chaining subtable.\n") );
 	info->bad_ot = true;
+        free(bcoverage);
+        free(coverage);
 return;
     }
     fcoverage = malloc(fcnt*sizeof(uint16));
@@ -1688,6 +1697,9 @@ return;
     if ( feof(ttf)) {
 	LogError( _("End of file in context chaining subtable.\n") );
 	info->bad_ot = true;
+        free(fcoverage);
+        free(bcoverage);
+        free(coverage);
 return;
     }
     sl = malloc(scnt*sizeof(struct seqlookup));
@@ -2030,6 +2042,7 @@ return;
     glyphs = getCoverageTable(ttf,stoffset+coverage,info);
     if ( glyphs==NULL ) {
 	LogError( _(" Bad ligature table, ignored\n") );
+        free(ls_offsets);
 return;
     }
     for ( i=0; i<cnt; ++i ) {
@@ -2038,6 +2051,7 @@ return;
 	if ( feof(ttf)) {
 	    LogError( _("Unexpected end of file in GSUB ligature sub-table.\n" ));
 	    info->bad_ot = true;
+            free(ls_offsets);
 return;
 	}
 	lig_offsets = malloc(lig_cnt*sizeof(uint16));
@@ -2046,6 +2060,8 @@ return;
 	if ( feof(ttf)) {
 	    LogError( _("Unexpected end of file in GSUB ligature sub-table.\n" ));
 	    info->bad_ot = true;
+            free(lig_offsets);
+            free(ls_offsets);
 return;
 	}
 	for ( j=0; j<lig_cnt; ++j ) {

@@ -1193,6 +1193,7 @@ static void bUtf8(Context *c) {
 	for ( i=0; i<arr->argc; ++i ) {
 	    if ( arr->vals[i].type!=v_int ) {
 		c->error = ce_badargtype;
+                free(temp);
 		return;
 	    } else if ( arr->vals[i].u.ival<0 || arr->vals[i].u.ival>0x10ffff ){
 		c->error = ce_badargtype;

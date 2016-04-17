@@ -779,7 +779,7 @@ static int GlifDump(const char *glyphdir, const char *gfname, const SplineChar *
         return 0;
     }
     xmlNodePtr root_node = _GlifToXML(sc, layer);
-    if (root_node == NULL) {xmlFreeDoc(doc); doc = NULL; return 0;}
+    if (root_node == NULL) {xmlFreeDoc(doc); doc = NULL; free(gn); return 0;}
     xmlDocSetRootElement(doc, root_node);
     int ret = (xmlSaveFormatFileEnc(gn, doc, "UTF-8", 1) != -1);
     xmlFreeDoc(doc); doc = NULL;
