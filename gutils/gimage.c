@@ -183,13 +183,17 @@ GImage *GImageAddImageBefore(GImage *dest, GImage *src, int pos) {
     }
     j = i;
     if ( src->list_len==0 ) {
-	if ( src->u.image->image_type!=it )
+	if ( src->u.image->image_type!=it ) {
+            free(imgs);
 return( NULL );
+}
 	imgs[j++] = src->u.image;
     } else {
 	for ( ; j<i+src->list_len; ++j ) {
-	    if ( src->u.images[j-i]->image_type!=it )
+	    if ( src->u.images[j-i]->image_type!=it ) {
+                free(imgs);
 return( NULL );
+}
 	    imgs[j] = src->u.images[j-i];
 	}
 	free(src->u.images);

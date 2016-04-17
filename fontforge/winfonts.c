@@ -839,6 +839,7 @@ return( false );
 	if ( !_FntFontDump(fntarray[i],bdf,map,resol) ) {
 	    for ( j=0; j<=i; ++j )
 		fclose(fntarray[j]);
+            free(file_lens);
 	    free(fntarray);
 return( false );
 	}

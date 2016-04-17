@@ -2316,9 +2316,13 @@ static GImage *xi1_to_gi1(GXDisplay *gdisp,XImage *xi) {
     struct _GImage *base;
 
     gi = calloc(1,sizeof(GImage));
-    base = malloc(sizeof(struct _GImage));
-    if ( gi==NULL || base==NULL )
+    if ( gi==NULL )
 return( NULL );
+    base = malloc(sizeof(struct _GImage));
+    if ( base==NULL ) {
+        free(gi);
+return( NULL );
+    }
     gi->u.image = base;
     base->image_type = it_mono;
     base->width = xi->width;
@@ -2354,10 +2358,19 @@ static GImage *xi8_to_gi8(GXDisplay *gdisp,XImage *xi) {
     XColor cols[256];
 
     gi = calloc(1,sizeof(GImage));
-    base = malloc(sizeof(struct _GImage));
-    clut = malloc(sizeof(GClut));
-    if ( gi==NULL || base==NULL )
+    if ( gi==NULL )
 return( NULL );
+    base = malloc(sizeof(struct _GImage));
+    if ( base ==NULL ) {
+        free(gi);
+return( NULL );
+    }
+    clut = malloc(sizeof(GClut));
+    if ( clut ==NULL ) {
+        free(base);
+        free(gi);
+return( NULL );
+    }
     gi->u.image = base;
     base->image_type = it_index;
     base->width = xi->width;

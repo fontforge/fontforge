@@ -3011,8 +3011,10 @@ return( NULL );
 	tuple = PyTuple_New(1);
 	PyTuple_SetItem(tuple,0,PointTuple(points[0]));
 	do_pycall(pen,"moveTo",tuple);
-	if ( PyErr_Occurred())
+	if ( PyErr_Occurred()) {
+            free(points);
 return( NULL );
+        }
 	last = 0;
 	for ( i=1; i<self->pt_cnt; ++i ) {
 	    if ( !points[i]->on_curve )
@@ -6271,8 +6273,10 @@ return( -1 );
        carets = malloc( cnt*sizeof(int16) );
     for ( i=0; i<cnt; ++i ) {
        carets[i] = PyInt_AsLong( PySequence_GetItem(value,i) );
-       if ( PyErr_Occurred())
+       if ( PyErr_Occurred()) {
+           free(carets);
 return( -1 );
+       }
     }
 
     for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
@@ -6742,7 +6746,6 @@ return( NULL );
 return( NULL );
 	}
       default:
-      break;
       break;
       /* leave act_unknown to allow anything until we resolve it by associating with a subtable */
     }
@@ -7972,6 +7975,7 @@ return( calloc(1,sizeof(SplineChar *)));
 	    sc = SFGetChar(sf,-1,start);
 	    if ( sc==NULL ) {
 		PyErr_Format(PyExc_TypeError,"String, %s, is not the name of a glyph in the expected font.", start );
+                free(ret);
 return( NULL );
 	    }
 	    *pt = ch;
@@ -7995,6 +7999,7 @@ return(NULL );
 	    ret[i] = ((PyFF_Glyph *) aglyph)->sc;
 	    if ( ret[i]->parent!=sf ) {
 		PyErr_Format(PyExc_TypeError,"Glyph object, %s, must belong to the expected font.", ret[i]->name);
+                free(ret);
 return( NULL );
 	    }
 	} else {
@@ -8002,6 +8007,7 @@ return( NULL );
 	    if ( str==NULL ) {
 		ENDPYGETSTR();
 		PyErr_Format(PyExc_TypeError,"Expected a name of a glyph in the expected font." );
+                free(ret);
 return( NULL );
 	    }
 	    sc = SFGetChar(sf,-1,str);
@@ -14043,16 +14049,20 @@ return( NULL );
 	    offs = malloc(cnt1*cnt2*sizeof(int16));
 	    for ( i=0 ; i<cnt1*cnt2; ++i ) {
 		offs[i] = PyInt_AsLong(PySequence_GetItem(offsets,i));
-		if ( PyErr_Occurred())
+		if ( PyErr_Occurred()) {
+                    free(offs);
 return( NULL );
+}
 	    }
 	} else
 	    offs = calloc(cnt1*cnt2,sizeof(int16));
     }
 
     sub = addLookupSubtable(sf, lookup, subtable, after_str);
-    if ( sub==NULL )
+    if ( sub==NULL ) {
+        free(offs);
 return( NULL );
+    }
     if ( sub->lookup->lookup_type!=gpos_pair ) {
 	PyErr_Format(PyExc_EnvironmentError, "Cannot add kerning data to %s, it has the wrong lookup type", lookup );
 	free(offs);
@@ -14077,8 +14087,10 @@ return( NULL );
 	if ( offsets==NULL )
 	    pyAutoKernAll(fv,sub);
     } else {
-	if ( !pyBuildClasses(fv,sub,class_error_distance,list1,list2) )
+	if ( !pyBuildClasses(fv,sub,class_error_distance,list1,list2) ) {
+            free(offs);
 return( NULL );
+        }
     }
 
     if ( sub->vertical_kerning ) {
