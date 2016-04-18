@@ -4436,6 +4436,7 @@ return(NULL);
 	len = last-first+1;
 	if ( len<=0 ) {
 	    IError( "Bad device table, invalid length.\n" );
+            free(adjust);
 return(NULL);
 	}
 	adjust->first_pixel_size = first;
@@ -4504,6 +4505,7 @@ static AnchorPoint *SFDReadAnchorPoints(FILE *sfd,SplineChar *sc,AnchorPoint** a
     name = SFDReadUTF7Str(sfd);
     if ( name==NULL ) {
 	LogError(_("Anchor Point with no class name: %s"), sc->name );
+	AnchorPointsFree(ap);
 return( lastap );
     }
     for ( an=sc->parent->anchor; an!=NULL && strcmp(an->name,name)!=0; an=an->next );
