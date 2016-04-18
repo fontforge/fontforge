@@ -857,19 +857,39 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             gevent.u.mouse.clicks = gdisp->bs.cur_click;
         }
         break;
-        case GDK_EXPOSE:
+        case GDK_EXPOSE: {
+            GdkEventExpose *expose = (GdkEventExpose *)event;
+
             gevent.type = et_expose;
-            gevent.u.expose.rect.x = ((GdkEventExpose *)event)->area.x;
-            gevent.u.expose.rect.y = ((GdkEventExpose *)event)->area.y;
-            gevent.u.expose.rect.width = ((GdkEventExpose *)event)->area.width;
-            gevent.u.expose.rect.height = ((GdkEventExpose *)event)->area.height;
+            gevent.u.expose.rect.x = expose->area.x;
+            gevent.u.expose.rect.y = expose->area.y;
+            gevent.u.expose.rect.width = expose->area.width;
+            gevent.u.expose.rect.height = expose->area.height;
 
             if (gw->cc != NULL) {
                 cairo_destroy(gw->cc);
                 gw->cc = NULL;
             }
-            gdk_window_begin_paint_region(w, ((GdkEventExpose *)event)->region);
-            break;
+
+            gdk_window_begin_paint_region(w, expose->region);
+
+            // So if this was a requested expose (send_event), and this
+            // is a child window, then mask out the expose region.
+            // This is necessary because gdk_window_begin_paint_region does
+            // nothing if it's a child window...
+            if (!gw->is_toplevel && expose->send_event) {
+                int nr = cairo_region_num_rectangles(expose->region);
+                gw->cc = gdk_cairo_create(w);
+
+                for (int i = 0; i < nr; i++) {
+                    cairo_rectangle_int_t rect;
+                    cairo_region_get_rectangle(expose->region, i, &rect);
+                    cairo_rectangle(gw->cc, rect.x, rect.y, rect.width, rect.height);
+                }
+                cairo_clip(gw->cc);
+            }
+        }
+        break;
         case GDK_VISIBILITY_NOTIFY:
             gevent.type = et_visibility;
             gevent.u.visibility.state = _GGDKDraw_GdkVisibilityStateToVS(((GdkEventVisibility *)event)->state);
@@ -1577,7 +1597,7 @@ static void GGDKDrawRequestExpose(GWindow w, GRect *rect, int doclear) {
         }
     }
 
-    if (!gw->is_toplevel) {
+    if (!doclear) {
         //Eugh
         // So if you try to invalidate a child window,
         // GDK will also invalidate the parent window over the child window's area.
@@ -1590,12 +1610,35 @@ static void GGDKDrawRequestExpose(GWindow w, GRect *rect, int doclear) {
         expose.area.y = clip.y;
         expose.area.width = clip.width;
         expose.area.height = clip.height;
-        expose.region = cairo_region_create_rectangle(&expose.area);
+        expose.region = gdk_window_get_visible_region(gw->w);
+        cairo_region_intersect_rectangle(expose.region, &expose.area);
+
+        // Mask out child window areas
+        GList_Glib *children = gdk_window_peek_children(gw->w);
+        while (children != NULL) {
+            cairo_region_t *chr = gdk_window_get_clip_region((GdkWindow *)children->data);
+            int dx, dy;
+
+            gdk_window_get_position((GdkWindow *)children->data, &dx, &dy);
+            cairo_region_translate(chr, dx, dy);
+            cairo_region_subtract(expose.region, chr);
+            cairo_region_destroy(chr);
+            children = children->next;
+        }
+
+        // Don't send unnecessarily...
+        if (cairo_region_is_empty(expose.region)) {
+            cairo_region_destroy(expose.region);
+            return;
+        }
+
+        cairo_region_get_extents(expose.region, &expose.area);
         gdk_event_put((GdkEvent *)&expose);
         cairo_region_destroy(expose.region);
     } else {
         gdk_window_invalidate_rect(gw->w, &clip, false);
     }
+
 }
 
 static void GGDKDrawForceUpdate(GWindow gw) {
