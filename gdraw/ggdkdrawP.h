@@ -112,11 +112,10 @@ typedef struct ggdkdisplay { /* :GDisplay */
 
     GPtrArray *dirty_windows; //List of GGDKWindows which called drawing functions outside of an expose event.
     GList_Glib *timers; //List of GGDKTimer's
-    GList_Glib *transients; //List of transient windows
 
     GGDKButtonState bs;
     GGDKWindow default_icon;
-    GdkWindow *last_nontransient_window;
+    GGDKWindow last_nontransient_window;
 
     GMainLoop  *main_loop;
     GdkDisplay *display;
@@ -158,9 +157,10 @@ struct ggdkwindow { /* :GWindow */
     unsigned int is_centered: 1;
 
     int reference_count; // Knowing when to destroy is tricky...
+    int modal_count;     // Knowing when to disable input is tricky...
 
     GWindow redirect_from;		/* only redirect input from this window and its children */
-    GdkWindow *transient_owner;
+    struct ggdkwindow *transient_owner;
     GdkEventSelection *received_selection;
 
     char *window_title;
