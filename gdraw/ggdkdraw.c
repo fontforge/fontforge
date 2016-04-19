@@ -998,6 +998,10 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         _GGDKDraw_CallEHChecked(gw, &gevent, gw->eh);
         if (gevent.type == et_expose) {
             gdk_window_end_paint(w);
+            if (gw->cc != NULL) {
+                cairo_destroy(gw->cc);
+                gw->cc = NULL;
+            }
         }
     }
     Log(LOGDEBUG, "[%d] Finished processing %d(%s)", request_id++, event->type, GdkEventName(event->type));
@@ -1597,7 +1601,7 @@ static void GGDKDrawRequestExpose(GWindow w, GRect *rect, int doclear) {
         }
     }
 
-    if (!doclear) {
+    if (!gw->is_toplevel) {
         //Eugh
         // So if you try to invalidate a child window,
         // GDK will also invalidate the parent window over the child window's area.
