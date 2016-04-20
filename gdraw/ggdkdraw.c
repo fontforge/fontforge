@@ -51,12 +51,6 @@ static void _GGDKDraw_OnWindowDestroyed(gpointer data) {
             }
         }
 
-        // Remove it from modal count, if present
-        if (gw->transient_owner != NULL && gw->restrict_input_to_me) {
-            assert(gw->transient_owner->modal_count > 0);
-            gw->transient_owner->modal_count--;
-        }
-
         // Signal that it has been destroyed
         struct gevent die = {0};
         die.w = (GWindow)gw;
@@ -544,6 +538,8 @@ static int _GGDKDraw_WindowOrParentsDying(GGDKWindow gw) {
 
 static bool _GGDKDraw_FilterByModal(GdkEvent *event, GGDKWindow gw) {
     GGDKDisplay *gdisp = gw->display;
+    GGDKWindow gww = gw;
+
     switch (event->type) {
         case GDK_KEY_PRESS:
         case GDK_KEY_RELEASE:
@@ -559,12 +555,17 @@ static bool _GGDKDraw_FilterByModal(GdkEvent *event, GGDKWindow gw) {
     }
 
     assert(gw->modal_count >= 0);
-    if (gw->modal_count <= 0) {
+    while (gww != NULL && gww->modal_count <= 0) {
+        gww = gww->parent;
+    }
+
+    if (gww == NULL) {
         return false;
     }
 
     if (event->type != GDK_MOTION_NOTIFY && event->type != GDK_BUTTON_RELEASE) {
-        GDrawBeep((GDisplay *)gdisp);
+        gdk_window_beep(gw->w);
+        //GDrawBeep((GDisplay *)gdisp);
     }
     return true;
 }
@@ -1053,6 +1054,23 @@ static GWindow GGDKDrawCreatePixmap(GDisplay *gdisp, uint16 width, uint16 height
 
 static GWindow GGDKDrawCreateBitmap(GDisplay *gdisp, uint16 width, uint16 height, uint8 *data) {
     Log(LOGDEBUG, "");
+    int stride = cairo_format_stride_for_width(CAIRO_FORMAT_A1, width);
+    int actual = (width & 0x7fff) / 8;
+
+    if (actual != stride) {
+        GWindow ret = _GGDKDraw_NewPixmap(gdisp, width, height, CAIRO_FORMAT_A1, NULL);
+        if (ret == NULL) {
+            return NULL;
+        }
+
+        cairo_surface_flush(((GGDKWindow)ret)->cs);
+        uint8 *buf = cairo_image_surface_get_data(((GGDKWindow)ret)->cs);
+        for (int j = 0; j < height; j++) {
+            memcpy(buf + stride * j, data + actual * j, actual);
+        }
+        cairo_surface_mark_dirty(((GGDKWindow)ret)->cs);
+        return ret;
+    }
 
     return _GGDKDraw_NewPixmap(gdisp, width, height, CAIRO_FORMAT_A1, data);
 }
@@ -1113,6 +1131,7 @@ static void GGDKDrawDestroyWindow(GWindow w) {
 static void GGDKDrawDestroyCursor(GDisplay *gdisp, GCursor gcursor) {
     Log(LOGDEBUG, "");
     assert(false);
+    // Well. No code calls GDrawDestroyCursor.
 }
 
 static int GGDKDrawNativeWindowExists(GDisplay *gdisp, void *native_window) {
