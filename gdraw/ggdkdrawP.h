@@ -110,6 +110,7 @@ typedef struct ggdkdisplay { /* :GDisplay */
     int     top_window_count;
     guint32 last_event_time;
 
+    GPtrArray *cursors; // List of cursors that the user made.
     GPtrArray *dirty_windows; //List of GGDKWindows which called drawing functions outside of an expose event.
     GList_Glib *timers; //List of GGDKTimer's
 

@@ -927,15 +927,15 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         case GDK_CONFIGURE: {
             GdkEventConfigure *configure = (GdkEventConfigure *)event;
             gevent.type = et_resize;
-            gevent.u.resize.size.x = configure->x;
-            gevent.u.resize.size.y = configure->y;
-            gevent.u.resize.size.width = configure->width;
+            gevent.u.resize.size.x      = configure->x;
+            gevent.u.resize.size.y      = configure->y;
+            gevent.u.resize.size.width  = configure->width;
             gevent.u.resize.size.height = configure->height;
-            gevent.u.resize.dx = gevent.u.resize.size.x - gw->pos.x;
-            gevent.u.resize.dy = gevent.u.resize.size.y - gw->pos.y;
-            gevent.u.resize.dwidth = gevent.u.resize.size.width - gw->pos.width;
-            gevent.u.resize.dheight = gevent.u.resize.size.height - gw->pos.height;
-            gevent.u.resize.moved = gevent.u.resize.sized = false;
+            gevent.u.resize.dx          = configure->x - gw->pos.x;
+            gevent.u.resize.dy          = configure->y - gw->pos.y;
+            gevent.u.resize.dwidth      = configure->width - gw->pos.width;
+            gevent.u.resize.dheight     = configure->height - gw->pos.height;
+            gevent.u.resize.moved       = gevent.u.resize.sized = false;
             if (gevent.u.resize.dx != 0 || gevent.u.resize.dy != 0) {
                 gevent.u.resize.moved = true;
             }
@@ -1084,18 +1084,19 @@ static GCursor GGDKDrawCreateCursor(GWindow src, GWindow mask, Color fg, Color b
     cairo_t *cc = cairo_create(cs);
 
     // Masking
-    cairo_mask_surface(cc, ((GGDKWindow)mask)->cs, 0, 0);
     //Background
     cairo_set_source_rgb(cc, COLOR_RED(bg) / 255., COLOR_GREEN(bg) / 255., COLOR_BLUE(bg) / 255.);
-    cairo_paint(cc);
+    cairo_mask_surface(cc, ((GGDKWindow)mask)->cs, 0, 0);
     //Foreground
+    cairo_set_source_rgb(cc, COLOR_RED(fg) / 255., COLOR_GREEN(fg) / 255., COLOR_BLUE(fg) / 255.);
     cairo_mask_surface(cc, ((GGDKWindow)src)->cs, 0, 0);
-    cairo_set_source_rgb(cc, COLOR_RED(fg) / 255., COLOR_GREEN(bg) / 255., COLOR_BLUE(bg) / 255.);
-    cairo_paint(cc);
 
     GdkCursor *cursor = gdk_cursor_new_from_surface(display, cs, x, y);
     cairo_destroy(cc);
     cairo_surface_destroy(cs);
+
+    g_ptr_array_add(gdisp->cursors, cursor);
+    return ct_user + (gdisp->cursors->len - 1);
 }
 
 static void GGDKDrawDestroyWindow(GWindow w) {
@@ -1390,10 +1391,19 @@ static void GGDKDrawSetCursor(GWindow w, GCursor gcursor) {
             cursor = gdk_cursor_new_from_name(gw->display->display, "none");
             break;
         default:
-            Log(LOGDEBUG, "UNSUPPORTED CURSOR!");
+            Log(LOGDEBUG, "CUSTOM CURSOR!");
     }
 
-    gdk_window_set_cursor(gw->w, cursor);
+    if (gcursor >= ct_user) {
+        GGDKDisplay *gdisp = gw->display;
+        gcursor -= ct_user;
+        if (gcursor < gdisp->cursors->len) {
+            gdk_window_set_cursor(gw->w, (GdkCursor *)gdisp->cursors->pdata[gcursor]);
+        }
+    } else {
+        gdk_window_set_cursor(gw->w, cursor);
+        g_object_unref(cursor);
+    }
 }
 
 static GCursor GGDKDrawGetCursor(GWindow gw) {
@@ -1957,6 +1967,8 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *programname) {
         return NULL;
     }
 
+    // cursors.c creates ~41.
+    gdisp->cursors = g_ptr_array_sized_new(50);
     // 15 Dirty windows/eh call?
     gdisp->dirty_windows = g_ptr_array_sized_new(15);
     if (gdisp->dirty_windows == NULL) {
