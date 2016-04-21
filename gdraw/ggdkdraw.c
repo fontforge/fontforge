@@ -1402,7 +1402,9 @@ static void GGDKDrawSetCursor(GWindow w, GCursor gcursor) {
         }
     } else {
         gdk_window_set_cursor(gw->w, cursor);
-        g_object_unref(cursor);
+        if (cursor != NULL) {
+            g_object_unref(cursor);
+        }
     }
 }
 
