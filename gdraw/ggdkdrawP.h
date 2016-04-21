@@ -74,6 +74,12 @@ typedef struct ggdkbuttonstate {
     int16 double_wiggle;	// max pixel wiggle allowed between release&click
 } GGDKButtonState;
 
+typedef struct ggdkkeystate {
+    GdkEventType type;
+    guint state;
+    guint keyval;
+} GGDKKeyState;
+
 typedef struct ggdkdisplay { /* :GDisplay */
     // Inherit GDisplay start
     struct displayfuncs *funcs;
@@ -115,6 +121,7 @@ typedef struct ggdkdisplay { /* :GDisplay */
     GList_Glib *timers; //List of GGDKTimer's
 
     GGDKButtonState bs;
+    GGDKKeyState ks;
     GGDKWindow default_icon;
     GGDKWindow last_nontransient_window;
 

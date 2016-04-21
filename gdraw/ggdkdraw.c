@@ -658,13 +658,16 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
     }
 
     switch (event->type) {
-        /*
         case GDK_KEY_PRESS:
-        case GDK_KEY_RELEASE:
-            gdisp->last_event_time = gdk_event_get_time(event);
+        case GDK_KEY_RELEASE: {
+            GdkEventKey *key = (GdkEventKey *)event;
             gevent.type = event->type == GDK_KEY_PRESS ? et_char : et_charup;
-            gevent.u.chr.state = _GGDKDraw_GdkModifierToKsm(((GdkEventKey*)event)->state); //event->xkey.state;
-            gevent.u.chr.autorepeat = 0;
+            gevent.u.chr.state = _GGDKDraw_GdkModifierToKsm(((GdkEventKey *)event)->state);
+            gevent.u.chr.autorepeat =
+                event->type    == GDK_KEY_PRESS &&
+                gdisp->ks.type == GDK_KEY_PRESS &&
+                key->keyval    == gdisp->ks.keyval &&
+                key->state     == gdisp->ks.state;
             // Mumble mumble Mac
             //if ((event->xkey.state & ksm_option) && gdisp->macosx_cmd) {
             //    gevent.u.chr.state |= ksm_meta;
@@ -674,109 +677,21 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             //gevent.u.chr.x = event->xkey.x;
             //gevent.u.chr.y = event->xkey.y;
 
-            if ((redirect = InputRedirection(gdisp->input, gw)) == (GWindow)(-1)) {
-                len = XLookupString((XKeyEvent *) event, charbuf, sizeof(charbuf), &keysym, &gdisp->buildingkeys);
-                if (event->type == KeyPress && len != 0) {
-                    GXDrawBeep((GDisplay *) gdisp);
-                }
-                return;
-            } else if (redirect != NULL) {
-                GPoint pt;
-                gevent.w = redirect;
-                pt.x = event->xkey.x;
-                pt.y = event->xkey.y;
-                GXDrawTranslateCoordinates(gw, redirect, &pt);
-                gevent.u.chr.x = pt.x;
-                gevent.u.chr.y = pt.y;
-                gw = redirect;
-            }
-            */
-        /*
-        if (gevent.type == et_char) {
-            // The state may be modified in the gevent where a mac command key
-            //  entry gets converted to control, etc.
-            if (((GGDKWindow) gw)->gic == NULL) {
-                len = XLookupString((XKeyEvent *) event, charbuf, sizeof(charbuf), &keysym, &gdisp->buildingkeys);
-                charbuf[len] = '\0';
-                gevent.u.chr.keysym = keysym;
-                def2u_strncpy(gevent.u.chr.chars, charbuf,
-                              sizeof(gevent.u.chr.chars) / sizeof(gevent.u.chr.chars[0]));
-            } else {
-        #ifdef X_HAVE_UTF8_STRING
-                // I think there's a bug in SCIM. If I leave the meta(alt/option) modifier
-                //  bit set, then scim returns no keysym and no characters. On the other hand,
-                //  if I don't leave that bit set, then the default input method on the mac
-                //  will not do the Option key transformations properly. What I pass should
-                //  be IM independent. So I don't think I should have to do the next line
-                event->xkey.state &= ~Mod2Mask;
-                // But I do
-                len = Xutf8LookupString(((GGDKWindow) gw)->gic->ic, (XKeyPressedEvent *)event,
-                                        charbuf, sizeof(charbuf), &keysym, &status);
-                pt = charbuf;
-                if (status == XBufferOverflow) {
-                    pt = malloc(len + 1);
-                    len = Xutf8LookupString(((GGDKWindow) gw)->gic->ic, (XKeyPressedEvent *)&event,
-                                            pt, len, &keysym, &status);
-                }
-                if (status != XLookupChars && status != XLookupBoth) {
-                    len = 0;
-                }
-                if (status != XLookupKeySym && status != XLookupBoth) {
-                    keysym = 0;
-                }
-                pt[len] = '\0';
-                gevent.u.chr.keysym = keysym;
-                utf82u_strncpy(gevent.u.chr.chars, pt,
-                               sizeof(gevent.u.chr.chars) / sizeof(gevent.u.chr.chars[0]));
-                if (pt != charbuf) {
-                    free(pt);
-                }
-        #else
-                gevent.u.chr.keysym = keysym = 0;
-                gevent.u.chr.chars[0] = 0;
-        #endif
-            }
-            // Convert X11 keysym values to unicode
-            if (keysym >= XKeysym_Mask) {
-                keysym -= XKeysym_Mask;
-            } else if (keysym <= XKEYSYM_TOP && keysym >= 0) {
-                keysym = gdraw_xkeysym_2_unicode[keysym];
-            }
-            gevent.u.chr.keysym = keysym;
-            if (keysym == gdisp->mykey_keysym &&
-                    (event->xkey.state & (ControlMask | Mod1Mask)) == gdisp->mykey_mask) {
-                gdisp->mykeybuild = !gdisp->mykeybuild;
-                gdisp->mykey_state = 0;
-                gevent.u.chr.chars[0] = '\0';
-                gevent.u.chr.keysym = '\0';
-                if (!gdisp->mykeybuild && _GDraw_BuildCharHook != NULL) {
-                    (_GDraw_BuildCharHook)((GDisplay *) gdisp);
-                }
-            } else if (gdisp->mykeybuild) {
-                _GDraw_ComposeChars((GDisplay *) gdisp, &gevent);
-            }
-        } else {
-            // XLookupKeysym doesn't do shifts for us (or I don't know how to use the index arg to make it)
-            len = XLookupString((XKeyEvent *) event, charbuf, sizeof(charbuf), &keysym, &gdisp->buildingkeys);
-            gevent.u.chr.keysym = keysym;
+            gevent.u.chr.keysym = gdk_keyval_to_unicode(key->keyval);
             gevent.u.chr.chars[0] = '\0';
-        }
 
-        //
-        // If we are a charup, but the very next XEvent is a chardown
-        // on the same key, then we are just an autorepeat XEvent which
-        // other code might like to ignore
-        //
-        if (gevent.type == et_charup && XEventsQueued(gdisp->display, QueuedAfterReading)) {
-            XEvent nev;
-            XPeekEvent(gdisp->display, &nev);
-            if (nev.type == KeyPress && nev.xkey.time == event->xkey.time &&
-                    nev.xkey.keycode == event->xkey.keycode) {
-                gevent.u.chr.autorepeat = 1;
+            if (gevent.u.chr.keysym == 0) {
+                gevent.u.chr.keysym = key->keyval;
+            } else {
+                gevent.u.chr.chars[0] = gevent.u.chr.keysym;
+                gevent.u.chr.chars[1] = '\0';
             }
+
+            gdisp->ks.type   = key->type;
+            gdisp->ks.keyval = key->keyval;
+            gdisp->ks.state  = key->state;
         }
         break;
-        */
         case GDK_MOTION_NOTIFY: {
             GdkEventMotion *evt = (GdkEventMotion *)event;
             gevent.type = et_mousemove;
