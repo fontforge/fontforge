@@ -2418,7 +2418,7 @@ static void GXDrawSetGIC(GWindow w, GIC *_gic, int x, int y) {
     ((GXWindow) w)->gic = gic;
 }
 
-static int GXDrawKeyState(int keysym) {
+static int GXDrawKeyState(GWindow w, int keysym) {
     char key_map_stat[32];
     Display *xdisplay = ((GXDisplay *)screen_display)->display;
     KeyCode code;

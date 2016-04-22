@@ -685,9 +685,9 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             //    gevent.u.chr.state |= ksm_meta;
             //}
 
-            //TODO: GDK doesn't send x/y pos when key was pressed...
-            //gevent.u.chr.x = event->xkey.x;
-            //gevent.u.chr.y = event->xkey.y;
+            if (key->keyval == GDK_KEY_space) {
+                gw->display->is_space_pressed = event->type == GDK_KEY_PRESS;
+            }
 
             gevent.u.chr.keysym = key->keyval;
             gevent.u.chr.chars[0] = gdk_keyval_to_unicode(key->keyval);
@@ -843,6 +843,9 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             gevent.u.crossing.entered = crossing->type == GDK_ENTER_NOTIFY;
             gevent.u.crossing.device = NULL;
             gevent.u.crossing.time = crossing->time;
+
+            // Always set to false when crossing boundary...
+            gw->display->is_space_pressed = false;
         }
         break;
         case GDK_CONFIGURE: {
@@ -1402,11 +1405,16 @@ static void GGDKDrawSetGIC(GWindow gw, GIC *gic, int x, int y) {
     Log(LOGDEBUG, ""); //assert(false);
 }
 
-static int GGDKDrawKeyState(int keysym) {
+static int GGDKDrawKeyState(GWindow w, int keysym) {
     Log(LOGDEBUG, "");
-    return 0;
+    if (keysym != ' ') {
+        Log(LOGWARN, "Cannot check state of unsupported character!");
+        return 0;
+    }
+    // Since this function is only used to check the state of the space button
+    // Dont't bother with a full implementation...
+    return ((GGDKWindow)w)->display->is_space_pressed;
 }
-
 
 static void GGDKDrawGrabSelection(GWindow w, enum selnames sel) {
     Log(LOGDEBUG, ""); //assert(false);

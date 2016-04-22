@@ -113,6 +113,8 @@ typedef struct ggdkdisplay { /* :GDisplay */
     char *err_report;
     // Inherit GDisplay end
 
+    unsigned int is_space_pressed: 1; // Used for GGDKDrawKeyState. We cheat!
+
     int     top_window_count;
     guint32 last_event_time;
 

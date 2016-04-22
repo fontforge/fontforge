@@ -232,7 +232,7 @@ static void PSDrawSetGIC(GWindow UNUSED(w), GIC *UNUSED(gic),
     /* Not meaningful */
 }
 
-static int PSDrawKeyState(int UNUSED(keysym)) {
+static int PSDrawKeyState(GWindow UNUSED(w), int UNUSED(keysym)) {
     /* Not meaningful */
     return 0;
 }
