@@ -605,17 +605,29 @@ static gboolean _GGDKDraw_ProcessTimerEvent(gpointer user_data) {
     return ret;
 }
 
-// In their infinite wisdom, GDK does not send configure events for child windows.
-static void _GGDKDraw_FakeConfigureEvent(GGDKWindow gw, int32 x, int32 y, int32 w, int32 h) {
+static gboolean _GGDKDraw_OnFakedResize(gpointer user_data) {
+    GGDKWindow gw = (GGDKWindow)user_data;
     GdkEventConfigure evt = {0};
-    evt.type = GDK_CONFIGURE;
-    evt.window = gw->w;
+
+    evt.type       = GDK_CONFIGURE;
+    evt.window     = gw->w;
     evt.send_event = true;
-    evt.x      = x >= 0 ? x : gw->pos.x;
-    evt.y      = y >= 0 ? y : gw->pos.y;
-    evt.width  = w >= 0 ? w : gw->pos.width;
-    evt.height = h >= 0 ? h : gw->pos.height;
+    evt.width      = gdk_window_get_width(gw->w);
+    evt.height     = gdk_window_get_height(gw->w);
+    gdk_window_get_position(gw->w, &evt.x, &evt.y);
+
     gdk_event_put((GdkEvent *)&evt);
+    gw->resize_timeout = 0;
+    return false;
+}
+
+// In their infinite wisdom, GDK does not send configure events for child windows.
+static void _GGDKDraw_FakeConfigureEvent(GGDKWindow gw) {
+    if (gw->resize_timeout != 0) {
+        g_source_remove(gw->resize_timeout);
+        gw->resize_timeout = 0;
+    }
+    gw->resize_timeout = g_timeout_add(150, _GGDKDraw_OnFakedResize, gw);
 }
 
 static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
@@ -1108,7 +1120,7 @@ static void GGDKDrawMove(GWindow gw, int32 x, int32 y) {
     Log(LOGDEBUG, ""); //assert(false);
     gdk_window_move(((GGDKWindow)gw)->w, x, y);
     if (!gw->is_toplevel) {
-        _GGDKDraw_FakeConfigureEvent((GGDKWindow)gw, x, y, -1, -1);
+        _GGDKDraw_FakeConfigureEvent((GGDKWindow)gw);
     }
     ((GGDKWindow)gw)->is_centered = false;
 }
@@ -1125,7 +1137,7 @@ static void GGDKDrawResize(GWindow gw, int32 w, int32 h) {
         _GGDKDraw_CenterWindowOnScreen((GGDKWindow)gw);
     }
     if (!gw->is_toplevel) {
-        _GGDKDraw_FakeConfigureEvent((GGDKWindow)gw, -1, -1, w, h);
+        _GGDKDraw_FakeConfigureEvent((GGDKWindow)gw);
     }
 }
 
@@ -1133,7 +1145,7 @@ static void GGDKDrawMoveResize(GWindow gw, int32 x, int32 y, int32 w, int32 h) {
     Log(LOGDEBUG, ""); //assert(false);
     gdk_window_move_resize(((GGDKWindow)gw)->w, x, y, w, h);
     if (!gw->is_toplevel) {
-        _GGDKDraw_FakeConfigureEvent((GGDKWindow)gw, x, y, w, h);
+        _GGDKDraw_FakeConfigureEvent((GGDKWindow)gw);
     }
 }
 
