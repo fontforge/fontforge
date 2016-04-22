@@ -677,13 +677,10 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             //gevent.u.chr.x = event->xkey.x;
             //gevent.u.chr.y = event->xkey.y;
 
-            gevent.u.chr.keysym = gdk_keyval_to_unicode(key->keyval);
-            gevent.u.chr.chars[0] = '\0';
+            gevent.u.chr.keysym = key->keyval;
+            gevent.u.chr.chars[0] = gdk_keyval_to_unicode(key->keyval);
 
-            if (gevent.u.chr.keysym == 0) {
-                gevent.u.chr.keysym = key->keyval;
-            } else {
-                gevent.u.chr.chars[0] = gevent.u.chr.keysym;
+            if (gevent.u.chr.chars[0] == '\0') {
                 gevent.u.chr.chars[1] = '\0';
             }
 
