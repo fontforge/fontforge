@@ -167,12 +167,11 @@ struct ggdkwindow { /* :GWindow */
     unsigned int is_centered: 1;
 
     int reference_count; // Knowing when to destroy is tricky...
-    int modal_count;     // Knowing when to disable input is tricky...
+    GPtrArray *transient_childs; // Handling transients is tricky...
     guint resize_timeout; // Resizing is tricky...
 
     GWindow redirect_from;		/* only redirect input from this window and its children */
     struct ggdkwindow *transient_owner;
-    GdkEventSelection *received_selection;
 
     char *window_title;
 
