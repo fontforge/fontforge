@@ -27,11 +27,8 @@ static GGC *_GGDKDraw_NewGGC() {
     return ggc;
 }
 
-static void _GGDKDraw_OnWindowDestroyed(gpointer data) {
+static gboolean _GGDKDraw_OnWindowDestroyed(gpointer data) {
     GGDKWindow gw = (GGDKWindow)data;
-    if (gw->is_cleaning_up) { // Nested call - we're already being destroyed.
-        return;
-    }
     gw->is_cleaning_up = true; // We're in the process of destroying it.
 
     Log(LOGDEBUG, "OnWindowDestroyed!");
@@ -100,6 +97,17 @@ static void _GGDKDraw_OnWindowDestroyed(gpointer data) {
 
     free(gw->ggc);
     free(gw);
+    return false;
+}
+
+// FF expects the destroy call to happen asynchronously to
+// the actual GDrawDestroyWindow call. So we add it to the queue...
+static void _GGDKDraw_InitiateWindowDestroy(GGDKWindow gw) {
+    if (gw->is_pixmap) {
+        _GGDKDraw_OnWindowDestroyed(gw);
+    } else if (!gw->is_cleaning_up) { // Check for nested call - if we're already being destroyed.
+        g_timeout_add(10, _GGDKDraw_OnWindowDestroyed, gw);
+    }
 }
 
 static void _GGDKDraw_OnTimerDestroyed(GGDKTimer *timer) {
@@ -131,7 +139,7 @@ static void _GGDKDraw_CallEHChecked(GGDKWindow gw, GEvent *event, int (*eh)(GWin
             }
         }
         // Decrement reference counter
-        GGDKDRAW_DECREF(gw, _GGDKDraw_OnWindowDestroyed);
+        GGDKDRAW_DECREF(gw, _GGDKDraw_InitiateWindowDestroy);
     }
 }
 
@@ -1056,7 +1064,7 @@ static void GGDKDrawDestroyWindow(GWindow w) {
         // Ensure an invalid value is returned if someone tries to get this value again.
         g_object_set_data(G_OBJECT(gw->w), "GGDKWindow", NULL);
     }
-    GGDKDRAW_DECREF(gw, _GGDKDraw_OnWindowDestroyed);
+    GGDKDRAW_DECREF(gw, _GGDKDraw_InitiateWindowDestroy);
 }
 
 static void GGDKDrawDestroyCursor(GDisplay *gdisp, GCursor gcursor) {

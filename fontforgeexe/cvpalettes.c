@@ -1470,7 +1470,7 @@ static void PostCharToWindow(GWindow to, GEvent *e) {
 static int cvtools_e_h(GWindow gw, GEvent *event) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
-    if ( event->type==et_destroy ) {
+    if ( event->type==et_destroy && cvtools == gw ) {
 	cvtools = NULL;
 return( true );
     }
@@ -1924,7 +1924,7 @@ return;
 static int cvlayers2_e_h(GWindow gw, GEvent *event) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
-    if ( event->type==et_destroy ) {
+    if ( event->type==et_destroy && cvlayers2 == gw ) {
 	cvlayers2 = NULL;
 return( true );
     }
@@ -2955,7 +2955,7 @@ static int cvlayers_e_h(GWindow gw, GEvent *event) {
     char *buts[3];
     buts[0] = _("_Yes"); buts[1]=_("_No"); buts[2] = NULL;
 
-    if ( event->type==et_destroy )
+    if ( event->type==et_destroy && cvlayers == gw )
     {
 	cvlayers = NULL;
 	return( true );
@@ -3935,7 +3935,7 @@ static void BVLayersSet(BitmapView *bv) {
 static int bvlayers_e_h(GWindow gw, GEvent *event) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
 
-    if ( event->type==et_destroy ) {
+    if ( event->type==et_destroy && bvlayers == gw ) {
 	bvlayers = NULL;
 return( true );
     }
@@ -4169,7 +4169,7 @@ return;
 static int bvshades_e_h(GWindow gw, GEvent *event) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
 
-    if ( event->type==et_destroy ) {
+    if ( event->type==et_destroy && bvshades == gw ) {
 	bvshades = NULL;
 return( true );
     }
@@ -4396,7 +4396,7 @@ return;			/* If the wm gave me a window the wrong size */
 static int bvtools_e_h(GWindow gw, GEvent *event) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
 
-    if ( event->type==et_destroy ) {
+    if ( event->type==et_destroy && bvtools == gw ) {
 	bvtools = NULL;
 return( true );
     }
