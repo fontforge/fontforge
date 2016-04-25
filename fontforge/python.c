@@ -12049,7 +12049,7 @@ return( -1 );
 		    ln->features = ft;
 		else
 		    lastft->next = ft;
-		lastln = ln;
+		lastft = ft;
 		ft->lang = StrToTag(tag,NULL);
 		if ( ft->lang == BAD_TAG ) {
 		    BaseFree(base);
