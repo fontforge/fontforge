@@ -2748,13 +2748,13 @@ static int SFD_Dump( FILE *sfd, SplineFont *sf, EncMap *map, EncMap *normal,
     }
     if ( sf->anchor!=NULL ) {
 	AnchorClass *an;
-	fprintf(sfd, "AnchorClass2: ");
+	fprintf(sfd, "AnchorClass2:");
 	for ( an=sf->anchor; an!=NULL; an=an->next ) {
-	    SFDDumpUTF7Str(sfd,an->name);
 	    putc(' ',sfd);
+	    SFDDumpUTF7Str(sfd,an->name);
             if ( an->subtable!=NULL ) {
-	        SFDDumpUTF7Str(sfd,an->subtable->subtable_name);
 	        putc(' ',sfd);
+	        SFDDumpUTF7Str(sfd,an->subtable->subtable_name);
             }
             else
                 fprintf(sfd, "\"\" ");
