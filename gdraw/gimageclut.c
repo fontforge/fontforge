@@ -504,8 +504,10 @@ return( PickGreyClut(clut,clutmax,grey_clut,cnt));
 	for ( i=0; i<cnt; ++i )
 	    clut->clut[i] = clutinf[i].col;
 	clut->clut[i] = transinf.col;
+        free(clutinf);
 return(clut);
     }
+    free(clutinf);
 	
 return( gimage_reduceclut(clut,clutmax,clutinf,cnt,&transinf));
 }

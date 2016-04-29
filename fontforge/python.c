@@ -8014,6 +8014,7 @@ return( NULL );
 	    ENDPYGETSTR();
 	    if ( sc==NULL ) {
 		PyErr_Format(PyExc_TypeError,"String, %s, is not the name of a glyph in the expected font.", str );
+                free(ret);
 return( NULL );
 	    }
 	    ret[i] = sc;

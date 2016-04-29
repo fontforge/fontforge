@@ -2205,6 +2205,7 @@ return;
 	    }
 	}
     }
+    free(bdfinfo);
 }
 
 

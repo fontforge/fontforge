@@ -914,6 +914,7 @@ return( false );
 	for ( j=0; j<num_files; ++j )
 	    fclose(fntarray[j]);
 	free(fntarray);
+        free(file_lens);
 return( false );
     }
 
