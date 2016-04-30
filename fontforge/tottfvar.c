@@ -65,13 +65,7 @@ static int AssignPtNumbers(MMSet *mm,int gid) {
         free(ss);
         free(sp);
 	if ( stillmore )
-{
-free(ss);
-free(sp);
 return( false );
-}
-free(ss);
-free(sp);
 return( true );
     } else {
 	stillmore = true;
