@@ -1532,6 +1532,7 @@ return;
 		memset(sum,0,new.bytes_per_line*sizeof(uint32));
 	    }
 	}
+        free(sum);
     } else {
 	for ( i=0; i<=bc->ymax-bc->ymin; ++i ) {
 	    bpt = bc->bitmap + i*bc->bytes_per_line;

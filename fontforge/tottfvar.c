@@ -62,6 +62,8 @@ static int AssignPtNumbers(MMSet *mm,int gid) {
 	stillmore = false;
 	for ( i=0; i<=mm->instance_count; ++i )
 	    if ( ss[i]!=NULL ) stillmore = true;
+        free(ss);
+        free(sp);
 	if ( stillmore )
 return( false );
 return( true );
@@ -70,7 +72,11 @@ return( true );
 	for ( i=0; i<=mm->instance_count; ++i )
 	    if ( ss[i]==NULL ) stillmore = false;
 	if ( !stillmore )
+{
+free(ss);
+free(sp);
 return( false );
+}
     }
 	    
     for (;;) {

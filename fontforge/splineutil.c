@@ -5785,7 +5785,7 @@ void SplineCharListsFree(struct splinecharlist *dlist) {
 }
 
 struct pattern *PatternCopy(struct pattern *old, real transform[6]) {
-    struct pattern *pat = chunkalloc(sizeof(struct pattern));
+    struct pattern *pat;
 
     if ( old==NULL )
 return( NULL );
@@ -5807,7 +5807,7 @@ return;
 }
 
 struct gradient *GradientCopy(struct gradient *old,real transform[6]) {
-    struct gradient *grad = chunkalloc(sizeof(struct gradient));
+    struct gradient *grad;
 
     if ( old==NULL )
 return( NULL );

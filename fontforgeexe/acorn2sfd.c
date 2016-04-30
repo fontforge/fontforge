@@ -562,6 +562,8 @@ return;
 	    free(widths);
 	}
     }
+    if (m != 0)
+        free(mapping);
 
     outline->defxadvance = outline->defyadvance = 1000;
 
