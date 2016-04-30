@@ -8990,6 +8990,7 @@ static void docall(Context *c,char *name,Val *val) {
 	sub.curfv = c->curfv;
 	sub.trace = c->trace;
 	sub.dontfree = dontfree;
+	/* sub.error = ce_false = 0 = implied, no error yet */
 	for ( i=0; i<sub.a.argc; ++i ) {
 	    dereflvalif(&args[i]);
 	    if ( args[i].type == v_arrfree )
@@ -9070,7 +9071,7 @@ static void docall(Context *c,char *name,Val *val) {
 docall_dofunc:
 	    (found->func)(&sub);
 docall_skipfunc:
-	    switch (c->error) {
+	    switch (sub.error) { /* check if any error in results */
 		case ce_false: break;
 		case ce_true: break;
 		case ce_wrongnumarg:
@@ -9086,7 +9087,7 @@ docall_expectstr:   ScriptError(&sub,"Expected string argument");
 docall_expectint:   ScriptError(&sub,"Expected integer argument");
 		    break;
 		case ce_quit:
-		    exit(c->return_val.u.ival);
+		    exit(sub.return_val.u.ival);
 	    }
 	} else {
 	    if ( strchr(name,'/')==NULL && strchr(c->filename,'/')!=NULL ) {
