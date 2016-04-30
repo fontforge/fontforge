@@ -413,15 +413,15 @@ static void PSLineTo(GPSWindow ps, int x, int y) {
 }
 
 /* This is my version of the postscript "arc" function. I've written it because*/
-/*  I can't use arc for stroking elipses. The obvious thing to do is to scale */
-/*  x and y differently so that the circle becomes an elipse. Sadly that also */
+/*  I can't use arc for stroking ellipses. The obvious thing to do is to scale */
+/*  x and y differently so that the circle becomes an ellipse. Sadly that also */
 /*  scales the line width so I get a different width at different points on   */
-/*  the elipse. Can't have that. */
-/* So here we approximate an elipse by four bezier curves. There is one curve */
-/*  for each quadrant of the elipse (0->90), (90->180), (180->270), (270-360) */
+/*  the ellipse. Can't have that. */
+/* So here we approximate an ellipse by four bezier curves. There is one curve */
+/*  for each quadrant of the ellipse (0->90), (90->180), (180->270), (270-360) */
 /*  of course if we're just doing bits of the arc (rather than the whole      */
-/*  elipse) we'll not have all of those, nor will they be filled in. The      */
-/*  magic numbers here do indeed produce a good fit to an elipse */
+/*  ellipse) we'll not have all of those, nor will they be filled in. The      */
+/*  magic numbers here do indeed produce a good fit to an ellipse */
 static void PSDoArc(GPSWindow ps, double cx, double cy, double radx, double rady,
 	double sa, double ea ) {
     double ss, sc, es, ec;
@@ -466,10 +466,10 @@ static void PSMyArc(GPSWindow ps, double cx, double cy, double radx, double rady
     }
 }
 
-static void PSDrawElipse(GPSWindow ps, GRect *rct,char *command) {
+static void PSDrawEllipse(GPSWindow ps, GRect *rct,char *command) {
     float cx, cy, radx, rady;
-    /* This does not make a very good stroked elipse if it isn't a circle */
-    /*  the line width is scaled along with the elipse and so it varies!!! */
+    /* This does not make a very good stroked ellipse if it isn't a circle */
+    /*  the line width is scaled along with the ellipse and so it varies!!! */
 
     _GPSDraw_FlushPath(ps);
     radx = rct->width/2.0;
@@ -478,10 +478,10 @@ static void PSDrawElipse(GPSWindow ps, GRect *rct,char *command) {
     cy = rct->y + rady;
     PSDrawNewpath(ps);
 
-    /* I can't use arc to draw an elipse. Doing so would mean scaling the */
+    /* I can't use arc to draw an ellipse. Doing so would mean scaling the */
     /*  x and y axes differently, which will also scale the stroke width */
     /*  differently. So I've written my own version that will work for */
-    /*  elipses without scaling. I use arc for circles because it produces */
+    /*  ellipses without scaling. I use arc for circles because it produces */
     /*  less text in the printing file */
     if ( radx!=rady )
 	PSMyArc(ps,cx,cy,radx,rady,0,360);
@@ -723,7 +723,7 @@ static void PSDrawDrawCircle(GWindow w, GRect *rct,Color col) {
 
     ps->ggc->fg = col;
     PSDrawSetline(ps);
-    PSDrawElipse(ps,rct,"stroke");
+    PSDrawEllipse(ps,rct,"stroke");
 }
 
 static void PSDrawFillCircle(GWindow w, GRect *rct,Color col) {
@@ -732,7 +732,7 @@ static void PSDrawFillCircle(GWindow w, GRect *rct,Color col) {
     ps->ggc->fg = col;
     PSDrawSetcol(ps);
     _GPSDraw_FlushPath(ps);
-    PSDrawElipse(ps,rct,"fill");
+    PSDrawEllipse(ps,rct,"fill");
 }
 
 static void PSDrawDrawArc(GWindow w, GRect *rct,int32 sa, int32 ta, Color col) {

@@ -70,7 +70,7 @@ static GTextInfo bordertype[] = {
 static GTextInfo bordershape[] = {
     { (unichar_t *) "Rect", NULL, 0, 0, (void *) (intpt) bs_rect, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) "Round Rect", NULL, 0, 0, (void *) (intpt) bs_roundrect, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
-    { (unichar_t *) "Elipse", NULL, 0, 0, (void *) (intpt) bs_elipse, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Ellipse", NULL, 0, 0, (void *) (intpt) bs_ellipse, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) "Diamond", NULL, 0, 0, (void *) (intpt) bs_diamond, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     GTEXTINFO_EMPTY
 };
@@ -663,7 +663,7 @@ return( true );
 }
 
 static int GRE_Save(GGadget *g, GEvent *e) {
-    static char *shapes[] = { "rect", "roundrect", "elipse", "diamond", NULL };
+    static char *shapes[] = { "rect", "roundrect", "ellipse", "diamond", NULL };
     static char *types[] = { "none", "box", "raised", "lowered", "engraved",
         "embossed", "double", NULL };
 

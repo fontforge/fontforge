@@ -342,7 +342,7 @@ return( false );
         rect.width =.4*w;
         rect.height=.4*h;
         fg=0; /* black */
-        GDrawFillElipse(pixmap, &rect, fg);
+        GDrawFillEllipse(pixmap, &rect, fg);
 
     } else if ( (!gr->ison) && gr->onbox == &visibility_on_box ) {
          /* draw closed eye */

@@ -881,7 +881,7 @@ extern int TrueCharState(GEvent *event);
 extern void CVToolsPopup(CharView *cv, GEvent *event);
 extern void BVToolsPopup(BitmapView *bv, GEvent *event);
 extern real CVRoundRectRadius(void);
-extern int CVRectElipseCenter(void);
+extern int CVRectEllipseCenter(void);
 extern void CVRectEllipsePosDlg(CharView *cv);
 extern real CVStarRatio(void);
 extern int CVPolyStarPoints(void);

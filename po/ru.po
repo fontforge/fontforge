@@ -34861,10 +34861,6 @@ msgstr "Причина:%s\n"
 #~ msgid "Acceptable"
 #~ msgstr "Приемлемый"
 
-#, fuzzy
-#~ msgid "Elipse"
-#~ msgstr "Эллипс"
-
 #~ msgid "_Stroke"
 #~ msgstr "_Штрих"
 

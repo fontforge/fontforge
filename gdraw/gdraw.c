@@ -449,14 +449,14 @@ void GDrawFillRoundRect(GWindow w, GRect *rect, int radius, Color col) {
 	(w->display->funcs->fillRoundRect)(w,rect,radius,col);
 }
 
-void GDrawDrawElipse(GWindow w, GRect *rect, Color col) {
+void GDrawDrawEllipse(GWindow w, GRect *rect, Color col) {
     if ( col!=COLOR_UNKNOWN )
-	(w->display->funcs->drawElipse)(w,rect,col);
+	(w->display->funcs->drawEllipse)(w,rect,col);
 }
 
-void GDrawFillElipse(GWindow w, GRect *rect, Color col) {
+void GDrawFillEllipse(GWindow w, GRect *rect, Color col) {
     if ( col!=COLOR_UNKNOWN )
-	(w->display->funcs->fillElipse)(w,rect,col);
+	(w->display->funcs->fillEllipse)(w,rect,col);
 }
 
 /* angles expressed as in X, in 64's of a degree with 0 angle at 3 o'clock */

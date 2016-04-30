@@ -142,7 +142,7 @@ typedef struct tabinfo {
 
 enum border_type { bt_none, bt_box, bt_raised, bt_lowered, bt_engraved,
 	    bt_embossed, bt_double };
-enum border_shape { bs_rect, bs_roundrect, bs_elipse, bs_diamond };
+enum border_shape { bs_rect, bs_roundrect, bs_ellipse, bs_diamond };
 enum box_flags {
     box_foreground_border_inner = 1,	/* 1 point line */
     box_foreground_border_outer = 2,	/* 1 point line */
@@ -160,9 +160,9 @@ typedef struct gbox {
     unsigned char padding;	/* In points */
     unsigned char rr_radius;	/* In points */
     unsigned char flags;
-    Color border_brightest;		/* used for left upper part of elipse */
+    Color border_brightest;		/* used for left upper part of ellipse */
     Color border_brighter;
-    Color border_darkest;		/* used for right lower part of elipse */
+    Color border_darkest;		/* used for right lower part of ellipse */
     Color border_darker;
     Color main_background;
     Color main_foreground;

@@ -170,7 +170,7 @@ extern int bv_height;				/* in bitmapview.c */
 extern int ask_user_for_cmap;			/* in parsettf.c */
 extern int mvshowgrid;				/* in metricsview.c */
 
-extern int rectelipse, polystar, regular_star;	/* from cvpalettes.c */
+extern int rectellipse, polystar, regular_star;	/* from cvpalettes.c */
 extern int center_out[2];			/* from cvpalettes.c */
 extern float rr_radius;				/* from cvpalettes.c */
 extern int ps_pointcnt;				/* from cvpalettes.c */
@@ -486,7 +486,7 @@ static struct prefs_list {
 	{ "PageLazyPrinter", pr_string, &printlazyprinter, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "RegularStar", pr_bool, &regular_star, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "PolyStar", pr_bool, &polystar, NULL, NULL, '\0', NULL, 1, NULL },
-	{ "RectEllipse", pr_bool, &rectelipse, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "RectEllipse", pr_bool, &rectellipse, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "RectCenterOut", pr_bool, &center_out[0], NULL, NULL, '\0', NULL, 1, NULL },
 	{ "EllipseCenterOut", pr_bool, &center_out[1], NULL, NULL, '\0', NULL, 1, NULL },
 	{ "PolyStartPointCnt", pr_int, &ps_pointcnt, NULL, NULL, '\0', NULL, 1, NULL },

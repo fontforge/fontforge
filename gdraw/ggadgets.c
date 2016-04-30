@@ -179,7 +179,7 @@ return( (void *) (intpt) ret );
 }
 
 static void *border_shape_cvt(char *val, void *def) {
-    static char *shapes[] = { "rect", "roundrect", "elipse", "diamond", NULL };
+    static char *shapes[] = { "rect", "roundrect", "ellipse", "diamond", NULL };
     int ret = match(shapes,val);
     if ( ret== -1 )
 return( def );
@@ -756,7 +756,7 @@ void _ggadgetFigureSize(GWindow gw, GBox *design, GRect *r, int isdef) {
       case bs_roundrect:
 	GBoxFigureRect(gw,design,r,isdef);
       break;
-      case bs_elipse:
+      case bs_ellipse:
 	GBoxFigureDiamond(gw,design,r,isdef);
       break;
       case bs_diamond:

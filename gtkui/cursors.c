@@ -33,8 +33,8 @@
 GdkCursor *ct_magplus, *ct_magminus, *ct_mypointer, *ct_circle, *ct_square, *ct_triangle,
 	*ct_ruler, *ct_pen, *ct_knife, *ct_rotate, *ct_skew, *ct_scale, *ct_flip,
 	*ct_3drotate, *ct_perspective, *ct_hvcircle, *ct_g2circle;
-GdkCursor *ct_rect, *ct_elipse, *ct_poly, *ct_star, *ct_pencil, *ct_shift, *ct_line,
-	*ct_myhand, *ct_filledrect, *ct_filledelipse, *ct_setwidth, *ct_eyedropper;
+GdkCursor *ct_rect, *ct_ellipse, *ct_poly, *ct_star, *ct_pencil, *ct_shift, *ct_line,
+	*ct_myhand, *ct_filledrect, *ct_filledellipse, *ct_setwidth, *ct_eyedropper;
 GdkCursor *ct_updown, *ct_leftright, *ct_nesw, *ct_nwse;
 GdkCursor *ct_rbearing, *ct_kerning, *ct_lbearing;
 GdkCursor *ct_prohibition, *ct_ddcursor;
@@ -463,11 +463,11 @@ static unsigned char nwse_bits[] = {
 static unsigned char rectcur_bits[] = {
    0x04, 0x00, 0x02, 0x00, 0xff, 0x7f, 0x12, 0x40, 0x14, 0x40, 0x10, 0x40,
    0xf0, 0x7f, 0x00, 0x00};
-#define elipsecur_width 16
-#define elipsecur_height 8
-#define elipsecur_x_hot 0
-#define elipsecur_y_hot 2
-static unsigned char elipsecur_bits[] = {
+#define ellipsecur_width 16
+#define ellipsecur_height 8
+#define ellipsecur_x_hot 0
+#define ellipsecur_y_hot 2
+static unsigned char ellipsecur_bits[] = {
    0x04, 0x00, 0x02, 0x00, 0x3f, 0x1f, 0xc2, 0x60, 0x24, 0x80, 0xc0, 0x60,
    0x00, 0x1f, 0x00, 0x00};
 #define polycur_width 16
@@ -575,11 +575,11 @@ static unsigned char handmask_bits[] = {
 static unsigned char filledrectcur_bits[] = {
    0x04, 0x00, 0x02, 0x00, 0xff, 0xff, 0xe2, 0xff, 0xe4, 0xff, 0xe0, 0xff,
    0xe0, 0xff, 0x00, 0x00};
-#define filledelipsecur_width 16
-#define filledelipsecur_height 8
-#define filledelipsecur_x_hot 0
-#define filledelipsecur_y_hot 2
-static unsigned char filledelipsecur_bits[] = {
+#define filledellipsecur_width 16
+#define filledellipsecur_height 8
+#define filledellipsecur_x_hot 0
+#define filledellipsecur_y_hot 2
+static unsigned char filledellipsecur_bits[] = {
    0x04, 0x00, 0x02, 0x00, 0x3f, 0x1f, 0xc2, 0x7f, 0xe4, 0xff, 0xc0, 0x7f,
    0x00, 0x1f, 0x00, 0x00};
 #define kerncur_width 16
@@ -777,10 +777,10 @@ void InitCursors(void) {
 	    1, &black, &white);
     ct_rect = gdk_cursor_new_from_pixmap( image,image,&red,&white,rectcur_x_hot,
 	    rectcur_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,(guchar *)elipsecur_bits,elipsecur_width,elipsecur_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)ellipsecur_bits,ellipsecur_width,ellipsecur_height,
 	    1, &black, &white);
-    ct_elipse = gdk_cursor_new_from_pixmap( image,image,&red,&white,elipsecur_x_hot,
-	    elipsecur_y_hot);
+    ct_ellipse = gdk_cursor_new_from_pixmap( image,image,&red,&white,ellipsecur_x_hot,
+	    ellipsecur_y_hot);
     image = gdk_pixmap_create_from_data(NULL,(guchar *)polycur_bits,polycur_width,polycur_height,
 	    1, &black, &white);
     ct_poly = gdk_cursor_new_from_pixmap( image,image,&red,&white,polycur_x_hot,
@@ -838,10 +838,10 @@ void InitCursors(void) {
 	    1, &black, &white);
     ct_filledrect = gdk_cursor_new_from_pixmap( image,image,&red,&white,filledrectcur_x_hot,
 	    filledrectcur_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,(guchar *)filledelipsecur_bits,filledelipsecur_width,filledelipsecur_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)filledellipsecur_bits,filledellipsecur_width,filledellipsecur_height,
 	    1, &black, &white);
-    ct_filledelipse = gdk_cursor_new_from_pixmap( image,image,&red,&white,filledelipsecur_x_hot,
-	    filledelipsecur_y_hot);
+    ct_filledellipse = gdk_cursor_new_from_pixmap( image,image,&red,&white,filledellipsecur_x_hot,
+	    filledellipsecur_y_hot);
 
     image = gdk_pixmap_create_from_data(NULL,(guchar *)kerncur_bits,kerncur_width,kerncur_height,
 	    1, &black, &white);

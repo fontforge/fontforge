@@ -291,7 +291,7 @@ static void GXCDraw_EllipsePath(cairo_t *cc,double cx,double cy,double width,dou
 
 void _GXCDraw_DrawEllipse(GXWindow gw, GRect *rect) {
     /* It is tempting to use the cairo arc command and scale the */
-    /*  coordinates to get an elipse, but that distorts the stroke width */
+    /*  coordinates to get an ellipse, but that distorts the stroke width */
     int lwidth = GXCDrawSetline(gw,gw->ggc);
     double cx, cy, width, height;
 
@@ -310,7 +310,7 @@ void _GXCDraw_DrawEllipse(GXWindow gw, GRect *rect) {
 
 void _GXCDraw_FillEllipse(GXWindow gw, GRect *rect) {
     /* It is tempting to use the cairo arc command and scale the */
-    /*  coordinates to get an elipse, but that distorts the stroke width */
+    /*  coordinates to get an ellipse, but that distorts the stroke width */
     double cx, cy, width, height;
 
     GXCDrawSetcolfunc(gw,gw->ggc);

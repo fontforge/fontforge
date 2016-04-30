@@ -1996,7 +1996,7 @@ return;
 #endif
 }
 
-static void GXDrawDrawElipse(GWindow gw, GRect *rect, Color col) {
+static void GXDrawDrawEllipse(GWindow gw, GRect *rect, Color col) {
     GXWindow gxw = (GXWindow) gw;
 
     gxw->ggc->fg = col;
@@ -2024,7 +2024,7 @@ static void GXDrawDrawArc(GWindow gw, GRect *rect, int32 sangle, int32 tangle, C
 	    sangle,tangle );
 }
 
-static void GXDrawFillElipse(GWindow gw, GRect *rect, Color col) {
+static void GXDrawFillEllipse(GWindow gw, GRect *rect, Color col) {
     GXWindow gxw = (GXWindow) gw;
     GXDisplay *display = gxw->display;
 
@@ -4283,8 +4283,8 @@ static struct displayfuncs xfuncs = {
     GXDrawDrawRect,
     GXDrawFillRect,
     GXDrawFillRoundRect,
-    GXDrawDrawElipse,
-    GXDrawFillElipse,
+    GXDrawDrawEllipse,
+    GXDrawFillEllipse,
     GXDrawDrawArc,
     GXDrawDrawPoly,
     GXDrawFillPoly,

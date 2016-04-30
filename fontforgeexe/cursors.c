@@ -33,8 +33,8 @@
 GCursor ct_magplus, ct_magminus, ct_mypointer, ct_circle, ct_square, ct_triangle,
 	ct_ruler, ct_pen, ct_knife, ct_rotate, ct_skew, ct_scale, ct_flip,
 	ct_3drotate, ct_perspective, ct_hvcircle, ct_g2circle;
-GCursor ct_rect, ct_elipse, ct_poly, ct_star, ct_pencil, ct_shift, ct_line,
-	ct_myhand, ct_filledrect, ct_filledelipse, ct_setwidth, ct_eyedropper;
+GCursor ct_rect, ct_ellipse, ct_poly, ct_star, ct_pencil, ct_shift, ct_line,
+	ct_myhand, ct_filledrect, ct_filledellipse, ct_setwidth, ct_eyedropper;
 GCursor ct_updown, ct_leftright, ct_nesw, ct_nwse;
 GCursor ct_rbearing, ct_kerning, ct_lbearing;
 GCursor ct_prohibition, ct_ddcursor, ct_features;
@@ -461,11 +461,11 @@ static unsigned char nwse_bits[] = {
 static unsigned char rectcur_bits[] = {
    0x04, 0x00, 0x02, 0x00, 0xff, 0x7f, 0x12, 0x40, 0x14, 0x40, 0x10, 0x40,
    0xf0, 0x7f, 0x00, 0x00};
-#define elipsecur_width 16
-#define elipsecur_height 8
-#define elipsecur_x_hot 0
-#define elipsecur_y_hot 2
-static unsigned char elipsecur_bits[] = {
+#define ellipsecur_width 16
+#define ellipsecur_height 8
+#define ellipsecur_x_hot 0
+#define ellipsecur_y_hot 2
+static unsigned char ellipsecur_bits[] = {
    0x04, 0x00, 0x02, 0x00, 0x3f, 0x1f, 0xc2, 0x60, 0x24, 0x80, 0xc0, 0x60,
    0x00, 0x1f, 0x00, 0x00};
 #define polycur_width 16
@@ -573,11 +573,11 @@ static unsigned char handmask_bits[] = {
 static unsigned char filledrectcur_bits[] = {
    0x04, 0x00, 0x02, 0x00, 0xff, 0xff, 0xe2, 0xff, 0xe4, 0xff, 0xe0, 0xff,
    0xe0, 0xff, 0x00, 0x00};
-#define filledelipsecur_width 16
-#define filledelipsecur_height 8
-#define filledelipsecur_x_hot 0
-#define filledelipsecur_y_hot 2
-static unsigned char filledelipsecur_bits[] = {
+#define filledellipsecur_width 16
+#define filledellipsecur_height 8
+#define filledellipsecur_x_hot 0
+#define filledellipsecur_y_hot 2
+static unsigned char filledellipsecur_bits[] = {
    0x04, 0x00, 0x02, 0x00, 0x3f, 0x1f, 0xc2, 0x7f, 0xe4, 0xff, 0xc0, 0x7f,
    0x00, 0x1f, 0x00, 0x00};
 #define kerncur_width 16
@@ -784,9 +784,9 @@ void InitCursors(void) {
     ct_rect = GDrawCreateCursor(image,image,0xff0000,0xffffff,rectcur_x_hot,
 	    rectcur_y_hot);
     GDrawDestroyWindow(image);
-    image = GDrawCreateBitmap(NULL,elipsecur_width,elipsecur_height,elipsecur_bits);
-    ct_elipse = GDrawCreateCursor(image,image,0xff0000,0xffffff,elipsecur_x_hot,
-	    elipsecur_y_hot);
+    image = GDrawCreateBitmap(NULL,ellipsecur_width,ellipsecur_height,ellipsecur_bits);
+    ct_ellipse = GDrawCreateCursor(image,image,0xff0000,0xffffff,ellipsecur_x_hot,
+	    ellipsecur_y_hot);
     GDrawDestroyWindow(image);
     image = GDrawCreateBitmap(NULL,polycur_width,polycur_height,polycur_bits);
     ct_poly = GDrawCreateCursor(image,image,0xff0000,0xffffff,polycur_x_hot,
@@ -841,9 +841,9 @@ void InitCursors(void) {
     ct_filledrect = GDrawCreateCursor(image,image,0xff0000,0xffffff,filledrectcur_x_hot,
 	    filledrectcur_y_hot);
     GDrawDestroyWindow(image);
-    image = GDrawCreateBitmap(NULL,filledelipsecur_width,filledelipsecur_height,filledelipsecur_bits);
-    ct_filledelipse = GDrawCreateCursor(image,image,0xff0000,0xffffff,filledelipsecur_x_hot,
-	    filledelipsecur_y_hot);
+    image = GDrawCreateBitmap(NULL,filledellipsecur_width,filledellipsecur_height,filledellipsecur_bits);
+    ct_filledellipse = GDrawCreateCursor(image,image,0xff0000,0xffffff,filledellipsecur_x_hot,
+	    filledellipsecur_y_hot);
     GDrawDestroyWindow(image);
 
     image = GDrawCreateBitmap(NULL,kerncur_width,kerncur_height,kerncur_bits);

@@ -2081,7 +2081,7 @@ static struct _GImage rrect0_base = {
 };
 
 
-static uint8 elipse0_data[] = {
+static uint8 ellipse0_data[] = {
     0xff, 0xff, 0xff, 
     0xff, 0xff, 0xff, 
     0xff, 0xff, 0xff, 
@@ -2108,10 +2108,10 @@ static uint8 elipse0_data[] = {
     0xff, 0xff, 0xff, 
 };
 
-static struct _GImage elipse0_base = {
+static struct _GImage ellipse0_base = {
     it_mono,
     2069,24,24,3,
-    (uint8 *) elipse0_data,
+    (uint8 *) ellipse0_data,
     &magnify0_clut,
     1
 };
@@ -2601,7 +2601,7 @@ GImage GIcon_pencil = { 0, { &pencil0_base }, NULL };
 GImage GIcon_shift = { 0, { &shift0_base }, NULL };
 GImage GIcon_star = { 0, { &star0_base }, NULL };
 GImage GIcon_poly = { 0, { &poly0_base }, NULL };
-GImage GIcon_elipse = { 0, { &elipse0_base }, NULL };
+GImage GIcon_ellipse = { 0, { &ellipse0_base }, NULL };
 GImage GIcon_rrect = { 0, { &rrect0_base }, NULL };
 GImage GIcon_rect = { 0, { &rect0_base }, NULL };
 GImage GIcon_squarecap = { 0, { &squarecap0_base }, NULL };
@@ -2712,7 +2712,7 @@ static struct _GImage smallrect0_base = {
     1
 };
 
-static uint8 smallelipse0_data[] = {
+static uint8 smallellipse0_data[] = {
     0xff, 0xff, 
     0xff, 0xff, 
     0xfc, 0x3f, 
@@ -2727,10 +2727,10 @@ static uint8 smallelipse0_data[] = {
     0xff, 0xff, 
 };
 
-static struct _GImage smallelipse0_base = {
+static struct _GImage smallellipse0_base = {
     it_mono,
     15420,16,12,2,
-    (uint8 *) smallelipse0_data,
+    (uint8 *) smallellipse0_data,
     &magnify0_clut,
     1
 };
@@ -4569,7 +4569,7 @@ GImage GIcon_smallpen = { 0, { &smallpen0_base }, NULL };
 GImage GIcon_smallpencil = { 0, { &smallpencil0_base }, NULL };
 GImage GIcon_smallpointer = { 0, { &smallpointer0_base }, NULL };
 GImage GIcon_smallruler = { 0, { &smallruler0_base }, NULL };
-GImage GIcon_smallelipse = { 0, { &smallelipse0_base }, NULL };
+GImage GIcon_smallellipse = { 0, { &smallellipse0_base }, NULL };
 GImage GIcon_smallrect = { 0, { &smallrect0_base }, NULL };
 GImage GIcon_smallpoly = { 0, { &smallpoly0_base }, NULL };
 GImage GIcon_smallstar = { 0, { &smallstar0_base }, NULL };
@@ -12226,7 +12226,7 @@ void InitToolIcons(void) {
         TryGGadgetImageCache(&GIcon_shift, "paletteshift.png");
         TryGGadgetImageCache(&GIcon_star, "palettestar.png");
         TryGGadgetImageCache(&GIcon_poly, "palettepoly.png");
-        TryGGadgetImageCache(&GIcon_elipse, "paletteelipse.png");
+        TryGGadgetImageCache(&GIcon_ellipse, "paletteellipse.png");
         TryGGadgetImageCache(&GIcon_rect, "paletterect.png");
         TryGGadgetImageCache(&GIcon_freehand, "palettefreehand.png");
         TryGGadgetImageCache(&GIcon_greyfree, "palettegreyfree.png");
@@ -12277,7 +12277,7 @@ void InitToolIcons(void) {
         TryGGadgetImageCache(&GIcon_smallpencil, "palettesmallpencil.png");
         TryGGadgetImageCache(&GIcon_smallpointer, "palettesmallpointer.png");
         TryGGadgetImageCache(&GIcon_smallruler, "palettesmallruler.png");
-        TryGGadgetImageCache(&GIcon_smallelipse, "palettesmallelipse.png");
+        TryGGadgetImageCache(&GIcon_smallellipse, "palettesmallellipse.png");
         TryGGadgetImageCache(&GIcon_smallrect, "palettesmallrect.png");
         TryGGadgetImageCache(&GIcon_smallpoly, "palettesmallpoly.png");
         TryGGadgetImageCache(&GIcon_smallstar, "palettesmallstar.png");
