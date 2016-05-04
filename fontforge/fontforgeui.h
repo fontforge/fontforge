@@ -62,6 +62,42 @@ extern GImage GIcon_tangent, GIcon_curve, GIcon_hvcurve, GIcon_corner, GIcon_rul
 	GIcon_spirodisabled, GIcon_spiroup, GIcon_spirodown,
 	GIcon_spirocurve, GIcon_spirocorner, GIcon_spirog2curve,
 	GIcon_spiroleft, GIcon_spiroright;
+extern  GImage GIcon_pointer_selected;
+extern  GImage GIcon_pointer_selected;
+extern  GImage GIcon_magnify_selected;
+extern  GImage GIcon_freehand_selected;
+extern  GImage GIcon_hand_selected;
+extern  GImage GIcon_knife_selected;
+extern  GImage GIcon_ruler_selected;
+extern  GImage GIcon_pen_selected;
+extern  GImage GIcon_spiroup_selected;
+extern  GImage GIcon_spirocorner_selected;
+extern  GImage GIcon_spirocurve_selected;
+extern  GImage GIcon_spirog2curve_selected;
+extern  GImage GIcon_spiroright_selected;
+extern  GImage GIcon_spiroleft_selected;
+extern  GImage GIcon_spirodisabled_selected;
+extern  GImage GIcon_spirodown_selected;
+extern  GImage GIcon_curve_selected;
+extern  GImage GIcon_hvcurve_selected;
+extern  GImage GIcon_corner_selected;
+extern  GImage GIcon_tangent_selected;
+extern  GImage GIcon_scale_selected;
+extern  GImage GIcon_rotate_selected;
+extern  GImage GIcon_flip_selected;
+extern  GImage GIcon_skew_selected;
+extern  GImage GIcon_3drotate_selected;
+extern  GImage GIcon_perspective_selected;
+extern  GImage GIcon_rect_selected;
+extern  GImage GIcon_poly_selected;
+extern  GImage GIcon_elipse_selected;
+extern  GImage GIcon_star_selected;
+extern  GImage GIcon_line_selected;
+extern  GImage GIcon_pencil_selected;
+extern  GImage GIcon_shift_selected;
+extern  GImage GIcon_greyfree_selected;
+  
+
 extern GImage GIcon_smallskew, GIcon_smallscale, GIcon_smallrotate,
 	GIcon_small3drotate, GIcon_smallperspective,
 	GIcon_smallflip, GIcon_smalltangent, GIcon_smallcorner,

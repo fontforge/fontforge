@@ -822,28 +822,75 @@ static void CVPolyStar(CharView *cv) {
 static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
     GRect old;
     /* Note: If you change this ordering, change enum cvtools */
-    static GImage *normbuttons[][2] = { { &GIcon_pointer, &GIcon_magnify },
-				    { &GIcon_freehand, &GIcon_hand },
-			            { &GIcon_knife, &GIcon_ruler },
-			            { &GIcon_pen, &GIcon_spirodisabled },
-				    { &GIcon_curve, &GIcon_hvcurve },
-			            { &GIcon_corner, &GIcon_tangent},
-			            { &GIcon_scale, &GIcon_rotate },
-			            { &GIcon_flip, &GIcon_skew },
-			            { &GIcon_3drotate, &GIcon_perspective },
-			            { &GIcon_rect, &GIcon_poly},
-			            { &GIcon_elipse, &GIcon_star}};
-    static GImage *spirobuttons[][2] = { { &GIcon_pointer, &GIcon_magnify },
-				    { &GIcon_freehand, &GIcon_hand },
-			            { &GIcon_knife, &GIcon_ruler },
-			            { &GIcon_spiroright, &GIcon_spirodown },
-				    { &GIcon_spirocurve, &GIcon_spirog2curve },
-			            { &GIcon_spirocorner, &GIcon_spiroleft },
-			            { &GIcon_scale, &GIcon_rotate },
-			            { &GIcon_flip, &GIcon_skew },
-			            { &GIcon_3drotate, &GIcon_perspective },
-			            { &GIcon_rect, &GIcon_poly},
-			            { &GIcon_elipse, &GIcon_star}};
+    // index0 is non selected / selected image
+    // index1 is the row    in the toolbar
+    // index2 is the column in the toolbar
+    static GImage *normbuttons[2][14][2] = {
+	{
+	    { &GIcon_pointer, &GIcon_magnify },
+	    { &GIcon_freehand, &GIcon_hand },
+	    { &GIcon_knife, &GIcon_ruler },
+	    { &GIcon_pen, &GIcon_spirodisabled },
+	    { &GIcon_curve, &GIcon_hvcurve },
+	    { &GIcon_corner, &GIcon_tangent},
+	    { &GIcon_scale, &GIcon_rotate },
+	    { &GIcon_flip, &GIcon_skew },
+	    { &GIcon_3drotate, &GIcon_perspective },
+	    { &GIcon_rect, &GIcon_poly},
+	    { 0, 0 },
+	    { &GIcon_elipse, &GIcon_star},
+	    { 0, 0 },
+	    { 0, 0 }
+	}
+	, {
+	    { &GIcon_pointer_selected, &GIcon_magnify_selected },
+	    { &GIcon_freehand_selected, &GIcon_hand_selected },
+	    { &GIcon_knife_selected, &GIcon_ruler_selected },
+	    { &GIcon_pen_selected, &GIcon_spiroup_selected },
+	    { &GIcon_curve_selected, &GIcon_hvcurve_selected },
+	    { &GIcon_corner_selected, &GIcon_tangent_selected},
+	    { &GIcon_scale_selected, &GIcon_rotate_selected },
+	    { &GIcon_flip_selected, &GIcon_skew_selected },
+	    { &GIcon_3drotate_selected, &GIcon_perspective_selected },
+	    { &GIcon_rect_selected, &GIcon_poly_selected},
+	    { 0, 0 },
+	    { &GIcon_elipse_selected, &GIcon_star_selected},
+	    { 0, 0 },
+	    { 0, 0 }
+	}};
+	static GImage *spirobuttons[2][14][2] = {
+	    {
+		{ &GIcon_pointer, &GIcon_magnify },
+		{ &GIcon_freehand, &GIcon_hand },
+		{ &GIcon_knife, &GIcon_ruler },
+		{ &GIcon_spiroright, &GIcon_spirodown },
+		{ &GIcon_spirocurve, &GIcon_spirog2curve },
+		{ &GIcon_spirocorner, &GIcon_spiroleft },
+		{ &GIcon_scale, &GIcon_rotate },
+		{ &GIcon_flip, &GIcon_skew },
+		{ &GIcon_3drotate, &GIcon_perspective },
+		{ &GIcon_rect, &GIcon_poly},
+		{ 0, 0 },
+		{ &GIcon_elipse, &GIcon_star},
+		{ 0, 0 },
+		{ 0, 0 }
+	    }
+	    , {
+		{ &GIcon_pointer_selected, &GIcon_magnify_selected },
+		{ &GIcon_freehand_selected, &GIcon_hand_selected },
+		{ &GIcon_knife_selected, &GIcon_ruler_selected },
+		{ &GIcon_spiroright_selected, &GIcon_spirodown_selected },
+		{ &GIcon_spirocurve_selected, &GIcon_spirog2curve_selected },
+		{ &GIcon_spirocorner_selected, &GIcon_spiroleft_selected },
+		{ &GIcon_scale_selected, &GIcon_rotate_selected },
+		{ &GIcon_flip_selected, &GIcon_skew_selected },
+		{ &GIcon_3drotate_selected, &GIcon_perspective_selected },
+		{ &GIcon_rect_selected, &GIcon_poly_selected},
+		{ 0, 0 },
+		{ &GIcon_elipse_selected, &GIcon_star_selected},
+		{ 0, 0 },
+		{ 0, 0 }
+	    }};
     static GImage *normsmalls[] = { &GIcon_smallpointer, &GIcon_smallmag,
 				    &GIcon_smallpencil, &GIcon_smallhand,
 			            &GIcon_smallknife, &GIcon_smallruler,
@@ -871,41 +918,58 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
 	    { '^', 'M', 's', 'e', '1',  '\0' },
 	    { 'M', 's', 'e', '2',  '\0' },
 	    { '^', 'M', 's', 'e', '2',  '\0' }};
-    int i,j,norm, mi;
+    int i,j,sel,norm, mi;
     int tool = cv->cntrldown?cv->cb1_tool:cv->b1_tool;
     int dither = GDrawSetDither(NULL,false);
     GRect temp;
     int canspiro = hasspiro(), inspiro = canspiro && cv->b.sc->inspiro;
-    GImage *(*buttons)[2] = inspiro ? spirobuttons : normbuttons;
+    GImage* (*buttons)[14][2] = (inspiro ? spirobuttons : normbuttons);
     GImage **smalls = inspiro ? spirosmalls : normsmalls;
 
-    normbuttons[3][1] = canspiro ? &GIcon_spiroup : &GIcon_spirodisabled;
+    /* static GImage *test[10][2] = { { &GIcon_pointer, &GIcon_magnify }, { &GIcon_pointer, &GIcon_magnify } }; */
+    /* GImage*** test2 = test; */
+
+    int foo[10][5] = { 
+	{ 1,2,3,4 }, { 1,2,3,4 }, { 1,2,3,4 }, { 1,2,3,4 }
+    };
+    int (*bar)[5] = foo;
+
+    
+    int foo2[3][10][5] = {
+	{ 
+	    { 1,2,3,4 }, { 1,2,3,4 }, { 1,2,3,4 }, { 1,2,3,4 }
+	},
+	{ 
+	    { 1,2,3,4 }, { 1,2,3,4 }, { 1,2,3,4 }, { 1,2,3,4 }
+	}
+    };
+    
+	
+    int (*bar2)[10][5] = foo2;
+	
+    
+
+    normbuttons[0][3][1] = canspiro ? &GIcon_spiroup : &GIcon_spirodisabled;
 
     GDrawPushClip(pixmap,r,&old);
     GDrawFillRect(pixmap,r,GDrawGetDefaultBackground(NULL));
     GDrawSetLineWidth(pixmap,0);
-    for ( i=0; i<sizeof(normbuttons)/sizeof(normbuttons[0])-1; ++i ) for ( j=0; j<2; ++j ) {
-	mi = i;
-	if ( i==(cvt_rect)/2 && ((j==0 && rectelipse) || (j==1 && polystar)) )
-	    ++mi;
-/*	if ( cv->b.sc->parent->order2 && buttons[mi][j]==&GIcon_freehand ) */
-/*	    GDrawDrawImage(pixmap,&GIcon_greyfree,NULL,j*27+1,i*27+1);	 */
-/*	else								 */
-	    GDrawDrawImage(pixmap,buttons[mi][j],NULL,j*27+1,i*27+1);
-	norm = (mi*2+j!=tool);
-	{
-	  // These are from charview.c.
-	  extern int cvbutton3d; // Default 1.
-	  extern Color cvbutton3dedgelightcol; // Default 0xe0e0e0.
-	  extern Color cvbutton3dedgedarkcol; // Default 0x707070.
-	  if (cvbutton3d) {
-	    GDrawDrawLine(pixmap,j*27,i*27,j*27+25,i*27,norm?cvbutton3dedgelightcol:cvbutton3dedgedarkcol);
-	    GDrawDrawLine(pixmap,j*27,i*27,j*27,i*27+25,norm?cvbutton3dedgelightcol:cvbutton3dedgedarkcol);
-	    GDrawDrawLine(pixmap,j*27,i*27+25,j*27+25,i*27+25,norm?cvbutton3dedgedarkcol:cvbutton3dedgelightcol);
-	    GDrawDrawLine(pixmap,j*27+25,i*27,j*27+25,i*27+25,norm?cvbutton3dedgedarkcol:cvbutton3dedgelightcol);
-	  }
+    for ( i=0; buttons[0][i][0]; ++i ) {
+	for ( j=0; j<2 && buttons[0][i][j]; ++j ) {
+
+		mi = i;
+		sel = (tool == mi*2+j );
+		if( buttons[0][mi][j] == &GIcon_rect && rectelipse
+		    || buttons[0][mi][j] == &GIcon_poly && polystar )
+		    {
+			sel = (tool == (mi+1)*2+j );
+			mi+=2;
+		    }
+				
+		GDrawDrawImage(pixmap,buttons[sel][mi][j],NULL,j*27+1,i*27+1);
 	}
     }
+    
     GDrawSetFont(pixmap,toolsfont);
     temp.x = 52-16; temp.y = i*27; temp.width = 16; temp.height = 4*12;
     GDrawFillRect(pixmap,&temp,GDrawGetDefaultBackground(NULL));
