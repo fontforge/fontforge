@@ -926,29 +926,6 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
     GImage* (*buttons)[14][2] = (inspiro ? spirobuttons : normbuttons);
     GImage **smalls = inspiro ? spirosmalls : normsmalls;
 
-    /* static GImage *test[10][2] = { { &GIcon_pointer, &GIcon_magnify }, { &GIcon_pointer, &GIcon_magnify } }; */
-    /* GImage*** test2 = test; */
-
-    int foo[10][5] = { 
-	{ 1,2,3,4 }, { 1,2,3,4 }, { 1,2,3,4 }, { 1,2,3,4 }
-    };
-    int (*bar)[5] = foo;
-
-    
-    int foo2[3][10][5] = {
-	{ 
-	    { 1,2,3,4 }, { 1,2,3,4 }, { 1,2,3,4 }, { 1,2,3,4 }
-	},
-	{ 
-	    { 1,2,3,4 }, { 1,2,3,4 }, { 1,2,3,4 }, { 1,2,3,4 }
-	}
-    };
-    
-	
-    int (*bar2)[10][5] = foo2;
-	
-    
-
     normbuttons[0][3][1] = canspiro ? &GIcon_spiroup : &GIcon_spirodisabled;
 
     GDrawPushClip(pixmap,r,&old);
