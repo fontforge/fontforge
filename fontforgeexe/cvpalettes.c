@@ -1286,7 +1286,6 @@ char* HKTextInfoToUntranslatedTextFromTextInfo( GTextInfo* ti ); // From ../gdra
 
 
 static void ToolsMouse(CharView *cv, GEvent *event) {
-//    int i = (event->u.mouse.y/27), j = (event->u.mouse.x/27), mi=i;
     IJ ij = getIJFromMouse( cv, event->u.mouse.x, event->u.mouse.y );
     int i = ij.i;
     int j = ij.j;
