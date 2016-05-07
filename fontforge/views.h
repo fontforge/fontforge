@@ -907,6 +907,7 @@ extern void CVPaletteDeactivate(void);
 extern void PalettesChangeDocking(void);
 extern int CVPalettesWidth(void);
 extern int BVPalettesWidth(void);
+extern int CVInSpiro( CharView *cv );
 
 extern void CVDoTransform(CharView *cv, enum cvtools cvt );
 

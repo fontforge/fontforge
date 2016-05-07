@@ -304,6 +304,16 @@ static void update_spacebar_hand_tool(CharView *cv) {
     }
 }
 
+
+int CVInSpiro( CharView *cv )
+{
+    int inspiro = 0;
+    int canspiro = hasspiro();
+    if( cv ) 
+	inspiro = canspiro && cv->b.sc->inspiro;
+    return inspiro;
+}
+
 /**
  * Returns the number of points which are currently selected in this
  * charview. Handy for menus and the like which might like to grey out
