@@ -95,8 +95,6 @@ enum cvtools cv_b1_tool = cvt_pointer, cv_cb1_tool = cvt_pointer,
 
 static GFont *toolsfont=NULL, *layersfont=NULL;
 
-#define CV_TOOLS_WIDTH		53
-#define CV_TOOLS_HEIGHT		(10*27+4*12+2)
 #define CV_LAYERS_WIDTH		104
 #define CV_LAYERS_HEIGHT	100
 #define CV_LAYERS_INITIALCNT	6
@@ -819,100 +817,244 @@ static void CVPolyStar(CharView *cv) {
     ps_pointcnt = temp;
 }
 
+/* Note: If you change this ordering, change enum cvtools */
+// index0 is non selected / selected image
+// index1 is the row    in the toolbar
+// index2 is the column in the toolbar
+//
+// This is two null terminated collections. The second collection
+// contains the alternate icons for circle and star at the bottom of
+// the toolbar.
+static GImage *normbuttons[2][14][2] = {
+    {
+	{ &GIcon_pointer,  &GIcon_magnify },
+	{ &GIcon_freehand, &GIcon_hand },
+	{ &GIcon_knife,    &GIcon_ruler },
+	{ &GIcon_pen,      &GIcon_spirodisabled },
+	{ &GIcon_curve,    &GIcon_hvcurve },
+	{ &GIcon_corner,   &GIcon_tangent},
+	{ &GIcon_scale,    &GIcon_rotate },
+	{ &GIcon_flip,     &GIcon_skew },
+	{ &GIcon_3drotate, &GIcon_perspective },
+	{ &GIcon_rect,     &GIcon_poly},
+	{ 0, 0 },
+	{ &GIcon_elipse,   &GIcon_star},
+	{ 0, 0 },
+	{ 0, 0 }
+    }
+    , {
+	{ &GIcon_pointer_selected,  &GIcon_magnify_selected },
+	{ &GIcon_freehand_selected, &GIcon_hand_selected },
+	{ &GIcon_knife_selected,    &GIcon_ruler_selected },
+	{ &GIcon_pen_selected,      &GIcon_spiroup_selected },
+	{ &GIcon_curve_selected,    &GIcon_hvcurve_selected },
+	{ &GIcon_corner_selected,   &GIcon_tangent_selected},
+	{ &GIcon_scale_selected,    &GIcon_rotate_selected },
+	{ &GIcon_flip_selected,     &GIcon_skew_selected },
+	{ &GIcon_3drotate_selected, &GIcon_perspective_selected },
+	{ &GIcon_rect_selected,     &GIcon_poly_selected},
+	{ 0, 0 },
+	{ &GIcon_elipse_selected,   &GIcon_star_selected},
+	{ 0, 0 },
+	{ 0, 0 }
+    }};
+static GImage *spirobuttons[2][14][2] = {
+    {
+	{ &GIcon_pointer,      &GIcon_magnify },
+	{ &GIcon_freehand,     &GIcon_hand },
+	{ &GIcon_knife,        &GIcon_ruler },
+	{ &GIcon_spiroright,   &GIcon_spirodown },
+	{ &GIcon_spirocurve,   &GIcon_spirog2curve },
+	{ &GIcon_spirocorner,  &GIcon_spiroleft },
+	{ &GIcon_scale,        &GIcon_rotate },
+	{ &GIcon_flip,         &GIcon_skew },
+	{ &GIcon_3drotate,     &GIcon_perspective },
+	{ &GIcon_rect,         &GIcon_poly},
+	{ 0, 0 },
+	{ &GIcon_elipse,       &GIcon_star},
+	{ 0, 0 },
+	{ 0, 0 }
+    }
+    , {
+	{ &GIcon_pointer_selected,     &GIcon_magnify_selected },
+	{ &GIcon_freehand_selected,    &GIcon_hand_selected },
+	{ &GIcon_knife_selected,       &GIcon_ruler_selected },
+	{ &GIcon_spiroright_selected,  &GIcon_spirodown_selected },
+	{ &GIcon_spirocurve_selected,  &GIcon_spirog2curve_selected },
+	{ &GIcon_spirocorner_selected, &GIcon_spiroleft_selected },
+	{ &GIcon_scale_selected,       &GIcon_rotate_selected },
+	{ &GIcon_flip_selected,        &GIcon_skew_selected },
+	{ &GIcon_3drotate_selected,    &GIcon_perspective_selected },
+	{ &GIcon_rect_selected,        &GIcon_poly_selected},
+	{ 0, 0 },
+	{ &GIcon_elipse_selected,      &GIcon_star_selected},
+	{ 0, 0 },
+	{ 0, 0 }
+    }};
+static GImage *normsmalls[] = { &GIcon_smallpointer,  &GIcon_smallmag,
+				&GIcon_smallpencil,   &GIcon_smallhand,
+				&GIcon_smallknife,    &GIcon_smallruler,
+				&GIcon_smallpen,      NULL,
+				&GIcon_smallcurve,    &GIcon_smallhvcurve,
+				&GIcon_smallcorner,   &GIcon_smalltangent,
+				&GIcon_smallscale,    &GIcon_smallrotate,
+				&GIcon_smallflip,     &GIcon_smallskew,
+				&GIcon_small3drotate, &GIcon_smallperspective,
+				&GIcon_smallrect,     &GIcon_smallpoly,
+				&GIcon_smallelipse,   &GIcon_smallstar };
+static GImage *spirosmalls[] = { &GIcon_smallpointer, &GIcon_smallmag,
+				 &GIcon_smallpencil,  &GIcon_smallhand,
+				 &GIcon_smallknife,   &GIcon_smallruler,
+				 &GIcon_smallspiroright,  NULL,
+				 &GIcon_smallspirocurve,  &GIcon_smallspirog2curve,
+				 &GIcon_smallspirocorner, &GIcon_smallspiroleft,
+				 &GIcon_smallscale,       &GIcon_smallrotate,
+				 &GIcon_smallflip,        &GIcon_smallskew,
+				 &GIcon_small3drotate,    &GIcon_smallperspective,
+				 &GIcon_smallrect,        &GIcon_smallpoly,
+				 &GIcon_smallelipse,      &GIcon_smallstar };
+
+static int getSmallIconsHeight()
+{
+    return GIcon_smallpointer.u.image->height;
+}
+
+static int getToolbarWidth( CharView *cv ) 
+{
+    int cache = 0;
+    if( !cache ) {
+	GImage* (*buttons)[14][2] = (CVInSpiro(cv) ? spirobuttons : normbuttons);
+	int i = 0;
+	
+	for ( i=0; buttons[0][i][0]; ++i ) {
+	    cache = MAX( cache, buttons[0][i][0]->u.image->width + buttons[0][i][1]->u.image->width );
+	}
+    }
+    return cache;
+}
+
+static int getToolbarHeight( CharView *cv ) 
+{
+    int cache = 0;
+    if( !cache ) {
+	GImage* (*buttons)[14][2] = (CVInSpiro(cv) ? spirobuttons : normbuttons);
+	int i = 0;
+	
+	for ( i=0; buttons[0][i][0]; ++i ) {
+	    cache += MAX( buttons[0][i][0]->u.image->height, buttons[0][i][1]->u.image->height );
+	}
+    }
+    cache += getSmallIconsHeight() * 4;
+    cache += 6;
+    return cache;
+}
+
+
+typedef struct _IJ 
+{
+    int i;
+    int j;
+} IJ;
+
+typedef void (*visitButtonsVisitor) ( CharView *cv,             // CharView passed to visitButtons()
+				      GImage* gimage, int mi,   // button we are visiting and adjusted 'i'
+				      int i, int j,             // i and j position of button (j is across 0,1) (i is down 0...11)
+				      int iconx, int icony,     // pixel where this button starts
+				      int selected,             // is this button the active tool
+				      void* udata );            // user data
+
+
+/**
+ * Visit every button in the toolbar calling the function 'v' with a
+ * collection of interesting state data.
+ */
+static void visitButtons( CharView* cv, visitButtonsVisitor v, void* udata ) 
+{
+    GImage* (*buttons)[14][2] = (CVInSpiro(cv) ? spirobuttons : normbuttons);
+    int i,j,sel,norm, mi;
+    int tool = cv->cntrldown?cv->cb1_tool:cv->b1_tool;
+    int icony = 1;
+    for ( i=0; buttons[0][i][0]; ++i ) {
+	int iconx = 1;
+	for ( j=0; j<2 && buttons[0][i][j]; ++j ) {
+
+	    mi = i;
+	    sel = (tool == mi*2+j );
+	    if( buttons[0][mi][j] == &GIcon_rect && rectelipse
+		|| buttons[0][mi][j] == &GIcon_poly && polystar )
+	    {
+		sel = (tool == (mi+1)*2+j );
+		mi+=2;
+	    }
+	    
+	    v( cv, buttons[sel][mi][j], mi, i, j, iconx, icony, sel, udata );
+	    iconx += buttons[sel][mi][j]->u.image->width;
+	}
+	icony += MAX( buttons[0][i][0]->u.image->width, buttons[0][i][1]->u.image->width );
+    }
+}
+
+typedef struct _getIJFromMouseVisitorData 
+{
+    int mx, my;
+    IJ ret;
+} getIJFromMouseVisitorData;
+
+static void getIJFromMouseVisitor( CharView *cv, GImage* gimage,
+				   int mi, int i, int j,
+				   int iconx, int icony, int selected, void* udata )
+{
+    getIJFromMouseVisitorData* d = (getIJFromMouseVisitorData*)udata;
+    if( IS_IN_ORDER3( iconx, d->mx, iconx + gimage->u.image->width )
+	&& IS_IN_ORDER3( icony, d->my, icony + gimage->u.image->height ))
+	{
+	    d->ret.i = i;
+	    d->ret.j = j;
+	}
+}
+
+/**
+ * Get the i,j coordinates of the toolbar button that is under the
+ * mouse at mx,my or return -1,-1 if nothing is under the mouse.
+ */ 
+static IJ getIJFromMouse( CharView* cv, int mx, int my ) 
+{
+    getIJFromMouseVisitorData d;
+    d.mx = mx;
+    d.my = my;
+    d.ret.i = -1;
+    d.ret.j = -1;
+    visitButtons( cv, getIJFromMouseVisitor, &d );
+    return d.ret;
+}
+
+
+/**
+ * This visitor draws the actual image for each toolbar button
+ * The drawing is done to d->pixmap.
+ * icony is the max 
+ */
+typedef struct _ToolsExposeVisitorData 
+{
+    GWindow pixmap;
+    int     maxicony;       //< largest icony that the visitor saw
+    int     lastIconHeight; //< height of the last icon visited
+} ToolsExposeVisitorData;
+static void ToolsExposeVisitor( CharView *cv, GImage* gimage,
+				int mi, int i, int j,
+				int iconx, int icony, int selected, void* udata )
+{
+    ToolsExposeVisitorData* d = (ToolsExposeVisitorData*)udata;
+    GImage* (*buttons)[14][2] = (CVInSpiro(cv) ? spirobuttons : normbuttons);
+    GDrawDrawImage(d->pixmap,buttons[selected][mi][j],NULL,iconx,icony);
+
+    d->maxicony = MAX( d->maxicony, icony );
+    d->lastIconHeight = buttons[selected][mi][j]->u.image->height;
+}
+
+
 static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
     GRect old;
-    /* Note: If you change this ordering, change enum cvtools */
-    // index0 is non selected / selected image
-    // index1 is the row    in the toolbar
-    // index2 is the column in the toolbar
-    static GImage *normbuttons[2][14][2] = {
-	{
-	    { &GIcon_pointer, &GIcon_magnify },
-	    { &GIcon_freehand, &GIcon_hand },
-	    { &GIcon_knife, &GIcon_ruler },
-	    { &GIcon_pen, &GIcon_spirodisabled },
-	    { &GIcon_curve, &GIcon_hvcurve },
-	    { &GIcon_corner, &GIcon_tangent},
-	    { &GIcon_scale, &GIcon_rotate },
-	    { &GIcon_flip, &GIcon_skew },
-	    { &GIcon_3drotate, &GIcon_perspective },
-	    { &GIcon_rect, &GIcon_poly},
-	    { 0, 0 },
-	    { &GIcon_elipse, &GIcon_star},
-	    { 0, 0 },
-	    { 0, 0 }
-	}
-	, {
-	    { &GIcon_pointer_selected, &GIcon_magnify_selected },
-	    { &GIcon_freehand_selected, &GIcon_hand_selected },
-	    { &GIcon_knife_selected, &GIcon_ruler_selected },
-	    { &GIcon_pen_selected, &GIcon_spiroup_selected },
-	    { &GIcon_curve_selected, &GIcon_hvcurve_selected },
-	    { &GIcon_corner_selected, &GIcon_tangent_selected},
-	    { &GIcon_scale_selected, &GIcon_rotate_selected },
-	    { &GIcon_flip_selected, &GIcon_skew_selected },
-	    { &GIcon_3drotate_selected, &GIcon_perspective_selected },
-	    { &GIcon_rect_selected, &GIcon_poly_selected},
-	    { 0, 0 },
-	    { &GIcon_elipse_selected, &GIcon_star_selected},
-	    { 0, 0 },
-	    { 0, 0 }
-	}};
-	static GImage *spirobuttons[2][14][2] = {
-	    {
-		{ &GIcon_pointer, &GIcon_magnify },
-		{ &GIcon_freehand, &GIcon_hand },
-		{ &GIcon_knife, &GIcon_ruler },
-		{ &GIcon_spiroright, &GIcon_spirodown },
-		{ &GIcon_spirocurve, &GIcon_spirog2curve },
-		{ &GIcon_spirocorner, &GIcon_spiroleft },
-		{ &GIcon_scale, &GIcon_rotate },
-		{ &GIcon_flip, &GIcon_skew },
-		{ &GIcon_3drotate, &GIcon_perspective },
-		{ &GIcon_rect, &GIcon_poly},
-		{ 0, 0 },
-		{ &GIcon_elipse, &GIcon_star},
-		{ 0, 0 },
-		{ 0, 0 }
-	    }
-	    , {
-		{ &GIcon_pointer_selected, &GIcon_magnify_selected },
-		{ &GIcon_freehand_selected, &GIcon_hand_selected },
-		{ &GIcon_knife_selected, &GIcon_ruler_selected },
-		{ &GIcon_spiroright_selected, &GIcon_spirodown_selected },
-		{ &GIcon_spirocurve_selected, &GIcon_spirog2curve_selected },
-		{ &GIcon_spirocorner_selected, &GIcon_spiroleft_selected },
-		{ &GIcon_scale_selected, &GIcon_rotate_selected },
-		{ &GIcon_flip_selected, &GIcon_skew_selected },
-		{ &GIcon_3drotate_selected, &GIcon_perspective_selected },
-		{ &GIcon_rect_selected, &GIcon_poly_selected},
-		{ 0, 0 },
-		{ &GIcon_elipse_selected, &GIcon_star_selected},
-		{ 0, 0 },
-		{ 0, 0 }
-	    }};
-    static GImage *normsmalls[] = { &GIcon_smallpointer, &GIcon_smallmag,
-				    &GIcon_smallpencil, &GIcon_smallhand,
-			            &GIcon_smallknife, &GIcon_smallruler,
-			            &GIcon_smallpen, NULL,
-				    &GIcon_smallcurve, &GIcon_smallhvcurve,
-			            &GIcon_smallcorner, &GIcon_smalltangent,
-			            &GIcon_smallscale, &GIcon_smallrotate,
-			            &GIcon_smallflip, &GIcon_smallskew,
-			            &GIcon_small3drotate, &GIcon_smallperspective,
-			            &GIcon_smallrect, &GIcon_smallpoly,
-			            &GIcon_smallelipse, &GIcon_smallstar };
-    static GImage *spirosmalls[] = { &GIcon_smallpointer, &GIcon_smallmag,
-				    &GIcon_smallpencil, &GIcon_smallhand,
-			            &GIcon_smallknife, &GIcon_smallruler,
-			            &GIcon_smallspiroright, NULL,
-				    &GIcon_smallspirocurve, &GIcon_smallspirog2curve,
-			            &GIcon_smallspirocorner, &GIcon_smallspiroleft,
-			            &GIcon_smallscale, &GIcon_smallrotate,
-			            &GIcon_smallflip, &GIcon_smallskew,
-			            &GIcon_small3drotate, &GIcon_smallperspective,
-			            &GIcon_smallrect, &GIcon_smallpoly,
-			            &GIcon_smallelipse, &GIcon_smallstar };
     static const unichar_t _Mouse[][9] = {
 	    { 'M', 's', 'e', '1',  '\0' },
 	    { '^', 'M', 's', 'e', '1',  '\0' },
@@ -931,29 +1073,25 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
     GDrawPushClip(pixmap,r,&old);
     GDrawFillRect(pixmap,r,GDrawGetDefaultBackground(NULL));
     GDrawSetLineWidth(pixmap,0);
-    for ( i=0; buttons[0][i][0]; ++i ) {
-	for ( j=0; j<2 && buttons[0][i][j]; ++j ) {
 
-		mi = i;
-		sel = (tool == mi*2+j );
-		if( buttons[0][mi][j] == &GIcon_rect && rectelipse
-		    || buttons[0][mi][j] == &GIcon_poly && polystar )
-		    {
-			sel = (tool == (mi+1)*2+j );
-			mi+=2;
-		    }
-				
-		GDrawDrawImage(pixmap,buttons[sel][mi][j],NULL,j*27+1,i*27+1);
-	}
-    }
+    ToolsExposeVisitorData d;
+    d.pixmap = pixmap;
+    d.maxicony = 0;
+    visitButtons( cv, ToolsExposeVisitor, &d );
+    int bottomOfMainIconsY = d.maxicony + d.lastIconHeight;
+    
     
     GDrawSetFont(pixmap,toolsfont);
-    temp.x = 52-16; temp.y = i*27; temp.width = 16; temp.height = 4*12;
+    temp.x = 52-16;
+    temp.y = bottomOfMainIconsY;
+    temp.width = 16;
+    temp.height = 4*12;
     GDrawFillRect(pixmap,&temp,GDrawGetDefaultBackground(NULL));
     for ( j=0; j<4; ++j ) {
-	GDrawDrawText(pixmap,2,i*27+j*12+10,(unichar_t *) _Mouse[j],-1,GDrawGetDefaultForeground(NULL));
+	GDrawDrawText(pixmap,2,bottomOfMainIconsY+j*getSmallIconsHeight()+10,
+		      (unichar_t *) _Mouse[j],-1,GDrawGetDefaultForeground(NULL));
 	if ( (&cv->b1_tool)[j]!=cvt_none && smalls[(&cv->b1_tool)[j]])
-	    GDrawDrawImage(pixmap,smalls[(&cv->b1_tool)[j]],NULL,52-16,i*27+j*12);
+	    GDrawDrawImage(pixmap,smalls[(&cv->b1_tool)[j]],NULL,52-16,bottomOfMainIconsY+j*getSmallIconsHeight());
     }
     GDrawPopClip(pixmap,&old);
     GDrawSetDither(NULL,dither);
@@ -1146,15 +1284,23 @@ static void CVChangeSpiroMode(CharView *cv) {
 
 char* HKTextInfoToUntranslatedTextFromTextInfo( GTextInfo* ti ); // From ../gdraw/gmenu.c.
 
+
 static void ToolsMouse(CharView *cv, GEvent *event) {
-    int i = (event->u.mouse.y/27), j = (event->u.mouse.x/27), mi=i;
+//    int i = (event->u.mouse.y/27), j = (event->u.mouse.x/27), mi=i;
+    IJ ij = getIJFromMouse( cv, event->u.mouse.x, event->u.mouse.y );
+    int i = ij.i;
+    int j = ij.j;
+    int mi = i;
     int pos;
     int isstylus = event->u.mouse.device!=NULL && strcmp(event->u.mouse.device,"stylus")==0;
     int styluscntl = isstylus && (event->u.mouse.state&0x200);
     static int settings[2];
 
+    if( j==-1 || i==-1 )
+	return;
+    
     if(j >= 2)
-return;			/* If the wm gave me a window the wrong size */
+	return;			/* If the wm gave me a window the wrong size */
 
 
     if ( i==(cvt_rect)/2 ) {
@@ -1344,7 +1490,7 @@ return( cvtools );
     wattrs.is_dlg = true;
     wattrs.utf8_window_title = _("Tools");
 
-    r.width = CV_TOOLS_WIDTH; r.height = CV_TOOLS_HEIGHT;
+    r.width = getToolbarWidth(cv); r.height = getToolbarHeight(cv);
     if ( cvtoolsoff.x==-9999 ) {
 	cvtoolsoff.x = -r.width-6; cvtoolsoff.y = cv->mbh+20;
     }
@@ -1798,10 +1944,10 @@ return;
     r.width = GGadgetScale(CV_LAYERS2_WIDTH); r.height = CV_LAYERS2_HEIGHT;
     if ( cvlayersoff.x==-9999 ) {
 	cvlayersoff.x = -r.width-6;
-	cvlayersoff.y = cv->mbh+CV_TOOLS_HEIGHT+45/*25*/;	/* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
+	cvlayersoff.y = cv->mbh+getToolbarHeight(cv)+45/*25*/;	/* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
     }
     r.x = cvlayersoff.x; r.y = cvlayersoff.y;
-    if ( palettes_docked ) { r.x = 0; r.y=CV_TOOLS_HEIGHT+2; }
+    if ( palettes_docked ) { r.x = 0; r.y=getToolbarHeight(cv)+2; }
     cvlayers2 = CreatePalette( cv->gw, &r, cvlayers2_e_h, NULL, &wattrs, cv->v );
 
     memset(&label,0,sizeof(label));
@@ -3062,10 +3208,10 @@ return( cvlayers );
     if ( cvlayersoff.x==-9999 ) {
 	 /* Offset of window on screen, by default make it sit just below the tools palette */
 	cvlayersoff.x = -r.width-6;
-	cvlayersoff.y = cv->mbh+CV_TOOLS_HEIGHT+45/*25*/; /* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
+	cvlayersoff.y = cv->mbh+getToolbarHeight(cv)+45/*25*/; /* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
     }
     r.x = cvlayersoff.x; r.y = cvlayersoff.y;
-    if ( palettes_docked ) { r.x = 0; r.y=CV_TOOLS_HEIGHT+2; }
+    if ( palettes_docked ) { r.x = 0; r.y=getToolbarHeight(cv)+2; }
     cvlayers = CreatePalette( cv->gw, &r, cvlayers_e_h, NULL, &wattrs, cv->v );
 
     memset(&label,0,sizeof(label));
@@ -3475,12 +3621,12 @@ static void CVPaletteCheck(CharView *cv) {
     }
     if ( cv->b.sc->parent->multilayer && cvlayers2==NULL ) {
 	if ( palettes_fixed ) {
-	    cvlayersoff.x = 0; cvlayersoff.y = CV_TOOLS_HEIGHT+45/*25*/;	/* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
+	    cvlayersoff.x = 0; cvlayersoff.y = getToolbarHeight(cv)+45/*25*/;	/* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
 	}
 	CVMakeLayers2(cv);
     } else if ( !cv->b.sc->parent->multilayer && cvlayers==NULL ) {
 	if ( palettes_fixed ) {
-	    cvlayersoff.x = 0; cvlayersoff.y = CV_TOOLS_HEIGHT+45/*25*/;	/* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
+	    cvlayersoff.x = 0; cvlayersoff.y = getToolbarHeight(cv)+45/*25*/;	/* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
 	}
 	CVMakeLayers(cv);
     }
@@ -3552,11 +3698,11 @@ void _CVPaletteActivate(CharView *cv,int force) {
             CVLCheckLayerCount(cv,true);
 	}
 	if ( palettes_docked ) {
-	    ReparentFixup(cvtools,cv->v,0,0,CV_TOOLS_WIDTH,CV_TOOLS_HEIGHT);
+	    ReparentFixup(cvtools,cv->v,0,0,getToolbarWidth(cv),getToolbarHeight(cv));
 	    if ( cv->b.sc->parent->multilayer )
-		ReparentFixup(cvlayers2,cv->v,0,CV_TOOLS_HEIGHT+2,0,0);
+		ReparentFixup(cvlayers2,cv->v,0,getToolbarHeight(cv)+2,0,0);
 	    else
-		ReparentFixup(cvlayers,cv->v,0,CV_TOOLS_HEIGHT+2,0,0);
+		ReparentFixup(cvlayers,cv->v,0,getToolbarHeight(cv)+2,0,0);
 	} else {
 	    if ( cvvisible[0]) {
 		if ( cv->b.sc->parent->multilayer )
@@ -4439,18 +4585,18 @@ void BVPaletteChangedChar(BitmapView *bv) {
     }
 }
 
-void PalettesChangeDocking(void) {
+void PalettesChangeDocking() {
 
     palettes_docked = !palettes_docked;
     if ( palettes_docked ) {
 	if ( cvtools!=NULL ) {
 	    CharView *cv = GDrawGetUserData(cvtools);
 	    if ( cv!=NULL ) {
-		ReparentFixup(cvtools,cv->v,0,0,CV_TOOLS_WIDTH,CV_TOOLS_HEIGHT);
+		ReparentFixup(cvtools,cv->v,0,0,getToolbarWidth(cv),getToolbarHeight(cv));
 		if ( cvlayers!=NULL )
-		    ReparentFixup(cvlayers,cv->v,0,CV_TOOLS_HEIGHT+2,0,0);
+		    ReparentFixup(cvlayers,cv->v,0,getToolbarHeight(cv)+2,0,0);
 		if ( cvlayers2!=NULL )
-		    ReparentFixup(cvlayers2,cv->v,0,CV_TOOLS_HEIGHT+2,0,0);
+		    ReparentFixup(cvlayers2,cv->v,0,getToolbarHeight(cv)+2,0,0);
 	    }
 	}
 	if ( bvtools!=NULL ) {
@@ -4463,11 +4609,12 @@ void PalettesChangeDocking(void) {
 	}
     } else {
 	if ( cvtools!=NULL ) {
+	    CharView *cv = GDrawGetUserData(cvtools);
 	    GDrawReparentWindow(cvtools,GDrawGetRoot(NULL),0,0);
 	    if ( cvlayers!=NULL )
-		GDrawReparentWindow(cvlayers,GDrawGetRoot(NULL),0,CV_TOOLS_HEIGHT+2+45);
+		GDrawReparentWindow(cvlayers,GDrawGetRoot(NULL),0,getToolbarHeight(cv)+2+45);
 	    if ( cvlayers2!=NULL )
-		GDrawReparentWindow(cvlayers2,GDrawGetRoot(NULL),0,CV_TOOLS_HEIGHT+2+45);
+		GDrawReparentWindow(cvlayers2,GDrawGetRoot(NULL),0,getToolbarHeight(cv)+2+45);
 	}
 	if ( bvtools!=NULL ) {
 	    GDrawReparentWindow(bvtools,GDrawGetRoot(NULL),0,0);
