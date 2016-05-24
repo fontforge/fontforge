@@ -663,7 +663,9 @@ int32 utf8_ildb(const char **_text) {
     const uint8 *text = (const uint8 *) *_text;
     /* Increment and load character */
 
-    if ( (ch = *text++)<0x80 ) {
+    if ( text==NULL )
+	return( val );
+    else if ( (ch = *text++)<0x80 ) {
 	val = ch;
     } else if ( ch<=0xbf ) {
 	/* error */
@@ -1007,7 +1009,7 @@ int u_endswith(const unichar_t *haystack,const unichar_t *needle) {
 
 int u_startswith(const unichar_t *haystack,const unichar_t *needle) {
 
-    if( !haystack || !needle ) 
+    if( !haystack || !needle )
 	return 0;
 
     unichar_t* p = u_strstr( haystack, needle );
