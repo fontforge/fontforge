@@ -795,9 +795,9 @@ FONTFORGE_GIT_VERSION=""
 if test -d ${srcdir}/.git; then
   FONTFORGE_GIT_VERSION=`cd ${srcdir} && git log --pretty=format:'%H' -n 1`
 fi
-FONTFORGE_MODTIME="`date '+%s'`L"
-FONTFORGE_MODTIME_STR="`date +'%H:%M %Z %e-%b-%Y'`"
-FONTFORGE_VERSIONDATE="`date '+%Y%m%d'`"
+FONTFORGE_MODTIME="`date --utc --date="@${SOURCE_DATE_EPOCH:-$(date +'%s')}" '+%s'`L"
+FONTFORGE_MODTIME_STR="`date --utc --date="@${SOURCE_DATE_EPOCH:-$(date +'%s')}" +'%H:%M %Z %e-%b-%Y'`"
+FONTFORGE_VERSIONDATE="`date --utc --date="@${SOURCE_DATE_EPOCH:-$(date +'%s')}" '+%Y%m%d'`"
 AC_DEFINE_UNQUOTED(FONTFORGE_GIT_VERSION,"$FONTFORGE_GIT_VERSION","git hash that source are built from")
 AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME,"$FONTFORGE_MODTIME","Epoch time that configure was run at")
 AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME_STR,"$FONTFORGE_MODTIME_STR",
