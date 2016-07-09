@@ -5,7 +5,7 @@
 class MyDownloadStrategy < GitDownloadStrategy
   # get the PR
   def fetch
-    system "rsync -a /Users/travis/build/fontforge/fontforge/. /Library/Caches/Homebrew/fontforge--git"
+    system "rsync -a /Users/travis/build/fontforge/fontforge/. ~/Library/Caches/Homebrew/fontforge--git"
   end
 
   def reset_args
