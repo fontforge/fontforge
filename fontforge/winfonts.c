@@ -1035,11 +1035,17 @@ return( false );
     for(res = first_res, i = 0; i < num_files; i++, res++) {
         lputshort(fon,res);
 
+        /* The first 0x6D bytes of the FNT file and the FONTDIRENTRY match */
         rewind(fntarray[i]);
-        fread(buf, 0x72, 1, fntarray[i]);
+        fread(buf, 0x6D, 1, fntarray[i]);
         fnt_header = (struct _fnt_header *)buf;
         fnt_header->fi.dfBitsOffset = 0;	/* I can ignore endianness here. all is 0 */
-        fwrite(buf, 0x72, 1, fon);
+        fwrite(buf, 0x6D, 1, fon);
+
+        /* FONTDIRENTRY.dfReserved */
+        lputlong(fon,0);
+        /* FONTDIRENTRY.szDeviceName */
+        fputc(0x00, fon);
 
 	fseek(fntarray[i], 0x69, SEEK_SET);
 	off = lgetlong(fntarray[i]);
