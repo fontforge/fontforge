@@ -2153,7 +2153,7 @@ static void SPLFirstVisitorFoundSoughtXY(SplinePoint* splfirst, Spline* spline, 
     if( d->found )
 	return;
 
-    printf("SPLFirstVisitorFoundSoughtXY() %f %f %f\n", d->x, spline->from->me.x, spline->to->me.x );
+    // printf("SPLFirstVisitorFoundSoughtXY() %f %f %f\n", d->x, spline->from->me.x, spline->to->me.x );
     if( d->use_x )
     {
 	if( spline->from->me.x == d->x )
