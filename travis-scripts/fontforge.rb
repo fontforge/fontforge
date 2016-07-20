@@ -6,6 +6,8 @@ class MyDownloadStrategy < GitDownloadStrategy
   # get the PR
   def fetch
     system "rsync -a /Users/travis/build/fontforge/fontforge/. ~/Library/Caches/Homebrew/fontforge--git"
+    # Mysterious fix for Homebrew/brew@2e916110e4c561b3e4175da099fc795e85ddb822
+    version.update_commit(last_commit) if head?
   end
 
   def reset_args
@@ -76,9 +78,10 @@ class Fontforge < Formula
       pydir = "#{%x(/usr/bin/python-config --prefix).chomp}"
     end
 
+    # Please don't specify the insane verbosity of --disable-silent-rules
     args = %W[
       --prefix=#{prefix}
-      --disable-silent-rules
+      --enable-silent-rules
       --disable-dependency-tracking
       --with-pythonbinary=#{pydir}/bin/python2.7
       --without-x

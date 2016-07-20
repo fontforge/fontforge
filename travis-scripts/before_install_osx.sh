@@ -36,9 +36,10 @@ type -all brew
 brew update
 brew config
 
+BREW_PREFIX=`brew --prefix`
 sed -i -e "s|{TRAVIS_PULL_REQUEST}|${TRAVIS_PULL_REQUEST}|g" ./travis-scripts/fontforge.rb
-rm /usr/local/Library/Formula/fontforge.rb
-cp ./travis-scripts/fontforge.rb /usr/local/Library/Formula/fontforge.rb
+rm $BREW_PREFIX/Library/Formula/fontforge.rb
+cp ./travis-scripts/fontforge.rb $BREW_PREFIX/Library/Formula/fontforge.rb
 echo "*****"
 echo "*****"
 echo "***** using homebrew formula fontforge.rb:"
@@ -46,30 +47,23 @@ cat ./travis-scripts/fontforge.rb
 echo "*****"
 echo "*****"
 
+# JT 20/07/16: Not needed anymore as gui isn't built with homebrew anyway
 # optional: can cut out X this block while testing git stuff
-pushd .
-cd /tmp
-wget http://xquartz.macosforge.org/downloads/SL/XQuartz-2.7.6.dmg
-hdiutil attach XQuartz-2.7.6.dmg 
-sudo installer -pkg /Volumes/XQuartz-*/XQuartz.pkg -target /
-popd 
+#pushd .
+#cd /tmp
+#wget http://xquartz.macosforge.org/downloads/SL/XQuartz-2.7.6.dmg
+#hdiutil attach XQuartz-2.7.6.dmg 
+#sudo installer -pkg /Volumes/XQuartz-*/XQuartz.pkg -target /
+#popd 
 
 echo "doing an OSX before install step."
-set +ev
 brew install python
-set -ev
 brew install cairo libspiro fontconfig
 
 #
 # this forces version 4.0.4 and 2.2.0 respectively.
-pushd .
-cd $(brew --prefix)
-rm Library/Formula/zeromq.rb
-rm Library/Formula/czmq.rb
-wget https://raw.githubusercontent.com/Homebrew/homebrew/ab7f37834a28b4d6/Library/Formula/zeromq.rb -O Library/Formula/zeromq.rb
-wget https://raw.githubusercontent.com/Homebrew/homebrew/3ad14e1e3f7d0131b/Library/Formula/czmq.rb -O Library/Formula/czmq.rb
+rm $BREW_PREFIX/Library/Formula/zeromq.rb
+rm $BREW_PREFIX/Library/Formula/czmq.rb
+wget https://raw.githubusercontent.com/Homebrew/homebrew/ab7f37834a28b4d6/Library/Formula/zeromq.rb -O $BREW_PREFIX/Library/Formula/zeromq.rb
+wget https://raw.githubusercontent.com/Homebrew/homebrew/3ad14e1e3f7d0131b/Library/Formula/czmq.rb -O $BREW_PREFIX/Library/Formula/czmq.rb
 brew install czmq zeromq
-popd
-
-
-
