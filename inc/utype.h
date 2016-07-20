@@ -145,6 +145,8 @@ extern struct arabicforms {
     unsigned int required_lig_with_alef: 1;
 } ArabicForms[256];	/* for chars 0x600-0x6ff, subtract 0x600 to use array */
 
+int is_LIGATURE_or_VULGAR_FRACTION(unsigned int codepoint);
+
 #define _SOFT_HYPHEN	0xad
 
 #define _DOUBLE_S	0xdf

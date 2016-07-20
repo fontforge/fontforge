@@ -907,6 +907,9 @@ static void dump() {
     fclose( data );
 
     dumparabicdata(header);
+
+    fprintf( header, "\nint is_LIGATURE_or_VULGAR_FRACTION(unsigned int codepoint);\n" );
+
     fprintf( header, "\n#define _SOFT_HYPHEN\t0xad\n" );
     fprintf( header, "\n#define _DOUBLE_S\t0xdf\n" );
     fprintf( header, "\n#endif\n" );
