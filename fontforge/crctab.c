@@ -1,6 +1,10 @@
 /* GWW: taken from http://www.ctan.org/tex-archive/tools/macutils/crc/ */
 /*  This is the output (slightly modified) of makecrc for the binhex case */
 
+/* Computation of Cyclic Redundancy Checks was invented by W. Wesley Peterson */
+/* in 1961. Various examples, including optimizations using lookup tables are */
+/* available in C, assembler (various CPUs), and other programming languages. */
+
 extern unsigned long binhex_crc(unsigned char *buffer,int size);
 
 static const unsigned long binhex_crcinit = 0;
