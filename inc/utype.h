@@ -1,5 +1,8 @@
 #ifndef _UTYPE_H
 #define _UTYPE_H
+/* Copyright: 2001 George Williams */
+/* License: BSD-3-clause */
+/* Contributions: Joe Da Silva */
 
 /* This file was generated using the program 'makeutype' */
 
