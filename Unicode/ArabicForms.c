@@ -1,6 +1,10 @@
-#include <utype.h>
+/* Copyright: 2001 George Williams */
+/* License: BSD-3-clause */
+/* Contributions: Khaled Hosny, Joe Da Silva */
 
 /* This file was generated using the program 'makeutype' */
+
+#include <utype.h>
 
 struct arabicforms ArabicForms[] = {
 	/* initial, medial, final, isolated, isletter, joindual, required_lig_with_alef */

@@ -608,9 +608,12 @@ static void dumparabicdata(FILE *header) {
 	exit(2);
     }
 
-    fprintf( data, "#include <utype.h>\n" );
-
+    fprintf( data, "/* Copyright: 2001 George Williams */\n" );
+    fprintf( data, "/* License: BSD-3-clause */\n" );
+    fprintf( data, "/* Contributions: Khaled Hosny, Joe Da Silva */\n" );
     fprintf( data, GeneratedFileMessage );
+
+    fprintf( data, "#include <utype.h>\n\n" );
 
     fprintf( data, "struct arabicforms ArabicForms[] = {\n" );
     fprintf( data, "\t/* initial, medial, final, isolated, isletter, joindual, required_lig_with_alef */\n");
