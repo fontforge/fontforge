@@ -3224,6 +3224,7 @@ return( true );
 }
 
 static int GFI_HelpOFL(GGadget *g, GEvent *e) {
+/* F1 Help to open a browser to sil.org Open Source License and FAQ */
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	help("http://scripts.sil.org/OFL");
     }
@@ -3231,6 +3232,9 @@ return( true );
 }
 
 static int GFI_AddOFL(GGadget *g, GEvent *e) {
+/* Add sil.org Open Source License (see ofl.c), and modify with current date */
+/* Author, and Font Family Name for rows[0,1] of the license. You can access */
+/* this routine from GUI at Element->Font_Info->TTF_Names. info at PS_Names. */
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	GGadget *tng = GWidgetGetControl(GGadgetGetWindow(g),CID_TNames);

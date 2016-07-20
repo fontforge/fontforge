@@ -1,3 +1,5 @@
+/* Copyright: 2007 George Williams */
+/* License: BSD-3-clause */
 /* This file contains the SIL Open Font License */
 /* See http://scripts.sil.org/OFL for all the details */
 /* Check the extensive FAQ as well */
@@ -6,8 +8,9 @@
 #include "ofl.h"
 
 static char *ofl_eng[] = {
-    "Copyright (c) %1$d, %2$s (<URL|email>),",
-    "with Reserved Font Name %s.",
+/* sil.org license by Authors Nicolas Spalinger & Victor Gaultney, 2007feb26 */
+    "Copyright (c) %1$d, %2$s (<URL|email>),",	/* <Date> <Copyright Holder> */
+    "with Reserved Font Name %s.",		/* <Font Family Name> */
     "",
     "This Font Software is licensed under the SIL Open Font License, Version 1.1.",
     "This license is copied below, and is also available with a FAQ at:",
