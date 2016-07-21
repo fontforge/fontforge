@@ -9346,6 +9346,7 @@ static void handlename(Context *c,Val *val) {
 		val->u.aval = malloc(sizeof(Array));
 		val->u.aval->argc = 10;
 		val->u.aval->vals = malloc((10+1)*sizeof(Val));
+		memset(&pfminfo,'\0',sizeof(pfminfo));
 		SFDefaultOS2Info(&pfminfo,sf,sf->fontname);
 		for ( cnt=0; cnt<10; ++cnt ) {
 		    val->u.aval->vals[cnt].type = v_int;
