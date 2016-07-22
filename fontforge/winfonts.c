@@ -485,6 +485,7 @@ return( false );
     if ( badch!=-1 )
 	LogError( _("At pixelsize %d the character %s either starts before the origin or extends beyond the advance width.\n"),
 		font->pixelsize, font->glyphs[badch]->sc->name );
+    memset(&pfminfo,'\0',sizeof(pfminfo));
     SFDefaultOS2Info(&pfminfo,font->sf,font->sf->fontname);
     widbytes = avgwid+spacesize;
     if ( cnt!=0 ) avgwid = rint(avgwid/(bigreal) cnt);
