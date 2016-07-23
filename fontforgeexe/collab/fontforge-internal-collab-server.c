@@ -239,6 +239,7 @@ s_collector (zloop_t *loop, zmq_pollitem_t *poller, void *args)
 		ff_uuid_generate( ba.uuid );
 	    }
 	    strncpy( ba.username,    GetAuthor(), beacon_announce_username_sz );
+	    ba.username[beacon_announce_username_sz-1] = '\0';
 	    ff_gethostname( ba.machinename, beacon_announce_machinename_sz );
 	    ba.port = htons( self->port );
 	    strcpy( ba.fontname, "" );
