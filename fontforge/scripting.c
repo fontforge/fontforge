@@ -3897,16 +3897,19 @@ static void bSetTeXParams(Context *c) {
 	    c->error = ce_wrongnumarg;
 	    return;
 	}
+	break;
       case 2:
 	if ( c->a.argc!=25 ) {
 	    c->error = ce_wrongnumarg;
 	    return;
 	}
+	break;
       case 3:
 	if ( c->a.argc!=16 ) {
 	    c->error = ce_wrongnumarg;
 	    return;
 	}
+	break;
       default:
 	ScriptError(c, "Bad value for first argument, must be 1,2 or 3");
       break;
