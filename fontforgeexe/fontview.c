@@ -5568,16 +5568,16 @@ static void FVMenuCollabStart(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
     if( res )
     {
 	printf("res:%s\n", res );
-	strncpy( address, res, IPADDRESS_STRING_LENGTH_T );
-	HostPortUnpack( address, &port, port_default );
+	HostPortUnpack( res, &port, port_default );
 
-	printf("address:%s\n", address );
+	printf("address:%s\n", res );
 	printf("port:%d\n", port );
 
-	void* cc = collabclient_new( address, port );
+	void* cc = collabclient_new( res, port );
 	fv->b.collabClient = cc;
 	collabclient_sessionStart( cc, fv );
 	printf("connecting to server...sent the sfd for session start.\n");
+	free(res);
     }
 }
 #endif
