@@ -4432,17 +4432,16 @@ static DeviceTable *SFDReadDeviceTable(FILE *sfd,DeviceTable *adjust) {
 return(NULL);
 	else
 	    ungetc(ch,sfd);
-	if ( adjust==NULL )
-	    adjust = chunkalloc(sizeof(DeviceTable));
 	getint(sfd,&first);
 	ch = nlgetc(sfd);		/* Should be '-' */
 	getint(sfd,&last);
 	len = last-first+1;
 	if ( len<=0 ) {
 	    IError( "Bad device table, invalid length.\n" );
-            free(adjust);
 return(NULL);
 	}
+	if ( adjust==NULL )
+	    adjust = chunkalloc(sizeof(DeviceTable));
 	adjust->first_pixel_size = first;
 	adjust->last_pixel_size = last;
 	adjust->corrections = malloc(len);

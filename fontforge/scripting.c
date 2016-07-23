@@ -1197,6 +1197,7 @@ static void bUtf8(Context *c) {
 		return;
 	    } else if ( arr->vals[i].u.ival<0 || arr->vals[i].u.ival>0x10ffff ){
 		c->error = ce_badargtype;
+		free(temp);
 		return;
 	    }
 	    temp[i] = arr->vals[i].u.ival;
@@ -1938,6 +1939,7 @@ static void bGenerateFamily(Context *c) {
 	    c->a.vals[3].type!=v_int ||
 	    c->a.vals[4].type!=v_arr ) {
 	c->error = ce_badargtype;
+	free(familysfs);
 	return;
     }
     bitmaptype = c->a.vals[2].u.sval;
@@ -2244,7 +2246,7 @@ static void bWritePfm(Context *c) {
 static void bExport(Context *c) {
     int format,i, gid ;
     BDFFont *bdf;
-    char *pt, *format_spec;
+    char *tmp, *pt, *format_spec;
     char buffer[20];
     char *t;
 
@@ -2258,7 +2260,7 @@ static void bExport(Context *c) {
     }
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
-    pt = utf82def_copy(t); free(t);
+    tmp = pt = utf82def_copy(t); free(t);
     sprintf( buffer, "%%n_%%f.%.4s", pt);
     format_spec = buffer;
     if ( strrchr(pt,'.')!=NULL ) {
@@ -2310,6 +2312,7 @@ static void bExport(Context *c) {
 	    ScriptExport(c->curfv->sf,bdf,format,gid,format_spec,c->curfv->map);
     if ( format_spec!=buffer )
 	free(format_spec);
+    free(tmp);
 }
 
 /* FontImage("Outputfilename",array of [pointsize,string][,width[,height]]) */
@@ -3894,16 +3897,19 @@ static void bSetTeXParams(Context *c) {
 	    c->error = ce_wrongnumarg;
 	    return;
 	}
+	break;
       case 2:
 	if ( c->a.argc!=25 ) {
 	    c->error = ce_wrongnumarg;
 	    return;
 	}
+	break;
       case 3:
 	if ( c->a.argc!=16 ) {
 	    c->error = ce_wrongnumarg;
 	    return;
 	}
+	break;
       default:
 	ScriptError(c, "Bad value for first argument, must be 1,2 or 3");
       break;

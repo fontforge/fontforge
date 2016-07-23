@@ -507,9 +507,10 @@ return( PickGreyClut(clut,clutmax,grey_clut,cnt));
         free(clutinf);
 return(clut);
     }
+
+    gimage_reduceclut(clut,clutmax,clutinf,cnt,&transinf);
     free(clutinf);
-	
-return( gimage_reduceclut(clut,clutmax,clutinf,cnt,&transinf));
+    return clut;
 }
 
 static const GCol white = { 0xff, 0xff, 0xff, 1 }, black = { 0, 0, 0, 0 };
