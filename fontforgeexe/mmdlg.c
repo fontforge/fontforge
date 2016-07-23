@@ -1005,7 +1005,7 @@ static void EditStyleName(MMW *mmw,int index) {
 	    mn = ti->userdata;
 	}
 	if ( pt!=NULL ) {
-	    for ( i=0, ++pt; i<4 && (*pt!=']' || *pt!='\0'); ++i ) {
+	    for ( i=0, ++pt; i<4 && (*pt!=']' && *pt!='\0'); ++i ) {
 		axes[i] = u_strtod(pt,&end);
 		pt = end;
 	    }
