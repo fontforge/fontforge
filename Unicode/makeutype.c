@@ -608,9 +608,12 @@ static void dumparabicdata(FILE *header) {
 	exit(2);
     }
 
-    fprintf( data, "#include <utype.h>\n" );
-
+    fprintf( data, "/* Copyright: 2001 George Williams */\n" );
+    fprintf( data, "/* License: BSD-3-clause */\n" );
+    fprintf( data, "/* Contributions: Khaled Hosny, Joe Da Silva */\n" );
     fprintf( data, GeneratedFileMessage );
+
+    fprintf( data, "#include <utype.h>\n\n" );
 
     fprintf( data, "struct arabicforms ArabicForms[] = {\n" );
     fprintf( data, "\t/* initial, medial, final, isolated, isletter, joindual, required_lig_with_alef */\n");
@@ -648,6 +651,9 @@ static void dump() {
     fprintf( header, "#ifndef _UTYPE_H\n" );
     fprintf( header, "#define _UTYPE_H\n" );
 
+    fprintf( header, "/* Copyright: 2001 George Williams */\n" );
+    fprintf( header, "/* License: BSD-3-clause */\n" );
+    fprintf( header, "/* Contributions: Joe Da Silva */\n" );
     fprintf( header, GeneratedFileMessage );
 
     fprintf( header, "#include <ctype.h>\t\t/* Include here so we can control it. If a system header includes it later bad things happen */\n" );
@@ -786,6 +792,9 @@ static void dump() {
 
     fprintf( header, "\n" );
 
+    fprintf( data, "/* Copyright: 2001 George Williams */\n" );
+    fprintf( data, "/* License: BSD-3-clause */\n" );
+    fprintf( data, "/* Contributions: Werner Lemberg, Khaled Hosny, Joe Da Silva */\n\n" );
     fprintf( data, "#include \"utype.h\"\n" );
     fprintf( data, GeneratedFileMessage );
     fprintf( data, "const unsigned short ____tolower[]= { 0,\n" );
