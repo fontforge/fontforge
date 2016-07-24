@@ -4573,7 +4573,7 @@ return;
 	tgcd[11].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	tgcd[11].gd.cid = CID_HorAccent;
 	tgcd[11].creator = GTextFieldCreate;
-	tgcd[11].gd.popup_msg = tgcd[9].gd.popup_msg;
+	tgcd[11].gd.popup_msg = tgcd[10].gd.popup_msg;
 	thvarray[16] = &tgcd[11];
 
 	tlabel[12].text = (unichar_t *) _("Guess");
@@ -4708,7 +4708,7 @@ return;
 	    vargcd[i][4].gd.pos.width = 60;
 	    vargcd[i][4].gd.cid = CID_ExtItalicCor+i*100;
 	    vargcd[i][4].creator = GTextFieldCreate;
-	    vargcd[i][4].gd.popup_msg = vargcd[i][4].gd.popup_msg;
+	    vargcd[i][4].gd.popup_msg = vargcd[i][3].gd.popup_msg;
 	    varhvarray[i][2][1] = &vargcd[i][4];
 
 	    vargcd[i][5].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
