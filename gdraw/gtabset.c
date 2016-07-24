@@ -405,7 +405,7 @@ static void GTabSet_Remetric(GTabSet *gts) {
 	/* Nothing much to do */
     } else if ( gts->scrolled ) {
 	free(gts->rowstarts);
-	gts->rowstarts = malloc(2*sizeof(16));
+	gts->rowstarts = malloc(2*sizeof(int16));
 	gts->rowstarts[0] = 0; gts->rowstarts[1] = gts->tabcnt;
 	gts->rcnt = 1;
     } else {
