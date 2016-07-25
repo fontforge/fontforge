@@ -2043,7 +2043,7 @@ static void xmlParseColorSource(xmlNodePtr top,char *name,DBounds *bbox,
     *_grad = NULL; *_epat = NULL;
     if ( colour_source==NULL )
 	LogError(_("Could not find Color Source with id %s."), name );
-    else if ( (islinear = xmlStrcmp(colour_source->name,(xmlChar *) "linearGradient")==0) ||
+    else if ( (islinear = (xmlStrcmp(colour_source->name,(xmlChar *) "linearGradient")==0)) ||
 	    xmlStrcmp(colour_source->name,(xmlChar *) "radialGradient")==0 ) {
 	struct gradient *grad = chunkalloc(sizeof(struct gradient));
 	int bbox_units;

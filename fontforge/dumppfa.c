@@ -2367,7 +2367,7 @@ static void dumptype0stuff(FILE *out,SplineFont *sf, EncMap *map) {
 
 static void dumpt1str(FILE *binary,uint8 *data, int len, int leniv) {
     if ( leniv==-1 )
-	fwrite(data,sizeof(1),len,binary);
+	fwrite(data,sizeof(uint8),len,binary);
     else
 	encodestrout((DumpChar) fputc,binary,data,len,leniv);
 }
