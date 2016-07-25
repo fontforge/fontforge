@@ -743,8 +743,15 @@ return;		/* Essentially colinear */ /* Won't be perfect because control points l
 	if ( was_neg!=0 && c->cur-was_neg<5 )
 	    c->all[was_neg].needs_point_left = c->all[was_neg].needs_point_right = false;
     }
-    if ( !atbreak )
-	c->all[c->cur++] = done;
+    if (!atbreak) {
+        if (c->cur >= c->max) {
+            int extras = 10;
+            c->all = realloc(c->all, (c->max+extras)*sizeof(StrokePoint));
+            memset(c->all+c->max, 0, extras*sizeof(StrokePoint));
+            c->max += extras;
+        }
+        c->all[c->cur++] = done;
+    }
 }
 
 static void FindSlope(StrokeContext *c,Spline *s, bigreal t, bigreal tdiff) {
@@ -3634,7 +3641,7 @@ return( first );
 
 SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
     StrokeContext c;
-    SplineSet *first, *last, *cur, *ret, *active, *anext;
+    SplineSet *first, *last, *cur, *ret, *active = NULL, *anext;
     SplinePoint *sp, *nsp;
     int n, max;
     bigreal d2, maxd2, len, maxlen;
