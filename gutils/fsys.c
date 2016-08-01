@@ -35,13 +35,8 @@
 #include <sys/stat.h>		/* for mkdir */
 #include <unistd.h>
 #include <glib.h>
+#include <glib/gstdio.h>
 #include <errno.h>			/* for mkdir_p */
-
-#ifdef _WIN32
-#define MKDIR(A,B) mkdir(A)
-#else
-#define MKDIR(A,B) mkdir(A,B)
-#endif
 
 static char dirname_[MAXPATHLEN+1];
 #if !defined(__MINGW32__)
@@ -134,14 +129,14 @@ return -ENOTDIR;
 	for(p = tmp + 1; *p; p++)
 	if(*p == '/') {
 		*p = 0;
-		r = MKDIR(tmp, mode);
+		r = mkdir(tmp, mode);
 		if (r < 0 && errno != EEXIST)
 return -errno;
 		*p = '/';
 	}
 
 	/* try to make the whole path */
-	r = MKDIR(tmp, mode);
+	r = mkdir(tmp, mode);
 	if(r < 0 && errno != EEXIST)
 return -errno;
 	/* creation successful or the file already exists */
@@ -341,13 +336,16 @@ return( buffer );
 }
 
 char *GFileNameTail(const char *oldname) {
-    char *pt;
+    char *pt = 0;
 
     pt = strrchr(oldname,'/');
-    if ( pt !=NULL )
-return( pt+1);
-    else
-return( (char *)oldname );
+
+    // a final slash was found, so we know that p+1 is a valid
+    // address in the string.
+    if ( pt )
+	return( pt+1);
+
+    return( (char *)oldname );
 }
 
 char *GFileAppendFile(char *dir,char *name,int isdir) {
@@ -416,8 +414,39 @@ int GFileReadable(const char *file) {
 return( access(file,04)==0 );
 }
 
+/**
+ * Removes a file or folder.
+ *
+ * @param [in] path The path to be removed.
+ * @param [in] recursive Specify true to remove a folder and all of its
+ *                       sub-contents.
+ * @return true if the deletion was successful or the path does not exist. It
+ *         will fail if trying to remove a directory that is not empty and
+ *         where `recursive` is false.
+ */
+int GFileRemove(const char *path, int recursive) {
+    GDir *dir;
+    const gchar *entry;
+
+    if (g_remove(path) != 0) {
+        if (recursive && (dir = g_dir_open(path, 0, NULL))) {
+            while ((entry = g_dir_read_name(dir))) {
+                gchar *fpath = g_build_filename(path, entry, NULL);
+                if (g_remove(fpath) != 0 && GFileIsDir(fpath)) {
+                    GFileRemove(fpath, recursive);
+                }
+                g_free(fpath);
+            }
+            g_dir_close(dir);
+        }
+        return (g_remove(path) == 0 || !GFileExists(path));
+    }
+
+    return true;
+}
+
 int GFileMkDir(const char *name) {
-return( MKDIR(name,0755));
+return( mkdir(name,0755));
 }
 
 int GFileRmDir(const char *name) {
@@ -586,6 +615,27 @@ return( pt+1);
 return( (unichar_t *)oldname );
 }
 
+/**
+ * Remove the 'root' part of the file path if it is absolute;
+ * On Unix this is '/' and on Windows this is for e.g. 'C:/'
+ */
+static unichar_t *u_GFileRemoveRoot(unichar_t *path) {
+    //May happen on Windows too e.g. CygWin
+    if (*path == '/') {
+        path++;
+    }
+#ifdef _WIN32
+    //Check if it is a drive letter path
+    else if (((path[0] >= 'A' && path[0] <= 'Z') ||
+              (path[0] >= 'a' && path[0] <= 'z')) &&
+             path[1] == ':' && path[2] == '/') {
+             
+        path += 3;
+    }
+#endif
+    return path;
+}
+
 unichar_t *u_GFileNormalize(unichar_t *name) {
     unichar_t *pt, *base, *ppt;
 
@@ -594,10 +644,9 @@ unichar_t *u_GFileNormalize(unichar_t *name) {
 	if ( base==NULL )
 return( name );
 	++base;
-    } else if ( *name=='/' )
-	base = name+1;
-    else
-	base = name;
+    }
+    
+    base = u_GFileRemoveRoot(name);
     for ( pt=base; *pt!='\0'; ) {
 	if ( *pt=='/' )
 	    u_strcpy(pt,pt+1);
@@ -691,7 +740,7 @@ return( access(buffer,04)==0 );
 int u_GFileMkDir(unichar_t *name) {
     char buffer[1024];
     u2def_strncpy(buffer,name,sizeof(buffer));
-return( MKDIR(buffer,0755));
+return( mkdir(buffer,0755));
 }
 
 int u_GFileRmDir(unichar_t *name) {
@@ -711,6 +760,18 @@ static char *GResourceProgramDir = 0;
 char* getGResourceProgramDir(void) {
     return GResourceProgramDir;
 }
+
+char* getLibexecDir_NonWindows(void) 
+{
+    // FIXME this was indirectly introduced by
+    // https://github.com/fontforge/fontforge/pull/1838 and is not
+    // tested on Windows yet.
+    //
+    static char path[PATH_MAX+4];
+    snprintf( path, PATH_MAX, "%s/../libexec/", getGResourceProgramDir());
+    return path;
+}
+
 
 
 void FindProgDir(char *prog) {
@@ -749,7 +810,8 @@ char *getShareDir(void) {
 
     set = true;
 
-    pt = strstr(GResourceProgramDir,"/bin");
+    //Assume share folder is one directory up
+    pt = strrchr(GResourceProgramDir, '/');
     if ( pt==NULL ) {
 #ifdef SHAREDIR
 	return( sharedir = SHAREDIR );
@@ -873,7 +935,7 @@ char *getFontForgeUserDir(int dir) {
 	fprintf(stderr, "%s\n", "cannot find home directory");
 return NULL;
 	}
-#if defined(__MINGW32__)
+#ifdef _WIN32
 	/* Allow for preferences to be saved locally in a 'portable' configuration. */ 
 	if (getenv("FF_PORTABLE") != NULL) {
 		buf = smprintf("%s/preferences/", getShareDir());
@@ -912,11 +974,13 @@ return NULL;
 	 * the value "$HOME/.cache/fontforge" */
 	buf = smprintf("%s/%s/fontforge", home, def);
 	if(buf != NULL) {
-	/* try to create buf.  If creating the directory fails, return NULL
-	 * because nothing will get saved into an inaccessible directory.  */
-	if(mkdir_p(buf, 0755) != EXIT_SUCCESS)
-return NULL;
-return buf;
+	    /* try to create buf.  If creating the directory fails, return NULL
+	     * because nothing will get saved into an inaccessible directory.  */
+            if ( mkdir_p(buf, 0755) != EXIT_SUCCESS ) {
+                free(buf);
+                return NULL;
+            }
+            return buf;
 	}
 return NULL;
 #endif
@@ -1016,14 +1080,39 @@ unichar_t *u_GFileGetHomeDocumentsDir(void) {
 }
 
 
-char *GFileDirName(const char *path)
+char *GFileDirNameEx(const char *path, int treat_as_file)
 {
-    char ret[PATH_MAX+1];
-    strncpy( ret, path, PATH_MAX );
-    ret[PATH_MAX] = '\0';
-    GFileNormalizePath( ret );
-    char *pt = strrchr( ret, '/' );
-    if ( pt )
-	*pt = '\0';
-    return strdup(ret);
+    char *ret = NULL;
+    if (path != NULL) {
+        //Must allocate enough space to append a trailing slash.
+        size_t len = strlen(path);
+        ret = malloc(len + 2);
+        
+        if (ret != NULL) {
+            char *pt;
+            
+            strcpy(ret, path);
+            GFileNormalizePath(ret);
+            if (treat_as_file || !GFileIsDir(ret)) {
+                pt = strrchr(ret, '/');
+                if (pt != NULL) {
+                    *pt = '\0';
+                }
+            }
+            
+            //Keep only one trailing slash
+            len = strlen(ret);
+            for (pt = ret + len - 1; pt >= ret && *pt == '/'; pt--) {
+                *pt = '\0';
+            }
+            *++pt = '/';
+            *++pt = '\0';
+        }
+    }
+    return ret;
 }
+
+char *GFileDirName(const char *path) {
+    return GFileDirNameEx(path, 0);
+}
+

@@ -663,7 +663,9 @@ int32 utf8_ildb(const char **_text) {
     const uint8 *text = (const uint8 *) *_text;
     /* Increment and load character */
 
-    if ( (ch = *text++)<0x80 ) {
+    if ( text==NULL )
+	return( val );
+    else if ( (ch = *text++)<0x80 ) {
 	val = ch;
     } else if ( ch<=0xbf ) {
 	/* error */
@@ -1005,6 +1007,21 @@ int u_endswith(const unichar_t *haystack,const unichar_t *needle) {
     return p == ( haystack + haylen - nedlen );
 }
 
+int u_startswith(const unichar_t *haystack,const unichar_t *needle) {
+
+    if( !haystack || !needle )
+	return 0;
+
+    unichar_t* p = u_strstr( haystack, needle );
+    return p == ( haystack );
+}
+
+int uc_startswith(const unichar_t *haystack,const char* needle)
+{
+    return u_startswith( haystack, c_to_u(needle));
+}
+
+
 char* c_itostr( int v )
 {
     static char ret[100+1];
@@ -1061,3 +1078,16 @@ char* str_replace_all( char* s, char* orig, char* replacement, int free_s )
     return ret;
 }
 
+int toint( char* v )
+{
+    if( !v )
+        return 0;
+    return atoi(v);
+}
+char* tostr( int v )
+{
+    const int bufsz = 100;
+    static char buf[101];
+    snprintf(buf,bufsz,"%d",v);
+    return buf;
+}

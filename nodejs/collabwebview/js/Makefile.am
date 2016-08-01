@@ -27,7 +27,7 @@
 include $(top_srcdir)/mk/layout.am
 
 targetdatadir = $(pkgnodejsdatadir)/collabwebview/js
-targetdata_SCRIPTS = $(srcdir)/*.js
+targetdata_DATA = $(srcdir)/*.js
 EXTRA_DIST = $(srcdir)/*.js
 
 SUBDIRS =

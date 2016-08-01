@@ -26,10 +26,11 @@
  */
 #include <fontforge-config.h>
 
-# include "fontforgeui.h"
-# include <gfile.h>
-# include "splinefont.h"
-#  include "ustring.h"
+#include "fontforgeui.h"
+#include "basics.h"
+#include <gfile.h>
+#include "splinefont.h"
+#include "ustring.h"
 
 static void WindowSelect(GWindow base,struct gmenuitem *mi,GEvent *e) {
     GDrawRaise(mi->ti.userdata);
@@ -100,6 +101,10 @@ return;
     }
     cnt = precnt;
     for ( fv = (FontViewBase *) fv_list; fv!=NULL; fv = fv->next ) {
+	if( !((FontView *) fv)->gw ) {
+	    continue;
+	}
+	
 	AddMI(&sub[cnt++],((FontView *) fv)->gw,fv->sf->changed,true);
 	for ( i=0; i<fv->sf->glyphcnt; ++i ) if ( fv->sf->glyphs[i]!=NULL ) {
 	    for ( cv = fv->sf->glyphs[i]->views; cv!=NULL; cv=cv->next )
@@ -259,6 +264,21 @@ void _aplistbuild(struct gmenuitem *top,SplineFont *sf,
     top->sub = sub;
 }
 
+void mbFreeGetText(GMenuItem *mb) {
+    /* free gettext substitutions on this menu and all sub menus */
+    int i;
+
+    if ( mb==NULL )
+return;
+    for ( i=0; mb[i].ti.text!=NULL || mb[i].ti.line || mb[i].ti.image!=NULL; ++i ) {
+        if (mb[i].ti.text_untranslated != NULL) { free(mb[i].ti.text_untranslated); mb[i].ti.text_untranslated = NULL; }
+	if ( mb[i].ti.text!=NULL ) {
+	    if ( mb[i].sub!=NULL )
+		mbFreeGetText(mb[i].sub);
+	}
+    }
+}
+
 void mbDoGetText(GMenuItem *mb) {
     /* perform gettext substitutions on this menu and all sub menus */
     int i;
@@ -266,14 +286,32 @@ void mbDoGetText(GMenuItem *mb) {
     if ( mb==NULL )
 return;
     for ( i=0; mb[i].ti.text!=NULL || mb[i].ti.line || mb[i].ti.image!=NULL; ++i ) {
-	if( mb[i].shortcut )
-	    mb[i].ti.text_untranslated = mb[i].shortcut;
-	else
-	    mb[i].ti.text_untranslated = mb[i].ti.text;
+	if( mb[i].shortcut ) {
+	    unichar_t tmp[2];
+	    tmp[0] = mb[i].shortcut;
+	    tmp[1] = (unichar_t)(0);
+	    mb[i].ti.text_untranslated = cu_copy(tmp);
+	} else
+	    mb[i].ti.text_untranslated = cu_copy(mb[i].ti.text);
 	if ( mb[i].ti.text!=NULL ) {
 	    mb[i].ti.text = (unichar_t *) S_((char *) mb[i].ti.text);
 	    if ( mb[i].sub!=NULL )
 		mbDoGetText(mb[i].sub);
+	}
+    }
+}
+
+void mb2FreeGetText(GMenuItem2 *mb) {
+    /* free gettext substitutions on this menu and all sub menus */
+    int i;
+
+    if ( mb==NULL )
+return;
+    for ( i=0; mb[i].ti.text!=NULL || mb[i].ti.line || mb[i].ti.image!=NULL; ++i ) {
+	if (mb[i].ti.text_untranslated != NULL) { free(mb[i].ti.text_untranslated); mb[i].ti.text_untranslated = NULL; }
+	if ( mb[i].ti.text!=NULL ) {
+	    if ( mb[i].sub!=NULL )
+		mb2FreeGetText(mb[i].sub);
 	}
     }
 }
@@ -286,9 +324,9 @@ void mb2DoGetText(GMenuItem2 *mb) {
 return;
     for ( i=0; mb[i].ti.text!=NULL || mb[i].ti.line || mb[i].ti.image!=NULL; ++i ) {
 	if( mb[i].shortcut )
-	    mb[i].ti.text_untranslated = mb[i].shortcut;
+	    mb[i].ti.text_untranslated = copy(mb[i].shortcut);
 	else
-	    mb[i].ti.text_untranslated = mb[i].ti.text;
+	    mb[i].ti.text_untranslated = cu_copy(mb[i].ti.text);
 	if ( mb[i].ti.text!=NULL ) {
 	    mb[i].ti.text = (unichar_t *) S_((char *) mb[i].ti.text);
 	    if ( mb[i].sub!=NULL )

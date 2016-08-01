@@ -150,23 +150,25 @@ Hotkey* hotkeyFindByEvent( GWindow w, GEvent *event ) {
  * Return the file name of the user defined hotkeys.
  * The return value must be freed by the caller.
  *
- * If extension is not null it will be postpended to the retuned path.
+ * If extension is not null it will be postpended to the returned path.
  * This way you get to avoid dealing with appending to a string in c.
  */
-static char *getHotkeyFilename( char* extension ) {
-    char *ret=NULL;
+static char* getHotkeyFilename(char* extension) {
+    char *ret = NULL;
     char buffer[1025];
+    char *ffdir = getFontForgeUserDir(Config);
 
-    if ( getFontForgeUserDir(Config)==NULL ) {
-	fprintf(stderr,_("Can not work out where your hotkey definition file is!\n"));
-	return( NULL );
+    if ( ffdir==NULL ) {
+        fprintf(stderr,_("Cannot find your hotkey definition file!\n"));
+        return NULL;
     }
     if( !extension )
-	extension = "";
+        extension = "";
     
-    sprintf(buffer,"%s/hotkeys%s", getFontForgeUserDir(Config), extension);
+    sprintf(buffer,"%s/hotkeys%s", ffdir, extension);
     ret = copy(buffer);
-    return( ret );
+    free(ffdir);
+    return ret;
 }
 
 /**
@@ -327,6 +329,10 @@ void hotkeysSave() {
     // Atomic rename of new over the old.
     //
     char* newpath = getHotkeyFilename(0);
+#ifdef __MINGW32__
+    //Atomic rename doesn't exist on Windows.
+    unlink(newpath);
+#endif
     int rc = rename( fn, newpath );
     int e = errno;
     free(fn);
@@ -380,7 +386,7 @@ Hotkey* isImmediateKey( GWindow w, char* path, GEvent *event )
     Hotkey* hk = hotkeyFindByAction( line );
     if( !hk )
 	return 0;
-    if( hk && !hk->action )
+    if( !hk->action )
 	return 0;
     
     if( event->u.chr.keysym == hk->keysym )

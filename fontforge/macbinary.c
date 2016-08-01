@@ -2042,11 +2042,11 @@ return( (SplineFont *) _NamesReadPostScript(pfb) );	/* This closes the font for 
     fd = _ReadPSFont(pfb);
     sf = NULL;
     if ( fd!=NULL ) {
-	sf = SplineFontFromPSFont(fd);
-	PSFontFree(fd);
-	/* There is no FOND in a postscript file, so we can't read any kerning*/
+	    sf = SplineFontFromPSFont(fd);
+	    PSFontFree(fd);
+	    /* There is no FOND in a postscript file, so we can't read any kerning*/
+        fclose(pfb);
     }
-    fclose(pfb);
 return( sf );
 }
 
@@ -2605,7 +2605,7 @@ return( test );
 	for ( which=cnt-1; which>=0; --which )
 	    if ( strcmp(names[which],find)==0 )
 	break;
-	if ( which==-1 && strstrmatch(find,test->fondname)!=NULL )
+	if ( which==-1 && test!=NULL && strstrmatch(find,test->fondname)!=NULL )
 	    which = GuessStyle(find,styles,cnt);
 	if ( which==-1 ) {
 	    char *fn = copy(filename);

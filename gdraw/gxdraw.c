@@ -58,6 +58,10 @@
 
 enum cm_type { cmt_default=-1, cmt_current, cmt_copy, cmt_private };
 
+void GDrawIErrorRun(const char *fmt,...);
+void GDrawIError(const char *fmt,...);
+
+
 #ifndef X_DISPLAY_MISSING
 # include <X11/Xatom.h>
 # include <X11/keysym.h>
@@ -69,6 +73,8 @@ enum cm_type { cmt_default=-1, cmt_current, cmt_copy, cmt_private };
 #define XKEYSYM_TOP	8364
 extern int gdraw_xkeysym_2_unicode[];
 
+
+extern int cmdlinearg_forceUIHidden;
 
 static void GXDrawTransmitSelection(GXDisplay *gd,XEvent *event);
 static void GXDrawClearSelData(GXDisplay *gd,enum selnames sel);
@@ -744,161 +750,23 @@ return( XCreateWindow(gdisp->display, gdisp->root,
 	    gdisp->depth, InputOutput, gdisp->visual, wmask, &attrs));
 }
 
-
-#if defined(__MINGW32__)
-/* FIXME: Xming+WindowsWM hack */
-
-/* unichar to ActiveCodePage, this is not limited to setlocale() */
-static char*  u2acp_copy(const unichar_t* ustr){
-    if(ustr){
-	int wlen = u_strlen(ustr);
-	if(wlen > 0){
-	    WCHAR* wcs = malloc(sizeof(WCHAR) * (wlen));
-	    char*  mbs = malloc(sizeof(char) * (wlen*3));
-	    if(wcs && mbs){
-		WCHAR* w = wcs;
-		const unichar_t* u = ustr;
-		for(; *u; *w++ = (WCHAR)*u++); /* unichar(4) to WCHAR(2) */
-
-		int alen = WideCharToMultiByte(CP_ACP,0, wcs,wlen, mbs,wlen*3, 0,0);
-		if(alen<0) alen=0;
-		mbs[alen]='\0';
-
-		free(wcs);
-		return mbs;
-	    }
-	    free(wcs);
-	    free(mbs);
-	}
+#if 0
+static void _GXDraw_DestroyWindow(GXDisplay *gdisp, GWindow input) {
+  // TODO: Reconcile differences between this function (written from _GXDraw_CreateWindow)
+  // with the actual function GXDrawDestroyWindow below.
+  GXWindow inputc = (GXWindow)input;
+  if (inputc->w != NULL) { 
+    if (inputc->is_pixmap) {
+      XFreePixmap(gdisp->display, inputc->w);
+    } else {
+      XDestroyWindow(gdisp->display, inputc->w);
     }
-    return NULL;
+    inputc->w = NULL;
+  }
+  if (inputc->gc != NULL) { XFreeGC(gdisp->display, inputc->gc); inputc->gc = NULL; }
+  free(input);
 }
-
-/* SET WM Name unichar */
-static void  mingw_set_wm_name(Display* display, Window window, const unichar_t* name){
-    char* a_str = u2acp_copy(name);
-    if(a_str){
-	XTextProperty prop;
-	if( XStringListToTextProperty(&a_str, 1, &prop) >= Success ){
-	    XSetWMName(display, window, &prop);
-	    XFree(prop.value);
-	}
-    }
-}
-/* Set WM IconName unichar */
-static void  mingw_set_wm_icon_name(Display* display, Window window, const unichar_t* name){
-    char* a_str = u2acp_copy(name);
-    if(a_str){
-	XTextProperty prop;
-	if( XStringListToTextProperty(&a_str, 1, &prop) >= Success ){
-	    XSetWMIconName(display, window, &prop);
-	    XFree(prop.value);
-	}
-    }
-}
-/* SET WM Name utf8 */
-static void  mingw_set_wm_name_utf8(Display* display, Window window, const char* utf8){
-    if(utf8){
-	unichar_t* uni = utf82u_copy(utf8);
-	if(uni){
-	    mingw_set_wm_name(display, window, uni);
-	    free(uni);
-	}
-    }
-}
-/* SET WM IconName utf8 */
-static void  mingw_set_wm_icon_name_utf8(Display* display, Window window, const char* utf8){
-    if(utf8){
-	unichar_t* uni = utf82u_copy(utf8);
-	if(uni){
-	    mingw_set_wm_icon_name(display, window, uni);
-	    free(uni);
-	}
-    }
-}
-/* GET WM Name unichar */
-static unichar_t*  mingw_get_wm_name(Display* display, Window window){
-    unichar_t* result = NULL;
-    XTextProperty prop;
-    if( XGetWMName(display, window, &prop) >= Success ){
-	char** list;
-	int    count;
-	if( XTextPropertyToStringList(&prop, &list, &count) >= Success ){
-	    char      *m, *mbs;
-	    WCHAR     *w, *wcs;
-	    unichar_t *u, *ustr;
-
-	    int i, wlen, alen=0;
-	    for(i=0; i < count; i++){
-		alen += strlen(list[i]);
-	    }
-
-	    mbs  = malloc(sizeof(char)      * (alen+4));
-	    wcs  = malloc(sizeof(WCHAR)     * (alen+4));
-	    ustr = malloc(sizeof(unichar_t) * (alen+4));
-
-	    if(mbs && wcs && ustr){
-		m = mbs;
-		for(i=0; i < count; i++){
-		    strcpy(m, list[i]);
-		    m += strlen(list[i]);
-		}
-
-		wlen = MultiByteToWideChar(CP_ACP,0, mbs,alen, wcs,alen);
-		if(wlen < 0) wlen=0;
-
-		w = wcs;
-		u = ustr;
-		for(i=0; i < wlen; i++)
-		    *u++ = (unichar_t)*w++;
-		*u++ = '\0';
-
-		result = ustr;
-		ustr = 0;
-	    }
-	    free(ustr);
-	    free(wcs);
-	    free(mbs);
-	    XFreeStringList(list);
-	}
-	XFree(prop.value);
-    }
-    return result;
-}
-/* GET WM Name utf8 */
-static char*  mingw_get_wm_name_utf8(Display* display, Window window){
-    unichar_t* uni = mingw_get_wm_name(display, window);
-    if(uni){
-	char* utf8 = u2utf8_copy(uni);
-	free(uni);
-	return utf8;
-    }
-    return NULL;
-}
-
-/* translate GK_ keysyms to Virtual Keys */
-/* abort on unimplemented translations */
-int GDrawKeyToVK(int keysym) {
-    switch( keysym ) {
-      case ' ':
-return( VK_SPACE );
-      default:
-	if ( (keysym>='0' && keysym<='9') ||
-		(keysym>='A' && keysym<='Z') )
-return( keysym );
-    }
-    abort();
-return( 0 );
-}
-
-int GDrawKeyState(int keysym) {
-    if (GetAsyncKeyState(GDrawKeyToVK(keysym)) & 0x8000)
-return 1;
-    else
-return 0;
-}
-
-#endif
+#endif // 0
 
 static GWindow _GXDraw_CreateWindow(GXDisplay *gdisp, GXWindow gw, GRect *pos,
 	int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs) {
@@ -1037,38 +905,30 @@ return( NULL );
 	}
 	XSetWMHints(display,nw->w,&wm_hints);
 	if ( (wattrs->mask&wam_wtitle) && wattrs->window_title!=NULL ) {
-	    #if defined(__MINGW32__)
-	    mingw_set_wm_name(display, nw->w, wattrs->window_title);
-	    #else
 	    XmbSetWMProperties(display,nw->w,(pt = u2def_copy(wattrs->window_title)),NULL,NULL,0,NULL,NULL,NULL);
 	    free(pt);
-	    #endif
 	}
 	if ( (wattrs->mask&wam_ititle) && wattrs->icon_title!=NULL ) {
-	    #if defined(__MINGW32__)
-	    mingw_set_wm_icon_name(display, nw->w, wattrs->icon_title);
-	    #else
 	    XmbSetWMProperties(display,nw->w,NULL,(pt = u2def_copy(wattrs->icon_title)),NULL,0,NULL,NULL,NULL);
 	    free(pt);
-	    #endif
 	}
 	if ( (wattrs->mask&wam_utf8_wtitle) && wattrs->utf8_window_title!=NULL ) {
-	    #if defined(__MINGW32__)
-	    mingw_set_wm_name_utf8(display, nw->w, wattrs->utf8_window_title);
-	    #else
+#ifdef X_HAVE_UTF8_STRING
+        Xutf8SetWMProperties(display, nw->w, wattrs->utf8_window_title, NULL, NULL, 0, NULL, NULL, NULL);
+#else
 	    unichar_t *tit = utf82u_copy(wattrs->utf8_window_title);
 	    XmbSetWMProperties(display,nw->w,(pt = u2def_copy(tit)),NULL,NULL,0,NULL,NULL,NULL);
 	    free(pt); free(tit);
-	    #endif
+#endif
 	}
 	if ( (wattrs->mask&wam_utf8_ititle) && wattrs->utf8_icon_title!=NULL ) {
-	    #if defined(__MINGW32__)
-	    mingw_set_wm_icon_name_utf8(display, nw->w, wattrs->utf8_icon_title);
-	    #else
+#ifdef X_HAVE_UTF8_STRING
+        Xutf8SetWMProperties(display, nw->w, NULL, wattrs->utf8_icon_title, NULL, 0, NULL, NULL, NULL);
+#else
 	    unichar_t *tit = utf82u_copy(wattrs->utf8_icon_title);
 	    XmbSetWMProperties(display,nw->w,NULL,(pt = u2def_copy(tit)),NULL,0,NULL,NULL,NULL);
 	    free(pt); free(tit);
-	    #endif
+#endif
 	}
 	s_h.x = pos->x; s_h.y = pos->y;
 	s_h.base_width = s_h.width = pos->width; s_h.base_height = s_h.height = pos->height;
@@ -1379,6 +1239,9 @@ static void GXDrawSetVisible(GWindow w, int visible) {
     GXWindow gw = (GXWindow) w;
     GXDisplay *gdisp = gw->display;
 
+    if( cmdlinearg_forceUIHidden )
+	visible = false;
+    
     gw->visible_request = visible;
     if ( visible ) {
 	XMapWindow(gdisp->display,gw->w);
@@ -1567,11 +1430,6 @@ static void GXDrawLower(GWindow w) {
 }
 
 static void GXDrawSetWindowTitles(GWindow w, const unichar_t *title, const unichar_t *icontit) {
-#if defined(__MINGW32__)
-    GXWindow gw = (GXWindow) w;
-    mingw_set_wm_name      (gw->display->display, gw->w, title);
-    mingw_set_wm_icon_name (gw->display->display, gw->w, icontit);
-#else
     GXWindow gw = (GXWindow) w;
     Display *display = gw->display->display;
     char *ipt, *tpt;
@@ -1580,17 +1438,14 @@ static void GXDrawSetWindowTitles(GWindow w, const unichar_t *title, const unich
 			(ipt = u2def_copy(icontit)),
 			NULL,0,NULL,NULL,NULL);
     free(ipt); free(tpt);
-#endif
 }
 
 static void GXDrawSetWindowTitles8(GWindow w, const char *title, const char *icontit) {
-#if defined(__MINGW32__)
-    GXWindow gw = (GXWindow) w;
-    mingw_set_wm_name_utf8      (gw->display->display, gw->w, title);
-    mingw_set_wm_icon_name_utf8 (gw->display->display, gw->w, icontit);
-#else
     GXWindow gw = (GXWindow) w;
     Display *display = gw->display->display;
+#ifdef X_HAVE_UTF8_STRING
+    Xutf8SetWMProperties(display, gw->w, title, icontit, NULL, 0, NULL, NULL, NULL);
+#else
     unichar_t *tit = utf82u_copy(title), *itit = utf82u_copy(icontit);
     char *ipt, *tpt;
 
@@ -1693,10 +1548,6 @@ return( NULL );
 static char *GXDrawGetWindowTitle8(GWindow w);
 
 static unichar_t *GXDrawGetWindowTitle(GWindow w) {
-#if defined(__MINGW32__)
-    GXWindow gw = (GXWindow) w;
-    return mingw_get_wm_name(gw->display->display, gw->w);
-#else
 #if X_HAVE_UTF8_STRING
     char *ret1 = GXDrawGetWindowTitle8(w);
     unichar_t *ret = utf82u_copy(ret1);
@@ -1714,14 +1565,9 @@ return( ret );
     XFree(pt);
 return( ret );
 #endif
-#endif
 }
 
 static char *GXDrawGetWindowTitle8(GWindow w) {
-#if defined(__MINGW32__)
-    GXWindow gw = (GXWindow) w;
-    return mingw_get_wm_name_utf8(gw->display->display, gw->w);
-#else
 #if X_HAVE_UTF8_STRING
     GXWindow gw = (GXWindow) w;
     Display *display = gw->display->display;
@@ -1751,7 +1597,6 @@ return( ret );
 
     free(ret1);
 return( ret );
-#endif
 #endif
 }
 
@@ -3960,6 +3805,11 @@ static void GXDrawGrabSelection(GWindow w,enum selnames sel) {
 	if ( gd->selinfo[sel].owner->eh!=NULL )
 	    (gd->selinfo[sel].owner->eh)((GWindow) gd->selinfo[sel].owner, &e);
     }
+    //Only one clipboard exists on Windows. Selectively set the selection owner
+    //as otherwise the Windows clipboard will be cleared.
+#ifdef _WIN32
+    if (sel == sn_clipboard)
+#endif
     XSetSelectionOwner(gd->display,gd->selinfo[sel].sel_atom,gw->w,gd->last_event_time);
     GXDrawClearSelData(gd,sel);
     gd->selinfo[sel].owner = gw;
@@ -4526,6 +4376,23 @@ static void GDrawInitXKB(GXDisplay *gdisp) {
 #endif
 }
 
+void _GXDraw_DestroyDisplay(GDisplay * gdisp) {
+    GXDisplay* gdispc = (GXDisplay*)(gdisp);
+    if (gdispc->grey_stipple != BadAlloc && gdispc->grey_stipple != BadDrawable && gdispc->grey_stipple != BadValue) {
+      XFreePixmap(gdispc->display, gdispc->grey_stipple); gdispc->grey_stipple = BadAlloc;
+    }
+    if (gdispc->fence_stipple != BadAlloc && gdispc->fence_stipple != BadDrawable && gdispc->fence_stipple != BadValue) {
+      XFreePixmap(gdispc->display, gdispc->fence_stipple); gdispc->fence_stipple = BadAlloc;
+    }
+    if (gdispc->groot != NULL) {
+      if (gdispc->groot->ggc != NULL) { free(gdispc->groot->ggc); gdispc->groot->ggc = NULL; }
+      free(gdispc->groot); gdispc->groot = NULL;
+    }
+    if (gdispc->im != NULL) { XCloseIM(gdispc->im); gdispc->im = NULL; }
+    if (gdispc->display != NULL) { XCloseDisplay(gdispc->display); gdispc->display = NULL; }
+    return;
+}
+
 GDisplay *_GXDraw_CreateDisplay(char *displayname,char *programname) {
     GXDisplay *gdisp;
     Display *display;
@@ -4612,7 +4479,7 @@ return( NULL );
 
 #ifdef X_HAVE_UTF8_STRING	/* Don't even try without this. I don't want to have to guess encodings myself... */
     /* X Input method initialization */
-    XSetLocaleModifiers("");
+    XSetLocaleModifiers(""); // As it turns out, we can't free this here.
     gdisp->im = XOpenIM(display, XrmGetDatabase(display),
 	    GResourceProgramName, GResourceProgramName);
     /* The only reason this seems to fail is if XMODIFIERS contains an @im */
@@ -4651,8 +4518,6 @@ void _XSyncScreen() {
     XSync(((GXDisplay *) screen_display)->display,false);
 }
 
-#if !defined(__MINGW32__)
-
 /* map GK_ keys to X keys */
 /* Assumes most are mapped 1-1, see gkeysym.h */
 /* abort on unimplemented translations */
@@ -4683,7 +4548,6 @@ return 0;
     }
 return ((key_map_stat[code >> 3] >> (code & 7)) & 1);
 }
-#endif
 
 #else	/* NO X */
 

@@ -1,10 +1,10 @@
 #Needs: fonts/Ambrosia.sfd
 #Make sure we can generate truetype instructions
 
-Open("@abs_srcdir@/fonts/Ambrosia.sfd")
+Open($1)
 SetPref("DetectDiagonalStems",1)
 SelectAll()
 AutoHint()
 SetFontOrder(2)
 AutoInstr()
-Generate("@abs_builddir@/results/Ambrosia.ttf")
+Generate("Ambrosia.ttf")

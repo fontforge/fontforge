@@ -3,21 +3,21 @@
 #Check that AutoHint does what it should
 #Check that generating type1/2 retain those hints
 
-Open("@abs_srcdir@/fonts/Hinting.sfd")
+Open($1)
 Reencode("Original")
 SelectAll()
 Copy()
 AutoHint()
 CompareGlyphs(-1,-1,-1,-1,1)
 
-Generate("@abs_builddir@/results/Hinting.cff")
-Open("@abs_builddir@/results/Hinting.cff")
+Generate("Hinting.cff")
+Open("Hinting.cff")
 Reencode("Original")
 SelectAll()
 CompareGlyphs(-1,-1,-1,-1,1)
 
-Generate("@abs_builddir@/results/Hinting.pfb")
-Open("@abs_builddir@/results/Hinting.pfb")
+Generate("Hinting.pfb")
+Open("Hinting.pfb")
 Reencode("Original")
 SelectAll()
 CompareGlyphs(-1,-1,-1,-1,1)

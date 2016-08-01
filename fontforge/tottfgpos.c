@@ -145,6 +145,8 @@ static uint32 scripts[][15] = {
 		{ 0 }
 };
 
+static SplineChar **SFOrderedGlyphs(SplineChar **glyphs);
+
 void ScriptMainRange(uint32 script, int *start, int *end) {
     int i;
 
@@ -361,7 +363,7 @@ void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, int *su
     memset(marks,0,classcnt*sizeof(SplineChar **));
     gmax = gi==NULL ? sf->glyphcnt : gi->gcnt;
     for ( j=0; j<2; ++j ) {
-	for ( i=0; i<gmax; ++i ) if ( (gid = gi==NULL ? i : gi->bygid[i])!=-1 && sf->glyphs[gid]!=NULL ) {
+	for ( i=0; i<gmax; ++i ) if ( (gid = gi==NULL ? i : gi->bygid[i])!=-1 && gid < sf->glyphcnt && sf->glyphs[gid]!=NULL ) {
 	    for ( ac = _ac, k=0; k<classcnt; ac=ac->next ) if ( ac->matches ) {
 		for ( test=sf->glyphs[gid]->anchor; test!=NULL ; test=test->next ) {
 		    if ( test->anchor==ac ) {
@@ -407,13 +409,18 @@ void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, int *su
 	    subcnts[k] = 0;
 	}
     }
-    for ( i=0; i<4; ++i )
+    for ( i=0; i<4; ++i ) {
 	if ( heads[i].glyphs!=NULL )
 	    heads[i].glyphs[heads[i].cnt] = NULL;
+    }
+    for ( i=0; i<classcnt; ++i ) {
+        if ( subcnts[k]!=0 )
+            SFOrderedGlyphs(marks[i]);
+    }
 
-    *base = heads[at_basechar].glyphs;
-    *lig  = heads[at_baselig].glyphs;
-    *mkmk = heads[at_basemark].glyphs;
+    *base = SFOrderedGlyphs(heads[at_basechar].glyphs);
+    *lig  = SFOrderedGlyphs(heads[at_baselig].glyphs);
+    *mkmk = SFOrderedGlyphs(heads[at_basemark].glyphs);
 }
 
 SplineChar **EntryExitDecompose(SplineFont *sf,AnchorClass *ac,struct glyphinfo *gi) {
@@ -524,8 +531,7 @@ static int sc_ttf_order( const void *_sc1, const void *_sc2) {
 return( sc1->ttf_glyph - sc2->ttf_glyph );
 }
 
-static SplineChar **SFOrderedGlyphsWithPSTinSubtable(SplineFont *sf,struct lookup_subtable *sub) {
-    SplineChar **glyphs = SFGlyphsWithPSTinSubtable(sf,sub);
+static SplineChar **SFOrderedGlyphs(SplineChar **glyphs) {
     int cnt, i, k;
     if ( glyphs==NULL )
 return( NULL );
@@ -537,7 +543,17 @@ return( NULL );
 	for ( i=0; i<=cnt-k; ++i )
 	    glyphs[i] = glyphs[i+k];
     }
+    for ( i=0; i<cnt-1; ++i )
+        if (glyphs[i]->ttf_glyph==glyphs[i+1]->ttf_glyph) {
+            memmove(glyphs+i, glyphs+i+1, (cnt-i)*sizeof(SplineChar *));
+            --cnt;
+        }
 return( glyphs );
+}
+
+static SplineChar **SFOrderedGlyphsWithPSTinSubtable(SplineFont *sf,struct lookup_subtable *sub) {
+    SplineChar **glyphs = SFGlyphsWithPSTinSubtable(sf,sub);
+    return SFOrderedGlyphs(glyphs);
 }
 
 SplineChar **SFGlyphsFromNames(SplineFont *sf,char *names) {
@@ -967,6 +983,7 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 	    }
 	    for ( v=0; v<2; ++v ) {
 		for ( kp = v ? glyphs[cnt]->vkerns : glyphs[cnt]->kerns; kp!=NULL; kp=kp->next ) {
+		    if( kp->subtable!=sub ) continue; // process only glyphs from the current subtable
 		    if ( kp->sc->ttf_glyph!=-1 ) {
 			if ( k ) {
 			    seconds[cnt][tot].other_gid = kp->sc->ttf_glyph;
@@ -1511,7 +1528,7 @@ static SplineChar **allmarkglyphs(SplineChar ***glyphlist, int classcnt) {
     int i, tot, k;
 
     if ( classcnt==1 )
-return( glyphlist[0]);
+return( SFOrderedGlyphs(glyphlist[0]));
 
     for ( i=tot=0; i<classcnt; ++i ) {
 	for ( k=0; glyphlist[i][k]!=NULL; ++k );
@@ -1606,15 +1623,20 @@ static void dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 		/* 2 for component count, for each component an offset to an offset to an anchor record */
 	}
 	++max;
-	aps = malloc((classcnt*max)*sizeof(AnchorPoint *));
+        int special_ceiling = classcnt*max;
+	aps = malloc((classcnt*max+max)*sizeof(AnchorPoint *));
 	for ( j=0; j<cnt; ++j ) {
-	    memset(aps,0,(classcnt*max)*sizeof(AnchorPoint *));
+	    memset(aps,0,(classcnt*max+max)*sizeof(AnchorPoint *));
 	    pos = 0;
 	    for ( ap=base[j]->anchor; ap!=NULL ; ap=ap->next )
 		for ( k=0, ac=_ac; k<classcnt; ac=ac->next ) if ( ac->matches ) {
 		    if ( ap->anchor==ac ) {
 			if ( ap->lig_index>pos ) pos = ap->lig_index;
-			aps[k*max+ap->lig_index] = ap;
+			if (k*max+ap->lig_index > special_ceiling || k*max+ap->lig_index < 0) {
+				fprintf(stderr, "A ligature index is invalid.\n");
+			} else {
+				aps[k*max+ap->lig_index] = ap;
+			}
 		    }
 		    ++k;
 		}
@@ -1645,7 +1667,7 @@ static void dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 		}
 	    }
 	}
-	free(aps);
+	free(aps); aps = NULL;
     }
     coverage_offset = ftell(gpos);
     fseek(gpos,subtable_start+4,SEEK_SET);
@@ -1876,6 +1898,7 @@ static uint16 *FigureInitialClasses(FPST *fpst) {
     uint16 *initial = malloc((fpst->nccnt+1)*sizeof(uint16));
     int i, cnt, j;
 
+    initial[fpst->nccnt] = 0xffff;
     for ( i=cnt=0; i<fpst->rule_cnt; ++i ) {
 	for ( j=0; j<cnt ; ++j )
 	    if ( initial[j] == fpst->rules[i].u.class.nclasses[0] )
@@ -2437,6 +2460,8 @@ return( true );
 static void otf_dumpALookup(FILE *lfile, OTLookup *otl, SplineFont *sf,
 	struct alltabs *at) {
     struct lookup_subtable *sub;
+    int lookup_sub_table_contains_no_data_count = 0;
+    int lookup_sub_table_is_too_big_count = 0;
 
     otl->lookup_offset = ftell(lfile);
     for ( sub = otl->subtables; sub!=NULL; sub=sub->next ) {
@@ -2496,14 +2521,20 @@ static void otf_dumpALookup(FILE *lfile, OTLookup *otl, SplineFont *sf,
 	      break;
 	    }
 	    if ( ftell(lfile)-sub->subtable_offset==0 ) {
-		IError( "Lookup sub table, %s in %s, contains no data.\n",
-			sub->subtable_name, sub->lookup->lookup_name );
+		if ( lookup_sub_table_contains_no_data_count < 32 ) {
+		  IError( "Lookup sub table, %s in %s, contains no data.\n",
+		  	sub->subtable_name, sub->lookup->lookup_name );
+		  lookup_sub_table_contains_no_data_count ++;
+		}
 		sub->unused = true;
 		sub->subtable_offset = -1;
 	    } else if ( sub->extra_subtables==NULL &&
 		    ftell(lfile)-sub->subtable_offset>65535 )
-		IError( "Lookup sub table, %s in %s, is too big. Will not be useable.\n",
-			sub->subtable_name, sub->lookup->lookup_name );
+		if ( lookup_sub_table_is_too_big_count < 32 ) {
+		  IError( "Lookup sub table, %s in %s, is too big. Will not be useable.\n",
+		  	sub->subtable_name, sub->lookup->lookup_name );
+		  lookup_sub_table_is_too_big_count ++;
+		}
 	}
     }
     otl->lookup_length = ftell(lfile)-otl->lookup_offset;
@@ -3004,11 +3035,6 @@ return( NULL );
     if ( size_params_ptr!=0 ) {
 	size_params_loc = ftell(g___);
 	fseek(g___,size_params_ptr,SEEK_SET);
-	/* When Adobe first released fonts containing the 'size' feature */
-	/*  they did not follow the spec, and the offset to the size parameters */
-	/*  was relative to the wrong location. They claim (Aug 2006) that */
-	/*  this has been fixed. FF used to do what Adobe did. Many programs */
-	/*  expect broken sizes tables now, but we don't supply them. */
 	putshort(g___,size_params_loc-size_params_ptr);
 	fseek(g___,size_params_loc,SEEK_SET);
 	putshort(g___,sf->design_size);

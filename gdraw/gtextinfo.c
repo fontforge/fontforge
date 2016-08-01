@@ -300,6 +300,25 @@ struct image_bucket {
 #define IC_SIZE	127
 static struct image_bucket *imagecache[IC_SIZE];
 
+void InitImageCache() {
+  memset(imagecache, 0, IC_SIZE * sizeof(struct image_bucket *));
+}
+
+void ClearImageCache() {
+      for ( int i=0; i<IC_SIZE; ++i ) {
+        struct image_bucket * bucket;
+        struct image_bucket * nextbucket;
+	for ( bucket = imagecache[i]; bucket!=NULL; bucket=nextbucket ) {
+          nextbucket = bucket->next;
+          if (bucket->filename != NULL) { free(bucket->filename); bucket->filename = NULL; }
+          if (bucket->absname != NULL) { free(bucket->absname); bucket->absname = NULL; }
+          if (bucket->image != NULL) { GImageDestroy(bucket->image); bucket->image = NULL; }
+          free(bucket);
+        }
+        imagecache[i] = NULL;
+     }
+}
+
 static int hash_filename(const char *_pt ) {
     const unsigned char *pt = (const unsigned char *) _pt;
     int val = 0;
@@ -321,7 +340,7 @@ static void ImagePathDefault(void) {
 	imagepath[0] = (imagedir == NULL) ? copy(imagedir_default) : copy(imagedir);
 	imagepath[1] = NULL;
 	imagepathlenmax = strlen(imagepath[0]);
-	free(_GGadget_ImagePath);
+	if (_GGadget_ImagePath != NULL) free(_GGadget_ImagePath);
 	_GGadget_ImagePath = copy("=");
     }
 }
@@ -416,7 +435,7 @@ void GGadgetSetImageDir(char *dir) {
                 imagepath[k] = copy(imagedir);
                 ImageCacheReload();
             }
-            free(_GGadget_ImagePath);
+            if (_GGadget_ImagePath != NULL) free(_GGadget_ImagePath);
             _GGadget_ImagePath = copy("=");
         }
     }
@@ -451,7 +470,7 @@ void GGadgetSetImagePath(char *path) {
 
     if ( path==NULL )
 return;
-    free( _GGadget_ImagePath );
+    if (_GGadget_ImagePath != NULL) free( _GGadget_ImagePath );
 
     if ( imagepath!=NULL ) {
 	for ( k=0; imagepath[k]!=NULL; ++k )
@@ -518,7 +537,7 @@ return( bucket->image );
     }
     if ( foundname!=NULL && bucket->image!=NULL )
 	*foundname = copy( bucket->absname );
-return( bucket->image );
+return(bucket->image);
 }
 
 GImage *GGadgetImageCache(const char *filename) {
@@ -659,6 +678,9 @@ return;
     free(ti);
 }
 
+/* The list is terminated with an empty entry. Not a NULL pointer, but 
+ * rather an empty entry terminates lists of GTextInfo entries.  (!)
+ */
 void GTextInfoArrayFree(GTextInfo **ti) {
     int i;
 
@@ -709,7 +731,7 @@ return( NULL );
 	for ( i=0; i<len && array[i]!=NULL; ++i );
 	len = i;
     }
-    ti = malloc((i+1)*sizeof(GTextInfo *));
+    ti = malloc((len+1)*sizeof(GTextInfo *));
     for ( i=0; i<len; ++i ) {
 	ti[i] = calloc(1,sizeof(GTextInfo));
 	ti[i]->text = uc_copy(array[i]);

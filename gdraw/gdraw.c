@@ -33,6 +33,8 @@
 #  include <sys/select.h>
 #endif
 
+
+
 /* Functions for font metrics:
     rectangle of text (left side bearing of first char, right of last char)
 */
@@ -928,6 +930,17 @@ return;
 	*pt++ = *hpt++;
     *pt = '\0';
     gdisp->mykeybuild = false;
+}
+
+void GDrawDestroyDisplays() {
+  if (screen_display != NULL) {
+    _GXDraw_DestroyDisplay(screen_display);
+    screen_display = NULL;
+  }
+  if (printer_display != NULL) {
+    _GPSDraw_DestroyDisplay(printer_display);
+    printer_display = NULL;
+  }
 }
 
 void GDrawCreateDisplays(char *displayname,char *programname) {

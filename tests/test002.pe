@@ -1,21 +1,21 @@
 #Needs: fonts/HanSans-Bold.otf
 # but any other otf cid font would do.
 
-Open("@abs_srcdir@/fonts/HanSans-Bold.otf");
+Open($2);
 Print( "...Read HanSans-Bold.otf")
-Generate("@abs_builddir@/results/HansSansBold.otf");
+Generate("HansSansBold.otf");
 Print( "...Generated otf (cid)")
-Generate("@abs_builddir@/results/HansSansBold.cid");
+Generate("HansSansBold.cid");
 Print( "...Generated ps cid")
-Save("@abs_builddir@/results/HansSansBold.sfd");
+Save("HansSansBold.sfd");
 Print( "...Saved cid sfd")
-Save("@abs_builddir@/results/HansSansBold.sfdir");
+Save("HansSansBold.sfdir");
 Print( "...Saved cid sfdir")
 Close();
-Open("@abs_builddir@/results/HansSansBold.sfdir");
+Open("HansSansBold.sfdir");
 Print( "...Opened cid sfdir")
 Close();
-Open("@abs_builddir@/results/HansSansBold.sfd");
+Open("HansSansBold.sfd");
 Print( "...Opened cid sfd")
 Close();
 Quit()

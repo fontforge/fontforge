@@ -55,7 +55,7 @@ dnl that call ./bootstrap or ./autogen.sh enable a quiet mode where users
 dnl won't see why ./configure fails. This forced-halt also aids users by
 dnl giving an immediate answer as to why ./configure fails (see lots of
 dnl issues before this where users run into problems, but reason for fail
-dnl isn't immediately clear) - anser is usually in adding a developer pkg
+dnl isn't immediately clear) - answer is usually in adding a developer pkg
 dnl since some distros normally distribute compiled binaries to save space.
 dnl This also avoids using pkg-config since some versions don't check the
 dnl additional directories such as /usr/local by default without users
@@ -159,14 +159,55 @@ with_libuninameslist=no
 
 dnl FONTFORGE_ARG_WITH_CAIRO
 dnl ------------------------
-AC_DEFUN([FONTFORGE_ARG_WITH_CAIRO],
-[
-   FONTFORGE_ARG_WITH([cairo],
-      [AS_HELP_STRING([--without-cairo],
-                      [build without Cairo graphics (use regular X graphics instead)])],
-      [cairo >= 1.6],
-      [FONTFORGE_WARN_PKG_NOT_FOUND([CAIRO])],
-      [_NO_LIBCAIRO])
+dnl Add with cairo support by default (only if cairo and headers exist).
+dnl Additionally, zlib, png and their header files should exist too.
+dnl If user defines --without-cairo, then don't use cairo graphics.
+dnl If user defines --with-cairo, then fail with error if there is no
+dnl cairo or headers available.
+dnl You will need to test for zlib and png before running this function.
+dnl Latest version here indicated cairo >= 1.6
+dnl function=`cairo_format_stride_for_width` will verify cairo >= 1.6
+AC_DEFUN([FONTFORGE_ARG_WITH_CAIRO],[
+FONTFORGE_ARG_WITHOUT([cairo],[LIBCAIRO],[build without Cairo graphics (use regular X graphics instead)])
+
+if test x"${with_cairo}" != xno; then
+dnl try the easy path first with PKG_CHECK_MODULES() else check using
+dnl lib and header checks for distros/OSes with weak pkg-config setups.
+   PKG_CHECK_MODULES([LIBCAIRO],[cairo >= 1.6],[i_do_have_cairo=yes],
+         [if test x"${i_do_have_cairo}" != xno -a x"${LIBCAIRO_CFLAGS}" = x; then
+             AC_CHECK_HEADER([cairo/cairo.h],[],[i_do_have_cairo=no])
+          fi
+          if test x"${i_do_have_cairo}" != xno -a x"${LIBCAIRO_LIBS}" = x; then
+             FONTFORGE_SEARCH_LIBS([cairo_format_stride_for_width],[cairo],
+                   [LIBCAIRO_LIBS="${LIBCAIRO_LIBS} ${found_lib}"],
+                   [i_do_have_cairo=no])
+          fi])
+fi
+
+AC_MSG_CHECKING([Build with Cairo support?])
+if test x"${with_cairo}" != xno; then
+   if test x"${i_do_have_libpng}" != xyes || test x"${with_libpng}" = xno; then
+      AC_MSG_FAILURE([ERROR: Please install the Developer version of libpng],[1])
+   fi
+fi
+if test x"${with_cairo}" = xyes; then
+   if test x"${i_do_have_cairo}" != xno; then
+      AC_MSG_RESULT([yes])
+   else
+      AC_MSG_FAILURE([ERROR: Please install the Developer version of Cairo],[1])
+   fi
+else
+   if test x"${i_do_have_cairo}" = xno || test x"${with_cairo}" = xno; then
+      AC_MSG_RESULT([no])
+      AC_DEFINE([_NO_LIBCAIRO],1,[Define if not using cairo])
+      AS_TR_SH(LIBCAIRO_CFLAGS)=""
+      AS_TR_SH(LIBCAIRO_LIBS)=""
+   else
+      AC_MSG_RESULT([yes])
+   fi
+fi
+AC_SUBST([LIBCAIRO_CFLAGS])
+AC_SUBST([LIBCAIRO_LIBS])
 ])
 
 
@@ -258,7 +299,8 @@ dnl ---------------------------
 dnl Add with libspiro support by default (only if libspiro library exists AND
 dnl spiroentrypoints.h header file exist). If both found, then check further
 dnl to see if this version of libspiro also has TaggedSpiroCPsToBezier0().
-dnl If TaggedSpiroCPsToBezier0() also exists, then also set _LIBSPIRO_FUN=1
+dnl If LibSpiroGetVersion() also exists, then also set _LIBSPIRO_FUN=2, else
+dnl if TaggedSpiroCPsToBezier0() also exists, then also set _LIBSPIRO_FUN=1
 dnl If user defines --without-libspiro, then do not include libspiro.
 dnl If user defines --with-libspiro, then fail with error if there is no
 dnl libspiro library OR no spiroentrypoints.h header file.
@@ -271,9 +313,11 @@ fi
 if test x"${i_do_have_libspiro}" = xyes -a x"${LIBSPIRO_LIBS}" = x; then
    FONTFORGE_SEARCH_LIBS([TaggedSpiroCPsToBezier],[spiro],
          [LIBSPIRO_LIBS="${LIBSPIRO_LIBS} ${found_lib}"
+          AC_CHECK_FUNC([LibSpiroVersion],
+                [AC_DEFINE([_LIBSPIRO_FUN],[2],[LibSpiro >= 0.6, includes LibSpiroVersion()])],
           AC_CHECK_FUNC([TaggedSpiroCPsToBezier0],
-                [AC_DEFINE([_LIBSPIRO_FUN],[1],[LibSpiro >= 0.2, includes TaggedSpiroCPsToBezier0()])])],
-         [i_do_have_libspiro=no])
+                [AC_DEFINE([_LIBSPIRO_FUN],[1],[LibSpiro >= 0.2, includes TaggedSpiroCPsToBezier0()])]))
+         ],[i_do_have_libspiro=no])
 fi
 
 FONTFORGE_BUILD_YES_NO_HALT([libspiro],[LIBSPIRO],[Build with LibSpiro Curve Contour support?])
@@ -351,38 +395,13 @@ dnl ---------------------------
 AC_DEFUN([FONTFORGE_WARN_PKG_FALLBACK],
    [AC_MSG_WARN([No pkg-config file was found for $1, but the library is present and we will try to use it.])])
 
-AC_DEFUN([CHECK_LIBUUID],
-	[
-	PKG_CHECK_MODULES([LIBUUID], [uuid >= 1.41.2], [LIBUUID_FOUND=yes], [LIBUUID_FOUND=no])
-	if test "$LIBUUID_FOUND" = "no" ; then
-	    PKG_CHECK_MODULES([LIBUUID], [uuid], [LIBUUID_FOUND=yes], [LIBUUID_FOUND=no])
-	    if test "$LIBUUID_FOUND" = "no" ; then
-                AC_MSG_ERROR([libuuid development files required])
-            else
-                LIBUUID_CFLAGS+=" -I$(pkg-config --variable=includedir uuid)/uuid "
-            fi
-	fi
-	AC_SUBST([LIBUUID_CFLAGS])
-	AC_SUBST([LIBUUID_LIBS])
-	])
-
 dnl FONTFORGE_ARG_WITH_ZEROMQ
 dnl -------------------------
 AC_DEFUN([FONTFORGE_ARG_WITH_ZEROMQ],
 [
 FONTFORGE_ARG_WITH([libzmq],
         [AS_HELP_STRING([--without-libzmq],[build without libzmq])],
-        [ libczmq >= 2.0.1 libzmq >= 4.0.0 ],
+        [ libczmq >= 2.2.0 libzmq >= 4.0.4 ],
         [FONTFORGE_WARN_PKG_NOT_FOUND([LIBZMQ])],
         [_NO_LIBZMQ], [NO_LIBZMQ=1])
-if test "x$i_do_have_libzmq" = xyes; then
-   if test "x${WINDOWS_CROSS_COMPILE}" = x; then
-      AC_MSG_WARN([Using zeromq enables collab, which needs libuuid, so I'm checking for that now...])
-      CHECK_LIBUUID
-   fi
-fi
-
-LIBZMQ_CFLAGS+=" $LIBUUID_CFLAGS"
-LIBZMQ_LIBS+=" $LIBUUID_LIBS"
-
 ])

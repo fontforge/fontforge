@@ -26,9 +26,105 @@
  */
 
 #include "macobjective.h"
+#include "fontforge-config.h"
+
+#ifdef USE_BREAKPAD
+
+static BreakpadRef InitBreakpad(void) {
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+  BreakpadRef breakpad = 0;
+  //NSDictionary *plist = [[NSBundle mainBundle] infoDictionary];
+  NSDictionary *plist = [NSDictionary dictionaryWithContentsOfFile :@"/Applications/FontForge.app/Contents/Info.plist"];
+
+  if( !plist ) {
+    printf("InitBreakpad() can not load default info.plist! no breakpad for you!\n");
+    return breakpad;
+  }
+
+
+  printf("InitBreakpad(top)\n\n");
+  for(NSString *key in [plist allKeys]) {
+    NSLog(@"%@",[plist objectForKey:key]);
+    printf("%p\n",[plist objectForKey:key]);
+  }
+
+
+//NSDictionary *d = [NSDictionary dictionaryWithContentsOfFile :@"/Applications/FontForge.app/Contents/Info.plist"];
+//for(NSString *key in [d allKeys]) {
+  //NSLog(@"%@",[d objectForKey:key]);
+  //printf("%p\n",[d objectForKey:key]);
+//}
+
+  // force these three REQUIRED keys to be in the plist so that breakpad comes up
+  // no matter what.
+    NSMutableDictionary* breakpad_config =
+        [[plist mutableCopy] autorelease];
+    if (![breakpad_config objectForKey:@BREAKPAD_URL]) {
+        [breakpad_config setObject:@"https://localhost/cr/report" forKey:@BREAKPAD_URL];
+    }
+    if (![breakpad_config objectForKey:@BREAKPAD_PRODUCT]) {
+        [breakpad_config setObject:@"FontForge" forKey:@BREAKPAD_PRODUCT];
+    }
+    if (![breakpad_config objectForKey:@BREAKPAD_VERSION]) {
+        [breakpad_config setObject:@"2015 Unstable" forKey:@BREAKPAD_VERSION];
+    }
+
+    // Note: version 1.0.0.4 of the framework changed the type of the argument 
+    // from CFDictionaryRef to NSDictionary * on the next line:
+    printf("xxx creating breakpad with plist:%p\n", breakpad_config );
+    breakpad = BreakpadCreate(breakpad_config);
+    if(!breakpad) {
+       printf("ERROR: Failed to create breakpad with your settings!\n" );
+    }
+
+  [pool release];
+  return breakpad;
+}
+
+@implementation BreakpadTest
+
+- (void)awakeFromNib {
+  breakpad = InitBreakpad();
+}
+
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
+  BreakpadRelease(breakpad);
+  return NSTerminateNow;
+}
+
+@end
+
+@implementation MyApplication
+
+- (void)awakeFromNib {
+  breakpad = InitBreakpad();
+}
+
+
+
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
+  BreakpadRelease(breakpad);
+  return NSTerminateNow;
+}
+
+@end
+
 
 void setup_cocoa_app() 
 {
-   [NSApplication sharedApplication];
+    printf("setup_cocoa_app()\n\n");
+    [MyApplication sharedApplication];
+    BreakpadTest* bp = [BreakpadTest alloc];
+    [bp awakeFromNib];
+
+//  [NSApplication sharedApplication];
 }
 
+#else
+
+void setup_cocoa_app()
+{
+    [NSApplication sharedApplication];
+}
+
+#endif

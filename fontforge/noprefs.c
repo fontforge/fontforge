@@ -105,7 +105,6 @@ extern int use_freetype_to_rasterize_fv;	/* in bitmapchar.c */
 /* UI preferences which we don't use, but will preserve to so we can read/write */
 /*  UI preference files without loss of data */
 static char *xdefs_filename;
-static char *helpdir=NULL;				/* in uiutil.c */
 static int splash=1;
 static int cv_auto_goto=1;
 static int OpenCharsInNewWindow=1;
@@ -126,8 +125,6 @@ static int loacal_markextrema, loacal_markpoi, loacal_showrulers,
     loacal_showcpinfo, loacal_showsidebearings, loacal_showpoints,
     loacal_showfilled, loacal_showtabs, loacal_showrefnames;
 static int oldsystem=100;
-static char *oflib_username;
-static char *oflib_password;
 static int rectelipse=0, polystar=0, regular_star=0;	/* from cvpalettes.c */
 static int center_out[2]={0,0};			/* from cvpalettes.c */
 static float rr_radius=0;				/* from cvpalettes.c */
@@ -155,7 +152,6 @@ static int old_validate = true;
 static int old_fontlog = false;
 static int home_char = 'A';
 static int compact_font_on_open=0;
-static int oflib_automagic_preview;		/* from oflib.c */
 static int aa_pixelsize;			/* from anchorsaway.c */
 
 static int gfc_showhidden, gfc_dirplace;
@@ -242,8 +238,7 @@ static struct prefs_list {
     { NULL, 0, NULL, NULL, NULL, '\0', NULL, 0, NULL } /* Sentinel */
 },
 extras[] = {
-    { N_("ResourceFile"), pr_file, &xdefs_filename, NULL, NULL, 'R', NULL, 0, N_("When FontForge starts up, it loads display related resources from a\nproperty on the screen. Sometimes it is useful to be able to store\nthese resources in a file. These resources are only read at start\nup, so changing this has no effect until the next time you start\nFontForge.") },
-    { N_("HelpDir"), pr_file, &helpdir, NULL, NULL, 'H', NULL, 0, N_("The directory on your local system in which FontForge will search for help\nfiles.  If a file is not found there, then FontForge will look for it on the net.") },
+    { N_("ResourceFile"), pr_file, &xdefs_filename, NULL, NULL, 'R', NULL, 0, N_("When FontForge starts up, it loads the user interface theme from\nthis file. Any changes will only take effect the next time you start FontForge.") },
     { N_("SplashScreen"), pr_bool, &splash, NULL, NULL, 'S', NULL, 0, N_("Show splash screen on start-up") },
     { N_("GlyphAutoGoto"), pr_bool, &cv_auto_goto, NULL, NULL, '\0', NULL, 0, N_("Typing a normal character in the glyph view window changes the window to look at that character") },
     { N_("OpenCharsInNewWindow"), pr_bool, &OpenCharsInNewWindow, NULL, NULL, '\0', NULL, 0, N_("When double clicking on a character in the font view\nopen that character in a new window, otherwise\nreuse an existing one.") },
@@ -274,8 +269,6 @@ extras[] = {
     { "ShowFilled", pr_int, &loacal_showfilled, NULL, NULL, '\0', NULL, 1, NULL },
     { "ShowTabs", pr_int, &loacal_showtabs, NULL, NULL, '\0', NULL, 1, NULL },
     { "DefaultScreenDpiSystem", pr_int, &oldsystem, NULL, NULL, '\0', NULL, 1, NULL },
-    { "OFLibUsername", pr_string, &oflib_username, NULL, NULL, '\0', NULL, 1, NULL },
-    { "OFLibPassword", pr_string, &oflib_password, NULL, NULL, '\0', NULL, 1, NULL },
     { "RegularStar", pr_bool, &regular_star, NULL, NULL, '\0', NULL, 1, NULL },
     { "PolyStar", pr_bool, &polystar, NULL, NULL, '\0', NULL, 1, NULL },
     { "RectEllipse", pr_bool, &rectelipse, NULL, NULL, '\0', NULL, 1, NULL },
@@ -300,7 +293,6 @@ extras[] = {
     { "FCShowHidden", pr_bool, &gfc_showhidden, NULL, NULL, '\0', NULL, 1, NULL },
     { "FCDirPlacement", pr_int, &gfc_dirplace, NULL, NULL, '\0', NULL, 1, NULL },
     { "FCBookmarks", pr_string, &gfc_bookmarks, NULL, NULL, '\0', NULL, 1, NULL },
-    { "OFLibAutomagicPreview", pr_int, &oflib_automagic_preview, NULL, NULL, '\0', NULL, 1, NULL },
     { "DefaultMVWidth", pr_int, &mv_width, NULL, NULL, '\0', NULL, 1, NULL },
     { "DefaultMVHeight", pr_int, &mv_height, NULL, NULL, '\0', NULL, 1, NULL },
     { "DefaultBVWidth", pr_int, &bv_width, NULL, NULL, '\0', NULL, 1, NULL },
@@ -687,7 +679,7 @@ static void DefaultXUID(void) {
     g_random_set_seed(tv.tv_usec+1);
     r2 = g_random_int();
     sprintf( buffer, "1021 %d %d", r1, r2 );
-    free(xuid);
+    if (xuid != NULL) free(xuid);
     xuid = copy(buffer);
 }
 

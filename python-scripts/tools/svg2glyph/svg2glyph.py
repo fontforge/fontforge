@@ -13,6 +13,7 @@ from os.path import join
 ascent = None
 em_size = None
 output_dir = 'output.sfdir'
+case_insensitive = False
 dx = dy = 0
 psnames_to_uni = {#{{{
              'space': 0x0020,
@@ -182,7 +183,7 @@ def putspline(cmd, indent, fobj, *lst):
         print(' ', end='', file=fobj)
         indent = indent - 1
     for pt in lst:
-        print('{:.9g} {:.9g}'.format(pt.x + dx, ascent - pt.y - dy), end=' ', file=fobj)
+        print('{} {}'.format(round(pt.x + dx), round(ascent - pt.y - dy)), end=' ', file=fobj)
     print('{} {}'.format(cmd, 0 if cmd == 'c' else 1), file=fobj)
 
 def getfloat(queue):
@@ -199,7 +200,7 @@ def handle_transform(elt):
             dx = dx + next(mp, 0)
             dy = dy + next(mp, 0)
 
-opts, args = getopt(sys.argv[1:], 'ha:e:o:', ['help', 'ascent=', 'em-size=', 'output-dir='])
+opts, args = getopt(sys.argv[1:], 'hia:e:o:', ['help', 'case-insensitive-fs', 'ascent=', 'em-size=', 'output-dir='])
 
 for opt, val in opts:
     if opt in ('-a', '--ascent'):
@@ -208,8 +209,10 @@ for opt, val in opts:
         em_size = int(val)
     elif opt in ('-o', '--output-dir'):
         output_dir = val
+    elif opt in ('-i', '--case-insensitive-fs'):
+        case_insensitive = True
     elif opt in ('-h', '--help'):
-        print('svg2glyph [-h|-a ASCENT|-e EM_SIZE|-o OUTPUT_DIR] SVG_FILE ...')
+        print('svg2glyph [-h|-i|-a ASCENT|-e EM_SIZE|-o OUTPUT_DIR] SVG_FILE ...')
         sys.exit(0)
 
 gid = 0
@@ -218,13 +221,17 @@ for fname in args:
     root = parse(fname)
     name = root.getElementsByTagName('title')[0].childNodes[0].data
     dx = dy = 0
-    handle_transform(root.getElementsByTagName('g')[0])
+    groups = root.getElementsByTagName('g')[0]
+    handle_transform(groups)
     if name in psnames_to_uni:
         uni = psnames_to_uni[name]
     else:
         uni = int(re.match('^uni([a-f0-9]{4})$', name, re.I).groups()[0], 16)
-    paths = root.getElementsByTagName('path')
-    glyph = join(output_dir, '{}.glyph'.format(name))
+    gname = name
+    if case_insensitive and (re.match('^[A-Z]$', name) or re.match('^[AO]E$', name)):
+        gname = '_{}'.format(name.lower())
+    paths = groups.getElementsByTagName('path')
+    glyph = join(output_dir, '{}.glyph'.format(gname))
     dest = open(glyph, 'w')
     print('{} -> {}'.format(fname, glyph))
     print('StartChar: {}'.format(name), file=dest)

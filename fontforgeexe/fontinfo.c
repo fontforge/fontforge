@@ -56,6 +56,7 @@ GTextInfo emsizes[] = {
     GTEXTINFO_EMPTY
 };
 
+/* Note that we are storing integer data in a pointer field, hence the casts. They are not to be dereferenced. */
 GTextInfo interpretations[] = {
 /* GT: See the long comment at "Property|New" */
 /* GT: The msgstr should contain a translation of "None", ignore "Interpretation|" */
@@ -196,6 +197,15 @@ static GTextInfo ibmfamily[] = {
     { (unichar_t *) N_("Sy Miscellaneous"), NULL, 0, 0, (void *) 0xc0f, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     GTEXTINFO_EMPTY
 };
+static GTextInfo stylemap[] = {
+    { (unichar_t *) N_("Automatic"), NULL, 0, 0, (void *) -1, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("None"), NULL, 0, 0, (void *) 0x00, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Regular"), NULL, 0, 0, (void *) 0x40, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Italic"), NULL, 0, 0, (void *) 0x01, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Bold"), NULL, 0, 0, (void *) 0x20, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Bold Italic"), NULL, 0, 0, (void *) 0x21, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    GTEXTINFO_EMPTY
+};
 static GTextInfo os2versions[] = {
     { (unichar_t *) N_("OS2Version|Automatic"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("1"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
@@ -330,15 +340,15 @@ static GTextInfo pancontrast[] = {
 static GTextInfo panstrokevar[] = {
     { (unichar_t *) N_("PanoseStrokeVariation|Any"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("PanoseStrokeVariation|No Fit"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("Gradual/Diagonal"), NULL, 0, 0, (void *) 2, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("Gradual/Transitional"), NULL, 0, 0, (void *) 3, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("Gradual/Vertical"), NULL, 0, 0, (void *) 4, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("Gradual/Horizontal"), NULL, 0, 0, (void *) 5, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("Rapid/Vertical"), NULL, 0, 0, (void *) 6, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("Rapid/Horizontal"), NULL, 0, 0, (void *) 7, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("Instant/Vertical"), NULL, 0, 0, (void *) 8, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) "9", NULL, 0, 0, (void *) 9, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) "10", NULL, 0, 0, (void *) 10, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("No Variation"), NULL, 0, 0, (void *) 2, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Gradual/Diagonal"), NULL, 0, 0, (void *) 3, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Gradual/Transitional"), NULL, 0, 0, (void *) 4, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Gradual/Vertical"), NULL, 0, 0, (void *) 5, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Gradual/Horizontal"), NULL, 0, 0, (void *) 6, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Rapid/Vertical"), NULL, 0, 0, (void *) 7, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Rapid/Horizontal"), NULL, 0, 0, (void *) 8, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Instant/Vertical"), NULL, 0, 0, (void *) 9, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Instant/Horizontal"), NULL, 0, 0, (void *) 10, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) "11", NULL, 0, 0, (void *) 11, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) "12", NULL, 0, 0, (void *) 12, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) "13", NULL, 0, 0, (void *) 13, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
@@ -1647,6 +1657,12 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_OS2Version		3031
 #define CID_UseTypoMetrics	3032
 #define CID_WeightWidthSlopeOnly	3033
+// Maybe we could insert these above and change the numbering.
+#define CID_CapHeight		3034
+#define CID_CapHeightLab		3035
+#define CID_XHeight		3036
+#define CID_XHeightLab		3037
+#define CID_StyleMap		3038
 
 #define CID_SubSuperDefault	3100
 #define CID_SubXSize		3101
@@ -1868,12 +1884,13 @@ static struct col_init psprivate_ci[] = {
     { me_string, NULL, NULL, NULL, N_("Value") }
     };
 
-static char *rpldecimal(const char *orig,const char *decimal_point,const char *oldloc) {
+static char *rpldecimal(const char *orig,const char *decimal_point, locale_t tmplocale) {
     char *end;
     char *new, *npt; const char *pt;
     int dlen;
     double dval;
     char buffer[40];
+    locale_t oldlocale;
 
     /* if the current locale uses a "." for a decimal point the we don't need */
     /*  to translate the number, just check that it is valid */
@@ -1901,9 +1918,9 @@ return( copy(orig));
     }
     *npt = '\0';
 
-    setlocale(LC_NUMERIC,"C");
+    oldlocale = uselocale_hack(tmplocale);
     strtod(new,&end);
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale_hack(oldlocale);
     while ( isspace(*end)) ++end;
     if ( *end=='\0' ) {
 	char *ret = copy(new);
@@ -1919,13 +1936,13 @@ return( ret );
 return( NULL );
     }
     free(new);
-    setlocale(LC_NUMERIC,"C");
+    oldlocale = uselocale_hack(tmplocale);
     sprintf( buffer, "%g", dval );
-    setlocale(LC_NUMERIC,oldloc);
+    uselocale_hack(oldlocale);
 return( copy(buffer));
 }
 
-static char *rplarraydecimal(const char *orig,const char *decimal_point,const char *oldloc) {
+static char *rplarraydecimal(const char *orig,const char *decimal_point, locale_t tmplocale) {
     char *new, *npt, *rpl;
     int nlen;
     const char *start, *pt; int ch;
@@ -1939,7 +1956,7 @@ static char *rplarraydecimal(const char *orig,const char *decimal_point,const ch
 	start=pt;
 	while ( *pt!=']' && *pt!=' ' && *pt!='\0' ) ++pt;
 	ch = *pt; *(char *) pt = '\0';
-	rpl = rpldecimal(start,decimal_point,oldloc);
+	rpl = rpldecimal(start,decimal_point,tmplocale);
 	*(char *) pt = ch;
 	if ( rpl==NULL ) {
 	    gwwv_post_notice(_("Bad type"),_("Expected array of numbers.\nFailed to parse \"%.*s\" as a number."),
@@ -1973,7 +1990,7 @@ static void PSPrivate_FinishEdit(GGadget *g,int r, int c, int wasnew) {
     char *key = strings[r*cols+0].u.md_str;
     char *val = strings[r*cols+1].u.md_str;
     char *pt, *ept, *newval;
-    char *oldloc;
+    locale_t tmplocale;
     struct psdict *tempdict;
 
     if ( key==NULL )
@@ -1992,7 +2009,9 @@ return;
 	break;
 	if ( KnownPrivates[i].name==NULL )	/* If we don't recognize it, leave it be */
 return;
-	oldloc = copy(setlocale(LC_NUMERIC,NULL));
+
+	tmplocale = newlocale_hack(LC_NUMERIC_MASK, "C", NULL);
+	if (tmplocale == NULL) fprintf(stderr, "Locale error.\n");
 
 	for ( pt=val; isspace(*pt); ++pt );
 	for ( ept = val+strlen(val-1); ept>pt && isspace(*ept); --ept );
@@ -2015,7 +2034,7 @@ return;
 	    if ( *pt!='\0' && (*pt!='{' || (ept>=pt && *ept!='}')) )
 		gwwv_post_notice(_("Bad type"),_("Expected PostScript code.\nWhich usually begins with a \"{\" and ends with a \"}\"."));
 	} else if ( KnownPrivates[i].type==pt_number ) {
-	    newval = rpldecimal(val,loc->decimal_point,oldloc);
+	    newval = rpldecimal(val,loc->decimal_point,tmplocale);
 	    if ( newval==NULL )
 		gwwv_post_notice(_("Bad type"),_("Expected number."));
 	    else if ( strcmp(newval,val)==0 )
@@ -2026,7 +2045,7 @@ return;
 		GGadgetRedraw(g);
 	    }
 	} else if ( KnownPrivates[i].type==pt_array ) {
-	    newval = rplarraydecimal(val,loc->decimal_point,oldloc);
+	    newval = rplarraydecimal(val,loc->decimal_point,tmplocale);
 	    if ( newval==NULL )
 		gwwv_post_notice(_("Bad type"),_("Expected number."));
 	    else if ( strcmp(newval,val)==0 )
@@ -2037,7 +2056,7 @@ return;
 		GGadgetRedraw(g);
 	    }
 	}
-	free(oldloc);
+	if (tmplocale != NULL) { freelocale_hack(tmplocale); tmplocale = NULL; }
     }
 }
 
@@ -3205,6 +3224,7 @@ return( true );
 }
 
 static int GFI_HelpOFL(GGadget *g, GEvent *e) {
+/* F1 Help to open a browser to sil.org Open Source License and FAQ */
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	help("http://scripts.sil.org/OFL");
     }
@@ -3212,6 +3232,9 @@ return( true );
 }
 
 static int GFI_AddOFL(GGadget *g, GEvent *e) {
+/* Add sil.org Open Source License (see ofl.c), and modify with current date */
+/* Author, and Font Family Name for rows[0,1] of the license. You can access */
+/* this routine from GUI at Element->Font_Info->TTF_Names. info at PS_Names. */
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	GGadget *tng = GWidgetGetControl(GGadgetGetWindow(g),CID_TNames);
@@ -3294,20 +3317,12 @@ static int GFI_AddOFL(GGadget *g, GEvent *e) {
 	    }
 	}
 	GMatrixEditSet(tng, newtns, rows+extras, false);
-	ff_post_notice(_("Please read the OFL"),_(
-	    "You should read the OFL and its FAQ \n"
-	    "at http://scripts.sil.org/OFL."
-	    "\n"
-	    "If you are not very familiar with English,\n"
-	    "please check if there is a translation of the \n"
-	    "FAQ or an unofficial translation of the license \n"
-	    "in your mother tongue or preferred language. \n"
-	    "\n"
-	    "Please fill in the copyright notice in the license\n"
-	    "header along with any Reserved Font Name(s).\n"
-	    "If you are branching from an existing font make sure\n"
-	    "you have the right to do so and remember to add your\n"
-	    "additional notice with any Reserved Font Name(s)." ));
+	ff_post_notice(_("Using the OFL for your open fonts"),_(
+	    "The OFL is a community-approved software license designed for libre/open font projects. \n"
+	    "Fonts under the OFL can be used, studied, copied, modified, embedded, merged and redistributed while giving authors enough control and artistic integrity. For more details including an FAQ see http://scripts.sil.org/OFL. \n\n"
+	    "This font metadata will help users, designers and distribution channels to know who you are, how to contact you and what rights you are granting. \n" 
+        "When releasing modified versions, remember to add your additional notice, including any extra Reserved Font Name(s). \n\n" 
+	    "Have fun designing open fonts!" ));
     }
 return( true );
 }
@@ -4003,6 +4018,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	int upos, uwid, as, des, err = false, weight=0;
 	int uniqueid, linegap=0, vlinegap=0, winascent=0, windescent=0;
 	int tlinegap=0, tascent=0, tdescent=0, hascent=0, hdescent=0;
+	int capheight=0, xheight=0;
 	int winaoff=true, windoff=true;
 	int taoff=true, tdoff=true, haoff = true, hdoff = true;
 	real ia, cidversion;
@@ -4010,7 +4026,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	int i,j, mcs;
 	int vmetrics, namechange, guideorder2;
 	int xuidchanged = false, usexuid, useuniqueid;
-	GTextInfo *pfmfam, *ibmfam, *fstype, *nlitem;
+	GTextInfo *pfmfam, *ibmfam, *fstype, *nlitem, *stylemap;
 	int32 len;
 	GTextInfo **ti;
 	int subs[4], super[4], strike[2];
@@ -4129,7 +4145,7 @@ return( true );
 	} else if ( styleid!=0 && fontstyle_name==NULL ) {
 	    ff_post_error(_("Bad Design Size Info"),_("If you specify a style id for the design size, then you must specify a style name"));
 return( true );
-	} else if ( fontstyle_name==NULL && styleid!=0 ) {
+	} else if ( fontstyle_name!=NULL && styleid==0 ) {
 	    ff_post_error(_("Bad Design Size Info"),_("If you specify a style name for the design size, then you must specify a style id"));
 return( true );
 	} else if ( design_size<0 ) {
@@ -4215,6 +4231,8 @@ return(true);
 	    hdoff = GGadgetIsChecked(GWidgetGetControl(gw,CID_HHeadDescentIsOff));
 	    hascent  = GetInt8(gw,CID_HHeadAscent,haoff ? _("_HHead Ascent Offset:") : _("HHead Ascent:"),&err);
 	    hdescent = GetInt8(gw,CID_HHeadDescent,hdoff ? _("HHead De_scent Offset:") : _("HHead Descent:"),&err);
+	    capheight = GetInt8(gw,CID_CapHeight, _("Ca_pital Height:"),&err);
+	    xheight = GetInt8(gw,CID_XHeight, _("_X Height:"),&err);
 	    if ( err )
 return(true);
 
@@ -4437,10 +4455,15 @@ return(true);
 	    else
 		sf->pfminfo.pfmfamily = 0x11;
 	    ibmfam = GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_IBMFamily));
-	    if ( pfmfam!=NULL )
+	    if ( ibmfam!=NULL )
 		sf->pfminfo.os2_family_class = (intpt) (ibmfam->userdata);
 	    else
 		sf->pfminfo.os2_family_class = 0x00;
+        stylemap = GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_StyleMap));
+        if ( stylemap!=NULL )
+        sf->pfminfo.stylemap = (intpt) (stylemap->userdata);
+        else
+        sf->pfminfo.stylemap = -1;
 	    memcpy(sf->pfminfo.os2_vendor,os2_vendor,sizeof(os2_vendor));
 	    fstype = GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_FSType));
 	    if ( fstype!=NULL )
@@ -4470,6 +4493,8 @@ return(true);
 	    sf->pfminfo.hhead_descent = hdescent;
 	    sf->pfminfo.hheadascent_add = haoff;
 	    sf->pfminfo.hheaddescent_add = hdoff;
+	    sf->pfminfo.os2_capheight = capheight;
+	    sf->pfminfo.os2_xheight = xheight;
 	    sf->pfminfo.pfmset = true;
 
 	    sf->pfminfo.subsuper_set = !GGadgetIsChecked(GWidgetGetControl(gw,CID_SubSuperDefault));
@@ -4857,7 +4882,6 @@ static void TTFSetup(struct gfi_data *d) {
 	uc_strcpy(ubuf,"PfEd");
     GGadgetSetTitle(GWidgetGetControl(d->gw,CID_Vendor),ubuf);
 
-
     GGadgetSetChecked(GWidgetGetControl(d->gw,CID_PanDefault),!info.panose_set);
     _GFI_PanoseDefault(d);
     if ( info.panose_set ) {
@@ -4909,6 +4933,13 @@ static void TTFSetup(struct gfi_data *d) {
     sprintf( buffer, "%d", info.os2_typodescent );
     uc_strcpy(ubuf,buffer);
     GGadgetSetTitle(GWidgetGetControl(d->gw,CID_TypoDescent),ubuf);
+
+    sprintf( buffer, "%d", info.os2_capheight );
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_CapHeight),ubuf);
+    sprintf( buffer, "%d", info.os2_xheight );
+    uc_strcpy(ubuf,buffer);
+    GGadgetSetTitle(GWidgetGetControl(d->gw,CID_XHeight),ubuf);
 
     GGadgetSetChecked(GWidgetGetControl(d->gw,CID_HHeadAscentIsOff),info.hheadascent_add);
     GFI_AsDsLab(d,CID_HHeadAscentIsOff,true);
@@ -6452,7 +6483,7 @@ static int GFI_LookupImportLookup(GGadget *g, GEvent *e) {
 	if ( done==2 ) {
 	    int32 len;
 	    GTextInfo **ti = GGadgetGetList(gcd[1].ret,&len);
-	    OTLookup **list = malloc((len+1)*sizeof(OTLookup));
+	    OTLookup **list = malloc((len+1)*sizeof(OTLookup*));
 	    struct lkdata *lk = &gfi->tables[isgpos];
 	    OTLookup *before = NULL;
 
@@ -7437,13 +7468,15 @@ return( lookups_e_h(gw,event,false));
 }
 
 void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
+    // This opens the Font Info box to the tab specified by defaspect,
+    // which indexes the array aspects, populated below.
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
     GTabInfo aspects[26], vaspects[6], lkaspects[3];
     GGadgetCreateData mgcd[10], ngcd[19], psgcd[30], tngcd[8],
-	pgcd[12], vgcd[19], pangcd[23], comgcd[4], txgcd[23], floggcd[4],
-	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[7], metgcd[29], vagcd[3], ssgcd[23],
+	pgcd[12], vgcd[21], pangcd[23], comgcd[4], txgcd[23], floggcd[4],
+	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[7], metgcd[33], vagcd[3], ssgcd[23],
 	xugcd[8], dgcd[6], ugcd[6], gaspgcd[5], gaspgcd_def[2], lksubgcd[2][4],
 	lkgcd[2], lkbuttonsgcd[15], cgcd[12], lgcd[20], msgcd[7], ssngcd[8],
 	woffgcd[8], privategcd_def[4];
@@ -7454,7 +7487,7 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
 	    lkbox[7], cbox[6], lbox[8], msbox[3], ssboxes[4], woffbox[2];
     GGadgetCreateData *marray[7], *marray2[9], *narray[29], *narray2[7], *narray3[3],
 	*xuarray[20], *psarray[10], *psarray2[21], *psarray4[10],
-	*pparray[6], *vradio[5], *varray[38], *metarray[46],
+	*pparray[6], *vradio[5], *varray[41], *metarray[53],
 	*ssarray[58], *panarray[40], *comarray[3], *flogarray[3],
 	*mkarray[6], *msarray[6],
 	*txarray[5], *txarray2[30],
@@ -7467,8 +7500,8 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
 	*larray[16], *larray2[25], *larray3[6], *larray4[5], *uharray[4],
 	*ssvarray[4], *woffarray[16];
     GTextInfo mlabel[10], nlabel[18], pslabel[30], tnlabel[7],
-	plabel[12], vlabel[19], panlabel[22], comlabel[3], txlabel[23],
-	mflabel[8], mclabel[8], szlabel[17], mklabel[7], metlabel[28],
+	plabel[12], vlabel[21], panlabel[22], comlabel[3], txlabel[23],
+	mflabel[8], mclabel[8], szlabel[17], mklabel[7], metlabel[32],
 	sslabel[23], xulabel[8], dlabel[5], ulabel[3], gasplabel[5],
 	lkbuttonslabel[14], clabel[11], floglabel[3], llabel[20], mslabel[7],
 	ssnlabel[7], wofflabel[8], privatelabel_def[3];
@@ -8233,7 +8266,7 @@ return;
 
     LayersMatrixInit(&layersmi,d);
 
-    lgcd[k].gd.pos.width = 300; lgcd[k].gd.pos.height = 200;
+    lgcd[k].gd.pos.width = 300; lgcd[k].gd.pos.height = 180;
     lgcd[k].gd.flags = sf->multilayer ? gg_visible : (gg_enabled | gg_visible);
     lgcd[k].gd.cid = CID_Backgrounds;
     lgcd[k].gd.u.matrix = &layersmi;
@@ -8419,16 +8452,6 @@ return;
     vgcd[13].gd.u.list = ibmfamily;
     vgcd[13].creator = GListButtonCreate;
 
-    vgcd[14].gd.pos.x = 10; vgcd[14].gd.pos.y = vgcd[13].gd.pos.y+24+6;
-    vlabel[14].text = (unichar_t *) _("Weight, Width, Slope Only");
-    vlabel[14].text_is_1byte = true;
-    vlabel[14].text_in_resource = true;
-    vgcd[14].gd.label = &vlabel[14];
-    vgcd[14].gd.cid = CID_WeightWidthSlopeOnly;
-    vgcd[14].gd.popup_msg = (unichar_t *) _("MS needs to know whether a font family's members differ\nonly in weight, width and slope (and not in other variables\nlike optical size)." );
-    vgcd[14].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    vgcd[14].creator = GCheckBoxCreate;
-
     vgcd[15].gd.pos.x = 10; vgcd[15].gd.pos.y = vgcd[11].gd.pos.y+24+6;
     vlabel[15].text = (unichar_t *) _("_OS/2 Version");
     vlabel[15].text_is_1byte = true;
@@ -8443,6 +8466,47 @@ return;
     vgcd[16].gd.cid = CID_OS2Version;
     vgcd[16].gd.u.list = os2versions;
     vgcd[16].creator = GListFieldCreate;
+    
+    vgcd[17].gd.pos.x = 10; vgcd[17].gd.pos.y = vgcd[13].gd.pos.y+26+6;
+    vlabel[17].text = (unichar_t *) _("Style Map:");
+    vlabel[17].text_is_1byte = true;
+    vlabel[17].text_in_resource = true;
+    vgcd[17].gd.label = &vlabel[17];
+    vgcd[17].gd.flags = gg_visible | gg_enabled;
+    vgcd[17].creator = GLabelCreate;
+
+    vgcd[18].gd.pos.x = 90; vgcd[18].gd.pos.y = vgcd[17].gd.pos.y-6; vgcd[18].gd.pos.width = vgcd[7].gd.pos.width;
+    vgcd[18].gd.flags = gg_visible | gg_enabled;
+    vgcd[18].gd.cid = CID_StyleMap;
+    vgcd[18].gd.u.list = stylemap;
+    vgcd[18].creator = GListButtonCreate;
+    stylemap[0].selected = stylemap[1].selected =
+	    stylemap[2].selected = stylemap[3].selected =
+        stylemap[4].selected = stylemap[5].selected = false;
+    if ( sf->pfminfo.stylemap == 0x00 )
+	i = 1;
+    else if ( sf->pfminfo.stylemap == 0x40 )
+	i = 2;
+    else if ( sf->pfminfo.stylemap == 0x01 )
+	i = 3;
+    else if ( sf->pfminfo.stylemap == 0x20 )
+	i = 4;
+    else if ( sf->pfminfo.stylemap == 0x21 )
+	i = 5;
+    else
+	i = 0;
+    stylemap[i].selected = true;
+    vgcd[18].gd.label = &stylemap[i];
+
+    vgcd[14].gd.pos.x = 10; vgcd[14].gd.pos.y = vgcd[18].gd.pos.y+24+6;
+    vlabel[14].text = (unichar_t *) _("Weight, Width, Slope Only");
+    vlabel[14].text_is_1byte = true;
+    vlabel[14].text_in_resource = true;
+    vgcd[14].gd.label = &vlabel[14];
+    vgcd[14].gd.cid = CID_WeightWidthSlopeOnly;
+    vgcd[14].gd.popup_msg = (unichar_t *) _("MS needs to know whether a font family's members differ\nonly in weight, width and slope (and not in other variables\nlike optical size)." );
+    vgcd[14].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    vgcd[14].creator = GCheckBoxCreate;
 
     vradio[0] = GCD_Glue; vradio[1] = &vgcd[8]; vradio[2] = &vgcd[9]; vradio[3] = GCD_Glue; vradio[4] = NULL;
 
@@ -8454,10 +8518,11 @@ return;
     varray[15] = &vbox[2]; varray[16] = GCD_ColSpan; varray[17] = NULL;
     varray[18] = &vgcd[10]; varray[19] = &vgcd[11]; varray[20] = NULL;
     varray[21] = &vgcd[12]; varray[22] = &vgcd[13]; varray[23] = NULL;
-    varray[24] = &vgcd[14]; varray[25] = GCD_ColSpan; varray[26] = NULL;
-    varray[27] = GCD_Glue; varray[28] = GCD_Glue; varray[29] = NULL;
+    varray[24] = &vgcd[17]; varray[25] = &vgcd[18]; varray[26] = NULL;
+    varray[27] = &vgcd[14]; varray[28] = GCD_ColSpan; varray[29] = NULL;
     varray[30] = GCD_Glue; varray[31] = GCD_Glue; varray[32] = NULL;
-    varray[33] = varray[37] = NULL;
+    varray[33] = GCD_Glue; varray[34] = GCD_Glue; varray[35] = NULL;
+    varray[36] = varray[40] = NULL;
 
     memset(vbox,0,sizeof(vbox));
     vbox[0].gd.flags = gg_enabled|gg_visible;
@@ -8472,6 +8537,7 @@ return;
 
     memset(&metgcd,0,sizeof(metgcd));
     memset(&metlabel,'\0',sizeof(metlabel));
+    memset(&metarray,'\0',sizeof(metarray));
 
     i = j = 0;
 
@@ -8748,6 +8814,51 @@ return;
     metgcd[i++].creator = GTextFieldCreate;
     metarray[j++] = GCD_Glue;
     metarray[j++] = NULL;
+
+    metgcd[i].gd.pos.x = 10; metgcd[i].gd.pos.y = metgcd[i-2].gd.pos.y+26+6;
+    metlabel[i].text = (unichar_t *) _("Ca_pital Height:");
+    metlabel[i].text_is_1byte = true;
+    metlabel[i].text_in_resource = true;
+    metgcd[i].gd.label = &metlabel[i];
+    metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    metgcd[i].gd.popup_msg = (unichar_t *) _("This denotes the height of X.");
+    metgcd[i].gd.cid = CID_CapHeightLab;
+    metarray[j++] = &metgcd[i];
+    metgcd[i++].creator = GLabelCreate;
+
+    metgcd[i].gd.pos.x = 125; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y-4;
+    metgcd[i].gd.pos.width = 50;
+    metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	/* value set later */
+    metgcd[i].gd.cid = CID_CapHeight;
+    metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metarray[j++] = &metgcd[i];
+    metgcd[i++].creator = GTextFieldCreate;
+    metarray[j++] = GCD_Glue;
+    metarray[j++] = NULL;
+
+    metgcd[i].gd.pos.x = 10; metgcd[i].gd.pos.y = metgcd[i-2].gd.pos.y+26+6;
+    metlabel[i].text = (unichar_t *) _("_X Height:");
+    metlabel[i].text_is_1byte = true;
+    metlabel[i].text_in_resource = true;
+    metgcd[i].gd.label = &metlabel[i];
+    metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    metgcd[i].gd.popup_msg = (unichar_t *) _("This denotes the height of x.");
+    metgcd[i].gd.cid = CID_XHeightLab;
+    metarray[j++] = &metgcd[i];
+    metgcd[i++].creator = GLabelCreate;
+
+    metgcd[i].gd.pos.x = 125; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y-4;
+    metgcd[i].gd.pos.width = 50;
+    metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	/* value set later */
+    metgcd[i].gd.cid = CID_XHeight;
+    metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
+    metarray[j++] = &metgcd[i];
+    metgcd[i++].creator = GTextFieldCreate;
+    metarray[j++] = GCD_Glue;
+    metarray[j++] = NULL;
+
     metarray[j++] = GCD_Glue; metarray[j++] = GCD_Glue; metarray[j++] = GCD_Glue;
 
     metarray[j++] = NULL; metarray[j++] = NULL;
@@ -9508,7 +9619,7 @@ return;
 /* GT: English (possibly translating it in parentheses). I believe there */
 /* GT: are legal reasons for this. */
 /* GT: So "Añadir SIL Open Font License (licencia de fuentes libres)" */
-    tnlabel[5].text = (unichar_t *) S_("Add SIL ");
+    tnlabel[5].text = (unichar_t *) S_("Add OFL");
     tnlabel[5].image_precedes = false;
     tnlabel[5].image = &OFL_logo;
     tnlabel[5].text_is_1byte = true;
@@ -9516,30 +9627,19 @@ return;
     tngcd[5].gd.label = &tnlabel[5];
     tngcd[5].gd.handle_controlevent = GFI_AddOFL;
     tngcd[5].gd.popup_msg = (unichar_t *) _(
-	"The SIL Open Font License (OFL) is designed for free/libre/open font projects.\n"
-	"Most other FLOSS licenses are designed for conventional software and are problematic for fonts.\n"
-	"The OFL is a community-approved license and is well-suited for releasing fonts to be freely \n"
-	"used, studied, copied, modified, embedded, merged and distributed while maintaining artistic integrity.\n"
-        "You are encouraged you to use it if you can.\n"
-	"\n"
-	"For more details about the OFL - and the corresponding FAQ - see http://scripts.sil.org/OFL \n"
-	"\n"
-	"Simply press this button to add the OFL metadata to your font.\n"
-	"\n");
+	"Click here to add the OFL metadata to your own font in the License and License URL fields. \n"
+	"Then click on the License field to fill in the placeholders in sync with OFL.txt. \n");
     tngcd[5].creator = GButtonCreate;
 
     tngcd[6].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    tnlabel[6].text = (unichar_t *) S_("OFL website");
+    tnlabel[6].text = (unichar_t *) S_("scripts.sil.org/OFL");
     tnlabel[6].text_is_1byte = true;
     tnlabel[6].text_in_resource = true;
     tngcd[6].gd.label = &tnlabel[6];
     tngcd[6].gd.handle_controlevent = GFI_HelpOFL;
     tngcd[6].gd.popup_msg = (unichar_t *) _(
-	"\n"
-	"Click here to go to http://scripts.sil.org/OFL \n"
-	"to get all the details about the Open Font License \n"
-	"and to read the corresponding FAQ. \n"
-	"\n");
+	"Click here for more information about the OFL (SIL Open Font License) \n"
+	"including the corresponding FAQ. \n");
     tngcd[6].creator = GButtonCreate;
     tnharray2[0] = &tngcd[5]; tnharray2[1] = &tngcd[6]; tnharray2[2] = GCD_Glue; tnharray2[3] = NULL;
     tnvarray[0] = &tnboxes[2]; tnvarray[1] = &tngcd[4]; tnvarray[2] = &tnboxes[3]; tnvarray[3] = NULL;
@@ -10446,6 +10546,10 @@ return;
 
 /******************************************************************************/
 
+    // This is where the indices for the different tabs get set as referenced by defaspect.
+    // If you change something here, it's probably a good idea to grep for calls to FontInfo
+    // in order to confirm/adjust the defaspect arguments.
+
     memset(&mlabel,0,sizeof(mlabel));
     memset(&mgcd,0,sizeof(mgcd));
     memset(&aspects,'\0',sizeof(aspects));
@@ -10560,8 +10664,9 @@ return;
     mgcd[0].gd.pos.x = 4; mgcd[0].gd.pos.y = 6;
     mgcd[0].gd.u.tabs = aspects;
     mgcd[0].gd.flags = gg_visible | gg_enabled | gg_tabset_vert;
-    mgcd[0].gd.pos.width = 260+85;
-    mgcd[0].gd.pos.height = 325;
+    // We adjusted the following two values so as to make the GPOS and GSUB scrollbars visible.
+    mgcd[0].gd.pos.width = 500; // 260+85;
+    mgcd[0].gd.pos.height = 380; // 325;
     mgcd[0].gd.handle_controlevent = GFI_AspectChange;
     mgcd[0].gd.cid = CID_Tabs;
     mgcd[0].creator = GTabSetCreate;
@@ -10772,6 +10877,10 @@ return;
 }
 
 void FontMenuFontInfo(void *_fv) {
+    if ( _fv && collabclient_inSessionFV( _fv) ) {
+	gwwv_post_error(_("Feature Not Available"), _("The Font Information Dialog is not available in collaboration mode yet."));
+	return;
+    }
     FontInfo( ((FontViewBase *) _fv)->sf,((FontViewBase *) _fv)->active_layer,-1,false);
 }
 

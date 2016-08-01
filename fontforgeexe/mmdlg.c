@@ -97,18 +97,16 @@ static int ExecConvertDesignVector(real *designs, int dcnt, char *ndv, char *cdv
 	real *stack) {
     char *temp, dv[101];
     int j, len, cnt;
-    char oldloc[25];
 
     /* PostScript parses things in "C" locale too */
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     len = 0;
     for ( j=0; j<dcnt; ++j ) {
 	sprintf(dv+len, "%g ", (double) designs[j]);
 	len += strlen(dv+len);
     }
-    setlocale(LC_NUMERIC,oldloc);
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
 
     temp = malloc(len+strlen(ndv)+strlen(cdv)+20);
     strcpy(temp,dv);
@@ -769,7 +767,7 @@ return;
 	gcd[k++].creator = GGroupCreate;
 
 	GGadgetsCreate(gw,gcd);
-	for ( i=0; i<4; ++i )
+	for ( i=0; i<mm->axis_count; ++i )
 	    free(axisnames[i]);
 	GTextInfoListFree(gcd[k-4].gd.u.list);
 	GWidgetIndicateFocusGadget(gcd[1].ret);
@@ -1007,7 +1005,7 @@ static void EditStyleName(MMW *mmw,int index) {
 	    mn = ti->userdata;
 	}
 	if ( pt!=NULL ) {
-	    for ( i=0, ++pt; i<4 && (*pt!=']' || *pt!='\0'); ++i ) {
+	    for ( i=0, ++pt; i<4 && (*pt!=']' && *pt!='\0'); ++i ) {
 		axes[i] = u_strtod(pt,&end);
 		pt = end;
 	    }
@@ -1067,7 +1065,7 @@ static void EditStyleName(MMW *mmw,int index) {
 
     GGadgetsCreate(gw,gcd);
 
-    for ( i=0; i<4; ++i )
+    for ( i=0; i<mmw->axis_count; ++i )
 	free( axisnames[i]);
 
     GDrawSetVisible(gw,true);
@@ -2365,6 +2363,7 @@ static int MMW_CheckBrowse(GGadget *g, GEvent *e) {
 	    if ( temp==NULL )
 return(true);
 	    sf = LoadSplineFont(temp,0);
+	    free(temp); temp = NULL;
 	    if ( sf==NULL )
 return(true);
 	    if ( sf->cidmaster!=NULL || sf->subfonts!=0 ) {

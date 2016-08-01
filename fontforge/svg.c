@@ -27,7 +27,6 @@
 #include "fontforgevw.h"
 #include <unistd.h>
 #include <math.h>
-#include <time.h>
 #include <locale.h>
 #include <utype.h>
 #include <chardata.h>
@@ -62,7 +61,6 @@ static int svg_outfontheader(FILE *file, SplineFont *sf,int layer) {
     BlueData bd;
     char *hash, *hasv, ch;
     int minu, maxu, i;
-    time_t now;
     const char *author = GetAuthor();
 
     memset(&info,0,sizeof(info));
@@ -78,9 +76,8 @@ static int svg_outfontheader(FILE *file, SplineFont *sf,int layer) {
 	fprintf( file, "\n-->\n" );
     }
     fprintf( file, "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\">\n" );
-    time(&now);
     fprintf( file, "<metadata>\nCreated by FontForge %d at %s",
-	    FONTFORGE_VERSIONDATE_RAW, ctime(&now) );
+	    FONTFORGE_VERSIONDATE_RAW, ctime((time_t*)&sf->modificationtime) );
     if ( author!=NULL )
 	fprintf(file," By %s\n", author);
     else
@@ -91,12 +88,16 @@ static int svg_outfontheader(FILE *file, SplineFont *sf,int layer) {
     }
     fprintf( file, "</metadata>\n" );
     fprintf( file, "<defs>\n" );
-    fprintf( file, "<font id=\"%s\" horiz-adv-x=\"%d\" ", sf->fontname, defwid );
+    fprintf( file, "<font id=\"");
+    latin1ToUtf8Out(file, sf->fontname);
+    fprintf(file, "\" horiz-adv-x=\"%d\" ", defwid );
     if ( sf->hasvmetrics )
 	fprintf( file, "vert-adv-y=\"%d\" ", sf->ascent+sf->descent );
     putc('>',file); putc('\n',file);
     fprintf( file, "  <font-face \n" );
-    fprintf( file, "    font-family=\"%s\"\n", sf->familyname_with_timestamp ? sf->familyname_with_timestamp : sf->familyname );
+    fprintf( file, "    font-family=\"");
+    latin1ToUtf8Out(file, sf->familyname_with_timestamp ? sf->familyname_with_timestamp : sf->familyname );
+    fprintf( file, "\"\n");
     fprintf( file, "    font-weight=\"%d\"\n", info.weight );
     if ( strstrmatch(sf->fontname,"obli") || strstrmatch(sf->fontname,"slanted") )
 	fprintf( file, "    font-style=\"oblique\"\n" );
@@ -755,7 +756,7 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid, int encuni, int vs
 	c = LigCnt(sc->parent,best,univals,sizeof(univals)/sizeof(univals[0]));
 	fputs("unicode=\"",file);
 	for ( i=0; i<c; ++i )
-	    if ( univals[i]>='A' && univals[i]<'z' )
+	    if ( univals[i]>='A' && univals[i]<='z' )
 		putc(univals[i],file);
 	    else
 		fprintf(file,"&#x%x;", (unsigned int) univals[i]);
@@ -872,17 +873,21 @@ static void svg_dumpkerns(FILE *file,SplineFont *sf,int isv) {
     }
 
     for ( kc=isv ? sf->vkerns : sf->kerns; kc!=NULL; kc=kc->next ) {
-	for ( i=1; i<kc->first_cnt; ++i ) for ( j=1; j<kc->second_cnt; ++j ) {
-	    if ( kc->offsets[i*kc->second_cnt+j]!=0 &&
-		    *kc->firsts[i]!='\0' && *kc->seconds[j]!='\0' ) {
-		fprintf( file, isv ? "    <vkern g1=\"" : "    <hkern g1=\"" );
-		fputkerns( file, kc->firsts[i]);
-		fprintf( file, "\"\n\tg2=\"" );
-		fputkerns( file, kc->seconds[j]);
-		fprintf( file, "\"\n\tk=\"%d\" />\n",
-			-kc->offsets[i*kc->second_cnt+j]);
-	    }
-	}
+        for ( i=0; i<kc->first_cnt; ++i ) {
+            if ( kc->firsts[i] && *kc->firsts[i]!='\0' ) {
+                for ( j=0; j<kc->second_cnt; ++j ) {
+                    if ( kc->seconds[j] && *kc->seconds[j]!='\0' &&
+                         kc->offsets[i*kc->second_cnt+j]!=0 ) {
+                        fprintf( file, isv ? "    <vkern g1=\"" : "    <hkern g1=\"" );
+                        fputkerns( file, kc->firsts[i]);
+                        fprintf( file, "\"\n\tg2=\"" );
+                        fputkerns( file, kc->seconds[j]);
+                        fprintf( file, "\"\n\tk=\"%d\" />\n",
+                                -kc->offsets[i*kc->second_cnt+j]);
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -922,12 +927,10 @@ return( uni==-1 || uni>=0x10000 ||
 
 static void svg_sfdump(FILE *file,SplineFont *sf,int layer) {
     int defwid, i, formeduni;
-    char oldloc[25];
     struct altuni *altuni;
 
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
 	sf->glyphs[i]->ticked = false;
@@ -989,7 +992,7 @@ static void svg_sfdump(FILE *file,SplineFont *sf,int layer) {
     svg_dumpkerns(file,sf,false);
     svg_dumpkerns(file,sf,true);
     svg_outfonttrailer(file);
-    setlocale(LC_NUMERIC,oldloc);
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
 }
 
 int _WriteSVGFont(FILE *file,SplineFont *sf,int flags,
@@ -1027,7 +1030,7 @@ return( ret );
 }
 
 int _ExportSVG(FILE *svg,SplineChar *sc,int layer) {
-    char oldloc[24], *end;
+    char *end;
     int em_size;
     DBounds b;
 
@@ -1038,8 +1041,8 @@ int _ExportSVG(FILE *svg,SplineChar *sc,int layer) {
     if ( b.miny>-sc->parent->descent ) b.miny = -sc->parent->descent;
     if ( b.maxy<em_size ) b.maxy = em_size;
 
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     fprintf(svg, "<?xml version=\"1.0\" standalone=\"no\"?>\n" );
     fprintf(svg, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\" >\n" );
     fprintf(svg, "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" viewBox=\"%d %d %d %d\">\n",
@@ -1058,7 +1061,7 @@ int _ExportSVG(FILE *svg,SplineChar *sc,int layer) {
     fprintf(svg, "  </g>\n\n" );
     fprintf(svg, "</svg>\n" );
 
-    setlocale(LC_NUMERIC,oldloc);
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
 return( !ferror(svg));
 }
 
@@ -1796,30 +1799,37 @@ return( NULL );
     if ( rx<0 ) rx = -rx;
     if ( ry<0 ) ry = -ry;
 
+    /* a magic number to make cubic beziers approximate ellipses    */
+    /*            4/3 * ( sqrt(2) - 1 ) = 0.55228...                */
+    /*   also     4/3 * tan(t/4)   where t = 90 b/c we do 4 curves  */
+    double magic = 0.5522847498307933984022516322796;
+    /* offset from on-curve point to control points                 */
+    double drx = rx * magic;
+    double dry = ry * magic;
     cur = chunkalloc(sizeof(SplineSet));
     cur->first = SplinePointCreate(cx-rx,cy);
-    cur->last = SplinePointCreate(cx,cy+ry);
-    cur->first->nextcp.x = cx-rx; cur->first->nextcp.y = cy+ry;
-    cur->last->prevcp = cur->first->nextcp;
+    cur->first->nextcp.x = cx-rx; cur->first->nextcp.y = cy+dry;
+    cur->first->prevcp.x = cx-rx; cur->first->prevcp.y = cy-dry;
     cur->first->noprevcp = cur->first->nonextcp = false;
+    cur->last = SplinePointCreate(cx,cy+ry);
+    cur->last->prevcp.x = cx-drx; cur->last->prevcp.y = cy+ry;
+    cur->last->nextcp.x = cx+drx; cur->last->nextcp.y = cy+ry;
     cur->last->noprevcp = cur->last->nonextcp = false;
-    SplineMake(cur->first,cur->last,true);
+    SplineMake(cur->first,cur->last,false);
     sp = SplinePointCreate(cx+rx,cy);
-    sp->prevcp.x = cx+rx; sp->prevcp.y = cy+ry;
-    sp->nextcp.x = cx+rx; sp->nextcp.y = cy-ry;
+    sp->prevcp.x = cx+rx; sp->prevcp.y = cy+dry;
+    sp->nextcp.x = cx+rx; sp->nextcp.y = cy-dry;
     sp->nonextcp = sp->noprevcp = false;
-    cur->last->nextcp = sp->prevcp;
-    SplineMake(cur->last,sp,true);
+    SplineMake(cur->last,sp,false);
     cur->last = sp;
     sp = SplinePointCreate(cx,cy-ry);
-    sp->prevcp = cur->last->nextcp;
-    sp->nextcp.x = cx-rx; sp->nextcp.y = cy-ry;
+    sp->prevcp.x = cx+drx; sp->prevcp.y = cy-ry;
+    sp->nextcp.x = cx-drx; sp->nextcp.y = cy-ry;
     sp->nonextcp = sp->noprevcp = false;
-    cur->first->prevcp = sp->nextcp;
-    SplineMake(cur->last,sp,true);
-    SplineMake(sp,cur->first,true);
+    SplineMake(cur->last,sp,false);
+    SplineMake(sp,cur->first,false);
     cur->last = cur->first;
-return( cur );
+    return( cur );
 }
 
 static SplineSet *SVGParsePoly(xmlNodePtr poly, int isgon) {
@@ -2033,7 +2043,7 @@ static void xmlParseColorSource(xmlNodePtr top,char *name,DBounds *bbox,
     *_grad = NULL; *_epat = NULL;
     if ( colour_source==NULL )
 	LogError(_("Could not find Color Source with id %s."), name );
-    else if ( (islinear = xmlStrcmp(colour_source->name,(xmlChar *) "linearGradient")==0) ||
+    else if ( (islinear = (xmlStrcmp(colour_source->name,(xmlChar *) "linearGradient")==0)) ||
 	    xmlStrcmp(colour_source->name,(xmlChar *) "radialGradient")==0 ) {
 	struct gradient *grad = chunkalloc(sizeof(struct gradient));
 	int bbox_units;
@@ -3175,6 +3185,7 @@ static SplineFont *SVGParseFont(xmlNodePtr font) {
     int cnt, flags = -1;
     xmlNodePtr kids;
     int defh=0, defv=0;
+    int has_font_face = false;
     xmlChar *name;
     SplineFont *sf;
     EncMap *map;
@@ -3202,6 +3213,7 @@ static SplineFont *SVGParseFont(xmlNodePtr font) {
     for ( kids = font->children; kids!=NULL; kids=kids->next ) {
 	int ascent=0, descent=0;
 	if ( xmlStrcmp(kids->name,(const xmlChar *) "font-face")==0 ) {
+	    has_font_face = true;
 	    name = xmlGetProp(kids,(xmlChar *) "units-per-em");
 	    if ( name!=NULL ) {
 		int val = rint(strtod((char *) name,NULL));
@@ -3347,7 +3359,7 @@ return( NULL );
 		xmlStrcmp(kids->name,(const xmlChar *) "missing-glyph")==0 )
 	    ++cnt;
     }
-    if ( sf->descent==0 ) {
+    if ( !has_font_face ) {
 	LogError( _("This font does not specify font-face\n") );
 	SplineFontFree(sf);
 return( NULL );
@@ -3535,16 +3547,17 @@ void SFSetOrder(SplineFont *sf,int order2) {
 void SFLSetOrder(SplineFont *sf, int layerdest, int order2) {
     int i;
 
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
-	    SPLSetOrder(sf->glyphs[i]->layers[layerdest].splines,order2);
+    for ( i=0; i<sf->glyphcnt; ++i )
+      if ( sf->glyphs[i]!=NULL && layerdest < sf->glyphs[i]->layer_cnt) {
+	    if (sf->glyphs[i]->layers[layerdest].splines != NULL)
+	      SPLSetOrder(sf->glyphs[i]->layers[layerdest].splines,order2);
 	    sf->glyphs[i]->layers[layerdest].order2 = order2;
-    }
+      }
 }
 
 static SplineFont *_SFReadSVG(xmlDocPtr doc, char *filename) {
     xmlNodePtr *fonts, font;
     SplineFont *sf;
-    char oldloc[25];
     char *chosenname = NULL;
 
     fonts = FindSVGFontNodes(doc);
@@ -3564,11 +3577,10 @@ return( NULL );
 	}
     }
     free(fonts);
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     sf = SVGParseFont(font);
-    setlocale(LC_NUMERIC,oldloc);
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     xmlFreeDoc(doc);
 
     if ( sf!=NULL ) {

@@ -1429,7 +1429,7 @@ return( -1 );
     if ( 1/max_diff > .039625 )
 return( -1 );
 
-return( .99/max_diff );
+    return rint(240.0*0.99/max_diff)/240.0;
 }
 
 double BlueScaleFigure(struct psdict *private_,real bluevalues[], real otherblues[]) {
@@ -1451,7 +1451,7 @@ static int dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
     int hasblue=0, hash=0, hasv=0, hasshift/*, hasxuid*/, hasbold, haslg;
     int isbold=false;
     int iscjk;
-    struct pschars *subrs, *chars;
+    struct pschars *subrs = NULL, *chars = NULL;
     const char *ND="def";
     MMSet *mm = (format==ff_mma || format==ff_mmb)? sf->mm : NULL;
     double bluescale;
@@ -1490,7 +1490,10 @@ return( false );
 	SplineFontAutoHint(sf,layer);
     }
     if ( !ff_progress_next_stage())
-return( false );
+    {
+        PSCharsFree(subrs);
+        return( false );
+    }
 
     otherblues[0] = otherblues[1] = bluevalues[0] = bluevalues[1] = 0;
     if ( !hasblue ) {
@@ -1514,7 +1517,7 @@ return( false );
     if ( !hasv ) {
 	FindVStems(sf,stemsnapv,snapcnt);
 	mi = -1;
-	for ( i=0; stemsnapv[i]!=0 && i<12; ++i )
+	for ( i=0; i<12 && stemsnapv[i]!=0 ; ++i )
 	    if ( mi==-1 ) mi = i;
 	    else if ( snapcnt[i]>snapcnt[mi] ) mi = i;
 	if ( mi!=-1 ) stdvw[0] = stemsnapv[mi];
@@ -1524,7 +1527,10 @@ return( false );
 	ff_progress_next_stage();
 	ff_progress_change_line1(_("Converting PostScript"));
 	if ( (chars = SplineFont2ChrsSubrs(sf,iscjk,subrs,flags,format,layer))==NULL )
-return( false );
+        {
+            PSCharsFree(subrs);
+            return( false );
+        }
 	ff_progress_next_stage();
 	ff_progress_change_line1(_("Saving PostScript Font"));
     }
@@ -2361,7 +2367,7 @@ static void dumptype0stuff(FILE *out,SplineFont *sf, EncMap *map) {
 
 static void dumpt1str(FILE *binary,uint8 *data, int len, int leniv) {
     if ( leniv==-1 )
-	fwrite(data,sizeof(1),len,binary);
+	fwrite(data,sizeof(uint8),len,binary);
     else
 	encodestrout((DumpChar) fputc,binary,data,len,leniv);
 }
@@ -2606,7 +2612,6 @@ return( !cidbytes.errors );
 
 int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags,
 	EncMap *map, SplineFont *fullsf,int layer) {
-    char oldloc[24];
     int err = false;
 
     if ( format!=ff_cid && format!=ff_ptype3 &&
@@ -2615,8 +2620,8 @@ int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags,
 	flags &= ~ps_flag_noflex;
 
     /* make sure that all reals get output with '.' for decimal points */
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     if ( (format==ff_mma || format==ff_mmb) && sf->mm!=NULL )
 	sf = sf->mm->normal;
     if ( format==ff_cid )
@@ -2626,7 +2631,7 @@ int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags,
 	if ( format==ff_ptype0 )
 	    dumptype0stuff(out,sf,map);
     }
-    setlocale(LC_NUMERIC,oldloc);
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     if ( ferror(out) || err)
 return( 0 );
 

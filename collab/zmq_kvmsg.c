@@ -51,13 +51,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //  kvmsg class - key-value message class for example applications
 										
 #include "zmq_kvmsg.h"
-#if !defined(__MINGW32__)
-#include <uuid/uuid.h>
-#endif
-#include "zlist.h"
 
 #include <glib.h>
 #include <inttypes.h>
+#include "inc/gnetwork.h"
 
 #define DEBUG zclock_log
 
@@ -456,10 +453,11 @@ kvmsg_uuid (kvmsg_t *self)
 {
     assert (self);
     if (self->present [FRAME_UUID]
-    &&  zmq_msg_size (&self->frame [FRAME_UUID]) == sizeof (uuid_t))
-        return (byte *) zmq_msg_data (&self->frame [FRAME_UUID]);
-    else
-        return NULL;
+	&& zmq_msg_size (&self->frame [FRAME_UUID]) == FF_UUID_BINARY_SIZE )
+    {
+	return (byte *) zmq_msg_data (&self->frame [FRAME_UUID]);
+    }
+    return NULL;
 }
 
 
@@ -470,15 +468,14 @@ kvmsg_set_uuid (kvmsg_t *self)
 {
     assert (self);
     zmq_msg_t *msg = &self->frame [FRAME_UUID];
-#if !defined(__MINGW32__)
-    uuid_t uuid;
-    uuid_generate (uuid);
+    zuuid_t *uuid = zuuid_new ();
+    size_t sz = zuuid_size (uuid);
     if (self->present [FRAME_UUID])
         zmq_msg_close (msg);
-    zmq_msg_init_size (msg, sizeof (uuid));
-    memcpy (zmq_msg_data (msg), uuid, sizeof (uuid));
+    zmq_msg_init_size (msg, sz);
+    memcpy (zmq_msg_data (msg), zuuid_data (uuid), sz);
+    zuuid_destroy (&uuid);
     self->present [FRAME_UUID] = 1;
-#endif
 }
 
 
@@ -650,7 +647,7 @@ void kvmap_visit( zhash_t* kvmap, int64_t minsequence,
     args.q = q;
     args.minsequence = minsequence;
     int rc = zhash_foreach ( kvmap, kvmap_visit_buildq_foreach_fn, &args );
-    g_queue_foreach( q, callback, argument );
+    g_queue_foreach( q, (GFunc)callback, argument );
     g_queue_free(q);
 }
 

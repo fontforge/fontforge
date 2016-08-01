@@ -819,10 +819,12 @@ void FVReencode(FontViewBase *fv,Encoding *enc) {
 	fv->selected = realloc(fv->selected,map->enccount);
 	memset(fv->selected,0,map->enccount);
 	EncMapFree(fv->map);
+	if (fv->sf != NULL && fv->map == fv->sf->map) { fv->sf->map = map; }
 	fv->map = map;
     }
     if ( fv->normal!=NULL ) {
 	EncMapFree(fv->normal);
+	if (fv->sf != NULL && fv->normal == fv->sf->map) { fv->sf->map = NULL; }
 	fv->normal = NULL;
     }
     SFReplaceEncodingBDFProps(fv->sf,fv->map);
@@ -851,8 +853,13 @@ void FVOverlap(FontViewBase *fv,enum overlap_type ot) {
 	    SCWorthOutputting((sc=fv->sf->glyphs[gid])) &&
 	    !sc->ticked ) {
 	sc->ticked = true;
+#if 0
+	// We await testing on the necessity of this operation.
 	if ( !SCRoundToCluster(sc,ly_all,false,.03,.12))
 	    SCPreserveLayer(sc,fv->active_layer,false);
+#else
+	    SCPreserveLayer(sc,fv->active_layer,false);
+#endif // 0
 	MinimumDistancesFree(sc->md);
 	if ( sc->parent->multilayer ) {
 	    first = ly_fore;
@@ -1314,7 +1321,7 @@ void FVClearHints(FontViewBase *fv) {
     }
 }
 
-FontViewBase *ViewPostScriptFont(char *filename,int openflags) {
+FontViewBase *ViewPostScriptFont(const char *filename,int openflags) {
     SplineFont *sf = LoadSplineFont(filename,openflags);
     extern NameList *force_names_when_opening;
     if ( sf==NULL )
@@ -1430,6 +1437,9 @@ void FVAddUnencoded(FontViewBase *fv, int cnt) {
 	/*  compact and make it be custom. That's what Alexey Kryukov asked */
 	/*  for */
 	EncMapFree(fv->normal);
+	// If fv->normal happens to be fv->sf->map, freeing it leaves an invalid pointer in the splinefont.
+	// So we tell the splinefont to use the fontview map.
+	if (fv->sf != NULL && fv->normal == fv->sf->map) { fv->sf->map = NULL; }
 	fv->normal = NULL;
 	fv->map->enc = &custom;
 	FVSetTitle(fv);
@@ -1493,6 +1503,7 @@ void FVCompact(FontViewBase *fv) {
 
     if ( fv->normal!=NULL ) {
 	EncMapFree(fv->map);
+	if (fv->sf != NULL && fv->sf->map == fv->map) { fv->sf->map = fv->normal ; }
 	fv->map = fv->normal;
 	fv->normal = NULL;
 	fv->selected = realloc(fv->selected,fv->map->enccount);
@@ -1502,6 +1513,7 @@ void FVCompact(FontViewBase *fv) {
 	/*  array. It's just bigger than it needs to be. */
 	fv->normal = EncMapCopy(fv->map);
 	CompactEncMap(fv->map,fv->sf);
+	fv->sf->map = fv->map;
     }
     if ( oldcount!=fv->map->enccount )
 	FontViewReformatOne(fv);
@@ -1722,6 +1734,7 @@ return;
 	    memset(fvs->selected+fvs->map->enccount,0,map->enccount-fvs->map->enccount);
 	}
 	EncMapFree(fv->map);
+	if (fv->sf != NULL && fv->map == fv->sf->map) { fv->sf->map = map; }
 	fv->map = map;
 	if ( fvs->normal!=NULL ) {
 	    EncMapFree(fvs->normal);
@@ -1817,6 +1830,11 @@ void FVRevertGlyph(FontViewBase *fv) {
     }
 }
 
+void FVClearSpecialData(FontViewBase *fv) {
+    SplineFont *sf = fv->sf;
+    if (sf) SplineFontClearSpecial(sf);
+}
+
 static int isuniname(char *name) {
     int i;
     if ( name[0]!='u' || name[1]!='n' || name[2]!='i' )
@@ -1874,9 +1892,11 @@ static FontViewBase *_FontViewBaseCreate(SplineFont *sf) {
 	if ( fv->nextsame!=NULL ) {
 	    fv->map = EncMapCopy(fv->nextsame->map);
 	    fv->normal = fv->nextsame->normal==NULL ? NULL : EncMapCopy(fv->nextsame->normal);
+	    fprintf(stderr, "There are two FontViews using the same SplineFont. Please report on the issue tracker or the mailing list how you reached this point.\n");
 	} else if ( sf->compacted ) {
 	    fv->normal = sf->map;
 	    fv->map = CompactEncMap(EncMapCopy(sf->map),sf);
+	    sf->map = fv->map;
 	} else {
 	    fv->map = sf->map;
 	    fv->normal = NULL;
@@ -1893,8 +1913,9 @@ static FontViewBase *_FontViewBaseCreate(SplineFont *sf) {
 	if ( fv->sf==NULL )
 	    fv->sf = sf->subfonts[0];
 	sf = fv->sf;
-	if ( fv->nextsame==NULL ) EncMapFree(sf->map);
+	if ( fv->nextsame==NULL ) { EncMapFree(sf->map); sf->map = NULL; }
 	fv->map = EncMap1to1(sf->glyphcnt);
+	if ( fv->nextsame==NULL ) { sf->map = fv->map; }
     }
     fv->selected = calloc(fv->map->enccount,sizeof(char));
 
@@ -1929,9 +1950,13 @@ static void FontViewBase_Free(FontViewBase *fv) {
 
    if ( fv->nextsame==NULL && fv->sf->fv==fv ) {
 	EncMapFree(fv->map);
+	if (fv->sf != NULL && fv->map == fv->sf->map) { fv->sf->map = NULL; }
+	fv->map = NULL;
 	SplineFontFree(fv->cidmaster?fv->cidmaster:fv->sf);
     } else {
 	EncMapFree(fv->map);
+	if (fv->sf != NULL && fv->map == fv->sf->map) { fv->sf->map = NULL; }
+	fv->map = NULL;
 	if ( fv->sf->fv==fv ) {
 	    if ( fv->cidmaster==NULL )
 		fv->sf->fv = fv->nextsame;
@@ -1954,9 +1979,6 @@ static void FontViewBase_Free(FontViewBase *fv) {
     PyFF_FreeFV(fv);
 #endif
     free(fv);
-#ifndef _NO_PYTHON
-    PyFF_FreeFV(fv);
-#endif
 }
 
 static int FontViewBaseWinInfo(FontViewBase *UNUSED(fv), int *cc, int *rc) {

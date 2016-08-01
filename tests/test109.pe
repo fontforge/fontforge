@@ -2,10 +2,10 @@
 #Needs: fonts/feta20.pfb
 #Make sure remove overlap sort of works...
 
-Open("@abs_srcdir@/fonts/OverlapBugs.sfd")
+Open($1)
 SelectAll();
 RemoveOverlap();
 
-Open("@abs_srcdir@/fonts/feta20.pfb");
+Open($2);
 SelectAll();
 RemoveOverlap();

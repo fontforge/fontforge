@@ -1,0 +1,53 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+#export DH_VERBOSE=1
+
+export CONFIG_SHELL=/bin/bash
+export DEB_BUILD_MAINT_OPTIONS := hardening=+all,-pie
+
+CONFIG_OPTS = --prefix=/usr \
+              --libdir=\$${prefix}/lib \
+              --mandir=\$${prefix}/share/man \
+              --with-regular-link \
+              --enable-devicetables \
+              --enable-type3 \
+	      --with-freetype-src=$(CURDIR)/freetype \
+	      --with-freetype-bytecode
+
+DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+ifneq ($(DEB_HOST_GNU_TYPE),$(DEB_BUILD_GNU_TYPE))
+	CROSS = --build $(DEB_BUILD_GNU_TYPE) --host $(DEB_HOST_GNU_TYPE)
+else
+	CROSS = --build $(DEB_BUILD_GNU_TYPE)
+endif
+
+%:
+	dh $@ --parallel --with autotools-dev,python2
+
+override_dh_auto_configure:
+	$(CURDIR)/bootstrap
+	$(CURDIR)/configure $(CROSS) ${CONFIG_OPTS} --enable-pyextension 
+
+override_dh_install: 
+	dh_install
+	find $(CURDIR)/debian/libfontforge1/usr/lib -name "*.la" -delete
+	-rm -rf $(CURDIR)/debian/libfontforge1/usr/lib/pkgconfig 
+	cp -pRP desktop/fontforge.xml $(CURDIR)/debian/fontforge.sharedmimeinfo 
+	chrpath -d $(CURDIR)/debian/fontforge/usr/bin/fontforge
+	touch @
+
+nox: override_dh_install
+	[ ! -f Makefile ] || $(MAKE) distclean
+	$(CURDIR)/bootstrap
+	$(CURDIR)/configure $(CROSS) ${CONFIG_OPTS} --without-x --disable-pyextension
+	$(MAKE); $(MAKE) install prefix=$(CURDIR)/debian/nox/usr
+	chrpath -d $(CURDIR)/debian/nox/usr/bin/fontforge
+	mv $(CURDIR)/debian/nox/usr/bin/* $(CURDIR)/debian/fontforge-nox/usr/bin/
+	touch @
+
+override_dh_strip: nox 
+	dh_strip --dbg-package=fontforge-dbg
+	# deal with some lintian failure
+	chmod 0644 $(CURDIR)/debian/lib*/usr/lib/lib*.so.*
+	(cd $(CURDIR)/debian/python-fontforge/usr/lib; for i in python*; do if [ -e $$i/site-packages ] ; then mv $$i/site-packages $$i/dist-packages; fi ; done)

@@ -831,8 +831,39 @@ void AutoKern2BuildClasses(SplineFont *sf,int layer,
 
     if ( kc==NULL )
 return;
-    free(kc->firsts); free(kc->seconds); free(kc->offsets);
+    // free(kc->firsts); free(kc->seconds); // I think that this forgets to free the contained strings.
+    if (kc->firsts != NULL) {
+      int tmppos;
+      for (tmppos = 0; tmppos < kc->first_cnt; tmppos++)
+        if (kc->firsts[tmppos] != NULL) { free(kc->firsts[tmppos]); kc->firsts[tmppos] = NULL; }
+      free(kc->firsts); kc->firsts = NULL;
+    }
+    if (kc->seconds != NULL) {
+      int tmppos;
+      for (tmppos = 0; tmppos < kc->second_cnt; tmppos++)
+        if (kc->seconds[tmppos] != NULL) { free(kc->seconds[tmppos]); kc->seconds[tmppos] = NULL; }
+      free(kc->seconds); kc->seconds = NULL;
+    }
+    free(kc->offsets);
     free(kc->adjusts);
+
+    // Group kerning.
+    // Specifically, we drop the group kerning stuff if the classes are getting redefined.
+    if (kc->firsts_names != NULL) {
+      int tmppos;
+      for (tmppos = 0; tmppos < kc->first_cnt; tmppos++)
+        if (kc->firsts_names[tmppos] != NULL) { free(kc->firsts_names[tmppos]); kc->firsts_names[tmppos] = NULL; }
+      free(kc->firsts_names); kc->firsts_names = NULL;
+    }
+    if (kc->seconds_names != NULL) {
+      int tmppos;
+      for (tmppos = 0; tmppos < kc->second_cnt; tmppos++)
+        if (kc->seconds_names[tmppos] != NULL) { free(kc->seconds_names[tmppos]); kc->seconds_names[tmppos] = NULL; }
+      free(kc->seconds_names); kc->seconds_names = NULL;
+    }
+    if (kc->firsts_flags != NULL) { free(kc->firsts_flags); kc->firsts_flags = NULL; }
+    if (kc->seconds_flags != NULL) { free(kc->seconds_flags); kc->seconds_flags = NULL; }
+    if (kc->offsets_flags != NULL) { free(kc->offsets_flags); kc->offsets_flags = NULL; }
 
     if ( good_enough==-1 )
 	good_enough = (sf->ascent+sf->descent)/100.0;

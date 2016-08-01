@@ -9,7 +9,7 @@
 
 # Source required external libraries:
 # Set a version string for this script.
-scriptversion=2012-10-21.11; # UTC
+scriptversion=2014-07-30.00; # UTC
 
 # General shell script boiler plate, and helper functions.
 # Written by Gary V. Vaughan, 2004
@@ -2364,7 +2364,7 @@ gnulib_non_module_files="
 # git repository. If you have a gnulib entry in your .gitmodules file,
 # these values are ignored.
 gnulib_path=
-gnulib_url=
+gnulib_url=http://git.savannah.gnu.org/r/gnulib.git
 
 # Additional gnulib-tool options to use.
 gnulib_tool_options="
@@ -3428,7 +3428,7 @@ func_require_dotgitmodules ()
         # If the .gitmodules file doesn't exist, create it now, and mark
         # it as ignored for the VCS.
         test -n "$gnulib_path" || gnulib_path=gnulib
-        test -n "$gnulib_url"  || gnulib_url=git://git.sv.gnu.org/gnulib
+        test -n "$gnulib_url"  || gnulib_url=http://git.savannah.gnu.org/r/gnulib.git
 
         {
           echo '[submodule "gnulib"]'
@@ -3462,6 +3462,14 @@ func_require_extra_locale_categories ()
 # require_git
 # -----------
 # Ignore git if it's not available, or we're not in a git checkout tree.
+#
+#
+# ***** WARNING ***** 
+#
+# This function is replaced by fontforge_require_git which is
+# contained in bootstrap.conf. If you expect func_require_git to
+# execute please look instead at fontforge_require_git for debugging.
+#
 require_git=func_require_git
 func_require_git ()
 {

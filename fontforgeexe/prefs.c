@@ -115,8 +115,6 @@ extern int old_sfnt_flags;		/* in savefont.c */
 extern int old_ps_flags;		/* in savefont.c */
 extern int old_validate;		/* in savefontdlg.c */
 extern int old_fontlog;			/* in savefontdlg.c */
-extern char *oflib_username;		/* in savefontdlg.c */
-extern char *oflib_password;		/* in savefontdlg.c */
 extern int oldsystem;			/* in bitmapdlg.c */
 extern int preferpotrace;		/* in autotrace.c */
 extern int autotrace_ask;		/* in autotrace.c */
@@ -149,7 +147,6 @@ extern int new_em_size;				/* in splineutil2.c */
 extern int new_fonts_are_order2;		/* in splineutil2.c */
 extern int loaded_fonts_same_as_new;		/* in splineutil2.c */
 extern int use_second_indic_scripts;		/* in tottfgpos.c */
-extern char *helpdir;				/* in uiutil.c */
 static char *othersubrsfile = NULL;
 extern MacFeat *default_mac_feature_map,	/* from macenc.c */
 		*user_mac_feature_map;
@@ -159,9 +156,9 @@ extern int allow_utf8_glyphnames;		/* in lookupui.c */
 extern int add_char_to_name_list;		/* in charinfo.c */
 extern int clear_tt_instructions_when_needed;	/* in cvundoes.c */
 extern int export_clipboard;			/* in cvundoes.c */
-extern int prefs_ensure_correct_extension;      /* in fontview.c */
 extern int cv_width;			/* in charview.c */
 extern int cv_height;			/* in charview.c */
+extern int cv_show_fill_with_space; /* in charview.c */
 extern int interpCPsOnMotion;			/* in charview.c */
 extern int DrawOpenPathsWithHighlight;          /* in charview.c */
 extern float prefs_cvEditHandleSize;            /* in charview.c */
@@ -180,7 +177,6 @@ extern int ps_pointcnt;				/* from cvpalettes.c */
 extern float star_percent;			/* from cvpalettes.c */
 extern int home_char;				/* from fontview.c */
 extern int compact_font_on_open;		/* from fontview.c */
-extern int oflib_automagic_preview;		/* from oflib.c */
 extern int aa_pixelsize;			/* from anchorsaway.c */
 extern enum cvtools cv_b1_tool, cv_cb1_tool, cv_b2_tool, cv_cb2_tool; /* cvpalettes.c */
 extern int show_kerning_pane_in_class;		/* kernclass.c */
@@ -191,6 +187,8 @@ extern int prefRevisionsToRetain; /* sfd.c */
 extern int prefs_cv_show_control_points_always_initially; /* from charview.c */
 extern int prefs_create_dragging_comparison_outline;      /* from charview.c */
 extern int prefs_cv_outline_thickness; /* from charview.c */
+
+extern char *pref_collab_last_server_connected_to; /* in collabclient.c */
 
 extern float OpenTypeLoadHintEqualityTolerance;  /* autohint.c */
 extern float GenerateHintWidthEqualityTolerance; /* splinesave.c */
@@ -299,8 +297,7 @@ static struct prefs_list {
 /* GT: this is because these strings are used in two different ways, one */
 /* GT: translated (which the user sees, and should probably have added spaces,*/
 /* GT: and one untranslated which needs the current odd format */
-	{ N_("ResourceFile"), pr_file, &xdefs_filename, NULL, NULL, 'R', NULL, 0, N_("When FontForge starts up, it loads display related resources from a\nproperty on the screen. Sometimes it is useful to be able to store\nthese resources in a file. These resources are only read at start\nup, so changing this has no effect until the next time you start\nFontForge.") },
-	{ N_("HelpDir"), pr_file, &helpdir, NULL, NULL, 'H', NULL, 0, N_("The directory on your local system in which FontForge will search for help\nfiles.  If a file is not found there, then FontForge will look for it on the net.") },
+	{ N_("ResourceFile"), pr_file, &xdefs_filename, NULL, NULL, 'R', NULL, 0, N_("When FontForge starts up, it loads the user interface theme from\nthis file. Any changes will only take effect the next time you start FontForge.") },
 	{ N_("OtherSubrsFile"), pr_file, &othersubrsfile, NULL, NULL, 'O', NULL, 0, N_("If you wish to replace Adobe's OtherSubrs array (for Type1 fonts)\nwith an array of your own, set this to point to a file containing\na list of up to 14 PostScript subroutines. Each subroutine must\nbe preceded by a line starting with '%%%%' (any text before the\nfirst '%%%%' line will be treated as an initial copyright notice).\nThe first three subroutines are for flex hints, the next for hint\nsubstitution (this MUST be present), the 14th (or 13 as the\nnumbering actually starts with 0) is for counter hints.\nThe subroutines should not be enclosed in a [ ] pair.") },
 	{ N_("FreeTypeInFontView"), pr_bool, &use_freetype_to_rasterize_fv, NULL, NULL, 'O', NULL, 0, N_("Use the FreeType rasterizer (when available)\nto rasterize glyphs in the font view.\nThis generally results in better quality.") },
 	{ N_("FreeTypeAAFillInOutlineView"), pr_bool, &use_freetype_with_aa_fill_cv, NULL, NULL, 'O', NULL, 0, N_("When filling using freetype in the outline view,\nhave freetype render the glyph antialiased.") },
@@ -309,7 +306,6 @@ static struct prefs_list {
 	{ N_("UseCairoDrawing"), pr_bool, &prefs_usecairo, NULL, NULL, '\0', NULL, 0, N_("Use the cairo library for drawing (if available)\nThis makes for prettier (anti-aliased) but slower drawing\nThis applies to any windows created AFTER this is set.\nAlready existing windows will continue as they are.") },
 #endif
 	{ N_("ExportClipboard"), pr_bool, &export_clipboard, NULL, NULL, '\0', NULL, 0, N_( "If you are running an X11 clipboard manager you might want\nto turn this off. FF can put things into its internal clipboard\nwhich it cannot export to X11 (things like copying more than\none glyph in the fontview). If you have a clipboard manager\nrunning it will force these to be exported with consequent\nloss of data.") },
-	{ N_("EnsureCorrectSaveExtension"), pr_bool, &prefs_ensure_correct_extension, NULL, NULL, '\0', NULL, 0, N_( "When inputting a name in the Save or SaveAs dialogs, FontForge can ensure that the correct filename extension (SFD or SFDIR) is always used. This prevents you from accidentally naming your source file with a binary extension (such as .otf), out of habit.") },
 	{ N_("AutoSaveFrequency"), pr_int, &AutoSaveFrequency, NULL, NULL, '\0', NULL, 0, N_( "The number of seconds between autosaves. If you set this to 0 there will be no autosaves.") },
 	{ N_("RevisionsToRetain"), pr_int, &prefRevisionsToRetain, NULL, NULL, '\0', NULL, 0, N_( "When Saving, keep this number of previous versions of the file. file.sfd-01 will be the last saved file, file.sfd-02 will be the file saved before that, and so on. If you set this to 0 then no revisions will be retained.") },
 	{ N_("UndoRedoLimitToSave"), pr_int, &UndoRedoLimitToSave, NULL, NULL, '\0', NULL, 0, N_( "The number of undo and redo operations which will be saved in sfd files.\nIf you set this to 0 undo/redo information is not saved to sfd files.\nIf set to -1 then all available undo/redo information is saved without limit.") },
@@ -339,29 +335,31 @@ static struct prefs_list {
 },
   editing_list[] = {
 	{ N_("ItalicConstrained"), pr_bool, &ItalicConstrained, NULL, NULL, '\0', NULL, 0, N_("In the Outline View, the Shift key constrains motion to be parallel to the ItalicAngle rather than constraining it to be vertical.") },
-	{ N_("ArrowMoveSize"), pr_real, &arrowAmount, NULL, NULL, '\0', NULL, 0, N_("The number of em-units by which an arrow key will move a selected point") },
-	{ N_("ArrowAccelFactor"), pr_real, &arrowAccelFactor, NULL, NULL, '\0', NULL, 0, N_("Holding down the Shift key will speed up arrow key motion by this factor") },
-	{ N_("DrawOpenPathsWithHighlight"), pr_bool, &DrawOpenPathsWithHighlight, NULL, NULL, '\0', NULL, 0, N_("Open paths should be drawn in a special highlight color to make them more apparent.") },
 	{ N_("InterpolateCPsOnMotion"), pr_bool, &interpCPsOnMotion, NULL, NULL, '\0', NULL, 0, N_("When moving one end point of a spline but not the other\ninterpolate the control points between the two.") },
 	{ N_("SnapDistance"), pr_real, &snapdistance, NULL, NULL, '\0', NULL, 0, N_("When the mouse pointer is within this many pixels\nof one of the various interesting features (baseline,\nwidth, grid splines, etc.) the pointer will snap\nto that feature.") },
 	{ N_("SnapDistanceMeasureTool"), pr_real, &snapdistancemeasuretool, NULL, NULL, '\0', NULL, 0, N_("When the measure tool is active and when the mouse pointer is within this many pixels\nof one of the various interesting features (baseline,\nwidth, grid splines, etc.) the pointer will snap\nto that feature.") },
-	{ N_("MeasureToolShowHorizontalVertical"), pr_bool, &measuretoolshowhorizontolvertical, NULL, NULL, '\0', NULL, 0, N_("Have the measure tool show horizontal and vertical distances on the canvas.") },
-	{ N_("XORRubberLines"), pr_bool, &xorrubberlines, NULL, NULL, '\0', NULL, 0, N_("Use XOR based rubber lines.") },
 	{ N_("SnapToInt"), pr_bool, &snaptoint, NULL, NULL, '\0', NULL, 0, N_("When the user clicks in the editing window, round the location to the nearest integers.") },
-	{ N_("JoinSnap"), pr_real, &joinsnap, NULL, NULL, '\0', NULL, 0, N_("The Edit->Join command will join points which are this close together\nA value of 0 means they must be coincident") },
 	{ N_("StopAtJoin"), pr_bool, &stop_at_join, NULL, NULL, '\0', NULL, 0, N_("When dragging points in the outline view a join may occur\n(two open contours may connect at their endpoints). When\nthis is On a join will cause FontForge to stop moving the\nselection (as if the user had released the mouse button).\nThis is handy if your fingers are inclined to wiggle a bit.") },
+	{ N_("JoinSnap"), pr_real, &joinsnap, NULL, NULL, '\0', NULL, 0, N_("The Edit->Join command will join points which are this close together\nA value of 0 means they must be coincident") },
 	{ N_("CopyMetaData"), pr_bool, &copymetadata, NULL, NULL, '\0', NULL, 0, N_("When copying glyphs from the font view, also copy the\nglyphs' metadata (name, encoding, comment, etc).") },
 	{ N_("UndoDepth"), pr_int, &maxundoes, NULL, NULL, '\0', NULL, 0, N_("The maximum number of Undoes/Redoes stored in a glyph. Use -1 for infinite Undoes\n(but watch RAM consumption and use the Edit menu's Remove Undoes as needed)") },
 	{ N_("UpdateFlex"), pr_bool, &updateflex, NULL, NULL, '\0', NULL, 0, N_("Figure out flex hints after every change") },
 	{ N_("AutoKernDialog"), pr_bool, &default_autokern_dlg, NULL, NULL, '\0', NULL, 0, N_("Open AutoKern dialog for new kerning subtables") },
 	{ N_("MetricsShiftSkip"), pr_int, &pref_mv_shift_and_arrow_skip, NULL, NULL, '\0', NULL, 0, N_("Number of units to increment/decrement a table value by in the metrics window when shift is held") },
 	{ N_("MetricsControlShiftSkip"), pr_int, &pref_mv_control_shift_and_arrow_skip, NULL, NULL, '\0', NULL, 0, N_("Number of units to increment/decrement a table value by in the metrics window when both control and shift is held") },
+	PREFS_LIST_EMPTY
+},
+  editing_interface_list[] = {
+	{ N_("ArrowMoveSize"), pr_real, &arrowAmount, NULL, NULL, '\0', NULL, 0, N_("The number of em-units by which an arrow key will move a selected point") },
+	{ N_("ArrowAccelFactor"), pr_real, &arrowAccelFactor, NULL, NULL, '\0', NULL, 0, N_("Holding down the Shift key will speed up arrow key motion by this factor") },
+	{ N_("DrawOpenPathsWithHighlight"), pr_bool, &DrawOpenPathsWithHighlight, NULL, NULL, '\0', NULL, 0, N_("Open paths should be drawn in a special highlight color to make them more apparent.") },
+	{ N_("MeasureToolShowHorizontalVertical"), pr_bool, &measuretoolshowhorizontolvertical, NULL, NULL, '\0', NULL, 0, N_("Have the measure tool show horizontal and vertical distances on the canvas.") },
+	{ N_("XORRubberLines"), pr_bool, &xorrubberlines, NULL, NULL, '\0', NULL, 0, N_("Use XOR based rubber lines.") },
 	{ N_("EditHandleSize"), pr_real, &prefs_cvEditHandleSize, NULL, NULL, '\0', NULL, 0, N_("The size of the handles showing control points and other interesting points in the glyph editor (default is 5).") },
 	{ N_("InactiveHandleAlpha"), pr_int, &prefs_cvInactiveHandleAlpha, NULL, NULL, '\0', NULL, 0, N_("Inactive handles in the glyph editor will be drawn with this alpha value (range: 0-255 default is 255).") },
 	{ N_("ShowControlPointsAlways"), pr_bool, &prefs_cv_show_control_points_always_initially, NULL, NULL, '\0', NULL, 0, N_("Always show the control points when editing a glyph.\nThis can be turned off in the menu View/Show, this setting will effect if control points are shown initially.\nChange requires a restart of fontforge.") },
+	{ N_("ShowFillWithSpace"), pr_bool, &cv_show_fill_with_space, NULL, NULL, '\0', NULL, 0, N_("Also enable preview mode when the space bar is pressed.") },
 	{ N_("OutlineThickness"), pr_int, &prefs_cv_outline_thickness, NULL, NULL, '\0', NULL, 0, N_("Setting above 1 will cause a thick outline to be drawn for glyph paths\n which is only extended inwards from the edge of the glyph.\n See also the ForegroundThickOutlineColor Resource for the color of this outline.") },
-
-    
 	PREFS_LIST_EMPTY
 },
   sync_list[] = {
@@ -429,11 +427,13 @@ static struct prefs_list {
 	{ N_("UseNewIndicScripts"), pr_bool, &use_second_indic_scripts, NULL, NULL, 'C', NULL, 0, N_("MS has changed (in August 2006) the inner workings of their Indic shaping\nengine, and to disambiguate this change has created a parallel set of script\ntags (generally ending in '2') for Indic writing systems. If you are working\nwith the new system set this flag, if you are working with the old unset it.\n(if you aren't doing Indic work, this flag is irrelevant).") },
 	PREFS_LIST_EMPTY
 },
+#ifdef BUILD_COLLAB
  collab_list[] = {
 	{ N_("SessionJoinTimeout"), pr_int, &pref_collab_sessionJoinTimeoutMS, NULL, NULL, 'C', NULL, 0, N_("The number of milliseconds to wait for a connection to the collaboration server to happen. FontForge may be unresponsive during this session connection time. (default 1000 which is 1 second)") },
 	{ N_("RoundTripMessageMaxTime"), pr_int, &pref_collab_roundTripTimerMS, NULL, NULL, 'C', NULL, 0, N_("The number of milliseconds that are allowed to pass between sending an update to the server and hearing it sent back as a message to all clients. The FontForge user interface may be unresponsive during this time. A change requires a restart of FontForge. (default 2000 which is 2 seconds)") },
 	PREFS_LIST_EMPTY
 },
+#endif
 /* These are hidden, so will never appear in preference ui, hence, no "N_(" */
 /*  They are controled elsewhere AntiAlias is a menu item in the font window's View menu */
 /*  etc. */
@@ -477,8 +477,6 @@ static struct prefs_list {
 	{ "DefaultBitmapFormat", pr_int, &oldbitmapstate, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "SaveValidate", pr_int, &old_validate, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "SaveFontLogAsk", pr_int, &old_fontlog, NULL, NULL, '\0', NULL, 1, NULL },
-	{ "OFLibUsername", pr_string, &oflib_username, NULL, NULL, '\0', NULL, 1, NULL },
-	{ "OFLibPassword", pr_string, &oflib_password, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "DefaultSFNTflags", pr_int, &old_sfnt_flags, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "DefaultPSflags", pr_int, &old_ps_flags, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "PageWidth", pr_int, &pagewidth, NULL, NULL, '\0', NULL, 1, NULL },
@@ -508,13 +506,13 @@ static struct prefs_list {
 	{ "FCShowHidden", pr_bool, &gfc_showhidden, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "FCDirPlacement", pr_int, &gfc_dirplace, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "FCBookmarks", pr_string, &gfc_bookmarks, NULL, NULL, '\0', NULL, 1, NULL },
-	{ "OFLibAutomagicPreview", pr_int, &oflib_automagic_preview, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "DefaultMVType",   pr_int, &mv_type, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "DefaultMVWidth",  pr_int, &mv_width, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "DefaultMVHeight", pr_int, &mv_height, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "DefaultBVWidth", pr_int, &bv_width, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "DefaultBVHeight", pr_int, &bv_height, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "AnchorControlPixelSize", pr_int, &aa_pixelsize, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "CollabLastServerConnectedTo", pr_string, &pref_collab_last_server_connected_to, NULL, NULL, '\0', NULL, 1, NULL },
 #ifdef _NO_LIBCAIRO
 	{ "UseCairoDrawing", pr_bool, &prefs_usecairo, NULL, NULL, '\0', NULL, 0, N_("Use the cairo library for drawing (if available)\nThis makes for prettier (anti-aliased) but slower drawing\nThis applies to any windows created AFTER this is set.\nAlready existing windows will continue as they are.") },
 #endif
@@ -536,11 +534,15 @@ static struct prefs_list {
 	{ "DefaultOTFflags", pr_int, &old_otf_flags, NULL, NULL, '\0', NULL, 1, NULL },
 	PREFS_LIST_EMPTY
 },
- *prefs_list[] = { general_list, new_list, open_list, navigation_list, sync_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, instrs_list,
+ *prefs_list[] = { general_list, new_list, open_list, navigation_list, sync_list, editing_list, editing_interface_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, instrs_list,
+ #ifdef BUILD_COLLAB
  collab_list,
+ #endif
  hidden_list, NULL },
- *load_prefs_list[] = { general_list, new_list, open_list, navigation_list, sync_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, instrs_list,
+ *load_prefs_list[] = { general_list, new_list, open_list, navigation_list, sync_list, editing_list, editing_interface_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, instrs_list,
+ #ifdef BUILD_COLLAB
  collab_list,
+ #endif
  hidden_list, oldnames, NULL };
 
 struct visible_prefs_list { char *tab_name; int nest; struct prefs_list *pl; } visible_prefs_list[] = {
@@ -549,6 +551,7 @@ struct visible_prefs_list { char *tab_name; int nest; struct prefs_list *pl; } v
     { N_("Open Font"), 0, open_list},
     { N_("Navigation"), 0, navigation_list},
     { N_("Editing"), 0, editing_list},
+    { N_("Interface"), 1, editing_interface_list},
     { N_("Synchronize"), 1, sync_list},
     { N_("TT"), 1, tt_list},
     { N_("Accents"), 1, accent_list},
@@ -778,14 +781,17 @@ return( false );
 static char *getPfaEditPrefs(void) {
     static char *prefs=NULL;
     char buffer[1025];
+    char *ffdir;
 
     if ( prefs!=NULL )
-return( prefs );
-    if ( getFontForgeUserDir(Config)==NULL )
-return( NULL );
-    sprintf(buffer,"%s/prefs", getFontForgeUserDir(Config));
+        return prefs;
+    ffdir = getFontForgeUserDir(Config);
+    if ( ffdir==NULL )
+        return NULL;
+    sprintf(buffer,"%s/prefs", ffdir);
+    free(ffdir);
     prefs = copy(buffer);
-return( prefs );
+    return prefs;
 }
 
 static char *PrefsUI_getFontForgeShareDir(void) {
@@ -1035,20 +1041,13 @@ static void DefaultXUID(void) {
     g_random_set_seed(tv.tv_usec+1);
     r2 = g_random_int();
     sprintf( buffer, "1021 %d %d", r1, r2 );
-    free(xuid);
+    if (xuid != NULL) free(xuid);
     xuid = copy(buffer);
-}
-
-static void DefaultHelp(void) {
-    if ( helpdir==NULL ) {
-	helpdir = copy(getHelpDir());
-    }
 }
 
 static void PrefsUI_SetDefaults(void) {
 
     DefaultXUID();
-    DefaultHelp();
     local_encoding = DefaultEncoding();
 }
 
@@ -1198,10 +1197,10 @@ static void PrefsUI_LoadPrefs(void)
 {
     char *prefs = getPfaEditPrefs();
     FILE *p;
-    char line[1100];
+    char line[1100], path[PATH_MAX];
     int i, j, ri=0, mn=0, ms=0, fn=0, ff=0, filt_max=0;
     int msp=0, msc=0;
-    char *pt;
+    char *pt, *real_xdefs_filename = NULL;
     struct prefs_list *pl;
 
     LoadPluginDir(NULL);
@@ -1309,10 +1308,9 @@ static void PrefsUI_LoadPrefs(void)
     //
     // If the user has no theme set, then use the default
     //
-    if ( !xdefs_filename )
+    real_xdefs_filename = xdefs_filename;
+    if ( !real_xdefs_filename )
     {
-	char path[PATH_MAX];
-
 	fprintf(stderr,"no xdefs_filename!\n");
 	if (!quiet) {
 	    fprintf(stderr,"TESTING: getPixmapDir:%s\n", getPixmapDir() );
@@ -1322,11 +1320,10 @@ static void PrefsUI_LoadPrefs(void)
 	snprintf(path, PATH_MAX, "%s/%s", getPixmapDir(), "resources" );
 	if (!quiet)
 	    fprintf(stderr,"trying default theme:%s\n", path );
-	if(GFileExists(path))
-	    change_res_filename( path );
+	real_xdefs_filename = path;
     }
-    if ( xdefs_filename!=NULL )
-	GResourceAddResourceFile(xdefs_filename,GResourceProgramName,true);
+    GResourceAddResourceFile(real_xdefs_filename,GResourceProgramName,true);
+
     if ( othersubrsfile!=NULL && ReadOtherSubrsFile(othersubrsfile)<=0 )
 	fprintf( stderr, "Failed to read OtherSubrs from %s\n", othersubrsfile );
 
@@ -1960,7 +1957,7 @@ return( true );
 	    for ( pt=xuid; *pt==' ' ; ++pt );
 	    if ( *pt=='[' ) {	/* People who know PS well, might want to put brackets arround the xuid base array, but I don't want them */
 		pt = copy(pt+1);
-		free( xuid );
+		if (xuid != NULL) free( xuid );
 		xuid = pt;
 	    }
 	    for ( pt=xuid+strlen(xuid)-1; pt>xuid && *pt==' '; --pt );
@@ -2653,10 +2650,11 @@ void LastFonts_Save(void) {
     if ( ffdir ) {
         sprintf(buffer, "%s/FontsOpenAtLastQuit", ffdir);
         preserve = fopen(buffer,"w");
+        free(ffdir);
     }
 
     for ( fv = fv_list; fv!=NULL; fv = next ) {
-	next = (FontView *) (fv->b.next);
+        next = (FontView *) (fv->b.next);
         if ( preserve ) {
             SplineFont *sf = fv->b.cidmaster?fv->b.cidmaster:fv->b.sf;
             fprintf(preserve, "%s\n", sf->filename?sf->filename:sf->origname);
@@ -2786,8 +2784,8 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
     GTabInfo aspects[TOPICS+5], subaspects[3];
     GGadgetCreateData **hvarray, boxes[2*TOPICS];
     struct pref_data p;
-    int line,line_max = 3;
-    int i = 0, gc = 0, ii, y, si=0, k=0;
+    int line = 0,line_max = 3;
+    int i = 0, gc = 0, ii, y=0, si=0, k=0;
     char buf[20];
     char *tempstr;
 

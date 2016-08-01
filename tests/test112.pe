@@ -1,17 +1,17 @@
 #Needs: fonts/QuadraticConversionBug.sfd, fonts/CourierNew.ttf
 #Make sure quadratic conversion works...
 
-Open("@abs_srcdir@/fonts/QuadraticConversionBug.sfd");
+Open($1);
 # the following use to crash (when in a script)
 SetFontOrder(2);
-Save("@abs_builddir@/results/QuadraticConversionBug2.sfd")
+Save("QuadraticConversionBug2.sfd")
 Close()
 # this used to give us IErrors
-Open("@abs_builddir@/results/QuadraticConversionBug2.sfd")
+Open("QuadraticConversionBug2.sfd")
 Close()
 
 # Ok. We can do the conversion without egregious errors. But are the glyphs similar?
-Open("@abs_srcdir@/fonts/QuadraticConversionBug.sfd");
+Open($1);
 Reencode("Original");
 SelectAll()
 Copy()
@@ -20,14 +20,14 @@ CompareGlyphs(-1,1.5)
 Close()
 
 #Now can we go to cubic?
-Open("@abs_srcdir@/fonts/CourierNew.ttf");
-Generate("@abs_builddir@/results/CourierNew.pfb")
+Open($2);
+Generate("CourierNew.pfb")
 SetFontOrder(3);
-Save("@abs_builddir@/results/CourierNew.sfd")
+Save("CourierNew.sfd")
 Close()
-Open("@abs_builddir@/results/CourierNew.pfb")
+Open("CourierNew.pfb")
 Close()
-Open("@abs_builddir@/results/CourierNew.sfd")
+Open("CourierNew.sfd")
 Close()
 
 Quit()

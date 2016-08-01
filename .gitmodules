@@ -1,6 +1,0 @@
-[submodule "gnulib"]
-	path = gnulib
-	url = git://git.sv.gnu.org/gnulib
-[submodule "uthash"]
-	path = uthash
-	url = git://github.com/troydhanson/uthash

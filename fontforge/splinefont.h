@@ -35,6 +35,8 @@
 #else
 # include <gwwiconv.h>
 #endif
+#include "locale.h"
+#include <gnetwork.h>
 
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
 # define real		double
@@ -536,6 +538,7 @@ typedef struct anchorpoint {
 } AnchorPoint;
 
 typedef struct kernpair {
+    // Note that the left character in the pair has the reference to the kerning pair, which in turn references the right character.
     struct lookup_subtable *subtable;
     struct splinechar *sc;
     int16 off;
@@ -544,16 +547,30 @@ typedef struct kernpair {
     struct kernpair *next;
 } KernPair;
 
+#define FF_KERNCLASS_FLAG_NATIVE 2 // If set, the class goes into groups.plist or kerning.plist.
+#define FF_KERNCLASS_FLAG_FEATURE 4 // If set, the class or rule goes into the feature file. In the present configuration, this ought to be zero always.
+#define FF_KERNCLASS_FLAG_NAMETYPE 8 // If unset (default), the class has a standard name, which translates to a U. F. O. name starting in public.kern, which may be illegal in the feature file. If set, it has a name like @MMK_.
+#define FF_KERNCLASS_FLAG_NAMELEGACY 16 // If set, the class has a U. F. O. name starting in @kc as FontForge liked to do in the past.
+#define FF_KERNCLASS_FLAG_VIRTUAL 32 // If unset (default), the class is a real character class and does not conflict with same-sided classes. If set, FontForge mostly ignores the class except for U. F. O. input/output.
+#define FF_KERNCLASS_FLAG_FLATTEN 64 // If unset (default), the class gets exported as a class. If set, it gets exported as its first member (in order to support class-character kerns).
+#define FF_KERNCLASS_FLAG_SINGLECHAR (FF_KERNCLASS_FLAG_VIRTUAL | FF_KERNCLASS_FLAG_FLATTEN) // We expect to see these used together.
+
 typedef struct kernclass {
     int first_cnt, second_cnt;		/* Count of classes for first and second chars */
     char **firsts;			/* list of a space separated list of char names */
     char **seconds;			/*  one entry for each class. Entry 0 is null */
     					/*  and means everything not specified elsewhere */
+    char **firsts_names; // We need to track the names of the classes in order to round-trip U. F. O. data.
+    char **seconds_names;
+    int *firsts_flags; // This tracks the storage format of the class in U. F. O. (groups.plist or features.fea) and whether it's a single-character class.
+    int *seconds_flags; // We also track the name format (@MMK or public.kern).
     struct lookup_subtable *subtable;
     uint16 kcid;			/* Temporary value, used for many things briefly */
-    int16 *offsets;			/* array of first_cnt*second_cnt entries */
-    DeviceTable *adjusts;		/* array of first_cnt*second_cnt entries */
-    struct kernclass *next;
+    int16 *offsets;			/* array of first_cnt*second_cnt entries with 0 representing no data */
+    int *offsets_flags;
+    DeviceTable *adjusts;		/* array of first_cnt*second_cnt entries representing resolution-specific adjustments */
+    struct kernclass *next;		// Note that, in most cases, a typeface needs only one struct kernclass since it can contain all classes.
+    int feature; // This indicates whether the kerning class came from a feature file. This is important during export.
 } KernClass;
 
 enum possub_type { pst_null, pst_position, pst_pair,
@@ -1155,6 +1172,7 @@ typedef struct splinepointlist {
     uint8 ticked;
     uint8 beziers_need_optimizer;	/* If the spiros have changed in spiro mode, then reverting to bezier mode might, someday, run a simplifier */
     uint8 is_clip_path;			/* In type3/svg fonts */
+    int start_offset; // This indicates which point is the canonical first for purposes of outputting to U. F. O..
     char *contour_name;
 } SplinePointList, SplineSet;
 
@@ -1290,6 +1308,8 @@ typedef struct layer /* : reflayer */{
     Undoes *redoes;
     uint32 validation_state;
     uint32 old_vs;
+    void *python_persistent;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
+    int python_persistent_has_lists;
 } Layer;
 
 enum layer_type { ly_all=-2, ly_grid= -1, ly_back=0, ly_fore=1,
@@ -1462,7 +1482,7 @@ typedef struct splinechar {
     struct splinecharlist *dependents;
 	    /* The dependents list is a list of all characters which refenence*/
 	    /*  the current character directly */
-    KernPair *kerns;
+    KernPair *kerns; // Note that the left character in the pair has the reference to the kerning pair, which in turn references the right character.
     KernPair *vkerns;
     PST *possub;		/* If we are a ligature then this tells us what */
 				/*  It may also contain a bunch of other stuff now */
@@ -1495,7 +1515,11 @@ typedef struct splinechar {
     void *python_sc_object;
     void *python_temporary;
 #endif
+#if 0
+    // Python persistent data is now in the layers.
     void *python_persistent;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
+    int python_persistent_has_lists;
+#endif // 0
 	/* If the glyph is used as a tile pattern, then the next two values */
 	/*  determine the amount of white space around the tile. If extra is*/
 	/*  non-zero then we add it to the max components of the bbox and   */
@@ -1701,6 +1725,10 @@ struct pfminfo {		/* A misnomer now. OS/2 info would be more accurate, but that'
     int16 weight;
     int16 width;
     char panose[10];
+    /* A subset of OS/2 fsSelection, used for style mapping. */
+    /* Must agree with macStyle per otspec, takes precedence. */
+    /* Can't use macStyle because it doesn't have a "regular" bit unlike the OS/2 component. */
+    int16 stylemap;
     int16 fstype;
     int16 linegap;		/* from hhea */
     int16 vlinegap;		/* from vhea */
@@ -1710,6 +1738,7 @@ struct pfminfo {		/* A misnomer now. OS/2 info would be more accurate, but that'
     int16 os2_subxsize, os2_subysize, os2_subxoff, os2_subyoff;
     int16 os2_supxsize, os2_supysize, os2_supxoff, os2_supyoff;
     int16 os2_strikeysize, os2_strikeypos;
+    int16 os2_capheight, os2_xheight;
     char os2_vendor[4];
     int16 os2_family_class;
     uint32 codepages[2];
@@ -1736,6 +1765,23 @@ struct gasp {
     uint16 flags;
 };
 
+struct ff_glyphclasses {
+    // This matches struct glyphclasses from featurefile.c for now. We may make the references numeric in the future.
+    // There may be a matching entry as a class elsewhere. For now, the output driver is responsible for eliminating duplicates.
+    // In the interest of preserving orderings, we shall output from here, checking for value overrides from kerning classes on each kerning group entry.
+    char *classname, *glyphs;
+    struct ff_glyphclasses *next;
+};
+
+struct ff_rawoffsets {
+    // This stores raw offsets as read from kerning.plist.
+    // FontForge shall output these after native data and shall output only those for which it has not emitted native data.
+    char *left;
+    char *right;
+    int offset;
+    struct ff_rawoffsets *next;
+};
+
 typedef struct splinefont {
     char *fontname, *fullname, *familyname, *weight;
     char *familyname_with_timestamp;
@@ -1744,7 +1790,7 @@ typedef struct splinefont {
     char *defbasefilename;
     char *version;
     real italicangle, upos, uwidth;		/* In font info */
-    int ascent, descent;
+    int ascent, descent, invalidem; // If invalidem, then we use the format-specific ascent and descent on export.
     int uniqueid;				/* Not copied when reading in!!!! */
     int glyphcnt, glyphmax;			/* allocated size of glyphs array */
     SplineChar **glyphs;
@@ -1853,6 +1899,9 @@ typedef struct splinefont {
     int mark_set_cnt;
     char **mark_sets;			/* glyph name list */
     char **mark_set_names;		/* used within ff, utf8 (the name we've given to this class of marks) */
+    struct ff_glyphclasses *groups; // This stores arbitrary named character lists for use in kerning or in the feature file.
+    struct ff_rawoffsets *groupkerns;
+    struct ff_rawoffsets *groupvkerns;
     long long creationtime;		/* seconds since 1970 */
     long long modificationtime;
     short os2_version;			/* 0 means default rather than the real version 0 */
@@ -1868,6 +1917,7 @@ typedef struct splinefont {
     void *python_temporary;
 #endif
     void *python_persistent;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
+    int python_persistent_has_lists; // This affects whether arrays exist as tuples or as lists (thus allowing us to use tuples for foreign data).
     enum loadvalidation_state loadvalidation_state;
     LayerInfo *layers;
     int layer_cnt;
@@ -1884,8 +1934,10 @@ typedef struct splinefont {
     char *woffMetadata;
     real ufo_ascent, ufo_descent;	/* I don't know what these mean, they don't seem to correspond to any other ascent/descent pair, but retain them so round-trip ufo input/output leaves them unchanged */
 	    /* ufo_descent is negative */
-
+    char *styleMapFamilyName;
     struct sfundoes *undoes;
+    char collab_uuid[ FF_UUID_STRING_SIZE ];
+    int preferred_kerning; // 1 for U. F. O. native, 2 for feature file, 0 undefined. Input functions shall flag 2, I think. This is now in S. F. D. in order to round-trip U. F. O. consistently.
 } SplineFont;
 
 struct axismap {
@@ -1959,16 +2011,17 @@ enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2,
 		    ttf_flag_TeXtable=0x80,
 		    ttf_flag_ofm=0x100,
 		    ttf_flag_oldkern=0x200,	/* never set in conjunction with applemode */
-		    ttf_flag_brokensize=0x400,	/* Adobe originally issued fonts with a bug in the size feature. They now claim (Aug 2006) that this has been fixed. Legacy programs will do the wrong thing with the fixed feature though */
 		    ttf_flag_pfed_lookupnames=0x800,
 		    ttf_flag_pfed_guides=0x1000,
 		    ttf_flag_pfed_layers=0x2000,
 		    ttf_flag_symbol=0x4000,
-		    ttf_flag_dummyDSIG=0x8000
+		    ttf_flag_dummyDSIG=0x8000,
+		    ttf_native_kern=0x10000, // This applies mostly to U. F. O. right now.
+		    ttf_flag_oldkernmappedonly=0x20000000 // Allow only mapped glyphs in the old-style "kern" table, required for Windows compatibility
 		};
 enum ttc_flags { ttc_flag_trymerge=0x1, ttc_flag_cff=0x2 };
 enum openflags { of_fstypepermitted=1, of_askcmap=2, of_all_glyphs_in_ttc=4,
-	of_fontlint=8, of_hidewindow=0x10 };
+	of_fontlint=8, of_hidewindow=0x10, of_all_tables=0x20 };
 enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,
 		    ps_flag_nohints = 0x40000, ps_flag_restrict256=0x80000,
 		    ps_flag_afm = 0x100000, ps_flag_pfm = 0x200000,
@@ -2122,6 +2175,7 @@ extern void SFFindNearTop(SplineFont *);
 extern void SFRestoreNearTop(SplineFont *);
 extern int SFForceEncoding(SplineFont *sf,EncMap *old,Encoding *new_map);
 extern int CountOfEncoding(Encoding *encoding_name);
+extern int SFReencode(SplineFont *sf, const char *encname, int force);
 extern void SFMatchGlyphs(SplineFont *sf,SplineFont *target,int addempties);
 extern void MMMatchGlyphs(MMSet *mm);
 extern const char *_GetModifiers(const char *fontname, const char *familyname, const char *weight);
@@ -2244,7 +2298,9 @@ extern void SCAddRef(SplineChar *sc,SplineChar *rsc,int layer, real xoff, real y
 extern void _SCAddRef(SplineChar *sc,SplineChar *rsc,int layer, real transform[6]);
 extern KernClass *KernClassCopy(KernClass *kc);
 extern void KernClassFreeContents(KernClass *kc);
+extern void KernClassClearSpecialContents(KernClass *kc);
 extern void KernClassListFree(KernClass *kc);
+extern void KernClassListClearSpecialContents(KernClass *kc);
 extern int KernClassContains(KernClass *kc, const char *name1, const char *name2, int ordered );
 extern void OTLookupFree(OTLookup *lookup);
 extern void OTLookupListFree(OTLookup *lookup );
@@ -2282,6 +2338,34 @@ extern void BaseLangFree(struct baselangextent *extent);
 extern void BaseScriptFree(struct basescript *bs);
 extern void BaseFree(struct Base *base);
 extern void SplineFontFree(SplineFont *sf);
+extern void SplineFontClearSpecial(SplineFont *sf);
+
+#if 1
+// These relate to experimental support for U. F. O. groups.
+#define GROUP_NAME_KERNING_UFO 1
+#define GROUP_NAME_KERNING_FEATURE 2
+#define GROUP_NAME_VERTICAL 4 // Otherwise horizontal.
+#define GROUP_NAME_RIGHT 8 // Otherwise left (or above).
+
+void GlyphGroupFree(struct ff_glyphclasses* group);
+void GlyphGroupsFree(struct ff_glyphclasses* root);
+int GroupNameType(const char *input);
+void GlyphGroupKernFree(struct ff_rawoffsets* groupkern);
+void GlyphGroupKernsFree(struct ff_rawoffsets* root);
+int CountKerningClasses(SplineFont *sf);
+#ifdef FF_UTHASH_GLIF_NAMES
+struct glif_name_index;
+int HashKerningClassNamesFlex(SplineFont *sf, struct glif_name_index * class_name_hash, int capitalize);
+int HashKerningClassNames(SplineFont *sf, struct glif_name_index * class_name_hash);
+int HashKerningClassNamesCaps(SplineFont *sf, struct glif_name_index * class_name_hash);
+#endif
+int KerningClassSeekByAbsoluteIndex(const struct splinefont *sf, int seek_index, struct kernclass **okc, int *oisv, int *oisr, int *ooffset);
+struct ff_glyphclasses *SFGetGroup(const struct splinefont *sf, int index, const char *name);
+int StringInStrings(char const* const* space, int length, const char *target);
+char **StringExplode(const char *input, char delimiter);
+void ExplodedStringFree(char **input);
+int SFKerningGroupExistsSpecific(const struct splinefont *sf, const char *groupname, int isv, int isr);
+#endif // 1
 extern struct jstf_lang *JstfLangsCopy(struct jstf_lang *jl);
 extern void JstfLangFree(struct jstf_lang *jl);
 extern void JustifyFree(Justify *just);
@@ -2294,6 +2378,7 @@ extern void MarkSetFree(int cnt,char **classes,char **names);
 extern void MarkClassFree(int cnt,char **classes,char **names);
 extern void MMSetFreeContents(MMSet *mm);
 extern void MMSetFree(MMSet *mm);
+extern void MMSetClearSpecial(MMSet *mm);
 extern void SFRemoveUndoes(SplineFont *sf,uint8 *selected,EncMap *map);
 extern void SplineRefigure3(Spline *spline);
 extern void SplineRefigure(Spline *spline);
@@ -2315,6 +2400,7 @@ extern void SplineFontQuickConservativeBounds(SplineFont *sf,DBounds *b);
 extern void SplinePointCategorize(SplinePoint *sp);
 extern int SplinePointIsACorner(SplinePoint *sp);
 extern void SPLCategorizePoints(SplinePointList *spl);
+extern void SPLCategorizePointsKeepCorners(SplinePointList *spl);
 extern void SCCategorizePoints(SplineChar *sc);
 extern SplinePointList *SplinePointListCopy1(const SplinePointList *spl);
 extern SplinePointList *SplinePointListCopy(const SplinePointList *base);
@@ -2512,7 +2598,7 @@ extern void SplineCharMerge(SplineChar *sc,SplineSet **head,int type);
 extern void SPLNearlyHvCps(SplineChar *sc,SplineSet *ss,bigreal err);
 extern void SPLNearlyHvLines(SplineChar *sc,SplineSet *ss,bigreal err);
 extern int  SPLNearlyLines(SplineChar *sc,SplineSet *ss,bigreal err);
-extern int SPInterpolate(SplinePoint *sp);
+extern int SPInterpolate(const SplinePoint *sp);
 extern void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,
 	struct simplifyinfo *smpl);
 extern SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,
@@ -2695,7 +2781,11 @@ extern void SplineFontAutoHintRefs( SplineFont *sf, int layer);
 extern StemInfo *HintCleanup(StemInfo *stem,int dosort,int instance_count);
 extern int SplineFontIsFlexible(SplineFont *sf,int layer, int flags);
 extern int SCDrawsSomething(SplineChar *sc);
+extern int SCDrawsSomethingOnLayer(SplineChar *sc, int layer);
 extern int SCWorthOutputting(SplineChar *sc);
+extern int SCHasData(SplineChar *sc);
+extern int LayerWorthOutputting(SplineFont *sf, int layer);
+extern int SCLWorthOutputtingOrHasData(SplineChar *sc, int layer);
 extern int SFFindNotdef(SplineFont *sf, int fixed);
 extern int doesGlyphExpandHorizontally(SplineChar *sc);
 extern int IsntBDFChar(BDFChar *bdfc);
@@ -2731,6 +2821,9 @@ typedef struct sfd_getfontmetadatadata
     OTLookup*           lastsotl;
     KernClass*          lastkc;
     KernClass*          lastvkc;
+    struct ff_glyphclasses* lastgroup;
+    struct ff_rawoffsets* lastgroupkern;
+    struct ff_rawoffsets* lastgroupvkern;
     FPST*               lastfp;
     ASM*                lastsm;
     struct ttf_table*   lastttf[2];
@@ -2741,6 +2834,10 @@ extern bool SFD_GetFontMetaData( FILE *sfd,
                                  char *tok,
                                  SplineFont *sf,
                                  SFD_GetFontMetaDataData* d );
+extern void SFD_GetFontMetaDataVoid( FILE *sfd,
+                                 char *tok,
+                                 SplineFont *sf,
+                                 void* d );
 typedef void (*visitSFDFragmentFunc)( FILE *sfd, char *tokbuf, SplineFont *sf, void* udata );
 extern void visitSFDFragment( FILE *sfd, SplineFont *sf, visitSFDFragmentFunc ufunc, void* udata );
 extern char* DumpSplineFontMetadata( SplineFont *sf );
@@ -2756,7 +2853,7 @@ extern void SFDDumpMacFeat(FILE *sfd,MacFeat *mf);
 extern MacFeat *SFDParseMacFeatures(FILE *sfd, char *tok);
 extern int SFDDoesAnyBackupExist(char* filename);
 extern int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal, int todir);
-extern int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal);
+extern int SFDWriteBak(char *filename,SplineFont *sf,EncMap *map,EncMap *normal);
 extern int SFDWriteBakExtended(char* locfilename,
 			       SplineFont *sf,EncMap *map,EncMap *normal,
 			       int s2d,
@@ -2781,12 +2878,11 @@ extern SplineFont *CFFParse(char *filename);
 extern SplineFont *SFReadMacBinary(char *filename,int flags,enum openflags openflags);
 extern SplineFont *SFReadWinFON(char *filename,int toback);
 extern SplineFont *SFReadPalmPdb(char *filename);
-extern SplineFont *LoadSplineFont(char *filename,enum openflags);
-extern SplineFont *_ReadSplineFont(FILE *file,char *filename, enum openflags openflags);
-extern SplineFont *ReadSplineFont(char *filename,enum openflags);	/* Don't use this, use LoadSF instead */
+extern SplineFont *LoadSplineFont(const char *filename,enum openflags);
+extern SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags openflags);
+extern SplineFont *ReadSplineFont(const char *filename,enum openflags);	/* Don't use this, use LoadSF instead */
 extern FILE *URLToTempFile(char *url,void *lock);
 extern int URLFromFile(const char *url,FILE *from);
-extern int HttpGetBuf(const char *url, char *databuf, int *datalen, void *mutex);
 extern void ArchiveCleanup(char *archivedir);
 extern char *Unarchive(char *name, char **_archivedir);
 extern char *Decompress(char *name, int compression);
@@ -2798,7 +2894,7 @@ extern uint16 MacStyleCode( SplineFont *sf, uint16 *psstyle );
 extern SplineFont *SFReadIkarus(char *fontname);
 extern SplineFont *_SFReadPdfFont(FILE *ttf,char *filename,enum openflags openflags);
 extern SplineFont *SFReadPdfFont(char *filename, enum openflags openflags);
-extern char **GetFontNames(char *filename);
+extern char **GetFontNames(char *filename, int do_slow);
 extern char **NamesReadPDF(char *filename);
 extern char **NamesReadSFD(char *filename);
 extern char **NamesReadTTF(char *filename);
@@ -3244,6 +3340,7 @@ extern void BCClearAll(BDFChar *bc);
 
 #if !defined(_NO_PYTHON)
 extern void FontForge_InitializeEmbeddedPython(void);
+extern void FontForge_FinalizeEmbeddedPython(void);
 extern void PyFF_ErrorString(const char *msg,const char *str);
 extern void PyFF_ErrorF3(const char *frmt, const char *str, int size, int depth);
 extern void PyFF_Stdin(void);
@@ -3252,7 +3349,9 @@ extern void PyFF_ScriptFile(struct fontviewbase *fv,SplineChar *sc,char *filenam
 extern void PyFF_ScriptString(struct fontviewbase *fv,SplineChar *sc,int layer,char *str);
 extern void PyFF_FreeFV(struct fontviewbase *fv);
 extern void PyFF_FreeSC(SplineChar *sc);
+void PyFF_FreeSCLayer(SplineChar *sc, int layer);
 extern void PyFF_FreeSF(SplineFont *sf);
+extern void PyFF_FreePythonPersistent(void *python_persistent);
 extern void PyFF_ProcessInitFiles(void);
 extern char *PyFF_PickleMeToString(void *pydata);
 extern void *PyFF_UnPickleMeToObjects(char *str);
@@ -3293,6 +3392,7 @@ extern int SFValidate(SplineFont *sf, int layer, int force);
 extern int VSMaskFromFormat(SplineFont *sf, int layer, enum fontformat format);
 
 extern int hasspiro(void);
+extern char *libspiro_version(void);
 extern SplineSet *SpiroCP2SplineSet(spiro_cp *spiros);
 extern spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *_cnt);
 extern spiro_cp *SpiroCPCopy(spiro_cp *spiros,uint16 *_cnt);
@@ -3440,6 +3540,90 @@ extern void debug_printHintInstance( HintInstance* hi, int hin, char* msg );
  * tolerence of b.
  */
 extern bool equalWithTolerence( real a, real b, real tolerence );
+
+// The following functions are in splineutil.c at present.
+size_t count_caps(const char * input);
+char * upper_case(const char * input);
+char * same_case(const char * input);
+char * delimit_null(const char * input, char delimiter);
+
+#include "ustring.h"
+
+#ifdef _WIN32
+#define BAD_LOCALE_HACK
+typedef char* locale_t;
+#define LC_GLOBAL_LOCALE ((locale_t)-1)
+#define LC_ALL_MASK LC_ALL
+#define LC_COLLATE_MASK LC_COLLATE
+#define LC_CTYPE_MASK LC_CTYPE
+#define LC_MONETARY_MASK LC_MONETARY
+#define LC_NUMERIC_MASK LC_NUMERIC
+#define LC_TIME_MASK LC_TIME
+#endif
+
+static inline void switch_to_c_locale(locale_t * tmplocale_p, locale_t * oldlocale_p) {
+#ifndef BAD_LOCALE_HACK
+  *tmplocale_p = newlocale(LC_NUMERIC_MASK, "C", NULL);
+  if (*tmplocale_p == NULL) fprintf(stderr, "Failed to create temporary locale.\n");
+  else if ((*oldlocale_p = uselocale(*tmplocale_p)) == NULL) {
+    fprintf(stderr, "Failed to change locale.\n");
+    freelocale(*tmplocale_p); *tmplocale_p = NULL;
+  }
+#else
+  // Yes, it is dirty. But so is an operating system that doesn't support threaded locales.
+  *oldlocale_p = (locale_t)copy(setlocale(LC_NUMERIC_MASK, "C"));
+  if (*oldlocale_p == NULL) fprintf(stderr, "Failed to change locale.\n");
+#endif
+}
+
+static inline void switch_to_old_locale(locale_t * tmplocale_p, locale_t * oldlocale_p) {
+#ifndef BAD_LOCALE_HACK
+  if (*oldlocale_p != NULL) { uselocale(*oldlocale_p); } else { uselocale(LC_GLOBAL_LOCALE); }
+  *oldlocale_p = NULL; // This ends the lifecycle of the temporary old locale storage.
+  if (*tmplocale_p != NULL) { freelocale(*tmplocale_p); *tmplocale_p = NULL; }
+#else
+  if (*oldlocale_p != NULL) {
+    setlocale(LC_NUMERIC_MASK, (char*)(*oldlocale_p));
+    free((char*)(*oldlocale_p));
+    *oldlocale_p = NULL;
+  }
+#endif
+}
+
+static inline locale_t newlocale_hack(int category_mask, const char *locale, locale_t base) {
+  // Note that, in the interest of minimizing the hack, we drop the category mask on Wingdows.
+#ifndef BAD_LOCALE_HACK
+  return newlocale(category_mask, locale, base);
+#else
+  return (locale_t)copy(locale);
+#endif
+}
+
+static inline locale_t uselocale_hack(locale_t dataset) {
+#ifndef BAD_LOCALE_HACK
+  return uselocale(dataset);
+#else
+  return (locale_t)copy(setlocale(LC_ALL_MASK, (char*)dataset));
+#endif
+}
+
+static inline void freelocale_hack(locale_t dataset) {
+#ifndef BAD_LOCALE_HACK
+  freelocale(dataset);
+#else
+  if (dataset != NULL) { free(dataset); }
+#endif
+}
+
+#if 0
+#define DECLARE_TEMP_LOCALE() char oldloc[25];
+#define SWITCH_TO_C_LOCALE() strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 ); oldloc[24]='\0'; setlocale(LC_NUMERIC,"C");
+#define SWITCH_TO_OLD_LOCALE() setlocale(LC_NUMERIC,oldloc);
+#else
+#define DECLARE_TEMP_LOCALE() locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+#define SWITCH_TO_C_LOCALE() switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
+#define SWITCH_TO_OLD_LOCALE() switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
+#endif
 
 
 

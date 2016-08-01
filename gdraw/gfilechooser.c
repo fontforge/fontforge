@@ -143,10 +143,10 @@ return( name );
 
 /* Handles *?{}[] wildcards */
 int GGadgetWildMatch(unichar_t *pattern, unichar_t *name,int ignorecase) {
-    unichar_t *eop = pattern + u_strlen(pattern);
-
     if ( pattern==NULL )
 return( true );
+
+    unichar_t *eop = pattern + u_strlen(pattern);
 
     name = SubMatch(pattern,eop,name,ignorecase);
     if ( name==NULL )
@@ -491,8 +491,10 @@ static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
 	uc_strcat(freeme,"/");
 	dir = freeme;
     }
-    if ( gfc->hpos>=gfc->hmax )
-	gfc->history = realloc(gfc->history,(gfc->hmax+20)*sizeof(unichar_t *));
+    if ( gfc->hpos+1>=gfc->hmax ) {
+	gfc->hmax = gfc->hmax+20;
+	gfc->history = realloc(gfc->history,(gfc->hmax)*sizeof(unichar_t *));
+    }
     if ( gfc->hcnt==0 ) {
 	gfc->history[gfc->hcnt++] = u_copy(dir);
     } else if ( u_strcmp(gfc->history[gfc->hpos],dir)==0 )
@@ -510,10 +512,15 @@ static int GFileChooserTextChanged(GGadget *t,GEvent *e) {
     GGadget *g = (GGadget *)GGadgetGetUserData(t);
 
     const unichar_t *pt, *spt;
-    unichar_t * pt_toFree = 0;
+    unichar_t * pt_toFree = 0, *local_toFree = 0;
     if ( e->type!=et_controlevent || e->u.control.subtype!=et_textchanged )
 return( true );
     spt = pt = _GGadgetGetTitle(t);
+#ifdef _WIN32
+    local_toFree = u_GFileNormalizePath(u_copy(spt));
+    pt = spt = local_toFree;
+#endif    
+    
     if ( pt==NULL )
 return( true );
     gfc = (GFileChooser *) GGadgetGetUserData(t);
@@ -554,6 +561,9 @@ return( true );
     free(gfc->lastname); gfc->lastname = NULL;
     if(pt_toFree)
 	free(pt_toFree);
+    
+    if (local_toFree)
+        free(local_toFree);
 
     if(gfc->inputfilenameprevchar)
 	free(gfc->inputfilenameprevchar);
@@ -1127,11 +1137,15 @@ void GFileChooserPopupCheck(GGadget *g,GEvent *e) {
 void GFileChooserFilterIt(GGadget *g) {
     GFileChooser *gfc = (GFileChooser *) g;
     unichar_t *pt, *spt, *slashpt, *dir, *temp;
+    unichar_t *tofree = NULL;
     int wasdir;
 
     wasdir = gfc->lastname!=NULL;
 
     spt = (unichar_t *) _GGadgetGetTitle(&gfc->name->g);
+#ifdef _WIN32
+    spt = tofree = u_GFileNormalizePath(u_copy(spt));
+#endif
     if ( *spt=='\0' ) {		/* Werner tells me that pressing the Filter button with nothing should show the default filter mask */
 	if ( gfc->wildcard!=NULL )
 	    GGadgetSetTitle(&gfc->name->g,gfc->wildcard);
@@ -1167,6 +1181,7 @@ return;
     }
     GFileChooserScanDir(gfc,dir);
     free(dir);
+    free(tofree);
 }
 
 /* A function that may be connected to a filter button as its handle_controlevent */
@@ -1217,41 +1232,6 @@ int GFileChooserDefInputFilenameFunc( GGadget *g,
 				      unichar_t* oldfilename ) {
     return 0;
 }
-
-int GFileChooserSaveAsInputFilenameFunc( GGadget *g,
-					 const unichar_t ** ppt,
-					 unichar_t* oldfilename ) {
-    const unichar_t* pt = *ppt;
-    char* p = u_to_c(pt);
-    int plen = strlen(p);
-    int ew = endswithi( p, ".sfdir") || endswithi( p, ".sfd");
-
-    if( !ew ) {
-	if( endswithi( u_to_c(oldfilename), ".sfd")
-	    || endswithi( u_to_c(oldfilename), ".sfdir")) {
-	    *ppt = u_copy(oldfilename);
-	    return 1;
-	}
-    }
-
-    /**
-     * If there is not a correct extension there already, then we will
-     * add one for the user to be helpful.
-     */
-    if( pt==*ppt) {
-	char* extension = ".sfd";
-	if( *p && p[plen-1] == '.' )
-	    extension = "sfd";
-	if( !ew ) {
-	    pt = u_concat( pt, c_to_u(extension) );
-	}
-    }
-
-    int ret = (pt != *ppt);
-    *ppt = pt;
-    return(ret);
-}
-
 
 void GFileChooserSetInputFilenameFunc(GGadget *g,GFileChooserInputFilenameFuncType func) {
     GFileChooser *gfc = (GFileChooser *) g;
@@ -1326,7 +1306,7 @@ return;
     if ( u_GFileIsAbsolute(tit) ){
 	base = uc_strstr(tit, "://");
 	if(!base) base = (unichar_t*) tit;
-	if(pt > base && pt[1] && (pt[1]!='.' || pt[2]!='\0') && !u_GFileIsDir(tit)){
+	if(pt > base && pt[1] && (pt[1]!='.' || pt[2]!='\0')){
 	    gfc->lastname = u_copy(pt+1);
 	    dir = u_copyn(tit, pt-tit);
 	}

@@ -179,6 +179,7 @@ static void ttf_dumpsfkerns(struct alltabs *at, SplineFont *sf, int tupleIndex, 
     int b, bmax;
     int *breaks;
     int winfail=0;
+    int subtableBeginPos,subtableEndPos;
 
     if ( CountKerns(at,sf,&kcnt)==0 )
 return;
@@ -196,30 +197,22 @@ return;
 	    gid = 0;
 	    for ( b=0; b<bmax; ++b ) {
 		c = bmax==1 ? c : breaks[b];
-		if ( version==0 ) {
-		    putshort(at->kern,0);		/* subtable version */
-		    if ( c>10920 )
-			ff_post_error(_("Too many kern pairs"),_("The 'kern' table supports at most 10920 kern pairs in a subtable"));
-		    putshort(at->kern,(7+3*c)*sizeof(uint16)); /* subtable length */
-		    putshort(at->kern,!isv);	/* coverage, flags=hor/vert&format=0 */
-		} else {
-		    putlong(at->kern,(8+3*c)*sizeof(uint16)); /* subtable length */
-		    /* Apple's new format has a completely different coverage format */
-		    putshort(at->kern,(isv?0x8000:0)| /* format 0, horizontal/vertical flags (coverage) */
-				    tupleMask);
-		    putshort(at->kern,tupleIndex);
-		}
-		putshort(at->kern,c);
-		for ( i=1,j=0; i<=c; i<<=1, ++j );
-		i>>=1; --j;
-		putshort(at->kern,i*6);		/* binary search headers */
-		putshort(at->kern,j);
-		putshort(at->kern,6*(c-i));
+
+		// skip subtable header because we don't know the number of kern pairs yet
+		subtableBeginPos=ftell(at->kern);
+		if(version==0) fseek(at->kern,7*sizeof(uint16),SEEK_CUR);
+		else fseek(at->kern,8*sizeof(uint16),SEEK_CUR);
 
 		for ( tot = 0; gid<at->gi.gcnt && tot<c; ++gid ) if ( at->gi.bygid[gid]!=-1 ) {
 		    SplineChar *sc = sf->glyphs[at->gi.bygid[gid]];
+		    // if requested, omit kern pairs with unmapped glyphs
+		    // (required for compatibility with non-OpenType-aware Windows applications)
+		    if( (at->gi.flags&ttf_flag_oldkernmappedonly) && (unsigned)(sc->unicodeenc)>0xFFFF ) continue;
 		    m = 0;
 		    for ( kp = isv ? sc->vkerns : sc->kerns; kp!=NULL; kp=kp->next ) {
+			// if requested, omit kern pairs with unmapped glyphs
+			// (required for compatibility with non-OpenType-aware Windows applications)
+			if( (at->gi.flags&ttf_flag_oldkernmappedonly) && (unsigned)(kp->sc->unicodeenc)>0xFFFF ) continue;
 			if ( kp->off!=0 && kp->sc->ttf_glyph!=-1 &&
 				LookupHasDefault(kp->subtable->lookup)) {
 			    /* order the pairs */
@@ -248,6 +241,31 @@ return;
 		    }
 		    tot += m;
 		}
+
+		// now we can fill the subtable header
+		c=tot;
+		subtableEndPos=ftell(at->kern);
+		fseek(at->kern,subtableBeginPos,SEEK_SET);
+		if ( version==0 ) {
+		    putshort(at->kern,0);		/* subtable version */
+		    if ( c>10920 )
+			ff_post_error(_("Too many kern pairs"),_("The 'kern' table supports at most 10920 kern pairs in a subtable"));
+		    putshort(at->kern,(7+3*c)*sizeof(uint16)); /* subtable length */
+		    putshort(at->kern,!isv);	/* coverage, flags=hor/vert&format=0 */
+		} else {
+		    putlong(at->kern,(8+3*c)*sizeof(uint16)); /* subtable length */
+		    /* Apple's new format has a completely different coverage format */
+		    putshort(at->kern,(isv?0x8000:0)| /* format 0, horizontal/vertical flags (coverage) */
+				    tupleMask);
+		    putshort(at->kern,tupleIndex);
+		}
+		putshort(at->kern,c);
+		for ( i=1,j=0; i<=c; i<<=1, ++j );
+		i>>=1; --j;
+		putshort(at->kern,i*6);		/* binary search headers */
+		putshort(at->kern,j);
+		putshort(at->kern,6*(c-i));
+		fseek(at->kern,subtableEndPos,SEEK_SET);
 	    }
 	    free(offsets);
 	    free(glnum);
@@ -257,7 +275,7 @@ return;
 
     if( winfail > 0 )
 	ff_post_error(_("Kerning is likely to fail on Windows"),_(
-		"Note: On Windows many apps can have problems with this font's kerning, because %d of its glyph kern pairs cannot be mapped to unicode-BMP kern pairs (eg, they have a Unicode value of -1) To avoid this, go to Generate, Options, and uncheck Old Style kern for OpenType."),
+		"Note: On Windows many apps can have problems with this font's kerning, because %d of its glyph kern pairs cannot be mapped to unicode-BMP kern pairs (eg, they have a Unicode value of -1) To avoid this, go to Generate, Options, and check the \"Windows-compatible \'kern\'\" option."),
 	    winfail);
 
     if ( at->applemode ) for ( isv=0; isv<2; ++isv ) {
@@ -2078,7 +2096,7 @@ uint16 *props_array(SplineFont *sf,struct glyphinfo *gi) {
 	    dir = 0;
 	    if ( sc->unicodeenc>=0x10300 && sc->unicodeenc<=0x103ff )
 		dir = 0;
-	    else if ( sc->unicodeenc>=0x10800 && sc->unicodeenc<=0x103ff )
+	    else if ( sc->unicodeenc>=0x10800 && sc->unicodeenc<=0x10fff )
 		dir = 1;
 	    else if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10fff ) {
 		if ( iseuronumeric(sc->unicodeenc) )

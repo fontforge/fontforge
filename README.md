@@ -1,22 +1,16 @@
-FontForge [![Build Status](https://travis-ci.org/fontforge/fontforge.png)](https://travis-ci.org/fontforge/fontforge)
-=========
+# FontForge [![Build Status](https://travis-ci.org/fontforge/fontforge.png)](https://travis-ci.org/fontforge/fontforge) [![Coverity Scan Build Status](https://scan.coverity.com/projects/792/badge.svg?flat=1)](https://scan.coverity.com/projects/792)
 
-An outline font editor that lets you create your own OpenType, TrueType, CID-keyed, multi-master
-fonts and more... or simply edit existing ones.
+![FontForge Logo](http://fontforge.github.io/assets/img/logo-transparent.png)
 
-Old site at [fontforge.org](http://fontforge.org), new site at
-[fontforge.github.io](http://fontforge.github.io).
+FontForge is a free (libre) font editor for Windows, Mac OS X and GNU+Linux. 
+Use it to create, edit and convert fonts in OpenType, TrueType, UFO, CID-keyed, Multiple Master, and many other formats.
 
-Building from source
---------------------
+[fontforge.org](http://fontforge.org) &mdash; homepage
 
-Instructions are listed in `INSTALL-git.md`, you can also find a list of dependencies in
-`.travis.yml`.  
-Fontforge supports Python >= 2.6, but the testsuite is solely Python 3-compatible.
+[designwithfontforge.com](http://designwithfontforge.com) &mdash; font creation manual
 
-Also check out the [developer documentation](http://fontforge.github.io/en-US/documentation/developers/).
+[`INSTALL-git.md`](INSTALL-git.md) &mdash; developer instructions to build from source
 
-Contributing guidelines
------------------------
+[`.travis.yml`](.travis.yml) &mdash; a list of installation dependencies
 
-Please see [`CONTRIBUTING.md`](CONTRIBUTING.md).
+[`CONTRIBUTING.md`](CONTRIBUTING.md) &mdash; contributing guidelines

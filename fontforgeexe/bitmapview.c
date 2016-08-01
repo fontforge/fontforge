@@ -635,7 +635,10 @@ static void BVDrawRefName(BitmapView *bv,GWindow pixmap,BDFRefChar *ref,int fg) 
     y = bv->height - bv->yoff - (bb.maxy + 1)*bv->scale;
     y -= 5;
     if ( x<-400 || y<-40 || x>bv->width+400 || y>bv->height )
+    {
+        free(refinfo);
 return;
+    }
 
     GDrawLayoutInit(pixmap,refinfo,-1,bv->small);
     GDrawLayoutExtents(pixmap,&size);
@@ -747,7 +750,7 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
     if ( bv->showoutline ) {
 	Color col = (view_bgcol<0x808080)
 		? (bv->bc->byte_data ? 0x008800 : 0x004400 )
-		: (bv->bc->byte_data ? 0x00ff00 : 0x00ff00 );
+		: 0x00ff00;
 	memset(&cvtemp,'\0',sizeof(cvtemp));
 	cvtemp.v = bv->v;
 	cvtemp.width = bv->width;
@@ -2225,17 +2228,30 @@ static unsigned char bitmap_bits[] = {
    0x30, 0x0c, 0xf0, 0x03, 0xf0, 0x03, 0x30, 0x0c, 0x30, 0x0c, 0x30, 0x0c,
    0x30, 0x0c, 0xfc, 0x03, 0xfc, 0x03, 0x00, 0x00};
 
+static int bitmapview_ready = false;
+
+static void BitmapViewFinish() {
+  if ( !bitmapview_ready ) return;
+  bitmapview_ready = 0;
+  mb2FreeGetText(mblist);
+}
+
+void BitmapViewFinishNonStatic() {
+  BitmapViewFinish();
+}
+
 static void BitmapViewInit(void) {
-    static int done = false;
+    // static int done = false; // superseded by bitmapview_ready.
     int i;
 
-    if ( done )
+    if ( bitmapview_ready )
 return;
-    done = true;
+    bitmapview_ready = true;
 
     mb2DoGetText(mblist);
     for ( i=0; BVFlipNames[i]!=NULL ; ++i )
 	BVFlipNames[i] = S_(BVFlipNames[i]);
+    atexit(&BitmapViewFinishNonStatic);
 }
 
 BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {

@@ -255,37 +255,39 @@ return;
 }
 
 static void BdfCRefFixup(BDFFont *bdf, int gid, int *warned, struct ttfinfo *info) {
-    BDFChar *me = bdf->glyphs[gid], *bdfc;
+    BDFChar *bdfc = bdf->glyphs[gid], *bdfcRefd;
     BDFRefChar *head, *prev = NULL, *next;
 
-    for ( head=me->refs; head!=NULL; head=next ) {
-	bdfc = head->gid < bdf->glyphcnt ? bdf->glyphs[head->gid] : NULL;
-	next = head->next;
-	if ( bdfc != NULL ) {
-	    head->bdfc = bdfc;
-	    BCMakeDependent( me,bdfc );
-	    prev = head;
-	} else if ( !*warned ) {
-	    /* Glyphs aren't named yet */
-	    LogError(_("Glyph %d in bitmap strike %d pixels refers to a missing glyph (%d)"),
-		    gid, bdf->pixelsize, head->gid );
-	    info->bad_embedded_bitmap = true;
-	    *warned = true;
-	    /* Remove bad reference from the list */
-	    if ( prev == NULL )
-		me->refs = head->next;
-	    else
-		prev->next = head->next;
-	    free( head );
-	}
-	/* According to the TTF spec, the xOffset and yOffset values specify   */
-	/* the top-left corner position of the component in the composite.     */
-	/* In our program it is more convenient to manipulate values specified */
-	/* relatively to the original position of the reference's parent glyph.*/
-	/* So we have to perform this conversion each time we read or write    */
-	/* an embedded TTF bitmap. */
-	head->xoff = head->xoff - bdfc->xmin + me->xmin;
-	head->yoff = me->ymax - bdfc->ymax - head->yoff;
+    for ( head=bdfc->refs; head!=NULL; head=next ) {
+        bdfcRefd = head->gid < bdf->glyphcnt ? bdf->glyphs[head->gid] : NULL;
+        next = head->next;
+        if ( bdfcRefd != NULL ) {
+            head->bdfc = bdfcRefd;
+            BCMakeDependent( bdfc, bdfcRefd );
+            prev = head;
+            /* According to the TTF spec, the xOffset and yOffset values specify   */
+            /* the top-left corner position of the component in the composite.     */
+            /* In our program it is more convenient to manipulate values specified */
+            /* relatively to the original position of the reference's parent glyph.*/
+            /* So we have to perform this conversion each time we read or write    */
+            /* an embedded TTF bitmap. */
+            head->xoff = head->xoff - bdfcRefd->xmin + bdfc->xmin;
+            head->yoff = bdfc->ymax - bdfcRefd->ymax - head->yoff;
+        } else {
+            if ( !*warned ) {
+                /* Glyphs aren't named yet */
+                LogError(_("Glyph %d in bitmap strike %d pixels refers to a missing glyph (%d)"),
+                        gid, bdf->pixelsize, head->gid );
+                info->bad_embedded_bitmap = true;
+                *warned = true;
+            }
+            /* Remove bad reference node from the singly-linked list */
+            if ( prev == NULL )
+                bdfc->refs = head->next;
+            else
+                prev->next = head->next;
+            free( head );
+        }
     }
 }
 
@@ -526,8 +528,10 @@ void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info,int onlyone) {
 	j += good;
     }
     cnt = j;
-    if ( cnt==0 )
-return;
+    if ( cnt==0 ) {
+        free(sizes);
+        return;
+    }
 
     /* Ask user which (if any) s/he is interested in */
     choices = calloc(cnt+1,sizeof(char *));
@@ -545,20 +549,19 @@ return;
 	sel[0] = true;
     else if ( no_windowing_ui ) {
 	if ( onlyone ) {
-	    biggest=0;
+	    biggest=-1; // We may not find one.
 	    for ( i=1; i<cnt; ++i )
-		if ( sizes[i].ppem>sizes[biggest].ppem && sizes[i].depth==1 )
+		if ( sizes[i].depth==1 && (biggest < 0 || sizes[i].ppem>sizes[biggest].ppem) )
 		    biggest = i;
 	    sel[biggest] = true;
 	} else {
-	    for ( i=0; i<cnt; ++i )
+	    biggest=-1;
+	    for ( i=0; i<cnt; ++i ) {
 		sel[i] = true;
+		if ( sizes[i].depth==1 && (biggest < 0 || sizes[i].ppem>sizes[biggest].ppem) )
+		    biggest = i;
+	    }
 	}
-    } else if ( no_windowing_ui ) {
-	if ( onlyone ) {
-	    if ( biggest!=-1 ) sel[biggest] = true;
-	} else
-	    biggest = -2;
     } else if ( onlyone ) {
 	biggest=ff_choose(_("Load Bitmap Fonts"), choices,cnt,biggest,
 		_("Do you want to load the bitmap fonts embedded in this true/open type file?\n(And if so, which)"));
@@ -979,16 +982,16 @@ static void DetectWidthGroups( struct glyphinfo *gi,BDFFont *bdf,int apple ) {
     IBounds ib, ib2;
     int i, j, cnt, final;
     
-    for ( i=0; i<gi->gcnt; ++i ) if ( gi->bygid[i]!=-1 && bdf->glyphs[gi->bygid[i]]!=NULL )
+    for ( i=0; i<gi->gcnt; ++i ) if ( gi->bygid[i] >= 0 && gi->bygid[i] < bdf->glyphcnt && bdf->glyphs[gi->bygid[i]]!=NULL )
 	bdf->glyphs[gi->bygid[i]]->widthgroup = false;
 
-    for ( i=0; i<gi->gcnt; ++i ) if ( gi->bygid[i]!=-1 && (bc=bdf->glyphs[gi->bygid[i]])!=NULL ) {
+    for ( i=0; i<gi->gcnt; ++i ) if ( gi->bygid[i] >= 0 && gi->bygid[i] < bdf->glyphcnt && (bc=bdf->glyphs[gi->bygid[i]])!=NULL ) {
 	BDFCharQuickBounds( bc,&ib,0,0,true,true );
 	if (( apple || HasOutputtableBitmap( bc ) || bc->refs == NULL ) &&
 		ib.minx >= 0 && ib.maxx <= bc->width &&
 		ib.maxy < bdf->ascent && ib.miny >= -bdf->descent ) {
 	    cnt = 1;
-	    for ( j=i+1; j<gi->gcnt; ++j ) if ( gi->bygid[j]!=-1 && (bc2=bdf->glyphs[gi->bygid[j]])!=NULL ) {
+	    for ( j=i+1; j<gi->gcnt; ++j ) if ( gi->bygid[j] >= 0 && gi->bygid[j] < bdf->glyphcnt && (bc2=bdf->glyphs[gi->bygid[j]])!=NULL ) {
 		BDFCharQuickBounds( bc2,&ib2,0,0,true,true );
 		if (( !apple && !HasOutputtableBitmap( bc2 ) && bc2->refs != NULL ) ||
 			ib2.minx < 0 || ib2.maxx > bc->width || ib2.miny < -bdf->descent ||
@@ -1006,7 +1009,7 @@ static void DetectWidthGroups( struct glyphinfo *gi,BDFFont *bdf,int apple ) {
 	    if ( cnt>20 ) {		/* We must have at least, oh, 20 glyphs with the same metrics */
 		bc->widthgroup = true;
 		BCPreserveAndExpand( bc,&ib );
-		for ( j=i+1; j<=final; ++j ) if ( gi->bygid[j] != -1 && ( bc2=bdf->glyphs[gi->bygid[j]])!=NULL ) {
+		for ( j=i+1; j<=final; ++j ) if ( gi->bygid[j] >= 0 && gi->bygid[j] < bdf->glyphcnt && ( bc2=bdf->glyphs[gi->bygid[j]])!=NULL ) {
 		    bc2->widthgroup = true;
 		    BCPreserveAndExpand( bc2,&ib );
 		}
@@ -1033,6 +1036,8 @@ static struct bitmapSizeTable *ttfdumpstrikelocs(FILE *bloc,FILE *bdat,
 	    (gi->bygid[j]==-1 || gi->bygid[j]>=bdf->glyphcnt || bdf->glyphs[gi->bygid[j]]==NULL); --j );
     if ( j==-1 ) {
 	IError("No characters to output in strikes");
+	free(size);
+	fclose(subtables);
 return(NULL);
     }
 
@@ -1054,7 +1059,7 @@ return(NULL);
     /* then we copy the subtables from the temp file to bloc */
 
     /* the pointers */
-    for ( i=0; i<gi->gcnt; ++i ) if ( gi->bygid[i]!=-1 && (bc=bdf->glyphs[gi->bygid[i]])!=NULL ) {
+    for ( i=0; i<gi->gcnt; ++i ) if ( gi->bygid[i]>=0 && gi->bygid[i]<bdf->glyphcnt && (bc=bdf->glyphs[gi->bygid[i]])!=NULL ) {
 	int wasdef = false;
 	if ( defs!=NULL && defs->bc->sc->ttf_glyph < bc->sc->ttf_glyph ) {
 	    --i;
@@ -1076,7 +1081,7 @@ return(NULL);
 	    cur->last = bc->sc->ttf_glyph;
 	else {
 	    for ( j=i+1; j<gi->gcnt ; ++j ) {
-		if ( gi->bygid[j]==-1 || (bc2=bdf->glyphs[gi->bygid[j]])==NULL )
+		if ( gi->bygid[j]<0 || gi->bygid[j]>=bdf->glyphcnt || (bc2=bdf->glyphs[gi->bygid[j]])==NULL )
 	    break;
 		else if ( bc2->widthgroup!=bc->widthgroup ||
 			(bc->widthgroup && (bc->width!=bc2->width || bc->vwidth!=bc2->vwidth)) )
@@ -1223,12 +1228,12 @@ void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes) {
 	/* correctly calculate reference placement in composite glyphs */
 	DetectWidthGroups( &at->gi,bdf,at->applebitmaps );
 	/* Apple doesn't support composite bitmaps ( EBDT formats 8 and 9) */
-	for ( j=0; j < at->gi.gcnt; ++j ) if ( at->gi.bygid[j]!=-1 && ( bc = bdf->glyphs[at->gi.bygid[j]] ) != NULL )
-	    BCPrepareForOutput( bc,at->applebitmaps );
+	for ( j=0; j < at->gi.gcnt; ++j ) if ( at->gi.bygid[j] >= 0 && at->gi.bygid[j] < bdf->glyphcnt && ( bc = bdf->glyphs[at->gi.bygid[j]] ) != NULL )
+            BCPrepareForOutput( bc,at->applebitmaps );
 	bl = BDFAddDefaultGlyphs(bdf, at->format);
 	cur = ttfdumpstrikelocs(at->bloc,at->bdat,bdf,bl,&at->gi);
 	BDFCleanupDefaultGlyphs(bdf);
-	for ( j=0; j < at->gi.gcnt; ++j ) if ( at->gi.bygid[j]!=-1 && ( bc = bdf->glyphs[at->gi.bygid[j]] ) != NULL )
+	for ( j=0; j < at->gi.gcnt; ++j ) if ( at->gi.bygid[j] >= 0 && at->gi.bygid[j] < bdf->glyphcnt && ( bc = bdf->glyphs[at->gi.bygid[j]] ) != NULL )
 	    BCRestoreAfterOutput( bc );
 
 	if ( cur==NULL )

@@ -741,7 +741,7 @@ static void readttfos2(FILE *ttf, FILE *util, struct ttfinfo *info) {
     static char *panose2[] = { "Any", "No Fit", "Very Light", "Light", "Thin", "Book", "Medium", "Demi", "Bold", "Heavy", "Black", "Nord" };
     static char *panose3[] = { "Any", "No Fit", "Old Style", "Modern", "Even Width", "Expanded", "Condensed", "Very Expanded", "Very Condensed", "Monospaced" };
     static char *panose4[] = { "Any", "No Fit", "None", "Very Low", "Low", "Medium Low", "Medium", "Medium High", "High", "Very High" };
-    static char *panose5[] = { "Any", "No Fit", "Gradual/Diagonal", "Gradual/Transitional", "Gradual/Vertical", "Gradual/Horizontal", "Rapid/Vertical", "Rapid/Horizontal", "Instant/Vertical" };
+    static char *panose5[] = { "Any", "No Fit", "No Variation", "Gradual/Diagonal", "Gradual/Transitional", "Gradual/Vertical", "Gradual/Horizontal", "Rapid/Vertical", "Rapid/Horizontal", "Instant/Vertical", "Instant/Horizontal" };
     static char *panose6[] = { "Any", "No Fit", "Straight Arms/Horizontal", "Straight Arms/Wedge", "Straight Arms/Vertical", "Straight Arms/Single Serif", "Straight Arms/Double Serif", "Non-Straight Arms/Horizontal", "Non-Straight Arms/Wedge", "Non-Straight Arms/Vertical", "Non-Straight Arms/Single Serif", "Non-Straight Arms/Double Serif" };
     static char *panose7[] = { "Any", "No Fit", "Normal/Contact", "Normal/Weighted", "Normal/Boxed", "Normal/Flattened", "Normal/Rounded", "Normal/Off-Center", "Normal/Square", "Oblique/Contact", "Oblique/Weighted", "Oblique/Boxed", "Oblique/Flattened", "Oblique/Rounded", "Oblique/Off-Center", "Oblique/Square" };
     static char *panose8[] = { "Any", "No Fit", "Standard/Trimmed", "Standard/Pointed", "Standard/Serifed", "High/Trimmed", "High/Pointed", "High/Serifed", "Constant/Trimmed", "Constant/Pointed", "Constant/Serifed", "Low/Trimmed", "Low/Pointed", "Low/Serifed" };
@@ -2887,6 +2887,7 @@ static void gdefshowligcaretlist(FILE *ttf,int offset,struct ttfinfo *info) {
 		printf( "!!!! Unknown caret format %d !!!!\n", format );
 	    }
 	}
+	free(offsets);
     }
     free(lc_offsets);
     free(glyphs);
@@ -3138,7 +3139,7 @@ return( type==0 ? "All typographic features" :
 	type==26 ? "Ideographic Spacing" :
 	type==27 ? "?Accented leters (undocumented)?" :
 	type==103 ? "CJK Roman spacing" :
-/* Compatability (depreciated) ... */
+/* Compatability (deprecated) ... */
 	type==100 ? "(adobe) Character Spacing" :
 	type==101 ? "(adobe) Kana Spacing" :
 	type==102 ? "(adobe) Kanji Spacing" :
@@ -5636,7 +5637,7 @@ return;
 static void readcffset(FILE *ttf,struct topdicts *dict,char **strings,int smax,
 	struct ttfinfo *info) {
     int len = dict->glyphs.cnt;
-    int i;
+    int i=0;
     int format, cnt, j, first;
 
     if ( dict->charsetoff==0 ) {

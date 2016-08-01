@@ -31,6 +31,7 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 AC_PREREQ([2.68])
+
 #--------------------------------------------------------------------------
 # PackageTimestamp version
 m4_define([fontforge_package_stamp], [20140101])
@@ -78,6 +79,12 @@ m4_define([libgioftp_info],[libgioftp_major_version:libgioftp_minor_version:0])
 m4_define([libgunicode_info],[libgunicode_major_version:libgunicode_minor_version:0])
 m4_define([libgutils_info],[libgutils_major_version:libgutils_minor_version:0])
 m4_define([libzmqcollab_info],[libzmqcollab_major_version:libzmqcollab_minor_version:0])
+
+#--------------------------------------------------------------------------
+
+# We need this in order to pass things through automake when it doesn't like them.
+BLANK1=''; AC_SUBST(BLANK1)
+AC_SUBST([BLANK2],[""])
 
 #--------------------------------------------------------------------------
 AC_INIT([fontforge],[fontforge_version],[fontforge-devel@lists.sourceforge.net],
@@ -159,6 +166,7 @@ libspiro_url="https://github.com/fontforge/libspiro"
 libuninameslist_url="https://github.com/fontforge/libuninameslist"
 libzmq_url="http://www.zeromq.org/"
 libreadline_url="http://www.gnu.org/software/readline"
+libxorg_url="http://www.x.org/"
 
 # Point to the Wikipedia page, primarily because one may want
 # libjpeg-turbo rather than the reference implementation.
@@ -206,6 +214,18 @@ AC_PATH_PROG([UNZIP],[unzip],[unzip])
 AC_PATH_PROG([UPDATE_MIME_DATABASE],[update-mime-database],[:])
 AC_PATH_PROG([UPDATE_DESKTOP_DATABASE],[update-desktop-database],[:])
 AC_PATH_PROG([PLUTIL],[plutil],[:])
+
+if test "y$HOMEBREW_BREW_FILE" != "y"; then
+   echo "detected a homebrew build environment"
+   PYLIBDIR=$(${HOMEBREW_PREFIX}/bin/python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")
+   PYPKGCONFIG="$( cd "$PYLIBDIR/../../pkgconfig" && pwd )"
+   export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$PYPKGCONFIG"
+   echo "found python pkg_config information: $PYPKGCONFIG"
+   if test "y$PYTHON" = "y"; then
+     export PYTHON="${HOMEBREW_PREFIX}/bin/python"
+   fi
+fi
+
 AM_PATH_PYTHON([2.7])
 PKG_CHECK_MODULES([PYTHON],[python-"${PYTHON_VERSION}"])
 i_do_have_python_scripting=yes;
@@ -264,11 +284,6 @@ FONTFORGE_ARG_ENABLE([tile-path],
                 [enable a 'tile path' command (a variant of 'expand stroke')])],
         [FONTFORGE_CONFIG_TILEPATH])
 
-AC_ARG_ENABLE([windows-cross-compile],
-        [AS_HELP_STRING([--enable-windows-cross-compile],
-                [enable cross compile for windows extra support])],
-        [WINDOWS_CROSS_COMPILE=yes])
-
 #--------------------------------------------------------------------------
 # Theme pixmap ICON selection.
 # Go with tango by default. Retain older 2012 theme for those who like it.
@@ -302,10 +317,31 @@ AM_CONDITIONAL([MAINTAINER_TOOLS],[test x"${i_do_have_maintainer_tools}" = xyes]
 AC_SUBST([MAINTAINER_TOOLS],["${i_do_have_maintainer_tools}"])
 
 #--------------------------------------------------------------------------
+# Check for autotrace and potrace (don't do anything with this yet)
+dnl check for autotrace (v0.31-1) commented-out due to bug in autotrace.m4
+dnl which requires brackets around [AUTOTRACE] on line 7.
+i_do_find_auto_po_trace="no"
+dnl AC_PATH_PROG([AUTO_TRACE],[autotrace],[no])
+AC_PATH_PROG([PO_TRACE],[potrace],[no])
+if test x"${PO_TRACE}" != xno; then
+    i_do_find_auto_po_trace="yes"
+fi
+dnl if test x"${AUTO_TRACE}" != xno; then
+dnl     i_do_find_auto_po_trace="yes"
+dnl fi
+
+#--------------------------------------------------------------------------
 #
 # Checks for libraries.
 
-AC_SEARCH_LIBS([cos],[m])
+# Check for math.h include and math library.
+AC_CHECK_HEADER([math.h],
+   AC_SEARCH_LIBS([cos],[m],[have_libm=yes],
+      AC_CHECK_LIB([m],[cos],[have_libm=yes],
+         AC_CHECK_FUNC([cos],[have_libm=yes]))))
+if test x"${have_libm}" != xyes; then
+    AC_MSG_FAILURE([ERROR: Please install Math library and math.h],[1])
+fi
 
 dnl FIXME: Is this needed, given we are using libltdl?
 dnl The dlopen() function is in the C library for *BSD and in libdl on GLIBC-based systems
@@ -313,9 +349,21 @@ dnl AC_SEARCH_LIBS([dlopen], [dl dld])
 
 FONTFORGE_CONFIG_X_LIBRARIES
 
-# zlib is a requirement. It is too commonly available to bother
-# leaving out.
-PKG_CHECK_MODULES([ZLIB],[zlib])
+# zlib is a requirement. It is too commonly available to bother leaving out.
+# Try package first, if failed then try library searches and a header check.
+PKG_CHECK_MODULES([ZLIB],[zlib],[have_zlib=yes],[have_zlib=no])
+if test x"${have_zlib}" != xyes; then
+   AC_SEARCH_LIBS([inflate],[z zlib zdll],[have_zlib=yes],[
+      AC_CHECK_LIB([z],[inflate],[have_zlib=yes],[
+      AC_CHECK_LIB([zlib],[inflate],[have_zlib=yes],[
+      AC_CHECK_LIB([zdll],[inflate],[have_zlib=yes])])])],)
+   if test x"${have_zlib}" == xyes; then
+      AC_CHECK_HEADER([zlib.h],[],[have_zlib=no])
+   fi
+fi
+if test x"${have_zlib}" != xyes; then
+   AC_MSG_FAILURE([ERROR: Please install ZLIB library and zlib.h include file],[1])
+fi
 PKG_CHECK_MODULES([GLIB],[glib-2.0 >= 2.6 gio-2.0])
 
 if test x"${i_do_have_gui}" = xyes; then
@@ -325,7 +373,6 @@ fi
 PKG_CHECK_MODULES([FREETYPE],[freetype2 >= 2.3.7])
 PKG_CHECK_MODULES([LIBXML],[libxml-2.0])
 
-FONTFORGE_ARG_WITH_CAIRO
 AC_ARG_VAR([FREETYPE_SOURCE],
         [directory where freetype source code is located for --enable-freetype-debugger;
          however, if --enable-freetype-debugger=DIR is specified, then DIR overrides
@@ -334,6 +381,7 @@ FONTFORGE_ARG_WITH_GIFLIB
 FONTFORGE_ARG_WITH_LIBJPEG
 FONTFORGE_ARG_WITH_LIBPNG
 FONTFORGE_ARG_WITH_LIBTIFF
+FONTFORGE_ARG_WITH_CAIRO # do this test only 'after' zlib and png checks
 FONTFORGE_ARG_WITH_LIBSPIRO
 FONTFORGE_ARG_WITH_LIBUNINAMESLIST
 #FONTFORGE_ARG_WITH_LIBUNICODENAMES
@@ -363,6 +411,7 @@ AC_CHECK_HEADERS([strings.h sys/ioctl.h sys/socket.h sys/time.h unistd.h])
 if test x"${i_do_want_iconv}" = xyes; then
    AC_CHECK_HEADERS([iconv.h])
 fi
+AC_CHECK_HEADERS([execinfo.h])
 gl_INIT
 
 #--------------------------------------------------------------------------
@@ -454,10 +503,13 @@ case $host in
       ;;
    *-apple-darwin*)
       ;;
-   *mingw* | *cygwin*)
+   *mingw*)
       dnl Explicitly export all symbols on Windows, since FontForge lacks an export table
 	  dnl See issue #1238 on GitHub for more information.
 	  my_lib_ldflags="${my_lib_ldflags} -no-undefined -Wl,--export-all-symbols"
+      ;;
+   *cygwin*)
+	  my_lib_ldflags="${my_lib_ldflags} -Wl,-no-undefined -Wl,--export-all-symbols"
       ;;
    *) saved_LDFLAGS=$LDFLAGS
       AC_MSG_CHECKING([whether the linker supports --no-undefined])
@@ -594,7 +646,7 @@ else
       [pythonbinary="${withval}"])
 
    have_ipython=no
-   if $( $pythonbinary -c 'import IPython' ); then
+   if $( $pythonbinary -c 'import IPython' 2> /dev/null ); then
       have_ipython=yes;
       AC_DEFINE([HAVE_IPYTHON],[1],[have ipython])
    fi
@@ -611,6 +663,22 @@ AC_ARG_ENABLE([python-even],
                 [enable a menu entry for Even])],
         [have_python_even=yes])
 AM_CONDITIONAL([HAVE_PYTHON_EVEN],[test x"${have_python_even}" = xyes])
+
+#--------------------------------------------------------------------------
+#--------------------------------------------------------------------------
+#--------------------------------------------------------------------------
+
+AC_ARG_ENABLE([breakpad],
+        [AS_HELP_STRING([--enable-breakpad],
+                [Use Breakpad for crash reporting (currently osx only)])],
+        [have_breakpad=yes])
+AM_CONDITIONAL([HAVE_BREAKPAD],[test x"${have_breakpad}" = xyes])
+if test x$have_breakpad = xyes ; then
+   echo "Taking advantage of Breakpad for debug reporting. You must roll a bundle for this to work..."
+   BREAKPAD_LIBADD=' -L$(top_builddir)/osx/FontForge.app/Contents/Frameworks/Breakpad.framework -lBreakpad '
+   AC_DEFINE(USE_BREAKPAD,[1],[Build support and use Breakpad])
+fi
+AC_SUBST(BREAKPAD_LIBADD)
 
 #--------------------------------------------------------------------------
 #--------------------------------------------------------------------------
@@ -686,6 +754,9 @@ osx/FontForge.app/Contents/Resources/opt/Makefile
 osx/FontForge.app/Contents/Resources/opt/local/Makefile
 osx/FontForge.app/Contents/Resources/opt/local/etc/Makefile
 osx/FontForge.app/Contents/Resources/opt/local/etc/fonts/Makefile
+osx/FontForge.app/Contents/Resources/breakpad/Makefile
+osx/FontForge.app/Contents/Resources/breakpad/webinterface/Makefile
+osx/FontForge.app/Contents/Resources/breakpad/webinterface/support/Makefile
 osx/FontForge.app/Contents/MacOS/Makefile
 osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Makefile
 osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Makefile
@@ -698,7 +769,22 @@ osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/PopUpButton.
 osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/Progressbar.nib/Makefile
 osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/SecureInputbox.nib/Makefile
 osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/Textbox.nib/Makefile
+osx/FontForge.app/Contents/Frameworks/Makefile
+osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Makefile
+osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/Makefile
+osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Makefile
+osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Headers/Makefile
+osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Resources/Makefile
+osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Resources/crash_report_sender.app/Makefile
+osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Resources/crash_report_sender.app/Contents/Makefile
+osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Resources/crash_report_sender.app/Contents/MacOS/Makefile
+osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Resources/crash_report_sender.app/Contents/Resources/Makefile
+osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Resources/crash_report_sender.app/Contents/Resources/English.lproj/Makefile
+breakpad/Makefile
+breakpad/server/Makefile
+
 fontforge.pc
+osx/FontForge.app/Contents/Info.plist
 ])
 
 #--------------------------------------------------------------------------
@@ -732,6 +818,9 @@ AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME_RAW,$FONTFORGE_MODTIME,"Epoch time that con
 AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME_STR_RAW,$FONTFORGE_MODTIME_STR,
 	"A user friendly date that that configure was run at: For example 01:48 GMT 6-Sep-2012 (no quotes)")
 AC_DEFINE_UNQUOTED(FONTFORGE_VERSIONDATE_RAW,$FONTFORGE_VERSIONDATE,"YYYYMMDD as number when configure was run (no quotes)")
+AC_SUBST(FONTFORGE_GIT_VERSION)
+AC_SUBST(FONTFORGE_VERSIONDATE)
+AC_SUBST(FONTFORGE_MODTIME_STR)
 
 #--------------------------------------------------------------------------
 
@@ -757,20 +846,21 @@ Summary of optional features:
   raw points mode	${i_do_have_debug_raw_points}
   tile path		${i_do_have_tile_path}
   gb12345 encoding	${i_do_have_gb12345}
+  potrace or autotrace	${i_do_find_auto_po_trace}
 
 Summary of optional dependencies:
 
 Optional Library	UseIt?	HaveIt?	WebsiteURL
-  cairo				${i_do_have_cairo}	${cairo_url}
-  libspiro		${with_libspiro}	${i_do_have_libspiro}	${libspiro_url}
+  cairo			${with_cairo}	${i_do_have_cairo}	${cairo_url}
   giflib		${with_giflib}	${i_do_have_giflib}	${giflib_url}
   libjpeg		${with_libjpeg}	${i_do_have_libjpeg}	${libjpeg_url}
   libpng		${with_libpng}	${i_do_have_libpng}	${libpng_url}
+  libreadline		${with_libreadline}	${i_do_have_libreadline}	${libreadline_url}
+  libspiro		${with_libspiro}	${i_do_have_libspiro}	${libspiro_url}
   libtiff		${with_libtiff}	${i_do_have_libtiff}	${libtiff_url}
   libuninameslist	${with_libuninameslist}	${i_do_have_libuninameslist}	${libuninameslist_url}
   zeromq (libzmq)		${i_do_have_libzmq}	${libzmq_url}
-  libreadline		${with_libreadline}	${i_do_have_libreadline}	${libreadline_url}
-  X Window System		${i_do_have_x}
+  X Window System		${i_do_have_x}	${libxorg_url}
 ])
 
 #--------------------------------------------------------------------------

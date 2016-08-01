@@ -1,7 +1,7 @@
 #Needs: fonts/CaslonMM.sfd
 
-Open("@abs_srcdir@/fonts/CaslonMM.sfd");
-Generate("@abs_builddir@/results/Caslon.mm.pfa")
+Open($1);
+Generate("Caslon.mm.pfa")
 Close()
-Open("@abs_builddir@/results/Caslon.mm.pfa")
+Open("Caslon.mm.pfa")
 Quit()

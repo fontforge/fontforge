@@ -35,7 +35,8 @@ GITIGNOREFILES = \
 	config/ \
 	gnulib/ \
 	lib/ \
-	libltdl/
+	libltdl/ \
+	uthash/
 
 
 #--------------------------------------------------------------------------
@@ -43,7 +44,7 @@ GITIGNOREFILES = \
 AM_CPPFLAGS =
 AM_LDFLAGS =
 
-BUILT_SOURCES =
+BUILT_SOURCES = uthash/src
 EXTRA_DIST =
 CLEANFILES =
 MOSTLYCLEANFILES =
@@ -59,7 +60,7 @@ include $(top_srcdir)/mk/layout.am
 
 #--------------------------------------------------------------------------
 
-SUBDIRS = inc lib libltdl Unicode gutils
+SUBDIRS = inc lib libltdl Unicode gutils breakpad
 
 if LIBZMQ
 SUBDIRS += collab
@@ -129,5 +130,19 @@ DISTCHECK_CONFIGURE_FLAGS = --enable-theme-2012 --enable-debug
 
 
 #--------------------------------------------------------------------------
+uthash/src:
+	if [ ! -e uthash/src ]; then \
+	if [ -e uthash ] ; then rm -r uthash ; fi ; \
+	git clone https://github.com/troydhanson/uthash ; \
+	fi ;
+
+# We import a selection of targets from Frank's standard packaging Makefile.
+
+# automake can't parse certain parts of Makefile syntax,
+# and there isn't an easy way to make it copy things that it doesn't
+# understand without grouching, so we use a sneaky trick, specifically
+# a blank macro from configure.ac so as to bypass evaluation.
+
+@BLANK2@-include $(top_srcdir)/pkg.mk
 
 -include $(top_srcdir)/git.mk

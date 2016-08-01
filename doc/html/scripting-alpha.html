@@ -494,11 +494,14 @@ a[4][0] = "Nested array";
 	    <A NAME="Chr">C</A>hr(int)<BR>
 	    Chr(array)
 	  <DD>
-	    Takes an integer [0,255] and returns a single character string containing
-	    that code point. Internally FontForge interprets strings as if they were
-	    in utf8 (well really, FontForge almost always just uses ASCII-US internally).
-	    If passed an array, it should be an array of integers and the result is the
-	    string. It can execute with no current font.
+	    Takes an integer [-128,255] and returns a single character
+	    string containing that byte.  Negative numbers are treated as
+	    signed bytes in two's complement.  Internally FontForge interprets
+	    strings as if they were in UTF-8, so it is possible to construct
+	    higher code points and strings that are not valid UTF-8 by
+	    passing in appropriate values.  If passed an array, it
+	    should be an array of integers and the result is the string.  It
+	    can execute with no current font.
 	  <DT>
 	    <A NAME="CIDChangeSubFont">C</A>IDChangeSubFont(new-sub-font-name)
 	  <DD>
@@ -1610,6 +1613,10 @@ SetLBearing(lbearing)
 	    <A NAME="HasPrivateEntry">H</A>asPrivateEntry(key)
 	  <DD>
 	    Returns whether key exists in the private dictionary.
+	  <DT>
+	    <A NAME="HasSpiro">H</A>asSpiro()
+	  <DD>
+	    Returns true if Raph Levien's spiro package is available in FontForge.
 	  <DT>
 	    <A NAME="HFlip">H</A>Flip([about-x])
 	  <DD>
@@ -3086,6 +3093,18 @@ SetGasp([8,2,16,1,65535,3])
 		Horizontal stems will be scaled by this factor.
 		If unspecified or zero, defaults to the value of stemw-scale.
 	      </DD>
+	    </DL>
+	  <DT>
+	    <A NAME="SpiroVersion">S</A>piroVersion()
+	  <DD>
+	    Returns the version of LibSpiro available to FontForge.<BR>
+	    Versions 0.1 to 0.5 do not have a method to indicate version numbers,
+	    but there is a limited method to estimate versions {'0.0'..'0.5'}.
+	    <DL>
+	    <DD>'0.0' if FontForge has no LibSpiro available.</DD>
+	    <DD>'0.1' if LibSpiro 20071029 is available.</DD>
+	    <DD>'0.2' if LibSpiro 0.2 to 0.5 is available.</DD>
+	    <DD>LibSpiro 0.6 and higher reports back it's version available.</DD>
 	    </DL>
 	  <DT>
 	    <A NAME="Sqrt">S</A>qrt(val)

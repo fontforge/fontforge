@@ -9,5 +9,7 @@ ShowControlPointsAlways: 1
 CreateDraggingComparisonOutline: 1
 ShowSideBearings: 0
 SnapOutlines: 0
-SnapDistance: 8
+SnapDistance: 2
 MarkExtrema: 1
+OutlineThickness: 3
+RevisionsToRetain: 0

@@ -2,4 +2,4 @@
 #Make sure merge fonts works...
 
 New();
-MergeFonts("@abs_srcdir@/fonts/cmbsy10.pfb")
+MergeFonts($1)

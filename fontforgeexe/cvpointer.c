@@ -513,13 +513,13 @@ void CVCheckResizeCursors(CharView *cv) {
 	    /* if ( cv->showhmetrics && cv->info.x > cv->b.sc->width-fudge && */
 	    /* 	 cv->info.x<cv->b.sc->width+fudge && cv->b.container==NULL && */
 	    /* 	 usemymetrics==NULL ) */
-	    if( CVNearRBearingLine( cv, cv->info.x, fudge ))
+      if ( cv->showhmetrics && NearCaret(cv->b.sc,cv->info.x,fudge)!=-1 &&
+		    usemymetrics==NULL )
+		cv->expandedge = ee_right;
+	    else if( CVNearRBearingLine( cv, cv->info.x, fudge ))
 		cv->expandedge = ee_right;
 	    else if( CVNearLBearingLine( cv, cv->info.x, fudge ))
 		cv->expandedge = ee_left;
-	    else if ( cv->showhmetrics && NearCaret(cv->b.sc,cv->info.x,fudge)!=-1 &&
-		    usemymetrics==NULL )
-		cv->expandedge = ee_right;
 	    if ( cv->showvmetrics && cv->b.sc->parent->hasvmetrics && cv->b.container==NULL &&
 		    cv->info.y > /*cv->b.sc->parent->vertical_origin*/-cv->b.sc->vwidth-fudge &&
 		    cv->info.y < /*cv->b.sc->parent->vertical_origin*/-cv->b.sc->vwidth+fudge )
@@ -687,7 +687,16 @@ return;
 	    SetCur(cv);
 	    needsupdate = true;
 	}
-	if ( dolbearing )
+	if ( nearcaret!=-1 )
+	{
+	    PST *pst;
+	    for ( pst=cv->b.sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next );
+	    cv->lcarets = pst;
+	    cv->nearcaret = nearcaret;
+	    cv->expandedge = ee_right;
+	    SetCur(cv);
+	}
+	else if ( dolbearing )
 	{
 	    if ( event->u.mouse.state&ksm_shift )
 		cv->lbearingsel = !cv->lbearingsel;
@@ -754,15 +763,6 @@ return;
 		cv->expandedge = ee_none;
 	    SetCur(cv);
 	    needsupdate = true;
-	}
-	else if ( nearcaret!=-1 )
-	{
-	    PST *pst;
-	    for ( pst=cv->b.sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next );
-	    cv->lcarets = pst;
-	    cv->nearcaret = nearcaret;
-	    cv->expandedge = ee_right;
-	    SetCur(cv);
 	}
 	else
 	{
@@ -1214,9 +1214,18 @@ static void adjustLBearing( CharView *cv, SplineChar *sc, real val )
 	transform[4] = val;
 	printf("adjustLBearing val:%f min:%f v-min:%f\n",val,bb.minx,(bb.minx+val));
 	FVTrans( (FontViewBase *) cv->b.fv, sc, transform, NULL, 0 | fvt_alllayers );
+	// We copy and adapt some code from FVTrans in order to adjust the CharView carets.
+	// We omit the fvt_scalepstpos for FVTrans since other CharView code seems to skip updating the SplineChar.
+	PST *pst;
+	for ( pst = cv->b.sc->possub; pst!=NULL; pst=pst->next ) {
+	    if ( pst->type == pst_lcaret ) {
+		int j;
+		for ( j=0; j<pst->u.lcaret.cnt; ++j )
+		    pst->u.lcaret.carets[j] = rint(pst->u.lcaret.carets[j]+val);
+	    }
+	}
     }
 }
-
 
 /* Move the selection and return whether we did a merge */
 int CVMoveSelection(CharView *cv, real dx, real dy, uint32 input_state) {
@@ -1396,6 +1405,44 @@ static void touchControlPointsVisitor ( void* key,
     SPTouchControl( sp, which, (int)(intptr_t)udata );
 }
 
+#ifndef MAX
+#define MAX(x,y)   (((x) > (y)) ? (x) : (y))
+#endif
+#ifndef MIN
+#define MIN(x,y)   (((x) < (y)) ? (x) : (y))
+#endif
+
+BasePoint nearest_point_on_line_segment(BasePoint p1, BasePoint p2, BasePoint p3) {
+	double x_diff = p2.x - p1.x;
+	double y_diff = p2.y - p1.y;
+	double slope_1 = (p2.y - p1.y) / (p2.x - p1.x);
+	double inverse_slope_1 = (p2.x - p1.x) / (p2.y - p1.y);
+	BasePoint output_1;
+	output_1.x = 0;
+	output_1.y = 0;
+	// Accuracy may be important, so we try to use the longer dimension.
+	if (x_diff == 0) {
+		// The line is vertical.
+		output_1.x = p1.x;
+		output_1.y = p3.y;
+	} else if (y_diff == 0) {
+		// The line is horizontal.
+		output_1.x = p3.x;
+		output_1.y = p1.y;
+	} else {
+		output_1.x = (p3.x/slope_1 + slope_1*p1.x + p3.y - p1.y)/(slope_1 + 1/slope_1);
+		output_1.y = (p3.y/inverse_slope_1 + inverse_slope_1*p1.y + p3.x - p1.x)/(inverse_slope_1 + 1/inverse_slope_1);
+	}
+	// We are using the segment between p1 and p2, not the line through them, so we must crop.
+	double min_x = MIN(p1.x, p2.x), max_x = MAX(p1.x, p2.x), min_y = MIN(p1.y, p2.y), max_y = MAX(p1.y, p2.y);
+	if (output_1.x < min_x) output_1.x = min_x;
+	if (output_1.x > max_x) output_1.x = max_x;
+	if (output_1.y < min_y) output_1.y = min_y;
+	if (output_1.y > max_y) output_1.y = max_y;
+	// Note that it is not necessary to conform these points to the line since the corners of the box are on the line.
+	return output_1;
+}
+
 int CVMouseMovePointer(CharView *cv, GEvent *event) {
     extern float arrowAmount;
     int needsupdate = false;
@@ -1509,12 +1556,43 @@ return( false );
     {
 	if ( !cv->recentchange )
 	    CVPreserveState(&cv->b);
+
+	BasePoint tmpp1;
+	BasePoint tmpp2;
+	tmpp1.x = cv->info.x;
+	tmpp1.y = cv->info.y;
+	tmpp2.x = cv->info.x;
+	tmpp2.y = cv->info.y;
+	BasePoint cachecp1 = (cv->p.sp ? cv->p.sp->prevcp : (BasePoint){0, 0});
+	BasePoint cachecp2 = (cv->p.sp ? cv->p.sp->nextcp : (BasePoint){0, 0});
+	double xadj = cv->info.x-cv->last_c.x;
+	double yadj = cv->info.y-cv->last_c.y;
+	touch_control_points = true;
+	// The modifier is wrong.
+	if (cv->p.anysel && cv->p.sp && event->u.mouse.state & ksm_control) {
+		// Identify the individual point clicked. Find its control points. Move the selected point on a line between those control points.
+		tmpp1 = nearest_point_on_line_segment((BasePoint){cv->p.sp->prevcp.x,cv->p.sp->prevcp.y}, \
+			(BasePoint){cv->p.sp->nextcp.x,cv->p.sp->nextcp.y}, (BasePoint){cv->info.x, cv->info.y});
+		// We also need to rebase the original point onto that line segment so that the movement is exactly along the line even if the original click is not.
+		tmpp2 = nearest_point_on_line_segment((BasePoint){cv->p.sp->prevcp.x,cv->p.sp->prevcp.y}, \
+			(BasePoint){cv->p.sp->nextcp.x,cv->p.sp->nextcp.y}, (BasePoint){cv->last_c.x, cv->last_c.y});
+		xadj = tmpp1.x-tmpp2.x;
+		yadj = tmpp1.y-tmpp2.y;
+		touch_control_points = false; // We will need to move the control points back (but only for the point dragged).
+	}
 	
 	did_a_merge = CVMoveSelection(cv,
-		cv->info.x-cv->last_c.x,cv->info.y-cv->last_c.y,
+		xadj,yadj,
 		event->u.mouse.state);
+	// Rather than create a new set of functions for moving points without their control points, we instead just restore them if we did not want them moved.
+	if (cv->p.sp && touch_control_points == false) {
+		cv->p.sp->prevcp = cachecp1;
+		cv->p.sp->nextcp = cachecp2;
+		touch_control_points = true;
+    		AdjustControls(cv->p.sp);
+	}
 	needsupdate = true;
-	touch_control_points = true;
+
     }
 
 

@@ -155,6 +155,12 @@ static GTextInfo **StandardFilters(void) {
     int k, cnt, i;
     GTextInfo **ti;
 
+    /* Make two passes thru outer loop. The first pass determines the
+     * interim count of how many entries will be generated and then
+     * allocates an array with 3 entries more than that. The second 
+     * pass ( if(k) ) accumulates the data values, then adds a trailer,
+     * to return in the GTextInfo** structure 'ti'.
+     */
     for ( k=0; k<2; ++k ) {
 	cnt = 0;
 	for ( i=0; def_font_filters[i].name!=NULL; ++i ) {
@@ -451,7 +457,7 @@ static int GFD_Ok(GGadget *g, GEvent *e) {
 return(true);
 	    }
 	    d->done = true;
-	    d->ret = GGadgetGetTitle(d->gfc);
+	    d->ret = u_GFileNormalizePath(GGadgetGetTitle(d->gfc));
 
 	    // Trim trailing '/' if its there and put that string back as
 	    // the d->gfc string.
@@ -462,7 +468,7 @@ return(true);
 		    tmp[ tmplen-1 ] = '\0';
 		    GGadgetSetTitle(d->gfc, tmp);
 		    free(tmp);
-		    d->ret = GGadgetGetTitle(d->gfc);
+		    d->ret = u_GFileNormalizePath(GGadgetGetTitle(d->gfc));
 		}
 	    }
 	}
@@ -526,11 +532,8 @@ return( false );
     GFileChooserGetChildren(d->gfc,NULL, &list, NULL);
     if ( list==NULL )
 return( false );
-    GGadgetGetSize(list,&size);
-    if ( event->u.mouse.x < size.x || event->u.mouse.y <size.y ||
-	    event->u.mouse.x >= size.x+size.width ||
-	    event->u.mouse.y >= size.y+size.height )
-return( false );
+    if ( !GGadgetWithin(list,event->u.mouse.x,event->u.mouse.y) )
+        return( false );
     pos = GListIndexFromY(list,event->u.mouse.y);
     if ( pos == d->filename_popup_pos )
 return( pos!=-1 );
@@ -542,8 +545,9 @@ return( pos!=-1 );
     if ( ufile==NULL )
 return( true );
     file = u2def_copy(ufile);
+    free(ufile);
 
-    fontnames = GetFontNames(file);
+    fontnames = GetFontNames(file, 0);
     if ( fontnames==NULL || fontnames[0]==NULL )
 	msg = uc_copy( "???" );
     else {
@@ -560,6 +564,12 @@ return( true );
 	msg[len-1] = '\0';
     }
     GGadgetPreparePopup(GGadgetGetWindow(d->gfc),msg);
+    if ( fontnames!=NULL ) {
+        for ( cnt=0; fontnames[cnt]!=NULL; ++cnt ) {
+            free(fontnames[cnt]);
+        }
+        free(fontnames);
+    }
     free(file);
     free(d->lastpopupfontname);
     d->lastpopupfontname = msg;
@@ -700,7 +710,6 @@ unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult) {
     }
     harray2[1] = &gcd[i]; harray2[2] = GCD_Glue; harray2[3] = NULL;
     gcd[i++].gd.u.list = namelistnames;
-    free(nlnames);
 
     boxes[3].gd.flags = gg_visible | gg_enabled;
     boxes[3].gd.u.boxelements = harray2;
@@ -777,7 +786,8 @@ unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult) {
     d.gfc = gcd[0].ret;
     d.rename = gcd[renamei].ret;
 
-    GGadgetSetList(harray1[2]->ret,(filts = StandardFilters()),true);
+    filts = StandardFilters();
+    GGadgetSetList(harray1[2]->ret,filts,true);
     GHVBoxSetExpandableRow(boxes[0].ret,0);
     GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
     GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
@@ -805,5 +815,10 @@ unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult) {
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);		/* Give the window a chance to vanish... */
     free( d.lastpopupfontname );
+    GTextInfoArrayFree(filts);
+    for ( cnt=0; nlnames[cnt]!=NULL; ++cnt) {
+	free(nlnames[cnt]);
+    }
+    free(nlnames);
 return(d.ret);
 }

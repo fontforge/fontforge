@@ -26,7 +26,7 @@
 
 include $(top_srcdir)/mk/layout.am
 
-SUBDIRS = Resources MacOS
+SUBDIRS = Resources MacOS Frameworks
 FFAPP_FILES = Info.plist PkgInfo
 EXTRA_DIST = $(FFAPP_FILES)
 

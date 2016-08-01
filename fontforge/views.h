@@ -812,9 +812,10 @@ extern void MenuNew(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void WindowMenuBuild(GWindow base,struct gmenuitem *mi,GEvent *);
 extern void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *);
 extern void MenuScriptsBuild(GWindow base,struct gmenuitem *mi,GEvent *);
+extern void mb2FreeGetText(GMenuItem2 *mb);
 extern void mb2DoGetText(GMenuItem2 *mb);
+extern void mbFreeGetText(GMenuItem *mb);
 extern void mbDoGetText(GMenuItem *mb);
-extern void OFLibBrowse(void);
 extern int RecentFilesAny(void);
 extern void _aplistbuild(struct gmenuitem *mi,SplineFont *sf,
 	void (*func)(GWindow,struct gmenuitem *,GEvent *));
@@ -906,6 +907,7 @@ extern void CVPaletteDeactivate(void);
 extern void PalettesChangeDocking(void);
 extern int CVPalettesWidth(void);
 extern int BVPalettesWidth(void);
+extern int CVInSpiro( CharView *cv );
 
 extern void CVDoTransform(CharView *cv, enum cvtools cvt );
 
@@ -937,6 +939,7 @@ extern void PI_ShowHints(SplineChar *sc, GGadget *list, int set);
 extern GTextInfo *SCHintList(SplineChar *sc,HintMask *);
 extern void CVResize(CharView *cv );
 extern CharView *CharViewCreate(SplineChar *sc,FontView *fv,int enc);
+extern void CharViewFinishNonStatic();
 
 /**
  * Extended version of CharViewCreate() which allows a window to be created but
@@ -1015,6 +1018,7 @@ extern Undoes *CVPreserveMaybeState(CharView *cv, int isTState );
 extern void CVRestoreTOriginalState(CharView *cv);
 extern void CVUndoCleanup(CharView *cv);
 
+extern void AdjustControls(SplinePoint *sp);
 extern void CVAdjustPoint(CharView *cv, SplinePoint *sp);
 extern void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *activess,
 	SplinePoint *merge, SplineSet *mergess);
@@ -1059,6 +1063,7 @@ extern int GotoChar(SplineFont *sf,EncMap *map, int *merge_with_selection);
 
 extern void CVShowPoint(CharView *cv, BasePoint *me);
 
+extern void BitmapViewFinishNonStatic();
 extern BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv,int enc);
 extern BitmapView *BitmapViewCreatePick(int enc, FontView *fv);
 extern void BitmapViewFree(BitmapView *bv);
@@ -1074,6 +1079,7 @@ extern void MVSetSCs(MetricsView *mv, SplineChar **scs);
 extern void MVRefreshChar(MetricsView *mv, SplineChar *sc);
 extern void MVRegenChar(MetricsView *mv, SplineChar *sc);
 extern void MVReKern(MetricsView *mv);
+extern void MetricsViewFinishNonStatic();
 extern MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf);
 extern void MetricsViewFree(MetricsView *mv);
 extern void MVRefreshAll(MetricsView *mv);
@@ -1294,6 +1300,7 @@ extern void MVColInit(void);
 extern void CVColInit( void );
 
 extern void FontViewRemove(FontView *fv);
+extern void FontViewFinishNonStatic();
 extern void FVChar(FontView *fv,GEvent *event);
 extern void FVDrawInfo(FontView *fv,GWindow pixmap,GEvent *event);
 extern void FVRedrawAllCharViews(FontView *fv);
@@ -1399,6 +1406,7 @@ extern void Prefs_LoadDefaultPreferences( void );
 extern CharView* CharViewFindActive();
 extern FontViewBase* FontViewFindActive();
 extern FontViewBase* FontViewFind( int (*testFunc)( FontViewBase*, void* ), void* udata );
+
 extern int FontViewFind_byXUID(      FontViewBase* fv, void* udata );
 extern int FontViewFind_byXUIDConnected( FontViewBase* fv, void* udata );
 extern int FontViewFind_byCollabPtr(  FontViewBase* fv, void* udata );

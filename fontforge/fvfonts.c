@@ -1326,9 +1326,10 @@ static void InterpPoint(SplineSet *cur, SplinePoint *base, SplinePoint *other, r
     p->selected = false;
     p->pointtype = (base->pointtype==other->pointtype)?base->pointtype:pt_corner;
     /*p->flex = 0;*/
-    if ( cur->first==NULL )
+    if ( cur->first==NULL ) {
 	cur->first = p;
-    else
+	cur->start_offset = 0;
+    } else
 	SplineMake(cur->last,p,order2);
     cur->last = p;
 }

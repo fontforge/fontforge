@@ -2,32 +2,52 @@ George Williams
 10 years and approximately 600,000 lines of code.
 
 Abel Cheung
+Adam Goode
+Adolfo Jayme Barrientos
 Adrien Tétar
 Aktado <aktado@users.sourceforge.jp>
 Alex Raftis
 Anand
+Andreas Larsen
+Andrew Janke
+Andrey Panov
+Anthony G. Basile
 Arthaey Angosii
 Alexey Kryukov - nowakowskittfinstr.c
 Alexandre Prokoudine
+Andreas Larsen
 Barry Schwartz
 Baruch Even - (debian upstream) baruch
 Bastien Dejean
 Behnam Esfahbod
 Ben Martin - hotkeys.c, hotkeys.h
+BensongChen, bungeman
+Ben Wagner
+Bill Wang
+catharanthus
+Charles M. Hannum
+Christopher Meng
 Claudio Beccari
 Craig Lennox
 Dave Crossland (dave@lab6.com)
 Deron Meranda
 Dave Levine
+David Lemon
+David Opstad
+David Shaal
+Divay Prakash
+Dominyk Tiller
 Dong Yang
 Dražen Lučanin
 Duane Moody
 Eddie Yuen
 Edward Lee
-Frank Trampe
+Eva Denman
+Frank Trampe <frank-trampe>
+Frédéric Wang
 Georg A. Duffner
 Giuseppe Bilotta
-Giuseppe Ghibo
+Giuseppe Ghibò
 Greg Ford
 Grzegorz
 Harald Harders
@@ -36,52 +56,79 @@ J. Jansen - gv - ANALYZE_MAP.COM
 Jacob Jansen
 James Cloos
 James Crippen
+James Woodcock
 Jason Pagura
+Jérémy Bobbio
 Jeremy Tan
 Jim Killock
+Jiwon Choi
+Joel Santos
 Johannes Plass - gv = ANALYZE_MAP.COM
+Johan Winge
 Jon Banquer
-Jonathan Hanna
+Jonathan Hanna <jhps>
 Jonathan Hue
-Jose Da Silva
+Jose Da Silva <JoesCat>
 Joshua Richardson
 Jouk Jansen
 Juergen Buntrock
+Julien Nabet <serval2412>
 Just Fill Bugs <mozbugbox>
 Kartik Mistry
 KANOU Hiroki
-Kauzuyuki
+Kazuki Ohta (Kauzuyuki, Kazuyuki)
+Kelvinsong
 Kemie Guaida - Tango PixMaps
+Kengo Ichiki
 Kevin Fenzi
-Khaled Hosny
+Khaled Hosny <khaledhosny>
+Koki Takahashi
 Lasse Fister
+László Károly
 Lu Wang <coolwanglu@gmail.com>
+Luiz Matheus <lzmths>
+Markus Schwarzenberg
+Marius Larsen
 Mark Oteiza
 Martin Hosken
 Mathias Wollin
+Matt Chisholm
 Matthew Petroff
 Matthew Skala
 Mayank Jha
 Max Rabkin - excepthook.py
 Maxim Iorsh
 Michal Mazurek
-Michal Nowakowski - nowakowskittfinstr.c
+Michal Nowakowski <michal-n> - nowakowskittfinstr.c
+midzer <midzer@gmail.com>
+Nicolas Kaiser
+Nicolas Spalinger
+Ondřej Hošek
+Parag Nemade
+Petr Gajdos
 Phil Krylov
 Phil Lindsay
+Pierre Hanser
 Primoz PETERLIN
 Qmpel
 R.L. Horn
+R.P.C. Rodgers - standard man macros
+Rafael Ferran i Peralta
+Rajeesh K Nambiar
+Raph Levien <raphlinus>
+Reuben Thomas <rrthomas>
 Richard Hughes
 Rogier van Dalen
-R.P.C. Rodgers - standard man macros
-Rajeesh K Nambiar
-Reuben Thomas
 Ryusei Yamaguchi
+Saeed Rasooli
 Scott Pakin - Packaging
-serval2412
+Scott Romack
 Silvan Toledo
 Steve White - ASMO 708 codepage, & more
 TANIGAWA Takashi
+Thayne McCombs
+Thomas Shinnick
+Tim Heilig
 Timothy O. Theisen - gv = ANALYZE_MAP.COM
 Tom Harvey - fontforge.1
 Tom Lechner
@@ -91,8 +138,11 @@ Vadim Belman
 Valek Filippov
 Vernon Adams
 Ville Skytta
-Werner Lemberg
-yannis
+Werner Lemberg <lemzwerg>
+Woensug Eric Choi
+贤哲 <xiaozhe.hxz@alibaba-inc.com>
+Yannis Haralambous
+Yao Wei (魏銘廷)
 Yuri Chornoivan
 Yi Yang (ahyangyi)
 
@@ -111,6 +161,7 @@ Claudio Beccari, it - Italian
 KANOU Hiroki, ja - Japanese
 TANIGAWA Takashi, ja - Japanese
 OKANO Takayoshi, ja - Japanese
+Woensug Eric Choi - ko - Korean
 Hiran - ml - Malayalam
 Michal Nowakowski - po - Polish
 Jose Da Silva - pt - Portuguese

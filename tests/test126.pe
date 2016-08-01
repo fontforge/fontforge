@@ -1,7 +1,7 @@
 #Needs: fonts/DataURI.sfd
 
-Open("@abs_srcdir@/fonts/DataURI.sfd");
-Generate("@abs_builddir@/results/DataURI.svg");
-Generate("@abs_builddir@/results/DataURI.pt3");
-Open("@abs_builddir@/results/DataURI.svg");
-#Open("@abs_builddir@/results/DataURI.pt3");	/* We can't read this type3 font */
+Open($1);
+Generate("DataURI.svg");
+Generate("DataURI.pt3");
+Open("DataURI.svg");
+#Open("DataURI.pt3");	/* We can't read this type3 font */

@@ -867,7 +867,7 @@ static void InterpolateWeak( GlyphData *gd, DBounds *orig_b, DBounds *new_b, dou
 		    fpd = &gd->points[fpd->sp->prev->from->ptindex];
 
 		tpd = &gd->points[pd->sp->next->to->ptindex];
-		while ( !(tpd->touched & mask) && tpd != pd && fpd->sp->next != NULL )
+		while ( !(tpd->touched & mask) && tpd != pd && tpd->sp->next != NULL )
 		    tpd = &gd->points[tpd->sp->next->to->ptindex];
 
 		if (( fpd->touched & mask ) && ( tpd->touched & mask ) &&
@@ -3718,6 +3718,7 @@ static void FindStartPoint(SplineSet *ss_expanded, SplineChar *sc, int layer) {
 	for ( sp=ss->first; ; ) {
 	    if ( IsStartPoint(sp,sc,layer) ) {
 		ss->first = ss->last = sp;
+		ss->start_offset = 0;
 		found = true;
 	break;
 	    }
@@ -3725,8 +3726,10 @@ static void FindStartPoint(SplineSet *ss_expanded, SplineChar *sc, int layer) {
 	    if ( sp==ss->first )
 	break;
 	}
-	if ( !found )
+	if ( !found ) {
 	    ss->first = ss->last = sp->prev->from;		/* Often true */
+	    ss->start_offset = 0;
+	}
     }
 }
 
@@ -4286,16 +4289,31 @@ static void PerGlyphInit(SplineChar *sc, struct lcg_zones *zones,
 }
 
 void FVEmbolden(FontViewBase *fv,enum embolden_type type,struct lcg_zones *zones) {
-    int i, gid;
+    int i, gid, cnt;
     SplineChar *sc;
 
     LCG_ZoneInit(fv->sf,fv->active_layer,zones,type);
+
+    for (i=0, cnt=0; i < fv->map->enccount; ++i) {
+        if (fv->selected[i] && (gid = fv->map->map[i]) != -1 &&
+            (sc=fv->sf->glyphs[gid]) != NULL) {
+
+            cnt++;
+        }
+    }
+
+    ff_progress_start_indicator(10, _("Change Weight"),
+        _("Changing glyph weights"), NULL, cnt, 1);
 
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
 	    (gid = fv->map->map[i])!=-1 && (sc=fv->sf->glyphs[gid])!=NULL ) {
 	PerGlyphInit(sc,zones,type);
 	SCEmbolden(sc, zones, -2);		/* -2 => all foreground layers */
+    if (!ff_progress_next()) {
+        break;
     }
+    }
+    ff_progress_end_indicator();
 }
 
 void CVEmbolden(CharViewBase *cv,enum embolden_type type,struct lcg_zones *zones) {
@@ -4707,10 +4725,12 @@ static SplineSet *MakeItalicDSerif(DStemInfo *d,double stemwidth,
 		SplineFree(ss->first->next);
 		SplinePointFree(ss->first);
 		ss->first = s->from;
+		ss->start_offset = 0;
 	    }
 	    if ( t1>=.999 ) {
 		SplinePointFree(ss->first);
 		ss->first = s->to;
+		ss->start_offset = 0;
 		SplineFree(ss->first->prev);
 		ss->first->prev = NULL;
 	    } else if ( t1>.001 ) {
@@ -4719,6 +4739,7 @@ static SplineSet *MakeItalicDSerif(DStemInfo *d,double stemwidth,
 		SplineFree(sp->prev);
 		sp->prev = NULL;
 		ss->first = sp;
+		ss->start_offset = 0;
 	    }
     break;
 	}
@@ -4864,7 +4885,7 @@ static void FindBottomSerifOnStem(SplineChar *sc,int layer,StemInfo *h,
     SplinePoint *start=NULL, *end=NULL, *sp;
     SplinePointList *ss;
     double sdiff, ediff;
-    double fuzz = (sc->parent->ascent+sc->parent->descent)/100;
+    double fuzz = (sc->parent->ascent+sc->parent->descent)/100.0;
 
     for ( ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
 	start=end=NULL;
@@ -5029,7 +5050,7 @@ static void FindBottomSerifOnDStem(SplineChar *sc,int layer,DStemInfo *d,
     SplinePointList *ss;
     double sdiff, ediff;
     double pos;
-    double fuzz = (sc->parent->ascent+sc->parent->descent)/100;
+    double fuzz = (sc->parent->ascent+sc->parent->descent)/100.0;
 
     for ( ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
 	start=end=NULL;
@@ -5083,7 +5104,7 @@ static void FindTopSerifOnDStem(SplineChar *sc,int layer,DStemInfo *d,
     SplinePointList *ss;
     double sdiff, ediff;
     double pos;
-    double fuzz = (sc->parent->ascent+sc->parent->descent)/100;
+    double fuzz = (sc->parent->ascent+sc->parent->descent)/100.0;
 
     for ( ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
 	start=end=NULL;
@@ -5136,8 +5157,10 @@ static void SerifRemove(SplinePoint *start,SplinePoint *end,SplineSet *ss) {
 	spnext = mid->next->to;
 	if ( mid!=start ) {
 	    SplinePointFree(mid);
-	    if ( mid==ss->first )
+	    if ( mid==ss->first ) {
 		ss->first = ss->last = start;
+		ss->start_offset = 0;
+	    }
 	}
 	SplineFree(spnext->prev);
     }
@@ -5234,8 +5257,10 @@ static SplinePoint *StemMoveBottomEndCarefully(SplinePoint *sp,SplineSet *oldss,
 		SplinePoint *newsp = sp->prev->from;
 		SplineFree(sp->prev);
 		SplinePointFree(sp);
-		if ( sp==oldss->first )
+		if ( sp==oldss->first ) {
 		    oldss->first = oldss->last = newsp;
+		    oldss->start_offset = 0;
+		}
 		sp=newsp;
 	    }
 	    CubicSolve(&other->next->splines[1],sp->me.y,ts);
@@ -5249,6 +5274,7 @@ static SplinePoint *StemMoveBottomEndCarefully(SplinePoint *sp,SplineSet *oldss,
 		    newend->next->to->prevcp = newend->nextcp;
 		newend->me.x = sp->me.x;
 		ss->first = newend;
+		ss->start_offset = 0;
 return( sp );
 	    }
 	}
@@ -5261,8 +5287,10 @@ return( sp );
 		SplinePoint *newsp = sp->next->to;
 		SplineFree(sp->next);
 		SplinePointFree(sp);
-		if ( sp==oldss->first )
+		if ( sp==oldss->first ) {
 		    oldss->first = oldss->last = newsp;
+		    oldss->start_offset = 0;
+		}
 		sp=newsp;
 	    }
 	    CubicSolve(&other->prev->splines[1],sp->me.y,ts);
@@ -5419,7 +5447,7 @@ static void FindTopSerifOnStem(SplineChar *sc,int layer,StemInfo *h,
     SplinePoint *start=NULL, *end=NULL, *sp;
     SplinePointList *ss;
     double sdiff, ediff;
-    double fuzz = (sc->parent->ascent+sc->parent->descent)/100;
+    double fuzz = (sc->parent->ascent+sc->parent->descent)/100.0;
 
     for ( ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
 	start=end=NULL;
@@ -5532,8 +5560,10 @@ static SplinePoint *StemMoveTopEndCarefully(SplinePoint *sp,SplineSet *oldss,
 		SplinePoint *newsp = sp->prev->from;
 		SplineFree(sp->prev);
 		SplinePointFree(sp);
-		if ( sp==oldss->first )
+		if ( sp==oldss->first ) {
 		    oldss->first = oldss->last = newsp;
+		    oldss->start_offset = 0;
+		}
 		sp=newsp;
 	    }
 	    CubicSolve(&other->next->splines[1],sp->me.y,ts);
@@ -5547,6 +5577,7 @@ static SplinePoint *StemMoveTopEndCarefully(SplinePoint *sp,SplineSet *oldss,
 		    newend->next->to->prevcp = newend->nextcp;
 		newend->me.x = sp->me.x;
 		ss->first = newend;
+		ss->start_offset = 0;
 return( sp );
 	    }
 	}
@@ -5559,8 +5590,10 @@ return( sp );
 		SplinePoint *newsp = sp->next->to;
 		SplineFree(sp->next);
 		SplinePointFree(sp);
-		if ( sp==oldss->first )
+		if ( sp==oldss->first ) {
 		    oldss->first = oldss->last = newsp;
+		    oldss->start_offset = 0;
+		}
 		sp=newsp;
 	    }
 	    CubicSolve(&other->prev->splines[1],sp->me.y,ts);
@@ -6085,10 +6118,12 @@ return;
     if ( touches ) {
 	if ( ss[0]==ss[1] ) {
 	    ss[0]->first = ss[0]->last = start[0];
+	    ss[0]->start_offset = 0;
 	    ss[1] = chunkalloc(sizeof(SplineSet));
 	    ss[1]->next = ss[0]->next;
 	    ss[0]->next = ss[1];
 	    ss[1]->first = ss[1]->last = start[1];
+	    ss[1]->start_offset = 0;
 	} else {
 	    SplineSet *spl, *prev;
 	    for ( prev=NULL, spl=sc->layers[layer].splines; spl!=ss[1]; spl=spl->next )

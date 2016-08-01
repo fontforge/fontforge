@@ -40,7 +40,12 @@ typedef struct kernclassdlg {
     KernClass *orig;
     struct lookup_subtable *subtable;
     int first_cnt, second_cnt;
+    char **firsts_names;
+    char **seconds_names;
+    int *firsts_flags;
+    int *seconds_flags;
     int16 *offsets;
+    int *offsets_flags;
     DeviceTable *adjusts;
     DeviceTable active_adjust;		/* The one that is currently active */
     DeviceTable orig_adjust;		/* Initial value for this the active adjust */
@@ -1210,6 +1215,19 @@ return( true );
 	free(kc->offsets);
 	free(kc->adjusts);
 
+	// Group kerning.
+	if (kc->firsts_names)
+	  for ( i=1; i<kc->first_cnt; ++i )
+	    if (kc->firsts_names[i]) free(kc->firsts_names[i]);
+	if (kc->seconds_names)
+	  for ( i=1; i<kc->second_cnt; ++i )
+	    if (kc->seconds_names[i]) free(kc->seconds_names[i]);
+	if (kc->firsts_flags) free(kc->firsts_flags);
+	if (kc->seconds_flags) free(kc->seconds_flags);
+	if (kc->offsets_flags) free(kc->offsets_flags);
+	if (kc->firsts_names) free(kc->firsts_names);
+	if (kc->seconds_names) free(kc->seconds_names);
+
 	kc->subtable->separation = separation;
 	kc->subtable->minkern = minkern;
 	kc->subtable->kerning_by_touch = touch;
@@ -1231,6 +1249,14 @@ return( true );
 	    kc->seconds[i] = GlyphNameListDeUnicode(classes[i].u.md_str);
 	kc->offsets = kcd->offsets;
 	kc->adjusts = kcd->adjusts;
+
+	// Group kerning.
+	kc->firsts_flags = kcd->firsts_flags;
+	kc->seconds_flags = kcd->seconds_flags;
+	kc->offsets_flags = kcd->offsets_flags;
+	kc->firsts_names = kcd->firsts_names;
+	kc->seconds_names = kcd->seconds_names;
+
 	kcd->sf->changed = true;
 	sf->changed = true;
 
@@ -1249,6 +1275,24 @@ static void KC_DoCancel(KernClassDlg *kcd) {
 		free(kcd->adjusts[i].corrections);
 	}
 	free(kcd->adjusts);
+
+	// Group kerning.
+	if (kcd->firsts_names) {
+          int i;
+	  for ( i=1; i<kcd->first_cnt; ++i )
+	    if (kcd->firsts_names[i]) free(kcd->firsts_names[i]);
+        }
+	if (kcd->seconds_names) {
+          int i;
+	  for ( i=1; i<kcd->second_cnt; ++i )
+	    if (kcd->seconds_names[i]) free(kcd->seconds_names[i]);
+        }
+	if (kcd->firsts_flags) free(kcd->firsts_flags);
+	if (kcd->seconds_flags) free(kcd->seconds_flags);
+	if (kcd->offsets_flags) free(kcd->offsets_flags);
+	if (kcd->firsts_names) free(kcd->firsts_names);
+	if (kcd->seconds_names) free(kcd->seconds_names);
+
 	GDrawDestroyWindow(kcd->gw);
     }
 }
@@ -1276,14 +1320,18 @@ static int KCD_TextSelect(GGadget *g, GEvent *e) {
 	char *start, *pt, *name;
 	int i;
 
-	for ( upt=uname; *upt!='(' && *upt!=' '; ++upt );
+        /* length of initial text contents up until blank, '(' or end-of-string */
+        for ( upt=uname; *upt!='\0' && *upt!='(' && *upt!=' '; ++upt );
 	name = u2utf8_copyn(uname,upt-uname);
+        /* if string empty or invalid for any reason, quit processing text */
+        if ( name==NULL )
+            return( false );
 	nlen = strlen(name);
 
 	for ( i=0; i<rows; ++i ) {
 	    for ( start = classes[i].u.md_str; start!=NULL && *start!='\0'; ) {
 		while ( *start==' ' ) ++start;
-		for ( pt=start; *pt!='\0' && *pt!=' ' && *pt!='(' && *pt!='\0'; ++pt );
+                for ( pt=start; *pt!='\0' && *pt!=' ' && *pt!='('; ++pt );
 		if ( pt-start == nlen && strncmp(name,start,nlen)==0 ) {
 		    GMatrixEditScrollToRowCol(list,i,0);
 		    GMatrixEditActivateRowCol(list,i,0);
@@ -1291,11 +1339,11 @@ static int KCD_TextSelect(GGadget *g, GEvent *e) {
 			KCD_VShow(kcd,i);
 		    else
 			KCD_HShow(kcd,i);
-return( true );
+                    return( true );
 		}
 		if ( *pt=='(' ) {
 		    while ( *pt!=')' && *pt!='\0' ) ++pt;
-		    ++pt;
+		    if ( *pt==')' ) ++pt;
 		}
 		start = pt;
 	    }
@@ -1336,6 +1384,9 @@ static void kernmenu_dispatch(GWindow gw, GMenuItem *mi, GEvent *e) {
       case MID_ClearAll:
 	for ( i=0; i<kcd->first_cnt*kcd->second_cnt; ++i )
 	    kcd->offsets[i] = 0;
+	if (kcd->offsets_flags != NULL)
+	  for ( i=0; i<kcd->first_cnt*kcd->second_cnt; ++i )
+	    kcd->offsets_flags[i] = 0;
       break;
       case MID_ClearDevTab: {
 	DeviceTable *devtab = &kcd->adjusts[kcd->st_pos];
@@ -2077,9 +2128,24 @@ static void KCD_FinishEdit(GGadget *g,int r, int c, int wasnew) {
 	    kcd->offsets = realloc(kcd->offsets,(kcd->first_cnt+1)*kcd->second_cnt*sizeof(int16));
 	    memset(kcd->offsets+kcd->first_cnt*kcd->second_cnt,
 		    0, kcd->second_cnt*sizeof(int16));
+            // adjusts are resolution-specific.
 	    kcd->adjusts = realloc(kcd->adjusts,(kcd->first_cnt+1)*kcd->second_cnt*sizeof(DeviceTable));
 	    memset(kcd->adjusts+kcd->first_cnt*kcd->second_cnt,
 		    0, kcd->second_cnt*sizeof(DeviceTable));
+            // Group kerning.
+	    if (kcd->firsts_names) {
+	      kcd->firsts_names = realloc(kcd->firsts_names,(kcd->first_cnt+1)*sizeof(char*));
+	      memset(kcd->firsts_names+kcd->first_cnt, 0, sizeof(char*));
+	    }
+	    if (kcd->firsts_flags) {
+	      kcd->firsts_flags = realloc(kcd->firsts_flags,(kcd->first_cnt+1)*sizeof(int));
+	      memset(kcd->firsts_flags+kcd->first_cnt, 0, sizeof(int));
+	    }
+	    if (kcd->offsets_flags) {
+	      kcd->offsets_flags = realloc(kcd->offsets_flags,(kcd->first_cnt+1)*kcd->second_cnt*sizeof(int));
+	      memset(kcd->offsets_flags+kcd->first_cnt*kcd->second_cnt,
+		    0, kcd->second_cnt*sizeof(int));
+	    }
 	    ++kcd->first_cnt;
 	    if ( autokern )
 		KCD_AutoKernAClass(kcd,kcd->first_cnt-1,true);
@@ -2095,6 +2161,7 @@ static void KCD_FinishEdit(GGadget *g,int r, int c, int wasnew) {
 	        free( kcd->offsets );
 	        kcd->offsets = new;
             }
+            
 	    {
 		DeviceTable *new = malloc(kcd->first_cnt*(kcd->second_cnt+1)*sizeof(DeviceTable));
 		for ( i=0; i<kcd->first_cnt; ++i ) {
@@ -2105,6 +2172,27 @@ static void KCD_FinishEdit(GGadget *g,int r, int c, int wasnew) {
 		free( kcd->adjusts );
 		kcd->adjusts = new;
 	    }
+
+            // Group kerning.
+	    if (kcd->seconds_names) {
+	      kcd->seconds_names = realloc(kcd->seconds_names,(kcd->second_cnt+1)*sizeof(char*));
+	      memset(kcd->seconds_names+kcd->second_cnt, 0, sizeof(char*));
+	    }
+	    if (kcd->seconds_flags) {
+	      kcd->seconds_flags = realloc(kcd->seconds_flags,(kcd->second_cnt+1)*sizeof(int));
+	      memset(kcd->seconds_flags+kcd->second_cnt, 0, sizeof(int));
+	    }
+            if (kcd->offsets_flags) {
+	      int *new = malloc(kcd->first_cnt*(kcd->second_cnt+1)*sizeof(int));
+	        for ( i=0; i<kcd->first_cnt; ++i ) {
+		    memcpy(new+i*(kcd->second_cnt+1),kcd->offsets_flags+i*kcd->second_cnt,
+			    kcd->second_cnt*sizeof(int));
+		    new[i*(kcd->second_cnt+1)+kcd->second_cnt] = 0;
+	        }
+	        free( kcd->offsets_flags );
+	        kcd->offsets_flags = new;
+            }
+
 	    ++kcd->second_cnt;
 	    if ( autokern )
 		KCD_AutoKernAClass(kcd,kcd->second_cnt-1,false);
@@ -2128,10 +2216,11 @@ static char *KCD_PickGlyphsForClass(GGadget *g,int r, int c) {
     int which    = GWidgetGetControl(kcd->gw,CID_ClassList+100) == g;
     int widgetid = whichToWidgetID( which );
     char *new = GlyphSetFromSelection(kcd->sf,kcd->layer,classes[r*cols+c].u.md_str);
-
-    GGadgetSetTitle8(GWidgetGetControl(kcd->gw,widgetid),new );
-    KCD_UpdateGlyphFromName(kcd,which,new);
-
+    if (new == NULL) new = copy("");
+    if (new != NULL) {
+      GGadgetSetTitle8(GWidgetGetControl(kcd->gw,widgetid),new );
+      KCD_UpdateGlyphFromName(kcd,which,new);
+    }
     char *other = GGadgetGetTitle8(GWidgetGetControl(kcd->gw,whichToWidgetID( !which )));
     if( other )
     {
@@ -2169,6 +2258,23 @@ static void KCD_RowMotion(GGadget *g,int oldr, int newr) {
 	    tempdt = kcd->adjusts[oldr*kcd->second_cnt + i];
 	    kcd->adjusts[oldr*kcd->second_cnt + i] = kcd->adjusts[newr*kcd->second_cnt + i];
 	    kcd->adjusts[newr*kcd->second_cnt + i] = tempdt;
+	    // Group kerning.
+	    if (kcd->offsets_flags) {
+	      int offflag = kcd->offsets_flags[oldr*kcd->second_cnt + i];
+	      kcd->offsets_flags[oldr*kcd->second_cnt + i] = kcd->offsets_flags[newr*kcd->second_cnt + i];
+	      kcd->offsets_flags[newr*kcd->second_cnt + i] = off;
+	    }
+	}
+	// Group kerning.
+	if (kcd->firsts_names) {
+	    char *name = kcd->firsts_names[oldr];
+	    kcd->firsts_names[oldr] = kcd->firsts_names[newr];
+	    kcd->firsts_names[newr] = name;
+	}
+	if (kcd->firsts_flags) {
+	    int flags = kcd->firsts_flags[oldr];
+	    kcd->firsts_flags[oldr] = kcd->firsts_flags[newr];
+	    kcd->firsts_flags[newr] = flags;
 	}
     } else {
 	for ( i=0; i<kcd->first_cnt; ++i ) {
@@ -2178,6 +2284,23 @@ static void KCD_RowMotion(GGadget *g,int oldr, int newr) {
 	    tempdt = kcd->adjusts[i*kcd->second_cnt + oldr];
 	    kcd->adjusts[i*kcd->second_cnt + oldr] = kcd->adjusts[i*kcd->second_cnt + newr];
 	    kcd->adjusts[i*kcd->second_cnt + newr] = tempdt;
+	    // Group kerning.
+	    if (kcd->offsets_flags) {
+	      int offflag = kcd->offsets_flags[i*kcd->second_cnt + oldr];
+	      kcd->offsets_flags[i*kcd->second_cnt + oldr] = kcd->offsets_flags[i*kcd->second_cnt + newr];
+	      kcd->offsets_flags[i*kcd->second_cnt + newr] = off;
+	    }
+	}
+	// Group kerning.
+	if (kcd->seconds_names) {
+	    char *name = kcd->seconds_names[oldr];
+	    kcd->seconds_names[oldr] = kcd->seconds_names[newr];
+	    kcd->seconds_names[newr] = name;
+	}
+	if (kcd->seconds_flags) {
+	    int flags = kcd->seconds_flags[oldr];
+	    kcd->seconds_flags[oldr] = kcd->seconds_flags[newr];
+	    kcd->seconds_flags[newr] = flags;
 	}
     }
     GDrawRequestExpose(kcd->gw,NULL,false);
@@ -2195,22 +2318,47 @@ static void KCD_DeleteClass(GGadget *g,int whichclass) {
 
     (void) GMatrixEditGet(g,&rows);
     if ( is_first ) {
-	for ( i=0; i<kcd->second_cnt; ++i )
+	for ( i=0; i<kcd->second_cnt; ++i ) {
 	    free(kcd->adjusts[whichclass*kcd->second_cnt+i].corrections);
+	    kcd->adjusts[whichclass*kcd->second_cnt+i].corrections = NULL;
+	}
 	for ( i=whichclass+1; i<rows; ++i ) {
-	    memcpy(kcd->offsets+(i-1)*kcd->second_cnt,
+	    memmove(kcd->offsets+(i-1)*kcd->second_cnt,
 		    kcd->offsets+i*kcd->second_cnt,
 		    kcd->second_cnt*sizeof(int16));
-	    memcpy(kcd->adjusts+(i-1)*kcd->second_cnt,
+	    memmove(kcd->adjusts+(i-1)*kcd->second_cnt,
 		    kcd->adjusts+i*kcd->second_cnt,
 		    kcd->second_cnt*sizeof(DeviceTable));
+	    // Group kerning.
+	    if (kcd->offsets_flags != NULL) {
+	      memmove(kcd->offsets_flags+(i-1)*kcd->second_cnt,
+		    kcd->offsets_flags+i*kcd->second_cnt,
+		    kcd->second_cnt*sizeof(int));
+	    }
 	}
+	// Group kerning.
+	kcd->offsets = realloc(kcd->offsets, (kcd->first_cnt-1)*kcd->second_cnt*sizeof(int16));
+	kcd->adjusts = realloc(kcd->adjusts, (kcd->first_cnt-1)*kcd->second_cnt*sizeof(DeviceTable));
+	kcd->offsets_flags = realloc(kcd->offsets_flags, (kcd->first_cnt-1)*kcd->second_cnt*sizeof(int));
+	if (kcd->firsts_names) {
+	  memmove(kcd->firsts_names+whichclass, kcd->firsts_names+whichclass + 1, (kcd->first_cnt - whichclass - 1) * sizeof(char*));
+	  kcd->firsts_names = realloc(kcd->firsts_names, (kcd->first_cnt - 1) * sizeof(char*));
+	}
+	if (kcd->firsts_flags) {
+	  memmove(kcd->firsts_flags+whichclass, kcd->firsts_flags+whichclass + 1, (kcd->first_cnt - whichclass - 1) * sizeof(int));
+	  kcd->firsts_flags = realloc(kcd->firsts_flags, (kcd->first_cnt - 1) * sizeof(int));
+	}
+
 	-- kcd->first_cnt;
     } else {
 	int16 *newoffs = malloc(kcd->first_cnt*(kcd->second_cnt-1)*sizeof(int16));
 	DeviceTable *newadj = malloc(kcd->first_cnt*(kcd->second_cnt-1)*sizeof(DeviceTable));
-	for ( i=0; i<kcd->first_cnt; ++i )
+	int *newoffflags = NULL;
+	if (kcd->offsets_flags != NULL) newoffflags = malloc(kcd->first_cnt*(kcd->second_cnt-1)*sizeof(int));
+	for ( i=0; i<kcd->first_cnt; ++i ) {
 	    free(kcd->adjusts[i*kcd->second_cnt+whichclass].corrections);
+	    kcd->adjusts[i*kcd->second_cnt+whichclass].corrections = NULL;
+	}
 	for ( i=0; i<rows; ++i ) if ( i!=whichclass ) {
 	    int newi = i>whichclass ? i-1 : i;
 	    for ( j=0; j<kcd->first_cnt; ++j ) {
@@ -2218,13 +2366,30 @@ static void KCD_DeleteClass(GGadget *g,int whichclass) {
 			kcd->offsets[j*kcd->second_cnt+i];
 		newadj[j*(kcd->second_cnt-1)+newi] =
 			kcd->adjusts[j*kcd->second_cnt+i];
+		// Group kerning.
+		if (newoffflags != NULL)
+		  newoffflags[j*(kcd->second_cnt-1)+newi] =
+			kcd->offsets_flags[j*kcd->second_cnt+i];
 	    }
 	}
+	// Group kerning.
+	if (kcd->seconds_names) {
+	  memmove(kcd->seconds_names+whichclass, kcd->seconds_names+whichclass + 1, (kcd->second_cnt - whichclass - 1) * sizeof(char*));
+	  kcd->seconds_names = realloc(kcd->seconds_names, (kcd->second_cnt - 1) * sizeof(char*));
+	}
+	if (kcd->seconds_flags) {
+	  memmove(kcd->seconds_flags+whichclass, kcd->seconds_flags+whichclass + 1, (kcd->second_cnt - whichclass - 1) * sizeof(int));
+	  kcd->seconds_flags = realloc(kcd->seconds_flags, (kcd->second_cnt - 1) * sizeof(int));
+	}
+
 	-- kcd->second_cnt;
 	free(kcd->offsets);
 	kcd->offsets = newoffs;
 	free(kcd->adjusts);
 	kcd->adjusts = newadj;
+	// Group kerning.
+	if (kcd->offsets_flags != NULL) free(kcd->offsets_flags);
+	kcd->offsets_flags = newoffflags;
     }
 }
 
@@ -2641,6 +2806,32 @@ return;
 	    kcd->adjusts[i].corrections = malloc(len);
 	    memcpy(kcd->adjusts[i].corrections,kc->adjusts[i].corrections,len);
 	}
+    }
+
+    // Group kerning.
+    if (kc->firsts_names) {
+      kcd->firsts_names = malloc(kc->first_cnt*sizeof(char*));
+      int namepos;
+      for (namepos = 0; namepos < kc->first_cnt; namepos ++)
+        kcd->firsts_names[namepos] = copy(kc->firsts_names[namepos]);
+    }
+    if (kc->seconds_names) {
+      kcd->seconds_names = malloc(kc->second_cnt*sizeof(char*));
+      int namepos;
+      for (namepos = 0; namepos < kc->second_cnt; namepos ++)
+        kcd->seconds_names[namepos] = copy(kc->seconds_names[namepos]);
+    }
+    if (kc->firsts_flags) {
+      kcd->firsts_flags = malloc(kc->first_cnt*sizeof(int));
+      memcpy(kcd->firsts_flags,kc->firsts_flags,kc->first_cnt*sizeof(int));
+    }
+    if (kc->seconds_flags) {
+      kcd->seconds_flags = malloc(kc->second_cnt*sizeof(int));
+      memcpy(kcd->seconds_flags,kc->seconds_flags,kc->second_cnt*sizeof(int));
+    }
+    if (kcd->offsets_flags) {
+      kcd->offsets_flags = malloc(kc->first_cnt*kc->second_cnt*sizeof(int));
+      memcpy(kcd->offsets_flags,kc->offsets_flags,kc->first_cnt*kc->second_cnt*sizeof(int));
     }
 
     memset(&wattrs,0,sizeof(wattrs));
@@ -3153,7 +3344,8 @@ return;
     wattrs.utf8_window_title =  isv?_("VKern By Classes"):_("Kern By Classes");
     wattrs.is_dlg = false;
     pos.x = pos.y = 0;
-    temp = 40 + 300*GIntGetResource(_NUM_Buttonsize)/GGadgetScale(100);
+    // temp = 40 + 300*GIntGetResource(_NUM_Buttonsize)/GGadgetScale(100); // The _NUM_Buttonsize value is obsolete.
+    temp = 40 + 300*114/GGadgetScale(100);
     if ( kcl_width<temp ) kcl_width = temp;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,kcl_width));
     pos.height = GDrawPointsToPixels(NULL,KCL_Height);

@@ -1,6 +1,7 @@
+#Needs: fonts/GillSans.dfont
 #Print("....I expect this test to generate some error messages");
 #Print(".... But it should not crash, nor terminate with an error status");
-Open("@abs_srcdir@/fonts/GillSans.dfont");
+Open($1);
 SelectAll();
 Simplify();
 Print("....Simplified");

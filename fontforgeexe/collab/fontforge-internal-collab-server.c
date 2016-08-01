@@ -148,7 +148,7 @@ s_send_single (const char *key, void *data, void *args)
 {
     kvroute_t *kvroute = (kvroute_t *) args;
     kvmsg_t *kvmsg = (kvmsg_t *) data;
-    DEBUG ("I: s_send_single %d type:%s", kvmsg_sequence(kvmsg), kvmsg_get_prop (kvmsg, "type") );
+    DEBUG ("I: s_send_single %"PRId64" type:%s", kvmsg_sequence(kvmsg), kvmsg_get_prop (kvmsg, "type") );
 
     if (strlen (kvroute->subtree) <= strlen (kvmsg_key (kvmsg))
     &&  memcmp (kvroute->subtree,
@@ -217,6 +217,8 @@ s_collector (zloop_t *loop, zmq_pollitem_t *poller, void *args)
 {
     clonesrv_t *self = (clonesrv_t *) args;
 
+    DEBUG("I: s_collector");
+    
     kvmsg_t *kvmsg = kvmsg_recv (poller->socket);
     if (kvmsg) {
         kvmsg_set_sequence (kvmsg, ++self->sequence);
@@ -229,12 +231,22 @@ s_collector (zloop_t *loop, zmq_pollitem_t *poller, void *args)
 	    beacon_announce_t ba;
 	    memset( &ba, 0, sizeof(ba));
 	    strcpy( ba.protocol, "fontforge-collab" );
-	    ba.version = 1;
-	    ff_uuid_generate( ba.uuid );
+	    ba.version = 2;
+	    char* uuid = kvmsg_get_prop (kvmsg, "collab_uuid" );
+	    if( uuid ) {
+		strcpy( ba.uuid, uuid );
+	    } else {
+		ff_uuid_generate( ba.uuid );
+	    }
 	    strncpy( ba.username,    GetAuthor(), beacon_announce_username_sz );
+	    ba.username[beacon_announce_username_sz-1] = '\0';
 	    ff_gethostname( ba.machinename, beacon_announce_machinename_sz );
 	    ba.port = htons( self->port );
 	    strcpy( ba.fontname, "" );
+
+	    DEBUG("I: adding beacon, payloadsz:%zu user:%s machine:%s",
+		  sizeof(beacon_announce_t), ba.username, ba.machinename );
+
 	    
 	    char* fontname = kvmsg_get_prop (kvmsg, "fontname" );
 	    if( fontname )
@@ -242,7 +254,8 @@ s_collector (zloop_t *loop, zmq_pollitem_t *poller, void *args)
 		strcpy( ba.fontname, fontname );
 	    }
 
-	    service_beacon = zbeacon_new( 5670 );
+
+	    service_beacon = zbeacon_new( self->ctx, 5670 );
 	    zbeacon_set_interval (service_beacon, 300 );
 	    zbeacon_publish (service_beacon, (byte*)&ba, sizeof(ba));
 	}
@@ -254,7 +267,7 @@ s_collector (zloop_t *loop, zmq_pollitem_t *poller, void *args)
 //            kvmsg_set_prop (kvmsg, "ttl",
 //                "%" PRId64, zclock_time () + ttl * 1000);
         DEBUG ("I: publishing update=%d type:%s", (int) self->sequence,kvmsg_get_prop (kvmsg, "type"));
-	DEBUG("I: hash size:%ld", zhash_size(self->kvmap));
+	DEBUG("I:x hash size:%ld", zhash_size(self->kvmap));
 	
         kvmsg_store( &kvmsg, self->kvmap );
 	
@@ -305,7 +318,7 @@ s_ping (zloop_t *loop, zmq_pollitem_t *poller, void *args)
 /* } */
 
 static int
-s_flush_ttl (zloop_t *loop, zmq_pollitem_t *poller, void *args)
+s_flush_ttl (zloop_t *loop, int unused, void *args)
 {
 //    clonesrv_t *self = (clonesrv_t *) args;
 //    if (self->kvmap)

@@ -595,9 +595,14 @@ return( EOF );
 return( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
 }
 
+static int short_too_long_warned = 0;
+
 void putshort(FILE *file,int sval) {
     if ( sval<-32768 || sval>65535 )
-	IError(_("Attempt to output %d into a 16-bit field. It will be truncated and the file may not be useful."), sval );
+	if (!short_too_long_warned) {
+	  IError(_("Attempt to output %d into a 16-bit field. It will be truncated and the file may not be useful."), sval );
+	  short_too_long_warned = 1;
+	}
     putc((sval>>8)&0xff,file);
     putc(sval&0xff,file);
 }
@@ -2037,7 +2042,7 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont,
     if ( !hash ) {
 	FindHStems(sf,stemsnaph,snapcnt);
 	mi = -1;
-	for ( i=0; stemsnaph[i]!=0 && i<12; ++i )
+	for ( i=0; i<12 && stemsnaph[i]!=0; ++i )
 	    if ( mi==-1 ) mi = i;
 	    else if ( snapcnt[i]>snapcnt[mi] ) mi = i;
 	if ( mi!=-1 ) stdhw[0] = stemsnaph[mi];
@@ -2046,7 +2051,7 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont,
     if ( !hasv ) {
 	FindVStems(sf,stemsnapv,snapcnt);
 	mi = -1;
-	for ( i=0; stemsnapv[i]!=0 && i<12; ++i )
+	for ( i=0; i<12 && stemsnapv[i]!=0; ++i )
 	    if ( mi==-1 ) mi = i;
 	    else if ( snapcnt[i]>snapcnt[mi] ) mi = i;
 	if ( mi!=-1 ) stdvw[0] = stemsnapv[mi];
@@ -2753,7 +2758,6 @@ void cvt_unix_to_1904( long long time, int32 result[2]) {
 
 static void sethead(struct head *head,SplineFont *sf,struct alltabs *at,
 	enum fontformat format, int32 *bsizes) {
-    time_t now;
     int i, lr, rl, indic_rearrange, arabic;
     ASM *sm;
     struct ttflangname *useng;
@@ -2861,10 +2865,8 @@ static void sethead(struct head *head,SplineFont *sf,struct alltabs *at,
 	head->flags |= (1<<9);		/* Apple documents this */
     /* if there are any indic characters, set bit 10 */
 
-    time(&now);		/* seconds since 1970, need to convert to seconds since 1904 */
-    cvt_unix_to_1904(now,head->modtime);
-    memcpy(head->createtime,head->modtime,sizeof(head->modtime));
-
+    cvt_unix_to_1904(sf->creationtime,head->createtime);
+    cvt_unix_to_1904(sf->modificationtime,head->modtime);
 }
 
 static void sethhead(struct hhead *hhead,struct hhead *vhead,struct alltabs *at, SplineFont *sf) {
@@ -3311,6 +3313,8 @@ static void WinBB(SplineFont *sf,uint16 *winascent,uint16 *windescent,struct all
 	*windescent  = sf->pfminfo.os2_windescent;
 }
 
+static void redohead(struct alltabs *at);
+
 static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
 	enum fontformat format) {
     int i,cnt1,cnt2,first,last,avg1,avg2,gid;
@@ -3326,7 +3330,7 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
 	os2->version = 3;
     if ( sf->use_typo_metrics || sf->weight_width_slope_only )
 	os2->version = 4;
-    if ( sf->os2_version!=0 )
+    if ( sf->os2_version > os2->version )
 	os2->version = sf->os2_version;
     if (( format>=ff_ttf && format<=ff_otfdfont) && (at->gi.flags&ttf_flag_symbol))
 	modformat = ff_ttfsym;
@@ -3348,11 +3352,20 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
     os2->ysupYOff = sf->pfminfo.os2_supyoff;
     os2->yStrikeoutSize = sf->pfminfo.os2_strikeysize;
     os2->yStrikeoutPos = sf->pfminfo.os2_strikeypos;
-    os2->fsSel = (at->head.macstyle&1?32:0)|(at->head.macstyle&2?1:0);
+    if ( sf->pfminfo.stylemap!=-1 ) {
+        int changed = 0;
+        os2->fsSel = sf->pfminfo.stylemap;
+        /* Make sure fsSel and macStyle don't contradict */
+        if (at->head.macstyle&1 && !(os2->fsSel&32)) {at->head.macstyle &= 0x7E; changed=1;}
+        if (at->head.macstyle&2 && !(os2->fsSel&1)) {at->head.macstyle &= 0x7D; changed=1;}
+        if (changed) redohead(at);
+    } else {
+        os2->fsSel = (at->head.macstyle&1?32:0)|(at->head.macstyle&2?1:0);
+        if ( os2->fsSel==0 && sf->pfminfo.weight==400 )
+	        os2->fsSel = 64;		/* Regular */
+    }
     if ( sf->fullname!=NULL && strstrmatch(sf->fullname,"outline")!=NULL )
 	os2->fsSel |= 8;
-    if ( os2->fsSel==0 && sf->pfminfo.weight>=400 && sf->pfminfo.weight<=500 )
-	os2->fsSel = 64;		/* Regular */
     if ( os2->version>=4 ) {
 	if ( strstrmatch(sf->fontname,"Obli")!=NULL ) {
 	    os2->fsSel &= ~1;		/* Turn off Italic */
@@ -3512,12 +3525,18 @@ docs are wrong.
     }
 
     if ( os2->version>=2 ) {
-	double xh, caph;
-
-	xh   = SFXHeight  (sf,at->gi.layer,true);
-	caph = SFCapHeight(sf,at->gi.layer,true);
-	os2->xHeight = (xh >= 0.0 ? xh : 0);
-	os2->capHeight = (caph >= 0.0 ? caph : 0);
+    if ( sf->pfminfo.os2_xheight!=0 )
+        os2->xHeight = sf->pfminfo.os2_xheight;
+    else {
+	    double xh = SFXHeight(sf,at->gi.layer,true);
+        os2->xHeight = (xh >= 0.0 ? xh : 0);
+    }
+    if ( sf->pfminfo.os2_capheight!=0 )
+        os2->capHeight = sf->pfminfo.os2_capheight;
+    else {
+	    double caph = SFCapHeight(sf,at->gi.layer,true);
+        os2->capHeight = (caph >= 0.0 ? caph : 0);
+    }
 	os2->defChar = 0;
 	if ( format==ff_otf || format==ff_otfcid )
 	    os2->defChar = ' ';
@@ -5676,13 +5695,15 @@ return( false );
 	}
 	AssignTTFBitGlyph(&at->gi,sf,at->map,bsizes);
     }
-    if ( at->gi.gcnt>=65535 ) {
-	/* You might think we could use GID 65535, but it is used as a "No Glyph" */
-	/*  mark in many places (cmap tables, mac substitutions to delete a glyph */
+    if ( at->gi.gcnt>65535 ) {
 	ff_post_error(_("Too many glyphs"), _("The 'sfnt' format is currently limited to 65535 glyphs, and your font has %d of them."),
 		at->gi.gcnt );
 	AbortTTF(at,sf);
 return( false );
+    } else if ( at->gi.gcnt==65535 ) {
+        /* GID 65535 is used as a "No Glyph" mark in many places (cmap tables, mac substitutions to delete a glyph */
+        LogError(_("Your font has exactly 65535 glyphs. Encoding 65535 is the limit and is often used as a magic \
+            value, so it may cause quirks.\n"));
     }
 
 
@@ -6034,13 +6055,12 @@ static void ATinit(struct alltabs *at,SplineFont *sf,EncMap *map,int flags, int 
 int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *map, int layer) {
     struct alltabs at;
-    char oldloc[25];
     int i, anyglyphs;
 
+    short_too_long_warned = 0; // This is a static variable defined for putshort.
     /* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
 
     if ( format==ff_otfcid || format== ff_cffcid ) {
 	if ( sf->cidmaster ) sf = sf->cidmaster;
@@ -6085,7 +6105,7 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 	if ( initTables(&at,sf,format,bsizes,bf))
 	    dumpttf(ttf,&at);
     }
-    setlocale(LC_NUMERIC,oldloc);
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     if ( at.error || ferror(ttf))
 return( 0 );
 
@@ -6218,13 +6238,11 @@ static void dumptype42(FILE *type42,struct alltabs *at, enum fontformat format) 
 int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
 	int flags,EncMap *map,int layer) {
     struct alltabs at;
-    char oldloc[25];
     int i;
 
     /* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
 
     if ( sf->subfontcnt!=0 ) sf = sf->subfonts[0];
 
@@ -6240,7 +6258,7 @@ int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
 	dumptype42(type42,&at,format);
     free(at.gi.loca);
 
-    setlocale(LC_NUMERIC,oldloc);
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     if ( at.error || ferror(type42))
 return( 0 );
 
@@ -6308,7 +6326,8 @@ return( false );
 		    sp->prevcp.x != sp2->prevcp.x ||
 		    sp->prevcp.y != sp2->prevcp.y )
 return( false );
-	    sp = sp->next->to; sp2 = sp2->next->to;
+	    sp = (sp->next ? sp->next->to : NULL);
+	    sp2 = (sp2->next ? sp2->next->to : NULL);
 	    if ( sp==ss->first ) {
 		if ( sp2==ss2->first )
 	break;
@@ -6513,7 +6532,7 @@ return( NULL );
     free(uhash);
     free(nhash);
 
-    if ( dummysf->glyphcnt>=0xffff ) {
+    if ( dummysf->glyphcnt>0xffff ) {
 	free(dummysf->glyphs);
 	free(bygid);
 	for ( sfitem= sfs, cnt=0; sfitem!=NULL; sfitem=sfitem->next, ++cnt )

@@ -38,6 +38,7 @@
 #ifndef _ALREADY_INCLUDED_FF_COLLAB_CLIENT_PRIV_H
 #define _ALREADY_INCLUDED_FF_COLLAB_CLIENT_PRIV_H
 
+
 #define MAGIC_VALUE 0xbeef
 #define SUBTREE "/client/"
 
@@ -51,12 +52,12 @@
 // Set to true if you want to see the raw SFD undo fragments which
 // are moving to/from the server.
 //
-#define DEBUG_SHOW_SFD_CHUNKS 0
+extern int DEBUG_SHOW_SFD_CHUNKS; // defined in collabclient.c
 
 
-
+// See beacon_announce_t for important detail.
 #define beacon_announce_protocol_sz     20
-#define beacon_announce_uuid_sz         40
+#define beacon_announce_uuid_sz         33
 #define beacon_announce_username_sz     50
 #define beacon_announce_machinename_sz  50
 #define beacon_announce_ip_sz           20
@@ -71,10 +72,27 @@
 #include "views.h"
 #include "inc/gwidget.h"
 #include "inc/gnetwork.h"
+#include "splinefont.h"
 
 
-
-
+/**
+ * Note that these sizes form an explicit binary contract. If you
+ * change the length of any of these then you have made a new beacon
+ * version and will need to update the sending end of the beacon in
+ * fontforge-internal-collab-server.c to a new version and the
+ * receiving end of the beacon to handle that new version in addition
+ * to all the old versions that the FontForge collab session should
+ * still handle.
+ *
+ * Using a binary structure is a trade off; beacons are meant to be
+ * small and simple and used to discover the server so only things
+ * like the IP address, user, font etc are interesting because they
+ * let a user easily select a session. Note that you can more easily
+ * add to the end of beacon_announce_t because you are then backwards
+ * compatible in that you are only sending more information than an
+ * old client expects, and thus old clients will happily work with
+ * newer servers, sans code that takes advantage of the new field.
+ */
 typedef struct {
     uint8_t protocol   [beacon_announce_protocol_sz];
     uint8_t version;
@@ -153,8 +171,31 @@ typedef struct {
     // to the publisher
     int publisher_sendseq;
 
+    // When we send off an SFD then we record the uuid of that file here
+    // so that we can know if we get a beacon back from the server with
+    // the same info or not.
+    char   unacknowledged_beacon_uuid[ FF_UUID_STRING_SIZE ];
+    time_t unacknowledged_beacon_sendTime;
+
+    // If the session is closing then we return false for 'inSession'
+    int sessionIsClosing;
 
 } cloneclient_t;
+
+#else
+
+/*
+ * have this type around to allow functions to exist which will only perform
+ * work when HAVE_COLLAB is defined. ie, this is a stub struct so that cloneclient_t
+ * can be used in function arguments.
+ */
+typedef struct {
+    int magic_number;    //  Magic number to test if the pointer is likely valid
+    
+    int WARNING_i_am_a_stub_do_not_delete_me;
+    
+} cloneclient_t;
+
 
 #endif // build_collab
 #endif // already_included_ff_collab_client_priv_h

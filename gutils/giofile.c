@@ -113,11 +113,20 @@ return;
 	cur->modtime = statb.st_mtime;
 	cur->isdir   = S_ISDIR(cur->mode);
 	cur->isexe   = !cur->isdir && (cur->mode & 0100);
-	if ( (temp=GIOguessMimeType(buffer)) || (temp=GIOGetMimeType(buffer)) ) {
-	    cur->mimetype = u_copy(c_to_u(temp));
-	    free(temp);
+	temp = NULL;
+	// Things go badly if we open a pipe or a device. So we don't.
+#ifdef __MINGW32__
+	//Symlinks behave differently on Windows and are transparent, so no S_ISLNK.
+	if (S_ISREG(statb.st_mode) || S_ISDIR(statb.st_mode)) {
+#else
+	if (S_ISREG(statb.st_mode) || S_ISDIR(statb.st_mode) || S_ISLNK(statb.st_mode)) {
+#endif
+	  // We look at the file and try to determine a MIME type.
+	  if ( (temp=GIOguessMimeType(buffer)) || (temp=GIOGetMimeType(buffer)) ) {
+	      cur->mimetype = u_copy(c_to_u(temp));
+	      free(temp);
+	  }
 	}
-
 	if ( last==NULL )
 	    head = last = cur;
 	else {

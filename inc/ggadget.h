@@ -469,7 +469,6 @@ void GFileChooserSetFilterText(GGadget *g,const unichar_t *filter);
 void GFileChooserSetFilterFunc(GGadget *g,GFileChooserFilterType filter);
 void GFileChooserSetInputFilenameFunc(GGadget *g,GFileChooserInputFilenameFuncType filter);
 int GFileChooserDefInputFilenameFunc( GGadget *g, const unichar_t** currentFilename, unichar_t* oldfilename );
-int GFileChooserSaveAsInputFilenameFunc( GGadget *g, const unichar_t** ppt, unichar_t* oldfilename );
 GFileChooserInputFilenameFuncType GFileChooserGetInputFilenameFunc(GGadget *g);
 void GFileChooserSetDir(GGadget *g,unichar_t *dir);
 struct giocontrol *GFileChooserReplaceIO(GGadget *g,struct giocontrol *gc);
@@ -601,6 +600,8 @@ typedef struct gresimage {
 } GResImage;
 GResImage *GGadgetResourceFindImage(char *name, GImage *def);
 
+void InitImageCache();
+void ClearImageCache();
 void GGadgetSetImageDir(char *dir);
 void GGadgetSetImagePath(char *path);
 GImage *GGadgetImageCache(const char *filename);

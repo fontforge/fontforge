@@ -331,7 +331,7 @@ static int GRE_InheritFontChange(GGadget *g, GEvent *e) {
 		*res->font = ifd.font;
  
 		GGadgetSetTitle8(g,ifd.spec);
-		GRE_FigureInheritance(gre,res,cid_off,cid_off+2,false,
+		GRE_FigureInheritance(gre,res,cid_off,cid_off+2,true,
 			(void *) &ifd, inherit_font_change);
 		free( ifd.spec );
 	    }
@@ -665,197 +665,199 @@ return( true );
 static int GRE_Save(GGadget *g, GEvent *e) {
     static char *shapes[] = { "rect", "roundrect", "elipse", "diamond", NULL };
     static char *types[] = { "none", "box", "raised", "lowered", "engraved",
-	    "embossed", "double", NULL };
+        "embossed", "double", NULL };
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	GRE *gre = GDrawGetUserData(GGadgetGetWindow(g));
-	char *filename;
-	FILE *output;
-	GGadgetCreateData gcd[2], *gcdp=NULL;
-	GTextInfo lab[1];
-	int update_prefs = true;
-	int i,j;
-	static char *flagnames[] = { "BorderInner", "BorderOuter", "ActiveInner",
-		"ShadowOuter", "DoDepressedBackground", "DrawDefault",
-		"GradientBG", NULL };
-	static char *colornames[] = { "NormalForeground", "DisabledForeground", "NormalBackground",
-		"DisabledBackground", "PressedBackground", "GradientStartCol", "BorderBrightest",
-		"BorderBrighter", "BorderDarker", "BorderDarkest", "BorderInnerCol", "BorderOuterCol",
-		"ActiveBorder",
-		NULL };
-	static char *intnames[] = { "BorderWidth", "Padding", "Radius", NULL };
-	struct resed *extras;
+        GRE *gre = GDrawGetUserData(GGadgetGetWindow(g));
+        char *filename;
+        FILE *output;
+        GGadgetCreateData gcd[2], *gcdp=NULL;
+        GTextInfo lab[1];
+        int update_prefs = true;
+        int i,j;
+        static char *flagnames[] = { "BorderInner", "BorderOuter", "ActiveInner",
+            "ShadowOuter", "DoDepressedBackground", "DrawDefault",
+            "GradientBG", NULL };
+        static char *colornames[] = { "NormalForeground", "DisabledForeground", "NormalBackground",
+            "DisabledBackground", "PressedBackground", "GradientStartCol", "BorderBrightest",
+            "BorderBrighter", "BorderDarker", "BorderDarkest", "BorderInnerCol", "BorderOuterCol",
+            "ActiveBorder",
+            NULL };
+        static char *intnames[] = { "BorderWidth", "Padding", "Radius", NULL };
+        struct resed *extras;
 
-	if ( gre->change_res_filename != NULL ) {
-	    memset(gcd,0,sizeof(gcd));
-	    memset(lab,0,sizeof(lab));
-	    lab[0].text = (unichar_t *) _("Store this filename in preferences");
-	    lab[0].text_is_1byte = true;
-	    gcd[0].gd.label = &lab[0];
-	    gcd[0].gd.flags = gg_visible|gg_enabled|gg_cb_on;
-	    gcd[0].gd.handle_controlevent = TogglePrefs;
-	    gcd[0].data = &update_prefs;
-	    gcd[0].creator = GCheckBoxCreate;
-	    gcdp = gcd;
-	}
+        if ( gre->change_res_filename != NULL ) {
+            memset(gcd,0,sizeof(gcd));
+            memset(lab,0,sizeof(lab));
+            lab[0].text = (unichar_t *) _("Store this filename in preferences");
+            lab[0].text_is_1byte = true;
+            gcd[0].gd.label = &lab[0];
+            gcd[0].gd.flags = gg_visible|gg_enabled|gg_cb_on;
+            gcd[0].gd.handle_controlevent = TogglePrefs;
+            gcd[0].data = &update_prefs;
+            gcd[0].creator = GCheckBoxCreate;
+            gcdp = gcd;
+        }
 
-	filename = gwwv_save_filename_with_gadget(_("Save Resource file as..."),gre->def_res_file,NULL,gcdp);
-	if ( filename==NULL )
-return( true );
-	output = fopen( filename,"w" );
-	if ( output==NULL ) {
-	    gwwv_post_error(_("Open failed"), _("Failed to open %s for output"), filename );
-return( true );
-	}
-	for ( i=0; gre->tofree[i].res!=NULL; ++i ) {
-	    GResInfo *res = gre->tofree[i].res;
-	    int cid = gre->tofree[i].startcid;
-	    if ( res->boxdata!=NULL ) {
-		for ( j=0; flagnames[j]!=NULL; ++j ) {
-		    if ( !GGadgetIsChecked( GWidgetGetControl(gre->gw,cid)) ||
-			    (res->override_mask&(1<<j)) ) {
-			fprintf( output, "%s.%s.Box.%s: %s\n",
-				res->progname, res->resname, flagnames[j],
-			        GGadgetIsChecked( GWidgetGetControl(gre->gw,cid+1))?"True" : "False" );
-		    }
-		    cid += 2;
-		}
-		for ( j=0; colornames[j]!=NULL; ++j ) {
-		    if ( !GGadgetIsChecked( GWidgetGetControl(gre->gw,cid))
-			    || (res->override_mask&(1<<(j+16))) ) {
-			fprintf( output, "%s.%s.Box.%s: #%06x\n",
-				res->progname, res->resname, colornames[j],
-			        GColorButtonGetColor( GWidgetGetControl(gre->gw,cid+2)) );
-		    }
-		    cid += 3;
-		}
-		if ( !GGadgetIsChecked( GWidgetGetControl(gre->gw,cid))
-			|| (res->override_mask&omf_border_type) ) {
-		    fprintf( output, "%s.%s.Box.BorderType: %s\n",
-			    res->progname, res->resname,
-			    types[ GGadgetGetFirstListSelectedItem(
-				     GWidgetGetControl(gre->gw,cid+2)) ] );
-		}
-		cid += 3;
-		if ( !GGadgetIsChecked( GWidgetGetControl(gre->gw,cid))
-			|| (res->override_mask&omf_border_shape) ) {
-		    fprintf( output, "%s.%s.Box.BorderShape: %s\n",
-			    res->progname, res->resname,
-			    shapes[ GGadgetGetFirstListSelectedItem(
-				     GWidgetGetControl(gre->gw,cid+2)) ] );
-		}
-		cid += 3;
-		for ( j=0; intnames[j]!=NULL; ++j ) {
-		    if ( !GGadgetIsChecked( GWidgetGetControl(gre->gw,cid))
-			    || (res->override_mask&(1<<(j+10))) ) {
-			char *ival = GGadgetGetTitle8( GWidgetGetControl(gre->gw,cid+2));
-			char *end;
-			int val = strtol(ival,&end,10);
-			if ( *end!='\0' || val<0 || val>255 )
-			    gwwv_post_error(_("Bad Number"), _("Bad numeric value for %s.%s"),
-				    res->resname, intnames[j]);
-			fprintf( output, "%s.%s.Box.%s: %s\n",
-				res->progname, res->resname, intnames[j], ival );
-			free(ival);
-		    }
-		    cid += 3;
-		}
-	    }
-	    if ( res->font!=NULL ) {
-		if ( !GGadgetIsChecked( GWidgetGetControl(gre->gw,gre->tofree[i].fontcid-1))
-			|| (res->override_mask&omf_font) ) {
-		    char *ival = GGadgetGetTitle8( GWidgetGetControl(gre->gw,gre->tofree[i].fontcid));
-		    fprintf( output, "%s.%s.Font: %s\n",
-			    res->progname, res->resname, ival );
-		    free(ival);
-		}
-	    }
-	    if ( res->extras!=NULL ) for ( extras=res->extras; extras->name!=NULL; ++extras ) {
-		GGadget *g = GWidgetGetControl(gre->gw,extras->cid);
-		switch ( extras->type ) {
-		  case rt_bool:
-		    fprintf( output, "%s.%s%s%s: %s\n",
-			    res->progname, res->resname, *res->resname=='\0'?"":".",extras->resname,
-			    GGadgetIsChecked(g)?"True":"False");
-		  break;
-		  case rt_int: {
-		    char *ival = GGadgetGetTitle8( g );
-		    char *end;
-		    (void) strtol(ival,&end,10);
-		    if ( *end!='\0' )
-			gwwv_post_error(_("Bad Number"), _("Bad numeric value for %s.%s"),
-				res->resname, extras->name );
-		    fprintf( output, "%s.%s%s%s: %s\n",
-			    res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
-			    ival );
-		    free(ival);
-		  } break;
-		  case rt_double: {
-		    char *dval = GGadgetGetTitle8( g );
-		    char *end;
-		    (void) strtod(dval,&end);
-		    if ( *end!='\0' )
-			gwwv_post_error(_("Bad Number"), _("Bad numeric value for %s.%s"),
-				res->resname, extras->name );
-		    fprintf( output, "%s.%s%s%s: %s\n",
-			    res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
-			    dval );
-		    free(dval);
-		  } break;
-		  case rt_color:
-		  case rt_coloralpha:
-		    fprintf( output, "%s.%s%s%s: #%06x\n",
-			    res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
-			    GColorButtonGetColor(g) );
-		  break;
-		  case rt_font: {
-		    char *fontdesc = GGadgetGetTitle8(g);
-		    if ( *fontdesc!='\0' )
-			fprintf( output, "%s.%s%s%s: %s\n",
-				res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
-				fontdesc );
-		    free(fontdesc);
-		  } break;
-		  case rt_image: {
-		    GResImage *ri = *((GResImage **) (extras->val));
-		    if ( ri!=NULL && ri->filename!=NULL ) {
-			const char* const* paths = _GGadget_GetImagePath();
-			int i;
-			for ( i=0; paths[i]!=NULL; ++i ) {
-			    if ( strncmp(paths[i],ri->filename,strlen(paths[i]))==0 ) {
-				char *pt = ri->filename+strlen(paths[i]);
-			        while ( *pt=='/' ) ++pt;
-				fprintf( output, "%s.%s%s%s: %s\n",
-					res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
-					pt );
-			break;
-			    }
-			}
-			if ( paths[i]==NULL )
-			    fprintf( output, "%s.%s%s%s: %s\n",
-				    res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
-				    ri->filename );
-		    }
-		  } break;
-		  case rt_string: case rt_stringlong: {
-		    char *sval = GGadgetGetTitle8( g );
-		    fprintf( output, "%s.%s%s%s: %s\n",
-			    res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
-			    sval );
-		    free(sval);
-		  } break;
-		}
-	    }
-	    fprintf( output, "\n" );
-	}
-	if ( ferror(output))
-	    gwwv_post_error(_("Write failed"),_("An error occurred when writing the resource file"));
-	fclose(output);
-	if ( gre->change_res_filename != NULL && update_prefs )
-	    (gre->change_res_filename)(filename);
-	free(filename);
+        filename = gwwv_save_filename_with_gadget(_("Save Resource file as..."),gre->def_res_file,NULL,gcdp);
+        if ( filename==NULL )
+            return true;
+        output = fopen( filename,"w" );
+        if ( output==NULL ) {
+            gwwv_post_error(_("Open failed"), _("Failed to open %s for output"), filename );
+            free(filename);
+            return true;
+        }
+        for ( i=0; gre->tofree[i].res!=NULL; ++i ) {
+            GResInfo *res = gre->tofree[i].res;
+            int cid = gre->tofree[i].startcid;
+            if ( res->boxdata!=NULL ) {
+                for ( j=0; flagnames[j]!=NULL; ++j ) {
+                    if ( !GGadgetIsChecked( GWidgetGetControl(gre->gw,cid)) ||
+                        (res->override_mask&(1<<j)) ) {
+                    fprintf( output, "%s.%s.Box.%s: %s\n",
+                        res->progname, res->resname, flagnames[j],
+                            GGadgetIsChecked( GWidgetGetControl(gre->gw,cid+1))?"True" : "False" );
+                    }
+                    cid += 2;
+                }
+                for ( j=0; colornames[j]!=NULL; ++j ) {
+                    if ( !GGadgetIsChecked( GWidgetGetControl(gre->gw,cid))
+                        || (res->override_mask&(1<<(j+16))) ) {
+                    fprintf( output, "%s.%s.Box.%s: #%06x\n",
+                        res->progname, res->resname, colornames[j],
+                            GColorButtonGetColor( GWidgetGetControl(gre->gw,cid+2)) );
+                    }
+                    cid += 3;
+                }
+                if ( !GGadgetIsChecked( GWidgetGetControl(gre->gw,cid))
+                    || (res->override_mask&omf_border_type) ) {
+                    fprintf( output, "%s.%s.Box.BorderType: %s\n",
+                        res->progname, res->resname,
+                        types[ GGadgetGetFirstListSelectedItem(
+                             GWidgetGetControl(gre->gw,cid+2)) ] );
+                }
+                cid += 3;
+                if ( !GGadgetIsChecked( GWidgetGetControl(gre->gw,cid))
+                    || (res->override_mask&omf_border_shape) ) {
+                    fprintf( output, "%s.%s.Box.BorderShape: %s\n",
+                        res->progname, res->resname,
+                        shapes[ GGadgetGetFirstListSelectedItem(
+                             GWidgetGetControl(gre->gw,cid+2)) ] );
+                }
+                cid += 3;
+                for ( j=0; intnames[j]!=NULL; ++j ) {
+                    if ( !GGadgetIsChecked( GWidgetGetControl(gre->gw,cid))
+                        || (res->override_mask&(1<<(j+10))) ) {
+                    char *ival = GGadgetGetTitle8( GWidgetGetControl(gre->gw,cid+2));
+                    char *end;
+                    int val = strtol(ival,&end,10);
+                    if ( *end!='\0' || val<0 || val>255 )
+                        gwwv_post_error(_("Bad Number"), _("Bad numeric value for %s.%s"),
+                            res->resname, intnames[j]);
+                    fprintf( output, "%s.%s.Box.%s: %s\n",
+                        res->progname, res->resname, intnames[j], ival );
+                    free(ival);
+                    }
+                    cid += 3;
+                }
+            }
+            if ( res->font!=NULL ) {
+                if ( !GGadgetIsChecked( GWidgetGetControl(gre->gw,gre->tofree[i].fontcid-1))
+                      || (res->override_mask&omf_font) ) {
+                    char *ival = GGadgetGetTitle8( GWidgetGetControl(gre->gw,gre->tofree[i].fontcid));
+                    fprintf( output, "%s.%s.Font: %s\n",
+                        res->progname, res->resname, ival );
+                    free(ival);
+                }
+            }
+            if ( res->extras!=NULL )
+                for ( extras=res->extras; extras->name!=NULL; ++extras ) {
+                    GGadget *g = GWidgetGetControl(gre->gw,extras->cid);
+                switch ( extras->type ) {
+                  case rt_bool:
+                    fprintf( output, "%s.%s%s%s: %s\n",
+                        res->progname, res->resname, *res->resname=='\0'?"":".",extras->resname,
+                        GGadgetIsChecked(g)?"True":"False");
+                    break;
+                  case rt_int: {
+                    char *ival = GGadgetGetTitle8( g );
+                    char *end;
+                    (void) strtol(ival,&end,10);
+                    if ( *end!='\0' )
+                        gwwv_post_error(_("Bad Number"), _("Bad numeric value for %s.%s"),
+                            res->resname, extras->name );
+                    fprintf( output, "%s.%s%s%s: %s\n",
+                        res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
+                        ival );
+                    free(ival);
+                  } break;
+                  case rt_double: {
+                    char *dval = GGadgetGetTitle8( g );
+                    char *end;
+                    (void) strtod(dval,&end);
+                    if ( *end!='\0' )
+                        gwwv_post_error(_("Bad Number"), _("Bad numeric value for %s.%s"),
+                            res->resname, extras->name );
+                    fprintf( output, "%s.%s%s%s: %s\n",
+                        res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
+                        dval );
+                    free(dval);
+                  } break;
+                  case rt_color:
+                  case rt_coloralpha:
+                    fprintf( output, "%s.%s%s%s: #%06x\n",
+                        res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
+                        GColorButtonGetColor(g) );
+                  break;
+                  case rt_font: {
+                    char *fontdesc = GGadgetGetTitle8(g);
+                    if ( *fontdesc!='\0' )
+                        fprintf( output, "%s.%s%s%s: %s\n",
+                            res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
+                            fontdesc );
+                    free(fontdesc);
+                  } break;
+                  case rt_image: {
+                    GResImage *ri = *((GResImage **) (extras->val));
+                    if ( ri!=NULL && ri->filename!=NULL ) {
+                        const char* const* paths = _GGadget_GetImagePath();
+                        int i;
+                        for ( i=0; paths[i]!=NULL; ++i ) {
+                            if ( strncmp(paths[i],ri->filename,strlen(paths[i]))==0 ) {
+                                char *pt = ri->filename+strlen(paths[i]);
+                                while ( *pt=='/' ) ++pt;
+                                fprintf( output, "%s.%s%s%s: %s\n",
+                                    res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
+                                    pt );
+                                break;
+                            }
+                        }
+                        if ( paths[i]==NULL )
+                            fprintf( output, "%s.%s%s%s: %s\n",
+                                res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
+                                ri->filename );
+                    }
+                  } break;
+                  case rt_string: case rt_stringlong: {
+                    char *sval = GGadgetGetTitle8( g );
+                    fprintf( output, "%s.%s%s%s: %s\n",
+                        res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
+                        sval );
+                    free(sval);
+                  } break;
+        }
+        }
+        fprintf( output, "\n" );
     }
-return( true );
+    if ( ferror(output) )
+        gwwv_post_error(_("Write failed"),_("An error occurred when writing the resource file"));
+    fclose(output);
+    if ( gre->change_res_filename != NULL && update_prefs )
+          (gre->change_res_filename)(filename);
+        free(filename);
+    }
+    return true;
 }
 
 static int GRE_OK(GGadget *g, GEvent *e) {

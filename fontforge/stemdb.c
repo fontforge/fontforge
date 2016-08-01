@@ -4615,15 +4615,17 @@ static void MarkDStemCorner( struct glyphdata *gd,struct pointdata *pd ) {
     
     for ( i=0; i<pd->prevcnt && !has_stem; i++ ) {
 	stem = pd->prevstems[i];
+	hv = IsUnitHV( &stem->unit,true );
 	if ( !stem->toobig && (
-	    ( x_dir && ( hv = IsUnitHV( &stem->unit,true ) == 1 )) ||
+	    ( x_dir &&  hv == 1 ) ||
 	    ( !x_dir && hv == 2 )))
 	    has_stem = true;
     }
     for ( i=0; i<pd->nextcnt && !has_stem; i++ ) {
 	stem = pd->nextstems[i];
+	hv = IsUnitHV( &stem->unit,true );
 	if ( !stem->toobig && (
-	    ( x_dir && ( hv = IsUnitHV( &stem->unit,true ) == 1 )) ||
+	    ( x_dir &&  hv == 1 ) ||
 	    ( !x_dir && hv == 2 )))
 	    has_stem = true;
     }
@@ -5663,7 +5665,7 @@ return( len );
 static int StemPairsSimilar( struct stemdata *s1, struct stemdata *s2,
     struct stemdata *ts1, struct stemdata *ts2 ) {
     
-    int normal, reversed, ret;
+    int normal, reversed, ret = 0;
     double olen1, olen2;
     
     /* Stem widths in the second pair should be nearly the same as */
@@ -5745,6 +5747,9 @@ struct glyphdata *GlyphDataInit( SplineChar *sc,int layer,double em_size,int onl
     Monotonic *m;
     int cnt;
     double iangle;
+
+    if ( layer<0 || layer>=sc->layer_cnt )
+        return( NULL );
 
     /* We only hint one layer at a time */
     /* We shan't try to hint references yet */

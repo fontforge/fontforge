@@ -265,7 +265,7 @@ static int last_format = 0;
 
 static void DoExport(struct gfc_data *d,unichar_t *path) {
     char *temp;
-    int format, good;
+    int format, good = 0;
 
     temp = cu_copy(path);
     last_format = format = (intpt) (GGadgetGetListItemSelected(d->format)->userdata);
@@ -412,25 +412,26 @@ static void GFD_dircreatefailed(GIOControl *gio) {
 
 static int GFD_NewDir(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	char *newdir;
-	unichar_t *utemp;
+        struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+        char *newdir;
+        unichar_t *utemp;
 
-	newdir = gwwv_ask_string(_("Create directory"),NULL,_("Directory name?"));
-	if ( newdir==NULL )
-return( true );
-	if ( !GFileIsAbsolute(newdir)) {
-	    char *basedir = u2utf8_copy(GFileChooserGetDir(d->gfc));
-	    char *temp = GFileAppendFile(basedir,newdir,false);
-	    free(newdir); free(basedir);
-	    newdir = temp;
-	}
-	utemp = utf82u_copy(newdir); free(newdir);
-	GIOmkDir(GFileChooserReplaceIO(d->gfc,
-		GIOCreate(utemp,d,GFD_dircreated,GFD_dircreatefailed)));
-	free(utemp);
+        newdir = gwwv_ask_string(_("Create directory"),NULL,_("Directory name?"));
+        if ( newdir==NULL )
+            return( true );
+        if ( !GFileIsAbsolute(newdir)) {
+            unichar_t *tmp_dir = GFileChooserGetDir(d->gfc);
+            char *basedir = u2utf8_copy(tmp_dir);
+            char *temp = GFileAppendFile(basedir,newdir,false);
+            free(newdir); free(basedir); free(tmp_dir);
+            newdir = temp;
+        }
+        utemp = utf82u_copy(newdir); free(newdir);
+        GIOmkDir(GFileChooserReplaceIO(d->gfc,
+              GIOCreate(utemp,d,GFD_dircreated,GFD_dircreatefailed)));
+        free(utemp);
     }
-return( true );
+    return true;
 }
 
 static int e_h(GWindow gw, GEvent *event) {

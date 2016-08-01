@@ -824,11 +824,6 @@ static int aload(unsigned sp, struct psstack *stack,size_t stacktop, struct garb
 		++sp;
 	    }
 	}
-	if ( sp<stacktop ) {
-	    stack[sp].type = ps_array;
-	    stack[sp].u.dict = dict;
-	    ++sp;
-	}
     }
 return( sp );
 }
@@ -997,7 +992,7 @@ static uint8 *StringToBytes(struct psstack *stackel,int *len) {
 	while ( isspace(*pt)) ++pt;
 	if ( *pt=='{' || *pt=='[' ) ++pt;
 	while ( isspace(*pt)) ++pt;
-    } else if ( stackel->type!=pt_string )
+    } else if ( stackel->type!=ps_string )
 return( NULL );
 
     upt = base = malloc(65536+1);	/* Maximum size of ps string */
@@ -1281,7 +1276,6 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
     DashType dashes[DASH_MAX];
     int dash_offset = 0;
     Entity *ent;
-    char oldloc[25];
     int warned = 0;
     struct garbage tofrees;
     SplineSet *clippath = NULL;
@@ -1290,9 +1284,8 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 
     tokbuf = malloc(tokbufsize);
 
-    strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
-    oldloc[24]=0;
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
 
     memset(&gb,'\0',sizeof(GrowBuf));
     memset(&dict,'\0',sizeof(dict));
@@ -1690,7 +1683,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 	  case pt_and:
 	    if ( sp>=2 ) {
 		if ( stack[sp-2].type == ps_num )
-		    stack[sp-2].u.val = ((int) stack[sp-1].u.val) & (int) stack[sp-1].u.val;
+		    stack[sp-2].u.val = ((int) stack[sp-2].u.val) & (int) stack[sp-1].u.val;
 		else if ( stack[sp-2].type == ps_bool )
 		    stack[sp-2].u.tf &= stack[sp-1].u.tf;
 		--sp;
@@ -1699,7 +1692,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 	  case pt_or:
 	    if ( sp>=2 ) {
 		if ( stack[sp-2].type == ps_num )
-		    stack[sp-2].u.val = ((int) stack[sp-1].u.val) | (int) stack[sp-1].u.val;
+		    stack[sp-2].u.val = ((int) stack[sp-2].u.val) | (int) stack[sp-1].u.val;
 		else if ( stack[sp-2].type == ps_bool )
 		    stack[sp-2].u.tf |= stack[sp-1].u.tf;
 		--sp;
@@ -1708,7 +1701,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 	  case pt_xor:
 	    if ( sp>=2 ) {
 		if ( stack[sp-2].type == ps_num )
-		    stack[sp-2].u.val = ((int) stack[sp-1].u.val) ^ (int) stack[sp-1].u.val;
+		    stack[sp-2].u.val = ((int) stack[sp-2].u.val) ^ (int) stack[sp-1].u.val;
 		else if ( stack[sp-2].type == ps_bool )
 		    stack[sp-2].u.tf ^= stack[sp-1].u.tf;
 		--sp;
@@ -2248,6 +2241,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 		for ( i=0; i<DASH_MAX && dashes[i]!=0; ++i );
 		dict.cnt = dict.max = i;
 		dict.entries = calloc(i,sizeof(struct pskeyval));
+                dict.is_executable = false;
 		for ( j=0; j<i; ++j ) {
 		    dict.entries[j].type = ps_num;
 		    dict.entries[j].u.val = dashes[j];
@@ -2624,6 +2618,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 		struct pskeydict dict;
 		dict.cnt = dict.max = i;
 		dict.entries = calloc(i,sizeof(struct pskeyval));
+                dict.is_executable = false;
 		for ( j=0; j<i; ++j ) {
 		    dict.entries[j].type = stack[sp-i+j].type;
 		    dict.entries[j].u = stack[sp-i+j].u;
@@ -2641,6 +2636,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 		struct pskeydict dict;
 		dict.cnt = dict.max = stack[sp-1].u.val;
 		dict.entries = calloc(dict.cnt,sizeof(struct pskeyval));
+                dict.is_executable = false;
 		/* all entries are inited to void */
 		stack[sp-1].type = ps_array;
 		stack[sp-1].u.dict = dict;
@@ -2816,7 +2812,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
     ECCategorizePoints(ec);
     if ( ec->width == UNDEFINED_WIDTH )
 	ec->width = wrapper->advance_width;
-    setlocale(LC_NUMERIC,oldloc);
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     free(tokbuf);
 }
 
@@ -2919,7 +2915,7 @@ return( head );
 	    if ( sc->layers[layer].stroke_pen.width==WIDTH_INHERITED )
 		si.radius = .5;
 	    if ( si.cap == lc_inherited ) si.cap = lc_butt;
-	    if ( si.join == lc_inherited ) si.join = lj_miter;
+	    if ( si.join == lj_inherited ) si.join = lj_miter;
 	    new = NULL;
 	    memcpy(transform,sc->layers[layer].stroke_pen.trans,4*sizeof(real));
 	    transform[4] = transform[5] = 0;
@@ -3130,7 +3126,7 @@ SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_stroked)
 		if ( ent->u.splines.stroke_width==WIDTH_INHERITED )
 		    si.radius = .5;
 		if ( si.cap == lc_inherited ) si.cap = lc_butt;
-		if ( si.join == lc_inherited ) si.join = lj_miter;
+		if ( si.join == lj_inherited ) si.join = lj_miter;
 		new = NULL;
 		MatInverse(inversetrans,ent->u.splines.transform);
 		transed = SplinePointListTransform(SplinePointListCopy(
@@ -3690,7 +3686,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	    switch ( v ) {
 	      case 0: /* dotsection */
 		if ( is_type2 )
-		    LogError( _("%s\'s dotsection operator is depreciated for Type2\n"), name );
+		    LogError( _("%s\'s dotsection operator is deprecated for Type2\n"), name );
 		sp = 0;
 	      break;
 	      case 1: /* vstem3 */	/* specifies three v hints zones at once */
@@ -3775,7 +3771,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		if ( sp<5 ) LogError( _("Stack underflow on seac in %s\n"), name );
 		if ( is_type2 ) {
 			if ( v==6 ) LogError( _("%s\'s SEAC operator is invalid for Type2\n"), name );
-			else LogError( _("%s\'s SEAC-like endchar operator is depreciated for Type2\n"), name );
+			else LogError( _("%s\'s SEAC-like endchar operator is deprecated for Type2\n"), name );
 		}
 		/* stack[0] must be the lsidebearing of the accent. I'm not sure why */
 		r1 = RefCharCreate();
@@ -4324,7 +4320,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		closepath(cur,is_type2);
 	    pcsp = 0;
 	    if ( sp==4 ) {
-		/* In Type2 strings endchar has a depreciated function of doing */
+		/* In Type2 strings endchar has a deprecated function of doing */
 		/*  a seac (which doesn't exist at all). Except enchar takes */
 		/*  4 args and seac takes 5. Bleah */
 		stack[4] = stack[3]; stack[3] = stack[2]; stack[2] = stack[1]; stack[1] = stack[0];

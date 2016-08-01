@@ -21,5 +21,6 @@ struct cidmap {
 extern struct cidmap *cidmaps;
 
 extern void DeleteEncoding(Encoding *me);
+extern void EncodingFree(Encoding *item);
 extern void RemoveMultiples(Encoding *item);
 #endif

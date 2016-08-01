@@ -83,13 +83,16 @@ static void initlibrarysearchpath(void) {
 
 static void initlibltdl(void) {
     char buffer[2000];
+    char *userConfigDir;
 
     if (!plugins_are_initialized()) {
         init_plugins();
-        if (getFontForgeUserDir(Config)!=NULL ) {
-            strcpy(buffer,getFontForgeUserDir(Config));
+        userConfigDir = getFontForgeUserDir(Config);
+        if ( userConfigDir != NULL ) {
+            strcpy(buffer,userConfigDir);
             strcat(buffer,"/plugins");
-            lt_dladdsearchdir(strdup(buffer));
+            free(userConfigDir);
+            lt_dladdsearchdir(buffer);
         }
     }
 }

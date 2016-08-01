@@ -432,7 +432,7 @@ static void Base_FinishEdit(GGadget *g, int r, int c, int wasnew) {
 	struct matrix_data *md = GMatrixEditGet(g,&rows);
 	uint32 script = TagFromString(md[r*cols+0].u.md_str);
 	uint32 bsln;
-	int i,j,k;
+	int i=0,j,k;
 
 /* This if is duplicated (almost) in tottfaat.c: PerGlyphDefBaseline */
 	if ( script==CHR('k','a','n','a') || script==CHR('h','a','n','g') ||
@@ -467,7 +467,7 @@ static void Base_FinishEdit(GGadget *g, int r, int c, int wasnew) {
 	
 static void BaselineMatrixInit(struct matrixinit *mi,struct Base *old) {
     struct matrix_data *md;
-    int k, i, cnt;
+    int k, i, cnt, mustfreemem;
     int _maps[20], *mapping;
     char script[8];
     struct basescript *bs;
@@ -477,6 +477,7 @@ static void BaselineMatrixInit(struct matrixinit *mi,struct Base *old) {
     mi->col_init = baselinesci;
 
     cnt = 0;
+    mustfreemem = 0;
     if ( old!=NULL )
 	for ( cnt=0, bs=old->scripts; bs!=NULL; bs=bs->next, ++cnt );
     mi->initial_row_cnt = cnt;
@@ -485,8 +486,10 @@ static void BaselineMatrixInit(struct matrixinit *mi,struct Base *old) {
     if ( old!=NULL ) {
 	if ( old->baseline_cnt<sizeof(_maps)/sizeof(_maps[0]) )
 	    mapping = _maps;
-	else
+	else  {
+            mustfreemem = 1;
 	    mapping = malloc(old->baseline_cnt*sizeof(int));
+        }
 	for ( k=0; k<old->baseline_cnt; ++k ) {
 	    mapping[k] = -1;
 	    for ( i=0; stdtags[i]!=0; ++i )
@@ -506,6 +509,8 @@ static void BaselineMatrixInit(struct matrixinit *mi,struct Base *old) {
 	    }
 	    md[mi->col_cnt*cnt+mi->col_cnt-1].u.md_str = (char *) BaseLangCopy(bs->langs);
 	}
+        if (mustfreemem != 0) 
+            free(mapping);
     }
 
     mi->finishedit = Base_FinishEdit;

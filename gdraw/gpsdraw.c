@@ -1425,6 +1425,12 @@ static struct displayfuncs psfuncs = {
     NULL
 };
 
+void _GPSDraw_DestroyDisplay(GDisplay *gdisp) {
+  if (gdisp->fontstate != NULL) { free(gdisp->fontstate); gdisp->fontstate = NULL; }
+  free(gdisp);
+  return;
+}
+
 GDisplay *_GPSDraw_CreateDisplay() {
     GPSDisplay *gdisp;
 

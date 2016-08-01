@@ -2074,7 +2074,7 @@ static int AnchorClassD_ShowAnchors(GGadget *g, GEvent *e) {
 return( true );
 	ac = classes[2*row+1].u.md_addr;
 	if ( ac==NULL || ac->subtable==NULL) {
-	    ac = SFAddAnchorClass(acd->sf,acd->sub,classes[2*row+1].u.md_str);
+	    ac = SFAddAnchorClass(acd->sf,acd->sub,classes[2*row+0].u.md_str);
 	} else if ( ac->subtable!=acd->sub ) {
 	    ff_post_error(_("Name in use"),_("The name, %.80s, has already been used to identify an anchor class in a different lookup subtable (%.80s)"),
 		    ac->name, ac->subtable->subtable_name );
@@ -2287,8 +2287,8 @@ static void AnchorClassD(SplineFont *sf, struct lookup_subtable *sub, int def_la
     wattrs.utf8_window_title = buffer;
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
-    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,300));
-    pos.height = GDrawPointsToPixels(NULL,200);
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,325));
+    pos.height = GDrawPointsToPixels(NULL,250);
     acd.gw = gw = GDrawCreateTopWindow(NULL,&pos,acd_e_h,&acd,&wattrs);
 
     i = 0;
@@ -3818,17 +3818,17 @@ static void SFDTrimUndoOldToNew_Output( FILE* retf, char* glyph, char* line ) {
 static char* SFDTrimUndoOldToNew( SplineFont *sf, char* oldstr, char* newstr ) {
 
     if( !oldstr || !newstr ) {
-	return 0;
+	    return 0;
     }
 
     /* open temporary files */
     FILE *of, *nf, *retf;
     if ( !(retf=MakeTemporaryFile()) )
-	goto error0SFDTrimUndoOldToNew;
+	    goto error0SFDTrimUndoOldToNew;
     if ( !(of=MakeTemporaryFile()) )
-	goto error1SFDTrimUndoOldToNew;
+	    goto error1SFDTrimUndoOldToNew;
     if ( !(nf=MakeTemporaryFile()) )
-	goto error2SFDTrimUndoOldToNew;
+	    goto error2SFDTrimUndoOldToNew;
 
     int glyphsWithUndoInfoCount = 0;
     fwrite( oldstr, strlen(oldstr), 1, of );
@@ -3843,80 +3843,80 @@ static char* SFDTrimUndoOldToNew( SplineFont *sf, char* oldstr, char* newstr ) {
 
     // copy the header from the old SFD fragment
     while((oline = getquotedeol(of)) && !feof(of)) {
-	if( !strnmatch( oline, "StartChar:", strlen( "StartChar:" ))) {
-	    int len = strlen("StartChar:");
-	    while( oline[len] && oline[len] == ' ' )
-		len++;
-	    oglyph = copy( oline+len );
-	    break;
-	}
-	fwrite( oline, strlen(oline), 1, retf );
-	fwrite( "\n", 1, 1, retf );
-	free(oline);
+	    if( !strnmatch( oline, "StartChar:", strlen( "StartChar:" ))) {
+	        int len = strlen("StartChar:");
+	        while( oline[len] && oline[len] == ' ' )
+	    	len++;
+	        oglyph = copy( oline+len );
+	        break;
+	    }
+	    fwrite( oline, strlen(oline), 1, retf );
+	    fwrite( "\n", 1, 1, retf );
+	    free(oline);
     }
 
     while (oglyph) {
-	oline = getquotedeol(of);
-	SplineChar* oldsc = SCFindByGlyphName( sf, oglyph );
-	int newGlyphsSeen = 0;
-
-	while ((nglyph = SFDMoveToNextStartChar(nf))) {
-	    newGlyphsSeen++;
-	    SplineChar* newsc = SCFindByGlyphName( sf, nglyph );
-	    if( !newsc || !oldsc ) {
-		goto error3SFDTrimUndoOldToNew;
+	    oline = getquotedeol(of);
+	    SplineChar* oldsc = SCFindByGlyphName( sf, oglyph );
+	    int newGlyphsSeen = 0;
+    
+	    while ((nglyph = SFDMoveToNextStartChar(nf))) {
+	        newGlyphsSeen++;
+	        SplineChar* newsc = SCFindByGlyphName( sf, nglyph );
+	        if( !newsc || !oldsc ) {
+	    	    goto error3SFDTrimUndoOldToNew;
+	        }
+	        /**
+	         * If the user has deleted a whole glyph from the SFD
+	         * fragment then the nglyph in the new list will be
+	         * *after* oglyph in the ordering. If that's the case then
+	         * we have to output oglyph and read another glyph from
+	         * the old list.
+	         */
+	        while( newsc->orig_pos > oldsc->orig_pos ) {
+	    	    glyphsWithUndoInfoCount++;
+	    	    SFDTrimUndoOldToNew_Output( retf, oglyph, oline );
+	    	    free(oline);
+	    	    oglyph = SFDMoveToNextStartChar(of);
+	    	    oline = getquotedeol(of);
+	    	    oldsc = SCFindByGlyphName( sf, oglyph );
+	        }
+    
+	        nline = getquotedeol(nf);
+	        if( !oline || !nline ) {
+	    	    fprintf(stderr,"failed to read new or old files during SFD diff. Returning entire new data as diff!\n");
+	    	    goto error3SFDTrimUndoOldToNew;
+	        }
+	        if( strcmp( oglyph, nglyph )) {
+//	    	    fprintf(stderr,"mismatch between old and new SFD fragments. Skipping new glyph that is not in old...\n");
+	    	    glyphsWithUndoInfoCount++;
+	    	    SFDTrimUndoOldToNew_Output( retf, nglyph, "Kerns2: " );
+	    	    free(nline);
+	    	    continue;
+	        }
+    
+	        if( !strcmp( oline, nline )) {
+	    	    // printf("old and new have the same data, skipping glyph:%s\n", oglyph );
+	    	    break;
+	        }
+    
+	        glyphsWithUndoInfoCount++;
+	        SFDTrimUndoOldToNew_Output( retf, oglyph, oline );
+	        free(nline);
+	        break;
 	    }
+    
 	    /**
-	     * If the user has deleted a whole glyph from the SFD
-	     * fragment then the nglyph in the new list will be
-	     * *after* oglyph in the ordering. If that's the case then
-	     * we have to output oglyph and read another glyph from
-	     * the old list.
+	     * There is one or more old glyphs which do not have a new glyph
+	     * in the SFD fragments, preserve those old SFD fragments.
 	     */
-	    while( newsc->orig_pos > oldsc->orig_pos ) {
-		glyphsWithUndoInfoCount++;
-		SFDTrimUndoOldToNew_Output( retf, oglyph, oline );
-		free(oline);
-		oglyph = SFDMoveToNextStartChar(of);
-		oline = getquotedeol(of);
-		oldsc = SCFindByGlyphName( sf, oglyph );
+	    if( !newGlyphsSeen ) {
+	        glyphsWithUndoInfoCount++;
+	        SFDTrimUndoOldToNew_Output( retf, oglyph, oline );
 	    }
-
-	    nline = getquotedeol(nf);
-	    if( !oline || !nline ) {
-		fprintf(stderr,"failed to read new or old files during SFD diff. Returning entire new data as diff!\n");
-		goto error3SFDTrimUndoOldToNew;
-	    }
-	    if( strcmp( oglyph, nglyph )) {
-//		fprintf(stderr,"mismatch between old and new SFD fragments. Skipping new glyph that is not in old...\n");
-		glyphsWithUndoInfoCount++;
-		SFDTrimUndoOldToNew_Output( retf, nglyph, "Kerns2: " );
-		free(nline);
-		continue;
-	    }
-
-	    if( !strcmp( oline, nline )) {
-		// printf("old and new have the same data, skipping glyph:%s\n", oglyph );
-		break;
-	    }
-
-	    glyphsWithUndoInfoCount++;
-	    SFDTrimUndoOldToNew_Output( retf, oglyph, oline );
-	    free(nline);
-	    break;
-	}
-
-	/**
-	 * There is one or more old glyphs which do not have a new glyph
-	 * in the SFD fragments, preserve those old SFD fragments.
-	 */
-	if( !newGlyphsSeen ) {
-	    glyphsWithUndoInfoCount++;
-	    SFDTrimUndoOldToNew_Output( retf, oglyph, oline );
-	}
-
-	free(oline);
-	oglyph = SFDMoveToNextStartChar(of);
+    
+	    free(oline);
+	    oglyph = SFDMoveToNextStartChar(of);
     }
     fclose(of);
 
@@ -3926,23 +3926,23 @@ static char* SFDTrimUndoOldToNew( SplineFont *sf, char* oldstr, char* newstr ) {
      * we only want to be able to revert to the old state (nothing)
      */
     while ((nglyph = SFDMoveToNextStartChar(nf))) {
-	SCFindByGlyphName( sf, nglyph );
-	nline = getquotedeol(nf);
-	glyphsWithUndoInfoCount++;
-	SFDTrimUndoOldToNew_Output( retf, nglyph, "Kerns2: " );
+	    SCFindByGlyphName( sf, nglyph );
+	    nline = getquotedeol(nf);
+	    glyphsWithUndoInfoCount++;
+	    SFDTrimUndoOldToNew_Output( retf, nglyph, "Kerns2: " );
     }
     fclose(nf);
 
     if( !glyphsWithUndoInfoCount )
-	goto error1SFDTrimUndoOldToNew;
+	    goto error1SFDTrimUndoOldToNew;
 
     char* ret = FileToAllocatedString( retf );
     fclose(retf);
     return ret;
 
-error3SFDTrimUndoOldToNew: free(of);
-error2SFDTrimUndoOldToNew: free(nf);
-error1SFDTrimUndoOldToNew: free(retf);
+error3SFDTrimUndoOldToNew: fclose(of);
+error2SFDTrimUndoOldToNew: fclose(nf);
+error1SFDTrimUndoOldToNew: fclose(retf);
 error0SFDTrimUndoOldToNew:
     return 0;
 }

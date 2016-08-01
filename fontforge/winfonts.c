@@ -269,7 +269,7 @@ return( false );
     sf->familyname[i] = '\0';
     temp = malloc(i+50);
     strcpy(temp,sf->familyname);
-    if ( fntheader.weight<=300 && fntheader.weight>500 ) {
+    if ( fntheader.weight<=300 || fntheader.weight>500 ) {
 	strcat(temp," ");
 	strcat(temp,sf->weight);
     }
@@ -471,7 +471,7 @@ return( false );
 	widbytes += (font->glyphs[gid]->width+7)>>3;
 	if ( font->glyphs[gid]->ymax>maxy ) maxy = font->glyphs[gid]->ymax;
 	if ( font->glyphs[gid]->ymin<miny ) miny = font->glyphs[gid]->ymin;
-	if ( font->glyphs[gid]->width>maxy ) maxwid = font->glyphs[gid]->width;
+	if ( font->glyphs[gid]->width>maxwid ) maxwid = font->glyphs[gid]->width;
 	if ( font->glyphs[gid]->width<font->glyphs[gid]->xmax || font->glyphs[gid]->xmin<0 )
 	    badch = gid;
 	if ( samewid==-1 ) samewid = font->glyphs[gid]->width;
@@ -485,11 +485,12 @@ return( false );
     if ( badch!=-1 )
 	LogError( _("At pixelsize %d the character %s either starts before the origin or extends beyond the advance width.\n"),
 		font->pixelsize, font->glyphs[badch]->sc->name );
+    memset(&pfminfo,'\0',sizeof(pfminfo));
     SFDefaultOS2Info(&pfminfo,font->sf,font->sf->fontname);
     widbytes = avgwid+spacesize;
     if ( cnt!=0 ) avgwid = rint(avgwid/(bigreal) cnt);
     gid = map->map['X'];
-    if ( font->glyphs[gid]!=NULL && font->glyphs[gid]->sc!=NULL &&
+    if ( gid!=-1 && font->glyphs[gid]!=NULL && font->glyphs[gid]->sc!=NULL &&
 	    font->glyphs[gid]->sc->unicodeenc == 'X' )
 	avgwid = font->glyphs[gid]->width;
 
@@ -497,6 +498,7 @@ return( false );
 	switch ( font->pixelsize ) {
 	  case 13: case 16: case 32:
 	    res = 96;
+	  break;
 	  default:
 	    res = 120;
 	  break;
@@ -728,52 +730,6 @@ typedef struct
      */
 } NE_TYPEINFO;
 
-typedef struct
-{
-    INT16 dfType;
-    INT16 dfPoints;
-    INT16 dfVertRes;
-    INT16 dfHorizRes;
-    INT16 dfAscent;
-    INT16 dfInternalLeading;
-    INT16 dfExternalLeading;
-    CHAR  dfItalic;
-    CHAR  dfUnderline;
-    CHAR  dfStrikeOut;
-    INT16 dfWeight;
-    BYTE  dfCharSet;
-    INT16 dfPixWidth;
-    INT16 dfPixHeight;
-    CHAR  dfPitchAndFamily;
-    INT16 dfAvgWidth;
-    INT16 dfMaxWidth;
-    CHAR  dfFirstChar;
-    CHAR  dfLastChar;
-    CHAR  dfDefaultChar;
-    CHAR  dfBreakChar;
-    INT16 dfWidthBytes;
-    LONG  dfDevice;
-    LONG  dfFace;
-    LONG  dfBitsPointer;
-    LONG  dfBitsOffset;
-    CHAR  dfReserved;
-    /* Fields, introduced for Windows 3.x fonts */
-    LONG  dfFlags;
-    INT16 dfAspace;
-    INT16 dfBspace;
-    INT16 dfCspace;
-    LONG  dfColorPointer;
-    LONG  dfReserved1[4];
-} FONTINFO16, *LPFONTINFO16;
-
-struct _fnt_header
-{
-    short dfVersion;
-    long dfSize;
-    char dfCopyright[60];
-    FONTINFO16 fi;
-};
-
 static const BYTE MZ_hdr[] = {'M',  'Z',  0x0d, 0x01, 0x01, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0xff, 0xff, 0x00, 0x00,
                  0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -830,6 +786,7 @@ int FONFontDump(char *filename,SplineFont *sf, int32 *sizes,int resol,
 		    sizes[i]&0xffff, sizes[i]>>16);
 	    for ( j=0; j<i; ++j )
 		fclose(fntarray[j]);
+            free(file_lens);
 	    free(fntarray);
 return( false );
 	}
@@ -837,6 +794,7 @@ return( false );
 	if ( !_FntFontDump(fntarray[i],bdf,map,resol) ) {
 	    for ( j=0; j<=i; ++j )
 		fclose(fntarray[j]);
+            free(file_lens);
 	    free(fntarray);
 return( false );
 	}
@@ -911,6 +869,7 @@ return( false );
 	for ( j=0; j<num_files; ++j )
 	    fclose(fntarray[j]);
 	free(fntarray);
+        free(file_lens);
 return( false );
     }
 
@@ -1031,11 +990,15 @@ return( false );
     for(res = first_res, i = 0; i < num_files; i++, res++) {
         lputshort(fon,res);
 
+        /* The first 0x6D bytes of the FNT file and the FONTDIRENTRY match */
         rewind(fntarray[i]);
-        fread(buf, 0x72, 1, fntarray[i]);
-        fnt_header = (struct _fnt_header *)buf;
-        fnt_header->fi.dfBitsOffset = 0;	/* I can ignore endianness here. all is 0 */
-        fwrite(buf, 0x72, 1, fon);
+        fread(buf, 0x6D, 1, fntarray[i]);
+        fwrite(buf, 0x6D, 1, fon);
+
+        /* FONTDIRENTRY.dfReserved */
+        lputlong(fon,0);
+        /* FONTDIRENTRY.szDeviceName */
+        fputc(0x00, fon);
 
 	fseek(fntarray[i], 0x69, SEEK_SET);
 	off = lgetlong(fntarray[i]);

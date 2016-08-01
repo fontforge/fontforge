@@ -52,6 +52,7 @@
 #include "scripting.h"
 #include "scriptfuncs.h"
 #include "flaglist.h"
+#include "gutils/prefs.h"
 
 #include "gutils/unicodelibinfo.h"
 
@@ -114,6 +115,8 @@ return( ret );
     }
 }
 
+#endif /* _NO_FFSCRIPT */
+
 void arrayfree(Array *a) {
     int i;
 
@@ -126,9 +129,7 @@ void arrayfree(Array *a) {
     free(a->vals);
     free(a);
 }
-#endif /* _NO_FFSCRIPT */
 
-#ifndef _NO_FFSCRIPT
 static Array *arraycopy(Array *a) {
     int i;
     Array *c;
@@ -145,6 +146,8 @@ static Array *arraycopy(Array *a) {
     }
 return( c );
 }
+
+#ifndef _NO_FFSCRIPT
 
 static void array_copy_into(Array *dest,int offset,Array *src) {
     int i;
@@ -172,6 +175,7 @@ return;
 	    arrayfree( dica->entries[i].val.u.aval );
     }
     free( dica->entries );
+    dica->entries = NULL;
 }
 
 static int DicaLookup(struct dictionary *dica,char *name,Val *val) {
@@ -208,11 +212,17 @@ static void DicaNewEntry(struct dictionary *dica,char *name,Val *val) {
 static void calldatafree(Context *c) {
     int i;
 
-    for ( i=1; i<c->a.argc; ++i ) {	/* child may have freed some args itself by shifting, but argc will reflect the proper values none the less */
-	if ( c->a.vals[i].type == v_str )
-	    free( c->a.vals[i].u.sval );
-	if ( c->a.vals[i].type == v_arrfree || (c->a.vals[i].type == v_arr && c->dontfree[i]!=c->a.vals[i].u.aval ))
+    /* child may have freed some args itself by shifting,
+       but argc will reflect the proper values none the less */
+    for ( i=1; i<c->a.argc; ++i ) {
+        if ( c->a.vals[i].type == v_str ) {
+            free( c->a.vals[i].u.sval );
+            c->a.vals[i].u.sval = NULL;
+        }
+	if ( c->a.vals[i].type == v_arrfree || (c->a.vals[i].type == v_arr && c->dontfree[i]!=c->a.vals[i].u.aval )) {
 	    arrayfree( c->a.vals[i].u.aval );
+	    c->a.vals[i].u.aval = NULL;
+    }
 	c->a.vals[i].type = v_void;
     }
     DictionaryFree(&c->locals);
@@ -223,6 +233,7 @@ static void calldatafree(Context *c) {
 	}
 }
 
+/* coverity[+kill] */
 static void traceback(Context *c) {
     int cnt = 0;
     while ( c!=NULL ) {
@@ -230,7 +241,7 @@ static void traceback(Context *c) {
 	    if ( c->err_env!=NULL ) {
 		longjmp(*c->err_env,1);
 	    }
-	    c->error = true;
+	    c->error = ce_true;
 	    return;
 	}
 	if ( cnt==1 ) LogError( _("Called from...\n") );
@@ -436,23 +447,13 @@ static void bPrint(Context *c) {
 }
 
 static void bError(Context *c) {
-
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Expected string argument" );
-
     ScriptError( c, c->a.vals[1].u.sval );
+    c->error = ce_silent;
 }
 
 static void bPostNotice(Context *c) {
     char *t1;
     char *loc;
-
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Expected string argument" );
 
     loc = c->a.vals[1].u.sval;
     if ( !no_windowing_ui ) {
@@ -477,10 +478,13 @@ static void bAskUser(Context *c) {
     char *quest;
     const char *def="";
 
-    if ( c->a.argc!=2 && c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str || ( c->a.argc==3 &&  c->a.vals[2].type!=v_str) )
-	ScriptError( c, "Expected string argument" );
+    if ( c->a.argc!=2 && c->a.argc!=3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_str || ( c->a.argc==3 && c->a.vals[2].type!=v_str) ) {
+	c->error = ce_expectstr;
+	return;
+    }
     quest = c->a.vals[1].u.sval;
     if ( c->a.argc==3 )
 	def = c->a.vals[2].u.sval;
@@ -523,11 +527,7 @@ static void bAskUser(Context *c) {
 static void bArray(Context *c) {
     int i;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_int )
-	ScriptError( c, "Expected integer argument" );
-    else if ( c->a.vals[1].u.ival<=0 )
+    if ( c->a.vals[1].u.ival<=0 )
 	ScriptError( c, "Argument must be positive" );
     c->return_val.type = v_arrfree;
     c->return_val.u.aval = malloc(sizeof(Array));
@@ -538,8 +538,7 @@ static void bArray(Context *c) {
 }
 
 static void bSizeOf(Context *c) {
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
+
     if ( c->a.vals[1].type!=v_arr && c->a.vals[1].type!=v_arrfree )
 	ScriptError( c, "Expected array argument" );
 
@@ -551,19 +550,11 @@ static void bTypeOf(Context *c) {
     static const char *typenames[] = { "Integer", "Real", "String", "Unicode", "LValue",
 	    "Array", "Array", "LValue", "LValue", "LValue", "Void" };
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-
     c->return_val.type = v_str;
     c->return_val.u.sval = copy( typenames[c->a.vals[1].type] );
 }
 
 static void bStrlen(Context *c) {
-
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Bad type for argument" );
 
     c->return_val.type = v_int;
     c->return_val.u.ival = strlen( c->a.vals[1].u.sval );
@@ -571,11 +562,6 @@ static void bStrlen(Context *c) {
 
 static void bStrstr(Context *c) {
     char *pt;
-
-    if ( c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str )
-	ScriptError( c, "Bad type for argument" );
 
     c->return_val.type = v_int;
     pt = strstr(c->a.vals[1].u.sval,c->a.vals[2].u.sval);
@@ -586,14 +572,19 @@ static void bStrSplit(Context *c) {
     char *pt, *pt2, *str1, *str2;
     int max=-1, len2, cnt, k;
 
-    if ( c->a.argc!=3 && c->a.argc!=4 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str )
-	ScriptError( c, "Bad type for argument" );
-    else if ( c->a.argc==4 && c->a.vals[3].type!=v_int )
-	ScriptError( c, "Bad type for argument" );
-    else if ( c->a.argc==4 )
+    if ( c->a.argc!=3 && c->a.argc!=4 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ) {
+	c->error = ce_badargtype;
+	return;
+    } else if ( c->a.argc==4 ) {
+	if ( c->a.vals[3].type!=v_int ) {
+	    c->error = ce_badargtype;
+	    return;
+	}
 	max = c->a.vals[3].u.ival;
+    }
 
     str1 = c->a.vals[1].u.sval;
     str2 = c->a.vals[2].u.sval;
@@ -622,7 +613,7 @@ static void bStrSplit(Context *c) {
 	    c->return_val.u.aval->argc = cnt;
 	    c->return_val.u.aval->vals = malloc(cnt*sizeof(Val));
 	} else {
-	    if ( *pt!='\0' ) {
+	    if ((*pt!='\0') && ((max==-1) || (cnt<max))) {
 		c->return_val.u.aval->vals[cnt].type = v_str;
 		c->return_val.u.aval->vals[cnt].u.sval = copy(pt);
 	    }
@@ -635,11 +626,11 @@ static void bStrJoin(Context *c) {
     int len, len2, k, i;
     Array *arr;
 
-    if ( c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( (c->a.vals[1].type!=v_arr && c->a.vals[1].type!=v_arrfree) ||
-	    c->a.vals[2].type!=v_str )
-	ScriptError( c, "Bad type for argument" );
+    if ( (c->a.vals[1].type!=v_arr && c->a.vals[1].type!=v_arrfree) ||
+	    c->a.vals[2].type!=v_str ) {
+	c->error = ce_badargtype;
+	return;
+    }
 
     arr = c->a.vals[1].u.aval;
     str2 = c->a.vals[2].u.sval;
@@ -666,11 +657,6 @@ static void bStrJoin(Context *c) {
 static void bStrcasestr(Context *c) {
     char *pt;
 
-    if ( c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str )
-	ScriptError( c, "Bad type for argument" );
-
     c->return_val.type = v_int;
     pt = strstrmatch(c->a.vals[1].u.sval,c->a.vals[2].u.sval);
     c->return_val.u.ival = pt==NULL ? -1 : pt-c->a.vals[1].u.sval;
@@ -680,11 +666,6 @@ static void bStrrstr(Context *c) {
     char *pt;
     char *haystack, *needle;
     int nlen;
-
-    if ( c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str )
-	ScriptError( c, "Bad type for argument" );
 
     c->return_val.type = v_int;
     haystack = c->a.vals[1].u.sval; needle = c->a.vals[2].u.sval;
@@ -699,11 +680,14 @@ static void bStrsub(Context *c) {
     int start, end;
     char *str;
 
-    if ( c->a.argc!=3 && c->a.argc!=4 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_int ||
-	    (c->a.argc==4 && c->a.vals[3].type!=v_int))
-	ScriptError( c, "Bad type for argument" );
+    if ( c->a.argc!=3 && c->a.argc!=4 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_int || \
+	    (c->a.argc==4 && c->a.vals[3].type!=v_int) ) {
+	c->error = ce_badargtype;
+	return;
+    }
 
     str = c->a.vals[1].u.sval;
     start = c->a.vals[2].u.ival;
@@ -716,11 +700,6 @@ static void bStrsub(Context *c) {
 
 static void bStrcasecmp(Context *c) {
 
-    if ( c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str )
-	ScriptError( c, "Bad type for argument" );
-
     c->return_val.type = v_int;
     c->return_val.u.ival = strmatch(c->a.vals[1].u.sval,c->a.vals[2].u.sval);
 }
@@ -728,11 +707,13 @@ static void bStrcasecmp(Context *c) {
 static void bStrtol(Context *c) {
     int base = 10;
 
-    if ( c->a.argc!=2 && c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[2].type!=v_int) )
-	ScriptError( c, "Bad type for argument" );
-    else if ( c->a.argc==3 ) {
+    if ( c->a.argc!=2 && c->a.argc!=3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[2].type!=v_int) ) {
+	c->error = ce_badargtype;
+	return;
+    } else if ( c->a.argc==3 ) {
 	base = c->a.vals[2].u.ival;
 	if ( base<0 || base==1 || base>36 )
 	    ScriptError( c, "Argument out of bounds" );
@@ -744,11 +725,6 @@ static void bStrtol(Context *c) {
 
 static void bStrtod(Context *c) {
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Bad type for argument" );
-
     c->return_val.type = v_real;
     c->return_val.u.fval = (float)strtod(c->a.vals[1].u.sval,NULL);
 }
@@ -757,11 +733,13 @@ static void bStrskipint(Context *c) {
     int base = 10;
     char *end;
 
-    if ( c->a.argc!=2 && c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[2].type!=v_int) )
-	ScriptError( c, "Bad type for argument" );
-    else if ( c->a.argc==3 ) {
+    if ( c->a.argc!=2 && c->a.argc!=3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[2].type!=v_int) ) {
+	c->error = ce_badargtype;
+	return;
+    } else if ( c->a.argc==3 ) {
 	base = c->a.vals[2].u.ival;
 	if ( base<0 || base==1 || base>36 )
 	    ScriptError( c, "Argument out of bounds" );
@@ -779,16 +757,19 @@ static void bStrftime(Context *c) {
     struct tm *tm;
     time_t now;
 
-    if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=4 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str ||
+    if ( c->a.argc<2 || c->a.argc>4 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_str ||
 	    (c->a.argc>=3 && c->a.vals[2].type!=v_int) ||
-	    (c->a.argc>=4 && c->a.vals[3].type!=v_str) )
-	ScriptError( c, "Bad type for argument" );
+	    (c->a.argc>=4 && c->a.vals[3].type!=v_str) ) {
+	c->error = ce_badargtype;
+	return;
+    }
     if ( c->a.argc>=3 )
 	isgmt = c->a.vals[2].u.ival;
     if ( c->a.argc>=4 )
-	oldloc = setlocale(LC_TIME, c->a.vals[3].u.sval);
+	oldloc = setlocale(LC_TIME, c->a.vals[3].u.sval); // TODO
 
     time(&now);
     if ( isgmt )
@@ -809,16 +790,14 @@ static void bisupper(Context *c) {
     long ch;
 
     c->return_val.type = v_int;
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type==v_str ) {
+    if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
 	c->return_val.u.ival = ch>=0 && ch<0x10000?isupper(ch):0;
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
 	c->return_val.u.ival = isupper(c->a.vals[1].u.ival);
     else
-	ScriptError( c, "Bad type for argument" );
+	c->error = ce_badargtype;
 }
 
 static void bislower(Context *c) {
@@ -826,16 +805,14 @@ static void bislower(Context *c) {
     long ch;
 
     c->return_val.type = v_int;
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type==v_str ) {
+    if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
 	c->return_val.u.ival = ch>=0 && ch<0x10000?islower(ch):0;
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
 	c->return_val.u.ival = islower(c->a.vals[1].u.ival);
     else
-	ScriptError( c, "Bad type for argument" );
+	c->error = ce_badargtype;
 }
 
 static void bisdigit(Context *c) {
@@ -843,16 +820,14 @@ static void bisdigit(Context *c) {
     long ch;
 
     c->return_val.type = v_int;
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type==v_str ) {
+    if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
 	c->return_val.u.ival = ch>=0 && ch<0x10000?isdigit(ch):0;
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
 	c->return_val.u.ival = isdigit(c->a.vals[1].u.ival);
     else
-	ScriptError( c, "Bad type for argument" );
+	c->error = ce_badargtype;
 }
 
 static void bishexdigit(Context *c) {
@@ -860,16 +835,14 @@ static void bishexdigit(Context *c) {
     long ch;
 
     c->return_val.type = v_int;
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type==v_str ) {
+    if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
 	c->return_val.u.ival = ch>=0 && ch<0x10000?ishexdigit(ch):0;
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
 	c->return_val.u.ival = ishexdigit(c->a.vals[1].u.ival);
     else
-	ScriptError( c, "Bad type for argument" );
+	c->error = ce_badargtype;
 }
 
 static void bisalpha(Context *c) {
@@ -877,16 +850,14 @@ static void bisalpha(Context *c) {
     long ch;
 
     c->return_val.type = v_int;
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type==v_str ) {
+    if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
 	c->return_val.u.ival = ch>=0 && ch<0x10000?isalpha(ch):0;
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
 	c->return_val.u.ival = isalpha(c->a.vals[1].u.ival);
     else
-	ScriptError( c, "Bad type for argument" );
+	c->error = ce_badargtype;
 }
 
 static void bisalnum(Context *c) {
@@ -894,16 +865,14 @@ static void bisalnum(Context *c) {
     long ch;
 
     c->return_val.type = v_int;
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type==v_str ) {
+    if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
 	c->return_val.u.ival = ch>=0 && ch<0x10000?isalnum(ch):0;
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
 	c->return_val.u.ival = isalnum(c->a.vals[1].u.ival);
     else
-	ScriptError( c, "Bad type for argument" );
+	c->error = ce_badargtype;
 }
 
 static void bisspace(Context *c) {
@@ -911,25 +880,21 @@ static void bisspace(Context *c) {
     long ch;
 
     c->return_val.type = v_int;
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type==v_str ) {
+    if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
 	c->return_val.u.ival = ch>=0 && ch<0x10000?isspace(ch):0;
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
 	c->return_val.u.ival = isspace(c->a.vals[1].u.ival);
     else
-	ScriptError( c, "Bad type for argument" );
+	c->error = ce_badargtype;
 }
 
 static void btoupper(Context *c) {
     char *pt; const char *ipt;
     long ch;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type==v_str ) {
+    if ( c->a.vals[1].type==v_str ) {
 	c->return_val.type = v_str;
 	c->return_val.u.sval = pt = copy(ipt = c->a.vals[1].u.sval);
 	while ( *ipt ) {
@@ -944,16 +909,14 @@ static void btoupper(Context *c) {
 	c->return_val.type = v_int;
 	c->return_val.u.ival = c->a.vals[1].u.ival<0x10000?toupper(c->a.vals[1].u.ival): c->a.vals[1].u.ival;
     } else
-	ScriptError( c, "Bad type for argument" );
+	c->error = ce_badargtype;
 }
 
 static void btolower(Context *c) {
     char *pt; const char *ipt;
     long ch;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type==v_str ) {
+    if ( c->a.vals[1].type==v_str ) {
 	c->return_val.type = v_str;
 	c->return_val.u.sval = pt = copy(ipt = c->a.vals[1].u.sval);
 	while ( *ipt ) {
@@ -968,16 +931,14 @@ static void btolower(Context *c) {
 	c->return_val.type = v_int;
 	c->return_val.u.ival = c->a.vals[1].u.ival<0x10000?tolower(c->a.vals[1].u.ival): c->a.vals[1].u.ival;
     } else
-	ScriptError( c, "Bad type for argument" );
+	c->error = ce_badargtype;
 }
 
 static void btomirror(Context *c) {
     char *pt; const char *ipt;
     long ch;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type==v_str ) {
+    if ( c->a.vals[1].type==v_str ) {
 	c->return_val.type = v_str;
 	c->return_val.u.sval = pt = copy(ipt = c->a.vals[1].u.sval);
 	while ( *ipt ) {
@@ -992,30 +953,22 @@ static void btomirror(Context *c) {
 	c->return_val.type = v_int;
 	c->return_val.u.ival = c->a.vals[1].u.ival<0x10000?tomirror(c->a.vals[1].u.ival): c->a.vals[1].u.ival;
     } else
-	ScriptError( c, "Bad type for argument" );
+	c->error = ce_badargtype;
 }
 
 static void bLoadPrefs(Context *c) {
 
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments" );
     LoadPrefs();
 }
 
 static void bSavePrefs(Context *c) {
 
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments" );
     SavePrefs(false);
     DumpPfaEditEncodings();
 }
 
 static void bGetPrefs(Context *c) {
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Bad type for argument" );
     if ( !GetPrefs(c->a.vals[1].u.sval,&c->return_val) )
 	ScriptErrorString( c, "Unknown Preference variable", c->a.vals[1].u.sval );
 }
@@ -1024,10 +977,10 @@ static void bSetPrefs(Context *c) {
     int ret;
 
     if ( c->a.argc!=3 && c->a.argc!=4 )
-	ScriptError( c, "Wrong number of arguments" );
+	c->error = ce_wrongnumarg;
     else if ( c->a.vals[1].type!=v_str && (c->a.argc==4 && c->a.vals[3].type!=v_int) )
-	ScriptError( c, "Bad type for argument" );
-    if ( (ret=SetPrefs(c->a.vals[1].u.sval,&c->a.vals[2],c->a.argc==4?&c->a.vals[3]:NULL))==0 )
+	c->error = ce_badargtype;
+    else if ( (ret=SetPrefs(c->a.vals[1].u.sval,&c->a.vals[2],c->a.argc==4?&c->a.vals[3]:NULL))==0 )
 	ScriptErrorString( c, "Unknown Preference variable", c->a.vals[1].u.sval );
     else if ( ret==-1 )
 	ScriptErrorString( c, "Bad type for preference variable",  c->a.vals[1].u.sval);
@@ -1035,17 +988,11 @@ static void bSetPrefs(Context *c) {
 
 static void bDefaultOtherSubrs(Context *c) {
 
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments" );
     DefaultOtherSubrs();
 }
 
 static void bReadOtherSubrsFile(Context *c) {
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Bad type for argument" );
     if ( ReadOtherSubrsFile(c->a.vals[1].u.sval)<=0 )
 	ScriptErrorString( c,"Failed to read OtherSubrs from %s", c->a.vals[1].u.sval );
 }
@@ -1053,21 +1000,27 @@ static void bReadOtherSubrsFile(Context *c) {
 static void bGetEnv(Context *c) {
     char *env;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Bad type for argument" );
     if ( (env = getenv(c->a.vals[1].u.sval))==NULL )
 	ScriptErrorString( c, "Unknown Preference variable", c->a.vals[1].u.sval );
     c->return_val.type = v_str;
     c->return_val.u.sval = strdup(env);
 }
 
+static void bHasSpiro(Context *c) {
+
+    c->return_val.type=v_int;
+    c->return_val.u.ival=hasspiro();
+}
+
+static void bSpiroVersion(Context *c) {
+/* Return libspiro Version number */
+
+    c->return_val.type = v_str;
+    c->return_val.u.sval = libspiro_version();
+}
+
 static void bUnicodeFromName(Context *c) {
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Bad type for argument" );
+
     c->return_val.type = v_int;
     c->return_val.u.ival = UniFromName(c->a.vals[1].u.sval,ui_none,&custom);
 }
@@ -1077,12 +1030,16 @@ static void bNameFromUnicode(Context *c) {
     int uniinterp;
     NameList *for_new_glyphs;
 
-    if ( c->a.argc!=2 && c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode )
-	ScriptError( c, "Bad type for argument" );
-    else if ( c->a.argc==3 && c->a.vals[2].type!=v_str )
-	ScriptError( c, "Bad type for argument" );
+    if ( c->a.argc!=2 && c->a.argc!=3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode ) {
+	c->error = ce_badargtype;
+	return;
+    } else if ( c->a.argc==3 && c->a.vals[2].type!=v_str ) {
+	c->error = ce_badargtype;
+	return;
+    }
 
     if ( c->a.argc==3 ) {
 	uniinterp = ui_none;
@@ -1103,8 +1060,6 @@ static void bNameFromUnicode(Context *c) {
 
 static void bUnicodeBlockCountFromLib(Context *c) {
 /* If the library is available, then return the number of name blocks */
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments" );
 
     c->return_val.type=v_int;
     c->return_val.u.ival=unicode_block_count();
@@ -1112,12 +1067,11 @@ static void bUnicodeBlockCountFromLib(Context *c) {
 
 static void bUnicodeBlockEndFromLib(Context *c) {
 /* If the library is available, then get the official Nth block end */
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode )
-	ScriptError( c, "Bad type for argument" );
+    if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode ) {
+	c->error = ce_badargtype;
+	return;
+    }
     c->return_val.type=v_int;
-
     c->return_val.u.ival=unicode_block_end(c->a.vals[1].u.ival);
 }
 
@@ -1125,10 +1079,10 @@ static void bUnicodeBlockNameFromLib(Context *c) {
 /* If the library is available, then get the official Nth block name */
     char *temp;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode )
-	ScriptError( c, "Bad type for argument" );
+    if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode ) {
+	c->error = ce_badargtype;
+	return;
+    }
     c->return_val.type = v_str;
 
     if ( (temp=unicode_block_name(c->a.vals[1].u.ival))==NULL ) {
@@ -1139,12 +1093,12 @@ static void bUnicodeBlockNameFromLib(Context *c) {
 
 static void bUnicodeBlockStartFromLib(Context *c) {
 /* If the library is available, then get the official Nth block start */
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode )
-	ScriptError( c, "Bad type for argument" );
-    c->return_val.type=v_int;
 
+    if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode ) {
+	c->error = ce_badargtype;
+	return;
+    }
+    c->return_val.type=v_int;
     c->return_val.u.ival=unicode_block_start(c->a.vals[1].u.ival);
 }
 
@@ -1152,10 +1106,10 @@ static void bUnicodeNameFromLib(Context *c) {
 /* If the library is available, then get the official name for this unicode value */
     char *temp;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode )
-	ScriptError( c, "Bad type for argument" );
+    if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode ) {
+	c->error = ce_badargtype;
+	return;
+    }
     c->return_val.type = v_str;
 
     if ( (temp=unicode_name(c->a.vals[1].u.ival))==NULL ) {
@@ -1167,10 +1121,10 @@ static void bUnicodeNameFromLib(Context *c) {
 static void bUnicodeAnnotationFromLib(Context *c) {
     char *temp;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode )
-	ScriptError( c, "Bad type for argument" );
+    if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode ) {
+	c->error = ce_badargtype;
+	return;
+    }
     c->return_val.type = v_str;
 
     if ( (temp=unicode_annot(c->a.vals[1].u.ival))==NULL ) {
@@ -1182,9 +1136,6 @@ static void bUnicodeAnnotationFromLib(Context *c) {
 static void bUnicodeNamesListVersion(Context *c) {
 /* If the library is available, then return the Nameslist Version */
     char *temp;
-
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments" );
 
     if ( (temp=unicode_library_version())==NULL ) {
 	temp=malloc(1*sizeof(char)); *temp='\0';
@@ -1212,7 +1163,7 @@ static void bChr(Context *c) {
 	for ( i=0; i<arr->argc; ++i ) {
 	    if ( arr->vals[i].type!=v_int )
 		ScriptError( c, "Bad type for argument" );
-	    else if ( c->a.vals[1].u.ival<-128 || c->a.vals[1].u.ival>255 )
+	    else if ( arr->vals[i].u.ival<-128 || arr->vals[i].u.ival>255 )
 		ScriptError( c, "Bad value for argument" );
 	    temp[i] = arr->vals[i].u.ival;
 	}
@@ -1228,11 +1179,11 @@ static void bUtf8(Context *c) {
     int i;
     uint32 *temp;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type==v_int ) {
-	if ( c->a.vals[1].u.ival<0 || c->a.vals[1].u.ival>0x10ffff )
-	    ScriptError( c, "Bad value for argument" );
+    if ( c->a.vals[1].type==v_int ) {
+	if ( c->a.vals[1].u.ival<0 || c->a.vals[1].u.ival>0x10ffff ) {
+	    c->error = ce_badargtype;
+	    return;
+	}
 	buf[0] = c->a.vals[1].u.ival; buf[1] = 0;
 	c->return_val.type = v_str;
 	c->return_val.u.sval = u2utf8_copy(buf);
@@ -1240,10 +1191,15 @@ static void bUtf8(Context *c) {
 	Array *arr = c->a.vals[1].u.aval;
 	temp = malloc((arr->argc+1)*sizeof(int32));
 	for ( i=0; i<arr->argc; ++i ) {
-	    if ( arr->vals[i].type!=v_int )
-		ScriptError( c, "Bad type for argument" );
-	    else if ( arr->vals[i].u.ival<0 || arr->vals[i].u.ival>0x10ffff )
-		ScriptError( c, "Bad value for argument" );
+	    if ( arr->vals[i].type!=v_int ) {
+		c->error = ce_badargtype;
+                free(temp);
+		return;
+	    } else if ( arr->vals[i].u.ival<0 || arr->vals[i].u.ival>0x10ffff ){
+		c->error = ce_badargtype;
+		free(temp);
+		return;
+	    }
 	    temp[i] = arr->vals[i].u.ival;
 	}
 	temp[i] = 0;
@@ -1251,14 +1207,13 @@ static void bUtf8(Context *c) {
 	c->return_val.u.sval = u2utf8_copy(temp);
 	free(temp);
     } else
-	ScriptError( c, "Bad type for argument" );
+	c->error = ce_badargtype;
 }
 
 static void bUCS4(Context *c) {
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type==v_str ) {
+    if ( c->a.vals[1].type==v_str ) {
+	/* TODO: see if more than v_str method, or simplify this in builtins */
 	const char *pt = c->a.vals[1].u.sval;
 	int i, len = g_utf8_strlen( pt, -1 );
 	c->return_val.type = v_arrfree;
@@ -1270,17 +1225,22 @@ static void bUCS4(Context *c) {
 	    c->return_val.u.aval->vals[i].u.ival = utf8_ildb(&pt);
 	}
     } else
-	ScriptError( c, "Bad type for argument" );
+	c->error = ce_badargtype;
 }
 
 static void bOrd(Context *c) {
-    if ( c->a.argc!=2 && c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str || ( c->a.argc==3 && c->a.vals[2].type!=v_int ))
-	ScriptError( c, "Bad type for argument" );
+    if ( c->a.argc!=2 && c->a.argc!=3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[2].type!=v_int) ) {
+	c->error = ce_badargtype;
+	return;
+    }
     if ( c->a.argc==3 ) {
-	if ( c->a.vals[2].u.ival<0 || c->a.vals[2].u.ival>(int)strlen( c->a.vals[1].u.sval ))
-	    ScriptError( c, "Bad value for argument" );
+	if ( c->a.vals[2].u.ival<0 || c->a.vals[2].u.ival>(int)strlen( c->a.vals[1].u.sval) ) {
+	    c->error = ce_badargtype;
+	    return;
+	}
 	c->return_val.type = v_int;
 	c->return_val.u.ival = (uint8) c->a.vals[1].u.sval[c->a.vals[2].u.ival];
     } else {
@@ -1297,79 +1257,59 @@ static void bOrd(Context *c) {
 }
 
 static void bReal(Context *c) {
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode )
-	ScriptError( c, "Bad type for argument" );
+    if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode ) {
+	c->error = ce_badargtype;
+	return;
+    }
     c->return_val.type = v_real;
     c->return_val.u.fval = (float) c->a.vals[1].u.ival;
 }
 
 static void bUCodePoint(Context *c) {
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type==v_real )
+    if ( c->a.vals[1].type==v_real )
 	c->return_val.u.ival = c->a.vals[1].u.fval;
     else if ( c->a.vals[1].type==v_unicode || c->a.vals[1].type==v_int )
 	c->return_val.u.ival = c->a.vals[1].u.ival;
-    else
-	ScriptError( c, "Bad type for argument" );
+    else {
+	c->error = ce_badargtype;
+	return;
+    }
     c->return_val.type = v_unicode;
 }
 
 static void bInt(Context *c) {
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type==v_real )
+    if ( c->a.vals[1].type==v_real )
 	c->return_val.u.ival = c->a.vals[1].u.fval;
     else if ( c->a.vals[1].type==v_unicode || c->a.vals[1].type==v_int )
 	c->return_val.u.ival = c->a.vals[1].u.ival;
-    else
-	ScriptError( c, "Bad type for argument" );
+    else {
+	c->error = ce_badargtype;
+	return;
+    }
     c->return_val.type = v_int;
 }
 
 static void bFloor(Context *c) {
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_real )
-	ScriptError( c, "Bad type for argument" );
     c->return_val.type = v_int;
     c->return_val.u.ival = floor( c->a.vals[1].u.fval );
 }
 
 static void bCeil(Context *c) {
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_real )
-	ScriptError( c, "Bad type for argument" );
     c->return_val.type = v_int;
     c->return_val.u.ival = ceil( c->a.vals[1].u.fval );
 }
 
 static void bRound(Context *c) {
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_real )
-	ScriptError( c, "Bad type for argument" );
     c->return_val.type = v_int;
     c->return_val.u.ival = rint( c->a.vals[1].u.fval );
 }
 
 static void bIsNan(Context *c) {
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_real )
-	ScriptError( c, "Bad type for argument" );
     c->return_val.type = v_int;
     c->return_val.u.ival = isnan( c->a.vals[1].u.fval );
 }
 
 static void bIsFinite(Context *c) {
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_real )
-	ScriptError( c, "Bad type for argument" );
     c->return_val.type = v_int;
     c->return_val.u.ival = finite( c->a.vals[1].u.fval );
 }
@@ -1421,8 +1361,6 @@ return( copy( buffer ));
 }
 
 static void bToString(Context *c) {
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
     c->return_val.type = v_str;
     c->return_val.u.sval = ToString( &c->a.vals[1] );
 }
@@ -1430,14 +1368,14 @@ static void bToString(Context *c) {
 static void bSqrt(Context *c) {
     double val;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type==v_real )
+    if ( c->a.vals[1].type==v_real )
 	val = c->a.vals[1].u.fval;
     else if ( c->a.vals[1].type==v_int )
 	val = c->a.vals[1].u.ival;
-    else
-	ScriptError( c, "Bad type for argument" );
+    else {
+	c->error = ce_badargtype;
+	return;
+    }
     c->return_val.type = v_real;
     c->return_val.u.fval = sqrt( val );
 }
@@ -1445,14 +1383,14 @@ static void bSqrt(Context *c) {
 static void bExp(Context *c) {
     double val;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type==v_real )
+    if ( c->a.vals[1].type==v_real )
 	val = c->a.vals[1].u.fval;
     else if ( c->a.vals[1].type==v_int )
 	val = c->a.vals[1].u.ival;
-    else
-	ScriptError( c, "Bad type for argument" );
+    else {
+	c->error = ce_badargtype;
+	return;
+    }
     c->return_val.type = v_real;
     c->return_val.u.fval = exp( val );
 }
@@ -1460,14 +1398,14 @@ static void bExp(Context *c) {
 static void bLog(Context *c) {
     double val;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type==v_real )
+    if ( c->a.vals[1].type==v_real )
 	val = c->a.vals[1].u.fval;
     else if ( c->a.vals[1].type==v_int )
 	val = c->a.vals[1].u.ival;
-    else
-	ScriptError( c, "Bad type for argument" );
+    else {
+	c->error = ce_badargtype;
+	return;
+    }
     c->return_val.type = v_real;
     c->return_val.u.fval = log( val );
 }
@@ -1475,20 +1413,22 @@ static void bLog(Context *c) {
 static void bPow(Context *c) {
     double val1, val2;
 
-    if ( c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type==v_real )
+    if ( c->a.vals[1].type==v_real )
 	val1 = c->a.vals[1].u.fval;
     else if ( c->a.vals[1].type==v_int )
 	val1 = c->a.vals[1].u.ival;
-    else
-	ScriptError( c, "Bad type for argument" );
+    else {
+	c->error = ce_badargtype;
+	return;
+    }
     if ( c->a.vals[2].type==v_real )
 	val2 = c->a.vals[2].u.fval;
     else if ( c->a.vals[2].type==v_int )
 	val2 = c->a.vals[2].u.ival;
-    else
-	ScriptError( c, "Bad type for argument" );
+    else {
+	c->error = ce_badargtype;
+	return;
+    }
     c->return_val.type = v_real;
     c->return_val.u.fval = pow( val1, val2 );
 }
@@ -1496,14 +1436,14 @@ static void bPow(Context *c) {
 static void bSin(Context *c) {
     double val;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type==v_real )
+    if ( c->a.vals[1].type==v_real )
 	val = c->a.vals[1].u.fval;
     else if ( c->a.vals[1].type==v_int )
 	val = c->a.vals[1].u.ival;
-    else
-	ScriptError( c, "Bad type for argument" );
+    else {
+	c->error = ce_badargtype;
+	return;
+    }
     c->return_val.type = v_real;
     c->return_val.u.fval = sin( val );
 }
@@ -1511,14 +1451,14 @@ static void bSin(Context *c) {
 static void bCos(Context *c) {
     double val;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type==v_real )
+    if ( c->a.vals[1].type==v_real )
 	val = c->a.vals[1].u.fval;
     else if ( c->a.vals[1].type==v_int )
 	val = c->a.vals[1].u.ival;
-    else
-	ScriptError( c, "Bad type for argument" );
+    else {
+	c->error = ce_badargtype;
+	return;
+    }
     c->return_val.type = v_real;
     c->return_val.u.fval = cos( val );
 }
@@ -1526,14 +1466,14 @@ static void bCos(Context *c) {
 static void bTan(Context *c) {
     double val;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type==v_real )
+    if ( c->a.vals[1].type==v_real )
 	val = c->a.vals[1].u.fval;
     else if ( c->a.vals[1].type==v_int )
 	val = c->a.vals[1].u.ival;
-    else
-	ScriptError( c, "Bad type for argument" );
+    else {
+	c->error = ce_badargtype;
+	return;
+    }
     c->return_val.type = v_real;
     c->return_val.u.fval = tan( val );
 }
@@ -1541,36 +1481,39 @@ static void bTan(Context *c) {
 static void bATan2(Context *c) {
     double val1, val2;
 
-    if ( c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type==v_real )
+    if ( c->a.vals[1].type==v_real )
 	val1 = c->a.vals[1].u.fval;
     else if ( c->a.vals[1].type==v_int )
 	val1 = c->a.vals[1].u.ival;
-    else
-	ScriptError( c, "Bad type for argument" );
+    else {
+	c->error = ce_badargtype;
+	return;
+    }
     if ( c->a.vals[2].type==v_real )
 	val2 = c->a.vals[2].u.fval;
     else if ( c->a.vals[2].type==v_int )
 	val2 = c->a.vals[2].u.ival;
-    else
-	ScriptError( c, "Bad type for argument" );
+    else {
+	c->error = ce_badargtype;
+	return;
+    }
     c->return_val.type = v_real;
     c->return_val.u.fval = atan2( val1, val2 );
 }
 
 static void bRand(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments" );
     c->return_val.type = v_int;
     c->return_val.u.ival = rand();
 }
 
 static void bFileAccess(Context *c) {
-    if ( c->a.argc!=3 && c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
-	ScriptError( c, "Bad type of argument" );
+    if ( c->a.argc!=3 && c->a.argc!=2 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[2].type!=v_int) ) {
+	c->error = ce_badargtype;
+	return;
+    }
     c->return_val.type = v_int;
     c->return_val.u.ival = access(c->a.vals[1].u.sval,c->a.argc==3 ? c->a.vals[2].u.ival : R_OK );
 }
@@ -1580,10 +1523,6 @@ static void bLoadFileToString(Context *c) {
     int len;
     char *name, *_name;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Bad type of argument" );
     c->return_val.type = v_str;
     _name = script2utf8_copy(c->a.vals[1].u.sval);
     name = utf82def_copy(_name); free(_name);
@@ -1608,13 +1547,17 @@ static void bWriteStringToFile(Context *c) {
     int append = 0;
     char *name, *_name;
 
-    if ( c->a.argc!=3 && c->a.argc!=4 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str && c->a.vals[2].type!=v_str )
-	ScriptError( c, "Bad type of argument" );
-    else if ( c->a.argc==4 ) {
-	if ( c->a.vals[3].type!=v_int )
-	    ScriptError( c, "Bad type of argument" );
+    if ( c->a.argc!=3 && c->a.argc!=4 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_str && c->a.vals[2].type!=v_str ) {
+	c->error = ce_badargtype;
+	return;
+    } else if ( c->a.argc==4 ) {
+	if ( c->a.vals[3].type!=v_int ) {
+	    c->error = ce_badargtype;
+	    return;
+	}
 	append = c->a.vals[3].u.ival;
     }
     _name = script2utf8_copy(c->a.vals[2].u.sval);
@@ -1633,10 +1576,6 @@ static void bWriteStringToFile(Context *c) {
 static void bLoadPlugin(Context *c) {
     char *name, *_name;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Bad type of argument" );
     _name = script2utf8_copy(c->a.vals[1].u.sval);
     name = utf82def_copy(_name); free(_name);
     LoadPlugin(name);
@@ -1646,11 +1585,14 @@ static void bLoadPlugin(Context *c) {
 static void bLoadPluginDir(Context *c) {
     char *dir=NULL, *_dir;
 
-    if ( c->a.argc>2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.argc==2 ) {
-	if ( c->a.vals[1].type!=v_str )
-	    ScriptError( c, "Bad type of argument" );
+    if ( c->a.argc>2 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.argc==2 ) {
+	if ( c->a.vals[1].type!=v_str ) {
+	    c->error = ce_badargtype;
+	    return;
+	}
 	_dir = script2utf8_copy(c->a.vals[1].u.sval);
 	dir = utf82def_copy(_dir); free(_dir);
     }
@@ -1661,10 +1603,6 @@ static void bLoadPluginDir(Context *c) {
 static void bLoadNamelist(Context *c) {
     char *name, *_name;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Bad type of argument" );
     _name = script2utf8_copy(c->a.vals[1].u.sval);
     name = utf82def_copy(_name); free(_name);
     LoadNamelist(name);
@@ -1674,11 +1612,14 @@ static void bLoadNamelist(Context *c) {
 static void bLoadNamelistDir(Context *c) {
     char *dir=NULL, *_dir;
 
-    if ( c->a.argc>2 )
-	ScriptError( c, "Wrong number of arguments" );
-    else if ( c->a.argc==2 ) {
-	if ( c->a.vals[1].type!=v_str )
-	    ScriptError( c, "Bad type of argument" );
+    if ( c->a.argc>2 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.argc==2 ) {
+	if ( c->a.vals[1].type!=v_str ) {
+	    c->error = ce_expectstr;
+	    return;
+	}
 	_dir = script2utf8_copy(c->a.vals[1].u.sval);
 	dir = utf82def_copy(_dir); free(_dir);
     }
@@ -1689,20 +1630,25 @@ static void bLoadNamelistDir(Context *c) {
 /* **** File menu **** */
 
 static void bQuit(Context *c) {
+    c->error = ce_quit;
     if ( verbose>0 ) putchar('\n');
-    if ( c->a.argc==1 )
-exit(0);
-    if ( c->a.argc>2 )
-	ScriptError( c, "Too many arguments" );
-    else if ( c->a.vals[1].type!=v_int )
-	ScriptError( c, "Expected integer argument" );
-    else
-exit(c->a.vals[1].u.ival );
-exit(1);
+    if ( c->a.argc>2 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
+    if ( c->a.argc==2 ) {
+	if ( c->a.vals[1].type!=v_int ) {
+	    c->error = ce_expectint;
+	    return;
+	} else
+	    c->return_val.u.ival=c->a.vals[1].u.ival;
+    } else
+	c->return_val.u.ival=0;
+    c->return_val.type=v_int;
 }
 #endif /* _NO_FFSCRIPT */
 
-char **GetFontNames(char *filename) {
+char **GetFontNames(char *filename, int do_slow) {
     FILE *foo;
     char **ret = NULL;
 
@@ -1741,7 +1687,8 @@ char **GetFontNames(char *filename) {
 	    } else if (( ch1=='%' && ch2=='!' ) ||
 			( ch1==0x80 && ch2=='\01' ) ) {	/* PFB header */
 		ret = NamesReadPostScript(filename);
-	    } else if ( ch1=='%' && ch2=='P' && ch3=='D' && ch4=='F' ) {
+	    } else if ( ch1=='%' && ch2=='P' && ch3=='D' && ch4=='F' && do_slow ) {
+	        // We are disabling scanning for P. D. F. until we can address the performance issues.
 		ret = NamesReadPDF(filename);
 	    } else if ( ch1=='<' && ch2=='?' && (ch3=='x'||ch3=='X') && (ch4=='m'||ch4=='M') ) {
 		ret = NamesReadSVG(filename);
@@ -1763,13 +1710,9 @@ static void bFontsInFile(Context *c) {
     char *t;
     char *locfilename;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "FontsInFile expects a filename" );
     t = script2utf8_copy(c->a.vals[1].u.sval);
     locfilename = utf82def_copy(t);
-    ret = GetFontNames(locfilename);
+    ret = GetFontNames(locfilename, 1);
     free(t); free(locfilename);
 
     cnt = 0;
@@ -1791,9 +1734,10 @@ static void bOpen(Context *c) {
     char *t;
     char *locfilename;
 
-    if ( c->a.argc!=2 && c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
+    if ( c->a.argc!=2 && c->a.argc!=3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_str )
 	ScriptError( c, "Open expects a filename" );
     else if ( c->a.argc==3 ) {
 	if ( c->a.vals[2].type!=v_int )
@@ -1821,10 +1765,6 @@ static void bSelectBitmap(Context *c) {
     BDFFont *bdf;
     int depth, size;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_int )
-	ScriptError( c, "Bad type for argument" );
     size = c->a.vals[2].u.ival;
     if ( size==-1 )
 	c->curfv->active_bitmap = NULL;
@@ -1841,8 +1781,6 @@ static void bSelectBitmap(Context *c) {
 }
 
 static void bNew(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     if ( !no_windowing_ui )
 	c->curfv = FontViewCreate(SplineFontNew(),false);
     else
@@ -1850,21 +1788,15 @@ static void bNew(Context *c) {
 }
 
 static void bClose(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FontViewClose(c->curfv);
     c->curfv = NULL;
 }
 
 static void bRevert(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVRevert(c->curfv);
 }
 
 static void bRevertToBackup(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVRevertBackup(c->curfv);
 }
 
@@ -1876,8 +1808,10 @@ static void bSave(Context *c) {
     int s2d = false;
     int localRevisionsToRetain = -1;
 
-    if ( c->a.argc>3 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc>3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
 
     // Grab the optional number of backups that are desired argument
     if ( c->a.argc==3 ) {
@@ -1937,15 +1871,18 @@ static void bGenerate(Context *c) {
     char *locfilename;
     NameList *rename_to = NULL;
 
-    if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=4 && c->a.argc!=5 && c->a.argc!=6 && c->a.argc!=7 )
-	ScriptError( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_str ||
+    if ( c->a.argc<2 || c->a.argc>7 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_str ||
 	    (c->a.argc>=3 && c->a.vals[2].type!=v_str ) ||
 	    (c->a.argc>=4 && c->a.vals[3].type!=v_int ) ||
 	    (c->a.argc>=5 && c->a.vals[4].type!=v_int ) ||
 	    (c->a.argc>=6 && c->a.vals[5].type!=v_str ) ||
-	    (c->a.argc>=7 && c->a.vals[5].type!=v_str ))
-	ScriptError( c, "Bad type of argument");
+	    (c->a.argc>=7 && c->a.vals[5].type!=v_str ) ) {
+	c->error = ce_badargtype;
+	return;
+    }
     if ( c->a.argc>=3 )
 	bitmaptype = c->a.vals[2].u.sval;
     if ( c->a.argc>=4 )
@@ -1998,12 +1935,13 @@ static void bGenerateFamily(Context *c) {
 
     familysfs = malloc((fondmax=10)*sizeof(SFArray));
 
-    if ( c->a.argc!=5 )
-	ScriptError( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
 	    c->a.vals[3].type!=v_int ||
-	    c->a.vals[4].type!=v_arr )
-	ScriptError( c, "Bad type of argument");
+	    c->a.vals[4].type!=v_arr ) {
+	c->error = ce_badargtype;
+	free(familysfs);
+	return;
+    }
     bitmaptype = c->a.vals[2].u.sval;
     fmflags = c->a.vals[3].u.ival;
 
@@ -2115,10 +2053,14 @@ static void bGenerateFeatureFile(Context *c) {
     FILE *out;
     int err;
 
-    if ( c->a.argc!=2 && c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[2].type!=v_str ))
-	ScriptError( c, "Bad type of argument");
+    if ( c->a.argc!=2 && c->a.argc!=3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
+    if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[2].type!=v_str) ) {
+	c->error = ce_badargtype;
+	return;
+    }
     if ( c->a.argc==3 ) {
 	otl = SFFindLookup(sf,c->a.vals[2].u.sval);
 	if ( otl==NULL )
@@ -2149,17 +2091,23 @@ static void Bitmapper(Context *c,int isavail) {
     int i;
     int rasterize = true;
 
-    if ( c->a.argc!=2 && (!isavail || c->a.argc!=3))
-	ScriptError( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_arr )
-	ScriptError( c, "Bad type of argument");
+    if ( c->a.argc!=2 && (!isavail || c->a.argc!=3)) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
+    if ( c->a.vals[1].type!=v_arr ) {
+	c->error = ce_badargtype;
+	return;
+    }
     for ( i=0; i<c->a.vals[1].u.aval->argc; ++i )
 	if ( c->a.vals[1].u.aval->vals[i].type!=v_int ||
 		c->a.vals[1].u.aval->vals[i].u.ival<=2 )
 	    ScriptError( c, "Bad type of array component");
     if ( c->a.argc==3 ) {
-	if ( c->a.vals[2].type!=v_int )
-	    ScriptError( c, "Bad type of argument");
+	if ( c->a.vals[2].type!=v_int ) {
+	    c->error = ce_badargtype;
+	    return;
+	}
 	rasterize = c->a.vals[2].u.ival;
     }
     sizes = malloc((c->a.vals[1].u.aval->argc+1)*sizeof(int32));
@@ -2205,12 +2153,16 @@ static void bImport(Context *c) {
     int format, back, ok, flags;
     char *t; char *locfilename;
 
-    if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=4 )
-	ScriptError( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_str ||
-	    (c->a.argc>=3 && c->a.vals[2].type!=v_int ) ||
-	    (c->a.argc==4 && c->a.vals[3].type!=v_int ))
-	ScriptError( c, "Bad type of argument");
+    if ( c->a.argc<2 || c->a.argc>4 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
+    if ( c->a.vals[1].type!=v_str || \
+	(c->a.argc>=3 && c->a.vals[2].type!=v_int) || \
+	(c->a.argc==4 && c->a.vals[3].type!=v_int) ) {
+	c->error = ce_badargtype;
+	return;
+    }
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
     locfilename = utf82def_copy(t);
@@ -2283,11 +2235,6 @@ static void bWritePfm(Context *c) {
     SplineFont *sf = c->curfv->sf;
     char *t; char *locfilename;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Bad type of argument");
-
     t = script2utf8_copy(c->a.vals[1].u.sval);
     locfilename = utf82def_copy(t);
     if ( !WritePfmFile(c->a.vals[1].u.sval,sf,0,c->curfv->map) )
@@ -2299,17 +2246,21 @@ static void bWritePfm(Context *c) {
 static void bExport(Context *c) {
     int format,i, gid ;
     BDFFont *bdf;
-    char *pt, *format_spec;
+    char *tmp, *pt, *format_spec;
     char buffer[20];
     char *t;
 
-    if ( c->a.argc!=2 && c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
-	ScriptError( c, "Bad type of arguments");
+    if ( c->a.argc!=2 && c->a.argc!=3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
+    if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[2].type!=v_int) ) {
+	c->error = ce_badargtype;
+	return;
+    }
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
-    pt = utf82def_copy(t); free(t);
+    tmp = pt = utf82def_copy(t); free(t);
     sprintf( buffer, "%%n_%%f.%.4s", pt);
     format_spec = buffer;
     if ( strrchr(pt,'.')!=NULL ) {
@@ -2341,8 +2292,10 @@ static void bExport(Context *c) {
     else
 	ScriptError( c, "Bad format (first arg must be eps/fig/xbm/bmp)");
 #endif
-    if (( format>=4 && c->a.argc!=3 ) || (format<4 && c->a.argc==3 ))
-	ScriptError( c, "Wrong number of arguments");
+    if (( format>=4 && c->a.argc!=3 ) || (format<4 && c->a.argc==3 )) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     bdf=NULL;
     if ( format>4 ) {
 	for ( bdf = c->curfv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
@@ -2359,6 +2312,7 @@ static void bExport(Context *c) {
 	    ScriptExport(c->curfv->sf,bdf,format,gid,format_spec,c->curfv->map);
     if ( format_spec!=buffer )
 	free(format_spec);
+    free(tmp);
 }
 
 /* FontImage("Outputfilename",array of [pointsize,string][,width[,height]]) */
@@ -2368,13 +2322,16 @@ static void bFontImage(Context *c) {
     int width = -1, height = -1;
     Array *arr;
 
-    if ( c->a.argc<3 || c->a.argc>5 )
-	ScriptError( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_str ||
+    if ( c->a.argc<3 || c->a.argc>5 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_str ||
 	    (c->a.vals[2].type!=v_arr && c->a.vals[2].type!=v_arrfree) ||
 	    (c->a.argc>=4 && c->a.vals[3].type!=v_int ) ||
-	    (c->a.argc>=5 && c->a.vals[4].type!=v_int ) )
-	ScriptError( c, "Bad type of arguments");
+	    (c->a.argc>=5 && c->a.vals[4].type!=v_int ) ) {
+	c->error = ce_badargtype;
+	return;
+    }
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
     pt = strrchr(t,'.');
@@ -2411,11 +2368,6 @@ static void bFontImage(Context *c) {
 static void bMergeKern(Context *c) {
     char *t; char *locfilename;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Bad type of arguments");
-
     t = script2utf8_copy(c->a.vals[1].u.sval);
     locfilename = utf82def_copy(t);
     if ( !LoadKerningDataFromMetricsFile(c->curfv->sf,locfilename,c->curfv->map))
@@ -2425,8 +2377,10 @@ static void bMergeKern(Context *c) {
 
 static void bPrintSetup(Context *c) {
 
-    if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=5 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=5 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     if ( c->a.vals[1].type!=v_int )
 	ScriptError( c, "Bad type for first argument");
     if ( c->a.argc>=3 && c->a.vals[2].type!=v_str )
@@ -2456,8 +2410,10 @@ static void bPrintFont(Context *c) {
     unichar_t *sample=NULL;
     char *t; char *locfilename=NULL;
 
-    if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=4 && c->a.argc!=5 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc<2 || c->a.argc>5 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     type = c->a.vals[1].u.ival;
     if ( c->a.vals[1].type!=v_int || type<0 || type>4 )
 	ScriptError( c, "Bad type for first argument");
@@ -2511,59 +2467,41 @@ static void bPrintFont(Context *c) {
 
 /* **** Edit menu **** */
 static void bCut(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVCopy(c->curfv,ct_fullcopy);
     FVClear(c->curfv);
 }
 
 static void bCopy(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVCopy(c->curfv,ct_fullcopy);
 }
 
 static void bCopyReference(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVCopy(c->curfv,ct_reference);
 }
 
 static void bCopyUnlinked(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVCopy(c->curfv,ct_unlinkrefs);
 }
 
 static void bCopyWidth(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVCopy(c->curfv,ut_width);
 }
 
 static void bCopyVWidth(Context *c) {
     if ( c->curfv!=NULL && !c->curfv->sf->hasvmetrics )
 	ScriptError(c,"Vertical metrics not enabled in this font");
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVCopy(c->curfv,ut_vwidth);
 }
 
 static void bCopyLBearing(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVCopy(c->curfv,ut_lbearing);
 }
 
 static void bCopyRBearing(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVCopy(c->curfv,ut_rbearing);
 }
 
 static void bCopyAnchors(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVCopyAnchors(c->curfv);
 }
 
@@ -2593,14 +2531,10 @@ static void bCopyGlyphFeatures(Context *c) {
 }
 
 static void bPaste(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     PasteIntoFV(c->curfv,false,NULL);
 }
 
 static void bPasteInto(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     PasteIntoFV(c->curfv,true,NULL);
 }
 
@@ -2608,56 +2542,46 @@ static void bPasteWithOffset(Context *c) {
     real trans[6];
     memset(trans,0,sizeof(trans));
     trans[0] = trans[3] = 1;
-    if ( c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
     if ( c->a.vals[1].type==v_int )
 	trans[4] = c->a.vals[1].u.ival;
     else if ( c->a.vals[1].type==v_real )
 	trans[4] = c->a.vals[1].u.fval;
-    else
-	ScriptError( c, "Bad type for argument");
+    else {
+	c->error = ce_badargtype;
+	return;
+    }
     if ( c->a.vals[2].type==v_int )
 	trans[5] = c->a.vals[2].u.ival;
     else if ( c->a.vals[2].type==v_real )
 	trans[5] = c->a.vals[2].u.fval;
-    else
-	ScriptError( c, "Bad type for argument");
+    else {
+	c->error = ce_badargtype;
+	return;
+    }
     PasteIntoFV(c->curfv,3,trans);
 }
 
 static void bClear(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVClear( c->curfv );
 }
 
 static void bClearBackground(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVClearBackground( c->curfv );
 }
 
 static void bCopyFgToBg(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVCopyFgtoBg(c->curfv);
 }
 
 static void bUnlinkReference(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVUnlinkRef(c->curfv);
 }
 
 static void bJoin(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVJoin(c->curfv);
 }
 
 static void bSameGlyphAs(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVSameGlyphAs(c->curfv);
 }
 
@@ -2670,8 +2594,6 @@ static void bMultipleEncodingsToReferences(Context *c) {
     struct altuni *alt, *next, *prev;
     int uni, enc;
 
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     for ( i=0; i<map->enccount; ++i ) {
 	if ( (gid=map->map[i])!=-1 && fv->selected[i] &&
 		(orig = sf->glyphs[gid])!=NULL && orig->altuni!=NULL ) {
@@ -2714,22 +2636,16 @@ static void bMultipleEncodingsToReferences(Context *c) {
 }
 
 static void bSelectAll(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     memset(c->curfv->selected,1,c->curfv->map->enccount);
 }
 
 static void bSelectNone(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     memset(c->curfv->selected,0,c->curfv->map->enccount);
 }
 
 static void bSelectInvert(Context *c) {
     int i;
 
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     for ( i=0; i<c->curfv->map->enccount; ++i )
 	c->curfv->selected[i] = !c->curfv->selected[i];
 }
@@ -2888,8 +2804,10 @@ static void bSelectAllInstancesOf(Context *c) {
 		if ( strcmp(sc->name,name)==0 )
 		    fv->selected[j] = true;
 	    }
-	} else
-	    ScriptError( c, "Bad type for argument");
+	} else {
+	    c->error = ce_badargtype;
+	    return;
+	}
     }
 }
 
@@ -2909,8 +2827,10 @@ static void bSelectChanged(Context *c) {
     if ( c->a.argc!=1 && c->a.argc!=2 )
 	ScriptError( c, "Too many arguments");
     if ( c->a.argc==2 ) {
-	if ( c->a.vals[1].type!=v_int )
-	    ScriptError( c, "Bad type for argument" );
+	if ( c->a.vals[1].type!=v_int ) {
+	    c->error = ce_badargtype;
+	    return;
+	}
 	add = c->a.vals[1].u.ival;
     }
 
@@ -2934,8 +2854,10 @@ static void bSelectHintingNeeded(Context *c) {
     if ( c->a.argc!=1 && c->a.argc!=2 )
 	ScriptError( c, "Too many arguments");
     if ( c->a.argc==2 ) {
-	if ( c->a.vals[1].type!=v_int )
-	    ScriptError( c, "Bad type for argument" );
+	if ( c->a.vals[1].type!=v_int ) {
+	    c->error = ce_badargtype;
+	    return;
+	}
 	add = c->a.vals[1].u.ival;
     }
 
@@ -2964,8 +2886,10 @@ static void bSelectWorthOutputting(Context *c) {
     if ( c->a.argc!=1 && c->a.argc!=2 )
 	ScriptError( c, "Too many arguments");
     if ( c->a.argc==2 ) {
-	if ( c->a.vals[1].type!=v_int )
-	    ScriptError( c, "Bad type for argument" );
+	if ( c->a.vals[1].type!=v_int ) {
+	    c->error = ce_badargtype;
+	    return;
+	}
 	add = c->a.vals[1].u.ival;
     }
 
@@ -2991,8 +2915,10 @@ static void bSelectGlyphsSplines(Context *c) {
     if ( c->a.argc!=1 && c->a.argc!=2 )
 	ScriptError( c, "Too many arguments");
     if ( c->a.argc==2 ) {
-	if ( c->a.vals[1].type!=v_int )
-	    ScriptError( c, "Bad type for argument" );
+	if ( c->a.vals[1].type!=v_int ) {
+	    c->error = ce_badargtype;
+	    return;
+	}
 	add = c->a.vals[1].u.ival;
     }
 
@@ -3018,8 +2944,10 @@ static void bSelectGlyphsReferences(Context *c) {
     if ( c->a.argc!=1 && c->a.argc!=2 )
 	ScriptError( c, "Too many arguments");
     if ( c->a.argc==2 ) {
-	if ( c->a.vals[1].type!=v_int )
-	    ScriptError( c, "Bad type for argument" );
+	if ( c->a.vals[1].type!=v_int ) {
+	    c->error = ce_badargtype;
+	    return;
+	}
 	add = c->a.vals[1].u.ival;
     }
 
@@ -3045,8 +2973,10 @@ static void bSelectGlyphsBoth(Context *c) {
     if ( c->a.argc!=1 && c->a.argc!=2 )
 	ScriptError( c, "Too many arguments");
     if ( c->a.argc==2 ) {
-	if ( c->a.vals[1].type!=v_int )
-	    ScriptError( c, "Bad type for argument" );
+	if ( c->a.vals[1].type!=v_int ) {
+	    c->error = ce_badargtype;
+	    return;
+	}
 	add = c->a.vals[1].u.ival;
     }
 
@@ -3070,13 +3000,13 @@ static void bSelectByATT(Context *c) {
 static void bSelectByPosSub(Context *c) {
     struct lookup_subtable *sub;
 
-    if ( c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str ||
-	    c->a.vals[2].type!=v_int )
-	ScriptError(c,"Bad argument type");
-    else if ( c->a.vals[2].u.ival<1 || c->a.vals[2].u.ival>3 )
-	ScriptError(c,"Bad argument value");
+    if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_int ) {
+	c->error = ce_badargtype;
+	return;
+    } else if ( c->a.vals[2].u.ival<1 || c->a.vals[2].u.ival>3 ) {
+	c->error = ce_badargtype;
+	return;
+    }
 
     sub = SFFindLookupSubtable(c->curfv->sf,c->a.vals[1].u.sval);
     if ( sub==NULL )
@@ -3092,10 +3022,10 @@ static void bSelectByColor(Context *c) {
     EncMap *map = c->curfv->map;
     SplineFont *sf = c->curfv->sf;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str && c->a.vals[1].type!=v_int )
-	ScriptError(c,"Bad argument type");
+    if ( c->a.vals[1].type!=v_str && c->a.vals[1].type!=v_int ) {
+	c->error = ce_badargtype;
+	return;
+    }
     if ( c->a.vals[1].type==v_int )
 	col = c->a.vals[1].u.ival;
     else {
@@ -3134,55 +3064,26 @@ static void bSelectByColor(Context *c) {
 static void bReencode(Context *c) {
     Encoding *new_enc;
     int force = 0;
+    int ret;
 
-    if ( c->a.argc!=2 && c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str || ( c->a.argc==3 && c->a.vals[2].type!=v_int ))
-	ScriptError(c,"Bad argument type");
+    if ( c->a.argc!=2 && c->a.argc!=3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_str || \
+	       (c->a.argc==3 && c->a.vals[2].type!=v_int) ) {
+	c->error = ce_badargtype;
+	return;
+    }
     if ( c->a.argc==3 )
 	force = c->a.vals[2].u.ival;
-    if ( strmatch(c->a.vals[1].u.sval,"compacted")==0 ) {
-	c->curfv->normal = EncMapCopy(c->curfv->map);
-	CompactEncMap(c->curfv->map,c->curfv->sf);
-    } else {
-	new_enc = FindOrMakeEncoding(c->a.vals[1].u.sval);
-	if ( new_enc==NULL )
-	    ScriptErrorString(c,"Unknown encoding", c->a.vals[1].u.sval);
-	if ( force )
-	    SFForceEncoding(c->curfv->sf,c->curfv->map,new_enc);
-	else if ( new_enc==&custom )
-	    c->curfv->map->enc = &custom;
-	else {
-	    EncMap *map = EncMapFromEncoding(c->curfv->sf,new_enc);
-	    EncMapFree(c->curfv->map);
-	    c->curfv->map = map;
-	    if ( !no_windowing_ui )
-		FVSetTitles(c->curfv->sf);
-	}
-	if ( c->curfv->normal!=NULL ) {
-	    EncMapFree(c->curfv->normal);
-	    c->curfv->normal = NULL;
-	}
-	SFReplaceEncodingBDFProps(c->curfv->sf,c->curfv->map);
-    }
-    free(c->curfv->selected);
-    c->curfv->selected = calloc(c->curfv->map->enccount,sizeof(char));
-    if ( !no_windowing_ui )
-	FontViewReformatAll(c->curfv->sf);
-/*
-    c->curfv->sf->changed = true;
-    c->curfv->sf->changed_since_autosave = true;
-    c->curfv->sf->changed_since_xuidchanged = true;
-*/
+    ret = SFReencode(c->curfv->sf, c->a.vals[1].u.sval, force);
+    if ( ret==-1 )
+	ScriptErrorString(c,"Unknown encoding", c->a.vals[1].u.sval);
 }
 
 static void bRenameGlyphs(Context *c) {
     NameList *nl;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError(c,"Bad argument type");
     nl = NameListByName(c->a.vals[1].u.sval);
     if ( nl==NULL )
 	ScriptErrorString(c,"Unknown namelist", c->a.vals[1].u.sval);
@@ -3193,11 +3094,7 @@ static void bSetCharCnt(Context *c) {
     EncMap *map = c->curfv->map;
     int newcnt;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_int )
-	ScriptError(c,"Bad argument type");
-    else if ( c->a.vals[1].u.ival<=0 || c->a.vals[1].u.ival>10*65536 )
+    if ( c->a.vals[1].u.ival<=0 || c->a.vals[1].u.ival>10*65536 )
 	ScriptError(c,"Argument out of bounds");
 
     newcnt = c->a.vals[1].u.ival;
@@ -3262,14 +3159,8 @@ static void bLoadTableFromFile(Context *c) {
     char *tstr, *end;
     struct ttf_table *tab;
     FILE *file;
-    int len;
     struct stat statb;
     char *t; char *locfilename;
-
-    if ( c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str && c->a.vals[2].type!=v_str )
-	ScriptError(c,"Bad argument type");
 
     tstr = c->a.vals[1].u.sval;
     end = tstr+strlen(tstr);
@@ -3288,7 +3179,6 @@ static void bLoadTableFromFile(Context *c) {
 	ScriptErrorString(c,"Could not open file: ", c->a.vals[2].u.sval );
     if ( fstat(fileno(file),&statb)==-1 )
 	ScriptErrorString(c,"fstat() failed on: ", c->a.vals[2].u.sval );
-    len = statb.st_size;
 
     for ( tab=sf->ttf_tab_saved; tab!=NULL && tab->tag!=tag; tab=tab->next );
     if ( tab==NULL ) {
@@ -3298,9 +3188,8 @@ static void bLoadTableFromFile(Context *c) {
 	sf->ttf_tab_saved = tab;
     } else
 	free(tab->data);
-    tab->len = len;
-    tab->data = malloc(len);
-    fread(tab->data,1,len,file);
+    tab->data = malloc(statb.st_size);
+    tab->len = fread(tab->data,1,statb.st_size,file);
     fclose(file);
 }
 
@@ -3311,11 +3200,6 @@ static void bSaveTableToFile(Context *c) {
     struct ttf_table *tab;
     FILE *file;
     char *t; char *locfilename;
-
-    if ( c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str && c->a.vals[2].type!=v_str )
-	ScriptError(c,"Bad argument type");
 
     tstr = c->a.vals[1].u.sval;
     end = tstr+strlen(tstr);
@@ -3346,11 +3230,6 @@ static void bRemovePreservedTable(Context *c) {
     char *tstr, *end;
     struct ttf_table *tab, *prev;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError(c,"Bad argument type");
-
     tstr = c->a.vals[1].u.sval;
     end = tstr+strlen(tstr);
     if ( *tstr=='\0' || end-tstr>4 )
@@ -3377,11 +3256,6 @@ static void bHasPreservedTable(Context *c) {
     char *tstr, *end;
     struct ttf_table *tab;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError(c,"Bad argument type");
-
     tstr = c->a.vals[1].u.sval;
     end = tstr+strlen(tstr);
     if ( *tstr=='\0' || end-tstr>4 )
@@ -3399,11 +3273,14 @@ static void bHasPreservedTable(Context *c) {
 static void bLoadEncodingFile(Context *c) {
     char *t; char *locfilename;
 
-    if ( c->a.argc != 2 && c->a.argc != 3 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ((c->a.vals[1].type!=v_str ) ||
-            (c->a.argc >= 3 && c->a.vals[2].type !=v_str))
-	ScriptError(c,"Bad argument type");
+    if ( c->a.argc != 2 && c->a.argc != 3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( (c->a.vals[1].type!=v_str) || \
+            (c->a.argc >= 3 && c->a.vals[2].type !=v_str) ) {
+	c->error = ce_badargtype;
+	return;
+    }
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
     locfilename = utf82def_copy(t);
@@ -3414,11 +3291,7 @@ static void bLoadEncodingFile(Context *c) {
 
 static void bSetFontOrder(Context *c) {
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_int )
-	ScriptError(c,"Bad argument type");
-    else if ( c->a.vals[1].u.ival!=2 && c->a.vals[1].u.ival!=3 )
+    if ( c->a.vals[1].u.ival!=2 && c->a.vals[1].u.ival!=3 )
 	ScriptError(c,"Order must be 2 or 3");
 
     c->return_val.type = v_int;
@@ -3437,11 +3310,6 @@ static void bSetFontOrder(Context *c) {
 
 static void bSetFontHasVerticalMetrics(Context *c) {
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_int )
-	ScriptError(c,"Bad argument type");
-
     c->return_val.type = v_int;
     c->return_val.u.ival = c->curfv->sf->hasvmetrics;
 
@@ -3458,21 +3326,26 @@ static void bSetGasp(Context *c) {
 	if ( arr->argc&1 )
 	    ScriptError( c, "Bad array size");
 	base = 0;
-    } else if ( (c->a.argc&1)==0 )
-	ScriptError( c, "Wrong number of arguments");
-    else {
+    } else if ( (c->a.argc&1)==0 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else {
 	arr = &c->a;
 	base = 1;
     }
     for ( i=base; i<arr->argc; i += 2 ) {
-	if ( arr->vals[i].type!=v_int || arr->vals[i+1].type!=v_int )
-	    ScriptError(c,"Bad argument type");
+	if ( arr->vals[i].type!=v_int || arr->vals[i+1].type!=v_int ) {
+	    c->error = ce_badargtype;
+	    return;
+	}
 	if ( arr->vals[i].u.ival<=0 || arr->vals[i].u.ival>65535 )
 	    ScriptError(c,"'gasp' Pixel size out of range");
 	if ( i!=base && arr->vals[i].u.ival<=arr->vals[i-2].u.ival )
 	    ScriptError(c,"'gasp' Pixel size out of order");
-	if ( arr->vals[i+1].u.ival<0 || arr->vals[i+1].u.ival>3 )
+	if ( arr->vals[i+1].u.ival<0 || arr->vals[i+1].u.ival>15 )
 	    ScriptError(c,"'gasp' flag out of range");
+        if ( arr->vals[i+1].u.ival>3 )
+            sf->gasp_version=1;
     }
     if ( arr->argc>=2 && arr->vals[arr->argc-2].u.ival!=65535 )
 	ScriptError(c,"'gasp' Final pixel size must be 65535");
@@ -3493,11 +3366,15 @@ static void bSetGasp(Context *c) {
 static void _SetFontNames(Context *c,SplineFont *sf) {
     int i;
 
-    if ( c->a.argc==1 || c->a.argc>7 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc==1 || c->a.argc>7 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     for ( i=1; i<c->a.argc; ++i )
-	if ( c->a.vals[i].type!=v_str )
-	    ScriptError(c,"Bad argument type");
+	if ( c->a.vals[i].type!=v_str ) {
+	    c->error = ce_badargtype;
+	    return;
+	}
     if ( *c->a.vals[1].u.sval!='\0' ) {
 	free(sf->fontname);
 	sf->fontname = forcePSName_copy(c,c->a.vals[1].u.sval);
@@ -3532,10 +3409,6 @@ static void bSetFontNames(Context *c) {
 
 static void bSetFondName(Context *c) {
     SplineFont *sf = c->curfv->sf;
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_str )
-	ScriptError(c,"Bad argument type");
     if ( *c->a.vals[1].u.sval!='\0' ) {
 	free(sf->fondname);
 	sf->fondname = forceASCIIcopy(c,c->a.vals[1].u.sval);
@@ -3549,11 +3422,11 @@ static void bSetTTFName(Context *c) {
     struct ttflangname *prev, *ln;
 
     if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
-    if ( c->a.argc!=4 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int ||
-	    c->a.vals[3].type!=v_str )
-	ScriptError(c,"Bad argument type");
+    if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int ||
+	    c->a.vals[3].type!=v_str ) {
+	c->error = ce_badargtype;
+	return;
+    }
 
     lang = c->a.vals[1].u.ival;
     strid = c->a.vals[2].u.ival;
@@ -3588,10 +3461,6 @@ static void bGetTTFName(Context *c) {
     struct ttflangname *ln;
 
     if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
-    if ( c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int )
-	ScriptError(c,"Bad argument type");
 
     lang = c->a.vals[1].u.ival;
     strid = c->a.vals[2].u.ival;
@@ -3613,42 +3482,56 @@ static void bSetItalicAngle(Context *c) {
     double denom=1;
     double num;
 
-    if ( c->a.argc!=2 && c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc!=2 && c->a.argc!=3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     if ( c->a.argc==3 ) {
-	if ( c->a.vals[2].type!=v_int )
-	    ScriptError(c,"Bad argument type");
+	if ( c->a.vals[2].type!=v_int || c->a.vals[2].u.ival==0 ) {
+	    c->error = ce_badargtype;
+	    return;
+	}
 	denom=c->a.vals[2].u.ival;
     }
     if ( c->a.vals[1].type==v_real )
 	num = c->a.vals[1].u.fval;
     else if ( c->a.vals[1].type==v_int )
 	num = c->a.vals[1].u.ival;
-    else
-	ScriptError(c,"Bad argument type");
+    else {
+	c->error = ce_badargtype;
+	return;
+    }
     c->curfv->sf->italicangle = num / denom;
 }
 
 static void bSetMacStyle(Context *c) {
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc!=2 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     if ( c->a.vals[1].type==v_int )
 	c->curfv->sf->macstyle = c->a.vals[1].u.ival;
     else if ( c->a.vals[1].type==v_str )
 	c->curfv->sf->macstyle = _MacStyleCode(c->a.vals[1].u.sval,NULL,NULL);
-    else
-	ScriptError(c,"Bad argument type");
+    else {
+	c->error = ce_badargtype;
+	return;
+    }
 }
 
 static void bSetPanose(Context *c) {
     int i;
 
-    if ( c->a.argc!=2 && c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc!=2 && c->a.argc!=3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     if ( c->a.argc==2 ) {
-	if ( c->a.vals[1].type!=v_arr && c->a.vals[1].type!=v_arrfree )
-	    ScriptError(c,"Bad argument type");
+	if ( c->a.vals[1].type!=v_arr && c->a.vals[1].type!=v_arrfree ) {
+	    c->error = ce_badargtype;
+	    return;
+	}
 	if ( c->a.vals[1].u.aval->argc!=10 )
 	    ScriptError(c,"Wrong size of array");
 	if ( c->a.vals[1].u.aval->vals[0].type!=v_int )
@@ -3660,8 +3543,10 @@ static void bSetPanose(Context *c) {
 	    c->curfv->sf->pfminfo.panose[i] =  c->a.vals[1].u.aval->vals[i].u.ival;
 	}
     } else if ( c->a.argc==3 ) {
-	if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int)
-	    ScriptError(c,"Bad argument type");
+	if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int) {
+	    c->error = ce_expectint;
+	    return;
+	}
 	if ( c->a.vals[1].u.ival<0 || c->a.vals[1].u.ival>=10 )
 	    ScriptError(c,"Bad argument value must be between [0,9]");
 	SFDefaultOS2Info(&c->curfv->sf->pfminfo,c->curfv->sf,c->curfv->sf->fontname);
@@ -3674,13 +3559,16 @@ static void bSetPanose(Context *c) {
 
 static void setint16(int16 *val,Context *c) {
     if ( c->a.vals[2].type!=v_int )
-	ScriptError(c,"Bad argument type");
-    *val = c->a.vals[2].u.ival;
+	c->error = ce_badargtype;
+    else
+	*val = c->a.vals[2].u.ival;
 }
 
 static void setss16(int16 *val,SplineFont *sf,Context *c) {
-    if ( c->a.vals[2].type!=v_int )
-	ScriptError(c,"Bad argument type");
+    if ( c->a.vals[2].type!=v_int ) {
+	c->error = ce_badargtype;
+	return;
+    }
     *val = c->a.vals[2].u.ival;
     sf->pfminfo.subsuper_set = true;
 }
@@ -3689,10 +3577,10 @@ static void bSetOS2Value(Context *c) {
     int i;
     SplineFont *sf = c->curfv->sf;
 
-    if ( c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_str )
-	ScriptError(c,"Bad argument type");
+    if ( c->a.vals[1].type!=v_str ) {
+	c->error = ce_expectstr;
+	return;
+    }
 
     SFDefaultOS2Info(&sf->pfminfo,sf,sf->fontname);
 
@@ -3790,9 +3678,16 @@ static void bSetOS2Value(Context *c) {
 	setss16(&sf->pfminfo.os2_strikeysize,sf,c);
     } else if ( strmatch(c->a.vals[1].u.sval,"StrikeOutPos")==0 ) {
 	setss16(&sf->pfminfo.os2_strikeypos,sf,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"CapHeight")==0 ) {
+	setss16(&sf->pfminfo.os2_capheight,sf,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"XHeight")==0 ) {
+	setss16(&sf->pfminfo.os2_xheight,sf,c);
     } else {
 	ScriptErrorString(c,"Unknown OS/2 field: ", c->a.vals[1].u.sval );
     }
+    if ( c->error )
+	return;
+
     sf->pfminfo.pfmset = true;
     sf->changed = true;
 }
@@ -3805,11 +3700,6 @@ static void os2getint(int val,Context *c) {
 static void bGetOS2Value(Context *c) {
     int i;
     SplineFont *sf = c->curfv->sf;
-
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_str )
-	ScriptError(c,"Bad argument type");
 
     if ( strmatch(c->a.vals[1].u.sval,"Weight")==0 ) {
 	os2getint(sf->pfminfo.weight,c);
@@ -3881,6 +3771,10 @@ static void bGetOS2Value(Context *c) {
 	os2getint(sf->pfminfo.os2_strikeysize,c);
     } else if ( strmatch(c->a.vals[1].u.sval,"StrikeOutPos")==0 ) {
 	os2getint(sf->pfminfo.os2_strikeypos,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"CapHeight")==0 ) {
+	os2getint(sf->pfminfo.os2_capheight,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"XHeight")==0 ) {
+	os2getint(sf->pfminfo.os2_xheight,c);
     } else {
 	ScriptErrorString(c,"Unknown OS/2 field: ", c->a.vals[1].u.sval );
     }
@@ -3890,8 +3784,6 @@ static void bSetMaxpValue(Context *c) {
     SplineFont *sf = c->curfv->sf;
     struct ttf_table *tab;
 
-    if ( c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_int )
 	ScriptError(c,"Bad argument type");
 
@@ -3929,11 +3821,6 @@ static void bGetMaxpValue(Context *c) {
     struct ttf_table *tab;
     uint8 *data, dummy[32];
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_str )
-	ScriptError(c,"Bad argument type");
-
     memset(dummy,0,32);
     dummy[15] = 2;
     tab = SFFindTable(sf,CHR('m','a','x','p'));
@@ -3967,9 +3854,6 @@ static void bGetFontBoundingBox(Context *c) {
     SplineFont *sf = c->curfv->sf;
     DBounds b;
 
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
-
     SplineFontFindBounds(sf,&b);
     c->return_val.type = v_arrfree;
     c->return_val.u.aval = malloc(sizeof(Array));
@@ -3984,22 +3868,13 @@ static void bGetFontBoundingBox(Context *c) {
 }
 
 static void bSetUniqueID(Context *c) {
-
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_int )
-	ScriptError(c,"Bad argument type");
     c->curfv->sf->uniqueid = c->a.vals[1].u.ival;
 }
 
 static void bGetTeXParam(Context *c) {
     SplineFont *sf = c->curfv->sf;
 
-    if ( c->a.argc!=2 )
-	ScriptError(c,"Bad argument count");
-    else if ( c->a.vals[1].type!=v_int )
-	ScriptError(c,"Bad argument type");
-    else if ( c->a.vals[1].u.ival<-1 || c->a.vals[1].u.ival>=24 )
+    if ( c->a.vals[1].u.ival<-1 || c->a.vals[1].u.ival>=24 )
 	ScriptError(c,"Bad argument value (must be >=-1 <=24)");
     c->return_val.type = v_int;
     if ( sf->texdata.type==tex_unset )
@@ -4018,17 +3893,23 @@ static void bSetTeXParams(Context *c) {
 	    ScriptError(c,"Bad argument type");
     switch ( c->a.vals[1].u.ival ) {
       case 1:
-	if ( c->a.argc!=10 )
-	    ScriptError( c, "Wrong number of arguments");
-      break;
+	if ( c->a.argc!=10 ) {
+	    c->error = ce_wrongnumarg;
+	    return;
+	}
+	break;
       case 2:
-	if ( c->a.argc!=25 )
-	    ScriptError( c, "Wrong number of arguments");
-      break;
+	if ( c->a.argc!=25 ) {
+	    c->error = ce_wrongnumarg;
+	    return;
+	}
+	break;
       case 3:
-	if ( c->a.argc!=16 )
-	    ScriptError( c, "Wrong number of arguments");
-      break;
+	if ( c->a.argc!=16 ) {
+	    c->error = ce_wrongnumarg;
+	    return;
+	}
+	break;
       default:
 	ScriptError(c, "Bad value for first argument, must be 1,2 or 3");
       break;
@@ -4048,9 +3929,10 @@ static void bSetCharName(Context *c) {
     int uni;
     char *comment;
 
-    if ( c->a.argc!=2 && c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
+    if ( c->a.argc!=2 && c->a.argc!=3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	ScriptError(c,"Bad argument type");
     sc = GetOneSelChar(c);
     uni = sc->unicodeenc;
@@ -4061,6 +3943,7 @@ static void bSetCharName(Context *c) {
 	uni = UniFromName(name,c->curfv->sf->uni_interp,c->curfv->map->enc);
     }
     SCSetMetaData(sc,name,uni,comment);
+    free(comment);
     /* SCLigDefault(sc); */	/* Not appropriate for indic scripts. May not be appropriate anywhere. Seems to confuse people even when it is appropriate */
 }
 
@@ -4070,9 +3953,10 @@ static void bSetUnicodeValue(Context *c) {
     int uni;
     char *comment;
 
-    if ( c->a.argc!=2 && c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( (c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode) ||
+    if ( c->a.argc!=2 && c->a.argc!=3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( (c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode) ||
 	    (c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	ScriptError(c,"Bad argument type");
     sc = GetOneSelChar(c);
@@ -4086,6 +3970,8 @@ static void bSetUnicodeValue(Context *c) {
 	name = copy(StdGlyphName(buffer,uni,c->curfv->sf->uni_interp,c->curfv->sf->for_new_glyphs));
     }
     SCSetMetaData(sc,name,uni,comment);
+    free(name);
+    free(comment);
     /*SCLigDefault(sc);*/
 }
 
@@ -4093,10 +3979,6 @@ static void bSetGlyphClass(Context *c) {
     SplineChar *sc;
     int class, gid, i;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError(c,"Bad argument type");
     if ( strmatch(c->a.vals[1].u.sval,"automatic")==0 )
 	class = 0;
     else if ( strmatch(c->a.vals[1].u.sval,"none")==0 )
@@ -4125,9 +4007,8 @@ static void bSetCharColor(Context *c) {
     SplineChar *sc;
     int i;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_int )
+    /* TODO: Look into maybe adding base 16 colours? */
+    if ( c->a.vals[1].type!=v_int )
 	ScriptError(c,"Bad argument type");
     for ( i=0; i<map->enccount; ++i ) if ( c->curfv->selected[i] ) {
 	sc = SFMakeChar(sf,map,i);
@@ -4139,10 +4020,6 @@ static void bSetCharColor(Context *c) {
 static void bSetCharComment(Context *c) {
     SplineChar *sc;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError(c,"Bad argument type");
     sc = GetOneSelChar(c);
     sc->comment = *c->a.vals[1].u.sval=='\0'?NULL:script2utf8_copy(c->a.vals[1].u.sval);
     c->curfv->sf->changed = true;
@@ -4155,10 +4032,6 @@ static void bSetGlyphChanged(Context *c) {
     EncMap *map = fv->map;
     SplineFont *sf = fv->sf;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_int )
-	ScriptError(c,"Bad argument type");
     changed_or_not = c->a.vals[1].u.ival ? true : false;
 
     for ( i=0; i< map->enccount; ++i ) {
@@ -4340,11 +4213,6 @@ static void bApplySubstitution(Context *c) {
     uint32 tags[3];
     int i;
 
-    if ( c->a.argc!=4 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
-	      c->a.vals[3].type!=v_str )
-	ScriptError(c,"Bad argument type");
     for ( i=0; i<3; ++i ) {
 	char *str = c->a.vals[i+1].u.sval;
 	char temp[4];
@@ -4373,8 +4241,6 @@ static void bTransform(Context *c) {
     BVTFunc bvts[1];
     int i;
 
-    if ( c->a.argc!=7 )
-	ScriptError( c, "Wrong number of arguments");
     for ( i=1; i<7; ++i ) {
 	if ( c->a.vals[i].type==v_real )
 	    trans[i-1] = c->a.vals[i].u.fval/100.;
@@ -4404,8 +4270,10 @@ static void bHFlip(Context *c) {
 	else
 	    trans[4] = 2*c->a.vals[1].u.fval;
 	otype = 0;
-    } else
-	ScriptError( c, "Wrong number of arguments");
+    } else {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     bvts[0].func = bvt_fliph;
     bvts[1].func = bvt_none;
     FVTransFunc(c->curfv,trans,otype,bvts,true);
@@ -4429,8 +4297,10 @@ static void bVFlip(Context *c) {
 	else
 	    trans[5] = 2*c->a.vals[1].u.fval;
 	otype = 0;
-    } else
-	ScriptError( c, "Wrong number of arguments");
+    } else {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     bvts[0].func = bvt_flipv;
     bvts[1].func = bvt_none;
     FVTransFunc(c->curfv,trans,otype,bvts,true);
@@ -4442,8 +4312,10 @@ static void bRotate(Context *c) {
     BVTFunc bvts[2];
     double a,ox,oy;
 
-    if ( c->a.argc==1 || c->a.argc==3 || c->a.argc>4 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc==1 || c->a.argc==3 || c->a.argc>4 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     if ( (c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_real) || (c->a.argc==4 &&
 	    ((c->a.vals[2].type!=v_int && c->a.vals[2].type!=v_real ) ||
 	     (c->a.vals[3].type!=v_int && c->a.vals[3].type!=v_real))))
@@ -4498,8 +4370,10 @@ static void bScale(Context *c) {
 	4 => different scale factors for each direction, origin last two args
     */
 
-    if ( c->a.argc==1 || c->a.argc>5 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc==1 || c->a.argc>5 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     for ( i=1; i<c->a.argc; ++i ) {
 	if ( c->a.vals[i].type==v_int )
 	    args[i] = c->a.vals[i].u.ival;
@@ -4544,8 +4418,10 @@ static void bSkew(Context *c) {
     BVTFunc bvts[2];
     double a;
 
-    if ( c->a.argc==1 || c->a.argc>5 )
-    ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc==1 || c->a.argc>5 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     for ( i=1; i<c->a.argc; ++i ) {
 	if ( c->a.vals[i].type==v_int )
 	    args[i] = c->a.vals[i].u.ival;
@@ -4584,8 +4460,6 @@ static void bMove(Context *c) {
     int otype = 1;
     BVTFunc bvts[2];
 
-    if ( c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
     trans[0] = trans[3] = 1;
     trans[1] = trans[2] = 0;
     if ( c->a.vals[1].type==v_int )
@@ -4611,8 +4485,10 @@ static void bScaleToEm(Context *c) {
     int i;
     int ascent, descent;
 
-    if ( c->a.argc!=3 && c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc!=3 && c->a.argc!=2 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     for ( i=1; i<c->a.argc; ++i )
 	if ( c->a.vals[i].type!=v_int || c->a.vals[i].u.ival<0 || c->a.vals[i].u.ival>16384 )
 	    ScriptError(c,"Bad argument type");
@@ -4660,9 +4536,10 @@ static void bItalic(Context *c) {
     double pct = 1.0;
     int i;
 
-    if ( c->a.argc>10 )
-	ScriptError( c, "Wrong number of arguments");
-
+    if ( c->a.argc>10 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     for (i = 1; i < c->a.argc; ++i) {
 	switch (i) {
 	case 1:
@@ -4806,8 +4683,10 @@ static void bChangeWeight(Context *c) {
     enum embolden_type type = embolden_auto;
     struct lcg_zones zones;
 
-    if ( c->a.argc>2 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc>2 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
 
     memset(&zones, 0, sizeof(zones));
     zones.counter_type = ct_auto;
@@ -4850,8 +4729,10 @@ static void bSmallCaps(Context *c) {
               defaults to stem width scale if omitted or zero.
     */
 
-    if ( c->a.argc>5 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc>5 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
 
     SmallCapsFindConstants(&small,c->curfv->sf,c->curfv->active_layer);
 
@@ -4934,8 +4815,10 @@ static void _bMoveReference(Context *c,int position) {
     SplineChar *sc;
     RefChar *ref;
 
-    if ( c->a.argc<4 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc<4 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     if ( c->a.vals[1].type==v_int )
 	translate[0] = c->a.vals[1].u.ival;
     else if ( c->a.vals[1].type==v_real )
@@ -5007,10 +4890,6 @@ static void bPositionReference(Context *c) {
 
 static void bNonLinearTransform(Context *c) {
 
-    if ( c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str )
-	ScriptError(c,"Bad argument type");
     if ( c->curfv->sf->layers[ly_fore].order2 )
 	ScriptError(c,"Can only be applied to cubic (PostScript) fonts");
     if ( !SFNLTrans(c->curfv,c->a.vals[1].u.sval,c->a.vals[2].u.sval))
@@ -5029,8 +4908,10 @@ static void bExpandStroke(Context *c) {
 	7 => stroke width, caligraphic angle, thickness-numerator, thickness-denom, 0, knaou's flags
     */
 
-    if ( c->a.argc<2 || c->a.argc>7 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc<2 || c->a.argc>7 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     for ( i=1; i<c->a.argc; ++i ) {
 	if ( c->a.vals[i].type==v_int )
 	    args[i] = c->a.vals[i].u.ival;
@@ -5085,20 +4966,10 @@ static void bExpandStroke(Context *c) {
 }
 
 static void bOutline(Context *c) {
-
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_int )
-	ScriptError(c,"Bad argument type");
     FVOutline(c->curfv,c->a.vals[1].u.ival);
 }
 
 static void bInline(Context *c) {
-
-    if ( c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int )
-	ScriptError(c,"Bad argument type");
     FVInline(c->curfv,c->a.vals[1].u.ival,c->a.vals[2].u.ival);
 }
 
@@ -5106,10 +4977,8 @@ static void bShadow(Context *c) {
     /* Angle, outline width, shadow_len */
     double a;
 
-    if ( c->a.argc!=4 )
-	ScriptError( c, "Wrong number of arguments");
     if ( (c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_real ) || c->a.vals[2].type!=v_int ||
-	    c->a.vals[2].type!=v_int )
+	    c->a.vals[3].type!=v_int )
 	ScriptError(c,"Bad argument type");
     if ( c->a.vals[1].type == v_int ) a = c->a.vals[1].u.ival;
     else a = c->a.vals[1].u.fval;
@@ -5121,10 +4990,8 @@ static void bWireframe(Context *c) {
     /* Angle, outline width, shadow_len */
     double a;
 
-    if ( c->a.argc!=4 )
-	ScriptError( c, "Wrong number of arguments");
     if ( (c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_real ) || c->a.vals[2].type!=v_int ||
-	    c->a.vals[2].type!=v_int )
+	    c->a.vals[3].type!=v_int )
 	ScriptError(c,"Bad argument type");
     if ( c->a.vals[1].type == v_int ) a = c->a.vals[1].u.ival;
     else a = c->a.vals[1].u.fval;
@@ -5133,20 +5000,14 @@ static void bWireframe(Context *c) {
 }
 
 static void bRemoveOverlap(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVOverlap(c->curfv,over_remove);
 }
 
 static void bOverlapIntersect(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVOverlap(c->curfv,over_intersect);
 }
 
 static void bFindIntersections(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVOverlap(c->curfv,over_findinter);
 }
 
@@ -5156,8 +5017,6 @@ static void bCanonicalStart(Context *c) {
     SplineFont *sf = fv->sf;
     int i,gid;
 
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] )
 	SPLsStartToLeftmost(sf->glyphs[gid],ly_fore);
 }
@@ -5168,8 +5027,6 @@ static void bCanonicalContours(Context *c) {
     SplineFont *sf = fv->sf;
     int i,gid;
 
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] )
 	CanonicalContours(sf->glyphs[gid],ly_fore);
 }
@@ -5217,8 +5074,10 @@ static void bSimplify(Context *c) {
 		}
 	    }
 	}
-    } else if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
+    } else if ( c->a.argc!=1 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     _FVSimplify(c->curfv,&smpl);
 }
 
@@ -5334,8 +5193,10 @@ static void bAddExtrema(Context *c) {
 	if ( c->a.vals[1].type!=v_int )
 	    ScriptError( c, "Bad type for argument" );
 	FVAddExtrema(c->curfv, (c->a.vals[1].u.ival != 0));
-    } else
-	ScriptError( c, "Wrong number of arguments");
+    } else {
+	c->error = ce_wrongnumarg;
+	return;
+    }
 }
 
 static void SCMakeLine(SplineChar *sc) {
@@ -5353,7 +5214,7 @@ static void SCMakeLine(SplineChar *sc) {
 		if (!sp->nonextcp || !sp->noprevcp ) {
 		    if ( !changed ) {
 			SCPreserveState( sc,false );
-			changed = false;
+			changed = true;
 		    }
 		    sp->prevcp = sp->me;
 		    sp->noprevcp = true;
@@ -5396,9 +5257,10 @@ static void bRoundToInt(Context *c) {
     SplineFont *sf = fv->sf;
     EncMap *map = fv->map;
 
-    if ( c->a.argc!=1 && c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.argc==2 ) {
+    if ( c->a.argc!=1 && c->a.argc!=2 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.argc==2 ) {
 	if ( c->a.vals[1].type==v_int )
 	    factor = c->a.vals[1].u.ival;
 	else if ( c->a.vals[1].type==v_real )
@@ -5419,9 +5281,10 @@ static void bRoundToCluster(Context *c) {
     SplineFont *sf = fv->sf;
     EncMap *map = fv->map;
 
-    if ( c->a.argc>3 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.argc>=2 ) {
+    if ( c->a.argc>3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.argc>=2 ) {
 	if ( c->a.vals[1].type==v_int )
 	    within = c->a.vals[1].u.ival;
 	else if ( c->a.vals[1].type==v_real )
@@ -5446,8 +5309,6 @@ static void bRoundToCluster(Context *c) {
 }
 
 static void bAutotrace(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVAutoTrace(c->curfv,false);
 }
 
@@ -5461,9 +5322,10 @@ static void bCorrectDirection(Context *c) {
     RefChar *ref;
     SplineChar *sc;
 
-    if ( c->a.argc!=1 && c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.argc==2 && c->a.vals[1].type!=v_int )
+    if ( c->a.argc!=1 && c->a.argc!=2 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.argc==2 && c->a.vals[1].type!=v_int )
 	ScriptError(c,"Bad argument type");
     else if ( c->a.argc==2 )
 	checkrefs = c->a.vals[1].u.ival;
@@ -5492,8 +5354,10 @@ static void bCorrectDirection(Context *c) {
 static void bReplaceOutlineWithReference(Context *c) {
     double fudge = .01;
 
-    if ( c->a.argc>3 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc>3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     if ( c->a.argc==2 ) {
 	if ( c->a.vals[1].type!=v_real )
 	    ScriptError(c,"Bad argument type");
@@ -5508,14 +5372,10 @@ static void bReplaceOutlineWithReference(Context *c) {
 }
 
 static void bBuildComposit(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVBuildAccent(c->curfv,false);
 }
 
 static void bBuildAccented(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVBuildAccent(c->curfv,true);
 }
 
@@ -5527,9 +5387,10 @@ static void bAppendAccent(Context *c) {
     int ret;
     SplineChar *sc;
 
-    if ( c->a.argc!=2 && c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str && c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode )
+    if ( c->a.argc!=2 && c->a.argc!=3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_str && c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode )
 	ScriptError(c,"Bad argument type");
     else if ( c->a.argc==3 && c->a.vals[2].type!=v_int )
 	ScriptError(c,"Bad argument type");
@@ -5550,8 +5411,6 @@ static void bAppendAccent(Context *c) {
 }
 
 static void bBuildDuplicate(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVBuildDuplicate(c->curfv);
 }
 
@@ -5560,9 +5419,10 @@ static void bMergeFonts(Context *c) {
     int openflags=0;
     char *t; char *locfilename;
 
-    if ( c->a.argc!=2 && c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
+    if ( c->a.argc!=2 && c->a.argc!=3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_str )
 	ScriptError( c, "MergeFonts expects a filename" );
     else if ( c->a.argc==3 ) {
 	if ( c->a.vals[2].type!=v_int )
@@ -5586,9 +5446,10 @@ static void bInterpolateFonts(Context *c) {
     float percent;
     char *t; char *locfilename;
 
-    if ( c->a.argc!=3 && c->a.argc!=4 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_real )
+    if ( c->a.argc!=3 && c->a.argc!=4 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_real )
 	ScriptError( c, "Bad argument type for first arg");
     else if ( c->a.vals[2].type!=v_str )
 	ScriptError( c, "InterpolateFonts expects a filename" );
@@ -5618,8 +5479,6 @@ static void bDefaultUseMyMetrics(Context *c) {
     SplineFont *sf = fv->sf;
     EncMap *map = fv->map;
 
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = sf->glyphs[gid];
 	RefChar *r, *match=NULL, *goodmatch=NULL;
@@ -5660,8 +5519,6 @@ static void bDefaultRoundToGrid(Context *c) {
     SplineFont *sf = fv->sf;
     EncMap *map = fv->map;
 
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = sf->glyphs[gid];
 	RefChar *r;
@@ -5681,32 +5538,22 @@ static void bDefaultRoundToGrid(Context *c) {
 }
 
 static void bAutoHint(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVAutoHint(c->curfv);
 }
 
 static void bSubstitutionPoints(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVAutoHintSubs(c->curfv);
 }
 
 static void bAutoCounter(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVAutoCounter(c->curfv);
 }
 
 static void bDontAutoHint(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVDontAutoHint(c->curfv);
 }
 
 static void bAutoInstr(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVAutoInstr(c->curfv);
 }
 
@@ -5784,8 +5631,6 @@ static void bAddInstrs(Context *c) {
     int i;
     EncMap *map = c->curfv->map;
 
-    if ( c->a.argc!=4 )
-	ScriptError( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_int || c->a.vals[3].type!=v_str )
 	ScriptError( c, "Bad argument type" );
     replace = c->a.vals[2].u.ival;
@@ -5819,8 +5664,10 @@ static void bFindOrAddCvtIndex(Context *c) {
     int sign_matters=0;
     SplineFont *sf = c->curfv->sf;
 
-    if ( c->a.argc<2 || c->a.argc>3 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc<2 || c->a.argc>3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     if ( c->a.vals[1].type!=v_int || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	ScriptError( c, "Bad argument type" );
     if ( c->a.argc==3 )
@@ -5836,10 +5683,6 @@ static void bGetCvtAt(Context *c) {
     SplineFont *sf = c->curfv->sf;
     struct ttf_table *tab;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_int )
-	ScriptError( c, "Bad argument type" );
     for ( tab=sf->ttf_tables; tab!=NULL && tab->tag!=CHR('c','v','t',' '); tab=tab->next );
     if ( tab==NULL || c->a.vals[1].u.ival>=(int)tab->len/2 )
 	ScriptError(c,"Cvt table is either not present or too short");
@@ -5852,10 +5695,6 @@ static void bReplaceCvtAt(Context *c) {
     SplineFont *sf = c->curfv->sf;
     struct ttf_table *tab;
 
-    if ( c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int )
-	ScriptError( c, "Bad argument type" );
     for ( tab=sf->ttf_tables; tab!=NULL && tab->tag!=CHR('c','v','t',' '); tab=tab->next );
     if ( tab==NULL || c->a.vals[1].u.ival>=(int)tab->len/2 )
 	ScriptError(c,"Cvt table is either not present or too short");
@@ -5868,8 +5707,10 @@ static void bPrivateToCvt(Context *c) {
 }
 
 static void bClearHints(Context *c) {
-    if ( c->a.argc>2 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc>2 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     if ( c->a.argc==1 )
 	FVClearHints(c->curfv);
     else if ( c->a.vals[1].type==v_str ) {
@@ -5909,8 +5750,6 @@ static void bClearHints(Context *c) {
 }
 
 static void bClearInstrs(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVClearInstrs(c->curfv);
 }
 
@@ -5920,10 +5759,6 @@ static void bClearTable(Context *c) {
     SplineFont *sf = c->curfv->sf;
     struct ttf_table *table, *prev;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Bad argument type" );
     if ( strlen(c->a.vals[1].u.sval)>4 || *c->a.vals[1].u.sval=='\0' )
 	ScriptError( c, "Table tag must be a 4 character ASCII string");
     _tag[0] = c->a.vals[1].u.sval[0];
@@ -5980,8 +5815,6 @@ static void bAddDHint( Context *c ) {
     SplineChar *sc;
     DStemInfo *d;
 
-    if ( c->a.argc!=7 )
-	ScriptError( c,"Wrong number of arguments" );
     for ( i=1; i<7; i++ ) {
         if ( c->a.vals[i].type==v_int )
 	    args[i-1] = c->a.vals[i].u.ival;
@@ -6045,8 +5878,6 @@ static void _AddHint(Context *c,int ish) {
     SplineChar *sc;
     StemInfo *h;
 
-    if ( c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
     if ( c->a.vals[1].type==v_int )
 	start = c->a.vals[1].u.ival;
     else if ( c->a.vals[1].type==v_real )
@@ -6056,7 +5887,7 @@ static void _AddHint(Context *c,int ish) {
     if ( c->a.vals[2].type==v_int )
 	width = c->a.vals[2].u.ival;
     else if ( c->a.vals[2].type==v_real )
-	start = c->a.vals[2].u.fval;
+        width = c->a.vals[2].u.fval;
     else
 	ScriptError( c, "Bad argument type" );
     if ( width<=0 && width!=-20 && width!=-21 )
@@ -6095,8 +5926,6 @@ static void bAddVHint(Context *c) {
 static void bClearCharCounterMasks(Context *c) {
     SplineChar *sc;
 
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     sc = GetOneSelChar(c);
     free(sc->countermasks);
     sc->countermasks = NULL;
@@ -6108,8 +5937,10 @@ static void bSetCharCounterMask(Context *c) {
     int i;
     HintMask *cm;
 
-    if ( c->a.argc<3 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc<3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     for ( i=1; i<c->a.argc; ++i )
 	if ( c->a.vals[i].type!=v_int )
 	    ScriptError( c, "Bad argument type" );
@@ -6140,10 +5971,6 @@ static void bReplaceCharCounterMasks(Context *c) {
     int i,j,cnt;
     Array *arr;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_arr )
-	ScriptError( c, "Bad argument type" );
     arr = c->a.vals[1].u.aval;
     cnt = arr->argc;
     cm = calloc(cnt,sizeof(HintMask));
@@ -6164,10 +5991,6 @@ static void bReplaceCharCounterMasks(Context *c) {
 }
 
 static void bClearPrivateEntry(Context *c) {
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Bad argument type" );
     if ( c->curfv->sf->private!=NULL )
 	PSDictRemoveEntry( c->curfv->sf->private,c->a.vals[1].u.sval);
 }
@@ -6175,11 +5998,6 @@ static void bClearPrivateEntry(Context *c) {
 static void bPrivateGuess(Context *c) {
     SplineFont *sf = c->curfv->sf;
     char *key;
-
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Bad argument type" );
 
     key = forceASCIIcopy(c,c->a.vals[1].u.sval);
     if ( sf->private==NULL ) {
@@ -6192,11 +6010,6 @@ static void bPrivateGuess(Context *c) {
 static void bChangePrivateEntry(Context *c) {
     SplineFont *sf = c->curfv->sf;
     char *key, *val;
-
-    if ( c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str )
-	ScriptError( c, "Bad argument type" );
 
     key = forceASCIIcopy(c,c->a.vals[1].u.sval);
     val = forceASCIIcopy(c,c->a.vals[2].u.sval);
@@ -6213,10 +6026,6 @@ static void bChangePrivateEntry(Context *c) {
 static void bHasPrivateEntry(Context *c) {
     SplineFont *sf = c->curfv->sf;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_str )
-	ScriptError(c,"Bad argument type");
     c->return_val.type = v_int;
     c->return_val.u.ival = 0;
     if ( PSDictHasEntry(sf->private,c->a.vals[1].u.sval)!=NULL )	/* this works if sf->private==NULL */
@@ -6226,10 +6035,6 @@ static void bHasPrivateEntry(Context *c) {
 static void bGetPrivateEntry(Context *c) {
     int i;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Bad argument type" );
     c->return_val.type = v_str;
     if ( c->curfv->sf->private==NULL ||
 	    (i = PSDictFindEntry(c->curfv->sf->private,c->a.vals[1].u.sval))==-1 )
@@ -6240,8 +6045,10 @@ static void bGetPrivateEntry(Context *c) {
 
 static void bSetWidth(Context *c) {
     int incr = 0;
-    if ( c->a.argc!=2 && c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc!=2 && c->a.argc!=3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     if ( c->a.vals[1].type!=v_int || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	ScriptError(c,"Bad argument type in SetWidth");
     if ( c->a.argc==3 )
@@ -6251,8 +6058,10 @@ static void bSetWidth(Context *c) {
 
 static void bSetVWidth(Context *c) {
     int incr = 0;
-    if ( c->a.argc!=2 && c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc!=2 && c->a.argc!=3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     if ( c->a.vals[1].type!=v_int || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	ScriptError(c,"Bad argument type in SetVWidth");
     if ( c->a.argc==3 )
@@ -6262,8 +6071,10 @@ static void bSetVWidth(Context *c) {
 
 static void bSetLBearing(Context *c) {
     int incr = 0;
-    if ( c->a.argc!=2 && c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc!=2 && c->a.argc!=3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     if ( c->a.vals[1].type!=v_int || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	ScriptError(c,"Bad argument type in SetLBearing");
     if ( c->a.argc==3 )
@@ -6273,8 +6084,10 @@ static void bSetLBearing(Context *c) {
 
 static void bSetRBearing(Context *c) {
     int incr = 0;
-    if ( c->a.argc!=2 && c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc!=2 && c->a.argc!=3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     if ( c->a.vals[1].type!=v_int || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	ScriptError(c,"Bad argument type in SetRBearing");
     if ( c->a.argc==3 )
@@ -6285,8 +6098,10 @@ static void bSetRBearing(Context *c) {
 static void bAutoWidth(Context *c) {
     int sep, min=10, max=-1;
 
-    if ( c->a.argc < 2 || c->a.argc > 4 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc < 2 || c->a.argc > 4 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     if ( c->a.vals[1].type!=v_int )
 	ScriptError(c,"Bad argument type in AutoWidth");
     sep = c->a.vals[1].u.ival;
@@ -6309,8 +6124,10 @@ static void bAutoKern(Context *c) {
 
     if ( c->a.argc == 3 )
 	ScriptError(c,"This scripting function now needs the name of a lookup-subtable too.");
-    if ( c->a.argc != 4 && c->a.argc != 5 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc != 4 && c->a.argc != 5 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int ||
 	    c->a.vals[3].type!=v_str ||
 	    (c->a.argc==5 && c->a.vals[4].type!=v_str))
@@ -6326,8 +6143,6 @@ static void bAutoKern(Context *c) {
 }
 
 static void bCenterInWidth(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     FVMetricsCenter(c->curfv,true);
 }
 
@@ -6340,8 +6155,10 @@ static void _SetKern(Context *c,int isv) {
     struct lookup_subtable *sub = NULL;
     KernPair *kp;
 
-    if ( c->a.argc!=3 && c->a.argc!=4 )
-	ScriptError( c, "Wrong number of arguments" );
+    if ( c->a.argc!=3 && c->a.argc!=4 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     ch2 = ParseCharIdent(c,&c->a.vals[1],true);
     if ( c->a.vals[2].type!=v_int )
 	ScriptError(c,"Bad argument type");
@@ -6412,23 +6229,14 @@ static void bSetVKern(Context *c) {
 }
 
 static void bClearAllKerns(Context *c) {
-
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments" );
     FVRemoveKerns(c->curfv);
 }
 
 static void bClearAllVKerns(Context *c) {
-
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments" );
     FVRemoveVKerns(c->curfv);
 }
 
 static void bVKernFromHKern(Context *c) {
-
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments" );
     FVVKernFromHKern(c->curfv);
 }
 
@@ -6438,9 +6246,7 @@ static void bMMInstanceNames(Context *c) {
     int i;
     MMSet *mm = c->curfv->sf->mm;
 
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( mm==NULL )
+    if ( mm==NULL )
 	ScriptError( c, "Not a multiple master font" );
 
     c->return_val.type = v_arrfree;
@@ -6457,9 +6263,7 @@ static void bMMAxisNames(Context *c) {
     int i;
     MMSet *mm = c->curfv->sf->mm;
 
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( mm==NULL )
+    if ( mm==NULL )
 	ScriptError( c, "Not a multiple master font" );
 
     c->return_val.type = v_arrfree;
@@ -6476,11 +6280,7 @@ static void bMMAxisBounds(Context *c) {
     int i, axis;
     MMSet *mm = c->curfv->sf->mm;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_int )
-	ScriptError( c, "Bad type of argument");
-    else if ( mm==NULL )
+    if ( mm==NULL )
 	ScriptError( c, "Not a multiple master font" );
     else if ( c->a.vals[1].u.ival<0 || c->a.vals[1].u.ival>=mm->axis_count )
 	ScriptError( c, "Axis out of range");
@@ -6500,9 +6300,7 @@ static void bMMAxisBounds(Context *c) {
 static void bMMWeightedName(Context *c) {
     MMSet *mm = c->curfv->sf->mm;
 
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( mm==NULL )
+    if ( mm==NULL )
 	ScriptError( c, "Not a multiple master font" );
 
     c->return_val.type = v_str;
@@ -6513,9 +6311,7 @@ static void bMMChangeInstance(Context *c) {
     int i;
     MMSet *mm = c->curfv->sf->mm;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( mm==NULL )
+    if ( mm==NULL )
 	ScriptError( c, "Not a multiple master font" );
     else if ( c->a.vals[1].type==v_int ) {
 	if ( c->a.vals[1].u.ival==-1 )
@@ -6545,13 +6341,9 @@ static void Reblend(Context *c, int tonew) {
     MMSet *mm = c->curfv->sf->mm;
     int i;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( mm==NULL )
+    if ( mm==NULL )
 	ScriptError( c, "Not a multiple master font" );
-    else if ( c->a.vals[1].type==v_arr )
-	ScriptError( c, "Bad type of argument");
-    else if ( c->a.vals[1].u.aval->argc!=mm->axis_count )
+    if ( c->a.vals[1].u.aval->argc!=mm->axis_count )
 	ScriptError( c, "Incorrect number of blend values" );
 
     for ( i=0; i<mm->axis_count; ++i ) {
@@ -6578,8 +6370,6 @@ static void bMMBlendToNewFont(Context *c) {
 
 static void bPreloadCidmap(Context *c) {
 
-    if ( c->a.argc!=5 )
-	ScriptError( c, "Wrong number of arguments" );
     if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str || c->a.vals[3].type!=v_str || c->a.vals[4].type!=v_int )
 	ScriptError( c, "Bad argument type" );
     LoadMapFromFile(c->a.vals[1].u.sval, c->a.vals[2].u.sval, c->a.vals[3].u.sval, c->a.vals[4].u.ival );
@@ -6589,8 +6379,6 @@ static void bConvertToCID(Context *c) {
     SplineFont *sf = c->curfv->sf;
     struct cidmap *map;
 
-    if ( c->a.argc!=4 )
-	ScriptError( c, "Wrong number of arguments" );
     if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str || c->a.vals[3].type!=v_int )
 	ScriptError( c, "Bad argument type" );
     if ( sf->cidmaster!=NULL )
@@ -6605,10 +6393,6 @@ static void bConvertByCMap(Context *c) {
     SplineFont *sf = c->curfv->sf;
     char *t; char *locfilename;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    if ( c->a.vals[0].type!=v_str )
-	ScriptError( c, "Bad argument type" );
     if ( sf->cidmaster!=NULL )
 	ScriptErrorString( c, "Already a cid-keyed font", sf->cidmaster->fontname );
     t = script2utf8_copy(c->a.vals[1].u.sval);
@@ -6622,10 +6406,6 @@ static void bCIDChangeSubFont(Context *c) {
     EncMap *map = c->curfv->map;
     int i;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments" );
-    if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Bad argument type" );
     if ( sf->cidmaster==NULL )
 	ScriptErrorString( c, "Not a cid-keyed font", sf->fontname );
     for ( i=0; i<sf->cidmaster->subfontcnt; ++i )
@@ -6667,8 +6447,6 @@ static void bCIDFlatten(Context *c) {
 
     if ( sf->cidmaster==NULL )
 	ScriptErrorString( c, "Not a cid-keyed font", sf->fontname );
-    else if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
 
     SFFlatten(sf->cidmaster);
 }
@@ -6679,10 +6457,6 @@ static void bCIDFlattenByCMap(Context *c) {
 
     if ( sf->cidmaster==NULL )
 	ScriptErrorString( c, "Not a cid-keyed font", sf->fontname );
-    else if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Argument must be a filename");
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
     locfilename = utf82def_copy(t);
@@ -6694,8 +6468,6 @@ static void bCIDFlattenByCMap(Context *c) {
 /* **** Info routines **** */
 
 static void bCharCnt(Context *c) {
-    if ( c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
     c->return_val.type = v_int;
     c->return_val.u.ival = c->curfv->map->enccount;
 }
@@ -6704,8 +6476,10 @@ static void bInFont(Context *c) {
     SplineFont *sf = c->curfv->sf;
     EncMap *map = c->curfv->map;
 
-    if ( c->a.argc>2 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc>2 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     c->return_val.type = v_int;
     if ( c->a.vals[1].type==v_int )
 	c->return_val.u.ival = c->a.vals[1].u.ival>=0 && c->a.vals[1].u.ival<map->enccount;
@@ -6726,8 +6500,10 @@ static void bWorthOutputting(Context *c) {
     EncMap *map = c->curfv->map;
     int gid;
 
-    if ( c->a.argc!=2 && c->a.argc!=1 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc>2 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     c->return_val.type = v_int;
     if ( c->a.argc==1 ) {
 	gid = map->map[GetOneSelCharIndex(c)];
@@ -6752,8 +6528,6 @@ static void bDrawsSomething(Context *c) {
     EncMap *map = c->curfv->map;
     int gid;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
     c->return_val.type = v_int;
     if ( c->a.argc==1 ) {
 	gid = map->map[GetOneSelCharIndex(c)];
@@ -6781,11 +6555,6 @@ static void bCheckForAnchorClass(Context *c) {
     AnchorClass *t;
     SplineFont *sf = c->curfv->sf;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Bad type for argument");
-
     for ( t=sf->anchor; t!=NULL; t=t->next )
 	if ( strcmp(c->a.vals[1].u.sval,t->name)==0 )
     break;
@@ -6802,9 +6571,10 @@ static void bAddAnchorClass(Context *c) {
 
     if ( c->a.argc==7 )
 	ScriptError( c, "This scripting function now takes a completely different set of arguments" );
-    else if ( c->a.argc!=4 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
+    else if ( c->a.argc!=4 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
 	    c->a.vals[3].type!=v_str )
 	ScriptError( c, "Bad type for argument");
 
@@ -6837,11 +6607,6 @@ static void bRemoveAnchorClass(Context *c) {
     AnchorClass *t;
     SplineFont *sf = c->curfv->sf;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Bad type for argument");
-
     for ( t=sf->anchor; t!=NULL; t=t->next )
 	if ( strcmp(c->a.vals[1].u.sval,t->name)==0 )
     break;
@@ -6858,9 +6623,10 @@ static void bAddAnchorPoint(Context *c) {
     AnchorPoint *ap;
     int ligindex = 0;
 
-    if ( c->a.argc<5 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
+    if ( c->a.argc<5 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
 	    (c->a.vals[3].type!=v_int && c->a.vals[3].type!=v_real ) ||
 	    (c->a.vals[4].type!=v_int && c->a.vals[4].type!=v_real ))
 	ScriptError( c, "Bad type for argument");
@@ -6906,14 +6672,15 @@ static void bAddAnchorPoint(Context *c) {
 	ScriptErrorString(c,"Unknown type for anchor point: ", c->a.vals[2].u.sval );
 
     if ( type== at_baselig ) {
-	if ( c->a.argc!=6 )
-	    ScriptError( c, "Wrong number of arguments");
-	else if ( c->a.vals[5].type!=v_int )
+	if ( c->a.argc!=6 ) {
+	    c->error = ce_wrongnumarg;
+	    return;
+	} else if ( c->a.vals[5].type!=v_int )
 	    ScriptError( c, "Bad type for argument");
 	ligindex = c->a.vals[5].u.ival;
-    } else {
-	if ( c->a.argc!=5 )
-	    ScriptError( c, "Wrong number of arguments");
+    } else if ( c->a.argc!=5 ) {
+	c->error = ce_wrongnumarg;
+	return;
     }
 
     if (( type==at_baselig && t->type!=act_mklg ) ||
@@ -6960,9 +6727,10 @@ static void bAddPosSub(Context *c) {
 
     memset(&temp,0,sizeof(temp));
 
-    if ( c->a.argc!=3 && c->a.argc!=6 && c->a.argc!=11 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
+    if ( c->a.argc!=3 && c->a.argc!=6 && c->a.argc!=11 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_str )
 	ScriptError( c, "Bad type for argument");
     else if ( c->a.argc==3 && c->a.vals[2].type!=v_str )
 	ScriptError( c, "Bad type for argument");
@@ -6979,19 +6747,25 @@ static void bAddPosSub(Context *c) {
 
     sub = SFFindLookupSubtable(c->curfv->sf,c->a.vals[1].u.sval);
     if ( sub==NULL )
-	ScriptErrorString(c,"Unknown lookup subtable",c->a.vals[2].u.sval);
+	ScriptErrorString(c,"Unknown lookup subtable",c->a.vals[1].u.sval);
 
     if ( sub->lookup->lookup_type==gpos_single ) {
 	temp.type = pst_position;
-	if (c->a.argc!=6 )
-	    ScriptError( c, "Wrong number of arguments");
+	if (c->a.argc!=6 ) {
+	    c->error = ce_wrongnumarg;
+	    return;
+	}
     } else if ( sub->lookup->lookup_type==gpos_pair ) {
 	temp.type = pst_pair;
-	if (c->a.argc!=11 )
-	    ScriptError( c, "Wrong number of arguments");
+	if (c->a.argc!=11 ) {
+	    c->error = ce_wrongnumarg;
+	    return;
+	}
     } else {
-	if (c->a.argc!=3 )
-	    ScriptError( c, "Wrong number of arguments");
+	if (c->a.argc!=3 ) {
+	    c->error = ce_wrongnumarg;
+	    return;
+	}
 	if ( sub->lookup->lookup_type==gsub_single )
 	    temp.type = pst_substitution;
 	else if ( sub->lookup->lookup_type==gsub_alternate )
@@ -7042,9 +6816,10 @@ static void bRemoveATT(Context *c) {
 static void bRemoveLookup(Context *c) {
     OTLookup *otl;
 
-    if ( c->a.argc<2 || c->a.argc>3 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
+    if ( c->a.argc<2 || c->a.argc>3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_str )
 	ScriptError( c, "Bad type for argument 1");
     else if ( c->a.argc==3 && c->a.vals[2].type!=v_int )
         ScriptError( c, "Bad type for argument 2");
@@ -7058,10 +6833,6 @@ static void bMergeLookups(Context *c) {
     OTLookup *otl1, *otl2;
     struct lookup_subtable *sub;
 
-    if ( c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str )
-	ScriptError( c, "Bad type for argument");
     otl1 = SFFindLookup(c->curfv->sf,c->a.vals[1].u.sval);
     if ( otl1==NULL )
 	ScriptErrorString(c,"Unknown lookup",c->a.vals[1].u.sval);
@@ -7087,9 +6858,10 @@ static void bMergeLookups(Context *c) {
 static void bRemoveLookupSubtable(Context *c) {
     struct lookup_subtable *sub;
 
-    if ( c->a.argc<2 || c->a.argc>3 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
+    if ( c->a.argc!=2 && c->a.argc!=3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_str )
 	ScriptError( c, "Bad type for argument");
     else if ( c->a.argc==3 && c->a.vals[2].type!=v_int )
         ScriptError( c, "Bad type for argument 2");
@@ -7102,10 +6874,6 @@ static void bRemoveLookupSubtable(Context *c) {
 static void bMergeLookupSubtables(Context *c) {
     struct lookup_subtable *sub1, *sub2;
 
-    if ( c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str )
-	ScriptError( c, "Bad type for argument");
     sub1 = SFFindLookupSubtable(c->curfv->sf,c->a.vals[1].u.sval);
     if ( sub1==NULL )
 	ScriptErrorString(c,"Unknown subtable",c->a.vals[1].u.sval);
@@ -7216,9 +6984,10 @@ static void bAddLookup(Context *c) {
     SplineFont *sf = c->curfv->sf;
     int type;
 
-    if ( c->a.argc!=5 && c->a.argc!=6 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
+    if ( c->a.argc!=5 && c->a.argc!=6 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
 	    c->a.vals[3].type!=v_int ||
 	    (c->a.vals[4].type!=v_arr && c->a.vals[4].type!=v_arrfree) ||
 	    (c->a.argc==6 && c->a.vals[5].type!=v_str))
@@ -7300,9 +7069,7 @@ static void bAddLookup(Context *c) {
 static void bSetFeatureList(Context *c) {
     OTLookup *otl;
 
-    if ( c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str ||
+    if ( c->a.vals[1].type!=v_str ||
 	     (c->a.vals[2].type!=v_arr && c->a.vals[2].type!=v_arrfree))
 	ScriptError( c, "Bad type for argument");
 
@@ -7317,9 +7084,7 @@ static void bSetFeatureList(Context *c) {
 static void bLookupStoreLigatureInAfm(Context *c) {
     OTLookup *otl;
 
-    if ( c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_int )
+    if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_int )
 	ScriptError( c, "Bad type for argument");
 
     otl = SFFindLookup(c->curfv->sf,c->a.vals[1].u.sval);
@@ -7349,11 +7114,6 @@ static void bGetLookupInfo(Context *c) {
     struct scriptlanglist *sl;
     int fcnt, scnt, l;
     Array *farray, *sarray, *larray;
-
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Bad type for argument");
 
     otl = SFFindLookup(c->curfv->sf,c->a.vals[1].u.sval);
     if ( otl==NULL )
@@ -7426,11 +7186,6 @@ static void bGetLookupSubtables(Context *c) {
     struct lookup_subtable *sub;
     int cnt;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Bad type for argument");
-
     otl = SFFindLookup(c->curfv->sf,c->a.vals[1].u.sval);
     if ( otl==NULL )
 	ScriptErrorString(c,"Missing lookup",c->a.vals[1].u.sval);
@@ -7452,11 +7207,6 @@ static void bGetLookups(Context *c) {
     SplineFont *sf = c->curfv->sf;
 
     if ( sf->cidmaster ) sf = sf->cidmaster;
-
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Bad type for argument");
 
     if ( strmatch(c->a.vals[1].u.sval,"GPOS")==0 )
 	base = sf->gpos_lookups;
@@ -7482,9 +7232,10 @@ static void bAddLookupSubtable(Context *c) {
     struct lookup_subtable *sub, *after=NULL;
     SplineFont *sf = c->curfv->sf;
 
-    if ( c->a.argc!=3 && c->a.argc!=4 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
+    if ( c->a.argc!=3 && c->a.argc!=4 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
 	    (c->a.argc==4 && c->a.vals[3].type!=v_str))
 	ScriptError( c, "Bad type for argument");
 
@@ -7534,10 +7285,6 @@ static void bAddLookupSubtable(Context *c) {
 static void bGetLookupOfSubtable(Context *c) {
     struct lookup_subtable *sub;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Bad type for argument");
     sub = SFFindLookupSubtable(c->curfv->sf,c->a.vals[1].u.sval);
     if ( sub==NULL )
 	ScriptErrorString(c,"Unknown lookup subtable",c->a.vals[1].u.sval);
@@ -7549,10 +7296,6 @@ static void bGetSubtableOfAnchorClass(Context *c) {
     AnchorClass *ac;
     SplineFont *sf = c->curfv->sf;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Bad type for argument");
     if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
 
     for ( ac=sf->anchor; ac!=NULL; ac=ac->next )
@@ -7574,9 +7317,10 @@ static void bAddSizeFeature(Context *c) {
     OtfNameListFree(sf->fontstyle_name);
     sf->fontstyle_name = NULL;
 
-    if ( c->a.argc!=6 && c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( (c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_real ) ||
+    if ( c->a.argc!=6 && c->a.argc!=2 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( (c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_real ) ||
 	    (c->a.argc==6 && ((c->a.vals[2].type!=v_int && c->a.vals[2].type!=v_real ) ||
 			      (c->a.vals[3].type!=v_int && c->a.vals[3].type!=v_real ) ||
 			       c->a.vals[4].type!=v_int ||
@@ -7814,9 +7558,10 @@ static void bCharInfo(Context *c) {
 
     if ( c->a.argc==5 )
 	ScriptError(c,"This variant of GlyphInfo no works. Use GetPosSub instead");
-    if ( c->a.argc!=2 && c->a.argc!=3 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
+    if ( c->a.argc!=2 && c->a.argc!=3 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_str )
 	ScriptError( c, "Bad type for argument");
 
     found = GetOneSelCharIndex(c);
@@ -8057,10 +7802,6 @@ static void bGetPosSub(Context *c) {
     if ( sc==NULL )
 	sc = SCBuildDummy(&dummy,sf,map,found);
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError(c,"Bad argument type");
     if ( *c->a.vals[1].u.sval=='*' )
 	sub = NULL;
     else {
@@ -8203,10 +7944,6 @@ static void bRemovePosSub(Context *c) {
     if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
     else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
 
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError(c,"Bad argument type");
     if ( *c->a.vals[1].u.sval=='*' )
 	sub = NULL;
     else {
@@ -8260,9 +7997,10 @@ static void bSetGlyphTeX(Context *c) {
     SplineChar *sc;
     int found;
 
-    if ( c->a.argc!=3 && c->a.argc!=5 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int )
+    if ( c->a.argc!=3 && c->a.argc!=5 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    } else if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int )
 	ScriptError( c, "Bad type for argument");
 
     found = GetOneSelCharIndex(c);
@@ -8288,8 +8026,10 @@ static void bCompareGlyphs(Context *c) {
     real pt_err = .5, spline_err = 1, bitmaps = -1;
     int bb_err=2, comp_hints=false, report_errors = true;
 
-    if ( c->a.argc>7 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc>7 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     if ( c->a.argc>=2 ) {
 	if ( c->a.vals[1].type==v_int )
 	    pt_err = c->a.vals[1].u.ival;
@@ -8348,8 +8088,10 @@ static void bCompareFonts(Context *c) {
     int flags;
     char *t, *locfilename;
 
-    if ( c->a.argc!=4 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc!=4 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str || c->a.vals[3].type!=v_int )
 	ScriptError( c, "Bad type for argument");
 
@@ -8381,8 +8123,10 @@ static void bCompareFonts(Context *c) {
 static void bValidate(Context *c) {
     int force = false;
 
-    if ( c->a.argc>2 )
-	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc>2 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
     if ( c->a.argc==2 ) {
 	if ( c->a.vals[1].type!=v_int )
 	    ScriptError( c, "Bad type for argument");
@@ -8400,366 +8144,391 @@ static void bDebugCrashFontForge(Context *UNUSED(c))
     *ptr = 1;
 }
 
+static void bclearSpecialData(Context *c) {
+    if (c->curfv) SplineFontClearSpecial(c->curfv->sf);
+}
 
-static struct builtins { const char *name; void (*func)(Context *); int nofontok; } builtins[] = {
+
+static struct builtins {
+    const char *name;
+    void (*func)(Context *);
+    unsigned int nofontok: 1;	/* 0=require active font */
+    unsigned int argcnt: 4;	/* 0=defined in function */
+    unsigned int argtype: 4;	/* 0=defined in function */
+} builtins[] = {
 /* Generic utilities */
-    { "Print", bPrint, 1 },
-    { "Error", bError, 1 },
-    { "AskUser", bAskUser, 1 },
-    { "PostNotice", bPostNotice, 1 },
-    { "Array", bArray, 1 },
-    { "SizeOf", bSizeOf, 1 },
-    { "TypeOf", bTypeOf, 1 },
-    { "Strsub", bStrsub, 1 },
-    { "Strlen", bStrlen, 1 },
-    { "StrSplit", bStrSplit, 1 },
-    { "StrJoin", bStrJoin, 1 },
-    { "Strstr", bStrstr, 1 },
-    { "Strrstr", bStrrstr, 1 },
-    { "Strcasestr", bStrcasestr, 1 },
-    { "Strcasecmp", bStrcasecmp, 1 },
-    { "Strtol", bStrtol, 1 },
-    { "Strtod", bStrtod, 1 },
-    { "Strskipint", bStrskipint, 1 },
-    { "Strftime", bStrftime, 1 },
-    { "IsUpper", bisupper, 1 },
-    { "IsLower", bislower, 1 },
-    { "IsDigit", bisdigit, 1 },
-    { "IsHexDigit", bishexdigit, 1 },
-    { "IsAlpha", bisalpha, 1 },
-    { "IsAlNum", bisalnum, 1 },
-    { "IsSpace", bisspace, 1 },
-    { "ToUpper", btoupper, 1 },
-    { "ToLower", btolower, 1 },
-    { "ToMirror", btomirror, 1 },
-    { "LoadPrefs", bLoadPrefs, 1 },
-    { "SavePrefs", bSavePrefs, 1 },
-    { "GetPref", bGetPrefs, 1 },
-    { "SetPref", bSetPrefs, 1 },
-    { "SetPrefs", bSetPrefs, 1 },		/* The name was misdocumented, so accept that name too */
-    { "DefaultOtherSubrs", bDefaultOtherSubrs, 1 },
-    { "ReadOtherSubrsFile", bReadOtherSubrsFile, 1 },
-    { "GetEnv", bGetEnv, 1 },
-    { "UnicodeFromName", bUnicodeFromName, 1 },
-    { "NameFromUnicode", bNameFromUnicode, 1 },
-    { "UnicodeBlockCountFromLib", bUnicodeBlockCountFromLib, 1 },
-    { "UnicodeBlockEndFromLib", bUnicodeBlockEndFromLib, 1 },
-    { "UnicodeBlockNameFromLib", bUnicodeBlockNameFromLib, 1},
-    { "UnicodeBlockStartFromLib", bUnicodeBlockStartFromLib, 1 },
-    { "UnicodeNameFromLib", bUnicodeNameFromLib, 1 },
-    { "UnicodeAnnotationFromLib", bUnicodeAnnotationFromLib, 1 },
-    { "UnicodeNamesListVersion", bUnicodeNamesListVersion, 1 },
-    { "Chr", bChr, 1 },
-    { "Ord", bOrd, 1 },
-    { "Real", bReal, 1 },
-    { "Int", bInt, 1 },
-    { "UCodePoint", bUCodePoint, 1 },
-    { "ToString", bToString, 1 },
-    { "Floor", bFloor, 1 },
-    { "Ceil", bCeil, 1 },
-    { "Round", bRound, 1 },
-    { "IsNan", bIsNan, 1 },
-    { "IsFinite", bIsFinite, 1 },
-    { "Sqrt", bSqrt, 1 },
-    { "Exp", bExp, 1 },
-    { "Log", bLog, 1 },
-    { "Pow", bPow, 1 },
-    { "Sin", bSin, 1 },
-    { "Cos", bCos, 1 },
-    { "Tan", bTan, 1 },
-    { "ATan2", bATan2, 1 },
-    { "Ucs4", bUCS4, 1 },
-    { "Utf8", bUtf8, 1 },
-    { "Rand", bRand, 1 },
-    { "FileAccess", bFileAccess, 1 },
-    { "LoadStringFromFile", bLoadFileToString, 1 },
-    { "WriteStringToFile", bWriteStringToFile, 1 },
-    { "LoadPlugin", bLoadPlugin, 1 },
-    { "LoadPluginDir", bLoadPluginDir, 1 },
-    { "LoadNamelist", bLoadNamelist, 1 },
-    { "LoadNamelistDir", bLoadNamelistDir, 1 },
+    { "Print", bPrint, 1,0,0 },
+    { "Error", bError, 1,2,v_str },
+    { "AskUser", bAskUser, 1,0,0 },
+    { "PostNotice", bPostNotice, 1,2,v_str },
+    { "Array", bArray, 1,2,v_int },
+    { "SizeOf", bSizeOf, 1,2,0 },
+    { "TypeOf", bTypeOf, 1,2,0 },
+    { "Strsub", bStrsub, 1,0,0 },
+    { "Strlen", bStrlen, 1,2,v_str },
+    { "StrSplit", bStrSplit, 1,0,0 },
+    { "StrJoin", bStrJoin, 1,3,0 },
+    { "Strstr", bStrstr, 1,3,v_str },
+    { "Strrstr", bStrrstr, 1,3,v_str },
+    { "Strcasestr", bStrcasestr, 1,3,v_str },
+    { "Strcasecmp", bStrcasecmp, 1,3,v_str },
+    { "Strtol", bStrtol, 1,0,0 },
+    { "Strtod", bStrtod, 1,2,v_str },
+    { "Strskipint", bStrskipint, 1,0,0 },
+    { "Strftime", bStrftime, 1,0,0 },
+    { "IsUpper", bisupper, 1,2,0 },
+    { "IsLower", bislower, 1,2,0 },
+    { "IsDigit", bisdigit, 1,2,0 },
+    { "IsHexDigit", bishexdigit, 1,2,0 },
+    { "IsAlpha", bisalpha, 1,2,0 },
+    { "IsAlNum", bisalnum, 1,2,0 },
+    { "IsSpace", bisspace, 1,2,0 },
+    { "ToUpper", btoupper, 1,2,0 },
+    { "ToLower", btolower, 1,2,0 },
+    { "ToMirror", btomirror, 1,2,0 },
+    { "LoadPrefs", bLoadPrefs, 1,1,0 },
+    { "SavePrefs", bSavePrefs, 1,1,0 },
+    { "GetPref", bGetPrefs, 1,2,v_str },
+    { "SetPref", bSetPrefs, 1,0,0 },
+    { "SetPrefs", bSetPrefs, 1,0,0 },		/* The name was misdocumented, so accept that name too */
+    { "DefaultOtherSubrs", bDefaultOtherSubrs, 1,1,0 },
+    { "ReadOtherSubrsFile", bReadOtherSubrsFile, 1,2,v_str },
+    { "GetEnv", bGetEnv, 1,2,v_str },
+    { "HasSpiro", bHasSpiro, 1,1,0 },
+    { "SpiroVersion", bSpiroVersion, 1,1,0 },
+    { "UnicodeFromName", bUnicodeFromName, 1,2,v_str },
+    { "NameFromUnicode", bNameFromUnicode, 1,0,0 },
+    { "UnicodeBlockCountFromLib", bUnicodeBlockCountFromLib, 1,1,0 },
+    { "UnicodeBlockEndFromLib", bUnicodeBlockEndFromLib, 1,2,0 },
+    { "UnicodeBlockNameFromLib", bUnicodeBlockNameFromLib, 1,2,0 },
+    { "UnicodeBlockStartFromLib", bUnicodeBlockStartFromLib, 1,2,0 },
+    { "UnicodeNameFromLib", bUnicodeNameFromLib, 1,2,0 },
+    { "UnicodeAnnotationFromLib", bUnicodeAnnotationFromLib, 1,2,0 },
+    { "UnicodeNamesListVersion", bUnicodeNamesListVersion, 1,1,0 },
+    { "Chr", bChr, 1,0,0 },
+    { "Ord", bOrd, 1,0,0 },
+    { "Real", bReal, 1,2,0 },
+    { "Int", bInt, 1,2,0 },
+    { "UCodePoint", bUCodePoint, 1,2,0 },
+    { "ToString", bToString, 1,2,0 },
+    { "Floor", bFloor, 1,2,v_real },
+    { "Ceil", bCeil, 1,2,v_real },
+    { "Round", bRound, 1,2,v_real },
+    { "IsNan", bIsNan, 1,2,v_real },
+    { "IsFinite", bIsFinite, 1,2,v_real },
+    { "Sqrt", bSqrt, 1,2,0 },
+    { "Exp", bExp, 1,2,0 },
+    { "Log", bLog, 1,2,0 },
+    { "Pow", bPow, 1,3,0 },
+    { "Sin", bSin, 1,2,0 },
+    { "Cos", bCos, 1,2,0 },
+    { "Tan", bTan, 1,2,0 },
+    { "ATan2", bATan2, 1,3,0 },
+    { "Ucs4", bUCS4, 1,2,0 },
+    { "Utf8", bUtf8, 1,2,0 },
+    { "Rand", bRand, 1,1,0 },
+    { "FileAccess", bFileAccess, 1,0,0 },
+    { "LoadStringFromFile", bLoadFileToString, 1,2,v_str },
+    { "WriteStringToFile", bWriteStringToFile, 1,0,0 },
+    { "LoadPlugin", bLoadPlugin, 1,2,v_str },
+    { "LoadPluginDir", bLoadPluginDir, 1,0,0 },
+    { "LoadNamelist", bLoadNamelist, 1,2,v_str },
+    { "LoadNamelistDir", bLoadNamelistDir, 1,0,0 },
 /* File menu */
-    { "Quit", bQuit, 1 },
-    { "FontsInFile", bFontsInFile, 1 },
-    { "Open", bOpen, 1 },
-    { "New", bNew, 1 },
-    { "Close", bClose, 0 },
-    { "Revert", bRevert, 0 },
-    { "RevertToBackup", bRevertToBackup, 0 },
-    { "Save", bSave, 0 },
-    { "Generate", bGenerate, 0 },
-    { "GenerateFamily", bGenerateFamily, 0 },
-    { "GenerateFeatureFile", bGenerateFeatureFile, 0 },
-    { "ControlAfmLigatureOutput", bControlAfmLigatureOutput, 0 },
+    { "Quit", bQuit, 1,0,0 },
+    { "FontsInFile", bFontsInFile, 1,2,v_str },
+    { "Open", bOpen, 1,0,0 },
+    { "New", bNew, 1,1,0 },
+    { "Close", bClose, 0,1,0 },
+    { "Revert", bRevert, 0,1,0 },
+    { "RevertToBackup", bRevertToBackup, 0,1,0 },
+    { "Save", bSave, 0,0,0 },
+    { "Generate", bGenerate, 0,0,0 },
+    { "GenerateFamily", bGenerateFamily, 0,5,0 },
+    { "GenerateFeatureFile", bGenerateFeatureFile, 0,0,0 },
+    { "ControlAfmLigatureOutput", bControlAfmLigatureOutput, 0,0,0 },
 #ifdef FONTFORGE_CONFIG_WRITE_PFM
-    { "WritePfm", bWritePfm, 0 },
+    { "WritePfm", bWritePfm, 0,2,v_str },
 #endif
-    { "Import", bImport, 0 },
-    { "Export", bExport, 0 },
-    { "FontImage", bFontImage, 0 },
-    { "MergeKern", bMergeKern, 0 },
-    { "MergeFeature", bMergeKern, 0 },
-    { "PrintSetup", bPrintSetup, 1 },
-    { "PrintFont", bPrintFont, 0 },
+    { "Import", bImport, 0,0,0 },
+    { "Export", bExport, 0,0,0 },
+    { "FontImage", bFontImage, 0,0,0 },
+    { "MergeKern", bMergeKern, 0,2,v_str },
+    { "MergeFeature", bMergeKern, 0,2,v_str },
+    { "PrintSetup", bPrintSetup, 1,0,0 },
+    { "PrintFont", bPrintFont, 0,0,0 },
 /* Edit Menu */
-    { "Cut", bCut, 0 },
-    { "Copy", bCopy, 0 },
-    { "CopyReference", bCopyReference, 0 },
-    { "CopyUnlinked", bCopyUnlinked, 0 },
-    { "CopyWidth", bCopyWidth, 0 },
-    { "CopyVWidth", bCopyVWidth, 0 },
-    { "CopyLBearing", bCopyLBearing, 0 },
-    { "CopyRBearing", bCopyRBearing, 0 },
-    { "CopyAnchors", bCopyAnchors, 0 },
-    { "CopyGlyphFeatures", bCopyGlyphFeatures, 0 },
-    { "Paste", bPaste, 0 },
-    { "PasteInto", bPasteInto, 0 },
-    { "PasteWithOffset", bPasteWithOffset, 0 },
-    { "SameGlyphAs", bSameGlyphAs, 0 },
-    { "MultipleEncodingsToReferences", bMultipleEncodingsToReferences, 0 },
-    { "Clear", bClear, 0 },
-    { "ClearBackground", bClearBackground, 0 },
-    { "CopyFgToBg", bCopyFgToBg, 0 },
-    { "UnlinkReference", bUnlinkReference, 0 },
-    { "Join", bJoin, 0 },
-    { "SelectAll", bSelectAll, 0 },
-    { "SelectNone", bSelectNone, 0 },
-    { "SelectInvert", bSelectInvert, 0 },
-    { "SelectMore", bSelectMore, 0 },
-    { "SelectFewer", bSelectFewer, 0 },
-    { "Select", bSelect, 0 },
-    { "SelectMoreSingletons", bSelectMoreSingletons, 0 },
-    { "SelectFewerSingletons", bSelectFewerSingletons, 0 },
-    { "SelectSingletons", bSelectSingletons, 0 },
-    { "SelectAllInstancesOf", bSelectAllInstancesOf, 0 },
-    { "SelectIf", bSelectIf, 0 },
-    { "SelectSingletonsIf", bSelectSingletonsIf, 0 },
-    { "SelectMoreSingletonsIf", bSelectMoreSingletonsIf, 0 },
-    { "SelectMoreIf", bSelectMoreIf, 0 },
-    { "SelectChanged", bSelectChanged, 0 },
-    { "SelectHintingNeeded", bSelectHintingNeeded, 0 },
-    { "SelectWorthOutputting", bSelectWorthOutputting, 0 },
-    { "SelectGlyphsSplines", bSelectGlyphsSplines, 0 },
-    { "SelectGlyphsReferences", bSelectGlyphsReferences, 0 },
-    { "SelectGlyphsBoth", bSelectGlyphsBoth, 0 },
-    { "SelectByATT", bSelectByATT, 0 },
-    { "SelectByPosSub", bSelectByPosSub, 0 },
-    { "SelectByColor", bSelectByColor, 0 },
-    { "SelectByColour", bSelectByColor, 0 },
+    { "Cut", bCut, 0,1,0 },
+    { "Copy", bCopy, 0,1,0 },
+    { "CopyReference", bCopyReference, 0,1,0 },
+    { "CopyUnlinked", bCopyUnlinked, 0,1,0 },
+    { "CopyWidth", bCopyWidth, 0,1,0 },
+    { "CopyVWidth", bCopyVWidth, 0,1,0 },
+    { "CopyLBearing", bCopyLBearing, 0,1,0 },
+    { "CopyRBearing", bCopyRBearing, 0,1,0 },
+    { "CopyAnchors", bCopyAnchors, 0,1,0 },
+    { "CopyGlyphFeatures", bCopyGlyphFeatures, 0,0,0 },
+    { "Paste", bPaste, 0,1,0 },
+    { "PasteInto", bPasteInto, 0,1,0 },
+    { "PasteWithOffset", bPasteWithOffset, 0,3,0 },
+    { "SameGlyphAs", bSameGlyphAs, 0,1,0 },
+    { "MultipleEncodingsToReferences", bMultipleEncodingsToReferences, 0,1,0 },
+    { "Clear", bClear, 0,1,0 },
+    { "ClearBackground", bClearBackground, 0,1,0 },
+    { "CopyFgToBg", bCopyFgToBg, 0,1,0 },
+    { "UnlinkReference", bUnlinkReference, 0,1,0 },
+    { "Join", bJoin, 0,1,0 },
+    { "SelectAll", bSelectAll, 0,1,0 },
+    { "SelectNone", bSelectNone, 0,1,0 },
+    { "SelectInvert", bSelectInvert, 0,1,0 },
+    { "SelectMore", bSelectMore, 0,0,0 },
+    { "SelectFewer", bSelectFewer, 0,0,0 },
+    { "Select", bSelect, 0,0,0 },
+    { "SelectMoreSingletons", bSelectMoreSingletons, 0,0,0 },
+    { "SelectFewerSingletons", bSelectFewerSingletons, 0,0,0 },
+    { "SelectSingletons", bSelectSingletons, 0,0,0 },
+    { "SelectAllInstancesOf", bSelectAllInstancesOf, 0,0,0 },
+    { "SelectIf", bSelectIf, 0,0,0 },
+    { "SelectSingletonsIf", bSelectSingletonsIf, 0,0,0 },
+    { "SelectMoreSingletonsIf", bSelectMoreSingletonsIf, 0,0,0 },
+    { "SelectMoreIf", bSelectMoreIf, 0,0,0 },
+    { "SelectChanged", bSelectChanged, 0,0,0 },
+    { "SelectHintingNeeded", bSelectHintingNeeded, 0,0,0 },
+    { "SelectWorthOutputting", bSelectWorthOutputting, 0,0,0 },
+    { "SelectGlyphsSplines", bSelectGlyphsSplines, 0,0,0 },
+    { "SelectGlyphsReferences", bSelectGlyphsReferences, 0,0,0 },
+    { "SelectGlyphsBoth", bSelectGlyphsBoth, 0,0,0 },
+    { "SelectByATT", bSelectByATT, 0,0,0 },
+    { "SelectByPosSub", bSelectByPosSub, 0,3,0 },
+    { "SelectByColor", bSelectByColor, 0,2,0 },
+    { "SelectByColour", bSelectByColor, 0,2,0 },
 /* Element/Encoding Menu */
-    { "Reencode", bReencode, 0 },
-    { "RenameGlyphs", bRenameGlyphs, 0 },
-    { "SetCharCnt", bSetCharCnt, 0 },
-    { "DetachGlyphs", bDetachGlyphs, 0 },
-    { "DetachAndRemoveGlyphs", bDetachAndRemoveGlyphs, 0 },
-    { "RemoveDetachedGlyphs", bRemoveDetachedGlyphs, 0 },
-    { "LoadTableFromFile", bLoadTableFromFile, 0 },
-    { "SaveTableToFile", bSaveTableToFile, 0 },
-    { "RemovePreservedTable", bRemovePreservedTable, 0 },
-    { "HasPreservedTable", bHasPreservedTable, 0 },
-    { "LoadEncodingFile", bLoadEncodingFile, 1 },
-    { "SetGasp", bSetGasp, 0 },
-    { "SetFontOrder", bSetFontOrder, 0 },
-    { "SetFontHasVerticalMetrics", bSetFontHasVerticalMetrics, 0 },
-    { "SetFontNames", bSetFontNames, 0 },
-    { "SetFondName", bSetFondName, 0 },
-    { "SetTTFName", bSetTTFName, 0 },
-    { "GetTTFName", bGetTTFName, 0 },
-    { "SetItalicAngle", bSetItalicAngle, 0 },
-    { "SetMacStyle", bSetMacStyle, 0 },
-    { "SetPanose", bSetPanose, 0 },
-    { "GetFontBoundingBox", bGetFontBoundingBox, 0 },
-    { "SetOS2Value", bSetOS2Value, 0 },
-    { "GetOS2Value", bGetOS2Value, 0 },
-    { "SetMaxpValue", bSetMaxpValue, 0 },
-    { "GetMaxpValue", bGetMaxpValue, 0 },
-    { "SetUniqueID", bSetUniqueID, 0 },
-    { "SetTeXParams", bSetTeXParams, 0 },
-    { "GetTeXParam", bGetTeXParam, 0 },
-    { "SetGlyphName", bSetCharName, 0 },
-    { "SetCharName", bSetCharName, 0 },
-    { "SetUnicodeValue", bSetUnicodeValue, 0 },
-    { "SetGlyphClass", bSetGlyphClass, 0 },
-    { "SetGlyphColor", bSetCharColor, 0 },
-    { "SetGlyphComment", bSetCharComment, 0 },
-    { "SetCharColor", bSetCharColor, 0 },
-    { "SetCharComment", bSetCharComment, 0 },
-    { "BitmapsAvail", bBitmapsAvail, 0 },
-    { "BitmapsRegen", bBitmapsRegen, 0 },
-    { "SetGlyphChanged", bSetGlyphChanged, 0 },
-    { "ApplySubstitution", bApplySubstitution, 0 },
-    { "Transform", bTransform, 0 },
-    { "HFlip", bHFlip, 0 },
-    { "VFlip", bVFlip, 0 },
-    { "Rotate", bRotate, 0 },
-    { "Scale", bScale, 0 },
-    { "Skew", bSkew, 0 },
-    { "Move", bMove, 0 },
-    { "ScaleToEm", bScaleToEm, 0 },
-    { "Italic", bItalic, 0 },
-    { "ChangeWeight", bChangeWeight, 0 },
-    { "SmallCaps", bSmallCaps, 0 },
-    { "MoveReference", bMoveReference, 0 },
-    { "PositionReference", bPositionReference, 0 },
-    { "NonLinearTransform", bNonLinearTransform, 0 },
-    { "ExpandStroke", bExpandStroke, 0 },
-    { "Inline", bInline, 0 },
-    { "Outline", bOutline, 0 },
-    { "Shadow", bShadow, 0 },
-    { "Wireframe", bWireframe, 0 },
-    { "MakeLine", bMakeLine, 0 },
-    { "RemoveOverlap", bRemoveOverlap, 0 },
-    { "OverlapIntersect", bOverlapIntersect, 0 },
-    { "FindIntersections", bFindIntersections, 0 },
-    { "CanonicalStart", bCanonicalStart, 0 },
-    { "CanonicalContours", bCanonicalContours, 0 },
-    { "Simplify", bSimplify, 0 },
-    { "NearlyHvCps", bNearlyHvCps, 0 },
-    { "NearlyHvLines", bNearlyHvLines, 0 },
-    { "NearlyLines", bNearlyLines, 0 },
-    { "AddExtrema", bAddExtrema, 0 },
-    { "RoundToInt", bRoundToInt, 0 },
-    { "RoundToCluster", bRoundToCluster, 0 },
-    { "Autotrace", bAutotrace, 0 },
-    { "AutoTrace", bAutotrace, 0 },	/* Oops. docs say upperT, old scripts expect lowert */
-    { "CorrectDirection", bCorrectDirection, 0 },
-    { "AddPosSub", bAddPosSub, 0 },
-    { "RemovePosSub", bRemovePosSub, 0 },
-    { "AddATT", bAddATT, 0 },
-    { "DefaultATT", bDefaultATT, 0 },
-    { "RemoveATT", bRemoveATT, 0 },
-    { "RemoveLookup", bRemoveLookup, 0 },
-    { "MergeLookups", bMergeLookups, 0 },
-    { "RemoveLookupSubtable", bRemoveLookupSubtable, 0 },
-    { "MergeLookupSubtables", bMergeLookupSubtables, 0 },
-    { "AddLookup", bAddLookup, 0 },
-    { "SetFeatureList", bSetFeatureList, 0 },
-    { "LookupStoreLigatureInAfm", bLookupStoreLigatureInAfm, 0 },
-    { "GetLookups", bGetLookups, 0 },
-    { "GetLookupSubtables", bGetLookupSubtables, 0 },
-    { "GetLookupInfo", bGetLookupInfo, 0 },
-    { "AddLookupSubtable", bAddLookupSubtable, 0 },
-    { "GetLookupOfSubtable", bGetLookupOfSubtable, 0 },
-    { "GetSubtableOfAnchorClass", bGetSubtableOfAnchorClass, 0 },
-    { "CheckForAnchorClass", bCheckForAnchorClass, 0 },
-    { "AddAnchorClass", bAddAnchorClass, 0 },
-    { "RemoveAnchorClass", bRemoveAnchorClass, 0 },
-    { "AddAnchorPoint", bAddAnchorPoint, 0 },
-    { "AddSizeFeature", bAddSizeFeature, 0 },
-    { "BuildComposit", bBuildComposit, 0 },
-    { "BuildComposite", bBuildComposit, 0 },
-    { "BuildAccented", bBuildAccented, 0 },
-    { "AddAccent", bAppendAccent, 0 },
-    { "BuildDuplicate", bBuildDuplicate, 0 },
-    { "ReplaceWithReference", bReplaceOutlineWithReference, 0 },
-    { "InterpolateFonts", bInterpolateFonts, 0 },
-    { "MergeFonts", bMergeFonts, 0 },
-    { "DefaultUseMyMetrics", bDefaultUseMyMetrics, 0 },
-    { "DefaultRoundToGrid", bDefaultRoundToGrid, 0 },
+    { "Reencode", bReencode, 0,0,0 },
+    { "RenameGlyphs", bRenameGlyphs, 0,2,v_str },
+    { "SetCharCnt", bSetCharCnt, 0,2,v_int },
+    { "DetachGlyphs", bDetachGlyphs, 0,1,0 },
+    { "DetachAndRemoveGlyphs", bDetachAndRemoveGlyphs, 0,1,0 },
+    { "RemoveDetachedGlyphs", bRemoveDetachedGlyphs, 0,0,0 },
+    { "LoadTableFromFile", bLoadTableFromFile, 0,3,v_str },
+    { "SaveTableToFile", bSaveTableToFile, 0,3,v_str },
+    { "RemovePreservedTable", bRemovePreservedTable, 0,2,v_str },
+    { "HasPreservedTable", bHasPreservedTable, 0,2,v_str },
+    { "LoadEncodingFile", bLoadEncodingFile, 1,0,0 },
+    { "SetGasp", bSetGasp, 0,0,0 },
+    { "SetFontOrder", bSetFontOrder, 0,2,v_int },
+    { "SetFontHasVerticalMetrics", bSetFontHasVerticalMetrics, 0,2,v_int },
+    { "SetFontNames", bSetFontNames, 0,0,0 },
+    { "SetFondName", bSetFondName, 0,2,v_str },
+    { "SetTTFName", bSetTTFName, 0,4,0 },
+    { "GetTTFName", bGetTTFName, 0,3,v_int },
+    { "SetItalicAngle", bSetItalicAngle, 0,0,0 },
+    { "SetMacStyle", bSetMacStyle, 0,2,0 },
+    { "SetPanose", bSetPanose, 0,0,0 },
+    { "GetFontBoundingBox", bGetFontBoundingBox, 0,1,0 },
+    { "SetOS2Value", bSetOS2Value, 0,3,0 },
+    { "GetOS2Value", bGetOS2Value, 0,2,v_str },
+    { "SetMaxpValue", bSetMaxpValue, 0,3,0 },
+    { "GetMaxpValue", bGetMaxpValue, 0,2,v_str },
+    { "SetUniqueID", bSetUniqueID, 0,2,v_int },
+    { "SetTeXParams", bSetTeXParams, 0,0,0 },
+    { "GetTeXParam", bGetTeXParam, 0,2,v_int },
+    { "SetGlyphName", bSetCharName, 0,0,0 },
+    { "SetCharName", bSetCharName, 0,0,0 },
+    { "SetUnicodeValue", bSetUnicodeValue, 0,0,0 },
+    { "SetGlyphClass", bSetGlyphClass, 0,2,v_str },
+    { "SetGlyphColor", bSetCharColor, 0,2,0 },
+    { "SetGlyphComment", bSetCharComment, 0,2,v_str },
+    { "SetCharColor", bSetCharColor, 0,2,0 },
+    { "SetCharComment", bSetCharComment, 0,2,v_str },
+    { "BitmapsAvail", bBitmapsAvail, 0,0,0 },
+    { "BitmapsRegen", bBitmapsRegen, 0,0,0 },
+    { "SetGlyphChanged", bSetGlyphChanged, 0,2,v_int },
+    { "ApplySubstitution", bApplySubstitution, 0,4,v_str },
+    { "Transform", bTransform, 0,7,0 },
+    { "HFlip", bHFlip, 0,0,0 },
+    { "VFlip", bVFlip, 0,0,0 },
+    { "Rotate", bRotate, 0,0,0 },
+    { "Scale", bScale, 0,0,0 },
+    { "Skew", bSkew, 0,0,0 },
+    { "Move", bMove, 0,3,0 },
+    { "ScaleToEm", bScaleToEm, 0,0,0 },
+    { "Italic", bItalic, 0,0,0 },
+    { "ChangeWeight", bChangeWeight, 0,0,0 },
+    { "SmallCaps", bSmallCaps, 0,0,0 },
+    { "MoveReference", bMoveReference, 0,0,0 },
+    { "PositionReference", bPositionReference, 0,0,0 },
+    { "NonLinearTransform", bNonLinearTransform, 0,3,v_str },
+    { "ExpandStroke", bExpandStroke, 0,0,0 },
+    { "Inline", bInline, 0,3,v_int },
+    { "Outline", bOutline, 0,2,v_int },
+    { "Shadow", bShadow, 0,4,0 },
+    { "Wireframe", bWireframe, 0,4,0 },
+    { "MakeLine", bMakeLine, 0,0,0 },
+    { "RemoveOverlap", bRemoveOverlap, 0,1,0 },
+    { "OverlapIntersect", bOverlapIntersect, 0,1,0 },
+    { "FindIntersections", bFindIntersections, 0,1,0 },
+    { "CanonicalStart", bCanonicalStart, 0,1,0 },
+    { "CanonicalContours", bCanonicalContours, 0,1,0 },
+    { "Simplify", bSimplify, 0,0,0 },
+    { "NearlyHvCps", bNearlyHvCps, 0,0,0 },
+    { "NearlyHvLines", bNearlyHvLines, 0,0,0 },
+    { "NearlyLines", bNearlyLines, 0,0,0 },
+    { "AddExtrema", bAddExtrema, 0,0,0 },
+    { "RoundToInt", bRoundToInt, 0,0,0 },
+    { "RoundToCluster", bRoundToCluster, 0,0,0 },
+    { "Autotrace", bAutotrace, 0,1,0 },
+    { "AutoTrace", bAutotrace, 0,1,0 },	/* Oops. docs say upperT, old scripts expect lowert */
+    { "CorrectDirection", bCorrectDirection, 0,0,0 },
+    { "AddPosSub", bAddPosSub, 0,0,0 },
+    { "RemovePosSub", bRemovePosSub, 0,2,v_str },
+    { "AddATT", bAddATT, 0,0,0 },
+    { "DefaultATT", bDefaultATT, 0,0,0 },
+    { "RemoveATT", bRemoveATT, 0,0,0 },
+    { "RemoveLookup", bRemoveLookup, 0,0,0 },
+    { "MergeLookups", bMergeLookups, 0,3,v_str },
+    { "RemoveLookupSubtable", bRemoveLookupSubtable, 0,0,0 },
+    { "MergeLookupSubtables", bMergeLookupSubtables, 0,3,v_str },
+    { "AddLookup", bAddLookup, 0,0,0 },
+    { "SetFeatureList", bSetFeatureList, 0,3,0 },
+    { "LookupStoreLigatureInAfm", bLookupStoreLigatureInAfm, 0,3,0 },
+    { "GetLookups", bGetLookups, 0,2,v_str },
+    { "GetLookupSubtables", bGetLookupSubtables, 0,2,v_str },
+    { "GetLookupInfo", bGetLookupInfo, 0,2,v_str },
+    { "AddLookupSubtable", bAddLookupSubtable, 0,0,0 },
+    { "GetLookupOfSubtable", bGetLookupOfSubtable, 0,2,v_str },
+    { "GetSubtableOfAnchorClass", bGetSubtableOfAnchorClass, 0,2,v_str },
+    { "CheckForAnchorClass", bCheckForAnchorClass, 0,2,v_str },
+    { "AddAnchorClass", bAddAnchorClass, 0,0,0 },
+    { "RemoveAnchorClass", bRemoveAnchorClass, 0,2,v_str },
+    { "AddAnchorPoint", bAddAnchorPoint, 0,0,0 },
+    { "AddSizeFeature", bAddSizeFeature, 0,0,0 },
+    { "BuildComposit", bBuildComposit, 0,1,0 },
+    { "BuildComposite", bBuildComposit, 0,1,0 },
+    { "BuildAccented", bBuildAccented, 0,1,0 },
+    { "AddAccent", bAppendAccent, 0,0,0 },
+    { "BuildDuplicate", bBuildDuplicate, 0,1,0 },
+    { "ReplaceWithReference", bReplaceOutlineWithReference, 0,0,0 },
+    { "InterpolateFonts", bInterpolateFonts, 0,0,0 },
+    { "MergeFonts", bMergeFonts, 0,0,0 },
+    { "DefaultUseMyMetrics", bDefaultUseMyMetrics, 0,1,0 },
+    { "DefaultRoundToGrid", bDefaultRoundToGrid, 0,1,0 },
 /*  Menu */
-    { "AutoHint", bAutoHint, 0 },
-    { "SubstitutionPoints", bSubstitutionPoints, 0 },
-    { "AutoCounter", bAutoCounter, 0 },
-    { "DontAutoHint", bDontAutoHint, 0 },
+    { "AutoHint", bAutoHint, 0,1,0 },
+    { "SubstitutionPoints", bSubstitutionPoints, 0,1,0 },
+    { "AutoCounter", bAutoCounter, 0,1,0 },
+    { "DontAutoHint", bDontAutoHint, 0,1,0 },
   /* Some idiot (me) put the wrong names in for these functions. I've since */
   /*  corrected that blunder (above) but just in case anyone uses the bad */
   /*  names, I guess I should leave them in */
-    { "bSubstitutionPoints", bSubstitutionPoints, 0 },
-    { "bAutoCounter", bAutoCounter, 0 },
-    { "bDontAutoHint", bDontAutoHint, 0 },
+    { "bSubstitutionPoints", bSubstitutionPoints, 0,1,0 },
+    { "bAutoCounter", bAutoCounter, 0,1,0 },
+    { "bDontAutoHint", bDontAutoHint, 0,1,0 },
   /* end blunder */
-    { "AddHHint", bAddHHint, 0 },
-    { "AddVHint", bAddVHint, 0 },
-    { "AddDHint", bAddDHint, 0 },
-    { "ClearGlyphCounterMasks", bClearCharCounterMasks, 0 },
-    { "SetGlyphCounterMask", bSetCharCounterMask, 0 },
-    { "ReplaceGlyphCounterMasks", bReplaceCharCounterMasks, 0 },
-    { "ClearCharCounterMasks", bClearCharCounterMasks, 0 },
-    { "SetCharCounterMask", bSetCharCounterMask, 0 },
-    { "ReplaceCharCounterMasks", bReplaceCharCounterMasks, 0 },
-    { "ClearPrivateEntry", bClearPrivateEntry, 0 },
-    { "PrivateGuess", bPrivateGuess, 0 },
-    { "ChangePrivateEntry", bChangePrivateEntry, 0 },
-    { "HasPrivateEntry", bHasPrivateEntry, 0 },
-    { "GetPrivateEntry", bGetPrivateEntry, 0 },
-    { "AutoInstr", bAutoInstr, 0 },
-    { "AddInstrs", bAddInstrs, 0 },
-    { "FindOrAddCvtIndex", bFindOrAddCvtIndex, 0 },
-    { "GetCvtAt", bGetCvtAt, 0 },
-    { "ReplaceCvtAt", bReplaceCvtAt, 0 },
-    { "PrivateToCvt", bPrivateToCvt, 0 },
-    { "ClearInstrs", bClearInstrs, 0 },
-    { "ClearTable", bClearTable, 0 },
-    { "ClearHints", bClearHints, 0 },
-    { "SelectBitmap", bSelectBitmap, 0 },
-    { "SetWidth", bSetWidth, 0 },
-    { "SetVWidth", bSetVWidth, 0 },
-    { "SetLBearing", bSetLBearing, 0 },
-    { "SetRBearing", bSetRBearing, 0 },
-    { "CenterInWidth", bCenterInWidth, 0 },
-    { "AutoWidth", bAutoWidth, 0 },
-    { "AutoKern", bAutoKern, 0 },
-    { "SetKern", bSetKern, 0 },
-    { "RemoveAllKerns", bClearAllKerns, 0 },
-    { "SetVKern", bSetVKern, 0 },
-    { "RemoveAllVKerns", bClearAllVKerns, 0 },
-    { "VKernFromHKern", bVKernFromHKern, 0 },
+    { "AddHHint", bAddHHint, 0,3,0 },
+    { "AddVHint", bAddVHint, 0,3,0 },
+    { "AddDHint", bAddDHint, 0,7,0 },
+    { "ClearGlyphCounterMasks", bClearCharCounterMasks, 0,1,0 },
+    { "SetGlyphCounterMask", bSetCharCounterMask, 0,0,0 },
+    { "ReplaceGlyphCounterMasks", bReplaceCharCounterMasks, 0,2,v_arr },
+    { "ClearCharCounterMasks", bClearCharCounterMasks, 0,1,0 },
+    { "SetCharCounterMask", bSetCharCounterMask, 0,0,0 },
+    { "ReplaceCharCounterMasks", bReplaceCharCounterMasks, 0,2,v_arr },
+    { "ClearPrivateEntry", bClearPrivateEntry, 0,2,v_str },
+    { "PrivateGuess", bPrivateGuess, 0,2,v_str },
+    { "ChangePrivateEntry", bChangePrivateEntry, 0,3,v_str },
+    { "HasPrivateEntry", bHasPrivateEntry, 0,2,v_str },
+    { "GetPrivateEntry", bGetPrivateEntry, 0,2,v_str },
+    { "AutoInstr", bAutoInstr, 0,1,0 },
+    { "AddInstrs", bAddInstrs, 0,4,0 },
+    { "FindOrAddCvtIndex", bFindOrAddCvtIndex, 0,0,0 },
+    { "GetCvtAt", bGetCvtAt, 0,2,v_int },
+    { "ReplaceCvtAt", bReplaceCvtAt, 0,3,v_int },
+    { "PrivateToCvt", bPrivateToCvt, 0,0,0 },
+    { "ClearInstrs", bClearInstrs, 0,1,0 },
+    { "ClearTable", bClearTable, 0,2,v_str },
+    { "ClearHints", bClearHints, 0,0,0 },
+    { "SelectBitmap", bSelectBitmap, 0,2,v_int },
+    { "SetWidth", bSetWidth, 0,0,0 },
+    { "SetVWidth", bSetVWidth, 0,0,0 },
+    { "SetLBearing", bSetLBearing, 0,0,0 },
+    { "SetRBearing", bSetRBearing, 0,0,0 },
+    { "CenterInWidth", bCenterInWidth, 0,1,0 },
+    { "AutoWidth", bAutoWidth, 0,0,0 },
+    { "AutoKern", bAutoKern, 0,0,0 },
+    { "SetKern", bSetKern, 0,0,0 },
+    { "RemoveAllKerns", bClearAllKerns, 0,1,0 },
+    { "SetVKern", bSetVKern, 0,0,0 },
+    { "RemoveAllVKerns", bClearAllVKerns, 0,1,0 },
+    { "VKernFromHKern", bVKernFromHKern, 0,1,0 },
 /* MM Menu */
-    { "MMInstanceNames", bMMInstanceNames, 0 },
-    { "MMAxisNames", bMMAxisNames, 0 },
-    { "MMAxisBounds", bMMAxisBounds, 0 },
-    { "MMWeightedName", bMMWeightedName, 0 },
-    { "MMChangeInstance", bMMChangeInstance, 0 },
-    { "MMChangeWeight", bMMChangeWeight, 0 },
-    { "MMBlendToNewFont", bMMBlendToNewFont, 0 },
+    { "MMInstanceNames", bMMInstanceNames, 0,1,0 },
+    { "MMAxisNames", bMMAxisNames, 0,1,0 },
+    { "MMAxisBounds", bMMAxisBounds, 0,2,v_int },
+    { "MMWeightedName", bMMWeightedName, 0,1,0 },
+    { "MMChangeInstance", bMMChangeInstance, 0,2,0 },
+    { "MMChangeWeight", bMMChangeWeight, 0,2,v_arr },
+    { "MMBlendToNewFont", bMMBlendToNewFont, 0,2,v_arr },
 /* CID Menu */
-    { "PreloadCidmap", bPreloadCidmap, 1 },
-    { "ConvertToCID", bConvertToCID, 0 },
-    { "ConvertByCMap", bConvertByCMap, 0 },
-    { "CIDChangeSubFont", bCIDChangeSubFont, 0 },
-    { "CIDSetFontNames", bCIDSetFontNames, 0 },
-    { "CIDFlatten", bCIDFlatten, 0 },
-    { "CIDFlattenByCMap", bCIDFlattenByCMap, 0 },
+    { "PreloadCidmap", bPreloadCidmap, 1,5,0 },
+    { "ConvertToCID", bConvertToCID, 0,4,0 },
+    { "ConvertByCMap", bConvertByCMap, 0,2,v_str },
+    { "CIDChangeSubFont", bCIDChangeSubFont, 0,2,v_str },
+    { "CIDSetFontNames", bCIDSetFontNames, 0,0,0 },
+    { "CIDFlatten", bCIDFlatten, 0,1,0 },
+    { "CIDFlattenByCMap", bCIDFlattenByCMap, 0,2,v_str },
 /* ***** */
-    { "CharCnt", bCharCnt, 0 },
-    { "InFont", bInFont, 0 },
-    { "DrawsSomething", bDrawsSomething, 0 },
-    { "WorthOutputting", bWorthOutputting, 0 },
-    { "CharInfo", bCharInfo, 0 },
-    { "GlyphInfo", bCharInfo, 0 },
-    { "GetAnchorPoints", bGetAnchorPoints, 0 },
-    { "GetPosSub", bGetPosSub, 0 },
-    { "SetGlyphTeX", bSetGlyphTeX, 0 },
-    { "CompareGlyphs", bCompareGlyphs, 0 },
-    { "CompareFonts", bCompareFonts, 0 },
-    { "Validate", bValidate, 0 },
-    { "DebugCrashFontForge", bDebugCrashFontForge, 0 },
-    { NULL, 0, 0 }
+    { "CharCnt", bCharCnt, 0,1,0 },
+    { "InFont", bInFont, 0,0,0 },
+    { "DrawsSomething", bDrawsSomething, 0,2,0 },
+    { "WorthOutputting", bWorthOutputting, 0,0,0 },
+    { "CharInfo", bCharInfo, 0,0,0 },
+    { "GlyphInfo", bCharInfo, 0,0,0 },
+    { "GetAnchorPoints", bGetAnchorPoints, 0,0,0 },
+    { "GetPosSub", bGetPosSub, 0,2,v_str },
+    { "SetGlyphTeX", bSetGlyphTeX, 0,0,0 },
+    { "CompareGlyphs", bCompareGlyphs, 0,0,0 },
+    { "CompareFonts", bCompareFonts, 0,4,0 },
+    { "Validate", bValidate, 0,0,0 },
+    { "DebugCrashFontForge", bDebugCrashFontForge, 0,0,0 },
+    { "ClearSpecialData", bclearSpecialData, 0,1,0 },
+    { NULL, 0, 0,0,0 }
 };
 
 static struct builtins *userdefined=NULL;
 static int ud_cnt=0, ud_max=0;
 
 int AddScriptingCommand(char *name,void (*func)(Context *),int needs_font ) {
+/* Add a new native scripting command (provided by 3rd_party plugin). */
     int i;
 
     for ( i=0; builtins[i].name!=NULL; ++i )
 	if ( strcmp(builtins[i].name,name)==0 )
-return( 0 );			/* Can't supercede a built in function */
+	    return( 0 );	/* Can't supercede a built in function */
 
     for ( i=0; i<ud_cnt; ++i )
 	if ( strcmp(userdefined[i].name,name)==0 ) {
 	    userdefined[i].func = func;
-	    userdefined[i].nofontok = !needs_font;
-return( 2 );
+	    userdefined[i].nofontok = needs_font ? 0:1;
+	    return( 2 );
 	}
 
-    if ( ud_cnt >= ud_max )
-	userdefined = realloc(userdefined,(ud_max+=20)*sizeof(struct builtins));
-    userdefined[ud_cnt].name = copy(name);
+    if ( ud_cnt >= ud_max ) {
+	/* create more space for +20 more user defined commands */
+	struct builtins *temp;
+	temp = realloc(userdefined,(ud_max+20)*sizeof(struct builtins));
+	if ( temp==NULL )
+	    return( 0 );
+	ud_max+=20;
+	userdefined = temp;
+    }
+
+    if ( (userdefined[ud_cnt].name=copy(name))==NULL )
+	return( 0 );
     userdefined[ud_cnt].func = func;
-    userdefined[ud_cnt].nofontok = !needs_font;
-return( true );
+    userdefined[ud_cnt].nofontok = needs_font ? 0:1;
+    userdefined[ud_cnt].argcnt = 0;
+    userdefined[ud_cnt].argtype = 0;
+    return( true );
 }
 
 UserDefScriptFunc HasUserScriptingCommand(char *name) {
@@ -9227,6 +8996,7 @@ static void docall(Context *c,char *name,Val *val) {
 	sub.curfv = c->curfv;
 	sub.trace = c->trace;
 	sub.dontfree = dontfree;
+	/* sub.error = ce_false = 0 = implied, no error yet */
 	for ( i=0; i<sub.a.argc; ++i ) {
 	    dereflvalif(&args[i]);
 	    if ( args[i].type == v_arrfree )
@@ -9272,9 +9042,59 @@ static void docall(Context *c,char *name,Val *val) {
 	if ( found!=NULL ) {
 	    if ( verbose>0 )
 		fflush(stdout);
-	    if ( sub.curfv==NULL && !found->nofontok )
+	    if ( sub.curfv==NULL && !found->nofontok ) {
 		ScriptError(&sub,"This command requires an active font");
+		goto docall_skipfunc;
+	    }
+	    if ( found->argcnt ) {
+		/* builtins: check arg count if need exact number */
+		if ( sub.a.argc!=found->argcnt ) {
+		    c->error = ce_wrongnumarg;
+		    goto docall_wrongnumarg;
+		}
+		if ( found->argtype ) {
+		    /* builtins: verify arg is correct type */
+		    for ( i=1; i<found->argcnt; ++i )
+			if ( sub.a.vals[i].type!=found->argtype ) {
+			    if ( found->argtype==v_str ) {
+				c->error = ce_expectstr;
+				goto docall_expectstr;
+			    } else if ( found->argtype==v_int ) {
+				c->error = ce_expectint;
+				goto docall_expectint;
+			    } else if ( found->argtype==v_real ) {
+				ScriptError(&sub,"Bad type for argument");
+			    } else if ( found->argtype==v_arr || found->argtype==v_arrfree )
+				ScriptError(&sub,"Expected array argument");
+			    else {
+				c->error = ce_badargtype;
+				goto docall_badargtype;
+			    }
+			    goto docall_skipfunc;
+			}
+		}
+	    }
+docall_dofunc:
 	    (found->func)(&sub);
+docall_skipfunc:
+	    switch (sub.error) { /* check if any error in results */
+		case ce_false: break;
+		case ce_true: break;
+		case ce_wrongnumarg:
+docall_wrongnumarg: ScriptError(&sub,"Wrong number of arguments");
+		    break;
+		case ce_badargtype:
+docall_badargtype: ScriptError(&sub,"Bad type for argument ");
+		    break;
+		case ce_expectstr:
+docall_expectstr:   ScriptError(&sub,"Expected string argument");
+		    break;
+		case ce_expectint:
+docall_expectint:   ScriptError(&sub,"Expected integer argument");
+		    break;
+		case ce_quit:
+		    exit(sub.return_val.u.ival);
+	    }
 	} else {
 	    if ( strchr(name,'/')==NULL && strchr(c->filename,'/')!=NULL ) {
 		char *pt;
@@ -9532,6 +9352,7 @@ static void handlename(Context *c,Val *val) {
 		val->u.aval = malloc(sizeof(Array));
 		val->u.aval->argc = 10;
 		val->u.aval->vals = malloc((10+1)*sizeof(Val));
+		memset(&pfminfo,'\0',sizeof(pfminfo));
 		SFDefaultOS2Info(&pfminfo,sf,sf->fontname);
 		for ( cnt=0; cnt<10; ++cnt ) {
 		    val->u.aval->vals[cnt].type = v_int;
@@ -10408,8 +10229,10 @@ _Noreturn void ProcessNativeScript(int argc, char *argv[], FILE *script) {
 		// If the script is accessible, we start to parse it.
 		c.lineno = 1;
 		// Set the jump environment for returning from the error reporter.
-		while (setjmp(env));
-		c.err_env = &env;
+                if (c.interactive) {
+                    while (setjmp(env));
+                    c.err_env = &env;
+                }
 		// Parse and execute.
 		while ( c.script && !c.error && !c.returned && !c.broken && (tok = ff_NextToken(&c))!=tt_eof ) {
 			ff_backuptok(&c);
@@ -10467,11 +10290,6 @@ static void _CheckIsScript(int argc, char *argv[]) {
     int i, is_python = DefaultLangPython();
     char *pt;
 
-#ifndef _NO_PYTHON
-/*# ifndef GWW_TEST*/
-    FontForge_InitializeEmbeddedPython(); /* !!!!!! debug (valgrind doesn't like python) */
-/*# endif*/
-#endif
     if ( argc==1 )
 return;
     for ( i=1; i<argc; ++i ) {
@@ -10479,6 +10297,8 @@ return;
 	if ( *pt=='-' && pt[1]=='-' && pt[2]!='\0' ) ++pt;
 	if ( strcmp(pt,"-nosplash")==0 || strcmp(pt,"-quiet")==0 )
 	    /* Skip it */;
+	else if ( strcmp(pt,"-forceuihidden")==0 )
+	    cmdlinearg_forceUIHidden = true;
 	else if ( strcmp(pt,"-lang=py")==0 )
 	    is_python = true;
 	else if ( strcmp(pt,"-lang=ff")==0 || strcmp(pt,"-lang=pe")==0 )
@@ -10589,12 +10409,16 @@ return;				/* Error return */
 
 void ExecuteScriptFile(FontViewBase *fv, SplineChar *sc, char *filename) {
 #if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
-    if ( sc!=NULL || PythonLangFromExt(filename))
+    if ( sc!=NULL || PythonLangFromExt(filename)) {
+        FontForge_InitializeEmbeddedPython();
 	PyFF_ScriptFile(fv,sc,filename);
-    else
+        FontForge_FinalizeEmbeddedPython();
+    } else
 	ExecuteNativeScriptFile(fv,filename);
 #elif !defined(_NO_PYTHON)
+    FontForge_InitializeEmbeddedPython();
     PyFF_ScriptFile(fv,sc,filename);
+    FontForge_FinalizeEmbeddedPython();
 #elif !defined(_NO_FFSCRIPT)
     ExecuteNativeScriptFile(fv,filename);
 #endif

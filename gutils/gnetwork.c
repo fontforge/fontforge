@@ -29,6 +29,10 @@
 #include "inc/gnetwork.h"
 #include "inc/ustring.h"
 
+#ifdef BUILD_COLLAB
+#include "czmq.h"
+#endif
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -44,13 +48,6 @@ extern int h_errno;
 #endif
 
 #include <arpa/inet.h>
-
-#ifdef BUILD_COLLAB
-#if !defined(__MINGW32__)
-#include <uuid/uuid.h>
-#endif
-#endif
-
 
 char* ff_gethostname( char* outstring, int outstring_sz )
 {
@@ -119,19 +116,25 @@ char* HostPortUnpack( char* packed, int* port, int port_default )
 
 
 //
-// target must be at least 1b4e28ba-2fa1-11d2-883f-0016d3cca427 + null in length.
+// target must be at least 32 bytes + NUL in length.
 //
 char* ff_uuid_generate( char* target )
 {
-    strcpy( target, "" );
-
 #ifdef BUILD_COLLAB
-#if !defined(__MINGW32__)
-    uuid_t uuid;
-    uuid_generate (uuid);
-    uuid_unparse_lower( uuid, target );
-#endif
+    zuuid_t *uuid = zuuid_new ();
+    strcpy (target, zuuid_str (uuid));
+    zuuid_destroy (&uuid);
+#else
+    strcpy( target, "" );
 #endif // collab guard.
 
     return target;
 }
+
+int ff_uuid_isValid( char* uuid )
+{
+    if( !uuid ) return 0;
+    if( !strlen(uuid)) return 0;
+    return 1;
+}
+

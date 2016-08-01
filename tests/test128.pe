@@ -1,0 +1,16 @@
+#Tests buffer overflow condition and correct operation of StrSplit
+
+ToString(StrSplit("a;bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",";",1));
+
+x=StrSplit("aaa;bbb;ccc",";")
+if (x[0]!="aaa")
+  Quit(1)
+endif
+if (x[1]!="bbb")
+  Quit(1)
+endif
+if (x[2]!="ccc")
+  Quit(1)
+endif
+
+Quit(0)

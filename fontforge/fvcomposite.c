@@ -2499,6 +2499,7 @@ static void DoRules(SplineFont *sf,SplineChar *sc,int layer,BDFFont *bdf,int dis
 	SplineMake(sp,first,sc->layers[layer].order2);
 	sc->layers[layer].splines = chunkalloc(sizeof(SplinePointList));
 	sc->layers[layer].splines->first = sc->layers[layer].splines->last = first;
+	sc->layers[layer].splines->start_offset = 0;
 	sc->width = width;
 	sc->widthset = true;
 	SCCharChangedUpdate(sc,layer);
@@ -2518,7 +2519,7 @@ static void DoRules(SplineFont *sf,SplineChar *sc,int layer,BDFFont *bdf,int dis
 static void BCDoRotation(BDFFont *bdf, int gid) {
     BDFChar *from, *to;
 
-    if ( gid>=bdf->glyphcnt || gid>=bdf->glyphcnt || bdf->glyphs[gid]==NULL )
+    if ( gid>=bdf->glyphcnt || bdf->glyphs[gid]==NULL )
 return;
     from = bdf->glyphs[gid];
     to = BDFMakeGID(bdf,gid);
@@ -2614,7 +2615,7 @@ return;
 static int SCMakeRightToLeftLig(SplineChar *sc,SplineFont *sf,
 	int layer, const unichar_t *start,BDFFont *bdf,int disp_only) {
     int cnt = u_strlen(start);
-    int ret, ch, alt_ch;
+    int ret=false, ch, alt_ch;
     const unichar_t *pt;
 
     pt = start+cnt-1;

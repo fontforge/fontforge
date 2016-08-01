@@ -96,8 +96,6 @@ extern int old_sfnt_flags;
 extern int old_ps_flags;		/* in savefontdlg.c */
 extern int old_validate;		/* in savefontdlg.c */
 extern int old_fontlog;			/* in savefontdlg.c */
-extern char *oflib_username;		/* in savefontdlg.c */
-extern char *oflib_password;		/* in savefontdlg.c */
 extern int oldsystem;			/* in bitmapdlg.c */
 extern int preferpotrace;		/* in autotrace.c */
 extern int autotrace_ask;		/* in autotrace.c */
@@ -121,7 +119,6 @@ extern int new_em_size;				/* in splineutil2.c */
 extern int new_fonts_are_order2;		/* in splineutil2.c */
 extern int loaded_fonts_same_as_new;		/* in splineutil2.c */
 extern int use_second_indic_scripts;		/* in tottfgpos.c */
-extern char *helpdir;				/* in uiutil.c */
 static char *othersubrsfile = NULL;
 extern MacFeat *default_mac_feature_map,	/* from macenc.c */
 		*user_mac_feature_map;
@@ -224,8 +221,7 @@ static struct prefs_list {
     unsigned int dontdisplay: 1;
     char *popup;
 } general_list[] = {
-	{ N_("ResourceFile"), pr_file, &xdefs_filename, NULL, NULL, 'R', NULL, 0, N_("When FontForge starts up, it loads display related resources from a\nproperty on the screen. Sometimes it is useful to be able to store\nthese resources in a file. These resources are only read at start\nup, so changing this has no effect until the next time you start\nFontForge.") },
-	{ N_("HelpDir"), pr_file, &helpdir, NULL, NULL, 'H', NULL, 0, N_("The directory on your local system in which FontForge will search for help\nfiles.  If a file is not found there, then FontForge will look for it on the net.") },
+	{ N_("ResourceFile"), pr_file, &xdefs_filename, NULL, NULL, 'R', NULL, 0, N_("When FontForge starts up, it loads the user interface theme from\nthis file. Any changes will only take effect the next time you start FontForge.") },
 	{ N_("OtherSubrsFile"), pr_file, &othersubrsfile, NULL, NULL, 'O', NULL, 0, N_("If you wish to replace Adobe's OtherSubrs array (for Type1 fonts)\nwith an array of your own, set this to point to a file containing\na list of up to 14 PostScript subroutines. Each subroutine must\nbe preceded by a line starting with '%%%%' (any text before the\nfirst '%%%%' line will be treated as an initial copyright notice).\nThe first three subroutines are for flex hints, the next for hint\nsubstitution (this MUST be present), the 14th (or 13 as the\nnumbering actually starts with 0) is for counter hints.\nThe subroutines should not be enclosed in a [ ] pair.") },
 	{ N_("FreeTypeInFontView"), pr_bool, &use_freetype_to_rasterize_fv, NULL, NULL, 'O', NULL, 0, N_("Use the FreeType rasterizer (when available)\nto rasterize glyphs in the font view.\nThis generally results in better quality.") },
 	{ N_("SplashScreen"), pr_bool, &splash, NULL, NULL, 'S', NULL, 0, N_("Show splash screen on start-up") },
@@ -347,8 +343,6 @@ static struct prefs_list {
 	{ "DefaultBitmapFormat", pr_int, &oldbitmapstate, NULL, NULL, '\0', NULL, 1 },
 	{ "SaveValidate", pr_int, &old_validate, NULL, NULL, '\0', NULL, 1 },
 	{ "SaveFontLogAsk", pr_int, &old_fontlog, NULL, NULL, '\0', NULL, 1 },
-	{ "OFLibUsername", pr_string, &oflib_username, NULL, NULL, '\0', NULL, 1 },
-	{ "OFLibPassword", pr_string, &oflib_password, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultSFNTflags", pr_int, &old_sfnt_flags, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultPSflags", pr_int, &old_ps_flags, NULL, NULL, '\0', NULL, 1 },
 	{ "PageWidth", pr_int, &pagewidth, NULL, NULL, '\0', NULL, 1 },
@@ -747,26 +741,12 @@ static void DefaultXUID(void) {
     g_random_set_seed(tv.tv_usec+1);
     r2 = g_random_int();
     sprintf( buffer, "1021 %d %d", r1, r2 );
-    free(xuid);
+    if (xuid != NULL) free(xuid);
     xuid = copy(buffer);
 }
 
-static void DefaultHelp(void) {
-    if ( helpdir==NULL ) {
-#ifdef DOCDIR
-	helpdir = copy(DOCDIR "/");
-#elif defined(SHAREDIR)
-	helpdir = copy(SHAREDIR "/doc/fontforge/");
-#else
-	helpdir = copy("/usr/local/share/doc/fontforge/");
-#endif
-    }
-}
-
 static void PrefsUI_SetDefaults(void) {
-
     DefaultXUID();
-    DefaultHelp();
     local_encoding = DefaultEncoding();
 }
 

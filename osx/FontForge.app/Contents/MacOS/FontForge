@@ -4,6 +4,32 @@ if test "x$DEBUG_LAUNCHER" != x; then
     set -x
 fi
 
+# $0 is possibly relative path to this script.
+SCRIPT_PATH="$( cd "$( dirname "$0" )" && pwd )"
+PKGBASEPATH="$( cd "${SCRIPT_PATH}/../.." && pwd )"
+
+echo "PKGBASE: $PKGBASEPATH"
+
+APPLICATIONS_FONTFORGE="/Applications/FontForge.app"
+if [ -L $APPLICATIONS_FONTFORGE ]; then
+    echo "your fontforge install is using a link...";
+    APPLICATIONS_FONTFORGE=$(readlink $APPLICATIONS_FONTFORGE);
+    echo "you actually installed the real file into $APPLICATIONS_FONTFORGE"
+fi
+
+
+if [ y"$PKGBASEPATH" != "y$APPLICATIONS_FONTFORGE" ]; then
+  COCOA_DIALOG="${SCRIPT_PATH}/CocoaDialog.app/Contents/MacOS/CocoaDialog";
+  $COCOA_DIALOG msgbox --no-newline \
+    --title "FontForge: Error starting" \
+    --text "FontForge is in the wrong folder on your computer." \
+    --informative-text "Please move the FontForge.app to your system /Applications folder." \
+    --button1 "OK" --float
+    BASEPATH="$( cd "${PKGBASEPATH}/.." && pwd )"
+    open "$BASEPATH"
+    exit;
+fi
+
 name=`basename "$0"`
 tmp="$0"
 tmp=`dirname "$tmp"`
@@ -20,7 +46,7 @@ bundle_data="$bundle_res"/opt/local/share
 bundle_etc="$bundle_res"/opt/local/etc
 bundle_share="$bundle_res"/opt/local/share
 
-#export DYLD_LIBRARY_PATH="$bundle_lib"
+export DYLD_LIBRARY_PATH="$bundle_lib"
 export XDG_CONFIG_DIRS="$bundle_etc"/xdg
 export XDG_DATA_DIRS="$bundle_data"
 export GTK_DATA_PREFIX="$bundle_res"
@@ -54,6 +80,15 @@ if [ x"$1" == "x--debug" -o x"$1" == "x--debug-clearenv" ]; then
     fi
 
     if command -v lldb 2>/dev/null; then
+
+        export PYTHONPATH="/Applications/FontForge.app/Contents/MacOS/Even.app/Contents/Resources/lib/"
+        export PATH="$PATH:$bundle_bin"
+        export PYTHON="$bundle_bin/Python.framework.*/bin/python"
+        export PYTHONHOME="$bundle_bin/Python.framework.2.7"
+
+        echo "have set up python stuff... PYTHONHOME: $PYTHONHOME "
+        echo "have set up python stuff... PYTHON:     $PYTHON "
+
         WRAPPER="gdb --args"
         WRAPPER="script $HOME/FontForge-Debug-Output.txt lldb --debug --source /Applications/FontForge.app/Contents/MacOS/debug-script -- "
         $WRAPPER
@@ -81,6 +116,23 @@ export LD_LIBRARY_PATH="$bundle_lib"
 /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f FontForge.app
 $scriptdir/fcprogress.pl >|/tmp/zz 2>&1
 
+# This ensures that File Open and File Save (etc) dialogs open in Home
+# when FontForge is launched via normal OS X methods (double-clicking
+# on the application or a SFD file, spotlight, etc.). If this script is
+# invoked via command line, assume the user knows what they are doing,
+# and don't change the current directory.
+if [ "$( ps -o comm= $PPID)" = "/sbin/launchd" ] ; then
+    cd ~/ || true
+fi
+
+# starting more than one does nothing, and it will close itself.
+/Applications/FontForge.app/Contents/MacOS/fontforge-crash-reporter.py &
+
 export PATH="$PATH:$bundle_bin"
-echo $WRAPPER $bundle_bin/fontforge -new "$@" > /tmp/oo
-$WRAPPER $bundle_bin/fontforge -new "$@"
+echo $WRAPPER $bundle_bin/fontforge > /tmp/oo
+
+if [ $# -eq 0 ] ; then
+    ( exec $WRAPPER $bundle_bin/fontforge -new & )
+else
+    ( exec $WRAPPER $bundle_bin/fontforge "$@" & )
+fi

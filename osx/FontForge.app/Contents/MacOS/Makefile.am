@@ -28,7 +28,8 @@ include $(top_srcdir)/mk/layout.am
 
 SUBDIRS = CocoaDialog.app
 FFAPP_FILES = FontForge FFPython debug-script fcprogress.pl \
-    library-paths-opt-local-to-absolute.sh library-paths-to-absolute.sh
+    library-paths-opt-local-to-absolute.sh library-paths-to-absolute.sh ldd \
+    Attach-Debugger-to-running-FontForge fontforge-crash-reporter.py
 EXTRA_DIST = $(FFAPP_FILES)
 
 if PLATFORM_OSX

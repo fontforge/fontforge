@@ -54,7 +54,7 @@ return;
     depth = 4;
     bdfc = SplineCharFreeTypeRasterizeNoHints(sc,layer,pixelsize,72,4);
     if ( bdfc==NULL )
-	bdfc = SplineCharAntiAlias(sc,pixelsize,layer,4);
+	bdfc = SplineCharAntiAlias(sc,layer,pixelsize,4);
     if ( bdfc==NULL )
 return;
 
@@ -77,11 +77,10 @@ int _ExportEPS(FILE *eps,SplineChar *sc, int layer, int preview) {
     time_t now;
     struct tm *tm;
     int ret;
-    char oldloc[24];
     const char *author = GetAuthor();
 
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
 
     fprintf( eps, "%%!PS-Adobe-3.0 EPSF-3.0\n" );
     SplineCharLayerFindBounds(sc,layer,&b);
@@ -127,7 +126,7 @@ int _ExportEPS(FILE *eps,SplineChar *sc, int layer, int preview) {
 	fprintf( eps, "fill grestore\n" );
     fprintf( eps, "%%%%EOF\n" );
     ret = !ferror(eps);
-    setlocale(LC_NUMERIC,oldloc);
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
 return( ret );
 }
 
@@ -157,8 +156,8 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
     int i;
 
     SFUntickAll(sc->parent);
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
 
     fprintf( pdf, "%%PDF-1.4\n%%\201\342\202\203\n" );	/* Header comment + binary comment */
     /* Every document contains a catalog which points to a page tree, which */
@@ -271,7 +270,7 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
 	free(objlocs);
 
     ret = !ferror(pdf);
-    setlocale(LC_NUMERIC,oldloc);
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
 return( ret );
 }
 
@@ -296,8 +295,8 @@ int _ExportPlate(FILE *plate,SplineChar *sc,int layer) {
     spiro_cp *spiros;
     int i, ret;
 
-    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
-    setlocale(LC_NUMERIC,"C");
+    locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     /* Output closed contours first, then open. Plate files can only handle */
     /*  one open contour (I think) and it must be at the end */
     fprintf( plate, "(plate\n" );
@@ -329,7 +328,7 @@ int _ExportPlate(FILE *plate,SplineChar *sc,int layer) {
     }
     fprintf(plate, ")\n");
     ret = !ferror(plate);
-    setlocale(LC_NUMERIC,oldloc);
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
 return( ret );
 }
 
@@ -673,7 +672,7 @@ static void MakeExportName(char *buffer, int blen,char *format_spec,
 		    *buffer++ = *pt++;
 		}
 #else
-		for ( pt=copy(sc->name); *pt!='\0' && buffer<bend; )
+		for ( pt=sc->name; *pt!='\0' && buffer<bend; )
 		    *buffer++ = *pt++;
 #endif
 	    } else if ( ch=='f' ) {

@@ -467,8 +467,6 @@ return( true );
 		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,-1);
 	    else if ( format==fv_gliftemplate )
 		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,-1);
-	    else if ( format==fv_glif )
-		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,-1);
 	    else if ( format>=fv_pythonbase )
 		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,-1);
 	} else if ( d->bv!=NULL )

@@ -39,7 +39,7 @@ const char *MimeListFromExt[] = {
 	/*14 .java */	"text/java",
 	/*15 .ps */	"text/fontps",
 	/*16 .pfa */	"text/ps",
-	/*17 .obj */	"application/x-object"
+	/*17 .obj */	"application/x-object",
 	/*18 core */	"application/x-core",
 	/*19 .tar */	"application/x-tar",
 	/*20 .zip */	"application/x-compressed",
@@ -120,6 +120,13 @@ char* GIOGetMimeType(const char *path) {
 /* If that does not work, then depend on guessing type. */
 #define	sniff_length	4096
     char *content_type=NULL,*mime=0;
+
+/*
+   Doing this on Windows is horrendously slow. glib on Windows also only uses
+   the sniff buffer iff MIME detection via file extension fails, and even
+   then, only for determining if it /looks like/ a text file.
+*/
+#ifndef __MINGW32__
     FILE *fp;
 
     if ( (fp=fopen(path,"rb"))!=NULL ) {
@@ -133,10 +140,13 @@ char* GIOGetMimeType(const char *path) {
 	    // file name
 	    content_type=g_content_type_guess(NULL,sniff_buffer,res,&uncertain);
 	    if (uncertain) {
-		g_content_type_guess(path,sniff_buffer,res,NULL);
+	        if (content_type!=NULL)
+                    g_free(content_type);
+		content_type=g_content_type_guess(path,sniff_buffer,res,NULL);
             }
         }
     }
+#endif
 
     if ( content_type==NULL )
 	/* if sniffing failed - then try and guess the file type */

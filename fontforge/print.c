@@ -2632,9 +2632,9 @@ return;
 	simple_pos = 8;
     else if ( strcmp(langbuf,"pl")==0 )
 	simple_pos = 9;
-    else if ( strcmp(langbuf,"pl")==0 )
+    else if ( strcmp(langbuf,"sl")==0 )
 	simple_pos = 10;
-    else if ( strcmp(langbuf,"cz")==0 )
+    else if ( strcmp(langbuf,"cs")==0 )
 	simple_pos = 11;
     else
 	simple_pos = rand()&3;
@@ -2642,7 +2642,7 @@ return;
     sample[0].lang = _simplelatnlangs[simple_pos];
 
     for ( j=0; _simplecyrillchoices[j]!=NULL; ++j );
-    simple_pos = rand()%j;
+    simple_pos = rand()%(j+1);
     _simplecyrill[0] = _simplecyrillchoices[simple_pos];
     sample[1].lang = _simplecyrilliclangs[simple_pos];
 }
