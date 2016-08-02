@@ -1,33 +1,220 @@
-/* This is a generated file. */
+/*
+Copyright: 2012 Barry Schwartz
+Copyright: 2016 Joe Da Silva
+License: BSD-3-clause
+Contributions:
+*/
 
+/* This file was generated using the program 'makeutype' */
+
+#include "utype.h"
 #include <stdlib.h>
 
-/*
- *  Codepoints whose names match the regular expression
- *
- *      LIGATURE|VULGAR FRACTION
- *
- */
-static unsigned int matching_codepoints[528] =
-{
-188, 189, 190, 306, 307, 338, 339, 1188, 1189, 1204, 1205, 1236, 1237, 1415, 1520, 1521, 1522, 1558, 1750, 1751, 8528, 8529, 8530, 8531, 8532, 8533, 8534, 8535, 8536, 8537, 8538, 8539, 8540, 8541, 8542, 8585, 43001, 64256, 64257, 64258, 64259, 64260, 64261, 64262, 64275, 64276, 64277, 64278, 64279, 64287, 64335, 64490, 64491, 64492, 64493, 64494, 64495, 64496, 64497, 64498, 64499, 64500, 64501, 64502, 64503, 64504, 64505, 64506, 64507, 64512, 64513, 64514, 64515, 64516, 64517, 64518, 64519, 64520, 64521, 64522, 64523, 64524, 64525, 64526, 64527, 64528, 64529, 64530, 64531, 64532, 64533, 64534, 64535, 64536, 64537, 64538, 64539, 64540, 64541, 64542, 64543, 64544, 64545, 64546, 64547, 64548, 64549, 64550, 64551, 64552, 64553, 64554, 64555, 64556, 64557, 64558, 64559, 64560, 64561, 64562, 64563, 64564, 64565, 64566, 64567, 64568, 64569, 64570, 64571, 64572, 64573, 64574, 64575, 64576, 64577, 64578, 64579, 64580, 64581, 64582, 64583, 64584, 64585, 64586, 64587, 64588, 64589, 64590, 64591, 64592, 64593, 64594, 64595, 64596, 64597, 64598, 64599, 64600, 64601, 64602, 64603, 64604, 64605, 64606, 64607, 64608, 64609, 64610, 64611, 64612, 64613, 64614, 64615, 64616, 64617, 64618, 64619, 64620, 64621, 64622, 64623, 64624, 64625, 64626, 64627, 64628, 64629, 64630, 64631, 64632, 64633, 64634, 64635, 64636, 64637, 64638, 64639, 64640, 64641, 64642, 64643, 64644, 64645, 64646, 64647, 64648, 64649, 64650, 64651, 64652, 64653, 64654, 64655, 64656, 64657, 64658, 64659, 64660, 64661, 64662, 64663, 64664, 64665, 64666, 64667, 64668, 64669, 64670, 64671, 64672, 64673, 64674, 64675, 64676, 64677, 64678, 64679, 64680, 64681, 64682, 64683, 64684, 64685, 64686, 64687, 64688, 64689, 64690, 64691, 64692, 64693, 64694, 64695, 64696, 64697, 64698, 64699, 64700, 64701, 64702, 64703, 64704, 64705, 64706, 64707, 64708, 64709, 64710, 64711, 64712, 64713, 64714, 64715, 64716, 64717, 64718, 64719, 64720, 64721, 64722, 64723, 64724, 64725, 64726, 64727, 64728, 64729, 64730, 64731, 64732, 64733, 64734, 64735, 64736, 64737, 64738, 64739, 64740, 64741, 64742, 64743, 64744, 64745, 64746, 64747, 64748, 64749, 64750, 64751, 64752, 64753, 64754, 64755, 64756, 64757, 64758, 64759, 64760, 64761, 64762, 64763, 64764, 64765, 64766, 64767, 64768, 64769, 64770, 64771, 64772, 64773, 64774, 64775, 64776, 64777, 64778, 64779, 64780, 64781, 64782, 64783, 64784, 64785, 64786, 64787, 64788, 64789, 64790, 64791, 64792, 64793, 64794, 64795, 64796, 64797, 64798, 64799, 64800, 64801, 64802, 64803, 64804, 64805, 64806, 64807, 64808, 64809, 64810, 64811, 64812, 64813, 64814, 64815, 64816, 64817, 64818, 64819, 64820, 64821, 64822, 64823, 64824, 64825, 64826, 64827, 64828, 64829, 64848, 64849, 64850, 64851, 64852, 64853, 64854, 64855, 64856, 64857, 64858, 64859, 64860, 64861, 64862, 64863, 64864, 64865, 64866, 64867, 64868, 64869, 64870, 64871, 64872, 64873, 64874, 64875, 64876, 64877, 64878, 64879, 64880, 64881, 64882, 64883, 64884, 64885, 64886, 64887, 64888, 64889, 64890, 64891, 64892, 64893, 64894, 64895, 64896, 64897, 64898, 64899, 64900, 64901, 64902, 64903, 64904, 64905, 64906, 64907, 64908, 64909, 64910, 64911, 64914, 64915, 64916, 64917, 64918, 64919, 64920, 64921, 64922, 64923, 64924, 64925, 64926, 64927, 64928, 64929, 64930, 64931, 64932, 64933, 64934, 64935, 64936, 64937, 64938, 64939, 64940, 64941, 64942, 64943, 64944, 64945, 64946, 64947, 64948, 64949, 64950, 64951, 64952, 64953, 64954, 64955, 64956, 64957, 64958, 64959, 64960, 64961, 64962, 64963, 64964, 64965, 64966, 64967, 65008, 65009, 65010, 65011, 65012, 65013, 65014, 65015, 65016, 65017, 65018, 65019, 65021, 65056, 65057, 65269, 65270, 65271, 65272, 65273, 65274, 65275, 65276
-};
+/* unicode.org codepoints for ligatures, vulgar fractions, other fractions */
 
-static int compare_codepoints (const void *codepoint1, const void *codepoint2)
-{
-    const unsigned int *cp1 = (const unsigned int *) codepoint1;
-    const unsigned int *cp2 = (const unsigned int *) codepoint2;
-    return ((*cp1 < *cp2) ? -1 : ((*cp1 == *cp2) ? 0 : 1));
+const uint16 ____ligature16[] = {
+  0x0132, 0x0133, 0x0152, 0x0153, 0x04a4, 0x04a5, 0x04b4, 0x04b5,
+  0x04d4, 0x04d5, 0x0587, 0x05f0, 0x05f1, 0x05f2, 0x0616, 0x06d6,
+  0x06d7, 0xa7f9, 0xfb00, 0xfb01, 0xfb02, 0xfb03, 0xfb04, 0xfb05,
+  0xfb06, 0xfb13, 0xfb14, 0xfb15, 0xfb16, 0xfb17, 0xfb1f, 0xfb4f,
+  0xfbea, 0xfbeb, 0xfbec, 0xfbed, 0xfbee, 0xfbef, 0xfbf0, 0xfbf1,
+  0xfbf2, 0xfbf3, 0xfbf4, 0xfbf5, 0xfbf6, 0xfbf7, 0xfbf8, 0xfbf9,
+  0xfbfa, 0xfbfb, 0xfc00, 0xfc01, 0xfc02, 0xfc03, 0xfc04, 0xfc05,
+  0xfc06, 0xfc07, 0xfc08, 0xfc09, 0xfc0a, 0xfc0b, 0xfc0c, 0xfc0d,
+  0xfc0e, 0xfc0f, 0xfc10, 0xfc11, 0xfc12, 0xfc13, 0xfc14, 0xfc15,
+  0xfc16, 0xfc17, 0xfc18, 0xfc19, 0xfc1a, 0xfc1b, 0xfc1c, 0xfc1d,
+  0xfc1e, 0xfc1f, 0xfc20, 0xfc21, 0xfc22, 0xfc23, 0xfc24, 0xfc25,
+  0xfc26, 0xfc27, 0xfc28, 0xfc29, 0xfc2a, 0xfc2b, 0xfc2c, 0xfc2d,
+  0xfc2e, 0xfc2f, 0xfc30, 0xfc31, 0xfc32, 0xfc33, 0xfc34, 0xfc35,
+  0xfc36, 0xfc37, 0xfc38, 0xfc39, 0xfc3a, 0xfc3b, 0xfc3c, 0xfc3d,
+  0xfc3e, 0xfc3f, 0xfc40, 0xfc41, 0xfc42, 0xfc43, 0xfc44, 0xfc45,
+  0xfc46, 0xfc47, 0xfc48, 0xfc49, 0xfc4a, 0xfc4b, 0xfc4c, 0xfc4d,
+  0xfc4e, 0xfc4f, 0xfc50, 0xfc51, 0xfc52, 0xfc53, 0xfc54, 0xfc55,
+  0xfc56, 0xfc57, 0xfc58, 0xfc59, 0xfc5a, 0xfc5b, 0xfc5c, 0xfc5d,
+  0xfc5e, 0xfc5f, 0xfc60, 0xfc61, 0xfc62, 0xfc63, 0xfc64, 0xfc65,
+  0xfc66, 0xfc67, 0xfc68, 0xfc69, 0xfc6a, 0xfc6b, 0xfc6c, 0xfc6d,
+  0xfc6e, 0xfc6f, 0xfc70, 0xfc71, 0xfc72, 0xfc73, 0xfc74, 0xfc75,
+  0xfc76, 0xfc77, 0xfc78, 0xfc79, 0xfc7a, 0xfc7b, 0xfc7c, 0xfc7d,
+  0xfc7e, 0xfc7f, 0xfc80, 0xfc81, 0xfc82, 0xfc83, 0xfc84, 0xfc85,
+  0xfc86, 0xfc87, 0xfc88, 0xfc89, 0xfc8a, 0xfc8b, 0xfc8c, 0xfc8d,
+  0xfc8e, 0xfc8f, 0xfc90, 0xfc91, 0xfc92, 0xfc93, 0xfc94, 0xfc95,
+  0xfc96, 0xfc97, 0xfc98, 0xfc99, 0xfc9a, 0xfc9b, 0xfc9c, 0xfc9d,
+  0xfc9e, 0xfc9f, 0xfca0, 0xfca1, 0xfca2, 0xfca3, 0xfca4, 0xfca5,
+  0xfca6, 0xfca7, 0xfca8, 0xfca9, 0xfcaa, 0xfcab, 0xfcac, 0xfcad,
+  0xfcae, 0xfcaf, 0xfcb0, 0xfcb1, 0xfcb2, 0xfcb3, 0xfcb4, 0xfcb5,
+  0xfcb6, 0xfcb7, 0xfcb8, 0xfcb9, 0xfcba, 0xfcbb, 0xfcbc, 0xfcbd,
+  0xfcbe, 0xfcbf, 0xfcc0, 0xfcc1, 0xfcc2, 0xfcc3, 0xfcc4, 0xfcc5,
+  0xfcc6, 0xfcc7, 0xfcc8, 0xfcc9, 0xfcca, 0xfccb, 0xfccc, 0xfccd,
+  0xfcce, 0xfccf, 0xfcd0, 0xfcd1, 0xfcd2, 0xfcd3, 0xfcd4, 0xfcd5,
+  0xfcd6, 0xfcd7, 0xfcd8, 0xfcd9, 0xfcda, 0xfcdb, 0xfcdc, 0xfcdd,
+  0xfcde, 0xfcdf, 0xfce0, 0xfce1, 0xfce2, 0xfce3, 0xfce4, 0xfce5,
+  0xfce6, 0xfce7, 0xfce8, 0xfce9, 0xfcea, 0xfceb, 0xfcec, 0xfced,
+  0xfcee, 0xfcef, 0xfcf0, 0xfcf1, 0xfcf2, 0xfcf3, 0xfcf4, 0xfcf5,
+  0xfcf6, 0xfcf7, 0xfcf8, 0xfcf9, 0xfcfa, 0xfcfb, 0xfcfc, 0xfcfd,
+  0xfcfe, 0xfcff, 0xfd00, 0xfd01, 0xfd02, 0xfd03, 0xfd04, 0xfd05,
+  0xfd06, 0xfd07, 0xfd08, 0xfd09, 0xfd0a, 0xfd0b, 0xfd0c, 0xfd0d,
+  0xfd0e, 0xfd0f, 0xfd10, 0xfd11, 0xfd12, 0xfd13, 0xfd14, 0xfd15,
+  0xfd16, 0xfd17, 0xfd18, 0xfd19, 0xfd1a, 0xfd1b, 0xfd1c, 0xfd1d,
+  0xfd1e, 0xfd1f, 0xfd20, 0xfd21, 0xfd22, 0xfd23, 0xfd24, 0xfd25,
+  0xfd26, 0xfd27, 0xfd28, 0xfd29, 0xfd2a, 0xfd2b, 0xfd2c, 0xfd2d,
+  0xfd2e, 0xfd2f, 0xfd30, 0xfd31, 0xfd32, 0xfd33, 0xfd34, 0xfd35,
+  0xfd36, 0xfd37, 0xfd38, 0xfd39, 0xfd3a, 0xfd3b, 0xfd3c, 0xfd3d,
+  0xfd50, 0xfd51, 0xfd52, 0xfd53, 0xfd54, 0xfd55, 0xfd56, 0xfd57,
+  0xfd58, 0xfd59, 0xfd5a, 0xfd5b, 0xfd5c, 0xfd5d, 0xfd5e, 0xfd5f,
+  0xfd60, 0xfd61, 0xfd62, 0xfd63, 0xfd64, 0xfd65, 0xfd66, 0xfd67,
+  0xfd68, 0xfd69, 0xfd6a, 0xfd6b, 0xfd6c, 0xfd6d, 0xfd6e, 0xfd6f,
+  0xfd70, 0xfd71, 0xfd72, 0xfd73, 0xfd74, 0xfd75, 0xfd76, 0xfd77,
+  0xfd78, 0xfd79, 0xfd7a, 0xfd7b, 0xfd7c, 0xfd7d, 0xfd7e, 0xfd7f,
+  0xfd80, 0xfd81, 0xfd82, 0xfd83, 0xfd84, 0xfd85, 0xfd86, 0xfd87,
+  0xfd88, 0xfd89, 0xfd8a, 0xfd8b, 0xfd8c, 0xfd8d, 0xfd8e, 0xfd8f,
+  0xfd92, 0xfd93, 0xfd94, 0xfd95, 0xfd96, 0xfd97, 0xfd98, 0xfd99,
+  0xfd9a, 0xfd9b, 0xfd9c, 0xfd9d, 0xfd9e, 0xfd9f, 0xfda0, 0xfda1,
+  0xfda2, 0xfda3, 0xfda4, 0xfda5, 0xfda6, 0xfda7, 0xfda8, 0xfda9,
+  0xfdaa, 0xfdab, 0xfdac, 0xfdad, 0xfdae, 0xfdaf, 0xfdb0, 0xfdb1,
+  0xfdb2, 0xfdb3, 0xfdb4, 0xfdb5, 0xfdb6, 0xfdb7, 0xfdb8, 0xfdb9,
+  0xfdba, 0xfdbb, 0xfdbc, 0xfdbd, 0xfdbe, 0xfdbf, 0xfdc0, 0xfdc1,
+  0xfdc2, 0xfdc3, 0xfdc4, 0xfdc5, 0xfdc6, 0xfdc7, 0xfdf0, 0xfdf1,
+  0xfdf2, 0xfdf3, 0xfdf4, 0xfdf5, 0xfdf6, 0xfdf7, 0xfdf8, 0xfdf9,
+  0xfdfa, 0xfdfb, 0xfdfd, 0xfe20, 0xfe21, 0xfef5, 0xfef6, 0xfef7,
+  0xfef8, 0xfef9, 0xfefa, 0xfefb, 0xfefc};
+
+const uint16 ____vulgfrac16[] = {
+  0x00bc, 0x00bd, 0x00be, 0x2150, 0x2151, 0x2152, 0x2153, 0x2154,
+  0x2155, 0x2156, 0x2157, 0x2158, 0x2159, 0x215a, 0x215b, 0x215c,
+  0x215d, 0x215e, 0x2189};
+
+const uint16 ____fraction16[] = {
+  0x0b72, 0x0b73, 0x0b74, 0x0b75, 0x0b76, 0x0b77, 0x0c78, 0x0c79,
+  0x0c7a, 0x0c7b, 0x0c7c, 0x0c7d, 0x0c7e, 0x0d73, 0x0d74, 0x0d75,
+  0x2044, 0x215f, 0x2cfd, 0xa830, 0xa831, 0xa832, 0xa833, 0xa834,
+  0xa835};
+
+const uint32 ____fraction32[] = {
+  0x00010e7b, 0x00010e7c, 0x00010e7d, 0x00010e7e};
+
+static int compare_codepoints16(const void *uCode1, const void *uCode2) {
+    const uint16 *cp1 = (const uint16 *)(uCode1);
+    const uint16 *cp2 = (const uint16 *)(uCode2);
+    return( (*cp1 < *cp2) ? -1 : ((*cp1 == *cp2) ? 0 : 1) );
 }
 
-int is_LIGATURE_or_VULGAR_FRACTION(unsigned int codepoint);
+static int compare_codepoints32(const void *uCode1, const void *uCode2) {
+    const uint32 *cp1 = (const uint32 *)(uCode1);
+    const uint32 *cp2 = (const uint32 *)(uCode2);
+    return( (*cp1 < *cp2) ? -1 : ((*cp1 == *cp2) ? 0 : 1) );
+}
 
-int is_LIGATURE_or_VULGAR_FRACTION(unsigned int codepoint)
-{
-    unsigned int *p =
-        (unsigned int *) bsearch (&codepoint, matching_codepoints,
-                                  528, sizeof (unsigned int),
-                                  compare_codepoints);
-    return (p != (unsigned int *) 0);
+int LigatureCount(void) {
+    return( 509 );
+}
+
+int VulgarFractionCount(void) {
+    return( 19 );
+}
+
+int OtherFractionCount(void) {
+    return( 29 );
+}
+
+int FractionCount(void) {
+    return( 48 );
+}
+
+int32 Ligature_get_U(int n) {
+    if ( n<0 || n>=509 )
+	return( -1 );
+    return( (int32)(____ligature16[n]) );
+}
+
+int32 VulgFrac_get_U(int n) {
+    if ( n<0 || n>=19 )
+	return( -1 );
+    return( (int32)(____vulgfrac16[n]) );
+}
+
+int32 Fraction_get_U(int n) {
+    if ( n<0 || n>=29 )
+	return( -1 );
+    if ( n<25 )
+	return( (int32)(____fraction16[n]) );
+    else
+	return( (int32)(____fraction32[n-25]) );
+}
+
+int Ligature_find_N(uint32 uCode) {
+    uint16 uCode16, *p16;
+    int n=-1;
+
+    if ( uCode<0x132 || uCode>0xfefc || isligorfrac(uCode)==0 )
+	return( -1 );
+    uCode16 = uCode;
+    p16 = (uint16 *)(bsearch(&uCode16, ____ligature16, 509, \
+				sizeof(uint16), compare_codepoints16));
+    if ( p16 ) n = p16 - ____ligature16;
+    return( n );
+}
+
+int VulgFrac_find_N(uint32 uCode) {
+    uint16 uCode16, *p16;
+    int n=-1;
+
+    if ( uCode<0xbc || uCode>0x2189 || isligorfrac(uCode)==0 )
+	return( -1 );
+    uCode16 = uCode;
+    p16 = (uint16 *)(bsearch(&uCode16, ____vulgfrac16, 19, \
+				sizeof(uint16), compare_codepoints16));
+    if ( p16 ) n = p16 - ____vulgfrac16;
+    return( n );
+}
+
+int Fraction_find_N(uint32 uCode) {
+    uint16 uCode16, *p16;
+    uint32 *p32;
+    int n=-1;
+
+    if ( uCode<0xb72 || uCode>0x10e7e || (uCode<65536 && isligorfrac(uCode)==0) )
+	return( -1 );
+    if ( uCode<25 ) {
+	uCode16 = uCode;
+	p16 = (uint16 *)(bsearch(&uCode16, ____fraction16, 25, \
+				sizeof(uint16), compare_codepoints16));
+	if ( p16 ) n = p16 - ____fraction16;
+    } else {
+	p32 = (uint32 *)(bsearch(&uCode, ____fraction32, 4, \
+				sizeof(uint32), compare_codepoints32));
+	if ( p32 ) n = p32 - ____fraction32 + 25;
+    }
+    return( n );
+}
+
+/* Boolean-style tests (found==0) to see if your codepoint value is listed */
+/* unicode.org codepoints for ligatures, vulgar fractions, other fractions */
+
+int is_LIGATURE(uint32 codepoint) {
+    return( Ligature_find_N(codepoint)<0 );
+}
+
+int is_VULGAR_FRACTION(uint32 codepoint) {
+    return( VulgFrac_find_N(codepoint)<0 );
+}
+
+int is_OTHER_FRACTION(uint32 codepoint) {
+    return( Fraction_find_N(codepoint)<0 );
+}
+
+int is_FRACTION(uint32 codepoint) {
+    return( VulgFrac_find_N(codepoint)<0 && Fraction_find_N(codepoint)<0 );
+}
+
+int is_LIGATURE_or_VULGAR_FRACTION(uint32 codepoint) {
+    return( Ligature_find_N(codepoint)<0 && VulgFrac_find_N(codepoint)<0 );
+}
+
+int is_LIGATURE_or_OTHER_FRACTION(uint32 codepoint) {
+    return( Ligature_find_N(codepoint)<0 && Fraction_find_N(codepoint)<0 );
+}
+
+int is_LIGATURE_or_FRACTION(uint32 codepoint) {
+    return( Ligature_find_N(codepoint)<0 && VulgFrac_find_N(codepoint)<0 && Fraction_find_N(codepoint)<0 );
 }
 

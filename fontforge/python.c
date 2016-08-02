@@ -810,6 +810,124 @@ static PyObject *PyFF_UnicodeNamesListVersion(PyObject *UNUSED(self), PyObject *
     return( ret );
 }
 
+/* Ligature & Fraction information based on current Unicode (builtin) chart. */
+/* Unicode chart seems to distinguish vulgar fractions from other fractions. */
+/* These routines test value with internal table. Returns true/false values. */
+static PyObject *PyFF_isligature(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"|i",&codepoint) )
+	return( NULL );
+
+    return( Py_BuildValue("i", is_LIGATURE(codepoint)==0?1:0) );
+}
+
+static PyObject *PyFF_isvulgarfraction(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"|i",&codepoint) )
+	return( NULL );
+
+    return( Py_BuildValue("i", is_VULGAR_FRACTION(codepoint)==0?1:0) );
+}
+
+static PyObject *PyFF_isotherfraction(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"|i",&codepoint) )
+	return( NULL );
+
+    return( Py_BuildValue("i", is_OTHER_FRACTION(codepoint)==0?1:0) );
+}
+
+static PyObject *PyFF_isfraction(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"|i",&codepoint) )
+	return( NULL );
+
+    return( Py_BuildValue("i", (is_VULGAR_FRACTION(codepoint)==0 || \
+				is_OTHER_FRACTION(codepoint)==0)?1:0) );
+}
+
+/* Cnt returns lookup table-size, Nxt returns next Unicode value from array, */
+/* Loc returns 'n' for table array[0..n..(Cnt-1)] pointer. Errors return -1. */
+static PyObject *PyFF_LigChartGetCnt(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
+    return( Py_BuildValue("i", LigatureCount()) );
+}
+
+static PyObject *PyFF_VulChartGetCnt(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
+    return( Py_BuildValue("i", VulgarFractionCount()) );
+}
+
+static PyObject *PyFF_OFracChartGetCnt(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
+    return( Py_BuildValue("i", OtherFractionCount()) );
+}
+
+static PyObject *PyFF_FracChartGetCnt(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
+    return( Py_BuildValue("i", FractionCount()) );
+}
+
+/* These routines return builtin table unicode values for n in {0..(Cnt-1)}. */
+/* Internal table array size and values will depend on which unicodelist was */
+/* used at time makeutype was run to make FontForge's internal utype tables. */
+static PyObject *PyFF_LigChartGetNxt(PyObject *UNUSED(self), PyObject *args) {
+    long val;
+
+    if ( !PyArg_ParseTuple(args,"|i",&val) )
+	return( NULL );
+
+    return( Py_BuildValue("i", Ligature_get_U(val)) );
+}
+
+static PyObject *PyFF_VulChartGetNxt(PyObject *UNUSED(self), PyObject *args) {
+    long val;
+
+    if ( !PyArg_ParseTuple(args,"|i",&val) )
+	return( NULL );
+
+    return( Py_BuildValue("i", VulgFrac_get_U(val)) );
+}
+
+static PyObject *PyFF_OFracChartGetNxt(PyObject *UNUSED(self), PyObject *args) {
+    long val;
+
+    if ( !PyArg_ParseTuple(args,"|i",&val) )
+	return( NULL );
+
+    return( Py_BuildValue("i", Fraction_get_U(val)) );
+}
+
+/* If you have a unicode ligature, or fraction, these routines return loc n. */
+/* Internal table array size and values will depend on which unicodelist was */
+/* used at time makeutype was run to make FontForge's internal utype tables. */
+static PyObject *PyFF_LigChartGetLoc(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"|i",&codepoint) )
+	return( NULL );
+
+    return( Py_BuildValue("i", Ligature_find_N(codepoint)) );
+}
+
+static PyObject *PyFF_VulChartGetLoc(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"|i",&codepoint) )
+	return( NULL );
+
+    return( Py_BuildValue("i", VulgFrac_find_N(codepoint)) );
+}
+
+static PyObject *PyFF_OFracChartGetLoc(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"|i",&codepoint) )
+	return( NULL );
+
+    return( Py_BuildValue("i", Fraction_find_N(codepoint)) );
+}
+
 static PyObject *PyFF_Version(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
     char buffer[20];
 
@@ -17686,6 +17804,20 @@ PyMethodDef module_fontforge_methods[] = {
     { "UnicodeBlockEndFromLib", PyFF_UnicodeBlockEndFromLib, METH_VARARGS, "Return the www.unicode.org block end, for example block[1]={128..255} -> 255" },
     { "UnicodeBlockNameFromLib", PyFF_UnicodeBlockNameFromLib, METH_VARARGS, "Return the www.unicode.org block name, for example block[2]={256..383} -> Latin Extended-A" },
     { "UnicodeNamesListVersion", PyFF_UnicodeNamesListVersion, METH_NOARGS, "Return the www.unicode.org NamesList version for this library" },
+    { "IsFraction", PyFF_isfraction, METH_VARARGS, "Compare value with internal Vulgar_Fraction and Other_Fraction table. Return true/false" },
+    { "IsLigature", PyFF_isligature, METH_VARARGS, "Compare value with internal Ligature table. Return true/false" },
+    { "IsVulgarFraction", PyFF_isvulgarfraction, METH_VARARGS, "Compare value with internal Vulgar_Fraction table. Return true/false" },
+    { "IsOtherFraction", PyFF_isotherfraction, METH_VARARGS, "Compare value with internal Other_Fraction table. Return true/false" },
+    { "ucLigChartGetCnt", PyFF_LigChartGetCnt, METH_NOARGS, "Return internal www.unicode.org chart Ligature count" },
+    { "ucVulChartGetCnt", PyFF_VulChartGetCnt, METH_NOARGS, "Return internal www.unicode.org chart Vulgar_Fractions count" },
+    { "ucOFracChartGetCnt", PyFF_OFracChartGetCnt, METH_NOARGS, "Return internal www.unicode.org chart Other_Fractions count" },
+    { "ucFracChartGetCnt", PyFF_FracChartGetCnt, METH_NOARGS, "Return internal www.unicode.org chart {Vulgar+Other} Fractions count" },
+    { "ucLigChartGetNxt", PyFF_LigChartGetNxt, METH_VARARGS, "Return internal array unicode value Ligature[n]" },
+    { "ucVulChartGetNxt", PyFF_VulChartGetNxt, METH_VARARGS, "Return internal array unicode value Vulgar_Fraction[n]" },
+    { "ucOFracChartGetNxt", PyFF_OFracChartGetNxt, METH_VARARGS, "Return internal array unicode value Other_Fraction[n]" },
+    { "ucLigChartGetLoc", PyFF_LigChartGetLoc, METH_VARARGS, "Return internal array location n for given unicode Ligature value" },
+    { "ucVulChartGetLoc", PyFF_VulChartGetLoc, METH_VARARGS, "Return internal array location n for given unicode Vulgar_Fraction value" },
+    { "ucOFracChartGetLoc", PyFF_OFracChartGetLoc, METH_VARARGS, "Return internal array location n for given unicode Other_Fraction value" },
     { "version", PyFF_Version, METH_NOARGS, "Returns a string containing the current version of FontForge, as 20061116" },
     { "runInitScripts", PyFF_RunInitScripts, METH_NOARGS, "Run the system and user initialization scripts, if not already run" },
     { "scriptPath", PyFF_GetScriptPath, METH_NOARGS, "Returns a list of the directories searched for scripts"},
