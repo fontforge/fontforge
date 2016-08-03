@@ -14923,7 +14923,9 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static const char *contextchain_keywords[] = { "afterSubtable",
+static const char *contextchain_keywords[] = {
+	"lookup", "subtable", "type", "rule",
+	"afterSubtable",
 	"bclasses", "mclasses", "fclasses",
 	"bclassnames", "mclassnames", "fclassnames", NULL };
 
@@ -14945,7 +14947,7 @@ static PyObject *PyFFFont_addContextualSubtable(PyFF_Font *self, PyObject *args,
     if ( CheckIfFontClosed(self) )
 return (NULL);
     sf = self->fv->sf;
-    if ( !PyArg_ParseTupleAndKeywords(args,keywds,"ssss|sOOO", (char **)contextchain_keywords,
+    if ( !PyArg_ParseTupleAndKeywords(args,keywds,"ssss|sOOOOOO", (char **)contextchain_keywords,
 	    &lookup, &subtable, &type, &rule,
 	    &after_str, &bclasses, &mclasses, &fclasses,
 	    &bclassnames, &mclassnames, &fclassnames))
@@ -15603,7 +15605,7 @@ return(NULL);
 	    "UTF-8",&filename, &others, &bitmaptype, &flags, &ttcflags,
 	    &namelist, &layer) ) {
 	PyErr_Clear();
-	if ( !PyArg_ParseTupleAndKeywords(args, keywds, "esO|sOOss", (char **)gen_keywords,
+	if ( !PyArg_ParseTupleAndKeywords(args, keywds, "esO|sOOss", (char **)genttc_keywords,
 		"UTF-8",&filename, &others, &bitmaptype, &flags, &ttcflags,
 		&namelist, &layer_str) )
 return( NULL );
@@ -16681,8 +16683,8 @@ return (NULL);
 Py_RETURN( self );
 }
 
-static const char *autowidth_keywords[] = { "minBearing", "maxBearing", "height",
-	"loopCnt", NULL };
+static const char *autowidth_keywords[] = { "separation", "minBearing", "maxBearing",
+	"height", "loopCnt", NULL };
 
 static PyObject *PyFFFont_autoWidth(PyFF_Font *self, PyObject *args, PyObject *keywds) {
     FontViewBase *fv;
