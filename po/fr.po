@@ -1,6 +1,7 @@
 # (French) French User Interface strings for FontForge.
 # Copyright (C) 2004-2007 by Pierre Hanser & Yannis Haralambous.
 # Copyright (C) 2014 by Adrien Tétar.
+# Copyright (C) 2016 by Jean-René Bastien.
 # This file is distributed under the same license as FontForge.
 #
 # Translators:
@@ -9,13 +10,14 @@
 # Pierre HANSER, 2007-11-18 10:37+0100
 #
 #
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: FontForge 2.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-07-15 14:55+0200\n"
 "PO-Revision-Date: 2016-08-07 15:58-0400\n"
-"Last-Translator: Adrien Tétar <adri-from-59 <at> hotmail <period> org>\n"
+"Last-Translator: Jean-René Bastien <jrbastien <at> yahoo <period> com>\n"
 "Language-Team: French <fr.c@li.org>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
