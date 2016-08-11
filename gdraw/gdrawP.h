@@ -89,6 +89,9 @@ struct gchr_accents {
     uint32 mask;
 };
 
+enum text_funcs { tf_width, tf_drawit, tf_rect, tf_stopat, tf_stopbefore, tf_stopafter };
+struct tf_arg { GTextBounds size; int width, maxwidth; unichar_t *last; char *utf8_last; int first; int dont_replace; };
+
 struct gwindow {
     GGC *ggc;
     GDisplay *display;
@@ -309,6 +312,8 @@ struct displayfuncs {
     int  (*layoutLineStart)(GWindow w,int line);
     void (*startNewSubPath)(GWindow w);
     int  (*fillRuleSetWinding)(GWindow w);
+
+    int (*doText8)(GWindow w, int32 x, int32 y, const char *text, int32 cnt, Color col, enum text_funcs drawit, struct tf_arg *arg);
 
     void (*PushClipOnly)(GWindow w);
     void (*ClipPreserve)(GWindow w);

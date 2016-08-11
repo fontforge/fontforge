@@ -189,9 +189,6 @@ typedef struct font_state {
     unsigned int names_loaded: 1;
 } FState;
 
-enum text_funcs { tf_width, tf_drawit, tf_rect, tf_stopat, tf_stopbefore, tf_stopafter };
-struct tf_arg { GTextBounds size; int width, maxwidth; unichar_t *last; char *utf8_last; int first; int dont_replace; };
-
 extern struct fontabbrev _gdraw_fontabbrev[];
 
 extern int _GDraw_ClassifyFontName(unichar_t *fontname, int *italic, int *bold);

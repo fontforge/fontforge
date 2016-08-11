@@ -26,7 +26,13 @@
  */
 
 #include "fontforge-config.h"
-#ifndef FONTFORGE_CAN_USE_GDK
+#ifdef FONTFORGE_CAN_USE_GDK
+
+void GDrawEnableCairo(int on) {
+    /* With GDK, Cairo is always enabled. */
+}
+
+#else // FONTFORGE_CAN_USE_GDK
 
 #include "gxdrawP.h"
 #include "gxcdrawP.h"
@@ -1104,16 +1110,6 @@ int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
 	}
     }
 return( rect.width );
-}
-
-int32 _GXPDraw_DoText(GWindow w, int32 x, int32 y,
-	const unichar_t *text, int32 cnt, Color col,
-	enum text_funcs drawit, struct tf_arg *arg) {
-    char *temp = cnt>=0 ? u2utf8_copyn(text,cnt) : u2utf8_copy(text);
-    if (temp == NULL) return 0;
-    int width = _GXPDraw_DoText8(w,x,y,temp,-1,col,drawit,arg);
-    free(temp);
-return(width);
 }
 
 void _GXPDraw_FontMetrics(GWindow gw, GFont *fi, int *as, int *ds, int *ld) {

@@ -504,7 +504,7 @@ static void GGDKDrawDrawLine(GWindow gw, int32 x, int32 y, int32 xend, int32 yen
     fprintf(stderr, "GDKCALL: GGDKDrawDrawLine\n"); assert(false);
 }
 
-static void GGDKDrawDrawArrow(GWindow gw, int32 x, int32 y, int32 xend, int32 yend, Color col){
+static void GGDKDrawDrawArrow(GWindow gw, int32 x, int32 y, int32 xend, int32 yend, int16 arrows, Color col){
     fprintf(stderr, "GDKCALL: GGDKDrawDrawArrow\n"); assert(false);
 }
 

@@ -4338,6 +4338,8 @@ static struct displayfuncs xfuncs = {
     GXDrawPathStartSubNew,
     GXDrawFillRuleSetWinding,
 
+    _GXPDraw_DoText8,
+
     GXDrawPushClipOnly,
     GXDrawClipPreserve
 };
