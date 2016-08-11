@@ -1894,12 +1894,12 @@ return;
 static void GXDrawDrawArrow(GWindow gw, int32 x,int32 y, int32 xend,int32 yend, int16 arrows, Color col) {
     GXWindow gxw = (GXWindow) gw;
     GXDisplay *display = gxw->display;
+    gxw->ggc->fg = col;
 
 #ifndef _NO_LIBCAIRO
     if ( gxw->usecairo )
 	GDrawIError("DrawArrow not supported");
 #endif
-    gxw->ggc->fg = col;
     GXDrawSetline(display,gxw->ggc);
     XDrawLine(display->display,gxw->w,display->gcstate[gxw->ggc->bitmap_col].gc,x,y,xend,yend);
     if ( arrows&1 )
