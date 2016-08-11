@@ -28,7 +28,9 @@
 
 #include "gdrawP.h"
 #include "fontP.h"
-#include "gxcdrawP.h"
+#ifndef FONTFORGE_CAN_USE_GDK
+#  include "gxcdrawP.h"
+#endif
 #include "ustring.h"
 
 FontInstance *GDrawSetFont(GWindow gw, FontInstance *fi) {
@@ -38,14 +40,14 @@ return( old );
 }
 
 FontInstance *GDrawInstanciateFont(GWindow gw, FontRequest *rq) {
-    GXDisplay *gdisp;
+    GDisplay *gdisp;
     FState *fs;
     struct font_instance *fi;
 
     if (gw == NULL)
 	gw = GDrawGetRoot(NULL);
 
-    gdisp = ((GXWindow) gw)->display;
+    gdisp = gw->display;
     fs = gdisp->fontstate;
 
     if ( rq->point_size<0 )	/* It's in pixels, not points, convert to points */

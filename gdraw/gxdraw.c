@@ -25,6 +25,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "fontforge-config.h"
+
+#ifndef FONTFORGE_CAN_USE_GDK
+
 #if defined(__MINGW32__)
 #include <winsock2.h>
 #include <windows.h>
@@ -4541,4 +4545,4 @@ void _XSyncScreen() {
 }
 #endif
 
-
+#endif // FONTFORGE_CAN_USE_GDK

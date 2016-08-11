@@ -78,3 +78,26 @@ elif test x"${my_real_type}" != x"float"; then
    AC_MSG_ERROR([Floating point type '${my_real_type}' not recognized.])
 fi   
 ])
+
+dnl FONTFORGE_ARG_ENABLE_GDK
+dnl ------------------------
+AC_DEFUN([FONTFORGE_ARG_ENABLE_GDK],
+[
+AC_ARG_ENABLE([gdk],
+        [AS_HELP_STRING([--enable-gdk],
+                [Enable the GDK GUI backend])],
+        [use_gdk=yes])
+if test x$use_gdk = xyes ; then
+    PKG_CHECK_MODULES([GDK],[gdk-3.0 >= 3.10],
+	[
+		fontforge_can_use_gdk=yes
+		AC_DEFINE(FONTFORGE_CAN_USE_GDK,[],[FontForge will build the GUI with the GDK backend])
+		echo "building the GUI with the GDK backend..."
+	],
+	[
+		fontforge_can_use_gdk=no
+		echo "NOT building the GUI with the GDK backend..."
+	])
+fi
+AM_CONDITIONAL([FONTFORGE_CAN_USE_GDK],[test x"${fontforge_can_use_gdk}" = xyes])
+])

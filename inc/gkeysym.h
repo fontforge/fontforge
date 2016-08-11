@@ -172,6 +172,8 @@ SOFTWARE.
 #define GK_Hyper_L		XK_Hyper_L	
 #define GK_Hyper_R		XK_Hyper_R
 
+#define GK_Mode_switch  XK_Mode_switch
+
 #else		/* No X */
 
 #define GK_Special		0xfe00	/* keysyms above this value aren't unicode */
@@ -293,6 +295,8 @@ SOFTWARE.
 #define GK_Super_R		0	
 #define GK_Hyper_L		0	
 #define GK_Hyper_R		0
+
+#define GK_Mode_switch 0xff7e
 #endif	/* No X */
 
 #endif

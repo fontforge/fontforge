@@ -56,6 +56,8 @@ capable of using composite.
 
 #include <fontforge-config.h>
 
+#ifndef FONTFORGE_CAN_USE_GDK
+
 #ifndef X_DISPLAY_MISSING
 # include <X11/X.h>
 # include <X11/Xlib.h>
@@ -390,5 +392,6 @@ void _GXDraw_Wacom_TestEvents(GXDisplay *gdisp);
 # endif	/* Wacom fix */
 
 
+#endif // FONTFORGE_CAN_USE_GDK
 
 #endif

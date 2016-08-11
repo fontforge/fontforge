@@ -24,6 +24,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "fontforge-config.h"
+#ifndef FONTFORGE_CAN_USE_GDK
 #ifndef X_DISPLAY_MISSING
 #include "gxdrawP.h"
 #include "gxcdrawP.h"
@@ -2537,3 +2539,4 @@ return( gi );
 #else	/* NO X */
 int gimagexdraw_a_file_must_define_something=3;
 #endif
+#endif // FONTFORGE_CAN_USE_GDK

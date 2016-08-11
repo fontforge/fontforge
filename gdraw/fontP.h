@@ -103,7 +103,11 @@ typedef struct {		/* normal 16 bit characters are two bytes */
 #endif		/* NO X */
 
 #include "gdrawP.h"
-#include "gxdrawP.h"
+#ifndef FONTFORGE_CAN_USE_GDK
+#  include "gxdrawP.h"
+#else
+#  include "ggdkdrawP.h"
+#endif
 #include "charset.h"
 
 struct fontabbrev {
