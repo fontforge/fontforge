@@ -70,6 +70,10 @@ update-project-id:
 
 #--------------------------------------------------------------------------
 # These 'make FontForge*' potfiles are created in $(builddir).
+#
+# If creating or updating a language po file, also go take a look at file
+# desktop/fontforge.appdata.xml to see if it also needs an extra language
+# definition added or updated.
 
 XGETTEXT_SEARCH_DIRS = $(top_srcdir)/fontforge/*.c $(top_srcdir)/fontforgeexe/*.c $(top_srcdir)/gdraw/*.c $(top_srcdir)/gutils/*.c $(top_srcdir)/inc/*.h
 
@@ -81,6 +85,14 @@ FontForge.pot:
 FontForge-MenuShortCuts.pot:
 	$(XGETTEXT) -kH_ -oFontForge-MenuShortCuts.pot $(XGETTEXT_SEARCH_DIRS)
 	-patch < potmstitle.patch
+
+# To update a language po file, go to directory po and type:
+# make FontForge-Update-po 1=fr
+# In this example (above), 'fr' is chosen to update po file 'fr.po'.
+FontForge-Update-po:
+	$(MAKE) FontForge.pot; $(MAKE) FontForge-MenuShortCuts.pot;	\
+	mv $1.po $1-old.po; msgmerge -N $1-old.po FontForge.pot > $1.po; \
+	rm FontForge.pot
 
 # This command (below) is for systems with older less capable xgettext.
 # xgettext has caniptions and strips non-ASCII characters from my strings
@@ -100,6 +112,8 @@ FontForge-old.pot: utf8.pot
 #--------------------------------------------------------------------------
 
 EXTRA_DIST = $(PO_FILES) potmstitle.patch pottitle.patch utf8.pot
-MOSTLYCLEANFILES = $(MO_FILES) $(noinst_FILES)
+
+MOSTLYCLEANFILES = $(MO_FILES) $(noinst_FILES)	\
+	FontForge.pot FontForge-MenuShortCuts.pot *-old.po
 
 -include $(top_srcdir)/git.mk
