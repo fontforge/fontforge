@@ -1,6 +1,9 @@
 #ifndef _GXCDRAWP_H
 # define _GXCDRAWP_H
 
+#include <fontforge-config.h>
+#ifndef FONTFORGE_CAN_USE_GDK
+
 extern int _GXCDraw_hasCairo(void);
 #ifndef _NO_LIBCAIRO
 
@@ -69,4 +72,5 @@ extern void _GXPDraw_LayoutSetWidth(GWindow w, int width);
 extern int  _GXPDraw_LayoutLineCount(GWindow w);
 extern int  _GXPDraw_LayoutLineStart(GWindow w,int l);
 
+#endif /* FONTFORGE_CAN_USE_GDK */
 #endif /* _GXCDRAWP_H */

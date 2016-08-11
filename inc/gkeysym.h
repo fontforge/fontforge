@@ -1,6 +1,8 @@
 #ifndef _GKEYSYM_H_
 #define _GKEYSYM_H_
 
+#include "fontforge-config.h"
+
 #ifndef X_DISPLAY_MISSING
 #include <X11/keysym.h>
 /* Based on the X keysymdef file */

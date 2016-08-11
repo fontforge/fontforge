@@ -14,9 +14,6 @@
 #include <string.h>
 #include <math.h>
 
-static void GGDKDrawSetCursor(GWindow w, GCursor gcursor);
-static void GGDKDrawTranslateCoordinates(GWindow from, GWindow to, GPoint *pt);
-
 // Private member functions (file-level)
 
 static GGC *_GGDKDraw_NewGGC() {
@@ -40,11 +37,12 @@ static void _GGDKDraw_OnWindowDestroyed(gpointer data) {
     gw->is_cleaning_up = true; // We're in the process of destroying it.
 
     Log(LOGDEBUG, "OnWindowDestroyed!");
+    if (gw->cc != NULL) {
+        cairo_destroy(gw->cc);
+        gw->cc = NULL;
+    }
+
     if (!gw->is_pixmap) {
-        if (gw->cc != NULL) {
-            cairo_destroy(gw->cc);
-            gw->cc = NULL;
-        }
         gdk_window_destroy(gw->w);
 
         // Wait for it to die
@@ -89,13 +87,10 @@ static void _GGDKDraw_OnWindowDestroyed(gpointer data) {
 
     g_object_unref(gw->pango_layout);
 
-    if (gw->cc != NULL) {
-        cairo_destroy(gw->cc);
-        gw->cc = NULL;
-    }
     if (gw->cs != NULL) {
         cairo_surface_destroy(gw->cs);
     }
+
     free(gw->ggc);
     free(gw);
 }
@@ -151,9 +146,6 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     if (gw == NULL) { // Creating a top-level window. Set parent as default root.
         gw = gdisp->groot;
         attribs.window_type = GDK_WINDOW_TOPLEVEL;
-        // Center windows by default. I hate stuff next to cursor.
-        pos->x = (gdisp->groot->pos.width - pos->width) / 2;
-        pos->y = (gdisp->groot->pos.height - pos->height) / 2;
     } else {
         attribs.window_type = GDK_WINDOW_CHILD;
     }
@@ -331,7 +323,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     }
 
     if ((wattrs->mask & wam_cursor) && wattrs->cursor != ct_default) {
-        GGDKDrawSetCursor((GWindow)nw, wattrs->cursor);
+        GDrawSetCursor((GWindow)nw, wattrs->cursor);
     }
 
     // Add a reference to our own structure.
@@ -359,18 +351,6 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     gdk_window_move_resize(nw->w, nw->pos.x, nw->pos.y, nw->pos.width, nw->pos.height);
     Log(LOGDEBUG, "Window created: %p[%p][%s][%d]", nw, nw->w, nw->window_title, nw->is_toplevel);
     return (GWindow)nw;
-}
-
-static void _GGDKDraw_InitFonts(GGDKDisplay *gdisp) {
-    FState *fs = calloc(1, sizeof(FState));
-    if (fs == NULL) {
-        Log(LOGDEBUG, "GGDKDraw: FState alloc failed!");
-        assert(false);
-    }
-
-    /* In inches, because that's how fonts are measured */
-    gdisp->fontstate = fs;
-    fs->res = gdisp->res;
 }
 
 static GWindow _GGDKDraw_NewPixmap(GDisplay *gdisp, uint16 width, uint16 height, cairo_format_t format,
@@ -415,7 +395,6 @@ static GWindow _GGDKDraw_NewPixmap(GDisplay *gdisp, uint16 width, uint16 height,
         free(gw->ggc);
         free(gw);
         return NULL;
-
     }
     // Add a reference to ourselves
     GGDKDRAW_ADDREF(gw);
@@ -857,12 +836,6 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             gevent.u.resize.size.y = configure->y;
             gevent.u.resize.size.width = configure->width;
             gevent.u.resize.size.height = configure->height;
-            //if (gw->is_toplevel) {
-            //    GPoint p = {0};
-            //    GGDKDrawTranslateCoordinates((GWindow)gw, (GWindow)(gdisp->groot), &p);
-            //    gevent.u.resize.size.x = p.x;
-            //    gevent.u.resize.size.y = p.y;
-            //}
             gevent.u.resize.dx = gevent.u.resize.size.x - gw->pos.x;
             gevent.u.resize.dy = gevent.u.resize.size.y - gw->pos.y;
             gevent.u.resize.dwidth = gevent.u.resize.size.width - gw->pos.width;
@@ -875,19 +848,11 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
                 gevent.u.resize.sized = true;
             }
 
-            if (!gevent.u.resize.sized && gevent.u.resize.moved) {
+            if (gw->is_toplevel && !gevent.u.resize.sized && gevent.u.resize.moved) {
                 gevent.type = et_noevent;
             }
 
             gw->pos = gevent.u.resize.size;
-            if (!gdisp->top_offsets_set && ((GGDKWindow) gw)->was_positioned &&
-                    gw->is_toplevel && !((GGDKWindow) gw)->is_popup &&
-                    !((GGDKWindow) gw)->istransient) {
-                // I don't know why I need a fudge factor here, but I do
-                //gdisp->off_x = gevent.u.resize.dx - 2; //TODO: FIXME!
-                //gdisp->off_y = gevent.u.resize.dy - 1;
-                gdisp->top_offsets_set = true;
-            }
         }
         break;
         case GDK_MAP:
@@ -905,21 +870,6 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             break;
         case GDK_DELETE:
             gevent.type = et_close;
-            break;
-        case GDK_CLIENT_EVENT:
-            /*
-                if ((redirect = InputRedirection(gdisp->input, gw)) != NULL) {
-                    GXDrawBeep((GDisplay *) gdisp);
-                    return;
-                }
-                if (event->xclient.message_type == gdisp->atoms.wm_protocols &&
-                        event->xclient.data.l[0] == gdisp->atoms.wm_del_window) {
-                    gevent.type = et_close;
-                } else if (event->xclient.message_type == gdisp->atoms.drag_and_drop) {
-                    gevent.type = event->xclient.data.l[0];
-                    gevent.u.drag_drop.x = event->xclient.data.l[1];
-                    gevent.u.drag_drop.y = event->xclient.data.l[2];
-                }*/
             break;
         case GDK_SELECTION_CLEAR: /*{
         int i;
@@ -952,7 +902,6 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             break;
         default:
             Log(LOGDEBUG, "UNPROCESSED GDK EVENT %d", event->type);
-            fflush(stderr);
             break;
     }
 
@@ -966,7 +915,15 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
 }
 
 static void GGDKDrawInit(GDisplay *gdisp) {
-    _GGDKDraw_InitFonts((GGDKDisplay *) gdisp);
+    FState *fs = calloc(1, sizeof(FState));
+    if (fs == NULL) {
+        Log(LOGDEBUG, "GGDKDraw: FState alloc failed!");
+        assert(false);
+    }
+
+    // In inches, because that's how fonts are measured
+    gdisp->fontstate = fs;
+    fs->res = gdisp->res;
 }
 
 //static void GGDKDrawTerm(GDisplay *gdisp){}
@@ -1115,11 +1072,7 @@ static void GGDKDrawSetVisible(GWindow w, int show) {
     Log(LOGDEBUG, ""); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
     if (show) {
-        if (gw->transient_owner != NULL) {
-            gdk_window_show_unraised(gw->w);
-        } else {
-            gdk_window_show(gw->w);
-        }
+        gdk_window_show(gw->w);
     } else {
         gdk_window_hide(gw->w);
     }
@@ -1253,9 +1206,8 @@ static void GGDKDrawGetPointerPosition(GWindow w, GEvent *ret) {
 static GWindow GGDKDrawGetPointerWindow(GWindow gw) {
     Log(LOGDEBUG, "");  //assert(false);
     GdkDevice *pointer = _GGDKDraw_GetPointer(((GGDKWindow)gw)->display);
-
-    // Do I need to unref this?
     GdkWindow *window = gdk_device_get_window_at_position(pointer, NULL, NULL);
+
     if (window != NULL) {
         return (GWindow)g_object_get_data(G_OBJECT(window), "GGDKWindow");
     }
@@ -1270,11 +1222,11 @@ static void GGDKDrawSetCursor(GWindow w, GCursor gcursor) {
     switch (gcursor) {
         case ct_default:
         case ct_backpointer:
+        case ct_pointer:
             cursor = gdk_cursor_new_from_name(gw->display->display, "default");
             break;
-        case ct_pointer:
-            cursor = gdk_cursor_new_from_name(gw->display->display, "pointer");
-            break;
+        //cursor = gdk_cursor_new_from_name(gw->display->display, "pointer");
+        //break;
         case ct_hand:
             cursor = gdk_cursor_new_from_name(gw->display->display, "hand");
             break;
@@ -1439,7 +1391,6 @@ static int GGDKDrawSelectionHasOwner(GDisplay *gdisp, enum selnames sn) {
     Log(LOGDEBUG, "");
     assert(false);
 }
-
 
 static void GGDKDrawPointerUngrab(GDisplay *gdisp) {
     Log(LOGDEBUG, ""); //assert(false);
@@ -1626,7 +1577,6 @@ static int GGDKDrawRequestDeviceEvents(GWindow w, int devcnt, struct gdeveventma
     Log(LOGDEBUG, ""); //assert(false);
     return 0; //Not sure how to handle... For tablets...
 }
-
 
 static GTimer *GGDKDrawRequestTimer(GWindow w, int32 time_from_now, int32 frequency, void *userdata) {
     Log(LOGDEBUG, ""); //assert(false);
@@ -1820,7 +1770,12 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *programname) {
     GdkDisplay *display;
     GGDKWindow groot;
 
-    display = gdk_display_open(displayname);
+    if (displayname == NULL) {
+        display = gdk_display_get_default();
+    } else {
+        display = gdk_display_open(displayname);
+    }
+
     if (display == NULL) {
         return NULL;
     }
@@ -1849,10 +1804,22 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *programname) {
         gdisp->res = 96;
     }
     gdisp->main_loop = g_main_loop_new(NULL, true);
-    gdisp->scale_screen_by = 1;
+    gdisp->scale_screen_by = 1; //Does nothing
     gdisp->bs.double_time = 200;
     gdisp->bs.double_wiggle = 3;
 
+    bool tbf = false, mxc = false;
+    GResStruct res[] = {
+        {.resname = "MultiClickTime", .type = rt_int, .val = &gdisp->bs.double_time},
+        {.resname = "MultiClickWiggle", .type = rt_int, .val = &gdisp->bs.double_wiggle},
+        //{.resname = "SelectionNotifyTimeout", .type = rt_int, .val = &gdisp->SelNotifyTimeout},
+        {.resname = "TwoButtonFixup", .type = rt_bool, .val = &tbf},
+        {.resname = "MacOSXCmd", .type = rt_bool, .val = &mxc},
+        NULL
+    };
+    GResourceFind(res, NULL);
+    gdisp->twobmouse_win = tbf;
+    gdisp->macosx_cmd = mxc;
     gdisp->pangoc_context = gdk_pango_context_get_for_screen(gdisp->screen);
 
     groot = (GGDKWindow)calloc(1, sizeof(struct ggdkwindow));
@@ -1874,8 +1841,6 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *programname) {
     groot->is_visible = true;
     g_object_set_data(G_OBJECT(gdisp->root), "GGDKWindow", groot);
 
-    //GGDKResourceInit(gdisp,programname);
-
     gdisp->def_background = GResourceFindColor("Background", COLOR_CREATE(0xf5, 0xff, 0xfa));
     gdisp->def_foreground = GResourceFindColor("Foreground", COLOR_CREATE(0x00, 0x00, 0x00));
     if (GResourceFindBool("Synchronize", false)) {
@@ -1889,7 +1854,7 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *programname) {
     _GDraw_InitError((GDisplay *) gdisp);
 
     //DEBUG
-    if (!getenv("GDK_DEBUG_OFF")) {
+    if (getenv("GGDK_DEBUG")) {
         gdk_window_set_debug_updates(true);
     }
     return (GDisplay *)gdisp;

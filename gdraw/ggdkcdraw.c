@@ -5,6 +5,8 @@
  */
 
 #include "ggdkdrawP.h"
+
+#ifdef FONTFORGE_CAN_USE_GDK
 #include "ustring.h"
 #include <assert.h>
 #include <string.h>
@@ -445,6 +447,71 @@ static cairo_surface_t *_GGDKDraw_GImage2Surface(GImage *image, GRect *src, uint
         }
     }
     return cs;
+}
+
+GImage *_GGDKDraw_GImageExtract(struct _GImage *base, GRect *src, GRect *size,
+                                double xscale, double yscale) {
+    static GImage temp;
+    static struct _GImage tbase;
+    static uint8 *data;
+    static int dlen;
+    int r, c;
+
+    memset(&temp, 0, sizeof(temp));
+    tbase = *base;
+    temp.u.image = &tbase;
+    tbase.width = size->width;
+    tbase.height = size->height;
+    if (base->image_type == it_mono) {
+        tbase.bytes_per_line = (size->width + 7) / 8;
+    } else if (base->image_type == it_index) {
+        tbase.bytes_per_line = size->width;
+    } else {
+        tbase.bytes_per_line = 4 * size->width;
+    }
+    if (tbase.bytes_per_line * size->height > dlen) {
+        data = realloc(data, dlen = tbase.bytes_per_line * size->height);
+    }
+    tbase.data = data;
+
+    /* I used to use rint(x). Now I use floor(x). For normal images rint */
+    /*  might be better, but for text we need floor */
+
+    if (base->image_type == it_mono) {
+        memset(data, 0, tbase.height * tbase.bytes_per_line);
+        for (r = 0; r < size->height; ++r) {
+            int or = ((int) floor((r + size->y) / yscale));
+            uint8 *pt = data + r * tbase.bytes_per_line;
+            uint8 *opt = base->data + or * base->bytes_per_line;
+            for (c = 0; c < size->width; ++c) {
+                int oc = ((int) floor((c + size->x) / xscale));
+                if (opt[oc >> 3] & (0x80 >> (oc & 7))) {
+                    pt[c >> 3] |= (0x80 >> (c & 7));
+                }
+            }
+        }
+    } else if (base->image_type == it_index) {
+        for (r = 0; r < size->height; ++r) {
+            int or = ((int) floor((r + size->y) / yscale));
+            uint8 *pt = data + r * tbase.bytes_per_line;
+            uint8 *opt = base->data + or * base->bytes_per_line;
+            for (c = 0; c < size->width; ++c) {
+                int oc = ((int) floor((c + size->x) / xscale));
+                *pt++ = opt[oc];
+            }
+        }
+    } else {
+        for (r = 0; r < size->height; ++r) {
+            int or = ((int) floor((r + size->y) / yscale));
+            uint32 *pt = (uint32 *)(data + r * tbase.bytes_per_line);
+            uint32 *opt = (uint32 *)(base->data + or * base->bytes_per_line);
+            for (c = 0; c < size->width; ++c) {
+                int oc = ((int) floor((c + size->x) / xscale));
+                *pt++ = opt[oc];
+            }
+        }
+    }
+    return (&temp);
 }
 
 // Protected member functions
@@ -935,7 +1002,7 @@ void GGDKDrawDrawImageMagnified(GWindow w, GImage *image, GRect *src, int32 x, i
     }
     /* Rounding errors */
     {
-        GImage *temp = _GImageExtract(base, &full, &viewable, xscale, yscale);
+        GImage *temp = _GGDKDraw_GImageExtract(base, &full, &viewable, xscale, yscale);
         GRect src;
         src.x = src.y = 0;
         src.width = viewable.width;
@@ -1245,4 +1312,4 @@ int GGDKDrawLayoutLineStart(GWindow w, int l) {
     return line->start_index;
 }
 
-
+#endif // FONTFORGE_CAN_USE_GDK

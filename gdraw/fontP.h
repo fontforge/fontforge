@@ -27,6 +27,8 @@
 #ifndef _FONTP_H
 #define _FONTP_H
 
+#include "fontforge-config.h"
+
 #ifndef X_DISPLAY_MISSING
 # include <X11/Xlib.h>		/* For XFontStruct */
 #else
