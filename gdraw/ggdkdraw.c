@@ -95,6 +95,8 @@ static gboolean _GGDKDraw_OnWindowDestroyed(gpointer data) {
         cairo_surface_destroy(gw->cs);
     }
 
+    g_hash_table_remove(gw->display->windows, gw);
+
     free(gw->ggc);
     free(gw);
     return false;
@@ -120,6 +122,31 @@ static void _GGDKDraw_OnTimerDestroyed(GGDKTimer *timer) {
     }
     gdisp->timers = g_list_remove(gdisp->timers, timer);
     free(timer);
+}
+
+static gboolean _GGDKDraw_OnFakedConfigure(gpointer user_data) {
+    GGDKWindow gw = (GGDKWindow)user_data;
+    GdkEventConfigure evt = {0};
+
+    evt.type       = GDK_CONFIGURE;
+    evt.window     = gw->w;
+    evt.send_event = true;
+    evt.width      = gdk_window_get_width(gw->w);
+    evt.height     = gdk_window_get_height(gw->w);
+    gdk_window_get_position(gw->w, &evt.x, &evt.y);
+
+    gdk_event_put((GdkEvent *)&evt);
+    gw->resize_timeout = 0;
+    return false;
+}
+
+// In their infinite wisdom, GDK does not send configure events for child windows.
+static void _GGDKDraw_FakeConfigureEvent(GGDKWindow gw) {
+    if (gw->resize_timeout != 0) {
+        g_source_remove(gw->resize_timeout);
+        gw->resize_timeout = 0;
+    }
+    gw->resize_timeout = g_timeout_add(150, _GGDKDraw_OnFakedConfigure, gw);
 }
 
 static void _GGDKDraw_CallEHChecked(GGDKWindow gw, GEvent *event, int (*eh)(GWindow gw, GEvent *)) {
@@ -419,7 +446,10 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     // Add our reference to the window
     // This will be unreferenced when the window is destroyed.
     g_object_ref(G_OBJECT(nw->w));
+    // Add our window to the display's hashmap
+    g_hash_table_add(gdisp->windows, nw);
     //gdk_window_move_resize(nw->w, nw->pos.x, nw->pos.y, nw->pos.width, nw->pos.height);
+
     Log(LOGDEBUG, "Window created: %p[%p][%s][%d]", nw, nw->w, nw->window_title, nw->is_toplevel);
     return (GWindow)nw;
 }
@@ -625,31 +655,6 @@ static gboolean _GGDKDraw_ProcessTimerEvent(gpointer user_data) {
     return ret;
 }
 
-static gboolean _GGDKDraw_OnFakedResize(gpointer user_data) {
-    GGDKWindow gw = (GGDKWindow)user_data;
-    GdkEventConfigure evt = {0};
-
-    evt.type       = GDK_CONFIGURE;
-    evt.window     = gw->w;
-    evt.send_event = true;
-    evt.width      = gdk_window_get_width(gw->w);
-    evt.height     = gdk_window_get_height(gw->w);
-    gdk_window_get_position(gw->w, &evt.x, &evt.y);
-
-    gdk_event_put((GdkEvent *)&evt);
-    gw->resize_timeout = 0;
-    return false;
-}
-
-// In their infinite wisdom, GDK does not send configure events for child windows.
-static void _GGDKDraw_FakeConfigureEvent(GGDKWindow gw) {
-    if (gw->resize_timeout != 0) {
-        g_source_remove(gw->resize_timeout);
-        gw->resize_timeout = 0;
-    }
-    gw->resize_timeout = g_timeout_add(150, _GGDKDraw_OnFakedResize, gw);
-}
-
 static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
     static int request_id = 0;
     struct gevent gevent = {0};
@@ -661,13 +666,13 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         gdisp->last_event_time = event_time;
     }
 
-    Log(LOGDEBUG, "[%d] Received event %d(%s) %x", request_id, event->type, GdkEventName(event->type), w);
+    //Log(LOGDEBUG, "[%d] Received event %d(%s) %x", request_id, event->type, GdkEventName(event->type), w);
     fflush(stderr);
 
     if (w == NULL) {
         return;
     } else if ((gw = g_object_get_data(G_OBJECT(w), "GGDKWindow")) == NULL) {
-        Log(LOGDEBUG, "MISSING GW!");
+        //Log(LOGDEBUG, "MISSING GW!");
         //assert(false);
         return;
     } else if (_GGDKDraw_WindowOrParentsDying(gw) || gdk_window_is_destroyed(w)) {
@@ -887,10 +892,12 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
                 gevent.u.resize.sized = true;
             }
 
-            if (gw->is_toplevel && !gevent.u.resize.sized && gevent.u.resize.moved) {
-                gevent.type = et_noevent;
-            }
+            // Apparently needed...
+            //if (gw->is_toplevel && !gevent.u.resize.sized && gevent.u.resize.moved) {
+            //    gevent.type = et_noevent;
+            //}
 
+            Log(LOGDEBUG, "CONFIGURED: %p:%s, %d %d %d %d", gw, gw->window_title, gw->pos.x, gw->pos.y, gw->pos.width, gw->pos.height);
             gw->pos = gevent.u.resize.size;
         }
         break;
@@ -946,7 +953,7 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             }
         }
     }
-    Log(LOGDEBUG, "[%d] Finished processing %d(%s)", request_id++, event->type, GdkEventName(event->type));
+    //Log(LOGDEBUG, "[%d] Finished processing %d(%s)", request_id++, event->type, GdkEventName(event->type));
 }
 
 static void GGDKDrawInit(GDisplay *gdisp) {
@@ -1074,7 +1081,7 @@ static void GGDKDrawDestroyCursor(GDisplay *gdisp, GCursor gcursor) {
 }
 
 static int GGDKDrawNativeWindowExists(GDisplay *gdisp, void *native_window) {
-    Log(LOGDEBUG, ""); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     GdkWindow *w = (GdkWindow *)native_window;
     GGDKWindow gw = g_object_get_data(G_OBJECT(w), "GGDKWindow");
 
@@ -1138,12 +1145,12 @@ static void GGDKDrawSetVisible(GWindow w, int show) {
 }
 
 static void GGDKDrawMove(GWindow gw, int32 x, int32 y) {
-    Log(LOGDEBUG, ""); //assert(false);
+    Log(LOGDEBUG, "%p:%s, %d %d", gw, ((GGDKWindow)gw)->window_title, x, y); //assert(false);
     gdk_window_move(((GGDKWindow)gw)->w, x, y);
+    ((GGDKWindow)gw)->is_centered = false;
     if (!gw->is_toplevel) {
         _GGDKDraw_FakeConfigureEvent((GGDKWindow)gw);
     }
-    ((GGDKWindow)gw)->is_centered = false;
 }
 
 static void GGDKDrawTrueMove(GWindow w, int32 x, int32 y) {
@@ -1152,7 +1159,7 @@ static void GGDKDrawTrueMove(GWindow w, int32 x, int32 y) {
 }
 
 static void GGDKDrawResize(GWindow gw, int32 w, int32 h) {
-    Log(LOGDEBUG, ""); //assert(false);
+    Log(LOGDEBUG, "%p:%s, %d %d", gw, ((GGDKWindow)gw)->window_title, w, h); //assert(false);
     gdk_window_resize(((GGDKWindow)gw)->w, w, h);
     if (gw->is_toplevel && ((GGDKWindow)gw)->is_centered) {
         _GGDKDraw_CenterWindowOnScreen((GGDKWindow)gw);
@@ -1163,7 +1170,7 @@ static void GGDKDrawResize(GWindow gw, int32 w, int32 h) {
 }
 
 static void GGDKDrawMoveResize(GWindow gw, int32 x, int32 y, int32 w, int32 h) {
-    Log(LOGDEBUG, ""); //assert(false);
+    Log(LOGDEBUG, "%p:%s, %d %d %d %d", gw, ((GGDKWindow)gw)->window_title, x, y, w, h); //assert(false);
     gdk_window_move_resize(((GGDKWindow)gw)->w, x, y, w, h);
     if (!gw->is_toplevel) {
         _GGDKDraw_FakeConfigureEvent((GGDKWindow)gw);
@@ -1173,11 +1180,20 @@ static void GGDKDrawMoveResize(GWindow gw, int32 x, int32 y, int32 w, int32 h) {
 static void GGDKDrawRaise(GWindow w) {
     Log(LOGDEBUG, ""); //assert(false);
     gdk_window_raise(((GGDKWindow)w)->w);
+    if (!w->is_toplevel) {
+        _GGDKDraw_FakeConfigureEvent((GGDKWindow)w);
+    }
 }
 
 static void GGDKDrawRaiseAbove(GWindow gw1, GWindow gw2) {
     Log(LOGDEBUG, ""); //assert(false);
     gdk_window_restack(((GGDKWindow)gw1)->w, ((GGDKWindow)gw2)->w, true);
+    if (!gw1->is_toplevel) {
+        _GGDKDraw_FakeConfigureEvent((GGDKWindow)gw1);
+    }
+    if (!gw2->is_toplevel) {
+        _GGDKDraw_FakeConfigureEvent((GGDKWindow)gw2);
+    }
 }
 
 // Only used once in gcontainer - force it to call GDrawRaiseAbove
@@ -1189,6 +1205,9 @@ static int GGDKDrawIsAbove(GWindow gw1, GWindow gw2) {
 static void GGDKDrawLower(GWindow gw) {
     Log(LOGDEBUG, ""); //assert(false);
     gdk_window_lower(((GGDKWindow)gw)->w);
+    if (!gw->is_toplevel) {
+        _GGDKDraw_FakeConfigureEvent((GGDKWindow)gw);
+    }
 }
 
 // Icon title is ignored.
@@ -1360,7 +1379,7 @@ static GWindow GGDKDrawGetRedirectWindow(GDisplay *gdisp) {
 }
 
 static void GGDKDrawTranslateCoordinates(GWindow from, GWindow to, GPoint *pt) {
-    Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, "");
     GGDKWindow gfrom = (GGDKWindow)from, gto = (GGDKWindow)to;
     GGDKDisplay *gdisp = gfrom->display;
 
@@ -1382,17 +1401,17 @@ static void GGDKDrawTranslateCoordinates(GWindow from, GWindow to, GPoint *pt) {
 
 
 static void GGDKDrawBeep(GDisplay *gdisp) {
-    Log(LOGDEBUG, ""); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     gdk_display_beep(((GGDKDisplay *)gdisp)->display);
 }
 
 static void GGDKDrawFlush(GDisplay *gdisp) {
-    Log(LOGDEBUG, ""); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     gdk_display_flush(((GGDKDisplay *)gdisp)->display);
 }
 
 static void GGDKDrawScroll(GWindow w, GRect *rect, int32 hor, int32 vert) {
-    Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, "");
     GGDKWindow gw = (GGDKWindow) w;
     GRect temp, old;
 
@@ -1417,7 +1436,7 @@ static void GGDKDrawSetGIC(GWindow gw, GIC *gic, int x, int y) {
 }
 
 static int GGDKDrawKeyState(GWindow w, int keysym) {
-    Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, "");
     if (keysym != ' ') {
         Log(LOGWARN, "Cannot check state of unsupported character!");
         return 0;
@@ -1537,7 +1556,7 @@ static void GGDKDrawPointerGrab(GWindow w) {
 }
 
 static void GGDKDrawRequestExpose(GWindow w, GRect *rect, int doclear) {
-    Log(LOGDEBUG, ""); // assert(false);
+    //Log(LOGDEBUG, ""); // assert(false);
 
     GGDKWindow gw = (GGDKWindow) w;
     GdkRectangle clip;
@@ -1630,6 +1649,18 @@ static void GGDKDrawForceUpdate(GWindow gw) {
 static void GGDKDrawSync(GDisplay *gdisp) {
     Log(LOGDEBUG, ""); //assert(false)
     gdk_display_sync(((GGDKDisplay *)gdisp)->display);
+
+    // Run configure events NOW!
+    /*GHashTableIter iter;
+    GGDKWindow gw;
+    g_hash_table_iter_init(&iter, ((GGDKDisplay*)gdisp)->windows);
+    while (g_hash_table_iter_next(&iter, (gpointer)&gw, NULL)) {
+        if (gw->resize_timeout != 0) {
+            g_source_remove(gw->resize_timeout);
+            gw->resize_timeout = 0;
+            _GGDKDraw_OnFakedConfigure(gw);
+        }
+    }*/
 }
 
 static void GGDKDrawSkipMouseMoveEvents(GWindow gw, GEvent *gevent) {
@@ -1701,7 +1732,7 @@ static int GGDKDrawRequestDeviceEvents(GWindow w, int devcnt, struct gdeveventma
 }
 
 static GTimer *GGDKDrawRequestTimer(GWindow w, int32 time_from_now, int32 frequency, void *userdata) {
-    Log(LOGDEBUG, ""); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     GGDKTimer *timer = calloc(1, sizeof(GGDKTimer));
     GGDKWindow gw = (GGDKWindow)w;
     if (timer == NULL)  {
@@ -1722,7 +1753,7 @@ static GTimer *GGDKDrawRequestTimer(GWindow w, int32 time_from_now, int32 freque
 }
 
 static void GGDKDrawCancelTimer(GTimer *timer) {
-    Log(LOGDEBUG, ""); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
     GGDKTimer *gtimer = (GGDKTimer *)timer;
     gtimer->active = false;
     GGDKDRAW_DECREF(gtimer, _GGDKDraw_OnTimerDestroyed);
@@ -1915,6 +1946,12 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *programname) {
     if (gdisp->dirty_windows == NULL) {
         free(gdisp);
         gdk_display_close(display);
+        return NULL;
+    }
+    gdisp->windows = g_hash_table_new(g_direct_hash, g_direct_equal);
+    if (gdisp->windows == NULL) {
+        g_ptr_array_free(gdisp->dirty_windows, false);
+        free(gdisp);
         return NULL;
     }
 

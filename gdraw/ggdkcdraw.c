@@ -18,7 +18,7 @@ static void _GGDKDraw_CheckAutoPaint(GGDKWindow gw) {
     if (gw->cc == NULL) {
         assert(!gw->is_pixmap);
 
-        Log(LOGWARN, "Dirty dirty window! 0x%p", gw);
+        //Log(LOGWARN, "Dirty dirty window! 0x%p", gw);
         g_ptr_array_insert(gw->display->dirty_windows, -1, gw);
         gw->cc = gdk_cairo_create(gw->w);
     }

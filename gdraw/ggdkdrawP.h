@@ -121,6 +121,7 @@ typedef struct ggdkdisplay { /* :GDisplay */
     GPtrArray *cursors; // List of cursors that the user made.
     GPtrArray *dirty_windows; //List of GGDKWindows which called drawing functions outside of an expose event.
     GList_Glib *timers; //List of GGDKTimer's
+    GHashTable *windows; // List of windows. Resizingis tricky++...
 
     GGDKButtonState bs;
     GGDKKeyState ks;
