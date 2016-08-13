@@ -157,6 +157,11 @@ typedef struct ggdkdisplay { /* :GDisplay */
 
     GGDKSelectionInfo selinfo[sn_max]; // We implement the clipboard using the selections model
     int sel_notify_timeout;
+    struct {
+        GGDKWindow w;
+        int x, y;
+        int rx, ry;
+    } last_dd; // Drag and drop
 
     GPtrArray *cursors; // List of cursors that the user made.
     GPtrArray *dirty_windows; //List of GGDKWindows which called drawing functions outside of an expose event.

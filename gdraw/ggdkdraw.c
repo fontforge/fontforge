@@ -1718,6 +1718,7 @@ static int GGDKDrawSelectionHasType(GWindow w, enum selnames sn, char *typename)
             if (((GGDKSelectionData *)ptr->data)->type_atom == sel_type) {
                 return true;
             }
+            ptr = ptr->next;
         }
         return false;
     }
@@ -1981,8 +1982,66 @@ static void GGDKDrawPostEvent(GEvent *e) {
 }
 
 static void GGDKDrawPostDragEvent(GWindow w, GEvent *mouse, enum event_type et) {
-    Log(LOGDEBUG, "");
-    assert(false);
+    Log(LOGDEBUG, ""); //assert(false);
+    GGDKWindow gw = (GGDKWindow)w, cw;
+    GGDKDisplay *gdisp = gw->display;
+    int x, y;
+
+    // If the cursor hasn't moved much, don't bother to send a drag event
+    x = abs(mouse->u.mouse.x - gdisp->last_dd.x);
+    y = abs(mouse->u.mouse.y - gdisp->last_dd.y);
+    if (x + y < 4 && et == et_drag) {
+        return;
+    }
+
+    cw = (GGDKWindow)GGDKDrawGetPointerWindow(w);
+
+    if (gdisp->last_dd.w != cw) {
+        if (gdisp->last_dd.w != NULL) {
+            GEvent e = {0};
+            e.type = et_dragout;
+            e.u.drag_drop.x = gdisp->last_dd.rx;
+            e.u.drag_drop.y = gdisp->last_dd.ry;
+
+            _GGDKDraw_CallEHChecked(gdisp->last_dd.w, &e, gdisp->last_dd.w->eh);
+        } else {
+            /* Send foreign dragout message */
+        }
+        gdisp->last_dd.w = NULL;
+    }
+
+    GEvent e = {0};
+    // Are we still within the original window?
+    if (cw == gw) {
+        e.type = et;
+        e.w = w;
+        x = e.u.drag_drop.x = mouse->u.mouse.x;
+        y = e.u.drag_drop.y = mouse->u.mouse.y;
+        _GGDKDraw_CallEHChecked(gw, &e, gw->eh);
+    } else if (cw != NULL) {
+        GPoint pt = {.x = mouse->u.mouse.x, .y = mouse->u.mouse.y};
+        GGDKDrawTranslateCoordinates(w, (GWindow)cw, &pt);
+        x = pt.x;
+        y = pt.y;
+
+        e.type = et;
+        e.u.drag_drop.x = x;
+        e.u.drag_drop.y = y;
+        e.w = (GWindow)cw;
+        _GGDKDraw_CallEHChecked(cw, &e, cw->eh);
+    } else {
+        // Foreign window
+    }
+
+    if (et != et_drop) {
+        gdisp->last_dd.w = cw;
+        gdisp->last_dd.x = mouse->u.mouse.x;
+        gdisp->last_dd.y = mouse->u.mouse.y;
+        gdisp->last_dd.rx = x;
+        gdisp->last_dd.ry = y;
+    } else {
+        gdisp->last_dd.w = NULL;
+    }
 }
 
 static int GGDKDrawRequestDeviceEvents(GWindow w, int devcnt, struct gdeveventmask *de) {
