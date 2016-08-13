@@ -80,6 +80,43 @@ typedef struct ggdkkeystate {
     guint keyval;
 } GGDKKeyState;
 
+struct seldata {
+    int32 typeatom;
+    int32 cnt;
+    int32 unitsize;
+    void *data;
+    void *(*gendata)(void *, int32 *len);
+    /* Either the data are stored here, or we use this function to generate them on the fly */
+    void (*freedata)(void *);
+    struct seldata *next;
+};
+
+typedef struct ggdkselectiondata {
+    /** The atom identifying the type of data held e.g. UTF8_STRING **/
+    GdkAtom type_atom;
+    /** Number of elements held **/
+    int32_t cnt;
+    /** Size per element held **/
+    int32_t unit_size;
+    /** Data of selection, or context data if generator is provided **/
+    void *data;
+    /** Function to generate selection data, or NULL if provided already **/
+    void *(*gendata)(void *, int32_t *len);
+    /** Method by which to free the data element **/
+    void (*freedata)(void *);
+} GGDKSelectionData;
+
+typedef struct ggdkselectioninfo {
+    /** The atom identifying this selection e.g. XA_PRIMARY/CLIPBOARD */
+    GdkAtom sel_atom;
+    /** The owner of the selection **/
+    GGDKWindow owner;
+    /** Time of owning the selection **/
+    guint32 timestamp;
+    /** Types of selection data made available **/
+    GList_Glib *datalist;
+} GGDKSelectionInfo;
+
 typedef struct ggdkdisplay { /* :GDisplay */
     // Inherit GDisplay start
     struct displayfuncs *funcs;
@@ -117,6 +154,8 @@ typedef struct ggdkdisplay { /* :GDisplay */
 
     int     top_window_count;
     guint32 last_event_time;
+
+    GGDKSelectionInfo selinfo[sn_max]; // We implement the clipboard using the selections model
 
     GPtrArray *cursors; // List of cursors that the user made.
     GPtrArray *dirty_windows; //List of GGDKWindows which called drawing functions outside of an expose event.

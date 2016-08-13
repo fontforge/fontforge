@@ -27,6 +27,92 @@ static GGC *_GGDKDraw_NewGGC() {
     return ggc;
 }
 
+static void _GGDKDraw_FreeSelDataEntry(gpointer d) {
+    GGDKSelectionData *data = (GGDKSelectionData *)d;
+    if (data->freedata) {
+        (data->freedata)(data->data);
+    } else {
+        free(data->data);
+    }
+    free(data);
+}
+
+static void _GGDKDraw_ClearSelData(GGDKDisplay *gdisp, enum selnames sn) {
+    g_list_free_full(gdisp->selinfo[sn].datalist, _GGDKDraw_FreeSelDataEntry);
+    gdisp->selinfo[sn].datalist = NULL;
+    gdisp->selinfo[sn].owner = NULL;
+}
+
+static bool _GGDKDraw_TransmitSelection(GGDKDisplay *gdisp, GdkEventSelection *e) {
+    /* Default location to store data if none specified */
+    if (e->property == GDK_NONE) {
+        e->property = e->target;
+    }
+
+    /* Check that we own the selection request */
+    enum selnames sn;
+    for (sn = 0; sn < sn_max; sn++) {
+        if (e->selection == gdisp->selinfo[sn].sel_atom) {
+            break;
+        }
+    }
+    if (sn == sn_max) {
+        return false;
+    }
+
+    GGDKSelectionInfo *sel = &gdisp->selinfo[sn];
+
+    if (e->target == gdk_atom_intern_static_string("TARGETS")) {
+        guint i = 0, dlen = g_list_length(sel->datalist);
+        GdkAtom *targets = calloc(2 + dlen, sizeof(GdkAtom));
+        GList_Glib *ptr = sel->datalist;
+
+        targets[i++] = gdk_atom_intern_static_string("TIMESTAMP");
+        targets[i++] = gdk_atom_intern_static_string("TARGETS");
+
+        while (ptr != NULL) {
+            targets[i++] = ((GGDKSelectionData *)ptr->data)->type_atom;
+            ptr = ptr->next;
+        }
+
+        gdk_property_change(e->requestor, e->property, gdk_atom_intern_static_string("ATOM"),
+                            32, GDK_PROP_MODE_REPLACE, (const guchar *)targets, i);
+    } else if (e->target == gdk_atom_intern_static_string("TIMESTAMP")) {
+        gdk_property_change(e->requestor, e->property, gdk_atom_intern_static_string("INTEGER"),
+                            32, GDK_PROP_MODE_REPLACE, (const guchar *)&sel->timestamp, 1);
+    } else {
+        GList_Glib *ptr = sel->datalist;
+        GGDKSelectionData *data = NULL;
+        while (ptr != NULL) {
+            if (((GGDKSelectionData *)ptr->data)->type_atom == e->target) {
+                data = (GGDKSelectionData *)ptr->data;
+                break;
+            }
+            ptr = ptr->next;
+        }
+        if (data == NULL) { // Unknown selection
+            return false;
+        }
+
+        void *tmp = data->data;
+        int len = data->cnt;
+        if (data->gendata) {
+            tmp = data->gendata(data->data, &len);
+            if (tmp == NULL) {
+                return false;
+            }
+        }
+
+        gdk_property_change(e->requestor, e->property, e->target,
+                            data->unit_size * 8, GDK_PROP_MODE_REPLACE, (const guchar *)tmp, len);
+        if (data->gendata) {
+            free(tmp);
+        }
+    }
+
+    return true;
+}
+
 static gboolean _GGDKDraw_OnWindowDestroyed(gpointer data) {
     GGDKWindow gw = (GGDKWindow)data;
     gw->is_cleaning_up = true; // We're in the process of destroying it.
@@ -75,6 +161,13 @@ static gboolean _GGDKDraw_OnWindowDestroyed(gpointer data) {
                 gw->display->timers = g_list_delete_link(gw->display->timers, ent);
             }
             ent = next;
+        }
+
+        // If it owns any of the selections, clear it
+        for (int i = 0; i < sn_max; i++) {
+            if (gw->display->selinfo[i].owner == gw) {
+                _GGDKDraw_ClearSelData(gw->display, i);
+            }
         }
 
         // Decrement the toplevel window count
@@ -432,7 +525,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
         GEvent e = {0};
         e.type = et_create;
         e.w = (GWindow) nw;
-        e.native_window = (void *)(intpt) nw->w;
+        e.native_window = (void *)(intptr_t) nw->w;
         _GGDKDraw_CallEHChecked(nw, &e, eh);
     }
 
@@ -917,23 +1010,27 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         case GDK_DELETE:
             gevent.type = et_close;
             break;
-        case GDK_SELECTION_CLEAR: /*{
-        int i;
-        gevent.type = et_selclear;
-        gevent.u.selclear.sel = sn_primary;
-        for (i = 0; i < sn_max; ++i) {
-            if (event->xselectionclear.selection == gdisp->selinfo[i].sel_atom) {
-                gevent.u.selclear.sel = i;
-                break;
+        case GDK_SELECTION_CLEAR: {
+            gevent.type = et_selclear;
+            gevent.u.selclear.sel = sn_primary;
+            for (int i = 0; i < sn_max; i++) {
+                GdkEventSelection *se = (GdkEventSelection *)event;
+                if (se->selection == gdisp->selinfo[i].sel_atom) {
+                    gevent.u.selclear.sel = i;
+                    break;
+                }
             }
+            _GGDKDraw_ClearSelData(gdisp, gevent.u.selclear.sel);
         }
-        GXDrawClearSelData(gdisp, gevent.u.selclear.sel);
-    }*/
-            break;
-        case GDK_SELECTION_REQUEST:
-            /*
-                GXDrawTransmitSelection(gdisp, event);*/
-            break;
+        break;
+        case GDK_SELECTION_REQUEST: {
+            GdkEventSelection *e = (GdkEventSelection *)event;
+            gdk_selection_send_notify(
+                e->requestor, e->selection, e->target,
+                _GGDKDraw_TransmitSelection(gdisp, e) ? e->property : GDK_NONE,
+                e->time);
+        }
+        break;
         case GDK_SELECTION_NOTIFY: // paste
             break;
         case GDK_PROPERTY_NOTIFY:
@@ -1446,13 +1543,66 @@ static int GGDKDrawKeyState(GWindow w, int keysym) {
     return ((GGDKWindow)w)->display->is_space_pressed;
 }
 
-static void GGDKDrawGrabSelection(GWindow w, enum selnames sel) {
+static void GGDKDrawGrabSelection(GWindow w, enum selnames sn) {
     Log(LOGDEBUG, ""); //assert(false);
+
+    GGDKWindow gw = (GGDKWindow)w;
+    GGDKDisplay *gdisp = gw->display;
+    GGDKSelectionInfo *sel = &gdisp->selinfo[sn];
+
+    // Send a SelectionClear event to the current owner of the selection
+    if (sel->owner != NULL && sel->datalist != NULL) {
+        GEvent e = {0};
+        e.w = (GWindow)sel->owner;
+        e.type = et_selclear;
+        e.u.selclear.sel = sn;
+        e.native_window = (void *)(intptr_t)sel->owner->w;
+        if (sel->owner->eh != NULL) {
+            _GGDKDraw_CallEHChecked(sel->owner, &e, sel->owner->eh);
+        }
+    }
+
+    //Only one clipboard exists on Windows. Selectively set the selection owner
+    //as otherwise the Windows clipboard will be cleared.
+#ifdef _WIN32
+    if (sn == sn_clipboard)
+#endif
+        gdk_selection_owner_set(gw->w, sel->sel_atom, gdisp->last_event_time, false);
+
+    _GGDKDraw_ClearSelData(gdisp, sn);
+    sel->owner = gw;
+    sel->timestamp = gdisp->last_event_time;
 }
 
 static void GGDKDrawAddSelectionType(GWindow w, enum selnames sel, char *type, void *data, int32 cnt, int32 unitsize,
                                      void *gendata(void *, int32 *len), void freedata(void *)) {
     Log(LOGDEBUG, ""); //assert(false);
+
+    GGDKWindow gw = (GGDKWindow)w;
+    GGDKDisplay *gdisp = gw->display;
+    GdkAtom type_atom = gdk_atom_intern(type, false);
+    GGDKSelectionData *sd = NULL;
+    GList_Glib *dl = gdisp->selinfo[sel].datalist;
+
+    if (unitsize != 1 && unitsize != 2 && unitsize != 4) {
+        GDrawIError("Bad unitsize to GGDKDrawAddSelectionType");
+        return;
+    }
+    while (dl != NULL && (sd = ((GGDKSelectionData *)dl->data))->type_atom != type_atom) {
+        dl = dl->next;
+    }
+
+    if (dl == NULL) {
+        sd = calloc(1, sizeof(GGDKSelectionData));
+        sd->type_atom = type_atom;
+        gdisp->selinfo[sel].datalist = g_list_append(gdisp->selinfo[sel].datalist, sd);
+    }
+
+    sd->cnt = cnt;
+    sd->data = data;
+    sd->unit_size = unitsize;
+    sd->gendata = gendata;
+    sd->freedata = freedata;
 }
 
 static void *GGDKDrawRequestSelection(GWindow w, enum selnames sn, char *typename, int32 *len) {
@@ -1501,13 +1651,20 @@ static int GGDKDrawSelectionHasType(GWindow w, enum selnames sn, char *typename)
     return false;
 }
 
-static void GGDKDrawBindSelection(GDisplay *gdisp, enum selnames sn, char *atomname) {
-    Log(LOGDEBUG, ""); //assert(false); //TODO: Implement selections (clipboard)
+static void GGDKDrawBindSelection(GDisplay *disp, enum selnames sn, char *atomname) {
+    Log(LOGDEBUG, ""); //assert(false);
+    GGDKDisplay *gdisp = (GGDKDisplay *) disp;
+    if (sn >= 0 && sn < sn_max) {
+        gdisp->selinfo[sn].sel_atom = gdk_atom_intern(atomname, false);
+    }
 }
 
-static int GGDKDrawSelectionHasOwner(GDisplay *gdisp, enum selnames sn) {
+static int GGDKDrawSelectionHasOwner(GDisplay *disp, enum selnames sn) {
     Log(LOGDEBUG, "");
-    assert(false);
+    // This function is only called once in startui.c to check if another instance exists.
+    // However, GDK does not reveal if an external window owns a selection.
+    // So this function cannot be implemented meaningfully.
+    return false;
 }
 
 static void GGDKDrawPointerUngrab(GDisplay *gdisp) {
@@ -1968,6 +2125,13 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *programname) {
     gdisp->scale_screen_by = 1; //Does nothing
     gdisp->bs.double_time = 200;
     gdisp->bs.double_wiggle = 3;
+
+    //Initialise selection atoms
+    gdisp->selinfo[sn_primary].sel_atom = gdk_atom_intern_static_string("PRIMARY");
+    gdisp->selinfo[sn_clipboard].sel_atom = gdk_atom_intern_static_string("CLIPBOARD");
+    gdisp->selinfo[sn_drag_and_drop].sel_atom = gdk_atom_intern_static_string("DRAG_AND_DROP");
+    gdisp->selinfo[sn_user1].sel_atom = gdk_atom_intern_static_string("PRIMARY");
+    gdisp->selinfo[sn_user2].sel_atom = gdk_atom_intern_static_string("PRIMARY");
 
     bool tbf = false, mxc = false;
     GResStruct res[] = {
