@@ -1008,6 +1008,7 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             GDrawDestroyWindow((GWindow)gw);
             break;
         case GDK_DELETE:
+            gw->is_waiting_for_selection = false;
             gevent.type = et_close;
             break;
         case GDK_SELECTION_CLEAR: {
@@ -1032,6 +1033,10 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         }
         break;
         case GDK_SELECTION_NOTIFY: // paste
+            if (gw->is_waiting_for_selection) {
+                gw->is_waiting_for_selection = false;
+                gw->is_notified_of_selection = ((GdkEventSelection *)event)->property != GDK_NONE;
+            }
             break;
         case GDK_PROPERTY_NOTIFY:
             break;
@@ -1150,6 +1155,9 @@ static void GGDKDrawDestroyWindow(GWindow w) {
     }
 
     gw->is_dying = true;
+    gw->is_waiting_for_selection = false;
+    gw->is_notified_of_selection = false;
+
     if (!gw->is_pixmap) {
         GList_Glib *list = gdk_window_get_children(gw->w);
         GList_Glib *child = list;
@@ -1546,6 +1554,10 @@ static int GGDKDrawKeyState(GWindow w, int keysym) {
 static void GGDKDrawGrabSelection(GWindow w, enum selnames sn) {
     Log(LOGDEBUG, ""); //assert(false);
 
+    if (sn < 0 || sn >= sn_max) {
+        return;
+    }
+
     GGDKWindow gw = (GGDKWindow)w;
     GGDKDisplay *gdisp = gw->display;
     GGDKSelectionInfo *sel = &gdisp->selinfo[sn];
@@ -1587,7 +1599,11 @@ static void GGDKDrawAddSelectionType(GWindow w, enum selnames sel, char *type, v
     if (unitsize != 1 && unitsize != 2 && unitsize != 4) {
         GDrawIError("Bad unitsize to GGDKDrawAddSelectionType");
         return;
+    } else if (sel < 0 || sel >= sn_max) {
+        GDrawIError("Bad selname value");
+        return;
     }
+
     while (dl != NULL && (sd = ((GGDKSelectionData *)dl->data))->type_atom != type_atom) {
         dl = dl->next;
     }
@@ -1606,47 +1622,118 @@ static void GGDKDrawAddSelectionType(GWindow w, enum selnames sel, char *type, v
 }
 
 static void *GGDKDrawRequestSelection(GWindow w, enum selnames sn, char *typename, int32 *len) {
-    Log(LOGDEBUG, ""); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
-    GdkAtom sel, type = gdk_atom_intern_static_string(typename), received_type = 0;
-    guchar *data;
-    gint received_format;
+    GGDKDisplay *gdisp = gw->display;
+    GdkAtom type_atom = gdk_atom_intern(typename, false);
+    void *ret = NULL;
 
-    switch (sn) {
-        case sn_primary:
-            sel = GDK_SELECTION_PRIMARY;
-            break;
-        case sn_clipboard:
-            sel = GDK_SELECTION_CLIPBOARD;
-            break;
-        default:
-            return NULL;
+    if (len != NULL) {
+        *len = 0;
     }
 
-#ifdef GDK_WINDOWING_WIN32
-    sel = GDK_SELECTION_CLIPBOARD;
-#endif
+    if (sn < 0 || sn >= sn_max || gw->is_waiting_for_selection) {
+        return NULL;
+    }
 
-    gdk_selection_convert(gw->w, sel, type, gw->display->last_event_time);
-    gdk_display_sync(gw->display->display);
-    // This is broken.
-    *len = gdk_selection_property_get(gw->w, &data, &received_type, &received_format);
-    if (received_type == type) {
-        char *ret = copy(data);
+    // If we own the selection, get the data ourselves...
+    if (gdisp->selinfo[sn].owner != NULL) {
+        GList_Glib *ptr = gdisp->selinfo[sn].datalist;
+        while (ptr != NULL) {
+            GGDKSelectionData *sd = (GGDKSelectionData *)ptr->data;
+            if (sd->type_atom == type_atom) {
+                if (sd->gendata != NULL) {
+                    ret = (sd->gendata)(sd->data, len);
+                    if (len != NULL) {
+                        *len *= sd->unit_size;
+                    }
+                } else {
+                    int sz = sd->unit_size * sd->cnt;
+                    ret = calloc(sz + 4, 1);
+                    if (ret) {
+                        memcpy(ret, sd->data, sz);
+                        if (len != NULL) {
+                            *len = sz;
+                        }
+                    }
+                }
+                return ret;
+            }
+            ptr = ptr->next;
+        }
+    }
+
+    // Otherwise we have to ask the owner for the data.
+    gdk_selection_convert(gw->w, gdisp->selinfo[sn].sel_atom, type_atom, gdisp->last_event_time);
+
+    gw->is_waiting_for_selection = true;
+    gw->is_notified_of_selection = false;
+
+    GTimer_GTK *timer = g_timer_new();
+    g_timer_start(timer);
+
+    while (gw->is_waiting_for_selection) {
+        if (g_timer_elapsed(timer, NULL) >= (double)gdisp->sel_notify_timeout) {
+            break;
+        }
+        GDrawProcessPendingEvents((GDisplay *)gdisp);
+    }
+    g_timer_destroy(timer);
+
+    if (gw->is_notified_of_selection) {
+        guchar *data;
+        GdkAtom received_type;
+        gint received_format;
+        gint rlen = gdk_selection_property_get(gw->w, &data, &received_type, &received_format);
+        ret = calloc(rlen + 4, 1);
+        if (ret) {
+            memcpy(ret, data, rlen);
+            if (len) {
+                *len = rlen;
+            }
+        }
         g_free(data);
-        return ret;
     }
-    return NULL;
+
+    gw->is_waiting_for_selection = false;
+    gw->is_notified_of_selection = false;
+
+    return ret;
 }
 
 static int GGDKDrawSelectionHasType(GWindow w, enum selnames sn, char *typename) {
     Log(LOGDEBUG, ""); //assert(false);
-    switch (sn) {
-        case sn_primary:
-        case sn_clipboard:
-            if (!strcmp(typename, "UTF8_STRING")) {
+
+    GGDKWindow gw = (GGDKWindow)w;
+    GGDKDisplay *gdisp = gw->display;
+    GdkAtom sel_type = gdk_atom_intern(typename, false);
+
+    if (sn < 0 || sn >= sn_max) {
+        return false;
+    }
+
+    // Check if we own it
+    if (gdisp->selinfo[sn].owner != NULL) {
+        GList_Glib *ptr = gdisp->selinfo[sn].datalist;
+        while (ptr != NULL) {
+            if (((GGDKSelectionData *)ptr->data)->type_atom == sel_type) {
                 return true;
             }
+        }
+        return false;
+    }
+
+    // Else query
+    GdkAtom *type_list;
+    int32 num_types;
+    type_list = (GdkAtom *) GGDKDrawRequestSelection(w, sn, "TARGETS", &num_types);
+    if (type_list != NULL) {
+        for (int i = 0; i < num_types; i++) {
+            if (type_list[i] == sel_type) {
+                free(type_list);
+                return true;
+            }
+        }
+        free(type_list);
     }
     return false;
 }
@@ -1661,9 +1748,24 @@ static void GGDKDrawBindSelection(GDisplay *disp, enum selnames sn, char *atomna
 
 static int GGDKDrawSelectionHasOwner(GDisplay *disp, enum selnames sn) {
     Log(LOGDEBUG, "");
-    // This function is only called once in startui.c to check if another instance exists.
-    // However, GDK does not reveal if an external window owns a selection.
-    // So this function cannot be implemented meaningfully.
+
+    if (sn < 0 || sn >= sn_max) {
+        return false;
+    }
+
+    GGDKDisplay *gdisp = (GGDKDisplay *)disp;
+    // Check if we own it
+    if (gdisp->selinfo[sn].owner != NULL) {
+        return true;
+    }
+
+    // Else query. Note, we cannot use gdk_selection_owner_get, as this only works for
+    // windows that GDK created. This code is untested.
+    void *data = GGDKDrawRequestSelection((GWindow)gdisp->groot, sn, "TIMESTAMP", NULL);
+    if (data != NULL) {
+        free(data);
+        return true;
+    }
     return false;
 }
 
@@ -1827,7 +1929,7 @@ static void GGDKDrawSkipMouseMoveEvents(GWindow gw, GEvent *gevent) {
 }
 
 static void GGDKDrawProcessPendingEvents(GDisplay *gdisp) {
-    Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, "");
     //assert(false);
     GMainContext *ctx = g_main_loop_get_context(((GGDKDisplay *)gdisp)->main_loop);
     if (ctx != NULL) {
@@ -2125,6 +2227,7 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *programname) {
     gdisp->scale_screen_by = 1; //Does nothing
     gdisp->bs.double_time = 200;
     gdisp->bs.double_wiggle = 3;
+    gdisp->sel_notify_timeout = 2; // 2 second timeout
 
     //Initialise selection atoms
     gdisp->selinfo[sn_primary].sel_atom = gdk_atom_intern_static_string("PRIMARY");
@@ -2137,7 +2240,7 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *programname) {
     GResStruct res[] = {
         {.resname = "MultiClickTime", .type = rt_int, .val = &gdisp->bs.double_time},
         {.resname = "MultiClickWiggle", .type = rt_int, .val = &gdisp->bs.double_wiggle},
-        //{.resname = "SelectionNotifyTimeout", .type = rt_int, .val = &gdisp->SelNotifyTimeout},
+        {.resname = "SelectionNotifyTimeout", .type = rt_int, .val = &gdisp->sel_notify_timeout},
         {.resname = "TwoButtonFixup", .type = rt_bool, .val = &tbf},
         {.resname = "MacOSXCmd", .type = rt_bool, .val = &mxc},
         NULL

@@ -156,6 +156,7 @@ typedef struct ggdkdisplay { /* :GDisplay */
     guint32 last_event_time;
 
     GGDKSelectionInfo selinfo[sn_max]; // We implement the clipboard using the selections model
+    int sel_notify_timeout;
 
     GPtrArray *cursors; // List of cursors that the user made.
     GPtrArray *dirty_windows; //List of GGDKWindows which called drawing functions outside of an expose event.
@@ -205,6 +206,8 @@ struct ggdkwindow { /* :GWindow */
     unsigned int isverytransient: 1;
     unsigned int is_cleaning_up: 1; //Are we running cleanup?
     unsigned int is_centered: 1;
+    unsigned int is_waiting_for_selection: 1;
+    unsigned int is_notified_of_selection: 1;
 
     int reference_count; // Knowing when to destroy is tricky...
     GPtrArray *transient_childs; // Handling transients is tricky...
