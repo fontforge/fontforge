@@ -27,18 +27,20 @@ static GGC *_GGDKDraw_NewGGC() {
     return ggc;
 }
 
-static void _GGDKDraw_FreeSelDataEntry(gpointer d) {
-    GGDKSelectionData *data = (GGDKSelectionData *)d;
-    if (data->freedata) {
-        (data->freedata)(data->data);
-    } else {
-        free(data->data);
-    }
-    free(data);
-}
-
 static void _GGDKDraw_ClearSelData(GGDKDisplay *gdisp, enum selnames sn) {
-    g_list_free_full(gdisp->selinfo[sn].datalist, _GGDKDraw_FreeSelDataEntry);
+    GList_Glib *ptr = gdisp->selinfo[sn].datalist;
+    while (ptr != NULL) {
+        GGDKSelectionData *data = (GGDKSelectionData *)ptr->data;
+        if (data->data) {
+            if (data->freedata) {
+                (data->freedata)(data->data);
+            } else {
+                free(data->data);
+            }
+        }
+        free(data);
+        ptr = g_list_delete_link(ptr, ptr);
+    }
     gdisp->selinfo[sn].datalist = NULL;
     gdisp->selinfo[sn].owner = NULL;
 }
@@ -1041,7 +1043,7 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         case GDK_PROPERTY_NOTIFY:
             break;
         default:
-            Log(LOGDEBUG, "UNPROCESSED GDK EVENT %d", event->type);
+            Log(LOGDEBUG, "UNPROCESSED GDK EVENT %d %s", event->type, GdkEventName(event->type));
             break;
     }
 
@@ -1801,7 +1803,7 @@ static void GGDKDrawPointerGrab(GWindow w) {
     gdk_device_grab(pointer, gw->w,
                     GDK_OWNERSHIP_NONE,
                     false,
-                    GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK,
+                    GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_SCROLL_MASK,
                     NULL, GDK_CURRENT_TIME);
 #else
     GdkSeat *seat = gdk_display_get_default_seat(gw->display->display);
