@@ -1216,15 +1216,14 @@ static void GGDKDrawSetWindowBackground(GWindow gw, Color gcol) {
     gdk_window_set_background_rgba(((GGDKWindow)gw)->w, &col);
 }
 
-// How about NO
 static int GGDKDrawSetDither(GDisplay *gdisp, int set) {
-    Log(LOGDEBUG, ""); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
+    // Not implemented; does nothing.
     return false;
 }
 
-
 static void GGDKDrawReparentWindow(GWindow child, GWindow newparent, int x, int y) {
-    Log(LOGDEBUG, "");
+    Log(LOGWARN, "GGDKDrawReparentWindow called: Reparenting should NOT be used!");
     GGDKWindow gchild = (GGDKWindow)child, gparent = (GGDKWindow)newparent;
     gchild->parent = gparent;
     gchild->is_toplevel = gchild->display->groot == gparent;
@@ -1562,15 +1561,9 @@ static void GGDKDrawGrabSelection(GWindow w, enum selnames sn) {
             _GGDKDraw_CallEHChecked(sel->owner, &e, sel->owner->eh);
         }
     }
-
-    //Only one clipboard exists on Windows. Selectively set the selection owner
-    //as otherwise the Windows clipboard will be cleared.
-#ifdef _WIN32
-    if (sn == sn_clipboard)
-#endif
-        gdk_selection_owner_set(gw->w, sel->sel_atom, gdisp->last_event_time, false);
-
     _GGDKDraw_ClearSelData(gdisp, sn);
+
+    gdk_selection_owner_set(gw->w, sel->sel_atom, gdisp->last_event_time, false);
     sel->owner = gw;
     sel->timestamp = gdisp->last_event_time;
 }
