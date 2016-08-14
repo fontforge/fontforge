@@ -17,8 +17,6 @@
 #    define GGDKDRAW_GDK_3_20
 #endif
 
-#define GColorToGDK(col) COLOR_RED(col)/255., COLOR_GREEN(col)/255., COLOR_BLUE(col)/255.
-
 #define GGDKDRAW_ADDREF(x) do { \
     assert((x)->reference_count >= 0); \
     (x)->reference_count++; \

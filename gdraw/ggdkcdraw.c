@@ -614,7 +614,9 @@ void GGDKDrawClear(GWindow w, GRect *rect) {
         r = &temp;
     }
     GGDKDrawPushClip((GWindow)gw, r, &old);
-    cairo_set_source_rgba(gw->cc, GColorToGDK(gw->ggc->bg), 1.0);
+    cairo_set_source_rgba(gw->cc, COLOR_RED(gw->ggc->bg) / 255.,
+                          COLOR_GREEN(gw->ggc->bg) / 255.,
+                          COLOR_BLUE(gw->ggc->bg) / 255., 1.0);
     cairo_paint(gw->cc);
     GGDKDrawPopClip((GWindow)gw, &old);
 }
