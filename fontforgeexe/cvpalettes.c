@@ -4242,6 +4242,7 @@ static void BVToolsExpose(GWindow pixmap, BitmapView *bv, GRect *r) {
     int dither = GDrawSetDither(NULL,false);
 
     GDrawPushClip(pixmap,r,&old);
+    GDrawFillRect(pixmap,r,GDrawGetDefaultBackground(NULL));
     GDrawSetLineWidth(pixmap,0);
     for ( i=0; i<sizeof(buttons)/sizeof(buttons[0]); ++i ) for ( j=0; j<2; ++j ) {
 	GDrawDrawImage(pixmap,buttons[i][j],NULL,j*27+1,i*27+1);
