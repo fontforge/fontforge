@@ -91,7 +91,7 @@ static int GGDKDrawSetline(GGDKWindow gw, GGC *mine) {
     }
     cairo_set_line_width(gw->cc, mine->line_width);
     //JT: This is from the original gxcdraw. But this looks like a bug?
-    //JT: Dashes will always be dis     abled as is.
+    //JT: Dashes will always be disabled as is.
     //cairo_set_dash(gw->cc, dashes, 0, mine->dash_offset);
     cairo_set_dash(gw->cc, dashes, (mine->dash_len == 0) ? 0 : 2, mine->dash_offset);
 

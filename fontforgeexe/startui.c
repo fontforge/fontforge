@@ -928,7 +928,7 @@ int fontforge_main( int argc, char **argv ) {
         fprintf( stderr, " Based on source from git with hash: %s\n", FONTFORGE_GIT_VERSION );
     }
 
-#if defined(__Mac)
+#if defined(__Mac) && !defined(FONTFORGE_CAN_USE_GDK)
     /* Start X if they haven't already done so. Well... try anyway */
     /* Must be before we change DYLD_LIBRARY_PATH or X won't start */
     /* (osascript depends on a libjpeg which isn't found if we look in /sw/lib first */
@@ -946,6 +946,8 @@ int fontforge_main( int argc, char **argv ) {
     } else if ( local_x==1 && *getenv("DISPLAY")!='/' && strcmp(getenv("DISPLAY"),":0.0")!=0 && strcmp(getenv("DISPLAY"),":0")!=0 )
 	/* 10.5.7 uses a named socket or something "/tmp/launch-01ftWX:0" */
 	local_x = 0;
+#elif defined (FONTFORGE_CAN_USE_GDK)
+    int local_x = 1;
 #endif
 
 #if defined(__MINGW32__)
