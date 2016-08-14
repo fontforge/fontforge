@@ -1126,24 +1126,41 @@ static GCursor GGDKDrawCreateCursor(GWindow src, GWindow mask, Color fg, Color b
     Log(LOGDEBUG, "");
 
     GGDKDisplay *gdisp = (GGDKDisplay *)(src->display);
-    GdkDisplay *display = gdisp->display;
-    cairo_surface_t *cs = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, src->pos.width, src->pos.height);
-    cairo_t *cc = cairo_create(cs);
+    GdkCursor *cursor = NULL;
+    if (mask == NULL) { // Use src directly
+        assert(src != NULL);
+        assert(src->is_pixmap);
+        cursor = gdk_cursor_new_from_surface(gdisp->display, ((GGDKWindow)src)->cs, x, y);
+    } else { // Assume it's an X11-style cursor
+        cairo_surface_t *cs = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, src->pos.width, src->pos.height);
+        cairo_t *cc = cairo_create(cs);
 
-    // Masking
-    //Background
-    cairo_set_source_rgb(cc, COLOR_RED(bg) / 255., COLOR_GREEN(bg) / 255., COLOR_BLUE(bg) / 255.);
-    cairo_mask_surface(cc, ((GGDKWindow)mask)->cs, 0, 0);
-    //Foreground
-    cairo_set_source_rgb(cc, COLOR_RED(fg) / 255., COLOR_GREEN(fg) / 255., COLOR_BLUE(fg) / 255.);
-    cairo_mask_surface(cc, ((GGDKWindow)src)->cs, 0, 0);
+        // Masking
+        //Background
+        cairo_set_source_rgb(cc, COLOR_RED(bg) / 255., COLOR_GREEN(bg) / 255., COLOR_BLUE(bg) / 255.);
+        cairo_mask_surface(cc, ((GGDKWindow)mask)->cs, 0, 0);
+        //Foreground
+        cairo_set_source_rgb(cc, COLOR_RED(fg) / 255., COLOR_GREEN(fg) / 255., COLOR_BLUE(fg) / 255.);
+        cairo_mask_surface(cc, ((GGDKWindow)src)->cs, 0, 0);
 
-    GdkCursor *cursor = gdk_cursor_new_from_surface(display, cs, x, y);
-    cairo_destroy(cc);
-    cairo_surface_destroy(cs);
+        cursor = gdk_cursor_new_from_surface(gdisp->display, cs, x, y);
+        cairo_destroy(cc);
+        cairo_surface_destroy(cs);
+    }
 
     g_ptr_array_add(gdisp->cursors, cursor);
     return ct_user + (gdisp->cursors->len - 1);
+}
+
+static void GGDKDrawDestroyCursor(GDisplay *disp, GCursor gcursor) {
+    Log(LOGDEBUG, "");
+
+    GGDKDisplay *gdisp = (GGDKDisplay *)disp;
+    gcursor -= ct_user;
+    if (gcursor >= 0 && gcursor < gdisp->cursors->len) {
+        g_object_unref(gdisp->cursors->pdata[gcursor]);
+        gdisp->cursors->pdata[gcursor] = NULL;
+    }
 }
 
 static void GGDKDrawDestroyWindow(GWindow w) {
@@ -1177,12 +1194,6 @@ static void GGDKDrawDestroyWindow(GWindow w) {
         g_object_set_data(G_OBJECT(gw->w), "GGDKWindow", NULL);
     }
     GGDKDRAW_DECREF(gw, _GGDKDraw_InitiateWindowDestroy);
-}
-
-static void GGDKDrawDestroyCursor(GDisplay *gdisp, GCursor gcursor) {
-    Log(LOGDEBUG, "");
-    assert(false);
-    // Well. No code calls GDrawDestroyCursor.
 }
 
 static int GGDKDrawNativeWindowExists(GDisplay *gdisp, void *native_window) {
@@ -1447,16 +1458,18 @@ static void GGDKDrawSetCursor(GWindow w, GCursor gcursor) {
             Log(LOGDEBUG, "CUSTOM CURSOR! %d", gcursor);
     }
 
-    gw->current_cursor = gcursor;
-
     if (gcursor >= ct_user) {
         GGDKDisplay *gdisp = gw->display;
         gcursor -= ct_user;
-        if (gcursor < gdisp->cursors->len) {
+        if (gcursor < gdisp->cursors->len && gdisp->cursors->pdata[gcursor] != NULL) {
             gdk_window_set_cursor(gw->w, (GdkCursor *)gdisp->cursors->pdata[gcursor]);
+            gw->current_cursor = gcursor;
+        } else {
+            Log(LOGWARN, "Invalid cursor value passed: %d", gcursor);
         }
     } else {
         gdk_window_set_cursor(gw->w, cursor);
+        gw->current_cursor = gcursor;
         if (cursor != NULL) {
             g_object_unref(cursor);
         }
