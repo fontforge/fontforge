@@ -46,12 +46,12 @@ static void _GGDKDraw_ClearSelData(GGDKDisplay *gdisp, enum selnames sn) {
 }
 
 static bool _GGDKDraw_TransmitSelection(GGDKDisplay *gdisp, GdkEventSelection *e) {
-    /* Default location to store data if none specified */
+    // Default location to store data if none specified
     if (e->property == GDK_NONE) {
         e->property = e->target;
     }
 
-    /* Check that we own the selection request */
+    // Check that we own the selection request
     enum selnames sn;
     for (sn = 0; sn < sn_max; sn++) {
         if (e->selection == gdisp->selinfo[sn].sel_atom) {
@@ -863,12 +863,6 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         case GDK_BUTTON_PRESS:
         case GDK_BUTTON_RELEASE: {
             GdkEventButton *evt = (GdkEventButton *)event;
-            /*if ((redirect = InputRedirection(gdisp->input, gw)) != NULL) {
-                if (event->type == ButtonPress) {
-                    GXDrawBeep((GDisplay *) gdisp);
-                }
-                return;
-            }*/
             gevent.u.mouse.state = _GGDKDraw_GdkModifierToKsm(evt->state);
             gevent.u.mouse.x = evt->x;
             gevent.u.mouse.y = evt->y;
@@ -1415,6 +1409,7 @@ static void GGDKDrawSetCursor(GWindow w, GCursor gcursor) {
     Log(LOGDEBUG, ""); //assert(false);
     GGDKWindow gw = (GGDKWindow)w;
     GdkCursor *cursor = NULL;
+    gw->current_cursor = gcursor;
 
     switch (gcursor) {
         case ct_default:
@@ -1468,21 +1463,13 @@ static void GGDKDrawSetCursor(GWindow w, GCursor gcursor) {
 
 static GCursor GGDKDrawGetCursor(GWindow gw) {
     Log(LOGDEBUG, "");
-    //assert(false);
-    return ct_default;
+    return ((GGDKWindow)gw)->current_cursor;
 }
 
 static GWindow GGDKDrawGetRedirectWindow(GDisplay *gdisp) {
-    Log(LOGDEBUG, ""); //assert(false);
+    //Log(LOGDEBUG, ""); //assert(false);
+    // Not implemented.
     return NULL;
-    // Sigh... I don't know...
-    /*
-    GGDKDisplay *gdisp = (GGDKDisplay *) gd;
-    if (gdisp->input == NULL) {
-        return NULL;
-    }
-    return gdisp->input->cur_dlg;
-    */
 }
 
 static void GGDKDrawTranslateCoordinates(GWindow from, GWindow to, GPoint *pt) {
