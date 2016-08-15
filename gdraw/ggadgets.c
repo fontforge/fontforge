@@ -157,7 +157,6 @@ GResInfo listmark_ri = {
 static GWindow popup;
 static GTimer *popup_timer, *popup_vanish_timer;
 static int popup_visible = false;
-static GRect popup_within;
 
 static int match(char **list, char *val) {
     int i;
@@ -499,6 +498,7 @@ static struct popup_info {
     const void *data;
     GImage *(*get_image)(const void *data);
     void (*free_image)(const void *data,GImage *img);
+    GWindow gw;
 } popup_info;
 
 void GGadgetEndPopup() {
@@ -554,11 +554,8 @@ return( false );
     popup_timer = NULL;
 
     /* Is the cursor still in the original window? */
-    GDrawGetPointerPosition(root,&where);
-    if ( where.u.mouse.x<popup_within.x || where.u.mouse.y<popup_within.y ||
-	    where.u.mouse.x>popup_within.x+popup_within.width ||
-	    where.u.mouse.y>popup_within.y+popup_within.height )
-return( true );
+    if (GDrawGetPointerWindow(root) != popup_info.gw)
+        return true;
 
     lines = 0; width = 1;
     if ( popup_info.img==NULL && popup_info.get_image!=NULL ) {
@@ -586,6 +583,7 @@ return( true );
     pos.width = width+2*GDrawPointsToPixels(popup,2);
     pos.height = lines*(as+ds) + img_height + 2*GDrawPointsToPixels(popup,2);
 
+    GDrawGetPointerPosition(root,&where);
     pos.x = where.u.mouse.x+10; pos.y = where.u.mouse.y+10;
     GDrawGetSize(root,&size);
     if ( pos.x + pos.width > size.width )
@@ -649,7 +647,6 @@ return( true );
 void GGadgetPreparePopupImage(GWindow base,const unichar_t *msg, const void *data,
 	GImage *(*get_image)(const void *data),
 	void (*free_image)(const void *data,GImage *img)) {
-    GPoint pt;
 
     GGadgetEndPopup();
     if ( msg==NULL && get_image==NULL )
@@ -660,6 +657,7 @@ return;
     popup_info.data = data;
     popup_info.get_image = get_image;
     popup_info.free_image = free_image;
+    popup_info.gw = base;
 
     if ( popup==NULL ) {
 	GWindowAttrs pattrs;
@@ -677,10 +675,6 @@ return;
 		msgpopup_eh,NULL,&pattrs);
 	GDrawSetFont(popup,popup_font);
     }
-    GDrawGetSize(base,&popup_within);
-    pt.x = pt.y = 0;
-    GDrawTranslateCoordinates(base,GDrawGetRoot(GDrawGetDisplayOfWindow(popup)), &pt);
-    popup_within.x = pt.x; popup_within.y = pt.y;
     popup_timer = GDrawRequestTimer(popup,popup_delay,0,(void *) msg);
 }
 
