@@ -1251,6 +1251,11 @@ static void GGDKDrawSetVisible(GWindow w, int show) {
     Log(LOGDEBUG, "");
     GGDKWindow gw = (GGDKWindow)w;
     if (show) {
+#ifdef GDK_WINDOWING_QUARTZ
+        // Quartz backend fails to send a configure event after showing a window
+        // But FF expects one.
+        _GGDKDraw_OnFakedConfigure(gw);
+#endif
         gdk_window_show(gw->w);
     } else {
         GGDKDrawSetTransientFor((GWindow)gw, NULL);
