@@ -149,10 +149,13 @@ FONTFORGE_CHECK_LTDL_VERSION
 CPPFLAGS="${CPPFLAGS} AS_ESCAPE([-I${top_builddir}]) AS_ESCAPE([-I${top_srcdir}])"
 
 
-AC_PATH_XTRA
-i_do_have_x="${have_x}"
-
 FONTFORGE_ARG_ENABLE_GDK
+
+if test x"${fontforge_can_use_gdk}" != xyes; then
+    AC_PATH_XTRA
+    i_do_have_x="${have_x}"
+fi
+
 if test x"${i_do_have_x}" = xyes || test x"${fontforge_can_use_gdk}" = xyes; then
     i_do_have_gui=yes
 fi
