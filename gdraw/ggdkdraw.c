@@ -133,6 +133,11 @@ static gboolean _GGDKDraw_OnWindowDestroyed(gpointer data) {
         gw->cc = NULL;
     }
 
+    if (gw->resize_timeout != 0) {
+        g_source_remove(gw->resize_timeout);
+        gw->resize_timeout = 0;
+    }
+
     if (!gw->is_pixmap) {
         while (gw->transient_childs->len > 0) {
             GGDKWindow tw = (GGDKWindow)g_ptr_array_remove_index_fast(gw->transient_childs, gw->transient_childs->len - 1);
@@ -229,17 +234,19 @@ static void _GGDKDraw_OnTimerDestroyed(GGDKTimer *timer) {
 
 static gboolean _GGDKDraw_OnFakedConfigure(gpointer user_data) {
     GGDKWindow gw = (GGDKWindow)user_data;
-    GdkEventConfigure evt = {0};
+    if (!gw->is_dying) {
+        GdkEventConfigure evt = {0};
 
-    evt.type       = GDK_CONFIGURE;
-    evt.window     = gw->w;
-    evt.send_event = true;
-    evt.width      = gdk_window_get_width(gw->w);
-    evt.height     = gdk_window_get_height(gw->w);
-    gdk_window_get_position(gw->w, &evt.x, &evt.y);
+        evt.type       = GDK_CONFIGURE;
+        evt.window     = gw->w;
+        evt.send_event = true;
+        evt.width      = gdk_window_get_width(gw->w);
+        evt.height     = gdk_window_get_height(gw->w);
+        gdk_window_get_position(gw->w, &evt.x, &evt.y);
 
-    gdk_event_put((GdkEvent *)&evt);
-    gw->resize_timeout = 0;
+        gdk_event_put((GdkEvent *)&evt);
+        gw->resize_timeout = 0;
+    }
     return false;
 }
 
