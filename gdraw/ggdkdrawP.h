@@ -63,7 +63,7 @@ typedef struct ggdktimer { // :GTimer
 } GGDKTimer;
 
 typedef struct ggdkbuttonstate {
-    int32 release_time;
+    uint32 release_time;
     GGDKWindow release_w;
     int16 release_x, release_y;
     int16 release_button;
@@ -246,13 +246,10 @@ void GGDKDrawDrawArc(GWindow gw, GRect *rect, int32 sangle, int32 eangle, Color 
 void GGDKDrawDrawPoly(GWindow gw, GPoint *pts, int16 cnt, Color col);
 void GGDKDrawFillPoly(GWindow gw, GPoint *pts, int16 cnt, Color col);
 void GGDKDrawDrawImage(GWindow gw, GImage *gimg, GRect *src, int32 x, int32 y);
-void GGDKDrawTileImage(GWindow gw, GImage *gimg, GRect *src, int32 x, int32 y);
 void GGDKDrawDrawGlyph(GWindow gw, GImage *gimg, GRect *src, int32 x, int32 y);
 void GGDKDrawDrawImageMagnified(GWindow gw, GImage *gimg, GRect *src, int32 x, int32 y, int32 width, int32 height);
 
-GImage *GGDKDrawCopyScreenToImage(GWindow gw, GRect *rect);
 void    GGDKDrawDrawPixmap(GWindow gw1, GWindow gw2, GRect *src, int32 x, int32 y);
-void    GGDKDrawTilePixmap(GWindow gw1, GWindow gw2, GRect *src, int32 x, int32 y);
 
 enum gcairo_flags GGDKDrawHasCairo(GWindow w);
 

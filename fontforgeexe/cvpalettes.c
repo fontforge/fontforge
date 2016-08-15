@@ -143,22 +143,6 @@ static GFont *toolsfont=NULL, *layersfont=NULL;
 #define CID_LayersMenu  9003
 #define CID_LayerLabel  9004
 
-static void ReparentFixup(GWindow child,GWindow parent, int x, int y, int width, int height ) {
-    /* This is so nice */
-    /* KDE does not honor my request for a border for top level windows */
-    /* KDE does not honor my request for size (for narrow) top level windows */
-    /* Gnome gets very confused by reparenting */
-	/* If we've got a top level window, then reparenting it removes gnome's */
-	/* decoration window, but sets the new parent to root (rather than what */
-	/* we asked for */
-	/* I have tried reparenting it twice, unmapping & reparenting. Nothing works */
-
-    GWidgetReparentWindow(child,parent,x,y);
-    if ( width!=0 )
-	GDrawResize(child,width,height);
-    GDrawSetWindowBorder(child,1,GDrawGetDefaultForeground(NULL));
-}
-
 void onCollabSessionStateChanged( gpointer instance, FontViewBase* fv, gpointer user_data )
 {
     bool inCollab = collabclient_inSessionFV( fv );

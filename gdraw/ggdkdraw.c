@@ -22,7 +22,7 @@ static void GGDKDrawSetTransientFor(GWindow transient, GWindow owner);
 
 // Private member functions (file-level)
 
-static GGC *_GGDKDraw_NewGGC() {
+static GGC *_GGDKDraw_NewGGC(void) {
     GGC *ggc = calloc(1, sizeof(GGC));
     if (ggc == NULL) {
         Log(LOGDEBUG, "GGC: Memory allocation failed!");
@@ -658,10 +658,10 @@ static VisibilityState _GGDKDraw_GdkVisibilityStateToVS(GdkVisibilityState state
             return vs_partially;
             break;
         case GDK_VISIBILITY_UNOBSCURED:
+        default:
             return vs_unobscured;
             break;
     }
-    return vs_unobscured;
 }
 
 static int _GGDKDraw_WindowOrParentsDying(GGDKWindow gw) {
@@ -678,7 +678,6 @@ static int _GGDKDraw_WindowOrParentsDying(GGDKWindow gw) {
 }
 
 static bool _GGDKDraw_FilterByModal(GdkEvent *event, GGDKWindow gw) {
-    GGDKDisplay *gdisp = gw->display;
     GGDKWindow gww = gw;
 
     switch (event->type) {
@@ -698,7 +697,7 @@ static bool _GGDKDraw_FilterByModal(GdkEvent *event, GGDKWindow gw) {
     while (gww != gw->display->groot) {
         if (gww->transient_childs->len > 0) {
             bool has_modal = false;
-            for (int i = 0; i < gww->transient_childs->len; i++) {
+            for (guint i = 0; i < gww->transient_childs->len; i++) {
                 GGDKWindow ow = (GGDKWindow)gww->transient_childs->pdata[i];
                 if (ow->restrict_input_to_me) {
                     has_modal = true;
@@ -725,7 +724,6 @@ static bool _GGDKDraw_FilterByModal(GdkEvent *event, GGDKWindow gw) {
 static gboolean _GGDKDraw_ProcessTimerEvent(gpointer user_data) {
     GGDKTimer *timer = (GGDKTimer *)user_data;
     GEvent e = {0};
-    GGDKDisplay *gdisp;
     bool ret = true;
 
     if (!timer->active || _GGDKDraw_WindowOrParentsDying((GGDKWindow)timer->owner)) {
@@ -733,7 +731,6 @@ static gboolean _GGDKDraw_ProcessTimerEvent(gpointer user_data) {
         return false;
     }
 
-    gdisp = ((GGDKWindow)timer->owner)->display;
     e.type = et_timer;
     e.w = timer->owner;
     e.native_window = timer->owner->native_window;
@@ -758,7 +755,7 @@ static gboolean _GGDKDraw_ProcessTimerEvent(gpointer user_data) {
 }
 
 static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
-    static int request_id = 0;
+    //static int request_id = 0;
     struct gevent gevent = {0};
     GGDKDisplay *gdisp = (GGDKDisplay *)data;
     GdkWindow *w = gdk_event_get_window(event);
@@ -884,8 +881,8 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
 
                 if (xdiff + ydiff < gdisp->bs.double_wiggle &&
                         gw == gdisp->bs.release_w &&
-                        evt->button == gdisp->bs.release_button &&
-                        gevent.u.mouse.time - gdisp->bs.release_time < gdisp->bs.double_time &&
+                        gevent.u.mouse.button == gdisp->bs.release_button &&
+                        (int32_t)(gevent.u.mouse.time - gdisp->bs.release_time) < gdisp->bs.double_time &&
                         gevent.u.mouse.time >= gdisp->bs.release_time) {	// Time can wrap
 
                     gdisp->bs.cur_click++;
@@ -1196,28 +1193,31 @@ static void GGDKDrawDestroyWindow(GWindow w) {
     GGDKDRAW_DECREF(gw, _GGDKDraw_InitiateWindowDestroy);
 }
 
-static int GGDKDrawNativeWindowExists(GDisplay *gdisp, void *native_window) {
+static int GGDKDrawNativeWindowExists(GDisplay *UNUSED(gdisp), void *native_window) {
     //Log(LOGDEBUG, "");
     GdkWindow *w = (GdkWindow *)native_window;
-    GGDKWindow gw = g_object_get_data(G_OBJECT(w), "GGDKWindow");
 
-    // So if the window is dying, the gdk window is already gone.
-    // But gcontainer.c expects this to return true on et_destroy...
-    if (gw == NULL || gw->is_dying) {
-        return true;
-    } else {
-        return !gdk_window_is_destroyed(w) && gdk_window_is_visible(w);
+    if (w != NULL) {
+        GGDKWindow gw = g_object_get_data(G_OBJECT(w), "GGDKWindow");
+        // So if the window is dying, the gdk window is already gone.
+        // But gcontainer.c expects this to return true on et_destroy...
+        if (gw == NULL || gw->is_dying) {
+            return true;
+        } else {
+            return !gdk_window_is_destroyed(w) && gdk_window_is_visible(w);
+        }
     }
+    return false;
 }
 
-static void GGDKDrawSetZoom(GWindow gw, GRect *size, enum gzoom_flags flags) {
+static void GGDKDrawSetZoom(GWindow UNUSED(gw), GRect *UNUSED(size), enum gzoom_flags UNUSED(flags)) {
     Log(LOGDEBUG, "");
     // Not implemented.
 }
 
 // Not possible?
-static void GGDKDrawSetWindowBorder(GWindow gw, int width, Color gcol) {
-    Log(LOGDEBUG, "");
+static void GGDKDrawSetWindowBorder(GWindow UNUSED(gw), int UNUSED(width), Color UNUSED(gcol)) {
+    Log(LOGWARN, "GGDKDrawSetWindowBorder unimplemented!");
 }
 
 static void GGDKDrawSetWindowBackground(GWindow gw, Color gcol) {
@@ -1231,8 +1231,7 @@ static void GGDKDrawSetWindowBackground(GWindow gw, Color gcol) {
     gdk_window_set_background_rgba(((GGDKWindow)gw)->w, &col);
 }
 
-static int GGDKDrawSetDither(GDisplay *gdisp, int set) {
-    //Log(LOGDEBUG, "");
+static int GGDKDrawSetDither(GDisplay *UNUSED(gdisp), int UNUSED(set)) {
     // Not implemented; does nothing.
     return false;
 }
@@ -1312,7 +1311,7 @@ static void GGDKDrawRaiseAbove(GWindow gw1, GWindow gw2) {
 }
 
 // Only used once in gcontainer - force it to call GDrawRaiseAbove
-static int GGDKDrawIsAbove(GWindow gw1, GWindow gw2) {
+static int GGDKDrawIsAbove(GWindow UNUSED(gw1), GWindow UNUSED(gw2)) {
     Log(LOGDEBUG, "");
     return false;
 }
@@ -1326,7 +1325,7 @@ static void GGDKDrawLower(GWindow gw) {
 }
 
 // Icon title is ignored.
-static void GGDKDrawSetWindowTitles8(GWindow w, const char *title, const char *icontitle) {
+static void GGDKDrawSetWindowTitles8(GWindow w, const char *title, const char *UNUSED(icontitle)) {
     Log(LOGDEBUG, "");// assert(false);
     GGDKWindow gw = (GGDKWindow)w;
     free(gw->window_title);
@@ -1337,7 +1336,7 @@ static void GGDKDrawSetWindowTitles8(GWindow w, const char *title, const char *i
     }
 }
 
-static void GGDKDrawSetWindowTitles(GWindow gw, const unichar_t *title, const unichar_t *icontitle) {
+static void GGDKDrawSetWindowTitles(GWindow gw, const unichar_t *title, const unichar_t *UNUSED(icontitle)) {
     Log(LOGDEBUG, "");
     char *str = u2utf8_copy(title);
     if (str != NULL) {
@@ -1481,7 +1480,7 @@ static GCursor GGDKDrawGetCursor(GWindow gw) {
     return ((GGDKWindow)gw)->current_cursor;
 }
 
-static GWindow GGDKDrawGetRedirectWindow(GDisplay *gdisp) {
+static GWindow GGDKDrawGetRedirectWindow(GDisplay *UNUSED(gdisp)) {
     //Log(LOGDEBUG, "");
     // Not implemented.
     return NULL;
@@ -1522,7 +1521,7 @@ static void GGDKDrawFlush(GDisplay *gdisp) {
 static void GGDKDrawScroll(GWindow w, GRect *rect, int32 hor, int32 vert) {
     //Log(LOGDEBUG, "");
     GGDKWindow gw = (GGDKWindow) w;
-    GRect temp, old;
+    GRect temp;
 
     vert = -vert;
     if (rect == NULL) {
@@ -1536,11 +1535,12 @@ static void GGDKDrawScroll(GWindow w, GRect *rect, int32 hor, int32 vert) {
 }
 
 
-static GIC *GGDKDrawCreateInputContext(GWindow gw, enum gic_style style) {
+static GIC *GGDKDrawCreateInputContext(GWindow UNUSED(gw), enum gic_style UNUSED(style)) {
     Log(LOGDEBUG, "");
+    return NULL;
 }
 
-static void GGDKDrawSetGIC(GWindow gw, GIC *gic, int x, int y) {
+static void GGDKDrawSetGIC(GWindow UNUSED(gw), GIC *UNUSED(gic), int UNUSED(x), int UNUSED(y)) {
     Log(LOGDEBUG, "");
 }
 
@@ -1813,7 +1813,7 @@ static void GGDKDrawPointerGrab(GWindow w) {
 #endif
 }
 
-static void GGDKDrawRequestExpose(GWindow w, GRect *rect, int doclear) {
+static void GGDKDrawRequestExpose(GWindow w, GRect *rect, int UNUSED(doclear)) {
     //Log(LOGDEBUG, "");
 
     GGDKWindow gw = (GGDKWindow) w;
@@ -1909,7 +1909,7 @@ static void GGDKDrawSync(GDisplay *gdisp) {
     gdk_display_sync(((GGDKDisplay *)gdisp)->display);
 }
 
-static void GGDKDrawSkipMouseMoveEvents(GWindow gw, GEvent *gevent) {
+static void GGDKDrawSkipMouseMoveEvents(GWindow UNUSED(gw), GEvent *UNUSED(gevent)) {
     //Log(LOGDEBUG, "");
     // Not implemented, not needed.
 }
@@ -2065,23 +2065,23 @@ static void GGDKDrawCancelTimer(GTimer *timer) {
 }
 
 
-static void GGDKDrawSyncThread(GDisplay *gdisp, void (*func)(void *), void *data) {
+static void GGDKDrawSyncThread(GDisplay *UNUSED(gdisp), void (*func)(void *), void *UNUSED(data)) {
     Log(LOGDEBUG, ""); // For some shitty gio impl. Ignore ignore ignore!
 }
 
 
-static GWindow GGDKDrawPrinterStartJob(GDisplay *gdisp, void *user_data, GPrinterAttrs *attrs) {
-    Log(LOGDEBUG, "");
+static GWindow GGDKDrawPrinterStartJob(GDisplay *UNUSED(gdisp), void *UNUSED(user_data), GPrinterAttrs *UNUSED(attrs)) {
+    Log(LOGERR, "");
     assert(false);
 }
 
-static void GGDKDrawPrinterNextPage(GWindow w) {
-    Log(LOGDEBUG, "");
+static void GGDKDrawPrinterNextPage(GWindow UNUSED(w)) {
+    Log(LOGERR, "");
     assert(false);
 }
 
-static int GGDKDrawPrinterEndJob(GWindow w, int cancel) {
-    Log(LOGDEBUG, "");
+static int GGDKDrawPrinterEndJob(GWindow UNUSED(w), int UNUSED(cancel)) {
+    Log(LOGERR, "");
     assert(false);
 }
 
@@ -2151,12 +2151,12 @@ static struct displayfuncs gdkfuncs = {
     GGDKDrawScroll,
 
     GGDKDrawDrawImage,
-    GGDKDrawTileImage,
+    NULL, // GGDKDrawTileImage - Unused function
     GGDKDrawDrawGlyph,
     GGDKDrawDrawImageMagnified,
-    GGDKDrawCopyScreenToImage,
+    NULL, // GGDKDrawCopyScreenToImage - Unused function
     GGDKDrawDrawPixmap,
-    GGDKDrawTilePixmap,
+    NULL, // GGDKDrawTilePixmap - Unused function
 
     GGDKDrawCreateInputContext,
     GGDKDrawSetGIC,
@@ -2223,7 +2223,7 @@ static struct displayfuncs gdkfuncs = {
 
 // Protected member functions (package-level)
 
-GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *programname) {
+GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *UNUSED(programname)) {
     GGDKDisplay *gdisp;
     GdkDisplay *display;
     GGDKWindow groot;
