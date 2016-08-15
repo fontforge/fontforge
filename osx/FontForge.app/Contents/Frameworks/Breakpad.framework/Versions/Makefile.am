@@ -32,7 +32,7 @@ if PLATFORM_OSX
 
 install-exec-hook:
 	cd $(DESTDIR)/$(pkgdatadir)/osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions && \
-	$(LN_S) A Current
+	$(LN_S) -f A Current
 endif
 
 
