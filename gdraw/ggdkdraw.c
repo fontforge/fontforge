@@ -1183,6 +1183,9 @@ static void GGDKDrawDestroyWindow(GWindow w) {
         }
         g_list_free(list);
 
+        if (gw->display->last_dd.w == gw) {
+            gw->display->last_dd.w = NULL;
+        }
         if (gw->display->last_nontransient_window == gw) {
             gw->display->last_nontransient_window = NULL;
         }
