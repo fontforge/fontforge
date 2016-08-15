@@ -115,6 +115,17 @@ typedef struct ggdkselectioninfo {
     GList_Glib *datalist;
 } GGDKSelectionInfo;
 
+typedef struct ggdkselectiontypes {
+    /** Time at which this value was updated **/
+    guint32 timestamp;
+    /** List of types available (targets) **/
+    GdkAtom *types;
+    /** Number of targets available **/
+    int32_t len;
+    /** The selection for which we're getting targets for **/
+    GdkAtom sel_atom;
+} GGDKSelectionTypes;
+
 typedef struct ggdkdisplay { /* :GDisplay */
     // Inherit GDisplay start
     struct displayfuncs *funcs;
@@ -154,6 +165,7 @@ typedef struct ggdkdisplay { /* :GDisplay */
     guint32 last_event_time;
 
     GGDKSelectionInfo selinfo[sn_max]; // We implement the clipboard using the selections model
+    GGDKSelectionTypes seltypes;
     int sel_notify_timeout;
     struct {
         GGDKWindow w;

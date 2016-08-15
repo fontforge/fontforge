@@ -1634,7 +1634,7 @@ static void *GGDKDrawRequestSelection(GWindow w, enum selnames sn, char *typenam
         *len = 0;
     }
 
-    if (sn < 0 || sn >= sn_max || gw->is_waiting_for_selection) {
+    if (sn < 0 || sn >= sn_max || gw->is_waiting_for_selection || gw->is_dying) {
         return NULL;
     }
 
@@ -1665,6 +1665,7 @@ static void *GGDKDrawRequestSelection(GWindow w, enum selnames sn, char *typenam
         }
     }
 
+#ifndef GDK_WINDOWING_QUARTZ
     // Otherwise we have to ask the owner for the data.
     gdk_selection_convert(gw->w, gdisp->selinfo[sn].sel_atom, type_atom, gdisp->last_event_time);
 
@@ -1699,6 +1700,7 @@ static void *GGDKDrawRequestSelection(GWindow w, enum selnames sn, char *typenam
 
     gw->is_waiting_for_selection = false;
     gw->is_notified_of_selection = false;
+#endif
 
     return ret;
 }
@@ -1707,12 +1709,12 @@ static int GGDKDrawSelectionHasType(GWindow w, enum selnames sn, char *typename)
     Log(LOGDEBUG, "");
 
     GGDKWindow gw = (GGDKWindow)w;
-    GGDKDisplay *gdisp = gw->display;
-    GdkAtom sel_type = gdk_atom_intern(typename, false);
-
-    if (sn < 0 || sn >= sn_max) {
+    if (gw->is_dying || gw->is_waiting_for_selection || sn < 0 || sn >= sn_max) {
         return false;
     }
+
+    GGDKDisplay *gdisp = gw->display;
+    GdkAtom sel_type = gdk_atom_intern(typename, false);
 
     // Check if we own it
     if (gdisp->selinfo[sn].owner != NULL) {
@@ -1727,17 +1729,19 @@ static int GGDKDrawSelectionHasType(GWindow w, enum selnames sn, char *typename)
     }
 
     // Else query
-    GdkAtom *type_list;
-    int32 num_types;
-    type_list = (GdkAtom *) GGDKDrawRequestSelection(w, sn, "TARGETS", &num_types);
-    if (type_list != NULL) {
-        for (int i = 0; i < num_types; i++) {
-            if (type_list[i] == sel_type) {
-                free(type_list);
+    if (gdisp->seltypes.timestamp != gdisp->last_event_time || gdisp->seltypes.sel_atom != gdisp->selinfo[sn].sel_atom) {
+        free(gdisp->seltypes.types);
+        gdisp->seltypes.types = NULL;
+        gdisp->seltypes.sel_atom = gdisp->selinfo[sn].sel_atom;
+        gdisp->seltypes.types = (GdkAtom *) GGDKDrawRequestSelection(w, sn, "TARGETS", &gdisp->seltypes.len);
+    }
+
+    if (gdisp->seltypes.types != NULL) {
+        for (int i = 0; i < gdisp->seltypes.len; i++) {
+            if (gdisp->seltypes.types[i] == sel_type) {
                 return true;
             }
         }
-        free(type_list);
     }
     return false;
 }
