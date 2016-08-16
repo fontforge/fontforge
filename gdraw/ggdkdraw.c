@@ -923,7 +923,7 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             gevent.u.expose.rect.width = expose->area.width;
             gevent.u.expose.rect.height = expose->area.height;
 
-            _GGDKDraw_CleanupAutoPaint(gw->display);
+            assert(gw->display->dirty_window == NULL);
             assert(gw->cc == NULL);
 
             gdk_window_begin_paint_region(w, expose->region);
@@ -1965,6 +1965,7 @@ static void GGDKDrawProcessPendingEvents(GDisplay *gdisp) {
     //Log(LOGDEBUG, "");
     GMainContext *ctx = g_main_loop_get_context(((GGDKDisplay *)gdisp)->main_loop);
     if (ctx != NULL) {
+        _GGDKDraw_CleanupAutoPaint((GGDKDisplay*)gdisp);
         while (g_main_context_iteration(ctx, false));
     }
 }
@@ -1978,25 +1979,8 @@ static void GGDKDrawProcessOneEvent(GDisplay *gdisp) {
     //Log(LOGDEBUG, "");
     GMainContext *ctx = g_main_loop_get_context(((GGDKDisplay *)gdisp)->main_loop);
     if (ctx != NULL) {
+        _GGDKDraw_CleanupAutoPaint((GGDKDisplay*)gdisp);
         g_main_context_iteration(ctx, true);
-    }
-}
-
-void _GGDKDraw_DumpWindowStates(GGDKDisplay *gdisp) {
-    GHashTableIter iter;
-    GGDKWindow gw;
-    if (gdisp->dirty_window != NULL) {
-        gw = gdisp->dirty_window;
-        Log(LOGDEBUG, "Got dirty window!: %p (%s) CC: %p ISP: %d ISD: %d",
-            gw, gw->window_title, gw->cc, (int)gw->is_in_paint, (int)gw->is_dying);
-    }
-
-    Log(LOGDEBUG, "Dumping window entries...");
-
-    g_hash_table_iter_init(&iter, gdisp->windows);
-    while (g_hash_table_iter_next(&iter, (void **) &gw, NULL)) {
-        Log(LOGDEBUG, "Got window: %p (%s) CC: %p ISP: %d ISD: %d",
-            gw, gw->window_title, gw->cc, (int)gw->is_in_paint, (int)gw->is_dying);
     }
 }
 
@@ -2004,6 +1988,7 @@ static void GGDKDrawEventLoop(GDisplay *gdisp) {
     Log(LOGDEBUG, "");
     GMainContext *ctx = g_main_loop_get_context(((GGDKDisplay *)gdisp)->main_loop);
     if (ctx != NULL) {
+        _GGDKDraw_CleanupAutoPaint((GGDKDisplay*)gdisp);
         do {
             while (((GGDKDisplay *)gdisp)->top_window_count > 0) {
                 g_main_context_iteration(ctx, true);
