@@ -879,12 +879,25 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             gevent.u.mouse.y = evt->y;
             gevent.u.mouse.button = evt->button;
 
+#ifdef GDK_WINDOWING_QUARTZ
+            // Quartz backend fails to give a button press event
+            // https://bugzilla.gnome.org/show_bug.cgi?id=769961
+            if (!evt->send_event && evt->type == GDK_BUTTON_RELEASE &&
+                    gdisp->bs.release_w == gw &&
+                    (evt->x < 0 || evt->x > gw->pos.width ||
+                     evt->y < 0 || evt->y > gw->pos.height)) {
+                evt->send_event = true;
+                gdk_event_put(event);
+                event->type = GDK_BUTTON_PRESS;
+            }
+#endif
+
             if (event->type == GDK_BUTTON_PRESS) {
                 int xdiff, ydiff;
                 gevent.type = et_mousedown;
 
-                xdiff = abs(evt->x - gdisp->bs.release_x);
-                ydiff = abs(evt->y - gdisp->bs.release_y);
+                xdiff = abs(((int)evt->x) - gdisp->bs.release_x);
+                ydiff = abs(((int)evt->y) - gdisp->bs.release_y);
 
                 if (xdiff + ydiff < gdisp->bs.double_wiggle &&
                         gw == gdisp->bs.release_w &&
@@ -1161,7 +1174,7 @@ static void GGDKDrawDestroyCursor(GDisplay *disp, GCursor gcursor) {
 
     GGDKDisplay *gdisp = (GGDKDisplay *)disp;
     gcursor -= ct_user;
-    if (gcursor >= 0 && gcursor < gdisp->cursors->len) {
+    if ((int)gcursor >= 0 && gcursor < gdisp->cursors->len) {
         g_object_unref(gdisp->cursors->pdata[gcursor]);
         gdisp->cursors->pdata[gcursor] = NULL;
     }
@@ -1573,7 +1586,7 @@ static int GGDKDrawKeyState(GWindow w, int keysym) {
 static void GGDKDrawGrabSelection(GWindow w, enum selnames sn) {
     Log(LOGDEBUG, "");
 
-    if (sn < 0 || sn >= sn_max) {
+    if ((int)sn < 0 || sn >= sn_max) {
         return;
     }
 
@@ -1612,7 +1625,7 @@ static void GGDKDrawAddSelectionType(GWindow w, enum selnames sel, char *type, v
     if (unitsize != 1 && unitsize != 2 && unitsize != 4) {
         GDrawIError("Bad unitsize to GGDKDrawAddSelectionType");
         return;
-    } else if (sel < 0 || sel >= sn_max) {
+    } else if ((int)sel < 0 || sel >= sn_max) {
         GDrawIError("Bad selname value");
         return;
     }
@@ -1644,7 +1657,7 @@ static void *GGDKDrawRequestSelection(GWindow w, enum selnames sn, char *typenam
         *len = 0;
     }
 
-    if (sn < 0 || sn >= sn_max || gw->is_waiting_for_selection || gw->is_dying) {
+    if ((int)sn < 0 || sn >= sn_max || gw->is_waiting_for_selection || gw->is_dying) {
         return NULL;
     }
 
@@ -1719,7 +1732,7 @@ static int GGDKDrawSelectionHasType(GWindow w, enum selnames sn, char *typename)
     Log(LOGDEBUG, "");
 
     GGDKWindow gw = (GGDKWindow)w;
-    if (gw->is_dying || gw->is_waiting_for_selection || sn < 0 || sn >= sn_max) {
+    if (gw->is_dying || gw->is_waiting_for_selection || (int)sn < 0 || sn >= sn_max) {
         return false;
     }
 
@@ -1759,7 +1772,7 @@ static int GGDKDrawSelectionHasType(GWindow w, enum selnames sn, char *typename)
 static void GGDKDrawBindSelection(GDisplay *disp, enum selnames sn, char *atomname) {
     Log(LOGDEBUG, "");
     GGDKDisplay *gdisp = (GGDKDisplay *) disp;
-    if (sn >= 0 && sn < sn_max) {
+    if ((int)sn >= 0 && sn < sn_max) {
         gdisp->selinfo[sn].sel_atom = gdk_atom_intern(atomname, false);
     }
 }
@@ -1767,7 +1780,7 @@ static void GGDKDrawBindSelection(GDisplay *disp, enum selnames sn, char *atomna
 static int GGDKDrawSelectionHasOwner(GDisplay *disp, enum selnames sn) {
     Log(LOGDEBUG, "");
 
-    if (sn < 0 || sn >= sn_max) {
+    if ((int)sn < 0 || sn >= sn_max) {
         return false;
     }
 
