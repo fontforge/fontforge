@@ -19,7 +19,8 @@ static void _GGDKDraw_CheckAutoPaint(GGDKWindow gw) {
         assert(!gw->is_pixmap);
 
         //Log(LOGWARN, "Dirty dirty window! 0x%p", gw);
-        g_ptr_array_insert(gw->display->dirty_windows, -1, gw);
+        _GGDKDraw_CleanupAutoPaint(gw->display);
+        gw->display->dirty_window = gw;
         gw->cc = gdk_cairo_create(gw->w);
     }
 }
@@ -450,7 +451,7 @@ static cairo_surface_t *_GGDKDraw_GImage2Surface(GImage *image, GRect *src, uint
 }
 
 static GImage *_GGDKDraw_GImageExtract(struct _GImage *base, GRect *src, GRect *size,
-                                double xscale, double yscale) {
+                                       double xscale, double yscale) {
     static GImage temp;
     static struct _GImage tbase;
     static uint8 *data;
@@ -537,6 +538,20 @@ bool _GGDKDraw_InitPangoCairo(GGDKWindow gw) {
     }
 
     return true;
+}
+
+void _GGDKDraw_CleanupAutoPaint(GGDKDisplay *gdisp) {
+    if (gdisp->dirty_window != NULL) {
+        if (gdisp->dirty_window->cc != NULL) {
+            cairo_destroy(gdisp->dirty_window->cc);
+            gdisp->dirty_window->cc = NULL;
+        }
+        if (gdisp->dirty_window->is_in_paint) {
+            gdk_window_end_paint(gdisp->dirty_window->w);
+            gdisp->dirty_window->is_in_paint = false;
+        }
+        gdisp->dirty_window = NULL;
+    }
 }
 
 void GGDKDrawPushClip(GWindow w, GRect *rct, GRect *old) {

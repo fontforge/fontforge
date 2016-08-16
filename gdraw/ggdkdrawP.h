@@ -174,7 +174,7 @@ typedef struct ggdkdisplay { /* :GDisplay */
     } last_dd; // Drag and drop
 
     GPtrArray *cursors; // List of cursors that the user made.
-    GPtrArray *dirty_windows; //List of GGDKWindows which called drawing functions outside of an expose event.
+    GGDKWindow dirty_window; // Window which called drawing functions outside of an expose event.
     GList_Glib *timers; //List of GGDKTimer's
     GHashTable *windows; // List of windows. Resizingis tricky++...
 
@@ -223,6 +223,7 @@ struct ggdkwindow { /* :GWindow */
     unsigned int is_centered: 1;
     unsigned int is_waiting_for_selection: 1;
     unsigned int is_notified_of_selection: 1;
+    unsigned int is_in_paint: 1; // Have we called gdk_window_begin_paint_region?
 
     int reference_count; // Knowing when to destroy is tricky...
     GPtrArray *transient_childs; // Handling transients is tricky...
@@ -242,6 +243,7 @@ struct ggdkwindow { /* :GWindow */
 // Functions in ggdkcdraw.c
 
 bool _GGDKDraw_InitPangoCairo(GGDKWindow gw);
+void _GGDKDraw_CleanupAutoPaint(GGDKDisplay *gdisp);
 
 void GGDKDrawPushClip(GWindow w, GRect *rct, GRect *old);
 void GGDKDrawPopClip(GWindow gw, GRect *old);

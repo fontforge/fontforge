@@ -190,6 +190,8 @@ static gboolean _GGDKDraw_OnWindowDestroyed(gpointer data) {
             gw->display->top_window_count--;
         }
 
+        assert(gw->display->dirty_window != gw);
+
         Log(LOGDEBUG, "Window destroyed: %p[%p][%s][%d]", gw, gw->w, gw->window_title, gw->is_toplevel);
         free(gw->window_title);
         g_ptr_array_free(gw->transient_childs, false);
@@ -266,15 +268,7 @@ static void _GGDKDraw_CallEHChecked(GGDKWindow gw, GEvent *event, int (*eh)(GWin
         (eh)((GWindow)gw, event);
 
         // Cleanup after our user...
-        GPtrArray *dirty = gw->display->dirty_windows;
-        while (dirty->len > 0) {
-            GGDKWindow dw = (GGDKWindow)g_ptr_array_remove_index_fast(dirty, dirty->len - 1);
-            assert(dw != NULL);
-            if (dw->cc != NULL && !dw->is_dying) {
-                cairo_destroy(dw->cc);
-                dw->cc = NULL;
-            }
-        }
+        _GGDKDraw_CleanupAutoPaint(gw->display);
         // Decrement reference counter
         GGDKDRAW_DECREF(gw, _GGDKDraw_InitiateWindowDestroy);
     }
@@ -929,12 +923,12 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             gevent.u.expose.rect.width = expose->area.width;
             gevent.u.expose.rect.height = expose->area.height;
 
-            if (gw->cc != NULL) {
-                cairo_destroy(gw->cc);
-                gw->cc = NULL;
-            }
+            _GGDKDraw_CleanupAutoPaint(gw->display);
+            assert(gw->cc == NULL);
 
             gdk_window_begin_paint_region(w, expose->region);
+            gw->is_in_paint = true;
+            gw->display->dirty_window = gw;
 
             // So if this was a requested expose (send_event), and this
             // is a child window, then mask out the expose region.
@@ -1067,13 +1061,6 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
 
     if (gevent.type != et_noevent && gw != NULL && gw->eh != NULL) {
         _GGDKDraw_CallEHChecked(gw, &gevent, gw->eh);
-        if (gevent.type == et_expose) {
-            gdk_window_end_paint(w);
-            if (gw->cc != NULL) {
-                cairo_destroy(gw->cc);
-                gw->cc = NULL;
-            }
-        }
     }
     //Log(LOGDEBUG, "[%d] Finished processing %d(%s)", request_id++, event->type, GdkEventName(event->type));
 }
@@ -2278,16 +2265,8 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *UNUSED(programname)) 
 
     // cursors.c creates ~41.
     gdisp->cursors = g_ptr_array_sized_new(50);
-    // 15 Dirty windows/eh call?
-    gdisp->dirty_windows = g_ptr_array_sized_new(15);
-    if (gdisp->dirty_windows == NULL) {
-        free(gdisp);
-        gdk_display_close(display);
-        return NULL;
-    }
     gdisp->windows = g_hash_table_new(g_direct_hash, g_direct_equal);
     if (gdisp->windows == NULL) {
-        g_ptr_array_free(gdisp->dirty_windows, false);
         free(gdisp);
         return NULL;
     }
@@ -2331,7 +2310,6 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *UNUSED(programname)) 
     groot = (GGDKWindow)calloc(1, sizeof(struct ggdkwindow));
     if (groot == NULL) {
         g_object_unref(gdisp->pangoc_context);
-        g_ptr_array_free(gdisp->dirty_windows, false);
         free(gdisp);
         gdk_display_close(display);
         return NULL;
