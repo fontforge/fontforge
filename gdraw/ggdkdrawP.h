@@ -294,6 +294,13 @@ int  GGDKDrawLayoutLineStart(GWindow w, int l);
 
 // END functions in ggdkdraw.c
 
+// Functions in ggdkcocoa.m
+
+char *_GGDKDrawCocoa_GetClipboardText(void);
+void _GGDKDrawCocoa_SetClipboardText(const char *text);
+
+// END functions in ggdkcocoa.m
+
 #endif // FONTFORGE_CAN_USE_GDK
 
 #endif // _GGDKDRAWP_H

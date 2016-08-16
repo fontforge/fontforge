@@ -766,8 +766,8 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         gdisp->last_event_time = event_time;
     }
 
-    //Log(LOGDEBUG, "[%d] Received event %d(%s) %x", request_id, event->type, GdkEventName(event->type), w);
-    fflush(stderr);
+    //Log(LOGDEBUG, "[%d] Received event %d(%s) %x", request_id++, event->type, GdkEventName(event->type), w);
+    //fflush(stderr);
 
     if (w == NULL) {
         return;
@@ -1632,6 +1632,20 @@ static void GGDKDrawAddSelectionType(GWindow w, enum selnames sel, char *type, v
     sd->unit_size = unitsize;
     sd->gendata = gendata;
     sd->freedata = freedata;
+
+#ifdef GDK_WINDOWING_QUARTZ
+    if (sel == sn_clipboard && type_atom == gdk_atom_intern_static_string("UTF8_STRING")) {
+        char *data = sd->data;
+        if (sd->gendata) {
+            int len;
+            data = sd->gendata(sd->data, &len);
+        }
+        _GGDKDrawCocoa_SetClipboardText(data);
+        if (sd->gendata) {
+            free(data);
+        }
+    }
+#endif
 }
 
 static void *GGDKDrawRequestSelection(GWindow w, enum selnames sn, char *typename, int32 *len) {
@@ -1647,6 +1661,16 @@ static void *GGDKDrawRequestSelection(GWindow w, enum selnames sn, char *typenam
     if ((int)sn < 0 || sn >= sn_max || gw->is_waiting_for_selection || gw->is_dying) {
         return NULL;
     }
+
+#ifdef GDK_WINDOWING_QUARTZ
+    if (sn == sn_clipboard && type_atom == gdk_atom_intern_static_string("UTF8_STRING")) {
+        ret = _GGDKDrawCocoa_GetClipboardText();
+        if (ret && len) {
+            *len = strlen(ret);
+        }
+        return ret;
+    }
+#endif
 
     // If we own the selection, get the data ourselves...
     if (gdisp->selinfo[sn].owner != NULL) {
@@ -1738,6 +1762,7 @@ static int GGDKDrawSelectionHasType(GWindow w, enum selnames sn, char *typename)
         return false;
     }
 
+#ifndef GDK_WINDOWING_QUARTZ
     // Else query
     if (gdisp->seltypes.timestamp != gdisp->last_event_time || gdisp->seltypes.sel_atom != gdisp->selinfo[sn].sel_atom) {
         free(gdisp->seltypes.types);
@@ -1754,6 +1779,9 @@ static int GGDKDrawSelectionHasType(GWindow w, enum selnames sn, char *typename)
         }
     }
     return false;
+#else
+    return sel_type == gdk_atom_intern_static_string("UTF8_STRING");
+#endif
 }
 
 static void GGDKDrawBindSelection(GDisplay *disp, enum selnames sn, char *atomname) {
