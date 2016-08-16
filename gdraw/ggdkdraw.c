@@ -1982,6 +1982,24 @@ static void GGDKDrawProcessOneEvent(GDisplay *gdisp) {
     }
 }
 
+void _GGDKDraw_DumpWindowStates(GGDKDisplay *gdisp) {
+    GHashTableIter iter;
+    GGDKWindow gw;
+    if (gdisp->dirty_window != NULL) {
+        gw = gdisp->dirty_window;
+        Log(LOGDEBUG, "Got dirty window!: %p (%s) CC: %p ISP: %d ISD: %d",
+            gw, gw->window_title, gw->cc, (int)gw->is_in_paint, (int)gw->is_dying);
+    }
+
+    Log(LOGDEBUG, "Dumping window entries...");
+
+    g_hash_table_iter_init(&iter, gdisp->windows);
+    while (g_hash_table_iter_next(&iter, (void **) &gw, NULL)) {
+        Log(LOGDEBUG, "Got window: %p (%s) CC: %p ISP: %d ISD: %d",
+            gw, gw->window_title, gw->cc, (int)gw->is_in_paint, (int)gw->is_dying);
+    }
+}
+
 static void GGDKDrawEventLoop(GDisplay *gdisp) {
     Log(LOGDEBUG, "");
     GMainContext *ctx = g_main_loop_get_context(((GGDKDisplay *)gdisp)->main_loop);
