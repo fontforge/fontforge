@@ -2003,9 +2003,12 @@ return;
     if ( gt->listfield ) {
 	GListField *glf = (GListField *) g;
 	if ( glf->popup ) {
-	    GDrawDestroyWindow(glf->popup);
-	    GDrawSync(NULL);
-	    GDrawProcessWindowEvents(glf->popup);	/* popup's destroy routine must execute before we die */
+	    /* Must cleanup the popup before we die */
+	    /* We do this instead of GDrawDestroyWindow because this method is synchronous */
+	    GEvent die;
+	    die.type = et_close;
+	    die.w = glf->popup;
+	    GDrawPostEvent(&die);
 	}
 	GTextInfoArrayFree(glf->ti);
     }

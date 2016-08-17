@@ -125,9 +125,12 @@ static bool _GGDKDraw_TransmitSelection(GGDKDisplay *gdisp, GdkEventSelection *e
 
 static gboolean _GGDKDraw_OnWindowDestroyed(gpointer data) {
     GGDKWindow gw = (GGDKWindow)data;
+    Log(LOGDEBUG, "Window: %p", gw);
+    if (gw->is_cleaning_up) {
+        return false;
+    }
     gw->is_cleaning_up = true; // We're in the process of destroying it.
 
-    Log(LOGDEBUG, "OnWindowDestroyed!");
     if (gw->cc != NULL) {
         cairo_destroy(gw->cc);
         gw->cc = NULL;
@@ -146,7 +149,7 @@ static gboolean _GGDKDraw_OnWindowDestroyed(gpointer data) {
             tw->istransient = false;
         }
 
-        if (!gdk_window_is_destroyed(gw->w)) {
+        if (gw != gw->display->groot && !gdk_window_is_destroyed(gw->w)) {
             gdk_window_destroy(gw->w);
             // Wait for it to die
             while (!gdk_window_is_destroyed(gw->w)) {
@@ -773,7 +776,6 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         return;
     } else if ((gw = g_object_get_data(G_OBJECT(w), "GGDKWindow")) == NULL) {
         //Log(LOGDEBUG, "MISSING GW!");
-
         return;
     } else if (_GGDKDraw_WindowOrParentsDying(gw) || gdk_window_is_destroyed(w)) {
         Log(LOGDEBUG, "DYING! %x", w);
@@ -1019,7 +1021,7 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             gw->is_visible = false;
             break;
         case GDK_DESTROY:
-            GGDKDrawDestroyWindow((GWindow)gw);
+            GGDKDrawDestroyWindow((GWindow)gw); //Note: If we get here, something's probably wrong.
             break;
         case GDK_DELETE:
             gw->is_waiting_for_selection = false;
@@ -1965,21 +1967,24 @@ static void GGDKDrawProcessPendingEvents(GDisplay *gdisp) {
     //Log(LOGDEBUG, "");
     GMainContext *ctx = g_main_loop_get_context(((GGDKDisplay *)gdisp)->main_loop);
     if (ctx != NULL) {
-        _GGDKDraw_CleanupAutoPaint((GGDKDisplay*)gdisp);
+        _GGDKDraw_CleanupAutoPaint((GGDKDisplay *)gdisp);
         while (g_main_context_iteration(ctx, false));
     }
 }
 
-static void GGDKDrawProcessWindowEvents(GWindow gw) {
-    Log(LOGDEBUG, "");
-    GGDKDrawProcessPendingEvents((GDisplay *)((GGDKWindow)gw)->display);
+static void GGDKDrawProcessWindowEvents(GWindow w) {
+    Log(LOGWARN, "This function SHOULD NOT BE CALLED! Will likely not do as expected! Window: %p", w);
+
+    if (w != NULL)  {
+        GGDKDrawProcessPendingEvents(w->display);
+    }
 }
 
 static void GGDKDrawProcessOneEvent(GDisplay *gdisp) {
     //Log(LOGDEBUG, "");
     GMainContext *ctx = g_main_loop_get_context(((GGDKDisplay *)gdisp)->main_loop);
     if (ctx != NULL) {
-        _GGDKDraw_CleanupAutoPaint((GGDKDisplay*)gdisp);
+        _GGDKDraw_CleanupAutoPaint((GGDKDisplay *)gdisp);
         g_main_context_iteration(ctx, true);
     }
 }
@@ -1988,7 +1993,7 @@ static void GGDKDrawEventLoop(GDisplay *gdisp) {
     Log(LOGDEBUG, "");
     GMainContext *ctx = g_main_loop_get_context(((GGDKDisplay *)gdisp)->main_loop);
     if (ctx != NULL) {
-        _GGDKDraw_CleanupAutoPaint((GGDKDisplay*)gdisp);
+        _GGDKDraw_CleanupAutoPaint((GGDKDisplay *)gdisp);
         do {
             while (((GGDKDisplay *)gdisp)->top_window_count > 0) {
                 g_main_context_iteration(ctx, true);

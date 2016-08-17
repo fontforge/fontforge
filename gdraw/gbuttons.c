@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <stdlib.h>
-#include "fontforge-config.h"
 #include "gdraw.h"
 #include "ggadgetP.h"
 #include "ustring.h"
@@ -548,11 +547,12 @@ return;
     if ( b->labeltype==2 ) {
 	GListButton *glb = (GListButton *) g;
 	if ( glb->popup ) {
-	    GDrawDestroyWindow(glb->popup);
-#ifndef FONTFORGE_CAN_USE_GDK
-	    GDrawSync(NULL);
-	    GDrawProcessWindowEvents(glb->popup);	/* popup's destroy routine must execute before we die */
-#endif
+	    /* Must cleanup the popup before we die  */
+	    /* We do this instead of GDrawDestroyWindow because this method is synchronous */
+	    GEvent die;
+	    die.type = et_close;
+	    die.w = glb->popup;
+	    GDrawPostEvent(&die);
 	}
 	GTextInfoArrayFree(glb->ti);
     }

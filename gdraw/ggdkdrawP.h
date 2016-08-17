@@ -78,6 +78,12 @@ typedef struct ggdkkeystate {
     guint keyval;
 } GGDKKeyState;
 
+typedef struct ggdkdndcontext {
+    GGDKWindow w;
+    int x, y;
+    int rx, ry;
+} GGDKDNDContext;
+
 struct seldata {
     int32 typeatom;
     int32 cnt;
@@ -167,16 +173,12 @@ typedef struct ggdkdisplay { /* :GDisplay */
     GGDKSelectionInfo selinfo[sn_max]; // We implement the clipboard using the selections model
     GGDKSelectionTypes seltypes;
     int sel_notify_timeout;
-    struct {
-        GGDKWindow w;
-        int x, y;
-        int rx, ry;
-    } last_dd; // Drag and drop
+    GGDKDNDContext last_dd; // Drag and drop
 
     GPtrArray *cursors; // List of cursors that the user made.
     GGDKWindow dirty_window; // Window which called drawing functions outside of an expose event.
     GList_Glib *timers; //List of GGDKTimer's
-    GHashTable *windows; // List of windows. Resizingis tricky++...
+    GHashTable *windows; // List of windows.
 
     GGDKButtonState bs;
     GGDKKeyState ks;
