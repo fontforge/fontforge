@@ -212,10 +212,10 @@ static void _GGDKDraw_EllipsePath(cairo_t *cc, double cx, double cy, double widt
     cairo_close_path(cc);
 }
 
-static cairo_surface_t *_GGDKDraw_GImage2Surface(GImage *image, GRect *src, uint8 **_data) {
+static cairo_surface_t *_GGDKDraw_GImage2Surface(GImage *image, GRect *src) {
     struct _GImage *base = (image->list_len == 0) ? image->u.image : image->u.images[0];
     cairo_format_t type;
-    uint8 *data, *pt;
+    uint8 *pt;
     uint32 *idata, *ipt, *ito;
     int i, j, jj, tjj, stride;
     int bit, tobit;
@@ -243,17 +243,15 @@ static cairo_surface_t *_GGDKDraw_GImage2Surface(GImage *image, GRect *src, uint
     /*  rgb images */
     if (base->image_type == it_true && type == CAIRO_FORMAT_RGB24) {
         idata = ((uint32 *)(base->data)) + src->y * base->bytes_per_line + src->x;
-        *_data = NULL;		/* We can reuse the image's own data, don't need a copy */
         return cairo_image_surface_create_for_data((uint8 *) idata, type,
                 src->width, src->height,
                 base->bytes_per_line);
     }
 
-    stride = cairo_format_stride_for_width(type, src->width);
-    *_data = data = malloc(stride * src->height);
-    cs = cairo_image_surface_create_for_data(data, type,
-            src->width, src->height,   stride);
-    idata = (uint32 *) data;
+    cs = cairo_image_surface_create(type, src->width, src->height);
+    stride = cairo_image_surface_get_stride(cs);
+    cairo_surface_flush(cs);
+    idata = (uint32 *)cairo_image_surface_get_data(cs);
 
     if (base->image_type == it_rgba) {
         ipt = ((uint32 *)(base->data + src->y * base->bytes_per_line)) + src->x;
@@ -337,7 +335,6 @@ static cairo_surface_t *_GGDKDraw_GImage2Surface(GImage *image, GRect *src, uint
                base->clut->trans_index != COLOR_UNKNOWN) {
         pt = base->data + src->y * base->bytes_per_line + (src->x >> 3);
         ito = idata;
-        memset(data, 0, src->height * stride);
         if (base->clut->trans_index == 0) {
             for (i = 0; i < src->height; ++i) {
                 bit = (0x80 >> (src->x & 0x7));
@@ -384,7 +381,6 @@ static cairo_surface_t *_GGDKDraw_GImage2Surface(GImage *image, GRect *src, uint
                base->clut->trans_index != COLOR_UNKNOWN) {
         pt = base->data + src->y * base->bytes_per_line + (src->x >> 3);
         ito = idata;
-        memset(data, 0, src->height * stride);
         if (base->clut->trans_index == 0) {
             for (i = 0; i < src->height; ++i) {
                 bit = (0x80 >> (src->x & 0x7));
@@ -449,6 +445,7 @@ static cairo_surface_t *_GGDKDraw_GImage2Surface(GImage *image, GRect *src, uint
             ito = (uint32 *)(((uint8 *) ito) + stride);
         }
     }
+    cairo_surface_mark_dirty(cs);
     return cs;
 }
 
@@ -889,28 +886,41 @@ void GGDKDrawDrawImage(GWindow w, GImage *image, GRect *src, int32 x, int32 y) {
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
 
-
-    uint8 *data;
-    cairo_surface_t *is = _GGDKDraw_GImage2Surface(image, src, &data);
+    cairo_surface_t *is = _GGDKDraw_GImage2Surface(image, src), *cs = is;
     struct _GImage *base = (image->list_len == 0) ? image->u.image : image->u.images[0];
 
     if (cairo_image_surface_get_format(is) == CAIRO_FORMAT_A1) {
         /* No color info, just alpha channel */
         Color fg = base->clut->trans_index == 0 ? base->clut->clut[1] : base->clut->clut[0];
+#ifdef GDK_WINDOWING_QUARTZ
+        // The quartz backend cannot mask/render A1 surfaces directly
+        // So render to intermediate ARGB32 surface first, then render that to screen
+        cs = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, src->width, src->height);
+        cairo_t *cc = cairo_create(cs);
+        cairo_set_source_rgba(cc, COLOR_RED(fg) / 255.0, COLOR_GREEN(fg) / 255.0, COLOR_BLUE(fg) / 255.0, 1.0);
+        cairo_mask_surface(cc, is, 0, 0);
+        cairo_destroy(cc);
+#else
         cairo_set_source_rgba(gw->cc, COLOR_RED(fg) / 255.0, COLOR_GREEN(fg) / 255.0, COLOR_BLUE(fg) / 255.0, 1.0);
-        cairo_mask_surface(gw->cc, is, x, y);
-    } else {
-        cairo_set_source_surface(gw->cc, is, x, y);
+        cairo_mask_surface(gw->cc, cs, x, y);
+        cs = NULL;
+#endif
+    }
+
+    if (cs != NULL) {
+        cairo_set_source_surface(gw->cc, cs, x, y);
         cairo_rectangle(gw->cc, x, y, src->width, src->height);
         cairo_fill(gw->cc);
+
+        if (cs != is) {
+            cairo_surface_destroy(cs);
+        }
     }
     /* Clear source and mask, in case we need to */
     cairo_new_path(gw->cc);
     cairo_set_source_rgba(gw->cc, 0, 0, 0, 0);
 
     cairo_surface_destroy(is);
-    free(data);
-
 }
 
 // What we really want to do is use the grey levels as an alpha channel
