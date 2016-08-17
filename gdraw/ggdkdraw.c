@@ -198,8 +198,10 @@ static gboolean _GGDKDraw_OnWindowDestroyed(gpointer data) {
         Log(LOGDEBUG, "Window destroyed: %p[%p][%s][%d]", gw, gw->w, gw->window_title, gw->is_toplevel);
         free(gw->window_title);
         g_ptr_array_free(gw->transient_childs, false);
-        // Unreference our reference to the window
-        g_object_unref(G_OBJECT(gw->w));
+        if (gw != gw->display->groot) {
+            // Unreference our reference to the window
+            g_object_unref(G_OBJECT(gw->w));
+        }
     }
 
     g_object_unref(gw->pango_layout);
@@ -250,8 +252,8 @@ static gboolean _GGDKDraw_OnFakedConfigure(gpointer user_data) {
         gdk_window_get_position(gw->w, &evt.x, &evt.y);
 
         gdk_event_put((GdkEvent *)&evt);
-        gw->resize_timeout = 0;
     }
+    gw->resize_timeout = 0;
     return false;
 }
 
@@ -732,6 +734,7 @@ static gboolean _GGDKDraw_ProcessTimerEvent(gpointer user_data) {
 
     if (!timer->active || _GGDKDraw_WindowOrParentsDying((GGDKWindow)timer->owner)) {
         timer->active = false;
+        timer->stopped = true;
         return false;
     }
 
@@ -745,6 +748,7 @@ static gboolean _GGDKDraw_ProcessTimerEvent(gpointer user_data) {
     _GGDKDraw_CallEHChecked((GGDKWindow)timer->owner, &e, timer->owner->eh);
     if (timer->active) {
         if (timer->repeat_time == 0) {
+            timer->stopped = true; // Since we return false, this timer is no longer valid.
             GGDKDrawCancelTimer((GTimer *)timer);
             ret = false;
         } else if (timer->has_differing_repeat_time) {
