@@ -1709,6 +1709,9 @@ static void *GGDKDrawRequestSelection(GWindow w, enum selnames sn, char *typenam
     // Otherwise we have to ask the owner for the data.
     gdk_selection_convert(gw->w, gdisp->selinfo[sn].sel_atom, type_atom, gdisp->last_event_time);
 
+    // On Windows, gdk_selection_convert is synchronous. Avoid the fluff of waiting
+    // which also can cause segfault if a window gets destroyed in the meantime...
+#ifdef GDK_WINDOWING_X11
     gw->is_waiting_for_selection = true;
     gw->is_notified_of_selection = false;
 
@@ -1724,23 +1727,28 @@ static void *GGDKDrawRequestSelection(GWindow w, enum selnames sn, char *typenam
     g_timer_destroy(timer);
 
     if (gw->is_notified_of_selection) {
+#endif
         guchar *data;
         GdkAtom received_type;
         gint received_format;
         gint rlen = gdk_selection_property_get(gw->w, &data, &received_type, &received_format);
-        ret = calloc(rlen + 4, 1);
-        if (ret) {
-            memcpy(ret, data, rlen);
-            if (len) {
-                *len = rlen;
+        if (data != NULL) {
+            ret = calloc(rlen + 4, 1);
+            if (ret) {
+                memcpy(ret, data, rlen);
+                if (len) {
+                    *len = rlen;
+                }
             }
+            g_free(data);
         }
-        g_free(data);
+#ifdef GDK_WINDOWING_X11
     }
 
     gw->is_waiting_for_selection = false;
     gw->is_notified_of_selection = false;
-#endif
+#endif // GDK_WINDOWING_X11
+#endif // GDK_WINDOWING_QUARTZ
 
     return ret;
 }
