@@ -346,6 +346,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     if (wattrs == NULL) {
         wattrs = &temp;
     }
+
     if (gw == NULL) { // Creating a top-level window. Set parent as default root.
         gw = gdisp->groot;
         attribs.window_type = GDK_WINDOW_TOPLEVEL;
@@ -353,20 +354,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
         attribs.window_type = GDK_WINDOW_CHILD;
     }
 
-    nw->ggc = _GGDKDraw_NewGGC();
-    if (nw->ggc == NULL) {
-        Log(LOGDEBUG, "_GGDKDraw_CreateWindow: _GGDKDraw_NewGGC returned NULL");
-        free(nw);
-        return NULL;
-    }
-
-    nw->display = gdisp;
-    nw->eh = eh;
-    nw->parent = gw;
-    nw->pos = *pos;
-    nw->user_data = user_data;
-
-    // Window type
+    // Now check window type
     if ((wattrs->mask & wam_nodecor) && wattrs->nodecoration) {
         // Is a modeless dialogue
         nw->is_popup = true;
@@ -379,9 +367,29 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     if ((wattrs->mask & wam_notrestricted) && wattrs->not_restricted) {
         nw->not_restricted = true;
     }
+    nw->is_toplevel = attribs.window_type != GDK_WINDOW_CHILD;
 
-    // Window title and hints
-    if (attribs.window_type != GDK_WINDOW_CHILD) {
+    // Drawing context
+    nw->ggc = _GGDKDraw_NewGGC();
+    if (nw->ggc == NULL) {
+        Log(LOGDEBUG, "_GGDKDraw_CreateWindow: _GGDKDraw_NewGGC returned NULL");
+        free(nw);
+        return NULL;
+    }
+
+    // Base fields
+    nw->display = gdisp;
+    nw->eh = eh;
+    nw->parent = gw;
+    nw->pos = *pos;
+    nw->user_data = user_data;
+
+    // Window title, hints and event mask
+    attribs.event_mask = GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK;
+    if (nw->is_toplevel) {
+        // Default event mask for toplevel windows
+        attribs.event_mask |= GDK_FOCUS_CHANGE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK;
+
         // Icon titles are ignored.
         if ((wattrs->mask & wam_utf8_wtitle) && (wattrs->utf8_window_title != NULL)) {
             nw->window_title = copy(wattrs->utf8_window_title);
@@ -398,11 +406,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
         attribs_mask |= GDK_WA_TYPE_HINT;
     }
 
-    // Event mask
-    attribs.event_mask = GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK;
-    if (attribs.window_type != GDK_WINDOW_CHILD) {
-        attribs.event_mask |= GDK_FOCUS_CHANGE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK;
-    }
+    // Further event mask flags
     if (wattrs->mask & wam_events) {
         if (wattrs->event_masks & (1 << et_char)) {
             attribs.event_mask |= GDK_KEY_PRESS_MASK;
@@ -454,7 +458,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     }
 
     // We center windows here because we need to know the window size+decor
-    if (attribs.window_type == GDK_WINDOW_TOPLEVEL) {
+    if (nw->is_toplevel && (!(wattrs->mask & wam_positioned) || (wattrs->mask & wam_centered))) {
         nw->is_centered = true;
         _GGDKDraw_CenterWindowOnScreen(nw);
     }
@@ -473,7 +477,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     };
     gdk_window_set_background_rgba(nw->w, &col);
 
-    if (attribs.window_type != GDK_WINDOW_CHILD) {
+    if (nw->is_toplevel) {
         // Set icon
         GGDKWindow icon = gdisp->default_icon;
         if (((wattrs->mask & wam_icon) && wattrs->icon != NULL) && ((GGDKWindow)wattrs->icon)->is_pixmap) {
@@ -544,9 +548,6 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
         e.native_window = nw->w;
         _GGDKDraw_CallEHChecked(nw, &e, eh);
     }
-
-    // This should not be here. Debugging purposes only.
-    // gdk_window_show(nw->w);
 
     // Set the user data to the GWindow
     // Although there is gdk_window_set_user_data, if non-NULL,
