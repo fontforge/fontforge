@@ -930,12 +930,14 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             gevent.u.expose.rect.width = expose->area.width;
             gevent.u.expose.rect.height = expose->area.height;
 
-            assert(gw->display->dirty_window == NULL);
+            // This can happen if say gdk_window_raise is called, which then runs the
+            // event loop itself, which is outside of our checked event handler
+            _GGDKDraw_CleanupAutoPaint(gdisp);
             assert(gw->cc == NULL);
 
             gdk_window_begin_paint_region(w, expose->region);
             gw->is_in_paint = true;
-            gw->display->dirty_window = gw;
+            gdisp->dirty_window = gw;
 
             // So if this was a requested expose (send_event), and this
             // is a child window, then mask out the expose region.
