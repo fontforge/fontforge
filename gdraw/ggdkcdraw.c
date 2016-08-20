@@ -160,7 +160,7 @@ static PangoFontDescription *_GGDKDraw_configfont(GWindow w, GFont *font) {
     //  own conversion from points to pixels
     // But under pangocairo I can set the resolution, so behavior is different
     pango_font_description_set_absolute_size(fd,
-            GDrawPointsToPixels(NULL, font->rq.point_size * PANGO_SCALE));
+            GDrawPointsToPixels(w, font->rq.point_size * PANGO_SCALE));
     return fd;
 }
 

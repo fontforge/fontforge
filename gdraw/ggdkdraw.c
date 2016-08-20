@@ -2327,10 +2327,16 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *UNUSED(programname)) 
     gdisp->screen = gdk_display_get_default_screen(display);
     gdisp->root = gdk_screen_get_root_window(gdisp->screen);
     gdisp->res = gdk_screen_get_resolution(gdisp->screen);
+    gdisp->pangoc_context = gdk_pango_context_get_for_screen(gdisp->screen);
     if (gdisp->res <= 0) {
-        Log(LOGWARN, "Unknown resolution, assuming 96DPI!");
         gdisp->res = 96;
     }
+#ifdef GDK_WINDOWING_QUARTZ
+    if (gdisp->res <= 72) {
+        gdisp->res = 96;
+    }
+#endif
+
     gdisp->main_loop = g_main_loop_new(NULL, true);
     gdisp->scale_screen_by = 1; //Does nothing
     gdisp->bs.double_time = 200;
@@ -2345,18 +2351,25 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *UNUSED(programname)) 
     gdisp->selinfo[sn_user2].sel_atom = gdk_atom_intern_static_string("PRIMARY");
 
     bool tbf = false, mxc = false;
+    int user_res = 0;
     GResStruct res[] = {
         {.resname = "MultiClickTime", .type = rt_int, .val = &gdisp->bs.double_time},
         {.resname = "MultiClickWiggle", .type = rt_int, .val = &gdisp->bs.double_wiggle},
         {.resname = "SelectionNotifyTimeout", .type = rt_int, .val = &gdisp->sel_notify_timeout},
         {.resname = "TwoButtonFixup", .type = rt_bool, .val = &tbf},
         {.resname = "MacOSXCmd", .type = rt_bool, .val = &mxc},
+        {.resname = "ScreenResolution", .type = rt_int, .val = &user_res},
         NULL
     };
     GResourceFind(res, NULL);
     gdisp->twobmouse_win = tbf;
     gdisp->macosx_cmd = mxc;
-    gdisp->pangoc_context = gdk_pango_context_get_for_screen(gdisp->screen);
+
+    // Now finalise the resolution
+    if (user_res > 0) {
+        gdisp->res = user_res;
+    }
+    pango_cairo_context_set_resolution(gdisp->pangoc_context, gdisp->res);
 
     groot = (GGDKWindow)calloc(1, sizeof(struct ggdkwindow));
     if (groot == NULL) {
