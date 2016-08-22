@@ -651,13 +651,13 @@ return;
 // The following code may be unnecessary, and it can cause an infinite stack loop.
 // One would hope that the event queue can take care of these things when we return to it.
 // We'll find out.
-#if 0
-    GDrawProcessPendingEvents(NULL);		/* The resize needs to happen before the expose */
-    if ( !cv->p.pressed && (event->u.mouse.state&ksm_meta) ) /* but a mouse up might sneak in... */
-return;
+//#if 0
+//    GDrawProcessPendingEvents(NULL);		/* The resize needs to happen before the expose */
+//    if ( !cv->p.pressed && (event->u.mouse.state&ksm_meta) ) /* but a mouse up might sneak in... */
+//return;
     GDrawRequestExpose(cv->ruler_w,NULL,false);
-    GDrawRequestExpose(cv->v,NULL,false);
-#endif // 0
+//    GDrawRequestExpose(cv->v,NULL,false);
+//#endif // 0
 }
 
 void CVMouseUpRuler(CharView *cv, GEvent *event) {
