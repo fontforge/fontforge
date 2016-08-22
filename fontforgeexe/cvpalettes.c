@@ -1028,6 +1028,25 @@ static IJ getIJFromMouse( CharView* cv, int mx, int my )
     return d.ret;
 }
 
+/*
+ * This draws the three-dimensional relief on a button. It gets the dimensions from the button image.
+ */
+
+int cvp_draw_relief(GWindow pixmap, GImage *iconimg, int iconx, int icony, int selected) {
+	extern Color cvbutton3dedgelightcol; // Default 0xe0e0e0.		
+	extern Color cvbutton3dedgedarkcol; // Default 0x707070.
+	int iconw = iconimg->u.image->width;
+	int iconh = iconimg->u.image->height;
+	int norm = !selected;
+	// Note: The original code placed the right and bottom fake relief
+	// outside of the button image area (offset by 25 instead of 24),
+	// but we are staying just inside the image area now.
+	GDrawDrawLine(pixmap,iconx,icony,iconx+iconw,icony,norm?cvbutton3dedgelightcol:cvbutton3dedgedarkcol);		
+	GDrawDrawLine(pixmap,iconx,icony,iconx,icony+iconh,norm?cvbutton3dedgelightcol:cvbutton3dedgedarkcol);		
+	GDrawDrawLine(pixmap,iconx,icony+iconh,iconx+iconw,icony+iconh,norm?cvbutton3dedgedarkcol:cvbutton3dedgelightcol);		
+	GDrawDrawLine(pixmap,iconx+iconw,icony,iconx+iconw,icony+iconh,norm?cvbutton3dedgedarkcol:cvbutton3dedgelightcol);
+}
+
 
 /**
  * This visitor draws the actual image for each toolbar button
@@ -1044,9 +1063,15 @@ static void ToolsExposeVisitor( CharView *cv, GImage* gimage,
 				int mi, int i, int j,
 				int iconx, int icony, int selected, void* udata )
 {
+		extern int cvbutton3d; // This comes from elsewhere.
     ToolsExposeVisitorData* d = (ToolsExposeVisitorData*)udata;
     GImage* (*buttons)[14][2] = (CVInSpiro(cv) ? spirobuttons : normbuttons);
-    GDrawDrawImage(d->pixmap,buttons[selected][mi][j],NULL,iconx,icony);
+
+		// We draw the button image onto the toolbar image.
+		GDrawDrawImage(d->pixmap,buttons[selected][mi][j],NULL,iconx,icony);
+
+		// We may need to draw relief, too.
+		if (cvbutton3d > 0) cvp_draw_relief(d->pixmap, buttons[0][mi][j], iconx, icony, selected);
 
     d->maxicony = MAX( d->maxicony, icony );
     d->lastIconHeight = buttons[selected][mi][j]->u.image->height;
