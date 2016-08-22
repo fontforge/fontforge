@@ -142,27 +142,31 @@ static gboolean _GGDKDraw_OnWindowDestroyed(gpointer data) {
     }
 
     if (!gw->is_pixmap) {
-        while (gw->transient_childs->len > 0) {
-            GGDKWindow tw = (GGDKWindow)g_ptr_array_remove_index_fast(gw->transient_childs, gw->transient_childs->len - 1);
-            gdk_window_set_transient_for(tw->w, gw->display->groot->w);
-            tw->transient_owner = NULL;
-            tw->istransient = false;
-        }
+        if (gw != gw->display->groot) {
+            while (gw->transient_childs->len > 0) {
+                GGDKWindow tw = (GGDKWindow)g_ptr_array_remove_index_fast(gw->transient_childs, gw->transient_childs->len - 1);
+                gdk_window_set_transient_for(tw->w, gw->display->groot->w);
+                tw->transient_owner = NULL;
+                tw->istransient = false;
+            }
 
-        if (gw != gw->display->groot && !gdk_window_is_destroyed(gw->w)) {
-            gdk_window_destroy(gw->w);
-            // Wait for it to die
-            while (!gdk_window_is_destroyed(gw->w)) {
-                GGDKDrawProcessPendingEvents((GDisplay *)gw->display);
+            if (!gdk_window_is_destroyed(gw->w)) {
+                gdk_window_destroy(gw->w);
+                // Wait for it to die
+                while (!gw->display->is_dying && !gdk_window_is_destroyed(gw->w)) {
+                    GGDKDrawProcessPendingEvents((GDisplay *)gw->display);
+                }
             }
         }
 
-        // Signal that it has been destroyed
-        struct gevent die = {0};
-        die.w = (GWindow)gw;
-        die.native_window = gw->w;
-        die.type = et_destroy;
-        GGDKDrawPostEvent(&die);
+        // Signal that it has been destroyed - only if we're not cleaning up the display
+        if (!gw->display->is_dying) {
+            struct gevent die = {0};
+            die.w = (GWindow)gw;
+            die.native_window = gw->w;
+            die.type = et_destroy;
+            GGDKDrawPostEvent(&die);
+        }
 
         // Remove all relevant timers that haven't been cleaned up by the user
         // Note: We do not free the GTimer struct as the user may then call DestroyTimer themselves...
@@ -197,14 +201,16 @@ static gboolean _GGDKDraw_OnWindowDestroyed(gpointer data) {
 
         Log(LOGDEBUG, "Window destroyed: %p[%p][%s][%d]", gw, gw->w, gw->window_title, gw->is_toplevel);
         free(gw->window_title);
-        g_ptr_array_free(gw->transient_childs, false);
         if (gw != gw->display->groot) {
+            g_ptr_array_free(gw->transient_childs, true);
             // Unreference our reference to the window
             g_object_unref(G_OBJECT(gw->w));
         }
     }
 
-    g_object_unref(gw->pango_layout);
+    if (gw->pango_layout != NULL) {
+        g_object_unref(gw->pango_layout);
+    }
 
     if (gw->cs != NULL) {
         cairo_surface_destroy(gw->cs);
@@ -1188,7 +1194,7 @@ static void GGDKDrawDestroyWindow(GWindow w) {
     gw->is_waiting_for_selection = false;
     gw->is_notified_of_selection = false;
 
-    if (!gw->is_pixmap) {
+    if (!gw->is_pixmap && gw != gw->display->groot) {
         GList_Glib *list = gdk_window_get_children(gw->w);
         GList_Glib *child = list;
         while (child != NULL) {
@@ -2408,22 +2414,75 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *UNUSED(programname)) 
     return (GDisplay *)gdisp;
 }
 
-void _GGDKDraw_DestroyDisplay(GDisplay *gdisp) {
-    GGDKDisplay *gdispc = (GGDKDisplay *)(gdisp);
+void _GGDKDraw_DestroyDisplay(GDisplay *disp) {
+    GGDKDisplay *gdisp = (GGDKDisplay *)(disp);
 
-    if (gdispc->groot != NULL) {
-        if (gdispc->groot->ggc != NULL) {
-            free(gdispc->groot->ggc);
-            gdispc->groot->ggc = NULL;
+    // Indicate we're dying...
+    gdisp->is_dying = true;
+
+    // Destroy remaining windows
+    if (g_hash_table_size(gdisp->windows) > 0) {
+        Log(LOGWARN, "Windows left allocated - forcibly freeing!");
+        while (g_hash_table_size(gdisp->windows) > 0) {
+            GHashTableIter iter;
+            GGDKWindow gw;
+            g_hash_table_iter_init(&iter, gdisp->windows);
+            if (g_hash_table_iter_next(&iter, (void **)&gw, NULL)) {
+                Log(LOGWARN, "Forcibly destroying window (%p:%s)", gw, gw->window_title);
+                gw->reference_count = 2;
+                GGDKDrawDestroyWindow((GWindow)gw);
+                _GGDKDraw_OnWindowDestroyed(gw);
+            }
         }
-        free(gdispc->groot);
-        gdispc->groot = NULL;
     }
 
-    if (gdispc->display != NULL) {
-        gdk_display_close(gdispc->display);
-        gdispc->display = NULL;
+    // Destroy root window
+    _GGDKDraw_OnWindowDestroyed(gdisp->groot);
+    gdisp->groot = NULL;
+
+    // Finally destroy the window table
+    g_hash_table_destroy(gdisp->windows);
+    gdisp->windows = NULL;
+
+    // Destroy cursors
+    for (guint i = 0; i < gdisp->cursors->len; i++) {
+        if (gdisp->cursors->pdata[i] != NULL) {
+            GGDKDrawDestroyCursor((GDisplay *)gdisp, (GCursor)(ct_user + i));
+        }
     }
+    g_ptr_array_free(gdisp->cursors, true);
+    gdisp->cursors = NULL;
+
+    // Destroy any orphaned timers (???)
+    if (gdisp->timers != NULL) {
+        Log(LOGWARN, "Orphaned timers present - forcibly freeing!");
+        while (gdisp->timers != NULL) {
+            GGDKTimer *timer = (GGDKTimer *)gdisp->timers->data;
+            timer->reference_count = 1;
+            GGDKDrawCancelTimer((GTimer *)timer);
+        }
+    }
+
+    // Get rid of our pango context
+    g_object_unref(gdisp->pangoc_context);
+    gdisp->pangoc_context = NULL;
+
+    // Destroy the fontstate
+    free(gdisp->fontstate);
+    gdisp->fontstate = NULL;
+
+    // Close the display
+    if (gdisp->display != NULL) {
+        gdk_display_close(gdisp->display);
+        gdisp->display = NULL;
+    }
+
+    // Unreference the main loop
+    g_main_loop_unref(gdisp->main_loop);
+    gdisp->main_loop = NULL;
+
+    // Free the data structure
+    free(gdisp);
     return;
 }
 
