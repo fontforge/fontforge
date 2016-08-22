@@ -616,6 +616,24 @@ return( calloc(1,sizeof(SplineChar *)) );
 return( glyphs );
 }
 
+static SplineChar **TTFGlyphsFromNames(SplineFont *sf,char *names) {
+    SplineChar **glyphs = SFGlyphsFromNames(sf,names);
+		if (glyphs == NULL) IError("Glyph-finding error.");
+		int i, j;
+		// Count the valid glyphs.
+		for (i=0; glyphs[i] != NULL; i++)
+			if (glyphs[i]->ttf_glyph >= 0) j++;
+		SplineChar **output = calloc(j+1,sizeof(SplineChar *));
+		if (output == NULL) IError("Memory error.");
+		for (i=0; glyphs[i] != NULL; i++)
+			if (glyphs[i]->ttf_glyph >= 0) {
+				output[j] = glyphs[i];
+				j++;
+			}
+		free(glyphs);
+		return output;
+}
+
 static SplineChar **OrderedGlyphsFromNames(SplineFont *sf,char *names) {
     SplineChar **glyphs = SFGlyphsFromNames(sf,names);
     int i,j;
@@ -623,7 +641,7 @@ static SplineChar **OrderedGlyphsFromNames(SplineFont *sf,char *names) {
     if ( glyphs==NULL || glyphs[0]==NULL )
 return( glyphs );
 
-    for ( i=0; glyphs[i+1]!=NULL; ++i ) for ( j=i+1; glyphs[j]!=NULL; ++j ) {
+    for ( i=0; glyphs[i] != NULL && glyphs[i+1]!=NULL; ++i ) for ( j=i+1; glyphs[j]!=NULL; ++j ) {
 	if ( glyphs[i]->ttf_glyph > glyphs[j]->ttf_glyph ) {
 	    SplineChar *sc = glyphs[i];
 	    glyphs[i] = glyphs[j];
@@ -2045,7 +2063,7 @@ static void dumpg___ContextChainGlyphs(FILE *lfile,SplineFont *sf,
 		if ( fpst->rules[k].lookups[l].lookup->lookup_index!=-1 )
 		    ++lc;
 	    if ( iscontext ) {
-		subglyphs = SFGlyphsFromNames(sf,fpst->rules[k].u.glyph.names);
+		subglyphs = TTFGlyphsFromNames(sf,fpst->rules[k].u.glyph.names);
 		for ( l=0; subglyphs[l]!=NULL; ++l );
 		putshort(lfile,l);
 		curcontext = l;
@@ -2055,14 +2073,14 @@ static void dumpg___ContextChainGlyphs(FILE *lfile,SplineFont *sf,
 		    putshort(lfile,subglyphs[l]->ttf_glyph);
 		free(subglyphs);
 	    } else {
-		subglyphs = SFGlyphsFromNames(sf,fpst->rules[k].u.glyph.back);
+		subglyphs = TTFGlyphsFromNames(sf,fpst->rules[k].u.glyph.back);
 		for ( l=0; subglyphs[l]!=NULL; ++l );
 		putshort(lfile,l);
 		curcontext = l;
 		for ( l=0; subglyphs[l]!=NULL; ++l )
 		    putshort(lfile,subglyphs[l]->ttf_glyph);
 		free(subglyphs);
-		subglyphs = SFGlyphsFromNames(sf,fpst->rules[k].u.glyph.names);
+		subglyphs = TTFGlyphsFromNames(sf,fpst->rules[k].u.glyph.names);
 		for ( l=0; subglyphs[l]!=NULL; ++l );
 		putshort(lfile,l);
 		curcontext += l;
@@ -2070,7 +2088,7 @@ static void dumpg___ContextChainGlyphs(FILE *lfile,SplineFont *sf,
 		for ( l=1; subglyphs[l]!=NULL; ++l )
 		    putshort(lfile,subglyphs[l]->ttf_glyph);
 		free(subglyphs);
-		subglyphs = SFGlyphsFromNames(sf,fpst->rules[k].u.glyph.fore);
+		subglyphs = TTFGlyphsFromNames(sf,fpst->rules[k].u.glyph.fore);
 		for ( l=0; subglyphs[l]!=NULL; ++l );
 		putshort(lfile,l);
 		curcontext += l;
