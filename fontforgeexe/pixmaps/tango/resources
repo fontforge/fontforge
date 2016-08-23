@@ -26,6 +26,7 @@ fontforge.CharView.Hotkey.Show.Tab6: 7
 fontforge.CharView.Hotkey.Show.Tab7: 8
 fontforge.CharView.Hotkey.Show.Tab8: 9
 fontforge.CharView.Hotkey.Show.Tab9: 0
+fontforge.CharView.Button3D: 0
 
 Gdraw.Background: #edeceb
 Gdraw.Foreground: #222222
