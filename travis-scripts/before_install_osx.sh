@@ -38,8 +38,8 @@ brew config
 
 BREW_PREFIX=`brew --prefix`
 sed -i -e "s|{TRAVIS_PULL_REQUEST}|${TRAVIS_PULL_REQUEST}|g" ./travis-scripts/fontforge.rb
-rm $BREW_PREFIX/Library/Formula/fontforge.rb
-cp ./travis-scripts/fontforge.rb $BREW_PREFIX/Library/Formula/fontforge.rb
+rm $BREW_PREFIX/Library/Taps/homebrew/homebrew-core/Formula/fontforge.rb
+cp ./travis-scripts/fontforge.rb $BREW_PREFIX/Library/Taps/homebrew/homebrew-core/Formula/fontforge.rb
 echo "*****"
 echo "*****"
 echo "***** using homebrew formula fontforge.rb:"
@@ -62,8 +62,8 @@ brew install cairo libspiro fontconfig
 
 #
 # this forces version 4.0.4 and 2.2.0 respectively.
-rm $BREW_PREFIX/Library/Formula/zeromq.rb
-rm $BREW_PREFIX/Library/Formula/czmq.rb
-wget https://raw.githubusercontent.com/Homebrew/homebrew/ab7f37834a28b4d6/Library/Formula/zeromq.rb -O $BREW_PREFIX/Library/Formula/zeromq.rb
-wget https://raw.githubusercontent.com/Homebrew/homebrew/3ad14e1e3f7d0131b/Library/Formula/czmq.rb -O $BREW_PREFIX/Library/Formula/czmq.rb
+rm $BREW_PREFIX/Library/Taps/homebrew/homebrew-core/Formula/zeromq.rb
+rm $BREW_PREFIX/Library/Taps/homebrew/homebrew-core/Formula/czmq.rb
+wget https://raw.githubusercontent.com/Homebrew/homebrew/ab7f37834a28b4d6/Library/Formula/zeromq.rb -O $BREW_PREFIX/Library/Taps/homebrew/homebrew-core/Formula/zeromq.rb
+wget https://raw.githubusercontent.com/Homebrew/homebrew/3ad14e1e3f7d0131b/Library/Formula/czmq.rb -O $BREW_PREFIX/Library/Taps/homebrew/homebrew-core/Formula/czmq.rb
 brew install czmq zeromq
