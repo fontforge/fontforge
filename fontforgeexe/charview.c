@@ -1684,7 +1684,8 @@ void CVDrawSplineSetSpecialized( CharView *cv, GWindow pixmap, SplinePointList *
 	if( strokeFillMode==sfm_stroke_trans )
 	    fgstrokeFillMode = sfm_stroke_trans;
 	if( shouldShowFilledUsingCairo(cv) ) {
-	    thinfgcolor = (thinfgcolor | 0x01000000) & 0x01ffffff;
+	    if (cv->inPreviewMode)
+	        thinfgcolor = (thinfgcolor | 0x01000000) & 0x01ffffff;
 	    fgstrokeFillMode = sfm_stroke_trans;
 	}
 	CVDrawSplineSetOutlineOnly( cv, pixmap, set,
@@ -1701,7 +1702,7 @@ void CVDrawSplineSetSpecialized( CharView *cv, GWindow pixmap, SplinePointList *
             int strokeWidth = prefs_cv_outline_thickness * 2 * cv->scale;
             Color strokefg = foreoutthicklinecol;
 
-	    if( shouldShowFilledUsingCairo(cv) ) {
+	    if( shouldShowFilledUsingCairo(cv) && cv->inPreviewMode ) {
 		strokefg = (strokefg | 0x01000000) & 0x01ffffff;
 	    }
 
