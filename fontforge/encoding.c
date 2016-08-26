@@ -553,27 +553,91 @@ static Encoding *ParseConsortiumEncodingFile(FILE *file) {
     memset(encs, 0, sizeof(encs));
     max = -1;
 
-    while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
-	if ( ishexdigit(buffer[0]) ) {
-	    if ( sscanf(buffer, "%x %x", (unsigned *) &enc, (unsigned *) &unienc)==2 &&
-		    enc<0x10000 && enc>=0 ) {
-		encs[enc] = unienc;
-		if ( enc>max ) max = enc;
-	    }
-	}
+    while (fgets(buffer, sizeof(buffer), file) != NULL) {
+        if (ishexdigit(buffer[0])) {
+            if (sscanf(buffer, "%x %x", (unsigned *) &enc, (unsigned *) &unienc)==2
+                && enc < 0x10000
+                && enc >= 0) {
+                encs[enc] = unienc;
+                if ( enc>max ) max = enc;
+            }
+        }
     }
 
-    if ( max==-1 )
-return( NULL );
+    if (max==-1)
+        return NULL;
 
     ++max;
-    if ( max<256 ) max = 256;
-    item = calloc(1,sizeof(Encoding));
+    if (max<256) max = 256;
+    item = calloc(1, sizeof(Encoding));
     item->only_1byte = item->has_1byte = true;
     item->char_cnt = max;
     item->unicode = malloc(max*sizeof(int32));
-    memcpy(item->unicode,encs,max*sizeof(int32));
-return( item );
+    memcpy(item->unicode, encs, max*sizeof(int32));
+    return item;
+}
+
+/* Parse the GlyphOrderAndAliasDB file format */
+static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
+    char* names[1024];
+    char buffer[256];
+    int32 encs[1024];
+    Encoding* item = NULL;
+    size_t i, any;
+    int max, enc;
+
+    for (i=0; i < sizeof(names)/sizeof(names[0]); ++i) {
+        encs[i] = -1;
+        names[i] = NULL;
+    }
+
+    max = -1; any = 0;
+    i = 0;
+    while (fgets(buffer, sizeof(buffer), file) != NULL) {
+        max = i;
+
+        int tab, tab2;
+        for (tab = 0; tab < sizeof(buffer) && buffer[tab] != '\t'; tab++);
+        if (tab < sizeof(buffer))
+            buffer[tab]='\0';
+
+        for (tab2 = tab+1; tab2 < sizeof(buffer) && buffer[tab2] != '\t'; tab2++);
+        if (tab2 < sizeof(buffer))
+            buffer[tab2]='\0';
+
+        if (strcmp(buffer, ".notdef") == 0) {
+            encs[i] = -1;
+        } else if ((enc = UniFromName(buffer, ui_none, &custom)) != -1) {
+            encs[i] = enc;
+
+            /* Used not to do this, but there are several legal names */
+            /*  for some slots and people get unhappy (rightly) if we */
+            /*  use the wrong one */
+            names[i] = copy(&buffer[tab+1]);
+            any = 1;
+        } else {
+            names[i] = copy(&buffer[tab+1]);
+            any = 1;
+        }
+        i++;
+    }
+
+    if (max != -1) {
+        if (++max < 256) max = 256;
+        item = calloc(1,sizeof(Encoding));
+        char* buf = strdup(_("Please name this encoding"));
+        item->enc_name = ff_ask_string(buf, "GlyphOrderAndAliasDB", buf);
+        item->char_cnt = max;
+        item->unicode = malloc(max*sizeof(int32));
+        memcpy(item->unicode, encs, max*sizeof(int32));
+
+        if (any) {
+            item->psnames = calloc(max, sizeof(char *));
+            memcpy(item->psnames, names, max*sizeof(char *));
+        }
+    }
+
+    return item;
 }
 
 /* Parse the GlyphOrderAndAliasDB file format */
@@ -642,12 +706,13 @@ static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
 void RemoveMultiples(Encoding *item) {
     Encoding *test;
 
-    for ( test=enclist; test!=NULL; test = test->next ) {
-	if ( strcmp(test->enc_name,item->enc_name)==0 )
-    break;
+    for (test=enclist; test!=NULL; test=test->next) {
+        if ( strcmp(test->enc_name, item->enc_name)==0 )
+            break;
     }
-    if ( test!=NULL )
-	DeleteEncoding(test);
+
+    if (test)
+        DeleteEncoding(test);
 }
 
 char *ParseEncodingFile(char *filename, char *encodingname) {
@@ -657,17 +722,22 @@ char *ParseEncodingFile(char *filename, char *encodingname) {
     char *buf, *name;
     int i,ch;
 
-    if ( filename==NULL ) filename = getPfaEditEncodings();
+    if (!filename)
+        filename = getPfaEditEncodings();
+
     file = fopen(filename,"r");
-    if ( file==NULL ) {
-	if ( orig!=NULL )
-	    ff_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), orig);
-return( NULL );
+    if (!file) {
+        if (orig)
+            ff_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), orig);
+        return NULL;
     }
+
+    /* An empty file is surely an invalid file */
     ch = getc(file);
-    if ( ch==EOF ) {
-	fclose(file);
-return( NULL );
+    if (ch==EOF) {
+        fclose(file);
+        /* TODO: Shouldn't we complain to the user about it here ? */
+        return NULL;
     }
 
     /* Here we detect file format and decide which format
@@ -687,47 +757,56 @@ return( NULL );
         head = PSSlurpEncodings(file);
     }
     fclose(file);
-    if ( head==NULL ) {
-	ff_post_error(_("Bad encoding file format"),_("Bad encoding file format") );
-	return( NULL );
+
+    if (!head) {
+        ff_post_error(_("Bad encoding file format"),_("Bad encoding file format") );
+        return NULL;
     }
 
-    for ( i=0, prev=NULL, item=head; item!=NULL; prev = item, item=next, ++i ) {
-	next = item->next;
-	if ( item->enc_name==NULL ) {
-	    if ( no_windowing_ui ) {
-		ff_post_error(_("Bad encoding file format"),_("This file contains an unnamed encoding, which cannot be named in a script"));
-		return( NULL );
-	    }
-	    if ( item==head && item->next==NULL )
-		buf = strdup(_( "Please name this encoding" ));
-	    else
-		buf = xasprintf(_( "Please name encoding %d in this file" ), i );
+    for (i=0, prev=NULL, item=head; item!=NULL; prev=item, item=next, ++i) {
+        next = item->next;
+        if (item->enc_name==NULL) {
+            if (no_windowing_ui) {
+                ff_post_error(_("Bad encoding file format"),_("This file contains an unnamed encoding, which cannot be named in a script"));
+                return NULL;
+            }
 
-	    name = ff_ask_string( buf, NULL, buf );
+            if (item==head && item->next==NULL)
+                buf = strdup(_("Please name this encoding"));
+            else
+                buf = xasprintf(_("Please name encoding %d in this file"), i);
 
-	    if ( name!=NULL ) {
-		item->enc_name = copy(name);
-		free(name);
-	    } else {
-		if ( prev==NULL )
-		    head = item->next;
-		else
-		    prev->next = item->next;
-		EncodingFree(item);
-	    }
-	}
+            name = ff_ask_string(buf, NULL, buf);
+
+            if (name) {
+                item->enc_name = copy(name);
+                free(name);
+            } else {
+                if (prev==NULL)
+                    head = item->next;
+                else
+                    prev->next = item->next;
+
+                EncodingFree(item);
+            }
+        }
     }
-    for ( item=head; item!=NULL; item=item->next )
-	RemoveMultiples(item);
 
-    if ( enclist == NULL )
-	enclist = head;
-    else {
-	for ( item=enclist; item->next!=NULL; item=item->next );
-	item->next = head;
+    for (item=head; item!=NULL; item=item->next) {
+        RemoveMultiples(item);
     }
-return( copy( head->enc_name ) );
+
+    if (!enclist) {
+        enclist = head;
+    } else {
+        for (item=enclist; item->next!=NULL; item=item->next ){
+            /* Run to the end of the linked list */
+        };
+        /* And append there the encodings we just loaded */
+        item->next = head;
+    }
+
+    return copy(head->enc_name);
 }
 
 void LoadPfaEditEncodings(void) {
