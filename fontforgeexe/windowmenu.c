@@ -292,7 +292,7 @@ return;
 	    tmp[1] = (unichar_t)(0);
 	    mb[i].ti.text_untranslated = cu_copy(tmp);
 	} else
-	    mb[i].ti.text_untranslated = cu_copy(mb[i].ti.text);
+	    mb[i].ti.text_untranslated = copy((char*)mb[i].ti.text);
 	if ( mb[i].ti.text!=NULL ) {
 	    mb[i].ti.text = (unichar_t *) S_((char *) mb[i].ti.text);
 	    if ( mb[i].sub!=NULL )
@@ -326,7 +326,7 @@ return;
 	if( mb[i].shortcut )
 	    mb[i].ti.text_untranslated = copy(mb[i].shortcut);
 	else
-	    mb[i].ti.text_untranslated = cu_copy(mb[i].ti.text);
+	    mb[i].ti.text_untranslated = copy((char*)mb[i].ti.text);
 	if ( mb[i].ti.text!=NULL ) {
 	    mb[i].ti.text = (unichar_t *) S_((char *) mb[i].ti.text);
 	    if ( mb[i].sub!=NULL )
