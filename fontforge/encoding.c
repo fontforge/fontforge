@@ -592,15 +592,15 @@ static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
 
     max = -1; any = 0;
     i = 0;
-    while (fgets(buffer, sizeof(buffer), file) != NULL) {
+    while (fgets(buffer, sizeof(buffer), file) != NULL && i < 1024) {
         max = i;
 
         int tab, tab2;
-        for (tab = 0; tab < sizeof(buffer) && buffer[tab] != '\t'; tab++);
+        for (tab = 0; tab < sizeof(buffer) && buffer[tab] != '\t' && buffer[tab] != '\0'; tab++);
         if (tab < sizeof(buffer))
             buffer[tab]='\0';
 
-        for (tab2 = tab+1; tab2 < sizeof(buffer) && buffer[tab2] != '\t'; tab2++);
+        for (tab2 = tab+1; tab2 < sizeof(buffer) && buffer[tab2] != '\t' && buffer[tab] != '\0'; tab2++);
         if (tab2 < sizeof(buffer))
             buffer[tab2]='\0';
 
@@ -622,20 +622,29 @@ static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
     }
 
     if (max != -1) {
+        // If we have mappings, we make an encoding.
+        // We pad the map in accordance with existing code in FindOrMakeEncoding and elsewhere.
+        // Nobody knows why.
         if (++max < 256) max = 256;
-        item = calloc(1,sizeof(Encoding));
-        char* buf = strdup(_("Please name this encoding"));
-        item->enc_name = ff_ask_string(buf, "GlyphOrderAndAliasDB", buf);
-        item->char_cnt = max;
-        item->unicode = malloc(max*sizeof(int32));
-        memcpy(item->unicode, encs, max*sizeof(int32));
-
-        if (any) {
-            item->psnames = calloc(max, sizeof(char *));
-            memcpy(item->psnames, names, max*sizeof(char *));
+        char *tmp_name = ff_ask_string(_("Encoding name."), "GlyphOrderAndAliasDB", _("Please name this encoding."));
+        if (tmp_name != NULL) {
+          if (tmp_name[0] == '\0') {
+						// Encodings must be named.
+						free(tmp_name);
+            tmp_name = NULL;
+					} else {
+            item = calloc(1,sizeof(Encoding));
+            item->enc_name = tmp_name;
+            item->char_cnt = max;
+            item->unicode = malloc(max*sizeof(int32));
+            memcpy(item->unicode, encs, max*sizeof(int32));
+            if (any) {
+                item->psnames = calloc(max, sizeof(char *));
+                memcpy(item->psnames, names, max*sizeof(char *));
+            }
+          }
         }
     }
-
     return item;
 }
 
