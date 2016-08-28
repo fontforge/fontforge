@@ -1,0 +1,55 @@
+# The SourceForge servers are really unreliable to download from.
+# Half the time, the downloads time-out, causing the build to fail.
+# As such, I have made a bintray mirror, which should be more reliable.
+platform:
+  - x64
+branches:
+  only:
+  - master
+clone_depth: 10
+environment:
+  global:
+    MBASH: C:\msys64\usr\bin\sh -lc
+    REPOFFLIB: >
+      \n[fontforgelibs32]\n
+      Server = https://dl.bintray.com/jtanx/fontforgelibs/fontforgelibs32\n
+      Server = http://downloads.sourceforge.net/project/fontforgebuilds/build-system-extras/fontforgelibs/i686\n
+      [fontforgelibs64]\n
+      Server = https://dl.bintray.com/jtanx/fontforgelibs/fontforgelibs64\n
+      Server = http://downloads.sourceforge.net/project/fontforgebuilds/build-system-extras/fontforgelibs/x86_64\n
+  matrix:
+    - MSYSTEM: MINGW32
+      MBITS: 32
+      VCXSRV: VcXsrv-1.14.2-minimal.tar.xz
+# For speed, we disable 64-bit builds.
+#    - MSYSTEM: MINGW64
+#      MBITS: 64
+#      VCXSRV: VcXsrv-1.17.0.0-x86_64-minimal.tar.xz
+
+#The cache is slightly slower than just downloading the files
+#cache:
+#  - 'C:\msys64\var\cache\pacman\pkg'
+install:
+  - git clone --depth=1 --branch=master https://github.com/fontforge/fontforgebuilds.git
+  - appveyor DownloadFile "https://dl.bintray.com/jtanx/fontforgelibs/build-system-extras/potrace-1.13.win%MBITS%.tar.gz" -FileName "%APPVEYOR_BUILD_FOLDER%\fontforgebuilds\original-archives\binaries\potrace-1.13.win%MBITS%.tar.gz"
+  - appveyor DownloadFile "https://dl.bintray.com/jtanx/fontforgelibs/build-system-extras/%VCXSRV%" -FileName "%APPVEYOR_BUILD_FOLDER%\fontforgebuilds\original-archives\binaries\%VCXSRV%"
+  - appveyor DownloadFile "http://download.savannah.gnu.org/releases/freetype/freetype-2.6.5.tar.bz2" -FileName "%APPVEYOR_BUILD_FOLDER%\fontforgebuilds\original-archives\sources\freetype-2.6.5.tar.bz2"
+  - call %MBASH% "pacman-key -r 90F90C4A && pacman-key --lsign-key 90F90C4A;"
+  - call %MBASH% "echo -e $REPOFFLIB >> /etc/pacman.conf"
+  - call %MBASH% "pacman -Sy --noconfirm"
+# These steps will update msys2 to the latest version
+# Uncomment these if builds fail because of pacman not installing dependencies due to version conflicts
+#  - call %MBASH% "pacman -Syuu --noconfirm"
+#  - call %MBASH% "pacman -Suu --noconfirm"
+#  - call %MBASH% "pacman -Suu --noconfirm"
+  - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds; exec 0</dev/null; ./ffbuild.sh --appveyor --depsonly"
+build_script:
+  - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds; exec 0</dev/null; ./ffbuild.sh --appveyor"
+  - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds; exec 0</dev/null; FFPATH=`cygpath -m $APPVEYOR_BUILD_FOLDER` ./make-portable-package.sh appveyor"
+  - call %MBASH% "pacman -Sc --noconfirm"
+test: off
+artifacts:
+  - path: fontforgebuilds\*-appveyor.7z
+    name: FontForge $(MBITS)-bit build
+  - path: fontforgebuilds\*-debugging-symbols.7z
+    name: FontForge $(MBITS)-bit debugging symbols
