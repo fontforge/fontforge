@@ -1,4 +1,4 @@
-# FontForge [![Build Status](https://travis-ci.org/fontforge/fontforge.png)](https://travis-ci.org/fontforge/fontforge) [![Coverity Scan Build Status](https://scan.coverity.com/projects/792/badge.svg?flat=1)](https://scan.coverity.com/projects/792)
+# FontForge [![Build Status](https://travis-ci.org/fontforge/fontforge.svg?branch=master)](https://travis-ci.org/fontforge/fontforge) [![Coverity Scan Build Status](https://scan.coverity.com/projects/792/badge.svg?flat=1)](https://scan.coverity.com/projects/792)
 
 ![FontForge Logo](http://fontforge.github.io/assets/img/logo-transparent.png)
 
