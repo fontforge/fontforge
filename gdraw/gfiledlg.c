@@ -111,7 +111,7 @@ static unichar_t *GWidgetOpenFileWPath(const unichar_t *title, const unichar_t *
     memset(&gcd,0,sizeof(gcd));
     memset(&boxes,0,sizeof(boxes));
     gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6;
-    gcd[0].gd.pos.width = 223-24; gcd[0].gd.pos.height = 180;
+    gcd[0].gd.pos.width = 223; gcd[0].gd.pos.height = 180;
     gcd[0].gd.flags = gg_visible | gg_enabled;
     gcd[0].creator = GFileChooserCreate;
     varray[0] = &gcd[0]; varray[1] = NULL;

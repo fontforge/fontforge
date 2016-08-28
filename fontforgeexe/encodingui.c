@@ -222,7 +222,7 @@ return( item );
 }
 
 void LoadEncodingFile(void) {
-    static char filter[] = "*.{ps,PS,txt,TXT,enc,ENC}";
+    static char filter[] = "*{.ps,.PS,.txt,.TXT,.enc,.ENC,GlyphOrderAndAliasDB}";
     char *fn;
     char *filename;
 

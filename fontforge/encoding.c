@@ -576,66 +576,112 @@ return( NULL );
 return( item );
 }
 
-/* Parse the GlyphOrderAndAliasDB file format */
+/**
+ *  \brief Parses a GlyphOrderAndAliasDB encoding file
+ *
+ *  \param [in] file The file handle to the encoding file
+ *  \return The encoding, or NULL if none could be made
+ *
+ *  \details Each line in the file contains one glyph name (equating to one slot).
+ *           It is assumed that values are tab separated. There
+ *           are at least two columns, with a third column being optional.
+ *           The first column is the glyph name to be used on output. This
+ *           is what will normally be used to determine the unicode value for
+ *           this slot.
+ *           The second column is the 'friendly' name - this is what will
+ *           be used for the slot's name.
+ *           The third, optional column specifies the unicode value that the
+ *           slot should map to. When available, this will be used in preference
+ *           to the first column.
+ */
 static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
-    char* names[1024];
-    char buffer[256];
-    int32 encs[1024];
-    Encoding* item = NULL;
-    size_t i, any;
-    int max, enc;
+    GArray *enc_arr = g_array_sized_new(FALSE, TRUE, sizeof(int32), 256);
+    GArray *names_arr = g_array_sized_new(FALSE, TRUE, sizeof(char *), 256);
+    Encoding *item = NULL;
+    char buffer[BUFSIZ];
+    int enc, any = FALSE, has_1byte = FALSE;
 
-    for (i=0; i < sizeof(names)/sizeof(names[0]); ++i) {
-        encs[i] = -1;
-        names[i] = NULL;
-    }
+    while (fgets(buffer, sizeof(buffer), file)) {
+        char *split = strchr(buffer, '\t'), *split2, *enc_name = NULL;
+        if (split == NULL) {
+            // Skip entries that do not contain at least two (tab separated) values
+            LogError(_("ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s\n"), enc_arr->len, g_strstrip(buffer));
+            //enc = -1;
+            //g_array_append_val(enc_arr, enc);
+            //g_array_append_val(names_arr, enc_name);
+            continue;
+        }
+        *split++ = '\0';
+        // Buffer now contains the first column
+        g_strstrip(buffer);
+        // split contains the second, and possibly the third column
+        g_strstrip(split);
 
-    max = -1; any = 0;
-    i = 0;
-    while (fgets(buffer, sizeof(buffer), file) != NULL) {
-        max = i;
+        // Optional third column
+        split2 = strchr(split, '\t');
+        if (split2 != NULL) {
+            *split2++ = '\0';
+            g_strstrip(split2);
+        }
 
-        int tab, tab2;
-        for (tab = 0; tab < sizeof(buffer) && buffer[tab] != '\t'; tab++);
-        if (tab < sizeof(buffer))
-            buffer[tab]='\0';
-
-        for (tab2 = tab+1; tab2 < sizeof(buffer) && buffer[tab2] != '\t'; tab2++);
-        if (tab2 < sizeof(buffer))
-            buffer[tab2]='\0';
-
-        if (strcmp(buffer, ".notdef") == 0) {
-            encs[i] = -1;
-        } else if ((enc = UniFromName(buffer, ui_none, &custom)) != -1) {
-            encs[i] = enc;
-
+        // Use the third column in preference to the first
+        enc = UniFromName((split2 != NULL) ? split2 : buffer, ui_none, &custom);
+        if (split[0] != '\0') {
             /* Used not to do this, but there are several legal names */
             /*  for some slots and people get unhappy (rightly) if we */
             /*  use the wrong one */
-            names[i] = copy(&buffer[tab+1]);
-            any = 1;
-        } else {
-            names[i] = copy(&buffer[tab+1]);
-            any = 1;
+            enc_name = copy(split);
+            any = TRUE;
         }
-        i++;
+
+        if (enc != -1 && enc_arr->len < 256) {
+            // We have a valid encoding within the first 256 entries
+            has_1byte = TRUE;
+        }
+
+        // Append entry to our arrays
+        g_array_append_val(enc_arr, enc);
+        g_array_append_val(names_arr, enc_name);
     }
 
-    if (max != -1) {
-        if (++max < 256) max = 256;
-        item = calloc(1,sizeof(Encoding));
-        char* buf = strdup(_("Please name this encoding"));
-        item->enc_name = ff_ask_string(buf, "GlyphOrderAndAliasDB", buf);
-        item->char_cnt = max;
-        item->unicode = malloc(max*sizeof(int32));
-        memcpy(item->unicode, encs, max*sizeof(int32));
+    if (enc_arr->len > 0) {
+        // If we have mappings, we make an encoding.
+        char *tmp_name = ff_ask_string(_("Encoding name"), "GlyphOrderAndAliasDB", _("Please name this encoding"));
+        if (tmp_name != NULL) {
+            if (tmp_name[0] == '\0') {
+                // Encodings must be named.
+                free(tmp_name);
+                tmp_name = NULL;
+            } else {
+                item = calloc(1, sizeof(Encoding));
+                item->enc_name = tmp_name;
+                // We pad the map in accordance with existing code in FindOrMakeEncoding and elsewhere.
+                // Nobody knows why.
+                item->char_cnt = (enc_arr->len < 256) ? 256 : enc_arr->len;
+                item->unicode = malloc(item->char_cnt * sizeof(int32));
+                memcpy(item->unicode, enc_arr->data, enc_arr->len * sizeof(int32));
+                if (item->char_cnt > enc_arr->len) {
+                    // Pad the unfilled entries with -1
+                    memset(item->unicode + enc_arr->len, -1, sizeof(int32) * (enc_arr->len - item->char_cnt));
+                }
+                if (any) {
+                    item->psnames = calloc(item->char_cnt, sizeof(char *));
+                    memcpy(item->psnames, names_arr->data, names_arr->len * sizeof(char *));
+                }
 
-        if (any) {
-            item->psnames = calloc(max, sizeof(char *));
-            memcpy(item->psnames, names, max*sizeof(char *));
+                item->is_custom = TRUE;
+                item->has_1byte = has_1byte;
+                if (enc_arr->len < 256) {
+                    item->only_1byte = TRUE;
+                } else {
+                    item->has_2byte = TRUE;
+                }
+            }
         }
     }
 
+    g_array_free(enc_arr, TRUE);
+    g_array_free(names_arr, TRUE);
     return item;
 }
 
