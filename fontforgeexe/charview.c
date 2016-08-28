@@ -13056,7 +13056,7 @@ return;
  	if( mblist_nomm[i].shortcut )
 	    mblist_nomm[i].ti.text_untranslated = copy(mblist_nomm[i].shortcut);
 	else
-	    mblist_nomm[i].ti.text_untranslated = cu_copy(mblist_nomm[i].ti.text);
+	    mblist_nomm[i].ti.text_untranslated = copy((char*)mblist_nomm[i].ti.text);
 
 	mblist_nomm[i].ti.text = (unichar_t *) _((char *) mblist_nomm[i].ti.text);
     }

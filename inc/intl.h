@@ -28,6 +28,8 @@
 #ifndef _INTL_H
 #define _INTL_H
 
+#include "fontforge-config.h"
+
 #if !defined( HAVE_LIBINTL_H )
 
 # define _(str)			(str)
