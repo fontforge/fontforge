@@ -539,6 +539,52 @@ bool _GGDKDraw_InitPangoCairo(GGDKWindow gw) {
     return true;
 }
 
+#ifdef GGDKDRAW_GDK_2
+/**
+ *  \brief Destructor for GdkPixbuf created by _GGDKDraw_Cairo2Pixbuf
+ *
+ *  \param [in] pixels Not used
+ *  \param [in] data The cairo surface that we made
+ */
+static void _GGDKDraw_OnPixbufDestroy(guchar *pixels, gpointer data) {
+    cairo_surface_destroy((cairo_surface_t *)data);
+}
+
+/**
+ *  \brief A poor man's version of gdk_pixbuf_get_from_surface
+ *
+ *  \param [in] cs The Cairo surface to convert to a GdkPixbuf
+ *  \return The Cairo surface converted into a GdkPixbuf
+ */
+GdkPixbuf *_GGDKDraw_Cairo2Pixbuf(cairo_surface_t *cs) {
+    int width = cairo_image_surface_get_width(cs), height = cairo_image_surface_get_height(cs);
+    cairo_surface_t *csp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+    int stride = cairo_image_surface_get_stride(csp);
+    cairo_t *cc = cairo_create(csp);
+    cairo_set_source_surface(cc, cs, 0, 0);
+    cairo_paint(cc);
+    cairo_destroy(cc);
+    cairo_surface_flush(csp);
+
+    if (cairo_surface_status(csp) != CAIRO_STATUS_SUCCESS) {
+        return NULL;
+    }
+
+    // Must swap blue and red channels due to Cairo/GdkPixbuf differences
+    unsigned char *data = cairo_image_surface_get_data(csp);
+    for (int i = 0; i < stride * height; i += 4) {
+        unsigned char blue = data[i];
+        data[i] = data[i + 2];
+        data[i + 2] = blue;
+    }
+    cairo_surface_mark_dirty(csp);
+
+    return gdk_pixbuf_new_from_data(data,
+                                    GDK_COLORSPACE_RGB, true, 8, width, height, stride,
+                                    _GGDKDraw_OnPixbufDestroy, csp);
+}
+#endif
+
 void _GGDKDraw_CleanupAutoPaint(GGDKDisplay *gdisp) {
     if (gdisp->dirty_window != NULL) {
         if (gdisp->dirty_window->cc != NULL) {

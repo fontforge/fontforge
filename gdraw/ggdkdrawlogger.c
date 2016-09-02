@@ -184,6 +184,7 @@ const char *GdkEventName(int code) {
         case GDK_DAMAGE:
             return "GDK_DAMAGE";
             break;
+#ifndef GGDKDRAW_GDK_2
         case GDK_TOUCH_BEGIN:
             return "GDK_TOUCH_BEGIN";
             break;
@@ -196,6 +197,7 @@ const char *GdkEventName(int code) {
         case GDK_TOUCH_CANCEL:
             return "GDK_TOUCH_CANCEL";
             break;
+#endif
 #ifdef GGDKDRAW_GDK_3_20
         case GDK_TOUCHPAD_SWIPE:
             return "GDK_TOUCHPAD_SWIPE";

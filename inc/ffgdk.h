@@ -36,6 +36,7 @@
 #define GList  GList_Glib
 #define GMenuItem GMenuItem_GIO
 #include <gdk/gdk.h>
+#include <gdk/gdkkeysyms.h>
 #undef GMenuItem
 #undef GList
 #undef GTimer

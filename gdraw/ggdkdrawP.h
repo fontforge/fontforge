@@ -17,6 +17,10 @@
 #    define GGDKDRAW_GDK_3_20
 #endif
 
+#if !defined(GDK_MAJOR_VERSION) || (GDK_MAJOR_VERSION <= 2)
+#    define GGDKDRAW_GDK_2
+#endif
+
 #define GGDKDRAW_ADDREF(x) do { \
     assert((x)->reference_count >= 0); \
     (x)->reference_count++; \
@@ -248,6 +252,10 @@ struct ggdkwindow { /* :GWindow */
 bool _GGDKDraw_InitPangoCairo(GGDKWindow gw);
 void _GGDKDraw_CleanupAutoPaint(GGDKDisplay *gdisp);
 
+#ifdef GGDKDRAW_GDK_2
+GdkPixbuf *_GGDKDraw_Cairo2Pixbuf(cairo_surface_t *cs);
+#endif
+
 void GGDKDrawPushClip(GWindow w, GRect *rct, GRect *old);
 void GGDKDrawPopClip(GWindow gw, GRect *old);
 void GGDKDrawSetDifferenceMode(GWindow gw);
@@ -295,7 +303,7 @@ void GGDKDrawLayoutSetWidth(GWindow w, int width);
 int  GGDKDrawLayoutLineCount(GWindow w);
 int  GGDKDrawLayoutLineStart(GWindow w, int l);
 
-// END functions in ggdkdraw.c
+// END functions in ggdkcdraw.c
 
 // Functions in ggdkcocoa.m
 
