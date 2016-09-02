@@ -479,7 +479,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
         nw->is_centered = true;
         _GGDKDraw_CenterWindowOnScreen(nw);
     } else {
-        // There is a bug on Windows (all versions < 3.21.1) where windows are not positioned correctly
+        // There is a bug on Windows (all versions < 3.21.1, <= 2.24.30) where windows are not positioned correctly
         // https://bugzilla.gnome.org/show_bug.cgi?id=764996
         gdk_window_move_resize(nw->w, nw->pos.x, nw->pos.y, nw->pos.width, nw->pos.height);
     }
@@ -961,9 +961,9 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             // is a child window, then mask out the expose region.
             // This is necessary because gdk_window_begin_paint_region does
             // nothing if it's a child window...
+#ifndef GGDKDRAW_GDK_2
             if (!gw->is_toplevel && expose->send_event) {
                 gw->cc = gdk_cairo_create(w);
-#ifndef GGDKDRAW_GDK_2
                 int nr = cairo_region_num_rectangles(expose->region);
 
                 for (int i = 0; i < nr; i++) {
@@ -971,17 +971,9 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
                     cairo_region_get_rectangle(expose->region, i, &rect);
                     cairo_rectangle(gw->cc, rect.x, rect.y, rect.width, rect.height);
                 }
-#else
-                int nr = 0;
-                GdkRectangle *rectangles = NULL;
-                gdk_region_get_rectangles(expose->region, &rectangles, &nr);
-                for (int i = 0; i < nr; i++) {
-                    cairo_rectangle(gw->cc, rectangles[i].x, rectangles[i].y, rectangles[i].width, rectangles[i].height);
-                }
-                g_free(rectangles);
-#endif
                 cairo_clip(gw->cc);
             }
+#endif
         }
         break;
         case GDK_VISIBILITY_NOTIFY:
@@ -1031,6 +1023,7 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             gevent.u.resize.moved       = gevent.u.resize.sized = false;
             if (gevent.u.resize.dx != 0 || gevent.u.resize.dy != 0) {
                 gevent.u.resize.moved = true;
+                gw->is_centered = false;
             }
             if (gevent.u.resize.dwidth != 0 || gevent.u.resize.dheight != 0) {
                 gevent.u.resize.sized = true;
@@ -1994,7 +1987,6 @@ static void GGDKDrawRequestExpose(GWindow w, GRect *rect, int UNUSED(doclear)) {
         }
     }
 
-#ifndef GGDKDRAW_GDK_2
     if (!gw->is_toplevel) {
         //Eugh
         // So if you try to invalidate a child window,
@@ -2008,6 +2000,7 @@ static void GGDKDrawRequestExpose(GWindow w, GRect *rect, int UNUSED(doclear)) {
         expose.area.y = clip.y;
         expose.area.width = clip.width;
         expose.area.height = clip.height;
+#ifndef GGDKDRAW_GDK_2
         expose.region = gdk_window_get_visible_region(gw->w);
         cairo_region_intersect_rectangle(expose.region, &expose.area);
 
@@ -2031,15 +2024,18 @@ static void GGDKDrawRequestExpose(GWindow w, GRect *rect, int UNUSED(doclear)) {
         }
 
         cairo_region_get_extents(expose.region, &expose.area);
-        gdk_event_put((GdkEvent *)&expose);
-        cairo_region_destroy(expose.region);
-    } else {
 #else
-    gdk_window_invalidate_rect(gw->w, &clip, false);
+        expose.region = gdk_region_rectangle(&expose.area);
 #endif
+        gdk_event_put((GdkEvent *)&expose);
 #ifndef GGDKDRAW_GDK_2
-    }
+        cairo_region_destroy(expose.region);
+#else
+        gdk_region_destroy(expose.region);
 #endif
+    } else {
+        gdk_window_invalidate_rect(gw->w, &clip, false);
+    }
 }
 
 static void GGDKDrawForceUpdate(GWindow gw) {
