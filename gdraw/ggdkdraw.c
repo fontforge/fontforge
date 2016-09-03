@@ -278,7 +278,14 @@ static void _GGDKDraw_FakeConfigureEvent(GGDKWindow gw) {
         g_source_remove(gw->resize_timeout);
         gw->resize_timeout = 0;
     }
-    gw->resize_timeout = g_timeout_add(150, _GGDKDraw_OnFakedConfigure, gw);
+
+    // Always fire the first faked configure event immediately
+    if (!gw->has_had_faked_configure) {
+        _GGDKDraw_OnFakedConfigure(gw);
+        gw->has_had_faked_configure = true;
+    } else {
+        gw->resize_timeout = g_timeout_add(150, _GGDKDraw_OnFakedConfigure, gw);
+    }
 }
 
 static void _GGDKDraw_CallEHChecked(GGDKWindow gw, GEvent *event, int (*eh)(GWindow gw, GEvent *)) {
@@ -1268,7 +1275,7 @@ static int GGDKDrawNativeWindowExists(GDisplay *UNUSED(gdisp), void *native_wind
 }
 
 static void GGDKDrawSetZoom(GWindow UNUSED(gw), GRect *UNUSED(size), enum gzoom_flags UNUSED(flags)) {
-    Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, "");
     // Not implemented.
 }
 

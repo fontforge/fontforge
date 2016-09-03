@@ -91,12 +91,23 @@ if test x$use_gdk = xyes ; then
     PKG_CHECK_MODULES([GDK],[gdk-3.0 >= 3.10],
     [
         fontforge_can_use_gdk=yes
-        AC_DEFINE(FONTFORGE_CAN_USE_GDK,[],[FontForge will build the GUI with the GDK backend])
-        echo "building the GUI with the GDK backend..."
+        fontforge_gdk_version=GDK3
+        AC_DEFINE(FONTFORGE_CAN_USE_GDK,[],[FontForge will build the GUI with the GDK3 backend])
+        AC_MSG_NOTICE([building the GUI with the GDK3 backend...])
     ],
     [
-        fontforge_can_use_gdk=no
-        AC_MSG_ERROR([Cannot build GDK backend without GDK installed.])
+        AC_MSG_WARN([GDK3 not found, trying with GDK2...])
+        PKG_CHECK_MODULES([GDK], [gdk-2.0 >= 2.10],
+        [
+            fontforge_can_use_gdk=yes
+            fontforge_gdk_version=GDK2
+            AC_DEFINE(FONTFORGE_CAN_USE_GDK,[],[FontForge will build the GUI with the GDK2 backend])
+            AC_MSG_NOTICE([building the GUI with the GDK2 backend...])
+        ],
+        [
+            fontforge_can_use_gdk=no
+            AC_MSG_ERROR([Cannot build GDK backend without GDK installed.])
+        ])
     ])
 fi
 AM_CONDITIONAL([FONTFORGE_CAN_USE_GDK],[test x"${fontforge_can_use_gdk}" = xyes])

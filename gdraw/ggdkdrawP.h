@@ -231,6 +231,7 @@ struct ggdkwindow { /* :GWindow */
     unsigned int is_waiting_for_selection: 1;
     unsigned int is_notified_of_selection: 1;
     unsigned int is_in_paint: 1; // Have we called gdk_window_begin_paint_region?
+    unsigned int has_had_faked_configure: 1;
 
     int reference_count; // Knowing when to destroy is tricky...
     GPtrArray *transient_childs; // Handling transients is tricky...

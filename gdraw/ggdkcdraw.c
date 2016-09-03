@@ -1265,7 +1265,9 @@ void GGDKDrawGetFontMetrics(GWindow gw, GFont *fi, int *as, int *ds, int *ld) {
     *ds = pango_font_metrics_get_descent(fm) / PANGO_SCALE;
     *ld = 0;
     pango_font_metrics_unref(fm);
-    g_object_unref(pfont);
+    if (pfont != NULL) {
+        g_object_unref(pfont);
+    }
 }
 
 void GGDKDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {

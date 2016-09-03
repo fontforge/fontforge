@@ -202,6 +202,7 @@ libuninameslist_url="https://github.com/fontforge/libuninameslist"
 libzmq_url="http://www.zeromq.org/"
 libreadline_url="http://www.gnu.org/software/readline"
 libxorg_url="http://www.x.org/"
+gdk_url="http://www.gtk.org/"
 
 # Point to the Wikipedia page, primarily because one may want
 # libjpeg-turbo rather than the reference implementation.
@@ -884,7 +885,7 @@ Optional Library	UseIt?	HaveIt?	WebsiteURL
   libuninameslist	${with_libuninameslist}	${i_do_have_libuninameslist}	${libuninameslist_url}
   zeromq (libzmq)		${i_do_have_libzmq}	${libzmq_url}
   X Window System		${i_do_have_x}	${libxorg_url}
-  GDK backend		${fontforge_can_use_gdk}
+  GDK backend		${fontforge_can_use_gdk}	${fontforge_gdk_version}	${gdk_url}
 ])
 
 #--------------------------------------------------------------------------
