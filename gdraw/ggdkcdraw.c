@@ -570,12 +570,20 @@ GdkPixbuf *_GGDKDraw_Cairo2Pixbuf(cairo_surface_t *cs) {
         return NULL;
     }
 
-    // Must swap blue and red channels due to Cairo/GdkPixbuf differences
+    // Must convert to GdkPixbuf format from CAIRO_FORMAT_ARGB32
     unsigned char *data = cairo_image_surface_get_data(csp);
     for (int i = 0; i < stride * height; i += 4) {
-        unsigned char blue = data[i];
-        data[i] = data[i + 2];
-        data[i + 2] = blue;
+        uint32_t p = *((uint32_t *)(data + i));
+        uint8_t alpha = p >> 24;
+        if (p == 0) {
+            *((uint32_t *)(data + i)) = 0;
+        } else {
+            // GdkPixbuf does not premultiply alpha
+            data[i] = (((p & 0xff0000) >> 16) *  255 + alpha / 2) / alpha;
+            data[i + 1] = (((p & 0xff00) >> 8) *  255 + alpha / 2) / alpha;
+            data[i + 2] = ((p & 0xff) *  255 + alpha / 2) / alpha;
+            data[i + 3] = alpha;
+        }
     }
     cairo_surface_mark_dirty(csp);
 
