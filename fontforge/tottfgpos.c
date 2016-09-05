@@ -489,9 +489,9 @@ static void dumpcoveragetable(FILE *gpos,SplineChar **glyphs) {
 	int glyph_cnt = 0;
 	for (i=0; glyphs[i]!=NULL; i++) {
 		if (i > 0 && glyphs[i]->ttf_glyph <= glyphs[i-1]->ttf_glyph)
-			IError("Glyphs must be ordered when creating coverage table");
+			LogError("Glyphs must be ordered when creating coverage table");
 		if (glyphs[i]->ttf_glyph < 0) {
-			fprintf(stderr, "-1 glyph index in dumpcoveragetable.\n");
+			LogError("-1 glyph index in dumpcoveragetable.\n");
 		} else {
 			glyph_cnt++;
 			// On the first validly TrueType-indexed glyph or at the start of any discontinuity, start a new range.
@@ -515,12 +515,11 @@ static void dumpcoveragetable(FILE *gpos,SplineChar **glyphs) {
 	// start is the index in the glyph array of the starting glyph. last is the ttf_glyph of the ending glyph.
 	r = 0; // r keeps count of the emitted ranges.
 	// We follow the chain of glyphs, ending and emitting a range whenever there is a discontinuity.
-
 	for (i=0; glyphs[i]!=NULL; i++) {
 		if (i > 0 && glyphs[i]->ttf_glyph <= glyphs[i-1]->ttf_glyph)
-			IError("Glyphs must be ordered when creating coverage table");
+			// LogError("Glyphs must be ordered when creating coverage table");
 		if (glyphs[i]->ttf_glyph < 0) {
-			fprintf(stderr, "-1 glyph index in dumpcoveragetable.\n");
+			// LogError("-1 glyph index in dumpcoveragetable.");
 		} else {
 			// At the start of any discontinuity, dump the previous range.
 			if (r > 0 && glyphs[i]->ttf_glyph > last + 1) {
@@ -617,15 +616,16 @@ return( glyphs );
 }
 
 static SplineChar **TTFGlyphsFromNames(SplineFont *sf,char *names) {
+		// This returns only the named glyphs that also have valid TrueType indices.
     SplineChar **glyphs = SFGlyphsFromNames(sf,names);
 		if (glyphs == NULL) IError("Glyph-finding error.");
 		int i, j;
 		// Count the valid glyphs.
-		for (i=0; glyphs[i] != NULL; i++)
+		for (i=0, j=0; glyphs[i] != NULL; i++)
 			if (glyphs[i]->ttf_glyph >= 0) j++;
 		SplineChar **output = calloc(j+1,sizeof(SplineChar *));
 		if (output == NULL) IError("Memory error.");
-		for (i=0; glyphs[i] != NULL; i++)
+		for (i=0, j=0; glyphs[i] != NULL; i++)
 			if (glyphs[i]->ttf_glyph >= 0) {
 				output[j] = glyphs[i];
 				j++;
