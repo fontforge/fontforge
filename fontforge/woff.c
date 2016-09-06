@@ -374,14 +374,14 @@ return( NULL );
 	if(metaLenUncompressed == 0xffffffff) {
 		LogError(_("WOFF uncompressed metadata section too large.\n"));
 		sf->woffMetadata = NULL; 
-		return(sf);
+		return( sf );
 	}
 
 	sf->woffMetadata = malloc(metaLenUncompressed+1);
 
 	if(sf->woffMetadata == NULL) {
 		LogError(_("WOFF uncompressed metadata section too large.\n"));
-		return(sf);
+		return( sf );
 	}
 
 	char *temp = malloc(metaLenCompressed+1);
@@ -390,7 +390,7 @@ return( NULL );
 		LogError(_("WOFF compressed metadata section too large.\n"));
 		sf->woffMetadata = NULL;
 		free(temp);
-		return(sf);
+		return( sf );
 	}
 
 	uLongf len = metaLenUncompressed;
