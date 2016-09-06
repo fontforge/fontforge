@@ -538,7 +538,7 @@ return( ret );
     fclose(sfnt);
 
     if ( sf->woffMetadata!= NULL ) {
-	int uncomplen = strlen((char*)sf->woffMetadata);
+	int uncomplen = strlen(sf->woffMetadata);
 	uLongf complen = 2*uncomplen;
 	unsigned char *temp=malloc(complen+1);
 	newoffset = ftell(woff);
