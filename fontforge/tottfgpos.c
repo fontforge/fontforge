@@ -559,17 +559,26 @@ static SplineChar **SFOrderedGlyphs(SplineChar **glyphs) {
 return( NULL );
     for ( cnt=0; glyphs[cnt]!=NULL; ++cnt);
     qsort(glyphs,cnt,sizeof(SplineChar *),sc_ttf_order);
-    if ( glyphs[0]->ttf_glyph==-1 ) {
+	// We want to eliminate invalid glyphs.
+    if ( cnt > 0 && glyphs[0]->ttf_glyph < 0 ) {
 	/* Not sure if this can happen, but it's easy to fix */
-	for ( k=0; k<cnt && glyphs[k]->ttf_glyph==-1; ++k);
+	// We count the invalid glyphs.
+	for ( k=0; k<cnt && glyphs[k]->ttf_glyph < 0; ++k);
+	// Then we move the valid glyphs down to the base of the range.
 	for ( i=0; i<=cnt-k; ++i )
 	    glyphs[i] = glyphs[i+k];
+	cnt -= k;
+	fprintf(stderr, "Eliminated %d invalid glyphs.\n", k);
+	// And we null-terminate.
+	glyphs[i] = NULL;
     }
     for ( i=0; i<cnt-1; ++i )
         if (glyphs[i]->ttf_glyph==glyphs[i+1]->ttf_glyph) {
+						fprintf(stderr, "Duplicate glyph.\n");
             memmove(glyphs+i, glyphs+i+1, (cnt-i)*sizeof(SplineChar *));
             --cnt;
         }
+	glyphs[i] = NULL;
 return( glyphs );
 }
 
@@ -632,6 +641,7 @@ static SplineChar **TTFGlyphsFromNames(SplineFont *sf,char *names) {
 				output[j] = glyphs[i];
 				j++;
 			}
+		fprintf(stderr, "Using %d of %d glyphs.\n", j, i);
 		free(glyphs);
 		return output;
 }
@@ -642,6 +652,8 @@ static SplineChar **OrderedGlyphsFromNames(SplineFont *sf,char *names) {
 
     if ( glyphs==NULL || glyphs[0]==NULL )
 return( glyphs );
+
+#if 0
 
     for ( i=0; glyphs[i] != NULL && glyphs[i+1]!=NULL; ++i ) for ( j=i+1; glyphs[j]!=NULL; ++j ) {
 	if ( glyphs[i]->ttf_glyph > glyphs[j]->ttf_glyph ) {
@@ -658,7 +670,12 @@ return( glyphs );
 	    }
 	}
     }
+
 return( glyphs );
+#endif // 0
+
+// We are going to try using SFOrderedGlyphs here.
+	return SFOrderedGlyphs(glyphs);
 }
 
 static void gposvrmaskeddump(FILE *gpos,int vf1,int mask,int offset) {
@@ -874,7 +891,7 @@ static void dumpGPOSsimplepos(FILE *gpos,SplineFont *sf,struct lookup_subtable *
 	for ( pst=glyphs[cnt]->possub; pst!=NULL; pst=pst->next ) {
 	    if ( pst->subtable==sub && pst->type==pst_position ) {
 		if ( first==NULL ) first = pst;
-		else if ( same ) {
+		else if ( same && first && pst ) {
 		    if ( first->u.pos.xoff!=pst->u.pos.xoff ||
 			    first->u.pos.yoff!=pst->u.pos.yoff ||
 			    first->u.pos.h_adv_off!=pst->u.pos.h_adv_off ||
@@ -906,7 +923,7 @@ static void dumpGPOSsimplepos(FILE *gpos,SplineFont *sf,struct lookup_subtable *
     coverage_pos = ftell(gpos);
     putshort(gpos,0);		/* offset to coverage table */
     putshort(gpos,bits);
-    if ( same ) {
+    if ( same && first ) {
 	if ( bits&1 ) putshort(gpos,first->u.pos.xoff);
 	if ( bits&2 ) putshort(gpos,first->u.pos.yoff);
 	if ( bits&4 ) putshort(gpos,first->u.pos.h_adv_off);
@@ -1994,6 +2011,24 @@ return( glyphs );
 return( glyphs );
 }
 
+static SplineChar **OrderedInitialTTFGlyphs(SplineFont *sf, FPST *fpst) {
+	SplineChar **glyphs = OrderedInitialGlyphs(sf, fpst);
+	int vcount = 0;
+	int i = 0;
+	for (i = 0; i < fpst->rule_cnt && glyphs[i] != NULL; i++) {
+		if (glyphs[i]->ttf_glyph >= 0) vcount ++;
+	}
+	fprintf(stderr, "Killing %d of %d glyphs.\n", i - vcount, i);
+	SplineChar **vglyphs = malloc((vcount+1)*sizeof(SplineChar *));
+	int j = 0;
+	for (i = 0; i < fpst->rule_cnt && glyphs[i] != NULL; i++) {
+		if (glyphs[i]->ttf_glyph >= 0) vglyphs[j++] = glyphs[i];
+	}
+	vglyphs[j] = NULL;
+	free(glyphs);
+	return vglyphs;
+}
+
 static int NamesStartWith(SplineChar *sc,char *names ) {
     char *pt;
 
@@ -2034,7 +2069,7 @@ static void dumpg___ContextChainGlyphs(FILE *lfile,SplineFont *sf,
     SplineChar **glyphs, **subglyphs;
     int lc;
 
-    glyphs = OrderedInitialGlyphs(sf,fpst);
+    glyphs = OrderedInitialTTFGlyphs(sf,fpst);
     for ( cnt=0; glyphs[cnt]!=NULL; ++cnt );
 
     putshort(lfile,1);		/* Sub format 1 => glyph lists */
