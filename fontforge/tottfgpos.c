@@ -488,8 +488,9 @@ static void dumpcoveragetable(FILE *gpos,SplineChar **glyphs) {
 	// We count the valid glyphs and the ranges.
 	int glyph_cnt = 0;
 	for (i=0; glyphs[i]!=NULL; i++) {
-		if (i > 0 && glyphs[i]->ttf_glyph <= glyphs[i-1]->ttf_glyph)
+		if (i > 0 && glyphs[i]->ttf_glyph <= glyphs[i-1]->ttf_glyph) {
 			LogError(_("Glyphs must be ordered when creating coverage table"));
+		}
 		if (glyphs[i]->ttf_glyph < 0) {
 			LogError(_("-1 glyph index in dumpcoveragetable.\n"));
 		} else {
@@ -516,8 +517,9 @@ static void dumpcoveragetable(FILE *gpos,SplineChar **glyphs) {
 	r = 0; // r keeps count of the emitted ranges.
 	// We follow the chain of glyphs, ending and emitting a range whenever there is a discontinuity.
 	for (i=0; glyphs[i]!=NULL; i++) {
-		if (i > 0 && glyphs[i]->ttf_glyph <= glyphs[i-1]->ttf_glyph)
+		if (i > 0 && glyphs[i]->ttf_glyph <= glyphs[i-1]->ttf_glyph) {
 			// LogError(_("Glyphs must be ordered when creating coverage table"));
+		}
 		if (glyphs[i]->ttf_glyph < 0) {
 			// LogError(_("-1 glyph index in dumpcoveragetable."));
 		} else {
