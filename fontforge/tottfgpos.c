@@ -568,17 +568,17 @@ return( NULL );
 	for ( i=0; i<=cnt-k; ++i )
 	    glyphs[i] = glyphs[i+k];
 	cnt -= k;
-	fprintf(stderr, "Eliminated %d invalid glyphs.\n", k);
+	// fprintf(stderr, "Eliminated %d invalid glyphs.\n", k);
 	// And we null-terminate.
 	glyphs[i] = NULL;
     }
     for ( i=0; i<cnt-1; ++i )
         if (glyphs[i]->ttf_glyph==glyphs[i+1]->ttf_glyph) {
-						fprintf(stderr, "Duplicate glyph.\n");
+						// fprintf(stderr, "Duplicate glyph.\n");
             memmove(glyphs+i, glyphs+i+1, (cnt-i)*sizeof(SplineChar *));
             --cnt;
         }
-	glyphs[i] = NULL;
+	glyphs[cnt] = NULL;
 return( glyphs );
 }
 
@@ -641,7 +641,7 @@ static SplineChar **TTFGlyphsFromNames(SplineFont *sf,char *names) {
 				output[j] = glyphs[i];
 				j++;
 			}
-		fprintf(stderr, "Using %d of %d glyphs.\n", j, i);
+		// fprintf(stderr, "Using %d of %d glyphs.\n", j, i);
 		free(glyphs);
 		return output;
 }
@@ -2018,7 +2018,7 @@ static SplineChar **OrderedInitialTTFGlyphs(SplineFont *sf, FPST *fpst) {
 	for (i = 0; i < fpst->rule_cnt && glyphs[i] != NULL; i++) {
 		if (glyphs[i]->ttf_glyph >= 0) vcount ++;
 	}
-	fprintf(stderr, "Killing %d of %d glyphs.\n", i - vcount, i);
+	// fprintf(stderr, "Killing %d of %d glyphs.\n", i - vcount, i);
 	SplineChar **vglyphs = malloc((vcount+1)*sizeof(SplineChar *));
 	int j = 0;
 	for (i = 0; i < fpst->rule_cnt && glyphs[i] != NULL; i++) {
