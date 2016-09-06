@@ -349,13 +349,21 @@ return( NULL );
 
     if ( sf!=NULL && metaOffset!=0 ) {
 	/*
-	Boundary/integer overflow checks:
-
-	We don't want to actually dereference a null pointer (returned by asking to allocate too much RAM) and we don't want to create a 0-sized chunk
-
-	uncompress() will always safely return an error if metaLenCompressed > metaLenUncompressed, might as well prevent this. Also prevents calling malloc(0) because 0xFFFFFFFF is the largest possible value for an unsigned 32bit int and the case where they're both 0xFFFFFFFF is prevented by check #2.
-
-	We can safely pass sf->woffMetadata as a NULL pointer because it's never accessed anywhere else without a check for it being NULL first
+	* Boundary/integer overflow checks:
+	*
+	* We don't want to actually dereference a null pointer (returned
+	* by asking to allocate too much RAM) and we don't want to create
+	* a 0-sized chunk
+	*
+	* uncompress() will always safely return an error if
+	* metaLenCompressed > metaLenUncompressed, might as well prevent
+	* this. Also prevents calling malloc(0) because 0xFFFFFFFF is the
+	* largest possible value for an unsigned 32bit int and the case
+	* where both values are 0xFFFFFFFF is prevented by check #2.
+	*
+	* We can safely pass sf->woffMetadata as a NULL pointer because
+	* it's never accessed anywhere else without a check for it being
+	* NULL first
 	*/
 	if(metaLenCompressed > metaLenUncompressed) {
 		LogError(_("WOFF compressed metadata should not be larger than uncompressed metadata.\n"));
