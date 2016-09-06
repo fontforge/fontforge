@@ -359,12 +359,12 @@ return( NULL );
 	* it's never accessed anywhere else without a check for it being
 	* NULL first
 	*/
-	if(metaLenUncompressed == 0xffffffff) {
+	if(metaLenUncompressed == (unsigned int)0xffffffff) {
 		LogError(_("WOFF uncompressed metadata section too large.\n"));
 		sf->woffMetadata = NULL; 
 		return( sf );
 	}
-	if(metaLenCompressed == 0xffffffff) {
+	if(metaLenCompressed == (unsigned int)0xffffffff) {
 		LogError(_("WOFF compressed metadata section too large.\n"));
 		sf->woffMetadata = NULL;
 		return( sf );
@@ -374,7 +374,7 @@ return( NULL );
 		LogError(_("WOFF uncompressed metadata section too large.\n"));
 		return( sf );
 	}
-	char *temp = malloc(metaLenCompressed+1);
+	unsigned char *temp = malloc(metaLenCompressed+1);
 	if(temp == NULL) { 
 		LogError(_("WOFF compressed metadata section too large.\n"));
 		free(sf->woffMetadata); 
@@ -538,9 +538,9 @@ return( ret );
     fclose(sfnt);
 
     if ( sf->woffMetadata!= NULL ) {
-	int uncomplen = strlen(sf->woffMetadata);
+	int uncomplen = strlen((char*)sf->woffMetadata);
 	uLongf complen = 2*uncomplen;
-	char *temp=malloc(complen+1);
+	unsigned char *temp=malloc(complen+1);
 	newoffset = ftell(woff);
 	compress(temp,&complen,sf->woffMetadata,uncomplen);
 	fwrite(temp,1,complen,woff);
