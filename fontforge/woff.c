@@ -349,41 +349,42 @@ return( NULL );
 
     if ( sf!=NULL && metaOffset!=0 ) {
 	/*
-1.	Check that the length of the compressed data is equal to or less than the length of the uncompressed data
-	Even though uncompress() is memory safe it's good practice to ensure that there's always enough room in our destination buffer
+	Boundary/integer overflow checks:
 
-2.	Allocate metadata destination buffer
-	Check if malloc returned a null pointer (requested too much memory) or if we overflowed and are pointing to a "0-size" buffer
-	If there's an overflow set it to null, if there's a null pointer, return
+	We don't want to actually dereference a null pointer (returned by asking to allocate too much RAM) and we don't want to create a 0-sized chunk
 
-3.	Allocate metadata source buffer
-	Same checks as #2
-	If either of these are true, then sf->woffMetadata = NULL, free(temp), and return sf
-	If neither of these things are true, then our call to fread() is safe.
+	uncompress() will always safely return an error if metaLenCompressed > metaLenUncompressed, might as well prevent this. Also prevents calling malloc(0) because 0xFFFFFFFF is the largest possible value for an unsigned 32bit int and the case where they're both 0xFFFFFFFF is prevented by check #2.
+
+	We can safely pass sf->woffMetadata as a NULL pointer because it's never accessed anywhere else without a check for it being NULL first
 	*/
 	if(metaLenCompressed > metaLenUncompressed) {
 		LogError(_("WOFF compressed metadata should not be larger than uncompressed metadata.\n"));
 		sf->woffMetadata = NULL; 
 		return(sf);	
 	}
-	sf->woffMetadata = malloc(metaLenUncompressed+1); 
+
 	if(metaLenUncompressed == 0xffffffff) {
 		LogError(_("WOFF uncompressed metadata section too large.\n"));
 		sf->woffMetadata = NULL; 
 		return(sf);
 	}
+
+	sf->woffMetadata = malloc(metaLenUncompressed+1);
+
 	if(sf->woffMetadata == NULL) {
 		LogError(_("WOFF uncompressed metadata section too large.\n"));
 		return(sf);
 	}
 
 	char *temp = malloc(metaLenCompressed+1);
-	if(metaLenCompressed == 0xffffffff || temp == NULL) { 
+
+	if(temp == NULL) { 
 		LogError(_("WOFF compressed metadata section too large.\n"));
 		sf->woffMetadata = NULL;
 		free(temp);
 		return(sf);
 	}
+
 	uLongf len = metaLenUncompressed;
 	fseek(woff,metaOffset,SEEK_SET);
 	fread(temp,1,metaLenCompressed,woff);
