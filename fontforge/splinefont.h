@@ -1931,7 +1931,7 @@ typedef struct splinefont {
     int woffMajor;
 #define woffUnset		0x4455
     int woffMinor;
-    char *woffMetadata;
+    unsigned char *woffMetadata;
     real ufo_ascent, ufo_descent;	/* I don't know what these mean, they don't seem to correspond to any other ascent/descent pair, but retain them so round-trip ufo input/output leaves them unchanged */
 	    /* ufo_descent is negative */
     char *styleMapFamilyName;
