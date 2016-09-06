@@ -213,7 +213,7 @@ SplineFont *_SFReadWOFF(FILE *woff,int flags,enum openflags openflags, char *fil
     int len, len_stated;
     int num_tabs;
     int major, minor;
-    int metaOffset, metaLenCompressed, metaLenUncompressed;
+    uint32_t metaOffset, metaLenCompressed, metaLenUncompressed;
     int privOffset, privLength;
     int i,j,err;
     int tag, offset, compLen, uncompLen, checksum;
@@ -253,9 +253,9 @@ return( NULL );
     /* total_uncompressed_sfnt_size = */ getlong(woff);
     major = getushort(woff);
     minor = getushort(woff);
-    metaOffset = getlong(woff);
-    metaLenCompressed = getlong(woff);
-    metaLenUncompressed = getlong(woff);
+    metaOffset = (uint32_t)getlong(woff);
+    metaLenCompressed = (uint32_t)getlong(woff);
+    metaLenUncompressed = (uint32_t)getlong(woff);
     privOffset = getlong(woff);
     privLength = getlong(woff);
 
@@ -359,12 +359,12 @@ return( NULL );
 	* it's never accessed anywhere else without a check for it being
 	* NULL first
 	*/
-	if(metaLenUncompressed == (unsigned int)0xffffffff) {
+	if(metaLenUncompressed == (uint32_t)0xffffffff) {
 		LogError(_("WOFF uncompressed metadata section too large.\n"));
 		sf->woffMetadata = NULL; 
 		return( sf );
 	}
-	if(metaLenCompressed == (unsigned int)0xffffffff) {
+	if(metaLenCompressed == (uint32_t)0xffffffff) {
 		LogError(_("WOFF compressed metadata section too large.\n"));
 		sf->woffMetadata = NULL;
 		return( sf );
