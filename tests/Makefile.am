@@ -155,7 +155,7 @@ EXTRA_DIST += helper107.pe helper118A.pe helper118B.pe		\
 EXTRA_DIST += findoverlapbugs.py test0001.py test0101.py	\
 	test1001.py test1001a.py test1001b.py test1001c.py	\
 	test1002.py test1003.py test1004.py test1005.py		\
-	test1006.py test1007.py test1008.py
+	test1006.py test1007.py test1008.py test926.py
 
 EXTRA_DIST += link_test.c randomtest.c build-aux/missing
 
