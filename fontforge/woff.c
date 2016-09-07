@@ -348,11 +348,49 @@ return( NULL );
     }
 
     if ( sf!=NULL && metaOffset!=0 ) {
+	/*
+	* Boundary/integer overflow checks:
+	*
+	* We don't want to actually dereference a null pointer (returned
+	* by asking to allocate too much RAM) and we don't want to allocate
+	* a 0-sized chunk (caused when one of the (metaLenxxx + 1) values overflows).
+	*
+	* uncompress() will always safely return an error if
+	* metaLenCompressed > metaLenUncompressed, so check #1 prevents
+	* this. This check, in conjunction with #2, also prevents calling
+	* malloc(0) because 0xFFFFFFFF is the largest possible value for 
+	* an unsigned 32bit int and the case where both values are 0xFFFFFFFF 
+	* is prevented by check #2.
+	*
+	* We can safely pass sf->woffMetadata as a NULL pointer because
+	* it's never accessed anywhere else without a check for it being
+	* NULL first
+	*/
+	if(metaLenCompressed > metaLenUncompressed) { // Check #1 to prevent uncompress from returning an error
+		LogError(_("WOFF compressed metadata should not be larger than uncompressed metadata.\n"));
+		sf->woffMetadata = NULL; 
+		return( sf );	
+	}
+	if(metaLenUncompressed == 0xffffffff) { //check #2 to prevent sf->woffMetadata from pointing to 0-sized buffer
+		LogError(_("WOFF uncompressed metadata section too large.\n"));
+		sf->woffMetadata = NULL; 
+		return( sf );
+	}
+	sf->woffMetadata = malloc(metaLenUncompressed+1);
+	if(sf->woffMetadata == NULL) { //check #3 to prevent dereferencing a null pointer later in this subroutine
+		LogError(_("WOFF uncompressed metadata section too large.\n"));
+		return( sf );
+	}
 	char *temp = malloc(metaLenCompressed+1);
+	if(temp == NULL) { //check #4 to prevent dereferencing another null pointer later in this subroutine
+		LogError(_("WOFF compressed metadata section too large.\n"));
+		sf->woffMetadata = NULL;
+		free(temp);
+		return( sf );
+	}
 	uLongf len = metaLenUncompressed;
 	fseek(woff,metaOffset,SEEK_SET);
 	fread(temp,1,metaLenCompressed,woff);
-	sf->woffMetadata = malloc(metaLenUncompressed+1);
 	sf->woffMetadata[metaLenUncompressed] ='\0';
 	uncompress(sf->woffMetadata,&len,temp,metaLenCompressed);
 	sf->woffMetadata[len] ='\0';
