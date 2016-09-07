@@ -348,11 +348,43 @@ return( NULL );
     }
 
     if ( sf!=NULL && metaOffset!=0 ) {
+	/*
+	* Boundary/integer overflow checks:
+	*
+	* We don't want to actually dereference a null pointer (returned
+	* by asking to allocate too much RAM) and we don't want to allocate
+	* a 0-sized chunk (caused when one of the (metaLenxxx + 1) values overflows).
+	*
+	* We can safely pass sf->woffMetadata as a NULL pointer because
+	* it's never accessed anywhere else without a check for it being
+	* NULL first
+	*/
+	if(metaLenUncompressed == 0xffffffff) {
+		LogError(_("WOFF uncompressed metadata section too large.\n"));
+		sf->woffMetadata = NULL; 
+		return( sf );
+	}
+	if(metaLenCompressed == 0xffffffff) {
+		LogError(_("WOFF compressed metadata section too large.\n"));
+		sf->woffMetaData = NULL;
+		return( sf );
+	}
+	sf->woffMetadata = malloc(metaLenUncompressed+1);
+	if(sf->woffMetadata == NULL) { 
+		LogError(_("WOFF uncompressed metadata section too large.\n"));
+		return( sf );
+	}
 	char *temp = malloc(metaLenCompressed+1);
+	if(temp == NULL) { 
+		LogError(_("WOFF compressed metadata section too large.\n"));
+		free(sf->woffMetaData);
+		sf->woffMetaData = NULL;
+		free(temp);
+		return( sf );
+	}
 	uLongf len = metaLenUncompressed;
 	fseek(woff,metaOffset,SEEK_SET);
 	fread(temp,1,metaLenCompressed,woff);
-	sf->woffMetadata = malloc(metaLenUncompressed+1);
 	sf->woffMetadata[metaLenUncompressed] ='\0';
 	uncompress(sf->woffMetadata,&len,temp,metaLenCompressed);
 	sf->woffMetadata[len] ='\0';
