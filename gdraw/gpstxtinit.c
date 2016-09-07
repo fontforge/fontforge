@@ -32,7 +32,7 @@
 #include <string.h>
 #include <dirent.h>
 
-#ifndef X_DISPLAY_MISSING
+#if !defined(FONTFORGE_CAN_USE_GDK) && !defined(X_DISPLAY_MISSING)
 # include <X11/Xatom.h>
 #else
 # define XA_X_HEIGHT	1
