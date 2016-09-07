@@ -359,12 +359,12 @@ return( NULL );
 	* it's never accessed anywhere else without a check for it being
 	* NULL first
 	*/
-	if(metaLenUncompressed == (uint32_t)0xffffffff) {
+	if(metaLenUncompressed == UINT32_MAX) {
 		LogError(_("WOFF uncompressed metadata section too large.\n"));
 		sf->woffMetadata = NULL; 
 		return( sf );
 	}
-	if(metaLenCompressed == (uint32_t)0xffffffff) {
+	if(metaLenCompressed == UINT32_MAX) {
 		LogError(_("WOFF compressed metadata section too large.\n"));
 		sf->woffMetadata = NULL;
 		return( sf );
