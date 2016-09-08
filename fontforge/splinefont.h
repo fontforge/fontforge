@@ -2164,7 +2164,6 @@ extern void OS2FigureUnicodeRanges(SplineFont *sf, uint32 Ranges[4]);
 extern void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname);
 extern void SFDefaultOS2Simple(struct pfminfo *pfminfo,SplineFont *sf);
 extern void SFDefaultOS2SubSuper(struct pfminfo *pfminfo,int emsize,double italicangle);
-extern void VerifyLanguages(SplineFont *sf);
 extern int ScriptIsRightToLeft(uint32 script);
 extern void ScriptMainRange(uint32 script, int *start, int *end);
 extern uint32 ScriptFromUnicode(uint32 u,SplineFont *sf);
