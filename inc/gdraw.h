@@ -557,7 +557,6 @@ extern void GDrawSetBuildCharHooks(void (*hook)(GDisplay *), void (*inshook)(GDi
 extern int GDrawRequestDeviceEvents(GWindow w,int devcnt,struct gdeveventmask *de);
 
 extern enum gcairo_flags GDrawHasCairo(GWindow w);
-extern void GDrawQueueDrawing(GWindow w,void (*)(GWindow,void *),void *);
 extern void GDrawPathStartNew(GWindow w);
 extern void GDrawPathStartSubNew(GWindow w);
 extern int GDrawFillRuleSetWinding(GWindow w);
