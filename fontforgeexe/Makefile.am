@@ -157,6 +157,10 @@ if LIBZMQ
 libfontforgeexe_la_LIBADD += $(top_builddir)/collab/libzmqcollab.la $(LIBZMQ_LIBS)
 endif
 
+if PYTHON_SCRIPTING
+libfontforgeexe_la_LIBADD += $(PYTHON_LIBS)
+endif PYTHON_SCRIPTING
+
 #--------------------------------------------------------------------------
 
 EXTRA_DIST = fontimage.pe fontlint.pe sfddiff.pe	\
