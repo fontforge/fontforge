@@ -8444,13 +8444,6 @@ static void pllistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     cv_pllistcheck(cv, mi);
 }
 
-/*
- * Unused
-static void tablistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    GDrawGetUserData(gw);
-}
-*/
-
 static void CVUndo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
