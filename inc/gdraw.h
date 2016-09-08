@@ -589,11 +589,6 @@ extern int GDrawKeyState(int keysym);
 extern int GImageGetScaledWidth(GWindow gw, GImage *img);
 extern int GImageGetScaledHeight(GWindow gw, GImage *img);
 
-
-/* extern void setZeroMQReadFD( GDisplay *disp, */
-/* 			     int zeromq_fd, void* zeromq_datas, */
-/* 			     void (*zeromq_fd_callback)(int zeromq_fd, void* datas )); */
-
 extern void GDrawAddReadFD( GDisplay *disp,
 			    int fd, void* udata,
 			    void (*callback)(int fd, void* udata ));
