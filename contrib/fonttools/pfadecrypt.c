@@ -42,27 +42,6 @@ static int hex(int ch1, int ch2) {
 return( (ch1<<4)|ch2 );
 }
 
-static int hexline=0;
-static void tohex(FILE *out,int ch) {
-    int ch1, ch2;
-
-    ch1 = ch>>4;
-    if ( ch1<=9 )
-	putc('0'+ch1,out);
-    else
-	putc('A'-10+ch1,out);
-    ch2 = ch&0xf;
-    if ( ch2<=9 )
-	putc('0'+ch2,out);
-    else
-	putc('A'-10+ch2,out);
-    hexline += 2;
-    if ( hexline>70 ) {
-	putc('\n',out);
-	hexline = 0;
-    }
-}
-	    
 static unsigned short r;
 #define c1	(unsigned short) 52845
 #define c2	(unsigned short) 22719
