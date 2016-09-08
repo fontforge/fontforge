@@ -845,7 +845,6 @@ extern uint16 *ClassesFromNames(SplineFont *sf,char **classnames,int class_cnt,
 extern SplineChar **SFGlyphsFromNames(SplineFont *sf,char *names);
 
 
-extern void AnchorClassOrder(SplineFont *sf);
 extern SplineChar **EntryExitDecompose(SplineFont *sf,AnchorClass *ac,
 	struct glyphinfo *gi);
 extern void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, int *subcnts,
