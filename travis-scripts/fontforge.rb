@@ -87,7 +87,6 @@ class Fontforge < Formula
       --prefix=#{prefix}
       --enable-silent-rules
       --disable-dependency-tracking
-      --with-pythonbinary=#{which "python2.7"}
       --without-x
     ]
 

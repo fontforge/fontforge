@@ -215,20 +215,6 @@ AC_PATH_PROG([UPDATE_MIME_DATABASE],[update-mime-database],[:])
 AC_PATH_PROG([UPDATE_DESKTOP_DATABASE],[update-desktop-database],[:])
 AC_PATH_PROG([PLUTIL],[plutil],[:])
 
-if test "y$HOMEBREW_BREW_FILE" != "y"; then
-   echo "detected a homebrew build environment"
-   PYLIBDIR=$(${HOMEBREW_PREFIX}/bin/python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")
-   PYPKGCONFIG="$( cd "$PYLIBDIR/../../pkgconfig" && pwd )"
-   export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$PYPKGCONFIG"
-   echo "found python pkg_config information: $PYPKGCONFIG"
-   if test "y$PYTHON" = "y"; then
-     export PYTHON="${HOMEBREW_PREFIX}/bin/python"
-   fi
-fi
-
-AM_PATH_PYTHON([2.7])
-PKG_CHECK_MODULES([PYTHON],[python-"${PYTHON_VERSION}"])
-i_do_have_python_scripting=yes;
 
 dnl###############################
 dnl###############################
@@ -635,20 +621,15 @@ AC_SUBST([MY_LIBS],[${my_libs}])
 
 #--------------------------------------------------------------------------
 
-have_ipython=no
-
-if test x$use_python_cross_option = xyes ; then
-   echo "skipping ipython detection during a cross compile"
-else
-   pythonbinary=python
-   AC_ARG_WITH([pythonbinary],
-      [AS_HELP_STRING([--with-pythonbinary[[=/path/to/python2.7]]],[])],
-      [pythonbinary="${withval}"])
-
-   have_ipython=no
-   if $( $pythonbinary -c 'import IPython' 2> /dev/null ); then
-      have_ipython=yes;
-      AC_DEFINE([HAVE_IPYTHON],[1],[have ipython])
+if test x"${i_do_have_python_scripting}" = xyes; then
+   AC_MSG_CHECKING([for IPython])
+   if $( $PYTHON -c 'import IPython' 2>&5 ); then
+        have_ipython=yes;
+        AC_DEFINE([HAVE_IPYTHON],[1],[have ipython])
+        AC_MSG_RESULT([yes])
+   else
+        have_ipython=no
+        AC_MSG_RESULT([no])
    fi
 fi
 
@@ -662,7 +643,7 @@ AC_ARG_ENABLE([python-even],
         [AS_HELP_STRING([--enable-python-even],
                 [enable a menu entry for Even])],
         [have_python_even=yes])
-AM_CONDITIONAL([HAVE_PYTHON_EVEN],[test x"${have_python_even}" = xyes])
+AM_CONDITIONAL([HAVE_PYTHON_EVEN],[test x"${have_python_even}" = xyes && test x"${i_do_have_python_scripting}" = xyes])
 
 #--------------------------------------------------------------------------
 #--------------------------------------------------------------------------
