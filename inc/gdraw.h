@@ -457,9 +457,6 @@ extern void *GDrawRequestSelection(GWindow w,enum selnames sn, char *typename, i
 extern int GDrawSelectionHasType(GWindow w,enum selnames sn, char *typename);
 extern void GDrawBindSelection(GDisplay *disp,enum selnames sel, char *atomname);
 extern int GDrawSelectionOwned(GDisplay *disp,enum selnames sel);
-extern void GDrawPropertyToSelectionOwner(GDisplay *disp,enum selnames sel,
-	char *property, char *type, int format, int mode,
-	uint8 *data, int nelements);
 
 extern void GDrawPointerUngrab(GDisplay *disp);
 extern void GDrawPointerGrab(GWindow w);
