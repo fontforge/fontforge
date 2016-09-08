@@ -194,6 +194,15 @@ AC_PROG_MAKE_SET
 AC_PROG_MKDIR_P
 AC_PROG_SED
 
+# Check for Objective C compiler
+m4_ifdef([AC_PROG_OBJC], [
+    AC_PROG_OBJC
+], [
+    AM_CONDITIONAL([am__fastdepOBJC], false)
+    AC_SUBST([OBJC], [$CC])
+    AC_SUBST([OBJCFLAGS], [$CFLAGS])
+])
+
 #--------------------------------------------------------------------------
 # Required for building FontForge package, plus we use PKG_CHECK_MODULES in
 # a few checks and searches for programs and libraries.

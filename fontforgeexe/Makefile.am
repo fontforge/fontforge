@@ -43,16 +43,6 @@ endif THE_PROGRAMS
 
 lib_LTLIBRARIES = libfontforgeexe.la
 
-#--------------------------------------------------------------------------
-
-macobjective.o: macobjective.m
-	clang -I../inc -I../osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Headers \
-            -g -arch x86_64 -arch i386 \
-            -c "${srcdir}/macobjective.m" -o macobjective.o
-
-
-#--------------------------------------------------------------------------
-
 SUBDIRS = pixmaps
 if LIBZMQ
 SUBDIRS += collab
@@ -116,6 +106,8 @@ endif THE_PROGRAMS
 
 #--------------------------------------------------------------------------
 
+libfontforgeexe_la_CPPFLAGS = $(AM_CPPFLAGS)
+
 if GRAPHICAL_USER_INTERFACE
 
 libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
@@ -137,18 +129,23 @@ libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
 	collabclientui.c collabclientui.h                                       \
 	sfundo.c wordlistparser.c wordlistparser.h fontforgeexe.h
 
+EXTRA_libfontforgeexe_la_SOURCES = macobjective.m
+
+libfontforgeexe_la_CPPFLAGS +=  $(LIBZMQ_CFLAGS) $(GTK2_CFLAGS)
+
+if MACINTOSH
+libfontforgeexe_la_OBJCFLAGS = -I../osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Headers
+libfontforgeexe_la_SOURCES += macobjective.m
+endif
+
 else !GRAPHICAL_USER_INTERFACE
 
 libfontforgeexe_la_SOURCES = startnoui.c
 
 endif !GRAPHICAL_USER_INTERFACE
 
-if MACINTOSH
-MACFFEXE_LIBADD=macobjective.o
-endif MACINTOSH
 
-libfontforgeexe_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_CFLAGS) $(GTK2_CFLAGS)
-libfontforgeexe_la_LIBADD = $(LTDLDEPS) $(LIBADD) $(GUILIBADD) $(MACFFEXE_LIBADD) $(MY_LIBS) $(GTK2_LIBS) $(top_builddir)/fontforge/libfontforge.la $(BREAKPAD_LIBADD)
+libfontforgeexe_la_LIBADD = $(LTDLDEPS) $(LIBADD) $(GUILIBADD) $(MY_LIBS) $(GTK2_LIBS) $(top_builddir)/fontforge/libfontforge.la $(BREAKPAD_LIBADD)
 
 libfontforgeexe_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBFONTFORGEEXE_VERSION) \
 	${MY_LIB_LDFLAGS}
@@ -165,7 +162,7 @@ endif PYTHON_SCRIPTING
 
 EXTRA_DIST = fontimage.pe fontlint.pe sfddiff.pe	\
 	fontimage.1 fontlint.1 sfddiff.1		\
-	acorn2sfd.c darwinsetup.in macobjective.m
+	acorn2sfd.c darwinsetup.in
 # MacFontForgeApp.zip
 MOSTLYCLEANFILES = fontimage fontlint sfddiff
 DISTCLEANFILES = $(MOSTLYCLEANFILES)
