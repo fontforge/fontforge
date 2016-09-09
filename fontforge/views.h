@@ -1114,8 +1114,6 @@ typedef enum
     constrainSelection_SpacePoints = 1,
     constrainSelection_SpaceSelectedRegions = 2
 } constrainSelection_t;
-extern void CVConstrainSelection(CharView *cv, constrainSelection_t type);
-extern void CVMakeParallel(CharView *cv);
 
 extern void ScriptDlg(FontView *fv,CharView *cv);
 

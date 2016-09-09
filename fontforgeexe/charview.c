@@ -27,6 +27,7 @@
 #include <fontforge-config.h>
 
 #include "fontforgeui.h"
+#include "alignment.h"
 #include "cvruler.h"
 #include <math.h>
 #include <locale.h>
