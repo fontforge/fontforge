@@ -1172,9 +1172,6 @@ extern void KCD_DrawGlyph(GWindow pixmap,int x,int baseline,BDFChar *bdfc,int ma
 extern GTextInfo *BuildFontList(FontView *except);
 extern void TFFree(GTextInfo *tf);
 
-extern void AnchorControl(SplineChar *sc,AnchorPoint *ap,int layer);
-extern void AnchorControlClass(SplineFont *_sf,AnchorClass *ac,int layer);
-
 extern void FVSelectByPST(FontView *fv);
 
 enum hist_type { hist_hstem, hist_vstem, hist_blues };

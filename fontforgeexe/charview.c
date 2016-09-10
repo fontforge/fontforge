@@ -28,6 +28,7 @@
 
 #include "fontforgeui.h"
 #include "alignment.h"
+#include "anchorsaway.h"
 #include "cvruler.h"
 #include <math.h>
 #include <locale.h>
