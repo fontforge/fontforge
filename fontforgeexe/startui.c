@@ -34,6 +34,7 @@
 
 #include <fontforge-config.h>
 #include "fontforgeui.h"
+#include "bitmapview.h"
 #include "cursors.h"
 #ifndef _NO_LIBUNICODENAMES
 #include <libunicodenames.h>	/* need to open a database when we start */

@@ -1041,7 +1041,6 @@ extern void CVMouseDownShape(CharView *cv,GEvent *event);
 extern void CPStartInfo(CharView *cv, GEvent *event);
 extern void CPUpdateInfo(CharView *cv, GEvent *event);
 extern void CPEndInfo(CharView *cv);
-extern void BVChar(BitmapView *cv, GEvent *event );
 extern void CVMouseDownPoint(CharView *cv,GEvent *event);
 extern void CVMouseMovePoint(CharView *cv,PressedOn *);
 extern void CVMouseUpPointer(CharView *cv );
@@ -1063,17 +1062,7 @@ extern int GotoChar(SplineFont *sf,EncMap *map, int *merge_with_selection);
 
 extern void CVShowPoint(CharView *cv, BasePoint *me);
 
-extern void BitmapViewFinishNonStatic();
-extern BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv,int enc);
-extern BitmapView *BitmapViewCreatePick(int enc, FontView *fv);
-extern void BitmapViewFree(BitmapView *bv);
-extern void BVMenuRotateInvoked(GWindow gw,struct gmenuitem *mi, GEvent *e);
-extern void BVRotateBitmap(BitmapView *bv,enum bvtools type );
-extern int  BVColor(BitmapView *bv);
-extern void BCGeneralFunction(BitmapView *bv,
-	void (*SetPoint)(BitmapView *,int x, int y, void *data),void *data);
 extern char *BVFlipNames[];
-extern void BVChangeBC(BitmapView *bv, BDFChar *bc, int fitit );
 
 extern void MVSetSCs(MetricsView *mv, SplineChar **scs);
 extern void MVRefreshChar(MetricsView *mv, SplineChar *sc);

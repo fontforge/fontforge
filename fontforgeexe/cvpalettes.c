@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "bitmapview.h"
 #include "collabclientui.h"
 
 int palettes_docked=1;
