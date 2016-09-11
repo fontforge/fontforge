@@ -27,6 +27,7 @@
  */
 #include "fontforgeui.h"
 #include "bitmapview.h"
+#include "bitmapdlg.h"
 #include "lookups.h"
 #include <gkeysym.h>
 #include <gresource.h>

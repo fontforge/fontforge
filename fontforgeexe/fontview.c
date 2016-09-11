@@ -35,6 +35,7 @@
 #include "bitmapview.h"
 #include "basedlg.h"
 #include "bdfinfo.h"
+#include "bitmapdlg.h"
 #include "groups.h"
 #include "psfont.h"
 #include <gfile.h>
