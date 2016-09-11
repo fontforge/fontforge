@@ -948,9 +948,6 @@ extern int CVOneThingSel(CharView *cv, SplinePoint **sp, SplinePointList **spl,
 extern int CVOneContourSel(CharView *cv, SplinePointList **_spl,
 	RefChar **ref, ImageList **img);
 extern void CVInfoDrawText(CharView *cv, GWindow pixmap );
-extern void CVStroke(CharView *cv);
-extern void FVStroke(FontView *fv);
-extern void FreeHandStrokeDlg(StrokeInfo *si);
 extern void OutlineDlg(FontView *fv, CharView *cv,MetricsView *mv,int isinline);
 extern void ShadowDlg(FontView *fv, CharView *cv,MetricsView *mv,int wireframe);
 extern void CVTile(CharView *cv);
@@ -1099,7 +1096,6 @@ extern void GFI_FinishSMNew(struct gfi_data *d,ASM *sm, int success,int isnew);
 extern void MMChangeBlend(MMSet *mm,FontView *fv,int tonew);
 extern void MMWizard(MMSet *mm);
 
-extern int LayerDialog(Layer *layer,SplineFont *sf);
 extern void CVLayerChange(CharView *cv);
 
 extern int PointOfViewDlg(struct pov_data *pov,SplineFont *sf,int flags);

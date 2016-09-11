@@ -39,6 +39,7 @@
 #include "combinations.h"
 #include "cvgetinfo.h"
 #include "cvimportdlg.h"
+#include "cvstroke.h"
 #include "groups.h"
 #include "psfont.h"
 #include <gfile.h>

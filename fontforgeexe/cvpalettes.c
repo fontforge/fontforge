@@ -31,6 +31,7 @@
 #include "cvgetinfo.h"
 #include "cvpointer.h"
 #include "cvshapes.h"
+#include "cvstroke.h"
 
 int palettes_docked=1;
 int rectelipse=0, polystar=0, regular_star=1;
