@@ -1164,10 +1164,6 @@ struct psdict;
 extern void SFHistogram(SplineFont *sf,int layer, struct psdict *private,uint8 *selected,
 	EncMap *map, enum hist_type which);
 
-extern void ContextChainEdit(SplineFont *sf,FPST *fpst,
-	struct gfi_data *gfi,unichar_t *newname,int layer);
-extern char *cu_copybetween(const unichar_t *start, const unichar_t *end);
-
 extern void StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d);
 extern void GFI_FinishSMNew(struct gfi_data *d,ASM *sm, int success,int isnew);
 
