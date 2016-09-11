@@ -29,6 +29,8 @@
 #include "cvpointer.h"
 #include <math.h>
 
+#include "cvtranstools.h"
+
 void CVMouseDownTransform(CharView *cv) {
     CVPreserveTState(cv);
 }

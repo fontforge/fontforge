@@ -43,7 +43,7 @@
 #include "cvpointer.h"
 #include "cvruler.h"
 #include "cvshapes.h"
-#include "cvstroke.h"
+#include "cvtranstools.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>

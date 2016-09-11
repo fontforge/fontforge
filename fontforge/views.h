@@ -991,9 +991,6 @@ extern void CPUpdateInfo(CharView *cv, GEvent *event);
 extern void CPEndInfo(CharView *cv);
 extern void CVMouseDownPoint(CharView *cv,GEvent *event);
 extern void CVMouseMovePoint(CharView *cv,PressedOn *);
-extern void CVMouseDownTransform(CharView *cv);
-extern void CVMouseMoveTransform(CharView *cv);
-extern void CVMouseUpTransform(CharView *cv);
 extern void LogoExpose(GWindow pixmap,GEvent *event, GRect *r,enum drawmode dm);
 
 extern int GotoChar(SplineFont *sf,EncMap *map, int *merge_with_selection);
