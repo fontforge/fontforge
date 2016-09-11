@@ -44,6 +44,7 @@
 #include "displayfonts.h"
 #include "effectsui.h"
 #include "encodingui.h"
+#include "fontinfo.h"
 #include "groups.h"
 #include "psfont.h"
 #include <gfile.h>

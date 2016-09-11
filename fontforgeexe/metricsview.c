@@ -32,6 +32,7 @@
 #include "cvgetinfo.h"
 #include "displayfonts.h"
 #include "effectsui.h"
+#include "fontinfo.h"
 #include "lookups.h"
 #include <gkeysym.h>
 #include <gresource.h>

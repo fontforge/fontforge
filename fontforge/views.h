@@ -824,12 +824,8 @@ extern unichar_t *ShowScripts(unichar_t *usedef);
 extern GTextInfo *SFLangList(SplineFont *sf,int addfinal,SplineChar *default_script);
 extern GTextInfo **SFLangArray(SplineFont *sf,int addfinal);
 extern int  ScriptLangList(SplineFont *sf,GGadget *list,int sli);
-extern void GListDelSelected(GGadget *list);
-extern void GListMoveSelected(GGadget *list,int offset);
 extern GTextInfo *GListChangeLine(GGadget *list,int pos, const unichar_t *line);
 extern GTextInfo *GListAppendLine(GGadget *list,const unichar_t *line,int select);
-extern GTextInfo *GListChangeLine8(GGadget *list,int pos, const char *line);
-extern GTextInfo *GListAppendLine8(GGadget *list,const char *line,int select);
 extern void CharInfoInit(void);
 extern void SCLigCaretCheck(SplineChar *sc,int clean);
 extern char *DevTab_Dlg(GGadget *g, int r, int c);
@@ -840,14 +836,9 @@ extern void DevTabToString(char **str,DeviceTable *adjust);
 extern void ValDevTabToStrings(struct matrix_data *mds,int first_offset,ValDevTab *adjust);
 extern void KpMDParse(SplineChar *sc,struct lookup_subtable *sub,
 	struct matrix_data *possub,int rows,int cols,int i);
-extern void GFI_LookupEnableButtons(struct gfi_data *gfi, int isgpos);
-extern void GFI_LookupScrollbars(struct gfi_data *gfi, int isgpos, int refresh);
 extern void FontInfo(SplineFont *sf,int layer,int aspect,int sync);
-extern void FontInfoDestroy(SplineFont *sf);
-extern void FontMenuFontInfo(void *fv);
 extern void SFPrivateInfo(SplineFont *sf);
 extern void FVDelay(FontView *fv,void (*func)(FontView *));
-extern void GFI_FinishContextNew(struct gfi_data *d,FPST *fpst, int success);
 extern void SCPreparePopup(GWindow gw,SplineChar *sc, struct remap *remap, int enc, int actualuni);
 enum outlinesfm_flags {
     sfm_stroke=0x1,
@@ -1080,7 +1071,6 @@ extern void SFHistogram(SplineFont *sf,int layer, struct psdict *private,uint8 *
 	EncMap *map, enum hist_type which);
 
 extern void StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d);
-extern void GFI_FinishSMNew(struct gfi_data *d,ASM *sm, int success,int isnew);
 
 extern void MMChangeBlend(MMSet *mm,FontView *fv,int tonew);
 extern void MMWizard(MMSet *mm);
@@ -1153,10 +1143,6 @@ extern void SFValidationWindow(SplineFont *sf,int layer, enum fontformat format)
 extern void ValidationDestroy(SplineFont *sf);
 
 
-
-extern const char *UI_TTFNameIds(int id);
-extern const char *UI_MSLangString(int language);
-extern void FontInfoInit(void);
 extern void LookupUIInit(void);
 
 extern void DefineGroups(struct fontview *fv);

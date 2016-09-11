@@ -26,6 +26,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "fontinfo.h"
 #include "ofl.h"
 #include <ustring.h>
 #include <chardata.h>

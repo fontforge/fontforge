@@ -30,6 +30,7 @@
 #include "bitmapdlg.h"
 #include "cvexportdlg.h"
 #include "cvimportdlg.h"
+#include "fontinfo.h"
 #include <gkeysym.h>
 #include <utype.h>
 #include <ustring.h>

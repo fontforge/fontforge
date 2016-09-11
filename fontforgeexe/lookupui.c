@@ -28,6 +28,7 @@
 #include "fontforgeui.h"
 #include "anchorsaway.h"
 #include "contextchain.h"
+#include "fontinfo.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>

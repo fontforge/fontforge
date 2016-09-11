@@ -27,6 +27,7 @@
  */
 #include "fontforgeui.h"
 #include "encodingui.h"
+#include "fontinfo.h"
 #include "groups.h"
 #include "plugins.h"
 #include <charset.h>
