@@ -37,6 +37,7 @@
 #include "cvgetinfo.h"
 #include "cvgridfit.h"
 #include "cvhand.h"
+#include "cvhints.h"
 #include "cvruler.h"
 #include <math.h>
 #include <locale.h>

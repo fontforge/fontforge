@@ -922,9 +922,6 @@ extern void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BV
 	int (*getorigin)(void *,BasePoint *,int), enum transdlg_flags flags,
 	enum cvtools cvt);
 extern int SimplifyDlg(SplineFont *sf,struct simplifyinfo *smpl);
-extern void CVReviewHints(CharView *cv);
-extern void CVCreateHint(CharView *cv,int ishstem,int preserveundoes);
-extern void SCRemoveSelectedMinimumDistances(SplineChar *sc,int inx);
 
 extern void DrawAnchorPoint(GWindow pixmap,int x, int y,int selected);
 extern void DefaultY(GRect *pos);
