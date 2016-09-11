@@ -1229,9 +1229,6 @@ extern char *GlyphNameListDeUnicode( char *str );
 extern void AddRmLang(SplineFont *sf, struct lkdata *lk,int add_lang);
 extern void FVMassGlyphRename(FontView *fv);
 
-extern void SFBdfProperties(SplineFont *sf, EncMap *map, BDFFont *thisone);
-
-
 
 extern GMenuItem2 helplist[];
 extern BasePoint last_ruler_offset[];

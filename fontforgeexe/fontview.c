@@ -34,6 +34,7 @@
 #include "autowidth2dlg.h"
 #include "bitmapview.h"
 #include "basedlg.h"
+#include "bdfinfo.h"
 #include "groups.h"
 #include "psfont.h"
 #include <gfile.h>
