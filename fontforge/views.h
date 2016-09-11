@@ -33,6 +33,7 @@
 #include <ggadget.h>
 #include "dlist.h"
 
+#include <delta.h>
 
 struct gfi_data;
 struct contextchaindlg;
@@ -1176,11 +1177,6 @@ extern void DisplayGroups(struct fontview *fv);
 
 extern void JustifyDlg(SplineFont *sf);
 extern char *GlyphListDlg(SplineFont *sf, char *glyphstr);
-
-extern void DeltaSuggestionDlg(FontView *fv,CharView *cv);
-extern void QGRmFontView(struct qg_data *qg,FontView *fv);
-extern void QGRmCharView(struct qg_data *qg,CharView *cv);
-
 
 extern struct hslrgb *SFFontCols(SplineFont *sf,struct hslrgb fontcols[6]);
 

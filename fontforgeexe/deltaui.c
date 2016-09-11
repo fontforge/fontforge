@@ -34,6 +34,8 @@
 #include <math.h>
 #include "delta.h"
 
+#include "deltaui.h"
+
 /* Suggestions for where delta instructions might be wanted */
 
 #define CID_Sizes	100

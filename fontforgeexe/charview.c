@@ -44,6 +44,7 @@
 #include "cvruler.h"
 #include "cvshapes.h"
 #include "cvtranstools.h"
+#include "deltaui.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>
