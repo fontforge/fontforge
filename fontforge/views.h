@@ -721,7 +721,6 @@ extern void FVInterpolateFonts(FontView *fv);
 
 extern void FVDeselectAll(FontView *fv);
 
-extern void FVAutoWidth2(FontView *fv);
 /*extern void FVAutoKern(FontView *fv);*/
 /*extern void FVAutoWidth(FontView *fv);*/
 
