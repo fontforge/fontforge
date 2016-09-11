@@ -1126,8 +1126,6 @@ extern void MathKernDialog(SplineChar *sc,int def_layer);
 
 extern void ShowAtt(SplineFont *sf,int def_layer);
 extern void FontCompareDlg(FontView *fv);
-extern void SFShowKernPairs(SplineFont *sf,SplineChar *sc,AnchorClass *ac,int layer);
-extern void SFShowLigatures(SplineFont *sf,SplineChar *sc);
 
 extern void SCEditInstructions(SplineChar *sc);
 extern void SFEditTable(SplineFont *sf, uint32 tag);

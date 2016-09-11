@@ -30,6 +30,7 @@
 #include "alignment.h"
 #include "anchorsaway.h"
 #include "bitmapdlg.h"
+#include "combinations.h"
 #include "cvruler.h"
 #include <math.h>
 #include <locale.h>
