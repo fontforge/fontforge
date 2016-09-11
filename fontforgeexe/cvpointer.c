@@ -26,6 +26,7 @@
  */
 
 #include "fontforgeui.h"
+#include "cvgridfit.h"
 #include <utype.h>
 #include <math.h>
 #include "collabclient.h"

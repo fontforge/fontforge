@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "cvgridfit.h"
 #include <math.h>
 
 void CVMouseDownTransform(CharView *cv) {

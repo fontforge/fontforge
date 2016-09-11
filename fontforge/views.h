@@ -1119,16 +1119,6 @@ extern void IIReinit(struct instrinfo *ii,int ip);
 extern int ii_v_e_h(GWindow gw, GEvent *event);
 extern void instr_scroll(struct instrinfo *ii,struct sbevent *sb);
 
-extern void CVGridFitChar(CharView *cv);
-/**
- * If a live preview of grid fit is somehow in effect, call CVGridFitChar() for us.
- * A caller can call here after a change and any CVGridFitChar() will be updated if need be.
- */
-extern void CVGridHandlePossibleFitChar(CharView *cv);
-extern void CVFtPpemDlg(CharView *cv,int debug);
-extern void SCDeGridFit(SplineChar *sc);
-extern void SCReGridFit(SplineChar *sc,int layer);
-
 extern void KernClassD(KernClass *kc, SplineFont *sf, int layer, int isv);
 extern void ShowKernClasses(SplineFont *sf,MetricsView *mv,int layer,int isv);
 extern void KCLD_End(struct kernclasslistdlg *kcld);

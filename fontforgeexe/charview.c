@@ -35,6 +35,7 @@
 #include "cvexportdlg.h"
 #include "cvfreehand.h"
 #include "cvgetinfo.h"
+#include "cvgridfit.h"
 #include "cvruler.h"
 #include <math.h>
 #include <locale.h>
