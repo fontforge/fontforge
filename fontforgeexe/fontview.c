@@ -41,6 +41,7 @@
 #include "cvimportdlg.h"
 #include "cvstroke.h"
 #include "deltaui.h"
+#include "displayfonts.h"
 #include "groups.h"
 #include "psfont.h"
 #include <gfile.h>

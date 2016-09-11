@@ -41,6 +41,8 @@
 #include <gkeysym.h>
 #include "print.h"
 
+#include "displayfonts.h"
+
 typedef struct printffdlg {
     struct printinfo pi;
     GWindow gw;

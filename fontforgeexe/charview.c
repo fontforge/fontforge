@@ -45,6 +45,7 @@
 #include "cvshapes.h"
 #include "cvtranstools.h"
 #include "deltaui.h"
+#include "displayfonts.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>
