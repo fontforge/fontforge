@@ -940,19 +940,7 @@ extern CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, in
 extern void CharViewFree(CharView *cv);
 extern int CVValid(SplineFont *sf, SplineChar *sc, CharView *cv);
 extern void CVSetCharChanged(CharView *cv,int changed);
-extern int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya);
-extern int CVAnySelPoints(CharView *cv);
 
-/**
- * Get all the selected points in the current cv.
- * Caller must g_list_free() the returned value.
- */
-extern GList_Glib* CVGetSelectedPoints(CharView *cv);
-extern void CVSelectPointAt(CharView *cv);
-extern int CVClearSel(CharView *cv);
-extern int CVSetSel(CharView *cv,int mask);
-extern void CVInvertSel(CharView *cv);
-extern int CVAllSelected(CharView *cv);
 extern SplinePointList *CVAnySelPointList(CharView *cv);
 extern int CVAnySelPoint(CharView *cv, SplinePoint **selsp, spiro_cp **selcp);
 extern int CVOneThingSel(CharView *cv, SplinePoint **sp, SplinePointList **spl,
@@ -960,7 +948,6 @@ extern int CVOneThingSel(CharView *cv, SplinePoint **sp, SplinePointList **spl,
 extern int CVOneContourSel(CharView *cv, SplinePointList **_spl,
 	RefChar **ref, ImageList **img);
 extern void CVInfoDrawText(CharView *cv, GWindow pixmap );
-extern void CVFindCenter(CharView *cv, BasePoint *bp, int nosel);
 extern void CVStroke(CharView *cv);
 extern void FVStroke(FontView *fv);
 extern void FreeHandStrokeDlg(StrokeInfo *si);
@@ -990,26 +977,14 @@ extern void FVSetWidth(FontView *fv,enum widthtype wtype);
 extern void CVSetWidth(CharView *cv,enum widthtype wtype);
 extern void GenericVSetWidth(FontView *fv,SplineChar* sc,enum widthtype wtype);
 extern void CVChangeSC(CharView *cv, SplineChar *sc );
-extern Undoes *CVPreserveTState(CharView *cv);
-/**
- * If isTState > 0 then CVPreserveTState(cv)
- * otherwise CVPreserveState(cv)
- */
-extern Undoes *CVPreserveMaybeState(CharView *cv, int isTState );
-extern void CVRestoreTOriginalState(CharView *cv);
-extern void CVUndoCleanup(CharView *cv);
 
 extern void AdjustControls(SplinePoint *sp);
 extern void CVAdjustPoint(CharView *cv, SplinePoint *sp);
 extern void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *activess,
 	SplinePoint *merge, SplineSet *mergess);
-extern void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to);
-extern int  CVMoveSelection(CharView *cv, real dx, real dy, uint32 input_state);
 extern int  CVTestSelectFromEvent(CharView *cv,GEvent *event);
 extern void CVMouseMovePen(CharView *cv, PressedOn *p, GEvent *event);
 extern void CVMouseUpPoint(CharView *cv,GEvent *event);
-extern int  CVMouseMovePointer(CharView *cv, GEvent *event);
-extern void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event);
 extern void CVMouseDownRuler(CharView *cv, GEvent *event);
 extern void CVMouseMoveRuler(CharView *cv, GEvent *event);
 extern int CVMouseAtSpline(CharView *cv,GEvent *event);
@@ -1020,8 +995,6 @@ extern void CPUpdateInfo(CharView *cv, GEvent *event);
 extern void CPEndInfo(CharView *cv);
 extern void CVMouseDownPoint(CharView *cv,GEvent *event);
 extern void CVMouseMovePoint(CharView *cv,PressedOn *);
-extern void CVMouseUpPointer(CharView *cv );
-extern void CVCheckResizeCursors(CharView *cv);
 extern void CVMouseDownTransform(CharView *cv);
 extern void CVMouseMoveTransform(CharView *cv);
 extern void CVMouseUpTransform(CharView *cv);
@@ -1455,11 +1428,6 @@ extern void CVFindAndVisitSelectedControlPoints( CharView *cv, bool preserveStat
 extern void CVVisitAllControlPoints( CharView *cv, bool preserveState,
 				     visitSelectedControlPointsVisitor f, void* udata );
 
-/**
- * Unselect all the BCP which are currently selected.
- */
-extern void CVUnselectAllBCP( CharView *cv );
-
 
 /**
  * This will call your visitor function 'f' on any selected BCP. This
@@ -1482,9 +1450,6 @@ extern void CVVisitAdjacentToSelectedControlPoints( CharView *cv, bool preserveS
 extern void CVFreePreTransformSPL( CharView* cv );
 
 extern bool CVShouldInterpolateCPsOnMotion( CharView* cv );
-
-extern int CVNearRBearingLine( CharView* cv, real x, real fudge );
-extern int CVNearLBearingLine( CharView* cv, real x, real fudge );
 
 extern void CVMenuConstrain(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e));
 

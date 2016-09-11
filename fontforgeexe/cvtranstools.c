@@ -26,6 +26,7 @@
  */
 #include "fontforgeui.h"
 #include "cvgridfit.h"
+#include "cvpointer.h"
 #include <math.h>
 
 void CVMouseDownTransform(CharView *cv) {

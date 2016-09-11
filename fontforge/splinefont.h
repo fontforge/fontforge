@@ -3519,15 +3519,6 @@ extern SplinePoint* SplinePointListContainsPointAtY( SplinePointList* container,
 extern SplinePoint* SplinePointListContainsPointAtXY( SplinePointList* container, real x, real y );
 
 
-/**
- * True if the spline with from/to is part of the guide splines.
- *
- * Handy for telling if the user has just clicked on a guide for example,
- * you might want to also check the active layer first with cv->b.drawmode == dm_grid
- */
-extern bool isSplinePointPartOfGuide( SplineFont *sf, SplinePoint *sp );
-
-
 extern bigreal DistanceBetweenPoints( BasePoint *p1, BasePoint *p2 );
 
 

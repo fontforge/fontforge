@@ -40,6 +40,7 @@
 #include "cvhints.h"
 #include "cvimportdlg.h"
 #include "cvknife.h"
+#include "cvpointer.h"
 #include "cvruler.h"
 #include <math.h>
 #include <locale.h>

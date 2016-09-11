@@ -30,6 +30,9 @@
 #include <utype.h>
 #include <math.h>
 #include "collabclient.h"
+
+#include "cvpointer.h"
+
 extern void BackTrace( const char* msg );
 
 int stop_at_join = false;
