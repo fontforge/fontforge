@@ -38,6 +38,7 @@
 #include "cvgridfit.h"
 #include "cvhand.h"
 #include "cvhints.h"
+#include "cvimportdlg.h"
 #include "cvruler.h"
 #include <math.h>
 #include <locale.h>

@@ -29,6 +29,7 @@
 #include "bdfinfo.h"
 #include "bitmapdlg.h"
 #include "cvexportdlg.h"
+#include "cvimportdlg.h"
 #include <gkeysym.h>
 #include <utype.h>
 #include <ustring.h>
