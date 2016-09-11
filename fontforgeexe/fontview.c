@@ -37,6 +37,7 @@
 #include "bdfinfo.h"
 #include "bitmapdlg.h"
 #include "combinations.h"
+#include "cvgetinfo.h"
 #include "groups.h"
 #include "psfont.h"
 #include <gfile.h>

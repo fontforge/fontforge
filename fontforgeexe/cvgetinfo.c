@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "cvgetinfo.h"
 #include <ustring.h>
 #include <math.h>
 #include <utype.h>
@@ -33,28 +34,6 @@
 
 #define RAD2DEG	(180/3.1415926535897932)
 #define TCnt	3
-
-typedef struct gidata {
-    struct dlistnode ln;
-    CharView *cv;
-    SplineChar *sc;
-    RefChar *rf;
-    ImageList *img;
-    AnchorPoint *ap;
-    SplinePoint *cursp;
-    spiro_cp *curcp;
-    SplinePointList *curspl;
-    SplinePointList *oldstate;
-    AnchorPoint *oldaps;
-    GWindow gw;
-    int done, first, changed;
-    int prevchanged, nextchanged;
-    int normal_start, normal_end;
-    int interp_start, interp_end;
-    GGadgetCreateData* gcd;
-    GGadget *group1ret, *group2ret;
-    int nonmodal;
-} GIData;
 
 #define CID_BaseX	2001
 #define CID_BaseY	2002

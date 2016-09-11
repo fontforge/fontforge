@@ -931,8 +931,6 @@ extern void DefaultY(GRect *pos);
 extern void CVDrawRubberRect(GWindow pixmap, CharView *cv);
 extern void CVInfoDraw(CharView *cv, GWindow pixmap );
 extern void CVChar(CharView *cv, GEvent *event );
-extern void PI_ShowHints(SplineChar *sc, GGadget *list, int set);
-extern GTextInfo *SCHintList(SplineChar *sc,HintMask *);
 extern void CVResize(CharView *cv );
 extern CharView *CharViewCreate(SplineChar *sc,FontView *fv,int enc);
 extern void CharViewFinishNonStatic();
@@ -992,15 +990,8 @@ extern GImage *SC_GetLinedImage(SplineChar *sc, int def_layer, int pos, int is_i
 extern struct glyphvariants *GV_ParseConstruction(struct glyphvariants *gv,
 	struct matrix_data *stuff, int rows, int cols);
 extern void GV_ToMD(GGadget *g, struct glyphvariants *gv);
-extern void CVGetInfo(CharView *cv);
-extern void CVPGetInfo(CharView *cv);
-extern int  SCUsedBySubs(SplineChar *sc);
-extern void SCSubBy(SplineChar *sc);
-extern void SCRefBy(SplineChar *sc);
-extern void ApGetInfo(CharView *cv, AnchorPoint *ap);
 extern void CVMakeClipPath(CharView *cv);
 extern void CVAddAnchor(CharView *cv);
-extern AnchorClass *AnchorClassUnused(SplineChar *sc,int *waslig);
 extern void FVSetWidth(FontView *fv,enum widthtype wtype);
 extern void CVSetWidth(CharView *cv,enum widthtype wtype);
 extern void GenericVSetWidth(FontView *fv,SplineChar* sc,enum widthtype wtype);
@@ -1267,9 +1258,7 @@ extern char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current);
 extern void ME_ListCheck(GGadget *g,int r, int c, SplineFont *sf);
 extern void ME_SetCheckUnique(GGadget *g,int r, int c, SplineFont *sf);
 extern void ME_ClassCheckUnique(GGadget *g,int r, int c, SplineFont *sf);
-extern void PI_Destroy(struct dlistnode *node);
 struct gidata;
-extern void PIChangePoint(struct gidata *ci);
 
 extern void CVRegenFill(CharView *cv);
 extern void RulerDlg(CharView *cv);

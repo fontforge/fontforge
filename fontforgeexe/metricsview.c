@@ -29,6 +29,7 @@
 #include "bitmapview.h"
 #include "bitmapdlg.h"
 #include "combinations.h"
+#include "cvgetinfo.h"
 #include "lookups.h"
 #include <gkeysym.h>
 #include <gresource.h>

@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "cvgetinfo.h"
 #include <math.h>
 #include "splinefont.h"
 #include "ustring.h"

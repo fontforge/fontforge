@@ -34,6 +34,7 @@
 #include "cvdebug.h"
 #include "cvexportdlg.h"
 #include "cvfreehand.h"
+#include "cvgetinfo.h"
 #include "cvruler.h"
 #include <math.h>
 #include <locale.h>
