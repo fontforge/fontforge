@@ -3063,7 +3063,6 @@ extern BDFFont *SplineFontFreeTypeRasterizeNoHints(SplineFont *sf,int layer,
 	int pixelsize,int depth);
 extern void FreeType_FreeRaster(struct freetype_raster *raster);
 struct TT_ExecContextRec_;
-extern struct freetype_raster *DebuggerCurrentRaster(struct  TT_ExecContextRec_ *exc,int depth);
 
 extern int UniFromName(const char *name,enum uni_interp interp, Encoding *encname);
 extern const char *StdGlyphName(char *buffer, int uni, enum uni_interp interp, NameList *for_this_font);

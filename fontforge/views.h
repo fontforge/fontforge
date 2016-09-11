@@ -736,24 +736,6 @@ extern void PfaEditSetFallback(void);
 extern void RecentFilesRemember(char *filename);
 extern void LastFonts_Save(void);
 
-struct debugger_context;
-extern void DebuggerTerminate(struct debugger_context *dc);
-extern void DebuggerReset(struct debugger_context *dc,real pointsizey, real pointsizex,int dpi,int dbg_fpgm, int is_bitmap);
-extern struct debugger_context *DebuggerCreate(SplineChar *sc,int layer,real pointsizey,real pointsizex,int dpi,int dbg_fpgm, int is_bitmap);
-enum debug_gotype { dgt_continue, dgt_step, dgt_next, dgt_stepout };
-extern void DebuggerGo(struct debugger_context *dc,enum debug_gotype,DebugView *dv);
-extern struct  TT_ExecContextRec_ *DebuggerGetEContext(struct debugger_context *dc);
-extern void DebuggerToggleBp(struct debugger_context *dc,int range,int ip);
-extern int DebuggerBpCheck(struct debugger_context *dc,int range,int ip);
-extern void DebuggerSetWatches(struct debugger_context *dc,int n, uint8 *w);
-extern uint8 *DebuggerGetWatches(struct debugger_context *dc, int *n);
-extern void DebuggerSetWatchStores(struct debugger_context *dc,int n, uint8 *w);
-extern uint8 *DebuggerGetWatchStores(struct debugger_context *dc, int *n);
-extern int DebuggerIsStorageSet(struct debugger_context *dc, int index);
-extern void DebuggerSetWatchCvts(struct debugger_context *dc,int n, uint8 *w);
-extern uint8 *DebuggerGetWatchCvts(struct debugger_context *dc, int *n);
-extern int DebuggingFpgm(struct debugger_context *dc);
-
 
 extern char *Kern2Text(SplineChar *other,KernPair *kp,int isv);
 extern char *PST2Text(PST *pst,SplineFont *sf);
