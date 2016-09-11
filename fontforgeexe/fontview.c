@@ -33,6 +33,7 @@
 #include "fontforgeui.h"
 #include "autowidth2dlg.h"
 #include "bitmapview.h"
+#include "basedlg.h"
 #include "groups.h"
 #include "psfont.h"
 #include <gfile.h>
