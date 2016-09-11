@@ -32,6 +32,7 @@
 #include "bitmapdlg.h"
 #include "combinations.h"
 #include "cvdebug.h"
+#include "cvexportdlg.h"
 #include "cvruler.h"
 #include <math.h>
 #include <locale.h>

@@ -925,8 +925,6 @@ extern int SimplifyDlg(SplineFont *sf,struct simplifyinfo *smpl);
 extern void CVReviewHints(CharView *cv);
 extern void CVCreateHint(CharView *cv,int ishstem,int preserveundoes);
 extern void SCRemoveSelectedMinimumDistances(SplineChar *sc,int inx);
-extern int CVExport(CharView *cv);
-extern int BVExport(BitmapView *bv);
 
 extern void DrawAnchorPoint(GWindow pixmap,int x, int y,int selected);
 extern void DefaultY(GRect *pos);

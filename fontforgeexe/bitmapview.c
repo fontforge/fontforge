@@ -28,6 +28,7 @@
 #include "fontforgeui.h"
 #include "bdfinfo.h"
 #include "bitmapdlg.h"
+#include "cvexportdlg.h"
 #include <gkeysym.h>
 #include <utype.h>
 #include <ustring.h>
