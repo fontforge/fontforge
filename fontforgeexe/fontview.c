@@ -46,6 +46,7 @@
 #include "encodingui.h"
 #include "fontinfo.h"
 #include "fvfontsdlg.h"
+#include "fvmetricsdlg.h"
 #include "groups.h"
 #include "psfont.h"
 #include <gfile.h>

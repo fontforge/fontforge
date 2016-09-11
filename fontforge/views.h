@@ -933,9 +933,6 @@ extern struct glyphvariants *GV_ParseConstruction(struct glyphvariants *gv,
 extern void GV_ToMD(GGadget *g, struct glyphvariants *gv);
 extern void CVMakeClipPath(CharView *cv);
 extern void CVAddAnchor(CharView *cv);
-extern void FVSetWidth(FontView *fv,enum widthtype wtype);
-extern void CVSetWidth(CharView *cv,enum widthtype wtype);
-extern void GenericVSetWidth(FontView *fv,SplineChar* sc,enum widthtype wtype);
 extern void CVChangeSC(CharView *cv, SplineChar *sc );
 
 extern void AdjustControls(SplinePoint *sp);

@@ -29,6 +29,8 @@
 #include <ustring.h>
 #include "fvmetrics.h"
 
+#include "fvmetricsdlg.h"
+
 typedef struct createwidthdlg {
     CreateWidthData wd;
     GWindow gw;
