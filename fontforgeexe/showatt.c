@@ -27,6 +27,7 @@
  */
 #include "fontforgeui.h"
 #include "bitmapview.h"
+#include "fvfontsdlg.h"
 #include <utype.h>
 #include <ustring.h>
 #include <gkeysym.h>

@@ -717,8 +717,6 @@ extern int SFGenerateFont(SplineFont *sf,int layer, int family,EncMap *map);
 
 extern void NonLinearDlg(FontView *fv,struct charview *cv);
 extern void FVChangeChar(FontView *fv,int encoding);
-extern void FVMergeFonts(FontView *fv);
-extern void FVInterpolateFonts(FontView *fv);
 
 extern void FVDeselectAll(FontView *fv);
 
@@ -1042,8 +1040,6 @@ extern void KCLD_End(struct kernclasslistdlg *kcld);
 extern void KCLD_MvDetach(struct kernclasslistdlg *kcld,MetricsView *mv);
 extern void KernPairD(SplineFont *sf,SplineChar *sc1,SplineChar *sc2,int layer, int isv);
 extern void KCD_DrawGlyph(GWindow pixmap,int x,int baseline,BDFChar *bdfc,int mag);
-extern GTextInfo *BuildFontList(FontView *except);
-extern void TFFree(GTextInfo *tf);
 
 extern void FVSelectByPST(FontView *fv);
 
