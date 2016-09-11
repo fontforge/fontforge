@@ -1174,9 +1174,6 @@ extern SplineChar *FVMakeChar(FontView *fv,int i);
 
 extern void CVPointOfView(CharView *cv,struct pov_data *);
 
-extern void DVCreateGloss(DebugView *dv);
-extern void DVMarkPts(DebugView *dv,SplineSet *ss);
-
 extern GMenuItem *GetEncodingMenu(void (*func)(GWindow,GMenuItem *,GEvent *),
 	Encoding *current);
 
