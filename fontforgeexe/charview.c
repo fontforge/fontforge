@@ -42,6 +42,7 @@
 #include "cvknife.h"
 #include "cvpointer.h"
 #include "cvruler.h"
+#include "cvshapes.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>

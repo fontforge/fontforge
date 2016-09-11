@@ -989,7 +989,6 @@ extern void CVMouseDownRuler(CharView *cv, GEvent *event);
 extern void CVMouseMoveRuler(CharView *cv, GEvent *event);
 extern int CVMouseAtSpline(CharView *cv,GEvent *event);
 extern void CVMouseUpRuler(CharView *cv, GEvent *event);
-extern void CVMouseDownShape(CharView *cv,GEvent *event);
 extern void CPStartInfo(CharView *cv, GEvent *event);
 extern void CPUpdateInfo(CharView *cv, GEvent *event);
 extern void CPEndInfo(CharView *cv);
@@ -998,8 +997,6 @@ extern void CVMouseMovePoint(CharView *cv,PressedOn *);
 extern void CVMouseDownTransform(CharView *cv);
 extern void CVMouseMoveTransform(CharView *cv);
 extern void CVMouseUpTransform(CharView *cv);
-extern void CVMouseMoveShape(CharView *cv);
-extern void CVMouseUpShape(CharView *cv);
 extern void LogoExpose(GWindow pixmap,GEvent *event, GRect *r,enum drawmode dm);
 
 extern int GotoChar(SplineFont *sf,EncMap *map, int *merge_with_selection);
