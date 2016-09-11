@@ -1054,7 +1054,6 @@ extern void CVMouseUpKnife(CharView *cv,GEvent *event);
 extern void CVMouseMoveShape(CharView *cv);
 extern void CVMouseUpShape(CharView *cv);
 extern void LogoExpose(GWindow pixmap,GEvent *event, GRect *r,enum drawmode dm);
-extern void CVDebugPointPopup(CharView *cv);
 
 extern int GotoChar(SplineFont *sf,EncMap *map, int *merge_with_selection);
 
@@ -1144,10 +1143,6 @@ extern void CVFtPpemDlg(CharView *cv,int debug);
 extern void SCDeGridFit(SplineChar *sc);
 extern void SCReGridFit(SplineChar *sc,int layer);
 
-extern void CVDebugReInit(CharView *cv,int restart_debug,int dbg_fpgm);
-extern void CVDebugFree(DebugView *dv);
-extern int DVChar(DebugView *dv, GEvent *e);
-
 extern void KernClassD(KernClass *kc, SplineFont *sf, int layer, int isv);
 extern void ShowKernClasses(SplineFont *sf,MetricsView *mv,int layer,int isv);
 extern void KCLD_End(struct kernclasslistdlg *kcld);
@@ -1181,7 +1176,6 @@ extern void CVPointOfView(CharView *cv,struct pov_data *);
 
 extern void DVCreateGloss(DebugView *dv);
 extern void DVMarkPts(DebugView *dv,SplineSet *ss);
-extern int CVXPos(DebugView *dv,int offset,int width);
 
 extern GMenuItem *GetEncodingMenu(void (*func)(GWindow,GMenuItem *,GEvent *),
 	Encoding *current);
