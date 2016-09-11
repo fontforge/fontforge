@@ -2171,8 +2171,6 @@ extern uint32 ScriptFromUnicode(uint32 u,SplineFont *sf);
 extern uint32 SCScriptFromUnicode(SplineChar *sc);
 extern int SCRightToLeft(SplineChar *sc);
 extern int SLIContainsR2L(SplineFont *sf,int sli);
-extern void SFFindNearTop(SplineFont *);
-extern void SFRestoreNearTop(SplineFont *);
 extern int SFForceEncoding(SplineFont *sf,EncMap *old,Encoding *new_map);
 extern int CountOfEncoding(Encoding *encoding_name);
 extern int SFReencode(SplineFont *sf, const char *encname, int force);

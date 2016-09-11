@@ -37,6 +37,8 @@
 #include "plugins.h"
 #include "encoding.h"
 
+#include "encodingui.h"
+
 static GTextInfo *EncodingList(void) {
     GTextInfo *ti;
     int i;

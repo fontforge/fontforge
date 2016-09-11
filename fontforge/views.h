@@ -845,9 +845,6 @@ extern void GFI_LookupScrollbars(struct gfi_data *gfi, int isgpos, int refresh);
 extern void FontInfo(SplineFont *sf,int layer,int aspect,int sync);
 extern void FontInfoDestroy(SplineFont *sf);
 extern void FontMenuFontInfo(void *fv);
-extern struct enc *MakeEncoding(SplineFont *sf, EncMap *map);
-extern void LoadEncodingFile(void);
-extern void RemoveEncoding(void);
 extern void SFPrivateInfo(SplineFont *sf);
 extern void FVDelay(FontView *fv,void (*func)(FontView *));
 extern void GFI_FinishContextNew(struct gfi_data *d,FPST *fpst, int success);
@@ -1096,9 +1093,6 @@ extern SplineChar *FVMakeChar(FontView *fv,int i);
 
 extern void CVPointOfView(CharView *cv,struct pov_data *);
 
-extern GMenuItem *GetEncodingMenu(void (*func)(GWindow,GMenuItem *,GEvent *),
-	Encoding *current);
-
 extern GTextInfo *TIFromName(const char *name);
 
 enum subtable_data_flags {
@@ -1164,7 +1158,6 @@ extern const char *UI_TTFNameIds(int id);
 extern const char *UI_MSLangString(int language);
 extern void FontInfoInit(void);
 extern void LookupUIInit(void);
-extern struct cidmap *AskUserForCIDMap(void);
 
 extern void DefineGroups(struct fontview *fv);
 extern void DisplayGroups(struct fontview *fv);

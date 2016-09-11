@@ -26,6 +26,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "encodingui.h"
 #include "groups.h"
 #include "plugins.h"
 #include <charset.h>

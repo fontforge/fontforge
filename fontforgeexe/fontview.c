@@ -43,6 +43,7 @@
 #include "deltaui.h"
 #include "displayfonts.h"
 #include "effectsui.h"
+#include "encodingui.h"
 #include "groups.h"
 #include "psfont.h"
 #include <gfile.h>
