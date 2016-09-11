@@ -24,6 +24,16 @@
   <p xml:lang="es">
   Es fácil aprender a utilizar FontForge, y existen diversos tutoriales que cubren desde los
   conceptos básicos hasta las funcionalidades avanzadas, como la creación y uso de «scripts».</p>
+  <p xml:lang="fr">
+  FontForge est un éditeur de polices de caractères numériques qui vous permet de créer, éditer,
+  ou convertir une large gamme de polices incluant PostScript, TrueType, OpenType, cid-keyed, 
+  multi-master, cff, SVG et BitMap (bdf, FON, NFNT).</p>
+  <p xml:lang="fr">
+  FontForge est un logiciel libre, gratuit et disponible pour divers systèmes d’exploitation.
+  Vous pouvez utiliser l'interface graphique de FontForge ou comme un outil à la ligne de commande.</p>
+  <p xml:lang="fr">
+  Apprendre à utiliser FontForge est facile, et il y a plusieurs tutoriels disponibles en commençant
+  par les bases jusqu'à des fonctionnalités plus avancées telles que la fabrication et l'utilisation de scripts.</p>
   <p xml:lang="uk">
   FontForge — редактор контурних та растрових шрифтів, за допомогою якого ви можете
   створювати, редагувати та перетворювати шрифти у форматах PostScript, TrueType, OpenType,
