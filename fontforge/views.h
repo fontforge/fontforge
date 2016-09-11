@@ -945,8 +945,6 @@ extern int CVOneThingSel(CharView *cv, SplinePoint **sp, SplinePointList **spl,
 extern int CVOneContourSel(CharView *cv, SplinePointList **_spl,
 	RefChar **ref, ImageList **img);
 extern void CVInfoDrawText(CharView *cv, GWindow pixmap );
-extern void OutlineDlg(FontView *fv, CharView *cv,MetricsView *mv,int isinline);
-extern void ShadowDlg(FontView *fv, CharView *cv,MetricsView *mv,int wireframe);
 extern void CVTile(CharView *cv);
 extern void FVTile(FontView *fv);
 extern void CVPatternTile(CharView *cv);
