@@ -33,6 +33,7 @@
 #include "combinations.h"
 #include "cvdebug.h"
 #include "cvexportdlg.h"
+#include "cvfreehand.h"
 #include "cvruler.h"
 #include <math.h>
 #include <locale.h>
