@@ -59,6 +59,7 @@
 #include "mmdlg.h"
 #include "nonlineartransui.h"
 #include "prefs.h"
+#include "problems.h"
 #include "psfont.h"
 #include <gfile.h>
 #include <gio.h>

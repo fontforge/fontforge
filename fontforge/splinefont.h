@@ -3375,7 +3375,6 @@ extern const char *knownweights[], *realweights[], **noticeweights[];
 
 extern int BPTooFar(BasePoint *bp1, BasePoint *bp2);
 extern StemInfo *SCHintOverlapInMask(SplineChar *sc,HintMask *hm);
-extern char *VSErrorsFromMask(int mask,int private_mask);
 extern int SCValidate(SplineChar *sc, int layer, int force);
 extern AnchorClass *SCValidateAnchors(SplineChar *sc);
 extern void SCTickValidationState(SplineChar *sc,int layer);

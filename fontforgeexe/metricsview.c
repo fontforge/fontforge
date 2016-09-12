@@ -38,6 +38,7 @@
 #include "lookupui.h"
 #include "gotodlg.h"
 #include "kernclass.h"
+#include "problems.h"
 #include <gkeysym.h>
 #include <gresource.h>
 #include <gresedit.h>
