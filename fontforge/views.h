@@ -1113,9 +1113,6 @@ extern void ValidationDestroy(SplineFont *sf);
 
 extern void LookupUIInit(void);
 
-extern void JustifyDlg(SplineFont *sf);
-extern char *GlyphListDlg(SplineFont *sf, char *glyphstr);
-
 extern struct hslrgb *SFFontCols(SplineFont *sf,struct hslrgb fontcols[6]);
 
 extern Color view_bgcol;	/* Background color for views */

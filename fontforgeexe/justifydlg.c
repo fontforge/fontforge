@@ -31,6 +31,8 @@
 #include <gkeysym.h>
 #include <math.h>
 
+#include "justifydlg.h"
+
 extern GTextInfo scripts[], languages[];
 
 static char *JSTF_GlyphDlg(GGadget *, int r, int c);

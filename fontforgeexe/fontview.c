@@ -51,6 +51,7 @@
 #include "groupsdlg.h"
 #include "groups.h"
 #include "histograms.h"
+#include "justifydlg.h"
 #include "psfont.h"
 #include <gfile.h>
 #include <gio.h>
