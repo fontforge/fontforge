@@ -1107,7 +1107,7 @@ void SFRemoveLookupSubTable(SplineFont *sf,struct lookup_subtable *sub, int remo
 	KernPair *kp, *kpprev, *kpnext;
 	k=0;
 	do {
-	    _sf = sf->subfontcnt==0 ? sf : sf->subfonts[i];
+	    _sf = sf->subfontcnt==0 ? sf : sf->subfonts[k];
 	    for ( i=0; i<_sf->glyphcnt; ++i ) if ( (sc=_sf->glyphs[i])!=NULL ) {
 		for ( pst=sc->possub, prev=NULL ; pst!=NULL; pst=next ) {
 		    next = pst->next;
@@ -2620,20 +2620,13 @@ struct lookup_data {
 
 static int ApplyLookupAtPos(uint32 tag, OTLookup *otl,struct lookup_data *data,int pos);
 
-static int GlyphNameInClass(const char *name,char *class ) {
+static int GlyphNameInClass(const char *name,const char *class) {
     const char *pt;
     int len = strlen(name);
 
-    if ( class==NULL )
-return( false );
-
-    pt = copy(class);
-    while ( (pt=strstr(pt,name))!=NULL ) {
-	if ( pt==NULL )
-return( false );
+    for (pt = class; pt && (pt=strstr(pt,name))!=NULL; pt += len) {
 	if ( (pt==class || pt[-1]==' ') && (pt[len]=='\0' || pt[len]==' '))
 return( true );
-	pt+=len;
     }
 
 return( false );
@@ -3538,33 +3531,16 @@ return( 0 );		/* No match */
 return( pos+1 );
 }
 
-int IsLowercase(SplineChar *sc) {
-    // If we hit beginning or end of line - so if sc is NULL, dismiss.
-    // That check is left to the caller.
-    if ( sc!=NULL && (sc->unicodeenc >= 0x61) && (sc->unicodeenc <= 0x7A) )
-        return 1;
-    return 0;
-}
-
-int IsSpacingChar(SplineChar *sc) {
-    // If we hit beginning or end of line - so if sc is NULL, dismiss.
-    // That check is left to the caller.
-    if ( sc!=NULL && (sc->unicodeenc == 0x20 || sc->unicodeenc == 0xA0 || sc->unicodeenc == 0x202F
-      || (sc->unicodeenc >= 0x2000 && sc->unicodeenc <= 0x200A)) )
-        return 1;
-    return 0;
-}
-
 static int ConditionalTagOk(uint32 tag, OTLookup *otl,struct lookup_data *data,int pos) {
     int npos, bpos;
+    uint32 script;
+    int before_in_script, after_in_script;
 
     if ( tag==CHR('i','n','i','t') || tag==CHR('i','s','o','l') ||
 	    tag==CHR('f','i','n','a') || tag==CHR('m','e','d','i') ) {
-	uint32 script = SCScriptFromUnicode(data->str[pos].sc);
-	int before_in_script, after_in_script;
-
 	npos = skipglyphs(otl->lookup_flags,data,pos+1);
 	bpos = bskipglyphs(otl->lookup_flags,data,pos-1);
+	script = SCScriptFromUnicode(data->str[pos].sc);
 	before_in_script = (bpos>=0 && SCScriptFromUnicode(data->str[bpos].sc)==script);
 	after_in_script = (npos<data->cnt && SCScriptFromUnicode(data->str[npos].sc)==script);
 	if ( tag==CHR('i','n','i','t') )
@@ -3575,25 +3551,6 @@ return( !before_in_script && !after_in_script );
 return( before_in_script && !after_in_script );
 	else
 return( before_in_script && after_in_script );
-    } else if ( tag == CHR('c','a','s','e') ) {
-        /*
-         * The idea of `case` is "select desired characters and apply the feature",
-         * but the metrics window is not a document editor, so we try to just disable
-         * the feature around lowercase letter(s) to ease the designer's job.
-         */
-        int before_is_lower;
-        int after_is_lower;
-        /* Skip spacing chars while we look for lowercase characters on the sides. */
-        bpos = pos-1;
-        while (bpos>=0 && IsSpacingChar(data->str[bpos].sc))
-            bpos--;
-        npos = pos+1;
-        while (npos<data->cnt && IsSpacingChar(data->str[npos].sc))
-            npos++;
-
-        before_is_lower = (bpos>=0 && IsLowercase(data->str[bpos].sc));
-        after_is_lower = (npos<data->cnt && IsLowercase(data->str[npos].sc));
-        return( !before_is_lower && !after_is_lower );
     }
 
 return( true );

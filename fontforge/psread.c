@@ -992,7 +992,7 @@ static uint8 *StringToBytes(struct psstack *stackel,int *len) {
 	while ( isspace(*pt)) ++pt;
 	if ( *pt=='{' || *pt=='[' ) ++pt;
 	while ( isspace(*pt)) ++pt;
-    } else if ( stackel->type!=pt_string )
+    } else if ( stackel->type!=ps_string )
 return( NULL );
 
     upt = base = malloc(65536+1);	/* Maximum size of ps string */
@@ -1683,7 +1683,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 	  case pt_and:
 	    if ( sp>=2 ) {
 		if ( stack[sp-2].type == ps_num )
-		    stack[sp-2].u.val = ((int) stack[sp-1].u.val) & (int) stack[sp-1].u.val;
+		    stack[sp-2].u.val = ((int) stack[sp-2].u.val) & (int) stack[sp-1].u.val;
 		else if ( stack[sp-2].type == ps_bool )
 		    stack[sp-2].u.tf &= stack[sp-1].u.tf;
 		--sp;
@@ -1692,7 +1692,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 	  case pt_or:
 	    if ( sp>=2 ) {
 		if ( stack[sp-2].type == ps_num )
-		    stack[sp-2].u.val = ((int) stack[sp-1].u.val) | (int) stack[sp-1].u.val;
+		    stack[sp-2].u.val = ((int) stack[sp-2].u.val) | (int) stack[sp-1].u.val;
 		else if ( stack[sp-2].type == ps_bool )
 		    stack[sp-2].u.tf |= stack[sp-1].u.tf;
 		--sp;
@@ -1701,7 +1701,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 	  case pt_xor:
 	    if ( sp>=2 ) {
 		if ( stack[sp-2].type == ps_num )
-		    stack[sp-2].u.val = ((int) stack[sp-1].u.val) ^ (int) stack[sp-1].u.val;
+		    stack[sp-2].u.val = ((int) stack[sp-2].u.val) ^ (int) stack[sp-1].u.val;
 		else if ( stack[sp-2].type == ps_bool )
 		    stack[sp-2].u.tf ^= stack[sp-1].u.tf;
 		--sp;
@@ -2915,7 +2915,7 @@ return( head );
 	    if ( sc->layers[layer].stroke_pen.width==WIDTH_INHERITED )
 		si.radius = .5;
 	    if ( si.cap == lc_inherited ) si.cap = lc_butt;
-	    if ( si.join == lc_inherited ) si.join = lj_miter;
+	    if ( si.join == lj_inherited ) si.join = lj_miter;
 	    new = NULL;
 	    memcpy(transform,sc->layers[layer].stroke_pen.trans,4*sizeof(real));
 	    transform[4] = transform[5] = 0;
@@ -3126,7 +3126,7 @@ SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_stroked)
 		if ( ent->u.splines.stroke_width==WIDTH_INHERITED )
 		    si.radius = .5;
 		if ( si.cap == lc_inherited ) si.cap = lc_butt;
-		if ( si.join == lc_inherited ) si.join = lj_miter;
+		if ( si.join == lj_inherited ) si.join = lj_miter;
 		new = NULL;
 		MatInverse(inversetrans,ent->u.splines.transform);
 		transed = SplinePointListTransform(SplinePointListCopy(

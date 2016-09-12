@@ -635,7 +635,10 @@ static void BVDrawRefName(BitmapView *bv,GWindow pixmap,BDFRefChar *ref,int fg) 
     y = bv->height - bv->yoff - (bb.maxy + 1)*bv->scale;
     y -= 5;
     if ( x<-400 || y<-40 || x>bv->width+400 || y>bv->height )
+    {
+        free(refinfo);
 return;
+    }
 
     GDrawLayoutInit(pixmap,refinfo,-1,bv->small);
     GDrawLayoutExtents(pixmap,&size);
@@ -747,7 +750,7 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
     if ( bv->showoutline ) {
 	Color col = (view_bgcol<0x808080)
 		? (bv->bc->byte_data ? 0x008800 : 0x004400 )
-		: (bv->bc->byte_data ? 0x00ff00 : 0x00ff00 );
+		: 0x00ff00;
 	memset(&cvtemp,'\0',sizeof(cvtemp));
 	cvtemp.v = bv->v;
 	cvtemp.width = bv->width;

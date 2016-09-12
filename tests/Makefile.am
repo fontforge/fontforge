@@ -91,12 +91,10 @@ EXTRA_DIST += fonts/AddExtremaTest2.sfd fonts/AddExtremumTest.sfd	\
 # generated test inputs
 GENERATED_INPUTS =							\
 	fonts/MunhwaGothic-Bold						\
-	fonts/mingliu.ttc						\
 	fonts/Ambrosia.pt3
 
 FETCHED_INPUTS =							\
-	$(srcdir)/fetched-fonts/MunhwaGothic-Bold				\
-	$(srcdir)/fetched-fonts/mingliu.ttc
+	$(srcdir)/fetched-fonts/MunhwaGothic-Bold
 
 MAYBE_GENERATED_INPUTS =						\
 	fonts/MinionPro-Regular.fea
@@ -113,11 +111,7 @@ fonts/Ambrosia.pt3: fonts/Ambrosia.sfd
 # Inputs we can download
 $(srcdir)/fetched-fonts/MunhwaGothic-Bold:
 	$(MKDIR_P) $(srcdir)/fetched-fonts
-	if [ ! -e $@ ] ; then $(WGET) ftp://ftp.naist.jp/pub/NetBSD/packages/distfiles/adobe-cidfonts/MunhwaGothic-Bold -O $@ ; fi ;
-
-$(srcdir)/fetched-fonts/mingliu.ttc:
-	$(MKDIR_P) $(srcdir)/fetched-fonts
-	if [ ! -e $@ ] ; then $(WGET) http://www.fontsupply.com/fonts/mingliu.ttc -O $@ ; fi ;
+	if [ ! -e $@ ] ; then $(WGET) https://github.com/fontforge/debugfonts/raw/master/MunhwaGothic-Bold -O $@ ; fi ;
 
 fonts/MunhwaGothic-Bold:
 	$(MKDIR_P) $(builddir)/fonts
@@ -125,7 +119,7 @@ fonts/MunhwaGothic-Bold:
 	if [ -e $(srcdir)/fetched-fonts/MunhwaGothic-Bold ]; then \
 	cp -pRP $(srcdir)/fetched-fonts/MunhwaGothic-Bold $@ ; \
 	else \
-	$(WGET) ftp://ftp.naist.jp/pub/NetBSD/packages/distfiles/adobe-cidfonts/MunhwaGothic-Bold -O $@ ; \
+	$(WGET) https://github.com/fontforge/debugfonts/raw/master/MunhwaGothic-Bold -O $@ ; \
 	fi ; \
 	fi ;
 
@@ -155,7 +149,7 @@ EXTRA_DIST += helper107.pe helper118A.pe helper118B.pe		\
 	test114.pe test115.pe test116.pe test117.pe		\
 	test118.pe test119.pe test120.pe test121.pe		\
 	test122.pe test123.pe test124.pe test125.pe		\
-	test126.pe test127.pe
+	test126.pe test127.pe test128.pe
 
 # python test scripts
 EXTRA_DIST += findoverlapbugs.py test0001.py test0101.py	\

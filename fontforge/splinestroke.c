@@ -1039,7 +1039,7 @@ return( left_trace );
 static void SquareCap(StrokeContext *c,int isend) {
     int cnt, i, start, end, incr;
     int start_corner, end_corner, cc, nc;
-    BasePoint slope, slope1, slope2;
+    BasePoint slope1, slope2;
     StrokePoint done;
     StrokePoint *p;
     bigreal t;
@@ -1114,9 +1114,9 @@ static void SquareCap(StrokeContext *c,int isend) {
 	    p->line = true;
 	    p->needs_point_left = p->needs_point_right = i==cnt;
 	    p->left.x = done.left.x - t*slope1.x;
-	    p->left.y = done.left.y - t*slope2.y;
-	    p->right.x = done.right.x + t*slope.x;
-	    p->right.y = done.right.y + t*slope.y;
+	    p->left.y = done.left.y - t*slope1.y;
+	    p->right.x = done.right.x + t*slope1.x;
+	    p->right.y = done.right.y + t*slope1.y;
 	    if ( i==end )
 	break;
 	}
@@ -3259,7 +3259,7 @@ return( end_pos-start_pos );
 	}
 	for ( i=0; i<5; ++i ) {
 	    c->tpt[i].x = me.x + slope.x*(i+1);
-	    c->tpt[i].x = me.y + slope.y*(i+1);
+	    c->tpt[i].y = me.y + slope.y*(i+1);
 	    c->tpt[i].t = (i+1)/6.0;
 	}
 return( 5 );
@@ -3682,6 +3682,10 @@ SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
 	}
 	if ( si->resolution==0 && c.resolution>c.radius/3 )
 	    c.resolution = c.radius/3;
+    if (c.resolution == 0) {
+        ff_post_notice(_("Invalid stroke parameters"), _("Stroke resolution is zero"));
+        return SplinePointListCopy(ss);
+    }
 	ret = SplineSets_Stroke(ss,&c,order2);
     } else {
 	first = last = NULL;
@@ -3750,6 +3754,10 @@ return( NULL );				/* That's an error, must be closed */
 	    c.radius2 = maxd2;
 	    if ( si->resolution==0 && c.resolution>c.radius/3 )
 		c.resolution = c.radius/3;
+        if (c.resolution == 0) {
+            ff_post_notice(_("Invalid stroke parameters"), _("Stroke resolution is zero"));
+            return SplinePointListCopy(ss);
+        }
 	    cur = SplineSets_Stroke(ss,&c,order2);
 	    if ( !c.scaled_or_rotated ) {
 		trans[4] = -trans[4]; trans[5] = -trans[5];

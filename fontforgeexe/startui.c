@@ -81,9 +81,19 @@ extern void setup_cocoa_app();
 /* For reasons obscure to me RunApplicationEventLoop is not defined in */
 /*  the mac header files if we are in 64 bit mode. Strangely it seems to */
 /*  be in the libraries and functional */
-#  if __LP64__
-extern void RunApplicationEventLoop(void);
-#  endif
+/*
+ * It was found in Dec 2014 that using RunApplicationEventLoop() could induce strange
+ * and extremely frustrating pausing issues on osx. The main generic event handling
+ * seems to work just fine, so there doesn't seem to be a need for this specialized
+ * Application Event Loop.
+ * 
+ * See this issue bringing back Breakpad usage and the issues linked in comments 2,3
+ * by adrientetar:
+ * https://github.com/fontforge/fontforge/issues/2120
+ */
+//#  if __LP64__
+//extern void RunApplicationEventLoop(void);
+//#  endif
 #endif
 
 #if defined(__MINGW32__)
@@ -97,7 +107,20 @@ extern int AutoSaveFrequency;
 int splash = 1;
 static int localsplash;
 static int unique = 0;
-static int listen_to_apple_events = false;
+
+/**
+ * In osx versions prior to 10.9.x a special -psn_ flag was supplied
+ * when fontforge was run by osx in some cases. For opening an sfd
+ * file from finder we need to register the openWith event in order to
+ * get the name of the file to open. So it makes sense to always
+ * register for Apple events on OSX so that we can get those file
+ * names as they come through.
+ */
+#if defined(__Mac)
+    static int listen_to_apple_events = true; // This was once true, but Apple broke it.
+#else
+    static int listen_to_apple_events = false;
+#endif
 static bool ProcessPythonInitFiles = 1;
 
 static void _dousage(void) {
@@ -235,14 +258,15 @@ static void SplashLayout() {
 
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
-    uc_strcpy(pt,"  git hash: ");;
+    uc_strcpy(pt,"  git hash: ");
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
+    uc_strcat(pt, " ");
     uc_strcat(pt, FONTFORGE_GIT_VERSION);
 
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
-    uc_strcpy(pt,"  Version: ");;
+    uc_strcpy(pt,"  Version: ");
     uc_strcat(pt,FONTFORGE_MODTIME_STR);
 
     pt += u_strlen(pt);
@@ -769,11 +793,7 @@ static void ffensuredir( const char* basedir, const char* dirname, mode_t mode )
 
     snprintf(buffer,buffersz,"%s/%s", basedir, dirname );
     // ignore errors, this is just to help the user aftre all.
-#if !defined(__MINGW32__)
     mkdir( buffer, mode );
-#else
-    mkdir( buffer );
-#endif
 }
 
 static void ensureDotFontForgeIsSetup() {
@@ -896,7 +916,7 @@ int fontforge_main( int argc, char **argv ) {
 #endif
 	        ".\n",
 	        FONTFORGE_MODTIME_STR );
-        fprintf( stderr, " Based on source from git with hash:%s\n", FONTFORGE_GIT_VERSION );
+        fprintf( stderr, " Based on source from git with hash: %s\n", FONTFORGE_GIT_VERSION );
     }
 
 #if defined(__Mac)
@@ -1121,7 +1141,7 @@ int fontforge_main( int argc, char **argv ) {
 	    /* structure, and the current directory was (shudder) "/" */
 	    /* (however, we changed to HOME earlier in main routine). */
 	    unique = 1;
-	    listen_to_apple_events = true;
+	    listen_to_apple_events = true; // This has been problematic on Mavericks and later.
 	}
 #endif
     }
@@ -1336,16 +1356,21 @@ exit( 0 );
 
     collabclient_ensureClientBeacon();
     collabclient_sniffForLocalServer();
-
+#ifndef _NO_PYTHON
     PythonUI_namedpipe_Init();
-    
+#endif
 
 #if defined(__Mac)
     if ( listen_to_apple_events ) {
 	install_apple_event_handlers();
 	install_mac_timer();
 	setup_cocoa_app();
-	RunApplicationEventLoop();
+
+	
+	// WARNING: See declaration of RunApplicationEventLoop() above as to
+	// why you might not want to call that function anymore.
+	// RunApplicationEventLoop();
+	
     } else
 #endif
     if ( doopen || !any )

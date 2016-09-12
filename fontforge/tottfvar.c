@@ -62,6 +62,8 @@ static int AssignPtNumbers(MMSet *mm,int gid) {
 	stillmore = false;
 	for ( i=0; i<=mm->instance_count; ++i )
 	    if ( ss[i]!=NULL ) stillmore = true;
+        free(ss);
+        free(sp);
 	if ( stillmore )
 return( false );
 return( true );
@@ -70,7 +72,11 @@ return( true );
 	for ( i=0; i<=mm->instance_count; ++i )
 	    if ( ss[i]==NULL ) stillmore = false;
 	if ( !stillmore )
+{
+free(ss);
+free(sp);
 return( false );
+}
     }
 	    
     for (;;) {
@@ -498,6 +504,7 @@ static void ttf_dumpcvar(struct alltabs *at, MMSet *mm) {
     uint16 *pts;
 
     deltas = CvtFindDeltas(mm,&ptcnt);
+    if ( deltas == NULL ) return;
     for ( i=cnt=0; i<mm->instance_count; ++i )
 	if ( deltas[i]!=NULL )
 	    ++cnt;

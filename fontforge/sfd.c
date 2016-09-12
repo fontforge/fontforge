@@ -148,9 +148,9 @@ static int PeekMatch(FILE *stream, const char * target) {
   while (target[pos1] != '\0' && lastread != EOF && lastread == target[pos1]) {
     pos1 ++; lastread = getc(stream);
   }
-  if (lastread != EOF) ungetc(lastread, stream);
-  int pos2 = pos1;
-  while (pos2 > 0) { ungetc(target[--pos2], stream); }
+  
+  int rewind_amount = pos1 + ((lastread == EOF) ? 0 : 1);
+  fseek(stream, -rewind_amount, SEEK_CUR);
   return (target[pos1] == '\0');
 }
 
@@ -1389,8 +1389,10 @@ void SFD_DumpPST( FILE *sfd, SplineChar *sc ) {
 	    } else if ( pst->type==pst_lcaret ) {
 		int i;
 		fprintf( sfd, "%d ", pst->u.lcaret.cnt );
-		for ( i=0; i<pst->u.lcaret.cnt; ++i )
-		    fprintf( sfd, "%d ", pst->u.lcaret.carets[i] );
+		for ( i=0; i<pst->u.lcaret.cnt; ++i ) {
+		    fprintf( sfd, "%d", pst->u.lcaret.carets[i] );
+                    if ( i<pst->u.lcaret.cnt-1 ) putc(' ',sfd);
+                }
 		fprintf( sfd, "\n" );
 	    } else
 		fprintf( sfd, "%s\n", pst->u.lig.components );
@@ -1585,7 +1587,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 		SFDDumpPattern(sfd,"StrokePattern:", sc->layers[i].stroke_pen.brush.pattern );
 	} else {
 	    if ( sc->layers[i].images==NULL && sc->layers[i].splines==NULL &&
-		    sc->layers[i].refs==NULL && sc->layers[i].validation_state&vs_known == 0 &&
+		    sc->layers[i].refs==NULL && (sc->layers[i].validation_state&vs_known) == 0 &&
 		    sc->layers[i].python_persistent == NULL)
     continue;
 	    if ( i==ly_back )
@@ -1657,8 +1659,10 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 	    } else if ( pst->type==pst_lcaret ) {
 		int i;
 		fprintf( sfd, "%d ", pst->u.lcaret.cnt );
-		for ( i=0; i<pst->u.lcaret.cnt; ++i )
-		    fprintf( sfd, "%d ", pst->u.lcaret.carets[i] );
+		for ( i=0; i<pst->u.lcaret.cnt; ++i ) {
+		    fprintf( sfd, "%d", pst->u.lcaret.carets[i] );
+                    if ( i<pst->u.lcaret.cnt-1 ) putc(' ',sfd);
+                }
 		fprintf( sfd, "\n" );
 	    } else
 		fprintf( sfd, "%s\n", pst->u.lig.components );
@@ -1754,8 +1758,12 @@ static int SFDDumpBitmapFont(FILE *sfd,BDFFont *bdf,EncMap *encm,int *newgids,
     BDFRefChar *ref;
 
     ff_progress_next_stage();
-    fprintf( sfd, "BitmapFont: %d %d %d %d %d %s\n", bdf->pixelsize, bdf->glyphcnt,
-	    bdf->ascent, bdf->descent, BDFDepth(bdf), bdf->foundry?bdf->foundry:"" );
+    if (bdf->foundry)
+        fprintf( sfd, "BitmapFont: %d %d %d %d %d %s\n", bdf->pixelsize, bdf->glyphcnt,
+                 bdf->ascent, bdf->descent, BDFDepth(bdf), bdf->foundry );
+    else
+        fprintf( sfd, "BitmapFont: %d %d %d %d %d\n", bdf->pixelsize, bdf->glyphcnt,
+                 bdf->ascent, bdf->descent, BDFDepth(bdf) );
     if ( bdf->prop_cnt>0 ) {
 	fprintf( sfd, "BDFStartProperties: %d\n", bdf->prop_cnt );
 	for ( i=0; i<bdf->prop_cnt; ++i ) {
@@ -1822,11 +1830,11 @@ static void SFDDumpPrivate(FILE *sfd,struct psdict *private) {
 
 static void SFDDumpLangName(FILE *sfd, struct ttflangname *ln) {
     int i, end;
-    fprintf( sfd, "LangName: %d ", ln->lang );
+    fprintf( sfd, "LangName: %d", ln->lang );
     for ( end = ttf_namemax; end>0 && ln->names[end-1]==NULL; --end );
     for ( i=0; i<end; ++i ) {
+        putc(' ',sfd);
         SFDDumpUTF7Str(sfd,ln->names[i]);
-        if ( i<end-1 ) putc(' ',sfd);
     }
     putc('\n',sfd);
 }
@@ -2053,36 +2061,31 @@ static void SFDFpstClassNamesOut(FILE *sfd,int class_cnt,char **classnames,const
     }
 }
 
-/**
- * Get the path name of /tmp or equivalent on the current system.
- * The return value should not be freed by the caller
- */
-static const char* getSlashTempName(void) {
-    char* t = 0;
-
-    if((t=getenv("TMPDIR"))) {
-	return t;
-    }
-
-#ifndef P_tmpdir
-#define P_tmpdir	"/tmp"
-#endif
-    return P_tmpdir;
-}
-
-
 FILE* MakeTemporaryFile(void) {
-    FILE * ret;
-    char template[PATH_MAX+1];
-    int fd;
+    FILE *ret = NULL;
 
-    strncpy( template, getSlashTempName(), PATH_MAX-2-strlen("fontforge-stemp-XXXXXX") );
-    strcat( template, "/" );
-    strcat( template, "fontforge-stemp-XXXXXX" );
-    fd = g_mkstemp( template );
-    printf("MakeTemporaryFile() fd:%d template:%s\n", fd, template );
-    if ( (ret=fdopen(fd,"rw+"))==NULL ) ret=0;
-    unlink( template );
+#ifndef __MINGW32__
+    gchar *loc;
+    int fd = g_file_open_tmp("fontforge-XXXXXX", &loc, NULL);
+
+    if (fd != -1) {
+        ret = fdopen(fd, "w+");
+        g_unlink(loc);
+        g_free(loc);
+    }
+#else
+    HANDLE hFile = INVALID_HANDLE_VALUE;
+    for (int retries = 0; hFile == INVALID_HANDLE_VALUE && retries < 10; retries++) {
+        wchar_t *temp = _wtempnam(NULL, L"FontForge");
+        hFile = CreateFileW(temp, GENERIC_READ|GENERIC_WRITE, 0, NULL,
+            CREATE_NEW, FILE_ATTRIBUTE_TEMPORARY|FILE_FLAG_DELETE_ON_CLOSE, NULL);
+        free(temp);
+    }
+    ret = _fdopen(_open_osfhandle((intptr_t)hFile, 0), "wb+");
+    if (ret == NULL && hFile != INVALID_HANDLE_VALUE) {
+        CloseHandle(hFile);
+    }
+#endif
     return ret;
 }
 
@@ -2196,12 +2199,6 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	fprintf(sfd, "FullName: %s\n", sf->fullname );
     if ( sf->familyname!=NULL )
 	fprintf(sfd, "FamilyName: %s\n", sf->familyname );
-    if ( sf->pfminfo.os2_family_name ) {
-	fprintf(sfd, "OS2FamilyName: "); SFDDumpUTF7Str(sfd,sf->pfminfo.os2_family_name); putc('\n', sfd);
-    }
-    if ( sf->pfminfo.os2_style_name ) {
-	fprintf(sfd, "OS2StyleName: "); SFDDumpUTF7Str(sfd,sf->pfminfo.os2_style_name ); putc('\n', sfd);
-    }
     if ( sf->weight!=NULL )
 	fprintf(sfd, "Weight: %s\n", sf->weight );
     if ( sf->copyright!=NULL )
@@ -2219,6 +2216,8 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 
     if ( sf->version!=NULL )
 	fprintf(sfd, "Version: %s\n", sf->version );
+    if ( sf->styleMapFamilyName!=NULL )
+	fprintf(sfd, "StyleMapFamilyName: %s\n", sf->styleMapFamilyName );
     if ( sf->fondname!=NULL )
 	fprintf(sfd, "FONDName: %s\n", sf->fondname );
     if ( sf->defbasefilename!=NULL )
@@ -2255,6 +2254,7 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	putc('\n',sfd);
     }
     // TODO: Output U. F. O. layer path.
+    if (sf->preferred_kerning != 0) fprintf(sfd, "PreferredKerning: %d\n", sf->preferred_kerning);
     if ( sf->strokedfont )
 	fprintf(sfd, "StrokedFont: %d\n", sf->strokedfont );
     else if ( sf->multilayer )
@@ -2275,6 +2275,8 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	SFDDumpBase(sfd,"BaseHoriz:",sf->horiz_base);
     if ( sf->vert_base!=NULL )
 	SFDDumpBase(sfd,"BaseVert:",sf->vert_base);
+    if ( sf->pfminfo.stylemap!=-1 )
+	fprintf(sfd, "StyleMap: 0x%04x\n", sf->pfminfo.stylemap );
     if ( sf->pfminfo.fstype!=-1 )
 	fprintf(sfd, "FSType: %d\n", sf->pfminfo.fstype );
     fprintf(sfd, "OS2Version: %d\n", sf->os2_version );
@@ -2321,7 +2323,9 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 	fprintf(sfd, "OS2StrikeYSize: %d\n", sf->pfminfo.os2_strikeysize );
 	fprintf(sfd, "OS2StrikeYPos: %d\n", sf->pfminfo.os2_strikeypos );
     }
+    if ( sf->pfminfo.os2_capheight!=0 )
     fprintf(sfd, "OS2CapHeight: %d\n", sf->pfminfo.os2_capheight );
+    if ( sf->pfminfo.os2_xheight!=0 )
     fprintf(sfd, "OS2XHeight: %d\n", sf->pfminfo.os2_xheight );
     if ( sf->pfminfo.os2_family_class!=0 )
 	fprintf(sfd, "OS2FamilyClass: %d\n", sf->pfminfo.os2_family_class );
@@ -2744,13 +2748,13 @@ static int SFD_Dump( FILE *sfd, SplineFont *sf, EncMap *map, EncMap *normal,
     }
     if ( sf->anchor!=NULL ) {
 	AnchorClass *an;
-	fprintf(sfd, "AnchorClass2: ");
+	fprintf(sfd, "AnchorClass2:");
 	for ( an=sf->anchor; an!=NULL; an=an->next ) {
-	    SFDDumpUTF7Str(sfd,an->name);
 	    putc(' ',sfd);
+	    SFDDumpUTF7Str(sfd,an->name);
             if ( an->subtable!=NULL ) {
-	        SFDDumpUTF7Str(sfd,an->subtable->subtable_name);
 	        putc(' ',sfd);
+	        SFDDumpUTF7Str(sfd,an->subtable->subtable_name);
             }
             else
                 fprintf(sfd, "\"\" ");
@@ -3038,8 +3042,7 @@ return;
 	    else
 		sprintf( markerfile,"%s/" FONT_PROPS, buffer );
 	    if ( !GFileExists(markerfile)) {
-		sprintf( markerfile, "rm -rf %s", buffer );
-		system( buffer );
+		GFileRemove(buffer, false);
 	    }
 	}
     }
@@ -4437,6 +4440,7 @@ return(NULL);
 	len = last-first+1;
 	if ( len<=0 ) {
 	    IError( "Bad device table, invalid length.\n" );
+            free(adjust);
 return(NULL);
 	}
 	adjust->first_pixel_size = first;
@@ -4505,6 +4509,7 @@ static AnchorPoint *SFDReadAnchorPoints(FILE *sfd,SplineChar *sc,AnchorPoint** a
     name = SFDReadUTF7Str(sfd);
     if ( name==NULL ) {
 	LogError(_("Anchor Point with no class name: %s"), sc->name );
+	AnchorPointsFree(ap);
 return( lastap );
     }
     for ( an=sc->parent->anchor; an!=NULL && strcmp(an->name,name)!=0; an=an->next );
@@ -4808,9 +4813,11 @@ static void SFDConsumeUntil( FILE *sfd, const char** terminators ) {
         const char** tp = terminators;
         for( ; tp && *tp; ++tp ) {
             if( !strnmatch( line, *tp, strlen( *tp ))) {
+                free(line);
                 return;
             }
         }
+        free(line);
     }
 }
 
@@ -4850,8 +4857,7 @@ void SFDGetKerns( FILE *sfd, SplineChar *sc, char* ttok ) {
 		while ( (ch=nlgetc(sfd))==' ' );
 		ungetc(ch,sfd);
 		if ( ch=='{' ) {
-		    kp->adjust=chunkalloc(sizeof(DeviceTable));
-		    SFDReadDeviceTable(sfd,kp->adjust);
+		    kp->adjust = SFDReadDeviceTable(sfd, NULL);
 		}
 		if ( last != NULL )
 		    last->next = kp;
@@ -4895,10 +4901,6 @@ exit(1);
 			IError("'%s' in %s has a script index out of bounds: %d",
 				isv ? "vkrn" : "kern",
 				sc->name, sli );
-		    else
-			IError( "'%s' in %s has a script index out of bounds: %d",
-				isv ? "vkrn" : "kern",
-				sc->name, sli );
 		    sli = SFFindBiggestScriptLangIndex(sli_sf,
 			    SCScriptFromUnicode(sc),DEFAULT_LANG);
 		    complained = true;
@@ -4913,8 +4915,7 @@ exit(1);
 		while ( (ch=nlgetc(sfd))==' ' );
 		ungetc(ch,sfd);
 		if ( ch=='{' ) {
-		    kp->kp.adjust=chunkalloc(sizeof(DeviceTable));
-		    SFDReadDeviceTable(sfd,kp->kp.adjust);
+		    kp->kp.adjust = SFDReadDeviceTable(sfd, NULL);
 		}
 		if ( last != NULL )
 		    last->kp.next = (KernPair *) kp;
@@ -5104,8 +5105,10 @@ char* SFDMoveToNextStartChar( FILE* sfd ) {
 	    while( line[len] && line[len] == ' ' )
 		len++;
 	    strcpy( ret, line+len );
+	    free(line);
 	    return copy(ret);
 	}
+	free(line);
 	if(feof( sfd ))
 	    break;
 
@@ -5579,8 +5582,7 @@ return( NULL );
 		while ( (ch=nlgetc(sfd))==' ' );
 		ungetc(ch,sfd);
 		if ( ch=='{' ) {
-		    kp->adjust=chunkalloc(sizeof(DeviceTable));
-		    SFDReadDeviceTable(sfd,kp->adjust);
+		    kp->adjust = SFDReadDeviceTable(sfd, NULL);
 		}
 		if ( last != NULL )
 		    last->next = kp;
@@ -5620,10 +5622,6 @@ exit(1);
 			IError("'%s' in %s has a script index out of bounds: %d",
 				isv ? "vkrn" : "kern",
 				sc->name, sli );
-		    else
-			IError( "'%s' in %s has a script index out of bounds: %d",
-				isv ? "vkrn" : "kern",
-				sc->name, sli );
 		    sli = SFFindBiggestScriptLangIndex(sli_sf,
 			    SCScriptFromUnicode(sc),DEFAULT_LANG);
 		    complained = true;
@@ -5638,8 +5636,7 @@ exit(1);
 		while ( (ch=nlgetc(sfd))==' ' );
 		ungetc(ch,sfd);
 		if ( ch=='{' ) {
-		    kp->kp.adjust=chunkalloc(sizeof(DeviceTable));
-		    SFDReadDeviceTable(sfd,kp->kp.adjust);
+		    kp->kp.adjust = SFDReadDeviceTable(sfd, NULL);
 		}
 		if ( last != NULL )
 		    last->kp.next = (KernPair *) kp;
@@ -5851,8 +5848,6 @@ static int SFDGetBitmapChar(FILE *sfd,BDFFont *bdf) {
     EncMap *map;
     int ch;
 
-    bfc = chunkalloc(sizeof(BDFChar));
-    memset( bfc,'\0',sizeof( BDFChar ));
     map = bdf->sf->map;
 
     if ( getint(sfd,&orig)!=1 || orig<0 )
@@ -5886,6 +5881,11 @@ return( 0 );
     }
     if ( enc<0 ||xmax<xmin || ymax<ymin )
 return( 0 );
+
+    bfc = chunkalloc(sizeof(BDFChar));
+    if (bfc == NULL)
+        return 0;
+
     if ( orig==-1 ) {
 	bfc->sc = SFMakeChar(bdf->sf,map,enc);
 	orig = bfc->sc->orig_pos;
@@ -5988,8 +5988,6 @@ static int SFDGetBitmapFont(FILE *sfd,SplineFont *sf,int fromdir,char *dirname) 
     int pixelsize, ascent, descent, depth=1;
     int ch, enccount;
 
-    bdf = calloc(1,sizeof(BDFFont));
-
     if ( getint(sfd,&pixelsize)!=1 || pixelsize<=0 )
 return( 0 );
     if ( getint(sfd,&enccount)!=1 || enccount<0 )
@@ -6004,6 +6002,11 @@ return( 0 );
 return( 0 );
     while ( (ch = nlgetc(sfd))==' ' );
     ungetc(ch,sfd);		/* old sfds don't have a foundry */
+
+    bdf = calloc(1,sizeof(BDFFont));
+    if (bdf == NULL)
+        return 0;
+
     if ( ch!='\n' && ch!='\r' ) {
 	getname(sfd,tok);
 	bdf->foundry = copy(tok);
@@ -6064,6 +6067,7 @@ return( 0 );
 		}
 	    }
 	}
+	free(name);
 	closedir(dir);
     }
     SFDFixupBitmapRefs( bdf );
@@ -7460,14 +7464,6 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	geteol(sfd,val);
 	sf->familyname = copy(val);
     }
-    else if ( strmatch(tok,"OS2FamilyName:")==0 )
-    {
-	if (!sf->pfminfo.os2_family_name) sf->pfminfo.os2_family_name = SFDReadUTF7Str(sfd);
-    }
-    else if ( strmatch(tok,"OS2StyleName:")==0 )
-    {
-	if (!sf->pfminfo.os2_style_name) sf->pfminfo.os2_style_name = SFDReadUTF7Str(sfd);
-    }
     else if ( strmatch(tok,"DefaultBaseFilename:")==0 )
     {
 	geteol(sfd,val);
@@ -7500,6 +7496,16 @@ bool SFD_GetFontMetaData( FILE *sfd,
     {
 	geteol(sfd,val);
 	sf->version = copy(val);
+    }
+    else if ( strmatch(tok,"StyleMapFamilyName:")==0 )
+    {
+    sf->styleMapFamilyName = SFDReadUTF7Str(sfd);
+    }
+    /* Legacy attribute for StyleMapFamilyName. Deprecated. */
+    else if ( strmatch(tok,"OS2FamilyName:")==0 )
+    {
+    if (sf->styleMapFamilyName == NULL)
+        sf->styleMapFamilyName = SFDReadUTF7Str(sfd);
     }
     else if ( strmatch(tok,"FONDName:")==0 )
     {
@@ -7823,6 +7829,12 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	ungetc(ch,sfd);
 	if ( ch!='\n' ) { sf->layers[layer].ufo_path = SFDReadUTF7Str(sfd); }
     }
+    else if ( strmatch(tok,"PreferredKerning:")==0 )
+    {
+	int temp;
+	getint(sfd,&temp);
+	sf->preferred_kerning = temp;
+    }
     else if ( strmatch(tok,"StrokedFont:")==0 )
     {
 	int temp;
@@ -7883,6 +7895,22 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	else
 	    d->last_base->scripts = bs;
 	d->last_base_script = bs;
+    }
+    else if ( strmatch(tok,"StyleMap:")==0 )
+    {
+    gethex(sfd,(uint32 *)&sf->pfminfo.stylemap);
+    }
+    /* Legacy attribute for StyleMap. Deprecated. */
+    else if ( strmatch(tok,"OS2StyleName:")==0 )
+    {
+    char* sname = SFDReadUTF7Str(sfd);
+    if (sf->pfminfo.stylemap == -1) {
+        if (strcmp(sname,"bold italic")==0) sf->pfminfo.stylemap = 0x21;
+        else if (strcmp(sname,"bold")==0) sf->pfminfo.stylemap = 0x20;
+        else if (strcmp(sname,"italic")==0) sf->pfminfo.stylemap = 0x01;
+        else if (strcmp(sname,"regular")==0) sf->pfminfo.stylemap = 0x40;
+    }
+    free(sname);
     }
     else if ( strmatch(tok,"FSType:")==0 )
     {
@@ -7993,9 +8021,10 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	      strmatch(tok,"KernClass3:")==0 || strmatch(tok,"VKernClass3:")==0 )
     {
 	int kernclassversion = 0;
-	if (tok[9] >= '0' && tok[9] <= '9') kernclassversion = tok[9] - '0';
-	int temp, classstart=1;
 	int isv = tok[0]=='V';
+	int kcvoffset = (isv ? 10 : 9); //Offset to read kerning class version
+	if (isdigit(tok[kcvoffset])) kernclassversion = tok[kcvoffset] - '0';
+	int temp, classstart=1;
 	int old = (kernclassversion == 0);
 
 	if ( (sf->sfd_version<2)!=old ) {
@@ -9120,63 +9149,81 @@ return( NULL );
 return( sf );
 }
 
-static int ask_about_file(FILE *asfd,int *state,char *filename) {
+/**
+ * Asks the user whether or not to recover, skip or delete an autosaved file.
+ * If requested by the user, this function will attempt to delete the file.
+ * @param [in] filename The path to the autosaved file.
+ * @param [in,out] state The current state.
+ *                 state&1: Recover all. state&2: Forget all.
+ * @param [out] asfd Location to store the file pointer to the autosaved file.
+ * @return true iff the file is to be recovered. If true, asfd will hold the
+ *         corresponding file pointer, which must be closed by the caller. If
+ *         false, asfd will hold NULL.
+ */
+static int ask_about_file(char *filename, int *state, FILE **asfd) {
     int ret;
     char *buts[6];
     char buffer[800], *pt;
 
-    if ( *state&1 )
-return( true );
-    else if ( *state&2 ) {
-	unlink(filename);
-return( false );
+    if ((*asfd = fopen(filename, "r")) == NULL) {
+        return false;
+    } else if (*state&1) { //Recover all
+        return true;
+    } else if (*state&2) { //Forget all
+        fclose(*asfd);
+        *asfd = NULL;
+        unlink(filename);
+        return false;
     }
 
-    fgets(buffer,sizeof(buffer),asfd);
-    rewind(asfd);
-    if ( strncmp(buffer,"Base: ",6)!=0 )
-	strcpy(buffer+6, "<New File>");
+    fgets(buffer,sizeof(buffer),*asfd);
+    rewind(*asfd);
+    if (strncmp(buffer,"Base: ",6) != 0) {
+        strcpy(buffer+6, "<New File>");
+    }
     pt = buffer+6;
-    if ( strlen(buffer+6)>70 ) {
-	pt = strrchr(buffer+6,'/');
-	if ( pt==NULL )
-	    pt = buffer+6;
+    if (strlen(buffer+6) > 70) {
+        pt = strrchr(buffer+6,'/');
+        if (pt == NULL)
+            pt = buffer+6;
     }
 
     buts[0] = _("Yes"); buts[1] = _("Yes to _All");
     buts[2] = _("_Skip for now");
     buts[3] = _("Forget _to All"); buts[4] = _("_Forget about it");
     buts[5] = NULL;
-    ret = ff_ask(_("Recover old edit"),(const char **) buts,0,3,_("You appear to have an old editing session on %s.\nWould you like to recover it?"), pt );
-    switch ( ret ) {
-      case 0:
-return( true );
-      case 1:
-	*state = 1;
-return( true );
-      case 2:
-return( false );
-      case 3:
-	*state = 2;
-	/* Fall through */
-      case 4:
-	unlink(filename);
-return( false );
-      default:
-      break;
+    ret = ff_ask(_("Recover old edit"),(const char **) buts,0,3,_("You appear to have an old editing session on %s.\nWould you like to recover it?"), pt);
+    switch (ret) {
+        case 1: //Recover all
+            *state = 1;
+            break;
+        case 2: //Skip one
+            fclose(*asfd);
+            *asfd = NULL;
+            return false;
+        case 3: //Forget all
+            *state = 2;
+            /* Fall through */
+        case 4: //Forget one
+            fclose(*asfd);
+            *asfd = NULL;
+            unlink(filename);
+            return false;
+        default: //Recover one
+            break;
     }
-return( true );
+    return true;
 }
 
 SplineFont *SFRecoverFile(char *autosavename,int inquire,int *state) {
-    FILE *asfd = fopen( autosavename,"r");
+    FILE *asfd;
     SplineFont *ret;
     char tok[1025];
 
-    if ( asfd==NULL )
-return(NULL);
-    if ( inquire && !ask_about_file(asfd,state,autosavename)) {
-	fclose( asfd );
+    if (!inquire) {
+        *state = 1; //Default to recover all
+    }
+    if (!ask_about_file(autosavename, state, &asfd)) {
 return( NULL );
     }
     locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.

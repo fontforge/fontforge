@@ -27,7 +27,6 @@
 #include "fontforgevw.h"
 #include <unistd.h>
 #include <math.h>
-#include <time.h>
 #include <locale.h>
 #include <utype.h>
 #include <chardata.h>
@@ -62,7 +61,6 @@ static int svg_outfontheader(FILE *file, SplineFont *sf,int layer) {
     BlueData bd;
     char *hash, *hasv, ch;
     int minu, maxu, i;
-    time_t now;
     const char *author = GetAuthor();
 
     memset(&info,0,sizeof(info));
@@ -78,9 +76,8 @@ static int svg_outfontheader(FILE *file, SplineFont *sf,int layer) {
 	fprintf( file, "\n-->\n" );
     }
     fprintf( file, "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\">\n" );
-    time(&now);
     fprintf( file, "<metadata>\nCreated by FontForge %d at %s",
-	    FONTFORGE_VERSIONDATE_RAW, ctime(&now) );
+	    FONTFORGE_VERSIONDATE_RAW, ctime((time_t*)&sf->modificationtime) );
     if ( author!=NULL )
 	fprintf(file," By %s\n", author);
     else
@@ -91,12 +88,16 @@ static int svg_outfontheader(FILE *file, SplineFont *sf,int layer) {
     }
     fprintf( file, "</metadata>\n" );
     fprintf( file, "<defs>\n" );
-    fprintf( file, "<font id=\"%s\" horiz-adv-x=\"%d\" ", sf->fontname, defwid );
+    fprintf( file, "<font id=\"");
+    latin1ToUtf8Out(file, sf->fontname);
+    fprintf(file, "\" horiz-adv-x=\"%d\" ", defwid );
     if ( sf->hasvmetrics )
 	fprintf( file, "vert-adv-y=\"%d\" ", sf->ascent+sf->descent );
     putc('>',file); putc('\n',file);
     fprintf( file, "  <font-face \n" );
-    fprintf( file, "    font-family=\"%s\"\n", sf->familyname_with_timestamp ? sf->familyname_with_timestamp : sf->familyname );
+    fprintf( file, "    font-family=\"");
+    latin1ToUtf8Out(file, sf->familyname_with_timestamp ? sf->familyname_with_timestamp : sf->familyname );
+    fprintf( file, "\"\n");
     fprintf( file, "    font-weight=\"%d\"\n", info.weight );
     if ( strstrmatch(sf->fontname,"obli") || strstrmatch(sf->fontname,"slanted") )
 	fprintf( file, "    font-style=\"oblique\"\n" );
@@ -755,7 +756,7 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid, int encuni, int vs
 	c = LigCnt(sc->parent,best,univals,sizeof(univals)/sizeof(univals[0]));
 	fputs("unicode=\"",file);
 	for ( i=0; i<c; ++i )
-	    if ( univals[i]>='A' && univals[i]<'z' )
+	    if ( univals[i]>='A' && univals[i]<='z' )
 		putc(univals[i],file);
 	    else
 		fprintf(file,"&#x%x;", (unsigned int) univals[i]);
@@ -3184,6 +3185,7 @@ static SplineFont *SVGParseFont(xmlNodePtr font) {
     int cnt, flags = -1;
     xmlNodePtr kids;
     int defh=0, defv=0;
+    int has_font_face = false;
     xmlChar *name;
     SplineFont *sf;
     EncMap *map;
@@ -3211,6 +3213,7 @@ static SplineFont *SVGParseFont(xmlNodePtr font) {
     for ( kids = font->children; kids!=NULL; kids=kids->next ) {
 	int ascent=0, descent=0;
 	if ( xmlStrcmp(kids->name,(const xmlChar *) "font-face")==0 ) {
+	    has_font_face = true;
 	    name = xmlGetProp(kids,(xmlChar *) "units-per-em");
 	    if ( name!=NULL ) {
 		int val = rint(strtod((char *) name,NULL));
@@ -3356,7 +3359,7 @@ return( NULL );
 		xmlStrcmp(kids->name,(const xmlChar *) "missing-glyph")==0 )
 	    ++cnt;
     }
-    if ( sf->descent==0 ) {
+    if ( !has_font_face ) {
 	LogError( _("This font does not specify font-face\n") );
 	SplineFontFree(sf);
 return( NULL );

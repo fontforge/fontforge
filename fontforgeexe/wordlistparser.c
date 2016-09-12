@@ -3,6 +3,7 @@
 *******************************************************************************
 
     Copyright (C) 2013 Ben Martin
+    Copyright 2014-2015, the FontForge Project Developers.
 
     This file is part of FontForge.
 
@@ -66,10 +67,13 @@ const char* Wordlist_getSCName( SplineChar* sc )
         
     static char ret[ 1024 ];
     int simple = false;
+    /* If the glyph is unencoded, we need to keep a slash before the name because
+       it doesn't correspond to the codepoint. */
+    if( sc->unicodeenc != -1 ) {
     if( strlen( sc->name ) == 1 )
     {
         char ch = sc->name[0];
-        
+
         if( ch >= 'a' && ch <= 'z' )
             simple = true;
         else if( ch >= '0' && ch <= '9' )
@@ -84,7 +88,6 @@ const char* Wordlist_getSCName( SplineChar* sc )
         }
     }
 
-    
     if( !strcmp( sc->name, "zero" ))
         return "0";
     if( !strcmp( sc->name, "one" ))
@@ -105,7 +108,8 @@ const char* Wordlist_getSCName( SplineChar* sc )
         return "8";
     if( !strcmp( sc->name, "nine" ))
         return "9";
-        
+    }
+
     snprintf( ret, 1024, "/%s", sc->name );
     return ret;
 }
@@ -260,7 +264,7 @@ u_WordlistEscapedInputStringToRealString_readGlyphName(
 	    unichar_t* endptr = 0;
 	    long unicodepoint = u_strtoul( glyphname+1, &endptr, 16 );
 	    TRACE("AAA glyphname:%s\n", u_to_c(glyphname+1) );
-	    TRACE("AAA unicodepoint:%d\n", unicodepoint );
+	    TRACE("AAA unicodepoint:%ld\n", unicodepoint );
 	    sc = SFGetChar( sf, unicodepoint, 0 );
 	    if( sc && endptr )
 	    {
@@ -284,15 +288,21 @@ u_WordlistEscapedInputStringToRealString_readGlyphName(
 	    {
 		unichar_t* endptr = 0;
 		long unicodepoint = u_strtoul( glyphname+3, &endptr, 16 );
+                SplineChar* tmp = 0;
 		TRACE("uni prefix, codepoint: %ld\n", unicodepoint );
 		sc = SFGetChar( sf, unicodepoint, 0 );
-		if( sc && endptr )
-		{
-		    unichar_t* endofglyphname = glyphname + u_strlen(glyphname);
-//		    printf("endptr:%p endofglyphname:%p\n", endptr, endofglyphname );
-		    for( ; endptr < endofglyphname; endptr++ )
-			--endpos;
-		}
+                if (tmp = SFGetChar( sf, -1, u_to_c(glyphname) )) {
+		    TRACE("have subst. char: %s\n", tmp->name );
+                    sc = tmp;
+                } else {
+		    if( sc && endptr )
+		    {
+		        unichar_t* endofglyphname = glyphname + u_strlen(glyphname);
+//		        printf("endptr:%p endofglyphname:%p\n", endptr, endofglyphname );
+		        for( ; endptr < endofglyphname; endptr++ )
+                            --endpos;
+		    }
+                }
 	    }
 	    
 	    if( firstLookup && glyphname[0] == '#' )
@@ -472,16 +482,17 @@ WordListLine WordlistEscapedInputStringToParsedDataComplex(
 		     * start from 65536 (values beyond Unicode, 65535 being the reserved
 		     * "frontier" value).
 		     */
-		    if ( n < 65536 ) {
-		        printf("ToRealString: backmapped position does not match Unicode encoding\n");
-		        printf("orig_pos: %d, backmap: %d, attached unicode enc: %d\n", sc->orig_pos, n, sc->unicodeenc );
-		        printf("ToRealString: INVALID CHAR POSITION, name: %s\n", sc->name );
+		    if ( (sf->map->enc->is_unicodebmp || sf->map->enc->is_unicodefull) && n < 65536 ) {
+		        TRACE("ToRealString: backmapped position does not match Unicode encoding\n");
+		        TRACE("orig_pos: %d, backmap: %d, attached unicode enc: %d\n", sc->orig_pos, n, sc->unicodeenc );
+		        TRACE("ToRealString: INVALID CHAR POSITION, name: %s\n", sc->name );
 		    }
 		}
 
 		out->sc = sc;
 		out->isSelected = isSelected;
 		out->currentGlyphIndex = currentGlyphIndex;
+                out->n = n;
 		out++;
 		/* out = utf8_idpb( out, n, 0 ); */
 		/* if( !out ) */
@@ -490,10 +501,8 @@ WordListLine WordlistEscapedInputStringToParsedDataComplex(
 	    }
 	}
 
-	char glyphname[10];
-	glyphname[0] = ch;
-	glyphname[1] ='\0';
-	SplineChar* sc = SFGetChar( sf, ch, 0 );
+	/* If we reach this point, we're looking based on codepoint. */
+	SplineChar* sc = SFGetOrMakeChar( sf, (int)ch, 0 );
 	out->sc = sc;
 	out->isSelected = isSelected;
 	out->currentGlyphIndex = currentGlyphIndex;
@@ -921,6 +930,7 @@ unichar_t* WordListLine_toustr( WordListLine wll )
     unichar_t* p = ret;
     for( ; wll->sc; wll++, p++ ) {
 	*p = wll->sc->unicodeenc;
+        if (*p == -1) *p = wll->n;
     }
     return ret;
 }

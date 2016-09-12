@@ -233,6 +233,10 @@ static int _Stroke_OK(StrokeDlg *sd,int isapply) {
 		GGadgetIsChecked( GWidgetGetControl(sw,CID_RoundJoin))?lj_round:
 		lj_miter;
 	si->radius = GetReal8(sw,CID_Width,_("Stroke _Width:"),&err)/2;
+    if (si->radius == 0) {
+        ff_post_error(_("Bad Value"), _("Stroke width cannot be zero"));
+        err = true;
+    }
 	if ( si->radius<0 ) si->radius = -si->radius;	/* Behavior is said to be very slow (but correct) for negative strokes */
 	si->penangle = GetReal8(sw,CID_PenAngle,_("Pen _Angle:"),&err);
 	if ( si->penangle>180 || si->penangle < -180 ) {
@@ -527,6 +531,7 @@ static void StrokeInit(StrokeDlg *sd) {
     sd->dummy_sf.glyphs = sd->chars;
     sd->dummy_sf.glyphcnt = sd->dummy_sf.glyphmax = 1;
     sd->dummy_sf.pfminfo.fstype = -1;
+    sd->dummy_sf.pfminfo.stylemap = -1;
     sd->dummy_sf.fontname = sd->dummy_sf.fullname = sd->dummy_sf.familyname = "dummy";
     sd->dummy_sf.weight = "Medium";
     sd->dummy_sf.origname = "dummy";
@@ -577,7 +582,6 @@ return( true );
 	}
 return( false );
     } else if ( event->type == et_mousemove ) {
-    } else if ( event->type == et_expose ) {
     } else if ( event->type == et_map ) {
 	/* Above palettes */
 	GDrawRaise(gw);
@@ -1357,6 +1361,7 @@ static void GDDInit(GradientDlg *gdd,SplineFont *sf,Layer *ly,struct gradient *g
     gdd->dummy_sf.glyphs = gdd->chars;
     gdd->dummy_sf.glyphcnt = gdd->dummy_sf.glyphmax = 1;
     gdd->dummy_sf.pfminfo.fstype = -1;
+    gdd->dummy_sf.pfminfo.stylemap = -1;
     gdd->dummy_sf.fontname = gdd->dummy_sf.fullname = gdd->dummy_sf.familyname = "dummy";
     gdd->dummy_sf.weight = "Medium";
     gdd->dummy_sf.origname = "dummy";

@@ -666,7 +666,7 @@ return;
 	trace->first->prevcp.y = trace->first->me.y -
 		sin(hangle)*llen;
 	trace->first->nextcp = oldn;
-    } else if ( trace->first->nonextcp ) {
+    } else if ( trace->first->noprevcp ) {
 	SplineCharDefaultPrevCP(trace->first);
 	dx = trace->first->me.x-trace->first->nextcp.x;
 	dy = trace->first->me.y-trace->first->nextcp.y;

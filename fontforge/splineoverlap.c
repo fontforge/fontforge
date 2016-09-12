@@ -477,14 +477,13 @@ static void MListReplaceMonotonicComplete(struct mlist ** input, struct monotoni
   // This replaces a reference to one monotonic with a copied reference. I hope that it is not necessary.
   // It is necessary to use double pointers so that we can set the previous reference.
   struct mlist ** current_pointer = input;
-  struct mlist * tmp_pointer;
+  struct monotonic * tmp_pointer;
   while (*current_pointer) {
     if ((*current_pointer)->m == findm) {
       if ((tmp_pointer = chunkalloc(sizeof(struct monotonic))) &&
       (memcpy(tmp_pointer, replacement, sizeof(struct monotonic)) == 0)) {
-        tmp_pointer->next = (*current_pointer)->next;
-        chunkfree(*current_pointer, sizeof(struct monotonic));
-        (*current_pointer) = tmp_pointer;
+        chunkfree((*current_pointer)->m, sizeof(struct monotonic));
+        (*current_pointer)->m = tmp_pointer;
       } else SOError("Error copying segment.\n");
     }
     current_pointer = &((*current_pointer)->next);
@@ -838,7 +837,7 @@ return;
 	    Monotonic *m2 = chunkalloc(sizeof(Monotonic));
 	    BasePoint pt, inter;
             BasePoint oldend;
-            if (m->end != NULL) m->end->inter;
+            if (m->end != NULL) oldend = m->end->inter;
             else {
               oldend.x = 0.0;
               oldend.y = 0.0;
@@ -1074,7 +1073,7 @@ static int RealCloser(extended ref0, extended ref1, extended queryval) {
 
 static void SplitMonotonicAtFlex(Monotonic *m,int which,bigreal coord,
 	struct inter_data *id, int doit) {
-    bigreal t;
+    bigreal t=0;
     int low=0, high=0;
     extended startx, starty, endx, endy;
     {
@@ -1191,7 +1190,7 @@ static void SplitMonotonicAtFlex(Monotonic *m,int which,bigreal coord,
       if (t == 0) {
         id->inter.x = m->s->from->me.x;
         id->inter.y = m->s->from->me.y;
-      } else if (m->end != NULL) {
+      } else if (m->start != NULL) {
         id->inter.x = m->start->inter.x;
         id->inter.y = m->start->inter.y;
       } else {
@@ -2059,7 +2058,7 @@ return( false );	/* But otherwise, don't create a new tiny spline */
     /* Ok, if we've gotten this far we know that two of the end points are  */
     /*  on both splines.                                                    */
     t1s[2] = t2s[2] = -1;
-    if ( !m1->s->knownlinear || !m1->s->knownlinear ) {
+    if ( !m1->s->knownlinear || !m2->s->knownlinear ) {
 	if ( t1s[1]<t1s[0] ) {
 	    extended temp = t1s[1]; t1s[1] = t1s[0]; t1s[0] = temp;
 	    temp = t2s[1]; t2s[1] = t2s[0]; t2s[0] = temp;

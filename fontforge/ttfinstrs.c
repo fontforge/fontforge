@@ -361,7 +361,7 @@ return( NULL );
 	break;
 	}
 	while ( *pt==' ' || *pt=='\t' ) ++pt;
-	if ( npos==0 && (*pt=='\n' || *pt=='\0') )
+	if ( npos==0 && (*pt=='\r' || *pt=='\n' || *pt=='\0') )
     continue;
 	nread = 0;
 	if ( push_left==-1 ) {
@@ -377,7 +377,7 @@ return( NULL );
 		push_left = numberstack[0];
 	    }
 	}
-	if ( push_left!=0 && push_left<npos-nread && (*pt=='\n' || *pt=='\0') ) {
+	if ( push_left!=0 && push_left<npos-nread && (*pt=='\r' || *pt=='\n' || *pt=='\0') ) {
 	    IVError(iv,_("More pushes specified than needed"),pt-text);
 return( NULL );
 	}
@@ -392,11 +392,11 @@ return( NULL );
 		instrs[icnt++] = numberstack[nread++];
 	    --push_left;
 	}
-	if ( nread<npos && push_left==0 && (*pt=='\n' || *pt=='\0')) {
+	if ( nread<npos && push_left==0 && (*pt=='\r' || *pt=='\n' || *pt=='\0')) {
 	    IVError(iv,_("Unexpected number"),pt-text);
 return( NULL );
 	}
-	if ( *pt=='\n' || *pt=='\0' )
+	if ( *pt=='\r' || *pt=='\n' || *pt=='\0' )
     continue;
 	if ( push_left>0 ) {
 	    IVError(iv,_("Missing pushes"),pt-text);
@@ -431,7 +431,7 @@ return( NULL );
 	    }
 	}
 	brack = NULL;
-	for ( end= pt; *end!='\n' && *end!=' ' && *end!='\0'; ++end )
+	for ( end= pt; *end!='\r' && *end!='\n' && *end!=' ' && *end!='\0'; ++end )
 	    if ( *end=='[' || *end=='_' ) brack=end;
 	for ( i=0; i<256; ++i )
 	    if ( strnmatch(pt,ff_ttf_instrnames[i],end-pt)==0 && end-pt==strlen(ff_ttf_instrnames[i]))

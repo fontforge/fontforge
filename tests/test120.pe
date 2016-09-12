@@ -2,7 +2,7 @@
 
 #Another point number test based on glyphs from deja-vu
 
-Open("@abs_srcdir@/fonts/NumberPoints.sfd")
+Open($1)
 Reencode("original")
 cnt=CharCnt()
 ptcnts = Array(cnt)
@@ -19,8 +19,8 @@ while ( i<cnt )
 endloop
 cnt = j
 
-Generate("@abs_builddir@/results/NumberPoints.ttf")
-Open("@abs_builddir@/results/NumberPoints.ttf")
+Generate("NumberPoints.ttf")
+Open("NumberPoints.ttf")
 
 i=0
 while ( i<cnt )

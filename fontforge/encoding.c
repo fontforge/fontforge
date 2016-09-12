@@ -264,9 +264,9 @@ Encoding *_FindOrMakeEncoding(const char *name,int make_it) {
     } else if ( strcasecmp(name,"isohebrew")==0 ) {
         name = "iso8859-8";
     } else if ( strcasecmp(name,"isothai")==0 ) {
-        name = "tis-620";	/* TIS doesn't define non-breaking space in 0xA0 */ 
+	name = "tis-620";	/* TIS doesn't define non-breaking space in 0xA0 */
     } else if ( strcasecmp(name,"latin0")==0 || strcasecmp(name,"latin9")==0 ) {
-        name = "iso8859-15";	/* "latin-9" is supported (libiconv bug?) */ 
+	name = "iso8859-15";	/* "latin-9" is supported (libiconv bug?) */
     } else if ( strcasecmp(name,"koi8r")==0 ) {
         name = "koi8-r";
     } else if ( strncasecmp(name,"jis201",6)==0 || strncasecmp(name,"jisx0201",8)==0 ) {
@@ -498,13 +498,18 @@ static char *getPfaEditEncodings(void) {
     return encfile;
 }
 
-static void EncodingFree(Encoding *item) {
+void EncodingFree(Encoding *item) {
     int i;
 
+    if ( item==NULL )
+	return;
+
     free(item->enc_name);
-    if ( item->psnames!=NULL ) for ( i=0; i<item->char_cnt; ++i )
-	free(item->psnames[i]);
-    free(item->psnames);
+    if ( item->psnames!=NULL ) {
+	for ( i=0; i<item->char_cnt; ++i )
+	    free(item->psnames[i]);
+	free(item->psnames);
+    }
     free(item->unicode);
     free(item);
 }
@@ -571,6 +576,69 @@ return( NULL );
 return( item );
 }
 
+/* Parse the GlyphOrderAndAliasDB file format */
+static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
+    char* names[1024];
+    char buffer[256];
+    int32 encs[1024];
+    Encoding* item = NULL;
+    size_t i, any;
+    int max, enc;
+
+    for (i=0; i < sizeof(names)/sizeof(names[0]); ++i) {
+        encs[i] = -1;
+        names[i] = NULL;
+    }
+
+    max = -1; any = 0;
+    i = 0;
+    while (fgets(buffer, sizeof(buffer), file) != NULL) {
+        max = i;
+
+        int tab, tab2;
+        for (tab = 0; tab < sizeof(buffer) && buffer[tab] != '\t'; tab++);
+        if (tab < sizeof(buffer))
+            buffer[tab]='\0';
+
+        for (tab2 = tab+1; tab2 < sizeof(buffer) && buffer[tab2] != '\t'; tab2++);
+        if (tab2 < sizeof(buffer))
+            buffer[tab2]='\0';
+
+        if (strcmp(buffer, ".notdef") == 0) {
+            encs[i] = -1;
+        } else if ((enc = UniFromName(buffer, ui_none, &custom)) != -1) {
+            encs[i] = enc;
+
+            /* Used not to do this, but there are several legal names */
+            /*  for some slots and people get unhappy (rightly) if we */
+            /*  use the wrong one */
+            names[i] = copy(&buffer[tab+1]);
+            any = 1;
+        } else {
+            names[i] = copy(&buffer[tab+1]);
+            any = 1;
+        }
+        i++;
+    }
+
+    if (max != -1) {
+        if (++max < 256) max = 256;
+        item = calloc(1,sizeof(Encoding));
+        char* buf = strdup(_("Please name this encoding"));
+        item->enc_name = ff_ask_string(buf, "GlyphOrderAndAliasDB", buf);
+        item->char_cnt = max;
+        item->unicode = malloc(max*sizeof(int32));
+        memcpy(item->unicode, encs, max*sizeof(int32));
+
+        if (any) {
+            item->psnames = calloc(max, sizeof(char *));
+            memcpy(item->psnames, names, max*sizeof(char *));
+        }
+    }
+
+    return item;
+}
+
 void RemoveMultiples(Encoding *item) {
     Encoding *test;
 
@@ -601,15 +669,23 @@ return( NULL );
 	fclose(file);
 return( NULL );
     }
-    ungetc(ch,file);
-    if ( ch=='#' || ch=='0' )
-    {
+
+    /* Here we detect file format and decide which format
+       parsing routine to actually use.
+    */
+    ungetc(ch, file);
+
+
+    if(strlen(filename) >= 20
+       && !strcmp(filename + strlen(filename) - 20, "GlyphOrderAndAliasDB")){
+        head = ParseGlyphOrderAndAliasDB(file);
+    } else if (ch=='#' || ch=='0') {
         head = ParseConsortiumEncodingFile(file);
         if(encodingname)
             head->enc_name = copy(encodingname);
+    } else {
+        head = PSSlurpEncodings(file);
     }
-    else
-	head = PSSlurpEncodings(file);
     fclose(file);
     if ( head==NULL ) {
 	ff_post_error(_("Bad encoding file format"),_("Bad encoding file format") );
@@ -784,10 +860,11 @@ int NameUni2CID(struct cidmap *map, int uni, const char *name) {
 		    if ( alts->uni==uni )
 				return( alts->cid );
     } else {
-		// Search for a matching name.
-		for ( i=0; i<map->namemax; ++i )
-	    	if ( map->name[i]!=NULL && strcmp(map->name[i],name)==0 )
-				return( i );
+	// Search for a matching name.
+	if ( name!=NULL )
+	    for ( i=0; i<map->namemax; ++i )
+		if ( map->name[i]!=NULL && strcmp(map->name[i],name)==0 )
+		    return( i );
     }
 	return( -1 );
 }
@@ -1176,7 +1253,7 @@ static char *readpsstr(char *str) {
     for ( eos = str; *eos!=')' && *eos!='\0'; ++eos );
 return( copyn(str,eos-str));
 }
-    
+
 static struct cmap *ParseCMap(char *filename) {
     char buf2[200];
     FILE *file;
@@ -1202,7 +1279,7 @@ return( NULL );
 		    cmap->registry = readpsstr(pt+strlen(reg));
 		else if ( strncmp(pt,ord,strlen(ord))==0 )
 		    cmap->ordering = readpsstr(pt+strlen(ord));
-		else if ( strncmp(pt,ord,strlen(ord))==0 ) {
+		else if ( strncmp(pt,sup,strlen(sup))==0 ) {
 		    for ( pt += strlen(sup); isspace(*pt); ++pt );
 		    cmap->supplement = strtol(pt,NULL,10);
 		}
@@ -2135,7 +2212,7 @@ return;
 	    /* Suppose we have deleted a reference from a composite glyph and than
 	     * going to remove the previously referenced glyph from the font. The
 	     * void reference still remains in the undoes stack, so that executing Undo/Redo
-	     * on the first glyph may lead to unpredictable effects. It is also 
+	     * on the first glyph may lead to unpredictable effects. It is also
 	     * impossible to detect such problematic undoes checking just our
 	     * going-to-be-deleted glyph's dependents, because the composite character
 	     * no longer contains the problematic reference and so is not listed
@@ -2453,7 +2530,7 @@ return( -1 );
 return( -1 );
 	}
 	if ( tpt-(char *) to == sizeof(unichar_t) )
-	{	    
+	{
 	    return( to[0] );
 	}
     } else if ( encname->tounicode_func!=NULL ) {

@@ -9,7 +9,7 @@ rm -f /Users/travis/build/fontforge/fontforge/.git/shallow
 set +e
 mkdir -p /tmp/fontforge-source-tree
 echo "brew build starting..."
-brew install --verbose fontforge --HEAD --with-x 
+brew install --verbose fontforge --HEAD --with-libspiro
 echo "brew build complete..."
 PR=$TRAVIS_PULL_REQUEST
 chmod +x ./travis-scripts/create-osx-app-bundle-homebrew.sh
@@ -22,6 +22,9 @@ echo "grabbing logs to server for inspection..."
 cp /tmp/bundle-output-${PR}.log $TO_BIGV_OUTPUTPATH
 cp ~/FontForge.app.zip          $TO_BIGV_OUTPUTPATH
 date >| $TO_BIGV_OUTPUTPATH/osx-build-end-timestamp
+echo "These are the files going over"
+ls -lhR $TO_BIGV_OUTPUTPATH
+
 SYNC_TO_BIGV
 set -e
 fontforge -version

@@ -36,7 +36,7 @@ return( *buffer=='\0' );
 }
 
 static int getnth(char *buffer, int col,int *mults) {
-    int i,j, val=0, best;
+    int i,j=0, val=0, best;
     char *end;
     int vals[10];
 

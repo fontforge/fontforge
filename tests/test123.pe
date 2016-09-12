@@ -1,23 +1,23 @@
 #Needs: fonts/MinionPro-Regular.otf
 
 # Check that our new subroutine usage in cff fonts produces an equivalent font.
-Open("@abs_srcdir@/fonts/MinionPro-Regular.otf")
-Generate("@abs_builddir@/results/MinionPro.otf")
-Open("@abs_builddir@/results/MinionPro.otf");
+Open($1)
+Generate("MinionPro.otf")
+Open("MinionPro.otf");
 #comparing fonts exactly doesn't work because ff will remove control points
 #if it thinks they are colinear with the to end points.
-if ( CompareFonts("@abs_srcdir@/fonts/MinionPro-Regular.otf","/dev/null",0x1|0x8|0x20)!=0 )
+if ( CompareFonts($1,"/dev/null",0x1|0x8|0x20)!=0 )
     Error("!!!! Otf Font differed");
 endif
 
-Open("@abs_srcdir@/fonts/MinionPro-Regular.otf")
+Open($1)
 if ( SizeOf(GetLookups("GSUB"))<=0 )
   Error("No lookups")
 endif
 Select("uni0394"); SelectMore("uni03A9"); SelectMore("uni03BC");
 DetachAndRemoveGlyphs()
-Generate("@abs_builddir@/results/MinionPro.pfb")
-Open("@abs_builddir@/results/MinionPro.pfb");
-if ( CompareFonts("@abs_srcdir@/fonts/MinionPro-Regular.otf","/dev/null",0x1|0x20)!=0 )
+Generate("MinionPro.pfb")
+Open("MinionPro.pfb");
+if ( CompareFonts($1,"/dev/null",0x1|0x20)!=0 )
     Error("!!!! Pfb Font differed");
 endif

@@ -2,18 +2,18 @@
 
 # Check that detach glyph works
 New()
-MergeFeature("@abs_srcdir@/fonts/MinionPro-Regular.fea")
-Generate("@abs_builddir@/results/Untitled2.otf")
-Open("@abs_builddir@/results/Untitled2.otf")
+MergeFeature($1)
+Generate("Untitled2.otf")
+Open("Untitled2.otf")
 if ( SizeOf(GetLookups("GSUB"))<=0 )
   Error("No lookups")
 endif
 Close()
 
 New()
-MergeFeature("@abs_srcdir@/fonts/ffMinionPro-Regular.fea")
-Generate("@abs_builddir@/results/Untitled2.otf")
-Open("@abs_builddir@/results/Untitled2.otf")
+MergeFeature($1)
+Generate("Untitled2.otf")
+Open("Untitled2.otf")
 if ( SizeOf(GetLookups("GSUB"))<=0 )
   Error("No lookups")
 endif

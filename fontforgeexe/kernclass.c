@@ -2216,6 +2216,7 @@ static char *KCD_PickGlyphsForClass(GGadget *g,int r, int c) {
     int which    = GWidgetGetControl(kcd->gw,CID_ClassList+100) == g;
     int widgetid = whichToWidgetID( which );
     char *new = GlyphSetFromSelection(kcd->sf,kcd->layer,classes[r*cols+c].u.md_str);
+    if (new == NULL) new = copy("");
     if (new != NULL) {
       GGadgetSetTitle8(GWidgetGetControl(kcd->gw,widgetid),new );
       KCD_UpdateGlyphFromName(kcd,which,new);
@@ -2317,8 +2318,10 @@ static void KCD_DeleteClass(GGadget *g,int whichclass) {
 
     (void) GMatrixEditGet(g,&rows);
     if ( is_first ) {
-	for ( i=0; i<kcd->second_cnt; ++i )
+	for ( i=0; i<kcd->second_cnt; ++i ) {
 	    free(kcd->adjusts[whichclass*kcd->second_cnt+i].corrections);
+	    kcd->adjusts[whichclass*kcd->second_cnt+i].corrections = NULL;
+	}
 	for ( i=whichclass+1; i<rows; ++i ) {
 	    memmove(kcd->offsets+(i-1)*kcd->second_cnt,
 		    kcd->offsets+i*kcd->second_cnt,
@@ -2352,8 +2355,10 @@ static void KCD_DeleteClass(GGadget *g,int whichclass) {
 	DeviceTable *newadj = malloc(kcd->first_cnt*(kcd->second_cnt-1)*sizeof(DeviceTable));
 	int *newoffflags = NULL;
 	if (kcd->offsets_flags != NULL) newoffflags = malloc(kcd->first_cnt*(kcd->second_cnt-1)*sizeof(int));
-	for ( i=0; i<kcd->first_cnt; ++i )
+	for ( i=0; i<kcd->first_cnt; ++i ) {
 	    free(kcd->adjusts[i*kcd->second_cnt+whichclass].corrections);
+	    kcd->adjusts[i*kcd->second_cnt+whichclass].corrections = NULL;
+	}
 	for ( i=0; i<rows; ++i ) if ( i!=whichclass ) {
 	    int newi = i>whichclass ? i-1 : i;
 	    for ( j=0; j<kcd->first_cnt; ++j ) {
@@ -3339,7 +3344,8 @@ return;
     wattrs.utf8_window_title =  isv?_("VKern By Classes"):_("Kern By Classes");
     wattrs.is_dlg = false;
     pos.x = pos.y = 0;
-    temp = 40 + 300*GIntGetResource(_NUM_Buttonsize)/GGadgetScale(100);
+    // temp = 40 + 300*GIntGetResource(_NUM_Buttonsize)/GGadgetScale(100); // The _NUM_Buttonsize value is obsolete.
+    temp = 40 + 300*114/GGadgetScale(100);
     if ( kcl_width<temp ) kcl_width = temp;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,kcl_width));
     pos.height = GDrawPointsToPixels(NULL,KCL_Height);

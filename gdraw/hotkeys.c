@@ -329,6 +329,10 @@ void hotkeysSave() {
     // Atomic rename of new over the old.
     //
     char* newpath = getHotkeyFilename(0);
+#ifdef __MINGW32__
+    //Atomic rename doesn't exist on Windows.
+    unlink(newpath);
+#endif
     int rc = rename( fn, newpath );
     int e = errno;
     free(fn);
@@ -382,7 +386,7 @@ Hotkey* isImmediateKey( GWindow w, char* path, GEvent *event )
     Hotkey* hk = hotkeyFindByAction( line );
     if( !hk )
 	return 0;
-    if( hk && !hk->action )
+    if( !hk->action )
 	return 0;
     
     if( event->u.chr.keysym == hk->keysym )

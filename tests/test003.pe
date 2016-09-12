@@ -1,11 +1,11 @@
 #Needs: fonts/MunhwaGothic-Bold
 # but any other non-otf cid font would do.
 
-Open("@abs_srcdir@/fonts/MunhwaGothic-Bold");
+Open($1);
 Print( "...Read MunhwaGothic-Bold (ps cid)")
-Generate("@abs_builddir@/results/MunhwaGothic-Bold.otf");
+Generate("MunhwaGothic-Bold.otf");
 Print( "...Generated otf (cid)")
-Generate("@abs_builddir@/results/MunhwaGothic-Bold.cid");
+Generate("MunhwaGothic-Bold.cid");
 Print( "...Generated cid")
 Close();
 Quit()

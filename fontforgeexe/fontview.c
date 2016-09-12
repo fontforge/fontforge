@@ -26,6 +26,10 @@
  */
 #include <fontforge-config.h>
 
+#include "inc/gnetwork.h"
+#include "collabclientui.h"
+#include "collabclientpriv.h"
+
 #include "fontforgeui.h"
 #include "groups.h"
 #include "psfont.h"
@@ -40,10 +44,6 @@
 #include <gresource.h>
 #include <math.h>
 #include <unistd.h>
-
-#include "inc/gnetwork.h"
-#include "collabclientui.h"
-#include "collabclientpriv.h"
 
 #include "gutils/unicodelibinfo.h"
 #include "sfundo.h"
@@ -922,6 +922,11 @@ static void FVMenuRevertGlyph(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
     FVRevertGlyph((FontViewBase *) fv);
 }
 
+static void FVMenuClearSpecialData(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    FVClearSpecialData((FontViewBase *) fv);
+}
+
 void MenuPrefs(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     DoPrefs();
 }
@@ -947,9 +952,9 @@ static void _MenuExit(void *UNUSED(junk)) {
     {
 	AskAndMaybeCloseLocalCollabServers();
     }
-
+#ifndef _NO_PYTHON
     python_call_onClosingFunctions();
-
+#endif
 
     LastFonts_Save();
     for ( fv = fv_list; fv!=NULL; fv = next )
@@ -1080,16 +1085,14 @@ void _FVMenuOpen(FontView *fv) {
     
     free( NewDir );
     free( OpenDir );
-    free( DefaultDir );
+    if (OpenDir != DefaultDir) {
+        free( DefaultDir );
+    }
 }
 
 static void FVMenuOpen(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     FontView *fv = (FontView*) GDrawGetUserData(gw);
     _FVMenuOpen(fv);
-}
-
-static void MenuBrowseOFLib(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    OFLibBrowse();
 }
 
 static void FVMenuContextualHelp(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -1305,7 +1308,7 @@ static void FVMenuCondense(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNU
 #define MID_Ligatures	2020
 #define MID_KernPairs	2021
 #define MID_AnchorPairs	2022
-#define MID_FitToEm	2023
+#define MID_FitToBbox	2023
 #define MID_DisplaySubs	2024
 #define MID_32x8	2025
 #define MID_16x4	2026
@@ -1396,6 +1399,7 @@ static void FVMenuCondense(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNU
 #define MID_RevertToBackup 2708
 #define MID_GenerateTTC 2709
 #define MID_OpenMetrics	2710
+#define MID_ClearSpecialData 2711
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -1872,7 +1876,7 @@ static void FVSelectByScript(FontView *fv,int merge) {
     memset(&label,0,sizeof(label));
     memset(&boxes,0,sizeof(boxes));
 
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict|wam_isdlg;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = false;
     wattrs.is_dlg = 1;
@@ -3237,7 +3241,7 @@ static void FVMenuSize(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	default_fv_font_size = dspsize = 96;
     else if ( mi->mid == MID_128 )
 	default_fv_font_size = dspsize = 128;
-    else if ( mi->mid == MID_FitToEm ) {
+    else if ( mi->mid == MID_FitToBbox ) {
 	default_fv_bbsized = fv->bbsized = !fv->bbsized;
 	fv->b.sf->display_bbsized = fv->bbsized;
 	changedmodifier = true;
@@ -4403,10 +4407,6 @@ static GMenuItem2 dummyitem[] = {
     { { (unichar_t *) N_("Font|_New"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'N' }, NULL, NULL, NULL, NULL, 0 },
     GMENUITEM2_EMPTY
 };
-static GMenuItem2 sites[] = {
-    { { (unichar_t *) N_("Open Font Library..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'N' }, NULL, NULL, NULL, MenuBrowseOFLib, 0 },
-    GMENUITEM2_EMPTY
-};
 
 static GMenuItem2 fllist[] = {
     { { (unichar_t *) N_("Font|_New"), (GImage *) "filenew.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'N' }, H_("New|No Shortcut"), NULL, NULL, MenuNew, 0 },
@@ -4414,7 +4414,6 @@ static GMenuItem2 fllist[] = {
     { { (unichar_t *) N_("_Hangul"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Hangul|No Shortcut"), hglist, hglistcheck, NULL, 0 },
 #endif
     { { (unichar_t *) N_("_Open"), (GImage *) "fileopen.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Open|No Shortcut"), NULL, NULL, FVMenuOpen, 0 },
-    { { (unichar_t *) N_("Browse web"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Browse web|No Shortcut"), sites, NULL, NULL, 0 },
     { { (unichar_t *) N_("Recen_t"), (GImage *) "filerecent.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 't' }, H_("Recent|No Shortcut"), dummyitem, MenuRecentBuild, NULL, MID_Recent },
     { { (unichar_t *) N_("_Close"), (GImage *) "fileclose.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Close|No Shortcut"), NULL, NULL, FVMenuClose, 0 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
@@ -4430,6 +4429,7 @@ static GMenuItem2 fllist[] = {
     { { (unichar_t *) N_("_Revert File"), (GImage *) "filerevert.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Revert File|No Shortcut"), NULL, NULL, FVMenuRevert, MID_Revert },
     { { (unichar_t *) N_("Revert To _Backup"), (GImage *) "filerevertbackup.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Revert To Backup|No Shortcut"), NULL, NULL, FVMenuRevertBackup, MID_RevertToBackup },
     { { (unichar_t *) N_("Revert Gl_yph"), (GImage *) "filerevertglyph.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Revert Glyph|No Shortcut"), NULL, NULL, FVMenuRevertGlyph, MID_RevertGlyph },
+    { { (unichar_t *) N_("Clear Special Data"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Clear Special Data|No Shortcut"), NULL, NULL, FVMenuClearSpecialData, MID_ClearSpecialData },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("_Print..."), (GImage *) "fileprint.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Print...|No Shortcut"), NULL, NULL, FVMenuPrint, MID_Print },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
@@ -5150,7 +5150,7 @@ static GMenuItem2 vwlist[] = {
     { { (unichar_t *) N_("_96 pixel outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, '4' }, H_("96 pixel outline|No Shortcut"), NULL, NULL, FVMenuSize, MID_96 },
     { { (unichar_t *) N_("_128 pixel outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, '4' }, H_("128 pixel outline|No Shortcut"), NULL, NULL, FVMenuSize, MID_128 },
     { { (unichar_t *) N_("_Anti Alias"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'A' }, H_("Anti Alias|No Shortcut"), NULL, NULL, FVMenuSize, MID_AntiAlias },
-    { { (unichar_t *) N_("_Fit to em"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'F' }, H_("Fit to em|No Shortcut"), NULL, NULL, FVMenuSize, MID_FitToEm },
+    { { (unichar_t *) N_("_Fit to font bounding box"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'F' }, H_("Fit to em|No Shortcut"), NULL, NULL, FVMenuSize, MID_FitToBbox },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Bitmap _Magnification..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'F' }, H_("Bitmap Magnification...|No Shortcut"), NULL, NULL, FVMenuMagnify, MID_BitmapMag },
     GMENUITEM2_EMPTY,			/* Some extra room to show bitmaps */
@@ -5274,8 +5274,8 @@ static void vwlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    mi->ti.checked = (fv->show!=NULL && fv->show->clut!=NULL);
 	    mi->ti.disabled = sf->onlybitmaps && fv->show!=fv->filled;
 	  break;
-	  case MID_FitToEm:
-	    mi->ti.checked = (fv->show!=NULL && !fv->show->bbsized);
+	  case MID_FitToBbox:
+	    mi->ti.checked = (fv->show!=NULL && fv->show->bbsized);
 	    mi->ti.disabled = sf->onlybitmaps && fv->show!=fv->filled;
 	  break;
 	  case MID_Layers:
@@ -8142,6 +8142,7 @@ int FontViewFind_byXUIDConnected( FontViewBase* fv, void* udata )
     if( !fv || !fv->sf )
 	return 0;
     return ( fv->collabState == cs_server || fv->collabState == cs_client )
+	&& fv->sf->xuid
 	&& !strcmp( fv->sf->xuid, (char*)udata );
 }
 
@@ -8194,6 +8195,12 @@ FontViewBase* FontViewFind( int (*testFunc)( FontViewBase*, void* udata ), void*
     }
     return 0;
 }
+
+FontView* FontViewFindUI( int (*testFunc)( FontViewBase*, void* udata ), void* udata )
+{
+    return (FontView*)FontViewFind( testFunc, udata );
+}
+
 
 /****************************************/
 /****************************************/

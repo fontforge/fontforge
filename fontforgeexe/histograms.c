@@ -337,9 +337,12 @@ static char *ArrayOrder(char *old,int args,int val1,int val2) {
 	old = end;
 	while ( *old==' ' ) ++old;
     }
-    array[i++] = val1;
-    if ( args==2 )
-	array[i++] = val2;
+    if (i<40)
+        array[i++] = val1;
+    if (i<40) {
+        if ( args==2 )
+	    array[i++] = val2;
+    }
     for ( j=0; j<i; ++j ) for ( k=j+1; k<i; ++k ) if ( array[j]>array[k] ) {
 	double temp = array[j];
 	array[j] = array[k];

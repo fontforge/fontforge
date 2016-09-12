@@ -35,6 +35,7 @@ if [ ! -e /tmp/bigvbase/have-key ]; then
     echo 0 > /tmp/bigvbase/have-key
   else
     echo 1 > /tmp/bigvbase/have-key
+    HAVE_SSH_KEY=1;
   fi
 else
   if [ y$(cat /tmp/bigvbase/have-key) = y1 ]; then 
@@ -54,7 +55,7 @@ SYNC_TO_BIGV() {
     if [ "y$HAVE_SSH_KEY" = y1 ]; then
       rsync -av $BASEPATH bigv:/tmp/ 
     else
-      echo "WARNING: No SSH key setip, no server sync for this build..."
+      echo "WARNING: No SSH key setup, no server sync for this build..."
     fi
 }
 

@@ -70,6 +70,7 @@ extern int GFileExists(const char *file);
 extern int GFileModifyable(const char *file);
 extern int GFileModifyableDir(const char *file);
 extern int GFileReadable(const char *file);
+extern int GFileRemove(const char *path, int recursive);
 extern int GFileMkDir(const char *name);
 extern int GFileRmDir(const char *name);
 extern int GFileUnlink(const char *name);
@@ -126,6 +127,16 @@ extern char *GFileDirName(const char *path);
  * 'files'.
  */
  extern char *GFileDirNameEx(const char *path, int treat_as_file);
+
+/**
+ * Get the $libexec directory for the installation. As this is only
+ * used at the moment on non windows machines and has not been tested
+ * on a mingw build, I have added the nonwindows postfix. When the
+ * function is needed on Windows then the postfix should be dropped.
+ *
+ * The return value must NOT be freed.
+ **/
+extern char* getLibexecDir_NonWindows(void);
 
 
 

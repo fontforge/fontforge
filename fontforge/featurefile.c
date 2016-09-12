@@ -1,5 +1,5 @@
 /* Copyright (C) 2000-2012 by George Williams */
-/* Copyright (C) 2012 by Khaled Hosny */
+/* Copyright (C) 2012-2013 by Khaled Hosny */
 /* Copyright (C) 2013 by Matthew Skala */
 /*
  * Redistribution and use in source and binary forms, with or without
@@ -64,6 +64,9 @@
 /* 2.e.vi The syntax for contourpoints has changed. In v1.6 it was */
 /*  "<contourpoint 2>", but in v1.8 it is "contourpoint 2". Yet this change */
 /*  is not mentioned in the v1.8 changelog, was it intentional? */
+
+/* Adobe says glyph names are 31 chars, but Mangal and Source Code Sans use longer names. */
+#define MAXG	63
 
 /* ************************************************************************** */
 /* ******************************* Output feat ****************************** */
@@ -333,12 +336,12 @@ static void dump_fpst_everythingelse(FILE *out, SplineFont *sf,char **classes,
 
 static char *lookupname(OTLookup *otl) {
     char *pt1, *pt2;
-    static char space[32];
+    static char space[MAXG+1];
 
     if ( otl->tempname != NULL )
 return( otl->tempname );
 
-    for ( pt1=otl->lookup_name,pt2=space; *pt1 && pt2<space+31; ++pt1 ) {
+    for ( pt1=otl->lookup_name,pt2=space; *pt1 && pt2<space+MAXG; ++pt1 ) {
 	if ( !(*pt1&0x80) && (isalpha(*pt1) || *pt1=='_' || *pt1=='.' ||
 		(pt1!=otl->lookup_name && isdigit(*pt1))))
 	    *pt2++ = *pt1;
@@ -409,7 +412,7 @@ int kernclass_for_feature_file(struct splinefont *sf, struct kernclass *kc, int 
 static void dump_kernclass(FILE *out,SplineFont *sf,struct lookup_subtable *sub) {
     int i,j;
     KernClass *kc = sub->kc;
-    
+
     // We only export classes and rules here that have not been emitted in groups.plist and kerning.plist.
     // The feature file can reference classes from groups.plist, but kerning.plist cannot reference groups from the feature file.
 
@@ -592,7 +595,9 @@ static void dump_contextpstglyphs(FILE *out,SplineFont *sf,
     space.u.pair.vr = pairvr;
 
     if ( r->u.glyph.back!=NULL ) {
-	dump_glyphnamelist(out,sf,r->u.glyph.back );
+	char *temp = reverseGlyphNames(r->u.glyph.back);
+	dump_glyphnamelist(out,sf,temp);
+	free (temp);
 	putc(' ',out);
     }
     last_start = last_end = NULL;
@@ -1389,7 +1394,8 @@ return;					/* No support for apple "lookups" */
 	putc('\n',out);
     }
     for ( sub=otl->subtables; sub!=NULL; sub=sub->next ) {
-	if ( sub!=otl->subtables )
+	/* The `subtable` keyword is only supported in class kerning lookups. */
+	if ( sub!=otl->subtables && sub->kc!=NULL )
 	    fprintf( out, "  subtable;\n" );
 	if ( sub->kc!=NULL )
 	    dump_kernclass(out,sf,sub);
@@ -1450,7 +1456,8 @@ return;					/* No support for apple "lookups" */
 			  break;
 			}
 		    }
-		    for ( isv=0; isv<2; ++isv ) {
+		    // We skip outputting these here if the SplineFont says to use native kerning.
+		    if (sf->preferred_kerning != 1) for ( isv=0; isv<2; ++isv ) {
 			for ( kp=isv ? sc->vkerns : sc->kerns; kp!=NULL; kp=kp->next ) if ( kp->subtable==sub ) {
 			    fprintf( out, "    pos " );
 			    dump_glyphname(out,sc);
@@ -1894,7 +1901,7 @@ static void preparenames(SplineFont *sf) {
     int isgpos, cnt, try, i;
     OTLookup *otl;
     char **names, *name;
-    char namebuf[32], featbuf[8], scriptbuf[8], *feat, *script;
+    char namebuf[MAXG+1], featbuf[8], scriptbuf[8], *feat, *script;
     struct scriptlanglist *sl;
 
     cnt = 0;
@@ -2118,11 +2125,10 @@ static int fea_classesIntersect(char *class1, char *class2) {
     long int index = 0;
     long int break_point = 0;
     int output = 0;
+    if (class1[0] == '\0' || class2[0] == '\0') return 0; // We cancel further action if one list is blank.
     // Parse the first input.
-    for ( pt1=class1 ; output == 0; ) {
+    for ( pt1=class1 ; output == 0 && pt1[0] != '\0'; ) {
         while ( *pt1==' ' ) ++pt1;
-        if ( *pt1=='\0' )
-            output = -1; // We cancel further action if one list is blank.
         for ( start1 = pt1; *pt1!=' ' && *pt1!='\0'; ++pt1 );
         ch1 = *pt1; *pt1 = '\0'; // Cache the byte and terminate.
         // We do not want to add the same name twice. It breaks the hash.
@@ -2133,12 +2139,10 @@ static int fea_classesIntersect(char *class1, char *class2) {
     }
     break_point = index; // Divide the entries from the two sources by index.
     // Parse the second input.
-    for ( pt2=class2 ; output == 0; ) {
+    for ( pt2=class2 ; output == 0 && pt2[0] != '\0'; ) {
         while ( *pt2==' ' ) ++pt2;
-        if ( *pt2=='\0' )
-            output = -1; // We cancel further action if one list is blank.
         for ( start2 = pt2; *pt2!=' ' && *pt2!='\0'; ++pt2 );
-        ch1 = *pt2; *pt2 = '\0'; // Cache the byte and terminate.
+        ch2 = *pt2; *pt2 = '\0'; // Cache the byte and terminate.
         struct glif_name * tmp = NULL;
         if ((tmp = glif_name_search_glif_name(glif_name_hash, start2)) == NULL) {
           glif_name_track_new(glif_name_hash, index++, start2);
@@ -2599,8 +2603,8 @@ return;
 		++tok->err_count;
 	    }
 	} else {
-		if ( pt>start+31 ) {
-		    /* Adobe says glyphnames are 31 chars, but Mangal uses longer names */
+		/* Adobe says glyphnames are 31 chars, but Mangal uses longer names */
+		if ( pt>start+MAXG ) {
 		    LogError(_("Name, %s%s, too long on line %d of %s"),
 			    tok->tokbuf, pt>=tok->tokbuf+MAXT?"...":"",
 			    tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
@@ -2719,7 +2723,7 @@ static int fea_ParseDeciPoints(struct parseState *tok) {
 	if ( ch!=EOF )
 	    ungetc(ch,in);
     } else {
-	LogError(_("Expected '%s' on line %d of %s"), fea_keywords[tk_int],
+	LogError(_("Expected '%s' on line %d of %s"), fea_keywords[tk_int].name,
 		tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	++tok->err_count;
 	tok->value = -1;
@@ -4547,7 +4551,12 @@ static FPST *fea_markedglyphs_to_fpst(struct parseState *tok,struct markedglyphs
 	r->lookups[i].seq = i;
 
     if ( all_single ) {
-	g = fea_glyphs_to_names(glyphs,bcnt,&r->u.glyph.back);
+	char *temp = NULL;
+	// backtrack glyphs should be in reverse order, but they are in
+	// natural order in the feature file, so we reverse them
+	g = fea_glyphs_to_names(glyphs,bcnt,&temp);
+	r->u.glyph.back = reverseGlyphNames (temp);
+	free (temp);
 	g = fea_glyphs_to_names(g,ncnt,&r->u.glyph.names);
 	g = fea_glyphs_to_names(g,fcnt,&r->u.glyph.fore);
     } else {
@@ -5447,6 +5456,10 @@ return;
 	      break;
 		}
 		/* Fall on through */
+	      case tk_char:
+		/* Ignore blank statement. */
+		if (tok->tokbuf[0]==';')
+		  break;
 	      default:
 		LogError(_("Unexpected token, %s, in feature definition on line %d of %s"), tok->tokbuf, tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 		++tok->err_count;
@@ -5549,10 +5562,10 @@ static void fea_ParseTableKeywords(struct parseState *tok, struct tablekeywords 
 	    tv->index = index;
 	} else
 	    tv = NULL;
-	fea_ParseTok(tok);
 	if ( strcmp(tok->tokbuf,"Vendor")==0 && tv!=NULL) {
 	    /* This takes a 4 character string */
 	    /* of course strings aren't part of the syntax, but it takes one anyway */
+	    fea_ParseTok(tok);
 	    if ( tok->type==tk_name && tok->could_be_tag )
 		/* Accept a normal tag, since that's what it really is */
 		tv->value = tok->tag;
@@ -5581,6 +5594,7 @@ static void fea_ParseTableKeywords(struct parseState *tok, struct tablekeywords 
 	    }
 	    fea_ParseTok(tok);
 	} else {
+	    fea_ParseTok(tok);
 	    if ( tok->type!=tk_int ) {
 		LogError(_("Expected integer on line %d of %s"),
 			tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
@@ -5646,7 +5660,8 @@ static void fea_ParseTableKeywords(struct parseState *tok, struct tablekeywords 
 static void fea_ParseGDEFTable(struct parseState *tok) {
     /* GlyphClassDef <base> <lig> <mark> <component>; */
     /* Attach <glyph>|<glyph class> <number>+; */	/* parse & ignore */
-    /* LigatureCaret <glyph>|<glyph class> <caret value>+ */
+    /* LigatureCaretByPos <glyph>|<glyph class> <number>+; */
+    /* LigatureCaretByIndex <glyph>|<glyph class> <number>+; */	/* parse & ignore */
     int i;
     struct feat_item *item;
     int16 *carets=NULL; int len=0, max=0;
@@ -5670,12 +5685,8 @@ static void fea_ParseGDEFTable(struct parseState *tok) {
 		}
 	    }
 	} else if ( strcmp(tok->tokbuf,"LigatureCaret")==0 || /* FF backwards compatibility */ \
-		 /* strcmp(tok->tokbuf,"LigatureCaretByIndex")==0  TODO should include this */ \
 		    strcmp(tok->tokbuf,"LigatureCaretByPos")==0 ) {
-	    /* Older versions of FontForge was using LigatureCaret but there is actually */
-	    /* LigatureCaretByPos and LigatureCaretByIndex which we need to watch (2013) */
-	    /* 2013may16 TODO: We need to update all this featurefile stuff according to */
-	    /* http://www.adobe.com/devnet/opentype/afdko/topic_feature_file_syntax.html */
+	    // Ligature carets by single coordinate (format 1).
 	    carets=NULL;
 	    len=0;
 	    item = chunkalloc(sizeof(struct feat_item));
@@ -5719,6 +5730,24 @@ static void fea_ParseGDEFTable(struct parseState *tok) {
 	    } else {
 		LogError(_("Expected integer or list of integers after %s on line %d of %s"), item->u1.class,
 			tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	    }
+	} else if (strcmp (tok->tokbuf, "LigatureCaretByIndex") == 0) {
+	    // Ligature carets by contour point index (format 2).
+	    // Unsupported, will be parsed and ignored.
+	    fea_ParseTok (tok);
+	    if (tok->type != tk_class && tok->type != tk_name && tok->type != tk_cid) {
+	        LogError (_("Expected name or class on line %d of %s"),
+	            tok->line[tok->inc_depth],
+	            tok->filename[tok->inc_depth]);
+	        ++tok->err_count;
+	        fea_skip_to_semi (tok);
+	        continue;
+	    } else {
+	        while (true) {
+	            fea_ParseTok (tok);
+	            if (tok->type != tk_int)
+	                break;
+	        }
 	    }
 	} else if ( strcmp(tok->tokbuf,"GlyphClassDef")==0 ) {
 	    item = chunkalloc(sizeof(struct feat_item));
@@ -6080,6 +6109,10 @@ static void fea_ParseFeatureFile(struct parseState *tok) {
 	  break;
 	  case tk_eof:
   goto end_loop;
+	  case tk_char:
+	    /* Ignore blank statement. */
+	    if (tok->tokbuf[0]==';')
+	      break;
 	  default:
 	    LogError(_("Unexpected token, %s, on line %d of %s"), tok->tokbuf, tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	    ++tok->err_count;
@@ -6591,20 +6624,41 @@ static void fea_ApplyLookupListPair(struct parseState *tok,
 		    }
 		}
 		if ( kp!=NULL ) {
-		    kp->sc = other;
-		    kp->subtable = sub;
-		    if ( vkern ) {
-			kp->next = sc->vkerns;
-			sc->vkerns = kp;
+		    // We want to add to the ends of the lists.
+		    KernPair *lastkp = NULL;
+		    KernPair *tmpkp = NULL;
+		    for ( tmpkp=(vkern?sc->vkerns:sc->kerns); tmpkp!=NULL && (tmpkp->sc != other || tmpkp->subtable != sub); lastkp = tmpkp, tmpkp=tmpkp->next );
+		    if (tmpkp == NULL) {
+		      // Populate the kerning pair.
+		      kp->sc = other;
+		      kp->subtable = sub;
+		      // Add to the list.
+		      if ( vkern ) {
+			if (lastkp) lastkp->next = kp;
+			else sc->vkerns = kp;
+			lastkp = kp;
+		      } else {
+			if (lastkp) lastkp->next = kp;
+			else sc->kerns = kp;
+			lastkp = kp;
+		      }
+		      PSTFree(pst);
 		    } else {
-			kp->next = sc->kerns;
-			sc->kerns = kp;
+		      LogError(_("Discarding a duplicate kerning pair."));
+		      SplineCharFree(sc); sc = NULL;
+		      free(kp); kp = NULL;
 		    }
-		    PSTFree(pst);
 		} else {
+		    // We want to add to the end of the list.
+		    PST *lastpst = NULL;
+		    PST *tmppst = NULL;
+		    for ( tmppst=sc->possub; tmppst!=NULL; lastpst = tmppst, tmppst=tmppst->next );
+		    // Populate.
 		    pst->subtable = sub;
-		    pst->next = sc->possub;
-		    sc->possub = pst;
+		    // Add to the list.
+		    if (lastpst) lastpst->next = pst;
+		    else sc->possub = pst;
+		    lastpst = pst;
 		}
 	    } else if ( l->type == ft_pstclass ) {
 		lefts.classes[kcnt] = copy(fea_canonicalClassOrder(l->u1.class));
@@ -6640,12 +6694,17 @@ static void fea_ApplyLookupListPair(struct parseState *tok,
 	    kc->offsets = calloc(kc->first_cnt*kc->second_cnt,sizeof(int16));
 	    kc->adjusts = calloc(kc->first_cnt*kc->second_cnt,sizeof(DeviceTable));
 	    fea_fillKernClass(kc,first);
+	    KernClass *lastkc = NULL;
+	    KernClass *tmpkc = NULL;
+	    for ( tmpkc=(sub->vertical_kerning?tok->sf->vkerns:tok->sf->kerns); tmpkc!=NULL; lastkc = tmpkc, tmpkc=tmpkc->next );
 	    if ( sub->vertical_kerning ) {
-		kc->next = tok->sf->vkerns;
-		tok->sf->vkerns = kc;
+		if (lastkc) lastkc->next = kc;
+		else tok->sf->vkerns = kc;
+		lastkc = kc;
 	    } else {
-		kc->next = tok->sf->kerns;
-		tok->sf->kerns = kc;
+		if (lastkc) lastkc->next = kc;
+		else tok->sf->kerns = kc;
+		lastkc = kc;
 	    }
 	}
 	sub = NULL;
@@ -7155,6 +7214,8 @@ static void fea_NameLookups(struct parseState *tok) {
                 oldapm = NULL;
                 lastap = NULL;
                 sc = sf->glyphs[gid];
+                if (!sc)
+                    continue;
                 for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
                     if ( ap->anchor==ac ) {
                         if ( ap->type==at_mark || ap->type==at_centry ) {

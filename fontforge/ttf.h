@@ -325,6 +325,7 @@ struct ttfinfo {
     int16 jstf_isShrink, jstf_prio, jstf_lcnt;
     struct otffeatname *feat_names;
     enum gsub_inusetype justinuse;
+    long ttfFileSize;
 };
 
 struct taboff {

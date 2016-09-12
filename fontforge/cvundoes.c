@@ -24,6 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "config.h"
 #include "fontforgevw.h"
 #include "views.h"
 #include <math.h>
@@ -33,8 +34,8 @@
 #include "inc/gfile.h"
 #include "psfont.h"
 
-#if defined(__MINGW32__)||defined(__CYGWIN__)
-// no backtrace on windows yet
+#ifndef HAVE_EXECINFO_H
+// no backtrace available
 #else
     #include <execinfo.h>
 #endif
@@ -1426,7 +1427,7 @@ return( copy(""));
 
     for ( lcnt = ly_fore; lcnt<dummy.layer_cnt; ++lcnt )
 	RefCharsFree(dummy.layers[lcnt].refs);
-    if ( dummy.layer_cnt!=2 )
+    if ( dummy.layer_cnt!=2 && dummy.layers != layers )
 	free( dummy.layers );
 
     fseek(svg,0,SEEK_END);
@@ -2477,7 +2478,10 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 	    }
 	}
 	if ( paster->u.state.refs!=NULL ) {
-	    RefChar *last=NULL;
+	    RefChar *last = sc->layers[layer].refs;
+	    while ( last != NULL && last->next != NULL) {
+	       last = last->next;
+	    }
 	    RefChar *new, *refs;
 	    SplineChar *rsc;
 	    double scale = PasteFigureScale(sc->parent,paster->copied_from);
@@ -2673,7 +2677,7 @@ static void APInto(SplineChar *sc,AnchorPoint *ap,AnchorPoint *fromap,
     }
     if ( fromap->yadjust.corrections!=NULL ) {
 	ap->yadjust.corrections = malloc(ap->yadjust.last_pixel_size-ap->yadjust.first_pixel_size+1);
-	memcpy(ap->yadjust.corrections,fromap->yadjust.corrections,ap->yadjust.last_pixel_size-ap->xadjust.first_pixel_size+1);
+	memcpy(ap->yadjust.corrections,fromap->yadjust.corrections,ap->yadjust.last_pixel_size-ap->yadjust.first_pixel_size+1);
     }
 }
 

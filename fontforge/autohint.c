@@ -171,8 +171,7 @@ void FindBlues( SplineFont *sf, int layer, real blues[14], real otherblues[10]) 
 		    ascenth[1] += b.maxy*b.maxy;
 		    ++ascenth[2];
 		} else if ( enc=='c' || enc=='e' || enc=='o' || enc=='s' || enc=='u' || 
-		            enc=='u' || enc=='v' || enc=='w' || enc=='x' || enc=='y' || 
-			    enc=='z' || 
+		            enc=='v' || enc=='w' || enc=='x' || enc=='y' || enc=='z' || 
 			    enc==0x3b5 /* epsilon */ ||
 			    enc==0x3b9 /* iota */ ||
 			    enc==0x3ba /* kappa */ ||
@@ -291,8 +290,7 @@ void FindBlues( SplineFont *sf, int layer, real blues[14], real otherblues[10]) 
 		    enc == 0x431 ) {
 		AddBlue(b.maxy,ascenth,false);
 	    } else if ( enc=='c' || enc=='e' || enc=='o' || enc=='s' || enc=='u' || 
-			enc=='u' || enc=='v' || enc=='w' || enc=='x' || enc=='y' || 
-			enc=='z' || 
+			enc=='v' || enc=='w' || enc=='x' || enc=='y' || enc=='z' || 
 			enc==0x3b5 /* epsilon */ ||
 			enc==0x3b9 /* iota */ ||
 			enc==0x3ba /* kappa */ ||
@@ -1755,7 +1753,7 @@ return( false );
         roff =  ( test->right.x - dn->right.x ) * dn->unit.y - 
                 ( test->right.y - dn->right.y ) * dn->unit.x;
         if (loff <= -dist_error_diag || loff >= dist_error_diag ||
-            roff <= -dist_error_diag || loff >= dist_error_diag )
+            roff <= -dist_error_diag || roff >= dist_error_diag )
     continue;
         soff =  ( test->left.x - dn->left.x ) * dn->unit.x + 
                 ( test->left.y - dn->left.y ) * dn->unit.y;
@@ -1842,6 +1840,7 @@ static StemInfo *RefHintsMerge(StemInfo *into, StemInfo *rh, real mul, real offs
 	if ( h==NULL || start!=h->start || width!=h->width ) {
 	    n = chunkalloc(sizeof(StemInfo));
 	    n->start = start; n->width = width;
+	    n->ghost = rh->ghost;
 	    n->next = h;
 	    if ( prev==NULL )
 		into = n;
@@ -3127,7 +3126,7 @@ static void FigureStems( SplineFont *sf, real snaps[12], real cnts[12],
 	}
 	/* Merge adjacent widths */
 	for ( i=smin; i<=smax; ++i ) {
-	    if ( stemwidths[i]!=0 && i<=smax-1 && stemwidths[i+1]!=0 ) {
+	    if ( i<=smax-1 && stemwidths[i]!=0 && stemwidths[i+1]!=0 ) {
 		if ( stemwidths[i]>stemwidths[i+1] ) {
 		    stemwidths[i] += stemwidths[i+1];
 		    stemwidths[i+1] = 0;

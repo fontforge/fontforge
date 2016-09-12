@@ -230,6 +230,8 @@ static void CheckLeftRight(struct kerns *k) {
     /*  we don't recognize as right-to-left (ie. not in unicode) */
     if ( SCRightToLeft(k->first) || SCRightToLeft(k->second) )
 	k->r2l = true;
+    else 
+        k->r2l = false;
 }
 
 static void KPBuildKernList(KPData *kpd) {
@@ -271,7 +273,7 @@ static void KPBuildKernList(KPData *kpd) {
 	break;
 	    if ( cnt==0 )
 return;
-	    kpd->kerns = malloc((cnt+1)*sizeof(struct kerns));
+	    kpd->kerns = calloc(cnt+1, sizeof(struct kerns));
 	    kpd->kcnt = cnt;
 	}
     } else {
@@ -294,7 +296,7 @@ return;
 	break;
 	    if ( cnt==0 )
 return;
-	    kpd->kerns = malloc((cnt+1)*sizeof(struct kerns));
+	    kpd->kerns = calloc(cnt+1, sizeof(struct kerns));
 	    kpd->kcnt = cnt;
 	}
     }

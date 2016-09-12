@@ -269,7 +269,7 @@ return( false );
     sf->familyname[i] = '\0';
     temp = malloc(i+50);
     strcpy(temp,sf->familyname);
-    if ( fntheader.weight<=300 && fntheader.weight>500 ) {
+    if ( fntheader.weight<=300 || fntheader.weight>500 ) {
 	strcat(temp," ");
 	strcat(temp,sf->weight);
     }
@@ -471,7 +471,7 @@ return( false );
 	widbytes += (font->glyphs[gid]->width+7)>>3;
 	if ( font->glyphs[gid]->ymax>maxy ) maxy = font->glyphs[gid]->ymax;
 	if ( font->glyphs[gid]->ymin<miny ) miny = font->glyphs[gid]->ymin;
-	if ( font->glyphs[gid]->width>maxy ) maxwid = font->glyphs[gid]->width;
+	if ( font->glyphs[gid]->width>maxwid ) maxwid = font->glyphs[gid]->width;
 	if ( font->glyphs[gid]->width<font->glyphs[gid]->xmax || font->glyphs[gid]->xmin<0 )
 	    badch = gid;
 	if ( samewid==-1 ) samewid = font->glyphs[gid]->width;
@@ -489,7 +489,7 @@ return( false );
     widbytes = avgwid+spacesize;
     if ( cnt!=0 ) avgwid = rint(avgwid/(bigreal) cnt);
     gid = map->map['X'];
-    if ( font->glyphs[gid]!=NULL && font->glyphs[gid]->sc!=NULL &&
+    if ( gid!=-1 && font->glyphs[gid]!=NULL && font->glyphs[gid]->sc!=NULL &&
 	    font->glyphs[gid]->sc->unicodeenc == 'X' )
 	avgwid = font->glyphs[gid]->width;
 
@@ -497,6 +497,7 @@ return( false );
 	switch ( font->pixelsize ) {
 	  case 13: case 16: case 32:
 	    res = 96;
+	  break;
 	  default:
 	    res = 120;
 	  break;
@@ -830,6 +831,7 @@ int FONFontDump(char *filename,SplineFont *sf, int32 *sizes,int resol,
 		    sizes[i]&0xffff, sizes[i]>>16);
 	    for ( j=0; j<i; ++j )
 		fclose(fntarray[j]);
+            free(file_lens);
 	    free(fntarray);
 return( false );
 	}
@@ -837,6 +839,7 @@ return( false );
 	if ( !_FntFontDump(fntarray[i],bdf,map,resol) ) {
 	    for ( j=0; j<=i; ++j )
 		fclose(fntarray[j]);
+            free(file_lens);
 	    free(fntarray);
 return( false );
 	}
@@ -911,6 +914,7 @@ return( false );
 	for ( j=0; j<num_files; ++j )
 	    fclose(fntarray[j]);
 	free(fntarray);
+        free(file_lens);
 return( false );
     }
 

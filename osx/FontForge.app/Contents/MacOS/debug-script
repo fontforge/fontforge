@@ -1,6 +1,11 @@
 version
+script print sys.version
 settings set frame-format "frame #${frame.index}: ${frame.pc}{ ${module.file.basename}`${function.name-with-args}{${function.pc-offset}}}{ at ${line.file.basename}:${line.number}}\n"
 target create /Applications/FontForge.app/Contents/Resources/opt/local/bin/fontforge
 target select 0
-run -SkipPythonInitFiles 
+#run -SkipPythonInitFiles 
 
+# please type the run command to start FontForge
+#
+# run
+#

@@ -19,6 +19,7 @@ scriptdir=$TEMPDIR/FontForge.app/Contents/MacOS
 bundle_res=$TEMPDIR/FontForge.app/Contents/Resources
 bundle_bin="$bundle_res/opt/local/bin"
 bundle_lib="$bundle_res/opt/local/lib"
+bundle_libexec="$bundle_res/opt/local/libexec"
 bundle_etc="$bundle_res/opt/local/etc"
 bundle_share="$bundle_res/opt/local/share"
 export PATH="$PATH:$scriptdir:/usr/local/bin"
@@ -127,15 +128,16 @@ echo "... dylibbunder on main fontforge executable is now complete..."
 # cd ..
 # rm -rf ./lib-bundle
 # cd ./bin
+cd $bundle_libexec/bin
 dylibbundler --overwrite-dir --bundle-deps --fix-file \
   ./FontForgeInternal/fontforge-internal-collab-server \
   --install-path @executable_path/collablib \
   --dest-dir ./FontForgeInternal/collablib
-
+cd -
 echo "... dylibbunder on collab server is complete ..."
 
 cp -av /usr/lib/libedit* $bundle_lib/
-cp -av /usr/lib/libedit* $bundle_bin/FontForgeInternal/collablib/
+cp -av /usr/lib/libedit* $bundle_libexec/bin/FontForgeInternal/collablib/
 
 cd $bundle_lib
 for if in libXcomposite.1.dylib libXcursor.1.dylib libXdamage.1.dylib libXfixes.3.dylib libXinerama.1.dylib libXrandr.2.dylib 
@@ -206,7 +208,7 @@ do
   otool -L  $if | grep libedit
   install_name_tool -change /usr/lib/libedit.3.dylib @executable_path/../lib/libedit.3.dylib $if
 done
-cd $bundle_bin/FontForgeInternal/collablib/
+cd $bundle_libexec/bin/FontForgeInternal/collablib/
 for if in *dylib 
 do 
   echo $if 
@@ -216,7 +218,7 @@ done
 
 cd $bundle_bin
 install_name_tool -change /usr/lib/libedit.3.dylib @executable_path/../lib/libedit.3.dylib fontforge 
-cd ./FontForgeInternal
+cd $bundle_libexec/bin/FontForgeInternal/
 install_name_tool -change /usr/lib/libedit.3.dylib @executable_path/collablib/libedit.3.dylib fontforge-internal-collab-server
 cd $bundle_bin
 

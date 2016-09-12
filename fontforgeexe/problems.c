@@ -3338,7 +3338,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[3].gd.pos.x = 3; pagcd[3].gd.pos.y = pagcd[2].gd.pos.y+17; 
     pagcd[3].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( direction ) pagcd[3].gd.flags |= gg_cb_on;
-    pagcd[3].gd.popup_msg = (unichar_t *) _("PostScript and TrueType require that paths be drawn\nin a clockwise direction. This lets you check that they\nare.\n Before doing this test insure that\nno paths self-intersect");
+    pagcd[3].gd.popup_msg = (unichar_t *) _("FontForge internally uses paths drawn in a\nclockwise direction. This lets you check that they are.\nBefore doing this test insure that\nno paths self-intersect.");
     pagcd[3].gd.cid = CID_Direction;
     pagcd[3].creator = GCheckBoxCreate;
     paarray[3] = &pagcd[3];

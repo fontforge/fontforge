@@ -1,9 +1,7 @@
 #!/bin/bash
 
-type -all brew
-
-. ./travis-scripts/common.sh
-set -ev
+# A quick sanity check to show if we are working on an osx machine.
+type -a brew
 
 #
 # Take the collection of secure environment variables and reconstitute an SSH key
@@ -15,9 +13,20 @@ done
 base64 --decode ~/.ssh/id_rsa_base64 > ~/.ssh/id_rsa
 chmod 600 ~/.ssh/id_rsa
 echo -e "Host bigv\n\tBatchMode yes\n\tStrictHostKeyChecking no\n\tHostname fontforge.default.fontforge.uk0.bigv.io\n\tUser travisci\n\tIdentityFile ~/.ssh/id_rsa\n" >> ~/.ssh/config
+#
+# now that we have the key setup, bring in the SYNC function.
+#
+. ./travis-scripts/common.sh
+#
 # wipe them out just in case a loose 'set' or whatever happens.
+#
 for i in {00..30}; do unset id_rsa_$i;  done
 for i in {00..09}; do unset id_rsa_0$i; done
+
+#
+# Start the work
+#
+set -ev
 
 # test the secure env variables and ability to upload
 date >| $TO_BIGV_OUTPUTPATH/osx-build-start-timestamp
@@ -28,7 +37,8 @@ brew update
 brew config
 
 sed -i -e "s|{TRAVIS_PULL_REQUEST}|${TRAVIS_PULL_REQUEST}|g" ./travis-scripts/fontforge.rb
-sudo cp ./travis-scripts/fontforge.rb /usr/local/Library/Formula/fontforge.rb
+rm /usr/local/Library/Formula/fontforge.rb
+cp ./travis-scripts/fontforge.rb /usr/local/Library/Formula/fontforge.rb
 echo "*****"
 echo "*****"
 echo "***** using homebrew formula fontforge.rb:"
@@ -45,16 +55,21 @@ sudo installer -pkg /Volumes/XQuartz-*/XQuartz.pkg -target /
 popd 
 
 echo "doing an OSX before install step."
-brew install cairo python libspiro fontconfig
-brew link python
+set +ev
+brew install python
+set -ev
+brew install cairo libspiro fontconfig
 
 #
 # this forces version 4.0.4 and 2.2.0 respectively.
 pushd .
-cd $( brew --prefix )
-git checkout ab7f37834a28b4d6f3c584f08e5b993d8c191653 Library/Formula/zeromq.rb
-git checkout 3ad14e1e3f7d0131b3eee7fb4ce38a65e22a5187 Library/Formula/czmq.rb
+cd $(brew --prefix)
+rm Library/Formula/zeromq.rb
+rm Library/Formula/czmq.rb
+wget https://raw.githubusercontent.com/Homebrew/homebrew/ab7f37834a28b4d6/Library/Formula/zeromq.rb -O Library/Formula/zeromq.rb
+wget https://raw.githubusercontent.com/Homebrew/homebrew/3ad14e1e3f7d0131b/Library/Formula/czmq.rb -O Library/Formula/czmq.rb
 brew install czmq zeromq
 popd
+
 
 

@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgevw.h"
+#include "encoding.h"
 #include <math.h>
 #include "psfont.h"
 #include "ustring.h"
@@ -1223,7 +1224,7 @@ SplinePointList *SplinePointListCopy1(const SplinePointList *spl) {
     cur->is_clip_path = spl->is_clip_path;
     cur->spiro_cnt = cur->spiro_max = 0;
     cur->spiros = 0;
-
+    if (spl->contour_name != NULL) cur->contour_name = copy(spl->contour_name);
     for ( pt=spl->first; ;  ) {
 	cpt = SplinePointCreate( 0, 0 );
 	*cpt = *pt;
@@ -1347,7 +1348,7 @@ return( head );
 static SplinePointList *SplinePointListCopySpiroSelected1(SplinePointList *spl) {
     SplinePointList *head=NULL, *last=NULL, *cur;
     int i,j;
-    spiro_cp *list = spl->spiros, *freeme = NULL, *temp;
+    spiro_cp *list = spl->spiros, *freeme = NULL, *temp = NULL;
 
     if ( !SPIRO_SPL_OPEN(spl)) {
 	/* If it's a closed contour and the start point is selected then we */
@@ -1463,7 +1464,7 @@ return( head );
 static SplinePointList *SplinePointListSplitSpiros(SplineChar *sc,SplinePointList *spl) {
     SplinePointList *head=NULL, *last=NULL, *cur;
     int i;
-    spiro_cp *list = spl->spiros, *freeme = NULL, *temp;
+    spiro_cp *list = spl->spiros, *freeme = NULL, *temp = NULL;
 
     if ( !SPIRO_SPL_OPEN(spl)) {
 	/* If it's a closed contour and the start point is selected then we */
@@ -1833,7 +1834,7 @@ SplinePointList *SplinePointListTransformExtended(SplinePointList *base, real tr
 		lastpointorig = orig;
 		if ( spline->to->selected ) anysel = true; else allsel = false;
 	    }
-	    
+
 	} else {
 	    for ( spt = spl->first ; spt!=pfirst; spt = spt->next->to ) {
 		if ( pfirst==NULL ) pfirst = spt;
@@ -2958,6 +2959,26 @@ static void LayerToRefLayer(struct reflayer *rl,Layer *layer, real transform[6])
     rl->fillfirst = layer->fillfirst;
 }
 
+int RefLayerFindBaseLayerIndex(RefChar *rf, int layer) {
+	// Note that most of the logic below is copied and lightly modified from SCReinstanciateRefChar.
+	SplineChar *rsc = rf->sc;
+	int i = 0, j = 0, cnt = 0;
+	RefChar *subref;
+	for ( i=ly_fore; i<rsc->layer_cnt; ++i ) {
+	    if ( rsc->layers[i].splines!=NULL || rsc->layers[i].images!=NULL ) {
+	        if (cnt == layer) return i;
+		++cnt;
+	    }
+	    for ( subref=rsc->layers[i].refs; subref!=NULL; subref=subref->next ) {
+		for ( j=0; j<subref->layer_cnt; ++j ) if ( subref->layers[j].images!=NULL || subref->layers[j].splines!=NULL ) {
+		    if (cnt == layer) return i;
+		    ++cnt;
+		}
+	    }
+	}
+	return -1;
+}
+
 void RefCharFindBounds(RefChar *rf) {
     int i;
     SplineChar *rsc = rf->sc;
@@ -2968,7 +2989,8 @@ void RefCharFindBounds(RefChar *rf) {
     for ( i=0; i<rf->layer_cnt; ++i ) {
 	_SplineSetFindBounds(rf->layers[i].splines,&rf->bb);
 	_SplineSetFindTop(rf->layers[i].splines,&rf->top);
-	if ( rsc->layers[i].dostroke ) {
+	int baselayer = RefLayerFindBaseLayerIndex(rf, i);
+	if ( baselayer >= 0 && rsc->layers[baselayer].dostroke ) {
 	    if ( rf->layers[i].stroke_pen.width!=WIDTH_INHERITED )
 		e = rf->layers[i].stroke_pen.width*rf->layers[i].stroke_pen.trans[0];
 	    else
@@ -3045,7 +3067,8 @@ return;
 	for ( i=0; i<rf->layer_cnt; ++i ) {
 	    _SplineSetFindBounds(rf->layers[i].splines,&rf->bb);
 	    _SplineSetFindTop(rf->layers[i].splines,&rf->top);
-	    if ( rsc->layers[i].dostroke ) {
+	    int baselayer = RefLayerFindBaseLayerIndex(rf, i);
+	    if ( baselayer >= 0 && rsc->layers[baselayer].dostroke ) {
 		if ( rf->layers[i].stroke_pen.width!=WIDTH_INHERITED )
 		    e = rf->layers[i].stroke_pen.width*rf->layers[i].stroke_pen.trans[0];
 		else
@@ -4229,7 +4252,7 @@ return( 0 );
     t1min = ISolveWithin(s1,major,(&min.x)[major],lowt1,hight1);
     t2max = ISolveWithin(s2,major,(&max.x)[major],lowt2,hight2);
     t2min = ISolveWithin(s2,major,(&min.x)[major],lowt2,hight2);
-    if ( t1max==-1 || t1min==-1 || t2max==-1 || t1min==-1 )
+    if ( t1max==-1 || t1min==-1 || t2max==-1 || t2min==-1 )
 return( 0 );
     t1diff = (t1max-t1min)/64.0;
     if (RealNear(t1diff,0))
@@ -5101,7 +5124,7 @@ MinimumDistance *MinimumDistanceCopy(MinimumDistance *md) {
     MinimumDistance *head=NULL, *last=NULL, *cur;
 
     for ( ; md!=NULL; md = md->next ) {
-	cur = chunkalloc(sizeof(DStemInfo));
+	cur = chunkalloc(sizeof(MinimumDistance));
 	*cur = *md;
 	cur->next = NULL;
 	if ( head==NULL )
@@ -5762,7 +5785,7 @@ void SplineCharListsFree(struct splinecharlist *dlist) {
 }
 
 struct pattern *PatternCopy(struct pattern *old, real transform[6]) {
-    struct pattern *pat = chunkalloc(sizeof(struct pattern));
+    struct pattern *pat;
 
     if ( old==NULL )
 return( NULL );
@@ -5784,7 +5807,7 @@ return;
 }
 
 struct gradient *GradientCopy(struct gradient *old,real transform[6]) {
-    struct gradient *grad = chunkalloc(sizeof(struct gradient));
+    struct gradient *grad;
 
     if ( old==NULL )
 return( NULL );
@@ -5995,11 +6018,11 @@ return( NULL );
     }
     for ( i=0; i<new->first_cnt; ++i ) {
 	new->firsts[i] = copy(kc->firsts[i]);
-	if (new->firsts_names) new->firsts_names[i] = copy(kc->firsts_names[i]);
+	if (kc->firsts_names && kc->firsts_names[i]) new->firsts_names[i] = copy(kc->firsts_names[i]);
     }
     for ( i=0; i<new->second_cnt; ++i ) {
 	new->seconds[i] = copy(kc->seconds[i]);
-	if (new->seconds_names) new->seconds_names[i] = copy(kc->seconds_names[i]);
+	if (kc->seconds_names && kc->seconds_names[i]) new->seconds_names[i] = copy(kc->seconds_names[i]);
     }
     new->adjusts = calloc(new->first_cnt*new->second_cnt,sizeof(DeviceTable));
     memcpy(new->adjusts,kc->adjusts, new->first_cnt*new->second_cnt*sizeof(DeviceTable));
@@ -6167,45 +6190,39 @@ void OtfFeatNameListFree(struct otffeatname *fn) {
 }
 
 EncMap *EncMapNew(int enccount,int backmax,Encoding *enc) {
-    EncMap *map = chunkalloc(sizeof(EncMap));
+/* NOTE: 'enccount' and 'backmax' can sometimes be different map sizes */
+    EncMap *map;
 
-    map->enccount = map->encmax = enccount;
-    map->backmax = backmax;
-    map->map = malloc(enccount*sizeof(int));
-    memset(map->map,-1,enccount*sizeof(int));
-    map->backmap = malloc(backmax*sizeof(int));
-    memset(map->backmap,-1,backmax*sizeof(int));
-    map->enc = enc;
-return(map);
+    /* Ensure all memory available, otherwise cleanup and exit as NULL */
+    if ( (map=chunkalloc(sizeof(EncMap)))!=NULL ) {
+	if ( (map->map=malloc(enccount*sizeof(int32)))!=NULL ) {
+	    if ( (map->backmap=malloc(backmax*sizeof(int32)))!=NULL ) {
+		map->enccount = map->encmax = enccount;
+		map->backmax = backmax;
+		memset(map->map,-1,enccount*sizeof(int32));
+		memset(map->backmap,-1,backmax*sizeof(int32));
+		map->enc = enc;
+		return( map );
+	    }
+	    free(map->map);
+	}
+	free(map);
+    }
+    return( NULL );
 }
 
 EncMap *EncMap1to1(int enccount) {
-    EncMap *map = chunkalloc(sizeof(EncMap));
-    /* Used for CID fonts where CID is same as orig_pos */
+/* Used for CID fonts where CID is same as orig_pos */
+/* NOTE: map-enc point to a global variable custom. */
+/* TODO: avoid global custom and use passed pointer */
+    EncMap *map;
     int i;
 
-    map->enccount = map->encmax = map->backmax = enccount;
-    map->map = malloc(enccount*sizeof(int));
-    map->backmap = malloc(enccount*sizeof(int));
-    for ( i=0; i<enccount; ++i )
-	map->map[i] = map->backmap[i] = i;
-    map->enc = &custom;
-return(map);
-}
-
-static void EncodingFree(Encoding *enc) {
-    int i;
-
-    if ( enc==NULL )
-return;
-    free(enc->enc_name);
-    free(enc->unicode);
-    if ( enc->psnames!=NULL ) {
-	for ( i=0; i<enc->char_cnt; ++i )
-	    free(enc->psnames[i]);
-	free(enc->psnames);
+    if ( (map=EncMapNew(enccount,enccount,&custom))!=NULL ) {
+	for ( i=0; i<enccount; ++i )
+	    map->map[i] = map->backmap[i] = i;
     }
-    free(enc);
+    return( map );
 }
 
 void EncMapFree(EncMap *map) {
@@ -6221,21 +6238,33 @@ return;
 }
 
 EncMap *EncMapCopy(EncMap *map) {
+/* Make a duplicate 'new' copy of EncMap 'map', Return a NULL if error */
+/* NOTE: new-enc also shares map->enc, so be careful if freeing either */
     EncMap *new;
+    int n;
 
-    new = chunkalloc(sizeof(EncMap));
-    *new = *map;
-    new->map = malloc(new->encmax*sizeof(int));
-    new->backmap = malloc(new->backmax*sizeof(int));
-    memcpy(new->map,map->map,new->enccount*sizeof(int));
-    memcpy(new->backmap,map->backmap,new->backmax*sizeof(int));
-    if ( map->remap ) {
-	int n;
-	for ( n=0; map->remap[n].infont!=-1; ++n );
-	new->remap = malloc(n*sizeof(struct remap));
-	memcpy(new->remap,map->remap,n*sizeof(struct remap));
-    }
-return( new );
+    /* Ensure all memory available, otherwise cleanup and exit as NULL */
+    if ( (new=chunkalloc(sizeof(EncMap)))!=NULL ) {
+	*new = *map;
+	if ( (new->map=malloc(map->enccount*sizeof(int32)))!=NULL ) {
+	    if ( (new->backmap=malloc(map->backmax*sizeof(int32)))!=NULL ) {
+		memcpy(new->map,map->map,map->enccount*sizeof(int32));
+		memcpy(new->backmap,map->backmap,map->backmax*sizeof(int32));
+		/* NOTE: This new->enc 'also' points to same map->enc. */
+		if ( map->remap==NULL )
+		    return( new );
+		for ( n=0; map->remap[n].infont!=-1; ++n );
+		if ( (new->remap=malloc(n*sizeof(struct remap)))!=NULL ) {
+		    memcpy(new->remap,map->remap,n*sizeof(struct remap));
+		    return( new );
+		}
+		free(new->backmap);
+	    }
+	    free(new->map);
+	}
+	free(new);
+     }
+    return( NULL );
 }
 
 void MarkClassFree(int cnt,char **classes,char **names) {
@@ -6423,10 +6452,6 @@ return;
         oldsf->orders = NULL;
       }
     }
-    // Free the special names.
-    if (sf->pfminfo.os2_family_name) { free(sf->pfminfo.os2_family_name); sf->pfminfo.os2_family_name = NULL; }
-    if (sf->pfminfo.os2_style_name) { free(sf->pfminfo.os2_style_name); sf->pfminfo.os2_style_name = NULL; }
-    // Free the bitmaps.
     for ( bdf = sf->bitmaps; bdf!=NULL; bdf = bnext ) {
 	bnext = bdf->next;
 	BDFFontFree(bdf);
@@ -6447,6 +6472,7 @@ return;
     free(sf->xuid);
     free(sf->cidregistry);
     free(sf->ordering);
+    if ( sf->styleMapFamilyName && sf->styleMapFamilyName[0]!='\0' ) { free(sf->styleMapFamilyName); sf->styleMapFamilyName = NULL; }
     MacFeatListFree(sf->features);
     /* We don't free the EncMap. That field is only a temporary pointer. Let the FontViewBase free it, that's where it really lives */
     // TODO: But that doesn't always get freed. The statement below causes double-frees, so we need to come up with better conditions.
@@ -6501,7 +6527,7 @@ return;
         }
       }
       free(sf->layers); sf->layers = NULL;
-    }   
+    }
     free(sf);
 }
 
@@ -6541,7 +6567,7 @@ return;
           sf->layers[layer].ufo_path = NULL;
         }
       }
-    }   
+    }
 }
 
 #if 0
@@ -6639,8 +6665,62 @@ int CountKerningClasses(SplineFont *sf) {
     return absolute_index;
 }
 
+size_t count_caps(const char * input) {
+  size_t count = 0;
+  for (int i = 0; input[i] != '\0'; i++) {
+    if ((input[i] >= 'A') && (input[i] <= 'Z')) count ++;
+  }
+  return count;
+}
+
+char * upper_case(const char * input) {
+  size_t output_length = strlen(input);
+  char * output = malloc(output_length + 1);
+  off_t pos = 0;
+  if (output == NULL) return NULL;
+  while (pos < output_length) {
+    if ((input[pos] >= 'a') && (input[pos] <= 'z')) {
+      output[pos] = (char)(((unsigned char) input[pos]) - 0x20U);
+    } else {
+      output[pos] = input[pos];
+    }
+    pos++;
+  }
+  output[pos] = '\0';
+  return output;
+}
+
+char * same_case(const char * input) {
+  size_t output_length = strlen(input);
+  char * output = malloc(output_length + 1);
+  off_t pos = 0;
+  if (output == NULL) return NULL;
+  while (pos < output_length) {
+    output[pos] = input[pos];
+    pos++;
+  }
+  output[pos] = '\0';
+  return output;
+}
+
+char * delimit_null(const char * input, char delimiter) {
+  size_t output_length = strlen(input);
+  char * output = malloc(output_length + 1);
+  if (output == NULL) return NULL;
+  off_t pos = 0;
+  while (pos < output_length) {
+    if (input[pos] == delimiter) {
+      output[pos] = '\0';
+    } else {
+      output[pos] = input[pos];
+    }
+    pos++;
+  }
+  return output;
+}
+
 #ifdef FF_UTHASH_GLIF_NAMES
-int HashKerningClassNames(SplineFont *sf, struct glif_name_index * class_name_hash) {
+int HashKerningClassNamesFlex(SplineFont *sf, struct glif_name_index * class_name_hash, int capitalize) {
     struct kernclass *current_kernclass;
     int isv;
     int isr;
@@ -6654,11 +6734,23 @@ int HashKerningClassNames(SplineFont *sf, struct glif_name_index * class_name_ha
     for ( i=0; i < (isr ? current_kernclass->second_cnt : current_kernclass->first_cnt); ++i )
     if ( (isr ? current_kernclass->seconds_names[i] : current_kernclass->firsts_names[i]) != NULL ) {
         // Add it to the hash table with its index.
-        glif_name_track_new(class_name_hash, absolute_index + i, (isr ? current_kernclass->seconds_names[i] : current_kernclass->firsts_names[i]));
+	if (capitalize) {
+          char * cap_name = upper_case(isr ? current_kernclass->seconds_names[i] : current_kernclass->firsts_names[i]);
+          glif_name_track_new(class_name_hash, absolute_index + i, cap_name);
+          free(cap_name); cap_name = NULL;
+	} else {
+          glif_name_track_new(class_name_hash, absolute_index + i, (isr ? current_kernclass->seconds_names[i] : current_kernclass->firsts_names[i]));
+        }
     }
     absolute_index +=i;
     }
     return absolute_index;
+}
+int HashKerningClassNames(SplineFont *sf, struct glif_name_index * class_name_hash) {
+  return HashKerningClassNamesFlex(sf, class_name_hash, 0);
+}
+int HashKerningClassNamesCaps(SplineFont *sf, struct glif_name_index * class_name_hash) {
+  return HashKerningClassNamesFlex(sf, class_name_hash, 1);
 }
 #endif
 
@@ -7707,7 +7799,7 @@ bigreal DistanceBetweenPoints( BasePoint *p1, BasePoint *p2 )
     bigreal t = pow(p1->x - p2->x,2) + pow(p1->y - p2->y,2);
     if( !t )
 	return t;
-    
+
     t = sqrt( t );
     return t;
 }

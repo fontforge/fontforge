@@ -36,6 +36,7 @@
 # include <gwwiconv.h>
 #endif
 #include "locale.h"
+#include <gnetwork.h>
 
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
 # define real		double
@@ -1724,6 +1725,10 @@ struct pfminfo {		/* A misnomer now. OS/2 info would be more accurate, but that'
     int16 weight;
     int16 width;
     char panose[10];
+    /* A subset of OS/2 fsSelection, used for style mapping. */
+    /* Must agree with macStyle per otspec, takes precedence. */
+    /* Can't use macStyle because it doesn't have a "regular" bit unlike the OS/2 component. */
+    int16 stylemap;
     int16 fstype;
     int16 linegap;		/* from hhea */
     int16 vlinegap;		/* from vhea */
@@ -1738,8 +1743,6 @@ struct pfminfo {		/* A misnomer now. OS/2 info would be more accurate, but that'
     int16 os2_family_class;
     uint32 codepages[2];
     uint32 unicoderanges[4];
-    char *os2_family_name;
-    char *os2_style_name;
 };
 
 struct ttf_table {
@@ -1931,13 +1934,10 @@ typedef struct splinefont {
     char *woffMetadata;
     real ufo_ascent, ufo_descent;	/* I don't know what these mean, they don't seem to correspond to any other ascent/descent pair, but retain them so round-trip ufo input/output leaves them unchanged */
 	    /* ufo_descent is negative */
-
+    char *styleMapFamilyName;
     struct sfundoes *undoes;
-    enum {
-	collab_uuid_sz = 40 
-    } SplineFontConstants;
-    char collab_uuid[ collab_uuid_sz ];
-    int preferred_kerning; // 1 for U. F. O. native, 2 for feature file, 0 undefined. Input functions shall flag 2, I think. This shall be a temporary value absent from S. F. D. for now.
+    char collab_uuid[ FF_UUID_STRING_SIZE ];
+    int preferred_kerning; // 1 for U. F. O. native, 2 for feature file, 0 undefined. Input functions shall flag 2, I think. This is now in S. F. D. in order to round-trip U. F. O. consistently.
 } SplineFont;
 
 struct axismap {
@@ -2015,11 +2015,13 @@ enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2,
 		    ttf_flag_pfed_guides=0x1000,
 		    ttf_flag_pfed_layers=0x2000,
 		    ttf_flag_symbol=0x4000,
-		    ttf_flag_dummyDSIG=0x8000
+		    ttf_flag_dummyDSIG=0x8000,
+		    ttf_native_kern=0x10000, // This applies mostly to U. F. O. right now.
+		    ttf_flag_oldkernmappedonly=0x20000000 // Allow only mapped glyphs in the old-style "kern" table, required for Windows compatibility
 		};
 enum ttc_flags { ttc_flag_trymerge=0x1, ttc_flag_cff=0x2 };
 enum openflags { of_fstypepermitted=1, of_askcmap=2, of_all_glyphs_in_ttc=4,
-	of_fontlint=8, of_hidewindow=0x10 };
+	of_fontlint=8, of_hidewindow=0x10, of_all_tables=0x20 };
 enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,
 		    ps_flag_nohints = 0x40000, ps_flag_restrict256=0x80000,
 		    ps_flag_afm = 0x100000, ps_flag_pfm = 0x200000,
@@ -2353,7 +2355,9 @@ void GlyphGroupKernsFree(struct ff_rawoffsets* root);
 int CountKerningClasses(SplineFont *sf);
 #ifdef FF_UTHASH_GLIF_NAMES
 struct glif_name_index;
+int HashKerningClassNamesFlex(SplineFont *sf, struct glif_name_index * class_name_hash, int capitalize);
 int HashKerningClassNames(SplineFont *sf, struct glif_name_index * class_name_hash);
+int HashKerningClassNamesCaps(SplineFont *sf, struct glif_name_index * class_name_hash);
 #endif
 int KerningClassSeekByAbsoluteIndex(const struct splinefont *sf, int seek_index, struct kernclass **okc, int *oisv, int *oisr, int *ooffset);
 struct ff_glyphclasses *SFGetGroup(const struct splinefont *sf, int index, const char *name);
@@ -2879,7 +2883,6 @@ extern SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openfl
 extern SplineFont *ReadSplineFont(const char *filename,enum openflags);	/* Don't use this, use LoadSF instead */
 extern FILE *URLToTempFile(char *url,void *lock);
 extern int URLFromFile(const char *url,FILE *from);
-extern int HttpGetBuf(const char *url, char *databuf, int *datalen, void *mutex);
 extern void ArchiveCleanup(char *archivedir);
 extern char *Unarchive(char *name, char **_archivedir);
 extern char *Decompress(char *name, int compression);
@@ -2891,7 +2894,7 @@ extern uint16 MacStyleCode( SplineFont *sf, uint16 *psstyle );
 extern SplineFont *SFReadIkarus(char *fontname);
 extern SplineFont *_SFReadPdfFont(FILE *ttf,char *filename,enum openflags openflags);
 extern SplineFont *SFReadPdfFont(char *filename, enum openflags openflags);
-extern char **GetFontNames(char *filename);
+extern char **GetFontNames(char *filename, int do_slow);
 extern char **NamesReadPDF(char *filename);
 extern char **NamesReadSFD(char *filename);
 extern char **NamesReadTTF(char *filename);
@@ -3389,6 +3392,7 @@ extern int SFValidate(SplineFont *sf, int layer, int force);
 extern int VSMaskFromFormat(SplineFont *sf, int layer, enum fontformat format);
 
 extern int hasspiro(void);
+extern char *libspiro_version(void);
 extern SplineSet *SpiroCP2SplineSet(spiro_cp *spiros);
 extern spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *_cnt);
 extern spiro_cp *SpiroCPCopy(spiro_cp *spiros,uint16 *_cnt);
@@ -3537,9 +3541,15 @@ extern void debug_printHintInstance( HintInstance* hi, int hin, char* msg );
  */
 extern bool equalWithTolerence( real a, real b, real tolerence );
 
+// The following functions are in splineutil.c at present.
+size_t count_caps(const char * input);
+char * upper_case(const char * input);
+char * same_case(const char * input);
+char * delimit_null(const char * input, char delimiter);
+
 #include "ustring.h"
 
-#ifdef __MINGW32__
+#ifdef _WIN32
 #define BAD_LOCALE_HACK
 typedef char* locale_t;
 #define LC_GLOBAL_LOCALE ((locale_t)-1)

@@ -31,6 +31,7 @@
 #include "uiinterface.h"
 #include "sfundo.h"
 #include "../fontforge/ffglib.h"
+#include "fontforgeexe.h"
 
 int  collabclient_setHaveLocalServer( int v );
 
@@ -59,7 +60,7 @@ int Collab_getLastChangedCodePoint( void )
   // client beacon for discovery
   static zbeacon_t* client_beacon = 0;
   static GHashTable* peers = 0;
-  static int client_beacon_timerID = 0;
+  static BackgroundTimer_t* client_beacon_timerID = 0;
 #endif
 
 
@@ -102,7 +103,7 @@ static void zeromq_subscriber_process_update( cloneclient_t* cc, kvmsg_t *kvmsg,
     byte* msgtype = kvmsg_get_prop (kvmsg, "type" );
 
     printf("cc process_update() uuid:%s\n", uuid );
-    FontView* fv = FontViewFind( FontViewFind_byXUIDConnected, uuid );
+    FontView* fv = FontViewFindUI( FontViewFind_byXUIDConnected, uuid );
     printf("fv:%p\n", fv );
     if( fv )
     {
@@ -307,7 +308,7 @@ static void zeromq_beacon_show_peers( cloneclient_t* cc )
 	printf("mach:%s\n", ba->machinename );
 	printf("ip  :%s\n", ba->ip );
 	printf("port:%d\n", ba->port );
-	printf("seconds since last msg:%d\n", tt - ba->last_msg_from_peer_time );
+	printf("seconds since last msg:%d\n", (int)(tt - ba->last_msg_from_peer_time) );
 	
     }
     printf("--- zeromq_beacon_show_peers(end)\n" );
@@ -402,7 +403,7 @@ static void collabclient_roundTripTimer( void* ccvp )
 		      _("FontForge expected some input from the server by now.\nWould you like to try to reconnect to the collaboration session?"))==1 )
 	{
 	    // break session
-	    FontView* fv = FontViewFind( FontViewFind_byCollabPtr, cc );
+	    FontView* fv = FontViewFindUI( FontViewFind_byCollabPtr, cc );
 	    if( fv )
 	    {
 		printf("fv:%p\n", fv );
@@ -432,8 +433,8 @@ static void collab_sessioncallbacks_init (CollabSessionCallbacks *self) {}
 static void
 collab_sessioncallbacks_class_init (CollabSessionCallbacksClass *klass)
 {
-    GType argtypes[] = { G_TYPE_POINTER, NULL };
-    
+    GType argtypes[] = {G_TYPE_POINTER};
+
     g_signal_newv ("joining",
 		   (collab_sessioncallbacks_get_type ()),
 		   G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
@@ -470,30 +471,34 @@ gpointer getSessionCallbacksObject()
 void collabclient_notifySessionJoining( cloneclient_t *cc, FontViewBase* fv )
 {
 #ifdef BUILD_COLLAB
-    
-    printf("AAA collabclient_notifySessionJoining() fv:%p\n", fv);
+
+    printf("AAA collabclient_notifySessionJoining() cc: %p, fv:%p\n", cc, fv);
     g_signal_emit_by_name( getSessionCallbacksObject(), "joining", fv );
-    
+
 #endif    
 }
 void collabclient_notifySessionLeaving( cloneclient_t *cc, FontViewBase* fv )
 {
 #ifdef BUILD_COLLAB
-    
-    cc->sessionIsClosing = 1;
-    g_signal_emit_by_name( getSessionCallbacksObject(), "leaving", fv );
+
+    if (cc) {
+        cc->sessionIsClosing = 1;
+        g_signal_emit_by_name( getSessionCallbacksObject(), "leaving", fv );
+    } else {
+        LogError(_("collabclient_notifySessionLeaving: cc was NULL"));
+    }
 
 #endif
 }
 void collabclient_addSessionJoiningCallback( collabclient_notification_cb func )
 {
     void* data = 0;
-    g_signal_connect( getSessionCallbacksObject(), "joining", (GCallback)func, data );
+    g_signal_connect( getSessionCallbacksObject(), "joining", G_CALLBACK(func), data );
 }
 void collabclient_addSessionLeavingCallback( collabclient_notification_cb func )
 {
     void* data = 0;
-    g_signal_connect( getSessionCallbacksObject(), "leaving", (GCallback)func, data );
+    g_signal_connect( getSessionCallbacksObject(), "leaving", G_CALLBACK(func), data );
 }
 
 
@@ -554,20 +559,18 @@ collabclient_remakeSockets( cloneclient_t *cc )
 {
     cc->snapshot = zsocket_new (cc->ctx, ZMQ_DEALER);
     zsocket_connect (cc->snapshot,
-	collabclient_makeAddressString( cc->address,
-	cc->port + socket_offset_snapshot));
+        "tcp://%s:%d", cc->address, cc->port+socket_offset_snapshot);
     
     cc->subscriber = zsocket_new (cc->ctx, ZMQ_SUB);
     zsocket_set_subscribe (cc->subscriber, "");
     zsocket_connect (cc->subscriber,
-	collabclient_makeAddressString( cc->address,
-	cc->port + socket_offset_subscriber));
+        "tcp://%s:%d", cc->address, cc->port+socket_offset_subscriber);
     zsocket_set_subscribe (cc->subscriber, SUBTREE);
 
     cc->publisher = zsocket_new (cc->ctx, ZMQ_PUSH);
     zsocket_connect (cc->publisher,
-	collabclient_makeAddressString( cc->address,
-	cc->port + socket_offset_publisher));
+        "tcp://%s:%d",
+        cc->address, cc->port+socket_offset_publisher);
 
     int fd = 0;
     size_t fdsz = sizeof(fd);
@@ -662,7 +665,7 @@ void collabclient_free( void** ccvp )
     zsocket_destroy( cc->ctx, cc->publisher  );
     BackgroundTimer_remove( cc->roundTripTimer );
 
-    FontView* fv = FontViewFind( FontViewFind_byCollabPtr, cc );
+    FontView* fv = FontViewFindUI( FontViewFind_byCollabPtr, cc );
     if( fv )
     {
 	fv->b.collabClient = 0;
@@ -696,7 +699,7 @@ static void collabclient_sendSFD( void* ccvp, char* sfd, char* collab_uuid, char
 //    kvmsg_set_prop (kvmsg, "ttl", "%d", randof (30));
     kvmsg_send     (kvmsg, cc->publisher);
     kvmsg_destroy (&kvmsg);
-    DEBUG("Sent a SFD of %d bytes to the server\n",strlen(sfd));
+    DEBUG("Sent a SFD of %zu bytes to the server\n",strlen(sfd));
     free(sfd);
 }
 
@@ -763,7 +766,7 @@ collabclient_sendRedo_sfdfragment( cloneclient_t* cc,
     kvmsg_set_prop (kvmsg, "isLocalUndo", pos );
     kvmsg_send     (kvmsg, cc->publisher);
     kvmsg_destroy  (&kvmsg);
-    DEBUG("Sent a undo chunk of %d bytes to the server\n",strlen(sfd));
+    DEBUG("Sent a undo chunk of %zu bytes to the server\n",strlen(sfd));
     free(sfd);
 }
 
@@ -818,7 +821,7 @@ collabclient_sendRedo_Internal( FontViewBase *fv, SplineChar *sc, Undoes *undo, 
     kvmsg_set_prop (kvmsg, "isLocalUndo", pos );
     kvmsg_send     (kvmsg, cc->publisher);
     kvmsg_destroy (&kvmsg);
-    DEBUG("Sent a undo chunk of %d bytes to the server\n",strlen(sfd));
+    DEBUG("Sent a undo chunk of %zu bytes to the server\n",strlen(sfd));
     free(sfd);
 }
 
@@ -885,7 +888,7 @@ static void beacon_moon_bounce_timer_callback( void* ccvp )
 	if( !strcmp( ba->uuid, sought_uuid ))
 	{
 	    printf("it took %d seconds to get a beacon back from the server\n",
-		   tt - cc->unacknowledged_beacon_sendTime );
+		   (int)(tt - cc->unacknowledged_beacon_sendTime) );
 	    strcpy( cc->unacknowledged_beacon_uuid, "" );
 	    cc->unacknowledged_beacon_sendTime = 0;
 	    return;
@@ -909,14 +912,15 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
     //
     {
 	char command_line[PATH_MAX+1];
-	sprintf(command_line,
-		"%s/FontForgeInternal/fontforge-internal-collab-server %d",
-		getGResourceProgramDir(), cc->port );
+	
 #if defined(__MINGW32__)
-//	chdir(getGResourceProgramDir());
-//	sprintf(command_line, "ffcollab.bat" );
 
 	sprintf(command_line, "'%s/ffcollab.bat' %d", getGResourceProgramDir(), cc->port );
+	
+#else	
+	sprintf(command_line,
+		"%s/bin/FontForgeInternal/fontforge-internal-collab-server %d",
+		getLibexecDir_NonWindows(), cc->port );
 #endif	
 	printf("command_line:%s\n", command_line );
 	GError * error = 0;
@@ -959,7 +963,7 @@ void collabclient_sessionStart( void* ccvp, FontView *fv )
 
     beacon_moon_bounce_timerID = BackgroundTimer_new( 3000, beacon_moon_bounce_timer_callback, cc );
 
-    collabclient_notifySessionJoining( cc, fv );
+    collabclient_notifySessionJoining( cc, (FontViewBase*)fv );
 #endif
 }
 
@@ -1106,7 +1110,7 @@ void collabclient_sessionReconnect( void* ccvp )
     collabclient_remakeSockets( cc );
     cc->publisher_sendseq = 1;
 
-    FontView* fv = FontViewFind( FontViewFind_byCollabPtr, cc );
+    FontView* fv = FontViewFindUI( FontViewFind_byCollabPtr, cc );
     if( fv )
     {
 	collabclient_sessionJoin( cc, fv );
@@ -1310,7 +1314,7 @@ void collabclient_sendFontLevelRedo( SplineFont* sf )
     
     if( sfdfrag )
     {
-	printf("have sfd frag len:%d\n", strlen(sfdfrag));
+	printf("have sfd frag len:%zu\n", strlen(sfdfrag));
 	printf("have sfd frag\n%s\n\n", sfdfrag);
 
 	FontViewBase* fv = sf->fv;
@@ -1376,8 +1380,7 @@ collabclient_sniffForLocalServer( void )
 
     cc->socket = zsocket_new ( ctx, ZMQ_REQ );
     zsocket_connect (cc->socket,
-		     collabclient_makeAddressString("localhost",
-						    port_default + socket_offset_ping));
+        "tcp://localhost:%d", port_default+socket_offset_ping);
     cc->timer = BackgroundTimer_new( 1000, collabclient_sniffForLocalServer_timer, cc );
     zstr_send  (cc->socket, "ping");
 
@@ -1395,11 +1398,10 @@ collabclient_closeLocalServer( int port )
     if( !port )
 	port = collabclient_getDefaultBasePort();
 
-    printf("collabclient_closeLocalServer() port:%d\n");
+    printf("collabclient_closeLocalServer() port:%d\n", port);
     void* socket = zsocket_new ( ctx, ZMQ_REQ );
     zsocket_connect ( socket,
-		      collabclient_makeAddressString("localhost",
-						     port + socket_offset_ping));
+        "tcp://localhost:%d", port+socket_offset_ping);
     zstr_send( socket, "quit" );
     cc->haveServer = 0;
 
@@ -1459,7 +1461,7 @@ void collabclient_trimOldBeaconInformation( int secondsCutOff )
 	beacon_announce_t* ba = (beacon_announce_t*)value;
 	int seconds_since_last_msg = tt - ba->last_msg_from_peer_time;
 	
-	printf("seconds since last msg:%d\n", tt - ba->last_msg_from_peer_time );
+	printf("seconds since last msg:%d\n", (int)(tt - ba->last_msg_from_peer_time) );
 	if( seconds_since_last_msg > secondsCutOff )
 	{
 	    g_hash_table_remove( peers, ba->uuid );

@@ -7,9 +7,9 @@
 
 Print( "...It's ok to get errors about 'Attempt to encode missing glyphs'")
 Print( " or 'Glyph index out of bounds'")
-Open("@abs_srcdir@/fonts/mingliu.ttc(PMingLiU)");
+Open($1+"(PMingLiU)");
 Print( "...Read mingliu.ttc(PMingLiU)")
-Generate("@abs_builddir@/results/pmingliu.ttf","bdf");
+Generate("pmingliu.ttf","bdf");
 Print( "...Generated ttf")
 Close();
 Quit()

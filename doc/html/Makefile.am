@@ -171,7 +171,7 @@ ROOT_DOC_LIST = AA-Comparison.html aacutebase.png aacutemid.png			\
 	nix-install.html non-linear.png non-standard.html NoPointHint.png	\
 	nvd.html o1.png o2.png o3.png o4.png o5.png o-baddir.png			\
 	OFL-FAQ-Unofficial-fr.html OFL-FAQ-Unofficial-vi.html				\
-	OFLibBrowse.png oflib.html OFL-Unofficial-el.html					\
+	OFL-Unofficial-el.html												\
 	OFL-Unofficial-fr.html OFL-Unofficial.html OFL-Unofficial-pl.html	\
 	OFL-Unofficial-vi.html oldchangelog.html openfont.png				\
 	otherlinks.html outlinechar.png OutlineInline.png					\

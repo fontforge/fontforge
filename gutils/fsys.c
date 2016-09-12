@@ -35,13 +35,8 @@
 #include <sys/stat.h>		/* for mkdir */
 #include <unistd.h>
 #include <glib.h>
+#include <glib/gstdio.h>
 #include <errno.h>			/* for mkdir_p */
-
-#ifdef _WIN32
-#define MKDIR(A,B) mkdir(A)
-#else
-#define MKDIR(A,B) mkdir(A,B)
-#endif
 
 static char dirname_[MAXPATHLEN+1];
 #if !defined(__MINGW32__)
@@ -134,14 +129,14 @@ return -ENOTDIR;
 	for(p = tmp + 1; *p; p++)
 	if(*p == '/') {
 		*p = 0;
-		r = MKDIR(tmp, mode);
+		r = mkdir(tmp, mode);
 		if (r < 0 && errno != EEXIST)
 return -errno;
 		*p = '/';
 	}
 
 	/* try to make the whole path */
-	r = MKDIR(tmp, mode);
+	r = mkdir(tmp, mode);
 	if(r < 0 && errno != EEXIST)
 return -errno;
 	/* creation successful or the file already exists */
@@ -419,8 +414,39 @@ int GFileReadable(const char *file) {
 return( access(file,04)==0 );
 }
 
+/**
+ * Removes a file or folder.
+ *
+ * @param [in] path The path to be removed.
+ * @param [in] recursive Specify true to remove a folder and all of its
+ *                       sub-contents.
+ * @return true if the deletion was successful or the path does not exist. It
+ *         will fail if trying to remove a directory that is not empty and
+ *         where `recursive` is false.
+ */
+int GFileRemove(const char *path, int recursive) {
+    GDir *dir;
+    const gchar *entry;
+
+    if (g_remove(path) != 0) {
+        if (recursive && (dir = g_dir_open(path, 0, NULL))) {
+            while ((entry = g_dir_read_name(dir))) {
+                gchar *fpath = g_build_filename(path, entry, NULL);
+                if (g_remove(fpath) != 0 && GFileIsDir(fpath)) {
+                    GFileRemove(fpath, recursive);
+                }
+                g_free(fpath);
+            }
+            g_dir_close(dir);
+        }
+        return (g_remove(path) == 0 || !GFileExists(path));
+    }
+
+    return true;
+}
+
 int GFileMkDir(const char *name) {
-return( MKDIR(name,0755));
+return( mkdir(name,0755));
 }
 
 int GFileRmDir(const char *name) {
@@ -714,7 +740,7 @@ return( access(buffer,04)==0 );
 int u_GFileMkDir(unichar_t *name) {
     char buffer[1024];
     u2def_strncpy(buffer,name,sizeof(buffer));
-return( MKDIR(buffer,0755));
+return( mkdir(buffer,0755));
 }
 
 int u_GFileRmDir(unichar_t *name) {
@@ -734,6 +760,18 @@ static char *GResourceProgramDir = 0;
 char* getGResourceProgramDir(void) {
     return GResourceProgramDir;
 }
+
+char* getLibexecDir_NonWindows(void) 
+{
+    // FIXME this was indirectly introduced by
+    // https://github.com/fontforge/fontforge/pull/1838 and is not
+    // tested on Windows yet.
+    //
+    static char path[PATH_MAX+4];
+    snprintf( path, PATH_MAX, "%s/../libexec/", getGResourceProgramDir());
+    return path;
+}
+
 
 
 void FindProgDir(char *prog) {
@@ -772,7 +810,8 @@ char *getShareDir(void) {
 
     set = true;
 
-    pt = strstr(GResourceProgramDir,"/bin");
+    //Assume share folder is one directory up
+    pt = strrchr(GResourceProgramDir, '/');
     if ( pt==NULL ) {
 #ifdef SHAREDIR
 	return( sharedir = SHAREDIR );
@@ -896,7 +935,7 @@ char *getFontForgeUserDir(int dir) {
 	fprintf(stderr, "%s\n", "cannot find home directory");
 return NULL;
 	}
-#if defined(__MINGW32__)
+#ifdef _WIN32
 	/* Allow for preferences to be saved locally in a 'portable' configuration. */ 
 	if (getenv("FF_PORTABLE") != NULL) {
 		buf = smprintf("%s/preferences/", getShareDir());

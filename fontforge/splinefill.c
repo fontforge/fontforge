@@ -1457,7 +1457,7 @@ BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indicate) {
 	strcpy(aa,_("Generating bitmap font"));
 	if ( sf->fontname!=NULL ) {
 	    strcat(aa,": ");
-	    strncat(aa,sf->fontname,sizeof(aa)-strlen(aa));
+	    strncat(aa,sf->fontname,sizeof(aa)-strlen(aa)-1);
 	    aa[sizeof(aa)-1] = '\0';
 	}
 	ff_progress_start_indicator(10,_("Rasterizing..."),
@@ -1532,6 +1532,7 @@ return;
 		memset(sum,0,new.bytes_per_line*sizeof(uint32));
 	    }
 	}
+        free(sum);
     } else {
 	for ( i=0; i<=bc->ymax-bc->ymin; ++i ) {
 	    bpt = bc->bitmap + i*bc->bytes_per_line;
@@ -1740,13 +1741,24 @@ BDFFont *SplineFontPieceMeal(SplineFont *sf,int layer,int ptsize,int dpi,
 	if ( bb.minx<-10*(sf->ascent+sf->descent) ) bb.minx = -2*(sf->ascent+sf->descent);
 	scale = pixelsize/ (real) (bb.maxy-bb.miny);
 	bdf->ascent = rint(bb.maxy*scale);
-	truesize = rint( (sf->ascent+sf->descent)*scale );
-	if ( pixelsize!=0 )
-	    ptsize = rint( ptsize*(double) truesize/pixelsize );
     } else {
-	scale = pixelsize / (real) (sf->ascent+sf->descent);
-	bdf->ascent = rint(sf->ascent*scale);
+	real ascent = sf->pfminfo.os2_typoascent;
+	real descent = sf->pfminfo.os2_typodescent;
+	ascent += sf->pfminfo.typoascent_add ? sf->ascent : 0;
+	descent -= sf->pfminfo.typodescent_add ? sf->descent: 0;
+	// 1.2 is just an arbitrary value to make the glyph look less tightly fit
+	// in the font view.
+	ascent *= 1.2;
+	descent *= 1.2;
+
+	scale = pixelsize / (real) (ascent - descent);
+	bdf->ascent = rint (ascent * scale);
     }
+
+    truesize = rint ((sf->ascent + sf->descent) * scale);
+    if (pixelsize != 0)
+	ptsize = rint (ptsize * (double) truesize / pixelsize);
+
     if ( flags&pf_ft_nohints )
     {
 	printf("SplineFontPieceMeal() going unhinted...\n");
@@ -1776,7 +1788,7 @@ BDFFont *SplineFontPieceMeal(SplineFont *sf,int layer,int ptsize,int dpi,
 	bdf->recontext_freetype = bdf->unhinted_freetype = false;
     }
     
-    if ( (ftc || bdf->recontext_freetype || bdf->recontext_freetype) && (flags&pf_antialias) )
+    if ( (ftc || bdf->recontext_freetype) && (flags&pf_antialias) )
 	BDFClut(bdf,16);
     else if ( flags&pf_antialias )
 	BDFClut(bdf,4);

@@ -107,58 +107,15 @@ static void injectNumericVersion(char ** textVersion, int versionMajor, int vers
   return;
 }
 
-static size_t count_caps(const char * input) {
-  size_t count = 0;
-  for (int i = 0; input[i] != '\0'; i++) {
-    if ((input[i] >= 'A') && (input[i] <= 'Z')) count ++;
-  }
-  return count;
-}
-
-static char * upper_case(const char * input) {
-  size_t output_length = strlen(input);
-  char * output = malloc(output_length + 1);
-  off_t pos = 0;
-  if (output == NULL) return NULL;
-  while (pos < output_length) {
-    if ((input[pos] >= 'a') && (input[pos] <= 'z')) {
-      output[pos] = (char)(((unsigned char) input[pos]) - 0x20U);
-    } else {
-      output[pos] = input[pos];
-    }
-    pos++;
-  }
-  output[pos] = '\0';
-  return output;
-}
-
-static char * same_case(const char * input) {
-  size_t output_length = strlen(input);
-  char * output = malloc(output_length + 1);
-  off_t pos = 0;
-  if (output == NULL) return NULL;
-  while (pos < output_length) {
-    output[pos] = input[pos];
-    pos++;
-  }
-  output[pos] = '\0';
-  return output;
-}
-
-static char * delimit_null(const char * input, char delimiter) {
-  size_t output_length = strlen(input);
-  char * output = malloc(output_length + 1);
-  if (output == NULL) return NULL;
-  off_t pos = 0;
-  while (pos < output_length) {
-    if (input[pos] == delimiter) {
-      output[pos] = '\0';
-    } else {
-      output[pos] = input[pos];
-    }
-    pos++;
-  }
-  return output;
+/* The spec does not really require padding the version str but it clears */
+/* 1.8 vs. 1.008 ambiguities and makes us inline with the AFDKO. */
+char* paddedVersionStr(const char * textVersion, char * buffer) {
+    int major = -1;
+    int minor = -1;
+    extractNumericVersion(textVersion, &major, &minor);
+    if (major < 0 || minor < 0) return (char *) textVersion;
+    snprintf(buffer, 6, "%d.%03d", major, minor);
+    return buffer;
 }
 
 const char * DOS_reserved[12] = {"CON", "PRN", "AUX", "CLOCK$", "NUL", "COM1", "COM2", "COM3", "COM4", "LPT1", "LPT2", "LPT3"};
@@ -283,7 +240,7 @@ int index, const char * input, const char * prefix, const char * suffix, int fla
             while (glif_name_search_glif_name(glif_name_hash, name_numbered) != NULL || number_once) {
               name_number++; // Remangle the name until we have no more matches.
               free(name_numbered); name_numbered = NULL;
-              asprintf(&name_numbered, "%s%15ld", name_base_upper, name_number);
+              asprintf(&name_numbered, "%s%015ld", name_base_upper, name_number);
               number_once = 0;
             }
             free(name_base_upper); name_base_upper = NULL;
@@ -295,7 +252,7 @@ int index, const char * input, const char * prefix, const char * suffix, int fla
         // Now we want the correct capitalization.
         free(name_numbered); name_numbered = NULL;
         if (name_number > 0) {
-          asprintf(&name_numbered, "%s%15ld", name_base, name_number);
+          asprintf(&name_numbered, "%s%015ld", name_base, name_number);
         } else {
           asprintf(&name_numbered, "%s", full_name_base);
         }
@@ -817,9 +774,12 @@ xmlNodePtr _GlifToXML(const SplineChar *sc,int layer) {
 static int GlifDump(const char *glyphdir, const char *gfname, const SplineChar *sc, int layer) {
     char *gn = buildname(glyphdir,gfname);
     xmlDocPtr doc = xmlNewDoc(BAD_CAST "1.0");
-    if (doc == NULL) return 0;
+    if (doc == NULL) {
+        free(gn);
+        return 0;
+    }
     xmlNodePtr root_node = _GlifToXML(sc, layer);
-    if (root_node == NULL) {xmlFreeDoc(doc); doc = NULL; return 0;}
+    if (root_node == NULL) {xmlFreeDoc(doc); doc = NULL; free(gn); return 0;}
     xmlDocSetRootElement(doc, root_node);
     int ret = (xmlSaveFormatFileEnc(gn, doc, "UTF-8", 1) != -1);
     xmlFreeDoc(doc); doc = NULL;
@@ -959,6 +919,30 @@ int count_occurrence(const char* big, const char* little) {
     return output;
 }
 
+static char* normalizeToASCII(char *str) {
+    if ( str!=NULL && !AllAscii(str))
+        return StripToASCII(str);
+    else
+        return copy(str);
+}
+
+static char* fetchTTFAttribute(const SplineFont *sf, int strid) {
+    char *value=NULL, *nonenglish=NULL;
+    struct ttflangname *nm;
+
+    for ( nm=sf->names; nm!=NULL; nm=nm->next ) {
+		if ( nm->names[strid]!=NULL ) {
+	    	nonenglish = nm->names[strid];
+	    	if ( nm->lang == 0x409 ) {
+				value = nm->names[strid];
+    			break;
+	    	}
+		}
+    }
+    if ( value==NULL ) value=nonenglish;
+    return value;
+}
+
 void PListAddString(xmlNodePtr parent, const char *key, const char *value) {
     if ( value==NULL ) value = "";
     xmlNodePtr keynode = xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key); // "<key>%s</key>" key
@@ -1004,8 +988,13 @@ static void PListAddNameString(xmlNodePtr parent, const char *key, const SplineF
 	    }
 	}
     }
-    if ( value==NULL && strid==ttf_version && sf->version!=NULL )
-	value = freeme = strconcat("Version ",sf->version);
+    if ( value==NULL && strid==ttf_version && sf->version!=NULL ) {
+	char versionStr[6];
+	paddedVersionStr(sf->version, versionStr);
+	value = freeme = strconcat("Version ", versionStr);
+    }
+    if ( value==NULL && strid==ttf_copyright && sf->copyright!=NULL )
+	value = sf->copyright;
     if ( value==NULL )
 	value=nonenglish;
     if ( value!=NULL ) {
@@ -1131,8 +1120,38 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
 /* Same keys in both formats */
     PListAddString(dictnode,"familyName",sf->familyname_with_timestamp ? sf->familyname_with_timestamp : sf->familyname);
     PListAddString(dictnode,"styleName",SFGetModifiers(sf));
-    if (sf->pfminfo.os2_family_name != NULL) PListAddString(dictnode,"styleMapFamilyName", sf->pfminfo.os2_family_name);
-    if (sf->pfminfo.os2_style_name != NULL) PListAddString(dictnode,"styleMapStyleName", sf->pfminfo.os2_style_name);
+    {
+        char* preferredFamilyName = fetchTTFAttribute(sf,ttf_preffamilyname);
+        char* preferredSubfamilyName = fetchTTFAttribute(sf,ttf_prefmodifiers);
+        char* styleMapFamily = NULL;
+        if (sf->styleMapFamilyName != NULL) {
+            /* Empty styleMapStyleName means we imported a UFO that does not have this field. Bypass the fallback. */
+            if (sf->styleMapFamilyName[0]!='\0')
+                styleMapFamily = sf->styleMapFamilyName;
+        } else if (preferredFamilyName != NULL && preferredSubfamilyName != NULL) {
+            styleMapFamily = malloc(strlen(preferredFamilyName)+strlen(preferredSubfamilyName)+2);
+            strcpy(styleMapFamily, preferredFamilyName);
+            strcat(styleMapFamily, " ");
+            strcat(styleMapFamily, preferredSubfamilyName);
+        } else if (sf->fullname != NULL) styleMapFamily = sf->fullname;
+        if (styleMapFamily != NULL) PListAddString(dictnode,"styleMapFamilyName", styleMapFamily);
+    }
+    {
+        char* styleMapName = NULL;
+        if (sf->pfminfo.stylemap != -1) {
+            if (sf->pfminfo.stylemap == 0x21) styleMapName = "bold italic";
+            else if (sf->pfminfo.stylemap == 0x20) styleMapName = "bold";
+            else if (sf->pfminfo.stylemap == 0x01) styleMapName = "italic";
+            else if (sf->pfminfo.stylemap == 0x40) styleMapName = "regular";
+        } else {
+            /* Figure out styleMapStyleName automatically. */
+            if (sf->pfminfo.weight == 700 && sf->italicangle < 0) styleMapName = "bold italic";
+            else if (sf->italicangle < 0) styleMapName = "italic";
+            else if (sf->pfminfo.weight == 700) styleMapName = "bold";
+            else if (sf->pfminfo.weight == 400) styleMapName = "regular";
+        }
+        if (styleMapName != NULL) PListAddString(dictnode,"styleMapStyleName", styleMapName);
+    }
     {
       // We attempt to get numeric major and minor versions for U. F. O. out of the FontForge version string.
       int versionMajor = -1;
@@ -1141,7 +1160,7 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
       if (versionMajor >= 0) PListAddInteger(dictnode,"versionMajor", versionMajor);
       if (versionMinor >= 0) PListAddInteger(dictnode,"versionMinor", versionMinor);
     }
-    PListAddString(dictnode,"copyright",sf->copyright);
+    PListAddNameString(dictnode,"copyright",sf,ttf_copyright);
     PListAddNameString(dictnode,"trademark",sf,ttf_trademark);
     PListAddInteger(dictnode,"unitsPerEm",sf->ascent+sf->descent);
 // We decided that it would be more helpful to round-trip the U. F. O. data.
@@ -1210,15 +1229,19 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
 	    for ( i=fscnt=0; i<16; ++i )
 		if ( sf->pfminfo.fstype&(1<<i) )
 		    fstype[fscnt++] = i;
-	    if ( fscnt!=0 )
-		PListAddIntArray(dictnode,"openTypeOS2Type",fstype,fscnt);
+	    /*
+	     * Note that value 0x0 is represented by an empty bit, so in that case
+	     * we output an empty array, otherwise compilers will fallback to their
+	     * default fsType value.
+	     */
+	    PListAddIntArray(dictnode,"openTypeOS2Type",fstype,fscnt);
 	}
 	if ( sf->pfminfo.typoascent_add )
 	    PListAddInteger(dictnode,"openTypeOS2TypoAscender",sf->ascent+sf->pfminfo.os2_typoascent);
 	else
 	    PListAddInteger(dictnode,"openTypeOS2TypoAscender",sf->pfminfo.os2_typoascent);
 	if ( sf->pfminfo.typodescent_add )
-	    PListAddInteger(dictnode,"openTypeOS2TypoDescender",sf->descent+sf->pfminfo.os2_typodescent);
+	    PListAddInteger(dictnode,"openTypeOS2TypoDescender",-sf->descent+sf->pfminfo.os2_typodescent);
 	else
 	    PListAddInteger(dictnode,"openTypeOS2TypoDescender",sf->pfminfo.os2_typodescent);
 	PListAddInteger(dictnode,"openTypeOS2TypoLineGap",sf->pfminfo.os2_typolinegap);
@@ -1227,7 +1250,7 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
 	else
 	    PListAddInteger(dictnode,"openTypeOS2WinAscent",sf->pfminfo.os2_winascent);
 	if ( sf->pfminfo.windescent_add )
-	    PListAddInteger(dictnode,"openTypeOS2WinDescent",bb.miny+sf->pfminfo.os2_windescent);
+	    PListAddInteger(dictnode,"openTypeOS2WinDescent",-bb.miny+sf->pfminfo.os2_windescent);
 	else
 	    PListAddInteger(dictnode,"openTypeOS2WinDescent",sf->pfminfo.os2_windescent);
     }
@@ -1299,13 +1322,12 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
     xmlFreeDoc(plistdoc); // Free the memory.
     xmlCleanupParser();
     return true;
-return true;
 }
 
 int kernclass_for_groups_plist(struct splinefont *sf, struct kernclass *kc, int flags) {
   // Note that this is not a complete logical inverse of sister function kernclass_for_feature_file.
   return ((flags & FF_KERNCLASS_FLAG_NATIVE) ||
-  (!(flags & FF_KERNCLASS_FLAG_FEATURE) && !kc->feature && sf->preferred_kerning == 1));
+  (!(flags & FF_KERNCLASS_FLAG_FEATURE) && !kc->feature && (sf->preferred_kerning & 1)));
 }
 
 void ClassKerningAddExtensions(struct kernclass * target) {
@@ -1316,7 +1338,7 @@ void ClassKerningAddExtensions(struct kernclass * target) {
   if (target->offsets_flags == NULL && (target->first_cnt * target->second_cnt)) target->offsets_flags = calloc(target->first_cnt * target->second_cnt, sizeof(int));
 }
 
-int UFONameKerningClasses(SplineFont *sf) {
+void UFONameKerningClasses(SplineFont *sf) {
 #ifdef FF_UTHASH_GLIF_NAMES
     struct glif_name_index _class_name_hash;
     struct glif_name_index * class_name_hash = &_class_name_hash; // Open the hash table.
@@ -1331,7 +1353,7 @@ int UFONameKerningClasses(SplineFont *sf) {
     int absolute_index = 0; // This gives us a unique index for each kerning class.
     // First we catch the existing names.
 #ifdef FF_UTHASH_GLIF_NAMES
-    HashKerningClassNames(sf, class_name_hash);
+    HashKerningClassNamesCaps(sf, class_name_hash); // Note that we use the all-caps hasher for compatibility with the official naming scheme and the following code.
 #endif
     // Next we create names for the unnamed. Note that we currently avoid naming anything that might go into the feature file (since that handler currently creates its own names).
     absolute_index = 0;
@@ -1340,7 +1362,7 @@ int UFONameKerningClasses(SplineFont *sf) {
     for (isr = 0; isr < 2; isr++) {
       // If the special class kerning storage blocks are unallocated, we allocate them if using native U. F. O. class kerning or skip the naming otherwise.
       if ( (isr ? current_kernclass->seconds_names : current_kernclass->firsts_names) == NULL ) {
-        if ( !(current_kernclass->feature) && (sf->preferred_kerning == 1) ) {
+        if ( !(current_kernclass->feature) && (sf->preferred_kerning & 1) ) {
           ClassKerningAddExtensions(current_kernclass);
         } else {
           continue;
@@ -1360,7 +1382,7 @@ int UFONameKerningClasses(SplineFont *sf) {
                 (sf->preferred_kerning == 0) &&
                 (classflags & (FF_KERNCLASS_FLAG_FEATURE | FF_KERNCLASS_FLAG_NAMETYPE))
               ) ||
-              (sf->preferred_kerning & 2)
+              (sf->preferred_kerning & 2) || (sf->preferred_kerning & 4)
             ) ?
             (
               isv ?
@@ -1394,6 +1416,7 @@ int UFONameKerningClasses(SplineFont *sf) {
 
 static int UFOOutputGroups(const char *basedir, SplineFont *sf) {
     SplineChar *sc;
+    int has_content = 0;
 
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
@@ -1443,8 +1466,6 @@ static int UFOOutputGroups(const char *basedir, SplineFont *sf) {
                 xmlNodePtr grouparray = xmlNewChild(dictnode, NULL, BAD_CAST "array", NULL);
                 // We use the results of the preceding search in order to get the list.
                 char *rawglyphlist = (
-                  isv ?
-                  (isr ? kc->seconds[offset] : kc->firsts[offset]) :
                   (isr ? kc->seconds[offset] : kc->firsts[offset])
                 );
                 // We need to convert from the space-delimited string to something more easily accessed on a per-item basis.
@@ -1459,6 +1480,7 @@ static int UFOOutputGroups(const char *basedir, SplineFont *sf) {
                 ExplodedStringFree(glyphlist);
                 // We flag the output of this kerning class as complete.
                 output_done[absolute_index] |= 1;
+                has_content = 1;
               }
             }
           }
@@ -1476,6 +1498,7 @@ static int UFOOutputGroups(const char *basedir, SplineFont *sf) {
             index++;
           }
           ExplodedStringFree(glyphlist);
+          has_content = 1;
         }
       }
     }
@@ -1488,15 +1511,15 @@ static int UFOOutputGroups(const char *basedir, SplineFont *sf) {
       int absolute_index = 0;
       for (isv = 0; isv < 2; isv++)
       for (current_kernclass = (isv ? sf->vkerns : sf->kerns); current_kernclass != NULL; current_kernclass = current_kernclass->next)
-      for (isr = 0; isr < 2; isr++) {
-        for (i=0; i < (isr ? current_kernclass->second_cnt : current_kernclass->first_cnt); ++i)
-        if (isr ? current_kernclass->seconds_names : current_kernclass->firsts_names) {
+      for (isr = 0; isr < 2; isr++)
+      if (isr ? current_kernclass->seconds_names : current_kernclass->firsts_names) {
+        for (i=0; i < (isr ? current_kernclass->second_cnt : current_kernclass->first_cnt); ++i) {
           const char *classname = (isr ? current_kernclass->seconds_names[i] : current_kernclass->firsts_names[i]);
           const char *rawglyphlist = (isr ? current_kernclass->seconds[i] : current_kernclass->firsts[i]);
           int classflags = (isr ? current_kernclass->seconds_flags[i] : current_kernclass->firsts_flags[i]);
           // Note that we only output if the kernclass is destined for U. F. O. and has not already met said fate.
           if (classname != NULL && rawglyphlist != NULL &&
-              !output_done[absolute_index + i] && kernclass_for_groups_plist(sf, current_kernclass, classflags)) {
+              !(output_done[absolute_index + i]) && kernclass_for_groups_plist(sf, current_kernclass, classflags)) {
                 xmlNewChild(dictnode, NULL, BAD_CAST "key", classname);
                 xmlNodePtr grouparray = xmlNewChild(dictnode, NULL, BAD_CAST "array", NULL);
                 // We need to convert from the space-delimited string to something more easily accessed on a per-item basis.
@@ -1506,10 +1529,12 @@ static int UFOOutputGroups(const char *basedir, SplineFont *sf) {
                 while (glyphlist[index] != NULL) {
                   if (SFGetChar(sf, -1, glyphlist[index]))
                     xmlNewChild(grouparray, NULL, BAD_CAST "string", glyphlist[index]);
+                  index++;
                 }
                 ExplodedStringFree(glyphlist);
                 // We flag the output of this kerning class as complete.
                 output_done[absolute_index + i] |= 1;
+                                has_content = 1;
           }
         }
         absolute_index +=i;
@@ -1522,7 +1547,7 @@ static int UFOOutputGroups(const char *basedir, SplineFont *sf) {
     if (output_done != NULL) { free(output_done); output_done = NULL; }
 
     char *fname = buildname(basedir, "groups.plist"); // Build the file name.
-    xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
+    if (has_content) xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
     free(fname); fname = NULL;
     xmlFreeDoc(plistdoc); // Free the memory.
     xmlCleanupParser();
@@ -1542,16 +1567,21 @@ static void KerningPListAddGlyph(xmlNodePtr parent, const char *key, const KernP
 static int UFOOutputKerning(const char *basedir, const SplineFont *sf) {
     SplineChar *sc;
     int i;
+    int has_content = 0;
+
+    if (!(sf->preferred_kerning & 1)) return true; // This goes into the feature file by default now.
 
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
     xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (dictnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Add the dict.
 
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) && sc->kerns!=NULL )
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) && sc->kerns!=NULL ) {
 	KerningPListAddGlyph(dictnode,sc->name,sc->kerns);
+	has_content = 1;
+    }
 
     char *fname = buildname(basedir, "kerning.plist"); // Build the file name.
-    xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
+    if (has_content) xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document if it's not empty.
     free(fname); fname = NULL;
     xmlFreeDoc(plistdoc); // Free the memory.
     xmlCleanupParser();
@@ -1561,6 +1591,9 @@ static int UFOOutputKerning(const char *basedir, const SplineFont *sf) {
 static int UFOOutputVKerning(const char *basedir, const SplineFont *sf) {
     SplineChar *sc;
     int i;
+    int has_content = 0;
+
+    if (!(sf->preferred_kerning & 1)) return true; // This goes into the feature file by default now.
 
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
@@ -1568,11 +1601,13 @@ static int UFOOutputVKerning(const char *basedir, const SplineFont *sf) {
 
     for ( i=sf->glyphcnt-1; i>=0; --i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) && sc->vkerns!=NULL ) break;
     if ( i<0 ) return( true );
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL && sc->vkerns!=NULL )
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL && sc->vkerns!=NULL ) {
 	KerningPListAddGlyph(dictnode,sc->name,sc->vkerns);
+	has_content = 1;
+    }
 
     char *fname = buildname(basedir, "vkerning.plist"); // Build the file name.
-    xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
+    if (has_content) xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document if it's not empty.
     free(fname); fname = NULL;
     xmlFreeDoc(plistdoc); // Free the memory.
     xmlCleanupParser();
@@ -1672,8 +1707,10 @@ int ufo_kerning_tree_attempt_insert(struct ufo_kerning_tree_session *session, co
 
 
 static int UFOOutputKerning2(const char *basedir, SplineFont *sf, int isv) {
-    SplineChar *sc;
     int i, j;
+    int has_content = 0;
+
+    if (!(sf->preferred_kerning & 1)) return true; // This goes into the feature file by default now.
 
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
@@ -1768,7 +1805,7 @@ static int UFOOutputKerning2(const char *basedir, SplineFont *sf, int isv) {
             !(left_grouptype & GROUP_NAME_RIGHT) &&
             ((left_grouptype & GROUP_NAME_VERTICAL) == (isv * GROUP_NAME_VERTICAL)) &&
             left_class_name_record != NULL &&
-            sc != NULL) {
+            ssc != NULL) {
             offset = current_groupkern->offset;
             valid = 1;
           }
@@ -1815,6 +1852,7 @@ static int UFOOutputKerning2(const char *basedir, SplineFont *sf, int isv) {
           struct ufo_kerning_tree_right *current_right;
           for (current_right = current_left->first_right; current_right != NULL; current_right = current_right->next)
             if (current_right->name != NULL) PListAddInteger(dictxml, current_right->name, current_right->value);
+          has_content = 1;
         }
       }
     }
@@ -1825,7 +1863,7 @@ static int UFOOutputKerning2(const char *basedir, SplineFont *sf, int isv) {
     if (output_done != NULL) { free(output_done); output_done = NULL; }
 
     char *fname = buildname(basedir, (isv ? "vkerning.plist" : "kerning.plist")); // Build the file name.
-    xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
+    if (has_content) xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
     free(fname); fname = NULL;
     xmlFreeDoc(plistdoc); // Free the memory.
     xmlCleanupParser();
@@ -1897,16 +1935,15 @@ int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer) {
 
 int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int flags,
 	const EncMap *map,int layer, int all_layers) {
-    char *foo = NULL, *glyphdir, *gfname;
+    char *glyphdir, *gfname;
     int err;
     FILE *plist;
     int i;
     SplineChar *sc;
 
     /* Clean it out, if it exists */
-    if (asprintf(&foo, "rm -rf %s", basedir) >= 0) {
-      if (system( foo ) == -1) fprintf(stderr, "Error clearing %s.\n", basedir);
-      free( foo ); foo = NULL;
+    if (!GFileRemove(basedir, true)) {
+        LogError(_("Error clearing %s."), basedir);
     }
 
     /* Create it */
@@ -2327,8 +2364,8 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
     glyph = xmlDocGetRootElement(doc);
     format = xmlGetProp(glyph,(xmlChar *) "format");
     if ( xmlStrcmp(glyph->name,(const xmlChar *) "glyph")!=0 ||
-	    (format!=NULL && xmlStrcmp(format,(xmlChar *) "1")!=0)) {
-		LogError(_("Expected glyph file with format==1"));
+	    (format!=NULL && xmlStrcmp(format,(xmlChar *) "1")!=0 && xmlStrcmp(format,(xmlChar *) "2")!=0)) {
+		LogError(_("Expected glyph file with format==1 or 2"));
 		xmlFreeDoc(doc);
 		free(format);
 		return( NULL );
@@ -2962,6 +2999,22 @@ static struct ff_glyphclasses *GlyphGroupDeduplicate(struct ff_glyphclasses *gro
   return group_base;
 }
 
+static uint32 script_from_glyph_list(SplineFont *sf, const char *glyph_names) {
+  uint32 script = DEFAULT_SCRIPT;
+  char *delimited_names;
+  off_t name_char_pos;
+  name_char_pos = 0;
+  delimited_names = delimit_null(glyph_names, ' ');
+  while (script == DEFAULT_SCRIPT && glyph_names[name_char_pos] != '\0') {
+    SplineChar *sc = SFGetChar(sf, -1, delimited_names + name_char_pos);
+    script = SCScriptFromUnicode(sc);
+    name_char_pos += strlen(delimited_names + name_char_pos);
+    if (glyph_names[name_char_pos] != '\0') name_char_pos ++;
+  }
+  free(delimited_names); delimited_names = NULL;
+  return script;
+}
+
 #define GROUP_NAME_KERNING_UFO 1
 #define GROUP_NAME_KERNING_FEATURE 2
 #define GROUP_NAME_VERTICAL 4 // Otherwise horizontal.
@@ -3145,29 +3198,72 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
         if (group_type & GROUP_NAME_RIGHT) {
           sf->vkerns->seconds[below_start + below_count] = copy(current_group->glyphs);
           sf->vkerns->seconds_names[below_start + below_count] = copy(current_group->classname);
-          sf->vkerns->seconds_flags[below_start + below_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type | GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
+          sf->vkerns->seconds_flags[below_start + below_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type & GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
           below_count++;
         } else {
           sf->vkerns->firsts[above_start + above_count] = copy(current_group->glyphs);
           sf->vkerns->firsts_names[above_start + above_count] = copy(current_group->classname);
-          sf->vkerns->firsts_flags[above_start + above_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type | GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
+          sf->vkerns->firsts_flags[above_start + above_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type & GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
           above_count++;
         }
       } else {
         if (group_type & GROUP_NAME_RIGHT) {
           sf->kerns->seconds[right_start + right_count] = copy(current_group->glyphs);
           sf->kerns->seconds_names[right_start + right_count] = copy(current_group->classname);
-          sf->kerns->seconds_flags[right_start + right_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type | GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
+          sf->kerns->seconds_flags[right_start + right_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type & GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
           right_count++;
         } else {
           sf->kerns->firsts[left_start + left_count] = copy(current_group->glyphs);
           sf->kerns->firsts_names[left_start + left_count] = copy(current_group->classname);
-          sf->kerns->firsts_flags[left_start + left_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type | GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
+          sf->kerns->firsts_flags[left_start + left_count] = FF_KERNCLASS_FLAG_NATIVE | ((group_type & GROUP_NAME_KERNING_FEATURE) ? FF_KERNCLASS_FLAG_NAMETYPE : 0);
           left_count++;
         }
       }
     }
   }
+#ifdef UFO_GUESS_SCRIPTS
+  // Check the script in each element of each group (for each polarity) until a character is of a script other than DFLT.
+  if (sf->kerns != NULL) {
+    uint32 script = DEFAULT_SCRIPT;
+    int class_index;
+    class_index = 0;
+    while (script == DEFAULT_SCRIPT && class_index < sf->kerns->first_cnt) {
+      if (sf->kerns->firsts[class_index] != NULL) script = script_from_glyph_list(sf, sf->kerns->firsts[class_index]);
+      class_index++;
+    }
+    class_index = 0;
+    while (script == DEFAULT_SCRIPT && class_index < sf->kerns->second_cnt) {
+      if (sf->kerns->seconds[class_index] != NULL) script = script_from_glyph_list(sf, sf->kerns->seconds[class_index]);
+      class_index++;
+    }
+    sf->kerns->subtable = SFSubTableFindOrMake(sf, CHR('k','e','r','n'), script, gpos_pair);
+  }
+  if (sf->vkerns != NULL) {
+    uint32 script = DEFAULT_SCRIPT;
+    int class_index;
+    class_index = 0;
+    while (script == DEFAULT_SCRIPT && class_index < sf->vkerns->first_cnt) {
+      if (sf->vkerns->firsts[class_index] != NULL) script = script_from_glyph_list(sf, sf->vkerns->firsts[class_index]);
+      class_index++;
+    }
+    class_index = 0;
+    while (script == DEFAULT_SCRIPT && class_index < sf->vkerns->second_cnt) {
+      if (sf->vkerns->seconds[class_index] != NULL) script = script_from_glyph_list(sf, sf->vkerns->seconds[class_index]);
+      class_index++;
+    }
+    sf->vkerns->subtable = SFSubTableFindOrMake(sf, CHR('v','k','r','n'), script, gpos_pair);
+  }
+#else
+  // Some test cases have proven that FontForge would do best to avoid classifying these.
+  uint32 script = DEFAULT_SCRIPT;
+  if (sf->kerns != NULL) {
+    sf->kerns->subtable = SFSubTableFindOrMake(sf, CHR('k','e','r','n'), script, gpos_pair);
+  }
+  if (sf->vkerns != NULL) {
+    sf->vkerns->subtable = SFSubTableFindOrMake(sf, CHR('v','k','r','n'), script, gpos_pair);
+  }
+#endif // UFO_GUESS_SCRIPTS
+
 }
 
 static void UFOHandleGroups(SplineFont *sf, char *basedir) {
@@ -3231,7 +3327,7 @@ return;
 		}
 	    }
 	    if (member_list_length == 0) member_list_length++; // We must have space for a zero-terminator even if the list is empty. A non-empty list has space for a space at the end that we can use.
-	    current_group->glyphs = malloc(member_list_length ? member_list_length : 1); // We allocate space for the list.
+	    current_group->glyphs = malloc(member_list_length); // We allocate space for the list.
 	    current_group->glyphs[0] = '\0';
 	    for (member_native_current = members_native; member_native_current != NULL; member_native_current = member_native_current->next) {
                 if (member_native_current != members_native) strcat(current_group->glyphs, " ");
@@ -3263,6 +3359,9 @@ static void UFOHandleKern(SplineFont *sf,char *basedir,int isv) {
     free(fname);
     if ( doc==NULL )
 return;
+
+    // If there is native kerning (as we would expect if the function has not returned), set the SplineFont flag to prefer it on output.
+    sf->preferred_kerning = 1;
 
     plist = xmlDocGetRootElement(doc);
     dict = FindNode(plist->children,"dict");
@@ -3311,9 +3410,14 @@ return;
 			    kp->next = sc->kerns;
 			    sc->kerns = kp;
 			}
+#ifdef UFO_GUESS_SCRIPTS
 			script = SCScriptFromUnicode(sc);
 			if ( script==DEFAULT_SCRIPT )
 			    script = SCScriptFromUnicode(ssc);
+#else
+			// Some test cases have proven that FontForge would do best to avoid classifying these.
+			script = DEFAULT_SCRIPT;
+#endif // UFO_GUESS_SCRIPTS
 			kp->subtable = SFSubTableFindOrMake(sf,
 				isv?CHR('v','k','r','n'):CHR('k','e','r','n'),
 				script, gpos_pair);
@@ -3364,6 +3468,9 @@ static void UFOHandleKern3(SplineFont *sf,char *basedir,int isv) {
     free(fname);
     if ( doc==NULL )
 return;
+
+    // If there is native kerning (as we would expect if the function has not returned), set the SplineFont flag to prefer it on output.
+    sf->preferred_kerning = 1;
 
     plist = xmlDocGetRootElement(doc);
     dict = FindNode(plist->children,"dict");
@@ -3461,9 +3568,14 @@ return;
 			    // kp->next = sc->kerns;
 			    // sc->kerns = kp;
 			}
+#ifdef UFO_GUESS_SCRIPTS
 			script = SCScriptFromUnicode(sc);
 			if ( script==DEFAULT_SCRIPT )
 			    script = SCScriptFromUnicode(ssc);
+#else
+			// Some test cases have proven that FontForge would do best to avoid classifying these.
+			script = DEFAULT_SCRIPT;
+#endif // UFO_GUESS_SCRIPTS
 			kp->subtable = SFSubTableFindOrMake(sf,
 				isv?CHR('v','k','r','n'):CHR('k','e','r','n'),
 				script, gpos_pair);
@@ -3479,7 +3591,6 @@ return;
 		  } else if (left_class_name_record && right_class_name_record) {
 		    struct kernclass *left_kc, *right_kc;
 		    int left_isv, right_isv, left_isr, right_isr, left_offset, right_offset;
-		    int left_grouptype = GroupNameType(keyname);
 		    int left_exists = KerningClassSeekByAbsoluteIndex(sf, left_class_name_record->gid, &left_kc, &left_isv, &left_isr, &left_offset);
 		    int right_exists = KerningClassSeekByAbsoluteIndex(sf, right_class_name_record->gid, &right_kc, &right_isv, &right_isr, &right_offset);
 		    if ((left_kc == NULL) || (right_kc == NULL)) { LogError(_("kerning.plist references a missing kerning class.")); continue; } // I don't know how this would happen, at least as the code is now, but we do need to throw an error.
@@ -3625,33 +3736,32 @@ SplineFont *SFReadUFO(char *basedir, int flags) {
 return( NULL );
     }
 
-    temp = buildname(basedir,"fontinfo.plist");
-    doc = xmlParseFile(temp);
-    free(temp);
-    if ( doc==NULL ) {
-	/* Can I get an error message from libxml? */
-return( NULL );
-    }
-    plist = xmlDocGetRootElement(doc);
-    dict = FindNode(plist->children,"dict");
-    if ( xmlStrcmp(plist->name,(const xmlChar *) "plist")!=0 || dict==NULL ) {
-	LogError(_("Expected property list file"));
-	xmlFreeDoc(doc);
-return( NULL );
-    }
-
     sf = SplineFontEmpty();
     SFDefaultOS2Info(&sf->pfminfo, sf, ""); // We set the default pfm values.
     sf->pfminfo.pfmset = 1; // We flag the pfminfo as present since we expect the U. F. O. to set any desired values.
     int versionMajor = -1; // These are not native SplineFont values.
     int versionMinor = -1; // We store the U. F. O. values and then process them at the end.
+    sf->styleMapFamilyName = ""; // Empty default to disable fallback at export (not user-accessible anyway as of now).
+    sf->pfminfo.stylemap = 0x0;
+
+    temp = buildname(basedir,"fontinfo.plist");
+    doc = xmlParseFile(temp);
+    free(temp);
     locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
     switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
-    for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
+    if ( doc!=NULL ) {
+      plist = xmlDocGetRootElement(doc);
+      dict = FindNode(plist->children,"dict");
+      if ( xmlStrcmp(plist->name,(const xmlChar *) "plist")!=0 || dict==NULL ) {
+	LogError(_("Expected property list file"));
+	xmlFreeDoc(doc);
+      return( NULL );
+      }
+      for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
 	for ( value = keys->next; value!=NULL && xmlStrcmp(value->name,(const xmlChar *) "text")==0;
 		value = value->next );
 	if ( value==NULL )
-    break;
+          break;
 	if ( xmlStrcmp(keys->name,(const xmlChar *) "key")==0 ) {
 	    keyname = xmlNodeListGetString(doc,keys->children,true);
 	    valname = xmlNodeListGetString(doc,value->children,true);
@@ -3665,12 +3775,15 @@ return( NULL );
 		else free(valname);
 	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "styleMapFamilyName")==0 ) {
-		if (sf->pfminfo.os2_family_name == NULL) sf->pfminfo.os2_family_name = (char *) valname;
+		if (sf->styleMapFamilyName == NULL) sf->styleMapFamilyName = (char *) valname;
 		else free(valname);
 	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "styleMapStyleName")==0 ) {
-		if (sf->pfminfo.os2_style_name == NULL) sf->pfminfo.os2_style_name = (char *) valname;
-		else free(valname);
+		if (strcmp((char *) valname, "regular")==0) sf->pfminfo.stylemap = 0x40;
+        else if (strcmp((char *) valname, "italic")==0) sf->pfminfo.stylemap = 0x01;
+        else if (strcmp((char *) valname, "bold")==0) sf->pfminfo.stylemap = 0x20;
+        else if (strcmp((char *) valname, "bold italic")==0) sf->pfminfo.stylemap = 0x21;
+		free(valname);
 	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "fullName")==0 ||
 		    xmlStrcmp(keyname,(xmlChar *) "postscriptFullName")==0 ) {
@@ -3692,7 +3805,9 @@ return( NULL );
 		else free(valname);
 	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "copyright")==0 ) {
-		if (sf->copyright == NULL) sf->copyright = (char *) valname;
+		UFOAddName(sf,(char *) valname,ttf_copyright);
+        /* sf->copyright hosts the old ASCII-only PS attribute */
+        if (sf->copyright == NULL) sf->copyright = normalizeToASCII((char *) valname);
 		else free(valname);
 	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "trademark")==0 )
@@ -3895,6 +4010,8 @@ return( NULL );
 		free(valname);
 	    free(keyname);
 	}
+      }
+      xmlFreeDoc(doc);
     }
     if ( em==-1 && as>=0 && ds>=0 )
 	em = as + ds;
@@ -3906,11 +4023,8 @@ return( NULL );
 	sf->invalidem = 1;
     }
     if ( em==-1 ) {
-	LogError(_("This font does not specify unitsPerEm"));
-	xmlFreeDoc(doc);
-	switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
-	SplineFontFree(sf);
-return( NULL );
+	LogError(_("This font does not specify unitsPerEm, so we guess 1000."));
+	em = 1000;
     }
     sf->ascent = as; sf->descent = ds;
     if ( sf->fontname==NULL ) {
@@ -3925,11 +4039,9 @@ return( NULL );
 	else
 	    sf->fullname = copy(sf->fontname);
     }
-    if ( sf->familyname==NULL ) {
-	if (sf->pfminfo.os2_family_name != NULL) sf->familyname=copy(sf->pfminfo.os2_family_name);
-	else sf->familyname = copy(sf->fontname);
-    }
-    free(stylename);
+    if ( sf->familyname==NULL )
+	sf->familyname = copy(sf->fontname);
+    free(stylename); stylename = NULL;
     if ( sf->weight==NULL )
 	sf->weight = copy("Regular");
     // We first try to set the SplineFont version by using the native numeric U. F. O. values.
@@ -3940,7 +4052,6 @@ return( NULL );
 	    sf->names->names[ttf_version]!=NULL &&
 	    strncmp(sf->names->names[ttf_version],"Version ",8)==0 )
 	sf->version = copy(sf->names->names[ttf_version]+8);
-    xmlFreeDoc(doc);
 
 	char * layercontentsname = buildname(basedir,"layercontents.plist");
 	char ** layernames = NULL;
@@ -4003,6 +4114,47 @@ return( NULL );
 						if (layerglyphdirname != NULL) { xmlFree(layerglyphdirname); layerglyphdirname = NULL; }
 					}
 				}
+				{
+					// Some typefaces (from very reputable shops) identify as following version 2 of the U. F. O. specification
+					// but have multiple layers and a layercontents.plist and omit the foreground layer from layercontents.plist.
+					// So, if the layercontents.plist includes no foreground layer and makes no other use of the directory glyphs
+					// and if that directory exists within the typeface, we map it to the foreground.
+					// Note that FontForge cannot round-trip this anomaly at present and shall include the foreground in
+					// layercontents.plist in any exported U. F. O..
+					int tmply = 0; // Temporary layer index.
+					while (tmply < layercontentslayercount && strcmp(layernames[2*tmply], "public.default") &&
+					  strcmp(layernames[2*tmply+1], "glyphs")) tmply ++;
+					// If tmply == layercontentslayercount then we know that no layer was named public.default and that no layer
+					// used the glyphs directory.
+					char * layerpath = buildname(basedir, "glyphs");
+					if (tmply == layercontentslayercount && layerpath != NULL && GFileExists(layerpath)) {
+						layercontentsvaluecount = 2;
+						// Note the copying here.
+						xmlChar * layerlabel = (xmlChar*)"public.default";
+						xmlChar * layerglyphdirname = (xmlChar*)"glyphs";
+						// We need two values (as noted above) per layer entry and ignore any layer lacking those.
+						if ((layercontentsvaluecount > 1) && (layernamesbuffersize < INT_MAX/2)) {
+							// Resize the layer names array as necessary.
+							if (layercontentslayercount >= layernamesbuffersize) {
+								layernamesbuffersize *= 2;
+								layernames = realloc(layernames, 2*sizeof(char*)*layernamesbuffersize);
+							}
+							// Fail silently on allocation failure; it's highly unlikely.
+							if (layernames != NULL) {
+								layernames[2*layercontentslayercount] = copy((char*)(layerlabel));
+								if (layernames[2*layercontentslayercount]) {
+									layernames[(2*layercontentslayercount)+1] = copy((char*)(layerglyphdirname));
+									if (layernames[(2*layercontentslayercount)+1])
+										layercontentslayercount++; // We increment only if both pointers are valid so as to avoid read problems later.
+									else
+										free(layernames[2*layercontentslayercount]);
+								}
+							}
+						}
+					}
+					if (layerpath != NULL) { free(layerpath); layerpath = NULL; }
+				}
+
 				if (layernames != NULL) {
 					int lcount = 0;
 					int auxpos = 2;
@@ -4039,8 +4191,8 @@ return( NULL );
 										if ( layerdest+1>sf->layer_cnt ) {
  										    sf->layers = realloc(sf->layers,(layerdest+1)*sizeof(LayerInfo));
 										    memset(sf->layers+sf->layer_cnt,0,((layerdest+1)-sf->layer_cnt)*sizeof(LayerInfo));
+										    sf->layer_cnt = layerdest+1;
 										}
-										sf->layer_cnt = layerdest+1;
 
 										// The check is redundant, but it allows us to copy from sfd.c.
 										if (( layerdest<sf->layer_cnt ) && sf->layers) {

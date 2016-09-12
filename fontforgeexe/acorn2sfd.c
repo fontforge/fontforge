@@ -1,8 +1,26 @@
+/* acorn2sfd.c.
+ * This program converts outline fonts used with RISC OS (from
+ * http://www.riscosopen.org or http://riscos.com) to .sfd files.
+ *
+ * To build, run:
+ *  make acorn2sfd
+ * in the fontforgeexe directory.  It has been tested on Linux. I have
+ * not tried compiling it on Windows.
+ *
+ * To use:
+ *  acorn2sfd [path_to_font_directory]
+ * eg:
+ *  acorn2sfd \!Fonts/NewHall/Medium/Italic
+ *
+ * remove any ,ff6 suffix on any files in the font directory before running
+ * acorn2sfd.
+ */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
 
+#include <fontforge-config.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -66,15 +84,24 @@ static int r_getint(FILE *file) {
 return( (((((getc(file)<<8)|ch3)<<8)|ch2)<<8)|ch1 );
 }
 
-static char *knownweights[] = { "Demi", "Bold", "Regu", "Medi", "Book", "Thin",
-	"Ligh", "Heav", "Blac", "Ultr", "Nord", "Norm", "Gras", "Stan", "Halb",
-	"Fett", "Mage", "Mitt", "Buch", NULL };
-static char *realweights[] = { "Demi", "Bold", "Regular", "Medium", "Book", "Thin",
-	"Light", "Heavy", "Black", "Ultra", "Nord", "Normal", "Gras", "Standard", "Halbfett",
-	"Fett", "Mager", "Mittel", "Buchschrift", NULL};
-static char *modifierlist[] = { "Ital", "Obli", "Kursive", "Cursive", "Slanted",
-	"Expa", "Cond", NULL };
-static char **mods[] = { knownweights, modifierlist, NULL };
+static char *get_font_filename(const char *str)
+{
+    char *fname = copy(str);
+    char *c;
+
+    for (c = fname; *c; c++) {
+	/* Change non-breaking space into a normal space */
+	if ((*c & 0xff) == 0xa0) {
+	    *c = ' ';
+	}
+    }
+
+    return fname;
+}
+
+static const char *modifierlist[] = { "Ital", "Obli", "Kursive", "Cursive",
+	"Slanted", "Expa", "Cond", NULL };
+static const char **mods[] = { knownweights, modifierlist, NULL };
 
 
 static char *GuessFamily(char *fontname) {
@@ -535,6 +562,8 @@ return;
 	    free(widths);
 	}
     }
+    if (m != 0)
+        free(mapping);
 
     outline->defxadvance = outline->defyadvance = 1000;
 
@@ -604,12 +633,17 @@ return;
 
     for ( i=0; i<outline->metrics_n; ++i ) {
 	gid1 = sf->map->map[i];
+	if (gid1 == -1) {
+	    continue;
+	}
 	for ( kern = outline->kerns[i]; kern!=NULL; kern=kern->next ) {
 	    kp = calloc(1,sizeof(KernPair));
 	    kp->off = em*kern->amount/1000;
 	    kp->subtable = subtable;
 	    gid2 = sf->map->map[kern->right];
-	    kp->sc = sf->glyphs[gid2];
+	    if (gid2 != -1) {
+		kp->sc = sf->glyphs[gid2];
+	    }
 	    kp->next = sf->glyphs[gid1]->kerns;
 	    sf->glyphs[gid1]->kerns = kp;
 	}
@@ -650,7 +684,7 @@ static void FindEncoding(SplineFont *sf,char *filename) {
     char pattern[12];
     char *otherdir;
     char *encfilename;
-    FILE *file;
+    FILE *file=NULL;
     char buffer[200];
     int pos, gid;
 
@@ -806,7 +840,7 @@ return( NULL );
 	outline.sf->copyright = copy(buffer);
     strcpy(buffer,outline.fontname);
     strcat(buffer,".sfd");
-    outline.sf->filename = copy(buffer);
+    outline.sf->filename = get_font_filename(buffer);
 
     outline.sf->top_enc = -1;
 

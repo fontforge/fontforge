@@ -3,35 +3,27 @@ become a little post processing step and the make-package.sh simply
 uses the create-osx-app-bundle.sh script to create an app.zip file
 from the macports built sources.
 
-As at April 2014 the build is performed using the following script
-sequence. The make-package script will create
-~/Desktop/FontForge.app.zip which you can then archive and upload that
+As of January 2015, the build is performed using the following script
+sequence. The create-osx-app-bundle.sh script will create
+~/FontForge.app.dmg which you can then archive and upload that
 file as desired. The script which does the upload is not in this
 repository as it includes some authentication credentials and is
 specific to the current distribution site.
 
+Before this starts, change to the directory
+/usr/local/src/github-fontforge
+and clone the fontforge sources into there:
+git clone git@github.com:fontforge/fontforge.git fontforge
+Add the aforementioned path to /opt/local/etc/macports/sources.conf as
+file:///usr/local/src/github-fontforge
+above the default MacPorts sources.
+
+cd /usr/local/src/github-fontforge
+sudo portindex
+cd fontforge/osx
 ./force-rebuild.sh
-./run-post-build-gc-fudge.sh
-./make-package.sh
-
-You will have to have the bdwgc built and installed for FontForge to
-build. The rebuild done by run-post-build-gc-fudge.sh is to get around
-a bug during the macports build which causes a bad gc interaction
-resulting in a crash when running FontForge. During setup bdwgc was
-not available though macports itself, in the future this may change
-and thus it will become a dep of the Portfile and no longer need
-manual installation.
-
-The core of the run-post-build-gc-fudge.sh script is to move to the build
-subdirectory inside
-/opt/local/var/macports/build/...
-and run
-$ make clean
-$ make
-
-The run-post-build-gc-fudge.sh script is left out as the exact
-subdirectory in /opt/local/var/macports/build will vary depending on
-how you have your macports configured.
+cd /opt/local/var/macports/build/_usr_local_src_github-fontforge_fontforge_osx/fontforge/work/fontforge-2.0.0_beta1
+bash ./osx/create-osx-app-bundle.sh
 
 As you can see in the post-extract of the Portfile a copy of gnulib is
 also expected to be found at /usr/local/src/github-fontforge/gnulib.
@@ -46,3 +38,4 @@ execution.
 For example, the file
 /opt/local/share/macports/Tcl/port1.0/portconfigure.tcl default
 configure.ldflags {"-L${prefix}/lib -Wl,-headerpad_max_install_names"}
+

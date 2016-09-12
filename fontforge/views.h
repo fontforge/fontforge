@@ -816,7 +816,6 @@ extern void mb2FreeGetText(GMenuItem2 *mb);
 extern void mb2DoGetText(GMenuItem2 *mb);
 extern void mbFreeGetText(GMenuItem *mb);
 extern void mbDoGetText(GMenuItem *mb);
-extern void OFLibBrowse(void);
 extern int RecentFilesAny(void);
 extern void _aplistbuild(struct gmenuitem *mi,SplineFont *sf,
 	void (*func)(GWindow,struct gmenuitem *,GEvent *));
@@ -1018,6 +1017,7 @@ extern Undoes *CVPreserveMaybeState(CharView *cv, int isTState );
 extern void CVRestoreTOriginalState(CharView *cv);
 extern void CVUndoCleanup(CharView *cv);
 
+extern void AdjustControls(SplinePoint *sp);
 extern void CVAdjustPoint(CharView *cv, SplinePoint *sp);
 extern void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *activess,
 	SplinePoint *merge, SplineSet *mergess);
@@ -1405,6 +1405,7 @@ extern void Prefs_LoadDefaultPreferences( void );
 extern CharView* CharViewFindActive();
 extern FontViewBase* FontViewFindActive();
 extern FontViewBase* FontViewFind( int (*testFunc)( FontViewBase*, void* ), void* udata );
+
 extern int FontViewFind_byXUID(      FontViewBase* fv, void* udata );
 extern int FontViewFind_byXUIDConnected( FontViewBase* fv, void* udata );
 extern int FontViewFind_byCollabPtr(  FontViewBase* fv, void* udata );

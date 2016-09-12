@@ -302,10 +302,10 @@ return( true );
     strcpy(buf,filename);
     pt = strrchr(buf,'/');
     if ( pt==NULL )
-	strcat(buf,"FontLog.txt");
+	strcat(buf,"FONTLOG.txt");
     else
-	strcpy(pt+1,"FontLog.txt");
-    flog = fopen(buf,"w");
+	strcpy(pt+1,"FONTLOG.txt");
+    flog = fopen(buf,"a"); // We changed this to append if the file exists.
     free(buf);
     if ( flog==NULL )
 return( false );
@@ -766,6 +766,7 @@ int _DoSave(SplineFont *sf,char *newname,int32 *sizes,int res,
     int iscid = oldformatstate==ff_cid || oldformatstate==ff_cffcid ||
 	    oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont;
     int flags = 0;
+    int tmpstore = 0;
 
     if ( oldformatstate == ff_multiple )
 return( WriteMultiplePSFont(sf,newname,sizes,subfontdefinition,map,layer));
@@ -837,7 +838,11 @@ return( true );
 	    oerr = !WriteSVGFont(newname,sf,oldformatstate,flags,map,layer);
 	  break;
 	  case ff_ufo:
+	    tmpstore = sf->preferred_kerning; // We toggle this flag in order to force native kerning output.
+	    if (flags & ttf_native_kern) sf->preferred_kerning = 1; // 1 flags native kerning.
+	    sf->preferred_kerning |= 4; // 4 flags old-style naming for the starting name in UFONameKerningClasses.
 	    oerr = !WriteUFOFont(newname,sf,oldformatstate,flags,map,layer);
+	    if (flags & ttf_native_kern) sf->preferred_kerning = tmpstore;
 	  break;
 	  default:
 	  break;
@@ -1148,6 +1153,7 @@ int GenerateScript(SplineFont *sf,char *filename,const char *bitmaptype, int fmf
 		if ( fmflags&0x800000 ) old_sfnt_flags |= ttf_flag_pfed_lookupnames;
 		if ( fmflags&0x1000000 ) old_sfnt_flags |= ttf_flag_pfed_guides;
 		if ( fmflags&0x2000000 ) old_sfnt_flags |= ttf_flag_pfed_layers;
+		if ( fmflags&0x4000000 ) old_sfnt_flags |= ttf_flag_oldkernmappedonly;
 	    }
 	} else {
 	    old_sfnt_flags = 0;
@@ -1190,6 +1196,7 @@ int GenerateScript(SplineFont *sf,char *filename,const char *bitmaptype, int fmf
 	    if ( fmflags&0x800000 ) old_sfnt_flags |= ttf_flag_pfed_lookupnames;
 	    if ( fmflags&0x1000000 ) old_sfnt_flags |= ttf_flag_pfed_guides;
 	    if ( fmflags&0x2000000 ) old_sfnt_flags |= ttf_flag_pfed_layers;
+	    if ( fmflags&0x4000000 ) old_sfnt_flags |= ttf_flag_oldkernmappedonly;
 	}
     }
 
