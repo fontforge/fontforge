@@ -36,6 +36,8 @@
 #include "ttf.h"
 #include "mm.h"
 
+#include "mmdlg.h"
+
 /* As far as I can tell, the CDV in AdobeSansMM is half gibberish */
 /* This is disturbing */
 /* But at least the CDV in Type1_supp.pdf for Myriad appears correct */

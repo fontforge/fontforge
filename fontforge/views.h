@@ -1015,9 +1015,6 @@ extern void FVSelectByPST(FontView *fv);
 
 extern void StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d);
 
-extern void MMChangeBlend(MMSet *mm,FontView *fv,int tonew);
-extern void MMWizard(MMSet *mm);
-
 extern void CVLayerChange(CharView *cv);
 
 extern int PointOfViewDlg(struct pov_data *pov,SplineFont *sf,int flags);

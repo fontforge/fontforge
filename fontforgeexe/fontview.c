@@ -56,6 +56,7 @@
 #include "layer2layer.h"
 #include "lookupui.h"
 #include "metricsview.h"
+#include "mmdlg.h"
 #include "psfont.h"
 #include <gfile.h>
 #include <gio.h>
