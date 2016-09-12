@@ -26,6 +26,7 @@
  */
 #include "fontforgeui.h"
 #include "fontinfo.h"
+#include "kernclass.h"
 #include <ustring.h>
 #include <math.h>
 #include <gkeysym.h>

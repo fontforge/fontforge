@@ -3270,10 +3270,6 @@ extern void AddNewAALTFeatures(SplineFont *sf);
 extern void SplinePointRound(SplinePoint *,real);
 
 extern int KCFindName(const char *name, char **classnames, int cnt, int allow_class0 );
-extern KernClass *SFFindKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
-	int *index,int allow_zero);
-extern KernClass *SFFindVKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
-	int *index,int allow_zero);
 
 extern void SCClearRounds(SplineChar *sc,int layer);
 extern void MDReplace(MinimumDistance *md,SplineSet *old,SplineSet *rpl);

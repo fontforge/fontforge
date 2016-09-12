@@ -49,6 +49,7 @@
 #include "effectsui.h"
 #include "fvmetricsdlg.h"
 #include "gotodlg.h"
+#include "kernclass.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>

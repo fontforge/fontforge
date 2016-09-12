@@ -27,6 +27,7 @@
  */
 #include "fontforgeui.h"
 #include "anchorsaway.h"
+#include "kernclass.h"
 #include "psfont.h"
 #include <ustring.h>
 #include <gkeysym.h>

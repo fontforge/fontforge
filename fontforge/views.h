@@ -1029,13 +1029,6 @@ extern void IIReinit(struct instrinfo *ii,int ip);
 extern int ii_v_e_h(GWindow gw, GEvent *event);
 extern void instr_scroll(struct instrinfo *ii,struct sbevent *sb);
 
-extern void KernClassD(KernClass *kc, SplineFont *sf, int layer, int isv);
-extern void ShowKernClasses(SplineFont *sf,MetricsView *mv,int layer,int isv);
-extern void KCLD_End(struct kernclasslistdlg *kcld);
-extern void KCLD_MvDetach(struct kernclasslistdlg *kcld,MetricsView *mv);
-extern void KernPairD(SplineFont *sf,SplineChar *sc1,SplineChar *sc2,int layer, int isv);
-extern void KCD_DrawGlyph(GWindow pixmap,int x,int baseline,BDFChar *bdfc,int mag);
-
 extern void FVSelectByPST(FontView *fv);
 
 extern void StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d);
@@ -1126,9 +1119,6 @@ extern void FVDrawInfo(FontView *fv,GWindow pixmap,GEvent *event);
 extern void FVRedrawAllCharViews(FontView *fv);
 extern void KFFontViewInits(struct kf_dlg *kf,GGadget *drawable);
 extern char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current);
-extern void ME_ListCheck(GGadget *g,int r, int c, SplineFont *sf);
-extern void ME_SetCheckUnique(GGadget *g,int r, int c, SplineFont *sf);
-extern void ME_ClassCheckUnique(GGadget *g,int r, int c, SplineFont *sf);
 struct gidata;
 
 extern void CVRegenFill(CharView *cv);
