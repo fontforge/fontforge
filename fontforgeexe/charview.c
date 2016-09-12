@@ -50,6 +50,7 @@
 #include "fvmetricsdlg.h"
 #include "gotodlg.h"
 #include "kernclass.h"
+#include "layer2layer.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>
