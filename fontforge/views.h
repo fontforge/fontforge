@@ -1118,9 +1118,6 @@ extern void ValidationDestroy(SplineFont *sf);
 
 extern void LookupUIInit(void);
 
-extern void DefineGroups(struct fontview *fv);
-extern void DisplayGroups(struct fontview *fv);
-
 extern void JustifyDlg(SplineFont *sf);
 extern char *GlyphListDlg(SplineFont *sf, char *glyphstr);
 
