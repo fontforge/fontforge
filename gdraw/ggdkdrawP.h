@@ -255,6 +255,9 @@ void _GGDKDraw_CleanupAutoPaint(GGDKDisplay *gdisp);
 
 #ifdef GGDKDRAW_GDK_2
 GdkPixbuf *_GGDKDraw_Cairo2Pixbuf(cairo_surface_t *cs);
+#else
+cairo_region_t *_GGDKDraw_CalculateDrawableRegion(GGDKWindow gw, bool force);
+void _GGDKDraw_ClipToRegion(GGDKWindow gw, cairo_region_t *r);
 #endif
 
 void GGDKDrawPushClip(GWindow w, GRect *rct, GRect *old);

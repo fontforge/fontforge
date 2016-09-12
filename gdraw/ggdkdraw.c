@@ -971,14 +971,7 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
 #ifndef GGDKDRAW_GDK_2
             if (!gw->is_toplevel && expose->send_event) {
                 gw->cc = gdk_cairo_create(w);
-                int nr = cairo_region_num_rectangles(expose->region);
-
-                for (int i = 0; i < nr; i++) {
-                    cairo_rectangle_int_t rect;
-                    cairo_region_get_rectangle(expose->region, i, &rect);
-                    cairo_rectangle(gw->cc, rect.x, rect.y, rect.width, rect.height);
-                }
-                cairo_clip(gw->cc);
+                _GGDKDraw_ClipToRegion(gw, expose->region);
             }
 #endif
         }
@@ -2008,28 +2001,13 @@ static void GGDKDrawRequestExpose(GWindow w, GRect *rect, int UNUSED(doclear)) {
         expose.area.width = clip.width;
         expose.area.height = clip.height;
 #ifndef GGDKDRAW_GDK_2
-        expose.region = gdk_window_get_visible_region(gw->w);
+        expose.region = _GGDKDraw_CalculateDrawableRegion(gw, true);
         cairo_region_intersect_rectangle(expose.region, &expose.area);
-
-        // Mask out child window areas
-        GList_Glib *children = gdk_window_peek_children(gw->w);
-        while (children != NULL) {
-            cairo_region_t *chr = gdk_window_get_clip_region((GdkWindow *)children->data);
-            int dx, dy;
-
-            gdk_window_get_position((GdkWindow *)children->data, &dx, &dy);
-            cairo_region_translate(chr, dx, dy);
-            cairo_region_subtract(expose.region, chr);
-            cairo_region_destroy(chr);
-            children = children->next;
-        }
-
         // Don't send unnecessarily...
         if (cairo_region_is_empty(expose.region)) {
             cairo_region_destroy(expose.region);
             return;
         }
-
         cairo_region_get_extents(expose.region, &expose.area);
 #else
         expose.region = gdk_region_rectangle(&expose.area);
