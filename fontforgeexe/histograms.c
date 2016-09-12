@@ -35,6 +35,8 @@
 #include <glib/gprintf.h>
 #include "xvasprintf.h"
 
+#include "histograms.h"
+
 /* This operations are designed to work on a single font. NOT a CID collection*/
 /*  A CID collection must be treated one sub-font at a time */
 

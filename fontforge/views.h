@@ -1038,11 +1038,6 @@ extern void KCD_DrawGlyph(GWindow pixmap,int x,int baseline,BDFChar *bdfc,int ma
 
 extern void FVSelectByPST(FontView *fv);
 
-enum hist_type { hist_hstem, hist_vstem, hist_blues };
-struct psdict;
-extern void SFHistogram(SplineFont *sf,int layer, struct psdict *private,uint8 *selected,
-	EncMap *map, enum hist_type which);
-
 extern void StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d);
 
 extern void MMChangeBlend(MMSet *mm,FontView *fv,int tonew);
