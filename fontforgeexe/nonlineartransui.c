@@ -31,6 +31,8 @@
 #include <ustring.h>
 #include "nonlineartrans.h"
 
+#include "nonlineartransui.h"
+
 struct nldlg {
     GWindow gw;
     int done, ok;

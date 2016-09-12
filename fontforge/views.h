@@ -715,7 +715,6 @@ extern int WritePfmFile(char *filename,SplineFont *sf, int type0, EncMap *map);
 #endif
 extern int SFGenerateFont(SplineFont *sf,int layer, int family,EncMap *map);
 
-extern void NonLinearDlg(FontView *fv,struct charview *cv);
 extern void FVChangeChar(FontView *fv,int encoding);
 
 extern void FVDeselectAll(FontView *fv);
@@ -1017,11 +1016,7 @@ extern void StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d);
 
 extern void CVLayerChange(CharView *cv);
 
-extern int PointOfViewDlg(struct pov_data *pov,SplineFont *sf,int flags);
-
 extern SplineChar *FVMakeChar(FontView *fv,int i);
-
-extern void CVPointOfView(CharView *cv,struct pov_data *);
 
 extern GTextInfo *TIFromName(const char *name);
 

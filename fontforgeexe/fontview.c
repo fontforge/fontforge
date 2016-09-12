@@ -57,6 +57,7 @@
 #include "lookupui.h"
 #include "metricsview.h"
 #include "mmdlg.h"
+#include "nonlineartransui.h"
 #include "psfont.h"
 #include <gfile.h>
 #include <gio.h>

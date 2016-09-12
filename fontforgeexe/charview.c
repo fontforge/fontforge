@@ -52,6 +52,7 @@
 #include "kernclass.h"
 #include "layer2layer.h"
 #include "metricsview.h"
+#include "nonlineartransui.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>
