@@ -48,6 +48,7 @@
 #include "displayfonts.h"
 #include "effectsui.h"
 #include "fvmetricsdlg.h"
+#include "gotodlg.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>

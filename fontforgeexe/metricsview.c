@@ -35,6 +35,7 @@
 #include "fontinfo.h"
 #include "fvmetricsdlg.h"
 #include "lookups.h"
+#include "gotodlg.h"
 #include <gkeysym.h>
 #include <gresource.h>
 #include <gresedit.h>

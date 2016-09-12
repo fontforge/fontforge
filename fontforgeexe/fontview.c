@@ -47,6 +47,7 @@
 #include "fontinfo.h"
 #include "fvfontsdlg.h"
 #include "fvmetricsdlg.h"
+#include "gotodlg.h"
 #include "groups.h"
 #include "psfont.h"
 #include <gfile.h>

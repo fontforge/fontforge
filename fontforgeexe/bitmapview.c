@@ -31,6 +31,7 @@
 #include "cvexportdlg.h"
 #include "cvimportdlg.h"
 #include "fontinfo.h"
+#include "gotodlg.h"
 #include <gkeysym.h>
 #include <utype.h>
 #include <ustring.h>

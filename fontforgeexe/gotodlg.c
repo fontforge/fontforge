@@ -30,6 +30,8 @@
 #include <ustring.h>
 #include "unicoderange.h"
 
+#include "gotodlg.h"
+
 static int alpha(const void *_t1, const void *_t2) {
     const GTextInfo *t1 = _t1, *t2 = _t2;
 

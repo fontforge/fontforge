@@ -953,8 +953,6 @@ extern void CVMouseDownPoint(CharView *cv,GEvent *event);
 extern void CVMouseMovePoint(CharView *cv,PressedOn *);
 extern void LogoExpose(GWindow pixmap,GEvent *event, GRect *r,enum drawmode dm);
 
-extern int GotoChar(SplineFont *sf,EncMap *map, int *merge_with_selection);
-
 extern void CVShowPoint(CharView *cv, BasePoint *me);
 
 extern char *BVFlipNames[];

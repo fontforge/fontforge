@@ -26,6 +26,7 @@
  */
 
 #include "fontforgeui.h"
+#include "gotodlg.h"
 #include <math.h>
 #include <stddef.h>
 #include <gkeysym.h>
