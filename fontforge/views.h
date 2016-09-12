@@ -962,9 +962,6 @@ extern void PointerDlg(CharView *cv);
 extern void GListAddStr(GGadget *list,unichar_t *str, void *ud);
 extern void GListReplaceStr(GGadget *list,int index, unichar_t *str, void *ud);
 
-extern unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult);
-
-
 
 
 extern void ShowAboutScreen(void);
