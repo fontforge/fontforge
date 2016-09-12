@@ -1246,7 +1246,7 @@ int GGDKDrawDoText8(GWindow w, int32 x, int32 y, const char *text, int32 cnt, Co
 
     pango_layout_set_font_description(gw->pango_layout, fd);
     pango_layout_set_text(gw->pango_layout, (char *)text, cnt);
-    pango_layout_get_pixel_extents(gw->pango_layout, NULL, &rect);
+    pango_layout_get_pixel_extents(gw->pango_layout, &ink, &rect);
 
     if (drawit == tf_drawit) {
         _GGDKDraw_CheckAutoPaint(gw);
@@ -1256,7 +1256,6 @@ int GGDKDrawDoText8(GWindow w, int32 x, int32 y, const char *text, int32 cnt, Co
         PangoLayoutRun *run;
         PangoFontMetrics *fm;
 
-        pango_layout_get_pixel_extents(gw->pango_layout, &ink, &rect);
         arg->size.lbearing = ink.x - rect.x;
         arg->size.rbearing = ink.x + ink.width - rect.x;
         arg->size.width = rect.width;
