@@ -973,13 +973,6 @@ extern void DoXRes(void);
 extern void PointerDlg(CharView *cv);
 extern void GListAddStr(GGadget *list,unichar_t *str, void *ud);
 extern void GListReplaceStr(GGadget *list,int index, unichar_t *str, void *ud);
-extern struct macname *NameGadgetsGetNames( GWindow gw );
-extern void NameGadgetsSetEnabled( GWindow gw, int enable );
-extern int GCDBuildNames(GGadgetCreateData *gcd,GTextInfo *label,int pos,struct macname *names);
-extern void GCDFillMacFeat(GGadgetCreateData *mfgcd,GTextInfo *mflabels, int width,
-	MacFeat *all, int fromprefs, GGadgetCreateData *boxes,
-	GGadgetCreateData **array);
-extern void Prefs_ReplaceMacFeatures(GGadget *list);
 
 extern unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult);
 

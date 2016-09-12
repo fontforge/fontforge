@@ -30,6 +30,7 @@
 #include "histograms.h"
 #include "kernclass.h"
 #include "lookupui.h"
+#include "macencui.h"
 #include "ofl.h"
 #include <ustring.h>
 #include <chardata.h>

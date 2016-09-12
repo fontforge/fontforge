@@ -29,6 +29,7 @@
 #include "encodingui.h"
 #include "fontinfo.h"
 #include "groups.h"
+#include "macencui.h"
 #include "plugins.h"
 #include <charset.h>
 #include <gfile.h>

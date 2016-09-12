@@ -31,6 +31,8 @@
 #include <ustring.h>
 #include "ttf.h"
 
+#include "macencui.h"
+
 extern MacFeat *default_mac_feature_map,
 	*builtin_mac_feature_map,
 	*user_mac_feature_map;
