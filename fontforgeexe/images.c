@@ -26,6 +26,8 @@
  */
 #include "fontforgeui.h"
 
+#include "images.h"
+
 static GClut magnify0_clut = { 2, 0, 1,
     { 0x0, 0xb0b0b0 } };
 

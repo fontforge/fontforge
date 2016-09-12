@@ -139,9 +139,6 @@ extern GMenuItem2 cvtoollist[], cvspirotoollist[];
 extern GTextInfo encodingtypes[];
 extern void cvtoollist_check(GWindow gw,struct gmenuitem *mi,GEvent *e);
 
-extern void InitToolIconClut(Color bg);
-extern void InitToolIcons(void); /* needs image cache already working */
-
 extern int ErrorWindowExists(void);
 extern void ShowErrorWindow(void);
 extern struct ui_interface gdraw_ui_interface;
