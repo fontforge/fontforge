@@ -50,6 +50,9 @@
 #include "collabclientui.h"
 #include "gfile.h"
 #include "wordlistparser.h"
+
+#include "metricsview.h"
+
 extern char* SFDCreateUndoForLookup( SplineFont *sf, int lookup_type ) ;
 
 

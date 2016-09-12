@@ -27,6 +27,7 @@
 #include "ffglib.h"
 
 #include "fontforgeui.h"
+#include "metricsview.h"
 #include "sftextfieldP.h"
 #include <stdlib.h>
 #include <math.h>

@@ -26,6 +26,7 @@
  */
 #include "fontforgeui.h"
 #include "lookupui.h"
+#include "metricsview.h"
 #include <gkeysym.h>
 #include <string.h>
 #include <ustring.h>

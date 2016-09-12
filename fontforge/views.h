@@ -957,17 +957,6 @@ extern void CVShowPoint(CharView *cv, BasePoint *me);
 
 extern char *BVFlipNames[];
 
-extern void MVSetSCs(MetricsView *mv, SplineChar **scs);
-extern void MVRefreshChar(MetricsView *mv, SplineChar *sc);
-extern void MVRegenChar(MetricsView *mv, SplineChar *sc);
-extern void MVReKern(MetricsView *mv);
-extern void MetricsViewFinishNonStatic();
-extern MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf);
-extern void MetricsViewFree(MetricsView *mv);
-extern void MVRefreshAll(MetricsView *mv);
-extern void MV_FriendlyFeatures(GGadget *g, int pos);
-extern GTextInfo *SLOfFont(SplineFont *sf);
-
 extern void DoPrefs(void);
 extern void DoXRes(void);
 extern void PointerDlg(CharView *cv);
@@ -1074,7 +1063,6 @@ extern void ValidationDestroy(SplineFont *sf);
 extern struct hslrgb *SFFontCols(SplineFont *sf,struct hslrgb fontcols[6]);
 
 extern Color view_bgcol;	/* Background color for views */
-extern void MVColInit(void);
 extern void CVColInit( void );
 
 extern void FontViewRemove(FontView *fv);
