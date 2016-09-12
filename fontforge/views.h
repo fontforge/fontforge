@@ -730,9 +730,6 @@ extern void PythonUI_namedpipe_Init(void);
 extern void SCStroke(SplineChar *sc);
 
 extern void PfaEditSetFallback(void);
-extern void RecentFilesRemember(char *filename);
-extern void LastFonts_Save(void);
-
 
 extern char *Kern2Text(SplineChar *other,KernPair *kp,int isv);
 extern char *PST2Text(PST *pst,SplineFont *sf);
@@ -956,13 +953,6 @@ extern void CVShowPoint(CharView *cv, BasePoint *me);
 
 extern char *BVFlipNames[];
 
-extern void DoPrefs(void);
-extern void DoXRes(void);
-extern void PointerDlg(CharView *cv);
-extern void GListAddStr(GGadget *list,unichar_t *str, void *ud);
-extern void GListReplaceStr(GGadget *list,int index, unichar_t *str, void *ud);
-
-
 
 extern void ShowAboutScreen(void);
 extern void DelayEvent(void (*func)(void *), void *data);
@@ -1064,7 +1054,6 @@ extern char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current);
 struct gidata;
 
 extern void CVRegenFill(CharView *cv);
-extern void RulerDlg(CharView *cv);
 extern int  CVCountSelectedPoints(CharView *cv);
 extern void _CVMenuInsertPt(CharView *cv);
 extern void _CVMenuNamePoint(CharView *cv, SplinePoint *sp);
@@ -1149,8 +1138,6 @@ extern void SFDFixupRefs(SplineFont *sf);
  * in the correct order.
  */
 extern void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, const char* keyPrefix, int idx );
-
-extern void Prefs_LoadDefaultPreferences( void );
 
 
 extern CharView* CharViewFindActive();

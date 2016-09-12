@@ -64,6 +64,8 @@ static void change_res_filename(const char *newname);
 
 #include "gutils/prefs.h"
 
+#include "prefs.h"
+
 extern int splash;
 extern int adjustwidth;
 extern int adjustlbearing;

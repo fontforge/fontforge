@@ -38,6 +38,7 @@
 #include "cursors.h"
 #include "images.h"
 #include "metricsview.h"
+#include "prefs.h"
 #ifndef _NO_LIBUNICODENAMES
 #include <libunicodenames.h>	/* need to open a database when we start */
 extern uninm_names_db names_db; /* Unicode character names and annotations database */

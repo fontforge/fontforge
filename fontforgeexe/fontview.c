@@ -58,6 +58,7 @@
 #include "metricsview.h"
 #include "mmdlg.h"
 #include "nonlineartransui.h"
+#include "prefs.h"
 #include "psfont.h"
 #include <gfile.h>
 #include <gio.h>
