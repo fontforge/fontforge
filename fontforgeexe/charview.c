@@ -4148,20 +4148,27 @@ return;
 }
 
 static void CVInfoDrawRulers(CharView *cv, GWindow pixmap ) {
+    // Check if we have any rulers to draw over
+    if (cv->hruler == NULL || cv->vruler == NULL) {
+        return;
+    }
+
     int rstart = cv->mbh+cv->charselectorh+cv->infoh;
     GRect rh, rv, oldrh, oldrv;
-    rh.y = cv->infoh+cv->mbh+cv->charselectorh; rh.height = cv->rulerh; rh.x = 0; rh.width = cv->rulerh+cv->width;
-    rv.x = 0; rv.width = cv->rulerh; rv.y = cv->infoh+cv->charselectorh+cv->mbh; rv.height = cv->rulerh+cv->height;
+    rh.y = rstart; rh.height = cv->rulerh; rh.x = cv->rulerh; rh.width = cv->width;
+    rv.x = 0; rv.width = cv->rulerh; rv.y = rstart + cv->rulerh; rv.height = cv->height;
 
     GDrawSetLineWidth(pixmap,0);
     // Draw the new rulers
     GDrawPushClip(pixmap, &rh, &oldrh);
-    GDrawRequestExpose(pixmap, &rh, false);
+    rh.x = cv->olde.x; rh.y = 0; rh.width = 1;
+    GDrawDrawPixmap(pixmap, cv->hruler, &rh, cv->rulerh + cv->olde.x, rstart);
     GDrawDrawLine(pixmap,cv->e.x+cv->rulerh,rstart,cv->e.x+cv->rulerh,rstart+cv->rulerh,0xff0000);
     GDrawPopClip(pixmap, &oldrh);
 
     GDrawPushClip(pixmap, &rv, &oldrv);
-    GDrawRequestExpose(pixmap, &rv, false);
+    rv.x = 0; rv.y = cv->olde.y; rv.height = 1;
+    GDrawDrawPixmap(pixmap, cv->vruler, &rv, 0, cv->rulerh + rstart + cv->olde.y);
     GDrawDrawLine(pixmap,0,cv->e.y+rstart+cv->rulerh,cv->rulerh,cv->e.y+rstart+cv->rulerh,0xff0000);
     GDrawPopClip(pixmap, &oldrv);
 
@@ -5864,45 +5871,67 @@ static void CVExposeRulers(CharView *cv, GWindow pixmap ) {
 	units/=10; littleunits = units/5;
     }
 
-    rect.x = 0; rect.width = cv->width+cv->rulerh; rect.y = ybase; rect.height = cv->rulerh;
-    GDrawFillRect(pixmap,&rect,GDrawGetDefaultBackground(NULL));
-    rect.y = ybase; rect.height = cv->height+cv->rulerh; rect.x = 0; rect.width = cv->rulerh;
-    GDrawFillRect(pixmap,&rect,GDrawGetDefaultBackground(NULL));
-    GDrawSetLineWidth(pixmap,0);
-    GDrawDrawLine(pixmap,cv->rulerh,cv->mbh+cv->charselectorh+cv->infoh+cv->rulerh-1,8096,cv->mbh+cv->charselectorh+cv->infoh+cv->rulerh-1,def_fg);
-    GDrawDrawLine(pixmap,cv->rulerh-1,cv->mbh+cv->charselectorh+cv->infoh+cv->rulerh,cv->rulerh-1,8096,def_fg);
-
-    GDrawSetFont(pixmap,cv->small);
-    if ( xmax-xmin<1 && cv->width>100 ) {
-	CVDrawNum(cv,pixmap,cv->rulerh,ybase+cv->sas,"%.3f",xmin,0);
-	CVDrawNum(cv,pixmap,cv->rulerh+cv->width,ybase+cv->sas,"%.3f",xmax,2);
+    // Create the pixmaps
+    if (cv->hruler != NULL) {
+        GDrawDestroyWindow(cv->hruler);
     }
+    if (cv->vruler != NULL) {
+        GDrawDestroyWindow(cv->vruler);
+    }
+    cv->hruler = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v), cv->width, cv->rulerh);
+    cv->vruler = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v), cv->rulerh, cv->height);
+
+    // Set background
+    rect.x = 0; rect.width = cv->width; rect.y = 0; rect.height = cv->rulerh;
+    GDrawFillRect(cv->hruler, &rect, GDrawGetDefaultBackground(NULL));
+    rect.width = cv->rulerh; rect.height = cv->height;
+    GDrawFillRect(cv->vruler, &rect, GDrawGetDefaultBackground(NULL));
+
+    // Draw bottom line of rulers
+    GDrawSetLineWidth(cv->hruler, 0);
+    GDrawSetLineWidth(cv->vruler, 0);
+    GDrawDrawLine(cv->hruler, 0, cv->rulerh - 1, cv->width, cv->rulerh - 1, def_fg);
+    GDrawDrawLine(cv->vruler, cv->rulerh - 1, 0, cv->rulerh - 1, cv->height, def_fg);
+
+    // Draw the ticks
+    GDrawSetFont(cv->hruler, cv->small);
+    GDrawSetFont(cv->vruler, cv->small);
+    if ( xmax-xmin<1 && cv->width>100 ) {
+	CVDrawNum(cv,cv->hruler,0,cv->sas,"%.3f",xmin,0);
+	CVDrawNum(cv,cv->hruler,cv->width,cv->sas,"%.3f",xmax,2);
+    }
+
     if ( ymax-ymin<1 && cv->height>100 ) {
-	CVDrawVNum(cv,pixmap,1,ybase+cv->rulerh+cv->height+cv->sas,"%.3f",ymin,0);
-	CVDrawVNum(cv,pixmap,1,ybase+cv->rulerh+cv->sas,"%.3f",ymax,2);
+	CVDrawVNum(cv,cv->vruler,1,cv->height+cv->sas,"%.3f",ymin,0);
+	CVDrawVNum(cv,cv->vruler,1,cv->sas,"%.3f",ymax,2);
     }
     if ( fabs(xmin/units) < 1e5 && fabs(ymin/units)<1e5 && fabs(xmax/units)<1e5 && fabs(ymax/units)<1e5 ) {
 	if ( littleunits!=0 ) {
 	    for ( pos=littleunits*ceil(xmin/littleunits); pos<xmax; pos += littleunits ) {
 		x = cv->xoff + rint(pos*cv->scale);
-		GDrawDrawLine(pixmap,x+cv->rulerh,ybase+cv->rulerh-4,x+cv->rulerh,ybase+cv->rulerh, def_fg);
+		GDrawDrawLine(cv->hruler,x,cv->rulerh-4,x,cv->rulerh, def_fg);
 	    }
 	    for ( pos=littleunits*ceil(ymin/littleunits); pos<ymax; pos += littleunits ) {
 		y = -cv->yoff + cv->height - rint(pos*cv->scale);
-		GDrawDrawLine(pixmap,cv->rulerh-4,ybase+cv->rulerh+y,cv->rulerh,ybase+cv->rulerh+y, def_fg);
+		GDrawDrawLine(cv->vruler,cv->rulerh-4,y,cv->rulerh,y, def_fg);
 	    }
 	}
 	for ( pos=units*ceil(xmin/units); pos<xmax; pos += units ) {
 	    x = cv->xoff + rint(pos*cv->scale);
-	    GDrawDrawLine(pixmap,x+cv->rulerh,ybase,x+cv->rulerh,ybase+cv->rulerh, rulerbigtickcol);
-	    CVDrawNum(cv,pixmap,x+cv->rulerh+15,ybase+cv->sas,"%g",pos,1);
+	    GDrawDrawLine(cv->hruler,x,0,x,cv->rulerh, rulerbigtickcol);
+	    CVDrawNum(cv,cv->hruler,x+15,cv->sas,"%g",pos,1);
 	}
 	for ( pos=units*ceil(ymin/units); pos<ymax; pos += units ) {
 	    y = -cv->yoff + cv->height - rint(pos*cv->scale);
-	    GDrawDrawLine(pixmap,0,ybase+cv->rulerh+y,cv->rulerh,ybase+cv->rulerh+y, rulerbigtickcol);
-	    CVDrawVNum(cv,pixmap,1,y+ybase+cv->rulerh+cv->sas+20,"%g",pos,1);
+	    GDrawDrawLine(cv->vruler,0,y,cv->rulerh,y, rulerbigtickcol);
+	    CVDrawVNum(cv,cv->vruler,1,y+cv->sas+20,"%g",pos,1);
 	}
     }
+
+    // Draw the pixmaps to screen
+    GDrawDrawPixmap(pixmap, cv->vruler, &rect, 0, cv->rulerh + ybase);
+    rect.width = cv->width; rect.height = cv->rulerh;
+    GDrawDrawPixmap(pixmap, cv->hruler, &rect, cv->rulerh, ybase);
 }
 
 static void InfoExpose(CharView *cv, GWindow pixmap, GEvent *expose) {
@@ -6303,6 +6332,14 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 	    GDrawDestroyWindow(cv->icon);
 	    cv->icon = NULL;
 	}
+    if (cv->hruler != NULL) {
+        GDrawDestroyWindow(cv->hruler);
+        cv->hruler = NULL;
+    }
+    if (cv->vruler != NULL) {
+        GDrawDestroyWindow(cv->vruler);
+        cv->vruler = NULL;
+    }
 	CharViewFree(cv);
       break;
       case et_close:
