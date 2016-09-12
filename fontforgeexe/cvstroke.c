@@ -26,6 +26,7 @@
  */
 #include "fontforgeui.h"
 #include "cvpointer.h"
+#include "lookupui.h"
 #include <ustring.h>
 #include <utype.h>
 #include <gkeysym.h>

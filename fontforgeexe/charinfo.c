@@ -29,6 +29,7 @@
 #include "fontforgeui.h"
 #include "cvgetinfo.h"
 #include "fontinfo.h"
+#include "lookupui.h"
 #include <ustring.h>
 #include <math.h>
 #include <utype.h>

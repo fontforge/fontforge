@@ -35,6 +35,7 @@
 #include "fontinfo.h"
 #include "fvmetricsdlg.h"
 #include "lookups.h"
+#include "lookupui.h"
 #include "gotodlg.h"
 #include "kernclass.h"
 #include <gkeysym.h>

@@ -1060,27 +1060,6 @@ struct subtable_data {
     SplineChar *sc;
 };
 
-extern GTextInfo **SFLookupListFromType(SplineFont *sf, int lookup_type );
-extern GTextInfo *SFLookupArrayFromType(SplineFont *sf, int lookup_type );
-extern GTextInfo *SFLookupArrayFromMask(SplineFont *sf, int lookup_mask );
-extern GTextInfo **SFSubtablesOfType(SplineFont *sf, int lookup_type, int kernclass, int add_none);
-extern GTextInfo *SFSubtableListOfType(SplineFont *sf, int lookup_type, int kernclass, int add_none);
-extern struct lookup_subtable *SFNewLookupSubtableOfType(SplineFont *sf, int lookup_type, struct subtable_data *sd, int def_layer );
-extern int EditLookup(OTLookup *otl,int isgpos,SplineFont *sf);
-extern int EditSubtable(struct lookup_subtable *sub,int isgpos,SplineFont *sf,
-	struct subtable_data *sd,int def_layer);
-extern void _LookupSubtableContents(SplineFont *sf, struct lookup_subtable *sub,
-	struct subtable_data *sd,int def_layer);
-extern char *SCNameUniStr(SplineChar *sc);
-extern unichar_t *uSCNameUniStr(SplineChar *sc);
-extern char *SFNameList2NameUni(SplineFont *sf, char *str);
-extern unichar_t **SFGlyphNameCompletion(SplineFont *sf,GGadget *t,int from_tab,
-	int new_name_after_space);
-extern char *GlyphNameListDeUnicode( char *str );
-extern void AddRmLang(SplineFont *sf, struct lkdata *lk,int add_lang);
-extern void FVMassGlyphRename(FontView *fv);
-
-
 extern GMenuItem2 helplist[];
 extern BasePoint last_ruler_offset[];
 
@@ -1098,8 +1077,6 @@ extern void fv_tl2listcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void SFValidationWindow(SplineFont *sf,int layer, enum fontformat format);
 extern void ValidationDestroy(SplineFont *sf);
 
-
-extern void LookupUIInit(void);
 
 extern struct hslrgb *SFFontCols(SplineFont *sf,struct hslrgb fontcols[6]);
 

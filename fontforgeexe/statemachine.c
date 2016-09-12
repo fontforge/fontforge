@@ -27,6 +27,7 @@
  */
 #include "fontforgeui.h"
 #include "fontinfo.h"
+#include "lookupui.h"
 #include "ttf.h"
 #include <chardata.h>
 #include <utype.h>

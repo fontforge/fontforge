@@ -42,6 +42,8 @@
 #include "gfile.h"
 #include "sfundo.h"
 
+#include "lookupui.h"
+
 int add_char_to_name_list = true;
 int default_autokern_dlg = true;
 int fontlevel_undo_limit = 10;
