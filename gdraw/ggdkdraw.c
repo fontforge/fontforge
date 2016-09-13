@@ -520,14 +520,14 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
         }
 
         GdkGeometry geom = {0};
-        GdkWindowHints hints = GDK_HINT_BASE_SIZE;
+        GdkWindowHints hints = 0;
         if ((wattrs->mask & wam_noresize) && wattrs->noresize) {
             hints |= GDK_HINT_MIN_SIZE;
         }
 
         // Hmm does this seem right?
-        geom.base_width = geom.min_width = geom.max_width = pos->width;
-        geom.base_height = geom.min_height = geom.max_height = pos->height;
+        geom.min_width = geom.max_width = pos->width;
+        geom.min_height = geom.max_height = pos->height;
 
         hints |= GDK_HINT_POS;
         nw->was_positioned = true;
@@ -589,8 +589,9 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     return (GWindow)nw;
 }
 
-static GWindow _GGDKDraw_NewPixmap(GDisplay *gdisp, uint16 width, uint16 height, cairo_format_t format,
+static GWindow _GGDKDraw_NewPixmap(GDisplay *disp, GWindow similar, uint16 width, uint16 height, bool is_bitmap,
                                    unsigned char *data) {
+    GGDKDisplay *gdisp = (GGDKDisplay *)disp;
     GGDKWindow gw = (GGDKWindow)calloc(1, sizeof(struct ggdkwindow));
     if (gw == NULL) {
         Log(LOGDEBUG, "GGDKDRAW: GGDKWindow calloc failed!");
@@ -603,10 +604,10 @@ static GWindow _GGDKDraw_NewPixmap(GDisplay *gdisp, uint16 width, uint16 height,
         free(gw);
         return NULL;
     }
-    gw->ggc->bg = ((GGDKDisplay *) gdisp)->def_background;
+    gw->ggc->bg = gdisp->def_background;
     width &= 0x7fff; // We're always using a cairo surface...
 
-    gw->display = (GGDKDisplay *) gdisp;
+    gw->display = gdisp;
     gw->is_pixmap = 1;
     gw->parent = NULL;
     gw->pos.x = gw->pos.y = 0;
@@ -614,8 +615,13 @@ static GWindow _GGDKDraw_NewPixmap(GDisplay *gdisp, uint16 width, uint16 height,
     gw->pos.height = height;
 
     if (data == NULL) {
-        gw->cs = cairo_image_surface_create(format, width, height);
+        if (similar == NULL) {
+            gw->cs = cairo_image_surface_create(is_bitmap ? CAIRO_FORMAT_A1 : CAIRO_FORMAT_ARGB32, width, height);
+        } else {
+            gw->cs = gdk_window_create_similar_surface(((GGDKWindow)similar)->w, CAIRO_CONTENT_COLOR, width, height);
+        }
     } else {
+        cairo_format_t format = is_bitmap ? CAIRO_FORMAT_A1 : CAIRO_FORMAT_ARGB32;
         gw->cs = cairo_image_surface_create_for_data(data, format, width, height, cairo_format_stride_for_width(format, width));
     }
 
@@ -964,13 +970,25 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             gw->is_in_paint = true;
             gdisp->dirty_window = gw;
 
-            // So if this was a requested expose (send_event), and this
-            // is a child window, then mask out the expose region.
-            // This is necessary because gdk_window_begin_paint_region does
-            // nothing if it's a child window...
 #ifndef GGDKDRAW_GDK_2
-            if (!gw->is_toplevel && expose->send_event) {
-                gw->cc = gdk_cairo_create(w);
+            // Okay. So on GDK3, if the window isn't native,
+            // gdk_window_begin_paint_region does nothing.
+            // So we have to (a) ensure we draw to an offscreen surface,
+            // and (b) clip the region appropriately. But on Windows
+            // (and maybe Quartz), it seems to double buffer anyway.
+            if (!gdk_window_has_native(gw->w)) {
+#if !defined(GDK_WINDOWING_WIN32) && !defined(GDK_WINDOWING_QUARTZ)
+                double sx = 1, sy = 1;
+                gw->cs = gdk_window_create_similar_surface(gw->w, CAIRO_CONTENT_COLOR, expose->area.width, expose->area.height);
+#if (CAIRO_VERSION_MAJOR >= 2) || (CAIRO_VERSION_MAJOR >= 1 && CAIRO_VERSION_MINOR >= 14)
+                cairo_surface_get_device_scale(gw->cs, &sx, &sy);
+#endif
+                cairo_surface_set_device_offset(gw->cs, -expose->area.x * sx, -expose->area.y * sy);
+                gw->cc = cairo_create(gw->cs);
+                gw->expose_region = cairo_region_reference(expose->region);
+#else
+                gw->cc = gdk_cairo_create(gw->w);
+#endif
                 _GGDKDraw_ClipToRegion(gw, expose->region);
             }
 #endif
@@ -1126,11 +1144,11 @@ static GWindow GGDKDrawCreateSubWindow(GWindow gw, GRect *pos, int (*eh)(GWindow
     return _GGDKDraw_CreateWindow(((GGDKWindow) gw)->display, (GGDKWindow) gw, pos, eh, user_data, gattrs);
 }
 
-static GWindow GGDKDrawCreatePixmap(GDisplay *gdisp, uint16 width, uint16 height) {
+static GWindow GGDKDrawCreatePixmap(GDisplay *gdisp, GWindow similar, uint16 width, uint16 height) {
     Log(LOGDEBUG, "");
 
     //TODO: Check format?
-    return _GGDKDraw_NewPixmap(gdisp, width, height, CAIRO_FORMAT_ARGB32, NULL);
+    return _GGDKDraw_NewPixmap(gdisp, similar, width, height, false, NULL);
 }
 
 static GWindow GGDKDrawCreateBitmap(GDisplay *gdisp, uint16 width, uint16 height, uint8 *data) {
@@ -1139,7 +1157,7 @@ static GWindow GGDKDrawCreateBitmap(GDisplay *gdisp, uint16 width, uint16 height
     int actual = (width & 0x7fff) / 8;
 
     if (actual != stride) {
-        GWindow ret = _GGDKDraw_NewPixmap(gdisp, width, height, CAIRO_FORMAT_A1, NULL);
+        GWindow ret = _GGDKDraw_NewPixmap(gdisp, NULL, width, height, true, NULL);
         if (ret == NULL) {
             return NULL;
         }
@@ -1153,7 +1171,7 @@ static GWindow GGDKDrawCreateBitmap(GDisplay *gdisp, uint16 width, uint16 height
         return ret;
     }
 
-    return _GGDKDraw_NewPixmap(gdisp, width, height, CAIRO_FORMAT_A1, data);
+    return _GGDKDraw_NewPixmap(gdisp, NULL, width, height, true, data);
 }
 
 static GCursor GGDKDrawCreateCursor(GWindow src, GWindow mask, Color fg, Color bg, int16 x, int16 y) {
@@ -1987,6 +2005,7 @@ static void GGDKDrawRequestExpose(GWindow w, GRect *rect, int UNUSED(doclear)) {
         }
     }
 
+#ifndef GGDKDRAW_GDK_2
     if (!gw->is_toplevel) {
         //Eugh
         // So if you try to invalidate a child window,
@@ -2000,7 +2019,6 @@ static void GGDKDrawRequestExpose(GWindow w, GRect *rect, int UNUSED(doclear)) {
         expose.area.y = clip.y;
         expose.area.width = clip.width;
         expose.area.height = clip.height;
-#ifndef GGDKDRAW_GDK_2
         expose.region = _GGDKDraw_CalculateDrawableRegion(gw, true);
         cairo_region_intersect_rectangle(expose.region, &expose.area);
         // Don't send unnecessarily...
@@ -2009,18 +2027,21 @@ static void GGDKDrawRequestExpose(GWindow w, GRect *rect, int UNUSED(doclear)) {
             return;
         }
         cairo_region_get_extents(expose.region, &expose.area);
-#else
-        expose.region = gdk_region_rectangle(&expose.area);
-#endif
+
         gdk_event_put((GdkEvent *)&expose);
-#ifndef GGDKDRAW_GDK_2
         cairo_region_destroy(expose.region);
-#else
-        gdk_region_destroy(expose.region);
-#endif
     } else {
-        gdk_window_invalidate_rect(gw->w, &clip, false);
+        // We must clip out child windows, otherwise it will flicker...
+        cairo_region_t *r = _GGDKDraw_CalculateDrawableRegion(gw, true);
+        cairo_region_intersect_rectangle(r, &clip);
+        gdk_window_invalidate_region(gw->w, r, false);
+        cairo_region_destroy(r);
+#else
+    gdk_window_invalidate_rect(gw->w, &clip, false);
+#endif
+#ifndef GGDKDRAW_GDK_2
     }
+#endif
 }
 
 static void GGDKDrawForceUpdate(GWindow gw) {

@@ -192,7 +192,7 @@ struct displayfuncs {
 
     GWindow (*createTopWindow)(GDisplay *, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *);
     GWindow (*createSubWindow)(GWindow, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *);
-    GWindow (*createPixmap)(GDisplay *, uint16 width, uint16 height);
+    GWindow (*createPixmap)(GDisplay *, GWindow similar, uint16 width, uint16 height);
     GWindow (*createBitmap)(GDisplay *, uint16 width, uint16 height, uint8 *data);
     GCursor (*createCursor)(GWindow src, GWindow mask, Color fg, Color bg, int16 x, int16 y);
     void (*destroyWindow)(GWindow);

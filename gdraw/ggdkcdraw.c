@@ -28,10 +28,12 @@ static void _GGDKDraw_CheckAutoPaint(GGDKWindow gw) {
 #ifndef GGDKDRAW_GDK_2
         // Unlike GDK2, it turns out you can draw over child windows
         // But we don't want that. Must be something to do with alpha transparency.
-        cairo_region_t *r = _GGDKDraw_CalculateDrawableRegion(gw, false);
-        if (r != NULL) {
-            _GGDKDraw_ClipToRegion(gw, r);
-            cairo_region_destroy(r);
+        if (!gdk_window_has_native(gw->w)) {
+            cairo_region_t *r = _GGDKDraw_CalculateDrawableRegion(gw, false);
+            if (r != NULL) {
+                _GGDKDraw_ClipToRegion(gw, r);
+                cairo_region_destroy(r);
+            }
         }
 #endif
     }
@@ -567,6 +569,7 @@ static void _GGDKDraw_OnPixbufDestroy(guchar *pixels, gpointer data) {
  *  \return The Cairo surface converted into a GdkPixbuf
  */
 GdkPixbuf *_GGDKDraw_Cairo2Pixbuf(cairo_surface_t *cs) {
+    g_return_val_if_fail(cairo_surface_get_type(cs) == CAIRO_SURFACE_TYPE_IMAGE, NULL);
     int width = cairo_image_surface_get_width(cs), height = cairo_image_surface_get_height(cs);
     cairo_surface_t *csp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
     int stride = cairo_image_surface_get_stride(csp);
@@ -642,13 +645,43 @@ void _GGDKDraw_ClipToRegion(GGDKWindow gw, cairo_region_t *r) {
 
 void _GGDKDraw_CleanupAutoPaint(GGDKDisplay *gdisp) {
     if (gdisp->dirty_window != NULL) {
-        if (gdisp->dirty_window->cc != NULL) {
-            cairo_destroy(gdisp->dirty_window->cc);
-            gdisp->dirty_window->cc = NULL;
+        GGDKWindow gw = gdisp->dirty_window;
+
+        if (gw->cc != NULL) {
+            cairo_destroy(gw->cc);
+            gw->cc = NULL;
         }
-        if (gdisp->dirty_window->is_in_paint) {
-            gdk_window_end_paint(gdisp->dirty_window->w);
-            gdisp->dirty_window->is_in_paint = false;
+        if (gw->is_in_paint) {
+            //Log(LOGDEBUG, "ENDED PAINT %p", gw);
+#if !defined(GGDKDRAW_GDK_2) && !defined(GDK_WINDOWING_WIN32) && !defined(GDK_WINDOWING_QUARTZ)
+            if (gw->cs != NULL) {
+                assert(gw->expose_region != NULL);
+                cairo_t *cc = gdk_cairo_create(gw->w);
+
+                gdk_cairo_region(cc, gw->expose_region);
+                cairo_clip(cc);
+
+                cairo_set_source_surface(cc, gw->cs, 0, 0);
+                cairo_set_operator(cc, CAIRO_OPERATOR_SOURCE);
+                cairo_paint(cc);
+
+                cairo_destroy(cc);
+                cairo_region_destroy(gw->expose_region);
+                gw->expose_region = NULL;
+                cairo_surface_destroy(gw->cs);
+                gw->cs = NULL;
+            }
+#endif
+            gdk_window_end_paint(gw->w);
+            gw->is_in_paint = false;
+        } else {
+#ifdef GGDKDRAW_GDK_2
+            // GDK2 likes to bunch up screen refreshes when an expose
+            // event hasn't been explicitly created. But this affects
+            // drawing, especially in the charview, which makes it look
+            // laggy. So force it to process window updates if we drew stuff.
+            gdk_window_process_updates(gw->w, false);
+#endif
         }
         gdisp->dirty_window = NULL;
     }

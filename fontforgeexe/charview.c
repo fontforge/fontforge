@@ -2858,7 +2858,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     if ( !cv->show_ft_results && cv->dv==NULL ) {
 
 	if ( cv->backimgs==NULL && !(GDrawHasCairo(cv->v)&gc_buildpath))
-	    cv->backimgs = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v),cv->width,cv->height);
+	    cv->backimgs = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v),cv->v,cv->width,cv->height);
 	if ( GDrawHasCairo(cv->v)&gc_buildpath ) {
 	    for ( layer = ly_back; layer<cv->b.sc->layer_cnt; ++layer ) if ( cv->b.sc->layers[layer].images!=NULL ) {
 		if (( sf->multilayer && ((( cv->showback[0]&1 || cvlayer==layer) && layer==ly_back ) ||
@@ -3413,7 +3413,7 @@ static GWindow CharIcon(CharView *cv, FontView *fv) {
 
     r.x = r.y = 0; r.width = r.height = fv->cbw-1;
     if ( icon == NULL )
-	cv->icon = icon = GDrawCreatePixmap(NULL,r.width,r.width);
+	cv->icon = icon = GDrawCreatePixmap(NULL,NULL,r.width,r.width);
     GDrawFillRect(icon,&r,0x0);		/* for some reason icons seem to be color reversed by my defn */
 
     bdf = NULL; bdfc = NULL;
@@ -5878,8 +5878,8 @@ static void CVExposeRulers(CharView *cv, GWindow pixmap ) {
     if (cv->vruler != NULL) {
         GDrawDestroyWindow(cv->vruler);
     }
-    cv->hruler = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v), cv->width, cv->rulerh);
-    cv->vruler = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v), cv->rulerh, cv->height);
+    cv->hruler = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v), cv->v, cv->width, cv->rulerh);
+    cv->vruler = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v), cv->v, cv->rulerh, cv->height);
 
     // Set background
     rect.x = 0; rect.width = cv->width; rect.y = 0; rect.height = cv->rulerh;

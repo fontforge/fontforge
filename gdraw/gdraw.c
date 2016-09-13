@@ -90,9 +90,9 @@ GWindow GDrawCreateSubWindow(GWindow w, GRect *pos,
 return( (w->display->funcs->createSubWindow)(w,pos,eh,user_data,wattrs) );
 }
 
-GWindow GDrawCreatePixmap(GDisplay *gdisp, uint16 width, uint16 height) {
+GWindow GDrawCreatePixmap(GDisplay *gdisp, GWindow similar, uint16 width, uint16 height) {
     if ( gdisp==NULL ) gdisp = screen_display;
-return( (gdisp->funcs->createPixmap)(gdisp,width,height));
+return( (gdisp->funcs->createPixmap)(gdisp,similar,width,height));
 }
 
 GWindow GDrawCreateBitmap(GDisplay *gdisp, uint16 width, uint16 height, uint8 *data) {

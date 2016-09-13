@@ -2063,7 +2063,7 @@ return;
 	int i,j;
 
 	full.x = full.y = 0; full.width = base->width; full.height = base->height;
-	pixmap = GDrawCreatePixmap((GDisplay *) gdisp,base->width,base->height);
+	pixmap = GDrawCreatePixmap((GDisplay *) gdisp,NULL,base->width,base->height);
 	_GXDraw_Image(pixmap,image,&full,0,0);
 	GDrawPushClip(_w,src,&old);
 	_GXDraw_SetClipFunc(gdisp,gw->ggc);
@@ -2091,8 +2091,8 @@ return;
 	int i,j;
 
 	full.x = full.y = 0; full.width = base->width; full.height = base->height;
-	pixmap = GDrawCreatePixmap((GDisplay *) gdisp,base->width,base->height);
-	maskmap = GDrawCreatePixmap((GDisplay *) gdisp,base->width,base->height);
+	pixmap = GDrawCreatePixmap((GDisplay *) gdisp,NULL,base->width,base->height);
+	maskmap = GDrawCreatePixmap((GDisplay *) gdisp,NULL,base->width,base->height);
 	gximage_to_ximage(gw, image, &full);
 	GDrawDestroyWindow(maskmap);
 #if FAST_BITS

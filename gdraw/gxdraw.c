@@ -1029,7 +1029,7 @@ static void GXDrawSetZoom(GWindow w, GRect *pos, enum gzoom_flags flags) {
     XSetWMSizeHints(display,((GXWindow) w)->w,&zoom,XA_WM_ZOOM_HINTS);
 }
 
-static GWindow GXDrawCreatePixmap(GDisplay *gdisp, uint16 width, uint16 height) {
+static GWindow GXDrawCreatePixmap(GDisplay *gdisp, GWindow UNUSED(similar), uint16 width, uint16 height) {
     GXWindow gw = calloc(1,sizeof(struct gxwindow));
     int wamcairo = false;
 

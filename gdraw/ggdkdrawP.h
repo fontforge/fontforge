@@ -243,6 +243,7 @@ struct ggdkwindow { /* :GWindow */
     char *window_title;
     GCursor current_cursor;
 
+    cairo_region_t *expose_region;
     cairo_surface_t *cs;
     cairo_t *cc;
     PangoLayout *pango_layout;

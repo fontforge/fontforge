@@ -322,7 +322,7 @@ extern int GDrawPixelsToPoints(GWindow gw,int pixels);
 extern void GDrawSetDefaultIcon(GWindow icon);
 extern GWindow GDrawCreateTopWindow(GDisplay *gdisp, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs);
 extern GWindow GDrawCreateSubWindow(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs);
-extern GWindow GDrawCreatePixmap(GDisplay *gdisp, uint16 width, uint16 height);
+extern GWindow GDrawCreatePixmap(GDisplay *gdisp, GWindow similar, uint16 width, uint16 height);
 extern GWindow GDrawCreateBitmap(GDisplay *gdisp, uint16 width, uint16 height, uint8 *data);
 extern GCursor GDrawCreateCursor(GWindow src,GWindow mask,Color fg,Color bg,
 	int16 x, int16 y );

@@ -68,7 +68,7 @@ static GWindow PSDrawCreateSubWindow(GWindow UNUSED(w), GRect *UNUSED(pos),
 return NULL;
 }
 
-static GWindow PSDrawCreatePixmap(GDisplay *UNUSED(gdisp), uint16 UNUSED(width),
+static GWindow PSDrawCreatePixmap(GDisplay *UNUSED(gdisp), GWindow UNUSED(similar), uint16 UNUSED(width),
         uint16 UNUSED(height)) {
     fprintf( stderr, "CreatePixmap not implemented for postscript\n" );
 return NULL;
