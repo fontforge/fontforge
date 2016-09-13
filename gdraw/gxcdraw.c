@@ -173,7 +173,7 @@ static int GXCDrawSetline(GXWindow gw, GGC *mine) {
 	    mine->dash_offset != gcs->dash_offset ) {
 	double dashes[2];
 	dashes[0] = mine->dash_len; dashes[1] = mine->skip_len;
-	cairo_set_dash(gw->cc,dashes,0,mine->dash_offset);
+	cairo_set_dash(gw->cc, dashes, (mine->dash_len == 0) ? 0 : 2, mine->dash_offset);
 	gcs->dash_offset = mine->dash_offset;
 	gcs->dash_len = mine->dash_len;
 	gcs->skip_len = mine->skip_len;

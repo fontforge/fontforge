@@ -5297,7 +5297,7 @@ static void CVMouseMove(CharView *cv, GEvent *event ) {
 return;
     }
 
-    GDrawRequestExpose(cv->v,NULL,false);	/* TBD, hack to clear ruler */
+    //GDrawRequestExpose(cv->v,NULL,false);	/* TBD, hack to clear ruler */
 
     SetFS(&fs,&p,cv,event);
     if ( cv->active_tool == cvt_freehand )
@@ -5433,12 +5433,10 @@ return;
 	    cv->p.ex = cv->p.cx;
 	    cv->p.ey = cv->p.cy;
 	}
-	if ( cv->p.rubberbanding )
-	    CVDrawRubberRect(cv->v,cv);
 	cv->p.ex = cv->info.x;
 	cv->p.ey = cv->info.y;
 	cv->p.rubberbanding = true;
-	CVDrawRubberRect(cv->v,cv);
+	GDrawRequestExpose(cv->v, NULL, false);
       break;
       case cvt_hand:
 	CVMouseMoveHand(cv,event);
@@ -5538,10 +5536,8 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
     update_spacebar_hand_tool(cv);
 
     if ( cv->p.rubberbanding ) {
-	CVDrawRubberRect(cv->v,cv);
 	cv->p.rubberbanding = false;
     } else if ( cv->p.rubberlining ) {
-	CVDrawRubberLine(cv->v,cv);
 	cv->p.rubberlining = false;
     }
 

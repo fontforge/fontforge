@@ -1490,14 +1490,10 @@ return( false );
 	    cv->p.ey = cv->p.cy;
 	}
 	needsupdate = CVRectSelect(cv,cv->info.x,cv->info.y);
-	if ( !needsupdate && cv->p.rubberbanding )
-	    CVDrawRubberRect(cv->v,cv);
 	/* printf("moving2 cx:%g cy:%g\n", cv->p.cx, cv->p.cy ); */
 	cv->p.ex = cv->info.x;
 	cv->p.ey = cv->info.y;
 	cv->p.rubberbanding = true;
-	if ( !needsupdate )
-	    CVDrawRubberRect(cv->v,cv);
     }
     else if ( cv->p.nextcp )
     {
@@ -1618,6 +1614,9 @@ return( false );
 	/* 			 (void*)cv->b.layerheads[cv->b.drawmode]->order2 ); */
 
 	GDrawRequestExpose(cv->v,NULL,false);
+    } else if (!needsupdate) {
+        // Needed to update the rubber rect
+        GDrawRequestExpose(cv->v,NULL,false);
     }
 
     cv->last_c.x = cv->info.x; cv->last_c.y = cv->info.y;
@@ -1684,6 +1683,7 @@ void CVMouseUpPointer(CharView *cv ) {
 	    SCSynchronizeLBearing(cv->b.sc,cv->info.x-cv->p.cx,CVLayer((CharViewBase *) cv));
 	}
     }
+    GDrawRequestExpose(cv->v, NULL, false);
     CPEndInfo(cv);
 }
 

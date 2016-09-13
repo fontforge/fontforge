@@ -1964,7 +1964,7 @@ static void GGDKDrawPointerGrab(GWindow w) {
 }
 
 static void GGDKDrawRequestExpose(GWindow w, GRect *rect, int UNUSED(doclear)) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, "%p [%s]", w, ((GGDKWindow)w)->window_title);
 
     GGDKWindow gw = (GGDKWindow) w;
     GdkRectangle clip;
