@@ -963,7 +963,8 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
 
             // This can happen if say gdk_window_raise is called, which then runs the
             // event loop itself, which is outside of our checked event handler
-            _GGDKDraw_CleanupAutoPaint(gdisp);
+            // I've added autopaint cleanups before such calls, so this should
+            // never happen any more.
             assert(gw->cc == NULL);
 
             gdk_window_begin_paint_region(w, expose->region);
@@ -1325,6 +1326,7 @@ static int GGDKDrawSetDither(GDisplay *UNUSED(gdisp), int UNUSED(set)) {
 static void GGDKDrawReparentWindow(GWindow child, GWindow newparent, int x, int y) {
     Log(LOGWARN, "GGDKDrawReparentWindow called: Reparenting should NOT be used!");
     GGDKWindow gchild = (GGDKWindow)child, gparent = (GGDKWindow)newparent;
+    _GGDKDraw_CleanupAutoPaint(gchild->display);
     gchild->parent = gparent;
     gchild->is_toplevel = gchild->display->groot == gparent;
     gdk_window_reparent(gchild->w, gparent->w, x, y);
@@ -1336,6 +1338,7 @@ static void GGDKDrawReparentWindow(GWindow child, GWindow newparent, int x, int 
 static void GGDKDrawSetVisible(GWindow w, int show) {
     Log(LOGDEBUG, "");
     GGDKWindow gw = (GGDKWindow)w;
+    _GGDKDraw_CleanupAutoPaint(gw->display);
     if (show) {
 #ifdef GDK_WINDOWING_QUARTZ
         // Quartz backend fails to send a configure event after showing a window
@@ -1351,6 +1354,7 @@ static void GGDKDrawSetVisible(GWindow w, int show) {
 
 static void GGDKDrawMove(GWindow gw, int32 x, int32 y) {
     Log(LOGDEBUG, "%p:%s, %d %d", gw, ((GGDKWindow)gw)->window_title, x, y);
+    _GGDKDraw_CleanupAutoPaint(((GGDKWindow)gw)->display);
     gdk_window_move(((GGDKWindow)gw)->w, x, y);
     ((GGDKWindow)gw)->is_centered = false;
     if (!gw->is_toplevel) {
@@ -1365,6 +1369,7 @@ static void GGDKDrawTrueMove(GWindow w, int32 x, int32 y) {
 
 static void GGDKDrawResize(GWindow gw, int32 w, int32 h) {
     Log(LOGDEBUG, "%p:%s, %d %d", gw, ((GGDKWindow)gw)->window_title, w, h);
+    _GGDKDraw_CleanupAutoPaint(((GGDKWindow)gw)->display);
     gdk_window_resize(((GGDKWindow)gw)->w, w, h);
     if (gw->is_toplevel && ((GGDKWindow)gw)->is_centered) {
         _GGDKDraw_CenterWindowOnScreen((GGDKWindow)gw);
@@ -1376,6 +1381,7 @@ static void GGDKDrawResize(GWindow gw, int32 w, int32 h) {
 
 static void GGDKDrawMoveResize(GWindow gw, int32 x, int32 y, int32 w, int32 h) {
     Log(LOGDEBUG, "%p:%s, %d %d %d %d", gw, ((GGDKWindow)gw)->window_title, x, y, w, h);
+    _GGDKDraw_CleanupAutoPaint(((GGDKWindow)gw)->display);
     gdk_window_move_resize(((GGDKWindow)gw)->w, x, y, w, h);
     if (!gw->is_toplevel) {
         _GGDKDraw_FakeConfigureEvent((GGDKWindow)gw);
@@ -1384,6 +1390,7 @@ static void GGDKDrawMoveResize(GWindow gw, int32 x, int32 y, int32 w, int32 h) {
 
 static void GGDKDrawRaise(GWindow w) {
     Log(LOGDEBUG, "");
+    _GGDKDraw_CleanupAutoPaint(((GGDKWindow)w)->display);
     gdk_window_raise(((GGDKWindow)w)->w);
     if (!w->is_toplevel) {
         _GGDKDraw_FakeConfigureEvent((GGDKWindow)w);
@@ -1392,6 +1399,7 @@ static void GGDKDrawRaise(GWindow w) {
 
 static void GGDKDrawRaiseAbove(GWindow gw1, GWindow gw2) {
     Log(LOGDEBUG, "");
+    _GGDKDraw_CleanupAutoPaint(((GGDKWindow)gw1)->display);
     gdk_window_restack(((GGDKWindow)gw1)->w, ((GGDKWindow)gw2)->w, true);
     if (!gw1->is_toplevel) {
         _GGDKDraw_FakeConfigureEvent((GGDKWindow)gw1);
@@ -1409,6 +1417,7 @@ static int GGDKDrawIsAbove(GWindow UNUSED(gw1), GWindow UNUSED(gw2)) {
 
 static void GGDKDrawLower(GWindow gw) {
     Log(LOGDEBUG, "");
+    _GGDKDraw_CleanupAutoPaint(((GGDKWindow)gw)->display);
     gdk_window_lower(((GGDKWindow)gw)->w);
     if (!gw->is_toplevel) {
         _GGDKDraw_FakeConfigureEvent((GGDKWindow)gw);

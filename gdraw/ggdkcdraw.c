@@ -735,7 +735,11 @@ void GGDKDrawPopClip(GWindow w, GRect *old) {
     //Log(LOGDEBUG, "");
     GGDKWindow gw = (GGDKWindow)w;
     gw->ggc->clip = *old;
-    cairo_restore(((GGDKWindow)gw)->cc);
+    // cc can be NULL if the autopaint cleanup had to run because
+    // a raise/lower/move/resize function was called.
+    if (gw->cc != NULL) {
+        cairo_restore(gw->cc);
+    }
 }
 
 
