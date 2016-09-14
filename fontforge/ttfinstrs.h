@@ -25,6 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef FONTFORGE_TTFINSTRS_H
+#define FONTFORGE_TTFINSTRS_H
+
 enum ttf_instructions {
  ttf_npushb=0x40, ttf_npushw=0x41, ttf_pushb=0xb0, ttf_pushw=0xb8,
  ttf_aa=0x7f, ttf_abs=0x64, ttf_add=0x60, ttf_alignpts=0x27, ttf_alignrp=0x3c,
@@ -66,3 +69,5 @@ typedef struct instrbase {
 
 extern char *__IVUnParseInstrs(InstrBase *iv);
 extern int instr_typify(struct instrdata *);
+
+#endif /* FONTFORGE_TTFINSTRS_H */
