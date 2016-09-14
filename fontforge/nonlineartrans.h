@@ -24,6 +24,10 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#ifndef _NONLINEARTRANS_H
+#define _NONLINEARTRANS_H
+
 #include "fontforgeui.h"
 #include <utype.h>
 #include <ustring.h>
@@ -31,9 +35,6 @@
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
-
-#ifndef _NONLINEARTRANS_H
-#define _NONLINEARTRANS_H
 
 enum operator {
     op_base = 0x100,			/* Bigger than any character */
