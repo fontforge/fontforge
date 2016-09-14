@@ -29,12 +29,7 @@
 // to get asprintf() defined from stdio.h on GNU platforms
 #define _GNU_SOURCE 1
 
-#define GTimer GTimer_GTK
-#define GList  GList_Glib
-#include <glib.h>
-#include <glib-object.h>
-#undef GTimer
-#undef GList
+#include "ffglib.h"
 
 #include <fontforge-config.h>
 
