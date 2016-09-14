@@ -5969,6 +5969,8 @@ return;
 	  GGadgetResize(cv->charselector, new_charselector_width, charselector_size.height);
 	  GGadgetMove(cv->charselectorPrev, new_charselectorPrev_x, charselectorPrev_size.y);
 	  GGadgetMove(cv->charselectorNext, new_charselectorNext_x, charselectorNext_size.y);
+	  charselector_size.x = 0; charselector_size.y = cv->mbh; charselector_size.width = newwidth + sbsize; charselector_size.height = cv->charselectorh;
+	  GDrawRequestExpose(cv->gw, &charselector_size, false);
 	}
 
 	if ( cv->showrulers ) {
