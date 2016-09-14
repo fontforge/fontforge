@@ -25,6 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef FONTFORGE_FFPYTHON_H
+#define FONTFORGE_FFPYTHON_H
+
 #include "flaglist.h"
 
 /*********** PYTHON 3 **********/
@@ -247,3 +250,4 @@ typedef void (*pyFF_sendRedoIfInSession_Func_t)( void* cv );
 pyFF_sendRedoIfInSession_Func_t get_pyFF_sendRedoIfInSession_Func( void );
 void set_pyFF_sendRedoIfInSession_Func( pyFF_sendRedoIfInSession_Func_t f );
 
+#endif /* FONTFORGE_FFPYTHON_H */
