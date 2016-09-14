@@ -3174,7 +3174,7 @@ static void SC_OutOfDateBackground(SplineChar *sc) {
 void CVRegenFill(CharView *cv) {
     BDFCharFree(cv->filled);
     cv->filled = NULL;
-    if ( cv->showfilled ) {
+    if ( cv->showfilled && !shouldShowFilledUsingCairo(cv) ) {
 	extern int use_freetype_to_rasterize_fv;
 	int layer = CVLayer((CharViewBase *) cv);
 	int size = cv->scale*(cv->b.fv->sf->ascent+cv->b.fv->sf->descent);
