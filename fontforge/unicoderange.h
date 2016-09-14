@@ -25,6 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef FONTFORGE_UNICODERANGE_H
+#define FONTFORGE_UNICODERANGE_H
+
 extern struct unicoderange {
     char *name;		/* The range's name */
     int32 first, last, defined;
@@ -51,3 +54,5 @@ struct rangeinfo {
 enum ur_flags { ur_includeempty = 1, ur_sortbyname = 2, ur_sortbyunicode = 4 };
 extern struct rangeinfo *SFUnicodeRanges(SplineFont *sf, enum ur_flags flags);
 extern int unicoderange_cnt;
+
+#endif /* FONTFORGE_UNICODERANGE_H */
