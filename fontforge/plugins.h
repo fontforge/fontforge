@@ -25,6 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef FONTFORGE_PLUGINS_H
+#define FONTFORGE_PLUGINS_H
+
 /* If a user wants to write a fontforge plugin s/he should include this file */
 
 /*
@@ -96,3 +99,5 @@ extern int LoadPlugin(const char *dynamic_lib_name);
 extern void LoadPluginDir(const char *search_path);
     /* Loads any dynamic libs from this search path. if search_path is
      * NULL loads from the path returned by lt_dlgetsearchpath() */
+
+#endif /* FONTFORGE_PLUGINS_H */
