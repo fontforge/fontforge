@@ -1354,13 +1354,16 @@ static unichar_t *GFileChooserGetTitle(GGadget *g) {
     GFileChooser *gfc = (GFileChooser *) g;
     unichar_t *spt, *curdir, *file;
 
-    spt = (unichar_t *) _GGadgetGetTitle(&gfc->name->g);
+    spt = u_GFileNormalizePath(u_copy((unichar_t *)_GGadgetGetTitle(&gfc->name->g)));
     if ( u_GFileIsAbsolute(spt) )
-	file = u_copy(spt);
+	file = spt;
     else {
 	curdir = GFileChooserGetCurDir(gfc,-1);
 	file = u_GFileAppendFile(curdir,spt,gfc->lastname!=NULL);
 	free(curdir);
+    }
+    if (file != spt) {
+        free(spt);
     }
 return( file );
 }
