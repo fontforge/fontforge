@@ -2364,7 +2364,7 @@ gnulib_non_module_files="
 # git repository. If you have a gnulib entry in your .gitmodules file,
 # these values are ignored.
 gnulib_path=
-gnulib_url=http://git.savannah.gnu.org/r/gnulib.git
+gnulib_url=https://github.com/coreutils/gnulib
 
 # Additional gnulib-tool options to use.
 gnulib_tool_options="
