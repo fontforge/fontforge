@@ -75,6 +75,7 @@ extern const unsigned char  ____digitval[];
 #define ____FINAL	0x2000000
 #define ____ISOLATED	0x4000000
 #define ____DECOMPNORM	0x10000000
+#define ____LIG_OR_FRAC	0x20000000
 
 #define islower(ch)		(____utype[(ch)+1]&____L)
 #define isupper(ch)		(____utype[(ch)+1]&____U)
@@ -104,6 +105,8 @@ extern const unsigned char  ____digitval[];
 #define isarabisolated(ch)	(____utype[(ch)+1]&____ISOLATED)
 
 #define isdecompositionnormative(ch) (____utype[(ch)+1]&____DECOMPNORM)
+
+#define isligorfrac(ch)		(____utype[(ch)+1]&____LIG_OR_FRAC)
 
 extern const uint32	____utype[];		/* hold character type features for each Unicode.org defined character */
 
@@ -147,6 +150,44 @@ extern struct arabicforms {
     unsigned int joindual: 1;
     unsigned int required_lig_with_alef: 1;
 } ArabicForms[256];	/* for chars 0x600-0x6ff, subtract 0x600 to use array */
+
+
+/* Ligature/Vulgar_Fraction/Fraction unicode.org character lists & functions */
+
+extern int LigatureCount(void);		/* Unicode table Ligature count */
+extern int VulgarFractionCount(void);	/* Unicode table Vulgar Fraction count */
+extern int OtherFractionCount(void);	/* Unicode table Other Fractions count */
+extern int FractionCount(void);		/* Unicode table Fractions found */
+
+extern int32 Ligature_get_U(int n);	/* Get table[N] value, error==-1 */
+extern int32 VulgFrac_get_U(int n);	/* Get table[N] value, error==-1 */
+extern int32 Fraction_get_U(int n);	/* Get table[N] value, error==-1 */
+
+extern int Ligature_find_N(uint32 u);	/* Find N of Ligature[N], error==-1 */
+extern int VulgFrac_find_N(uint32 u);	/* Find N of VulgFrac[N], error==-1 */
+extern int Fraction_find_N(uint32 u);	/* Find N of Fraction[N], error==-1 */
+
+/* Return !0 if codepoint is a Ligature */
+extern int is_LIGATURE(uint32 codepoint);
+
+/* Return !0 if codepoint is a Vulgar Fraction */
+extern int is_VULGAR_FRACTION(uint32 codepoint);
+
+/* Return !0 if codepoint is a non-vulgar Fraction */
+extern int is_OTHER_FRACTION(uint32 codepoint);
+
+/* Return !0 if codepoint is a Fraction */
+extern int is_FRACTION(uint32 codepoint);
+
+/* Return !0 if codepoint is a Ligature or Vulgar Fraction */
+extern int is_LIGATURE_or_VULGAR_FRACTION(uint32 codepoint);
+
+/* Return !0 if codepoint is a Ligature or non-Vulgar Fraction */
+extern int is_LIGATURE_or_OTHER_FRACTION(uint32 codepoint);
+
+/* Return !0 if codepoint is a Ligature or Fraction */
+extern int is_LIGATURE_or_FRACTION(uint32 codepoint);
+
 
 #define _SOFT_HYPHEN	0xad
 

@@ -96,6 +96,7 @@ check_pedit([Try SVG and PT3],[test126.pe],[DataURI.sfd])
 check_pedit([Test generation of TrueType instructions],[test127.pe],[Ambrosia.sfd])
 #check_pedit([],[svg2ttf.pe])
 check_pedit([Test StrSplit overrun],[test128.pe])
+check_pedit([Ligatures and Fractions Table Lookups],[test129.pe])
 
 AT_BANNER([FontForge Python Scripting Tests])
 
@@ -112,6 +113,7 @@ check_python([Generate duplicate fonts test],[test1005.py],[AddExtremaTest2.sfd]
 check_python([Math table test],[test1006.py])
 check_python([Check for splinestroke 0 len fail],[test1007.py],[ayn+meem.init.svg])
 check_python([PythonAPI: font glyph iteration],[test1008.py],[OverlapBugs.sfd])
+check_python([Ligatures and Fractions Table Lookups],[test1009.py])
 #check_python([find overlap bug],[findoverlapbugs.py])
 check_python([Validate WOFF output],[test926.py],[DejaVuSerif.sfd])
 

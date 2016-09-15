@@ -33,9 +33,8 @@ lib_LTLIBRARIES = libfontforge.la
 
 #--------------------------------------------------------------------------
 
-noinst_HEADERS = fontforgeui.h sftextfieldP.h configure-fontforge.h	\
-	views.h is_LIGATURE.h flaglist.h strlist.h charview_private.h	\
-	cvundoes.h tables.h
+noinst_HEADERS = fontforgeui.h sftextfieldP.h configure-fontforge.h views.h 	\
+	flaglist.h strlist.h charview_private.h cvundoes.h tables.h
 
 pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 	libffstamp.h psfont.h stemdb.h autowidth.h delta.h fontforgevw.h	\
@@ -71,7 +70,7 @@ libfontforge_la_SOURCES = activeinui.c asmfpst.c autohint.c autosave.c	\
 	cvundoes.c dumpbdf.c dumppfa.c effects.c encoding.c		\
 	featurefile.c flaglist.c fontviewbase.c freetype.c		\
 	fvcomposite.c fvfonts.c fvimportbdf.c fvmetrics.c ftdelta.c	\
-	glyphcomp.c groups.c http.c ikarus.c is_LIGATURE.c langfreq.c	\
+	glyphcomp.c groups.c http.c ikarus.c langfreq.c			\
 	lookups.c macbinary.c macenc.c mathconstants.c mm.c namelist.c	\
 	nonlineartrans.c noprefs.c nouiutil.c nowakowskittfinstr.c	\
 	ofl.c othersubrs.c palmfonts.c parsepdf.c parsepfa.c		\
