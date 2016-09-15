@@ -28,6 +28,8 @@
 #ifndef _SCRIPTING_H
 #define _SCRIPTING_H
 
+#include "fontforge-config.h"
+
 #include "fontforgevw.h"
 #include <setjmp.h>
 #include <stdarg.h>
@@ -150,5 +152,9 @@ extern void ff_VerboseCheck(void);
 extern enum token_type ff_NextToken(Context *c);
 extern void ff_backuptok(Context *c);
 extern void ff_statement(Context*);
+
+#ifndef _NO_FFSCRIPT
+extern void DictionaryFree(struct dictionary *dica);
+#endif
 
 #endif	/* _SCRIPTING_H */
