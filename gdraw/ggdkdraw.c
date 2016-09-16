@@ -1875,6 +1875,7 @@ static int GGDKDrawSelectionHasType(GWindow w, enum selnames sn, char *typename)
         gdisp->seltypes.types = NULL;
         gdisp->seltypes.sel_atom = gdisp->selinfo[sn].sel_atom;
         gdisp->seltypes.types = (GdkAtom *) GGDKDrawRequestSelection(w, sn, "TARGETS", &gdisp->seltypes.len);
+        gdisp->seltypes.len /= sizeof(GdkAtom *);
     }
 
     if (gdisp->seltypes.types != NULL) {
