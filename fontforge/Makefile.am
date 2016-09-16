@@ -101,7 +101,7 @@ endif LIBZMQ
 libfontforge_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBFONTFORGE_VERSION) \
 	${MY_LIB_LDFLAGS}
 
-libfontforge_la_LIBADD += $(MY_LIBS) $(LIBZMQ_LIBS)
+libfontforge_la_LIBADD += $(MY_LIBS)
 
 #--------------------------------------------------------------------------
 
