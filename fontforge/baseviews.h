@@ -475,10 +475,6 @@ extern int AutoWidthScript(FontViewBase *fv,int spacing);
 extern int AutoKernScript(FontViewBase *fv,int spacing, int threshold,
 	struct lookup_subtable *sub, char *kernfile);
 
-#ifndef _NO_FFSCRIPT
-extern void DictionaryFree(struct dictionary *dica);
-#endif
-
 extern void BCTrans(BDFFont *bdf,BDFChar *bc,BVTFunc *bvts,FontViewBase *fv );
 extern void BCSetPoint(BDFChar *bc, int x, int y, int color);
 extern void BCTransFunc(BDFChar *bc,enum bvtools type,int xoff,int yoff);
