@@ -46,7 +46,6 @@ static void GGDKDraw_StippleMePink(GGDKWindow gw, int ts, Color fg) {
     int bit, i, j;
     uint32 *data;
     static uint32 space[8 * 8];
-    static cairo_surface_t *is = NULL;
     static cairo_pattern_t *pat = NULL;
 
     if ((fg >> 24) != 0xff) {
@@ -68,10 +67,11 @@ static void GGDKDraw_StippleMePink(GGDKWindow gw, int ts, Color fg) {
             }
         }
     }
-    if (is == NULL) {
-        is = cairo_image_surface_create_for_data((uint8 *) space, CAIRO_FORMAT_ARGB32,
-                8, 8, 8 * 4);
+    if (pat == NULL) {
+        cairo_surface_t *is = cairo_image_surface_create_for_data((uint8 *) space,
+                              CAIRO_FORMAT_ARGB32, 8, 8, 8 * 4);
         pat = cairo_pattern_create_for_surface(is);
+        cairo_surface_destroy(is);
         cairo_pattern_set_extend(pat, CAIRO_EXTEND_REPEAT);
     }
     cairo_set_source(gw->cc, pat);
@@ -1233,6 +1233,7 @@ void GGDKDrawPathFill(GWindow w, Color col) {
 
 void GGDKDrawPathFillAndStroke(GWindow w, Color fillcol, Color strokecol) {
     //Log(LOGDEBUG, "");
+    // This function is unused, so it's unclear if it's implemented correctly.
     GGDKWindow gw = (GGDKWindow) w;
 
     cairo_save(gw->cc);
@@ -1242,8 +1243,7 @@ void GGDKDrawPathFillAndStroke(GWindow w, Color fillcol, Color strokecol) {
     cairo_restore(gw->cc);
     w->ggc->fg = strokecol;
     GGDKDrawSetline(gw, gw->ggc);
-    //JT: Surely this should be cairo_stroke...
-    //cairo_fill( gw->cc );
+    cairo_fill_preserve(gw->cc);
     cairo_stroke(gw->cc);
 }
 
