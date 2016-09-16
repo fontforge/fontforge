@@ -279,43 +279,13 @@ enum fvformats { fv_bdf, fv_ttf, fv_pk, fv_pcf, fv_mac, fv_win, fv_palm,
 	fv_fig,
 	fv_pythonbase = 0x100 };
 
-extern enum undotype CopyUndoType(void);
-extern int CopyContainsSomething(void);
-extern int CopyContainsBitmap(void);
-extern int CopyContainsVectors(void);
-extern const Undoes *CopyBufferGet(void);
 extern RefChar *CopyContainsRef(SplineFont *);
 extern char **CopyGetPosSubData(enum possub_type *type,SplineFont **copied_from,
 	int pst_depth);
 extern void CopyReference(SplineChar *sc);
-extern void SCCopyLookupData(SplineChar *sc);
 extern void PasteRemoveSFAnchors(SplineFont *);
-extern void PasteAnchorClassMerge(SplineFont *sf,AnchorClass *into,AnchorClass *from);
-extern void PasteRemoveAnchorClass(SplineFont *sf,AnchorClass *dying);
 
-/**
- * Serialize and undo into a string.
- * You must free() the returned string.
- */
-extern char* UndoToString( SplineChar* sc, Undoes *undo );
-
-/**
- * Dump a list of undos for a splinechar starting at the given 'undo'.
- * msg is used as a header message so that a dump at a particular time stands
- * out from one that occurs later in the code.
- */
-extern void dumpUndoChain( char* msg, SplineChar* sc, Undoes *undo );
-
-extern void ClipboardClear(void);
-extern SplineSet *ClipBoardToSplineSet(void);
-extern void BCCopySelected(BDFChar *bc,int pixelsize,int depth);
-extern void BCCopyReference(BDFChar *bc,int pixelsize,int depth);
-extern void PasteToBC(BDFChar *bc,int pixelsize,int depth);
-extern void FVCopyWidth(FontViewBase *fv,enum undotype ut);
-extern void FVCopyAnchors(FontViewBase *fv);
 enum fvcopy_type { ct_fullcopy, ct_reference, ct_lookups, ct_unlinkrefs };
-extern void FVCopy(FontViewBase *fv, enum fvcopy_type copytype);
-extern void PasteIntoFV(FontViewBase *fv, int pasteinto, real trans[6]);
 extern void FVCopyFgtoBg(FontViewBase *fv);
 extern void FVSameGlyphAs(FontViewBase *fv);
 extern void FVClearBackground(FontViewBase *fv);
@@ -489,21 +459,9 @@ extern void BCMergeReferences(BDFChar *base,BDFChar *cur,int8 xoff,int8 yoff);
 extern BDFChar *BDFGetMergedChar(BDFChar *bc) ;
 extern void BCUnlinkThisReference(struct fontviewbase *fv,BDFChar *bc);
 
-extern int CVLayer(CharViewBase *cv);
-extern Undoes *CVPreserveStateHints(CharViewBase *cv);
-extern Undoes *CVPreserveState(CharViewBase *cv);
 extern Undoes *_CVPreserveTState(CharViewBase *cv,PressedOn *);
-extern Undoes *CVPreserveWidth(CharViewBase *cv,int width);
-extern Undoes *CVPreserveVWidth(CharViewBase *cv,int vwidth);
-extern void CVDoRedo(CharViewBase *cv);
-extern void CVDoUndo(CharViewBase *cv);
-extern void _CVRestoreTOriginalState(CharViewBase *cv,PressedOn *p);
-extern void _CVUndoCleanup(CharViewBase *cv,PressedOn *p);
-extern void CVRemoveTopUndo(CharViewBase *cv);
 extern void CopySelected(CharViewBase *cv,int doanchors);
-extern void CVCopyGridFit(CharViewBase *cv);
 extern void CopyWidth(CharViewBase *cv,enum undotype);
-extern void PasteToCV(CharViewBase *cv);
 extern void CVYPerspective(CharViewBase *cv,bigreal x_vanish, bigreal y_vanish);
 extern void ScriptSCEmbolden(SplineChar *sc,int layer,enum embolden_type type,struct lcg_zones *zones);
 extern void CVEmbolden(CharViewBase *cv,enum embolden_type type,struct lcg_zones *zones);

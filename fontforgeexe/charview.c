@@ -28,6 +28,7 @@
 
 #include "fontforgeui.h"
 #include "cvruler.h"
+#include "cvundoes.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>

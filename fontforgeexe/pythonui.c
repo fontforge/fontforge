@@ -38,6 +38,7 @@
 #include "structmember.h"
 
 #include "fontforgeui.h"
+#include "cvundoes.h"
 #include "ttf.h"
 #include "plugins.h"
 #include "ustring.h"

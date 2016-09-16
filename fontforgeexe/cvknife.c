@@ -26,6 +26,7 @@
  */
 #include "fontforgeui.h"
 #include "collabclientui.h"
+#include "cvundoes.h"
 #include <math.h>
 
 #if defined(KNIFE_CONTINUOUS)	/* Use this code to do cuts as we move along. Probably a bad idea, let's wait till the end */

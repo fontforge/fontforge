@@ -27,6 +27,7 @@
 #include "fontforge.h"
 #include "splinefont.h"
 #include "baseviews.h"
+#include "cvundoes.h"
 #include "views.h"
 #include <gdraw.h>
 #include <ustring.h>
@@ -138,8 +139,6 @@ static void SFDDumpHintList(FILE *sfd,const char *key, StemInfo *h);
 static void SFDDumpDHintList( FILE *sfd,const char *key, DStemInfo *d );
 static StemInfo *SFDReadHints(FILE *sfd);
 static DStemInfo *SFDReadDHints( SplineFont *sf,FILE *sfd,int old );
-extern void ExtractHints(SplineChar *sc,void *hints,int docopy);
-extern void *UHintCopy(SplineChar *sc,int docopy);
 
 static int PeekMatch(FILE *stream, const char * target) {
   // This returns 1 if target matches the next characters in the stream.

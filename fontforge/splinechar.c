@@ -27,6 +27,7 @@
  */
 
 #include "fontforgevw.h"
+#include "cvundoes.h"
 #include <math.h>
 #include <locale.h>
 # include <ustring.h>

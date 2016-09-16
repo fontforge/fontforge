@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "cvundoes.h"
 #include <math.h>
 #include <locale.h>
 #include <string.h>

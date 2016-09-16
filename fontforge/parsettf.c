@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforge.h"
+#include "cvundoes.h"
 #include "splinefont.h"
 #include <chardata.h>
 #include <utype.h>
