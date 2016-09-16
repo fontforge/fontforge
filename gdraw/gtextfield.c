@@ -2030,6 +2030,8 @@ return;
     free(gt->lines);
     free(gt->oldtext);
     free(gt->text);
+    free(gt->utf8_text);
+    free(gt->lines8);
     _ggadget_destroy(g);
 }
 
