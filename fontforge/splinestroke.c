@@ -865,7 +865,7 @@ static void HideStrokePointsCircle(StrokeContext *c) {
 		if ( dist1sq<400 )
 		    j -= (6-1);
 		else
-		    j -= .66667*sqrt(dist1sq)-1;
+		    j -= .5*sqrt(dist1sq)-1;
 		/* Minus 1 because we are going to add 1 anyway */
 	    }
 	}
