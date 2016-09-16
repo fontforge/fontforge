@@ -2450,7 +2450,7 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *UNUSED(programname)) 
         {.resname = "TwoButtonFixup", .type = rt_bool, .val = &tbf},
         {.resname = "MacOSXCmd", .type = rt_bool, .val = &mxc},
         {.resname = "ScreenResolution", .type = rt_int, .val = &user_res},
-        NULL
+        {.resname = NULL},
     };
     GResourceFind(res, NULL);
     gdisp->twobmouse_win = tbf;
@@ -2528,6 +2528,10 @@ void _GGDKDraw_DestroyDisplay(GDisplay *disp) {
     // Finally destroy the window table
     g_hash_table_destroy(gdisp->windows);
     gdisp->windows = NULL;
+
+    // Destroy held selection types, if any
+    free(gdisp->seltypes.types);
+    gdisp->seltypes.types = NULL;
 
     // Destroy cursors
     for (guint i = 0; i < gdisp->cursors->len; i++) {
