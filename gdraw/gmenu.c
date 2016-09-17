@@ -1067,8 +1067,11 @@ static int HKActionMatchesFirstPartOf( char* action, char* prefix_const, int mun
     char prefix[PATH_MAX+1];
     char* pt = 0;
     strncpy( prefix, prefix_const, PATH_MAX );
-    if( munge )
-	strncpy( prefix, HKTextInfoToUntranslatedText( prefix_const ),PATH_MAX );
+    if( munge ) {
+	char *tofree = HKTextInfoToUntranslatedText(prefix_const);
+	strncpy( prefix, tofree,PATH_MAX );
+	free(tofree);
+    }
 //    TRACE("munge:%d prefix2:%s\n", munge, prefix );
 
     pt = strchr(action,'.');

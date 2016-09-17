@@ -777,7 +777,7 @@ return( copy( head->enc_name ) );
 }
 
 void LoadPfaEditEncodings(void) {
-    ParseEncodingFile(NULL, NULL);
+    free(ParseEncodingFile(NULL, NULL));
 }
 
 void DumpPfaEditEncodings(void) {

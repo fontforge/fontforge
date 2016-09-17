@@ -872,7 +872,7 @@ static void DrawPoint( CharView *cv, GWindow pixmap, SplinePoint *sp,
 {
     GRect r;
     int x, y, cx, cy;
-    Color col = sp==spl->first ? firstpointcol : pointcol, subcol;
+    Color col = sp==spl->first ? firstpointcol : pointcol;
     int pnum;
     char buf[16];
     int isfake;
@@ -12848,7 +12848,7 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_utf8_ititle;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
-    wattrs.utf8_icon_title = CVMakeTitles(cv,buf,sizeof(buf));
+    wattrs.utf8_icon_title = (const char*)CVMakeTitles(cv,buf,sizeof(buf));
     wattrs.utf8_window_title = buf;
     wattrs.icon = CharIcon(cv, fv);
     if ( wattrs.icon )
@@ -12860,6 +12860,7 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
 
     cv->gw = gw = GDrawCreateTopWindow(NULL,&pos,cv_e_h,cv,&wattrs);
     free( (unichar_t *) wattrs.icon_title );
+    free((char*)wattrs.utf8_icon_title);
     GDrawSetWindowTypeName(cv->gw, "CharView");
 
     // FIXME: cant do this until gw is shown?
