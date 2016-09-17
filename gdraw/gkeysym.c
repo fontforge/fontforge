@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <gdraw.h>
+#include <gkeysym.h>
 
 static unichar_t BackSpace[] = { 'B', 'a', 'c', 'k', 'S', 'p', 'a', 'c', 'e', '\0' };
 static unichar_t Tab[] = { 'T', 'a', 'b', '\0' };
@@ -338,3 +339,23 @@ unichar_t *GDrawKeysyms[] = {
 	Delete,
 	NULL
 };
+
+int GKeysymIsModifier(uint16 keysym) {
+    switch(keysym) {
+        case GK_Shift_L:
+        case GK_Shift_R:
+        case GK_Control_L:
+        case GK_Control_R:
+        case GK_Meta_L:
+        case GK_Meta_R:
+        case GK_Alt_L:
+        case GK_Alt_R:
+        case GK_Super_L:
+        case GK_Super_R:
+        case GK_Hyper_L:
+        case GK_Hyper_R:
+            return true;
+        default:
+            return false;
+    }
+}
