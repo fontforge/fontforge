@@ -25,6 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef FONTFORGE_SAVEFONT_H
+#define FONTFORGE_SAVEFONT_H
+
 extern const char (*savefont_extensions[]), (*bitmapextensions[]);
 extern int old_sfnt_flags;
 
@@ -33,3 +36,5 @@ void RestoreUnlinkRmOvrlp(SplineFont *sf,const char *filename,int layer);
 int _DoSave(SplineFont *sf,char *newname,int32 *sizes,int res,
 	EncMap *map, char *subfontdefinition,int layer);
 int CheckIfTransparent(SplineFont *sf);
+
+#endif /* FONTFORGE_SAVEFONT_H */

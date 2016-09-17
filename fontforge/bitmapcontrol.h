@@ -25,6 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef FONTFORGE_BITMAPCONTROL_H
+#define FONTFORGE_BITMAPCONTROL_H
+
 typedef struct createbitmapdata {
     FontViewBase *fv;
     SplineFont *sf;
@@ -41,3 +44,5 @@ enum { bd_all, bd_selected, bd_current };
 extern int bdfcontrol_lastwhich;
 
 void BitmapsDoIt(CreateBitmapData *bd,int32 *sizes,int usefreetype);
+
+#endif /* FONTFORGE_BITMAPCONTROL_H */

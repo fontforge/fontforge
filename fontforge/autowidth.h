@@ -1,3 +1,5 @@
+#ifndef FONTFORGE_AUTOWIDTH_H
+#define FONTFORGE_AUTOWIDTH_H
 
 struct charone {
     real lbearing, rmax;
@@ -64,3 +66,5 @@ extern void AW_KernRemoveBelowThreshold(SplineFont *sf,int threshold);
 
 extern SplineFont *aw_old_sf;
 extern int aw_old_spaceguess;
+
+#endif /* FONTFORGE_AUTOWIDTH_H */

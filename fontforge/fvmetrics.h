@@ -24,6 +24,10 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#ifndef FONTFORGE_FVMETRICS_H
+#define FONTFORGE_FVMETRICS_H
+
 #include "fontforgeui.h"
 #include <math.h>
 #include <ustring.h>
@@ -45,3 +49,5 @@ typedef struct createwidthdata {
 extern void CVDoit(CreateWidthData *wd);
 extern void FVDoit(CreateWidthData *wd);
 extern void GenericVDoit(CreateWidthData *wd);
+
+#endif /* FONTFORGE_FVMETRICS_H */

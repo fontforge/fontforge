@@ -1,3 +1,6 @@
+#ifndef FONTFORGE_LOOKUPS_H
+#define FONTFORGE_LOOKUPS_H
+
 extern const char *lookup_type_names[2][10];
 extern void SortInsertLookup(SplineFont *sf, OTLookup *newotl);
 extern char *SuffixFromTags(FeatureScriptLangList *fl);
@@ -27,3 +30,5 @@ extern char *SuffixFromTags(FeatureScriptLangList *fl);
 extern int KernClassFindIndexContaining( char **firsts_or_seconds,
 					 int firsts_or_seconds_size,
 					 const char *name );
+
+#endif /* FONTFORGE_LOOKUPS_H */

@@ -25,9 +25,14 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef FONTFORGE_SEARCH_H
+#define FONTFORGE_SEARCH_H
+
 extern void SDDestroy(SearchData *sd);
 extern SearchData *SDFillup(SearchData *sd, FontViewBase *fv);
 extern int SearchChar(SearchData *sv, int gid,int startafter);
 extern int _DoFindAll(SearchData *sv);
 extern int DoRpl(SearchData *sv);
 extern void SVResetPaths(SearchData *sv);
+
+#endif /* FONTFORGE_SEARCH_H */

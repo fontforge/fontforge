@@ -24,6 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#ifndef FONTFORGE_PRINT_H
+#define FONTFORGE_PRINT_H
+
 enum { pt_lp, pt_lpr, pt_ghostview, pt_file, pt_other, pt_pdf, pt_unknown=-1 };
 extern int pagewidth, pageheight;
 extern char *printlazyprinter;
@@ -114,3 +117,5 @@ extern void DoPrinting(PI *pi,char *filename);
 extern int PdfDumpGlyphResources(PI *pi,SplineChar *sc);
 extern void makePatName(char *buffer,
 	RefChar *ref,SplineChar *sc,int layer,int isstroke,int isgrad);
+
+#endif /* FONTFORGE_PRINT_H */

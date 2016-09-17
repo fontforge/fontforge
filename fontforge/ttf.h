@@ -24,7 +24,10 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
- 
+
+#ifndef FONTFORGE_TTF_H
+#define FONTFORGE_TTF_H
+
 #include "psfont.h"		/* for struct fddata */
 
 #define MAC_DELETED_GLYPH_NAME	"<Delete>"
@@ -931,3 +934,5 @@ extern struct otfname *FindAllLangEntries(FILE *ttf, struct ttfinfo *info, int i
 #define TeX_BigOpSpace5		CHR('B','O','S','5')
 
 extern void SFDummyUpCIDs(struct glyphinfo *gi,SplineFont *sf);
+
+#endif /* FONTFORGE_TTF_H */
