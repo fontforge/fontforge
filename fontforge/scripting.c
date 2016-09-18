@@ -2547,21 +2547,21 @@ static void bCopyUnlinked(Context *c) {
 }
 
 static void bCopyWidth(Context *c) {
-    FVCopy(c->curfv,ut_width);
+    FVCopyWidth(c->curfv,ut_width);
 }
 
 static void bCopyVWidth(Context *c) {
     if ( c->curfv!=NULL && !c->curfv->sf->hasvmetrics )
 	ScriptError(c,"Vertical metrics not enabled in this font");
-    FVCopy(c->curfv,ut_vwidth);
+    FVCopyWidth(c->curfv,ut_vwidth);
 }
 
 static void bCopyLBearing(Context *c) {
-    FVCopy(c->curfv,ut_lbearing);
+    FVCopyWidth(c->curfv,ut_lbearing);
 }
 
 static void bCopyRBearing(Context *c) {
-    FVCopy(c->curfv,ut_rbearing);
+    FVCopyWidth(c->curfv,ut_rbearing);
 }
 
 static void bCopyAnchors(Context *c) {
