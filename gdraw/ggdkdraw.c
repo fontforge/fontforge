@@ -7,6 +7,7 @@
 
 #ifdef FONTFORGE_CAN_USE_GDK
 #include "gresource.h"
+#include "gkeysym.h"
 #include "ustring.h"
 #include <assert.h>
 #include <string.h>
@@ -848,15 +849,15 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             //    gevent.u.chr.state |= ksm_meta;
             //}
 
-            if (key->keyval == GDK_KEY_space) {
-                gw->display->is_space_pressed = event->type == GDK_KEY_PRESS;
-            }
+            if (gevent.u.chr.autorepeat && GKeysymIsModifier(key->keyval)) {
+                gevent.type = et_noevent;
+            } else {
+                if (key->keyval == GDK_KEY_space) {
+                    gw->display->is_space_pressed = event->type == GDK_KEY_PRESS;
+                }
 
-            gevent.u.chr.keysym = key->keyval;
-            gevent.u.chr.chars[0] = gdk_keyval_to_unicode(key->keyval);
-
-            if (gevent.u.chr.chars[0] == '\0') {
-                gevent.u.chr.chars[1] = '\0';
+                gevent.u.chr.keysym = key->keyval;
+                gevent.u.chr.chars[0] = gdk_keyval_to_unicode(key->keyval);
             }
 
             gdisp->ks.type   = key->type;
