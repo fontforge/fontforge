@@ -1065,12 +1065,15 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
                 gevent.u.resize.sized = true;
             }
 
-            // Apparently needed...
-            //if (gw->is_toplevel && !gevent.u.resize.sized && gevent.u.resize.moved) {
-            //    gevent.type = et_noevent;
-            //}
-
-            Log(LOGDEBUG, "CONFIGURED: %p:%s, %d %d %d %d", gw, gw->window_title, gw->pos.x, gw->pos.y, gw->pos.width, gw->pos.height);
+            // I could make this Windows specific... But it doesn't seem necessary on other platforms too.
+            // On Windows, repeated configure messages are sent if we move the window around.
+            // This causes CPU usage to go up because mose handlers of this message just redraw the whole window.
+            if (gw->is_toplevel && !gevent.u.resize.sized && gevent.u.resize.moved) {
+                gevent.type = et_noevent;
+                Log(LOGDEBUG, "Configure DISCARDED: %p:%s, %d %d %d %d", gw, gw->window_title, gw->pos.x, gw->pos.y, gw->pos.width, gw->pos.height);
+            } else {
+                Log(LOGDEBUG, "CONFIGURED: %p:%s, %d %d %d %d", gw, gw->window_title, gw->pos.x, gw->pos.y, gw->pos.width, gw->pos.height);
+            }
             gw->pos = gevent.u.resize.size;
 
             // Update the opaque region (we're always completely opaque)
@@ -1303,7 +1306,7 @@ static int GGDKDrawNativeWindowExists(GDisplay *UNUSED(gdisp), void *native_wind
         if (gw == NULL || gw->is_dying) {
             return true;
         } else {
-            return !gdk_window_is_destroyed(w) && gdk_window_is_visible(w);
+            return !gdk_window_is_destroyed(w);
         }
     }
     return false;
