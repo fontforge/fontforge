@@ -37,6 +37,21 @@ static GGC *_GGDKDraw_NewGGC(void) {
     return ggc;
 }
 
+static void _GGDKDraw_SetOpaqueRegion(GGDKWindow gw) {
+#ifndef GGDKDRAW_GDK_2
+    cairo_rectangle_int_t r = {
+        gw->pos.x, gw->pos.y, gw->pos.width, gw->pos.height
+    };
+    cairo_region_t *cr = cairo_region_create_rectangle(&r);
+    if (cairo_region_status(cr) == CAIRO_STATUS_SUCCESS) {
+        gdk_window_set_opaque_region(gw->w, cr);
+        cairo_region_destroy(cr);
+    }
+#else
+    (void)gw; // Unused
+#endif
+}
+
 static void _GGDKDraw_ClearSelData(GGDKDisplay *gdisp, enum selnames sn) {
     GList_Glib *ptr = gdisp->selinfo[sn].datalist;
     while (ptr != NULL) {
@@ -498,6 +513,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     }
     nw->ggc->bg = wattrs->background_color;
     GGDKDrawSetWindowBackground((GWindow)nw, wattrs->background_color);
+    _GGDKDraw_SetOpaqueRegion(nw);
 
     if (nw->is_toplevel) {
         // Set icon
@@ -1056,6 +1072,12 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
 
             Log(LOGDEBUG, "CONFIGURED: %p:%s, %d %d %d %d", gw, gw->window_title, gw->pos.x, gw->pos.y, gw->pos.width, gw->pos.height);
             gw->pos = gevent.u.resize.size;
+
+            // Update the opaque region (we're always completely opaque)
+            // Although I don't actually know if this is completely necessary
+            if (gw->is_toplevel && gevent.u.resize.sized) {
+                _GGDKDraw_SetOpaqueRegion(gw);
+            }
         }
         break;
         case GDK_MAP:
