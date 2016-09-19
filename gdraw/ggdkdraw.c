@@ -931,6 +931,7 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             gevent.u.mouse.x = evt->x;
             gevent.u.mouse.y = evt->y;
             gevent.u.mouse.button = evt->button;
+            gevent.u.mouse.time = evt->time;
 
 #ifdef GDK_WINDOWING_QUARTZ
             // Quartz backend fails to give a button press event
@@ -955,16 +956,16 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
                 if (xdiff + ydiff < gdisp->bs.double_wiggle &&
                         gw == gdisp->bs.release_w &&
                         gevent.u.mouse.button == gdisp->bs.release_button &&
-                        (int32_t)(gevent.u.mouse.time - gdisp->bs.release_time) < gdisp->bs.double_time &&
-                        gevent.u.mouse.time >= gdisp->bs.release_time) {	// Time can wrap
+                        (int32_t)(gevent.u.mouse.time - gdisp->bs.last_press_time) < gdisp->bs.double_time &&
+                        gevent.u.mouse.time >= gdisp->bs.last_press_time) {	// Time can wrap
 
                     gdisp->bs.cur_click++;
                 } else {
                     gdisp->bs.cur_click = 1;
                 }
+                gdisp->bs.last_press_time = gevent.u.mouse.time;
             } else {
                 gevent.type = et_mouseup;
-                gdisp->bs.release_time = gevent.u.mouse.time;
                 gdisp->bs.release_w = gw;
                 gdisp->bs.release_x = evt->x;
                 gdisp->bs.release_y = evt->y;

@@ -67,7 +67,7 @@ typedef struct ggdktimer { // :GTimer
 } GGDKTimer;
 
 typedef struct ggdkbuttonstate {
-    uint32 release_time;
+    uint32 last_press_time;
     GGDKWindow release_w;
     int16 release_x, release_y;
     int16 release_button;
