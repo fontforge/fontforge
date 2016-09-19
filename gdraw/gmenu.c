@@ -1859,7 +1859,7 @@ static int GMenuBarCheckHotkey(GWindow top, GGadget *g, GEvent *event) {
     GMenuBar *mb = (GMenuBar *) g;
 	GWindow w = GGadgetGetWindow(g);
 	GGadget* focus = GWindowGetFocusGadgetOfWindow(w);
-	if (GGadgetGetSkipHotkeyProcessing(focus) || event->u.chr.state == 0)
+	if (GGadgetGetSkipHotkeyProcessing(focus))
 	    return 0;
 
 //    TRACE("GMenuBarCheckKey(2) keysym:%d upper:%d lower:%d\n",keysym,toupper(keysym),tolower(keysym));
