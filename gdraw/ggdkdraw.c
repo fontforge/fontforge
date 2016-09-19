@@ -477,12 +477,8 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
         nw->redirect_from = wattrs->redirect_from;
     }
 
-    attribs.x = pos->x;
-    attribs.y = pos->y;
     attribs.width = pos->width;
     attribs.height = pos->height;
-    attribs_mask |= GDK_WA_X | GDK_WA_Y;
-
     attribs.wclass = GDK_INPUT_OUTPUT;
     // GDK docs say to not use this. But that's because it's done by GTK...
     attribs.wmclass_name = GResourceProgramName;
@@ -499,13 +495,13 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     }
 
     // We center windows here because we need to know the window size+decor
+    // There is a bug on Windows (all versions < 3.21.1, <= 2.24.30) so don't use GDK_WA_X/GDK_WA_Y
+    // https://bugzilla.gnome.org/show_bug.cgi?id=764996
     if (nw->is_toplevel && (!(wattrs->mask & wam_positioned) || (wattrs->mask & wam_centered))) {
         nw->is_centered = true;
         _GGDKDraw_CenterWindowOnScreen(nw);
     } else {
-        // There is a bug on Windows (all versions < 3.21.1, <= 2.24.30) where windows are not positioned correctly
-        // https://bugzilla.gnome.org/show_bug.cgi?id=764996
-        gdk_window_move_resize(nw->w, nw->pos.x, nw->pos.y, nw->pos.width, nw->pos.height);
+        gdk_window_move(nw->w, nw->pos.x, nw->pos.y);
     }
 
     // Set background
