@@ -438,7 +438,8 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
         }
 
         attribs.title = nw->window_title;
-        attribs.type_hint = nw->is_popup ? GDK_WINDOW_TYPE_HINT_UTILITY : GDK_WINDOW_TYPE_HINT_NORMAL;
+        attribs.type_hint = (nw->is_popup || (wattrs->mask & wam_palette)) ?
+                            GDK_WINDOW_TYPE_HINT_UTILITY : GDK_WINDOW_TYPE_HINT_NORMAL;
 
         if (attribs.title != NULL) {
             attribs_mask |= GDK_WA_TITLE;
@@ -538,13 +539,16 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
 
         GdkGeometry geom = {0};
         GdkWindowHints hints = 0;
+        if (wattrs->mask & wam_palette) {
+            hints |= GDK_HINT_MIN_SIZE | GDK_HINT_BASE_SIZE;
+        }
         if ((wattrs->mask & wam_noresize) && wattrs->noresize) {
-            hints |= GDK_HINT_MIN_SIZE;
+            hints |= GDK_HINT_MIN_SIZE | GDK_HINT_MAX_SIZE | GDK_HINT_BASE_SIZE;
         }
 
         // Hmm does this seem right?
-        geom.min_width = geom.max_width = pos->width;
-        geom.min_height = geom.max_height = pos->height;
+        geom.base_width = geom.min_width = geom.max_width = pos->width;
+        geom.base_height = geom.min_height = geom.max_height = pos->height;
 
         hints |= GDK_HINT_POS;
         nw->was_positioned = true;

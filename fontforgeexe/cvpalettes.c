@@ -198,6 +198,7 @@ static GWindow CreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *),
         pos->x = 0;
         gw = GDrawCreateSubWindow(v, pos, eh, user_data, wattrs);
     } else {
+        wattrs->mask |= wam_palette;
         gw = GDrawCreateTopWindow(NULL,&newpos,eh,user_data,wattrs);
     }
 
