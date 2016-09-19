@@ -1707,6 +1707,12 @@ return( true );
     }
 
     if ( event->type == et_mousedown ) {
+	if ( event->u.mouse.button==3 &&
+		GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y)) {
+	    GTFPopupMenu(gt,event);
+return( true );
+	}
+
 	if ( i>=gt->lcnt )
 	    end1 = end2 = end;
 	else {
@@ -1743,12 +1749,6 @@ return( true );
 	} else {
 	    gt->sel_start = end-gt->text;
 	    gt->sel_end = gt->sel_base;
-	}
-
-	if ( event->u.mouse.button==3 &&
-		GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y)) {
-	    GTFPopupMenu(gt,event);
-return( true );
 	}
 
 	if ( gt->pressed==NULL )
