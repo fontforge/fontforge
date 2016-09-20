@@ -25,11 +25,11 @@ export PYTHON_LIBS="-L$PYLIB $(python-config --libs)"
 
 ./bootstrap
 ./configure --with-freetype-source=../freetype-2.5.0.1
-make V=1
+make -j4
 sudo make install
 fontforge -version
 $PYTHON -v -c "import fontforge; print(fontforge.__version__, fontforge.version());"
-make DISTCHECK_CONFIGURE_FLAGS="UPDATE_MIME_DATABASE=/bin/true UPDATE_DESKTOP_DATABASE=/bin/true" distcheck
+make DISTCHECK_CONFIGURE_FLAGS="UPDATE_MIME_DATABASE=/bin/true UPDATE_DESKTOP_DATABASE=/bin/true" distcheck -j4
 
 date >| $TO_BIGV_OUTPUTPATH/linux-build-finish-timestamp
 SYNC_TO_BIGV
