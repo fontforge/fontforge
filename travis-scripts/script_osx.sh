@@ -3,14 +3,20 @@
 #. ./travis-scripts/common.sh
 set -ev
 
+./bootstrap
+./configure --without-x
+make -j4
+make install
+fontforge -version
+
 #LOGFILE=/tmp/travisci-osx-brewlog.txt
 #rm -f /Users/travis/build/fontforge/fontforge/.git/shallow
 
-set +e
+#set +e
 #mkdir -p /tmp/fontforge-source-tree
-echo "brew build starting..."
-brew install --verbose ./travis-scripts/fontforge.rb --HEAD
-echo "brew build complete..."
+#echo "brew build starting..."
+#brew install --verbose ./travis-scripts/fontforge.rb --HEAD
+#echo "brew build complete..."
 #PR=$TRAVIS_PULL_REQUEST
 #chmod +x ./travis-scripts/create-osx-app-bundle-homebrew.sh
 #cd /tmp/fontforge-source-tree
@@ -26,7 +32,7 @@ echo "brew build complete..."
 #ls -lhR $TO_BIGV_OUTPUTPATH
 
 #SYNC_TO_BIGV
-set -e
-brew test fontforge --verbose
+#set -e
+#brew test fontforge --verbose
 
 
