@@ -46,6 +46,7 @@
 
 extern int old_sfnt_flags;
 
+#include "autohint.h"
 #include "fontforgevw.h"
 #include "cvundoes.h"
 #include "ttf.h"

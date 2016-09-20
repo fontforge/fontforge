@@ -2196,7 +2196,6 @@ extern int RealWithin(real a,real b,real fudge);
 extern int RealRatio(real a,real b,real fudge);
 
 extern int PointsDiagonalable(SplineFont *sf,BasePoint **bp,BasePoint *unit);
-extern int MergeDStemInfo(SplineFont *sf,DStemInfo **ds, DStemInfo *test);
 
 extern void LineListFree(LineList *ll);
 extern void LinearApproxFree(LinearApprox *la);
@@ -2696,24 +2695,7 @@ extern SplineSet *SSShadow(SplineSet *spl,real angle, real outline_width,
 
 extern double BlueScaleFigureForced(struct psdict *private_,real bluevalues[], real otherblues[]);
 extern double BlueScaleFigure(struct psdict *private_,real bluevalues[], real otherblues[]);
-extern void FindBlues( SplineFont *sf, int layer, real blues[14], real otherblues[10]);
-extern void QuickBlues(SplineFont *sf, int layer, BlueData *bd);
-extern void FindHStems( SplineFont *sf, real snaps[12], real cnt[12]);
-extern void FindVStems( SplineFont *sf, real snaps[12], real cnt[12]);
 extern double SFStdVW(SplineFont *sf);
-extern int SplineCharIsFlexible(SplineChar *sc,int layer);
-extern void SCGuessHintInstancesList(SplineChar *sc,int layer,StemInfo *hstem,StemInfo *vstem,DStemInfo *dstem,int hvforce,int dforce);
-extern void SCGuessDHintInstances(SplineChar *sc, int layer,DStemInfo *ds );
-extern void SCGuessHHintInstancesAndAdd(SplineChar *sc, int layer,StemInfo *stem, real guess1, real guess2);
-extern void SCGuessVHintInstancesAndAdd(SplineChar *sc, int layer,StemInfo *stem, real guess1, real guess2);
-extern void SCGuessHHintInstancesList(SplineChar *sc, int layer);
-extern void SCGuessVHintInstancesList(SplineChar *sc, int layer);
-extern real HIlen( StemInfo *stems);
-extern real HIoverlap( HintInstance *mhi, HintInstance *thi);
-extern int StemInfoAnyOverlaps(StemInfo *stems);
-extern int StemListAnyConflicts(StemInfo *stems);
-extern HintInstance *HICopyTrans(HintInstance *hi, real mul, real offset);
-extern int SFNeedsAutoHint( SplineFont *_sf);
 
 typedef struct bluezone {
     real base;
@@ -2761,19 +2743,7 @@ extern void FreeGlobalInstrCt( GlobalInstrCt *gic );
 extern void NowakowskiSCAutoInstr( GlobalInstrCt *gic,SplineChar *sc );
 extern void CVT_ImportPrivate(SplineFont *sf);
 
-extern void SCModifyHintMasksAdd(SplineChar *sc,int layer,StemInfo *new);
-extern void SCClearHints(SplineChar *sc);
-extern void SCClearHintMasks(SplineChar *sc,int layer,int counterstoo);
-extern void SCFigureVerticalCounterMasks(SplineChar *sc);
-extern void SCFigureCounterMasks(SplineChar *sc);
-extern void SCFigureHintMasks(SplineChar *sc,int layer);
-extern void _SplineCharAutoHint( SplineChar *sc, int layer, BlueData *bd, struct glyphdata *gd2, int gen_undoes );
-extern void SplineCharAutoHint( SplineChar *sc,int layer, BlueData *bd);
-extern void SFSCAutoHint( SplineChar *sc,int layer,BlueData *bd);
 extern void SplineFontAutoHint( SplineFont *sf, int layer);
-extern void SplineFontAutoHintRefs( SplineFont *sf, int layer);
-extern StemInfo *HintCleanup(StemInfo *stem,int dosort,int instance_count);
-extern int SplineFontIsFlexible(SplineFont *sf,int layer, int flags);
 extern int SCDrawsSomething(SplineChar *sc);
 extern int SCDrawsSomethingOnLayer(SplineChar *sc, int layer);
 extern int SCWorthOutputting(SplineChar *sc);

@@ -26,6 +26,7 @@
  */
 /*			   Yet another interpreter			      */
 
+#include "autohint.h"
 #include "fontforge.h"
 #include "cvundoes.h"
 #include <gfile.h>

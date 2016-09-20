@@ -35,6 +35,7 @@ lib_LTLIBRARIES = libfontforge.la
 
 noinst_HEADERS = \
 	asmfpst.h \
+	autohint.h \
 	fontforgeui.h sftextfieldP.h configure-fontforge.h views.h 	\
 	flaglist.h strlist.h charview_private.h cvundoes.h tables.h
 

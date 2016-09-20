@@ -26,6 +26,7 @@
  */
 #include <fontforge-config.h>
 
+#include "autohint.h"
 #include "fontforgeui.h"
 #include "cvruler.h"
 #include "cvundoes.h"

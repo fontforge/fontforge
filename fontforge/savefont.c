@@ -26,6 +26,7 @@
  */
 #include <fontforge-config.h>
 
+#include "autohint.h"
 #include "fontforgevw.h"
 #include "ustring.h"
 #include "gfile.h"

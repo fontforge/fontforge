@@ -27,6 +27,7 @@
 
 #include "cvundoes.h"
 
+#include "autohint.h"
 #include "config.h"
 #include "fontforgevw.h"
 #include "views.h"
