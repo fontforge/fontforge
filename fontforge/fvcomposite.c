@@ -26,6 +26,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "autohint.h"
+#include "autowidth.h"
 #include "fontforgevw.h"
 #include "cvundoes.h"
 #include <chardata.h>

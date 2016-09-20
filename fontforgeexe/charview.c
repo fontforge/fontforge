@@ -29,6 +29,7 @@
 #include "autohint.h"
 #include "autosave.h"
 #include "autotrace.h"
+#include "autowidth.h"
 #include "fontforgeui.h"
 #include "cvruler.h"
 #include "cvundoes.h"

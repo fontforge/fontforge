@@ -2645,8 +2645,6 @@ extern int PointListIsSelected(SplinePointList *spl);
 extern void SCSplinePointsUntick(SplineChar *sc,int layer);
 extern void SplineSetsUntick(SplineSet *spl);
 extern void SFOrderBitmapList(SplineFont *sf);
-extern int KernThreshold(SplineFont *sf, int cnt);
-extern real SFGuessItalicAngle(SplineFont *sf);
 
 extern SplinePoint *SplineTtfApprox(Spline *ps);
 extern SplineSet *SSttfApprox(SplineSet *ss);

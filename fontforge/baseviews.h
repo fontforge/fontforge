@@ -426,17 +426,11 @@ extern void _FVSimplify(FontViewBase *fv,struct simplifyinfo *smpl);
 extern void UnlinkThisReference(FontViewBase *fv,SplineChar *sc,int layer);
 extern FontViewBase *ViewPostScriptFont(const char *filename,int openflags);
 extern void FVBuildAccent(FontViewBase *fv,int onlyaccents);
-extern void FVRemoveKerns(FontViewBase *fv);
-extern void FVRemoveVKerns(FontViewBase *fv);
-extern void FVVKernFromHKern(FontViewBase *fv);
 extern void FVAddUnencoded(FontViewBase *fv, int cnt);
 extern void FVRemoveUnused(FontViewBase *fv);
 extern void FVCompact(FontViewBase *fv);
 extern void FVDetachGlyphs(FontViewBase *fv);
 extern void FVDetachAndRemoveGlyphs(FontViewBase *fv);
-extern int AutoWidthScript(FontViewBase *fv,int spacing);
-extern int AutoKernScript(FontViewBase *fv,int spacing, int threshold,
-	struct lookup_subtable *sub, char *kernfile);
 
 extern void BCTrans(BDFFont *bdf,BDFChar *bc,BVTFunc *bvts,FontViewBase *fv );
 extern void BCSetPoint(BDFChar *bc, int x, int y, int color);

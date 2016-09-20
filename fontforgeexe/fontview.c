@@ -32,6 +32,7 @@
 
 #include "autosave.h"
 #include "autotrace.h"
+#include "autowidth.h"
 #include "autowidth2.h"
 #include "fontforgeui.h"
 #include "cvundoes.h"

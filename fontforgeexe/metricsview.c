@@ -26,6 +26,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "autotrace.h"
+#include "autowidth.h"
 #include "fontforgeui.h"
 #include "cvundoes.h"
 #include "lookups.h"

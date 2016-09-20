@@ -28,6 +28,7 @@
 
 #include "autohint.h"
 #include "autotrace.h"
+#include "autowidth.h"
 #include "autowidth2.h"
 #include "fontforge.h"
 #include "cvundoes.h"
