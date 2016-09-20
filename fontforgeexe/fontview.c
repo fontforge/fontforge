@@ -30,6 +30,7 @@
 #include "collabclientui.h"
 #include "collabclientpriv.h"
 
+#include "autosave.h"
 #include "fontforgeui.h"
 #include "cvundoes.h"
 #include "groups.h"

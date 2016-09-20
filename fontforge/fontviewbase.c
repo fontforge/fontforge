@@ -26,6 +26,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "autohint.h"
+#include "autosave.h"
 #include "fontforge.h"
 #include "baseviews.h"
 #include "cvundoes.h"
