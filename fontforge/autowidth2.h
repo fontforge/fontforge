@@ -27,6 +27,9 @@
 #ifndef _AUTOWIDTH2_H
 # define _AUTOWIDTH2_H
 
+#include "baseviews.h"
+#include "splinefont.h"
+
 typedef struct aw_glyph {
     SplineChar *sc;
     DBounds bb;
@@ -80,5 +83,12 @@ extern int PyFF_GlyphSeparation(AW_Glyph *g1,AW_Glyph *g2,AW_Data *all);
 extern void FFPy_AWGlyphFree(AW_Glyph *me);
 extern void FFPy_AWDataFree(AW_Data *all);
 #endif		/* PYTHON */
+
+extern SplineChar ***GlyphClassesFromNames(SplineFont *sf, char **classnames, int class_cnt);
+
+extern void AutoWidth2(FontViewBase *fv, int separation, int min_side, int max_side, int chunk_height, int loop_cnt);
+extern void AutoKern2BuildClasses(SplineFont *sf, int layer, SplineChar **leftglyphs,SplineChar **rightglyphs, struct lookup_subtable *sub, int separation, int min_kern, int touching, int only_closer, int autokern, real good_enough);
+extern void AutoKern2NewClass(SplineFont *sf, int layer, char **leftnames, char **rightnames, int lcnt, int rcnt, void (*kcAddOffset)(void *data,int left_index, int right_index,int offset), void *data, int separation, int min_kern, int from_closest_approach, int only_closer, int chunk_height);
+extern void GuessOpticalOffset(SplineChar *sc, int layer, real *_loff, real *_roff, int chunk_height);
 
 #endif		/* _AUTOWIDTH2_H */

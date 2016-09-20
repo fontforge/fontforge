@@ -26,6 +26,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "autowidth2.h"
 #include "fontforgeui.h"
 #include "cvundoes.h"
 #include <ustring.h>
