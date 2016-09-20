@@ -33,6 +33,7 @@
 #include "fontforgeui.h"
 #include "groups.h"
 #include "psfont.h"
+#include "scripting.h"
 #include <gfile.h>
 #include <gio.h>
 #include <gresedit.h>
