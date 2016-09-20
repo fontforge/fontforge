@@ -26,6 +26,7 @@
  */
 #include "ffglib.h"
 
+#include "autotrace.h"
 #include "fontforgeui.h"
 #include "cvundoes.h"
 #include "sftextfieldP.h"

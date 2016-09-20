@@ -26,6 +26,7 @@
  */
 
 #include "autohint.h"
+#include "autotrace.h"
 #include "fontforgevw.h"
 #include <utype.h>
 #include <ustring.h>
