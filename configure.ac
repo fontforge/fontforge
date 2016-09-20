@@ -100,6 +100,8 @@ AM_INIT_AUTOMAKE([foreign -Wall subdir-objects tar-pax])
 AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
 
+gl_EARLY
+
 #--------------------------------------------------------------------------
 # automake 1.12 requires AM_PROG_AR but automake < 1.11.2 doesn't recognize it.
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
@@ -185,7 +187,6 @@ AC_PROG_AWK
 AC_PROG_CC
 AC_PROG_CC_C99
 AM_PROG_CC_C_O
-gl_EARLY
 AC_PROG_CPP
 AC_PROG_GREP
 AC_PROG_INSTALL
