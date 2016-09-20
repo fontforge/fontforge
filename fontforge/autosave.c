@@ -27,6 +27,7 @@
 
 #include "autosave.h"
 
+#include "baseviews.h"
 #include "fontforgevw.h"
 /*#include "ustring.h"*/
 #include <sys/stat.h>
@@ -140,7 +141,7 @@ return;
 }
 
 
-void _DoAutoSaves(FontViewBase *fvs) {
+static void _DoAutoSaves(FontViewBase *fvs) {
     FontViewBase *fv;
     SplineFont *sf;
 
