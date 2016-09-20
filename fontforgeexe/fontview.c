@@ -34,6 +34,7 @@
 #include "autotrace.h"
 #include "autowidth.h"
 #include "autowidth2.h"
+#include "bitmapchar.h"
 #include "fontforgeui.h"
 #include "cvundoes.h"
 #include "groups.h"

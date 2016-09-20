@@ -40,6 +40,7 @@ noinst_HEADERS = \
 	autotrace.h \
 	autowidth.h \
 	autowidth2.h \
+	bitmapchar.h \
 	fontforgeui.h sftextfieldP.h configure-fontforge.h views.h 	\
 	flaglist.h strlist.h charview_private.h cvundoes.h tables.h
 

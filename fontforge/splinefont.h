@@ -2479,16 +2479,6 @@ extern int  BDFFontDump(char *filename,BDFFont *font, EncMap *map, int res);
 extern int  FNTFontDump(char *filename,BDFFont *font, EncMap *map, int res);
 extern int  FONFontDump(char *filename,SplineFont *sf, int32 *sizes,int res,
 	EncMap *map);
-extern void SFReplaceEncodingBDFProps(SplineFont *sf,EncMap *map);
-extern void SFReplaceFontnameBDFProps(SplineFont *sf);
-extern int  IsUnsignedBDFKey(const char *key);
-extern int  BdfPropHasInt(BDFFont *font,const char *key, int def );
-extern const char *BdfPropHasString(BDFFont *font,const char *key, const char *def);
-extern void def_Charset_Enc(EncMap *map,char *reg,char *enc);
-extern void Default_XLFD(BDFFont *bdf,EncMap *map, int res);
-extern void Default_Properties(BDFFont *bdf,EncMap *map,char *onlyme);
-extern void BDFDefaultProps(BDFFont *bdf, EncMap *map, int res);
-extern BDFProperties *BdfPropsCopy(BDFProperties *props, int cnt );
 struct xlfd_components {
     char foundry[80];
     char family[100];
@@ -2513,8 +2503,6 @@ struct std_bdf_props {
 };
 #define STD_BDF_PROPS_EMPTY { NULL, 0, 0 }
 
-extern void XLFD_GetComponents(const char *xlfd,struct xlfd_components *comp);
-extern void XLFD_CreateComponents(BDFFont *bdf,EncMap *map,int res,struct xlfd_components *comp);
 /* Two lines intersect in at most 1 point */
 /* Two quadratics intersect in at most 4 points */
 /* Two cubics intersect in at most 9 points */ /* Plus an extra space for a trailing -1 */
@@ -2874,8 +2862,6 @@ extern SplineChar *SFMakeChar(SplineFont *sf,EncMap *map,int i);
 extern char *AdobeLigatureFormat(char *name);
 extern uint32 LigTagFromUnicode(int uni);
 extern void SCLigCaretheck(SplineChar *sc,int clean);
-extern BDFChar *BDFMakeGID(BDFFont *bdf,int gid);
-extern BDFChar *BDFMakeChar(BDFFont *bdf,EncMap *map,int enc);
 
 extern void SCUndoSetLBearingChange(SplineChar *sc,int lb);
 
@@ -3266,7 +3252,6 @@ extern int SFIsDuplicatable(SplineFont *sf, SplineChar *sc);
 extern void SCClearLayer(SplineChar *sc,int layer);
 extern void SCClearContents(SplineChar *sc,int layer);
 extern void SCClearAll(SplineChar *sc,int layer);
-extern void BCClearAll(BDFChar *bc);
 
 #if !defined(_NO_PYTHON)
 extern void FontForge_InitializeEmbeddedPython(void);
