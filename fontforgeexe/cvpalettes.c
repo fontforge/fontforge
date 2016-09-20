@@ -1033,7 +1033,7 @@ static IJ getIJFromMouse( CharView* cv, int mx, int my )
  * This draws the three-dimensional relief on a button. It gets the dimensions from the button image.
  */
 
-int cvp_draw_relief(GWindow pixmap, GImage *iconimg, int iconx, int icony, int selected) {
+void cvp_draw_relief(GWindow pixmap, GImage *iconimg, int iconx, int icony, int selected) {
 	extern Color cvbutton3dedgelightcol; // Default 0xe0e0e0.		
 	extern Color cvbutton3dedgedarkcol; // Default 0x707070.
 	int iconw = iconimg->u.image->width;
@@ -1560,11 +1560,13 @@ return( SplineCharAntiAlias(&dummy,ly_fore,24,4));
 }
 
 /**
- *  \brief Recalculate the number of visible layers and reposition the scrollbar
+ *  \brief Recalculate the number of visible layers,
+ *         reposition the visibility checkboxes, and
+ *         if requested, reposition/resize the scrollbar.
  *
  *  \param [in] cv The charview
  */
-static void CVLayers2Reflow(CharView *cv) {
+static void CVLayers2Reflow(CharView *cv, bool resize) {
     extern int _GScrollBar_Width;
     GGadget *scrollbar;
     GRect cvl2size;
@@ -1574,6 +1576,28 @@ static void CVLayers2Reflow(CharView *cv) {
     layer2.visible_layers = (cvl2size.height - layer2.header_height - 2 * CV_LAYERS2_LINE_HEIGHT) / CV_LAYERS2_LINE_HEIGHT;
     if (layer2.visible_layers < 0) {
         layer2.visible_layers = 0;
+    }
+
+    // Reposition the visibility checkboxes
+    int num_potentially_visible = 2 + layer2.visible_layers + 1;
+    if (num_potentially_visible > layer2.current_layers){
+        num_potentially_visible = layer2.current_layers;
+    }
+    for (int i = 2, first_visible = 2 + layer2.offtop; i < layer2.current_layers; i++) {
+        GGadget *vis = GWidgetGetControl(cvlayers2, CID_VBase + i - 1);
+        if (vis == NULL) {
+            break;
+        }
+        if (i >= first_visible && (i - layer2.offtop) < num_potentially_visible) {
+            GGadgetMove(vis, 5, layer2.header_height + (i - layer2.offtop) * CV_LAYERS2_LINE_HEIGHT);
+            GGadgetSetVisible(vis, true);
+        } else {
+            GGadgetSetVisible(vis, false);
+        }
+    }
+
+    if (!resize) {
+        return;
     }
 
     scrollbar = GWidgetGetControl(cvlayers2, CID_SB);
@@ -1642,7 +1666,7 @@ static void CVLayers2Set(CharView *cv) {
 	layer2.layers[i+1] = BDFCharFromLayer(cv->b.sc,i);
     layer2.active = CVLayer(&cv->b)+1;
 
-    CVLayers2Reflow(cv);
+    CVLayers2Reflow(cv, true);
 }
 
 static void Layers2Expose(CharView *cv,GWindow pixmap,GEvent *event) {
@@ -1884,6 +1908,7 @@ static void Layer2Scroll(CharView *cv, GEvent *event) {
 return;
     layer2.offtop = off;
     GScrollBarSetPos(GWidgetGetControl(cvlayers2,CID_SB),off);
+    CVLayers2Reflow(cv, false);
     GDrawRequestExpose(cvlayers2,NULL,false);
 }
 
@@ -1906,7 +1931,7 @@ return( true );
 	PostCharToWindow(cv->gw,event);
       break;
       case et_resize:
-        CVLayers2Reflow(cv);
+        CVLayers2Reflow(cv, true);
       break;
       case et_expose:
 	Layers2Expose(cv,gw,event);
