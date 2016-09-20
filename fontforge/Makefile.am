@@ -33,7 +33,9 @@ lib_LTLIBRARIES = libfontforge.la
 
 #--------------------------------------------------------------------------
 
-noinst_HEADERS = fontforgeui.h sftextfieldP.h configure-fontforge.h views.h 	\
+noinst_HEADERS = \
+	asmfpst.h \
+	fontforgeui.h sftextfieldP.h configure-fontforge.h views.h 	\
 	flaglist.h strlist.h charview_private.h cvundoes.h tables.h
 
 pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\

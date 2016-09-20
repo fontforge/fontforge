@@ -3077,11 +3077,7 @@ int SFFigureDefWidth(SplineFont *sf, int *_nomwid);
 extern int SFRenameTheseFeatureTags(SplineFont *sf, uint32 tag, int sli, int flags,
 	uint32 totag, int tosli, int toflags, int ismac);
 extern int SFRemoveUnusedNestedFeatures(SplineFont *sf);
-extern int ClassesMatch(int cnt1,char **classes1,int cnt2,char **classes2);
-extern FPST *FPSTGlyphToClass(FPST *fpst);
 
-extern ASM *ASMFromOpenTypeForms(SplineFont *sf,uint32 script);
-extern ASM *ASMFromFPST(SplineFont *sf,FPST *fpst,int ordered);
 
 extern char *utf8_verify_copy(const char *str);
 
