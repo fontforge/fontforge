@@ -1374,7 +1374,7 @@ static void bIsNan(Context *c) {
 
 static void bIsFinite(Context *c) {
     c->return_val.type = v_int;
-    c->return_val.u.ival = finite( c->a.vals[1].u.fval );
+    c->return_val.u.ival = isfinite( c->a.vals[1].u.fval );
 }
 
 

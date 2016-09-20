@@ -4645,7 +4645,7 @@ int LineTangentToSplineThroughPt(Spline *s, BasePoint *pt, extended ts[4],
     Quartic quad;
     int i,j,k;
 
-    if ( !finite(pt->x) || !finite(pt->y) ) {
+    if ( !isfinite(pt->x) || !isfinite(pt->y) ) {
 	IError( "Non-finite arguments passed to LineTangentToSplineThroughPt");
 return( -1 );
     }

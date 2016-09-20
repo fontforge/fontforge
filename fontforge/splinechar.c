@@ -2126,7 +2126,7 @@ static int MakeEllipseWithAxis(CharViewBase *cv,SplinePoint *sp1,SplinePoint *sp
     clockwise = EllipseClockwise(sp1,sp2,&slope1,&slope2);
     dot = slope1.y*slope2.x - slope1.x*slope2.y;
     theta = atan2(-slope1.x,slope1.y);
-    if ( !finite(theta))
+    if ( !isfinite(theta))
 return( false );
     c = cos(theta); s = sin(theta);
     if ( RealNear(dot,0) ) {
