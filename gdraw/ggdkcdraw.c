@@ -57,9 +57,10 @@ static void _GGDKDraw_CheckAutoPaint(GGDKWindow gw) {
         // Unlike GDK2, it turns out you can draw over child windows
         // But we don't want that. Must be something to do with alpha transparency.
         if (!gdk_window_has_native(gw->w)) {
-            cairo_region_t *r = _GGDKDraw_CalculateDrawableRegion(gw, false);
+            cairo_region_t *r = _GGDKDraw_ExcludeChildRegions(gw, NULL, false);
             if (r != NULL) {
-                _GGDKDraw_ClipToRegion(gw, r);
+                gdk_cairo_region(gw->cc, r);
+                cairo_clip(gw->cc);
                 cairo_region_destroy(r);
             }
         }
@@ -632,38 +633,32 @@ GdkPixbuf *_GGDKDraw_Cairo2Pixbuf(cairo_surface_t *cs) {
 
 #else // GDK3
 
-cairo_region_t *_GGDKDraw_CalculateDrawableRegion(GGDKWindow gw, bool force) {
+cairo_region_t *_GGDKDraw_ExcludeChildRegions(GGDKWindow gw, cairo_region_t *r, bool force) {
     GList_Glib *children = gdk_window_peek_children(gw->w);
-    if (children == NULL) {
-        if (force) {
-            return gdk_window_get_visible_region(gw->w);
+    cairo_region_t *reg = NULL;
+
+    if (children) {
+        if (r == NULL) {
+            reg = gdk_window_get_clip_region(gw->w);
+        } else {
+            reg = cairo_region_copy(r);
         }
-        return NULL;
+
+        while (children != NULL) {
+            cairo_region_t *chr = gdk_window_get_clip_region((GdkWindow *)children->data);
+            int dx, dy;
+
+            gdk_window_get_position((GdkWindow *)children->data, &dx, &dy);
+            cairo_region_translate(chr, dx, dy);
+            cairo_region_subtract(reg, chr);
+            cairo_region_destroy(chr);
+            children = children->next;
+        }
+    } else if (force) {
+        reg = gdk_window_get_clip_region(gw->w);
     }
 
-    cairo_region_t *r = gdk_window_get_visible_region(gw->w);
-    while (children != NULL) {
-        cairo_region_t *chr = gdk_window_get_clip_region((GdkWindow *)children->data);
-        int dx, dy;
-
-        gdk_window_get_position((GdkWindow *)children->data, &dx, &dy);
-        cairo_region_translate(chr, dx, dy);
-        cairo_region_subtract(r, chr);
-        cairo_region_destroy(chr);
-        children = children->next;
-    }
-    return r;
-}
-
-void _GGDKDraw_ClipToRegion(GGDKWindow gw, cairo_region_t *r) {
-    int nr = cairo_region_num_rectangles(r);
-
-    for (int i = 0; i < nr; i++) {
-        cairo_rectangle_int_t rect;
-        cairo_region_get_rectangle(r, i, &rect);
-        cairo_rectangle(gw->cc, rect.x, rect.y, rect.width, rect.height);
-    }
-    cairo_clip(gw->cc);
+    return reg;
 }
 
 #endif // GGDKDRAW_GDK_2

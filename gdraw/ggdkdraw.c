@@ -996,12 +996,24 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         break;
         case GDK_EXPOSE: {
             GdkEventExpose *expose = (GdkEventExpose *)event;
+#ifndef GGDKDRAW_GDK_2
+            // Okay. So on GDK3, we must exclude child window regions to prevent flicker.
+            // However, we cannot modify the expose event's region directly, as this is
+            // used by GDK to determine what child windows to invalidate. Hence, we must
+            // make a copy of the region, sans any child window areas.
+            cairo_rectangle_int_t extents;
+            cairo_region_t *reg = _GGDKDraw_ExcludeChildRegions(gw, expose->region, true);
+            cairo_region_get_extents(reg, &extents);
+#else
+            GdkRegion *reg = expose->region;
+            GdkRectangle extents = expose->area;
+#endif
 
             gevent.type = et_expose;
-            gevent.u.expose.rect.x = expose->area.x;
-            gevent.u.expose.rect.y = expose->area.y;
-            gevent.u.expose.rect.width = expose->area.width;
-            gevent.u.expose.rect.height = expose->area.height;
+            gevent.u.expose.rect.x = extents.x;
+            gevent.u.expose.rect.y = extents.y;
+            gevent.u.expose.rect.width = extents.width;
+            gevent.u.expose.rect.height = extents.height;
 
             // This can happen if say gdk_window_raise is called, which then runs the
             // event loop itself, which is outside of our checked event handler
@@ -1009,12 +1021,12 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             // never happen any more.
             assert(gw->cc == NULL);
 
-            gdk_window_begin_paint_region(w, expose->region);
+            gdk_window_begin_paint_region(w, reg);
             gw->is_in_paint = true;
             gdisp->dirty_window = gw;
 
 #ifndef GGDKDRAW_GDK_2
-            // Okay. So on GDK3, if the window isn't native,
+            // But wait, there's more! On GDK3, if the window isn't native,
             // gdk_window_begin_paint_region does nothing.
             // So we have to (a) ensure we draw to an offscreen surface,
             // and (b) clip the region appropriately. But on Windows
@@ -1022,18 +1034,23 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             if (!gdk_window_has_native(gw->w)) {
 #if !defined(GDK_WINDOWING_WIN32) && !defined(GDK_WINDOWING_QUARTZ)
                 double sx = 1, sy = 1;
-                gw->cs = gdk_window_create_similar_surface(gw->w, CAIRO_CONTENT_COLOR, expose->area.width, expose->area.height);
+
+                gw->cs = gdk_window_create_similar_surface(gw->w, CAIRO_CONTENT_COLOR, extents.width, extents.height);
 #if (CAIRO_VERSION_MAJOR >= 2) || (CAIRO_VERSION_MAJOR >= 1 && CAIRO_VERSION_MINOR >= 14)
                 cairo_surface_get_device_scale(gw->cs, &sx, &sy);
 #endif
-                cairo_surface_set_device_offset(gw->cs, -expose->area.x * sx, -expose->area.y * sy);
+                cairo_surface_set_device_offset(gw->cs, -extents.x * sx, -extents.y * sy);
                 gw->cc = cairo_create(gw->cs);
-                gw->expose_region = cairo_region_reference(expose->region);
+                gw->expose_region = cairo_region_reference(reg);
 #else
                 gw->cc = gdk_cairo_create(gw->w);
 #endif
-                _GGDKDraw_ClipToRegion(gw, expose->region);
+                gdk_cairo_region(gw->cc, reg);
+                cairo_clip(gw->cc);
             }
+#endif
+#ifndef GGDKDRAW_GDK_2
+            cairo_region_destroy(reg);
 #endif
         }
         break;
@@ -2066,43 +2083,7 @@ static void GGDKDrawRequestExpose(GWindow w, GRect *rect, int UNUSED(doclear)) {
         }
     }
 
-#ifndef GGDKDRAW_GDK_2
-    if (!gw->is_toplevel) {
-        //Eugh
-        // So if you try to invalidate a child window,
-        // GDK will also invalidate the parent window over the child window's area.
-        // This causes noticable flickering. So synthesise the expose event ourselves...
-        GdkEventExpose expose = {0};
-        expose.type = GDK_EXPOSE;
-        expose.window = gw->w;
-        expose.send_event = true;
-        expose.area.x = clip.x;
-        expose.area.y = clip.y;
-        expose.area.width = clip.width;
-        expose.area.height = clip.height;
-        expose.region = _GGDKDraw_CalculateDrawableRegion(gw, true);
-        cairo_region_intersect_rectangle(expose.region, &expose.area);
-        // Don't send unnecessarily...
-        if (cairo_region_is_empty(expose.region)) {
-            cairo_region_destroy(expose.region);
-            return;
-        }
-        cairo_region_get_extents(expose.region, &expose.area);
-
-        gdk_event_put((GdkEvent *)&expose);
-        cairo_region_destroy(expose.region);
-    } else {
-        // We must clip out child windows, otherwise it will flicker...
-        cairo_region_t *r = _GGDKDraw_CalculateDrawableRegion(gw, true);
-        cairo_region_intersect_rectangle(r, &clip);
-        gdk_window_invalidate_region(gw->w, r, false);
-        cairo_region_destroy(r);
-#else
     gdk_window_invalidate_rect(gw->w, &clip, false);
-#endif
-#ifndef GGDKDRAW_GDK_2
-    }
-#endif
 }
 
 static void GGDKDrawForceUpdate(GWindow gw) {
