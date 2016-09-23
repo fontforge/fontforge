@@ -27,6 +27,7 @@
 #include "ffglib.h"
 
 #include "fontforgeui.h"
+#include "metricsview.h"
 #include "sftextfieldP.h"
 #include <stdlib.h>
 #include <math.h>
@@ -40,6 +41,8 @@
 #endif
 #include <gkeysym.h>
 #include "print.h"
+
+#include "displayfonts.h"
 
 typedef struct printffdlg {
     struct printinfo pi;

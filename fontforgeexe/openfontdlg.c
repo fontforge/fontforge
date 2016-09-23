@@ -33,6 +33,8 @@
 #include <gwidget.h>
 #include <ggadget.h>
 
+#include "openfontdlg.h"
+
 extern NameList *force_names_when_opening;
 int default_font_filter_index=0;
 struct openfilefilters *user_font_filters = NULL;

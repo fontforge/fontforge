@@ -643,8 +643,6 @@ extern void AutoKern2BuildClasses(SplineFont *sf,int layer,
 	int autokern,
 	real good_enough);
 
-extern void MVSelectFirstKerningTable(struct metricsview *mv);
-
 extern float joinsnap;
 
 #endif

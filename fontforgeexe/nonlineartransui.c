@@ -26,9 +26,12 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "cvpointer.h"
 #include <utype.h>
 #include <ustring.h>
 #include "nonlineartrans.h"
+
+#include "nonlineartransui.h"
 
 struct nldlg {
     GWindow gw;

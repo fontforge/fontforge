@@ -26,6 +26,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "anchorsaway.h"
+#include "contextchain.h"
+#include "fontinfo.h"
+#include "kernclass.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>
@@ -37,6 +41,8 @@
 #include "lookups.h"
 #include "gfile.h"
 #include "sfundo.h"
+
+#include "lookupui.h"
 
 int add_char_to_name_list = true;
 int default_autokern_dlg = true;

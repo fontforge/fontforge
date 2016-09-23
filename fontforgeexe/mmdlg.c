@@ -25,6 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "fontinfo.h"
+#include "kernclass.h"
+#include "macencui.h"
 #include <ustring.h>
 #include <math.h>
 #include <gkeysym.h>
@@ -32,6 +35,8 @@
 #include <utype.h>
 #include "ttf.h"
 #include "mm.h"
+
+#include "mmdlg.h"
 
 /* As far as I can tell, the CDV in AdobeSansMM is half gibberish */
 /* This is disturbing */

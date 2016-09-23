@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "cvgridfit.h"
 #include <ustring.h>
 #include <chardata.h>
 #include <utype.h>
@@ -32,6 +33,8 @@
 #include <gimage.h>
 #include <math.h>
 #include "delta.h"
+
+#include "deltaui.h"
 
 /* Suggestions for where delta instructions might be wanted */
 

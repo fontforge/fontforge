@@ -24,12 +24,16 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <fontforge-config.h>
+
 #include "fontforgeui.h"
 #include "fffreetype.h"
 #include "edgelist2.h"
 #include <gwidget.h>
 #include <ustring.h>
 #include <math.h>
+
+#include "freetypeui.h"
 
 /******************************************************************************/
 /* ***************************** Debugger Stuff ***************************** */
@@ -43,49 +47,6 @@ typedef struct bpdata {
     int range;	/* tt_coderange_glyph, tt_coderange_font, tt_coderange_cvt */
     int ip;
 } BpData;
-
-struct debugger_context {
-    FT_Library context;
-    FTC *ftc;
-    /* I use a thread because freetype doesn't return, it just has a callback */
-    /*  on each instruction. In actuallity only one thread should be executable*/
-    /*  at a time (either main, or child) */
-    pthread_t thread;
-    pthread_mutex_t parent_mutex, child_mutex;
-    pthread_cond_t parent_cond, child_cond;
-    unsigned int terminate: 1;		/* The thread has been started simply to clean itself up and die */
-    unsigned int has_mutexes: 1;
-    unsigned int has_thread: 1;
-    unsigned int has_finished: 1;
-    unsigned int debug_fpgm: 1;
-    unsigned int multi_step: 1;
-    unsigned int found_wp: 1;
-    unsigned int found_wps: 1;
-    unsigned int found_wps_uninit: 1;
-    unsigned int found_wpc: 1;
-    unsigned int initted_pts: 1;
-    unsigned int is_bitmap: 1;
-    int wp_ptindex, wp_cvtindex, wp_storeindex;
-    real ptsizey, ptsizex;
-    int dpi;
-    TT_ExecContext exc;
-    SplineChar *sc;
-    int layer;
-    BpData temp;
-    BpData breaks[32];
-    int bcnt;
-    FT_Vector *oldpts;
-    FT_Long *oldstore;
-    uint8 *storetouched;
-    int storeSize;
-    FT_Long *oldcvt;
-    FT_Long oldsval, oldcval;
-    int n_points;
-    uint8 *watch;		/* exc->pts.n_points */
-    uint8 *watchstorage;	/* exc->storeSize, exc->storage[i] */
-    uint8 *watchcvt;		/* exc->cvtSize, exc->cvt[i] */
-    int uninit_index;
-};
 
 static int AtWp(struct debugger_context *dc, TT_ExecContext exc ) {
     int i, hit=false, h;

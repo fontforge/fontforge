@@ -26,7 +26,19 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "bitmapview.h"
+#include "bitmapdlg.h"
+#include "combinations.h"
+#include "cvgetinfo.h"
+#include "displayfonts.h"
+#include "effectsui.h"
+#include "fontinfo.h"
+#include "fvmetricsdlg.h"
 #include "lookups.h"
+#include "lookupui.h"
+#include "gotodlg.h"
+#include "kernclass.h"
+#include "problems.h"
 #include <gkeysym.h>
 #include <gresource.h>
 #include <gresedit.h>
@@ -39,6 +51,9 @@
 #include "collabclientui.h"
 #include "gfile.h"
 #include "wordlistparser.h"
+
+#include "metricsview.h"
+
 extern char* SFDCreateUndoForLookup( SplineFont *sf, int lookup_type ) ;
 
 

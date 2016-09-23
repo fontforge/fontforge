@@ -25,11 +25,14 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "lookupui.h"
 #include <ustring.h>
 #include <chardata.h>
 #include <utype.h>
 #include <gkeysym.h>
 #include <math.h>
+
+#include "justifydlg.h"
 
 extern GTextInfo scripts[], languages[];
 

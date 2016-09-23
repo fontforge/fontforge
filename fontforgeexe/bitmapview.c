@@ -26,6 +26,12 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "bdfinfo.h"
+#include "bitmapdlg.h"
+#include "cvexportdlg.h"
+#include "cvimportdlg.h"
+#include "fontinfo.h"
+#include "gotodlg.h"
 #include <gkeysym.h>
 #include <utype.h>
 #include <ustring.h>

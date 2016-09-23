@@ -25,7 +25,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "cvpointer.h"
 #include <math.h>
+
+#include "cvshapes.h"
 
 static struct shapedescrip {
     BasePoint me, prevcp, nextcp; int nocp;

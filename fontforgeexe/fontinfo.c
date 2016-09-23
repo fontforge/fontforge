@@ -26,6 +26,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "fontinfo.h"
+#include "histograms.h"
+#include "kernclass.h"
+#include "lookupui.h"
+#include "macencui.h"
 #include "ofl.h"
 #include <ustring.h>
 #include <chardata.h>

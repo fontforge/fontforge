@@ -26,7 +26,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "encodingui.h"
+#include "fontinfo.h"
 #include "groups.h"
+#include "macencui.h"
+#include "metricsview.h"
 #include "plugins.h"
 #include <charset.h>
 #include <gfile.h>
@@ -59,6 +63,8 @@
 static void change_res_filename(const char *newname);
 
 #include "gutils/prefs.h"
+
+#include "prefs.h"
 
 extern int splash;
 extern int adjustwidth;

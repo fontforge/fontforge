@@ -1,0 +1,7 @@
+#ifndef FONTFORGE_FONTFORGEEXE_CVEXPORTDLG_H
+#define FONTFORGE_FONTFORGEEXE_CVEXPORTDLG_H
+
+extern int BVExport(BitmapView *bv);
+extern int CVExport(CharView *cv);
+
+#endif /* FONTFORGE_FONTFORGEEXE_CVEXPORTDLG_H */

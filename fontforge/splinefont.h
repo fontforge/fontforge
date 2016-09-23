@@ -2171,8 +2171,6 @@ extern uint32 ScriptFromUnicode(uint32 u,SplineFont *sf);
 extern uint32 SCScriptFromUnicode(SplineChar *sc);
 extern int SCRightToLeft(SplineChar *sc);
 extern int SLIContainsR2L(SplineFont *sf,int sli);
-extern void SFFindNearTop(SplineFont *);
-extern void SFRestoreNearTop(SplineFont *);
 extern int SFForceEncoding(SplineFont *sf,EncMap *old,Encoding *new_map);
 extern int CountOfEncoding(Encoding *encoding_name);
 extern int SFReencode(SplineFont *sf, const char *encname, int force);
@@ -2840,7 +2838,6 @@ extern void SFD_GetFontMetaDataVoid( FILE *sfd,
                                  void* d );
 typedef void (*visitSFDFragmentFunc)( FILE *sfd, char *tokbuf, SplineFont *sf, void* udata );
 extern void visitSFDFragment( FILE *sfd, SplineFont *sf, visitSFDFragmentFunc ufunc, void* udata );
-extern char* DumpSplineFontMetadata( SplineFont *sf );
 
 
 extern void SFD_DumpLookup( FILE *sfd, SplineFont *sf );
@@ -3066,7 +3063,6 @@ extern BDFFont *SplineFontFreeTypeRasterizeNoHints(SplineFont *sf,int layer,
 	int pixelsize,int depth);
 extern void FreeType_FreeRaster(struct freetype_raster *raster);
 struct TT_ExecContextRec_;
-extern struct freetype_raster *DebuggerCurrentRaster(struct  TT_ExecContextRec_ *exc,int depth);
 
 extern int UniFromName(const char *name,enum uni_interp interp, Encoding *encname);
 extern const char *StdGlyphName(char *buffer, int uni, enum uni_interp interp, NameList *for_this_font);
@@ -3274,10 +3270,6 @@ extern void AddNewAALTFeatures(SplineFont *sf);
 extern void SplinePointRound(SplinePoint *,real);
 
 extern int KCFindName(const char *name, char **classnames, int cnt, int allow_class0 );
-extern KernClass *SFFindKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
-	int *index,int allow_zero);
-extern KernClass *SFFindVKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
-	int *index,int allow_zero);
 
 extern void SCClearRounds(SplineChar *sc,int layer);
 extern void MDReplace(MinimumDistance *md,SplineSet *old,SplineSet *rpl);
@@ -3383,7 +3375,6 @@ extern const char *knownweights[], *realweights[], **noticeweights[];
 
 extern int BPTooFar(BasePoint *bp1, BasePoint *bp2);
 extern StemInfo *SCHintOverlapInMask(SplineChar *sc,HintMask *hm);
-extern char *VSErrorsFromMask(int mask,int private_mask);
 extern int SCValidate(SplineChar *sc, int layer, int force);
 extern AnchorClass *SCValidateAnchors(SplineChar *sc);
 extern void SCTickValidationState(SplineChar *sc,int layer);
@@ -3517,15 +3508,6 @@ extern void SPLFirstVisitPoints( SplinePoint* splfirst, SPLFirstVisitPointsVisit
 extern SplinePoint* SplinePointListContainsPointAtX( SplinePointList* container, real x );
 extern SplinePoint* SplinePointListContainsPointAtY( SplinePointList* container, real y );
 extern SplinePoint* SplinePointListContainsPointAtXY( SplinePointList* container, real x, real y );
-
-
-/**
- * True if the spline with from/to is part of the guide splines.
- *
- * Handy for telling if the user has just clicked on a guide for example,
- * you might want to also check the active layer first with cv->b.drawmode == dm_grid
- */
-extern bool isSplinePointPartOfGuide( SplineFont *sf, SplinePoint *sp );
 
 
 extern bigreal DistanceBetweenPoints( BasePoint *p1, BasePoint *p2 );

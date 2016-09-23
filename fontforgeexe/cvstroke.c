@@ -25,11 +25,15 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "cvpointer.h"
+#include "lookupui.h"
 #include <ustring.h>
 #include <utype.h>
 #include <gkeysym.h>
 #include <math.h>
 #define PI      3.1415926535897932
+
+#include "cvstroke.h"
 
 extern GDevEventMask input_em[];
 extern const int input_em_cnt;

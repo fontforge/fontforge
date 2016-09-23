@@ -30,6 +30,8 @@
 #include "gfile.h"
 #include "chardata.h"
 
+#include "fvfontsdlg.h"
+
 static void MergeAskFilename(FontView *fv,int preserveCrossFontKerning) {
     char *filename = GetPostScriptFontName(NULL,true);
     SplineFont *sf;

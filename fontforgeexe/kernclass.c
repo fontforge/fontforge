@@ -25,11 +25,15 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "lookupui.h"
+#include "metricsview.h"
 #include <gkeysym.h>
 #include <string.h>
 #include <ustring.h>
 #include <utype.h>
 #include <math.h>
+
+#include "kernclass.h"
 
 extern GBox _ggadget_Default_Box;
 #define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
@@ -78,13 +82,6 @@ typedef struct kernclassdlg {
     struct kernclassdlg *next;
 
 } KernClassDlg;
-
-typedef struct kernclasslistdlg {
-    SplineFont *sf;
-    int layer;
-    GWindow gw;
-    int isv;
-} KernClassListDlg;
 
 #define KCL_Width	200
 #define KCL_Height	173

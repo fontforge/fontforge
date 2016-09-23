@@ -25,7 +25,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "cvgridfit.h"
+#include "cvpointer.h"
 #include <math.h>
+
+#include "cvtranstools.h"
 
 void CVMouseDownTransform(CharView *cv) {
     CVPreserveTState(cv);

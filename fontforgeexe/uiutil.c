@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "cvimportdlg.h"
+#include "fontinfo.h"
 #include <gfile.h>
 #include <stdarg.h>
 #include <unistd.h>

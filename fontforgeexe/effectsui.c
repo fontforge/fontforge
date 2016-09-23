@@ -31,6 +31,8 @@
 #include <math.h>
 #include "edgelist.h"
 
+#include "effectsui.h"
+
 static void CVOutline(CharView *cv, real width) {
     StrokeInfo si;
     SplineSet *temp, *spl;

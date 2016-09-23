@@ -26,11 +26,15 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "cvpointer.h"
+#include "gotodlg.h"
 #include "ttf.h"
 #include <gwidget.h>
 #include <ustring.h>
 #include <math.h>
 #include <gkeysym.h>
+
+#include "problems.h"
 
 /* ************************************************************************** */
 /* ***************************** Problems Dialog **************************** */

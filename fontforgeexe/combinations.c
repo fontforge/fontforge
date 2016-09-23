@@ -26,6 +26,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "anchorsaway.h"
+#include "kernclass.h"
+#include "metricsview.h"
 #include "psfont.h"
 #include <ustring.h>
 #include <gkeysym.h>

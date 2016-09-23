@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "contextchain.h"
 #include "groups.h"
 #include <unistd.h>
 #include <ustring.h>
@@ -32,6 +33,7 @@
 #include <gkeysym.h>
 #include <math.h>
 
+#include "groupsdlg.h"
 
 
 /******************************************************************************/

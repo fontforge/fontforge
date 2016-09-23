@@ -26,9 +26,13 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "fontinfo.h"
+#include "prefs.h"
 #include <gkeysym.h>
 #include <ustring.h>
 #include "ttf.h"
+
+#include "macencui.h"
 
 extern MacFeat *default_mac_feature_map,
 	*builtin_mac_feature_map,
