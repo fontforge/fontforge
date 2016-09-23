@@ -534,7 +534,7 @@ return( pt_number );
 	    }
 	} else {
 	    *val = strtod(tokbuf,&end);
-	    if ( !finite(*val) ) {
+	    if ( !isfinite(*val) ) {
 /* GT: NaN is a concept in IEEE floating point which means "Not a Number" */
 /* GT: it is used to represent errors like 0/0 or sqrt(-1). */
 		LogError( _("Bad number, infinity or nan: %s\n"), tokbuf );
@@ -685,14 +685,14 @@ return( sp );
 }
 
 static void CheckMakeB(BasePoint *test, BasePoint *good) {
-    if ( !finite(test->x) || test->x>100000 || test->x<-100000 ) {
+    if ( !isfinite(test->x) || test->x>100000 || test->x<-100000 ) {
 	LogError( _("Value out of bounds in spline.\n") );
 	if ( good!=NULL )
 	    test->x = good->x;
 	else
 	    test->x = 0;
     }
-    if ( !finite(test->y) || test->y>100000 || test->y<-100000 ) {
+    if ( !isfinite(test->y) || test->y>100000 || test->y<-100000 ) {
 	LogError( _("Value out of bounds in spline.\n") );
 	if ( good!=NULL )
 	    test->y = good->y;

@@ -85,7 +85,7 @@ void SplineRefigure3(Spline *spline) {
 		spline->isquadratic = true;	/* Only likely if we read in a TTF */
 	}
     }
-    if ( !finite(ysp->a) || !finite(xsp->a) || !finite(ysp->c) || !finite(xsp->c) || !finite(ysp->d) || !finite(xsp->d))
+    if ( !isfinite(ysp->a) || !isfinite(xsp->a) || !isfinite(ysp->c) || !isfinite(xsp->c) || !isfinite(ysp->d) || !isfinite(xsp->d))
 	IError("NaN value in spline creation");
     LinearApproxFree(spline->approx);
     spline->approx = NULL;

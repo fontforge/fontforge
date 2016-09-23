@@ -101,7 +101,15 @@ endif LIBZMQ
 libfontforge_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBFONTFORGE_VERSION) \
 	${MY_LIB_LDFLAGS}
 
-libfontforge_la_LIBADD += $(MY_LIBS) $(LIBZMQ_LIBS)
+if PYTHON_SCRIPTING
+if !MACINTOSH
+libfontforge_la_LIBADD += $(PYTHON_LIBS)
+else
+libfontforge_la_LDFLAGS += -undefined dynamic_lookup
+endif MACINTOSH
+endif PYTHON_SCRIPTING
+
+libfontforge_la_LIBADD += $(MY_LIBS)
 
 #--------------------------------------------------------------------------
 
