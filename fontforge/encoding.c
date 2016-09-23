@@ -1228,6 +1228,9 @@ return( NULL );
 	    }
 	} else if ( strncmp(pt,"end",3)== 0 )
 	    in = cmt_out;
+    else if (pos >= cmap->groups[in].n) {
+        LogError(_("cidmap entry out of bounds: %s"), buf2);
+    }
 	else {
 	    // Read the first bracketed code.
 	    if ( *pt!='<' )
@@ -1465,7 +1468,7 @@ return( false );
     }
     sf = CIDFlatten(sf,glyphs,curmax);
 
-    warned = true;
+    warned = false;
     for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	EncMap *map = fvs->map;
 	for ( j=0; j<2; ++j ) {
@@ -1515,6 +1518,10 @@ return( false );
 		map->map = realloc(map->map,(map->encmax = map->enccount = max+extras)*sizeof(int32));
 		memset(map->map,-1,map->enccount*sizeof(int32));
 		memset(map->backmap,-1,sf->glyphcnt*sizeof(int32));
+		fvs->selected = realloc(fvs->selected, map->enccount*sizeof(char));
+		if (map->enccount > sf->glyphcnt) {
+		    memset(fvs->selected+sf->glyphcnt, 0, map->enccount-sf->glyphcnt);
+		}
 		map->remap = cmap->remap; cmap->remap = NULL;
 	    }
 	    warned = true;
