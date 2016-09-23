@@ -76,15 +76,16 @@ struct l2 {
     BDFChar **layers;     /* layer thumbnail previews              */
     int sb_start;         /* x pixel position of the scrollbar     */
     int column_width;     /* width of various indicator columns    */
+    int header_height;    /* height of the header in pixels before the first layer */
     int mo_col, mo_layer; /* mouse over column and layer           */
     int rename_active;    /* If >=2, layer number for which the edit box for layer names is active */
     GClut *clut;
     GFont *font;          /* font to draw text in the palette with */
 } layerinfo = {           /* info about the current layers in the layers palette */
-    2, 0, 0, 0, 0, NULL, 0, 0, 0, 0, 0, NULL, NULL
+    2, 0, 0, 0, 0, NULL, 0, 0, 0, 0, 0, 0, NULL, NULL
 };
 
-struct l2 layer2 = { 2, 0, 0, 0, 0, NULL, 0, 0, 0, 0, 0, NULL, NULL };
+struct l2 layer2 = { 2, 0, 0, 0, 0, NULL, 0, 0, 0, 0, 0, 0, NULL, NULL };
 static int layers2_active = -1;
 static GPoint cvtoolsoff = { -9999, -9999 }, cvlayersoff = { -9999, -9999 }, bvlayersoff = { -9999, -9999 }, bvtoolsoff = { -9999, -9999 }, bvshadesoff = { -9999, -9999 };
 int palettes_fixed=1;
@@ -99,11 +100,10 @@ static GFont *toolsfont=NULL, *layersfont=NULL;
 #define CV_LAYERS_HEIGHT	100
 #define CV_LAYERS_INITIALCNT	6
 #define CV_LAYERS_LINE_HEIGHT	25
-#define CV_LAYERS2_WIDTH	120
-#define CV_LAYERS2_HEIGHT	196
+#define CV_LAYERS2_WIDTH	185
+#define CV_LAYERS2_HEIGHT	126
 #define CV_LAYERS2_LINE_HEIGHT	25
 #define CV_LAYERS2_HEADER_HEIGHT	20
-#define CV_LAYERS2_VISLAYERS	( (CV_LAYERS2_HEIGHT-CV_LAYERS2_HEADER_HEIGHT-2*CV_LAYERS2_LINE_HEIGHT)/CV_LAYERS2_LINE_HEIGHT )
 #define BV_TOOLS_WIDTH		53
 #define BV_TOOLS_HEIGHT		80
 #define BV_LAYERS_HEIGHT	73
@@ -135,6 +135,7 @@ static GFont *toolsfont=NULL, *layersfont=NULL;
 #define CID_RemoveLayer 9001
 #define CID_RenameLayer 9002
 #define CID_LayersMenu  9003
+#define CID_LayerLabel  9004
 
 static void ReparentFixup(GWindow child,GWindow parent, int x, int y, int width, int height ) {
     /* This is so nice */
@@ -1032,7 +1033,7 @@ static IJ getIJFromMouse( CharView* cv, int mx, int my )
  * This draws the three-dimensional relief on a button. It gets the dimensions from the button image.
  */
 
-int cvp_draw_relief(GWindow pixmap, GImage *iconimg, int iconx, int icony, int selected) {
+void cvp_draw_relief(GWindow pixmap, GImage *iconimg, int iconx, int icony, int selected) {
 	extern Color cvbutton3dedgelightcol; // Default 0xe0e0e0.		
 	extern Color cvbutton3dedgedarkcol; // Default 0x707070.
 	int iconw = iconimg->u.image->width;
@@ -1558,6 +1559,66 @@ static BDFChar *BDFCharFromLayer(SplineChar *sc,int layer) {
 return( SplineCharAntiAlias(&dummy,ly_fore,24,4));
 }
 
+/**
+ *  \brief Recalculate the number of visible layers,
+ *         reposition the visibility checkboxes, and
+ *         if requested, reposition/resize the scrollbar.
+ *
+ *  \param [in] cv The charview
+ */
+static void CVLayers2Reflow(CharView *cv, bool resize) {
+    extern int _GScrollBar_Width;
+    GGadget *scrollbar;
+    GRect cvl2size;
+
+    GDrawGetSize(cvlayers2, &cvl2size);
+    // Minus 2 because we always have the 'Guide' and 'Back' entries
+    layer2.visible_layers = (cvl2size.height - layer2.header_height - 2 * CV_LAYERS2_LINE_HEIGHT) / CV_LAYERS2_LINE_HEIGHT;
+    if (layer2.visible_layers < 0) {
+        layer2.visible_layers = 0;
+    }
+
+    // Reposition the visibility checkboxes
+    int num_potentially_visible = 2 + layer2.visible_layers + 1;
+    if (num_potentially_visible > layer2.current_layers){
+        num_potentially_visible = layer2.current_layers;
+    }
+    for (int i = 2, first_visible = 2 + layer2.offtop; i < layer2.current_layers; i++) {
+        GGadget *vis = GWidgetGetControl(cvlayers2, CID_VBase + i - 1);
+        if (vis == NULL) {
+            break;
+        }
+        if (i >= first_visible && (i - layer2.offtop) < num_potentially_visible) {
+            GGadgetMove(vis, 5, layer2.header_height + (i - layer2.offtop) * CV_LAYERS2_LINE_HEIGHT);
+            GGadgetSetVisible(vis, true);
+        } else {
+            GGadgetSetVisible(vis, false);
+        }
+    }
+
+    if (!resize) {
+        return;
+    }
+
+    scrollbar = GWidgetGetControl(cvlayers2, CID_SB);
+    // Check if we need the scrollbar or not.
+    if (layer2.current_layers - 2 <= layer2.visible_layers || layer2.visible_layers <= 0) {
+        GGadgetSetVisible(scrollbar, false);
+        layer2.sb_start = cvl2size.width;
+        layer2.offtop = 0;
+    } else {
+        layer2.sb_start = cvl2size.width - GDrawPointsToPixels(cv->gw, _GScrollBar_Width);
+        GGadgetMove(scrollbar, layer2.sb_start, 0);
+        GGadgetResize(scrollbar, GDrawPointsToPixels(cv->gw, _GScrollBar_Width), cvl2size.height);
+        GGadgetSetVisible(scrollbar, true);
+
+        GScrollBarSetBounds(scrollbar, 0, layer2.current_layers - 2, layer2.visible_layers);
+        GScrollBarSetPos(scrollbar, layer2.offtop);
+    }
+
+    GDrawRequestExpose(cvlayers2, NULL, false);
+}
+
 /* Update the type3 layers palette to the given character view */
 static void CVLayers2Set(CharView *cv) {
     int i, top;
@@ -1605,30 +1666,31 @@ static void CVLayers2Set(CharView *cv) {
 	layer2.layers[i+1] = BDFCharFromLayer(cv->b.sc,i);
     layer2.active = CVLayer(&cv->b)+1;
 
-    GScrollBarSetBounds(GWidgetGetControl(cvlayers2,CID_SB),0,cv->b.sc->layer_cnt+1-2,
-	    CV_LAYERS2_VISLAYERS);
-    if ( layer2.offtop>cv->b.sc->layer_cnt-1-CV_LAYERS2_VISLAYERS )
-	layer2.offtop = cv->b.sc->layer_cnt-1-CV_LAYERS2_VISLAYERS;
-    if ( layer2.offtop<0 ) layer2.offtop = 0;
-    GScrollBarSetPos(GWidgetGetControl(cvlayers2,CID_SB),layer2.offtop);
-
-    GDrawRequestExpose(cvlayers2,NULL,false);
+    CVLayers2Reflow(cv, true);
 }
 
 static void Layers2Expose(CharView *cv,GWindow pixmap,GEvent *event) {
     int i, ll;
     const char *str;
-    GRect r;
+    GRect r, oldclip;
     struct _GImage base;
     GImage gi;
     int as = (24*cv->b.sc->parent->ascent)/(cv->b.sc->parent->ascent+cv->b.sc->parent->descent);
+    int leftOffset, layerCount;
 
-    if ( event->u.expose.rect.y+event->u.expose.rect.height<CV_LAYERS2_HEADER_HEIGHT )
+    if ( event->u.expose.rect.y+event->u.expose.rect.height<layer2.header_height )
 return;
 
-    r.x = 30; r.width = layer2.sb_start-r.x;
-    r.y = CV_LAYERS2_HEADER_HEIGHT;
-    r.height = CV_LAYERS2_LINE_HEIGHT-CV_LAYERS2_HEADER_HEIGHT;
+    // Calculate the left offset (from the checkboxes)
+    GGadgetGetSize(GWidgetGetControl(cvlayers2, CID_VGrid), &r);
+    leftOffset = r.x + r.width;
+    // Compute the drawable area and clip to it.
+    GDrawGetSize(cvlayers2, &r);
+    r.x = leftOffset;
+    r.width = layer2.sb_start - r.x;
+    r.y = layer2.header_height;
+    r.height = r.height - layer2.header_height;
+    GDrawPushClip(pixmap, &r, &oldclip);
     GDrawFillRect(pixmap,&r,GDrawGetDefaultBackground(NULL));
 
     GDrawSetDither(NULL, false);	/* on 8 bit displays we don't want any dithering */
@@ -1641,22 +1703,26 @@ return;
     base.trans = -1;
     GDrawSetFont(pixmap,layer2.font);
 
-    for ( i=(event->u.expose.rect.y-CV_LAYERS2_HEADER_HEIGHT)/CV_LAYERS2_LINE_HEIGHT;
-	    i<(event->u.expose.rect.y+event->u.expose.rect.height+CV_LAYERS2_LINE_HEIGHT-1-CV_LAYERS2_HEADER_HEIGHT)/CV_LAYERS2_LINE_HEIGHT;
-	    ++i ) {
+    // +2 for the defaults, +1 to show one extra (could be partially visible)
+    layerCount = layer2.visible_layers + 2 + 1;
+    if (layerCount > layer2.current_layers) {
+        layerCount = layer2.current_layers;
+    }
+    for (i = 0; i < layerCount; ++i) {
 	ll = i<2 ? i : i+layer2.offtop;
 	if ( ll==layer2.active ) {
-	    r.x = 30; r.width = layer2.sb_start-r.x;
-	    r.y = CV_LAYERS2_HEADER_HEIGHT + i*CV_LAYERS2_LINE_HEIGHT;
+            r.x = leftOffset;
+            r.width = layer2.sb_start - r.x;
+            r.y = layer2.header_height + i * CV_LAYERS2_LINE_HEIGHT;
 	    r.height = CV_LAYERS2_LINE_HEIGHT;
 	    GDrawFillRect(pixmap,&r,GDrawGetDefaultForeground(NULL));
 	}
-	GDrawDrawLine(pixmap,r.x,CV_LAYERS2_HEADER_HEIGHT+i*CV_LAYERS2_LINE_HEIGHT,
-		r.x+r.width,CV_LAYERS2_HEADER_HEIGHT+i*CV_LAYERS2_LINE_HEIGHT,
+        GDrawDrawLine(pixmap, r.x, layer2.header_height + i * CV_LAYERS2_LINE_HEIGHT,
+                      r.x + r.width, layer2.header_height + i * CV_LAYERS2_LINE_HEIGHT,
 		0x808080);
 	if ( i==0 || i==1 ) {
 	    str = i==0?_("Guide") : _("Back");
-	    GDrawDrawText8(pixmap,r.x+2,CV_LAYERS2_HEADER_HEIGHT + i*CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT-12)/2+12,
+            GDrawDrawText8(pixmap, r.x + 2, layer2.header_height + i * CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT - 12) / 2 + 12,
 		    (char *) str,-1,ll==layer2.active?0xffffff:GDrawGetDefaultForeground(NULL));
 	} else if ( layer2.offtop+i>=layer2.current_layers ) {
     break;
@@ -1670,7 +1736,7 @@ return;
 	    base.height = bdfc->ymax-bdfc->ymin+1;
 	    GDrawDrawImage(pixmap,&gi,NULL,
 		    r.x+2+bdfc->xmin,
-		    CV_LAYERS2_HEADER_HEIGHT + i*CV_LAYERS2_LINE_HEIGHT+as-bdfc->ymax);
+                           layer2.header_height + i * CV_LAYERS2_LINE_HEIGHT + as - bdfc->ymax);
 #else
 	    // This logic comes from CVInfoDrawText.
 	    const int layernamesz = 100;
@@ -1683,11 +1749,12 @@ return;
 	      fprintf(stderr, "Invalid layer!\n");
 	    }
 	    // And this comes from above.
-	    GDrawDrawText8(pixmap,r.x+2,CV_LAYERS2_HEADER_HEIGHT + i*CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT-12)/2+12,
+            GDrawDrawText8(pixmap, r.x + 2, layer2.header_height + i * CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT - 12) / 2 + 12,
 		    (char *) layername,-1,ll==layer2.active?0xffffff:GDrawGetDefaultForeground(NULL));
 #endif // 0
 	}
     }
+    GDrawPopClip(pixmap, &oldclip);
 }
 
 // Frank changed the prefix from MID to MIDL in order to avert conflicts with values set in charview_private.h.
@@ -1822,25 +1889,26 @@ static void Layer2Scroll(CharView *cv, GEvent *event) {
     if ( sbt==et_sb_top )
 	off = 0;
     else if ( sbt==et_sb_bottom )
-	off = cv->b.sc->layer_cnt-1-CV_LAYERS2_VISLAYERS;
+	off = cv->b.sc->layer_cnt-1-layer2.visible_layers;
     else if ( sbt==et_sb_up ) {
 	off = layer2.offtop-1;
     } else if ( sbt==et_sb_down ) {
 	off = layer2.offtop+1;
     } else if ( sbt==et_sb_uppage ) {
-	off = layer2.offtop-CV_LAYERS2_VISLAYERS+1;
+	off = layer2.offtop-layer2.visible_layers+1;
     } else if ( sbt==et_sb_downpage ) {
-	off = layer2.offtop+CV_LAYERS2_VISLAYERS-1;
+	off = layer2.offtop+layer2.visible_layers-1;
     } else /* if ( sbt==et_sb_thumb || sbt==et_sb_thumbrelease ) */ {
 	off = event->u.control.u.sb.pos;
     }
-    if ( off>cv->b.sc->layer_cnt-1-CV_LAYERS2_VISLAYERS )
-	off = cv->b.sc->layer_cnt-1-CV_LAYERS2_VISLAYERS;
+    if ( off>cv->b.sc->layer_cnt-1-layer2.visible_layers )
+	off = cv->b.sc->layer_cnt-1-layer2.visible_layers;
     if ( off<0 ) off=0;
     if ( off==layer2.offtop )
 return;
     layer2.offtop = off;
     GScrollBarSetPos(GWidgetGetControl(cvlayers2,CID_SB),off);
+    CVLayers2Reflow(cv, false);
     GDrawRequestExpose(cvlayers2,NULL,false);
 }
 
@@ -1862,12 +1930,21 @@ return( true );
       case et_char: case et_charup:
 	PostCharToWindow(cv->gw,event);
       break;
+      case et_resize:
+        CVLayers2Reflow(cv, true);
+      break;
       case et_expose:
 	Layers2Expose(cv,gw,event);
       break;
       case et_mousedown: {
-	int layer = (event->u.mouse.y-CV_LAYERS2_HEADER_HEIGHT)/CV_LAYERS2_LINE_HEIGHT;
 	if ( event->u.mouse.y>CV_LAYERS2_HEADER_HEIGHT ) {
+        if (event->u.mouse.button >= 4) {
+            // Scroll the list
+            event->u.control.u.sb.type = (event->u.mouse.button == 4 || event->u.mouse.button == 6) ? et_sb_up : et_sb_down;
+            Layer2Scroll(cv, event);
+            return true;
+        }
+	int layer = (event->u.mouse.y-CV_LAYERS2_HEADER_HEIGHT)/CV_LAYERS2_LINE_HEIGHT;
 	    if ( layer<2 ) {
 		cv->b.drawmode = layer==0 ? dm_grid : dm_back;
 		layer2.active = layer;
@@ -2013,6 +2090,7 @@ return;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = 30; gcd[2].gd.pos.y = 5; 
     gcd[2].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels|gg_utf8_popup;
+    gcd[2].gd.cid = CID_LayerLabel;
     gcd[2].gd.popup_msg = (unichar_t *) _("Is Layer Editable?");
     gcd[2].creator = GLabelCreate;
 
@@ -2058,7 +2136,12 @@ return;
     if ( cv->showback[0]&1 ) gcd[4].gd.flags |= gg_cb_on;
     if ( cv->showfore ) gcd[5].gd.flags |= gg_cb_on;
 
-    GGadgetsCreate(cvlayers2,gcd);
+    GGadgetsCreate(cvlayers2, gcd);
+    // Calculate the header height. The '-1' is magic! Needed to obtain symmetry
+    layer2.header_height = GGadgetGetY(GWidgetGetControl(cvlayers2, CID_VGrid)) - 1;
+    // Move the "Layer" label into the correct position based on the width of the checkbox
+    GGadgetGetSize(GWidgetGetControl(cvlayers2, CID_VGrid), &r);
+    GGadgetMove(GWidgetGetControl(cvlayers2, CID_LayerLabel), r.x + r.width, 5);
     if ( cvvisible[0] )
 	GDrawSetVisible(cvlayers2,true);
 }
@@ -3171,11 +3254,11 @@ return( true );
 		    fake.w = cvlayers;
 		    fake.u.mouse.x = 40;
 		    if ( strmatch[i].cid==CID_EGrid ) {
-			fake.u.mouse.y = CV_LAYERS2_HEADER_HEIGHT+12;
+			fake.u.mouse.y = layer2.header_height+12;
 		    } else if ( strmatch[i].cid==CID_EBack ) {
-			fake.u.mouse.y = CV_LAYERS2_HEADER_HEIGHT+12+CV_LAYERS2_LINE_HEIGHT;
+			fake.u.mouse.y = layer2.header_height+12+CV_LAYERS2_LINE_HEIGHT;
 		    } else {
-			fake.u.mouse.y = CV_LAYERS2_HEADER_HEIGHT+12+2*CV_LAYERS2_LINE_HEIGHT;
+			fake.u.mouse.y = layer2.header_height+12+2*CV_LAYERS2_LINE_HEIGHT;
 		    }
 		    cvlayers2_e_h(cvlayers2,&fake);
 		} else {
