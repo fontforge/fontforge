@@ -37,6 +37,7 @@ libgunicode_la_SOURCES =	\
 	charset/iso_8859_13.c	\
 	charset/iso_8859_14.c	\
 	charset/iso_8859_15.c	\
+	charset/iso_8859_16.c	\
 	charset/iso_8859_1.c	\
 	charset/iso_8859_2.c	\
 	charset/iso_8859_3.c	\

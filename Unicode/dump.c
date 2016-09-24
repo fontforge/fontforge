@@ -64,17 +64,17 @@
 char *alphabets[] = { "8859-1.TXT", "8859-2.TXT", "8859-3.TXT", "8859-4.TXT",
     "8859-5.TXT", "8859-6.TXT", "8859-7.TXT", "8859-8.TXT", "8859-9.TXT",
     "8859-10.TXT", "8859-11.TXT", "8859-13.TXT", "8859-14.TXT", "8859-15.TXT",
-    /*"8859-16.TXT",*/ "koi8r.TXT", "JIS0201.txt", "WIN.TXT", "MacRoman.TXT",
+    "8859-16.TXT", "koi8r.TXT", "JIS0201.txt", "WIN.TXT", "MacRoman.TXT",
     "MacSYMBOL.TXT", "zapfding.TXT", /*"MacCYRILLIC.TXT",*/ NULL };
 char *alnames[] = { "i8859_1", "i8859_2", "i8859_3", "i8859_4",
     "i8859_5", "i8859_6", "i8859_7", "i8859_8", "i8859_9",
     "i8859_10", "i8859_11", "i8859_13", "i8859_14", "i8859_15",
-    /* "i8859_16",*/ "koi8_r", "jis201", "win", "mac",
+    "i8859_16", "koi8_r", "jis201", "win", "mac",
     "MacSymbol", "ZapfDingbats", /*"MacCyrillic",*/ NULL };
 int almaps[] = { em_iso8859_1, em_iso8859_2, em_iso8859_3, em_iso8859_4,
     em_iso8859_5, em_iso8859_6, em_iso8859_7, em_iso8859_8, em_iso8859_9,
     em_iso8859_10, em_iso8859_11, em_iso8859_13, em_iso8859_14, em_iso8859_15,
-    /*em_iso8859_16,*/ em_koi8_r, em_jis201, em_win, em_mac, em_symbol, em_zapfding,
+    em_iso8859_16, em_koi8_r, em_jis201, em_win, em_mac, em_symbol, em_zapfding,
     -1 };
 
 
