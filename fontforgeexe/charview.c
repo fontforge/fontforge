@@ -5869,13 +5869,25 @@ static void CVExposeRulers(CharView *cv, GWindow pixmap ) {
 
     // Create the pixmaps
     if (cv->hruler != NULL) {
-        GDrawDestroyWindow(cv->hruler);
+        GDrawGetSize(cv->hruler, &rect);
+        if (rect.width != cv->width || rect.height != cv->rulerh) {
+            GDrawDestroyWindow(cv->hruler);
+            cv->hruler = NULL;
+        }
     }
     if (cv->vruler != NULL) {
-        GDrawDestroyWindow(cv->vruler);
+        GDrawGetSize(cv->vruler, &rect);
+        if (rect.height != cv->height || rect.width != cv->rulerh) {
+            GDrawDestroyWindow(cv->vruler);
+            cv->vruler = NULL;
+        }
     }
-    cv->hruler = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v), cv->v, cv->width, cv->rulerh);
-    cv->vruler = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v), cv->v, cv->rulerh, cv->height);
+    if (cv->hruler == NULL) {
+        cv->hruler = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v), cv->v, cv->width, cv->rulerh);
+    }
+    if (cv->vruler == NULL) {
+        cv->vruler = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v), cv->v, cv->rulerh, cv->height);
+    }
 
     // Set background
     rect.x = 0; rect.width = cv->width; rect.y = 0; rect.height = cv->rulerh;
