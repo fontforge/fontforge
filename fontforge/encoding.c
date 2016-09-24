@@ -253,6 +253,8 @@ Encoding *_FindOrMakeEncoding(const char *name,int make_it) {
 	    strncpy(buffer+3,name+4,sizeof(buffer)-3);
         buffer[sizeof(buffer)-1] = '\0';
 	    name = buffer;
+    } else if ( strcasecmp(name,"isolatin10")==0 || strcasecmp(name,"latin10")==0 ) {
+        name = "iso8859-16";	/* try 10 before trying 1 */
     } else if ( strcasecmp(name,"isolatin1")==0 ) {
         name = "iso8859-1";
     } else if ( strcasecmp(name,"isocyrillic")==0 ) {

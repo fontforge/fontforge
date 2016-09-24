@@ -122,6 +122,7 @@ done > generate.log 2>&1 <<_EOT_
 -o iso_8859_13.c default i8859_13 raw/8859-13.TXT
 -o iso_8859_14.c default i8859_14 raw/8859-14.TXT
 -o iso_8859_15.c default i8859_15 raw/8859-15.TXT
+-o iso_8859_16.c default i8859_16 raw/8859-16.TXT
 -o jis201.c default jis201 raw/JIS0201.TXT
 -o koi8_r.c default koi8_r raw/KOI8-R.TXT
 -o mac.c default mac raw/ROMAN.TXT

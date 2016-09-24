@@ -83,7 +83,7 @@ static const char *charset_names[] = {
     "custom",
     "iso8859-1", "iso8859-2", "iso8859-3", "iso8859-4", "iso8859-5",
     "iso8859-6", "iso8859-7", "iso8859-8", "iso8859-9", "iso8859-10",
-    "iso8859-11", "iso8859-13", "iso8859-14", "iso8859-15",
+    "iso8859-11", "iso8859-13", "iso8859-14", "iso8859-15", "iso8859-16",
     "koi8-r",
     "jis201",
     "win", "mac", "symbol", "zapfding", "adobestandard",
