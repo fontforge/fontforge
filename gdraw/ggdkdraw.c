@@ -1021,7 +1021,11 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             // never happen any more.
             assert(gw->cc == NULL);
 
+#ifdef GGDKDRAW_GDK_3_22
+            gw->drawing_ctx = gdk_window_begin_draw_frame(w, reg);
+#else
             gdk_window_begin_paint_region(w, reg);
+#endif
             gw->is_in_paint = true;
             gdisp->dirty_window = gw;
 
@@ -1043,7 +1047,11 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
                 gw->cc = cairo_create(gw->cs);
                 gw->expose_region = cairo_region_reference(reg);
 #else
+#ifdef GGDKDRAW_GDK_3_22
+                gw->cc = cairo_reference(gdk_drawing_context_get_cairo_context(gw->drawing_ctx));
+#else
                 gw->cc = gdk_cairo_create(gw->w);
+#endif
 #endif
                 gdk_cairo_region(gw->cc, reg);
                 cairo_clip(gw->cc);
