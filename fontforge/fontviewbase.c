@@ -27,6 +27,7 @@
  */
 #include "fontforge.h"
 #include "baseviews.h"
+#include "cvundoes.h"
 #include "groups.h"
 #include "psfont.h"
 #include "scripting.h"

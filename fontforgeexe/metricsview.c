@@ -26,6 +26,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "cvundoes.h"
 #include "lookups.h"
 #include <gkeysym.h>
 #include <gresource.h>

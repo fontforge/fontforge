@@ -31,6 +31,7 @@
 #include "collabclientpriv.h"
 
 #include "fontforgeui.h"
+#include "cvundoes.h"
 #include "groups.h"
 #include "psfont.h"
 #include "scripting.h"

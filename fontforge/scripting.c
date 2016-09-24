@@ -27,6 +27,7 @@
 /*			   Yet another interpreter			      */
 
 #include "fontforge.h"
+#include "cvundoes.h"
 #include <gfile.h>
 #include <utype.h>
 #include <ustring.h>

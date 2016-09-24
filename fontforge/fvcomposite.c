@@ -26,6 +26,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgevw.h"
+#include "cvundoes.h"
 #include <chardata.h>
 #include <math.h>
 #include <utype.h>

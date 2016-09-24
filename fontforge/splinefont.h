@@ -2215,8 +2215,6 @@ extern void SplineSetBeziersClear(SplineSet *spl);
 extern void RefCharFree(RefChar *ref);
 extern void RefCharsFree(RefChar *ref);
 extern void RefCharsFreeRef(RefChar *ref);
-extern void CopyBufferFree(void);
-extern void CopyBufferClearCopiedFrom(SplineFont *dying);
 extern void UndoesFree(Undoes *undo);
 extern void StemInfosFree(StemInfo *h);
 extern void StemInfoFree(StemInfo *h);
@@ -2445,7 +2443,6 @@ extern SplineChar *MakeDupRef(SplineChar *base, int local_enc, int uni_enc);
 extern void SCRemoveDependent(SplineChar *dependent,RefChar *rf,int layer);
 extern void SCRemoveLayerDependents(SplineChar *dependent,int layer);
 extern void SCRemoveDependents(SplineChar *dependent);
-extern int SCDependsOnSC(SplineChar *parent, SplineChar *child);
 extern void BCCompressBitmap(BDFChar *bdfc);
 extern void BCRegularizeBitmap(BDFChar *bdfc);
 extern void BCRegularizeGreymap(BDFChar *bdfc);
@@ -2919,21 +2916,7 @@ extern void SCLigCaretheck(SplineChar *sc,int clean);
 extern BDFChar *BDFMakeGID(BDFFont *bdf,int gid);
 extern BDFChar *BDFMakeChar(BDFFont *bdf,EncMap *map,int enc);
 
-extern RefChar *RefCharsCopyState(SplineChar *sc,int layer);
-extern int SCWasEmpty(SplineChar *sc, int skip_this_layer);
 extern void SCUndoSetLBearingChange(SplineChar *sc,int lb);
-extern Undoes *SCPreserveHints(SplineChar *sc,int layer);
-extern Undoes *SCPreserveLayer(SplineChar *sc,int layer,int dohints);
-extern Undoes *_SCPreserveLayer(SplineChar *sc,int layer,int dohints);
-extern Undoes *SCPreserveState(SplineChar *sc,int dohints);
-extern Undoes *SCPreserveBackground(SplineChar *sc);
-extern Undoes *SFPreserveGuide(SplineFont *sf);
-extern Undoes *_SFPreserveGuide(SplineFont *sf);
-extern Undoes *SCPreserveWidth(SplineChar *sc);
-extern Undoes *SCPreserveVWidth(SplineChar *sc);
-extern Undoes *BCPreserveState(BDFChar *bc);
-extern void BCDoRedo(BDFChar *bc);
-extern void BCDoUndo(BDFChar *bc);
 
 extern int isaccent(int uni);
 extern int SFIsCompositBuildable(SplineFont *sf,int unicodeenc,SplineChar *sc, int layer);
@@ -2943,7 +2926,6 @@ extern void SCBuildComposit(SplineFont *sf, SplineChar *sc, int layer, BDFFont *
 extern int SCAppendAccent(SplineChar *sc,int layer, char *glyph_name,int uni,uint32 pos);
 extern const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,int nocheck);
 
-extern int getAdobeEnc(const char *name);
 
 extern void SFSplinesFromLayers(SplineFont *sf,int tostroke);
 extern void SFSetLayerWidthsStroked(SplineFont *sf, real strokewidth);
@@ -3323,8 +3305,6 @@ extern EncMap *EncMapFromEncoding(SplineFont *sf,Encoding *enc);
 extern void SFRemoveGlyph(SplineFont *sf,SplineChar *sc);
 extern void SFAddEncodingSlot(SplineFont *sf,int gid);
 extern void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int baseenc);
-extern void SCDoRedo(SplineChar *sc,int layer);
-extern void SCDoUndo(SplineChar *sc,int layer);
 extern void SCCopyWidth(SplineChar *sc,enum undotype);
 extern void SCAppendPosSub(SplineChar *sc,enum possub_type type, char **d,SplineFont *copied_from);
 extern void SCClearBackground(SplineChar *sc);

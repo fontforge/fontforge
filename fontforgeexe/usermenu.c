@@ -26,6 +26,7 @@
  */
 
 #include "fontforgeui.h"
+#include "cvundoes.h"
 #include "usermenu.h"
 #include "ustring.h"
 
