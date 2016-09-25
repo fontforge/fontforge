@@ -9042,7 +9042,7 @@ return( false );
 	if ( getname(asfd,tok)!=1 )
 return( false );
     }
-    if ( sf->map->enc!=newmap ) {
+    if ( sf->map!=NULL && sf->map->enc!=newmap ) {
 	EncMap *map = EncMapFromEncoding(sf,newmap);
 	EncMapFree(sf->map);
 	sf->map = map;
