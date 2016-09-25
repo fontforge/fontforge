@@ -150,6 +150,8 @@ return( em_iso8859_13+val-13 );
 	}
     }
 
+    if ( uc_strstrmatch(setname,"latin10")!=NULL )
+return( em_iso8859_16 );
     if ( uc_strstrmatch(setname,"latin1")!=NULL )
 return( em_iso8859_1 );
     else if ( uc_strstrmatch(setname,"latin2")!=NULL )

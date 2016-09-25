@@ -36,6 +36,7 @@ wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-11.TXT
 wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-13.TXT
 wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-14.TXT
 wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-15.TXT
+wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-16.TXT
 wget http://unicode.org/Public/MAPPINGS/VENDORS/MISC/KOI8-R.TXT
 mv KOI8-R.TXT koi8r.TXT
 wget http://unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/JIS/JIS0201.TXT
