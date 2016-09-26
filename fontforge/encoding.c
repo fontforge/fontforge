@@ -1309,7 +1309,8 @@ static struct cmap *ParseCMap(char *filename) {
     char *end, *pt;
     int val, pos;
     enum cmaptype in;
-    static const char *bcsr = "begincodespacerange", *bndr = "beginnotdefrange", *bcr = "begincidrange";
+    int in_is_single; // We set this if we are to parse cidchars into cidranges.
+    static const char *bcsr = "begincodespacerange", *bndr = "beginnotdefrange", *bcr = "begincidrange", *bcc = "begincidchar";
     static const char *reg = "/Registry", *ord = "/Ordering", *sup="/Supplement";
 
     file = fopen(filename,"r");
@@ -1335,29 +1336,44 @@ return( NULL );
     continue;
 	    val = strtol(pt,&end,10);
 	    while ( isspace(*end)) ++end;
-	    if ( strncmp(end,bcsr,strlen(bcsr))==0 )
+	    in_is_single = 0;
+	    if ( strncmp(end,bcsr,strlen(bcsr))==0 ) {
 		in = cmt_coderange;
-	    else if ( strncmp(end,bndr,strlen(bndr))==0 )
+	    } else if ( strncmp(end,bndr,strlen(bndr))==0 ) {
 		in = cmt_notdefs;
-	    else if ( strncmp(end,bcr,strlen(bcr))==0 )
+	    } else if ( strncmp(end,bcr,strlen(bcr))==0 ) {
 		in = cmt_cid;
+	    } else if ( strncmp(end,bcc,strlen(bcc))==0 ) {
+		in = cmt_cid;
+		in_is_single = 1;
+	    }
 	    if ( in!=cmt_out ) {
 		pos = cmap->groups[in].n;
 		cmap->groups[in].ranges = ExtendArray(cmap->groups[in].ranges,&cmap->groups[in].n,val);
 	    }
 	} else if ( strncmp(pt,"end",3)== 0 )
 	    in = cmt_out;
+    else if (pos >= cmap->groups[in].n) {
+        LogError(_("cidmap entry out of bounds: %s"), buf2);
+    }
 	else {
+	    // Read the first bracketed code.
 	    if ( *pt!='<' )
 	continue;
 	    cmap->groups[in].ranges[pos].first = strtoul(pt+1,&end,16);
 	    if ( *end=='>' ) ++end;
 	    while ( isspace(*end)) ++end;
-	    if ( *end=='<' ) ++end;
-	    cmap->groups[in].ranges[pos].last = strtoul(end,&end,16);
+	    if (in_is_single) {
+	      cmap->groups[in].ranges[pos].last = cmap->groups[in].ranges[pos].first;
+	    } else {
+	      // Read the second bracketed code.
+	      if ( *end=='<' ) ++end;
+	      cmap->groups[in].ranges[pos].last = strtoul(end,&end,16);
+	      if ( *end=='>' ) ++end;
+	    }
 	    if ( in!=cmt_coderange ) {
-		if ( *end=='>' ) ++end;
 		while ( isspace(*end)) ++end;
+	        // Read the unbracketed argument.
 		cmap->groups[in].ranges[pos].cid = strtol(end,&end,10);
 	    }
 	    ++pos;
@@ -1577,7 +1593,7 @@ return( false );
     }
     sf = CIDFlatten(sf,glyphs,curmax);
 
-    warned = true;
+    warned = false;
     for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	EncMap *map = fvs->map;
 	for ( j=0; j<2; ++j ) {
@@ -1627,6 +1643,10 @@ return( false );
 		map->map = realloc(map->map,(map->encmax = map->enccount = max+extras)*sizeof(int32));
 		memset(map->map,-1,map->enccount*sizeof(int32));
 		memset(map->backmap,-1,sf->glyphcnt*sizeof(int32));
+		fvs->selected = realloc(fvs->selected, map->enccount*sizeof(char));
+		if (map->enccount > sf->glyphcnt) {
+		    memset(fvs->selected+sf->glyphcnt, 0, map->enccount-sf->glyphcnt);
+		}
 		map->remap = cmap->remap; cmap->remap = NULL;
 	    }
 	    warned = true;
