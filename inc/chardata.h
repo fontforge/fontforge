@@ -39,6 +39,8 @@ extern const unichar_t unicode_from_i8859_14[];
 extern struct charmap i8859_14_from_unicode;
 extern const unichar_t unicode_from_i8859_15[];
 extern struct charmap i8859_15_from_unicode;
+extern const unichar_t unicode_from_i8859_16[];
+extern struct charmap i8859_16_from_unicode;
 extern const unichar_t unicode_from_koi8_r[];
 extern struct charmap koi8_r_from_unicode;
 extern const unichar_t unicode_from_jis201[];
