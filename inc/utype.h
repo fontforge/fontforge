@@ -103,9 +103,7 @@ extern const unsigned char  ____digitval[];
 #define isarabmedial(ch)	(____utype[(ch)+1]&____MEDIAL)
 #define isarabfinal(ch)		(____utype[(ch)+1]&____FINAL)
 #define isarabisolated(ch)	(____utype[(ch)+1]&____ISOLATED)
-
 #define isdecompositionnormative(ch) (____utype[(ch)+1]&____DECOMPNORM)
-
 #define isligorfrac(ch)		(____utype[(ch)+1]&____LIG_OR_FRAC)
 
 extern const uint32	____utype[];		/* hold character type features for each Unicode.org defined character */
