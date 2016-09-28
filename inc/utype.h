@@ -4,7 +4,7 @@
 /* License: BSD-3-clause */
 /* Contributions: Joe Da Silva */
 
-/* This file was generated using the program 'makeutype' */
+/* This file was generated using the program 'makeutype' for Unicode_version 9.0 */
 
 #include <ctype.h>	/* Include here so we can control it. If a system header includes it later bad things happen */
 #include <basics.h>	/* Include here so we can use pre-defined int types to correctly size constant data arrays. */

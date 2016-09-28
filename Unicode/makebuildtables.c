@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <utype.h>
+#include "utype.c"
 
 #define ACUTE		0x1
 #define GRAVE		0x2

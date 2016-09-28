@@ -58,9 +58,10 @@ uni_maps=(
 	"$u/VENDORS/MICSFT/WINDOWS/CP950.TXT"
 )
 
-a="ftp://ftp.oreilly.de/pub/examples/english_examples/nutshell/cjkv/adobe"
+#a="ftp://ftp.oreilly.de/pub/examples/english_examples/nutshell/cjkv/adobe"
+a="ftp://ftp.netbsd.org/pub/pkgsrc/distfiles/adobe-cmaps-20060615/"
 adobe_maps=(
-#	"$a/ac15.tar.Z"		# Big5
+	"$a/ac15.tar.Z"		# Big5
 	"$a/ag15.tar.Z"		# GB2312
 	"$a/aj16.tar.Z"		# JIS X 0208
 	"$a/aj20.tar.Z"		# JIS X 0212
