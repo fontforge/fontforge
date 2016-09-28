@@ -3262,6 +3262,8 @@ static int SplineSetFindDupes(SplineSet *contours) {
 		}
 		contour_curr = contour_curr->next;
 	}
+	pointer_list_item_free_chain(points);
+	pointer_list_item_free_chain(paths);
 	return err;
 }
 #endif // 0
