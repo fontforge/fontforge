@@ -47,6 +47,7 @@ noinst_HEADERS = \
 	crctab.h \
 	cvexport.h \
 	cvimages.h \
+	dumpbdf.h \
 	fontforgeui.h sftextfieldP.h configure-fontforge.h views.h 	\
 	flaglist.h strlist.h charview_private.h cvundoes.h tables.h
 
