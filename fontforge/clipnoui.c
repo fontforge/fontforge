@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "clipnoui.h"
+
 #include "fontforge.h"
 #include "uiinterface.h"
 
