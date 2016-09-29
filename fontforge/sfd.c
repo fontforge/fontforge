@@ -26,11 +26,11 @@
  */
 #include "autohint.h"
 #include "bvedit.h"
+#include "cvimages.h"
+#include "cvundoes.h"
 #include "fontforge.h"
 #include "splinefont.h"
 #include "baseviews.h"
-#include "cvimages.h"
-#include "cvundoes.h"
 #include "views.h"
 #include <gdraw.h>
 #include <ustring.h>

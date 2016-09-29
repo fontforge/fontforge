@@ -27,8 +27,8 @@
  */
 
 #include "bvedit.h"
-#include "fontforgevw.h"
 #include "cvundoes.h"
+#include "fontforgevw.h"
 #include "scriptfuncs.h"
 #include <math.h>
 #include <ustring.h>

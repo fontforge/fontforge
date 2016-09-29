@@ -27,8 +27,8 @@
 
 #include "autohint.h"
 
-#include "fontforge.h"
 #include "cvundoes.h"
+#include "fontforge.h"
 #include <stdio.h>
 #include <math.h>
 #include "splinefont.h"

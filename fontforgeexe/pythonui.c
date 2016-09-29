@@ -37,8 +37,8 @@
 #include "Python.h"
 #include "structmember.h"
 
-#include "fontforgeui.h"
 #include "cvundoes.h"
+#include "fontforgeui.h"
 #include "ttf.h"
 #include "plugins.h"
 #include "ustring.h"

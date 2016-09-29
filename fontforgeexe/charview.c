@@ -30,9 +30,9 @@
 #include "autosave.h"
 #include "autotrace.h"
 #include "autowidth.h"
-#include "fontforgeui.h"
 #include "cvruler.h"
 #include "cvundoes.h"
+#include "fontforgeui.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>

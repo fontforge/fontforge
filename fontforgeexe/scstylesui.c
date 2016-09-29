@@ -26,8 +26,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "autohint.h"
-#include "fontforgeui.h"
 #include "cvundoes.h"
+#include "fontforgeui.h"
 #include <ustring.h>
 #include <utype.h>
 #include <gkeysym.h>

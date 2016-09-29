@@ -27,8 +27,8 @@
 
 #include "cvimages.h"
 
-#include "fontforgevw.h"
 #include "cvundoes.h"
+#include "fontforgevw.h"
 #include <math.h>
 #include <sys/types.h>
 #include <dirent.h>

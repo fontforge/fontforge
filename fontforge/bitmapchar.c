@@ -28,8 +28,8 @@
 #include "bitmapchar.h"
 
 #include "bvedit.h"
-#include "fontforgevw.h"
 #include "cvundoes.h"
+#include "fontforgevw.h"
 #include <string.h>
 #include <ustring.h>
 #include <utype.h>

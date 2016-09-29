@@ -29,8 +29,8 @@
 #include "autowidth.h"
 #include "bitmapchar.h"
 #include "bvedit.h"
-#include "fontforgeui.h"
 #include "cvundoes.h"
+#include "fontforgeui.h"
 #include "lookups.h"
 #include <gkeysym.h>
 #include <gresource.h>

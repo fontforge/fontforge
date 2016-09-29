@@ -35,8 +35,8 @@
 #include "bvedit.h"
 #include "cvexport.h"
 #include "cvimages.h"
-#include "fontforge.h"
 #include "cvundoes.h"
+#include "fontforge.h"
 #include <gfile.h>
 #include <utype.h>
 #include <ustring.h>

@@ -29,8 +29,8 @@
 #include "autowidth.h"
 
 #include "autohint.h"
-#include "fontforgevw.h"
 #include "cvundoes.h"
+#include "fontforgevw.h"
 #include <math.h>
 #include <ustring.h>
 #include <utype.h>

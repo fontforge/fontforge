@@ -27,8 +27,8 @@
 
 #if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
 
-#include "fontforgeui.h"
 #include "cvundoes.h"
+#include "fontforgeui.h"
 #include <gresource.h>
 #include <utype.h>
 #include <ustring.h>

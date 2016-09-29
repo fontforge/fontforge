@@ -26,8 +26,8 @@
  */
 #include "autohint.h"
 #include "cvexport.h"
-#include "fontforgeui.h"
 #include "cvundoes.h"
+#include "fontforgeui.h"
 #include <math.h>
 #include <locale.h>
 #include <string.h>

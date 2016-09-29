@@ -25,9 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "autohint.h"
-#include "fontforge.h"
 #include "cvimages.h"
 #include "cvundoes.h"
+#include "fontforge.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>
