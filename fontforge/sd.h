@@ -79,7 +79,7 @@ struct image {
     Color col;				/* that gets poured into imagemasks */
 };
 
-struct group {
+struct e_group {
     struct entity *group;
 };
 
@@ -91,7 +91,7 @@ typedef struct entity {
 	struct filledsplines splines;
 	struct text text;
 	struct image image;
-	struct group group;
+	struct e_group group;
     } u;
     SplineSet *clippath;
     DBounds bb;
