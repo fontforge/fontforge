@@ -36,6 +36,7 @@
 #include "cvexport.h"
 #include "cvimages.h"
 #include "cvundoes.h"
+#include "dumppfa.h"
 #include "fontforge.h"
 #include <gfile.h>
 #include <utype.h>

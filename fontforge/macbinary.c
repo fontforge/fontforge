@@ -26,6 +26,7 @@
  */
 #include "bvedit.h"
 #include "crctab.h"
+#include "dumppfa.h"
 #include "fontforgevw.h"
 #include <stdlib.h>
 #include <string.h>

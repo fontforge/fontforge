@@ -26,6 +26,7 @@
  */
 #include "autohint.h"
 #include "cvundoes.h"
+#include "dumppfa.h"
 #include "fontforgevw.h"
 #include <ustring.h>
 #include <utype.h>

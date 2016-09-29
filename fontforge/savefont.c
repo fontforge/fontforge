@@ -29,6 +29,7 @@
 #include "autohint.h"
 #include "cvundoes.h"
 #include "dumpbdf.h"
+#include "dumppfa.h"
 #include "fontforgevw.h"
 #include "ustring.h"
 #include "gfile.h"

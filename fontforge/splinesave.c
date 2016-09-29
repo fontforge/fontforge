@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "autohint.h"
+#include "dumppfa.h"
 #include "fontforge.h"
 #include <stdio.h>
 #include <math.h>

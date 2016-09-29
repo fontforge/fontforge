@@ -34,6 +34,7 @@
 #endif
 
 #include "autohint.h"
+#include "dumppfa.h"
 #include "fontforgevw.h"
 #include <unistd.h>
 #include <math.h>

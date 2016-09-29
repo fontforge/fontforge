@@ -27,6 +27,7 @@
  */
 #include "autowidth.h"
 #include "bitmapchar.h"
+#include "dumppfa.h"
 #include "fontforgeui.h"
 #include "ofl.h"
 #include <ustring.h>

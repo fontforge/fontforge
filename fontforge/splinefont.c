@@ -27,6 +27,7 @@
 
 #include "autohint.h"
 #include "autotrace.h"
+#include "dumppfa.h"
 #include "fontforgevw.h"
 #include <utype.h>
 #include <ustring.h>

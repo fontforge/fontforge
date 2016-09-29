@@ -37,6 +37,7 @@
 #include "bitmapchar.h"
 #include "bvedit.h"
 #include "cvundoes.h"
+#include "dumppfa.h"
 #include "fontforgeui.h"
 #include "groups.h"
 #include "psfont.h"

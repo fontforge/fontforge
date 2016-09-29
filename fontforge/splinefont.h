@@ -2125,10 +2125,6 @@ enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, bf_sfnt_ms, bf_otb,
 extern int32 filechecksum(FILE *file);
 extern const char *GetAuthor(void);
 extern SplineChar *SFFindExistingCharMac(SplineFont *,EncMap *map, int unienc);
-extern void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
-	SplineChar *sc, int refs_to_splines, int pdfopers,int layer );
-extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags,EncMap *enc,SplineFont *fullsf,int layer);
-extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *enc,SplineFont *fullsf,int layer);
 extern int WriteMacPSFont(char *fontname,SplineFont *sf,enum fontformat format,
 	int flags,EncMap *enc,int layer);
 extern int _WriteWOFFFont(FILE *ttf,SplineFont *sf, enum fontformat format,
@@ -2462,7 +2458,6 @@ extern void BDFCharFree(BDFChar *bdfc);
 extern void BDFPropsFree(BDFFont *bdf);
 extern void BDFFontFree(BDFFont *bdf);
 extern void SFDefaultAscent(SplineFont *sf);
-extern int  PSBitmapDump(char *filename,BDFFont *font, EncMap *map);
 extern int  FNTFontDump(char *filename,BDFFont *font, EncMap *map, int res);
 extern int  FONFontDump(char *filename,SplineFont *sf, int32 *sizes,int res,
 	EncMap *map);
@@ -2663,7 +2658,6 @@ extern SplineSet *SplineSetRemoveOverlap(SplineChar *sc,SplineSet *base,enum ove
 extern SplineSet *SSShadow(SplineSet *spl,real angle, real outline_width,
 	real shadow_length,SplineChar *sc, int wireframe);
 
-extern double BlueScaleFigureForced(struct psdict *private_,real bluevalues[], real otherblues[]);
 extern double BlueScaleFigure(struct psdict *private_,real bluevalues[], real otherblues[]);
 extern double SFStdVW(SplineFont *sf);
 
@@ -2906,12 +2900,6 @@ extern void SFClearAutoSave(SplineFont *sf);
 
 extern void PSCharsFree(struct pschars *chrs);
 extern void PSDictFree(struct psdict *chrs);
-extern struct psdict *PSDictCopy(struct psdict *dict);
-extern int PSDictFindEntry(struct psdict *dict, const char *key);
-extern char *PSDictHasEntry(struct psdict *dict, const char *key);
-extern int PSDictSame(struct psdict *dict1, struct psdict *dict2);
-extern int PSDictRemoveEntry(struct psdict *dict, const char *key);
-extern int PSDictChangeEntry(struct psdict *dict, const char *key, const char *newval);
 extern int SFPrivateGuess(SplineFont *sf,int layer, struct psdict *private,
 	char *name, int onlyone);
 

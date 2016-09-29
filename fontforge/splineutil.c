@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "cvundoes.h"
+#include "dumppfa.h"
 #include "fontforgevw.h"
 #include "encoding.h"
 #include <math.h>

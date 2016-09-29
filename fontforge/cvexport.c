@@ -29,6 +29,7 @@
 
 #include "autohint.h"
 #include "bvedit.h"
+#include "dumppfa.h"
 #include "fontforgevw.h"
 #include <math.h>
 #include <locale.h>
