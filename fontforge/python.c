@@ -50,6 +50,7 @@ extern int old_sfnt_flags;
 #include "autotrace.h"
 #include "autowidth2.h"
 #include "bitmapcontrol.h"
+#include "cvexport.h"
 #include "fontforgevw.h"
 #include "cvundoes.h"
 #include "ttf.h"

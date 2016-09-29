@@ -31,6 +31,7 @@
 #include "bitmapchar.h"
 #include "bvedit.h"
 #include "config.h"
+#include "cvexport.h"
 #include "fontforgevw.h"
 #include "views.h"
 #include <math.h>

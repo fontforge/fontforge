@@ -3213,21 +3213,8 @@ extern void SCAddScaleImage(SplineChar *sc,struct gimage *image,int doclear,int 
 extern void SCInsertImage(SplineChar *sc,struct gimage *image,real scale,real yoff, real xoff, int layer);
 extern void SCImportFig(SplineChar *sc,int layer,char *path,int doclear);
 
-extern int _ExportPlate(FILE *pdf,SplineChar *sc,int layer);
-extern int _ExportPDF(FILE *pdf,SplineChar *sc,int layer);
-extern int _ExportEPS(FILE *eps,SplineChar *sc,int layer, int gen_preview);
 extern int _ExportSVG(FILE *svg,SplineChar *sc,int layer);
 extern int _ExportGlif(FILE *glif,SplineChar *sc,int layer);
-extern int ExportEPS(char *filename,SplineChar *sc,int layer);
-extern int ExportPDF(char *filename,SplineChar *sc,int layer);
-extern int ExportPlate(char *filename,SplineChar *sc,int layer);
-extern int ExportSVG(char *filename,SplineChar *sc,int layer);
-extern int ExportGlif(char *filename,SplineChar *sc,int layer);
-extern int ExportFig(char *filename,SplineChar *sc,int layer);
-extern int BCExportXBM(char *filename,BDFChar *bdfc, int format);
-extern int ExportImage(char *filename,SplineChar *sc, int layer, int format, int pixelsize, int bitsperpixel);
-extern void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int gid,
-	char *format_spec, EncMap *map);
 
 extern EncMap *EncMapFromEncoding(SplineFont *sf,Encoding *enc);
 extern void SFRemoveGlyph(SplineFont *sf,SplineChar *sc);
