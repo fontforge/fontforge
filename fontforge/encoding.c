@@ -26,6 +26,7 @@
  */
 
 #include "bitmapchar.h"
+#include "bvedit.h"
 #include "fontforgevw.h"
 #include "splinefont.h"
 #include <ustring.h>

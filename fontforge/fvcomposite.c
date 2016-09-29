@@ -28,6 +28,7 @@
 #include "autohint.h"
 #include "autowidth.h"
 #include "bitmapchar.h"
+#include "bvedit.h"
 #include "fontforgevw.h"
 #include "cvundoes.h"
 #include <chardata.h>

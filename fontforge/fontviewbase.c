@@ -28,6 +28,7 @@
 #include "autohint.h"
 #include "autosave.h"
 #include "bitmapchar.h"
+#include "bvedit.h"
 #include "fontforge.h"
 #include "baseviews.h"
 #include "cvundoes.h"

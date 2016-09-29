@@ -28,6 +28,7 @@
 #include "autotrace.h"
 #include "autowidth.h"
 #include "bitmapchar.h"
+#include "bvedit.h"
 #include "fontforgeui.h"
 #include "cvundoes.h"
 #include "lookups.h"

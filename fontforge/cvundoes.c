@@ -29,6 +29,7 @@
 
 #include "autohint.h"
 #include "bitmapchar.h"
+#include "bvedit.h"
 #include "config.h"
 #include "fontforgevw.h"
 #include "views.h"

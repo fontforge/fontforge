@@ -32,6 +32,7 @@
 #include "autowidth2.h"
 #include "bitmapchar.h"
 #include "bitmapcontrol.h"
+#include "bvedit.h"
 #include "fontforge.h"
 #include "cvundoes.h"
 #include <gfile.h>

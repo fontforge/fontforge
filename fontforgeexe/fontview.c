@@ -35,6 +35,7 @@
 #include "autowidth.h"
 #include "autowidth2.h"
 #include "bitmapchar.h"
+#include "bvedit.h"
 #include "fontforgeui.h"
 #include "cvundoes.h"
 #include "groups.h"

@@ -432,19 +432,6 @@ extern void FVCompact(FontViewBase *fv);
 extern void FVDetachGlyphs(FontViewBase *fv);
 extern void FVDetachAndRemoveGlyphs(FontViewBase *fv);
 
-extern void BCTrans(BDFFont *bdf,BDFChar *bc,BVTFunc *bvts,FontViewBase *fv );
-extern void BCSetPoint(BDFChar *bc, int x, int y, int color);
-extern void BCTransFunc(BDFChar *bc,enum bvtools type,int xoff,int yoff);
-extern void skewselect(BVTFunc *bvtf,real t);
-
-extern BDFFloat *BDFFloatCreate(BDFChar *bc,int xmin,int xmax,int ymin,int ymax, int clear);
-extern BDFFloat *BDFFloatCopy(BDFFloat *sel);
-extern BDFFloat *BDFFloatConvert(BDFFloat *sel,int newdepth, int olddepth);
-extern void BDFFloatFree(BDFFloat *sel);
-
-extern void BCMergeReferences(BDFChar *base,BDFChar *cur,int8 xoff,int8 yoff);
-extern BDFChar *BDFGetMergedChar(BDFChar *bc) ;
-extern void BCUnlinkThisReference(struct fontviewbase *fv,BDFChar *bc);
 
 extern Undoes *_CVPreserveTState(CharViewBase *cv,PressedOn *);
 extern void CopySelected(CharViewBase *cv,int doanchors);

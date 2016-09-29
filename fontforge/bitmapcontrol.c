@@ -28,6 +28,7 @@
 #include "bitmapcontrol.h"
 
 #include "autohint.h"
+#include "bvedit.h"
 #include "fontforgevw.h"
 #include "ustring.h"
 #include <math.h>
