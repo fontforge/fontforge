@@ -26,6 +26,7 @@
  */
 #include "fontforgeui.h"
 #include "bvedit.h"
+#include "cvimages.h"
 #include "cvundoes.h"
 #include <math.h>
 #include <sys/types.h>

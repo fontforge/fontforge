@@ -29,6 +29,7 @@
 #include "fontforge.h"
 #include "splinefont.h"
 #include "baseviews.h"
+#include "cvimages.h"
 #include "cvundoes.h"
 #include "views.h"
 #include <gdraw.h>

@@ -26,6 +26,7 @@
  */
 #include "bitmapchar.h"
 #include "bvedit.h"
+#include "cvimages.h"
 #include "fontforgevw.h"
 #include <gfile.h>
 #include <math.h>

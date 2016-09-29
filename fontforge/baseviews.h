@@ -322,8 +322,6 @@ extern void FVAddEncodingSlot(FontViewBase *fv,int gid);
 extern int FVImportMult(FontViewBase *fv, char *filename,int toback,int bf);
 extern int FVImportBDF(FontViewBase *fv, char *filename,int ispk, int toback);
 extern void MergeFont(FontViewBase *fv,SplineFont *other,int preserveCrossFontKerning);
-extern int FVImportImages(FontViewBase *fv,char *path,int isimage,int toback,int flags);
-extern int FVImportImageTemplate(FontViewBase *fv,char *path,int isimage,int toback,int flags);
 extern void ScriptPrint(FontViewBase *fv,int type,int32 *pointsizes,char *samplefile,
 	unichar_t *sample, char *outputfile);
 extern int FVBParseSelectByPST(FontViewBase *fv,struct lookup_subtable *sub,

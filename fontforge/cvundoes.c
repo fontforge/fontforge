@@ -32,6 +32,7 @@
 #include "bvedit.h"
 #include "config.h"
 #include "cvexport.h"
+#include "cvimages.h"
 #include "fontforgevw.h"
 #include "views.h"
 #include <math.h>

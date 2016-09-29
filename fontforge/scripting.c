@@ -34,6 +34,7 @@
 #include "bitmapcontrol.h"
 #include "bvedit.h"
 #include "cvexport.h"
+#include "cvimages.h"
 #include "fontforge.h"
 #include "cvundoes.h"
 #include <gfile.h>

@@ -128,7 +128,6 @@ extern Entity *EntityInterpretPS(FILE *ps,int *width);
 extern Entity *EntityInterpretSVG(char *filename,char *memory, int memlen, int em_size,int ascent);
 extern Entity *EntityInterpretPDFPage(FILE *pdf,int select_page);
 extern SplinePointList *SplinesFromEntities(Entity *ent,int *flags,int is_stroked);
-extern void SCAppendEntityLayers(SplineChar *sc, Entity *ent);
 extern void EntityDefaultStrokeFill(Entity *ent);
 
 	/* Used for type3 fonts briefly */

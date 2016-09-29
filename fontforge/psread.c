@@ -26,6 +26,7 @@
  */
 #include "autohint.h"
 #include "fontforge.h"
+#include "cvimages.h"
 #include "cvundoes.h"
 #include <math.h>
 #include <locale.h>

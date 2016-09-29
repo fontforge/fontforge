@@ -2274,7 +2274,6 @@ extern void SFFinishMergeContext(struct sfmergecontext *mc);
 extern SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext *);
 extern BDFChar *BDFCharCopy(BDFChar *bc);
 extern void BitmapsCopy(SplineFont *to, SplineFont *from, int to_index, int from_index );
-extern struct gimage *ImageAlterClut(struct gimage *image);
 extern void ImageListsFree(ImageList *imgs);
 extern void TTFLangNamesFree(struct ttflangname *l);
 extern void AltUniFree(struct altuni *altuni);
@@ -3201,17 +3200,9 @@ extern void SFUntickAll(SplineFont *sf);
 extern void BDFOrigFixup(BDFFont *bdf,int orig_cnt,SplineFont *sf);
 
 extern int HasSVG(void);
-extern void SCImportSVG(SplineChar *sc,int layer,char *path,char  *memory, int memlen,int doclear);
 extern int HasUFO(void);
-extern void SCImportGlif(SplineChar *sc,int layer,char *path,char  *memory, int memlen,int doclear);
 extern void SCImportPS(SplineChar *sc,int layer,char *path,int doclear, int flags);
-extern void SCImportPSFile(SplineChar *sc,int layer,FILE *ps,int doclear,int flags);
 extern void SCImportPDF(SplineChar *sc,int layer,char *path,int doclear, int flags);
-extern void SCImportPDFFile(SplineChar *sc,int layer,FILE *ps,int doclear,int flags);
-extern void SCImportPlateFile(SplineChar *sc,int layer,FILE *plate,int doclear);
-extern void SCAddScaleImage(SplineChar *sc,struct gimage *image,int doclear,int layer);
-extern void SCInsertImage(SplineChar *sc,struct gimage *image,real scale,real yoff, real xoff, int layer);
-extern void SCImportFig(SplineChar *sc,int layer,char *path,int doclear);
 
 extern int _ExportSVG(FILE *svg,SplineChar *sc,int layer);
 extern int _ExportGlif(FILE *glif,SplineChar *sc,int layer);
