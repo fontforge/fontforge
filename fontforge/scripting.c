@@ -31,6 +31,7 @@
 #include "autowidth.h"
 #include "autowidth2.h"
 #include "bitmapchar.h"
+#include "bitmapcontrol.h"
 #include "fontforge.h"
 #include "cvundoes.h"
 #include <gfile.h>
