@@ -44,6 +44,7 @@ noinst_HEADERS = \
 	bitmapcontrol.h \
 	bvedit.h \
 	clipnoui.h \
+	crctab.h \
 	fontforgeui.h sftextfieldP.h configure-fontforge.h views.h 	\
 	flaglist.h strlist.h charview_private.h cvundoes.h tables.h
 
