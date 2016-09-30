@@ -2164,7 +2164,6 @@ extern void OS2FigureUnicodeRanges(SplineFont *sf, uint32 Ranges[4]);
 extern void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname);
 extern void SFDefaultOS2Simple(struct pfminfo *pfminfo,SplineFont *sf);
 extern void SFDefaultOS2SubSuper(struct pfminfo *pfminfo,int emsize,double italicangle);
-extern void VerifyLanguages(SplineFont *sf);
 extern int ScriptIsRightToLeft(uint32 script);
 extern void ScriptMainRange(uint32 script, int *start, int *end);
 extern uint32 ScriptFromUnicode(uint32 u,SplineFont *sf);
@@ -2612,7 +2611,6 @@ extern int Spline1DCantExtremeY(const Spline *s);
 extern Spline *SplineAddExtrema(Spline *s,int always,real lenbound,
 	real offsetbound,DBounds *b);
 extern void SplineSetAddExtrema(SplineChar *sc,SplineSet *ss,enum ae_type between_selected, int emsize);
-extern void SplineSetAddSpiroExtrema(SplineChar *sc,SplineSet *ss,enum ae_type between_selected, int emsize);
 extern void SplineCharAddExtrema(SplineChar *sc,SplineSet *head,enum ae_type between_selected,int emsize);
 extern SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head);
 extern SplineFont *SplineFontNew(void);
@@ -2715,7 +2713,6 @@ extern real HIoverlap( HintInstance *mhi, HintInstance *thi);
 extern int StemInfoAnyOverlaps(StemInfo *stems);
 extern int StemListAnyConflicts(StemInfo *stems);
 extern HintInstance *HICopyTrans(HintInstance *hi, real mul, real offset);
-extern void MDAdd(SplineChar *sc, int x, SplinePoint *sp1, SplinePoint *sp2);
 extern int SFNeedsAutoHint( SplineFont *_sf);
 
 typedef struct bluezone {
@@ -3067,7 +3064,6 @@ extern void SFTemporaryRestoreGlyphNames(SplineFont *sf, char **former);
 extern void doversion(const char *);
 
 extern AnchorPos *AnchorPositioning(SplineChar *sc,unichar_t *ustr,SplineChar **sstr );
-extern void AnchorPosFree(AnchorPos *apos);
 
 extern int  SF_CloseAllInstrs(SplineFont *sf);
 extern int  SSTtfNumberPoints(SplineSet *ss);
@@ -3306,7 +3302,6 @@ extern void SFRemoveGlyph(SplineFont *sf,SplineChar *sc);
 extern void SFAddEncodingSlot(SplineFont *sf,int gid);
 extern void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int baseenc);
 extern void SCCopyWidth(SplineChar *sc,enum undotype);
-extern void SCAppendPosSub(SplineChar *sc,enum possub_type type, char **d,SplineFont *copied_from);
 extern void SCClearBackground(SplineChar *sc);
 extern void BackgroundImageTransform(SplineChar *sc, ImageList *img,real transform[6]);
 extern int SFIsDuplicatable(SplineFont *sf, SplineChar *sc);

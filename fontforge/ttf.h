@@ -835,7 +835,6 @@ extern int memushort(uint8 *data,int table_len, int offset);
 extern void memputshort(uint8 *data,int offset,uint16 val);
 extern int TTF__getcvtval(SplineFont *sf,int val);
 extern int TTF_getcvtval(SplineFont *sf,int val);
-extern void SCinitforinstrs(SplineChar *sc);
 extern int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags);
 extern int Macable(SplineFont *sf, OTLookup *otl);
 
@@ -846,7 +845,6 @@ extern uint16 *ClassesFromNames(SplineFont *sf,char **classnames,int class_cnt,
 extern SplineChar **SFGlyphsFromNames(SplineFont *sf,char *names);
 
 
-extern void AnchorClassOrder(SplineFont *sf);
 extern SplineChar **EntryExitDecompose(SplineFont *sf,AnchorClass *ac,
 	struct glyphinfo *gi);
 extern void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, int *subcnts,
