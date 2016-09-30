@@ -42,8 +42,8 @@
  * Run "gcc -s -I../inc -o makeutype makeutype.c"
  *
  * Then run the executable binary "/makeutype".
- * This will create 4 files in the same directory:
- *	ArabicForms.c, unialt.c, utype.c, utype.h
+ * This will create 5 files in the same directory:
+ *	ArabicForms.c, is_Ligatures.c, unialt.c, utype.c, utype.h
  * (please move utype.h into Fontforge's "../inc" subdirectory)
  *
  * When done building the updated files, you can clean-up by removing
@@ -52,6 +52,8 @@
  */
 #include <fontforge-config.h>
 
+#define UnicodeMajor	9
+#define UnicodeMinor	0
 
 /* Build a ctype array out of the UnicodeData.txt and PropList.txt files */
 #include <stdio.h>
@@ -137,7 +139,7 @@ unsigned long ligature[LG_MAX];
 unsigned long fraction[FR_MAX];
 unsigned long vulgfrac[VF_MAX];
 
-const char GeneratedFileMessage[] = "\n/* This file was generated using the program 'makeutype' */\n\n";
+const char GeneratedFileMessage[] = "\n/* This file was generated using the program 'makeutype' for Unicode_version %d.%d */\n\n";
 const char CantReadFile[] = "Can't find or read file %s\n";		/* exit(1) */
 const char CantSaveFile[] = "Can't open or write to output file %s\n";	/* exit(2) */
 const char NoMoreMemory[] = "Can't access more memory.\n";		/* exit(3) */
@@ -664,7 +666,7 @@ static void dumparabicdata(FILE *header) {
     fprintf( data, "/* Copyright: 2001 George Williams */\n" );
     fprintf( data, "/* License: BSD-3-clause */\n" );
     fprintf( data, "/* Contributions: Khaled Hosny, Joe Da Silva */\n" );
-    fprintf( data, GeneratedFileMessage );
+    fprintf( data, GeneratedFileMessage, UnicodeMajor, UnicodeMinor );
 
     fprintf( data, "#include <utype.h>\n\n" );
 
@@ -760,7 +762,7 @@ static void dumpbsearchfindN(FILE *data,long unsigned int *dt,int s,int m,char *
 	fprintf( data, "(uCode<%d && isligorfrac(uCode)==0) )\n", MAXC );
     fprintf( data, "\treturn( -1 );\n    " );
     if ( s<m )
-	fprintf( data, "if ( uCode<%d ) {\n\tuCode16 = uCode;\n\t", s );
+	fprintf( data, "if ( uCode<0x%x ) {\n\tuCode16 = uCode;\n\t", dt[s-1] );
     else
 	fprintf( data, "uCode16 = uCode;\n    " );
     fprintf( data, "p16 = (uint16 *)(bsearch(&uCode16, %s16, %d, \\\n", t, s );
@@ -824,7 +826,7 @@ static void dumpligaturesfractions(FILE *header) {
     fprintf( data, "Copyright: 2016 Joe Da Silva\n" );
     fprintf( data, "License: BSD-3-clause\n" );
     fprintf( data, "Contributions:\n*/\n" );
-    fprintf( data, GeneratedFileMessage );
+    fprintf( data, GeneratedFileMessage, UnicodeMajor, UnicodeMinor );
     fprintf( data, "#include \"utype.h\"\n" );
     fprintf( data, "#include <stdlib.h>\n\n" );
 
@@ -901,7 +903,7 @@ static void dump() {
     fprintf( header, "/* Copyright: 2001 George Williams */\n" );
     fprintf( header, "/* License: BSD-3-clause */\n" );
     fprintf( header, "/* Contributions: Joe Da Silva */\n" );
-    fprintf( header, GeneratedFileMessage );
+    fprintf( header, GeneratedFileMessage, UnicodeMajor, UnicodeMinor );
 
     fprintf( header, "#include <ctype.h>\t/* Include here so we can control it. If a system header includes it later bad things happen */\n" );
     fprintf( header, "#include <basics.h>\t/* Include here so we can use pre-defined int types to correctly size constant data arrays. */\n" );
@@ -1049,7 +1051,7 @@ static void dump() {
     fprintf( data, "/* License: BSD-3-clause */\n" );
     fprintf( data, "/* Contributions: Werner Lemberg, Khaled Hosny, Joe Da Silva */\n\n" );
     fprintf( data, "#include \"utype.h\"\n" );
-    fprintf( data, GeneratedFileMessage );
+    fprintf( data, GeneratedFileMessage, UnicodeMajor, UnicodeMinor );
     fprintf( data, "const unsigned short ____tolower[]= { 0,\n" );
     for ( i=0; i<MAXC; i+=j ) {
 	fprintf( data, " " );
@@ -1197,7 +1199,7 @@ return;
 
     fprintf(file, "#include <chardata.h>\n" );
 
-    fprintf(file, GeneratedFileMessage );
+    fprintf(file, GeneratedFileMessage, UnicodeMajor, UnicodeMinor );
 
     for ( i=32; i<MAXC; ++i ) {
 	if ( alts[i][0]!=0 ) {

@@ -265,7 +265,8 @@ static struct gchr_transform trans_E[] = {
 
 static struct gchr_transform trans_F[] = {
     { GREEK, 0, 0x00003a6 },
-    { DOTABOVE, 0, 0x0001e1e }
+    { DOTABOVE, 0, 0x0001e1e },
+    { SLASH, 0, 0x000a798 }
 };
 
 static struct gchr_transform trans_G[] = {
@@ -693,7 +694,8 @@ static struct gchr_transform trans_e[] = {
 static struct gchr_transform trans_f[] = {
     { 0, 0, 0x0002640 },
     { GREEK, 0, 0x00003c6 },
-    { DOTABOVE, 0, 0x0001e1f }
+    { DOTABOVE, 0, 0x0001e1f },
+    { SLASH, 0, 0x000a799 }
 };
 
 static struct gchr_transform trans_g[] = {
@@ -1068,7 +1070,7 @@ struct gchr_lookup _gdraw_chrlookup[95] = {
     { 9, trans_C },		/* C */
     { 8, trans_D },		/* D */
     { 30, trans_E },		/* E */
-    { 2, trans_F },		/* F */
+    { 3, trans_F },		/* F */
     { 9, trans_G },		/* G */
     { 13, trans_H },		/* H */
     { 24, trans_I },		/* I */
@@ -1100,7 +1102,7 @@ struct gchr_lookup _gdraw_chrlookup[95] = {
     { 9, trans_c },		/* c */
     { 8, trans_d },		/* d */
     { 31, trans_e },		/* e */
-    { 3, trans_f },		/* f */
+    { 4, trans_f },		/* f */
     { 10, trans_g },		/* g */
     { 16, trans_h },		/* h */
     { 30, trans_i },		/* i */

@@ -2,7 +2,7 @@
 /* License: BSD-3-clause */
 /* Contributions: Khaled Hosny, Joe Da Silva */
 
-/* This file was generated using the program 'makeutype' */
+/* This file was generated using the program 'makeutype' for Unicode_version 9.0 */
 
 #include <utype.h>
 
@@ -13,7 +13,7 @@ struct arabicforms ArabicForms[] = {
 	{ 0x0602, 0x0602, 0x0602, 0x0602, 0, 0, 0 },
 	{ 0x0603, 0x0603, 0x0603, 0x0603, 0, 0, 0 },
 	{ 0x0604, 0x0604, 0x0604, 0x0604, 0, 0, 0 },
-	{ 0x0000, 0x0000, 0x0000, 0x0000, 0, 0, 0 },
+	{ 0x0605, 0x0605, 0x0605, 0x0605, 0, 0, 0 },
 	{ 0x0606, 0x0606, 0x0606, 0x0606, 0, 0, 0 },
 	{ 0x0607, 0x0607, 0x0607, 0x0607, 0, 0, 0 },
 	{ 0x0608, 0x0608, 0x0608, 0x0608, 0, 0, 0 },
