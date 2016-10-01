@@ -34,7 +34,7 @@ AC_PREREQ([2.68])
 
 #--------------------------------------------------------------------------
 # PackageTimestamp version
-m4_define([fontforge_package_stamp], [20140101])
+m4_define([fontforge_package_stamp], [20161001])
 #--------------------------------------------------------------------------
 # Making point releases:
 #   fontforge_major_version += 0;
