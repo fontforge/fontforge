@@ -15,6 +15,7 @@ bundle_lib="$bundle_res/opt/local/lib"
 bundle_libexec="$bundle_res/opt/local/libexec"
 bundle_etc="$bundle_res/opt/local/etc"
 bundle_share="$bundle_res/opt/local/share"
+bundle_frameworks="$bundle_res/opt/local/Library/Frameworks"
 export PATH="$PATH:$scriptdir"
 srcdir=$(pwd)
 
@@ -95,11 +96,42 @@ cp -av /usr/lib/libedit* $bundle_lib/
 cp -av /usr/lib/libedit* $bundle_libexec/bin/FontForgeInternal/collablib/
 
 cd $bundle_lib
-for if in libXcomposite.1.dylib libXcursor.1.dylib libXdamage.1.dylib libXfixes.3.dylib libXinerama.1.dylib libXrandr.2.dylib libatk-1.0.0.dylib libgdk-x11-2.0.0.dylib libgdk_pixbuf-2.0.0.dylib libgtk-x11-2.0.0.dylib libtest-1.0.0.dylib
+for if in libgif.4.dylib libgif.dylib libjpeg.9.dylib libjpeg.dylib libpng16.16.dylib libpng16.dylib libtiff.5.dylib libtiff.dylib libuninameslist.0.dylib libuninames.dylib libpangocairo-1.0.0.dylib libpangocairo-1.0.dylib libcairo-gobject.2.dylib libcairo-gobject.dylib libcairo-script-interpreter.2.dylib libcairo-script-interpreter.dylib libcairo.2.dylib libcairo.dylib libgobject-2.0.0.dylib libgobject-2.0.dylib libpango-1.0.0.dylib libpango-1.0.dylib libpangoft2-1.0.0.dylib libpangoft2-1.0.dylib libpangoxft-1.0.0.dylib libpangoxft-1.0.dylib libXft.2.dylib libXft.dylib libfreetype.6.dylib libfreetype.dylib libfontconfig.1.dylib libfontconfig.dylib libSM.6.dylib libSM.dylib libICE.6.dylib libICE.dylib libreadline.6.2.dylib libreadline.6.3.dylib libreadline.6.dylib libreadline.dylib libspiro.0.0.1.dylib libspiro.0.dylib libspiro.dylib libharfbuzz.0.dylib libharfbuzz.dylib libgio-2.0.0.dylib libgio-2.0.dylib libglib-2.0.0.dylib libglib-2.0.dylib libxml2.2.dylib libxml2.dylib libiconv.2.dylib libiconv.dylib libintl.8.dylib libintl.dylib libX11-xcb.1.dylib libX11-xcb.dylib libX11.6.dylib libX11.dylib libXau.6.dylib libXau.dylib libXdmcp.6.dylib libXdmcp.dylib libXext.6.dylib libXext.dylib libXfixes.dylib libXi.6.dylib libXi.dylib libXrender.1.dylib libXrender.dylib libXt.6.dylib libXt.dylib
 do
+    # TODO: Use cp -L in order to make this less fragile.
     cp -av /opt/local/lib/$if $bundle_lib/
     library-paths-opt-local-to-absolute.sh $bundle_lib/$if 
 done
+
+repathify () {
+	cd "$1"; for tfile in *; do if [ -f "$tfile" ] && [ ! -h "$tfile" ] && [ `file "$tfile" | awk '{ print $2 }'` = "Mach-O" ] ; then for lfile in `otool -L "$tfile" | grep '^\t/opt/local/' | awk '{print $1}'` ; do install_name_tool -change "$lfile" `echo "$lfile" | sed -e 's|^/opt/local/|/Applications/FontForge.app/Contents/Resources/opt/local/|g'` "$tfile" ; done ; for lfile in `otool -L "$tfile" | grep '^\t' | head -n 1 | grep '^\t/opt/local/' | awk '{print $1}'` ; do install_name_tool -id `echo "$lfile" | sed -e 's|^/opt/local/|/Applications/FontForge.app/Contents/Resources/opt/local/|g'` "$tfile" ; done ; fi ; done ;
+}
+
+repathify_r () {
+	cd "$1";
+	for item in * ;
+	do
+		if [ -d "$item" ] ;
+		then
+			# folder.
+			repathify_r "$1"/"$item";
+		else if [ -x "$item" ] ;
+		then
+			# executable.
+			repathify "$1"/"$item";
+		else
+			if [ `echo "$item" | awk '/\.dylib$/'` ] ;
+			then
+				repathify "$1"/"$item";
+			fi;
+		fi ;
+	done ;
+}
+
+(repathify_r $bundle_lib;)
+if [ ! -e $bundle_frameworks ]; then mkdir $bundle_frameworks; fi;
+cp -pRP /opt/local/Library/Frameworks/Python.framework $bundle_frameworks/;
+(repathify_r $bundle_frameworks;)
 
 # cd $bundle_lib
 # cd ./python2.7/site-packages/fontforge.so
