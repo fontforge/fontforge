@@ -11,7 +11,7 @@ Uploaders: Frank Trampe <frank.trampe@gmail.com>,
            Daniel Kahn Gillmor <dkg@fifthhorseman.net>
 XS-Python-Version: all
 Build-Depends: autoconf,
-               automake,
+               automake1.11,
                autotools-dev,
                bzip2,
                chrpath,

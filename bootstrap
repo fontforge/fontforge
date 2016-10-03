@@ -4617,7 +4617,7 @@ bootstrap_options_prep ()
     # Option defaults:
     opt_copy=${copy-'false'}
     opt_dry_run=false
-    opt_force=false
+    opt_force=true
     opt_gnulib_srcdir=$GNULIB_SRCDIR
     opt_skip_git=false
     opt_skip_po=false
