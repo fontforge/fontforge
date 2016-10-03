@@ -26,7 +26,7 @@ endif
 	dh $@ --parallel --with autotools-dev,python2
 
 override_dh_auto_configure:
-	$(CURDIR)/bootstrap
+	$(CURDIR)/bootstrap --force
 	$(CURDIR)/configure $(CROSS) ${CONFIG_OPTS} --enable-pyextension 
 
 override_dh_install: 
@@ -39,7 +39,7 @@ override_dh_install:
 
 nox: override_dh_install
 	[ ! -f Makefile ] || $(MAKE) distclean
-	$(CURDIR)/bootstrap
+	$(CURDIR)/bootstrap --force
 	$(CURDIR)/configure $(CROSS) ${CONFIG_OPTS} --without-x --disable-pyextension
 	$(MAKE); $(MAKE) install prefix=$(CURDIR)/debian/nox/usr
 	chrpath -d $(CURDIR)/debian/nox/usr/bin/fontforge
