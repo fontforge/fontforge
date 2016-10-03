@@ -17,7 +17,7 @@ sudo port clean fontforge
 port clean fontforge
 sudo rm -f /opt/local/var/macports/distfiles/fontforge/2.0.0_beta1/fontforge-2.0.0_beta1.tar.gz
 
-export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:/opt/local/home/ben/bdwgc/lib/pkgconfig"
+# export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:/opt/local/home/ben/bdwgc/lib/pkgconfig"
 
 echo "... starting build ... "
 sudo port -v -k install fontforge
