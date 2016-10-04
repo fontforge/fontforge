@@ -18893,11 +18893,18 @@ return;
 ** function.
 */
 PyMODINIT_FUNC FFPY_PYTHON_ENTRY_FUNCTION(const char* modulename) {
-    doinitFontForgeMain();
-    no_windowing_ui = running_script = true;
+    static int initted = false;
 
-    RegisterAllPyModules();
-    CreateAllPyModules();
+    if (!initted) {
+        doinitFontForgeMain();
+        no_windowing_ui = running_script = true;
+
+#if PY_MAJOR_VERSION <= 2
+        RegisterAllPyModules();
+#endif
+        CreateAllPyModules();
+        initted = true;
+    }
 
 #if PY_MAJOR_VERSION >= 3
     /* Python 3 expects the module object to be returned */
