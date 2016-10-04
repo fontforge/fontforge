@@ -133,7 +133,7 @@ configure.args  --with-cairo \
                 --x-includes=${prefix}/include \
                 --x-libraries=${prefix}/lib \
                 --with-pythonbinary=/opt/local/bin/python2.7 \
-                --enable-python-even --enable-gtk2-use --disable-silent-rules
+                --enable-gtk2-use --disable-silent-rules
 
 configure.cflags-append  -D__GLIB_H_INSIDE__ -Ipython2.7 -g
 configure.ldflags-append -lintl
