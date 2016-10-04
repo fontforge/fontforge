@@ -46,7 +46,7 @@ bundle_data="$bundle_res"/opt/local/share
 bundle_etc="$bundle_res"/opt/local/etc
 bundle_share="$bundle_res"/opt/local/share
 
-export DYLD_LIBRARY_PATH="$bundle_lib"
+# export DYLD_LIBRARY_PATH="$bundle_lib"
 export XDG_CONFIG_DIRS="$bundle_etc"/xdg
 export XDG_DATA_DIRS="$bundle_data"
 export GTK_DATA_PREFIX="$bundle_res"
@@ -103,6 +103,9 @@ if [ x"$1" == "x--debug" -o x"$1" == "x--debug-clearenv" ]; then
     fi
 fi
 
+# We lost Even.
+if [1 = 0];
+then
 #
 # only change these here to the local bundle ones so the scripts
 # can run.
@@ -111,10 +114,10 @@ export PYTHONPATH="/Applications/FontForge.app/Contents/MacOS/Even.app/Contents/
 # This line allows python to find the compiled libraries so for example the gdraw
 # module can use _libraries['libgdraw.so.5'] = CDLL('libgdraw.so.5')
 export LD_LIBRARY_PATH="$bundle_lib"
-
+fi;
 
 /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f FontForge.app
-$scriptdir/fcprogress.pl >|/tmp/zz 2>&1
+$scriptdir/fcprogress.pl 2>&1
 
 # This ensures that File Open and File Save (etc) dialogs open in Home
 # when FontForge is launched via normal OS X methods (double-clicking
@@ -126,10 +129,10 @@ if [ "$( ps -o comm= $PPID)" = "/sbin/launchd" ] ; then
 fi
 
 # starting more than one does nothing, and it will close itself.
-/Applications/FontForge.app/Contents/MacOS/fontforge-crash-reporter.py &
+# /Applications/FontForge.app/Contents/MacOS/fontforge-crash-reporter.py &
 
 export PATH="$PATH:$bundle_bin"
-echo $WRAPPER $bundle_bin/fontforge > /tmp/oo
+# echo $WRAPPER $bundle_bin/fontforge > /tmp/oo
 
 if [ $# -eq 0 ] ; then
     ( exec $WRAPPER $bundle_bin/fontforge -new & )
