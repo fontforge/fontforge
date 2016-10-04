@@ -15,7 +15,7 @@ bundle_lib="$bundle_res/opt/local/lib"
 bundle_libexec="$bundle_res/opt/local/libexec"
 bundle_etc="$bundle_res/opt/local/etc"
 bundle_share="$bundle_res/opt/local/share"
-bundle_frameworks="$bundle_res/opt/local/Library"
+bundle_library="$bundle_res/opt/local/Library"
 bundle_frameworks="$bundle_res/opt/local/Library/Frameworks"
 export PATH="$PATH:$scriptdir"
 srcdir=$(pwd)
@@ -212,6 +212,10 @@ cd $bundle_bin
 #
 # python can't be assumed to exist on the machine
 #
+# This is now covered elsewhere so that libraries get remapped too.
+
+if [1 = 0];
+then
 cd $bundle_bin
 cp -av /opt/local/Library/Frameworks/Python.framework/Versions/2.7/Python .
 cd $bundle_bin
@@ -229,6 +233,7 @@ done
 cd $bundle_bin
 install_name_tool -change /opt/local/Library/Frameworks/Python.framework/Versions/2.7/Python @executable_path/Python fontforge 
 cd $bundle_bin
+fi;
 
 (repathify_r $bundle_bin;)
 
