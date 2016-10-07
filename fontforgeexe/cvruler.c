@@ -964,6 +964,7 @@ return;
 	int len;
 	int charwidth = 6; /* TBD */
 	Color textcolor = (cv->start_intersection_snapped && cv->end_intersection_snapped) ? measuretoolcanvasnumberssnappedcol : measuretoolcanvasnumberscol;
+	GRect prev_rect;
 
 	if ( measuretoolshowhorizontolvertical ) {
 	    char buf[40];
@@ -990,7 +991,7 @@ return;
 
 	GDrawSetFont(pixmap,cv->rfont);
 	for ( i=0 ; i<cv->num_ruler_intersections; ++i ) {
-	    GRect rect,prev_rect;
+	    GRect rect;
 
 	    rect.x = cv->xoff + rint(cv->ruler_intersections[i].x*cv->scale) - 1;
 	    rect.y = -cv->yoff + cv->height - rint(cv->ruler_intersections[i].y*cv->scale) - 1;
