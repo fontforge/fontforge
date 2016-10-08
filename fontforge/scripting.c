@@ -2358,6 +2358,7 @@ static void bExport(Context *c) {
 #endif
     if (( format>=4 && c->a.argc!=3 ) || (format<4 && c->a.argc==3 )) {
 	c->error = ce_wrongnumarg;
+	free(tmp);
 	return;
     }
     bdf=NULL;
@@ -2374,8 +2375,6 @@ static void bExport(Context *c) {
 	if ( c->curfv->selected[i] && (gid=c->curfv->map->map[i])!=-1 &&
 		SCWorthOutputting(c->curfv->sf->glyphs[gid]) )
 	    ScriptExport(c->curfv->sf,bdf,format,gid,format_spec,c->curfv->map);
-    if ( format_spec!=buffer )
-	free(format_spec);
     free(tmp);
 }
 
