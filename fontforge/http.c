@@ -568,7 +568,7 @@ return( false );
 	    password=copy("FontForge");
     } else if ( password==NULL )
 	password = copy("");
-    
+
     sprintf(cmd,"USER %s\r\n", username);
     if ( ftpsendr(soc,cmd,databuf,datalen)== -1 ) {
 	ff_progress_end_indicator();
@@ -594,7 +594,7 @@ return( false );
 	ChangeLine2_8(_("Requesting font..."));
     else
 	ChangeLine2_8(_("Transmitting font..."));
-	
+
     if ( ftpsendpassive(soc,&data_addr,databuf,datalen)<= 0 ) {
 	ff_progress_end_indicator();
 	close( soc ); free(filename); free(databuf);
@@ -663,7 +663,7 @@ return( true );
 FILE *URLToTempFile(char *url,void *_lock) {
     FILE *ret;
 
-    if ( strncasecmp(url,"http://",7)==0 )
+    if ( strncasecmp(url,"http://",7)==0 || strncasecmp(url,"https://",8)==0 )
 return( HttpURLToTempFile(url,_lock));
     else if ( strncasecmp(url,"ftp://",6)==0 ) {
 	if ( FtpURLAndTempFile(url,&ret,NULL))
