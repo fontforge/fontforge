@@ -8808,6 +8808,8 @@ exit( 1 );
 	SFD_AssignLookups((SplineFont1 *) sf);
     if ( !d.hadtimes )
 	SFTimesFromFile(sf,sfd);
+    // Make a blank encoding if there are no characters so as to avoid crashes later.
+    if (sf->map == NULL) sf->map = EncMapNew(sf->glyphcnt,sf->glyphcnt,&custom);
 
     SFDFixupUndoRefs(sf);
 return( sf );
