@@ -173,6 +173,7 @@ GITIGNOREFILES = $(MAYBE_GENERATED_INPUTS)			\
 	fonts/merged.cff					\
 	fonts/MinionPro-Regular.otf				\
 	fonts/LucidaGrande.ttc					\
-	fonts/nuvo-medium-woff-demo.woff
+	fonts/nuvo-medium-woff-demo.woff			\
+	fetched-fonts/*
 
 -include $(top_srcdir)/git.mk
