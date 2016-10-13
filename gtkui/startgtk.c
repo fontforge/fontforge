@@ -525,9 +525,7 @@ int main( int argc, char **argv ) {
 #ifdef _NO_PYTHON
 	    "-NoPython"
 #endif
-#ifdef FONTFORGE_CONFIG_USE_DOUBLE
 	    "-D"
-#endif
 	    ".\n",
 	    source_modtime_str );
     fprintf( stderr, " Library based on sources from %s.\n", library_version_configuration.library_source_modtime_string );

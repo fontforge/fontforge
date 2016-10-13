@@ -89,9 +89,7 @@ int fontforge_main( int argc, char **argv ) {
 #ifdef _NO_PYTHON
 	    "-NoPython"
 #endif
-#ifdef FONTFORGE_CONFIG_USE_DOUBLE
 	    "-D"
-#endif
 	    ".\n",
 	    FONTFORGE_MODTIME_STR );
     fprintf( stderr, " Based on source from git with hash: %s\n", FONTFORGE_GIT_VERSION );

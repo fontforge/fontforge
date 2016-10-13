@@ -60,21 +60,3 @@ if test x"${force_off_python_extension}" = xyes; then
 fi
 AM_CONDITIONAL([PYTHON_EXTENSION],[test x"${i_do_have_python_extension}" = xyes])
 ])
-
-
-dnl FONTFORGE_ARG_ENABLE_REAL
-dnl -------------------------
-AC_DEFUN([FONTFORGE_ARG_ENABLE_REAL],
-[
-AC_ARG_ENABLE([real],
-        [AS_HELP_STRING([--enable-real=TYPE],
-                [TYPE is float or double;
-                 sets the floating point type used internally [default=double]])],
-        [my_real_type="${enableval}"],
-        [my_real_type=double])
-if test x"${my_real_type}" = x"double"; then
-   AC_DEFINE([FONTFORGE_CONFIG_USE_DOUBLE],1,[Define if using 'double' precision.])
-elif test x"${my_real_type}" != x"float"; then
-   AC_MSG_ERROR([Floating point type '${my_real_type}' not recognized.])
-fi   
-])

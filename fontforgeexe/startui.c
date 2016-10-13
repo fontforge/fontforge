@@ -275,9 +275,7 @@ static void SplashLayout() {
 #ifdef _NO_PYTHON
     uc_strcat(pt,"-NoPython");
 #endif
-#ifdef FONTFORGE_CONFIG_USE_DOUBLE
     uc_strcat(pt,"-D");
-#endif
     uc_strcat(pt,")");
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
@@ -906,9 +904,7 @@ int fontforge_main( int argc, char **argv ) {
 #ifdef _NO_PYTHON
 	        "-NoPython"
 #endif
-#ifdef FONTFORGE_CONFIG_USE_DOUBLE
 	        "-D"
-#endif
 	        ".\n",
 	        FONTFORGE_MODTIME_STR );
         fprintf( stderr, " Based on source from git with hash: %s\n", FONTFORGE_GIT_VERSION );
