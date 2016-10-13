@@ -90,7 +90,6 @@ EXTRA_DIST += fonts/AddExtremaTest2.sfd fonts/AddExtremumTest.sfd	\
 
 # generated test inputs
 GENERATED_INPUTS =							\
-	fonts/MunhwaGothic-Bold						\
 	fonts/Ambrosia.pt3
 
 FETCHED_INPUTS =							\
@@ -110,18 +109,8 @@ fonts/Ambrosia.pt3: fonts/Ambrosia.sfd
 
 # Inputs we can download
 $(srcdir)/fetched-fonts/MunhwaGothic-Bold:
-	$(MKDIR_P) $(srcdir)/fetched-fonts
+	$(MKDIR_P) $(dir $@)
 	if [ ! -e $@ ] ; then $(WGET) https://github.com/fontforge/debugfonts/raw/master/MunhwaGothic-Bold -O $@ ; fi ;
-
-fonts/MunhwaGothic-Bold:
-	$(MKDIR_P) $(builddir)/fonts
-	if [ ! -e $@ ] ; then \
-	if [ -e $(srcdir)/fetched-fonts/MunhwaGothic-Bold ]; then \
-	cp -pRP $(srcdir)/fetched-fonts/MunhwaGothic-Bold $@ ; \
-	else \
-	$(WGET) https://github.com/fontforge/debugfonts/raw/master/MunhwaGothic-Bold -O $@ ; \
-	fi ; \
-	fi ;
 
 fonts/mingliu.ttc:
 	$(MKDIR_P) $(builddir)/fonts

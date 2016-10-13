@@ -1,4 +1,4 @@
-#Needs: fonts/MunhwaGothic-Bold
+#Needs: fetched-fonts/MunhwaGothic-Bold
 # but any other non-otf cid font would do.
 
 Open($1);
