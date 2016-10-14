@@ -1037,7 +1037,6 @@ int _ExportSVG(FILE *svg,SplineChar *sc,int layer) {
     SplineCharLayerFindBounds(sc,layer,&b);
     em_size = sc->parent->ascent+sc->parent->descent;
     if ( b.minx>0 ) b.minx=0;
-    if ( b.maxx<em_size ) b.maxx = em_size;
     if ( b.miny>-sc->parent->descent ) b.miny = -sc->parent->descent;
     if ( b.maxy<em_size ) b.maxy = em_size;
 
