@@ -3,9 +3,6 @@ compiler: gcc
 sudo: required
 dist: trusty
 osx_image: xcode8
-branches:
-  only:
-    - master
 os:
   - linux
   - osx
