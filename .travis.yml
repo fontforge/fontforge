@@ -1,41 +1,101 @@
 language: c
 compiler: gcc
-sudo: required
+sudo: false
 dist: trusty
 osx_image: xcode8
+
 branches:
   only:
     - master
+    - travis
 os:
   - linux
   - osx
 
-before_install: ./travis-scripts/before_install_${TRAVIS_OS_NAME}.sh
-install:        ./travis-scripts/install_${TRAVIS_OS_NAME}.sh
-script:         ./travis-scripts/script_${TRAVIS_OS_NAME}.sh
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+      - deadsnakes
+    packages: [autoconf, automake, autotools-dev, bzip2, gcc-4.9, libtool,
+      libjpeg-dev, libtiff4-dev, libpng12-dev, libfreetype6-dev, libgif-dev,
+      libx11-dev, libxml2-dev, libpango1.0-dev, libcairo2-dev, python3.5-dev]
 
-env:
-  global:
-  - secure: "J+P8zdYyxQ4vb//RdlGG16zzXJowpTQFe83FOCFQ/i92g/vpMH69/5yU5Tw6lBW/VXT39eyRYfs5jO/qGLWdCs6RcOJjF2S0IsuqhZ3iGmFvewyneqd7T2WTC3GuZkifljK/CzvV8JoN0Yb+WFUfB5vEHTbuHByWeCKCGAwq/hA="
-  - secure: "Uoxkpn1xSa0dP8ijk7QLde4UeeLCgWtQkogiUEdABTcmGda4fSzqc42t5EKqbYp3nDCh6I23JYgDKdVAdGE5XQexkY0ZWplAkhl0Vx97o1NQIuiKizrNIaZiYHdnJtF0yh6zIWQVJLMUpaEJvMSo9CK+EMjYhj+JyHjrEgWR73Q="
-  - secure: "NaQ7ksxpoqNx/5B/n5IrB7Q0G8b1XNJmN0xVRddcExBVjiv7RRcZ0QxtaIi47xOghkZe61TBdZUo7V+g5jiZr2RxyZho89OMwZKOisx091LWAeBCBf321e9geY87pNSOm2Xt/VG4xLzUzkysVAnRXuX2ykONPzgQZ89Qg2q/s5E="
-  - secure: "ZhrAt6f4Y6h2FOIY9bNa63lPkDpy8nzWBAksDg0zLpata2yNimj+WmMIccVGblGufjGj7LRYFvWWC3pmLLEj8Dh5eFUqWcsGMiKOdlMo3dLj4jWI8KDjF5S+lOno4XdIy0HZGsSnanopz+eFrlh9ECqaif02pnZO2K2qY/jHpIs="
-  - secure: "A+bKOKww+KG9gGV1tAVKfQnvUwe/2UQfu7Q2BPisWtJMQnUzPK68eI2RZZuL3IGIWG2aw1dRrXv3UngAkW+PDx1kS0TJHbcC23gawDqsdremppT1NXLFfoQ21YWZWvNuwgypzqbsn2PqSSiodqFrIoQzYPG8SjOQe1+JGY8ifk8="
-  - secure: "DuVz1uTLJkRpHTh2rHJ4NRdVsGOKTpmFp8t44lAB0c82MsZI63ypCgeBzYelTkhn+ZZRgxmoFU7K5bZxHvgyyhAd8qBt7zVZEKgk8RdBKoWdChTYIjorvIb/ULPipWJWu+dU+jDs83IMxbMgWKL8jEUoxibIeHSTU4wk/WZp5ng="
-  - secure: "B8/wEHBbg0RgjQjMCdLMA53/CKfh4VM8hBm1i8oRRCHUV50tHuW4MIwwP6g6pcTfrkDsWJzlGGvDaV38PlHc85rBmLeen8j/j9nNgZQd62Z+2VyVPDR8l+HyKWLjR9dw9Z2W+mjSPElMpT961GbZTqXXTiSf8zvz6Om9vVuZ3O8="
-  - secure: "EJApLWIV71ApIn5I/FdnAxBCLwxQINVQkEBy3RjJvVagsTjqPkHieOQLSz1Chjf7nsC6PF/4N5FfXSY0PbykyltTkRK7eOjSVOsHvyY7yv8nZ/lF4ybHPrKGlONwwJmt55/qelk/DjRO3/xYgjwaVG1ceTczhGA5dHmod44PYx8="
-  - secure: "UiruhB4vmra3GIrGAxyva+3LJZUziAHFyACG2qPCofgaF9YLqu1RWp1iF2WZVIqJROtM10nEo0Vrxsm5ArFlbZ7n+ajLC81BGn1QrppnQFmvT3tCDum7+rcnK+Zb5bOehocH7TVFjrfkGK0BxtYOorfpKNnSyD+ZSeYXpZJrftw="
-  - secure: "R3KnxSiB/RqQR15hG5qqzoqEl7KZmprs3TFEFJQLHBPWJEklQnUsLH9sfmOtTqVNUF+rYno5+urYH5anxDUVlPSqvhp0MPyv2PIi8LbUh2ZJSx6+IzdgdU/+oQAUoltLIum9p69UUtrwfQQGKhqp256a1L3PfL39FcjdIUPib9E="
-  - secure: "VVf6xMWBbTNXfWJHNce/OAfLK4IyVmaw8pqlnZpvyj91y+JPVdIOAyQDv+B/2IekVaO5X3BIkwYEPUSnRcv+34xwsN0kFBM3oacCUDLAg0KF5HNdU1YprWcANm1cwuMLvIKco4iqC5CvXzG9sKnhegnHeQiphpcNOALN9afB+aU="
-  - secure: "PwjUMp56CuXQB0H7WqIh5Aj5GNlWYSQBMkb8MuZj2j8L+YxrGBbJ8e3V0BjdBH5+c/HCPaW4jZw2cuOvNRLAVYUSOgXIboJnXiMKBohdBDHjgDhb4DhbgobktdXqf5wWrQgTX44NJjFzsZUadMJ/1UgObHsn7a/CP5WjRDFwkwY="
-  - secure: "L2T+y/T8NkA+x6/dd0L7bkgk+e+Wss0R33W0EH7F60cvodoC1B6i22K9Q1T9e99+2Is1H7Inur4VUmts69/np3HYzWKW2GtPAnGJTLlGffjJz4CIuHJp+U8cOMvyMzq3llHtP4tosFKhF0fFjSpQKekCxEYgd1HgVu2sl0sFRjA="
-  - secure: "Ab3I8s1kbvbs7dG1JRK3H4YdkqlfuP9urQ1o1CISVhVMepl9oz3NpIdAVn6huI2W1dL6qkvmPVlDMEwteoYChgTCk666KUZdmHwSjcxL1ipYMWlYPb0BeMczIPrl04x84uEPGVfC5/kO15eSdc/1oF4Smsvi6CnY5HxRzbg5tfY="
-  - secure: "Ic5uV+CPtiU1LDYfkNhI/H1dt/D4vIuVazzsF57yUzo0/5pO50zqsxvNpumFjOkkzedCa/T5h2foGWdPqxkvC18clapTUH3eMTQqGmhM+OoPkK5nB6lM9ID1GdRGZDtWM34Ny+RbykaTX7k1fzy9zho0FUIpLlQPg80GjAp5x44="
-  - secure: "ZnVvk7I5rkfkywD+mk/GRSI+T3Yv+sH/Cmfv7pcZj5pqOW4+F2zaN7AlTf1p6Z617yxZLnPloxzuJwaFxuDsix6cleSpTfoLzBgiDESjYrNpTNzItmRqCvHzeHb7io1k4njeIzSZ42qSRjqYTtyn+CS9tGu5nnCEEWQvKw9jwxE="
-  - secure: "e7kaADE/UPf04vGDFx0eypl6n7OTLgUMBtssACE0EJiUe26wOTVM0T+2JgfrKpQcQKNcPw/8HYmQBnTYc/i+fRoQVUMqPOsUed0EsRwjYMjQzHXrf+V5O5f9L/mzfuE1zaUNsuTPDuwHsD4waTzkZAeu7ObFUu4GfL7UGqWq6BI="
-  - secure: "F7gduNOjzAoPn0FhIAKnex5U+6BMCMhK3SCs3rzfYRpwpfLXZCHMTkoSNPkqGvdpIzHltXmp1wZNZTz6UYfLZpFHS38vAfpadd8gx0MtMZHsJXAvBMC1o/3izk5AA58ftcgCursJXnLog3N5+S7Rp+jb+2n5LTEsUpAgigxjxbw="
-  - secure: "F1NVl9vjOdJVqg+IUB8t2yj605cVpfoBWDw4KmAnZiaAf++/v928w1dS4d/Fn6dH7aOoyCUCgIvqABj/FXIykA/glINcgF82mWBjiWQJT3NiyZIF3s0zPxobuLAPJxNS7CjllxcVlot6YgYnU3GRn1GwXqYFt6hsYF/7d/he86M="
-  - secure: "Rfatn2LFHIoLdRyO6lFlb++t7WokONvICAZs1aOLu7bnz3K/3SLE0xp56fwh4MY/6a2LJ8Wa+egb3N/UpD+9Yin6wBs0i1Vj7zwC5uhu4DO3Zbs2ZhA6eE6iMaskIudZFShTTimyLKHamu2dyG6T2o5x+n5BxeZx5Z6WGzNpWiI="
-  - secure: "OwMuJ31SpkXMySb0jjLAHQb3P/MtiYRUBc0uLsqAyUd37mDJD84yk3SO5i15MsEcl719Sslzz9VRfx1wk3kG+po7+McigwP2U2e1TkG0UCU5S88jp08xKKDDIHMDKt7WycV//OG9DcrsdE3prky1fQOLUObWIXUN1k7V57sAmRk="
-  - secure: "Sp2HtQNQnt8e8dH9TYiB6j9yTuT7fMjgDvxQvvIupfyOz+ZB6sMYSs9xmIb50yR4x2f5IitdRoQ6AremetNt5X0YZSiwaO3Vlmw1KcJNLEDbfevO8GrdDLNbO4dcRPragXQEg/z5bqBvs1zntsedBFuwW7Wj71GYaIpgxb0Mk4k="
-  - secure: "JVwlvKJX70bUt45nfLfVTC4UM0plJ2K1aW2J7svi0qTl3YhgPfj9r+SPCYJPe6oRHAoTrZ6vEpQbGDPyH1zDm27PIR9cnvRJiX7FKzGhOMvxfVi2DVvHNjQTfzbBIunWy3upiAhm69EfhIuc5+TIJ2B7tThru6ZuN3LO99WT2Ro="
+cache:
+  directories:
+    - $TRAVIS_BUILD_DIR/travisdeps
+
+before_install:
+  - set -e
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update || brew update; fi
+
+install:
+  - |
+    export DEPSPREFIX=$TRAVIS_BUILD_DIR/travisdeps
+
+    if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+      export PREFIX=$TRAVIS_BUILD_DIR/target
+      export FTVER=`dpkg -s libfreetype6-dev | perl -ne 'print $1 if /^Version: (\d+(?:\.\d+)+)/'`
+      export SFFTVER=`echo $FTVER | perl -ne 'print $1 if /^(\d+(?:\.\d+){1,2})/'`
+      export PATH=$PATH:$DEPSPREFIX/bin:$PREFIX/bin
+      export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DEPSPREFIX/lib:$PREFIX/lib
+      export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$DEPSPREFIX/lib/pkgconfig
+      export CC=gcc-4.9
+
+      # This block only runs if the cache isn't present.
+      if [ ! "$(ls -A $DEPSPREFIX)" ]; then
+        mkdir -p work && pushd work
+        wget 'https://github.com/zeromq/zeromq4-1/releases/download/v4.1.5/zeromq-4.1.5.tar.gz' -O - |tar -zxf -
+        wget 'https://github.com/zeromq/czmq/releases/download/v3.0.2/czmq-3.0.2.tar.gz' -O - |tar -zxf -
+        wget 'https://github.com/fontforge/libspiro/releases/download/0.5.20150702/libspiro-0.5.20150702.tar.gz' -O - | tar -zxf -
+        wget 'https://github.com/fontforge/libuninameslist/releases/download/20160701/libuninameslist-20160701.tar.gz' -O - | tar -zxf -
+        wget 'https://bitbucket.org/sortsmill/libunicodenames/downloads/libunicodenames-1.1.0_beta1.tar.xz' -O - | tar -Jxf -
+        wget --tries 1 "http://download.savannah.gnu.org/releases/freetype/freetype-$FTVER.tar.gz" || \
+          wget "https://sourceforge.net/projects/freetype/files/freetype2/$SFFTVER/freetype-$FTVER.tar.gz"
+
+        pushd zeromq-4.1.5 && ./configure --prefix=$DEPSPREFIX && make -j4 && make install && popd
+        pushd czmq-3.0.2 && ./configure --prefix=$DEPSPREFIX && make -j4 && make install && popd
+        pushd libspiro-0.5.20150702 && ./configure --prefix=$DEPSPREFIX && make -j4 && make install && popd
+        pushd libuninameslist-20160701 && ./configure --prefix=$DEPSPREFIX && make -j4 && make install && popd
+        pushd libunicodenames-1.1.0_beta1 && ./configure --prefix=$DEPSPREFIX && make -j4 && make install && popd
+        tar -zxf freetype-$FTVER.tar.gz -C $DEPSPREFIX
+        popd
+      fi
+    else
+      # Disable fc-cache on fontconfig install. Because it's slow.
+      sed -i.bak '/fc-cache/d' "$(brew --prefix)/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/fontconfig.rb"
+      # Install cairo and pango, using cached bottles if possible
+      pushd $DEPSPREFIX
+      brew install *cairo*bottle* || (brew install --build-bottle cairo --with-x11 && brew bottle cairo)
+      brew install *pango*bottle* || (brew install --build-bottle pango --with-x11 && brew bottle pango)
+      brew outdated | grep -q cairo && rm *cairo*bottle* || true
+      brew outdated | grep -q pango && rm *pango*bottle* || true
+      popd
+      brew install ./travis-scripts/fontforge.rb --HEAD --with-x11 --only-dependencies
+    fi
+
+script:
+  - |
+    if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+      export PYTHON=python3.5
+      export PYTHONPATH=$PYTHONPATH:$PREFIX/lib/python$($PYTHON -c "import sys; print('{0}.{1}'.format(sys.version_info.major, sys.version_info.minor))")/site-packages
+      export FTSRC=--with-freetype-source=$DEPSPREFIX/freetype-$FTVER
+      export FFPREFIX=--prefix=$PREFIX
+      export CFLAGS="-fdiagnostics-color=auto -Wall -Wno-switch"
+      #Why.
+      export LIBSPIRO_CFLAGS=`pkg-config --cflags libspiro` && export LIBSPIRO_LIBS=`pkg-config --libs libspiro`
+      export LIBUNINAMESLIST_CFLAGS=`pkg-config --cflags libuninameslist` && export LIBUNINAMESLIST_LIBS=`pkg-config --libs libuninameslist`
+    else
+      export PYTHON=python
+      export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
+      export MSGFMT=/usr/local/opt/gettext/bin/msgfmt
+    fi
+  - ./bootstrap
+  - ./configure $FFPREFIX $FTSRC
+  - make -j4
+  - make install
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then make distcheck; fi
+  - fontforge -version
+  - $PYTHON -c "import fontforge; import psMat; print(fontforge.__version__, fontforge.version())"
+  # This is needed, otherwise the OS X build errors out...
+  - set +e
