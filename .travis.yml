@@ -8,6 +8,7 @@ branches:
   only:
     - master
     - travis
+    - coverity_scan
 os:
   - linux
   - osx
@@ -20,6 +21,14 @@ addons:
     packages: [autoconf, automake, autotools-dev, bzip2, gcc-4.9, libtool,
       libjpeg-dev, libtiff4-dev, libpng12-dev, libfreetype6-dev, libgif-dev,
       libx11-dev, libxml2-dev, libpango1.0-dev, libcairo2-dev, python3.5-dev]
+  coverity_scan:
+    project:
+      name: "fontforge/fontforge"
+      description: "Free (libre) font editor for Windows, Mac OS X and GNU+Linux"
+    build_command_prepend: cov-configure --comptype gcc --compiler $CC --template && ./bootstrap --force && ./configure $FTSRC
+    build_command: make -j4
+    branch_pattern: coverity_scan
+    notification_email: jtanx_blackhole@outlook.com
 
 cache:
   directories:
@@ -37,6 +46,7 @@ install:
       export PREFIX=$TRAVIS_BUILD_DIR/target
       export FTVER=`dpkg -s libfreetype6-dev | perl -ne 'print $1 if /^Version: (\d+(?:\.\d+)+)/'`
       export SFFTVER=`echo $FTVER | perl -ne 'print $1 if /^(\d+(?:\.\d+){1,2})/'`
+      export FTSRC=--with-freetype-source=$DEPSPREFIX/freetype-$FTVER
       export PATH=$PATH:$DEPSPREFIX/bin:$PREFIX/bin
       export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DEPSPREFIX/lib:$PREFIX/lib
       export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$DEPSPREFIX/lib/pkgconfig
@@ -61,7 +71,20 @@ install:
         tar -zxf freetype-$FTVER.tar.gz -C $DEPSPREFIX
         popd
       fi
+
+      # These are FF-specific mods (set here so it runs also in Coverity)
+      export PYTHON=python3.5
+      export PYTHONPATH=$PYTHONPATH:$PREFIX/lib/python$($PYTHON -c "import sys; print('{0}.{1}'.format(sys.version_info.major, sys.version_info.minor))")/site-packages
+      export CFLAGS="-fdiagnostics-color=auto -Wall -Wno-switch"
+      export FFPREFIX=--prefix=$PREFIX
+      #Why.
+      export LIBSPIRO_CFLAGS=`pkg-config --cflags libspiro` && export LIBSPIRO_LIBS=`pkg-config --libs libspiro`
+      export LIBUNINAMESLIST_CFLAGS=`pkg-config --cflags libuninameslist` && export LIBUNINAMESLIST_LIBS=`pkg-config --libs libuninameslist`
     else
+      export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
+      export MSGFMT=/usr/local/opt/gettext/bin/msgfmt
+      export PYTHON=python
+
       # Disable fc-cache on fontconfig install. Because it's slow.
       sed -i.bak '/fc-cache/d' "$(brew --prefix)/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/fontconfig.rb"
       # Install cairo and pango, using cached bottles if possible
@@ -75,21 +98,6 @@ install:
     fi
 
 script:
-  - |
-    if [ "$TRAVIS_OS_NAME" == "linux" ]; then
-      export PYTHON=python3.5
-      export PYTHONPATH=$PYTHONPATH:$PREFIX/lib/python$($PYTHON -c "import sys; print('{0}.{1}'.format(sys.version_info.major, sys.version_info.minor))")/site-packages
-      export FTSRC=--with-freetype-source=$DEPSPREFIX/freetype-$FTVER
-      export FFPREFIX=--prefix=$PREFIX
-      export CFLAGS="-fdiagnostics-color=auto -Wall -Wno-switch"
-      #Why.
-      export LIBSPIRO_CFLAGS=`pkg-config --cflags libspiro` && export LIBSPIRO_LIBS=`pkg-config --libs libspiro`
-      export LIBUNINAMESLIST_CFLAGS=`pkg-config --cflags libuninameslist` && export LIBUNINAMESLIST_LIBS=`pkg-config --libs libuninameslist`
-    else
-      export PYTHON=python
-      export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
-      export MSGFMT=/usr/local/opt/gettext/bin/msgfmt
-    fi
   - ./bootstrap
   - ./configure $FFPREFIX $FTSRC
   - make -j4
@@ -99,3 +107,8 @@ script:
   - $PYTHON -c "import fontforge; import psMat; print(fontforge.__version__, fontforge.version())"
   # This is needed, otherwise the OS X build errors out...
   - set +e
+
+env:
+  global:
+   # For Coverity
+   - secure: "MeTS1Pqa5gzx1nn/peW/9a5kq84bba3XYUljOfkCUqzuyGiERk/nmok+RW7skrgzboBlKxnNG8+ykKqHMwK9s9M83ezFxvEWXBcKEpmEQKkqXPI5hpMs6jGLTgpeuheSIzqHA3danV8iircp1GOiTLWA0pt/AOsNLZiaYBh0OiE="
