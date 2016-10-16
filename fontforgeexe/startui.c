@@ -100,8 +100,8 @@ extern void setup_cocoa_app();
 
 extern int AutoSaveFrequency;
 int splash = 1;
-static int localsplash;
-static int unique = 0;
+static bool localsplash;
+static bool unique = false;
 
 /**
  * In osx versions prior to 10.9.x a special -psn_ flag was supplied
@@ -112,11 +112,11 @@ static int unique = 0;
  * names as they come through.
  */
 #if defined(__Mac)
-    static int listen_to_apple_events = true; // This was once true, but Apple broke it.
+    static bool listen_to_apple_events = true; // This was once true, but Apple broke it.
 #else
-    static int listen_to_apple_events = false;
+    static bool listen_to_apple_events = false;
 #endif
-static bool ProcessPythonInitFiles = 1;
+static bool ProcessPythonInitFiles = true;
 
 static void _dousage(void) {
     printf( "fontforge [options] [fontfiles]\n" );
@@ -210,7 +210,7 @@ static unichar_t msg[470];
 static unichar_t *lines[30], *is, *ie;
 
 void ShowAboutScreen(void) {
-    static int first=1;
+    static bool first = true;
 
     if ( first ) {
 	GDrawResize(splashw,splashimage.u.image->width,splashimage.u.image->height+linecnt*fh);
@@ -312,7 +312,7 @@ struct argsstruct {
     int next;
     int argc;
     char **argv;
-    int any;
+    bool any;
 };
 
 static void SendNextArg(struct argsstruct *args) {
@@ -487,7 +487,7 @@ static void we_are_dead(void) {
 
 static pascal OSErr QuitApplicationAE( const AppleEvent * theAppleEvent,
 	AppleEvent * reply, SInt32 handlerRefcon) {
-    static int first_time = true;
+    static bool first_time = true;
 
  fprintf( logfile, "QUIT event received.\n" ); fflush( logfile );
     quit_event = reply;
@@ -671,13 +671,14 @@ static void  AddR(char *program_name, char *window_name, char *cmndline_val) {
     }
 }
 
-static int ReopenLastFonts(void) {
+static bool ReopenLastFonts(void) {
     char buffer[1024];
     char *ffdir = getFontForgeUserDir(Config);
     FILE *old;
-    int any = 0;
+    bool any = false;
 
-    if ( ffdir==NULL ) return false;
+    if( ffdir==NULL )
+        return false;
 
     sprintf( buffer, "%s/FontsOpenAtLastQuit", ffdir );
     old = fopen(buffer,"r");
@@ -687,10 +688,11 @@ static int ReopenLastFonts(void) {
     }
     while ( fgets(buffer,sizeof(buffer),old)!=NULL ) {
     if ( ViewPostScriptFont(g_strchomp(buffer),0)!=0 )
-        any = 1;
+        any = true;
     }
     fclose(old);
     free(ffdir);
+
     return any;
 }
 
@@ -721,7 +723,7 @@ return( -2 );
 return( val );
 }
 
-static int uses_local_x(int argc,char **argv) {
+static bool uses_local_x(int argc,char **argv) {
     int i;
     char *arg;
 
@@ -863,7 +865,7 @@ int fontforge_main( int argc, char **argv ) {
     const char *load_prefs = getenv("FONTFORGE_LOADPREFS");
     int i;
     int recover=2;
-    int any;
+    bool any;
     int next_recent=0;
     GRect pos;
     GWindowAttrs wattrs;
@@ -871,7 +873,8 @@ int fontforge_main( int argc, char **argv ) {
     FontRequest rq;
     int ds, ld;
     int openflags=0;
-    int doopen=0, quit_request=0;
+    bool doopen = false;
+    bool quit_request = false;
     bool use_cairo = true;
 
 #if !(GLIB_CHECK_VERSION(2, 35, 0))
@@ -918,8 +921,8 @@ int fontforge_main( int argc, char **argv ) {
     /* Start X if they haven't already done so. Well... try anyway */
     /* Must be before we change DYLD_LIBRARY_PATH or X won't start */
     /* (osascript depends on a libjpeg which isn't found if we look in /sw/lib first */
-    int local_x = uses_local_x(argc,argv);
-    if ( local_x==1 && getenv("DISPLAY")==NULL ) {
+    bool local_x = uses_local_x(argc,argv);
+    if ( local_x==true && getenv("DISPLAY")==NULL ) {
 	/* Don't start X if we're just going to quit. */
 	/* if X exists, it isn't needed. If X doesn't exist it's wrong */
 	if ( !hasquit(argc,argv)) {
@@ -929,9 +932,9 @@ int fontforge_main( int argc, char **argv ) {
 	    system( "osascript -e 'tell application \"X11\" to activate'" );
 	}
 	setenv("DISPLAY",":0.0",0);
-    } else if ( local_x==1 && *getenv("DISPLAY")!='/' && strcmp(getenv("DISPLAY"),":0.0")!=0 && strcmp(getenv("DISPLAY"),":0")!=0 )
+    } else if ( local_x==false && *getenv("DISPLAY")!='/' && strcmp(getenv("DISPLAY"),":0.0")!=0 && strcmp(getenv("DISPLAY"),":0")!=0 )
 	/* 10.5.7 uses a named socket or something "/tmp/launch-01ftWX:0" */
-	local_x = 0;
+	local_x = false;
 #endif
 
 #if defined(__MINGW32__)
@@ -1094,7 +1097,7 @@ int fontforge_main( int argc, char **argv ) {
 	else if ( strcmp(pt,"-quiet")==0 )
 	    /* already checked for this earlier, no need to do it again */;
 	else if ( strcmp(pt,"-unique")==0 )
-	    unique = 1;
+	    unique = true;
 	else if ( strcmp(pt,"-forceuihidden")==0 )
 	    cmdlinearg_forceUIHidden = 0;
 	else if ( strcmp(pt,"-recover")==0 && i<argc-1 ) {
@@ -1135,7 +1138,7 @@ int fontforge_main( int argc, char **argv ) {
 	    /* we've been started on the mac from the FontForge.app   */
 	    /* structure, and the current directory was (shudder) "/" */
 	    /* (however, we changed to HOME earlier in main routine). */
-	    unique = 1;
+	    unique = true;
 	    listen_to_apple_events = true; // This has been problematic on Mavericks and later.
 	}
 #endif
@@ -1183,7 +1186,7 @@ int fontforge_main( int argc, char **argv ) {
 	char *pt = argv[i];
 
 	if ( !strcmp(pt,"-SkipPythonInitFiles")) {
-	    ProcessPythonInitFiles = 0;
+	    ProcessPythonInitFiles = false;
 	}
     }
     
@@ -1257,12 +1260,12 @@ exit( 0 );
     GDrawProcessPendingEvents(NULL);
     GDrawSetBuildCharHooks(BuildCharHook,InsCharHook);
 
-    any = 0;
+    any = false;
     if ( recover==-1 )
 	CleanAutoRecovery();
     else if ( recover )
 	any = DoAutoRecoveryExtended( recover-1 );
-			
+
     openflags = 0;
     for ( i=1; i<argc; ++i ) {
 	char buffer[1025];
@@ -1273,18 +1276,18 @@ exit( 0 );
 	    ++pt;
 	if ( strcmp(pt,"-new")==0 ) {
 	    FontNew();
-	    any = 1;
+	    any = true;
 #  if HANYANG
 	} else if ( strcmp(pt,"-newkorean")==0 ) {
 	    MenuNewComposition(NULL,NULL,NULL);
-	    any = 1;
+	    any = true;
 #  endif
 	} else if ( !strcmp(pt,"-SkipPythonInitFiles")) {
 	    // already handled above.
 	} else if ( strcmp(pt,"-last")==0 ) {
 	    if ( next_recent<RECENT_MAX && RecentFiles[next_recent]!=NULL )
 		if ( ViewPostScriptFont(RecentFiles[next_recent++],openflags))
-		    any = 1;
+		    any = true;
 	} else if ( strcmp(pt,"-sync")==0 || strcmp(pt,"-memory")==0 ||
 		    strcmp(pt,"-nosplash")==0 || strcmp(pt,"-recover=none")==0 ||
 		    strcmp(pt,"-recover=clean")==0 || strcmp(pt,"-recover=auto")==0 ||
@@ -1320,14 +1323,14 @@ exit( 0 );
 		    /* It's probably a Unified Font Object directory */
 		    free(fname);
 		    if ( ViewPostScriptFont(buffer,openflags) )
-			any = 1;
+			any = true;
 		} else {
 		    strcpy(fname,buffer); strcat(fname,"/font.props");
 		    if ( GFileExists(fname)) {
 			/* It's probably a sf dir collection */
 			free(fname);
 			if ( ViewPostScriptFont(buffer,openflags) )
-			    any = 1;
+			    any = true;
 		    } else {
 			free(fname);
 			if ( buffer[strlen(buffer)-1]!='/' ) {
@@ -1338,12 +1341,12 @@ exit( 0 );
 			fname = GetPostScriptFontName(buffer,false);
 			if ( fname!=NULL )
 			    ViewPostScriptFont(fname,openflags);
-			any = 1;	/* Even if we didn't get a font, don't bring up dlg again */
+			any = true;	/* Even if we didn't get a font, don't bring up dlg again */
 			free(fname);
 		    }
 		}
 	    } else if ( ViewPostScriptFont(buffer,openflags)!=0 )
-		any = 1;
+		any = true;
 	}
     }
     if ( !any && !doopen )
