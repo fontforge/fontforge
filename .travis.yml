@@ -109,6 +109,7 @@ script:
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then make distcheck -j4; fi
   - fontforge -version
   - $PYTHON -c "import fontforge; import psMat; print(fontforge.__version__, fontforge.version())"
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then travis-scripts/ffosxbuild.sh $PREFIX; fi
 
 env:
   global:
