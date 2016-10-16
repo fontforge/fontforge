@@ -3,20 +3,19 @@
 set -e
 BASE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 workdir=$1
-outdir=$2
+hash=$2
 
 if [ -z $workdir ]; then
-    echo "Usage: `basename $0` workdir [outdir]"
+    echo "Usage: `basename $0` workdir hash"
     echo "  workdir is the location to the prefix that FontForge was installed to."
-    echo "  outdir is the location to dump the bundle to. By default it is FontForge.app"
+    echo "  hash is the version hash of this build"
     echo
     echo "  This script does not support overwriting an existing bundle."
     exit 1
 fi
 
-if [ -z $outdir ]; then
-    outdir=FontForge.app
-fi
+builddate=`date +%Y-%m-%d`
+outdir=FontForge-$builddate-${hash:0:7}.app
 
 if [ ! -f $BASE/lddx ]; then
     echo "Fetching lddx..."

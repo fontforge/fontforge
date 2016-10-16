@@ -109,7 +109,20 @@ script:
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then make distcheck -j4; fi
   - fontforge -version
   - $PYTHON -c "import fontforge; import psMat; print(fontforge.__version__, fontforge.version())"
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then travis-scripts/ffosxbuild.sh $PREFIX; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then travis-scripts/ffosxbuild.sh $PREFIX $TRAVIS_COMMIT; fi
+
+deploy:
+  provider: bintray
+  file: "travis-scripts/bintray_descriptor.json"
+  user: "fontforge-ci-bot"
+  dry-run: false
+  key:
+    secure: Uf8EJV4m5uCicRQmn5eEnP/LSYzW0By9iI2vID/qS5zo3787qCtqWeovBJEUgkRk7aU6OlnIQ0w9WVBxGlElAkoaqbZs+RWYnv5JS/mX98+fFTYhtz9u0A5GTo8+IOgv1jho28Yrt9HaFRfFhBOSqNucGvDKeS3RMRywEaQmzMQ=
+  on:
+    condition: $TRAVIS_OS_NAME = osx
+    branch:
+      - master
+      - travis
 
 env:
   global:
