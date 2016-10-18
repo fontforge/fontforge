@@ -31,6 +31,7 @@
 #include "autohint.h"
 #include "cvundoes.h"
 #include "fontforgevw.h"
+#include "fvfonts.h"
 #include <math.h>
 #include <ustring.h>
 #include <utype.h>

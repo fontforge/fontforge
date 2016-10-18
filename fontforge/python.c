@@ -58,6 +58,7 @@ extern int old_sfnt_flags;
 #include "featurefile.h"
 #include "fontforgevw.h"
 #include "fvcomposite.h"
+#include "fvfonts.h"
 #include "ttf.h"
 #include "plugins.h"
 #include "utype.h"

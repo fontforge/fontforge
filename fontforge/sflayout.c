@@ -29,6 +29,7 @@
 #include "bvedit.h"
 #include "encoding.h"
 #include "fontforgevw.h"
+#include "fvfonts.h"
 #include <math.h>
 
 #include "sflayoutP.h"

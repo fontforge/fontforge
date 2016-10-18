@@ -30,6 +30,7 @@
 #include "autohint.h"
 #include "bvedit.h"
 #include "fontforge.h"
+#include "fvfonts.h"
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>

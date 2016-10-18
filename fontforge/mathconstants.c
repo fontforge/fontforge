@@ -26,6 +26,8 @@
  */
 
 #include "fontforgevw.h"
+#include "fvfonts.h"
+
 #ifdef __need_size_t
 /* This is a bug on the mac, someone defines this and leaves it defined */
 /*  that means when I load stddef.h it only defines size_t and doesn't */

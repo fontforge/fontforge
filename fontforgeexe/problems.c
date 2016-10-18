@@ -28,6 +28,7 @@
 #include "autohint.h"
 #include "cvundoes.h"
 #include "fontforgeui.h"
+#include "fvfonts.h"
 #include "ttf.h"
 #include <gwidget.h>
 #include <ustring.h>

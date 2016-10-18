@@ -26,6 +26,7 @@
  */
 
 #include "fontforge.h"
+#include "fvfonts.h"
 #include "sfd1.h"
 #include <string.h>
 

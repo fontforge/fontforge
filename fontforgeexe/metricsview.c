@@ -32,6 +32,7 @@
 #include "cvundoes.h"
 #include "fontforgeui.h"
 #include "fvcomposite.h"
+#include "fvfonts.h"
 #include "lookups.h"
 #include <gkeysym.h>
 #include <gresource.h>

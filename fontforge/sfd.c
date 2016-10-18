@@ -30,6 +30,7 @@
 #include "cvundoes.h"
 #include "encoding.h"
 #include "fontforge.h"
+#include "fvfonts.h"
 #include "splinefont.h"
 #include "baseviews.h"
 #include "views.h"

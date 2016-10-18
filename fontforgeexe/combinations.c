@@ -27,6 +27,7 @@
  */
 #include "fontforgeui.h"
 #include "fvcomposite.h"
+#include "fvfonts.h"
 #include "psfont.h"
 #include <ustring.h>
 #include <gkeysym.h>

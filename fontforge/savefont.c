@@ -31,6 +31,7 @@
 #include "dumpbdf.h"
 #include "dumppfa.h"
 #include "fontforgevw.h"
+#include "fvfonts.h"
 #include "ustring.h"
 #include "gfile.h"
 #include "gresource.h"

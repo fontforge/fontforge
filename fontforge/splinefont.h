@@ -2247,13 +2247,6 @@ struct sfmergecontext {
     int preserveCrossFontKerning;
     int lmax;
 };
-extern PST *PSTCopy(PST *base,SplineChar *sc,struct sfmergecontext *mc);
-extern struct lookup_subtable *MCConvertSubtable(struct sfmergecontext *mc,struct lookup_subtable *sub);
-extern AnchorClass *MCConvertAnchorClass(struct sfmergecontext *mc,AnchorClass *ac);
-extern void SFFinishMergeContext(struct sfmergecontext *mc);
-extern SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext *);
-extern BDFChar *BDFCharCopy(BDFChar *bc);
-extern void BitmapsCopy(SplineFont *to, SplineFont *from, int to_index, int from_index );
 extern void ImageListsFree(ImageList *imgs);
 extern void TTFLangNamesFree(struct ttflangname *l);
 extern void AltUniFree(struct altuni *altuni);
@@ -2266,8 +2259,6 @@ extern void LayerDefault(Layer *);
 extern SplineChar *SplineCharCreate(int layer_cnt);
 extern SplineChar *SFSplineCharCreate(SplineFont *sf);
 extern RefChar *RefCharCreate(void);
-extern RefChar *RefCharsCopy(RefChar *ref);	/* Still needs to be instanciated and have the dependency list adjusted */
-extern struct altuni *AltUniCopy(struct altuni *altuni,SplineFont *noconflicts);
 extern void SCAddRef(SplineChar *sc,SplineChar *rsc,int layer, real xoff, real yoff);
 extern KernClass *KernClassCopy(KernClass *kc);
 extern void KernClassFreeContents(KernClass *kc);
@@ -2488,10 +2479,6 @@ extern extended IterateSplineSolveFixup(const Spline1D *sp, extended tmin, exten
 extern void SplineFindExtrema(const Spline1D *sp, extended *_t1, extended *_t2 );
 extern int SSBoundsWithin(SplineSet *ss,bigreal z1, bigreal z2, bigreal *wmin, bigreal *wmax, int major );
 extern bigreal SplineMinDistanceToPoint(Spline *s, BasePoint *p);
-
-SplineSet *SplineSetsInterpolate(SplineSet *base, SplineSet *other, real amount, SplineChar *sc);
-SplineChar *SplineCharInterpolate(SplineChar *base, SplineChar *other, real amount, SplineFont *newfont);
-extern SplineFont *InterpolateFont(SplineFont *base, SplineFont *other, real amount, Encoding *enc);
 
 double SFSerifHeight(SplineFont *sf);
 
@@ -2841,20 +2828,8 @@ extern void MatMultiply(real m1[6], real m2[6], real to[6]);
 extern int MatIsIdentity(real transform[6]);
 
 extern int NameToEncoding(SplineFont *sf,EncMap *map,const char *uname);
-extern void GlyphHashFree(SplineFont *sf);
-extern void SFHashGlyph(SplineFont *sf,SplineChar *sc);
-extern SplineChar *SFHashName(SplineFont *sf,const char *name);
-extern int SFFindGID(SplineFont *sf, int unienc, const char *name );
-extern int SFFindSlot(SplineFont *sf, EncMap *map, int unienc, const char *name );
-extern int SFCIDFindCID(SplineFont *sf, int unienc, const char *name );
-extern SplineChar *SFGetChar(SplineFont *sf, int unienc, const char *name );
-extern int SFHasChar(SplineFont *sf, int unienc, const char *name );
 extern SplineChar *SFGetOrMakeChar(SplineFont *sf, int unienc, const char *name );
 extern SplineChar *SFGetOrMakeCharFromUnicode( SplineFont *sf, EncMap *map, int ch );
-extern SplineChar *SFGetOrMakeCharFromUnicodeBasic( SplineFont *sf, int ch );
-extern int SFFindExistingSlot(SplineFont *sf, int unienc, const char *name );
-extern int SFCIDFindExistingChar(SplineFont *sf, int unienc, const char *name );
-extern int SFHasCID(SplineFont *sf, int cid);
 
 extern int DoAutoRecovery(int);
 typedef void (*DoAutoRecoveryPostRecoverFunc)(SplineFont *sf);

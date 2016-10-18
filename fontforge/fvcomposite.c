@@ -32,6 +32,7 @@
 #include "cvundoes.h"
 #include "encoding.h"
 #include "fontforgevw.h"
+#include "fvfonts.h"
 #include <chardata.h>
 #include <math.h>
 #include <utype.h>

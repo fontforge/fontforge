@@ -27,6 +27,8 @@
 ******************************************************************************/
 
 #include "sfundo.h"
+
+#include "fvfonts.h"
 #include "views.h"
 #include <string.h>
 #include "uiinterface.h"

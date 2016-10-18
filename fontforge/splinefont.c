@@ -31,6 +31,7 @@
 #include "encoding.h"
 #include "fontforgevw.h"
 #include "fvcomposite.h"
+#include "fvfonts.h"
 #include <utype.h>
 #include <ustring.h>
 #include <math.h>

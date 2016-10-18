@@ -31,6 +31,7 @@
 #include "bvedit.h"
 #include "dumppfa.h"
 #include "fontforgevw.h"
+#include "fvfonts.h"
 #include "splinefont.h"
 #include <ustring.h>
 #include <utype.h>

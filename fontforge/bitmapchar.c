@@ -31,6 +31,7 @@
 #include "cvundoes.h"
 #include "dumpbdf.h"
 #include "fontforgevw.h"
+#include "fvfonts.h"
 #include <string.h>
 #include <ustring.h>
 #include <utype.h>

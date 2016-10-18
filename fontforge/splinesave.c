@@ -27,6 +27,7 @@
 #include "autohint.h"
 #include "dumppfa.h"
 #include "fontforge.h"
+#include "fvfonts.h"
 #include <stdio.h>
 #include <math.h>
 #include "splinefont.h"

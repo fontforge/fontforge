@@ -33,6 +33,7 @@
 #include "encoding.h"
 #include "fontforge.h"
 #include "fvcomposite.h"
+#include "fvfonts.h"
 #include "baseviews.h"
 #include "groups.h"
 #include "psfont.h"

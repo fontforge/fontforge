@@ -41,6 +41,7 @@
 #include "encoding.h"
 #include "fontforgeui.h"
 #include "fvcomposite.h"
+#include "fvfonts.h"
 #include "groups.h"
 #include "psfont.h"
 #include "scripting.h"

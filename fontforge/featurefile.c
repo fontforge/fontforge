@@ -32,6 +32,7 @@
 
 #include "encoding.h"
 #include "fontforgevw.h"
+#include "fvfonts.h"
 #include "ttf.h"
 #include <stdio.h>
 #include <math.h>

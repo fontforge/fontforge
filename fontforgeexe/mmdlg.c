@@ -27,6 +27,7 @@
 #include "dumppfa.h"
 #include "encoding.h"
 #include "fontforgeui.h"
+#include "fvfonts.h"
 #include <ustring.h>
 #include <math.h>
 #include <gkeysym.h>

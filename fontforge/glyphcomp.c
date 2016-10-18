@@ -29,6 +29,7 @@
 #include "bvedit.h"
 #include "cvundoes.h"
 #include "fontforgevw.h"
+#include "fvfonts.h"
 #include "scriptfuncs.h"
 #include <math.h>
 #include <ustring.h>

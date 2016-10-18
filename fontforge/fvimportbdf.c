@@ -29,6 +29,7 @@
 #include "cvimages.h"
 #include "encoding.h"
 #include "fontforgevw.h"
+#include "fvfonts.h"
 #include <gfile.h>
 #include <math.h>
 #include "utype.h"

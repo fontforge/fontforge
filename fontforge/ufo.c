@@ -37,6 +37,8 @@
 #include "dumppfa.h"
 #include "featurefile.h"
 #include "fontforgevw.h"
+#include "fvfonts.h"
+#include "fvfonts.h"
 #include <unistd.h>
 #include <math.h>
 #include <time.h>
