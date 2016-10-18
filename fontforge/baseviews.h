@@ -335,10 +335,6 @@ extern int SSNLTrans(SplineSet *ss,char *x_expr,char *y_expr);
 extern int SCNLTrans(SplineChar *sc, int layer,char *x_expr,char *y_expr);
 extern void FVPointOfView(FontViewBase *fv,struct pov_data *);
 extern void FVStrokeItScript(void *fv, StrokeInfo *si,int pointless);
-extern void FVOutline(struct fontviewbase *fv, real width);
-extern void FVInline(struct fontviewbase *fv, real width, real inset);
-extern void FVShadow(struct fontviewbase *fv,real angle, real outline_width,
-	real shadow_length,int wireframe);
 extern void CI_Init(struct counterinfo *ci,SplineFont *sf);
 extern void FVEmbolden(struct fontviewbase *fv,enum embolden_type type,struct lcg_zones *zones);
 extern void FVCondenseExtend(struct fontviewbase *fv,struct counterinfo *ci);

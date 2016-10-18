@@ -37,6 +37,7 @@
 #include "cvimages.h"
 #include "cvundoes.h"
 #include "dumppfa.h"
+#include "effects.h"
 #include "fontforge.h"
 #include <gfile.h>
 #include <utype.h>

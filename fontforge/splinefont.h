@@ -2655,8 +2655,6 @@ extern enum PolyType PolygonIsConvex(BasePoint *poly,int n, int *badpointindex);
 extern SplineSet *UnitShape(int isrect);
 extern SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,int order2);
 extern SplineSet *SplineSetRemoveOverlap(SplineChar *sc,SplineSet *base,enum overlap_type);
-extern SplineSet *SSShadow(SplineSet *spl,real angle, real outline_width,
-	real shadow_length,SplineChar *sc, int wireframe);
 
 extern double BlueScaleFigure(struct psdict *private_,real bluevalues[], real otherblues[]);
 extern double SFStdVW(SplineFont *sf);
