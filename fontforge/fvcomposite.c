@@ -2716,7 +2716,7 @@ return( false );
 return( true );
 }
 
-int SCMakeDotless(SplineFont *sf, SplineChar *dotless, int layer, BDFFont *bdf, int disp_only, int doit) {
+static int SCMakeDotless(SplineFont *sf, SplineChar *dotless, int layer, BDFFont *bdf, int disp_only, int doit) {
     SplineChar *sc;
     BDFChar *bc;
     int ret = 0;
