@@ -27,6 +27,7 @@
 #include "autohint.h"
 #include "featurefile.h"
 #include "fontforgevw.h"		/* For Error */
+#include "fvcomposite.h"
 #include "ttf.h"		/* For AnchorClassDecompose */
 #include <stdio.h>
 #include "splinefont.h"

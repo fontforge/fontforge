@@ -28,6 +28,7 @@
 #include "cvundoes.h"
 #include "dumppfa.h"
 #include "fontforgevw.h"
+#include "fvcomposite.h"
 #include <ustring.h>
 #include <utype.h>
 #include <gkeysym.h>

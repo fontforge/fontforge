@@ -41,6 +41,7 @@
 #include "encoding.h"
 #include "featurefile.h"
 #include "fontforge.h"
+#include "fvcomposite.h"
 #include <gfile.h>
 #include <utype.h>
 #include <ustring.h>

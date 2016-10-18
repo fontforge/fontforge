@@ -31,6 +31,7 @@
 #include "bvedit.h"
 #include "cvundoes.h"
 #include "fontforgeui.h"
+#include "fvcomposite.h"
 #include "lookups.h"
 #include <gkeysym.h>
 #include <gresource.h>

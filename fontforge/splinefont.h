@@ -2089,7 +2089,6 @@ enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_mma, ff_mmb,
 extern int CanWoff(void);
 extern struct pschars *SplineFont2ChrsSubrs(SplineFont *sf, int iscjk,
 	struct pschars *subrs,int flags,enum fontformat format,int layer);
-extern int CanonicalCombiner(int uni);
 struct cidbytes;
 struct fd2data;
 struct ttfinfo;
@@ -2218,12 +2217,6 @@ extern void AnchorClassMerge(SplineFont *sf,AnchorClass *into,AnchorClass *from)
 extern void AnchorClassesFree(AnchorClass *kp);
 extern void TtfTablesFree(struct ttf_table *tab);
 extern void SFRemoveSavedTable(SplineFont *sf, uint32 tag);
-extern AnchorClass *AnchorClassMatch(SplineChar *sc1,SplineChar *sc2,
-	AnchorClass *restrict_, AnchorPoint **_ap1,AnchorPoint **_ap2 );
-extern AnchorClass *AnchorClassMkMkMatch(SplineChar *sc1,SplineChar *sc2,
-	AnchorPoint **_ap1,AnchorPoint **_ap2 );
-extern AnchorClass *AnchorClassCursMatch(SplineChar *sc1,SplineChar *sc2,
-	AnchorPoint **_ap1,AnchorPoint **_ap2 );
 extern void SCInsertPST(SplineChar *sc,PST *new_);
 extern void ValDevFree(ValDevTab *adjust);
 extern ValDevTab *ValDevTabCopy(ValDevTab *orig);
@@ -2276,7 +2269,6 @@ extern RefChar *RefCharCreate(void);
 extern RefChar *RefCharsCopy(RefChar *ref);	/* Still needs to be instanciated and have the dependency list adjusted */
 extern struct altuni *AltUniCopy(struct altuni *altuni,SplineFont *noconflicts);
 extern void SCAddRef(SplineChar *sc,SplineChar *rsc,int layer, real xoff, real yoff);
-extern void _SCAddRef(SplineChar *sc,SplineChar *rsc,int layer, real transform[6]);
 extern KernClass *KernClassCopy(KernClass *kc);
 extern void KernClassFreeContents(KernClass *kc);
 extern void KernClassClearSpecialContents(KernClass *kc);
@@ -2824,13 +2816,6 @@ extern void SCLigCaretheck(SplineChar *sc,int clean);
 
 extern void SCUndoSetLBearingChange(SplineChar *sc,int lb);
 
-extern int isaccent(int uni);
-extern int SFIsCompositBuildable(SplineFont *sf,int unicodeenc,SplineChar *sc, int layer);
-extern int SFIsSomethingBuildable(SplineFont *sf,SplineChar *sc, int layer,int onlyaccents);
-extern int SFIsRotatable(SplineFont *sf,SplineChar *sc);
-extern void SCBuildComposit(SplineFont *sf, SplineChar *sc, int layer, BDFFont *bmp, int disp_only);
-extern int SCAppendAccent(SplineChar *sc,int layer, char *glyph_name,int uni,uint32 pos);
-extern const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,int nocheck);
 
 
 extern void SFSplinesFromLayers(SplineFont *sf,int tostroke);
@@ -2890,7 +2875,6 @@ extern void SplineSetsRound2Int(SplineSet *spl,real factor,int inspiro,int onlys
 extern void SCRound2Int(SplineChar *sc,int layer, real factor);
 extern int SCRoundToCluster(SplineChar *sc,int layer,int sel,bigreal within,bigreal max);
 extern int SplineSetsRemoveAnnoyingExtrema(SplineSet *ss,bigreal err);
-extern int hascomposing(SplineFont *sf,int u,SplineChar *sc);
 
 extern void SFFlatten(SplineFont *cidmaster);
 

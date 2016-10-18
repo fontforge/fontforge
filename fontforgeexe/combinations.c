@@ -26,6 +26,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "fvcomposite.h"
 #include "psfont.h"
 #include <ustring.h>
 #include <gkeysym.h>

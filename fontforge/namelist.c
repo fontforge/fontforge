@@ -27,6 +27,7 @@
  */
 
 #include "fontforgevw.h"
+#include "fvcomposite.h"
 #include "ustring.h"
 #include <utype.h>
 #include "namehash.h"

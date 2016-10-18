@@ -40,6 +40,7 @@
 #include "dumppfa.h"
 #include "encoding.h"
 #include "fontforgeui.h"
+#include "fvcomposite.h"
 #include "groups.h"
 #include "psfont.h"
 #include "scripting.h"

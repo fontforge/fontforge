@@ -35,6 +35,7 @@
 #include "dumppfa.h"
 #include "encoding.h"
 #include "fontforgeui.h"
+#include "fvcomposite.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>
