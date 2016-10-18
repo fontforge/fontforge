@@ -403,7 +403,7 @@ return;
     putc('>',out);
 }
 
-int kernclass_for_feature_file(struct splinefont *sf, struct kernclass *kc, int flags) {
+static int kernclass_for_feature_file(struct splinefont *sf, struct kernclass *kc, int flags) {
   // Note that this is not a complete logical inverse of sister function kernclass_for_groups_plist.
   return ((flags & FF_KERNCLASS_FLAG_FEATURE) ||
   (!(flags & FF_KERNCLASS_FLAG_NATIVE) && (kc->feature || sf->preferred_kerning != 1)));
@@ -7289,7 +7289,7 @@ static void fea_NameLookups(struct parseState *tok) {
     FVRefreshAll(sf);
 }
 
-void CopySplineFontGroupsForFeatureFile(SplineFont *sf, struct parseState* tok) {
+static void CopySplineFontGroupsForFeatureFile(SplineFont *sf, struct parseState* tok) {
   struct ff_glyphclasses *ff_current = sf->groups;
   struct glyphclasses *feature_current = tok->classes;
   // It may be useful to run this multiple times, appending to an existing list, so we traverse to the end.
