@@ -39,6 +39,7 @@
 #include "dumppfa.h"
 #include "effects.h"
 #include "encoding.h"
+#include "featurefile.h"
 #include "fontforge.h"
 #include <gfile.h>
 #include <utype.h>

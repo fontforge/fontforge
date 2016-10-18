@@ -29,6 +29,7 @@
 #include "bitmapchar.h"
 #include "dumppfa.h"
 #include "encoding.h"
+#include "featurefile.h"
 #include "fontforgeui.h"
 #include "ofl.h"
 #include <ustring.h>

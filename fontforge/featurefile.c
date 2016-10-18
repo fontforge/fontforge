@@ -28,6 +28,8 @@
  */
 #include <fontforge-config.h>
 
+#include "featurefile.h"
+
 #include "encoding.h"
 #include "fontforgevw.h"
 #include "ttf.h"

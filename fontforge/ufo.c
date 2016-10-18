@@ -35,6 +35,7 @@
 
 #include "autohint.h"
 #include "dumppfa.h"
+#include "featurefile.h"
 #include "fontforgevw.h"
 #include <unistd.h>
 #include <math.h>

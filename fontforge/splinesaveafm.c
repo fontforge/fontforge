@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "autohint.h"
+#include "featurefile.h"
 #include "fontforgevw.h"		/* For Error */
 #include "ttf.h"		/* For AnchorClassDecompose */
 #include <stdio.h>

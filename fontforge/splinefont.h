@@ -2073,10 +2073,7 @@ extern int LoadKerningDataFromOfm(SplineFont *sf, char *filename, EncMap *map);
 extern int LoadKerningDataFromPfm(SplineFont *sf, char *filename, EncMap *map);
 extern int LoadKerningDataFromMacFOND(SplineFont *sf, char *filename, EncMap *map);
 extern int LoadKerningDataFromMetricsFile(SplineFont *sf, char *filename, EncMap *map);
-extern void FeatDumpFontLookups(FILE *out,SplineFont *sf);
-extern void FeatDumpOneLookup(FILE *out,SplineFont *sf, OTLookup *otl);
 extern void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename);
-extern void SFApplyFeatureFilename(SplineFont *sf,char *filename);
 extern void SubsNew(SplineChar *to,enum possub_type type,int tag,char *components,
 	    SplineChar *default_script);
 extern void PosNew(SplineChar *to,int tag,int dx, int dy, int dh, int dv);
