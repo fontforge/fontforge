@@ -30,6 +30,7 @@
 #include "bitmapchar.h"
 #include "bvedit.h"
 #include "cvundoes.h"
+#include "encoding.h"
 #include "fontforge.h"
 #include "baseviews.h"
 #include "groups.h"

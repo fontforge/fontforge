@@ -38,6 +38,7 @@
 #include "cvundoes.h"
 #include "dumppfa.h"
 #include "effects.h"
+#include "encoding.h"
 #include "fontforge.h"
 #include <gfile.h>
 #include <utype.h>

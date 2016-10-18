@@ -27,6 +27,7 @@
  */
 #include "cvimages.h"
 #include "dumppfa.h"
+#include "encoding.h"
 #include "fontforge.h"
 #include <chardata.h>
 #include <utype.h>

@@ -318,7 +318,6 @@ extern void FVAutoInstr(FontViewBase *fv);
 extern void FVClearInstrs(FontViewBase *fv);
 extern void FVClearHints(FontViewBase *fv);
 extern void SCAutoTrace(SplineChar *sc,int layer, int ask);
-extern void FVAddEncodingSlot(FontViewBase *fv,int gid);
 extern int FVImportMult(FontViewBase *fv, char *filename,int toback,int bf);
 extern int FVImportBDF(FontViewBase *fv, char *filename,int ispk, int toback);
 extern void MergeFont(FontViewBase *fv,SplineFont *other,int preserveCrossFontKerning);

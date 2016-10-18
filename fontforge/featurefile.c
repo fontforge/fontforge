@@ -28,6 +28,7 @@
  */
 #include <fontforge-config.h>
 
+#include "encoding.h"
 #include "fontforgevw.h"
 #include "ttf.h"
 #include <stdio.h>

@@ -33,6 +33,7 @@
 #include "cvruler.h"
 #include "cvundoes.h"
 #include "dumppfa.h"
+#include "encoding.h"
 #include "fontforgeui.h"
 #include <math.h>
 #include <locale.h>

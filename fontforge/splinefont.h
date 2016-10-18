@@ -2084,7 +2084,6 @@ extern int SFOneWidth(SplineFont *sf);
 extern int CIDOneWidth(SplineFont *sf);
 extern int SFOneHeight(SplineFont *sf);
 extern int SFIsCJK(SplineFont *sf,EncMap *map);
-extern void CIDMasterAsDes(SplineFont *sf);
 enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_mma, ff_mmb,
 	ff_ptype3, ff_ptype0, ff_cid, ff_cff, ff_cffcid,
 	ff_type42, ff_type42cid,
@@ -2168,11 +2167,6 @@ extern int SCRightToLeft(SplineChar *sc);
 extern int SLIContainsR2L(SplineFont *sf,int sli);
 extern void SFFindNearTop(SplineFont *);
 extern void SFRestoreNearTop(SplineFont *);
-extern int SFForceEncoding(SplineFont *sf,EncMap *old,Encoding *new_map);
-extern int CountOfEncoding(Encoding *encoding_name);
-extern int SFReencode(SplineFont *sf, const char *encname, int force);
-extern void SFMatchGlyphs(SplineFont *sf,SplineFont *target,int addempties);
-extern void MMMatchGlyphs(MMSet *mm);
 extern const char *_GetModifiers(const char *fontname, const char *familyname, const char *weight);
 extern const char *SFGetModifiers(const SplineFont *sf);
 extern const unichar_t *_uGetModifiers(const unichar_t *fontname, const unichar_t *familyname,
@@ -2314,12 +2308,9 @@ extern void LayerFreeContents(SplineChar *sc, int layer);
 extern void SplineCharFreeContents(SplineChar *sc);
 extern void SplineCharFree(SplineChar *sc);
 extern void EncMapFree(EncMap *map);
-extern EncMap *EncMapFromEncoding(SplineFont *sf,Encoding *enc);
-extern EncMap *CompactEncMap(EncMap *map, SplineFont *sf);
 extern EncMap *EncMapNew(int encmax, int backmax, Encoding *enc);
 extern EncMap *EncMap1to1(int enccount);
 extern EncMap *EncMapCopy(EncMap *map);
-extern void SFExpandGlyphCount(SplineFont *sf, int newcnt);
 extern void ScriptLangListFree(struct scriptlanglist *sl);
 extern void FeatureScriptLangListFree(FeatureScriptLangList *fl);
 extern void SFBaseSort(SplineFont *sf);
@@ -2515,9 +2506,6 @@ extern SplineFont *InterpolateFont(SplineFont *base, SplineFont *other, real amo
 
 double SFSerifHeight(SplineFont *sf);
 
-extern void DumpPfaEditEncodings(void);
-extern char *ParseEncodingFile(char *filename, char *encodingname);
-extern void LoadPfaEditEncodings(void);
 
 extern int GenerateScript(SplineFont *sf,char *filename, const char *bitmaptype,
 	int fmflags,int res, char *subfontdirectory,struct sflist *sfs,
@@ -2721,7 +2709,6 @@ extern int PfmSplineFont(FILE *pfm, SplineFont *sf,EncMap *map,int layer);
 extern int TfmSplineFont(FILE *tfm, SplineFont *sf,EncMap *map,int layer);
 extern int OfmSplineFont(FILE *afm, SplineFont *sf,EncMap *map,int layer);
 extern const char *EncodingName(Encoding *map);
-extern char *SFEncodingName(SplineFont *sf,EncMap *map);
 extern void SFLigaturePrepare(SplineFont *sf);
 extern void SFLigatureCleanup(SplineFont *sf);
 extern void SFKernClassTempDecompose(SplineFont *sf,int isv);
@@ -2771,9 +2758,6 @@ extern char* DumpSplineFontMetadata( SplineFont *sf );
 extern void SFD_DumpLookup( FILE *sfd, SplineFont *sf );
 extern enum uni_interp interp_from_encoding(Encoding *enc,enum uni_interp interp);
 extern const char *EncName(Encoding *encname);
-extern const char*FindUnicharName(void);
-extern Encoding *_FindOrMakeEncoding(const char *name,int make_it);
-extern Encoding *FindOrMakeEncoding(const char *name);
 extern void SFDDumpMacFeat(FILE *sfd,MacFeat *mf);
 extern MacFeat *SFDParseMacFeatures(FILE *sfd, char *tok);
 extern int SFDDoesAnyBackupExist(char* filename);
@@ -2911,22 +2895,7 @@ extern int SCRoundToCluster(SplineChar *sc,int layer,int sel,bigreal within,bigr
 extern int SplineSetsRemoveAnnoyingExtrema(SplineSet *ss,bigreal err);
 extern int hascomposing(SplineFont *sf,int u,SplineChar *sc);
 
-struct cidmap;			/* private structure to encoding.c */
-extern int CIDFromName(char *name,SplineFont *cidmaster);
-extern int CID2Uni(struct cidmap *map,int cid);
-extern int CID2NameUni(struct cidmap *map,int cid, char *buffer, int len);
-extern int NameUni2CID(struct cidmap *map,int uni, const char *name);
-extern struct altuni *CIDSetAltUnis(struct cidmap *map,int cid);
-extern int MaxCID(struct cidmap *map);
-extern struct cidmap *LoadMapFromFile(char *file,char *registry,char *ordering,
-	int supplement);
-extern struct cidmap *FindCidMap(char *registry,char *ordering,int supplement,
-	SplineFont *sf);
-extern void SFEncodeToMap(SplineFont *sf,struct cidmap *map);
-extern SplineFont *CIDFlatten(SplineFont *cidmaster,SplineChar **chars,int charcnt);
 extern void SFFlatten(SplineFont *cidmaster);
-extern int  SFFlattenByCMap(SplineFont *sf,char *cmapname);
-extern SplineFont *MakeCIDMaster(SplineFont *sf,EncMap *oldmap,int bycmap,char *cmapfilename,struct cidmap *cidmap);
 
 int getushort(FILE *ttf);
 int32 getlong(FILE *ttf);
@@ -3015,9 +2984,6 @@ extern MacFeat *FindMacFeature(SplineFont *sf, int feat,MacFeat **secondary);
 extern struct macsetting *FindMacSetting(SplineFont *sf, int feat, int set,struct macsetting **secondary);
 extern struct macname *FindMacSettingName(SplineFont *sf, int feat, int set);
 
-extern int32 UniFromEnc(int enc, Encoding *encname);
-extern int32 EncFromUni(int32 uni, Encoding *encname);
-extern int32 EncFromName(const char *name,enum uni_interp interp,Encoding *encname);
 
 extern void MatInverse(real into[6], real orig[6]);
 
@@ -3181,7 +3147,6 @@ extern void RevertedGlyphReferenceFixup(SplineChar *sc, SplineFont *sf);
 
 extern void SFUntickAll(SplineFont *sf);
 
-extern void BDFOrigFixup(BDFFont *bdf,int orig_cnt,SplineFont *sf);
 
 extern int HasSVG(void);
 extern int HasUFO(void);
@@ -3191,10 +3156,6 @@ extern void SCImportPDF(SplineChar *sc,int layer,char *path,int doclear, int fla
 extern int _ExportSVG(FILE *svg,SplineChar *sc,int layer);
 extern int _ExportGlif(FILE *glif,SplineChar *sc,int layer);
 
-extern EncMap *EncMapFromEncoding(SplineFont *sf,Encoding *enc);
-extern void SFRemoveGlyph(SplineFont *sf,SplineChar *sc);
-extern void SFAddEncodingSlot(SplineFont *sf,int gid);
-extern void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int baseenc);
 extern void SCCopyWidth(SplineChar *sc,enum undotype);
 extern void SCClearBackground(SplineChar *sc);
 extern void BackgroundImageTransform(SplineChar *sc, ImageList *img,real transform[6]);

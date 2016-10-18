@@ -5,6 +5,7 @@
 #define FontForgeInit gb12345_LTX_FontForgeInit
 
 #include "plugins.h"
+#include "encoding.h"
 
 static const unsigned short __gb12345_to_ucs[] =
 {

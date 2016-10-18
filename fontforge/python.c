@@ -54,6 +54,7 @@ extern int old_sfnt_flags;
 #include "cvimages.h"
 #include "cvundoes.h"
 #include "dumppfa.h"
+#include "encoding.h"
 #include "fontforgevw.h"
 #include "ttf.h"
 #include "plugins.h"

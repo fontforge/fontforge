@@ -38,6 +38,7 @@
 #include "bvedit.h"
 #include "cvundoes.h"
 #include "dumppfa.h"
+#include "encoding.h"
 #include "fontforgeui.h"
 #include "groups.h"
 #include "psfont.h"

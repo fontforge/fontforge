@@ -27,6 +27,7 @@
 #include "autohint.h"
 #include "cvimages.h"
 #include "dumppfa.h"
+#include "encoding.h"
 #include "fontforgevw.h"
 #include <unistd.h>
 #include <math.h>

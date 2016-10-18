@@ -28,6 +28,7 @@
 #include "autohint.h"
 #include "autotrace.h"
 #include "dumppfa.h"
+#include "encoding.h"
 #include "fontforgevw.h"
 #include <utype.h>
 #include <ustring.h>

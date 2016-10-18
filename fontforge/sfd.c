@@ -28,6 +28,7 @@
 #include "bvedit.h"
 #include "cvimages.h"
 #include "cvundoes.h"
+#include "encoding.h"
 #include "fontforge.h"
 #include "splinefont.h"
 #include "baseviews.h"

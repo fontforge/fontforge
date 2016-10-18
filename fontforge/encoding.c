@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "encoding.h"
+
 #include "bitmapchar.h"
 #include "bvedit.h"
 #include "dumppfa.h"

@@ -26,6 +26,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "autotrace.h"
+#include "encoding.h"
 #include "fontforgeui.h"
 #include "groups.h"
 #include "plugins.h"

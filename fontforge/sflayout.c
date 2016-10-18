@@ -27,6 +27,7 @@
  */
 
 #include "bvedit.h"
+#include "encoding.h"
 #include "fontforgevw.h"
 #include <math.h>
 

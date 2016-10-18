@@ -28,6 +28,7 @@
 #include "bitmapchar.h"
 #include "bvedit.h"
 #include "cvundoes.h"
+#include "encoding.h"
 #include "fontforgeui.h"
 #include <gkeysym.h>
 #include <utype.h>
