@@ -44,6 +44,7 @@
 #include "fvcomposite.h"
 #include "fvfonts.h"
 #include "fvimportbdf.h"
+#include "fvmetrics.h"
 #include <gfile.h>
 #include <utype.h>
 #include <ustring.h>

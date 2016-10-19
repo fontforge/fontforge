@@ -526,7 +526,6 @@ extern uint8 *_IVParse(SplineFont *sf, char *text, int *len,
 	void (*IVError)(void *,char *, int), void *iv);
 extern char *_IVUnParseInstrs(uint8 *instrs,int instr_cnt);
 
-extern void FVSetWidthScript(FontViewBase *fv,enum widthtype wtype,int val,int incr);
 extern void FVMetricsCenter(FontViewBase *fv,int docenter);
 extern void FVRevert(FontViewBase *fv);
 extern void FVRevertBackup(FontViewBase *fv);
