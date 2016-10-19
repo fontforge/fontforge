@@ -10,6 +10,7 @@ clone_depth: 10
 environment:
   global:
     MBASH: C:\msys64\usr\bin\sh -lc
+    MSYS2_FC_CACHE_SKIP: true
   matrix:
     - MSYSTEM: MINGW32
       MBITS: 32
