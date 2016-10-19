@@ -101,7 +101,7 @@ static void extractNumericVersion(const char * textVersion, int * versionMajor, 
 
 static void injectNumericVersion(char ** textVersion, int versionMajor, int versionMinor) {
   // We generate a version string from numeric values if available.
-  if (versionMajor == -1) asprintf(textVersion, "");
+  if (versionMajor == -1) asprintf(textVersion, "%s", "");
   else if (versionMinor == -1) asprintf(textVersion, "%d", versionMajor);
   else asprintf(textVersion, "%d.%d", versionMajor, versionMinor);
   return;
