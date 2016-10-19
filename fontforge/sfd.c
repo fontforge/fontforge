@@ -44,6 +44,7 @@
 
 #define GTimer GTimer_GTK
 #include <glib.h>
+#include <glib/gstdio.h>
 #undef GTimer
 
 
