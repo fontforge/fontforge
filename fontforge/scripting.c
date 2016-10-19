@@ -43,6 +43,7 @@
 #include "fontforge.h"
 #include "fvcomposite.h"
 #include "fvfonts.h"
+#include "fvimportbdf.h"
 #include <gfile.h>
 #include <utype.h>
 #include <ustring.h>

@@ -318,8 +318,6 @@ extern void FVAutoInstr(FontViewBase *fv);
 extern void FVClearInstrs(FontViewBase *fv);
 extern void FVClearHints(FontViewBase *fv);
 extern void SCAutoTrace(SplineChar *sc,int layer, int ask);
-extern int FVImportMult(FontViewBase *fv, char *filename,int toback,int bf);
-extern int FVImportBDF(FontViewBase *fv, char *filename,int ispk, int toback);
 extern void ScriptPrint(FontViewBase *fv,int type,int32 *pointsizes,char *samplefile,
 	unichar_t *sample, char *outputfile);
 extern int FVBParseSelectByPST(FontViewBase *fv,struct lookup_subtable *sub,

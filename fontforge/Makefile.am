@@ -54,6 +54,7 @@ noinst_HEADERS = \
 	featurefile.h \
 	fvcomposite.h \
 	fvfonts.h \
+	fvimportbdf.h \
 	fontforgeui.h sftextfieldP.h configure-fontforge.h views.h 	\
 	flaglist.h strlist.h charview_private.h cvundoes.h tables.h
 

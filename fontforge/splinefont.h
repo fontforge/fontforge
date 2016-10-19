@@ -2167,7 +2167,6 @@ extern const char *_GetModifiers(const char *fontname, const char *familyname, c
 extern const char *SFGetModifiers(const SplineFont *sf);
 extern const unichar_t *_uGetModifiers(const unichar_t *fontname, const unichar_t *familyname,
 	const unichar_t *weight);
-extern void SFSetFontName(SplineFont *sf, char *family, char *mods, char *fullname);
 extern void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes);
 extern void ttfdumpbitmapscaling(SplineFont *sf,struct alltabs *at,int32 *sizes);
 extern void SplineFontSetUnChanged(SplineFont *sf);
@@ -2428,7 +2427,6 @@ extern BDFFont *SplineFontPieceMeal(SplineFont *sf,int layer,int ptsize, int dpi
 extern void BDFCharFree(BDFChar *bdfc);
 extern void BDFPropsFree(BDFFont *bdf);
 extern void BDFFontFree(BDFFont *bdf);
-extern void SFDefaultAscent(SplineFont *sf);
 extern int  FNTFontDump(char *filename,BDFFont *font, EncMap *map, int res);
 extern int  FONFontDump(char *filename,SplineFont *sf, int32 *sizes,int res,
 	EncMap *map);
@@ -2771,8 +2769,6 @@ extern int URLFromFile(const char *url,FILE *from);
 extern void ArchiveCleanup(char *archivedir);
 extern char *Unarchive(char *name, char **_archivedir);
 extern char *Decompress(char *name, int compression);
-extern SplineFont *SFFromBDF(char *filename,int ispk,int toback);
-extern void SFCheckPSBitmap(SplineFont *sf);
 extern uint16 _MacStyleCode( const char *styles, SplineFont *sf, uint16 *psstyle );
 extern uint16 MacStyleCode( SplineFont *sf, uint16 *psstyle );
 extern SplineFont *SFReadIkarus(char *fontname);

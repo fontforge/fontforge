@@ -27,6 +27,7 @@
 #include "cvundoes.h"
 #include "encoding.h"
 #include "fontforge.h"
+#include "fvimportbdf.h"
 #include "splinefont.h"
 #include <chardata.h>
 #include <utype.h>

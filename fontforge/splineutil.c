@@ -26,9 +26,10 @@
  */
 #include "cvundoes.h"
 #include "dumppfa.h"
+#include "encoding.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
-#include "encoding.h"
+#include "fvimportbdf.h"
 #include <math.h>
 #include "psfont.h"
 #include "ustring.h"
