@@ -1037,7 +1037,6 @@ int _ExportSVG(FILE *svg,SplineChar *sc,int layer) {
     SplineCharLayerFindBounds(sc,layer,&b);
     em_size = sc->parent->ascent+sc->parent->descent;
     if ( b.minx>0 ) b.minx=0;
-    if ( b.maxx<em_size ) b.maxx = em_size;
     if ( b.miny>-sc->parent->descent ) b.miny = -sc->parent->descent;
     if ( b.maxy<em_size ) b.maxy = em_size;
 
@@ -1047,7 +1046,7 @@ int _ExportSVG(FILE *svg,SplineChar *sc,int layer) {
     fprintf(svg, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\" >\n" );
     fprintf(svg, "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" viewBox=\"%d %d %d %d\">\n",
 	    (int) floor(b.minx), (int) floor(b.miny),
-	    (int) ceil(b.maxx), (int) ceil(b.maxy));
+	    (int) ceil(sc->width), (int) ceil(em_size));
     fprintf(svg, "  <g transform=\"matrix(1 0 0 -1 0 %d)\">\n",
 	    sc->parent->ascent );
     if ( sc->parent->multilayer || sc->parent->strokedfont || !svg_sc_any(sc,layer)) {
