@@ -30,6 +30,7 @@
 /* Basically sfnts with compressed tables and some more metadata */
 
 #include "fontforge.h"
+#include "http.h"
 #include <math.h>
 #include <ctype.h>
 

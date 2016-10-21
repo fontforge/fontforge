@@ -33,6 +33,7 @@
 #include "fvcomposite.h"
 #include "fvfonts.h"
 #include "fvimportbdf.h"
+#include "http.h"
 #include <utype.h>
 #include <ustring.h>
 #include <math.h>

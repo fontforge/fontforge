@@ -30,6 +30,7 @@
 #include "encoding.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
+#include "http.h"
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>

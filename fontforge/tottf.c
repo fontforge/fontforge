@@ -30,6 +30,7 @@
 #include "encoding.h"
 #include "fontforge.h"
 #include "fvfonts.h"
+#include "http.h"
 #include <math.h>
 #include <unistd.h>
 #include <time.h>

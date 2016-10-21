@@ -2764,8 +2764,6 @@ extern SplineFont *SFReadPalmPdb(char *filename);
 extern SplineFont *LoadSplineFont(const char *filename,enum openflags);
 extern SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags openflags);
 extern SplineFont *ReadSplineFont(const char *filename,enum openflags);	/* Don't use this, use LoadSF instead */
-extern FILE *URLToTempFile(char *url,void *lock);
-extern int URLFromFile(const char *url,FILE *from);
 extern void ArchiveCleanup(char *archivedir);
 extern char *Unarchive(char *name, char **_archivedir);
 extern char *Decompress(char *name, int compression);
