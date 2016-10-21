@@ -32,6 +32,7 @@
 #include "featurefile.h"
 #include "fontforgeui.h"
 #include "lookups.h"
+#include "namelist.h"
 #include "ofl.h"
 #include <ustring.h>
 #include <chardata.h>

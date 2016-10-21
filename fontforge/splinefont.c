@@ -36,6 +36,7 @@
 #include "http.h"
 #include "ikarus.h"
 #include "macbinary.h"
+#include "namelist.h"
 #include <utype.h>
 #include <ustring.h>
 #include <math.h>

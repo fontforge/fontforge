@@ -32,6 +32,7 @@
 #include "dumppfa.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
+#include "namelist.h"
 #include "splinefont.h"
 #include <ustring.h>
 #include <utype.h>

@@ -29,6 +29,7 @@
 #include "cvundoes.h"
 #include "fontforgeui.h"
 #include "fvfonts.h"
+#include "namelist.h"
 #include "ttf.h"
 #include <gwidget.h>
 #include <ustring.h>

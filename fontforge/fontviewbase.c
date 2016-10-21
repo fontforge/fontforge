@@ -34,6 +34,7 @@
 #include "fontforge.h"
 #include "fvcomposite.h"
 #include "fvfonts.h"
+#include "namelist.h"
 #include "baseviews.h"
 #include "groups.h"
 #include "psfont.h"

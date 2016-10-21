@@ -2863,20 +2863,6 @@ extern void FreeType_FreeRaster(struct freetype_raster *raster);
 struct TT_ExecContextRec_;
 extern struct freetype_raster *DebuggerCurrentRaster(struct  TT_ExecContextRec_ *exc,int depth);
 
-extern int UniFromName(const char *name,enum uni_interp interp, Encoding *encname);
-extern const char *StdGlyphName(char *buffer, int uni, enum uni_interp interp, NameList *for_this_font);
-extern char **AllGlyphNames(int uni, NameList *for_this_font,SplineChar *sc/* May be NULL*/);
-extern char **AllNamelistNames(void);
-extern NameList *DefaultNameListForNewFonts(void);
-extern NameList *NameListByName(const char *name);
-extern NameList *LoadNamelist(char *filename);
-extern void LoadNamelistDir(char *dir);
-extern const char *RenameGlyphToNamelist(char *buffer, SplineChar *sc,NameList *old,
-	NameList *new, char **sofar);
-extern void SFRenameGlyphsToNamelist(SplineFont *sf,NameList *new);
-extern char **SFTemporaryRenameGlyphsToNamelist(SplineFont *sf,NameList *new);
-extern void SFTemporaryRestoreGlyphNames(SplineFont *sf, char **former);
-
 extern void doversion(const char *);
 
 extern AnchorPos *AnchorPositioning(SplineChar *sc,unichar_t *ustr,SplineChar **sstr );

@@ -30,6 +30,7 @@
 #include "encoding.h"
 #include "fontforgevw.h"
 #include "lookups.h"
+#include "namelist.h"
 #include "ustring.h"
 #include "utype.h"
 #include "gfile.h"

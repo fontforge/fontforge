@@ -31,6 +31,7 @@
 #include "fvfonts.h"
 #include "fvimportbdf.h"
 #include "mm.h"
+#include "namelist.h"
 #include <math.h>
 #include "psfont.h"
 #include "ustring.h"

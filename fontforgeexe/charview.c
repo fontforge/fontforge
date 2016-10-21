@@ -39,6 +39,7 @@
 #include "fvfonts.h"
 #include "lookups.h"
 #include "mm.h"
+#include "namelist.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>

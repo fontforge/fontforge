@@ -26,6 +26,7 @@
  */
 #include "encoding.h"
 #include "fontforgevw.h"
+#include "namelist.h"
 #include "pluginloading.h"
 #include <gfile.h>
 #include <time.h>

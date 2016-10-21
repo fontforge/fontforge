@@ -30,6 +30,7 @@
 #include "fontforgeui.h"
 #include "groups.h"
 #include "macenc.h"
+#include "namelist.h"
 #include "plugins.h"
 #include <charset.h>
 #include <gfile.h>

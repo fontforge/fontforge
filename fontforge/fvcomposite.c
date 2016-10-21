@@ -33,6 +33,7 @@
 #include "encoding.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
+#include "namelist.h"
 #include <chardata.h>
 #include <math.h>
 #include <utype.h>

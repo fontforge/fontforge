@@ -44,6 +44,7 @@
 #include "fvfonts.h"
 #include "groups.h"
 #include "mm.h"
+#include "namelist.h"
 #include "psfont.h"
 #include "scripting.h"
 #include <gfile.h>
