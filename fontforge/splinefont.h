@@ -3135,14 +3135,9 @@ extern spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *_cnt);
 extern spiro_cp *SpiroCPCopy(spiro_cp *spiros,uint16 *_cnt);
 extern void SSRegenerateFromSpiros(SplineSet *spl);
 
-struct lang_frequencies;
 extern unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 	void (*langsyscallback)(void *tf, int end, uint32 script, uint32 lang) );
-extern char *RandomParaFromScriptLang(uint32 script, uint32 lang, SplineFont *sf,
-	struct lang_frequencies *freq);
 extern char *RandomParaFromScript(uint32 script, uint32 *lang, SplineFont *sf);
-extern int   SF2Scripts(SplineFont *sf,uint32 scripts[100]);
-extern char **SFScriptLangs(SplineFont *sf,struct lang_frequencies ***freq);
 
 extern int SSHasClip(SplineSet *ss);
 extern int SSHasDrawn(SplineSet *ss);

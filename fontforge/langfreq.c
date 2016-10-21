@@ -1,5 +1,7 @@
 /* -*- coding: utf-8 -*- */
 
+#include "langfreq.h"
+
 #include "fvfonts.h"
 
 #include <stdio.h>
@@ -17,14 +19,7 @@
 #define MEDI	2
 #define FINA	3
 
-struct letter_frequencies {
-    const char *utf8_letter;
-    float frequency[4];
-    float *afters;
-};
-
 #define LETTER_FREQUENCIES_EMPTY { NULL, { 0, 0, 0, 0 }, NULL }
-
 
 /* This is over many languages, used when we have no specific info */
 static float word_lengths[] = {
@@ -1820,7 +1815,7 @@ static float WEL_vowel_run[] = {
     0.000000, 0.716191, 0.249052, 0.031673, 0.002959, 0.000125, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000
 };
 
-static struct lang_frequencies { uint32 script, lang; char *note; struct letter_frequencies *cnts; float *wordlens; char *vowels; float *consonant_run, *all_consonants, *vowel_run; } lang_frequencies[] = {
+static struct lang_frequencies lang_frequencies[] = {
     { CHR('l','a','t','n'), CHR('C','S','Y',' '), N_("Czech"),     CSY_counts, CSY_word_lens, "aeiouyráéíóúýěů", CSY_consonant_run, CSY_all_consonants, CSY_vowel_run },
     { CHR('l','a','t','n'), CHR('N','L','D',' '), N_("Dutch"),     NLD_counts, NLD_word_lens, "aeiouyàéêëïòó", NLD_consonant_run, NLD_all_consonants, NLD_vowel_run },
     { CHR('l','a','t','n'), CHR('E','N','G',' '), N_("English"),   ENG_counts, ENG_word_lens, "aeiouy", ENG_consonant_run, ENG_all_consonants, ENG_vowel_run },
