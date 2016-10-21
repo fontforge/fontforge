@@ -27,6 +27,7 @@
 #include "fontforge.h"
 #include "baseviews.h"
 #include "libffstamp.h"			/* FontForge version# date time stamps */
+#include "libstamp.h"
 #include "uiinterface.h"
 
 struct library_version_configuration library_version_configuration = {
