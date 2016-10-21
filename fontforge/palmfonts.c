@@ -27,6 +27,7 @@
 #include "bvedit.h"
 #include "encoding.h"
 #include "fontforgevw.h"
+#include "macbinary.h"
 #include <stdio.h>
 #include <math.h>
 #include "splinefont.h"

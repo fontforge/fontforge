@@ -46,6 +46,7 @@
 #include "fvimportbdf.h"
 #include "fvmetrics.h"
 #include "lookups.h"
+#include "macbinary.h"
 #include <gfile.h>
 #include <utype.h>
 #include <ustring.h>

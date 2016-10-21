@@ -33,6 +33,7 @@
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "http.h"
+#include "macbinary.h"
 #include "ustring.h"
 #include "gfile.h"
 #include "gresource.h"

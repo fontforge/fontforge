@@ -35,6 +35,7 @@
 #include "fvimportbdf.h"
 #include "http.h"
 #include "ikarus.h"
+#include "macbinary.h"
 #include <utype.h>
 #include <ustring.h>
 #include <math.h>

@@ -2071,7 +2071,6 @@ extern int LoadKerningDataFromAfm(SplineFont *sf, char *filename);
 extern int LoadKerningDataFromTfm(SplineFont *sf, char *filename, EncMap *map);
 extern int LoadKerningDataFromOfm(SplineFont *sf, char *filename, EncMap *map);
 extern int LoadKerningDataFromPfm(SplineFont *sf, char *filename, EncMap *map);
-extern int LoadKerningDataFromMacFOND(SplineFont *sf, char *filename, EncMap *map);
 extern int LoadKerningDataFromMetricsFile(SplineFont *sf, char *filename, EncMap *map);
 extern void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename);
 extern void SubsNew(SplineChar *to,enum possub_type type,int tag,char *components,
@@ -2119,9 +2118,6 @@ enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, bf_sfnt_ms, bf_otb,
 	bf_none };
 extern int32 filechecksum(FILE *file);
 extern const char *GetAuthor(void);
-extern SplineChar *SFFindExistingCharMac(SplineFont *,EncMap *map, int unienc);
-extern int WriteMacPSFont(char *fontname,SplineFont *sf,enum fontformat format,
-	int flags,EncMap *enc,int layer);
 extern int _WriteWOFFFont(FILE *ttf,SplineFont *sf, enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer);
 extern int WriteWOFFFont(char *fontname,SplineFont *sf, enum fontformat format,
@@ -2132,20 +2128,12 @@ extern int WriteTTFFont(char *fontname,SplineFont *sf, enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer);
 extern int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
 	int flags,EncMap *enc,int layer);
-extern int WriteMacTTFFont(char *fontname,SplineFont *sf, enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer);
-extern int WriteMacBitmaps(char *filename,SplineFont *sf, int32 *sizes,
-	int is_dfont,EncMap *enc);
 extern int WritePalmBitmaps(const char *filename,SplineFont *sf, int32 *sizes,EncMap *enc);
-extern int WriteMacFamily(char *filename,struct sflist *sfs,enum fontformat format,
-	enum bitmapformat bf,int flags,int layer);
 extern int WriteTTC(const char *filename,struct sflist *sfs,enum fontformat format,
 	enum bitmapformat bf,int flags,int layer,enum ttc_flags ttcflags);
-extern long mactime(void);
 extern int WriteSVGFont(const char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *enc,int layer);
 extern int _WriteSVGFont(FILE *file,SplineFont *sf,int flags,EncMap *enc,int layer);
 extern int WriteUFOFont(const char *fontname, SplineFont *sf, enum fontformat format,int flags, const EncMap *enc,int layer);
-extern void SfListFree(struct sflist *sfs);
 extern void TTF_PSDupsDefault(SplineFont *sf);
 extern void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf);
 extern void TeXDefaultParams(SplineFont *sf);
@@ -2755,7 +2743,6 @@ extern SplineFont *SFReadSVGMem(char *data,int flags);
 extern SplineFont *SFReadUFO(char *filename,int flags);
 extern SplineFont *_CFFParse(FILE *temp,int len,char *fontsetname);
 extern SplineFont *CFFParse(char *filename);
-extern SplineFont *SFReadMacBinary(char *filename,int flags,enum openflags openflags);
 extern SplineFont *SFReadWinFON(char *filename,int toback);
 extern SplineFont *SFReadPalmPdb(char *filename);
 extern SplineFont *LoadSplineFont(const char *filename,enum openflags);
@@ -2764,7 +2751,6 @@ extern SplineFont *ReadSplineFont(const char *filename,enum openflags);	/* Don't
 extern void ArchiveCleanup(char *archivedir);
 extern char *Unarchive(char *name, char **_archivedir);
 extern char *Decompress(char *name, int compression);
-extern uint16 _MacStyleCode( const char *styles, SplineFont *sf, uint16 *psstyle );
 extern uint16 MacStyleCode( SplineFont *sf, uint16 *psstyle );
 extern SplineFont *_SFReadPdfFont(FILE *ttf,char *filename,enum openflags openflags);
 extern SplineFont *SFReadPdfFont(char *filename, enum openflags openflags);
@@ -2777,7 +2763,6 @@ extern char **NamesReadPostScript(char *filename);
 extern char **_NamesReadPostScript(FILE *ps);
 extern char **NamesReadSVG(char *filename);
 extern char **NamesReadUFO(char *filename);
-extern char **NamesReadMacBinary(char *filename);
 
 extern void SFSetOrder(SplineFont *sf,int order2);
 extern void SFLSetOrder(SplineFont *sf, int layerdest, int order2);

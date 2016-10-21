@@ -27,6 +27,7 @@
  */
 #include "encoding.h"
 #include "fontforgeui.h"
+#include "macbinary.h"
 #include <ustring.h>
 #include <locale.h>
 #include <gfile.h>
