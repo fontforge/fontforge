@@ -2313,8 +2313,6 @@ int SFKerningGroupExistsSpecific(const struct splinefont *sf, const char *groupn
 extern struct jstf_lang *JstfLangsCopy(struct jstf_lang *jl);
 extern void JstfLangFree(struct jstf_lang *jl);
 extern void JustifyFree(Justify *just);
-extern void MATHFree(struct MATH *math);
-extern struct MATH *MathTableNew(SplineFont *sf);
 extern void OtfNameListFree(struct otfname *on);
 extern void OtfFeatNameListFree(struct otffeatname *fn);
 extern struct otffeatname *findotffeatname(uint32 tag,SplineFont *sf);

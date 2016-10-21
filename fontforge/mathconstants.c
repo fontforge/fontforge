@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "mathconstants.h"
+
 #include "fontforgevw.h"
 #include "fvfonts.h"
 

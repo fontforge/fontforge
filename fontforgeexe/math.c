@@ -27,6 +27,7 @@
 
 #include "fontforgeui.h"
 #include "fvfonts.h"
+#include "mathconstants.h"
 #include <math.h>
 #include <stddef.h>
 #include <gkeysym.h>
