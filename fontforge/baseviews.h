@@ -327,9 +327,6 @@ extern void TransHints(StemInfo *stem,real mul1, real off1, real mul2, real off2
 extern void TransDStemHints(DStemInfo *ds,real xmul, real xoff, real ymul, real yoff, int round_to_int );
 extern void VrTrans(struct vr *vr,real transform[6]);
 extern int SFNLTrans(FontViewBase *fv,char *x_expr,char *y_expr);
-extern int SSNLTrans(SplineSet *ss,char *x_expr,char *y_expr);
-extern int SCNLTrans(SplineChar *sc, int layer,char *x_expr,char *y_expr);
-extern void FVPointOfView(FontViewBase *fv,struct pov_data *);
 extern void FVStrokeItScript(void *fv, StrokeInfo *si,int pointless);
 extern void CI_Init(struct counterinfo *ci,SplineFont *sf);
 extern void FVEmbolden(struct fontviewbase *fv,enum embolden_type type,struct lcg_zones *zones);
@@ -426,7 +423,6 @@ extern void FVDetachAndRemoveGlyphs(FontViewBase *fv);
 extern Undoes *_CVPreserveTState(CharViewBase *cv,PressedOn *);
 extern void CopySelected(CharViewBase *cv,int doanchors);
 extern void CopyWidth(CharViewBase *cv,enum undotype);
-extern void CVYPerspective(CharViewBase *cv,bigreal x_vanish, bigreal y_vanish);
 extern void ScriptSCEmbolden(SplineChar *sc,int layer,enum embolden_type type,struct lcg_zones *zones);
 extern void CVEmbolden(CharViewBase *cv,enum embolden_type type,struct lcg_zones *zones);
 extern void SCCondenseExtend(struct counterinfo *ci,SplineChar *sc, int layer,

@@ -27,9 +27,9 @@
  */
 #include "cvundoes.h"
 #include "fontforgeui.h"
+#include "nonlineartrans.h"
 #include <utype.h>
 #include <ustring.h>
-#include "nonlineartrans.h"
 
 struct nldlg {
     GWindow gw;
@@ -57,7 +57,7 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[8], boxes[4], *hvarray[3][3], *barray[9], *varray[3][2];
     GTextInfo label[8];
-    struct context c;
+    struct expr_context c;
     char *expstr;
 
     memset(&d,'\0',sizeof(d));

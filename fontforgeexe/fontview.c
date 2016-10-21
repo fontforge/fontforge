@@ -45,6 +45,7 @@
 #include "groups.h"
 #include "mm.h"
 #include "namelist.h"
+#include "nonlineartrans.h"
 #include "psfont.h"
 #include "scripting.h"
 #include <gfile.h>
