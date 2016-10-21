@@ -30,6 +30,7 @@
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "fvimportbdf.h"
+#include "mm.h"
 #include <math.h>
 #include "psfont.h"
 #include "ustring.h"

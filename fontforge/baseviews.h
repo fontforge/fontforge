@@ -529,8 +529,6 @@ extern void FVRevert(FontViewBase *fv);
 extern void FVRevertBackup(FontViewBase *fv);
 extern void FVRevertGlyph(FontViewBase *fv);
 extern void FVClearSpecialData(FontViewBase *fv);
-extern int   MMReblend(FontViewBase *fv, MMSet *mm);
-extern FontViewBase *MMCreateBlendedFont(MMSet *mm,FontViewBase *fv,real blends[MmMax],int tonew );
 extern void FVB_MakeNamelist(FontViewBase *fv, FILE *file);
 
 /**

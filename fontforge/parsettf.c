@@ -31,6 +31,7 @@
 #include "lookups.h"
 #include "splinefont.h"
 #include "macenc.h"
+#include "mm.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>

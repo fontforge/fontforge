@@ -24,6 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "mm.h"
+
 #include "dumppfa.h"
 #include "fontforgevw.h"
 #include "lookups.h"
@@ -32,7 +35,6 @@
 #include <math.h>
 #include <utype.h>
 #include "ttf.h"
-#include "mm.h"
 
 const char *MMAxisAbrev(char *axis_name) {
     if ( strcmp(axis_name,"Weight")==0 )

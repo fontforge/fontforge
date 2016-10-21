@@ -34,6 +34,7 @@
 #include "fvcomposite.h"
 #include "fvfonts.h"
 #include "lookups.h"
+#include "mm.h"
 #include <gkeysym.h>
 #include <gresource.h>
 #include <gresedit.h>

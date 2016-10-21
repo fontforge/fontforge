@@ -2909,16 +2909,6 @@ extern int BpWithin(BasePoint *first, BasePoint *mid, BasePoint *last);
 enum psstrokeflags { /* sf_removeoverlap=2,*/ sf_handle_eraser=4,
 	sf_correctdir=8, sf_clearbeforeinput=16 };
 
-extern const char *MMAxisAbrev(char *axis_name);
-extern char *MMMakeMasterFontname(MMSet *mm,int ipos,char **fullname);
-extern char *MMGuessWeight(MMSet *mm,int ipos,char *def);
-extern char *MMExtractNth(char *pt,int ipos);
-extern char *MMExtractArrayNth(char *pt,int ipos);
-extern int MMValid(MMSet *mm,int complain);
-extern void MMKern(SplineFont *sf,SplineChar *first,SplineChar *second,int diff,
-	struct lookup_subtable *sub,KernPair *oldkp);
-extern char *MMBlendChar(MMSet *mm, int gid);
-
 extern char *EnforcePostScriptName(char *old);
 
 extern char *ToAbsolute(char *filename);
