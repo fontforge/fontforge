@@ -2258,7 +2258,6 @@ extern void FPSTClassesFree(FPST *fpst);
 extern void FPSTRulesFree(struct fpst_rule *r, enum fpossub_format format, int rcnt);
 extern void FPSTFree(FPST *fpst);
 extern void ASMFree(ASM *sm);
-extern struct macname *MacNameCopy(struct macname *mn);
 extern void MacNameListFree(struct macname *mn);
 extern void MacSettingListFree(struct macsetting *ms);
 extern void MacFeatListFree(MacFeat *mf);
@@ -2900,20 +2899,7 @@ extern int SFRemoveUnusedNestedFeatures(SplineFont *sf);
 
 extern char *utf8_verify_copy(const char *str);
 
-extern char *MacStrToUtf8(const char *str,int macenc,int maclang);
-extern char *Utf8ToMacStr(const char *ustr,int macenc,int maclang);
-extern uint8 MacEncFromMacLang(int maclang);
-extern uint16 WinLangFromMac(int maclang);
-extern uint16 WinLangToMac(int winlang);
-extern int CanEncodingWinLangAsMac(int winlang);
-extern const int32 *MacEncToUnicode(int script,int lang);
-extern int MacLangFromLocale(void);
-extern char *MacLanguageFromCode(int code);
-extern char *FindEnglishNameInMacName(struct macname *mn);
-extern char *PickNameFromMacName(struct macname *mn);
-extern MacFeat *FindMacFeature(SplineFont *sf, int feat,MacFeat **secondary);
 extern struct macsetting *FindMacSetting(SplineFont *sf, int feat, int set,struct macsetting **secondary);
-extern struct macname *FindMacSettingName(SplineFont *sf, int feat, int set);
 
 
 extern void MatInverse(real into[6], real orig[6]);

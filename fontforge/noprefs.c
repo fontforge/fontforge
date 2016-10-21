@@ -28,6 +28,7 @@
 #include "encoding.h"
 #include "fontforge.h"
 #include "groups.h"
+#include "macenc.h"
 #include "plugins.h"
 #include <charset.h>
 #include <gfile.h>

@@ -26,6 +26,7 @@
  */
 #include "encoding.h"
 #include "fontforgevw.h"
+#include "macenc.h"
 #include <gkeysym.h>
 #include <ustring.h>
 #include "ttf.h"

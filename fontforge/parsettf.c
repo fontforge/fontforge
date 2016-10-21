@@ -30,6 +30,7 @@
 #include "fvimportbdf.h"
 #include "lookups.h"
 #include "splinefont.h"
+#include "macenc.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>

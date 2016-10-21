@@ -32,6 +32,7 @@
 #include "fvfonts.h"
 #include "http.h"
 #include "lookups.h"
+#include "macenc.h"
 #include <math.h>
 #include <unistd.h>
 #include <time.h>
