@@ -504,7 +504,6 @@ extern void PyFF_SCImport(SplineChar *sc,int ie_index,char *filename,
 	int layer, int clear);
 extern void PyFF_InitFontHook(FontViewBase *fv);
 
-extern void LookupInit(void);
 extern int UserFeaturesDiffer(void);
 extern uint32 *StdFeaturesOfScript(uint32 script);
 

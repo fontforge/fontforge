@@ -29,6 +29,7 @@
 #include "autotrace.h"
 #include "cvundoes.h"
 #include "fontforgeui.h"
+#include "lookups.h"
 #include "sftextfieldP.h"
 #include <stdlib.h>
 #include <math.h>

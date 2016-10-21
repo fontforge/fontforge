@@ -33,6 +33,7 @@
 #include "clipnoui.h"
 #include "encoding.h"
 #include "fontforgeui.h"
+#include "lookups.h"
 #ifndef _NO_LIBUNICODENAMES
 #include <libunicodenames.h>	/* need to open a database when we start */
 extern uninm_names_db names_db; /* Unicode character names and annotations database */

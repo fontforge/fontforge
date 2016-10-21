@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforge.h"
+#include "lookups.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>

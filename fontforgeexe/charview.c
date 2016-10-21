@@ -37,6 +37,7 @@
 #include "fontforgeui.h"
 #include "fvcomposite.h"
 #include "fvfonts.h"
+#include "lookups.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>

@@ -26,6 +26,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "lookups.h"
 #include "ttf.h"
 #include <chardata.h>
 #include <utype.h>

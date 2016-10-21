@@ -62,6 +62,7 @@ extern int old_sfnt_flags;
 #include "fvimportbdf.h"
 #include "glyphcomp.h"
 #include "langfreq.h"
+#include "lookups.h"
 #include "ttf.h"
 #include "plugins.h"
 #include "utype.h"

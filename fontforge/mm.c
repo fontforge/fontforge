@@ -26,6 +26,7 @@
  */
 #include "dumppfa.h"
 #include "fontforgevw.h"
+#include "lookups.h"
 #include <ustring.h>
 #include <math.h>
 #include <utype.h>

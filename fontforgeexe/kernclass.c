@@ -27,6 +27,7 @@
 #include "autowidth2.h"
 #include "fontforgeui.h"
 #include "fvfonts.h"
+#include "lookups.h"
 #include <gkeysym.h>
 #include <string.h>
 #include <ustring.h>

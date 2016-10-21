@@ -26,6 +26,7 @@
  */
 #include "asmfpst.h"
 #include "fontforgeui.h"
+#include "lookups.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>

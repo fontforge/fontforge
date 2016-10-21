@@ -25,6 +25,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "lookups.h"
+
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include <chardata.h>
@@ -35,7 +38,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include "ttf.h"
-#include "lookups.h"
 #include "xvasprintf.h"
 
 struct opentype_feature_friendlynames friendlies[] = {

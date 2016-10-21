@@ -31,6 +31,7 @@
 #include "fontforge.h"
 #include "fvfonts.h"
 #include "http.h"
+#include "lookups.h"
 #include <math.h>
 #include <unistd.h>
 #include <time.h>

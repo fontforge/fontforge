@@ -28,6 +28,7 @@
 #include "encoding.h"
 #include "fontforge.h"
 #include "fvimportbdf.h"
+#include "lookups.h"
 #include "splinefont.h"
 #include <chardata.h>
 #include <utype.h>

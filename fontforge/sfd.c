@@ -32,6 +32,7 @@
 #include "fontforge.h"
 #include "fvfonts.h"
 #include "http.h"
+#include "lookups.h"
 #include "splinefont.h"
 #include "baseviews.h"
 #include "views.h"

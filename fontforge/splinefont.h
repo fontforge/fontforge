@@ -2210,7 +2210,6 @@ extern AnchorPoint *AnchorPointsCopy(AnchorPoint *alist);
 extern AnchorClass *SFFindOrAddAnchorClass(SplineFont *sf,char *name,struct lookup_subtable *sub);
 extern void SFRemoveAnchorClass(SplineFont *sf,AnchorClass *an);
 extern int AnchorClassesNextMerge(AnchorClass *ac);
-extern int IsAnchorClassUsed(SplineChar *sc,AnchorClass *an);
 extern AnchorPoint *APAnchorClassMerge(AnchorPoint *anchors,AnchorClass *into,AnchorClass *from);
 extern void AnchorClassMerge(SplineFont *sf,AnchorClass *into,AnchorClass *from);
 extern void AnchorClassesFree(AnchorClass *kp);
@@ -2224,7 +2223,6 @@ extern DeviceTable *DeviceTableCopy(DeviceTable *orig);
 extern void DeviceTableSet(DeviceTable *adjust, int size, int correction);
 extern void PSTFree(PST *lig);
 extern uint16 PSTDefaultFlags(enum possub_type type,SplineChar *sc );
-extern int PSTContains(const char *components,const char *name);
 extern StemInfo *StemInfoCopy(StemInfo *h);
 extern DStemInfo *DStemInfoCopy(DStemInfo *h);
 extern MinimumDistance *MinimumDistanceCopy(MinimumDistance *h);
@@ -2264,7 +2262,6 @@ extern void KernClassFreeContents(KernClass *kc);
 extern void KernClassClearSpecialContents(KernClass *kc);
 extern void KernClassListFree(KernClass *kc);
 extern void KernClassListClearSpecialContents(KernClass *kc);
-extern int KernClassContains(KernClass *kc, const char *name1, const char *name2, int ordered );
 extern void OTLookupFree(OTLookup *lookup);
 extern void OTLookupListFree(OTLookup *lookup );
 extern FPST *FPSTCopy(FPST *fpst);
@@ -2978,71 +2975,11 @@ extern int RefDepth(RefChar *ref,int layer);
 
 extern SplineChar *SCHasSubs(SplineChar *sc,uint32 tag);
 
-extern char *TagFullName(SplineFont *sf,uint32 tag, int ismac, int onlyifknown);
-
-extern uint32 *SFScriptsInLookups(SplineFont *sf,int gpos);
-extern uint32 *SFLangsInScript(SplineFont *sf,int gpos,uint32 script);
-extern uint32 *SFFeaturesInScriptLang(SplineFont *sf,int gpos,uint32 script,uint32 lang);
-extern OTLookup **SFLookupsInScriptLangFeature(SplineFont *sf,int gpos,uint32 script,uint32 lang, uint32 feature);
-extern SplineChar **SFGlyphsWithPSTinSubtable(SplineFont *sf,struct lookup_subtable *subtable);
-extern SplineChar **SFGlyphsWithLigatureinLookup(SplineFont *sf,struct lookup_subtable *subtable);
-extern void SFFindUnusedLookups(SplineFont *sf);
-extern void SFFindClearUnusedLookupBits(SplineFont *sf);
-extern int LookupUsedNested(SplineFont *sf,OTLookup *checkme);
-extern void SFRemoveUnusedLookupSubTables(SplineFont *sf,
-	int remove_incomplete_anchorclasses,
-	int remove_unused_lookups);
-extern void SFRemoveLookupSubTable(SplineFont *sf,struct lookup_subtable *sub,int remove_acs);
-extern void SFRemoveLookup(SplineFont *sf,OTLookup *otl,int remove_acs);
 extern struct lookup_subtable *SFFindLookupSubtable(SplineFont *sf,char *name);
-extern struct lookup_subtable *SFFindLookupSubtableAndFreeName(SplineFont *sf,char *name);
-extern OTLookup *SFFindLookup(SplineFont *sf,char *name);
-extern void NameOTLookup(OTLookup *otl,SplineFont *sf);
-extern int GlyphNameCnt(const char *pt);
-extern char *reverseGlyphNames(char *str);
-extern char *FPSTRule_From_Str(SplineFont *sf,FPST *fpst,struct fpst_rule *rule,
-	char *line, int *return_is_warning );
-extern char *FPSTRule_To_Str(SplineFont *sf,FPST *fpst,struct fpst_rule *rule);
-extern void FListAppendScriptLang(FeatureScriptLangList *fl,uint32 script_tag,uint32 lang_tag);
-extern void FListsAppendScriptLang(FeatureScriptLangList *fl,uint32 script_tag,uint32 lang_tag);
-struct scriptlanglist *SLCopy(struct scriptlanglist *sl);
-struct scriptlanglist *SListCopy(struct scriptlanglist *sl);
-extern FeatureScriptLangList *FeatureListCopy(FeatureScriptLangList *fl);
-extern void SLMerge(FeatureScriptLangList *into, struct scriptlanglist *fsl);
-extern void FLMerge(OTLookup *into, OTLookup *from);
-extern FeatureScriptLangList *FLOrder(FeatureScriptLangList *fl);
-extern int FeatureScriptTagInFeatureScriptList(uint32 tag, uint32 script, FeatureScriptLangList *fl);
-extern FeatureScriptLangList *FindFeatureTagInFeatureScriptList(uint32 tag, FeatureScriptLangList *fl);
 extern int FeatureTagInFeatureScriptList(uint32 tag, FeatureScriptLangList *fl);
-extern int DefaultLangTagInOneScriptList(struct scriptlanglist *sl);
-extern struct scriptlanglist *DefaultLangTagInScriptList(struct scriptlanglist *sl, int DFLT_ok);
-extern int ScriptInFeatureScriptList(uint32 script, FeatureScriptLangList *fl);
-extern int _FeatureOrderId( int isgpos,uint32 tag );
-extern int FeatureOrderId( int isgpos,FeatureScriptLangList *fl );
-extern void SFSubTablesMerge(SplineFont *_sf,struct lookup_subtable *subfirst,
-	struct lookup_subtable *subsecond);
-extern struct lookup_subtable *SFSubTableFindOrMake(SplineFont *sf,uint32 tag,uint32 script,
-	int lookup_type );
-extern struct lookup_subtable *SFSubTableMake(SplineFont *sf,uint32 tag,uint32 script,
-	int lookup_type );
-extern OTLookup *OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLookup *from_otl);
-extern void OTLookupsCopyInto(SplineFont *into_sf,SplineFont *from_sf,
-	OTLookup **from_list, OTLookup *before);
-extern struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32 *flist, uint32 script, uint32 lang,
-	int pixelsize, SplineChar **glyphs);
-extern int VerticalKernFeature(SplineFont *sf, OTLookup *otl, int ask);
-extern void SFGlyphRenameFixup(SplineFont *sf, const char *old, const char *new, int rename_related_glyphs);
-
-struct sllk { uint32 script; int cnt, max; OTLookup **lookups; int lcnt, lmax; uint32 *langs; };
-extern void SllkFree(struct sllk *sllk,int sllk_cnt);
-extern struct sllk *AddOTLToSllks( OTLookup *otl, struct sllk *sllk,
-	int *_sllk_cnt, int *_sllk_max );
-extern OTLookup *NewAALTLookup(SplineFont *sf,struct sllk *sllk, int sllk_cnt, int i);
-extern void AddNewAALTFeatures(SplineFont *sf);
 
 extern void SplinePointRound(SplinePoint *,real);
 
-extern int KCFindName(const char *name, char **classnames, int cnt, int allow_class0 );
 extern KernClass *SFFindKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
 	int *index,int allow_zero);
 extern KernClass *SFFindVKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
