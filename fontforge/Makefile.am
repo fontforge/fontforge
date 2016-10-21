@@ -57,6 +57,7 @@ noinst_HEADERS = \
 	fvimportbdf.h \
 	glyphcomp.h\
 	http.h\
+	ikarus.h\
 	fontforgeui.h sftextfieldP.h configure-fontforge.h views.h 	\
 	flaglist.h strlist.h charview_private.h cvundoes.h tables.h
 
