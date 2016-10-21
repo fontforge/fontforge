@@ -60,6 +60,7 @@ extern int old_sfnt_flags;
 #include "fvcomposite.h"
 #include "fvfonts.h"
 #include "fvimportbdf.h"
+#include "glyphcomp.h"
 #include "ttf.h"
 #include "plugins.h"
 #include "utype.h"

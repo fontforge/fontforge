@@ -26,6 +26,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "glyphcomp.h"
+
 #include "bvedit.h"
 #include "cvundoes.h"
 #include "fontforgevw.h"
