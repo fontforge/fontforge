@@ -35,6 +35,7 @@
 #include "http.h"
 #include "macbinary.h"
 #include "namelist.h"
+#include "palmfonts.h"
 #include "ustring.h"
 #include "gfile.h"
 #include "gresource.h"

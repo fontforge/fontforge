@@ -2135,7 +2135,6 @@ extern int WriteTTFFont(char *fontname,SplineFont *sf, enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer);
 extern int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
 	int flags,EncMap *enc,int layer);
-extern int WritePalmBitmaps(const char *filename,SplineFont *sf, int32 *sizes,EncMap *enc);
 extern int WriteTTC(const char *filename,struct sflist *sfs,enum fontformat format,
 	enum bitmapformat bf,int flags,int layer,enum ttc_flags ttcflags);
 extern int WriteSVGFont(const char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *enc,int layer);
@@ -2748,7 +2747,6 @@ extern SplineFont *SFReadUFO(char *filename,int flags);
 extern SplineFont *_CFFParse(FILE *temp,int len,char *fontsetname);
 extern SplineFont *CFFParse(char *filename);
 extern SplineFont *SFReadWinFON(char *filename,int toback);
-extern SplineFont *SFReadPalmPdb(char *filename);
 extern SplineFont *LoadSplineFont(const char *filename,enum openflags);
 extern SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags openflags);
 extern SplineFont *ReadSplineFont(const char *filename,enum openflags);	/* Don't use this, use LoadSF instead */
