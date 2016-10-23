@@ -25,6 +25,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "parsepdf.h"
+
 #include "cvimages.h"
 #include "dumppfa.h"
 #include "encoding.h"

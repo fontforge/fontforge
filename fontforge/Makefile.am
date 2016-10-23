@@ -66,6 +66,7 @@ noinst_HEADERS = \
 	namelist.h\
 	othersubrs.h \
 	palmfonts.h \
+	parsepdf.h \
 	fontforgeui.h sftextfieldP.h configure-fontforge.h views.h 	\
 	flaglist.h strlist.h charview_private.h cvundoes.h tables.h
 

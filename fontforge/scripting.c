@@ -52,6 +52,7 @@
 #include "mm.h"
 #include "namelist.h"
 #include "othersubrs.h"
+#include "parsepdf.h"
 #include <gfile.h>
 #include <utype.h>
 #include <ustring.h>

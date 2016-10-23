@@ -30,6 +30,7 @@
 #include "cvundoes.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
+#include "parsepdf.h"
 #include <math.h>
 #include <sys/types.h>
 #include <dirent.h>
