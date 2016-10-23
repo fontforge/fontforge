@@ -200,6 +200,8 @@ static int processAssignment(long index,char *pt,long *flg) {
 	assignedcodepoints[index/32] |= (1<<(index%32));	/* This Unicode char is visible */
 	/* Collect ligatures, vulgar fractions and other fractions */
 	if ( strstr(pt,"LIGATURE") ) {
+	    if ( index>=0x1F670 && index<=0x1F673 )
+		return( 0 ); /* skip these chars, they're not ligatures */
 	    /* This codepoint index is a ligature */
 	    /* fprintf( stderr, "ligature[%d]=U+%X, = %s\n", lgm, index, pt ); */
 	    if ( lgm >= LG_MAX ) {
@@ -224,6 +226,7 @@ static int processAssignment(long index,char *pt,long *flg) {
 	    }
 	    vfm++;
 	} else if ( strstr(pt,"FRACTION") ) {
+	    if ( index==0x2044 ) return( 0 ); /* a char, not a fraction */
 	    /* This codepoint index is a fraction */
 	    /* fprintf( stderr, "fraction[%d]=U+%X, = %s\n", frm, index, pt ); */
 	    if ( frm >= FR_MAX ) {
