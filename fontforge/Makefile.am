@@ -64,6 +64,7 @@ noinst_HEADERS = \
 	macenc.h\
 	mathconstants.h\
 	namelist.h\
+	othersubrs.h \
 	fontforgeui.h sftextfieldP.h configure-fontforge.h views.h 	\
 	flaglist.h strlist.h charview_private.h cvundoes.h tables.h
 

@@ -31,6 +31,7 @@
 #include "groups.h"
 #include "macenc.h"
 #include "namelist.h"
+#include "othersubrs.h"
 #include "plugins.h"
 #include <charset.h>
 #include <gfile.h>

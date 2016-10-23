@@ -2913,8 +2913,6 @@ extern void SFModifyComposition(SplineFont *sf);
 extern void SFBuildSyllables(SplineFont *sf);
 # endif
 
-extern void DefaultOtherSubrs(void);
-extern int ReadOtherSubrsFile(char *filename);
 
 extern char *utf8toutf7_copy(const char *_str);
 extern char *utf7toutf8_copy(const char *_str);

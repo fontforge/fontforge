@@ -66,6 +66,7 @@ extern int old_sfnt_flags;
 #include "mathconstants.h"
 #include "namelist.h"
 #include "nonlineartrans.h"
+#include "othersubrs.h"
 #include "ttf.h"
 #include "plugins.h"
 #include "utype.h"
