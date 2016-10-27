@@ -36,6 +36,7 @@
 #include "mem.h"
 #include "mm.h"
 #include "parsepfa.h"
+#include "parsettfbmf.h"
 #include <math.h>
 #include <unistd.h>
 #include <time.h>
