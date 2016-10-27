@@ -37,6 +37,7 @@
 #include "lookups.h"
 #include "mem.h"
 #include "parsepfa.h"
+#include "parsettf.h"
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>

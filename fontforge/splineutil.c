@@ -33,6 +33,7 @@
 #include "mm.h"
 #include "namelist.h"
 #include "parsepfa.h"
+#include "parsettf.h"
 #include <math.h>
 #include "psfont.h"
 #include "ustring.h"

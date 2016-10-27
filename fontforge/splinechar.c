@@ -32,6 +32,7 @@
 #include "fvfonts.h"
 #include "lookups.h"
 #include "mem.h"
+#include "parsettf.h"
 #include <math.h>
 #include <locale.h>
 # include <ustring.h>

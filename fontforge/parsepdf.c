@@ -34,6 +34,7 @@
 #include "fontforge.h"
 #include "namelist.h"
 #include "parsepfa.h"
+#include "parsettf.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>

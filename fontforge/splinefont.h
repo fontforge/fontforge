@@ -2140,7 +2140,6 @@ extern int WriteTTC(const char *filename,struct sflist *sfs,enum fontformat form
 extern int WriteSVGFont(const char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *enc,int layer);
 extern int _WriteSVGFont(FILE *file,SplineFont *sf,int flags,EncMap *enc,int layer);
 extern int WriteUFOFont(const char *fontname, SplineFont *sf, enum fontformat format,int flags, const EncMap *enc,int layer);
-extern void TTF_PSDupsDefault(SplineFont *sf);
 extern void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf);
 extern void TeXDefaultParams(SplineFont *sf);
 extern int AlreadyMSSymbolArea(SplineFont *sf,EncMap *map);
@@ -2240,7 +2239,6 @@ struct sfmergecontext {
 extern void ImageListsFree(ImageList *imgs);
 extern void TTFLangNamesFree(struct ttflangname *l);
 extern void AltUniFree(struct altuni *altuni);
-extern void AltUniFigure(SplineFont *sf,EncMap *map,int check_dups);
 extern void AltUniRemove(SplineChar *sc,int uni);
 extern void AltUniAdd(SplineChar *sc,int uni);
 extern void AltUniAdd_DontCheckDups(SplineChar *sc,int uni);
@@ -2732,18 +2730,12 @@ extern SplineFont *SFDRead(char *filename);
 extern SplineFont *_SFDRead(char *filename,FILE *sfd);
 extern SplineFont *SFDirRead(char *filename);
 extern SplineChar *SFDReadOneChar(SplineFont *sf,const char *name);
-extern char *TTFGetFontName(FILE *ttf,int32 offset,int32 off2);
 enum ttfflags { ttf_onlystrikes=1, ttf_onlyonestrike=2, ttf_onlykerns=4, ttf_onlynames=8 };
 extern SplineFont *_SFReadWOFF(FILE *woff,int flags,enum openflags openflags,
 	char *filename,struct fontdict *fd);
-extern SplineFont *_SFReadTTF(FILE *ttf,int flags,enum openflags openflags,
-	char *filename,struct fontdict *fd);
-extern SplineFont *SFReadTTF(char *filename,int flags,enum openflags openflags);
 extern SplineFont *SFReadSVG(char *filename,int flags);
 extern SplineFont *SFReadSVGMem(char *data,int flags);
 extern SplineFont *SFReadUFO(char *filename,int flags);
-extern SplineFont *_CFFParse(FILE *temp,int len,char *fontsetname);
-extern SplineFont *CFFParse(char *filename);
 extern SplineFont *SFReadWinFON(char *filename,int toback);
 extern SplineFont *LoadSplineFont(const char *filename,enum openflags);
 extern SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags openflags);
@@ -2754,8 +2746,6 @@ extern char *Decompress(char *name, int compression);
 extern uint16 MacStyleCode( SplineFont *sf, uint16 *psstyle );
 extern char **GetFontNames(char *filename, int do_slow);
 extern char **NamesReadSFD(char *filename);
-extern char **NamesReadTTF(char *filename);
-extern char **NamesReadCFF(char *filename);
 extern char **NamesReadSVG(char *filename);
 extern char **NamesReadUFO(char *filename);
 
@@ -2862,8 +2852,6 @@ extern int  SF_CloseAllInstrs(SplineFont *sf);
 extern int  SSTtfNumberPoints(SplineSet *ss);
 extern int  SCNumberPoints(SplineChar *sc,int layer);
 extern int  SCPointsNumberedProperly(SplineChar *sc,int layer);
-extern int  ttfFindPointInSC(SplineChar *sc,int layer,int pnum,BasePoint *pos,
-	RefChar *bound);
 
 int SFFigureDefWidth(SplineFont *sf, int *_nomwid);
 
@@ -2886,7 +2874,6 @@ extern int BpWithin(BasePoint *first, BasePoint *mid, BasePoint *last);
 enum psstrokeflags { /* sf_removeoverlap=2,*/ sf_handle_eraser=4,
 	sf_correctdir=8, sf_clearbeforeinput=16 };
 
-extern char *EnforcePostScriptName(char *old);
 
 extern char *ToAbsolute(char *filename);
 
@@ -2974,7 +2961,6 @@ extern int SSExistsInLayer(SplineSet *ss,SplineSet *lots );
 extern int SplineExistsInSS(Spline *s,SplineSet *ss);
 extern int SpExistsInSS(SplinePoint *sp,SplineSet *ss);
 
-extern int MSLanguageFromLocale(void);
 
 extern struct math_constants_descriptor {
     char *ui_name;

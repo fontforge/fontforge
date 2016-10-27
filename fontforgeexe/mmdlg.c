@@ -31,6 +31,7 @@
 #include "macenc.h"
 #include "mm.h"
 #include "mem.h"
+#include "parsettf.h"
 #include <ustring.h>
 #include <math.h>
 #include <gkeysym.h>

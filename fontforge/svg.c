@@ -33,6 +33,7 @@
 #include "http.h"
 #include "lookups.h"
 #include "namelist.h"
+#include "parsettf.h"
 #include <unistd.h>
 #include <math.h>
 #include <locale.h>

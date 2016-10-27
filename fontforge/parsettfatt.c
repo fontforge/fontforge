@@ -30,6 +30,7 @@
 #include "fontforge.h"
 #include "lookups.h"
 #include "mem.h"
+#include "parsettf.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>

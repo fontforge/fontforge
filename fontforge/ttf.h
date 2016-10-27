@@ -785,7 +785,6 @@ struct contexttree {
 #define _SCALED_OFFSETS		0x800	/* Use Apple definition of offset interpretation */
 #define _UNSCALED_OFFSETS	0x1000	/* Use MS definition */
 
-extern int ttfFixupRef(SplineChar **chars,int i);
 extern const char *cffnames[];
 extern const int nStdStrings;
 
@@ -870,7 +869,6 @@ extern void otf_dump_math(struct alltabs *at, SplineFont *sf);
 extern void VariationFree(struct ttfinfo *info);
 extern void readttfvariations(struct ttfinfo *info, FILE *ttf);
 
-extern struct otfname *FindAllLangEntries(FILE *ttf, struct ttfinfo *info, int id );
 
 /* Known font parameters for 'TeX ' table (fontdims, spacing params, whatever you want to call them) */
     /* Used by all fonts */
