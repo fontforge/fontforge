@@ -39,6 +39,7 @@
 #include "namelist.h"
 #include "palmfonts.h"
 #include "parsepdf.h"
+#include "parsepfa.h"
 #include <utype.h>
 #include <ustring.h>
 #include <math.h>

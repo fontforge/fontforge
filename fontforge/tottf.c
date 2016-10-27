@@ -34,6 +34,7 @@
 #include "lookups.h"
 #include "macenc.h"
 #include "mm.h"
+#include "parsepfa.h"
 #include <math.h>
 #include <unistd.h>
 #include <time.h>

@@ -182,7 +182,4 @@ extern const char (*AdobeStandardEncoding[256]);
 extern const char (*AdobeExpertEncoding[256]);
 extern int copymetadata, copyttfinstr;
 
-extern FontDict *_ReadPSFont(FILE *ps);
-extern FontDict *ReadPSFont(char *fontname);
-extern void PSFontFree(FontDict *fd);
 #endif

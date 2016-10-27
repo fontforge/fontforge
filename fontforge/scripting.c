@@ -53,6 +53,7 @@
 #include "namelist.h"
 #include "othersubrs.h"
 #include "parsepdf.h"
+#include "parsepfa.h"
 #include <gfile.h>
 #include <utype.h>
 #include <ustring.h>

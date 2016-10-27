@@ -33,6 +33,7 @@
 #include "macenc.h"
 #include "mm.h"
 #include "namelist.h"
+#include "parsepfa.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>

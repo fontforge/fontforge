@@ -2758,8 +2758,6 @@ extern char **GetFontNames(char *filename, int do_slow);
 extern char **NamesReadSFD(char *filename);
 extern char **NamesReadTTF(char *filename);
 extern char **NamesReadCFF(char *filename);
-extern char **NamesReadPostScript(char *filename);
-extern char **_NamesReadPostScript(FILE *ps);
 extern char **NamesReadSVG(char *filename);
 extern char **NamesReadUFO(char *filename);
 
@@ -2811,8 +2809,6 @@ extern SplineFont *SFRecoverFile(char *autosavename,int inquire, int *state);
 extern void SFAutoSave(SplineFont *sf,EncMap *map);
 extern void SFClearAutoSave(SplineFont *sf);
 
-extern void PSCharsFree(struct pschars *chrs);
-extern void PSDictFree(struct psdict *chrs);
 extern int SFPrivateGuess(SplineFont *sf,int layer, struct psdict *private,
 	char *name, int onlyone);
 

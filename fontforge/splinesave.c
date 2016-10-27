@@ -28,6 +28,7 @@
 #include "dumppfa.h"
 #include "fontforge.h"
 #include "fvfonts.h"
+#include "parsepfa.h"
 #include <stdio.h>
 #include <math.h>
 #include "splinefont.h"
