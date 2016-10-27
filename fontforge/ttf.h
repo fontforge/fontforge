@@ -866,25 +866,6 @@ extern int ttf_fftm_dump(SplineFont *sf,struct alltabs *at);
 
     /* The MATH table */
 extern void otf_dump_math(struct alltabs *at, SplineFont *sf);
-extern void otf_read_math(FILE *ttf,struct ttfinfo *info);
-extern void otf_read_math_used(FILE *ttf,struct ttfinfo *info);
-extern void GuessNamesFromMATH(FILE *ttf,struct ttfinfo *info);
-
-    /* Parsing advanced typography */
-extern void readmacfeaturemap(FILE *ttf,struct ttfinfo *info);
-extern void readttfkerns(FILE *ttf,struct ttfinfo *info);
-extern void readttfmort(FILE *ttf,struct ttfinfo *info);
-extern void readttfmort_glyphsused(FILE *ttf,struct ttfinfo *info);
-extern void readttfopbd(FILE *ttf,struct ttfinfo *info);
-extern void readttflcar(FILE *ttf,struct ttfinfo *info);
-extern void readttfprop(FILE *ttf,struct ttfinfo *info);
-extern void readttfbsln(FILE *ttf,struct ttfinfo *info);
-extern void readttfgsubUsed(FILE *ttf,struct ttfinfo *info);
-extern void GuessNamesFromGSUB(FILE *ttf,struct ttfinfo *info);
-extern void readttfgpossub(FILE *ttf,struct ttfinfo *info,int gpos);
-extern void readttfgdef(FILE *ttf,struct ttfinfo *info);
-extern void readttfbase(FILE *ttf,struct ttfinfo *info);
-extern void readttfjstf(FILE *ttf,struct ttfinfo *info);
 
 extern void VariationFree(struct ttfinfo *info);
 extern void readttfvariations(struct ttfinfo *info, FILE *ttf);
