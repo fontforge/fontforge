@@ -829,9 +829,6 @@ extern struct macsettingname {
 
     /* TrueType instructions */
 extern struct ttf_table *SFFindTable(SplineFont *sf,uint32 tag);
-extern int32 memlong(uint8 *data,int table_len, int offset);
-extern int memushort(uint8 *data,int table_len, int offset);
-extern void memputshort(uint8 *data,int offset,uint16 val);
 extern int TTF__getcvtval(SplineFont *sf,int val);
 extern int TTF_getcvtval(SplineFont *sf,int val);
 extern int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags);

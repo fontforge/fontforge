@@ -29,6 +29,7 @@
 #include "autohint.h"
 #include "dumppfa.h"
 #include "fontforgevw.h"
+#include "mem.h"
 #include <math.h>
 #include <utype.h>
 

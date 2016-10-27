@@ -49,6 +49,7 @@
 #include "fvmetrics.h"
 #include "lookups.h"
 #include "macbinary.h"
+#include "mem.h"
 #include "mm.h"
 #include "namelist.h"
 #include "othersubrs.h"

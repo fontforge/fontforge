@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforge.h"
+#include "mem.h"
 #include "ttf.h"
 #include <math.h>
 #include <ustring.h>

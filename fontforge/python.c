@@ -64,6 +64,7 @@ extern int old_sfnt_flags;
 #include "langfreq.h"
 #include "lookups.h"
 #include "mathconstants.h"
+#include "mem.h"
 #include "namelist.h"
 #include "nonlineartrans.h"
 #include "othersubrs.h"

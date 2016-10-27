@@ -33,6 +33,7 @@
 #include "http.h"
 #include "lookups.h"
 #include "macenc.h"
+#include "mem.h"
 #include "mm.h"
 #include "parsepfa.h"
 #include <math.h>

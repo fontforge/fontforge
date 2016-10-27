@@ -26,6 +26,7 @@
  */
 #include "fontforge.h"
 #include "fvfonts.h"
+#include "mem.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>
