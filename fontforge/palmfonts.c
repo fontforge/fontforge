@@ -31,6 +31,7 @@
 #include "encoding.h"
 #include "fontforgevw.h"
 #include "macbinary.h"
+#include "mem.h"
 #include <stdio.h>
 #include <math.h>
 #include "splinefont.h"

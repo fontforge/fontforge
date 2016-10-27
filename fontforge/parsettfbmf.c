@@ -31,6 +31,7 @@
 #include "bvedit.h"
 #include "fontforge.h"
 #include "chardata.h"
+#include "mem.h"
 #include "utype.h"
 #include "ustring.h"
 #include <math.h>

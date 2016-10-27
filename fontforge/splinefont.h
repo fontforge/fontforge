@@ -2821,11 +2821,6 @@ extern int SplineSetsRemoveAnnoyingExtrema(SplineSet *ss,bigreal err);
 
 extern void SFFlatten(SplineFont *cidmaster);
 
-int getushort(FILE *ttf);
-int32 getlong(FILE *ttf);
-int get3byte(FILE *ttf);
-real getfixed(FILE *ttf);
-real get2dot14(FILE *ttf);
 void putshort(FILE *file,int sval);
 void putlong(FILE *file,int val);
 void putfixed(FILE *file,real dval);

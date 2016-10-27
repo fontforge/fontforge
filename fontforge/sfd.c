@@ -33,6 +33,7 @@
 #include "fvfonts.h"
 #include "http.h"
 #include "lookups.h"
+#include "mem.h"
 #include "namelist.h"
 #include "splinefont.h"
 #include "baseviews.h"
