@@ -34,6 +34,7 @@
 #include "fvfonts.h"
 #include "langfreq.h"
 #include "mm.h"
+#include "psread.h"
 #include "sflayoutP.h"
 #include <stdlib.h>
 #include <math.h>

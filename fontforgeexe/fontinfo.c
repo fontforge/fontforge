@@ -36,6 +36,7 @@
 #include "ofl.h"
 #include "parsepfa.h"
 #include "parsettf.h"
+#include "psread.h"
 #include <ustring.h>
 #include <chardata.h>
 #include <utype.h>

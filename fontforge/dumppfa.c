@@ -33,6 +33,7 @@
 #include "fvfonts.h"
 #include "http.h"
 #include "parsepfa.h"
+#include "psread.h"
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>

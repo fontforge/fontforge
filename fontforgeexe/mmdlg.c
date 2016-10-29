@@ -32,6 +32,7 @@
 #include "mm.h"
 #include "mem.h"
 #include "parsettf.h"
+#include "psread.h"
 #include <ustring.h>
 #include <math.h>
 #include <gkeysym.h>

@@ -29,6 +29,7 @@
 #include "cvundoes.h"
 #include "fontforge.h"
 #include "namelist.h"
+#include "psread.h"
 #include <math.h>
 #include "ustring.h"
 #include "chardata.h"

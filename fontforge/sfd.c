@@ -36,6 +36,7 @@
 #include "mem.h"
 #include "namelist.h"
 #include "parsettf.h"
+#include "psread.h"
 #include "splinefont.h"
 #include "baseviews.h"
 #include "views.h"

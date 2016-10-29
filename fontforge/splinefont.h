@@ -2765,15 +2765,9 @@ extern void SCUndoSetLBearingChange(SplineChar *sc,int lb);
 
 
 
-extern void SFSplinesFromLayers(SplineFont *sf,int tostroke);
-extern void SFSetLayerWidthsStroked(SplineFont *sf, real strokewidth);
 extern SplineSet *SplinePointListInterpretSVG(char *filename,char *memory, int memlen, int em_size, int ascent,int stroked);
 extern SplineSet *SplinePointListInterpretGlif(SplineFont *sf,char *filename,char *memory, int memlen, int em_size, int ascent,int stroked);
 #define UNDEFINED_WIDTH	-999999
-extern SplinePointList *SplinePointListInterpretPS(FILE *ps,int flags,int stroked,int *width);
-extern void PSFontInterpretPS(FILE *ps,struct charprocs *cp,char **encoding);
-extern struct enc *PSSlurpEncodings(FILE *file);
-extern int EvaluatePS(char *str,real *stack,int size);
 struct pscontext {
     int is_type2;
     int painttype;
@@ -2781,11 +2775,6 @@ struct pscontext {
     real blend_values[17];
     int blend_warn;
 };
-extern int UnblendedCompare(real u1[MmMax], real u2[MmMax], int cnt);
-extern SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *context,
-	struct pschars *subrs, struct pschars *gsubrs, const char *name);
-extern void MatMultiply(real m1[6], real m2[6], real to[6]);
-extern int MatIsIdentity(real transform[6]);
 
 extern int NameToEncoding(SplineFont *sf,EncMap *map,const char *uname);
 extern SplineChar *SFGetOrMakeChar(SplineFont *sf, int unienc, const char *name );
@@ -2865,7 +2854,6 @@ extern char *utf8_verify_copy(const char *str);
 extern struct macsetting *FindMacSetting(SplineFont *sf, int feat, int set,struct macsetting **secondary);
 
 
-extern void MatInverse(real into[6], real orig[6]);
 
 extern int BpColinear(BasePoint *first, BasePoint *mid, BasePoint *last);
 extern int BpWithin(BasePoint *first, BasePoint *mid, BasePoint *last);

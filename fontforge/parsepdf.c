@@ -35,6 +35,7 @@
 #include "namelist.h"
 #include "parsepfa.h"
 #include "parsettf.h"
+#include "psread.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>
