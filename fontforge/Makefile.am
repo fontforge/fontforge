@@ -71,6 +71,7 @@ noinst_HEADERS = \
 	parsettfatt.h \
 	parsettfbmf.h \
 	parsettf.h \
+	parsettfvar.h \
 	fontforgeui.h sftextfieldP.h configure-fontforge.h views.h 	\
 	flaglist.h strlist.h charview_private.h cvundoes.h tables.h
 

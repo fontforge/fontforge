@@ -40,6 +40,7 @@
 #include "parsepfa.h"
 #include "parsettfatt.h"
 #include "parsettfbmf.h"
+#include "parsettfvar.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>

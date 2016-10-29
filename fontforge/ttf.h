@@ -866,8 +866,6 @@ extern int ttf_fftm_dump(SplineFont *sf,struct alltabs *at);
     /* The MATH table */
 extern void otf_dump_math(struct alltabs *at, SplineFont *sf);
 
-extern void VariationFree(struct ttfinfo *info);
-extern void readttfvariations(struct ttfinfo *info, FILE *ttf);
 
 
 /* Known font parameters for 'TeX ' table (fontdims, spacing params, whatever you want to call them) */
