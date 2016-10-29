@@ -326,10 +326,6 @@ extern void TransDStemHints(DStemInfo *ds,real xmul, real xoff, real ymul, real 
 extern void VrTrans(struct vr *vr,real transform[6]);
 extern int SFNLTrans(FontViewBase *fv,char *x_expr,char *y_expr);
 extern void FVStrokeItScript(void *fv, StrokeInfo *si,int pointless);
-extern void CI_Init(struct counterinfo *ci,SplineFont *sf);
-extern void FVEmbolden(struct fontviewbase *fv,enum embolden_type type,struct lcg_zones *zones);
-extern void FVCondenseExtend(struct fontviewbase *fv,struct counterinfo *ci);
-extern void ScriptSCCondenseExtend(SplineChar *sc,struct counterinfo *ci);
 
 struct smallcaps {
     double lc_stem_width, uc_stem_width;
@@ -342,9 +338,6 @@ struct smallcaps {
     int layer;
     double italic_angle, tan_ia;
 };
-
-extern void SmallCapsFindConstants(struct smallcaps *small, SplineFont *sf,
-	int layer );
 
 enum glyphchange_type { gc_generic, gc_smallcaps, gc_subsuper, gc_max };
 
@@ -389,21 +382,7 @@ struct genericchange {
     double italic_angle, tan_ia;
 };
 
-extern void FVAddSmallCaps(FontViewBase *fv,struct genericchange *genchange);
-extern void FVGenericChange(FontViewBase *fv,struct genericchange *genchange);
-extern void CVGenericChange(CharViewBase *cv,struct genericchange *genchange);
 
-struct xheightinfo {
-    double xheight_current, xheight_desired;
-    double serif_height;
-};
-
-extern void InitXHeightInfo(SplineFont *sf, int layer, struct xheightinfo *xi);
-extern void ChangeXHeight(FontViewBase *fv,CharViewBase *cv, struct xheightinfo *xi);
-extern SplineSet *SSControlStems(SplineSet *ss,
-	double stemwidthscale, double stemheightscale,
-	double hscale, double vscale, double xheight);
-extern void MakeItalic(FontViewBase *fv,CharViewBase *cv,ItalicInfo *ii);
 extern int FVReplaceAll( FontViewBase *fv, SplineSet *find, SplineSet *rpl, double fudge, int flags );
 extern void FVBReplaceOutlineWithReference( FontViewBase *fv, double fudge );
 extern void FVCorrectReferences(FontViewBase *fv);
@@ -421,10 +400,6 @@ extern void FVDetachAndRemoveGlyphs(FontViewBase *fv);
 extern Undoes *_CVPreserveTState(CharViewBase *cv,PressedOn *);
 extern void CopySelected(CharViewBase *cv,int doanchors);
 extern void CopyWidth(CharViewBase *cv,enum undotype);
-extern void ScriptSCEmbolden(SplineChar *sc,int layer,enum embolden_type type,struct lcg_zones *zones);
-extern void CVEmbolden(CharViewBase *cv,enum embolden_type type,struct lcg_zones *zones);
-extern void SCCondenseExtend(struct counterinfo *ci,SplineChar *sc, int layer,
-	int do_undoes);
 extern void SCClearSelPt(SplineChar *sc);
 extern void SC_MoreLayers(SplineChar *,Layer *old);
 extern void SCLayersChange(SplineChar *sc);

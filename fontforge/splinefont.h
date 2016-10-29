@@ -2463,8 +2463,6 @@ extern void SplineFindExtrema(const Spline1D *sp, extended *_t1, extended *_t2 )
 extern int SSBoundsWithin(SplineSet *ss,bigreal z1, bigreal z2, bigreal *wmin, bigreal *wmax, int major );
 extern bigreal SplineMinDistanceToPoint(Spline *s, BasePoint *p);
 
-double SFSerifHeight(SplineFont *sf);
-
 
 #define CURVATURE_ERROR	-1e9
 extern bigreal SplineCurvature(Spline *s, bigreal t);
@@ -2600,7 +2598,6 @@ extern SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,int order2);
 extern SplineSet *SplineSetRemoveOverlap(SplineChar *sc,SplineSet *base,enum overlap_type);
 
 extern double BlueScaleFigure(struct psdict *private_,real bluevalues[], real otherblues[]);
-extern double SFStdVW(SplineFont *sf);
 
 typedef struct bluezone {
     real base;

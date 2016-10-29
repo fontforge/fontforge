@@ -79,6 +79,7 @@ extern int old_sfnt_flags;
 #include "strlist.h"
 #include "scripting.h"
 #include "scriptfuncs.h"
+#include "scstyles.h"
 #include "ffpython.h"
 
 #include <math.h>
