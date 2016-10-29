@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_SAVEFONT_H
 #define FONTFORGE_SAVEFONT_H
 
+#include <fontforge-config.h>
+
+#include "splinefont.h"
+
 extern const char (*savefont_extensions[]), (*bitmapextensions[]);
 extern int old_sfnt_flags;
 
@@ -36,5 +40,11 @@ void RestoreUnlinkRmOvrlp(SplineFont *sf,const char *filename,int layer);
 int _DoSave(SplineFont *sf,char *newname,int32 *sizes,int res,
 	EncMap *map, char *subfontdefinition,int layer);
 int CheckIfTransparent(SplineFont *sf);
+
+extern int GenerateScript(SplineFont *sf, char *filename, const char *bitmaptype, int fmflags, int res, char *subfontdirectory, struct sflist *sfs, EncMap *map, NameList *rename_to, int layer);
+
+#ifdef FONTFORGE_CONFIG_WRITE_PFM
+extern int WritePfmFile(char *filename, SplineFont *sf, EncMap *map, int layer);
+#endif
 
 #endif /* FONTFORGE_SAVEFONT_H */

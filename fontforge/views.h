@@ -718,9 +718,6 @@ extern int _FVMenuGenerate(FontView *fv,int family);
 extern void _FVCloseWindows(FontView *fv);
 extern char *GetPostScriptFontName(char *defdir,int mult);
 extern void MergeKernInfo(SplineFont *sf,EncMap *map);
-#ifdef FONTFORGE_CONFIG_WRITE_PFM
-extern int WritePfmFile(char *filename,SplineFont *sf, int type0, EncMap *map);
-#endif
 extern int SFGenerateFont(SplineFont *sf,int layer, int family,EncMap *map);
 
 extern void NonLinearDlg(FontView *fv,struct charview *cv);

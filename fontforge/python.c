@@ -72,6 +72,7 @@ extern int old_sfnt_flags;
 #include "plugins.h"
 #include "print.h"
 #include "psread.h"
+#include "savefont.h"
 #include "utype.h"
 #include "ustring.h"
 #include "flaglist.h"

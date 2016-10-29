@@ -2466,10 +2466,6 @@ extern bigreal SplineMinDistanceToPoint(Spline *s, BasePoint *p);
 double SFSerifHeight(SplineFont *sf);
 
 
-extern int GenerateScript(SplineFont *sf,char *filename, const char *bitmaptype,
-	int fmflags,int res, char *subfontdirectory,struct sflist *sfs,
-	EncMap *map,NameList *rename_to,int layer);
-
 #define CURVATURE_ERROR	-1e9
 extern bigreal SplineCurvature(Spline *s, bigreal t);
 

@@ -57,6 +57,7 @@
 #include "parsepfa.h"
 #include "parsettf.h"
 #include "print.h"
+#include "savefont.h"
 #include <gfile.h>
 #include <utype.h>
 #include <ustring.h>
