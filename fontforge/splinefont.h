@@ -2740,7 +2740,6 @@ extern void ArchiveCleanup(char *archivedir);
 extern char *Unarchive(char *name, char **_archivedir);
 extern char *Decompress(char *name, int compression);
 extern uint16 MacStyleCode( SplineFont *sf, uint16 *psstyle );
-extern char **GetFontNames(char *filename, int do_slow);
 extern char **NamesReadSFD(char *filename);
 extern char **NamesReadSVG(char *filename);
 extern char **NamesReadUFO(char *filename);

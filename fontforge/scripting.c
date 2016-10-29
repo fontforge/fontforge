@@ -28,6 +28,8 @@
 
 #include <fontforge-config.h>
 
+#include "scripting.h"
+
 #include "autohint.h"
 #include "autotrace.h"
 #include "autowidth.h"
@@ -80,7 +82,6 @@
 #endif
 #include "ttf.h"
 #include "plugins.h"
-#include "scripting.h"
 #include "scriptfuncs.h"
 #include "flaglist.h"
 #include "gutils/prefs.h"

@@ -438,7 +438,6 @@ extern void _CVMenuMakeLine(CharViewBase *cv,int do_arc,int ellipse_to_back);
 extern void MVCopyChar(FontViewBase *fv, BDFFont *bdf, SplineChar *sc, enum fvcopy_type fullcopy);
 extern void PasteIntoMV(FontViewBase *fv, BDFFont *bdf,SplineChar *sc, int doclear);
 
-extern void ExecuteScriptFile(FontViewBase *fv, SplineChar *sc, char *filename);
 
 enum search_flags { sv_reverse = 0x1, sv_flips = 0x2, sv_rotate = 0x4,
 	sv_scale = 0x8, sv_endpoints=0x10 };
