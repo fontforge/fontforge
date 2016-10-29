@@ -383,9 +383,6 @@ struct genericchange {
 };
 
 
-extern int FVReplaceAll( FontViewBase *fv, SplineSet *find, SplineSet *rpl, double fudge, int flags );
-extern void FVBReplaceOutlineWithReference( FontViewBase *fv, double fudge );
-extern void FVCorrectReferences(FontViewBase *fv);
 extern void _FVSimplify(FontViewBase *fv,struct simplifyinfo *smpl);
 extern void UnlinkThisReference(FontViewBase *fv,SplineChar *sc,int layer);
 extern FontViewBase *ViewPostScriptFont(const char *filename,int openflags);
@@ -418,45 +415,6 @@ enum search_flags { sv_reverse = 0x1, sv_flips = 0x2, sv_rotate = 0x4,
 	sv_scale = 0x8, sv_endpoints=0x10 };
 
 enum flipset { flip_none = 0, flip_x, flip_y, flip_xy };
-
-typedef struct searchdata {
-    SplineChar sc_srch, sc_rpl;
-    SplineSet *path, *revpath, *replacepath, *revreplace;
-    int pointcnt, rpointcnt;
-    real fudge;
-    real fudge_percent;			/* a value of .05 here represents 5% (we don't store the integer) */
-    unsigned int tryreverse: 1;
-    unsigned int tryflips: 1;
-    unsigned int tryrotate: 1;
-    unsigned int tryscale: 1;
-    unsigned int endpoints: 1;		/* Don't match endpoints, use them for direction only */
-    unsigned int onlyselected: 1;
-    unsigned int subpatternsearch: 1;
-    unsigned int doreplace: 1;
-    unsigned int replaceall: 1;
-    unsigned int findall: 1;
-    unsigned int searchback: 1;
-    unsigned int wrap: 1;
-    unsigned int wasreversed: 1;
-    unsigned int replacewithref: 1;
-    unsigned int already_complained: 1;	/* User has already been alerted to the fact that we've converted splines to refs and lost the instructions */
-    SplineSet *matched_spl;
-    SplinePoint *matched_sp, *last_sp;
-    real matched_rot, matched_scale;
-    real matched_x, matched_y;
-    double matched_co, matched_si;		/* Precomputed sin, cos */
-    enum flipset matched_flip;
-    unsigned long long matched_refs;	/* Bit map of which refs in the char were matched */
-    unsigned long long matched_ss;	/* Bit map of which splines in the char were matched */
-				    /* In multi-path mode */
-    unsigned long long matched_ss_start;/* Bit map of which splines we tried to start matches with */
-    FontViewBase *fv;
-    SplineChar *curchar;
-    int last_gid;
-} SearchData;
-
-extern struct searchdata *SDFromContour( FontViewBase *fv, SplineSet *find, double fudge, int flags );
-extern SplineChar *SDFindNext(struct searchdata *sv);
 
 extern struct python_import_export {
     struct _object *import;	/* None becomes NULL */

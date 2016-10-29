@@ -34,6 +34,7 @@
 
 #include <ggadget.h>
 #include "dlist.h"
+#include "search.h"
 
 
 struct gfi_data;

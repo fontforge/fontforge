@@ -61,6 +61,7 @@
 #include "print.h"
 #include "savefont.h"
 #include "scstyles.h"
+#include "search.h"
 #include <gfile.h>
 #include <utype.h>
 #include <ustring.h>
