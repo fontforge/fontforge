@@ -2992,8 +2992,6 @@ extern spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *_cnt);
 extern spiro_cp *SpiroCPCopy(spiro_cp *spiros,uint16 *_cnt);
 extern void SSRegenerateFromSpiros(SplineSet *spl);
 
-extern unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
-	void (*langsyscallback)(void *tf, int end, uint32 script, uint32 lang) );
 extern char *RandomParaFromScript(uint32 script, uint32 *lang, SplineFont *sf);
 
 extern int SSHasClip(SplineSet *ss);
