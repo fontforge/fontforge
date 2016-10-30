@@ -2707,7 +2707,6 @@ extern char* DumpSplineFontMetadata( SplineFont *sf );
 
 
 extern void SFD_DumpLookup( FILE *sfd, SplineFont *sf );
-extern enum uni_interp interp_from_encoding(Encoding *enc,enum uni_interp interp);
 extern const char *EncName(Encoding *encname);
 extern void SFDDumpMacFeat(FILE *sfd,MacFeat *mf);
 extern MacFeat *SFDParseMacFeatures(FILE *sfd, char *tok);
