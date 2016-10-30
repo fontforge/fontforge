@@ -26,6 +26,7 @@
  */
 #include "cvundoes.h"
 #include "fontforgeui.h"
+#include "spiro.h"
 #include <math.h>
 
 static struct shapedescrip {

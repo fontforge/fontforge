@@ -32,6 +32,7 @@
 #include "fvfonts.h"
 #include "parsepdf.h"
 #include "psread.h"
+#include "spiro.h"
 #include <math.h>
 #include <sys/types.h>
 #include <dirent.h>

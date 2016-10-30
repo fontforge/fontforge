@@ -27,6 +27,7 @@
 
 #include "cvundoes.h"
 #include "fontforgeui.h"
+#include "spiro.h"
 #include <utype.h>
 #include <math.h>
 #include "collabclient.h"

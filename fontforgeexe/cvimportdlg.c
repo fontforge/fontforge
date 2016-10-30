@@ -29,6 +29,7 @@
 #include "cvundoes.h"
 #include "fontforgeui.h"
 #include "fvimportbdf.h"
+#include "spiro.h"
 #include <math.h>
 #include <sys/types.h>
 #include <dirent.h>

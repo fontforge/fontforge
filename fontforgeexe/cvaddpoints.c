@@ -27,6 +27,7 @@
 #include "cvundoes.h"
 #include "fontforgeui.h"
 #include <math.h>
+#include "spiro.h"
 #include "splinefont.h"
 #include "ustring.h"
 

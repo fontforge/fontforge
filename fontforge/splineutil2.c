@@ -30,6 +30,7 @@
 #include "fontforge.h"
 #include "namelist.h"
 #include "psread.h"
+#include "spiro.h"
 #include <math.h>
 #include "ustring.h"
 #include "chardata.h"

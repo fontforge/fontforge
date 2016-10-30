@@ -37,6 +37,7 @@
 #include "psread.h"
 #include <math.h>
 #include "psfont.h"
+#include "spiro.h"
 #include "ustring.h"
 #include "utype.h"
 #include "views.h"		/* for FindSel structure */

@@ -26,6 +26,7 @@
  */
 #include "cvundoes.h"
 #include "fontforgeui.h"
+#include "spiro.h"
 #include "collabclientui.h"
 
 int palettes_docked=1;
