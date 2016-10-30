@@ -40,6 +40,7 @@
 #include "lookups.h"
 #include "mm.h"
 #include "namelist.h"
+#include "sfd.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>

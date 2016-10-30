@@ -49,6 +49,7 @@
 #include "psfont.h"
 #include "scripting.h"
 #include "search.h"
+#include "sfd.h"
 #include <gfile.h>
 #include <gio.h>
 #include <gresedit.h>

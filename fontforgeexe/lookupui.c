@@ -29,6 +29,7 @@
 #include "fontforgeui.h"
 #include "fvfonts.h"
 #include "lookups.h"
+#include "sfd.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>

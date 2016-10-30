@@ -2667,60 +2667,9 @@ extern void SFKernCleanup(SplineFont *sf,int isv);
 extern int SCSetMetaData(SplineChar *sc,const char *name,int unienc,
 	const char *comment);
 
-extern int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf );
-typedef struct sfd_getfontmetadatadata
-{
-
-    // these indicate if we saw some metadata or not.
-    // perhaps the caller wants to do something special
-    // if the metadata was present/missing.
-    int hadtimes;
-    int had_layer_cnt;
-
-    // state that is mostly interesting to SFD_GetFontMetaData() only
-    struct Base*        last_base;
-    struct basescript*  last_base_script;
-    OTLookup*           lastpotl;
-    OTLookup*           lastsotl;
-    KernClass*          lastkc;
-    KernClass*          lastvkc;
-    struct ff_glyphclasses* lastgroup;
-    struct ff_rawoffsets* lastgroupkern;
-    struct ff_rawoffsets* lastgroupvkern;
-    FPST*               lastfp;
-    ASM*                lastsm;
-    struct ttf_table*   lastttf[2];
-
-} SFD_GetFontMetaDataData;
-extern void SFD_GetFontMetaDataData_Init( SFD_GetFontMetaDataData* d );
-extern bool SFD_GetFontMetaData( FILE *sfd,
-                                 char *tok,
-                                 SplineFont *sf,
-                                 SFD_GetFontMetaDataData* d );
-extern void SFD_GetFontMetaDataVoid( FILE *sfd,
-                                 char *tok,
-                                 SplineFont *sf,
-                                 void* d );
-typedef void (*visitSFDFragmentFunc)( FILE *sfd, char *tokbuf, SplineFont *sf, void* udata );
-extern void visitSFDFragment( FILE *sfd, SplineFont *sf, visitSFDFragmentFunc ufunc, void* udata );
 extern char* DumpSplineFontMetadata( SplineFont *sf );
 
 
-extern void SFD_DumpLookup( FILE *sfd, SplineFont *sf );
-extern const char *EncName(Encoding *encname);
-extern void SFDDumpMacFeat(FILE *sfd,MacFeat *mf);
-extern MacFeat *SFDParseMacFeatures(FILE *sfd, char *tok);
-extern int SFDDoesAnyBackupExist(char* filename);
-extern int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal, int todir);
-extern int SFDWriteBak(char *filename,SplineFont *sf,EncMap *map,EncMap *normal);
-extern int SFDWriteBakExtended(char* locfilename,
-			       SplineFont *sf,EncMap *map,EncMap *normal,
-			       int s2d,
-			       int localPrefMaxBackupsToKeep );
-extern SplineFont *SFDRead(char *filename);
-extern SplineFont *_SFDRead(char *filename,FILE *sfd);
-extern SplineFont *SFDirRead(char *filename);
-extern SplineChar *SFDReadOneChar(SplineFont *sf,const char *name);
 enum ttfflags { ttf_onlystrikes=1, ttf_onlyonestrike=2, ttf_onlykerns=4, ttf_onlynames=8 };
 extern SplineFont *_SFReadWOFF(FILE *woff,int flags,enum openflags openflags,
 	char *filename,struct fontdict *fd);
@@ -2735,7 +2684,6 @@ extern void ArchiveCleanup(char *archivedir);
 extern char *Unarchive(char *name, char **_archivedir);
 extern char *Decompress(char *name, int compression);
 extern uint16 MacStyleCode( SplineFont *sf, uint16 *psstyle );
-extern char **NamesReadSFD(char *filename);
 extern char **NamesReadSVG(char *filename);
 extern char **NamesReadUFO(char *filename);
 
@@ -2772,9 +2720,6 @@ extern SplineChar *SFGetOrMakeCharFromUnicode( SplineFont *sf, EncMap *map, int 
 
 extern int DoAutoRecovery(int);
 typedef void (*DoAutoRecoveryPostRecoverFunc)(SplineFont *sf);
-extern SplineFont *SFRecoverFile(char *autosavename,int inquire, int *state);
-extern void SFAutoSave(SplineFont *sf,EncMap *map);
-extern void SFClearAutoSave(SplineFont *sf);
 
 extern int SFPrivateGuess(SplineFont *sf,int layer, struct psdict *private,
 	char *name, int onlyone);
@@ -2863,11 +2808,8 @@ extern void SFBuildSyllables(SplineFont *sf);
 # endif
 
 
-extern char *utf8toutf7_copy(const char *_str);
-extern char *utf7toutf8_copy(const char *_str);
 
 extern void SFSetModTime(SplineFont *sf);
-extern void SFTimesFromFile(SplineFont *sf,FILE *);
 
 extern int SFHasInstructions(SplineFont *sf);
 extern int RefDepth(RefChar *ref,int layer);

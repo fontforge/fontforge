@@ -33,6 +33,7 @@
 #include "namelist.h"
 #include "othersubrs.h"
 #include "plugins.h"
+#include "sfd.h"
 #include <charset.h>
 #include <gfile.h>
 #include <gresource.h>

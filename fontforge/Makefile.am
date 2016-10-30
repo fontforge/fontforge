@@ -75,6 +75,7 @@ noinst_HEADERS = \
 	psread.h \
 	savefont.h \
 	scstyles.h \
+	sfd.h \
 	fontforgeui.h sftextfieldP.h configure-fontforge.h views.h 	\
 	flaglist.h strlist.h charview_private.h cvundoes.h tables.h
 

@@ -29,6 +29,7 @@
 
 #include "baseviews.h"
 #include "fontforgevw.h"
+#include "sfd.h"
 /*#include "ustring.h"*/
 #include <sys/stat.h>
 #include <sys/types.h>

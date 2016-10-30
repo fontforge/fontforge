@@ -62,6 +62,7 @@
 #include "savefont.h"
 #include "scstyles.h"
 #include "search.h"
+#include "sfd.h"
 #include <gfile.h>
 #include <utype.h>
 #include <ustring.h>
