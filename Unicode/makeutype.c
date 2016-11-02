@@ -707,19 +707,19 @@ static void buildtables(FILE *data,long unsigned int *dt,int s,int m,char *t) {
 	else
 	    fprintf(data, ",\n" );
     }
-    if ( s<m ) {
-	fprintf( data, "const uint32 %s32[] = {\n", t );
+
+	fprintf(data, "const uint32 %s32[] = {\n", t);
 	for ( i=s; i<m; i=i+j ) {
-	    fprintf( data, "  0x%08x", dt[i] );
-	    for ( j=1; j<4 && i+j<m; ++j ) {
-		fprintf(data, ", 0x%08x", dt[i+j] );
-	    }
-	    if ( i+j>=m )
-		fprintf(data, "};\n\n" );
-	    else
-		fprintf(data, ",\n" );
+		fprintf(data, "  0x%08x", dt[i]);
+		for (j=1; j<4 && i+j<m; ++j) {
+			fprintf(data, ", 0x%08x", dt[i+j]);
+		}
+		if (i+j >= m)
+			fprintf(data, "\n");
+		else
+			fprintf(data, ",\n");
 	}
-    }
+	fprintf(data, "};\n\n");
 }
 
 static void dumpbsearch(FILE *data,int s) {
@@ -849,7 +849,7 @@ static void dumpligaturesfractions(FILE *header) {
     fprintf( data, "int LigatureCount(void) {\n" );
     fprintf( data, "\treturn ELEMENTS_IN_ARRAY(ligature16) + ELEMENTS_IN_ARRAY(ligature32);\n}\n\n" );
     fprintf( data, "int VulgarFractionCount(void) {\n" );
-    fprintf( data, "\treturn ELEMENTS_IN_ARRAY(vulgfrac16);\n}\n\n" );
+    fprintf( data, "\treturn ELEMENTS_IN_ARRAY(vulgfrac16) + ELEMENTS_IN_ARRAY(vulgfrac32);\n}\n\n" );
     fprintf( data, "int OtherFractionCount(void) {\n" );
     fprintf( data, "\treturn ELEMENTS_IN_ARRAY(fraction16) + ELEMENTS_IN_ARRAY(fraction32);\n}\n\n" );
     fprintf( data, "int FractionCount(void) {\n" );

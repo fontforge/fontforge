@@ -79,12 +79,16 @@ const uint16 ligature16[] = {
   0xfef6, 0xfef7, 0xfef8, 0xfef9, 0xfefa, 0xfefb, 0xfefc};
 
 const uint32 ligature32[] = {
-  0x00011176};
+  0x00011176
+};
 
 const uint16 vulgfrac16[] = {
   0x00bc, 0x00bd, 0x00be, 0x2150, 0x2151, 0x2152, 0x2153, 0x2154,
   0x2155, 0x2156, 0x2157, 0x2158, 0x2159, 0x215a, 0x215b, 0x215c,
   0x215d, 0x215e, 0x2189};
+
+const uint32 vulgfrac32[] = {
+};
 
 const uint16 fraction16[] = {
   0x0b72, 0x0b73, 0x0b74, 0x0b75, 0x0b76, 0x0b77, 0x0c78, 0x0c79,
@@ -97,7 +101,8 @@ const uint32 fraction32[] = {
   0x000109bc, 0x000109bd, 0x000109f6, 0x000109f7,
   0x000109f8, 0x000109f9, 0x000109fa, 0x000109fb,
   0x000109fc, 0x000109fd, 0x000109fe, 0x000109ff,
-  0x00010e7b, 0x00010e7c, 0x00010e7d, 0x00010e7e};
+  0x00010e7b, 0x00010e7c, 0x00010e7d, 0x00010e7e
+};
 
 static int compare_codepoints16(const void *uCode1, const void *uCode2) {
     const uint16 *cp1 = (const uint16 *)(uCode1);
@@ -118,7 +123,7 @@ int LigatureCount(void) {
 }
 
 int VulgarFractionCount(void) {
-	return ELEMENTS_IN_ARRAY(vulgfrac16);
+	return ELEMENTS_IN_ARRAY(vulgfrac16) + ELEMENTS_IN_ARRAY(vulgfrac32);
 }
 
 int OtherFractionCount(void) {
