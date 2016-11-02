@@ -67,6 +67,7 @@
 #include "splinefill.h"
 #include "splineorder2.h"
 #include "splinesaveafm.h"
+#include "splinestroke.h"
 #include <gfile.h>
 #include <utype.h>
 #include <ustring.h>

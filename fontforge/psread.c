@@ -30,6 +30,7 @@
 #include "fontforge.h"
 #include "namelist.h"
 #include "splineoverlap.h"
+#include "splinestroke.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>

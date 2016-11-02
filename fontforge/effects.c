@@ -31,6 +31,7 @@
 #include "cvundoes.h"
 #include "fontforgevw.h"
 #include "splineoverlap.h"
+#include "splinestroke.h"
 #include <ustring.h>
 #include <gkeysym.h>
 #include <utype.h>

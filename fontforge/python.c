@@ -87,6 +87,7 @@ extern int old_sfnt_flags;
 #include "spiro.h"
 #include "splinefill.h"
 #include "splineoverlap.h"
+#include "splinestroke.h"
 #include "ffpython.h"
 
 #include <math.h>

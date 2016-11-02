@@ -229,10 +229,6 @@ typedef struct strokeinfo {
     bigreal (*factor)(void *data,struct spline *spline,real t);
 } StrokeInfo;
 
-enum PolyType { Poly_Convex, Poly_Concave, Poly_PointOnEdge,
-    Poly_TooFewPoints, Poly_Line };
-
-
 enum overlap_type { over_remove, over_rmselected, over_intersect, over_intersel,
 	over_exclude, over_findinter, over_fisel };
 
@@ -2516,9 +2512,6 @@ extern int IntersectLinesClip(BasePoint *inter,
 	BasePoint *line1_1, BasePoint *line1_2,
 	BasePoint *line2_1, BasePoint *line2_2);
 
-extern enum PolyType PolygonIsConvex(BasePoint *poly,int n, int *badpointindex);
-extern SplineSet *UnitShape(int isrect);
-extern SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,int order2);
 
 extern double BlueScaleFigure(struct psdict *private_,real bluevalues[], real otherblues[]);
 
