@@ -40,6 +40,7 @@
 #include "ttf.h"		/* For AnchorClassDecompose */
 #include <stdio.h>
 #include "splinefont.h"
+#include "splinesave.h"
 #include <utype.h>
 #include <ustring.h>
 #include <time.h>

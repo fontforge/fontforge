@@ -82,6 +82,7 @@ noinst_HEADERS = \
 	splineoverlap.h \
 	splinerefigure.h \
 	splinesaveafm.h \
+	splinesave.h \
 	fontforgeui.h sftextfieldP.h configure-fontforge.h views.h 	\
 	flaglist.h strlist.h charview_private.h cvundoes.h tables.h
 

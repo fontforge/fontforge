@@ -2066,10 +2066,6 @@ extern char *strconcat3(const char *str, const char *str2, const char *str3);
 extern char *XUIDFromFD(int xuid[20]);
 extern SplineFont *SplineFontFromPSFont(struct fontdict *fd);
 extern void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename);
-extern int SFOneWidth(SplineFont *sf);
-extern int CIDOneWidth(SplineFont *sf);
-extern int SFOneHeight(SplineFont *sf);
-extern int SFIsCJK(SplineFont *sf,EncMap *map);
 enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_mma, ff_mmb,
 	ff_ptype3, ff_ptype0, ff_cid, ff_cff, ff_cffcid,
 	ff_type42, ff_type42cid,
@@ -2094,14 +2090,7 @@ extern void GrowBufferAddStr(GrowBuf *gb,char *str);
 
 struct glyphdata;
 extern int UnitsParallel(BasePoint *u1,BasePoint *u2,int strict);
-extern int CvtPsStem3(struct growbuf *gb, SplineChar *scs[MmMax], int instance_count,
-	int ishstem, int round);
 extern struct pschars *CID2ChrsSubrs(SplineFont *cidmaster,struct cidbytes *cidbytes,int flags,int layer);
-extern struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid,
-	int defwid, const int *bygid, int cnt, int flags,
-	struct pschars **_subrs,int layer);
-extern struct pschars *CID2ChrsSubrs2(SplineFont *cidmaster,struct fd2data *fds,
-	int flags, struct pschars **_glbls,int layer);
 enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, bf_sfnt_ms, bf_otb,
 	bf_nfntmacbin, /*bf_nfntdfont, */bf_fon, bf_fnt, bf_palm,
 	bf_ptype3,
@@ -2171,7 +2160,6 @@ extern void SplineSetSpirosClear(SplineSet *spl);
 extern void SplineSetBeziersClear(SplineSet *spl);
 extern void RefCharFree(RefChar *ref);
 extern void RefCharsFree(RefChar *ref);
-extern void RefCharsFreeRef(RefChar *ref);
 extern void UndoesFree(Undoes *undo);
 extern void StemInfosFree(StemInfo *h);
 extern void StemInfoFree(StemInfo *h);
@@ -2947,14 +2935,6 @@ extern bigreal DistanceBetweenPoints( BasePoint *p1, BasePoint *p2 );
 
 
 extern void debug_printHint( StemInfo *h, char* msg );
-extern void debug_printHintInstance( HintInstance* hi, int hin, char* msg );
-
-
-/**
- * It is like a == b, but also true if a is within
- * tolerence of b.
- */
-extern bool equalWithTolerence( real a, real b, real tolerence );
 
 // The following functions are in splineutil.c at present.
 size_t count_caps(const char * input);
