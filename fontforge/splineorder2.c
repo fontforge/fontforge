@@ -28,6 +28,7 @@
 #include "splineorder2.h"
 
 #include "fontforge.h"
+#include "splinerefigure.h"
 #include <math.h>
 #include <unistd.h>
 #include <time.h>

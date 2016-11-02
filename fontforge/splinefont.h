@@ -2318,7 +2318,6 @@ extern void MMSetFreeContents(MMSet *mm);
 extern void MMSetFree(MMSet *mm);
 extern void MMSetClearSpecial(MMSet *mm);
 extern void SFRemoveUndoes(SplineFont *sf,uint8 *selected,EncMap *map);
-extern void SplineRefigure3(Spline *spline);
 extern void SplineRefigure(Spline *spline);
 extern Spline *SplineMake3(SplinePoint *from, SplinePoint *to);
 extern LinearApprox *SplineApproximate(Spline *spline, real scale);
