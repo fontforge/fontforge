@@ -33,6 +33,7 @@
 #include "lookups.h"
 #include "namelist.h"
 #include "scstyles.h"
+#include "splineorder2.h"
 #include <ustring.h>
 #include <utype.h>
 #include <gkeysym.h>

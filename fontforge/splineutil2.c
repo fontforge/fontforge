@@ -32,6 +32,7 @@
 #include "psread.h"
 #include "spiro.h"
 #include "splinefill.h"
+#include "splineorder2.h"
 #include <math.h>
 #include "ustring.h"
 #include "chardata.h"

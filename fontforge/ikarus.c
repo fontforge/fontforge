@@ -30,6 +30,7 @@
 #include "fontforge.h"
 #include "namelist.h"
 #include "mem.h"
+#include "splineorder2.h"
 #include <utype.h>
 #include <string.h>
 #include <ustring.h>

@@ -28,6 +28,7 @@
 #include "fontforgeui.h"
 #include "spiro.h"
 #include "splinefill.h"
+#include "splineorder2.h"
 #include "collabclientui.h"
 
 int palettes_docked=1;

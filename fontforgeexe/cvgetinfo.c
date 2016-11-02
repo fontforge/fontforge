@@ -29,6 +29,7 @@
 #include "lookups.h"
 #include "parsettf.h"
 #include "spiro.h"
+#include "splineorder2.h"
 #include <ustring.h>
 #include <math.h>
 #include <utype.h>

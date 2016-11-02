@@ -2528,30 +2528,8 @@ extern int PointListIsSelected(SplinePointList *spl);
 extern void SplineSetsUntick(SplineSet *spl);
 extern void SFOrderBitmapList(SplineFont *sf);
 
-extern SplinePoint *SplineTtfApprox(Spline *ps);
-extern SplineSet *SSttfApprox(SplineSet *ss);
-extern SplineSet *SplineSetsTTFApprox(SplineSet *ss);
-extern SplineSet *SSPSApprox(SplineSet *ss);
-extern SplineSet *SplineSetsPSApprox(SplineSet *ss);
-extern SplineSet *SplineSetsConvertOrder(SplineSet *ss, int to_order2);
-extern void SplineRefigure2(Spline *spline);
-extern void SplineRefigureFixup(Spline *spline);
-extern Spline *SplineMake2(SplinePoint *from, SplinePoint *to);
 extern Spline *SplineMake(SplinePoint *from, SplinePoint *to, int order2);
 extern Spline *SFSplineMake(SplineFont *sf,SplinePoint *from, SplinePoint *to);
-extern void SCConvertToOrder2(SplineChar *sc);
-extern void SFConvertToOrder2(SplineFont *sf);
-extern void SCConvertToOrder3(SplineChar *sc);
-extern void SFConvertToOrder3(SplineFont *sf);
-extern void SFConvertGridToOrder2(SplineFont *_sf);
-extern void SCConvertLayerToOrder2(SplineChar *sc,int layer);
-extern void SFConvertLayerToOrder2(SplineFont *sf,int layer);
-extern void SFConvertGridToOrder3(SplineFont *_sf);
-extern void SCConvertLayerToOrder3(SplineChar *sc,int layer);
-extern void SFConvertLayerToOrder3(SplineFont *sf,int layer);
-extern void SCConvertOrder(SplineChar *sc, int to_order2);
-extern void SplinePointPrevCPChanged2(SplinePoint *sp);
-extern void SplinePointNextCPChanged2(SplinePoint *sp);
 extern int IntersectLinesSlopes(BasePoint *inter,
 	BasePoint *line1, BasePoint *slope1,
 	BasePoint *line2, BasePoint *slope2);

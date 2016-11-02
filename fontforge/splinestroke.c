@@ -27,6 +27,7 @@
 #include "cvundoes.h"
 #include "fontforge.h"
 #include "splinefont.h"
+#include "splineorder2.h"
 #include <math.h>
 #define PI      3.1415926535897932
 

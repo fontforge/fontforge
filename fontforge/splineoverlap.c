@@ -26,6 +26,7 @@
  */
 #include "fontforge.h"
 #include "splinefont.h"
+#include "splineorder2.h"
 #include "edgelist2.h"
 #include <math.h>
 #ifdef HAVE_IEEEFP_H

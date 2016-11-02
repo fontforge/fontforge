@@ -32,6 +32,7 @@
 #include "fvfonts.h"
 #include "lookups.h"
 #include "splinefill.h"
+#include "splineorder2.h"
 #include <math.h>
 
 #include "sflayoutP.h"

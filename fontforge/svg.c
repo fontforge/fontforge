@@ -35,6 +35,7 @@
 #include "namelist.h"
 #include "parsettf.h"
 #include "psread.h"
+#include "splineorder2.h"
 #include <unistd.h>
 #include <math.h>
 #include <locale.h>

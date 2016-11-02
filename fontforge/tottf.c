@@ -38,6 +38,7 @@
 #include "parsepfa.h"
 #include "parsettfbmf.h"
 #include "splinefill.h"
+#include "splineorder2.h"
 #include <math.h>
 #include <unistd.h>
 #include <time.h>

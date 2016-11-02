@@ -78,6 +78,7 @@ noinst_HEADERS = \
 	sfd.h \
 	spiro.h \
 	splinefill.h \
+	splineorder2.h \
 	fontforgeui.h sftextfieldP.h configure-fontforge.h views.h 	\
 	flaglist.h strlist.h charview_private.h cvundoes.h tables.h
 

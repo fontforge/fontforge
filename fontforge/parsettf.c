@@ -43,6 +43,7 @@
 #include "parsettfvar.h"
 #include "psread.h"
 #include "sfd1.h"
+#include "splineorder2.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>

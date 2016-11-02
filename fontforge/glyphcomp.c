@@ -34,6 +34,7 @@
 #include "fvfonts.h"
 #include "scriptfuncs.h"
 #include "splinefill.h"
+#include "splineorder2.h"
 #include <math.h>
 #include <ustring.h>
 

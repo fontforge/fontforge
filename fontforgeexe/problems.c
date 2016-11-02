@@ -31,6 +31,7 @@
 #include "fvfonts.h"
 #include "namelist.h"
 #include "ttf.h"
+#include "splineorder2.h"
 #include <gwidget.h>
 #include <ustring.h>
 #include <math.h>

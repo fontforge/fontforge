@@ -32,6 +32,7 @@
 #include "lookups.h"
 #include "namelist.h"
 #include "splinefill.h"
+#include "splineorder2.h"
 #include "ustring.h"
 #include "utype.h"
 #include "gfile.h"

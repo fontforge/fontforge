@@ -65,6 +65,7 @@
 #include "sfd.h"
 #include "spiro.h"
 #include "splinefill.h"
+#include "splineorder2.h"
 #include <gfile.h>
 #include <utype.h>
 #include <ustring.h>

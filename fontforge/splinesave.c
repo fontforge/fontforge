@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "splinefont.h"
+#include "splineorder2.h"
 #include "psfont.h"
 #include <ustring.h>
 #include <string.h>

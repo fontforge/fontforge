@@ -38,6 +38,7 @@
 #include "parsettf.h"
 #include "psread.h"
 #include "sfd.h"
+#include "splineorder2.h"
 #include <ustring.h>
 #include <chardata.h>
 #include <utype.h>

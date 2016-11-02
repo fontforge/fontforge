@@ -26,6 +26,7 @@
  */
 #include "cvundoes.h"
 #include "fontforgeui.h"
+#include "splineorder2.h"
 #include <math.h>
 
 #undef DEBUG_FREEHAND

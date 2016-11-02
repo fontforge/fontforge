@@ -39,6 +39,7 @@
 #include "psfont.h"
 #include "spiro.h"
 #include "splinefill.h"
+#include "splineorder2.h"
 #include "ustring.h"
 #include "utype.h"
 #include "views.h"		/* for FindSel structure */
