@@ -38,6 +38,7 @@
 #include "macbinary.h"
 #include "namelist.h"
 #include "palmfonts.h"
+#include "splinefill.h"
 #include "ustring.h"
 #include "gfile.h"
 #include "gresource.h"

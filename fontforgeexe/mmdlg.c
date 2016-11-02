@@ -34,6 +34,7 @@
 #include "parsettf.h"
 #include "psread.h"
 #include "sfd.h"
+#include "splinefill.h"
 #include <ustring.h>
 #include <math.h>
 #include <gkeysym.h>

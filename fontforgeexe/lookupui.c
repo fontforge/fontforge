@@ -30,6 +30,7 @@
 #include "fvfonts.h"
 #include "lookups.h"
 #include "sfd.h"
+#include "splinefill.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>

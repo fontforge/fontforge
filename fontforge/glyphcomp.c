@@ -33,6 +33,7 @@
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "scriptfuncs.h"
+#include "splinefill.h"
 #include <math.h>
 #include <ustring.h>
 

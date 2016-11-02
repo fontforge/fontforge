@@ -31,6 +31,7 @@
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "lookups.h"
+#include "splinefill.h"
 #include <math.h>
 
 #include "sflayoutP.h"

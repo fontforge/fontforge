@@ -2383,28 +2383,7 @@ extern SplineChar *MakeDupRef(SplineChar *base, int local_enc, int uni_enc);
 extern void SCRemoveDependent(SplineChar *dependent,RefChar *rf,int layer);
 extern void SCRemoveLayerDependents(SplineChar *dependent,int layer);
 extern void SCRemoveDependents(SplineChar *dependent);
-extern void BCCompressBitmap(BDFChar *bdfc);
-extern void BCRegularizeBitmap(BDFChar *bdfc);
-extern void BCRegularizeGreymap(BDFChar *bdfc);
-extern int GradientHere(bigreal scale,DBounds *bbox,int iy,int ix,
-	struct gradient *grad,struct pattern *pat, int defgrey);
-extern void PatternPrep(SplineChar *sc,struct brush *brush,bigreal scale);
-extern BDFChar *SplineCharRasterize(SplineChar *sc, int layer, bigreal pixelsize);
-extern BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indicate);
-extern BDFFont *SplineFontRasterize(SplineFont *sf, int layer, int pixelsize, int indicate);
-extern void BDFCAntiAlias(BDFChar *bc, int linear_scale);
-extern BDFChar *SplineCharAntiAlias(SplineChar *sc, int layer, int pixelsize,int linear_scale);
-extern BDFFont *SplineFontAntiAlias(SplineFont *sf, int layer, int pixelsize,int linear_scale);
-extern struct clut *_BDFClut(int linear_scale);
 extern void BDFClut(BDFFont *bdf, int linear_scale);
-extern int BDFDepth(BDFFont *bdf);
-extern BDFChar *BDFPieceMeal(BDFFont *bdf, int index);
-extern BDFChar *BDFPieceMealCheck(BDFFont *bdf, int index);
-enum piecemeal_flags { pf_antialias=1, pf_bbsized=2, pf_ft_nohints=4, pf_ft_recontext=8 };
-extern BDFFont *SplineFontPieceMeal(SplineFont *sf,int layer,int ptsize, int dpi,int flags,void *freetype_context);
-extern void BDFCharFree(BDFChar *bdfc);
-extern void BDFPropsFree(BDFFont *bdf);
-extern void BDFFontFree(BDFFont *bdf);
 extern int  FNTFontDump(char *filename,BDFFont *font, EncMap *map, int res);
 extern int  FONFontDump(char *filename,SplineFont *sf, int32 *sizes,int res,
 	EncMap *map);

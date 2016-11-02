@@ -38,6 +38,7 @@
 #include "namelist.h"
 #include "palmfonts.h"
 #include "parsettf.h"
+#include "splinefill.h"
 #include <gfile.h>
 #include <math.h>
 #include "utype.h"

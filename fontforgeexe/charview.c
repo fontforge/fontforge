@@ -42,6 +42,7 @@
 #include "namelist.h"
 #include "sfd.h"
 #include "spiro.h"
+#include "splinefill.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>

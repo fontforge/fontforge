@@ -30,6 +30,7 @@
 #include "fvfonts.h"
 #include "lookups.h"
 #include "psfont.h"
+#include "splinefill.h"
 #include <ustring.h>
 #include <gkeysym.h>
 #include <utype.h>

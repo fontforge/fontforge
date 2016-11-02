@@ -83,6 +83,7 @@ extern int old_sfnt_flags;
 #include "search.h"
 #include "sfd.h"
 #include "spiro.h"
+#include "splinefill.h"
 #include "ffpython.h"
 
 #include <math.h>

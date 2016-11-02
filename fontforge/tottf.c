@@ -37,6 +37,7 @@
 #include "mm.h"
 #include "parsepfa.h"
 #include "parsettfbmf.h"
+#include "splinefill.h"
 #include <math.h>
 #include <unistd.h>
 #include <time.h>

@@ -28,6 +28,7 @@
 #include "fontforgeui.h"
 #include "fvfonts.h"
 #include "lookups.h"
+#include "splinefill.h"
 #include <gkeysym.h>
 #include <string.h>
 #include <ustring.h>

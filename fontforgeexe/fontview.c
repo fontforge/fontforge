@@ -48,6 +48,7 @@
 #include "nonlineartrans.h"
 #include "psfont.h"
 #include "scripting.h"
+#include "splinefill.h"
 #include "search.h"
 #include "sfd.h"
 #include <gfile.h>

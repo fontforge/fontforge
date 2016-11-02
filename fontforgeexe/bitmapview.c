@@ -31,6 +31,7 @@
 #include "encoding.h"
 #include "fontforgeui.h"
 #include "fvfonts.h"
+#include "splinefill.h"
 #include <gkeysym.h>
 #include <utype.h>
 #include <ustring.h>

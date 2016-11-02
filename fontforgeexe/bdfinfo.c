@@ -30,6 +30,7 @@
 #include "bitmapchar.h"
 #include "fontforgeui.h"
 #include "splinefont.h"
+#include "splinefill.h"
 #include <string.h>
 #include <ustring.h>
 #include <utype.h>

@@ -28,6 +28,7 @@
 #include "encoding.h"
 #include "fontforge.h"
 #include "mem.h"
+#include "splinefill.h"
 #include <stdio.h>
 #include <math.h>
 #include "splinefont.h"

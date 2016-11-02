@@ -30,6 +30,7 @@
 #include "autohint.h"
 #include "bvedit.h"
 #include "fontforgevw.h"
+#include "splinefill.h"
 #include "ustring.h"
 #include <math.h>
 #include "bitmapcontrol.h"
