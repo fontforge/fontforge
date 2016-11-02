@@ -174,56 +174,108 @@ int32 Fraction_get_U(int n) {
 }
 
 int Ligature_find_N(uint32 uCode) {
-    uint16 uCode16, *p16;
-    uint32 *p32;
-    int n=-1;
+	uint16 uCode16;
+	int n=-1;
 
-    if ( uCode<0x132 || uCode>0x11176 || (uCode<65536 && isligorfrac(uCode)==0) )
-	return( -1 );
-    if ( uCode<0xfefc ) {
-	uCode16 = uCode;
-	p16 = (uint16 *)(bsearch(&uCode16, ligature16, 511, \
-				sizeof(uint16), compare_codepoints16));
-	if ( p16 ) n = p16 - ligature16;
-    } else {
-	p32 = (uint32 *)(bsearch(&uCode, ligature32, 1, \
-				sizeof(uint32), compare_codepoints32));
-	if ( p32 ) n = p32 - ligature32 + 511;
-    }
-    return( n );
+	int ligature_max = 65536;
+
+	uint32 ligature16_first = ligature16[0];
+	uint32 ligature16_last = ligature16[ELEMENTS_IN_ARRAY(ligature16)-1];
+
+	if ((uCode < ligature16_first) || (uCode > ligature16_last) ||
+	    ((uCode < ligature_max) && (isligorfrac(uCode)==0)))
+		return -1;
+
+	if (uCode < ligature16_last) {
+		uCode16 = uCode;
+		uint16* p16 = (uint16 *)(bsearch(&uCode16,
+		                                 ligature16,
+		                                 ELEMENTS_IN_ARRAY(ligature16),
+		                                 sizeof(uint16),
+		                                 compare_codepoints16));
+		if (p16)
+			n = p16 - ligature16;
+	} else {
+		uint32* p32 = (uint32 *)(bsearch(&uCode,
+		                                 ligature32,
+		                                 ELEMENTS_IN_ARRAY(ligature32),
+		                                 sizeof(uint32),
+		                                 compare_codepoints32));
+		if (p32)
+			n = p32 - ligature32 + ELEMENTS_IN_ARRAY(ligature32);
+	}
+
+	return n;
 }
 
 int VulgFrac_find_N(uint32 uCode) {
-    uint16 uCode16, *p16;
-    int n=-1;
+	uint16 uCode16;
+	int n=-1;
 
-    if ( uCode<0xbc || uCode>0x2189 || isligorfrac(uCode)==0 )
-	return( -1 );
-    uCode16 = uCode;
-    p16 = (uint16 *)(bsearch(&uCode16, vulgfrac16, 19, \
-				sizeof(uint16), compare_codepoints16));
-    if ( p16 ) n = p16 - vulgfrac16;
-    return( n );
+	int vulgfrac_max = 65536;
+
+	uint32 vulgfrac16_first = vulgfrac16[0];
+	uint32 vulgfrac16_last = vulgfrac16[ELEMENTS_IN_ARRAY(vulgfrac16)-1];
+
+	if ((uCode < vulgfrac16_first) || (uCode > vulgfrac16_last) ||
+	    ((uCode < vulgfrac_max) && (isligorfrac(uCode)==0)))
+		return -1;
+
+	if (uCode < vulgfrac16_last) {
+		uCode16 = uCode;
+		uint16* p16 = (uint16 *)(bsearch(&uCode16,
+		                                 vulgfrac16,
+		                                 ELEMENTS_IN_ARRAY(vulgfrac16),
+		                                 sizeof(uint16),
+		                                 compare_codepoints16));
+		if (p16)
+			n = p16 - vulgfrac16;
+	} else {
+		uint32* p32 = (uint32 *)(bsearch(&uCode,
+		                                 vulgfrac32,
+		                                 ELEMENTS_IN_ARRAY(vulgfrac32),
+		                                 sizeof(uint32),
+		                                 compare_codepoints32));
+		if (p32)
+			n = p32 - vulgfrac32 + ELEMENTS_IN_ARRAY(vulgfrac32);
+	}
+
+	return n;
 }
 
 int Fraction_find_N(uint32 uCode) {
-    uint16 uCode16, *p16;
-    uint32 *p32;
-    int n=-1;
+	uint16 uCode16;
+	int n=-1;
 
-    if ( uCode<0xb72 || uCode>0x10e7e || (uCode<65536 && isligorfrac(uCode)==0) )
-	return( -1 );
-    if ( uCode<0xa835 ) {
-	uCode16 = uCode;
-	p16 = (uint16 *)(bsearch(&uCode16, fraction16, 34, \
-				sizeof(uint16), compare_codepoints16));
-	if ( p16 ) n = p16 - fraction16;
-    } else {
-	p32 = (uint32 *)(bsearch(&uCode, fraction32, 16, \
-				sizeof(uint32), compare_codepoints32));
-	if ( p32 ) n = p32 - fraction32 + 34;
-    }
-    return( n );
+	int fraction_max = 65536;
+
+	uint32 fraction16_first = fraction16[0];
+	uint32 fraction16_last = fraction16[ELEMENTS_IN_ARRAY(fraction16)-1];
+
+	if ((uCode < fraction16_first) || (uCode > fraction16_last) ||
+	    ((uCode < fraction_max) && (isligorfrac(uCode)==0)))
+		return -1;
+
+	if (uCode < fraction16_last) {
+		uCode16 = uCode;
+		uint16* p16 = (uint16 *)(bsearch(&uCode16,
+		                                 fraction16,
+		                                 ELEMENTS_IN_ARRAY(fraction16),
+		                                 sizeof(uint16),
+		                                 compare_codepoints16));
+		if (p16)
+			n = p16 - fraction16;
+	} else {
+		uint32* p32 = (uint32 *)(bsearch(&uCode,
+		                                 fraction32,
+		                                 ELEMENTS_IN_ARRAY(fraction32),
+		                                 sizeof(uint32),
+		                                 compare_codepoints32));
+		if (p32)
+			n = p32 - fraction32 + ELEMENTS_IN_ARRAY(fraction32);
+	}
+
+	return n;
 }
 
 /* Boolean-style tests (found==0) to see if your codepoint value is listed */

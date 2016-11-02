@@ -757,35 +757,43 @@ static void dump_getU(FILE *data,long unsigned int *dt,int s,int m,char *t,char 
 static void dumpbsearchfindN(FILE *data,long unsigned int *dt,int s,int m,char *t) {
 /* Find 'n' for this unicode value. Treat both (uint16, uint32) tables as a */
 /* single table. 'n' will be within {0<=n<=(sizeof(table)-1}, and Error=-1. */
-    fprintf( data, "    uint16 uCode16, *p16;\n" );
-    if ( s<m )
-	fprintf( data, "    uint32 *p32;\n" );
-    fprintf( data, "    int n=-1;\n\n" );
-    fprintf( data, "    if ( uCode<0x%x || uCode>0x%x || ", dt[0], dt[m-1] );
-    if ( dt[m-1]<MAXC )
-	fprintf( data, "isligorfrac(uCode)==0 )\n" );
-    else
-	fprintf( data, "(uCode<%d && isligorfrac(uCode)==0) )\n", MAXC );
-    fprintf( data, "\treturn( -1 );\n    " );
-    if ( s<m )
-	fprintf( data, "if ( uCode<0x%x ) {\n\tuCode16 = uCode;\n\t", dt[s-1] );
-    else
-	fprintf( data, "uCode16 = uCode;\n    " );
-    fprintf( data, "p16 = (uint16 *)(bsearch(&uCode16, %s16, %d, \\\n", t, s );
-    fprintf( data, "\t\t\t\tsizeof(uint16), compare_codepoints16));\n" );
-    if ( s<m )
-	fprintf( data, "\t" );
-    else
-	fprintf( data, "    " );
-    fprintf( data, "if ( p16 ) n = p16 - %s16;\n", t );
-    if ( s<m ) {
-	fprintf( data, "    } else {\n" );
-	fprintf( data, "\tp32 = (uint32 *)(bsearch(&uCode, %s32, %d, \\\n", t, m-s );
-	fprintf( data, "\t\t\t\tsizeof(uint32), compare_codepoints32));\n" );
-	fprintf( data, "\tif ( p32 ) n = p32 - %s32 + %d;\n", t, s );
-	fprintf( data, "    }\n" );
-    }
-    fprintf( data, "    return( n );\n}\n\n" );
+	fprintf(data, "\tuint16 uCode16;\n");
+	fprintf(data, "\tint n=-1;\n");
+	fprintf(data, "\n");
+
+	fprintf(data, "\tint %s_max = %d;\n", t, MAXC);
+	fprintf(data, "\n");
+
+	fprintf(data, "\tuint32 %s16_first = %s16[0];\n", t, t);
+	fprintf(data, "\tuint32 %s16_last = %s16[ELEMENTS_IN_ARRAY(%s16)-1];\n", t, t, t);
+	fprintf(data, "\n");
+
+	fprintf(data, "\tif ((uCode < %s16_first) || (uCode > %s16_last) ||\n", t, t);
+	fprintf(data, "\t    ((uCode < %s_max) && (isligorfrac(uCode)==0)))\n", t);
+	fprintf(data, "\t\treturn -1;\n");
+	fprintf(data, "\n");
+
+
+	fprintf(data, "\tif (uCode < %s16_last) {\n", t);
+	fprintf(data, "\t\tuCode16 = uCode;\n");
+
+	fprintf(data, "\t\tuint16* p16 = (uint16 *)(bsearch(&uCode16,\n");
+	fprintf(data, "\t\t                                 %s16,\n", t);
+	fprintf(data, "\t\t                                 ELEMENTS_IN_ARRAY(%s16),\n", t);
+	fprintf(data, "\t\t                                 sizeof(uint16),\n");
+	fprintf(data, "\t\t                                 compare_codepoints16));\n");
+	fprintf(data, "\t\tif (p16)\n");
+	fprintf(data, "\t\t\tn = p16 - %s16;\n", t);
+	fprintf(data, "\t} else {\n");
+	fprintf(data, "\t\tuint32* p32 = (uint32 *)(bsearch(&uCode,\n");
+	fprintf(data, "\t\t                                 %s32,\n", t);
+	fprintf(data, "\t\t                                 ELEMENTS_IN_ARRAY(%s32),\n", t);
+	fprintf(data, "\t\t                                 sizeof(uint32),\n");
+	fprintf(data, "\t\t                                 compare_codepoints32));\n");
+	fprintf(data, "\t\tif (p32)\n");
+	fprintf(data, "\t\t\tn = p32 - %s32 + ELEMENTS_IN_ARRAY(%s32);\n", t, t);
+	fprintf(data, "\t}\n\n");
+	fprintf(data, "\treturn n;\n}\n\n" );
 }
 
 static void dumpligaturesfractions(FILE *header) {
