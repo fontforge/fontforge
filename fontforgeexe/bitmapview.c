@@ -32,6 +32,7 @@
 #include "fontforgeui.h"
 #include "fvfonts.h"
 #include "splinefill.h"
+#include "splinesaveafm.h"
 #include <gkeysym.h>
 #include <utype.h>
 #include <ustring.h>

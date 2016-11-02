@@ -30,6 +30,7 @@
 #include "glyphcomp.h"
 #include "lookups.h"
 #include "splinefill.h"
+#include "splinesaveafm.h"
 #include <utype.h>
 #include <ustring.h>
 #include <gkeysym.h>

@@ -29,6 +29,7 @@
 #include "fontforge.h"
 #include "fvfonts.h"
 #include "psread.h"
+#include "splinesaveafm.h"
 #include <stdio.h>
 #include <string.h>
 #include <ustring.h>

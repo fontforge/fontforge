@@ -30,6 +30,7 @@
 #include "mem.h"
 #include "namelist.h"
 #include "asmfpst.h"
+#include "splinesaveafm.h"
 #include <utype.h>
 #include <ustring.h>
 

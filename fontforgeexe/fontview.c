@@ -51,6 +51,7 @@
 #include "splinefill.h"
 #include "search.h"
 #include "sfd.h"
+#include "splinesaveafm.h"
 #include <gfile.h>
 #include <gio.h>
 #include <gresedit.h>

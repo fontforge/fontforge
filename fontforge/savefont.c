@@ -40,6 +40,7 @@
 #include "palmfonts.h"
 #include "splinefill.h"
 #include "splineoverlap.h"
+#include "splinesaveafm.h"
 #include "ustring.h"
 #include "gfile.h"
 #include "gresource.h"

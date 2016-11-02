@@ -32,6 +32,7 @@
 #include "lookups.h"
 #include "print.h"
 #include "sftextfieldP.h"
+#include "splinesaveafm.h"
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>

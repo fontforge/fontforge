@@ -33,6 +33,7 @@
 #include "ttf.h"
 #include "splineorder2.h"
 #include "splineoverlap.h"
+#include "splinesaveafm.h"
 #include <gwidget.h>
 #include <ustring.h>
 #include <math.h>

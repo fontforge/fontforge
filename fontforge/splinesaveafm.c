@@ -24,6 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "splinesaveafm.h"
+
 #include "autohint.h"
 #include "featurefile.h"
 #include "fontforgevw.h"		/* For Error */

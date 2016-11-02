@@ -39,6 +39,7 @@
 #include "parsettfbmf.h"
 #include "splinefill.h"
 #include "splineorder2.h"
+#include "splinesaveafm.h"
 #include <math.h>
 #include <unistd.h>
 #include <time.h>

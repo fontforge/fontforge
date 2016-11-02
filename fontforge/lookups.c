@@ -31,6 +31,7 @@
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "macenc.h"
+#include "splinesaveafm.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>

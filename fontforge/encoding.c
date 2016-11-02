@@ -36,6 +36,7 @@
 #include "psread.h"
 #include "splinefont.h"
 #include "splinefill.h"
+#include "splinesaveafm.h"
 #include <ustring.h>
 #include <utype.h>
 #include <math.h>

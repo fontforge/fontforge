@@ -2065,17 +2065,7 @@ extern char *strconcat3(const char *str, const char *str2, const char *str3);
 
 extern char *XUIDFromFD(int xuid[20]);
 extern SplineFont *SplineFontFromPSFont(struct fontdict *fd);
-extern int CheckAfmOfPostScript(SplineFont *sf,char *psname);
-extern int LoadKerningDataFromAmfm(SplineFont *sf, char *filename);
-extern int LoadKerningDataFromAfm(SplineFont *sf, char *filename);
-extern int LoadKerningDataFromTfm(SplineFont *sf, char *filename, EncMap *map);
-extern int LoadKerningDataFromOfm(SplineFont *sf, char *filename, EncMap *map);
-extern int LoadKerningDataFromPfm(SplineFont *sf, char *filename, EncMap *map);
-extern int LoadKerningDataFromMetricsFile(SplineFont *sf, char *filename, EncMap *map);
 extern void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename);
-extern void SubsNew(SplineChar *to,enum possub_type type,int tag,char *components,
-	    SplineChar *default_script);
-extern void PosNew(SplineChar *to,int tag,int dx, int dy, int dh, int dv);
 extern int SFOneWidth(SplineFont *sf);
 extern int CIDOneWidth(SplineFont *sf);
 extern int SFOneHeight(SplineFont *sf);
@@ -2134,7 +2124,6 @@ extern int WriteSVGFont(const char *fontname,SplineFont *sf,enum fontformat form
 extern int _WriteSVGFont(FILE *file,SplineFont *sf,int flags,EncMap *enc,int layer);
 extern int WriteUFOFont(const char *fontname, SplineFont *sf, enum fontformat format,int flags, const EncMap *enc,int layer);
 extern void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf);
-extern void TeXDefaultParams(SplineFont *sf);
 extern int AlreadyMSSymbolArea(SplineFont *sf,EncMap *map);
 extern void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]);
 extern void OS2FigureUnicodeRanges(SplineFont *sf, uint32 Ranges[4]);
@@ -2593,24 +2582,6 @@ extern void CVT_ImportPrivate(SplineFont *sf);
 
 extern void SplineFontAutoHint( SplineFont *sf, int layer);
 extern int SCDrawsSomething(SplineChar *sc);
-extern int SCDrawsSomethingOnLayer(SplineChar *sc, int layer);
-extern int SCWorthOutputting(SplineChar *sc);
-extern int SCHasData(SplineChar *sc);
-extern int LayerWorthOutputting(SplineFont *sf, int layer);
-extern int SCLWorthOutputtingOrHasData(SplineChar *sc, int layer);
-extern int SFFindNotdef(SplineFont *sf, int fixed);
-extern int doesGlyphExpandHorizontally(SplineChar *sc);
-extern int CIDWorthOutputting(SplineFont *cidmaster, int enc); /* Returns -1 on failure, font number on success */
-extern int AmfmSplineFont(FILE *afm, MMSet *mm,int formattype,EncMap *map,int layer);
-extern int AfmSplineFont(FILE *afm, SplineFont *sf,int formattype,EncMap *map, int docc, SplineFont *fullsf,int layer);
-extern int PfmSplineFont(FILE *pfm, SplineFont *sf,EncMap *map,int layer);
-extern int TfmSplineFont(FILE *tfm, SplineFont *sf,EncMap *map,int layer);
-extern int OfmSplineFont(FILE *afm, SplineFont *sf,EncMap *map,int layer);
-extern const char *EncodingName(Encoding *map);
-extern void SFLigaturePrepare(SplineFont *sf);
-extern void SFLigatureCleanup(SplineFont *sf);
-extern void SFKernClassTempDecompose(SplineFont *sf,int isv);
-extern void SFKernCleanup(SplineFont *sf,int isv);
 extern int SCSetMetaData(SplineChar *sc,const char *name,int unienc,
 	const char *comment);
 

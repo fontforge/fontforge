@@ -39,6 +39,7 @@
 #include "parsepfa.h"
 #include "parsettf.h"
 #include "splinefill.h"
+#include "splinesaveafm.h"
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>

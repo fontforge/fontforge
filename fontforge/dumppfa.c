@@ -35,6 +35,7 @@
 #include "parsepfa.h"
 #include "psread.h"
 #include "splineorder2.h"
+#include "splinesaveafm.h"
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>

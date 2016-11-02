@@ -33,6 +33,7 @@
 #include "macbinary.h"
 #include "mem.h"
 #include "splinefill.h"
+#include "splinesaveafm.h"
 #include <stdio.h>
 #include <math.h>
 #include "splinefont.h"

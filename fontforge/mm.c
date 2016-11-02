@@ -31,6 +31,7 @@
 #include "fontforgevw.h"
 #include "lookups.h"
 #include "macenc.h"
+#include "splinesaveafm.h"
 #include <ustring.h>
 #include <math.h>
 #include <utype.h>

@@ -35,6 +35,7 @@
 #include "parsettf.h"
 #include "spiro.h"
 #include "splineorder2.h"
+#include "splinesaveafm.h"
 #include <math.h>
 #include <locale.h>
 # include <ustring.h>

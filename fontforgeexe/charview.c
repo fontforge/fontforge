@@ -45,6 +45,7 @@
 #include "splinefill.h"
 #include "splineorder2.h"
 #include "splineoverlap.h"
+#include "splinesaveafm.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>

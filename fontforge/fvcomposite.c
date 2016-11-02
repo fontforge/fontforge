@@ -34,6 +34,7 @@
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "splinefill.h"
+#include "splinesaveafm.h"
 #include "namelist.h"
 #include <chardata.h>
 #include <math.h>

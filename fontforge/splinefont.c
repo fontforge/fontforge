@@ -43,6 +43,7 @@
 #include "parsettf.h"
 #include "sfd.h"
 #include "splinefill.h"
+#include "splinesaveafm.h"
 #include <utype.h>
 #include <ustring.h>
 #include <math.h>

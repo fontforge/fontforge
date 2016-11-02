@@ -42,6 +42,7 @@
 #include "psread.h"
 #include "splinefont.h"
 #include "splinefill.h"
+#include "splinesaveafm.h"
 #include "baseviews.h"
 #include "views.h"
 #include <gdraw.h>

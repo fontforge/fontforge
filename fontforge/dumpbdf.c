@@ -33,6 +33,7 @@
 #include "fontforge.h"
 #include "splinefont.h"
 #include "splinefill.h"
+#include "splinesaveafm.h"
 #include <gdraw.h>			/* for the defn of GClut for greymaps */
 #include <string.h>
 #include <ustring.h>

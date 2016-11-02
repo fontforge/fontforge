@@ -31,6 +31,7 @@
 #include "mm.h"
 #include "namelist.h"
 #include "splinefill.h"
+#include "splinesaveafm.h"
 #include <ustring.h>
 #include <locale.h>
 #include <gfile.h>

@@ -31,6 +31,7 @@
 #include "fvfonts.h"
 #include "splinefill.h"
 #include "splineorder2.h"
+#include "splinesaveafm.h"
 #include <math.h>
 
 FT_Library ff_ft_context;
