@@ -32,6 +32,7 @@
 #include "namelist.h"
 #include "ttf.h"
 #include "splineorder2.h"
+#include "splineoverlap.h"
 #include <gwidget.h>
 #include <ustring.h>
 #include <math.h>

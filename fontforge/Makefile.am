@@ -79,6 +79,7 @@ noinst_HEADERS = \
 	spiro.h \
 	splinefill.h \
 	splineorder2.h \
+	splineoverlap.h \
 	fontforgeui.h sftextfieldP.h configure-fontforge.h views.h 	\
 	flaglist.h strlist.h charview_private.h cvundoes.h tables.h
 

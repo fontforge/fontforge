@@ -34,6 +34,7 @@
 #include "namelist.h"
 #include "scstyles.h"
 #include "splineorder2.h"
+#include "splineoverlap.h"
 #include <ustring.h>
 #include <utype.h>
 #include <gkeysym.h>

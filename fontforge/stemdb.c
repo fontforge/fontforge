@@ -29,6 +29,7 @@
 #include "fontforge.h"
 #include "edgelist2.h"
 #include "stemdb.h"
+#include "splineoverlap.h"
 
 #include <math.h>
 #include <utype.h>

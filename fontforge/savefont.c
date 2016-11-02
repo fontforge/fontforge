@@ -39,6 +39,7 @@
 #include "namelist.h"
 #include "palmfonts.h"
 #include "splinefill.h"
+#include "splineoverlap.h"
 #include "ustring.h"
 #include "gfile.h"
 #include "gresource.h"

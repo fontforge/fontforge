@@ -79,9 +79,4 @@ typedef struct monotonic {
     struct preintersection *pending;
 } Monotonic;
 
-extern void FreeMonotonics(Monotonic *m);
-extern Monotonic *SSsToMContours(SplineSet *spl, enum overlap_type ot);
-	/* overlap_type controls whether we look at selected splinesets or all splinesets */
-extern int MonotonicFindAt(Monotonic *ms,int which, extended test, Monotonic **space );
-
 #endif /* _EDGELIST2_H */
