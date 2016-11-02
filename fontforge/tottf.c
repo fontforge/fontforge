@@ -3587,6 +3587,7 @@ static void dummyloca(struct alltabs *at) {
 }
 
 static void redohead(struct alltabs *at) {
+    if (at->headf) fclose(at->headf);
     at->headf = tmpfile();
 
     putlong(at->headf,at->head.version);
