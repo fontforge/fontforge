@@ -741,14 +741,17 @@ static void dump_getU(FILE *data,long unsigned int *dt,int s,int m,char *t,char 
 /* and the generated functions work-as:					    */
 /* Get the 'n'th unicode value in the table, where {0<=n<=(sizeof(table)-1} */
 /* Treat both (uint16, uint32) tables as if it is only one table. Error=-1. */
-    fprintf( data, "int32 %s_get_U(int n) {\n", nam );
-    fprintf( data, "    if ( n<0 || n>=%d )\n\treturn( -1 );\n    ", m );
-    if ( s<m )
-	fprintf( data, "if ( n<%d )\n\t", s );
-    fprintf( data, "return( (int32)(%s16[n]) );\n", t );
-    if ( s<m )
-    fprintf( data, "    else\n\treturn( (int32)(%s32[n-%d]) );\n", t, s );
-    fprintf( data, "}\n\n" );
+
+	fprintf(data, "int32 %s_get_U(int n) {\n", nam);
+	fprintf(data, "\tsize_t num_%s = ELEMENTS_IN_ARRAY(%s16) + ELEMENTS_IN_ARRAY(%s32);\n", t, t, t);
+	fprintf(data, "\tsize_t num_%s16 = ELEMENTS_IN_ARRAY(%s16);\n", t, t, t);
+	fprintf(data, "\n");
+	fprintf(data, "\tif ((n < 0) || (n >= num_%s))\n\t\treturn -1;\n", t);
+	fprintf(data, "\n");
+	fprintf(data, "\tif (n < num_%s16)\n", t);
+	fprintf(data, "\t\treturn (int32)(%s16[n]);\n", t);
+	fprintf(data, "\telse\n\t\treturn (int32)(%s32[n-num_%s16]);\n", t, t);
+	fprintf(data, "}\n\n");
 }
 
 static void dumpbsearchfindN(FILE *data,long unsigned int *dt,int s,int m,char *t) {

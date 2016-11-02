@@ -135,27 +135,42 @@ int FractionCount(void) {
 }
 
 int32 Ligature_get_U(int n) {
-    if ( n<0 || n>=512 )
-	return( -1 );
-    if ( n<511 )
-	return( (int32)(ligature16[n]) );
-    else
-	return( (int32)(ligature32[n-511]) );
+	size_t num_ligature = ELEMENTS_IN_ARRAY(ligature16) + ELEMENTS_IN_ARRAY(ligature32);
+	size_t num_ligature16 = ELEMENTS_IN_ARRAY(ligature16);
+
+	if ((n < 0) || (n >= num_ligature))
+		return -1;
+
+	if (n < num_ligature16)
+		return (int32)(ligature16[n]);
+	else
+		return (int32)(ligature32[n-num_ligature16]);
 }
 
 int32 VulgFrac_get_U(int n) {
-    if ( n<0 || n>=19 )
-	return( -1 );
-    return( (int32)(vulgfrac16[n]) );
+	size_t num_vulgfrac = ELEMENTS_IN_ARRAY(vulgfrac16) + ELEMENTS_IN_ARRAY(vulgfrac32);
+	size_t num_vulgfrac16 = ELEMENTS_IN_ARRAY(vulgfrac16);
+
+	if ((n < 0) || (n >= num_vulgfrac))
+		return -1;
+
+	if (n < num_vulgfrac16)
+		return (int32)(vulgfrac16[n]);
+	else
+		return (int32)(vulgfrac32[n-num_vulgfrac16]);
 }
 
 int32 Fraction_get_U(int n) {
-    if ( n<0 || n>=50 )
-	return( -1 );
-    if ( n<34 )
-	return( (int32)(fraction16[n]) );
-    else
-	return( (int32)(fraction32[n-34]) );
+	size_t num_fraction = ELEMENTS_IN_ARRAY(fraction16) + ELEMENTS_IN_ARRAY(fraction32);
+	size_t num_fraction16 = ELEMENTS_IN_ARRAY(fraction16);
+
+	if ((n < 0) || (n >= num_fraction))
+		return -1;
+
+	if (n < num_fraction16)
+		return (int32)(fraction16[n]);
+	else
+		return (int32)(fraction32[n-num_fraction16]);
 }
 
 int Ligature_find_N(uint32 uCode) {
