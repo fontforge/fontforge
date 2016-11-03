@@ -151,6 +151,8 @@ extern const uint32 ff_unicode_utype[]; /* hold character type features for each
 #define combiningclass(ch)	(ff_unicode_utype2[(ch)+1]&FF_UNICODE_COMBININGCLASS)
 #define combiningposmask(ch)	(ff_unicode_utype2[(ch)+1]&FF_UNICODE_COMBININGPOSMASK)
 
+#define FF_UNICODE_COMPACT_TABLE_SIZE_MAX 65536
+
 extern const uint32	ff_unicode_utype2[];		/* hold position boolean flags for each Unicode.org defined character */
 
 #define isunicodepointassigned(ch) (ff_unicode_codepointassigned[(ch)/32]&(1<<((ch)%32)))

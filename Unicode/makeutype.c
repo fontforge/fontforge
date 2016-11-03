@@ -62,21 +62,19 @@
 
 #include <utype.h>
 
-/*#define MAXC		0x600		/* Last upper/lower case dicodomy is Armenian 0x580, er, nope. 1fff (greek and latin extended) then full-width 0xff00 */
-#define MAXC	65536
 #define MAXA	18
 
 #include "combiners.h"
 
-char *names[MAXC];
-unsigned short mytolower[MAXC];
-unsigned short mytoupper[MAXC];
-unsigned short mytotitle[MAXC];
-unsigned char mynumericvalue[MAXC];
-unsigned short mymirror[MAXC];
-unsigned long flags[MAXC];			/* 32 binary flags for each unicode.org character */
-unsigned long flags2[MAXC];
-unichar_t alts[MAXC][MAXA+1];
+char *names[FF_UNICODE_COMPACT_TABLE_SIZE_MAX];
+unsigned short mytolower[FF_UNICODE_COMPACT_TABLE_SIZE_MAX];
+unsigned short mytoupper[FF_UNICODE_COMPACT_TABLE_SIZE_MAX];
+unsigned short mytotitle[FF_UNICODE_COMPACT_TABLE_SIZE_MAX];
+unsigned char mynumericvalue[FF_UNICODE_COMPACT_TABLE_SIZE_MAX];
+unsigned short mymirror[FF_UNICODE_COMPACT_TABLE_SIZE_MAX];
+unsigned long flags[FF_UNICODE_COMPACT_TABLE_SIZE_MAX];			/* 32 binary flags for each unicode.org character */
+unsigned long flags2[FF_UNICODE_COMPACT_TABLE_SIZE_MAX];
+unichar_t alts[FF_UNICODE_COMPACT_TABLE_SIZE_MAX][MAXA+1];
 unsigned long assignedcodepoints[0x120000/32];	/* 32 characters represented per each long value */
 
 int frm, lgm, vfm;				/* identify all ligatures and fractions */
@@ -96,7 +94,7 @@ const char LgFrcTooMany[] = "Error. Too many %s, stopped at %s[%d]=U+%X\n"; /* e
 
 static void FreeNamesMemorySpace() {
     long index;
-    for ( index=0; index<MAXC ; ++index )
+    for ( index=0; index<FF_UNICODE_COMPACT_TABLE_SIZE_MAX ; ++index )
 	free( names[index] );
 }
 
@@ -157,7 +155,7 @@ static int processAssignment(long index,char *pt,long *flg) {
 		return( 5 );
 	    }
 	    ligature[lgm] = index;
-	    if ( index < MAXC ) {
+	    if ( index < FF_UNICODE_COMPACT_TABLE_SIZE_MAX ) {
 		*flg |= FF_UNICODE_LIG_OR_FRAC;
 	    }
 	    lgm++;
@@ -169,7 +167,7 @@ static int processAssignment(long index,char *pt,long *flg) {
 		return( 5 );
 	    }
 	    vulgfrac[vfm] = index;
-	    if ( index < MAXC ) {
+	    if ( index < FF_UNICODE_COMPACT_TABLE_SIZE_MAX ) {
 		*flg |= FF_UNICODE_LIG_OR_FRAC;
 	    }
 	    vfm++;
@@ -182,7 +180,7 @@ static int processAssignment(long index,char *pt,long *flg) {
 		return( 5 );
 	    }
 	    fraction[frm] = index;
-	    if ( index < MAXC ) {
+	    if ( index < FF_UNICODE_COMPACT_TABLE_SIZE_MAX ) {
 		*flg |= FF_UNICODE_LIG_OR_FRAC;
 	    }
 	    frm++;
@@ -235,7 +233,7 @@ static void readin(void) {
 	    FreeNamesMemorySpace();
 	    exit(5);
 	}
-	if ( index>=MAXC )		/* For now can only deal with BMP !!!! */
+	if ( index>=FF_UNICODE_COMPACT_TABLE_SIZE_MAX )		/* For now can only deal with BMP !!!! */
     continue;
 	pt = end;
 	if ( *pt==';' ) {
@@ -332,7 +330,7 @@ static void readin(void) {
 		tc = index;
 	    pt = end;
 	    if ( *pt==';' ) ++pt;
-	    if ( index>=MAXC )
+	    if ( index>=FF_UNICODE_COMPACT_TABLE_SIZE_MAX )
     break;
 	    mytolower[index]= lc;
 	    mytoupper[index]= uc;
@@ -536,7 +534,7 @@ return;
 	    if ( *pt==';' ) ++pt;
 	    /* character decomposition */
 	    FigureAlternates(index,pt, false);
-	    if ( index>=MAXC )
+	    if ( index>=FF_UNICODE_COMPACT_TABLE_SIZE_MAX )
     break;
 	    if ((names[index]= malloc(strlen(buf2)+strlen(prefix)+4)) == NULL) {
 		fprintf( stderr, NoMoreMemory );
@@ -558,7 +556,7 @@ static int find(char *base, char *suffix) {
     strcpy(name,base);
     strcat(name,suffix);
 
-    for ( i=0; i<MAXC; ++i )
+    for ( i=0; i<FF_UNICODE_COMPACT_TABLE_SIZE_MAX; ++i )
 	if ( names[i]!=NULL && strcmp(names[i],name)==0 )
 return( i );
 
@@ -714,11 +712,11 @@ static void dump() {
     fprintf( data, "#include <utype.h>\n" );
     fprintf( data, GeneratedFileMessage, UnicodeMajor, UnicodeMinor );
     fprintf( data, "const unsigned short ff_unicode_tolower[]= { 0,\n" );
-    for ( i=0; i<MAXC; i+=j ) {
+    for ( i=0; i<FF_UNICODE_COMPACT_TABLE_SIZE_MAX; i+=j ) {
 	fprintf( data, " " );
-	for ( j=0; j<8 && i+j<MAXC-1; ++j )
+	for ( j=0; j<8 && i+j<FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1; ++j )
 	    fprintf(data, " 0x%04x,", mytolower[i+j]);
-	if ( i+j==MAXC-1 ) {
+	if ( i+j==FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1 ) {
 	    fprintf(data, " 0x%04x\n};\n\n", mytolower[i+j]);
     break;
 	} else
@@ -728,11 +726,11 @@ static void dump() {
 		fprintf( data, "\n");
     }
     fprintf( data, "const unsigned short ff_unicode_toupper[] = { 0,\n" );
-    for ( i=0; i<MAXC; i+=j ) {
+    for ( i=0; i<FF_UNICODE_COMPACT_TABLE_SIZE_MAX; i+=j ) {
 	fprintf( data, " " );
-	for ( j=0; j<8 && i+j<MAXC-1; ++j )
+	for ( j=0; j<8 && i+j<FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1; ++j )
 	    fprintf(data, " 0x%04x,", mytoupper[i+j]);
-	if ( i+j==MAXC-1 ) {
+	if ( i+j==FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1 ) {
 	    fprintf(data, " 0x%04x\n};\n\n", mytoupper[i+j]);
     break;
 	} else
@@ -742,11 +740,11 @@ static void dump() {
 		fprintf( data, "\n");
     }
     fprintf( data, "const unsigned short ff_unicode_totitle[] = { 0,\n" );
-    for ( i=0; i<MAXC; i+=j ) {
+    for ( i=0; i<FF_UNICODE_COMPACT_TABLE_SIZE_MAX; i+=j ) {
 	fprintf( data, " " );
-	for ( j=0; j<8 && i+j<MAXC-1; ++j )
+	for ( j=0; j<8 && i+j<FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1; ++j )
 	    fprintf(data, " 0x%04x,", mytotitle[i+j]);
-	if ( i+j==MAXC-1 ) {
+	if ( i+j==FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1 ) {
 	    fprintf(data, " 0x%04x\n};\n\n", mytotitle[i+j]);
     break;
 	} else
@@ -756,11 +754,11 @@ static void dump() {
 		fprintf( data, "\n");
     }
     fprintf( data, "const unsigned short ff_unicode_tomirror[] = { 0,\n" );
-    for ( i=0; i<MAXC; i+=j ) {
+    for ( i=0; i<FF_UNICODE_COMPACT_TABLE_SIZE_MAX; i+=j ) {
 	fprintf( data, " " );
-	for ( j=0; j<8 && i+j<MAXC-1; ++j )
+	for ( j=0; j<8 && i+j<FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1; ++j )
 	    fprintf(data, " 0x%04x,", mymirror[i+j]);
-	if ( i+j==MAXC-1 ) {
+	if ( i+j==FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1 ) {
 	    fprintf(data, " 0x%04x\n};\n\n", mymirror[i+j]);
     break;
 	} else
@@ -770,11 +768,11 @@ static void dump() {
 		fprintf( data, "\n");
     }
     fprintf( data, "const unsigned char ff_unicode_digitval[] = { 0,\n" );
-    for ( i=0; i<MAXC; i+=j ) {
+    for ( i=0; i<FF_UNICODE_COMPACT_TABLE_SIZE_MAX; i+=j ) {
 	fprintf( data, " " );
-	for ( j=0; j<8 && i+j<MAXC-1; ++j )
+	for ( j=0; j<8 && i+j<FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1; ++j )
 	    fprintf(data, " 0x%02x,", mynumericvalue[i+j]);
-	if ( i+j==MAXC-1 ) {
+	if ( i+j==FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1 ) {
 	    fprintf(data, " 0x%02x\n};\n\n", mynumericvalue[i+j]);
     break;
 	} else
@@ -784,11 +782,11 @@ static void dump() {
 		fprintf( data, "\n");
     }
     fprintf( data, "const uint32 ff_unicode_utype[] = { 0,\n" );
-    for ( i=0; i<MAXC; i+=j ) {
+    for ( i=0; i<FF_UNICODE_COMPACT_TABLE_SIZE_MAX; i+=j ) {
 	fprintf( data, " " );
-	for ( j=0; j<8 && i+j<MAXC-1; ++j )
+	for ( j=0; j<8 && i+j<FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1; ++j )
 	    fprintf(data, " 0x%08x,", flags[i+j]);
-	if ( i+j==MAXC-1 ) {
+	if ( i+j==FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1 ) {
 	    fprintf(data, " 0x%08x\n};\n\n", flags[i+j]);
     break;
 	} else
@@ -799,11 +797,11 @@ static void dump() {
     }
     fprintf( data, "const uint32 ff_unicode_utype2[] = { 0,\n" );
     fprintf( data, "  /* binary flags used for physical layout of each unicode.org character */\n" );
-    for ( i=0; i<MAXC; i+=j ) {
+    for ( i=0; i<FF_UNICODE_COMPACT_TABLE_SIZE_MAX; i+=j ) {
 	fprintf( data, " " );
-	for ( j=0; j<8 && i+j<MAXC-1; ++j )
+	for ( j=0; j<8 && i+j<FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1; ++j )
 	    fprintf(data, " 0x%08x,", flags2[i+j]);
-	if ( i+j==MAXC-1 ) {
+	if ( i+j==FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1 ) {
 	    fprintf(data, " 0x%08x\n};\n\n", flags2[i+j]);
     break;
 	} else
@@ -858,7 +856,7 @@ return;
 
     fprintf(file, GeneratedFileMessage, UnicodeMajor, UnicodeMinor );
 
-    for ( i=32; i<MAXC; ++i ) {
+    for ( i=32; i<FF_UNICODE_COMPACT_TABLE_SIZE_MAX; ++i ) {
 	if ( alts[i][0]!=0 ) {
 	    fprintf( file, "static const unichar_t str_%x[] = { 0x%04x, ", i, alts[i][0] );
 	    for ( j=1; j<MAXA && alts[i][j]!=0; ++j )

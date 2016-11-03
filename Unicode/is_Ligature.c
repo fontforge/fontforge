@@ -85,13 +85,11 @@ int Ligature_find_N(uint32 uCode) {
 	uint16 uCode16;
 	int n=-1;
 
-	int ligature_max = 65536;
-
 	uint32 ligature16_first = ligature16[0];
 	uint32 ligature16_last = ligature16[ELEMENTS_IN_ARRAY(ligature16)-1];
 
 	if ((uCode < ligature16_first) || (uCode > ligature16_last) ||
-	    ((uCode < ligature_max) && (isligorfrac(uCode)==0)))
+	    ((uCode < FF_UNICODE_COMPACT_TABLE_SIZE_MAX) && (isligorfrac(uCode)==0)))
 		return -1;
 
 	if (uCode < ligature16_last) {
@@ -120,13 +118,11 @@ int VulgFrac_find_N(uint32 uCode) {
 	uint16 uCode16;
 	int n=-1;
 
-	int vulgfrac_max = 65536;
-
 	uint32 vulgfrac16_first = vulgfrac16[0];
 	uint32 vulgfrac16_last = vulgfrac16[ELEMENTS_IN_ARRAY(vulgfrac16)-1];
 
 	if ((uCode < vulgfrac16_first) || (uCode > vulgfrac16_last) ||
-	    ((uCode < vulgfrac_max) && (isligorfrac(uCode)==0)))
+	    ((uCode < FF_UNICODE_COMPACT_TABLE_SIZE_MAX) && (isligorfrac(uCode)==0)))
 		return -1;
 
 	if (uCode < vulgfrac16_last) {
@@ -155,13 +151,11 @@ int Fraction_find_N(uint32 uCode) {
 	uint16 uCode16;
 	int n=-1;
 
-	int fraction_max = 65536;
-
 	uint32 fraction16_first = fraction16[0];
 	uint32 fraction16_last = fraction16[ELEMENTS_IN_ARRAY(fraction16)-1];
 
 	if ((uCode < fraction16_first) || (uCode > fraction16_last) ||
-	    ((uCode < fraction_max) && (isligorfrac(uCode)==0)))
+	    ((uCode < FF_UNICODE_COMPACT_TABLE_SIZE_MAX) && (isligorfrac(uCode)==0)))
 		return -1;
 
 	if (uCode < fraction16_last) {
