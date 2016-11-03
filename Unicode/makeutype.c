@@ -66,35 +66,6 @@
 #define MAXC	65536
 #define MAXA	18
 
-/* These values get stored within flags[unicodechar={0..MAXC}] */
-#define FF_UNICODE_LOWER               1
-#define FF_UNICODE_UPPER               2
-#define FF_UNICODE_DIGIT               8
-#define FF_UNICODE_SPACE               0x10
-#define FF_UNICODE_PUNCT               0x20
-#define FF_UNICODE_HEX                 0x40
-#define FF_UNICODE_ZEROWIDTH           0x80
-
-#define FF_UNICODE_LEFT_2_RIGHT        0x100
-#define FF_UNICODE_RIGHT_2_LEFT        0x200
-#define FF_UNICODE_ENUMERIC            0x400
-#define FF_UNICODE_ANUMERIC            0x800
-#define FF_UNICODE_COMBINING           0x8000
-
-#define FF_UNICODE_BREAKBEFOREOK       0x10000
-#define FF_UNICODE_BREAKAFTEROK        0x20000
-#define FF_UNICODE_NONSTART            0x40000 /* small kana, close punct, can't start a line */
-#define FF_UNICODE_NONEND              0x80000 /* open punct, can't end a line */
-//#define FF_UNICODE_MUSTBREAK           0x100000 /* newlines, paragraphs, etc. */
-#define FF_UNICODE_URLBREAKAFTER       0x100000 /* break after slash not followed by digits (ie. in URLs not fractions or dates) */
-
-#define FF_UNICODE_ALPHABETIC          0x200000
-#define FF_UNICODE_IDEOGRAPHIC         0x400000
-
-
-#define FF_UNICODE_NOBREAK             0x8000000
-#define FF_UNICODE_DecompositionNormative 0x10000000
-
 #include "combiners.h"
 
 char *names[MAXC];
