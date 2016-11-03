@@ -696,7 +696,7 @@ static void buildtables(FILE *data,long unsigned int *dt,int s,int m,char *t) {
 /* range of 't'16{0...s} and then as uint32 for the range 't'32{(s+1)...m}. */
     int i,j;
 
-    fprintf( data, "const uint16 %s16[] = {\n", t );
+    fprintf( data, "static const uint16 %s16[] = {\n", t );
     for ( i=j=0; i<s; i=i+j ) {
 	fprintf( data, "  0x%04x", dt[i] );
 	for ( j=1; j<8 && i+j<s; ++j ) {
@@ -708,7 +708,7 @@ static void buildtables(FILE *data,long unsigned int *dt,int s,int m,char *t) {
 	    fprintf(data, ",\n" );
     }
 
-	fprintf(data, "const uint32 %s32[] = {\n", t);
+	fprintf(data, "static const uint32 %s32[] = {\n", t);
 	for ( i=s; i<m; i=i+j ) {
 		fprintf(data, "  0x%08x", dt[i]);
 		for (j=1; j<4 && i+j<m; ++j) {
