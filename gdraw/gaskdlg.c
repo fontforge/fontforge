@@ -163,8 +163,6 @@ static GWindow DlgCreate(const unichar_t *title,const unichar_t *question,va_lis
     if ( d!=NULL )
 	memset(d,0,sizeof(*d));
     GGadgetInit();
-    /* u_vsnprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),question,ap);*/
-    /* u_vsnprintf() also assumes UCS4 string is null terminated */
     qbuf = g_ucs4_to_utf8( (const gunichar *)question, -1, NULL, NULL, NULL );
     if( !qbuf ) {
 	fprintf( stderr, "Failed to convert question string in DlgCreate()\n" );
