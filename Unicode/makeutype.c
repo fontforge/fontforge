@@ -926,10 +926,10 @@ static void dump() {
     fprintf( header, "#define FF_UNICODE_LEFTEDGE            0x%0x\n", FF_UNICODE_LeftEdge );
     fprintf( header, "#define FF_UNICODE_RIGHTEDGE           0x%0x\n", FF_UNICODE_RightEdge );
     fprintf( header, "#define FF_UNICODE_TOUCHING            0x%0x\n", FF_UNICODE_Touching );
-    fprintf( header, "#define FF_UNICODE_COMBININGPOSMASK    0x%0x\n",
-	    FF_UNICODE_Outside|FF_UNICODE_CenteredOutside|FF_UNICODE_CenterRight|FF_UNICODE_CenterLeft|FF_UNICODE_Joins2|
-	    FF_UNICODE_Right|FF_UNICODE_Left|FF_UNICODE_Overstrike|FF_UNICODE_Below|FF_UNICODE_Above|FF_UNICODE_RightEdge|FF_UNICODE_LeftEdge|
-	    FF_UNICODE_Touching);
+    fprintf( header, "#define FF_UNICODE_COMBININGPOSMASK    "
+                     "(FF_UNICODE_OUTSIDE|FF_UNICODE_CENTEREDOUTSIDE|FF_UNICODE_CENTERRIGHT|FF_UNICODE_CENTERLEFT|FF_UNICODE_JOINS2|"
+                     "FF_UNICODE_RIGHT|FF_UNICODE_LEFT|FF_UNICODE_OVERSTRIKE|FF_UNICODE_BELOW|FF_UNICODE_ABOVE|FF_UNICODE_RIGHTEDGE|FF_UNICODE_LEFTEDGE|"
+                     "FF_UNICODE_TOUCHING)\n");
     fprintf( header, "#define FF_UNICODE_NOPOSDATAGIVEN      (uint32)(-1)\t/* -1 == no position data given */\n\n" );
 
     fprintf( header, "#define combiningclass(ch)\t(ff_unicode_utype2[(ch)+1]&FF_UNICODE_COMBININGCLASS)\n" );
