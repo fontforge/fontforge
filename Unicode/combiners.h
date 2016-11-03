@@ -1,6 +1,8 @@
 #ifndef FONTFORGE_UNICODE_COMBINERS_H
 #define FONTFORGE_UNICODE_COMBINERS_H
 
+#include <utype.h>
+
 static const int poses300[] = {
     FF_UNICODE_ABOVE,
     FF_UNICODE_ABOVE,

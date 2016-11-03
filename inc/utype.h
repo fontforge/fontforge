@@ -152,6 +152,7 @@ extern struct arabicforms {
 
 /* Ligature/Vulgar_Fraction/Fraction unicode.org character lists & functions */
 
+/* Return !0 if this unicode value is a Ligature or Fraction */
 extern int LigatureCount(void);		/* Unicode table Ligature count */
 extern int VulgarFractionCount(void);	/* Unicode table Vulgar Fraction count */
 extern int OtherFractionCount(void);	/* Unicode table Other Fractions count */
