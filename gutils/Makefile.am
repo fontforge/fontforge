@@ -29,15 +29,44 @@ lib_LTLIBRARIES = libgutils.la libgioftp.la
 
 #--------------------------------------------------------------------------
 
-libgutils_la_SOURCES = divisors.c dlist.c fsys.c g_giomime.c gcol.c	\
-	gimage.c gimagebmpP.h gimageread.c gimagereadbmp.c		\
-	gimagereadgif.c gimagereadjpeg.c gimagereadpng.c		\
-	gimagereadras.c gimagereadrgb.c gimagereadtiff.c		\
-	gimagereadxbm.c gimagereadxpm.c gimagewritebmp.c		\
-	gimagewritegimage.c gimagewritejpeg.c gimagewritepng.c		\
-	gimagewritexbm.c gimagewritexpm.c gio.c giofile.c giohosts.c	\
-	giothread.c giotrans.c giofuncP.h gioP.h gnetwork.c gutils.c	\
-	gwwintl.c prefs.c prefs.h unicodelibinfo.c unicodelibinfo.h
+libgutils_la_SOURCES = \
+	divisors.c \
+	dlist.c \
+	fsys.c \
+	gcol.c \
+	g_giomime.c \
+	gimagebmpP.h \
+	gimage.c \
+	gimagereadbmp.c \
+	gimageread.c \
+	gimagereadgif.c \
+	gimagereadjpeg.c \
+	gimagereadpng.c \
+	gimagereadras.c \
+	gimagereadrgb.c \
+	gimagereadtiff.c \
+	gimagereadxbm.c \
+	gimagereadxpm.c \
+	gimagewritebmp.c\
+	gimagewritegimage.c \
+	gimagewritejpeg.c \
+	gimagewritepng.c \
+	gimagewritexbm.c \
+	gimagewritexpm.c \
+	gio.c \
+	giofile.c \
+	giofuncP.h \
+	giohosts.c \
+	gioP.h \
+	giothread.c \
+	giotrans.c \
+	gnetwork.c \
+	gutils.c\
+	gwwintl.c \
+	prefs.c \
+	prefs.h \
+	unicodelibinfo.c \
+	unicodelibinfo.h
 
 libgutils_la_CFLAGS = $(WARN_CFLAGS)
 
