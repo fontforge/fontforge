@@ -28,15 +28,6 @@
 #define _CONFIG_FONTFORGE_H_
 
 
-/* Apple suggests using a sfnt version of 'true' for fonts designed for use   */
-/*  only on a mac (windows refuses such fonts). I generally prefer to have a  */
-/*  font work everywhere, so normally ff produces fonts with version 1.0      */
-/*  Set this if you want Apple only fonts (produced when Apple mode is set and*/
-/*  Opentype mode is unset in the Generate Fonts-Options dialog).	      */
-/*									      */
-/* #define FONTFORGE_CONFIG_APPLE_ONLY_TTF				      */
-/*									      */
-
 
 /* Nobody else puts apple unicode encodings into the name table. So I probably*/
 /*  shouldn't either.  But if someone wants them...			      */

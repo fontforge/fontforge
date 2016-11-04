@@ -108,6 +108,15 @@ TeX
 	TeX		TeX specific info (stuff that used to live in tfm files)
 */
 
+/* Apple suggests using a sfnt version of 'true' for fonts designed for use   */
+/*  only on a mac (windows refuses such fonts). I generally prefer to have a  */
+/*  font work everywhere, so normally ff produces fonts with version 1.0      */
+/*  Set this if you want Apple only fonts (produced when Apple mode is set and*/
+/*  Opentype mode is unset in the Generate Fonts-Options dialog).             */
+/*                                                                            */
+/* #define FONTFORGE_CONFIG_APPLE_ONLY_TTF                                    */
+/*                                                                            */
+
 const char *ttfstandardnames[258] = {
 ".notdef",
 ".null",
