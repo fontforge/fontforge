@@ -78,10 +78,6 @@
 /* **************************** Numeric Settings **************************** */
 /* ************************************************************************** */
 
-
-/* The number of files displayed in the "File->Recent" menu */
-#define RECENT_MAX	10
-
 /* The number of tabs allowed in the outline glyph view of former glyphs */
 #define FORMER_MAX	10
 
