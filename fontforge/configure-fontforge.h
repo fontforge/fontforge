@@ -82,14 +82,6 @@
 /*									      */
 
 
-/* Werner wants to be able to see the raw (unscaled) data for the location of */
-/*  points (in the points window of the debugger). I'm not sure that is       */
-/*  generally a good idea (I think it makes the dlg look unsymetric).         */
-/*									      */
-/* #define FONTFORGE_CONFIG_SHOW_RAW_POINTS				      */
-/*									      */
-
-
 /* ************************************************************************** */
 /* **************************** Numeric Settings **************************** */
 /* ************************************************************************** */
