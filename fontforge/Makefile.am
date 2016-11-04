@@ -45,7 +45,6 @@ noinst_HEADERS = \
 	bvedit.h \
 	charview_private.h \
 	clipnoui.h \
-	configure-fontforge.h \
 	crctab.h \
 	cvexport.h \
 	cvimages.h \
