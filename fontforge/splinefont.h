@@ -55,6 +55,13 @@
 #define MmMax		16	/* PS says at most this many instances for type1/2 mm fonts */
 #define AppleMmMax	26	/* Apple sort of has a limit of 4095, but we only support this many */
 
+
+/* The maximum number of layers allowed in a normal font (this includes the */
+/*  default foreground and background layers) -- this does not limit type3  */
+/*  fonts */
+#define BACK_LAYER_MAX 256
+
+
 typedef struct ipoint {
     int x;
     int y;

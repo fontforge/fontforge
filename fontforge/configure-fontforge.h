@@ -78,9 +78,4 @@
 /* **************************** Numeric Settings **************************** */
 /* ************************************************************************** */
 
-/* The maximum number of layers allowed in a normal font (this includes the */
-/*  default foreground and background layers) -- this does not limit type3  */
-/*  fonts */
-#define BACK_LAYER_MAX	256
-
 #endif

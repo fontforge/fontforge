@@ -130,7 +130,6 @@ typedef struct debugview {
 /* The number of tabs allowed in the outline glyph view of former glyphs */
 #define FORMER_MAX	10
 
-
 enum dv_coderange { cr_none=0, cr_fpgm, cr_prep, cr_glyph };	/* cleverly chosen to match ttobjs.h */
 
 struct freehand {
@@ -153,9 +152,12 @@ typedef struct charviewtab
 enum { charview_cvtabssz = 100 };
 
 
+ /* approximately BACK_LAYER_MAX / 32 */
+#define BACK_LAYERS_VIEW_MAX 8
+
 typedef struct charview {
     CharViewBase b;
-    uint32 showback[BACK_LAYER_MAX/32];
+    uint32 showback[BACK_LAYERS_VIEW_MAX];
     unsigned int showfore:1;
     unsigned int showgrids:1;
     unsigned int showhhints:1;
