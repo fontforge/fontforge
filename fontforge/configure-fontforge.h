@@ -29,12 +29,6 @@
 
 
 
-/* Nobody else puts apple unicode encodings into the name table. So I probably*/
-/*  shouldn't either.  But if someone wants them...			      */
-/*									      */
-/* #define FONTFORGE_CONFIG_APPLE_UNICODE_NAMES				      */
-/*									      */
-
 
 /* I used to use an approximation method when converting cubic to quadratic   */
 /*  splines which was non-symmetric. In some cases it produced better results */

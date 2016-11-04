@@ -117,6 +117,12 @@ TeX
 /* #define FONTFORGE_CONFIG_APPLE_ONLY_TTF                                    */
 /*                                                                            */
 
+/* Nobody else puts apple unicode encodings into the name table. So I probably*/
+/*  shouldn't either.  But if someone wants them...			      */
+/*									      */
+/* #define FONTFORGE_CONFIG_APPLE_UNICODE_NAMES				      */
+/*									      */
+
 const char *ttfstandardnames[258] = {
 ".notdef",
 ".null",
