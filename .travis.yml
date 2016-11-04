@@ -1,7 +1,7 @@
 language: c
 compiler: gcc
 sudo: false
-dist: trusty
+dist: precise
 osx_image: xcode8
 
 branches:
