@@ -78,9 +78,6 @@
 /* **************************** Numeric Settings **************************** */
 /* ************************************************************************** */
 
-/* The number of tabs allowed in the outline glyph view of former glyphs */
-#define FORMER_MAX	10
-
 /* The maximum number of layers allowed in a normal font (this includes the */
 /*  default foreground and background layers) -- this does not limit type3  */
 /*  fonts */

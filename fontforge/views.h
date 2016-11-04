@@ -126,6 +126,11 @@ typedef struct debugview {
     int layer;
 } DebugView;
 
+
+/* The number of tabs allowed in the outline glyph view of former glyphs */
+#define FORMER_MAX	10
+
+
 enum dv_coderange { cr_none=0, cr_fpgm, cr_prep, cr_glyph };	/* cleverly chosen to match ttobjs.h */
 
 struct freehand {
