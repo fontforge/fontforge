@@ -38,29 +38,71 @@ noinst_HEADERS = \
 	autohint.h \
 	autosave.h \
 	autotrace.h \
-	autowidth.h \
 	autowidth2.h \
+	autowidth.h \
 	bitmapchar.h \
 	bitmapcontrol.h \
 	bvedit.h \
+	charview_private.h \
 	clipnoui.h \
+	configure-fontforge.h \
 	crctab.h \
 	cvexport.h \
 	cvimages.h \
+	cvundoes.h \
 	dumpbdf.h \
 	dumppfa.h \
-	fontforgeui.h sftextfieldP.h configure-fontforge.h views.h 	\
-	flaglist.h strlist.h charview_private.h cvundoes.h tables.h
+	flaglist.h \
+	fontforgeui.h \
+	sftextfieldP.h \
+	strlist.h \
+	tables.h \
+	views.h
 
-pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
-	libffstamp.h psfont.h stemdb.h autowidth.h delta.h fontforgevw.h	\
-	lookups.h savefont.h ttf.h baseviews.h fvmetrics.h mm.h			\
-	scriptfuncs.h ttfinstrs.h edgelist2.h namehash.h scripting.h		\
-	uiinterface.h bezctx_ff.h edgelist.h groups.h nonlineartrans.h		\
-	sd.h unicoderange.h bitmapcontrol.h encoding.h ofl.h search.h		\
-	usermenu.h fffreetype.h PfEd.h sfd1.h ffpython.h			\
-	plugins.h sflayoutP.h print.h splinefont.h cvruler.h ffglib.h           \
-	glif_name_hash.h
+pkginclude_HEADERS = \
+	autowidth2.h \
+	autowidth.h \
+	baseviews.h \
+	bezctx_ff.h \
+	bitmapcontrol.h \
+	configure-fontforge.h \
+	cvruler.h \
+	delta.h \
+	edgelist2.h \
+	edgelist.h \
+	encoding.h \
+	fffreetype.h \
+	ffglib.h \
+	ffpython.h \
+	fontforge.h \
+	fontforgevw.h \
+	fvmetrics.h \
+	glif_name_hash.h \
+	groups.h \
+	libffstamp.h \
+	lookups.h \
+	mm.h \
+	namehash.h \
+	nonlineartrans.h \
+	ofl.h \
+	PfEd.h \
+	plugins.h \
+	print.h \
+	psfont.h \
+	savefont.h \
+	scriptfuncs.h \
+	scripting.h \
+	sd.h \
+	search.h \
+	sfd1.h \
+	sflayoutP.h \
+	splinefont.h \
+	stemdb.h \
+	ttf.h \
+	ttfinstrs.h \
+	uiinterface.h \
+	unicoderange.h \
+	usermenu.h
 
 #--------------------------------------------------------------------------
 
@@ -79,27 +121,105 @@ AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
 
 #--------------------------------------------------------------------------
 
-libfontforge_la_SOURCES = activeinui.c asmfpst.c autohint.c autosave.c	\
-	autotrace.c autowidth.c autowidth2.c bezctx_ff.c bitmapchar.c	\
-	bitmapcontrol.c bvedit.c collabclient.c collabclient.h		\
-	collabclientpriv.h clipnoui.c crctab.c cvexport.c cvimages.c	\
-	cvundoes.c dumpbdf.c dumppfa.c effects.c encoding.c		\
-	featurefile.c flaglist.c fontviewbase.c freetype.c		\
-	fvcomposite.c fvfonts.c fvimportbdf.c fvmetrics.c ftdelta.c	\
-	glyphcomp.c groups.c http.c ikarus.c langfreq.c			\
-	lookups.c macbinary.c macenc.c mathconstants.c mm.c namelist.c	\
-	nonlineartrans.c noprefs.c nouiutil.c nowakowskittfinstr.c	\
-	ofl.c othersubrs.c palmfonts.c parsepdf.c parsepfa.c		\
-	parsettfatt.c parsettfbmf.c parsettf.c parsettfvar.c plugins.c	\
-	pluginloading.c print.c psread.c pua.c python.c savefont.c	\
-	scripting.c scstyles.c search.c sfd1.c sfd.c sflayout.c		\
-	sfundo.h spiro.c splinechar.c splinefill.c splinefont.c		\
-	splineorder2.c splineoverlap.c splinesaveafm.c splinesave.c	\
-	splinestroke.c splineutil2.c splineutil.c start.c		\
-	stemdb.c strlist.c svg.c tottfaat.c tottfgpos.c tottf.c		\
-	tottfvar.c ttfinstrs.c ttfspecial.c ufo.c unicoderange.c	\
-	utils.c winfonts.c woff.c zapfnomen.c \
-	glif_name_hash.c
+libfontforge_la_SOURCES = \
+	activeinui.c \
+	asmfpst.c \
+	autohint.c \
+	autosave.c \
+	autotrace.c \
+	autowidth2.c \
+	autowidth.c \
+	bezctx_ff.c \
+	bitmapchar.c \
+	bitmapcontrol.c \
+	bvedit.c \
+	clipnoui.c \
+	collabclient.c \
+	collabclient.h \
+	collabclientpriv.h \
+	crctab.c \
+	cvexport.c \
+	cvimages.c \
+	cvundoes.c \
+	dumpbdf.c \
+	dumppfa.c \
+	effects.c \
+	encoding.c \
+	featurefile.c \
+	flaglist.c \
+	fontviewbase.c \
+	freetype.c \
+	ftdelta.c \
+	fvcomposite.c \
+	fvfonts.c \
+	fvimportbdf.c \
+	fvmetrics.c \
+	glif_name_hash.c \
+	glyphcomp.c \
+	groups.c \
+	http.c \
+	ikarus.c \
+	langfreq.c \
+	lookups.c \
+	macbinary.c \
+	macenc.c \
+	mathconstants.c \
+	mm.c \
+	namelist.c \
+	nonlineartrans.c \
+	noprefs.c \
+	nouiutil.c \
+	nowakowskittfinstr.c \
+	ofl.c \
+	othersubrs.c \
+	palmfonts.c \
+	parsepdf.c \
+	parsepfa.c \
+	parsettfatt.c \
+	parsettfbmf.c \
+	parsettf.c \
+	parsettfvar.c \
+	pluginloading.c \
+	plugins.c \
+	print.c \
+	psread.c \
+	pua.c \
+	python.c \
+	savefont.c \
+	scripting.c \
+	scstyles.c \
+	search.c \
+	sfd1.c \
+	sfd.c \
+	sflayout.c \
+	sfundo.h \
+	spiro.c \
+	splinechar.c \
+	splinefill.c \
+	splinefont.c \
+	splineorder2.c \
+	splineoverlap.c \
+	splinesaveafm.c \
+	splinesave.c \
+	splinestroke.c \
+	splineutil2.c \
+	splineutil.c \
+	start.c \
+	stemdb.c \
+	strlist.c \
+	svg.c \
+	tottfaat.c \
+	tottf.c \
+	tottfgpos.c \
+	tottfvar.c \
+	ttfinstrs.c \
+	ttfspecial.c \
+	ufo.c \
+	unicoderange.c \
+	utils.c \
+	winfonts.c \
+	woff.c \
+	zapfnomen.c
 
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 
