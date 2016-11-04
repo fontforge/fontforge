@@ -54,6 +54,14 @@
 /*  (actually this failure mode may not be possible), but I'm not sure */
 /* Then we play the same trick for the rest of the cubic spline (if any) */
 
+/* I used to use an approximation method when converting cubic to quadratic   */
+/*  splines which was non-symmetric. In some cases it produced better results */
+/*  than the current approach. This flag restores the old algorithm.	      */
+/*									      */
+/* #define FONTFORGE_CONFIG_NON_SYMMETRIC_QUADRATIC_CONVERSION		      */
+/*									      */
+
+
 /* Does the quadratic spline in ttf approximate the cubic spline in ps */
 /*  within one pixel between tmin and tmax (on ps. presumably ttf between 0&1 */
 /* dim is the dimension in which there is the greatest change */
