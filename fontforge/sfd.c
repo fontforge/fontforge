@@ -63,6 +63,17 @@
 # define NAME_MAX _POSIX_NAME_MAX
 #endif
 
+/* Prior to late Sept of 2003 FontForge converted certain mac feature/settings*/
+/*  into opentype-like tags. Some features could be converted directly but for*/
+/*  a few I made up tags.  Now FontForge is capable of using the mac feature  */
+/*  settings directly. If you set this flag then when FontForge loads in an sfd*/
+/*  file with these non-standard opentype tags, it will convert them into the */
+/*  appropriate mac feature/setting combinations.                             */
+/*									      */
+/* #define FONTFORGE_CONFIG_CVT_OLD_MAC_FEATURES			      */
+/*									      */
+
+
 int UndoRedoLimitToSave = 0;
 int UndoRedoLimitToLoad = 0;
 
