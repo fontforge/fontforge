@@ -53,14 +53,6 @@
 /*									      */
 
 
-/* Harald Harders would like to be able to generate a PFM file without        */
-/*  creating a font along with it. I don't see the need for this, but he pro- */
-/*  vided a patch. Setting this flag will enable his patch		      */
-/*									      */
-/* #define FONTFORGE_CONFIG_WRITE_PFM					      */
-/*									      */
-
-
 /* Prior to late Sept of 2003 FontForge converted certain mac feature/settings*/
 /*  into opentype-like tags. Some features could be converted directly but for*/
 /*  a few I made up tags.  Now FontForge is capable of using the mac feature  */

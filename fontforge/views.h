@@ -27,6 +27,8 @@
 #ifndef _VIEWS_H
 #define _VIEWS_H
 
+#include <fontforge-config.h>
+
 #include "ffglib.h"
 #include "baseviews.h"
 

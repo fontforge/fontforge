@@ -280,6 +280,11 @@ FONTFORGE_ARG_ENABLE([tile-path],
                 [enable a 'tile path' command (a variant of 'expand stroke')])],
         [FONTFORGE_CONFIG_TILEPATH])
 
+FONTFORGE_ARG_ENABLE([write-pfm],
+        [AS_HELP_STRING([--enable-write-pfm],
+                [add the ability to save a PFM file without creating the associated font file])],
+        [FONTFORGE_CONFIG_WRITE_PFM])
+
 #--------------------------------------------------------------------------
 # Theme pixmap ICON selection.
 # Go with tango by default. Retain older 2012 theme for those who like it.

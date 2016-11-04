@@ -26,6 +26,8 @@
  */
 /*			   Yet another interpreter			      */
 
+#include <fontforge-config.h>
+
 #include "autohint.h"
 #include "autotrace.h"
 #include "autowidth.h"
