@@ -110,24 +110,86 @@ libfontforgeexe_la_CPPFLAGS = $(AM_CPPFLAGS)
 
 if GRAPHICAL_USER_INTERFACE
 
-libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
-	autowidth2dlg.c basedlg.c bdfinfo.c bitmapdlg.c bitmapview.c	\
-	charinfo.c charview.c clipui.c combinations.c contextchain.c	\
-	cursors.c cvaddpoints.c cvdebug.c cvdgloss.c cvexportdlg.c		\
-	cvfreehand.c cvgetinfo.c cvgridfit.c cvhand.c cvhints.c			\
-	cvimportdlg.c cvknife.c cvpalettes.c cvpointer.c cvruler.c 		\
-	cvshapes.c cvstroke.c cvtranstools.c displayfonts.c effectsui.c	\
-	encodingui.c fontinfo.c fontview.c freetypeui.c fvfontsdlg.c	\
-	fvmetricsdlg.c gotodlg.c groupsdlg.c histograms.c images.c		\
-	kernclass.c layer2layer.c lookupui.c macencui.c math.c			\
-	metricsview.c mmdlg.c nonlineartransui.c openfontdlg.c	        \
-	prefs.c problems.c pythonui.c savefontdlg.c scriptingdlg.c		\
-	scstylesui.c searchview.c sftextfield.c showatt.c simplifydlg.c	        \
-	splashimage.c startui.c statemachine.c tilepath.c transform.c	        \
-	ttfinstrsui.c uiutil.c windowmenu.c justifydlg.c deltaui.c		\
-	usermenu.c macobjective.h                                               \
-	collabclientui.c collabclientui.h                                       \
-	sfundo.c wordlistparser.c wordlistparser.h fontforgeexe.h
+libfontforgeexe_la_SOURCES = \
+	alignment.c \
+	anchorsaway.c \
+	autowidth2dlg.c \
+	basedlg.c \
+	bdfinfo.c \
+	bitmapdlg.c \
+	bitmapview.c \
+	charinfo.c \
+	charview.c \
+	clipui.c \
+	collabclientui.c \
+	collabclientui.h \
+	combinations.c \
+	contextchain.c \
+	cursors.c \
+	cvaddpoints.c \
+	cvdebug.c \
+	cvdgloss.c \
+	cvexportdlg.c \
+	cvfreehand.c \
+	cvgetinfo.c \
+	cvgridfit.c \
+	cvhand.c \
+	cvhints.c \
+	cvimportdlg.c \
+	cvknife.c \
+	cvpalettes.c \
+	cvpointer.c \
+	cvruler.c \
+	cvshapes.c \
+	cvstroke.c \
+	cvtranstools.c \
+	deltaui.c \
+	displayfonts.c \
+	effectsui.c \
+	encodingui.c \
+	fontforgeexe.h \
+	fontinfo.c \
+	fontview.c \
+	freetypeui.c \
+	fvfontsdlg.c \
+	fvmetricsdlg.c \
+	gotodlg.c \
+	groupsdlg.c \
+	histograms.c \
+	images.c \
+	justifydlg.c \
+	kernclass.c \
+	layer2layer.c \
+	lookupui.c \
+	macencui.c \
+	macobjective.h \
+	math.c \
+	metricsview.c \
+	mmdlg.c \
+	nonlineartransui.c \
+	openfontdlg.c \
+	prefs.c \
+	problems.c \
+	pythonui.c \
+	savefontdlg.c \
+	scriptingdlg.c \
+	scstylesui.c \
+	searchview.c \
+	sftextfield.c \
+	sfundo.c \
+	showatt.c \
+	simplifydlg.c \
+	splashimage.c \
+	startui.c \
+	statemachine.c \
+	tilepath.c \
+	transform.c \
+	ttfinstrsui.c \
+	uiutil.c \
+	usermenu.c \
+	windowmenu.c \
+	wordlistparser.c \
+	wordlistparser.h
 
 EXTRA_libfontforgeexe_la_SOURCES = macobjective.m
 
