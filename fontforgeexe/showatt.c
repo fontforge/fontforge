@@ -31,6 +31,7 @@
 #include "lookups.h"
 #include "splinefill.h"
 #include "splinesaveafm.h"
+#include "splineutil.h"
 #include <utype.h>
 #include <ustring.h>
 #include <gkeysym.h>

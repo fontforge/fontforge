@@ -35,6 +35,7 @@
 #include "scriptfuncs.h"
 #include "splinefill.h"
 #include "splineorder2.h"
+#include "splineutil.h"
 #include "splineutil2.h"
 #include <math.h>
 #include <ustring.h>

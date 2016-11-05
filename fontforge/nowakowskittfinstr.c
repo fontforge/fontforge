@@ -36,6 +36,7 @@
 #include "ttf.h"
 #include "splinefont.h"
 #include "stemdb.h"
+#include "splineutil.h"
 #include "splineutil2.h"
 
 extern int autohint_before_generate;

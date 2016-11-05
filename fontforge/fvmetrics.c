@@ -31,6 +31,7 @@
 #include "bvedit.h"
 #include "cvundoes.h"
 #include "fontforgevw.h"
+#include "splineutil.h"
 #include <math.h>
 #include <ustring.h>
 

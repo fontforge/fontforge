@@ -35,6 +35,7 @@
 #include "fvfonts.h"
 #include "splinefill.h"
 #include "splinesaveafm.h"
+#include "splineutil.h"
 #include "namelist.h"
 #include <chardata.h>
 #include <math.h>

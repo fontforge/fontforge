@@ -37,6 +37,7 @@
 #include "psread.h"
 #include "sflayoutP.h"
 #include "splinesaveafm.h"
+#include "splineutil.h"
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>

@@ -28,6 +28,7 @@
 #include "fvfonts.h"
 #include "groups.h"
 #include "namelist.h"
+#include "splineutil.h"
 #include <unistd.h>
 #include <ustring.h>
 #include <utype.h>

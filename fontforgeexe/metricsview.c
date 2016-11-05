@@ -37,6 +37,7 @@
 #include "mm.h"
 #include "splinefill.h"
 #include "splineoverlap.h"
+#include "splineutil.h"
 #include "splineutil2.h"
 #include <gkeysym.h>
 #include <gresource.h>

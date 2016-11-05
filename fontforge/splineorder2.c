@@ -29,6 +29,7 @@
 
 #include "fontforge.h"
 #include "splinerefigure.h"
+#include "splineutil.h"
 #include "splineutil2.h"
 #include <math.h>
 #include <unistd.h>

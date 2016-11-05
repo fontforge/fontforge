@@ -26,6 +26,7 @@
  */
 #include "fontforgeui.h"
 #include "fvfonts.h"
+#include "splineutil.h"
 #include "ustring.h"
 #include "utype.h"
 #include "gfile.h"

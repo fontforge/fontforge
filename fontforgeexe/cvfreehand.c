@@ -28,6 +28,7 @@
 #include "fontforgeui.h"
 #include "splineorder2.h"
 #include "splinestroke.h"
+#include "splineutil.h"
 #include "splineutil2.h"
 #include <math.h>
 

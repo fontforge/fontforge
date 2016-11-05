@@ -41,6 +41,7 @@
 #include <stdio.h>
 #include "splinefont.h"
 #include "splinesave.h"
+#include "splineutil.h"
 #include <utype.h>
 #include <ustring.h>
 #include <time.h>

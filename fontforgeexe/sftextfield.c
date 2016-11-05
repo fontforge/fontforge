@@ -27,6 +27,7 @@
 #include "fontforgeui.h"
 #include "langfreq.h"
 #include "splinefill.h"
+#include "splineutil.h"
 #include <gkeysym.h>
 #include <math.h>
 

@@ -27,6 +27,7 @@
 #include "fontforgevw.h"
 #include "fffreetype.h"
 #include "delta.h"
+#include "splineutil.h"
 #include <math.h>
 
 static int NearestPt(Spline *s,BasePoint *bp) {

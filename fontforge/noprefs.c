@@ -33,6 +33,7 @@
 #include "othersubrs.h"
 #include "plugins.h"
 #include "sfd.h"
+#include "splineutil.h"
 #include <charset.h>
 #include <gfile.h>
 #include <ustring.h>

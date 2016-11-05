@@ -36,6 +36,7 @@
 #include "splineorder2.h"
 #include "splineoverlap.h"
 #include "splinestroke.h"
+#include "splineutil.h"
 #include "splineutil2.h"
 #include <ustring.h>
 #include <utype.h>

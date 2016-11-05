@@ -44,6 +44,7 @@
 #include "psread.h"
 #include "sfd1.h"
 #include "splineorder2.h"
+#include "splineutil.h"
 #include "splineutil2.h"
 #include <chardata.h>
 #include <utype.h>

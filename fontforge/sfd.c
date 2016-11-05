@@ -43,6 +43,7 @@
 #include "splinefont.h"
 #include "splinefill.h"
 #include "splinesaveafm.h"
+#include "splineutil.h"
 #include "splineutil2.h"
 #include "baseviews.h"
 #include "views.h"

@@ -27,6 +27,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 #include <basics.h>
 #include <stdio.h>
 
+#include "splineutil.h"
+
 #ifndef _NO_LIBSPIRO
 #include "bezctx_ff.h"
 #include "fontforgevw.h"	/* For LogError, else splinefont.h */

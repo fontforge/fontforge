@@ -31,6 +31,7 @@
 #include "namelist.h"
 #include "mem.h"
 #include "splineorder2.h"
+#include "splineutil.h"
 #include "splineutil2.h"
 #include <utype.h>
 #include <string.h>

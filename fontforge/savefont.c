@@ -41,6 +41,7 @@
 #include "splinefill.h"
 #include "splineoverlap.h"
 #include "splinesaveafm.h"
+#include "splineutil.h"
 #include "ustring.h"
 #include "gfile.h"
 #include "gresource.h"

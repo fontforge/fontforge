@@ -52,6 +52,7 @@
 #include "search.h"
 #include "sfd.h"
 #include "splinesaveafm.h"
+#include "splineutil.h"
 #include "splineutil2.h"
 #include <gfile.h>
 #include <gio.h>

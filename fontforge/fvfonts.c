@@ -34,6 +34,7 @@
 #include "splinefill.h"
 #include "splineorder2.h"
 #include "splinesaveafm.h"
+#include "splineutil.h"
 #include "splineutil2.h"
 #include "ustring.h"
 #include "utype.h"

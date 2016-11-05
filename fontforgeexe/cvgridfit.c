@@ -26,6 +26,7 @@
  */
 #include "cvundoes.h"
 #include "fontforgeui.h"
+#include "splineutil.h"
 #include <ustring.h>
 #include <gkeysym.h>
 #include <math.h>

@@ -41,6 +41,7 @@
 #include "splinefill.h"
 #include "splinesave.h"
 #include "splinesaveafm.h"
+#include "splineutil.h"
 #include "splineutil2.h"
 #include <stdlib.h>
 #include <string.h>
