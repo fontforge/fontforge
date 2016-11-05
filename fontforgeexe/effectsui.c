@@ -28,6 +28,7 @@
 #include "effects.h"
 #include "fontforgeui.h"
 #include "splinestroke.h"
+#include "splineutil2.h"
 #include <ustring.h>
 #include <gkeysym.h>
 #include <utype.h>

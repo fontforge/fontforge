@@ -36,6 +36,7 @@
 #include "spiro.h"
 #include "splineorder2.h"
 #include "splinesaveafm.h"
+#include "splineutil2.h"
 #include <math.h>
 #include <locale.h>
 # include <ustring.h>

@@ -27,6 +27,7 @@
 #include "fontforge.h"
 #include "mem.h"
 #include "splinefill.h"
+#include "splineutil2.h"
 #include <math.h>
 #include <time.h>
 #include <utype.h>

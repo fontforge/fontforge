@@ -37,6 +37,7 @@
 #include "splinefont.h"
 #include "splineorder2.h"
 #include "splinesaveafm.h"
+#include "splineutil2.h"
 #include "psfont.h"
 #include <ustring.h>
 #include <string.h>

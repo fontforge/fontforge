@@ -43,6 +43,7 @@
 #include "spiro.h"
 #include "splineoverlap.h"
 #include "splinesaveafm.h"
+#include "splineutil2.h"
 #include <gfile.h>
 #include <gio.h>
 #include <ustring.h>

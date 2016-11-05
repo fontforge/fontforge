@@ -33,6 +33,7 @@
 #include "psread.h"
 #include "splineorder2.h"
 #include "splinestroke.h"
+#include "splineutil2.h"
 #include <math.h>
 #include <ustring.h>
 #include <utype.h>

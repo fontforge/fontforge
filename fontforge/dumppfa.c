@@ -37,6 +37,7 @@
 #include "splineorder2.h"
 #include "splinesave.h"
 #include "splinesaveafm.h"
+#include "splineutil2.h"
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>

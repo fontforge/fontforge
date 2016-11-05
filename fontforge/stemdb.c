@@ -30,6 +30,7 @@
 #include "edgelist2.h"
 #include "stemdb.h"
 #include "splineoverlap.h"
+#include "splineutil2.h"
 
 #include <math.h>
 #include <utype.h>

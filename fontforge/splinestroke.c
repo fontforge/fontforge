@@ -32,6 +32,7 @@
 #include "splinefont.h"
 #include "splineorder2.h"
 #include "splineoverlap.h"
+#include "splineutil2.h"
 #include <math.h>
 #define PI      3.1415926535897932
 

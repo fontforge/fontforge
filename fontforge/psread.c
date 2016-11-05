@@ -31,6 +31,7 @@
 #include "namelist.h"
 #include "splineoverlap.h"
 #include "splinestroke.h"
+#include "splineutil2.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>

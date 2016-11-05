@@ -2130,16 +2130,8 @@ extern const unichar_t *_uGetModifiers(const unichar_t *fontname, const unichar_
 extern void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes);
 extern void SplineFontSetUnChanged(SplineFont *sf);
 
-extern int Within4RoundingErrors(bigreal v1, bigreal v2);
-extern int Within16RoundingErrors(bigreal v1, bigreal v2);
-extern int Within64RoundingErrors(bigreal v1, bigreal v2);
 extern int RealNear(real a,real b);
-extern int RealNearish(real a,real b);
-extern int RealApprox(real a,real b);
-extern int RealWithin(real a,real b,real fudge);
-extern int RealRatio(real a,real b,real fudge);
 
-extern int PointsDiagonalable(SplineFont *sf,BasePoint **bp,BasePoint *unit);
 
 extern void LineListFree(LineList *ll);
 extern void LinearApproxFree(LinearApprox *la);
@@ -2294,7 +2286,6 @@ extern void SFRemoveUndoes(SplineFont *sf,uint8 *selected,EncMap *map);
 extern void SplineRefigure(Spline *spline);
 extern Spline *SplineMake3(SplinePoint *from, SplinePoint *to);
 extern LinearApprox *SplineApproximate(Spline *spline, real scale);
-extern int SplinePointListIsClockwise(const SplineSet *spl);
 extern void SplineSetFindBounds(const SplinePointList *spl, DBounds *bounds);
 extern void SplineCharLayerFindBounds(SplineChar *sc,int layer,DBounds *bounds);
 extern void SplineCharFindBounds(SplineChar *sc,DBounds *bounds);
@@ -2343,7 +2334,6 @@ extern SplinePointList *SPLCopyTranslatedHintMasks(SplinePointList *base,
 extern SplinePointList *SPLCopyTransformedHintMasks(RefChar *r,
 	SplineChar *basesc, BasePoint *trans,int layer);
 extern SplinePointList *SplinePointListRemoveSelected(SplineChar *sc,SplinePointList *base);
-extern void SplinePointListSet(SplinePointList *tobase, SplinePointList *frombase);
 extern void SplinePointListSelect(SplinePointList *spl,int sel);
 extern void SCRefToSplines(SplineChar *sc,RefChar *rf,int layer);
 extern void RefCharFindBounds(RefChar *rf);
@@ -2425,79 +2415,9 @@ extern SplinePoint *SplineBisect(Spline *spline, extended t);
 extern Spline *SplineSplit(Spline *spline, extended ts[3]);
 extern Spline *ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
 	TPoint *mid, int cnt,int order2);
-extern Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
-	TPoint *mid, int cnt,int order2);
 extern bigreal SplineLength(Spline *spline);
-extern bigreal SplineLengthRange(Spline *spline, real from_t, real to_t);
-extern bigreal PathLength(SplineSet *ss);
-extern Spline *PathFindDistance(SplineSet *path,bigreal d,bigreal *_t);
-extern SplineSet *SplineSetBindToPath(SplineSet *ss,int doscale, int glyph_as_unit,
-	int align,real offset, SplineSet *path);
 extern int SplineIsLinear(Spline *spline);
-extern int SplineIsLinearMake(Spline *spline);
-extern int SplineInSplineSet(Spline *spline, SplineSet *spl);
 extern int SSPointWithin(SplineSet *spl,BasePoint *pt);
-extern SplineSet *SSRemoveZeroLengthSplines(SplineSet *base);
-extern void SSRemoveStupidControlPoints(SplineSet *base);
-extern void SSOverlapClusterCpAngles(SplineSet *base,bigreal within);
-extern void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint *to,int type);
-extern void SplineCharMerge(SplineChar *sc,SplineSet **head,int type);
-extern void SPLNearlyHvCps(SplineChar *sc,SplineSet *ss,bigreal err);
-extern void SPLNearlyHvLines(SplineChar *sc,SplineSet *ss,bigreal err);
-extern int  SPLNearlyLines(SplineChar *sc,SplineSet *ss,bigreal err);
-extern int SPInterpolate(const SplinePoint *sp);
-extern void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,
-	struct simplifyinfo *smpl);
-extern SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,
-	struct simplifyinfo *smpl);
-extern void SPLStartToLeftmost(SplineChar *sc,SplinePointList *spl, int *changed);
-extern void SPLsStartToLeftmost(SplineChar *sc,int layer);
-extern void CanonicalContours(SplineChar *sc,int layer);
-extern void SplineSetJoinCpFixup(SplinePoint *sp);
-extern SplineSet *SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed);
-enum ae_type { ae_all, ae_between_selected, ae_only_good, ae_only_good_rm_later };
-extern int SpIsExtremum(SplinePoint *sp);
-extern int Spline1DCantExtremeX(const Spline *s);
-extern int Spline1DCantExtremeY(const Spline *s);
-extern Spline *SplineAddExtrema(Spline *s,int always,real lenbound,
-	real offsetbound,DBounds *b);
-extern void SplineSetAddExtrema(SplineChar *sc,SplineSet *ss,enum ae_type between_selected, int emsize);
-extern void SplineCharAddExtrema(SplineChar *sc,SplineSet *head,enum ae_type between_selected,int emsize);
-extern SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head);
-extern SplineFont *SplineFontNew(void);
-extern char *GetNextUntitledName(void);
-extern SplineFont *SplineFontEmpty(void);
-extern SplineFont *SplineFontBlank(int charcnt);
-extern void SFIncrementXUID(SplineFont *sf);
-extern void SFRandomChangeXUID(SplineFont *sf);
-extern SplineSet *SplineSetReverse(SplineSet *spl);
-extern SplineSet *SplineSetsExtractOpen(SplineSet **tbase);
-extern void SplineSetsInsertOpen(SplineSet **tbase,SplineSet *open);
-extern SplineSet *SplineSetsCorrect(SplineSet *base,int *changed);
-extern SplineSet *SplineSetsAntiCorrect(SplineSet *base);
-extern SplineSet *SplineSetsDetectDir(SplineSet **_base, int *lastscan);
-extern void SPAverageCps(SplinePoint *sp);
-extern void SPLAverageCps(SplinePointList *spl);
-extern void SPWeightedAverageCps(SplinePoint *sp);
-extern void BP_HVForce(BasePoint *vector);
-extern void SplineCharDefaultPrevCP(SplinePoint *base);
-extern void SplineCharDefaultNextCP(SplinePoint *base);
-extern void SplineCharTangentNextCP(SplinePoint *sp);
-extern void SplineCharTangentPrevCP(SplinePoint *sp);
-/**
- * This is like SPAdjustControl but you have not wanting to move the
- * BCP at all, but you would like the current location of the passed
- * BCP to reshape the spline through the splinepoint. For example, if
- * you drag the spline between two points then you might like to touch
- * the inside BCP between the two splinepoints to reshape the whole
- * curve through a curve point.
- */
-extern void SPTouchControl(SplinePoint *sp,BasePoint *which, int order2);
-extern void SPAdjustControl(SplinePoint *sp,BasePoint *cp, BasePoint *to,int order2);
-extern void SPHVCurveForce(SplinePoint *sp);
-extern void SPSmoothJoint(SplinePoint *sp);
-extern int PointListIsSelected(SplinePointList *spl);
-extern void SplineSetsUntick(SplineSet *spl);
 extern void SFOrderBitmapList(SplineFont *sf);
 
 extern Spline *SplineMake(SplinePoint *from, SplinePoint *to, int order2);

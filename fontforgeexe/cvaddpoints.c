@@ -30,6 +30,7 @@
 #include "spiro.h"
 #include "splinefont.h"
 #include "splineorder2.h"
+#include "splineutil2.h"
 #include "ustring.h"
 
 int CVOneThingSel(CharView *cv, SplinePoint **sp, SplinePointList **_spl,

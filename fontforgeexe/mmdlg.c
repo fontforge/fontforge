@@ -35,6 +35,7 @@
 #include "psread.h"
 #include "sfd.h"
 #include "splinefill.h"
+#include "splineutil2.h"
 #include <ustring.h>
 #include <math.h>
 #include <gkeysym.h>

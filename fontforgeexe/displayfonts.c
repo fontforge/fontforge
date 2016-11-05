@@ -33,6 +33,7 @@
 #include "print.h"
 #include "sftextfieldP.h"
 #include "splinesaveafm.h"
+#include "splineutil2.h"
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>

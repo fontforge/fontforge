@@ -31,6 +31,7 @@
 #include "mem.h"
 #include "namelist.h"
 #include "splinefont.h"
+#include "splineutil2.h"
 #include <ustring.h>
 
 static int includestrokes = false;

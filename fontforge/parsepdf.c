@@ -36,6 +36,7 @@
 #include "parsepfa.h"
 #include "parsettf.h"
 #include "psread.h"
+#include "splineutil2.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>

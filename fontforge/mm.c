@@ -32,6 +32,7 @@
 #include "lookups.h"
 #include "macenc.h"
 #include "splinesaveafm.h"
+#include "splineutil2.h"
 #include <ustring.h>
 #include <math.h>
 #include <utype.h>
