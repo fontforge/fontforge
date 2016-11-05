@@ -2973,7 +2973,7 @@ static void LayerToRefLayer(struct reflayer *rl,Layer *layer, real transform[6])
     rl->fillfirst = layer->fillfirst;
 }
 
-int RefLayerFindBaseLayerIndex(RefChar *rf, int layer) {
+static int RefLayerFindBaseLayerIndex(RefChar *rf, int layer) {
 	// Note that most of the logic below is copied and lightly modified from SCReinstanciateRefChar.
 	SplineChar *rsc = rf->sc;
 	int i = 0, j = 0, cnt = 0;
