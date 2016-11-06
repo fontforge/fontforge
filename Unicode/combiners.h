@@ -1,3 +1,6 @@
+#ifndef FONTFORGE_UNICODE_COMBINERS_H
+#define FONTFORGE_UNICODE_COMBINERS_H
+
 static const int poses300[] = {
     _Above,
     _Above,
@@ -1012,3 +1015,5 @@ const static struct {
     { 0xFE20, 0xFB23, posesFE20 },
     { 0 }
 };
+
+#endif /* FONTFORGE_UNICODE_COMBINERS_H */
