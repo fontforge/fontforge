@@ -1848,11 +1848,16 @@ static void dumpGSUBmultiplesubs(FILE *gsub,SplineFont *sf,struct lookup_subtabl
 	putshort(gsub,offset);
 	if (maps[cnt] == NULL) {
 		fprintf( stderr, "maps[%d] is null; glyphs[%d] is \"%s\"; lookup name is \"%s\".\n" , cnt , cnt , (glyphs[cnt]->name ? glyphs[cnt]->name : ""), sub->subtable_name) ;
-	}
-	for ( gc=0; maps[cnt][gc]!=NULL; ++gc );
+            gc = 0;
+	} else {
+    	    for ( gc=0; maps[cnt][gc]!=NULL; ++gc );
+        }
 	offset += 2+2*gc;
     }
     for ( cnt = 0; glyphs[cnt]!=NULL; ++cnt ) {
+        if (maps[cnt] == NULL) {
+            break;
+        }
 	for ( gc=0; maps[cnt][gc]!=NULL; ++gc );
 	putshort(gsub,gc);
 	for ( gc=0; maps[cnt][gc]!=NULL; ++gc )
