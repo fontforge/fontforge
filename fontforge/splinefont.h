@@ -2393,7 +2393,6 @@ extern void FreeType_FreeRaster(struct freetype_raster *raster);
 struct TT_ExecContextRec_;
 extern struct freetype_raster *DebuggerCurrentRaster(struct  TT_ExecContextRec_ *exc,int depth);
 
-extern void doversion(const char *);
 
 extern AnchorPos *AnchorPositioning(SplineChar *sc,unichar_t *ustr,SplineChar **sstr );
 
@@ -2498,9 +2497,7 @@ extern void *PyFF_UnPickleMeToObjects(char *str);
 struct _object;		/* Python Object */
 extern void PyFF_CallDictFunc(struct _object *dict,const char *key,const char *argtypes, ... );
 #endif
-extern void doinitFontForgeMain(void);
 
-extern void InitSimpleStuff(void);
 
 
 

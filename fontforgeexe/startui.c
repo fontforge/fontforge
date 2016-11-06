@@ -34,6 +34,7 @@
 #include "encoding.h"
 #include "fontforgeui.h"
 #include "lookups.h"
+#include "start.h"
 
 #ifndef _NO_LIBUNICODENAMES
 #include <libunicodenames.h>	/* need to open a database when we start */
