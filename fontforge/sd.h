@@ -79,7 +79,7 @@ struct image {
     Color col;				/* that gets poured into imagemasks */
 };
 
-struct group {
+struct e_group {
     struct entity *group;
 };
 
@@ -91,7 +91,7 @@ typedef struct entity {
 	struct filledsplines splines;
 	struct text text;
 	struct image image;
-	struct group group;
+	struct e_group group;
     } u;
     SplineSet *clippath;
     DBounds bb;
@@ -128,7 +128,6 @@ extern Entity *EntityInterpretPS(FILE *ps,int *width);
 extern Entity *EntityInterpretSVG(char *filename,char *memory, int memlen, int em_size,int ascent);
 extern Entity *EntityInterpretPDFPage(FILE *pdf,int select_page);
 extern SplinePointList *SplinesFromEntities(Entity *ent,int *flags,int is_stroked);
-extern void SCAppendEntityLayers(SplineChar *sc, Entity *ent);
 extern void EntityDefaultStrokeFill(Entity *ent);
 
 	/* Used for type3 fonts briefly */

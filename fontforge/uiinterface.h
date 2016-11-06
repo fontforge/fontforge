@@ -511,8 +511,6 @@ extern struct clip_interface *clip_interface;
 #define ClipboardRequest	(clip_interface->request_clip)
 #define ClipboardHasType	(clip_interface->clip_has_type)
 
-void FF_SetClipInterface(struct clip_interface *clipi);
-
 extern const char *NOUI_TTFNameIds(int id);
 extern const char *NOUI_MSLangString(int language);
 #endif

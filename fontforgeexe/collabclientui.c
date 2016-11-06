@@ -29,6 +29,7 @@
 #include "collabclientpriv.h"
 #include "collabclientui.h"
 #include "uiinterface.h"
+#include "cvundoes.h"
 #include "sfundo.h"
 #include "../fontforge/ffglib.h"
 #include "fontforgeexe.h"

@@ -24,15 +24,16 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "fontforgevw.h"
+#include "autowidth2.h"
+
 #include "cvundoes.h"
+#include "fontforgevw.h"
 #include <math.h>
 #include <ustring.h>
 #include <utype.h>
 
 #define DENOM_FACTOR_OF_EMSIZE	50.0
 
-#include "autowidth2.h"
 #include "edgelist2.h"
 
 static int aw2_bbox_separation(AW_Glyph *g1, AW_Glyph *g2, AW_Data *all) {

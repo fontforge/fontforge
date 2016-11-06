@@ -24,6 +24,10 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "autosave.h"
+
+#include "baseviews.h"
 #include "fontforgevw.h"
 /*#include "ustring.h"*/
 #include <sys/stat.h>
@@ -137,7 +141,7 @@ return;
 }
 
 
-void _DoAutoSaves(FontViewBase *fvs) {
+static void _DoAutoSaves(FontViewBase *fvs) {
     FontViewBase *fv;
     SplineFont *sf;
 

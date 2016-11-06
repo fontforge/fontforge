@@ -136,14 +136,4 @@ typedef struct eilist {
     enum overlap_type ot;
 } EIList;
 
-extern void ElFreeEI(EIList *el);
-extern void ELFindEdges(SplineChar *sc, EIList *el);
-extern void ELOrder(EIList *el, int major );
-extern real EITOfNextMajor(EI *e, EIList *el, real sought_m );
-extern int EISameLine(EI *e, EI *n, real i, int major);
-extern int EISkipExtremum(EI *e, real i, int major);
-extern EI *EIActiveEdgesFindStem(EI *apt, real i, int major);
-extern EI *EIActiveListReorder(EI *active,int *change);
-extern EI *EIActiveEdgesRefigure(EIList *el, EI *active,real i,int major,
-	int *_change);
 #endif

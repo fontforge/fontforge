@@ -25,9 +25,13 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "autohint.h"
+#include "autosave.h"
+#include "bitmapchar.h"
+#include "bvedit.h"
+#include "cvundoes.h"
 #include "fontforge.h"
 #include "baseviews.h"
-#include "cvundoes.h"
 #include "groups.h"
 #include "psfont.h"
 #include "scripting.h"

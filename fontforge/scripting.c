@@ -26,8 +26,18 @@
  */
 /*			   Yet another interpreter			      */
 
-#include "fontforge.h"
+#include "autohint.h"
+#include "autotrace.h"
+#include "autowidth.h"
+#include "autowidth2.h"
+#include "bitmapchar.h"
+#include "bitmapcontrol.h"
+#include "bvedit.h"
+#include "cvexport.h"
+#include "cvimages.h"
 #include "cvundoes.h"
+#include "dumppfa.h"
+#include "fontforge.h"
 #include <gfile.h>
 #include <utype.h>
 #include <ustring.h>

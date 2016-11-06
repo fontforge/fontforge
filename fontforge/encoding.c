@@ -25,6 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "bitmapchar.h"
+#include "bvedit.h"
+#include "dumppfa.h"
 #include "fontforgevw.h"
 #include "splinefont.h"
 #include <ustring.h>

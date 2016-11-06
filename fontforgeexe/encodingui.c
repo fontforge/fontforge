@@ -26,6 +26,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "bitmapchar.h"
 #include "fontforgeui.h"
 #include <ustring.h>
 #include <utype.h>

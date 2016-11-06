@@ -25,6 +25,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "cvexport.h"
+#include "dumppfa.h"
 #include "fontforgevw.h"
 #include "sflayoutP.h"
 #include <stdlib.h>

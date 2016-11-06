@@ -24,6 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "autohint.h"
+#include "dumpbdf.h"
+#include "dumppfa.h"
 #include "fontforge.h"
 #include <math.h>
 #include <unistd.h>

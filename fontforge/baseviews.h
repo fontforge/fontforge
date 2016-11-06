@@ -318,19 +318,10 @@ extern void FVAutoInstr(FontViewBase *fv);
 extern void FVClearInstrs(FontViewBase *fv);
 extern void FVClearHints(FontViewBase *fv);
 extern void SCAutoTrace(SplineChar *sc,int layer, int ask);
-extern const char *FindAutoTraceName(void);
-extern void *GetAutoTraceArgs(void);
-extern void SetAutoTraceArgs(void *a);
-extern const char *FindMFName(void);
-extern char *ProgramExists(const char *prog,char *buffer);
-extern void MfArgsInit(void);
-extern void FVAutoTrace(FontViewBase *fv,int ask);
 extern void FVAddEncodingSlot(FontViewBase *fv,int gid);
 extern int FVImportMult(FontViewBase *fv, char *filename,int toback,int bf);
 extern int FVImportBDF(FontViewBase *fv, char *filename,int ispk, int toback);
 extern void MergeFont(FontViewBase *fv,SplineFont *other,int preserveCrossFontKerning);
-extern int FVImportImages(FontViewBase *fv,char *path,int isimage,int toback,int flags);
-extern int FVImportImageTemplate(FontViewBase *fv,char *path,int isimage,int toback,int flags);
 extern void ScriptPrint(FontViewBase *fv,int type,int32 *pointsizes,char *samplefile,
 	unichar_t *sample, char *outputfile);
 extern int FVBParseSelectByPST(FontViewBase *fv,struct lookup_subtable *sub,
@@ -433,31 +424,12 @@ extern void _FVSimplify(FontViewBase *fv,struct simplifyinfo *smpl);
 extern void UnlinkThisReference(FontViewBase *fv,SplineChar *sc,int layer);
 extern FontViewBase *ViewPostScriptFont(const char *filename,int openflags);
 extern void FVBuildAccent(FontViewBase *fv,int onlyaccents);
-extern void FVRemoveKerns(FontViewBase *fv);
-extern void FVRemoveVKerns(FontViewBase *fv);
-extern void FVVKernFromHKern(FontViewBase *fv);
 extern void FVAddUnencoded(FontViewBase *fv, int cnt);
 extern void FVRemoveUnused(FontViewBase *fv);
 extern void FVCompact(FontViewBase *fv);
 extern void FVDetachGlyphs(FontViewBase *fv);
 extern void FVDetachAndRemoveGlyphs(FontViewBase *fv);
-extern int AutoWidthScript(FontViewBase *fv,int spacing);
-extern int AutoKernScript(FontViewBase *fv,int spacing, int threshold,
-	struct lookup_subtable *sub, char *kernfile);
 
-extern void BCTrans(BDFFont *bdf,BDFChar *bc,BVTFunc *bvts,FontViewBase *fv );
-extern void BCSetPoint(BDFChar *bc, int x, int y, int color);
-extern void BCTransFunc(BDFChar *bc,enum bvtools type,int xoff,int yoff);
-extern void skewselect(BVTFunc *bvtf,real t);
-
-extern BDFFloat *BDFFloatCreate(BDFChar *bc,int xmin,int xmax,int ymin,int ymax, int clear);
-extern BDFFloat *BDFFloatCopy(BDFFloat *sel);
-extern BDFFloat *BDFFloatConvert(BDFFloat *sel,int newdepth, int olddepth);
-extern void BDFFloatFree(BDFFloat *sel);
-
-extern void BCMergeReferences(BDFChar *base,BDFChar *cur,int8 xoff,int8 yoff);
-extern BDFChar *BDFGetMergedChar(BDFChar *bc) ;
-extern void BCUnlinkThisReference(struct fontviewbase *fv,BDFChar *bc);
 
 extern Undoes *_CVPreserveTState(CharViewBase *cv,PressedOn *);
 extern void CopySelected(CharViewBase *cv,int doanchors);
@@ -562,7 +534,6 @@ extern uint8 *_IVParse(SplineFont *sf, char *text, int *len,
 	void (*IVError)(void *,char *, int), void *iv);
 extern char *_IVUnParseInstrs(uint8 *instrs,int instr_cnt);
 
-extern int BitmapControl(FontViewBase *fv,int32 *sizes,int isavail,int rasterize);
 extern void FVSetWidthScript(FontViewBase *fv,enum widthtype wtype,int val,int incr);
 extern void FVMetricsCenter(FontViewBase *fv,int docenter);
 extern void FVRevert(FontViewBase *fv);
@@ -579,27 +550,12 @@ extern void FVB_MakeNamelist(FontViewBase *fv, FILE *file);
  */
 extern void FVTitleUpdate(FontViewBase *fv);
 
-extern void AutoWidth2(FontViewBase *fv,int separation,int min_side,int max_side,
-	int chunk_height, int loop_cnt);
-extern void GuessOpticalOffset(SplineChar *sc,int layer,real *_loff, real *_roff,
-	int chunk_height );
 extern void AutoKern2(SplineFont *sf, int layer,SplineChar **left,SplineChar **right,
 	struct lookup_subtable *into,
 	int separation, int min_kern, int from_closest_approach, int only_closer,
 	int chunk_height,
 	void (*addkp)(void *data,SplineChar *left,SplineChar *r,int off),
 	void *data);
-extern void AutoKern2NewClass(SplineFont *sf,int layer,char **leftnames, char **rightnames,
-	int lcnt, int rcnt,
-	void (*kcAddOffset)(void *data,int left_index, int right_index,int offset), void *data,
-	int separation, int min_kern, int from_closest_approach, int only_closer,
-	int chunk_height);
-extern void AutoKern2BuildClasses(SplineFont *sf,int layer,
-	SplineChar **leftglyphs,SplineChar **rightglyphs,
-	struct lookup_subtable *sub,
-	int separation, int min_kern, int touching, int only_closer,
-	int autokern,
-	real good_enough);
 
 extern void MVSelectFirstKerningTable(struct metricsview *mv);
 

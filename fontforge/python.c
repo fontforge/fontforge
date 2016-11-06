@@ -46,8 +46,15 @@
 
 extern int old_sfnt_flags;
 
-#include "fontforgevw.h"
+#include "autohint.h"
+#include "autotrace.h"
+#include "autowidth2.h"
+#include "bitmapcontrol.h"
+#include "cvexport.h"
+#include "cvimages.h"
 #include "cvundoes.h"
+#include "dumppfa.h"
+#include "fontforgevw.h"
 #include "ttf.h"
 #include "plugins.h"
 #include "utype.h"

@@ -24,6 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "bvedit.h"
+#include "crctab.h"
+#include "dumppfa.h"
 #include "fontforgevw.h"
 #include <stdlib.h>
 #include <string.h>
@@ -103,7 +106,6 @@ const int mac_dpi = 72;
 /* Crc code taken from: */
 /* http://www.ctan.org/tex-archive/tools/macutils/crc/ */
 /* MacBinary files use the same CRC that binhex does (in the MacBinary header) */
-extern unsigned long binhex_crc(unsigned char *buffer,int size);
 
 /* ******************************** Creation ******************************** */
 

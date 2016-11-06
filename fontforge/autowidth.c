@@ -25,13 +25,15 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "fontforgevw.h"
+
+#include "autowidth.h"
+
+#include "autohint.h"
 #include "cvundoes.h"
+#include "fontforgevw.h"
 #include <math.h>
 #include <ustring.h>
 #include <utype.h>
-
-#include "autowidth.h"
 
 SplineFont *aw_old_sf=NULL;
 int aw_old_spaceguess;

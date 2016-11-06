@@ -24,8 +24,10 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "fontforge.h"
+#include "autohint.h"
+#include "cvimages.h"
 #include "cvundoes.h"
+#include "fontforge.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>

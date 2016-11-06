@@ -25,11 +25,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "cvundoes.h"
 #include "fontforgeui.h"
 #include <utype.h>
 #include <math.h>
 #include "collabclient.h"
-#include "cvundoes.h"
 extern void BackTrace( const char* msg );
 
 int stop_at_join = false;

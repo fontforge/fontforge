@@ -1,6 +1,9 @@
 #ifndef FONTFORGE_AUTOWIDTH_H
 #define FONTFORGE_AUTOWIDTH_H
 
+#include "baseviews.h"
+#include "splinefont.h"
+
 struct charone {
     real lbearing, rmax;
     real newl, newr;
@@ -66,5 +69,13 @@ extern void AW_KernRemoveBelowThreshold(SplineFont *sf,int threshold);
 
 extern SplineFont *aw_old_sf;
 extern int aw_old_spaceguess;
+
+extern int AutoKernScript(FontViewBase *fv, int spacing, int threshold, struct lookup_subtable *sub, char *kernfile);
+extern int AutoWidthScript(FontViewBase *fv, int spacing);
+extern int KernThreshold(SplineFont *sf, int cnt);
+extern real SFGuessItalicAngle(SplineFont *sf);
+extern void FVRemoveKerns(FontViewBase *fv);
+extern void FVRemoveVKerns(FontViewBase *fv);
+extern void FVVKernFromHKern(FontViewBase *fv);
 
 #endif /* FONTFORGE_AUTOWIDTH_H */

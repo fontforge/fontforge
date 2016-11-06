@@ -28,6 +28,9 @@
 #include "ffglib.h"
 
 #include <fontforge-config.h>
+#include "autosave.h"
+#include "bitmapchar.h"
+#include "clipnoui.h"
 #include "fontforgeui.h"
 #ifndef _NO_LIBUNICODENAMES
 #include <libunicodenames.h>	/* need to open a database when we start */
