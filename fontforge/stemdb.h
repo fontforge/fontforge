@@ -216,4 +216,6 @@ extern struct glyphdata *DStemInfoToStemData( struct glyphdata *gd,DStemInfo *ds
 extern int IsStemAssignedToPoint( struct pointdata *pd,struct stemdata *stem,int is_next );
 extern void GlyphDataFree(struct glyphdata *gd);
 
+extern int UnitsParallel(BasePoint *u1, BasePoint *u2, int strict);
+
 #endif		/* _STEMDB_H_ */

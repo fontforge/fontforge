@@ -2080,7 +2080,6 @@ typedef struct growbuf {
 extern void GrowBuffer(GrowBuf *gb);
 
 struct glyphdata;
-extern int UnitsParallel(BasePoint *u1,BasePoint *u2,int strict);
 extern struct pschars *CID2ChrsSubrs(SplineFont *cidmaster,struct cidbytes *cidbytes,int flags,int layer);
 enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, bf_sfnt_ms, bf_otb,
 	bf_nfntmacbin, /*bf_nfntdfont, */bf_fon, bf_fnt, bf_palm,
