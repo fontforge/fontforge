@@ -17,7 +17,7 @@ Alexey Kryukov - nowakowskittfinstr.c
 Alexandre Prokoudine
 Andreas Larsen
 Barry Schwartz <chemoelectric>
-Baruch Even - (debian upstream) baruch
+Baruch Even <baruch@debian.org>
 Bastien Dejean
 Behnam Esfahbod
 Ben Martin - hotkeys.c, hotkeys.h
@@ -80,6 +80,7 @@ Kazuki Ohta (Kauzuyuki, Kazuyuki)
 Kelvinsong
 Kemie Guaida - Tango PixMaps
 Kengo Ichiki
+Kęstutis Biliūnas <kebil@kaunas.init.lt>
 Kevin Fenzi
 Khaled Hosny <khaledhosny>
 Koki Takahashi
@@ -90,7 +91,8 @@ Luiz Matheus <lzmths>
 Markus Schwarzenberg
 Marius Larsen
 Mark Oteiza
-Martin Hosken
+Martin Hosken <martin_hosken@sil.org>
+Matthias Klose <doko@ubuntu.com>
 Mathias Wollin
 Matt Chisholm
 Matthew Petroff
@@ -118,6 +120,7 @@ Rajeesh K Nambiar
 Raph Levien <raphlinus>
 Reuben Thomas <rrthomas>
 Richard Hughes
+Rogério Brito <rbrito@ime.usp.br>
 Rogier van Dalen
 Ryusei Yamaguchi
 Saeed Rasooli
@@ -140,6 +143,7 @@ Vernon Adams
 Ville Skytta
 Werner Lemberg <lemzwerg>
 Woensug Eric Choi
+Wojciech Muła <wm@mahajana.net>
 贤哲 <xiaozhe.hxz@alibaba-inc.com>
 Yannis Haralambous
 Yao Wei (魏銘廷)
