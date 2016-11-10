@@ -2756,41 +2756,6 @@ return( ret );
 return( ret );
 }
 
-static void SCSetReasonableLBearing(SplineChar *sc,SplineChar *base,int layer) {
-    DBounds full, b;
-    SplineFont *sf;
-    int emsize;
-    double xoff;
-    RefChar *ref;
-    real transform[6];
-
-    /* Hmm. Panov doesn't think this should happen */
-return;
-
-    SplineCharLayerFindBounds(sc,layer,&full);
-    SplineCharLayerFindBounds(base,layer,&b);
-
-    sf = sc->parent;
-    emsize = sf->ascent+sf->descent;
-
-    /* Now don't get excited if we have a very thin glyph (I in a sans-serif) */
-    /*  and a centered accent spills off to the left a little */
-    if ( full.minx>=0 || full.minx>=b.minx || full.minx>=-(emsize/20) )
-return;
-    /* ok. let's say we want an lbearing that's the same as that of the base */
-    /*  glyph */
-    xoff = b.minx-full.minx;
-    memset(transform,0,sizeof(transform));
-    transform[0] = transform[3] = 1.0;
-    transform[4] = xoff;
-    for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next ) {
-	ref->bb.minx += xoff; ref->bb.maxx += xoff;
-	ref->transform[4] += xoff;
-	SplinePointListTransform(ref->layers[0].splines,transform,tpt_AllPoints);
-    }
-    SCSynchronizeWidth(sc,sc->width + xoff,sc->width,NULL);
-}
-
 void SCBuildComposit(SplineFont *sf, SplineChar *sc, int layer, BDFFont *bdf, int disp_only ) {
     const unichar_t *pt, *apt; unichar_t ch;
     real ia;
@@ -2872,11 +2837,6 @@ return;
 	    if ( base!=NULL ) base->use_my_metrics = false;
 	    SCPutRefAfter(sc,sf,layer,*pt++,bdf,disp_only,dot);
 	}
-	/* All along we assumed the base glyph didn't move. This makes       */
-	/* positioning easier. But if we add accents to the left we now want */
-	/* to move the glyph so we don't have a negative lbearing */
-	if ( base!=NULL )
-	    SCSetReasonableLBearing(sc,base->sc,layer);
     }
     if ( !disp_only || bdf == NULL )
 	SCCharChangedUpdate(sc,layer);
