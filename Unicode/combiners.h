@@ -2,910 +2,910 @@
 #define FONTFORGE_UNICODE_COMBINERS_H
 
 static const int poses300[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,                            /* 0x310 */
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above|FF_UNICODE_CenterRight,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above|FF_UNICODE_Right|FF_UNICODE_Touching,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,                            /* 0x320 */
-    FF_UNICODE_Below|FF_UNICODE_Touching,
-    FF_UNICODE_Below|FF_UNICODE_Touching,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below|FF_UNICODE_Touching,
-    FF_UNICODE_Below|FF_UNICODE_Touching,        /* 0x328 */
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,                            /* 0x330 */
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Overstrike,
-    FF_UNICODE_Overstrike,
-    FF_UNICODE_Overstrike,
-    FF_UNICODE_Overstrike,
-    FF_UNICODE_Overstrike,                       /* 0x338 */
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above|FF_UNICODE_Left,            /* 0x340 */
-    FF_UNICODE_Above|FF_UNICODE_Right,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Below,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,                            /* 0x310 */
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERRIGHT,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE|FF_UNICODE_RIGHT|FF_UNICODE_TOUCHING,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,                            /* 0x320 */
+    FF_UNICODE_BELOW|FF_UNICODE_TOUCHING,
+    FF_UNICODE_BELOW|FF_UNICODE_TOUCHING,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW|FF_UNICODE_TOUCHING,
+    FF_UNICODE_BELOW|FF_UNICODE_TOUCHING,        /* 0x328 */
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,                            /* 0x330 */
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_OVERSTRIKE,
+    FF_UNICODE_OVERSTRIKE,
+    FF_UNICODE_OVERSTRIKE,
+    FF_UNICODE_OVERSTRIKE,
+    FF_UNICODE_OVERSTRIKE,                       /* 0x338 */
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE|FF_UNICODE_LEFT,            /* 0x340 */
+    FF_UNICODE_ABOVE|FF_UNICODE_RIGHT,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW,
     0
 };
 static const int poses360[] = {
-    FF_UNICODE_Above|FF_UNICODE_Joins2,
-    FF_UNICODE_Above|FF_UNICODE_Joins2,
-    FF_UNICODE_Below|FF_UNICODE_Joins2,
+    FF_UNICODE_ABOVE|FF_UNICODE_JOINS2,
+    FF_UNICODE_ABOVE|FF_UNICODE_JOINS2,
+    FF_UNICODE_BELOW|FF_UNICODE_JOINS2,
     0
 };
 static const int poses385[] = {
-    FF_UNICODE_Above
+    FF_UNICODE_ABOVE
 };
 static const int poses483[] = {
-    FF_UNICODE_Above|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Above|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Above|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Above|FF_UNICODE_CenterLeft,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERLEFT,
     0
 };
 
 static const int poses488[] = {
-    FF_UNICODE_CenteredOutside,                  /* 8 down half-circles distributed in a circle around the character */
-    FF_UNICODE_CenteredOutside                   /* 8 commas rotated as moved around circle, bottom is normal comma */
+    FF_UNICODE_CENTEREDOUTSIDE,                  /* 8 down half-circles distributed in a circle around the character */
+    FF_UNICODE_CENTEREDOUTSIDE                   /* 8 commas rotated as moved around circle, bottom is normal comma */
 };
 
 static const int poses591[] = {
-    FF_UNICODE_Below,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Below|FF_UNICODE_CenterRight,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above|FF_UNICODE_LeftEdge,
-    FF_UNICODE_Below|FF_UNICODE_RightEdge,
-    FF_UNICODE_Below,
-    FF_UNICODE_Above|FF_UNICODE_CenterRight,
-    FF_UNICODE_Above|FF_UNICODE_RightEdge,
-    FF_UNICODE_Above|FF_UNICODE_CenterRight,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above|FF_UNICODE_RightEdge,       /* 05a0 */
-    FF_UNICODE_Above|FF_UNICODE_LeftEdge
+    FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW|FF_UNICODE_CENTERRIGHT,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE|FF_UNICODE_LEFTEDGE,
+    FF_UNICODE_BELOW|FF_UNICODE_RIGHTEDGE,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERRIGHT,
+    FF_UNICODE_ABOVE|FF_UNICODE_RIGHTEDGE,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERRIGHT,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE|FF_UNICODE_RIGHTEDGE,       /* 05a0 */
+    FF_UNICODE_ABOVE|FF_UNICODE_LEFTEDGE
 };
 
 static const int poses5A3[] = {
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Below|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Below,
-    FF_UNICODE_Above|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Above|FF_UNICODE_LeftEdge,
-    FF_UNICODE_Below,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Below|FF_UNICODE_RightEdge,
-    FF_UNICODE_Above|FF_UNICODE_LeftEdge,
-    FF_UNICODE_Above,
-    FF_UNICODE_Below,                            /* 05b0 */
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Above|FF_UNICODE_LeftEdge
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_BELOW|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_ABOVE|FF_UNICODE_LEFTEDGE,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW|FF_UNICODE_RIGHTEDGE,
+    FF_UNICODE_ABOVE|FF_UNICODE_LEFTEDGE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW,                            /* 05b0 */
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE|FF_UNICODE_LEFTEDGE
 };
 
 static const int poses5BB[] = {
-    FF_UNICODE_Below,
-    FF_UNICODE_Overstrike,
-    FF_UNICODE_Below
+    FF_UNICODE_BELOW,
+    FF_UNICODE_OVERSTRIKE,
+    FF_UNICODE_BELOW
 };
 
 static const int poses5BF[] = {
-    FF_UNICODE_Above
+    FF_UNICODE_ABOVE
 };
 
 static const int poses5C1[] = {
-    FF_UNICODE_Above|FF_UNICODE_RightEdge,
-    FF_UNICODE_Above|FF_UNICODE_LeftEdge
+    FF_UNICODE_ABOVE|FF_UNICODE_RIGHTEDGE,
+    FF_UNICODE_ABOVE|FF_UNICODE_LEFTEDGE
 };
 
 static const int poses5C4[] = {
-    FF_UNICODE_Above
+    FF_UNICODE_ABOVE
 };
 
 static const int poses64b[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Below,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Below,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
     0
 };
 
 static const int poses670[] = {
-    FF_UNICODE_Above
+    FF_UNICODE_ABOVE
 };
 
 static const int poses6D6[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Overstrike,
-    FF_UNICODE_Overstrike,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,                            /* 6e0 */
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Below,
-    FF_UNICODE_Above
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_OVERSTRIKE,
+    FF_UNICODE_OVERSTRIKE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,                            /* 6e0 */
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE
 };
 
 static const int poses6E7[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Above
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE
 };
 
 static const int poses6EA[] = {
-    FF_UNICODE_Below,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Below
+    FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW
 };
 
 static const int poses711[] = {
-    FF_UNICODE_Above
+    FF_UNICODE_ABOVE
 };
 
 static const int poses730[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Below,
-    FF_UNICODE_CenteredOutside,                  /* Two dots, one above CenterRight, one below CenterLeft */
-    FF_UNICODE_Above,
-    FF_UNICODE_Below,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Above,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Above,
-    FF_UNICODE_Below,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above|FF_UNICODE_LeftEdge,        /* 0740 */
-    FF_UNICODE_Above,
-    FF_UNICODE_Below,
-    FF_UNICODE_Above,
-    FF_UNICODE_Below,
-    FF_UNICODE_Above,
-    FF_UNICODE_Below,
-    FF_UNICODE_Above,
-    FF_UNICODE_Below,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_CENTEREDOUTSIDE,                  /* Two dots, one above CENTERRIGHT, one below CENTERLEFT */
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE|FF_UNICODE_LEFTEDGE,        /* 0740 */
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE
 };
 
 static const int poses7A6[] = {
-    FF_UNICODE_Above|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Above|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Below|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Below|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Above|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Above|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Above|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Above|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Above|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Above|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Above|FF_UNICODE_CenterLeft,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_BELOW|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_BELOW|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERLEFT,
 };
 
 static const int poses901[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Right
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_RIGHT
 };
 
 static const int poses93C[] = {
-    FF_UNICODE_Below
+    FF_UNICODE_BELOW
 };
 
 static const int poses93E[] = {
-    FF_UNICODE_Right,
-    FF_UNICODE_Left,
-    FF_UNICODE_Right,                            /* 940 */
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Above|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Above|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Right,
-    FF_UNICODE_Right,
-    FF_UNICODE_Right,
-    FF_UNICODE_Right,
-    FF_UNICODE_Below|FF_UNICODE_CenterRight
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_LEFT,
+    FF_UNICODE_RIGHT,                            /* 940 */
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_BELOW|FF_UNICODE_CENTERRIGHT
 };
 
 static const int poses951[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Below,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE
 };
 
 static const int poses962[] = {
-    FF_UNICODE_Below,
-    FF_UNICODE_Below
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW
 };
 
 static const int poses981[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Right,
-    FF_UNICODE_Right
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT
 };
 
 static const int poses9BC[] = {
-    FF_UNICODE_Below
+    FF_UNICODE_BELOW
 };
 
 static const int poses9BE[] = {
-    FF_UNICODE_Right,
-    FF_UNICODE_Left,
-    FF_UNICODE_Right,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below|FF_UNICODE_CenterRight
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_LEFT,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW|FF_UNICODE_CENTERRIGHT
 };
 
 static const int poses9C7[] = {
-    FF_UNICODE_Left,
-    FF_UNICODE_Left
+    FF_UNICODE_LEFT,
+    FF_UNICODE_LEFT
 };
 
 static const int poses9CB[] = {
-    FF_UNICODE_Overstrike,
-    FF_UNICODE_Overstrike,
-    FF_UNICODE_Below
+    FF_UNICODE_OVERSTRIKE,
+    FF_UNICODE_OVERSTRIKE,
+    FF_UNICODE_BELOW
 };
 
 static const int poses9D7[] = {
-    FF_UNICODE_Right
+    FF_UNICODE_RIGHT
 };
 
 static const int poses9E2[] = {
-    FF_UNICODE_Below,
-    FF_UNICODE_Below
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW
 };
 
 static const int posesA02[] = {
-    FF_UNICODE_Above
+    FF_UNICODE_ABOVE
 };
 
 static const int posesA3C[] = {
-    FF_UNICODE_Below
+    FF_UNICODE_BELOW
 };
 
 static const int posesA3E[] = {
-    FF_UNICODE_Right,
-    FF_UNICODE_Left,
-    FF_UNICODE_Right,                            /* 0a40 */
-    FF_UNICODE_Below,
-    FF_UNICODE_Below
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_LEFT,
+    FF_UNICODE_RIGHT,                            /* 0a40 */
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW
 };
 
 static const int posesA47[] = {
-    FF_UNICODE_Above|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Above|FF_UNICODE_CenterLeft
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERLEFT
 };
 
 static const int posesA4B[] = {
-    FF_UNICODE_Above|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Above|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Below
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_BELOW
 };
 
 static const int posesA70[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Above
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE
 };
 
 static const int posesA81[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Right
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_RIGHT
 };
 
 static const int posesABC[] = {
-    FF_UNICODE_Below
+    FF_UNICODE_BELOW
 };
 
 static const int posesABE[] = {
-    FF_UNICODE_Right,
-    FF_UNICODE_Left,
-    FF_UNICODE_Right,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Above
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_LEFT,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE
 };
 
 static const int posesAC7[] = {
-    FF_UNICODE_Above|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Above|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Right
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_RIGHT
 };
 
 static const int posesACB[] = {
-    FF_UNICODE_Right,
-    FF_UNICODE_Right,
-    FF_UNICODE_Below|FF_UNICODE_CenterRight
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_BELOW|FF_UNICODE_CENTERRIGHT
 };
 
 static const int posesB01[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Right
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_RIGHT
 };
 
 static const int posesB3C[] = {
-    FF_UNICODE_Below
+    FF_UNICODE_BELOW
 };
 
 static const int posesB3E[] = {
-    FF_UNICODE_Right,
-    FF_UNICODE_Above,
-    FF_UNICODE_Right,                            /* 0b40 */
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_RIGHT,                            /* 0b40 */
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW
 };
 
 static const int posesB47[] = {
-    FF_UNICODE_Left,
-    FF_UNICODE_Outside|FF_UNICODE_Left|FF_UNICODE_Above
+    FF_UNICODE_LEFT,
+    FF_UNICODE_OUTSIDE|FF_UNICODE_LEFT|FF_UNICODE_ABOVE
 };
 
 static const int posesB4B[] = {
-    FF_UNICODE_CenteredOutside,
-    FF_UNICODE_CenteredOutside,
-    FF_UNICODE_Below
+    FF_UNICODE_CENTEREDOUTSIDE,
+    FF_UNICODE_CENTEREDOUTSIDE,
+    FF_UNICODE_BELOW
 };
 
 static const int posesB56[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Right,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_RIGHT,
 };
 
 static const int posesB82[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Right
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_RIGHT
 };
 
 static const int posesBBE[] = {
-    FF_UNICODE_Right,
-    FF_UNICODE_Right,
-    FF_UNICODE_Above,
-    FF_UNICODE_Right,
-    FF_UNICODE_Right
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT
 };
 
 static const int posesBC6[] = {
-    FF_UNICODE_Left,
-    FF_UNICODE_Left,
-    FF_UNICODE_Left
+    FF_UNICODE_LEFT,
+    FF_UNICODE_LEFT,
+    FF_UNICODE_LEFT
 };
 
 static const int posesBCA[] = {
-    FF_UNICODE_CenteredOutside,
-    FF_UNICODE_CenteredOutside,
-    FF_UNICODE_CenteredOutside,
-    FF_UNICODE_Above
+    FF_UNICODE_CENTEREDOUTSIDE,
+    FF_UNICODE_CENTEREDOUTSIDE,
+    FF_UNICODE_CENTEREDOUTSIDE,
+    FF_UNICODE_ABOVE
 };
 
 static const int posesBD7[] = {
-    FF_UNICODE_Right
+    FF_UNICODE_RIGHT
 };
 
 static const int posesC01[] = {
-    FF_UNICODE_Right,
-    FF_UNICODE_Right,
-    FF_UNICODE_Right
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT
 };
 
 static const int posesC3E[] = {
-    FF_UNICODE_Above|FF_UNICODE_CenterRight,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Right,
-    FF_UNICODE_Right,
-    FF_UNICODE_Right,
-    FF_UNICODE_Right
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERRIGHT,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT
 };
 
 static const int posesC46[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_CenteredOutside
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_CENTEREDOUTSIDE
 };
 
 static const int posesC4A[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE
 };
 
 static const int posesC55[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Below
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW
 };
 
 static const int posesC82[] = {
-    FF_UNICODE_Right,
-    FF_UNICODE_Right
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT
 };
 
 static const int posesCBE[] = {
-    FF_UNICODE_Right,
-    FF_UNICODE_Above,
-    FF_UNICODE_Outside|FF_UNICODE_Above|FF_UNICODE_Right,
-    FF_UNICODE_Right,
-    FF_UNICODE_Right,
-    FF_UNICODE_Right,
-    FF_UNICODE_Right
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_OUTSIDE|FF_UNICODE_ABOVE|FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT
 };
 
 static const int posesCC6[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Outside|FF_UNICODE_Above|FF_UNICODE_Right,
-    FF_UNICODE_Outside|FF_UNICODE_Above|FF_UNICODE_Right
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_OUTSIDE|FF_UNICODE_ABOVE|FF_UNICODE_RIGHT,
+    FF_UNICODE_OUTSIDE|FF_UNICODE_ABOVE|FF_UNICODE_RIGHT
 };
 
 static const int posesCCA[] = {
-    FF_UNICODE_Outside|FF_UNICODE_Above|FF_UNICODE_Right,
-    FF_UNICODE_Outside|FF_UNICODE_Above|FF_UNICODE_Right,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above
+    FF_UNICODE_OUTSIDE|FF_UNICODE_ABOVE|FF_UNICODE_RIGHT,
+    FF_UNICODE_OUTSIDE|FF_UNICODE_ABOVE|FF_UNICODE_RIGHT,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE
 };
 
 static const int posesCD5[] = {
-    FF_UNICODE_Right,
-    FF_UNICODE_Right
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT
 };
 
 static const int posesD02[] = {
-    FF_UNICODE_Right,
-    FF_UNICODE_Right
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT
 };
 
 static const int posesD3E[] = {
-    FF_UNICODE_Right,
-    FF_UNICODE_Right,
-    FF_UNICODE_Right,
-    FF_UNICODE_Below|FF_UNICODE_Right,
-    FF_UNICODE_Below|FF_UNICODE_Right,
-    FF_UNICODE_Below
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_BELOW|FF_UNICODE_RIGHT,
+    FF_UNICODE_BELOW|FF_UNICODE_RIGHT,
+    FF_UNICODE_BELOW
 };
 
 static const int posesD46[] = {
-    FF_UNICODE_Left,
-    FF_UNICODE_Left,
-    FF_UNICODE_Left
+    FF_UNICODE_LEFT,
+    FF_UNICODE_LEFT,
+    FF_UNICODE_LEFT
 };
 
 static const int posesD4A[] = {
-    FF_UNICODE_Outside|FF_UNICODE_Left|FF_UNICODE_Right,
-    FF_UNICODE_Outside|FF_UNICODE_Left|FF_UNICODE_Right,
-    FF_UNICODE_Outside|FF_UNICODE_Left|FF_UNICODE_Right,
-    FF_UNICODE_Above|FF_UNICODE_Right
+    FF_UNICODE_OUTSIDE|FF_UNICODE_LEFT|FF_UNICODE_RIGHT,
+    FF_UNICODE_OUTSIDE|FF_UNICODE_LEFT|FF_UNICODE_RIGHT,
+    FF_UNICODE_OUTSIDE|FF_UNICODE_LEFT|FF_UNICODE_RIGHT,
+    FF_UNICODE_ABOVE|FF_UNICODE_RIGHT
 };
 
 static const int posesD57[] = {
-    FF_UNICODE_Right
+    FF_UNICODE_RIGHT
 };
 
 static const int posesD82[] = {
-    FF_UNICODE_Right,
-    FF_UNICODE_Right
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT
 };
 
 static const int posesDCA[] = {
-    FF_UNICODE_Right
+    FF_UNICODE_RIGHT
 };
 
 static const int posesDCF[] = {
-    FF_UNICODE_Right,
-    FF_UNICODE_Right,
-    FF_UNICODE_Right,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Below
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW
 };
 
 static const int posesDD6[] = {
-    FF_UNICODE_Below
+    FF_UNICODE_BELOW
 };
 
 static const int posesDD8[] = {
-    FF_UNICODE_Right,
-    FF_UNICODE_Left,
-    FF_UNICODE_CenteredOutside,
-    FF_UNICODE_Left,
-    FF_UNICODE_CenteredOutside,
-    FF_UNICODE_CenteredOutside,
-    FF_UNICODE_CenteredOutside,
-    FF_UNICODE_Right
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_LEFT,
+    FF_UNICODE_CENTEREDOUTSIDE,
+    FF_UNICODE_LEFT,
+    FF_UNICODE_CENTEREDOUTSIDE,
+    FF_UNICODE_CENTEREDOUTSIDE,
+    FF_UNICODE_CENTEREDOUTSIDE,
+    FF_UNICODE_RIGHT
 };
 
 static const int posesDF2[] = {
-    FF_UNICODE_Right,
-    FF_UNICODE_Right
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT
 };
 
 static const int posesE31[] = {
-    FF_UNICODE_Above
+    FF_UNICODE_ABOVE
 };
 
 static const int posesE34[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Below|FF_UNICODE_Right,
-    FF_UNICODE_Below|FF_UNICODE_CenterRight,
-    FF_UNICODE_Below|FF_UNICODE_Right
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW|FF_UNICODE_RIGHT,
+    FF_UNICODE_BELOW|FF_UNICODE_CENTERRIGHT,
+    FF_UNICODE_BELOW|FF_UNICODE_RIGHT
 };
 
 static const int posesE47[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Above|FF_UNICODE_Right,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above|FF_UNICODE_CenterRight,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above|FF_UNICODE_Right,
-    FF_UNICODE_Above|FF_UNICODE_Right,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE|FF_UNICODE_RIGHT,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERRIGHT,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE|FF_UNICODE_RIGHT,
+    FF_UNICODE_ABOVE|FF_UNICODE_RIGHT,
 };
 
 static const int posesEB1[] = {
-    FF_UNICODE_Above
+    FF_UNICODE_ABOVE
 };
 
 static const int posesEB4[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW
 };
 
 static const int posesEBB[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Below
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW
 };
 
 static const int posesEC8[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE
 };
 
 static const int posesF18[] = {
-    FF_UNICODE_Below|FF_UNICODE_Right
+    FF_UNICODE_BELOW|FF_UNICODE_RIGHT
 };
 
 static const int posesF35[] = {
-    FF_UNICODE_Below
+    FF_UNICODE_BELOW
 };
 
 static const int posesF37[] = {
-    FF_UNICODE_Below
+    FF_UNICODE_BELOW
 };
 
 static const int posesF39[] = {
-    FF_UNICODE_Above|FF_UNICODE_Right|FF_UNICODE_Touching
+    FF_UNICODE_ABOVE|FF_UNICODE_RIGHT|FF_UNICODE_TOUCHING
 };
 
 static const int posesF3E[] = {
-    FF_UNICODE_Below|FF_UNICODE_Right,
-    FF_UNICODE_Below|FF_UNICODE_Left
+    FF_UNICODE_BELOW|FF_UNICODE_RIGHT,
+    FF_UNICODE_BELOW|FF_UNICODE_LEFT
 };
 
 static const int posesF71[] = {
-    FF_UNICODE_Below,
-    FF_UNICODE_Above,
-    FF_UNICODE_Outside|FF_UNICODE_Above|FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Outside|FF_UNICODE_Above|FF_UNICODE_Below,
-    FF_UNICODE_Outside|FF_UNICODE_Above|FF_UNICODE_Below,
-    FF_UNICODE_Outside|FF_UNICODE_Above|FF_UNICODE_Below,
-    FF_UNICODE_Outside|FF_UNICODE_Above|FF_UNICODE_Below,
-    FF_UNICODE_Above|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Above|FF_UNICODE_CenterLeft,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Right,
-    FF_UNICODE_Above,		/* 0f80 */
-    FF_UNICODE_Outside|FF_UNICODE_Above|FF_UNICODE_Below,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Below|FF_UNICODE_Left
+    FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_OUTSIDE|FF_UNICODE_ABOVE|FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_OUTSIDE|FF_UNICODE_ABOVE|FF_UNICODE_BELOW,
+    FF_UNICODE_OUTSIDE|FF_UNICODE_ABOVE|FF_UNICODE_BELOW,
+    FF_UNICODE_OUTSIDE|FF_UNICODE_ABOVE|FF_UNICODE_BELOW,
+    FF_UNICODE_OUTSIDE|FF_UNICODE_ABOVE|FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERLEFT,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_ABOVE,		/* 0f80 */
+    FF_UNICODE_OUTSIDE|FF_UNICODE_ABOVE|FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW|FF_UNICODE_LEFT
 };
 
 static const int posesF86[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE
 };
 
 static const int posesF90[] = {
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW
 };
 
 static const int posesF99[] = {
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW
 };
 
 static const int posesFC6[] = {
-    FF_UNICODE_Below
+    FF_UNICODE_BELOW
 };
 
 static const int poses102C[] = {
-    FF_UNICODE_Right,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,                            /* 1030 */
-    FF_UNICODE_Left,
-    FF_UNICODE_Above
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,                            /* 1030 */
+    FF_UNICODE_LEFT,
+    FF_UNICODE_ABOVE
 };
 
 static const int poses1036[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Below,
-    FF_UNICODE_Right,
-    FF_UNICODE_Above
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_ABOVE
 };
 
 static const int poses1056[] = {
-    FF_UNICODE_Right,
-    FF_UNICODE_Right,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW
 };
 
 static const int poses17B4[] = {
-    FF_UNICODE_Overstrike,
-    FF_UNICODE_Overstrike,
-    FF_UNICODE_Right,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Below,
-    FF_UNICODE_Outside|FF_UNICODE_Left|FF_UNICODE_Above,
-    FF_UNICODE_CenteredOutside,
-    FF_UNICODE_CenteredOutside,                  /* 17c0 */
-    FF_UNICODE_Left,
-    FF_UNICODE_Left,
-    FF_UNICODE_Left,
-    FF_UNICODE_CenteredOutside,
-    FF_UNICODE_CenteredOutside,
-    FF_UNICODE_Above,
-    FF_UNICODE_Right,
-    FF_UNICODE_Right,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above|FF_UNICODE_CenterRight,
-    FF_UNICODE_Above|FF_UNICODE_CenterRight,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above|FF_UNICODE_CenterRight,     /* 17d0 */
-    FF_UNICODE_Above,
-    FF_UNICODE_Below,
-    FF_UNICODE_Above
+    FF_UNICODE_OVERSTRIKE,
+    FF_UNICODE_OVERSTRIKE,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_OUTSIDE|FF_UNICODE_LEFT|FF_UNICODE_ABOVE,
+    FF_UNICODE_CENTEREDOUTSIDE,
+    FF_UNICODE_CENTEREDOUTSIDE,                  /* 17c0 */
+    FF_UNICODE_LEFT,
+    FF_UNICODE_LEFT,
+    FF_UNICODE_LEFT,
+    FF_UNICODE_CENTEREDOUTSIDE,
+    FF_UNICODE_CENTEREDOUTSIDE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERRIGHT,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERRIGHT,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE|FF_UNICODE_CENTERRIGHT,     /* 17d0 */
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_BELOW,
+    FF_UNICODE_ABOVE
 };
 
 static const int poses18A9[] = {
-    FF_UNICODE_Above|FF_UNICODE_Left
+    FF_UNICODE_ABOVE|FF_UNICODE_LEFT
 };
 
 /* These aren't listed as combiners, but if we don't use them as such greek fonts don't work */
 static const int poses1FBD[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Right,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_RIGHT,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE
 };
 
 /* These aren't listed as combiners, but if we don't use them as such greek fonts don't work */
 static const int poses1FCD[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE
 };
 
 /* These aren't listed as combiners, but if we don't use them as such greek fonts don't work */
 static const int poses1FDD[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE
 };
 
 /* These aren't listed as combiners, but if we don't use them as such greek fonts don't work */
 static const int poses1FED[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE
 };
 
 /* These aren't listed as combiners, but if we don't use them as such greek fonts don't work */
 static const int poses1FFD[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Above
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE
 };
 
 static const int poses20D0[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Overstrike,
-    FF_UNICODE_Overstrike,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Overstrike,
-    FF_UNICODE_Overstrike,
-    FF_UNICODE_Overstrike,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_CenteredOutside,
-    FF_UNICODE_CenteredOutside,
-    FF_UNICODE_CenteredOutside,
-    FF_UNICODE_Overstrike,
-    FF_UNICODE_Above,
-    FF_UNICODE_CenteredOutside,
-    FF_UNICODE_CenteredOutside
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_OVERSTRIKE,
+    FF_UNICODE_OVERSTRIKE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_OVERSTRIKE,
+    FF_UNICODE_OVERSTRIKE,
+    FF_UNICODE_OVERSTRIKE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_CENTEREDOUTSIDE,
+    FF_UNICODE_CENTEREDOUTSIDE,
+    FF_UNICODE_CENTEREDOUTSIDE,
+    FF_UNICODE_OVERSTRIKE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_CENTEREDOUTSIDE,
+    FF_UNICODE_CENTEREDOUTSIDE
 };
 
 static const int poses302A[] = {
-    FF_UNICODE_Below|FF_UNICODE_Left,
-    FF_UNICODE_Above|FF_UNICODE_Left,
-    FF_UNICODE_Above|FF_UNICODE_Right,
-    FF_UNICODE_Below|FF_UNICODE_Right,
-    FF_UNICODE_Left,
-    FF_UNICODE_Left
+    FF_UNICODE_BELOW|FF_UNICODE_LEFT,
+    FF_UNICODE_ABOVE|FF_UNICODE_LEFT,
+    FF_UNICODE_ABOVE|FF_UNICODE_RIGHT,
+    FF_UNICODE_BELOW|FF_UNICODE_RIGHT,
+    FF_UNICODE_LEFT,
+    FF_UNICODE_LEFT
 };
 
 static const int poses3099[] = {
-    FF_UNICODE_Above|FF_UNICODE_Right,
-    FF_UNICODE_Above|FF_UNICODE_Right,
+    FF_UNICODE_ABOVE|FF_UNICODE_RIGHT,
+    FF_UNICODE_ABOVE|FF_UNICODE_RIGHT,
 };
 
 static const int posesFB1E[] = {
-    FF_UNICODE_Above
+    FF_UNICODE_ABOVE
 };
 
 static const int posesFE20[] = {
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above,
-    FF_UNICODE_Above
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE,
+    FF_UNICODE_ABOVE
 };
 
 const static struct {
