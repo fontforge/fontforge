@@ -31,7 +31,8 @@ cp -r $workdir/share/fontforge/osx/FontForge.app $outdir
 cp -r $workdir/bin $outdir/Contents/Resources/opt/local/
 cp -r $workdir/share $outdir/Contents/Resources/opt/local/
 rm -r $outdir/Contents/Resources/opt/local/share/fontforge/osx
-cp -r $workdir/libexec $outdir/Contents/Resources/opt/local/
+# This may not work if collab isn't built
+cp -r $workdir/libexec $outdir/Contents/Resources/opt/local/ || true
 mkdir $outdir/Contents/Resources/opt/local/lib
 cp -r $workdir/lib/python2.7 $outdir/Contents/Resources/opt/local/lib/python2.7
 
