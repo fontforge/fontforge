@@ -59,6 +59,7 @@ libgunicode_la_SOURCES =	\
 	ArabicForms.c		\
 	char.c			\
 	is_Ligature.c		\
+	is_Ligature_data.h	\
 	memory.c		\
 	ucharmap.c		\
 	unialt.c		\

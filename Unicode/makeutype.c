@@ -42,9 +42,8 @@
  * Run "gcc -s -I../inc -o makeutype makeutype.c"
  *
  * Then run the executable binary "/makeutype".
- * This will create 5 files in the same directory:
- *	ArabicForms.c, is_Ligatures.c, unialt.c, utype.c, utype.h
- * (please move utype.h into Fontforge's "../inc" subdirectory)
+ * This will create 4 files in the same directory:
+ *	ArabicForms.c, is_Ligatures_data.h, unialt.c, utype.c
  *
  * When done building the updated files, you can clean-up by removing
  * LineBreak.txt, NamesList.txt, PropList.txt,UnicodeData.txt, and the
@@ -61,74 +60,21 @@
 #include <string.h>
 #include <basics.h>
 
-/*#define MAXC		0x600		/* Last upper/lower case dicodomy is Armenian 0x580, er, nope. 1fff (greek and latin extended) then full-width 0xff00 */
-#define MAXC	65536
+#include <utype.h>
+
 #define MAXA	18
-
-/* These values get stored within flags[unicodechar={0..MAXC}] */
-#define _LOWER		1
-#define _UPPER		2
-#define _TITLE		4
-#define _DIGIT		8
-#define _SPACE		0x10
-#define _PUNCT		0x20
-#define _HEX		0x40
-#define _ZEROWIDTH	0x80
-
-#define _LEFT_2_RIGHT	0x100
-#define _RIGHT_2_LEFT	0x200
-#define _ENUMERIC	0x400
-#define _ANUMERIC	0x800
-#define _ENS		0x1000
-#define _CS		0x2000
-#define _ENT		0x4000
-#define _COMBINING	0x8000
-
-#define _BREAKBEFOREOK	0x10000
-#define _BREAKAFTEROK	0x20000
-#define _NONSTART	0x40000		/* small kana, close punct, can't start a line */
-#define _NONEND		0x80000		/* open punct, can't end a line */
-/*#define _MUSTBREAK	0x100000	/* newlines, paragraphs, etc. */
-#define	_URLBREAKAFTER	0x100000	/* break after slash not followed by digits (ie. in URLs not fractions or dates) */
-
-#define _ALPHABETIC	0x200000
-#define _IDEOGRAPHIC	0x400000
-
-#define _INITIAL	0x800000
-#define _MEDIAL		0x1000000
-#define _FINAL		0x2000000
-#define _ISOLATED	0x4000000
-
-#define _NOBREAK	0x8000000
-#define _DecompositionNormative	0x10000000
-#define _LIG_OR_FRAC	0x20000000
-
-#define _CombiningClass		0xff
-#define _Above			0x100
-#define _Below			0x200
-#define _Overstrike		0x400
-#define _Left			0x800
-#define _Right			0x1000
-#define _Joins2			0x2000
-#define _CenterLeft		0x4000
-#define _CenterRight		0x8000
-#define _CenteredOutside	0x10000
-#define _Outside		0x20000
-#define _RightEdge		0x40000
-#define _LeftEdge		0x80000
-#define _Touching		0x100000
 
 #include "combiners.h"
 
-char *names[MAXC];
-unsigned short mytolower[MAXC];
-unsigned short mytoupper[MAXC];
-unsigned short mytotitle[MAXC];
-unsigned char mynumericvalue[MAXC];
-unsigned short mymirror[MAXC];
-unsigned long flags[MAXC];			/* 32 binary flags for each unicode.org character */
-unsigned long flags2[MAXC];
-unichar_t alts[MAXC][MAXA+1];
+char *names[FF_UNICODE_COMPACT_TABLE_SIZE_MAX];
+unsigned short mytolower[FF_UNICODE_COMPACT_TABLE_SIZE_MAX];
+unsigned short mytoupper[FF_UNICODE_COMPACT_TABLE_SIZE_MAX];
+unsigned short mytotitle[FF_UNICODE_COMPACT_TABLE_SIZE_MAX];
+unsigned char mynumericvalue[FF_UNICODE_COMPACT_TABLE_SIZE_MAX];
+unsigned short mymirror[FF_UNICODE_COMPACT_TABLE_SIZE_MAX];
+unsigned long flags[FF_UNICODE_COMPACT_TABLE_SIZE_MAX];			/* 32 binary flags for each unicode.org character */
+unsigned long flags2[FF_UNICODE_COMPACT_TABLE_SIZE_MAX];
+unichar_t alts[FF_UNICODE_COMPACT_TABLE_SIZE_MAX][MAXA+1];
 unsigned long assignedcodepoints[0x120000/32];	/* 32 characters represented per each long value */
 
 int frm, lgm, vfm;				/* identify all ligatures and fractions */
@@ -148,7 +94,7 @@ const char LgFrcTooMany[] = "Error. Too many %s, stopped at %s[%d]=U+%X\n"; /* e
 
 static void FreeNamesMemorySpace() {
     long index;
-    for ( index=0; index<MAXC ; ++index )
+    for ( index=0; index<FF_UNICODE_COMPACT_TABLE_SIZE_MAX ; ++index )
 	free( names[index] );
 }
 
@@ -181,7 +127,7 @@ static void FigureAlternates(long index, char *apt, int normative) {
     if ( i>MAXA )
 	fprintf( stderr, "%d is too many alternates for U+%04X\n", i, index );
     if ( i>0 && normative)
-	flags[index] |= _DecompositionNormative;
+	flags[index] |= FF_UNICODE_DecompositionNormative;
 
     /* arabic isolated forms are alternates for the standard forms */
     if ( isisolated && alts[index][0]>=0x600 && alts[index][0]<0x6ff && alts[index][1]==0 &&
@@ -209,8 +155,8 @@ static int processAssignment(long index,char *pt,long *flg) {
 		return( 5 );
 	    }
 	    ligature[lgm] = index;
-	    if ( index < MAXC ) {
-		*flg |= _LIG_OR_FRAC;
+	    if ( index < FF_UNICODE_COMPACT_TABLE_SIZE_MAX ) {
+		*flg |= FF_UNICODE_LIG_OR_FRAC;
 	    }
 	    lgm++;
 	} else if ( strstr(pt,"VULGAR" /* FRACTION */) ) {
@@ -221,8 +167,8 @@ static int processAssignment(long index,char *pt,long *flg) {
 		return( 5 );
 	    }
 	    vulgfrac[vfm] = index;
-	    if ( index < MAXC ) {
-		*flg |= _LIG_OR_FRAC;
+	    if ( index < FF_UNICODE_COMPACT_TABLE_SIZE_MAX ) {
+		*flg |= FF_UNICODE_LIG_OR_FRAC;
 	    }
 	    vfm++;
 	} else if ( strstr(pt,"FRACTION") ) {
@@ -234,8 +180,8 @@ static int processAssignment(long index,char *pt,long *flg) {
 		return( 5 );
 	    }
 	    fraction[frm] = index;
-	    if ( index < MAXC ) {
-		*flg |= _LIG_OR_FRAC;
+	    if ( index < FF_UNICODE_COMPACT_TABLE_SIZE_MAX ) {
+		*flg |= FF_UNICODE_LIG_OR_FRAC;
 	    }
 	    frm++;
 	}
@@ -287,7 +233,7 @@ static void readin(void) {
 	    FreeNamesMemorySpace();
 	    exit(5);
 	}
-	if ( index>=MAXC )		/* For now can only deal with BMP !!!! */
+	if ( index>=FF_UNICODE_COMPACT_TABLE_SIZE_MAX )		/* For now can only deal with BMP !!!! */
     continue;
 	pt = end;
 	if ( *pt==';' ) {
@@ -299,15 +245,15 @@ static void readin(void) {
 	    /* general category */
 	    for ( pt1=pt; *pt1!=';' && *pt1!='\0'; ++pt1 );
 	    if ( strncmp(pt,"Lu",pt1-pt)==0 )
-		flg |= _UPPER|_ALPHABETIC;
+		flg |= FF_UNICODE_UPPER|FF_UNICODE_ALPHABETIC;
 	    else if ( strncmp(pt,"Ll",pt1-pt)==0 )
-		flg |= _LOWER|_ALPHABETIC;
+		flg |= FF_UNICODE_LOWER|FF_UNICODE_ALPHABETIC;
 	    else if ( strncmp(pt,"Lt",pt1-pt)==0 )
-		flg |= _TITLE|_ALPHABETIC;
+		flg |= FF_UNICODE_TITLE|FF_UNICODE_ALPHABETIC;
 	    else if ( strncmp(pt,"Lo",pt1-pt)==0 )
-		flg |= _ALPHABETIC;
+		flg |= FF_UNICODE_ALPHABETIC;
 	    else if ( strncmp(pt,"Nd",pt1-pt)==0 )
-		flg |= _DIGIT;
+		flg |= FF_UNICODE_DIGIT;
 	    pt = pt1;
 	    if ( *pt==';' ) ++pt;
 	    /* Unicode combining classes, I do my own version later */
@@ -317,30 +263,30 @@ static void readin(void) {
 	    /* Bidirectional Category */
 	    for ( pt1=pt; *pt1!=';' && *pt1!='\0'; ++pt1 );
 	    if ( strncmp(pt,"L",pt1-pt)==0 || strncmp(pt,"LRE",pt1-pt)==0 || strncmp(pt,"LRO",pt1-pt)==0 )
-		flg |= _LEFT_2_RIGHT;
+		flg |= FF_UNICODE_LEFT_2_RIGHT;
 	    if ( strncmp(pt,"R",pt1-pt)==0 || strncmp(pt,"AL",pt1-pt)==0 || strncmp(pt,"RLE",pt1-pt)==0 || strncmp(pt,"RLO",pt1-pt)==0 )
-		flg |= _RIGHT_2_LEFT;
+		flg |= FF_UNICODE_RIGHT_2_LEFT;
 	    else if ( strncmp(pt,"EN",pt1-pt)==0 )
-		flg |= _ENUMERIC;
+		flg |= FF_UNICODE_ENUMERIC;
 	    else if ( strncmp(pt,"ES",pt1-pt)==0 )
-		flg |= _ENS;
+		flg |= FF_UNICODE_ENS;
 	    else if ( strncmp(pt,"ET",pt1-pt)==0 )
-		flg |= _ENT;
+		flg |= FF_UNICODE_ENT;
 	    else if ( strncmp(pt,"AN",pt1-pt)==0 )
-		flg |= _ANUMERIC;
+		flg |= FF_UNICODE_ANUMERIC;
 	    else if ( strncmp(pt,"CS",pt1-pt)==0 )
-		flg |= _CS;
+		flg |= FF_UNICODE_CS;
 	    pt = pt1;
 	    if ( *pt==';' ) ++pt;
 	    /* character decomposition */
 	    if ( strncmp(pt,"<initial>",strlen("<initial>"))==0 )
-		flg |= _INITIAL;
+		flg |= FF_UNICODE_INITIAL;
 	    else if ( strncmp(pt,"<final>",strlen("<final>"))==0 )
-		flg |= _FINAL;
+		flg |= FF_UNICODE_FINAL;
 	    else if ( strncmp(pt,"<medial>",strlen("<medial>"))==0 )
-		flg |= _MEDIAL;
+		flg |= FF_UNICODE_MEDIAL;
 	    else if ( strncmp(pt,"<isolated>",strlen("<isolated>"))==0 )
-		flg |= _ISOLATED;
+		flg |= FF_UNICODE_ISOLATED;
 	    FigureAlternates(index,pt, true);
 	    while ( *pt!=';' && *pt!='\0' ) ++pt;
 	    if ( *pt==';' ) ++pt;
@@ -384,7 +330,7 @@ static void readin(void) {
 		tc = index;
 	    pt = end;
 	    if ( *pt==';' ) ++pt;
-	    if ( index>=MAXC )
+	    if ( index>=FF_UNICODE_COMPACT_TABLE_SIZE_MAX )
     break;
 	    mytolower[index]= lc;
 	    mytoupper[index]= uc;
@@ -443,25 +389,25 @@ static void readin(void) {
 	    ++pt;
 	    for ( pt1=pt; *pt1!=';' && *pt1!=' ' && *pt1!='\0'; ++pt1 );
 	    if ( strncmp(pt,"BK",pt1-pt)==0 || strncmp(pt,"CR",pt1-pt)==0 || strncmp(pt,"LF",pt1-pt)==0 )
-		/*flg |= _MUSTBREAK*/;
+		/*flg |= FF_UNICODE_MUSTBREAK*/;
 	    else if ( strncmp(pt,"NS",pt1-pt)==0 || strncmp(pt,"CL",pt1-pt)==0 )
-		flg |= _NONSTART;
+		flg |= FF_UNICODE_NONSTART;
 	    else if ( strncmp(pt,"OP",pt1-pt)==0 || strncmp(pt,"CM",pt1-pt)==0 )
-		flg |= _NONEND;
+		flg |= FF_UNICODE_NONEND;
 	    else if ( strncmp(pt,"GL",pt1-pt)==0 )
-		flg |= _NONEND|_NONSTART;
+		flg |= FF_UNICODE_NONEND|FF_UNICODE_NONSTART;
 	    else if ( strncmp(pt,"SP",pt1-pt)==0 || strncmp(pt,"HY",pt1-pt)==0 ||
 		    strncmp(pt,"BA",pt1-pt)==0 ||
 		    strncmp(pt,"ZW",pt1-pt)==0 )
-		flg |= _BREAKAFTEROK;
+		flg |= FF_UNICODE_BREAKAFTEROK;
 	    else if ( strncmp(pt,"BB",pt1-pt)==0 )
-		flg |= _BREAKBEFOREOK;
+		flg |= FF_UNICODE_BREAKBEFOREOK;
 	    else if ( strncmp(pt,"B2",pt1-pt)==0 )
-		flg |= _BREAKBEFOREOK|_BREAKAFTEROK;
+		flg |= FF_UNICODE_BREAKBEFOREOK|FF_UNICODE_BREAKAFTEROK;
 	    else if ( strncmp(pt,"ID",pt1-pt)==0 )
-		flg |= _BREAKBEFOREOK|_BREAKAFTEROK;
+		flg |= FF_UNICODE_BREAKBEFOREOK|FF_UNICODE_BREAKAFTEROK;
 	    else if ( strncmp(pt,"SY",pt1-pt)==0 )
-		flg |= _URLBREAKAFTER;
+		flg |= FF_UNICODE_URLBREAKAFTER;
 	    pt = pt1;
 	    for ( ; index<=indexend; ++index )
 		flags[index] |= flg;
@@ -484,21 +430,21 @@ static void readin(void) {
 	}
 	if ( true || strncmp(buffer,"Property dump for:", strlen("Property dump for:"))==0 ) {
 	    if ( strstr(buffer, "(Zero-width)")!=NULL || strstr(buffer, "ZERO WIDTH")!=NULL )
-		flg = _ZEROWIDTH;
+		flg = FF_UNICODE_ZEROWIDTH;
 	    else if ( strstr(buffer, "(White space)")!=NULL || strstr(buffer, "White_Space")!=NULL )
-		flg = _SPACE;
+		flg = FF_UNICODE_SPACE;
 	    else if ( strstr(buffer, "(Punctuation)")!=NULL || strstr(buffer, "Punctuation")!=NULL )
-		flg = _PUNCT;
+		flg = FF_UNICODE_PUNCT;
 	    else if ( strstr(buffer, "(Alphabetic)")!=NULL || strstr(buffer, "Alphabetic")!=NULL )
-		flg = _ALPHABETIC;
+		flg = FF_UNICODE_ALPHABETIC;
 	    else if ( strstr(buffer, "(Ideographic)")!=NULL || strstr(buffer, "Ideographic")!=NULL )
-		flg = _IDEOGRAPHIC;
+		flg = FF_UNICODE_IDEOGRAPHIC;
 	    else if ( strstr(buffer, "(Hex Digit)")!=NULL || strstr(buffer, "Hex_Digit")!=NULL )
-		flg = _HEX;
+		flg = FF_UNICODE_HEX;
 	    else if ( strstr(buffer, "(Combining)")!=NULL || strstr(buffer, "COMBINING")!=NULL )
-		flg = _COMBINING;
+		flg = FF_UNICODE_COMBINING;
 	    else if ( strstr(buffer, "(Non-break)")!=NULL )
-		flg = _NOBREAK;
+		flg = FF_UNICODE_NOBREAK;
 	    if ( flg!=0 ) {
 		if (( buffer[0]>='0' && buffer[0]<='9') || (buffer[0]>='A' && buffer[0]<='F')) {
 		    index = wasfirst = strtol(buffer,NULL,16);
@@ -512,16 +458,16 @@ static void readin(void) {
     }
     fclose(fp);
     /* There used to be a zero width property, but no longer */
-    flags[0x200B] |= _ZEROWIDTH;
-    flags[0x200C] |= _ZEROWIDTH;
-    flags[0x200D] |= _ZEROWIDTH;
-    flags[0x2060] |= _ZEROWIDTH;
-    flags[0xFEFF] |= _ZEROWIDTH;
+    flags[0x200B] |= FF_UNICODE_ZEROWIDTH;
+    flags[0x200C] |= FF_UNICODE_ZEROWIDTH;
+    flags[0x200D] |= FF_UNICODE_ZEROWIDTH;
+    flags[0x2060] |= FF_UNICODE_ZEROWIDTH;
+    flags[0xFEFF] |= FF_UNICODE_ZEROWIDTH;
     /* There used to be a No Break property, but no longer */
-    flags[0x00A0] |= _NOBREAK;
-    flags[0x2011] |= _NOBREAK;
-    flags[0x202F] |= _NOBREAK;
-    flags[0xFEFF] |= _NOBREAK;
+    flags[0x00A0] |= FF_UNICODE_NOBREAK;
+    flags[0x2011] |= FF_UNICODE_NOBREAK;
+    flags[0x202F] |= FF_UNICODE_NOBREAK;
+    flags[0xFEFF] |= FF_UNICODE_NOBREAK;
 
     if ((fp = fopen("NamesList.txt","r"))==NULL ) {
 	fprintf( stderr, CantReadFile, "NamesList.txt" );
@@ -538,11 +484,11 @@ static void readin(void) {
 	}
 	if ( (index = strtol(buffer,NULL,16))!=0 ) {
 	    if ( strstr(buffer, "COMBINING")!=NULL )
-		flg = _COMBINING;
+		flg = FF_UNICODE_COMBINING;
 	    else if ( strstr(buffer, "N0-BREAK")!=NULL )
-		flg = _NOBREAK;
+		flg = FF_UNICODE_NOBREAK;
 	    else if ( strstr(buffer, "ZERO WIDTH")!=NULL )
-		flg = _ZEROWIDTH;
+		flg = FF_UNICODE_ZEROWIDTH;
 
 	    if ( index<0xffff )		/* !!!!! BMP */
 		flags[wasfirst] |= flg;
@@ -588,7 +534,7 @@ return;
 	    if ( *pt==';' ) ++pt;
 	    /* character decomposition */
 	    FigureAlternates(index,pt, false);
-	    if ( index>=MAXC )
+	    if ( index>=FF_UNICODE_COMPACT_TABLE_SIZE_MAX )
     break;
 	    if ((names[index]= malloc(strlen(buf2)+strlen(prefix)+4)) == NULL) {
 		fprintf( stderr, NoMoreMemory );
@@ -610,14 +556,14 @@ static int find(char *base, char *suffix) {
     strcpy(name,base);
     strcat(name,suffix);
 
-    for ( i=0; i<MAXC; ++i )
+    for ( i=0; i<FF_UNICODE_COMPACT_TABLE_SIZE_MAX; ++i )
 	if ( names[i]!=NULL && strcmp(names[i],name)==0 )
 return( i );
 
 return( -1 );
 }
 
-static void dumparabicdata(FILE *header) {
+static void dumparabicdata(void) {
     FILE *data;
     struct arabicforms {
 	unsigned short initial, medial, final, isolated;
@@ -651,13 +597,6 @@ static void dumparabicdata(FILE *header) {
 	}
     }
     forms[0x44/* 0x644 == LAM */].required_lig_with_alef = 1;
-
-    fprintf(header,"\nextern struct arabicforms {\n" );
-    fprintf(header,"    unsigned short initial, medial, final, isolated;\n" );
-    fprintf(header,"    unsigned int isletter: 1;\n" );
-    fprintf(header,"    unsigned int joindual: 1;\n" );
-    fprintf(header,"    unsigned int required_lig_with_alef: 1;\n" );
-    fprintf(header,"} ArabicForms[256];\t/* for chars 0x600-0x6ff, subtract 0x600 to use array */\n" );
 
     data = fopen( "ArabicForms.c","w");
     if (data==NULL) {
@@ -696,7 +635,7 @@ static void buildtables(FILE *data,long unsigned int *dt,int s,int m,char *t) {
 /* range of 't'16{0...s} and then as uint32 for the range 't'32{(s+1)...m}. */
     int i,j;
 
-    fprintf( data, "const uint16 %s16[] = {\n", t );
+    fprintf( data, "static const uint16 %s16[] = {\n", t );
     for ( i=j=0; i<s; i=i+j ) {
 	fprintf( data, "  0x%04x", dt[i] );
 	for ( j=1; j<8 && i+j<s; ++j ) {
@@ -707,360 +646,77 @@ static void buildtables(FILE *data,long unsigned int *dt,int s,int m,char *t) {
 	else
 	    fprintf(data, ",\n" );
     }
-    if ( s<m ) {
-	fprintf( data, "const uint32 %s32[] = {\n", t );
+
+	fprintf(data, "static const uint32 %s32[] = {\n", t);
 	for ( i=s; i<m; i=i+j ) {
-	    fprintf( data, "  0x%08x", dt[i] );
-	    for ( j=1; j<4 && i+j<m; ++j ) {
-		fprintf(data, ", 0x%08x", dt[i+j] );
-	    }
-	    if ( i+j>=m )
-		fprintf(data, "};\n\n" );
-	    else
-		fprintf(data, ",\n" );
+		fprintf(data, "  0x%08x", dt[i]);
+		for (j=1; j<4 && i+j<m; ++j) {
+			fprintf(data, ", 0x%08x", dt[i+j]);
+		}
+		if (i+j >= m)
+			fprintf(data, "\n");
+		else
+			fprintf(data, ",\n");
 	}
-    }
+	fprintf(data, "};\n\n");
 }
 
-static void dumpbsearch(FILE *data,int s) {
-/* Customize bsearch sizes to match data table sizes for uint16 and uint32. */
-    fprintf( data, "static int compare_codepoints%d(const void *uCode1, const void *uCode2) {\n", s );
-    fprintf( data, "    const uint%d *cp1 = (const uint%d *)(uCode1);\n", s, s );
-    fprintf( data, "    const uint%d *cp2 = (const uint%d *)(uCode2);\n", s, s );
-    fprintf( data, "    return( (*cp1 < *cp2) ? -1 : ((*cp1 == *cp2) ? 0 : 1) );\n}\n\n" );
-}
-
-static void dump_getU(FILE *data,long unsigned int *dt,int s,int m,char *t,char *nam) {
-/* This function is used 3x to generate customized ligature vulgar_fraction */
-/* and other_fraction function call returning the 'n'th table unicode value */
-/* where you call this function with:					    */
-/*	'm' is the maximum size of the table,				    */
-/*	's' is size of the lower partition of the table (fits in uint16).   */
-/*	't' is the first part of the data type name.			    */
-/*	'nam' is the function_call name base.				    */
-/* and the generated functions work-as:					    */
-/* Get the 'n'th unicode value in the table, where {0<=n<=(sizeof(table)-1} */
-/* Treat both (uint16, uint32) tables as if it is only one table. Error=-1. */
-    fprintf( data, "int32 %s_get_U(int n) {\n", nam );
-    fprintf( data, "    if ( n<0 || n>=%d )\n\treturn( -1 );\n    ", m );
-    if ( s<m )
-	fprintf( data, "if ( n<%d )\n\t", s );
-    fprintf( data, "return( (int32)(%s16[n]) );\n", t );
-    if ( s<m )
-    fprintf( data, "    else\n\treturn( (int32)(%s32[n-%d]) );\n", t, s );
-    fprintf( data, "}\n\n" );
-}
-
-static void dumpbsearchfindN(FILE *data,long unsigned int *dt,int s,int m,char *t) {
-/* Find 'n' for this unicode value. Treat both (uint16, uint32) tables as a */
-/* single table. 'n' will be within {0<=n<=(sizeof(table)-1}, and Error=-1. */
-    fprintf( data, "    uint16 uCode16, *p16;\n" );
-    if ( s<m )
-	fprintf( data, "    uint32 *p32;\n" );
-    fprintf( data, "    int n=-1;\n\n" );
-    fprintf( data, "    if ( uCode<0x%x || uCode>0x%x || ", dt[0], dt[m-1] );
-    if ( dt[m-1]<MAXC )
-	fprintf( data, "isligorfrac(uCode)==0 )\n" );
-    else
-	fprintf( data, "(uCode<%d && isligorfrac(uCode)==0) )\n", MAXC );
-    fprintf( data, "\treturn( -1 );\n    " );
-    if ( s<m )
-	fprintf( data, "if ( uCode<0x%x ) {\n\tuCode16 = uCode;\n\t", dt[s-1] );
-    else
-	fprintf( data, "uCode16 = uCode;\n    " );
-    fprintf( data, "p16 = (uint16 *)(bsearch(&uCode16, %s16, %d, \\\n", t, s );
-    fprintf( data, "\t\t\t\tsizeof(uint16), compare_codepoints16));\n" );
-    if ( s<m )
-	fprintf( data, "\t" );
-    else
-	fprintf( data, "    " );
-    fprintf( data, "if ( p16 ) n = p16 - %s16;\n", t );
-    if ( s<m ) {
-	fprintf( data, "    } else {\n" );
-	fprintf( data, "\tp32 = (uint32 *)(bsearch(&uCode, %s32, %d, \\\n", t, m-s );
-	fprintf( data, "\t\t\t\tsizeof(uint32), compare_codepoints32));\n" );
-	fprintf( data, "\tif ( p32 ) n = p32 - %s32 + %d;\n", t, s );
-	fprintf( data, "    }\n" );
-    }
-    fprintf( data, "    return( n );\n}\n\n" );
-}
-
-static void dumpligaturesfractions(FILE *header) {
+static void dumpligaturesfractions(void) {
     FILE *data;
     int i,j,l16,v16,f16;
 
-    fprintf( header, "\n\n/* Ligature/Vulgar_Fraction/Fraction unicode.org character lists & functions */\n\n" );
-
-    /* Return !0 if this unicode value is a Ligature or Fraction */
-    fprintf( header, "extern int LigatureCount(void);\t\t/* Unicode table Ligature count */\n" );
-    fprintf( header, "extern int VulgarFractionCount(void);\t/* Unicode table Vulgar Fraction count */\n" );
-    fprintf( header, "extern int OtherFractionCount(void);\t/* Unicode table Other Fractions count */\n" );
-    fprintf( header, "extern int FractionCount(void);\t\t/* Unicode table Fractions found */\n\n" );
-    fprintf( header, "extern int32 Ligature_get_U(int n);\t/* Get table[N] value, error==-1 */\n" );
-    fprintf( header, "extern int32 VulgFrac_get_U(int n);\t/* Get table[N] value, error==-1 */\n" );
-    fprintf( header, "extern int32 Fraction_get_U(int n);\t/* Get table[N] value, error==-1 */\n\n" );
-    fprintf( header, "extern int Ligature_find_N(uint32 u);\t/* Find N of Ligature[N], error==-1 */\n" );
-    fprintf( header, "extern int VulgFrac_find_N(uint32 u);\t/* Find N of VulgFrac[N], error==-1 */\n" );
-    fprintf( header, "extern int Fraction_find_N(uint32 u);\t/* Find N of Fraction[N], error==-1 */\n\n" );
-
-    fprintf( header, "/* Return !0 if codepoint is a Ligature */\n" );
-    fprintf( header, "extern int is_LIGATURE(uint32 codepoint);\n\n" );
-    fprintf( header, "/* Return !0 if codepoint is a Vulgar Fraction */\n" );
-    fprintf( header, "extern int is_VULGAR_FRACTION(uint32 codepoint);\n\n" );
-    fprintf( header, "/* Return !0 if codepoint is a non-vulgar Fraction */\n" );
-    fprintf( header, "extern int is_OTHER_FRACTION(uint32 codepoint);\n\n" );
-    fprintf( header, "/* Return !0 if codepoint is a Fraction */\n" );
-    fprintf( header, "extern int is_FRACTION(uint32 codepoint);\n\n" );
-    fprintf( header, "/* Return !0 if codepoint is a Ligature or Vulgar Fraction */\n" );
-    fprintf( header, "extern int is_LIGATURE_or_VULGAR_FRACTION(uint32 codepoint);\n\n" );
-    fprintf( header, "/* Return !0 if codepoint is a Ligature or non-Vulgar Fraction */\n" );
-    fprintf( header, "extern int is_LIGATURE_or_OTHER_FRACTION(uint32 codepoint);\n\n" );
-    fprintf( header, "/* Return !0 if codepoint is a Ligature or Fraction */\n" );
-    fprintf( header, "extern int is_LIGATURE_or_FRACTION(uint32 codepoint);\n\n" );
-
-    data = fopen( "is_Ligature.c","w");
+    data = fopen("is_Ligature_data.h","w");
     if (data==NULL) {
-	fprintf( stderr, CantSaveFile, "is_Ligature.c" );
+	fprintf(stderr, CantSaveFile, "is_Ligature_data.h");
 	FreeNamesMemorySpace();
 	exit(2);
     }
 
-    fprintf( data, "/*\nCopyright: 2012 Barry Schwartz\n" );
-    fprintf( data, "Copyright: 2016 Joe Da Silva\n" );
-    fprintf( data, "License: BSD-3-clause\n" );
-    fprintf( data, "Contributions:\n*/\n" );
-    fprintf( data, GeneratedFileMessage, UnicodeMajor, UnicodeMinor );
-    fprintf( data, "#include \"utype.h\"\n" );
-    fprintf( data, "#include <stdlib.h>\n\n" );
+    fprintf(data, "#ifndef FONTFORGE_UNICODE_IS_LIGATURE_DATA_H\n");
+    fprintf(data, "#define FONTFORGE_UNICODE_IS_LIGATURE_DATA_H\n");
+    fprintf(data, GeneratedFileMessage, UnicodeMajor, UnicodeMinor);
+    fprintf(data, "/* unicode.org codepoints for ligatures, vulgar fractions, other fractions */\n");
+    fprintf(data, "\n");
+
+    fprintf(data, "#include <basics.h> /* for non-standard uint{16,32} typedefs */\n");
+    fprintf(data, "\n");
 
     /* simple compression using uint16 instead of everything as uint32 */
     for ( l16=0; l16<lgm && ligature[l16]<=65535; ++l16 );
     for ( v16=0; v16<vfm && vulgfrac[v16]<=65535; ++v16 );
     for ( f16=0; f16<frm && fraction[f16]<=65535; ++f16 );
 
-    fprintf( data, "/* unicode.org codepoints for ligatures, vulgar fractions, other fractions */\n\n" );
-    buildtables(data,ligature,l16,lgm,"____ligature");
-    buildtables(data,vulgfrac,v16,vfm,"____vulgfrac");
-    buildtables(data,fraction,f16,frm,"____fraction");
+    buildtables(data,ligature,l16,lgm,"ligature");
+    buildtables(data,vulgfrac,v16,vfm,"vulgfrac");
+    buildtables(data,fraction,f16,frm,"fraction");
 
-    dumpbsearch(data,16); dumpbsearch(data,32);
-
-    fprintf( data, "int LigatureCount(void) {\n" );
-    fprintf( data, "    return( %d );\n}\n\n", lgm );
-    fprintf( data, "int VulgarFractionCount(void) {\n" );
-    fprintf( data, "    return( %d );\n}\n\n", vfm );
-    fprintf( data, "int OtherFractionCount(void) {\n" );
-    fprintf( data, "    return( %d );\n}\n\n", frm );
-    fprintf( data, "int FractionCount(void) {\n" );
-    fprintf( data, "    return( %d );\n}\n\n", vfm+frm );
-
-    dump_getU(data,ligature,l16,lgm,"____ligature","Ligature");
-    dump_getU(data,vulgfrac,v16,vfm,"____vulgfrac","VulgFrac");
-    dump_getU(data,fraction,f16,frm,"____fraction","Fraction");
-
-    fprintf( data, "int Ligature_find_N(uint32 uCode) {\n" );
-    dumpbsearchfindN(data,ligature,l16,lgm,"____ligature");
-    fprintf( data, "int VulgFrac_find_N(uint32 uCode) {\n" );
-    dumpbsearchfindN(data,vulgfrac,v16,vfm,"____vulgfrac");
-    fprintf( data, "int Fraction_find_N(uint32 uCode) {\n" );
-    dumpbsearchfindN(data,fraction,f16,frm,"____fraction");
-
-    fprintf( data, "/* Boolean-style tests (found==0) to see if your codepoint value is listed */\n" );
-    fprintf( data, "/* unicode.org codepoints for ligatures, vulgar fractions, other fractions */\n\n" );
-
-    fprintf( data, "int is_LIGATURE(uint32 codepoint) {\n" );
-    fprintf( data, "    return( Ligature_find_N(codepoint)<0 );\n}\n\n" );
-    fprintf( data, "int is_VULGAR_FRACTION(uint32 codepoint) {\n" );
-    fprintf( data, "    return( VulgFrac_find_N(codepoint)<0 );\n}\n\n" );
-    fprintf( data, "int is_OTHER_FRACTION(uint32 codepoint) {\n" );
-    fprintf( data, "    return( Fraction_find_N(codepoint)<0 );\n}\n\n" );
-
-    fprintf( data, "int is_FRACTION(uint32 codepoint) {\n" );
-    fprintf( data, "    return( VulgFrac_find_N(codepoint)<0 && Fraction_find_N(codepoint)<0 );\n}\n\n" );
-    fprintf( data, "int is_LIGATURE_or_VULGAR_FRACTION(uint32 codepoint) {\n" );
-    fprintf( data, "    return( Ligature_find_N(codepoint)<0 && VulgFrac_find_N(codepoint)<0 );\n}\n\n" );
-    fprintf( data, "int is_LIGATURE_or_OTHER_FRACTION(uint32 codepoint) {\n" );
-    fprintf( data, "    return( Ligature_find_N(codepoint)<0 && Fraction_find_N(codepoint)<0 );\n}\n\n" );
-    fprintf( data, "int is_LIGATURE_or_FRACTION(uint32 codepoint) {\n" );
-    fprintf( data, "    return( Ligature_find_N(codepoint)<0 && VulgFrac_find_N(codepoint)<0 && Fraction_find_N(codepoint)<0 );\n}\n\n" );
+    fprintf(data, "#endif /* FONTFORGE_UNICODE_IS_LIGATURE_DATA_H */\n");
 }
 
 static void dump() {
-    FILE *header, *data;
+    FILE *data;
     int i,j;
 
-    header=fopen("utype.h","w");
     data = fopen("utype.c","w");
 
-    if ( header==NULL || data==NULL ) {
-	fprintf( stderr, CantSaveFile, "(utype.[ch])" );
-	if ( header ) fclose( header );
+    if (data==NULL) {
+	fprintf( stderr, CantSaveFile, "(utype.c)" );
 	if ( data   ) fclose( data );
 	FreeNamesMemorySpace();
 	exit(2);
     }
 
-    fprintf( header, "#ifndef _UTYPE_H\n" );
-    fprintf( header, "#define _UTYPE_H\n" );
-
-    fprintf( header, "/* Copyright: 2001 George Williams */\n" );
-    fprintf( header, "/* License: BSD-3-clause */\n" );
-    fprintf( header, "/* Contributions: Joe Da Silva */\n" );
-    fprintf( header, GeneratedFileMessage, UnicodeMajor, UnicodeMinor );
-
-    fprintf( header, "#include <ctype.h>\t/* Include here so we can control it. If a system header includes it later bad things happen */\n" );
-    fprintf( header, "#include <basics.h>\t/* Include here so we can use pre-defined int types to correctly size constant data arrays. */\n" );
-    fprintf( header, "#ifdef tolower\n" );
-    fprintf( header, "# undef tolower\n" );
-    fprintf( header, "#endif\n" );
-    fprintf( header, "#ifdef toupper\n" );
-    fprintf( header, "# undef toupper\n" );
-    fprintf( header, "#endif\n" );
-    fprintf( header, "#ifdef islower\n" );
-    fprintf( header, "# undef islower\n" );
-    fprintf( header, "#endif\n" );
-    fprintf( header, "#ifdef isupper\n" );
-    fprintf( header, "# undef isupper\n" );
-    fprintf( header, "#endif\n" );
-    fprintf( header, "#ifdef isalpha\n" );
-    fprintf( header, "# undef isalpha\n" );
-    fprintf( header, "#endif\n" );
-    fprintf( header, "#ifdef isdigit\n" );
-    fprintf( header, "# undef isdigit\n" );
-    fprintf( header, "#endif\n" );
-    fprintf( header, "#ifdef isalnum\n" );
-    fprintf( header, "# undef isalnum\n" );
-    fprintf( header, "#endif\n" );
-    fprintf( header, "#ifdef isspace\n" );
-    fprintf( header, "# undef isspace\n" );
-    fprintf( header, "#endif\n" );
-    fprintf( header, "#ifdef ispunct\n" );
-    fprintf( header, "# undef ispunct\n" );
-    fprintf( header, "#endif\n" );
-    fprintf( header, "#ifdef ishexdigit\n" );
-    fprintf( header, "# undef ishexdigit\n" );
-    fprintf( header, "#endif\n\n" );
-
-    fprintf( header, "extern const unsigned short ____tolower[];\n" );
-    fprintf( header, "extern const unsigned short ____toupper[];\n" );
-    fprintf( header, "extern const unsigned short ____totitle[];\n" );
-    fprintf( header, "extern const unsigned short ____tomirror[];\n" );
-    fprintf( header, "extern const unsigned char  ____digitval[];\n" );
-    fprintf( header, "\n" );
-
-    fprintf( header, "/* utype[] holds binary flags used for features of each unicode.org character */\n" );
-    fprintf( header, "#define ____L\t\t0x%0x\n", _LOWER );
-    fprintf( header, "#define ____U\t\t0x%0x\n", _UPPER );
-    fprintf( header, "#define ____TITLE\t0x%0x\n", _TITLE );
-    fprintf( header, "#define ____D\t\t0x%0x\n", _DIGIT );
-    fprintf( header, "#define ____S\t\t0x%0x\n", _SPACE );
-    fprintf( header, "#define ____P\t\t0x%0x\n", _PUNCT );
-    fprintf( header, "#define ____X\t\t0x%0x\n", _HEX );
-    fprintf( header, "#define ____ZW\t\t0x%0x\n", _ZEROWIDTH );
-    fprintf( header, "#define ____L2R\t\t0x%0x\n", _LEFT_2_RIGHT );
-    fprintf( header, "#define ____R2L\t\t0x%0x\n", _RIGHT_2_LEFT );
-    fprintf( header, "#define ____ENUM\t0x%0x\n", _ENUMERIC );
-    fprintf( header, "#define ____ANUM\t0x%0x\n", _ANUMERIC );
-    fprintf( header, "#define ____ENS\t\t0x%0x\n", _ENS );
-    fprintf( header, "#define ____CS\t\t0x%0x\n", _CS );
-    fprintf( header, "#define ____ENT\t\t0x%0x\n", _ENT );
-    fprintf( header, "#define ____COMBINE\t0x%0x\n", _COMBINING );
-    fprintf( header, "#define ____BB\t\t0x%0x\n", _BREAKBEFOREOK );
-    fprintf( header, "#define ____BA\t\t0x%0x\n", _BREAKAFTEROK );
-    fprintf( header, "#define ____NS\t\t0x%0x\n", _NONSTART );
-    fprintf( header, "#define ____NE\t\t0x%0x\n", _NONEND );
-    fprintf( header, "#define ____UB\t\t0x%0x\n", _URLBREAKAFTER );
-    fprintf( header, "#define ____NB\t\t0x%0x\n", _NOBREAK );
-    fprintf( header, "#define ____AL\t\t0x%0x\n", _ALPHABETIC );
-    fprintf( header, "#define ____ID\t\t0x%0x\n", _IDEOGRAPHIC );
-    fprintf( header, "#define ____INITIAL\t0x%0x\n", _INITIAL );
-    fprintf( header, "#define ____MEDIAL\t0x%0x\n", _MEDIAL );
-    fprintf( header, "#define ____FINAL\t0x%0x\n", _FINAL );
-    fprintf( header, "#define ____ISOLATED\t0x%0x\n", _ISOLATED );
-    fprintf( header, "#define ____DECOMPNORM\t0x%0x\n", _DecompositionNormative );
-    fprintf( header, "#define ____LIG_OR_FRAC\t0x%0x\n", _LIG_OR_FRAC );
-    fprintf( header, "\n" );
-
-    fprintf( header, "#define islower(ch)\t\t(____utype[(ch)+1]&____L)\n" );
-    fprintf( header, "#define isupper(ch)\t\t(____utype[(ch)+1]&____U)\n" );
-    fprintf( header, "#define istitle(ch)\t\t(____utype[(ch)+1]&____TITLE)\n" );
-    fprintf( header, "#define isalpha(ch)\t\t(____utype[(ch)+1]&(____L|____U|____TITLE|____AL))\n" );
-    fprintf( header, "#define isdigit(ch)\t\t(____utype[(ch)+1]&____D)\n" );
-    fprintf( header, "#define isalnum(ch)\t\t(____utype[(ch)+1]&(____L|____U|____TITLE|____AL|____D))\n" );
-    fprintf( header, "#define isideographic(ch)\t(____utype[(ch)+1]&____ID)\n" );
-    fprintf( header, "#define isideoalpha(ch)\t\t(____utype[(ch)+1]&(____ID|____L|____U|____TITLE|____AL))\n" );
-    fprintf( header, "#define isspace(ch)\t\t(____utype[(ch)+1]&____S)\n" );
-    fprintf( header, "#define ispunct(ch)\t\t(____utype[(ch)+1]&_____P)\n" );
-    fprintf( header, "#define ishexdigit(ch)\t\t(____utype[(ch)+1]&____X)\n" );
-    fprintf( header, "#define iszerowidth(ch)\t\t(____utype[(ch)+1]&____ZW)\n" );
-    fprintf( header, "#define islefttoright(ch)\t(____utype[(ch)+1]&____L2R)\n" );
-    fprintf( header, "#define isrighttoleft(ch)\t(____utype[(ch)+1]&____R2L)\n" );
-    fprintf( header, "#define iseuronumeric(ch)\t(____utype[(ch)+1]&____ENUM)\n" );
-    fprintf( header, "#define isarabnumeric(ch)\t(____utype[(ch)+1]&____ANUM)\n" );
-    fprintf( header, "#define iseuronumsep(ch)\t(____utype[(ch)+1]&____ENS)\n" );
-    fprintf( header, "#define iscommonsep(ch)\t\t(____utype[(ch)+1]&____CS)\n" );
-    fprintf( header, "#define iseuronumterm(ch)\t(____utype[(ch)+1]&____ENT)\n" );
-    fprintf( header, "#define iscombining(ch)\t\t(____utype[(ch)+1]&____COMBINE)\n" );
-    fprintf( header, "#define isbreakbetweenok(ch1,ch2) (((____utype[(ch1)+1]&____BA) && !(____utype[(ch2)+1]&____NS)) || ((____utype[(ch2)+1]&____BB) && !(____utype[(ch1)+1]&____NE)) || (!(____utype[(ch2)+1]&____D) && ch1=='/'))\n" );
-    fprintf( header, "#define isnobreak(ch)\t\t(____utype[(ch)+1]&____NB)\n" );
-    fprintf( header, "#define isarabinitial(ch)\t(____utype[(ch)+1]&____INITIAL)\n" );
-    fprintf( header, "#define isarabmedial(ch)\t(____utype[(ch)+1]&____MEDIAL)\n" );
-    fprintf( header, "#define isarabfinal(ch)\t\t(____utype[(ch)+1]&____FINAL)\n" );
-    fprintf( header, "#define isarabisolated(ch)\t(____utype[(ch)+1]&____ISOLATED)\n" );
-    fprintf( header, "#define isdecompositionnormative(ch) (____utype[(ch)+1]&____DECOMPNORM)\n" );
-    fprintf( header, "#define isligorfrac(ch)\t\t(____utype[(ch)+1]&____LIG_OR_FRAC)\n" );
-    fprintf( header, "\n" );
-
-    fprintf( header, "extern const uint32\t____utype[];\t\t/* hold character type features for each Unicode.org defined character */\n\n" );
-
-    fprintf( header, "/* utype2[] binary flags used for position/layout of each unicode.org character */\n" );
-    fprintf( header, "#define ____COMBININGCLASS\t0x%0x\n", _CombiningClass );
-    fprintf( header, "#define ____ABOVE\t\t0x%0x\n", _Above );
-    fprintf( header, "#define ____BELOW\t\t0x%0x\n", _Below );
-    fprintf( header, "#define ____OVERSTRIKE\t\t0x%0x\n", _Overstrike );
-    fprintf( header, "#define ____LEFT\t\t0x%0x\n", _Left );
-    fprintf( header, "#define ____RIGHT\t\t0x%0x\n", _Right );
-    fprintf( header, "#define ____JOINS2\t\t0x%0x\n", _Joins2 );
-    fprintf( header, "#define ____CENTERLEFT\t\t0x%0x\n", _CenterLeft );
-    fprintf( header, "#define ____CENTERRIGHT\t\t0x%0x\n", _CenterRight );
-    fprintf( header, "#define ____CENTEREDOUTSIDE\t0x%0x\n", _CenteredOutside );
-    fprintf( header, "#define ____OUTSIDE\t\t0x%0x\n", _Outside );
-    fprintf( header, "#define ____LEFTEDGE\t\t0x%0x\n", _LeftEdge );
-    fprintf( header, "#define ____RIGHTEDGE\t\t0x%0x\n", _RightEdge );
-    fprintf( header, "#define ____TOUCHING\t\t0x%0x\n", _Touching );
-    fprintf( header, "#define ____COMBININGPOSMASK\t0x%0x\n",
-	    _Outside|_CenteredOutside|_CenterRight|_CenterLeft|_Joins2|
-	    _Right|_Left|_Overstrike|_Below|_Above|_RightEdge|_LeftEdge|
-	    _Touching );
-    fprintf( header, "#define ____NOPOSDATAGIVEN\t(uint32)(-1)\t/* -1 == no position data given */\n\n" );
-
-    fprintf( header, "#define combiningclass(ch)\t(____utype2[(ch)+1]&____COMBININGCLASS)\n" );
-    fprintf( header, "#define combiningposmask(ch)\t(____utype2[(ch)+1]&____COMBININGPOSMASK)\n\n" );
-
-    fprintf( header, "extern const uint32\t____utype2[];\t\t/* hold position boolean flags for each Unicode.org defined character */\n\n" );
-
-    fprintf( header, "#define isunicodepointassigned(ch) (____codepointassigned[(ch)/32]&(1<<((ch)%%32)))\n\n" );
-
-    fprintf( header, "extern const uint32\t____codepointassigned[]; /* 1bit_boolean_flag x 32 = exists in Unicode.org character chart list. */\n\n" );
-
-    fprintf( header, "#define tolower(ch) (____tolower[(ch)+1])\n" );
-    fprintf( header, "#define toupper(ch) (____toupper[(ch)+1])\n" );
-    fprintf( header, "#define totitle(ch) (____totitle[(ch)+1])\n" );
-    fprintf( header, "#define tomirror(ch) (____tomirror[(ch)+1])\n" );
-    fprintf( header, "#define tovalue(ch) (____digitval[(ch)+1])\n" );
-    fprintf( header, "\n" );
-
     fprintf( data, "/* Copyright: 2001 George Williams */\n" );
     fprintf( data, "/* License: BSD-3-clause */\n" );
     fprintf( data, "/* Contributions: Werner Lemberg, Khaled Hosny, Joe Da Silva */\n\n" );
-    fprintf( data, "#include \"utype.h\"\n" );
+    fprintf( data, "#include <utype.h>\n" );
     fprintf( data, GeneratedFileMessage, UnicodeMajor, UnicodeMinor );
-    fprintf( data, "const unsigned short ____tolower[]= { 0,\n" );
-    for ( i=0; i<MAXC; i+=j ) {
+    fprintf( data, "const unsigned short ff_unicode_tolower[]= { 0,\n" );
+    for ( i=0; i<FF_UNICODE_COMPACT_TABLE_SIZE_MAX; i+=j ) {
 	fprintf( data, " " );
-	for ( j=0; j<8 && i+j<MAXC-1; ++j )
+	for ( j=0; j<8 && i+j<FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1; ++j )
 	    fprintf(data, " 0x%04x,", mytolower[i+j]);
-	if ( i+j==MAXC-1 ) {
+	if ( i+j==FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1 ) {
 	    fprintf(data, " 0x%04x\n};\n\n", mytolower[i+j]);
     break;
 	} else
@@ -1069,12 +725,12 @@ static void dump() {
 	    else
 		fprintf( data, "\n");
     }
-    fprintf( data, "const unsigned short ____toupper[] = { 0,\n" );
-    for ( i=0; i<MAXC; i+=j ) {
+    fprintf( data, "const unsigned short ff_unicode_toupper[] = { 0,\n" );
+    for ( i=0; i<FF_UNICODE_COMPACT_TABLE_SIZE_MAX; i+=j ) {
 	fprintf( data, " " );
-	for ( j=0; j<8 && i+j<MAXC-1; ++j )
+	for ( j=0; j<8 && i+j<FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1; ++j )
 	    fprintf(data, " 0x%04x,", mytoupper[i+j]);
-	if ( i+j==MAXC-1 ) {
+	if ( i+j==FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1 ) {
 	    fprintf(data, " 0x%04x\n};\n\n", mytoupper[i+j]);
     break;
 	} else
@@ -1083,12 +739,12 @@ static void dump() {
 	    else
 		fprintf( data, "\n");
     }
-    fprintf( data, "const unsigned short ____totitle[] = { 0,\n" );
-    for ( i=0; i<MAXC; i+=j ) {
+    fprintf( data, "const unsigned short ff_unicode_totitle[] = { 0,\n" );
+    for ( i=0; i<FF_UNICODE_COMPACT_TABLE_SIZE_MAX; i+=j ) {
 	fprintf( data, " " );
-	for ( j=0; j<8 && i+j<MAXC-1; ++j )
+	for ( j=0; j<8 && i+j<FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1; ++j )
 	    fprintf(data, " 0x%04x,", mytotitle[i+j]);
-	if ( i+j==MAXC-1 ) {
+	if ( i+j==FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1 ) {
 	    fprintf(data, " 0x%04x\n};\n\n", mytotitle[i+j]);
     break;
 	} else
@@ -1097,12 +753,12 @@ static void dump() {
 	    else
 		fprintf( data, "\n");
     }
-    fprintf( data, "const unsigned short ____tomirror[] = { 0,\n" );
-    for ( i=0; i<MAXC; i+=j ) {
+    fprintf( data, "const unsigned short ff_unicode_tomirror[] = { 0,\n" );
+    for ( i=0; i<FF_UNICODE_COMPACT_TABLE_SIZE_MAX; i+=j ) {
 	fprintf( data, " " );
-	for ( j=0; j<8 && i+j<MAXC-1; ++j )
+	for ( j=0; j<8 && i+j<FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1; ++j )
 	    fprintf(data, " 0x%04x,", mymirror[i+j]);
-	if ( i+j==MAXC-1 ) {
+	if ( i+j==FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1 ) {
 	    fprintf(data, " 0x%04x\n};\n\n", mymirror[i+j]);
     break;
 	} else
@@ -1111,12 +767,12 @@ static void dump() {
 	    else
 		fprintf( data, "\n");
     }
-    fprintf( data, "const unsigned char ____digitval[] = { 0,\n" );
-    for ( i=0; i<MAXC; i+=j ) {
+    fprintf( data, "const unsigned char ff_unicode_digitval[] = { 0,\n" );
+    for ( i=0; i<FF_UNICODE_COMPACT_TABLE_SIZE_MAX; i+=j ) {
 	fprintf( data, " " );
-	for ( j=0; j<8 && i+j<MAXC-1; ++j )
+	for ( j=0; j<8 && i+j<FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1; ++j )
 	    fprintf(data, " 0x%02x,", mynumericvalue[i+j]);
-	if ( i+j==MAXC-1 ) {
+	if ( i+j==FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1 ) {
 	    fprintf(data, " 0x%02x\n};\n\n", mynumericvalue[i+j]);
     break;
 	} else
@@ -1125,12 +781,12 @@ static void dump() {
 	    else
 		fprintf( data, "\n");
     }
-    fprintf( data, "const uint32 ____utype[] = { 0,\n" );
-    for ( i=0; i<MAXC; i+=j ) {
+    fprintf( data, "const uint32 ff_unicode_utype[] = { 0,\n" );
+    for ( i=0; i<FF_UNICODE_COMPACT_TABLE_SIZE_MAX; i+=j ) {
 	fprintf( data, " " );
-	for ( j=0; j<8 && i+j<MAXC-1; ++j )
+	for ( j=0; j<8 && i+j<FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1; ++j )
 	    fprintf(data, " 0x%08x,", flags[i+j]);
-	if ( i+j==MAXC-1 ) {
+	if ( i+j==FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1 ) {
 	    fprintf(data, " 0x%08x\n};\n\n", flags[i+j]);
     break;
 	} else
@@ -1139,13 +795,13 @@ static void dump() {
 	    else
 		fprintf( data, "\n");
     }
-    fprintf( data, "const uint32 ____utype2[] = { 0,\n" );
+    fprintf( data, "const uint32 ff_unicode_utype2[] = { 0,\n" );
     fprintf( data, "  /* binary flags used for physical layout of each unicode.org character */\n" );
-    for ( i=0; i<MAXC; i+=j ) {
+    for ( i=0; i<FF_UNICODE_COMPACT_TABLE_SIZE_MAX; i+=j ) {
 	fprintf( data, " " );
-	for ( j=0; j<8 && i+j<MAXC-1; ++j )
+	for ( j=0; j<8 && i+j<FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1; ++j )
 	    fprintf(data, " 0x%08x,", flags2[i+j]);
-	if ( i+j==MAXC-1 ) {
+	if ( i+j==FF_UNICODE_COMPACT_TABLE_SIZE_MAX-1 ) {
 	    fprintf(data, " 0x%08x\n};\n\n", flags2[i+j]);
     break;
 	} else
@@ -1155,7 +811,7 @@ static void dump() {
 		fprintf( data, "\n");
     }
 
-    fprintf( data, "const uint32 ____codepointassigned[] = {\n" );
+    fprintf( data, "const uint32 ff_unicode_codepointassigned[] = {\n" );
     fprintf( data, "  /* 32 unicode.org characters represented for each data value in array */\n" );
     for ( i=0; i<0x120000/32; i+=j ) {
 	fprintf( data, " " );
@@ -1173,12 +829,8 @@ static void dump() {
 
     fclose( data );
 
-    dumparabicdata(header);
-    dumpligaturesfractions(header);
-    fprintf( header, "\n#define _SOFT_HYPHEN\t0xad\n" );
-    fprintf( header, "\n#define _DOUBLE_S\t0xdf\n" );
-    fprintf( header, "\n#endif\n" );
-    fclose( header );
+    dumparabicdata();
+    dumpligaturesfractions();
 }
 
 static int AnyAlts(int i ) {
@@ -1204,7 +856,7 @@ return;
 
     fprintf(file, GeneratedFileMessage, UnicodeMajor, UnicodeMinor );
 
-    for ( i=32; i<MAXC; ++i ) {
+    for ( i=32; i<FF_UNICODE_COMPACT_TABLE_SIZE_MAX; ++i ) {
 	if ( alts[i][0]!=0 ) {
 	    fprintf( file, "static const unichar_t str_%x[] = { 0x%04x, ", i, alts[i][0] );
 	    for ( j=1; j<MAXA && alts[i][j]!=0; ++j )
