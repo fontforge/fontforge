@@ -74,7 +74,8 @@ AM_CFLAGS = $(WARN_CFLAGS)
 AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
 	"-I$(top_builddir)/lib" "-I$(top_srcdir)/lib"			\
 	"-DSHAREDIR=\"${MY_SHAREDIR}\"" "-DDOCDIR=\"${MY_DOCDIR}\""	\
-        "-I$(top_srcdir)/uthash/src" "-DFF_UTHASH_GLIF_NAMES=1"         \
+	"-I$(top_builddir)/uthash/src" "-I$(top_srcdir)/uthash/src"	\
+	"-DFF_UTHASH_GLIF_NAMES=1"					\
 	"-DPLUGINDIR=\"${MY_PLUGINDIR}\"" $(MY_CFLAGS)
 
 #--------------------------------------------------------------------------
