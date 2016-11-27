@@ -12,7 +12,7 @@ Contributions:
 
 /* unicode.org codepoints for ligatures, vulgar fractions, other fractions */
 
-const uint16 ____ligature16[] = {
+const uint16 ligature16[] = {
   0x0132, 0x0133, 0x0152, 0x0153, 0x04a4, 0x04a5, 0x04b4, 0x04b5,
   0x04d4, 0x04d5, 0x0587, 0x05f0, 0x05f1, 0x05f2, 0x0616, 0x06d6,
   0x06d7, 0xa7f9, 0xfb00, 0xfb01, 0xfb02, 0xfb03, 0xfb04, 0xfb05,
@@ -78,22 +78,22 @@ const uint16 ____ligature16[] = {
   0xfdfa, 0xfdfb, 0xfdfd, 0xfe20, 0xfe21, 0xfe27, 0xfe28, 0xfef5,
   0xfef6, 0xfef7, 0xfef8, 0xfef9, 0xfefa, 0xfefb, 0xfefc};
 
-const uint32 ____ligature32[] = {
+const uint32 ligature32[] = {
   0x00011176};
 
-const uint16 ____vulgfrac16[] = {
+const uint16 vulgfrac16[] = {
   0x00bc, 0x00bd, 0x00be, 0x2150, 0x2151, 0x2152, 0x2153, 0x2154,
   0x2155, 0x2156, 0x2157, 0x2158, 0x2159, 0x215a, 0x215b, 0x215c,
   0x215d, 0x215e, 0x2189};
 
-const uint16 ____fraction16[] = {
+const uint16 fraction16[] = {
   0x0b72, 0x0b73, 0x0b74, 0x0b75, 0x0b76, 0x0b77, 0x0c78, 0x0c79,
   0x0c7a, 0x0c7b, 0x0c7c, 0x0c7d, 0x0c7e, 0x0d58, 0x0d59, 0x0d5a,
   0x0d5b, 0x0d5c, 0x0d5d, 0x0d5e, 0x0d73, 0x0d74, 0x0d75, 0x0d76,
   0x0d77, 0x0d78, 0x215f, 0x2cfd, 0xa830, 0xa831, 0xa832, 0xa833,
   0xa834, 0xa835};
 
-const uint32 ____fraction32[] = {
+const uint32 fraction32[] = {
   0x000109bc, 0x000109bd, 0x000109f6, 0x000109f7,
   0x000109f8, 0x000109f9, 0x000109fa, 0x000109fb,
   0x000109fc, 0x000109fd, 0x000109fe, 0x000109ff,
@@ -131,24 +131,24 @@ int32 Ligature_get_U(int n) {
     if ( n<0 || n>=512 )
 	return( -1 );
     if ( n<511 )
-	return( (int32)(____ligature16[n]) );
+	return( (int32)(ligature16[n]) );
     else
-	return( (int32)(____ligature32[n-511]) );
+	return( (int32)(ligature32[n-511]) );
 }
 
 int32 VulgFrac_get_U(int n) {
     if ( n<0 || n>=19 )
 	return( -1 );
-    return( (int32)(____vulgfrac16[n]) );
+    return( (int32)(vulgfrac16[n]) );
 }
 
 int32 Fraction_get_U(int n) {
     if ( n<0 || n>=50 )
 	return( -1 );
     if ( n<34 )
-	return( (int32)(____fraction16[n]) );
+	return( (int32)(fraction16[n]) );
     else
-	return( (int32)(____fraction32[n-34]) );
+	return( (int32)(fraction32[n-34]) );
 }
 
 int Ligature_find_N(uint32 uCode) {
@@ -160,13 +160,13 @@ int Ligature_find_N(uint32 uCode) {
 	return( -1 );
     if ( uCode<0xfefc ) {
 	uCode16 = uCode;
-	p16 = (uint16 *)(bsearch(&uCode16, ____ligature16, 511, \
+	p16 = (uint16 *)(bsearch(&uCode16, ligature16, 511, \
 				sizeof(uint16), compare_codepoints16));
-	if ( p16 ) n = p16 - ____ligature16;
+	if ( p16 ) n = p16 - ligature16;
     } else {
-	p32 = (uint32 *)(bsearch(&uCode, ____ligature32, 1, \
+	p32 = (uint32 *)(bsearch(&uCode, ligature32, 1, \
 				sizeof(uint32), compare_codepoints32));
-	if ( p32 ) n = p32 - ____ligature32 + 511;
+	if ( p32 ) n = p32 - ligature32 + 511;
     }
     return( n );
 }
@@ -178,9 +178,9 @@ int VulgFrac_find_N(uint32 uCode) {
     if ( uCode<0xbc || uCode>0x2189 || isligorfrac(uCode)==0 )
 	return( -1 );
     uCode16 = uCode;
-    p16 = (uint16 *)(bsearch(&uCode16, ____vulgfrac16, 19, \
+    p16 = (uint16 *)(bsearch(&uCode16, vulgfrac16, 19, \
 				sizeof(uint16), compare_codepoints16));
-    if ( p16 ) n = p16 - ____vulgfrac16;
+    if ( p16 ) n = p16 - vulgfrac16;
     return( n );
 }
 
@@ -193,13 +193,13 @@ int Fraction_find_N(uint32 uCode) {
 	return( -1 );
     if ( uCode<0xa835 ) {
 	uCode16 = uCode;
-	p16 = (uint16 *)(bsearch(&uCode16, ____fraction16, 34, \
+	p16 = (uint16 *)(bsearch(&uCode16, fraction16, 34, \
 				sizeof(uint16), compare_codepoints16));
-	if ( p16 ) n = p16 - ____fraction16;
+	if ( p16 ) n = p16 - fraction16;
     } else {
-	p32 = (uint32 *)(bsearch(&uCode, ____fraction32, 16, \
+	p32 = (uint32 *)(bsearch(&uCode, fraction32, 16, \
 				sizeof(uint32), compare_codepoints32));
-	if ( p32 ) n = p32 - ____fraction32 + 34;
+	if ( p32 ) n = p32 - fraction32 + 34;
     }
     return( n );
 }
