@@ -261,7 +261,7 @@ static void readin(void) {
     long index, lc, uc, tc, flg, val, indexend, wasfirst;
     int  cc;
     FILE *fp;
-    int i,j;
+    long i,j;
 
     buffer[512]='\0'; buf2[0] = buf2[300]='\0'; oldname[0]='\0';
     if ((fp = fopen("UnicodeData.txt","r"))==NULL ) {
@@ -550,7 +550,8 @@ static void readin(void) {
     }
     fclose(fp);
 
-    for ( i=0; combiners[i].low!=0; ++i ) {
+    /* TODO: 2016nov21 -> Get combiners directly from UnicodeData.txt */
+    for ( i=0; combiners[i].low>=0; ++i ) {
 	for ( j=combiners[i].low; j<=combiners[i].high; ++j )
 	    flags2[j] |= combiners[i].pos[j-combiners[i].low];
     }
