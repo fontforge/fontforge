@@ -846,14 +846,15 @@ static void dumpligaturesfractions(FILE *header) {
 
     dumpbsearch(data,16); dumpbsearch(data,32);
 
+    fprintf( data, "#define ELEMENTS_IN_ARRAY(x) (sizeof(x) / sizeof(x[0]))\n\n" );
     fprintf( data, "int LigatureCount(void) {\n" );
-    fprintf( data, "    return( %d );\n}\n\n", lgm );
+    fprintf( data, "    return( ELEMENTS_IN_ARRAY(ligature16) + ELEMENTS_IN_ARRAY(ligature32) );\n}\n\n" );
     fprintf( data, "int VulgarFractionCount(void) {\n" );
-    fprintf( data, "    return( %d );\n}\n\n", vfm );
+    fprintf( data, "    return( ELEMENTS_IN_ARRAY(vulgfrac16) );\n}\n\n" );
     fprintf( data, "int OtherFractionCount(void) {\n" );
-    fprintf( data, "    return( %d );\n}\n\n", frm );
+    fprintf( data, "    return( ELEMENTS_IN_ARRAY(fraction16) + ELEMENTS_IN_ARRAY(fraction32) );\n}\n\n" );
     fprintf( data, "int FractionCount(void) {\n" );
-    fprintf( data, "    return( %d );\n}\n\n", vfm+frm );
+    fprintf( data, "    return( VulgarFractionCount() + OtherFractionCount() );\n}\n\n" );
 
     dump_getU(data,ligature,l16,lgm,"ligature","Ligature");
     dump_getU(data,vulgfrac,v16,vfm,"vulgfrac","VulgFrac");

@@ -111,20 +111,22 @@ static int compare_codepoints32(const void *uCode1, const void *uCode2) {
     return( (*cp1 < *cp2) ? -1 : ((*cp1 == *cp2) ? 0 : 1) );
 }
 
+#define ELEMENTS_IN_ARRAY(x) (sizeof(x) / sizeof(x[0]))
+
 int LigatureCount(void) {
-    return( 512 );
+    return( ELEMENTS_IN_ARRAY(ligature16) + ELEMENTS_IN_ARRAY(ligature32) );
 }
 
 int VulgarFractionCount(void) {
-    return( 19 );
+    return( ELEMENTS_IN_ARRAY(vulgfrac16) );
 }
 
 int OtherFractionCount(void) {
-    return( 50 );
+    return( ELEMENTS_IN_ARRAY(fraction16) + ELEMENTS_IN_ARRAY(fraction32) );
 }
 
 int FractionCount(void) {
-    return( 69 );
+    return( VulgarFractionCount() + OtherFractionCount() );
 }
 
 int32 Ligature_get_U(int n) {
