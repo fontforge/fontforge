@@ -65,10 +65,7 @@ libgunicode_la_SOURCES =	\
 	ustring.c		\
 	utype.c			\
 	gwwiconv.c		\
-	combiners.h		\
 	$(NULL)
-
-#	usprintf.c
 
 libgunicode_la_CFLAGS = $(WARN_CFLAGS)
 libgunicode_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
@@ -84,12 +81,14 @@ libgunicode_la_LIBADD = $(MY_LIBS)
 
 #dump_SOURCES = dump.c
 #makebuildtables_SOURCES = makebuildtables.c utype.c
-#makeutype_SOURCES = makeutype.c
+#makeutype_SOURCES = makeutype.c combiners.h
 
-#noinst_PROGRAMS = dump makebuildtables makeutype
-
-EXTRA_DIST = README.TXT #dump.c makebuildtables.c makeutype.c
-
+EXTRA_DIST = README.TXT		\
+	combiners.h		\
+	dump.c			\
+	makebuildtables.c	\
+	makeutype.c		\
+	usprintf.c
 #--------------------------------------------------------------------------
 
 -include $(top_srcdir)/git.mk
