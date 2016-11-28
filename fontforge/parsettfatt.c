@@ -4758,6 +4758,7 @@ return;
     /*  removes the flag */
     if ( info->badgid_cnt!=0 ) {
 	/* Merge the fake glyphs in with the real ones */
+	int oldgc = info->glyph_cnt;
 	info->chars = realloc(info->chars,(info->glyph_cnt+info->badgid_cnt)*sizeof(SplineChar *));
 	for ( i=0; i<info->badgid_cnt; ++i ) {
 	    info->chars[info->glyph_cnt+i] = info->badgids[i];
@@ -4765,6 +4766,17 @@ return;
 	}
 	info->glyph_cnt += info->badgid_cnt;
 	free(info->badgids);
+	/* We also need to adjust the variations. */
+	if (info->variations) {
+	    int ctup;
+	    for (ctup = 0; ctup < info->variations->tuple_count; ctup++) {
+		SplineChar ** tscs = info->variations->tuples[ctup].chars;
+		info->variations->tuples[ctup].chars = calloc(info->glyph_cnt, sizeof(SplineChar *));
+		memcpy(info->variations->tuples[ctup].chars, tscs, oldgc * sizeof(SplineChar *));
+		free(tscs);
+		tscs = NULL;
+	    }
+	}
     }
 }
 
