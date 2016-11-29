@@ -33,10 +33,32 @@ DISTCLEANFILES=fontforge-config.h stamp-h1 stamp-h2
 # installation. In particular, they ought to have <> instead of "" and
 # they should require a "fontforge/" prefix.
 
-pkginclude_HEADERS = basics.h chardata.h charset.h dynamic.h	\
-	fileutil.h fontforge-config.h gdraw.h gfile.h ggadget.h gicons.h gimage.h gio.h		\
-	gkeysym.h gprogress.h gresedit.h gresource.h gwidget.h gwwiconv.h	\
-	intl.h ustring.h utype.h dlist.h carbon.h gnetwork.h gutils.h
+pkginclude_HEADERS = \
+	basics.h \
+	carbon.h \
+	chardata.h \
+	charset.h \
+	dlist.h \
+	dynamic.h \
+	fileutil.h \
+	fontforge-config.h \
+	gdraw.h \
+	gfile.h \
+	ggadget.h \
+	gicons.h \
+	gimage.h \
+	gio.h \
+	gkeysym.h \
+	gnetwork.h \
+	gprogress.h \
+	gresedit.h \
+	gresource.h \
+	gutils.h \
+	gwidget.h \
+	gwwiconv.h \
+	intl.h \
+	ustring.h \
+	utype.h
 
 noinst_HEADERS = pluginloading.h
 
