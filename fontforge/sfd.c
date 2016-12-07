@@ -63,16 +63,6 @@
 # define NAME_MAX _POSIX_NAME_MAX
 #endif
 
-/* Prior to late Sept of 2003 FontForge converted certain mac feature/settings*/
-/*  into opentype-like tags. Some features could be converted directly but for*/
-/*  a few I made up tags.  Now FontForge is capable of using the mac feature  */
-/*  settings directly. If you set this flag then when FontForge loads in an sfd*/
-/*  file with these non-standard opentype tags, it will convert them into the */
-/*  appropriate mac feature/setting combinations.                             */
-/*									      */
-/* #define FONTFORGE_CONFIG_CVT_OLD_MAC_FEATURES			      */
-/*									      */
-
 
 int UndoRedoLimitToSave = 0;
 int UndoRedoLimitToLoad = 0;
@@ -4630,39 +4620,6 @@ static PST1 *LigaCreateFromOldStyleMultiple(PST1 *liga) {
 return( last );
 }
 
-#ifdef FONTFORGE_CONFIG_CVT_OLD_MAC_FEATURES
-static struct { int feature, setting; uint32 tag; } formertags[] = {
-    { 1, 6, CHR('M','L','O','G') },
-    { 1, 8, CHR('M','R','E','B') },
-    { 1, 10, CHR('M','D','L','G') },
-    { 1, 12, CHR('M','S','L','G') },
-    { 1, 14, CHR('M','A','L','G') },
-    { 8, 0, CHR('M','S','W','I') },
-    { 8, 2, CHR('M','S','W','F') },
-    { 8, 4, CHR('M','S','L','I') },
-    { 8, 6, CHR('M','S','L','F') },
-    { 8, 8, CHR('M','S','N','F') },
-    { 22, 1, CHR('M','W','I','D') },
-    { 27, 1, CHR('M','U','C','M') },
-    { 103, 2, CHR('M','W','I','D') },
-    { -1, -1, 0xffffffff },
-};
-
-static void CvtOldMacFeature(PST1 *pst) {
-    int i;
-
-    if ( pst->macfeature )
-return;
-    for ( i=0; formertags[i].feature!=-1 ; ++i ) {
-	if ( pst->tag == formertags[i].tag ) {
-	    pst->macfeature = true;
-	    pst->tag = (formertags[i].feature<<16) | formertags[i].setting;
-return;
-	}
-    }
-}
-#endif
-
 static void SFDSetEncMap(SplineFont *sf,int orig_pos,int enc) {
     EncMap *map = sf->map;
 
@@ -5097,10 +5054,6 @@ exit(1);
 			last = (PST *) LigaCreateFromOldStyleMultiple((PST1 *) pst);
 		}
 	    }
-#ifdef FONTFORGE_CONFIG_CVT_OLD_MAC_FEATURES
-	    if ( old )
-		CvtOldMacFeature((PST1 *) pst);
-#endif
     } else {
 	return;
     }
@@ -5790,10 +5743,6 @@ exit(1);
 			last = (PST *) LigaCreateFromOldStyleMultiple((PST1 *) pst);
 		}
 	    }
-#ifdef FONTFORGE_CONFIG_CVT_OLD_MAC_FEATURES
-	    if ( old )
-		CvtOldMacFeature((PST1 *) pst);
-#endif
 	} else if ( strmatch(tok,"Colour:")==0 ) {
 	    uint32 temp;
 	    gethex(sfd,&temp);
