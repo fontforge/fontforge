@@ -54,14 +54,6 @@
 /*  (actually this failure mode may not be possible), but I'm not sure */
 /* Then we play the same trick for the rest of the cubic spline (if any) */
 
-/* I used to use an approximation method when converting cubic to quadratic   */
-/*  splines which was non-symmetric. In some cases it produced better results */
-/*  than the current approach. This flag restores the old algorithm.	      */
-/*									      */
-/* #define FONTFORGE_CONFIG_NON_SYMMETRIC_QUADRATIC_CONVERSION		      */
-/*									      */
-
-
 /* Does the quadratic spline in ttf approximate the cubic spline in ps */
 /*  within one pixel between tmin and tmax (on ps. presumably ttf between 0&1 */
 /* dim is the dimension in which there is the greatest change */
@@ -437,7 +429,6 @@ return( end );
 return( _ttfapprox(ps,tmin,tmax,start));
 }
 
-#if !defined(FONTFORGE_CONFIG_NON_SYMMETRIC_QUADRATIC_CONVERSION)
 typedef struct qpoint {
     BasePoint bp;
     BasePoint cp;
@@ -695,7 +686,6 @@ return( q );
     }
 return( -1 );
 }
-#endif
 
 static SplinePoint *AlreadyQuadraticCheck(Spline *ps, SplinePoint *start) {
     SplinePoint *sp;
@@ -734,7 +724,6 @@ return( NULL );
 }
 
 static SplinePoint *ttfApprox(Spline *ps, SplinePoint *start) {
-#if !defined(FONTFORGE_CONFIG_NON_SYMMETRIC_QUADRATIC_CONVERSION)
     extended magicpoints[6], last;
     int cnt, i, j, qcnt, test_level;
     QPoint data[8*10];
@@ -761,7 +750,6 @@ static SplinePoint *ttfApprox(Spline *ps, SplinePoint *start) {
 	      ps->to->me.y==ps->to->prevcp.y &&
 	      ps->to->me.x!=ps->to->prevcp.x &&
 	      2*ps->to->me.x==rint(2*ps->to->me.x)) );
-#endif
     SplinePoint *ret;
 /* Divide the spline up at extrema and points of inflection. The first	*/
 /*  because ttf splines should have points at their extrema, the second */
@@ -773,7 +761,6 @@ static SplinePoint *ttfApprox(Spline *ps, SplinePoint *start) {
     if (( ret = AlreadyQuadraticCheck(ps,start))!=NULL )
 return( ret );
 
-#if !defined(FONTFORGE_CONFIG_NON_SYMMETRIC_QUADRATIC_CONVERSION)
     qcnt = 1;
     data[0].bp = ps->from->me;
     data[0].t = 0;
@@ -824,7 +811,6 @@ return( CvtDataToSplines(data,1,qcnt,start));
 	if ( qcnt!=-1 )
     return( CvtDataToSplines(data,1,qcnt,start));
     }
-#endif
 
 return( __ttfApprox(ps,0,1,start));
 }
