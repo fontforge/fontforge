@@ -40,16 +40,6 @@
 float GenerateHintWidthEqualityTolerance = 0.0;
 int autohint_before_generate = 1;
 
-/* In addition to placing snippets of charstrings into subrs, I tried adding  */
-/*  whole glyphs (when that was possible). To my surprise, it made things     */
-/*  worse in one of my test cases, and barely registered an improvement in    */
-/*  another.   So I think we're better off without it. But I don't understand */
-/*  why things are worse so I'm leaving the code in to play with              */
-/*									      */
-/* #define FONTFORGE_CONFIG_PS_REFS_GET_SUBRS				      */
-/*									      */
-
-
 /* Let's talk about references. */
 /* If we are doing Type1 output, then the obvious way of doing them is seac */
 /*  but that's so limitting. It only works for exactly two characters both */
@@ -1605,194 +1595,16 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
 return( ret );
 }
 
-#ifdef FONTFORGE_CONFIG_PS_REFS_GET_SUBRS
-static int AlwaysSeacable(SplineChar *sc,int flags) {
-    struct splinecharlist *d;
-    RefChar *r;
-
-    if ( sc->parent->cidmaster!=NULL )	/* Can't use seac in CID fonts, no encoding */
-return( false );
-    if ( flags&ps_flag_noseac )
-return( false );
-
-    for ( d=sc->dependents; d!=NULL; d = d->next ) {
-	if ( d->sc->layers[layer].splines!=NULL )	/* I won't deal with things with both splines and refs. */
-    continue;				/*  skip it */
-	for ( r=d->sc->layers[layer].refs; r!=NULL; r=r->next ) {
-	    if ( !r->justtranslated )
-	break;				/* Can't deal with it either way */
-	}
-	if ( r!=NULL )		/* Bad transform matrix */
-    continue;			/* Can't handle either way, skip */
-
-	for ( r=d->sc->layers[layer].refs; r!=NULL; r=r->next ) {
-	    if ( r->adobe_enc==-1 )
-return( false );			/* not seacable, but could go in subr */
-	}
-	r = d->sc->layers[layer].refs;
-	if ( r->next!=NULL && r->next->next!=NULL )
-return( false );		/* seac only takes 2 glyphs */
-	if ( r->next!=NULL &&
-		((r->transform[4]!=0 || r->transform[5]!=0 || r->sc->width!=d->sc->width) &&
-		 (r->next->transform[4]!=0 || r->next->transform[5]!=0 || r->next->sc->width!=d->sc->width)))
-return( false );		/* seac only allows one to be translated, and the untranslated one must have the right width */
-	if ( r->next==NULL &&
-		(r->transform[4]!=0 || r->transform[5]!=0 || r->sc->width!=d->sc->width))
-return( false );
-    }
-    /* Either always can be represented by seac, or sometimes by neither */
-return( true );
-}
-
-/* normally we can't put a character with hint conflicts into a subroutine */
-/*  (because when we would have to invoke the hints within the subr and */
-/*   hints are expressed as absolute positions, so if the char has been */
-/*   translated we can't do the hints right). BUT if the character is not */
-/*  translated, and if it has the right lbearing, then the hints in the */
-/*  ref will match those in the character and we can use a subroutine for */
-/*  both */
-/* If at least one ref fits our requirements then return true */
-/* The same reasoning applies to flex hints. There are absolute expressions */
-/*  in them too. */
-static int SpecialCaseConflicts(SplineChar *sc) {
-    struct splinecharlist *d;
-    RefChar *r;
-    DBounds sb, db;
-
-    SplineCharFindBounds(sc,&sb);
-    for ( d=sc->dependents; d!=NULL; d = d->next ) {
-	SplineCharFindBounds(d->sc,&db);
-	if ( db.minx != sb.minx )
-    continue;
-	for ( r=d->sc->layers[layer].refs; r!=NULL; r=r->next )
-	    if ( r->sc == sc && r->justtranslated &&
-		    r->transform[4]==0 && r->transform[5]==0 )
-return( true );
-    }
-return( false );
-}
-
-static BasePoint *FigureStartStop(SplineChar *sc, GlyphInfo *gi ) {
-    int m, didfirst;
-    SplineChar *msc;
-    SplineSet *spl;
-    RefChar *r;
-    BasePoint *startstop;
-
-    /* We need to know the location of the first point on the */
-    /*  first path (need to rmoveto it, and the location of the */
-    /*  last point on the last path (will need to move from it */
-    /*  for the next component) */
-
-    startstop = calloc(2*gi->instance_count,sizeof(BasePoint));
-    for ( m=0; m<gi->instance_count; ++m ) {
-	if ( gi->instance_count==1 || sc->parent->mm==NULL )
-	    msc = sc;
-	else
-	    msc = sc->parent->mm->instances[m]->glyphs[sc->orig_pos];
-	didfirst = false;
-	spl = msc->layers[layer].splines;
-	if ( spl!=NULL ) {
-	    startstop[0] = spl->first->me;
-	    didfirst = true;
-	    while ( spl!=NULL ) {
-		/* Closepath does NOT set the current point */
-		/* Remember we reverse PostScript */
-		if ( spl->last==spl->first && spl->first->next!=NULL &&
-			spl->first->next->knownlinear )
-		    startstop[1] = spl->first->next->to->me;
-		else
-		    startstop[1] = spl->last->me;
-		spl = spl->next;
-	    }
-	}
-	for ( r=msc->layers[layer].refs; r!=NULL; r=r->next ) {
-	    spl = r->layers[0].splines;
-	    if ( spl!=NULL ) {
-		if ( !didfirst )
-		    startstop[0] = spl->first->me;
-		didfirst = true;
-	    }
-	    while ( spl!=NULL ) {
-		/* Closepath does NOT set the current point */
-		/* Remember we reverse PostScript */
-		if ( spl->last==spl->first && spl->first->next!=NULL &&
-			spl->first->next->knownlinear )
-		    startstop[1] = spl->first->next->to->me;
-		else
-		    startstop[1] = spl->last->me;
-		spl = spl->next;
-	    }
-	}
-    }
-return( startstop );
-}
-#endif	/* FONTFORGE_CONFIG_PS_REFS_GET_SUBRS */
-
 /* Mark those glyphs which can live totally in subrs */
 static void SplineFont2FullSubrs1(int flags,GlyphInfo *gi) {
     int i;
     SplineChar *sc;
-#ifdef FONTFORGE_CONFIG_PS_REFS_GET_SUBRS
-    int anydone, cc;
-    struct potentialsubrs *ps;
-    SplineSet *spl;
-    RefChar *r;
-#endif	/* FONTFORGE_CONFIG_PS_REFS_GET_SUBRS */
 
     if ( !autohint_before_generate && !(flags&ps_flag_nohints))
 	SplineFontAutoHintRefs(gi->sf,gi->layer);
     for ( i=0; i<gi->glyphcnt; ++i ) if ( (sc=gi->gb[i].sc)!=NULL )
 	sc->ttf_glyph = 0x7fff;
 
-#ifdef FONTFORGE_CONFIG_PS_REFS_GET_SUBRS
-    anydone = true;
-    while ( anydone ) {
-	anydone = false;
-	for ( i=0; i<gi->glyphcnt; ++i ) if ( (sc=gi->gb[i].sc)!=NULL ) {
-	    if ( !SCWorthOutputting(sc) || sc->ttf_glyph!=0x7fff )
-	continue;
-	    /* if the glyph is a single contour with no hintmasks then */
-	    /*  our single contour code will find it. If we do it here too */
-	    /*  we'll get a subr which points to another subr. Very dull and */
-	    /*  a waste of space */
-	    cc = 0;
-	    for ( spl=sc->layers[layer].splines; spl!=NULL; spl=spl->next )
-		++cc;
-	    for ( r= sc->layers[layer].refs; r!=NULL && cc<2 ; r=r->next ) {
-		for ( spl=r->layers[0].splines; spl!=NULL; spl=spl->next )
-		    ++cc;
-	    }
-	    if ( cc<2 )
-	continue;
-	    /* Put the */
-	    /*  character into a subr if it is referenced by other characters */
-	    if ( (sc->dependents!=NULL &&
-		     ((!sc->hconflicts && !sc->vconflicts && !sc->layers[gi->layer].anyflexes) ||
-			 SpecialCaseConflicts(sc)) &&
-		     !AlwaysSeacable(sc,flags))) {
-		RefChar *r;
-
-		for ( r=sc->layers[layer].refs; r!=NULL; r=r->next )
-		    if ( r->sc->ttf_glyph==0x7fff )
-		break;
-		if ( r!=NULL )	/* Contains a reference to something which is */
-	continue;		/* not in a sub itself. Skip it for now, we'll*/
-				/* come back to it next pass when perhaps the */
-			        /* reference will be nicely ensconsed itself */
-		if ( gi->pcnt>=gi->pmax )
-		    gi->psubrs = realloc(gi->psubrs,(gi->pmax+=gi->glyphcnt)*sizeof(struct potentialsubrs));
-		ps = &gi->psubrs[gi->pcnt];
-		memset(ps,0,sizeof(*ps));	/* set cnt to 0 */
-		ps->idx = gi->pcnt++;
-		ps->full_glyph_index = i;
-		sc->ttf_glyph = gi->pcnt-1;
-		ps->startstop = FigureStartStop(sc,gi);
-		anydone = true;
-	    }
-	}
-    }
-#endif	/* FONTFORGE_CONFIG_PS_REFS_GET_SUBRS */
 }
 
 int SFOneWidth(SplineFont *sf) {
@@ -3114,88 +2926,16 @@ static void Type2NotDefSplines(SplineFont *sf,SplineChar *sc,int layer) {
     sc->hstem = hints;
 }
 
-#ifdef FONTFORGE_CONFIG_PS_REFS_GET_SUBRS
-/* This char has hint conflicts. Check to see if we can put it into a subr */
-/*  in spite of that. If there is at least one dependent character which: */
-/*	refers to us without translating us */
-/*	and all its other refs contain no hints at all */
-static int Type2SpecialCase(SplineChar *sc) {
-    struct splinecharlist *d;
-    RefChar *r;
-
-    for ( d=sc->dependents; d!=NULL; d=d->next ) {
-	for ( r=d->sc->layers[layer].refs; r!=NULL; r = r->next ) {
-	    if ( autohint_before_generate && r->sc!=NULL &&
-		    r->sc->changedsincelasthinted && !r->sc->manualhints )
-		SplineCharAutoHint(r->sc,NULL);
-	    if ( r->transform[0]!=1 || r->transform[1]!=0 ||
-		    r->transform[2]!=0 || r->transform[3]!=1 )
-	break;
-	    if ( r->sc!=sc && (r->sc->hstem!=NULL || r->sc->vstem!=NULL))
-	break;
-	    if ( r->sc==sc && (r->transform[4]!=0 || r->transform[5]!=0))
-	break;
-	}
-	if ( r==NULL )
-return( true );
-    }
-return( false );
-}
-#endif	/* FONTFORGE_CONFIG_PS_REFS_GET_SUBRS */
-
 /* Mark those glyphs which can live totally in subrs */
 static void SplineFont2FullSubrs2(int flags,GlyphInfo *gi) {
     int i;
     SplineChar *sc;
-#ifdef FONTFORGE_CONFIG_PS_REFS_GET_SUBRS
-    int cc;
-    RefChar *r;
-    struct potentialsubrs *ps;
-    SplineSet *spl;
-#endif	/* FONTFORGE_CONFIG_PS_REFS_GET_SUBRS */
 
     if ( !autohint_before_generate && !(flags&ps_flag_nohints))
 	SplineFontAutoHintRefs(gi->sf,gi->layer);
 
     for ( i=0; i<gi->glyphcnt; ++i ) if ( (sc=gi->gb[i].sc)!=NULL )
 	sc->lsidebearing = 0x7fff;
-
-/* This code allows us to put whole glyphs into subroutines */
-/* I found slight improvements in space on some fonts, and large increases */
-/*  in others. So I'm disabling it for now */
-#ifdef FONTFORGE_CONFIG_PS_REFS_GET_SUBRS
-    /* We don't allow refs to refs. It's too complex */
-    for ( i=0; i<gi->glyphcnt; ++i ) if ( (sc=gi->gb[i].sc)!=NULL ) {
-	if ( SCWorthOutputting(sc) &&
-	    (( sc->layers[layer].refs==NULL && sc->dependents!=NULL &&
-		    ( (!sc->hconflicts && !sc->vconflicts) ||
-			Type2SpecialCase(sc)) )  )) {
-	    /* if the glyph is a single contour with no hintmasks then */
-	    /*  our single contour code will find it. If we do it here too */
-	    /*  we'll get a subr which points to another subr. Very dull and */
-	    /*  a waste of space */
-	    cc = 0;
-	    for ( spl=sc->layers[layer].splines; spl!=NULL; spl=spl->next )
-		++cc;
-	    for ( r= sc->layers[layer].refs; r!=NULL && cc<2 ; r=r->next ) {
-		for ( spl=r->layers[0].splines; spl!=NULL; spl=spl->next )
-		    ++cc;
-	    }
-	    if ( cc<2 )
-    continue;
-	    /* Put the */
-	    /*  character into a subr if it is referenced by other characters */
-	    if ( gi->pcnt>=gi->pmax )
-		gi->psubrs = realloc(gi->psubrs,(gi->pmax+=gi->glyphcnt)*sizeof(struct potentialsubrs));
-	    ps = &gi->psubrs[gi->pcnt];
-	    memset(ps,0,sizeof(*ps));	/* set cnt to 0 */
-	    ps->idx = gi->pcnt++;
-	    ps->full_glyph_index = i;
-	    sc->lsidebearing = gi->pcnt-1;
-	    ps->startstop = FigureStartStop(sc,gi);
-	}
-    }
-#endif	/* FONTFORGE_CONFIG_PS_REFS_GET_SUBRS */
 }
 
 struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid, int defwid,
