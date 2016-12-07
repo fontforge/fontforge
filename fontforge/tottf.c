@@ -108,12 +108,6 @@ TeX
 	TeX		TeX specific info (stuff that used to live in tfm files)
 */
 
-/* Nobody else puts apple unicode encodings into the name table. So I probably*/
-/*  shouldn't either.  But if someone wants them...			      */
-/*									      */
-/* #define FONTFORGE_CONFIG_APPLE_UNICODE_NAMES				      */
-/*									      */
-
 const char *ttfstandardnames[258] = {
 ".notdef",
 ".null",
@@ -3911,16 +3905,6 @@ return;		/* Should not happen, but it did */
     if ( !nt->applemode && lang!=0x409 )
 	maclang = 0xffff;
     if ( maclang!=0xffff ) {
-#ifdef FONTFORGE_CONFIG_APPLE_UNICODE_NAMES
-	if ( strid!=ttf_postscriptname ) {
-	    *ne = ne[-1];
-	    ne->platform = 0;	/* Mac unicode */
-	    ne->specific = 0;	/* 3 => Unicode 2.0 semantics */ /* 0 ("default") is also a reasonable value */
-	    ne->lang     = maclang;
-	    ++ne;
-	}
-#endif
-
 	macenc = MacEncFromMacLang(maclang);
 	macname = Utf8ToMacStr(utf8name,macenc,maclang);
 	if ( macname!=NULL ) {
