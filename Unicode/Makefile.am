@@ -67,6 +67,15 @@ libgunicode_la_SOURCES =	\
 	gwwiconv.c		\
 	$(NULL)
 
+libgunicode_la.$(OBJEXT):	\
+	../inc/basics.h		\
+	../inc/chardata.h	\
+	../inc/charset.h	\
+	../inc/gwwiconv.h	\
+	../inc/ustring.h	\
+	../inc/utype.h		\
+	is_Ligature_data.h
+
 libgunicode_la_CFLAGS = $(WARN_CFLAGS)
 libgunicode_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 	"-I$(top_builddir)/lib" "-I$(top_srcdir)/lib"			\
