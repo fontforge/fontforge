@@ -28,6 +28,9 @@
 #include "cvexport.h"
 #include "dumppfa.h"
 #include "fontforgevw.h"
+#include "fvfonts.h"
+#include "langfreq.h"
+#include "mm.h"
 #include "sflayoutP.h"
 #include <stdlib.h>
 #include <math.h>

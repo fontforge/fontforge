@@ -28,7 +28,13 @@
  */
 #include <fontforge-config.h>
 
+#include "featurefile.h"
+
+#include "encoding.h"
 #include "fontforgevw.h"
+#include "fvfonts.h"
+#include "lookups.h"
+#include "namelist.h"
 #include "ttf.h"
 #include <stdio.h>
 #include <math.h>

@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "langfreq.h"
 #include <gkeysym.h>
 #include <math.h>
 

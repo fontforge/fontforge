@@ -27,7 +27,13 @@
 #include "autohint.h"
 #include "dumpbdf.h"
 #include "dumppfa.h"
+#include "encoding.h"
 #include "fontforge.h"
+#include "fvfonts.h"
+#include "http.h"
+#include "lookups.h"
+#include "macenc.h"
+#include "mm.h"
 #include <math.h>
 #include <unistd.h>
 #include <time.h>

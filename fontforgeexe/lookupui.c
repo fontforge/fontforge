@@ -27,6 +27,8 @@
  */
 #include "autowidth2.h"
 #include "fontforgeui.h"
+#include "fvfonts.h"
+#include "lookups.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>
@@ -35,7 +37,6 @@
 #include <stdlib.h>
 #include "ttf.h"
 #include <gkeysym.h>
-#include "lookups.h"
 #include "gfile.h"
 #include "sfundo.h"
 

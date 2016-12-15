@@ -318,10 +318,6 @@ extern void FVAutoInstr(FontViewBase *fv);
 extern void FVClearInstrs(FontViewBase *fv);
 extern void FVClearHints(FontViewBase *fv);
 extern void SCAutoTrace(SplineChar *sc,int layer, int ask);
-extern void FVAddEncodingSlot(FontViewBase *fv,int gid);
-extern int FVImportMult(FontViewBase *fv, char *filename,int toback,int bf);
-extern int FVImportBDF(FontViewBase *fv, char *filename,int ispk, int toback);
-extern void MergeFont(FontViewBase *fv,SplineFont *other,int preserveCrossFontKerning);
 extern void ScriptPrint(FontViewBase *fv,int type,int32 *pointsizes,char *samplefile,
 	unichar_t *sample, char *outputfile);
 extern int FVBParseSelectByPST(FontViewBase *fv,struct lookup_subtable *sub,
@@ -331,14 +327,7 @@ extern void TransHints(StemInfo *stem,real mul1, real off1, real mul2, real off2
 extern void TransDStemHints(DStemInfo *ds,real xmul, real xoff, real ymul, real yoff, int round_to_int );
 extern void VrTrans(struct vr *vr,real transform[6]);
 extern int SFNLTrans(FontViewBase *fv,char *x_expr,char *y_expr);
-extern int SSNLTrans(SplineSet *ss,char *x_expr,char *y_expr);
-extern int SCNLTrans(SplineChar *sc, int layer,char *x_expr,char *y_expr);
-extern void FVPointOfView(FontViewBase *fv,struct pov_data *);
 extern void FVStrokeItScript(void *fv, StrokeInfo *si,int pointless);
-extern void FVOutline(struct fontviewbase *fv, real width);
-extern void FVInline(struct fontviewbase *fv, real width, real inset);
-extern void FVShadow(struct fontviewbase *fv,real angle, real outline_width,
-	real shadow_length,int wireframe);
 extern void CI_Init(struct counterinfo *ci,SplineFont *sf);
 extern void FVEmbolden(struct fontviewbase *fv,enum embolden_type type,struct lcg_zones *zones);
 extern void FVCondenseExtend(struct fontviewbase *fv,struct counterinfo *ci);
@@ -434,7 +423,6 @@ extern void FVDetachAndRemoveGlyphs(FontViewBase *fv);
 extern Undoes *_CVPreserveTState(CharViewBase *cv,PressedOn *);
 extern void CopySelected(CharViewBase *cv,int doanchors);
 extern void CopyWidth(CharViewBase *cv,enum undotype);
-extern void CVYPerspective(CharViewBase *cv,bigreal x_vanish, bigreal y_vanish);
 extern void ScriptSCEmbolden(SplineChar *sc,int layer,enum embolden_type type,struct lcg_zones *zones);
 extern void CVEmbolden(CharViewBase *cv,enum embolden_type type,struct lcg_zones *zones);
 extern void SCCondenseExtend(struct counterinfo *ci,SplineChar *sc, int layer,
@@ -512,8 +500,6 @@ extern void PyFF_SCImport(SplineChar *sc,int ie_index,char *filename,
 	int layer, int clear);
 extern void PyFF_InitFontHook(FontViewBase *fv);
 
-extern void LookupInit(void);
-extern int UserFeaturesDiffer(void);
 extern uint32 *StdFeaturesOfScript(uint32 script);
 
 enum byte_types { bt_instr, bt_cnt, bt_byte, bt_wordhi, bt_wordlo, bt_impliedreturn };
@@ -534,14 +520,11 @@ extern uint8 *_IVParse(SplineFont *sf, char *text, int *len,
 	void (*IVError)(void *,char *, int), void *iv);
 extern char *_IVUnParseInstrs(uint8 *instrs,int instr_cnt);
 
-extern void FVSetWidthScript(FontViewBase *fv,enum widthtype wtype,int val,int incr);
 extern void FVMetricsCenter(FontViewBase *fv,int docenter);
 extern void FVRevert(FontViewBase *fv);
 extern void FVRevertBackup(FontViewBase *fv);
 extern void FVRevertGlyph(FontViewBase *fv);
 extern void FVClearSpecialData(FontViewBase *fv);
-extern int   MMReblend(FontViewBase *fv, MMSet *mm);
-extern FontViewBase *MMCreateBlendedFont(MMSet *mm,FontViewBase *fv,real blends[MmMax],int tonew );
 extern void FVB_MakeNamelist(FontViewBase *fv, FILE *file);
 
 /**

@@ -28,6 +28,8 @@
 #ifndef FONTFORGE_FVMETRICS_H
 #define FONTFORGE_FVMETRICS_H
 
+#include "baseviews.h"
+
 #include "fontforgeui.h"
 #include <math.h>
 #include <ustring.h>
@@ -49,5 +51,6 @@ typedef struct createwidthdata {
 extern void CVDoit(CreateWidthData *wd);
 extern void FVDoit(CreateWidthData *wd);
 extern void GenericVDoit(CreateWidthData *wd);
+extern void FVSetWidthScript(FontViewBase *fv, enum widthtype wtype, int val, int incr);
 
 #endif /* FONTFORGE_FVMETRICS_H */

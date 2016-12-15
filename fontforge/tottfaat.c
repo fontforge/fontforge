@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforge.h"
+#include "fvfonts.h"
+#include "macenc.h"
 #include "asmfpst.h"
 #include <utype.h>
 

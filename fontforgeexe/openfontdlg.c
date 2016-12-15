@@ -26,6 +26,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "namelist.h"
 #include <stdlib.h>
 #include <string.h>
 #include <ustring.h>

@@ -29,6 +29,7 @@
 
 #include "cvundoes.h"
 #include "fontforgevw.h"
+#include "fvimportbdf.h"
 #include <math.h>
 #include <ustring.h>
 #include <utype.h>

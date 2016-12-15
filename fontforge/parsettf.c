@@ -25,8 +25,14 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "cvundoes.h"
+#include "encoding.h"
 #include "fontforge.h"
+#include "fvimportbdf.h"
+#include "lookups.h"
 #include "splinefont.h"
+#include "macenc.h"
+#include "mm.h"
+#include "namelist.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>

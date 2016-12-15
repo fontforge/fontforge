@@ -25,7 +25,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "dumppfa.h"
+#include "encoding.h"
 #include "fontforgeui.h"
+#include "fvfonts.h"
+#include "macenc.h"
+#include "mm.h"
 #include <ustring.h>
 #include <math.h>
 #include <gkeysym.h>

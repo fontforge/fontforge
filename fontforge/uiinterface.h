@@ -356,8 +356,6 @@ extern struct fi_interface *fi_interface;
 #define FIOTLookupCopyInto			(fi_interface->copy_into)
 #define FontInfo_Destroy			(fi_interface->destroy)
 
-void FF_SetFIInterface(struct fi_interface *fii);
-
 /* ************************************************************************** */
 /*                           Updating font windows                            */
 /* ************************************************************************** */

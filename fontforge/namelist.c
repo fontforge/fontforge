@@ -26,7 +26,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "namelist.h"
+
 #include "fontforgevw.h"
+#include "fvcomposite.h"
+#include "fvfonts.h"
 #include "ustring.h"
 #include <utype.h>
 #include "namehash.h"

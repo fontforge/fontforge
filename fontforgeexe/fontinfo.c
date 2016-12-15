@@ -28,14 +28,17 @@
 #include "autowidth.h"
 #include "bitmapchar.h"
 #include "dumppfa.h"
+#include "encoding.h"
+#include "featurefile.h"
 #include "fontforgeui.h"
+#include "lookups.h"
+#include "namelist.h"
 #include "ofl.h"
 #include <ustring.h>
 #include <chardata.h>
 #include <utype.h>
 #include "unicoderange.h"
 #include <locale.h>
-#include "lookups.h"
 #include "sfundo.h"
 #include "collabclientui.h"
 

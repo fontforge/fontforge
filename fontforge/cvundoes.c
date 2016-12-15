@@ -34,6 +34,8 @@
 #include "cvexport.h"
 #include "cvimages.h"
 #include "fontforgevw.h"
+#include "fvfonts.h"
+#include "namelist.h"
 #include "views.h"
 #include <math.h>
 #include <ustring.h>

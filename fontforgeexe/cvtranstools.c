@@ -26,6 +26,8 @@
  */
 #include "cvundoes.h"
 #include "fontforgeui.h"
+#include "nonlineartrans.h"
+
 #include <math.h>
 
 void CVMouseDownTransform(CharView *cv) {

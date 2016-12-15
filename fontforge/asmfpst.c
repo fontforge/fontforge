@@ -28,6 +28,7 @@
 #include "asmfpst.h"
 
 #include "fontforgevw.h"
+#include "fvfonts.h"
 #include "ttf.h"
 #include <chardata.h>
 #include <utype.h>

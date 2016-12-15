@@ -29,6 +29,8 @@
 #include "cvundoes.h"
 #include "dumppfa.h"
 #include "fontforgevw.h"
+#include "fvfonts.h"
+#include "lookups.h"
 #include <math.h>
 #include <locale.h>
 # include <ustring.h>

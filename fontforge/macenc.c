@@ -24,7 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "encoding.h"
 #include "fontforgevw.h"
+#include "macenc.h"
 #include <gkeysym.h>
 #include <ustring.h>
 #include "ttf.h"

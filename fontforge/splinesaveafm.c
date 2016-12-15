@@ -25,7 +25,14 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "autohint.h"
+#include "featurefile.h"
 #include "fontforgevw.h"		/* For Error */
+#include "fvcomposite.h"
+#include "fvfonts.h"
+#include "lookups.h"
+#include "macbinary.h"
+#include "mm.h"
+#include "namelist.h"
 #include "ttf.h"		/* For AnchorClassDecompose */
 #include <stdio.h>
 #include "splinefont.h"

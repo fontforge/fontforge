@@ -28,7 +28,15 @@
 #include "autohint.h"
 #include "autotrace.h"
 #include "dumppfa.h"
+#include "encoding.h"
 #include "fontforgevw.h"
+#include "fvcomposite.h"
+#include "fvfonts.h"
+#include "fvimportbdf.h"
+#include "http.h"
+#include "ikarus.h"
+#include "macbinary.h"
+#include "namelist.h"
 #include <utype.h>
 #include <ustring.h>
 #include <math.h>

@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforge.h"
+#include "fvfonts.h"
 #include <stdio.h>
 #include <string.h>
 #include <ustring.h>

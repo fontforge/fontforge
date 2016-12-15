@@ -24,10 +24,17 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "macbinary.h"
+
 #include "bvedit.h"
 #include "crctab.h"
 #include "dumppfa.h"
+#include "encoding.h"
 #include "fontforgevw.h"
+#include "fvfonts.h"
+#include "http.h"
+#include "lookups.h"
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>

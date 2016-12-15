@@ -33,7 +33,13 @@
 #include "cvruler.h"
 #include "cvundoes.h"
 #include "dumppfa.h"
+#include "encoding.h"
 #include "fontforgeui.h"
+#include "fvcomposite.h"
+#include "fvfonts.h"
+#include "lookups.h"
+#include "mm.h"
+#include "namelist.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>

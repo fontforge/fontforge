@@ -27,6 +27,8 @@
 #include <dirent.h>
 #include <errno.h>
 
+#include "lookups.h"
+#include "namelist.h"
 #include "splinefont.h"
 #include <ustring.h>
 

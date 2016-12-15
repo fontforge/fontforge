@@ -26,6 +26,7 @@
  */
 
 #include "fontforgeui.h"
+#include "fvfonts.h"
 #include <utype.h>
 #include <ustring.h>
 #include "unicoderange.h"

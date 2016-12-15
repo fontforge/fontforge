@@ -49,6 +49,21 @@ noinst_HEADERS = \
 	cvimages.h \
 	dumpbdf.h \
 	dumppfa.h \
+	effects.h \
+	encoding.h \
+	featurefile.h \
+	fvcomposite.h \
+	fvfonts.h \
+	fvimportbdf.h \
+	glyphcomp.h\
+	http.h\
+	ikarus.h\
+	langfreq.h\
+	libstamp.h\
+	macbinary.h\
+	macenc.h\
+	mathconstants.h\
+	namelist.h\
 	fontforgeui.h sftextfieldP.h configure-fontforge.h views.h 	\
 	flaglist.h strlist.h charview_private.h cvundoes.h tables.h
 
