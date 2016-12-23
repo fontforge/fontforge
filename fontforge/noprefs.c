@@ -142,6 +142,8 @@ static int  gridfit_x_sameas_y=true;		/* in cvgridfit.c */
 static int default_font_filter_index=0;
 static unichar_t *script_menu_names[SCRIPT_MENU_MAX];
 static char *script_filenames[SCRIPT_MENU_MAX];
+/* defined in fontforgeui.h */
+#define RECENT_MAX 10
 static char *RecentFiles[RECENT_MAX];
 static int ItalicConstrained = true;
 extern int clear_tt_instructions_when_needed;	/* cvundoes.c */
