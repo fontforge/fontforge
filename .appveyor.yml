@@ -42,8 +42,8 @@ install:
   - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds/original-archives/binaries; exec 0</dev/null; wget --tries 4 https://dl.bintray.com/jtanx/fontforgelibs/build-system-extras/$VCXSRV"
   - >-
     call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds/original-archives/sources; exec 0</dev/null;
-    wget --tries 1 http://download.savannah.gnu.org/releases/freetype/freetype-2.6.5.tar.bz2 || 
-    wget --tries 4 https://sourceforge.net/projects/freetype/files/freetype2/2.6.5/freetype-2.6.5.tar.bz2"
+    wget --tries 1 http://download.savannah.gnu.org/releases/freetype/freetype-2.7.1.tar.bz2 || 
+    wget --tries 4 https://sourceforge.net/projects/freetype/files/freetype2/2.7.1/freetype-2.7.1.tar.bz2"
 # These steps will update msys2 to the latest version
 # Uncomment these if builds fail because of pacman not installing dependencies due to version conflicts
 #  - call %MBASH% "pacman -Syuu --noconfirm"
