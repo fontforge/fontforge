@@ -25,12 +25,16 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "print.h"
+
 #include "cvexport.h"
 #include "dumppfa.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "langfreq.h"
 #include "mm.h"
+#include "psread.h"
 #include "sflayoutP.h"
 #include <stdlib.h>
 #include <math.h>
@@ -43,7 +47,6 @@
 #if !defined(__MINGW32__)
 #include <sys/wait.h>
 #endif
-#include "print.h"
 
 int pagewidth = 0, pageheight=0;	/* In points */
 char *printlazyprinter=NULL;

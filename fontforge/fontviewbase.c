@@ -39,6 +39,8 @@
 #include "groups.h"
 #include "psfont.h"
 #include "scripting.h"
+#include "sfd.h"
+#include "spiro.h"
 #include <gfile.h>
 #include <gio.h>
 #include <ustring.h>

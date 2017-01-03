@@ -64,6 +64,19 @@ noinst_HEADERS = \
 	macenc.h\
 	mathconstants.h\
 	namelist.h\
+	othersubrs.h \
+	palmfonts.h \
+	parsepdf.h \
+	parsepfa.h \
+	parsettfatt.h \
+	parsettfbmf.h \
+	parsettf.h \
+	parsettfvar.h \
+	psread.h \
+	savefont.h \
+	scstyles.h \
+	sfd.h \
+	spiro.h \
 	fontforgeui.h sftextfieldP.h configure-fontforge.h views.h 	\
 	flaglist.h strlist.h charview_private.h cvundoes.h tables.h
 
@@ -75,7 +88,8 @@ pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 	sd.h unicoderange.h bitmapcontrol.h encoding.h ofl.h search.h		\
 	usermenu.h fffreetype.h PfEd.h sfd1.h ffpython.h			\
 	plugins.h sflayoutP.h print.h splinefont.h cvruler.h ffglib.h           \
-	glif_name_hash.h
+	glif_name_hash.h \
+	mem.h
 
 #--------------------------------------------------------------------------
 
@@ -115,7 +129,8 @@ libfontforge_la_SOURCES = activeinui.c asmfpst.c autohint.c autosave.c	\
 	stemdb.c strlist.c svg.c tottfaat.c tottfgpos.c tottf.c		\
 	tottfvar.c ttfinstrs.c ttfspecial.c ufo.c unicoderange.c	\
 	utils.c winfonts.c woff.c zapfnomen.c \
-	glif_name_hash.c
+	glif_name_hash.c \
+	mem.c
 
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 

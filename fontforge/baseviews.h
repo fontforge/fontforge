@@ -318,8 +318,6 @@ extern void FVAutoInstr(FontViewBase *fv);
 extern void FVClearInstrs(FontViewBase *fv);
 extern void FVClearHints(FontViewBase *fv);
 extern void SCAutoTrace(SplineChar *sc,int layer, int ask);
-extern void ScriptPrint(FontViewBase *fv,int type,int32 *pointsizes,char *samplefile,
-	unichar_t *sample, char *outputfile);
 extern int FVBParseSelectByPST(FontViewBase *fv,struct lookup_subtable *sub,
 	int search_type);
 extern int SFScaleToEm(SplineFont *sf, int ascent, int descent);
@@ -328,10 +326,6 @@ extern void TransDStemHints(DStemInfo *ds,real xmul, real xoff, real ymul, real 
 extern void VrTrans(struct vr *vr,real transform[6]);
 extern int SFNLTrans(FontViewBase *fv,char *x_expr,char *y_expr);
 extern void FVStrokeItScript(void *fv, StrokeInfo *si,int pointless);
-extern void CI_Init(struct counterinfo *ci,SplineFont *sf);
-extern void FVEmbolden(struct fontviewbase *fv,enum embolden_type type,struct lcg_zones *zones);
-extern void FVCondenseExtend(struct fontviewbase *fv,struct counterinfo *ci);
-extern void ScriptSCCondenseExtend(SplineChar *sc,struct counterinfo *ci);
 
 struct smallcaps {
     double lc_stem_width, uc_stem_width;
@@ -344,9 +338,6 @@ struct smallcaps {
     int layer;
     double italic_angle, tan_ia;
 };
-
-extern void SmallCapsFindConstants(struct smallcaps *small, SplineFont *sf,
-	int layer );
 
 enum glyphchange_type { gc_generic, gc_smallcaps, gc_subsuper, gc_max };
 
@@ -391,24 +382,7 @@ struct genericchange {
     double italic_angle, tan_ia;
 };
 
-extern void FVAddSmallCaps(FontViewBase *fv,struct genericchange *genchange);
-extern void FVGenericChange(FontViewBase *fv,struct genericchange *genchange);
-extern void CVGenericChange(CharViewBase *cv,struct genericchange *genchange);
 
-struct xheightinfo {
-    double xheight_current, xheight_desired;
-    double serif_height;
-};
-
-extern void InitXHeightInfo(SplineFont *sf, int layer, struct xheightinfo *xi);
-extern void ChangeXHeight(FontViewBase *fv,CharViewBase *cv, struct xheightinfo *xi);
-extern SplineSet *SSControlStems(SplineSet *ss,
-	double stemwidthscale, double stemheightscale,
-	double hscale, double vscale, double xheight);
-extern void MakeItalic(FontViewBase *fv,CharViewBase *cv,ItalicInfo *ii);
-extern int FVReplaceAll( FontViewBase *fv, SplineSet *find, SplineSet *rpl, double fudge, int flags );
-extern void FVBReplaceOutlineWithReference( FontViewBase *fv, double fudge );
-extern void FVCorrectReferences(FontViewBase *fv);
 extern void _FVSimplify(FontViewBase *fv,struct simplifyinfo *smpl);
 extern void UnlinkThisReference(FontViewBase *fv,SplineChar *sc,int layer);
 extern FontViewBase *ViewPostScriptFont(const char *filename,int openflags);
@@ -423,10 +397,6 @@ extern void FVDetachAndRemoveGlyphs(FontViewBase *fv);
 extern Undoes *_CVPreserveTState(CharViewBase *cv,PressedOn *);
 extern void CopySelected(CharViewBase *cv,int doanchors);
 extern void CopyWidth(CharViewBase *cv,enum undotype);
-extern void ScriptSCEmbolden(SplineChar *sc,int layer,enum embolden_type type,struct lcg_zones *zones);
-extern void CVEmbolden(CharViewBase *cv,enum embolden_type type,struct lcg_zones *zones);
-extern void SCCondenseExtend(struct counterinfo *ci,SplineChar *sc, int layer,
-	int do_undoes);
 extern void SCClearSelPt(SplineChar *sc);
 extern void SC_MoreLayers(SplineChar *,Layer *old);
 extern void SCLayersChange(SplineChar *sc);
@@ -440,51 +410,11 @@ extern void _CVMenuMakeLine(CharViewBase *cv,int do_arc,int ellipse_to_back);
 extern void MVCopyChar(FontViewBase *fv, BDFFont *bdf, SplineChar *sc, enum fvcopy_type fullcopy);
 extern void PasteIntoMV(FontViewBase *fv, BDFFont *bdf,SplineChar *sc, int doclear);
 
-extern void ExecuteScriptFile(FontViewBase *fv, SplineChar *sc, char *filename);
 
 enum search_flags { sv_reverse = 0x1, sv_flips = 0x2, sv_rotate = 0x4,
 	sv_scale = 0x8, sv_endpoints=0x10 };
 
 enum flipset { flip_none = 0, flip_x, flip_y, flip_xy };
-
-typedef struct searchdata {
-    SplineChar sc_srch, sc_rpl;
-    SplineSet *path, *revpath, *replacepath, *revreplace;
-    int pointcnt, rpointcnt;
-    real fudge;
-    real fudge_percent;			/* a value of .05 here represents 5% (we don't store the integer) */
-    unsigned int tryreverse: 1;
-    unsigned int tryflips: 1;
-    unsigned int tryrotate: 1;
-    unsigned int tryscale: 1;
-    unsigned int endpoints: 1;		/* Don't match endpoints, use them for direction only */
-    unsigned int onlyselected: 1;
-    unsigned int subpatternsearch: 1;
-    unsigned int doreplace: 1;
-    unsigned int replaceall: 1;
-    unsigned int findall: 1;
-    unsigned int searchback: 1;
-    unsigned int wrap: 1;
-    unsigned int wasreversed: 1;
-    unsigned int replacewithref: 1;
-    unsigned int already_complained: 1;	/* User has already been alerted to the fact that we've converted splines to refs and lost the instructions */
-    SplineSet *matched_spl;
-    SplinePoint *matched_sp, *last_sp;
-    real matched_rot, matched_scale;
-    real matched_x, matched_y;
-    double matched_co, matched_si;		/* Precomputed sin, cos */
-    enum flipset matched_flip;
-    unsigned long long matched_refs;	/* Bit map of which refs in the char were matched */
-    unsigned long long matched_ss;	/* Bit map of which splines in the char were matched */
-				    /* In multi-path mode */
-    unsigned long long matched_ss_start;/* Bit map of which splines we tried to start matches with */
-    FontViewBase *fv;
-    SplineChar *curchar;
-    int last_gid;
-} SearchData;
-
-extern struct searchdata *SDFromContour( FontViewBase *fv, SplineSet *find, double fudge, int flags );
-extern SplineChar *SDFindNext(struct searchdata *sv);
 
 extern struct python_import_export {
     struct _object *import;	/* None becomes NULL */

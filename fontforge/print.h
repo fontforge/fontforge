@@ -27,11 +27,13 @@
 #ifndef FONTFORGE_PRINT_H
 #define FONTFORGE_PRINT_H
 
+#include "baseviews.h"
+#include "splinefont.h"
+
 enum { pt_lp, pt_lpr, pt_ghostview, pt_file, pt_other, pt_pdf, pt_unknown=-1 };
 extern int pagewidth, pageheight;
 extern char *printlazyprinter;
 extern char *printcommand;
-#include "baseviews.h"
 
 extern int printtype;
 extern int use_gv;
@@ -117,5 +119,8 @@ extern void DoPrinting(PI *pi,char *filename);
 extern int PdfDumpGlyphResources(PI *pi,SplineChar *sc);
 extern void makePatName(char *buffer,
 	RefChar *ref,SplineChar *sc,int layer,int isstroke,int isgrad);
+
+extern unichar_t *PrtBuildDef(SplineFont *sf, void *tf, void (*langsyscallback)(void *tf, int end, uint32 script, uint32 lang));
+extern void ScriptPrint(FontViewBase *fv, int type, int32 *pointsizes, char *samplefile, unichar_t *sample, char *outputfile);
 
 #endif /* FONTFORGE_PRINT_H */

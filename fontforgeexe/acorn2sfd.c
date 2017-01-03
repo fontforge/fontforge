@@ -28,6 +28,7 @@
 #include <errno.h>
 
 #include "lookups.h"
+#include "mem.h"
 #include "namelist.h"
 #include "splinefont.h"
 #include <ustring.h>

@@ -31,6 +31,8 @@
 
 #include "fontforge.h"
 #include "http.h"
+#include "mem.h"
+#include "parsettf.h"
 #include <math.h>
 #include <ctype.h>
 

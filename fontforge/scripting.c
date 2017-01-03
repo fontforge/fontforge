@@ -28,6 +28,8 @@
 
 #include <fontforge-config.h>
 
+#include "scripting.h"
+
 #include "autohint.h"
 #include "autotrace.h"
 #include "autowidth.h"
@@ -49,8 +51,19 @@
 #include "fvmetrics.h"
 #include "lookups.h"
 #include "macbinary.h"
+#include "mem.h"
 #include "mm.h"
 #include "namelist.h"
+#include "othersubrs.h"
+#include "parsepdf.h"
+#include "parsepfa.h"
+#include "parsettf.h"
+#include "print.h"
+#include "savefont.h"
+#include "scstyles.h"
+#include "search.h"
+#include "sfd.h"
+#include "spiro.h"
 #include <gfile.h>
 #include <utype.h>
 #include <ustring.h>
@@ -73,7 +86,6 @@
 #endif
 #include "ttf.h"
 #include "plugins.h"
-#include "scripting.h"
 #include "scriptfuncs.h"
 #include "flaglist.h"
 #include "gutils/prefs.h"

@@ -34,6 +34,10 @@
 #include "lookups.h"
 #include "namelist.h"
 #include "ofl.h"
+#include "parsepfa.h"
+#include "parsettf.h"
+#include "psread.h"
+#include "sfd.h"
 #include <ustring.h>
 #include <chardata.h>
 #include <utype.h>

@@ -11,6 +11,8 @@ typedef unsigned char uint8;
 #define false	0
 #include <string.h>
 
+#include "mem.h"
+
 static int verbose = false;
 static int max_lig_nest = 10000;
 static int just_headers = false;

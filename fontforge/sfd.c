@@ -24,6 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "sfd.h"
+
 #include "autohint.h"
 #include "bvedit.h"
 #include "cvimages.h"
@@ -33,7 +36,10 @@
 #include "fvfonts.h"
 #include "http.h"
 #include "lookups.h"
+#include "mem.h"
 #include "namelist.h"
+#include "parsettf.h"
+#include "psread.h"
 #include "splinefont.h"
 #include "baseviews.h"
 #include "views.h"

@@ -36,6 +36,8 @@
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "namelist.h"
+#include "sfd.h"
+#include "spiro.h"
 #include "views.h"
 #include <math.h>
 #include <ustring.h>

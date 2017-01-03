@@ -29,6 +29,7 @@
 #include "sfundo.h"
 
 #include "fvfonts.h"
+#include "sfd.h"
 #include "views.h"
 #include <string.h>
 #include "uiinterface.h"

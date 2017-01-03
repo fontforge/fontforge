@@ -32,6 +32,7 @@
 #include "fvfonts.h"
 #include "lookups.h"
 #include "namelist.h"
+#include "scstyles.h"
 #include <ustring.h>
 #include <utype.h>
 #include <gkeysym.h>

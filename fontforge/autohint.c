@@ -30,6 +30,7 @@
 #include "cvundoes.h"
 #include "dumppfa.h"
 #include "fontforge.h"
+#include "psread.h"
 #include <stdio.h>
 #include <math.h>
 #include "splinefont.h"

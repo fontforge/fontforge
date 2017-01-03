@@ -32,8 +32,12 @@
 #include "fvimportbdf.h"
 #include "mm.h"
 #include "namelist.h"
+#include "parsepfa.h"
+#include "parsettf.h"
+#include "psread.h"
 #include <math.h>
 #include "psfont.h"
+#include "spiro.h"
 #include "ustring.h"
 #include "utype.h"
 #include "views.h"		/* for FindSel structure */

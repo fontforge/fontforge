@@ -24,13 +24,15 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "search.h"
+
 #include "cvundoes.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include <math.h>
 #include <ustring.h>
 #include <utype.h>
-#include "search.h"
 
 static int CoordMatches(real real_off, real search_off, SearchData *s) {
     if ( real_off >= search_off-s->fudge && real_off <= search_off+s->fudge )
