@@ -43,6 +43,7 @@
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "tottf.h"
+#include "tottfgpos.h"
 #include <unistd.h>
 #include <math.h>
 #include <locale.h>

@@ -38,6 +38,7 @@
 #include "splinestroke.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+#include "tottfgpos.h"
 #include <ustring.h>
 #include <utype.h>
 #include <gkeysym.h>

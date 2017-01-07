@@ -47,6 +47,7 @@
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "tottfaat.h"
+#include "tottfgpos.h"
 #include <math.h>
 #include <unistd.h>
 #include <time.h>

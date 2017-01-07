@@ -45,6 +45,7 @@
 #include "splineutil2.h"
 #include "svg.h"
 #include "tottf.h"
+#include "tottfgpos.h"
 #include <unistd.h>
 #include <math.h>
 #include <time.h>

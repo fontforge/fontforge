@@ -72,6 +72,7 @@
 #include "splineutil2.h"
 #include "svg.h"
 #include "tottf.h"
+#include "tottfgpos.h"
 #include <gfile.h>
 #include <utype.h>
 #include <ustring.h>

@@ -35,6 +35,7 @@
 #include "namelist.h"
 #include "splinefill.h"
 #include "splineutil.h"
+#include "tottfgpos.h"
 #include <ustring.h>
 #include <math.h>
 #include <utype.h>

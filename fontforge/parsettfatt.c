@@ -33,6 +33,7 @@
 #include "parsettf.h"
 #include "splineutil.h"
 #include "tottfaat.h"
+#include "tottfgpos.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>

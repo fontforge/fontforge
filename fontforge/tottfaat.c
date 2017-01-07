@@ -34,6 +34,7 @@
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "tottf.h"
+#include "tottfgpos.h"
 #include <utype.h>
 
 #include "ttf.h"

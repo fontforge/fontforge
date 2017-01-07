@@ -2091,11 +2091,6 @@ extern int _WriteWOFFFont(FILE *ttf,SplineFont *sf, enum fontformat format,
 extern int WriteWOFFFont(char *fontname,SplineFont *sf, enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer);
 extern int WriteUFOFont(const char *fontname, SplineFont *sf, enum fontformat format,int flags, const EncMap *enc,int layer);
-extern int ScriptIsRightToLeft(uint32 script);
-extern void ScriptMainRange(uint32 script, int *start, int *end);
-extern uint32 ScriptFromUnicode(uint32 u,SplineFont *sf);
-extern uint32 SCScriptFromUnicode(SplineChar *sc);
-extern int SCRightToLeft(SplineChar *sc);
 extern int SLIContainsR2L(SplineFont *sf,int sli);
 extern void SFFindNearTop(SplineFont *);
 extern void SFRestoreNearTop(SplineFont *);
@@ -2144,7 +2139,6 @@ extern SplineChar *SplineCharCreate(int layer_cnt);
 extern void SCAddRef(SplineChar *sc,SplineChar *rsc,int layer, real xoff, real yoff);
 extern void SplineCharFree(SplineChar *sc);
 extern void ScriptLangListFree(struct scriptlanglist *sl);
-extern void SFBaseSort(SplineFont *sf);
 
 #if 1
 // These relate to experimental support for U. F. O. groups.
@@ -2153,7 +2147,6 @@ extern void SFBaseSort(SplineFont *sf);
 #define GROUP_NAME_VERTICAL 4 // Otherwise horizontal.
 #define GROUP_NAME_RIGHT 8 // Otherwise left (or above).
 #endif // 1
-extern struct otffeatname *findotffeatname(uint32 tag,SplineFont *sf);
 extern void MMSetFree(MMSet *mm);
 extern void SFRemoveUndoes(SplineFont *sf,uint8 *selected,EncMap *map);
 extern void SplineRefigure(Spline *spline);

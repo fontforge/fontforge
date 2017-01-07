@@ -788,15 +788,6 @@ struct contexttree {
 extern const char *cffnames[];
 extern const int nStdStrings;
 
-    /* Open type Advanced Typography Tables */
-extern void otf_dumpgpos(struct alltabs *at, SplineFont *sf);
-extern void otf_dumpgsub(struct alltabs *at, SplineFont *sf);
-extern void otf_dumpgdef(struct alltabs *at, SplineFont *sf);
-extern void otf_dumpbase(struct alltabs *at, SplineFont *sf);
-extern void otf_dumpjstf(struct alltabs *at, SplineFont *sf);
-extern void otf_dump_dummydsig(struct alltabs *at, SplineFont *sf);
-extern int gdefclass(SplineChar *sc);
-
     /* Apple variation tables */
 extern int ContourPtNumMatch(MMSet *mm, int gid);
 extern int16 **SCFindDeltas(MMSet *mm, int gid, int *_ptcnt);
@@ -814,22 +805,6 @@ extern struct ttf_table *SFFindTable(SplineFont *sf,uint32 tag);
 extern int TTF__getcvtval(SplineFont *sf,int val);
 extern int TTF_getcvtval(SplineFont *sf,int val);
 
-    /* Used by both otf and apple */
-extern int LigCaretCnt(SplineChar *sc);
-extern uint16 *ClassesFromNames(SplineFont *sf,char **classnames,int class_cnt,
-	int numGlyphs, SplineChar ***glyphs, int apple_kc);
-extern SplineChar **SFGlyphsFromNames(SplineFont *sf,char *names);
-
-
-extern SplineChar **EntryExitDecompose(SplineFont *sf,AnchorClass *ac,
-	struct glyphinfo *gi);
-extern void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, int *subcnts,
-	SplineChar ***marks,SplineChar ***base,
-	SplineChar ***lig,SplineChar ***mkmk,
-	struct glyphinfo *gi);
-
-
-
     /* Non-standard tables */
 	/* My PfEd table for FontForge/PfaEdit specific info */
 extern void pfed_dump(struct alltabs *at, SplineFont *sf);
@@ -842,10 +817,6 @@ extern int ttf_bdf_dump(SplineFont *sf,struct alltabs *at,int32 *sizes);
 extern void ttf_bdf_read(FILE *ttf,struct ttfinfo *info);
 	/* The FFTM table, to some timestamps I'd like */
 extern int ttf_fftm_dump(SplineFont *sf,struct alltabs *at);
-
-    /* The MATH table */
-extern void otf_dump_math(struct alltabs *at, SplineFont *sf);
-
 
 
 /* Known font parameters for 'TeX ' table (fontdims, spacing params, whatever you want to call them) */

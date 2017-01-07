@@ -37,6 +37,7 @@
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "tottf.h"
+#include "tottfgpos.h"
 #include <gwidget.h>
 #include <ustring.h>
 #include <math.h>
