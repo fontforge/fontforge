@@ -813,7 +813,6 @@ extern struct macsettingname {
 extern struct ttf_table *SFFindTable(SplineFont *sf,uint32 tag);
 extern int TTF__getcvtval(SplineFont *sf,int val);
 extern int TTF_getcvtval(SplineFont *sf,int val);
-extern int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags);
 
     /* Used by both otf and apple */
 extern int LigCaretCnt(SplineChar *sc);
@@ -829,7 +828,6 @@ extern void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, 
 	SplineChar ***lig,SplineChar ***mkmk,
 	struct glyphinfo *gi);
 
-extern void cvt_unix_to_1904( long long time, int32 result[2]);
 
 
     /* Non-standard tables */
@@ -886,6 +884,5 @@ extern void otf_dump_math(struct alltabs *at, SplineFont *sf);
 #define TeX_BigOpSpace4		CHR('B','O','S','4')
 #define TeX_BigOpSpace5		CHR('B','O','S','5')
 
-extern void SFDummyUpCIDs(struct glyphinfo *gi,SplineFont *sf);
 
 #endif /* FONTFORGE_TTF_H */

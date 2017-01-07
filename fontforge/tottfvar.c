@@ -28,6 +28,7 @@
 #include "mem.h"
 #include "ttf.h"
 #include "splinesaveafm.h"
+#include "tottf.h"
 #include <math.h>
 #include <ustring.h>
 

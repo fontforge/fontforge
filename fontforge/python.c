@@ -92,6 +92,7 @@ extern int old_sfnt_flags;
 #include "splineutil2.h"
 #include "start.h"
 #include "svg.h"
+#include "tottf.h"
 #include "ffpython.h"
 
 #include <math.h>

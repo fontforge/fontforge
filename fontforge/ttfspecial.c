@@ -29,6 +29,7 @@
 #include "splinefill.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+#include "tottf.h"
 #include <math.h>
 #include <time.h>
 #include <utype.h>

@@ -34,6 +34,7 @@
 #include "fvfonts.h"
 #include "splinefill.h"
 #include "splinesaveafm.h"
+#include "tottf.h"
 #include <string.h>
 #include <ustring.h>
 #include <utype.h>

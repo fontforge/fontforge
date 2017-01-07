@@ -37,6 +37,7 @@
 #include "splineorder2.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+#include "tottf.h"
 #include <math.h>
 #include <ustring.h>
 

@@ -36,6 +36,7 @@
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+#include "tottf.h"
 #include <gwidget.h>
 #include <ustring.h>
 #include <math.h>

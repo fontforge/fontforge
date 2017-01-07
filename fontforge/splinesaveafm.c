@@ -38,6 +38,7 @@
 #include "mm.h"
 #include "namelist.h"
 #include "ttf.h"		/* For AnchorClassDecompose */
+#include "tottf.h"
 #include <stdio.h>
 #include "splinefont.h"
 #include "splinesave.h"

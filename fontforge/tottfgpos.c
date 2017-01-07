@@ -32,6 +32,7 @@
 #include "asmfpst.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
+#include "tottf.h"
 #include <utype.h>
 #include <ustring.h>
 
