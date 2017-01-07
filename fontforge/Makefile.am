@@ -88,6 +88,7 @@ noinst_HEADERS = \
 	splineutil2.h \
 	start.h \
 	svg.h \
+	tottfaat.h \
 	fontforgeui.h sftextfieldP.h configure-fontforge.h views.h 	\
 	flaglist.h strlist.h charview_private.h cvundoes.h tables.h
 

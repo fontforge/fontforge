@@ -32,6 +32,7 @@
 #include "mem.h"
 #include "parsettf.h"
 #include "splineutil.h"
+#include "tottfaat.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>
