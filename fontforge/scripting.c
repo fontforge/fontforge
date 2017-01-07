@@ -70,6 +70,7 @@
 #include "splinestroke.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+#include "svg.h"
 #include <gfile.h>
 #include <utype.h>
 #include <ustring.h>

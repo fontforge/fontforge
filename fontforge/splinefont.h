@@ -2099,8 +2099,6 @@ extern int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
 	int flags,EncMap *enc,int layer);
 extern int WriteTTC(const char *filename,struct sflist *sfs,enum fontformat format,
 	enum bitmapformat bf,int flags,int layer,enum ttc_flags ttcflags);
-extern int WriteSVGFont(const char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *enc,int layer);
-extern int _WriteSVGFont(FILE *file,SplineFont *sf,int flags,EncMap *enc,int layer);
 extern int WriteUFOFont(const char *fontname, SplineFont *sf, enum fontformat format,int flags, const EncMap *enc,int layer);
 extern void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf);
 extern int AlreadyMSSymbolArea(SplineFont *sf,EncMap *map);
@@ -2299,8 +2297,6 @@ extern char* DumpSplineFontMetadata( SplineFont *sf );
 enum ttfflags { ttf_onlystrikes=1, ttf_onlyonestrike=2, ttf_onlykerns=4, ttf_onlynames=8 };
 extern SplineFont *_SFReadWOFF(FILE *woff,int flags,enum openflags openflags,
 	char *filename,struct fontdict *fd);
-extern SplineFont *SFReadSVG(char *filename,int flags);
-extern SplineFont *SFReadSVGMem(char *data,int flags);
 extern SplineFont *SFReadUFO(char *filename,int flags);
 extern SplineFont *SFReadWinFON(char *filename,int toback);
 extern SplineFont *LoadSplineFont(const char *filename,enum openflags);
@@ -2310,13 +2306,8 @@ extern void ArchiveCleanup(char *archivedir);
 extern char *Unarchive(char *name, char **_archivedir);
 extern char *Decompress(char *name, int compression);
 extern uint16 MacStyleCode( SplineFont *sf, uint16 *psstyle );
-extern char **NamesReadSVG(char *filename);
 extern char **NamesReadUFO(char *filename);
 
-extern void SFSetOrder(SplineFont *sf,int order2);
-extern void SFLSetOrder(SplineFont *sf, int layerdest, int order2);
-extern int SFFindOrder(SplineFont *sf);
-extern int SFLFindOrder(SplineFont *sf, int layerdest);
 
 extern const char *UnicodeRange(int unienc);
 extern SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,EncMap *map,int i);
@@ -2329,7 +2320,6 @@ extern void SCUndoSetLBearingChange(SplineChar *sc,int lb);
 
 
 
-extern SplineSet *SplinePointListInterpretSVG(char *filename,char *memory, int memlen, int em_size, int ascent,int stroked);
 extern SplineSet *SplinePointListInterpretGlif(SplineFont *sf,char *filename,char *memory, int memlen, int em_size, int ascent,int stroked);
 #define UNDEFINED_WIDTH	-999999
 struct pscontext {
@@ -2437,7 +2427,6 @@ extern void SFSetModTime(SplineFont *sf);
 extern int SFHasInstructions(SplineFont *sf);
 extern int RefDepth(RefChar *ref,int layer);
 
-extern SplineChar *SCHasSubs(SplineChar *sc,uint32 tag);
 
 extern struct lookup_subtable *SFFindLookupSubtable(SplineFont *sf,char *name);
 extern int FeatureTagInFeatureScriptList(uint32 tag, FeatureScriptLangList *fl);
@@ -2459,12 +2448,10 @@ extern void RevertedGlyphReferenceFixup(SplineChar *sc, SplineFont *sf);
 extern void SFUntickAll(SplineFont *sf);
 
 
-extern int HasSVG(void);
 extern int HasUFO(void);
 extern void SCImportPS(SplineChar *sc,int layer,char *path,int doclear, int flags);
 extern void SCImportPDF(SplineChar *sc,int layer,char *path,int doclear, int flags);
 
-extern int _ExportSVG(FILE *svg,SplineChar *sc,int layer);
 extern int _ExportGlif(FILE *glif,SplineChar *sc,int layer);
 
 extern void SCCopyWidth(SplineChar *sc,enum undotype);
