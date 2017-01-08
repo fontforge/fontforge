@@ -28,6 +28,8 @@
 #ifndef FONTFORGE_TTFINSTRS_H
 #define FONTFORGE_TTFINSTRS_H
 
+#include "splinefont.h"
+
 enum ttf_instructions {
  ttf_npushb=0x40, ttf_npushw=0x41, ttf_pushb=0xb0, ttf_pushw=0xb8,
  ttf_aa=0x7f, ttf_abs=0x64, ttf_add=0x60, ttf_alignpts=0x27, ttf_alignrp=0x3c,
@@ -59,6 +61,19 @@ enum ttf_instructions {
 
 extern const char *ff_ttf_instrnames[];
 
+struct instrdata {
+    uint8 *instrs;
+    int instr_cnt, max;
+    uint8 *bts;
+    unsigned int changed: 1;
+    unsigned int in_composit: 1;
+    SplineFont *sf;
+    SplineChar *sc;
+    uint32 tag;
+    struct instrdlg *id; /* FIXME: struct instrdlg is defined in exe/ttfstrsui.c, remove from this struct */
+    struct instrdata *next;
+};
+
 typedef struct instrbase {
     unsigned int inedit: 1;
     struct instrdata *instrdata;
@@ -67,6 +82,10 @@ typedef struct instrbase {
     char *scroll, *offset;
 } InstrBase;
 
+enum byte_types { bt_instr, bt_cnt, bt_byte, bt_wordhi, bt_wordlo, bt_impliedreturn };
+
+extern uint8 *_IVParse(SplineFont *sf, char *text, int *len, void (*IVError)(void *, char *, int), void *iv);
+extern char *_IVUnParseInstrs(uint8 *instrs, int instr_cnt);
 extern char *__IVUnParseInstrs(InstrBase *iv);
 extern int instr_typify(struct instrdata *);
 

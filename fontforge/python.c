@@ -94,6 +94,7 @@ extern int old_sfnt_flags;
 #include "svg.h"
 #include "tottf.h"
 #include "tottfgpos.h"
+#include "ttfinstrs.h"
 #include "ffpython.h"
 
 #include <math.h>

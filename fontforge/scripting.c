@@ -73,6 +73,7 @@
 #include "svg.h"
 #include "tottf.h"
 #include "tottfgpos.h"
+#include "ttfinstrs.h"
 #include <gfile.h>
 #include <utype.h>
 #include <ustring.h>
