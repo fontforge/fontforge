@@ -49,6 +49,7 @@
 #include "tottfaat.h"
 #include "tottfgpos.h"
 #include "tottfvar.h"
+#include "ttfspecial.h"
 #include <math.h>
 #include <unistd.h>
 #include <time.h>
