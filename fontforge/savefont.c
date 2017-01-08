@@ -44,6 +44,7 @@
 #include "splineutil.h"
 #include "svg.h"
 #include "tottf.h"
+#include "winfonts.h"
 #include "ustring.h"
 #include "gfile.h"
 #include "gresource.h"

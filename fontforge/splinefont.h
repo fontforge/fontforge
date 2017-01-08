@@ -2167,9 +2167,6 @@ extern SplinePointList *SplinePointListTransform(SplinePointList *base, real tra
 extern void SCReinstanciateRef(SplineChar *sc,SplineChar *rsc,int layer);
 extern SplineChar *MakeDupRef(SplineChar *base, int local_enc, int uni_enc);
 extern void BDFClut(BDFFont *bdf, int linear_scale);
-extern int  FNTFontDump(char *filename,BDFFont *font, EncMap *map, int res);
-extern int  FONFontDump(char *filename,SplineFont *sf, int32 *sizes,int res,
-	EncMap *map);
 struct xlfd_components {
     char foundry[80];
     char family[100];
@@ -2275,7 +2272,6 @@ enum ttfflags { ttf_onlystrikes=1, ttf_onlyonestrike=2, ttf_onlykerns=4, ttf_onl
 extern SplineFont *_SFReadWOFF(FILE *woff,int flags,enum openflags openflags,
 	char *filename,struct fontdict *fd);
 extern SplineFont *SFReadUFO(char *filename,int flags);
-extern SplineFont *SFReadWinFON(char *filename,int toback);
 extern SplineFont *LoadSplineFont(const char *filename,enum openflags);
 extern SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags openflags);
 extern SplineFont *ReadSplineFont(const char *filename,enum openflags);	/* Don't use this, use LoadSF instead */
