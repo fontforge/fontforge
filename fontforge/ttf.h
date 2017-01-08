@@ -788,12 +788,6 @@ struct contexttree {
 extern const char *cffnames[];
 extern const int nStdStrings;
 
-    /* Apple variation tables */
-extern int ContourPtNumMatch(MMSet *mm, int gid);
-extern int16 **SCFindDeltas(MMSet *mm, int gid, int *_ptcnt);
-extern int16 **CvtFindDeltas(MMSet *mm, int *_ptcnt);
-extern void ttf_dumpvariations(struct alltabs *at, SplineFont *sf);
-
 extern struct macsettingname {
     int mac_feature_type;
     int mac_feature_setting;

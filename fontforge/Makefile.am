@@ -91,6 +91,7 @@ noinst_HEADERS = \
 	tottfaat.h \
 	tottf.h \
 	tottfgpos.h \
+	tottfvar.h \
 	fontforgeui.h sftextfieldP.h configure-fontforge.h views.h 	\
 	flaglist.h strlist.h charview_private.h cvundoes.h tables.h
 
