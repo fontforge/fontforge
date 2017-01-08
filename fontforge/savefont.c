@@ -45,6 +45,7 @@
 #include "svg.h"
 #include "tottf.h"
 #include "winfonts.h"
+#include "woff.h"
 #include "ustring.h"
 #include "gfile.h"
 #include "gresource.h"

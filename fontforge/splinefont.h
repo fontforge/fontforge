@@ -2064,7 +2064,6 @@ enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_mma, ff_mmb,
 	ff_type42, ff_type42cid,
 	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_ttc, ff_ttfdfont, ff_otf, ff_otfdfont,
 	ff_otfcid, ff_otfciddfont, ff_svg, ff_ufo, ff_woff, ff_none };
-extern int CanWoff(void);
 extern struct pschars *SplineFont2ChrsSubrs(SplineFont *sf, int iscjk,
 	struct pschars *subrs,int flags,enum fontformat format,int layer);
 struct cidbytes;
@@ -2086,10 +2085,6 @@ enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, bf_sfnt_ms, bf_otb,
 	bf_ptype3,
 	bf_none };
 extern const char *GetAuthor(void);
-extern int _WriteWOFFFont(FILE *ttf,SplineFont *sf, enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer);
-extern int WriteWOFFFont(char *fontname,SplineFont *sf, enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer);
 extern int WriteUFOFont(const char *fontname, SplineFont *sf, enum fontformat format,int flags, const EncMap *enc,int layer);
 extern int SLIContainsR2L(SplineFont *sf,int sli);
 extern void SFFindNearTop(SplineFont *);
@@ -2269,8 +2264,6 @@ extern char* DumpSplineFontMetadata( SplineFont *sf );
 
 
 enum ttfflags { ttf_onlystrikes=1, ttf_onlyonestrike=2, ttf_onlykerns=4, ttf_onlynames=8 };
-extern SplineFont *_SFReadWOFF(FILE *woff,int flags,enum openflags openflags,
-	char *filename,struct fontdict *fd);
 extern SplineFont *SFReadUFO(char *filename,int flags);
 extern SplineFont *LoadSplineFont(const char *filename,enum openflags);
 extern SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags openflags);

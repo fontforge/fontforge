@@ -47,6 +47,7 @@
 #include "splineutil.h"
 #include "svg.h"
 #include "winfonts.h"
+#include "woff.h"
 #include <utype.h>
 #include <ustring.h>
 #include <math.h>
