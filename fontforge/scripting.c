@@ -8235,11 +8235,54 @@ static void bValidate(Context *c) {
     c->return_val.u.ival = SFValidate(c->curfv->sf, ly_fore, force );
 }
 
-static void bDebugCrashFontForge(Context *UNUSED(c))
-{
+/* #define _DEBUGCRASHFONTFORGE 1 */
+#ifdef _DEBUGCRASHFONTFORGE
+static int bDebugCrashFontForgeS(int s) {
+    return( bDebugCrashFontForgeS(s+1) );	/* crash call stack */
+}
+#endif
+
+static void bDebugCrashFontForge(Context *c) {
+/* This function was introduced to crash FontForge on purpose for debugging. */
+/* To test your debugger, try: fontforge -lang=ff -c "DebugCrashFontForge()" */
+#ifdef _DEBUGCRASHFONTFORGE
+    int a, b, d;
+    char buffer[2], *ptr = NULL;
+
+    a = 0; b = d = a + 1;
+    if ( c->a.argc>2 ) {
+	c->error = ce_wrongnumarg;
+	return;
+    }
+    if ( c->a.argc==2 ) {
+	if ( c->a.vals[1].type!=v_int )
+	    ScriptError( c, "Bad type for argument");
+	d = c->a.vals[1].u.ival;
+    }
+    if ( d<0 || d>6 ) d = 1;
     fprintf(stderr,"FontForge is crashing because you asked it to using the DebugCrashFontForge command\n");
-    int *ptr = NULL;
-    *ptr = 1;
+    if ( d==1 )
+	c->return_val.u.ival = b / a;	/* crash with divide by zero */
+    else if ( d==2 )
+	b = bDebugCrashFontForgeS(0);	/* crash the call stack */
+    else if ( d==3 )
+	buffer[(d+d)] = 1;		/* crash on stack buffer overflow */
+    else if ( d==4 )
+	*ptr = 1;			/* crash on *ptr==NULL */
+    else if ( d==5 ) {
+	ptr = (void *)1; --ptr;
+	*ptr = 1;			/* crash on *ptr==0 address */
+    } else if ( d==6 ) {
+	ptr = malloc(10);
+	*(ptr+1000) = 1;		/* crash on malloc buffer overflow */
+	free(ptr);
+    }
+    fprintf(stderr,"DebugCrashFontForge did not crash as expected.\n");
+#else
+    fprintf(stderr,"DebugCrashFontForge instruction disabled.\n");
+    c->return_val.u.ival = 0;
+#endif
+    c->return_val.type = v_int;
 }
 
 static void bclearSpecialData(Context *c) {
@@ -8704,7 +8747,7 @@ static struct builtins {
     { "CompareGlyphs", bCompareGlyphs, 0,0,0 },
     { "CompareFonts", bCompareFonts, 0,4,0 },
     { "Validate", bValidate, 0,0,0 },
-    { "DebugCrashFontForge", bDebugCrashFontForge, 0,0,0 },
+    { "DebugCrashFontForge", bDebugCrashFontForge, 1,0,0 },
     { "ClearSpecialData", bclearSpecialData, 0,1,0 },
     { "ucLigChartGetCnt", bLigChartGetCnt, 1,1,0 },
     { "ucVulChartGetCnt", bVulChartGetCnt, 1,1,0 },
