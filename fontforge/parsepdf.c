@@ -25,11 +25,17 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "parsepdf.h"
+
 #include "cvimages.h"
 #include "dumppfa.h"
 #include "encoding.h"
 #include "fontforge.h"
 #include "namelist.h"
+#include "parsepfa.h"
+#include "parsettf.h"
+#include "psread.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>

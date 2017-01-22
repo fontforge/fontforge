@@ -31,6 +31,7 @@
 #include "bvedit.h"
 #include "dumppfa.h"
 #include "fontforgevw.h"
+#include "spiro.h"
 #include <math.h>
 #include <locale.h>
 #include <string.h>

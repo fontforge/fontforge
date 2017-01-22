@@ -27,6 +27,8 @@
  */
 #include "fontforgeui.h"
 #include "namelist.h"
+#include "scripting.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <ustring.h>

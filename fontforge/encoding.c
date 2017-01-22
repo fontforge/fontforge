@@ -33,6 +33,7 @@
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "namelist.h"
+#include "psread.h"
 #include "splinefont.h"
 #include <ustring.h>
 #include <utype.h>

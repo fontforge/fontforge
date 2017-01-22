@@ -27,6 +27,8 @@
 #include "dumppfa.h"
 #include "encoding.h"
 #include "fontforge.h"
+#include "parsettf.h"
+#include "psread.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -29,6 +29,7 @@
 #include "cvundoes.h"
 #include "dumppfa.h"
 #include "fontforgeui.h"
+#include "scstyles.h"
 #include <ustring.h>
 #include <utype.h>
 #include <gkeysym.h>

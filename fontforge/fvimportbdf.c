@@ -34,7 +34,10 @@
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "macbinary.h"
+#include "mem.h"
 #include "namelist.h"
+#include "palmfonts.h"
+#include "parsettf.h"
 #include <gfile.h>
 #include <math.h>
 #include "utype.h"

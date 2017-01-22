@@ -27,6 +27,7 @@
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "lookups.h"
+#include "mem.h"
 #include "namelist.h"
 #include "asmfpst.h"
 #include <utype.h>

@@ -41,9 +41,6 @@ static const unsigned unicode4_size = 17*65536;
     /* Unicode goes up to 0x10ffff */
 
 
-extern void ProcessNativeScript(int argc, char *argv[], FILE *script);
-extern void CheckIsScript(int argc, char *argv[]);
-
 extern int32 unicode_from_adobestd[256];
 
 /* unicode_nameannot - Deprecated, but kept for older programs to access. */

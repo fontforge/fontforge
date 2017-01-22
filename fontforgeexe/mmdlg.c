@@ -30,6 +30,10 @@
 #include "fvfonts.h"
 #include "macenc.h"
 #include "mm.h"
+#include "mem.h"
+#include "parsettf.h"
+#include "psread.h"
+#include "sfd.h"
 #include <ustring.h>
 #include <math.h>
 #include <gkeysym.h>

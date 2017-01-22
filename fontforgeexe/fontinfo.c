@@ -34,6 +34,10 @@
 #include "lookups.h"
 #include "namelist.h"
 #include "ofl.h"
+#include "parsepfa.h"
+#include "parsettf.h"
+#include "psread.h"
+#include "sfd.h"
 #include <ustring.h>
 #include <chardata.h>
 #include <utype.h>
@@ -228,14 +232,14 @@ static GTextInfo gaspversions[] = {
 static GTextInfo panfamily[] = {
     { (unichar_t *) N_("PanoseFamily|Any"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("PanoseFamily|No Fit"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("Latin: Text & Display"), NULL, 0, 0, (void *) 2, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Latin: Text and Display"), NULL, 0, 0, (void *) 2, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
 /* GT: See the long comment at "Property|New" */
 /* GT: The msgstr should contain a translation of "Script", ignore "cursive|" */
 /* GT: English uses "script" to me a general writing style (latin, greek, kanji) */
 /* GT: and the cursive handwriting style. Here we mean cursive handwriting. */
     { (unichar_t *) N_("cursive|Latin: Handwritten"), NULL, 0, 0, (void *) 3, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Latin: Decorative"), NULL, 0, 0, (void *) 4, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("Latin: Pictorial/Symbol"), NULL, 0, 0, (void *) 5, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Latin: Pictorial and Symbol"), NULL, 0, 0, (void *) 5, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) "6", NULL, 0, 0, (void *) 6, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) "7", NULL, 0, 0, (void *) 7, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) "8", NULL, 0, 0, (void *) 8, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
@@ -298,7 +302,7 @@ static GTextInfo panweight[] = {
     { (unichar_t *) N_("Bold"), NULL, 0, 0, (void *) 8, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Heavy"), NULL, 0, 0, (void *) 9, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Black"), NULL, 0, 0, (void *) 10, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("Nord"), NULL, 0, 0, (void *) 11, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Extra Black (Nord)"), NULL, 0, 0, (void *) 11, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) "12", NULL, 0, 0, (void *) 12, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) "13", NULL, 0, 0, (void *) 13, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) "14", NULL, 0, 0, (void *) 14, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
@@ -448,7 +452,7 @@ static GTextInfo pantool[] = {
     { (unichar_t *) N_("Ball (Round Cap)"), NULL, 0, 0, (void *) 5, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Brush"), NULL, 0, 0, (void *) 6, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Rough"), NULL, 0, 0, (void *) 7, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("Felt Pen/Brush Tip"), NULL, 0, 0, (void *) 8, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Felt Pen or Brush Tip"), NULL, 0, 0, (void *) 8, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Wild Brush - Drips a lot"), NULL, 0, 0, (void *) 9, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) "10", NULL, 0, 0, (void *) 10, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) "11", NULL, 0, 0, (void *) 11, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
@@ -556,18 +560,18 @@ static GTextInfo panform[] = {
 static GTextInfo panfinials[] = {
     { (unichar_t *) N_("PanoseFinials|Any"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("PanoseFinials|No Fit"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("None/No loops"), NULL, 0, 0, (void *) 2, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("None/Closed loops"), NULL, 0, 0, (void *) 3, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("None/Open loops"), NULL, 0, 0, (void *) 4, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("Sharp/No loops"), NULL, 0, 0, (void *) 5, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("Sharp/Closed loops"), NULL, 0, 0, (void *) 6, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("Sharp/Open loops"), NULL, 0, 0, (void *) 7, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("Tapered/No loops"), NULL, 0, 0, (void *) 8, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("Tapered/Closed loops"), NULL, 0, 0, (void *) 9, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("Tapered/Open loops"), NULL, 0, 0, (void *) 10, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("Round/No loops"), NULL, 0, 0, (void *) 11, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("Round/Closed loops"), NULL, 0, 0, (void *) 12, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("Round/Open loops"), NULL, 0, 0, (void *) 13, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("None/No Loops"), NULL, 0, 0, (void *) 2, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("None/Closed Loops"), NULL, 0, 0, (void *) 3, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("None/Open Loops"), NULL, 0, 0, (void *) 4, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Sharp/No Loops"), NULL, 0, 0, (void *) 5, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Sharp/Closed Loops"), NULL, 0, 0, (void *) 6, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Sharp/Open Loops"), NULL, 0, 0, (void *) 7, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Tapered/No Loops"), NULL, 0, 0, (void *) 8, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Tapered/Closed Loops"), NULL, 0, 0, (void *) 9, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Tapered/Open Loops"), NULL, 0, 0, (void *) 10, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Round/No Loops"), NULL, 0, 0, (void *) 11, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Round/Closed Loops"), NULL, 0, 0, (void *) 12, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Round/Open Loops"), NULL, 0, 0, (void *) 13, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) "14", NULL, 0, 0, (void *) 14, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) "15", NULL, 0, 0, (void *) 15, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     GTEXTINFO_EMPTY
@@ -673,12 +677,12 @@ static GTextInfo panserifvar[] = {
 static GTextInfo pantreatment[] = {
     { (unichar_t *) N_("PanoseTreatment|Any"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("PanoseTreatment|No Fit"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("Solid Fill"), NULL, 0, 0, (void *) 2, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Standard Solid Fill"), NULL, 0, 0, (void *) 2, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("No Fill"), NULL, 0, 0, (void *) 3, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Patterned Fill"), NULL, 0, 0, (void *) 4, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Complex Fill"), NULL, 0, 0, (void *) 5, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Shaped Fill"), NULL, 0, 0, (void *) 6, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("Drawn/Distressed"), NULL, 0, 0, (void *) 7, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Drawn or Distressed"), NULL, 0, 0, (void *) 7, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) "8", NULL, 0, 0, (void *) 8, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) "9", NULL, 0, 0, (void *) 9, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) "10", NULL, 0, 0, (void *) 10, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
@@ -714,7 +718,7 @@ static GTextInfo pantopology2[] = {
     { (unichar_t *) N_("Standard"), NULL, 0, 0, (void *) 2, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Square"), NULL, 0, 0, (void *) 3, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Multiple Segment"), NULL, 0, 0, (void *) 4, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("Deco (E,M,S) Waco midline"), NULL, 0, 0, (void *) 5, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Deco (E,M,S) Waco Midline"), NULL, 0, 0, (void *) 5, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Uneven Weighting"), NULL, 0, 0, (void *) 6, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Diverse Arms"), NULL, 0, 0, (void *) 7, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Diverse Forms"), NULL, 0, 0, (void *) 8, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
@@ -760,7 +764,7 @@ static GTextInfo pankind[] = {
     { (unichar_t *) N_("Borders"), NULL, 0, 0, (void *) 9, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Icons"), NULL, 0, 0, (void *) 10, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Logos"), NULL, 0, 0, (void *) 11, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("Industry specific"), NULL, 0, 0, (void *) 12, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Industry Specific"), NULL, 0, 0, (void *) 12, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) "13", NULL, 0, 0, (void *) 13, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) "14", NULL, 0, 0, (void *) 14, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) "15", NULL, 0, 0, (void *) 15, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
@@ -9131,7 +9135,7 @@ return;
     panarray[j++] = &pangcd[i-1]; panarray[j++] = NULL;
 
     pangcd[i].gd.pos.x = 20; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y+14+4;
-    panlabel[i].text = (unichar_t *) S_("Panose|_Family");
+    panlabel[i].text = (unichar_t *) S_("Panose|_Family Kind");
     panlabel[i].text_is_1byte = true;
     panlabel[i].text_in_resource = true;
     pangcd[i].gd.label = &panlabel[i];

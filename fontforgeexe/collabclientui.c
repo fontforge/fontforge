@@ -30,6 +30,7 @@
 #include "collabclientui.h"
 #include "uiinterface.h"
 #include "cvundoes.h"
+#include "sfd.h"
 #include "sfundo.h"
 #include "../fontforge/ffglib.h"
 #include "fontforgeexe.h"

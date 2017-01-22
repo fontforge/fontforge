@@ -24,8 +24,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _SFD1_H
-#define _SFD1_H
+#ifndef FONTFORGE_SFD1_H
+#define FONTFORGE_SFD1_H
 /* This file contains the data structures needed to read in an old sfd file */
 /* features and lookups and scripts are handled differently. That means that */
 /* the KernPair, KernClass, PST, FPST, AnchorClass, StateMachine data structures */
@@ -121,4 +121,7 @@ typedef struct splinefont1 {
 extern int SFFindBiggestScriptLangIndex(SplineFont *_sf,uint32 script,uint32 lang);
 extern int SFAddScriptIndex(SplineFont1 *sf,uint32 *scripts,int scnt);
 extern void SFD_AssignLookups(SplineFont1 *sf);
-#endif		/* _SFD1_H */
+
+extern enum uni_interp interp_from_encoding(Encoding *enc, enum uni_interp interp);
+
+#endif /* FONTFORGE_SFD1_H */

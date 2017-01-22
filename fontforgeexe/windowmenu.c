@@ -30,6 +30,7 @@
 #include "basics.h"
 #include <gfile.h>
 #include "splinefont.h"
+#include "scripting.h"
 #include "ustring.h"
 
 static void WindowSelect(GWindow base,struct gmenuitem *mi,GEvent *e) {
