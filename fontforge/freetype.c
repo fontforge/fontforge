@@ -29,6 +29,11 @@
 #include "fontforgevw.h"
 #include "fffreetype.h"
 #include "fvfonts.h"
+#include "splinefill.h"
+#include "splineorder2.h"
+#include "splinesaveafm.h"
+#include "splinestroke.h"
+#include "splineutil.h"
 #include <math.h>
 
 FT_Library ff_ft_context;

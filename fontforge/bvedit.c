@@ -29,6 +29,7 @@
 
 #include "cvundoes.h"
 #include "fontforgevw.h"
+#include "splinefill.h"
 #include <math.h>
 #include "ustring.h"
 

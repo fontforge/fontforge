@@ -28,6 +28,8 @@
 #include "fvfonts.h"
 #include "macenc.h"
 #include "asmfpst.h"
+#include "splinesaveafm.h"
+#include "splineutil.h"
 #include <utype.h>
 
 #include "ttf.h"

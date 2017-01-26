@@ -40,6 +40,9 @@
 #include "fvfonts.h"
 #include "fvfonts.h"
 #include "lookups.h"
+#include "splinesaveafm.h"
+#include "splineutil.h"
+#include "splineutil2.h"
 #include <unistd.h>
 #include <math.h>
 #include <time.h>

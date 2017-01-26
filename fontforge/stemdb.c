@@ -24,11 +24,16 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "stemdb.h"
+
 #include "autohint.h"
 #include "dumppfa.h"
 #include "fontforge.h"
 #include "edgelist2.h"
-#include "stemdb.h"
+#include "splineoverlap.h"
+#include "splineutil.h"
+#include "splineutil2.h"
 
 #include <math.h>
 #include <utype.h>

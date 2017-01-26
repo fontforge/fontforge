@@ -27,6 +27,7 @@
  */
 #include "fontforgeui.h"
 #include "macenc.h"
+#include "splineutil.h"
 #include <gkeysym.h>
 #include <ustring.h>
 #include "ttf.h"

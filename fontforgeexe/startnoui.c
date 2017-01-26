@@ -26,6 +26,7 @@
  */
 #include "fontforgevw.h"
 #include "scripting.h"
+#include "start.h"
 
 #ifndef _NO_LIBUNICODENAMES
 #include <libunicodenames.h>	/* need to open a database when we start */

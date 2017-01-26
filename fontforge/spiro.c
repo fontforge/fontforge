@@ -31,6 +31,7 @@
 #include "spiro.h"
 
 #include "fontforgevw.h"
+#include "splineutil.h"
 
 /* Access to Raph Levien's spiro splines */
 /* See http://www.levien.com/spiro/ */

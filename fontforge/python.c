@@ -73,6 +73,8 @@ extern int old_sfnt_flags;
 #include "print.h"
 #include "psread.h"
 #include "savefont.h"
+#include "splineorder2.h"
+#include "splinesaveafm.h"
 #include "utype.h"
 #include "ustring.h"
 #include "flaglist.h"
@@ -83,6 +85,12 @@ extern int old_sfnt_flags;
 #include "search.h"
 #include "sfd.h"
 #include "spiro.h"
+#include "splinefill.h"
+#include "splineoverlap.h"
+#include "splinestroke.h"
+#include "splineutil.h"
+#include "splineutil2.h"
+#include "start.h"
 #include "ffpython.h"
 
 #include <math.h>

@@ -30,6 +30,7 @@
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "ttf.h"
+#include "splineutil.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>

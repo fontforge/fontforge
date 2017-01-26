@@ -32,6 +32,10 @@
 #include "fontforgevw.h"
 #include "macbinary.h"
 #include "mem.h"
+#include "splinefill.h"
+#include "splinesaveafm.h"
+#include "splineutil.h"
+#include "splineutil2.h"
 #include <stdio.h>
 #include <math.h>
 #include "splinefont.h"

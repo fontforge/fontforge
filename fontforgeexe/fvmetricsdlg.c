@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "bvedit.h"
+#include "splineutil.h"
 #include "fontforgeui.h"
 #include <math.h>
 #include <ustring.h>

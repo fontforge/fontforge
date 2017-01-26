@@ -38,6 +38,10 @@
 #include "namelist.h"
 #include "sfd.h"
 #include "spiro.h"
+#include "splinefill.h"
+#include "splineorder2.h"
+#include "splineutil.h"
+#include "splineutil2.h"
 #include "views.h"
 #include <math.h>
 #include <ustring.h>

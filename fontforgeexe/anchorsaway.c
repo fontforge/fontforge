@@ -26,6 +26,8 @@
  */
 #include "fontforgeui.h"
 #include "fvfonts.h"
+#include "splinefill.h"
+#include "splineutil.h"
 #include <gkeysym.h>
 #include <string.h>
 #include <ustring.h>

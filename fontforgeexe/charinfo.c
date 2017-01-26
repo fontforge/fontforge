@@ -33,6 +33,8 @@
 #include "fvfonts.h"
 #include "lookups.h"
 #include "namelist.h"
+#include "splinefill.h"
+#include "splineutil.h"
 #include <ustring.h>
 #include <math.h>
 #include <utype.h>

@@ -24,6 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "splinesaveafm.h"
+
 #include "autohint.h"
 #include "featurefile.h"
 #include "fontforgevw.h"		/* For Error */
@@ -37,6 +40,8 @@
 #include "ttf.h"		/* For AnchorClassDecompose */
 #include <stdio.h>
 #include "splinefont.h"
+#include "splinesave.h"
+#include "splineutil.h"
 #include <utype.h>
 #include <ustring.h>
 #include <time.h>

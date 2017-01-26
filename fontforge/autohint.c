@@ -34,6 +34,10 @@
 #include <stdio.h>
 #include <math.h>
 #include "splinefont.h"
+#include "splinefill.h"
+#include "splinesave.h"
+#include "splineutil.h"
+#include "splineutil2.h"
 #include "views.h"
 #include "stemdb.h"
 #include <utype.h>

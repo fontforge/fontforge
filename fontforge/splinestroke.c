@@ -24,9 +24,16 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "splinestroke.h"
+
 #include "cvundoes.h"
 #include "fontforge.h"
 #include "splinefont.h"
+#include "splineorder2.h"
+#include "splineoverlap.h"
+#include "splineutil.h"
+#include "splineutil2.h"
 #include <math.h>
 #define PI      3.1415926535897932
 

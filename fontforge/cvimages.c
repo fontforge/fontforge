@@ -33,6 +33,9 @@
 #include "parsepdf.h"
 #include "psread.h"
 #include "spiro.h"
+#include "splineorder2.h"
+#include "splineutil.h"
+#include "splineutil2.h"
 #include <math.h>
 #include <sys/types.h>
 #include <dirent.h>

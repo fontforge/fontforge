@@ -36,6 +36,7 @@
 #include "lookups.h"
 #include "namelist.h"
 #include "ttf.h"
+#include "splineutil.h"
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>

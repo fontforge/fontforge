@@ -1,4 +1,5 @@
 #include "fontforge.h"
+#include "start.h"
 
 int main()
 {

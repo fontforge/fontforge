@@ -42,6 +42,12 @@
 #include "namelist.h"
 #include "sfd.h"
 #include "spiro.h"
+#include "splinefill.h"
+#include "splineorder2.h"
+#include "splineoverlap.h"
+#include "splinesaveafm.h"
+#include "splineutil.h"
+#include "splineutil2.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>

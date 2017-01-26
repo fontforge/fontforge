@@ -34,6 +34,10 @@
 #include "mem.h"
 #include "parsettf.h"
 #include "spiro.h"
+#include "splineorder2.h"
+#include "splinesaveafm.h"
+#include "splineutil.h"
+#include "splineutil2.h"
 #include <math.h>
 #include <locale.h>
 # include <ustring.h>

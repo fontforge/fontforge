@@ -28,6 +28,7 @@
 #include "cvundoes.h"
 #include "fontforgeui.h"
 #include "nonlineartrans.h"
+#include "splineutil.h"
 #include <utype.h>
 #include <ustring.h>
 

@@ -3,6 +3,7 @@
 #include "langfreq.h"
 
 #include "fvfonts.h"
+#include "splinesaveafm.h"
 
 #include <stdio.h>
 #include <stdlib.h>

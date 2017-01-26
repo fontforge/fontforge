@@ -26,6 +26,7 @@
  */
 #include "fontforgeui.h"
 #include "lookups.h"
+#include "splineutil.h"
 #include <ustring.h>
 #include <chardata.h>
 #include <utype.h>

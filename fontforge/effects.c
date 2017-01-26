@@ -30,6 +30,10 @@
 #include "autohint.h"
 #include "cvundoes.h"
 #include "fontforgevw.h"
+#include "splineoverlap.h"
+#include "splinestroke.h"
+#include "splineutil.h"
+#include "splineutil2.h"
 #include <ustring.h>
 #include <gkeysym.h>
 #include <utype.h>

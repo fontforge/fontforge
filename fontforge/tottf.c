@@ -37,6 +37,12 @@
 #include "mm.h"
 #include "parsepfa.h"
 #include "parsettfbmf.h"
+#include "splinefill.h"
+#include "splineorder2.h"
+#include "splinesaveafm.h"
+#include "splinesave.h"
+#include "splineutil.h"
+#include "splineutil2.h"
 #include <math.h>
 #include <unistd.h>
 #include <time.h>

@@ -35,6 +35,10 @@
 #include "namelist.h"
 #include "psread.h"
 #include "splinefont.h"
+#include "splinefill.h"
+#include "splinesaveafm.h"
+#include "splineutil.h"
+#include "splineutil2.h"
 #include <ustring.h>
 #include <utype.h>
 #include <math.h>

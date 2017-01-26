@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "splineutil.h"
+#include "splineutil2.h"
 #include <math.h>
 #include <gkeysym.h>
 

@@ -26,6 +26,7 @@
  */
 #include "fontforgeui.h"
 #include "gwidget.h"
+#include "splinefill.h"
 #include "ustring.h"
 #include <gkeysym.h>
 #include <math.h>

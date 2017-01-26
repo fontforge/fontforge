@@ -27,6 +27,10 @@
 #include "cvundoes.h"
 #include "fontforgeui.h"
 #include "spiro.h"
+#include "splinefill.h"
+#include "splineorder2.h"
+#include "splineutil.h"
+#include "splineutil2.h"
 #include "collabclientui.h"
 
 int palettes_docked=1;

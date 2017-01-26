@@ -77,6 +77,16 @@ noinst_HEADERS = \
 	scstyles.h \
 	sfd.h \
 	spiro.h \
+	splinefill.h \
+	splineorder2.h \
+	splineoverlap.h \
+	splinerefigure.h \
+	splinesaveafm.h \
+	splinesave.h \
+	splinestroke.h \
+	splineutil.h \
+	splineutil2.h \
+	start.h \
 	fontforgeui.h sftextfieldP.h configure-fontforge.h views.h 	\
 	flaglist.h strlist.h charview_private.h cvundoes.h tables.h
 

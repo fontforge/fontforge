@@ -42,6 +42,9 @@
 #include "parsepfa.h"
 #include "parsettf.h"
 #include "sfd.h"
+#include "splinefill.h"
+#include "splinesaveafm.h"
+#include "splineutil.h"
 #include <utype.h>
 #include <ustring.h>
 #include <math.h>

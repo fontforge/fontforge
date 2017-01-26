@@ -64,6 +64,12 @@
 #include "search.h"
 #include "sfd.h"
 #include "spiro.h"
+#include "splinefill.h"
+#include "splineorder2.h"
+#include "splinesaveafm.h"
+#include "splinestroke.h"
+#include "splineutil.h"
+#include "splineutil2.h"
 #include <gfile.h>
 #include <utype.h>
 #include <ustring.h>
