@@ -59,6 +59,7 @@ libgunicode_la_SOURCES =	\
 	ArabicForms.c		\
 	char.c			\
 	is_Ligature.c		\
+	is_Ligature_data.h	\
 	memory.c		\
 	ucharmap.c		\
 	unialt.c		\
@@ -84,6 +85,8 @@ libgunicode_la_LIBADD = $(MY_LIBS)
 #makeutype_SOURCES = makeutype.c combiners.h
 
 EXTRA_DIST = README.TXT		\
+	charset/gen-charset.pl	\
+	charset/generate.sh	\
 	combiners.h		\
 	dump.c			\
 	makebuildtables.c	\
