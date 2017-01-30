@@ -116,6 +116,7 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_MKDIR_P
 AC_PROG_SED
+AC_PATH_PROG([STRIP],[strip],[:])
 
 # Check for Objective C compiler
 m4_ifdef([AC_PROG_OBJC], [
