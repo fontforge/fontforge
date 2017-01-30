@@ -722,11 +722,11 @@ po/Makefile
 mackeys/Makefile
 doc/Makefile
 doc/html/Makefile
-pycontrib/Makefile
-pycontrib/simple/Makefile
-pycontrib/collab/Makefile
-pycontrib/graphicore/Makefile
-pycontrib/gdraw/Makefile
+python-scripts/Makefile
+python-scripts/simple/Makefile
+python-scripts/collab/Makefile
+python-scripts/graphicore/Makefile
+python-scripts/gdraw/Makefile
 nodejs/Makefile
 nodejs/collabwebview/Makefile
 nodejs/collabwebview/css/Makefile

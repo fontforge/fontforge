@@ -92,7 +92,7 @@ SUBDIRS += \
 	nodejs \
 	plugins \
 	po \
-	pycontrib \
+	python-scripts \
 	share \
 	tests \
 	$(NULL)

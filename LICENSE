@@ -181,7 +181,7 @@ fontforge-20120731-b/Packaging:
 fontforge.desktop	FontForge.spec		fontforge.xml
 FontForge-doc.spec	FontForge.static.spec
 
-fontforge-20120731-b/pycontrib:
+fontforge-20120731-b/python-scripts:
 excepthook.py
 
 fontforge-20120731-b/Unicode:
