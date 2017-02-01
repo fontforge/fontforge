@@ -1823,7 +1823,7 @@ return;		/* Not interesting. Only intersection is at an endpoint */
 			any = true;
 			x1o = x1; x2o = x2;
 		    } else if ( x1o!=x2o && (x1o>x2o) != ( x1>x2 ) ) {
-			/* A cross over has occured. (assume we have a small enough */
+			/* A cross over has occurred. (assume we have a small enough */
 			/*  region that three cross-overs can't have occurred) */
 			/* Use a binary search to track it down */
 			extended ytop, ybot, ytest, oldy;
@@ -1933,7 +1933,7 @@ return;		/* Not interesting. Only intersection is at an endpoint */
 			any = true;
 			y1o = y1; y2o = y2;
 		    } else if ( y1o!=y2o && (y1o>y2o) != ( y1>y2 ) ) {
-			/* A cross over has occured. (assume we have a small enough */
+			/* A cross over has occurred. (assume we have a small enough */
 			/*  region that three cross-overs can't have occurred) */
 			/* Use a binary search to track it down */
 			extended xtop, xbot, xtest, oldx;
