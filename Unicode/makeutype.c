@@ -43,7 +43,7 @@
  *
  * Then run the executable binary "/makeutype".
  * This will create 5 files in the same directory:
- *	ArabicForms.c, is_Ligatures.c, unialt.c, utype.c, utype.h
+ *	ArabicForms.c, is_Ligatures_data.c, unialt.c, utype.c, utype.h
  * (please move utype.h into Fontforge's "../inc" subdirectory)
  *
  * When done building the updated files, you can clean-up by removing
@@ -697,7 +697,7 @@ static void buildtables(FILE *data,long unsigned int *dt,int s,int m,char *t) {
 /* range of 't'16{0...s} and then as uint32 for the range 't'32{(s+1)...m}. */
     int i,j;
 
-    fprintf( data, "const uint16 %s16[] = {", t );
+    fprintf( data, "static const uint16 %s16[] = {", t );
     for ( i=j=0; i<s; i=i+j ) {
 	fprintf( data, "\n  0x%04x", dt[i] );
 	for ( j=1; j<8 && i+j<s; ++j ) {
@@ -706,7 +706,7 @@ static void buildtables(FILE *data,long unsigned int *dt,int s,int m,char *t) {
 	if ( i+j<s )
 	    fprintf(data, "," );
     }
-    fprintf(data, "\n};\n\nconst uint32 %s32[] = {", t );
+    fprintf(data, "\n};\n\nstatic const uint32 %s32[] = {", t );
     for ( i=s; i<m; i=i+j ) {
 	fprintf( data, "\n  0x%08x", dt[i] );
 	for ( j=1; j<4 && i+j<m; ++j ) {
@@ -716,74 +716,21 @@ static void buildtables(FILE *data,long unsigned int *dt,int s,int m,char *t) {
 	    fprintf(data, "," );
     }
     fprintf(data, "\n};\n\n" );
-}
 
-static void dumpbsearch(FILE *data,int s) {
-/* Customize bsearch sizes to match data table sizes for uint16 and uint32. */
-    fprintf( data, "static int compare_codepoints%d(const void *uCode1, const void *uCode2) {\n", s );
-    fprintf( data, "    const uint%d *cp1 = (const uint%d *)(uCode1);\n", s, s );
-    fprintf( data, "    const uint%d *cp2 = (const uint%d *)(uCode2);\n", s, s );
-    fprintf( data, "    return( (*cp1 < *cp2) ? -1 : ((*cp1 == *cp2) ? 0 : 1) );\n}\n\n" );
-}
-
-static void dump_getU(FILE *data,long unsigned int *dt,int s,int m,char *t,char *nam) {
-/* This function is used 3x to generate customized ligature vulgar_fraction */
-/* and other_fraction function call returning the 'n'th table unicode value */
-/* where you call this function with:					    */
-/*	'm' is the maximum size of the table,				    */
-/*	's' is size of the lower partition of the table (fits in uint16).   */
-/*	't' is the first part of the data type name.			    */
-/*	'nam' is the function_call name base.				    */
-/* and the generated functions work-as:					    */
-/* Get the 'n'th unicode value in the table, where {0<=n<=(sizeof(table)-1} */
-/* Treat both (uint16, uint32) tables as if it is only one table. Error=-1. */
-    fprintf( data, "int32 %s_get_U(int n) {\n", nam );
-    fprintf( data, "    if ( n<0 || n>=%d )\n\treturn( -1 );\n    ", m );
-    if ( s<m )
-	fprintf( data, "if ( n<%d )\n\t", s );
-    fprintf( data, "return( (int32)(%s16[n]) );\n", t );
-    if ( s<m )
-    fprintf( data, "    else\n\treturn( (int32)(%s32[n-%d]) );\n", t, s );
-    fprintf( data, "}\n\n" );
-}
-
-static void dumpbsearchfindN(FILE *data,long unsigned int *dt,int s,int m,char *t) {
-/* Find 'n' for this unicode value. Treat both (uint16, uint32) tables as a */
-/* single table. 'n' will be within {0<=n<=(sizeof(table)-1}, and Error=-1. */
-    fprintf( data, "    uint16 uCode16, *p16;\n" );
-    if ( s<m )
-	fprintf( data, "    uint32 *p32;\n" );
-    fprintf( data, "    int n=-1;\n\n" );
-    fprintf( data, "    if ( uCode<0x%x || uCode>0x%x || ", dt[0], dt[m-1] );
-    if ( dt[m-1]<MAXC )
-	fprintf( data, "isligorfrac(uCode)==0 )\n" );
-    else
-	fprintf( data, "(uCode<%d && isligorfrac(uCode)==0) )\n", MAXC );
-    fprintf( data, "\treturn( -1 );\n    " );
-    if ( s<m )
-	fprintf( data, "if ( uCode<0x%x ) {\n\tuCode16 = uCode;\n\t", dt[s-1] );
-    else
-	fprintf( data, "uCode16 = uCode;\n    " );
-    fprintf( data, "p16 = (uint16 *)(bsearch(&uCode16, %s16, %d, \\\n", t, s );
-    fprintf( data, "\t\t\t\tsizeof(uint16), compare_codepoints16));\n" );
-    if ( s<m )
-	fprintf( data, "\t" );
-    else
-	fprintf( data, "    " );
-    fprintf( data, "if ( p16 ) n = p16 - %s16;\n", t );
-    if ( s<m ) {
-	fprintf( data, "    } else {\n" );
-	fprintf( data, "\tp32 = (uint32 *)(bsearch(&uCode, %s32, %d, \\\n", t, m-s );
-	fprintf( data, "\t\t\t\tsizeof(uint32), compare_codepoints32));\n" );
-	fprintf( data, "\tif ( p32 ) n = p32 - %s32 + %d;\n", t, s );
-	fprintf( data, "    }\n" );
-    }
-    fprintf( data, "    return( n );\n}\n\n" );
+    /* Simplify code by providing constants used in lig/vulg/frac functions */
+    fprintf( data, "#define FF_%sTOTAL16\t%d\n", t, s );
+    fprintf( data, "#define FF_%sTOTAL32\t%d\n", t, m-s );
+    fprintf( data, "#define FF_%sTOTAL\t%d\n", t, m );
+    fprintf( data, "#define FF_%s16FIRST\t0x%04x\n", t, dt[0] );
+    fprintf( data, "#define FF_%s16LAST\t0x%04x\n", t, dt[s-1] );
+    fprintf( data, "#define FF_%s32FIRST\t0x%08x\n", t, ((m-s)?dt[s]:dt[m-1]+1) );
+    fprintf( data, "#define FF_%s32LAST\t0x%08x\n", t, dt[m-1] );
+    fprintf( data, "\n" );
 }
 
 static void dumpligaturesfractions(FILE *header) {
     FILE *data;
-    int i,j,l16,v16,f16;
+    int l16,v16,f16;
 
     fprintf( header, "\n\n/* Ligature/Vulgar_Fraction/Fraction unicode.org character lists & functions */\n\n" );
 
@@ -814,72 +761,29 @@ static void dumpligaturesfractions(FILE *header) {
     fprintf( header, "/* Return !0 if codepoint is a Ligature or Fraction */\n" );
     fprintf( header, "extern int is_LIGATURE_or_FRACTION(uint32 codepoint);\n\n" );
 
-    data = fopen( "is_Ligature.c","w");
+    data = fopen("is_Ligature_data.h","w");
     if (data==NULL) {
-	fprintf( stderr, CantSaveFile, "is_Ligature.c" );
+	fprintf( stderr, CantSaveFile, "is_Ligature_data.h" );
 	FreeNamesMemorySpace();
 	exit(2);
     }
 
-    fprintf( data, "/*\nCopyright: 2012 Barry Schwartz\n" );
-    fprintf( data, "Copyright: 2016 Joe Da Silva\n" );
+    fprintf( data, "/*\nCopyright: 2012 Barry Schwartz, create is_Ligature.c to test for vulgar fracs\n" );
+    fprintf( data, "Copyright: 2016 Joe Da Silva, re-write is_Ligature.c for ligs, vulg, and frac\n" );
+    fprintf( data, "Copyright: 2016 Gioele Barabucci, Simplify code and create is_Ligature_data.h\n" );
     fprintf( data, "License: BSD-3-clause\n" );
-    fprintf( data, "Contributions:\n*/\n" );
+    fprintf( data, "Contributions:\n*/\n\n" );
     fprintf( data, GeneratedFileMessage, UnicodeMajor, UnicodeMinor );
-    fprintf( data, "#include \"utype.h\"\n" );
-    fprintf( data, "#include <stdlib.h>\n\n" );
+    fprintf( data, "/* unicode.org codepoints for ligatures, vulgar fractions, other fractions */\n\n" );
 
     /* simple compression using uint16 instead of everything as uint32 */
     for ( l16=0; l16<lgm && ligature[l16]<=65535; ++l16 );
     for ( v16=0; v16<vfm && vulgfrac[v16]<=65535; ++v16 );
     for ( f16=0; f16<frm && fraction[f16]<=65535; ++f16 );
 
-    fprintf( data, "/* unicode.org codepoints for ligatures, vulgar fractions, other fractions */\n\n" );
     buildtables(data,ligature,l16,lgm,"ligature");
     buildtables(data,vulgfrac,v16,vfm,"vulgfrac");
     buildtables(data,fraction,f16,frm,"fraction");
-
-    dumpbsearch(data,16); dumpbsearch(data,32);
-
-    fprintf( data, "#define ELEMENTS_IN_ARRAY(x) (sizeof(x) / sizeof(x[0]))\n\n" );
-    fprintf( data, "int LigatureCount(void) {\n" );
-    fprintf( data, "    return( ELEMENTS_IN_ARRAY(ligature16) + ELEMENTS_IN_ARRAY(ligature32) );\n}\n\n" );
-    fprintf( data, "int VulgarFractionCount(void) {\n" );
-    fprintf( data, "    return( ELEMENTS_IN_ARRAY(vulgfrac16) + ELEMENTS_IN_ARRAY(vulgfrac32) );\n}\n\n" );
-    fprintf( data, "int OtherFractionCount(void) {\n" );
-    fprintf( data, "    return( ELEMENTS_IN_ARRAY(fraction16) + ELEMENTS_IN_ARRAY(fraction32) );\n}\n\n" );
-    fprintf( data, "int FractionCount(void) {\n" );
-    fprintf( data, "    return( VulgarFractionCount() + OtherFractionCount() );\n}\n\n" );
-
-    dump_getU(data,ligature,l16,lgm,"ligature","Ligature");
-    dump_getU(data,vulgfrac,v16,vfm,"vulgfrac","VulgFrac");
-    dump_getU(data,fraction,f16,frm,"fraction","Fraction");
-
-    fprintf( data, "int Ligature_find_N(uint32 uCode) {\n" );
-    dumpbsearchfindN(data,ligature,l16,lgm,"ligature");
-    fprintf( data, "int VulgFrac_find_N(uint32 uCode) {\n" );
-    dumpbsearchfindN(data,vulgfrac,v16,vfm,"vulgfrac");
-    fprintf( data, "int Fraction_find_N(uint32 uCode) {\n" );
-    dumpbsearchfindN(data,fraction,f16,frm,"fraction");
-
-    fprintf( data, "/* Boolean-style tests (found==0) to see if your codepoint value is listed */\n" );
-    fprintf( data, "/* unicode.org codepoints for ligatures, vulgar fractions, other fractions */\n\n" );
-
-    fprintf( data, "int is_LIGATURE(uint32 codepoint) {\n" );
-    fprintf( data, "    return( Ligature_find_N(codepoint)<0 );\n}\n\n" );
-    fprintf( data, "int is_VULGAR_FRACTION(uint32 codepoint) {\n" );
-    fprintf( data, "    return( VulgFrac_find_N(codepoint)<0 );\n}\n\n" );
-    fprintf( data, "int is_OTHER_FRACTION(uint32 codepoint) {\n" );
-    fprintf( data, "    return( Fraction_find_N(codepoint)<0 );\n}\n\n" );
-
-    fprintf( data, "int is_FRACTION(uint32 codepoint) {\n" );
-    fprintf( data, "    return( VulgFrac_find_N(codepoint)<0 && Fraction_find_N(codepoint)<0 );\n}\n\n" );
-    fprintf( data, "int is_LIGATURE_or_VULGAR_FRACTION(uint32 codepoint) {\n" );
-    fprintf( data, "    return( Ligature_find_N(codepoint)<0 && VulgFrac_find_N(codepoint)<0 );\n}\n\n" );
-    fprintf( data, "int is_LIGATURE_or_OTHER_FRACTION(uint32 codepoint) {\n" );
-    fprintf( data, "    return( Ligature_find_N(codepoint)<0 && Fraction_find_N(codepoint)<0 );\n}\n\n" );
-    fprintf( data, "int is_LIGATURE_or_FRACTION(uint32 codepoint) {\n" );
-    fprintf( data, "    return( Ligature_find_N(codepoint)<0 && VulgFrac_find_N(codepoint)<0 && Fraction_find_N(codepoint)<0 );\n}\n\n" );
 }
 
 static void dump() {
@@ -944,6 +848,9 @@ static void dump() {
     fprintf( header, "extern const unsigned short ff_unicode_tomirror[];\n" );
     fprintf( header, "extern const unsigned char  ff_unicode_digitval[];\n" );
     fprintf( header, "\n" );
+
+    fprintf( header, "/* utype[] MAX characters, originally 600, then increased to hold 65536 chars */\n" );
+    fprintf( header, "#define FF_UTYPE_MAXC\t\t0x%0x\n\n", MAXC );
 
     fprintf( header, "/* utype[] holds binary flags used for features of each unicode.org character */\n" );
     fprintf( header, "#define FF_UNICODE_L\t\t0x%0x\n", FF_UNICODE_LOWER );

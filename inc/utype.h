@@ -45,6 +45,9 @@ extern const unsigned short ff_unicode_totitle[];
 extern const unsigned short ff_unicode_tomirror[];
 extern const unsigned char  ff_unicode_digitval[];
 
+/* utype[] MAX characters, originally 600, then increased to hold 65536 chars */
+#define FF_UTYPE_MAXC		0x10000
+
 /* utype[] holds binary flags used for features of each unicode.org character */
 #define FF_UNICODE_L		0x1
 #define FF_UNICODE_U		0x2
