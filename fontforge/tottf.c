@@ -4939,17 +4939,13 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
     if ( hasmac&1 ) {
 	/* big mac table, just a copy of the ms table */
 	putshort(at->cmap,0);	/* mac unicode platform */
-	putshort(at->cmap,3);	/* Unicode 2.0 */
+	putshort(at->cmap,3);	/* Unicode 2.0, BMP only */
 	putlong(at->cmap,mspos);
     }
     if ( format12!=NULL ) {
 	/* full unicode mac table, just a copy of the ms table */
 	putshort(at->cmap,0);	/* mac unicode platform */
-        if( map->enc->is_unicodefull ) {
-	    putshort(at->cmap,10);	/* Unicode 2.0, unicode beyond BMP */
-	} else {
-	    putshort(at->cmap,4);	/* Unicode 2.0, unicode BMP */
-	}
+	putshort(at->cmap,4);	/* Unicode 2.0, full repertoire */
 	putlong(at->cmap,ucs4pos);
     }
     if ( format14!=NULL ) {
