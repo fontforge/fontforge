@@ -964,6 +964,104 @@ static PyObject *PyFF_OFracChartGetLoc(PyObject *UNUSED(self), PyObject *args) {
     return( Py_BuildValue("i", Fraction_find_N(codepoint)) );
 }
 
+/* If you have a unicode ligature, or fraction, these routines return alt c. */
+static PyObject *PyFF_LigChartGetAltCnt(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"l",&codepoint) )
+	return( NULL );
+    return( Py_BuildValue("i", Ligature_alt_getC(codepoint)) );
+}
+
+static PyObject *PyFF_LigChartUGetAltCnt(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"l",&codepoint) )
+	return( NULL );
+    return( Py_BuildValue("i", LigatureU_alt_getC(codepoint)) );
+}
+
+static PyObject *PyFF_VulChartGetAltCnt(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"l",&codepoint) )
+	return( NULL );
+    return( Py_BuildValue("i", VulgFrac_alt_getC(codepoint)) );
+}
+
+static PyObject *PyFF_VulChartUGetAltCnt(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"l",&codepoint) )
+	return( NULL );
+    return( Py_BuildValue("i", VulgFracU_alt_getC(codepoint)) );
+}
+
+static PyObject *PyFF_OFracChartGetAltCnt(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"l",&codepoint) )
+	return( NULL );
+    return( Py_BuildValue("i", Fraction_alt_getC(codepoint)) );
+}
+
+static PyObject *PyFF_OFracChartUGetAltCnt(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"l",&codepoint) )
+	return( NULL );
+    return( Py_BuildValue("i", FractionU_alt_getC(codepoint)) );
+}
+
+/* If you have a unicode ligature, or fraction, these routines return alt v. */
+static PyObject *PyFF_LigChartGetAltVal(PyObject *UNUSED(self), PyObject *args) {
+    long nthCode,altN;
+
+    if ( !PyArg_ParseTuple(args,"ll",&nthCode, &altN) )
+	return( NULL );
+    return( Py_BuildValue("i", Ligature_alt_getV(nthCode,altN)) );
+}
+
+static PyObject *PyFF_LigChartUGetAltVal(PyObject *UNUSED(self), PyObject *args) {
+    long nthCode,altN;
+
+    if ( !PyArg_ParseTuple(args,"ll",&nthCode, &altN) )
+	return( NULL );
+    return( Py_BuildValue("i", LigatureU_alt_getV(nthCode,altN)) );
+}
+
+static PyObject *PyFF_VulChartGetAltVal(PyObject *UNUSED(self), PyObject *args) {
+    long nthCode,altN;
+
+    if ( !PyArg_ParseTuple(args,"ll",&nthCode, &altN) )
+	return( NULL );
+    return( Py_BuildValue("i", VulgFrac_alt_getV(nthCode,altN)) );
+}
+
+static PyObject *PyFF_VulChartUGetAltVal(PyObject *UNUSED(self), PyObject *args) {
+    long nthCode,altN;
+
+    if ( !PyArg_ParseTuple(args,"ll",&nthCode, &altN) )
+	return( NULL );
+    return( Py_BuildValue("i", VulgFracU_alt_getV(nthCode,altN)) );
+}
+
+static PyObject *PyFF_OFracChartGetAltVal(PyObject *UNUSED(self), PyObject *args) {
+    long nthCode,altN;
+
+    if ( !PyArg_ParseTuple(args,"ll",&nthCode, &altN) )
+	return( NULL );
+    return( Py_BuildValue("i", Fraction_alt_getV(nthCode,altN)) );
+}
+
+static PyObject *PyFF_OFracChartUGetAltVal(PyObject *UNUSED(self), PyObject *args) {
+    long nthCode,altN;
+
+    if ( !PyArg_ParseTuple(args,"ll",&nthCode, &altN) )
+	return( NULL );
+    return( Py_BuildValue("i", FractionU_alt_getV(nthCode,altN)) );
+}
+
 static PyObject *PyFF_Version(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
     char buffer[20];
 
@@ -17871,6 +17969,18 @@ PyMethodDef module_fontforge_methods[] = {
     { "ucLigChartGetLoc", PyFF_LigChartGetLoc, METH_VARARGS, "Return internal array location n for given unicode Ligature value" },
     { "ucVulChartGetLoc", PyFF_VulChartGetLoc, METH_VARARGS, "Return internal array location n for given unicode Vulgar_Fraction value" },
     { "ucOFracChartGetLoc", PyFF_OFracChartGetLoc, METH_VARARGS, "Return internal array location n for given unicode Other_Fraction value" },
+    { "ucLigChartGetAltCnt", PyFF_LigChartGetAltCnt, METH_VARARGS, "Return internal Alternate count for given unicode Ligature value" },
+    { "ucLigChartGetAltVal", PyFF_LigChartGetAltVal, METH_VARARGS, "Return internal Alternate value for given unicode Ligature value" },
+    { "ucVulChartGetAltCnt", PyFF_VulChartGetAltCnt, METH_VARARGS, "Return internal Alternate count for given unicode Vulgar_Fraction value" },
+    { "ucVulChartGetAltVal", PyFF_VulChartGetAltVal, METH_VARARGS, "Return internal Alternate value for given unicode Vulgar_Fraction value" },
+    { "ucOFracChartGetAltCnt", PyFF_OFracChartGetAltCnt, METH_VARARGS, "Return internal Alternate count for given unicode Other_Fraction value" },
+    { "ucOFracChartGetAltVal", PyFF_OFracChartGetAltVal, METH_VARARGS, "Return internal Alternate value for given unicode Other_Fraction value" },
+    { "ucLigChartUGetAltCnt", PyFF_LigChartUGetAltCnt, METH_VARARGS, "Return internal Alternate count for given unicode Ligature value" },
+    { "ucLigChartUGetAltVal", PyFF_LigChartUGetAltVal, METH_VARARGS, "Return internal Alternate value for given unicode Ligature value" },
+    { "ucVulChartUGetAltCnt", PyFF_VulChartUGetAltCnt, METH_VARARGS, "Return internal Alternate count for given unicode Vulgar_Fraction value" },
+    { "ucVulChartUGetAltVal", PyFF_VulChartUGetAltVal, METH_VARARGS, "Return internal Alternate value for given unicode Vulgar_Fraction value" },
+    { "ucOFracChartUGetAltCnt", PyFF_OFracChartUGetAltCnt, METH_VARARGS, "Return internal Alternate count for given unicode Other_Fraction value" },
+    { "ucOFracChartUGetAltVal", PyFF_OFracChartUGetAltVal, METH_VARARGS, "Return internal Alternate value for given unicode Other_Fraction value" },
     { "version", PyFF_Version, METH_NOARGS, "Returns a string containing the current version of FontForge, as 20061116" },
     { "runInitScripts", PyFF_RunInitScripts, METH_NOARGS, "Run the system and user initialization scripts, if not already run" },
     { "scriptPath", PyFF_GetScriptPath, METH_NOARGS, "Returns a list of the directories searched for scripts"},

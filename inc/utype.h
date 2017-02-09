@@ -168,6 +168,19 @@ extern int Ligature_find_N(uint32 u);	/* Find N of Ligature[N], error==-1 */
 extern int VulgFrac_find_N(uint32 u);	/* Find N of VulgFrac[N], error==-1 */
 extern int Fraction_find_N(uint32 u);	/* Find N of Fraction[N], error==-1 */
 
+extern int Ligature_alt_getC(int n);	/* Unicode table Ligature Alt count */
+extern int32 Ligature_alt_getV(int n,int a); /* Unicode table Ligature Alt value */
+extern int VulgFrac_alt_getC(int n);	/* Unicode table Vulgar Fraction Alt count */
+extern int32 VulgFrac_alt_getV(int n,int a); /* Unicode table Vulgar Fraction Alt value */
+extern int Fraction_alt_getC(int n);	/* Unicode table Other Fraction Alt count */
+extern int32 Fraction_alt_getV(int n,int a); /* Unicode table Other Fraction Alt value */
+extern int LigatureU_alt_getC(uint32 u);	/* Unicode table Ligature Alt count */
+extern int32 LigatureU_alt_getV(uint32 u,int a); /* Unicode table Ligature Alt value */
+extern int VulgFracU_alt_getC(uint32 u);	/* Unicode table Vulgar Fraction Alt count */
+extern int32 VulgFracU_alt_getV(uint32 u,int a); /* Unicode table Vulgar Fraction Alt value */
+extern int FractionU_alt_getC(uint32 u);	/* Unicode table Other Fraction Alt count */
+extern int32 FractionU_alt_getV(uint32 u,int a); /* Unicode table Other Fraction Alt value */
+
 /* Return !0 if codepoint is a Ligature */
 extern int is_LIGATURE(uint32 codepoint);
 
