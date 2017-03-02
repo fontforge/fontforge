@@ -788,8 +788,8 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid, int encuni, int vs
 	    fprintf( file, "unicode=\"&#x%x;\" ", alt[0]);
 	else
 	    fprintf( file, "unicode=\"&#x%x;\" ", encuni);
-	if ( vs!=-1 )
-	    fprintf( file, "unicode=\"&#x%x;\" ", vs);
+	//if ( vs!=-1 )
+	//    fprintf( file, "unicode=\"&#x%x;\" ", vs);
     }
     if ( sc->width!=defwid )
 	fprintf( file, "horiz-adv-x=\"%d\" ", sc->width );
