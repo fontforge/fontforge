@@ -56,7 +56,7 @@ Gdraw.GCheckBoxOff.Box.BorderType: none
 Gdraw.GCheckBoxOff.Box.DoDepressedBackground: False
 Gdraw.GCheckBoxOff.Box.NormalBackground: #edeceb
 Gdraw.GCheckBoxOff.Box.Padding: 3
-Gdraw.GCheckBoxOff.DisabledImage: check_off.png
+Gdraw.GCheckBoxOff.DisabledImage: check_off_disabled.png
 Gdraw.GCheckBoxOff.Image: check_off.png
 Gdraw.GCheckBoxOn.Box.BorderBrighter: #f9f8f7
 Gdraw.GCheckBoxOn.Box.BorderDarkest: #dddcdb
@@ -66,7 +66,7 @@ Gdraw.GCheckBoxOn.Box.DoDepressedBackground: False
 Gdraw.GCheckBoxOn.Box.NormalBackground: #edeceb
 Gdraw.GCheckBoxOn.Box.Padding: 3
 Gdraw.GCheckBoxOn.Box.PressedBackground: #88b2de
-Gdraw.GCheckBoxOn.DisabledImage: check_on.png
+Gdraw.GCheckBoxOn.DisabledImage: check_on_disabled.png
 Gdraw.GCheckBoxOn.Image: check_on.png
 Gdraw.GComboBox.Box.BorderBrighter: #dddcdb
 Gdraw.GComboBox.Box.BorderBrightest: #dddcdb
@@ -216,7 +216,7 @@ Gdraw.GRadioOff.Box.BorderWidth: 0
 Gdraw.GRadioOff.Box.DoDepressedBackground: False
 Gdraw.GRadioOff.Box.NormalBackground: #edeceb
 Gdraw.GRadioOff.Box.Padding: 0
-Gdraw.GRadioOff.DisabledImage: radio_off.png
+Gdraw.GRadioOff.DisabledImage: radio_off_disabled.png
 Gdraw.GRadioOff.Image: radio_off.png
 Gdraw.GRadioOn.Box.BorderBrighter: #f1f0ef
 Gdraw.GRadioOn.Box.BorderDarkest: #dddcdb
@@ -226,7 +226,7 @@ Gdraw.GRadioOn.Box.DoDepressedBackground: False
 Gdraw.GRadioOn.Box.NormalBackground: #edeceb
 Gdraw.GRadioOn.Box.Padding: 3
 Gdraw.GRadioOn.Box.PressedBackground: #88b2de
-Gdraw.GRadioOn.DisabledImage: radio_on.png
+Gdraw.GRadioOn.DisabledImage: radio_on_disabled.png
 Gdraw.GRadioOn.Image: radio_on.png
 Gdraw.GScrollBar.Box.ActiveBorder: #e3e6e6
 Gdraw.GScrollBar.Box.BorderBrightest: #e6e6e3

@@ -14,7 +14,7 @@ msgstr ""
 "Project-Id-Version: FontForge 2.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-02-24 15:05-0500\n"
-"PO-Revision-Date: 2017-02-24 15:05-0500\n"
+"PO-Revision-Date: 2017-03-08 17:59-0500\n"
 "Last-Translator: Jean-René Bastien <jrbastien@yahoo.com>\n"
 "Language-Team: French\n"
 "Language: fr\n"
@@ -36349,40 +36349,41 @@ msgstr "Bouton radio"
 
 #: ../gdraw/gradio.c:83 ../gdraw/gradio.c:160
 msgid "Image used instead of the Radio On Mark"
-msgstr "Image utilisée au lieu de la marque radio activée"
+msgstr "Image utilisée au lieu de la marque radio sélectionnée"
 
 #: ../gdraw/gradio.c:84 ../gdraw/gradio.c:161
 msgid "Image used instead of the Radio On Mark (when the radio is disabled)"
 msgstr ""
-"Image utilisée au lieu de la marque radio activée (quand le bouton radio est "
-"activé)"
+"Image utilisée au lieu de la marque radio sélectionnée (quand le bouton "
+"radio est désactivé)"
 
 #: ../gdraw/gradio.c:93
 msgid "Radio On Mark"
-msgstr "Marque radio activée"
+msgstr "Marque radio sélectionnée"
 
 #: ../gdraw/gradio.c:94
 msgid "The mark showing a radio button is on (depressed, selected)"
-msgstr "La marque montrant un bouton radio activé (enfoncé, sélectionné)"
+msgstr "La marque montrant un bouton radio sélectionné (enfoncé, activé)"
 
 #: ../gdraw/gradio.c:106
 msgid "Image used instead of the Radio Off Mark"
-msgstr "Image utilisée au lieu de la marque radio désactivée"
+msgstr "Image utilisée au lieu de la marque radio désélectionnée"
 
 #: ../gdraw/gradio.c:107
 msgid "Image used instead of the Radio Off Mark (when the radio is disabled)"
 msgstr ""
-"Image utilisée au lieu de la marque radio désactivée (quand le bouton radio "
-"est désactivé)"
+"Image utilisée au lieu de la marque radio désélectionné (quand le bouton "
+"radio est désactivé)"
 
 #: ../gdraw/gradio.c:116
 msgid "Radio Off Mark"
-msgstr "Marque radio désactivée"
+msgstr "Marque radio désélectionnée"
 
 #: ../gdraw/gradio.c:117
 msgid "The mark showing a radio button is off (up, not selected)"
 msgstr ""
-"La marque montrant un bouton radio désactivé (non enfoncé, non sélectionné)"
+"La marque montrant un bouton radio désélectionné (non enfoncé, non "
+"sélectionné)"
 
 #: ../gdraw/gradio.c:147 ../gdraw/gradio.c:148
 msgid "Check Box"
@@ -36390,31 +36391,31 @@ msgstr "Case à cocher"
 
 #: ../gdraw/gradio.c:170
 msgid "Check Box On Mark"
-msgstr "Marque de case à cocher activée"
+msgstr "Marque de case à cocher sélectionnée"
 
 #: ../gdraw/gradio.c:171
 msgid "The mark showing a checkbox is on (depressed, selected)"
-msgstr "La marque montrant une case à cocher activée (remplie, sélectionnée)"
+msgstr "La marque montrant une case à cocher sélectionnée (remplie, activée)"
 
 #: ../gdraw/gradio.c:184
 msgid "Image used instead of the Check Box Off Mark"
-msgstr "Image utilisée au lieu de la marque de case à cocher désactivée"
+msgstr "Image utilisée au lieu de la marque de case à cocher désélectionnée"
 
 #: ../gdraw/gradio.c:185
 msgid ""
 "Image used instead of the Check Box Off Mark (when the radio is disabled)"
 msgstr ""
-"Image utilisée au lieu de la marque de case à cocher désactivée (quand la "
-"case n'est pas cochée)"
+"Image utilisée au lieu de la marque de case à cocher désélectionnée (quand "
+"la case n'est pas cochée)"
 
 #: ../gdraw/gradio.c:194
 msgid "Check Box Off Mark"
-msgstr "Marque de case à cocher désactivée"
+msgstr "Marque de case à cocher désélectionnée"
 
 #: ../gdraw/gradio.c:195
 msgid "The mark showing a checkbox is off (up, not selected)"
 msgstr ""
-"La marque montrant une case à cocher désactivée (vide, non sélectionnée)"
+"La marque montrant une case à cocher désélectionnée (vide, non sélectionnée)"
 
 #: ../gdraw/gresedit.c:489 ../gdraw/gresedit.c:510
 msgid "Bad font"
