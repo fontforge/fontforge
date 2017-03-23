@@ -4856,7 +4856,7 @@ return;
 		for ( i=0; i<count; ++i ) {
 		    int gid = getushort(ttf);
 		    if ( dounicode )
-			info->chars[gid]->unicodeenc = trans!=NULL ? trans[first+1] : first+i;
+			info->chars[gid]->unicodeenc = trans!=NULL ? trans[first+i] : first+i;
 		    if ( map!=NULL && first+i < map->enccount )
 			map->map[first+i] = gid;
 		}
