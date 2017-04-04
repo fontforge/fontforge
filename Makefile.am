@@ -44,7 +44,6 @@ GITIGNOREFILES = \
 AM_CPPFLAGS =
 AM_LDFLAGS =
 
-BUILT_SOURCES = uthash/src
 EXTRA_DIST =
 CLEANFILES =
 MOSTLYCLEANFILES =
@@ -114,7 +113,6 @@ EXTRA_DIST += \
 	Packaging/FontForge-doc.spec \
 	Packaging/FontForge.spec \
 	Packaging/FontForge.static.spec \
-	uthash/src \
 	$(NULL)
 
 #--------------------------------------------------------------------------
@@ -130,11 +128,6 @@ DISTCHECK_CONFIGURE_FLAGS = --enable-theme-2012 --enable-debug
 
 
 #--------------------------------------------------------------------------
-uthash/src:
-	if [ ! -e uthash/src ]; then \
-	if [ -e uthash ] ; then rm -r uthash ; fi ; \
-	git clone https://github.com/troydhanson/uthash ; \
-	fi ;
 
 # We import a selection of targets from Frank's standard packaging Makefile.
 
