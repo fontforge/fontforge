@@ -866,6 +866,9 @@ static GWindow ChoiceDlgCreate8(struct dlg_info *d,const char *title,
 	if ( choices[i][0]=='-' && choices[i][1]=='\0' )
 	    llabels[i].line = true;
 	else {
+	    /* FIXME: This works by pure chance. The choices array consists of
+	     * UTF-8 strings. Need cleanup deep down draw text funcs.
+	     */
 	    llabels[i].text = (unichar_t *) choices[i];
 	    llabels[i].text_is_1byte = true;
 	}

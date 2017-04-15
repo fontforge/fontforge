@@ -56,76 +56,86 @@ GTextInfo sortby[] = {
 };
 
 void SFShowLigatures(SplineFont *sf,SplineChar *searchfor) {
-    int i, cnt;
-    char **choices=NULL;
-    int *where=NULL;
+    int i;
+    GPtrArray *entries = g_ptr_array_new();
+    GArray *intarray = g_array_new( TRUE, FALSE, sizeof(int) );
+    int *gids=NULL;
     SplineChar *sc, *sc2;
     char *pt, *line;
     char *start, *end, ch;
     PST *pst;
 
-    while ( 1 ) {
-	for ( i=cnt=0; i<sf->glyphcnt; ++i ) {
-	    if ( (sc=sf->glyphs[i])!=NULL && SCDrawsSomething(sc) ) {
-		for ( pst=sc->possub; pst!=NULL; pst=pst->next )
-			if ( pst->type==pst_ligature &&
-				(searchfor==NULL || PSTContains(pst->u.lig.components,searchfor->name))) {
-		    if ( choices!=NULL ) {
-			line = pt = malloc((strlen(sc->name)+13+3*strlen(pst->u.lig.components)));
-			strcpy(pt,sc->name);
-			pt += strlen(pt);
-			if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 ) {
-			    *pt++='(';
-			    pt = utf8_idpb(pt,sc->unicodeenc,0);
-			    *pt++=')';
-			}
-			/* *pt++ = 0x21d0;*/ /* left arrow */
-			strcpy(pt," ⇐ "); pt += strlen(pt);
-			for ( start= pst->u.lig.components; ; start=end ) {
-			    while ( *start==' ' ) ++start;
-			    if ( *start=='\0' )
-			break;
-			    for ( end=start+1; *end!='\0' && *end!=' '; ++end );
-			    ch = *end;
-			    *end = '\0';
-			    strcpy( pt,start );
-			    pt += strlen(pt);
-			    sc2 = SFGetChar(sf,-1,start);
-			    *end = ch;
-			    if ( sc2!=NULL && sc2->unicodeenc!=-1 && sc2->unicodeenc<0x10000 ) {
-				*pt++='(';
-				*pt++ = sc2->unicodeenc;
-				*pt++=')';
-			    }
-			    *pt++ = ' ';
-			}
-			pt[-1] = '\0';
-			choices[cnt] = line;
-			where[cnt] = i;
-		    }
-		    ++cnt;
+    for ( i = 0; i < sf->glyphcnt; ++i ) {
+
+	if( ( ( sc = sf->glyphs[i] ) == NULL ) || !SCDrawsSomething(sc) ) continue;
+
+	for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
+
+	    if( pst->type != pst_ligature ) continue;
+	    if( ( searchfor != NULL ) && ! PSTContains( pst->u.lig.components, searchfor->name ) ) continue;
+
+	    GString *line = g_string_new( "" );
+	    line = g_string_append( line, sc->name );
+
+	    /* Build string for each entry: "(composite glyph) ⇐ (decomposed parts)"  */
+	    if( g_unichar_validate( sc->unicodeenc ) ) {
+		gchar *buf = calloc( 1, 8 ); /* should need at most 6 bytes of a valid UTF-8 char */
+		g_unichar_to_utf8( sc->unicodeenc, buf );
+		if( strcmp( sc->name, buf ) != 0)
+		    g_string_append_printf( line, "(%s)", buf );
+		g_free( buf );
+	    }
+
+	    line = g_string_append( line, " ⇐ " );
+
+	    /* Now the decomposed parts */
+	    /* FIXME: maybe rewrite to use regex */
+	    for ( start = pst->u.lig.components; ; start=end ) {
+		while ( *start==' ' ) ++start;
+		if ( *start=='\0' )
+		    break;
+		for ( end=start+1; *end!='\0' && *end!=' '; ++end );
+		ch = *end;
+		*end = '\0';
+
+		line = g_string_append( line, start );
+
+		sc2 = SFGetChar(sf,-1,start);
+		*end = ch;
+		if ( ( sc2 != NULL ) && g_unichar_validate( sc2->unicodeenc ) ) {
+		    gchar *buf = calloc( 1, 8 );
+		    g_unichar_to_utf8( sc2->unicodeenc, buf );
+		    if( strcmp( sc2->name, buf ) != 0)
+			g_string_append_printf( line, "(%s) ", buf );
+		    else
+			line = g_string_append( line, " " );
+		    g_free( buf );
 		}
 	    }
-	}
-	if ( choices!=NULL )
-    break;
-	choices = malloc((cnt+2)*sizeof(unichar_t *));
-	where = malloc((cnt+1)*sizeof(int));
-	if ( cnt==0 ) {
-	    choices[0] = copy("<No Ligatures>");
-	    where[0] = -1;
-	    choices[1] = NULL;
-    break;
+	    g_ptr_array_add( entries, g_string_free( line, FALSE ) );
+	    g_array_append_val( intarray, i );
 	}
     }
-    choices[cnt] = NULL;
-    i = gwwv_choose(_("Ligatures"),(const char **) choices,cnt,0,_("Select a ligature to view"));
-    if ( i!=-1 && where[i]!=-1 )
-	CharViewCreate(sf->glyphs[where[i]],(FontView *) sf->fv,-1);
-    free(where);
-    for ( i=0; i<cnt; ++i )
-	free(choices[i]);
-    free(choices);
+
+    if( entries->len == 0 ) {
+	GWidgetError8( _("No Ligature"), _("No ligature is available in this font") );
+	g_array_free( intarray, TRUE );
+	g_ptr_array_free( entries, TRUE );
+	return;
+    }
+
+    /* chooser wants null terminated list */
+    g_ptr_array_add( entries, NULL );
+    gids = (int *) g_array_free( intarray, FALSE );
+
+    /* TODO: maybe directly open CharView if there's only one option */
+    i = gwwv_choose( _("Ligatures"), (const char **) entries->pdata,
+	    entries->len - 1, 0, _("Select a ligature to view") );
+    if ( ( i != -1 ) && ( gids[i] != -1 ) )
+	CharViewCreate( sf->glyphs[ gids[i] ], (FontView *) sf->fv, -1 );
+
+    free( gids );
+    g_ptr_array_free( entries, TRUE );
 }
 
 struct kerns {
