@@ -580,6 +580,28 @@ return( NULL );
 return( pt );
 }
 
+static void read_unknown_tag(FILE *sfd) {
+  // In the event that we encounter an unknown tag,
+  // we will read until we reach the end of the file
+  // or a new line outside of a quoted string.
+  int tmpc = getc(sfd);
+  while (tmpc != EOF && tmpc != '\n' && tmpc != '\r') {
+    while (tmpc != EOF && tmpc != '\n' && tmpc != '\r' && tmpc != '"') {
+      tmpc = getc(sfd);
+    }
+    if (tmpc == '"') {
+      ungetc(tmpc, sfd);
+      char *tmpstring = SFDReadUTF7Str(sfd);
+      free(tmpstring);
+      tmpstring = NULL;
+      tmpc = getc(sfd);
+    }
+  }
+  if (tmpc != EOF) {
+    ungetc(tmpc, sfd);
+  }
+}
+
 struct enc85 {
     FILE *sfd;
     unsigned char sofar[4];
@@ -8263,7 +8285,10 @@ bool SFD_GetFontMetaData( FILE *sfd,
         //
         // We didn't have a match ourselves.
         //
-        return false;
+        // return false;
+        // Try to read through it anyway.
+        read_unknown_tag(sfd);
+        LogError(_("Unknown tag %s."), tok);
     }
     return true;
 }
