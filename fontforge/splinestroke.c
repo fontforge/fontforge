@@ -3137,11 +3137,11 @@ return( NULL );
 		int isnext=sp->next->to==sp2, isprev=sp->prev->from==sp2;
 		BreakLine(sp->next,start,end,&first1,&second1);
 		BreakLine(sp2->next,end,start,&first2,&second2);
-		if ( first1->me.x!=second2->me.x || first1->me.y!=second2->me.y ) {
+		if ( first1->me.x!=second2->me.x || first1->me.y!=second2->me.y || first1==second2 ) {
 		    IError("Confusion reighns!");
 return( ss );
 		}
-		if ( second1->me.x!=first2->me.x || second1->me.y!=first2->me.y ) {
+		if ( second1->me.x!=first2->me.x || second1->me.y!=first2->me.y || first2==second1 ) {
 		    IError("Confusion regnas!");
 return( ss );
 		}
