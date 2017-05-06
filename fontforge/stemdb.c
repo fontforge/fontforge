@@ -5975,10 +5975,10 @@ return( gd );
     /* Figure out active zones at the first order (as they are needed to */
     /* determine which stems are undesired and they don't depend from */
     /* the "potential" state of left/right points in chunks */
-    gd->lspace = malloc(gd->pcnt*sizeof(struct segment));
-    gd->rspace = malloc(gd->pcnt*sizeof(struct segment));
-    gd->bothspace = malloc(3*gd->pcnt*sizeof(struct segment));
-    gd->activespace = malloc(3*gd->pcnt*sizeof(struct segment));
+    gd->lspace = calloc(gd->pcnt, sizeof(struct segment));
+    gd->rspace = calloc(gd->pcnt, sizeof(struct segment));
+    gd->bothspace = calloc(3 * gd->pcnt, sizeof(struct segment));
+    gd->activespace = calloc(3 * gd->pcnt, sizeof(struct segment));
 #if GLYPH_DATA_DEBUG
     fprintf( stderr,"Going to calculate stem active zones for %s\n",gd->sc->name );
 #endif
