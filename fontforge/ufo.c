@@ -121,7 +121,7 @@ static void injectNumericVersion(char ** textVersion, int versionMajor, int vers
 
 /* The spec does not really require padding the version str but it clears */
 /* 1.8 vs. 1.008 ambiguities and makes us inline with the AFDKO. */
-char* paddedVersionStr(const char * textVersion, char * buffer) {
+static char* paddedVersionStr(const char * textVersion, char * buffer) {
     int major = -1;
     int minor = -1;
     extractNumericVersion(textVersion, &major, &minor);
@@ -133,14 +133,14 @@ char* paddedVersionStr(const char * textVersion, char * buffer) {
 const char * DOS_reserved[12] = {"CON", "PRN", "AUX", "CLOCK$", "NUL", "COM1", "COM2", "COM3", "COM4", "LPT1", "LPT2", "LPT3"};
 const int DOS_reserved_count = 12;
 
-int polyMatch(const char * input, int reference_count, const char ** references) {
+static int polyMatch(const char * input, int reference_count, const char ** references) {
   for (off_t pos = 0; pos < reference_count; pos++) {
     if (strcmp(references[pos], input) == 0) return 1;
   }
   return 0;
 }
 
-int is_DOS_drive(char * input) {
+static int is_DOS_drive(char * input) {
   if ((input != NULL) &&
      (strlen(input) == 2) &&
      (((input[0] >= 'A') && (input[0] <= 'Z')) || ((input[0] >= 'a') && (input[0] <= 'z'))) &&
@@ -149,7 +149,7 @@ int is_DOS_drive(char * input) {
   return 0;
 }
 
-char * ufo_name_mangle(const char * input, const char * prefix, const char * suffix, int flags) {
+static char * ufo_name_mangle(const char * input, const char * prefix, const char * suffix, int flags) {
   // This does not append the prefix or the suffix.
   // flags & 1 determines whether to post-pad caps (something implemented in the standard).
   // flags & 2 determines whether to replace a leading '.' (standard).
@@ -216,7 +216,7 @@ char * ufo_name_mangle(const char * input, const char * prefix, const char * suf
   return output2;
 }
 
-char * ufo_name_number(
+static char * ufo_name_number(
 #ifdef FF_UTHASH_GLIF_NAMES
 struct glif_name_index * glif_name_hash,
 #else
@@ -382,10 +382,10 @@ static void xmlSetPropPrintf(xmlNodePtr target, const xmlChar * name, char * for
 /* ************************************************************************** */
 #ifndef _NO_PYTHON
 static int PyObjDumpable(PyObject *value, int has_lists);
-xmlNodePtr PyObjectToXML( PyObject *value, int has_lists );
+static xmlNodePtr PyObjectToXML( PyObject *value, int has_lists );
 #endif
 
-xmlNodePtr PythonLibToXML(void *python_persistent, const SplineChar *sc, int has_lists) {
+static xmlNodePtr PythonLibToXML(void *python_persistent, const SplineChar *sc, int has_lists) {
     int has_hints = (sc!=NULL && (sc->hstem!=NULL || sc->vstem!=NULL ));
     xmlNodePtr retval = NULL, dictnode = NULL, keynode = NULL, valnode = NULL;
     // retval = xmlNewNode(NULL, BAD_CAST "lib"); //     "<lib>"
@@ -520,7 +520,7 @@ return( true );
 return( false );
 }
 
-xmlNodePtr PyObjectToXML( PyObject *value, int has_lists ) {
+static xmlNodePtr PyObjectToXML( PyObject *value, int has_lists ) {
     xmlNodePtr childtmp = NULL;
     xmlNodePtr valtmpxml = NULL;
     char * valtmp = NULL;
@@ -598,7 +598,7 @@ static int refcomp(const void *_r1, const void *_r2) {
 return( strcmp( ref1->sc->name, ref2->sc->name) );
 }
 
-xmlNodePtr _GlifToXML(const SplineChar *sc,int layer) {
+static xmlNodePtr _GlifToXML(const SplineChar *sc,int layer) {
     if (layer > sc->layer_cnt) return NULL;
     const struct altuni *altuni;
     int isquad = sc->layers[layer].order2;
@@ -872,7 +872,7 @@ void clear_cached_ufo_point_starts(SplineFont * sf) {
   }
 }
 
-xmlDocPtr PlistInit() {
+static xmlDocPtr PlistInit() {
     // Some of this code is pasted from libxml2 samples.
     xmlDocPtr doc = NULL;
     xmlNodePtr root_node = NULL, dict_node = NULL;
@@ -924,7 +924,7 @@ static void PListAddDate(xmlNodePtr parent, const char *key, time_t timestamp) {
 	    tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
 }
 
-int count_occurrence(const char* big, const char* little) {
+static int count_occurrence(const char* big, const char* little) {
     const char * tmp = big;
     int output = 0;
     while (tmp = strstr(tmp, little)) { output ++; tmp ++; }
@@ -955,7 +955,7 @@ static char* fetchTTFAttribute(const SplineFont *sf, int strid) {
     return value;
 }
 
-void PListAddString(xmlNodePtr parent, const char *key, const char *value) {
+static void PListAddString(xmlNodePtr parent, const char *key, const char *value) {
     if ( value==NULL ) value = "";
     xmlNodePtr keynode = xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key); // "<key>%s</key>" key
 #ifdef ESCAPE_LIBXML_STRINGS
@@ -1336,13 +1336,13 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer) {
     return true;
 }
 
-int kernclass_for_groups_plist(struct splinefont *sf, struct kernclass *kc, int flags) {
+static int kernclass_for_groups_plist(struct splinefont *sf, struct kernclass *kc, int flags) {
   // Note that this is not a complete logical inverse of sister function kernclass_for_feature_file.
   return ((flags & FF_KERNCLASS_FLAG_NATIVE) ||
   (!(flags & FF_KERNCLASS_FLAG_FEATURE) && !kc->feature && (sf->preferred_kerning & 1)));
 }
 
-void ClassKerningAddExtensions(struct kernclass * target) {
+static void ClassKerningAddExtensions(struct kernclass * target) {
   if (target->firsts_names == NULL && target->first_cnt) target->firsts_names = calloc(target->first_cnt, sizeof(char *));
   if (target->seconds_names == NULL && target->second_cnt) target->seconds_names = calloc(target->second_cnt, sizeof(char *));
   if (target->firsts_flags == NULL && target->first_cnt) target->firsts_flags = calloc(target->first_cnt, sizeof(int));
@@ -1350,7 +1350,7 @@ void ClassKerningAddExtensions(struct kernclass * target) {
   if (target->offsets_flags == NULL && (target->first_cnt * target->second_cnt)) target->offsets_flags = calloc(target->first_cnt * target->second_cnt, sizeof(int));
 }
 
-void UFONameKerningClasses(SplineFont *sf) {
+static void UFONameKerningClasses(SplineFont *sf) {
 #ifdef FF_UTHASH_GLIF_NAMES
     struct glif_name_index _class_name_hash;
     struct glif_name_index * class_name_hash = &_class_name_hash; // Open the hash table.
@@ -1659,7 +1659,7 @@ struct ufo_kerning_tree_session {
   struct glif_name_index _class_pair_hash;
 };
 
-void ufo_kerning_tree_destroy_contents(struct ufo_kerning_tree_session *session) {
+static void ufo_kerning_tree_destroy_contents(struct ufo_kerning_tree_session *session) {
   struct ufo_kerning_tree_left *current_left;
   struct ufo_kerning_tree_left *next_left;
   for (current_left = session->first_left; current_left != NULL; current_left = next_left) {
@@ -1677,7 +1677,7 @@ void ufo_kerning_tree_destroy_contents(struct ufo_kerning_tree_session *session)
   memset(session, 0, sizeof(struct ufo_kerning_tree_session));
 }
 
-int ufo_kerning_tree_attempt_insert(struct ufo_kerning_tree_session *session, const char *left_name, const char *right_name, int value) {
+static int ufo_kerning_tree_attempt_insert(struct ufo_kerning_tree_session *session, const char *left_name, const char *right_name, int value) {
   struct glif_name_index *left_group_name_hash = &(session->_left_group_name_hash);
   struct glif_name_index *class_pair_hash = &(session->_class_pair_hash);
   char *tmppairname = NULL;
@@ -1917,7 +1917,7 @@ return( false );
 return( !err );
 }
 
-int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer) {
+static int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer) {
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
     xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (dictnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Make the dict.
@@ -1945,7 +1945,7 @@ int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer) {
     return err;
 }
 
-int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int flags,
+static int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int flags,
 	const EncMap *map,int layer, int all_layers) {
     char *glyphdir, *gfname;
     int err;
@@ -2086,7 +2086,7 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff,int
     return !err;
 }
 
-int SplineFontHasUFOLayerNames(SplineFont *sf) {
+static int SplineFontHasUFOLayerNames(SplineFont *sf) {
   if (sf == NULL || sf->layers == NULL) return 0;
   int layer_pos = 0;
   for (layer_pos = 0; layer_pos < sf->layer_cnt; layer_pos++) {
@@ -3442,7 +3442,7 @@ return;
     xmlFreeDoc(doc);
 }
 
-int TryAddRawGroupKern(struct splinefont *sf, int isv, struct glif_name_index *class_name_pair_hash, int *current_groupkern_index_p, struct ff_rawoffsets **current_groupkern_p, const char *left, const char *right, int offset) {
+static int TryAddRawGroupKern(struct splinefont *sf, int isv, struct glif_name_index *class_name_pair_hash, int *current_groupkern_index_p, struct ff_rawoffsets **current_groupkern_p, const char *left, const char *right, int offset) {
   char *pairtext;
   int success = 0;
   if (left && right && asprintf(&pairtext, "%s %s", left, right) > 0 && pairtext) {
