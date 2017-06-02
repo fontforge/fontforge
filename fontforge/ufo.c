@@ -812,65 +812,6 @@ int _ExportGlif(FILE *glif,SplineChar *sc,int layer) {
 /* ****************************    UFO Output    **************************** */
 /* ************************************************************************** */
 
-void clear_cached_ufo_paths(SplineFont * sf) {
-  // We cache the glif names and the layer paths.
-  // This is helpful for preserving the structure of a U. F. O. to be edited.
-  // But it may be desirable to purge that data on final output for consistency.
-  // This function does that.
-  int i;
-  // First we clear the glif names.
-  for (i = 0; i < sf->glyphcnt; i++) {
-    struct splinechar * sc = sf->glyphs[i];
-    if (sc->glif_name != NULL) { free(sc->glif_name); sc->glif_name = NULL; }
-  }
-  // Then we clear the layer names.
-  for (i = 0; i < sf->layer_cnt; i++) {
-    struct layerinfo * ly = &(sf->layers[i]);
-    if (ly->ufo_path != NULL) { free(ly->ufo_path); ly->ufo_path = NULL; }
-  }
-}
-
-void clear_cached_ufo_point_starts(SplineFont * sf) {
-  // We store the offset from the leading spline point at which to start output
-  // so as to be able to start curves on control points as some incoming U. F. O. files do.
-  // But we may want to clear these sometimes.
-  int splinechar_index;
-  for (splinechar_index = 0; splinechar_index < sf->glyphcnt; splinechar_index ++) {
-    struct splinechar *sc = sf->glyphs[splinechar_index];
-    if (sc != NULL) {
-      int layer_index;
-      for (layer_index = 0; layer_index < sc->layer_cnt; layer_index ++) {
-        // We look at the actual shapes for this layer.
-        {
-          struct splinepointlist *spl;
-          for (spl = sc->layers[layer_index].splines; spl != NULL; spl = spl->next) {
-            spl->start_offset = 0;
-          }
-        }
-        // And then we go hunting for shapes in the refchars.
-        {
-          struct refchar *rc;
-          for (rc = sc->layers[layer_index].refs; rc != NULL; rc = rc->next) {
-            int reflayer_index;
-            for (reflayer_index = 0; reflayer_index < rc->layer_cnt; reflayer_index ++) {
-              struct splinepointlist *spl;
-              for (spl = rc->layers[reflayer_index].splines; spl != NULL; spl = spl->next) {
-                spl->start_offset = 0;
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  // The SplineFont also has a grid.
-  {
-    struct splinepointlist *spl;
-    for (spl = sf->grid.splines; spl != NULL; spl = spl->next) {
-      spl->start_offset = 0;
-    }
-  }
-}
 
 static xmlDocPtr PlistInit() {
     // Some of this code is pasted from libxml2 samples.
