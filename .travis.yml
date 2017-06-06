@@ -34,8 +34,8 @@ cache:
   directories:
     - $TRAVIS_BUILD_DIR/travisdeps
 
-before_install:
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update || brew update; fi
+#before_install:
+#  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update || brew update; fi
 
 install:
   - |
@@ -77,28 +77,31 @@ install:
       export PYTHON=python3.5
       export PYTHONPATH=$PYTHONPATH:$PREFIX/lib/python$($PYTHON -c "import sys; print('{0}.{1}'.format(sys.version_info.major, sys.version_info.minor))")/site-packages
       export CFLAGS="-fdiagnostics-color=auto -Wall -Wno-switch"
-      #Why.
-      export LIBSPIRO_CFLAGS=`pkg-config --cflags libspiro` && export LIBSPIRO_LIBS=`pkg-config --libs libspiro`
-      export LIBUNINAMESLIST_CFLAGS=`pkg-config --cflags libuninameslist` && export LIBUNINAMESLIST_LIBS=`pkg-config --libs libuninameslist`
     else
-      export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
-      export MSGFMT=/usr/local/opt/gettext/bin/msgfmt
-      export PYTHON=python
+      export PATH=/opt/local/bin:$PATH
+      export PKG_CONFIG_PATH=/opt/local/lib/pkgconfig:/opt/X11/lib/pkgconfig:/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/pkgconfig:$PKG_CONFIG_PATH
       export PYTHONPATH=$PYTHONPATH:$PREFIX/lib/python2.7/site-packages
+      export PYTHON=python
+      wget https://github.com/macports/macports-base/releases/download/v2.4.1/MacPorts-2.4.1-10.11-ElCapitan.pkg
+      sudo installer -pkg MacPorts-2.4.1-10.11-ElCapitan.pkg -target /
+      sudo port selfupdate
 
-      # IPython??
-      # pip install ipython
-      # Disable fc-cache on fontconfig install. Because it's slow.
-      sed -i.bak '/fc-cache/d' "$(brew --prefix)/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/fontconfig.rb"
-      # Install cairo and pango, using cached bottles if possible
-      pushd $DEPSPREFIX
-      brew install *cairo*bottle* || (brew install --build-bottle cairo --with-x11 && brew bottle cairo)
-      brew install *pango*bottle* || (brew install --build-bottle pango --with-x11 && brew bottle pango)
-      brew outdated | grep -q cairo && rm *cairo*bottle* || true
-      brew outdated | grep -q pango && rm *pango*bottle* || true
-      popd
-      brew install ./travis-scripts/fontforge.rb --HEAD --with-x11 --only-dependencies
+      PORTDEFS=$(pushd osx >/dev/null && port deps | \
+        grep '^Build\|^Library' | \
+        sed -e 's/Build Dependencies://' -e 's/Library Dependencies://' | \
+        tr , '\n' | \
+        sed -e 's/^[[:space:]]*//' && \
+        popd >/dev/null \
+      )
+      echo "Installing dependencies: $PORTDEFS"
+      COLUMNS=80 sudo port install $PORTDEFS
+      sudo port select --set python python27
+      sudo port select --set python2 python27
     fi
+
+    #Why.
+    export LIBSPIRO_CFLAGS=`pkg-config --cflags libspiro` && export LIBSPIRO_LIBS=`pkg-config --libs libspiro`
+    export LIBUNINAMESLIST_CFLAGS=`pkg-config --cflags libuninameslist` && export LIBUNINAMESLIST_LIBS=`pkg-config --libs libuninameslist`
     set +e
 
 script:
@@ -109,7 +112,7 @@ script:
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then make distcheck -j4; fi
   - fontforge -version
   - $PYTHON -c "import fontforge; import psMat; print(fontforge.__version__, fontforge.version())"
-  - if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then travis-scripts/ffosxbuild.sh $PREFIX $TRAVIS_COMMIT; fi
+  #- if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then travis-scripts/ffosxbuild.sh $PREFIX $TRAVIS_COMMIT; fi
 
 deploy:
   provider: bintray
