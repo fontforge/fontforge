@@ -94,7 +94,7 @@ install:
         popd >/dev/null \
       )
       echo "Installing dependencies: $PORTDEFS"
-      COLUMNS=80 sudo port install $PORTDEFS
+      COLUMNS=80 sudo port install $PORTDEFS 2>&1 | tee /dev/null
       sudo port select --set python python27
       sudo port select --set python2 python27
     fi
@@ -112,7 +112,7 @@ script:
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then make distcheck -j4; fi
   - fontforge -version
   - $PYTHON -c "import fontforge; import psMat; print(fontforge.__version__, fontforge.version())"
-  #- if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then travis-scripts/ffosxbuild.sh $PREFIX $TRAVIS_COMMIT; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then travis-scripts/ffosxbuild.sh $PREFIX $TRAVIS_COMMIT; fi
 
 deploy:
   provider: bintray
@@ -130,4 +130,4 @@ deploy:
 env:
   global:
    # For Coverity
-   - secure: "MeTS1Pqa5gzx1nn/peW/9a5kq84bba3XYUljOfkCUqzuyGiERk/nmok+RW7skrgzboBlKxnNG8+ykKqHMwK9s9M83ezFxvEWXBcKEpmEQKkqXPI5hpMs6jGLTgpeuheSIzqHA3danV8iircp1GOiTLWA0pt/AOsNLZiaYBh0OiE="
+   - secure: "YBvK5QLZ4LNE3WQPXjDYalLsTgmiGyRGYY87ep5knQ0YGyt3Q9OiBCtQ3GvhHNKOa2L2QlctJi2VWcUu+ftrS72mi5j2tvse9wRF3V8EVFIPb3bxjnN6E11FjXtLIqU8WR7HlAHJpOL2bhO+RleIhSVZm0MsiSjekFOoA5tfll4="

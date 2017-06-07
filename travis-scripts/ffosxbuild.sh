@@ -47,11 +47,13 @@ popd
 
 # Now we bundle the Python libraries
 echo "Bundling Python libraries..."
-pylib=$(otool -L $workdir/bin/fontforge | grep python | sed -e 's/ \(.*\)//')
+otool -L $workdir/bin/fontforge
+
+pylib=$(otool -L $workdir/bin/fontforge | grep -i python | sed -e 's/ \(.*\)//')
 pycruft=$(dirname $pylib)/../../..
 cp -a $pycruft/Python.framework $outdir/Contents/Frameworks
 pushd $outdir/Contents/Frameworks/Python.framework/Versions/2.7/lib/python2.7/
-rm site-packages
+rm site-packages || rm -rf site-packages
 ln -s ../../../../../../Resources/opt/local/lib/python2.7/site-packages
 popd
 pushd $outdir/Contents/Frameworks/Python.framework && \

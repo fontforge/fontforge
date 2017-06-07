@@ -16,9 +16,9 @@
     },
 
     "version": {
-        "name": "ci",
+        "name": "ci-2017-06-08",
         "desc": "This is a CI build",
-        "released": "2016-10-16",
+        "released": "2017-06-08",
         "gpgSign": false
     },
 
