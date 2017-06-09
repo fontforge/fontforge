@@ -120,7 +120,7 @@ deploy:
   user: "fontforge-ci-bot"
   dry-run: false
   key:
-    secure: Uf8EJV4m5uCicRQmn5eEnP/LSYzW0By9iI2vID/qS5zo3787qCtqWeovBJEUgkRk7aU6OlnIQ0w9WVBxGlElAkoaqbZs+RWYnv5JS/mX98+fFTYhtz9u0A5GTo8+IOgv1jho28Yrt9HaFRfFhBOSqNucGvDKeS3RMRywEaQmzMQ=
+    secure: "YBvK5QLZ4LNE3WQPXjDYalLsTgmiGyRGYY87ep5knQ0YGyt3Q9OiBCtQ3GvhHNKOa2L2QlctJi2VWcUu+ftrS72mi5j2tvse9wRF3V8EVFIPb3bxjnN6E11FjXtLIqU8WR7HlAHJpOL2bhO+RleIhSVZm0MsiSjekFOoA5tfll4="
   on:
     condition: $TRAVIS_OS_NAME = osx
     branch:
@@ -130,4 +130,4 @@ deploy:
 env:
   global:
    # For Coverity
-   - secure: "YBvK5QLZ4LNE3WQPXjDYalLsTgmiGyRGYY87ep5knQ0YGyt3Q9OiBCtQ3GvhHNKOa2L2QlctJi2VWcUu+ftrS72mi5j2tvse9wRF3V8EVFIPb3bxjnN6E11FjXtLIqU8WR7HlAHJpOL2bhO+RleIhSVZm0MsiSjekFOoA5tfll4="
+   - secure: "MeTS1Pqa5gzx1nn/peW/9a5kq84bba3XYUljOfkCUqzuyGiERk/nmok+RW7skrgzboBlKxnNG8+ykKqHMwK9s9M83ezFxvEWXBcKEpmEQKkqXPI5hpMs6jGLTgpeuheSIzqHA3danV8iircp1GOiTLWA0pt/AOsNLZiaYBh0OiE="
