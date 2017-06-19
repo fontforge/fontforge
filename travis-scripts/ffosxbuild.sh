@@ -47,11 +47,13 @@ popd
 
 # Now we bundle the Python libraries
 echo "Bundling Python libraries..."
-pylib=$(otool -L $workdir/bin/fontforge | grep python | sed -e 's/ \(.*\)//')
+otool -L $workdir/bin/fontforge
+
+pylib=$(otool -L $workdir/bin/fontforge | grep -i python | sed -e 's/ \(.*\)//')
 pycruft=$(dirname $pylib)/../../..
 cp -a $pycruft/Python.framework $outdir/Contents/Frameworks
 pushd $outdir/Contents/Frameworks/Python.framework/Versions/2.7/lib/python2.7/
-rm site-packages
+rm site-packages || rm -rf site-packages
 ln -s ../../../../../../Resources/opt/local/lib/python2.7/site-packages
 popd
 pushd $outdir/Contents/Frameworks/Python.framework && \
@@ -110,6 +112,13 @@ hdiutil create -size 800m   \
    -srcfolder $outdir       \
    -ov        -format UDBZ  \
    $outdir.dmg
+
+# Update the bintray descriptor... sigh. If this fails, then oh well, no bintray
+echo "Updating the bintray descriptor..."
+sed -i '' s/ciXXXX/$(date +mac-ci-%Y-%M-%d)/g $BASE/bintray_descriptor.json || true
+sed -i '' s/releaseXXXX/$(date +%Y-%M-%d)/g $BASE/bintray_descriptor.json || true
+echo "Bintray descriptor:"
+cat $BASE/bintray_descriptor.json
 
 echo "Done."
 
