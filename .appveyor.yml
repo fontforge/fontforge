@@ -38,12 +38,12 @@ environment:
 #  - 'C:\msys64\var\cache\pacman\pkg'
 install:
   - git clone --depth=1 --branch=master https://github.com/fontforge/fontforgebuilds.git
-  - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds/original-archives/binaries; exec 0</dev/null; wget --tries 4 https://dl.bintray.com/jtanx/fontforgelibs/build-system-extras/potrace-1.13.win$MBITS.tar.gz"
+  - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds/original-archives/binaries; exec 0</dev/null; wget --tries 4 https://dl.bintray.com/jtanx/fontforgelibs/build-system-extras/potrace-1.14.win$MBITS.tar.gz"
   - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds/original-archives/binaries; exec 0</dev/null; wget --tries 4 https://dl.bintray.com/jtanx/fontforgelibs/build-system-extras/$VCXSRV"
   - >-
     call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds/original-archives/sources; exec 0</dev/null;
-    wget --tries 1 http://download.savannah.gnu.org/releases/freetype/freetype-2.7.1.tar.bz2 || 
-    wget --tries 4 https://sourceforge.net/projects/freetype/files/freetype2/2.7.1/freetype-2.7.1.tar.bz2"
+    wget --tries 1 http://download.savannah.gnu.org/releases/freetype/freetype-2.8.tar.bz2 || 
+    wget --tries 4 https://sourceforge.net/projects/freetype/files/freetype2/2.8/freetype-2.8.tar.bz2"
 # These steps will update msys2 to the latest version
 # Uncomment these if builds fail because of pacman not installing dependencies due to version conflicts
 #  - call %MBASH% "pacman -Syuu --noconfirm"
