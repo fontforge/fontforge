@@ -23,7 +23,7 @@ AS_CASE([$host],
        MACAPP=""
       fi
 
-      RAW_COMPILE_PLATFORM_CFLAGS=" $CFLAGS -arch x86_64 -arch i386 "
+      RAW_COMPILE_PLATFORM_CFLAGS=" $CFLAGS "
       AC_SUBST([RAW_COMPILE_PLATFORM_CFLAGS])
 
       dnl fink puts stuff under /sw
