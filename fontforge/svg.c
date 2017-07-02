@@ -800,10 +800,10 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid, int encuni, int vs
 		alt[1]=='\0' )
 	    /* For arabic forms use the base representation in the 0600 block */
 	    fprintf( file, "unicode=\"&#x%x;\" ", alt[0]);
+	else if ( vs!=-1 )
+	    fprintf( file, "unicode=\"&#x%x;\" ", vs);
 	else
 	    fprintf( file, "unicode=\"&#x%x;\" ", encuni);
-	if ( vs!=-1 )
-	    fprintf( file, "unicode=\"&#x%x;\" ", vs);
     }
     if ( sc->width!=defwid )
 	fprintf( file, "horiz-adv-x=\"%d\" ", sc->width );
