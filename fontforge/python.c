@@ -17201,6 +17201,30 @@ return (NULL);
 Py_RETURN( self );
 }
 
+static PyObject *PyFFFont_isWorthOutputting(PyFF_Font *self, PyObject *UNUSED(args)) {
+    PyObject *ret = Py_False;
+
+    FontViewBase *fv;
+    SplineFont *sf;
+    EncMap *map;
+    int i, gid;
+
+    if ( !CheckIfFontClosed(self) ) {
+        fv = self->fv;
+        sf = fv->sf;
+        map = fv->map;
+        for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] ) {
+            SplineChar *sc = sf->glyphs[gid];
+            if ( SCWorthOutputting(sc) ) {
+                ret = Py_True;
+                break;
+            }
+        }
+    }
+    Py_INCREF( ret );
+return( ret );
+}
+
 PyMethodDef PyFF_Font_methods[] = {
     { "appendSFNTName", (PyCFunction) PyFFFont_appendSFNTName, METH_VARARGS, "Adds or replaces a name in the sfnt 'name' table. Takes three arguments, a language, a string id, and the string value" },
     { "close", (PyCFunction) PyFFFont_close, METH_NOARGS, "Frees up memory for the current font. Any python pointers to it will become invalid." },
@@ -17290,6 +17314,7 @@ PyMethodDef PyFF_Font_methods[] = {
     { "genericGlyphChange", (PyCFunction) PyFFFont_genericGlyphChange, METH_VARARGS | METH_KEYWORDS, "Rather like changeWeight or condenseExtend but with more options."},
     { "italicize", (PyCFunction) PyFFFont_italicize, METH_VARARGS | METH_KEYWORDS, "Italicize the selected glyphs"},
     { "intersect", (PyCFunction) PyFFFont_Intersect, METH_NOARGS, "Leaves the areas where the contours of a glyph overlap."},
+    { "isWorthOutputting", (PyCFunction) PyFFFont_isWorthOutputting, METH_NOARGS, "Returns whether the current selection is worth outputting" },
     { "removeOverlap", (PyCFunction) PyFFFont_RemoveOverlap, METH_NOARGS, "Remove overlapping areas from a glyph"},
     { "round", (PyCFunction)PyFFFont_Round, METH_VARARGS, "Rounds point coordinates (and reference translations) to integers"},
     { "simplify", (PyCFunction)PyFFFont_Simplify, METH_VARARGS, "Simplifies a glyph" },

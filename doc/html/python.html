@@ -5141,6 +5141,15 @@ pen = None;				# Finalize the pen. This tells FontForge
 	See also <A href="#f-removeOverlap">removeOverlap</A>.</TD>
     </TR>
     <TR>
+      <TD><CODE><A name="f-isWorthOutputting">isWorthOutputting</A></CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns whether the current selection is worth outputting into a font file.
+        Basically a glyph is worth outputting if it contains any contours, or
+        references or has had its width set.
+        See also glyph's <A href="#g-isWorthOutputting">isWorthOutputting</A> method.
+      </TD>
+    </TR>
+    <TR>
       <TD><CODE>pasteInto</CODE></TD>
       <TD><CODE>()</CODE></TD>
       <TD>Pastes the contents of (fontforge's internal) clipboard into the selected
