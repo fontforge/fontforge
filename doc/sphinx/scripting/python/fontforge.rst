@@ -4910,6 +4910,13 @@ See the :class:`selection` type for how to alter the selection.
    Leaves only areas in the intersection of contours in all selected glyphs.
    See also :meth:`font.removeOverlap()`.
 
+.. method:: font.isWorthOutputting()
+
+   Returns whether the current selection is worth outputting into a font file.
+   Basically a glyph is worth outputting if it contains any contours, or
+   references or has had its width set.
+   See also :meth:`glyph.isWorthOutputting()`.
+
 .. method:: font.pasteInto()
 
    Pastes the contents of (FontForge's internal) clipboard into the selected
