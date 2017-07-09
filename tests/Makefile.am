@@ -87,11 +87,12 @@ EXTRA_DIST += fonts/AddExtremaTest2.sfd fonts/AddExtremumTest.sfd	\
 	fonts/QuadOverlapBugs.sfd fonts/QuadraticConversionBug.sfd	\
 	fonts/SimplifyBugs.sfd fonts/SplineOverlapBug1.sfd		\
 	fonts/StrokeTests.sfd fonts/VKern.sfd fonts/MunhwaGothic-Bold \
-	README
+	fonts/NotoSans-Regular.ttc README
 
 # generated test inputs
 FETCHED_INPUTS =							\
-	fonts/MunhwaGothic-Bold
+	fonts/MunhwaGothic-Bold					\
+	fonts/NotoSans-Regular.ttc
 
 FETCHED_INPUTS_NONFREE =					\
 	fonts/mingliu.ttc
@@ -117,6 +118,12 @@ fonts/MunhwaGothic-Bold:
 	$(MKDIR_P) $(builddir)/fonts
 	if [ ! -e $@ ] ; then \
 	$(WGET) https://github.com/fontforge/debugfonts/raw/master/MunhwaGothic-Bold -O $@ ; \
+	fi ;
+
+fonts/NotoSans-Regular.ttc:
+	$(MKDIR_P) $(builddir)/fonts
+	if [ ! -e $@ ] ; then \
+	$(WGET) https://github.com/fontforge/debugfonts/raw/master/NotoSans-Regular.ttc -O $@ ; \
 	fi ;
 
 fonts/mingliu.ttc:
@@ -166,6 +173,8 @@ GITIGNOREFILES = $(MAYBE_GENERATED_INPUTS)			\
 	fonts/merged.cff					\
 	fonts/MinionPro-Regular.otf				\
 	fonts/LucidaGrande.ttc					\
-	fonts/nuvo-medium-woff-demo.woff
+	fonts/nuvo-medium-woff-demo.woff		\
+	$(FETCHED_INPUTS)						\
+	$(FETCHED_INPUTS_NONFREE)
 
 -include $(top_srcdir)/git.mk

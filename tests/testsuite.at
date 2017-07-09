@@ -97,11 +97,12 @@ check_pedit([Test generation of TrueType instructions],[test127.pe],[Ambrosia.sf
 #check_pedit([],[svg2ttf.pe])
 check_pedit([Test StrSplit overrun],[test128.pe])
 check_pedit([Ligatures and Fractions Table Lookups],[test129.pe])
+check_pedit([TTC loading],[test130.pe],[NotoSans-Regular.ttc])
 
 AT_BANNER([FontForge Python Scripting Tests])
 
 check_python([FontForge .sfd file open check],[test0001.py],[Ambrosia.sfd])
-check_python([FontForge .ttc file open check],[test0101.py],[LucidaGrande.ttc])
+check_python([FontForge .ttc file open check],[test0101.py],[NotoSans-Regular.ttc])
 check_python([Generate several font files],[test1001.py],[Caliban.sfd])
 check_python([Point count check],[test1001a.py],[Zapfino-4.0d3.dfont])
 check_python([Odd morx test without crashing],[test1001b.py],[Zapfino-4.1d6.dfont])
