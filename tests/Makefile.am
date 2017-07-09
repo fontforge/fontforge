@@ -45,21 +45,21 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 
 noinst_FILES = * fonts/* results/* results
 
+TESTSUITE = $(srcdir)/testsuite
 EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE) atlocal.in
-TESTSUITE = $(builddir)/testsuite
 
 FONTFORGE = $(top_builddir)/fontforgeexe/fontforge
 
-check-local: $(builddir)/fonts atconfig atlocal $(TESTSUITE) $(FONTFORGE)
+check-local: $(builddir)/fonts atconfig atlocal $(TESTSUITE) $(FONTFORGE) $(GENERATED_INPUTS) $(FETCHED_INPUTS)
 	$(MKDIR_P) $(builddir)/results
 	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS)
 
-installcheck-local: atconfig atlocal $(TESTSUITE)
+installcheck-local: atconfig atlocal $(TESTSUITE)  $(GENERATED_INPUTS) $(FETCHED_INPUTS)
 	$(MKDIR_P) $(builddir)/results
 	$(SHELL) '$(TESTSUITE)' AUTOTEST_PATH='$(bindir)' $(TESTSUITEFLAGS)
 
 clean-local:
-	rm -fR $(builddir)/results/ $(builddir)/fetched-fonts/
+	rm -fR $(builddir)/results/ $(builddir)/testsuite.dir/
 
 # test ! -f '$(abs_builddir)/testsuite' || bash -x '$(abs_builddir)/testsuite' --clean
 # The previous line breaks the build in parallel mode sometimes.
@@ -70,7 +70,7 @@ clean-local:
 
 AUTOM4TE = $(SHELL) $(srcdir)/build-aux/missing --run autom4te
 AUTOTEST = $(AUTOM4TE) --language=autotest
-$(TESTSUITE): $(srcdir)/testsuite.at $(srcdir)/package.m4 $(GENERATED_INPUTS) $(FETCHED_INPUTS)
+$(TESTSUITE): $(srcdir)/testsuite.at $(srcdir)/package.m4
 	$(AUTOTEST) -I '$(srcdir)' -o $@.tmp $@.at
 	mv $@.tmp $@
 
@@ -86,51 +86,43 @@ EXTRA_DIST += fonts/AddExtremaTest2.sfd fonts/AddExtremumTest.sfd	\
 	fonts/OmittedCharBugs.sfd fonts/OverlapBugs.sfd			\
 	fonts/QuadOverlapBugs.sfd fonts/QuadraticConversionBug.sfd	\
 	fonts/SimplifyBugs.sfd fonts/SplineOverlapBug1.sfd		\
-	fonts/StrokeTests.sfd fonts/VKern.sfd README
+	fonts/StrokeTests.sfd fonts/VKern.sfd fonts/MunhwaGothic-Bold \
+	README
 
 # generated test inputs
-GENERATED_INPUTS =							\
-	fonts/MunhwaGothic-Bold						\
-	fonts/Ambrosia.pt3
-
 FETCHED_INPUTS =							\
-	$(srcdir)/fetched-fonts/MunhwaGothic-Bold
+	fonts/MunhwaGothic-Bold
+
+FETCHED_INPUTS_NONFREE =					\
+	fonts/mingliu.ttc
+
+GENERATED_INPUTS =							\
+	fonts/Ambrosia.pt3
 
 MAYBE_GENERATED_INPUTS =						\
 	fonts/MinionPro-Regular.fea
 
 .PHONY: prefetch-fonts
+.PHONY: prefetch-nonfree-fonts
 
 prefetch-fonts: $(FETCHED_INPUTS)
+prefetch-nonfree-fonts: $(FETCHED_INPUTS_NONFREE)
 
 # Inputs we can generate from files in git
 fonts/Ambrosia.pt3: fonts/Ambrosia.sfd
 	$(MKDIR_P) $(builddir)/fonts
 	$(FONTFORGE) -c 'open(argv[1]).generate(argv[2])' $< $@
 
-# Inputs we can download
-$(srcdir)/fetched-fonts/MunhwaGothic-Bold:
-	$(MKDIR_P) $(srcdir)/fetched-fonts
-	if [ ! -e $@ ] ; then $(WGET) https://github.com/fontforge/debugfonts/raw/master/MunhwaGothic-Bold -O $@ ; fi ;
-
 fonts/MunhwaGothic-Bold:
 	$(MKDIR_P) $(builddir)/fonts
 	if [ ! -e $@ ] ; then \
-	if [ -e $(srcdir)/fetched-fonts/MunhwaGothic-Bold ]; then \
-	cp -pRP $(srcdir)/fetched-fonts/MunhwaGothic-Bold $@ ; \
-	else \
 	$(WGET) https://github.com/fontforge/debugfonts/raw/master/MunhwaGothic-Bold -O $@ ; \
-	fi ; \
 	fi ;
 
 fonts/mingliu.ttc:
 	$(MKDIR_P) $(builddir)/fonts
 	if [ ! -e $@ ] ; then \
-	if [ -e $(srcdir)/fetched-fonts/mingliu.ttc ]; then \
-	cp -pRP $(srcdir)/fetched-fonts/mingliu.ttc $@ ; \
-	else \
 	$(WGET) http://www.fontsupply.com/fonts/mingliu.ttc -O $@ ; \
-	fi ; \
 	fi ;
 
 # Inputs we can generate from files that aren't available
@@ -160,9 +152,10 @@ EXTRA_DIST += findoverlapbugs.py test0001.py test0101.py	\
 
 EXTRA_DIST += link_test.c randomtest.c build-aux/missing
 
-DISTCLEANFILES = atconfig randomtest $(GENERATED_INPUTS) fonts/*.afm testsuite.log
+DISTCLEANFILES = atconfig randomtest fonts/*.afm testsuite.log $(GENERATED_INPUTS)
 
-MAINTAINERCLEANFILES = package.m4 testsuite.dir testsuite.log results $(TESTSUITE)
+MAINTAINERCLEANFILES = package.m4 testsuite.dir testsuite.log	\
+	results $(TESTSUITE) $(FETCHED_INPUTS) $(FETCHED_INPUTS_NONFREE)
 
 GITIGNOREFILES = $(MAYBE_GENERATED_INPUTS)			\
 	fonts/Zapfino-4.0d3.dfont				\
@@ -173,7 +166,6 @@ GITIGNOREFILES = $(MAYBE_GENERATED_INPUTS)			\
 	fonts/merged.cff					\
 	fonts/MinionPro-Regular.otf				\
 	fonts/LucidaGrande.ttc					\
-	fonts/nuvo-medium-woff-demo.woff			\
-	fetched-fonts/*
+	fonts/nuvo-medium-woff-demo.woff
 
 -include $(top_srcdir)/git.mk
