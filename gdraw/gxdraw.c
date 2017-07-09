@@ -4384,6 +4384,9 @@ void _GXDraw_DestroyDisplay(GDisplay * gdisp) {
     if (gdispc->fence_stipple != BadAlloc && gdispc->fence_stipple != BadDrawable && gdispc->fence_stipple != BadValue) {
       XFreePixmap(gdispc->display, gdispc->fence_stipple); gdispc->fence_stipple = BadAlloc;
     }
+    if (gdispc->pango_context != NULL) {
+        g_object_unref(gdispc->pango_context); gdispc->pango_context = NULL;
+    }
     if (gdispc->groot != NULL) {
       if (gdispc->groot->ggc != NULL) { free(gdispc->groot->ggc); gdispc->groot->ggc = NULL; }
       free(gdispc->groot); gdispc->groot = NULL;
