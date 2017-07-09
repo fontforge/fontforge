@@ -59,7 +59,7 @@ installcheck-local: atconfig atlocal $(TESTSUITE)
 	$(SHELL) '$(TESTSUITE)' AUTOTEST_PATH='$(bindir)' $(TESTSUITEFLAGS)
 
 clean-local:
-	rm -fR $(builddir)/results/*
+	rm -fR $(builddir)/results/ $(builddir)/fetched-fonts/
 
 # test ! -f '$(abs_builddir)/testsuite' || bash -x '$(abs_builddir)/testsuite' --clean
 # The previous line breaks the build in parallel mode sometimes.
@@ -160,9 +160,9 @@ EXTRA_DIST += findoverlapbugs.py test0001.py test0101.py	\
 
 EXTRA_DIST += link_test.c randomtest.c build-aux/missing
 
-DISTCLEANFILES = atconfig randomtest $(GENERATED_INPUTS) fonts/*.afm $(TESTSUITE) testsuite.log
+DISTCLEANFILES = atconfig randomtest $(GENERATED_INPUTS) fonts/*.afm testsuite.log
 
-MAINTAINERCLEANFILES = package.m4 testsuite.dir testsuite.log results
+MAINTAINERCLEANFILES = package.m4 testsuite.dir testsuite.log results $(TESTSUITE)
 
 GITIGNOREFILES = $(MAYBE_GENERATED_INPUTS)			\
 	fonts/Zapfino-4.0d3.dfont				\
