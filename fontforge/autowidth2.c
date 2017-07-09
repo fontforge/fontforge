@@ -444,7 +444,7 @@ SplineChar ***GlyphClassesFromNames(SplineFont *sf,char **classnames,
 	    else
 		classes[i] = malloc((clen+1)*sizeof(SplineChar *));
 	}
-	if ( cn != NULL ) free( cn ) ; cn = NULL ;
+	if ( cn != NULL ) { free( cn ) ; cn = NULL ; }
     }
 return( classes );
 }
