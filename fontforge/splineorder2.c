@@ -1431,8 +1431,10 @@ return;
     unit.x = from->nextcp.x-from->me.x;
     unit.y = from->nextcp.y-from->me.y;
     len = sqrt(unit.x*unit.x + unit.y*unit.y);
-    if ( len!=0 )
-	unit.x /= len; unit.y /= len;
+    if ( len!=0 ) {
+        unit.x /= len;
+        unit.y /= len;
+    }
 
     if ( (fpt = from->pointtype)==pt_hvcurve ) fpt = pt_curve;
     if ( (tpt =   to->pointtype)==pt_hvcurve ) tpt = pt_curve;
