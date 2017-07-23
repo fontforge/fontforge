@@ -87,7 +87,8 @@ EXTRA_DIST += fonts/AddExtremaTest2.sfd fonts/AddExtremumTest.sfd	\
 	fonts/QuadOverlapBugs.sfd fonts/QuadraticConversionBug.sfd	\
 	fonts/SimplifyBugs.sfd fonts/SplineOverlapBug1.sfd		\
 	fonts/StrokeTests.sfd fonts/VKern.sfd fonts/MunhwaGothic-Bold \
-	fonts/NotoSans-Regular.ttc README
+	fonts/NotoSans-Regular.ttc fonts/n019003l.pfb fonts/cmbsy10.pfb	\
+	README
 
 # generated test inputs
 FETCHED_INPUTS =							\
