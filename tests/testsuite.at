@@ -6,6 +6,21 @@ AT_COPYRIGHT([Copyright(C) 2014 George Williams & Contributors])
 
 m4_defun([run_pedit],[(${abs_top_builddir}/fontforgeexe/fontforge -lang ff -script "${abs_srcdir}/$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" || /bin/false)])
 
+# check_file( destination_variable, file_name )
+# Check if the input file exists, first checking the build folder, then
+# falling back to the source folder. If neither exist, skip the test.
+m4_defun([check_file],[
+  m4_ifblank([$2], [], [
+    if test -r "${abs_builddir}/fonts/$2"; then
+      $1="${abs_builddir}/fonts/$2"
+    elif test -r "${abs_srcdir}/fonts/$2"; then
+      $1="${abs_srcdir}/fonts/$2"
+    else
+      AT_SKIP_IF([true])
+    fi
+  ])
+])
+
 # check_pedit( name_of_test=$1, use test#=$2, skip_if_file_not_exist=$3 )
 # Test FontForge Native Scripting commands using various testXXXX.pe files.
 # $1 descriptive title of test
@@ -14,20 +29,13 @@ m4_defun([run_pedit],[(${abs_top_builddir}/fontforgeexe/fontforge -lang ff -scri
 m4_defun([check_pedit],[
 AT_SETUP([$1])
 AT_SKIP_IF([test ! -r "${abs_srcdir}/$2"])
-test_input1="${abs_srcdir}/fonts/$3"
-m4_ifblank([$3],[],[AT_SKIP_IF([test ! -r "${abs_srcdir}/fonts/$3"])])
-test_input2="${abs_srcdir}/fonts/$4"
-m4_ifblank([$4],[],[AT_SKIP_IF([test ! -r "${abs_srcdir}/fonts/$4"])])
-test_input3="${abs_srcdir}/fonts/$5"
-m4_ifblank([$5],[],[AT_SKIP_IF([test ! -r "${abs_srcdir}/fonts/$5"])])
-test_input4="${abs_srcdir}/fonts/$6"
-m4_ifblank([$6],[],[AT_SKIP_IF([test ! -r "${abs_srcdir}/fonts/$6"])])
-test_input5="${abs_srcdir}/fonts/$7"
-m4_ifblank([$7],[],[AT_SKIP_IF([test ! -r "${abs_srcdir}/fonts/$7"])])
-test_input6="${abs_srcdir}/fonts/$8"
-m4_ifblank([$8],[],[AT_SKIP_IF([test ! -r "${abs_srcdir}/fonts/$8"])])
-test_input7="${abs_srcdir}/fonts/$9"
-m4_ifblank([$9],[],[AT_SKIP_IF([test ! -r "${abs_srcdir}/fonts/$9"])])
+check_file([test_input1], [$3])
+check_file([test_input2], [$4])
+check_file([test_input3], [$5])
+check_file([test_input4], [$6])
+check_file([test_input5], [$7])
+check_file([test_input6], [$8])
+check_file([test_input7], [$9])
 AT_CHECK([run_pedit([$2],[$test_input1],[$test_input2],[$test_input3],[$test_input4],[$test_input5],[$test_input6],[$test_input7])],[0],[ignore],[ignore])
 AT_CLEANUP
 ])
@@ -45,8 +53,7 @@ m4_defun([run_python],[(${abs_top_builddir}/fontforgeexe/fontforge -lang py -scr
 m4_defun([check_python],[
 AT_SETUP([$1])
 AT_SKIP_IF([test ! -r "${abs_srcdir}/$2"])
-test_input="${abs_srcdir}/fonts/$3"
-m4_ifblank([$3],[],[AT_SKIP_IF([test ! -r "$test_input"])])
+check_file([test_input], [$3])
 AT_CHECK([run_python([$2],[$test_input])],[0],[ignore],[ignore])
 AT_CLEANUP
 ])
