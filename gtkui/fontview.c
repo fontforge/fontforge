@@ -3297,7 +3297,7 @@ void FontViewMenu_ActivateElement(GtkMenuItem *menuitem, gpointer user_data) {
 	    anybuildable );
 
     anytraceable = false;
-    if ( FindAutoTraceName()!=NULL && anychars!=-1 ) {
+    if ( FindAutoTrace(NULL, 0) >= 0 && anychars!=-1 ) {
 	int i;
 	for ( i=0; i<fv->b.map->enccount; ++i )
 	    if ( fv->b.selected[i] && (gid=fv->b.map->map[i])!=-1 &&
