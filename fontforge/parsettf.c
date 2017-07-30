@@ -1769,7 +1769,7 @@ static void readttfcopyrights(FILE *ttf,struct ttfinfo *info) {
     if ( info->version==NULL ) info->version = copy("1.0");
     else if ( strnmatch(info->version,"Version ",8)==0 ) {
 	char *temp = copy(info->version+8);
-	if ( temp[strlen(temp)-1]==' ' )
+	if ( temp[0] != '\0' && temp[strlen(temp)-1]==' ' )
 	    temp[strlen(temp)-1] = '\0';
 	free(info->version);
 	info->version = temp;
