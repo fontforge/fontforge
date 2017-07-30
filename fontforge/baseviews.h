@@ -317,7 +317,7 @@ extern void FVDontAutoHint(FontViewBase *fv);
 extern void FVAutoInstr(FontViewBase *fv);
 extern void FVClearInstrs(FontViewBase *fv);
 extern void FVClearHints(FontViewBase *fv);
-extern void SCAutoTrace(SplineChar *sc,int layer, int ask);
+extern int SCAutoTrace(SplineChar *sc,int layer, int ask);
 extern int FVBParseSelectByPST(FontViewBase *fv,struct lookup_subtable *sub,
 	int search_type);
 extern int SFScaleToEm(SplineFont *sf, int ascent, int descent);

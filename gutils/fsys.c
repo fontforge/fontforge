@@ -37,7 +37,6 @@
 #include <unistd.h>
 #include <glib.h>
 #include <glib/gstdio.h>
-#include <errno.h>			/* for mkdir_p */
 
 static char dirname_[MAXPATHLEN+1];
 #if !defined(__MINGW32__)
@@ -143,6 +142,48 @@ unichar_t *u_GFileGetHomeDir(void) {
 	free(tmp);
     }
 return dir;
+}
+
+/**
+ * Checks if the specified program exists in the current PATH.
+ * On Windows (MINGW), the executable name *must* include the '.exe' extension.
+ * 
+ * @param [in] prog The program to check its existence for.
+ * @return true iff the program exists in the PATH.
+ */
+int GFileProgramExists(const char *prog) {
+    char *path, *entry, *buffer, *pt;
+#ifdef __MINGW32__
+    const char sep = ';';
+#else
+    const char sep = ':';
+#endif
+    bool at_end = false, prog_found = false;
+
+    if ((path = entry = copy(g_getenv("PATH"))) == NULL) {
+        return false;
+    }
+
+    while (!at_end && !prog_found) {
+        pt = strchr(entry, sep);
+        if (pt == NULL) {
+            at_end = true;
+            pt = entry+strlen(entry);
+        } else {
+            *pt = '\0';
+        }
+        
+        if ((buffer = g_build_filename(entry, prog, NULL))) {
+            if (g_file_test(buffer, G_FILE_TEST_IS_EXECUTABLE)) {
+                prog_found = true;
+            }
+            g_free(buffer);
+        }
+        entry = pt+1;
+    }
+    
+    free(path);
+    return prog_found;
 }
 
 static void savestrcpy(char *dest,const char *src) {

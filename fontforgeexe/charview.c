@@ -10934,7 +10934,7 @@ static void cv_ellistcheck(CharView *cv, struct gmenuitem *mi) {
 		    CVLayer((CharViewBase *) cv),false);
 	  break;
 	  case MID_Autotrace:
-	    mi->ti.disabled = FindAutoTraceName()==NULL || cv->b.sc->layers[ly_back].images==NULL;
+	    mi->ti.disabled = FindAutoTrace(NULL, 0) < 0 || cv->b.sc->layers[ly_back].images==NULL;
 	  break;
 	  case MID_Align:
 	    mi->ti.disabled = cv->b.sc->inspiro && hasspiro();
