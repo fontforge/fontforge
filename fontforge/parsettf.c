@@ -3116,6 +3116,10 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len,
 	  case (12<<8)+24:
 	    LogError( _("FontForge does not support type2 multiple master fonts\n") );
 	    info->bad_cff = true;
+	    if (sp < 4) {
+	        LogError(_("CFF dict stack underflow detected: %d < 4\n"), sp);
+	        break;
+	    }
 	    td->nMasters = stack[0];
 	    td->nAxes = sp-4;
 	    memcpy(td->weightvector,stack+1,(sp-4)*sizeof(real));
