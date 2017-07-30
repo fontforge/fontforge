@@ -7,7 +7,7 @@
 extern char **AutoTraceArgs(int ask);
 extern char *ProgramExists(const char *prog, char *buffer);
 extern int FindAutoTrace(char *path, size_t bufsiz);
-extern const char *FindMFName(void);
+extern void *GetAutoTraceArgs(void);
 extern SplineFont *SFFromMF(char *filename);
 extern void FVAutoTrace(FontViewBase *fv, int ask);
 extern void *GetAutoTraceArgs(void);

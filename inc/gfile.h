@@ -40,8 +40,7 @@
 /* home directories for fontforge */
 enum { Cache, Config, Data };
 
-int mkdir_p(const char *path, mode_t mode);
-char *smprintf(const char *fmt, ...);
+extern int GFileCheckGlibSpawnStatus(int status);
 
 extern char *GFileNormalizePath(char *path);
 extern unichar_t *u_GFileNormalizePath(unichar_t *path);

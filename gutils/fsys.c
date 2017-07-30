@@ -47,6 +47,24 @@ static char dirname_[MAXPATHLEN+1];
 #endif
 
 /**
+ * Checks the return status from the g_spawn family of functions.
+ * 
+ * @param [in] status The return status to check.
+ * @return true iff the status indicates the program exited normally. 
+ */
+int GFileCheckGlibSpawnStatus(int status) {
+#if GLIB_CHECK_VERSION(2,34,0)
+    return g_spawn_check_exit_status(status, NULL);
+#else
+# ifdef __MINGW32__
+    return status == 0;
+# else
+    return WIFEXITED(status);
+# endif
+#endif
+}
+
+/**
  * \brief Removes the extension from a file path, if it exists.
  * This method assumes that the path is already normalized.
  * \param path The path to be modified. Is modified in-place.
