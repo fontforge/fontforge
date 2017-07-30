@@ -29,7 +29,6 @@
 #include <ffglib.h>
 #include <stdio.h>
 #include "ustring.h"
-#include "fileutil.h"
 #include "gfile.h"
 
 int cmdlinearg_forceUIHidden = 0;

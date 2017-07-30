@@ -41,7 +41,7 @@
 #include "colorP.h"
 #include "fontP.h"
 #include "ustring.h"
-#include "fileutil.h"
+#include "gfile.h"
 
 /* ************************************************************************** */
 /* ********************** Noops & Meaningless functions ********************* */

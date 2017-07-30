@@ -51,7 +51,7 @@ extern unichar_t* u_GFileGetHomeDir(void);
 extern char *GFileRemoveExtension(char *path);
 extern char *GFileGetAbsoluteName(const char *name, char *result, size_t rsiz);
 extern char *GFileMakeAbsoluteName(char *name);
-extern char *GFileBuildName(char *dir,char *fname,char *buffer,size_t size);
+extern char *GFileBuildName(const char *dir, const char *fname, char *buffer, size_t size);
 extern char *GFileReplaceName(char *oldname,char *fname,char *buffer,size_t size);
 /**
  * Return the file name for the full path 'path'. This is like the
@@ -144,9 +144,5 @@ extern char *GFileDirName(const char *path);
  * The return value must NOT be freed.
  **/
 extern char* getLibexecDir_NonWindows(void);
-
-
-
-
 
 #endif

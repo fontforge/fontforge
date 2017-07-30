@@ -31,7 +31,7 @@
 
 #include <gdraw.h>
 #include <gresource.h>
-#include <fileutil.h>
+#include <gfile.h>
 #include "charset.h"
 #include "fontP.h"
 #include <utype.h>

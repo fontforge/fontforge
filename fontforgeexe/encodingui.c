@@ -288,7 +288,7 @@ struct block {
     char **dirs;
 };
 
-static void AddToBlock(struct block *block,char *mapname, char *dir) {
+static void AddToBlock(struct block *block, const char *mapname, char *dir) {
     int i, val, j;
     int len = strlen(mapname);
 
@@ -318,31 +318,31 @@ return;		/* Duplicate */
 }
 
 static void FindMapsInDir(struct block *block,char *dir) {
-    struct dirent *ent;
-    DIR *d;
+    GDir *d;
+    const gchar *ent_name;
     int len;
     char *pt, *pt2;
 
     if ( dir==NULL )
 return;
     /* format of cidmap filename "?*-?*-[0-9]*.cidmap" */
-    d = opendir(dir);
+    d = g_dir_open(dir, 0, NULL);
     if ( d==NULL )
 return;
-    while ( (ent = readdir(d))!=NULL ) {
-	if ( (len = strlen(ent->d_name))<8 )
+    while ( (ent_name = g_dir_read_name(d))!=NULL ) {
+	if ( (len = strlen(ent_name))<8 )
     continue;
-	if ( strcmp(ent->d_name+len-7,".cidmap")!=0 )
+	if ( strcmp(ent_name+len-7,".cidmap")!=0 )
     continue;
-	pt = strchr(ent->d_name, '-');
-	if ( pt==NULL || pt==ent->d_name )
+	pt = strchr(ent_name, '-');
+	if ( pt==NULL || pt==ent_name )
     continue;
 	pt2 = strchr(pt+1, '-' );
 	if ( pt2==NULL || pt2==pt+1 || !isdigit(pt2[1]))
     continue;
-	AddToBlock(block,ent->d_name,dir);
+	AddToBlock(block,ent_name,dir);
     }
-    closedir(d);
+    g_dir_close(d);
 }
 
 static void FindMapsInNoLibsDir(struct block *block,char *dir) {

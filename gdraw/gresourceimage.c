@@ -32,7 +32,7 @@
 
 #include <gdraw.h>
 #include <gresource.h>
-#include <fileutil.h>
+#include <gfile.h>
 
 #include "gresourceP.h"
 
