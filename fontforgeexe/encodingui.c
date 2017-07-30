@@ -229,7 +229,7 @@ void LoadEncodingFile(void) {
     fn = gwwv_open_filename(_("Load Encoding"), NULL, filter, NULL);
     if ( fn==NULL )
 return;
-    filename = utf82def_copy(fn);
+    filename = utf82fsys_copy(fn);
     ParseEncodingFile(filename, NULL);
     free(fn); free(filename);
     DumpPfaEditEncodings();

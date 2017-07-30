@@ -683,7 +683,7 @@ return(true);
 			pi->pi.printtype==pt_pdf?"*.pdf":"*.ps");
 		if ( ret==NULL )
 return(true);
-		file = utf82def_copy(ret);
+		file = utf82fsys_copy(ret);
 		free(ret);
 		pi->pi.out = fopen(file,"wb");
 		if ( pi->pi.out==NULL ) {

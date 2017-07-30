@@ -670,25 +670,25 @@ return( false );
 
 int u_GFileIsDir(const unichar_t *file) {
     char buffer[1024];
-    u2def_strncpy(buffer,file,sizeof(buffer));
+    u2fsys_strncpy(buffer,file,sizeof(buffer));
     return GFileIsDir(buffer);
 }
 
 int u_GFileExists(const unichar_t *file) {
     char buffer[1024];
-    u2def_strncpy(buffer,file,sizeof(buffer));
+    u2fsys_strncpy(buffer,file,sizeof(buffer));
 return( g_file_test(buffer, G_FILE_TEST_EXISTS) );
 }
 
 int u_GFileReadable(unichar_t *file) {
     char buffer[1024];
-    u2def_strncpy(buffer,file,sizeof(buffer));
+    u2fsys_strncpy(buffer,file,sizeof(buffer));
 return( g_access(buffer, R_OK)==0 );
 }
 
 int u_GFileMkDir(unichar_t *name) {
     char buffer[1024];
-    u2def_strncpy(buffer,name,sizeof(buffer));
+    u2fsys_strncpy(buffer,name,sizeof(buffer));
 return( mkdir(buffer,0755));
 }
 
