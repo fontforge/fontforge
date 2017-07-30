@@ -1005,8 +1005,8 @@ int FVImportImageTemplate(FontViewBase *fv,char *path,int format,int toback, int
     const char *dirname;
     int i, val;
     int isu=false, ise=false, isc=false;
-    DIR *dir;
-    struct dirent *entry;
+    GDir *dir;
+    const gchar *ent_name;
     SplineChar *sc;
     char start [1025];
 
@@ -1031,25 +1031,25 @@ return( false );
 	*name = '\0';
     }
 
-    if ( (dir = opendir(dirname))==NULL ) {
+    if ( (dir = g_dir_open(dirname, 0, NULL))==NULL ) {
 	    ff_post_error(_("Nothing Loaded"),_("Nothing Loaded"));
 return( false );
     }
     
     tot = 0;
-    while ( (entry=readdir(dir))!=NULL ) {
-	pt = strrchr(entry->d_name,'.');
+    while ( (ent_name=g_dir_read_name(dir))!=NULL ) {
+	pt = strrchr(ent_name,'.');
 	if ( pt==NULL )
     continue;
 	if ( strmatch(pt,ext)!=0 )
     continue;
 	if ( !(
-		(isu && entry->d_name[0]=='u' && entry->d_name[1]=='n' && entry->d_name[2]=='i' && (val=strtol(entry->d_name+3,&end,16), end==pt)) ||
-		(isu && entry->d_name[0]=='u' && (val=strtol(entry->d_name+1,&end,16), end==pt)) ||
-		(isc && entry->d_name[0]=='c' && entry->d_name[1]=='i' && entry->d_name[2]=='d' && (val=strtol(entry->d_name+3,&end,10), end==pt)) ||
-		(ise && entry->d_name[0]=='e' && entry->d_name[1]=='n' && entry->d_name[2]=='c' && (val=strtol(entry->d_name+3,&end,10), end==pt)) ))
+		(isu && ent_name[0]=='u' && ent_name[1]=='n' && ent_name[2]=='i' && (val=strtol(ent_name+3,&end,16), end==pt)) ||
+		(isu && ent_name[0]=='u' && (val=strtol(ent_name+1,&end,16), end==pt)) ||
+		(isc && ent_name[0]=='c' && ent_name[1]=='i' && ent_name[2]=='d' && (val=strtol(ent_name+3,&end,10), end==pt)) ||
+		(ise && ent_name[0]=='e' && ent_name[1]=='n' && ent_name[2]=='c' && (val=strtol(ent_name+3,&end,10), end==pt)) ))
     continue;
-	sprintf (start, "%s/%s", dirname, entry->d_name);
+	snprintf (start, sizeof(start), "%s/%s", dirname, ent_name);
 	if ( isu ) {
 	    i = SFFindSlot(fv->sf,fv->map,val,NULL);
 	    if ( i==-1 ) {
@@ -1094,7 +1094,7 @@ return( false );
 	    ++tot;
 	}
     }
-    closedir(dir);
+    g_dir_close(dir);
     if ( tot==0 )
 	ff_post_error(_("Nothing Loaded"),_("Nothing Loaded"));
 return( true );

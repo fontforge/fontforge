@@ -663,7 +663,7 @@ return( nl2 );
 return( nl );
 }
 
-static int isnamelist(char *filename) {
+static int isnamelist(const char *filename) {
     char *pt;
 
     pt = strrchr(filename,'.');
@@ -676,8 +676,8 @@ return( false );
 }
 
 void LoadNamelistDir(char *dir) {
-    DIR *diro;
-    struct dirent *ent;
+    GDir *diro;
+    const gchar *ent_name;
     char buffer[1025];
     char *userConfigDir = NULL;
 
@@ -687,15 +687,15 @@ void LoadNamelistDir(char *dir) {
             return;
     }
 
-    diro = opendir(dir);
+    diro = g_dir_open(dir, 0, NULL);
     if ( diro!=NULL ) {         /* It's ok not to have any */
-        while ( (ent = readdir(diro))!=NULL ) {
-            if ( isnamelist(ent->d_name) ) {
-                sprintf( buffer, "%s/%s", dir, ent->d_name );
+        while ( (ent_name = g_dir_read_name(diro))!=NULL ) {
+            if ( isnamelist(ent_name) ) {
+                snprintf(buffer, sizeof(buffer), "%s/%s", dir, ent_name);
                 LoadNamelist(buffer);
             }
         }
-        closedir(diro);
+        g_dir_close(diro);
     }
 
     if ( userConfigDir!=NULL ) 

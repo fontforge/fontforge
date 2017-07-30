@@ -42,7 +42,7 @@
 #include "charset.h"
 #include "utype.h"
 #include "gresource.h"
-#include "fileutil.h"
+#include "gfile.h"
 
 /* standard 35 lazy printer afm files may be found at ftp://ftp.adobe.com/pub/adobe/type/win/all/afmfiles/base35 */
 
@@ -458,8 +458,8 @@ return;
 int _GPSDraw_InitFonts(FState *fonts) {
     char *pt, *path, *pp, *epp;
     char dirname[1025], filename[1200];
-    DIR *file;
-    struct dirent *rec;
+    GDir *dir;
+    const gchar *ent_name;
     int offset;
 
     if ( fonts->names_loaded!=0 )
@@ -480,26 +480,16 @@ return( true );
 	GFileBuildName(dirname,"afm",dirname,sizeof(dirname));
 	if ( !GFileExists(dirname))
 	    dirname[epp-pp] = '\0';
-	file = opendir(dirname);
-	if ( file!=NULL ) {
-	    if (( rec = readdir(file))==NULL ) {		/* Must have "." */
-		closedir(file);
-    continue;
-	    }
-	    /* There's a bug in some solaris readdir libs, so that the structure */
-	    /*  returned doesn't match the include file alignment */
-	    offset = 0;
-	    if ( strcmp(rec->d_name,".")!=0 && strcmp(rec->d_name-2,".")==0 )
-		offset = -2;
-	    while ( (rec = readdir(file))!=NULL ) {
-		char *name = rec->d_name+offset;
-		if ( (pt = strstrmatch(name,".afm"))!=NULL && pt[4]=='\0' ) {	/* don't find "*.afm~" */
-		    GFileBuildName(dirname,name,filename,sizeof(filename));
+	dir = g_dir_open(dirname, 0, NULL);
+	if ( dir!=NULL ) {
+	    while ( (ent_name = g_dir_read_name(dir))!=NULL ) {
+		if ( (pt = strstrmatch(ent_name,".afm"))!=NULL && pt[4]=='\0' ) {	/* don't find "*.afm~" */
+		    GFileBuildName(dirname,ent_name,filename,sizeof(filename));
 		    parse_afm(fonts,filename,NULL);
 		/* I don't understand acfm files, but I think I can skip 'em */
 		}
 	    }
-	    closedir(file);
+	    g_dir_close(dir);
 	}
     }
     fonts->names_loaded = true;
