@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "mem.h"
+#include "tottf.h"
 
 /* This program takes a ttc file and turns it into its component ttf files */
 /* The makes two changes to the data:                                      */

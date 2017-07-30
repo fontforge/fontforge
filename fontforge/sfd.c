@@ -45,6 +45,8 @@
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+#include "tottfgpos.h"
+#include "ttfinstrs.h"
 #include "baseviews.h"
 #include "views.h"
 #include <gdraw.h>

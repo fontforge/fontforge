@@ -41,6 +41,7 @@
 #include "splinefill.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+#include "winfonts.h"
 #include <gfile.h>
 #include <math.h>
 #include "utype.h"

@@ -32,6 +32,8 @@
 #include "splinefill.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
+#include "tottfaat.h"
+#include "tottfgpos.h"
 #include <utype.h>
 #include <ustring.h>
 #include <gkeysym.h>

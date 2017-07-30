@@ -34,6 +34,7 @@
 #include "splinefill.h"
 #include "splineorder2.h"
 #include "splineutil.h"
+#include "tottfgpos.h"
 #include <math.h>
 
 #include "sflayoutP.h"

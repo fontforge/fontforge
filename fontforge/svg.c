@@ -24,6 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "svg.h"
+
 #include "autohint.h"
 #include "cvimages.h"
 #include "dumppfa.h"
@@ -39,6 +42,8 @@
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+#include "tottf.h"
+#include "tottfgpos.h"
 #include <unistd.h>
 #include <math.h>
 #include <locale.h>

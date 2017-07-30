@@ -33,6 +33,8 @@
 #include "splinefill.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
+#include "tottf.h"
+#include "woff.h"
 #include <ustring.h>
 #include <locale.h>
 #include <gfile.h>

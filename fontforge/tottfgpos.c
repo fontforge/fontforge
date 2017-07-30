@@ -24,6 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "tottfgpos.h"
+
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "lookups.h"
@@ -32,6 +35,7 @@
 #include "asmfpst.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
+#include "tottf.h"
 #include <utype.h>
 #include <ustring.h>
 

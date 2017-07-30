@@ -30,6 +30,7 @@
 #include "fontforge.h"
 #include "fvfonts.h"
 #include "lookups.h"
+#include "tottfgpos.h"
 #include <string.h>
 
 /* This file contains the routines needed to process an old style sfd file and*/

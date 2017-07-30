@@ -24,6 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "tottf.h"
+
 #include "autohint.h"
 #include "dumpbdf.h"
 #include "dumppfa.h"
@@ -43,6 +46,10 @@
 #include "splinesave.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+#include "tottfaat.h"
+#include "tottfgpos.h"
+#include "tottfvar.h"
+#include "ttfspecial.h"
 #include <math.h>
 #include <unistd.h>
 #include <time.h>

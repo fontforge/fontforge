@@ -24,6 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "winfonts.h"
+
 #include "bvedit.h"
 #include "encoding.h"
 #include "fontforge.h"
@@ -31,6 +34,7 @@
 #include "splinefill.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+#include "tottf.h"
 #include <stdio.h>
 #include <math.h>
 #include "splinefont.h"

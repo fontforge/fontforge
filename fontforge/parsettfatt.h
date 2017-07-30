@@ -5,10 +5,10 @@
 
 #include "ttf.h"
 
-extern void GuessNamesFromGSUB(FILE *ttf, struct ttfinfo *info);
-extern void GuessNamesFromMATH(FILE *ttf, struct ttfinfo *info);
+/* The MATH table */
 extern void otf_read_math(FILE *ttf, struct ttfinfo *info);
 extern void otf_read_math_used(FILE *ttf, struct ttfinfo *info);
+extern void GuessNamesFromMATH(FILE *ttf, struct ttfinfo *info);
 
 /* Parsing advanced typography */
 extern void readmacfeaturemap(FILE *ttf, struct ttfinfo *info);
@@ -24,5 +24,6 @@ extern void readttfmort(FILE *ttf, struct ttfinfo *info);
 extern void readttfmort_glyphsused(FILE *ttf, struct ttfinfo *info);
 extern void readttfopbd(FILE *ttf, struct ttfinfo *info);
 extern void readttfprop(FILE *ttf, struct ttfinfo *info);
+extern void GuessNamesFromGSUB(FILE *ttf, struct ttfinfo *info);
 
 #endif /* FONTFORGE_PARSETTFATT_H */

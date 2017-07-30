@@ -34,6 +34,7 @@
 #include "spiro.h"
 #include "splinefill.h"
 #include "splineutil.h"
+#include "svg.h"
 #include <math.h>
 #include <locale.h>
 #include <string.h>

@@ -30,6 +30,7 @@
 #include "lookups.h"
 #include "splinefill.h"
 #include "splineutil.h"
+#include "tottfgpos.h"
 #include <gkeysym.h>
 #include <string.h>
 #include <ustring.h>

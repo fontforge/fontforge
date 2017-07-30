@@ -3,6 +3,7 @@
 
 #include "psfont.h"
 #include "splinefont.h"
+#include "ttfinstrs.h"
 #include "views.h"
 
 extern AnchorClass *SFFindOrAddAnchorClass(SplineFont *sf, char *name, struct lookup_subtable *sub);

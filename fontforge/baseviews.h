@@ -431,24 +431,6 @@ extern void PyFF_InitFontHook(FontViewBase *fv);
 
 extern uint32 *StdFeaturesOfScript(uint32 script);
 
-enum byte_types { bt_instr, bt_cnt, bt_byte, bt_wordhi, bt_wordlo, bt_impliedreturn };
-struct instrdata {
-    uint8 *instrs;
-    int instr_cnt, max;
-    uint8 *bts;
-    unsigned int changed: 1;
-    unsigned int in_composit: 1;
-    SplineFont *sf;
-    SplineChar *sc;
-    uint32 tag;
-    struct instrdlg *id;
-    struct instrdata *next;
-};
-
-extern uint8 *_IVParse(SplineFont *sf, char *text, int *len,
-	void (*IVError)(void *,char *, int), void *iv);
-extern char *_IVUnParseInstrs(uint8 *instrs,int instr_cnt);
-
 extern void FVMetricsCenter(FontViewBase *fv,int docenter);
 extern void FVRevert(FontViewBase *fv);
 extern void FVRevertBackup(FontViewBase *fv);
