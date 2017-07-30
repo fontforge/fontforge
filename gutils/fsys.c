@@ -285,7 +285,7 @@ char *GFileMakeAbsoluteName(char *name) {
 return( copy(buffer));
 }
 
-char *GFileBuildName(char *dir,char *fname,char *buffer,size_t size) {
+char *GFileBuildName(const char *dir, const char *fname, char *buffer, size_t size) {
     int len;
 
     if ( dir==NULL || *dir=='\0' ) {

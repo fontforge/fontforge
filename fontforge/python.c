@@ -19339,25 +19339,24 @@ static gint GPtrArrayStrcmp(gconstpointer a, gconstpointer b) {
 }
 
 static void LoadFilesInPythonInitDir(char *dir) {
-    DIR *diro;
-    struct dirent *ent;
+    GDir *diro;
+    const gchar *ent_name;
     GPtrArray *filelist;
 
-    diro = opendir(dir);
+    diro = g_dir_open(dir, 0, NULL);
     if ( diro==NULL )		/* It's ok not to have any python init scripts */
 return;
 
     filelist = g_ptr_array_new_with_free_func(free);
-
-    while ( (ent = readdir(diro))!=NULL ) {
-	char *pt = strrchr(ent->d_name,'.');
+    while ( (ent_name = g_dir_read_name(diro))!=NULL ) {
+	char *pt = strrchr(ent_name,'.');
 	if ( pt==NULL )
     continue;
 	if ( strcmp(pt,".py")==0 ) {
-        g_ptr_array_add(filelist, smprintf("%s/%s", dir, ent->d_name));
+	    g_ptr_array_add(filelist, smprintf("%s/%s", dir, ent_name));
 	}
     }
-    closedir(diro);
+    g_dir_close(diro);
 
     g_ptr_array_sort(filelist, GPtrArrayStrcmp);
 
