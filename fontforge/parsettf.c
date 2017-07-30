@@ -3324,6 +3324,10 @@ return( NULL );
 	offsets[i] = getoffset(ttf,offsize);
     dicts = malloc((count+1)*sizeof(struct topdicts *));
     for ( i=0; i<count; ++i ) {
+	if (fontnames != NULL && fontnames[i] == NULL) {
+		LogError(_("Number of CFF font names is less than dict size: %d < %d"), i, count);
+		break;
+	}
 	dicts[i] = readcfftopdict(ttf,fontnames!=NULL?fontnames[i]:NULL,
 		offsets[i+1]-offsets[i], info);
 	if ( parent_dict!=NULL && parent_dict->fontmatrix_set ) {

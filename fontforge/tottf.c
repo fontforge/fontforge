@@ -3826,7 +3826,7 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
     if ( dummy->names[ttf_uniqueid]==NULL || *dummy->names[ttf_uniqueid]=='\0' ) {
 	time(&now);
 	tm = localtime(&now);
-	sprintf( buffer, "%s : %s : %d-%d-%d",
+	snprintf( buffer, sizeof(buffer), "%s : %s : %d-%d-%d",
 		BDFFoundry?BDFFoundry:TTFFoundry?TTFFoundry:"FontForge 2.0",
 		sf->fullname!=NULL?sf->fullname:sf->fontname,
 		tm->tm_mday, tm->tm_mon+1, tm->tm_year+1900 );
