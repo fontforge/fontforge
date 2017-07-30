@@ -620,11 +620,11 @@ int _FVMenuSaveAs(FontView *fv) {
     GTextInfo label;
 
     if ( fv->b.cidmaster!=NULL && fv->b.cidmaster->filename!=NULL )
-	temp=def2utf8_copy(fv->b.cidmaster->filename);
+	temp=fsys2utf8_copy(fv->b.cidmaster->filename);
     else if ( fv->b.sf->mm!=NULL && fv->b.sf->mm->normal->filename!=NULL )
-	temp=def2utf8_copy(fv->b.sf->mm->normal->filename);
+	temp=fsys2utf8_copy(fv->b.sf->mm->normal->filename);
     else if ( fv->b.sf->filename!=NULL )
-	temp=def2utf8_copy(fv->b.sf->filename);
+	temp=fsys2utf8_copy(fv->b.sf->filename);
     else {
 	SplineFont *sf = fv->b.cidmaster?fv->b.cidmaster:
 		fv->b.sf->mm!=NULL?fv->b.sf->mm->normal:fv->b.sf;
@@ -679,7 +679,7 @@ int _FVMenuSaveAs(FontView *fv) {
     free(temp);
     if ( ret==NULL )
 return( 0 );
-    filename = utf82def_copy(ret);
+    filename = utf82fsys_copy(ret);
     free(ret);
 
     if(!(endswithi( filename, ".sfdir") || endswithi( filename, ".sfd")))
@@ -1030,7 +1030,7 @@ void MergeKernInfo(SplineFont *sf,EncMap *map) {
 
     if ( ret==NULL )
 return;				/* Cancelled */
-    temp = utf82def_copy(ret);
+    temp = utf82fsys_copy(ret);
 
     if ( !LoadKerningDataFromMetricsFile(sf,temp,map))
 	ff_post_error(_("Load of Kerning Metrics Failed"),_("Failed to load kern data from %s"), temp);
@@ -3586,7 +3586,7 @@ return;
 	uc_strcat(title,"*");
     if ( file!=NULL ) {
 	uc_strcat(title,"  ");
-	temp = def2u_copy(GFileNameTail(file));
+	temp = fsys2u_copy(GFileNameTail(file));
 	u_strcat(title,temp);
 	free(temp);
     }
@@ -3645,9 +3645,9 @@ static enum fchooserret CMapFilter(GGadget *g,GDirEntry *ent,
     if ( ret==fc_show && !ent->isdir ) {
 	int len = 3*(u_strlen(dir)+u_strlen(ent->name)+5);
 	char *filename = malloc(len);
-	u2def_strncpy(filename,dir,len);
+	u2fsys_strncpy(filename,dir,len);
 	strcat(filename,"/");
-	u2def_strncpy(buf2,ent->name,sizeof(buf2));
+	u2fsys_strncpy(buf2,ent->name,sizeof(buf2));
 	strcat(filename,buf2);
 	file = GFileFopen(filename,"r");
 	if ( file==NULL )
@@ -4856,12 +4856,12 @@ static void FVMenuMakeNamelist(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent 
     FILE *file;
 
     snprintf(buffer, sizeof(buffer),"%s/%s.nam", getFontForgeUserDir(Config), fv->b.sf->fontname );
-    temp = def2utf8_copy(buffer);
+    temp = fsys2utf8_copy(buffer);
     filename = gwwv_save_filename(_("Make Namelist"), temp,"*.nam");
     free(temp);
     if ( filename==NULL )
 return;
-    temp = utf82def_copy(filename);
+    temp = utf82fsys_copy(filename);
     file = GFileFopen(temp,"w");
     free(temp);
     if ( file==NULL ) {
@@ -4888,7 +4888,7 @@ static void FVMenuLoadNamelist(GWindow UNUSED(gw), struct gmenuitem *UNUSED(mi),
 
     if ( ret==NULL )
 return;				/* Cancelled */
-    temp = utf82def_copy(ret);
+    temp = utf82fsys_copy(ret);
     pt = strrchr(temp,'/');
     if ( pt==NULL )
 	pt = temp;
@@ -4978,7 +4978,7 @@ static void FVMenuNameGlyphs(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *U
 
     if ( ret==NULL )
 return;				/* Cancelled */
-    temp = utf82def_copy(ret);
+    temp = utf82fsys_copy(ret);
 
     file = GFileFopen( temp,"r");
     if ( file==NULL ) {

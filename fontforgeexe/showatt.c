@@ -2342,7 +2342,7 @@ static void AttSave(struct att_dlg *att) {
 
     if ( ret==NULL )
 return;
-    cret = utf82def_copy(ret);
+    cret = utf82fsys_copy(ret);
     file = GFileFopen(cret,"w");
     free(cret);
     if ( file==NULL ) {
