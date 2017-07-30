@@ -88,6 +88,7 @@ extern int mf_ask;			/* in autotrace.c */
 extern int mf_clearbackgrounds;		/* in autotrace.c */
 extern int mf_showerrors;		/* in autotrace.c */
 extern char *mf_args;			/* in autotrace.c */
+extern char *autotrace_args;	/* in autotrace.c */
 static int glyph_2_name_map=0;		/* was in tottf.c, now a flag in savefont options dlg */
 extern int coverageformatsallowed;	/* in tottfgpos.c */
 extern int hint_diagonal_ends;		/* in stemdb.c */
@@ -206,7 +207,7 @@ static struct prefs_list {
     { N_("CharCenterHighest"), pr_bool, &CharCenterHighest, NULL, NULL, '\0', NULL, 0, N_("When centering an accent over a glyph, should the accent\nbe centered on the highest point(s) of the glyph,\nor the middle of the glyph?") },
     { N_("PreferSpacingAccents"), pr_bool, &PreferSpacingAccents, NULL, NULL, '\0', NULL, 0, N_("Use spacing accents (Unicode: 02C0-02FF) rather than\ncombining accents (Unicode: 0300-036F) when\nbuilding accented glyphs.") },
     { N_("PreferPotrace"), pr_bool, &preferpotrace, NULL, NULL, '\0', NULL, 0, N_("FontForge supports two different helper applications to do autotracing\n autotrace and potrace\nIf your system only has one it will use that one, if you have both\nuse this option to tell FontForge which to pick.") },
-    { N_("AutotraceArgs"), pr_string, NULL, GetAutoTraceArgs, SetAutoTraceArgs, '\0', NULL, 0, N_("Extra arguments for configuring the autotrace program\n(either autotrace or potrace)") },
+    { N_("AutotraceArgs"), pr_string, &autotrace_args, NULL, SetAutoTraceArgs, '\0', NULL, 0, N_("Extra arguments for configuring the autotrace program\n(either autotrace or potrace)") },
     { N_("AutotraceAsk"), pr_bool, &autotrace_ask, NULL, NULL, '\0', NULL, 0, N_("Ask the user for autotrace arguments each time autotrace is invoked") },
     { N_("MfArgs"), pr_string, &mf_args, NULL, NULL, '\0', NULL, 0, N_("Commands to pass to mf (metafont) program, the filename will follow these") },
     { N_("MfAsk"), pr_bool, &mf_ask, NULL, NULL, '\0', NULL, 0, N_("Ask the user for mf commands each time mf is invoked") },
