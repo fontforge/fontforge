@@ -548,7 +548,7 @@ return( NULL );
 
     pt = strrchr(filename,'/');
     if ( pt==NULL ) pt = filename; else ++pt;
-    title = def2utf8_copy(pt);
+    title = fsys2utf8_copy(pt);
     pt = strrchr(title,'.');
     if ( pt!=NULL ) *pt = '\0';
 

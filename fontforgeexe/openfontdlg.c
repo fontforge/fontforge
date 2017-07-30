@@ -550,7 +550,7 @@ return( pos!=-1 );
     ufile = GFileChooserFileNameOfPos(d->gfc,pos);
     if ( ufile==NULL )
 return( true );
-    file = u2def_copy(ufile);
+    file = u2fsys_copy(ufile);
     free(ufile);
 
     fontnames = GetFontNames(file, 0);
@@ -839,9 +839,9 @@ char *GetPostScriptFontName(char *dir, bool mult, bool modal) {
     char *u_dir;
     char *temp;
 
-    u_dir = def2utf8_copy(dir);
+    u_dir = fsys2utf8_copy(dir);
     ret = FVOpenFont(_("Open Font"), u_dir, mult, modal);
-    temp = u2def_copy(ret);
+    temp = u2fsys_copy(ret);
 
     free(ret);
 return( temp );

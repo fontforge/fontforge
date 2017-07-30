@@ -1111,7 +1111,7 @@ static PyObject *PyFF_OpenFont(PyObject *UNUSED(self), PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"s|O", &filename, &flagsobj ))
 	return NULL;
-    locfilename = utf82def_copy(filename);
+    locfilename = utf82fsys_copy(filename);
 
     if ( flagsobj!=NULL && PyLong_Check(flagsobj) ) {
 	openflags = PyLong_AsLong(flagsobj);
@@ -1146,7 +1146,7 @@ static PyObject *PyFF_FontsInFile(PyObject *UNUSED(self), PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"s",&filename) )
 return( NULL );
-    locfilename = utf82def_copy(filename);
+    locfilename = utf82fsys_copy(filename);
     ret = GetFontNames(locfilename, 1);
     free(locfilename);
     cnt = 0;
@@ -4611,7 +4611,7 @@ static PyObject *PyFFLayer_export(PyFF_Layer *self, PyObject *args,
                                       &ep.use_transform, &use_system,
                                       &ask_system) )
 	return( NULL );
-    locfilename = utf82def_copy(filename);
+    locfilename = utf82fsys_copy(filename);
 
     if ( use_system || ask_system ) {
 	epp = ExportParamsState();
@@ -8445,7 +8445,7 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
 	if ( psflags & 2 )
 	    ip.correct_direction = true;
     }
-    locfilename = utf82def_copy(filename);
+    locfilename = utf82fsys_copy(filename);
 
     /* Check if the file exists and is readable */
     if ( !GFileReadable(locfilename) ) {
@@ -8528,7 +8528,7 @@ static PyObject *PyFFGlyph_export(PyObject *self, PyObject *args,
 	if ( !PyArg_ParseTuple(args,"s|OO",&filename,&obj1,&obj2) )
 	    return NULL;
     }
-    locfilename = utf82def_copy(filename);
+    locfilename = utf82fsys_copy(filename);
 
     if ( use_system || ask_system ) {
 	epp = ExportParamsState();
@@ -14386,7 +14386,7 @@ return (NULL);
     if ( !PyArg_ParseTuple(args,"s|i",&filename,
 	    &to_background) )
 return( NULL );
-    locfilename = utf82def_copy(filename);
+    locfilename = utf82fsys_copy(filename);
 
     ext = strrchr(locfilename,'.');
     if ( ext==NULL ) {
@@ -14459,7 +14459,7 @@ static PyObject *PyFFFont_compareFonts(PyFF_Font *self,PyObject *args) {
 return (NULL);
     if ( !PyArg_ParseTuple(args,"OsO", &other, &filename, &flagstuple ))
 return( NULL );
-    locfilename = utf82def_copy(filename);
+    locfilename = utf82fsys_copy(filename);
 
     if ( !PyType_IsSubtype(&PyFF_FontType, Py_TYPE(other)) ) {
 	PyErr_Format(PyExc_TypeError,"First argument must be a fontforge font");
@@ -16341,7 +16341,7 @@ static PyObject *PyFFFont_Save(PyFF_Font *self, PyObject *args) {
     if ( filename!=NULL )
     {
 	/* Save As - Filename was provided */
-	locfilename = utf82def_copy(filename);
+	locfilename = utf82fsys_copy(filename);
 
 	pt = strrchr(locfilename,'.');
 	if ( pt!=NULL && strmatch(pt,".sfdir")==0 )
@@ -16548,7 +16548,7 @@ return( NULL );
 return( NULL );
 	}
     }
-    locfilename = utf82def_copy(filename);
+    locfilename = utf82fsys_copy(filename);
     if ( !GenerateScript(fv->sf,locfilename,bitmaptype,iflags,resolution,subfontdirectory,
 	    NULL,fv->normal==NULL?fv->map:fv->normal,rename_to,layer) ) {
 	PyErr_Format(PyExc_EnvironmentError, "Font generation failed");
@@ -16703,7 +16703,7 @@ return( NULL );
 return( NULL );
     }
 
-    locfilename = utf82def_copy(filename);
+    locfilename = utf82fsys_copy(filename);
 
     if ( !WriteTTC(locfilename,head,ff_ttc,bf,iflags,layer,ittcflags)) {
 	PyErr_Format(PyExc_EnvironmentError, "Font generation failed");
@@ -16730,7 +16730,7 @@ return (NULL);
     fv = self->fv;
     if ( !PyArg_ParseTuple(args,"s|s",&filename,&lookup_name) )
 return( NULL );
-    locfilename = utf82def_copy(filename);
+    locfilename = utf82fsys_copy(filename);
 
     if ( lookup_name!=NULL ) {
 	otl = SFFindLookup(fv->sf,lookup_name);
@@ -16769,7 +16769,7 @@ return (NULL);
     fv = self->fv;
     if ( !PyArg_ParseTuple(args,"s",&filename) )
 return( NULL );
-    locfilename = utf82def_copy(filename);
+    locfilename = utf82fsys_copy(filename);
 
     if ( !LoadKerningDataFromMetricsFile(fv->sf,locfilename,fv->map)) {
 	PyErr_Format(PyExc_EnvironmentError, "No metrics data found");
@@ -16799,7 +16799,7 @@ return (NULL);
 return( NULL );
 	sf = other->fv->sf;
     } else {
-	locfilename = utf82def_copy(filename);
+	locfilename = utf82fsys_copy(filename);
 	sf = LoadSplineFont(locfilename,openflags);
 	if ( sf==NULL ) {
 	    PyErr_Format(PyExc_EnvironmentError, "No font found in file \"%s\"", locfilename);
@@ -16827,7 +16827,7 @@ return (NULL);
     fv = self->fv;
     if ( !PyArg_ParseTuple(args,"ds|i",&fraction,&filename, &openflags) )
 return( NULL );
-    locfilename = utf82def_copy(filename);
+    locfilename = utf82fsys_copy(filename);
     sf = LoadSplineFont(locfilename,openflags);
     if ( sf==NULL ) {
 	PyErr_Format(PyExc_EnvironmentError, "No font found in file \"%s\"", locfilename);
@@ -17079,7 +17079,7 @@ static PyObject *PyFFFont_printSample(PyFF_Font *self, PyObject *args) {
             sample = utf82u_copy(sampleArg);
             samplefile = NULL;
         } else {
-            samplefile = utf82def_copy(sampleArg);
+            samplefile = utf82fsys_copy(sampleArg);
             sample = NULL;
         }
     }
