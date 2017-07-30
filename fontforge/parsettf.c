@@ -3333,8 +3333,14 @@ return( dicts );
 }
 
 static const char *getsid(int sid,char **strings,int scnt,struct ttfinfo *info) {
-    if ( sid==-1 )
+    if ( sid==-1 ) // Default value, indicating it's not present
 return( NULL );
+    else if (sid < 0) {
+        LogError(_("Bad sid %d (0 <= sid < %d)\n"), sid, scnt+nStdStrings);
+        if (info != NULL)
+            info->bad_cff = true;
+        return NULL;
+    }
     else if ( sid<nStdStrings )
 return( cffnames[sid] );
     else if ( sid-nStdStrings>scnt ) {
@@ -5938,17 +5944,17 @@ void TTF_PSDupsDefault(SplineFont *sf) {
     for ( english=sf->names; english!=NULL && english->lang!=0x409; english=english->next );
     if ( english==NULL )
 return;
-    if ( english->names[ttf_family]!=NULL &&
+    if ( english->names[ttf_family]!=NULL && sf->familyname!=NULL &&
 	    strcmp(english->names[ttf_family],sf->familyname)==0 ) {
 	free(english->names[ttf_family]);
 	english->names[ttf_family]=NULL;
     }
-    if ( english->names[ttf_copyright]!=NULL &&
+    if ( english->names[ttf_copyright]!=NULL && sf->copyright!=NULL &&
 	    strcmp(english->names[ttf_copyright],sf->copyright)==0 ) {
 	free(english->names[ttf_copyright]);
 	english->names[ttf_copyright]=NULL;
     }
-    if ( english->names[ttf_fullname]!=NULL &&
+    if ( english->names[ttf_fullname]!=NULL && sf->fullname!=NULL &&
 	    strcmp(english->names[ttf_fullname],sf->fullname)==0 ) {
 	free(english->names[ttf_fullname]);
 	english->names[ttf_fullname]=NULL;
