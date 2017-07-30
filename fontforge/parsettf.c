@@ -2796,6 +2796,15 @@ return( 3 );
 	pt = buffer;
 	do {
 	    ch = getc(ttf);
+		// Space for at least 2 bytes is required
+		if ((pt-buffer) > (sizeof(buffer) - 2)) {
+			// The buffer is completely full; null-terminate truncate it
+			if ((pt-buffer) == sizeof(buffer)) {
+				pt--;
+			}
+			*pt++ = '\0';
+			break;
+		}
 	    if ( pt<buffer+44 || (ch&0xf)==0xf || (ch&0xf0)==0xf0 ) {
 		pt = addnibble(pt,ch>>4);
 		pt = addnibble(pt,ch&0xf);
@@ -3019,7 +3028,7 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len,
 
     /* Multiple master fonts can have Type2 operators here, particularly */
     /*  blend operators. We're ignoring that */
-    while ( ftell(ttf)<base+len ) {
+    while ( !feof(ttf) && ftell(ttf)<base+len ) {
 	sp = 0;
 	while ( (ret=readcffthing(ttf,&ival,&stack[sp],&oval,info))!=3 && ftell(ttf)<base+len ) {
 	    if ( ret==1 )
