@@ -1342,7 +1342,7 @@ return;
     if ( d->family==gf_none )
 	layer = (intpt) GGadgetGetListItemSelected(GWidgetGetControl(d->gw,CID_Layers))->userdata;
 
-    temp = u2def_copy(path);
+    temp = u2fsys_copy(path);
     oldformatstate = GGadgetGetFirstListSelectedItem(d->pstype);
     iscid = oldformatstate==ff_cid || oldformatstate==ff_cffcid ||
 	    oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont;

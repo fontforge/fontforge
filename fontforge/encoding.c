@@ -1186,7 +1186,7 @@ return( maybe );
 		}
 	    }
 	} else {
-	    file = utf82def_copy(uret);
+	    file = utf82fsys_copy(uret);
 	    free(uret);
 	}
     }

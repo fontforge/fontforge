@@ -350,7 +350,7 @@ static void unexpected(Context *c,enum token_type got) {
 
 void ScriptError( Context *c, const char *msg ) {
     char *t1 = script2utf8_copy(msg);
-    char *ufile = def2utf8_copy(c->filename);
+    char *ufile = fsys2utf8_copy(c->filename);
 
     /* All of fontforge's internal errors are in ASCII where there is */
     /*  no difference between latin1 and utf8. User errors are a different */
@@ -374,7 +374,7 @@ void ScriptError( Context *c, const char *msg ) {
 void ScriptErrorString( Context *c, const char *msg, const char *name) {
     char *t1 = script2utf8_copy(msg);
     char *t2 = script2utf8_copy(name);
-    char *ufile = def2utf8_copy(c->filename);
+    char *ufile = fsys2utf8_copy(c->filename);
 
     if ( verbose>0 )
 	fflush(stdout);
@@ -392,7 +392,7 @@ void ScriptErrorString( Context *c, const char *msg, const char *name) {
 }
 
 void ScriptErrorF( Context *c, const char *format, ... ) {
-    char *ufile = def2utf8_copy(c->filename);
+    char *ufile = fsys2utf8_copy(c->filename);
     /* All string arguments here assumed to be utf8 */
     char errbuf[400];
     va_list ap;
@@ -1634,7 +1634,7 @@ static void bLoadFileToString(Context *c) {
 
     c->return_val.type = v_str;
     _name = script2utf8_copy(c->a.vals[1].u.sval);
-    name = utf82def_copy(_name); free(_name);
+    name = utf82fsys_copy(_name); free(_name);
     f = fopen(name,"rb");
     free(name);
 
@@ -1670,7 +1670,7 @@ static void bWriteStringToFile(Context *c) {
 	append = c->a.vals[3].u.ival;
     }
     _name = script2utf8_copy(c->a.vals[2].u.sval);
-    name = utf82def_copy(_name); free(_name);
+    name = utf82fsys_copy(_name); free(_name);
     f = fopen(name,append?"ab":"wb");
     free(name);
     c->return_val.type = v_int;
@@ -1686,7 +1686,7 @@ static void bLoadPlugin(Context *c) {
     char *name, *_name;
 
     _name = script2utf8_copy(c->a.vals[1].u.sval);
-    name = utf82def_copy(_name); free(_name);
+    name = utf82fsys_copy(_name); free(_name);
     LoadPlugin(name);
     free(name);
 }
@@ -1703,7 +1703,7 @@ static void bLoadPluginDir(Context *c) {
 	    return;
 	}
 	_dir = script2utf8_copy(c->a.vals[1].u.sval);
-	dir = utf82def_copy(_dir); free(_dir);
+	dir = utf82fsys_copy(_dir); free(_dir);
     }
     LoadPluginDir(dir);
     free(dir);
@@ -1713,7 +1713,7 @@ static void bLoadNamelist(Context *c) {
     char *name, *_name;
 
     _name = script2utf8_copy(c->a.vals[1].u.sval);
-    name = utf82def_copy(_name); free(_name);
+    name = utf82fsys_copy(_name); free(_name);
     LoadNamelist(name);
     free(name);
 }
@@ -1730,7 +1730,7 @@ static void bLoadNamelistDir(Context *c) {
 	    return;
 	}
 	_dir = script2utf8_copy(c->a.vals[1].u.sval);
-	dir = utf82def_copy(_dir); free(_dir);
+	dir = utf82fsys_copy(_dir); free(_dir);
     }
     LoadNamelistDir(dir);
     free(dir);
@@ -1820,7 +1820,7 @@ static void bFontsInFile(Context *c) {
     char *locfilename;
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
-    locfilename = utf82def_copy(t);
+    locfilename = utf82fsys_copy(t);
     ret = GetFontNames(locfilename, 1);
     free(t); free(locfilename);
 
@@ -1854,7 +1854,7 @@ static void bOpen(Context *c) {
 	openflags = c->a.vals[2].u.ival;
     }
     t = script2utf8_copy(c->a.vals[1].u.sval);
-    locfilename = utf82def_copy(t);
+    locfilename = utf82fsys_copy(t);
     sf = LoadSplineFont(locfilename,openflags);
     free(t); free(locfilename);
     if ( sf==NULL )
@@ -1938,7 +1938,7 @@ static void bSave(Context *c) {
 	    ScriptError(c,"If an argument is given to Save it must be a filename");
 
 	t = script2utf8_copy(c->a.vals[1].u.sval);
-	locfilename = utf82def_copy(t);
+	locfilename = utf82fsys_copy(t);
 	pt = strrchr(locfilename,'.');
 	if ( pt!=NULL && strmatch(pt,".sfdir")==0 )
 	    s2d = true;
@@ -2006,7 +2006,7 @@ static void bGenerate(Context *c) {
 	    ScriptErrorString( c, "Could not find namelist: ", c->a.vals[6].u.sval);
     }
     t = script2utf8_copy(c->a.vals[1].u.sval);
-    locfilename = utf82def_copy(t);
+    locfilename = utf82fsys_copy(t);
     if ( !GenerateScript(sf,locfilename,bitmaptype,fmflags,res,subfontdirectory,
 	    NULL,c->curfv->normal==NULL?c->curfv->map:c->curfv->normal,rename_to,
 	    ly_fore) )
@@ -2141,7 +2141,7 @@ static void bGenerateFamily(Context *c) {
     free(familysfs);
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
-    locfilename = utf82def_copy(t);
+    locfilename = utf82fsys_copy(t);
     if ( !GenerateScript(sf,locfilename,bitmaptype,fmflags,-1,NULL,sfs,
 	    c->curfv->normal==NULL?c->curfv->map:c->curfv->normal,NULL,
 	    ly_fore) )
@@ -2177,7 +2177,7 @@ static void bGenerateFeatureFile(Context *c) {
     }
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
-    locfilename = utf82def_copy(t);
+    locfilename = utf82fsys_copy(t);
     out = fopen(locfilename,"w");
     if ( out==NULL )
 	ScriptError(c,"Failed to open output file");
@@ -2274,7 +2274,7 @@ static void bImport(Context *c) {
     }
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
-    locfilename = utf82def_copy(t);
+    locfilename = utf82fsys_copy(t);
     filename = GFileMakeAbsoluteName(locfilename);
     free(locfilename); free(t);
 
@@ -2345,7 +2345,7 @@ static void bWritePfm(Context *c) {
     char *t; char *locfilename;
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
-    locfilename = utf82def_copy(t);
+    locfilename = utf82fsys_copy(t);
     if ( !WritePfmFile(c->a.vals[1].u.sval,sf,0,c->curfv->map) )
 	ScriptError(c,"Save failed");
     free(locfilename); free(t);
@@ -2369,7 +2369,7 @@ static void bExport(Context *c) {
     }
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
-    tmp = pt = utf82def_copy(t); free(t);
+    tmp = pt = utf82fsys_copy(t); free(t);
     sprintf( buffer, "%%n_%%f.%.4s", pt);
     format_spec = buffer;
     if ( strrchr(pt,'.')!=NULL ) {
@@ -2477,7 +2477,7 @@ static void bMergeKern(Context *c) {
     char *t; char *locfilename;
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
-    locfilename = utf82def_copy(t);
+    locfilename = utf82fsys_copy(t);
     if ( !LoadKerningDataFromMetricsFile(c->curfv->sf,locfilename,c->curfv->map))
 	ScriptError( c, "Failed to find kern info in file" );
     free(locfilename); free(t);
@@ -2557,7 +2557,7 @@ static void bPrintFont(Context *c) {
 		samplefile = NULL;
 	    } else {
 		t = script2utf8_copy(samplefile);
-		samplefile = locfilename = utf82def_copy(t); free(t);
+		samplefile = locfilename = utf82fsys_copy(t); free(t);
 	    }
 	}
     }
@@ -3280,7 +3280,7 @@ static void bLoadTableFromFile(Context *c) {
     tag |= (tstr+3<end ? tstr[3] : ' ')    ;
 
     t = script2utf8_copy(c->a.vals[2].u.sval);
-    locfilename = utf82def_copy(t);
+    locfilename = utf82fsys_copy(t);
     file = fopen(locfilename,"rb");
     free(locfilename); free(t);
     if ( file==NULL )
@@ -3319,7 +3319,7 @@ static void bSaveTableToFile(Context *c) {
     tag |= (tstr+3<end ? tstr[3] : ' ')    ;
 
     t = script2utf8_copy(c->a.vals[2].u.sval);
-    locfilename = utf82def_copy(t);
+    locfilename = utf82fsys_copy(t);
     file = fopen(locfilename,"wb");
     free(locfilename); free(t);
     if ( file==NULL )
@@ -3391,7 +3391,7 @@ static void bLoadEncodingFile(Context *c) {
     }
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
-    locfilename = utf82def_copy(t);
+    locfilename = utf82fsys_copy(t);
     ParseEncodingFile(locfilename, (c->a.argc>=3 ? c->a.vals[2].u.sval : NULL));
     free(locfilename); free(t);
     /*DumpPfaEditEncodings();*/
@@ -5538,7 +5538,7 @@ static void bMergeFonts(Context *c) {
 	openflags = c->a.vals[2].u.ival;
     }
     t = script2utf8_copy(c->a.vals[1].u.sval);
-    locfilename = utf82def_copy(t);
+    locfilename = utf82fsys_copy(t);
     sf = LoadSplineFont(locfilename,openflags);
     free(t); free(locfilename);
     if ( sf==NULL )
@@ -5571,7 +5571,7 @@ static void bInterpolateFonts(Context *c) {
     else
 	percent = c->a.vals[1].u.fval;
     t = script2utf8_copy(c->a.vals[2].u.sval);
-    locfilename = utf82def_copy(t);
+    locfilename = utf82fsys_copy(t);
     sf = LoadSplineFont(locfilename,openflags);
     free(t); free(locfilename);
     if ( sf==NULL )
@@ -6504,7 +6504,7 @@ static void bConvertByCMap(Context *c) {
     if ( sf->cidmaster!=NULL )
 	ScriptErrorString( c, "Already a cid-keyed font", sf->cidmaster->fontname );
     t = script2utf8_copy(c->a.vals[1].u.sval);
-    locfilename = utf82def_copy(t);
+    locfilename = utf82fsys_copy(t);
     MakeCIDMaster(sf, c->curfv->map, true, locfilename, NULL);
     free(t); free(locfilename);
 }
@@ -6567,7 +6567,7 @@ static void bCIDFlattenByCMap(Context *c) {
 	ScriptErrorString( c, "Not a cid-keyed font", sf->fontname );
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
-    locfilename = utf82def_copy(t);
+    locfilename = utf82fsys_copy(t);
     if ( !SFFlattenByCMap(sf,locfilename))
 	ScriptErrorString( c, "Can't find (or can't parse) cmap file",c->a.vals[1].u.sval);
     free(t); free(locfilename);
@@ -8213,7 +8213,7 @@ static void bCompareFonts(Context *c) {
 	ScriptErrorString( c, "Failed to open output file", c->a.vals[2].u.sval);
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
-    locfilename = utf82def_copy(t);
+    locfilename = utf82fsys_copy(t);
     free(t);
     t = GFileMakeAbsoluteName(locfilename);
     free(locfilename);
@@ -9739,7 +9739,7 @@ static void handlename(Context *c,Val *val) {
 		    }
 		}
 		val->type = v_str;
-		t = def2utf8_copy(sf==NULL?"":
+		t = fsys2utf8_copy(sf==NULL?"":
 			sf->filename!=NULL?sf->filename:sf->origname);
 		val->u.sval = utf82script_copy(t);
 		free(t);
