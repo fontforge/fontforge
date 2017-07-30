@@ -43,6 +43,8 @@
 /* home directories for fontforge */
 enum { Cache, Config, Data };
 
+extern int GFileCheckGlibSpawnStatus(int status);
+
 extern char *GFileNormalizePath(char *path);
 extern unichar_t *u_GFileNormalizePath(unichar_t *path);
 
