@@ -3533,7 +3533,7 @@ static void readcffset(FILE *ttf,struct topdicts *dict,struct ttfinfo *info) {
 	    for ( i = 1; i<len; ) {
 		first = dict->charset[i++] = getushort(ttf);
 		cnt = getc(ttf);
-		for ( j=0; j<cnt; ++j )
+		for ( j=0; j<cnt && i<len; ++j )
 		    dict->charset[i++] = ++first;
 	    }
 	} else if ( format==2 ) {
