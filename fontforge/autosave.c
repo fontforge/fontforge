@@ -30,136 +30,153 @@
 #include "baseviews.h"
 #include "fontforgevw.h"
 #include "sfd.h"
-/*#include "ustring.h"*/
-#include <sys/stat.h>
 #include <sys/types.h>
-#include <fcntl.h>
 #include <unistd.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <dirent.h>
-#include <ustring.h>
-#include "gfile.h"
-#include "views.h"
-#include "gwidget.h"
 
 int AutoSaveFrequency=5;
 
-#if !defined(__MINGW32__)
-# include <pwd.h>
-#endif
+/**
+ * Gets the autosave directory, attempting to create it if it does not exist.
+ *
+ * @return The autosave directory, or NULL on error. The result must be freed
+ *         by the caller.
+ */
+static char *GetAutoDirName() {
+    char *userdir = getFontForgeUserDir(Config);
+    char *autodir = NULL;
 
-static char *getAutoDirName(char *buffer) {
-    char *dir=getFontForgeUserDir(Config);
-
-    if ( dir!=NULL ) {
-        sprintf(buffer,"%s/autosave", dir);
-        free(dir);
-        if ( access(buffer,F_OK)==-1 )
-            if ( GFileMkDir(buffer)==-1 )
-                return( NULL );
-        dir = copy(buffer);
+    if (userdir != NULL) {
+        int ret = asprintf(&autodir, "%s/autosave", userdir);
+        free(userdir);
+        if (ret == -1) {
+            return NULL;
+        } else if (!GFileExists(autodir) && GFileMkDir(autodir) == -1) {
+            free(autodir);
+            return NULL;
+        }
     }
-    return( dir );
+    return autodir;
 }
 
-static void MakeAutoSaveName(SplineFont *sf) {
+/**
+ * Makes a unique autosave filename for a given spline font, if it does not
+ * have one already.
+ *
+ * @param [in] sf The font to create an autosave name for.
+ * @return true iff the font now has an autosave name.
+ */
+static bool MakeAutoSaveName(SplineFont *sf) {
     char buffer[1025];
     char *autosavedir;
     static int cnt=0;
 
-    if ( sf->autosavename )
-return;
-    autosavedir = getAutoDirName(buffer);
-    if ( autosavedir==NULL )
-return;
-    while ( 1 ) {
-	sprintf( buffer, "%s/auto%06x-%d.asfd", autosavedir, getpid(), ++cnt );
-	if ( access(buffer,F_OK)==-1 ) {
-	    sf->autosavename = copy(buffer);
-return;
-	}
+    if (!sf->autosavename && (autosavedir = GetAutoDirName())) {
+        while (true) {
+            int nret = snprintf(buffer, sizeof(buffer), "%s/auto%06x-%d.asfd",
+                                autosavedir, getpid(), ++cnt);
+            if (nret < 0 || nret >= sizeof(buffer)) {
+                break;
+            } else if (!GFileExists(buffer)) {
+                sf->autosavename = copy(buffer);
+                break;
+            }
+        }
+        free(autosavedir);
     }
+    return (sf->autosavename != NULL);
 }
 
-
-int DoAutoRecoveryExtended(int inquire)
-{
-    char buffer[1025];
-    char *recoverdir = getAutoDirName(buffer);
-    DIR *dir;
-    struct dirent *entry;
-    int any = false;
-    SplineFont *sf;
-    int inquire_state=0;
-
-    if ( recoverdir==NULL )
-return( false );
-    if ( (dir = opendir(recoverdir))==NULL )
-return( false );
-    while ( (entry=readdir(dir))!=NULL ) {
-	if ( strcmp(entry->d_name,".")==0 || strcmp(entry->d_name,"..")==0 )
-    continue;
-	sprintf(buffer,"%s/%s",recoverdir,entry->d_name);
-	fprintf( stderr, "Recovering from %s... ", buffer);
-	if ( (sf = SFRecoverFile(buffer,inquire,&inquire_state)) ) {
-	    any=true;
-	    if ( sf->fv==NULL )		/* Doesn't work, cli arguments not parsed yet */
-		FontViewCreate(sf,false);
-	    fprintf( stderr, " Done\n" );
-	}
-    }
-    closedir(dir);
-return( any );
-}
-
-int DoAutoRecovery(int inquire )
-{
-    return DoAutoRecoveryExtended( inquire );
-}
-
-
-void CleanAutoRecovery(void) {
-    char buffer[1025];
-    char *recoverdir = getAutoDirName(buffer);
-    DIR *dir;
-    struct dirent *entry;
-
-    if ( recoverdir==NULL )
-return;
-    if ( (dir = opendir(recoverdir))==NULL )
-return;
-    while ( (entry=readdir(dir))!=NULL ) {
-	if ( strcmp(entry->d_name,".")==0 || strcmp(entry->d_name,"..")==0 )
-    continue;
-	sprintf(buffer,"%s/%s",recoverdir,entry->d_name);
-	if ( unlink(buffer)!=0 ) {
-	    fprintf( stderr, "Failed to clean " );
-	    perror(buffer);
-	}
-    }
-    closedir(dir);
-}
-
-
+/**
+ * Performs an autosave on all open fonts in the provided linked list.
+ * An autosave will not be done if the autosave frequency (preference) is zero.
+ *
+ * @param [in] fvs Linked list of fonts to autosave.
+ */
 static void _DoAutoSaves(FontViewBase *fvs) {
     FontViewBase *fv;
     SplineFont *sf;
 
-    if ( AutoSaveFrequency<=0 )
-return;
+    if (AutoSaveFrequency <= 0)
+        return;
 
-    for ( fv=fvs; fv!=NULL; fv=fv->next ) {
-	sf = fv->cidmaster?fv->cidmaster:fv->sf;
-	if ( sf->changed_since_autosave ) {
-	    if ( sf->autosavename==NULL )
-		MakeAutoSaveName(sf);
-	    if ( sf->autosavename!=NULL )
-		SFAutoSave(sf,fv->map);
-	}
+    for (fv = fvs; fv != NULL; fv = fv->next ) {
+        sf = (fv->cidmaster ? fv->cidmaster : fv->sf);
+        if (sf->changed_since_autosave && MakeAutoSaveName(sf)) {
+            SFAutoSave(sf, fv->map);
+        }
     }
 }
 
+/**
+ * Performs an autosave on all currently open fonts.
+ */
 void DoAutoSaves(void) {
     _DoAutoSaves(FontViewFirst());
+}
+
+/**
+ * Checks the autosave directory to recover autosaved fonts.
+ *
+ * @param [in] inquire Boolean, indicates whether or not to ask the user for
+ *                     what action to take.
+ * @return true iff any font was recovered.
+ */
+int DoAutoRecoveryExtended(int inquire) {
+    char buffer[1025];
+    char *recoverdir = GetAutoDirName();
+    GDir *dir;
+    const gchar *entry;
+    int any = false;
+    SplineFont *sf;
+    int inquire_state=0;
+
+    if (recoverdir == NULL) {
+        return false;
+    } else if ((dir = g_dir_open(recoverdir, 0, NULL)) == NULL) {
+        free(recoverdir);
+        return false;
+    }
+
+    while ((entry = g_dir_read_name(dir)) != NULL ) {
+        snprintf(buffer, sizeof(buffer), "%s/%s", recoverdir, entry);
+        fprintf(stderr, "Recovering from %s... ", buffer);
+        if ((sf = SFRecoverFile(buffer, inquire, &inquire_state))) {
+            any = true;
+            if (sf->fv == NULL) /* Doesn't work, cli arguments not parsed yet */
+                FontViewCreate(sf, false);
+            fprintf(stderr, " Done\n");
+        }
+    }
+    g_dir_close(dir);
+    free(recoverdir);
+    return any;
+}
+
+int DoAutoRecovery(int inquire) {
+    return DoAutoRecoveryExtended(inquire);
+}
+
+/**
+ * Attempts to remove all files within the autosave directory.
+ */
+void CleanAutoRecovery(void) {
+    char buffer[1025];
+    char *recoverdir = GetAutoDirName();
+    GDir *dir;
+    const gchar *entry;
+
+    if (recoverdir == NULL || (dir = g_dir_open(recoverdir, 0, NULL)) == NULL) {
+        free(recoverdir);
+        return;
+    }
+
+    while ((entry = g_dir_read_name(dir)) != NULL) {
+        snprintf(buffer, sizeof(buffer), "%s/%s", recoverdir, entry);
+        if (GFileUnlink(buffer) != 0) {
+            fprintf(stderr, "Failed to clean ");
+            perror(buffer);
+        }
+    }
+    free(recoverdir);
+    g_dir_close(dir);
 }
