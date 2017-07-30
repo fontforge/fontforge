@@ -1769,7 +1769,7 @@ static void readttfcopyrights(FILE *ttf,struct ttfinfo *info) {
     if ( info->version==NULL ) info->version = copy("1.0");
     else if ( strnmatch(info->version,"Version ",8)==0 ) {
 	char *temp = copy(info->version+8);
-	if ( temp[strlen(temp)-1]==' ' )
+	if ( temp[0] != '\0' && temp[strlen(temp)-1]==' ' )
 	    temp[strlen(temp)-1] = '\0';
 	free(info->version);
 	info->version = temp;
@@ -2796,6 +2796,15 @@ return( 3 );
 	pt = buffer;
 	do {
 	    ch = getc(ttf);
+		// Space for at least 2 bytes is required
+		if ((pt-buffer) > (sizeof(buffer) - 2)) {
+			// The buffer is completely full; null-terminate truncate it
+			if ((pt-buffer) == sizeof(buffer)) {
+				pt--;
+			}
+			*pt++ = '\0';
+			break;
+		}
 	    if ( pt<buffer+44 || (ch&0xf)==0xf || (ch&0xf0)==0xf0 ) {
 		pt = addnibble(pt,ch>>4);
 		pt = addnibble(pt,ch&0xf);
@@ -3019,7 +3028,7 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len,
 
     /* Multiple master fonts can have Type2 operators here, particularly */
     /*  blend operators. We're ignoring that */
-    while ( ftell(ttf)<base+len ) {
+    while ( !feof(ttf) && ftell(ttf)<base+len ) {
 	sp = 0;
 	while ( (ret=readcffthing(ttf,&ival,&stack[sp],&oval,info))!=3 && ftell(ttf)<base+len ) {
 	    if ( ret==1 )
@@ -3116,6 +3125,10 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len,
 	  case (12<<8)+24:
 	    LogError( _("FontForge does not support type2 multiple master fonts\n") );
 	    info->bad_cff = true;
+	    if (sp < 4) {
+	        LogError(_("CFF dict stack underflow detected: %d < 4\n"), sp);
+	        break;
+	    }
 	    td->nMasters = stack[0];
 	    td->nAxes = sp-4;
 	    memcpy(td->weightvector,stack+1,(sp-4)*sizeof(real));
@@ -3320,6 +3333,10 @@ return( NULL );
 	offsets[i] = getoffset(ttf,offsize);
     dicts = malloc((count+1)*sizeof(struct topdicts *));
     for ( i=0; i<count; ++i ) {
+	if (fontnames != NULL && fontnames[i] == NULL) {
+		LogError(_("Number of CFF font names is less than dict size: %d < %d"), i, count);
+		break;
+	}
 	dicts[i] = readcfftopdict(ttf,fontnames!=NULL?fontnames[i]:NULL,
 		offsets[i+1]-offsets[i], info);
 	if ( parent_dict!=NULL && parent_dict->fontmatrix_set ) {
@@ -3333,8 +3350,14 @@ return( dicts );
 }
 
 static const char *getsid(int sid,char **strings,int scnt,struct ttfinfo *info) {
-    if ( sid==-1 )
+    if ( sid==-1 ) // Default value, indicating it's not present
 return( NULL );
+    else if (sid < 0) {
+        LogError(_("Bad sid %d (0 <= sid < %d)\n"), sid, scnt+nStdStrings);
+        if (info != NULL)
+            info->bad_cff = true;
+        return NULL;
+    }
     else if ( sid<nStdStrings )
 return( cffnames[sid] );
     else if ( sid-nStdStrings>scnt ) {
@@ -3519,7 +3542,7 @@ static void readcffset(FILE *ttf,struct topdicts *dict,struct ttfinfo *info) {
 	    for ( i = 1; i<len; ) {
 		first = dict->charset[i++] = getushort(ttf);
 		cnt = getc(ttf);
-		for ( j=0; j<cnt; ++j )
+		for ( j=0; j<cnt && i<len; ++j )
 		    dict->charset[i++] = ++first;
 	    }
 	} else if ( format==2 ) {
@@ -5938,17 +5961,17 @@ void TTF_PSDupsDefault(SplineFont *sf) {
     for ( english=sf->names; english!=NULL && english->lang!=0x409; english=english->next );
     if ( english==NULL )
 return;
-    if ( english->names[ttf_family]!=NULL &&
+    if ( english->names[ttf_family]!=NULL && sf->familyname!=NULL &&
 	    strcmp(english->names[ttf_family],sf->familyname)==0 ) {
 	free(english->names[ttf_family]);
 	english->names[ttf_family]=NULL;
     }
-    if ( english->names[ttf_copyright]!=NULL &&
+    if ( english->names[ttf_copyright]!=NULL && sf->copyright!=NULL &&
 	    strcmp(english->names[ttf_copyright],sf->copyright)==0 ) {
 	free(english->names[ttf_copyright]);
 	english->names[ttf_copyright]=NULL;
     }
-    if ( english->names[ttf_fullname]!=NULL &&
+    if ( english->names[ttf_fullname]!=NULL && sf->fullname!=NULL &&
 	    strcmp(english->names[ttf_fullname],sf->fullname)==0 ) {
 	free(english->names[ttf_fullname]);
 	english->names[ttf_fullname]=NULL;

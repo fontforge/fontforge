@@ -3665,6 +3665,11 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		stack[sp++] = -(v-251)*256 - *type1++ - 108;
 		--len;
 	    } else {
+		if (len < 4) {
+			LogError(_("Not enough data: %d < 4"), len);
+			len = 0;
+			break;
+		}
 		int val = (*type1<<24) | (type1[1]<<16) | (type1[2]<<8) | type1[3];
 		stack[sp++] = val;
 		type1 += 4;
