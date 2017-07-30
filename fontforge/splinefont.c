@@ -1084,9 +1084,9 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
     strncpy(ubuf,_("Loading font from "),sizeof(ubuf)-1);
     len = strlen(ubuf);
     if ( !wasurl || i==-1 )	/* If it wasn't compressed, or it wasn't an url, then the fullname is reasonable, else use the original name */
-	    strncat(ubuf,temp = def2utf8_copy(GFileNameTail(fullname)),100);
+	    strncat(ubuf,temp = fsys2utf8_copy(GFileNameTail(fullname)),100);
     else
-	    strncat(ubuf,temp = def2utf8_copy(GFileNameTail(fname)),100);
+	    strncat(ubuf,temp = fsys2utf8_copy(GFileNameTail(fname)),100);
     free(temp);
     ubuf[100+len] = '\0';
     ff_progress_start_indicator(FontViewFirst()==NULL?0:10,_("Loading..."),ubuf,_("Reading Glyphs"),0,1);

@@ -568,7 +568,7 @@ GTextInfo** WordlistLoadFileToGTextInfo( int type, int words_max )
     {
 	return 0;
     }
-    temp = utf82def_copy(filename);
+    temp = utf82fsys_copy(filename);
     GIOChannel* file = g_io_channel_new_file( temp, "r", 0 );
     free(temp);
     if ( !file )

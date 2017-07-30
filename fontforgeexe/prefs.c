@@ -1940,7 +1940,7 @@ return( true );
 	}
 	for ( i=0; i<mi; ++i ) {
 	    script_menu_names[i] = u_copy(names[i]);
-	    script_filenames[i] = u2def_copy(scripts[i]);
+	    script_filenames[i] = u2fsys_copy(scripts[i]);
 	}
 
 	list = GGadgetGetList(GWidgetGetControl(gw,CID_Mapping),&len);

@@ -745,7 +745,7 @@ return( 1 );
     filecnt = 1;
     if ( (old_ps_flags&ps_flag_afm) )
 	filecnt = 2;
-    path = def2utf8_copy(newname);
+    path = fsys2utf8_copy(newname);
     ff_progress_start_indicator(10,_("Saving font"),
 	    _("Saving Multiple PostScript Fonts"),
 	    path,256,(max+1)*filecnt );
@@ -809,7 +809,7 @@ return( WriteMultiplePSFont(sf,newname,sizes,subfontdefinition,map,layer));
     if ( oldformatstate<=ff_cffcid && oldbitmapstate==bf_otb )
 	flags = old_psotb_flags;
 
-    path = def2utf8_copy(newname);
+    path = fsys2utf8_copy(newname);
     ff_progress_start_indicator(10,_("Saving font"),
 		oldformatstate==ff_ttf || oldformatstate==ff_ttfsym ||
 		     oldformatstate==ff_ttfmacbin ?_("Saving TrueType Font") :
