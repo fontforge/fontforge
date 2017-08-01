@@ -55,7 +55,6 @@ noinst_HEADERS = \
 	fvcomposite.h \
 	fvfonts.h \
 	fvimportbdf.h \
-	glyphcomp.h\
 	http.h\
 	ikarus.h\
 	langfreq.h\
@@ -108,6 +107,7 @@ pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 	plugins.h sflayoutP.h print.h splinefont.h cvruler.h ffglib.h           \
 	flaglist.h \
 	glif_name_hash.h \
+	glyphcomp.h \
 	mem.h
 
 #--------------------------------------------------------------------------
