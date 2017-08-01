@@ -94,7 +94,7 @@ noinst_HEADERS = \
 	ttfspecial.h \
 	winfonts.h \
 	woff.h \
-	fontforgeui.h sftextfieldP.h configure-fontforge.h views.h 	\
+	fontforgeui.h sftextfieldP.h configure-fontforge.h \
 	strlist.h charview_private.h cvundoes.h tables.h
 
 pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
@@ -108,7 +108,8 @@ pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 	flaglist.h \
 	glif_name_hash.h \
 	glyphcomp.h \
-	mem.h
+	mem.h \
+	views.h
 
 #--------------------------------------------------------------------------
 
