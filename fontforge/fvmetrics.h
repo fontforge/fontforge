@@ -29,8 +29,8 @@
 #define FONTFORGE_FVMETRICS_H
 
 #include "baseviews.h"
+#include "splinefont.h"
 
-#include "fontforgeui.h"
 #include <math.h>
 #include <ustring.h>
 
