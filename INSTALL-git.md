@@ -27,7 +27,7 @@ sudo apt-get install packaging-dev pkg-config python-dev libpango1.0-dev libglib
 ```
 
 Install the *unifont* package to get a full display of the reference glyphs.
-[Unifont] (http://savannah.gnu.org/projects/unifont) includes glyphs for all Unicode codepoints, and FontForge will use it if it is installed.
+[Unifont](http://savannah.gnu.org/projects/unifont) includes glyphs for all Unicode codepoints, and FontForge will use it if it is installed.
 
 ```sh
 sudo apt-get install unifont;
@@ -49,7 +49,7 @@ cd ..
 
 Build *libuninameslist*
 
-FontForge uses [libuninameslist] (http://github.com/fontforge/libuninameslist) to access attribute data about each Unicode code point.
+FontForge uses [libuninameslist](http://github.com/fontforge/libuninameslist) to access attribute data about each Unicode code point.
 
 Download the code:
 
