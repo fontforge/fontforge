@@ -1,6 +1,8 @@
 /* Zapf dingbat info. Slot into unicode at 0x2700 */
 /* Taken from adobe's afm file */
 
+#include "zapfnomen.h"
+
 char *zapfnomen[] = {
 	0,"a1","a2","a202","a3","a4","a5","a119",
 	"a118","a117","a11","a12","a13","a14","a15","a16",

@@ -40,6 +40,7 @@
 #include "ttf.h"		/* For AnchorClassDecompose */
 #include "tottf.h"
 #include "tottfgpos.h"
+#include "zapfnomen.h"
 #include <stdio.h>
 #include "splinefont.h"
 #include "splinesave.h"
@@ -58,11 +59,6 @@
  #include <sys/stat.h>
  #include <unistd.h>
 #endif
-
-extern char *zapfnomen[];
-extern short zapfwx[];
-extern short zapfbb[][4];
-extern char zapfexists[];
 
 static void *mygets(FILE *file,char *buffer,int size) {
     char *end = buffer+size-1;
