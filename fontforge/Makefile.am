@@ -72,6 +72,7 @@ noinst_HEADERS = \
 	parsettf.h \
 	parsettfvar.h \
 	psread.h \
+	pua.h \
 	savefont.h \
 	scstyles.h \
 	sfd.h \

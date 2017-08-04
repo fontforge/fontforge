@@ -34,6 +34,7 @@
 #include "fvfonts.h"
 #include "namelist.h"
 #include "psread.h"
+#include "pua.h"
 #include "splinefont.h"
 #include "splinefill.h"
 #include "splinesaveafm.h"
@@ -2067,7 +2068,6 @@ return( NULL );
     /*  plane. Big5HK does and the AMS glyphs do */
     if ( enc->is_unicodefull && (sf->uni_interp == ui_trad_chinese ||
 				 sf->uni_interp == ui_ams )) {
-	extern const int cns14pua[], amspua[];
 	const int *pua = sf->uni_interp == ui_ams? amspua : cns14pua;
 	for ( i=0xe000; i<0xf8ff; ++i ) {
 	    if ( pua[i-0xe000]!=0 )
