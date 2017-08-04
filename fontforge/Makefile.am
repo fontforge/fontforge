@@ -97,7 +97,7 @@ noinst_HEADERS = \
 	woff.h \
 	zapfnomen.h \
 	fontforgeui.h sftextfieldP.h configure-fontforge.h \
-	strlist.h charview_private.h cvundoes.h tables.h
+	strlist.h charview_private.h cvundoes.h
 
 pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 	libffstamp.h psfont.h stemdb.h autowidth.h delta.h fontforgevw.h	\
