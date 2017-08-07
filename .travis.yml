@@ -17,6 +17,14 @@ env:
   global:
     # For Coverity
     - secure: "MeTS1Pqa5gzx1nn/peW/9a5kq84bba3XYUljOfkCUqzuyGiERk/nmok+RW7skrgzboBlKxnNG8+ykKqHMwK9s9M83ezFxvEWXBcKEpmEQKkqXPI5hpMs6jGLTgpeuheSIzqHA3danV8iircp1GOiTLWA0pt/AOsNLZiaYBh0OiE="
+  matrix:
+    - TRACE_CODE_COVERAGE=false
+    - TRACE_CODE_COVERAGE=true
+
+matrix:
+  exclude:
+    - os: osx
+      env: TRACE_CODE_COVERAGE=true
 
 addons:
   apt:
@@ -25,7 +33,7 @@ addons:
       - deadsnakes
     packages: [autoconf, automake, autotools-dev, bzip2, gcc-4.9, libtool,
       libjpeg-dev, libtiff4-dev, libpng12-dev, libfreetype6-dev, libgif-dev,
-      libx11-dev, libxml2-dev, libpango1.0-dev, libcairo2-dev, python3.5-dev]
+      libx11-dev, libxml2-dev, libpango1.0-dev, libcairo2-dev, python3.5-dev, lcov]
   coverity_scan:
     project:
       name: "fontforge/fontforge"
@@ -38,6 +46,9 @@ addons:
 cache:
   directories:
     - $TRAVIS_BUILD_DIR/travisdeps
+
+before_install:
+  - if $TRACE_CODE_COVERAGE ; then pip --quiet install --user cpp-coveralls==0.3.12 ; fi
 
 #before_install:
 #  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update || brew update; fi
@@ -52,11 +63,16 @@ install:
     export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$DEPSPREFIX/lib/pkgconfig
     export FFCONFIG="--prefix=$PREFIX"
 
+    if $TRACE_CODE_COVERAGE ; then
+        FFCONFIG="$FFCONFIG --enable-code-coverage --enable-debug"
+    fi
+
     if [ "$TRAVIS_OS_NAME" == "linux" ]; then
       export FTVER=`dpkg -s libfreetype6-dev | perl -ne 'print $1 if /^Version: (\d+(?:\.\d+)+)/'`
       export SFFTVER=`echo $FTVER | perl -ne 'print $1 if /^(\d+(?:\.\d+){1,2})/'`
       export FFCONFIG="$FFCONFIG --with-freetype-source=$DEPSPREFIX/freetype-$FTVER"
       export CC=gcc-4.9
+      export GCOV=gcov-4.9
 
       # This block only runs if the cache isn't present.
       if [ ! "$(ls -A $DEPSPREFIX)" ]; then
@@ -114,6 +130,7 @@ script:
   - ./configure $FFCONFIG
   - make -j4
   - make install
+  - if $TRACE_CODE_COVERAGE ; then make check ; coveralls --gcov-options '\-bulp' --gcov $(which gcov-4.9) ; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then make distcheck -j4; fi
   - fontforge -version
   - $PYTHON -c "import fontforge; import psMat; print(fontforge.__version__, fontforge.version())"
