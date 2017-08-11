@@ -99,6 +99,7 @@ AC_CONFIG_HEADERS([config.h inc/fontforge-config.h:config.h])
 AM_INIT_AUTOMAKE([foreign -Wall subdir-objects tar-pax])
 AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
+AX_CODE_COVERAGE
 
 #--------------------------------------------------------------------------
 #
@@ -492,7 +493,7 @@ AC_SUBST([ISYSTEM])
 
 AC_LANG_PUSH([C]) dnl NOTE: configure.ac - try not to push/pop too often
 # Create LDFLAGS for libraries. Currently used to pass '-no-undefined' to libtool.
-my_lib_ldflags=""
+my_lib_ldflags="${CODE_COVERAGE_LDFLAGS}"
 dnl add --no-undefined if supported. Based on information seen here:
 dnl https://mail.gnome.org/archives/commits-list/2011-October/msg10575.html
 dnl http://femass.com.br/Net-SNMP/configure.d/config_os_progs
@@ -606,6 +607,7 @@ my_cflags="${my_cflags} ${LIBXML_CFLAGS}"
 my_cflags="${my_cflags} ${PYTHON_CFLAGS}"
 my_cflags="${my_cflags} ${PTHREAD_CFLAGS}"
 my_cflags="${my_cflags} ${LIBREADLINE_CFLAGS}"
+my_cflags="${my_cflags} ${CODE_COVERAGE_CFLAGS}"
 test x"${SDK}" = x || my_cflags="${my_cflags} -I${SDK}"
 test x"${LTDLINCL}" = x || my_cflags="${my_cflags} -I${LTDLINCL}"
 AC_SUBST([MY_CFLAGS],[${my_cflags}])
