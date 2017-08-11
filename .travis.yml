@@ -13,6 +13,11 @@ os:
   - linux
   - osx
 
+env:
+  global:
+    # For Coverity
+    - secure: "MeTS1Pqa5gzx1nn/peW/9a5kq84bba3XYUljOfkCUqzuyGiERk/nmok+RW7skrgzboBlKxnNG8+ykKqHMwK9s9M83ezFxvEWXBcKEpmEQKkqXPI5hpMs6jGLTgpeuheSIzqHA3danV8iircp1GOiTLWA0pt/AOsNLZiaYBh0OiE="
+
 addons:
   apt:
     sources:
@@ -126,8 +131,3 @@ deploy:
     branch:
       - master
       - travis
-
-env:
-  global:
-   # For Coverity
-   - secure: "MeTS1Pqa5gzx1nn/peW/9a5kq84bba3XYUljOfkCUqzuyGiERk/nmok+RW7skrgzboBlKxnNG8+ykKqHMwK9s9M83ezFxvEWXBcKEpmEQKkqXPI5hpMs6jGLTgpeuheSIzqHA3danV8iircp1GOiTLWA0pt/AOsNLZiaYBh0OiE="
