@@ -8839,8 +8839,8 @@ return( sf );
 void SFTimesFromFile(SplineFont *sf,FILE *file) {
     struct stat b;
     if ( fstat(fileno(file),&b)!=-1 ) {
-	sf->modificationtime = b.st_mtime;
-	sf->creationtime = b.st_mtime;
+	sf->modificationtime = getenv("SOURCE_DATE_EPOCH") ? atol(getenv("SOURCE_DATE_EPOCH")) : b.st_mtime;
+	sf->creationtime = getenv("SOURCE_DATE_EPOCH") ? atol(getenv("SOURCE_DATE_EPOCH")) : b.st_mtime;
     }
 }
 

@@ -1269,7 +1269,7 @@ static void prepend_timestamp(struct gfc_data *d){
 
     time_t rawtime;
     struct tm * timeinfo;
-    time(&rawtime);
+    if (getenv("SOURCE_DATE_EPOCH")) rawtime=atol(getenv("SOURCE_DATE_EPOCH")); else time(&rawtime);
     timeinfo = localtime(&rawtime);
     char timestamp[11];
     strftime(timestamp, 11, "%y%m%d%H%M", timeinfo);

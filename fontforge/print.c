@@ -1155,7 +1155,7 @@ static void dump_pdfprologue(PI *pi) {
 	fprintf( pi->out, "  /Title (Character Displays from %s)\n", pi->mainsf->fullname );
     fprintf( pi->out, "  /Creator (FontForge)\n" );
     fprintf( pi->out, "  /Producer (FontForge)\n" );
-    time(&now);
+    if (getenv("SOURCE_DATE_EPOCH")) now=atol(getenv("SOURCE_DATE_EPOCH")); else time(&now);
     tm = localtime(&now);
     fprintf( pi->out, "    /CreationDate (D:%04d%02d%02d%02d%02d%02d",
 	    tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec );
@@ -1172,7 +1172,7 @@ static void dump_pdfprologue(PI *pi) {
 	fprintf( pi->out, "%02d'%02d')\n", (int)(timezone/3600),(int)(timezone/60-(timezone/3600)*60) );
     }
 #endif
-    if ( author!=NULL )
+    if ( author!=NULL && !getenv("SOURCE_DATE_EPOCH") )
 	fprintf( pi->out, "  /Author (%s)\n", author );
     fprintf( pi->out, ">>\n" );
     fprintf( pi->out, "endobj\n\n" );
@@ -1369,10 +1369,10 @@ return;
     fprintf( pi->out, "%%!PS-Adobe-3.0\n" );
     fprintf( pi->out, "%%%%BoundingBox: 20 20 %d %d\n", pi->pagewidth-30, pi->pageheight-20 );
     fprintf( pi->out, "%%%%Creator: FontForge\n" );
-    time(&now);
+    if (getenv("SOURCE_DATE_EPOCH")) now=atol(getenv("SOURCE_DATE_EPOCH")); else time(&now);
     fprintf( pi->out, "%%%%CreationDate: %s", ctime(&now) );
     fprintf( pi->out, "%%%%DocumentData: Binary\n" );
-    if ( author!=NULL )
+    if ( author!=NULL && !getenv("SOURCE_DATE_EPOCH") )
 	fprintf( pi->out, "%%%%For: %s\n", author);
     fprintf( pi->out, "%%%%LanguageLevel: %d\n", 3 );
     fprintf( pi->out, "%%%%Orientation: Portrait\n" );

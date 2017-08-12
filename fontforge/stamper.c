@@ -12,7 +12,7 @@ int main( int argc, char **argv ) {
     time_t now;
     struct tm *tm;
 
-    time(&now);
+    if (getenv("SOURCE_DATE_EPOCH")) now=atol(getenv("SOURCE_DATE_EPOCH")); else time(&now);
     tm = gmtime(&now);
     /* Let the user or developer know that this resulting output is generated rather than edited */
     printf( "/* This file was generated using stamper.c to create the next version release.          */\n" );

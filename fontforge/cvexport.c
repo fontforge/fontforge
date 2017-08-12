@@ -98,9 +98,9 @@ int _ExportEPS(FILE *eps,SplineChar *sc, int layer, int preview) {
     fprintf( eps, "%%%%Pages: 0\n" );
     fprintf( eps, "%%%%Title: %s from %s\n", sc->name, sc->parent->fontname );
     fprintf( eps, "%%%%Creator: FontForge\n" );
-    if ( author!=NULL )
+    if ( author!=NULL && !getenv("SOURCE_DATE_EPOCH") )
 	fprintf( eps, "%%%%Author: %s\n", author);
-    time(&now);
+    if (getenv("SOURCE_DATE_EPOCH")) now=atol(getenv("SOURCE_DATE_EPOCH")); else time(&now);
     tm = localtime(&now);
     fprintf( eps, "%%%%CreationDate: %d:%02d %d-%d-%d\n", tm->tm_hour, tm->tm_min,
 	    tm->tm_mday, tm->tm_mon+1, 1900+tm->tm_year );
@@ -218,7 +218,7 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
     fprintf( pdf, "6 0 obj\n" );
     fprintf( pdf, " <<\n" );
     fprintf( pdf, "    /Creator (FontForge)\n" );
-    time(&now);
+    if (getenv("SOURCE_DATE_EPOCH")) now=atol(getenv("SOURCE_DATE_EPOCH")); else time(&now);
     tm = localtime(&now);
     fprintf( pdf, "    /CreationDate (D:%04d%02d%02d%02d%02d%02d",
 	    1900+tm->tm_year, tm->tm_mon+1, tm->tm_mday,
@@ -238,7 +238,7 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
     }
 #endif
     fprintf( pdf, "    /Title (%s from %s)\n", sc->name, sc->parent->fontname );
-    if ( author!=NULL )
+    if ( author!=NULL && !getenv("SOURCE_DATE_EPOCH") )
 	fprintf( pdf, "    /Author (%s)\n", author );
     fprintf( pdf, " >>\n" );
 

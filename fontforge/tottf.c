@@ -3831,7 +3831,7 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
     if ( dummy->names[ttf_subfamily]==NULL || *dummy->names[ttf_subfamily]=='\0' )
 	dummy->names[ttf_subfamily] = utf8_verify_copy(SFGetModifiers(sf));
     if ( dummy->names[ttf_uniqueid]==NULL || *dummy->names[ttf_uniqueid]=='\0' ) {
-	time(&now);
+	if (getenv("SOURCE_DATE_EPOCH")) now=atol(getenv("SOURCE_DATE_EPOCH")); else time(&now);
 	tm = localtime(&now);
 	snprintf( buffer, sizeof(buffer), "%s : %s : %d-%d-%d",
 		BDFFoundry?BDFFoundry:TTFFoundry?TTFFoundry:"FontForge 2.0",
@@ -5769,7 +5769,7 @@ return( false );
     if ( sf->hasvmetrics ) {
 	redohhead(at,true);
     }
-    ttf_fftm_dump(sf,at);
+    if (!getenv("SOURCE_DATE_EPOCH")) ttf_fftm_dump(sf,at);
 
     if ( format!=ff_type42 && format!=ff_type42cid && !sf->internal_temp ) {
 	initATTables(at, sf, format);
@@ -6589,7 +6589,7 @@ return( NULL );
     redohhead(&ret[fcnt],false);
     if ( dummysf->hasvmetrics )
 	redohhead(&ret[fcnt],true);
-    ttf_fftm_dump(dummysf,&ret[fcnt]);
+    if (!getenv("SOURCE_DATE_EPOCH")) ttf_fftm_dump(dummysf,&ret[fcnt]);
 
 return( ret );
 }

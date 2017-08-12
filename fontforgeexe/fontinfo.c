@@ -3263,7 +3263,7 @@ static int GFI_AddOFL(GGadget *g, GEvent *e) {
 	time_t now;
 	struct tm *tm;
 
-	time(&now);
+	if (getenv("SOURCE_DATE_EPOCH")) now=atol(getenv("SOURCE_DATE_EPOCH")); else time(&now);
 	tm = localtime(&now);
 
 	tns = GMatrixEditGet(tng, &rows); newtns = NULL;
@@ -3303,7 +3303,7 @@ static int GFI_AddOFL(GGadget *g, GEvent *e) {
 			len = 0;
 			for ( l=0; data[l]!=NULL; ++l ) {
 			    if ( l==0 ) {
-				sprintf( buffer, data[l], tm->tm_year+1900, author );
+				if (!getenv("SOURCE_DATE_EPOCH")) sprintf( buffer, data[l], tm->tm_year+1900, author );
 			        bpt = buffer;
 			    } else if ( l==1 ) {
 				sprintf( buffer, data[l], reservedname );

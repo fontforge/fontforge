@@ -336,7 +336,7 @@ return( last );
 	time_t now; struct tm *tm;
 	h = strtol(end,&end,10);
 	min = strtol(end+1,&end,10);
-	time(&now);
+	if (getenv("SOURCE_DATE_EPOCH")) now=atol(getenv("SOURCE_DATE_EPOCH")); else time(&now);
 	tm = gmtime(&now);
 	if ( m>tm->tm_mon )
 	    y = tm->tm_year-1;
