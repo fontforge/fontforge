@@ -25,7 +25,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "cvundoes.h"
 #include "fontforgeui.h"
+#include "spiro.h"
+#include "splineutil.h"
+#include "splineutil2.h"
 #include <utype.h>
 #include <math.h>
 #include "collabclient.h"

@@ -53,14 +53,6 @@
 /*									      */
 
 
-/* Harald Harders would like to be able to generate a PFM file without        */
-/*  creating a font along with it. I don't see the need for this, but he pro- */
-/*  vided a patch. Setting this flag will enable his patch		      */
-/*									      */
-/* #define FONTFORGE_CONFIG_WRITE_PFM					      */
-/*									      */
-
-
 /* Prior to late Sept of 2003 FontForge converted certain mac feature/settings*/
 /*  into opentype-like tags. Some features could be converted directly but for*/
 /*  a few I made up tags.  Now FontForge is capable of using the mac feature  */
@@ -82,28 +74,8 @@
 /*									      */
 
 
-/* Werner wants to be able to see the raw (unscaled) data for the location of */
-/*  points (in the points window of the debugger). I'm not sure that is       */
-/*  generally a good idea (I think it makes the dlg look unsymetric).         */
-/*									      */
-/* #define FONTFORGE_CONFIG_SHOW_RAW_POINTS				      */
-/*									      */
-
-
 /* ************************************************************************** */
 /* **************************** Numeric Settings **************************** */
 /* ************************************************************************** */
-
-
-/* The number of files displayed in the "File->Recent" menu */
-#define RECENT_MAX	10
-
-/* The number of tabs allowed in the outline glyph view of former glyphs */
-#define FORMER_MAX	10
-
-/* The maximum number of layers allowed in a normal font (this includes the */
-/*  default foreground and background layers) -- this does not limit type3  */
-/*  fonts */
-#define BACK_LAYER_MAX	256
 
 #endif

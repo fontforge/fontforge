@@ -296,3 +296,5 @@ SOFTWARE.
 #endif	/* No X */
 
 #endif
+
+int GKeysymIsModifier(uint16 keysym);

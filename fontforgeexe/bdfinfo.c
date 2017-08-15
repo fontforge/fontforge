@@ -27,8 +27,10 @@
  */
 
 /* Routines to handle bdf properties, and a dialog to set them */
+#include "bitmapchar.h"
 #include "fontforgeui.h"
 #include "splinefont.h"
+#include "splinefill.h"
 #include <string.h>
 #include <ustring.h>
 #include <utype.h>

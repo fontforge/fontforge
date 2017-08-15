@@ -26,7 +26,7 @@ msgstr ""
 
 #: autotrace.c:535 autotrace.c:536 autotrace.c:739 autotrace.c:740
 msgid "Additional arguments for autotrace program:"
-msgstr ""
+msgstr "Zusätzliche Argumente für das autotrace-Programm:"
 
 #: autotrace.c:552 autotrace.c:588 autotrace.c:763
 #, fuzzy
@@ -136,29 +136,29 @@ msgstr ""
 
 #: collabclient.c:121
 msgid "Disconnected"
-msgstr ""
+msgstr "Getrennt"
 
 #: collabclient.c:123
 msgid "Collab Server"
-msgstr ""
+msgstr "Collab-Server"
 
 #: collabclient.c:125
 msgid "Collab Client"
-msgstr ""
+msgstr "Collab-Client"
 
 #: collabclient.c:127
 msgid "Unknown Collab State!"
-msgstr ""
+msgstr "Unbekannter Collab-Status!"
 
 #: cvexport.c:727 savefont.c:657 savefont.c:853
 #: ../fontforgeexe/cvexportdlg.c:295 ../fontforgeexe/fontview.c:724
 #: ../fontforgeexe/showatt.c:2337
 msgid "Save Failed"
-msgstr ""
+msgstr "Speichern fehlgeschlagen"
 
 #: cvimages.c:116 cvimages.c:161 cvimages.c:311 cvimages.c:341
 msgid "Too Complex or Bad"
-msgstr ""
+msgstr "Zu komplex oder ungültig"
 
 #: cvimages.c:116 cvimages.c:161
 msgid ""
@@ -206,24 +206,24 @@ msgstr "Kann mf nicht finden"
 
 #: cvimages.c:834
 msgid "Bad xfig file"
-msgstr ""
+msgstr "Ungültige xfig-Datei"
 
 #: cvimages.c:963 cvimages.c:1070 cvimages.c:1075
 #: ../fontforgeexe/cvimportdlg.c:83 ../fontforgeexe/cvimportdlg.c:106
 msgid "Bad image file"
-msgstr ""
+msgstr "Ungültige Bilddatei"
 
 #: cvimages.c:963 cvimages.c:1070 ../fontforgeexe/cvimportdlg.c:83
 #: ../fontforgeexe/cvimportdlg.c:106
 #, c-format
 msgid "Bad image file: %.100s"
-msgstr ""
+msgstr "Ungültige Bilddatei: %.100s"
 
 #: cvimages.c:993 ../fontforgeexe/groupsdlg.c:1492
 #: ../fontforgeexe/groupsdlg.c:1495
 #, fuzzy
 msgid "Nothing Selected"
-msgstr "Ausgewählt"
+msgstr "Nichts ausgewählt"
 
 #: cvimages.c:993
 msgid "You must select a glyph before you can import an image into it"
@@ -232,44 +232,44 @@ msgstr ""
 #: cvimages.c:995
 #, fuzzy
 msgid "More Images Than Selected Glyphs"
-msgstr "gewählte Zeichen"
+msgstr "Weitere Bilder als ausgewählte Glyphen"
 
 #: cvimages.c:1014 cvimages.c:1022
 #, fuzzy
 msgid "Bad Template"
-msgstr "Unzulässiger Name"
+msgstr "Ungültige Vorlage"
 
 #: cvimages.c:1014
 msgid "Bad template, no extension"
-msgstr ""
+msgstr "Ungültige Vorlage, keine Erweiterung"
 
 #: cvimages.c:1022
 msgid "Bad template, unrecognized format"
-msgstr ""
+msgstr "Ungültige Vorlage, nicht erkanntes Format"
 
 #: cvimages.c:1033 cvimages.c:1099
 #, fuzzy
 msgid "Nothing Loaded"
-msgstr "Nichts abzupausen"
+msgstr "Nichts geladen"
 
 #: cvimages.c:1054
 #, fuzzy
 msgid "Unicode value not in font"
-msgstr "Unicode-_Wert"
+msgstr "Unicode-Wert nicht in Schriftart"
 
 #: cvimages.c:1054
 #, c-format
 msgid "Unicode value (%x) not in font, ignored"
-msgstr ""
+msgstr "Unicode-Wert (%x) nicht in Schriftart, ignoriert"
 
 #: cvimages.c:1062
 msgid "Encoding value not in font"
-msgstr ""
+msgstr "Kodierungswert nicht in Schriftart"
 
 #: cvimages.c:1062
 #, c-format
 msgid "Encoding value (%x) not in font, ignored"
-msgstr ""
+msgstr "Kodierungswert (%x) nicht in Schriftart, ignoriert"
 
 #: cvimages.c:1075
 #, c-format
@@ -278,7 +278,7 @@ msgstr ""
 
 #: cvundoes.c:2088
 msgid "Don't Warn Again"
-msgstr ""
+msgstr "Nicht erneut warnen"
 
 #: cvundoes.c:2088 cvundoes.c:2866 fvimportbdf.c:1889
 #: ../fontforgeexe/alignment.c:583 ../fontforgeexe/anchorsaway.c:1370
@@ -349,7 +349,7 @@ msgstr "_OK"
 #: ../fontforgeexe/metricsview.c:2612 ../fontforgeexe/searchview.c:523
 #, fuzzy
 msgid "Bad Reference"
-msgstr "gespiegelte Referenz"
+msgstr "Ungültige Referenz"
 
 #: cvundoes.c:2089
 #, c-format
@@ -381,12 +381,12 @@ msgstr "_Ja"
 #: parsettf.c:5677 sfd.c:8901 tottf.c:1467
 #, fuzzy
 msgid "Yes to _All"
-msgstr "_Alle auswählen"
+msgstr "Ja zu _allen"
 
 #: cvundoes.c:2098 cvundoes.c:2319 cvundoes.c:3604 fontviewbase.c:107
 #: parsettf.c:5678 tottf.c:1468
 msgid "No _to All"
-msgstr ""
+msgstr "Nein _zu allen"
 
 #: cvundoes.c:2099 cvundoes.c:2317 cvundoes.c:3605 fontviewbase.c:108
 #: fontviewbase.c:1409 parsettfbmf.c:484 splinechar.c:1013 splinefont.c:1238
@@ -413,7 +413,7 @@ msgstr ""
 #: cvundoes.c:2269
 #, fuzzy
 msgid "Anchor Lost"
-msgstr "Ankereinstellungen..."
+msgstr "Anker verloren"
 
 #: cvundoes.c:2269
 msgid ""
@@ -424,7 +424,7 @@ msgstr ""
 #: cvundoes.c:2291
 #, fuzzy
 msgid "Duplicate Anchor"
-msgstr "_Anker auswählen"
+msgstr "Anker duplizieren"
 
 #: cvundoes.c:2291
 #, c-format
@@ -433,7 +433,7 @@ msgstr ""
 
 #: cvundoes.c:2321
 msgid "Different Fonts"
-msgstr ""
+msgstr "Verschiedene Schriftarten"
 
 #: cvundoes.c:2321
 msgid ""
@@ -445,7 +445,7 @@ msgstr ""
 
 #: cvundoes.c:2513
 msgid "Please don't do that"
-msgstr ""
+msgstr "Bitte machen Sie das nicht"
 
 #: cvundoes.c:2513
 msgid "You may not paste a reference into this window"
@@ -462,7 +462,7 @@ msgstr ""
 #: cvundoes.c:2552 cvundoes.c:3185 cvundoes.c:3735 cvundoes.c:3830
 #, fuzzy
 msgid "No Vertical Metrics"
-msgstr "Besitzt _vertikale Metrik"
+msgstr "Keine vertikale Metrik"
 
 #: cvundoes.c:2552 cvundoes.c:3185 cvundoes.c:3735 cvundoes.c:3830
 msgid ""
@@ -475,12 +475,12 @@ msgstr ""
 #: ../fontforgeexe/lookupui.c:3975 ../fontforgeexe/lookupui.c:4000
 #, fuzzy
 msgid "Missing glyph"
-msgstr "Fehlendes Zeichenpaar"
+msgstr "Fehlende Glyphe"
 
 #: cvundoes.c:2846 cvundoes.c:2985
 #, fuzzy
 msgid "Could not find original glyph"
-msgstr "Konnte das Zeichen %.70s nicht finden"
+msgstr "Konnte die originale Glyphe nicht finden"
 
 #: cvundoes.c:2867 fontviewbase.c:995 fontviewbase.c:1636 fvimportbdf.c:1890
 #: parsettf.c:5505 savefont.c:754 splinechar.c:1022
@@ -571,7 +571,7 @@ msgstr "_Abbrechen"
 #: cvundoes.c:2898
 #, fuzzy, c-format
 msgid "Second glyph of %s"
-msgstr "gewählte Zeichen"
+msgstr "Zweite Glyphe von %s"
 
 #: cvundoes.c:2913 ../fontforgeexe/charinfo.c:5171
 msgid "No Lookups"
@@ -600,7 +600,7 @@ msgstr ""
 #: cvundoes.c:3456 cvundoes.c:3484
 #, fuzzy
 msgid "No selection\n"
-msgstr "Auswahl _invertieren"
+msgstr "Keine Auswahl\n"
 
 #: cvundoes.c:3607
 msgid "Bitmap Paste"
@@ -613,7 +613,7 @@ msgstr ""
 #: dumpbdf.c:434 dumppfa.c:2797 winfonts.c:659
 #, fuzzy, c-format
 msgid "Can't open %s\n"
-msgstr "Öffnen fehlgeschlagen"
+msgstr "Kann %s nicht öffnen\n"
 
 #: dumpbdf.c:448
 #, c-format
@@ -628,15 +628,15 @@ msgstr ""
 #: dumppfa.c:1519 fontviewbase.c:1079 tottf.c:2062
 #, fuzzy
 msgid "Auto Hinting Font..."
-msgstr "Abpausen..."
+msgstr ""
 
 #: dumppfa.c:1555 dumppfa.c:2502
 msgid "Converting PostScript"
-msgstr ""
+msgstr "PostScript konvertieren"
 
 #: dumppfa.c:1559 dumppfa.c:2506 savefont.c:803
 msgid "Saving PostScript Font"
-msgstr ""
+msgstr "PostScript-Schriftart speichern"
 
 #: effects.c:45
 msgid "Outlining glyphs"
@@ -671,15 +671,15 @@ msgstr ""
 #: encoding.c:624 ../fontforgeexe/tilepath.c:770
 #, fuzzy
 msgid "First"
-msgstr "_erster"
+msgstr "Erste"
 
 #: encoding.c:625 encoding.c:634
 msgid "Second"
-msgstr ""
+msgstr "Zweite"
 
 #: encoding.c:626 encoding.c:634
 msgid "Third"
-msgstr ""
+msgstr "Dritte"
 
 #: encoding.c:628 encoding.c:637
 #, c-format
@@ -690,7 +690,7 @@ msgstr ""
 #: ../fontforgeexe/cvpalettes.c:1503
 #, fuzzy
 msgid "_First"
-msgstr "_erster"
+msgstr "_Erste"
 
 #: encoding.c:684
 #, fuzzy
@@ -720,11 +720,11 @@ msgstr ""
 
 #: encoding.c:1039
 msgid "_Use It"
-msgstr ""
+msgstr "_Verwenden"
 
 #: encoding.c:1039
 msgid "_Search"
-msgstr ""
+msgstr "_Suche"
 
 #: encoding.c:1040 encoding.c:1085
 msgid "Use CID Map"
@@ -740,7 +740,7 @@ msgstr ""
 
 #: encoding.c:1062
 msgid "_Browse"
-msgstr ""
+msgstr "_Durchsuchen"
 
 #: encoding.c:1062
 msgid "_Give Up"
@@ -784,7 +784,7 @@ msgstr "_Löschen"
 
 #: encoding.c:1166 encoding.c:1603
 msgid "_Add"
-msgstr ""
+msgstr "_Hinzufügen"
 
 #: encoding.c:1167 encoding.c:1605
 msgid "Extraneous glyphs"
@@ -803,7 +803,7 @@ msgstr ""
 
 #: encoding.c:1477 ../fontforgeexe/savefontdlg.c:1484
 msgid "Encoding Too Large"
-msgstr ""
+msgstr "Kodierung zu groß"
 
 #: encoding.c:1517
 msgid "MultipleEncodingIgnored"
@@ -1469,23 +1469,23 @@ msgstr ""
 #: fontviewbase.c:972
 #, fuzzy
 msgid "Correcting Direction..."
-msgstr "Richtung _korrigieren"
+msgstr "Richtung wird korrigiert..."
 
 #: fontviewbase.c:993
 #, fuzzy
 msgid "Unlink All"
-msgstr "Referenzen lösen"
+msgstr "Alles lösen"
 
 #: fontviewbase.c:994
 #, fuzzy
 msgid "Unlink"
-msgstr "Referenzen lösen"
+msgstr "Lösen"
 
 #: fontviewbase.c:997 ../fontforgeexe/charview.c:10115
 #: ../fontforgeexe/metricsview.c:3029
 #, fuzzy
 msgid "Flipped Reference"
-msgstr "gespiegelte Referenz"
+msgstr "Gespiegelte Referenz"
 
 #: fontviewbase.c:997 ../fontforgeexe/charview.c:10115
 #: ../fontforgeexe/metricsview.c:3029
@@ -1498,17 +1498,17 @@ msgstr ""
 #: fontviewbase.c:1037
 #, fuzzy
 msgid "Simplifying..."
-msgstr "Stärker vereinfachen..."
+msgstr "Wird vereinfacht..."
 
 #: fontviewbase.c:1103
 #, fuzzy
 msgid "Finding Substitution Points..."
-msgstr "Er_setzungen..."
+msgstr ""
 
 #: fontviewbase.c:1123
 #, fuzzy
 msgid "Finding Counter Masks..."
-msgstr "Neu Counter Mask"
+msgstr ""
 
 #: fontviewbase.c:1258 fontviewbase.c:1260 ../fontforgeexe/charview.c:10445
 msgid "Things could be better..."
@@ -1539,7 +1539,7 @@ msgstr "_Akzentuierte erstellen"
 #: fontviewbase.c:1411
 #, fuzzy
 msgid "Replace Å"
-msgstr "E_rsetzen"
+msgstr "Å ersetzen"
 
 #: fontviewbase.c:1411
 msgid ""
@@ -1550,12 +1550,12 @@ msgstr ""
 #: fontviewbase.c:1635 ../fontforgeexe/fontinfo.c:10262
 #, fuzzy
 msgid "_Revert"
-msgstr "Datei _zurücksetzen"
+msgstr "Zu_rücksetzen"
 
 #: fontviewbase.c:1638 ../fontforgeexe/fontview.c:516
 #, fuzzy
 msgid "Font changed"
-msgstr "Keine Änderung"
+msgstr "Schriftart geändert"
 
 #: fontviewbase.c:1638
 #, c-format
@@ -1567,7 +1567,7 @@ msgstr ""
 
 #: fontviewbase.c:1763 ../fontforgeexe/charview.c:6271
 msgid "Old sfd file"
-msgstr ""
+msgstr "Alte sfd-Datei"
 
 #: fontviewbase.c:1763 ../fontforgeexe/charview.c:6271
 msgid ""
@@ -1577,7 +1577,7 @@ msgstr ""
 
 #: fontviewbase.c:1769
 msgid "Glyph Name Changed"
-msgstr ""
+msgstr "Glypenname geändert"
 
 #: fontviewbase.c:1769
 #, c-format
@@ -1606,7 +1606,7 @@ msgstr ""
 
 #: freetype.c:721
 msgid "No ByteCode Interpreter"
-msgstr ""
+msgstr "Kein ByteCode-Interpreter"
 
 #: freetype.c:721
 msgid ""
@@ -1652,7 +1652,7 @@ msgstr ""
 #: fvfonts.c:1222 fvfonts.c:1230 ../fontforgeexe/fvfontsdlg.c:55
 #, fuzzy
 msgid "Merging Problem"
-msgstr "Pr_obleme finden..."
+msgstr ""
 
 #: fvfonts.c:1222 ../fontforgeexe/fvfontsdlg.c:55
 msgid "Merging a font with itself achieves nothing"
@@ -1864,7 +1864,7 @@ msgstr ""
 
 #: fvimportbdf.c:2063
 msgid "Not a pk file"
-msgstr ""
+msgstr "Keine pk-Datei"
 
 #: fvimportbdf.c:2063
 #, fuzzy, c-format
@@ -1873,7 +1873,7 @@ msgstr "Öffnen von %.200s fehlgeschlagen"
 
 #: fvimportbdf.c:2070
 msgid "Not a gf file"
-msgstr ""
+msgstr "Keine gf-Datei"
 
 #: fvimportbdf.c:2070
 #, fuzzy, c-format
@@ -1882,7 +1882,7 @@ msgstr "Öffnen von %.200s fehlgeschlagen"
 
 #: fvimportbdf.c:2076 fvimportbdf.c:2082 fvimportbdf.c:2170
 msgid "Not a pcf file"
-msgstr ""
+msgstr "Keine pcf-Datei"
 
 #: fvimportbdf.c:2076 fvimportbdf.c:2082 fvimportbdf.c:2170
 #, fuzzy, c-format
@@ -1891,7 +1891,7 @@ msgstr "Öffnen von %.200s fehlgeschlagen"
 
 #: fvimportbdf.c:2088
 msgid "Not a bdf file"
-msgstr ""
+msgstr "Keine bdf-Datei"
 
 #: fvimportbdf.c:2088
 #, fuzzy, c-format
@@ -1900,27 +1900,27 @@ msgstr "Öffnen von %.200s fehlgeschlagen"
 
 #: fvimportbdf.c:2226 splinefont.c:995
 msgid "Decompress Failed!"
-msgstr ""
+msgstr "Dekomprimieren fehlgeschlagen!"
 
 #: fvimportbdf.c:2316 fvimportbdf.c:2326 fvimportbdf.c:2404
 #, c-format
 msgid "Loading font from %.100s"
-msgstr ""
+msgstr "Schriftart aus %.100s wird geladen"
 
 #: fvimportbdf.c:2317 fvimportbdf.c:2405 splinefont.c:1017
 #, fuzzy
 msgid "Loading..."
-msgstr "Abpausen..."
+msgstr "Ladevorgang..."
 
 #: fvimportbdf.c:2317 fvimportbdf.c:2405 splinefont.c:1017
 #, fuzzy
 msgid "Reading Glyphs"
-msgstr "Zeiche_n aufräumen"
+msgstr "Glyphen werden gelesen"
 
 #: fvimportbdf.c:2348
 #, fuzzy
 msgid "No Bitmap Font"
-msgstr "Neues _Bitmapfenster"
+msgstr "Keine Bitmapschriftart"
 
 #: fvimportbdf.c:2348
 #, fuzzy, c-format
@@ -1930,7 +1930,7 @@ msgstr "Konnte das Zeichen %.70s nicht finden"
 #: glyphcomp.c:948 glyphcomp.c:1208 glyphcomp.c:1223 glyphcomp.c:1237
 #, fuzzy
 msgid "Outline Glyphs\n"
-msgstr "Alle Zeichen"
+msgstr ""
 
 #: glyphcomp.c:953 glyphcomp.c:1239
 msgid "Glyph Differences\n"
@@ -2150,7 +2150,7 @@ msgstr ""
 #: glyphcomp.c:1489
 #, fuzzy
 msgid "version"
-msgstr "_Version"
+msgstr "Version"
 
 #: glyphcomp.c:1983 glyphcomp.c:2185 glyphcomp.c:2202 glyphcomp.c:2220
 #: glyphcomp.c:2237
@@ -2162,7 +2162,7 @@ msgstr "Positionen"
 #: glyphcomp.c:2237
 #, fuzzy
 msgid "Glyph Substitution\n"
-msgstr "Multiple Ersetzungen"
+msgstr "Glyphenersetzung\n"
 
 #: glyphcomp.c:1986
 msgid "Lookup Differences\n"
@@ -2175,7 +2175,7 @@ msgstr ""
 
 #: glyphcomp.c:1992
 msgid "<Nothing>"
-msgstr ""
+msgstr "<Nichts>"
 
 #: glyphcomp.c:2023
 #, c-format
@@ -2314,7 +2314,7 @@ msgstr ""
 #: http.c:694
 #, fuzzy
 msgid "Font Upload..."
-msgstr "Schri_ft-Eigenschaften..."
+msgstr "Schriftart hochladen..."
 
 #: http.c:694
 msgid "Uploading to Open Font Library"
@@ -2338,20 +2338,20 @@ msgstr ""
 
 #: http.c:735
 msgid "Login failed"
-msgstr ""
+msgstr "Anmelden fehlgeschlagen"
 
 #: http.c:735
 #, fuzzy
 msgid "Could not log in."
-msgstr "Öffnen fehlgeschlagen"
+msgstr "Konnte nicht anmelden."
 
 #: http.c:758
 msgid "Could not read state"
-msgstr ""
+msgstr "Konnte Status nicht lesen"
 
 #: http.c:758
 msgid "Could not read state."
-msgstr ""
+msgstr "Konnte Status nicht lesen."
 
 #: http.c:781 http.c:794
 msgid "Font file vanished"
@@ -2388,7 +2388,7 @@ msgstr ""
 #: http.c:1007 ../gdraw/gfilechooser.c:459
 #, c-format
 msgid "Enter password for %s@%s"
-msgstr ""
+msgstr "Passwort für %s@%s eingeben"
 
 #: http.c:1026 http.c:1189 http.c:1348
 #, c-format
@@ -2406,11 +2406,11 @@ msgstr ""
 #: http.c:1045 http.c:1208 http.c:1359
 #, fuzzy
 msgid "Font Download..."
-msgstr "Schri_ft-Eigenschaften..."
+msgstr "Schriftart herunterladen..."
 
 #: http.c:1046 http.c:1209 http.c:1360
 msgid "Resolving host"
-msgstr ""
+msgstr "Host wird aufgelöst"
 
 #: http.c:1084 http.c:1422
 msgid "Requesting font..."
@@ -2419,24 +2419,24 @@ msgstr ""
 #: http.c:1095 http.c:1251
 #, fuzzy
 msgid "Could not send request"
-msgstr "Öffnen fehlgeschlagen"
+msgstr "Konnte Anforderung nicht senden"
 
 #: http.c:1095 http.c:1251
 #, c-format
 msgid "Could not send request to \"%s\"."
-msgstr ""
+msgstr "Konnte Anforderung an \"%s\" nicht senden."
 
 #: http.c:1106 http.c:1451
 msgid "Downloading font..."
-msgstr ""
+msgstr "Schriftart wird heruntergeladen..."
 
 #: http.c:1164 http.c:1168 http.c:1326 http.c:1329 http.c:1445 http.c:1464
 msgid "Could not download data"
-msgstr ""
+msgstr "Konnte Daten nicht herunterladen"
 
 #: http.c:1164 http.c:1326
 msgid "Could not download data."
-msgstr ""
+msgstr "Konnte Daten nicht herunterladen."
 
 #: http.c:1168 http.c:1329
 #, c-format
@@ -2445,11 +2445,11 @@ msgstr ""
 
 #: http.c:1241
 msgid "Requesting file..."
-msgstr ""
+msgstr "Datei wird angefordert..."
 
 #: http.c:1260
 msgid "Downloading file..."
-msgstr ""
+msgstr "Datei wird heruntergeladen..."
 
 #: http.c:1351
 #, c-format
@@ -2462,16 +2462,16 @@ msgstr ""
 
 #: http.c:1383
 msgid "Logging in..."
-msgstr ""
+msgstr "Anmeldevorgang..."
 
 #: http.c:1410
 msgid "Bad Username/Password\n"
-msgstr ""
+msgstr "Ungültiger Benutzername/Passwort\n"
 
 #: http.c:1424
 #, fuzzy
 msgid "Transmitting font..."
-msgstr "_Transformieren..."
+msgstr "Schriftart wird übertragen..."
 
 #: http.c:1437
 msgid "FTP passive Data Connect failed\n"
@@ -2480,19 +2480,19 @@ msgstr ""
 #: http.c:1445 http.c:1464
 #, fuzzy
 msgid "Could not find file."
-msgstr "Öffnen fehlgeschlagen"
+msgstr "Konnte Datei nicht finden."
 
 #: http.c:1470
 msgid "Uploading font..."
-msgstr ""
+msgstr "Schriftart wird hochgeladen..."
 
 #: http.c:1484
 msgid "Could not transmit data"
-msgstr ""
+msgstr "Konnte Daten nicht übertragen"
 
 #: http.c:1484
 msgid "Could not transmit data."
-msgstr ""
+msgstr "Konnte Daten nicht übertragen."
 
 #: http.c:1501
 msgid "FontForge only handles ftp and http URLs at the moment"
@@ -2539,25 +2539,25 @@ msgstr ""
 #: langfreq.c:1822 macenc.c:2274 ../fontforgeexe/fontinfo.c:829
 #: ../fontforgeexe/lookupui.c:360 ../fontforgeexe/macencui.c:118
 msgid "Czech"
-msgstr ""
+msgstr "Tschechisch"
 
 #: langfreq.c:1823 macenc.c:2238 ../fontforgeexe/fontinfo.c:832
 #: ../fontforgeexe/lookupui.c:567 ../fontforgeexe/macencui.c:82
 msgid "Dutch"
-msgstr ""
+msgstr "Niederländisch"
 
 #: langfreq.c:1824 macenc.c:2234 ../fontforgeexe/lookupui.c:380
 #: ../fontforgeexe/macencui.c:78
 msgid "English"
-msgstr ""
+msgstr "Englisch"
 
 #: langfreq.c:1825 macenc.c:2235 ../fontforgeexe/macencui.c:79
 msgid "French"
-msgstr ""
+msgstr "Französisch"
 
 #: langfreq.c:1826 macenc.c:2236 ../fontforgeexe/macencui.c:80
 msgid "German"
-msgstr ""
+msgstr "Deutsch"
 
 #: langfreq.c:1827 macenc.c:2248 ../fontforgeexe/fontinfo.c:884
 #: ../fontforgeexe/lookupui.c:379 ../fontforgeexe/macencui.c:92
@@ -2572,18 +2572,18 @@ msgstr ""
 #: langfreq.c:1829 macenc.c:2255 ../fontforgeexe/fontinfo.c:890
 #: ../fontforgeexe/lookupui.c:422 ../fontforgeexe/macencui.c:99
 msgid "Hindi"
-msgstr ""
+msgstr "Hindi"
 
 #: langfreq.c:1830 macenc.c:2260 ../fontforgeexe/fontinfo.c:891
 #: ../fontforgeexe/lookupui.c:428 ../fontforgeexe/macencui.c:104
 msgid "Hungarian"
-msgstr ""
+msgstr "Ungarisch"
 
 #: langfreq.c:1831 macenc.c:2237 ../fontforgeexe/fontinfo.c:897
 #: ../fontforgeexe/lookupui.c:441 ../fontforgeexe/macencui.c:81
 #, fuzzy
 msgid "Italian"
-msgstr "Kursive"
+msgstr "Italienisch"
 
 #: langfreq.c:1832 unicoderange.c:167 ../fontforgeexe/fontinfo.c:1119
 msgid "Hiragana"
@@ -2596,22 +2596,22 @@ msgstr ""
 #: langfreq.c:1834 macenc.c:2258 ../fontforgeexe/fontinfo.c:912
 #: ../fontforgeexe/lookupui.c:513 ../fontforgeexe/macencui.c:102
 msgid "Lithuanian"
-msgstr ""
+msgstr "Litauisch"
 
 #: langfreq.c:1835 macenc.c:2259 ../fontforgeexe/fontinfo.c:932
 #: ../fontforgeexe/lookupui.c:588 ../fontforgeexe/macencui.c:103
 msgid "Polish"
-msgstr ""
+msgstr "Polnisch"
 
 #: langfreq.c:1836 macenc.c:2268 ../fontforgeexe/fontinfo.c:943
 #: ../fontforgeexe/lookupui.c:601 ../fontforgeexe/macencui.c:112
 msgid "Russian"
-msgstr ""
+msgstr "Russisch"
 
 #: langfreq.c:1837 macenc.c:2240 ../fontforgeexe/lookupui.c:382
 #: ../fontforgeexe/macencui.c:84
 msgid "Spanish"
-msgstr ""
+msgstr "Spanisch"
 
 #: langfreq.c:1838 macenc.c:2301 ../fontforgeexe/fontinfo.c:946
 #: ../fontforgeexe/lookupui.c:603 ../fontforgeexe/macencui.c:145
@@ -2621,17 +2621,17 @@ msgstr ""
 #: langfreq.c:1839 macenc.c:2239 ../fontforgeexe/lookupui.c:633
 #: ../fontforgeexe/macencui.c:83
 msgid "Swedish"
-msgstr ""
+msgstr "Schwedisch"
 
 #: langfreq.c:1840 macenc.c:2251 ../fontforgeexe/fontinfo.c:997
 #: ../fontforgeexe/lookupui.c:657 ../fontforgeexe/macencui.c:95
 msgid "Turkish"
-msgstr ""
+msgstr "Türkisch"
 
 #: langfreq.c:1841 macenc.c:2331 ../fontforgeexe/fontinfo.c:1007
 #: ../fontforgeexe/lookupui.c:674 ../fontforgeexe/macencui.c:175
 msgid "Welsh"
-msgstr ""
+msgstr "Walisisch"
 
 #: lookups.c:42 ../fontforgeexe/charinfo.c:1377 ../fontforgeexe/math.c:71
 #: ../fontforgeexe/math.c:150
@@ -2640,11 +2640,11 @@ msgstr ""
 
 #: lookups.c:43
 msgid "TeX Glyphlist"
-msgstr "TeX Zeichenliste"
+msgstr "TeX Glyphennliste"
 
 #: lookups.c:44
 msgid "TeX Extension List"
-msgstr ""
+msgstr "TeX Erweiterungsliste"
 
 #: lookups.c:47
 #, fuzzy
@@ -2676,7 +2676,7 @@ msgstr ""
 #: lookups.c:53
 #, fuzzy
 msgid "Ancient Ligatures"
-msgstr "alte Ligaturen"
+msgstr "Alte Ligaturen"
 
 #: lookups.c:54
 msgid "Below Base Forms"
@@ -2746,51 +2746,51 @@ msgstr ""
 
 #: lookups.c:69
 msgid "Character Variants 00"
-msgstr ""
+msgstr "Zeichenvariante 00"
 
 #: lookups.c:70
 msgid "Character Variants 01"
-msgstr ""
+msgstr "Zeichenvariante 01"
 
 #: lookups.c:71
 msgid "Character Variants 02"
-msgstr ""
+msgstr "Zeichenvariante 02"
 
 #: lookups.c:72
 msgid "Character Variants 03"
-msgstr ""
+msgstr "Zeichenvariante 03"
 
 #: lookups.c:73
 msgid "Character Variants 04"
-msgstr ""
+msgstr "Zeichenvariante 04"
 
 #: lookups.c:74
 msgid "Character Variants 05"
-msgstr ""
+msgstr "Zeichenvariante 05"
 
 #: lookups.c:75
 msgid "Character Variants 06"
-msgstr ""
+msgstr "Zeichenvariante 06"
 
 #: lookups.c:76
 msgid "Character Variants 07"
-msgstr ""
+msgstr "Zeichenvariante 07"
 
 #: lookups.c:77
 msgid "Character Variants 08"
-msgstr ""
+msgstr "Zeichenvariante 08"
 
 #: lookups.c:78
 msgid "Character Variants 09"
-msgstr ""
+msgstr "Zeichenvariante 09"
 
 #: lookups.c:79
 msgid "Character Variants 10"
-msgstr ""
+msgstr "Zeichenvariante 10"
 
 #: lookups.c:80
 msgid "Character Variants 99"
-msgstr ""
+msgstr "Zeichenvariante 99"
 
 #: lookups.c:81
 msgid "Drop Caps"
@@ -2798,7 +2798,7 @@ msgstr ""
 
 #: lookups.c:82
 msgid "Distance"
-msgstr ""
+msgstr "Entfernung"
 
 #: lookups.c:83
 msgid "Discretionary Ligatures"
@@ -2807,7 +2807,7 @@ msgstr "optionale Ligaturen"
 #: lookups.c:84 ../fontforgeexe/scstylesui.c:379
 #, fuzzy
 msgid "Denominators"
-msgstr "Kom_binationen"
+msgstr ""
 
 #: lookups.c:85
 msgid "Dipthongs (Obsolete)"
@@ -2852,12 +2852,12 @@ msgstr ""
 #: lookups.c:94
 #, fuzzy
 msgid "Full Widths"
-msgstr "vierteln in Breite"
+msgstr "Volle Breiten"
 
 #: lookups.c:95
 #, fuzzy
 msgid "Half Forms"
-msgstr "Initiale Formen"
+msgstr "Halbe Formen"
 
 #: lookups.c:96
 #, fuzzy
@@ -2894,7 +2894,7 @@ msgstr ""
 #: lookups.c:103
 #, fuzzy
 msgid "Half Widths"
-msgstr "vierteln in Breite"
+msgstr "Halbe Breiten"
 
 #: lookups.c:104
 msgid "Initial Forms"
@@ -2921,19 +2921,19 @@ msgstr ""
 
 #: lookups.c:109
 msgid "JIS2004 Forms"
-msgstr ""
+msgstr "JIS2004-Formulare"
 
 #: lookups.c:110
 msgid "JIS78 Forms"
-msgstr ""
+msgstr "JIS78-Formulare"
 
 #: lookups.c:111
 msgid "JIS83 Forms"
-msgstr ""
+msgstr "JIS83-Formulare"
 
 #: lookups.c:112
 msgid "JIS90 Forms"
-msgstr ""
+msgstr "JIS90-Formulare"
 
 #: lookups.c:113
 msgid "Horizontal Kerning"
@@ -2942,7 +2942,7 @@ msgstr "Horizontales Kerning"
 #: lookups.c:114
 #, fuzzy
 msgid "Left Bounds"
-msgstr "Rechte Ränder"
+msgstr "Linke Ränder"
 
 #: lookups.c:115
 #, fuzzy
@@ -3512,7 +3512,7 @@ msgstr ""
 
 #: lookups.c:1331 unicoderange.c:56 ../fontforgeexe/lookupui.c:199
 msgid "Cyrillic"
-msgstr ""
+msgstr "Kyrillisch"
 
 #: lookups.c:1332 ../fontforgeexe/lookupui.c:200
 #, fuzzy
@@ -3934,7 +3934,7 @@ msgstr "Kontextabh. Zierbuchst."
 #: lookups.c:1616
 #, c-format
 msgid "%s anchor %d"
-msgstr ""
+msgstr "%s Anker %d"
 
 #: lookups.c:1876
 #, c-format

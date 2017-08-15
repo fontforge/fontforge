@@ -26,7 +26,15 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "bvedit.h"
+#include "encoding.h"
 #include "fontforgevw.h"
+#include "fvfonts.h"
+#include "lookups.h"
+#include "splinefill.h"
+#include "splineorder2.h"
+#include "splineutil.h"
+#include "tottfgpos.h"
 #include <math.h>
 
 #include "sflayoutP.h"

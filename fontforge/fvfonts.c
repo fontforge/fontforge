@@ -24,7 +24,19 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "fvfonts.h"
+
+#include "encoding.h"
 #include "fontforgevw.h"
+#include "lookups.h"
+#include "namelist.h"
+#include "splinefill.h"
+#include "splineorder2.h"
+#include "splinesaveafm.h"
+#include "splineutil.h"
+#include "splineutil2.h"
+#include "tottfgpos.h"
 #include "ustring.h"
 #include "utype.h"
 #include "gfile.h"

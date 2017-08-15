@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <ctype.h>
+#include <stdlib.h>
 #include <string.h>
 
 static char used[0x110000];

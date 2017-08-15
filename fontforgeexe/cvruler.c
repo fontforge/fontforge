@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "splineutil.h"
+#include "splineutil2.h"
 #include <math.h>
 #include <ustring.h>
 
@@ -651,13 +653,13 @@ return;
 // The following code may be unnecessary, and it can cause an infinite stack loop.
 // One would hope that the event queue can take care of these things when we return to it.
 // We'll find out.
-#if 0
-    GDrawProcessPendingEvents(NULL);		/* The resize needs to happen before the expose */
-    if ( !cv->p.pressed && (event->u.mouse.state&ksm_meta) ) /* but a mouse up might sneak in... */
-return;
+//#if 0
+//    GDrawProcessPendingEvents(NULL);		/* The resize needs to happen before the expose */
+//    if ( !cv->p.pressed && (event->u.mouse.state&ksm_meta) ) /* but a mouse up might sneak in... */
+//return;
     GDrawRequestExpose(cv->ruler_w,NULL,false);
-    GDrawRequestExpose(cv->v,NULL,false);
-#endif // 0
+//    GDrawRequestExpose(cv->v,NULL,false);
+//#endif // 0
 }
 
 void CVMouseUpRuler(CharView *cv, GEvent *event) {
@@ -964,6 +966,7 @@ return;
 	int len;
 	int charwidth = 6; /* TBD */
 	Color textcolor = (cv->start_intersection_snapped && cv->end_intersection_snapped) ? measuretoolcanvasnumberssnappedcol : measuretoolcanvasnumberscol;
+	GRect prev_rect;
 
 	if ( measuretoolshowhorizontolvertical ) {
 	    char buf[40];
@@ -990,7 +993,7 @@ return;
 
 	GDrawSetFont(pixmap,cv->rfont);
 	for ( i=0 ; i<cv->num_ruler_intersections; ++i ) {
-	    GRect rect,prev_rect;
+	    GRect rect;
 
 	    rect.x = cv->xoff + rint(cv->ruler_intersections[i].x*cv->scale) - 1;
 	    rect.y = -cv->yoff + cv->height - rint(cv->ruler_intersections[i].y*cv->scale) - 1;

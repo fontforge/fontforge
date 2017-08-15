@@ -345,6 +345,109 @@
 	This can execute with no current font.</TD>
     </TR>
     <TR>
+      <TD><CODE>IsFraction</CODE></TD>
+      <TD><CODE>(n)</CODE></TD>
+      <TD>Return 1 if n is a unicode fraction (either a vulgar fraction or other
+	fraction) as described by www.unicode.org. Return 0 if there is no
+	fraction for this value. It can execute with no current font.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>IsLigature</CODE></TD>
+      <TD><CODE>(n)</CODE></TD>
+      <TD>Return 1 if n is a ligature as described by www.unicode.org. Return 0
+	if there is no unicode ligature for this value. It can execute with no
+	current font.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>IsOtherFraction</CODE></TD>
+      <TD><CODE>(n)</CODE></TD>
+      <TD>Return 1 if n is a unicode fraction (not defined as vulgar fraction)
+	as described by www.unicode.org. Return 0 if there is no fraction for
+	this value. It can execute with no current font.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>IsVulgarFraction</CODE></TD>
+      <TD><CODE>(n)</CODE></TD>
+      <TD>Return 1 if n is a unicode vulgar fraction as described by
+	www.unicode.org. Return 0 if there is no fraction for this value.
+	It can execute with no current font.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>ucFracChartGetCnt</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns total count of Fractions found in the Unicode chart as
+	described by www.unicode.org. It can execute with no current font.
+	<BR>Note: Count depends on chart version built into FontForge.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>ucLigChartGetCnt</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns total count of Ligatures found in the Unicode chart as
+	described by www.unicode.org. It can execute with no current font.
+	<BR>Note: Count depends on chart version built into FontForge.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>ucLigChartGetLoc</CODE></TD>
+      <TD><CODE>(val)</CODE></TD>
+      <TD>Returns n for FontForge internal table Unicode val=Ligature[n]. If
+	val does not exist in table, then return -1. Can execute with no
+	current font.
+	<BR>Note: Count depends on chart version built into FontForge.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>ucLigChartGetNxt</CODE></TD>
+      <TD><CODE>(n)</CODE></TD>
+      <TD>Returns FontForge internal table Unicode Ligature[n]. Return -1 if
+	n<0 or n>=ucLigChartGetCnt(). It can execute with no current font.
+	<BR>Note: Count depends on chart version built into FontForge.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>ucOFracChartGetCnt</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns total count of non-Vulgar Fractions found in the Unicode
+	chart as described by www.unicode.org. It can execute with no current
+	font.
+	<BR>Note: Count depends on chart version built into FontForge.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>ucOFracChartGetLoc</CODE></TD>
+      <TD><CODE>(val)</CODE></TD>
+      <TD>Returns n for FontForge internal table Unicode val=OtherFraction[n].
+	If val does not exist in table, then return -1. Can execute with no
+	current font.
+	<BR>Note: Count depends on chart version built into FontForge.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>ucOFracChartGetNxt</CODE></TD>
+      <TD><CODE>(n)</CODE></TD>
+      <TD>Returns FontForge internal table Unicode (non-vulgar) Fraction[n].
+	Return -1 if n<0 or n>=ucOFracChartGetCnt(). Can execute with no
+	current font.
+	<BR>Note: Count depends on chart version built into FontForge.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>ucVulChartGetCnt</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns total count of Vulgar Fractions found in the Unicode chart
+	as described by www.unicode.org. It can execute with no current font.
+	<BR>Note: Count depends on chart version built into FontForge.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>ucVulChartGetLoc</CODE></TD>
+      <TD><CODE>(val)</CODE></TD>
+      <TD>Returns n for FontForge internal table Unicode val=VulgarFraction[n].
+	If val does not exist in table, then return -1. Can execute with no
+	current font.
+	<BR>Note: Count depends on chart version built into FontForge.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>ucVulChartGetNxt</CODE></TD>
+      <TD><CODE>(n)</CODE></TD>
+      <TD>Returns FontForge internal table Unicode Vulgar Fraction[n]. Returns
+	-1 if n<0 or n>=ucVulChartGetCnt(). Can execute with no current font.
+	<BR>Note: Count depends on chart version built into FontForge.</TD>
+    </TR>
+    <TR>
       <TD><CODE>SpiroVersion</CODE></TD>
       <TD><CODE>()</CODE></TD>
       <TD>Returns the version of LibSpiro available to FontForge.<BR>
@@ -4911,7 +5014,7 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD><CODE>autoWidth</CODE></TD>
-      <TD><CODE>(separation [,minBearing=,maxBearing=])</CODE></TD>
+      <TD><CODE>(separation [,minBearing=,maxBearing=,height=,loopCnt=])</CODE></TD>
       <TD>Guesses at reasonable horizontal advance widths for the selected glyphs</TD>
     </TR>
     <TR>

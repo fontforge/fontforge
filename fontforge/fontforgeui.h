@@ -161,6 +161,9 @@ extern struct clip_interface gdraw_clip_interface;
 extern int ItalicConstrained;
 extern unichar_t *script_menu_names[SCRIPT_MENU_MAX];
 extern char *script_filenames[SCRIPT_MENU_MAX];
+
+/* The number of files displayed in the "File->Recent" menu */
+#define RECENT_MAX	10
 extern char *RecentFiles[RECENT_MAX];
 
 /* I would like these to be const ints, but gcc doesn't treat them as consts */

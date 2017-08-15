@@ -24,10 +24,15 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "splinerefigure.h"
+
 #include "fontforge.h"
 #include <stdio.h>
 #include <math.h>
 #include "splinefont.h"
+#include "splineutil.h"
+#include "splineutil2.h"
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
@@ -85,7 +90,7 @@ void SplineRefigure3(Spline *spline) {
 		spline->isquadratic = true;	/* Only likely if we read in a TTF */
 	}
     }
-    if ( !finite(ysp->a) || !finite(xsp->a) || !finite(ysp->c) || !finite(xsp->c) || !finite(ysp->d) || !finite(xsp->d))
+    if ( !isfinite(ysp->a) || !isfinite(xsp->a) || !isfinite(ysp->c) || !isfinite(xsp->c) || !isfinite(ysp->d) || !isfinite(xsp->d))
 	IError("NaN value in spline creation");
     LinearApproxFree(spline->approx);
     spline->approx = NULL;

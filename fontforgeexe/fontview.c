@@ -30,9 +30,31 @@
 #include "collabclientui.h"
 #include "collabclientpriv.h"
 
+#include "autosave.h"
+#include "autotrace.h"
+#include "autowidth.h"
+#include "autowidth2.h"
+#include "bitmapchar.h"
+#include "bvedit.h"
+#include "cvundoes.h"
+#include "dumppfa.h"
+#include "encoding.h"
 #include "fontforgeui.h"
+#include "fvcomposite.h"
+#include "fvfonts.h"
 #include "groups.h"
+#include "mm.h"
+#include "namelist.h"
+#include "nonlineartrans.h"
 #include "psfont.h"
+#include "scripting.h"
+#include "splinefill.h"
+#include "search.h"
+#include "sfd.h"
+#include "splinesaveafm.h"
+#include "splineutil.h"
+#include "splineutil2.h"
+#include "tottfgpos.h"
 #include <gfile.h>
 #include <gio.h>
 #include <gresedit.h>
@@ -1279,7 +1301,6 @@ static void FVMenuChangeGlyph(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
 static void FVMenuSubSup(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     GlyphChangeDlg(fv,NULL,gc_subsuper);
-    /*AddSubSupDlg(fv);*/
 }
 
 static void FVMenuOblique(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -7318,7 +7339,7 @@ static FontView *__FontViewCreate(SplineFont *sf) {
 	    if ( fv->b.nextsame==NULL ) { sf->map = fv->b.map; }
 	}
     }
-    fv->b.selected = calloc(fv->b.map->enccount,sizeof(char));
+    fv->b.selected = calloc((fv->b.map ? fv->b.map->enccount : 0), sizeof(char));
     fv->user_requested_magnify = -1;
     fv->magnify = (ps<=9)? 3 : (ps<20) ? 2 : 1;
     fv->cbw = (ps*fv->magnify)+1;

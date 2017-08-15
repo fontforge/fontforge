@@ -356,8 +356,6 @@ extern struct fi_interface *fi_interface;
 #define FIOTLookupCopyInto			(fi_interface->copy_into)
 #define FontInfo_Destroy			(fi_interface->destroy)
 
-void FF_SetFIInterface(struct fi_interface *fii);
-
 /* ************************************************************************** */
 /*                           Updating font windows                            */
 /* ************************************************************************** */
@@ -510,8 +508,6 @@ extern struct clip_interface *clip_interface;
 #define ClipboardAddDataType	(clip_interface->add_data_type)
 #define ClipboardRequest	(clip_interface->request_clip)
 #define ClipboardHasType	(clip_interface->clip_has_type)
-
-void FF_SetClipInterface(struct clip_interface *clipi);
 
 extern const char *NOUI_TTFNameIds(int id);
 extern const char *NOUI_MSLangString(int language);

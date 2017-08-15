@@ -24,7 +24,10 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "asmfpst.h"
 #include "fontforgeui.h"
+#include "lookups.h"
+#include "splineutil.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>

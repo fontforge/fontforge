@@ -33,9 +33,70 @@ lib_LTLIBRARIES = libfontforge.la
 
 #--------------------------------------------------------------------------
 
-noinst_HEADERS = fontforgeui.h sftextfieldP.h configure-fontforge.h	\
-	views.h is_LIGATURE.h flaglist.h strlist.h charview_private.h	\
-	cvundoes.h tables.h
+noinst_HEADERS = \
+	asmfpst.h \
+	autohint.h \
+	autosave.h \
+	autotrace.h \
+	autowidth.h \
+	autowidth2.h \
+	bitmapchar.h \
+	bitmapcontrol.h \
+	bvedit.h \
+	clipnoui.h \
+	crctab.h \
+	cvexport.h \
+	cvimages.h \
+	dumpbdf.h \
+	dumppfa.h \
+	effects.h \
+	encoding.h \
+	featurefile.h \
+	fvcomposite.h \
+	fvfonts.h \
+	fvimportbdf.h \
+	glyphcomp.h\
+	http.h\
+	ikarus.h\
+	langfreq.h\
+	libstamp.h\
+	macbinary.h\
+	macenc.h\
+	mathconstants.h\
+	namelist.h\
+	othersubrs.h \
+	palmfonts.h \
+	parsepdf.h \
+	parsepfa.h \
+	parsettfatt.h \
+	parsettfbmf.h \
+	parsettf.h \
+	parsettfvar.h \
+	psread.h \
+	savefont.h \
+	scstyles.h \
+	sfd.h \
+	spiro.h \
+	splinefill.h \
+	splineorder2.h \
+	splineoverlap.h \
+	splinerefigure.h \
+	splinesaveafm.h \
+	splinesave.h \
+	splinestroke.h \
+	splineutil.h \
+	splineutil2.h \
+	start.h \
+	svg.h \
+	tottfaat.h \
+	tottf.h \
+	tottfgpos.h \
+	tottfvar.h \
+	ttfspecial.h \
+	winfonts.h \
+	woff.h \
+	fontforgeui.h sftextfieldP.h configure-fontforge.h views.h 	\
+	flaglist.h strlist.h charview_private.h cvundoes.h tables.h
 
 pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 	libffstamp.h psfont.h stemdb.h autowidth.h delta.h fontforgevw.h	\
@@ -45,7 +106,8 @@ pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 	sd.h unicoderange.h bitmapcontrol.h encoding.h ofl.h search.h		\
 	usermenu.h fffreetype.h PfEd.h sfd1.h ffpython.h			\
 	plugins.h sflayoutP.h print.h splinefont.h cvruler.h ffglib.h           \
-	glif_name_hash.h
+	glif_name_hash.h \
+	mem.h
 
 #--------------------------------------------------------------------------
 
@@ -59,7 +121,8 @@ AM_CFLAGS = $(WARN_CFLAGS)
 AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
 	"-I$(top_builddir)/lib" "-I$(top_srcdir)/lib"			\
 	"-DSHAREDIR=\"${MY_SHAREDIR}\"" "-DDOCDIR=\"${MY_DOCDIR}\""	\
-        "-I$(top_srcdir)/uthash/src" "-DFF_UTHASH_GLIF_NAMES=1"         \
+	"-I$(top_builddir)/uthash/src" "-I$(top_srcdir)/uthash/src"	\
+	"-DFF_UTHASH_GLIF_NAMES=1"					\
 	"-DPLUGINDIR=\"${MY_PLUGINDIR}\"" $(MY_CFLAGS)
 
 #--------------------------------------------------------------------------
@@ -71,7 +134,7 @@ libfontforge_la_SOURCES = activeinui.c asmfpst.c autohint.c autosave.c	\
 	cvundoes.c dumpbdf.c dumppfa.c effects.c encoding.c		\
 	featurefile.c flaglist.c fontviewbase.c freetype.c		\
 	fvcomposite.c fvfonts.c fvimportbdf.c fvmetrics.c ftdelta.c	\
-	glyphcomp.c groups.c http.c ikarus.c is_LIGATURE.c langfreq.c	\
+	glyphcomp.c groups.c http.c ikarus.c langfreq.c			\
 	lookups.c macbinary.c macenc.c mathconstants.c mm.c namelist.c	\
 	nonlineartrans.c noprefs.c nouiutil.c nowakowskittfinstr.c	\
 	ofl.c othersubrs.c palmfonts.c parsepdf.c parsepfa.c		\
@@ -84,7 +147,8 @@ libfontforge_la_SOURCES = activeinui.c asmfpst.c autohint.c autosave.c	\
 	stemdb.c strlist.c svg.c tottfaat.c tottfgpos.c tottf.c		\
 	tottfvar.c ttfinstrs.c ttfspecial.c ufo.c unicoderange.c	\
 	utils.c winfonts.c woff.c zapfnomen.c \
-	glif_name_hash.c
+	glif_name_hash.c \
+	mem.c
 
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 
@@ -102,7 +166,15 @@ endif LIBZMQ
 libfontforge_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBFONTFORGE_VERSION) \
 	${MY_LIB_LDFLAGS}
 
-libfontforge_la_LIBADD += $(MY_LIBS) $(LIBZMQ_LIBS)
+if PYTHON_SCRIPTING
+if !MACINTOSH
+libfontforge_la_LIBADD += $(PYTHON_LIBS)
+else
+libfontforge_la_LDFLAGS += -undefined dynamic_lookup
+endif MACINTOSH
+endif PYTHON_SCRIPTING
+
+libfontforge_la_LIBADD += $(MY_LIBS)
 
 #--------------------------------------------------------------------------
 

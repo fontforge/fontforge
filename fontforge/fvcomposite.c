@@ -25,7 +25,18 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "autohint.h"
+#include "autowidth.h"
+#include "bitmapchar.h"
+#include "bvedit.h"
+#include "cvundoes.h"
+#include "encoding.h"
 #include "fontforgevw.h"
+#include "fvfonts.h"
+#include "splinefill.h"
+#include "splinesaveafm.h"
+#include "splineutil.h"
+#include "namelist.h"
 #include <chardata.h>
 #include <math.h>
 #include <utype.h>
@@ -1536,13 +1547,13 @@ return( 0x70000000 );
     if ( autohint_before_generate && sc->changedsincelasthinted && !sc->manualhints )
 	SplineCharAutoHint(sc,layer,NULL);
     if ( (best=sc->vstem)!=NULL ) {
-	if ( pos&____CENTERLEFT ) {
+	if ( pos & FF_UNICODE_CENTERLEFT ) {
 	    for ( h=best->next; h!=NULL && h->start<best->start+best->width; h=h->next )
 		if ( h->start+h->width<best->start+best->width )
 		    best = h;
 	    if ( best->start+best->width/2>(bb->maxx+bb->minx)/2 )
 		best = NULL;
-	} else if ( pos&____CENTERRIGHT ) {
+	} else if ( pos & FF_UNICODE_CENTERRIGHT ) {
 	    while ( best->next!=NULL )
 		best = best->next;
 	    if ( best->start+best->width/2<(bb->maxx+bb->minx)/2 )
@@ -1584,15 +1595,15 @@ return( best->start + best->width/2 - (rbb->maxx-rbb->minx)/2 - rbb->minx );
                 temp = rbxtest; rbxtest = lbxtest; lbxtest = temp;
             }
             if ( d == sc->dstem ||
-                ( pos&____CENTERLEFT && rbxtest < rbx ) ||
-                ( pos&____CENTERRIGHT && lbxtest > lbx )) {
+                ( ( pos & FF_UNICODE_CENTERLEFT ) && rbxtest < rbx ) ||
+                ( ( pos & FF_UNICODE_CENTERRIGHT ) && lbxtest > lbx ) ) {
                 lbx = lbxtest; rbx = rbxtest;
             }
         }
         if ( lbx < rbx && (
-            ( pos&____CENTERLEFT &&
+            ( ( pos & FF_UNICODE_CENTERLEFT ) &&
             ( lbx + rbx )/2 <= ( bb->maxx + bb->minx )/2 ) ||
-            ( pos&____CENTERRIGHT &&
+            ( ( pos & FF_UNICODE_CENTERRIGHT ) &&
             ( lbx + rbx )/2 >= ( bb->maxx + bb->minx )/2 )))
 return(( lbx + rbx )/2 - ( rbb->maxx - rbb->minx )/2 - rbb->minx );
     }
@@ -1944,34 +1955,34 @@ static void _BCCenterAccent( BDFFont *bdf, int gid, int rgid, int ch, int basech
 	BDFCharQuickBounds( bc,&ibb,0,0,false,true );
 	BDFCharQuickBounds( rbc,&irb,0,0,false,true );
 
-	if ( (pos&____ABOVE) && (pos&(____LEFT|____RIGHT)) )
+	if ( (pos & FF_UNICODE_ABOVE) && (pos & (FF_UNICODE_LEFT|FF_UNICODE_RIGHT)) )
 	    iyoff = ibb.maxy - irb.maxy;
-	else if ( pos&____ABOVE )
+	else if ( pos & FF_UNICODE_ABOVE )
 	    iyoff = ibb.maxy + ispacing - irb.miny;
-	else if ( pos&____BELOW ) {
+	else if ( pos & FF_UNICODE_BELOW ) {
 	    iyoff = ibb.miny - irb.maxy;
-	    if ( !( pos&____TOUCHING) )
+	    if ( !( pos & FF_UNICODE_TOUCHING) )
 		iyoff -= ispacing;
-	} else if ( pos&____OVERSTRIKE )
+	} else if ( pos & FF_UNICODE_OVERSTRIKE )
 	    iyoff = ibb.miny - irb.miny + ((ibb.maxy-ibb.miny)-(irb.maxy-irb.miny))/2;
 	else
 	    iyoff = ibb.miny - irb.miny;
 	if ( isupper(basech) && ch==0x342)
 	    ixoff = ibb.minx - irb.minx;
-	else if ( pos&____LEFT )
+	else if ( pos & FF_UNICODE_LEFT )
 	    ixoff = ibb.minx - ispacing - irb.maxx;
-	else if ( pos&____RIGHT ) {
+	else if ( pos & FF_UNICODE_RIGHT ) {
 	    ixoff = ibb.maxx - irb.minx + ispacing/2;
-	    if ( !( pos&____TOUCHING) )
+	    if ( !( pos & FF_UNICODE_TOUCHING) )
 		ixoff += ispacing;
 	} else {
-	    if ( pos&____CENTERLEFT )
+	    if ( pos & FF_UNICODE_CENTERLEFT )
 		ixoff = ibb.minx + (ibb.maxx-ibb.minx)/2 - irb.maxx;
-	    else if ( pos&____LEFTEDGE )
+	    else if ( pos & FF_UNICODE_LEFTEDGE )
 		ixoff = ibb.minx - irb.minx;
-	    else if ( pos&____CENTERRIGHT )
+	    else if ( pos & FF_UNICODE_CENTERRIGHT )
 		ixoff = ibb.minx + (ibb.maxx-ibb.minx)/2 - irb.minx;
-	    else if ( pos&____RIGHTEDGE )
+	    else if ( pos & FF_UNICODE_RIGHTEDGE )
 		ixoff = ibb.maxx - irb.maxx;
 	    else
 		ixoff = ibb.minx - irb.minx + ((ibb.maxx-ibb.minx)-(irb.maxx-irb.minx))/2;
@@ -2029,12 +2040,12 @@ return;
     }
     if ( ia==0 && baserch!=basech && basersc!=NULL ) {
 	ybase = SplineCharFindSlantedBounds(basersc,layer,&bbb,ia);
-	if ( ____utype2[1+ch]&(____ABOVE|____BELOW) ) {
+	if ( ff_unicode_utype2[1+ch] & (FF_UNICODE_ABOVE|FF_UNICODE_BELOW) ) {
 	    /* if unicode.org character definition matches ABOVE or BELOW, then... */
 	    bbb.maxy = bb.maxy;
 	    bbb.miny = bb.miny;
 	}
-	if ( ____utype2[1+ch]&(____RIGHT|____LEFT) ) {
+	if ( ff_unicode_utype2[1+ch] & (FF_UNICODE_RIGHT|FF_UNICODE_LEFT) ) {
 	    /* if unicode.org character definition matches RIGHT or LEFT, then... */
 	    bbb.maxx = bb.maxx;
 	    bbb.minx = bb.minx;
@@ -2054,11 +2065,11 @@ return;
 	/*  If so then figure offsets relative to it. */
 	xoff = ap1->me.x-ap2->me.x + sc->layers[layer].refs->transform[4];
 	yoff = ap1->me.y-ap2->me.y + sc->layers[layer].refs->transform[5];
-	pos = ____utype2[1+ch];	/* init with unicode.org position information */
+	pos = ff_unicode_utype2[1+ch];	/* init with unicode.org position information */
     } else if ( AnchorClassMatch(basersc,rsc,(AnchorClass *) -1,&ap1,&ap2)!=NULL && ap2->type==at_mark ) {
 	xoff = ap1->me.x-ap2->me.x;
 	yoff = ap1->me.y-ap2->me.y;
-	pos = ____utype2[1+ch];	/* init with unicode.org position information */
+	pos = ff_unicode_utype2[1+ch];	/* init with unicode.org position information */
     } else {
  /* try to establish a common line on which all accents lie. The problem being*/
  /*  that an accent above a,e,o will usually be slightly higher than an accent */
@@ -2094,59 +2105,59 @@ return;
 	    transform[3] = -1;
 	    transform[5] = rbb.maxy+rbb.miny;
 	}
-	if ( pos==____NOPOSDATAGIVEN ) {
+	if ( pos==FF_UNICODE_NOPOSDATAGIVEN ) {
 	    /* if here, then we need to initialize some type of position info for the accent */
 	    if ( ch<0 || ch>=0x10000 )	/* makeutype.c only built data in utype.c for {0...MAXC} */
-		pos = ____ABOVE;
+		pos = FF_UNICODE_ABOVE;
 	    else
-		pos = ____utype2[1+ch];	/* init with unicode.org position information */
+		pos = ff_unicode_utype2[1+ch];	/* init with unicode.org position information */
 	    /* In greek, PSILI and friends are centered above lower case, and kern left*/
 	    /*  for upper case */
 	    if (( basech>=0x390 && basech<=0x3ff) || (basech>=0x1f00 && basech<=0x1fff)) {
 		if ( ( basech==0x1fbf || basech==0x1fef || basech==0x1ffe ) &&
 			(ch==0x1fbf || ch==0x1fef || ch==0x1ffe || ch==0x1fbd || ch==0x1ffd )) {
-		    pos = ____ABOVE|____RIGHT;
+		    pos = FF_UNICODE_ABOVE|FF_UNICODE_RIGHT;
 		} else if ( isupper(basech) &&
 			(ch==0x313 || ch==0x314 || ch==0x301 || ch==0x300 || ch==0x30d ||
 			 ch==0x1ffe || ch==0x1fbf || ch==0x1fcf || ch==0x1fdf ||
 			 ch==0x1fbd || ch==0x1fef || ch==0x1ffd ||
 			 ch==0x1fcd || ch==0x1fdd || ch==0x1fce || ch==0x1fde ) )
-		    pos = ____ABOVE|____LEFT;
+		    pos = FF_UNICODE_ABOVE|FF_UNICODE_LEFT;
 		else if ( isupper(basech) && ch==0x1fbe )
-		    pos = ____RIGHT;
+		    pos = FF_UNICODE_RIGHT;
 		else if ( ch==0x1fcd || ch==0x1fdd || ch==0x1fce || ch==0x1fde ||
 			 ch==0x1ffe || ch==0x1fbf || ch==0x1fcf || ch==0x1fdf ||
 			 ch==0x384 )
-		    pos = ____ABOVE;
+		    pos = FF_UNICODE_ABOVE;
 	    } else if ( (basech==0x1ffe || basech==0x1fbf) && (ch==0x301 || ch==0x300))
-		pos = ____RIGHT;
+		pos = FF_UNICODE_RIGHT;
 	    else if ( sc->unicodeenc==0x1fbe && ch==0x345 )
-		pos = ____RIGHT;
+		pos = FF_UNICODE_RIGHT;
 	    else if ( basech=='l' && ch==0xb7 )
-		pos = ____RIGHT|____OVERSTRIKE;
+		pos = FF_UNICODE_RIGHT|FF_UNICODE_OVERSTRIKE;
 	    else if ( basech=='L' && ch==0xb7 )
-		pos = ____OVERSTRIKE;
+		pos = FF_UNICODE_OVERSTRIKE;
 	    else if ( ch==0xb7 )
-		pos = ____RIGHT;
+		pos = FF_UNICODE_RIGHT;
 	    else if ( basech=='A' && ch==0x30a )	/* Aring usually touches */
-		pos = ____ABOVE|____TOUCHING;
+		pos = FF_UNICODE_ABOVE|FF_UNICODE_TOUCHING;
 	    else if (( basech=='A' || basech=='a' || basech=='E' || basech=='u' ) &&
 		    ch == 0x328 )
-		pos = ____BELOW|____CENTERRIGHT|____TOUCHING;	/* ogonek off to the right for these in polish (but not lc e) */
+		pos = FF_UNICODE_BELOW|FF_UNICODE_CENTERRIGHT|FF_UNICODE_TOUCHING;	/* ogonek off to the right for these in polish (but not lc e) */
 	    else if (( basech=='N' || basech=='n' || basech=='K' || basech=='k' || basech=='R' || basech=='r' || basech=='H' || basech=='h' ) &&
 		    ch == 0x327 )
-		pos = ____BELOW|____CENTERLEFT|____TOUCHING;	/* cedilla off under left stem for these guys */
-	    if ( basech==0x391 && pos==(____ABOVE|____LEFT) ) {
+		pos = FF_UNICODE_BELOW|FF_UNICODE_CENTERLEFT|FF_UNICODE_TOUCHING;	/* cedilla off under left stem for these guys */
+	    if ( basech==0x391 && pos==(FF_UNICODE_ABOVE|FF_UNICODE_LEFT) ) {
 		bb.minx += (bb.maxx-bb.minx)/4;
 	    }
 	}
 	if ( sc->unicodeenc==0x0149 )
-	    pos = ____ABOVE|____LEFT;
+	    pos = FF_UNICODE_ABOVE|FF_UNICODE_LEFT;
 	else if ( sc->unicodeenc==0x013d || sc->unicodeenc==0x013e )
-	    pos = ____ABOVE|____RIGHT;
+	    pos = FF_UNICODE_ABOVE|FF_UNICODE_RIGHT;
 	else if ( sc->unicodeenc==0x010f || sc->unicodeenc==0x013d ||
 		  sc->unicodeenc==0x013e || sc->unicodeenc==0x0165 )
-	    pos = ____ABOVE|____RIGHT;
+	    pos = FF_UNICODE_ABOVE|FF_UNICODE_RIGHT;
 	else if ( (sc->unicodeenc==0x1fbd || sc->unicodeenc==0x1fbf ||
 		sc->unicodeenc==0x1ffe || sc->unicodeenc==0x1fc0 ) &&
 		bb.maxy==0 && bb.miny==0 ) {
@@ -2154,26 +2165,26 @@ return;
 	    bb.maxy = 7*sf->ascent/10;
 	}
 
-	if ( (pos&____ABOVE) && (pos&(____LEFT|____RIGHT)) )
+	if ( (pos & FF_UNICODE_ABOVE) && (pos & (FF_UNICODE_LEFT|FF_UNICODE_RIGHT)) )
 	    yoff = bb.maxy - rbb.maxy;
-	else if ( pos&____ABOVE ) {
+	else if ( pos & FF_UNICODE_ABOVE ) {
 	    yoff = bb.maxy - rbb.miny;
-	    if ( !( pos&____TOUCHING) )
+	    if ( !( pos & FF_UNICODE_TOUCHING) )
 		yoff += spacing;
-	} else if ( pos&____BELOW ) {
+	} else if ( pos & FF_UNICODE_BELOW ) {
 	    yoff = bb.miny - rbb.maxy;
-	    if ( !( pos&____TOUCHING) )
+	    if ( !( pos & FF_UNICODE_TOUCHING) )
 		yoff -= spacing;
-	} else if ( pos&____OVERSTRIKE )
+	} else if ( pos & FF_UNICODE_OVERSTRIKE )
 	    yoff = bb.miny - rbb.miny + ((bb.maxy-bb.miny)-(rbb.maxy-rbb.miny))/2;
 	else /* If neither Above, Below, nor overstrike then should use the same baseline */
 	    yoff = bb.miny - rbb.miny;
 
-	if ( pos&(____ABOVE|____BELOW) ) {
+	if ( pos & (FF_UNICODE_ABOVE|FF_UNICODE_BELOW) ) {
 	    /* When we center an accent above an asymetric character like "C" we */
 	    /*  should not pick the mid point of the char. Rather we should pick */
 	    /*  the highest point (mostly anyway, there are exceptions) */
-	    if ( pos&____ABOVE ) {
+	    if ( pos & FF_UNICODE_ABOVE ) {
 		static DBounds pointless;
 		if ( CharCenterHighest ) {
 		    if ( basech!='b' && basech!='d' && basech!='h' && basech!='n' && basech!='r' && basech!=0xf8 &&
@@ -2187,30 +2198,30 @@ return;
 			    (xoff=SCStemCheck(sf,layer,basech,&bb,&pointless,pos))!=0x70000000 )
 			bb.minx = bb.maxx = xoff;		/* While on "t" we should center over the stem */
 		}
-	    } else if ( ( pos&____BELOW ) && !eta )
+	    } else if ( ( pos & FF_UNICODE_BELOW ) && !eta )
 		if ( CharCenterHighest )
 		    ybase = SCFindBottomXRange(sc,layer,&bb,ia);
 	}
 
 	if ( isupper(basech) && ch==0x342)	/* While this guy rides above PSILI on left */
 	    xoff = bb.minx - rbb.minx;
-	else if ( pos&____LEFT )
+	else if ( pos & FF_UNICODE_LEFT )
 	    xoff = bb.minx - spacing - rbb.maxx;
-	else if ( pos&____RIGHT ) {
+	else if ( pos & FF_UNICODE_RIGHT ) {
 	    xoff = bb.maxx - rbb.minx+spacing/2;
-	    if ( !( pos&____TOUCHING) )
+	    if ( !( pos & FF_UNICODE_TOUCHING) )
 		xoff += spacing;
 	} else {
-	    if ( (pos&(____CENTERLEFT|____CENTERRIGHT)) &&
+	    if ( (pos & (FF_UNICODE_CENTERLEFT|FF_UNICODE_CENTERRIGHT)) &&
 		    (xoff=SCStemCheck(sf,layer,basech,&bb,&rbb,pos))!=0x70000000 )
 		/* Done */;
-	    else if ( pos&____CENTERLEFT )
+	    else if ( pos & FF_UNICODE_CENTERLEFT )
 		xoff = bb.minx + (bb.maxx-bb.minx)/2 - rbb.maxx;
-	    else if ( pos&____LEFTEDGE )
+	    else if ( pos & FF_UNICODE_LEFTEDGE )
 		xoff = bb.minx - rbb.minx;
-	    else if ( pos&____CENTERRIGHT )
+	    else if ( pos & FF_UNICODE_CENTERRIGHT )
 		xoff = bb.minx + (bb.maxx-bb.minx)/2 - rbb.minx;
-	    else if ( pos&____RIGHTEDGE )
+	    else if ( pos & FF_UNICODE_RIGHTEDGE )
 		xoff = bb.maxx - rbb.maxx;
 	    else
 		xoff = bb.minx - rbb.minx + ((bb.maxx-bb.minx)-(rbb.maxx-rbb.minx))/2;
@@ -2223,9 +2234,9 @@ return;
 
     if ( bdf == NULL || !disp_only ) {
 	_SCAddRef(sc,rsc,layer,transform);
-	if ( pos!=____NOPOSDATAGIVEN && (pos&____RIGHT) )
+	if ( pos != FF_UNICODE_NOPOSDATAGIVEN && (pos & FF_UNICODE_RIGHT) )
 	    SCSynchronizeWidth(sc,sc->width + rbb.maxx-rbb.minx+spacing,sc->width,NULL);
-	if ( pos!=____NOPOSDATAGIVEN && (pos&(____LEFT|____RIGHT|____CENTERLEFT|____LEFTEDGE|____CENTERRIGHT|____RIGHTEDGE)) )
+	if ( pos != FF_UNICODE_NOPOSDATAGIVEN && (pos & (FF_UNICODE_LEFT|FF_UNICODE_RIGHT|FF_UNICODE_CENTERLEFT|FF_UNICODE_LEFTEDGE|FF_UNICODE_CENTERRIGHT|FF_UNICODE_RIGHTEDGE)) )
 	    TurnOffUseMyMetrics(sc);
     }
     if ( !disp_only ) {
@@ -2244,7 +2255,7 @@ static void SCCenterAccent(SplineChar *sc,SplineChar *basersc, SplineFont *sf,
     SplineChar *rsc = GetGoodAccentGlyph(sf,ch,basech,&invert,ia,dot,sc);
 
     /* find a location to put an accent on this character */
-    _SCCenterAccent(sc,basersc,sf,layer,ch,bdf,disp_only,rsc,ia,basech,invert,____NOPOSDATAGIVEN);
+    _SCCenterAccent(sc,basersc,sf,layer,ch,bdf,disp_only,rsc,ia,basech,invert,FF_UNICODE_NOPOSDATAGIVEN);
 }
 
 static void _BCPutRefAfter( BDFFont *bdf,int gid,int rgid,int normal,int under ) {
@@ -2715,7 +2726,7 @@ return( false );
 return( true );
 }
 
-int SCMakeDotless(SplineFont *sf, SplineChar *dotless, int layer, BDFFont *bdf, int disp_only, int doit) {
+static int SCMakeDotless(SplineFont *sf, SplineChar *dotless, int layer, BDFFont *bdf, int disp_only, int doit) {
     SplineChar *sc;
     BDFChar *bc;
     int ret = 0;
@@ -2830,7 +2841,7 @@ return;
     if ( dot==NULL && ( ch=='i' || ch=='j' || ch==0x456 )) {
 	/* if we're combining i (or j) with an accent that would interfere */
 	/*  with the dot, then get rid of the dot. (use dotlessi) */
-	for ( apt = pt; *apt && combiningposmask(*apt)!=____ABOVE; ++apt);
+	for ( apt = pt; *apt && combiningposmask(*apt) != FF_UNICODE_ABOVE; ++apt);
 	if ( *apt!='\0' ) {
 	    if ( ch=='i' || ch==0x456 ) ch = 0x0131;
 	    else if ( ch=='j' ) {

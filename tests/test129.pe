@@ -1,0 +1,99 @@
+# test some ligatures and fractions close to U0000. Avoid high values such as
+# UFxxx since the Unicode chart may add new unicode values later.
+
+Print("Get Table Array Totals.")
+lt = ucLigChartGetCnt()
+vt = ucVulChartGetCnt()
+ot = ucOFracChartGetCnt()
+ft = ucFracChartGetCnt()
+if ( lt < 50 || lt > 2000 || vt < 10 || vt > 2000 || ot < 10 || vt > 2000)
+  Error("Expected totals approximately closer to 500, 50, 20.")
+endif
+if ( vt + ot != ft )
+  Error("Expected totals to add up.")
+endif
+
+Print("Test valid (and invalid) ligatures.")
+l1 = ucLigChartGetLoc(306)
+l2 = ucLigChartGetLoc(0x133)
+l3 = ucLigChartGetLoc(0x153)
+l4 = ucLigChartGetLoc(0x4b5)
+l5 = ucLigChartGetLoc(0x135)
+if ( l1 != 0 || l2 != 1 || l3 != 3 || l4 != 7 || l5 != -1 )
+  Error("Expected Ligature table array 'n' values of 0,1,3,7,-1.")
+endif
+
+Print("Return some ligatures from built-in table.")
+l1 = ucLigChartGetNxt(0)
+l2 = ucLigChartGetNxt(1)
+l3 = ucLigChartGetNxt(3)
+l4 = ucLigChartGetNxt(7)
+l5 = ucLigChartGetNxt(lt) # table starts at 0, not 1 (last value is at [lt-1])
+if ( l1 != 306 || l2 != 307 || l3 != 339 || l4 != 1205 || l5 != -1 )
+  Error("Expected Ligatures values from table of: 306,307,339,1205,-1.")
+endif
+
+Print("Test valid (and invalid) vulgar fractions.")
+v1 = ucVulChartGetLoc(0xbd)
+v2 = ucVulChartGetLoc(0x132)
+if ( v1 != 1 || v2 != -1 )
+  Error("Expected Vulgar Fraction table array 'n' values of: 1,-1.")
+endif
+
+Print("Verify uint32 code works.")
+o1 = ucOFracChartGetNxt(ot-1)
+if ( o1 <= 69000 )
+  Error("Expected last Other Fraction of 0x10e7e or larger.")
+endif
+
+Print("Test boolean found==1, not_found==0.")
+b1 = IsLigature(306)
+b2 = IsLigature(0x135)
+b3 = IsVulgarFraction(0xbd)
+b4 = IsVulgarFraction(0x132)
+b5 = IsFraction(0xbd)
+b6 = IsFraction(0x132)
+if ( b1 != 1 || b2 != 0 || b3 != 1 || b4 != 0 || b5 != 1 || b6 != 0 )
+  Error("Expected boolean values of 1,0,1,0,1,0.")
+endif
+
+Print("Test valid (and invalid) vulgar fraction alt expansions.")
+e1 = ucVulChartGetLoc(0xbc)
+e2 = ucVulChartGetLoc(0x2152)
+e3 = ucVulChartGetAltCnt(e1)
+e4 = ucVulChartGetAltCnt(e2)
+e5 = ucVulChartGetAltCnt(1000)
+e6 = ucVulChartGetAltVal(e1,0)
+e7 = ucVulChartGetAltVal(e1,2)
+e8 = ucVulChartGetAltVal(e2,2)
+e9 = ucVulChartGetAltVal(e2,3)
+if ( e1 < 0 || e2 < 0 || e3 != 3 || e4 != 4 || e5 != -1 || e6 != 49 || e7 != 52 || e8 != 49 || e9 != 48 )
+  Print(e1,"_",e2,"_",e3,"_",e4,"_",e5,"_",e6,"_",e7,"_",e8,"_",e9)
+  Error("Expected alt_expansion_count results of {3,4,-1,49,52,49,48}.")
+endif
+
+Print("Test ligature alt expansions.")
+f1 = ucLigChartGetLoc(0xfdfa)
+f2 = ucLigChartGetLoc(0xfdfb)
+f3 = ucLigChartGetAltCnt(f1)
+f4 = ucLigChartGetAltCnt(f2)
+f5 = ucLigChartGetAltVal(f1,0)
+f6 = ucLigChartGetAltVal(f1,1)
+f7 = ucLigChartGetAltVal(f1,2)
+f8 = ucLigChartGetAltVal(f1,3)
+f9 = ucLigChartGetAltVal(f1,20)
+f10 = ucLigChartGetAltVal(f2,3)
+f11 = ucLigChartGetAltVal(f2,4)
+f12 = ucLigChartUGetAltCnt(0x153)
+f13 = ucLigChartUGetAltCnt(0x4d5)
+f14 = ucLigChartUGetAltVal(0x4d5,0)
+f15 = ucLigChartUGetAltVal(0x4d5,1)
+f16 = ucLigChartUGetAltCnt(0x00011176)
+f17 = ucLigChartUGetAltVal(0x00011176,0)
+if ( f1 < 0 || f2 < 0 || f3 != 18 || f4 != 7 || f5 != 0x635 || f6 != 0x644 || f7 != 0x649 || f8 != 0x20 || f9 != -1 || f10 != 0x62c || f11 != 0x644 || f12 != 2 || f13 != 2 || f14 != 0x430 || f15 != 0x435 || f16 != 0 || f17 != -1 )
+  Print(f1,"_",f2,"_",f3,"_",f4,"_",f5,"_",f6,"_",f7,"_",f8,"_",f9 )
+  Print(f10 ,"_", f11 ,"_", f12 ,"_", f13 ,"_", f14 ,"_", f15 ,"_", f16 ,"_", f17 )
+  Error("Expected alt_expansion_count results of {18,7,1589,1604,1609,32,-1,1580,1604,2,2,1072,1077,0,-1}.")
+endif
+
+Print("All Tests done and valid.")

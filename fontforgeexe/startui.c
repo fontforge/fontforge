@@ -25,15 +25,17 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define GTimer GTimer_GTK
-#define GList  GList_Glib
-#include <glib.h>
-#include <glib-object.h>
-#undef GTimer
-#undef GList
+#include "ffglib.h"
 
 #include <fontforge-config.h>
+#include "autosave.h"
+#include "bitmapchar.h"
+#include "clipnoui.h"
+#include "encoding.h"
 #include "fontforgeui.h"
+#include "lookups.h"
+#include "start.h"
+
 #ifndef _NO_LIBUNICODENAMES
 #include <libunicodenames.h>	/* need to open a database when we start */
 extern uninm_names_db names_db; /* Unicode character names and annotations database */
@@ -102,6 +104,7 @@ extern void setup_cocoa_app();
 #endif
 
 #include "collabclientui.h"
+#include "scripting.h"
 
 extern int AutoSaveFrequency;
 int splash = 1;

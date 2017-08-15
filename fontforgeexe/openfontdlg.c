@@ -26,6 +26,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "namelist.h"
+#include "scripting.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <ustring.h>
@@ -457,7 +460,7 @@ static int GFD_Ok(GGadget *g, GEvent *e) {
 return(true);
 	    }
 	    d->done = true;
-	    d->ret = u_GFileNormalizePath(GGadgetGetTitle(d->gfc));
+	    d->ret = GGadgetGetTitle(d->gfc);
 
 	    // Trim trailing '/' if its there and put that string back as
 	    // the d->gfc string.
@@ -468,7 +471,7 @@ return(true);
 		    tmp[ tmplen-1 ] = '\0';
 		    GGadgetSetTitle(d->gfc, tmp);
 		    free(tmp);
-		    d->ret = u_GFileNormalizePath(GGadgetGetTitle(d->gfc));
+		    d->ret = GGadgetGetTitle(d->gfc);
 		}
 	    }
 	}

@@ -34,7 +34,7 @@ AC_PREREQ([2.68])
 
 #--------------------------------------------------------------------------
 # PackageTimestamp version
-m4_define([fontforge_package_stamp], [20140101])
+m4_define([fontforge_package_stamp], [20170731])
 #--------------------------------------------------------------------------
 # Making point releases:
 #   fontforge_major_version += 0;
@@ -99,6 +99,34 @@ AC_CONFIG_HEADERS([config.h inc/fontforge-config.h:config.h])
 AM_INIT_AUTOMAKE([foreign -Wall subdir-objects tar-pax])
 AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
+AX_CODE_COVERAGE
+
+#--------------------------------------------------------------------------
+#
+# Checks for programs.
+
+AC_PROG_AWK
+AC_PROG_CC
+AC_PROG_CC_C99
+AM_PROG_CC_C_O
+gl_EARLY
+AC_PROG_CPP
+AC_PROG_GREP
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+AC_PROG_MKDIR_P
+AC_PROG_SED
+AC_PATH_PROG([STRIP],[strip],[:])
+
+# Check for Objective C compiler
+m4_ifdef([AC_PROG_OBJC], [
+    AC_PROG_OBJC
+], [
+    AM_CONDITIONAL([am__fastdepOBJC], false)
+    AC_SUBST([OBJC], [$CC])
+    AC_SUBST([OBJCFLAGS], [$CFLAGS])
+])
 
 #--------------------------------------------------------------------------
 # automake 1.12 requires AM_PROG_AR but automake < 1.11.2 doesn't recognize it.
@@ -178,23 +206,7 @@ libjpeg_url="http://en.wikipedia.org/wiki/Libjpeg"
 libtiff_url="http://en.wikipedia.org/wiki/Libtiff"
 
 #--------------------------------------------------------------------------
-#
-# Checks for programs.
 
-AC_PROG_AWK
-AC_PROG_CC
-AC_PROG_CC_C99
-AM_PROG_CC_C_O
-gl_EARLY
-AC_PROG_CPP
-AC_PROG_GREP
-AC_PROG_INSTALL
-AC_PROG_LN_S
-AC_PROG_MAKE_SET
-AC_PROG_MKDIR_P
-AC_PROG_SED
-
-#--------------------------------------------------------------------------
 # Required for building FontForge package, plus we use PKG_CHECK_MODULES in
 # a few checks and searches for programs and libraries.
 # NOTE: Some distros don't have /usr/local included in the /etc/ld.so PATH,
@@ -215,20 +227,6 @@ AC_PATH_PROG([UPDATE_MIME_DATABASE],[update-mime-database],[:])
 AC_PATH_PROG([UPDATE_DESKTOP_DATABASE],[update-desktop-database],[:])
 AC_PATH_PROG([PLUTIL],[plutil],[:])
 
-if test "y$HOMEBREW_BREW_FILE" != "y"; then
-   echo "detected a homebrew build environment"
-   PYLIBDIR=$(${HOMEBREW_PREFIX}/bin/python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")
-   PYPKGCONFIG="$( cd "$PYLIBDIR/../../pkgconfig" && pwd )"
-   export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$PYPKGCONFIG"
-   echo "found python pkg_config information: $PYPKGCONFIG"
-   if test "y$PYTHON" = "y"; then
-     export PYTHON="${HOMEBREW_PREFIX}/bin/python"
-   fi
-fi
-
-AM_PATH_PYTHON([2.7])
-PKG_CHECK_MODULES([PYTHON],[python-"${PYTHON_VERSION}"])
-i_do_have_python_scripting=yes;
 
 dnl###############################
 dnl###############################
@@ -283,6 +281,11 @@ FONTFORGE_ARG_ENABLE([tile-path],
         [AS_HELP_STRING([--enable-tile-path],
                 [enable a 'tile path' command (a variant of 'expand stroke')])],
         [FONTFORGE_CONFIG_TILEPATH])
+
+FONTFORGE_ARG_ENABLE([write-pfm],
+        [AS_HELP_STRING([--enable-write-pfm],
+                [add the ability to save a PFM file without creating the associated font file])],
+        [FONTFORGE_CONFIG_WRITE_PFM])
 
 #--------------------------------------------------------------------------
 # Theme pixmap ICON selection.
@@ -490,7 +493,7 @@ AC_SUBST([ISYSTEM])
 
 AC_LANG_PUSH([C]) dnl NOTE: configure.ac - try not to push/pop too often
 # Create LDFLAGS for libraries. Currently used to pass '-no-undefined' to libtool.
-my_lib_ldflags=""
+my_lib_ldflags="${CODE_COVERAGE_LDFLAGS}"
 dnl add --no-undefined if supported. Based on information seen here:
 dnl https://mail.gnome.org/archives/commits-list/2011-October/msg10575.html
 dnl http://femass.com.br/Net-SNMP/configure.d/config_os_progs
@@ -604,6 +607,7 @@ my_cflags="${my_cflags} ${LIBXML_CFLAGS}"
 my_cflags="${my_cflags} ${PYTHON_CFLAGS}"
 my_cflags="${my_cflags} ${PTHREAD_CFLAGS}"
 my_cflags="${my_cflags} ${LIBREADLINE_CFLAGS}"
+my_cflags="${my_cflags} ${CODE_COVERAGE_CFLAGS}"
 test x"${SDK}" = x || my_cflags="${my_cflags} -I${SDK}"
 test x"${LTDLINCL}" = x || my_cflags="${my_cflags} -I${LTDLINCL}"
 AC_SUBST([MY_CFLAGS],[${my_cflags}])
@@ -611,7 +615,6 @@ AC_SUBST([MY_CFLAGS],[${my_cflags}])
 #--------------------------------------------------------------------------
 # Create and Set FontForge Library Flags
 
-test x"${i_do_have_python_scripting}" = xyes && my_libs="${my_libs} ${PYTHON_LIBS}"
 test x"${i_do_have_giflib}" = xyes && my_libs="${my_libs} ${GIFLIB_LIBS}"
 test x"${i_do_have_libjpeg}" = xyes && my_libs="${my_libs} ${LIBJPEG_LIBS}"
 test x"${i_do_have_libpng}" = xyes && my_libs="${my_libs} ${LIBPNG_LIBS}"
@@ -623,7 +626,6 @@ test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${PANGOCAIRO_LIBS}"
 test x"${i_do_have_gui}" = xyes && my_libs="${my_libs} ${PANGO_LIBS}"
 test x"${i_do_have_x}" = xyes && my_libs="${my_libs} ${X_PRE_LIBS} ${X_LIBS} ${X_EXTRA_LIBS}"
 test x"${i_do_have_libreadline}" = xyes && my_libs="${my_libs} ${LIBREADLINE_LIBS}"
-my_libs="${my_libs} ${PYTHON_LIBS}"
 test x"${i_do_have_libspiro}" = xyes && my_libs="${my_libs} ${LIBSPIRO_LIBS}"
 my_libs="${my_libs} ${LIBSPIRO_LIBS}"
 my_libs="${my_libs} ${FREETYPE_LIBS}"
@@ -635,20 +637,15 @@ AC_SUBST([MY_LIBS],[${my_libs}])
 
 #--------------------------------------------------------------------------
 
-have_ipython=no
-
-if test x$use_python_cross_option = xyes ; then
-   echo "skipping ipython detection during a cross compile"
-else
-   pythonbinary=python
-   AC_ARG_WITH([pythonbinary],
-      [AS_HELP_STRING([--with-pythonbinary[[=/path/to/python2.7]]],[])],
-      [pythonbinary="${withval}"])
-
-   have_ipython=no
-   if $( $pythonbinary -c 'import IPython' 2> /dev/null ); then
-      have_ipython=yes;
-      AC_DEFINE([HAVE_IPYTHON],[1],[have ipython])
+if test x"${i_do_have_python_scripting}" = xyes; then
+   AC_MSG_CHECKING([for IPython])
+   if $( $PYTHON -c 'import IPython' 2>&5 ); then
+        have_ipython=yes;
+        AC_DEFINE([HAVE_IPYTHON],[1],[have ipython])
+        AC_MSG_RESULT([yes])
+   else
+        have_ipython=no
+        AC_MSG_RESULT([no])
    fi
 fi
 
@@ -662,7 +659,7 @@ AC_ARG_ENABLE([python-even],
         [AS_HELP_STRING([--enable-python-even],
                 [enable a menu entry for Even])],
         [have_python_even=yes])
-AM_CONDITIONAL([HAVE_PYTHON_EVEN],[test x"${have_python_even}" = xyes])
+AM_CONDITIONAL([HAVE_PYTHON_EVEN],[test x"${have_python_even}" = xyes && test x"${i_do_have_python_scripting}" = xyes])
 
 #--------------------------------------------------------------------------
 #--------------------------------------------------------------------------
@@ -806,9 +803,15 @@ FONTFORGE_GIT_VERSION=""
 if test -d ${srcdir}/.git; then
   FONTFORGE_GIT_VERSION=`cd ${srcdir} && git log --pretty=format:'%H' -n 1`
 fi
-FONTFORGE_MODTIME="`date '+%s'`L"
-FONTFORGE_MODTIME_STR="`date +'%H:%M %Z %e-%b-%Y'`"
-FONTFORGE_VERSIONDATE="`date '+%Y%m%d'`"
+FONTFORGE_DATE_NOW=${SOURCE_DATE_EPOCH:-$(date +'%s')}
+FONTFORGE_DATE_OPTS="--date=@${FONTFORGE_DATE_NOW}"
+if ! date --version 2>/dev/null ; then
+  # Use POSIX date instead of GNU date on BSD systems
+  FONTFORGE_DATE_OPTS="-j -f %s ${FONTFORGE_DATE_NOW}"
+fi
+FONTFORGE_MODTIME="$(date -u $FONTFORGE_DATE_OPTS +'%s')L"
+FONTFORGE_MODTIME_STR="$(date -u $FONTFORGE_DATE_OPTS +'%H:%M %Z %e-%b-%Y')"
+FONTFORGE_VERSIONDATE="$(date -u $FONTFORGE_DATE_OPTS +'%Y%m%d')"
 AC_DEFINE_UNQUOTED(FONTFORGE_GIT_VERSION,"$FONTFORGE_GIT_VERSION","git hash that source are built from")
 AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME,"$FONTFORGE_MODTIME","Epoch time that configure was run at")
 AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME_STR,"$FONTFORGE_MODTIME_STR",

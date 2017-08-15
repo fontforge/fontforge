@@ -24,7 +24,15 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "cvundoes.h"
 #include "fontforgeui.h"
+#include "lookups.h"
+#include "parsettf.h"
+#include "spiro.h"
+#include "splineorder2.h"
+#include "splineutil.h"
+#include "splineutil2.h"
+#include "tottfgpos.h"
 #include <ustring.h>
 #include <math.h>
 #include <utype.h>

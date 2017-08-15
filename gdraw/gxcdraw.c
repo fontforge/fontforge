@@ -909,7 +909,7 @@ void _GXPDraw_NewWindow(GXWindow nw) {
     {
 	if ( gdisp->pango_context==NULL ) {
 	    gdisp->pango_fontmap = pango_xft_get_font_map(gdisp->display,gdisp->screen);
-	    gdisp->pango_context = pango_xft_get_context(gdisp->display,gdisp->screen);
+	    gdisp->pango_context = pango_font_map_create_context(gdisp->pango_fontmap);
 	    /* No obvious way to get or set the resolution of pango_xft */
 	}
 	nw->xft_w = XftDrawCreate(gdisp->display,nw->w,gdisp->visual,gdisp->cmap);

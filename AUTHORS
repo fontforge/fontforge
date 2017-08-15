@@ -6,32 +6,36 @@ Adam Goode
 Adolfo Jayme Barrientos
 Adrien Tétar
 Aktado <aktado@users.sourceforge.jp>
+Alex Miller <aalex-millerr>
 Alex Raftis
+Alexandre Julliard
+Alexandre Prokoudine
+Alexey Kuznetsov <catharanthus>
+Alexey Kryukov - nowakowskittfinstr.c
 Anand
 Andreas Larsen
 Andrew Janke
 Andrey Panov
 Anthony G. Basile
 Arthaey Angosii
-Alexey Kryukov - nowakowskittfinstr.c
-Alexandre Prokoudine
-Andreas Larsen
-Barry Schwartz
-Baruch Even - (debian upstream) baruch
+Barry Schwartz <chemoelectric>
+Baruch Even <baruch@debian.org>
 Bastien Dejean
 Behnam Esfahbod
 Ben Martin - hotkeys.c, hotkeys.h
 BensongChen, bungeman
 Ben Wagner
 Bill Wang
-catharanthus
 Charles M. Hannum
+Charles Reilly <mungre>
 Christopher Meng
 Claudio Beccari
 Craig Lennox
 Dave Crossland (dave@lab6.com)
 Deron Meranda
 Dave Levine
+David Hedley <davidhedley>
+David Hull <dhull>
 David Lemon
 David Opstad
 David Shaal
@@ -40,12 +44,17 @@ Dominyk Tiller
 Dong Yang
 Dražen Lučanin
 Duane Moody
+E.J. Neafsey
 Eddie Yuen
 Edward Lee
+Eric Bavier <bavier@member.fsf.org>
 Eva Denman
+Fabian Greffrath <fabiangreffrath>
+Felipe Corrêa da Silva Sanches <felipesanches>
 Frank Trampe <frank-trampe>
-Frédéric Wang
+Frédéric Wang <fred-wang>
 Georg A. Duffner
+Gioele Barabucci <gioele>
 Giuseppe Bilotta
 Giuseppe Ghibò
 Greg Ford
@@ -58,6 +67,7 @@ James Cloos
 James Crippen
 James Woodcock
 Jason Pagura
+Jens Reyer <jre-wine>
 Jérémy Bobbio
 Jeremy Tan
 Jim Killock
@@ -80,30 +90,41 @@ Kazuki Ohta (Kauzuyuki, Kazuyuki)
 Kelvinsong
 Kemie Guaida - Tango PixMaps
 Kengo Ichiki
+Kęstutis Biliūnas <kebil@kaunas.init.lt>
 Kevin Fenzi
 Khaled Hosny <khaledhosny>
 Koki Takahashi
+Kyrylo Yatsenko <hedrok>
 Lasse Fister
 László Károly
 Lu Wang <coolwanglu@gmail.com>
+Ludwig Schwardt
 Luiz Matheus <lzmths>
-Markus Schwarzenberg
 Marius Larsen
+Mark G. Adams
 Mark Oteiza
-Martin Hosken
+Markus Schwarzenberg
+Martin Giese
+Martin Hosken <martin_hosken@sil.org>
 Mathias Wollin
+Matijs van Zuijlen <mvz>
 Matt Chisholm
 Matthew Petroff
-Matthew Skala
+Matthew Skala < mskala>
+Matthias Klose <doko@ubuntu.com>
 Mayank Jha
 Max Rabkin - excepthook.py
 Maxim Iorsh
+Michael Gährken
 Michal Mazurek
 Michal Nowakowski <michal-n> - nowakowskittfinstr.c
+Michinari Nukazawa <MichinariNukazawa>
 midzer <midzer@gmail.com>
+MURAOKA Taro
 Nicolas Kaiser
 Nicolas Spalinger
 Ondřej Hošek
+Pander Musubi <Pander>
 Parag Nemade
 Petr Gajdos
 Phil Krylov
@@ -118,9 +139,12 @@ Rajeesh K Nambiar
 Raph Levien <raphlinus>
 Reuben Thomas <rrthomas>
 Richard Hughes
+Rob Madole <robmadole>
+Rogério Brito <rbrito@ime.usp.br>
 Rogier van Dalen
 Ryusei Yamaguchi
 Saeed Rasooli
+Sergey S Betke <sergey-s-betke>
 Scott Pakin - Packaging
 Scott Romack
 Silvan Toledo
@@ -136,10 +160,12 @@ Uli Schlachter
 Ulrich Klauer
 Vadim Belman
 Valek Filippov
+Vasudev Kamath <copyninja>
 Vernon Adams
 Ville Skytta
 Werner Lemberg <lemzwerg>
 Woensug Eric Choi
+Wojciech Muła <wm@mahajana.net>
 贤哲 <xiaozhe.hxz@alibaba-inc.com>
 Yannis Haralambous
 Yao Wei (魏銘廷)
@@ -151,16 +177,18 @@ Yi Yang (ahyangyi)
 
 Language Translations provided by:
 Rafael Ferran i Peralta - ca - Catalan
+Ettore Atalan - de - Deutsch
 Philipp Poll - de - Deutsch
 Apostolos Syropoulos - el - Greek
 George Williams - en_GB
-Walter Echarri, es - Spanish
-Pierre Hanser, fr - French
-Yannis Haralambous - French
-Claudio Beccari, it - Italian
-KANOU Hiroki, ja - Japanese
-TANIGAWA Takashi, ja - Japanese
-OKANO Takayoshi, ja - Japanese
+Walter Echarri - es - Spanish
+Jean-René Bastien - fr - French
+Pierre Hanser - fr - French
+Yannis Haralambous - fr - French
+Claudio Beccari - it - Italian
+KANOU Hiroki - ja - Japanese
+TANIGAWA Takashi - ja - Japanese
+OKANO Takayoshi - ja - Japanese
 Woensug Eric Choi - ko - Korean
 Hiran - ml - Malayalam
 Michal Nowakowski - po - Polish

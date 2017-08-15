@@ -99,6 +99,8 @@ hicolor22x22dir = ${hicolordir}/22x22/apps
 hicolor24x24dir = ${hicolordir}/24x24/apps
 hicolor32x32dir = ${hicolordir}/32x32/apps
 hicolor48x48dir = ${hicolordir}/48x48/apps
+hicolor64x64dir = ${hicolordir}/64x64/apps
+hicolor128x128dir = ${hicolordir}/128x128/apps
 hicolor256x256dir = ${hicolordir}/256x256/apps
 hicolorscalabledir = ${hicolordir}/scalable/apps
 

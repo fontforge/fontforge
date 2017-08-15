@@ -25,8 +25,21 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "autotrace.h"
+#include "autowidth.h"
+#include "bitmapchar.h"
+#include "bvedit.h"
+#include "cvundoes.h"
 #include "fontforgeui.h"
+#include "fvcomposite.h"
+#include "fvfonts.h"
 #include "lookups.h"
+#include "mm.h"
+#include "splinefill.h"
+#include "splineoverlap.h"
+#include "splineutil.h"
+#include "splineutil2.h"
+#include "tottfgpos.h"
 #include <gkeysym.h>
 #include <gresource.h>
 #include <gresedit.h>

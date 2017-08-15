@@ -324,8 +324,8 @@ return( false );
 	    GDrawCancelTimer(gsb->pressed); gsb->pressed = NULL;
 	    int isv = event->u.mouse.button<=5;
 	    if ( event->u.mouse.state&ksm_shift ) isv = !isv;
-	    if ( isv != g->vert )
-return( false );	/* Only respond to scrolling events in our direction */
+	    if ( !isv && g->vert )
+return( false );	/* Allow horizontal scrolling with normal scroll but not vice versa */
 	    else if ( event->u.mouse.state&ksm_control )
 return( false );
 	    if ( event->u.mouse.button==5 || event->u.mouse.button==7 ) {

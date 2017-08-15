@@ -25,8 +25,27 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef FONTFORGE_MM_H
+#define FONTFORGE_MM_H
+
+#include "baseviews.h"
+#include "splinefont.h"
+
 extern void MMWeightsUnMap(real weights[MmMax], real axiscoords[4],
 	int axis_count);
 extern bigreal MMAxisUnmap(MMSet *mm,int axis,bigreal ncv);
 extern SplineFont *_MMNewFont(MMSet *mm,int index,char *familyname,real *normalized);
 extern SplineFont *MMNewFont(MMSet *mm,int index,char *familyname);
+
+extern char *MMBlendChar(MMSet *mm, int gid);
+extern char *MMExtractArrayNth(char *pt, int ipos);
+extern char *MMExtractNth(char *pt, int ipos);
+extern char *MMGuessWeight(MMSet *mm, int ipos, char *def);
+extern char *MMMakeMasterFontname(MMSet *mm, int ipos, char **fullname);
+extern const char *MMAxisAbrev(char *axis_name);
+extern FontViewBase *MMCreateBlendedFont(MMSet *mm, FontViewBase *fv, real blends[MmMax], int tonew);
+extern int MMReblend(FontViewBase *fv, MMSet *mm);
+extern int MMValid(MMSet *mm, int complain);
+extern void MMKern(SplineFont *sf, SplineChar *first, SplineChar *second, int diff, struct lookup_subtable *sub, KernPair *oldkp);
+
+#endif /* FONTFORGE_MM_H */

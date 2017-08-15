@@ -891,7 +891,14 @@ static int gotten=false;
 
 static void GFCPopupMenu(GGadget *g, GEvent *e) {
     int i;
-    GFileChooser *gfc = (GFileChooser *) GGadgetGetUserData(g);
+    // The reason this casting works is a bit of a hack.
+    // If this was initiated from a right click, `g` will be the GFC GGadget.
+    // Then its userdata would be the initiator's, and NOT the GFC struct.
+    // Thus we cannot call GGadgetGetUserData.
+    // However, since in the GFC struct, its GGadget comes first, effectively
+    // the pointer to its GGadget will equal the pointer to its GFC struct.
+    // I have ensured that all calls to this function pass the GFC GGadget.
+    GFileChooser *gfc = (GFileChooser *) g;
 
     for ( i=0; gfcpopupmenu[i].ti.text!=NULL || gfcpopupmenu[i].ti.line; ++i )
 	gfcpopupmenu[i].ti.userdata = gfc;
@@ -917,7 +924,7 @@ static int GFileChooserConfigure(GGadget *g, GEvent *e) {
 	fake.w = g->base;
 	fake.u.mouse.x = pos.x;
 	fake.u.mouse.y = pos.y+pos.height;
-	GFCPopupMenu(g,&fake);
+	GFCPopupMenu((GGadget*)GGadgetGetUserData(g),&fake);
     }
 return( true );
 }
@@ -1347,13 +1354,16 @@ static unichar_t *GFileChooserGetTitle(GGadget *g) {
     GFileChooser *gfc = (GFileChooser *) g;
     unichar_t *spt, *curdir, *file;
 
-    spt = (unichar_t *) _GGadgetGetTitle(&gfc->name->g);
+    spt = u_GFileNormalizePath(u_copy((unichar_t *)_GGadgetGetTitle(&gfc->name->g)));
     if ( u_GFileIsAbsolute(spt) )
-	file = u_copy(spt);
+	file = spt;
     else {
 	curdir = GFileChooserGetCurDir(gfc,-1);
 	file = u_GFileAppendFile(curdir,spt,gfc->lastname!=NULL);
 	free(curdir);
+    }
+    if (file != spt) {
+        free(spt);
     }
 return( file );
 }

@@ -80,8 +80,6 @@ typedef struct gdirentry {
 extern void GIOdir(GIOControl *gc);
 extern void GIOstatFile(GIOControl *gc);
 extern void GIOfileExists(GIOControl *gc);
-extern void GIOgetFile(GIOControl *gc);
-extern void GIOputFile(GIOControl *gc);
 extern void GIOmkDir(GIOControl *gc);
 extern void GIOdelFile(GIOControl *gc);
 extern void GIOdelDir(GIOControl *gc);

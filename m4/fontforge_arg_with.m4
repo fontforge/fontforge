@@ -401,7 +401,7 @@ AC_DEFUN([FONTFORGE_ARG_WITH_ZEROMQ],
 [
 FONTFORGE_ARG_WITH([libzmq],
         [AS_HELP_STRING([--without-libzmq],[build without libzmq])],
-        [ libczmq >= 2.2.0 libzmq >= 4.0.4 ],
+        [ libczmq >= 2.2.0 libczmq < 4 libzmq >= 4.0.4 ],
         [FONTFORGE_WARN_PKG_NOT_FOUND([LIBZMQ])],
         [_NO_LIBZMQ], [NO_LIBZMQ=1])
 ])

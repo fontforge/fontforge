@@ -1,0 +1,11 @@
+#Needs: fonts/NotoSans-Regular.ttc
+# but any other ttc file would do
+
+Open($1+"(Noto Sans)");
+Print( "...Read NotoSans-Regular.ttc(Noto Sans)")
+Close();
+
+Open($1+"(Noto Sans UI)");
+Print( "...Read NotoSans-Regular.ttc(Noto Sans UI)")
+Close();
+Quit()

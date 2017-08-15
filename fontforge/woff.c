@@ -29,7 +29,13 @@
 /* Which are defined here: http://people.mozilla.com/~jkew/woff/woff-2009-09-16.html */
 /* Basically sfnts with compressed tables and some more metadata */
 
+#include "woff.h"
+
 #include "fontforge.h"
+#include "http.h"
+#include "mem.h"
+#include "parsettf.h"
+#include "tottf.h"
 #include <math.h>
 #include <ctype.h>
 
@@ -213,7 +219,7 @@ SplineFont *_SFReadWOFF(FILE *woff,int flags,enum openflags openflags, char *fil
     int len, len_stated;
     int num_tabs;
     int major, minor;
-    int metaOffset, metaLenCompressed, metaLenUncompressed;
+    uint32_t metaOffset, metaLenCompressed, metaLenUncompressed;
     int privOffset, privLength;
     int i,j,err;
     int tag, offset, compLen, uncompLen, checksum;
@@ -253,9 +259,9 @@ return( NULL );
     /* total_uncompressed_sfnt_size = */ getlong(woff);
     major = getushort(woff);
     minor = getushort(woff);
-    metaOffset = getlong(woff);
-    metaLenCompressed = getlong(woff);
-    metaLenUncompressed = getlong(woff);
+    metaOffset = (uint32_t)getlong(woff);
+    metaLenCompressed = (uint32_t)getlong(woff);
+    metaLenUncompressed = (uint32_t)getlong(woff);
     privOffset = getlong(woff);
     privLength = getlong(woff);
 
@@ -348,13 +354,45 @@ return( NULL );
     }
 
     if ( sf!=NULL && metaOffset!=0 ) {
-	char *temp = malloc(metaLenCompressed+1);
+	/*
+	* Boundary/integer overflow checks:
+	*
+	* We don't want to actually dereference a null pointer (returned
+	* by asking to allocate too much RAM) and we don't want to allocate
+	* a 0-sized chunk (caused when one of the (metaLenxxx + 1) values overflows).
+	*
+	* We can safely pass sf->woffMetadata as a NULL pointer because
+	* it's never accessed anywhere else without a check for it being
+	* NULL first
+	*/
+	if(metaLenUncompressed == UINT32_MAX) {
+		LogError(_("WOFF uncompressed metadata section too large.\n"));
+		sf->woffMetadata = NULL; 
+		return( sf );
+	}
+	if(metaLenCompressed == UINT32_MAX) {
+		LogError(_("WOFF compressed metadata section too large.\n"));
+		sf->woffMetadata = NULL;
+		return( sf );
+	}
+	sf->woffMetadata = malloc(metaLenUncompressed+1);
+	if(sf->woffMetadata == NULL) { 
+		LogError(_("WOFF uncompressed metadata section too large.\n"));
+		return( sf );
+	}
+	unsigned char *temp = malloc(metaLenCompressed+1);
+	if(temp == NULL) { 
+		LogError(_("WOFF compressed metadata section too large.\n"));
+		free(sf->woffMetadata); 
+		sf->woffMetadata = NULL;
+		free(temp);
+		return( sf );
+	}
 	uLongf len = metaLenUncompressed;
 	fseek(woff,metaOffset,SEEK_SET);
 	fread(temp,1,metaLenCompressed,woff);
-	sf->woffMetadata = malloc(metaLenUncompressed+1);
 	sf->woffMetadata[metaLenUncompressed] ='\0';
-	uncompress(sf->woffMetadata,&len,temp,metaLenCompressed);
+	uncompress((unsigned char *)sf->woffMetadata,&len,temp,metaLenCompressed);
 	sf->woffMetadata[len] ='\0';
 	free(temp);
     }
@@ -508,9 +546,9 @@ return( ret );
     if ( sf->woffMetadata!= NULL ) {
 	int uncomplen = strlen(sf->woffMetadata);
 	uLongf complen = 2*uncomplen;
-	char *temp=malloc(complen+1);
+	unsigned char *temp=malloc(complen+1);
 	newoffset = ftell(woff);
-	compress(temp,&complen,sf->woffMetadata,uncomplen);
+	compress(temp,&complen,(unsigned char *)sf->woffMetadata,uncomplen);
 	fwrite(temp,1,complen,woff);
 	free(temp);
 	if ( (ftell(woff)&3)!=0 ) {

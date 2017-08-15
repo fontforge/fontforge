@@ -24,16 +24,19 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "fontforgeui.h"
+
+#ifndef FONTFORGE_NONLINEARTRANS_H
+#define FONTFORGE_NONLINEARTRANS_H
+
+#include "baseviews.h"
+#include "splinefont.h"
+
 #include <utype.h>
 #include <ustring.h>
 #include <math.h>
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
-
-#ifndef _NONLINEARTRANS_H
-#define _NONLINEARTRANS_H
 
 enum operator {
     op_base = 0x100,			/* Bigger than any character */
@@ -58,7 +61,7 @@ struct expr {
     real value;
 };
 
-struct context {
+struct expr_context {
     char *start, *cur;
     unsigned int had_error: 1;
     enum operator backed_token;
@@ -71,9 +74,15 @@ struct context {
     void (*pov_func)(BasePoint *me,void *);
 };
 
-extern void _SFNLTrans(FontViewBase *fv,struct context *c);
-extern struct expr *nlt_parseexpr(struct context *c,char *str);
+extern void _SFNLTrans(FontViewBase *fv, struct expr_context *c);
+extern struct expr *nlt_parseexpr(struct expr_context *c, char *str);
 extern void nlt_exprfree(struct expr *e);
-extern void CVNLTrans(CharViewBase *cv,struct context *c);
+extern void CVNLTrans(CharViewBase *cv,struct expr_context *c);
 extern void SPLPoV(SplineSet *spl,struct pov_data *pov, int only_selected);
-#endif
+
+extern int SCNLTrans(SplineChar *sc, int layer, char *x_expr, char *y_expr);
+extern int SSNLTrans(SplineSet *ss, char *x_expr, char *y_expr);
+extern void CVYPerspective(CharViewBase *cv, bigreal x_vanish, bigreal y_vanish);
+extern void FVPointOfView(FontViewBase *fv, struct pov_data *pov);
+
+#endif /* FONTFORGE_NONLINEARTRANS_H */

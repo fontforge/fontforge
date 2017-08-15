@@ -24,8 +24,16 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "dumpbdf.h"
+
+#include "bitmapchar.h"
+#include "bvedit.h"
+#include "encoding.h"
 #include "fontforge.h"
 #include "splinefont.h"
+#include "splinefill.h"
+#include "splinesaveafm.h"
 #include <gdraw.h>			/* for the defn of GClut for greymaps */
 #include <string.h>
 #include <ustring.h>

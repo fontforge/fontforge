@@ -24,7 +24,19 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "cvimages.h"
+
+#include "cvundoes.h"
 #include "fontforgevw.h"
+#include "fvfonts.h"
+#include "parsepdf.h"
+#include "psread.h"
+#include "spiro.h"
+#include "splineorder2.h"
+#include "splineutil.h"
+#include "splineutil2.h"
+#include "svg.h"
 #include <math.h>
 #include <sys/types.h>
 #include <dirent.h>

@@ -46,15 +46,55 @@
 
 extern int old_sfnt_flags;
 
+#include "autohint.h"
+#include "autotrace.h"
+#include "autowidth2.h"
+#include "bitmapcontrol.h"
+#include "cvexport.h"
+#include "cvimages.h"
+#include "cvundoes.h"
+#include "dumppfa.h"
+#include "encoding.h"
+#include "featurefile.h"
 #include "fontforgevw.h"
+#include "fvcomposite.h"
+#include "fvfonts.h"
+#include "fvimportbdf.h"
+#include "glyphcomp.h"
+#include "langfreq.h"
+#include "lookups.h"
+#include "mathconstants.h"
+#include "mem.h"
+#include "namelist.h"
+#include "nonlineartrans.h"
+#include "othersubrs.h"
 #include "ttf.h"
 #include "plugins.h"
+#include "print.h"
+#include "psread.h"
+#include "savefont.h"
+#include "splineorder2.h"
+#include "splinesaveafm.h"
 #include "utype.h"
 #include "ustring.h"
 #include "flaglist.h"
 #include "strlist.h"
 #include "scripting.h"
 #include "scriptfuncs.h"
+#include "scstyles.h"
+#include "search.h"
+#include "sfd.h"
+#include "spiro.h"
+#include "splinefill.h"
+#include "splineoverlap.h"
+#include "splinestroke.h"
+#include "splineutil.h"
+#include "splineutil2.h"
+#include "start.h"
+#include "svg.h"
+#include "tottf.h"
+#include "tottfgpos.h"
+#include "ttfinstrs.h"
 #include "ffpython.h"
 
 #include <math.h>
@@ -810,6 +850,222 @@ static PyObject *PyFF_UnicodeNamesListVersion(PyObject *UNUSED(self), PyObject *
     return( ret );
 }
 
+/* Ligature & Fraction information based on current Unicode (builtin) chart. */
+/* Unicode chart seems to distinguish vulgar fractions from other fractions. */
+/* These routines test value with internal table. Returns true/false values. */
+static PyObject *PyFF_isligature(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"|i",&codepoint) )
+	return( NULL );
+
+    return( Py_BuildValue("i", is_LIGATURE(codepoint)==0?1:0) );
+}
+
+static PyObject *PyFF_isvulgarfraction(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"|i",&codepoint) )
+	return( NULL );
+
+    return( Py_BuildValue("i", is_VULGAR_FRACTION(codepoint)==0?1:0) );
+}
+
+static PyObject *PyFF_isotherfraction(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"|i",&codepoint) )
+	return( NULL );
+
+    return( Py_BuildValue("i", is_OTHER_FRACTION(codepoint)==0?1:0) );
+}
+
+static PyObject *PyFF_isfraction(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"|i",&codepoint) )
+	return( NULL );
+
+    return( Py_BuildValue("i", (is_VULGAR_FRACTION(codepoint)==0 || \
+				is_OTHER_FRACTION(codepoint)==0)?1:0) );
+}
+
+/* Cnt returns lookup table-size, Nxt returns next Unicode value from array, */
+/* Loc returns 'n' for table array[0..n..(Cnt-1)] pointer. Errors return -1. */
+static PyObject *PyFF_LigChartGetCnt(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
+    return( Py_BuildValue("i", LigatureCount()) );
+}
+
+static PyObject *PyFF_VulChartGetCnt(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
+    return( Py_BuildValue("i", VulgarFractionCount()) );
+}
+
+static PyObject *PyFF_OFracChartGetCnt(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
+    return( Py_BuildValue("i", OtherFractionCount()) );
+}
+
+static PyObject *PyFF_FracChartGetCnt(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
+    return( Py_BuildValue("i", FractionCount()) );
+}
+
+/* These routines return builtin table unicode values for n in {0..(Cnt-1)}. */
+/* Internal table array size and values will depend on which unicodelist was */
+/* used at time makeutype was run to make FontForge's internal utype tables. */
+static PyObject *PyFF_LigChartGetNxt(PyObject *UNUSED(self), PyObject *args) {
+    long val;
+
+    if ( !PyArg_ParseTuple(args,"|i",&val) )
+	return( NULL );
+
+    return( Py_BuildValue("i", Ligature_get_U(val)) );
+}
+
+static PyObject *PyFF_VulChartGetNxt(PyObject *UNUSED(self), PyObject *args) {
+    long val;
+
+    if ( !PyArg_ParseTuple(args,"|i",&val) )
+	return( NULL );
+
+    return( Py_BuildValue("i", VulgFrac_get_U(val)) );
+}
+
+static PyObject *PyFF_OFracChartGetNxt(PyObject *UNUSED(self), PyObject *args) {
+    long val;
+
+    if ( !PyArg_ParseTuple(args,"|i",&val) )
+	return( NULL );
+
+    return( Py_BuildValue("i", Fraction_get_U(val)) );
+}
+
+/* If you have a unicode ligature, or fraction, these routines return loc n. */
+/* Internal table array size and values will depend on which unicodelist was */
+/* used at time makeutype was run to make FontForge's internal utype tables. */
+static PyObject *PyFF_LigChartGetLoc(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"|i",&codepoint) )
+	return( NULL );
+
+    return( Py_BuildValue("i", Ligature_find_N(codepoint)) );
+}
+
+static PyObject *PyFF_VulChartGetLoc(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"|i",&codepoint) )
+	return( NULL );
+
+    return( Py_BuildValue("i", VulgFrac_find_N(codepoint)) );
+}
+
+static PyObject *PyFF_OFracChartGetLoc(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"|i",&codepoint) )
+	return( NULL );
+
+    return( Py_BuildValue("i", Fraction_find_N(codepoint)) );
+}
+
+/* If you have a unicode ligature, or fraction, these routines return alt c. */
+static PyObject *PyFF_LigChartGetAltCnt(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"l",&codepoint) )
+	return( NULL );
+    return( Py_BuildValue("i", Ligature_alt_getC(codepoint)) );
+}
+
+static PyObject *PyFF_LigChartUGetAltCnt(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"l",&codepoint) )
+	return( NULL );
+    return( Py_BuildValue("i", LigatureU_alt_getC(codepoint)) );
+}
+
+static PyObject *PyFF_VulChartGetAltCnt(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"l",&codepoint) )
+	return( NULL );
+    return( Py_BuildValue("i", VulgFrac_alt_getC(codepoint)) );
+}
+
+static PyObject *PyFF_VulChartUGetAltCnt(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"l",&codepoint) )
+	return( NULL );
+    return( Py_BuildValue("i", VulgFracU_alt_getC(codepoint)) );
+}
+
+static PyObject *PyFF_OFracChartGetAltCnt(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"l",&codepoint) )
+	return( NULL );
+    return( Py_BuildValue("i", Fraction_alt_getC(codepoint)) );
+}
+
+static PyObject *PyFF_OFracChartUGetAltCnt(PyObject *UNUSED(self), PyObject *args) {
+    long codepoint;
+
+    if ( !PyArg_ParseTuple(args,"l",&codepoint) )
+	return( NULL );
+    return( Py_BuildValue("i", FractionU_alt_getC(codepoint)) );
+}
+
+/* If you have a unicode ligature, or fraction, these routines return alt v. */
+static PyObject *PyFF_LigChartGetAltVal(PyObject *UNUSED(self), PyObject *args) {
+    long nthCode,altN;
+
+    if ( !PyArg_ParseTuple(args,"ll",&nthCode, &altN) )
+	return( NULL );
+    return( Py_BuildValue("i", Ligature_alt_getV(nthCode,altN)) );
+}
+
+static PyObject *PyFF_LigChartUGetAltVal(PyObject *UNUSED(self), PyObject *args) {
+    long nthCode,altN;
+
+    if ( !PyArg_ParseTuple(args,"ll",&nthCode, &altN) )
+	return( NULL );
+    return( Py_BuildValue("i", LigatureU_alt_getV(nthCode,altN)) );
+}
+
+static PyObject *PyFF_VulChartGetAltVal(PyObject *UNUSED(self), PyObject *args) {
+    long nthCode,altN;
+
+    if ( !PyArg_ParseTuple(args,"ll",&nthCode, &altN) )
+	return( NULL );
+    return( Py_BuildValue("i", VulgFrac_alt_getV(nthCode,altN)) );
+}
+
+static PyObject *PyFF_VulChartUGetAltVal(PyObject *UNUSED(self), PyObject *args) {
+    long nthCode,altN;
+
+    if ( !PyArg_ParseTuple(args,"ll",&nthCode, &altN) )
+	return( NULL );
+    return( Py_BuildValue("i", VulgFracU_alt_getV(nthCode,altN)) );
+}
+
+static PyObject *PyFF_OFracChartGetAltVal(PyObject *UNUSED(self), PyObject *args) {
+    long nthCode,altN;
+
+    if ( !PyArg_ParseTuple(args,"ll",&nthCode, &altN) )
+	return( NULL );
+    return( Py_BuildValue("i", Fraction_alt_getV(nthCode,altN)) );
+}
+
+static PyObject *PyFF_OFracChartUGetAltVal(PyObject *UNUSED(self), PyObject *args) {
+    long nthCode,altN;
+
+    if ( !PyArg_ParseTuple(args,"ll",&nthCode, &altN) )
+	return( NULL );
+    return( Py_BuildValue("i", FractionU_alt_getV(nthCode,altN)) );
+}
+
 static PyObject *PyFF_Version(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
     char buffer[20];
 
@@ -891,7 +1147,7 @@ static PyObject *PyFF_OpenFont(PyObject *UNUSED(self), PyObject *args) {
     if ( !PyArg_ParseTuple(args,"es|i", "UTF-8", &filename, &openflags ))
 return( NULL );
     locfilename = utf82def_copy(filename);
-    free(filename);
+    PyMem_Free(filename);
 
     /* The actual filename opened may be different from the one passed
      * to LoadSplineFont, so we can't report the filename on an
@@ -918,7 +1174,7 @@ static PyObject *PyFF_FontsInFile(PyObject *UNUSED(self), PyObject *args) {
     if ( !PyArg_ParseTuple(args,"es","UTF-8",&filename) )
 return( NULL );
     locfilename = utf82def_copy(filename);
-    free(filename);
+    PyMem_Free(filename);
     ret = GetFontNames(locfilename, 1);
     free(locfilename);
     cnt = 0;
@@ -3974,7 +4230,7 @@ static PyObject *PyFFLayer_export(PyFF_Layer *self, PyObject *args) {
     if ( !PyArg_ParseTuple(args,"es","UTF-8",&filename) )
 return( NULL );
     locfilename = utf82def_copy(filename);
-    free(filename);
+    PyMem_Free(filename);
 
     pt = strrchr(locfilename,'.');
     if ( pt==NULL ) pt=locfilename;
@@ -4272,7 +4528,7 @@ static PyMethodDef PyFFLayer_methods[] = {
     {"export", (PyCFunction)PyFFLayer_export, METH_VARARGS,
 	     "Exports the layer to a file" },
     {"stroke", (PyCFunction)PyFFLayer_Stroke, METH_VARARGS,
-	     "Strokes the countours in a layer" },
+	     "Strokes the contours in a layer" },
     {"removeOverlap", (PyCFunction)PyFFLayer_RemoveOverlap, METH_NOARGS,
 	     "Remove overlapping areas from a layer." },
     {"intersect", (PyCFunction)PyFFLayer_Intersect, METH_NOARGS,
@@ -7263,7 +7519,7 @@ static const char *appendaccent_keywords[] = { "name", "unicode", "pos", NULL };
 static PyObject *PyFFGlyph_appendAccent(PyObject *self, PyObject *args, PyObject *keywds) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int layer = ((PyFF_Glyph *) self)->layer;
-    int pos = ____NOPOSDATAGIVEN;	/* unicode char pos info, see #define for (uint32)(utype2[]) */
+    int pos = FF_UNICODE_NOPOSDATAGIVEN; /* unicode char pos info, see #define for (uint32)(utype2[]) */
     int uni=-1;				/* unicode char value */
     char *name = NULL;			/* unicode char name */
     int ret;
@@ -7631,7 +7887,7 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args) {
     if ( !PyArg_ParseTuple(args,"es|O","UTF-8",&filename, &flags) )
 return( NULL );
     locfilename = utf82def_copy(filename);
-    free(filename);
+    PyMem_Free(filename);
 
     /* Check if the file exists and is readable */
     if ( access(locfilename,R_OK)!=0 ) {
@@ -7700,7 +7956,7 @@ static PyObject *PyFFGlyph_export(PyObject *self, PyObject *args) {
     if ( !PyArg_ParseTuple(args,"es|OO","UTF-8",&filename,&foo,&bar) )
 return( NULL );
     locfilename = utf82def_copy(filename);
-    free(filename);
+    PyMem_Free(filename);
 
     pt = strrchr(locfilename,'.');
     if ( pt==NULL ) pt=locfilename;
@@ -8614,7 +8870,7 @@ static PyMethodDef PyFF_Glyph_methods[] = {
     { "selfIntersects", (PyCFunction)PyFFGlyph_selfIntersects, METH_NOARGS, "Returns whether this glyph intersects itself" },
     { "validate", (PyCFunction)PyFFGlyph_validate, METH_VARARGS, "Returns whether this glyph is valid for output (if not check validation_state" },
     { "simplify", (PyCFunction)PyFFGlyph_Simplify, METH_VARARGS, "Simplifies a glyph" },
-    { "stroke", (PyCFunction)PyFFGlyph_Stroke, METH_VARARGS, "Strokes the countours in a glyph"},
+    { "stroke", (PyCFunction)PyFFGlyph_Stroke, METH_VARARGS, "Strokes the contours in a glyph"},
     { "transform", (PyCFunction)PyFFGlyph_Transform, METH_VARARGS, "Transform a glyph by a 6 element matrix." },
     { "nltransform", (PyCFunction)PyFFGlyph_NLTransform, METH_VARARGS, "Transform a glyph by two non-linear expressions (one for x, one for y)." },
     { "unlinkRef", PyFFGlyph_unlinkRef, METH_VARARGS, "Unlink a reference and turn it into outlines"},
@@ -11625,6 +11881,18 @@ ff_gs_bit(onlybitmaps)
 ff_gs_bit(hasvmetrics)
 ff_gs_bit(head_optimized_for_cleartype)
 
+static PyObject *PyFF_Font_get_creationtime(PyFF_Font *self, void *UNUSED(closure)) {
+    if ( CheckIfFontClosed(self) )
+return(NULL);
+
+  SplineFont *sf = self->fv->sf;
+  time_t t = sf->creationtime;
+  const struct tm *tm = gmtime(&t);
+  char creationtime[200];
+  strftime(creationtime, sizeof(creationtime), "%Y/%m/%d %H:%M:%S", tm);
+return Py_BuildValue("s", creationtime);
+}
+
 static PyObject *PyFF_Font_get_sfntRevision(PyFF_Font *self, void *UNUSED(closure)) {
     int version = self->fv->sf->sfntRevision;
 
@@ -13000,6 +13268,9 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {(char *)"italicangle",
      (getter)PyFF_Font_get_italicangle, (setter)PyFF_Font_set_italicangle,
      (char *)"The Italic angle (skewedness) of the font", NULL},
+    {(char *)"creationtime",
+     (getter) PyFF_Font_get_creationtime, NULL,
+     (char*)"Font creation time. (readonly)", NULL},
     {(char *)"upos",
      (getter)PyFF_Font_get_upos, (setter)PyFF_Font_set_upos,
      (char *)"Underline Position", NULL},
@@ -13380,7 +13651,7 @@ return (NULL);
 	    &to_background) )
 return( NULL );
     locfilename = utf82def_copy(filename);
-    free(filename);
+    PyMem_Free(filename);
 
     ext = strrchr(locfilename,'.');
     if ( ext==NULL ) {
@@ -13454,7 +13725,7 @@ return (NULL);
     if ( !PyArg_ParseTuple(args,"OesO", &other, "UTF-8", &filename, &flagstuple ))
 return( NULL );
     locfilename = utf82def_copy(filename);
-    free(filename);
+    PyMem_Free(filename);
 
     if ( !PyType_IsSubtype(&PyFF_FontType, Py_TYPE(other)) ) {
 	PyErr_Format(PyExc_TypeError,"First argument must be a fontforge font");
@@ -14908,7 +15179,9 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static const char *contextchain_keywords[] = { "afterSubtable",
+static const char *contextchain_keywords[] = {
+	"lookup", "subtable", "type", "rule",
+	"afterSubtable",
 	"bclasses", "mclasses", "fclasses",
 	"bclassnames", "mclassnames", "fclassnames", NULL };
 
@@ -14930,7 +15203,7 @@ static PyObject *PyFFFont_addContextualSubtable(PyFF_Font *self, PyObject *args,
     if ( CheckIfFontClosed(self) )
 return (NULL);
     sf = self->fv->sf;
-    if ( !PyArg_ParseTupleAndKeywords(args,keywds,"ssss|sOOO", (char **)contextchain_keywords,
+    if ( !PyArg_ParseTupleAndKeywords(args,keywds,"ssss|sOOOOOO", (char **)contextchain_keywords,
 	    &lookup, &subtable, &type, &rule,
 	    &after_str, &bclasses, &mclasses, &fclasses,
 	    &bclassnames, &mclassnames, &fclassnames))
@@ -15519,7 +15792,7 @@ return( NULL );
 	}
     }
     locfilename = utf82def_copy(filename);
-    free(filename);
+    PyMem_Free(filename);
     if ( !GenerateScript(fv->sf,locfilename,bitmaptype,iflags,resolution,subfontdirectory,
 	    NULL,fv->normal==NULL?fv->map:fv->normal,rename_to,layer) ) {
 	PyErr_Format(PyExc_EnvironmentError, "Font generation failed");
@@ -15588,7 +15861,7 @@ return(NULL);
 	    "UTF-8",&filename, &others, &bitmaptype, &flags, &ttcflags,
 	    &namelist, &layer) ) {
 	PyErr_Clear();
-	if ( !PyArg_ParseTupleAndKeywords(args, keywds, "esO|sOOss", (char **)gen_keywords,
+	if ( !PyArg_ParseTupleAndKeywords(args, keywds, "esO|sOOss", (char **)genttc_keywords,
 		"UTF-8",&filename, &others, &bitmaptype, &flags, &ttcflags,
 		&namelist, &layer_str) )
 return( NULL );
@@ -15675,7 +15948,7 @@ return( NULL );
     }
 
     locfilename = utf82def_copy(filename);
-    free(filename);
+    PyMem_Free(filename);
 
     if ( !WriteTTC(locfilename,head,ff_ttc,bf,iflags,layer,ittcflags)) {
 	PyErr_Format(PyExc_EnvironmentError, "Font generation failed");
@@ -15703,7 +15976,7 @@ return (NULL);
     if ( !PyArg_ParseTuple(args,"es|s","UTF-8",&filename,&lookup_name) )
 return( NULL );
     locfilename = utf82def_copy(filename);
-    free(filename);
+    PyMem_Free(filename);
 
     if ( lookup_name!=NULL ) {
 	otl = SFFindLookup(fv->sf,lookup_name);
@@ -15743,7 +16016,8 @@ return (NULL);
     if ( !PyArg_ParseTuple(args,"es","UTF-8",&filename) )
 return( NULL );
     locfilename = utf82def_copy(filename);
-    free(filename);
+    PyMem_Free(filename);
+
     if ( !LoadKerningDataFromMetricsFile(fv->sf,locfilename,fv->map)) {
 	PyErr_Format(PyExc_EnvironmentError, "No metrics data found");
 return( NULL );
@@ -15767,7 +16041,7 @@ return (NULL);
 	    &preserveCrossFontKerning, &openflags) )
 return( NULL );
     locfilename = utf82def_copy(filename);
-    free(filename);
+    PyMem_Free(filename);
     sf = LoadSplineFont(locfilename,openflags);
     if ( sf==NULL ) {
 	PyErr_Format(PyExc_EnvironmentError, "No font found in file \"%s\"", locfilename);
@@ -15795,7 +16069,7 @@ return (NULL);
     if ( !PyArg_ParseTuple(args,"des|i",&fraction,"UTF-8",&filename, &openflags) )
 return( NULL );
     locfilename = utf82def_copy(filename);
-    free(filename);
+    PyMem_Free(filename);
     sf = LoadSplineFont(locfilename,openflags);
     if ( sf==NULL ) {
 	PyErr_Format(PyExc_EnvironmentError, "No font found in file \"%s\"", locfilename);
@@ -16666,8 +16940,8 @@ return (NULL);
 Py_RETURN( self );
 }
 
-static const char *autowidth_keywords[] = { "minBearing", "maxBearing", "height",
-	"loopCnt", NULL };
+static const char *autowidth_keywords[] = { "separation", "minBearing", "maxBearing",
+	"height", "loopCnt", NULL };
 
 static PyObject *PyFFFont_autoWidth(PyFF_Font *self, PyObject *args, PyObject *keywds) {
     FontViewBase *fv;
@@ -17023,9 +17297,9 @@ PyMethodDef PyFF_Font_methods[] = {
     { "removeOverlap", (PyCFunction) PyFFFont_RemoveOverlap, METH_NOARGS, "Remove overlapping areas from a glyph"},
     { "round", (PyCFunction)PyFFFont_Round, METH_VARARGS, "Rounds point coordinates (and reference translations) to integers"},
     { "simplify", (PyCFunction)PyFFFont_Simplify, METH_VARARGS, "Simplifies a glyph" },
-    { "stroke", (PyCFunction)PyFFFont_Stroke, METH_VARARGS, "Strokes the countours in a glyph"},
+    { "stroke", (PyCFunction)PyFFFont_Stroke, METH_VARARGS, "Strokes the contours in a glyph"},
     { "transform", (PyCFunction)PyFFFont_Transform, METH_VARARGS, "Transform a font by a 6 element matrix." },
-    { "nltransform", (PyCFunction)PyFFFont_NLTransform, METH_VARARGS, "Transform a font by non-linear expessions for x and y." },
+    { "nltransform", (PyCFunction)PyFFFont_NLTransform, METH_VARARGS, "Transform a font by non-linear expressions for x and y." },
     { "validate", (PyCFunction)PyFFFont_validate, METH_VARARGS, "Check whether a font is valid and return True if it is." },
     { "reencode", (PyCFunction)PyFFFont_reencode, METH_VARARGS, "Reencodes the current font into the given encoding." },
     { "clearSpecialData", (PyCFunction)PyFFFont_clearSpecialData, METH_NOARGS, "Clear special data not accessible in FontForge." },
@@ -17686,6 +17960,32 @@ PyMethodDef module_fontforge_methods[] = {
     { "UnicodeBlockEndFromLib", PyFF_UnicodeBlockEndFromLib, METH_VARARGS, "Return the www.unicode.org block end, for example block[1]={128..255} -> 255" },
     { "UnicodeBlockNameFromLib", PyFF_UnicodeBlockNameFromLib, METH_VARARGS, "Return the www.unicode.org block name, for example block[2]={256..383} -> Latin Extended-A" },
     { "UnicodeNamesListVersion", PyFF_UnicodeNamesListVersion, METH_NOARGS, "Return the www.unicode.org NamesList version for this library" },
+    { "IsFraction", PyFF_isfraction, METH_VARARGS, "Compare value with internal Vulgar_Fraction and Other_Fraction table. Return true/false" },
+    { "IsLigature", PyFF_isligature, METH_VARARGS, "Compare value with internal Ligature table. Return true/false" },
+    { "IsVulgarFraction", PyFF_isvulgarfraction, METH_VARARGS, "Compare value with internal Vulgar_Fraction table. Return true/false" },
+    { "IsOtherFraction", PyFF_isotherfraction, METH_VARARGS, "Compare value with internal Other_Fraction table. Return true/false" },
+    { "ucLigChartGetCnt", PyFF_LigChartGetCnt, METH_NOARGS, "Return internal www.unicode.org chart Ligature count" },
+    { "ucVulChartGetCnt", PyFF_VulChartGetCnt, METH_NOARGS, "Return internal www.unicode.org chart Vulgar_Fractions count" },
+    { "ucOFracChartGetCnt", PyFF_OFracChartGetCnt, METH_NOARGS, "Return internal www.unicode.org chart Other_Fractions count" },
+    { "ucFracChartGetCnt", PyFF_FracChartGetCnt, METH_NOARGS, "Return internal www.unicode.org chart {Vulgar+Other} Fractions count" },
+    { "ucLigChartGetNxt", PyFF_LigChartGetNxt, METH_VARARGS, "Return internal array unicode value Ligature[n]" },
+    { "ucVulChartGetNxt", PyFF_VulChartGetNxt, METH_VARARGS, "Return internal array unicode value Vulgar_Fraction[n]" },
+    { "ucOFracChartGetNxt", PyFF_OFracChartGetNxt, METH_VARARGS, "Return internal array unicode value Other_Fraction[n]" },
+    { "ucLigChartGetLoc", PyFF_LigChartGetLoc, METH_VARARGS, "Return internal array location n for given unicode Ligature value" },
+    { "ucVulChartGetLoc", PyFF_VulChartGetLoc, METH_VARARGS, "Return internal array location n for given unicode Vulgar_Fraction value" },
+    { "ucOFracChartGetLoc", PyFF_OFracChartGetLoc, METH_VARARGS, "Return internal array location n for given unicode Other_Fraction value" },
+    { "ucLigChartGetAltCnt", PyFF_LigChartGetAltCnt, METH_VARARGS, "Return internal Alternate count for given unicode Ligature value" },
+    { "ucLigChartGetAltVal", PyFF_LigChartGetAltVal, METH_VARARGS, "Return internal Alternate value for given unicode Ligature value" },
+    { "ucVulChartGetAltCnt", PyFF_VulChartGetAltCnt, METH_VARARGS, "Return internal Alternate count for given unicode Vulgar_Fraction value" },
+    { "ucVulChartGetAltVal", PyFF_VulChartGetAltVal, METH_VARARGS, "Return internal Alternate value for given unicode Vulgar_Fraction value" },
+    { "ucOFracChartGetAltCnt", PyFF_OFracChartGetAltCnt, METH_VARARGS, "Return internal Alternate count for given unicode Other_Fraction value" },
+    { "ucOFracChartGetAltVal", PyFF_OFracChartGetAltVal, METH_VARARGS, "Return internal Alternate value for given unicode Other_Fraction value" },
+    { "ucLigChartUGetAltCnt", PyFF_LigChartUGetAltCnt, METH_VARARGS, "Return internal Alternate count for given unicode Ligature value" },
+    { "ucLigChartUGetAltVal", PyFF_LigChartUGetAltVal, METH_VARARGS, "Return internal Alternate value for given unicode Ligature value" },
+    { "ucVulChartUGetAltCnt", PyFF_VulChartUGetAltCnt, METH_VARARGS, "Return internal Alternate count for given unicode Vulgar_Fraction value" },
+    { "ucVulChartUGetAltVal", PyFF_VulChartUGetAltVal, METH_VARARGS, "Return internal Alternate value for given unicode Vulgar_Fraction value" },
+    { "ucOFracChartUGetAltCnt", PyFF_OFracChartUGetAltCnt, METH_VARARGS, "Return internal Alternate count for given unicode Other_Fraction value" },
+    { "ucOFracChartUGetAltVal", PyFF_OFracChartUGetAltVal, METH_VARARGS, "Return internal Alternate value for given unicode Other_Fraction value" },
     { "version", PyFF_Version, METH_NOARGS, "Returns a string containing the current version of FontForge, as 20061116" },
     { "runInitScripts", PyFF_RunInitScripts, METH_NOARGS, "Run the system and user initialization scripts, if not already run" },
     { "scriptPath", PyFF_GetScriptPath, METH_NOARGS, "Returns a list of the directories searched for scripts"},
@@ -18743,11 +19043,18 @@ return;
 ** function.
 */
 PyMODINIT_FUNC FFPY_PYTHON_ENTRY_FUNCTION(const char* modulename) {
-    doinitFontForgeMain();
-    no_windowing_ui = running_script = true;
+    static int initted = false;
 
-    RegisterAllPyModules();
-    CreateAllPyModules();
+    if (!initted) {
+        doinitFontForgeMain();
+        no_windowing_ui = running_script = true;
+
+#if PY_MAJOR_VERSION <= 2
+        RegisterAllPyModules();
+#endif
+        CreateAllPyModules();
+        initted = true;
+    }
 
 #if PY_MAJOR_VERSION >= 3
     /* Python 3 expects the module object to be returned */

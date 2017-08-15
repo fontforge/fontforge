@@ -25,10 +25,26 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "autohint.h"
+#include "autosave.h"
+#include "bitmapchar.h"
+#include "bvedit.h"
+#include "cvundoes.h"
+#include "encoding.h"
 #include "fontforge.h"
+#include "fvcomposite.h"
+#include "fvfonts.h"
+#include "namelist.h"
 #include "baseviews.h"
 #include "groups.h"
 #include "psfont.h"
+#include "scripting.h"
+#include "sfd.h"
+#include "spiro.h"
+#include "splineoverlap.h"
+#include "splinesaveafm.h"
+#include "splineutil.h"
+#include "splineutil2.h"
 #include <gfile.h>
 #include <gio.h>
 #include <ustring.h>

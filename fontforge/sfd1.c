@@ -25,8 +25,12 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "fontforge.h"
 #include "sfd1.h"
+
+#include "fontforge.h"
+#include "fvfonts.h"
+#include "lookups.h"
+#include "tottfgpos.h"
 #include <string.h>
 
 /* This file contains the routines needed to process an old style sfd file and*/

@@ -165,6 +165,7 @@ struct namemap encodingnames[] = {
     {"Latin6 (iso8859-10)", em_iso8859_10 },
     {"Latin7 (iso8859-13)", em_iso8859_13 },
     {"Latin8 (iso8859-14)", em_iso8859_14 },
+    {"Latin10 (iso8859-16)", em_iso8859_16 },
     {"Cyrillic (iso8859-5)", em_iso8859_5 },
     {"Cyrillic (koi8-r)", em_koi8_r },
     {"Arabic (iso8859-6)", em_iso8859_6 },

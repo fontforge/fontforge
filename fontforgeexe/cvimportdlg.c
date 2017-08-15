@@ -24,7 +24,13 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "bvedit.h"
+#include "cvimages.h"
+#include "cvundoes.h"
 #include "fontforgeui.h"
+#include "fvimportbdf.h"
+#include "spiro.h"
+#include "splinefill.h"
 #include <math.h>
 #include <sys/types.h>
 #include <dirent.h>

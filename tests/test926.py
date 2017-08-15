@@ -66,9 +66,12 @@ import struct
 import zlib
 import optparse
 import codecs
-from cStringIO import StringIO
 from xml.etree import ElementTree
 from xml.parsers.expat import ExpatError
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 # ----------------------
 # Support: Metadata Spec
@@ -626,7 +629,7 @@ def _testHeaderSignature(data, reporter):
     """
     header = unpackHeader(data)
     signature = header["signature"]
-    if signature != "wOFF":
+    if signature != b"wOFF":
         reporter.logError(message="Invalid signature: %s." % signature)
         return True, False
     else:
@@ -643,15 +646,15 @@ def _testHeaderFlavor(data, reporter):
     """
     header = unpackHeader(data)
     flavor = header["flavor"]
-    if flavor not in ("OTTO", "\000\001\000\000", "true"):
+    if flavor not in (b"OTTO", b"\000\001\000\000", b"true"):
         reporter.logWarning(message="Unknown flavor: %s." % flavor)
     else:
         try:
             tags = [table["tag"] for table in unpackDirectory(data)]
-            if "CFF " in tags and flavor != "OTTO":
+            if b"CFF " in tags and flavor != b"OTTO":
                 reporter.logError(message="A \"CFF\" table is defined in the font and the flavor is not set to \"OTTO\".")
                 return False, True
-            elif "CFF " not in tags and flavor == "OTTO":
+            elif b"CFF " not in tags and flavor == b"OTTO":
                 reporter.logError(message="The flavor is set to \"OTTO\" but no \"CFF\" table is defined.")
                 return False, True
             else:
@@ -999,7 +1002,7 @@ def _testTableDirectoryPadding(data, reporter):
         if paddingLength:
             paddingOffset = offset + length
             padding = data[paddingOffset:paddingOffset+paddingLength]
-            expectedPadding = "\0" * paddingLength
+            expectedPadding = b"\0" * paddingLength
             if padding != expectedPadding:
                 reporter.logError(message="The \"%s\" table is not padded with null bytes." % tag)
                 haveError = True
@@ -1167,11 +1170,11 @@ def _testTableDirectoryChecksums(data, reporter):
         else:
             reporter.logPass(message="The \"%s\" table directory entry original checksum is correct." % tag)
     # check the head checksum adjustment
-    if "head" not in tables:
+    if b"head" not in tables:
         reporter.logWarning(message="The font does not contain a \"head\" table.")
     else:
         newChecksum = calcHeadChecksum(data)
-        data = tables["head"]
+        data = tables[b"head"]
         try:
             checksum = struct.unpack(">L", data[8:12])[0]
             if checksum != newChecksum:
@@ -1841,7 +1844,7 @@ def calcPaddingLength(length):
     return 4 - (length % 4)
 
 def padData(data):
-    data += "\0" * calcPaddingLength(len(data))
+    data += b"\0" * calcPaddingLength(len(data))
     return data
 
 def sumDataULongs(data):
@@ -1850,8 +1853,8 @@ def sumDataULongs(data):
     return value
 
 def calcChecksum(tag, data):
-    if tag == "head":
-        data = data[:8] + "\0\0\0\0" + data[12:]
+    if tag == b"head":
+        data = data[:8] + b"\0\0\0\0" + data[12:]
     data = padData(data)
     value = sumDataULongs(data)
     return value
@@ -2758,7 +2761,7 @@ def validateFont(path, options, writeFile=True):
 
 # Generate a WOFF file with fontforge.
 fontname=sys.argv[1]
-woffname = "%s.woff" % fontname
+woffname = "%s.woff" % os.path.splitext(os.path.basename(fontname))[0]
 font=fontforge.open(fontname)
 font.generate(woffname)
 font.close()

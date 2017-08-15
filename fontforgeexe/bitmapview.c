@@ -25,7 +25,14 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "bitmapchar.h"
+#include "bvedit.h"
+#include "cvundoes.h"
+#include "encoding.h"
 #include "fontforgeui.h"
+#include "fvfonts.h"
+#include "splinefill.h"
+#include "splinesaveafm.h"
 #include <gkeysym.h>
 #include <utype.h>
 #include <ustring.h>

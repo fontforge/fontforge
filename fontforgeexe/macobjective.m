@@ -25,8 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "macobjective.h"
 #include "fontforge-config.h"
+#include "macobjective.h"
 
 #ifdef USE_BREAKPAD
 

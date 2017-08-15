@@ -24,10 +24,21 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "autohint.h"
+
+#include "cvundoes.h"
+#include "dumppfa.h"
 #include "fontforge.h"
+#include "psread.h"
 #include <stdio.h>
 #include <math.h>
 #include "splinefont.h"
+#include "splinefill.h"
+#include "splinesave.h"
+#include "splineutil.h"
+#include "splineutil2.h"
+#include "tottfgpos.h"
 #include "views.h"
 #include "stemdb.h"
 #include <utype.h>

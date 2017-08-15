@@ -27,6 +27,9 @@
 #ifndef _CVRULER_H
 #define _CVRULER_H
 
+#include "gdraw.h"
+#include "views.h"
+
 extern int measuretoolshowhorizontolvertical;
 extern Color measuretoollinecol;
 extern Color measuretoolpointcol;

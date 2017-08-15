@@ -24,7 +24,24 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "fvimportbdf.h"
+
+#include "bitmapchar.h"
+#include "bvedit.h"
+#include "cvimages.h"
+#include "encoding.h"
 #include "fontforgevw.h"
+#include "fvfonts.h"
+#include "macbinary.h"
+#include "mem.h"
+#include "namelist.h"
+#include "palmfonts.h"
+#include "parsettf.h"
+#include "splinefill.h"
+#include "splineutil.h"
+#include "splineutil2.h"
+#include "winfonts.h"
 #include <gfile.h>
 #include <math.h>
 #include "utype.h"

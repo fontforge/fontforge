@@ -26,7 +26,12 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
+#include "spiro.h"
+
 #include "fontforgevw.h"
+#include "splineutil.h"
 
 /* Access to Raph Levien's spiro splines */
 /* See http://www.levien.com/spiro/ */

@@ -25,7 +25,15 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "autowidth2.h"
 #include "fontforgeui.h"
+#include "fvfonts.h"
+#include "lookups.h"
+#include "sfd.h"
+#include "splinefill.h"
+#include "splinesaveafm.h"
+#include "splineutil.h"
+#include "tottfgpos.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>
@@ -34,7 +42,6 @@
 #include <stdlib.h>
 #include "ttf.h"
 #include <gkeysym.h>
-#include "lookups.h"
 #include "gfile.h"
 #include "sfundo.h"
 
@@ -1499,7 +1506,9 @@ static GTextInfo *FeatureListFromLookupType(int lookup_type) {
 	cnt = 0;
 	for ( i=0; friendlies[i].tag!=0; ++i ) if ( friendlies[i].masks&mask ) {
 	    if ( k ) {
-		ti[cnt].text = (unichar_t *) copy( friendlies[i].friendlyname );
+		char buf[128];
+		snprintf(buf, sizeof buf, "%s %s", friendlies[i].tagstr, friendlies[i].friendlyname);
+		ti[cnt].text = (unichar_t *) copy( buf );
 		ti[cnt].text_is_1byte = true;
 		ti[cnt].userdata = friendlies[i].tagstr;
 	    }

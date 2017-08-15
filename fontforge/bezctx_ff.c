@@ -27,6 +27,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 #include <basics.h>
 #include <stdio.h>
 
+#include "splineutil.h"
+
 #ifndef _NO_LIBSPIRO
 #include "bezctx_ff.h"
 #include "fontforgevw.h"	/* For LogError, else splinefont.h */
@@ -57,7 +59,7 @@ nancheck(bezctx_ff *bc) {
 static void bezctx_ff_moveto(bezctx *z, double x, double y, int is_open) {
     bezctx_ff *bc = (bezctx_ff *)z;
 
-    if ( !finite(x) || !finite(y)) {	/* Protection against NaNs */
+    if ( !isfinite(x) || !isfinite(y)) {	/* Protection against NaNs */
 	nancheck(bc);
 	x = y = 0;
     }
@@ -78,7 +80,7 @@ static void bezctx_ff_lineto(bezctx *z, double x, double y) {
     bezctx_ff *bc = (bezctx_ff *)z;
     SplinePoint *sp;
 
-    if ( !finite(x) || !finite(y)) {
+    if ( !isfinite(x) || !isfinite(y)) {
 	nancheck(bc);
 	x = y = 0;
     }
@@ -97,7 +99,7 @@ bezctx_ff_quadto(bezctx *z, double xm, double ym, double x3, double y3) {
     double x2, y2;
     SplinePoint *sp;
 
-    if ( !finite(xm) || !finite(ym) || !finite(x3) || !finite(y3)) {
+    if ( !isfinite(xm) || !isfinite(ym) || !isfinite(x3) || !isfinite(y3)) {
 	nancheck(bc);
 	xm = ym = x3 = y3 = 0;
     }
@@ -126,7 +128,7 @@ bezctx_ff_curveto(bezctx *z, double x1, double y1, double x2, double y2,
     bezctx_ff *bc = (bezctx_ff *)z;
     SplinePoint *sp;
 
-    if ( !finite(x1) || !finite(y1) || !finite(x2) || !finite(y2) || !finite(x3) || !finite(y3)) {
+    if ( !isfinite(x1) || !isfinite(y1) || !isfinite(x2) || !isfinite(y2) || !isfinite(x3) || !isfinite(y3)) {
 	nancheck(bc);
 	x1 = y1 = x2 = y2 = x3 = y3 = 0;
     }

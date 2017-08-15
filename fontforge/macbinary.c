@@ -24,7 +24,27 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "macbinary.h"
+
+#include "bvedit.h"
+#include "crctab.h"
+#include "dumppfa.h"
+#include "encoding.h"
 #include "fontforgevw.h"
+#include "fvfonts.h"
+#include "http.h"
+#include "lookups.h"
+#include "mem.h"
+#include "parsepfa.h"
+#include "parsettf.h"
+#include "splinefill.h"
+#include "splinesave.h"
+#include "splinesaveafm.h"
+#include "splineutil.h"
+#include "splineutil2.h"
+#include "tottf.h"
+#include "tottfgpos.h"
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -103,7 +123,6 @@ const int mac_dpi = 72;
 /* Crc code taken from: */
 /* http://www.ctan.org/tex-archive/tools/macutils/crc/ */
 /* MacBinary files use the same CRC that binhex does (in the MacBinary header) */
-extern unsigned long binhex_crc(unsigned char *buffer,int size);
 
 /* ******************************** Creation ******************************** */
 

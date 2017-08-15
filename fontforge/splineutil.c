@@ -24,10 +24,28 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "fontforgevw.h"
+
+#include "splineutil.h"
+
+#include "cvundoes.h"
+#include "dumppfa.h"
 #include "encoding.h"
+#include "fontforgevw.h"
+#include "fvfonts.h"
+#include "fvimportbdf.h"
+#include "mm.h"
+#include "namelist.h"
+#include "parsepfa.h"
+#include "parsettf.h"
+#include "psread.h"
 #include <math.h>
 #include "psfont.h"
+#include "spiro.h"
+#include "splinefill.h"
+#include "splineorder2.h"
+#include "splinerefigure.h"
+#include "splineutil2.h"
+#include "tottf.h"
 #include "ustring.h"
 #include "utype.h"
 #include "views.h"		/* for FindSel structure */
@@ -2959,7 +2977,7 @@ static void LayerToRefLayer(struct reflayer *rl,Layer *layer, real transform[6])
     rl->fillfirst = layer->fillfirst;
 }
 
-int RefLayerFindBaseLayerIndex(RefChar *rf, int layer) {
+static int RefLayerFindBaseLayerIndex(RefChar *rf, int layer) {
 	// Note that most of the logic below is copied and lightly modified from SCReinstanciateRefChar.
 	SplineChar *rsc = rf->sc;
 	int i = 0, j = 0, cnt = 0;
@@ -4645,7 +4663,7 @@ int LineTangentToSplineThroughPt(Spline *s, BasePoint *pt, extended ts[4],
     Quartic quad;
     int i,j,k;
 
-    if ( !finite(pt->x) || !finite(pt->y) ) {
+    if ( !isfinite(pt->x) || !isfinite(pt->y) ) {
 	IError( "Non-finite arguments passed to LineTangentToSplineThroughPt");
 return( -1 );
     }

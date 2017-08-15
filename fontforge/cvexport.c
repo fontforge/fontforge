@@ -24,7 +24,17 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "cvexport.h"
+
+#include "autohint.h"
+#include "bvedit.h"
+#include "dumppfa.h"
 #include "fontforgevw.h"
+#include "spiro.h"
+#include "splinefill.h"
+#include "splineutil.h"
+#include "svg.h"
 #include <math.h>
 #include <locale.h>
 #include <string.h>

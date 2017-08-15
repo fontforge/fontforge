@@ -26,14 +26,22 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "autowidth2.h"
+#include "cvundoes.h"
 #include "fontforgeui.h"
+#include "fvcomposite.h"
+#include "fvfonts.h"
+#include "lookups.h"
+#include "namelist.h"
+#include "splinefill.h"
+#include "splineutil.h"
+#include "tottfgpos.h"
 #include <ustring.h>
 #include <math.h>
 #include <utype.h>
 #include <chardata.h>
 #include "ttf.h"		/* For MAC_DELETED_GLYPH_NAME */
 #include <gkeysym.h>
-#include "is_LIGATURE.h"
 #include "gutils/unicodelibinfo.h"
 
 extern int lookup_hideunused;
@@ -1691,7 +1699,7 @@ static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
 	else if ( iscombining(alt[1]) && ( alt[2]=='\0' || iscombining(alt[2]))) {
 	    if ( alt_lig != -10 )	/* alt_lig = 10 => mac unicode decomp */
 		alt = NULL;		/* Otherwise, don't treat accented letters as ligatures */
-	} else if (! is_LIGATURE_or_VULGAR_FRACTION((unsigned int) uni) &&
+	} else if (! is_LIGATURE_or_VULGAR_FRACTION((uint32)(uni)) &&
 		uni!=0x152 && uni!=0x153 &&	/* oe ligature should not be standard */
 		uni!=0x132 && uni!=0x133 &&	/* nor ij */
 		(uni<0xfb2a || uni>0xfb4f) &&	/* Allow hebrew precomposed chars */

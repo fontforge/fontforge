@@ -495,7 +495,7 @@ static int _GWidget_TopLevel_Key(GWindow top, GWindow ew, GEvent *event) {
 	}
     }
     /* Check for mnemonics and shortcuts */
-    if ( event->type == et_char ) {
+    if ( event->type == et_char && !GKeysymIsModifier(event->u.chr.keysym) ) {
 	handled = GMenuPopupCheckKey(event);
 	if ( topd->ispalette ) {
 	    if ( !(handled = GMenuBarCheckKey(top,topd->owner->gmenubar,event)) )

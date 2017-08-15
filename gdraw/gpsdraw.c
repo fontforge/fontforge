@@ -1105,7 +1105,7 @@ static int PSFinishJob(GPSWindow ps,int cancel) {
     error |= ferror(ps->init_file);
     if ( error || cancel ) {
 	if ( !cancel )
-	    GDrawError("An error occured while saving the print job to disk.\nNot printed." );
+	    GDrawError("An error occurred while saving the print job to disk.\nNot printed." );
 	if ( gdisp->filename!=NULL )
 	    GFileUnlink(gdisp->filename);
 	fclose(ps->init_file);

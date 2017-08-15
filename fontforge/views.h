@@ -27,11 +27,16 @@
 #ifndef _VIEWS_H
 #define _VIEWS_H
 
+#include <fontforge-config.h>
+
+#include "ttfinstrs.h"
+
 #include "ffglib.h"
 #include "baseviews.h"
 
 #include <ggadget.h>
 #include "dlist.h"
+#include "search.h"
 
 
 struct gfi_data;
@@ -124,6 +129,10 @@ typedef struct debugview {
     int layer;
 } DebugView;
 
+
+/* The number of tabs allowed in the outline glyph view of former glyphs */
+#define FORMER_MAX	10
+
 enum dv_coderange { cr_none=0, cr_fpgm, cr_prep, cr_glyph };	/* cleverly chosen to match ttobjs.h */
 
 struct freehand {
@@ -146,9 +155,12 @@ typedef struct charviewtab
 enum { charview_cvtabssz = 100 };
 
 
+ /* approximately BACK_LAYER_MAX / 32 */
+#define BACK_LAYERS_VIEW_MAX 8
+
 typedef struct charview {
     CharViewBase b;
-    uint32 showback[BACK_LAYER_MAX/32];
+    uint32 showback[BACK_LAYERS_VIEW_MAX];
     unsigned int showfore:1;
     unsigned int showgrids:1;
     unsigned int showhhints:1;
@@ -709,9 +721,6 @@ extern int _FVMenuGenerate(FontView *fv,int family);
 extern void _FVCloseWindows(FontView *fv);
 extern char *GetPostScriptFontName(char *defdir,int mult);
 extern void MergeKernInfo(SplineFont *sf,EncMap *map);
-#ifdef FONTFORGE_CONFIG_WRITE_PFM
-extern int WritePfmFile(char *filename,SplineFont *sf, int type0, EncMap *map);
-#endif
 extern int SFGenerateFont(SplineFont *sf,int layer, int family,EncMap *map);
 
 extern void NonLinearDlg(FontView *fv,struct charview *cv);
@@ -766,8 +775,6 @@ extern char *PST2Text(PST *pst,SplineFont *sf);
 
 void EmboldenDlg(FontView *fv, CharView *cv);
 void CondenseExtendDlg(FontView *fv, CharView *cv);
-void AddSmallCapsDlg(FontView *fv);
-void AddSubSupDlg(FontView *fv);
 void ObliqueDlg(FontView *fv, CharView *cv);
 void GlyphChangeDlg(FontView *fv, CharView *cv, enum glyphchange_type gc);
 void ItalicDlg(FontView *fv, CharView *cv);
@@ -1319,86 +1326,6 @@ extern int  CVCountSelectedPoints(CharView *cv);
 extern void _CVMenuInsertPt(CharView *cv);
 extern void _CVMenuNamePoint(CharView *cv, SplinePoint *sp);
 extern void _CVMenuNameContour(CharView *cv);
-
-// sfd.c
-extern void SFD_DumpPST( FILE *sfd, SplineChar *sc );
-extern void SFD_DumpKerns( FILE *sfd, SplineChar *sc, int *newgids );
-extern void SFDDumpCharStartingMarker(FILE *sfd,SplineChar *sc);
-extern Undoes *SFDGetUndo( FILE *sfd, SplineChar *sc,
-			   const char* startTag, int current_layer );
-
-/**
- * Create, open and unlink a new temporary file. This allows the
- * caller to write to and read from the file without needing to worry
- * about cleaning up the filesystem at all.
- *
- * On Linux, this will create a new file in /tmp with a secure name,
- * open it, and delete the file from the filesystem. The application
- * can still happily use the file as it has it open, but once it is
- * closed or the application itself closes (or crashes) then the file
- * will be expunged for you by the kernel.
- *
- * The caller can fclose() the returned file. Other applications will
- * not be able to find the file by name anymore when this call
- * returns.
- *
- * This function returns 0 if error encountered.
- */
-extern FILE* MakeTemporaryFile(void);
-
-/*
- * Convert the contents of a File* to a newly allocated string
- * The caller needs to free the returned string.
- */
-extern char* FileToAllocatedString( FILE *f );
-extern char *getquotedeol(FILE *sfd);
-extern int getname(FILE *sfd, char *tokbuf);
-extern void SFDGetKerns( FILE *sfd, SplineChar *sc, char* ttok );
-extern void SFDGetPSTs( FILE *sfd, SplineChar *sc, char* ttok );
-
-/**
- * Move the sfd file pointer to the start of the next glyph. Return 0
- * if there is no next glyph. Otherwise, a copy of the string on the
- * line of the SFD file that starts the glyph is returned. The caller
- * should return the return value of this function.
- *
- * If the glyph starts with:
- * StartChar: a
- * The the return value with be "a" (sans the quotes).
- *
- * This is handy if the caller is done with a glyph and just wants to
- * skip to the start of the next one.
- */
-extern char* SFDMoveToNextStartChar( FILE* sfd );
-
-/**
- * Some references in the SFD file are to a numeric glyph ID. As a
- * sneaky method to handle that, fontforge will load these glyph
- * numbers into the pointers which should refer to the glyph. For
- * example, in kerning, instead of pointing to the splinechar for the
- * "v" glyph, the ID might be stored there, say the number 143. This
- * fixup function will convert such 143 references to being pointers
- * to the splinechar with a numeric ID of 143. It is generally a good
- * idea to do this, as some fontforge code will of course assume a
- * pointer to a splinechar is a pointer to a splinechar and not just
- * the glyph index of that splinechar.
- *
- * MIQ updated this in Oct 2012 to be more forgiving when called twice
- * or on a splinefont which has some of it's references already fixed.
- * This was to allow partial updates of data structures from SFD
- * fragments and the fixup to operate just on those references which
- * need to be fixed.
- */
-extern void SFDFixupRefs(SplineFont *sf);
-
-/**
- * Dump a single undo for the given splinechar to the file at "sfd".
- * The keyPrefix can be either Undo or Redo to generate the correct XML
- * element, and idx is the index into the undoes list that 'u' was found at
- * so that a stream of single undo/redo elements can be saved and reloaded
- * in the correct order.
- */
-extern void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, const char* keyPrefix, int idx );
 
 extern void Prefs_LoadDefaultPreferences( void );
 

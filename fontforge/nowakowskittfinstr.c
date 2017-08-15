@@ -26,13 +26,20 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "autohint.h"
+#include "dumppfa.h"
 #include "fontforgevw.h"
+#include "mem.h"
 #include <math.h>
 #include <utype.h>
 
 #include "ttf.h"
 #include "splinefont.h"
 #include "stemdb.h"
+#include "splineutil.h"
+#include "splineutil2.h"
+#include "stemdb.h"
+#include "tottf.h"
 
 extern int autohint_before_generate;
 
@@ -533,7 +540,7 @@ static void GICImportBlues(GlobalInstrCt *gic) {
 	    if (values != NULL) {
 	        /* First pair is a bottom zone (see Type1 specification). */
 	        for (j=0; j<bluecnt; j++)
-		    if (finite(gic->blues[j].family_base))
+		    if (isfinite(gic->blues[j].family_base))
 		        continue;
 		    else if (values[1] != gic->blues[j].base &&
 		             SegmentsOverlap(gic->blues[j].base,
@@ -544,7 +551,7 @@ static void GICImportBlues(GlobalInstrCt *gic) {
 		/* Next pairs are top zones (see Type1 specification). */
 		for (i=1; i<cnt; i++) {
 		    for (j=0; j<bluecnt; j++)
-		        if (finite(gic->blues[j].family_base))
+		        if (isfinite(gic->blues[j].family_base))
 			    continue;
 			else if (values[2*i] != gic->blues[j].base &&
 			         SegmentsOverlap(gic->blues[j].base,
@@ -564,7 +571,7 @@ static void GICImportBlues(GlobalInstrCt *gic) {
 		/* All pairs are bottom zones (see Type1 specification). */
 		for (i=0; i<cnt; i++) {
 		    for (j=0; j<bluecnt; j++)
-		        if (finite(gic->blues[j].family_base))
+		        if (isfinite(gic->blues[j].family_base))
 			    continue;
 			else if (values[2*i+1] != gic->blues[j].base &&
 			         SegmentsOverlap(gic->blues[j].base,
@@ -691,7 +698,7 @@ static void init_cvt(GlobalInstrCt *gic) {
         gic->blues[i].cvtindex = cvtindex;
         memputshort(cvt, 2*cvtindex++, rint(gic->blues[i].base));
 
-	if (finite(gic->blues[i].family_base)) {
+	if (isfinite(gic->blues[i].family_base)) {
 	    gic->blues[i].family_cvtindex = cvtindex;
             memputshort(cvt, 2*cvtindex++, rint(gic->blues[i].family_base));
 	}
@@ -1677,7 +1684,7 @@ static uint8 *use_family_blues(uint8 *prep_head, GlobalInstrCt *gic) {
     int callargs[3];
 
     for (i=0; i<gic->bluecnt; i++) {
-        if (finite(gic->blues[i].family_base))
+        if (isfinite(gic->blues[i].family_base))
         {
             for (stopat=0; stopat<32768; stopat++) {
                 h1 = compute_blue_height(gic->blues[i].base, EM, bs, stopat);

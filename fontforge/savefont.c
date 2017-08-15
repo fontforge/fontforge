@@ -26,7 +26,26 @@
  */
 #include <fontforge-config.h>
 
+#include "savefont.h"
+
+#include "autohint.h"
+#include "cvundoes.h"
+#include "dumpbdf.h"
+#include "dumppfa.h"
 #include "fontforgevw.h"
+#include "fvfonts.h"
+#include "http.h"
+#include "macbinary.h"
+#include "namelist.h"
+#include "palmfonts.h"
+#include "splinefill.h"
+#include "splineoverlap.h"
+#include "splinesaveafm.h"
+#include "splineutil.h"
+#include "svg.h"
+#include "tottf.h"
+#include "winfonts.h"
+#include "woff.h"
 #include "ustring.h"
 #include "gfile.h"
 #include "gresource.h"
@@ -36,8 +55,6 @@
 #include <math.h>
 #include <string.h>
 #include "psfont.h"
-#include "savefont.h"
-#include "cvundoes.h"
 
 int old_sfnt_flags = ttf_flag_otmode;
 int old_ps_flags = ps_flag_afm|ps_flag_round;

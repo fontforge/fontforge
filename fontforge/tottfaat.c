@@ -24,7 +24,17 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "tottfaat.h"
+
 #include "fontforge.h"
+#include "fvfonts.h"
+#include "macenc.h"
+#include "asmfpst.h"
+#include "splinesaveafm.h"
+#include "splineutil.h"
+#include "tottf.h"
+#include "tottfgpos.h"
 #include <utype.h>
 
 #include "ttf.h"

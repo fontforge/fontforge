@@ -25,9 +25,16 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "autotrace.h"
+#include "encoding.h"
 #include "fontforgeui.h"
 #include "groups.h"
+#include "macenc.h"
+#include "namelist.h"
+#include "othersubrs.h"
 #include "plugins.h"
+#include "sfd.h"
+#include "splineutil.h"
 #include <charset.h>
 #include <gfile.h>
 #include <gresource.h>
@@ -843,6 +850,7 @@ static int encmatch(const char *enc,int subok) {
 	{ "ASCII", e_usascii },
 	{ "ISO646-NO", e_iso646_no },
 	{ "ISO646-SE", e_iso646_se },
+	{ "LATIN10", e_iso8859_16 },
 	{ "LATIN1", e_iso8859_1 },
 	{ "ISO-8859-1", e_iso8859_1 },
 	{ "ISO-8859-2", e_iso8859_2 },
@@ -858,6 +866,7 @@ static int encmatch(const char *enc,int subok) {
 	{ "ISO-8859-13", e_iso8859_13 },
 	{ "ISO-8859-14", e_iso8859_14 },
 	{ "ISO-8859-15", e_iso8859_15 },
+	{ "ISO-8859-16", e_iso8859_16 },
 	{ "ISO_8859-1", e_iso8859_1 },
 	{ "ISO_8859-2", e_iso8859_2 },
 	{ "ISO_8859-3", e_iso8859_3 },
@@ -872,6 +881,7 @@ static int encmatch(const char *enc,int subok) {
 	{ "ISO_8859-13", e_iso8859_13 },
 	{ "ISO_8859-14", e_iso8859_14 },
 	{ "ISO_8859-15", e_iso8859_15 },
+	{ "ISO_8859-16", e_iso8859_16 },
 	{ "ISO8859-1", e_iso8859_1 },
 	{ "ISO8859-2", e_iso8859_2 },
 	{ "ISO8859-3", e_iso8859_3 },
@@ -886,6 +896,7 @@ static int encmatch(const char *enc,int subok) {
 	{ "ISO8859-13", e_iso8859_13 },
 	{ "ISO8859-14", e_iso8859_14 },
 	{ "ISO8859-15", e_iso8859_15 },
+	{ "ISO8859-16", e_iso8859_16 },
 	{ "ISO88591", e_iso8859_1 },
 	{ "ISO88592", e_iso8859_2 },
 	{ "ISO88593", e_iso8859_3 },
@@ -900,6 +911,7 @@ static int encmatch(const char *enc,int subok) {
 	{ "ISO885913", e_iso8859_13 },
 	{ "ISO885914", e_iso8859_14 },
 	{ "ISO885915", e_iso8859_15 },
+	{ "ISO885916", e_iso8859_16 },
 	{ "8859_1", e_iso8859_1 },
 	{ "8859_2", e_iso8859_2 },
 	{ "8859_3", e_iso8859_3 },
@@ -914,6 +926,7 @@ static int encmatch(const char *enc,int subok) {
 	{ "8859_13", e_iso8859_13 },
 	{ "8859_14", e_iso8859_14 },
 	{ "8859_15", e_iso8859_15 },
+	{ "8859_16", e_iso8859_16 },
 	{ "KOI8-R", e_koi8_r },
 	{ "KOI8R", e_koi8_r },
 	{ "WINDOWS-1252", e_win },

@@ -37,6 +37,7 @@ libgunicode_la_SOURCES =	\
 	charset/iso_8859_13.c	\
 	charset/iso_8859_14.c	\
 	charset/iso_8859_15.c	\
+	charset/iso_8859_16.c	\
 	charset/iso_8859_1.c	\
 	charset/iso_8859_2.c	\
 	charset/iso_8859_3.c	\
@@ -57,16 +58,15 @@ libgunicode_la_SOURCES =	\
 	charset/ZapfDingbats.c	\
 	ArabicForms.c		\
 	char.c			\
+	is_Ligature.c		\
+	is_Ligature_data.h	\
 	memory.c		\
 	ucharmap.c		\
 	unialt.c		\
 	ustring.c		\
 	utype.c			\
 	gwwiconv.c		\
-	combiners.h		\
 	$(NULL)
-
-#	usprintf.c
 
 libgunicode_la_CFLAGS = $(WARN_CFLAGS)
 libgunicode_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
@@ -82,12 +82,16 @@ libgunicode_la_LIBADD = $(MY_LIBS)
 
 #dump_SOURCES = dump.c
 #makebuildtables_SOURCES = makebuildtables.c utype.c
-#makeutype_SOURCES = makeutype.c
+#makeutype_SOURCES = makeutype.c combiners.h
 
-#noinst_PROGRAMS = dump makebuildtables makeutype
-
-EXTRA_DIST = README.TXT #dump.c makebuildtables.c makeutype.c
-
+EXTRA_DIST = README.TXT		\
+	charset/gen-charset.pl	\
+	charset/generate.sh	\
+	combiners.h		\
+	dump.c			\
+	makebuildtables.c	\
+	makeutype.c		\
+	usprintf.c
 #--------------------------------------------------------------------------
 
 -include $(top_srcdir)/git.mk

@@ -25,7 +25,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "fvfonts.h"
 #include "groups.h"
+#include "namelist.h"
+#include "splineutil.h"
 #include <unistd.h>
 #include <ustring.h>
 #include <utype.h>
@@ -1037,7 +1040,7 @@ return( true );
 	GDrawRequestExpose(grp->v,NULL,false);
 	if ( grp->oldsel==NULL )
 return( true );
-	if ( grp->oldsel->glyphs!=NULL && grp->oldsel->glyphs!='\0' ) {
+	if ( grp->oldsel->glyphs!=NULL && grp->oldsel->glyphs[0]!='\0' ) {
 	    GGadgetSetEnabled(grp->newsub,false);
 return( true );
 	}

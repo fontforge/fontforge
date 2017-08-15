@@ -28,6 +28,8 @@
 ******************************************************************************/
 #include <fontforge-config.h>
 
+#include "fvfonts.h"
+
 #include <string.h>
 #include <ctype.h>
 

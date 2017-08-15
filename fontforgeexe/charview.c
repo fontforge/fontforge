@@ -26,8 +26,28 @@
  */
 #include <fontforge-config.h>
 
-#include "fontforgeui.h"
+#include "autohint.h"
+#include "autosave.h"
+#include "autotrace.h"
+#include "autowidth.h"
 #include "cvruler.h"
+#include "cvundoes.h"
+#include "dumppfa.h"
+#include "encoding.h"
+#include "fontforgeui.h"
+#include "fvcomposite.h"
+#include "fvfonts.h"
+#include "lookups.h"
+#include "mm.h"
+#include "namelist.h"
+#include "sfd.h"
+#include "spiro.h"
+#include "splinefill.h"
+#include "splineorder2.h"
+#include "splineoverlap.h"
+#include "splinesaveafm.h"
+#include "splineutil.h"
+#include "splineutil2.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>
@@ -872,7 +892,7 @@ static void DrawPoint( CharView *cv, GWindow pixmap, SplinePoint *sp,
 {
     GRect r;
     int x, y, cx, cy;
-    Color col = sp==spl->first ? firstpointcol : pointcol, subcol;
+    Color col = sp==spl->first ? firstpointcol : pointcol;
     int pnum;
     char buf[16];
     int isfake;
@@ -1684,7 +1704,8 @@ void CVDrawSplineSetSpecialized( CharView *cv, GWindow pixmap, SplinePointList *
 	if( strokeFillMode==sfm_stroke_trans )
 	    fgstrokeFillMode = sfm_stroke_trans;
 	if( shouldShowFilledUsingCairo(cv) ) {
-	    thinfgcolor = (thinfgcolor | 0x01000000) & 0x01ffffff;
+	    if (cv->inPreviewMode)
+	        thinfgcolor = (thinfgcolor | 0x01000000) & 0x01ffffff;
 	    fgstrokeFillMode = sfm_stroke_trans;
 	}
 	CVDrawSplineSetOutlineOnly( cv, pixmap, set,
@@ -1701,7 +1722,7 @@ void CVDrawSplineSetSpecialized( CharView *cv, GWindow pixmap, SplinePointList *
             int strokeWidth = prefs_cv_outline_thickness * 2 * cv->scale;
             Color strokefg = foreoutthicklinecol;
 
-	    if( shouldShowFilledUsingCairo(cv) ) {
+	    if( shouldShowFilledUsingCairo(cv) && cv->inPreviewMode ) {
 		strokefg = (strokefg | 0x01000000) & 0x01ffffff;
 	    }
 
@@ -3173,7 +3194,7 @@ static void SC_OutOfDateBackground(SplineChar *sc) {
 void CVRegenFill(CharView *cv) {
     BDFCharFree(cv->filled);
     cv->filled = NULL;
-    if ( cv->showfilled ) {
+    if ( cv->showfilled && !shouldShowFilledUsingCairo(cv) ) {
 	extern int use_freetype_to_rasterize_fv;
 	int layer = CVLayer((CharViewBase *) cv);
 	int size = cv->scale*(cv->b.fv->sf->ascent+cv->b.fv->sf->descent);
@@ -5968,6 +5989,8 @@ return;
 	  GGadgetResize(cv->charselector, new_charselector_width, charselector_size.height);
 	  GGadgetMove(cv->charselectorPrev, new_charselectorPrev_x, charselectorPrev_size.y);
 	  GGadgetMove(cv->charselectorNext, new_charselectorNext_x, charselectorNext_size.y);
+	  charselector_size.x = 0; charselector_size.y = cv->mbh; charselector_size.width = newwidth + sbsize; charselector_size.height = cv->charselectorh;
+	  GDrawRequestExpose(cv->gw, &charselector_size, false);
 	}
 
 	if ( cv->showrulers ) {
@@ -12845,7 +12868,7 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_utf8_ititle;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
-    wattrs.utf8_icon_title = CVMakeTitles(cv,buf,sizeof(buf));
+    wattrs.utf8_icon_title = (const char*)CVMakeTitles(cv,buf,sizeof(buf));
     wattrs.utf8_window_title = buf;
     wattrs.icon = CharIcon(cv, fv);
     if ( wattrs.icon )
@@ -12857,6 +12880,7 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
 
     cv->gw = gw = GDrawCreateTopWindow(NULL,&pos,cv_e_h,cv,&wattrs);
     free( (unichar_t *) wattrs.icon_title );
+    free((char*)wattrs.utf8_icon_title);
     GDrawSetWindowTypeName(cv->gw, "CharView");
 
     // FIXME: cant do this until gw is shown?
@@ -13055,7 +13079,7 @@ return;
  	if( mblist_nomm[i].shortcut )
 	    mblist_nomm[i].ti.text_untranslated = copy(mblist_nomm[i].shortcut);
 	else
-	    mblist_nomm[i].ti.text_untranslated = cu_copy(mblist_nomm[i].ti.text);
+	    mblist_nomm[i].ti.text_untranslated = copy((char*)mblist_nomm[i].ti.text);
 
 	mblist_nomm[i].ti.text = (unichar_t *) _((char *) mblist_nomm[i].ti.text);
     }

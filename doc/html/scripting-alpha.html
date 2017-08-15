@@ -1745,9 +1745,24 @@ SetLBearing(lbearing)
 	    Returns whether the value is finite (not infinite and not a nan). It can
 	    execute with no current font.
 	  <DT>
+	    <A NAME="IsFraction">IsFraction</A>(val)
+	  <DD>
+	    Returns whether val is a fraction (either a vulgar fraction or other
+	    fraction). Val may be either an integer, a unicode or a string. The
+	    first two cases are treated as unicode code points, the third looks
+	    at the first (utf8) character in the string. It can execute with no
+	    current font.
+	  <DT>
 	    <A NAME="IsHexDigit">IsHexDigit</A>(val)
 	  <DD>
 	    Returns whether val is a hex-digit. Val may be either an integer, a unicode
+	    or a string. The first two cases are treated as unicode code points, the
+	    third looks at the first (utf8) character in the string. It can execute with
+	    no current font.
+	  <DT>
+	    <A NAME="IsLigature">IsLigature</A>(val)
+	  <DD>
+	    Returns whether val is a ligature. Val may be either an integer, a unicode
 	    or a string. The first two cases are treated as unicode code points, the
 	    third looks at the first (utf8) character in the string. It can execute with
 	    no current font.
@@ -1763,12 +1778,26 @@ SetLBearing(lbearing)
 	  <DD>
 	    Returns whether the value is a nan. It can execute with no current font.
 	  <DT>
+	    <A NAME="IsOtherFraction">IsOtherFraction</A>(val)
+	  <DD>
+	    Returns whether val is a fraction (not defined as a vulgar fraction). Val
+	    may be either an integer, a unicode or a string. The first two cases are
+	    treated as unicode code points, the third looks at the first (utf8)
+	    character in the string. It can execute with no current font.
+	  <DT>
 	    <A NAME="IsUpper">IsUpper</A>(val)
 	  <DD>
 	    Returns whether val is an upper case letter. Val may be either an integer,
 	    a unicode or a string. The first two cases are treated as unicode code points,
 	    the third looks at the first (utf8) character in the string. It can execute
 	    with no current font.
+	  <DT>
+	    <A NAME="IsVulgarFraction">IsVulgarFraction</A>(val)
+	  <DD>
+	    Returns whether val is a vulgar fraction. Val may be either an integer, a unicode
+	    or a string. The first two cases are treated as unicode code points, the
+	    third looks at the first (utf8) character in the string. It can execute with
+	    no current font.
 	  <DT>
 	    <A NAME="Italic">Italic</A>([angle[,[xscale[,flags[,serif[,bearings[,stems[,counters[,lcstems[,lccounters]]]]]]]]]])</DT>
 	  <DD>
@@ -3201,7 +3230,7 @@ SetGasp([8,2,16,1,65535,3])
 	  <DT>
 	    <A NAME="ToLower">ToLower</A>(val)
 	  <DD>
-	    Converts value to a lower case letter. Val may be either an integer, a unicode
+	    Returns value converted to a lower case letter. Val may be either an integer, a unicode
 	    or a string. The first two cases are treated as unicode code points, in the
 	    third the entire string will be converted. It can execute with no current
 	    font.
@@ -3221,7 +3250,7 @@ SetGasp([8,2,16,1,65535,3])
 	  <DT>
 	    <A NAME="ToUpper">ToUpper</A>(val)
 	  <DD>
-	    Converts value to an upper case letter. Val may be either an integer, a unicode
+	    Returns value converted to an upper case letter. Val may be either an integer, a unicode
 	    or a string. The first two cases are treated as unicode code points, in the
 	    third the entire string will be converted. It can execute with no current
 	    font.
@@ -3294,10 +3323,74 @@ SetGasp([8,2,16,1,65535,3])
       <TD BGCOLOR=yellow><A NAME="U">U</A></TD>
       <TD><DL>
 	  <DT>
+	    <A NAME="ucFracChartGetCnt">u</A>cFracChartGetCnt()
+	  <DD>
+	    Returns total count of Fractions found in the Unicode chart as
+	    described by www.unicode.org. It can execute with no current font.
+	    <BR>Note: Count depends on chart version built into FontForge.
+	  <DT>
+	    <A NAME="ucLigChartGetCnt">u</A>cLigChartGetCnt()
+	  <DD>
+	    Returns total count of Ligatures found in the Unicode chart as
+	    described by www.unicode.org. It can execute with no current font.
+	    <BR>Note: Count depends on chart version built into FontForge.
+	  <DT>
+	    <A NAME="ucLigChartGetLoc">u</A>cLigChartGetLoc(val)
+	  <DD>
+	    Returns n for FontForge internal table Unicode val=Ligature[n]. If
+	    val does not exist in table, then return -1. Can execute with no
+	    current font.
+	    <BR>Note: Count depends on chart version built into FontForge.
+	  <DT>
+	    <A NAME="ucLigChartGetNxt">u</A>cLigChartGetNxt(int)
+	  <DD>
+	    Returns FontForge internal table Unicode Ligature[n]. Return -1 if
+	    n<0 or n>=ucLigChartGetCnt(). It can execute with no current font.
+	    <BR>Note: Count depends on chart version built into FontForge.
+	  <DT>
 	    <A NAME="UCodePoint">U</A>CodePoint(int)
 	  <DD>
 	    Converts the argument to a unicode code point (a special type used in several
 	    commands). It can execute with no current font.
+	  <DT>
+	    <A NAME="ucOFracChartGetCnt">u</A>cOFracChartGetCnt()
+	  <DD>
+	    Returns total count of non-Vulgar Fractions found in the Unicode
+	    chart as described by www.unicode.org. It can execute with no current
+	    font.<BR>Note: Count depends on chart version built into FontForge.
+	  <DT>
+	    <A NAME="ucOFracChartGetLoc">u</A>cOFracChartGetLoc(val)
+	  <DD>
+	    Returns n for FontForge internal table Unicode val=OtherFraction[n].
+	    If val does not exist in table, then return -1. Can execute with no
+	    current font.
+	    <BR>Note: Count depends on chart version built into FontForge.
+	  <DT>
+	    <A NAME="ucOFracChartGetNxt">u</A>cOFracChartGetNxt(int)
+	  <DD>
+	    Returns FontForge internal table Unicode (non-vulgar) Fraction[n].
+	    Return -1 if n<0 or n>=ucOFracChartGetCnt(). Can execute with no
+	    current font.
+	    <BR>Note: Count depends on chart version built into FontForge.
+	  <DT>
+	    <A NAME="ucVulChartGetCnt">u</A>cVulChartGetCnt()
+	  <DD>
+	    Returns total count of Vulgar Fractions found in the Unicode chart
+	    as described by www.unicode.org. It can execute with no current font.
+	    <BR>Note: Count depends on chart version built into FontForge.
+	  <DT>
+	    <A NAME="ucVulChartGetLoc">u</A>cVulChartGetLoc(val)
+	  <DD>
+	    Returns n for FontForge internal table Unicode val=VulgarFraction[n].
+	    If val does not exist in table, then return -1. Can execute with no
+	    current font.
+	    <BR>Note: Count depends on chart version built into FontForge.
+	  <DT>
+	    <A NAME="ucVulChartGetNxt">u</A>cVulChartGetNxt(int)
+	  <DD>
+	    Returns FontForge internal table Unicode Vulgar Fraction[n]. Returns
+	    -1 if n<0 or n>=ucVulChartGetCnt(). Can execute with no current font.
+	    <BR>Note: Count depends on chart version built into FontForge.
 	  <DT>
 	    <A NAME="UnicodeAnnotationFromLib">U</A>nicodeAnnotationFromLib(val)
 	  <DD>

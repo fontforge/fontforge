@@ -457,9 +457,6 @@ extern void *GDrawRequestSelection(GWindow w,enum selnames sn, char *typename, i
 extern int GDrawSelectionHasType(GWindow w,enum selnames sn, char *typename);
 extern void GDrawBindSelection(GDisplay *disp,enum selnames sel, char *atomname);
 extern int GDrawSelectionOwned(GDisplay *disp,enum selnames sel);
-extern void GDrawPropertyToSelectionOwner(GDisplay *disp,enum selnames sel,
-	char *property, char *type, int format, int mode,
-	uint8 *data, int nelements);
 
 extern void GDrawPointerUngrab(GDisplay *disp);
 extern void GDrawPointerGrab(GWindow w);
@@ -560,7 +557,6 @@ extern void GDrawSetBuildCharHooks(void (*hook)(GDisplay *), void (*inshook)(GDi
 extern int GDrawRequestDeviceEvents(GWindow w,int devcnt,struct gdeveventmask *de);
 
 extern enum gcairo_flags GDrawHasCairo(GWindow w);
-extern void GDrawQueueDrawing(GWindow w,void (*)(GWindow,void *),void *);
 extern void GDrawPathStartNew(GWindow w);
 extern void GDrawPathStartSubNew(GWindow w);
 extern int GDrawFillRuleSetWinding(GWindow w);
@@ -592,11 +588,6 @@ extern int GDrawKeyState(int keysym);
 
 extern int GImageGetScaledWidth(GWindow gw, GImage *img);
 extern int GImageGetScaledHeight(GWindow gw, GImage *img);
-
-
-/* extern void setZeroMQReadFD( GDisplay *disp, */
-/* 			     int zeromq_fd, void* zeromq_datas, */
-/* 			     void (*zeromq_fd_callback)(int zeromq_fd, void* datas )); */
 
 extern void GDrawAddReadFD( GDisplay *disp,
 			    int fd, void* udata,

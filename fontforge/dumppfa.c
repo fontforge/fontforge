@@ -24,7 +24,22 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "dumppfa.h"
+
+#include "autohint.h"
+#include "bvedit.h"
 #include "fontforge.h"
+#include "fvfonts.h"
+#include "http.h"
+#include "parsepfa.h"
+#include "psread.h"
+#include "splineorder2.h"
+#include "splinesave.h"
+#include "splinesaveafm.h"
+#include "splineutil.h"
+#include "splineutil2.h"
+#include "tottf.h"
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>

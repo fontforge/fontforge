@@ -25,7 +25,19 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "parsepdf.h"
+
+#include "cvimages.h"
+#include "dumppfa.h"
+#include "encoding.h"
 #include "fontforge.h"
+#include "namelist.h"
+#include "parsepfa.h"
+#include "parsettf.h"
+#include "psread.h"
+#include "splineutil.h"
+#include "splineutil2.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>
@@ -1198,7 +1210,7 @@ return( pt_number );
 	    }
 	} else {
 	    *val = strtod(tokbuf,&end);
-	    if ( !finite(*val) ) {
+	    if ( !isfinite(*val) ) {
 /* GT: NaN is a concept in IEEE floating point which means "Not a Number" */
 /* GT: it is used to represent errors like 0/0 or sqrt(-1). */
 		LogError( _("Bad number, infinity or nan: %s\n"), tokbuf );

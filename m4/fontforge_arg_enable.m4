@@ -34,7 +34,7 @@ AC_ARG_ENABLE([python-scripting],
         [i_do_have_python_scripting="${enableval}"],
         [i_do_have_python_scripting=yes])
 if test x"${i_do_have_python_scripting}" = xyes; then
-   AM_PATH_PYTHON([2.3])
+   AM_PATH_PYTHON([2.7])
    PKG_CHECK_MODULES([PYTHON],[python-"${PYTHON_VERSION}"],,[i_do_have_python_scripting=no; force_off_python_extension=yes])
 fi
 if test x"${i_do_have_python_scripting}" != xyes; then

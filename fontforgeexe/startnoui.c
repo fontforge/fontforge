@@ -25,6 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgevw.h"
+#include "scripting.h"
+#include "start.h"
+
 #ifndef _NO_LIBUNICODENAMES
 #include <libunicodenames.h>	/* need to open a database when we start */
 extern uninm_names_db names_db; /* Unicode character names and annotations database */

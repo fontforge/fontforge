@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <zlib.h>
 
+#include "mem.h"
+#include "tottf.h"
+
 /* Compile with: $ cc -o woff woff.c -lz */
 
 /* http://people.mozilla.com/~jkew/woff/woff-2009-09-16.html */

@@ -24,7 +24,32 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "tottf.h"
+
+#include "autohint.h"
+#include "dumpbdf.h"
+#include "dumppfa.h"
+#include "encoding.h"
 #include "fontforge.h"
+#include "fvfonts.h"
+#include "http.h"
+#include "lookups.h"
+#include "macenc.h"
+#include "mem.h"
+#include "mm.h"
+#include "parsepfa.h"
+#include "parsettfbmf.h"
+#include "splinefill.h"
+#include "splineorder2.h"
+#include "splinesaveafm.h"
+#include "splinesave.h"
+#include "splineutil.h"
+#include "splineutil2.h"
+#include "tottfaat.h"
+#include "tottfgpos.h"
+#include "tottfvar.h"
+#include "ttfspecial.h"
 #include <math.h>
 #include <unistd.h>
 #include <time.h>
@@ -3368,7 +3393,6 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
 	os2->fsSel |= 8;
     if ( os2->version>=4 ) {
 	if ( strstrmatch(sf->fontname,"Obli")!=NULL ) {
-	    os2->fsSel &= ~1;		/* Turn off Italic */
 	    os2->fsSel |= 512;		/* Turn on Oblique */
 	}
 	if ( sf->use_typo_metrics )
@@ -3587,6 +3611,7 @@ static void dummyloca(struct alltabs *at) {
 }
 
 static void redohead(struct alltabs *at) {
+    if (at->headf) fclose(at->headf);
     at->headf = tmpfile();
 
     putlong(at->headf,at->head.version);
@@ -3808,7 +3833,7 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
     if ( dummy->names[ttf_uniqueid]==NULL || *dummy->names[ttf_uniqueid]=='\0' ) {
 	time(&now);
 	tm = localtime(&now);
-	sprintf( buffer, "%s : %s : %d-%d-%d",
+	snprintf( buffer, sizeof(buffer), "%s : %s : %d-%d-%d",
 		BDFFoundry?BDFFoundry:TTFFoundry?TTFFoundry:"FontForge 2.0",
 		sf->fullname!=NULL?sf->fullname:sf->fontname,
 		tm->tm_mday, tm->tm_mon+1, tm->tm_year+1900 );
@@ -4921,17 +4946,13 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
     if ( hasmac&1 ) {
 	/* big mac table, just a copy of the ms table */
 	putshort(at->cmap,0);	/* mac unicode platform */
-	putshort(at->cmap,3);	/* Unicode 2.0 */
+	putshort(at->cmap,3);	/* Unicode 2.0, BMP only */
 	putlong(at->cmap,mspos);
     }
     if ( format12!=NULL ) {
 	/* full unicode mac table, just a copy of the ms table */
 	putshort(at->cmap,0);	/* mac unicode platform */
-        if( map->enc->is_unicodefull ) {
-	    putshort(at->cmap,10);	/* Unicode 2.0, unicode beyond BMP */
-	} else {
-	    putshort(at->cmap,4);	/* Unicode 2.0, unicode BMP */
-	}
+	putshort(at->cmap,4);	/* Unicode 2.0, full repertoire */
 	putlong(at->cmap,ucs4pos);
     }
     if ( format14!=NULL ) {

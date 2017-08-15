@@ -25,12 +25,17 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _SCRIPTING_H
-#define _SCRIPTING_H
+#ifndef FONTFORGE_SCRIPTING_H
+#define FONTFORGE_SCRIPTING_H
 
+#include "fontforge-config.h"
+
+#include "baseviews.h"
 #include "fontforgevw.h"
+
 #include <setjmp.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 /* If users want to write user defined scripting built-in functions they will */
 /*  need this file. The most relevant structure is the Context */
@@ -151,4 +156,13 @@ extern enum token_type ff_NextToken(Context *c);
 extern void ff_backuptok(Context *c);
 extern void ff_statement(Context*);
 
-#endif	/* _SCRIPTING_H */
+#ifndef _NO_FFSCRIPT
+extern void DictionaryFree(struct dictionary *dica);
+#endif
+
+extern char **GetFontNames(char *filename, int do_slow);
+extern void ProcessNativeScript(int argc, char *argv[], FILE *script);
+extern void CheckIsScript(int argc, char *argv[]);
+extern void ExecuteScriptFile(FontViewBase *fv, SplineChar *sc, char *filename);
+
+#endif /* FONTFORGE_SCRIPTING_H */

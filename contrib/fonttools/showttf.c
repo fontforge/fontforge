@@ -11,6 +11,8 @@ typedef unsigned char uint8;
 #define false	0
 #include <string.h>
 
+#include "mem.h"
+
 static int verbose = false;
 static int max_lig_nest = 10000;
 static int just_headers = false;
@@ -272,7 +274,7 @@ exit ( 1 );
 	fprintf(stderr, "This looks like a postscript (pfb) file, and not a truetype font.\n" );
 exit ( 1 );
     } else if ( (v>>24)==1 && ((v>>16)&0xff)==0 && ((v>>8)&0xff)==4 ) {
-	fprintf( stderr, "This looks like a bare CFF file. Proceding under that assumption.\n");
+	fprintf( stderr, "This looks like a bare CFF file. Proceeding under that assumption.\n");
 	info->cff_start = 0;
 	fseek(ttf,0,SEEK_END);
 	info->cff_length = ftell(ttf);

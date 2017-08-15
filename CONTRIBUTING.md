@@ -117,6 +117,10 @@ For building from source for a release versions, go to the [Release Page](https:
 
      git checkout tags/20141014
 
+After the checkout, you need to first run the bootsrap script to checkout dependencies and generate the configure script:
+
+    ./bootstrap
+
 The configure script allows you to turn off and on various features of FontForge that might not be appropriate for your system. For a complete list of options, type
 
      ./configure --help

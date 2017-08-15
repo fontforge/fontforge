@@ -24,7 +24,13 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "autowidth2.h"
 #include "fontforgeui.h"
+#include "fvfonts.h"
+#include "lookups.h"
+#include "splinefill.h"
+#include "splineutil.h"
+#include "tottfgpos.h"
 #include <gkeysym.h>
 #include <string.h>
 #include <ustring.h>

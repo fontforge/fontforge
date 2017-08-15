@@ -26,7 +26,19 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "cvundoes.h"
+#include "dumppfa.h"
 #include "fontforgevw.h"
+#include "fvfonts.h"
+#include "lookups.h"
+#include "mem.h"
+#include "parsettf.h"
+#include "spiro.h"
+#include "splineorder2.h"
+#include "splinesaveafm.h"
+#include "splineutil.h"
+#include "splineutil2.h"
+#include "tottf.h"
 #include <math.h>
 #include <locale.h>
 # include <ustring.h>
@@ -2126,7 +2138,7 @@ static int MakeEllipseWithAxis(CharViewBase *cv,SplinePoint *sp1,SplinePoint *sp
     clockwise = EllipseClockwise(sp1,sp2,&slope1,&slope2);
     dot = slope1.y*slope2.x - slope1.x*slope2.y;
     theta = atan2(-slope1.x,slope1.y);
-    if ( !finite(theta))
+    if ( !isfinite(theta))
 return( false );
     c = cos(theta); s = sin(theta);
     if ( RealNear(dot,0) ) {

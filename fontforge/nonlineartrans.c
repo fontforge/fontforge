@@ -24,14 +24,19 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "nonlineartrans.h"
+
+#include "cvundoes.h"
 #include "fontforgevw.h"
+#include "splineutil.h"
+#include "splineutil2.h"
 #include <utype.h>
 #include <ustring.h>
 #include <math.h>
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
-#include "nonlineartrans.h"
 
 static struct builtins { const char *name; enum operator op; } builtins[] = {
     { "x", op_x },
@@ -59,7 +64,7 @@ return;
     chunkfree(e,sizeof(*e));
 }
 
-static int gettoken(struct context *c, real *val) {
+static int gettoken(struct expr_context *c, real *val) {
     int ch, i;
     char *end, *pt;
     char buffer[40];
@@ -168,7 +173,7 @@ return( op_value );
     }
 }
 
-static void backup(struct context *c,enum operator op, real val ) {
+static void backup(struct expr_context *c,enum operator op, real val ) {
     if ( c->backed_token!=op_base ) {
 	IError( "Attempt to back up twice.\nnear ...%s\n", c->cur );
 	c->had_error = true;
@@ -178,9 +183,9 @@ static void backup(struct context *c,enum operator op, real val ) {
 	c->backed_val = val;
 }
 
-static struct expr *getexpr(struct context *c);
+static struct expr *getexpr(struct expr_context *c);
 
-static struct expr *gete0(struct context *c) {
+static struct expr *gete0(struct expr_context *c) {
     real val = 0;
     enum operator op = gettoken(c,&val);
     struct expr *ret;
@@ -243,7 +248,7 @@ return( ret );
     }
 }
 
-static struct expr *gete1(struct context *c) {
+static struct expr *gete1(struct expr_context *c) {
     real val = 0;
     enum operator op;
     struct expr *ret, *op1;
@@ -262,7 +267,7 @@ static struct expr *gete1(struct context *c) {
 return( op1 );
 }
 
-static struct expr *gete2(struct context *c) {
+static struct expr *gete2(struct expr_context *c) {
     real val = 0;
     enum operator op;
     struct expr *ret, *op1;
@@ -281,7 +286,7 @@ static struct expr *gete2(struct context *c) {
 return( op1 );
 }
 
-static struct expr *gete3(struct context *c) {
+static struct expr *gete3(struct expr_context *c) {
     real val = 0;
     enum operator op;
     struct expr *ret, *op1;
@@ -300,7 +305,7 @@ static struct expr *gete3(struct context *c) {
 return( op1 );
 }
 
-static struct expr *gete4(struct context *c) {
+static struct expr *gete4(struct expr_context *c) {
     real val = 0;
     enum operator op;
     struct expr *ret, *op1;
@@ -319,7 +324,7 @@ static struct expr *gete4(struct context *c) {
 return( op1 );
 }
 
-static struct expr *gete5(struct context *c) {
+static struct expr *gete5(struct expr_context *c) {
     real val = 0;
     enum operator op;
     struct expr *ret, *op1;
@@ -338,7 +343,7 @@ static struct expr *gete5(struct context *c) {
 return( op1 );
 }
 
-static struct expr *getexpr(struct context *c) {
+static struct expr *getexpr(struct expr_context *c) {
     real val = 0;
     enum operator op;
     struct expr *ret, *op1;
@@ -363,7 +368,7 @@ return( op1 );
     }
 }
 
-struct expr *nlt_parseexpr(struct context *c,char *str) {
+struct expr *nlt_parseexpr(struct expr_context *c, char *str) {
     struct expr *ret;
 
     c->backed_token = op_base;
@@ -380,7 +385,7 @@ return( NULL );
 return( ret );
 }
 
-static real evaluate_expr(struct context *c,struct expr *e) {
+static real evaluate_expr(struct expr_context *c, struct expr *e) {
     real val1, val2;
 
     switch ( e->operator ) {
@@ -488,7 +493,7 @@ return( 0 );
     }
 }
 
-static real NL_expr(struct context *c,struct expr *e) {
+static real NL_expr(struct expr_context *c, struct expr *e) {
     real val = evaluate_expr(c,e);
     if ( isnan(val))
 return( 0 );
@@ -500,7 +505,7 @@ return( -32768 );
 return( val );
 }
 
-static void NLTransPoint(SplinePoint *sp,struct context *c) {
+static void NLTransPoint(SplinePoint *sp, struct expr_context *c) {
     BasePoint old, off, delta;
     int fixup = true;
 
@@ -550,7 +555,7 @@ static void NLTransPoint(SplinePoint *sp,struct context *c) {
     }
 }
 
-static void SplineSetNLTrans(SplineSet *ss,struct context *c,
+static void SplineSetNLTrans(SplineSet *ss, struct expr_context *c,
 	int everything) {
     SplinePoint *first, *last, *next;
     SplinePoint *sp;
@@ -639,7 +644,7 @@ static void SplineSetNLTrans(SplineSet *ss,struct context *c,
     ss->last = last;
 }
 
-static void _SCNLTrans(SplineChar *sc,struct context *c,int layer) {
+static void _SCNLTrans(SplineChar *sc, struct expr_context *c, int layer) {
     SplineSet *ss;
     RefChar *ref;
     int i, last, first;
@@ -669,7 +674,7 @@ return;
     }
 }
 
-void _SFNLTrans(FontViewBase *fv,struct context *c) {
+void _SFNLTrans(FontViewBase *fv, struct expr_context *c) {
     SplineChar *sc;
     RefChar *ref;
     int i, gid;
@@ -696,7 +701,7 @@ void _SFNLTrans(FontViewBase *fv,struct context *c) {
 }
 
 int SFNLTrans(FontViewBase *fv,char *x_expr,char *y_expr) {
-    struct context c;
+    struct expr_context c;
 
     memset(&c,0,sizeof(c));
     if ( (c.x_expr = nlt_parseexpr(&c,x_expr))==NULL )
@@ -714,7 +719,7 @@ return( true );
 }
 
 int SSNLTrans(SplineSet *ss,char *x_expr,char *y_expr) {
-    struct context c;
+    struct expr_context c;
 
     memset(&c,0,sizeof(c));
     if ( (c.x_expr = nlt_parseexpr(&c,x_expr))==NULL )
@@ -735,7 +740,7 @@ return( true );
 }
 
 int SCNLTrans(SplineChar *sc, int layer,char *x_expr,char *y_expr) {
-    struct context c;
+    struct expr_context c;
 
     memset(&c,0,sizeof(c));
     if ( (c.x_expr = nlt_parseexpr(&c,x_expr))==NULL )
@@ -752,7 +757,7 @@ return( false );
 return( true );
 }
 
-void CVNLTrans(CharViewBase *cv,struct context *c) {
+void CVNLTrans(CharViewBase *cv, struct expr_context *c) {
     SplineSet *ss;
     RefChar *ref;
     int layer = CVLayer(cv);
@@ -796,7 +801,7 @@ void SPLPoV(SplineSet *base,struct pov_data *pov, int only_selected) {
     SplineSet *spl;
     real transform[6];
     bigreal si = sin( pov->direction ), co = cos( pov->direction );
-    struct context c;
+    struct expr_context c;
 
     if ( pov->z==0 )
 return;
@@ -888,7 +893,7 @@ static void VanishingTrans(BasePoint *me,void *_vanish) {
 
 void CVYPerspective(CharViewBase *cv,bigreal x_vanish, bigreal y_vanish) {
     SplineSet *spl;
-    struct context c;
+    struct expr_context c;
     struct vanishing_point vanish;
 
     if ( y_vanish==0 )		/* Leave things unchanged */

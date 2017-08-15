@@ -24,7 +24,15 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "autohint.h"
+#include "cvimages.h"
+#include "cvundoes.h"
 #include "fontforge.h"
+#include "namelist.h"
+#include "splineoverlap.h"
+#include "splinestroke.h"
+#include "splineutil.h"
+#include "splineutil2.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>
@@ -534,7 +542,7 @@ return( pt_number );
 	    }
 	} else {
 	    *val = strtod(tokbuf,&end);
-	    if ( !finite(*val) ) {
+	    if ( !isfinite(*val) ) {
 /* GT: NaN is a concept in IEEE floating point which means "Not a Number" */
 /* GT: it is used to represent errors like 0/0 or sqrt(-1). */
 		LogError( _("Bad number, infinity or nan: %s\n"), tokbuf );
@@ -685,14 +693,14 @@ return( sp );
 }
 
 static void CheckMakeB(BasePoint *test, BasePoint *good) {
-    if ( !finite(test->x) || test->x>100000 || test->x<-100000 ) {
+    if ( !isfinite(test->x) || test->x>100000 || test->x<-100000 ) {
 	LogError( _("Value out of bounds in spline.\n") );
 	if ( good!=NULL )
 	    test->x = good->x;
 	else
 	    test->x = 0;
     }
-    if ( !finite(test->y) || test->y>100000 || test->y<-100000 ) {
+    if ( !isfinite(test->y) || test->y>100000 || test->y<-100000 ) {
 	LogError( _("Value out of bounds in spline.\n") );
 	if ( good!=NULL )
 	    test->y = good->y;
@@ -3657,6 +3665,11 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		stack[sp++] = -(v-251)*256 - *type1++ - 108;
 		--len;
 	    } else {
+		if (len < 4) {
+			LogError(_("Not enough data: %d < 4"), len);
+			len = 0;
+			break;
+		}
 		int val = (*type1<<24) | (type1[1]<<16) | (type1[2]<<8) | type1[3];
 		stack[sp++] = val;
 		type1 += 4;

@@ -27,12 +27,12 @@
 include $(top_srcdir)/mk/layout.am
 
 SUBDIRS = Resources MacOS Frameworks
-FFAPP_FILES = Info.plist PkgInfo
-EXTRA_DIST = $(FFAPP_FILES)
+EXTRA_DIST = PkgInfo
 
 if PLATFORM_OSX
   ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents
-  ffapp_DATA = $(FFAPP_FILES)
+  ffapp_DATA = PkgInfo
+  nodist_ffapp_DATA = Info.plist
 endif
 
 -include $(top_srcdir)/git.mk

@@ -34,10 +34,11 @@ DISTCLEANFILES=fontforge-config.h stamp-h1 stamp-h2
 # they should require a "fontforge/" prefix.
 
 pkginclude_HEADERS = basics.h chardata.h charset.h dynamic.h	\
-	fileutil.h fontforge-config.h gdraw.h gfile.h ggadget.h gicons.h gimage.h gio.h		\
+	fileutil.h gdraw.h gfile.h ggadget.h gicons.h gimage.h gio.h		\
 	gkeysym.h gprogress.h gresedit.h gresource.h gwidget.h gwwiconv.h	\
 	intl.h ustring.h utype.h dlist.h carbon.h gnetwork.h gutils.h
 
+nodist_pkginclude_HEADERS = fontforge-config.h
 noinst_HEADERS = pluginloading.h
 
 -include $(top_srcdir)/git.mk

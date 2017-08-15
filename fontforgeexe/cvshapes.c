@@ -24,7 +24,12 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "cvundoes.h"
 #include "fontforgeui.h"
+#include "spiro.h"
+#include "splineorder2.h"
+#include "splineutil.h"
+#include "splineutil2.h"
 #include <math.h>
 
 static struct shapedescrip {

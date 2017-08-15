@@ -24,8 +24,26 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "cvundoes.h"
+
+#include "autohint.h"
+#include "bitmapchar.h"
+#include "bvedit.h"
 #include "config.h"
+#include "cvexport.h"
+#include "cvimages.h"
 #include "fontforgevw.h"
+#include "fvfonts.h"
+#include "namelist.h"
+#include "sfd.h"
+#include "spiro.h"
+#include "splinefill.h"
+#include "splineorder2.h"
+#include "splineutil.h"
+#include "splineutil2.h"
+#include "svg.h"
+#include "tottfgpos.h"
 #include "views.h"
 #include <math.h>
 #include <ustring.h>
@@ -52,9 +70,6 @@ int export_clipboard = 0;
 int export_clipboard = 1;
 #endif
 
-extern void *UHintCopy(SplineChar *sc,int docopy);
-extern void ExtractHints(SplineChar *sc,void *hints,int docopy);
-extern void UndoesFreeButRetainFirstN( Undoes** undopp, int retainAmount );
 
 /* ********************************* Undoes ********************************* */
 

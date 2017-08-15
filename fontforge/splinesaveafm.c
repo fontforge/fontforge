@@ -24,10 +24,26 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "splinesaveafm.h"
+
+#include "autohint.h"
+#include "featurefile.h"
 #include "fontforgevw.h"		/* For Error */
+#include "fvcomposite.h"
+#include "fvfonts.h"
+#include "lookups.h"
+#include "macbinary.h"
+#include "mem.h"
+#include "mm.h"
+#include "namelist.h"
 #include "ttf.h"		/* For AnchorClassDecompose */
+#include "tottf.h"
+#include "tottfgpos.h"
 #include <stdio.h>
 #include "splinefont.h"
+#include "splinesave.h"
+#include "splineutil.h"
 #include <utype.h>
 #include <ustring.h>
 #include <time.h>

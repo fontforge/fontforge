@@ -24,7 +24,16 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "parsettfatt.h"
+
 #include "fontforge.h"
+#include "lookups.h"
+#include "mem.h"
+#include "parsettf.h"
+#include "splineutil.h"
+#include "tottfaat.h"
+#include "tottfgpos.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>
@@ -3622,31 +3631,6 @@ static void mortclass_apply_value(struct ttfinfo *info, int gfirst, int glast,FI
 	info->morx_classes[i] = class;
 }
 
-int32 memlong(uint8 *data,int len, int offset) {
-    if ( offset>=0 && offset+3<len ) {
-	int ch1 = data[offset], ch2 = data[offset+1], ch3 = data[offset+2], ch4 = data[offset+3];
-return( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
-    } else {
-	LogError( _("Bad font, offset out of bounds.\n") );
-return( 0 );
-    }
-}
-
-int memushort(uint8 *data,int len, int offset) {
-    if ( offset>=0 && offset+1<len ) {
-	int ch1 = data[offset], ch2 = data[offset+1];
-return( (ch1<<8)|ch2 );
-    } else {
-	LogError( _("Bad font, offset out of bounds.\n") );
-return( 0 );
-    }
-}
-
-void memputshort(uint8 *data,int offset,uint16 val) {
-    data[offset] = (val>>8);
-    data[offset+1] = val&0xff;
-}
-
 #define MAX_LIG_COMP	16
 struct statemachine {
     uint8 *data;
@@ -4758,6 +4742,7 @@ return;
     /*  removes the flag */
     if ( info->badgid_cnt!=0 ) {
 	/* Merge the fake glyphs in with the real ones */
+	int oldgc = info->glyph_cnt;
 	info->chars = realloc(info->chars,(info->glyph_cnt+info->badgid_cnt)*sizeof(SplineChar *));
 	for ( i=0; i<info->badgid_cnt; ++i ) {
 	    info->chars[info->glyph_cnt+i] = info->badgids[i];
@@ -4765,6 +4750,17 @@ return;
 	}
 	info->glyph_cnt += info->badgid_cnt;
 	free(info->badgids);
+	/* We also need to adjust the variations. */
+	if (info->variations) {
+	    int ctup;
+	    for (ctup = 0; ctup < info->variations->tuple_count; ctup++) {
+		SplineChar ** tscs = info->variations->tuples[ctup].chars;
+		info->variations->tuples[ctup].chars = calloc(info->glyph_cnt, sizeof(SplineChar *));
+		memcpy(info->variations->tuples[ctup].chars, tscs, oldgc * sizeof(SplineChar *));
+		free(tscs);
+		tscs = NULL;
+	    }
+	}
     }
 }
 

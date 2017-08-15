@@ -25,7 +25,16 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "encoding.h"
 #include "fontforgeui.h"
+#include "macbinary.h"
+#include "mm.h"
+#include "namelist.h"
+#include "splinefill.h"
+#include "splinesaveafm.h"
+#include "splineutil.h"
+#include "tottf.h"
+#include "woff.h"
 #include <ustring.h>
 #include <locale.h>
 #include <gfile.h>
@@ -2119,7 +2128,18 @@ return( 0 );
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = family?_("Generate Mac Family"):_("Generate Fonts");
+    {
+        const char *label = _("Generate Fonts");
+        switch (family) {
+        case gf_ttc:
+            label = _("Generate TTC");
+            break;
+        case gf_macfamily:
+            label = _("Generate Mac Family");
+            break;
+        }
+        wattrs.utf8_window_title = label;
+    }
     pos.x = pos.y = 0;
     totwid = GGadgetScale(295);
     bsbigger = 4*bs+4*14>totwid; totwid = bsbigger?4*bs+4*12:totwid;

@@ -24,8 +24,15 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "asmfpst.h"
+
 #include "fontforgevw.h"
+#include "fvfonts.h"
 #include "ttf.h"
+#include "splineutil.h"
+#include "tottfaat.h"
+#include "tottfgpos.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>

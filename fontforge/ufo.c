@@ -33,7 +33,19 @@
 # include <utype.h>
 #endif
 
+#include "autohint.h"
+#include "dumppfa.h"
+#include "featurefile.h"
 #include "fontforgevw.h"
+#include "fvfonts.h"
+#include "fvfonts.h"
+#include "lookups.h"
+#include "splinesaveafm.h"
+#include "splineutil.h"
+#include "splineutil2.h"
+#include "svg.h"
+#include "tottf.h"
+#include "tottfgpos.h"
 #include <unistd.h>
 #include <math.h>
 #include <time.h>
@@ -101,7 +113,7 @@ static void extractNumericVersion(const char * textVersion, int * versionMajor, 
 
 static void injectNumericVersion(char ** textVersion, int versionMajor, int versionMinor) {
   // We generate a version string from numeric values if available.
-  if (versionMajor == -1) asprintf(textVersion, "");
+  if (versionMajor == -1) asprintf(textVersion, "%s", "");
   else if (versionMinor == -1) asprintf(textVersion, "%d", versionMajor);
   else asprintf(textVersion, "%d.%d", versionMajor, versionMinor);
   return;

@@ -1,4 +1,0 @@
-version=3
-
-opts=uversionmangle=s/^/0.0./ \
- http://sf.net/fontforge/fontforge_full-(.*)\.tar\.bz2

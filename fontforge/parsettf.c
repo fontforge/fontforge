@@ -24,8 +24,30 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "parsettf.h"
+
+#include "cvundoes.h"
+#include "encoding.h"
 #include "fontforge.h"
+#include "fvimportbdf.h"
+#include "lookups.h"
 #include "splinefont.h"
+#include "macenc.h"
+#include "mem.h"
+#include "mm.h"
+#include "namelist.h"
+#include "parsepfa.h"
+#include "parsettfatt.h"
+#include "parsettfbmf.h"
+#include "parsettfvar.h"
+#include "psread.h"
+#include "sfd1.h"
+#include "splineorder2.h"
+#include "splineutil.h"
+#include "splineutil2.h"
+#include "tottf.h"
+#include "ttfspecial.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>
@@ -310,33 +332,6 @@ return( langlocalecode==-1 ? (langcode|0x400) : langlocalecode );
 }
 /* ************************************************************************** */
 
-int getushort(FILE *ttf) {
-    int ch1 = getc(ttf);
-    int ch2 = getc(ttf);
-    if ( ch2==EOF )
-return( EOF );
-return( (ch1<<8)|ch2 );
-}
-
-int get3byte(FILE *ttf) {
-    int ch1 = getc(ttf);
-    int ch2 = getc(ttf);
-    int ch3 = getc(ttf);
-    if ( ch3==EOF )
-return( EOF );
-return( (ch1<<16)|(ch2<<8)|ch3 );
-}
-
-int32 getlong(FILE *ttf) {
-    int ch1 = getc(ttf);
-    int ch2 = getc(ttf);
-    int ch3 = getc(ttf);
-    int ch4 = getc(ttf);
-    if ( ch4==EOF )
-return( EOF );
-return( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
-}
-
 static int32 getoffset(FILE *ttf, int offsize) {
     if ( offsize==1 )
 return( getc(ttf));
@@ -346,22 +341,6 @@ return( getushort(ttf));
 return( get3byte(ttf));
     else
 return( getlong(ttf));
-}
-
-real getfixed(FILE *ttf) {
-    int32 val = getlong(ttf);
-    int mant = val&0xffff;
-    /* This oddity may be needed to deal with the first 16 bits being signed */
-    /*  and the low-order bits unsigned */
-return( (real) (val>>16) + (mant/65536.0) );
-}
-
-real get2dot14(FILE *ttf) {
-    int32 val = getushort(ttf);
-    int mant = val&0x3fff;
-    /* This oddity may be needed to deal with the first 2 bits being signed */
-    /*  and the low-order bits unsigned */
-return( (real) ((val<<16)>>(16+14)) + (mant/16384.0) );
 }
 
 static Encoding *enc_from_platspec(int platform,int specific) {
@@ -1792,7 +1771,7 @@ static void readttfcopyrights(FILE *ttf,struct ttfinfo *info) {
     if ( info->version==NULL ) info->version = copy("1.0");
     else if ( strnmatch(info->version,"Version ",8)==0 ) {
 	char *temp = copy(info->version+8);
-	if ( temp[strlen(temp)-1]==' ' )
+	if ( temp[0] != '\0' && temp[strlen(temp)-1]==' ' )
 	    temp[strlen(temp)-1] = '\0';
 	free(info->version);
 	info->version = temp;
@@ -2819,6 +2798,15 @@ return( 3 );
 	pt = buffer;
 	do {
 	    ch = getc(ttf);
+		// Space for at least 2 bytes is required
+		if ((pt-buffer) > (sizeof(buffer) - 2)) {
+			// The buffer is completely full; null-terminate truncate it
+			if ((pt-buffer) == sizeof(buffer)) {
+				pt--;
+			}
+			*pt++ = '\0';
+			break;
+		}
 	    if ( pt<buffer+44 || (ch&0xf)==0xf || (ch&0xf0)==0xf0 ) {
 		pt = addnibble(pt,ch>>4);
 		pt = addnibble(pt,ch&0xf);
@@ -3042,7 +3030,7 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len,
 
     /* Multiple master fonts can have Type2 operators here, particularly */
     /*  blend operators. We're ignoring that */
-    while ( ftell(ttf)<base+len ) {
+    while ( !feof(ttf) && ftell(ttf)<base+len ) {
 	sp = 0;
 	while ( (ret=readcffthing(ttf,&ival,&stack[sp],&oval,info))!=3 && ftell(ttf)<base+len ) {
 	    if ( ret==1 )
@@ -3139,6 +3127,10 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len,
 	  case (12<<8)+24:
 	    LogError( _("FontForge does not support type2 multiple master fonts\n") );
 	    info->bad_cff = true;
+	    if (sp < 4) {
+	        LogError(_("CFF dict stack underflow detected: %d < 4\n"), sp);
+	        break;
+	    }
 	    td->nMasters = stack[0];
 	    td->nAxes = sp-4;
 	    memcpy(td->weightvector,stack+1,(sp-4)*sizeof(real));
@@ -3343,6 +3335,10 @@ return( NULL );
 	offsets[i] = getoffset(ttf,offsize);
     dicts = malloc((count+1)*sizeof(struct topdicts *));
     for ( i=0; i<count; ++i ) {
+	if (fontnames != NULL && fontnames[i] == NULL) {
+		LogError(_("Number of CFF font names is less than dict size: %d < %d"), i, count);
+		break;
+	}
 	dicts[i] = readcfftopdict(ttf,fontnames!=NULL?fontnames[i]:NULL,
 		offsets[i+1]-offsets[i], info);
 	if ( parent_dict!=NULL && parent_dict->fontmatrix_set ) {
@@ -3356,8 +3352,14 @@ return( dicts );
 }
 
 static const char *getsid(int sid,char **strings,int scnt,struct ttfinfo *info) {
-    if ( sid==-1 )
+    if ( sid==-1 ) // Default value, indicating it's not present
 return( NULL );
+    else if (sid < 0) {
+        LogError(_("Bad sid %d (0 <= sid < %d)\n"), sid, scnt+nStdStrings);
+        if (info != NULL)
+            info->bad_cff = true;
+        return NULL;
+    }
     else if ( sid<nStdStrings )
 return( cffnames[sid] );
     else if ( sid-nStdStrings>scnt ) {
@@ -3542,7 +3544,7 @@ static void readcffset(FILE *ttf,struct topdicts *dict,struct ttfinfo *info) {
 	    for ( i = 1; i<len; ) {
 		first = dict->charset[i++] = getushort(ttf);
 		cnt = getc(ttf);
-		for ( j=0; j<cnt; ++j )
+		for ( j=0; j<cnt && i<len; ++j )
 		    dict->charset[i++] = ++first;
 	    }
 	} else if ( format==2 ) {
@@ -4227,6 +4229,11 @@ return( -1 );
 	} else if ( enc<255 ) {
 	    /* This is erroneous as I understand SJIS */
 	    enc = badencoding(info);
+	} else if (enc >= 0xeaa5) {
+        /* Encoded value is outside SJIS range */
+        /* If this happens, it's likely that it's actually CP932 encoded */
+        /* Todo: Detect CP932 encoding earlier and apply that instead of SJIS */
+        enc = badencoding(info);
 	} else {
 	    int ch1 = enc>>8, ch2 = enc&0xff;
 	    if ( ch1 >= 129 && ch1<= 159 )
@@ -4243,7 +4250,7 @@ return( -1 );
 		--ch1;
 		ch2 -= 31;
 	    }
-	    if ( ch1<0x21 || ch2<0x21 || ch1>0x7f || ch2>0x7f )
+	    if ( ch1<0x21 || ch2<0x21 || ch1>0x7e || ch2>0x7e )
 		enc = badencoding(info);
 	    else
 		enc = unicode_from_jis208[(ch1-0x21)*94+(ch2-0x21)];
@@ -4874,7 +4881,7 @@ return;
 		for ( i=0; i<count; ++i ) {
 		    int gid = getushort(ttf);
 		    if ( dounicode )
-			info->chars[gid]->unicodeenc = trans!=NULL ? trans[first+1] : first+i;
+			info->chars[gid]->unicodeenc = trans!=NULL ? trans[first+i] : first+i;
 		    if ( map!=NULL && first+i < map->enccount )
 			map->map[first+i] = gid;
 		}
@@ -5814,7 +5821,7 @@ static SplineFont *SFFromTuple(SplineFont *basesf,struct variations *v,int tuple
     sf->glyphmax = sf->glyphcnt = basesf->glyphcnt;
     sf->glyphs = v->tuples[tuple].chars;
     sf->layers[ly_fore].order2 = sf->layers[ly_back].order2 = true;
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( basesf->glyphs[i]!=NULL ) {
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( basesf->glyphs[i]!=NULL && sf->glyphs[i]!=NULL ) {
 	SplineChar *sc = sf->glyphs[i];
 	sc->orig_pos = i;
 	sc->parent = sf;
@@ -5956,17 +5963,17 @@ void TTF_PSDupsDefault(SplineFont *sf) {
     for ( english=sf->names; english!=NULL && english->lang!=0x409; english=english->next );
     if ( english==NULL )
 return;
-    if ( english->names[ttf_family]!=NULL &&
+    if ( english->names[ttf_family]!=NULL && sf->familyname!=NULL &&
 	    strcmp(english->names[ttf_family],sf->familyname)==0 ) {
 	free(english->names[ttf_family]);
 	english->names[ttf_family]=NULL;
     }
-    if ( english->names[ttf_copyright]!=NULL &&
+    if ( english->names[ttf_copyright]!=NULL && sf->copyright!=NULL &&
 	    strcmp(english->names[ttf_copyright],sf->copyright)==0 ) {
 	free(english->names[ttf_copyright]);
 	english->names[ttf_copyright]=NULL;
     }
-    if ( english->names[ttf_fullname]!=NULL &&
+    if ( english->names[ttf_fullname]!=NULL && sf->fullname!=NULL &&
 	    strcmp(english->names[ttf_fullname],sf->fullname)==0 ) {
 	free(english->names[ttf_fullname]);
 	english->names[ttf_fullname]=NULL;

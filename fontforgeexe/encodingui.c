@@ -26,6 +26,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "bitmapchar.h"
 #include "fontforgeui.h"
 #include <ustring.h>
 #include <utype.h>
@@ -222,7 +223,7 @@ return( item );
 }
 
 void LoadEncodingFile(void) {
-    static char filter[] = "*.{ps,PS,txt,TXT,enc,ENC}";
+    static char filter[] = "*{.ps,.PS,.txt,.TXT,.enc,.ENC,GlyphOrderAndAliasDB}";
     char *fn;
     char *filename;
 
@@ -456,6 +457,7 @@ GTextInfo encodingtypes[] = {
     { (unichar_t *) N_("ISO 8859-10  (Latin6)"), NULL, 0, 0, (void *) "iso8859-10", NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("ISO 8859-13  (Latin7)"), NULL, 0, 0, (void *) "iso8859-13", NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("ISO 8859-14  (Latin8)"), NULL, 0, 0, (void *) "iso8859-14", NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("ISO 8859-16  (Latin10)"), NULL, 0, 0, (void *) "iso8859-16", NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0, 0, 0, '\0'},	/* Line */
     { (unichar_t *) N_("ISO 8859-5 (Cyrillic)"), NULL, 0, 0, (void *) "iso8859-5", NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("KOI8-R (Cyrillic)"), NULL, 0, 0, (void *) "koi8-r", NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },

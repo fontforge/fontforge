@@ -24,8 +24,14 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "splineoverlap.h"
+
 #include "fontforge.h"
 #include "splinefont.h"
+#include "splineorder2.h"
+#include "splineutil.h"
+#include "splineutil2.h"
 #include "edgelist2.h"
 #include <math.h>
 #ifdef HAVE_IEEEFP_H
@@ -128,7 +134,7 @@ static void ValidateMListTs(struct mlist * input) {
 #define ValidateMListTs_IF_VERBOSE(input) 
 #endif
 
-extended evalSpline(Spline *s, extended t, int dim) {
+static extended evalSpline(Spline *s, extended t, int dim) {
   return ((s->splines[dim].a*t+s->splines[dim].b)*t+s->splines[dim].c)*t+s->splines[dim].d;
 }
 
@@ -1817,7 +1823,7 @@ return;		/* Not interesting. Only intersection is at an endpoint */
 			any = true;
 			x1o = x1; x2o = x2;
 		    } else if ( x1o!=x2o && (x1o>x2o) != ( x1>x2 ) ) {
-			/* A cross over has occured. (assume we have a small enough */
+			/* A cross over has occurred. (assume we have a small enough */
 			/*  region that three cross-overs can't have occurred) */
 			/* Use a binary search to track it down */
 			extended ytop, ybot, ytest, oldy;
@@ -1927,7 +1933,7 @@ return;		/* Not interesting. Only intersection is at an endpoint */
 			any = true;
 			y1o = y1; y2o = y2;
 		    } else if ( y1o!=y2o && (y1o>y2o) != ( y1>y2 ) ) {
-			/* A cross over has occured. (assume we have a small enough */
+			/* A cross over has occurred. (assume we have a small enough */
 			/*  region that three cross-overs can't have occurred) */
 			/* Use a binary search to track it down */
 			extended xtop, xbot, xtest, oldx;

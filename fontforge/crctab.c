@@ -5,7 +5,7 @@
 /* in 1961. Various examples, including optimizations using lookup tables are */
 /* available in C, assembler (various CPUs), and other programming languages. */
 
-extern unsigned long binhex_crc(unsigned char *buffer,int size);
+#include "crctab.h"
 
 static const unsigned long binhex_crcinit = 0;
 

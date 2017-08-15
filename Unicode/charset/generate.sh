@@ -58,9 +58,10 @@ uni_maps=(
 	"$u/VENDORS/MICSFT/WINDOWS/CP950.TXT"
 )
 
-a="ftp://ftp.oreilly.de/pub/examples/english_examples/nutshell/cjkv/adobe"
+#a="ftp://ftp.oreilly.de/pub/examples/english_examples/nutshell/cjkv/adobe"
+a="ftp://ftp.netbsd.org/pub/pkgsrc/distfiles/adobe-cmaps-20060615/"
 adobe_maps=(
-#	"$a/ac15.tar.Z"		# Big5
+	"$a/ac15.tar.Z"		# Big5
 	"$a/ag15.tar.Z"		# GB2312
 	"$a/aj16.tar.Z"		# JIS X 0208
 	"$a/aj20.tar.Z"		# JIS X 0212
@@ -122,6 +123,7 @@ done > generate.log 2>&1 <<_EOT_
 -o iso_8859_13.c default i8859_13 raw/8859-13.TXT
 -o iso_8859_14.c default i8859_14 raw/8859-14.TXT
 -o iso_8859_15.c default i8859_15 raw/8859-15.TXT
+-o iso_8859_16.c default i8859_16 raw/8859-16.TXT
 -o jis201.c default jis201 raw/JIS0201.TXT
 -o koi8_r.c default koi8_r raw/KOI8-R.TXT
 -o mac.c default mac raw/ROMAN.TXT

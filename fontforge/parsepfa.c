@@ -24,7 +24,11 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "dumppfa.h"
+#include "encoding.h"
 #include "fontforge.h"
+#include "parsettf.h"
+#include "psread.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
