@@ -7349,9 +7349,11 @@ static OTLookup **SFDLookupList(FILE *sfd,SplineFont *sf) {
     }
     if ( lcnt==0 )
 return( NULL );
-
     ret = malloc((lcnt+1)*sizeof(OTLookup *));
     memcpy(ret,buf,lcnt*sizeof(OTLookup *));
+    // check if buf uses heap after a malloc/realloc
+    if (lcnt>100)
+        free(buf);
     ret[lcnt] = NULL;
 return( ret );
 }

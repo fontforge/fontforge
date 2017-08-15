@@ -1386,6 +1386,7 @@ return;
 	if ( glyphs==NULL ) {
 /* GT: This continues a multi-line error message, hence the leading space */
 	    LogError( _(" Bad contextual substitution table, ignored\n") );
+            free(class);
             free(rules);
 return;
 	}
@@ -1543,6 +1544,7 @@ return;
 	if ( glyphs==NULL ) {
 /* GT: This continues a multi-line error message, hence the leading space */
 	    LogError( _(" Bad contextual chaining substitution table, ignored\n") );
+            free(class);
             free(rules);
 return;
 	}
