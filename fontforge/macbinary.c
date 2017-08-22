@@ -43,6 +43,8 @@
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+#include "tottf.h"
+#include "tottfgpos.h"
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>

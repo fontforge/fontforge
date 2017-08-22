@@ -1040,7 +1040,7 @@ return( true );
 	GDrawRequestExpose(grp->v,NULL,false);
 	if ( grp->oldsel==NULL )
 return( true );
-	if ( grp->oldsel->glyphs!=NULL && grp->oldsel->glyphs!='\0' ) {
+	if ( grp->oldsel->glyphs!=NULL && grp->oldsel->glyphs[0]!='\0' ) {
 	    GGadgetSetEnabled(grp->newsub,false);
 return( true );
 	}

@@ -31,6 +31,7 @@
 #include "fvfonts.h"
 #include "splineoverlap.h"
 #include "splineutil.h"
+#include "tottfgpos.h"
 #include <math.h>
 #include <ustring.h>
 #include <utype.h>
@@ -444,7 +445,7 @@ SplineChar ***GlyphClassesFromNames(SplineFont *sf,char **classnames,
 	    else
 		classes[i] = malloc((clen+1)*sizeof(SplineChar *));
 	}
-	if ( cn != NULL ) free( cn ) ; cn = NULL ;
+	if ( cn != NULL ) { free( cn ) ; cn = NULL ; }
     }
 return( classes );
 }

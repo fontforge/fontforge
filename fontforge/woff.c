@@ -29,10 +29,13 @@
 /* Which are defined here: http://people.mozilla.com/~jkew/woff/woff-2009-09-16.html */
 /* Basically sfnts with compressed tables and some more metadata */
 
+#include "woff.h"
+
 #include "fontforge.h"
 #include "http.h"
 #include "mem.h"
 #include "parsettf.h"
+#include "tottf.h"
 #include <math.h>
 #include <ctype.h>
 

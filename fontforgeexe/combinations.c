@@ -32,6 +32,7 @@
 #include "psfont.h"
 #include "splinefill.h"
 #include "splineutil.h"
+#include "tottfgpos.h"
 #include <ustring.h>
 #include <gkeysym.h>
 #include <utype.h>

@@ -29,6 +29,8 @@
 
 #include <fontforge-config.h>
 
+#include "ttfinstrs.h"
+
 #include "ffglib.h"
 #include "baseviews.h"
 

@@ -5,6 +5,7 @@
 #include <zlib.h>
 
 #include "mem.h"
+#include "tottf.h"
 
 /* Compile with: $ cc -o woff woff.c -lz */
 

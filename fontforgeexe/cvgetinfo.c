@@ -32,6 +32,7 @@
 #include "splineorder2.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+#include "tottfgpos.h"
 #include <ustring.h>
 #include <math.h>
 #include <utype.h>

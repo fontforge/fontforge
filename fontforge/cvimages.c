@@ -36,6 +36,7 @@
 #include "splineorder2.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+#include "svg.h"
 #include <math.h>
 #include <sys/types.h>
 #include <dirent.h>

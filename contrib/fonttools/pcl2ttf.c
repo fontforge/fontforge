@@ -37,6 +37,7 @@
 #include <unistd.h>
 
 #include "mem.h"
+#include "tottf.h"
 
 #define true	1
 #define false	0

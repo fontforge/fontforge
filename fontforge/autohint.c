@@ -38,6 +38,7 @@
 #include "splinesave.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+#include "tottfgpos.h"
 #include "views.h"
 #include "stemdb.h"
 #include <utype.h>

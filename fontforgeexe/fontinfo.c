@@ -42,6 +42,7 @@
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+#include "tottf.h"
 #include <ustring.h>
 #include <chardata.h>
 #include <utype.h>

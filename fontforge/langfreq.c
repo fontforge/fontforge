@@ -4,6 +4,7 @@
 
 #include "fvfonts.h"
 #include "splinesaveafm.h"
+#include "tottfgpos.h"
 
 #include <stdio.h>
 #include <stdlib.h>

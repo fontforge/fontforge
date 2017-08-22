@@ -36,8 +36,11 @@ GITIGNOREFILES = \
 	gnulib/ \
 	lib/ \
 	libltdl/ \
-	uthash/
+	uthash/ \
+	'**/*.gcno' \
+	'**/*.gcda'
 
+@CODE_COVERAGE_RULES@
 
 #--------------------------------------------------------------------------
 

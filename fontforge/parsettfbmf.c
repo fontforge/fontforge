@@ -33,6 +33,8 @@
 #include "chardata.h"
 #include "mem.h"
 #include "splinefill.h"
+#include "tottf.h"
+#include "ttfspecial.h"
 #include "utype.h"
 #include "ustring.h"
 #include <math.h>

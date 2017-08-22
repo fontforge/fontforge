@@ -38,6 +38,7 @@
 #include "sflayoutP.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
+#include "tottf.h"
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>

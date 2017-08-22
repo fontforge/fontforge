@@ -54,6 +54,7 @@
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+#include "tottfgpos.h"
 #include <gfile.h>
 #include <gio.h>
 #include <gresedit.h>
