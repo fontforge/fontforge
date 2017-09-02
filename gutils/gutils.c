@@ -100,3 +100,14 @@ time_t GetTime(void) {
 
 	return now;
 }
+
+time_t GetST_MTime(struct stat s) {
+	time_t st_time;
+	if (getenv("SOURCE_DATE_EPOCH")) {
+		st_time = atol(getenv("SOURCE_DATE_EPOCH"));
+	} else {
+		st_time = s.st_mtime;
+	}
+
+	return st_time;
+}
