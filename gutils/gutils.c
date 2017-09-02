@@ -89,3 +89,13 @@ return( ret );
 #endif
 }
 
+time_t GetTime(void) {
+	time_t now;
+	if (getenv("SOURCE_DATE_EPOCH")) {
+		now = atol(getenv("SOURCE_DATE_EPOCH"));
+	} else {
+		now = time(NULL);
+	}
+
+	return now;
+}
