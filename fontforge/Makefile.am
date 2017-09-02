@@ -55,7 +55,6 @@ noinst_HEADERS = \
 	fvcomposite.h \
 	fvfonts.h \
 	fvimportbdf.h \
-	glyphcomp.h\
 	http.h\
 	ikarus.h\
 	langfreq.h\
@@ -95,8 +94,8 @@ noinst_HEADERS = \
 	ttfspecial.h \
 	winfonts.h \
 	woff.h \
-	fontforgeui.h sftextfieldP.h configure-fontforge.h views.h 	\
-	flaglist.h strlist.h charview_private.h cvundoes.h tables.h
+	fontforgeui.h sftextfieldP.h configure-fontforge.h \
+	strlist.h charview_private.h cvundoes.h tables.h
 
 pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 	libffstamp.h psfont.h stemdb.h autowidth.h delta.h fontforgevw.h	\
@@ -106,8 +105,11 @@ pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 	sd.h unicoderange.h bitmapcontrol.h encoding.h ofl.h search.h		\
 	usermenu.h fffreetype.h PfEd.h sfd1.h ffpython.h			\
 	plugins.h sflayoutP.h print.h splinefont.h cvruler.h ffglib.h           \
+	flaglist.h \
 	glif_name_hash.h \
-	mem.h
+	glyphcomp.h \
+	mem.h \
+	views.h
 
 #--------------------------------------------------------------------------
 

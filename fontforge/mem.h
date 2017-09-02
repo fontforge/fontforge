@@ -1,8 +1,8 @@
 #ifndef FONTFORGE_MEM_H
 #define FONTFORGE_MEM_H
 
-#include "../inc/basics.h"
-#include <inc/fontforge-config.h>
+#include "basics.h"
+#include "fontforge-config.h"
 
 // FIXME: move from splinefont.h to a separate header
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
