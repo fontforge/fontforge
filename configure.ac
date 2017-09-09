@@ -425,6 +425,10 @@ AC_C_BIGENDIAN
 AC_TYPE_PID_T
 AX_PTHREAD
 
+# Error out under certain conditions, please.
+gl_WARN_ADD([-Werror=implicit-function-declaration])
+gl_WARN_ADD([-Werror=int-conversion])
+
 #--------------------------------------------------------------------------
 # Check to see if "this" compiler can use these flags, errors, or warnings.
 # Enable the flags that can be used and skip flags that are unknown.
