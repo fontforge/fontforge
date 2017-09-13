@@ -37,7 +37,7 @@ addons:
       - deadsnakes
     packages: [autoconf, automake, autotools-dev, bzip2, gcc-7, libtool,
       libjpeg-dev, libtiff4-dev, libpng12-dev, libfreetype6-dev, libgif-dev,
-      libx11-dev, libxml2-dev, libpango1.0-dev, libcairo2-dev, python3.5-dev, lcov]
+      libx11-dev, libxml2-dev, libpango1.0-dev, libcairo2-dev, python3.6-dev, lcov]
   coverity_scan:
     project:
       name: "fontforge/fontforge"
@@ -94,7 +94,7 @@ install:
           wget "https://sourceforge.net/projects/freetype/files/freetype2/$SFFTVER/freetype-$FTVER.tar.gz"
 
         pushd zeromq-4.1.5 && ./configure --prefix=$DEPSPREFIX && make -j4 && make install && popd
-        pushd czmq-3.0.2 && ./configure --prefix=$DEPSPREFIX && make -j4 && make install && popd
+        pushd czmq-3.0.2 && CFLAGS="-Wno-format-truncation" ./configure --prefix=$DEPSPREFIX && make -j4 && make install && popd
         pushd libspiro-0.5.20150702 && ./configure --prefix=$DEPSPREFIX && make -j4 && make install && popd
         pushd libuninameslist-20160701 && ./configure --prefix=$DEPSPREFIX && make -j4 && make install && popd
         pushd libunicodenames-1.1.0_beta1 && ./configure --prefix=$DEPSPREFIX && make -j4 && make install && popd
@@ -103,7 +103,7 @@ install:
       fi
 
       # These are FF-specific mods (set here so it runs also in Coverity)
-      export PYTHON=python3.5
+      export PYTHON=python3.6
       export PYTHONPATH=$PYTHONPATH:$PREFIX/lib/python$($PYTHON -c "import sys; print('{0}.{1}'.format(sys.version_info.major, sys.version_info.minor))")/site-packages
       export CFLAGS="-fdiagnostics-color=always -Wall -Wno-switch"
     else
