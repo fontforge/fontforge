@@ -607,7 +607,13 @@ return( NULL );
 	}
     }
 
-    if ( !SetPrefs((char *) prefname,&val,NULL)) {
+    bool succeeded = SetPrefs((char *) prefname,&val,NULL);
+    if (val.type == v_str && val.u.sval) {
+        PyMem_Free(val.u.sval);
+        val.u.sval = NULL;
+    }
+
+    if (!succeeded) {
 	PyErr_Format(PyExc_NameError, "Unknown preference item in SetPrefs: %s", prefname );
 return( NULL );
     }
@@ -728,7 +734,7 @@ static PyObject *PyFF_UnicodeFromName(PyObject *UNUSED(self), PyObject *args) {
 return( NULL );
 
     ret = Py_BuildValue("i", UniFromName((char *) name, ui_none,&custom));
-    free(name);
+    PyMem_Free(name);
 return( ret );
 }
 
@@ -1361,12 +1367,14 @@ Py_RETURN_NONE;			/* Well, that was pointless */
     if ( import==Py_None )
 	import=NULL;
     else if ( !PyCallable_Check(import) ) {
+	PyMem_Free(name);
 	PyErr_Format(PyExc_TypeError, "First argument is not callable" );
 return( NULL );
     }
     if ( export==Py_None )
 	export=NULL;
     else if ( !PyCallable_Check(export) ) {
+	PyMem_Free(name);
 	PyErr_Format(PyExc_TypeError, "Second argument is not callable" );
 return( NULL );
     }
@@ -1472,7 +1480,7 @@ static PyObject *PyFF_logError(PyObject *UNUSED(self), PyObject *args) {
     if ( !PyArg_ParseTuple(args,"es","UTF-8", &msg) )
 return( NULL );
     LogError(msg);
-    free(msg);
+    PyMem_Free(msg);
 Py_RETURN_NONE;
 }
 
@@ -1486,6 +1494,8 @@ static PyObject *PyFF_postError(PyObject *UNUSED(self), PyObject *args) {
 return( NULL );
     if( showPythonErrors )
         ff_post_error(title,msg);		/* Prints to stderr if no ui */
+    PyMem_Free(title);
+    PyMem_Free(msg);
 Py_RETURN_NONE;
 }
 
@@ -1494,6 +1504,8 @@ static PyObject *PyFF_postNotice(PyObject *UNUSED(self), PyObject *args) {
     if ( !PyArg_ParseTuple(args,"eses","UTF-8", &title, "UTF-8", &msg) )
 return( NULL );
     ff_post_notice(title,msg);		/* Prints to stderr if no ui */
+    PyMem_Free(title);
+    PyMem_Free(msg);
 Py_RETURN_NONE;
 }
 
@@ -1511,8 +1523,8 @@ return( NULL );
 return( NULL );
 
     ret = ff_open_filename(title,def,filter);
-    free(title);
-    free(def);
+    PyMem_Free(title);
+    PyMem_Free(def);
     if ( ret==NULL )
 Py_RETURN_NONE;
     reto = DECODE_UTF8(ret,strlen(ret),NULL);
@@ -1534,8 +1546,8 @@ return( NULL );
 return( NULL );
 
     ret = ff_save_filename(title,def,filter);
-    free(title);
-    free(def);
+    PyMem_Free(title);
+    PyMem_Free(def);
     if ( ret==NULL )
 Py_RETURN_NONE;
     reto = DECODE_UTF8(ret,strlen(ret),NULL);
@@ -1558,8 +1570,8 @@ return( NULL );
 return( NULL );
     if ( !PySequence_Check(answero) || STRING_CHECK(answero)) {
 	PyErr_Format(PyExc_TypeError, "Expected a tuple of strings for the third argument");
-	free(title);
-	free(quest);
+	PyMem_Free(title);
+	PyMem_Free(quest);
 return( NULL );
     }
     cnt = PySequence_Size(answero);
@@ -1568,16 +1580,16 @@ return( NULL );
 	cancel = cnt-1;
     if ( cancel<0 || cancel>=cnt || def<0 || def>=cnt ) {
 	PyErr_Format(PyExc_ValueError, "Value out of bounds for 4th or 5th argument");
-	free(title);
-	free(quest);
+	PyMem_Free(title);
+	PyMem_Free(quest);
 	free(answers);
 return( NULL );
     }
     for ( i=0; i<cnt; ++i ) {
         PyObject *utf8_name = PYBYTES_UTF8(PySequence_GetItem(answero,i));
 	if ( utf8_name==NULL ) {
-	    free(title);
-	    free(quest);
+	    PyMem_Free(title);
+	    PyMem_Free(quest);
 	    FreeStringArray( i, answers );
 return( NULL );
 	}
@@ -1587,8 +1599,8 @@ return( NULL );
     answers[cnt] = NULL;
 
     ret = ff_ask(title,(const char **) answers,def,cancel,quest);
-    free(title);
-    free(quest);
+    PyMem_Free(title);
+    PyMem_Free(quest);
     FreeStringArray( cnt, answers );
 return( Py_BuildValue("i",ret));
 }
@@ -1608,23 +1620,23 @@ return( NULL );
 return( NULL );
     if ( !PySequence_Check(answero) || STRING_CHECK(answero)) {
 	PyErr_Format(PyExc_TypeError, "Expected a tuple of strings for the third argument");
-	free(title);
-	free(quest);
+	PyMem_Free(title);
+	PyMem_Free(quest);
 return( NULL );
     }
     cnt = PySequence_Size(answero);
     answers = calloc(cnt+1, sizeof(char *));
     if ( def<0 || def>=cnt ) {
 	PyErr_Format(PyExc_ValueError, "Value out of bounds for 4th argument");
-	free(title);
-	free(quest);
+	PyMem_Free(title);
+	PyMem_Free(quest);
 return( NULL );
     }
     for ( i=0; i<cnt; ++i ) {
         PyObject *utf8_name = PYBYTES_UTF8(PySequence_GetItem(answero,i));
         if ( utf8_name==NULL ) {
-	    free(title);
-	    free(quest);
+	    PyMem_Free(title);
+	    PyMem_Free(quest);
 	    FreeStringArray( i, answers );
 return( NULL );
 	}
@@ -1634,8 +1646,8 @@ return( NULL );
     answers[cnt] = NULL;
 
     ret = ff_choose(title,(const char **) answers,cnt,def,quest);
-    free(title);
-    free(quest);
+    PyMem_Free(title);
+    PyMem_Free(quest);
     FreeStringArray( cnt, answers );
 return( Py_BuildValue("i",ret));
 }
@@ -1654,8 +1666,8 @@ return( NULL );
 return( NULL );
 
     ret = ff_ask_string(title,def,quest);
-    free(title);
-    free(quest);
+    PyMem_Free(title);
+    PyMem_Free(quest);
     free(def);
     if ( ret==NULL )
 Py_RETURN_NONE;
