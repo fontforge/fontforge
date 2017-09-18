@@ -91,8 +91,9 @@ return( ret );
 
 time_t GetTime(void) {
 	time_t now;
-	if (getenv("SOURCE_DATE_EPOCH")) {
-		now = atol(getenv("SOURCE_DATE_EPOCH"));
+	const char *source_date_epoch = getenv("SOURCE_DATE_EPOCH");
+	if (source_date_epoch) {
+		now = atol(source_date_epoch);
 	} else {
 		now = time(NULL);
 	}
