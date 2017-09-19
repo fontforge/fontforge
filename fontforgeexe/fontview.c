@@ -59,7 +59,7 @@
 #include <gio.h>
 #include <gresedit.h>
 #include <ustring.h>
-#include "../fontforge/ffglib.h"
+#include <ffglib.h>
 #include <gkeysym.h>
 #include <utype.h>
 #include <chardata.h>

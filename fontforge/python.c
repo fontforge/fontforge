@@ -115,7 +115,7 @@ extern int old_sfnt_flags;
 #include "collab/zmq_kvmsg.h"
 #endif
 #include "collabclient.h"
-#include "ffglib.h"
+#include <ffglib.h>
 
 extern int prefRevisionsToRetain;
 

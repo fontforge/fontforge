@@ -25,7 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "ffglib.h"
+#include <ffglib.h>
 
 #include <fontforge-config.h>
 #include "autosave.h"

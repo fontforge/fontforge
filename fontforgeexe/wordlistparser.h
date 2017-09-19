@@ -30,7 +30,7 @@
 #define _ALREADY_INCLUDED_FF_WORDLIST_PARSER_H
 
 #include "splinefont.h"
-#include "ffglib.h"
+#include <ffglib.h>
 
 const char* Wordlist_getSCName( SplineChar* sc );
 

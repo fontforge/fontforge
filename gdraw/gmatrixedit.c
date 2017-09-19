@@ -32,7 +32,7 @@
 #include "gresource.h"
 #include <string.h>
 #include <ustring.h>
-#include "../fontforge/ffglib.h"
+#include <ffglib.h>
 #include <glib/gprintf.h>
 #include "xvasprintf.h"
 

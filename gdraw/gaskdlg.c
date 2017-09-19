@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ustring.h"
-#include "ffglib.h"
+#include <ffglib.h>
 #include <glib/gprintf.h>
 #include "gdraw.h"
 #include "gwidget.h"
