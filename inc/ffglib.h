@@ -26,6 +26,7 @@
 #define GList  GList_Glib
 #include <glib.h>
 #include <glib-object.h>
+#include <glib/gstdio.h>
 #undef GTimer
 #undef GList
 

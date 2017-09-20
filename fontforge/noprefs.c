@@ -55,7 +55,7 @@
 #include <windows.h>
 #endif
 
-#include <glib.h>
+#include <ffglib.h>
 
 static char *othersubrsfile = NULL;
 

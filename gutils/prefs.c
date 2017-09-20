@@ -26,7 +26,7 @@
  */
 
 #include "prefs.h"
-#include <glib.h>
+#include <ffglib.h>
 #include <stdio.h>
 #include "ustring.h"
 #include "fileutil.h"

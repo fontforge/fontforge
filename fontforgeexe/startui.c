@@ -56,12 +56,6 @@ extern uninm_blocks_db blocks_db;
 #include "../gdraw/hotkeys.h"
 #include "gutils/prefs.h"
 
-
-#define GTimer GTimer_GTK
-#include <glib.h>
-#include <glib-object.h>
-#undef GTimer
-
 #ifdef __Mac
 extern void setup_cocoa_app();
 #endif

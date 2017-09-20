@@ -34,8 +34,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>		/* for mkdir */
 #include <unistd.h>
-#include <glib.h>
-#include <glib/gstdio.h>
+#include <ffglib.h>
 #include <errno.h>			/* for mkdir_p */
 
 static char dirname_[MAXPATHLEN+1];

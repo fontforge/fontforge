@@ -52,7 +52,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 										
 #include "zmq_kvmsg.h"
 
-#include <glib.h>
+#include <ffglib.h>
 #include <inttypes.h>
 #include "inc/gnetwork.h"
 

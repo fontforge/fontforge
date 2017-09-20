@@ -41,7 +41,7 @@
 # include <stdlib.h>		/* getenv,setenv */
 #endif
 
-#include <glib.h>
+#include <ffglib.h>
 
 #include "gutils/unicodelibinfo.h"
 #include "psfont.h"
