@@ -18,7 +18,7 @@
 #include "gfile.h"
 #include "ustring.h"
 #include <gio/gio.h>
-#include <glib.h>
+#include <ffglib.h>
 
 const char *MimeListFromExt[] = {
 /* This list is indexed from list ExtToMimeList */

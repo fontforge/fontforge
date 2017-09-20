@@ -49,7 +49,7 @@
 #include "plugins.h"
 #include "encoding.h"
 #include "psfont.h"
-#include "ffglib.h"
+#include <ffglib.h>
 #include <glib/gprintf.h>
 #include "xvasprintf.h"
 

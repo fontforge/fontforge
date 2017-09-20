@@ -64,7 +64,7 @@ extern int DEBUG_SHOW_SFD_CHUNKS; // defined in collabclient.c
 #define beacon_announce_fontname_sz     40
 
 
-#include "ffglib.h"
+#include <ffglib.h>
 #include "inc/fontforge-config.h"
 #include "inc/ustring.h"
 #include "collabclient.h"

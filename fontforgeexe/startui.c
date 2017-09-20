@@ -25,7 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "ffglib.h"
+#include <ffglib.h>
 
 #include <fontforge-config.h>
 #include "autosave.h"
@@ -55,12 +55,6 @@ extern uninm_blocks_db blocks_db;
 #include <sys/types.h>
 #include "../gdraw/hotkeys.h"
 #include "gutils/prefs.h"
-
-
-#define GTimer GTimer_GTK
-#include <glib.h>
-#include <glib-object.h>
-#undef GTimer
 
 #ifdef __Mac
 extern void setup_cocoa_app();

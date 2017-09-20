@@ -27,7 +27,7 @@
 #ifndef _BASEVIEWS_H
 #define _BASEVIEWS_H
 
-#include "ffglib.h"
+#include <ffglib.h>
 #include "splinefont.h"
 
 #define free_with_debug(x) { fprintf(stderr,"%p FREE()\n",x); free(x); }

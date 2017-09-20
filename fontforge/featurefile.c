@@ -54,7 +54,7 @@
 #include <ustring.h>
 #include <locale.h>
 
-#include "ffglib.h"
+#include <ffglib.h>
 
 /* Adobe's opentype feature file */
 /* Which suffers incompatible changes according to Adobe's whim */

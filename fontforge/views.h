@@ -31,7 +31,7 @@
 
 #include "ttfinstrs.h"
 
-#include "ffglib.h"
+#include <ffglib.h>
 #include "baseviews.h"
 
 #include <ggadget.h>

@@ -14,7 +14,7 @@
 #include "splinefont.h"
 #include <intl.h>
 
-#include <glib.h>
+#include <ffglib.h>
 
 #define ISOL	0
 #define INIT	1

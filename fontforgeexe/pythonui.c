@@ -29,7 +29,7 @@
 // to get asprintf() defined from stdio.h on GNU platforms
 #define _GNU_SOURCE 1
 
-#include "ffglib.h"
+#include <ffglib.h>
 
 #include <fontforge-config.h>
 
