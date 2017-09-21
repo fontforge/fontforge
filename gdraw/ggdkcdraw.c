@@ -724,7 +724,7 @@ void _GGDKDraw_CleanupAutoPaint(GGDKDisplay *gdisp) {
 }
 
 void GGDKDrawPushClip(GWindow w, GRect *rct, GRect *old) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
 
     // Return the current clip, and intersect the current clip with the desired
     // clip to get the new clip.
@@ -771,7 +771,7 @@ void GGDKDrawPushClip(GWindow w, GRect *rct, GRect *old) {
 }
 
 void GGDKDrawPopClip(GWindow w, GRect *old) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
     gw->ggc->clip = *old;
     // cc can be NULL if the autopaint cleanup had to run because
@@ -783,7 +783,7 @@ void GGDKDrawPopClip(GWindow w, GRect *old) {
 
 
 void GGDKDrawSetDifferenceMode(GWindow w) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
     cairo_set_operator(gw->cc, CAIRO_OPERATOR_DIFFERENCE);
@@ -792,7 +792,7 @@ void GGDKDrawSetDifferenceMode(GWindow w) {
 
 
 void GGDKDrawClear(GWindow w, GRect *rect) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
     GRect temp, *r = rect, old;
@@ -810,7 +810,7 @@ void GGDKDrawClear(GWindow w, GRect *rect) {
 }
 
 void GGDKDrawDrawLine(GWindow w, int32 x, int32 y, int32 xend, int32 yend, Color col) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
 
@@ -830,7 +830,7 @@ void GGDKDrawDrawLine(GWindow w, int32 x, int32 y, int32 xend, int32 yend, Color
 }
 
 void GGDKDrawDrawArrow(GWindow w, int32 x, int32 y, int32 xend, int32 yend, int16 arrows, Color col) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
 
@@ -871,7 +871,7 @@ void GGDKDrawDrawArrow(GWindow w, int32 x, int32 y, int32 xend, int32 yend, int1
 }
 
 void GGDKDrawDrawRect(GWindow w, GRect *rect, Color col) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
 
@@ -889,7 +889,7 @@ void GGDKDrawDrawRect(GWindow w, GRect *rect, Color col) {
 }
 
 void GGDKDrawFillRect(GWindow w, GRect *rect, Color col) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
 
@@ -904,7 +904,7 @@ void GGDKDrawFillRect(GWindow w, GRect *rect, Color col) {
 }
 
 void GGDKDrawFillRoundRect(GWindow w, GRect *rect, int radius, Color col) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
 
@@ -925,7 +925,7 @@ void GGDKDrawFillRoundRect(GWindow w, GRect *rect, int radius, Color col) {
 }
 
 void GGDKDrawDrawEllipse(GWindow w, GRect *rect, Color col) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
 
@@ -954,7 +954,7 @@ void GGDKDrawDrawEllipse(GWindow w, GRect *rect, Color col) {
 }
 
 void GGDKDrawFillEllipse(GWindow w, GRect *rect, Color col) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
 
@@ -984,7 +984,7 @@ void GGDKDrawFillEllipse(GWindow w, GRect *rect, Color col) {
  *  \param [in] eangle The angle offset from the start in degrees * 64 (positive CCW)
  */
 void GGDKDrawDrawArc(GWindow w, GRect *rect, int32 sangle, int32 eangle, Color col) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
 
@@ -1009,7 +1009,7 @@ void GGDKDrawDrawArc(GWindow w, GRect *rect, int32 sangle, int32 eangle, Color c
 }
 
 void GGDKDrawDrawPoly(GWindow w, GPoint *pts, int16 cnt, Color col) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
 
@@ -1028,7 +1028,7 @@ void GGDKDrawDrawPoly(GWindow w, GPoint *pts, int16 cnt, Color col) {
 }
 
 void GGDKDrawFillPoly(GWindow w, GPoint *pts, int16 cnt, Color col) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
 
@@ -1056,7 +1056,7 @@ void GGDKDrawFillPoly(GWindow w, GPoint *pts, int16 cnt, Color col) {
 }
 
 void GGDKDrawDrawImage(GWindow w, GImage *image, GRect *src, int32 x, int32 y) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
 
@@ -1099,7 +1099,7 @@ void GGDKDrawDrawImage(GWindow w, GImage *image, GRect *src, int32 x, int32 y) {
 
 // What we really want to do is use the grey levels as an alpha channel
 void GGDKDrawDrawGlyph(GWindow w, GImage *image, GRect *src, int32 x, int32 y) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
 
@@ -1144,7 +1144,7 @@ void GGDKDrawDrawGlyph(GWindow w, GImage *image, GRect *src, int32 x, int32 y) {
 }
 
 void GGDKDrawDrawImageMagnified(GWindow w, GImage *image, GRect *src, int32 x, int32 y, int32 width, int32 height) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
 
@@ -1211,7 +1211,7 @@ void GGDKDrawDrawImageMagnified(GWindow w, GImage *image, GRect *src, int32 x, i
 }
 
 void GGDKDrawDrawPixmap(GWindow w, GWindow pixmap, GRect *src, int32 x, int32 y) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w, gpixmap = (GGDKWindow)pixmap;
     _GGDKDraw_CheckAutoPaint(gw);
 
@@ -1225,53 +1225,53 @@ void GGDKDrawDrawPixmap(GWindow w, GWindow pixmap, GRect *src, int32 x, int32 y)
 }
 
 enum gcairo_flags GGDKDrawHasCairo(GWindow UNUSED(w)) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     return gc_all;
 }
 
 void GGDKDrawPathStartNew(GWindow w) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     _GGDKDraw_CheckAutoPaint((GGDKWindow)w);
     cairo_new_path(((GGDKWindow)w)->cc);
 }
 
 void GGDKDrawPathClose(GWindow w) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     cairo_close_path(((GGDKWindow)w)->cc);
 }
 
 void GGDKDrawPathMoveTo(GWindow w, double x, double y) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     _GGDKDraw_CheckAutoPaint((GGDKWindow)w);
     cairo_move_to(((GGDKWindow)w)->cc, x, y);
 }
 
 void GGDKDrawPathLineTo(GWindow w, double x, double y) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     cairo_line_to(((GGDKWindow)w)->cc, x, y);
 }
 
 void GGDKDrawPathCurveTo(GWindow w, double cx1, double cy1, double cx2, double cy2, double x, double y) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     cairo_curve_to(((GGDKWindow)w)->cc, cx1, cy1, cx2, cy2, x, y);
 }
 
 void GGDKDrawPathStroke(GWindow w, Color col) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     w->ggc->fg = col;
     GGDKDrawSetline((GGDKWindow) w, w->ggc);
     cairo_stroke(((GGDKWindow)w)->cc);
 }
 
 void GGDKDrawPathFill(GWindow w, Color col) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     cairo_set_source_rgba(((GGDKWindow) w)->cc, COLOR_RED(col) / 255.0, COLOR_GREEN(col) / 255.0, COLOR_BLUE(col) / 255.0,
                           (col >> 24) / 255.0);
     cairo_fill(((GGDKWindow) w)->cc);
 }
 
 void GGDKDrawPathFillAndStroke(GWindow w, Color fillcol, Color strokecol) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     // This function is unused, so it's unclear if it's implemented correctly.
     GGDKWindow gw = (GGDKWindow) w;
 
@@ -1287,13 +1287,13 @@ void GGDKDrawPathFillAndStroke(GWindow w, Color fillcol, Color strokecol) {
 }
 
 void GGDKDrawStartNewSubPath(GWindow w) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     _GGDKDraw_CheckAutoPaint((GGDKWindow)w);
     cairo_new_sub_path(((GGDKWindow)w)->cc);
 }
 
 int GGDKDrawFillRuleSetWinding(GWindow w) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     _GGDKDraw_CheckAutoPaint((GGDKWindow)w);
     cairo_set_fill_rule(((GGDKWindow)w)->cc, CAIRO_FILL_RULE_WINDING);
     return 1;
@@ -1301,7 +1301,7 @@ int GGDKDrawFillRuleSetWinding(GWindow w) {
 
 int GGDKDrawDoText8(GWindow w, int32 x, int32 y, const char *text, int32 cnt, Color col, enum text_funcs drawit,
                     struct tf_arg *arg) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
 
     GGDKWindow gw = (GGDKWindow) w;
     struct font_instance *fi = gw->ggc->fi;
@@ -1363,13 +1363,13 @@ int GGDKDrawDoText8(GWindow w, int32 x, int32 y, const char *text, int32 cnt, Co
 }
 
 void GGDKDrawPushClipOnly(GWindow w) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     _GGDKDraw_CheckAutoPaint((GGDKWindow)w);
     cairo_save(((GGDKWindow)w)->cc);
 }
 
 void GGDKDrawClipPreserve(GWindow w) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     _GGDKDraw_CheckAutoPaint((GGDKWindow)w);
     cairo_clip_preserve(((GGDKWindow)w)->cc);
 }
@@ -1377,7 +1377,7 @@ void GGDKDrawClipPreserve(GWindow w) {
 // PANGO LAYOUT
 
 void GGDKDrawGetFontMetrics(GWindow gw, GFont *fi, int *as, int *ds, int *ld) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
 
     GGDKDisplay *gdisp = ((GGDKWindow) gw)->display;
     PangoFont *pfont;
@@ -1398,7 +1398,7 @@ void GGDKDrawGetFontMetrics(GWindow gw, GFont *fi, int *as, int *ds, int *ld) {
 }
 
 void GGDKDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow) w;
     PangoFontDescription *fd;
 
@@ -1412,14 +1412,14 @@ void GGDKDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
 }
 
 void GGDKDrawLayoutDraw(GWindow w, int32 x, int32 y, Color fg) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
 
     _GGDKDraw_MyCairoRenderLayout(gw->cc, fg, gw->pango_layout, x, y);
 }
 
 void GGDKDrawLayoutIndexToPos(GWindow w, int index, GRect *pos) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
     PangoRectangle rect;
 
@@ -1431,7 +1431,7 @@ void GGDKDrawLayoutIndexToPos(GWindow w, int index, GRect *pos) {
 }
 
 int GGDKDrawLayoutXYToIndex(GWindow w, int x, int y) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
     int trailing, index;
 
@@ -1457,7 +1457,7 @@ int GGDKDrawLayoutXYToIndex(GWindow w, int x, int y) {
 }
 
 void GGDKDrawLayoutExtents(GWindow w, GRect *size) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
     PangoRectangle rect;
 
@@ -1469,21 +1469,21 @@ void GGDKDrawLayoutExtents(GWindow w, GRect *size) {
 }
 
 void GGDKDrawLayoutSetWidth(GWindow w, int width) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
 
     pango_layout_set_width(gw->pango_layout, (width == -1) ? -1 : width * PANGO_SCALE);
 }
 
 int GGDKDrawLayoutLineCount(GWindow w) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
 
     return pango_layout_get_line_count(gw->pango_layout);
 }
 
 int GGDKDrawLayoutLineStart(GWindow w, int l) {
-    //Log(LOGDEBUG, "");
+    //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
     PangoLayoutLine *line = pango_layout_get_line(gw->pango_layout, l);
 

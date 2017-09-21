@@ -47,8 +47,7 @@ static const char *unspecified_funct = "???";
  * @param fmt - A format string
  * @param ... - Arguments to be printed according to the format string
  */
-void LogEx(int level, const char *funct, const char *file, int line, ...) {
-    const char *fmt;
+void LogEx(int level, const char *funct, const char *file, int line, const char *fmt, ...) {
     char buffer[BUFSIZ];
     va_list va;
 
@@ -56,13 +55,7 @@ void LogEx(int level, const char *funct, const char *file, int line, ...) {
         return;
     }
 
-    va_start(va, line);
-    fmt = va_arg(va, const char *);
-
-    if (fmt == NULL) { // sanity check
-        fprintf(stderr, "Format string is NULL!\n");
-    }
-
+    va_start(va, fmt);
     vsnprintf(buffer, BUFSIZ, fmt, va);
     va_end(va);
 
