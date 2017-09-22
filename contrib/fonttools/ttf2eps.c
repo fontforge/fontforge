@@ -29,8 +29,6 @@
 #include <stdio.h>
 #include <time.h>
 
-#include "mem.h"
-
 typedef struct basepoint {
     double x, y;
 } BasePoint;

@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "mem.h"
-
 typedef unsigned int uint32;
 typedef int int32;
 typedef short int16;

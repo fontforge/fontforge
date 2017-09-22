@@ -36,9 +36,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "mem.h"
-#include "tottf.h"
-
 #define true	1
 #define false	0
 #define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
