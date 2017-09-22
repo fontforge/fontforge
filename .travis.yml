@@ -137,6 +137,7 @@ script:
   - ./bootstrap
   - ./configure $FFCONFIG
   - make -j4
+  - make -C contrib/fonttools -j4
   - make install
   - if [ ! -z "$TRACE_CODE_COVERAGE" ]; then make check ; coveralls --gcov-options '\-bulp' --gcov $(which $GCOV) ; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then make distcheck -j4; fi
