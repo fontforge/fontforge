@@ -250,9 +250,11 @@ while ($argc>1)
       endloop
       if (i<Strlen($argv[1]))
         optarg=Strsub($argv[1],i);
-      else
+      elseif ($argv[2])
         shift;
         optarg=$argv[1];
+      else
+        optarg="";
       endif
       subargs=StrSplit(optarg,',');
       i=0;
