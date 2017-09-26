@@ -144,7 +144,7 @@ return( 1 );
 return( 1 );
     }
 
-    time(&now);
+    if (getenv("SOURCE_DATE_EPOCH")) now=atol(getenv("SOURCE_DATE_EPOCH")); else time(&now);
     tm = gmtime(&now);
 
     fprintf( output, "# (British) English User Interface strings for FontForge.\n" );

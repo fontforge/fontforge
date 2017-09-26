@@ -1763,7 +1763,7 @@ static void dumpfontcomments(void (*dumpchar)(int ch,void *data), void *data,
     time_t now;
     const char *author = GetAuthor();
 
-    time(&now);
+    if (getenv("SOURCE_DATE_EPOCH")) now=atol(getenv("SOURCE_DATE_EPOCH")); else time(&now);
     /* Werner points out that the DSC Version comment has a very specific */
     /*  syntax. We can't just put in a random string, must be <real> <int> */
     /* So we can sort of do that for CID fonts (give it a <revsion> of 0 */
@@ -1779,7 +1779,7 @@ static void dumpfontcomments(void (*dumpchar)(int ch,void *data), void *data,
 	dumpf(dumpchar,data,"%%Version: %s\n", sf->version);
     }
     dumpf(dumpchar,data,"%%%%CreationDate: %s", ctime(&now));
-    if ( author!=NULL )
+    if ( author!=NULL && !getenv("SOURCE_DATE_EPOCH") )
 	dumpf(dumpchar,data,"%%%%Creator: %s\n", author);
 
     if ( format==ff_cid || format==ff_cffcid || format==ff_type42cid ||

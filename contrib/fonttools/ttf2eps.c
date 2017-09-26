@@ -795,7 +795,7 @@ static void DumpEpsHeader(FILE *eps, struct ttfinfo *info, int glyph,
 	fprintf(eps, " Unicode %04x", info->glyph_unicode[glyph]);
     fprintf( eps, "\n" );
     fprintf( eps, "%%%%Creator: ttf2eps\n" );
-    time(&now);
+    if (getenv("SOURCE_DATE_EPOCH")) now=atol(getenv("SOURCE_DATE_EPOCH")); else time(&now);
     tm = localtime(&now);
     fprintf( eps, "%%%%CreationDate: %d:%02d %d-%d-%d\n", tm->tm_hour, tm->tm_min,
 	    tm->tm_mday, tm->tm_mon+1, 1900+tm->tm_year );

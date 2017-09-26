@@ -605,7 +605,7 @@ return( true );
 
 void SFSetModTime(SplineFont *sf) {
     time_t now;
-    time(&now);
+    if (getenv("SOURCE_DATE_EPOCH")) now=atol(getenv("SOURCE_DATE_EPOCH")); else time(&now);
     sf->modificationtime = now;
 }
 

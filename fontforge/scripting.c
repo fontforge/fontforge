@@ -817,7 +817,7 @@ static void bStrftime(Context *c) {
     if ( c->a.argc>=4 )
 	oldloc = setlocale(LC_TIME, c->a.vals[3].u.sval); // TODO
 
-    time(&now);
+    if (getenv("SOURCE_DATE_EPOCH")) now=atol(getenv("SOURCE_DATE_EPOCH")); else time(&now);
     if ( isgmt )
 	tm = gmtime(&now);
     else

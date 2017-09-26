@@ -2645,8 +2645,8 @@ return(NULL);
     fclose(temp);
 
     if ( fstat(fileno(in),&b)!=-1 ) {
-	fp.fd->modificationtime = b.st_mtime;
-	fp.fd->creationtime = b.st_mtime;
+	fp.fd->modificationtime = getenv("SOURCE_DATE_EPOCH") ? atol(getenv("SOURCE_DATE_EPOCH")) : b.st_mtime;
+	fp.fd->creationtime = getenv("SOURCE_DATE_EPOCH") ? atol(getenv("SOURCE_DATE_EPOCH")) : b.st_mtime;
     }
 return( fp.fd );
 }

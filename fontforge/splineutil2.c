@@ -3832,7 +3832,7 @@ SplineFont *SplineFontEmpty(void) {
     else
 	memcpy(sf->pfminfo.os2_vendor,"PfEd",4);
     sf->for_new_glyphs = DefaultNameListForNewFonts();
-    time(&now);
+    if (getenv("SOURCE_DATE_EPOCH")) now=atol(getenv("SOURCE_DATE_EPOCH")); else time(&now);
     sf->creationtime = sf->modificationtime = now;
 
     sf->layer_cnt = 2;
@@ -3860,9 +3860,9 @@ SplineFont *SplineFontBlank(int charcnt) {
     sprintf( buffer, "%s.sfd", sf->fontname);
     sf->origname = ToAbsolute(buffer);
     sf->weight = copy("Regular");
-    time(&now);
+    if (getenv("SOURCE_DATE_EPOCH")) now=atol(getenv("SOURCE_DATE_EPOCH")); else time(&now);
     tm = localtime(&now);
-    if ( author!=NULL )
+    if ( author!=NULL && !getenv("SOURCE_DATE_EPOCH") )
 	sprintf( buffer, "Copyright (c) %d, %.50s", tm->tm_year+1900, author );
     else
 	sprintf( buffer, "Copyright (c) %d, Anonymous", tm->tm_year+1900 );
