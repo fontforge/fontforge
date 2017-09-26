@@ -81,7 +81,7 @@ sudo ldconfig;
 ```
 
 **Attention, Designers Who Love TrueType Hinting:** 
-You like to run `./configure` with the `--with-freetype-source` option. 
+You like to run `./configure` with the `--with-freetype-source=[ROOT-FREETYPE-SRC]` option. 
 This option enables advanced features for debugging TrueType font hints, such as stepping through hinting instructions one by one.
 
 ## Common Problems
