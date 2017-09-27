@@ -89,3 +89,14 @@ return( ret );
 #endif
 }
 
+time_t GetTime(void) {
+	time_t now;
+	const char *source_date_epoch = getenv("SOURCE_DATE_EPOCH");
+	if (source_date_epoch) {
+		now = atol(source_date_epoch);
+	} else {
+		now = time(NULL);
+	}
+
+	return now;
+}

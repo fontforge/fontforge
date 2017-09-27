@@ -55,7 +55,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <gfile.h>
-#include <time.h>
+#include <gutils.h>
 #include "unicoderange.h"
 #include "psfont.h"
 #include <locale.h>
@@ -604,9 +604,7 @@ return( true );
 }
 
 void SFSetModTime(SplineFont *sf) {
-    time_t now;
-    time(&now);
-    sf->modificationtime = now;
+    sf->modificationtime = GetTime();
 }
 
 static SplineFont *_SFReadPostScript(FILE *file,char *filename) {

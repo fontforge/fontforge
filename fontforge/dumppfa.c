@@ -52,7 +52,7 @@
 # include <pwd.h>
 #endif
 #include <stdarg.h>
-#include <time.h>
+#include <gutils.h>
 #include "psfont.h"
 #include "splinefont.h"
 #include <gdraw.h>		/* For image defn */
@@ -1763,7 +1763,7 @@ static void dumpfontcomments(void (*dumpchar)(int ch,void *data), void *data,
     time_t now;
     const char *author = GetAuthor();
 
-    time(&now);
+    now = GetTime();
     /* Werner points out that the DSC Version comment has a very specific */
     /*  syntax. We can't just put in a random string, must be <real> <int> */
     /* So we can sort of do that for CID fonts (give it a <revsion> of 0 */

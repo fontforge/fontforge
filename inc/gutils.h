@@ -27,8 +27,11 @@
 #ifndef _GUTILS_H
 #define _GUTILS_H
 
+#include <time.h>
+
 extern int16 div_tables[257][2];
 
 extern const char *GetAuthor(void);
+extern time_t GetTime(void);
 
 #endif

@@ -52,7 +52,7 @@
 #include "ttfspecial.h"
 #include <math.h>
 #include <unistd.h>
-#include <time.h>
+#include <gutils.h>
 #include <locale.h>
 #include <utype.h>
 #include <ustring.h>
@@ -3831,8 +3831,8 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
     if ( dummy->names[ttf_subfamily]==NULL || *dummy->names[ttf_subfamily]=='\0' )
 	dummy->names[ttf_subfamily] = utf8_verify_copy(SFGetModifiers(sf));
     if ( dummy->names[ttf_uniqueid]==NULL || *dummy->names[ttf_uniqueid]=='\0' ) {
-	time(&now);
-	tm = localtime(&now);
+	now = GetTime();
+	tm = gmtime(&now);
 	snprintf( buffer, sizeof(buffer), "%s : %s : %d-%d-%d",
 		BDFFoundry?BDFFoundry:TTFFoundry?TTFFoundry:"FontForge 2.0",
 		sf->fullname!=NULL?sf->fullname:sf->fontname,
