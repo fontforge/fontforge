@@ -911,7 +911,7 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             gevent.u.mouse.state = _GGDKDraw_GdkModifierToKsm(evt->state);
             gevent.u.mouse.x = evt->x;
             gevent.u.mouse.y = evt->y;
-            Log(LOGDEBUG, "Motion: [%f %f]", evt->x, evt->y);
+            //Log(LOGDEBUG, "Motion: [%f %f]", evt->x, evt->y);
         }
         break;
         case GDK_SCROLL: { //Synthesize a button press
@@ -1120,7 +1120,7 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
 
             // I could make this Windows specific... But it doesn't seem necessary on other platforms too.
             // On Windows, repeated configure messages are sent if we move the window around.
-            // This causes CPU usage to go up because mose handlers of this message just redraw the whole window.
+            // This causes CPU usage to go up because mouse handlers of this message just redraw the whole window.
             if (gw->is_toplevel && !gevent.u.resize.sized && gevent.u.resize.moved) {
                 gevent.type = et_noevent;
                 Log(LOGDEBUG, "Configure DISCARDED: %p:%s, %d %d %d %d", gw, gw->window_title, gw->pos.x, gw->pos.y, gw->pos.width, gw->pos.height);
@@ -1419,6 +1419,10 @@ static void GGDKDrawSetVisible(GWindow w, int show) {
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CleanupAutoPaint(gw->display);
     if (show) {
+        if (gdk_window_is_visible(gw->w)) {
+            Log(LOGDEBUG, "0x%p %d DISCARDED", w, show);
+            return;
+        }
 #ifdef GDK_WINDOWING_QUARTZ
         // Quartz backend fails to send a configure event after showing a window
         // But FF expects one.
@@ -2053,7 +2057,7 @@ static void GGDKDrawPointerGrab(GWindow w) {
 }
 
 static void GGDKDrawRequestExpose(GWindow w, GRect *rect, int UNUSED(doclear)) {
-    //Log(LOGDEBUG, "%p [%s]", w, ((GGDKWindow)w)->window_title);
+    Log(LOGDEBUG, "%p [%s]", w, ((GGDKWindow)w)->window_title);
 
     GGDKWindow gw = (GGDKWindow) w;
     GdkRectangle clip;
