@@ -15,6 +15,7 @@ os:
 
 env:
   global:
+    - COVERALLS_IS_SET_UP=true # assume coveralls is set up for the moment, will be detected later
     # For Coverity
     - secure: "MeTS1Pqa5gzx1nn/peW/9a5kq84bba3XYUljOfkCUqzuyGiERk/nmok+RW7skrgzboBlKxnNG8+ykKqHMwK9s9M83ezFxvEWXBcKEpmEQKkqXPI5hpMs6jGLTgpeuheSIzqHA3danV8iircp1GOiTLWA0pt/AOsNLZiaYBh0OiE="
   matrix:
@@ -69,6 +70,9 @@ install:
 
     if [ ! -z "$TRACE_CODE_COVERAGE" ] ; then
         FFCONFIG="$FFCONFIG --enable-code-coverage --enable-debug"
+        if ! curl --head --fail --silent "https://coveralls.io/github/${TRAVIS_REPO_SLUG}" > /dev/null ; then
+            COVERALLS_IS_SET_UP=false
+        fi
     fi
 
     # For some inane reason Travis defines this to '-g -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security'
@@ -139,7 +143,7 @@ script:
   - make -j4
   - make -C contrib/fonttools -j4
   - make install
-  - if [ ! -z "$TRACE_CODE_COVERAGE" ]; then make check ; coveralls --gcov-options '\-bulp' --gcov $(which $GCOV) ; fi
+  - if [ ! -z "$TRACE_CODE_COVERAGE" ] && $COVERALLS_IS_SET_UP ; then make check ; coveralls --gcov-options '\-bulp' --gcov $(which $GCOV) ; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then make distcheck -j4; fi
   - fontforge -version
   - $PYTHON -c "import fontforge; import psMat; print(fontforge.__version__, fontforge.version()); fontforge.font();"
