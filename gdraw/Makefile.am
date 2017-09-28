@@ -40,7 +40,8 @@ libgdraw_la_SOURCES = choosericons.c ctlvalues.c drawboxborder.c	\
 	gwidgets.c gxdraw.c gxcdraw.c ghvbox.c gmatrixedit.c		\
 	gdrawable.c gspacer.c xkeysyms_unicode.c colorP.h gdrawP.h	\
 	gimagebmpP.h gresourceP.h gxcdrawP.h fontP.h ggadgetP.h		\
-	gpsdrawP.h gwidgetP.h gxdrawP.h hotkeys.c hotkeys.h
+	gpsdrawP.h gwidgetP.h gxdrawP.h hotkeys.c hotkeys.h		\
+	divisors.c divisors.h
 
 libgdraw_la_CFLAGS = $(WARN_CFLAGS)
 

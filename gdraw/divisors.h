@@ -24,12 +24,11 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _GUTILS_H
-#define _GUTILS_H
+#ifndef GUTILS_DIVISORS_H
+#define GUTILS_DIVISORS_H
 
-#include <time.h>
+#include <basics.h>
 
-extern const char *GetAuthor(void);
-extern time_t GetTime(void);
+extern int16 div_tables[257][2];
 
-#endif
+#endif /* GUTILS_DIVISORS_H */

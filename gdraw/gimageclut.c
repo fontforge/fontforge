@@ -27,11 +27,11 @@
 #include "gdrawP.h"
 #include "colorP.h"
 #include "charset.h"
+#include "divisors.h"
 #include "ustring.h"
-#include "gutils.h"
 
 #if defined(__MINGW32__)
-#  include "../gutils/divisors.c"
+#  include "divisors.c"
 #endif
 
 struct clutinf {

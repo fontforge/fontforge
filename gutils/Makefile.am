@@ -29,7 +29,7 @@ lib_LTLIBRARIES = libgutils.la libgioftp.la
 
 #--------------------------------------------------------------------------
 
-libgutils_la_SOURCES = divisors.c dlist.c fsys.c g_giomime.c gcol.c	\
+libgutils_la_SOURCES = dlist.c fsys.c g_giomime.c gcol.c	\
 	gimage.c gimagebmpP.h gimageread.c gimagereadbmp.c		\
 	gimagereadgif.c gimagereadjpeg.c gimagereadpng.c		\
 	gimagereadras.c gimagereadrgb.c gimagereadtiff.c		\
