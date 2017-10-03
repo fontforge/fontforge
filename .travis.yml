@@ -19,17 +19,18 @@ env:
     # For Coverity
     - secure: "MeTS1Pqa5gzx1nn/peW/9a5kq84bba3XYUljOfkCUqzuyGiERk/nmok+RW7skrgzboBlKxnNG8+ykKqHMwK9s9M83ezFxvEWXBcKEpmEQKkqXPI5hpMs6jGLTgpeuheSIzqHA3danV8iircp1GOiTLWA0pt/AOsNLZiaYBh0OiE="
   matrix:
-    - BUILD_EXTRA_FLAGS="--without-x"
-    - TRACE_CODE_COVERAGE=true
-    - OSX_ONLY=true
+    - MODE=compilation
+    - MODE=distcheck
+    - MODE=coverage
 matrix:
+  include:
+    - os: linux
+      env: MODE=compilation BUILD_EXTRA_FLAGS="--without-x"
   exclude:
     - os: osx
-      env: BUILD_EXTRA_FLAGS="--without-x"
+      env: MODE=distcheck
     - os: osx
-      env: TRACE_CODE_COVERAGE=true
-    - os: linux
-      env: OSX_ONLY=true
+      env: MODE=coverage
 
 addons:
   apt:
@@ -52,7 +53,7 @@ cache:
     - $TRAVIS_BUILD_DIR/travisdeps
 
 before_install:
-  - if [ ! -z "$TRACE_CODE_COVERAGE" ]; then pip --quiet install --user cpp-coveralls==0.3.12 ; fi
+  - if [ "$MODE" == "coverage" ] ; then pip --quiet install --user cpp-coveralls==0.3.12 ; fi
 
 #before_install:
 #  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update || brew update; fi
@@ -67,7 +68,7 @@ install:
     export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$DEPSPREFIX/lib/pkgconfig
     export FFCONFIG="--prefix=$PREFIX $BUILD_EXTRA_FLAGS"
 
-    if [ ! -z "$TRACE_CODE_COVERAGE" ] ; then
+    if [ "$MODE" == "coverage" ] ; then
         FFCONFIG="$FFCONFIG --enable-code-coverage --enable-debug"
     fi
 
@@ -134,15 +135,12 @@ install:
     set +e
 
 script:
-  - ./bootstrap
-  - ./configure $FFCONFIG
-  - make
-  - make -C contrib/fonttools
-  - make install
-  - if [ ! -z "$TRACE_CODE_COVERAGE" ]; then make check ; coveralls --gcov-options '\-bulp' --gcov $(which $GCOV) ; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then make distcheck; fi
-  - fontforge -version
-  - $PYTHON -c "import fontforge; import psMat; print(fontforge.__version__, fontforge.version()); fontforge.font();"
+  - ./bootstrap && ./configure $FFCONFIG
+  - if [ "$MODE" == "compilation" ] || [ "$MODE" == "coverage" ] ; then make && make -C contrib/fonttools && make install ; fi
+  - if [ "$MODE" == "coverage" ] ; then make check ; coveralls --gcov-options '\-bulp' --gcov $(which $GCOV) ; fi
+  - if [ "$MODE" == "distcheck" ] ; then make distcheck ; fi
+  - if [ "$MODE" == "compilation" ] ; then fontforge -version ; fi
+  - if [ "$MODE" == "compilation" ] ; then $PYTHON -c "import fontforge; import psMat; print(fontforge.__version__, fontforge.version()); fontforge.font();" ; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then travis-scripts/ffosxbuild.sh $PREFIX $TRAVIS_COMMIT; fi
 
 after_failure:
