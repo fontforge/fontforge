@@ -36,9 +36,8 @@ addons:
     sources:
       - ubuntu-toolchain-r-test
       - deadsnakes
-    packages: [autoconf, automake, autotools-dev, bzip2, gcc-7, libtool,
-      libjpeg-dev, libtiff4-dev, libpng12-dev, libfreetype6-dev, libgif-dev,
-      libx11-dev, libxml2-dev, libpango1.0-dev, libcairo2-dev, python3.6-dev, lcov]
+    packages: [gcc-7, python3.6-dev, lcov,
+      libtiff4-dev, libgif-dev, libxml2-dev, libpango1.0-dev]
   coverity_scan:
     project:
       name: "fontforge/fontforge"
