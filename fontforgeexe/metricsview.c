@@ -1116,7 +1116,7 @@ return;
 }
 
 static int isValidInt(unichar_t *end) {
-    if ( *end && !(*end=='-' && end[1]=='\0'))
+    if ( end != 0x0 && *end && !(*end=='-' && end[1]=='\0'))
 	return 0;
     return 1;
 }
@@ -5354,7 +5354,6 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     gd.handle_controlevent = MV_TextChanged;
     gd.u.list = mv_text_init;
     mv->text = GListFieldCreate(gw,&gd,mv);
-
     // Up and Down buttons for moving through the word list.
     {
         GTextInfo label[9];

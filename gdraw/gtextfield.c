@@ -432,7 +432,7 @@ static int GTextField_Show(GTextField *gt, int pos) {
     xoff = gt->xoff_left;
     if ( gt->lines[i+1]==-1 ) ll = -1; else ll = gt->lines[i+1]-gt->lines[i]-1;
     GRect size;
-    if ( gt->lines8[i+1]==-1 ) ll = strlen(gt->utf8_text+gt->lines8[i]); else ll = gt->lines8[i+1]-gt->lines8[i]-1;
+    if ( gt->lines8[i+1]==-1 && gt->utf8_text+gt->lines8[i] != 0x0) ll = strlen(gt->utf8_text+gt->lines8[i]); else ll = gt->lines8[i+1]-gt->lines8[i]-1;
     GDrawLayoutInit(gt->g.base,gt->utf8_text+gt->lines8[i],ll,NULL);
     GDrawLayoutExtents(gt->g.base,&size);
     if ( size.width < width )
@@ -2825,7 +2825,6 @@ return( ret );
 
 GGadget *GListFieldCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     GListField *ge = calloc(1,sizeof(GCompletionField));
-
     ge->gt.listfield = true;
     if ( gd->u.list!=NULL )
 	ge->ti = GTextInfoArrayFromList(gd->u.list,&ge->ltot);

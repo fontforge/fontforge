@@ -417,8 +417,8 @@ double u_strtod(const unichar_t *str, unichar_t **ptr) {
     char buf[60], *pt, *ret;
     const unichar_t *upt;
     double val;
-
-    for ( upt=str, pt=buf; *upt<128 && *upt!='\0' && pt-buf<(ptrdiff_t)(sizeof(buf)-1); )
+    if (str == 0x0) return 0;
+    for ( upt=str, pt=buf; *upt != 0x00 && *upt<128 && pt-buf<(ptrdiff_t)(sizeof(buf)-1); )
 	*pt++ = *upt++;
     *pt = '\0';
     val = strtod(buf,&ret);

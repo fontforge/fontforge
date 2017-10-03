@@ -4304,7 +4304,8 @@ return( copy(str));
 	        !issurrogate(sc->unicodeenc) &&
 		!isprivateuse(sc->unicodeenc)) {
 	    *rpt++ = '(';
-	    rpt = utf8_idpb(rpt,sc->unicodeenc,0);
+	    char *tmp = utf8_idpb(rpt,sc->unicodeenc,0);
+		if (tmp != '\0') rpt = tmp;
 	    *rpt++ = ')';
 	}
 	*rpt++ = ' ';
@@ -4338,7 +4339,8 @@ return( copy(sc->name));
 	    !isprivateuse(sc->unicodeenc)) {
 	pt = temp+len;
 	*pt++ = '(';
-	pt = utf8_idpb(pt,sc->unicodeenc,0);
+    char *tmp = utf8_idpb(pt,sc->unicodeenc,0);
+    if (tmp != '\0') pt = tmp;
 	*pt++ = ')';
 	*pt = '\0';
     }
