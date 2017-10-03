@@ -15,6 +15,7 @@ os:
 
 env:
   global:
+    - MAKEFLAGS="-j4"
     # For Coverity
     - secure: "MeTS1Pqa5gzx1nn/peW/9a5kq84bba3XYUljOfkCUqzuyGiERk/nmok+RW7skrgzboBlKxnNG8+ykKqHMwK9s9M83ezFxvEWXBcKEpmEQKkqXPI5hpMs6jGLTgpeuheSIzqHA3danV8iircp1GOiTLWA0pt/AOsNLZiaYBh0OiE="
   matrix:
@@ -93,11 +94,11 @@ install:
         wget --tries 1 "http://download.savannah.gnu.org/releases/freetype/freetype-$FTVER.tar.gz" || \
           wget "https://sourceforge.net/projects/freetype/files/freetype2/$SFFTVER/freetype-$FTVER.tar.gz"
 
-        pushd zeromq-4.1.5 && ./configure --prefix=$DEPSPREFIX && make -j4 && make install && popd
-        pushd czmq-3.0.2 && CFLAGS="-Wno-format-truncation" ./configure --prefix=$DEPSPREFIX && make -j4 && make install && popd
-        pushd libspiro-0.5.20150702 && ./configure --prefix=$DEPSPREFIX && make -j4 && make install && popd
-        pushd libuninameslist-20160701 && ./configure --prefix=$DEPSPREFIX && make -j4 && make install && popd
-        pushd libunicodenames-1.1.0_beta1 && ./configure --prefix=$DEPSPREFIX && make -j4 && make install && popd
+        pushd zeromq-4.1.5 && ./configure --prefix=$DEPSPREFIX && make && make install && popd
+        pushd czmq-3.0.2 && CFLAGS="-Wno-format-truncation" ./configure --prefix=$DEPSPREFIX && make && make install && popd
+        pushd libspiro-0.5.20150702 && ./configure --prefix=$DEPSPREFIX && make && make install && popd
+        pushd libuninameslist-20160701 && ./configure --prefix=$DEPSPREFIX && make && make install && popd
+        pushd libunicodenames-1.1.0_beta1 && ./configure --prefix=$DEPSPREFIX && make && make install && popd
         tar -zxf freetype-$FTVER.tar.gz -C $DEPSPREFIX
         popd
       fi
@@ -136,11 +137,11 @@ install:
 script:
   - ./bootstrap
   - ./configure $FFCONFIG
-  - make -j4
-  - make -C contrib/fonttools -j4
+  - make
+  - make -C contrib/fonttools
   - make install
   - if [ ! -z "$TRACE_CODE_COVERAGE" ]; then make check ; coveralls --gcov-options '\-bulp' --gcov $(which $GCOV) ; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then make distcheck -j4; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then make distcheck; fi
   - fontforge -version
   - $PYTHON -c "import fontforge; import psMat; print(fontforge.__version__, fontforge.version()); fontforge.font();"
   - if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then travis-scripts/ffosxbuild.sh $PREFIX $TRAVIS_COMMIT; fi
