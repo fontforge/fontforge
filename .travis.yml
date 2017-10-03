@@ -53,6 +53,7 @@ cache:
     - $TRAVIS_BUILD_DIR/travisdeps
 
 before_install:
+  - if [ "$MODE" == "coverage" ] ; then curl --head --fail --silent "https://coveralls.io/github/${TRAVIS_REPO_SLUG}" > /dev/null || unset MODE ; fi
   - if [ "$MODE" == "coverage" ] ; then pip --quiet install --user cpp-coveralls==0.3.12 ; fi
 
 #before_install:
@@ -135,7 +136,7 @@ install:
     set +e
 
 script:
-  - ./bootstrap && ./configure $FFCONFIG
+  - if [ -n "$MODE" ] ; then ./bootstrap && ./configure $FFCONFIG ; fi
   - if [ "$MODE" == "compilation" ] || [ "$MODE" == "coverage" ] ; then make && make -C contrib/fonttools && make install ; fi
   - if [ "$MODE" == "coverage" ] ; then make check ; coveralls --gcov-options '\-bulp' --gcov $(which $GCOV) ; fi
   - if [ "$MODE" == "distcheck" ] ; then make distcheck ; fi
