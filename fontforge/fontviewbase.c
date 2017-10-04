@@ -38,6 +38,7 @@
 #include "baseviews.h"
 #include "groups.h"
 #include "psfont.h"
+#include "pua.h"
 #include "scripting.h"
 #include "sfd.h"
 #include "spiro.h"
@@ -368,7 +369,6 @@ return;
 }
 
 void FVBuildDuplicate(FontViewBase *fv) {
-    extern const int cns14pua[], amspua[];
     const int *pua = fv->sf->uni_interp==ui_trad_chinese ? cns14pua : fv->sf->uni_interp==ui_ams ? amspua : NULL;
     int i, cnt=0, gid;
     SplineChar dummy;

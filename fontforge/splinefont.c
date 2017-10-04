@@ -41,6 +41,7 @@
 #include "parsepdf.h"
 #include "parsepfa.h"
 #include "parsettf.h"
+#include "pua.h"
 #include "sfd.h"
 #include "splinefill.h"
 #include "splinesaveafm.h"
@@ -164,7 +165,6 @@ static SplineChar *_SFMakeChar(SplineFont *sf,EncMap *map,int enc) {
     SplineChar dummy, *sc;
     SplineFont *ssf;
     int j, real_uni, gid;
-    extern const int cns14pua[], amspua[];
 
     if ( enc>=map->enccount )
 	gid = -1;
@@ -1489,7 +1489,6 @@ return( weight==NULL || *weight=='\0' ? regular: weight );
 }
 
 int SFIsDuplicatable(SplineFont *sf, SplineChar *sc) {
-    extern const int cns14pua[], amspua[];
     const int *pua = sf->uni_interp==ui_trad_chinese ? cns14pua : sf->uni_interp==ui_ams ? amspua : NULL;
     int baseuni = 0;
     const unichar_t *pt;

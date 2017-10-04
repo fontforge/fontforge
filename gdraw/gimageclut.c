@@ -28,11 +28,6 @@
 #include "colorP.h"
 #include "charset.h"
 #include "ustring.h"
-#include "gutils.h"
-
-#if defined(__MINGW32__)
-#  include "../gutils/divisors.c"
-#endif
 
 struct clutinf {
     Color col;

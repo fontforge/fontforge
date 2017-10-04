@@ -2,6 +2,8 @@
 /*  defined in planes other than the BMP (chinese), or just multiple encodings*/
 /*  for the same glyph (ams)						      */
 
+#include "pua.h"
+
 /* These data are taken from http://www.ams.org/STIX/bnb/stix-tbl.asc-2003-10-10 */
 const int amspua[] = {
 /* E000 */	    0x0,     0x0,     0x0,     0x0,     0x0,     0x0,     0x0,     0x0,

@@ -31,10 +31,10 @@
 #include "fontforgevw.h"
 #include "fvcomposite.h"
 #include "fvfonts.h"
+#include "pua.h"
 #include "ustring.h"
 #include <utype.h>
 #include "namehash.h"
-#include "tables.h"
 
 int recognizePUA = false;
 NameList *force_names_when_opening=NULL;

@@ -29,8 +29,6 @@
 
 #include <time.h>
 
-extern int16 div_tables[257][2];
-
 extern const char *GetAuthor(void);
 extern time_t GetTime(void);
 

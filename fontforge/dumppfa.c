@@ -40,6 +40,7 @@
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "tottf.h"
+#include "zapfnomen.h"
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -2306,8 +2307,6 @@ return( true );
 return( false );
 }
 
-extern char *zapfnomen[];
-extern int8 zapfexists[];
 static void dumptype0stuff(FILE *out,SplineFont *sf, EncMap *map) {
     const char *notdefname;
     int i,j;

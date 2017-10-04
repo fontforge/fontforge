@@ -27,6 +27,8 @@
 #ifndef _GDRAWP_H
 #define _GDRAWP_H
 
+#include <basics.h>
+
 #include "gdraw.h"
 
 typedef struct gcol {
@@ -310,6 +312,8 @@ struct displayfuncs {
     void (*ClipPreserve)(GWindow w);
     
 };
+
+extern int16 div_tables[257][2]; // in div_tables.c
 
 extern void _GXDraw_DestroyDisplay(GDisplay * gdisp);
 extern GDisplay *_GXDraw_CreateDisplay(char *displayname,char *programname);

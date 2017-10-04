@@ -1,4 +1,4 @@
-#include "gdraw.h"
+#include "basics.h"
 
 /* divide data (division tricks for numbers<256) */
 /* multiply by the first number, left shift by the second */

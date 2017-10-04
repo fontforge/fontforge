@@ -47,6 +47,7 @@
 #include "namelist.h"
 #include "nonlineartrans.h"
 #include "psfont.h"
+#include "pua.h"
 #include "scripting.h"
 #include "splinefill.h"
 #include "search.h"
@@ -6143,7 +6144,6 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 	    char utf8_buf[8];
 	    int use_utf8 = false;
 	    Color fg;
-	    extern const int amspua[];
 	    int uni;
 	    struct cidmap *cidmap = NULL;
 	    sc = (gid=fv->b.map->map[index])!=-1 ? fv->b.sf->glyphs[gid]: NULL;
