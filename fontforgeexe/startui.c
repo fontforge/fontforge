@@ -510,23 +510,23 @@ static  OSErr install_apple_event_handlers(void) {
 
     err     = AEInstallEventHandler(kCoreEventClass, kAEOpenApplication,
                 NewAEEventHandlerUPP(OpenApplicationAE), 0, false);
-    require_noerr(err, CantInstallAppleEventHandler);
+    __Require_noErr(err, CantInstallAppleEventHandler);
 
     err     = AEInstallEventHandler(kCoreEventClass, kAEReopenApplication,
                 NewAEEventHandlerUPP(ReopenApplicationAE), 0, false);
-    require_noerr(err, CantInstallAppleEventHandler);
+    __Require_noErr(err, CantInstallAppleEventHandler);
 
     err     = AEInstallEventHandler(kCoreEventClass, kAEOpenDocuments,
                 NewAEEventHandlerUPP(OpenDocumentsAE), 0, false);
-    require_noerr(err, CantInstallAppleEventHandler);
+    __Require_noErr(err, CantInstallAppleEventHandler);
 
     err     = AEInstallEventHandler(kCoreEventClass, kAEQuitApplication,
                 NewAEEventHandlerUPP(QuitApplicationAE), 0, false);
-    require_noerr(err, CantInstallAppleEventHandler);
+    __Require_noErr(err, CantInstallAppleEventHandler);
 
     err     = AEInstallEventHandler(kCoreEventClass, kAEShowPreferences,
                 NewAEEventHandlerUPP(ShowPreferencesAE), 0, false);
-    require_noerr(err, CantInstallAppleEventHandler);
+    __Require_noErr(err, CantInstallAppleEventHandler);
 
  /* some debugging code, for now */
  if ( getenv("HOME")!=NULL ) {
