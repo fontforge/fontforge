@@ -15,29 +15,30 @@ os:
 
 env:
   global:
+    - MAKEFLAGS="-j4"
     # For Coverity
     - secure: "MeTS1Pqa5gzx1nn/peW/9a5kq84bba3XYUljOfkCUqzuyGiERk/nmok+RW7skrgzboBlKxnNG8+ykKqHMwK9s9M83ezFxvEWXBcKEpmEQKkqXPI5hpMs6jGLTgpeuheSIzqHA3danV8iircp1GOiTLWA0pt/AOsNLZiaYBh0OiE="
   matrix:
-    - BUILD_EXTRA_FLAGS="--without-x"
-    - TRACE_CODE_COVERAGE=true
-    - OSX_ONLY=true
+    - MODE=compilation
+    - MODE=distcheck
+    - MODE=coverage
 matrix:
+  include:
+    - os: linux
+      env: MODE=compilation BUILD_EXTRA_FLAGS="--without-x"
   exclude:
     - os: osx
-      env: BUILD_EXTRA_FLAGS="--without-x"
+      env: MODE=distcheck
     - os: osx
-      env: TRACE_CODE_COVERAGE=true
-    - os: linux
-      env: OSX_ONLY=true
+      env: MODE=coverage
 
 addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
       - deadsnakes
-    packages: [autoconf, automake, autotools-dev, bzip2, gcc-7, libtool,
-      libjpeg-dev, libtiff4-dev, libpng12-dev, libfreetype6-dev, libgif-dev,
-      libx11-dev, libxml2-dev, libpango1.0-dev, libcairo2-dev, python3.6-dev, lcov]
+    packages: [gcc-7, python3.6-dev, lcov,
+      libtiff4-dev, libgif-dev, libxml2-dev, libpango1.0-dev]
   coverity_scan:
     project:
       name: "fontforge/fontforge"
@@ -52,7 +53,8 @@ cache:
     - $TRAVIS_BUILD_DIR/travisdeps
 
 before_install:
-  - if [ ! -z "$TRACE_CODE_COVERAGE" ]; then pip --quiet install --user cpp-coveralls==0.3.12 ; fi
+  - if [ "$MODE" == "coverage" ] ; then curl --head --fail --silent "https://coveralls.io/github/${TRAVIS_REPO_SLUG}" > /dev/null || unset MODE ; fi
+  - if [ "$MODE" == "coverage" ] ; then pip --quiet install --user cpp-coveralls==0.3.12 ; fi
 
 #before_install:
 #  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update || brew update; fi
@@ -67,7 +69,7 @@ install:
     export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$DEPSPREFIX/lib/pkgconfig
     export FFCONFIG="--prefix=$PREFIX $BUILD_EXTRA_FLAGS"
 
-    if [ ! -z "$TRACE_CODE_COVERAGE" ] ; then
+    if [ "$MODE" == "coverage" ] ; then
         FFCONFIG="$FFCONFIG --enable-code-coverage --enable-debug"
     fi
 
@@ -93,11 +95,11 @@ install:
         wget --tries 1 "http://download.savannah.gnu.org/releases/freetype/freetype-$FTVER.tar.gz" || \
           wget "https://sourceforge.net/projects/freetype/files/freetype2/$SFFTVER/freetype-$FTVER.tar.gz"
 
-        pushd zeromq-4.1.5 && ./configure --prefix=$DEPSPREFIX && make -j4 && make install && popd
-        pushd czmq-3.0.2 && CFLAGS="-Wno-format-truncation" ./configure --prefix=$DEPSPREFIX && make -j4 && make install && popd
-        pushd libspiro-0.5.20150702 && ./configure --prefix=$DEPSPREFIX && make -j4 && make install && popd
-        pushd libuninameslist-20160701 && ./configure --prefix=$DEPSPREFIX && make -j4 && make install && popd
-        pushd libunicodenames-1.1.0_beta1 && ./configure --prefix=$DEPSPREFIX && make -j4 && make install && popd
+        pushd zeromq-4.1.5 && ./configure --prefix=$DEPSPREFIX && make && make install && popd
+        pushd czmq-3.0.2 && CFLAGS="-Wno-format-truncation" ./configure --prefix=$DEPSPREFIX && make && make install && popd
+        pushd libspiro-0.5.20150702 && ./configure --prefix=$DEPSPREFIX && make && make install && popd
+        pushd libuninameslist-20160701 && ./configure --prefix=$DEPSPREFIX && make && make install && popd
+        pushd libunicodenames-1.1.0_beta1 && ./configure --prefix=$DEPSPREFIX && make && make install && popd
         tar -zxf freetype-$FTVER.tar.gz -C $DEPSPREFIX
         popd
       fi
@@ -134,15 +136,12 @@ install:
     set +e
 
 script:
-  - ./bootstrap
-  - ./configure $FFCONFIG
-  - make -j4
-  - make -C contrib/fonttools -j4
-  - make install
-  - if [ ! -z "$TRACE_CODE_COVERAGE" ]; then make check ; coveralls --gcov-options '\-bulp' --gcov $(which $GCOV) ; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then make distcheck -j4; fi
-  - fontforge -version
-  - $PYTHON -c "import fontforge; import psMat; print(fontforge.__version__, fontforge.version()); fontforge.font();"
+  - if [ -n "$MODE" ] ; then ./bootstrap && ./configure $FFCONFIG ; fi
+  - if [ "$MODE" == "compilation" ] || [ "$MODE" == "coverage" ] ; then make && make -C contrib/fonttools && make install ; fi
+  - if [ "$MODE" == "coverage" ] ; then make check ; coveralls --gcov-options '\-bulp' --gcov $(which $GCOV) ; fi
+  - if [ "$MODE" == "distcheck" ] ; then make distcheck ; fi
+  - if [ "$MODE" == "compilation" ] ; then fontforge -version ; fi
+  - if [ "$MODE" == "compilation" ] ; then $PYTHON -c "import fontforge; import psMat; print(fontforge.__version__, fontforge.version()); fontforge.font();" ; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then travis-scripts/ffosxbuild.sh $PREFIX $TRAVIS_COMMIT; fi
 
 after_failure:
