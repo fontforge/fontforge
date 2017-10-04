@@ -93,7 +93,7 @@ static void dictfree(struct pskeydict *dict) {
 		dict->entries[i].type==ps_lit ) {
 	    free(dict->entries[i].u.str);
 	    dict->entries[i].u.str = NULL;
-    }
+	}
 	else if ( dict->entries[i].type==ps_array || dict->entries[i].type==ps_dict )
 	    dictfree(&dict->entries[i].u.dict);
     }
