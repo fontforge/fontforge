@@ -150,7 +150,7 @@ libfontforge_la_SOURCES = activeinui.c asmfpst.c autohint.c autosave.c	\
 	splinestroke.c splineutil2.c splineutil.c start.c		\
 	stemdb.c strlist.c svg.c tottfaat.c tottfgpos.c tottf.c		\
 	tottfvar.c ttfinstrs.c ttfspecial.c ufo.c unicoderange.c	\
-	utils.c winfonts.c woff.c zapfnomen.c \
+	winfonts.c woff.c zapfnomen.c \
 	glif_name_hash.c \
 	mem.c
 
