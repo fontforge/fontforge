@@ -9,26 +9,20 @@ branches:
     - master
     - travis
     - coverity_scan
-os:
-  - linux
-  - osx
 
 env:
   global:
     - MAKEFLAGS="-j4"
     # For Coverity
     - secure: "MeTS1Pqa5gzx1nn/peW/9a5kq84bba3XYUljOfkCUqzuyGiERk/nmok+RW7skrgzboBlKxnNG8+ykKqHMwK9s9M83ezFxvEWXBcKEpmEQKkqXPI5hpMs6jGLTgpeuheSIzqHA3danV8iircp1GOiTLWA0pt/AOsNLZiaYBh0OiE="
-  matrix:
-    - BUILD_EXTRA_FLAGS="--without-x"
-    - TRACE_CODE_COVERAGE=true
-    - OSX_ONLY=true
+
 matrix:
-  exclude:
-    - os: osx
-      env: BUILD_EXTRA_FLAGS="--without-x"
-    - os: osx
-      env: TRACE_CODE_COVERAGE=true
+  include:
     - os: linux
+      env: LINUX_NOX=true
+    - os: linux
+      env: LINUX_FULL=true
+    - os: osx
       env: OSX_ONLY=true
 
 addons:
@@ -53,9 +47,7 @@ cache:
     - $TRAVIS_BUILD_DIR/travisdeps
 
 before_install:
-  - if [ ! -z "$TRACE_CODE_COVERAGE" ]; then pip --quiet install --user cpp-coveralls==0.3.12 ; fi
-
-#before_install:
+  - if [ ! -z "$LINUX_FULL" ]; then pip --quiet install --user cpp-coveralls==0.3.12 ; fi
 #  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update || brew update; fi
 
 install:
@@ -66,10 +58,12 @@ install:
     export PATH=$PATH:$DEPSPREFIX/bin:$PREFIX/bin
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DEPSPREFIX/lib:$PREFIX/lib
     export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$DEPSPREFIX/lib/pkgconfig
-    export FFCONFIG="--prefix=$PREFIX $BUILD_EXTRA_FLAGS"
+    export FFCONFIG="--prefix=$PREFIX"
 
-    if [ ! -z "$TRACE_CODE_COVERAGE" ] ; then
-        FFCONFIG="$FFCONFIG --enable-code-coverage --enable-debug"
+    if [ ! -z "$LINUX_FULL" ] ; then
+      export FFCONFIG="$FFCONFIG --enable-code-coverage --enable-debug"
+    elif [ ! -z "$LINUX_NOX" ]; then
+      export FFCONFIG="$FFCONFIG --without-x"
     fi
 
     # For some inane reason Travis defines this to '-g -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security'
@@ -137,14 +131,16 @@ install:
 script:
   - ./bootstrap
   - ./configure $FFCONFIG
-  - make
-  - make -C contrib/fonttools
+  - make && make -C contrib/fonttools
   - make install
-  - if [ ! -z "$TRACE_CODE_COVERAGE" ]; then make check ; coveralls --gcov-options '\-bulp' --gcov $(which $GCOV) ; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then make distcheck; fi
+  - make check
+  - if [ ! -z "$LINUX_FULL" ]; then make distcheck; fi
   - fontforge -version
   - $PYTHON -c "import fontforge; import psMat; print(fontforge.__version__, fontforge.version()); fontforge.font();"
-  - if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then travis-scripts/ffosxbuild.sh $PREFIX $TRAVIS_COMMIT; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]; then travis-scripts/ffosxbuild.sh $PREFIX $TRAVIS_COMMIT; fi
+
+after_success:
+  - if [ ! -z "$LINUX_FULL" ]; then coveralls --gcov-options '\-bulp' --gcov $(which $GCOV) || true; fi
 
 after_failure:
   - cat config.log
