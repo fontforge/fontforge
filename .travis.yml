@@ -100,7 +100,7 @@ install:
       # These are FF-specific mods (set here so it runs also in Coverity)
       export PYTHON=python3.6
       export PYTHONPATH=$PYTHONPATH:$PREFIX/lib/python$($PYTHON -c "import sys; print('{0}.{1}'.format(sys.version_info.major, sys.version_info.minor))")/site-packages
-      export CFLAGS="-fdiagnostics-color=always -Wall -Wno-switch"
+      export CFLAGS="-fdiagnostics-color=always -Wall -Wno-switch -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wrestrict -Wnull-dereference -Wjump-misses-init -Wdouble-promotion -Wshadow"
     else
       export PATH=/opt/local/bin:$PATH
       export PKG_CONFIG_PATH=/opt/local/lib/pkgconfig:/opt/X11/lib/pkgconfig:/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/pkgconfig:$PKG_CONFIG_PATH
