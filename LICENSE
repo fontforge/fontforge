@@ -186,7 +186,7 @@ excepthook.py
 
 fontforge-20120731-b/Unicode:
 char.c		makebuildtables.c	ucharmap.c
-dump.c		makeutype.c		usprintf.c
+dump.c		makeutype.c
 gwwiconv.c	memory.c		ustring.c
 ```
 

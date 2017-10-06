@@ -90,8 +90,8 @@ EXTRA_DIST = README.TXT		\
 	combiners.h		\
 	dump.c			\
 	makebuildtables.c	\
-	makeutype.c		\
-	usprintf.c
+	makeutype.c
+
 #--------------------------------------------------------------------------
 
 -include $(top_srcdir)/git.mk
