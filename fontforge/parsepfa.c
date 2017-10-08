@@ -29,6 +29,7 @@
 #include "fontforge.h"
 #include "parsettf.h"
 #include "psread.h"
+#include <gutils.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -2645,8 +2646,8 @@ return(NULL);
     fclose(temp);
 
     if ( fstat(fileno(in),&b)!=-1 ) {
-	fp.fd->modificationtime = b.st_mtime;
-	fp.fd->creationtime = b.st_mtime;
+	fp.fd->modificationtime = GetST_MTime(b);
+	fp.fd->creationtime = GetST_MTime(b);
     }
 return( fp.fd );
 }
