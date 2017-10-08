@@ -24,6 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <gutils.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -795,7 +796,7 @@ static void DumpEpsHeader(FILE *eps, struct ttfinfo *info, int glyph,
 	fprintf(eps, " Unicode %04x", info->glyph_unicode[glyph]);
     fprintf( eps, "\n" );
     fprintf( eps, "%%%%Creator: ttf2eps\n" );
-    time(&now);
+    now = GetTime();
     tm = localtime(&now);
     fprintf( eps, "%%%%CreationDate: %d:%02d %d-%d-%d\n", tm->tm_hour, tm->tm_min,
 	    tm->tm_mday, tm->tm_mon+1, 1900+tm->tm_year );

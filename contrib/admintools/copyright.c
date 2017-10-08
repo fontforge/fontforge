@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <errno.h>
+#include <gutils.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -71,7 +72,7 @@ return;
 	tm = localtime(&sb.st_mtime);
 	fprintf( output, "*** %s~\t%d-%0d-%0d %02d:%02d:%02d.000000000 -0800\n", filename,
 	    tm->tm_year+1900, tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec );
-	time(&now);
+	now = GetTime();
 	tm = localtime(&now);
 	fprintf( output, "--- %s\t%d-%0d-%0d %02d:%02d:%02d.000000000 -0800\n", filename,
 	    tm->tm_year+1900, tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec );

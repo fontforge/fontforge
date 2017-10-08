@@ -75,6 +75,7 @@
 #include "tottfgpos.h"
 #include "ttfinstrs.h"
 #include <gfile.h>
+#include <gutils.h>
 #include <utype.h>
 #include <ustring.h>
 #include <ffglib.h>
@@ -817,7 +818,7 @@ static void bStrftime(Context *c) {
     if ( c->a.argc>=4 )
 	oldloc = setlocale(LC_TIME, c->a.vals[3].u.sval); // TODO
 
-    time(&now);
+    now = GetTime();
     if ( isgmt )
 	tm = gmtime(&now);
     else
