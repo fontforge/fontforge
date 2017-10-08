@@ -6,8 +6,8 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
 #include <stdlib.h>
+#include <time.h>
 
 /* Update copyright notices to a new year */
 
@@ -68,11 +68,11 @@ return;
     fclose(src);
     if ( IsCopyright(lines[0],buffer)) {
 	stat(filename,&sb);
-	tm = localtime(&sb.st_mtime);
+	tm = gmtime(&sb.st_mtime);
 	fprintf( output, "*** %s~\t%d-%0d-%0d %02d:%02d:%02d.000000000 -0800\n", filename,
 	    tm->tm_year+1900, tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec );
 	time(&now);
-	tm = localtime(&now);
+	tm = gmtime(&now);
 	fprintf( output, "--- %s\t%d-%0d-%0d %02d:%02d:%02d.000000000 -0800\n", filename,
 	    tm->tm_year+1900, tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec );
 	fprintf( output, "***************\n" );

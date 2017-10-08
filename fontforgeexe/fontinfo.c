@@ -3264,7 +3264,7 @@ static int GFI_AddOFL(GGadget *g, GEvent *e) {
 	struct tm *tm;
 
 	time(&now);
-	tm = localtime(&now);
+	tm = gmtime(&now);
 
 	tns = GMatrixEditGet(tng, &rows); newtns = NULL;
 	for ( k=0; k<2; ++k ) {
