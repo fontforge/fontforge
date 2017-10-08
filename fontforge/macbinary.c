@@ -1423,7 +1423,6 @@ static int DumpMacBinaryHeader(FILE *res,struct macbinaryheader *mb) {
 
 	/* Creation time, (seconds from 1/1/1904) */
     now = mactime();
-    time(&now);
     *hpt++ = now>>24; *hpt++ = now>>16; *hpt++ = now>>8; *hpt++ = now;
 	/* Modification time, (seconds from 1/1/1904) */
     *hpt++ = now>>24; *hpt++ = now>>16; *hpt++ = now>>8; *hpt++ = now;
