@@ -49,6 +49,7 @@
 #include <locale.h>
 #include <utype.h>
 #include <chardata.h>
+#include <time.h>
 #include <ustring.h>
 #include <unistd.h>
 #include <sys/types.h>

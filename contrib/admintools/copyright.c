@@ -6,8 +6,8 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
 #include <stdlib.h>
+#include <time.h>
 
 /* Update copyright notices to a new year */
 

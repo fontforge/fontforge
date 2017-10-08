@@ -54,6 +54,7 @@
 #include <unistd.h>
 #include <gutils.h>
 #include <locale.h>
+#include <time.h>
 #include <utype.h>
 #include <ustring.h>
 #include <chardata.h>
