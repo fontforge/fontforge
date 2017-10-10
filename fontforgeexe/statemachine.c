@@ -497,7 +497,38 @@ static int smdedit_e_h(GWindow gw, GEvent *event) {
 	    else
 		smd->edit_done = true;
 	  break;
+	  case et_buttonpress:
+	  case et_radiochanged:
+	  case et_listselected:
+	  case et_listdoubleclick:
+	  case et_scrollbarchange:
+	  case et_textchanged:
+	  case et_textfocuschanged:
+	  case et_lastsubtype:
+	  default:
+	  break;
 	}
+      break;
+      case et_noevent:
+      case et_charup:
+      case et_mousemove:
+      case et_mousedown:
+      case et_mouseup:
+      case et_crossing:
+      case et_focus:
+      case et_expose:
+      case et_visibility:
+      case et_resize:
+      case et_timer:
+      case et_map:
+      case et_destroy:
+      case et_selclear:
+      case et_drag:
+      case et_dragout:
+      case et_drop:
+      //case et_lastnativeevent:	/* Same as et_drop */
+      case et_user:
+      default:
       break;
     }
 
@@ -1092,9 +1123,11 @@ static void SMD_HScroll(SMD *smd,struct sbevent *sb) {
 	    newpos -= smd->width/smd->statew - 1;
 	break;
       case et_sb_up:
+      //case et_sb_left:	/* Same as et_sb_up */
         --newpos;
 	break;
       case et_sb_down:
+      //case et_sb_right:	/* Same as et_sb_down */
         ++newpos;
 	break;
       case et_sb_downpage:
@@ -1109,6 +1142,8 @@ static void SMD_HScroll(SMD *smd,struct sbevent *sb) {
       case et_sb_thumb:
       case et_sb_thumbrelease:
         newpos = sb->pos;
+	break;
+	default:
 	break;
     }
     if ( newpos + (smd->width/smd->statew) >= smd->class_cnt )
@@ -1140,9 +1175,11 @@ static void SMD_VScroll(SMD *smd,struct sbevent *sb) {
 	    newpos -= smd->height/smd->stateh - 1;
 	break;
       case et_sb_up:
+      //case et_sb_left:	/* Same as et_sb_up */
         --newpos;
 	break;
       case et_sb_down:
+      //case et_sb_right:	/* Same as et_sb_down */
         ++newpos;
 	break;
       case et_sb_downpage:
@@ -1157,6 +1194,8 @@ static void SMD_VScroll(SMD *smd,struct sbevent *sb) {
       case et_sb_thumb:
       case et_sb_thumbrelease:
         newpos = sb->pos;
+	break;
+      default:
 	break;
     }
     if ( newpos + (smd->height/smd->stateh) >= smd->state_cnt )
@@ -1236,8 +1275,35 @@ static int smd_e_h(GWindow gw, GEvent *event) {
 	    else
 		SMD_VScroll(smd,&event->u.control.u.sb);
 	    break;
+
+	  case et_buttonpress:
+	  case et_buttonactivate:
+	  case et_radiochanged:
+	  case et_listselected:
+	  case et_listdoubleclick:
+	  case et_textchanged:
+	  case et_textfocuschanged:
+	  case et_lastsubtype:
+	  default:
+	    break;
 	}
 	
+	break;
+
+      case et_noevent:
+      case et_charup:
+      case et_crossing:
+      case et_focus:
+      case et_visibility:
+      case et_timer:
+      case et_create:
+      case et_selclear:
+      case et_drag:
+      case et_dragout:
+      case et_drop:
+      //case et_lastnativeevent:	/* Same as et_drop */
+      case et_user:
+      default:
 	break;
     }
 
