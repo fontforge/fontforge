@@ -116,7 +116,6 @@ pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 
 LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgutils.la	\
-	$(top_builddir)/gutils/libgioftp.la	\
 	$(top_builddir)/lib/libgnu.la
 
 AM_CFLAGS = $(WARN_CFLAGS)

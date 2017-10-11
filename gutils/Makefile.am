@@ -25,7 +25,7 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-lib_LTLIBRARIES = libgutils.la libgioftp.la
+lib_LTLIBRARIES = libgutils.la
 
 #--------------------------------------------------------------------------
 
@@ -52,18 +52,6 @@ libgutils_la_CFLAGS += $(LIBZMQ_CFLAGS)
 endif
 
 libgutils_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBGUTILS_VERSION) \
-	${MY_LIB_LDFLAGS}
-
-#--------------------------------------------------------------------------
-
-libgioftp_la_SOURCES = gioftp.c gioftpP.h
-
-libgioftp_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
-	$(MY_CFLAGS)
-
-libgioftp_la_LIBADD = $(MY_LIBS) $(top_builddir)/Unicode/libgunicode.la
-
-libgioftp_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBGIOFTP_VERSION) \
 	${MY_LIB_LDFLAGS}
 
 #--------------------------------------------------------------------------

@@ -47,7 +47,6 @@ AM_CPPFLAGS = -DLIBDIR='"$(libdir)"' $(PYTHON_CFLAGS)			\
 
 LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgutils.la			\
-	$(top_builddir)/gutils/libgioftp.la			\
 	$(top_builddir)/fontforge/libfontforge.la
 
 -include $(top_srcdir)/git.mk
