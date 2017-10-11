@@ -595,9 +595,6 @@ static void ProcessFileChooserPrefs(void) {
 	b[i++] = uc_copy("/cygdrive/c/Windows/Fonts/");
 #endif
 	b[i++] = uc_copy("/usr/X11R6/lib/X11/fonts/");
-#ifndef __CygWin		/* I'm not releasing ftp support on cygwin */
-	b[i++] = uc_copy("ftp://ctan.org/pub/tex-archive/fonts/");
-#endif
 	b[i++] = NULL;
 	GFileChooserSetBookmarks(b);
     } else {
