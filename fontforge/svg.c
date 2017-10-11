@@ -33,7 +33,6 @@
 #include "encoding.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
-#include "http.h"
 #include "lookups.h"
 #include "namelist.h"
 #include "parsettf.h"
@@ -1047,8 +1046,6 @@ return( 0 );
     ret = true;
     if ( ferror(file))
 	ret = false;
-    if ( strstr(fontname,"://")!=NULL && ret )
-	ret = URLFromFile(fontname,file);
     if ( fclose(file)==-1 )
 return( 0 );
 return( ret );

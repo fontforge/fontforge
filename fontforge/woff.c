@@ -32,7 +32,6 @@
 #include "woff.h"
 
 #include "fontforge.h"
-#include "http.h"
 #include "mem.h"
 #include "parsettf.h"
 #include "tottf.h"
@@ -557,8 +556,6 @@ return( 0 );
 return( 0 );
     }
     ret = _WriteWOFFFont(woff,sf,format,bsizes,bf,flags,enc,layer);
-    if ( strstr(fontname,"://")!=NULL && ret )
-	ret = URLFromFile(fontname,woff);
     if ( fclose(woff)==-1 )
 return( 0 );
 return( ret );

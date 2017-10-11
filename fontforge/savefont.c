@@ -34,7 +34,6 @@
 #include "dumppfa.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
-#include "http.h"
 #include "macbinary.h"
 #include "namelist.h"
 #include "palmfonts.h"
@@ -126,8 +125,6 @@ static int WriteAfmFile(char *filename,SplineFont *sf, int formattype,
 return( false );
     }
     ret = AfmSplineFont(afm,sf,subtype,map,flags&ps_flag_afmwithmarks,fullsf,layer);
-    if ( ret && strstr(buf,"://")!=NULL )
-	ret = URLFromFile(buf,afm);
     free(buf);
     if ( fclose(afm)==-1 )
 return( false );

@@ -34,7 +34,6 @@
 #include "encoding.h"
 #include "fontforge.h"
 #include "fvfonts.h"
-#include "http.h"
 #include "lookups.h"
 #include "mem.h"
 #include "namelist.h"
@@ -3122,8 +3121,6 @@ return( 0 );
 	err = SFDDump(sfd,sf,map,normal,todir,filename);
     switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     if ( ferror(sfd) ) err = true;
-    if ( !err && !todir && strstr(filename,"://")!=NULL )
-	err = !URLFromFile(filename,sfd);
     if ( fclose(sfd) ) err = true;
     if ( todir )
 	SFFinalDirClean(filename);

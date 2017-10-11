@@ -33,7 +33,6 @@
 #include "encoding.h"
 #include "fontforge.h"
 #include "fvfonts.h"
-#include "http.h"
 #include "lookups.h"
 #include "macenc.h"
 #include "mem.h"
@@ -6167,8 +6166,6 @@ return( 0 );
 return( 0 );
     }
     ret = _WriteTTFFont(ttf,sf,format,bsizes,bf,flags,map,layer);
-    if ( strstr(fontname,"://")!=NULL && ret )
-	ret = URLFromFile(fontname,ttf);
     if ( ret && (flags&ttf_flag_glyphmap) )
 	DumpGlyphToNameMap(fontname,sf);
     if ( fclose(ttf)==-1 )
@@ -7031,8 +7028,6 @@ return( true );
 	    IError("Miscalculated offsets in ttc");
     } else
 
-    if ( strstr(filename,"://")!=NULL && ok )
-	ok = URLFromFile(filename,ttc);
     if ( ferror(ttc))
 	ok = false;
     if ( fclose(ttc)==-1 )
