@@ -127,6 +127,7 @@ check_pedit([TTC loading],[test130.pe],[NotoSans-Regular.ttc])
 check_pedit([Export processes directives in filenames],[test132.pe],[Ambrosia.sfd])
 
 check_pedit_output([Exported EPS],[test500.pe],[Ambrosia.sfd],[f-Ambrosia-g-k.eps])
+check_pedit_output([Exported SVG],[test501.pe],[Ambrosia.sfd],[f-Ambrosia-g-k.svg])
 
 AT_BANNER([FontForge Python Scripting Tests])
 
