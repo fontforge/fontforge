@@ -132,6 +132,7 @@ static void StatesFree(struct asm_state *old,int old_class_cnt,int old_state_cnt
 	    }
 	}
     }
+
     free(old);
 }
 
@@ -159,21 +160,18 @@ static struct asm_state *StateCopy(struct asm_state *old,int old_class_cnt,int o
 	    }
 	}
     }
-    for ( ; i<new_state_cnt; ++i )
-	new[i*new_class_cnt+2].next_state = i;		/* Deleted glyphs should be treated as noops */
+    for ( ; i<new_state_cnt; ++i ) { 	new[i*new_class_cnt+2].next_state = i;		/* Deleted glyphs should be treated as noops */ }
 
-    if ( freeold )
-	StatesFree(old,old_class_cnt,old_state_cnt,type);
+    if ( freeold ) { StatesFree(old,old_class_cnt,old_state_cnt,type); }
 
-return( new );
+    return new;
 }
 
 static void StateRemoveClasses(SMD *smd, int removeme ) {
     struct asm_state *new;
     int i,j,k;
 
-    if ( removeme<4 )
-return;
+    if ( removeme<4 ) { return; }
 
     new = calloc((smd->class_cnt-1)*smd->state_cnt,sizeof(struct asm_state));
     for ( i=0; i<smd->state_cnt ; ++i ) {
@@ -201,11 +199,10 @@ static int FindMaxReachableStateCnt(SMD *smd) {
     for ( i=0; i<=max_reachable && i<smd->state_cnt; ++i ) {
 	for ( j=0; j<smd->class_cnt; ++j ) {
 	    ns = smd->states[i*smd->class_cnt+j].next_state;
-	    if ( ns>max_reachable )
-		max_reachable = ns;
+	    if ( ns>max_reachable ) { max_reachable = ns; }
 	}
     }
-return( max_reachable+1 );		/* The count is one more than the max */
+    return max_reachable + 1;		/* The count is one more than the max */
 }
 
 /* ************************************************************************** */
@@ -239,7 +236,7 @@ static char *copy_count(GWindow gw,int cid,int *cnt) {
     while ( *u==' ' ) ++u;
     if ( *u=='\0' ) {
 	*cnt = 0;
-return( NULL );
+	return NULL;
     }
 
     ret = pt = malloc(u_strlen(u)+1);
@@ -256,7 +253,7 @@ return( NULL );
     }
     *pt = '\0';
     *cnt = c+1;
-return( ret );
+    return ret;
 }
 
 static void SMD_Fillup(SMD *smd) {
@@ -332,8 +329,7 @@ static int SMD_DoChange(SMD *smd) {
     int oddcomplain=false;
 
     ns = GetInt8(smd->editgw,CID_NextState,_("Next State:"),&err);
-    if ( err )
-return( false );
+    if ( err ) { return false; }
     flags = 0;
     if ( !GGadgetIsChecked(GWidgetGetControl(smd->editgw,CID_Flag4000)) ) flags |= 0x4000;
     if ( GGadgetIsChecked(GWidgetGetControl(smd->editgw,CID_Flag8000)) ) flags |= 0x8000;
@@ -352,10 +348,10 @@ return( false );
 	    kbuf[kerns] = u_strtol(ret,&end,10);
 	    if ( end==ret ) {
 		GGadgetProtest8(_("Kern Values:"));
-return( false );
+		return false;
 	    } else if ( kerns>=8 ) {
 		ff_post_error(_("Too Many Kerns"),_("At most 8 kerning values may be specified here"));
-return( false );
+		return false;
 	    } else if ( kbuf[kerns]&1 ) {
 		kbuf[kerns] &= ~1;
 		if ( !oddcomplain )
@@ -382,11 +378,11 @@ return( false );
 	else if ( (mlook=SFFindLookup(smd->sf,ret8))==NULL ) {
 	    ff_post_error(_("Unknown lookup"),_("Lookup, %s, does not exist"), ret8 );
 	    free(ret8);
-return( false );
+	    return false;
 	} else if ( mlook->lookup_type!=gsub_single ) {
 	    ff_post_error(_("Bad lookup type"),_("Lookups in contextual state machines must be simple substitutions,\n, but %s is not"), ret8 );
 	    free(ret8);
-return( false );
+	    return false;
 	}
 	free(ret8);
 	ret8 = GGadgetGetTitle8(GWidgetGetControl(smd->editgw,CID_TagCur));
@@ -395,11 +391,11 @@ return( false );
 	else if ( (clook=SFFindLookup(smd->sf,ret8))==NULL ) {
 	    ff_post_error(_("Unknown lookup"),_("Lookup, %s, does not exist"), ret8 );
 	    free(ret8);
-return( false );
+	    return false;
 	} else if ( clook->lookup_type!=gsub_single ) {
 	    ff_post_error(_("Bad lookup type"),_("Lookups in contextual state machines must be simple substitutions,\n, but %s is not"), ret8 );
 	    free(ret8);
-return( false );
+	    return false;
 	}
 	this->next_state = ns;
 	this->flags = flags;
@@ -416,7 +412,7 @@ return( false );
 	if ( cnt>31 ) {
 	    ff_post_error(_("Too Many Glyphs"),_("At most 31 glyphs may be specified in an insert list"));
 	    free(mins);
-return( false );
+	    return false;
 	}
 	flags |= cnt<<5;
 
@@ -425,7 +421,7 @@ return( false );
 	    ff_post_error(_("Too Many Glyphs"),_("At most 31 glyphs may be specified in an insert list"));
 	    free(mins);
 	    free(cins);
-return( false );
+	    return false;
 	}
 	flags |= cnt;
 	this->next_state = ns;
@@ -438,7 +434,7 @@ return( false );
 
     /* Show changes in main window */
     GDrawRequestExpose(smd->gw,NULL,false);
-return( true );
+    return true;
 }
 
 static int SMDE_Arrow(GGadget *g, GEvent *e) {
@@ -459,6 +455,8 @@ static int SMDE_Arrow(GGadget *g, GEvent *e) {
 	  case CID_Down:
 	    if ( state<smd->state_cnt-1 ) ++state;
 	  break;
+	  default:
+	  break;
 	}
 	if ( state!=smd->st_pos/smd->class_cnt || class!=smd->st_pos%smd->class_cnt ) {
 	    if ( SMD_DoChange(smd)) {
@@ -467,7 +465,8 @@ static int SMDE_Arrow(GGadget *g, GEvent *e) {
 	    }
 	}
     }
-return( true );
+
+    return true;
 }
 
 static int smdedit_e_h(GWindow gw, GEvent *event) {
@@ -481,15 +480,15 @@ static int smdedit_e_h(GWindow gw, GEvent *event) {
       case et_char:
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("statemachine.html#EditTransition");
-return( true );
+	    return true;
 	} else if ( event->u.chr.keysym == GK_Escape ) {
 	    smd->edit_done = true;
-return( true );
+	    return true;
 	} else if ( event->u.chr.chars[0] == '\r' ) {
 	    smd->edit_done = SMD_DoChange(smd);
-return( true );
+	    return true;
 	}
-return( false );
+	return false;
       case et_controlevent:
 	switch( event->u.control.subtype ) {
 	  case et_buttonactivate:
@@ -498,10 +497,42 @@ return( false );
 	    else
 		smd->edit_done = true;
 	  break;
+	  case et_buttonpress:
+	  case et_radiochanged:
+	  case et_listselected:
+	  case et_listdoubleclick:
+	  case et_scrollbarchange:
+	  case et_textchanged:
+	  case et_textfocuschanged:
+	  case et_lastsubtype:
+	  default:
+	  break;
 	}
       break;
+      case et_noevent:
+      case et_charup:
+      case et_mousemove:
+      case et_mousedown:
+      case et_mouseup:
+      case et_crossing:
+      case et_focus:
+      case et_expose:
+      case et_visibility:
+      case et_resize:
+      case et_timer:
+      case et_map:
+      case et_destroy:
+      case et_selclear:
+      case et_drag:
+      case et_dragout:
+      case et_drop:
+      //case et_lastnativeevent:	/* Same as et_drop */
+      case et_user:
+      default:
+      break;
     }
-return( true );
+
+    return true;
 }
 
 static void SMD_EditState(SMD *smd) {
@@ -788,7 +819,8 @@ static void SMD_EditState(SMD *smd) {
     }
     smd->st_pos = -1;
     GDrawDestroyWindow(gw);
-return;
+
+    return;
 }
 
 /* ************************************************************************** */
@@ -817,7 +849,8 @@ static int SMD_Cancel(GGadget *g, GEvent *e) {
 
 	_SMD_Cancel(smd);
     }
-return( true );
+
+    return true;
 }
 
 static int SMD_Ok(GGadget *g, GEvent *e) {
@@ -852,7 +885,8 @@ static int SMD_Ok(GGadget *g, GEvent *e) {
 		(GGadgetIsChecked(GWidgetGetControl(smd->gw,CID_VertOnly))?0x8000:0);
 	_SMD_Finish(smd,true);
     }
-return( true );
+
+    return true;
 }
 
 static void SMD_Mouse(SMD *smd,GEvent *event) {
@@ -869,12 +903,13 @@ static void SMD_Mouse(SMD *smd,GEvent *event) {
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
 	    (event->u.mouse.button>=4 && event->u.mouse.button<=7) ) {
 	GGadgetDispatchEvent(smd->vsb,event);
-return;
+
+	return;
     }
 
     if ( event->u.mouse.x<smd->xstart || event->u.mouse.x>smd->xstart2+smd->width ||
 	    event->u.mouse.y<smd->ystart || event->u.mouse.y>smd->ystart2+smd->height )
-return;
+	return;
 
     if ( event->type==et_mousemove ) {
 	int c = (event->u.mouse.x - smd->xstart2)/smd->statew + smd->offleft;
@@ -899,13 +934,11 @@ return;
 	    else if ( s==1 )
 		utf82u_strcat(space,_("{Start of Line}"));
 	}
-	if ( space[0]=='\0' )
-return;
+	if ( space[0]=='\0' ) { return; }
 	if ( space[u_strlen(space)-1]=='\n' )
 	    space[u_strlen(space)-1]='\0';
 	GGadgetPreparePopup(smd->gw,space);
-    } else if ( event->u.mouse.x<smd->xstart2 || event->u.mouse.y<smd->ystart2 )
-return;
+    } else if ( event->u.mouse.x<smd->xstart2 || event->u.mouse.y<smd->ystart2 ) { return; }
     else if ( event->type==et_mousedown )
 	smd->st_pos = pos;
     else if ( event->type==et_mouseup ) {
@@ -922,10 +955,8 @@ static void SMD_Expose(SMD *smd,GWindow pixmap,GEvent *event) {
     unichar_t ubuf[8];
     char buf[101];
 
-    if ( area->y+area->height<smd->ystart )
-return;
-    if ( area->y>smd->ystart2+smd->height )
-return;
+    if ( area->y+area->height<smd->ystart ) { return; }
+    if ( area->y>smd->ystart2+smd->height ) { return; }
 
     GDrawPushClip(pixmap,area,&old1);
     GDrawSetFont(pixmap,smd->font);
@@ -964,17 +995,13 @@ return;
 
     for ( i=0 ; smd->offtop+i<smd->state_cnt && (i-1)*smd->stateh<smd->height; ++i ) {
 	y = smd->ystart2+i*smd->stateh;
-	if ( y>area->y+area->height )
-    break;
-	if ( y+smd->stateh<area->y )
-    continue;
+	if ( y>area->y+area->height ) { break; }
+	if ( y+smd->stateh<area->y ) { continue; }
 	for ( j=0 ; smd->offleft+j<smd->class_cnt && (j-1)*smd->statew<smd->width; ++j ) {
 	    struct asm_state *this = &smd->states[(i+smd->offtop)*smd->class_cnt+j+smd->offleft];
 	    x = smd->xstart2+j*smd->statew;
-	    if ( x>area->x+area->width )
-	break;
-	    if ( x+smd->statew<area->x )
-	continue;
+	    if ( x>area->x+area->width ) { break; }
+	    if ( x+smd->statew<area->x ) { continue; }
 
 	    sprintf( buf, "%d", this->next_state );
 	    len = GDrawGetText8Width(pixmap,buf,-1);
@@ -1067,12 +1094,11 @@ static int SMD_SBReset(SMD *smd) {
     GScrollBarSetPos(smd->vsb,smd->offtop);
     GScrollBarSetPos(smd->hsb,smd->offleft);
 
-return( oldtop!=smd->offtop || oldleft!=smd->offleft );
+    return oldtop != smd->offtop || oldleft != smd->offleft;
 }
 
 static void SMD_HShow(SMD *smd, int pos) {
-    if ( pos<0 || pos>=smd->class_cnt )
-return;
+    if ( pos<0 || pos>=smd->class_cnt ) { return; }
     --pos;	/* One line of context */
     if ( pos + (smd->width/smd->statew) >= smd->class_cnt )
 	pos = smd->class_cnt - (smd->width/smd->statew);
@@ -1089,32 +1115,36 @@ static void SMD_HScroll(SMD *smd,struct sbevent *sb) {
     switch( sb->type ) {
       case et_sb_top:
         newpos = 0;
-      break;
+	break;
       case et_sb_uppage:
 	if ( smd->width/smd->statew == 1 )
 	    --newpos;
 	else
 	    newpos -= smd->width/smd->statew - 1;
-      break;
+	break;
       case et_sb_up:
+      //case et_sb_left:	/* Same as et_sb_up */
         --newpos;
-      break;
+	break;
       case et_sb_down:
+      //case et_sb_right:	/* Same as et_sb_down */
         ++newpos;
-      break;
+	break;
       case et_sb_downpage:
 	if ( smd->width/smd->statew == 1 )
 	    ++newpos;
 	else
 	    newpos += smd->width/smd->statew - 1;
-      break;
+	break;
       case et_sb_bottom:
         newpos = smd->class_cnt - (smd->width/smd->statew);
-      break;
+	break;
       case et_sb_thumb:
       case et_sb_thumbrelease:
         newpos = sb->pos;
-      break;
+	break;
+	default:
+	break;
     }
     if ( newpos + (smd->width/smd->statew) >= smd->class_cnt )
 	newpos = smd->class_cnt - (smd->width/smd->statew);
@@ -1137,32 +1167,36 @@ static void SMD_VScroll(SMD *smd,struct sbevent *sb) {
     switch( sb->type ) {
       case et_sb_top:
         newpos = 0;
-      break;
+	break;
       case et_sb_uppage:
 	if ( smd->height/smd->stateh == 1 )
 	    --newpos;
 	else
 	    newpos -= smd->height/smd->stateh - 1;
-      break;
+	break;
       case et_sb_up:
+      //case et_sb_left:	/* Same as et_sb_up */
         --newpos;
-      break;
+	break;
       case et_sb_down:
+      //case et_sb_right:	/* Same as et_sb_down */
         ++newpos;
-      break;
+	break;
       case et_sb_downpage:
 	if ( smd->height/smd->stateh == 1 )
 	    ++newpos;
 	else
 	    newpos += smd->height/smd->stateh - 1;
-      break;
+	break;
       case et_sb_bottom:
         newpos = smd->state_cnt - (smd->height/smd->stateh);
-      break;
+	break;
       case et_sb_thumb:
       case et_sb_thumbrelease:
         newpos = sb->pos;
-      break;
+	break;
+      default:
+	break;
     }
     if ( newpos + (smd->height/smd->stateh) >= smd->state_cnt )
 	newpos = smd->state_cnt - (smd->height/smd->stateh);
@@ -1184,22 +1218,23 @@ static int smd_e_h(GWindow gw, GEvent *event) {
     switch ( event->type ) {
       case et_close:
 	_SMD_Cancel(smd);
-      break;
+	break;
       case et_char:
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("statemachine.html");
-return( true );
+	    return true;
 	} else if ( event->u.chr.keysym=='q' && (event->u.chr.state&ksm_control)) {
 	    if ( event->u.chr.state&ksm_shift )
 		_SMD_Cancel(smd);
 	    else
 		MenuExit(NULL,NULL,NULL);
-return( true );
+	    return true;
 	}
-return( false );
+
+	return false;
       case et_expose:
 	SMD_Expose(smd,gw,event);
-      break;
+	break;
       case et_resize: {
 	int blen = GDrawPointsToPixels(NULL,GIntGetResource(_NUM_Buttonsize));
 	GRect wsize, csize;
@@ -1231,7 +1266,7 @@ return( false );
       } break;
       case et_mouseup: case et_mousemove: case et_mousedown:
 	SMD_Mouse(smd,event);
-      break;
+	break;
       case et_controlevent:
 	switch( event->u.control.subtype ) {
 	  case et_scrollbarchange:
@@ -1239,11 +1274,40 @@ return( false );
 		SMD_HScroll(smd,&event->u.control.u.sb);
 	    else
 		SMD_VScroll(smd,&event->u.control.u.sb);
-	  break;
+	    break;
+
+	  case et_buttonpress:
+	  case et_buttonactivate:
+	  case et_radiochanged:
+	  case et_listselected:
+	  case et_listdoubleclick:
+	  case et_textchanged:
+	  case et_textfocuschanged:
+	  case et_lastsubtype:
+	  default:
+	    break;
 	}
-      break;
+	
+	break;
+
+      case et_noevent:
+      case et_charup:
+      case et_crossing:
+      case et_focus:
+      case et_visibility:
+      case et_timer:
+      case et_create:
+      case et_selclear:
+      case et_drag:
+      case et_dragout:
+      case et_drop:
+      //case et_lastnativeevent:	/* Same as et_drop */
+      case et_user:
+      default:
+	break;
     }
-return( true );
+
+    return true;
 }
 
 static char *SMD_PickGlyphsForClass(GGadget *g,int r, int c) {
@@ -1251,7 +1315,8 @@ static char *SMD_PickGlyphsForClass(GGadget *g,int r, int c) {
     int rows, cols = GMatrixEditGetColCnt(g);
     struct matrix_data *classes = _GMatrixEditGet(g,&rows);
     char *new = GlyphSetFromSelection(smd->sf,ly_fore,classes[r*cols+c].u.md_str);
-return( new );
+
+    return new;
 }
 
 static void SMD_NewClassRow(GGadget *g,int r) {
@@ -1270,9 +1335,7 @@ static void SMD_FinishEdit(GGadget *g,int r, int c, int wasnew) {
     ME_ClassCheckUnique(g, r, c, smd->sf);
 }
 
-static int SMD_EnableDeleteClass(GGadget *g,int whichclass) {
-return( whichclass>=4 );
-}
+static int SMD_EnableDeleteClass(GGadget *g,int whichclass) { return whichclass >= 4; }
 
 static void SMD_DeleteClass(GGadget *g,int whichclass) {
     SMD *smd = GDrawGetUserData(GGadgetGetWindow(g));
@@ -1291,7 +1354,8 @@ static unichar_t **SMD_GlyphListCompletion(GGadget *t,int from_tab) {
     SMD *smd = GDrawGetUserData(GDrawGetParentWindow(GGadgetGetWindow(t)));
     SplineFont *sf = smd->sf;
 
-return( SFGlyphNameCompletion(sf,t,from_tab,true));
+    return SFGlyphNameCompletion(sf, t, from_tab, true);
+
 }
 
 static struct col_init class_ci[] = {

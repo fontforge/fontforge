@@ -932,7 +932,7 @@ unichar_t* WordListLine_toustr( WordListLine wll )
     unichar_t* p = ret;
     for( ; wll->sc; wll++, p++ ) {
 	*p = wll->sc->unicodeenc;
-        if (*p == -1) *p = wll->n;
+        if (*p == 0) { *p = wll->n; }
     }
     return ret;
 }

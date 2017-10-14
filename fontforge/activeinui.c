@@ -27,6 +27,6 @@
 
 #include "fontforgeui.h"
 
-FontViewBase *fv_active_in_ui = NULL;
-SplineChar *sc_active_in_ui = NULL;
-int layer_active_in_ui = ly_fore;
+FontViewBase    *fv_active_in_ui    = NULL;
+SplineChar      *sc_active_in_ui    = NULL;
+int             layer_active_in_ui  = ly_fore;
