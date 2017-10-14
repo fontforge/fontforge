@@ -63,14 +63,19 @@ const char *GetAuthor(void) {
 #else
     struct passwd *pwd;
     static char author[200] = { '\0' };
-    const char *ret = NULL, *pt;
+    const char *ret = NULL, *username;
 
     if ( author[0]!='\0' )
 return( author );
 
 /* Can all be commented out if no pwd routines */
     pwd = getpwuid(getuid());
-    if ( pwd!=NULL && pwd->pw_gecos!=NULL && *pwd->pw_gecos!='\0' ) {
+    username = getenv("USER");
+    if (getenv("SOURCE_DATE_EPOCH") && username) {
+	strncpy(author, username, sizeof(author));
+	author[sizeof(author)-1] = '\0';
+	ret = author;
+    } else if ( pwd!=NULL && pwd->pw_gecos!=NULL && *pwd->pw_gecos!='\0' ) {
 	strncpy(author,pwd->pw_gecos,sizeof(author));
 	author[sizeof(author)-1] = '\0';
 	ret = author;
@@ -78,8 +83,8 @@ return( author );
 	strncpy(author,pwd->pw_name,sizeof(author));
 	author[sizeof(author)-1] = '\0';
 	ret = author;
-    } else if ( (pt=getenv("USER"))!=NULL ) {
-	strncpy(author,pt,sizeof(author));
+    } else if ( username !=NULL ) {
+	strncpy(author, username, sizeof(author));
 	author[sizeof(author)-1] = '\0';
 	ret = author;
     }
