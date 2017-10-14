@@ -397,7 +397,7 @@ static void FPSTBuildAllClasses(FPST *fpst)
                     + fpst->rules[i].u.class.fcnt
                     + 1)
                 * sizeof(uint16));
-        *
+        
 	off = fpst->rules[i].u.class.bcnt;
 
 	for (j = 0; j < off; ++j) {
@@ -622,9 +622,9 @@ static char *BuildMarkClass(SplineFont *sf)
     markglyphs = malloc(sf->glyphcnt * sizeof(SplineChar *));
     
     for (i = 0; i < sf->glyphcnt; ++i) {
-        if ((sc=sf->glyphs[i]) != NULL) {
+        if ((sc = sf->glyphs[i]) != NULL) {
 	    if (IsMarkChar(sc)) { markglyphs[mg++] = sc; }
-        } 
+        }
     }
 
     markglyphs[mg] = NULL;
@@ -662,7 +662,7 @@ static char *BuildClassNames(SplineChar **glyphs, uint16 *map, int classnum)
     return ret;
 }
 
-static int FindFormLookupsForScript(SplineFont *ss, uint32 script, OTLookup *lookups[4])
+static int FindFormLookupsForScript(SplineFont *sf, uint32 script, OTLookup *lookups[4])
 {
     OTLookup                *otl;
     FeatureScriptLangList   *fl;
