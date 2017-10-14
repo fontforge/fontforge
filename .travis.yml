@@ -146,6 +146,7 @@ after_failure:
   - cat config.log
   - cat Makefile
   - which python
+  - cat tests/testsuite.log
 
 deploy:
   provider: bintray
