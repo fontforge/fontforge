@@ -1,0 +1,16 @@
+Open($1);
+Select("k");
+
+Export("g-%n-f-%f-gu-%u%U-%%.eps");
+exported_file_name="g-k-f-Ambrosia-gu-006b006B-%.eps";
+error = FileAccess(exported_file_name);
+if ( error != 0 )
+  Error("Cannot find exported file " + exported_file_name);
+endif
+
+Export("eps");
+exported_file_name_default="k_Ambrosia.eps";
+error = FileAccess(exported_file_name_default);
+if ( error != 0 )
+  Error("Cannot find exported file with default name " + exported_file_name_default);
+endif
