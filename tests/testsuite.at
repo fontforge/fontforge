@@ -40,6 +40,25 @@ AT_CHECK([run_pedit([$2],[$test_input1],[$test_input2],[$test_input3],[$test_inp
 AT_CLEANUP
 ])
 
+m4_defun([run_pedit_compare],[
+(SOURCE_DATE_EPOCH=1483326245 USER=FontForgeTestsuite \
+${abs_top_builddir}/fontforgeexe/fontforge -lang ff -script "${abs_srcdir}/$1" "$2" &&
+cmp "$3" "${abs_top_srcdir}/tests/references/$3")])
+
+# check_pedit_output( name_of_test=$1, use test#=$2, skip_if_file_not_exist=$3, reference=$5)
+# Test FontForge Native Scripting commands using various testXXXX.pe files.
+# $1 descriptive title of test
+# $2 is test to run (skipped if FontForge built without python scripting)
+# $3 file for this test (some files are external and need to be imported)
+# $4 generated file, named like the reference against which it will be compared
+m4_defun([check_pedit_output],[
+AT_SETUP([$1])
+AT_SKIP_IF([test ! -r "${abs_srcdir}/$2"])
+check_file([test_input1], [$3])
+AT_CHECK([run_pedit_compare([$2],[$test_input1],[$4])],[0],[ignore],[ignore])
+AT_CLEANUP
+])
+
 #--------------------------------------------------------------------------
 # Fontforge Python Scripting test functions
 
@@ -106,6 +125,8 @@ check_pedit([Test StrSplit overrun],[test128.pe])
 check_pedit([Ligatures and Fractions Table Lookups],[test129.pe])
 check_pedit([TTC loading],[test130.pe],[NotoSans-Regular.ttc])
 check_pedit([Export processes directives in filenames],[test132.pe],[Ambrosia.sfd])
+
+check_pedit_output([Exported EPS],[test500.pe],[Ambrosia.sfd],[f-Ambrosia-g-k.eps])
 
 AT_BANNER([FontForge Python Scripting Tests])
 

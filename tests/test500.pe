@@ -1,0 +1,3 @@
+Open($1);
+Select("k");
+Export("f-%f-g-%n.eps");
