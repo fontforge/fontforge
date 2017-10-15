@@ -43,7 +43,7 @@ AT_CLEANUP
 m4_defun([run_pedit_compare],[
 (SOURCE_DATE_EPOCH=1483326245 USER=FontForgeTestsuite \
 ${abs_top_builddir}/fontforgeexe/fontforge -lang ff -script "${abs_srcdir}/$1" "$2" &&
-cmp "$3" "${abs_top_srcdir}/tests/references/$3")])
+diff -u "$3" "${abs_top_srcdir}/tests/references/$3")])
 
 # check_pedit_output( name_of_test=$1, use test#=$2, skip_if_file_not_exist=$3, reference=$5)
 # Test FontForge Native Scripting commands using various testXXXX.pe files.
