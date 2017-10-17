@@ -797,7 +797,11 @@ static void DumpEpsHeader(FILE *eps, struct ttfinfo *info, int glyph,
     fprintf( eps, "\n" );
     fprintf( eps, "%%%%Creator: ttf2eps\n" );
     now = GetTime();
-    tm = localtime(&now);
+    if (!getenv("SOURCE_DATE_EPOCH")) {
+	tm = localtime(&now);
+    } else {
+	tm = gmtime(&now);
+    }
     fprintf( eps, "%%%%CreationDate: %d:%02d %d-%d-%d\n", tm->tm_hour, tm->tm_min,
 	    tm->tm_mday, tm->tm_mon+1, 1900+tm->tm_year );
     fprintf( eps, "%%%%EndComments\n" );

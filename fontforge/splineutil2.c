@@ -3860,7 +3860,11 @@ SplineFont *SplineFontBlank(int charcnt) {
     sf->origname = ToAbsolute(buffer);
     sf->weight = copy("Regular");
     now = GetTime();
-    tm = localtime(&now);
+    if (!getenv("SOURCE_DATE_EPOCH")) {
+	tm = localtime(&now);
+    } else {
+	tm = gmtime(&now);
+    }
     if ( author!=NULL )
 	sprintf( buffer, "Copyright (c) %d, %.50s", tm->tm_year+1900, author );
     else
