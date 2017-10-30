@@ -1,280 +1,240 @@
-.\" Manual page by Tom Harvey, subsequently modified by George Williams.
-.\" Copyright © 2000-2002 by George Williams.
-.\" Re-edited to use standard -man macros by RPC Rodgers, 23 October 2002.
-.ds Ps P\s-2OST\s+2S\s-2CRIPT\s+2
-.TH FONTFORGE 1 "2 March 2004"
+\." Copyright (c) 2000-2007 by George Williams (gww@silcom.com).
+\." Original manual page by Tom Harvey, subsequently modified by
+\." George Williams. Heavily rewritten and modified to use standard
+\." -man (5) macros by R.P.C. Rodgers (rodgers@nlm.nih.gov), 23 October 2002. 
+\." Paul Hardy reconstructed the original man page and added output from
+\." the latest FontForge release.
+.TH FONTFORGE 1 "2017 Jun 18"
 .SH NAME
-.B fontforge - create and modify PostScript, TrueType and SVG fonts
+fontforge \- create, modify, and view font files
 .SH SYNOPSIS
-.B fontforge
-.RB [ \-c
-.IR string ]
-.RB [ \-cmap
-.IR maptype ]
-.RB [ \-depth
-.IR pixeld ]
-.RB [ \-display
-.IR str ]
-.RB [ \-lang=ff ]
-.RB [ \-lang=py ]
-.RB [ \-last ]
-.RB [ \-library-status ]
-.RB [ \-help ]
-.RB [ \-keyboard
-.IR ktype ]
-.RB [ \-new ]
-.RB [ \-nosplash ]
-.RB [ \-recover
-.IR mode ]
-.RB [ \-script
-.IR file ]
-.RB [ \-sync ]
-.RB [ \-usage ]
-.RB [ \-vc
-.IR vclass ]
-.RB [ \-version ]
-.I fontfile ...
+.BR fontforge
+[\fB\-c\fP\ \fIstring\fP]
+[\fB\-cmap\fP\ \fImaptype\fP]
+[\fB\-depth\fP\ \fIpixeld\fP]
+[\fB\-display\fP\ \fIstr\fP]
+[\fB\-lang\fP=ff]
+[\fB\-lang\fP=py]
+[\fB\-library-status\fP]
+[\fB\-help\fP]
+[\fB\-keyboard\fP\ \fIktype\fP]
+[\fB\-new\fP]
+[\fB\-nosplash\fP]
+[\fB\-recover\fP\ \fImode\fP]
+[\fB\-script\fP\ \fIfile\fP]
+[\fB\-sync\fP]
+[\fB\-usage\fP]
+[\fB\-vc\fP\ \fIclass\fP]
+[\fB\-version\fP]
+[\fIfontfile\fP\ ...]
 .SH DESCRIPTION
-The program
-.I fontforge
-allows you to create and modify font files,
-accepting input in the following formats
-(with associated file extensions appearing in parentheses):
-.TP
-Glyph Bitmap Distribution (.bdf)
-.TP
-Macintosh resource fonts (.dfont, .bin, .hqx)
-.TP
-OpenType (.otf)
-.TP
-.IR fontforge " spline font database (.sfd)"
-.TP
-\*(Ps, which includes:
-.RS
-.TP
-ASCII format (.pfa)
-.TP
-Binary format (.pfb)
-.TP
-CID-keyed fonts, Adobe convention used primarily for Asian characters (.cid, .otf)
-.TP
-\*(Ps Type 0 (.ps)
-.TP
-\*(Ps Type 3 (.ps)
-.RE
-.TP
-Scaleable vector graphics fonts (.svg)
-.TP
-TeX bitmap (.pk)
-.TP
-TrueType (.ttf, .ttc)
-.TP
-X11 bitmap (.pcf)
-.LP
+.B FontForge
+will read PostScript (pfa, pfb, ps, cid), OpenType (otf),
+TrueType (ttf, ttc), Macintosh resource fonts (dfont, bin, hqx),
+Scaled Vector Graphics (svg), TeX bitmap (pk),
+Glyph Bitmap Distribution Format (bdf),
+and X11 bitmap (pcf) fonts.  Font files
+may be compressed with gzip (for example, myfont.pcf.gz).
+.B FontForge
+will also read its own format: Spline Font Database (sfd) files.
+.PP
 If the argument list contains a font file name (or several),
-.I fontforge
-opens a
-.B fontview
-window for each font displaying the characters of the that font.
-In the absence of options or arguments,
-the program opens a file-picker window,
-allowing you to browse your disk to find a font file,
-or create a new one.
-.LP
+\fBfontforge\fP opens a \fBfontview\fP window
+for each font displaying the characters of that font.
+In the absence of options or arguments, the program
+opens a file-picker window, allowing you to browse
+your disk to find a font file, or create a new one.
+.PP
 This manual page is intended only as a rudimentary overview;
 see the HTML Users Manual for more complete information.
+.PP
+If no \fIfontfiles\fP are specified, and neither is \fB\-new\fP, and
+there is nothing to recover, then \fBFontForge\fP will produce
+an open font dialogue box.
+.PP
+If a \fIscriptfile\fP is specified then \fBFontForge\fP will not open the
+X display, nor will it process any additional arguments. It will execute the
+\fIscriptfile\fP and give it any remaining arguments
+.PP
+If the first argument is an executable filename, and that file's first
+line contains "fontforge", then it will be treated as a \fIscriptfile\fP.
 .SH OPTIONS
-.TP
-.BI \-c " string"
-Must be the first argument. Executes "string" as a set of scripting commands.
-Any additional arguments will be passed to the script.
-.TP
-.BI \-cmap " maptype"
-Employ the specified method to control 8-bit colormaps,
-where
-.I maptype
-assumes one of these three values:
-.RS
-.TP
-.B current
-Attempt to allocate colors in the current (shared) colormap.
-The program will likely not find everything it requires.
-.TP
-.B copy
-Allocate what can be allocated, then copy the current colormap;
-it can thus make use of cells other programs are using.
-.TP
-.B private
-Create a new colormap and fill it with the required colors.
-.RE
-.TP
-.BI \-depth " pixeld" 
-Attempt to employ a visual that matches the specified pixel depth,
-.IR pixeld .
-.TP
-.BI \-display " str" 
-Employ the X display specified by the string
-.I str
-(for example: localhost:0).
-.TP
-.B \-help
-Display the usage description
-and start a web client displaying the online documentation.
-.TP
-.BI \-keyboard " ktype" 
-Alter the displayed menus to employ modifier keys appropriate
-to the specified keyboard type,
-where
-.I ktype
-assumes one of the following four values:
-.RS
-.TP
-.B ibm
-IBM PC type keyboard.
-.TP
-.B mac
-Apple Macintosh keyboard.
-.TP
-.B sun
-Sun workstation keyboard.
-.TP
-.B ppc
-Macintosh keyboard, but on a system running SuSe linux
-(the mappings differ from those used under MacOS X).
-.RE
-.TP
-.B \-last
-Opens whatever font you last edited with
-.I fontforge.
-If you specify
-.I n
-.B \-last
-.I fontforge
-will open the last
-.I n
-fonts.
-.TP
-.B \-lang=ff
-Interpret the script with the fontforge interpreter.
-.TP
-.B \-lang=py
-Interpret the script with the python interpreter.
-.TP
-.B \-library-status
-Prints information about optional libraries.
-.TP
+.TP 12
 .B \-new
-Create a new font with the ISO 8859-1 encoding
-(the international encoding standard for western Europe,
-and the standard for most X fonts).
+Creates a new font.
+.TP
+.B \-last
+Loads the last sfd file closed.
+.TP
+.B \-recover none\fR|\fPauto\fR|\fPinquire\fR|\fPclean
+Control error recovery.
+\fBnone\fP suppresses crash revcovery.
+\fBauto\fP performs automatic recover if the program crashed
+before saving changes; this is the default.
+\fBinquire\fP asks what to do with auto-saved crash recovery files.
+\fBclean\fP deletes recovery information.
+.TP
+.B \-allglyphs
+Load all glyphs in the 'glyf' table. of a TrueType collection.
 .TP
 .B \-nosplash
 Suppress display of the splash screen.
 .TP
-.BI \-recover " mode"
-Control the crash recovery mechanism
-(helpful if crash recovery causes problems),
-where
-.I mode
-takes on one of three allowed settings:
-.RS
+.B \-quiet
+Don't print non-essential information to stderr.
 .TP
-.B auto
-perform automatic recovery (default) if the program crashed before saving changes.
+.B \-unique
+If a copy of fontforge is already running, open all arguments
+in it and have this process exit.
 .TP
-.B clean
-Delete recovery information.
+.B \-display \fIdisplay-name\fP
+Employ the X display specified by the string
+\fIdisplay-name\fP (for example: localhost:0).
 .TP
-.B none
-Suppress crash recovery.
-.RE
+.B \-depth \fIpixeld\fP
+Attempt to employ a visual that matches the specified pixel depth,
+\fIpixeld\fP.
 .TP
-.BI \-script " file"
-Execute the script named
-.IR file .
-Does not open the X display.
-This must be the first argument passed to fontforge. Any other arguments are
-handled by the scriptfile itself.
-Any other command line arguments will be passed to the script.
-The program contains a command interpreter which allows access to
-most but not all of its interactive features.
-If a scriptfile is executable, and if its first line contains
-the string "fontforge", then the argument
-.BI \-script
-may be omitted. This means that fontforge can be used as an interpreter.
+.B \-vc \fIval\fP
+Sets the visual class if possible.
+.TP
+.B \-cmap current\fR|\fPcopy\fR|\fPprivate
+Sets the type of color map.
+\fBcurrent\fP attempts to allocate colors int he current (shared) color map.
+The program will likely not find everything it requires.
+\fBcopy\fP allocates what can be allocated,
+then copies the current color map; it can thus
+make use of cells other programs are using.
+\fBprivate\fP creates a new color map and fills it with the required colors.
+.TP
+.B \-dontopenxdevices
+In case that fails.
 .TP
 .B \-sync
-Make X synchronous.
-Used primarily for debugging, this option slows X down.
+Syncs the display, debugging.
 .TP
-.B \-usage
-Display the usage description.
+.B \-keyboard ibm\fR|\fPmac\fR|\fPsun\fR|\fPppc
+Generates appropriate hotkeys in menus.
+Use \fBibm\fP on an IBM-compatible PC.
+Use \fBmac\fP on a Mac computer running Mac\ OS.
+Use \fBsun\fP on a Sun workstation.
+Use \fBppc\fP on Power PC Mac running SUSE GNU/Linux.
 .TP
-.B \-vc vclass 
-Attempt to use a visual that matches the class,
-.IR vclass ,
-specified as either the name of a visual class
-or an integer enumerating a visual class.
+\fB\-usecairo\fP=yes|no
+Use (or not) the cairo library for drawing.
+.TP
+.B \-help
+Displays a help message and exits.
+.TP
+.B \-docs
+Displays help file output and then invokes a browser
+using the \fBBROWSER\fP environment variable.
 .TP
 .B \-version
-Display the current version
-(a six digit string containing the date stamp of the source files).
+Prints the version of fontforge and exits.
+.TP
+.B \-library-status
+Prints information about optional libraries and exits.
+.TP
+\fB\-lang\fP=py
+Use Python for scripts (may precede \fB\-script\fP).
+.TP
+\fB\-lang\fP=ff
+Use fontforge's legacy scripting language.
+.TP
+.B \-script \fIscriptfile\fP
+Executes \fIscriptfile\fP.  Must be the first option (or follow \fB\-lang\fP).
+All other arguments are passed to \fIscriptfile\fP.
+Execute the script named \fIfile\fP.
+Does not open the X display.
+This must be the first argument passed to \fBFontForge\fP.
+Any other arguments are handled by the script file itself.
+Any other command line arguments will be passed to the script.
+The program contains a command interpreter,
+which allows access to most but not all of
+its interactive features.
+If a script file is executable, and if its first line
+contains the string "fontforge", then
+the argument \fB\-script\fP may be omitted.
+This means that \fBFontForge\fP can be used
+as an interpreter.
+.TP
+.B \-dry \fIscriptfile\fP
+Syntax checks \fIscriptfile\fP (dry run).  Must be the first option.
+All other arguments are passed to \fIscriptfile\fP.  This option can
+only be used with fontforge's own scripting language, not with Python.
+.TP
+.B \-c \fIscript-string\fP
+Executes argument as scripting commands.  Must be the first option.
+All other arguments are passed to the script.
+.SH EXAMPLE
+Sample usage:
+.PP
+.RS
+fontforge myfont.ttf &
+.RE
 .SH ENVIRONMENT
-If any of the following environment variables exist,
-they are used:
 .TP
 .B BROWSER
-Specifies the name of a browser program for examining documentation.
+Specifies the name of a browser program for 
+examining online documentation.
 .TP
 .B AUTOTRACE
-Specifies the location of the autotrace program (usually FontForge can figure
-this out without help, but not always).
+Specifies the location of the autotrace program.
+Usually FontForge can figure this out without
+help, but not always.
 .TP
 .B MF
-Specifies the location of the metafont program.
+Specifies the location of the \fBmetafont\fP program.
 .TP
 .B FONTFORGE_VERBOSE
-Turns on verbose mode in scripting. Each statement is printed as it is executed.
+Turns on verbose mode in scripting.  Each statement
+is printed as it is executed.
 .SH FILES
 .TP
-.B ~/.FontForge/autosave/
-crash recovery directory
+~/.FontForge/autosave
+Crash recovery directory.
 .TP
-.B /usr/local/share/fontforge/*.ui
-translations for the user interface
+/usr/share/fontforge/*.ui
+Translations for user interfaces.
 .TP
-.B /usr/local/share/doc/fontforge/*.html
-optional location for online documentation.
+/usr/share/fontforge/doc/*.html
+Optional location for online documentation.
 .TP
-.B /usr/local/share/fontforge/*.cidmap
-"encoding" files for Adobe's cid formats
-from \fChttp://fontforge.sourceforge.net/cidmaps.tgz\fP
-.\"
-.SH "SEE ALSO"
-.BR sfddiff (1)
-.LP
-The HTML version of the
-.I fontforge
-manual,
-available online at:
-.TP
-\fChttp://fontforge.sourceforge.net/\fP
-.\" .SH STANDARDS
-.\" .SH HISTORY
+/usr/share/fontforge/*.cidmap
+"Encoding" files for Adobe's cid formats, from
+http://fontforge.sourceforge.net/
+cidmaps.tgz.
+.SH SEE ALSO
+\fBsfddiff\fP(1)
+.PP
+The HTML version of the \fBFontForge\fP manual, available online at:
+http://fontforge.sourceforge.net/.
 .SH NOTE
-.BR fontforge
-used to be called
-.BR pfaedit.
-.SH AUTHOR
-Copyright (C) 2000-2007 by George Williams (gww@silcom.com).
-Original manual page by Tom Harvey, subsequently modified by George Williams.
-Heavily rewritten and modified to use standard
-.IR \-man " (5) macros by R.P.C. Rodgers (rodgers@nlm.nih.gov), 23 October 2002."
+\fBFontForge\fP used to be called \fBPfaEdit\fP.
+.SH AUTHORS
+.B FontForge
+is Copyright \(co 2000\(en2014 by George Williams, and is currently
+maintained by the FontForge development team.  See
+/usr/share/doc/fontforge/AUTHORS for a comprehensive list of contributors.
+.SH LICENSE
+FontForge is licensed under GPLv3+: GNU GPL version 3 or later
+(http://gnu.org/licenses/gpl.html) with many parts covered by a BSD license
+(http://fontforge.org/license.html).  Please read the LICENSE file included
+in the FontForge distribution for details, or see
+https://github.com/fontforge/fontforge/blob/master/LICENSE.
+.PP
+FontForge is available as a whole under the terms of the [GNU GPL](http://www.gnu.org/copyleft/gpl.html), version
+3 or any later version. 
+However, almost all of its parts are available under the "revised BSD license" ([pdf](http://www.law.yi.org/~sfllaw/talks/bsd.pdf)) because FontForge was mostly written by George Williams, using that license.
+.PP
+The Revised BSD License is very permissive, and allows for code to be combined with other code under other licenses. 
+.PP
+There are many useful libraries available under copyleft libre licenses, such as the LGPL and GPL, which FontForge started to use in 2012. 
+.PP
+For example, Pango and Cairo are available under the LGPL, and gnulib is available under the GPL.
+.PP
+Advanced features added since 2012 are licensed by their individual developers under the GPLv3.
 .SH BUGS
-Undoubtedly many, but unknown and ever changing.
-See
-.IP
-\fChttp://fontforge.sourceforge.net/#known-bugs\fP
-for a current list.
-.\" end of file
-.\"
+See the FontForge Github Issue Tracker, at
+https://github.com/fontforge/fontforge/issues/.
