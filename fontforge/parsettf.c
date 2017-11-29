@@ -4723,11 +4723,11 @@ return;
 		IError("Table too large; truncated to 1048576 entries.");
 		dlen = 1048576;
 	}
-	dtable = calloc(dlen, sizeof(uint16));
 	if ( enc->is_unicodebmp && (format==8 || format==10 || format==12))
 	    enc = FindOrMakeEncoding("UnicodeFull");
 
 	if ( format==0 ) {
+	    dtable = calloc(dlen, sizeof(uint16));
 	    int encmapminsize = dlen;
 	    if (encmapminsize < 256) encmapminsize = 256;
 	    if ( justinuse==git_normal && map!=NULL && map->enccount<encmapminsize ) {
@@ -4751,6 +4751,8 @@ return;
 		    }
 		} else if ( dtable[i]<info->glyph_cnt && info->chars[dtable[i]]!=NULL )
 		    info->inuse[dtable[i]] = 1;
+	    free(dtable);
+	    dtable = NULL;
 	} else if ( format==4 ) {
 	    segCount = getushort(ttf)/2;
 	    /* searchRange = */ getushort(ttf);
