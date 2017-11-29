@@ -4769,9 +4769,14 @@ return;
 		    4*segCount*sizeof(uint16);
 	    /* that's the amount of space left in the subtable and it must */
 	    /*  be filled with glyphIDs */
+	    int rlen = len;
 	    if ( len<0 ) {
 		IError("This font has an illegal format 4 subtable with too little space for all the segments.\nThis error is not recoverable.\nBye" );
-		exit(1);
+		// exit(1);
+		// Exiting abruptly is not a desirable behavior.
+		// Even if continuing to load would result in a totally broken font,
+		// that is still better than closing completely.
+		len = 0;
 	    }
 	    glyphs = malloc(len);
 	    glyph_tot = len/2;
