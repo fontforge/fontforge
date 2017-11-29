@@ -2648,7 +2648,7 @@ return( false );
 
     for ( pst=sc->possub; pst!=NULL; pst=pst->next ) if ( pst->subtable!=NULL )
 	found |= LookupFeaturesMissScript(p,pst->subtable->lookup,NULL,script,sf,sc->name);
-    for ( ap=sc->anchor; ap!=NULL; ap=ap->next )
+    for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->anchor->subtable!=NULL )
 	found |= LookupFeaturesMissScript(p,ap->anchor->subtable->lookup,NULL,script,sf,sc->name);
 
 return( found );
