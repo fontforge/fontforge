@@ -4716,35 +4716,41 @@ return;
 	    len = getlong(ttf);
 	    /* language = */ getlong(ttf);
 	}
-	int rlen = len;
-	if (len >= 256) {
-		IError("Table too large; truncated to 256 entries.");
-		len = 256;
+	uint16 *dtable = NULL;
+	size_t dlen = len;
+	if (dlen >= 1048576) {
+		// One typeface has over 100,000 entries in a table!
+		IError("Table too large; truncated to 1048576 entries.");
+		dlen = 1048576;
 	}
+	dtable = calloc(dlen, sizeof(uint16));
 	if ( enc->is_unicodebmp && (format==8 || format==10 || format==12))
 	    enc = FindOrMakeEncoding("UnicodeFull");
 
 	if ( format==0 ) {
-	    if ( justinuse==git_normal && map!=NULL && map->enccount<256 ) {
-		map->map = realloc(map->map,256*sizeof(int));
-		memset(map->map,-1,(256-map->enccount)*sizeof(int));
-		map->enccount = map->encmax = 256;
+	    int encmapminsize = dlen;
+	    if (encmapminsize < 256) encmapminsize = 256;
+	    if ( justinuse==git_normal && map!=NULL && map->enccount<encmapminsize ) {
+		map->map = realloc(map->map,encmapminsize*sizeof(int));
+		memset(map->map,-1,(encmapminsize-map->enccount)*sizeof(int));
+		map->enccount = map->encmax = encmapminsize;
 	    }
+	    int discardc;
 	    for ( i=0; i<len-6; ++i )
-		table[i] = getc(ttf);
+		if (i<dlen-6) dtable[i] = getc(ttf); else discardc = getc(ttf);
 	    trans = enc->unicode;
 	    if ( trans==NULL && dcmap[dc].platform==1 )
 		trans = MacEncToUnicode(dcmap[dc].specific,dcmap[dc].lang-1);
-	    for ( i=0; i<256 && i<len-6; ++i )
+	    for ( i=0; i<dlen-6; ++i )
 		if ( justinuse==git_normal ) {
-		    if ( table[i]<info->glyph_cnt && info->chars[table[i]]!=NULL ) {
+		    if ( dtable[i]<info->glyph_cnt && info->chars[dtable[i]]!=NULL ) {
 			if ( map!=NULL )
-			    map->map[i] = table[i];
+			    map->map[i] = dtable[i];
 			if ( dounicode && trans!=NULL )
-			    info->chars[table[i]]->unicodeenc = trans[i];
+			    info->chars[dtable[i]]->unicodeenc = trans[i];
 		    }
-		} else if ( table[i]<info->glyph_cnt && info->chars[table[i]]!=NULL )
-		    info->inuse[table[i]] = 1;
+		} else if ( dtable[i]<info->glyph_cnt && info->chars[dtable[i]]!=NULL )
+		    info->inuse[dtable[i]] = 1;
 	} else if ( format==4 ) {
 	    segCount = getushort(ttf)/2;
 	    /* searchRange = */ getushort(ttf);
