@@ -4716,6 +4716,11 @@ return;
 	    len = getlong(ttf);
 	    /* language = */ getlong(ttf);
 	}
+	int rlen = len;
+	if (len >= 256) {
+		IError("Table too large; truncated to 256 entries.");
+		len = 256;
+	}
 	if ( enc->is_unicodebmp && (format==8 || format==10 || format==12))
 	    enc = FindOrMakeEncoding("UnicodeFull");
 
