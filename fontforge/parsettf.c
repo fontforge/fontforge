@@ -4732,12 +4732,11 @@ return;
 	    if (encmapminsize < 256) encmapminsize = 256;
 	    if ( justinuse==git_normal && map!=NULL && map->enccount<encmapminsize ) {
 		map->map = realloc(map->map,encmapminsize*sizeof(int));
-		memset(map->map,-1,(encmapminsize-map->enccount)*sizeof(int));
+		memset(map->map+map->enccount,-1,(encmapminsize-map->enccount)*sizeof(int));
 		map->enccount = map->encmax = encmapminsize;
 	    }
-	    int discardc;
 	    for ( i=0; i<len-6; ++i )
-		if (i<dlen-6) dtable[i] = getc(ttf); else discardc = getc(ttf);
+		if (i<dlen-6) dtable[i] = getc(ttf); else getc(ttf);
 	    trans = enc->unicode;
 	    if ( trans==NULL && dcmap[dc].platform==1 )
 		trans = MacEncToUnicode(dcmap[dc].specific,dcmap[dc].lang-1);
@@ -4754,6 +4753,7 @@ return;
 	    free(dtable);
 	    dtable = NULL;
 	} else if ( format==4 ) {
+	    int rlen = len;
 	    segCount = getushort(ttf)/2;
 	    /* searchRange = */ getushort(ttf);
 	    /* entrySelector = */ getushort(ttf);
@@ -4777,9 +4777,8 @@ return;
 		    4*segCount*sizeof(uint16);
 	    /* that's the amount of space left in the subtable and it must */
 	    /*  be filled with glyphIDs */
-	    int rlen = len;
 	    if ( len<0 ) {
-		IError("This font has an illegal format 4 subtable with too little space for all the segments.\nThis error is not recoverable.\nBye" );
+		IError("This font has an illegal format 4 subtable with too little space for all the segments (%d).\nThis error is not recoverable.\n", rlen);
 		// exit(1);
 		// Exiting abruptly is not a desirable behavior.
 		// Even if continuing to load would result in a totally broken font,
