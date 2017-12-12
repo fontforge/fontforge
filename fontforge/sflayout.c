@@ -504,7 +504,7 @@ void LayoutInfoRefigureLines(LayoutInfo *li, int start_of_change,
     li->pcnt += pdiff;
 
     if ( li->lmax <= li->lcnt+lcnt - (le-ls) + 1 ) {
-	li->lines = realloc(li->lines,(li->lmax = li->lcnt+30+lcnt-(le-ls+1))*sizeof(struct openfont_str **));
+	li->lines = realloc(li->lines,(li->lmax = li->lcnt+30+lcnt-(le-ls+1))*sizeof(struct opentype_str **));
 	li->lineheights = realloc(li->lineheights,li->lmax*sizeof(struct lineheights));
     }
     /* move any old lines around */

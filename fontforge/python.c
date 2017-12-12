@@ -3268,7 +3268,7 @@ return( NULL );
 	}
     } else {
 	if ( start!=0 ) {
-	    points = malloc(self->pt_cnt*sizeof(struct PyFF_Point *));
+	    points = malloc(self->pt_cnt*sizeof(PyFF_Point *));
 	    for ( i=start; i<self->pt_cnt; ++i )
 		points[i-start] = self->points[i];
 	    off = self->pt_cnt - start;
