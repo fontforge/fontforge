@@ -44,11 +44,13 @@
 #include "splineutil2.h"
 #include "tottf.h"
 #include "tottfgpos.h"
+#include <gutils.h>
 #include <unistd.h>
 #include <math.h>
 #include <locale.h>
 #include <utype.h>
 #include <chardata.h>
+#include <time.h>
 #include <ustring.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -3612,8 +3614,8 @@ return( NULL );
 	SFSetOrder(sf,sf->layers[ly_fore].order2);
 	sf->chosenname = chosenname;
 	if ( stat(filename,&b)!=-1 ) {
-	    sf->modificationtime = b.st_mtime;
-	    sf->creationtime = b.st_mtime;
+	    sf->modificationtime = GetST_MTime(b);
+	    sf->creationtime = GetST_MTime(b);
 	}
     }
 return( sf );

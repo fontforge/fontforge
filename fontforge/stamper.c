@@ -2,6 +2,7 @@
  * This program is used to create a 'release date' time stamp when it is time for the
  * next fontforge release build. See fontforge/GNUmakefile.in
  */
+#include <gutils.h>
 #include <stdio.h>
 #include <time.h>
 
@@ -9,11 +10,9 @@ static const char *months[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
 	"Aug", "Sep", "Oct", "Nov", "Dec", NULL };
 
 int main( int argc, char **argv ) {
-    time_t now;
-    struct tm *tm;
+    time_t now = GetTime();
+    struct tm *tm = gmtime(&now);
 
-    time(&now);
-    tm = gmtime(&now);
     /* Let the user or developer know that this resulting output is generated rather than edited */
     printf( "/* This file was generated using stamper.c to create the next version release.          */\n" );
     printf( "/* If you need to update this to the next release version, see fontforge/GNUmakefile.in */\n\n" );

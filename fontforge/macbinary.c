@@ -51,8 +51,8 @@
 #include <math.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <time.h>
 #include <ustring.h>
+#include <gutils.h>
 #include "ttf.h"
 #include "psfont.h"
 #if __Mac
@@ -1359,9 +1359,8 @@ static void DumpResourceMap(FILE *res,struct resourcetype *rtypes,enum fontforma
 }
 
 long mactime(void) {
-    time_t now;
+    time_t now = GetTime();
 
-    time(&now);
     /* convert from 1970 based time to 1904 based time */
     now += (1970-1904)*365L*24*60*60+((1970-1904)>>2)*24*60*60;
     /* Ignore any leap seconds -- Sorry Steve */
@@ -1423,7 +1422,6 @@ static int DumpMacBinaryHeader(FILE *res,struct macbinaryheader *mb) {
 
 	/* Creation time, (seconds from 1/1/1904) */
     now = mactime();
-    time(&now);
     *hpt++ = now>>24; *hpt++ = now>>16; *hpt++ = now>>8; *hpt++ = now;
 	/* Modification time, (seconds from 1/1/1904) */
     *hpt++ = now>>24; *hpt++ = now>>16; *hpt++ = now>>8; *hpt++ = now;

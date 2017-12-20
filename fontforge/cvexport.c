@@ -39,6 +39,7 @@
 #include <locale.h>
 #include <string.h>
 #include "gfile.h"
+#include <gutils.h>
 #include <time.h>
 #include "ustring.h"
 #include "gio.h"
@@ -100,8 +101,12 @@ int _ExportEPS(FILE *eps,SplineChar *sc, int layer, int preview) {
     fprintf( eps, "%%%%Creator: FontForge\n" );
     if ( author!=NULL )
 	fprintf( eps, "%%%%Author: %s\n", author);
-    time(&now);
-    tm = localtime(&now);
+    now = GetTime();
+    if (!getenv("SOURCE_DATE_EPOCH")) {
+	tm = localtime(&now);
+    } else {
+	tm = gmtime(&now);
+    }
     fprintf( eps, "%%%%CreationDate: %d:%02d %d-%d-%d\n", tm->tm_hour, tm->tm_min,
 	    tm->tm_mday, tm->tm_mon+1, 1900+tm->tm_year );
     if ( sc->parent->multilayer ) {
@@ -218,8 +223,12 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
     fprintf( pdf, "6 0 obj\n" );
     fprintf( pdf, " <<\n" );
     fprintf( pdf, "    /Creator (FontForge)\n" );
-    time(&now);
-    tm = localtime(&now);
+    now = GetTime();
+    if (!getenv("SOURCE_DATE_EPOCH")) {
+	tm = localtime(&now);
+    } else {
+	tm = gmtime(&now);
+    }
     fprintf( pdf, "    /CreationDate (D:%04d%02d%02d%02d%02d%02d",
 	    1900+tm->tm_year, tm->tm_mon+1, tm->tm_mday,
 	    tm->tm_hour, tm->tm_min, tm->tm_sec );
@@ -227,7 +236,7 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
     fprintf( pdf, "Z)\n" );
 #else
     tzset();
-    if ( timezone==0 )
+    if ( timezone==0  || getenv("SOURCE_DATE_EPOCH") )
 	fprintf( pdf, "Z)\n" );
     else {
 	if ( timezone<0 ) /* fprintf bug - this is a kludge to print +/- in front of a %02d-padded value */
