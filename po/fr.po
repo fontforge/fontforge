@@ -13578,7 +13578,7 @@ msgstr ""
 
 #: ../fontforgeexe/charinfo.c:2099
 msgid "Only a single character allowed"
-msgstr "Un seul caractèere autorisé"
+msgstr "Un seul caractère autorisé"
 
 #: ../fontforgeexe/charinfo.c:2137
 msgid "Pixel Size"
