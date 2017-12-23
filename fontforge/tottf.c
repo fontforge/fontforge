@@ -2854,23 +2854,24 @@ static void sethead(struct head *head,SplineFont *sf,struct alltabs *at,
     /*  a different advance width from that expected by scaling, then windows */
     /*  will only notice the fact if the 0x10 bit is set (even though this has*/
     /*  nothing to do with instructions) */
-/* Apple flags */
-    if ( sf->hasvmetrics )
-	head->flags |= (1<<5);		/* designed to be layed out vertically */
-    /* Bit 6 must be zero */
-    if ( arabic )
-	head->flags |= (1<<7);
-    if ( sf->sm )
-	head->flags |= (1<<8);		/* has metamorphesis effects */
-    if ( rl )
-	head->flags |= (1<<9);
-    indic_rearrange = 0;
-    for ( sm = sf->sm; sm!=NULL; sm=sm->next )
-	if ( sm->type == asm_indic )
-	    indic_rearrange = true;
-    if ( indic_rearrange )
-	head->flags |= (1<<10);
-/* End apple flags */
+    if ( at->applemode ) {
+	/* Apple flags */
+	if ( sf->hasvmetrics )
+	    head->flags |= (1<<5);		/* designed to be layed out vertically */
+	/* Bit 6 must be zero */
+	if ( arabic )
+	    head->flags |= (1<<7);
+	if ( sf->sm )
+	    head->flags |= (1<<8);		/* has metamorphesis effects */
+	if ( rl )
+	    head->flags |= (1<<9);
+	indic_rearrange = 0;
+	for ( sm = sf->sm; sm!=NULL; sm=sm->next )
+	    if ( sm->type == asm_indic )
+		indic_rearrange = true;
+	if ( indic_rearrange )
+	    head->flags |= (1<<10);
+    }
     if ( sf->head_optimized_for_cleartype )
 	head->flags |= (1<<13);
     head->emunits = sf->ascent+sf->descent;
@@ -2880,16 +2881,23 @@ static void sethead(struct head *head,SplineFont *sf,struct alltabs *at,
     if ( at->gi.glyph_len<0x20000 )
 	head->locais32 = 0;
 
-    /* I assume we've always got some neutrals (spaces, punctuation) */
-    if ( lr && rl )
-	head->dirhint = 0;
-    else if ( rl )
-	head->dirhint = -2;
-    else
-	head->dirhint = 2;
-    if ( rl )
-	head->flags |= (1<<9);		/* Apple documents this */
-    /* if there are any indic characters, set bit 10 */
+    if ( !at->applemode ) {
+      /* "Deprecated (Set to 2)":
+       * https://www.microsoft.com/typography/otspec/head.htm#fontDirectionHint
+       */
+      head->dirhint = 2;
+    } else {
+      /* I assume we've always got some neutrals (spaces, punctuation) */
+      if ( lr && rl )
+          head->dirhint = 0;
+      else if ( rl )
+          head->dirhint = -2;
+      else
+          head->dirhint = 2;
+      if ( rl )
+          head->flags |= (1<<9);		/* Apple documents this */
+      /* if there are any indic characters, set bit 10 */
+    }
 
     cvt_unix_to_1904(sf->creationtime,head->createtime);
     cvt_unix_to_1904(sf->modificationtime,head->modtime);
