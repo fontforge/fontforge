@@ -1171,6 +1171,7 @@ int GenerateScript(SplineFont *sf,char *filename,const char *bitmaptype, int fmf
 		if ( fmflags&0x1000000 ) old_sfnt_flags |= ttf_flag_pfed_guides;
 		if ( fmflags&0x2000000 ) old_sfnt_flags |= ttf_flag_pfed_layers;
 		if ( fmflags&0x4000000 ) old_sfnt_flags |= ttf_flag_oldkernmappedonly;
+		if ( fmflags&0x8000000 ) old_sfnt_flags |= ttf_flag_nomacnames;
 	    }
 	} else {
 	    old_sfnt_flags = 0;
@@ -1214,6 +1215,7 @@ int GenerateScript(SplineFont *sf,char *filename,const char *bitmaptype, int fmf
 	    if ( fmflags&0x1000000 ) old_sfnt_flags |= ttf_flag_pfed_guides;
 	    if ( fmflags&0x2000000 ) old_sfnt_flags |= ttf_flag_pfed_layers;
 	    if ( fmflags&0x4000000 ) old_sfnt_flags |= ttf_flag_oldkernmappedonly;
+	    if ( fmflags&0x8000000 ) old_sfnt_flags |= ttf_flag_nomacnames;
 	}
     }
 
