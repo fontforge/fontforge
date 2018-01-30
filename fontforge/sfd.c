@@ -4885,7 +4885,7 @@ void SFDGetKerns( FILE *sfd, SplineChar *sc, char* ttok ) {
 		last = kp;
 	    }
 	    if( !kernCount ) {
-		printf("SFDGetKerns() have a BLANK KERN\n");
+//		printf("SFDGetKerns() have a BLANK KERN\n");
 		sc->kerns = 0;
 	    }
     } else if ( strmatch(tok,"Kerns:")==0 ||

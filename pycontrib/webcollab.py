@@ -61,7 +61,7 @@ def stopWebServerInCollabMode(data = None, glyphOrFont = None):
     ensureChildClosed()
 
 if fontforge.hasUserInterface():
-    print("fontforge.hasUserInterface!")
+    #print("fontforge.hasUserInterface!")
     fontforge.onAppClosing( WebServerInCollabModeGoodbye )
     fontforge.registerMenuItem(startWebServerInCollabMode, None, None, ("Font","Glyph"),
                                 None, "Start Web server in Collab mode");
