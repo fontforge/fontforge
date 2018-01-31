@@ -1322,7 +1322,7 @@ static void PrefsUI_LoadPrefs(void)
     real_xdefs_filename = xdefs_filename;
     if ( !real_xdefs_filename )
     {
-	fprintf(stderr,"no xdefs_filename!\n");
+//	fprintf(stderr,"no xdefs_filename!\n");
 	if (!quiet) {
 	    fprintf(stderr,"TESTING: getPixmapDir:%s\n", getPixmapDir() );
 	    fprintf(stderr,"TESTING: getShareDir:%s\n", getShareDir() );

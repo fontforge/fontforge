@@ -1767,7 +1767,7 @@ BDFFont *SplineFontPieceMeal(SplineFont *sf,int layer,int ptsize,int dpi,
 
     if ( flags&pf_ft_nohints )
     {
-	printf("SplineFontPieceMeal() going unhinted...\n");
+//	printf("SplineFontPieceMeal() going unhinted...\n");
 	bdf->unhinted_freetype = true;
     }
     else if ( flags&pf_ft_recontext )
