@@ -4019,7 +4019,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	struct gfi_data *d = GDrawGetUserData(gw);
 	SplineFont *sf = d->sf, *_sf;
 
-	printf("at top of GFI_OK\n");
+//	printf("at top of GFI_OK\n");
 
 	char* sfdfrag  = DumpSplineFontMetadata( sf );
 	SFUndoes* undo = SFUndoCreateSFD( sfut_fontinfo,
