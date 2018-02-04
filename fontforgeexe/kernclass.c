@@ -653,7 +653,7 @@ static void KCD_UpdateGlyphFromName(KernClassDlg *kcd,int which,char* glyphname)
     SplineChar **possc = which==0 ? &kcd->scf : &kcd->scs;
     SplineChar *sc;
     void *freetypecontext=NULL;
-    printf("KCD_UpdateGlyphFromName() which:%d iskp:%d\n", which, kcd->iskernpair);
+//    printf("KCD_UpdateGlyphFromName() which:%d iskp:%d\n", which, kcd->iskernpair);
 
     char* localglyphname = copy( glyphname );
     char* p = 0;
@@ -681,7 +681,7 @@ static void KCD_UpdateGlyphFromName(KernClassDlg *kcd,int which,char* glyphname)
 	*scpos = SplineCharAntiAlias(sc,kcd->layer,kcd->pixelsize,4);
     }
 
-    printf("KCD_UpdateGlyph() scpos:%p\n", *scpos );
+//    printf("KCD_UpdateGlyph() scpos:%p\n", *scpos );
 }
 
 static void KCD_UpdateGlyph(KernClassDlg *kcd,int which) {
