@@ -1216,7 +1216,7 @@ static void adjustLBearing( CharView *cv, SplineChar *sc, real val )
 	transform[0] = transform[3] = 1.0;
 	transform[1] = transform[2] = transform[5] = 0;
 	transform[4] = val;
-	printf("adjustLBearing val:%f min:%f v-min:%f\n",val,bb.minx,(bb.minx+val));
+//	printf("adjustLBearing val:%f min:%f v-min:%f\n",val,bb.minx,(bb.minx+val));
 	FVTrans( (FontViewBase *) cv->b.fv, sc, transform, NULL, 0 | fvt_alllayers );
 	// We copy and adapt some code from FVTrans in order to adjust the CharView carets.
 	// We omit the fvt_scalepstpos for FVTrans since other CharView code seems to skip updating the SplineChar.
@@ -1334,7 +1334,7 @@ return(false);
     }
     if ( cv->lbearingsel ) {
 
-	printf("lbearing dx:%f\n", dx );
+//	printf("lbearing dx:%f\n", dx );
 	adjustLBearing( cv, cv->b.sc, dx );
 	changed = true;
     }
@@ -1645,7 +1645,7 @@ void CVMouseUpPointer(CharView *cv ) {
     }
     if ( cv->lbearingsel )
     {
-	printf("oldlbearing:%f\n", cv->oldlbearing );
+//	printf("oldlbearing:%f\n", cv->oldlbearing );
 	cv->expandedge = ee_none;
 	GDrawSetCursor(cv->v,ct_mypointer);
     }

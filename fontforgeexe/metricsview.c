@@ -167,7 +167,7 @@ static SplineChar* getSelectedChar( MetricsView* mv ) {
 
 static void selectUserChosenWordListGlyphs( MetricsView *mv, void* userdata )
 {
-    printf("selectUserChosenWordListGlyphs(top)\n");
+//    printf("selectUserChosenWordListGlyphs(top)\n");
     MVSelectSetForAll( mv, 0 );
     // The previous check thought that userdata was in integer and wanted to verify that
     // it was positive and not equal to -1 or to -2. Frank changed it.
@@ -1204,7 +1204,7 @@ return( true );
 
 	    SCSynchronizeWidth(sc,val,sc->width,NULL);
 	    SCCharChangedUpdate(sc,ly_none);
-	    printf("mv_widthChanged() sending collab\n");
+//	    printf("mv_widthChanged() sending collab\n");
 	    MV_handle_collabclient_sendRedo(mv,sc);
 
 	} else if ( mv->vertical && val!=sc->vwidth ) {
@@ -3847,7 +3847,7 @@ static void MVMenuSetWidth(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) 
     if ( mi->mid == MID_SetVWidth && !mv->sf->hasvmetrics )
 return;
     SplineChar* sc = getSelectedChar(mv);
-    printf("MVMenuSetWidth() sc:%p\n",sc);
+//    printf("MVMenuSetWidth() sc:%p\n",sc);
     if(!sc)
  	return;
 
@@ -4778,7 +4778,7 @@ return;
 	    // nothing
 	}
 
-	printf("mvsubmouse() mv->pressedwidth:%d \n", mv->pressedwidth );
+//	printf("mvsubmouse() mv->pressedwidth:%d \n", mv->pressedwidth );
 	mv->pressed = false;
 	mv->activeoff = 0;
 	sc = mv->glyphs[i].sc;
@@ -4786,7 +4786,7 @@ return;
 	    mv->pressedwidth = false;
 	    if ( mv->right_to_left ) diff = -diff;
 	    diff = diff*(mv->sf->ascent+mv->sf->descent)/(mv->pixelsize*iscale);
-	    printf("mvsubmouse() diff:%d \n", diff );
+//	    printf("mvsubmouse() diff:%d \n", diff );
 	    if ( diff!=0 ) {
 		SCPreserveWidth(sc);
 		SCSynchronizeWidth(sc,sc->width+diff,sc->width,NULL);
@@ -4802,7 +4802,7 @@ return;
 		MVRefreshValues(mv,i-1);
 	    }
 	} else if ( mv->type!=mv_kernonly ) {
-	    printf("mvsubmouse() not kern only \n" );
+//	    printf("mvsubmouse() not kern only \n" );
 	    MV_handle_collabclient_maybeSnapshot(mv,sc);
 	    real transform[6];
 	    transform[0] = transform[3] = 1.0;

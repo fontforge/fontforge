@@ -658,7 +658,7 @@ int _FVMenuSaveAs(FontView *fv) {
     if( !GFileIsAbsolute(temp) )
     {
     	char* defaultSaveDir = GFileGetHomeDocumentsDir();
-	printf("save-as:%s\n", temp );
+//	printf("save-as:%s\n", temp );
     	char* temp2 = GFileAppendFile( defaultSaveDir, temp, 0 );
     	free(temp);
     	temp = temp2;
@@ -1653,7 +1653,7 @@ static void FVMenuUndoFontLevel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	return;
 
     struct sfundoes *undo = sf->undoes;
-    printf("font level undo msg:%s\n", undo->msg );
+//    printf("font level undo msg:%s\n", undo->msg );
     SFUndoPerform( undo, sf );
     SFUndoRemoveAndFree( sf, undo );
 }
@@ -3578,8 +3578,8 @@ return;
 
     const char* collabStateString = "";
     if( collabclient_inSessionFV( &fv->b )) {
-	printf("collabclient_getState( fv ) %d %d\n",
-	       fv->b.collabState, collabclient_getState( &fv->b ));
+//	printf("collabclient_getState( fv ) %d %d\n",
+//	       fv->b.collabState, collabclient_getState( &fv->b ));
 	collabStateString = collabclient_stateToString(collabclient_getState( &fv->b ));
     }
 
@@ -5562,7 +5562,7 @@ static void FVMenuCollabStart(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
 {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
-    printf("connecting to server and sending initial SFD to it...\n");
+//    printf("connecting to server and sending initial SFD to it...\n");
 
     int port_default = 5556;
     int port = port_default;
@@ -5578,7 +5578,7 @@ static void FVMenuCollabStart(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
 		  "%s", HostPortPack( address, port ));
     }
 
-    printf("host address:%s\n",address);
+//    printf("host address:%s\n",address);
 
     char* res = gwwv_ask_string(
 	"Starting Collab Server",
@@ -5589,16 +5589,16 @@ static void FVMenuCollabStart(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
 
     if( res )
     {
-	printf("res:%s\n", res );
+//	printf("res:%s\n", res );
 	HostPortUnpack( res, &port, port_default );
 
-	printf("address:%s\n", res );
-	printf("port:%d\n", port );
+//	printf("address:%s\n", res );
+//	printf("port:%d\n", port );
 
 	void* cc = collabclient_new( res, port );
 	fv->b.collabClient = cc;
 	collabclient_sessionStart( cc, fv );
-	printf("connecting to server...sent the sfd for session start.\n");
+//	printf("connecting to server...sent the sfd for session start.\n");
 	free(res);
     }
 }
@@ -5627,8 +5627,8 @@ static int collab_MakeChoicesArray( GHashTable* peers, char** choices, int choic
 	if( localOnly && !collabclient_isAddressLocal( ba->ip ))
 	    continue;
 
-	printf("user:%s\n", ba->username );
-	printf("mach:%s\n", ba->machinename );
+//	printf("user:%s\n", ba->username );
+//	printf("mach:%s\n", ba->machinename );
 
 	char buf[101];
 	if( localOnly )
@@ -5676,7 +5676,7 @@ static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent
 {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
-    printf("connecting to server...\n");
+//    printf("connecting to server...\n");
 
     {
 	int choices_sz = 100;
@@ -5689,7 +5689,7 @@ static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent
 	int max = collab_MakeChoicesArray( peers, choices, choices_sz, localOnly );
 	int choice = gwwv_choose(_("Connect to Collab Server"),(const char **) choices, max,
 				 0,_("Select a collab server to connect to..."));
-	printf("you wanted %d\n", choice );
+//	printf("you wanted %d\n", choice );
 	if( choice <= max )
 	{
 	    beacon_announce_t* ba = collab_getBeaconFromChoicesArray( peers, choice, localOnly );
@@ -5706,14 +5706,14 @@ static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent
 	}
     }
 
-    printf("FVMenuCollabConnect(done)\n");
+//    printf("FVMenuCollabConnect(done)\n");
 }
 
 static void FVMenuCollabConnectToExplicitAddress(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
 {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
-    printf("********** connecting to server... explicit address... p:%p\n", pref_collab_last_server_connected_to);
+//    printf("********** connecting to server... explicit address... p:%p\n", pref_collab_last_server_connected_to);
 
     char* default_server = "localhost";
     if( pref_collab_last_server_connected_to ) {
@@ -5743,7 +5743,7 @@ static void FVMenuCollabConnectToExplicitAddress(GWindow gw, struct gmenuitem *U
     	collabclient_sessionJoin( cc, fv );
     }
 
-    printf("FVMenuCollabConnect(done)\n");
+//    printf("FVMenuCollabConnect(done)\n");
 }
 
 static void FVMenuCollabDisconnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
@@ -5780,10 +5780,10 @@ static void AskAndMaybeCloseLocalCollabServers()
 				      buts, _("Select which servers you wish to close..."));
 
     int allServersSelected = 1;
-    printf("you wanted %d\n", choice );
+//    printf("you wanted %d\n", choice );
     for( i=0; i < max; i++ )
     {
-	printf("sel[%d] is %d\n", i, sel[i] );
+//	printf("sel[%d] is %d\n", i, sel[i] );
 	beacon_announce_t* ba = collab_getBeaconFromChoicesArray( peers, choice, localOnly );
 
 	if( sel[i] && ba )
@@ -5795,7 +5795,7 @@ static void AskAndMaybeCloseLocalCollabServers()
 		FontViewBase* fv = FontViewFind( FontViewFind_byCollabBasePort, (void*)(intptr_t)port );
 		if( fv )
 		    collabclient_sessionDisconnect( fv );
-		printf("CLOSING port:%d fv:%p\n", port, fv );
+//		printf("CLOSING port:%d fv:%p\n", port, fv );
 		collabclient_closeLocalServer( port );
 	    }
 	}
@@ -5805,7 +5805,7 @@ static void AskAndMaybeCloseLocalCollabServers()
 	}
     }
 
-    printf("allServersSelected:%d\n", allServersSelected );
+//    printf("allServersSelected:%d\n", allServersSelected );
     if( allServersSelected )
 	collabclient_closeAllLocalServersForce();
 }
@@ -5845,7 +5845,7 @@ static void collablistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e))
 	    break;
 	}
 	case MID_CollabCloseLocalServer:
-	    printf("can close local server: %d\n", collabclient_haveLocalServer() );
+//	    printf("can close local server: %d\n", collabclient_haveLocalServer() );
 	    mi->ti.disabled = !collabclient_haveLocalServer();
 	    break;
 	}
@@ -6795,7 +6795,7 @@ return;
 		break;
 	    if ( gid!=-1 ) {
 		CharView *cv = (CharView *) (sf->glyphs[gid]->views);
-		printf("calling CVChangeSC() sc:%p %s\n", sc, sc->name );
+//		printf("calling CVChangeSC() sc:%p %s\n", sc, sc->name );
 		CVChangeSC(cv,sc);
 		GDrawSetVisible(cv->gw,true);
 		GDrawRaise(cv->gw);
@@ -7085,7 +7085,7 @@ return( GGadgetDispatchEvent(fv->vsb,event));
 	FVTimer(fv,event);
       break;
       case et_focus:
-	  printf("fv.et_focus\n");
+//	  printf("fv.et_focus\n");
 	if ( event->u.focus.gained_focus )
 	    GDrawSetGIC(gw,fv->gic,0,20);
       break;
@@ -8208,7 +8208,7 @@ FontViewBase* FontViewFindActive()
 FontViewBase* FontViewFind( int (*testFunc)( FontViewBase*, void* udata ), void* udata )
 {
     FontViewBase *fv;
-    printf("FontViewFind(top) fv_list:%p\n", fv_list );
+//    printf("FontViewFind(top) fv_list:%p\n", fv_list );
     for ( fv = (FontViewBase*)fv_list; fv!=NULL; fv=fv->next )
     {
 	if( testFunc( fv, udata ))
