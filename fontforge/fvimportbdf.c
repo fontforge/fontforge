@@ -1686,7 +1686,7 @@ return( false );
 	/* Nothing to do */;
     else if ( PCF_SCAN_UNIT(format)==2 )
 	TwoByteSwap(bitmap, sizebitmaps);
-    else if ( PCF_SCAN_UNIT(format)==2 )
+    else if ( PCF_SCAN_UNIT(format)==4 )
 	FourByteSwap(bitmap, sizebitmaps);
     if ( PCF_GLYPH_PAD(format)==1 ) {
 	for ( i=0; i<cnt; ++i ) {
