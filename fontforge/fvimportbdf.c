@@ -1645,7 +1645,7 @@ static void TwoByteSwap(uint8 *bitmap,int sizebitmaps) {
 static void FourByteSwap(uint8 *bitmap,int sizebitmaps) {
     int i, t;
 
-    for ( i=0; i<sizebitmaps-1; i+=2 ) {
+    for ( i=0; i<sizebitmaps-1; i+=4 ) {
 	t = bitmap[i];
 	bitmap[i] = bitmap[i+3];
 	bitmap[i+3] = t;
