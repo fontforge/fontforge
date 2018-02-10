@@ -2147,7 +2147,7 @@ return( false );
 	if ( slope1.x*slope2.x + slope1.y*slope2.y > 0 )
 return( false );		/* Point in different directions */
 	temp.x = sp2->me.x - sp1->me.x;
-	temp.y = sp2->me.y - sp2->me.y;
+	temp.y = sp2->me.y - sp1->me.y;
 	if ( !RealNear(slope1.x*temp.x - slope1.y*temp.y,0) )
 return( false );
 	center.x = sp1->me.x + temp.x/2;
