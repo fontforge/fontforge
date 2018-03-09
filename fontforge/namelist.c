@@ -527,6 +527,7 @@ NameList *LoadNamelist(char *filename) {
     int up, ub, uc;
     int rn_cnt=0, rn_max = 0;
     int uses_unicode = false;
+    char *title;
 
     if ( file==NULL )
 return( NULL );
@@ -534,12 +535,21 @@ return( NULL );
     if ( !psnamesinited )
 	psinitnames();
 
-    nl = chunkalloc(sizeof(NameList));
     pt = strrchr(filename,'/');
     if ( pt==NULL ) pt = filename; else ++pt;
-    nl->title = def2utf8_copy(pt);
-    pt = strrchr(nl->title,'.');
+    title = def2utf8_copy(pt);
+    pt = strrchr(title,'.');
     if ( pt!=NULL ) *pt = '\0';
+
+    if ( NameListByName(title)!=NULL ) {
+	ff_post_error(_("NameList duplicated"),_("NameList with the name \"%s\" already exists"), title );
+	fclose(file);
+	free(title);
+return( NULL );
+    }
+
+    nl = chunkalloc(sizeof(NameList));
+    nl->title = title;
 
     while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
 	if ( buffer[0]=='#' || buffer[0]=='\n' || buffer[0]=='\r' )
