@@ -3666,7 +3666,7 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
     }
 
     int cnt = CVCountSelectedPoints(cv);
-    printf(".... count:%d\n", cnt );
+//    printf(".... count:%d\n", cnt );
     if( cnt > 1 ) {
 	mi[i].ti.text = (unichar_t *) _("Make Line");
 	mi[i].ti.text_is_1byte = true;

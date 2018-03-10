@@ -1322,7 +1322,7 @@ exit( 0 );
 	else if ( strcmp(pt,"-open")==0 )
 	    doopen = true;
 	else {
-	    printf("else argv[i]:%s\n", argv[i] );
+//	    printf("else argv[i]:%s\n", argv[i] );
 	    if ( strstr(argv[i],"://")!=NULL ) {		/* Assume an absolute URL */
 		strncpy(buffer,argv[i],sizeof(buffer));
 		buffer[sizeof(buffer)-1]= '\0';

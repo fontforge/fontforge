@@ -109,6 +109,7 @@ check_pedit([TTC loading],[test130.pe],[NotoSans-Regular.ttc])
 AT_BANNER([FontForge Python Scripting Tests])
 
 check_python([FontForge .sfd file open check],[test0001.py],[Ambrosia.sfd])
+check_python([Loading duplicate name list],[test0002.py],[AGL For New Fonts.txt])
 check_python([FontForge .ttc file open check],[test0101.py],[NotoSans-Regular.ttc])
 check_python([Generate several font files],[test1001.py],[Caliban.sfd])
 check_python([Point count check],[test1001a.py],[Zapfino-4.0d3.dfont])

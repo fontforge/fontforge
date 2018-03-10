@@ -1,177 +1,147 @@
-.\" Manual page for sfddiff by George Williams
-.\" Copyright © 2000-2002 by George Williams.
-.\" Re-edited to use standard -man macros by RPC Rodgers, 23 October 2002.
-.TH SFDDIFF 1 "8 April 2006"
-.
-.
+\." Copyright (c) 2000-2006 by George Williams (gww@silcom.com).  Manual
+\." page heavily rewritten and modified to use standard -man(5) macros
+\." by R.P.C. Rodgers (rodgers@nlm.nih.gov), 23 October 2002.  Paul Hardy
+\." reconstructed the original man page in 2017.
+.TH SFDDIFF 1 "2017 Jun 18"
 .SH NAME
-.
-.B sfddiff \- compare two font files
-.
-.
+sfddiff \- compare two font files
 .SH SYNOPSIS
-.
-.B sfddiff
-.RB [ \-\-help ]
-.RB [ \-\-ignorehints ]
-.RB [ \-\-ignorenames ]
-.RB [ \-\-ignoregpos ]
-.RB [ \-\-ignoregsub ]
-.RB [ \-\-ignorebitmaps ]
-.RB [ \-\-exact ]
-.RB [ \-\-warn ]
-.RB [ \-\-merge
-.IR outfile ]
-.RB [ \-\-usage ]
-.RB [ \-\-version ]
-.I fontfile1
-.I fontfile2 
-.
-.
+.BR sfddiff
+[\fB\-\-help\fP]
+[\fB\-\-ignorehints\fP]
+[\fB\-\-ignorenames\fP]
+[\fB\-\-ignoregpos\fP]
+[\fB\-\-ignoregsub\fP]
+[\fB\-\-ignorebitmaps\fP]
+[\fB\-\-exact\fP]
+[\fB\-\-warn\fP]
+[\fB\-\-merge\fP\ \fIoutfile\fP]
+[\fB\-\-usage\fP]
+[\fB\-\-version\fP]
+.I fontfile1 fontfile2 
 .SH DESCRIPTION
-.
-The program
-.B sfddiff
-compares two font files, which may be in any format
-.BR fontforge (1)
-can read.
+The program \fBsfddiff\fP compares two font files,
+which may be in any format that \fBfontforge\fP(1) can read.
 It will notice the following differences:
-.
-.TP
+.TP 4
 1)
 Characters are present in one font but not in the other.
-.
 .TP
 2)
-Characters are present in both fonts but have different sets of outlines
-or references.
-The outlines may be compared so that only exact matches are accepted, or
-so that a fuzzier match is used.
-Similarly references may need to match exactly, or may be matched after
-an unlink.
-.IP
-This fuzzy comparison is useful when comparing truetype and postscript
-fonts, or when comparing a font with references to one without.
-.
+Characters are present in both fonts but have different sets
+of outlines or references. The outlines may be compared so that
+only exact matches are accepted, or so that a fuzzier match is
+used.  Similarly references may need to match exactly, or may be
+matched after an unlink.  This fuzzy comparison is useful when
+comparing truetype and postscript fonts, or when comparing a font
+with references to one without. 
 .TP
 3)
-The postscript hints or truetype instructions are different.
-.
+The PostScript hints or TrueType instructions are different.
 .TP
 4)
-The font names (the truetype `name' table) differ.
-.
+The font names (the TrueType 'name' tables) differ.
 .TP
 5)
-The kerning (and other `gpos' information) differs.
-.
+The kerning (and other 'gpos' information) differs.
 .TP
 6)
-The ligatures (and other `gsub' information) differ.
-.
+The ligatures (and other 'gsub' information) differ.
 .TP
 7)
 Any bitmap strikes present in one font but not in the other.
-.
 .TP
 8)
-Any bitmap characters present in one strike of one font but in the
-equivalent strike of the other.
-.
+Any bitmap characters present in one strike of one font
+but not in the equivalent strike of the other.
 .TP
 9)
 Any bitmap characters which differ.
-.
-.
 .SH OPTIONS
-.
-.TP
+.TP 16
 .B \-\-help
 Provide a description with a list of the available options.
-.
 .TP
 .B \-\-ignorehints
-Suppress the reporting of hint/instruction differences.
-.
+Suppress the reporting of hint/instruction differences. 
 .TP
 .B \-\-ignoregpos
-Suppress the reporting of kerning (and other `gpos') differences.
-.
+Suppress the reporting of kerning (and other 'gpos') differences. 
 .TP
 .B \-\-ignoregsub
-Suppress the reporting of ligature (and other `gsub') differences.
-.
+Suppress the reporting of ligature (and other 'gsub') differences. 
 .TP
 .B \-\-ignorenames
-Suppress the reporting of name string differences.
-.
+Suppress the reporting of name string differences. 
 .TP
 .B \-\-ignorebitmaps
-Suppress the reporting of bitmap differences.
-.
+Suppress the reporting of bitmap differences. 
 .TP
 .B \-\-exact
-Require outlines to match exactly.
-.
+Require outlines to match exactly. 
 .TP
 .B \-\-warn
 Warn if the outlines/references are slightly different.
-.
 .TP
-.BI \-\-merge " outfile"
-Store a merged version of the two fonts into the specified output file.
-The merged data will be based on
-.IR sfdfile1 ,
-as well as any characters present in
-.I sfdfile2
-but not in
-.I sfdfile1
-will be added, and the outlines of
-.I sfdfile2
-will be placed in the background.
-Finally, for any characters with different outlines or references the
-background of the character will contain the outlines from
-.I sfdfile2
-(references will be unlinked into outlines and those outlines also will be
-added).
-.
+\fB\-\-merge\fP \fIoutfile\fP
+Store a merged version of the two fonts into the specified
+output file.  The merged data will be based on \fIsfdfile1\fP,
+any characters present in \fIsfdfile2\fP but not in
+\fIsfdfile1\fP will be added, and the outlines of \fIsfdfile2\fP
+will be placed in the background.  Finally, for any characters
+with different outlines or references the background of the
+character will contain the outlines from \fIsfdfile2\fP
+(references will be unlinked into outlines and those outlines
+also will be added). 
 .TP
 .B \-\-usage
-Display the usage description.
-.
+Display the usage description. 
 .TP
 .B \-\-version
 Display the current version.
-.
-.
-.\" .SH ENVIRONMENT
-.\" .SH FILES
-.\" .SH EXAMPLES
-.\" .SH DIAGNOSTICS
-.
-.
-.SH "SEE ALSO"
-.
-.BR fontforge (1)
-.LP
-The HTML version of the
-.I fontforge
-manual at:
-.IP
-\fChttp://fontforge.sourceforge.net/\fP
-.
-.
-.\" .SH STANDARDS
-.\" .SH HISTORY
-.
-.
-.SH AUTHOR
-.
-Copyright (C) 2000-2006 by George Williams (gww@silcom.com).
-Manual page heavily rewritten and modified to use standard
-.IR \-man (5)
-macros by R.P.C. Rodgers (rodgers@nlm.nih.gov), 23 October 2002.
-.
-.
-.\" .SH BUGS
-.\" end of file
+.SH SEE ALSO
+\fBfontforge\fP(1)
+.PP
+The HTML version of the \fBFontForge\fP manual, available online at:
+http://fontforge.sourceforge.net/.
+.SH NOTE
+\fBFontForge\fP used to be called \fBPfaEdit\fP.
+.SH AUTHORS
+.B FontForge
+is Copyright \(co 2000\(en2014 by George Williams, and is currently
+maintained by the FontForge development team.  See
+/usr/share/doc/fontforge/AUTHORS for a comprehensive list of
+contributors.
+.SH LICENSE
+The \fBsfddiff\fP program is licensed under GPLv3+:
+GNU GPL version\ 3 or later
+(http://gnu.org/licenses/gpl.html) with many parts covered by
+a BSD license
+(http://fontforge.org/license.html).  Please read the LICENSE file
+included in the FontForge distribution for details, or see
+https://github.com/fontforge/fontforge/blob/master/LICENSE.
+.PP
+FontForge is available as a whole under the terms of the
+[GNU GPL](http://www.gnu.org/copyleft/gpl.html), version\ 3
+or any later version. 
+However, almost all of its parts are available under the
+"revised BSD license"
+([pdf](http://www.law.yi.org/~sfllaw/talks/bsd.pdf))
+because FontForge was mostly written by George Williams,
+using that license.
+.PP
+The Revised BSD License is very permissive, and allows for code
+to be combined with other code under other licenses. 
+.PP
+There are many useful libraries available under copyleft libre
+licenses, such as the LGPL and GPL, which FontForge started
+to use in 2012. 
+.PP
+For example, Pango and Cairo are available under the LGPL, and
+gnulib is available under the GPL.
+.PP
+Advanced features added since 2012 are licensed by their individual
+developers under the GPLv3.
+.SH BUGS
+See the FontForge Github Issue Tracker, at
+https://github.com/fontforge/fontforge/issues/.

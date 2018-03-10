@@ -28,8 +28,10 @@
 #define _GUTILS_H
 
 #include <time.h>
+#include <sys/stat.h>
 
 extern const char *GetAuthor(void);
 extern time_t GetTime(void);
+extern time_t GetST_MTime(struct stat s);
 
 #endif

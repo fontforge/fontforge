@@ -1419,7 +1419,7 @@ static PyObject *PyFF_onAppClosing(PyObject *self, PyObject *args) {
     int cnt;
 
     cnt = PyTuple_Size(args);
-    printf("PyFF_onAppClosing() cnt:%d\n", cnt );
+//    printf("PyFF_onAppClosing() cnt:%d\n", cnt );
     if ( cnt<1 ) {
 	PyErr_Format(PyExc_TypeError, "Too few arguments");
 	return( NULL );
@@ -1440,7 +1440,7 @@ static PyObject *PyFF_onAppClosing(PyObject *self, PyObject *args) {
 static void python_call_onClosingFunctions_fe( gpointer data, gpointer udata )
 {
     PyObject *func = (PyObject*)data;
-    printf("python_call_onClosingFunctions_fe() f:%p\n", func );
+//    printf("python_call_onClosingFunctions_fe() f:%p\n", func );
     if( func )
     {
 	PyObject *arglist, *result;
@@ -1463,7 +1463,7 @@ void python_call_onClosingFunctions()
 /* ************************************************************************** */
 
 static PyObject *PyFF_registerMenuItemStub(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
-    printf("PyFF_registerMenuItemStub()\n");
+//    printf("PyFF_registerMenuItemStub()\n");
     /* This is a stub which will be replaced when we've got a UI */
 Py_RETURN_NONE;
 }
@@ -3268,7 +3268,7 @@ return( NULL );
 	}
     } else {
 	if ( start!=0 ) {
-	    points = malloc(self->pt_cnt*sizeof(struct PyFF_Point *));
+	    points = malloc(self->pt_cnt*sizeof(PyFF_Point *));
 	    for ( i=start; i<self->pt_cnt; ++i )
 		points[i-start] = self->points[i];
 	    off = self->pt_cnt - start;

@@ -50,6 +50,7 @@
 #include "baseviews.h"
 #include "views.h"
 #include <gdraw.h>
+#include <gutils.h>
 #include <ustring.h>
 #include <math.h>
 #include <utype.h>
@@ -4884,7 +4885,7 @@ void SFDGetKerns( FILE *sfd, SplineChar *sc, char* ttok ) {
 		last = kp;
 	    }
 	    if( !kernCount ) {
-		printf("SFDGetKerns() have a BLANK KERN\n");
+//		printf("SFDGetKerns() have a BLANK KERN\n");
 		sc->kerns = 0;
 	    }
     } else if ( strmatch(tok,"Kerns:")==0 ||
@@ -8836,8 +8837,8 @@ return( sf );
 void SFTimesFromFile(SplineFont *sf,FILE *file) {
     struct stat b;
     if ( fstat(fileno(file),&b)!=-1 ) {
-	sf->modificationtime = b.st_mtime;
-	sf->creationtime = b.st_mtime;
+	sf->modificationtime = GetST_MTime(b);
+	sf->creationtime = GetST_MTime(b);
     }
 }
 

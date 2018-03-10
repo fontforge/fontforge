@@ -43,6 +43,7 @@
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "tottf.h"
+#include <gutils.h>
 #include <ustring.h>
 #include <chardata.h>
 #include <utype.h>
@@ -3263,7 +3264,7 @@ static int GFI_AddOFL(GGadget *g, GEvent *e) {
 	time_t now;
 	struct tm *tm;
 
-	time(&now);
+	now = GetTime();
 	tm = localtime(&now);
 
 	tns = GMatrixEditGet(tng, &rows); newtns = NULL;
@@ -4018,7 +4019,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	struct gfi_data *d = GDrawGetUserData(gw);
 	SplineFont *sf = d->sf, *_sf;
 
-	printf("at top of GFI_OK\n");
+//	printf("at top of GFI_OK\n");
 
 	char* sfdfrag  = DumpSplineFontMetadata( sf );
 	SFUndoes* undo = SFUndoCreateSFD( sfut_fontinfo,

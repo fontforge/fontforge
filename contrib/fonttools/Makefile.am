@@ -35,6 +35,8 @@ noinst_PROGRAMS = findtable pfadecrypt rmligamarks stripttc woff	\
 
 woff_LDADD = $(ZLIB_LIBS)
 dewoff_LDADD = $(ZLIB_LIBS)
+ttf2eps_LDADD = $(top_builddir)/Unicode/libgunicode.la \
+                $(top_builddir)/gutils/libgutils.la
 
 EXTRA_DIST = README-ttf2eps
 

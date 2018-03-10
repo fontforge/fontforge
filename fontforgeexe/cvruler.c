@@ -901,7 +901,7 @@ static void CpInfoPlace(CharView *cv, GEvent *event) {
 }
 
 void CPStartInfo(CharView *cv, GEvent *event) {
-    printf("CPStartInfo() showcp:%d pressed:%d rw:%p\n", cv->showcpinfo, cv->p.pressed, cv->ruler_w );
+//    printf("CPStartInfo() showcp:%d pressed:%d rw:%p\n", cv->showcpinfo, cv->p.pressed, cv->ruler_w );
 
     if ( !cv->showcpinfo )
 return;

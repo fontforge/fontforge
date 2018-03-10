@@ -1645,7 +1645,7 @@ static void TwoByteSwap(uint8 *bitmap,int sizebitmaps) {
 static void FourByteSwap(uint8 *bitmap,int sizebitmaps) {
     int i, t;
 
-    for ( i=0; i<sizebitmaps-1; i+=2 ) {
+    for ( i=0; i<sizebitmaps-1; i+=4 ) {
 	t = bitmap[i];
 	bitmap[i] = bitmap[i+3];
 	bitmap[i+3] = t;
@@ -1686,7 +1686,7 @@ return( false );
 	/* Nothing to do */;
     else if ( PCF_SCAN_UNIT(format)==2 )
 	TwoByteSwap(bitmap, sizebitmaps);
-    else if ( PCF_SCAN_UNIT(format)==2 )
+    else if ( PCF_SCAN_UNIT(format)==4 )
 	FourByteSwap(bitmap, sizebitmaps);
     if ( PCF_GLYPH_PAD(format)==1 ) {
 	for ( i=0; i<cnt; ++i ) {

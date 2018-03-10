@@ -44,11 +44,13 @@
 #include "splineutil2.h"
 #include "tottf.h"
 #include "tottfgpos.h"
+#include <gutils.h>
 #include <unistd.h>
 #include <math.h>
 #include <locale.h>
 #include <utype.h>
 #include <chardata.h>
+#include <time.h>
 #include <ustring.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -114,9 +116,13 @@ static int svg_outfontheader(FILE *file, SplineFont *sf,int layer) {
 	fprintf( file, "vert-adv-y=\"%d\" ", sf->ascent+sf->descent );
     putc('>',file); putc('\n',file);
     fprintf( file, "  <font-face \n" );
-    fprintf( file, "    font-family=\"");
-    latin1ToUtf8Out(file, sf->familyname_with_timestamp ? sf->familyname_with_timestamp : sf->familyname );
-    fprintf( file, "\"\n");
+    if (sf->familyname_with_timestamp != NULL || sf->familyname != NULL) {
+	fprintf( file, "    font-family=\"");
+	latin1ToUtf8Out(file, sf->familyname_with_timestamp ? sf->familyname_with_timestamp : sf->familyname );
+	fprintf( file, "\"\n");
+    } else {
+	LogError(_("An SVG font without a familyname value might not be usable."));
+    }
     fprintf( file, "    font-weight=\"%d\"\n", info.weight );
     if ( strstrmatch(sf->fontname,"obli") || strstrmatch(sf->fontname,"slanted") )
 	fprintf( file, "    font-style=\"oblique\"\n" );
@@ -3608,8 +3614,8 @@ return( NULL );
 	SFSetOrder(sf,sf->layers[ly_fore].order2);
 	sf->chosenname = chosenname;
 	if ( stat(filename,&b)!=-1 ) {
-	    sf->modificationtime = b.st_mtime;
-	    sf->creationtime = b.st_mtime;
+	    sf->modificationtime = GetST_MTime(b);
+	    sf->creationtime = GetST_MTime(b);
 	}
     }
 return( sf );

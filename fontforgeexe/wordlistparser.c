@@ -171,7 +171,7 @@ WordlistEscapedInputStringToRealString_readGlyphName(
 	    }
 	    if( !sc )
 	    {
-		printf("WordlistEscapedInputStringToRealString_readGlyphName() no char found for backslashed unicodepoint:%ld\n", unicodepoint );
+//		printf("WordlistEscapedInputStringToRealString_readGlyphName() no char found for backslashed unicodepoint:%ld\n", unicodepoint );
 		strcpy(glyphname,"backslash");
 		sc = SFGetChar( sf, -1, glyphname );
 		endpos = startpos;
@@ -278,7 +278,7 @@ u_WordlistEscapedInputStringToRealString_readGlyphName(
 	    }
 	    if( !sc )
 	    {
-		printf("WordlistEscapedInputStringToRealString_readGlyphName() no char found for backslashed unicodepoint:%ld\n", unicodepoint );
+//		printf("WordlistEscapedInputStringToRealString_readGlyphName() no char found for backslashed unicodepoint:%ld\n", unicodepoint );
 		uc_strcpy(glyphname,"backslash");
 		sc = SFGetChar( sf, -1, u_to_c(glyphname) );
 		endpos = startpos;

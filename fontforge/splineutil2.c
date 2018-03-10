@@ -41,6 +41,7 @@
 #include <math.h>
 #include "ustring.h"
 #include "chardata.h"
+#include <gutils.h>
 #include <unistd.h>
 #include <time.h>
 #include <stdlib.h>
@@ -3808,7 +3809,6 @@ return( copy(buffer));
 
 SplineFont *SplineFontEmpty(void) {
     extern int default_fv_row_count, default_fv_col_count;
-    time_t now;
     SplineFont *sf;
 
     sf = calloc(1,sizeof(SplineFont));
@@ -3832,8 +3832,7 @@ SplineFont *SplineFontEmpty(void) {
     else
 	memcpy(sf->pfminfo.os2_vendor,"PfEd",4);
     sf->for_new_glyphs = DefaultNameListForNewFonts();
-    time(&now);
-    sf->creationtime = sf->modificationtime = now;
+    sf->creationtime = sf->modificationtime = GetTime();
 
     sf->layer_cnt = 2;
     sf->layers = calloc(2,sizeof(LayerInfo));
@@ -3860,8 +3859,12 @@ SplineFont *SplineFontBlank(int charcnt) {
     sprintf( buffer, "%s.sfd", sf->fontname);
     sf->origname = ToAbsolute(buffer);
     sf->weight = copy("Regular");
-    time(&now);
-    tm = localtime(&now);
+    now = GetTime();
+    if (!getenv("SOURCE_DATE_EPOCH")) {
+	tm = localtime(&now);
+    } else {
+	tm = gmtime(&now);
+    }
     if ( author!=NULL )
 	sprintf( buffer, "Copyright (c) %d, %.50s", tm->tm_year+1900, author );
     else

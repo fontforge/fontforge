@@ -439,7 +439,7 @@ static void* pyFF_maybeCallCVPreserveState( PyFF_Glyph *self ) {
 	collabclient_CVPreserveStateCalled( &cv->b );
 
 	no_windowing_ui = old_no_windowing_ui;
-	printf("called CVPreserveState()\n");
+//	printf("called CVPreserveState()\n");
     }
 
     return cv;
@@ -453,7 +453,7 @@ static void pyFF_sendRedoIfInSession_Func_Real( void* cvv )
     if( inPythonStartedCollabSession && cv )
     {
 	collabclient_sendRedo( &cv->b );
-	printf("collabclient_sendRedo()...\n");
+//	printf("collabclient_sendRedo()...\n");
     }
 #endif
 }
@@ -531,10 +531,10 @@ static PyObject *PyFFFont_CollabSessionRunMainLoop(PyFF_Font *self, PyObject *ar
 
     if( originalSeq < collabclient_getCurrentSequenceNumber( self->fv->collabClient ))
     {
-	printf("***********************\n");
-	printf("*********************** calling python updated function!!\n");
-	printf("***********************\n");
-	printf("***********************\n");
+//	printf("***********************\n");
+//	printf("*********************** calling python updated function!!\n");
+//	printf("***********************\n");
+//	printf("***********************\n");
 	InvokeCollabSessionSetUpdatedCallback( self );
     }
 #endif

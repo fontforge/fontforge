@@ -24,6 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <gutils.h>
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
@@ -939,7 +940,7 @@ static void PSInitJob(GPSWindow ps, unichar_t *title) {
 	    72.0*gdisp->lmargin, 72.0*gdisp->bmargin,
 	    72.0*(gdisp->xwidth-gdisp->rmargin), 72.0*(gdisp->yheight-gdisp->tmargin));
     fprintf( ps->init_file, "%%%%Creator: %s\n", GResourceProgramName );
-    time(&now);
+    now = GetTime();
     fprintf( ps->init_file, "%%%%CreationDate: %s", ctime(&now) );
     if ( title!=NULL )
 	fprintf( ps->init_file, "%%%%Title: %s\n", u2def_strncpy(buf,title,sizeof(buf)) );

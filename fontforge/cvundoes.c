@@ -951,16 +951,16 @@ static void SCUndoAct(SplineChar *sc,int layer, Undoes *undo) {
 	Layer *head = layer==ly_grid ? &sc->parent->grid : &sc->layers[layer];
 	SplinePointList *spl = head->splines;
 
-	printf("SCUndoAct() ut_state case, layer:%d sc:%p scn:%s scw:%d uw:%d\n",
-	       layer, sc, sc->name, sc->width, undo->u.state.width );
+//	printf("SCUndoAct() ut_state case, layer:%d sc:%p scn:%s scw:%d uw:%d\n",
+//	       layer, sc, sc->name, sc->width, undo->u.state.width );
 	
 	if ( layer==ly_fore ) {
 	    int width = sc->width;
 	    int vwidth = sc->vwidth;
 	    if ( sc->width!=undo->u.state.width )
 	    {
-		printf("SCUndoAct() sc:%p scn:%s scw:%d uw:%d\n",
-		       sc, sc->name, sc->width, undo->u.state.width );
+//		printf("SCUndoAct() sc:%p scn:%s scw:%d uw:%d\n",
+//		       sc, sc->name, sc->width, undo->u.state.width );
 		SCSynchronizeWidth(sc,undo->u.state.width,width,NULL);
 	    }
 	    sc->vwidth = undo->u.state.vwidth;
@@ -1025,7 +1025,7 @@ static void SCUndoAct(SplineChar *sc,int layer, Undoes *undo) {
 void CVDoUndo(CharViewBase *cv) {
     Undoes *undo = cv->layerheads[cv->drawmode]->undoes;
 
-    printf("CVDoUndo() undo:%p u->next:%p\n", undo, ( undo ? undo->next : 0 ) );
+//    printf("CVDoUndo() undo:%p u->next:%p\n", undo, ( undo ? undo->next : 0 ) );
     if ( undo==NULL )		/* Shouldn't happen */
 	return;
 

@@ -36,7 +36,7 @@ def ensureChildClosed():
     childNodejs = None
 
 def WebServerInCollabModeGoodbye():
-    print('webcollab closing...')
+    #print('webcollab closing...')
     ensureChildClosed()
 
 def startWebServerInCollabMode(data = None, glyphOrFont = None):
@@ -44,8 +44,8 @@ def startWebServerInCollabMode(data = None, glyphOrFont = None):
     global child
     global childNodejs
     ensureChildClosed()
-    print("FONTFORGE:" + FONTFORGE)
-    print("script path:" + collabpath + "web-test-collab.py")
+    #print("FONTFORGE:" + FONTFORGE)
+    #print("script path:" + collabpath + "web-test-collab.py")
     child = subprocess.Popen( [ FONTFORGE, "-forceuihidden", "-script", collabpath + "web-test-collab.py" ] )
     #
     # start the nodejs server
@@ -61,7 +61,7 @@ def stopWebServerInCollabMode(data = None, glyphOrFont = None):
     ensureChildClosed()
 
 if fontforge.hasUserInterface():
-    print("fontforge.hasUserInterface!")
+    #print("fontforge.hasUserInterface!")
     fontforge.onAppClosing( WebServerInCollabModeGoodbye )
     fontforge.registerMenuItem(startWebServerInCollabMode, None, None, ("Font","Glyph"),
                                 None, "Start Web server in Collab mode");
