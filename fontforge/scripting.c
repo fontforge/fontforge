@@ -2179,7 +2179,7 @@ static void bGenerateFeatureFile(Context *c) {
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
     locfilename = utf82def_copy(t);
-    out = fopen(locfilename,"w");
+    out = fopen(locfilename,"wb");
     if ( out==NULL )
 	ScriptError(c,"Failed to open output file");
     if ( otl!=NULL )
@@ -8209,7 +8209,7 @@ static void bCompareFonts(Context *c) {
     if ( strcmp(c->a.vals[2].u.sval,"-")==0 )
 	diffs = stdout;
     else
-	diffs = fopen(c->a.vals[2].u.sval,"w");
+	diffs = fopen(c->a.vals[2].u.sval,"wb");
     if ( diffs==NULL )
 	ScriptErrorString( c, "Failed to open output file", c->a.vals[2].u.sval);
 
@@ -9621,22 +9621,22 @@ docall_expectint:   ScriptError(&sub,"Expected integer argument");
 		pt = strrchr(sub.filename,'/');
 		strcpy(pt+1,name);
 	    }
-	    sub.script = fopen(sub.filename,"r");
+	    sub.script = fopen(sub.filename,"rb");
 	    if ( sub.script==NULL ) {
 		char *pt;
 		if ( sub.filename==name )
 		    sub.filename = strcpy(malloc(strlen(name)+4),name);
 		pt = sub.filename + strlen(sub.filename);
 		strcpy((char *)pt, ".ff");
-		sub.script = fopen(sub.filename,"r");
+		sub.script = fopen(sub.filename,"rb");
 		if ( sub.script==NULL ) {
 		    strcpy((char *)pt, ".pe");
-		    sub.script = fopen(sub.filename,"r");
+		    sub.script = fopen(sub.filename,"rb");
 		}
 		if ( sub.script==NULL )
 		    *pt = '\0';
 	    }
-	    sub.script = fopen(sub.filename,"r");
+	    sub.script = fopen(sub.filename,"rb");
 	    if ( sub.script==NULL ) {
 		ScriptErrorString(c, "No built-in function or script file", name);
 	    } else {
@@ -10015,7 +10015,7 @@ static void term(Context *c,Val *val) {
 			    free(val->u.sval);
 			    val->u.sval = ret;
 			}
-		    } else if ( strcmp(c->tok_text,"r")==0 ) {
+		    } else if ( strcmp(c->tok_text,"rb")==0 ) {
 			pt = strrchr(val->u.sval,'/');
 			if ( pt==NULL ) pt=val->u.sval;
 			ept = strrchr(pt,'.');
@@ -10722,7 +10722,7 @@ _Noreturn void ProcessNativeScript(int argc, char *argv[], FILE *script) {
     } else if ( i<argc && strcmp(argv[i],"-")!=0 ) {
 		// Take the first non-matched argument as a filename if it isn't a hyphen. (So the filename is not necessarily right after the -script argument.)
 		c.filename = argv[i];
-		c.script = fopen(c.filename,"r");
+		c.script = fopen(c.filename,"rb");
     } else {
 		// If there is no other source of commands, use stdin.
 		c.filename = "<stdin>";
@@ -10854,7 +10854,7 @@ return;
 	    ProcessNativeScript(argc, argv,NULL);
 #endif
 	} else /*if ( access(argv[i],X_OK|R_OK)==0 )*/ {
-	    FILE *temp = fopen(argv[i],"r");
+	    FILE *temp = fopen(argv[i],"rb");
 	    char buffer[200];
 	    if ( temp==NULL )
 return;
@@ -10910,7 +10910,7 @@ static void ExecuteNativeScriptFile(FontViewBase *fv, char *filename) {
     if ( setjmp(env)!=0 )
 return;				/* Error return */
 
-    c.script = fopen(c.filename,"r");
+    c.script = fopen(c.filename,"rb");
     if ( c.script==NULL )
 	ScriptError(&c, "No such file");
     else {
