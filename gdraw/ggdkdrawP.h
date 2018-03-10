@@ -67,8 +67,9 @@
 #define Log(level, ...) LogEx(level, __func__, __FILE__, __LINE__, __VA_ARGS__)
 
 /** An enum to make the severity of log messages human readable in code **/
-enum {LOGERR = 0, LOGWARN = 1, LOGNOTE = 2, LOGINFO = 3, LOGDEBUG = 4};
+enum {LOGNONE = 0, LOGERR = 1, LOGWARN = 2, LOGINFO = 3, LOGDEBUG = 4};
 
+extern void LogInit(void);
 extern void LogEx(int level, const char *funct, const char *file, int line, const char *fmt,  ...) G_GNUC_PRINTF(5, 6);   // General function for printing log messages to stderr
 extern const char *GdkEventName(int code);
 // End logging

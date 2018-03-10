@@ -364,15 +364,24 @@ static GdkDevice *_GGDKDraw_GetPointer(GGDKDisplay *gdisp) {
 static void _GGDKDraw_CenterWindowOnScreen(GGDKWindow gw) {
     GGDKDisplay *gdisp = gw->display;
     GdkRectangle work_area, window_size;
-    GdkScreen *pointer_screen;
-    int x, y, monitor = 0;
+    int x, y;
 
-    gdk_window_get_frame_extents(gw->w, &window_size);
+#ifdef GGDKDRAW_GDK_3_22
+    GdkMonitor *monitor;
+
+    gdk_device_get_position(_GGDKDraw_GetPointer(gdisp), NULL, &x, &y);
+    monitor = gdk_display_get_monitor_at_point(gdisp->display, x, y);
+    gdk_monitor_get_workarea(monitor, &work_area);
+#else
+    GdkScreen *pointer_screen;
+    int monitor = 0;
+
 #ifndef GGDKDRAW_GDK_2
     gdk_device_get_position(_GGDKDraw_GetPointer(gdisp), &pointer_screen, &x, &y);
 #else
     gdk_display_get_pointer(gdisp->display, &pointer_screen, &x, &y, NULL);
-#endif
+#endif // GGDKDRAW_GDK_2
+
     if (pointer_screen == gdisp->screen) { // Ensure it's on the same screen
         monitor = gdk_screen_get_monitor_at_point(gdisp->screen, x, y);
     }
@@ -381,7 +390,10 @@ static void _GGDKDraw_CenterWindowOnScreen(GGDKWindow gw) {
     gdk_screen_get_monitor_workarea(pointer_screen, monitor, &work_area);
 #else
     gdk_screen_get_monitor_geometry(pointer_screen, monitor, &work_area);
-#endif
+#endif // GGDKDRAW_GDK_2
+#endif // GGDKDRAW_GDK_3_22
+
+    gdk_window_get_frame_extents(gw->w, &window_size);
     gw->pos.x = (work_area.width - window_size.width) / 2 + work_area.x;
     gw->pos.y = (work_area.height - window_size.height) / 2 + work_area.y;
 
@@ -1385,7 +1397,9 @@ static void GGDKDrawSetWindowBackground(GWindow w, Color gcol) {
         .blue = COLOR_BLUE(gcol) / 255.,
         .alpha = 1.
     };
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     gdk_window_set_background_rgba(gw->w, &col);
+G_GNUC_END_IGNORE_DEPRECATIONS
 #else
     GdkColor col = {
         .red = (65535 * COLOR_RED(gcol)) / 255,
@@ -2103,7 +2117,9 @@ static void GGDKDrawRequestExpose(GWindow w, GRect *rect, int UNUSED(doclear)) {
 
 static void GGDKDrawForceUpdate(GWindow gw) {
     //Log(LOGDEBUG, " ");
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     gdk_window_process_updates(((GGDKWindow)gw)->w, true);
+G_GNUC_END_IGNORE_DEPRECATIONS
 }
 
 static void GGDKDrawSync(GDisplay *gdisp) {
@@ -2436,6 +2452,8 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *UNUSED(programname)) 
     GdkDisplay *display;
     GGDKWindow groot;
 
+    LogInit();
+
     if (displayname == NULL) {
         display = gdk_display_get_default();
     } else {
@@ -2521,8 +2539,10 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *UNUSED(programname)) 
     groot->ggc = _GGDKDraw_NewGGC();
     groot->display = gdisp;
     groot->w = gdisp->root;
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     groot->pos.width = gdk_screen_get_width(gdisp->screen);
     groot->pos.height = gdk_screen_get_height(gdisp->screen);
+G_GNUC_END_IGNORE_DEPRECATIONS
     groot->is_toplevel = true;
     groot->is_visible = true;
     g_object_set_data(G_OBJECT(gdisp->root), "GGDKWindow", groot);
@@ -2541,7 +2561,9 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *UNUSED(programname)) 
 
     //DEBUG
     if (getenv("GGDK_DEBUG")) {
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
         gdk_window_set_debug_updates(true);
+G_GNUC_END_IGNORE_DEPRECATIONS
     }
     return (GDisplay *)gdisp;
 }
@@ -2554,13 +2576,13 @@ void _GGDKDraw_DestroyDisplay(GDisplay *disp) {
 
     // Destroy remaining windows
     if (g_hash_table_size(gdisp->windows) > 0) {
-        Log(LOGWARN, "Windows left allocated - forcibly freeing!");
+        Log(LOGINFO, "Windows left allocated - forcibly freeing!");
         while (g_hash_table_size(gdisp->windows) > 0) {
             GHashTableIter iter;
             GGDKWindow gw;
             g_hash_table_iter_init(&iter, gdisp->windows);
             if (g_hash_table_iter_next(&iter, (void **)&gw, NULL)) {
-                Log(LOGWARN, "Forcibly destroying window (%p:%s)", gw, gw->window_title);
+                Log(LOGINFO, "Forcibly destroying window (%p:%s)", gw, gw->window_title);
                 gw->reference_count = 2;
                 GGDKDrawDestroyWindow((GWindow)gw);
                 _GGDKDraw_OnWindowDestroyed(gw);

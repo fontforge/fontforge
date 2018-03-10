@@ -32,8 +32,31 @@
 #ifdef FONTFORGE_CAN_USE_GDK
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 
 static const char *unspecified_funct = "???";
+static int log_level = LOGWARN;
+
+/**
+ * Initialise the logger
+ */
+void LogInit(void) {
+    const char *requested = getenv("GGDK_LOGLEVEL");
+
+    if (requested) {
+        if (!strcmp(requested, "none")) {
+            log_level = LOGNONE;
+        } else if (!strcmp(requested, "error")) {
+            log_level = LOGERR;
+        } else if (!strcmp(requested, "warn")) {
+            log_level = LOGWARN;
+        } else if (!strcmp(requested, "info")) {
+            log_level = LOGINFO;
+        } else if (!strcmp(requested, "debug") || !strcmp(requested, "all")) {
+            log_level = LOGDEBUG;
+        }
+    }
+}
 
 /**
  * Print a message to stderr and log it via syslog. The message must be
@@ -51,7 +74,7 @@ void LogEx(int level, const char *funct, const char *file, int line, const char 
     char buffer[BUFSIZ];
     va_list va;
 
-    if (getenv("GGDK_QUIET")) {
+    if (level > log_level) {
         return;
     }
 
@@ -71,9 +94,6 @@ void LogEx(int level, const char *funct, const char *file, int line, const char 
             break;
         case LOGWARN:
             severity = "WARNING";
-            break;
-        case LOGNOTE:
-            severity = "NOTICE";
             break;
         case LOGINFO:
             severity = "INFO";

@@ -53,13 +53,9 @@ static void _GGDKDraw_CheckAutoPaint(GGDKWindow gw) {
         }
 
         // Shut up! I know what I'm doing.
-#ifdef GGDKDRAW_GDK_3_22
 G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-#endif
         gw->cc = gdk_cairo_create(gw->w);
-#ifdef GGDKDRAW_GDK_3_22
 G_GNUC_END_IGNORE_DEPRECATIONS
-#endif
 
 #ifndef GGDKDRAW_GDK_2
         // Unlike GDK2, it turns out you can draw over child windows
