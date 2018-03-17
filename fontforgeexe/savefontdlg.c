@@ -2281,7 +2281,7 @@ return( 0 );
 	formattypes[ff_otf].disabled = true;
 	formattypes[ff_otfcid].disabled = true;
 	formattypes[ff_cffcid].disabled = true;
-	// formattypes[ff_ufo].disabled = true;
+	formattypes[ff_ufo].disabled = true;
 	if ( ofs!=ff_svg )
 	    ofs = ff_ptype3;
     } else if ( sf->strokedfont ) {
