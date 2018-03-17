@@ -12,21 +12,21 @@ environment:
     MBASH: C:\msys64\usr\bin\sh -lc
     MSYS2_FC_CACHE_SKIP: true
   matrix:
-    - MSYSTEM: MINGW32
-      MBITS: 32
-      VCXSRV: VcXsrv-1.14.2-minimal.tar.xz
-      BACKEND: x11
+#    - MSYSTEM: MINGW32
+#      MBITS: 32
+#      VCXSRV: VcXsrv-1.14.2-minimal.tar.xz
+#      BACKEND: x11
 # For speed, we disable 64-bit builds.
 #    - MSYSTEM: MINGW64
 #      MBITS: 64
 #      VCXSRV: VcXsrv-1.17.0.0-x86_64-minimal.tar.xz
 #      BACKEND: x11
 # No GDK builds yet
-#    - MSYSTEM: MINGW32
-#      MBITS: 32
-#      VCXSRV: VcXsrv-1.14.2-minimal.tar.xz
-#      BACKEND: gdk
-#      GDKOPT: --enable-gdk
+    - MSYSTEM: MINGW32
+      MBITS: 32
+      VCXSRV: VcXsrv-1.14.2-minimal.tar.xz
+      BACKEND: gdk
+      GDKOPT: --enable-gdk=gdk2
 #    - MSYSTEM: MINGW64
 #      MBITS: 64
 #      VCXSRV: VcXsrv-1.17.0.0-x86_64-minimal.tar.xz

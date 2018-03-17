@@ -56,6 +56,8 @@ capable of using composite.
 
 #include <fontforge-config.h>
 
+#ifndef FONTFORGE_CAN_USE_GDK
+
 #ifndef X_DISPLAY_MISSING
 # include <X11/X.h>
 # include <X11/Xlib.h>
@@ -90,7 +92,6 @@ typedef struct gcstate {
     Color fore_col;		/* desired */
     Color back_col;		/* desired */
     GRect clip;
-    enum draw_func func;
     unsigned int copy_through_sub_windows: 1;
     unsigned int bitmap_col: 1;			/* fore_col is mapped for bitmap */
     int16 dash_len, skip_len;
@@ -391,5 +392,6 @@ void _GXDraw_Wacom_TestEvents(GXDisplay *gdisp);
 # endif	/* Wacom fix */
 
 
+#endif // FONTFORGE_CAN_USE_GDK
 
 #endif

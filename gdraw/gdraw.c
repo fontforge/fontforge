@@ -90,9 +90,9 @@ GWindow GDrawCreateSubWindow(GWindow w, GRect *pos,
 return( (w->display->funcs->createSubWindow)(w,pos,eh,user_data,wattrs) );
 }
 
-GWindow GDrawCreatePixmap(GDisplay *gdisp, uint16 width, uint16 height) {
+GWindow GDrawCreatePixmap(GDisplay *gdisp, GWindow similar, uint16 width, uint16 height) {
     if ( gdisp==NULL ) gdisp = screen_display;
-return( (gdisp->funcs->createPixmap)(gdisp,width,height));
+return( (gdisp->funcs->createPixmap)(gdisp,similar,width,height));
 }
 
 GWindow GDrawCreateBitmap(GDisplay *gdisp, uint16 width, uint16 height, uint8 *data) {
@@ -365,16 +365,8 @@ GGC *GDrawGetWindowGGC(GWindow w) {
 return( w->ggc );
 }
 
-void GDrawSetXORBase(GWindow w,Color col) {
-    w->ggc->xor_base = col;
-}
-
-void GDrawSetXORMode(GWindow w) {
-    w->ggc->func = df_xor;
-}
-
-void GDrawSetCopyMode(GWindow w) {
-    w->ggc->func = df_copy;
+void GDrawSetDifferenceMode(GWindow w) {
+    (w->display->funcs->setDifferenceMode)(w);
 }
 
 void GDrawSetCopyThroughSubWindows(GWindow w,int16 through) {
@@ -699,6 +691,10 @@ void GDrawSetGIC(GWindow w, GIC *gic, int x, int y) {
     (w->display->funcs->setGIC)(w,gic,x,y);
 }
 
+int GDrawKeyState(GWindow w, int keysym) {
+    return (w->display->funcs->keyState)(w, keysym);
+}
+
 void GDrawGrabSelection(GWindow w,enum selnames sel) {
     (w->display->funcs->grabSelection)(w,sel);
 }
@@ -934,7 +930,11 @@ return;
 
 void GDrawDestroyDisplays() {
   if (screen_display != NULL) {
+#ifndef FONTFORGE_CAN_USE_GDK
     _GXDraw_DestroyDisplay(screen_display);
+#else
+    _GGDKDraw_DestroyDisplay(screen_display);
+#endif
     screen_display = NULL;
   }
   if (printer_display != NULL) {
@@ -945,7 +945,11 @@ void GDrawDestroyDisplays() {
 
 void GDrawCreateDisplays(char *displayname,char *programname) {
     GIO_SetThreadCallback((void (*)(void *,void *,void *)) GDrawSyncThread);
+#ifndef FONTFORGE_CAN_USE_GDK
     screen_display = _GXDraw_CreateDisplay(displayname,programname);
+#else
+    screen_display = _GGDKDraw_CreateDisplay(displayname, programname);
+#endif
     printer_display = _GPSDraw_CreateDisplay();
     if ( screen_display==NULL ) {
 	fprintf( stderr, "Could not open screen.\n" );

@@ -26,6 +26,7 @@
  */
 
 #include <ffglib.h>
+#include <ffgdk.h>
 
 #include <fontforge-config.h>
 #include "autosave.h"
@@ -400,7 +401,9 @@ static pascal OSErr OpenApplicationAE( const AppleEvent * theAppleEvent,
  fprintf( logfile, "OPENAPP event received.\n" ); fflush( logfile );
     if ( localsplash )
 	start_splash_screen();
+#ifndef FONTFORGE_CAN_USE_GDK
     system( "DYLD_LIBRARY_PATH=\"\"; osascript -e 'tell application \"X11\" to activate'" );
+#endif // FONTFORGE_CAN_USE_GDK
     if ( fv_list==NULL )
 	_FVMenuOpen(NULL);
  fprintf( logfile, " event processed %d.\n", noErr ); fflush( logfile );
@@ -412,7 +415,9 @@ static pascal OSErr ReopenApplicationAE( const AppleEvent * theAppleEvent,
  fprintf( logfile, "ReOPEN event received.\n" ); fflush( logfile );
     if ( localsplash )
 	start_splash_screen();
+#ifndef FONTFORGE_CAN_USE_GDK
     system( "DYLD_LIBRARY_PATH=\"\"; osascript -e 'tell application \"X11\" to activate'" );
+#endif // FONTFORGE_CAN_USE_GDK
     if ( fv_list==NULL )
 	_FVMenuOpen(NULL);
  fprintf( logfile, " event processed %d.\n", noErr ); fflush( logfile );
@@ -424,7 +429,9 @@ static pascal OSErr ShowPreferencesAE( const AppleEvent * theAppleEvent,
  fprintf( logfile, "PREFS event received.\n" ); fflush( logfile );
     if ( localsplash )
 	start_splash_screen();
+#ifndef FONTFORGE_CAN_USE_GDK
     system( "DYLD_LIBRARY_PATH=\"\"; osascript -e 'tell application \"X11\" to activate'" );
+#endif // FONTFORGE_CAN_USE_GDK
     DoPrefs();
  fprintf( logfile, " event processed %d.\n", noErr ); fflush( logfile );
 return( noErr );
@@ -454,7 +461,9 @@ static pascal OSErr OpenDocumentsAE( const AppleEvent * theAppleEvent,
 	ViewPostScriptFont(buffer,0);
  fprintf( logfile, " file: %s\n", buffer );
     }
+#ifndef FONTFORGE_CAN_USE_GDK
     system( "DYLD_LIBRARY_PATH=\"\"; osascript -e 'tell application \"X11\" to activate'" );
+#endif // FONTFORGE_CAN_USE_GDK
     AEDisposeDesc(&docList);
  fprintf( logfile, " event processed %d.\n", err ); fflush( logfile );
 
@@ -879,6 +888,9 @@ int fontforge_main( int argc, char **argv ) {
 #if !(GLIB_CHECK_VERSION(2, 35, 0))
     g_type_init();
 #endif
+#ifdef FONTFORGE_CAN_USE_GDK
+    gdk_init(&argc, &argv);
+#endif
 
     /* Must be done before we cache the current directory */
     /* Change to HOME dir if specified on the commandline */
@@ -916,7 +928,7 @@ int fontforge_main( int argc, char **argv ) {
         fprintf( stderr, " Based on source from git with hash: %s\n", FONTFORGE_GIT_VERSION );
     }
 
-#if defined(__Mac)
+#if defined(__Mac) && !defined(FONTFORGE_CAN_USE_GDK)
     /* Start X if they haven't already done so. Well... try anyway */
     /* Must be before we change DYLD_LIBRARY_PATH or X won't start */
     /* (osascript depends on a libjpeg which isn't found if we look in /sw/lib first */
@@ -934,6 +946,8 @@ int fontforge_main( int argc, char **argv ) {
     } else if ( local_x==1 && *getenv("DISPLAY")!='/' && strcmp(getenv("DISPLAY"),":0.0")!=0 && strcmp(getenv("DISPLAY"),":0")!=0 )
 	/* 10.5.7 uses a named socket or something "/tmp/launch-01ftWX:0" */
 	local_x = 0;
+#elif defined (FONTFORGE_CAN_USE_GDK)
+    int local_x = 1;
 #endif
 
 #if defined(__MINGW32__)

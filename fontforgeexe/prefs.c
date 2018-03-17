@@ -86,7 +86,6 @@ extern float arrowAccelFactor;
 extern float snapdistance;
 extern float snapdistancemeasuretool;
 extern int measuretoolshowhorizontolvertical;
-extern int xorrubberlines;
 extern int snaptoint;
 extern float joinsnap;
 extern char *BDFFoundry;
@@ -359,7 +358,6 @@ static struct prefs_list {
 	{ N_("ArrowAccelFactor"), pr_real, &arrowAccelFactor, NULL, NULL, '\0', NULL, 0, N_("Holding down the Shift key will speed up arrow key motion by this factor") },
 	{ N_("DrawOpenPathsWithHighlight"), pr_bool, &DrawOpenPathsWithHighlight, NULL, NULL, '\0', NULL, 0, N_("Open paths should be drawn in a special highlight color to make them more apparent.") },
 	{ N_("MeasureToolShowHorizontalVertical"), pr_bool, &measuretoolshowhorizontolvertical, NULL, NULL, '\0', NULL, 0, N_("Have the measure tool show horizontal and vertical distances on the canvas.") },
-	{ N_("XORRubberLines"), pr_bool, &xorrubberlines, NULL, NULL, '\0', NULL, 0, N_("Use XOR based rubber lines.") },
 	{ N_("EditHandleSize"), pr_real, &prefs_cvEditHandleSize, NULL, NULL, '\0', NULL, 0, N_("The size of the handles showing control points and other interesting points in the glyph editor (default is 5).") },
 	{ N_("InactiveHandleAlpha"), pr_int, &prefs_cvInactiveHandleAlpha, NULL, NULL, '\0', NULL, 0, N_("Inactive handles in the glyph editor will be drawn with this alpha value (range: 0-255 default is 255).") },
 	{ N_("ShowControlPointsAlways"), pr_bool, &prefs_cv_show_control_points_always_initially, NULL, NULL, '\0', NULL, 0, N_("Always show the control points when editing a glyph.\nThis can be turned off in the menu View/Show, this setting will effect if control points are shown initially.\nChange requires a restart of fontforge.") },

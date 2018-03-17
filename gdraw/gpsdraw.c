@@ -69,7 +69,7 @@ static GWindow PSDrawCreateSubWindow(GWindow UNUSED(w), GRect *UNUSED(pos),
 return NULL;
 }
 
-static GWindow PSDrawCreatePixmap(GDisplay *UNUSED(gdisp), uint16 UNUSED(width),
+static GWindow PSDrawCreatePixmap(GDisplay *UNUSED(gdisp), GWindow UNUSED(similar), uint16 UNUSED(width),
         uint16 UNUSED(height)) {
     fprintf( stderr, "CreatePixmap not implemented for postscript\n" );
 return NULL;
@@ -231,6 +231,11 @@ return( NULL );
 static void PSDrawSetGIC(GWindow UNUSED(w), GIC *UNUSED(gic),
         int UNUSED(x), int UNUSED(y)) {
     /* Not meaningful */
+}
+
+static int PSDrawKeyState(GWindow UNUSED(w), int UNUSED(keysym)) {
+    /* Not meaningful */
+    return 0;
 }
 
 static void PSDrawPointerUngrab(GDisplay *UNUSED(gdisp)) {
@@ -628,6 +633,10 @@ static void PSDrawPopClip(GWindow w,GRect *old) {
     ps->last_fg = -1;
     ps->last_font = NULL;
     ps->ggc->clip = *old;
+}
+
+static void PSDrawSetDifferenceMode(GWindow UNUSED(w)) {
+    fprintf(stderr, "PSDrawSetDifferenceMode not implemented for postscript\n" );
 }
 
 static void PSDrawDrawLine(GWindow w, int32 x,int32 y,int32 xend,int32 yend,Color col) {
@@ -1347,6 +1356,8 @@ static struct displayfuncs psfuncs = {
     PSDrawPushClip,
     PSDrawPopClip,
 
+    PSDrawSetDifferenceMode,
+
     PSDrawClear,
     PSDrawDrawLine,
     PSDrawDrawArrowLine,
@@ -1370,6 +1381,7 @@ static struct displayfuncs psfuncs = {
 
     PSDrawCreateInputContext,
     PSDrawSetGIC,
+    PSDrawKeyState,
 
     PSDrawGrabSelection,
     PSDrawAddSelectionType,
@@ -1415,6 +1427,7 @@ static struct displayfuncs psfuncs = {
     PSDrawPathFillAndStroke,
 
     NULL,		/* Pango layout */
+    NULL,
     NULL,
     NULL,
     NULL,

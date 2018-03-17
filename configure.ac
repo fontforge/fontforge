@@ -149,9 +149,16 @@ FONTFORGE_CHECK_LTDL_VERSION
 CPPFLAGS="${CPPFLAGS} AS_ESCAPE([-I${top_builddir}]) AS_ESCAPE([-I${top_srcdir}])"
 
 
-AC_PATH_XTRA
-i_do_have_x="${have_x}"
-i_do_have_gui="${i_do_have_x}"
+FONTFORGE_ARG_ENABLE_GDK
+
+if test x"${fontforge_can_use_gdk}" != xyes; then
+    AC_PATH_XTRA
+    i_do_have_x="${have_x}"
+fi
+
+if test x"${i_do_have_x}" = xyes || test x"${fontforge_can_use_gdk}" = xyes; then
+    i_do_have_gui=yes
+fi
 
 AC_SUBST([HOST],["$host"])
 AC_SUBST([MACAPP])
@@ -195,6 +202,7 @@ libuninameslist_url="https://github.com/fontforge/libuninameslist"
 libzmq_url="http://www.zeromq.org/"
 libreadline_url="http://www.gnu.org/software/readline"
 libxorg_url="http://www.x.org/"
+gdk_url="http://www.gtk.org/"
 
 # Point to the Wikipedia page, primarily because one may want
 # libjpeg-turbo rather than the reference implementation.
@@ -350,7 +358,9 @@ dnl FIXME: Is this needed, given we are using libltdl?
 dnl The dlopen() function is in the C library for *BSD and in libdl on GLIBC-based systems
 dnl AC_SEARCH_LIBS([dlopen], [dl dld])
 
-FONTFORGE_CONFIG_X_LIBRARIES
+if test x"${fontforge_can_use_gdk}" != xyes; then
+    FONTFORGE_CONFIG_X_LIBRARIES
+fi
 
 # zlib is a requirement. It is too commonly available to bother leaving out.
 # Try package first, if failed then try library searches and a header check.
@@ -360,7 +370,7 @@ if test x"${have_zlib}" != xyes; then
       AC_CHECK_LIB([z],[inflate],[have_zlib=yes],[
       AC_CHECK_LIB([zlib],[inflate],[have_zlib=yes],[
       AC_CHECK_LIB([zdll],[inflate],[have_zlib=yes])])])],)
-   if test x"${have_zlib}" == xyes; then
+   if test x"${have_zlib}" = xyes; then
       AC_CHECK_HEADER([zlib.h],[],[have_zlib=no])
    fi
 fi
@@ -369,7 +379,7 @@ if test x"${have_zlib}" != xyes; then
 fi
 PKG_CHECK_MODULES([GLIB],[glib-2.0 >= 2.6 gio-2.0])
 
-if test x"${i_do_have_gui}" = xyes; then
+if test x"${i_do_have_x}" = xyes; then
    PKG_CHECK_MODULES([PANGO],[pango >= 1.10 pangoxft])
 fi
 
@@ -391,7 +401,7 @@ FONTFORGE_ARG_WITH_LIBUNINAMESLIST
 FONTFORGE_ARG_WITH_ZEROMQ
 FONTFORGE_ARG_WITH_LIBREADLINE
 
-if test x"${i_do_have_x}" = xyes; then
+if test x"${i_do_have_gui}" = xyes; then
    if test x"${i_do_have_libzmq}" = xyes; then
       AC_DEFINE(BUILD_COLLAB,[1],[Build the Collab Code])
    fi
@@ -477,6 +487,7 @@ if test "$gl_gcc_warnings" = yes; then
   done
 
   # Add an extra warning
+  gl_WARN_ADD([-Wformat])
   gl_WARN_ADD([-Wstrict-overflow=1])
 
   # Add these explicitly: adding -Wfoo to $nw doesn't work in this case
@@ -485,7 +496,6 @@ if test "$gl_gcc_warnings" = yes; then
 
   # Add some more safety measures
   gl_WARN_ADD([-D_FORTIFY_SOURCE=2])
-  gl_WARN_ADD([-fmudflap])
 
   # When compiling with GCC, prefer -isystem to -I when including system
   # include files, to avoid generating useless diagnostics for the files.
@@ -598,6 +608,7 @@ my_cflags="${my_cflags} ${ZLIB_CFLAGS}"
 my_cflags="${my_cflags} ${GLIB_CFLAGS}"
 my_cflags="${my_cflags} ${CAIRO_CFLAGS}"
 my_cflags="${my_cflags} ${PANGO_CFLAGS}"
+my_cflags="${my_cflags} ${GDK_CFLAGS}"
 my_cflags="${my_cflags} ${PANGOCAIRO_CFLAGS}"
 my_cflags="${my_cflags} ${FREETYPE_CFLAGS}"
 my_cflags="${my_cflags} ${GIFLIB_CFLAGS}"
@@ -628,7 +639,13 @@ test x"${i_do_have_libunicodenames}" = xyes && my_libs="${my_libs} ${LIBUNICODEN
 test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${CAIRO_LIBS}"
 test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${PANGOCAIRO_LIBS}"
 test x"${i_do_have_gui}" = xyes && my_libs="${my_libs} ${PANGO_LIBS}"
-test x"${i_do_have_x}" = xyes && my_libs="${my_libs} ${X_PRE_LIBS} ${X_LIBS} ${X_EXTRA_LIBS}"
+
+if test x"${fontforge_can_use_gdk}" = xyes; then
+    my_libs="${my_libs} ${GDK_LIBS}"
+else
+    test x"${i_do_have_x}" = xyes && my_libs="${my_libs} ${X_PRE_LIBS} ${X_LIBS} ${X_EXTRA_LIBS}"
+fi
+
 test x"${i_do_have_libreadline}" = xyes && my_libs="${my_libs} ${LIBREADLINE_LIBS}"
 test x"${i_do_have_libspiro}" = xyes && my_libs="${my_libs} ${LIBSPIRO_LIBS}"
 my_libs="${my_libs} ${LIBSPIRO_LIBS}"
@@ -868,6 +885,7 @@ Optional Library	UseIt?	HaveIt?	WebsiteURL
   libuninameslist	${with_libuninameslist}	${i_do_have_libuninameslist}	${libuninameslist_url}
   zeromq (libzmq)		${i_do_have_libzmq}	${libzmq_url}
   X Window System		${i_do_have_x}	${libxorg_url}
+  GDK backend		${fontforge_can_use_gdk}	${fontforge_gdk_version}	${gdk_url}
 ])
 
 #--------------------------------------------------------------------------

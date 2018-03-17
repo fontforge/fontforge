@@ -25,6 +25,15 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "fontforge-config.h"
+#ifdef FONTFORGE_CAN_USE_GDK
+
+void GDrawEnableCairo(int on) {
+    /* With GDK, Cairo is always enabled. */
+}
+
+#else // FONTFORGE_CAN_USE_GDK
+
 #include "gxdrawP.h"
 #include "gxcdrawP.h"
 
@@ -164,7 +173,7 @@ static int GXCDrawSetline(GXWindow gw, GGC *mine) {
 	    mine->dash_offset != gcs->dash_offset ) {
 	double dashes[2];
 	dashes[0] = mine->dash_len; dashes[1] = mine->skip_len;
-	cairo_set_dash(gw->cc,dashes,0,mine->dash_offset);
+	cairo_set_dash(gw->cc, dashes, (mine->dash_len == 0) ? 0 : 2, mine->dash_offset);
 	gcs->dash_offset = mine->dash_offset;
 	gcs->dash_len = mine->dash_len;
 	gcs->skip_len = mine->skip_len;
@@ -199,7 +208,19 @@ void _GXCDraw_ClipPreserve(GXWindow gw) {
     cairo_clip_preserve( gw->cc );
 }
 
-
+/**
+ *  \brief Sets Cairo to use the difference operator with antialiasing disabled.
+ *  To ensure that difference mode only applies temporarily, ensure that
+ *  PushClip or PushClipOnly has been called before this function. Call PopClip
+ *  to return to normal mode. This mode is used to perform cursor blinking
+ *  (a minimal replacement for XOR mode).
+ *
+ *  \param [in] gw The window to set apply the difference operator to.
+ */
+void _GXCDraw_SetDifferenceMode(GXWindow gw) {
+    cairo_set_operator(gw->cc, CAIRO_OPERATOR_DIFFERENCE);
+    cairo_set_antialias(gw->cc, CAIRO_ANTIALIAS_NONE);
+}
 
 /* ************************************************************************** */
 /* ***************************** Cairo Drawing ****************************** */
@@ -229,6 +250,31 @@ void _GXCDraw_DrawLine(GXWindow gw, int32 x,int32 y, int32 xend,int32 yend) {
 	cairo_move_to(gw->cc,x,y);
 	cairo_line_to(gw->cc,xend,yend);
     }
+    cairo_stroke(gw->cc);
+}
+
+/**
+ *  \brief Draws an arc (circular and elliptical).
+ *
+ *  \param [in] gw The window to draw on.
+ *  \param [in] rect The bounding box of the arc. If width!=height, then
+ *                   an elliptical arc will be drawn.
+ *  \param [in] start_angle The start angle in radians (Cairo coordinates)
+ *  \param [in] end_angle The end angle in radians (Cairo coordinates)
+ */
+void _GXCDraw_DrawArc(GXWindow gw, GRect *rect, double start_angle, double end_angle) {
+    int width = GXCDrawSetline(gw, gw->ggc);
+
+    cairo_new_path(gw->cc);
+    cairo_save(gw->cc);
+    if (width&1) {
+        cairo_translate(gw->cc, rect->x+.5 + rect->width / 2., rect->y+.5 + rect->height / 2.);
+    } else {
+        cairo_translate(gw->cc, rect->x + rect->width / 2., rect->y + rect->height / 2.);
+    }
+    cairo_scale(gw->cc, rect->width / 2., rect->height / 2.);
+    cairo_arc(gw->cc, 0., 0., 1., start_angle, end_angle);
+    cairo_restore(gw->cc);
     cairo_stroke(gw->cc);
 }
 
@@ -803,7 +849,7 @@ return;
 enum gcairo_flags _GXCDraw_CairoCapabilities( GXWindow gw) {
     enum gcairo_flags flags = gc_all;
 
-return( flags|gc_xor );	/* If not buffered, we can emulate xor by having X11 do it in the X layer */
+return( flags );
 }
 /* ************************************************************************** */
 /* **************************** Synchronization ***************************** */
@@ -1066,16 +1112,6 @@ int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
 return( rect.width );
 }
 
-int32 _GXPDraw_DoText(GWindow w, int32 x, int32 y,
-	const unichar_t *text, int32 cnt, Color col,
-	enum text_funcs drawit, struct tf_arg *arg) {
-    char *temp = cnt>=0 ? u2utf8_copyn(text,cnt) : u2utf8_copy(text);
-    if (temp == NULL) return 0;
-    int width = _GXPDraw_DoText8(w,x,y,temp,-1,col,drawit,arg);
-    free(temp);
-return(width);
-}
-
 void _GXPDraw_FontMetrics(GWindow gw, GFont *fi, int *as, int *ds, int *ld) {
     GXDisplay *gdisp = ((GXWindow) gw)->display;
     PangoFont *pfont;
@@ -1203,3 +1239,5 @@ return( -1 );
 
 return( line->start_index );
 }
+
+#endif // FONTFORGE_CAN_USE_GDK

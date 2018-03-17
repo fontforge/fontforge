@@ -24,6 +24,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "fontforge-config.h"
 #include "cvundoes.h"
 #include "fontforgeui.h"
 #include "spiro.h"
@@ -307,6 +309,8 @@ void CVMouseUpKnife(CharView *cv, GEvent *event)
 	}
 	CVCharChangedUpdate(   &cv->b );
 	collabclient_sendRedo( &cv->b );
+    } else {
+        GDrawRequestExpose(cv->v, NULL, false);
     }
 #endif
 }

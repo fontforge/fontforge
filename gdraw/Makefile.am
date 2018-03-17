@@ -41,7 +41,15 @@ libgdraw_la_SOURCES = choosericons.c ctlvalues.c drawboxborder.c	\
 	gdrawable.c gspacer.c xkeysyms_unicode.c colorP.h gdrawP.h	\
 	gimagebmpP.h gresourceP.h gxcdrawP.h fontP.h ggadgetP.h		\
 	gpsdrawP.h gwidgetP.h gxdrawP.h hotkeys.c hotkeys.h		\
-	div_tables.c
+	div_tables.c ggdkdraw.c ggdkcdraw.c ggdkdrawlogger.c ggdkdrawP.h
+
+EXTRA_libgdraw_la_SOURCES = ggdkcocoa.m
+
+if MACINTOSH
+if FONTFORGE_CAN_USE_GDK
+libgdraw_la_SOURCES += ggdkcocoa.m
+endif
+endif
 
 libgdraw_la_CFLAGS = $(WARN_CFLAGS)
 

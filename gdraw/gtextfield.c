@@ -1370,16 +1370,12 @@ return;
     if ( x<0 || x>=gt->g.inner.width )
 return;
     GDrawPushClip(pixmap,&gt->g.inner,&old);
-    GDrawSetXORMode(pixmap);
-    GDrawSetXORBase(pixmap,gt->g.box->main_background!=COLOR_DEFAULT?gt->g.box->main_background:
-	    GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap)) );
+    GDrawSetDifferenceMode(pixmap);
     GDrawSetFont(pixmap,gt->font);
     GDrawSetLineWidth(pixmap,0);
     GDrawDrawLine(pixmap,gt->g.inner.x+x,gt->g.inner.y+y,
 	    gt->g.inner.x+x,gt->g.inner.y+y+gt->fh,
-	    gt->g.box->main_foreground!=COLOR_DEFAULT?gt->g.box->main_foreground:
-	    GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)) );
-    GDrawSetCopyMode(pixmap);
+	    COLOR_WHITE);
     GDrawPopClip(pixmap,&old);
 }
 
@@ -1395,17 +1391,13 @@ return;
 return;
 
     GDrawPushClip(gt->g.base,&gt->g.inner,&old);
-    GDrawSetXORMode(gt->g.base);
-    GDrawSetXORBase(gt->g.base,gt->g.box->main_background!=COLOR_DEFAULT?gt->g.box->main_background:
-	    GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(gt->g.base)) );
+    GDrawSetDifferenceMode(gt->g.base);
     GDrawSetFont(gt->g.base,gt->font);
     GDrawSetLineWidth(gt->g.base,0);
     GDrawSetDashedLine(gt->g.base,2,2,0);
     GDrawDrawLine(gt->g.base,gt->g.inner.x+x,gt->g.inner.y+y,
 	    gt->g.inner.x+x,gt->g.inner.y+y+gt->fh,
-	    gt->g.box->main_foreground!=COLOR_DEFAULT?gt->g.box->main_foreground:
-	    GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(gt->g.base)) );
-    GDrawSetCopyMode(gt->g.base);
+	    COLOR_WHITE);
     GDrawPopClip(gt->g.base,&old);
     GDrawSetDashedLine(gt->g.base,0,0,0);
     gt->has_dd_cursor = !gt->has_dd_cursor;
@@ -2011,9 +2003,12 @@ return;
     if ( gt->listfield ) {
 	GListField *glf = (GListField *) g;
 	if ( glf->popup ) {
-	    GDrawDestroyWindow(glf->popup);
-	    GDrawSync(NULL);
-	    GDrawProcessWindowEvents(glf->popup);	/* popup's destroy routine must execute before we die */
+	    /* Must cleanup the popup before we die */
+	    /* We do this instead of GDrawDestroyWindow because this method is synchronous */
+	    GEvent die;
+	    die.type = et_close;
+	    die.w = glf->popup;
+	    GDrawPostEvent(&die);
 	}
 	GTextInfoArrayFree(glf->ti);
     }

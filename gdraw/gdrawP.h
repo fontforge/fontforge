@@ -89,6 +89,9 @@ struct gchr_accents {
     uint32 mask;
 };
 
+enum text_funcs { tf_width, tf_drawit, tf_rect, tf_stopat, tf_stopbefore, tf_stopafter };
+struct tf_arg { GTextBounds size; int width, maxwidth; unichar_t *last; char *utf8_last; int first; int dont_replace; };
+
 struct gwindow {
     GGC *ggc;
     GDisplay *display;
@@ -189,7 +192,7 @@ struct displayfuncs {
 
     GWindow (*createTopWindow)(GDisplay *, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *);
     GWindow (*createSubWindow)(GWindow, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *);
-    GWindow (*createPixmap)(GDisplay *, uint16 width, uint16 height);
+    GWindow (*createPixmap)(GDisplay *, GWindow similar, uint16 width, uint16 height);
     GWindow (*createBitmap)(GDisplay *, uint16 width, uint16 height, uint8 *data);
     GCursor (*createCursor)(GWindow src, GWindow mask, Color fg, Color bg, int16 x, int16 y);
     void (*destroyWindow)(GWindow);
@@ -228,6 +231,8 @@ struct displayfuncs {
     void (*pushClip)(GWindow, GRect *rct, GRect *old);
     void (*popClip)(GWindow, GRect *old);
 
+    void (*setDifferenceMode)(GWindow);
+
     void (*clear)(GWindow,GRect *);
     void (*drawLine)(GWindow, int32 x,int32 y, int32 xend,int32 yend, Color col);
     void (*drawArrow)(GWindow, int32 x,int32 y, int32 xend,int32 yend, int16 arrows, Color col); /* arrows&1 => arrow at start, &2 => at end */
@@ -251,6 +256,7 @@ struct displayfuncs {
 
     GIC *(*createInputContext)(GWindow, enum gic_style);
     void (*setGIC)(GWindow, GIC *, int x, int y);
+    int (*keyState)(GWindow w, int keysym);
 
     void (*grabSelection)(GWindow w,enum selnames sel);
     void (*addSelectionType)(GWindow w,enum selnames sel,char *type,
@@ -308,6 +314,8 @@ struct displayfuncs {
     void (*startNewSubPath)(GWindow w);
     int  (*fillRuleSetWinding)(GWindow w);
 
+    int (*doText8)(GWindow w, int32 x, int32 y, const char *text, int32 cnt, Color col, enum text_funcs drawit, struct tf_arg *arg);
+
     void (*PushClipOnly)(GWindow w);
     void (*ClipPreserve)(GWindow w);
     
@@ -315,8 +323,13 @@ struct displayfuncs {
 
 extern int16 div_tables[257][2]; // in div_tables.c
 
+extern void GDrawIErrorRun(const char *fmt,...);
+extern void GDrawIError(const char *fmt,...);
+
 extern void _GXDraw_DestroyDisplay(GDisplay * gdisp);
 extern GDisplay *_GXDraw_CreateDisplay(char *displayname,char *programname);
+extern void _GGDKDraw_DestroyDisplay(GDisplay *disp);
+extern GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *programname);
 extern void _GPSDraw_DestroyDisplay(GDisplay *gdisp);
 extern GDisplay *_GPSDraw_CreateDisplay(void);
 extern void _GDraw_InitError(GDisplay *);

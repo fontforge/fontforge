@@ -547,9 +547,12 @@ return;
     if ( b->labeltype==2 ) {
 	GListButton *glb = (GListButton *) g;
 	if ( glb->popup ) {
-	    GDrawDestroyWindow(glb->popup);
-	    GDrawSync(NULL);
-	    GDrawProcessWindowEvents(glb->popup);	/* popup's destroy routine must execute before we die */
+	    /* Must cleanup the popup before we die  */
+	    /* We do this instead of GDrawDestroyWindow because this method is synchronous */
+	    GEvent die;
+	    die.type = et_close;
+	    die.w = glb->popup;
+	    GDrawPostEvent(&die);
 	}
 	GTextInfoArrayFree(glb->ti);
     }

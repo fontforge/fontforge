@@ -46,15 +46,12 @@ typedef struct font_instance FontInstance, GFont;
 enum gic_style { gic_overspot=2, gic_root=1, gic_hidden=0, gic_orlesser=4, gic_type=3 };
 typedef struct ginput_context GIC;
 
-enum draw_func { df_copy, df_xor };
-
 typedef struct ggc {
     struct gwindow *w;
     int32 xor_base;
     Color fg;
     Color bg;
     GRect clip;
-    enum draw_func func;
     unsigned int copy_through_sub_windows: 1;
     unsigned int bitmap_col: 1;			/* window is mapped for bitmap */
     int16 skip_len, dash_len;
@@ -233,7 +230,7 @@ enum window_attr_mask { wam_events=0x2, wam_bordwidth=0x4,
 			wam_isdlg=0x10000, wam_notrestricted=0x20000,
 			wam_transient=0x40000,
 			wam_utf8_wtitle=0x80000, wam_utf8_ititle=0x100000,
-			wam_nocairo=0x200000, wam_verytransient=0x400000 };
+			wam_nocairo=0x200000, wam_verytransient=0x400000, wam_palette=0x800000 };
 
 typedef struct gwindow_attrs {
     enum window_attr_mask mask;
@@ -313,7 +310,7 @@ typedef int (*GDrawEH)(GWindow,GEvent *);
 extern unichar_t *GDrawKeysyms[];
 extern GDisplay *screen_display, *printer_display;
 
-extern void GDrawDestroyDisplays();
+extern void GDrawDestroyDisplays(void);
 extern void GDrawCreateDisplays(char *displayname,char *programname);
 extern void *GDrawNativeDisplay(GDisplay *);
 extern void GDrawTerm(GDisplay *disp);
@@ -325,7 +322,7 @@ extern int GDrawPixelsToPoints(GWindow gw,int pixels);
 extern void GDrawSetDefaultIcon(GWindow icon);
 extern GWindow GDrawCreateTopWindow(GDisplay *gdisp, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs);
 extern GWindow GDrawCreateSubWindow(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs);
-extern GWindow GDrawCreatePixmap(GDisplay *gdisp, uint16 width, uint16 height);
+extern GWindow GDrawCreatePixmap(GDisplay *gdisp, GWindow similar, uint16 width, uint16 height);
 extern GWindow GDrawCreateBitmap(GDisplay *gdisp, uint16 width, uint16 height, uint8 *data);
 extern GCursor GDrawCreateCursor(GWindow src,GWindow mask,Color fg,Color bg,
 	int16 x, int16 y );
@@ -397,9 +394,8 @@ extern void GDrawPopClip(GWindow w, GRect *old);
 extern void GDrawPushClipOnly(GWindow w);
 extern void GDrawClipPreserve(GWindow w);
 extern GGC *GDrawGetWindowGGC(GWindow w);
-extern void GDrawSetXORBase(GWindow w,Color col);
-extern void GDrawSetXORMode(GWindow w);
 extern void GDrawSetCopyMode(GWindow w);
+extern void GDrawSetDifferenceMode(GWindow w);
 extern void GDrawSetCopyThroughSubWindows(GWindow w,int16 through);
 extern void GDrawSetDashedLine(GWindow w,int16 dash_len, int16 skip_len, int16 off);
 extern void GDrawSetStippled(GWindow w,int16 ts, int32 yoff,int32 xoff);
@@ -426,6 +422,7 @@ extern int32 GDrawDrawText8(GWindow gw, int32 x, int32 y, const char *txt, int32
 
 extern GIC *GDrawCreateInputContext(GWindow w,enum gic_style def_style);
 extern void GDrawSetGIC(GWindow w,GIC *gic,int x, int y);
+extern int GDrawKeyState(GWindow w, int keysym);
 
 extern void GDrawClear(GWindow w, GRect *rect);
 extern void GDrawDrawLine(GWindow w, int32 x,int32 y, int32 xend,int32 yend, Color col);
@@ -584,7 +581,6 @@ extern int  GDrawLayoutLineStart(GWindow w,int line);
 extern void GDrawFatalError(const char *fmt,...);
 extern void GDrawIError(const char *fmt,...);
 extern void GDrawError(const char *fmt,...);
-extern int GDrawKeyState(int keysym);
 
 extern int GImageGetScaledWidth(GWindow gw, GImage *img);
 extern int GImageGetScaledHeight(GWindow gw, GImage *img);

@@ -38,14 +38,14 @@ return( old );
 }
 
 FontInstance *GDrawInstanciateFont(GWindow gw, FontRequest *rq) {
-    GXDisplay *gdisp;
+    GDisplay *gdisp;
     FState *fs;
     struct font_instance *fi;
 
     if (gw == NULL)
 	gw = GDrawGetRoot(NULL);
 
-    gdisp = ((GXWindow) gw)->display;
+    gdisp = gw->display;
     fs = gdisp->fontstate;
 
     if ( rq->point_size<0 )	/* It's in pixels, not points, convert to points */
@@ -76,25 +76,44 @@ return( rq );
 
 int32 GDrawDrawText(GWindow gw, int32 x, int32 y, const unichar_t *text, int32 cnt, Color col) {
     struct tf_arg arg;
+    glong realcnt;
+    gchar *temp = g_ucs4_to_utf8((gunichar*)text, cnt, NULL, &realcnt, NULL);
+    int width = 0;
 
-return( _GXPDraw_DoText(gw,x,y,text,cnt,col,tf_drawit,&arg));
+    if (temp != NULL) {
+        width = gw->display->funcs->doText8(gw,x,y,temp,realcnt,col,tf_drawit,&arg);
+        g_free(temp);
+    }
+
+    return width;
 }
 
 int32 GDrawGetTextWidth(GWindow gw,const unichar_t *text, int32 cnt) {
     struct tf_arg arg;
+    glong realcnt;
+    gchar *temp = g_ucs4_to_utf8((gunichar*)text, cnt, NULL, &realcnt, NULL);
+    int width = 0;
 
-return( _GXPDraw_DoText(gw,0,0,text,cnt,0x0,tf_width,&arg));
+    if (temp != NULL) {
+        width = gw->display->funcs->doText8(gw,0,0,temp,realcnt,0x0,tf_width,&arg);
+        g_free(temp);
+    }
+    return width;
 }
 
 int32 GDrawGetTextBounds(GWindow gw,const unichar_t *text, int32 cnt, GTextBounds *bounds) {
-    int ret;
-    struct tf_arg arg;
+    int ret = 0;
+    struct tf_arg arg = {0};
+    glong realcnt;
+    gchar *temp = g_ucs4_to_utf8((gunichar*)text, cnt, NULL, &realcnt, NULL);
 
-    memset(&arg,'\0',sizeof(arg));
-    arg.first = true;
-    ret = _GXPDraw_DoText(gw,0,0,text,cnt,0x0,tf_rect,&arg);
-    *bounds = arg.size;
-return( ret );
+    if (temp != NULL) {
+        arg.first = true;
+        ret = gw->display->funcs->doText8(gw,0,0,temp,realcnt,0x0,tf_rect,&arg);
+        *bounds = arg.size;
+        g_free(temp);
+    }
+    return ret;
 }
 
 /* UTF8 routines */
@@ -102,16 +121,16 @@ return( ret );
 int32 GDrawDrawText8(GWindow gw, int32 x, int32 y, const char *text, int32 cnt, Color col) {
     struct tf_arg arg;
 
-return( _GXPDraw_DoText8(gw,x,y,text,cnt,col,tf_drawit,&arg));
+return( gw->display->funcs->doText8(gw,x,y,text,cnt,col,tf_drawit,&arg));
 }
 
 int32 GDrawGetText8Width(GWindow gw, const char *text, int32 cnt) {
     struct tf_arg arg;
 
-return( _GXPDraw_DoText8(gw,0,0,text,cnt,0x0,tf_width,&arg));
+return( gw->display->funcs->doText8(gw,0,0,text,cnt,0x0,tf_width,&arg));
 }
 
-int32 GDrawGetText8Height(GWindow gw, const char *text, int32 cnt) 
+int32 GDrawGetText8Height(GWindow gw, const char *text, int32 cnt)
 {
     GTextBounds bounds;
     int32 ret = GDrawGetText8Bounds( gw, text, cnt, &bounds );
@@ -126,7 +145,7 @@ int32 GDrawGetText8Bounds(GWindow gw,const char *text, int32 cnt, GTextBounds *b
 
     memset(&arg,'\0',sizeof(arg));
     arg.first = true;
-    ret = _GXPDraw_DoText8(gw,0,0,text,cnt,0x0,tf_rect,&arg);
+    ret = gw->display->funcs->doText8(gw,0,0,text,cnt,0x0,tf_rect,&arg);
     *bounds = arg.size;
 return( ret );
 }

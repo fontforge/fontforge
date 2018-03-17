@@ -1219,16 +1219,9 @@ return;
     if ( x<0 || x>=st->g.inner.width )
 return;
     GDrawPushClip(pixmap,&st->g.inner,&old);
-    GDrawSetXORMode(pixmap);
-    GDrawSetXORBase(pixmap,st->g.box->main_background!=COLOR_DEFAULT?st->g.box->main_background:
-	    GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap)) );
-    GDrawSetFont(pixmap,st->font);
-    GDrawSetLineWidth(pixmap,0);
-    GDrawDrawLine(pixmap,st->g.inner.x+x,st->g.inner.y+y,
-	    st->g.inner.x+x,st->g.inner.y+y+fh,
-	    st->g.box->main_foreground!=COLOR_DEFAULT?st->g.box->main_foreground:
-	    GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)) );
-    GDrawSetCopyMode(pixmap);
+    GDrawSetDifferenceMode(pixmap);
+    GDrawDrawLine(pixmap, st->g.inner.x+x,st->g.inner.y+y,
+	    st->g.inner.x+x,st->g.inner.y+y+fh, COLOR_WHITE);
     GDrawPopClip(pixmap,&old);
 }
 
@@ -1245,17 +1238,10 @@ return;
 return;
 
     GDrawPushClip(st->g.base,&st->g.inner,&old);
-    GDrawSetXORMode(st->g.base);
-    GDrawSetXORBase(st->g.base,st->g.box->main_background!=COLOR_DEFAULT?st->g.box->main_background:
-	    GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(st->g.base)) );
-    GDrawSetFont(st->g.base,st->font);
-    GDrawSetLineWidth(st->g.base,0);
-    GDrawSetDashedLine(st->g.base,2,2,0);
+    GDrawSetDifferenceMode(st->g.base);
     GDrawDrawLine(st->g.base,st->g.inner.x+x,st->g.inner.y+y,
 	    st->g.inner.x+x,st->g.inner.y+y+st->li.lineheights[l].fh,
-	    st->g.box->main_foreground!=COLOR_DEFAULT?st->g.box->main_foreground:
-	    GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(st->g.base)) );
-    GDrawSetCopyMode(st->g.base);
+        COLOR_WHITE);
     GDrawPopClip(st->g.base,&old);
     GDrawSetDashedLine(st->g.base,0,0,0);
     st->has_dd_cursor = !st->has_dd_cursor;

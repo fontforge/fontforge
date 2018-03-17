@@ -219,6 +219,7 @@ typedef struct charview {
     int layers_off_top;
     real scale;
     GWindow gw, v;
+    GWindow hruler, vruler; /* Ruler pixmaps */
     GGadget *vsb, *hsb, *mb, *tabs;
     GFont *small, *normal;
     GWindow icon;

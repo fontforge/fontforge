@@ -89,7 +89,6 @@ float arrowAmount=1;
 float arrowAccelFactor=10.;
 float snapdistance=3.5;
 float snapdistancemeasuretool=3.5;
-int xorrubberlines=false;
 int updateflex = false;
 extern int clear_tt_instructions_when_needed;
 int use_freetype_with_aa_fill_cv = 1;
@@ -226,6 +225,7 @@ static void CVVScroll(CharView *cv,struct sbevent *sb);
 static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e);
 static void CVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e);
 static void CVPreviewModeSet(GWindow gw, int checked);
+static void CVExposeRulers(CharView *cv, GWindow pixmap);
 
 static int cvcolsinited = false;
 
@@ -304,7 +304,7 @@ static struct resed charview2_re[] = {
 
 /* return 1 if anything changed */
 static void update_spacebar_hand_tool(CharView *cv) {
-    if ( GDrawKeyState(' ') ) {
+    if ( GDrawKeyState(cv->v, ' ') ) {
 	if ( !cv->spacebar_hold  && !cv_auto_goto ) {
 	    cv->spacebar_hold = 1;
 	    cv->b1_tool_old = cv->b1_tool;
@@ -505,10 +505,7 @@ return;
     }
     GDrawSetDashedLine(pixmap,2,2,0);
     GDrawSetLineWidth(pixmap,0);
-    GDrawSetXORMode(pixmap);
-    GDrawSetXORBase(pixmap,view_bgcol);
     GDrawDrawRect(pixmap,&r,oldoutlinecol);
-    GDrawSetCopyMode(pixmap);
     GDrawSetDashedLine(pixmap,0,0,0);
 }
 
@@ -521,16 +518,8 @@ return;
     y = -cv->yoff + cv->height - rint(cv->p.cy*cv->scale);
     xend =  cv->xoff + rint(cv->info.x*cv->scale);
     yend = -cv->yoff + cv->height - rint(cv->info.y*cv->scale);
-    if ( xorrubberlines ) {		/* XOR prevents use of CAIRO for these lines */
-	GDrawSetXORMode(pixmap);
 	GDrawSetLineWidth(pixmap,0);
-	GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(NULL));
-    } else {
-	GDrawSetCopyMode(pixmap);
-	GDrawSetLineWidth(pixmap,0);
-    }
     GDrawDrawLine(pixmap,x,y,xend,yend,col);
-    GDrawSetCopyMode(pixmap);
 }
 
 static void CVDrawBB(CharView *cv, GWindow pixmap, DBounds *bb) {
@@ -2869,7 +2858,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     if ( !cv->show_ft_results && cv->dv==NULL ) {
 
 	if ( cv->backimgs==NULL && !(GDrawHasCairo(cv->v)&gc_buildpath))
-	    cv->backimgs = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v),cv->width,cv->height);
+	    cv->backimgs = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v),cv->v,cv->width,cv->height);
 	if ( GDrawHasCairo(cv->v)&gc_buildpath ) {
 	    for ( layer = ly_back; layer<cv->b.sc->layer_cnt; ++layer ) if ( cv->b.sc->layers[layer].images!=NULL ) {
 		if (( sf->multilayer && ((( cv->showback[0]&1 || cvlayer==layer) && layer==ly_back ) ||
@@ -3424,7 +3413,7 @@ static GWindow CharIcon(CharView *cv, FontView *fv) {
 
     r.x = r.y = 0; r.width = r.height = fv->cbw-1;
     if ( icon == NULL )
-	cv->icon = icon = GDrawCreatePixmap(NULL,r.width,r.width);
+	cv->icon = icon = GDrawCreatePixmap(NULL,NULL,r.width,r.width);
     GDrawFillRect(icon,&r,0x0);		/* for some reason icons seem to be color reversed by my defn */
 
     bdf = NULL; bdfc = NULL;
@@ -3901,7 +3890,7 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
     cv->activeModifierControl &= ~( event->u.chr.keysym == GK_Control_L || event->u.chr.keysym == GK_Control_R
 				    || event->u.chr.keysym == GK_Meta_L || event->u.chr.keysym == GK_Meta_R );
     cv->activeModifierAlt     &= ~( event->u.chr.keysym == GK_Alt_L || event->u.chr.keysym == GK_Alt_R
-				    || event->u.chr.keysym == XK_Mode_switch );
+				    || event->u.chr.keysym == GK_Mode_switch );
     // helps with keys on the mac
     if( (event->u.chr.state&ksm_meta) )
         cv->activeModifierAlt = 0;
@@ -3954,7 +3943,7 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
     }
 
 
-    if( event->u.chr.keysym == XK_Escape )
+    if( event->u.chr.keysym == GK_Escape )
     {
 	TRACE("escape char.......!\n");
 	GGadget *active = GWindowGetFocusGadgetOfWindow(cv->gw);
@@ -4159,18 +4148,31 @@ return;
 }
 
 static void CVInfoDrawRulers(CharView *cv, GWindow pixmap ) {
-    int rstart = cv->mbh+cv->charselectorh+cv->infoh;
-    GDrawSetXORMode(pixmap);
-    GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(NULL));
-    GDrawSetLineWidth(pixmap,0);
-    if ( cv->olde.x!=-1 ) {
-	GDrawDrawLine(pixmap,cv->olde.x+cv->rulerh,rstart,cv->olde.x+cv->rulerh,rstart+cv->rulerh,0xff0000);
-	GDrawDrawLine(pixmap,0,cv->olde.y+rstart+cv->rulerh,cv->rulerh,cv->olde.y+rstart+cv->rulerh,0xff0000);
+    // Check if we have any rulers to draw over
+    if (cv->hruler == NULL || cv->vruler == NULL) {
+        return;
     }
+
+    int rstart = cv->mbh+cv->charselectorh+cv->infoh;
+    GRect rh, rv, oldrh, oldrv;
+    rh.y = rstart; rh.height = cv->rulerh; rh.x = cv->rulerh; rh.width = cv->width;
+    rv.x = 0; rv.width = cv->rulerh; rv.y = rstart + cv->rulerh; rv.height = cv->height;
+
+    GDrawSetLineWidth(pixmap,0);
+    // Draw the new rulers
+    GDrawPushClip(pixmap, &rh, &oldrh);
+    rh.x = cv->olde.x; rh.y = 0; rh.width = 1;
+    GDrawDrawPixmap(pixmap, cv->hruler, &rh, cv->rulerh + cv->olde.x, rstart);
     GDrawDrawLine(pixmap,cv->e.x+cv->rulerh,rstart,cv->e.x+cv->rulerh,rstart+cv->rulerh,0xff0000);
+    GDrawPopClip(pixmap, &oldrh);
+
+    GDrawPushClip(pixmap, &rv, &oldrv);
+    rv.x = 0; rv.y = cv->olde.y; rv.height = 1;
+    GDrawDrawPixmap(pixmap, cv->vruler, &rv, 0, cv->rulerh + rstart + cv->olde.y);
     GDrawDrawLine(pixmap,0,cv->e.y+rstart+cv->rulerh,cv->rulerh,cv->e.y+rstart+cv->rulerh,0xff0000);
+    GDrawPopClip(pixmap, &oldrv);
+
     cv->olde = cv->e;
-    GDrawSetCopyMode(pixmap);
 }
 
 void CVInfoDraw(CharView *cv, GWindow pixmap ) {
@@ -5295,7 +5297,7 @@ static void CVMouseMove(CharView *cv, GEvent *event ) {
 return;
     }
 
-    GDrawRequestExpose(cv->v,NULL,false);	/* TBD, hack to clear ruler */
+    //GDrawRequestExpose(cv->v,NULL,false);	/* TBD, hack to clear ruler */
 
     SetFS(&fs,&p,cv,event);
     if ( cv->active_tool == cvt_freehand )
@@ -5431,12 +5433,10 @@ return;
 	    cv->p.ex = cv->p.cx;
 	    cv->p.ey = cv->p.cy;
 	}
-	if ( cv->p.rubberbanding )
-	    CVDrawRubberRect(cv->v,cv);
 	cv->p.ex = cv->info.x;
 	cv->p.ey = cv->info.y;
 	cv->p.rubberbanding = true;
-	CVDrawRubberRect(cv->v,cv);
+	GDrawRequestExpose(cv->v, NULL, false);
       break;
       case cvt_hand:
 	CVMouseMoveHand(cv,event);
@@ -5536,10 +5536,8 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
     update_spacebar_hand_tool(cv);
 
     if ( cv->p.rubberbanding ) {
-	CVDrawRubberRect(cv->v,cv);
 	cv->p.rubberbanding = false;
     } else if ( cv->p.rubberlining ) {
-	CVDrawRubberLine(cv->v,cv);
 	cv->p.rubberlining = false;
     }
 
@@ -5869,45 +5867,79 @@ static void CVExposeRulers(CharView *cv, GWindow pixmap ) {
 	units/=10; littleunits = units/5;
     }
 
-    rect.x = 0; rect.width = cv->width+cv->rulerh; rect.y = ybase; rect.height = cv->rulerh;
-    GDrawFillRect(pixmap,&rect,GDrawGetDefaultBackground(NULL));
-    rect.y = ybase; rect.height = cv->height+cv->rulerh; rect.x = 0; rect.width = cv->rulerh;
-    GDrawFillRect(pixmap,&rect,GDrawGetDefaultBackground(NULL));
-    GDrawSetLineWidth(pixmap,0);
-    GDrawDrawLine(pixmap,cv->rulerh,cv->mbh+cv->charselectorh+cv->infoh+cv->rulerh-1,8096,cv->mbh+cv->charselectorh+cv->infoh+cv->rulerh-1,def_fg);
-    GDrawDrawLine(pixmap,cv->rulerh-1,cv->mbh+cv->charselectorh+cv->infoh+cv->rulerh,cv->rulerh-1,8096,def_fg);
-
-    GDrawSetFont(pixmap,cv->small);
-    if ( xmax-xmin<1 && cv->width>100 ) {
-	CVDrawNum(cv,pixmap,cv->rulerh,ybase+cv->sas,"%.3f",xmin,0);
-	CVDrawNum(cv,pixmap,cv->rulerh+cv->width,ybase+cv->sas,"%.3f",xmax,2);
+    // Create the pixmaps
+    if (cv->hruler != NULL) {
+        GDrawGetSize(cv->hruler, &rect);
+        if (rect.width != cv->width || rect.height != cv->rulerh) {
+            GDrawDestroyWindow(cv->hruler);
+            cv->hruler = NULL;
+        }
     }
+    if (cv->vruler != NULL) {
+        GDrawGetSize(cv->vruler, &rect);
+        if (rect.height != cv->height || rect.width != cv->rulerh) {
+            GDrawDestroyWindow(cv->vruler);
+            cv->vruler = NULL;
+        }
+    }
+    if (cv->hruler == NULL) {
+        cv->hruler = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v), cv->v, cv->width, cv->rulerh);
+    }
+    if (cv->vruler == NULL) {
+        cv->vruler = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v), cv->v, cv->rulerh, cv->height);
+    }
+
+    // Set background
+    rect.x = 0; rect.width = cv->width; rect.y = 0; rect.height = cv->rulerh;
+    GDrawFillRect(cv->hruler, &rect, GDrawGetDefaultBackground(NULL));
+    rect.width = cv->rulerh; rect.height = cv->height;
+    GDrawFillRect(cv->vruler, &rect, GDrawGetDefaultBackground(NULL));
+
+    // Draw bottom line of rulers
+    GDrawSetLineWidth(cv->hruler, 0);
+    GDrawSetLineWidth(cv->vruler, 0);
+    GDrawDrawLine(cv->hruler, 0, cv->rulerh - 1, cv->width, cv->rulerh - 1, def_fg);
+    GDrawDrawLine(cv->vruler, cv->rulerh - 1, 0, cv->rulerh - 1, cv->height, def_fg);
+
+    // Draw the ticks
+    GDrawSetFont(cv->hruler, cv->small);
+    GDrawSetFont(cv->vruler, cv->small);
+    if ( xmax-xmin<1 && cv->width>100 ) {
+	CVDrawNum(cv,cv->hruler,0,cv->sas,"%.3f",xmin,0);
+	CVDrawNum(cv,cv->hruler,cv->width,cv->sas,"%.3f",xmax,2);
+    }
+
     if ( ymax-ymin<1 && cv->height>100 ) {
-	CVDrawVNum(cv,pixmap,1,ybase+cv->rulerh+cv->height+cv->sas,"%.3f",ymin,0);
-	CVDrawVNum(cv,pixmap,1,ybase+cv->rulerh+cv->sas,"%.3f",ymax,2);
+	CVDrawVNum(cv,cv->vruler,1,cv->height+cv->sas,"%.3f",ymin,0);
+	CVDrawVNum(cv,cv->vruler,1,cv->sas,"%.3f",ymax,2);
     }
     if ( fabs(xmin/units) < 1e5 && fabs(ymin/units)<1e5 && fabs(xmax/units)<1e5 && fabs(ymax/units)<1e5 ) {
 	if ( littleunits!=0 ) {
 	    for ( pos=littleunits*ceil(xmin/littleunits); pos<xmax; pos += littleunits ) {
 		x = cv->xoff + rint(pos*cv->scale);
-		GDrawDrawLine(pixmap,x+cv->rulerh,ybase+cv->rulerh-4,x+cv->rulerh,ybase+cv->rulerh, def_fg);
+		GDrawDrawLine(cv->hruler,x,cv->rulerh-4,x,cv->rulerh, def_fg);
 	    }
 	    for ( pos=littleunits*ceil(ymin/littleunits); pos<ymax; pos += littleunits ) {
 		y = -cv->yoff + cv->height - rint(pos*cv->scale);
-		GDrawDrawLine(pixmap,cv->rulerh-4,ybase+cv->rulerh+y,cv->rulerh,ybase+cv->rulerh+y, def_fg);
+		GDrawDrawLine(cv->vruler,cv->rulerh-4,y,cv->rulerh,y, def_fg);
 	    }
 	}
 	for ( pos=units*ceil(xmin/units); pos<xmax; pos += units ) {
 	    x = cv->xoff + rint(pos*cv->scale);
-	    GDrawDrawLine(pixmap,x+cv->rulerh,ybase,x+cv->rulerh,ybase+cv->rulerh, rulerbigtickcol);
-	    CVDrawNum(cv,pixmap,x+cv->rulerh+15,ybase+cv->sas,"%g",pos,1);
+	    GDrawDrawLine(cv->hruler,x,0,x,cv->rulerh, rulerbigtickcol);
+	    CVDrawNum(cv,cv->hruler,x+15,cv->sas,"%g",pos,1);
 	}
 	for ( pos=units*ceil(ymin/units); pos<ymax; pos += units ) {
 	    y = -cv->yoff + cv->height - rint(pos*cv->scale);
-	    GDrawDrawLine(pixmap,0,ybase+cv->rulerh+y,cv->rulerh,ybase+cv->rulerh+y, rulerbigtickcol);
-	    CVDrawVNum(cv,pixmap,1,y+ybase+cv->rulerh+cv->sas+20,"%g",pos,1);
+	    GDrawDrawLine(cv->vruler,0,y,cv->rulerh,y, rulerbigtickcol);
+	    CVDrawVNum(cv,cv->vruler,1,y+cv->sas+20,"%g",pos,1);
 	}
     }
+
+    // Draw the pixmaps to screen
+    GDrawDrawPixmap(pixmap, cv->vruler, &rect, 0, cv->rulerh + ybase);
+    rect.width = cv->width; rect.height = cv->rulerh;
+    GDrawDrawPixmap(pixmap, cv->hruler, &rect, cv->rulerh, ybase);
 }
 
 static void InfoExpose(CharView *cv, GWindow pixmap, GEvent *expose) {
@@ -6185,21 +6217,27 @@ static void CVLogoExpose(CharView *cv,GWindow pixmap,GEvent *event) {
 	    cv->b.layerheads[cv->b.drawmode]->background ? dm_back : dm_fore );
 }
 
-static void CVDrawGuideLine(CharView *cv,int guide_pos) {
+static void CVDrawGuideLine(CharView *cv, int old_guide_pos, int guide_pos) {
     GWindow pixmap = cv->v;
 
     if ( guide_pos<0 )
 return;
     GDrawSetDashedLine(pixmap,2,2,0);
     GDrawSetLineWidth(pixmap,0);
-    GDrawSetXORMode(pixmap);
-    GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(NULL));
+
     if ( cv->ruler_pressedv ) {
+        if (old_guide_pos >= 0) {
+            GRect r = {.x = old_guide_pos, .y = 0, .width = 1, .height = cv->height};
+            GDrawRequestExpose(pixmap,&r,false);
+        }
 	GDrawDrawLine(pixmap,guide_pos,0,guide_pos,cv->height,0x000000);
     } else {
+        if (old_guide_pos >= 0) {
+            GRect r = {.x = 0, .y = old_guide_pos, .width = cv->width, .height = 1};
+            GDrawRequestExpose(pixmap,&r,false);
+        }
 	GDrawDrawLine(pixmap,0,guide_pos,cv->width,guide_pos,0x000000);
     }
-    GDrawSetCopyMode(pixmap);
     GDrawSetDashedLine(pixmap,0,0,0);
 }
 
@@ -6302,6 +6340,14 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 	    GDrawDestroyWindow(cv->icon);
 	    cv->icon = NULL;
 	}
+    if (cv->hruler != NULL) {
+        GDrawDestroyWindow(cv->hruler);
+        cv->hruler = NULL;
+    }
+    if (cv->vruler != NULL) {
+        GDrawDestroyWindow(cv->vruler);
+        cv->vruler = NULL;
+    }
 	CharViewFree(cv);
       break;
       case et_close:
@@ -6334,7 +6380,7 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 		}
 		cv->guide_pos = -1;
 	    } else if ( event->type==et_mouseup && cv->ruler_pressed ) {
-		CVDrawGuideLine(cv,cv->guide_pos);
+		CVDrawGuideLine(cv,-1,cv->guide_pos);
 		cv->guide_pos = -1;
 		cv->showing_tool = cvt_none;
 		CVToolsSetCursor(cv,event->u.mouse.state&~(1<<(7+event->u.mouse.button)),event->u.mouse.device);		/* X still has the buttons set in the state, even though we just released them. I don't want em */
@@ -6351,7 +6397,7 @@ return( GGadgetDispatchEvent(cv->vsb,event));
       break;
       case et_mousemove:
 	if ( cv->ruler_pressed ) {
-	    CVDrawGuideLine(cv,cv->guide_pos);
+        int old_pos = cv->guide_pos;
 	    cv->e.x = event->u.mouse.x - cv->rulerh;
 	    cv->e.y = event->u.mouse.y-(cv->mbh+cv->charselectorh+cv->infoh+cv->rulerh);
 	    cv->info.x = (cv->e.x-cv->xoff)/cv->scale;
@@ -6360,7 +6406,7 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 		cv->guide_pos = cv->e.x;
 	    else
 		cv->guide_pos = cv->e.y;
-	    CVDrawGuideLine(cv,cv->guide_pos);
+	    CVDrawGuideLine(cv,old_pos,cv->guide_pos);
 	    CVInfoDraw(cv,cv->gw);
 	}
     else if ( event->u.mouse.y > cv->mbh )
@@ -7934,7 +7980,7 @@ void CVChar(CharView *cv, GEvent *event ) {
     cv->activeModifierControl |= ( event->u.chr.keysym == GK_Control_L || event->u.chr.keysym == GK_Control_R
 				   || event->u.chr.keysym == GK_Meta_L || event->u.chr.keysym == GK_Meta_R );
     cv->activeModifierAlt     |= ( event->u.chr.keysym == GK_Alt_L || event->u.chr.keysym == GK_Alt_R
-				   || event->u.chr.keysym == XK_Mode_switch );
+				   || event->u.chr.keysym == GK_Mode_switch );
 
     if( oldactiveModifierControl != cv->activeModifierControl
 	|| oldactiveModifierAlt != cv->activeModifierAlt )

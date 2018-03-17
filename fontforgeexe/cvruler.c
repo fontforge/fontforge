@@ -658,7 +658,8 @@ return;
 //    if ( !cv->p.pressed && (event->u.mouse.state&ksm_meta) ) /* but a mouse up might sneak in... */
 //return;
     GDrawRequestExpose(cv->ruler_w,NULL,false);
-//    GDrawRequestExpose(cv->v,NULL,false);
+    if (cv->p.pressed)
+        GDrawRequestExpose(cv->v,NULL,false);
 //#endif // 0
 }
 

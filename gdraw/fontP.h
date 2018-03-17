@@ -27,7 +27,9 @@
 #ifndef _FONTP_H
 #define _FONTP_H
 
-#ifndef X_DISPLAY_MISSING
+#include "fontforge-config.h"
+
+#if !defined(FONTFORGE_CAN_USE_GDK) && !defined(X_DISPLAY_MISSING)
 # include <X11/Xlib.h>		/* For XFontStruct */
 #else
 /* Taken from ... */
@@ -103,7 +105,11 @@ typedef struct {		/* normal 16 bit characters are two bytes */
 #endif		/* NO X */
 
 #include "gdrawP.h"
-#include "gxdrawP.h"
+#ifndef FONTFORGE_CAN_USE_GDK
+#  include "gxdrawP.h"
+#else
+#  include "ggdkdrawP.h"
+#endif
 #include "charset.h"
 
 struct fontabbrev {
@@ -184,9 +190,6 @@ typedef struct font_state {
     struct font_name *font_names[26];
     unsigned int names_loaded: 1;
 } FState;
-
-enum text_funcs { tf_width, tf_drawit, tf_rect, tf_stopat, tf_stopbefore, tf_stopafter };
-struct tf_arg { GTextBounds size; int width, maxwidth; unichar_t *last; char *utf8_last; int first; int dont_replace; };
 
 extern struct fontabbrev _gdraw_fontabbrev[];
 
