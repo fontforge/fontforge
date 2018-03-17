@@ -4193,10 +4193,8 @@ return( NULL );
 											bg = 0;
 										} else if (strcmp(layernames[2*lcount],"public.background")==0) {
 											layerdest = ly_back;
-											sf->multilayer |= 1;
 										} else {
 											layerdest = auxpos++;
-											sf->multilayer |= 1;
 										}
 
 										// We ensure that the splinefont layer list has sufficient space.
