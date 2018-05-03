@@ -2466,7 +2466,6 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *UNUSED(programname)) 
 
     gdisp = (GGDKDisplay *)calloc(1, sizeof(GGDKDisplay));
     if (gdisp == NULL) {
-        gdk_display_close(display);
         return NULL;
     }
 
@@ -2531,7 +2530,6 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *UNUSED(programname)) 
     if (groot == NULL) {
         g_object_unref(gdisp->pangoc_context);
         free(gdisp);
-        gdk_display_close(display);
         return NULL;
     }
 
@@ -2631,7 +2629,6 @@ void _GGDKDraw_DestroyDisplay(GDisplay *disp) {
 
     // Close the display
     if (gdisp->display != NULL) {
-        gdk_display_close(gdisp->display);
         gdisp->display = NULL;
     }
 
