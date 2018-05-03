@@ -115,8 +115,8 @@ hdiutil create -size 800m   \
 
 # Update the bintray descriptor... sigh. If this fails, then oh well, no bintray
 echo "Updating the bintray descriptor..."
-sed -i '' s/ciXXXX/$(date +mac-ci-%Y-%M-%d)/g $BASE/bintray_descriptor.json || true
-sed -i '' s/releaseXXXX/$(date +%Y-%M-%d)/g $BASE/bintray_descriptor.json || true
+sed -i '' s/ciXXXX/$(date +mac-ci-%Y-%m-%d)/g $BASE/bintray_descriptor.json || true
+sed -i '' s/releaseXXXX/$(date +%Y-%m-%d)/g $BASE/bintray_descriptor.json || true
 echo "Bintray descriptor:"
 cat $BASE/bintray_descriptor.json
 
