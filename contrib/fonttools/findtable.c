@@ -74,13 +74,13 @@ return( false );
 return( false );
     else if ( (v>>24)==1 && ((v>>16)&0xff)==0 && ((v>>8)&0xff)==4 )
 return( false );
-    else if ( v==CHR('t','y','p','1')) {
-    } else
+    else if ( v==CHR('t','y','p','1')) { /* TODO: this does nothing now */
+    } else { /* TODO: this also does nothing now */ }
 	;
     e_sr = (numtables<8?4:numtables<16?8:numtables<32?16:numtables<64?32:64)*16;
     e_es = (numtables<8?2:numtables<16?3:numtables<32?4:numtables<64?5:6);
     e_rs = numtables*16-e_sr;
-    
+
 
     for ( i=0; i<numtables; ++i ) {
 	tag = getlong(ttf);
@@ -119,7 +119,7 @@ return( 2 );
 
     any = false;
     for ( i=2; i<argc; ++i ) {
-	FILE *ttf = fopen( argv[i],"r");
+	FILE *ttf = fopen( argv[i],"rbs");
 	if ( ttf==NULL )
 	    fprintf( stderr, "Failed to open %s\n", argv[i]);
 	else {

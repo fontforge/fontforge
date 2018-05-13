@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "utype.h"
 
 static char used[0x110000];
 static int cid_2_unicode[0x10000];
@@ -87,7 +88,7 @@ return( -1 );
 		mults[j++] = vals[i];
 	}
 	if ( j>MULT_MAX ) {
-	    fprintf( stderr, "Too many multiple values for %04x, need %d slots\n", val, j );
+	    fprintf( stderr, "Too many multiple values for %04x, need %d slots\n", (unsigned int)(val), j );
 exit(1);
 	}
     }
@@ -122,7 +123,7 @@ int main(int argc, char **argv) {
 	    /*if ( psunicodenames[uni]!=NULL )
 		sprintf( buffer, "%s.hw", psunicodenames[uni]);
 	    else*/
-		sprintf( buffer, "uni%04X.hw", fakeuni);
+		sprintf( buffer, "uni%04X.hw", (unsigned int)(fakeuni) );
 	    nonuni_names[cid] = strdup(buffer);
 	} else if ( cid>=18255 && cid<=18351 ) {
 	    /* rotated halfwidth latin */
@@ -143,7 +144,7 @@ int main(int argc, char **argv) {
 	    used[uni] = 1;
 	    cid_2_unicode[cid] = uni;
 	} else {
-	    sprintf( buffer, "uni%04X.dup%d", uni, ++used[uni] );
+	    sprintf( buffer, "uni%04X.dup%d", (unsigned int)(uni), ++used[uni] );
 	    nonuni_names[cid] = strdup(buffer);
 	}
 	max = cid;
@@ -153,7 +154,7 @@ int main(int argc, char **argv) {
 	    if ( cid_2_unicode[j] == cid_2_rotunicode[i] )
 	break;
 	if ( j==maxcid )
-	    sprintf( buffer, "uni%04X.vert", cid_2_rotunicode[i]);
+	    sprintf( buffer, "uni%04X.vert", (unsigned int)(cid_2_rotunicode[i]) );
 	else
 	    sprintf( buffer, "Korea1.%d.vert", j);
 	nonuni_names[i] = strdup(buffer);
@@ -166,14 +167,14 @@ int main(int argc, char **argv) {
 	    for ( i=1; cid+i<=max && cid_2_unicode[cid+i]==cid_2_unicode[cid]+i && cid_2_unicodemult[cid+i][0]==0; ++i );
 	    --i;
 	    if ( i!=0 ) {
-		printf( "%d..%d %04x\n", cid, cid+i, cid_2_unicode[cid] );
+		printf( "%d..%d %04x\n", cid, cid+i, (unsigned int)(cid_2_unicode[cid]) );
 		cid += i;
 	    } else
-		printf( "%d %04x\n", cid, cid_2_unicode[cid] );
+		printf( "%d %04x\n", cid, (unsigned int)(cid_2_unicode[cid]) );
 	} else if ( cid_2_unicode[cid]!=-1 ) {
-	    printf( "%d %04x", cid, cid_2_unicode[cid]);
+	    printf( "%d %04x", cid, (unsigned int)(cid_2_unicode[cid]) );
 	    for ( i=0; cid_2_unicodemult[cid][i]!=0; ++i )
-		printf( ",%04x", cid_2_unicodemult[cid][i]);
+		printf( ",%04x", (unsigned int)(cid_2_unicodemult[cid][i]) );
 	    printf( "\n");
 	} else if ( nonuni_names[cid]!=NULL )
 	    printf( "%d /%s\n", cid, nonuni_names[cid] );

@@ -1,5 +1,6 @@
 # Copyright (C) 2000-2012 by George Williams
 # Copyright (C) 2012 by Barry Schwartz
+# Copyright (C) 2018 by Jose Da Silva
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -26,18 +27,54 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #--------------------------------------------------------------------------
-#
-# Small programs some people might find useful. These are not built
-# from the top-level Makefile.
+# Small programs some people may find useful. These are built and installed
+# if user runs './configure --enable-fontforge-extras' before running make.
+# NOTE: some of these programs might not have been updated in a long while.
 
-noinst_PROGRAMS = findtable pfadecrypt rmligamarks stripttc woff	\
-	dewoff pcl2ttf showttf ttf2eps
+AM_CFLAGS = $(WARN_CFLAGS)
 
-woff_LDADD = $(ZLIB_LIBS)
+bin_PROGRAMS = acorn2sfd dewoff woff findtable pcl2ttf pfadecrypt	\
+	rmligamarks showttf stripttc ttf2eps
+
+man_MANS = acorn2sfd.1 showttf.1 ttf2eps.1
+
+EXTRA_DIST = acorn2sfd.c acorn2sfd.1 dewoff.c woff.c findtable.c	\
+	pcl2ttf.c pfadecrypt.c rmligamarks.c showttf.c showttf.1	\
+	stripttc.c ttf2eps.c ttf2eps.1 portablecompositor.cpp		\
+	acorn2sfd.1 showttf.1 ttf2eps.1
+
+acorn2sfd_SOURCES = acorn2sfd.c
+acorn2sfd_CFLAGS = $(MY_CFLAGS)
+acorn2sfd_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
+	"-I$(top_builddir)/lib" "-I$(top_srcdir)/lib"			\
+	"-I$(top_builddir)/fontforge" "-I$(top_srcdir)/fontforge"	\
+	"-I$(top_builddir)/gutils" "-I$(top_srcdir)/gutils"		\
+	"-I$(top_builddir)/Unicode" "-I$(top_srcdir)/Unicode"		\
+	$(MY_CFLAGS)
+acorn2sfd_LDADD = $(top_builddir)/fontforge/libfontforge.la		\
+	$(top_builddir)/Unicode/libgunicode.la $(MY_LIBS)
+
+dewoff_SOURCES = dewoff.c
 dewoff_LDADD = $(ZLIB_LIBS)
-ttf2eps_LDADD = $(top_builddir)/Unicode/libgunicode.la \
-                $(top_builddir)/gutils/libgutils.la
+woff_SOURCES = woff.c
+woff_LDADD = $(ZLIB_LIBS)
 
-EXTRA_DIST = README-ttf2eps
+findtable_SOURCES = findtable.c
 
--include $(top_srcdir)/git.mk
+pcl2ttf_SOURCES = pcl2ttf.c
+
+pfadecrypt_SOURCES = pfadecrypt.c
+
+rmligamarks_SOURCES = rmligamarks.c
+
+showttf_SOURCES = showttf.c
+
+stripttc_SOURCES = stripttc.c
+
+ttf2eps_SOURCES = ttf2eps.c
+ttf2eps_CFLAGS = $(MY_CFLAGS)
+ttf2eps_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
+	"-I$(top_builddir)/Unicode" "-I$(top_srcdir)/Unicode"		\
+	"-I$(top_builddir)/gutils" "-I$(top_srcdir)/gutils" $(MY_CFLAGS)
+ttf2eps_LDADD = $(top_builddir)/Unicode/libgunicode.la			\
+	$(top_builddir)/gutils/libgutils.la $(MY_LIBS)

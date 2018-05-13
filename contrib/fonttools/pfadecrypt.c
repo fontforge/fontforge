@@ -62,7 +62,7 @@ static void tohex(FILE *out,int ch) {
 	hexline = 0;
     }
 }
-	    
+
 static unsigned short r;
 #define c1	(unsigned short) 52845
 #define c2	(unsigned short) 22719
@@ -89,32 +89,32 @@ static void dumpzeros(FILE *out, unsigned char *zeros, int zcnt) {
 }
 
 static void decodestr(unsigned char *str, int len) {
-    unsigned short r = 4330;
+    unsigned short rc = 4330;
     unsigned char plain, cypher;
 
     while ( len-->0 ) {
 	cypher = *str;
 	plain = ( cypher ^ (r>>8));
-	r = (cypher + r) * c1 + c2;
+	rc = (cypher + rc) * c1 + c2;
 	*str++ = plain;
     }
 }
 
 static void encodestr(unsigned char *str, int len) {
-    unsigned short r = 4330;
+    unsigned short rc = 4330;
     unsigned char plain, cypher;
 
     while ( len-->0 ) {
 	plain = *str;
 	cypher = ( plain ^ (r>>8));
-	r = (cypher + r) * c1 + c2;
+	rc = (cypher + rc) * c1 + c2;
 	*str++ = cypher;
     }
 }
 
 static void decodebytes(FILE *out,unsigned char *binpt, int binlen ) {
     unsigned char *end = binpt+binlen;
-    static char *commands[32] = { "?0", "hstem", "?2", "vstem", "vmoveto",
+    static const char *commands[32] = { "?0", "hstem", "?2", "vstem", "vmoveto",
 	    "rlineto", "hlineto", "vlineto", "rrcurveto", "closepath",
 	    "callsubr", "return", "escape", "hsbw", "endchar", "?15", "?16",
 	    "?17", "?18", "?19", "?20", "rmoveto", "hmoveto", "?23", "?24",
@@ -177,8 +177,8 @@ static int glorpline(FILE *temp, FILE *out,char *rdtok) {
     int binlen;
     int ch;
     int innum, val, inbinary, inhex, cnt, inr, wasspace, nownum, nowr, nowspace, sptok;
-    char *rdline = "{string currentfile exch readstring pop}", *rpt;
-    char *rdline2 = "{string currentfile exch readhexstring pop}";
+    const char *rdline = "{string currentfile exch readstring pop}", *rpt;
+    const char *rdline2 = "{string currentfile exch readhexstring pop}";
     char *tokpt = NULL, *rdpt;
     char temptok[255];
     int intok, first, willbehex = 0;
@@ -439,7 +439,7 @@ static void doubledecrypt(char *outputfile,char *fontname) {
     leniv = 4;
     useshex = 0;
 
-    in = fopen(fontname,"r");
+    in = fopen(fontname,"rbs");
     if ( in==NULL ) {
 	fprintf( stderr, "Cannot open %s\n", fontname );
 return;
@@ -449,7 +449,7 @@ return;
 	sprintf( buffer,"%s.decrypt", pt);
 	outputfile=buffer;
     }
-    out = fopen(outputfile,"w");
+    out = fopen(outputfile,"wb");
     if ( out==NULL ) {
 	fprintf( stderr, "Cannot open %s for output\n", outputfile );
 	fclose(in);

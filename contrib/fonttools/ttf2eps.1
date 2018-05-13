@@ -1,0 +1,29 @@
+.TH ttf2eps 1 "2018-May-04"
+.SH NAME
+ttf2eps \- extract ttf file glyphs into an eps file.
+
+.SH SYNOPSIS
+.BR ttf2eps
+[\fB\-\-all\fP] {\fB\-\-name\fP ps-name | \fB\-\-unicode\fP hex | \fB\-\-unicode\fP hex | \fB\-\-glyph\fP num} \fIttf-fontfile\fP
+.SH DESCRIPTION
+.B ttf2eps
+reads the specified true-type file and extracts the indicated glyphs into
+an eps file. Each file is named for the character extracted (according to
+the 'post' table). Multiple glyphs may be extracted at a time, either by
+specifying the character's name, it's unicode encoding, or it's true type
+glyph number. All the glyphs may be extracted by using [\fB\-\-all\fP].
+.PP
+Files are created in the current directory.
+.PP
+Some meta-information is provided in comments inside each .eps file,
+for example the character's width, the font's ascent, descent and
+number of units per em.
+.SH SEE ALSO
+\fBfontforge\fP(1)
+.SH AUTHORS
+.B ttf2eps
+was written by by George Williams <gww@silcom.com>.
+.PP
+FontForge is currently maintained by the FontForge development team.
+See /usr/share/doc/fontforge/AUTHORS for a comprehensive list of
+contributors.

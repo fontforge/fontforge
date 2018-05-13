@@ -1140,7 +1140,7 @@ int main(int argc, char **argv) {
 	fprintf( stderr, "Must have exactly one truetype filename argument\n" );
 return( 1 );
     }
-    ttf = fopen(filename,"r");
+    ttf = fopen(filename,"rbs");
     if ( ttf==NULL ) {
 	fprintf( stderr, "Can't open %s\n", filename);
 return( 1 );

@@ -143,6 +143,11 @@ LT_INIT([dlopen])
 LTDL_INIT([recursive convenience])
 FONTFORGE_CHECK_LTDL_VERSION
 
+#--------------------------------------------------------------------------
+# init these early so they can be filled by packages (especially glib-2.0).
+my_cflags=
+my_libs=
+
 # The following is for the benefit of the libltdl Makefile,
 # which expects to find <inc/fontforge-config.h> in top_builddir,
 # and for some other things that use a path relative to top_srcdir.
@@ -305,7 +310,7 @@ FONTFORGE_ARG_ENABLE([theme-2012],
                 [use old circa 2012 icons instead of using the tango default icons])],
         [FONTFORGE_THEME_TANGO])
 if test x$enable_theme_2012 = xyes; then
-   $themename = 2012
+   themename=2012
 fi
 
 # select the theme.
@@ -377,7 +382,38 @@ fi
 if test x"${have_zlib}" != xyes; then
    AC_MSG_FAILURE([ERROR: Please install ZLIB library and zlib.h include file],[1])
 fi
-PKG_CHECK_MODULES([GLIB],[glib-2.0 >= 2.6 gio-2.0])
+
+# glib became a requirement, but is also required if using GDK GUI system.
+# before checking for glib-2.0, we need to verify you have pthreads first.
+# Different OSes might have pthreads, pthread, kthread, or something else.
+have_pthreads=yes
+AX_PTHREAD( ,[have_pthreads=no]) dnl avoid filling "yes" here
+if test x"${have_pthreads}" = xyes; then
+   case $host in
+      *aix*) ;; dnl AIX uses separate threading compiler (see AX_PTHREAD).
+      *) CC="$PTHREAD_CC" ;;
+   esac
+else
+   # just check for a function and avoid searching for "-pthreads"
+   AC_CHECK_FUNC([pthread_create],[have_pthreads=yes])
+fi
+AC_CHECK_HEADER([pthread.h],,[have_pthreads=no])
+if test x"${have_pthreads}" != xyes; then
+   AC_MSG_FAILURE([ERROR: Please install PTHREADS library with development include files],[1])
+else
+   AC_DEFINE(HAVE_PTHREAD_H,[1],[We have pthreads.h.])
+fi
+PKG_CHECK_MODULES([GLIB],[glib-2.0 >= 2.6 gio-2.0],[have_glib=pkg],[have_glib=no])
+# glib ships with gio library. Some systems have trouble accessing these.
+# GLIB_CFLAGS='-pthread -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include'
+# GLIB_LIBS='-lgio-2.0 -lgobject-2.0 -lglib-2.0'
+if test x"${have_glib}" = xno; then
+   PKG_CHECK_MODULES([GLIB],[glib-2.0 >= 2.6],[have_glib=pkg],[have_glib=no])
+   PKG_CHECK_MODULES([GIO_UNIX],[gio-unix-2.0],[my_cflags="${my_cflags} ${GIO_UNIX_CFLAGS}" my_libs="${my_libs} ${GIO_UNIX_LIBS}"],[have_glib=no])
+fi
+if test x"${have_glib}" != xpkg; then
+   AC_MSG_FAILURE([ERROR: Please install GLIB-2.0 (with GIO-2.0 or GIO-UNIX-2.0) libraries with development include files],[1])
+fi
 
 if test x"${i_do_have_x}" = xyes; then
    PKG_CHECK_MODULES([PANGO],[pango >= 1.10 pangoxft])
@@ -419,7 +455,7 @@ FONTFORGE_CONFIG_FREETYPE_DEBUGGER
 
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h ieeefp.h])
 AC_CHECK_HEADERS([langinfo.h libintl.h])
-AC_CHECK_HEADERS([memory.h netdb.h netinet/in.h pthread.h])
+AC_CHECK_HEADERS([memory.h netdb.h netinet/in.h])
 AC_CHECK_HEADERS([strings.h sys/ioctl.h sys/socket.h sys/time.h unistd.h])
 if test x"${i_do_want_iconv}" = xyes; then
    AC_CHECK_HEADERS([iconv.h])
@@ -433,7 +469,6 @@ gl_INIT
 
 AC_C_BIGENDIAN
 AC_TYPE_PID_T
-AX_PTHREAD
 
 # Error out under certain conditions, please.
 gl_WARN_ADD([-Werror=implicit-function-declaration])
@@ -593,12 +628,26 @@ AM_CONDITIONAL([MACINTOSH],[test x"${gww_ismac}" = xyes])
 # The following conditionals are always false, so the directories
 # never get built by default. Nevertheless, they will be included by
 # "make dist".
-AM_CONDITIONAL([FONTTOOLS],[test x != x])
+dnl AM_CONDITIONAL([FONTTOOLS],[test x != x])
+
+#--------------------------------------------------------------------------
+# Enable FontForge-Extras. Default is/was no since these files were default
+# off (or not in use since 2012 or earlier). User can enable to build these
+# files, and install extras found in directory contrib.
+fontforge_extras=no
+AC_ARG_ENABLE([fontforge-extras],
+        [AS_HELP_STRING([--enable-fontforge-extras],
+                [Build and Install fontforge-extras (from contrib directory).])],
+        [fontforge_extras=yes])
+if test x"${i_do_have_programs}" != xyes; then
+   fontforge_extras=no
+fi
+AM_CONDITIONAL([FONTTOOLS],[test x"${fontforge_extras}" = xyes])
 
 #--------------------------------------------------------------------------
 # Create and Set FontForge Compiler Flags
 
-my_cflags="${WARNING_CFLAGS}"
+my_cflags="${my_cflags} ${WARNING_CFLAGS}"
 if test x"${i_do_have_freetype_debugger}" != xno; then
    my_cflags="${my_cflags} -I${FREETYPE_SOURCE}/src/truetype"
    my_cflags="${my_cflags} -I${FREETYPE_SOURCE}/include"
@@ -761,7 +810,9 @@ plugins/Makefile
 tests/Makefile
 desktop/Makefile
 contrib/Makefile
+contrib/admintools/Makefile
 contrib/cidmap/Makefile
+contrib/cidmap/src/Makefile
 contrib/fonttools/Makefile
 osx/Makefile
 osx/FontForge.app/Makefile
@@ -870,6 +921,7 @@ Summary of optional features:
   raw points mode	${i_do_have_debug_raw_points}
   tile path		${i_do_have_tile_path}
   gb12345 encoding	${i_do_have_gb12345}
+  fontforge-extras	${fontforge_extras}
   potrace or autotrace	${i_do_find_auto_po_trace}
 
 Summary of optional dependencies:

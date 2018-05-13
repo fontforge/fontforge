@@ -1,0 +1,32 @@
+.TH ACORN2SFD 1 "2018-May-1"
+.SH NAME
+acorn2sfd \- creates FontForge sfd files from Acorn RISCOS fonts
+.SH SYNOPSIS
+.BR acorn2sfd
+[\fB\-\-help\fP]
+[\fB\-\-includestrokes\fP]
+[\fB\-\-version\fP]
+[\fIacorndirs\fP]
+.SH DESCRIPTION
+.B acorn2sfd
+takes a list of directory names and attempts to convert the font
+data within each directory to one of FontForge's sfd files.
+.PP
+Acorn RISCOS fonts consist of 2 files \fBOutlines\fP and \fBIntmetrics\fP in
+a directory.
+.SH OPTIONS
+.TP 16
+.B \-\-help
+Provide a description with a list of available options.
+.TP
+.B \-\-includestrokes
+Set a flag to include strokes.
+.TP
+.B \-\-version
+Display the current version.
+.SH AUTHORS
+.B acorn2sfd
+is Copyright \(co 2000\(en2012 by George Williams, and is
+currently maintained by the FontForge development team.  See
+/usr/share/doc/fontforge/AUTHORS for a comprehensive list of
+contributors.

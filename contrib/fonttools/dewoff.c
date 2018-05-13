@@ -139,7 +139,7 @@ static int dewoff(char *filename) {
     int here, next, tab_start;
     int head_pos = -1;
 
-    woff = fopen( filename,"rb");
+    woff = fopen( filename,"rbs");
     if ( woff==NULL )
 return( we_cantopen );
 
@@ -243,7 +243,6 @@ return( err );
     /*  but I've reordered the tables (probably) so I've got a different */
     /*  set of offsets and I must figure it out for myself */
     if ( head_pos!=-1 ) {
-	int checksum;
 	fseek(sfnt,head_pos+8,SEEK_SET);
 	putlong(sfnt,0);		/* Clear what was there */
 	checksum = filecheck(sfnt);	/* Recalc */

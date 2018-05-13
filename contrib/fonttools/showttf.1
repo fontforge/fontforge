@@ -1,0 +1,38 @@
+.TH SHOWTTF 1 "2006-Dec-23"
+.SH NAME
+showttf \- decompose a font file into its various tables and display it
+
+.SH SYNOPSIS
+.BR showttf
+[\fB\-\-verbose\fP] [\fB\-\-headers\fP] [\fB\-\-checkhead\fP] \fIfontfile\fP
+.SH DESCRIPTION
+.B showttf
+is a program which will decompose a truetype (or opentype) font file into
+its various tables and display the contents of those tables as best it can.
+It will also point out the errors it finds in the file. This is similar to
+MicroSoft's ttfdump (except the showttf shows some of Apple's tables which
+ttfdump does not), and to Apple's ftxdumperfuser (except the showttf shows
+some OpenType tables which Apple's ignores). And, of course, showttf is
+open source and runs on most any system.
+.SH OPTIONS
+.TP 16
+.B \-\-verbose \-v
+Print additional information.
+.TP
+.B \-\-headers \-h
+Print headers only
+.TP
+.B \-\-checkhead \-c
+Check Head
+.SH SEE ALSO
+\fBfontforge\fP(1)
+.SH AUTHORS
+.B showttf
+was written by by George Williams <gww@silcom.com>.
+.PP
+This manual page was written by Kestutis Biliunas <kebil@kaunas.init.lt>,
+for the Debian system (but may be used by others).
+.PP
+FontForge is currently maintained by the FontForge development team.
+See /usr/share/doc/fontforge/AUTHORS for a comprehensive list of
+contributors.
