@@ -6,7 +6,7 @@
 /* This makes two changes to the data:                                     */
 /*	* The tables are placed at different offsets, therefore            */
 /*	  the offset fields in the table header are also different.        */
-/*	* the checksumAdjustment field of the 'head' table is set correctly*/
+/*	* the 'head' table checksumAdjustment field is set correctly       */
 
 #define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
 

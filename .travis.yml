@@ -51,7 +51,6 @@ before_install:
 #  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update || brew update; fi
 
 install:
-  - travis_wait mvn install
   - |
     set -e
     export DEPSPREFIX=$TRAVIS_BUILD_DIR/travisdeps
@@ -62,7 +61,7 @@ install:
     export FFCONFIG="--prefix=$PREFIX"
 
     if [ ! -z "$LINUX_FULL" ] ; then
-      export FFCONFIG="$FFCONFIG --enable-debug"
+      export FFCONFIG="$FFCONFIG --enable-code-coverage --enable-debug"
     elif [ ! -z "$LINUX_NOX" ]; then
       export FFCONFIG="$FFCONFIG --without-x"
     fi
