@@ -639,6 +639,7 @@ AC_ARG_ENABLE([fontforge-extras],
         [AS_HELP_STRING([--enable-fontforge-extras],
                 [Build and Install fontforge-extras (from contrib directory).])],
         [fontforge_extras=yes])
+# If user chose "./configure --disable-programs", then turn this off too.
 if test x"${i_do_have_programs}" != xyes; then
    fontforge_extras=no
 fi
