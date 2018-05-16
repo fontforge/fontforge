@@ -3,10 +3,10 @@
 #include <string.h>
 
 /* This program takes a ttc file and turns it into its component ttf files */
-/* The makes two changes to the data:                                      */
-/*	* The tables are placed a different offsets                        */
-/*	  (so the offset fields in the table header are different)         */
-/*      * the checksumAdjustment field of the 'head' table is set correctly*/
+/* This makes two changes to the data:                                     */
+/*	* The tables are placed at different offsets, therefore            */
+/*	  the offset fields in the table header are also different.        */
+/*	* the 'head' table checksumAdjustment field is set correctly       */
 
 #define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
 
@@ -70,7 +70,7 @@ static void copytable(FILE *ttf,FILE *ttc,int offset,int length) {
     }
 }
 
-static void handlefont(char *filename,int which,FILE *ttc,int offset) {
+static int handlefont(char *filename,int which,FILE *ttc,int offset) {
     char outfile[2000], *pt;
     FILE *ttf;
     int i, cnt, *offsets, *lengths, head, tag, pos, headpos;
@@ -84,7 +84,7 @@ static void handlefont(char *filename,int which,FILE *ttc,int offset) {
     ttf = fopen( outfile,"wb");
     if ( ttf==NULL ) {
 	fprintf( stderr, "Failed to open %s for output.\n", outfile );
-return;
+	return( -3 );
     }
     printf ( "%s ", outfile );
 
@@ -129,44 +129,51 @@ return;
     }
     fclose(ttf);
     free(offsets); free(lengths);
+    return( 0 );
 }
 
-static void handlefile(char *filename) {
-    FILE *ttc = fopen(filename,"r");
-    int version, cnt, i;
+static int handlefile(char *filename) {
+    FILE *ttc = fopen(filename,"rb");
+    int version, cnt, e, i;
     int *offsets;
 
     if ( ttc==NULL ) {
 	fprintf( stderr, "Could not open %s\n", filename );
-return;
+	return( -1 );
     }
 
     version = getlong(ttc);
     if ( version!=CHR('t','t','c','f')) {
 	fprintf( stderr, "%s does not look like a ttc file, bad version.\n", filename );
 	fclose(ttc);
-return;
+	return( -2 );
     }
 
     version = getlong(ttc);
     if ( version!=0x10000 && version != 0x20000 )
-	fprintf( stderr, "Unexpected ttc version number: %08x\n", version );
+	fprintf( stderr, "Unexpected ttc version number: %08x\n", (unsigned int)(version) );
     cnt = getlong(ttc);
     offsets = malloc(cnt*sizeof(int));
     for ( i=0; i<cnt; ++i )
 	offsets[i] = getlong(ttc);
     printf( "%s => ", filename );
     for ( i=0; i<cnt; ++i )
-	handlefont(filename,i,ttc,offsets[i]);
+	if ( (e = handlefont(filename,i,ttc,offsets[i])) ) {
+	    fclose(ttc);
+	    free(offsets);
+	    return( e );
+	};
     printf( "\n" );
     fclose(ttc);
     free(offsets);
+    return( 0 );
 }
-    
+
 int main(int argc, char *argv[]) {
-    int i;
+    int e, i;
 
     for ( i=1; i<argc; ++i )
-	handlefile(argv[i]);
-return( 0 );
+	if ( (e = handlefile(argv[i])) )
+	    return( e );
+    return( 0 );
 }

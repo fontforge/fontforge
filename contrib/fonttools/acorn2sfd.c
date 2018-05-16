@@ -26,15 +26,18 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <errno.h>
+#include <gutils.h>
 
+#include "splineutil.h"
+#include "cvundoes.h"
 #include "lookups.h"
 #include "mem.h"
 #include "namelist.h"
+#include "sfd.h"
 #include "splinefont.h"
-#include "splineutil.h"
 #include "splineutil2.h"
 #include "start.h"
-#include <ustring.h>
+#include "ustring.h"	/* read fontforge inc/ustring.h */
 
 static int includestrokes = false;
 
@@ -330,7 +333,7 @@ static void ReadChunk(FILE *file,struct Outlines *outline,int chunk) {
 	flag = r_getint(file);
     else if ( outline->version==6 )
 	flag = (1<<7);
-    if ( !flag&0x80000000 )
+    if ( (!flag)&0x80000000 )
 	fprintf( stderr, "Bad flag at beginning of chunk %d\n", chunk );
 
     index_start = ftell(file);
@@ -371,13 +374,13 @@ return( false );
 	    ++name;
 	} else if ( ch=='[' ) {
 	    /* [<char>...] matches the chars
-	    /* [<char>-<char>...] matches any char within the range (inclusive)
-	    /* the above may be concattenated and the resultant pattern matches
-	    /*		anything thing which matches any of them.
-	    /* [^<char>...] matches any char which does not match the rest of
-	    /*		the pattern
-	    /* []...] as a special case a ']' immediately after the '[' matches
-	    /*		itself and does not end the pattern */
+	     * [<char>-<char>...] matches any char within the range (inclusive)
+	     * the above may be concattenated and the resultant pattern matches
+	     *		anything thing which matches any of them.
+	     * [^<char>...] matches any char which does not match the rest of
+	     *		the pattern
+	     * []...] as a special case a ']' immediately after the '[' matches
+	     *		itself and does not end the pattern */
 	    int found = 0, not=0;
 	    ++pattern;
 	    if ( pattern[0]=='^' ) { not = 1; ++pattern; }
@@ -506,9 +509,9 @@ static void ReadIntmetrics(char *dir, struct Outlines *outline) {
     struct r_kern *kern;
 
     if ( dirfind(dir, "IntMet?",filename) )
-	file = fopen(filename,"rb");
+	file = fopen(filename,"rbs");
     else if ( dirfind(dir, "Intmetric?",filename) )
-	file = fopen(filename,"rb");
+	file = fopen(filename,"rbs");
     if ( file==NULL ) {
 	fprintf(stderr,"Couldn't open %s (for advance width data)\n  Oh well, advance widths will all be wrong.\n", filename );
 	free(filename);
@@ -705,9 +708,9 @@ static void FindEncoding(SplineFont *sf,char *filename) {
     encfilename = malloc(strlen(otherdir)+strlen("base0encoding")+20);
 
     if ( dirfind(otherdir, pattern,encfilename) )
-	file = fopen(encfilename,"r");
+	file = fopen(encfilename,"rbs");
     else if ( dirfind(filename, pattern,encfilename) )
-	file = fopen(encfilename,"r");
+	file = fopen(encfilename,"rbs");
     free(otherdir);
 
     if ( file==NULL ) {
@@ -747,7 +750,7 @@ static SplineFont *ReadOutline(char *dir) {
     char buffer[100];
 
     if ( dirfind(dir, "Outlines*",filename) )
-	file = fopen(filename,"rb");
+	file = fopen(filename,"rbs");
     if ( file==NULL ) {
 	fprintf(stderr,"Couldn't open %s\n", filename );
 	free(filename);
@@ -884,8 +887,8 @@ static void dousage(void) {
     printf( "acorn2sfd [options] {acorndirs}\n" );
     printf( "\t-version\t (prints the version of acorn2sfd and exits)\n" );
     printf( "\t-help\t\t (prints a brief help text and exits)\n" );
-    printf( "For more information see:\n\thttp://pfaedit.sourceforge.net/\n" );
-    printf( "Send bug reports to:\tgww@silcom.com\n" );
+    printf( "For more information see:\n\thttp://github.com/fontforge/\n" );
+    printf( "Send bug reports to:\tfontforge-devel@lists.sourceforge.net\n" );
 exit(0);
 }
 
@@ -893,14 +896,14 @@ static void dohelp(void) {
     printf( "acorn2sfd -- reads an acorn RISCOS font and creates an sfd file.\n" );
     printf( " Acorn RISCOS fonts consist of two files \"Outlines\" and \"Intmetrics\" in a\n" );
     printf( " directory. This program takes a list of directory names and attempts to\n" );
-    printf( " convert the font data within each directory to one of PfaEdit's sfd files\n\n" );
+    printf( " convert the font data within each directory to one of FontForge's sfd files\n\n" );
     dousage();
 }
 
 int main(int argc, char **argv) {
     int i, any=false;
     char *pt;
-    
+
     for ( i=1; i<argc; ++i ) {
 	if ( *argv[i]=='-' ) {
 	    pt = argv[i]+1;
@@ -921,6 +924,6 @@ int main(int argc, char **argv) {
     }
     if ( !any )
 	ReadOutline(".");
-	    
+
 return( 0 );
 }

@@ -25,12 +25,9 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-include $(top_srcdir)/mk/layout.am
+DIST_SUBDIRS = admintools cidmap fonttools
 
-SUBDIRS = cidmap
-
+SUBDIRS = admintools cidmap
 if FONTTOOLS
 SUBDIRS += fonttools
-endif FONTTOOLS
-
--include $(top_srcdir)/git.mk
+endif

@@ -37,7 +37,7 @@ addons:
     project:
       name: "fontforge/fontforge"
       description: "Free (libre) font editor for Windows, Mac OS X and GNU+Linux"
-    build_command_prepend: cov-configure --comptype gcc --compiler $CC --template && ./bootstrap --force && ./configure $FFCONFIG
+    build_command_prepend: cov-configure --comptype gcc --compiler $CC --template && ./bootstrap --force && ./configure $FFCONFIG --enable-fontforge-extras
     build_command: make -j4
     branch_pattern: coverity_scan
     notification_email: jtanx_blackhole@outlook.com
@@ -131,7 +131,7 @@ install:
 script:
   - ./bootstrap
   - ./configure $FFCONFIG
-  - make && make -C contrib/fonttools
+  - make
   - make install
   - make check
   - if [ ! -z "$LINUX_FULL" ]; then make distcheck; fi

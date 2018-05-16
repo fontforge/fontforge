@@ -40,7 +40,7 @@
 
 static void ProcessFiles(FILE *in, FILE *out) {
     char line[1000];
-    char *match1 = "Ligature: 8", *match2 = "Ligature: 9";
+    const char *match1 = "Ligature: 8", *match2 = "Ligature: 9";
     int matchlen = strlen(match1);
 
     while ( fgets(line,sizeof(line),in)!=NULL ) {
@@ -61,7 +61,7 @@ static void ProcessFilename(char *name) {
 	strcpy(buffer+strlen(buffer)-4,"-new.sfd");
     else
 	strcat(buffer,"-new");
-    in = fopen(name,"r");
+    in = fopen(name,"rs");
     if ( in==NULL ) {
 	fprintf( stderr, "Could not open %s for reading\n", name );
 exit(1);

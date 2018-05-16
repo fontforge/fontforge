@@ -124,7 +124,7 @@ EXTRA_DIST += \
 
 DISTCHECK_CONFIGURE_FLAGS = --enable-theme-2012 --enable-debug
 
-#	\
+#	--enable-fontforge-extras				\
 #	--disable-native-scripting --disable-python-scripting	\
 #	--without-giflib --without-libjpeg --without-libpng	\
 #	--without-libtiff --without-libxml --without-libspiro	\

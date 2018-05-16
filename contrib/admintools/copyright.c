@@ -53,7 +53,7 @@ static void ProcessFile(char *filename,FILE *output, char *dir) {
     time_t now;
     struct tm *tm;
 
-    src = fopen(filename,"r");
+    src = fopen(filename,"rs");
     if ( src==NULL ) {
 	fprintf( stderr, "Failed to open %s/%s\n", dir, filename);
 exit(1);

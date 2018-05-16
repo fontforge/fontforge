@@ -1,3 +1,6 @@
+#if 0
+#include "basics.h"
+#else
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -9,6 +12,7 @@ typedef unsigned short uint16;
 typedef unsigned char uint8;
 #define true	1
 #define false	0
+#endif
 #include <string.h>
 
 static int verbose = false;
@@ -292,13 +296,13 @@ exit(0);
     if ( e_sr!=sr || e_es!=es || e_rs!=rs )
 	printf( "!!!! Unexpected values for binsearch header. Based on the number of tables I\n!!!!! expect searchRange=%d (not %d), entrySel=%d (not %d) rangeShift=%d (not %d)\n",
 		e_sr, sr, e_es, es, e_rs, rs );
-    
+
 /* The one example I have of a ttc file has the file checksum set to: 0xdcd07d3e */
 /*  I don't know if that's magic or not (docs don't say), but it vaguely follows */
 /*  the same pattern as 0xb1b0afba so it might be */
 /* All the fonts used the same head table so one difficulty was eased */
     printf( "File Checksum =%x (should be 0xb1b0afba), diff=%x\n",
-	    filecheck(util,0,-1), 0xb1b0afba-filecheck(util,0,-1));
+	    (unsigned int)(filecheck(util,0,-1)), (unsigned int)((0xb1b0afba-filecheck(util,0,-1))) );
 
     for ( i=0; i<info->numtables; ++i ) {
 	tag = getlong(ttf);
@@ -307,8 +311,8 @@ exit(0);
 	length = getlong(ttf);
 	cs = filecheck(util,offset,length);
  printf( "%c%c%c%c checksum=%08x actual=%08x diff=%x offset=%d len=%d\n",
-	     tag>>24, (tag>>16)&0xff, (tag>>8)&0xff, tag&0xff,
-	     checksum, cs, checksum^cs,
+	     (int)((tag>>24)&0xff), (int)((tag>>16)&0xff), (int)((tag>>8)&0xff), (int)(tag&0xff),
+	     (unsigned int)(checksum), (unsigned int)(cs), (unsigned int)((checksum^cs)),
 	     offset, length );
 	switch ( tag ) {
 	  case CHR('B','A','S','E'):
@@ -533,10 +537,11 @@ static void readttfhead(FILE *ttf, FILE *util, struct ttfinfo *info) {
     printf( "\nHEAD table (at %d)\n", info->head_start );
     printf( "\tVersion=%g\n", getfixed(ttf));
     printf( "\tfontRevision=%g\n", getfixed(ttf));
-    printf( "\tchecksumAdj=%x\n", (int) getlong(ttf));
+    printf( "\tchecksumAdj=%x\n", (unsigned int)(getlong(ttf)) );
     mn = getlong(ttf);
-    printf( "\tmagicNumber=%x (0x5f0f3cf5, diff=%x)\n", mn, mn-0x5f0f3cf5);
-    printf( "\tflags=%x ", flags=getushort(ttf));
+    printf( "\tmagicNumber=%x (0x5f0f3cf5, diff=%x)\n",
+	    (unsigned int)(mn), (unsigned int)(mn-0x5f0f3cf5) );
+    printf( "\tflags=%x ", (unsigned int)((flags=getushort(ttf))) );
     if ( flags&1 ) printf( "baseline_at_0 " );
     if ( flags&2 ) printf( "lsb_at_0 " );
     if ( flags&4 ) printf( "instrs_depend_on_size " );
@@ -544,13 +549,13 @@ static void readttfhead(FILE *ttf, FILE *util, struct ttfinfo *info) {
     if ( flags&16 ) printf( "instr_set_width " );
     printf( "\n" );
     printf( "\tunitsPerEm=%d\n", getushort(ttf));
-    printf( "\tcreate[0]=%x\n", (int) getlong(ttf));
-    printf( "\t create[1]=%x\n", (int) getlong(ttf));
+    printf( "\tcreate[0]=%x\n", (unsigned int)(getlong(ttf)) );
+    printf( "\t create[1]=%x\n", (unsigned int)(getlong(ttf)) );
     fseek(ttf,-8,SEEK_CUR);
     unix_date = readdate(ttf);
     printf( "\tFile created: %s", ctime(&unix_date));
-    printf( "\tmodtime[0]=%x\n", (int) getlong(ttf));
-    printf( "\t modtime[1]=%x\n", (int) getlong(ttf));
+    printf( "\tmodtime[0]=%x\n", (unsigned int)(getlong(ttf)) );
+    printf( "\t modtime[1]=%x\n", (unsigned int)(getlong(ttf)) );
     fseek(ttf,-8,SEEK_CUR);
     unix_date = readdate(ttf);
     printf( "\tFile modified: %s", ctime(&unix_date));
@@ -558,7 +563,7 @@ static void readttfhead(FILE *ttf, FILE *util, struct ttfinfo *info) {
     printf( "\tymin=%d\n", (short) getushort(ttf));
     printf( "\txmax=%d\n", (short) getushort(ttf));
     printf( "\tymax=%d\n", (short) getushort(ttf));
-    printf( "\tmacstyle=%x\n", getushort(ttf));
+    printf( "\tmacstyle=%x\n", (unsigned int)(getushort(ttf)) );
     printf( "\tlowestppem=%d\n", getushort(ttf));
     printf( "\tfontdirhint=%d ", fd = getushort(ttf));
     switch ( fd ) {
@@ -638,7 +643,7 @@ static void readttfname(FILE *ttf, FILE *util, struct ttfinfo *info) {
     for ( i=0; i<nrec; ++i ) {
 	printf( "\t platform=%d", getushort(ttf));
 	printf( " plat spec encoding=%d", getushort(ttf));
-	printf( " language=%x", getushort(ttf));
+	printf( " language=%x", (unsigned int)(getushort(ttf)) );
 	printf( " name=%d ", id=getushort(ttf));
 /* Name IDs defined in original TTF docs */
 	printf( id==0?"Copyright\n":id==1?"Family\n":id==2?"Subfamily\n":id==3?
@@ -648,7 +653,7 @@ static void readttfname(FILE *ttf, FILE *util, struct ttfinfo *info) {
 		id==8?"Manufacturer\n":
 		id==9?"Designer\n":
 		id==10?"Descriptor\n":
-		id==11?"Vender URL\n":
+		id==11?"Vendor URL\n":
 		id==12?"Designer URL\n":
 /* Guesse  based on ARIAL.TTF usage. Not documented that I've seen */
 		id==13?"License\n":
@@ -673,7 +678,7 @@ static void readttfname(FILE *ttf, FILE *util, struct ttfinfo *info) {
 		putchar('^');
 		putchar('?');
 	    } else if ( ch>=0x80 && ch<0xa0 ) {
-		printf("<%2X>", ch );
+		printf("<%2X>", (unsigned int)(ch) );
 	    } else
 		putchar(ch);
 	}
@@ -719,34 +724,34 @@ return;
 
 static void readttfos2(FILE *ttf, FILE *util, struct ttfinfo *info) {
     int i, val;
-    static char *weights[] = { "Unspecified", "Thin", "Extra-Light", "Light", "Normal", "Medium", "Semi-Bold", "Bold",  "Extra-Bold", "Black", "???" };
-    static char *widths[] = { "Unspecified", "Ultra-Condensed", "Extra-Condensed", "Condensed", "Semi-Condensed", "Medium", "Semi-Expanded", "Expanded", "Extra-Expanded", "Ultra-Expanded", "???" };
-    static char *class[16] = { "No classification", "Old Style Serifs", "Transitional Serifs", "Modern Serifs", "Clarendon Serifs", "Slab Serifs", "???", "Freeform Serifs", "Sans Serif", "Ornamentals", "Scripts", "???", "Symbolic", "???", "???", "???" };
-    static char *subclass0[16] = { "", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "Misc" };
-    static char *subclass1[16] = { "", "ibm rounded", "garalde", "venetian", "modified venetian", "dutch modern", "dutch traditional", "contemporary", "caligraphic", "???", "???", "???", "???", "???", "???", "Misc" };
-    static char *subclass2[16] = { "", "direct line", "script", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "Misc" };
-    static char *subclass3[16] = { "", "italian", "script", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "Misc" };
-    static char *subclass4[16] = { "", "clarendon", "modern", "traditional", "newspaper", "stub", "monotone", "typewriter", "???", "???", "???", "???", "???", "???", "???", "Misc" };
-    static char *subclass5[16] = { "", "monotone", "humanist", "geometric", "swiss", "typewriter", "???", "???", "???", "???", "???", "???", "???", "???", "???", "Misc" };
-    static char *subclass7[16] = { "", "modern", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "Misc" };
-    static char *subclass8[16] = { "", "ibm neogrotesque", "humanist", "low-x rounded", "high-x rounded", "neo-grotesque", "modified neo-grotesque", "???", "???", "typewriter", "matrix", "???", "???", "???", "???", "Misc" };
-    static char *subclass9[16] = { "", "engraver", "black letter", "decorative", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "Misc" };
-    static char *subclass10[16] = { "", "???", "uncial", "brush joined", "formal joined", "monotone joined", "calligraphic", "brush unjoined", "formal unjoined", "monotone unjoined", "???", "???", "???", "???", "???", "Misc" };
-    static char *subclass12[16] = { "", "???", "???", "mixed serif", "???", "???", "old style serif", "neo-grotesque sans", "???", "???", "???", "???", "???", "???", "???", "Misc" };
-    static char **subclasses[16] = { subclass0, subclass1, subclass2, subclass3,
+    static const char *weights[] = { "Unspecified", "Thin", "Extra-Light", "Light", "Normal", "Medium", "Semi-Bold", "Bold",  "Extra-Bold", "Black", "???" };
+    static const char *widths[] = { "Unspecified", "Ultra-Condensed", "Extra-Condensed", "Condensed", "Semi-Condensed", "Medium", "Semi-Expanded", "Expanded", "Extra-Expanded", "Ultra-Expanded", "???" };
+    static const char *class[16] = { "No classification", "Old Style Serifs", "Transitional Serifs", "Modern Serifs", "Clarendon Serifs", "Slab Serifs", "???", "Freeform Serifs", "Sans Serif", "Ornamentals", "Scripts", "???", "Symbolic", "???", "???", "???" };
+    static const char *subclass0[16] = { "", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "Misc" };
+    static const char *subclass1[16] = { "", "ibm rounded", "garalde", "venetian", "modified venetian", "dutch modern", "dutch traditional", "contemporary", "caligraphic", "???", "???", "???", "???", "???", "???", "Misc" };
+    static const char *subclass2[16] = { "", "direct line", "script", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "Misc" };
+    static const char *subclass3[16] = { "", "italian", "script", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "Misc" };
+    static const char *subclass4[16] = { "", "clarendon", "modern", "traditional", "newspaper", "stub", "monotone", "typewriter", "???", "???", "???", "???", "???", "???", "???", "Misc" };
+    static const char *subclass5[16] = { "", "monotone", "humanist", "geometric", "swiss", "typewriter", "???", "???", "???", "???", "???", "???", "???", "???", "???", "Misc" };
+    static const char *subclass7[16] = { "", "modern", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "Misc" };
+    static const char *subclass8[16] = { "", "ibm neogrotesque", "humanist", "low-x rounded", "high-x rounded", "neo-grotesque", "modified neo-grotesque", "???", "???", "typewriter", "matrix", "???", "???", "???", "???", "Misc" };
+    static const char *subclass9[16] = { "", "engraver", "black letter", "decorative", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "???", "Misc" };
+    static const char *subclass10[16] = { "", "???", "uncial", "brush joined", "formal joined", "monotone joined", "calligraphic", "brush unjoined", "formal unjoined", "monotone unjoined", "???", "???", "???", "???", "???", "Misc" };
+    static const char *subclass12[16] = { "", "???", "???", "mixed serif", "???", "???", "old style serif", "neo-grotesque sans", "???", "???", "???", "???", "???", "???", "???", "Misc" };
+    static const char **subclasses[16] = { subclass0, subclass1, subclass2, subclass3,
 	    subclass4, subclass5, subclass0, subclass7, subclass8, subclass9,
 	    subclass10, subclass0, subclass12, subclass0, subclass0, subclass0 };
-    static char *panose0[] = { "Any", "No Fit", "Text & Display", "Script", "Decorative", "Pictoral" };
-    static char *panose1[] = { "Any", "No Fit", "Cove", "Obtuse Cove", "Square Cove", "Obtuse Square Cove", "Square", "Thin", "Bone", "Exaggerated", "Triangle", "Normal Sans", "Obtuse Sans", "Perp Sans", "Flared", "Rounded" };
-    static char *panose2[] = { "Any", "No Fit", "Very Light", "Light", "Thin", "Book", "Medium", "Demi", "Bold", "Heavy", "Black", "Nord" };
-    static char *panose3[] = { "Any", "No Fit", "Old Style", "Modern", "Even Width", "Expanded", "Condensed", "Very Expanded", "Very Condensed", "Monospaced" };
-    static char *panose4[] = { "Any", "No Fit", "None", "Very Low", "Low", "Medium Low", "Medium", "Medium High", "High", "Very High" };
-    static char *panose5[] = { "Any", "No Fit", "No Variation", "Gradual/Diagonal", "Gradual/Transitional", "Gradual/Vertical", "Gradual/Horizontal", "Rapid/Vertical", "Rapid/Horizontal", "Instant/Vertical", "Instant/Horizontal" };
-    static char *panose6[] = { "Any", "No Fit", "Straight Arms/Horizontal", "Straight Arms/Wedge", "Straight Arms/Vertical", "Straight Arms/Single Serif", "Straight Arms/Double Serif", "Non-Straight Arms/Horizontal", "Non-Straight Arms/Wedge", "Non-Straight Arms/Vertical", "Non-Straight Arms/Single Serif", "Non-Straight Arms/Double Serif" };
-    static char *panose7[] = { "Any", "No Fit", "Normal/Contact", "Normal/Weighted", "Normal/Boxed", "Normal/Flattened", "Normal/Rounded", "Normal/Off-Center", "Normal/Square", "Oblique/Contact", "Oblique/Weighted", "Oblique/Boxed", "Oblique/Flattened", "Oblique/Rounded", "Oblique/Off-Center", "Oblique/Square" };
-    static char *panose8[] = { "Any", "No Fit", "Standard/Trimmed", "Standard/Pointed", "Standard/Serifed", "High/Trimmed", "High/Pointed", "High/Serifed", "Constant/Trimmed", "Constant/Pointed", "Constant/Serifed", "Low/Trimmed", "Low/Pointed", "Low/Serifed" };
-    static char *panose9[] = { "Any", "No Fit", "Constant/Small", "Constant/Standard", "Constant/Large", "Ducking/Small", "Ducking/Standard", "Ducking/Large" };
-    static struct { char *name; char **choices; int cnt; } panose[10] = {
+    static const char *panose0[] = { "Any", "No Fit", "Text & Display", "Script", "Decorative", "Pictoral" };
+    static const char *panose1[] = { "Any", "No Fit", "Cove", "Obtuse Cove", "Square Cove", "Obtuse Square Cove", "Square", "Thin", "Bone", "Exaggerated", "Triangle", "Normal Sans", "Obtuse Sans", "Perp Sans", "Flared", "Rounded" };
+    static const char *panose2[] = { "Any", "No Fit", "Very Light", "Light", "Thin", "Book", "Medium", "Demi", "Bold", "Heavy", "Black", "Nord" };
+    static const char *panose3[] = { "Any", "No Fit", "Old Style", "Modern", "Even Width", "Expanded", "Condensed", "Very Expanded", "Very Condensed", "Monospaced" };
+    static const char *panose4[] = { "Any", "No Fit", "None", "Very Low", "Low", "Medium Low", "Medium", "Medium High", "High", "Very High" };
+    static const char *panose5[] = { "Any", "No Fit", "No Variation", "Gradual/Diagonal", "Gradual/Transitional", "Gradual/Vertical", "Gradual/Horizontal", "Rapid/Vertical", "Rapid/Horizontal", "Instant/Vertical", "Instant/Horizontal" };
+    static const char *panose6[] = { "Any", "No Fit", "Straight Arms/Horizontal", "Straight Arms/Wedge", "Straight Arms/Vertical", "Straight Arms/Single Serif", "Straight Arms/Double Serif", "Non-Straight Arms/Horizontal", "Non-Straight Arms/Wedge", "Non-Straight Arms/Vertical", "Non-Straight Arms/Single Serif", "Non-Straight Arms/Double Serif" };
+    static const char *panose7[] = { "Any", "No Fit", "Normal/Contact", "Normal/Weighted", "Normal/Boxed", "Normal/Flattened", "Normal/Rounded", "Normal/Off-Center", "Normal/Square", "Oblique/Contact", "Oblique/Weighted", "Oblique/Boxed", "Oblique/Flattened", "Oblique/Rounded", "Oblique/Off-Center", "Oblique/Square" };
+    static const char *panose8[] = { "Any", "No Fit", "Standard/Trimmed", "Standard/Pointed", "Standard/Serifed", "High/Trimmed", "High/Pointed", "High/Serifed", "Constant/Trimmed", "Constant/Pointed", "Constant/Serifed", "Low/Trimmed", "Low/Pointed", "Low/Serifed" };
+    static const char *panose9[] = { "Any", "No Fit", "Constant/Small", "Constant/Standard", "Constant/Large", "Ducking/Small", "Ducking/Standard", "Ducking/Large" };
+    static struct { const char *name; char const *const *const choices; int cnt; } panose[10] = {
 	{ "Family", panose0, sizeof(panose0) },
 	{ "Serif Type", panose1, sizeof(panose1) },
 	{ "Weight", panose2, sizeof(panose2) },
@@ -766,7 +771,7 @@ static void readttfos2(FILE *ttf, FILE *util, struct ttfinfo *info) {
     if ( val>=0 && val<=999 ) printf( "%s\n", weights[val/100] ); else printf( "???\n");
     printf( "\t widthClass=%d ", val = getushort(ttf));
     if ( val>=0 && val<=9 ) printf( "%s\n", widths[val] ); else printf( "???\n");
-    printf( "\t fstype=0x%x ", val = (short) getushort(ttf));
+    printf( "\t fstype=0x%x ", (unsigned int)((val = (short) getushort(ttf))) );
     if ( val&0x8 ) printf( "Editable embedding\n");
     else if ( val&0x4 ) printf( "Preview & Print embedding\n");
     else if ( val&0x2 ) printf( "Restricted license embedding\n");
@@ -781,7 +786,7 @@ static void readttfos2(FILE *ttf, FILE *util, struct ttfinfo *info) {
     printf( "\t ySupscript YOffset=%d\n", (short) getushort(ttf));
     printf( "\t yStrikeoutSize=%d\n", (short) getushort(ttf));
     printf( "\t yStrikeoutPos=%d\n", (short) getushort(ttf));
-    printf( "\t sFamilyClass=%04x ", val = getushort(ttf));
+    printf( "\t sFamilyClass=%04x ", (unsigned int)((val = getushort(ttf))) );
     if ( (val>>8)>=0 && (val>>8)<16 ) {
 	printf( "%s ", class[val>>8]);
 	if ( (val&0xff)<16 )
@@ -791,18 +796,18 @@ static void readttfos2(FILE *ttf, FILE *util, struct ttfinfo *info) {
     } else printf ( "??? ???\n" );
     printf( "\t Panose\n" );
     for ( i=0; i<10; ++i ) {
-	printf( "\t\t%s: %02x ", panose[i].name, val= getc(ttf));
+	printf( "\t\t%s: %02x ", panose[i].name, (unsigned int)(val= getc(ttf)) );
 	if ( val>0 && val<panose[i].cnt ) printf( "%s\n", panose[i].choices[val]);
 	else printf( "???\n" );
     }
     printf( "\n");
-    printf( "\t UnicodeRange=%08x ", (int) getlong(ttf));
-    printf( "%08x ", (int) getlong(ttf));
-    printf( "%08x ", (int) getlong(ttf));
-    printf( "%08x\n", (int) getlong(ttf));
+    printf( "\t UnicodeRange=%08x ", (unsigned int)(getlong(ttf)) );
+    printf( "%08x ", (unsigned int)(getlong(ttf)) );
+    printf( "%08x ", (unsigned int)(getlong(ttf)) );
+    printf( "%08x\n", (unsigned int)(getlong(ttf)) );
     printf( "\t achVendId " );
     for ( i=0; i<4; ++i )
-	printf( "%02x ", getc(ttf));
+	printf( "%02x ", (unsigned int)(getc(ttf)) );
     printf( "\n");
     printf( "\t fsSelection=%d\n", getushort(ttf));
     printf( "\t firstcharindex=%d\n", getushort(ttf));
@@ -815,8 +820,8 @@ static void readttfos2(FILE *ttf, FILE *util, struct ttfinfo *info) {
     if ( info->os2_len==78 ) {
 	printf( "\t (no CodePageRange)\n" );
     } else {
-	printf( "\t CodePageRange=%08x ", (int) getlong(ttf));
-	printf( "%08x\n", (int) getlong(ttf));
+	printf( "\t CodePageRange=%08x ", (unsigned int)(getlong(ttf)) );
+	printf( "%08x\n", (unsigned int)(getlong(ttf)) );
 	if ( info->os2_len==96 ) {
 	    /* Open type additions */
 	    printf( "\txHeight=%d\n", (short) getushort(ttf));
@@ -1861,11 +1866,11 @@ static void readttfencodings(FILE *ttf,FILE *util, struct ttfinfo *info) {
 	format = getushort(ttf);
 	if ( format!=12 && format!=10 && format!=8 ) {
 	    len = getushort(ttf);
-	    printf( " Format=%d len=%d Language=%x\n", format, len, getushort(ttf) );
+	    printf( " Format=%d len=%d Language=%x\n", format, len, (unsigned int)(getushort(ttf)) );
 	} else {
 	    /* padding */ getushort(ttf);
 	    len = (int) getlong(ttf);
-	    printf( " Format=%d len=%d Language=%x\n", format, len, (int) getlong(ttf) );
+	    printf( " Format=%d len=%d Language=%x\n", format, len, (unsigned int)(getlong(ttf)) );
 	}
 	if ( format==0 ) {
 	    printf( "  Table: " );
@@ -2012,19 +2017,18 @@ return;
 			    info->dups = makedup(index,i,info->dups);
 		    }
 		} else {
-		    int k = table[i];
+		    int enc0, k = table[i];
 		    for ( j=0; j<subheads[k].cnt; ++j ) {
-			int enc;
 			if ( subheads[k].rangeoff+j>=cnt )
 			    index = 0;
 			else if ( (index = glyphs[subheads[k].rangeoff+j])!= 0 )
 			    index = (uint16) (index+subheads[k].delta);
 			if ( index!=0 && index<info->glyph_cnt ) {
-			    enc = (i<<8)|(j+subheads[k].first);
+			    enc0 = (i<<8)|(j+subheads[k].first);
 			    if ( info->glyph_unicode[index]==0 )
-				info->glyph_unicode[index] = enc;
+				info->glyph_unicode[index] = enc0;
 			    else
-				info->dups = makedup(index,enc,info->dups);
+				info->dups = makedup(index,enc0,info->dups);
 			}
 		    }
 		    if ( last==-1 ) last = i;
@@ -2065,7 +2069,9 @@ return;
 	    printf("Some glyphs have multiple encodings:\n" );
 	    for ( dup = info->dups; dup!=NULL ; dup=dup->prev )
 		printf( " Glyph %d -> U+%04X (primary=U+%04X)\n",
-			dup->glyph, dup->enc, info->glyph_unicode[dup->glyph] );
+			dup->glyph,
+			(unsigned int)(dup->enc),
+			(unsigned int)(info->glyph_unicode[dup->glyph]) );
 	}
     } else
 	printf( "Could not understand encoding table\n" );
@@ -2087,10 +2093,12 @@ return;
 	    vs_data[i].defoff = getlong(ttf);
 	    vs_data[i].nondefoff = getlong(ttf);
 	    printf( "  varSelector=%04x, defaultUVSOffset=%d nonDefaultOffset=%d\n",
-		    vs_data[i].vs, vs_data[i].defoff, vs_data[i].nondefoff);
+		    (unsigned int)(vs_data[i].vs),
+		    (int)(vs_data[i].defoff),
+		    (int)(vs_data[i].nondefoff) );
 	}
 	for ( i=0; i<cnt; ++i ) {
-	    printf( " Variation Selector=%04x\n", vs_data[i].vs );
+	    printf( " Variation Selector=%04x\n", (unsigned int)(vs_data[i].vs) );
 	    if ( vs_data[i].defoff!=0 ) {
 		fseek(ttf,info->encoding_start+vs_map+vs_data[i].defoff,SEEK_SET);
 		rcnt = getlong(ttf);
@@ -2098,7 +2106,7 @@ return;
 		for ( j=0; j<rcnt; ++j ) {
 		    int uni = get3byte(ttf);
 		    printf( "   U+%04x and %d code points following that\n",
-			    uni, getc(ttf));
+			    (unsigned int)(uni), getc(ttf));
 		}
 	    }
 	    if ( vs_data[i].nondefoff!=0 ) {
@@ -2108,7 +2116,7 @@ return;
 		for ( j=0; j<rcnt; ++j ) {
 		    int uni = get3byte(ttf);
 		    printf( "   U+%04x.U+%04x -> GID %d\n",
-			    uni, vs_data[i].vs, getushort(ttf));
+			    (unsigned int)(uni), (unsigned int)(vs_data[i].vs), getushort(ttf) );
 		}
 	    }
 	}
@@ -2123,7 +2131,7 @@ static void readttfpost(FILE *ttf, FILE *util, struct ttfinfo *info) {
 
     fseek(ttf,info->postscript_start,SEEK_SET);
     printf( "\npost table (at %d)\n", info->postscript_start );
-    printf( "\t format=%08x\n", format = (int) getlong(ttf));
+    printf( "\t format=%08x\n", (unsigned int)((format = (int) getlong(ttf))) );
     printf( "\t italicAngle=%g\n", getfixed(ttf));
     printf( "\t underlinePos=%d\n", (short) getushort(ttf));
     printf( "\t underlineWidth=%d\n", getushort(ttf));
@@ -2133,6 +2141,7 @@ static void readttfpost(FILE *ttf, FILE *util, struct ttfinfo *info) {
     printf( "\t mem3=%d\n", (int) getlong(ttf));
     printf( "\t mem4=%d\n", (int) getlong(ttf));
 
+    gc = 0; names = NULL;
     if ( format==0x00030000 ) {
 	/* Used in Open Type, seems only to contain the above stuff */
 	/* (no names, they're in the cff section) */
@@ -2191,6 +2200,10 @@ static void readttfpost(FILE *ttf, FILE *util, struct ttfinfo *info) {
 		info->glyph_names[i] = strdup(buffer);
 	    }
 	}
+    } else if ( info->glyph_names!=NULL ) {
+	for ( i=0; i<gc; ++i )
+	    free(names[i]);
+	free(names);
     }
 }
 
@@ -2201,10 +2214,10 @@ static void showlangsys(FILE *ttf,int script_start, uint16 ls_off, uint32 ls_nam
 	printf( "\t Language System table for default language\n" );
     else
 	printf( "\t Language System table for '%c%c%c%c'\n",
-		(ls_name>>24)&0xff,
-		(ls_name>>16)&0xff,
-		(ls_name>>8)&0xff,
-		ls_name&0xff);
+		(int)((ls_name>>24)&0xff),
+		(int)((ls_name>>16)&0xff),
+		(int)((ls_name>>8)&0xff),
+		(int)(ls_name&0xff) );
     fseek(ttf,script_start+ls_off,SEEK_SET);
     printf( "\t  LookupOrder=%d\n", getushort(ttf));
     printf( "\t  Required Feature Index=%d\n", (short) getushort(ttf));
@@ -2212,7 +2225,7 @@ static void showlangsys(FILE *ttf,int script_start, uint16 ls_off, uint32 ls_nam
     for ( i=0; i<cnt; ++i )
 	printf( "\t   Feature %d Offset=%d\n", i, getushort(ttf));
 }
-    
+
 static void showscriptlist(FILE *ttf,int script_start ) {
     int cnt,i, j;
     uint16 *script_table_offsets;
@@ -2230,20 +2243,20 @@ static void showscriptlist(FILE *ttf,int script_start ) {
 	script_table_names[i] = getlong(ttf);
 	script_table_offsets[i] = getushort(ttf);
 	printf( "\t Script[%d] '%c%c%c%c' Offset=%d\n", i,
-		(script_table_names[i]>>24)&0xff,
-		(script_table_names[i]>>16)&0xff,
-		(script_table_names[i]>>8)&0xff,
-		script_table_names[i]&0xff,
-		script_table_offsets[i]);
+		(int)((script_table_names[i]>>24)&0xff),
+		(int)((script_table_names[i]>>16)&0xff),
+		(int)((script_table_names[i]>>8)&0xff),
+		(int)(script_table_names[i]&0xff),
+		script_table_offsets[i] );
     }
     printf( "\t--\n" );
     for ( i=0; i<cnt; ++i ) {
 	fseek(ttf,script_start+script_table_offsets[i],SEEK_SET);
 	printf( "\t Script table for '%c%c%c%c'\n",
-		(script_table_names[i]>>24)&0xff,
-		(script_table_names[i]>>16)&0xff,
-		(script_table_names[i]>>8)&0xff,
-		script_table_names[i]&0xff);
+		(int)((script_table_names[i]>>24)&0xff),
+		(int)((script_table_names[i]>>16)&0xff),
+		(int)((script_table_names[i]>>8)&0xff),
+		(int)(script_table_names[i]&0xff) );
 	printf( "\t  default language offset=%d\n", dlo=getushort(ttf));
 	printf( "\t  language systems count=%d\n", ls_cnt = getushort(ttf));
 	ls_names = malloc(ls_cnt*sizeof(uint32));
@@ -2252,11 +2265,11 @@ static void showscriptlist(FILE *ttf,int script_start ) {
 	    ls_names[j] = getlong(ttf);
 	    ls_offsets[j] = getushort(ttf);
 	    printf( "\t   Language System '%c%c%c%c' Offset=%d\n",
-		    (ls_names[j]>>24)&0xff,
-		    (ls_names[j]>>16)&0xff,
-		    (ls_names[j]>>8)&0xff,
-		    ls_names[j]&0xff,
-		    ls_offsets[j]);
+		    (int)((ls_names[j]>>24)&0xff),
+		    (int)((ls_names[j]>>16)&0xff),
+		    (int)((ls_names[j]>>8)&0xff),
+		    (int)(ls_names[j]&0xff),
+		    ls_offsets[j] );
 	}
 	if ( dlo!=0 )
 	    showlangsys(ttf,script_start+script_table_offsets[i],dlo,0);
@@ -2283,20 +2296,20 @@ static void showfeaturelist(FILE *ttf,int feature_start ) {
 	feature_record_names[i] = getlong(ttf);
 	feature_record_offsets[i] = getushort(ttf);
 	printf( "\t Feature[%d] '%c%c%c%c' Offset=%d\n", i,
-		(feature_record_names[i]>>24)&0xff,
-		(feature_record_names[i]>>16)&0xff,
-		(feature_record_names[i]>>8)&0xff,
-		feature_record_names[i]&0xff,
-		feature_record_offsets[i]);
+		(int)((feature_record_names[i]>>24)&0xff),
+		(int)((feature_record_names[i]>>16)&0xff),
+		(int)((feature_record_names[i]>>8)&0xff),
+		(int)(feature_record_names[i]&0xff),
+		feature_record_offsets[i] );
     }
     printf( "\t--\n" );
     for ( i=0; i<cnt; ++i ) {
 	fseek(ttf,feature_start+feature_record_offsets[i],SEEK_SET);
 	printf( "\t Feature Table[%d] '%c%c%c%c'\n", i,
-		(feature_record_names[i]>>24)&0xff,
-		(feature_record_names[i]>>16)&0xff,
-		(feature_record_names[i]>>8)&0xff,
-		feature_record_names[i]&0xff);
+		(int)((feature_record_names[i]>>24)&0xff),
+		(int)((feature_record_names[i]>>16)&0xff),
+		(int)((feature_record_names[i]>>8)&0xff),
+		(int)(feature_record_names[i]&0xff) );
 	printf( "\t  Feature Parameters Offset=%d\n", getushort(ttf));
 	printf( "\t  Lookup Count = %d\n", lu_cnt = getushort(ttf));
 	if ( i+1<cnt && feature_record_offsets[i]<feature_record_offsets[i+1] &&
@@ -2388,7 +2401,7 @@ static uint16 *getClassDefTable(FILE *ttf, int classdef_offset, int cnt) {
 return glist;
 }
 
-static void readvaluerecord(int vf,FILE *ttf,char *label) {
+static void readvaluerecord(int vf,FILE *ttf,const char *label) {
     printf( "\t\t %s: ", label );
     if ( vf&1 )
 	printf( "XPlacement: %d  ", (short) getushort(ttf));
@@ -2430,7 +2443,7 @@ static void gposPairSubTable(FILE *ttf, int which, int stoffset, struct ttfinfo 
     printf( "\t  Pair Sub Table[%d]\n", which );
     printf( "\t   SubFormat=%d\n", subformat = getushort(ttf));
     printf( "\t   Coverage Offset=%d\n", coverage = getushort(ttf));
-    printf( "\t   ValueFormat1=0x%x ", vf1 = getushort(ttf));
+    printf( "\t   ValueFormat1=0x%x ", (unsigned int)((vf1 = getushort(ttf))) );
     printf( "%s%s%s%s%s%s%s%s\n", 
 	    (vf1&1) ? "XPlacement|":"",
 	    (vf1&2) ? "YPlacement|":"",
@@ -2440,7 +2453,7 @@ static void gposPairSubTable(FILE *ttf, int which, int stoffset, struct ttfinfo 
 	    (vf1&0x20) ? "YDevPlacement|":"",
 	    (vf1&0x40) ? "XDevAdvance|":"",
 	    (vf1&0x80) ? "YDevAdvance|":"" );
-    printf( "\t   ValueFormat2=0x%x ", vf2 = getushort(ttf));
+    printf( "\t   ValueFormat2=0x%x ", (unsigned int)(vf2 = getushort(ttf)) );
     printf( "%s%s%s%s%s%s%s%s\n",
 	    (vf2&1) ? "XPlacement|":"",
 	    (vf2&2) ? "YPlacement|":"",
@@ -2718,7 +2731,7 @@ static void showgpossublookup(FILE *ttf,int base, int lkoffset,
 		    "Reserved");
 	is_exten_lu = lu_type==7;
     }
-    printf( "\t  Flags=0x%x %s|%s|%s|%s\n", flags,
+    printf( "\t  Flags=0x%x %s|%s|%s|%s\n", (unsigned int)(flags),
 	    (flags&0x1)?"RightToLeft":"LeftToRight",
 	    (flags&0x2)?"IgnoreBaseGlyphs":"",
 	    (flags&0x4)?"IgnoreLigatures":"",
@@ -2912,7 +2925,7 @@ static void readttfkern(FILE *ttf, FILE *util, struct ttfinfo *info) {
     int version, ntables;
     int header_size, len, coverage, i, j;
     uint32 begin;
-    int left, right, array, n;
+    int left, right, val, array, n, sr, es, rs;
 
     fseek(ttf,info->kern_start,SEEK_SET);
     printf( "\nkern table (at %d)\n", info->kern_start );
@@ -2934,7 +2947,8 @@ static void readttfkern(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	    printf( "\t Sub-table %d, version=%d\n", i, getushort(ttf));
 	    len = getushort(ttf);
 	    coverage = getushort(ttf);
-	    printf( "\t  len=%d coverage=%x %s%s%s%s sub table format=%d\n", len, coverage,
+	    printf( "\t  len=%d coverage=%x %s%s%s%s sub table format=%d\n",
+		    len, (unsigned int)(coverage),
 		    ( coverage&1 ) ? "Horizontal": "Vertical",
 		    ( coverage&2 ) ? " Minimum" : "",
 		    ( coverage&4 ) ? " cross-stream" : "",
@@ -2942,14 +2956,13 @@ static void readttfkern(FILE *ttf, FILE *util, struct ttfinfo *info) {
 		    ( coverage>>8 ));
 	    if ( (coverage>>8)==0 ) {
 		/* Kern pairs */
-		int n = getushort(ttf);
-		int sr = getushort(ttf);
-		int es = getushort(ttf);
-		int rs = getushort(ttf);
+		n = getushort(ttf);
+		sr = getushort(ttf);
+		es = getushort(ttf);
+		rs = getushort(ttf);
 		printf( "\t   npairs=%d searchRange=%d entrySelector=%d rangeShift=%d\n",
 			n, sr, es, rs );
 		for ( i=0; i<n; ++i ) {
-		    int left, right, val;
 		    left = getushort(ttf);
 		    right = getushort(ttf);
 		    val = (short) getushort(ttf);
@@ -2965,7 +2978,8 @@ static void readttfkern(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	} else {
 	    len = getlong(ttf);
 	    coverage = getushort(ttf);
-	    printf( "\t  len=%d coverage=%x %s%s%s sub table format=%d\n", len, coverage,
+	    printf( "\t  len=%d coverage=%x %s%s%s sub table format=%d\n",
+		    len, (unsigned int)(coverage),
 		    ( coverage&0x8000 ) ? "Vertical": "Horizontal",
 		    ( coverage&0x4000 ) ? " cross-stream" : "",
 		    ( coverage&0x2000 ) ? " kern-variation" : "",
@@ -3020,14 +3034,15 @@ static void readttffontdescription(FILE *ttf, FILE *util, struct ttfinfo *info) 
 	fseek(ttf,-4,SEEK_CUR);
 	lval = getlong(ttf);
 	printf("\t  %c%c%c%c %s %08lx ", 
-	     tag>>24, (tag>>16)&0xff, (tag>>8)&0xff, tag&0xff,
-	     tag==CHR('w','g','h','t')? "Weight" :
-	     tag==CHR('w','d','t','h')? "Width" :
-	     tag==CHR('s','l','n','t')? "Slant" :
-	     tag==CHR('o','p','s','z')? "Optical Size" :
-	     tag==CHR('n','a','l','f')? "Non-alphabetic" :
-		 "Unknown",
-	     (long) lval );
+		(int)((tag>>24)&0xff), (int)((tag>>16)&0xff),
+		(int)((tag>>8)&0xff), (int)(tag&0xff),
+		tag==CHR('w','g','h','t')? "Weight" :
+		tag==CHR('w','d','t','h')? "Width" :
+		tag==CHR('s','l','n','t')? "Slant" :
+		tag==CHR('o','p','s','z')? "Optical Size" :
+		tag==CHR('n','a','l','f')? "Non-alphabetic" :
+		"Unknown",
+		(long unsigned int)(lval) );
 	switch ( tag ) {
 	  case CHR('w','g','h','t'):
 	  case CHR('w','d','t','h'):
@@ -3059,8 +3074,8 @@ static void readttffeatures(FILE *ttf, FILE *util, struct ttfinfo *info) {
     printf( "\t version=%g\n", getfixed(ttf));
     n = getushort(ttf);
     printf( "\t number of features=%d\n", n);
-    printf( "\t must be zero: %x\n", getushort(ttf));
-    printf( "\t must be zero: %x\n", (int) getlong(ttf));
+    printf( "\t must be zero: %x\n", (unsigned int)(getushort(ttf)) );
+    printf( "\t must be zero: %x\n", (unsigned int)(getlong(ttf)) );
     info->features = calloc(n+1,sizeof(struct features));
     info->features[n].feature = -1;
     for ( i=0; i<n; ++i ) {
@@ -3074,7 +3089,7 @@ static void readttffeatures(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	printf( "\t Feature %d\n", i );
 	printf( "\t  Feature Id %d\n", info->features[i].feature );
 	printf( "\t  number Settings %d\n", info->features[i].nsettings );
-	printf( "\t  setting offset %d\n", setting_offset );
+	printf( "\t  setting offset %d\n", (int)(setting_offset) );
 	printf( "\t  feature flags %d ", info->features[i].featureflags );
 	if ( !(info->features[i].featureflags&0x8000) )
 	    printf( "Non-Exclusive settings\n" );
@@ -3111,7 +3126,8 @@ static char *getfeaturename(struct ttfinfo *info, int type) {
     if ( name!=NULL )
 return( name );
 /* This list is taken from http://developer.apple.com/fonts/Registry/index.html*/
-return( type==0 ? "All typographic features" :
+return( (char *)((
+	type==0 ? "All typographic features" :
 	type==1 ? "Ligature" :
 	type==2 ? "Cursive connection" :
 	type==3 ? "Letter case" :
@@ -3147,7 +3163,7 @@ return( type==0 ? "All typographic features" :
 /* End */
 	type==16000 ? "?Decompose Unicode (undocumented)?" :
 	type==16001 ? "?Combining character (undocumented)?" :
-	    "Unknown feature type" );
+	    "Unknown feature type")) );
 }
 
 static char *getsettingname(struct ttfinfo *info, int type, int setting) {
@@ -3158,6 +3174,7 @@ static char *getsettingname(struct ttfinfo *info, int type, int setting) {
     if ( info->features!=NULL ) {
 	for ( k=0; info->features[k].feature!=-1 && info->features[k].feature!=type; ++k );
 	if ( info->features[k].feature!=-1 ) {
+	    /*name = info->features[k].name;		will be null at end of list */
 	    for ( l=0 ; l<info->features[k].nsettings && info->features[k].settings[l].setting!=setting; ++l );
 	    if ( l<info->features[k].nsettings )
 		name = info->features[k].settings[l].name;
@@ -3165,16 +3182,18 @@ static char *getsettingname(struct ttfinfo *info, int type, int setting) {
     }
     if ( name )
 return( name );
-/* These lists are taken from http://developer.apple.com/fonts/Registry/index.html*/
+/* These lists are taken from http://developer.apple.com/fonts/Registry/index.html */
 /*  the numeric values are at the bottom of the page */
     else switch ( type ) {
       case 0:
-return( setting==0 ? "On" :
+return( (char *)((
+	setting==0 ? "On" :
 	setting==1 ? "Off" :
-	"Unknown" );
+	"Unknown")) );
       break;
       case 1:	/* Ligatures */
-return( setting==0 ? "Required ligatures On" :
+return( (char *)((
+	setting==0 ? "Required ligatures On" :
 	setting==1 ? "Required ligatures Off" :
 	setting==2 ? "Common Ligatures On" :
 	setting==3 ? "Common Ligatures Off" :
@@ -3190,40 +3209,46 @@ return( setting==0 ? "Required ligatures On" :
 	setting==13 ? "Squared ligatures Off" :
 	setting==14 ? "Squared ligatures, abbreviated On" :
 	setting==15 ? "Squared ligatures, abbreviated Off" :
-	    "Unknown" );
+	    "Unknown")) );
       break;
       case 2:	/* cursive */
-return( setting==0 ? "Unconnected" :
+return( (char *)((
+	setting==0 ? "Unconnected" :
 	setting==1 ? "Partially connected" :
 	setting==2 ? "Cursive" :
-	    "Unknown" );
+	    "Unknown")) );
       break;
       case 3:	/* Letter case */
-return( setting==0 ? "Upper & Lower case" :
+return( (char *)((
+	setting==0 ? "Upper & Lower case" :
 	setting==1 ? "All Caps" :
 	setting==2 ? "All Lower Case" :
 	setting==3 ? "Small Caps" :
 	setting==4 ? "Initial Caps" :
 	setting==5 ? "Initial Caps & Small Caps" :
-	    "Unknown" );
+	    "Unknown")) );
       break;
       case 4:	/* Vertical Substitution */
-return( setting==0 ? "On" :
+return( (char *)((
+	setting==0 ? "On" :
 	setting==1 ? "Off" :
-	    "Unknown" );
+	    "Unknown")) );
       break;
       case 5:	/* Linguistic Rearrangement */
-return( setting==0 ? "On" :
+return( (char *)((
+	setting==0 ? "On" :
 	setting==1 ? "Off" :
-	    "Unknown" );
+	    "Unknown")) );
       break;
       case 6:	/* Number spacing */
-return( setting==0 ? "On" :
+return( (char *)((
+	setting==0 ? "On" :
 	setting==1 ? "Off" :
-	    "Unknown" );
+	    "Unknown")) );
       break;
       case 8:	/* Smart swash */
-return( setting==0 ? "Initial swashes On" :
+return( (char *)((
+	setting==0 ? "Initial swashes On" :
 	setting==1 ? "Initial swashes Off" :
 	setting==2 ? "Final swashes On" :
 	setting==3 ? "Final swashes Off" :
@@ -3233,34 +3258,39 @@ return( setting==0 ? "Initial swashes On" :
 	setting==7 ? "line final swashes Off" :
 	setting==8 ? "non-final swashes On" :
 	setting==9 ? "non-final swashes Off" :
-	    "Unknown" );
+	    "Unknown")) );
       break;
       case 9:	/* diacritics */
-return( setting==0 ? "show Diacritics" :
+return( (char *)((
+	setting==0 ? "show Diacritics" :
 	setting==1 ? "hide Diacritics" :
 	setting==2 ? "decompose Diacritics" :
-	    "Unknown" );
+	    "Unknown")) );
       break;
       case 10:	/* vertical positioning */
-return( setting==0 ? "normal position" :
+return( (char *)((
+	setting==0 ? "normal position" :
 	setting==1 ? "superiors" :
 	setting==2 ? "inferiors" :
 	setting==3 ? "ordinals" :
-	    "Unknown" );
+	    "Unknown")) );
       break;
       case 11:	/* fractions */
-return( setting==0 ? "no fractions" :
+return( (char *)((
+	setting==0 ? "no fractions" :
 	setting==1 ? "vertical fractions" :
 	setting==2 ? "diagonal fractions" :
-	    "Unknown" );
+	    "Unknown")) );
       break;
       case 13:	/* overlapping chars */
-return( setting==0 ? "prevent Overlap On" :
+return( (char *)((
+	setting==0 ? "prevent Overlap On" :
 	setting==1 ? "prevent Overlap Off" :
-	    "Unknown" );
+	    "Unknown")) );
       break;
       case 14:	/* typographic extras */
-return( setting==0 ? "hyphens to Em dashes On" :
+return( (char *)((
+	setting==0 ? "hyphens to Em dashes On" :
 	setting==1 ? "hyphens to Em dashes Off" :
 	setting==2 ? "hyphens to En dashes On" :
 	setting==3 ? "hyphens to En dashes Off" :
@@ -3272,10 +3302,11 @@ return( setting==0 ? "hyphens to Em dashes On" :
 	setting==9 ? "smart Quotes Off" :
 	setting==10 ? "periods to ellipsis On" :
 	setting==11 ? "periods to ellipsis Off" :
-	    "Unknown" );
+	    "Unknown")) );
       break;
       case 15:	/* mathmatical extras */
-return( setting==0 ? "hyphen to minus On" :
+return( (char *)((
+	setting==0 ? "hyphen to minus On" :
 	setting==1 ? "hyphen to minus Off" :
 	setting==2 ? "asterisk to multiply On" :
 	setting==3 ? "asterisk to multiply Off" :
@@ -3285,41 +3316,46 @@ return( setting==0 ? "hyphen to minus On" :
 	setting==7 ? "inequality ligatures Off" :
 	setting==8 ? "exponents On" :
 	setting==9 ? "exponents Off" :
-	    "Unknown" );
+	    "Unknown")) );
       break;
       case 16:	/* ornament sets */
-return( setting==0 ? "no ornaments" :
+return( (char *)((
+	setting==0 ? "no ornaments" :
 	setting==1 ? "dingbats" :
 	setting==2 ? "pi Characters" :
 	setting==3 ? "fleurons" :
 	setting==4 ? "decorative borders" :
 	setting==5 ? "international symbols" :
 	setting==6 ? "math symbols" :
-	    "Unknown" );
+	    "Unknown")) );
       break;
       case 17:	/* character alternates */
-return( setting==0 ? "no alternates" :
-	    "Unknown" );
+return( (char *)((
+	setting==0 ? "no alternates" :
+	    "Unknown")) );
       break;
       case 18:	/* design complexity */
-return( setting==0 ? "design level 1" :
+return( (char *)((
+	setting==0 ? "design level 1" :
 	setting==1 ? "design level 2" :
 	setting==2 ? "design level 3" :
 	setting==3 ? "design level 4" :
 	setting==4 ? "design level 5" :
-	    "Unknown" );
+	    "Unknown")) );
       break;
       case 19:	/* style options */
-return( setting==0 ? "no style options" :
+return( (char *)((
+	setting==0 ? "no style options" :
 	setting==1 ? "display text" :
 	setting==2 ? "engraved text" :
 	setting==3 ? "illuminated Caps" :
 	setting==4 ? "titling caps" :
 	setting==5 ? "tall caps" :
-	    "Unknown" );
+	    "Unknown")) );
       break;
       case 20:	/* character shape */
-return( setting==0 ? "traditional characters" :
+return( (char *)((
+	setting==0 ? "traditional characters" :
 	setting==1 ? "simplified characters" :
 	setting==2 ? "jis1978 characters" :
 	setting==3 ? "jis1983 characters" :
@@ -3330,22 +3366,25 @@ return( setting==0 ? "traditional characters" :
 	setting==8 ? "traditional alt 4" :
 	setting==9 ? "traditional alt 5" :
 	setting==10 ? "expert characters" :
-	    "Unknown" );
+	    "Unknown")) );
       break;
       case 21:	/* number case */
-return( setting==0 ? "lower case numbers" :
+return( (char *)((
+	setting==0 ? "lower case numbers" :
 	setting==1 ? "upper case numbers" :
-	    "Unknown" );
+	    "Unknown")) );
       break;
       case 22:	/* text spacing */
-return( setting==0 ? "proportional" :
+return( (char *)((
+	setting==0 ? "proportional" :
 	setting==1 ? "monospace" :
 	setting==2 ? "halfwidth" :
 	setting==3 ? "normally spaced" :
-	    "Unknown" );
+	    "Unknown")) );
       break;
       case 23:	/* transliteration */
-return( setting==0 ? "no transliteration" :
+return( (char *)((
+	setting==0 ? "no transliteration" :
 	setting==1 ? "hanja to hangul" :
 	setting==2 ? "hiragana to katakana" :
 	setting==3 ? "katakana to hiragana" :
@@ -3356,10 +3395,11 @@ return( setting==0 ? "no transliteration" :
 	setting==8 ? "hanja to hangul alt 2" :
 	setting==9 ? "hanja to hangul alt 3" :
 	setting==10 ? "expert characters" :
-	    "Unknown" );
+	    "Unknown")) );
       break;
       case 24:	/* anotation */
-return( setting==0 ? "no annotation" :
+return( (char *)((
+	setting==0 ? "no annotation" :
 	setting==1 ? "box annotation" :
 	setting==2 ? "rounded box annotation" :
 	setting==3 ? "circle annotation" :
@@ -3368,47 +3408,54 @@ return( setting==0 ? "no annotation" :
 	setting==6 ? "period annotation" :
 	setting==7 ? "roman numeral annotation" :
 	setting==8 ? "diamond annotation" :
-	"Unknown" );
+	"Unknown")) );
       break;
       case 25:	/* kana spacing */
-return( setting==0 ? "full width kana" :
+return( (char *)((
+	setting==0 ? "full width kana" :
 	setting==1 ? "proportional kana" : /* Proportional Japanese glyphs */
-	"Unknown" );
+	"Unknown")) );
       break;
       case 26:	/* ideograph spacing */
-return( setting==0 ? "full width ideograph" :
+return( (char *)((
+	setting==0 ? "full width ideograph" :
 	setting==1 ? "proportional ideograph" :
-	"Unknown" );
+	"Unknown")) );
       break;
       case 27:	/* Accented letters (determined empirically) */
-return( setting==0 ? "On" :
+return( (char *)((
+	setting==0 ? "On" :
 	setting==1 ? "Off" :
-	"Unknown" );
+	"Unknown")) );
       break;
       case 103:	/* CJK Spacing */
-return( setting==0 ? "halfwidth CJK Roman" : /* No change */
+return( (char *)((
+	setting==0 ? "halfwidth CJK Roman" : /* No change */
 	setting==1 ? "proportional CJK Roman" :
 	setting==2 ? "default CJK Roman" : /* Ideal metrics */
 	setting==3 ? "fullwidth CJK Roman" :
-	"Unknown" );
+	"Unknown")) );
       break;
       case 16000: /* Decomposed Unicode (determined empirically) */
-return( setting==0 ? "Compose" :
+return( (char *)((
+	setting==0 ? "Compose" :
 	setting==1 ? "Off" :
-	"Unknown" );
+	"Unknown")) );
       break;
       case 16001: /* Combining character (determined empirically) */
-return( setting==0 ? "Combine" :
+return( (char *)((
+	setting==0 ? "Combine" :
 	setting==1 ? "Off" :
-	"Unknown" );
+	"Unknown")) );
       break;
       default:
-return( setting==0 ? "Unknown (?On?)" :
+return( (char *)((
+	setting==0 ? "Unknown (?On?)" :
 	setting==1 ? "Unknown (?Off?)" :
-	"Unknown" );
+	"Unknown")) );
       break;
     }
-return( "Unknown" );
+return( (char *)("Unknown") );
 }
 
 static int showbinsearchheader(FILE *ttf) {
@@ -3576,7 +3623,7 @@ static void show_statetable(struct statetable *st, struct ttfinfo *info, FILE *t
 	if ( entry_print!=NULL )
 	    entry_print(pt,st,info,ttf);
 	else {
-	    printf( "\t   Flags %04x\n", (pt[2]<<8)|pt[3] );
+	    printf( "\t   Flags %04x\n", (unsigned int)(((pt[2]<<8)|pt[3])) );
 	    for ( j=0; j<st->entry_extras; ++j )
 		printf( "\t   GlyphOffset[%d] = %d\n", j, (pt[2*j+4]<<8)|pt[2*j+5]);
 	}
@@ -3625,7 +3672,7 @@ static void show_statetablex(struct statetable *st, struct ttfinfo *info, FILE *
 	if ( entry_print!=NULL )
 	    entry_print(pt,st,info,ttf);
 	else {
-	    printf( "\t   Flags %04x\n", (pt[2]<<8)|pt[3] );
+	    printf( "\t   Flags %04x\n", (unsigned int)(((pt[2]<<8)|pt[3])) );
 	    for ( j=0; j<st->entry_extras; ++j )
 		printf( "\t   GlyphOffset[%d] = %d\n", j, (pt[2*j+4]<<8)|pt[2*j+5]);
 	}
@@ -3866,7 +3913,7 @@ static void show_contextkerndata(uint8 *entry,struct statetable *st,struct ttfin
     int offset = flags&0x3fff;
     int i, k;
 
-    printf( "\t   Flags %04x ", flags );
+    printf( "\t   Flags %04x ", (unsigned int)(flags) );
     if ( flags&0x8000 )
 	printf( "Add to Kern Stack | ");
     if ( flags&0x4000 )
@@ -3899,7 +3946,7 @@ static void readttfkern_context(FILE *ttf, FILE *util, struct ttfinfo *info, int
 static void show_indicflags(uint8 *entry,struct statetable *st,struct ttfinfo *info,FILE *ttf) {
     int flags = (entry[2]<<8)|entry[3];
 
-    printf( "\t   Flags %04x ", flags );
+    printf( "\t   Flags %04x ", (unsigned int)(flags) );
     if ( flags&0x8000 )
 	printf( "Mark First | ");
     if ( flags&0x2000 )
@@ -3983,7 +4030,7 @@ static void show_contextflags(uint8 *entry,struct statetable *st,struct ttfinfo 
     int cur_offset = (int16) ((entry[6]<<8)|entry[7]);
     int i, sub;
 
-    printf( "\t   Flags %04x ", flags );
+    printf( "\t   Flags %04x ", (unsigned int)(flags) );
     if ( flags&0x8000 )
 	printf( "Set Mark | ");
     if ( flags&0x4000 )
@@ -4076,7 +4123,7 @@ static void show_contextflagsx(uint8 *entry,struct statetable *st,struct ttfinfo
     int mark_index = ((entry[4]<<8)|entry[5]);
     int cur_index = ((entry[6]<<8)|entry[7]);
 
-    printf( "\t   Flags %04x ", flags );
+    printf( "\t   Flags %04x ", (unsigned int)(flags) );
     if ( flags&0x8000 )
 	printf( "Set Mark | ");
     if ( flags&0x4000 )
@@ -4111,7 +4158,7 @@ static void show_ligflags(uint8 *entry,struct statetable *st,struct ttfinfo *inf
     int flags = (entry[2]<<8)|entry[3];
     uint32 val;
 
-    printf( "\t   Flags %04x ", flags );
+    printf( "\t   Flags %04x ", (unsigned int)(flags) );
     if ( flags&0x8000 )
 	printf( "Set Component | ");
     if ( flags&0x4000 )
@@ -4151,7 +4198,7 @@ static void show_ligxflags(uint8 *entry,struct statetable *st,struct ttfinfo *in
     int index = (entry[4]<<8)|entry[5];
     uint32 val;
 
-    printf( "\t   Flags %04x ", flags );
+    printf( "\t   Flags %04x ", (unsigned int)(flags) );
     if ( flags&0x8000 )
 	printf( "Set Component | ");
     if ( flags&0x2000 )
@@ -4444,8 +4491,8 @@ static void readttfmetamorph(FILE *ttf, FILE *util, struct ttfinfo *info) {
     for ( i=0; i<n; ++i ) {
 	printf( "\t For Chain %d\n", i );
 	chain_start = ftell(ttf);
-	printf( "\t  default flags=%lx\n", (long) getlong(ttf));
-	printf( "\t  chain length=%ld\n", (long) (len = getlong(ttf)));
+	printf( "\t  default flags=%lx\n", (long unsigned int)(getlong(ttf)) );
+	printf( "\t  chain length=%ld\n", (long)((len = getlong(ttf))) );
 	printf( "\t  number Feature Entries=%d\n", nf = ismorx ? getlong(ttf) : getushort(ttf));
 	printf( "\t  number Subtables=%d\n", ns = ismorx ? (int) getlong(ttf) : getushort(ttf));
 	for ( j=k=0; j<nf; ++j ) {
@@ -4454,9 +4501,9 @@ static void readttfmetamorph(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	    printf( "%s\n", getfeaturename(info,type));
 	    printf( "\t   Feature Setting=%d ", setting=getushort(ttf));
 	    printf( "%s\n", getsettingname(info,type, setting));
-	    printf( "\t   Enable Flags=%08lx\n", (long) (flags = getlong(ttf)));
-	    printf( "\t   Disable Flags=%08lx ", (long) (temp=getlong(ttf)));
-	    printf( "(Complement=%08lx)\n", (long) ~temp);
+	    printf( "\t   Enable Flags=%08lx\n", (long unsigned int)((flags = getlong(ttf))) );
+	    printf( "\t   Disable Flags=%08lx ", (long unsigned int)((temp=getlong(ttf))) );
+	    printf( "(Complement=%08lx)\n", (long unsigned int)(~temp) );
 	    /* try to get a unique flag value for this feature setting */
 	    for ( l=0; l<k; ++l )
 		flags &= ~masks[l];
@@ -4489,7 +4536,7 @@ static void readttfmetamorph(FILE *ttf, FILE *util, struct ttfinfo *info) {
 		printf( "\n" );
 	    printf( "\t  Length = %d\n", stab_len );
 	    printf( "\t  Coverage = %08x, Apply=%s Search=%s\n\t\tType=%s\n",
-		coverage,
+		(unsigned int)(coverage),
 		(coverage&0x20000000) ? "Always" : (coverage&0x80000000) ? "Vertical" : "Horizontal",
 		(coverage&0x40000000) ? "Descending (?Right2Left?)" : "Ascending (?Left2Right?)",
 		(coverage&0xff)==0 ? "Indic rearrangement" :
@@ -4498,7 +4545,7 @@ static void readttfmetamorph(FILE *ttf, FILE *util, struct ttfinfo *info) {
 		(coverage&0xff)==4 ? "non-contextual glyph substitution" :
 		(coverage&0xff)==5 ? "contextual glyph insertion" :
 		    "Unknown" );
-	    printf( "\t  Flags=%08lx\n", (long) flags );
+	    printf( "\t  Flags=%08lx\n", (long unsigned int)(flags) );
 	    switch( (coverage&0x7) ) {
 	      case 0:
 		if ( !ismorx )
@@ -4643,11 +4690,11 @@ static void readttfapplefvar(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	printf( "\t  Axis %d\n", i );
 	tag = getlong(ttf);
 	printf( "\t    Axis Tag '%c%c%c%c'\n",
-		tag>>24, (tag>>16)&0xff, (tag>>8)&0xff, tag&0xff);
+		(int)((tag>>24)&0xff), (int)((tag>>16)&0xff), (int)((tag>>8)&0xff), (int)(tag&0xff) );
 	printf( "\t    minValue=%g\n", getfixed(ttf));
 	printf( "\t    defaultValue=%g\n", getfixed(ttf));
 	printf( "\t    maxValue=%g\n", getfixed(ttf));
-	printf( "\t    flags=%x\n", getushort(ttf));
+	printf( "\t    flags=%x\n", (unsigned int)(getushort(ttf)) );
 	nameid = getushort(ttf);
 	name = getttfname(util,info,nameid);
 	printf( "\t    nameid=%d (%s)\n", nameid, name==NULL ? "Not Found" : name );
@@ -4657,7 +4704,7 @@ static void readttfapplefvar(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	nameid = getushort(ttf);
 	name = getttfname(util,info,nameid);
 	printf( "\t    nameid=%d (%s)\n", nameid, name==NULL ? "Not Found" : name );
-	printf( "\t    flags=%x\n", getushort(ttf));
+	printf( "\t    flags=%x\n", (unsigned int)(getushort(ttf)) );
 	printf( "\t    Blend coefficients: ");
 	for ( j=0; j<axiscount; ++j )
 	    printf( "%g, ", getfixed(ttf));
@@ -4679,9 +4726,9 @@ static void readttfapplegvar(FILE *ttf, FILE *util, struct ttfinfo *info) {
     if ( axiscount!=info->fvar_axiscount )
 	fprintf( stderr, "The axis count in the gvar table differs from that in the fvar table.\n 'gvar' axes=%d, 'fvar' axes=%d\n", axiscount, info->fvar_axiscount );
     printf( "\t global coord count=%d\n", gcc = getushort(ttf));
-    printf( "\t offset to coord=%d\n", offset2Coord = getlong(ttf));
+    printf( "\t offset to coord=%d\n", (int)((offset2Coord = getlong(ttf))) );
     printf( "\t glyph count=%d\n", glyphCount = getushort(ttf));
-    printf( "\t flags=%x\n", flags = getushort(ttf));
+    printf( "\t flags=%x\n", (unsigned int)((flags = getushort(ttf))) );
     printf( "\t offset to data=%x\n", offset2Data = getlong(ttf));
     offsets = malloc(glyphCount*sizeof(uint32));
     if ( flags&1 ) {
@@ -4697,7 +4744,7 @@ static void readttfapplegvar(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	tupleCount = getushort(ttf);
 	offset = getushort(ttf);
 	printf( "\t    Tuple count=%x, (count=%d) tuples %sshare points\n",
-		tupleCount, tupleCount&0xfff,
+		(unsigned int)(tupleCount), tupleCount&0xfff,
 		(tupleCount&0x8000)? "" : "do not " );
 	printf( "\t    Offset=%d\n", offset );
 	for ( j=0; j<(tupleCount&0xfff); ++j ) {
@@ -4768,7 +4815,7 @@ static void readttfgasp(FILE *ttf, FILE *util, struct ttfinfo *info) {
     }
 }
 
-static void readtableinstr(FILE *ttf, int start, int len, char *string) {
+static void readtableinstr(FILE *ttf, int start, int len, const char *string) {
     int i, j, ch, n, ch1, ch2;
 
     if ( start==0 )
@@ -4813,8 +4860,8 @@ static char **readcfffontnames(FILE *ttf, int ltype) {
     uint32 *offsets;
     char **names;
     int i,j;
-    static char *labels[] = { "Font Name", "String", NULL };
-    static char *lab2[] = { "fontnames", "strings", NULL };
+    const char *labels[] = { "Font Name", "String", NULL };
+    const char *lab2[] = { "fontnames", "strings", NULL };
 
     printf( "\nThere %s %d %s in this cff\n", count==1?"is":"are", count, lab2[ltype] );
     if ( count==0 )
@@ -4826,7 +4873,7 @@ return( NULL );
 	offsets[i] = getoffset(ttf,offsize);
 	if ( i==0 && offsets[0]!=1 )
 	    fprintf(stderr, "!! Initial offset must be one in %s\n", labels[ltype]);
-	printf( "%d ", offsets[i]);
+	printf( "%d ", (int)(offsets[i]) );
     }
     putchar('\n');
     names = malloc((count+1)*sizeof(char *));
@@ -5096,12 +5143,12 @@ static void ShowCharString(uint8 *str,int len,int type) {
 }
 
 static void readcffsubrs(FILE *ttf,struct topdicts *dict,struct pschars *subs,
-	int type, char *label) {
+	int type, const char *label) {
     uint16 count = getushort(ttf);
     int offsize;
     uint32 *offsets;
     int i,j;
-    static char *text[] = { "char strings", "subrs", NULL };
+    const char *text[] = { "char strings", "subrs", NULL };
     uint8 *temp;
 
     printf( "\nThere are %d %s in the index associated with %s\n",
@@ -5126,8 +5173,8 @@ return;
 	    fprintf( stderr, "!!! Initial offset must be 1 in %s in %s\n", text[type], label);
 	else if ( i!=0 && offsets[i]<offsets[i-1] )
 	    fprintf( stderr, "!!! bad length for %d, %d in %s in %s\n",
-		    i-1, offsets[i]-offsets[i-1], text[type], label);
-	printf( "%d ", offsets[i]);
+		    i-1, (int)((offsets[i]-offsets[i-1])), text[type], label);
+	printf( "%d ", (int)(offsets[i]) );
     }
     putchar('\n');
     for ( i=0; i<count; ++i ) {
@@ -5320,14 +5367,14 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len) {
 	    td->sid_fontname = stack[sp-1];
 	  break;
 	  default:
-	    fprintf(stderr,"Unknown operator in %s: %x\n", fontname, oval );
+	    fprintf(stderr,"Unknown operator in %s: %x\n", fontname, (unsigned int)(oval) );
 	  break;
 	}
     }
 return( td );
 }
 
-static void dumpsid(char *label, int sid, char **strings, int smax ) {
+static void dumpsid(const char *label, int sid, char **strings, int smax ) {
     if ( sid==-1 )
 return;
 
@@ -5480,7 +5527,7 @@ static void readcffprivate(FILE *ttf, struct topdicts *td, char **strings, int s
 	    td->nominalwidthx = stack[sp-1];
 	  break;
 	  default:
-	    fprintf(stderr,"Unknown operator in %s: %x\n", td->fontname, oval );
+	    fprintf(stderr,"Unknown operator in %s: %x\n", td->fontname, (unsigned int)(oval) );
 	  break;
 	}
     }
@@ -5512,7 +5559,7 @@ return( NULL );
 	offsets[i] = getoffset(ttf,offsize);
 	if ( i==0 && offsets[0]!=1 )
 	    fprintf(stderr, "!! Initial offset must be one in Top Dict Index\n" );
-	printf( "%d ", offsets[i]);
+	printf( "%d ", (int)(offsets[i]) );
     }
     putchar('\n');
     dicts = malloc((count+1)*sizeof(struct topdicts *));
@@ -5609,18 +5656,18 @@ return;
     }
     fseek(ttf,dict->cff_start+dict->encodingoff,SEEK_SET);
     format = getc(ttf);
-    printf( "\nCFF Encoding format=%x\n", format );
+    printf( "\nCFF Encoding format=%x\n", (unsigned int)(format) );
     if ( (format&0x7f)==0 ) {
 	cnt = getc(ttf);
 	printf( " Enc cnt=%d\n Enc: ", cnt );
 	for ( i=0; i<cnt; ++i )
-	    printf( "%02x ", getc(ttf));
+	    printf( "%02x ", (unsigned int)(getc(ttf)) );
 	printf("\n");
     } else if ( (format&0x7f)==1 ) {
 	cnt = getc(ttf);
 	printf( " Enc range cnt=%d\n", cnt );
 	for ( i=0; i<cnt; ++i ) {
-	    printf( "  Enc Range %d: First=%02x ", i, getc(ttf));
+	    printf( "  Enc Range %d: First=%02x ", i, (unsigned int)(getc(ttf)) );
 	    printf( "nLeft=%d\n", getc(ttf));
 	}
     }
@@ -5804,7 +5851,7 @@ static int readcff(FILE *ttf,FILE *util, struct ttfinfo *info) {
 return( 1 );
 }
 
-static void readttfBigGlyphMetrics(FILE *ttf,char *indent) {
+static void readttfBigGlyphMetrics(FILE *ttf,const char *indent) {
     printf( "%sBitmap rows=%d\n", indent, getc(ttf));
     printf( "%sBitmap columns=%d\n", indent, getc(ttf));
     printf( "%shoriBearingX=%d\n", indent, (signed char) getc(ttf));
@@ -5832,7 +5879,7 @@ return;
     advance = getc(ttf);
     printf( "\t\theight=%d width=%d sbX=%d sbY=%d advance=%d %s aligned\n",
 	    h,w,sbX,sbY,advance,imageFormat==1?"Byte":"Bit");
-    len -= 5;
+    len -= 5; ch = 0;
     if ( imageFormat==1 ) {
 	/* Byte aligned data */
 	for ( i=0; i<h; ++i ) {
@@ -5942,7 +5989,7 @@ static int readttfbitmapscale(FILE *ttf,FILE *util, struct ttfinfo *info) {
 
     fseek(ttf,info->bitmapscale_start,SEEK_SET);
     printf( "\nBitmap scaling data (at %d)\n", info->bitmapscale_start);
-    printf( "\tVersion: 0x%08x\n", (int) getlong(ttf));
+    printf( "\tVersion: 0x%08x\n", (unsigned int)(getlong(ttf)) );
     printf( "\tnum Sizes: %d\n", cnt = (int) getlong(ttf));
     for ( i=0; i<cnt; ++i ) {
 	printf( " Scaling Info %d\n", i );
@@ -5966,13 +6013,13 @@ static int readttfbitmaps(FILE *ttf,FILE *util, struct ttfinfo *info) {
 
     fseek(ttf,info->bitmaploc_start,SEEK_SET);
     printf( "\nBitmap location data (at %d for %d bytes)\n", info->bitmaploc_start, info->bitmaploc_length);
-    printf( "\tVersion: 0x%08x\n", (int) getlong(ttf));
-    printf( "\tnumStrikes: %d\n", (int) (cnt = getlong(ttf)));
+    printf( "\tVersion: 0x%08x\n", (unsigned int)(getlong(ttf)) );
+    printf( "\tnumStrikes: %d\n", (int)((cnt = getlong(ttf))) );
     for ( i=0; i<cnt; ++i ) {
-	printf( "\t indexSubTableArrayOffset: %d\n", (int) (offset = getlong(ttf)));
-	printf( "\t indexTableSize: %d\n", (int) (size = getlong(ttf)));
-	printf( "\t numberOfIndexSubTables: %d\n", (int) (num = getlong(ttf)));
-	printf( "\t colorRef: %d\n", (int) getlong(ttf));
+	printf( "\t indexSubTableArrayOffset: %d\n", (int)((offset = getlong(ttf))) );
+	printf( "\t indexTableSize: %d\n", (int)((size = getlong(ttf))) );
+	printf( "\t numberOfIndexSubTables: %d\n", (int)((num = getlong(ttf))) );
+	printf( "\t colorRef: %d\n", (int)(getlong(ttf)) );
 	printf( "\t horizontal metrics\n" );
 	sbitLineMetrics(ttf);
 	printf( "\t vertical metrics\n" );
@@ -5982,7 +6029,7 @@ static int readttfbitmaps(FILE *ttf,FILE *util, struct ttfinfo *info) {
 	printf( "\t ppemX: %d\n", getc(ttf));
 	printf( "\t ppemY: %d\n", getc(ttf));
 	printf( "\t bitDepth: %d\n", getc(ttf));
-	printf( "\t flags: 0x%x\n\n", getc(ttf));
+	printf( "\t flags: 0x%x\n\n", (unsigned int)(getc(ttf)) );
 	here = ftell(ttf);
 	readttfIndexSizeSubTab(ttf,info->bitmaploc_start+offset,size,num,info);
 	fseek(ttf,here,SEEK_SET);
@@ -5997,7 +6044,7 @@ static int readttfhdmx(FILE *ttf,FILE *util, struct ttfinfo *info) {
 
     fseek(ttf,info->hdmx_start,SEEK_SET);
     printf( "\nHorizontal device metrics (at %d)\n", info->hdmx_start);
-    printf( "\tVersion: 0x%08x\n", getushort(ttf));
+    printf( "\tVersion: 0x%08x\n", (unsigned int)(getushort(ttf)) );
     printf( "\tnum Records: %d\n", cnt = getushort(ttf));
     printf( "\trecord Size: %d\n", size = (int) getlong(ttf));
     pos = ftell(ttf);
@@ -6079,7 +6126,7 @@ static void readttfmathConstants(FILE *ttf,uint32 start, struct ttfinfo *info) {
     int i;
 
     fseek(ttf,start,SEEK_SET);
-    printf( "\n MATH Constants sub-table (at %d)\n", start);
+    printf( "\n MATH Constants sub-table (at %d)\n", (int)(start) );
     for ( i=0; i<4; ++i )
 	printf( "\t    Constant %d: %d\n", i, getushort(ttf));
     for ( ; i<4+51; ++i ) {
@@ -6103,9 +6150,9 @@ static void readttfmathICTA(FILE *ttf,uint32 start, struct ttfinfo *info, int is
 
     fseek(ttf,start,SEEK_SET);
     if ( is_ic )
-	printf( "\n  MATH Italics Correction sub-table (at %d)\n", start);
+	printf( "\n  MATH Italics Correction sub-table (at %d)\n", (int)(start) );
     else
-	printf( "\n  MATH Top Accent Attachment sub-table (at %d)\n", start);
+	printf( "\n  MATH Top Accent Attachment sub-table (at %d)\n", (int)(start) );
     printf( "\t   Coverage Offset=%d\n", coverage = getushort(ttf));
     printf( "\t   Count=%d\n", cnt = getushort(ttf));
     if ( feof(ttf) ) {
@@ -6149,10 +6196,10 @@ static void readttfmathKern(FILE *ttf,uint32 start, struct ttfinfo *info) {
     int coverage, cnt, i, j;
     uint16 *glyphs;
     uint32 here;
-    static char *cornernames[] = { "TopRight:", "TopLeft:", "BottomRight:", "BottomLeft:" };
+    const char *cornernames[] = { "TopRight:", "TopLeft:", "BottomRight:", "BottomLeft:" };
 
     fseek(ttf,start,SEEK_SET);
-    printf( "\n  MATH Kerning sub-table (at %d)\n", start);
+    printf( "\n  MATH Kerning sub-table (at %d)\n", (int)(start) );
     printf( "\t   Coverage Offset=%d\n", coverage = getushort(ttf));
     printf( "\t   Count=%d\n", cnt = getushort(ttf));
     if ( feof(ttf) ) {
@@ -6182,11 +6229,11 @@ static void readttfmathGlyphInfo(FILE *ttf,uint32 start, struct ttfinfo *info) {
     uint32 ic, ta, es, mk;
 
     fseek(ttf,start,SEEK_SET);
-    printf( "\n MATH Glyph Info sub-table (at %d)\n", start);
-    printf( "\tOffset to Italic Correction: %d\n", ic = getushort(ttf));
-    printf( "\tOffset to Top Accent: %d\n", ta = getushort(ttf));
-    printf( "\tOffset to Extended Shape: %d\n", es = getushort(ttf));
-    printf( "\tOffset to Math Kern: %d\n", mk = getushort(ttf));
+    printf( "\n MATH Glyph Info sub-table (at %d)\n", (int)(start) );
+    printf( "\tOffset to Italic Correction: %d\n", (int)((ic = getushort(ttf))) );
+    printf( "\tOffset to Top Accent: %d\n", (int)((ta = getushort(ttf))) );
+    printf( "\tOffset to Extended Shape: %d\n", (int)((es = getushort(ttf))) );
+    printf( "\tOffset to Math Kern: %d\n", (int)((mk = getushort(ttf))) );
     if ( feof(ttf) ) {
 	fprintf( stderr, "!> Unexpected end of file!\n" );
 return;
@@ -6197,7 +6244,7 @@ return;
     if ( ta!=0 )
 	readttfmathICTA(ttf,start+ta,info,0);
     if ( es!=0 ) {
-	printf( "\n  MATH Extended Shape sub-table (at %d)\n", start+es);
+	printf( "\n  MATH Extended Shape sub-table (at %d)\n", (int)((start+es)) );
 	free( showCoverageTable(ttf,start+es,-1));
     }
     if ( mk!=0 )
@@ -6241,7 +6288,7 @@ return;
 	    printf( " end=%d", getushort(ttf));
 	    printf( " full=%d", getushort(ttf));
 	    flags = getushort(ttf);
-	    printf( " flags=%04x(%s%s)\n", flags, (flags&1)?"Extender":"Required",
+	    printf( " flags=%04x(%s%s)\n", (unsigned int)(flags), (flags&1)?"Extender":"Required",
 		    (flags&0xfffe)?",Unknown flags!!!!":"");
 	}
     }
@@ -6254,7 +6301,7 @@ static void readttfmathVariants(FILE *ttf,uint32 start, struct ttfinfo *info) {
     uint32 here;
 
     fseek(ttf,start,SEEK_SET);
-    printf( "\n MATH Variants sub-table (at %d)\n", start);
+    printf( "\n MATH Variants sub-table (at %d)\n", (int)(start) );
     printf( "\t  MinConnectorOverlap=%d\n", getushort(ttf));
     printf( "\t  VCoverage Offset=%d\n", vcoverage = getushort(ttf));
     printf( "\t  HCoverage Offset=%d\n", hcoverage = getushort(ttf));
@@ -6305,12 +6352,12 @@ static int readttfmath(FILE *ttf,FILE *util, struct ttfinfo *info) {
 
     fseek(ttf,info->math_start,SEEK_SET);
     printf( "\nMATH table (at %d)\n", info->math_start);
-    printf( "\tVersion: 0x%08x\n", version = (int) getlong(ttf));
+    printf( "\tVersion: 0x%08x\n", (unsigned int)((version = (int) getlong(ttf))) );
     if ( version!=0x00010000 )
 	fprintf( stderr, "!> Bad version number for math table.\n" );
-    printf( "\tOffset to Constants: %d\n", constants = getushort(ttf));
-    printf( "\tOffset to GlyphInfo: %d\n", glyphinfo = getushort(ttf));
-    printf( "\tOffset to Variants: %d\n", variants = getushort(ttf));
+    printf( "\tOffset to Constants: %d\n", (int)((constants = getushort(ttf))) );
+    printf( "\tOffset to GlyphInfo: %d\n", (int)((glyphinfo = getushort(ttf))) );
+    printf( "\tOffset to Variants: %d\n", (int)((variants = getushort(ttf))) );
     if ( feof(ttf) ) {
 	fprintf( stderr, "!> Unexpected end of file!\n" );
 return( 0 );
@@ -6341,12 +6388,15 @@ static void readttfbaseminmax(FILE *ttf,uint32 offset,struct ttfinfo *info,
     if ( lang_tag == 0 )
 	printf( "\t   min extent=%d  max extent=%d for script '%c%c%c%c'\n",
 		min, max,
-		script_tag>>24, script_tag>>16, script_tag>>8, script_tag );
+		(int)((script_tag>>24)&0xff), (int)((script_tag>>16)&0xff),
+		(int)((script_tag>>8)&0xff), (int)((script_tag)&0xff) );
     else
 	printf( "\t    min extent=%d  max extent=%d for language '%c%c%c%c' in script '%c%c%c%c'\n",
 		min, max,
-		lang_tag>>24, lang_tag>>16, lang_tag>>8, lang_tag,
-		script_tag>>24, script_tag>>16, script_tag>>8, script_tag );
+		(int)((lang_tag>>24)&0xff), (int)((lang_tag>>16)&0xff),
+		(int)((lang_tag>>8)&0xff), (int)((lang_tag)&0xff),
+		(int)((script_tag>>24)&0xff), (int)((script_tag>>16)&0xff),
+		(int)((script_tag>>8)&0xff), (int)(script_tag&0xf) );
     feat_cnt = getushort(ttf);
     for ( j=0; j<feat_cnt; ++j ) {
 	uint32 feat_tag = getlong(ttf);
@@ -6355,14 +6405,19 @@ static void readttfbaseminmax(FILE *ttf,uint32 offset,struct ttfinfo *info,
 	if ( lang_tag == 0 )
 	    printf( "\t    min extent=%d  max extent=%d in feature '%c%c%c%c' of script '%c%c%c%c'\n",
 		    min, max,
-		    feat_tag>>24, feat_tag>>16, feat_tag>>8, feat_tag,
-		    script_tag>>24, script_tag>>16, script_tag>>8, script_tag );
+		    (int)((feat_tag>>24)&0xff), (int)((feat_tag>>16)&0xff),
+		    (int)((feat_tag>>8)&0xff), (int)(feat_tag&0xff),
+		    (int)((script_tag>>24)&0xff), (int)((script_tag>>16)&0xff),
+		    (int)((script_tag>>8)&0xff), (int)(script_tag&0xff) );
 	else
 	    printf( "\t     min extent=%d  max extent=%d in feature '%c%c%c%c' of language '%c%c%c%c' in script '%c%c%c%c'\n",
 		    min, max,
-		    feat_tag>>24, feat_tag>>16, feat_tag>>8, feat_tag,
-		    lang_tag>>24, lang_tag>>16, lang_tag>>8, lang_tag,
-		    script_tag>>24, script_tag>>16, script_tag>>8, script_tag );
+		    (int)((feat_tag>>24)&0xff), (int)((feat_tag>>16)&0xff),
+		    (int)((feat_tag>>8)&0xff), (int)(feat_tag&0xff),
+		    (int)((lang_tag>>24)&0xff), (int)((lang_tag>>16)&0xff),
+		    (int)((lang_tag>>8)&0xff), (int)((lang_tag)&0xff),
+		    (int)((script_tag>>24)&0xff), (int)((script_tag>>16)&0xff),
+		    (int)((script_tag>>8)&0xff), (int)(script_tag&0xff) );
     }
 }
 
@@ -6379,7 +6434,7 @@ static int readttfbase(FILE *ttf,FILE *util, struct ttfinfo *info) {
 
     fseek(ttf,info->base_start,SEEK_SET);
     printf( "\nBASE table (at %d)\n", info->base_start);
-    printf( "\tVersion: 0x%08x\n", version = getlong(ttf));
+    printf( "\tVersion: 0x%08x\n", (unsigned int)((version = getlong(ttf))) );
     if ( version!=0x00010000 )
 	fprintf( stderr, "!> Bad version number for BASE table.\n" );
     axes[0] = getushort(ttf);	/* Horizontal */
@@ -6406,7 +6461,8 @@ static int readttfbase(FILE *ttf,FILE *util, struct ttfinfo *info) {
 		tags[i] = getlong(ttf);
 	    printf( "\t %d Baseline tags for %s\n", basetagcnt, axis==0 ? "Horizontal": "Vertical" );
 	    for ( i=0; i<basetagcnt; ++i )
-		printf( "\t  '%c%c%c%c'\n", tags[i]>>24, tags[i]>>16, tags[i]>>8, tags[i]);
+		printf( "\t  '%c%c%c%c'\n", (int)((tags[i]>>24)&0xff),
+			(int)((tags[i]>>16)&0xff), (int)((tags[i]>>8)&0xff), (int)(tags[i]&0xff) );
 	}
 	if ( basescripts==0 )
 	    printf("\t NO %s base script data\n", axis==0 ? "Horizontal": "Vertical" );
@@ -6426,7 +6482,8 @@ static int readttfbase(FILE *ttf,FILE *util, struct ttfinfo *info) {
 		struct tagoff *ls;
 		printf("\t %s baseline data for '%c%c%c%c' script\n",
 			axis==0 ? "Horizontal": "Vertical",
-			bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag );
+			(int)((bs[i].tag>>24)&0xff), (int)((bs[i].tag>>16)&0xff),
+			(int)((bs[i].tag>>8)&0xff), (int)(bs[i].tag&0xff) );
 		fseek(ttf,bs[i].offset,SEEK_SET);
 		basevalues = getushort(ttf);
 		defminmax  = getushort(ttf);
@@ -6439,7 +6496,8 @@ static int readttfbase(FILE *ttf,FILE *util, struct ttfinfo *info) {
 		if ( basevalues==0 )
 		    printf("\t  No %s baseline positions for '%c%c%c%c' script\n",
 			    axis==0 ? "Horizontal": "Vertical",
-			    bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag );
+			    (int)((bs[i].tag>>24)&0xff), (int)((bs[i].tag>>16)&0xff),
+			    (int)((bs[i].tag>>8)&0xff), (int)(bs[i].tag&0xff) );
 		else {
 		    int defbl, coordcnt;
 		    int *coords;
@@ -6448,12 +6506,15 @@ static int readttfbase(FILE *ttf,FILE *util, struct ttfinfo *info) {
 		    defbl = getushort(ttf);
 		    coordcnt = getushort(ttf);
 		    printf("\t  The default baseline for '%c%c%c%c' script is '%c%c%c%c'\n",
-			    bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag,
-			    tags[defbl]>>24, tags[defbl]>>16, tags[defbl]>>8, tags[defbl]);
+			    (int)((bs[i].tag>>24)&0xff), (int)((bs[i].tag>>16)&0xff),
+			    (int)((bs[i].tag>>8)&0xff), (int)(bs[i].tag&0xff),
+			    (int)((tags[defbl]>>24)&0xff), (int)((tags[defbl]>>16)&0xff),
+			    (int)((tags[defbl]>>8)&0xff), (int)(tags[defbl]&0xff) );
 		    if ( coordcnt!=basetagcnt )
 			fprintf( stderr, "!!!!! Coord count (%d) for '%c%c%c%c' script does not match base tag count (%d) in 'BASE' table\n",
 				coordcnt,
-				bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag,
+				(int)((bs[i].tag>>24)&0xff), (int)((bs[i].tag>>16)&0xff),
+				(int)((bs[i].tag>>8)&0xff), (int)(bs[i].tag&0xff),
 				basetagcnt );
 		    coords = calloc(coordcnt,sizeof(int));
 		    for ( j=0; j<coordcnt; ++j )
@@ -6466,26 +6527,34 @@ static int readttfbase(FILE *ttf,FILE *util, struct ttfinfo *info) {
 			if ( format==3 ) {
 			    devtab_off = getushort(ttf);
 			    printf("\t   Baseline '%c%c%c%c' in script '%c%c%c%c' is at %d, with device table\n",
-				    tags[j]>>24, tags[j]>>16, tags[j]>>8, tags[j],
-				    bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag,
+				    (int)((tags[j]>>24)&0xff), (int)((tags[j]>>16)&0xff),
+				    (int)((tags[j]>>8)&0xff), (int)(tags[j]&0xff),
+				    (int)((bs[j].tag>>24)&0xff), (int)((bs[j].tag>>16)&0xff),
+				    (int)((bs[j].tag>>8)&0xff), (int)(bs[j].tag&0xff),
 			            coord );
 			} else if ( format==2 ) {
 			    gid = getushort(ttf);
 			    pt  = getushort(ttf);
 			    printf("\t   Baseline '%c%c%c%c' in script '%c%c%c%c' is at %d, modified by point %d in glyph %d\n",
-				    tags[j]>>24, tags[j]>>16, tags[j]>>8, tags[j],
-				    bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag,
+				    (int)((tags[j]>>24)&0xff), (int)((tags[j]>>16)&0xff),
+				    (int)((tags[j]>>8)&0xff), (int)(tags[j]&0xff),
+				    (int)((bs[j].tag>>24)&0xff), (int)((bs[j].tag>>16)&0xff),
+				    (int)((bs[j].tag>>8)&0xff), (int)(bs[j].tag&0xff),
 			            coord, pt, gid );
 			} else {
 			    printf("\t   Baseline '%c%c%c%c' in script '%c%c%c%c' is at %d\n",
-				    tags[j]>>24, tags[j]>>16, tags[j]>>8, tags[j],
-				    bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag,
+				    (int)((tags[j]>>24)&0xff), (int)((tags[j]>>16)&0xff),
+				    (int)((tags[j]>>8)&0xff), (int)(tags[j]&0xff),
+				    (int)((bs[j].tag>>24)&0xff), (int)((bs[j].tag>>16)&0xff),
+				    (int)((bs[j].tag>>8)&0xff), (int)(bs[j].tag&0xff),
 			            coord );
 			    if ( format!=1 )
 				fprintf( stderr, "!!!!! Bad Base Coord format (%d) for '%c%c%c%c' in '%c%c%c%c' script in 'BASE' table\n",
 					format,
-					    tags[j]>>24, tags[j]>>16, tags[j]>>8, tags[j],
-					bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag );
+					    (int)((tags[j]>>24)&0xff), (int)((tags[j]>>16)&0xff),
+					    (int)((tags[j]>>8)&0xff), (int)(tags[j]&0xff),
+					    (int)((bs[j].tag>>24)&0xff), (int)((bs[j].tag>>16)&0xff),
+					    (int)((bs[j].tag>>8)&0xff), (int)(bs[j].tag&0xff) );
 			}
 		    }
 		    free(coords);
@@ -6493,26 +6562,28 @@ static int readttfbase(FILE *ttf,FILE *util, struct ttfinfo *info) {
 		if ( defminmax==0 )
 		    printf("\t  No %s min/max extents for '%c%c%c%c' script\n",
 			    axis==0 ? "Horizontal": "Vertical",
-			    bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag );
+			    (int)((bs[i].tag>>24)&0xff), (int)((bs[i].tag>>16)&0xff),
+			    (int)((bs[i].tag>>8)&0xff), (int)(bs[i].tag&0xff) );
 		else
 		    readttfbaseminmax(ttf,bs[i].offset+defminmax,info,bs[i].tag,0);
 		if ( langsyscnt==0 )
 		    printf("\t  No %s min/max extents for specific langs in '%c%c%c%c' script\n",
 			    axis==0 ? "Horizontal": "Vertical",
-			    bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag );
+			    (int)((bs[i].tag>>24)&0xff), (int)((bs[i].tag>>16)&0xff),
+			    (int)((bs[i].tag>>8)&0xff), (int)(bs[i].tag&0xff) );
 		else
 		    for ( j=0; j<langsyscnt; ++j ) if ( ls[j].offset!=0 )
 			readttfbaseminmax(ttf,bs[i].offset+ls[j].offset,info,bs[i].tag,ls[j].tag);
 		free(ls);
 	    }
+	    free(bs);
 	}
-	free(bs);
 	free(tags);
     }
 return( 1 );
 }
 
-static void readttfjustmax(char *label,FILE *ttf,int base,int offset, struct ttfinfo *info) {
+static void readttfjustmax(const char *label,FILE *ttf,int base,int offset, struct ttfinfo *info) {
     int lcnt,i;
     int *offsets;
 
@@ -6532,7 +6603,7 @@ return;
     free(offsets);
 }
 
-static void readttfjustlookups(char *label,FILE *ttf,int base,int offset) {
+static void readttfjustlookups(const char *label,FILE *ttf,int base,int offset) {
     int lcnt,i;
 
     if ( offset==0 ) {
@@ -6556,8 +6627,10 @@ static void readttfjustlangsys(FILE *ttf,int offset,uint32 stag, uint32 ltag, st
 
     fseek(ttf,offset,SEEK_SET);
     printf("\t  Justification priority data for '%c%c%c%c' script, '%c%c%c%c' lang.\n",
-	    stag>>24, stag>>16, stag>>8, stag,
-	    ltag>>24, ltag>>16, ltag>>8, ltag );
+	    (int)((stag>>24)&0xff), (int)((stag>>16)&0xff),
+	    (int)((stag>>8)&0xff), (int)(stag&0xff),
+	    (int)((ltag>>24)&0xff), (int)((ltag>>16)&0xff),
+	    (int)((ltag>>8)&0xff), (int)(ltag&0xff) );
     pcnt = getushort(ttf);
     offsets = malloc(pcnt*sizeof(int));
     for ( j=0; j<pcnt; ++j )
@@ -6602,7 +6675,7 @@ static void readttfjstf(FILE *ttf,FILE *util, struct ttfinfo *info) {
 
     fseek(ttf,info->JSTF_start,SEEK_SET);
     printf( "\nJSTF table (at %d)\n", info->JSTF_start);
-    printf( "\tVersion: 0x%08x\n", version = getlong(ttf));
+    printf( "\tVersion: 0x%08x\n", (unsigned int)(version = getlong(ttf)) );
     if ( version!=0x00010000 )
 	fprintf( stderr, "!> Bad version number for BASE table.\n" );
     cnt = getushort(ttf);		/* Script count */
@@ -6614,8 +6687,9 @@ static void readttfjstf(FILE *ttf,FILE *util, struct ttfinfo *info) {
     }
 
     for ( i=0; i<cnt; ++i ) {
-	printf("\t Justification data for '%c%c%c%c' script\n",
-		scripts[i].tag>>24, scripts[i].tag>>16, scripts[i].tag>>8, scripts[i].tag );
+	printf("\t Justification data for '%c%c%c%c' script\n",		\
+		(char)(scripts[i].tag>>24), (char)(scripts[i].tag>>16),	\
+	        (char)(scripts[i].tag>>8), (char)(scripts[i].tag) );
 	if ( scripts[i].offset==0 ) {
 	    printf("\t  Nothing for this script\n" );
     continue;
@@ -6662,7 +6736,7 @@ static void readttfjstf(FILE *ttf,FILE *util, struct ttfinfo *info) {
 
 static void readit(FILE *ttf, FILE *util) {
     struct ttfinfo info;
-    int i;
+    int i, pos;
 
     memset(&info,'\0',sizeof(info));
     readttfheader(ttf,util,&info);
@@ -6745,19 +6819,18 @@ return;
     if ( info.math_start!=0 )
 	readttfmath(ttf,util,&info);
     if ( info.glyphlocations_start!=0 ) {
-	int i, pos;
 	fseek(ttf,info.glyphlocations_start,SEEK_SET);
 	if ( info.index_to_loc_is_long ) {
 	    for ( i=0; 4*i<info.loca_length; ++i ) {
 		pos = getlong(ttf);
 		if ( pos&3 )
-		    fprintf( stderr, "Not aligned GID=%d, pos=0x%x\n", i, pos);
+		    fprintf( stderr, "Not aligned GID=%d, pos=0x%x\n", i, (unsigned int)(pos));
 	    }
 	} else {
 	    for ( i=0; 2*i<info.loca_length; ++i ) {
 		pos = getushort(ttf);
 		if ( pos&1 )
-		    fprintf( stderr, "Not aligned GID=%d, pos=0x%x\n", i, pos<<1 );
+		    fprintf( stderr, "Not aligned GID=%d, pos=0x%x\n", i, (unsigned int)(pos<<1) );
 	    }
 	}
     }
@@ -6787,12 +6860,12 @@ int main(int argc, char **argv) {
 	    if ( filename!=NULL )
 		printf( "\n\n\n******************** %s *****************\n\n\n", argv[i]);
 	    filename = argv[i];
-	    ttf = fopen(filename,"rb");
+	    ttf = fopen(filename,"rbs");
 	    if ( ttf==NULL ) {
 		fprintf( stderr, "Can't open %s\n", argv[1]);
 return( 1 );
 	    }
-	    util = fopen(filename,"rb");
+	    util = fopen(filename,"rbs");
 
 	    readit(ttf,util);
 	    fclose(ttf);

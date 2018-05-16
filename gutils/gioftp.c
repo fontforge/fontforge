@@ -31,6 +31,7 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <pthread.h>
 
 #if defined(__MINGW32__)
 void* GIO_dispatch(GIOControl* gc) { return 0;}
