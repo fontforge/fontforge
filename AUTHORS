@@ -1,11 +1,14 @@
 George Williams
+pfaedit <pfaedit>
 10 years and approximately 600,000 lines of code.
 
 Abel Cheung
 Adam Goode
 Adolfo Jayme Barrientos
 Adrien Tétar
+Aidan Kane <aidankane@gmail.com> <aidos>
 Aktado <aktado@users.sourceforge.jp>
+Alan Coopersmith
 Alex Miller <aalex-millerr>
 Alex Raftis
 Alexandre Julliard
@@ -25,6 +28,8 @@ Behnam Esfahbod
 Ben Martin - hotkeys.c, hotkeys.h
 BensongChen, bungeman
 Ben Wagner
+Bernhard M. Wiedemann <bwiedemann@suse.de> <bmwiedemann>
+Brian Murray <brian@ubuntu.com>
 Bill Wang
 Charles M. Hannum
 Charles Reilly <mungre>
@@ -46,6 +51,7 @@ Dražen Lučanin
 Duane Moody
 E.J. Neafsey
 Eddie Yuen
+Edward Betts <edward@4angle.com> <EdwardBetts>
 Edward Lee
 Eric Bavier <bavier@member.fsf.org>
 Eva Denman
@@ -59,7 +65,10 @@ Giuseppe Bilotta
 Giuseppe Ghibò
 Greg Ford
 Grzegorz
+Guillermo Robles <guillerobles1995@gmail.com> <wynro>
 Harald Harders
+Henry Wong <movietravelcode@outlook.com>
+Hideki Yamane <henrich@debian.org> <henrich>
 Horváth Balázs
 J. Jansen - gv - ANALYZE_MAP.COM
 Jacob Jansen
@@ -85,7 +94,7 @@ Juergen Buntrock
 Julien Nabet <serval2412>
 Just Fill Bugs <mozbugbox>
 Kartik Mistry
-KANOU Hiroki
+KANOU Hiroki <KANOU>
 Kazuki Ohta (Kauzuyuki, Kazuyuki)
 Kelvinsong
 Kemie Guaida - Tango PixMaps
@@ -100,6 +109,7 @@ László Károly
 Lu Wang <coolwanglu@gmail.com>
 Ludwig Schwardt
 Luiz Matheus <lzmths>
+Maks Naumov <maksqwe1@ukr.net> <maksqwe>
 Marius Larsen
 Mark G. Adams
 Mark Oteiza
@@ -121,11 +131,14 @@ Michal Nowakowski <michal-n> - nowakowskittfinstr.c
 Michinari Nukazawa <MichinariNukazawa>
 midzer <midzer@gmail.com>
 MURAOKA Taro
+Nayana Hettiarachchi <nayana@corp-gems.com> <devzer01>
+Neil Parker
 Nicolas Kaiser
 Nicolas Spalinger
+Nigel Tao <nigeltao@golang.org> <nigeltao>
 Ondřej Hošek
 Pander Musubi <Pander>
-Parag Nemade
+Parag A Nemade <pnemade@fedoraproject.org> <pnemade>
 Petr Gajdos
 Phil Krylov
 Phil Lindsay
@@ -136,6 +149,7 @@ R.L. Horn
 R.P.C. Rodgers - standard man macros
 Rafael Ferran i Peralta
 Rajeesh K Nambiar
+Ralf Stubner
 Raph Levien <raphlinus>
 Reuben Thomas <rrthomas>
 Richard Hughes
@@ -184,6 +198,7 @@ George Williams - en_GB
 Walter Echarri - es - Spanish
 Jean-René Bastien - fr - French
 Pierre Hanser - fr - French
+Thaega <Thaega> - fr - French
 Yannis Haralambous - fr - French
 Claudio Beccari - it - Italian
 KANOU Hiroki - ja - Japanese
