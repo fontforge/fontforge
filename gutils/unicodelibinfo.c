@@ -33,10 +33,6 @@
 
 #include "unicodelibinfo.h"
 #include <ustring.h>
-#include <ffglib.h>
-#include <glib/gprintf.h>
-#include "xvasprintf.h"
-
 
 #ifndef _NO_LIBUNINAMESLIST
 #include <uninameslist.h>
@@ -54,9 +50,20 @@ uninm_names_db names_db; /* Unicode character names and annotations database */
 uninm_blocks_db blocks_db;
 #endif
 
-static char *chosung[] = { "G", "GG", "N", "D", "DD", "L", "M", "B", "BB", "S", "SS", "", "J", "JJ", "C", "K", "T", "P", "H", NULL };
-static char *jungsung[] = { "A", "AE", "YA", "YAE", "EO", "E", "YEO", "YE", "O", "WA", "WAE", "OE", "YO", "U", "WEO", "WE", "WI", "YU", "EU", "YI", "I", NULL };
-static char *jongsung[] = { "", "G", "GG", "GS", "N", "NJ", "NH", "D", "L", "LG", "LM", "LB", "LS", "LT", "LP", "LH", "M", "B", "BS", "S", "SS", "NG", "J", "C", "K", "T", "P", "H", NULL };
+#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
+#else
+static const char *chosung[] = { "G", "GG", "N", "D", "DD", "L", "M", "B",	\
+	"BB", "S", "SS", "", "J", "JJ", "C", "K", "T", "P", "H", NULL };
+static const char *jungsung[] = { "A", "AE", "YA", "YAE", "EO", "E", "YEO",	\
+	"YE", "O", "WA", "WAE", "OE", "YO", "U", "WEO", "WE", "WI", "YU",	\
+	"EU", "YI", "I", NULL };
+static const char *jongsung[] = { "", "G", "GG", "GS", "N", "NJ", "NH", "D",	\
+	"L", "LG", "LM", "LB", "LS", "LT", "LP", "LH", "M", "B", "BS", "S",	\
+	"SS", "NG", "J", "C", "K", "T", "P", "H", NULL };
+static const char chosungl[] = { 1,2,1,1,2,1,1,1,2,1,2,0,1,2,1,1,1,1,1,0 };
+static const char jungsungl[] = { 1,2,2,2,2,1,3,2,1,2,3,2,2,1,3,2,2,2,2,2,1,0 };
+static const char jongsungl[] = { 0,1,2,2,1,2,2,1,1,2,2,2,2,2,2,2,1,1,2,1,2,2,1,1,1,1,1,1,0 };
+#endif
 
 void inituninameannot(void) {
 /* Initialize unicode name-annotation library access for FontForge */
@@ -133,6 +140,7 @@ char *unicode_name(int32 unienc) {
      * revisit later.
      */
     if( ( unienc >= 0xAC00 && unienc <= 0xD7A3 ) && ( name_data == NULL ) ) {
+	/* replaced code below to reduce library dependencies
 	if( ( ( unienc - 0xAC00 ) % 28 ) == 0 ) {
 	    name_data = xasprintf( "Hangul Syllable %s-%s",
 		    chosung [ (unienc - 0xAC00) / (21*28) ],
@@ -143,6 +151,25 @@ char *unicode_name(int32 unienc) {
 		    jungsung[ ((unienc - 0xAC00) / 28 ) % 21 ],
 		    jongsung[ (unienc - 0xAC00) % 28 ] );
 	}
+	*/
+	const char *h = "Hangul Syllable -----------";
+	char buffer[30], i1, i2, i3, l1, l2, l3;
+	memcpy(buffer,h,(sizeof(h)));
+	i1 = (unienc - 0xAC00) / (21*28);
+	l1 = (char)(chosungl[i1]);
+	memcpy(&buffer[16],(char *)(&chosung[i1]),l1*sizeof(char));
+	i2 = ((unienc - 0xAC00) / 28 ) % 21;
+	l2 = (char)(jungsungl[i2]);
+	memcpy(&buffer[17+l1],(char *)(&jungsung[i2]),l2*sizeof(char));
+	if( ( ( unienc - 0xAC00 ) % 28 ) == 0 ) {
+	    buffer[17+l1+l2] = 0;
+	} else {
+	    i3 = (unienc - 0xAC00) % 28;
+	    l3 = (char)(jongsungl[i3]);
+	    memcpy(&buffer[18+l1+l2],(char *)(&jongsung[i3]),l3*sizeof(char));
+	    buffer[18+l1+l2+l3] = 0;
+	}
+	name_data = copy( buffer );
     }
 
     return( name_data );
@@ -391,6 +418,64 @@ char *unicode_block_name(int32 block_i) {
     return( name_data );
 #endif
 }
+
+/* libuninameslist 0.5 and higher functions, otherwise return NULL or -1. */
+#if !(_NO_LIBUNINAMESLIST) && (_LIBUNINAMESLIST_FUN >= 5)
+/* Get count for libuninameslist names2 table list-size available to read */
+int32 unicode_names2cnt(void) {
+    return( (int32)(uniNamesList_names2cnt()) );
+}
+
+/* Return "Nth" internal_table_location for this unicode value. None==-1. */
+int32 unicode_names2getUtabLoc(int32 unienc) {
+    return( (int32)(uniNamesList_names2getU((unsigned long)(unienc))) );
+}
+
+/* Return unicode value for "Nth" internal table location or -1 if error. */
+int32 unicode_names2valFrmTab(int32 n) {
+    return( (int32)(uniNamesList_names2val(n)) );
+}
+
+/* Return unicode name2 for "Nth" internal table location. NULL if error. */
+/* NOTE: free() the string before exiting fontforge to avoid memory leak. */
+char *unicode_name2FrmTab(int32 n) {
+    int l;
+    char *p;
+    if ( n<0 || n>=uniNamesList_names2cnt() )
+	return( NULL );
+    l=uniNamesList_names2lnC((int)(n))*sizeof(char);
+    if ( (p=(char *)(calloc(1,l+sizeof(char))))==NULL )
+	return( NULL );
+    memcpy(p,uniNamesList_names2anC((int)(n)),l);
+    return( p );
+}
+
+/* Return unicode name2 for unicode "unienc" if exists, else return NULL. */
+/* NOTE: free() the string before exiting fontforge to avoid memory leak. */
+char *unicode_name2(int32 unienc) {
+    return( unicode_name2FrmTab(unicode_names2getUtabLoc(unienc)) );
+}
+#else
+/* libuninameslist ver0.4 or older, or libunicodenames return NULL or -1. */
+/* for these older libraries, we would need to search entire list to find */
+/* about 28 or less possible names2 codes. This isn't an effective use of */
+/* computer use and it's better for user to use a more recent names list. */
+int32 unicode_names2cnt(void) {
+    return( -1 );
+}
+int32 unicode_names2getUtabLoc(int32 unienc) {
+    return( -1 );
+}
+int32 unicode_names2valFrmTab(int32 n) {
+    return( -1 );
+}
+char *unicode_name2FrmTab(int32 n) {
+    return( NULL );
+}
+char *unicode_name2(int32 unienc) {
+    return( NULL );
+}
+#endif
 
 char *unicode_library_version(void) {
 /* Return the unicode version for this library. Sometimes users still use */

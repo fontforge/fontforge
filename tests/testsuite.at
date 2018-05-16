@@ -105,6 +105,7 @@ check_pedit([Test generation of TrueType instructions],[test127.pe],[Ambrosia.sf
 check_pedit([Test StrSplit overrun],[test128.pe])
 check_pedit([Ligatures and Fractions Table Lookups],[test129.pe])
 check_pedit([TTC loading],[test130.pe],[NotoSans-Regular.ttc])
+check_pedit([unicodelibinfo Table Lookups],[test131.pe])
 
 AT_BANNER([FontForge Python Scripting Tests])
 

@@ -1,0 +1,49 @@
+# test some libuninameslist functions (if the library is included).
+
+e0 = UnicodeBlockCountFromLib()
+if ( e0 < 0 )
+  Print("Nothing to test - exit.")
+  exit(0)
+endif
+
+
+
+# test Names2 functions (if we have libuninameslist version>=0.5)
+e0 = UnicodeNames2GetNxt(0)
+#if ( e0 < 0 )
+#  Print("Nothing to test - exit.")
+#  exit(0)
+#endif
+
+ver = UnicodeNamesListVersion()
+Print("Libuninameslist version is :",ver)
+
+Print("Test Names2 functions. Must be libuninameslist 0.5 or newer.")
+cnt = UnicodeNames2GetCnt()
+Print("Libuninameslist internal table has ",cnt," Names2.")
+
+# none of these are -1 if library loaded
+n0 = UnicodeNames2GetNxt(0)
+n1 = UnicodeNames2GetNxt(1)
+n2 = UnicodeNames2GetNxt(2)
+Print("Internal table has ",n0,", ",n1,", ",n2," as the first 3 unicode values.")
+
+# We know these Names2 exist, but these 'tX' values may change if more errors found
+t0 = UnicodeNames2NxtUni(0x01A2)
+t1 = UnicodeNames2NxtUni(0xFEFF)
+t2 = UnicodeNames2NxtUni(118981)
+Print("Internal table has [",t0,"]=0x01A2, [",t1,"]=0xFEFF, [",t2,"]=118981 as expected Names2 values.")
+if ( t0 < 0 || t1 < 0 || t2 < 0 )
+  Error("These Names2 exist, so we expected these to return valid unicode values.")
+endif
+
+s0 = UnicodeNames2FrmTab(3)
+Print("unicode from table[3]=",s0)
+
+s1 = UnicodeNames2FrmTab(65)
+s2 = UnicodeNames2FrmTab(0x709)
+Print("There should be no Names2 for character 65, the value returned is",s1)
+Print("There should be a Names2 for character 0x709, the value returned is",s2)
+
+Print("All Tests done and valid.")
+

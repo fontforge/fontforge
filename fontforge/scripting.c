@@ -1168,6 +1168,9 @@ static void bNameFromUnicode(Context *c) {
     c->return_val.u.sval = copy(StdGlyphName(buffer,c->a.vals[1].u.ival,uniinterp,for_new_glyphs));
 }
 
+
+/* --start of libuninameslist functions------------------------ */
+
 static void bUnicodeBlockCountFromLib(Context *c) {
 /* If the library is available, then return the number of name blocks */
 
@@ -1253,6 +1256,84 @@ static void bUnicodeNamesListVersion(Context *c) {
     c->return_val.type = v_str;
     c->return_val.u.sval = temp;
 }
+
+/* ----start of libuninameslist Names2 functions--------------- */
+
+static void bUnicodeNames2GetCnt(Context *c) {
+/* If the library is available, then Get the Names2 table Count */
+    c->return_val.type=v_int;
+    c->return_val.u.ival=unicode_names2cnt();
+}
+
+static void bUnicodeNames2GetNxt(Context *c) {
+/* If the library is available, use unicode val to find Names2, */
+/* if exists, return location in table, if not found return -1. */
+    const char *pt;
+    long ch;
+
+    c->return_val.type = v_int;
+    if ( c->a.vals[1].type==v_str ) {
+	pt = c->a.vals[1].u.sval;
+	ch = utf8_ildb(&pt);
+	c->return_val.u.ival = unicode_names2getUtabLoc(ch);
+    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
+	c->return_val.u.ival = unicode_names2getUtabLoc(c->a.vals[1].u.ival);
+    else
+	c->error = ce_badargtype;
+}
+
+static void bUnicodeNames2NxtUni(Context *c) {
+/* If the library is available, return unicode val for table[n] */
+    const char *pt;
+    long ch;
+
+    c->return_val.type = v_int;
+    if ( c->a.vals[1].type==v_str ) {
+	pt = c->a.vals[1].u.sval;
+	ch = utf8_ildb(&pt);
+	c->return_val.u.ival = unicode_names2valFrmTab(ch);
+    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
+	c->return_val.u.ival = unicode_names2valFrmTab(c->a.vals[1].u.ival);
+    else
+	c->error = ce_badargtype;
+}
+
+static void bUnicodeNames2FrmTab(Context *c) {
+/* If the library is available, return table[n]->Names2 string. */
+    const char *pt;
+    long ch;
+
+    c->return_val.type = v_str;
+    if ( c->a.vals[1].type==v_str ) {
+	pt = c->a.vals[1].u.sval;
+	ch = utf8_ildb(&pt);
+	c->return_val.u.sval = unicode_name2FrmTab(ch);
+    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
+	c->return_val.u.sval = unicode_name2FrmTab(c->a.vals[1].u.ival);
+    else
+	c->error = ce_badargtype;
+}
+
+static void bUnicodeNames2(Context *c) {
+/* If the library is available, use unicode val to find Names2, */
+/* if exists, return Names2, and if not exist then return NULL. */
+    const char *pt;
+    long ch;
+
+    c->return_val.type = v_str;
+    if ( c->a.vals[1].type==v_str ) {
+	pt = c->a.vals[1].u.sval;
+	ch = utf8_ildb(&pt);
+	c->return_val.u.sval = unicode_name2(ch);
+    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
+	c->return_val.u.sval = unicode_name2(c->a.vals[1].u.ival);
+    else
+	c->error = ce_badargtype;
+}
+
+/* ----end of libuninameslist Names2 functions----------------- */
+/* --end of libuninameslist functions-------------------------- */
+
 
 static void bChr(Context *c) {
     char buf[2];
@@ -8702,6 +8783,11 @@ static struct builtins {
     { "UnicodeNameFromLib", bUnicodeNameFromLib, 1,2,0 },
     { "UnicodeAnnotationFromLib", bUnicodeAnnotationFromLib, 1,2,0 },
     { "UnicodeNamesListVersion", bUnicodeNamesListVersion, 1,1,0 },
+    { "UnicodeNames2GetCnt", bUnicodeNames2GetCnt, 1,1,0 },
+    { "UnicodeNames2GetNxt", bUnicodeNames2GetNxt, 1,2,0 },
+    { "UnicodeNames2NxtUni", bUnicodeNames2NxtUni, 1,2,0 },
+    { "UnicodeNames2FrmTab", bUnicodeNames2FrmTab, 1,2,0 },
+    { "UnicodeNames2", bUnicodeNames2, 1,2,0 },
     { "Chr", bChr, 1,0,0 },
     { "Ord", bOrd, 1,0,0 },
     { "Real", bReal, 1,2,0 },

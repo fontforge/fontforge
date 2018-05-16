@@ -107,6 +107,7 @@ if test x"${i_do_have_libuninameslist}" = xyes -a x"${LIBUNINAMESLIST_LIBS}" = x
       [LIBUNINAMESLIST_LIBS="${LIBUNINAMESLIST_LIBS} ${found_lib}"
        AC_CHECK_FUNC([uniNamesList_NamesListVersion],[have_libuninameslist=3])
        AC_CHECK_FUNC([uniNamesList_blockCount],[have_libuninameslist=4])
+       AC_CHECK_FUNC([uniNamesList_names2anU],[have_libuninameslist=5])
        AC_DEFINE_UNQUOTED([_LIBUNINAMESLIST_FUN],[$have_libuninameslist],[LibUninNamesList library >= 0.3])
       ],[i_do_have_libuninameslist=no])
 fi
