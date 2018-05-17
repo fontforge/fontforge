@@ -859,11 +859,11 @@ static PyObject *PyFF_UnicodeNamesListVersion(PyObject *UNUSED(self), PyObject *
 /* Names2 lookup commands to get info from attached libuninameslist >= v0.5. */
 /* Cnt returns lookup table-size, Nxt returns next Unicode value from array, */
 /* Nxt returns 'n' for table array[0..n..(Cnt-1)] pointer. Errors return -1. */
-static PyObject *PyFF_UnicodeNames2GetCnt(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
+static PyObject *PyFF_UnicodeNames2GetCntFromLib(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
     return( Py_BuildValue("i", unicode_names2cnt()) );
 }
 
-static PyObject *PyFF_UnicodeNames2GetNxt(PyObject *UNUSED(self), PyObject *args) {
+static PyObject *PyFF_UnicodeNames2GetNxtFromLib(PyObject *UNUSED(self), PyObject *args) {
     long val;
 
     if ( !PyArg_ParseTuple(args,"|i",&val) )
@@ -871,7 +871,7 @@ static PyObject *PyFF_UnicodeNames2GetNxt(PyObject *UNUSED(self), PyObject *args
     return( Py_BuildValue("i", unicode_names2getUtabLoc(val)) );
 }
 
-static PyObject *PyFF_UnicodeNames2NxtUni(PyObject *UNUSED(self), PyObject *args) {
+static PyObject *PyFF_UnicodeNames2NxtUniFromLib(PyObject *UNUSED(self), PyObject *args) {
     long val;
 
     if ( !PyArg_ParseTuple(args,"|i",&val) )
@@ -879,7 +879,7 @@ static PyObject *PyFF_UnicodeNames2NxtUni(PyObject *UNUSED(self), PyObject *args
     return( Py_BuildValue("i", unicode_names2getUtabLoc(val)) );
 }
 
-static PyObject *PyFF_UnicodeNames2FrmTab(PyObject *UNUSED(self), PyObject *args) {
+static PyObject *PyFF_UnicodeNames2FrmTabFromLib(PyObject *UNUSED(self), PyObject *args) {
     long val;
     char *temp;
 
@@ -892,7 +892,7 @@ static PyObject *PyFF_UnicodeNames2FrmTab(PyObject *UNUSED(self), PyObject *args
     return( ret );
 }
 
-static PyObject *PyFF_UnicodeNames2(PyObject *UNUSED(self), PyObject *args) {
+static PyObject *PyFF_UnicodeNames2FromLib(PyObject *UNUSED(self), PyObject *args) {
     long val;
     char *temp;
 
@@ -904,7 +904,6 @@ static PyObject *PyFF_UnicodeNames2(PyObject *UNUSED(self), PyObject *args) {
     PyObject *ret=Py_BuildValue("s",temp); free(temp);
     return( ret );
 }
-
 
 
 /* Ligature & Fraction information based on current Unicode (builtin) chart. */
@@ -18024,10 +18023,10 @@ PyMethodDef module_fontforge_methods[] = {
     { "UnicodeBlockEndFromLib", PyFF_UnicodeBlockEndFromLib, METH_VARARGS, "Return the www.unicode.org block end, for example block[1]={128..255} -> 255" },
     { "UnicodeBlockNameFromLib", PyFF_UnicodeBlockNameFromLib, METH_VARARGS, "Return the www.unicode.org block name, for example block[2]={256..383} -> Latin Extended-A" },
     { "UnicodeNamesListVersion", PyFF_UnicodeNamesListVersion, METH_NOARGS, "Return the www.unicode.org NamesList version for this library" },
-    { "UnicodeNames2GetCnt", PyFF_UnicodeNames2GetCnt, METH_NOARGS, "Return the www.unicode.org NamesList total count of Names2 corrections for this library" },
-    { "UnicodeNames2GetNxt", PyFF_UnicodeNames2GetNxt, METH_VARARGS, "Return the table location of the next www.unicode.org Names2 for this library" },
-    { "UnicodeNames2FrmTab", PyFF_UnicodeNames2FrmTab, METH_VARARGS, "Return the www.unicode.org NamesList Names2 from internal table[0<=N<UnicodeNames2GetCnt()] for this library" },
-    { "UnicodeNames2", PyFF_UnicodeNames2, METH_VARARGS, "Return the www.unicode.org NamesList Names2 for this Unicode value if it exists for this library" },
+    { "UnicodeNames2GetCntFromLib", PyFF_UnicodeNames2GetCntFromLib, METH_NOARGS, "Return the www.unicode.org NamesList total count of Names2 corrections for this library" },
+    { "UnicodeNames2GetNxtFromLib", PyFF_UnicodeNames2GetNxtFromLib, METH_VARARGS, "Return the table location of the next www.unicode.org Names2 for this library" },
+    { "UnicodeNames2FrmTabFromLib", PyFF_UnicodeNames2FrmTabFromLib, METH_VARARGS, "Return the www.unicode.org NamesList Names2 from internal table[0<=N<UnicodeNames2GetCnt()] for this library" },
+    { "UnicodeNames2FromLib", PyFF_UnicodeNames2FromLib, METH_VARARGS, "Return the www.unicode.org NamesList Names2 for this Unicode value if it exists for this library" },
     /* --end of libuninameslist functions-------------------------- */
     { "IsFraction", PyFF_isfraction, METH_VARARGS, "Compare value with internal Vulgar_Fraction and Other_Fraction table. Return true/false" },
     { "IsLigature", PyFF_isligature, METH_VARARGS, "Compare value with internal Ligature table. Return true/false" },

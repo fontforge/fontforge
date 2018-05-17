@@ -1259,13 +1259,13 @@ static void bUnicodeNamesListVersion(Context *c) {
 
 /* ----start of libuninameslist Names2 functions--------------- */
 
-static void bUnicodeNames2GetCnt(Context *c) {
+static void bUnicodeNames2GetCntFromLib(Context *c) {
 /* If the library is available, then Get the Names2 table Count */
     c->return_val.type=v_int;
     c->return_val.u.ival=unicode_names2cnt();
 }
 
-static void bUnicodeNames2GetNxt(Context *c) {
+static void bUnicodeNames2GetNxtFromLib(Context *c) {
 /* If the library is available, use unicode val to find Names2, */
 /* if exists, return location in table, if not found return -1. */
     const char *pt;
@@ -1282,7 +1282,7 @@ static void bUnicodeNames2GetNxt(Context *c) {
 	c->error = ce_badargtype;
 }
 
-static void bUnicodeNames2NxtUni(Context *c) {
+static void bUnicodeNames2NxtUniFromLib(Context *c) {
 /* If the library is available, return unicode val for table[n] */
     const char *pt;
     long ch;
@@ -1298,7 +1298,7 @@ static void bUnicodeNames2NxtUni(Context *c) {
 	c->error = ce_badargtype;
 }
 
-static void bUnicodeNames2FrmTab(Context *c) {
+static void bUnicodeNames2FrmTabFromLib(Context *c) {
 /* If the library is available, return table[n]->Names2 string. */
     const char *pt;
     long ch;
@@ -1314,7 +1314,7 @@ static void bUnicodeNames2FrmTab(Context *c) {
 	c->error = ce_badargtype;
 }
 
-static void bUnicodeNames2(Context *c) {
+static void bUnicodeNames2FromLib(Context *c) {
 /* If the library is available, use unicode val to find Names2, */
 /* if exists, return Names2, and if not exist then return NULL. */
     const char *pt;
@@ -8776,6 +8776,7 @@ static struct builtins {
     { "SpiroVersion", bSpiroVersion, 1,1,0 },
     { "UnicodeFromName", bUnicodeFromName, 1,2,v_str },
     { "NameFromUnicode", bNameFromUnicode, 1,0,0 },
+    /* --start of libuninameslist functions------------------------ */
     { "UnicodeBlockCountFromLib", bUnicodeBlockCountFromLib, 1,1,0 },
     { "UnicodeBlockEndFromLib", bUnicodeBlockEndFromLib, 1,2,0 },
     { "UnicodeBlockNameFromLib", bUnicodeBlockNameFromLib, 1,2,0 },
@@ -8783,11 +8784,14 @@ static struct builtins {
     { "UnicodeNameFromLib", bUnicodeNameFromLib, 1,2,0 },
     { "UnicodeAnnotationFromLib", bUnicodeAnnotationFromLib, 1,2,0 },
     { "UnicodeNamesListVersion", bUnicodeNamesListVersion, 1,1,0 },
-    { "UnicodeNames2GetCnt", bUnicodeNames2GetCnt, 1,1,0 },
-    { "UnicodeNames2GetNxt", bUnicodeNames2GetNxt, 1,2,0 },
-    { "UnicodeNames2NxtUni", bUnicodeNames2NxtUni, 1,2,0 },
-    { "UnicodeNames2FrmTab", bUnicodeNames2FrmTab, 1,2,0 },
-    { "UnicodeNames2", bUnicodeNames2, 1,2,0 },
+    /* ----start of libuninameslist Names2 functions--------------- */
+    { "UnicodeNames2GetCntFromLib", bUnicodeNames2GetCntFromLib, 1,1,0 },
+    { "UnicodeNames2GetNxtFromLib", bUnicodeNames2GetNxtFromLib, 1,2,0 },
+    { "UnicodeNames2NxtUniFromLib", bUnicodeNames2NxtUniFromLib, 1,2,0 },
+    { "UnicodeNames2FrmTabFromLib", bUnicodeNames2FrmTabFromLib, 1,2,0 },
+    { "UnicodeNames2FromLib", bUnicodeNames2FromLib, 1,2,0 },
+    /* ----end of libuninameslist Names2 functions----------------- */
+    /* --end of libuninameslist functions-------------------------- */
     { "Chr", bChr, 1,0,0 },
     { "Ord", bOrd, 1,0,0 },
     { "Real", bReal, 1,2,0 },

@@ -426,14 +426,14 @@ int32 unicode_names2cnt(void) {
     return( (int32)(uniNamesList_names2cnt()) );
 }
 
-/* Return "Nth" internal_table_location for this unicode value. None==-1. */
-int32 unicode_names2getUtabLoc(int32 unienc) {
-    return( (int32)(uniNamesList_names2getU((unsigned long)(unienc))) );
-}
-
 /* Return unicode value for "Nth" internal table location or -1 if error. */
 int32 unicode_names2valFrmTab(int32 n) {
     return( (int32)(uniNamesList_names2val(n)) );
+}
+
+/* Return "Nth" internal_table_location for this unicode value. None==-1. */
+int32 unicode_names2getUtabLoc(int32 unienc) {
+    return( (int32)(uniNamesList_names2getU((unsigned long)(unienc))) );
 }
 
 /* Return unicode name2 for "Nth" internal table location. NULL if error. */
@@ -463,10 +463,10 @@ char *unicode_name2(int32 unienc) {
 int32 unicode_names2cnt(void) {
     return( -1 );
 }
-int32 unicode_names2getUtabLoc(int32 unienc) {
+int32 unicode_names2valFrmTab(int32 n) {
     return( -1 );
 }
-int32 unicode_names2valFrmTab(int32 n) {
+int32 unicode_names2getUtabLoc(int32 unienc) {
     return( -1 );
 }
 char *unicode_name2FrmTab(int32 n) {
