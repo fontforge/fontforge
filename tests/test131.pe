@@ -3,12 +3,12 @@
 cnt = UnicodeBlockCountFromLib()
 if ( cnt < 1 )
   Print("No NamesList library - Nothing to test.")
-  Exit(0)
+  Quit()
 endif
 
 if ( cnt < 294 )
   Print("Pre-20170701 or older library - Nothing to test beyond here.")
-  Exit(0)
+  Quit()
 endif
 ver = UnicodeNamesListVersion()
 Print("Libuninameslist version is :",ver)
@@ -17,7 +17,7 @@ Print("Libuninameslist version is :",ver)
 # test Names2 functions (if we have libuninameslist version>=10.9)
 if ( cnt < 305 )
   Print("Pre-20180408 or older library - Nothing to test beyond here.")
-  Exit(0)
+  Quit()
 endif
 
 cnt = UnicodeNames2GetCntFromLib()
