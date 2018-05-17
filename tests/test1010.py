@@ -2,6 +2,12 @@
 
 import sys, fontforge
 
+cnt = UnicodeBlockCountFromLib()
+if ( cnt < 0 )
+  Print("No NamesList library - Nothing to test.")
+  quit()
+
+
 ver = fontforge.UnicodeNamesListVersion()
 Print("Libuninameslist version is :",ver)
 

@@ -1,5 +1,11 @@
 # test some libuninameslist functions (if the library is included).
 
+cnt = UnicodeBlockCountFromLib()
+if ( cnt < 0 )
+  Print("No NamesList library - Nothing to test.")
+  Exit(0)
+endif
+
 ver = UnicodeNamesListVersion()
 Print("Libuninameslist version is :",ver)
 
