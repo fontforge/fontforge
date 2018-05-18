@@ -332,7 +332,7 @@ static void ReadChunk(FILE *file,struct Outlines *outline,int chunk) {
     if ( outline->version>=7 )
 	flag = r_getint(file);
     else if ( outline->version==6 )
-	flag = (1<<7);
+	flag |= (1<<7);
     if ( (~flag)&0x80000000 )
 	fprintf( stderr, "Bad flag at beginning of chunk %d\n", chunk );
 
