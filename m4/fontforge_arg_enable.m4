@@ -31,15 +31,38 @@ AC_DEFUN([FONTFORGE_ARG_DISABLE_PYTHON_SCRIPTING],
 [
 AC_ARG_ENABLE([python-scripting],
         [AS_HELP_STRING([--disable-python-scripting],[disable Python scripting])],
-        [i_do_have_python_scripting="${enableval}"],
-        [i_do_have_python_scripting=yes])
+        [i_do_have_python_scripting="${enableval}"; enable_python_scripting="${enableval}"],
+        [i_do_have_python_scripting=yes; enable_python_scripting=check])
 if test x"${i_do_have_python_scripting}" = xyes; then
-   AM_PATH_PYTHON([2.7])
-   PKG_CHECK_MODULES([PYTHON],[python-"${PYTHON_VERSION}"],,[i_do_have_python_scripting=no; force_off_python_extension=yes])
+   AM_PATH_PYTHON([2.7],,[:])
+   PKG_CHECK_MODULES([PYTHON],[python-"${PYTHON_VERSION}"],
+      [PKG_CHECK_MODULES([PYTHONDEV],[python-"${PYTHON_VERSION}"],,[i_do_have_python_scripting=no; force_off_python_extension=yes])],
+      [i_do_have_python_scripting=no; force_off_python_extension=yes])
 fi
-if test x"${i_do_have_python_scripting}" != xyes; then
-   AC_DEFINE([_NO_PYTHON],1,[Define if not using Python.])
+if test x"${i_do_have_python_scripting}" = xyes -a x"${PYTHON_CFLAGS}" = x; then
+   AC_CHECK_HEADER([python.h],[],[i_do_have_python_scripting=no])
 fi
+# force a halt if user specified yes, but there is no developer package found
+AC_MSG_CHECKING([Build with Python support?])
+if test x"${enable_python_scripting}" = xyes; then
+   if test x"${i_do_have_python_scripting}" = xyes; then
+      AC_MSG_RESULT([yes])
+   else
+      AC_MSG_FAILURE([ERROR: Please install the PYTHON Developer Package],[1])
+   fi
+else
+   if test x"${i_do_have_python_scripting}" = xno || test x"${enable_python_scripting}" = xno; then
+      AC_MSG_RESULT([no])
+      i_do_have_python_scripting=no
+      AC_DEFINE([_NO_PYTHON],1,[Define if not using Python.])
+      PYTHON_CFLAGS=""
+      PYTHON_LIBS=""
+   else
+      AC_MSG_RESULT([yes])
+   fi
+fi
+AC_SUBST([PYTHON_CFLAGS])
+AC_SUBST([PYTHON_LIBS])
 AM_CONDITIONAL([PYTHON_SCRIPTING],[test x"${i_do_have_python_scripting}" = xyes])
 ])
 
