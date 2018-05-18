@@ -78,3 +78,5 @@ ttf2eps_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 	"-I$(top_builddir)/gutils" "-I$(top_srcdir)/gutils" $(MY_CFLAGS)
 ttf2eps_LDADD = $(top_builddir)/Unicode/libgunicode.la			\
 	$(top_builddir)/gutils/libgutils.la $(MY_LIBS)
+
+-include $(top_srcdir)/git.mk

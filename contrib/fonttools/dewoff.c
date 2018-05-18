@@ -139,7 +139,7 @@ static int dewoff(char *filename) {
     int here, next, tab_start;
     int head_pos = -1;
 
-    woff = fopen( filename,"rbs");
+    woff = fopen( filename,"rb");
     if ( woff==NULL )
 return( we_cantopen );
 

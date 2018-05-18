@@ -311,7 +311,8 @@ exit(0);
 	length = getlong(ttf);
 	cs = filecheck(util,offset,length);
  printf( "%c%c%c%c checksum=%08x actual=%08x diff=%x offset=%d len=%d\n",
-	     (int)((tag>>24)&0xff), (int)((tag>>16)&0xff), (int)((tag>>8)&0xff), (int)(tag&0xff),
+	     (char)((tag>>24)&0xff), (char)((tag>>16)&0xff),
+	     (char)((tag>>8)&0xff), (char)(tag&0xff),
 	     (unsigned int)(checksum), (unsigned int)(cs), (unsigned int)((checksum^cs)),
 	     offset, length );
 	switch ( tag ) {
@@ -2214,10 +2215,8 @@ static void showlangsys(FILE *ttf,int script_start, uint16 ls_off, uint32 ls_nam
 	printf( "\t Language System table for default language\n" );
     else
 	printf( "\t Language System table for '%c%c%c%c'\n",
-		(int)((ls_name>>24)&0xff),
-		(int)((ls_name>>16)&0xff),
-		(int)((ls_name>>8)&0xff),
-		(int)(ls_name&0xff) );
+		(char)((ls_name>>24)&0xff), (char)((ls_name>>16)&0xff),
+		(char)((ls_name>>8)&0xff), (char)(ls_name&0xff) );
     fseek(ttf,script_start+ls_off,SEEK_SET);
     printf( "\t  LookupOrder=%d\n", getushort(ttf));
     printf( "\t  Required Feature Index=%d\n", (short) getushort(ttf));
@@ -2243,20 +2242,20 @@ static void showscriptlist(FILE *ttf,int script_start ) {
 	script_table_names[i] = getlong(ttf);
 	script_table_offsets[i] = getushort(ttf);
 	printf( "\t Script[%d] '%c%c%c%c' Offset=%d\n", i,
-		(int)((script_table_names[i]>>24)&0xff),
-		(int)((script_table_names[i]>>16)&0xff),
-		(int)((script_table_names[i]>>8)&0xff),
-		(int)(script_table_names[i]&0xff),
+		(char)((script_table_names[i]>>24)&0xff),
+		(char)((script_table_names[i]>>16)&0xff),
+		(char)((script_table_names[i]>>8)&0xff),
+		(char)(script_table_names[i]&0xff),
 		script_table_offsets[i] );
     }
     printf( "\t--\n" );
     for ( i=0; i<cnt; ++i ) {
 	fseek(ttf,script_start+script_table_offsets[i],SEEK_SET);
 	printf( "\t Script table for '%c%c%c%c'\n",
-		(int)((script_table_names[i]>>24)&0xff),
-		(int)((script_table_names[i]>>16)&0xff),
-		(int)((script_table_names[i]>>8)&0xff),
-		(int)(script_table_names[i]&0xff) );
+		(char)((script_table_names[i]>>24)&0xff),
+		(char)((script_table_names[i]>>16)&0xff),
+		(char)((script_table_names[i]>>8)&0xff),
+		(char)(script_table_names[i]&0xff) );
 	printf( "\t  default language offset=%d\n", dlo=getushort(ttf));
 	printf( "\t  language systems count=%d\n", ls_cnt = getushort(ttf));
 	ls_names = malloc(ls_cnt*sizeof(uint32));
@@ -2265,10 +2264,10 @@ static void showscriptlist(FILE *ttf,int script_start ) {
 	    ls_names[j] = getlong(ttf);
 	    ls_offsets[j] = getushort(ttf);
 	    printf( "\t   Language System '%c%c%c%c' Offset=%d\n",
-		    (int)((ls_names[j]>>24)&0xff),
-		    (int)((ls_names[j]>>16)&0xff),
-		    (int)((ls_names[j]>>8)&0xff),
-		    (int)(ls_names[j]&0xff),
+		    (char)((ls_names[j]>>24)&0xff),
+		    (char)((ls_names[j]>>16)&0xff),
+		    (char)((ls_names[j]>>8)&0xff),
+		    (char)(ls_names[j]&0xff),
 		    ls_offsets[j] );
 	}
 	if ( dlo!=0 )
@@ -2296,20 +2295,20 @@ static void showfeaturelist(FILE *ttf,int feature_start ) {
 	feature_record_names[i] = getlong(ttf);
 	feature_record_offsets[i] = getushort(ttf);
 	printf( "\t Feature[%d] '%c%c%c%c' Offset=%d\n", i,
-		(int)((feature_record_names[i]>>24)&0xff),
-		(int)((feature_record_names[i]>>16)&0xff),
-		(int)((feature_record_names[i]>>8)&0xff),
-		(int)(feature_record_names[i]&0xff),
+		(char)((feature_record_names[i]>>24)&0xff),
+		(char)((feature_record_names[i]>>16)&0xff),
+		(char)((feature_record_names[i]>>8)&0xff),
+		(char)(feature_record_names[i]&0xff),
 		feature_record_offsets[i] );
     }
     printf( "\t--\n" );
     for ( i=0; i<cnt; ++i ) {
 	fseek(ttf,feature_start+feature_record_offsets[i],SEEK_SET);
 	printf( "\t Feature Table[%d] '%c%c%c%c'\n", i,
-		(int)((feature_record_names[i]>>24)&0xff),
-		(int)((feature_record_names[i]>>16)&0xff),
-		(int)((feature_record_names[i]>>8)&0xff),
-		(int)(feature_record_names[i]&0xff) );
+		(char)((feature_record_names[i]>>24)&0xff),
+		(char)((feature_record_names[i]>>16)&0xff),
+		(char)((feature_record_names[i]>>8)&0xff),
+		(char)(feature_record_names[i]&0xff) );
 	printf( "\t  Feature Parameters Offset=%d\n", getushort(ttf));
 	printf( "\t  Lookup Count = %d\n", lu_cnt = getushort(ttf));
 	if ( i+1<cnt && feature_record_offsets[i]<feature_record_offsets[i+1] &&
@@ -3034,8 +3033,8 @@ static void readttffontdescription(FILE *ttf, FILE *util, struct ttfinfo *info) 
 	fseek(ttf,-4,SEEK_CUR);
 	lval = getlong(ttf);
 	printf("\t  %c%c%c%c %s %08lx ", 
-		(int)((tag>>24)&0xff), (int)((tag>>16)&0xff),
-		(int)((tag>>8)&0xff), (int)(tag&0xff),
+		(char)((tag>>24)&0xff), (char)((tag>>16)&0xff),
+		(char)((tag>>8)&0xff), (char)(tag&0xff),
 		tag==CHR('w','g','h','t')? "Weight" :
 		tag==CHR('w','d','t','h')? "Width" :
 		tag==CHR('s','l','n','t')? "Slant" :
@@ -4690,7 +4689,8 @@ static void readttfapplefvar(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	printf( "\t  Axis %d\n", i );
 	tag = getlong(ttf);
 	printf( "\t    Axis Tag '%c%c%c%c'\n",
-		(int)((tag>>24)&0xff), (int)((tag>>16)&0xff), (int)((tag>>8)&0xff), (int)(tag&0xff) );
+		(char)((tag>>24)&0xff), (char)((tag>>16)&0xff),
+		(char)((tag>>8)&0xff), (char)(tag&0xff) );
 	printf( "\t    minValue=%g\n", getfixed(ttf));
 	printf( "\t    defaultValue=%g\n", getfixed(ttf));
 	printf( "\t    maxValue=%g\n", getfixed(ttf));
@@ -6388,15 +6388,15 @@ static void readttfbaseminmax(FILE *ttf,uint32 offset,struct ttfinfo *info,
     if ( lang_tag == 0 )
 	printf( "\t   min extent=%d  max extent=%d for script '%c%c%c%c'\n",
 		min, max,
-		(int)((script_tag>>24)&0xff), (int)((script_tag>>16)&0xff),
-		(int)((script_tag>>8)&0xff), (int)((script_tag)&0xff) );
+		(char)((script_tag>>24)&0xff), (char)((script_tag>>16)&0xff),
+		(char)((script_tag>>8)&0xff), (char)((script_tag)&0xff) );
     else
 	printf( "\t    min extent=%d  max extent=%d for language '%c%c%c%c' in script '%c%c%c%c'\n",
 		min, max,
-		(int)((lang_tag>>24)&0xff), (int)((lang_tag>>16)&0xff),
-		(int)((lang_tag>>8)&0xff), (int)((lang_tag)&0xff),
-		(int)((script_tag>>24)&0xff), (int)((script_tag>>16)&0xff),
-		(int)((script_tag>>8)&0xff), (int)(script_tag&0xf) );
+		(char)((lang_tag>>24)&0xff), (char)((lang_tag>>16)&0xff),
+		(char)((lang_tag>>8)&0xff), (char)((lang_tag)&0xff),
+		(char)((script_tag>>24)&0xff), (char)((script_tag>>16)&0xff),
+		(char)((script_tag>>8)&0xff), (char)(script_tag&0xf) );
     feat_cnt = getushort(ttf);
     for ( j=0; j<feat_cnt; ++j ) {
 	uint32 feat_tag = getlong(ttf);
@@ -6405,19 +6405,19 @@ static void readttfbaseminmax(FILE *ttf,uint32 offset,struct ttfinfo *info,
 	if ( lang_tag == 0 )
 	    printf( "\t    min extent=%d  max extent=%d in feature '%c%c%c%c' of script '%c%c%c%c'\n",
 		    min, max,
-		    (int)((feat_tag>>24)&0xff), (int)((feat_tag>>16)&0xff),
-		    (int)((feat_tag>>8)&0xff), (int)(feat_tag&0xff),
-		    (int)((script_tag>>24)&0xff), (int)((script_tag>>16)&0xff),
-		    (int)((script_tag>>8)&0xff), (int)(script_tag&0xff) );
+		    (char)((feat_tag>>24)&0xff), (char)((feat_tag>>16)&0xff),
+		    (char)((feat_tag>>8)&0xff), (char)(feat_tag&0xff),
+		    (char)((script_tag>>24)&0xff), (char)((script_tag>>16)&0xff),
+		    (char)((script_tag>>8)&0xff), (char)(script_tag&0xff) );
 	else
 	    printf( "\t     min extent=%d  max extent=%d in feature '%c%c%c%c' of language '%c%c%c%c' in script '%c%c%c%c'\n",
 		    min, max,
-		    (int)((feat_tag>>24)&0xff), (int)((feat_tag>>16)&0xff),
-		    (int)((feat_tag>>8)&0xff), (int)(feat_tag&0xff),
-		    (int)((lang_tag>>24)&0xff), (int)((lang_tag>>16)&0xff),
-		    (int)((lang_tag>>8)&0xff), (int)((lang_tag)&0xff),
-		    (int)((script_tag>>24)&0xff), (int)((script_tag>>16)&0xff),
-		    (int)((script_tag>>8)&0xff), (int)(script_tag&0xff) );
+		    (char)((feat_tag>>24)&0xff), (char)((feat_tag>>16)&0xff),
+		    (char)((feat_tag>>8)&0xff), (char)(feat_tag&0xff),
+		    (char)((lang_tag>>24)&0xff), (char)((lang_tag>>16)&0xff),
+		    (char)((lang_tag>>8)&0xff), (char)((lang_tag)&0xff),
+		    (char)((script_tag>>24)&0xff), (char)((script_tag>>16)&0xff),
+		    (char)((script_tag>>8)&0xff), (char)(script_tag&0xff) );
     }
 }
 
@@ -6461,8 +6461,9 @@ static int readttfbase(FILE *ttf,FILE *util, struct ttfinfo *info) {
 		tags[i] = getlong(ttf);
 	    printf( "\t %d Baseline tags for %s\n", basetagcnt, axis==0 ? "Horizontal": "Vertical" );
 	    for ( i=0; i<basetagcnt; ++i )
-		printf( "\t  '%c%c%c%c'\n", (int)((tags[i]>>24)&0xff),
-			(int)((tags[i]>>16)&0xff), (int)((tags[i]>>8)&0xff), (int)(tags[i]&0xff) );
+		printf( "\t  '%c%c%c%c'\n",
+			(char)((tags[i]>>24)&0xff), (char)((tags[i]>>16)&0xff),
+			(char)((tags[i]>>8)&0xff), (char)(tags[i]&0xff) );
 	}
 	if ( basescripts==0 )
 	    printf("\t NO %s base script data\n", axis==0 ? "Horizontal": "Vertical" );
@@ -6482,8 +6483,8 @@ static int readttfbase(FILE *ttf,FILE *util, struct ttfinfo *info) {
 		struct tagoff *ls;
 		printf("\t %s baseline data for '%c%c%c%c' script\n",
 			axis==0 ? "Horizontal": "Vertical",
-			(int)((bs[i].tag>>24)&0xff), (int)((bs[i].tag>>16)&0xff),
-			(int)((bs[i].tag>>8)&0xff), (int)(bs[i].tag&0xff) );
+			(char)((bs[i].tag>>24)&0xff), (char)((bs[i].tag>>16)&0xff),
+			(char)((bs[i].tag>>8)&0xff), (char)(bs[i].tag&0xff) );
 		fseek(ttf,bs[i].offset,SEEK_SET);
 		basevalues = getushort(ttf);
 		defminmax  = getushort(ttf);
@@ -6496,8 +6497,8 @@ static int readttfbase(FILE *ttf,FILE *util, struct ttfinfo *info) {
 		if ( basevalues==0 )
 		    printf("\t  No %s baseline positions for '%c%c%c%c' script\n",
 			    axis==0 ? "Horizontal": "Vertical",
-			    (int)((bs[i].tag>>24)&0xff), (int)((bs[i].tag>>16)&0xff),
-			    (int)((bs[i].tag>>8)&0xff), (int)(bs[i].tag&0xff) );
+			    (char)((bs[i].tag>>24)&0xff), (char)((bs[i].tag>>16)&0xff),
+			    (char)((bs[i].tag>>8)&0xff), (char)(bs[i].tag&0xff) );
 		else {
 		    int defbl, coordcnt;
 		    int *coords;
@@ -6506,15 +6507,15 @@ static int readttfbase(FILE *ttf,FILE *util, struct ttfinfo *info) {
 		    defbl = getushort(ttf);
 		    coordcnt = getushort(ttf);
 		    printf("\t  The default baseline for '%c%c%c%c' script is '%c%c%c%c'\n",
-			    (int)((bs[i].tag>>24)&0xff), (int)((bs[i].tag>>16)&0xff),
-			    (int)((bs[i].tag>>8)&0xff), (int)(bs[i].tag&0xff),
-			    (int)((tags[defbl]>>24)&0xff), (int)((tags[defbl]>>16)&0xff),
-			    (int)((tags[defbl]>>8)&0xff), (int)(tags[defbl]&0xff) );
+			    (char)((bs[i].tag>>24)&0xff), (char)((bs[i].tag>>16)&0xff),
+			    (char)((bs[i].tag>>8)&0xff), (char)(bs[i].tag&0xff),
+			    (char)((tags[defbl]>>24)&0xff), (char)((tags[defbl]>>16)&0xff),
+			    (char)((tags[defbl]>>8)&0xff), (char)(tags[defbl]&0xff) );
 		    if ( coordcnt!=basetagcnt )
 			fprintf( stderr, "!!!!! Coord count (%d) for '%c%c%c%c' script does not match base tag count (%d) in 'BASE' table\n",
 				coordcnt,
-				(int)((bs[i].tag>>24)&0xff), (int)((bs[i].tag>>16)&0xff),
-				(int)((bs[i].tag>>8)&0xff), (int)(bs[i].tag&0xff),
+				(char)((bs[i].tag>>24)&0xff), (char)((bs[i].tag>>16)&0xff),
+				(char)((bs[i].tag>>8)&0xff), (char)(bs[i].tag&0xff),
 				basetagcnt );
 		    coords = calloc(coordcnt,sizeof(int));
 		    for ( j=0; j<coordcnt; ++j )
@@ -6527,34 +6528,34 @@ static int readttfbase(FILE *ttf,FILE *util, struct ttfinfo *info) {
 			if ( format==3 ) {
 			    devtab_off = getushort(ttf);
 			    printf("\t   Baseline '%c%c%c%c' in script '%c%c%c%c' is at %d, with device table\n",
-				    (int)((tags[j]>>24)&0xff), (int)((tags[j]>>16)&0xff),
-				    (int)((tags[j]>>8)&0xff), (int)(tags[j]&0xff),
-				    (int)((bs[j].tag>>24)&0xff), (int)((bs[j].tag>>16)&0xff),
-				    (int)((bs[j].tag>>8)&0xff), (int)(bs[j].tag&0xff),
+				    (char)((tags[j]>>24)&0xff), (char)((tags[j]>>16)&0xff),
+				    (char)((tags[j]>>8)&0xff), (char)(tags[j]&0xff),
+				    (char)((bs[j].tag>>24)&0xff), (char)((bs[j].tag>>16)&0xff),
+				    (char)((bs[j].tag>>8)&0xff), (char)(bs[j].tag&0xff),
 			            coord );
 			} else if ( format==2 ) {
 			    gid = getushort(ttf);
 			    pt  = getushort(ttf);
 			    printf("\t   Baseline '%c%c%c%c' in script '%c%c%c%c' is at %d, modified by point %d in glyph %d\n",
-				    (int)((tags[j]>>24)&0xff), (int)((tags[j]>>16)&0xff),
-				    (int)((tags[j]>>8)&0xff), (int)(tags[j]&0xff),
-				    (int)((bs[j].tag>>24)&0xff), (int)((bs[j].tag>>16)&0xff),
-				    (int)((bs[j].tag>>8)&0xff), (int)(bs[j].tag&0xff),
+				    (char)((tags[j]>>24)&0xff), (char)((tags[j]>>16)&0xff),
+				    (char)((tags[j]>>8)&0xff), (char)(tags[j]&0xff),
+				    (char)((bs[j].tag>>24)&0xff), (char)((bs[j].tag>>16)&0xff),
+				    (char)((bs[j].tag>>8)&0xff), (char)(bs[j].tag&0xff),
 			            coord, pt, gid );
 			} else {
 			    printf("\t   Baseline '%c%c%c%c' in script '%c%c%c%c' is at %d\n",
-				    (int)((tags[j]>>24)&0xff), (int)((tags[j]>>16)&0xff),
-				    (int)((tags[j]>>8)&0xff), (int)(tags[j]&0xff),
-				    (int)((bs[j].tag>>24)&0xff), (int)((bs[j].tag>>16)&0xff),
-				    (int)((bs[j].tag>>8)&0xff), (int)(bs[j].tag&0xff),
+				    (char)((tags[j]>>24)&0xff), (char)((tags[j]>>16)&0xff),
+				    (char)((tags[j]>>8)&0xff), (char)(tags[j]&0xff),
+				    (char)((bs[j].tag>>24)&0xff), (char)((bs[j].tag>>16)&0xff),
+				    (char)((bs[j].tag>>8)&0xff), (char)(bs[j].tag&0xff),
 			            coord );
 			    if ( format!=1 )
 				fprintf( stderr, "!!!!! Bad Base Coord format (%d) for '%c%c%c%c' in '%c%c%c%c' script in 'BASE' table\n",
 					format,
-					    (int)((tags[j]>>24)&0xff), (int)((tags[j]>>16)&0xff),
-					    (int)((tags[j]>>8)&0xff), (int)(tags[j]&0xff),
-					    (int)((bs[j].tag>>24)&0xff), (int)((bs[j].tag>>16)&0xff),
-					    (int)((bs[j].tag>>8)&0xff), (int)(bs[j].tag&0xff) );
+					(char)((tags[j]>>24)&0xff), (char)((tags[j]>>16)&0xff),
+					(char)((tags[j]>>8)&0xff), (char)(tags[j]&0xff),
+					(char)((bs[j].tag>>24)&0xff), (char)((bs[j].tag>>16)&0xff),
+					(char)((bs[j].tag>>8)&0xff), (char)(bs[j].tag&0xff) );
 			}
 		    }
 		    free(coords);
@@ -6562,15 +6563,15 @@ static int readttfbase(FILE *ttf,FILE *util, struct ttfinfo *info) {
 		if ( defminmax==0 )
 		    printf("\t  No %s min/max extents for '%c%c%c%c' script\n",
 			    axis==0 ? "Horizontal": "Vertical",
-			    (int)((bs[i].tag>>24)&0xff), (int)((bs[i].tag>>16)&0xff),
-			    (int)((bs[i].tag>>8)&0xff), (int)(bs[i].tag&0xff) );
+			    (char)((bs[i].tag>>24)&0xff), (char)((bs[i].tag>>16)&0xff),
+			    (char)((bs[i].tag>>8)&0xff), (char)(bs[i].tag&0xff) );
 		else
 		    readttfbaseminmax(ttf,bs[i].offset+defminmax,info,bs[i].tag,0);
 		if ( langsyscnt==0 )
 		    printf("\t  No %s min/max extents for specific langs in '%c%c%c%c' script\n",
 			    axis==0 ? "Horizontal": "Vertical",
-			    (int)((bs[i].tag>>24)&0xff), (int)((bs[i].tag>>16)&0xff),
-			    (int)((bs[i].tag>>8)&0xff), (int)(bs[i].tag&0xff) );
+			    (char)((bs[i].tag>>24)&0xff), (char)((bs[i].tag>>16)&0xff),
+			    (char)((bs[i].tag>>8)&0xff), (char)(bs[i].tag&0xff) );
 		else
 		    for ( j=0; j<langsyscnt; ++j ) if ( ls[j].offset!=0 )
 			readttfbaseminmax(ttf,bs[i].offset+ls[j].offset,info,bs[i].tag,ls[j].tag);
@@ -6627,10 +6628,10 @@ static void readttfjustlangsys(FILE *ttf,int offset,uint32 stag, uint32 ltag, st
 
     fseek(ttf,offset,SEEK_SET);
     printf("\t  Justification priority data for '%c%c%c%c' script, '%c%c%c%c' lang.\n",
-	    (int)((stag>>24)&0xff), (int)((stag>>16)&0xff),
-	    (int)((stag>>8)&0xff), (int)(stag&0xff),
-	    (int)((ltag>>24)&0xff), (int)((ltag>>16)&0xff),
-	    (int)((ltag>>8)&0xff), (int)(ltag&0xff) );
+	    (char)((stag>>24)&0xff), (char)((stag>>16)&0xff),
+	    (char)((stag>>8)&0xff), (char)(stag&0xff),
+	    (char)((ltag>>24)&0xff), (char)((ltag>>16)&0xff),
+	    (char)((ltag>>8)&0xff), (char)(ltag&0xff) );
     pcnt = getushort(ttf);
     offsets = malloc(pcnt*sizeof(int));
     for ( j=0; j<pcnt; ++j )
@@ -6860,12 +6861,12 @@ int main(int argc, char **argv) {
 	    if ( filename!=NULL )
 		printf( "\n\n\n******************** %s *****************\n\n\n", argv[i]);
 	    filename = argv[i];
-	    ttf = fopen(filename,"rbs");
+	    ttf = fopen(filename,"rb");
 	    if ( ttf==NULL ) {
 		fprintf( stderr, "Can't open %s\n", argv[1]);
 return( 1 );
 	    }
-	    util = fopen(filename,"rbs");
+	    util = fopen(filename,"rb");
 
 	    readit(ttf,util);
 	    fclose(ttf);

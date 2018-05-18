@@ -31,3 +31,5 @@ SUBDIRS = admintools cidmap
 if FONTTOOLS
 SUBDIRS += fonttools
 endif
+
+-include $(top_srcdir)/git.mk

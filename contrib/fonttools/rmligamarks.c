@@ -61,7 +61,7 @@ static void ProcessFilename(char *name) {
 	strcpy(buffer+strlen(buffer)-4,"-new.sfd");
     else
 	strcat(buffer,"-new");
-    in = fopen(name,"rs");
+    in = fopen(name,"r");
     if ( in==NULL ) {
 	fprintf( stderr, "Could not open %s for reading\n", name );
 exit(1);

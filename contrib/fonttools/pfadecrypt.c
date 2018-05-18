@@ -439,7 +439,7 @@ static void doubledecrypt(char *outputfile,char *fontname) {
     leniv = 4;
     useshex = 0;
 
-    in = fopen(fontname,"rbs");
+    in = fopen(fontname,"rb");
     if ( in==NULL ) {
 	fprintf( stderr, "Cannot open %s\n", fontname );
 return;
