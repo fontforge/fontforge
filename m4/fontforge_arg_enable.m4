@@ -25,14 +25,32 @@ fi
 ])
 
 
-dnl FONTFORGE_ARG_DISABLE_PYTHON_SCRIPTING
-dnl --------------------------------------
-AC_DEFUN([FONTFORGE_ARG_DISABLE_PYTHON_SCRIPTING],
+dnl FONTFORGE_ARG_DISABLE_PYTHON_SCRIPTING_AND_EXTENSION
+dnl ----------------------------------------------------
+dnl Add Python scripting by default and also add python extensions too.
+dnl If user says nothing, then assume yes unless python is not available.
+dnl First check if python and developer files are available, if yes, then
+dnl continue, however, if user indicates yes, then we must verify that we
+dnl do have python and developer files available, otherwise halt and let
+dnl user know that they must add python and python developer files too.
+AC_DEFUN([FONTFORGE_ARG_DISABLE_PYTHON_SCRIPTING_AND_EXTENSION],
 [
 AC_ARG_ENABLE([python-scripting],
         [AS_HELP_STRING([--disable-python-scripting],[disable Python scripting])],
         [i_do_have_python_scripting="${enableval}"; enable_python_scripting="${enableval}"],
         [i_do_have_python_scripting=yes; enable_python_scripting=check])
+AC_ARG_ENABLE([python-extension],
+         [AS_HELP_STRING([--disable-python-extension],
+                         [do not build the Python extension modules "psMat" and "fontforge",
+                          even if they were included in this source distribution])],
+         [i_do_have_python_extension="${enableval}"; enable_python_extension="${enableval}"],
+         [i_do_have_python_extension=yes; enable_python_extension=check])
+# force yes for python_scripting if user says yes for python_extension
+if test x"${enable_python_extension}" = xyes; then
+   i_do_have_python_scripting=yes
+   enable_python_scripting=yes
+fi
+# test for python and python-dev
 if test x"${i_do_have_python_scripting}" = xyes; then
    AM_PATH_PYTHON([2.7],,[:])
    PKG_CHECK_MODULES([PYTHON],[python-"${PYTHON_VERSION}"],
@@ -54,6 +72,7 @@ else
    if test x"${i_do_have_python_scripting}" = xno || test x"${enable_python_scripting}" = xno; then
       AC_MSG_RESULT([no])
       i_do_have_python_scripting=no
+      i_do_have_python_extension=no
       AC_DEFINE([_NO_PYTHON],1,[Define if not using Python.])
       PYTHON_CFLAGS=""
       PYTHON_LIBS=""
@@ -61,26 +80,15 @@ else
       AC_MSG_RESULT([yes])
    fi
 fi
+AC_MSG_CHECKING([Build with Python extension modules "psMat" and "fontforge"?])
+if test x"${enable_python_extension}" = xyes; then
+   AC_MSG_RESULT([yes])
+else
+   AC_MSG_RESULT([no])
+fi
 AC_SUBST([PYTHON_CFLAGS])
 AC_SUBST([PYTHON_LIBS])
 AM_CONDITIONAL([PYTHON_SCRIPTING],[test x"${i_do_have_python_scripting}" = xyes])
-])
-
-
-dnl FONTFORGE_ARG_DISABLE_PYTHON_EXTENSION
-dnl --------------------------------------
-AC_DEFUN([FONTFORGE_ARG_DISABLE_PYTHON_EXTENSION],
-[
-AC_ARG_ENABLE([python-extension],
-         [AS_HELP_STRING([--disable-python-extension],
-                         [do not build the Python extension modules "psMat" and "fontforge",
-                          even if they were included in this source distribution])],
-         [i_do_have_python_extension="${enableval}"],
-         [i_do_have_python_extension=yes])
-dnl don't try to make the module unless we have python
-if test x"${force_off_python_extension}" = xyes; then
-         i_do_have_python_extension=no
-fi
 AM_CONDITIONAL([PYTHON_EXTENSION],[test x"${i_do_have_python_extension}" = xyes])
 ])
 

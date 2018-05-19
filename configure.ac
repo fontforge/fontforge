@@ -270,8 +270,7 @@ FONTFORGE_ARG_DISABLE([native-scripting],
         [_NO_FFSCRIPT])
 AM_CONDITIONAL([NATIVE_SCRIPTING],[test x"${i_do_have_native_scripting}" = xyes])
 
-FONTFORGE_ARG_DISABLE_PYTHON_SCRIPTING
-FONTFORGE_ARG_DISABLE_PYTHON_EXTENSION
+FONTFORGE_ARG_DISABLE_PYTHON_SCRIPTING_AND_EXTENSION
 
 AC_ARG_ENABLE([freetype-debugger],
         [AS_HELP_STRING([--enable-freetype-debugger[[=DIR]]],
@@ -914,12 +913,12 @@ Configuration:
 
 Summary of optional features:
 
-			HaveIt?	UseIt?
+			UseIt?	HaveIt?
   real (floating pt)		${my_real_type}
   programs		yes	${i_do_have_programs}
   native scripting	yes	${i_do_have_native_scripting}
   python scripting	${enable_python_scripting}	${i_do_have_python_scripting}
-  python extension		${i_do_have_python_extension}
+  python extension	${enable_python_extension}	${i_do_have_python_extension}
   freetype debugger		${i_do_have_freetype_debugger}
   raw points mode		${i_do_have_debug_raw_points}
   tile path			${i_do_have_tile_path}
@@ -929,7 +928,7 @@ Summary of optional features:
 
 Summary of optional dependencies:
 
-Optional Library	HaveIt?	UseIt?	WebsiteURL
+Optional Library	UseIt?	HaveIt?	WebsiteURL
   cairo			${with_cairo}	${i_do_have_cairo}	${cairo_url}
   giflib		${with_giflib}	${i_do_have_giflib}	${giflib_url}
   libjpeg		${with_libjpeg}	${i_do_have_libjpeg}	${libjpeg_url}
