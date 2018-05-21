@@ -37,7 +37,7 @@ addons:
     project:
       name: "fontforge/fontforge"
       description: "Free (libre) font editor for Windows, Mac OS X and GNU+Linux"
-    build_command_prepend: cov-configure --comptype gcc --compiler $CC --template && ./bootstrap --force && ./configure $FFCONFIG --enable-fontforge-extras
+    build_command_prepend: cov-configure --comptype gcc --compiler $CC --template && ./bootstrap --force && ./configure $FFCONFIG
     build_command: make -j4
     branch_pattern: coverity_scan
     notification_email: jtanx_blackhole@outlook.com
@@ -58,7 +58,7 @@ install:
     export PATH=$PATH:$DEPSPREFIX/bin:$PREFIX/bin
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DEPSPREFIX/lib:$PREFIX/lib
     export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$DEPSPREFIX/lib/pkgconfig
-    export FFCONFIG="--prefix=$PREFIX"
+    export FFCONFIG="--prefix=$PREFIX --enable-fontforge-extras"
 
     if [ ! -z "$LINUX_FULL" ] ; then
       export FFCONFIG="$FFCONFIG --enable-code-coverage --enable-debug"

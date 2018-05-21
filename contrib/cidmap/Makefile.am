@@ -57,3 +57,5 @@ if FONTTOOLS
 cidmapdir += $(pkgdatadir)
 cidmap_DATA += $(cmaps)
 endif
+
+-include $(top_srcdir)/git.mk

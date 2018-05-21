@@ -426,8 +426,10 @@ static unsigned short gettableshort(struct ttf_header *hdr, int tag, int offset)
     /* Get a short at the indicated offset of the indicated table */
     struct subtables *tbl = gettable(hdr,tag);
     if ( tbl==NULL ) {
-	fprintf( stderr, "Missing required table: '%c%c%c%c'\n", tag>>24, tag>>16, tag>>8, tag );
-return( -1 );
+	fprintf( stderr, "Missing required table: '%c%c%c%c'\n",
+			(char)((tag>>24)&0xff), (char)((tag>>16)&0xff),
+			(char)((tag>>8)&0xff), (char)(tag&0xff) );
+	return( -1 );
     }
     if ( offset+1>=tbl->len ) {
 	fprintf( stderr, "Attempt to read beyond the end of a table\n" );

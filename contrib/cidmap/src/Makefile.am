@@ -36,3 +36,5 @@ mapjapan2_LDADD = $(LDADDS)
 
 mapkorean_SOURCES = mapkorean.c
 mapkorean_LDADD = $(LDADDS)
+
+-include $(top_srcdir)/git.mk

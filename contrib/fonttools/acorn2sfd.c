@@ -332,8 +332,8 @@ static void ReadChunk(FILE *file,struct Outlines *outline,int chunk) {
     if ( outline->version>=7 )
 	flag = r_getint(file);
     else if ( outline->version==6 )
-	flag = (1<<7);
-    if ( (!flag)&0x80000000 )
+	flag |= (1<<7);
+    if ( (~flag)&0x80000000 )
 	fprintf( stderr, "Bad flag at beginning of chunk %d\n", chunk );
 
     index_start = ftell(file);
@@ -509,9 +509,9 @@ static void ReadIntmetrics(char *dir, struct Outlines *outline) {
     struct r_kern *kern;
 
     if ( dirfind(dir, "IntMet?",filename) )
-	file = fopen(filename,"rbs");
+	file = fopen(filename,"rb");
     else if ( dirfind(dir, "Intmetric?",filename) )
-	file = fopen(filename,"rbs");
+	file = fopen(filename,"rb");
     if ( file==NULL ) {
 	fprintf(stderr,"Couldn't open %s (for advance width data)\n  Oh well, advance widths will all be wrong.\n", filename );
 	free(filename);
@@ -708,9 +708,9 @@ static void FindEncoding(SplineFont *sf,char *filename) {
     encfilename = malloc(strlen(otherdir)+strlen("base0encoding")+20);
 
     if ( dirfind(otherdir, pattern,encfilename) )
-	file = fopen(encfilename,"rbs");
+	file = fopen(encfilename,"rb");
     else if ( dirfind(filename, pattern,encfilename) )
-	file = fopen(encfilename,"rbs");
+	file = fopen(encfilename,"rb");
     free(otherdir);
 
     if ( file==NULL ) {
@@ -750,7 +750,7 @@ static SplineFont *ReadOutline(char *dir) {
     char buffer[100];
 
     if ( dirfind(dir, "Outlines*",filename) )
-	file = fopen(filename,"rbs");
+	file = fopen(filename,"rb");
     if ( file==NULL ) {
 	fprintf(stderr,"Couldn't open %s\n", filename );
 	free(filename);

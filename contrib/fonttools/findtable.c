@@ -119,7 +119,7 @@ return( 2 );
 
     any = false;
     for ( i=2; i<argc; ++i ) {
-	FILE *ttf = fopen( argv[i],"rbs");
+	FILE *ttf = fopen( argv[i],"rb");
 	if ( ttf==NULL )
 	    fprintf( stderr, "Failed to open %s\n", argv[i]);
 	else {

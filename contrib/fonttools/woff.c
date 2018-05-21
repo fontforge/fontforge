@@ -143,7 +143,7 @@ static void woff(char *filename, char *metafile, char *privfile,
     int tag, checksum, offset;
     int tab_start, here;
 
-    sfnt = fopen( filename,"rbs");
+    sfnt = fopen( filename,"rb");
     if ( sfnt==NULL ) {
 	fprintf( stderr, "Can't open %s\n", filename );
 return;
