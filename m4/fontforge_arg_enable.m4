@@ -35,10 +35,27 @@ dnl do have python and developer files available, otherwise halt and let
 dnl user know that they must add python and python developer files too.
 AC_DEFUN([FONTFORGE_ARG_DISABLE_PYTHON_SCRIPTING_AND_EXTENSION],
 [
+i_want_python_dev=2.7
 AC_ARG_ENABLE([python-scripting],
-        [AS_HELP_STRING([--disable-python-scripting],[disable Python scripting])],
+        [AS_HELP_STRING([--disable-python-scripting],[disable Python scripting. If you
+        REQUIRE Python, then use --enable-python-scripting to force a yes for install.
+        If you want python>=3.3, then use --enable-python-scripting=3])],
         [i_do_have_python_scripting="${enableval}"; enable_python_scripting="${enableval}"],
         [i_do_have_python_scripting=yes; enable_python_scripting=check])
+AC_MSG_CHECKING([python script is $i_do_have_python_scripting and want is $want_python])
+AC_MSG_RESULT([ version])
+# default is to load python 2.7 or higher, but user requests 3.3 or higher
+if test i_do_have_python_scripting > 2; then
+   if test i_do_have_python_scripting > 3; then
+      i_want_python_dev=3.3
+   else
+      i_want_python_dev=2.7
+   fi
+   i_do_have_python_scripting=yes
+   enable_python_scripting=yes
+fi
+AC_MSG_CHECKING([python script is $i_do_have_python_scripting and want is $want_python])
+AC_MSG_RESULT([ version])
 AC_ARG_ENABLE([python-extension],
          [AS_HELP_STRING([--disable-python-extension],
                          [do not build the Python extension modules "psMat" and "fontforge",
@@ -52,10 +69,19 @@ if test x"${enable_python_extension}" = xyes; then
 fi
 # test for python and python-dev
 if test x"${i_do_have_python_scripting}" = xyes; then
-   AM_PATH_PYTHON([2.7],,[:])
+   AM_PATH_PYTHON([i_want_python_dev],,[:])
    PKG_CHECK_MODULES([PYTHON],[python-"${PYTHON_VERSION}"],
       [PKG_CHECK_MODULES([PYTHONDEV],[python-"${PYTHON_VERSION}"],,[i_do_have_python_scripting=no; force_off_python_extension=yes])],
       [i_do_have_python_scripting=no; force_off_python_extension=yes])
+   if ( PYTHON_VERSION >= 2.7; then
+      if ( PYTHON_VERSION >= 3.3; then
+         i_want_python_dev=3.3
+      else
+         i_want_python_dev=2.7
+      fi
+   else
+      i_want_python_dev=""
+   fi
 fi
 if test x"${i_do_have_python_scripting}" = xyes -a x"${PYTHON_CFLAGS}" = x; then
    AC_CHECK_HEADER([python.h],[],[i_do_have_python_scripting=no])
@@ -86,6 +112,9 @@ if test x"${enable_python_extension}" = xyes; then
 else
    AC_MSG_RESULT([no])
 fi
+AC_MSG_CHECKING([python version is $PYTHON_VERSION])
+AC_MSG_RESULT([version])
+
 AC_SUBST([PYTHON_CFLAGS])
 AC_SUBST([PYTHON_LIBS])
 AM_CONDITIONAL([PYTHON_SCRIPTING],[test x"${i_do_have_python_scripting}" = xyes])
