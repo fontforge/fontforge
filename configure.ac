@@ -916,8 +916,8 @@ Summary of optional features:
 			UseIt?	HaveIt?
   real (floating pt)		${my_real_type}
   programs		yes	${i_do_have_programs}
-  native scripting	yes	${i_do_have_native_scripting}${i_want_python_dev}
-  python scripting	${enable_python_scripting}	${i_do_have_python_scripting}
+  native scripting	yes	${i_do_have_native_scripting}
+  python scripting	${enable_python_scripting}	${i_do_have_python_scripting}${i_want_python_ver}
   python extension	${enable_python_extension}	${i_do_have_python_extension}
   freetype debugger		${i_do_have_freetype_debugger}
   raw points mode		${i_do_have_debug_raw_points}
