@@ -33,6 +33,9 @@
 
 #include "unicodelibinfo.h"
 #include <ustring.h>
+#include <ffglib.h>
+#include <glib/gprintf.h>
+#include "xvasprintf.h"
 
 #ifndef _NO_LIBUNINAMESLIST
 #include <uninameslist.h>
@@ -60,9 +63,6 @@ static const char *jungsung[] = { "A", "AE", "YA", "YAE", "EO", "E", "YEO",	\
 static const char *jongsung[] = { "", "G", "GG", "GS", "N", "NJ", "NH", "D",	\
 	"L", "LG", "LM", "LB", "LS", "LT", "LP", "LH", "M", "B", "BS", "S",	\
 	"SS", "NG", "J", "C", "K", "T", "P", "H", NULL };
-static const char chosungl[] = { 1,2,1,1,2,1,1,1,2,1,2,0,1,2,1,1,1,1,1,0 };
-static const char jungsungl[] = { 1,2,2,2,2,1,3,2,1,2,3,2,2,1,3,2,2,2,2,2,1,0 };
-static const char jongsungl[] = { 0,1,2,2,1,2,2,1,1,2,2,2,2,2,2,2,1,1,2,1,2,2,1,1,1,1,1,1,0 };
 #endif
 
 void inituninameannot(void) {
@@ -140,7 +140,6 @@ char *unicode_name(int32 unienc) {
      * revisit later.
      */
     if( ( unienc >= 0xAC00 && unienc <= 0xD7A3 ) && ( name_data == NULL ) ) {
-	/* replaced code below to reduce library dependencies
 	if( ( ( unienc - 0xAC00 ) % 28 ) == 0 ) {
 	    name_data = xasprintf( "Hangul Syllable %s-%s",
 		    chosung [ (unienc - 0xAC00) / (21*28) ],
@@ -151,25 +150,6 @@ char *unicode_name(int32 unienc) {
 		    jungsung[ ((unienc - 0xAC00) / 28 ) % 21 ],
 		    jongsung[ (unienc - 0xAC00) % 28 ] );
 	}
-	*/
-	const char *h = "Hangul Syllable -----------";
-	char buffer[30], i1, i2, i3, l1, l2, l3;
-	memcpy(buffer,h,(sizeof(h)));
-	i1 = (unienc - 0xAC00) / (21*28);
-	l1 = (char)(chosungl[i1]);
-	memcpy(&buffer[16],(char *)(&chosung[i1]),l1*sizeof(char));
-	i2 = ((unienc - 0xAC00) / 28 ) % 21;
-	l2 = (char)(jungsungl[i2]);
-	memcpy(&buffer[17+l1],(char *)(&jungsung[i2]),l2*sizeof(char));
-	if( ( ( unienc - 0xAC00 ) % 28 ) == 0 ) {
-	    buffer[17+l1+l2] = 0;
-	} else {
-	    i3 = (unienc - 0xAC00) % 28;
-	    l3 = (char)(jongsungl[i3]);
-	    memcpy(&buffer[18+l1+l2],(char *)(&jongsung[i3]),l3*sizeof(char));
-	    buffer[18+l1+l2+l3] = 0;
-	}
-	name_data = copy( buffer );
     }
 
     return( name_data );

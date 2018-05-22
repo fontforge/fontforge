@@ -876,7 +876,7 @@ static PyObject *PyFF_UnicodeNames2NxtUniFromLib(PyObject *UNUSED(self), PyObjec
 
     if ( !PyArg_ParseTuple(args,"|i",&val) )
 	return( NULL );
-    return( Py_BuildValue("i", unicode_names2getUtabLoc(val)) );
+    return( Py_BuildValue("i", unicode_names2valFrmTab(val)) );
 }
 
 static PyObject *PyFF_UnicodeNames2FrmTabFromLib(PyObject *UNUSED(self), PyObject *args) {
@@ -886,7 +886,7 @@ static PyObject *PyFF_UnicodeNames2FrmTabFromLib(PyObject *UNUSED(self), PyObjec
     if ( !PyArg_ParseTuple(args,"|i",&val) )
 	return( NULL );
     if ( (temp=unicode_name2FrmTab(val))==NULL ) {
-	temp=malloc(1*sizeof(char)); *temp='\0';
+	return Py_BuildValue("s", "");
     }
     PyObject *ret=Py_BuildValue("s",temp); free(temp);
     return( ret );
@@ -899,7 +899,7 @@ static PyObject *PyFF_UnicodeNames2FromLib(PyObject *UNUSED(self), PyObject *arg
     if ( !PyArg_ParseTuple(args,"|i",&val) )
 	return( NULL );
     if ( (temp=unicode_name2(val))==NULL ) {
-	temp=malloc(1*sizeof(char)); *temp='\0';
+	return Py_BuildValue("s", "");
     }
     PyObject *ret=Py_BuildValue("s",temp); free(temp);
     return( ret );
@@ -18024,6 +18024,7 @@ PyMethodDef module_fontforge_methods[] = {
     { "UnicodeBlockNameFromLib", PyFF_UnicodeBlockNameFromLib, METH_VARARGS, "Return the www.unicode.org block name, for example block[2]={256..383} -> Latin Extended-A" },
     { "UnicodeNamesListVersion", PyFF_UnicodeNamesListVersion, METH_NOARGS, "Return the www.unicode.org NamesList version for this library" },
     { "UnicodeNames2GetCntFromLib", PyFF_UnicodeNames2GetCntFromLib, METH_NOARGS, "Return the www.unicode.org NamesList total count of Names2 corrections for this library" },
+    { "UnicodeNames2NxtUniFromLib", PyFF_UnicodeNames2NxtUniFromLib, METH_VARARGS, "Return the table location of the next www.unicode.org Names2 for this library" },
     { "UnicodeNames2GetNxtFromLib", PyFF_UnicodeNames2GetNxtFromLib, METH_VARARGS, "Return the table location of the next www.unicode.org Names2 for this library" },
     { "UnicodeNames2FrmTabFromLib", PyFF_UnicodeNames2FrmTabFromLib, METH_VARARGS, "Return the www.unicode.org NamesList Names2 from internal table[0<=N<UnicodeNames2GetCnt()] for this library" },
     { "UnicodeNames2FromLib", PyFF_UnicodeNames2FromLib, METH_VARARGS, "Return the www.unicode.org NamesList Names2 for this Unicode value if it exists for this library" },
