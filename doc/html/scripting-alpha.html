@@ -3450,6 +3450,44 @@ SetGasp([8,2,16,1,65535,3])
 	    libuninameslist ver_0.3.20130501 or later, else it returns empty string "".
 	    This can execute with no current font.
 	  <DT>
+	    <A NAME="UnicodeNames2GetCntFromLib">U</A>nicodeNames2GetCntFromLib()
+	  <DD>
+	    Return the Total Count of all Names that were corrected with a new name.
+	    Errors and corrections happen, therefore names can be corrected in the
+	    next Unicode Nameslist version.
+	    If there is no libuninameslist ver 0.5 or later available, then return -1
+	  <DT>
+	    <A NAME="UnicodeNames2GetNxtFromLib">U</A>nicodeNames2GetNxtFromLib(val)
+	  <DD>
+	    Errors and corrections happen, therefore names can be corrected in the
+	    next Unicode Nameslist version. With val==unicode value, this function
+	    returns -1 if no Names2 exists, or the Nth table location for this
+	    unicode value listed in libuninameslist that was corrected to a new name.
+	    If there is no libuninameslist ver 0.5 or later, then return -1.
+	  <DT>
+	    <A NAME="UnicodeNames2NxtUniFromLib">U</A>nicodeNames2NxtUniFromLib(val)
+	  <DD>
+	    Errors and corrections happen, therefore names can be corrected in the
+	    next Unicode Nameslist version. This function returns the Next Unicode value
+	    listed in libuninameslist internal table that was corrected to a new name.
+	    The internal table of Unicode values is of size UnicodeNames2GetCntFromLib().
+	    If there is no libuninameslist ver 0.5 or later, then return -1.
+	  <DT>
+	    <A NAME="UnicodeNames2FrmTabFromLib">U</A>nicodeNames2FrmTabFromLib(val)
+	  <DD>
+	    Errors and corrections happen, therefore names can be corrected in the
+	    next Unicode Nameslist version. This function returns the Next Names2
+	    listed in libuninameslist internal table that was corrected to a new name.
+	    The internal table of Unicode values is of size UnicodeNames2GetCntFromLib().
+	    If there is no libuninameslist ver 0.5 or later, then return NULL.
+	  <DT>
+	    <A NAME="UnicodeNames2FromLib">U</A>nicodeNames2FromLib(val)
+	  <DD>
+	    Errors and corrections happen, therefore names can be corrected in the
+	    next Unicode Nameslist version. This function returns the Names2 or NULL
+	    based on the unicode value given.
+	    If there is no libuninameslist ver 0.5 or later, then return NULL.
+	  <DT>
 	    <A NAME="UnlinkReference" HREF="editmenu.html#Unlink">UnlinkReference</A>
 	  <DD>
 	    Unlinks all references within all selected glyphs

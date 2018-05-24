@@ -345,6 +345,49 @@
 	This can execute with no current font.</TD>
     </TR>
     <TR>
+      <TD><CODE>UnicodeNames2GetCntFromLib</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+	Return the Total Count of all Names that were corrected with a new name.
+	Errors and corrections happen, therefore names can be corrected in the
+	next Unicode Nameslist version.
+	If there is no libuninameslist ver 0.5 or later available, then return -1
+    </TR>
+    <TR>
+      <TD><CODE>UnicodeNames2GetNxtFromLib</CODE></TD>
+      <TD><CODE>(n)</CODE></TD>
+	Errors and corrections happen, therefore names can be corrected in the
+	next Unicode Nameslist version. With val==unicode value, this function
+	returns -1 if no Names2 exists, or the Nth table location for this
+	unicode value listed in libuninameslist that was corrected to a new name.
+	If there is no libuninameslist ver 0.5 or later, then return -1.
+    </TR>
+    <TR>
+      <TD><CODE>UnicodeNames2NxtUniFromLib</CODE></TD>
+      <TD><CODE>(n)</CODE></TD>
+	Errors and corrections happen, therefore names can be corrected in the
+	next Unicode Nameslist version. This function returns the Next Names2
+	listed in libuninameslist internal table that was corrected to a new name.
+	The internal table of Unicode values is of size UnicodeNames2GetCntFromLib().
+	If there is no libuninameslist ver 0.5 or later, then return -1.
+    </TR>
+    <TR>
+      <TD><CODE>UnicodeNames2FrmTabFromLib</CODE></TD>
+      <TD><CODE>(n)</CODE></TD>
+	Errors and corrections happen, therefore names can be corrected in the
+	next Unicode Nameslist version. This function returns the Next Names2
+	listed in libuninameslist internal table that was corrected to a new name.
+	The internal table of Unicode values is of size UnicodeNames2GetCntFromLib().
+	If there is no libuninameslist ver 0.5 or later, then return NULL.
+    <TR>
+    </TR>
+      <TD><CODE>UnicodeNames2FromLib</CODE></TD>
+      <TD><CODE>(val)</CODE></TD>
+	Errors and corrections happen, therefore names can be corrected in the
+	next Unicode Nameslist version. This function returns the Names2 or NULL
+	based on the unicode value given.
+	If there is no libuninameslist ver 0.5 or later, then return NULL.
+    </TR>
+    <TR>
       <TD><CODE>IsFraction</CODE></TD>
       <TD><CODE>(n)</CODE></TD>
       <TD>Return 1 if n is a unicode fraction (either a vulgar fraction or other

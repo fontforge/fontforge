@@ -42,5 +42,10 @@ extern int32 unicode_block_end(int32 block_i);
 extern char *unicode_block_name(int32 block_i);
 extern char *unicode_library_version(void);
 extern int32 unicode_block_count(void);
+extern int32 unicode_names2cnt(void);
+extern int32 unicode_names2valFrmTab(int32 n);
+extern int32 unicode_names2getUtabLoc(int32 unienc);
+extern char *unicode_name2FrmTab(int32 n);
+extern char *unicode_name2(int32 unienc);
 
 #endif

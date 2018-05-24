@@ -83,7 +83,7 @@ install:
         wget 'https://github.com/zeromq/zeromq4-1/releases/download/v4.1.5/zeromq-4.1.5.tar.gz' -O - |tar -zxf -
         wget 'https://github.com/zeromq/czmq/releases/download/v3.0.2/czmq-3.0.2.tar.gz' -O - |tar -zxf -
         wget 'https://github.com/fontforge/libspiro/releases/download/0.5.20150702/libspiro-0.5.20150702.tar.gz' -O - | tar -zxf -
-        wget 'https://github.com/fontforge/libuninameslist/releases/download/20160701/libuninameslist-20160701.tar.gz' -O - | tar -zxf -
+        wget 'https://github.com/fontforge/libuninameslist/releases/download/20180408/libuninameslist-dist-20180408.tar.gz' -O - | tar -zxf -
         wget 'https://bitbucket.org/sortsmill/libunicodenames/downloads/libunicodenames-1.1.0_beta1.tar.xz' -O - | tar -Jxf -
         wget --tries 1 "http://download.savannah.gnu.org/releases/freetype/freetype-$FTVER.tar.gz" || \
           wget "https://sourceforge.net/projects/freetype/files/freetype2/$SFFTVER/freetype-$FTVER.tar.gz"
@@ -91,7 +91,7 @@ install:
         pushd zeromq-4.1.5 && ./configure --prefix=$DEPSPREFIX && make && make install && popd
         pushd czmq-3.0.2 && CFLAGS="-Wno-format-truncation" ./configure --prefix=$DEPSPREFIX && make && make install && popd
         pushd libspiro-0.5.20150702 && ./configure --prefix=$DEPSPREFIX && make && make install && popd
-        pushd libuninameslist-20160701 && ./configure --prefix=$DEPSPREFIX && make && make install && popd
+        pushd libuninameslist-20180408 && ./configure --enable-pscript --prefix=$DEPSPREFIX && make && make install && popd
         pushd libunicodenames-1.1.0_beta1 && ./configure --prefix=$DEPSPREFIX && make && make install && popd
         tar -zxf freetype-$FTVER.tar.gz -C $DEPSPREFIX
         popd

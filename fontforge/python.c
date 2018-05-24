@@ -856,6 +856,56 @@ static PyObject *PyFF_UnicodeNamesListVersion(PyObject *UNUSED(self), PyObject *
     return( ret );
 }
 
+/* Names2 lookup commands to get info from attached libuninameslist >= v0.5. */
+/* Cnt returns lookup table-size, Nxt returns next Unicode value from array, */
+/* Nxt returns 'n' for table array[0..n..(Cnt-1)] pointer. Errors return -1. */
+static PyObject *PyFF_UnicodeNames2GetCntFromLib(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
+    return( Py_BuildValue("i", unicode_names2cnt()) );
+}
+
+static PyObject *PyFF_UnicodeNames2GetNxtFromLib(PyObject *UNUSED(self), PyObject *args) {
+    long val;
+
+    if ( !PyArg_ParseTuple(args,"|i",&val) )
+	return( NULL );
+    return( Py_BuildValue("i", unicode_names2getUtabLoc(val)) );
+}
+
+static PyObject *PyFF_UnicodeNames2NxtUniFromLib(PyObject *UNUSED(self), PyObject *args) {
+    long val;
+
+    if ( !PyArg_ParseTuple(args,"|i",&val) )
+	return( NULL );
+    return( Py_BuildValue("i", unicode_names2valFrmTab(val)) );
+}
+
+static PyObject *PyFF_UnicodeNames2FrmTabFromLib(PyObject *UNUSED(self), PyObject *args) {
+    long val;
+    char *temp;
+
+    if ( !PyArg_ParseTuple(args,"|i",&val) )
+	return( NULL );
+    if ( (temp=unicode_name2FrmTab(val))==NULL ) {
+	return Py_BuildValue("s", "");
+    }
+    PyObject *ret=Py_BuildValue("s",temp); free(temp);
+    return( ret );
+}
+
+static PyObject *PyFF_UnicodeNames2FromLib(PyObject *UNUSED(self), PyObject *args) {
+    long val;
+    char *temp;
+
+    if ( !PyArg_ParseTuple(args,"|i",&val) )
+	return( NULL );
+    if ( (temp=unicode_name2(val))==NULL ) {
+	return Py_BuildValue("s", "");
+    }
+    PyObject *ret=Py_BuildValue("s",temp); free(temp);
+    return( ret );
+}
+
+
 /* Ligature & Fraction information based on current Unicode (builtin) chart. */
 /* Unicode chart seems to distinguish vulgar fractions from other fractions. */
 /* These routines test value with internal table. Returns true/false values. */
@@ -17965,6 +18015,7 @@ PyMethodDef module_fontforge_methods[] = {
     { "preloadCidmap", PyFF_PreloadCidmap, METH_VARARGS, "Load a cidmap file" },
     { "unicodeFromName", PyFF_UnicodeFromName, METH_VARARGS, "Given a name, look it up in the namelists and find what unicode code point it maps to (returns -1 if not found)" },
     { "nameFromUnicode", PyFF_NameFromUnicode, METH_VARARGS, "Given a unicode code point and (optionally) a namelist, find the corresponding glyph name" },
+    /* --start of libuninameslist functions------------------------ */
     { "UnicodeNameFromLib", PyFF_UnicodeNameFromLib, METH_VARARGS, "Return the www.unicode.org name for a given unicode character value" },
     { "UnicodeAnnotationFromLib", PyFF_UnicodeAnnotationFromLib, METH_VARARGS, "Return the www.unicode.org annotation(s) for a given unicode character value" },
     { "UnicodeBlockCountFromLib", PyFF_UnicodeBlockCountFromLib, METH_NOARGS, "Return the www.unicode.org block count" },
@@ -17972,6 +18023,12 @@ PyMethodDef module_fontforge_methods[] = {
     { "UnicodeBlockEndFromLib", PyFF_UnicodeBlockEndFromLib, METH_VARARGS, "Return the www.unicode.org block end, for example block[1]={128..255} -> 255" },
     { "UnicodeBlockNameFromLib", PyFF_UnicodeBlockNameFromLib, METH_VARARGS, "Return the www.unicode.org block name, for example block[2]={256..383} -> Latin Extended-A" },
     { "UnicodeNamesListVersion", PyFF_UnicodeNamesListVersion, METH_NOARGS, "Return the www.unicode.org NamesList version for this library" },
+    { "UnicodeNames2GetCntFromLib", PyFF_UnicodeNames2GetCntFromLib, METH_NOARGS, "Return the www.unicode.org NamesList total count of Names2 corrections for this library" },
+    { "UnicodeNames2NxtUniFromLib", PyFF_UnicodeNames2NxtUniFromLib, METH_VARARGS, "Return the table location of the next www.unicode.org Names2 for this library" },
+    { "UnicodeNames2GetNxtFromLib", PyFF_UnicodeNames2GetNxtFromLib, METH_VARARGS, "Return the table location of the next www.unicode.org Names2 for this library" },
+    { "UnicodeNames2FrmTabFromLib", PyFF_UnicodeNames2FrmTabFromLib, METH_VARARGS, "Return the www.unicode.org NamesList Names2 from internal table[0<=N<UnicodeNames2GetCnt()] for this library" },
+    { "UnicodeNames2FromLib", PyFF_UnicodeNames2FromLib, METH_VARARGS, "Return the www.unicode.org NamesList Names2 for this Unicode value if it exists for this library" },
+    /* --end of libuninameslist functions-------------------------- */
     { "IsFraction", PyFF_isfraction, METH_VARARGS, "Compare value with internal Vulgar_Fraction and Other_Fraction table. Return true/false" },
     { "IsLigature", PyFF_isligature, METH_VARARGS, "Compare value with internal Ligature table. Return true/false" },
     { "IsVulgarFraction", PyFF_isvulgarfraction, METH_VARARGS, "Compare value with internal Vulgar_Fraction table. Return true/false" },
