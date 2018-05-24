@@ -1747,11 +1747,9 @@ SetLBearing(lbearing)
 	  <DT>
 	    <A NAME="IsFraction">IsFraction</A>(val)
 	  <DD>
-	    Returns whether val is a fraction (either a vulgar fraction or other
-	    fraction). Val may be either an integer, a unicode or a string. The
-	    first two cases are treated as unicode code points, the third looks
-	    at the first (utf8) character in the string. It can execute with no
-	    current font.
+	    Return 1 if n is a unicode fraction (either a vulgar fraction or other
+	    fraction) as described by www.unicode.org. Return 0 if there is no
+	    fraction for this value. It can execute with no current font.
 	  <DT>
 	    <A NAME="IsHexDigit">IsHexDigit</A>(val)
 	  <DD>
@@ -1762,10 +1760,9 @@ SetLBearing(lbearing)
 	  <DT>
 	    <A NAME="IsLigature">IsLigature</A>(val)
 	  <DD>
-	    Returns whether val is a ligature. Val may be either an integer, a unicode
-	    or a string. The first two cases are treated as unicode code points, the
-	    third looks at the first (utf8) character in the string. It can execute with
-	    no current font.
+	    Return 1 if n is a ligature as described by www.unicode.org. Return 0
+	    if there is no unicode ligature for this value. It can execute with no
+	    current font.
 	  <DT>
 	    <A NAME="IsLower">IsLower</A>(val)
 	  <DD>
@@ -1780,10 +1777,9 @@ SetLBearing(lbearing)
 	  <DT>
 	    <A NAME="IsOtherFraction">IsOtherFraction</A>(val)
 	  <DD>
-	    Returns whether val is a fraction (not defined as a vulgar fraction). Val
-	    may be either an integer, a unicode or a string. The first two cases are
-	    treated as unicode code points, the third looks at the first (utf8)
-	    character in the string. It can execute with no current font.
+	    Return 1 if n is a unicode fraction (not defined as vulgar fraction)
+	    as described by www.unicode.org. Return 0 if there is no fraction for
+	    this value. It can execute with no current font.
 	  <DT>
 	    <A NAME="IsUpper">IsUpper</A>(val)
 	  <DD>
@@ -1794,10 +1790,9 @@ SetLBearing(lbearing)
 	  <DT>
 	    <A NAME="IsVulgarFraction">IsVulgarFraction</A>(val)
 	  <DD>
-	    Returns whether val is a vulgar fraction. Val may be either an integer, a unicode
-	    or a string. The first two cases are treated as unicode code points, the
-	    third looks at the first (utf8) character in the string. It can execute with
-	    no current font.
+	    Return 1 if n is a unicode vulgar fraction as described by
+	    www.unicode.org. Return 0 if there is no fraction for this value.
+	    It can execute with no current font.
 	  <DT>
 	    <A NAME="Italic">Italic</A>([angle[,[xscale[,flags[,serif[,bearings[,stems[,counters[,lcstems[,lccounters]]]]]]]]]])</DT>
 	  <DD>
@@ -3369,7 +3364,7 @@ SetGasp([8,2,16,1,65535,3])
 	    <A NAME="ucOFracChartGetNxt">u</A>cOFracChartGetNxt(int)
 	  <DD>
 	    Returns FontForge internal table Unicode (non-vulgar) Fraction[n].
-	    Return -1 if n<0 or n>=ucOFracChartGetCnt(). Can execute with no
+	    Return -1 if n&lt;0 or n&gt;=ucOFracChartGetCnt(). Can execute with no
 	    current font.
 	    <BR>Note: Count depends on chart version built into FontForge.
 	  <DT>
