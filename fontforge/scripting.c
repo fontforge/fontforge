@@ -10105,7 +10105,7 @@ static void term(Context *c,Val *val) {
 			    free(val->u.sval);
 			    val->u.sval = ret;
 			}
-		    } else if ( strcmp(c->tok_text,"rb")==0 ) {
+		    } else if ( strcmp(c->tok_text,"r")==0 ) {
 			pt = strrchr(val->u.sval,'/');
 			if ( pt==NULL ) pt=val->u.sval;
 			ept = strrchr(pt,'.');
