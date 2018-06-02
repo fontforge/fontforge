@@ -25,39 +25,156 @@ fi
 ])
 
 
-dnl FONTFORGE_ARG_DISABLE_PYTHON_SCRIPTING
-dnl --------------------------------------
-AC_DEFUN([FONTFORGE_ARG_DISABLE_PYTHON_SCRIPTING],
+dnl FONTFORGE_ARG_DISABLE_PYTHON_SCRIPTING_AND_EXTENSION
+dnl ----------------------------------------------------
+dnl Add Python scripting by default and also add python extensions too.
+dnl If user says nothing, then assume yes unless python is not available.
+dnl First check if python and developer files are available, if yes, then
+dnl continue, however, if user indicates yes, then we must verify that we
+dnl do have python and developer files available, otherwise halt and let
+dnl user know that they must add python and python developer files too.
+dnl This is setup to try v3.3+ first, then v2.7+ if user requests nothing
+dnl or yes or A. If user request 2 or 3, then we check for 2.7+ or 3.3+
+AC_DEFUN([FONTFORGE_ARG_DISABLE_PYTHON_SCRIPTING_AND_EXTENSION],
 [
+i_want_python_ver="A"
 AC_ARG_ENABLE([python-scripting],
-        [AS_HELP_STRING([--disable-python-scripting],[disable Python scripting])],
-        [i_do_have_python_scripting="${enableval}"],
-        [i_do_have_python_scripting=yes])
-if test x"${i_do_have_python_scripting}" = xyes; then
-   AM_PATH_PYTHON([2.7])
-   PKG_CHECK_MODULES([PYTHON],[python-"${PYTHON_VERSION}"],,[i_do_have_python_scripting=no; force_off_python_extension=yes])
-fi
-if test x"${i_do_have_python_scripting}" != xyes; then
-   AC_DEFINE([_NO_PYTHON],1,[Define if not using Python.])
-fi
-AM_CONDITIONAL([PYTHON_SCRIPTING],[test x"${i_do_have_python_scripting}" = xyes])
-])
-
-
-dnl FONTFORGE_ARG_DISABLE_PYTHON_EXTENSION
-dnl --------------------------------------
-AC_DEFUN([FONTFORGE_ARG_DISABLE_PYTHON_EXTENSION],
-[
+        [AS_HELP_STRING([--disable-python-scripting],[disable Python scripting. If you
+        REQUIRE Python, then use --enable-python-scripting to force a yes for install.
+        If you want python>=3.3, then use --enable-python-scripting=3, use 2 if you
+        want python>=2.7. yes will use 3.3+ or 2.7+ (whichever is available).])],
+        [i_do_have_python_scripting="${enableval}"; enable_python_scripting="${enableval}"],
+        [i_do_have_python_scripting=yes; enable_python_scripting=check])
 AC_ARG_ENABLE([python-extension],
          [AS_HELP_STRING([--disable-python-extension],
                          [do not build the Python extension modules "psMat" and "fontforge",
                           even if they were included in this source distribution])],
-         [i_do_have_python_extension="${enableval}"],
-         [i_do_have_python_extension=yes])
-dnl don't try to make the module unless we have python
-if test x"${force_off_python_extension}" = xyes; then
-         i_do_have_python_extension=no
+         [i_do_have_python_extension="${enableval}"; enable_python_extension="${enableval}"],
+         [i_do_have_python_extension=yes; enable_python_extension=check])
+# default is to load python 3.3+ or 2.7+, but user forces a request for 2.7+ or 3.3+
+if test x${i_do_have_python_scripting} = x2; then
+   i_want_python_ver="2"
+   i_do_have_python_scripting=yes
+   enable_python_scripting=yes
+else
+   if test x${i_do_have_python_scripting} = x3; then
+      i_want_python_ver="3"
+      i_do_have_python_scripting=yes
+      enable_python_scripting=yes
+   else
+      if test ${i_do_have_python_scripting}x = Ax; then
+         i_want_python_ver="A"
+         i_do_have_python_scripting=yes
+         enable_python_scripting=yes
+      else
+         if test ${i_do_have_python_scripting}x = ax; then
+            i_want_python_ver="A"
+            i_do_have_python_scripting=yes
+            enable_python_scripting=yes
+         fi
+      fi
+   fi
 fi
+# force yes for python_scripting if user says yes for python_extension
+if test x"${enable_python_extension}" = xyes; then
+   i_do_have_python_scripting=yes
+   if test x"${enable_python_scripting}" = xno; then
+      enable_python_scripting=yes
+   fi
+fi
+# first, test for python (we want defaults returned, avoid adding anything in yes section)
+if test x"${i_do_have_python_scripting}" = xyes; then
+   if test x${i_want_python_ver} = x3; then
+      AM_PATH_PYTHON([3.3],,[i_do_have_python_scripting=no])
+   else
+      if test x${i_want_python_ver} = x2; then
+         AM_PATH_PYTHON([2.7],,[i_do_have_python_scripting=no])
+dnl TODO: verify this is actually 2.7+ and not 3.3+
+dnl      if test x"${i_do_have_python_scripting}" = xyes; then
+dnl         if PY_MAJOR_VERSION >= 3; then
+dnl            i_do_have_python_scripting=no
+dnl         fi
+dnl      fi
+      else
+dnl      # default is try for 3.3+, otherwise try for 2.7+
+dnl      AM_PATH_PYTHON([3.3],,[i_do_have_python_scripting=no])
+dnl      if test x"${i_do_have_python_scripting}" != xyes; then
+dnl         i_do_have_python_scripting=yes
+            AM_PATH_PYTHON([2.7],,[i_do_have_python_scripting=no])
+dnl         if test x"${i_do_have_python_scripting}" = xyes; then
+dnl            i_want_python_ver="2" dnl only 2.7+ available
+dnl         else
+               i_want_python_ver=
+dnl         fi
+dnl      else
+dnl         i_want_python_ver="3" might be 3 and 2 available
+dnl      fi
+      fi
+   fi
+fi
+# second, test for python-dev
+if test x"${i_do_have_python_scripting}" != xyes; then
+   i_want_python_ver=
+else
+   PKG_CHECK_MODULES([PYTHON],[python-"${PYTHON_VERSION}"], dnl   [PKG_CHECK_MODULES([PYTHONDEV],[python-"${PYTHON_VERSION}"],,[i_do_have_python_scripting=maybe])],
+      [PKG_CHECK_MODULES([PYTHONDEV],[python-"${PYTHON_VERSION}"],,[i_do_have_python_scripting=no])],
+      [i_do_have_python_scripting=no])
+dnl dnl TODO: have python3 AND python2, but only have python2 dev, but no python3 dev
+dnl if test x"${i_do_have_python_scripting}" = xmaybe; then
+dnl   if test x${i_want_python_ver} = xA; then
+dnl      i_want_python_ver="2"
+dnl      i_do_have_python_scripting=yes
+dnl      AM_PATH_PYTHON([2.7],,[i_do_have_python_scripting=no])
+dnl      if test x"${i_do_have_python_scripting}" = xyes; then
+dnl         PKG_CHECK_MODULES([PYTHONDEV],[python-"${PYTHON_VERSION}"],,[i_do_have_python_scripting=no])
+dnl      fi
+dnl   else
+dnl      i_do_have_python_scripting=no
+dnl   fi
+dnl   i_want_python_ver=
+dnl fi
+   if test x"${i_do_have_python_scripting}" = xno; then
+      force_off_python_extension=yes
+   fi
+
+fi
+# third, check for header file in case older distro package info not enough
+if test x"${i_do_have_python_scripting}" = xyes -a x"${PYTHON_CFLAGS}" = x; then
+   AC_CHECK_HEADER([python.h],[],[i_do_have_python_scripting=no])
+fi
+# force a halt if user specified yes, but there is no developer package found
+AC_MSG_CHECKING([Build with Python support?])
+if test x"${enable_python_scripting}" = xyes; then
+   if test x"${i_do_have_python_scripting}" = xyes; then
+      AC_MSG_RESULT([yes])
+      i_want_python_ver="${PYTHON_VERSION}"
+   else
+      AC_MSG_FAILURE([ERROR: Please install the PYTHON Developer Package],[1])
+   fi
+else
+   if test x"${i_do_have_python_scripting}" = xno || test x"${enable_python_scripting}" = xno; then
+      AC_MSG_RESULT([no])
+      i_do_have_python_scripting=no
+      i_do_have_python_extension=no
+      i_want_python_ver=
+      AC_DEFINE([_NO_PYTHON],1,[Define if not using Python.])
+      PYTHON_CFLAGS=""
+      PYTHON_LIBS=""
+   else
+      AC_MSG_RESULT([yes])
+      i_want_python_ver="${PYTHON_VERSION}"
+
+   fi
+fi
+AC_MSG_CHECKING([Build with Python extension modules "psMat" and "fontforge"?])
+if test x"${i_do_have_python_extension}" = xyes; then
+   AC_MSG_RESULT([yes])
+else
+   AC_MSG_RESULT([no])
+fi
+AC_SUBST([PYTHON_CFLAGS])
+AC_SUBST([PYTHON_LIBS])
+AM_CONDITIONAL([PYTHON_SCRIPTING],[test x"${i_do_have_python_scripting}" = xyes])
 AM_CONDITIONAL([PYTHON_EXTENSION],[test x"${i_do_have_python_extension}" = xyes])
 ])
 

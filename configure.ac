@@ -207,6 +207,7 @@ libuninameslist_url="https://github.com/fontforge/libuninameslist"
 libzmq_url="http://www.zeromq.org/"
 libreadline_url="http://www.gnu.org/software/readline"
 libxorg_url="http://www.x.org/"
+python_url="https://www.python.org/"
 gdk_url="http://www.gtk.org/"
 
 # Point to the Wikipedia page, primarily because one may want
@@ -269,8 +270,7 @@ FONTFORGE_ARG_DISABLE([native-scripting],
         [_NO_FFSCRIPT])
 AM_CONDITIONAL([NATIVE_SCRIPTING],[test x"${i_do_have_native_scripting}" = xyes])
 
-FONTFORGE_ARG_DISABLE_PYTHON_SCRIPTING
-FONTFORGE_ARG_DISABLE_PYTHON_EXTENSION
+FONTFORGE_ARG_DISABLE_PYTHON_SCRIPTING_AND_EXTENSION
 
 AC_ARG_ENABLE([freetype-debugger],
         [AS_HELP_STRING([--enable-freetype-debugger[[=DIR]]],
@@ -913,16 +913,17 @@ Configuration:
 
 Summary of optional features:
 
-  real (floating pt)	${my_real_type}
-  programs		${i_do_have_programs}
-  native scripting	${i_do_have_native_scripting}
-  python scripting	${i_do_have_python_scripting}
-  python extension	${i_do_have_python_extension}
-  freetype debugger	${i_do_have_freetype_debugger}
-  raw points mode	${i_do_have_debug_raw_points}
-  tile path		${i_do_have_tile_path}
-  gb12345 encoding	${i_do_have_gb12345}
-  fontforge-extras	${fontforge_extras}
+			UseIt?	HaveIt?
+  real (floating pt)		${my_real_type}
+  programs		yes	${i_do_have_programs}
+  native scripting	yes	${i_do_have_native_scripting}
+  python scripting	${enable_python_scripting}	${i_do_have_python_scripting}${i_want_python_ver}
+  python extension	${enable_python_extension}	${i_do_have_python_extension}
+  freetype debugger		${i_do_have_freetype_debugger}
+  raw points mode		${i_do_have_debug_raw_points}
+  tile path			${i_do_have_tile_path}
+  gb12345 encoding		${i_do_have_gb12345}
+  fontforge-extras	yes	${fontforge_extras}
   potrace or autotrace	${i_do_find_auto_po_trace}
 
 Summary of optional dependencies:
@@ -936,6 +937,7 @@ Optional Library	UseIt?	HaveIt?	WebsiteURL
   libspiro		${with_libspiro}	${i_do_have_libspiro}	${libspiro_url}
   libtiff		${with_libtiff}	${i_do_have_libtiff}	${libtiff_url}
   libuninameslist	${with_libuninameslist}	${i_do_have_libuninameslist}	${libuninameslist_url}
+  python-dev		${enable_python_scripting}	${i_do_have_python_scripting}	${python_url}
   zeromq (libzmq)		${i_do_have_libzmq}	${libzmq_url}
   X Window System		${i_do_have_x}	${libxorg_url}
   GDK backend		${fontforge_can_use_gdk}	${fontforge_gdk_version}	${gdk_url}
