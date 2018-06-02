@@ -362,6 +362,7 @@ fi
 dnl FIXME: Is this needed, given we are using libltdl?
 dnl The dlopen() function is in the C library for *BSD and in libdl on GLIBC-based systems
 dnl AC_SEARCH_LIBS([dlopen], [dl dld])
+AC_CHECK_HEADER([ltdl.h],,AC_MSG_FAILURE([ERROR: Please install ltdl.h developer files],[1]))
 
 if test x"${fontforge_can_use_gdk}" != xyes; then
     FONTFORGE_CONFIG_X_LIBRARIES
