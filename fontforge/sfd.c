@@ -3917,6 +3917,8 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
     char tok[100];
     int ttfindex = 0;
     int lastacceptable;
+    int have_cur_val = 0;
+    int cur_val = 0;
 
     current.x = current.y = 0;
     lastacceptable = 0;
@@ -3982,8 +3984,8 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
 		    SplinePointList *spl = chunkalloc(sizeof(SplinePointList));
 		    spl->first = spl->last = pt;
 		    spl->start_offset = 0;
-		    if ( cur!=NULL ) {
-			if ( SFDCloseCheck(cur,order2))
+		    if ( cur!=NULL && !(have_cur_val==1 && cur_val & SFD_PTFLAG_FORCE_OPEN_PATH) ) {
+			if ( SFDCloseCheck(cur,order2) )
 			    --ttfindex;
 			cur->next = spl;
 		    } else
@@ -4005,7 +4007,8 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
 	    if ( sp>=6 ) {
 		getint(sfd,&val);
 		have_read_val = 1;
-
+		cur_val = val;
+		have_cur_val = 1;
 
 		current.x = stack[sp-2];
 		current.y = stack[sp-1];
@@ -4062,8 +4065,11 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
 		sp = 0;
 	}
 	if ( pt!=NULL ) {
-	    if( !have_read_val )
+	    if( !have_read_val ) {
 		getint(sfd,&val);
+		cur_val = val;
+		have_cur_val = 1;
+	    }
 
 	    pt->pointtype = (val & SFD_PTFLAG_TYPE_MASK);
 	    pt->selected  = (val & SFD_PTFLAG_IS_SELECTED) > 0;
@@ -4112,7 +4118,7 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
 	    }
 	}
     }
-    if ( cur!=NULL )
+    if ( cur!=NULL && !(have_cur_val==1 && cur_val & SFD_PTFLAG_FORCE_OPEN_PATH) )
 	SFDCloseCheck(cur,order2);
     if ( lastacceptable && cur->last->prev!=NULL )
 	cur->last->prev->acceptableextrema = true;
