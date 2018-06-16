@@ -1,0 +1,7 @@
+#Needs: fonts/Ambrosia.sfd
+
+Open($1)
+Generate("Ambrosia.woff2")
+Close()
+Open("Ambrosia.woff2")
+Save("Ambrosia.sfd")

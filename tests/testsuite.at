@@ -106,6 +106,7 @@ check_pedit([Test StrSplit overrun],[test128.pe])
 check_pedit([Ligatures and Fractions Table Lookups],[test129.pe])
 check_pedit([TTC loading],[test130.pe],[NotoSans-Regular.ttc])
 check_pedit([libnameslist checks],[test131.pe])
+check_pedit([WOFF2 round tripping],[test132.pe],[Ambrosia.woff2])
 
 AT_BANNER([FontForge Python Scripting Tests])
 
@@ -127,5 +128,6 @@ check_python([Ligatures and Fractions Table Lookups],[test1009.py])
 check_python([libnameslist checks],[test1010.py])
 #check_python([find overlap bug],[findoverlapbugs.py])
 check_python([Validate WOFF output],[test926.py],[DejaVuSerif.sfd])
+check_pedit([WOFF2 round tripping],[test927.py],[Ambrosia.woff2])
 
 #--------------------------------------------------------------------------
