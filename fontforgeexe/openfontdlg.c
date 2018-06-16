@@ -40,19 +40,11 @@ extern NameList *force_names_when_opening;
 int default_font_filter_index=0;
 struct openfilefilters *user_font_filters = NULL;
 
-#ifdef _NO_LIBPNG
-#  ifdef FONTFORGE_CAN_USE_WOFF2
-#    define WOFF_EXT ",woff2"
-#  else
-#    define WOFF_EXT ""
-#  endif
-#else
-#  ifdef FONTFORGE_CAN_USE_WOFF2
+#ifdef FONTFORGE_CAN_USE_WOFF2
 /* GGadgetWildMatch is buggy... it must be woff2 then woff */
-#    define WOFF_EXT ",woff2,woff"
-#  else
-#    define WOFF_EXT ",woff"
-#  endif
+#  define WOFF_EXT ",woff2,woff"
+#else
+#  define WOFF_EXT ",woff"
 #endif
 
 struct openfilefilters def_font_filters[] = {

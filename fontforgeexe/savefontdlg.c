@@ -2330,8 +2330,6 @@ return( 0 );
 	formattypes[ff_ttc].disabled = false;
 	ofs = ff_ttc;
     }
-    if ( !CanWoff())
-	formattypes[ff_woff].disabled = true;
 #ifndef FONTFORGE_CAN_USE_WOFF2
 	formattypes[ff_woff2].disabled = true;
 #endif
