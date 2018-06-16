@@ -138,6 +138,9 @@ return( NULL );
 return( NULL );
 	++pattern;
     }
+    if (pattern > eop) {
+        return NULL;
+    }
 return( name );
 }
 

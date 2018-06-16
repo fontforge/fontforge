@@ -109,6 +109,7 @@ AC_PROG_AWK
 AC_PROG_CC
 AC_PROG_CC_C99
 AM_PROG_CC_C_O
+AC_PROG_CXX
 gl_EARLY
 AC_PROG_CPP
 AC_PROG_GREP
@@ -209,6 +210,7 @@ libreadline_url="http://www.gnu.org/software/readline"
 libxorg_url="http://www.x.org/"
 python_url="https://www.python.org/"
 gdk_url="http://www.gtk.org/"
+woff2_url="https://github.com/google/woff2"
 
 # Point to the Wikipedia page, primarily because one may want
 # libjpeg-turbo rather than the reference implementation.
@@ -438,6 +440,8 @@ FONTFORGE_ARG_WITH_LIBUNINAMESLIST
 FONTFORGE_ARG_WITH_ZEROMQ
 FONTFORGE_ARG_WITH_LIBREADLINE
 
+FONTFORGE_ARG_ENABLE_WOFF2
+
 if test x"${i_do_have_gui}" = xyes; then
    if test x"${i_do_have_libzmq}" = xyes; then
       AC_DEFINE(BUILD_COLLAB,[1],[Build the Collab Code])
@@ -660,6 +664,7 @@ my_cflags="${my_cflags} ${GLIB_CFLAGS}"
 my_cflags="${my_cflags} ${CAIRO_CFLAGS}"
 my_cflags="${my_cflags} ${PANGO_CFLAGS}"
 my_cflags="${my_cflags} ${GDK_CFLAGS}"
+my_cflags="${my_cflags} ${WOFF2_CFLAGS}"
 my_cflags="${my_cflags} ${PANGOCAIRO_CFLAGS}"
 my_cflags="${my_cflags} ${FREETYPE_CFLAGS}"
 my_cflags="${my_cflags} ${GIFLIB_CFLAGS}"
@@ -690,6 +695,7 @@ test x"${i_do_have_libunicodenames}" = xyes && my_libs="${my_libs} ${LIBUNICODEN
 test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${CAIRO_LIBS}"
 test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${PANGOCAIRO_LIBS}"
 test x"${i_do_have_gui}" = xyes && my_libs="${my_libs} ${PANGO_LIBS}"
+test x"${fontforge_can_use_woff2}" = xyes && my_libs="${my_libs} ${WOFF2_LIBS}"
 
 if test x"${fontforge_can_use_gdk}" = xyes; then
     my_libs="${my_libs} ${GDK_LIBS}"
@@ -940,6 +946,7 @@ Optional Library	UseIt?	HaveIt?	WebsiteURL
   libuninameslist	${with_libuninameslist}	${i_do_have_libuninameslist}	${libuninameslist_url}
   python-dev		${enable_python_scripting}	${i_do_have_python_scripting}	${python_url}
   zeromq (libzmq)		${i_do_have_libzmq}	${libzmq_url}
+  woff2			${fontforge_can_use_woff2}	${fontforge_has_woff2}	${woff2_url}
   X Window System		${i_do_have_x}	${libxorg_url}
   GDK backend		${fontforge_can_use_gdk}	${fontforge_gdk_version}	${gdk_url}
 ])

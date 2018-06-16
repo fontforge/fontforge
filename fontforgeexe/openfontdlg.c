@@ -40,6 +40,21 @@ extern NameList *force_names_when_opening;
 int default_font_filter_index=0;
 struct openfilefilters *user_font_filters = NULL;
 
+#ifdef _NO_LIBPNG
+#  ifdef FONTFORGE_CAN_USE_WOFF2
+#    define WOFF_EXT ",woff2"
+#  else
+#    define WOFF_EXT ""
+#  endif
+#else
+#  ifdef FONTFORGE_CAN_USE_WOFF2
+/* GGadgetWildMatch is buggy... it must be woff2 then woff */
+#    define WOFF_EXT ",woff2,woff"
+#  else
+#    define WOFF_EXT ",woff"
+#  endif
+#endif
+
 struct openfilefilters def_font_filters[] = {
     {
         N_("All Fonts"),
@@ -58,9 +73,6 @@ struct openfilefilters def_font_filters[] = {
 	   "cff,"
 	   "cef,"
 	   "gai,"
-#ifndef _NO_LIBPNG
-	   "woff,"
-#endif
 	   "svg,"
 	   "ufo,"
 	   "pf3,"
@@ -80,6 +92,7 @@ struct openfilefilters def_font_filters[] = {
 /* I used to say "*gf" but that also matched xgf (xgridfit) files -- which ff can't open */
 	   "[0-9]*gf,"
 	   "pdb"
+	   WOFF_EXT
         "}"
         /* With any of these methods of compression */
 	"{.gz,.Z,.bz2,.lzma,}"
@@ -98,9 +111,6 @@ struct openfilefilters def_font_filters[] = {
 	   "cff,"
 	   "cef,"
 	   "gai,"
-#ifndef _NO_LIBPNG
-	   "woff,"
-#endif
 	   "svg,"
 	   "ufo,"
 	   "pf3,"
@@ -112,6 +122,7 @@ struct openfilefilters def_font_filters[] = {
 	   "dfont,"
 	   "mf,"
 	   "ik"
+	   WOFF_EXT
 	"}"
 	"{.gz,.Z,.bz2,.lzma,}"
     },
@@ -135,11 +146,7 @@ struct openfilefilters def_font_filters[] = {
     { NU_("ΤεΧ Bitmap Fonts"), "*{pk,gf}" },
     { N_("PostScript"), "*.{pfa,pfb,t42,otf,cef,cff,gai,pf3,pt3,gsf,cid}{.gz,.Z,.bz,.bz2,.lzma,}" },
     { N_("TrueType"), "*.{ttf,t42,ttc}{.gz,.Z,.bz,.bz2,.lzma,}" },
-#ifdef _NO_LIBPNG
-    { N_("OpenType"), "*.{ttf,otf}{.gz,.Z,.bz,.bz2,.lzma,}" },
-#else
-    { N_("OpenType"), "*.{ttf,otf,woff}{.gz,.Z,.bz,.bz2,.lzma,}" },
-#endif
+    { N_("OpenType"), "*.{ttf,otf" WOFF_EXT "}{.gz,.Z,.bz,.bz2,.lzma,}" },
     { N_("Type1"), "*.{pfa,pfb,gsf,cid}{.gz,.Z,.bz2,.lzma,}" },
     { N_("Type2"), "*.{otf,cef,cff,gai}{.gz,.Z,.bz2,.lzma,}" },
     { N_("Type3"), "*.{pf3,pt3}{.gz,.Z,.bz2,.lzma,}" },

@@ -157,7 +157,8 @@ static GTextInfo formattypes[] = {
     { (unichar_t *) N_("OpenType CID (dfont)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("SVG font"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("Unified Font Object"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
-    { (unichar_t *) N_("Web Open Font"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Web Open Font (WOFF)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Web Open Font (WOFF2)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("No Outline Font"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     GTEXTINFO_EMPTY
 };
@@ -1654,7 +1655,7 @@ static void GFD_FigureWhich(struct gfc_data *d) {
 	which = 1;		/* truetype options */ /* type42 also */
     else
 	which = 2;		/* opentype options */
-    if ( fs==ff_woff ) {
+    if ( fs==ff_woff || fs==ff_woff2 ) {
 	SplineFont *sf = d->sf;
 	int layer = d->layer;
 	if ( sf->layers[layer].order2 )
@@ -2331,6 +2332,10 @@ return( 0 );
     }
     if ( !CanWoff())
 	formattypes[ff_woff].disabled = true;
+#ifndef FONTFORGE_CAN_USE_WOFF2
+	formattypes[ff_woff2].disabled = true;
+#endif
+
     for ( i=0; i<sizeof(formattypes)/sizeof(formattypes[0]); ++i )
 	formattypes[i].selected = false;
     formattypes[ofs].selected = true;
