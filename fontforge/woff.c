@@ -38,32 +38,6 @@
 #include "tottf.h"
 #include <math.h>
 #include <ctype.h>
-
-#ifdef _NO_LIBPNG
-
-SplineFont *_SFReadWOFF(FILE *woff,int flags,enum openflags openflags, char *filename,struct fontdict *fd) {
-    ff_post_error(_("WOFF not supported"), _("This version of fontforge cannot handle WOFF files. You need to recompile it with libpng and zlib") );
-return( NULL );
-}
-
-int _WriteWOFFFont(FILE *woff,SplineFont *sf, enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer) {
-    ff_post_error(_("WOFF not supported"), _("This version of fontforge cannot handle WOFF files. You need to recompile it with libpng and zlib") );
-return( 1 );
-}
-
-int WriteWOFFFont(char *fontname,SplineFont *sf, enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer) {
-    ff_post_error(_("WOFF not supported"), _("This version of fontforge cannot handle WOFF files. You need to recompile it with libpng and zlib") );
-return( 1 );
-}
-
-int CanWoff(void) {
-return( 0 );
-}
-
-#else /* ! _NO_LIBPNG */
-
 # include <zlib.h>
 
 static void copydata(FILE *to,int off_to,FILE *from,int off_from, int len) {
@@ -233,11 +207,7 @@ SplineFont *_SFReadWOFF(FILE *woff,int flags,enum openflags openflags, char *fil
     rewind(woff);
     {
         int signature = getlong(woff);
-        if ( signature==CHR('w','O','F','2') ) {
-            // TODO: add support for WOFF2
-            LogError(_("WOFF2 is not supported yet."));
-            return NULL;
-        } else if ( signature!=CHR('w','O','F','F') ) {
+        if ( signature!=CHR('w','O','F','F') ) {
             LogError(_("Bad signature in WOFF header."));
             return NULL;
         }
@@ -594,8 +564,146 @@ return( 0 );
 return( ret );
 }
 
-int CanWoff(void) {
-    return( true );
+#ifdef FONTFORGE_CAN_USE_WOFF2
+
+/**
+ * Read the contents of fp into a buffer, caller must free.
+ */
+static uint8_t *ReadFileToBuffer(FILE *fp, size_t *buflen)
+{
+    if (fseek(fp, 0, SEEK_END) < 0) {
+        return NULL;
+    }
+
+    long length = ftell(fp);
+    if (length <= 0 || fseek(fp, 0, SEEK_SET) < 0) {
+        return NULL;
+    }
+
+    uint8_t *buf = calloc(length, 1);
+    if (!buf) {
+        return NULL;
+    }
+
+    *buflen = fread(buf, 1, length, fp);
+    if (fgetc(fp) != EOF) {
+        free(buf);
+        return NULL;
+    }
+    return buf;
 }
 
-#endif /* ! _NO_LIBPNG */
+/**
+ * Write the contents of buf into fp.
+ * On success, the returned file pointer is equal to fp.
+ * It will be positioned at the start of the file.
+ */
+static FILE *WriteBufferToFile(FILE *fp, const uint8_t *buf, size_t buflen)
+{
+    if (fp && fwrite(buf, 1, buflen, fp) == buflen) {
+        if (fseek(fp, 0, SEEK_SET) >= 0) {
+            return fp;
+        }
+    }
+    return NULL;
+}
+
+/**
+ * Write the contents of buf into a temporary file.
+ * On success, the returned file pointer is at the start of the file.
+ * The caller is responsible for closing it.
+ */
+static FILE *WriteBufferToTempFile(const uint8_t *buf, size_t buflen)
+{
+    FILE *fp = tmpfile();
+    if (!WriteBufferToFile(fp, buf, buflen)) {
+        fclose(fp);
+        return NULL;
+    }
+    return fp;
+}
+
+int WriteWOFF2Font(char *fontname, SplineFont *sf, enum fontformat format, int32_t *bsizes, enum bitmapformat bf, int flags, EncMap *enc, int layer)
+{
+    FILE *woff = fopen(fontname, "wb");
+    int ret = 0;
+    if (woff) {
+        ret = _WriteWOFF2Font(woff, sf, format, bsizes, bf, flags, enc, layer);
+        fclose(woff);
+    }
+    return ret;
+}
+
+int _WriteWOFF2Font(FILE *fp, SplineFont *sf, enum fontformat format, int32_t *bsizes, enum bitmapformat bf, int flags, EncMap *enc, int layer)
+{
+    FILE *tmp = tmpfile();
+    if (!tmp) {
+        return 0;
+    }
+    int ret = _WriteTTFFont(tmp, sf, format, bsizes, bf, flags, enc, layer);
+    if (!ret) {
+        fclose(tmp);
+        return 0;
+    }
+
+    size_t raw_input_length = 0;
+    uint8_t *raw_input = ReadFileToBuffer(tmp, &raw_input_length);
+    fclose(tmp);
+    if (!raw_input) {
+        return 0;
+    }
+
+    size_t comp_size = woff2_max_woff2_compressed_size(raw_input, raw_input_length);
+    uint8_t *comp_buffer = calloc(comp_size, 1);
+    if (!comp_buffer) {
+        free(raw_input);
+        return 0;
+    }
+    ret = woff2_convert_ttf_to_woff2(raw_input, raw_input_length, comp_buffer, &comp_size);
+    free(raw_input);
+    if (!ret) {
+        free(comp_buffer);
+        return 0;
+    }
+
+    ret = WriteBufferToFile(fp, comp_buffer, comp_size) != NULL;
+    free(comp_buffer);
+    return ret;
+}
+
+SplineFont *_SFReadWOFF2(FILE *fp, int flags, enum openflags openflags, char *filename, struct fontdict *fd)
+{
+    size_t raw_input_length = 0;
+    uint8_t *raw_input = ReadFileToBuffer(fp, &raw_input_length);
+    if (!fp) {
+        return NULL;
+    }
+
+    size_t decomp_size = woff2_compute_woff2_final_size(raw_input, raw_input_length);
+    if (decomp_size > WOFF2_DEFAULT_MAX_SIZE) {
+        decomp_size = WOFF2_DEFAULT_MAX_SIZE;
+    }
+    uint8_t *decomp_buffer = calloc(decomp_size, 1);
+    if (!decomp_buffer) {
+        free(raw_input);
+        return NULL;
+    }
+    int success = woff2_convert_woff2_to_ttf(raw_input, raw_input_length, decomp_buffer, &decomp_size);
+    free(raw_input);
+    if (!success) {
+        free(decomp_buffer);
+        return NULL;
+    }
+
+    FILE *tmp = WriteBufferToTempFile(decomp_buffer, decomp_size);
+    free(decomp_buffer);
+    if (!tmp) {
+        return NULL;
+    }
+
+    SplineFont *ret = _SFReadTTF(tmp, flags, openflags, filename, fd);
+    fclose(tmp);
+    return ret;
+}
+
+#endif // FONTFORGE_CAN_USE_WOFF2

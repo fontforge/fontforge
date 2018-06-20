@@ -43,13 +43,7 @@ libgdraw_la_SOURCES = choosericons.c ctlvalues.c drawboxborder.c	\
 	gpsdrawP.h gwidgetP.h gxdrawP.h hotkeys.c hotkeys.h		\
 	div_tables.c ggdkdraw.c ggdkcdraw.c ggdkdrawlogger.c ggdkdrawP.h
 
-EXTRA_libgdraw_la_SOURCES = ggdkcocoa.m
-
-if MACINTOSH
-if FONTFORGE_CAN_USE_GDK
-libgdraw_la_SOURCES += ggdkcocoa.m
-endif
-endif
+libgdraw_la_LIBADD =
 
 libgdraw_la_CFLAGS = $(WARN_CFLAGS)
 
@@ -57,7 +51,17 @@ libgdraw_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 	"-I$(top_builddir)/lib" "-I$(top_srcdir)/lib"			\
 	"-I$(top_srcdir)/fontforge" "-DSHAREDIR=\"${MY_SHAREDIR}\"" $(MY_CFLAGS)
 
-libgdraw_la_LIBADD = $(MY_LIBS) $(top_builddir)/Unicode/libgunicode.la	\
+if MACINTOSH
+if FONTFORGE_CAN_USE_GDK
+CLEANFILES = libgdraw_objc.la
+noinst_LTLIBRARIES = libgdraw_objc.la
+libgdraw_objc_la_SOURCES = ggdkcocoa.m
+libgdraw_objc_la_OBJCFLAGS = $(libgdraw_la_CPPFLAGS)
+libgdraw_la_LIBADD += libgdraw_objc.la
+endif
+endif
+
+libgdraw_la_LIBADD += $(MY_LIBS) $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgutils.la \
 	$(top_builddir)/fontforge/libfontforge.la \
 	$(top_builddir)/lib/libgnu.la

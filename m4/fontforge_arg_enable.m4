@@ -214,7 +214,6 @@ if test x$use_gdk = xyes ; then
             AC_MSG_NOTICE([building the GUI with the GDK2 backend...])
         ],
         [
-            fontforge_can_use_gdk=no
             AC_MSG_ERROR([Cannot build GDK backend without GDK installed.])
         ])
     else
@@ -226,10 +225,41 @@ if test x$use_gdk = xyes ; then
             AC_MSG_NOTICE([building the GUI with the GDK3 backend...])
         ],
         [
-            fontforge_can_use_gdk=no
             AC_MSG_ERROR([Cannot build GDK backend without GDK installed.])
         ])
     fi
+else
+    fontforge_can_use_gdk=no
 fi
 AM_CONDITIONAL([FONTFORGE_CAN_USE_GDK],[test x"${fontforge_can_use_gdk}" = xyes])
+])
+
+dnl FONTFORGE_ARG_ENABLE_WOFF2
+dnl ------------------------
+AC_DEFUN([FONTFORGE_ARG_ENABLE_WOFF2],
+[
+AC_ARG_ENABLE([woff2],
+        [AS_HELP_STRING([--enable-woff2],
+                [Enable WOFF2 support.])],
+        [use_woff2=yes])
+if test x$use_woff2 = xyes ; then
+    PKG_CHECK_MODULES([WOFF2],[libwoff2enc,libwoff2dec],
+    [
+        AC_LANG_PUSH([C++])
+        AX_CHECK_COMPILE_FLAG([-std=c++11],
+            [CXXFLAGS="$CXXFLAGS -std=c++11"],
+            [AC_MSG_ERROR([Get a compiler with C++11 support.])])
+        AC_LANG_POP
+        fontforge_can_use_woff2=yes
+        fontforge_has_woff2=yes
+        AC_DEFINE(FONTFORGE_CAN_USE_WOFF2,[],[FontForge will build with WOFF2 support])
+        AC_MSG_NOTICE([building with WOFF2 support enabled...])
+    ],
+    [
+        AC_MSG_ERROR([Cannot build with WOFF2 support without the woff2 development library installed.])
+    ])
+else
+    fontforge_can_use_woff2=no
+fi
+AM_CONDITIONAL([FONTFORGE_CAN_USE_WOFF2],[test x"${fontforge_can_use_woff2}" = xyes])
 ])

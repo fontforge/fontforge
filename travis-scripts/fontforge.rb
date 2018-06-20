@@ -1,45 +1,14 @@
-# based on https://raw.githubusercontent.com/Homebrew/homebrew/master/Library/Formula/fontforge.rb
-
-class MyDownloadStrategy < GitDownloadStrategy
-  # get the PR
-  def fetch
-    system "echo", "Dumping to", cached_location
-    system "rsync", "-a", "/Users/travis/build/fontforge/fontforge/.", cached_location
-    # Mysterious fix for Homebrew/brew@2e916110e4c561b3e4175da099fc795e85ddb822
-    version.update_commit(last_commit) if head?
-  end
-
-  def reset_args
-    ref = case @ref_type
-          when :branch then "origin/#@ref"
-          when :revision, :tag then @ref
-          else "origin/HEAD"
-          end
-
-    %W{reset --hard pr{TRAVIS_PULL_REQUEST}}
-  end
-
-  def reset
-    quiet_safe_system "git", *reset_args
-  end
-end
-
 class Fontforge < Formula
   desc "Command-line outline and bitmap font editor/converter"
   homepage "https://fontforge.github.io"
-  url "https://github.com/fontforge/fontforge/releases/download/20161005/fontforge-dist-20161004.tar.gz"
-  sha256 "ccba2d84cf009e2a51656af4e0191c6a95aa1a63e5dfdeb7423969c889a24a64"
+  url "https://github.com/fontforge/fontforge/releases/download/20170731/fontforge-dist-20170731.tar.xz"
+  sha256 "840adefbedd1717e6b70b33ad1e7f2b116678fa6a3d52d45316793b9fd808822"
+  revision 3
 
   bottle do
-    sha256 "aeeb0031067149f9795f9aac5bf3b623ab53557345509086de1124cd941b0ad8" => :sierra
-    sha256 "e25c8e3ca59b9cc7ee4ece35b46d2bc95757aab7d8d800b4af4afe2b7a6dd5ed" => :el_capitan
-    sha256 "e5e8e6a5522841bccf8dc4fbfd4953b35e5375320785474ddd0dc7aa066b1fcb" => :yosemite
-  end
-
-  head do
-    url "file:///Users/travis/build/fontforge/fontforge", :branch => "FETCH_HEAD", :using => MyDownloadStrategy
-    depends_on "autoconf" => :build
-    depends_on "automake" => :build
+    sha256 "06dbc9a8d4bc58b2097d455074118db2b0c9063d6e341e8f36034f7dbb896aec" => :high_sierra
+    sha256 "c1c341cc9e10bb504fee8b8cdcb827ae1ee32db9a2c723743a79e39df32da8fd" => :sierra
+    sha256 "ec69ac98f88c91f84f83d929310c6b7bdb4ccdc731e2603d2402dbdccd54a6d2" => :el_capitan
   end
 
   option "with-giflib", "Build with GIF support"
@@ -47,31 +16,28 @@ class Fontforge < Formula
 
   deprecated_option "with-gif" => "with-giflib"
 
-  depends_on :x11 => :optional
-  if build.with? "x11"
-    depends_on "cairo" => "with-x11"
-    depends_on "pango" => "with-x11"
-  else
-    depends_on "cairo"
-    depends_on "pango"
-  end
   depends_on "pkg-config" => :build
-  depends_on "libtool" => :run
+  depends_on "libtool"
   depends_on "gettext"
-  depends_on "zeromq"
-  depends_on "czmq"
+  depends_on "pango"
+  depends_on "cairo"
   depends_on "fontconfig"
-  depends_on "libpng" => :recommended
+  depends_on "libpng"
   depends_on "jpeg" => :recommended
   depends_on "libtiff" => :recommended
-  depends_on "libspiro" => :recommended
-  depends_on "libuninameslist" => :recommended
   depends_on "giflib" => :optional
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "libspiro" => :optional
+  depends_on "libuninameslist" => :optional
+  depends_on "gtk+3"
+  depends_on "python@2"
+  depends_on "woff2" => :recommended
 
-  fails_with :llvm do
-    build 2336
-    cause "Compiling cvexportdlg.c fails with error: initializer element is not constant"
+  # Remove for > 20170731
+  # Fix "fatal error: 'mem.h' file not found" for --with-extra-tools
+  # Upstream PR from 22 Sep 2017 https://github.com/fontforge/fontforge/pull/3156
+  patch do
+    url "https://github.com/fontforge/fontforge/commit/9f69bd0f9.patch?full_index=1"
+    sha256 "f8afa9a6ab7a71650a3f013d9872881754e1ba4a265f693edd7ba70f2ec1d525"
   end
 
   def install
@@ -80,29 +46,22 @@ class Fontforge < Formula
 
     args = %W[
       --prefix=#{prefix}
+      --disable-silent-rules
       --disable-dependency-tracking
+      --enable-gdk=gdk3
     ]
 
-    args << "--without-x" if build.without? "x11"
-    args << "--without-libpng" if build.without? "libpng"
     args << "--without-libjpeg" if build.without? "jpeg"
     args << "--without-libtiff" if build.without? "libtiff"
     args << "--without-giflib" if build.without? "giflib"
     args << "--without-libspiro" if build.without? "libspiro"
     args << "--without-libuninameslist" if build.without? "libuninameslist"
+    args << "--enable-woff2" if build.without? "woff2"
 
-    # Fix linker error; see: https://trac.macports.org/ticket/25012
-    ENV.append "LDFLAGS", "-lintl"
-
-    # Reset ARCHFLAGS to match how we build
-    ENV["ARCHFLAGS"] = "-arch #{MacOS.preferred_arch}"
-
-    if build.head?
-      system "./bootstrap"
-    end
     system "./configure", *args
-    system "make"
     system "make", "install"
+
+    (pkgshare/"osx/FontForge.app").rmtree
 
     if build.with? "extra-tools"
       cd "contrib/fonttools" do
@@ -112,16 +71,10 @@ class Fontforge < Formula
     end
   end
 
-  def post_install
-    # Now we create a copy in /tmp that the script_osx.sh can use to
-    # roll a package
-    #
-    # WARNING: using rsync runs into all sorts of troubles with autotools.
-    #system "cp -aL . /tmp/fontforge-source-tree/"
-  end
-
   test do
     system bin/"fontforge", "-version"
-    system "python", "-c", "import fontforge"
+    system bin/"fontforge", "-lang=py", "-c", "import fontforge; fontforge.font()"
+    ENV.append_path "PYTHONPATH", lib/"python2.7/site-packages"
+    system "python2.7", "-c", "import fontforge; fontforge.font()"
   end
 end

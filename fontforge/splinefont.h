@@ -2063,7 +2063,7 @@ enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_mma, ff_mmb,
 	ff_ptype3, ff_ptype0, ff_cid, ff_cff, ff_cffcid,
 	ff_type42, ff_type42cid,
 	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_ttc, ff_ttfdfont, ff_otf, ff_otfdfont,
-	ff_otfcid, ff_otfciddfont, ff_svg, ff_ufo, ff_woff, ff_none };
+	ff_otfcid, ff_otfciddfont, ff_svg, ff_ufo, ff_woff, ff_woff2, ff_none };
 extern struct pschars *SplineFont2ChrsSubrs(SplineFont *sf, int iscjk,
 	struct pschars *subrs,int flags,enum fontformat format,int layer);
 struct cidbytes;

@@ -67,9 +67,14 @@ const char *savefont_extensions[] = { ".pfa", ".pfb", ".res", "%s.pfb", ".pfa", 
 	".cid", ".cff", ".cid.cff",
 	".t42", ".t11",
 	".ttf", ".ttf", ".suit", ".ttc", ".dfont", ".otf", ".otf.dfont", ".otf",
-	".otf.dfont", ".svg", ".ufo", ".woff", NULL };
+	".otf.dfont", ".svg", ".ufo", ".woff",
+#ifdef FONTFORGE_CAN_USE_WOFF2
+	".woff2",
+#endif
+	NULL };
 const char *bitmapextensions[] = { "-*.bdf", ".ttf", ".dfont", ".ttf", ".otb", ".bmap", ".dfont", ".fon", "-*.fnt", ".pdb", "-*.pt3", ".none", NULL };
 #else
+// NOTE: The order here must match the fontformat enum
 const char *savefont_extensions[] = { ".pfa", ".pfb", ".bin", "%s.pfb", ".pfa", ".pfb", ".pt3", ".ps",
 	".cid", ".cff", ".cid.cff",
 	".t42", ".t11",
@@ -77,6 +82,9 @@ const char *savefont_extensions[] = { ".pfa", ".pfb", ".bin", "%s.pfb", ".pfa", 
 	".otf.dfont", ".svg",
 	".ufo",
 	".woff",
+#ifdef FONTFORGE_CAN_USE_WOFF2
+	".woff2",
+#endif
 NULL };
 const char *bitmapextensions[] = { "-*.bdf", ".ttf", ".dfont", ".ttf", ".otb", ".bmap.bin", ".fon", "-*.fnt", ".pdb", "-*.pt3", ".none", NULL };
 #endif
@@ -844,6 +852,12 @@ return( true );
 	    oerr = !WriteWOFFFont(newname,sf,oldformatstate,sizes,bmap,
 		flags,map,layer);
 	  break;
+#ifdef FONTFORGE_CAN_USE_WOFF2
+	  case ff_woff2:
+	    oerr = !WriteWOFF2Font(newname,sf,oldformatstate,sizes,bmap,
+		flags,map,layer);
+	  break;
+#endif
 	  case ff_pfbmacbin:
 	    oerr = !WriteMacPSFont(newname,sf,oldformatstate,flags,map,layer);
 	  break;

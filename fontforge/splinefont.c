@@ -1119,6 +1119,11 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
 	} else if ( ch1=='w' && ch2=='O' && ch3=='F' && ch4=='F' ) {
 	    sf = _SFReadWOFF(file,0,openflags,fullname,NULL);
 	    checked = 'w';
+	} else if ( ch1=='w' && ch2=='O' && ch3=='F' && ch4=='2' ) {
+#ifdef FONTFORGE_CAN_USE_WOFF2
+	    sf = _SFReadWOFF2(file,0,openflags,fullname,NULL);
+	    checked = 'w';
+#endif
 	} else if (( ch1=='%' && ch2=='!' ) ||
 		    ( ch1==0x80 && ch2=='\01' ) ) {	/* PFB header */
 	    sf = _SFReadPostScript(file,fullname);

@@ -105,6 +105,7 @@ endif THE_PROGRAMS
 #--------------------------------------------------------------------------
 
 libfontforgeexe_la_CPPFLAGS = $(AM_CPPFLAGS)
+libfontforgeexe_la_LIBADD =
 
 if GRAPHICAL_USER_INTERFACE
 
@@ -127,13 +128,14 @@ libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
 	collabclientui.c collabclientui.h                                       \
 	sfundo.c wordlistparser.c wordlistparser.h fontforgeexe.h
 
-EXTRA_libfontforgeexe_la_SOURCES = macobjective.m
-
 libfontforgeexe_la_CPPFLAGS +=  $(LIBZMQ_CFLAGS) $(GTK2_CFLAGS)
 
 if MACINTOSH
-libfontforgeexe_la_OBJCFLAGS = -I../osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Headers
-libfontforgeexe_la_SOURCES += macobjective.m
+CLEANFILES = libfontforgeexe_objc.la
+noinst_LTLIBRARIES = libfontforgeexe_objc.la
+libfontforgeexe_objc_la_SOURCES = macobjective.h macobjective.m
+libfontforgeexe_objc_la_OBJCFLAGS = -I../osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Headers
+libfontforgeexe_la_LIBADD += libfontforgeexe_objc.la
 endif
 
 else !GRAPHICAL_USER_INTERFACE
@@ -143,7 +145,7 @@ libfontforgeexe_la_SOURCES = startnoui.c
 endif !GRAPHICAL_USER_INTERFACE
 
 
-libfontforgeexe_la_LIBADD = $(LTDLDEPS) $(LIBADD) $(GUILIBADD) $(MY_LIBS) $(GTK2_LIBS) $(top_builddir)/fontforge/libfontforge.la $(BREAKPAD_LIBADD)
+libfontforgeexe_la_LIBADD += $(LTDLDEPS) $(LIBADD) $(GUILIBADD) $(MY_LIBS) $(GTK2_LIBS) $(top_builddir)/fontforge/libfontforge.la $(BREAKPAD_LIBADD)
 
 libfontforgeexe_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBFONTFORGEEXE_VERSION) \
 	${MY_LIB_LDFLAGS}

@@ -791,22 +791,8 @@ static void pdf_85filter(FILE *to,FILE *from) {
     }
 }
 
-#ifdef _NO_LIBPNG
-
-static int haszlib(void) {
-return( false );
-}
-
-static void pdf_zfilter(FILE *to,FILE *from) {
-}
-
-#else
 
 # include <zlib.h>
-
-static int haszlib(void) {
-return( true );
-}
 
 #define Z_CHUNK	65536
 /* Copied with few mods from the zlib howto */
@@ -852,7 +838,6 @@ return ret;
     free(in); free(out);
 return( ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR );
 }
-#endif /* _NO_LIBPNG */
 
 static void pdf_rlefilter(FILE *to,FILE *from) {
     int ch1, ch2, i;
@@ -919,7 +904,7 @@ return( res );
 	} else if ( strmatch("ASCII85Decode",pt)==0 ) {
 	    pdf_85filter(res,old);
 	    pt += strlen("ASCII85Decode");
-	} else if ( strmatch("FlateDecode",pt)==0 && haszlib()) {
+	} else if ( strmatch("FlateDecode",pt)==0) {
             if ( ptDecodeParms!=NULL ) {
 	        LogError( _("Unsupported decode filter parameters : %s"), ptDecodeParms );
 	        fclose(old); fclose(res);

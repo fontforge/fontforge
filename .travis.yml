@@ -2,7 +2,7 @@ language: c
 compiler: gcc
 sudo: false
 dist: trusty
-osx_image: xcode8
+osx_image: xcode9.2
 
 branches:
   only:
@@ -48,7 +48,7 @@ cache:
 
 before_install:
   - if [ ! -z "$LINUX_FULL" ]; then pip --quiet install --user cpp-coveralls==0.3.12 ; fi
-#  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update || brew update; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update || brew update; fi # 1 billion years later...
 
 install:
   - |
@@ -102,25 +102,16 @@ install:
       export PYTHONPATH=$PYTHONPATH:$PREFIX/lib/python$($PYTHON -c "import sys; print('{0}.{1}'.format(sys.version_info.major, sys.version_info.minor))")/site-packages
       export CFLAGS="-fdiagnostics-color=always -Wall -Wno-switch -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wrestrict -Wnull-dereference -Wjump-misses-init -Wdouble-promotion -Wshadow"
     else
-      export PATH=/opt/local/bin:$PATH
-      export PKG_CONFIG_PATH=/opt/local/lib/pkgconfig:/opt/X11/lib/pkgconfig:/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/pkgconfig:$PKG_CONFIG_PATH
-      export PYTHONPATH=$PYTHONPATH:$PREFIX/lib/python2.7/site-packages
+      export FFCONFIG="$FFCONFIG --enable-gdk=gdk3 --enable-woff2"
+      export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig
+      export MSGFMT=/usr/local/opt/gettext/bin/msgfmt
       export PYTHON=python
-      wget https://github.com/macports/macports-base/releases/download/v2.4.1/MacPorts-2.4.1-10.11-ElCapitan.pkg
-      sudo installer -pkg MacPorts-2.4.1-10.11-ElCapitan.pkg -target /
-      sudo port selfupdate
-
-      PORTDEFS=$(pushd osx >/dev/null && port deps | \
-        grep '^Build\|^Library' | \
-        sed -e 's/Build Dependencies://' -e 's/Library Dependencies://' | \
-        tr , '\n' | \
-        sed -e 's/^[[:space:]]*//' && \
-        popd >/dev/null \
-      )
-      echo "Installing dependencies: $PORTDEFS"
-      COLUMNS=80 sudo port install $PORTDEFS 2>&1 | tee /dev/null
-      sudo port select --set python python27
-      sudo port select --set python2 python27
+      export PYTHONPATH=$PYTHONPATH:$PREFIX/lib/python2.7/site-packages
+      # Disable fc-cache on fontconfig install. Because it's slow.
+      sed -i.bak '/fc-cache/d' "$(brew --prefix)/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/fontconfig.rb"
+      brew unlink python || true
+      brew install ./travis-scripts/fontforge.rb --only-dependencies || true
+      # 10 billion years later...
     fi
 
     #Why.

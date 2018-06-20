@@ -155,9 +155,17 @@ libfontforge_la_SOURCES = activeinui.c asmfpst.c autohint.c autosave.c	\
 	mem.c
 
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
+libfontforge_la_LIBADD =
+
+if FONTFORGE_CAN_USE_WOFF2
+CLEANFILES = libfontforge_cxx.la
+noinst_LTLIBRARIES = libfontforge_cxx.la
+libfontforge_cxx_la_SOURCES = woff2.cc
+libfontforge_la_LIBADD += libfontforge_cxx.la -lstdc++
+endif
 
 libfontforge_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_CFLAGS)
-libfontforge_la_LIBADD = splinerefigure.lo $(LIBADD) $(LIBLTDL)
+libfontforge_la_LIBADD += splinerefigure.lo $(LIBADD) $(LIBLTDL)
 
 if PLUGIN_GB12345
 libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/gb12345.la
@@ -199,6 +207,7 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 		splinerefigure.lo $(AM_CPPFLAGS) $(srcdir)/splinerefigure.c
 
 #--------------------------------------------------------------------------
+
 EXTRA_DIST = generate_codepoint_selector.py threaddummy.c
 
 if MACINTOSH
