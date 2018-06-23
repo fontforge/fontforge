@@ -5029,7 +5029,7 @@ return( xasprintf( _("%s is not a class name for the forward classes." ), parsed
 		    parsed[i].replacements = NULL;
 		}
 	    } else
-		rule->u.coverage.ncovers[i-last-1] = parsed[i].entity;
+		rule->u.coverage.fcovers[i-last-1] = parsed[i].entity;
 	    parsed[i].entity = NULL;
 	}
       break;
