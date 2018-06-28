@@ -608,7 +608,7 @@ msgstr ""
 
 #: cvundoes.c:3700
 msgid "Pasting..."
-msgstr ""
+msgstr "Einfügen..."
 
 #: dumpbdf.c:434 dumppfa.c:2797 winfonts.c:659
 #, fuzzy, c-format
@@ -28238,7 +28238,7 @@ msgstr ""
 
 #: ../fontforgeexe/prefs.c:548
 msgid "New Font"
-msgstr ""
+msgstr "Neue Schriftart"
 
 #: ../fontforgeexe/prefs.c:550
 msgid "Navigation"
@@ -28251,7 +28251,7 @@ msgstr "_Bearbeiten"
 
 #: ../fontforgeexe/prefs.c:552
 msgid "Synchronize"
-msgstr ""
+msgstr "Synchronisieren"
 
 #: ../fontforgeexe/prefs.c:553
 msgid "TT"
@@ -28379,11 +28379,11 @@ msgstr "_Scheren..."
 
 #: ../fontforgeexe/prefs.c:2295 ../fontforgeexe/prefs.c:2869
 msgid "On"
-msgstr ""
+msgstr "Ein"
 
 #: ../fontforgeexe/prefs.c:2303 ../fontforgeexe/prefs.c:2877
 msgid "Off"
-msgstr ""
+msgstr "Aus"
 
 #. GT: See the long comment at "Property|New"
 #. GT: This and the next few strings show a limitation of my widget set which
@@ -28879,7 +28879,7 @@ msgstr "Positionen"
 
 #: ../fontforgeexe/problems.c:2267
 msgid "pair"
-msgstr ""
+msgstr "paar"
 
 #: ../fontforgeexe/problems.c:2268
 #, fuzzy
@@ -29155,7 +29155,7 @@ msgstr ""
 
 #: ../fontforgeexe/problems.c:3285
 msgid "Poin_ts too close"
-msgstr ""
+msgstr "Punkte zu nah"
 
 #: ../fontforgeexe/problems.c:3292
 msgid ""
@@ -29166,7 +29166,7 @@ msgstr ""
 
 #: ../fontforgeexe/problems.c:3297
 msgid "_Points too far"
-msgstr ""
+msgstr "_Punkte zu weit entfernt"
 
 #: ../fontforgeexe/problems.c:3304
 msgid ""
@@ -30305,7 +30305,7 @@ msgstr ""
 
 #: ../fontforgeexe/savefontdlg.c:798
 msgid "Save Colors"
-msgstr ""
+msgstr "Farben Speichern"
 
 #: ../fontforgeexe/savefontdlg.c:800
 msgid "Save glyph colors in the PfEd table"
@@ -30510,7 +30510,7 @@ msgstr "Fonts _herstellen..."
 
 #: ../fontforgeexe/savefontdlg.c:1550
 msgid "Errors detected"
-msgstr ""
+msgstr "Fehler gefunden"
 
 #: ../fontforgeexe/savefontdlg.c:1550
 #, c-format
@@ -30646,19 +30646,19 @@ msgstr ""
 
 #: ../fontforgeexe/savefontdlg.c:2757
 msgid "Register"
-msgstr ""
+msgstr "Registrieren"
 
 #: ../fontforgeexe/savefontdlg.c:2782
 msgid "Username:"
-msgstr ""
+msgstr "Benutzername:"
 
 #: ../fontforgeexe/savefontdlg.c:2786 ../fontforgeexe/savefontdlg.c:2796
 msgid "Username on OFLib"
-msgstr ""
+msgstr "Benutzername auf OFLib"
 
 #: ../fontforgeexe/savefontdlg.c:2801
 msgid "Password:"
-msgstr ""
+msgstr "Passwort:"
 
 #: ../fontforgeexe/savefontdlg.c:2805 ../fontforgeexe/savefontdlg.c:2819
 msgid "Password on OFLib"
@@ -30719,7 +30719,7 @@ msgstr ""
 
 #: ../fontforgeexe/savefontdlg.c:2889
 msgid "Description:"
-msgstr ""
+msgstr "Beschreibung:"
 
 #: ../fontforgeexe/savefontdlg.c:2893 ../fontforgeexe/savefontdlg.c:2900
 #: ../fontforgeexe/savefontdlg.c:2910
@@ -30728,7 +30728,7 @@ msgstr ""
 
 #: ../fontforgeexe/savefontdlg.c:2906
 msgid "License:"
-msgstr ""
+msgstr "Lizenz:"
 
 #: ../fontforgeexe/savefontdlg.c:2915
 msgid "SIL"
@@ -30758,7 +30758,7 @@ msgstr ""
 
 #: ../fontforgeexe/savefontdlg.c:2960
 msgid "Preview:"
-msgstr ""
+msgstr "Vorschau:"
 
 #: ../fontforgeexe/savefontdlg.c:2964
 msgid "An image of the font in use"
@@ -30766,7 +30766,7 @@ msgstr ""
 
 #: ../fontforgeexe/savefontdlg.c:2969
 msgid "Generated Image"
-msgstr ""
+msgstr "Generiertes Bild"
 
 #: ../fontforgeexe/savefontdlg.c:2974
 msgid ""
@@ -31097,11 +31097,11 @@ msgstr ""
 
 #: ../fontforgeexe/scstylesui.c:1139
 msgid "Letters:"
-msgstr ""
+msgstr "Zeichen:"
 
 #: ../fontforgeexe/scstylesui.c:1155
 msgid "Symbols:"
-msgstr ""
+msgstr "Symbole:"
 
 #: ../fontforgeexe/scstylesui.c:1178
 msgid "Create small caps variants for symbols as well as letters"
@@ -31209,7 +31209,7 @@ msgstr ""
 
 #: ../fontforgeexe/scstylesui.c:1734
 msgid "Reset"
-msgstr ""
+msgstr "Zurücksetzen"
 
 #: ../fontforgeexe/scstylesui.c:1841
 msgid "Embolden by"
@@ -31670,7 +31670,7 @@ msgstr ""
 
 #: ../fontforgeexe/searchview.c:812
 msgid "Find All"
-msgstr ""
+msgstr "Finde alles"
 
 #: ../fontforgeexe/searchview.c:832
 #, fuzzy
@@ -31695,11 +31695,11 @@ msgstr "Öffnen von %.200s fehlgeschlagen"
 
 #: ../fontforgeexe/sftextfield.c:722
 msgid "No letters in font"
-msgstr ""
+msgstr "Keine Zeichen in der Schriftart"
 
 #: ../fontforgeexe/sftextfield.c:728
 msgid "Text from script"
-msgstr ""
+msgstr "Text vom Script"
 
 #: ../fontforgeexe/sftextfield.c:728
 msgid "Insert random text in the specified script"
@@ -31713,7 +31713,7 @@ msgstr "_Speichern"
 
 #: ../fontforgeexe/sftextfield.c:818 ../fontforgeexe/sftextfield.c:820
 msgid "Save Image"
-msgstr ""
+msgstr "Bild Speichern"
 
 #: ../fontforgeexe/sftextfield.c:937 ../gdraw/gresedit.c:2335
 #, fuzzy
@@ -31722,7 +31722,7 @@ msgstr "_Speichern unter..."
 
 #: ../fontforgeexe/sftextfield.c:939
 msgid "_Insert Random Text..."
-msgstr ""
+msgstr "_Zufälligen Text einfügen..."
 
 #: ../fontforgeexe/sftextfield.c:941
 #, fuzzy
@@ -31877,7 +31877,7 @@ msgstr "Ankerklassen"
 
 #: ../fontforgeexe/showatt.c:584
 msgid "coverage"
-msgstr ""
+msgstr "Abdeckung"
 
 #. GT: There are various broad classes of lookups here and the first string
 #. GT: describes those: "Contextual Positioning", Contextual Substitution", etc.
@@ -32123,7 +32123,7 @@ msgstr ""
 
 #: ../fontforgeexe/showatt.c:1710
 msgid "Arabic Number"
-msgstr ""
+msgstr "Arabische Nummer"
 
 #: ../fontforgeexe/showatt.c:1711
 msgid "Common Number Separator"
@@ -32143,7 +32143,7 @@ msgstr ""
 
 #: ../fontforgeexe/showatt.c:1715
 msgid "Neutral"
-msgstr ""
+msgstr "Neutral"
 
 #: ../fontforgeexe/showatt.c:1716
 msgid "<Unknown direction>"
