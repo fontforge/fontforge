@@ -840,9 +840,9 @@ return;
     else if ( inschr.dsp_mode==d_dec )
 	sprintf( buffer, "%d", ch );
     else if ( inschr.map==em_unicode )
-	sprintf( buffer, "%d,%d", (ch>>8), (ch&0xff) );
+	sprintf( buffer, "%d,%d", ((ch&0xff)>>8), (ch&0xff) );
     else
-	sprintf( buffer, "%d,%d", (ch>>8)-0x21, (ch&0xff)-0x21 );
+	sprintf( buffer, "%d,%d", ((ch&0xff)>>8)-0x21, (ch&0xff)-0x21 );
     uc_strcpy(ubuffer,buffer);
     GGadgetSetTitle(GWidgetGetControl(inschr.icw,INSCHR_Char),ubuffer);
     InsChrFigureShow();
@@ -864,14 +864,19 @@ static void InsChrMouseMove(GWindow gw, GEvent *event) {
     y= (event->u.mouse.y-inschr.ybase)/inschr.spacing;
     if ( !inschr.mouse_down && event->u.mouse.y>inschr.ybase ) {
 	int uch = InsChrMapChar(16*y + x);
-	static unichar_t space[600];
+	static unichar_t space[650];
 	char cspace[40];
 	char *uniname;
 	char *uniannot;
 
 	if ( (uniname=unicode_name(uch))!=NULL ) {
 	    uc_strncpy(space, uniname, 550);
-	    sprintf( cspace, " U+%04X", uch );
+	    if ( uch<=0xffff )
+		sprintf( cspace, " U+%04X", uch );
+	    else if ( uch<=0xfffff )
+		sprintf( cspace, " 0x%05X", uch );
+	    else
+		sprintf( cspace, " 0x%06X", uch );
 	    uc_strcpy(space+u_strlen(space),cspace);
 	    free(uniname);
 	} else {
@@ -879,7 +884,7 @@ static void InsChrMouseMove(GWindow gw, GEvent *event) {
 		sprintf(cspace, "Control Char U+%04X ", uch);
 	    else if ( uch>=0x3400 && uch<=0x4db5 )
 		sprintf(cspace, "CJK Ideograph Extension A U+%04X ", uch);
-	    else if ( uch>=0x4E00 && uch<=0x9FA5 )
+	    else if ( uch>=0x4e00 && uch<=0x9fef )
 		sprintf(cspace, "CJK Ideograph U+%04X ", uch);
 	    else if ( uch>=0xAC00 && uch<=0xD7A3 )
 		sprintf(cspace, "Hangul Syllable U+%04X ", uch);
@@ -891,8 +896,27 @@ static void InsChrMouseMove(GWindow gw, GEvent *event) {
 		sprintf(cspace, "Low Surrogate U+%04X ", uch);
 	    else if ( uch>=0xE000 && uch<=0xF8FF )
 		sprintf(cspace, "Private Use U+%04X ", uch);
+	    else if ( uch>=0x20000 && uch<=0x2a6d6 )
+		sprintf(cspace, "CJK Ideograph Extension B 0x%05X ", uch);
+	    else if ( uch>=0x2a700 && uch<=0x2b734 )
+		sprintf(cspace, "CJK Ideograph Extension C 0x%05X ", uch);
+	    else if ( uch>=0x2b740 && uch<=0x2b81d )
+		sprintf(cspace, "CJK Ideograph Extension D 0x%05X ", uch);
+	    else if ( uch>=0x2b820 && uch<=0x2ceaf )
+		sprintf(cspace, "CJK Ideograph Extension E 0x%05X ", uch);
+	    else if ( uch>=0x2ceb0 && uch<=0x2ebe0 )
+		sprintf(cspace, "CJK Ideograph Extension F 0x%05X ", uch);
+	    else if ( uch>=0xf0000 && uch<=0xfffff )
+		sprintf(cspace, "Supplementary Private Use Area-A 0x%05X ", uch);
+	    else if ( uch>=0x100000 && uch<=0x10fffd )
+		sprintf(cspace, "Supplementary Private Use Area-B 0x%06X ", uch);
 	    else
-		sprintf(cspace, "Unencoded Unicode U+%04X ", uch);
+		if ( uch<=0xffff )
+		    sprintf(cspace, "Unencoded Unicode U+%04X ", uch);
+		else if ( uch<=0xfffff )
+		    sprintf(cspace, "Unencoded Unicode 0x%05X ", uch);
+		else
+		    sprintf(cspace, "Unencoded Unicode 0x%06X ", uch);
 	    uc_strcpy(space,cspace);
 	}
 	if ( (uniannot=unicode_annot(uch))!=NULL ) {

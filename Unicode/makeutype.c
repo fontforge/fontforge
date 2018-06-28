@@ -52,7 +52,7 @@
  */
 #include <fontforge-config.h>
 
-#define UnicodeMajor	9
+#define UnicodeMajor	11
 #define UnicodeMinor	0
 
 /* Build a ctype array out of the UnicodeData.txt and PropList.txt files */
@@ -177,6 +177,7 @@ static const long lig_alt_overrides[] = {
     0xfe21, 0,
     0xfe27, 0,
     0xfe28, 0,
+    0x10f27, 0,
     0x11176, 0, /* ? */
     0x1f670, 0, 0x1f671, 0, 0x1f672, 0, 0x1f673, 0, /* chars? keep? */
     -1
@@ -196,7 +197,10 @@ static const long frac_alt_overrides[] = {
     0x109bc, 0, 0x109bd, 0,
     0x109f6, 0, 0x109f7, 0, 0x109f8, 0, 0x109f9, 0, 0x109fa, 0,
     0x109fb, 0, 0x109fc, 0, 0x109fd, 0, 0x109fe, 0, 0x109ff, 0,
+    0x10a48, 0 /*10a40+?*/,
     0x10e7b, 0, 0x10e7c, 0, 0x10e7d, 0, 0x10e7e, 0,
+    0x10f26, 0,
+    0x1ecad, 0, 0x1ecae, 0, 0x1ecaf, 0,
     -1
 };
 
@@ -266,7 +270,7 @@ static int overrides_find_count(long uCode, int lvf) {
 	    i += (++v);
 	}
     }
-    if ( verbLVOa || i>=0 ) fprintf( stderr, "<%d override> ", i );
+    if ( verbLVOa || i>=0 ) fprintf( stderr, "<0x%lx %d override> ", uCode, i );
     return( i );
 }
 
@@ -311,14 +315,14 @@ static int FigureAlternates_lfv(int index, char *apt, int lvf, long val) {
 	}
     } else if ( lvf==1 ) { /* vulgar */
 	altsv[index][0] = altsv[index][1] =altsv[index][2] = 0;
-	if ( (c=overrides_find_count(val,lvf))>=0 ) {
+	if ( (po=overrides_find_count(val,lvf))>=0 ) {
 	    t = 3;
 	} else if ( (start=strstr(apt,"<fraction>"))!=NULL ) {
 	    t = 0;
 	}
     } else if ( lvf==2 ) {
 	altsf[index][0] = altsf[index][1] =altsf[index][2] = 0;
-	if ( (c=overrides_find_count(val,lvf))>=0 ) {
+	if ( (po=overrides_find_count(val,lvf))>=0 ) {
 	    t = 3;
 	} else if ( (start=strstr(apt,"<fraction>"))!=NULL ) {
 	    t = 0;
@@ -335,7 +339,7 @@ static int FigureAlternates_lfv(int index, char *apt, int lvf, long val) {
     }
 
     if ( verbLVOa )
-	fprintf( stderr,"lvf=%d index=%d t=%d val=U+%X alt{",lvf,index,t,val );
+	fprintf( stderr,"po=%d lvf=%d index=%d t=%d val=U+%X alt{",po,lvf,index,t,val );
     if ( t==3 ) { /* Skip search and include table overrides */
 	for ( i=0,pc=overrides_find_value((++po),lvf); pc; ++i,--pc ) {
 	    alt = overrides_find_value((++po),lvf);
@@ -784,6 +788,12 @@ static void readin(void) {
 	for ( j=combiners[i].low; j<=combiners[i].high; ++j )
 	    flags2[j] |= combiners[i].pos[j-combiners[i].low];
     }
+
+    /* 2018jun19: Unicode11.0 still points to 0xdf, fixit as per 2017 */
+    /* Aug9th, the Council for German Orthography ultimately adopting */
+    /* capital ß (ẞ) into German orthography, and ending orthographic */
+    /* debate. Example, it's now possible: Straße — STRASSE — STRAẞE. */
+    if ( mytoupper[0xdf]==0xdf ) mytoupper[0xdf]=0x1e9e;
 }
 
 static void readcorpfile(char *prefix, char *corp) {
@@ -901,7 +911,7 @@ static void dumparabicdata(FILE *header) {
     fprintf( data, "/* Contributions: Khaled Hosny, Joe Da Silva */\n" );
     fprintf( data, GeneratedFileMessage, UnicodeMajor, UnicodeMinor );
 
-    fprintf( data, "#include <utype.h>\n\n" );
+    fprintf( data, "#include \"utype.h\"\n\n" );
 
     fprintf( data, "struct arabicforms ArabicForms[] = {\n" );
     fprintf( data, "\t/* initial, medial, final, isolated, isletter, joindual, required_lig_with_alef */\n");
@@ -1166,20 +1176,13 @@ static void dumpligaturesfractions(FILE *header) {
     fprintf( header, "extern int FractionU_alt_getC(uint32 u);\t/* Unicode table Other Fraction Alt count */\n" );
     fprintf( header, "extern int32 FractionU_alt_getV(uint32 u,int a); /* Unicode table Other Fraction Alt value */\n\n" );
 
-    fprintf( header, "/* Return !0 if codepoint is a Ligature */\n" );
-    fprintf( header, "extern int is_LIGATURE(uint32 codepoint);\n\n" );
-    fprintf( header, "/* Return !0 if codepoint is a Vulgar Fraction */\n" );
-    fprintf( header, "extern int is_VULGAR_FRACTION(uint32 codepoint);\n\n" );
-    fprintf( header, "/* Return !0 if codepoint is a non-vulgar Fraction */\n" );
-    fprintf( header, "extern int is_OTHER_FRACTION(uint32 codepoint);\n\n" );
-    fprintf( header, "/* Return !0 if codepoint is a Fraction */\n" );
-    fprintf( header, "extern int is_FRACTION(uint32 codepoint);\n\n" );
-    fprintf( header, "/* Return !0 if codepoint is a Ligature or Vulgar Fraction */\n" );
-    fprintf( header, "extern int is_LIGATURE_or_VULGAR_FRACTION(uint32 codepoint);\n\n" );
-    fprintf( header, "/* Return !0 if codepoint is a Ligature or non-Vulgar Fraction */\n" );
-    fprintf( header, "extern int is_LIGATURE_or_OTHER_FRACTION(uint32 codepoint);\n\n" );
-    fprintf( header, "/* Return !0 if codepoint is a Ligature or Fraction */\n" );
-    fprintf( header, "extern int is_LIGATURE_or_FRACTION(uint32 codepoint);\n\n" );
+    fprintf( header, "extern int is_LIGATURE(uint32 codepoint);\t/* Return !0 if codepoint is a Ligature */\n" );
+    fprintf( header, "extern int is_VULGAR_FRACTION(uint32 codepoint); /* Return !0 if codepoint is a Vulgar Fraction */\n" );
+    fprintf( header, "extern int is_OTHER_FRACTION(uint32 codepoint); /* Return !0 if codepoint is non-vulgar Fraction */\n" );
+    fprintf( header, "extern int is_FRACTION(uint32 codepoint);\t/* Return !0 if codepoint is a Fraction */\n" );
+    fprintf( header, "extern int is_LIGATURE_or_VULGAR_FRACTION(uint32 codepoint); /* Return !0 if Ligature or Vulgar Fraction */\n" );
+    fprintf( header, "extern int is_LIGATURE_or_OTHER_FRACTION(uint32 codepoint); /* Return !0 if Ligature or non-Vulgar Fraction */\n" );
+    fprintf( header, "extern int is_LIGATURE_or_FRACTION(uint32 codepoint); /* Return !0 if Ligature or Fraction */\n\n" );
 
     data = fopen("is_Ligature_data.h","w");
     if (data==NULL) {
@@ -1234,7 +1237,7 @@ static void dump() {
     fprintf( header, GeneratedFileMessage, UnicodeMajor, UnicodeMinor );
 
     fprintf( header, "#include <ctype.h>\t/* Include here so we can control it. If a system header includes it later bad things happen */\n" );
-    fprintf( header, "#include <basics.h>\t/* Include here so we can use pre-defined int types to correctly size constant data arrays. */\n" );
+    fprintf( header, "#include \"basics.h\"\t/* Include here so we can use pre-defined int types to correctly size constant data arrays. */\n" );
     fprintf( header, "#ifdef tolower\n" );
     fprintf( header, "# undef tolower\n" );
     fprintf( header, "#endif\n" );
@@ -1266,15 +1269,18 @@ static void dump() {
     fprintf( header, "# undef ishexdigit\n" );
     fprintf( header, "#endif\n\n" );
 
-    fprintf( header, "extern const unsigned short ff_unicode_tolower[];\n" );
-    fprintf( header, "extern const unsigned short ff_unicode_toupper[];\n" );
-    fprintf( header, "extern const unsigned short ff_unicode_totitle[];\n" );
-    fprintf( header, "extern const unsigned short ff_unicode_tomirror[];\n" );
-    fprintf( header, "extern const unsigned char  ff_unicode_digitval[];\n" );
-    fprintf( header, "\n" );
-
-    fprintf( header, "/* utype[] MAX characters, originally 600, then increased to hold 65536 chars */\n" );
+    fprintf( header, "/* MAX characters, originally 600, then increased to hold 65536 chars */\n" );
     fprintf( header, "#define FF_UTYPE_MAXC\t\t0x%0x\n\n", MAXC );
+
+    fprintf( header, "extern const unsigned short ffUnicodeToLower(int32 ucode);\n" );
+    fprintf( header, "extern const unsigned short ffUnicodeToUpper(int32 ucode);\n" );
+    fprintf( header, "extern const unsigned short ffUnicodeToTitle(int32 ucode);\n" );
+    fprintf( header, "extern const unsigned short ffUnicodeToMirror(int32 ucode);\n" );
+    fprintf( header, "extern const unsigned char ffUnicodeDigitVal(int32 ucode);\n" );
+    fprintf( header, "extern const uint32 ffUnicodeUtype(int32 ucode);\n" );
+    fprintf( header, "extern const uint32 ffUnicodeUtype2(int32 ucode);\n" );
+    fprintf( header, "extern const uint32 isunicodepointassigned(int32 ucode);\n" );
+    fprintf( header, "\n" );
 
     fprintf( header, "/* utype[] holds binary flags used for features of each unicode.org character */\n" );
     fprintf( header, "#define FF_UNICODE_L\t\t0x%0x\n", FF_UNICODE_LOWER );
@@ -1309,37 +1315,35 @@ static void dump() {
     fprintf( header, "#define FF_UNICODE_LIG_OR_FRAC\t0x%0x\n", FF_UNICODE_LIG_OR_FRAC );
     fprintf( header, "\n" );
 
-    fprintf( header, "#define islower(ch)\t\t(ff_unicode_utype[(ch)+1]&FF_UNICODE_L)\n" );
-    fprintf( header, "#define isupper(ch)\t\t(ff_unicode_utype[(ch)+1]&FF_UNICODE_U)\n" );
-    fprintf( header, "#define istitle(ch)\t\t(ff_unicode_utype[(ch)+1]&FF_UNICODE_TITLE)\n" );
-    fprintf( header, "#define isalpha(ch)\t\t(ff_unicode_utype[(ch)+1]&(FF_UNICODE_L|FF_UNICODE_U|FF_UNICODE_TITLE|FF_UNICODE_AL))\n" );
-    fprintf( header, "#define isdigit(ch)\t\t(ff_unicode_utype[(ch)+1]&FF_UNICODE_D)\n" );
-    fprintf( header, "#define isalnum(ch)\t\t(ff_unicode_utype[(ch)+1]&(FF_UNICODE_L|FF_UNICODE_U|FF_UNICODE_TITLE|FF_UNICODE_AL|FF_UNICODE_D))\n" );
-    fprintf( header, "#define isideographic(ch)\t(ff_unicode_utype[(ch)+1]&FF_UNICODE_ID)\n" );
-    fprintf( header, "#define isideoalpha(ch)\t\t(ff_unicode_utype[(ch)+1]&(FF_UNICODE_ID|FF_UNICODE_L|FF_UNICODE_U|FF_UNICODE_TITLE|FF_UNICODE_AL))\n" );
-    fprintf( header, "#define isspace(ch)\t\t(ff_unicode_utype[(ch)+1]&FF_UNICODE_S)\n" );
-    fprintf( header, "#define ispunct(ch)\t\t(ff_unicode_utype[(ch)+1]&_FF_UNICODE_P)\n" );
-    fprintf( header, "#define ishexdigit(ch)\t\t(ff_unicode_utype[(ch)+1]&FF_UNICODE_X)\n" );
-    fprintf( header, "#define iszerowidth(ch)\t\t(ff_unicode_utype[(ch)+1]&FF_UNICODE_ZW)\n" );
-    fprintf( header, "#define islefttoright(ch)\t(ff_unicode_utype[(ch)+1]&FF_UNICODE_L2R)\n" );
-    fprintf( header, "#define isrighttoleft(ch)\t(ff_unicode_utype[(ch)+1]&FF_UNICODE_R2L)\n" );
-    fprintf( header, "#define iseuronumeric(ch)\t(ff_unicode_utype[(ch)+1]&FF_UNICODE_ENUM)\n" );
-    fprintf( header, "#define isarabnumeric(ch)\t(ff_unicode_utype[(ch)+1]&FF_UNICODE_ANUM)\n" );
-    fprintf( header, "#define iseuronumsep(ch)\t(ff_unicode_utype[(ch)+1]&FF_UNICODE_ENS)\n" );
-    fprintf( header, "#define iscommonsep(ch)\t\t(ff_unicode_utype[(ch)+1]&FF_UNICODE_CS)\n" );
-    fprintf( header, "#define iseuronumterm(ch)\t(ff_unicode_utype[(ch)+1]&FF_UNICODE_ENT)\n" );
-    fprintf( header, "#define iscombining(ch)\t\t(ff_unicode_utype[(ch)+1]&FF_UNICODE_COMBINE)\n" );
-    fprintf( header, "#define isbreakbetweenok(ch1,ch2) (((ff_unicode_utype[(ch1)+1]&FF_UNICODE_BA) && !(ff_unicode_utype[(ch2)+1]&FF_UNICODE_NS)) || ((ff_unicode_utype[(ch2)+1]&FF_UNICODE_BB) && !(ff_unicode_utype[(ch1)+1]&FF_UNICODE_NE)) || (!(ff_unicode_utype[(ch2)+1]&FF_UNICODE_D) && ch1=='/'))\n" );
-    fprintf( header, "#define isnobreak(ch)\t\t(ff_unicode_utype[(ch)+1]&FF_UNICODE_NB)\n" );
-    fprintf( header, "#define isarabinitial(ch)\t(ff_unicode_utype[(ch)+1]&FF_UNICODE_INITIAL)\n" );
-    fprintf( header, "#define isarabmedial(ch)\t(ff_unicode_utype[(ch)+1]&FF_UNICODE_MEDIAL)\n" );
-    fprintf( header, "#define isarabfinal(ch)\t\t(ff_unicode_utype[(ch)+1]&FF_UNICODE_FINAL)\n" );
-    fprintf( header, "#define isarabisolated(ch)\t(ff_unicode_utype[(ch)+1]&FF_UNICODE_ISOLATED)\n" );
-    fprintf( header, "#define isdecompositionnormative(ch) (ff_unicode_utype[(ch)+1]&FF_UNICODE_DECOMPNORM)\n" );
-    fprintf( header, "#define isligorfrac(ch)\t\t(ff_unicode_utype[(ch)+1]&FF_UNICODE_LIG_OR_FRAC)\n" );
+    fprintf( header, "#define islower(ch)\t\t(ffUnicodeUtype((ch))&FF_UNICODE_L)\n" );
+    fprintf( header, "#define isupper(ch)\t\t(ffUnicodeUtype((ch))&FF_UNICODE_U)\n" );
+    fprintf( header, "#define istitle(ch)\t\t(ffUnicodeUtype((ch))&FF_UNICODE_TITLE)\n" );
+    fprintf( header, "#define isalpha(ch)\t\t(ffUnicodeUtype((ch))&(FF_UNICODE_L|FF_UNICODE_U|FF_UNICODE_TITLE|FF_UNICODE_AL))\n" );
+    fprintf( header, "#define isdigit(ch)\t\t(ffUnicodeUtype((ch))&FF_UNICODE_D)\n" );
+    fprintf( header, "#define isalnum(ch)\t\t(ffUnicodeUtype((ch))&(FF_UNICODE_L|FF_UNICODE_U|FF_UNICODE_TITLE|FF_UNICODE_AL|FF_UNICODE_D))\n" );
+    fprintf( header, "#define isideographic(ch)\t(ffUnicodeUtype((ch))&FF_UNICODE_ID)\n" );
+    fprintf( header, "#define isideoalpha(ch)\t\t(ffUnicodeUtype((ch))&(FF_UNICODE_ID|FF_UNICODE_L|FF_UNICODE_U|FF_UNICODE_TITLE|FF_UNICODE_AL))\n" );
+    fprintf( header, "#define isspace(ch)\t\t(ffUnicodeUtype((ch))&FF_UNICODE_S)\n" );
+    fprintf( header, "#define ispunct(ch)\t\t(ffUnicodeUtype((ch))&_FF_UNICODE_P)\n" );
+    fprintf( header, "#define ishexdigit(ch)\t\t(ffUnicodeUtype((ch))&FF_UNICODE_X)\n" );
+    fprintf( header, "#define iszerowidth(ch)\t\t(ffUnicodeUtype((ch))&FF_UNICODE_ZW)\n" );
+    fprintf( header, "#define islefttoright(ch)\t(ffUnicodeUtype((ch))&FF_UNICODE_L2R)\n" );
+    fprintf( header, "#define isrighttoleft(ch)\t(ffUnicodeUtype((ch))&FF_UNICODE_R2L)\n" );
+    fprintf( header, "#define iseuronumeric(ch)\t(ffUnicodeUtype((ch))&FF_UNICODE_ENUM)\n" );
+    fprintf( header, "#define isarabnumeric(ch)\t(ffUnicodeUtype((ch))&FF_UNICODE_ANUM)\n" );
+    fprintf( header, "#define iseuronumsep(ch)\t(ffUnicodeUtype((ch))&FF_UNICODE_ENS)\n" );
+    fprintf( header, "#define iscommonsep(ch)\t\t(ffUnicodeUtype((ch))&FF_UNICODE_CS)\n" );
+    fprintf( header, "#define iseuronumterm(ch)\t(ffUnicodeUtype((ch))&FF_UNICODE_ENT)\n" );
+    fprintf( header, "#define iscombining(ch)\t\t(ffUnicodeUtype((ch))&FF_UNICODE_COMBINE)\n" );
+    fprintf( header, "#define isbreakbetweenok(ch1,ch2) (((ffUnicodeUtype((ch1))&FF_UNICODE_BA) && !(ffUnicodeUtype((ch2))&FF_UNICODE_NS)) || ((ffUnicodeUtype((ch2))&FF_UNICODE_BB) && !(ffUnicodeUtype((ch1))&FF_UNICODE_NE)) || (!(ffUnicodeUtype((ch2))&FF_UNICODE_D) && ch1=='/'))\n" );
+    fprintf( header, "#define isnobreak(ch)\t\t(ffUnicodeUtype((ch))&FF_UNICODE_NB)\n" );
+    fprintf( header, "#define isarabinitial(ch)\t(ffUnicodeUtype((ch))&FF_UNICODE_INITIAL)\n" );
+    fprintf( header, "#define isarabmedial(ch)\t(ffUnicodeUtype((ch))&FF_UNICODE_MEDIAL)\n" );
+    fprintf( header, "#define isarabfinal(ch)\t\t(ffUnicodeUtype((ch))&FF_UNICODE_FINAL)\n" );
+    fprintf( header, "#define isarabisolated(ch)\t(ffUnicodeUtype((ch))&FF_UNICODE_ISOLATED)\n" );
+    fprintf( header, "#define isdecompositionnormative(ch) (ffUnicodeUtype((ch))&FF_UNICODE_DECOMPNORM)\n" );
+    fprintf( header, "#define isligorfrac(ch)\t\t(ffUnicodeUtype((ch))&FF_UNICODE_LIG_OR_FRAC)\n" );
     fprintf( header, "\n" );
-
-    fprintf( header, "extern const uint32 ff_unicode_utype[];\t/* hold character type features for each Unicode.org defined character */\n\n" );
 
     fprintf( header, "/* utype2[] binary flags used for position/layout of each unicode.org character */\n" );
     fprintf( header, "#define FF_UNICODE_COMBININGCLASS\t0x%0x\n", FF_UNICODE_CombiningClass );
@@ -1362,20 +1366,14 @@ static void dump() {
 	    FF_UNICODE_Touching);
     fprintf( header, "#define FF_UNICODE_NOPOSDATAGIVEN\t(uint32)(-1)\t/* -1 == no position data given */\n\n" );
 
-    fprintf( header, "#define combiningclass(ch)\t(ff_unicode_utype2[(ch)+1]&FF_UNICODE_COMBININGCLASS)\n" );
-    fprintf( header, "#define combiningposmask(ch)\t(ff_unicode_utype2[(ch)+1]&FF_UNICODE_COMBININGPOSMASK)\n\n" );
+    fprintf( header, "#define combiningclass(ch)\t(ffUnicodeUtype2((ch))&FF_UNICODE_COMBININGCLASS)\n" );
+    fprintf( header, "#define combiningposmask(ch)\t(ffUnicodeUtype2((ch))&FF_UNICODE_COMBININGPOSMASK)\n\n" );
 
-    fprintf( header, "extern const uint32 ff_unicode_utype2[];\t/* hold position boolean flags for each Unicode.org defined character */\n\n" );
-
-    fprintf( header, "#define isunicodepointassigned(ch) (ff_unicode_codepointassigned[(ch)/32]&(1<<((ch)%%32)))\n\n" );
-
-    fprintf( header, "extern const uint32 ff_unicode_codepointassigned[]; /* 1bit_boolean_flag x 32 = exists in Unicode.org character chart list. */\n\n" );
-
-    fprintf( header, "#define tolower(ch) (ff_unicode_tolower[(ch)+1])\n" );
-    fprintf( header, "#define toupper(ch) (ff_unicode_toupper[(ch)+1])\n" );
-    fprintf( header, "#define totitle(ch) (ff_unicode_totitle[(ch)+1])\n" );
-    fprintf( header, "#define tomirror(ch) (ff_unicode_tomirror[(ch)+1])\n" );
-    fprintf( header, "#define tovalue(ch) (ff_unicode_digitval[(ch)+1])\n" );
+    fprintf( header, "#define tolower(ch) (ffUnicodeToLower((ch)))\n" );
+    fprintf( header, "#define toupper(ch) (ffUnicodeToUpper((ch)))\n" );
+    fprintf( header, "#define totitle(ch) (ffUnicodeToTitle((ch)))\n" );
+    fprintf( header, "#define tomirror(ch) (ffUnicodeToMirror((ch)))\n" );
+    fprintf( header, "#define tovalue(ch) (ffUnicodeDigitVal((ch)))\n" );
     fprintf( header, "\n" );
 
     fprintf( data, "/* Copyright: 2001 George Williams */\n" );
@@ -1383,7 +1381,7 @@ static void dump() {
     fprintf( data, "/* Contributions: Werner Lemberg, Khaled Hosny, Joe Da Silva */\n\n" );
     fprintf( data, "#include \"utype.h\"\n" );
     fprintf( data, GeneratedFileMessage, UnicodeMajor, UnicodeMinor );
-    fprintf( data, "const unsigned short ff_unicode_tolower[]= { 0,\n" );
+    fprintf( data, "static const unsigned short ff_unicode_tolower[]= { 0,\n" );
     for ( i=0; i<MAXC; i+=j ) {
 	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
@@ -1397,7 +1395,7 @@ static void dump() {
 	    else
 		fprintf( data, "\n");
     }
-    fprintf( data, "const unsigned short ff_unicode_toupper[] = { 0,\n" );
+    fprintf( data, "static const unsigned short ff_unicode_toupper[] = { 0,\n" );
     for ( i=0; i<MAXC; i+=j ) {
 	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
@@ -1411,7 +1409,7 @@ static void dump() {
 	    else
 		fprintf( data, "\n");
     }
-    fprintf( data, "const unsigned short ff_unicode_totitle[] = { 0,\n" );
+    fprintf( data, "static const unsigned short ff_unicode_totitle[] = { 0,\n" );
     for ( i=0; i<MAXC; i+=j ) {
 	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
@@ -1425,7 +1423,7 @@ static void dump() {
 	    else
 		fprintf( data, "\n");
     }
-    fprintf( data, "const unsigned short ff_unicode_tomirror[] = { 0,\n" );
+    fprintf( data, "static const unsigned short ff_unicode_tomirror[] = { 0,\n" );
     for ( i=0; i<MAXC; i+=j ) {
 	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
@@ -1439,7 +1437,7 @@ static void dump() {
 	    else
 		fprintf( data, "\n");
     }
-    fprintf( data, "const unsigned char ff_unicode_digitval[] = { 0,\n" );
+    fprintf( data, "static const unsigned char ff_unicode_digitval[] = { 0,\n" );
     for ( i=0; i<MAXC; i+=j ) {
 	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
@@ -1453,7 +1451,8 @@ static void dump() {
 	    else
 		fprintf( data, "\n");
     }
-    fprintf( data, "const uint32 ff_unicode_utype[] = { 0,\n" );
+    fprintf( data, "static const uint32 ff_unicode_utype[] = { 0,\n" );
+    fprintf( data, "  /* hold character type features for each Unicode.org defined character */\n" );
     for ( i=0; i<MAXC; i+=j ) {
 	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
@@ -1467,7 +1466,7 @@ static void dump() {
 	    else
 		fprintf( data, "\n");
     }
-    fprintf( data, "const uint32 ff_unicode_utype2[] = { 0,\n" );
+    fprintf( data, "static const uint32 ff_unicode_utype2[] = { 0,\n" );
     fprintf( data, "  /* binary flags used for physical layout of each unicode.org character */\n" );
     for ( i=0; i<MAXC; i+=j ) {
 	fprintf( data, " " );
@@ -1483,8 +1482,9 @@ static void dump() {
 		fprintf( data, "\n");
     }
 
-    fprintf( data, "const uint32 ff_unicode_codepointassigned[] = {\n" );
-    fprintf( data, "  /* 32 unicode.org characters represented for each data value in array */\n" );
+    fprintf( data, "static const uint32 ff_unicode_codepointassigned[] = {\n" );
+    fprintf( data, "  /* 32 unicode.org characters represented for each data value in array. */\n" );
+    fprintf( data, "  /* (1bit_boolean_flag)x32==exists in Unicode.org character chart list. */\n" );
     for ( i=0; i<0x120000/32; i+=j ) {
 	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<0x120000/32-1; ++j )
@@ -1498,6 +1498,40 @@ static void dump() {
 	    else
 		fprintf( data, "\n");
     }
+
+    /* Common 'internal-use' functions */
+    fprintf( data, "const unsigned short ffUnicodeToLower(int32 ucode) {\n" );
+    fprintf( data, "    if ( ucode>=-1 && ucode<FF_UTYPE_MAXC )\n" );
+    fprintf( data, "\treturn( ff_unicode_tolower[++ucode] );\n" );
+    fprintf( data, "    return( ff_unicode_tolower[0] );\n}\n\n" );
+    fprintf( data, "const unsigned short ffUnicodeToUpper(int32 ucode) {\n" );
+    fprintf( data, "    if ( ucode>=-1 && ucode<FF_UTYPE_MAXC )\n" );
+    fprintf( data, "\treturn( ff_unicode_toupper[++ucode] );\n" );
+    fprintf( data, "    return( ff_unicode_toupper[0] );\n}\n\n" );
+    fprintf( data, "const unsigned short ffUnicodeToTitle(int32 ucode) {\n" );
+    fprintf( data, "    if ( ucode>=-1 && ucode<FF_UTYPE_MAXC )\n" );
+    fprintf( data, "\treturn( ff_unicode_totitle[++ucode] );\n" );
+    fprintf( data, "    return( ff_unicode_totitle[0] );\n}\n\n" );
+    fprintf( data, "const unsigned short ffUnicodeToMirror(int32 ucode) {\n" );
+    fprintf( data, "    if ( ucode>=-1 && ucode<FF_UTYPE_MAXC )\n" );
+    fprintf( data, "\treturn( ff_unicode_tomirror[++ucode] );\n" );
+    fprintf( data, "    return( ff_unicode_tomirror[0] );\n}\n\n" );
+    fprintf( data, "const unsigned char ffUnicodeDigitVal(int32 ucode) {\n" );
+    fprintf( data, "    if ( ucode>=-1 && ucode<FF_UTYPE_MAXC )\n" );
+    fprintf( data, "\treturn( ff_unicode_digitval[++ucode] );\n" );
+    fprintf( data, "    return( ff_unicode_digitval[0] );\n}\n\n" );
+    fprintf( data, "const uint32 ffUnicodeUtype(int32 ucode) {\n" );
+    fprintf( data, "    if ( ucode>=-1 && ucode<FF_UTYPE_MAXC )\n" );
+    fprintf( data, "\treturn( ff_unicode_utype[++ucode] );\n" );
+    fprintf( data, "    return( ff_unicode_utype[0] );\n}\n\n" );
+    fprintf( data, "const uint32 ffUnicodeUtype2(int32 ucode) {\n" );
+    fprintf( data, "    if ( ucode>=-1 && ucode<FF_UTYPE_MAXC )\n" );
+    fprintf( data, "\treturn( ff_unicode_utype2[++ucode] );\n" );
+    fprintf( data, "    return( ff_unicode_utype2[0] );\n}\n\n" );
+    fprintf( data, "const uint32 isunicodepointassigned(int32 ucode) {\n" );
+    fprintf( data, "    if ( ucode>=0 && ucode<0x120000 )\n" );
+    fprintf( data, "\treturn( (ff_unicode_codepointassigned[(ucode)/32]&(1<<((ucode)%32))) );\n" );
+    fprintf( data, "    return( 0 );\n}\n\n" );
 
     fclose( data );
 

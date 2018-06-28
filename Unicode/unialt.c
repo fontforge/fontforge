@@ -1,6 +1,6 @@
 #include <chardata.h>
 
-/* This file was generated using the program 'makeutype' for Unicode_version 9.0 */
+/* This file was generated using the program 'makeutype' for Unicode_version 11.0 */
 
 static const unichar_t str_a0[] = { 0x0020, 0 };
 static const unichar_t str_a8[] = { 0x0020, 0x0308, 0 };

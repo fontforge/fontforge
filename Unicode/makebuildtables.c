@@ -29,7 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <utype.h>
+#include "utype.h"
 #include "utype.c"
 
 #define ACUTE		0x1
@@ -377,6 +377,9 @@ void dumpinfo() {
     char buffer[400], buffer2[400];
 
     out = fopen("gdrawbuildchars.c","w");
+    fprintf(out, "/* Copyright: 2001 George Williams */\n" );
+    fprintf(out, "/* License: BSD-3-clause */\n\n" );
+    fprintf(out, "/* This file was generated using the program 'makebuildtables.c' */\n\n" );
     fprintf(out,"#include \"gdrawP.h\"\n\n" );
 
     for ( i=0; names[i].name!=NULL; ++i )
@@ -393,9 +396,9 @@ void dumpinfo() {
     fprintf(out,"struct gchr_lookup _gdraw_chrlookup[95] = {\n" );
     for ( i=0; i<95; ++i ) {
 	if ( info[i]==NULL )
-	    fprintf(out, "    { 0 },\t\t\t/* %c */\n", i+' ' );
+	    fprintf(out, "    /* %c */ { 0 },\n", i+' ' );
 	else
-	    fprintf(out, "    { %d, trans_%s },\t/* %c */\n", queuelen(info[i]), charnames[i], i+' ' );
+	    fprintf(out, "    /* %c */ { %d, trans_%s },\n", i+' ', queuelen(info[i]), charnames[i], i+' ' );
     }
     fprintf(out,"};\n\n" );
 
@@ -425,7 +428,7 @@ void dumpinfo() {
     fprintf(out, "    { 0x030b, 0x%07x },\n", LINEBELOW );
     fprintf(out, "    { 0x030b, 0x%07x },\n", HOOKABOVE );
     fprintf(out, "    { 0x030b, 0x%07x },\n", HORN );
-    fprintf(out, "    { 0 },\n" );
+    fprintf(out, "    { 0, 0 },\n" );
     fprintf(out, "};\n\n" );
     fprintf(out, "uint32 _gdraw_chrs_any=ANY, _gdraw_chrs_ctlmask=GREEK, _gdraw_chrs_metamask=0;\n" );
     fclose(out);
@@ -538,7 +541,7 @@ return( NULL );
 return( cur );
 }
 
-main() {
+int main() {
     FILE *in;
     int i;
 
@@ -546,11 +549,11 @@ main() {
     in = fopen("UnicodeData.txt","r");
     if ( in==NULL ) {
 	fprintf(stderr,"Can't open UnicodeData.txt\n" );
-	exit(1);
+	return( -1 );
     }
     ParseUnicodeFile(in);
     for ( i=0; i<95; ++i )
 	info[i] = RevQueue(info[i]);
     dumpinfo();
-    exit(0);
+    return( 0 );
 }

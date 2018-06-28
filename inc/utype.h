@@ -4,10 +4,10 @@
 /* License: BSD-3-clause */
 /* Contributions: Joe Da Silva */
 
-/* This file was generated using the program 'makeutype' for Unicode_version 9.0 */
+/* This file was generated using the program 'makeutype' for Unicode_version 11.0 */
 
 #include <ctype.h>	/* Include here so we can control it. If a system header includes it later bad things happen */
-#include <basics.h>	/* Include here so we can use pre-defined int types to correctly size constant data arrays. */
+#include "basics.h"	/* Include here so we can use pre-defined int types to correctly size constant data arrays. */
 #ifdef tolower
 # undef tolower
 #endif
@@ -39,14 +39,17 @@
 # undef ishexdigit
 #endif
 
-extern const unsigned short ff_unicode_tolower[];
-extern const unsigned short ff_unicode_toupper[];
-extern const unsigned short ff_unicode_totitle[];
-extern const unsigned short ff_unicode_tomirror[];
-extern const unsigned char  ff_unicode_digitval[];
-
-/* utype[] MAX characters, originally 600, then increased to hold 65536 chars */
+/* MAX characters, originally 600, then increased to hold 65536 chars */
 #define FF_UTYPE_MAXC		0x10000
+
+extern const unsigned short ffUnicodeToLower(int32 ucode);
+extern const unsigned short ffUnicodeToUpper(int32 ucode);
+extern const unsigned short ffUnicodeToTitle(int32 ucode);
+extern const unsigned short ffUnicodeToMirror(int32 ucode);
+extern const unsigned char ffUnicodeDigitVal(int32 ucode);
+extern const uint32 ffUnicodeUtype(int32 ucode);
+extern const uint32 ffUnicodeUtype2(int32 ucode);
+extern const uint32 isunicodepointassigned(int32 ucode);
 
 /* utype[] holds binary flags used for features of each unicode.org character */
 #define FF_UNICODE_L		0x1
@@ -80,36 +83,34 @@ extern const unsigned char  ff_unicode_digitval[];
 #define FF_UNICODE_DECOMPNORM	0x10000000
 #define FF_UNICODE_LIG_OR_FRAC	0x20000000
 
-#define islower(ch)		(ff_unicode_utype[(ch)+1]&FF_UNICODE_L)
-#define isupper(ch)		(ff_unicode_utype[(ch)+1]&FF_UNICODE_U)
-#define istitle(ch)		(ff_unicode_utype[(ch)+1]&FF_UNICODE_TITLE)
-#define isalpha(ch)		(ff_unicode_utype[(ch)+1]&(FF_UNICODE_L|FF_UNICODE_U|FF_UNICODE_TITLE|FF_UNICODE_AL))
-#define isdigit(ch)		(ff_unicode_utype[(ch)+1]&FF_UNICODE_D)
-#define isalnum(ch)		(ff_unicode_utype[(ch)+1]&(FF_UNICODE_L|FF_UNICODE_U|FF_UNICODE_TITLE|FF_UNICODE_AL|FF_UNICODE_D))
-#define isideographic(ch)	(ff_unicode_utype[(ch)+1]&FF_UNICODE_ID)
-#define isideoalpha(ch)		(ff_unicode_utype[(ch)+1]&(FF_UNICODE_ID|FF_UNICODE_L|FF_UNICODE_U|FF_UNICODE_TITLE|FF_UNICODE_AL))
-#define isspace(ch)		(ff_unicode_utype[(ch)+1]&FF_UNICODE_S)
-#define ispunct(ch)		(ff_unicode_utype[(ch)+1]&_FF_UNICODE_P)
-#define ishexdigit(ch)		(ff_unicode_utype[(ch)+1]&FF_UNICODE_X)
-#define iszerowidth(ch)		(ff_unicode_utype[(ch)+1]&FF_UNICODE_ZW)
-#define islefttoright(ch)	(ff_unicode_utype[(ch)+1]&FF_UNICODE_L2R)
-#define isrighttoleft(ch)	(ff_unicode_utype[(ch)+1]&FF_UNICODE_R2L)
-#define iseuronumeric(ch)	(ff_unicode_utype[(ch)+1]&FF_UNICODE_ENUM)
-#define isarabnumeric(ch)	(ff_unicode_utype[(ch)+1]&FF_UNICODE_ANUM)
-#define iseuronumsep(ch)	(ff_unicode_utype[(ch)+1]&FF_UNICODE_ENS)
-#define iscommonsep(ch)		(ff_unicode_utype[(ch)+1]&FF_UNICODE_CS)
-#define iseuronumterm(ch)	(ff_unicode_utype[(ch)+1]&FF_UNICODE_ENT)
-#define iscombining(ch)		(ff_unicode_utype[(ch)+1]&FF_UNICODE_COMBINE)
-#define isbreakbetweenok(ch1,ch2) (((ff_unicode_utype[(ch1)+1]&FF_UNICODE_BA) && !(ff_unicode_utype[(ch2)+1]&FF_UNICODE_NS)) || ((ff_unicode_utype[(ch2)+1]&FF_UNICODE_BB) && !(ff_unicode_utype[(ch1)+1]&FF_UNICODE_NE)) || (!(ff_unicode_utype[(ch2)+1]&FF_UNICODE_D) && ch1=='/'))
-#define isnobreak(ch)		(ff_unicode_utype[(ch)+1]&FF_UNICODE_NB)
-#define isarabinitial(ch)	(ff_unicode_utype[(ch)+1]&FF_UNICODE_INITIAL)
-#define isarabmedial(ch)	(ff_unicode_utype[(ch)+1]&FF_UNICODE_MEDIAL)
-#define isarabfinal(ch)		(ff_unicode_utype[(ch)+1]&FF_UNICODE_FINAL)
-#define isarabisolated(ch)	(ff_unicode_utype[(ch)+1]&FF_UNICODE_ISOLATED)
-#define isdecompositionnormative(ch) (ff_unicode_utype[(ch)+1]&FF_UNICODE_DECOMPNORM)
-#define isligorfrac(ch)		(ff_unicode_utype[(ch)+1]&FF_UNICODE_LIG_OR_FRAC)
-
-extern const uint32 ff_unicode_utype[];	/* hold character type features for each Unicode.org defined character */
+#define islower(ch)		(ffUnicodeUtype((ch))&FF_UNICODE_L)
+#define isupper(ch)		(ffUnicodeUtype((ch))&FF_UNICODE_U)
+#define istitle(ch)		(ffUnicodeUtype((ch))&FF_UNICODE_TITLE)
+#define isalpha(ch)		(ffUnicodeUtype((ch))&(FF_UNICODE_L|FF_UNICODE_U|FF_UNICODE_TITLE|FF_UNICODE_AL))
+#define isdigit(ch)		(ffUnicodeUtype((ch))&FF_UNICODE_D)
+#define isalnum(ch)		(ffUnicodeUtype((ch))&(FF_UNICODE_L|FF_UNICODE_U|FF_UNICODE_TITLE|FF_UNICODE_AL|FF_UNICODE_D))
+#define isideographic(ch)	(ffUnicodeUtype((ch))&FF_UNICODE_ID)
+#define isideoalpha(ch)		(ffUnicodeUtype((ch))&(FF_UNICODE_ID|FF_UNICODE_L|FF_UNICODE_U|FF_UNICODE_TITLE|FF_UNICODE_AL))
+#define isspace(ch)		(ffUnicodeUtype((ch))&FF_UNICODE_S)
+#define ispunct(ch)		(ffUnicodeUtype((ch))&_FF_UNICODE_P)
+#define ishexdigit(ch)		(ffUnicodeUtype((ch))&FF_UNICODE_X)
+#define iszerowidth(ch)		(ffUnicodeUtype((ch))&FF_UNICODE_ZW)
+#define islefttoright(ch)	(ffUnicodeUtype((ch))&FF_UNICODE_L2R)
+#define isrighttoleft(ch)	(ffUnicodeUtype((ch))&FF_UNICODE_R2L)
+#define iseuronumeric(ch)	(ffUnicodeUtype((ch))&FF_UNICODE_ENUM)
+#define isarabnumeric(ch)	(ffUnicodeUtype((ch))&FF_UNICODE_ANUM)
+#define iseuronumsep(ch)	(ffUnicodeUtype((ch))&FF_UNICODE_ENS)
+#define iscommonsep(ch)		(ffUnicodeUtype((ch))&FF_UNICODE_CS)
+#define iseuronumterm(ch)	(ffUnicodeUtype((ch))&FF_UNICODE_ENT)
+#define iscombining(ch)		(ffUnicodeUtype((ch))&FF_UNICODE_COMBINE)
+#define isbreakbetweenok(ch1,ch2) (((ffUnicodeUtype((ch1))&FF_UNICODE_BA) && !(ffUnicodeUtype((ch2))&FF_UNICODE_NS)) || ((ffUnicodeUtype((ch2))&FF_UNICODE_BB) && !(ffUnicodeUtype((ch1))&FF_UNICODE_NE)) || (!(ffUnicodeUtype((ch2))&FF_UNICODE_D) && ch1=='/'))
+#define isnobreak(ch)		(ffUnicodeUtype((ch))&FF_UNICODE_NB)
+#define isarabinitial(ch)	(ffUnicodeUtype((ch))&FF_UNICODE_INITIAL)
+#define isarabmedial(ch)	(ffUnicodeUtype((ch))&FF_UNICODE_MEDIAL)
+#define isarabfinal(ch)		(ffUnicodeUtype((ch))&FF_UNICODE_FINAL)
+#define isarabisolated(ch)	(ffUnicodeUtype((ch))&FF_UNICODE_ISOLATED)
+#define isdecompositionnormative(ch) (ffUnicodeUtype((ch))&FF_UNICODE_DECOMPNORM)
+#define isligorfrac(ch)		(ffUnicodeUtype((ch))&FF_UNICODE_LIG_OR_FRAC)
 
 /* utype2[] binary flags used for position/layout of each unicode.org character */
 #define FF_UNICODE_COMBININGCLASS	0xff
@@ -129,20 +130,14 @@ extern const uint32 ff_unicode_utype[];	/* hold character type features for each
 #define FF_UNICODE_COMBININGPOSMASK	0x1fff00
 #define FF_UNICODE_NOPOSDATAGIVEN	(uint32)(-1)	/* -1 == no position data given */
 
-#define combiningclass(ch)	(ff_unicode_utype2[(ch)+1]&FF_UNICODE_COMBININGCLASS)
-#define combiningposmask(ch)	(ff_unicode_utype2[(ch)+1]&FF_UNICODE_COMBININGPOSMASK)
+#define combiningclass(ch)	(ffUnicodeUtype2((ch))&FF_UNICODE_COMBININGCLASS)
+#define combiningposmask(ch)	(ffUnicodeUtype2((ch))&FF_UNICODE_COMBININGPOSMASK)
 
-extern const uint32 ff_unicode_utype2[];	/* hold position boolean flags for each Unicode.org defined character */
-
-#define isunicodepointassigned(ch) (ff_unicode_codepointassigned[(ch)/32]&(1<<((ch)%32)))
-
-extern const uint32 ff_unicode_codepointassigned[]; /* 1bit_boolean_flag x 32 = exists in Unicode.org character chart list. */
-
-#define tolower(ch) (ff_unicode_tolower[(ch)+1])
-#define toupper(ch) (ff_unicode_toupper[(ch)+1])
-#define totitle(ch) (ff_unicode_totitle[(ch)+1])
-#define tomirror(ch) (ff_unicode_tomirror[(ch)+1])
-#define tovalue(ch) (ff_unicode_digitval[(ch)+1])
+#define tolower(ch) (ffUnicodeToLower((ch)))
+#define toupper(ch) (ffUnicodeToUpper((ch)))
+#define totitle(ch) (ffUnicodeToTitle((ch)))
+#define tomirror(ch) (ffUnicodeToMirror((ch)))
+#define tovalue(ch) (ffUnicodeDigitVal((ch)))
 
 
 extern struct arabicforms {
@@ -181,26 +176,13 @@ extern int32 VulgFracU_alt_getV(uint32 u,int a); /* Unicode table Vulgar Fractio
 extern int FractionU_alt_getC(uint32 u);	/* Unicode table Other Fraction Alt count */
 extern int32 FractionU_alt_getV(uint32 u,int a); /* Unicode table Other Fraction Alt value */
 
-/* Return !0 if codepoint is a Ligature */
-extern int is_LIGATURE(uint32 codepoint);
-
-/* Return !0 if codepoint is a Vulgar Fraction */
-extern int is_VULGAR_FRACTION(uint32 codepoint);
-
-/* Return !0 if codepoint is a non-vulgar Fraction */
-extern int is_OTHER_FRACTION(uint32 codepoint);
-
-/* Return !0 if codepoint is a Fraction */
-extern int is_FRACTION(uint32 codepoint);
-
-/* Return !0 if codepoint is a Ligature or Vulgar Fraction */
-extern int is_LIGATURE_or_VULGAR_FRACTION(uint32 codepoint);
-
-/* Return !0 if codepoint is a Ligature or non-Vulgar Fraction */
-extern int is_LIGATURE_or_OTHER_FRACTION(uint32 codepoint);
-
-/* Return !0 if codepoint is a Ligature or Fraction */
-extern int is_LIGATURE_or_FRACTION(uint32 codepoint);
+extern int is_LIGATURE(uint32 codepoint);	/* Return !0 if codepoint is a Ligature */
+extern int is_VULGAR_FRACTION(uint32 codepoint); /* Return !0 if codepoint is a Vulgar Fraction */
+extern int is_OTHER_FRACTION(uint32 codepoint); /* Return !0 if codepoint is non-vulgar Fraction */
+extern int is_FRACTION(uint32 codepoint);	/* Return !0 if codepoint is a Fraction */
+extern int is_LIGATURE_or_VULGAR_FRACTION(uint32 codepoint); /* Return !0 if Ligature or Vulgar Fraction */
+extern int is_LIGATURE_or_OTHER_FRACTION(uint32 codepoint); /* Return !0 if Ligature or non-Vulgar Fraction */
+extern int is_LIGATURE_or_FRACTION(uint32 codepoint); /* Return !0 if Ligature or Fraction */
 
 
 #define FF_UNICODE_SOFT_HYPHEN	0xad
