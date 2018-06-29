@@ -1,24 +1,48 @@
-/* Copyright: 2001 George Williams */
-/* License: BSD-3-clause */
+/* Copyright (C) 2000-2012 by George Williams */
+/*
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ *
+ * The name of the author may not be used to endorse or promote products
+ * derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ * EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 /* This file was generated using the program 'makebuildtables.c' */
 
 #include "gdrawP.h"
 
-#define	ACUTE	0x0000001
-#define	GRAVE	0x0000002
+#define	ACUTE		0x0000001
+#define	GRAVE		0x0000002
 #define	DIAERESIS	0x0000004
 #define	CIRCUMFLEX	0x0000008
-#define	TILDE	0x0000010
-#define	RING	0x0000020
-#define	SLASH	0x0000040
-#define	BREVE	0x0000080
-#define	CARON	0x0000100
+#define	TILDE		0x0000010
+#define	RING		0x0000020
+#define	SLASH		0x0000040
+#define	BREVE		0x0000080
+#define	CARON		0x0000100
 #define	DOTABOVE	0x0000200
 #define	DOTBELOW	0x0000400
-#define	CEDILLA	0x0000800
-#define	OGONEK	0x0001000
-#define	MACRON	0x0002000
+#define	CEDILLA		0x0000800
+#define	OGONEK		0x0001000
+#define	MACRON		0x0002000
 #define	DBLGRAVE	0x0004000
 #define	DBLACUTE	0x0008000
 #define	INVBREVE	0x0010000
@@ -28,10 +52,10 @@
 #define	RINGBELOW	0x0100000
 #define	LINEBELOW	0x0200000
 #define	HOOKABOVE	0x0400000
-#define	HORN	0x0800000
-#define	GREEK	0x8000000
+#define	HORN		0x0800000
+#define	GREEK		0x8000000
 
-#define	ANY	0xfffffff
+#define	ANY		0xfffffff
 
 static struct gchr_transform trans_space[] = {
     { 0, 0, 0x00000a0 },

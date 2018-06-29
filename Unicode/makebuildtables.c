@@ -377,14 +377,33 @@ void dumpinfo() {
     char buffer[400], buffer2[400];
 
     out = fopen("gdrawbuildchars.c","w");
-    fprintf(out, "/* Copyright: 2001 George Williams */\n" );
-    fprintf(out, "/* License: BSD-3-clause */\n\n" );
+    fprintf(out, "/* Copyright (C) 2000-2012 by George Williams */\n" );
+    fprintf(out, "/*\n * Redistribution and use in source and binary forms, with or without\n" );
+    fprintf(out, " * modification, are permitted provided that the following conditions are met:\n *\n" );
+    fprintf(out, " * Redistributions of source code must retain the above copyright notice, this\n" );
+    fprintf(out, " * list of conditions and the following disclaimer.\n *\n" );
+    fprintf(out, " * Redistributions in binary form must reproduce the above copyright notice,\n" );
+    fprintf(out, " * this list of conditions and the following disclaimer in the documentation\n" );
+    fprintf(out, " * and/or other materials provided with the distribution.\n *\n" );
+    fprintf(out, " * The name of the author may not be used to endorse or promote products\n" );
+    fprintf(out, " * derived from this software without specific prior written permission.\n *\n" );
+    fprintf(out, " * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED\n" );
+    fprintf(out, " * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF\n" );
+    fprintf(out, " * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO\n" );
+    fprintf(out, " * EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\n" );
+    fprintf(out, " * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,\n" );
+    fprintf(out, " * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;\n" );
+    fprintf(out, " * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,\n" );
+    fprintf(out, " * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR\n" );
+    fprintf(out, " * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF\n" );
+    fprintf(out, " * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n */\n\n" );
     fprintf(out, "/* This file was generated using the program 'makebuildtables.c' */\n\n" );
     fprintf(out,"#include \"gdrawP.h\"\n\n" );
 
     for ( i=0; names[i].name!=NULL; ++i )
-	fprintf( out, "#define\t%s\t0x%07x\n", names[i].name, names[i].mask );
-    fprintf(out,"\n#define\tANY\t0x%07x\n\n", ANY );
+	fprintf( out, "#define\t%s\t%s0x%07x\n", names[i].name, \
+		 strlen(names[i].name)>7?"":"\t", names[i].mask );
+    fprintf(out,"\n#define\tANY\t\t0x%07x\n\n", ANY );
 
     for ( i=0; i<95; ++i ) if ( info[i]!=NULL ) {
 	fprintf(out, "static struct gchr_transform trans_%s[] = {\n", charnames[i] );
