@@ -10,8 +10,11 @@ wget http://unicode.org/Public/UNIDATA/PropList.txt
 wget http://unicode.org/Public/UNIDATA/UnicodeData.txt
 gcc -s -I../inc -o makeutype makeutype.c
 ./makeutype
+gcc -s -I../inc -o makebuildtables makebuildtables.c
+./makebuildtables
 rm *.txt
 mv utype.h ../inc/
+mv gdrawbuildchars.c ../gdraw/
 
 UPDATING FONTFORGE'S ROUTINES FOR RE-ENCODING
 
@@ -20,6 +23,10 @@ external files to work. Here is my best attempt to find these files. You will
 notice that some files are still lacking. I couldn't find them.
 
 Thanks to Jose Da Silva for asking, what's it for. To make use of this, run:
+
+
+NOTE: Some of this is currently done by charset/generate.sh
+TODO: See what got lost with new method, compare outputs
 
 cd Unicode
 wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-1.TXT

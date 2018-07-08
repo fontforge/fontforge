@@ -1679,7 +1679,7 @@ return( true );
 }
 
 /* Generate default settings for the entries in ligature lookup
- * subtables. */
+ * TODO: expand beyond (bmp) */
 static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
     const unichar_t *alt=NULL, *pt;
     char *components = NULL, *tmp;
@@ -1694,7 +1694,9 @@ static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
     else if ( isdecompositionnormative(uni) &&
 		unicode_alternates[uni>>8]!=NULL &&
 		(alt = unicode_alternates[uni>>8][uni&0xff])!=NULL ) {
-	if ( alt[1]=='\0' )
+	if ( alt[1]=='\0' ||
+		Ligature_alt_getC(Ligature_find_N(uni))<=1 ||
+		Fraction_alt_getC(Fraction_find_N(uni))<=1 )
 	    alt = NULL;		/* Single replacements aren't ligatures */
 	else if ( iscombining(alt[1]) && ( alt[2]=='\0' || iscombining(alt[2]))) {
 	    if ( alt_lig != -10 )	/* alt_lig = 10 => mac unicode decomp */
@@ -1703,17 +1705,19 @@ static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
 		uni!=0x152 && uni!=0x153 &&	/* oe ligature should not be standard */
 		uni!=0x132 && uni!=0x133 &&	/* nor ij */
 		(uni<0xfb2a || uni>0xfb4f) &&	/* Allow hebrew precomposed chars */
-		uni!=0x215f &&
+		uni!=0x215f &&			/* exclude 1/ */
 		!((uni>=0x0958 && uni<=0x095f) || uni==0x929 || uni==0x931 || uni==0x934)) {
 	    alt = NULL;
 	} else if ( (tmp=unicode_name(65))==NULL ) { /* test for 'A' to see if library exists */
-	    if ( (uni>=0xbc && uni<=0xbe ) ||		/* Latin1 fractions */
-		    (uni>=0x2153 && uni<=0x215e ) ||	/* other fractions */
+	    if ( (uni>=0xbc && uni<=0xbe ) ||		/* Latin1 vulgar fractions */
+		    (uni>=0x2150 && uni<=0x215e ) ||	/* other vulgar fractions */
+		    (uni>=0x2189) ||			/* other vulgar fraction */
 		    (uni>=0xfb00 && uni<=0xfb06 ) ||	/* latin ligatures */
 		    (uni>=0xfb13 && uni<=0xfb17 ) ||	/* armenian ligatures */
-		    uni==0xfb17 ||			/* hebrew ligature */
+		    uni==0xfb1f ||			/* hebrew ligature */
 		    (uni>=0xfb2a && uni<=0xfb4f ) ||	/* hebrew precomposed chars */
-		    (uni>=0xfbea && uni<=0xfdcf ) ||	/* arabic ligatures */
+		    (uni>=0xfbea && uni<=0xfd3d ) ||	/* arabic ligatures */
+		    (uni>=0xfd50 && uni<=0xfdcf ) ||	/* arabic ligatures */
 		    (uni>=0xfdf0 && uni<=0xfdfb ) ||	/* arabic ligatures */
 		    (uni>=0xfef5 && uni<=0xfefc ))	/* arabic ligatures */
 		;	/* These are good */
@@ -1820,10 +1824,14 @@ return( NULL );
 return( components );
 }
 
+/* TODO: see what can be brought-in from is_Ligature_data.h tables, but this */
+/* also appears to run various features beyond ligatures and fractions too.  */
 uint32 LigTagFromUnicode(int uni) {
     int tag = CHR('l','i','g','a');	/* standard */
 
-    if (( uni>=0xbc && uni<=0xbe ) || (uni>=0x2153 && uni<=0x215f) )
+    if ( (uni>=0xbc && uni<=0xbe) ||	/* latin1 vulgar fractions */
+	 (uni>=0x2150 && uni<=0x215f) ||/* other vulgar fractions */
+	 (uni==0x2189) )
 	tag = CHR('f','r','a','c');	/* Fraction */
     /* hebrew precomposed characters */
     else if ( uni>=0xfb2a && uni<=0xfb4e )

@@ -31,7 +31,7 @@
 #include <ustring.h>
 #include <utype.h>
 #include <charset.h>
-#include <chardata.h>
+#include "chardata.h"
 
 int local_encoding = e_iso8859_1;
 #if HAVE_ICONV

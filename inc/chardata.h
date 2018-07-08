@@ -1,4 +1,4 @@
-#include <basics.h>
+#include "basics.h"
 
 struct charmap {
     int first, last;

@@ -2,9 +2,9 @@
 /* License: BSD-3-clause */
 /* Contributions: Khaled Hosny, Joe Da Silva */
 
-/* This file was generated using the program 'makeutype' for Unicode_version 9.0 */
+/* This file was generated using the program 'makeutype' for Unicode_version 11.0 */
 
-#include <utype.h>
+#include "utype.h"
 
 struct arabicforms ArabicForms[] = {
 	/* initial, medial, final, isolated, isletter, joindual, required_lig_with_alef */

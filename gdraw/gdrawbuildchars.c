@@ -2,17 +2,17 @@
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
-
+ *
  * Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
-
+ *
  * Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
-
+ *
  * The name of the author may not be used to endorse or promote products
  * derived from this software without specific prior written permission.
-
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
@@ -24,22 +24,25 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+/* This file was generated using the program 'makebuildtables.c' */
+
 #include "gdrawP.h"
 
-#define	ACUTE	0x0000001
-#define	GRAVE	0x0000002
+#define	ACUTE		0x0000001
+#define	GRAVE		0x0000002
 #define	DIAERESIS	0x0000004
 #define	CIRCUMFLEX	0x0000008
-#define	TILDE	0x0000010
-#define	RING	0x0000020
-#define	SLASH	0x0000040
-#define	BREVE	0x0000080
-#define	CARON	0x0000100
+#define	TILDE		0x0000010
+#define	RING		0x0000020
+#define	SLASH		0x0000040
+#define	BREVE		0x0000080
+#define	CARON		0x0000100
 #define	DOTABOVE	0x0000200
 #define	DOTBELOW	0x0000400
-#define	CEDILLA	0x0000800
-#define	OGONEK	0x0001000
-#define	MACRON	0x0002000
+#define	CEDILLA		0x0000800
+#define	OGONEK		0x0001000
+#define	MACRON		0x0002000
 #define	DBLGRAVE	0x0004000
 #define	DBLACUTE	0x0008000
 #define	INVBREVE	0x0010000
@@ -49,10 +52,10 @@
 #define	RINGBELOW	0x0100000
 #define	LINEBELOW	0x0200000
 #define	HOOKABOVE	0x0400000
-#define	HORN	0x0800000
-#define	GREEK	0x8000000
+#define	HORN		0x0800000
+#define	GREEK		0x8000000
 
-#define	ANY	0xfffffff
+#define	ANY		0xfffffff
 
 static struct gchr_transform trans_space[] = {
     { 0, 0, 0x00000a0 },
@@ -506,7 +509,8 @@ static struct gchr_transform trans_U[] = {
     { GRAVE|HORN, 0, 0x0001eea },
     { HOOKABOVE|HORN, 0, 0x0001eec },
     { TILDE|HORN, 0, 0x0001eee },
-    { DOTBELOW|HORN, 0, 0x0001ef0 }
+    { DOTBELOW|HORN, 0, 0x0001ef0 },
+    { SLASH, 0, 0x000a7b8 }
 };
 
 static struct gchr_transform trans_V[] = {
@@ -958,7 +962,8 @@ static struct gchr_transform trans_u[] = {
     { GRAVE|HORN, 0, 0x0001eeb },
     { HOOKABOVE|HORN, 0, 0x0001eed },
     { TILDE|HORN, 0, 0x0001eef },
-    { DOTBELOW|HORN, 0, 0x0001ef1 }
+    { DOTBELOW|HORN, 0, 0x0001ef1 },
+    { SLASH, 0, 0x000a7b9 }
 };
 
 static struct gchr_transform trans_v[] = {
@@ -1032,101 +1037,101 @@ static struct gchr_transform trans_asciitilde[] = {
 };
 
 struct gchr_lookup _gdraw_chrlookup[95] = {
-    { 2, trans_space },		/*   */
-    { 1, trans_exclam },	/* ! */
-    { 1, trans_quotedbl },	/* " */
-    { 2, trans_numbersign },	/* # */
-    { 2, trans_dollar },	/* $ */
-    { 0 },			/* % */
-    { 0 },			/* & */
-    { 1, trans_quotesingle },	/* ' */
-    { 0 },			/* ( */
-    { 0 },			/* ) */
-    { 2, trans_asterisk },	/* * */
-    { 1, trans_plus },		/* + */
-    { 1, trans_comma },		/* , */
-    { 2, trans_hyphenminus },	/* - */
-    { 2, trans_period },	/* . */
-    { 1, trans_slash },		/* / */
-    { 1, trans_zero },		/* 0 */
-    { 0 },			/* 1 */
-    { 1, trans_two },		/* 2 */
-    { 0 },			/* 3 */
-    { 1, trans_four },		/* 4 */
-    { 1, trans_five },		/* 5 */
-    { 1, trans_six },		/* 6 */
-    { 1, trans_seven },		/* 7 */
-    { 0 },			/* 8 */
-    { 0 },			/* 9 */
-    { 1, trans_colon },		/* : */
-    { 1, trans_semicolon },	/* ; */
-    { 1, trans_less },		/* < */
-    { 1, trans_equal },		/* = */
-    { 2, trans_greater },	/* > */
-    { 1, trans_question },	/* ? */
-    { 1, trans_at },		/* @ */
-    { 35, trans_A },		/* A */
-    { 5, trans_B },		/* B */
-    { 9, trans_C },		/* C */
-    { 8, trans_D },		/* D */
-    { 30, trans_E },		/* E */
-    { 3, trans_F },		/* F */
-    { 9, trans_G },		/* G */
-    { 13, trans_H },		/* H */
-    { 24, trans_I },		/* I */
-    { 3, trans_J },		/* J */
-    { 7, trans_K },		/* K */
-    { 10, trans_L },		/* L */
-    { 4, trans_M },		/* M */
-    { 10, trans_N },		/* N */
-    { 41, trans_O },		/* O */
-    { 6, trans_P },		/* P */
-    { 2, trans_Q },		/* Q */
-    { 11, trans_R },		/* R */
-    { 10, trans_S },		/* S */
-    { 8, trans_T },		/* T */
-    { 37, trans_U },		/* U */
-    { 3, trans_V },		/* V */
-    { 10, trans_W },		/* W */
-    { 3, trans_X },		/* X */
-    { 11, trans_Y },		/* Y */
-    { 8, trans_Z },		/* Z */
-    { 1, trans_bracketleft },	/* [ */
-    { 2, trans_backslash },	/* \ */
-    { 1, trans_bracketright },	/* ] */
-    { 1, trans_asciicircum },	/* ^ */
-    { 2, trans_underscore },	/* _ */
-    { 1, trans_grave },		/* ` */
-    { 38, trans_a },		/* a */
-    { 5, trans_b },		/* b */
-    { 9, trans_c },		/* c */
-    { 8, trans_d },		/* d */
-    { 31, trans_e },		/* e */
-    { 4, trans_f },		/* f */
-    { 10, trans_g },		/* g */
-    { 16, trans_h },		/* h */
-    { 30, trans_i },		/* i */
-    { 4, trans_j },		/* j */
-    { 7, trans_k },		/* k */
-    { 10, trans_l },		/* l */
-    { 5, trans_m },		/* m */
-    { 11, trans_n },		/* n */
-    { 41, trans_o },		/* o */
-    { 6, trans_p },		/* p */
-    { 2, trans_q },		/* q */
-    { 12, trans_r },		/* r */
-    { 11, trans_s },		/* s */
-    { 10, trans_t },		/* t */
-    { 43, trans_u },		/* u */
-    { 3, trans_v },		/* v */
-    { 11, trans_w },		/* w */
-    { 3, trans_x },		/* x */
-    { 12, trans_y },		/* y */
-    { 9, trans_z },		/* z */
-    { 1, trans_braceleft },	/* { */
-    { 2, trans_bar },		/* | */
-    { 1, trans_braceright },	/* } */
-    { 1, trans_asciitilde },	/* ~ */
+    /*   */ { 2, trans_space },
+    /* ! */ { 1, trans_exclam },
+    /* " */ { 1, trans_quotedbl },
+    /* # */ { 2, trans_numbersign },
+    /* $ */ { 2, trans_dollar },
+    /* % */ { 0 },
+    /* & */ { 0 },
+    /* ' */ { 1, trans_quotesingle },
+    /* ( */ { 0 },
+    /* ) */ { 0 },
+    /* * */ { 2, trans_asterisk },
+    /* + */ { 1, trans_plus },
+    /* , */ { 1, trans_comma },
+    /* - */ { 2, trans_hyphenminus },
+    /* . */ { 2, trans_period },
+    /* / */ { 1, trans_slash },
+    /* 0 */ { 1, trans_zero },
+    /* 1 */ { 0 },
+    /* 2 */ { 1, trans_two },
+    /* 3 */ { 0 },
+    /* 4 */ { 1, trans_four },
+    /* 5 */ { 1, trans_five },
+    /* 6 */ { 1, trans_six },
+    /* 7 */ { 1, trans_seven },
+    /* 8 */ { 0 },
+    /* 9 */ { 0 },
+    /* : */ { 1, trans_colon },
+    /* ; */ { 1, trans_semicolon },
+    /* < */ { 1, trans_less },
+    /* = */ { 1, trans_equal },
+    /* > */ { 2, trans_greater },
+    /* ? */ { 1, trans_question },
+    /* @ */ { 1, trans_at },
+    /* A */ { 35, trans_A },
+    /* B */ { 5, trans_B },
+    /* C */ { 9, trans_C },
+    /* D */ { 8, trans_D },
+    /* E */ { 30, trans_E },
+    /* F */ { 3, trans_F },
+    /* G */ { 9, trans_G },
+    /* H */ { 13, trans_H },
+    /* I */ { 24, trans_I },
+    /* J */ { 3, trans_J },
+    /* K */ { 7, trans_K },
+    /* L */ { 10, trans_L },
+    /* M */ { 4, trans_M },
+    /* N */ { 10, trans_N },
+    /* O */ { 41, trans_O },
+    /* P */ { 6, trans_P },
+    /* Q */ { 2, trans_Q },
+    /* R */ { 11, trans_R },
+    /* S */ { 10, trans_S },
+    /* T */ { 8, trans_T },
+    /* U */ { 38, trans_U },
+    /* V */ { 3, trans_V },
+    /* W */ { 10, trans_W },
+    /* X */ { 3, trans_X },
+    /* Y */ { 11, trans_Y },
+    /* Z */ { 8, trans_Z },
+    /* [ */ { 1, trans_bracketleft },
+    /* \ */ { 2, trans_backslash },
+    /* ] */ { 1, trans_bracketright },
+    /* ^ */ { 1, trans_asciicircum },
+    /* _ */ { 2, trans_underscore },
+    /* ` */ { 1, trans_grave },
+    /* a */ { 38, trans_a },
+    /* b */ { 5, trans_b },
+    /* c */ { 9, trans_c },
+    /* d */ { 8, trans_d },
+    /* e */ { 31, trans_e },
+    /* f */ { 4, trans_f },
+    /* g */ { 10, trans_g },
+    /* h */ { 16, trans_h },
+    /* i */ { 30, trans_i },
+    /* j */ { 4, trans_j },
+    /* k */ { 7, trans_k },
+    /* l */ { 10, trans_l },
+    /* m */ { 5, trans_m },
+    /* n */ { 11, trans_n },
+    /* o */ { 41, trans_o },
+    /* p */ { 6, trans_p },
+    /* q */ { 2, trans_q },
+    /* r */ { 12, trans_r },
+    /* s */ { 11, trans_s },
+    /* t */ { 10, trans_t },
+    /* u */ { 44, trans_u },
+    /* v */ { 3, trans_v },
+    /* w */ { 11, trans_w },
+    /* x */ { 3, trans_x },
+    /* y */ { 12, trans_y },
+    /* z */ { 9, trans_z },
+    /* { */ { 1, trans_braceleft },
+    /* | */ { 2, trans_bar },
+    /* } */ { 1, trans_braceright },
+    /* ~ */ { 1, trans_asciitilde },
 };
 
 struct gchr_accents _gdraw_accents[] = {

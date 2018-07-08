@@ -2040,12 +2040,12 @@ return;
     }
     if ( ia==0 && baserch!=basech && basersc!=NULL ) {
 	ybase = SplineCharFindSlantedBounds(basersc,layer,&bbb,ia);
-	if ( ff_unicode_utype2[1+ch] & (FF_UNICODE_ABOVE|FF_UNICODE_BELOW) ) {
+	if ( (ffUnicodeUtype2(ch) & (FF_UNICODE_ABOVE|FF_UNICODE_BELOW)) ) {
 	    /* if unicode.org character definition matches ABOVE or BELOW, then... */
 	    bbb.maxy = bb.maxy;
 	    bbb.miny = bb.miny;
 	}
-	if ( ff_unicode_utype2[1+ch] & (FF_UNICODE_RIGHT|FF_UNICODE_LEFT) ) {
+	if ( (ffUnicodeUtype2(ch) & (FF_UNICODE_RIGHT|FF_UNICODE_LEFT)) ) {
 	    /* if unicode.org character definition matches RIGHT or LEFT, then... */
 	    bbb.maxx = bb.maxx;
 	    bbb.minx = bb.minx;
@@ -2065,11 +2065,11 @@ return;
 	/*  If so then figure offsets relative to it. */
 	xoff = ap1->me.x-ap2->me.x + sc->layers[layer].refs->transform[4];
 	yoff = ap1->me.y-ap2->me.y + sc->layers[layer].refs->transform[5];
-	pos = ff_unicode_utype2[1+ch];	/* init with unicode.org position information */
+	pos = ffUnicodeUtype2(ch);	/* init with unicode.org position information */
     } else if ( AnchorClassMatch(basersc,rsc,(AnchorClass *) -1,&ap1,&ap2)!=NULL && ap2->type==at_mark ) {
 	xoff = ap1->me.x-ap2->me.x;
 	yoff = ap1->me.y-ap2->me.y;
-	pos = ff_unicode_utype2[1+ch];	/* init with unicode.org position information */
+	pos = ffUnicodeUtype2(ch);	/* init with unicode.org position information */
     } else {
  /* try to establish a common line on which all accents lie. The problem being*/
  /*  that an accent above a,e,o will usually be slightly higher than an accent */
@@ -2110,7 +2110,7 @@ return;
 	    if ( ch<0 || ch>=0x10000 )	/* makeutype.c only built data in utype.c for {0...MAXC} */
 		pos = FF_UNICODE_ABOVE;
 	    else
-		pos = ff_unicode_utype2[1+ch];	/* init with unicode.org position information */
+		pos = ffUnicodeUtype2(ch);	/* init with unicode.org position information */
 	    /* In greek, PSILI and friends are centered above lower case, and kern left*/
 	    /*  for upper case */
 	    if (( basech>=0x390 && basech<=0x3ff) || (basech>=0x1f00 && basech<=0x1fff)) {
