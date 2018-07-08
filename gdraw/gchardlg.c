@@ -840,9 +840,9 @@ return;
     else if ( inschr.dsp_mode==d_dec )
 	sprintf( buffer, "%d", ch );
     else if ( inschr.map==em_unicode )
-	sprintf( buffer, "%d,%d", ((ch&0xff)>>8), (ch&0xff) );
+	sprintf( buffer, "%d,%d", ((ch>>8)&0xff), (ch&0xff) );
     else
-	sprintf( buffer, "%d,%d", ((ch&0xff)>>8)-0x21, (ch&0xff)-0x21 );
+	sprintf( buffer, "%d,%d", ((ch>>8)&0xff)-0x21, (ch&0xff)-0x21 );
     uc_strcpy(ubuffer,buffer);
     GGadgetSetTitle(GWidgetGetControl(inschr.icw,INSCHR_Char),ubuffer);
     InsChrFigureShow();
