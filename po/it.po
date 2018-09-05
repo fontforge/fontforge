@@ -78,13 +78,12 @@ msgstr "Impossibile leggere (o trovare) il file di uscita di mf"
 
 #: autotrace.c:829
 msgid "MetaFont exited with an error"
-msgstr "MetaFont è terminato per un errore"
+msgstr "MetaFont è stato terminato per un errore"
 
 #: autowidth2.c:495 autowidth2.c:567 autowidth2.c:642 autowidth2.c:759
 #: autowidth2.c:897
-#, fuzzy
 msgid "Glyph too big"
-msgstr "Caratteri a destra"
+msgstr "Glifo troppo grande"
 
 #: autowidth2.c:495 autowidth2.c:567 autowidth2.c:642 autowidth2.c:759
 #: autowidth2.c:897
@@ -123,51 +122,52 @@ msgstr ""
 
 #: bitmapcontrol.c:148
 msgid "Scaling Bitmaps"
-msgstr "Scalamento delle bitmap"
+msgstr "Scalamento delle Bitmap"
 
 #: bitmapcontrol.c:222 savefont.c:341 savefont.c:348 winfonts.c:858
 #, fuzzy
 msgid "Missing Bitmap"
-msgstr "Sto salvando le immagini bitmap"
+msgstr "Bitmap mancante/i"
 
 #: bitmapcontrol.c:222
 #, fuzzy, c-format
 msgid "Attempt to regenerate a pixel size that has not been created (%d@%d)"
 msgstr ""
 "Tentativo di rigenerazione di una dimensione di pixel che non è stata già "
-"creata: "
+"creata (%d@%d)"
 
 #: collabclient.c:121
 msgid "Disconnected"
-msgstr ""
+msgstr "Disconnesso"
 
 #: collabclient.c:123
 msgid "Collab Server"
-msgstr ""
+msgstr "Server Collaborativo"
 
 #: collabclient.c:125
 msgid "Collab Client"
-msgstr ""
+msgstr "Client Collaborativo"
 
 #: collabclient.c:127
 msgid "Unknown Collab State!"
-msgstr ""
+msgstr "Stato Collaborativo sconosciuto!"
 
 #: cvexport.c:727 savefont.c:657 savefont.c:853
 #: ../fontforgeexe/cvexportdlg.c:295 ../fontforgeexe/fontview.c:724
 #: ../fontforgeexe/showatt.c:2337
 msgid "Save Failed"
-msgstr "Errore di registrazione"
+msgstr "Errore nel salvataggio"
 
 #: cvimages.c:116 cvimages.c:161 cvimages.c:311 cvimages.c:341
 msgid "Too Complex or Bad"
-msgstr ""
+msgstr "Troppo complesso o sbagliato"
 
 #: cvimages.c:116 cvimages.c:161
 msgid ""
 "I'm sorry this file is too complex for me to understand (or is erroneous, or "
 "is empty)"
-msgstr ""
+msgstr "Mi dispiace, trovo questo file troppo complesso da comprendere (o è "
+"sbagliato, oppure vuoto)"
 
 #: cvimages.c:205 cvimages.c:213 cvimages.c:218 cvimages.c:241
 #, fuzzy
@@ -178,30 +178,35 @@ msgstr "Non ci sono file PK"
 msgid ""
 "This does not seem to be a plate file\n"
 "First line wrong"
-msgstr ""
+msgstr "Questo non sembra essere un file plate\n"
+"Prima riga sbagliata"
 
 #: cvimages.c:213
 msgid ""
 "This does not seem to be a plate file\n"
 "Expected left paren"
-msgstr ""
+msgstr "Questo non sembra essere un file plate\n"
+"Aspettavo parentesi sinistra"
 
 #: cvimages.c:218
 msgid ""
 "This does not seem to be a plate file\n"
 "Expected one of 'voc[]z'"
-msgstr ""
+msgstr "Questo non sembra essere un file plate\n"
+"PAspettavo uno di 'voc[]z'"
 
 #: cvimages.c:241
 msgid ""
 "This does not seem to be a plate file\n"
 "Expected two real numbers"
-msgstr ""
+msgstr "Questo non sembra essere un file plate\n"
+"Aspettavo due numeri reali"
 
 #: cvimages.c:311 cvimages.c:341
 msgid ""
 "I'm sorry this file is too complex for me to understand (or is erroneous)"
-msgstr ""
+msgstr "Mi dispiace, trovo questo file troppo complesso da comprendere (o è "
+"sbagliato)"
 
 #: cvimages.c:830
 msgid "Can't find the file"
@@ -229,11 +234,12 @@ msgstr "Non è stato selezionato nulla"
 
 #: cvimages.c:993
 msgid "You must select a glyph before you can import an image into it"
-msgstr ""
+msgstr "Devi selezionare un glifo prima di poter importare un'immagine "
+"al suo interno"
 
 #: cvimages.c:995
 msgid "More Images Than Selected Glyphs"
-msgstr "Ci sono più immagini che caratteri selezionati"
+msgstr "Ci sono più immagini che glifi selezionati"
 
 #: cvimages.c:1014 cvimages.c:1022
 msgid "Bad Template"
@@ -258,16 +264,16 @@ msgstr "Valore Unicode assente dal font"
 #: cvimages.c:1054
 #, c-format
 msgid "Unicode value (%x) not in font, ignored"
-msgstr "Valore Unicode (%x) assente dal font; ignorato"
+msgstr "Valore Unicode (%x) assente dal font, ignorato"
 
 #: cvimages.c:1062
 msgid "Encoding value not in font"
-msgstr "Valore dell'encoding assente dal font"
+msgstr "Valore di codifica assente dal font"
 
 #: cvimages.c:1062
 #, c-format
 msgid "Encoding value (%x) not in font, ignored"
-msgstr "Valore dell'encoding (%x) assente dal font; ignorato"
+msgstr "Valore di codifica (%x) assente dal font, ignorato"
 
 #: cvimages.c:1075
 #, c-format
@@ -388,7 +394,7 @@ msgstr "Sì _a tutto"
 #: parsettf.c:5678 tottf.c:1468
 #, fuzzy
 msgid "No _to All"
-msgstr "N_o a tutto"
+msgstr "No a _tutto"
 
 #: cvundoes.c:2099 cvundoes.c:2317 cvundoes.c:3605 fontviewbase.c:108
 #: fontviewbase.c:1409 parsettfbmf.c:484 splinechar.c:1013 splinefont.c:1238
@@ -434,7 +440,7 @@ msgstr "Ancora doppia"
 #: cvundoes.c:2291
 #, fuzzy, c-format
 msgid "There is already an anchor point named %1$.40s in %2$.40s."
-msgstr "C'è già un'ancora chiamata %$1s in %$2hs."
+msgstr "C'è già un'ancora chiamata %1$.40s in %2$.40s."
 
 #: cvundoes.c:2321
 #, fuzzy
@@ -447,23 +453,26 @@ msgid ""
 "Generally this will not work unless the 'prep', 'fpgm' and 'cvt ' tables are "
 "the same.\n"
 "Do you want to continue anyway?"
-msgstr ""
+msgstr "Stai provando ad incollare istruzioni di un glifo da un font ad un altro. "
+"Generalmente non funzionerà, a meno che le tavole 'prep', 'fpgm' e 'cvt' siano "
+"le stesse.\n"
+"Vuoi continuare comunque?"
 
 #: cvundoes.c:2513
 msgid "Please don't do that"
-msgstr ""
+msgstr "Per favore, non farlo"
 
 #: cvundoes.c:2513
 msgid "You may not paste a reference into this window"
-msgstr ""
+msgstr "Non puoi incollare un riferimento in questa finestra"
 
 #: cvundoes.c:2521 cvundoes.c:3374 ../fontforgeexe/searchview.c:261
 msgid "Self-referential glyph"
-msgstr "Carattere con auto-riferimento"
+msgstr "Glifo con auto-riferimento"
 
 #: cvundoes.c:2521 cvundoes.c:3374 ../fontforgeexe/searchview.c:261
 msgid "Attempt to make a glyph that refers to itself"
-msgstr "Stai cercando di creare un carattere con un riferimento a lui stesso"
+msgstr "Stai cercando di creare un glifo con un riferimento a lui stesso"
 
 #: cvundoes.c:2552 cvundoes.c:3185 cvundoes.c:3735 cvundoes.c:3830
 msgid "No Vertical Metrics"
@@ -481,12 +490,12 @@ msgstr "Le metriche verticali non sono state attivate in questo font"
 #: ../fontforgeexe/lookupui.c:3975 ../fontforgeexe/lookupui.c:4000
 #, fuzzy
 msgid "Missing glyph"
-msgstr "Caratteri mancanti..."
+msgstr "Glifo mancante"
 
 #: cvundoes.c:2846 cvundoes.c:2985
 #, fuzzy
 msgid "Could not find original glyph"
-msgstr "Carattere introvabile"
+msgstr "Impossibile trovare il glifo originale"
 
 #: cvundoes.c:2867 fontviewbase.c:995 fontviewbase.c:1636 fvimportbdf.c:1890
 #: parsettf.c:5505 savefont.c:754 splinechar.c:1022
@@ -564,7 +573,7 @@ msgstr "Carattere introvabile"
 #: ../gdraw/gmatrixedit.c:1240 ../gdraw/gresedit.c:2343
 #: ../gdraw/gsavefiledlg.c:289
 msgid "_Cancel"
-msgstr "_Cancella"
+msgstr "_Annulla"
 
 #. GT: I'm not happy with this phrase. Suggestions for improvements are welcome
 #. GT:  Here I am generating a list of lookup names representing data that can
@@ -577,7 +586,7 @@ msgstr "_Cancella"
 #: cvundoes.c:2898
 #, fuzzy, c-format
 msgid "Second glyph of %s"
-msgstr "I caratteri selezionati"
+msgstr "Secondo glifo di %s"
 
 #: cvundoes.c:2913 ../fontforgeexe/charinfo.c:5171
 msgid "No Lookups"
@@ -608,11 +617,11 @@ msgstr "Stai cercando di creare un carattere con un riferimento a lui stesso"
 #: cvundoes.c:3456 cvundoes.c:3484
 #, fuzzy
 msgid "No selection\n"
-msgstr "Ruota la selezione"
+msgstr "Nessuna selezione\n"
 
 #: cvundoes.c:3607
 msgid "Bitmap Paste"
-msgstr "Incolla la bitmap"
+msgstr "Incolla la Bitmap"
 
 #: cvundoes.c:3700
 msgid "Pasting..."
@@ -621,12 +630,12 @@ msgstr "Incolla..."
 #: dumpbdf.c:434 dumppfa.c:2797 winfonts.c:659
 #, fuzzy, c-format
 msgid "Can't open %s\n"
-msgstr "Impossibile leggere il font"
+msgstr "Impossibile aprire %s\n"
 
 #: dumpbdf.c:448
 #, c-format
 msgid "Failed to write %s\n"
-msgstr ""
+msgstr "Errore di scrittura %s\n"
 
 #: dumppfa.c:629 print.c:552 svg.c:498
 #, c-format
@@ -648,35 +657,35 @@ msgstr "Salvataggio del font PostScript"
 #: effects.c:45
 #, fuzzy
 msgid "Outlining glyphs"
-msgstr "Crea i caratteri accentati"
+msgstr "Crea i bordi esterni dei glifi"
 
 #: effects.c:80
 #, fuzzy
 msgid "Inlining glyphs"
-msgstr "Interpretazione dei glifi"
+msgstr "Crea i bordi interni dei glifi"
 
 #: effects.c:786
 #, fuzzy
 msgid "Shadowing glyphs"
-msgstr "Lettura dei glifi"
+msgstr "Crea le ombre dei glifi"
 
 #: encoding.c:606 encoding.c:614
 msgid "Bad encoding file format"
-msgstr "Formato del file di encoding errato"
+msgstr "Formato del file di codifica errato"
 
 #: encoding.c:614
 msgid ""
 "This file contains an unnamed encoding, which cannot be named in a script"
-msgstr ""
+msgstr "Questo file contiene una codifica senza nome, che non può essere nominata in uno script"
 
 #: encoding.c:618 ../fontforgeexe/encodingui.c:195
 msgid "Please name this encoding"
-msgstr "Per favore, dai un nome a questo encoding"
+msgstr "Dai un nome a questa codifica"
 
 #: encoding.c:623 encoding.c:633
 #, c-format
 msgid "Please name the %s encoding in this file"
-msgstr "Per favore, dai un nome al %s encoding in questo file"
+msgstr "Dai un nome alla codifica %s in questo file"
 
 #: encoding.c:624 ../fontforgeexe/tilepath.c:770
 #, fuzzy
@@ -694,7 +703,7 @@ msgstr "terzo"
 #: encoding.c:628 encoding.c:637
 #, c-format
 msgid "Please name the %dth encoding in this file"
-msgstr "Per favore, dai un nome al %d-esimo encoding in questo file"
+msgstr "Dai un nome alla %d-esima codifica in questo file"
 
 #: encoding.c:634 ../fontforgeexe/charview.c:11318
 #: ../fontforgeexe/cvpalettes.c:1503
@@ -714,19 +723,20 @@ msgstr "Cerca di un file di tabella CID..."
 #: encoding.c:956
 #, fuzzy, c-format
 msgid "Couldn't open cidmap file: %s"
-msgstr "Impossibile leggere il file %.200s"
+msgstr "Impossibile leggere il file cidmap %s"
 
 #: encoding.c:958
 #, fuzzy
 msgid "Bad cidmap file"
-msgstr "File immagine errato"
+msgstr "File cidmap errato"
 
 #: encoding.c:958 encoding.c:959
 #, c-format
 msgid ""
 "%s is not a cidmap file, please download\n"
 "http://fontforge.sourceforge.net/cidmaps.tgz"
-msgstr ""
+msgstr "%s non è un file cidmap, scarica \n"
+"http://fontforge.sourceforge.net/cidmaps.tgz"
 
 #: encoding.c:1039
 msgid "_Use It"
@@ -810,7 +820,7 @@ msgstr "_Aggiungere"
 
 #: encoding.c:1167 encoding.c:1605
 msgid "Extraneous glyphs"
-msgstr "Caratteri soprannumerari"
+msgstr "Glifi soprannumerari"
 
 #: encoding.c:1167 encoding.c:1605
 msgid ""
@@ -825,7 +835,7 @@ msgstr ""
 
 #: encoding.c:1463
 msgid "Not a CID-keyed font"
-msgstr "Questo font non ha un encoding CID"
+msgstr "Questo font non ha una codifica CID"
 
 #: encoding.c:1477 ../fontforgeexe/savefontdlg.c:1484
 msgid "Encoding Too Large"
@@ -833,7 +843,7 @@ msgstr "Codifica troppo grande"
 
 #: encoding.c:1517
 msgid "MultipleEncodingIgnored"
-msgstr "MultipleEncodingIgnored"
+msgstr "CodificaMultiplaIgnorata"
 
 #: encoding.c:1518
 #, c-format
@@ -847,12 +857,12 @@ msgstr ""
 #: featurefile.c:96
 #, fuzzy, c-format
 msgid "No glyph named %s."
-msgstr "Nessun carattere selezionato."
+msgstr "Nessun glifo selezionato."
 
 #: featurefile.c:134
 #, c-format
 msgid "No CID named %s"
-msgstr ""
+msgstr "Nessun CID chiamato %s"
 
 #: featurefile.c:2380
 #, c-format
@@ -1478,7 +1488,7 @@ msgstr ""
 
 #: fontviewbase.c:364 fontviewbase.c:365
 msgid "Building duplicate encodings"
-msgstr ""
+msgstr "Costruzione di codifiche duplicate"
 
 #: fontviewbase.c:762
 msgid "Transforming..."
@@ -1486,7 +1496,7 @@ msgstr "Trasformazione..."
 
 #: fontviewbase.c:847
 msgid "Removing overlaps..."
-msgstr "Soppressione dei ricoprimenti..."
+msgstr "Soppressione delle ricoperture..."
 
 #: fontviewbase.c:882
 msgid "Adding points at Extrema..."
@@ -1494,7 +1504,7 @@ msgstr "Aggiungi punti alle estremità..."
 
 #: fontviewbase.c:930 fontviewbase.c:951
 msgid "Rounding to integer..."
-msgstr "Arrotonda ll'intero..."
+msgstr "Arrotonda all'intero..."
 
 #: fontviewbase.c:972
 msgid "Correcting Direction..."
@@ -2234,15 +2244,15 @@ msgstr ""
 #: glyphcomp.c:2036
 #, c-format
 msgid ""
-"“%s” in %s did not contain a positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv="
+"“%s” in %s did not contain a positioning lookup ?x=%d ?y=%d ?x_adv=%d ?y_adv="
 "%d\n"
 msgstr ""
 
 #: glyphcomp.c:2039
 #, c-format
 msgid ""
-"“%s” in %s did not contain a pairwise positioning lookup ∆x=%d ∆y=%d ∆x_adv="
-"%d ∆y_adv=%d to %s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
+"“%s” in %s did not contain a pairwise positioning lookup ?x=%d ?y=%d ?x_adv="
+"%d ?y_adv=%d to %s ?x=%d ?y=%d ?x_adv=%d ?y_adv=%d\n"
 msgstr ""
 
 #: glyphcomp.c:2045
@@ -2591,120 +2601,120 @@ msgstr ""
 #: langfreq.c:1822 macenc.c:2274 ../fontforgeexe/fontinfo.c:829
 #: ../fontforgeexe/lookupui.c:360 ../fontforgeexe/macencui.c:118
 msgid "Czech"
-msgstr ""
+msgstr "Ceco"
 
 #: langfreq.c:1823 macenc.c:2238 ../fontforgeexe/fontinfo.c:832
 #: ../fontforgeexe/lookupui.c:567 ../fontforgeexe/macencui.c:82
 msgid "Dutch"
-msgstr ""
+msgstr "Olandese"
 
 #: langfreq.c:1824 macenc.c:2234 ../fontforgeexe/lookupui.c:380
 #: ../fontforgeexe/macencui.c:78
 #, fuzzy
 msgid "English"
-msgstr "Inglese americano en_US"
+msgstr "Inglese"
 
 #: langfreq.c:1825 macenc.c:2235 ../fontforgeexe/macencui.c:79
 #, fuzzy
 msgid "French"
-msgstr "Francese svizzero fr_CH"
+msgstr "Francese"
 
 #: langfreq.c:1826 macenc.c:2236 ../fontforgeexe/macencui.c:80
 #, fuzzy
 msgid "German"
-msgstr "Tedesco svizzero de_CH"
+msgstr "Tedesco"
 
 #: langfreq.c:1827 macenc.c:2248 ../fontforgeexe/fontinfo.c:884
 #: ../fontforgeexe/lookupui.c:379 ../fontforgeexe/macencui.c:92
 msgid "Lang|Greek"
-msgstr ""
+msgstr "Greco"
 
 #: langfreq.c:1828 macenc.c:2244 ../fontforgeexe/fontinfo.c:889
 #: ../fontforgeexe/lookupui.c:442 ../fontforgeexe/macencui.c:88
 msgid "Lang|Hebrew"
-msgstr ""
+msgstr "Ebraico"
 
 #: langfreq.c:1829 macenc.c:2255 ../fontforgeexe/fontinfo.c:890
 #: ../fontforgeexe/lookupui.c:422 ../fontforgeexe/macencui.c:99
 msgid "Hindi"
-msgstr ""
+msgstr "Hindi"
 
 #: langfreq.c:1830 macenc.c:2260 ../fontforgeexe/fontinfo.c:891
 #: ../fontforgeexe/lookupui.c:428 ../fontforgeexe/macencui.c:104
 msgid "Hungarian"
-msgstr ""
+msgstr "Ungherese"
 
 #: langfreq.c:1831 macenc.c:2237 ../fontforgeexe/fontinfo.c:897
 #: ../fontforgeexe/lookupui.c:441 ../fontforgeexe/macencui.c:81
 #, fuzzy
 msgid "Italian"
-msgstr "Corsivo"
+msgstr "Italiano"
 
 #: langfreq.c:1832 unicoderange.c:167 ../fontforgeexe/fontinfo.c:1119
 msgid "Hiragana"
-msgstr ""
+msgstr "Hiragana"
 
 #: langfreq.c:1833 unicoderange.c:168
 msgid "Katakana"
-msgstr ""
+msgstr "Katakana"
 
 #: langfreq.c:1834 macenc.c:2258 ../fontforgeexe/fontinfo.c:912
 #: ../fontforgeexe/lookupui.c:513 ../fontforgeexe/macencui.c:102
 msgid "Lithuanian"
-msgstr ""
+msgstr "Lituano"
 
 #: langfreq.c:1835 macenc.c:2259 ../fontforgeexe/fontinfo.c:932
 #: ../fontforgeexe/lookupui.c:588 ../fontforgeexe/macencui.c:103
 msgid "Polish"
-msgstr ""
+msgstr "Polacco"
 
 #: langfreq.c:1836 macenc.c:2268 ../fontforgeexe/fontinfo.c:943
 #: ../fontforgeexe/lookupui.c:601 ../fontforgeexe/macencui.c:112
 msgid "Russian"
-msgstr ""
+msgstr "Russo"
 
 #: langfreq.c:1837 macenc.c:2240 ../fontforgeexe/lookupui.c:382
 #: ../fontforgeexe/macencui.c:84
 #, fuzzy
 msgid "Spanish"
-msgstr "Spagnolo messicano es_MX"
+msgstr "Spagnolo"
 
 #: langfreq.c:1838 macenc.c:2301 ../fontforgeexe/fontinfo.c:946
 #: ../fontforgeexe/lookupui.c:603 ../fontforgeexe/macencui.c:145
 #, fuzzy
 msgid "Sanskrit"
-msgstr "Senza grazie"
+msgstr "Sanscrito"
 
 #: langfreq.c:1839 macenc.c:2239 ../fontforgeexe/lookupui.c:633
 #: ../fontforgeexe/macencui.c:83
 #, fuzzy
 msgid "Swedish"
-msgstr "Svedese sv_SE"
+msgstr "Svedese"
 
 #: langfreq.c:1840 macenc.c:2251 ../fontforgeexe/fontinfo.c:997
 #: ../fontforgeexe/lookupui.c:657 ../fontforgeexe/macencui.c:95
 msgid "Turkish"
-msgstr ""
+msgstr "Turco"
 
 #: langfreq.c:1841 macenc.c:2331 ../fontforgeexe/fontinfo.c:1007
 #: ../fontforgeexe/lookupui.c:674 ../fontforgeexe/macencui.c:175
 msgid "Welsh"
-msgstr ""
+msgstr "Gallese"
 
 #: lookups.c:42 ../fontforgeexe/charinfo.c:1377 ../fontforgeexe/math.c:71
 #: ../fontforgeexe/math.c:150
 #, fuzzy
 msgid "Italic Correction"
-msgstr "Non è nella collezione"
+msgstr "Correzione corsivo"
 
 #: lookups.c:43
 #, fuzzy
 msgid "TeX Glyphlist"
-msgstr "Troppo pochi caratteri"
+msgstr "Lista glifi TeX"
 
 #: lookups.c:44
 msgid "TeX Extension List"
-msgstr ""
+msgstr "Lista estensione TeX"
 
 #: lookups.c:47
 msgid "Access All Alternates"
@@ -2941,7 +2951,7 @@ msgstr "Alternative Kana orizzontali"
 
 #: lookups.c:100
 msgid "Historic Ligatures"
-msgstr "Ligature storica"
+msgstr "Ligature storiche"
 
 #: lookups.c:101
 msgid "Hanja to Hangul"
@@ -2970,11 +2980,11 @@ msgstr "Corsivo"
 
 #: lookups.c:107
 msgid "Justification Alternatives"
-msgstr "Alternative di justificazione"
+msgstr "Alternative di giustificazione"
 
 #: lookups.c:108
 msgid "Japanese Forms (Obsolete)"
-msgstr ""
+msgstr "Forme Giapponesi (Obsolete)"
 
 #: lookups.c:109
 #, fuzzy
@@ -2996,7 +3006,7 @@ msgstr "Forme JIS90"
 #: lookups.c:113
 #, fuzzy
 msgid "Horizontal Kerning"
-msgstr "Alternative Kana orizzontali"
+msgstr "Crenatura orizzontale"
 
 #: lookups.c:114
 msgid "Left Bounds"
@@ -3051,7 +3061,7 @@ msgstr "Forme di annotazione alternative"
 #: lookups.c:126
 #, fuzzy
 msgid "NLC Kanji Forms"
-msgstr "Forme Nukta"
+msgstr "Forme Nukta NLC"
 
 #: lookups.c:127
 msgid "Nukta Forms"
@@ -3063,7 +3073,7 @@ msgstr "Numeratori"
 
 #: lookups.c:129
 msgid "Oldstyle Figures"
-msgstr "Cifre Oldstyle "
+msgstr "Cifre Oldstyle"
 
 #: lookups.c:130
 msgid "Optical Bounds"
@@ -3071,7 +3081,7 @@ msgstr "Limiti ottici"
 
 #: lookups.c:131
 msgid "Ordinals"
-msgstr ""
+msgstr "Ordinali"
 
 #: lookups.c:132
 msgid "Ornaments"
@@ -3088,7 +3098,7 @@ msgstr "Da minuscolo a maiuscoletto"
 #: lookups.c:135
 #, fuzzy
 msgid "Proportional Kana"
-msgstr "Larghezza proporzionale"
+msgstr "Kana proporzionale"
 
 #: lookups.c:136
 #, fuzzy
@@ -3491,7 +3501,7 @@ msgid "Bopomofo"
 msgstr "Bopomofo"
 
 #: lookups.c:1316 ../fontforgeexe/lookupui.c:186
-msgid "Brāhmī"
+msgid "Brahmi"
 msgstr ""
 
 #: lookups.c:1317 ../fontforgeexe/lookupui.c:187
@@ -3594,17 +3604,17 @@ msgstr "Etiopico"
 #: lookups.c:1344 ../fontforgeexe/lookupui.c:212
 #, fuzzy
 msgid "Script|Georgian"
-msgstr "Script per menu"
+msgstr "Georgiano"
 
 #: lookups.c:1345 unicoderange.c:153 ../fontforgeexe/fontinfo.c:1168
 #: ../fontforgeexe/lookupui.c:213
 msgid "Glagolitic"
-msgstr ""
+msgstr "Glagolitico"
 
 #: lookups.c:1346 unicoderange.c:256 ../fontforgeexe/fontinfo.c:1157
 #: ../fontforgeexe/lookupui.c:214
 msgid "Gothic"
-msgstr ""
+msgstr "Gotico"
 
 #: lookups.c:1347 parsettf.c:4432 ../fontforgeexe/lookupui.c:215
 #, fuzzy
@@ -3613,11 +3623,11 @@ msgstr "Script per menu"
 
 #: lookups.c:1348 parsettf.c:4436 ../fontforgeexe/lookupui.c:216
 msgid "Script|Gujarati"
-msgstr ""
+msgstr "Gujarati"
 
 #: lookups.c:1349 ../fontforgeexe/lookupui.c:217
 msgid "Script|Gujarati2"
-msgstr ""
+msgstr "Gujarati"
 
 #: lookups.c:1350 unicoderange.c:71 ../fontforgeexe/fontinfo.c:1087
 #: ../fontforgeexe/lookupui.c:218
@@ -3641,11 +3651,11 @@ msgstr "Hangul"
 #: lookups.c:1354 ../fontforgeexe/lookupui.c:222
 #, fuzzy
 msgid "Script|Hanunóo"
-msgstr "Script per menu"
+msgstr "Hanunóo"
 
 #: lookups.c:1355 parsettf.c:4432 ../fontforgeexe/lookupui.c:223
 msgid "Script|Hebrew"
-msgstr ""
+msgstr "Ebraico"
 
 #: lookups.c:1358 ../fontforgeexe/lookupui.c:226
 msgid "Script|Javanese"
@@ -3660,7 +3670,7 @@ msgid "Hiragana & Katakana"
 msgstr "Hiragana & Katakana"
 
 #: lookups.c:1361 ../fontforgeexe/lookupui.c:229
-msgid "Kharoṣṭhī"
+msgid "Kharo??hi"
 msgstr ""
 
 #: lookups.c:1362 ../fontforgeexe/lookupui.c:230
@@ -3683,12 +3693,12 @@ msgstr ""
 #: lookups.c:1366 ../fontforgeexe/lookupui.c:234
 #, fuzzy
 msgid "Script|Lao"
-msgstr "_Script:"
+msgstr ""
 
 #: lookups.c:1367 ../fontforgeexe/lookupui.c:235
 #, fuzzy
 msgid "Script|Latin"
-msgstr "Script per menu"
+msgstr "Latino"
 
 #: lookups.c:1368 ../fontforgeexe/lookupui.c:236
 msgid "Lepcha (Róng)"
@@ -3697,7 +3707,7 @@ msgstr ""
 #: lookups.c:1369 ../fontforgeexe/lookupui.c:237
 #, fuzzy
 msgid "Script|Limbu"
-msgstr "Script per menu"
+msgstr ""
 
 #: lookups.c:1370 ../fontforgeexe/lookupui.c:238
 #, fuzzy
@@ -3720,16 +3730,16 @@ msgstr ""
 #: lookups.c:1374 ../fontforgeexe/lookupui.c:240
 #, fuzzy
 msgid "Script|Mandaean"
-msgstr "Script per menu"
+msgstr ""
 
 #: lookups.c:1376 ../fontforgeexe/lookupui.c:242
 #, fuzzy
-msgid "Script|Malayālam"
+msgid "Script|Malayalam"
 msgstr "Malayalam"
 
 #: lookups.c:1377 ../fontforgeexe/lookupui.c:243
 #, fuzzy
-msgid "Script|Malayālam2"
+msgid "Script|Malayalam2"
 msgstr "Malayalam"
 
 #: lookups.c:1378 unicoderange.c:303 ../fontforgeexe/fontinfo.c:1160
@@ -3753,12 +3763,12 @@ msgstr "Birmano"
 #: lookups.c:1382 unicoderange.c:102 ../fontforgeexe/fontinfo.c:1166
 #, fuzzy
 msgid "New Tai Lue"
-msgstr "Nuova legatura"
+msgstr "Nuovo Tai Lue"
 
 #: lookups.c:1383 unicoderange.c:64 ../fontforgeexe/fontinfo.c:1084
 #: ../fontforgeexe/lookupui.c:248 ../fontforgeexe/lookupui.c:566
 msgid "N'Ko"
-msgstr ""
+msgstr "N'Ko"
 
 #: lookups.c:1384 unicoderange.c:91 ../fontforgeexe/fontinfo.c:1149
 #: ../fontforgeexe/lookupui.c:249
@@ -3767,11 +3777,11 @@ msgstr "Ogham"
 
 #: lookups.c:1385 unicoderange.c:110 ../fontforgeexe/fontinfo.c:1185
 msgid "Ol Chiki"
-msgstr ""
+msgstr "Ol Chiki"
 
 #: lookups.c:1386 ../fontforgeexe/lookupui.c:250
 msgid "Old Italic (Etruscan, Oscan, etc.)"
-msgstr ""
+msgstr "Vecchio Corsivo (Etrisco, Oscan, ecc.)"
 
 #: lookups.c:1387 ../fontforgeexe/lookupui.c:251
 msgid "Script|Old Permic"
@@ -3779,16 +3789,16 @@ msgstr ""
 
 #: lookups.c:1388 ../fontforgeexe/lookupui.c:252
 msgid "Old Persian cuneiform"
-msgstr ""
+msgstr "Vecchio Persiano cuneiforme"
 
 #: lookups.c:1389 ../fontforgeexe/lookupui.c:253
 #, fuzzy
 msgid "Script|Oriya"
-msgstr "File di script"
+msgstr "Oriya"
 
 #: lookups.c:1390 ../fontforgeexe/lookupui.c:254
 msgid "Script|Oriya2"
-msgstr ""
+msgstr "Oriya"
 
 #: lookups.c:1391 unicoderange.c:261 ../fontforgeexe/fontinfo.c:1177
 #: ../fontforgeexe/lookupui.c:255
@@ -4274,11 +4284,11 @@ msgstr ""
 #: ../fontforgeexe/macencui.c:85
 #, fuzzy
 msgid "Danish"
-msgstr "Finlandese fi_FI"
+msgstr "Danese"
 
 #: macenc.c:2242 ../fontforgeexe/lookupui.c:590 ../fontforgeexe/macencui.c:86
 msgid "Portuguese"
-msgstr ""
+msgstr "Portoghese"
 
 #: macenc.c:2243 ../fontforgeexe/lookupui.c:569 ../fontforgeexe/macencui.c:87
 #, fuzzy
@@ -4288,41 +4298,41 @@ msgstr "Norvegese Bokmal no_NO"
 #: macenc.c:2245 ../fontforgeexe/fontinfo.c:67 ../fontforgeexe/fontinfo.c:899
 #: ../fontforgeexe/lookupui.c:445 ../fontforgeexe/macencui.c:89
 msgid "Japanese"
-msgstr ""
+msgstr "Giapponese"
 
 #: macenc.c:2246 ../fontforgeexe/lookupui.c:306 ../fontforgeexe/macencui.c:90
 msgid "Lang|Arabic"
-msgstr ""
+msgstr "Arabo"
 
 #: macenc.c:2247 ../fontforgeexe/fontinfo.c:856 ../fontforgeexe/lookupui.c:390
 #: ../fontforgeexe/macencui.c:91
 #, fuzzy
 msgid "Finnish"
-msgstr "Finlandese fi_FI"
+msgstr "Finlandese"
 
 #: macenc.c:2249 ../fontforgeexe/fontinfo.c:893 ../fontforgeexe/lookupui.c:439
 #: ../fontforgeexe/macencui.c:93
 msgid "Icelandic"
-msgstr ""
+msgstr "Islandese"
 
 #: macenc.c:2250 ../fontforgeexe/fontinfo.c:918 ../fontforgeexe/lookupui.c:551
 #: ../fontforgeexe/macencui.c:94
 msgid "Maltese"
-msgstr ""
+msgstr "Maltese"
 
 #: macenc.c:2252 ../fontforgeexe/fontinfo.c:827 ../fontforgeexe/lookupui.c:427
 #: ../fontforgeexe/macencui.c:96
 msgid "Croatian"
-msgstr ""
+msgstr "Croato"
 
 #: macenc.c:2253 ../fontforgeexe/fontinfo.c:68 ../fontforgeexe/macencui.c:97
 #, fuzzy
 msgid "Traditional Chinese"
-msgstr "Forme tradizionali"
+msgstr "Cinese Tradizionale"
 
 #: macenc.c:2254 ../fontforgeexe/lookupui.c:665 ../fontforgeexe/macencui.c:98
 msgid "Urdu"
-msgstr ""
+msgstr "Urdu"
 
 #: macenc.c:2256 ../fontforgeexe/fontinfo.c:990 ../fontforgeexe/lookupui.c:648
 #: ../fontforgeexe/macencui.c:100
@@ -4333,25 +4343,25 @@ msgstr ""
 #: ../fontforgeexe/lookupui.c:478 ../fontforgeexe/macencui.c:101
 #, fuzzy
 msgid "Korean"
-msgstr "Johab (Coreano)"
+msgstr "Johab (Koreano)"
 
 #: macenc.c:2261 ../fontforgeexe/fontinfo.c:852 ../fontforgeexe/lookupui.c:383
 #: ../fontforgeexe/macencui.c:105
 msgid "Estonian"
-msgstr ""
+msgstr "Estone"
 
 #: macenc.c:2262 ../fontforgeexe/fontinfo.c:910 ../fontforgeexe/lookupui.c:519
 #: ../fontforgeexe/macencui.c:106
 msgid "Latvian"
-msgstr ""
+msgstr "Lettone"
 
 #: macenc.c:2263 ../fontforgeexe/fontinfo.c:945 ../fontforgeexe/macencui.c:107
 msgid "Sami (Lappish)"
-msgstr ""
+msgstr "Sami (Lappone)"
 
 #: macenc.c:2264 ../fontforgeexe/macencui.c:108
 msgid "Faroese (Icelandic)"
-msgstr ""
+msgstr "Faroese / Faringio (Islandese)"
 
 #. GT: See the long comment at "Property|New"
 #. GT: The msgstr should contain a translation of "Farsi/Persian"), ignore "Lang|"
@@ -4359,178 +4369,178 @@ msgstr ""
 #. GT: The msgstr should contain a translation of "Farsi/Persian", ignore "Lang|"
 #: macenc.c:2267 ../fontforgeexe/macencui.c:111
 msgid "Lang|Farsi/Persian"
-msgstr ""
+msgstr "Farsi / Persiano"
 
 #: macenc.c:2269 ../fontforgeexe/fontinfo.c:69 ../fontforgeexe/macencui.c:113
 #, fuzzy
 msgid "Simplified Chinese"
-msgstr "Forme semplificate"
+msgstr "Cinese semplificato"
 
 #: macenc.c:2270 ../fontforgeexe/lookupui.c:392 ../fontforgeexe/macencui.c:114
 msgid "Flemish"
-msgstr ""
+msgstr "Fiammingo"
 
 #: macenc.c:2271 ../fontforgeexe/macencui.c:115
 msgid "Irish Gaelic"
-msgstr ""
+msgstr "Irlandese Gaelico"
 
 #: macenc.c:2272 ../fontforgeexe/fontinfo.c:789 ../fontforgeexe/lookupui.c:625
 #: ../fontforgeexe/macencui.c:116
 msgid "Albanian"
-msgstr ""
+msgstr "Albanese"
 
 #: macenc.c:2273 ../fontforgeexe/fontinfo.c:941 ../fontforgeexe/lookupui.c:597
 #: ../fontforgeexe/macencui.c:117
 msgid "Romanian"
-msgstr ""
+msgstr "Rumeno"
 
 #: macenc.c:2275 ../fontforgeexe/fontinfo.c:953 ../fontforgeexe/lookupui.c:614
 #: ../fontforgeexe/macencui.c:119
 msgid "Slovak"
-msgstr ""
+msgstr "Slovacco"
 
 #: macenc.c:2276 ../fontforgeexe/fontinfo.c:954 ../fontforgeexe/lookupui.c:616
 #: ../fontforgeexe/macencui.c:120
 msgid "Slovenian"
-msgstr ""
+msgstr "Sloveno"
 
 #: macenc.c:2277 ../fontforgeexe/fontinfo.c:1010
 #: ../fontforgeexe/lookupui.c:444 ../fontforgeexe/macencui.c:121
 msgid "Yiddish"
-msgstr ""
+msgstr "Yiddish"
 
 #: macenc.c:2278 ../fontforgeexe/lookupui.c:626 ../fontforgeexe/macencui.c:122
 msgid "Serbian"
-msgstr ""
+msgstr "Serbo"
 
 #: macenc.c:2279 ../fontforgeexe/fontinfo.c:914 ../fontforgeexe/lookupui.c:533
 #: ../fontforgeexe/macencui.c:123
 msgid "Macedonian"
-msgstr ""
+msgstr "Macedone"
 
 #: macenc.c:2280 ../fontforgeexe/fontinfo.c:817 ../fontforgeexe/lookupui.c:325
 #: ../fontforgeexe/macencui.c:124
 msgid "Bulgarian"
-msgstr ""
+msgstr "Bulgaro"
 
 #: macenc.c:2281 ../fontforgeexe/fontinfo.c:1000
 #: ../fontforgeexe/lookupui.c:664 ../fontforgeexe/macencui.c:125
 msgid "Ukrainian"
-msgstr ""
+msgstr "Ucraino"
 
 #: macenc.c:2282 ../fontforgeexe/fontinfo.c:814 ../fontforgeexe/macencui.c:126
 msgid "Byelorussian"
-msgstr ""
+msgstr "Bielorusso"
 
 #: macenc.c:2283 ../fontforgeexe/lookupui.c:668 ../fontforgeexe/macencui.c:127
 msgid "Uzbek"
-msgstr ""
+msgstr "Uzbeco"
 
 #: macenc.c:2284 ../fontforgeexe/fontinfo.c:903 ../fontforgeexe/lookupui.c:454
 #: ../fontforgeexe/macencui.c:128
 msgid "Kazakh"
-msgstr ""
+msgstr "Kazaco"
 
 #: macenc.c:2285 ../fontforgeexe/macencui.c:129
 msgid "Axerbaijani (Cyrillic)"
-msgstr ""
+msgstr "Azero (Cirillico)"
 
 #: macenc.c:2286 ../fontforgeexe/macencui.c:130
 #, fuzzy
 msgid "Axerbaijani (Arabic)"
-msgstr "Arabo ar"
+msgstr "Azero (Arabo)"
 
 #: macenc.c:2287 ../fontforgeexe/fontinfo.c:809 ../fontforgeexe/lookupui.c:429
 #: ../fontforgeexe/macencui.c:131
 msgid "Lang|Armenian"
-msgstr ""
+msgstr "Armeno"
 
 #: macenc.c:2288 ../fontforgeexe/fontinfo.c:878 ../fontforgeexe/lookupui.c:453
 #: ../fontforgeexe/macencui.c:132
 msgid "Lang|Georgian"
-msgstr ""
+msgstr "Georgiano"
 
 #: macenc.c:2289 ../fontforgeexe/lookupui.c:546 ../fontforgeexe/macencui.c:133
 msgid "Moldavian"
-msgstr ""
+msgstr "Moldavo"
 
 #: macenc.c:2290 ../fontforgeexe/fontinfo.c:905 ../fontforgeexe/lookupui.c:464
 #: ../fontforgeexe/macencui.c:134
 msgid "Kirghiz"
-msgstr ""
+msgstr "Cirghiso"
 
 #: macenc.c:2291 ../fontforgeexe/lookupui.c:640 ../fontforgeexe/macencui.c:135
 msgid "Tajiki"
-msgstr ""
+msgstr "Tajiki"
 
 #: macenc.c:2292 ../fontforgeexe/fontinfo.c:998 ../fontforgeexe/lookupui.c:651
 #: ../fontforgeexe/macencui.c:136
 msgid "Turkmen"
-msgstr ""
+msgstr "Turkmeno"
 
 #: macenc.c:2293 ../fontforgeexe/fontinfo.c:923 ../fontforgeexe/macencui.c:137
 msgid "Mongolian (Mongolian)"
-msgstr ""
+msgstr "Mongolo (Mongolia)"
 
 #: macenc.c:2294 ../fontforgeexe/macencui.c:138
 msgid "Mongolian (cyrillic)"
-msgstr ""
+msgstr "Mongolo (cirillico)"
 
 #: macenc.c:2295 ../fontforgeexe/fontinfo.c:931 ../fontforgeexe/lookupui.c:584
 #: ../fontforgeexe/macencui.c:139
 msgid "Pashto"
-msgstr ""
+msgstr "Pashto"
 
 #: macenc.c:2296 ../fontforgeexe/lookupui.c:493 ../fontforgeexe/macencui.c:140
 msgid "Kurdish"
-msgstr ""
+msgstr "Curdo"
 
 #: macenc.c:2297 ../fontforgeexe/lookupui.c:487 ../fontforgeexe/macencui.c:141
 msgid "Kashmiri"
-msgstr ""
+msgstr "Kashmiri"
 
 #: macenc.c:2298 ../fontforgeexe/lookupui.c:620 ../fontforgeexe/macencui.c:142
 msgid "Sindhi"
-msgstr ""
+msgstr "Sindhi"
 
 #: macenc.c:2299 ../fontforgeexe/lookupui.c:650 ../fontforgeexe/macencui.c:143
 msgid "Lang|Tibetan"
-msgstr ""
+msgstr "Tibetano"
 
 #: macenc.c:2300 ../fontforgeexe/fontinfo.c:924 ../fontforgeexe/lookupui.c:559
 #: ../fontforgeexe/macencui.c:144
 msgid "Nepali"
-msgstr ""
+msgstr "Nepalese"
 
 #: macenc.c:2302 ../fontforgeexe/fontinfo.c:921 ../fontforgeexe/lookupui.c:524
 #: ../fontforgeexe/macencui.c:146
 msgid "Marathi"
-msgstr ""
+msgstr "Marathi"
 
 #: macenc.c:2303 ../fontforgeexe/fontinfo.c:815 ../fontforgeexe/lookupui.c:324
 #: ../fontforgeexe/macencui.c:147
 msgid "Lang|Bengali"
-msgstr ""
+msgstr "Bengalese"
 
 #: macenc.c:2304 ../fontforgeexe/fontinfo.c:810 ../fontforgeexe/lookupui.c:309
 #: ../fontforgeexe/macencui.c:148
 #, fuzzy
 msgid "Assamese"
-msgstr "Nomi"
+msgstr "Assamese"
 
 #: macenc.c:2305 ../fontforgeexe/fontinfo.c:886 ../fontforgeexe/lookupui.c:414
 #: ../fontforgeexe/macencui.c:149
 msgid "Lang|Gujarati"
-msgstr ""
+msgstr "Gujarati"
 
 #: macenc.c:2306 ../fontforgeexe/lookupui.c:582 ../fontforgeexe/macencui.c:150
 msgid "Punjabi"
-msgstr ""
+msgstr "Punjabi"
 
 #: macenc.c:2307 ../fontforgeexe/fontinfo.c:928 ../fontforgeexe/lookupui.c:577
 #: ../fontforgeexe/macencui.c:151
 msgid "Lang|Oriya"
-msgstr ""
+msgstr "Oriya"
 
 #: macenc.c:2308 ../fontforgeexe/fontinfo.c:917 ../fontforgeexe/macencui.c:152
 #, fuzzy
@@ -5327,23 +5337,28 @@ msgstr "Questo carattere è definito in più di un sotto-font CID"
 msgid ""
 "This glyph contains a different number of references in different instances"
 msgstr ""
+"Questo glifo contiene un numero differente di riferimenti in diverse istanze"
 
 #: mm.c:370
 msgid ""
 "A reference in this glyph refers to a different encoding in different "
 "instances"
-msgstr ""
+msgstr "Un riferimento a questo glifo punta ad un'altra codifica in differenti "
+"istanze"
 
 #: mm.c:433 mm.c:445
 msgid ""
 "A contour in this glyph contains a different number of points in different "
 "instances"
 msgstr ""
+"Un contorno in questo glifo contiene un numero differente di punti in diverse "
+"istanze"
 
 #: mm.c:455
 msgid ""
 "This glyph contains a different number of contours in different instances"
 msgstr ""
+"Questo glifo contiene un numero differente di contorni in differenti istanze"
 
 #: mm.c:491
 #, fuzzy
@@ -5371,12 +5386,12 @@ msgstr "Salvataggio del font Multiple PostScript"
 
 #: mm.c:671
 msgid "Various errors occurred at the selected glyphs"
-msgstr ""
+msgstr "Si sono verificati vari errori con il glifo selezionato"
 
 #: mm.c:673
 #, c-format
 msgid "The following error occurred on the selected glyphs: %.100s"
-msgstr ""
+msgstr "Il seguente errore si è verificato con il glifo selezionato: %.100s"
 
 #: mm.c:984
 #, c-format
@@ -5437,35 +5452,40 @@ msgstr ""
 msgid ""
 "The glyph %1$.30s has a different number of contours in font %2$.30s than in "
 "%3$.30s"
-msgstr "Il font %1$.30s ha un encoding uguale a quello di %2$.30hs"
+msgstr "Il glifo %1$.30s ha un diverso numero di contorni nel font %2$.30hs "
+"rispetto a %3$.30s"
 
 #: mm.c:1079
 #, c-format
 msgid ""
 "The glyph %1$.30s in font %2$.30s has a different number of points (or "
 "control points) on its contours than in %3$.30s"
-msgstr ""
+msgstr "Il glifo %1$.30s nel font %2.30s ha un diverso numero di punti (o "
+"punti di controllo) sui suoi contorni rispetto a %3$.30s"
 
 #: mm.c:1086
 #, fuzzy, c-format
 msgid ""
 "The glyph %1$.30s in font %2$.30s has contours running in a different "
 "direction than in %3$.30s"
-msgstr "Il font %1$.30s ha un encoding uguale a quello di %2$.30hs"
+msgstr "Il glifo %1$.30s nel font %2.30s ha contorni rivolti in una direzione "
+"diversa rispetto a %3$.30s"
 
 #: mm.c:1093
 #, fuzzy, c-format
 msgid ""
 "The glyph %1$.30s in font %2$.30s has a different number of references than "
 "in %3$.30s"
-msgstr "Il font %1$.30s ha un encoding uguale a quello di %2$.30hs"
+msgstr "Il glifo %1$.30s nel font %2.30s ha un diverso numero di riferimenti "
+"rispetto a %3$.30s"
 
 #: mm.c:1100
 #, fuzzy, c-format
 msgid ""
 "The glyph %1$.30s in font %2$.30s has references with different scaling or "
 "rotation (etc.) than in %3$.30s"
-msgstr "Il font %1$.30s ha un encoding uguale a quello di %2$.30hs"
+msgstr "Il glifo %1$.30s nel font %2.30s ha una riferimenti con scala o rotazione "
+"(ecc.) diverse rispetto a %2$.30s"
 
 #: mm.c:1107
 #, fuzzy, c-format
@@ -5600,8 +5620,8 @@ msgstr ""
 
 #: namelist.c:11969
 #, fuzzy
-msgid "ΤεΧ Names"
-msgstr "ΤεΧ Base (8r)"
+msgid "?e? Names"
+msgstr "?e? Base (8r)"
 
 #: namelist.c:15343
 #, fuzzy
@@ -10341,11 +10361,11 @@ msgstr ""
 
 #: unicoderange.c:70 ../fontforgeexe/fontinfo.c:1086
 msgid "Bengali"
-msgstr ""
+msgstr "Bengalese"
 
 #: unicoderange.c:72 ../fontforgeexe/fontinfo.c:1088
 msgid "Gujarati"
-msgstr ""
+msgstr "Gujarati"
 
 #: unicoderange.c:73 ../fontforgeexe/fontinfo.c:1089
 msgid "Oriya"
@@ -12156,19 +12176,19 @@ msgstr "Apri(_O)"
 #: ../fontforgeexe/bitmapview.c:2114 ../fontforgeexe/charview.c:11146
 #: ../fontforgeexe/fontview.c:4508 ../fontforgeexe/metricsview.c:3685
 msgid "Recen_t"
-msgstr "_Recenti"
+msgstr "Recen_ti"
 
 #: ../fontforgeexe/bitmapview.c:2115 ../fontforgeexe/charview.c:11147
 #: ../fontforgeexe/fontview.c:4509 ../fontforgeexe/metricsview.c:3686
 msgid "_Close"
-msgstr "Chiudi(_F)"
+msgstr "_Chiudi"
 
 #: ../fontforgeexe/bitmapview.c:2117 ../fontforgeexe/charview.c:11150
 #: ../fontforgeexe/cvexportdlg.c:551 ../fontforgeexe/fontview.c:512
 #: ../fontforgeexe/fontview.c:4511 ../fontforgeexe/metricsview.c:3688
 #: ../gdraw/gsavefiledlg.c:242
 msgid "_Save"
-msgstr "Salva(_E)"
+msgstr "_Salva"
 
 #: ../fontforgeexe/bitmapview.c:2118 ../fontforgeexe/charview.c:11151
 #: ../fontforgeexe/fontview.c:4512 ../fontforgeexe/metricsview.c:3689
@@ -12189,7 +12209,7 @@ msgstr "Crea una _famiglia per Mac..."
 #: ../fontforgeexe/fontview.c:4516 ../fontforgeexe/metricsview.c:3692
 #, fuzzy
 msgid "Generate TTC..."
-msgstr "_Crea i font..."
+msgstr "Crea TTC..."
 
 #: ../fontforgeexe/bitmapview.c:2122
 msgid "Expor_t..."
@@ -12204,7 +12224,7 @@ msgstr "_Importa..."
 #: ../fontforgeexe/bitmapview.c:2125 ../fontforgeexe/charview.c:11158
 #: ../fontforgeexe/fontview.c:4520
 msgid "_Revert File"
-msgstr "Getta il _file"
+msgstr "_Ripristina il _file"
 
 #: ../fontforgeexe/bitmapview.c:2127 ../fontforgeexe/charview.c:11169
 #: ../fontforgeexe/fontview.c:4537 ../fontforgeexe/metricsview.c:3699
@@ -12214,7 +12234,7 @@ msgstr "Pr_eferenze..."
 #: ../fontforgeexe/bitmapview.c:2128 ../fontforgeexe/charview.c:11170
 #: ../fontforgeexe/fontview.c:4538 ../fontforgeexe/metricsview.c:3700
 msgid "_X Resource Editor..."
-msgstr ""
+msgstr "Editor di Risorse _X"
 
 #: ../fontforgeexe/bitmapview.c:2130 ../fontforgeexe/charview.c:11172
 #: ../fontforgeexe/fontview.c:4540 ../fontforgeexe/metricsview.c:3702
@@ -12225,19 +12245,19 @@ msgstr "Esci(_Q)"
 #: ../fontforgeexe/fontview.c:4594 ../fontforgeexe/metricsview.c:3707
 #: ../fontforgeexe/sftextfield.c:931 ../gdraw/gtextfield.c:1038
 msgid "_Undo"
-msgstr "_Disfa"
+msgstr "_Annulla"
 
 #: ../fontforgeexe/bitmapview.c:2136 ../fontforgeexe/charview.c:11202
 #: ../fontforgeexe/fontview.c:4595 ../fontforgeexe/metricsview.c:3708
 msgid "_Redo"
-msgstr "_Rifà"
+msgstr "_Ripristina"
 
 #: ../fontforgeexe/bitmapview.c:2138 ../fontforgeexe/charview.c:11204
 #: ../fontforgeexe/fontview.c:4598 ../fontforgeexe/fontview.c:6004
 #: ../fontforgeexe/metricsview.c:3710 ../fontforgeexe/sftextfield.c:933
 #: ../fontforgeexe/uiutil.c:668 ../gdraw/gtextfield.c:1039
 msgid "Cu_t"
-msgstr "Taglia(_P)"
+msgstr "_Taglia"
 
 #: ../fontforgeexe/bitmapview.c:2139 ../fontforgeexe/charview.c:11205
 #: ../fontforgeexe/fontview.c:4599 ../fontforgeexe/fontview.c:6005
@@ -12274,33 +12294,33 @@ msgstr "Selezion_a tutto"
 
 #: ../fontforgeexe/bitmapview.c:2146 ../fontforgeexe/fontview.c:4625
 msgid "Remo_ve Undoes"
-msgstr "Canc_ella gli 'undo'"
+msgstr "Canc_ella gli "Annulla""
 
 #: ../fontforgeexe/bitmapview.c:2148 ../fontforgeexe/charview.c:11224
 #: ../fontforgeexe/fontview.c:4621 ../fontforgeexe/fontview.c:6011
 #: ../fontforgeexe/metricsview.c:3724
 msgid "U_nlink Reference"
-msgstr "Sostitui_re il riferimento"
+msgstr "Scollega il riferimento"
 
 #: ../fontforgeexe/bitmapview.c:2153
 msgid "Flip _Horizontally"
-msgstr "Simmetria orizzontale(_H)"
+msgstr "Rifletti orizzontalmente(_H)"
 
 #: ../fontforgeexe/bitmapview.c:2154
 msgid "Flip _Vertically"
-msgstr "Simmetria _verticale"
+msgstr "Rifletti _verticalmente"
 
 #: ../fontforgeexe/bitmapview.c:2155
 msgid "_Rotate 90° CW"
-msgstr "_Rotazione oraria di 90°"
+msgstr "_Ruota di 90° in senso orario"
 
 #: ../fontforgeexe/bitmapview.c:2156
 msgid "Rotate _90° CCW"
-msgstr "Rotazione antioraria di _90°"
+msgstr "Ruota di _90° in senso antiorario"
 
 #: ../fontforgeexe/bitmapview.c:2157
 msgid "Rotate _180°"
-msgstr "Rotazione di _180°"
+msgstr "Ruota a _180°"
 
 #: ../fontforgeexe/bitmapview.c:2158
 msgid "_Skew..."
@@ -12309,39 +12329,39 @@ msgstr "Inclina...(_S)"
 #: ../fontforgeexe/bitmapview.c:2163 ../fontforgeexe/charview.c:11409
 #: ../fontforgeexe/fontview.c:4728 ../fontforgeexe/metricsview.c:3779
 msgid "_Font Info..."
-msgstr "Informazioni sul font...(_P)"
+msgstr "Informazioni sul _font..."
 
 #: ../fontforgeexe/bitmapview.c:2164 ../fontforgeexe/fontview.c:6013
 #: ../fontforgeexe/metricsview.c:3780
 msgid "Glyph _Info..."
-msgstr "_Informazioni sul carattere..."
+msgstr "_Informazioni sul glifo..."
 
 #: ../fontforgeexe/bitmapview.c:2165
 #, fuzzy
 msgid "BDF Info..."
-msgstr "Informazioni sul font...(_P)"
+msgstr "Informazioni sul BDF..."
 
 #: ../fontforgeexe/bitmapview.c:2167 ../fontforgeexe/fontview.c:4733
 #: ../fontforgeexe/metricsview.c:3784
 #, fuzzy
 msgid "Bitm_ap Strikes Available..."
-msgstr "Bitm_ap disponibili..."
+msgstr "Bitm_ap Strike disponibili..."
 
 #: ../fontforgeexe/bitmapview.c:2168 ../fontforgeexe/charview.c:11416
 #: ../fontforgeexe/fontview.c:4734 ../fontforgeexe/metricsview.c:3785
 #, fuzzy
 msgid "Regenerate _Bitmap Glyphs..."
-msgstr "Rigenera le _bitmap..."
+msgstr "Rigenera i Glifi _Bitmap..."
 
 #: ../fontforgeexe/bitmapview.c:2169
 msgid "Remove This Glyph"
-msgstr ""
+msgstr "Rimuovi questo Glifo"
 
 #: ../fontforgeexe/bitmapview.c:2171 ../fontforgeexe/charview.c:11420
 #: ../fontforgeexe/fontview.c:4738
 #, fuzzy
 msgid "_Transformations"
-msgstr "Matrice di trasformazione"
+msgstr "Trasformazioni"
 
 #: ../fontforgeexe/bitmapview.c:2176 ../fontforgeexe/charview.c:11562
 #: ../fontforgeexe/charview.c:11879 ../fontforgeexe/charview.c:11900
@@ -12352,7 +12372,7 @@ msgstr "Strumenti(_O)"
 #: ../fontforgeexe/bitmapview.c:2177 ../fontforgeexe/charview.c:11563
 #: ../fontforgeexe/fontview.c:5227 ../fontforgeexe/metricsview.c:3928
 msgid "_Layers"
-msgstr "Strati(_C)"
+msgstr "_Livelli"
 
 #: ../fontforgeexe/bitmapview.c:2178
 msgid "_Shades"
@@ -12369,37 +12389,37 @@ msgstr "_Adatta"
 #: ../fontforgeexe/bitmapview.c:2186 ../fontforgeexe/charview.c:11706
 #: ../fontforgeexe/metricsview.c:3916
 msgid "Z_oom out"
-msgstr "Rimpicci_olisci"
+msgstr "Z_oom indietro"
 
 #: ../fontforgeexe/bitmapview.c:2187 ../fontforgeexe/charview.c:11707
 #: ../fontforgeexe/metricsview.c:3917
 msgid "Zoom _in"
-msgstr "_Ingrandisci"
+msgstr "Zoom avant_i"
 
 #: ../fontforgeexe/bitmapview.c:2189 ../fontforgeexe/charview.c:11713
 #: ../fontforgeexe/fontview.c:5221 ../fontforgeexe/metricsview.c:3922
 msgid "_Next Glyph"
-msgstr "Carattere successivo(_P)"
+msgstr "Glifo successivo(_N)"
 
 #: ../fontforgeexe/bitmapview.c:2190 ../fontforgeexe/charview.c:11714
 #: ../fontforgeexe/fontview.c:5222 ../fontforgeexe/metricsview.c:3923
 msgid "_Prev Glyph"
-msgstr "Carattere precede_nte"
+msgstr "Glifo _precedente"
 
 #: ../fontforgeexe/bitmapview.c:2191 ../fontforgeexe/charview.c:11715
 #: ../fontforgeexe/fontview.c:5223 ../fontforgeexe/metricsview.c:3924
 msgid "Next _Defined Glyph"
-msgstr "Carattere _definito successivo"
+msgstr "Glifo _definito successivo"
 
 #: ../fontforgeexe/bitmapview.c:2192 ../fontforgeexe/charview.c:11716
 #: ../fontforgeexe/fontview.c:5224 ../fontforgeexe/metricsview.c:3925
 msgid "Prev Defined Gl_yph"
-msgstr "C_arattere definito precedente"
+msgstr "Glifo definito precedente(_Y)"
 
 #: ../fontforgeexe/bitmapview.c:2193 ../fontforgeexe/charview.c:11718
 #: ../fontforgeexe/fontview.c:5225
 msgid "_Goto"
-msgstr "V_ai a"
+msgstr "Vai a...(_G)"
 
 #: ../fontforgeexe/bitmapview.c:2194 ../fontforgeexe/charview.c:11719
 #: ../fontforgeexe/metricsview.c:3926
@@ -12408,11 +12428,11 @@ msgstr "Cerca nella finestra del font(_V)"
 
 #: ../fontforgeexe/bitmapview.c:2196
 msgid "_Bigger Pixel Size"
-msgstr "Più _grande"
+msgstr "Dimensione pixel più grande(_B)"
 
 #: ../fontforgeexe/bitmapview.c:2197
 msgid "_Smaller Pixel Size"
-msgstr "_Più piccolo"
+msgstr "Dimensione pixel più piccola(_S)"
 
 #: ../fontforgeexe/bitmapview.c:2199
 msgid "_Palettes"
@@ -12422,12 +12442,12 @@ msgstr "Tavolozze(_P)"
 #: ../fontforgeexe/cvpalettes.c:4090 ../fontforgeexe/fontview.c:5421
 #: ../fontforgeexe/fontview.c:6025 ../fontforgeexe/metricsview.c:4022
 msgid "Set _Width..."
-msgstr "Fissa _la larghezza..."
+msgstr "Imposta _larghezza..."
 
 #: ../fontforgeexe/bitmapview.c:2205
 #, fuzzy
 msgid "Set _Vertical Width..."
-msgstr "Fissa l'a_vanzamento verticale..."
+msgstr "Imposta larghezza _verticale..."
 
 #: ../fontforgeexe/bitmapview.c:2210 ../fontforgeexe/charview.c:11874
 #: ../fontforgeexe/charview.c:11895 ../fontforgeexe/fontview.c:6031
@@ -12451,7 +12471,7 @@ msgstr "E_lemento"
 #: ../fontforgeexe/charview.c:11885 ../fontforgeexe/charview.c:11906
 #: ../fontforgeexe/fontview.c:6042 ../fontforgeexe/metricsview.c:4276
 msgid "_View"
-msgstr "_Vista"
+msgstr "_Visualizza"
 
 #: ../fontforgeexe/bitmapview.c:2214 ../fontforgeexe/charview.c:11886
 #: ../fontforgeexe/charview.c:11907 ../fontforgeexe/fontview.c:6043
@@ -12473,7 +12493,7 @@ msgstr "_Aiuto"
 
 #: ../fontforgeexe/bitmapview.c:2328
 msgid "Recalculate Bitmaps"
-msgstr "Ricalcola le bitmap"
+msgstr "Ricalcola le Bitmap"
 
 #: ../fontforgeexe/charinfo.c:136 ../fontforgeexe/fontinfo.c:10063
 #, fuzzy
@@ -12487,17 +12507,17 @@ msgstr "Classe non autorizzata"
 
 #: ../fontforgeexe/charinfo.c:138 ../fontforgeexe/cvgetinfo.c:1461
 msgid "Base Glyph"
-msgstr "Base Glyph"
+msgstr "Glifo Base"
 
 #: ../fontforgeexe/charinfo.c:139 ../fontforgeexe/cvgetinfo.c:1472
 msgid "Base Lig"
-msgstr "Base Lig"
+msgstr "Legatura Base"
 
 #: ../fontforgeexe/charinfo.c:140 ../fontforgeexe/charview.c:2057
 #: ../fontforgeexe/cvgetinfo.c:1450 ../fontforgeexe/showatt.c:1419
 #, fuzzy
 msgid "Mark"
-msgstr "Base Mark"
+msgstr "Mark Base"
 
 #: ../fontforgeexe/charinfo.c:141 ../fontforgeexe/showatt.c:1420
 #, fuzzy
@@ -12507,7 +12527,7 @@ msgstr "Componenti"
 #: ../fontforgeexe/charinfo.c:148 ../fontforgeexe/fontview.c:4556
 #: ../fontforgeexe/fontview.c:4695 ../fontforgeexe/groupsdlg.c:44
 msgid "Color|Choose..."
-msgstr ""
+msgstr "Scegli colore..."
 
 #: ../fontforgeexe/charinfo.c:149 ../fontforgeexe/fontview.c:4557
 #: ../fontforgeexe/fontview.c:4696 ../fontforgeexe/groupsdlg.c:45
@@ -12518,7 +12538,7 @@ msgstr "Default"
 #: ../fontforgeexe/charinfo.c:161
 #, fuzzy
 msgid "New Positioning"
-msgstr "Nuova variante di posizione"
+msgstr "Nuova posizione"
 
 #: ../fontforgeexe/charinfo.c:161
 #, fuzzy
@@ -12569,11 +12589,11 @@ msgstr "Valore errato"
 #: ../fontforgeexe/charinfo.c:506
 #, fuzzy
 msgid "Glyph names are limited to 31 characters"
-msgstr "Le marche di Script sono limitate a 4 caratteri ASCII"
+msgstr "I nomi dei glifi sono limitati a 31 caratteri"
 
 #: ../fontforgeexe/charinfo.c:512
 msgid "A glyph name may not start with a digit nor a full stop (period)"
-msgstr ""
+msgstr "Il nome di un glifo non può iniziare con un numero o con un punto"
 
 #: ../fontforgeexe/charinfo.c:527
 #, c-format
@@ -12581,18 +12601,21 @@ msgid ""
 "A glyph name must be ASCII, without spaces and may not contain the "
 "characters \"([{<>}])/%%\", and should contain only alphanumerics, periods "
 "and underscores"
-msgstr ""
+msgstr "Il nome di un glifo dev'essere ASCII, senza spazi e non può "
+"contenere i caratteri \"([{<>}])/%%\", e dovrebbe contenere solo alfanumerici, "
+"punti ed underscore"
 
 #: ../fontforgeexe/charinfo.c:530
 msgid ""
 "A glyph name should contain only alphanumerics, periods and underscores\n"
 "Do you want to use this name in spite of that?"
-msgstr ""
+msgstr "Il nome di un glifo dovrebbe contenere solo alfanumerici, punti ed underscores\n"
+"Vuoi usare il nome scelto nonostante questo?"
 
 #: ../fontforgeexe/charinfo.c:833
 #, fuzzy
 msgid "Duplicate Ligature"
-msgstr "Nome ripetuto"
+msgstr "Legatura duplicata"
 
 #: ../fontforgeexe/charinfo.c:833
 #, c-format
@@ -12604,7 +12627,7 @@ msgstr ""
 #: ../fontforgeexe/charinfo.c:846
 #, fuzzy
 msgid "Duplicate Kern data"
-msgstr "Targhetta ripetuta"
+msgstr "Informazione di crenatura duplicate"
 
 #: ../fontforgeexe/charinfo.c:846
 #, c-format
@@ -12626,12 +12649,12 @@ msgstr ""
 #: ../fontforgeexe/charinfo.c:878 ../fontforgeexe/lookupui.c:3987
 #, fuzzy
 msgid "Missing glyph name"
-msgstr "Caratteri mancanti..."
+msgstr "Nome del glifo mancante"
 
 #: ../fontforgeexe/charinfo.c:878
 #, c-format
 msgid "You must specify a glyph name for subtable %s"
-msgstr ""
+msgstr "Devi specificare il nome di un glifo per la sottotabella %s"
 
 #: ../fontforgeexe/charinfo.c:890
 #, c-format
@@ -12643,7 +12666,7 @@ msgstr ""
 #: ../fontforgeexe/charinfo.c:900
 #, fuzzy
 msgid "Substitution generates itself"
-msgstr "Nuova variante di sostituzione"
+msgstr "La sostituzione si genera da sola"
 
 #: ../fontforgeexe/charinfo.c:900
 #, c-format
@@ -12655,15 +12678,15 @@ msgstr ""
 #: ../fontforgeexe/charinfo.c:1085
 #, fuzzy
 msgid "Unicode out of range"
-msgstr "Valore fuori limiti"
+msgstr "Unicode fuori dai limiti"
 
 #: ../fontforgeexe/charinfo.c:1085
 msgid "Bad unicode value for an alternate unicode / variation selector"
-msgstr ""
+msgstr "Valore unicode errato per unicode alternativo / selettore di variante"
 
 #: ../fontforgeexe/charinfo.c:1097
 msgid "Unexpected Variation Selector"
-msgstr ""
+msgstr "Selettore di variante inaspettato"
 
 #: ../fontforgeexe/charinfo.c:1098
 #, c-format
@@ -12682,8 +12705,9 @@ msgid ""
 "both must be unique within a font,\n"
 "do you want to swap them?"
 msgstr ""
-"C'è già un carattere con questo nome,\n"
-"Vuopi scambiare i nomi?"
+"C'è già un glifo con questo nome e codifica,\n"
+"entrambi devono essere unici dentro un font,\n"
+"vuoi scambiare i loro nomi?"
 
 #: ../fontforgeexe/charinfo.c:1316
 #, fuzzy
@@ -12692,8 +12716,9 @@ msgid ""
 "which must be unique within a font,\n"
 "do you want to swap the encodings of the two?"
 msgstr ""
-"C'è già un carattere con questo nome,\n"
-"Vuopi scambiare i nomi?"
+"C'è già un glifo con questa codifica,\n"
+"che dev'essere unica all'interno di un font,\n"
+"vuoi scambiare le loro codifiche?"
 
 #: ../fontforgeexe/charinfo.c:1328
 #, fuzzy
@@ -12702,12 +12727,13 @@ msgid ""
 "which must be unique within a font,\n"
 "do you want to swap the names of the two?"
 msgstr ""
-"C'è già un carattere con questo nome,\n"
-"Vuopi scambiare i nomi?"
+"C'è già un glifo con questo nome,\n"
+"che dev'essere unico all'interno di un font,\n"
+"vuoi scambiare i loro nomi?"
 
 #: ../fontforgeexe/charinfo.c:1376
 msgid "Depth"
-msgstr ""
+msgstr "Profondità"
 
 #: ../fontforgeexe/charinfo.c:1378
 msgid "Top Accent Horizontal Pos"
@@ -12715,11 +12741,11 @@ msgstr ""
 
 #: ../fontforgeexe/charinfo.c:1381
 msgid "Horizontal Extension Italic Correction"
-msgstr ""
+msgstr "Estensione orizzontale correzione Corsivo"
 
 #: ../fontforgeexe/charinfo.c:1382
 msgid "Vertical Extension Italic Correction"
-msgstr ""
+msgstr "Estensione verticale correzione Corsivo"
 
 #: ../fontforgeexe/charinfo.c:1389
 msgid "Tile Margin"
@@ -12784,7 +12810,7 @@ msgstr ""
 #: ../fontforgeexe/charinfo.c:2208
 #, fuzzy
 msgid "Bad pixel size"
-msgstr "Grandezza in pixel?"
+msgstr "Errore nella grandezza dei pixel"
 
 #: ../fontforgeexe/charinfo.c:2208
 #, c-format
@@ -12813,28 +12839,28 @@ msgstr "Grandezza dei pixel:"
 #: ../fontforgeexe/charinfo.c:2378 ../fontforgeexe/charinfo.c:2383
 #: ../fontforgeexe/charinfo.c:2388 ../fontforgeexe/charinfo.c:2404
 msgid "Subtable"
-msgstr ""
+msgstr "Sottotabella"
 
 #: ../fontforgeexe/charinfo.c:2369 ../fontforgeexe/lookupui.c:2557
 #, fuzzy
 msgid "Replacement Glyph Name"
-msgstr "Nomi PS"
+msgstr "Nome del glifo di rimpiazzo"
 
 #: ../fontforgeexe/charinfo.c:2374 ../fontforgeexe/lookupui.c:2562
 #, fuzzy
 msgid "Source Glyph Names"
-msgstr "Nomi PS"
+msgstr "Origine nomi dei glifi"
 
 #: ../fontforgeexe/charinfo.c:2379 ../fontforgeexe/charinfo.c:2384
 #: ../fontforgeexe/lookupui.c:2567
 #, fuzzy
 msgid "Replacement Glyph Names"
-msgstr "Nomi PS"
+msgstr "Nomi dei glifi di rimpiazzo"
 
 #: ../fontforgeexe/charinfo.c:2389 ../fontforgeexe/lookupui.c:2584
 #, fuzzy
-msgid "∆x"
-msgstr "∆X:"
+msgid "?x"
+msgstr "?X:"
 
 #. GT: "Adjust" here means Device Table based pixel adjustments, an OpenType
 #. GT: concept which allows small corrections for small pixel sizes where
@@ -12855,56 +12881,56 @@ msgstr "∆X:"
 #: ../fontforgeexe/math.c:72 ../fontforgeexe/math.c:79
 #: ../fontforgeexe/math.c:93
 msgid "Adjust"
-msgstr ""
+msgstr "Correggi"
 
 #: ../fontforgeexe/charinfo.c:2395 ../fontforgeexe/lookupui.c:2590
 #, fuzzy
-msgid "∆y"
-msgstr "∆X:"
+msgid "?y"
+msgstr "?X:"
 
 #: ../fontforgeexe/charinfo.c:2397 ../fontforgeexe/lookupui.c:2592
-msgid "∆x_adv"
+msgid "?x_adv"
 msgstr ""
 
 #: ../fontforgeexe/charinfo.c:2399 ../fontforgeexe/lookupui.c:2594
-msgid "∆y_adv"
+msgid "?y_adv"
 msgstr ""
 
 #: ../fontforgeexe/charinfo.c:2405 ../fontforgeexe/lookupui.c:2600
 #, fuzzy
 msgid "Second Glyph Name"
-msgstr "Nomi PS"
+msgstr "Nome del secondo glifo"
 
 #: ../fontforgeexe/charinfo.c:2406 ../fontforgeexe/lookupui.c:2601
-msgid "∆x #1"
+msgid "?x #1"
 msgstr ""
 
 #: ../fontforgeexe/charinfo.c:2408 ../fontforgeexe/lookupui.c:2603
-msgid "∆y #1"
+msgid "?y #1"
 msgstr ""
 
 #: ../fontforgeexe/charinfo.c:2410 ../fontforgeexe/lookupui.c:2605
-msgid "∆x_adv #1"
+msgid "?x_adv #1"
 msgstr ""
 
 #: ../fontforgeexe/charinfo.c:2412 ../fontforgeexe/lookupui.c:2607
-msgid "∆y_adv #1"
+msgid "?y_adv #1"
 msgstr ""
 
 #: ../fontforgeexe/charinfo.c:2414 ../fontforgeexe/lookupui.c:2609
-msgid "∆x #2"
+msgid "?x #2"
 msgstr ""
 
 #: ../fontforgeexe/charinfo.c:2416 ../fontforgeexe/lookupui.c:2611
-msgid "∆y #2"
+msgid "?y #2"
 msgstr ""
 
 #: ../fontforgeexe/charinfo.c:2418 ../fontforgeexe/lookupui.c:2613
-msgid "∆x_adv #2"
+msgid "?x_adv #2"
 msgstr ""
 
 #: ../fontforgeexe/charinfo.c:2420 ../fontforgeexe/lookupui.c:2615
-msgid "∆y_adv #2"
+msgid "?y_adv #2"
 msgstr ""
 
 #: ../fontforgeexe/charinfo.c:3448 ../fontforgeexe/math.c:58
@@ -12922,11 +12948,11 @@ msgstr ""
 #: ../fontforgeexe/math.c:117
 #, fuzzy
 msgid "Glyph"
-msgstr "Base Glyph"
+msgstr "Glifo base"
 
 #: ../fontforgeexe/charinfo.c:3455 ../fontforgeexe/math.c:118
 msgid "Extender"
-msgstr ""
+msgstr "Estensore"
 
 #. GT: "Len" is an abreviation for "Length"
 #: ../fontforgeexe/charinfo.c:3457 ../fontforgeexe/math.c:120
@@ -12951,7 +12977,7 @@ msgstr ""
 #: ../fontforgeexe/fontview.c:2136 ../fontforgeexe/fontview.c:2552
 #: ../fontforgeexe/groupsdlg.c:1006 ../gdraw/gbuttons.c:234
 msgid "Pick a color"
-msgstr ""
+msgstr "Scegli un colore"
 
 #: ../fontforgeexe/charinfo.c:3809
 #, c-format
@@ -12961,29 +12987,29 @@ msgstr "Informazioni sul carattere di %.40s"
 #: ../fontforgeexe/charinfo.c:3810
 #, fuzzy
 msgid "Glyph Info..."
-msgstr "_Informazioni sul carattere..."
+msgstr "_Informazioni sul glifo..."
 
 #: ../fontforgeexe/charinfo.c:3904
 msgid "No components"
-msgstr "Non ci sono i componenti"
+msgstr "Non ci sono componenti"
 
 #: ../fontforgeexe/charinfo.c:3905 ../fontforgeexe/charinfo.c:4456
 msgid "Accented glyph composed of:"
-msgstr "Carattere accentato fatto da:"
+msgstr "Glifo accentato composto da:"
 
 #: ../fontforgeexe/charinfo.c:3906
 msgid "Glyph composed of:"
-msgstr "Carattere composto da:"
+msgstr "Glifo composto da:"
 
 #: ../fontforgeexe/charinfo.c:4169
 #, fuzzy
 msgid "Glyph Info"
-msgstr "_Informazioni sul carattere..."
+msgstr "_Informazioni sul glifo..."
 
 #: ../fontforgeexe/charinfo.c:4180
 #, fuzzy
 msgid "Gl_yph Name:"
-msgstr "Nomi PS"
+msgstr "Nome del Glifo(_Y)"
 
 #: ../fontforgeexe/charinfo.c:4216
 msgid "Unicode C_har:"
@@ -12991,15 +13017,15 @@ msgstr "Car. Unicode:(_H)"
 
 #: ../fontforgeexe/charinfo.c:4236
 msgid "Set From N_ame"
-msgstr "F_atto con i nomi"
+msgstr "Imposta dal _nome"
 
 #: ../fontforgeexe/charinfo.c:4247
 msgid "Set From Val_ue"
-msgstr "Fatto con i valori(_U)"
+msgstr "Imposta dal valore(_U)"
 
 #: ../fontforgeexe/charinfo.c:4262
 msgid "Alternate Unicode Encodings / Variation Selectors"
-msgstr ""
+msgstr "Codifica Unicode alternativa / Selettore di variante"
 
 #: ../fontforgeexe/charinfo.c:4266
 msgid ""
@@ -13022,7 +13048,7 @@ msgstr ""
 #: ../fontforgeexe/charinfo.c:4290
 #, fuzzy
 msgid "OT _Glyph Class:"
-msgstr "Nomi PS"
+msgstr "Classe _glifo OT:"
 
 #: ../fontforgeexe/charinfo.c:4305
 msgid "Mark for Unlink, Remove Overlap Before Save"
@@ -13055,7 +13081,7 @@ msgstr "Colore:"
 
 #: ../fontforgeexe/charinfo.c:4380 ../fontforgeexe/lookupui.c:4587
 msgid "_Hide Unused Columns"
-msgstr ""
+msgstr "Nascondi colonne inutilizzate(_H)"
 
 #: ../fontforgeexe/charinfo.c:4386
 msgid ""
@@ -13098,12 +13124,12 @@ msgstr "Deviner(_G)"
 
 #: ../fontforgeexe/charinfo.c:4507
 msgid "Depth:"
-msgstr ""
+msgstr "Profondità:"
 
 #: ../fontforgeexe/charinfo.c:4534
 #, fuzzy
 msgid "Italic Correction:"
-msgstr "Non è nella collezione"
+msgstr "Correzione Corsivo:"
 
 #: ../fontforgeexe/charinfo.c:4540
 msgid ""
@@ -13152,7 +13178,7 @@ msgstr ""
 #: ../fontforgeexe/charinfo.c:4612 ../fontforgeexe/math.c:1880
 #, fuzzy
 msgid "Math Kerning"
-msgstr "Attenzione"
+msgstr "Crenatura matematica"
 
 #: ../fontforgeexe/charinfo.c:4618
 msgid ""
@@ -13185,17 +13211,18 @@ msgstr ""
 #: ../fontforgeexe/charinfo.c:4680
 #, fuzzy
 msgid "Variant Glyphs:"
-msgstr "Lettura dei glifi"
+msgstr "Glifi varianti"
 
 #: ../fontforgeexe/charinfo.c:4686
 msgid ""
 "A list of the names of pre defined glyphs which represent\n"
 "bigger versions of the current glyph."
-msgstr ""
+msgstr "Una lista dei nomi di glifi predefiniti che rappresenta\n"
+"versioni più grandi dei glifi attuali."
 
 #: ../fontforgeexe/charinfo.c:4695
 msgid "Glyph Extension Components"
-msgstr ""
+msgstr "Componenti estensione glifi"
 
 #: ../fontforgeexe/charinfo.c:4700
 msgid ""
@@ -13213,7 +13240,7 @@ msgstr ""
 #: ../fontforgeexe/charinfo.c:4705
 #, fuzzy
 msgid "Italic Cor:"
-msgstr "Corsivo"
+msgstr "Corr. Corsivo:"
 
 #: ../fontforgeexe/charinfo.c:4710
 msgid ""
@@ -13260,7 +13287,7 @@ msgstr ""
 #: ../fontforgeexe/charinfo.c:4874
 #, fuzzy
 msgid "Substitutions"
-msgstr "_Sostituzione..."
+msgstr "_Sostituzioni..."
 
 #: ../fontforgeexe/charinfo.c:4878
 msgid "Alt Subs"
@@ -13274,7 +13301,7 @@ msgstr "Mult Subs"
 #: ../fontforgeexe/showatt.c:658
 #, fuzzy
 msgid "Ligatures"
-msgstr "_Ligature"
+msgstr "_Legature"
 
 #: ../fontforgeexe/charinfo.c:4890
 msgid "Components"
@@ -13290,20 +13317,20 @@ msgid "Counters"
 msgstr "Spalle H"
 
 #: ../fontforgeexe/charinfo.c:4905
-msgid "ΤεΧ & Math"
+msgid "?e? & Math"
 msgstr ""
 
 #. GT: "Vert." is an abbreviation for Vertical
 #: ../fontforgeexe/charinfo.c:4911 ../fontforgeexe/math.c:153
 #, fuzzy
 msgid "Vert. Variants"
-msgstr "Varianti Vattu"
+msgstr "Varianti Vert."
 
 #. GT: "Horiz." is an abbreviation for Horizontal
 #: ../fontforgeexe/charinfo.c:4917
 #, fuzzy
 msgid "Horiz. Variants"
-msgstr "Varianti Vattu"
+msgstr "Varianti Orizz."
 
 #: ../fontforgeexe/charinfo.c:4923
 #, fuzzy
@@ -13315,14 +13342,14 @@ msgstr "Grandezza dei pixel:"
 #: ../fontforgeexe/cvgetinfo.c:3602 ../fontforgeexe/cvhints.c:534
 #: ../fontforgeexe/mmdlg.c:2556
 msgid "< _Prev"
-msgstr "< _Precedente"
+msgstr "< _Prec"
 
 #: ../fontforgeexe/charinfo.c:4953 ../fontforgeexe/contextchain.c:2137
 #: ../fontforgeexe/cvgetinfo.c:1600 ../fontforgeexe/cvgetinfo.c:3196
 #: ../fontforgeexe/cvgetinfo.c:3613 ../fontforgeexe/cvhints.c:545
 #: ../fontforgeexe/mmdlg.c:2567
 msgid "_Next >"
-msgstr "Successivo >(_N)"
+msgstr "_Succ >"
 
 #: ../fontforgeexe/charinfo.c:5094
 msgid "Select By ATT..."
@@ -13331,7 +13358,7 @@ msgstr ""
 #: ../fontforgeexe/charinfo.c:5094
 #, fuzzy
 msgid "No glyphs matched"
-msgstr "Nessun carattere selezionato."
+msgstr "Nessun glifo selezionato."
 
 #: ../fontforgeexe/charinfo.c:5171
 msgid "No applicable lookup subtables"
@@ -13349,7 +13376,7 @@ msgstr ""
 #: ../fontforgeexe/fontview.c:2244
 #, fuzzy
 msgid "Select Results"
-msgstr "Selezion_a tutto"
+msgstr "Selezion_a risultati"
 
 #: ../fontforgeexe/charinfo.c:5221
 msgid ""
@@ -13360,7 +13387,7 @@ msgstr ""
 #: ../fontforgeexe/charinfo.c:5226 ../fontforgeexe/fontview.c:1990
 #: ../fontforgeexe/fontview.c:2252
 msgid "Merge Results"
-msgstr ""
+msgstr "Unisci risultati"
 
 #: ../fontforgeexe/charinfo.c:5231
 msgid ""
@@ -16456,7 +16483,7 @@ msgstr ""
 
 #: ../fontforgeexe/cvimportdlg.c:424 ../fontforgeexe/openfontdlg.c:134
 #, fuzzy
-msgid "ΤεΧ Bitmap Fonts"
+msgid "?e? Bitmap Fonts"
 msgstr "Nessuna bitmap"
 
 #: ../fontforgeexe/cvimportdlg.c:425
@@ -17200,7 +17227,7 @@ msgstr ""
 
 #: ../fontforgeexe/cvruler.c:727
 #, c-format
-msgid "∆Curvature: %g"
+msgid "?Curvature: %g"
 msgstr ""
 
 #: ../fontforgeexe/cvruler.c:744
@@ -18196,7 +18223,7 @@ msgstr "Apri la finestra dei _contorni"
 
 #: ../fontforgeexe/effectsui.c:368 ../fontforgeexe/effectsui.c:440
 msgid "Shadow Length:"
-msgstr ""
+msgstr "Lunghezza dell'ombra:"
 
 #: ../fontforgeexe/effectsui.c:369 ../fontforgeexe/effectsui.c:458
 #, fuzzy
@@ -18206,7 +18233,7 @@ msgstr "_Inclinazione del corsivo:"
 #: ../fontforgeexe/effectsui.c:410
 #, fuzzy
 msgid "Shadow"
-msgstr "_Sfumature"
+msgstr "Ombre"
 
 #: ../fontforgeexe/encodingui.c:135
 #, fuzzy
@@ -18308,8 +18335,8 @@ msgid "Symbol"
 msgstr "Symbol"
 
 #: ../fontforgeexe/encodingui.c:471
-msgid "ΤεΧ Base (8r)"
-msgstr "ΤεΧ Base (8r)"
+msgid "?e? Base (8r)"
+msgstr "?e? Base (8r)"
 
 #: ../fontforgeexe/encodingui.c:473
 msgid "ISO 10646-1 (Unicode, BMP)"
@@ -18518,296 +18545,296 @@ msgstr "Decorativo"
 
 #: ../fontforgeexe/fontinfo.c:128
 msgid "No Classification"
-msgstr ""
+msgstr "Senza classificazione"
 
 #: ../fontforgeexe/fontinfo.c:129
 #, fuzzy
 msgid "Old Style Serifs"
-msgstr "Stile antico"
+msgstr "Serif (con grazie) Stile Antico (OSS)"
 
 #: ../fontforgeexe/fontinfo.c:130
 msgid "OSS Rounded Legibility"
-msgstr ""
+msgstr "OSS Arrotondato Leggibile"
 
 #: ../fontforgeexe/fontinfo.c:131
 msgid "OSS Geralde"
-msgstr ""
+msgstr "OSS Geralde"
 
 #: ../fontforgeexe/fontinfo.c:132
 msgid "OSS Venetian"
-msgstr ""
+msgstr "OSS Veneziano"
 
 #: ../fontforgeexe/fontinfo.c:133
 msgid "OSS Modified Venetian"
-msgstr ""
+msgstr "OSS Veneziano Modificato"
 
 #: ../fontforgeexe/fontinfo.c:134
 msgid "OSS Dutch Modern"
-msgstr ""
+msgstr "OSS Olandese Moderno"
 
 #: ../fontforgeexe/fontinfo.c:135
 msgid "OSS Dutch Trad"
-msgstr ""
+msgstr "OSS Olandese Tradizionale"
 
 #: ../fontforgeexe/fontinfo.c:136
 msgid "OSS Contemporary"
-msgstr ""
+msgstr "OSS Contemporaneo"
 
 #: ../fontforgeexe/fontinfo.c:137
 #, fuzzy
 msgid "OSS Calligraphic"
-msgstr "_Calligrafia"
+msgstr "OSS Calligrafico"
 
 #: ../fontforgeexe/fontinfo.c:138
 msgid "OSS Miscellaneous"
-msgstr ""
+msgstr "OSS Miscellaneo"
 
 #: ../fontforgeexe/fontinfo.c:139
 #, fuzzy
 msgid "Transitional Serifs"
-msgstr "Forme tradizionali"
+msgstr "Serif/grazie Tradizionali (TS)"
 
 #: ../fontforgeexe/fontinfo.c:140
 #, fuzzy
 msgid "TS Direct Line"
-msgstr "Nome della cartella?"
+msgstr "TS Linea Diritta"
 
 #: ../fontforgeexe/fontinfo.c:141
 #, fuzzy
 msgid "TS Script"
-msgstr "_Script:"
+msgstr "TS Script"
 
 #: ../fontforgeexe/fontinfo.c:142
 msgid "TS Miscellaneous"
-msgstr ""
+msgstr "TS Miscellaneo"
 
 #: ../fontforgeexe/fontinfo.c:143
 #, fuzzy
 msgid "Modern Serifs"
-msgstr "Moderno"
+msgstr "Serif (con grazie) Moderni (MS)"
 
 #: ../fontforgeexe/fontinfo.c:144
 #, fuzzy
 msgid "MS Italian"
-msgstr "Francese valdostano fr_IT"
+msgstr "MS Italiano"
 
 #: ../fontforgeexe/fontinfo.c:145
 #, fuzzy
 msgid "MS Script"
-msgstr "_Script:"
+msgstr "MS Script"
 
 #: ../fontforgeexe/fontinfo.c:146
 msgid "MS Miscellaneous"
-msgstr ""
+msgstr "MS Miscellaneo"
 
 #: ../fontforgeexe/fontinfo.c:147
 msgid "Clarendon Serifs"
-msgstr ""
+msgstr "Serif Clarendon (CS)"
 
 #: ../fontforgeexe/fontinfo.c:148
 msgid "CS Clarendon"
-msgstr ""
+msgstr "CS Clarendon"
 
 #: ../fontforgeexe/fontinfo.c:149
 #, fuzzy
 msgid "CS Modern"
-msgstr "Moderno"
+msgstr "CS Moderno"
 
 #: ../fontforgeexe/fontinfo.c:150
 #, fuzzy
 msgid "CS Traditional"
-msgstr "Spagnolo di Spagna tradizionale es_ES"
+msgstr "CS tradizionale"
 
 #: ../fontforgeexe/fontinfo.c:151
 msgid "CS Newspaper"
-msgstr ""
+msgstr "CS Quotidiano"
 
 #: ../fontforgeexe/fontinfo.c:152
 msgid "CS Stub Serif"
-msgstr ""
+msgstr "CS Serif Bozza"
 
 #: ../fontforgeexe/fontinfo.c:153
 msgid "CS Monotone"
-msgstr ""
+msgstr "CS Monotono"
 
 #: ../fontforgeexe/fontinfo.c:154
 msgid "CS Typewriter"
-msgstr ""
+msgstr "CS Typewriter"
 
 #: ../fontforgeexe/fontinfo.c:155
 msgid "CS Miscellaneous"
-msgstr ""
+msgstr "CS Miscellaneo"
 
 #: ../fontforgeexe/fontinfo.c:156
 #, fuzzy
 msgid "Slab Serifs"
-msgstr "Grazie(_S)"
+msgstr "Serif (con grazie) Slab (SS)"
 
 #: ../fontforgeexe/fontinfo.c:157
 msgid "Slab Serifs|SS Monotone"
-msgstr ""
+msgstr "SS Monotono"
 
 #: ../fontforgeexe/fontinfo.c:158
 msgid "Slab Serifs|SS Humanist"
-msgstr ""
+msgstr "SS Umanista"
 
 #: ../fontforgeexe/fontinfo.c:159
 msgid "Slab Serifs|SS Geometric"
-msgstr ""
+msgstr "SS Geometrico"
 
 #: ../fontforgeexe/fontinfo.c:160
 msgid "Slab Serifs|SS Swiss"
-msgstr ""
+msgstr "SS Svizzero"
 
 #: ../fontforgeexe/fontinfo.c:161
 msgid "Slab Serifs|SS Typewriter"
-msgstr ""
+msgstr "SS Typewriter"
 
 #: ../fontforgeexe/fontinfo.c:162
 msgid "Slab Serifs|SS Miscellaneous"
-msgstr ""
+msgstr "SS Miscellaneo"
 
 #: ../fontforgeexe/fontinfo.c:163
 msgid "Freeform Serifs"
-msgstr ""
+msgstr "Serif (con grazie) a Forma Libera (FS)"
 
 #: ../fontforgeexe/fontinfo.c:164
 #, fuzzy
 msgid "FS Modern"
-msgstr "Moderno"
+msgstr "FS Moderno"
 
 #: ../fontforgeexe/fontinfo.c:165
 msgid "FS Miscellaneous"
-msgstr ""
+msgstr "FS Miscellaneo"
 
 #: ../fontforgeexe/fontinfo.c:167
 msgid "Sans-Serif|SS IBM NeoGrotesque Gothic"
-msgstr ""
+msgstr "Senza Serif (senza grazie) - SS IBM NeoGrotesque Gothic"
 
 #: ../fontforgeexe/fontinfo.c:168
 #, fuzzy
 msgid "Sans-Serif|SS Humanist"
-msgstr "Senza grazie"
+msgstr "Senza Serif (senza grazie) - SS IBM Umanista"
 
 #: ../fontforgeexe/fontinfo.c:169
 msgid "Sans-Serif|SS Low-x Round Geometric"
-msgstr ""
+msgstr "Senza Serif (senza grazie) - SS Low-x geometrico arrotondato"
 
 #: ../fontforgeexe/fontinfo.c:170
 msgid "Sans-Serif|SS High-x Round Geometric"
-msgstr ""
+msgstr "Senza Serif (senza grazie) - SS High-x geometrico arrotondato"
 
 #: ../fontforgeexe/fontinfo.c:171
 msgid "Sans-Serif|SS NeoGrotesque Gothic"
-msgstr ""
+msgstr "Senza Serif (senza grazie) - SS NeoGrotesque Gothic"
 
 #: ../fontforgeexe/fontinfo.c:172
 msgid "Sans-Serif|SS Modified Grotesque Gothic"
-msgstr ""
+msgstr "Senza Serif (senza grazie) - SS Modified NeoGrotesque Gothic"
 
 #: ../fontforgeexe/fontinfo.c:173
 msgid "Sans-Serif|SS Typewriter Gothic"
-msgstr ""
+msgstr "Senza Serif (senza grazie) - SS Typewriter Gothic"
 
 #: ../fontforgeexe/fontinfo.c:174
 #, fuzzy
 msgid "Sans-Serif|SS Matrix"
-msgstr "Senza grazie"
+msgstr "Senza Serif (senza grazie) - SS Matrix"
 
 #: ../fontforgeexe/fontinfo.c:175
 msgid "Sans-Serif|SS Miscellaneous"
-msgstr ""
+msgstr "Senza Serif (senza grazie) - SS miscellaneo"
 
 #: ../fontforgeexe/fontinfo.c:176
 #, fuzzy
 msgid "Ornamentals"
-msgstr "Ornamenti"
+msgstr "Ornamentali (O)"
 
 #: ../fontforgeexe/fontinfo.c:177
 msgid "O Engraver"
-msgstr ""
+msgstr "O Incisione"
 
 #: ../fontforgeexe/fontinfo.c:178
 msgid "O Black Letter"
-msgstr ""
+msgstr "O Lettera nera"
 
 #: ../fontforgeexe/fontinfo.c:179
 #, fuzzy
 msgid "O Decorative"
-msgstr "Decorativo"
+msgstr "O Decorativo"
 
 #: ../fontforgeexe/fontinfo.c:180
 msgid "O Three Dimensional"
-msgstr ""
+msgstr "O tridimensionale"
 
 #: ../fontforgeexe/fontinfo.c:181
 msgid "O Miscellaneous"
-msgstr ""
+msgstr "O miscellaneo"
 
 #: ../fontforgeexe/fontinfo.c:182
 #, fuzzy
 msgid "Scripts"
-msgstr "_Script:"
+msgstr "_Script (S)"
 
 #: ../fontforgeexe/fontinfo.c:183
 msgid "S Uncial"
-msgstr ""
+msgstr "S Onciale"
 
 #: ../fontforgeexe/fontinfo.c:184
 msgid "S Brush Joined"
-msgstr ""
+msgstr "S Pennello unito"
 
 #: ../fontforgeexe/fontinfo.c:185
 #, fuzzy
 msgid "S Formal Joined"
-msgstr "Normale/Arrotondato"
+msgstr "S Formale unito"
 
 #: ../fontforgeexe/fontinfo.c:186
 msgid "S Monotone Joined"
-msgstr ""
+msgstr "S Monotono unito"
 
 #: ../fontforgeexe/fontinfo.c:187
 #, fuzzy
 msgid "S Calligraphic"
-msgstr "_Calligrafia"
+msgstr "S Calligrafico"
 
 #: ../fontforgeexe/fontinfo.c:188
 msgid "S Brush Unjoined"
-msgstr ""
+msgstr "S Pennello staccato"
 
 #: ../fontforgeexe/fontinfo.c:189
 msgid "S Formal Unjoined"
-msgstr ""
+msgstr "S Formale staccato"
 
 #: ../fontforgeexe/fontinfo.c:190
 msgid "S Monotone Unjoined"
-msgstr ""
+msgstr "S Monotono staccato"
 
 #: ../fontforgeexe/fontinfo.c:191
 msgid "S Miscellaneous"
-msgstr ""
+msgstr "S miscellaneo"
 
 #: ../fontforgeexe/fontinfo.c:192
 #, fuzzy
 msgid "Symbolic"
-msgstr "Symbol"
+msgstr "Simbolico (Sy)"
 
 #: ../fontforgeexe/fontinfo.c:193
 msgid "Sy Mixed Serif"
-msgstr ""
+msgstr "Sy Serif misto"
 
 #: ../fontforgeexe/fontinfo.c:194
 #, fuzzy
 msgid "Sy Old Style Serif"
-msgstr "Stile antico"
+msgstr "Sy Serif stile antico"
 
 #: ../fontforgeexe/fontinfo.c:195
 msgid "Sy Neo-grotesque Sans Serif"
-msgstr ""
+msgstr "Sy Senza grazie Neo-grotesque"
 
 #: ../fontforgeexe/fontinfo.c:196
 msgid "Sy Miscellaneous"
-msgstr ""
+msgstr "Sy miscellaneo"
 
 #: ../fontforgeexe/fontinfo.c:200
 msgid "OS2Version|Automatic"
@@ -19861,7 +19888,7 @@ msgstr ""
 #: ../fontforgeexe/fontinfo.c:717
 #, fuzzy
 msgid "Extended Collection"
-msgstr "Non è nella collezione"
+msgstr "Collezione estesa"
 
 #: ../fontforgeexe/fontinfo.c:718
 msgid "Literals"
@@ -19869,11 +19896,11 @@ msgstr ""
 
 #: ../fontforgeexe/fontinfo.c:719
 msgid "No Lower Case"
-msgstr ""
+msgstr "Senza minuscolo"
 
 #: ../fontforgeexe/fontinfo.c:720 ../fontforgeexe/scstylesui.c:1103
 msgid "Small Caps"
-msgstr ""
+msgstr "Minuscolo"
 
 #: ../fontforgeexe/fontinfo.c:735
 #, fuzzy
@@ -19886,17 +19913,17 @@ msgstr ""
 
 #: ../fontforgeexe/fontinfo.c:737
 msgid "Montages"
-msgstr ""
+msgstr "Montaggi"
 
 #: ../fontforgeexe/fontinfo.c:738
 #, fuzzy
 msgid "Pictures"
-msgstr "_Ligature"
+msgstr "Immagini"
 
 #: ../fontforgeexe/fontinfo.c:739
 #, fuzzy
 msgid "Shapes"
-msgstr "Tipo della forma"
+msgstr "Forme"
 
 #: ../fontforgeexe/fontinfo.c:740
 #, fuzzy
@@ -19905,29 +19932,29 @@ msgstr "Pedici scientifici"
 
 #: ../fontforgeexe/fontinfo.c:741
 msgid "Music"
-msgstr ""
+msgstr "Musica"
 
 #: ../fontforgeexe/fontinfo.c:742
 #, fuzzy
 msgid "Expert"
-msgstr "Forme esperte"
+msgstr "Esperto"
 
 #: ../fontforgeexe/fontinfo.c:743
 #, fuzzy
 msgid "Patterns"
-msgstr "_Flatten"
+msgstr "Schemi"
 
 #: ../fontforgeexe/fontinfo.c:744
 msgid "Borders"
-msgstr ""
+msgstr "Bordi"
 
 #: ../fontforgeexe/fontinfo.c:745
 msgid "Icons"
-msgstr ""
+msgstr "Icone"
 
 #: ../fontforgeexe/fontinfo.c:746
 msgid "Logos"
-msgstr ""
+msgstr "Loghi"
 
 #: ../fontforgeexe/fontinfo.c:747
 msgid "Industry specific"
@@ -19936,34 +19963,34 @@ msgstr ""
 #: ../fontforgeexe/fontinfo.c:756
 #, fuzzy
 msgid "No Width"
-msgstr "Copia la lar_ghezza"
+msgstr "Niente larghezza"
 
 #: ../fontforgeexe/fontinfo.c:757
 #, fuzzy
 msgid "Exceptionally Wide"
-msgstr "Larghezza proporzionale"
+msgstr "Eccezionalmente largo"
 
 #: ../fontforgeexe/fontinfo.c:758
 msgid "Super Wide"
-msgstr ""
+msgstr "Super largo"
 
 #: ../fontforgeexe/fontinfo.c:759
 #, fuzzy
 msgid "Very Wide"
-msgstr "Molto alto"
+msgstr "Molto largo"
 
 #: ../fontforgeexe/fontinfo.c:760
 msgid "Wide"
-msgstr ""
+msgstr "Largo"
 
 #: ../fontforgeexe/fontinfo.c:762
 msgid "Narrow"
-msgstr ""
+msgstr "Stretto"
 
 #: ../fontforgeexe/fontinfo.c:763
 #, fuzzy
 msgid "Very Narrow"
-msgstr "Molto basso"
+msgstr "Molto stretto"
 
 #: ../fontforgeexe/fontinfo.c:774 ../fontforgeexe/fontinfo.c:775
 #: ../fontforgeexe/fontinfo.c:781
@@ -20057,17 +20084,17 @@ msgstr "Linea _mediana"
 
 #: ../fontforgeexe/fontinfo.c:776 ../fontforgeexe/fontinfo.c:9192
 msgid "_X-Height"
-msgstr "_X-Height"
+msgstr "Altezza-_X"
 
 #: ../fontforgeexe/fontinfo.c:777
 #, fuzzy
 msgid "_Tool"
-msgstr "Strumenti(_O)"
+msgstr "S_trumenti"
 
 #: ../fontforgeexe/fontinfo.c:777 ../fontforgeexe/fontinfo.c:780
 #, fuzzy
 msgid "_Spacing"
-msgstr "Spaziatura"
+msgstr "_Spaziatura"
 
 #: ../fontforgeexe/fontinfo.c:777 ../fontforgeexe/fontinfo.c:780
 #, fuzzy
@@ -20076,7 +20103,7 @@ msgstr "Percentuale di altezza:(_H)"
 
 #: ../fontforgeexe/fontinfo.c:777 ../fontforgeexe/fontinfo.c:778
 msgid "_Topology"
-msgstr ""
+msgstr "_Topologia"
 
 #: ../fontforgeexe/fontinfo.c:777
 #, fuzzy
@@ -20122,7 +20149,7 @@ msgstr ""
 #: ../fontforgeexe/fontinfo.c:778
 #, fuzzy
 msgid "Char. _Range"
-msgstr "Cambia(_H)"
+msgstr "Cambia range(_H)"
 
 #: ../fontforgeexe/fontinfo.c:780
 msgid "_Kind"
@@ -20151,688 +20178,688 @@ msgstr ""
 #: ../fontforgeexe/fontinfo.c:793
 #, fuzzy
 msgid "Arabic (Saudi Arabia)"
-msgstr "Arabo ar"
+msgstr "Arabo (Arabia Saudita)"
 
 #: ../fontforgeexe/fontinfo.c:794
 msgid "Arabic (Iraq)"
-msgstr ""
+msgstr "Arabo (Iraq)"
 
 #: ../fontforgeexe/fontinfo.c:795
 msgid "Arabic (Egypt)"
-msgstr ""
+msgstr "Arabo (Egitto)"
 
 #: ../fontforgeexe/fontinfo.c:796
 #, fuzzy
 msgid "Arabic (Libya)"
-msgstr "Arabo ar"
+msgstr "Arabo (Libia)"
 
 #: ../fontforgeexe/fontinfo.c:797
 #, fuzzy
 msgid "Arabic (Algeria)"
-msgstr "Arabo ar"
+msgstr "Arabo (Algeria)"
 
 #: ../fontforgeexe/fontinfo.c:798
 msgid "Arabic (Morocco)"
-msgstr ""
+msgstr "Arabo (Marocco)"
 
 #: ../fontforgeexe/fontinfo.c:799
 #, fuzzy
 msgid "Arabic (Tunisia)"
-msgstr "Arabo ar"
+msgstr "Arabo (Tunisia)"
 
 #: ../fontforgeexe/fontinfo.c:800
 msgid "Arabic (Oman)"
-msgstr ""
+msgstr "Arabo (Oman)"
 
 #: ../fontforgeexe/fontinfo.c:801
 msgid "Arabic (Yemen)"
-msgstr ""
+msgstr "Arabo (Yemen)"
 
 #: ../fontforgeexe/fontinfo.c:802
 #, fuzzy
 msgid "Arabic (Syria)"
-msgstr "Arabo ar"
+msgstr "Arabo (Siria)"
 
 #: ../fontforgeexe/fontinfo.c:803
 msgid "Arabic (Jordan)"
-msgstr ""
+msgstr "Arabo (Giordania)"
 
 #: ../fontforgeexe/fontinfo.c:804
 msgid "Arabic (Lebanon)"
-msgstr ""
+msgstr "Arabo (Libano)"
 
 #: ../fontforgeexe/fontinfo.c:805
 msgid "Arabic (Kuwait)"
-msgstr ""
+msgstr "Arabo (Kuwait)"
 
 #: ../fontforgeexe/fontinfo.c:806
 msgid "Arabic (U.A.E.)"
-msgstr ""
+msgstr "Arabo (Emirati Arabi Uniti)"
 
 #: ../fontforgeexe/fontinfo.c:807
 #, fuzzy
 msgid "Arabic (Bahrain)"
-msgstr "Arabo ar"
+msgstr "Arabo (Bahrain)"
 
 #: ../fontforgeexe/fontinfo.c:808
 msgid "Arabic (Qatar)"
-msgstr ""
+msgstr "Arabo (Qatar)"
 
 #: ../fontforgeexe/fontinfo.c:811
 msgid "Azeri (Latin)"
-msgstr ""
+msgstr "Azero (Latino)"
 
 #: ../fontforgeexe/fontinfo.c:812
 #, fuzzy
 msgid "Azeri (Cyrillic)"
-msgstr "KOI8-R (Cirillico)"
+msgstr "Azero (Cirillico)"
 
 #: ../fontforgeexe/fontinfo.c:816
 msgid "Bengali Bangladesh"
-msgstr ""
+msgstr "Bengalese (Bangladesh)"
 
 #: ../fontforgeexe/fontinfo.c:820
 msgid "Cambodian"
-msgstr ""
+msgstr "Cambogiano"
 
 #: ../fontforgeexe/fontinfo.c:821 ../fontforgeexe/lookupui.c:351
 msgid "Lang|Cherokee"
-msgstr ""
+msgstr "Cherokee"
 
 #: ../fontforgeexe/fontinfo.c:822
 msgid "Chinese (Taiwan)"
-msgstr "Cinese zh_CN"
+msgstr "Cinese (Taiwan)"
 
 #: ../fontforgeexe/fontinfo.c:823
 #, fuzzy
 msgid "Chinese (PRC)"
-msgstr "Cinese zh_CN"
+msgstr "Cinese (Repubblica Popolare Cinese)"
 
 #: ../fontforgeexe/fontinfo.c:824
 #, fuzzy
 msgid "Chinese (Hong Kong)"
-msgstr "Cinese zh_CN"
+msgstr "Cinese (Hong Kong)"
 
 #: ../fontforgeexe/fontinfo.c:825
 #, fuzzy
 msgid "Chinese (Singapore)"
-msgstr "Cinese zh_CN"
+msgstr "Cinese (Singapore)"
 
 #: ../fontforgeexe/fontinfo.c:826
 #, fuzzy
 msgid "Chinese (Macau)"
-msgstr "Cinese zh_CN"
+msgstr "Cinese (Macao)"
 
 #: ../fontforgeexe/fontinfo.c:828
 msgid "Croatian Bosnia/Herzegovina"
-msgstr ""
+msgstr "Croato Bosnia ed Erzegovina"
 
 #: ../fontforgeexe/fontinfo.c:831
 msgid "Divehi"
-msgstr ""
+msgstr "Maldiviano Divehi"
 
 #: ../fontforgeexe/fontinfo.c:833
 msgid "Flemish (Belgian Dutch)"
-msgstr "Fiammingo nl_BE"
+msgstr "Fiammingo (Belga olandese)"
 
 #: ../fontforgeexe/fontinfo.c:834 ../fontforgeexe/lookupui.c:377
 msgid "Edo"
-msgstr ""
+msgstr "Edi"
 
 #: ../fontforgeexe/fontinfo.c:835
 msgid "English (British)"
-msgstr "Inglese britannico en_UK"
+msgstr "Inglese (Regno Unito)"
 
 #: ../fontforgeexe/fontinfo.c:836
 msgid "English (US)"
-msgstr "Inglese americano en_US"
+msgstr "Inglese (Stati Uniti)"
 
 #: ../fontforgeexe/fontinfo.c:837
 msgid "English (Canada)"
-msgstr "Inglese canadese en_CA"
+msgstr "Inglese (Canada)"
 
 #: ../fontforgeexe/fontinfo.c:838
 msgid "English (Australian)"
-msgstr "Inglese australiano en_AU"
+msgstr "Inglese (Australia)"
 
 #: ../fontforgeexe/fontinfo.c:839
 #, fuzzy
 msgid "English (New Zealand)"
-msgstr "Inglese neozelandese en_NZ"
+msgstr "Inglese (Nuova Zelanda)"
 
 #: ../fontforgeexe/fontinfo.c:840
 msgid "English (Irish)"
-msgstr "Inglese d'Irlanda en_IE"
+msgstr "Inglese (Irlanda)"
 
 #: ../fontforgeexe/fontinfo.c:841
 #, fuzzy
 msgid "English (South Africa)"
-msgstr "Inglese australiano en_AU"
+msgstr "Inglese (Sudafrica)"
 
 #: ../fontforgeexe/fontinfo.c:842
 #, fuzzy
 msgid "English (Jamaica)"
-msgstr "Inglese canadese en_CA"
+msgstr "Inglese (Giamaica)"
 
 #: ../fontforgeexe/fontinfo.c:843
 #, fuzzy
 msgid "English (Caribbean)"
-msgstr "Inglese canadese en_CA"
+msgstr "Inglese (Caraibi)"
 
 #: ../fontforgeexe/fontinfo.c:844
 #, fuzzy
 msgid "English (Belize)"
-msgstr "Inglese britannico en_UK"
+msgstr "Inglese (Belize)"
 
 #: ../fontforgeexe/fontinfo.c:845
 #, fuzzy
 msgid "English (Trinidad)"
-msgstr "Inglese canadese en_CA"
+msgstr "Inglese (Trinidad)"
 
 #: ../fontforgeexe/fontinfo.c:846
 #, fuzzy
 msgid "English (Zimbabwe)"
-msgstr "Inglese americano en_US"
+msgstr "Inglese (Zimbabwe)"
 
 #: ../fontforgeexe/fontinfo.c:847
 #, fuzzy
 msgid "English (Philippines)"
-msgstr "Inglese britannico en_UK"
+msgstr "Inglese (Filippine)"
 
 #: ../fontforgeexe/fontinfo.c:848
 #, fuzzy
 msgid "English (Indonesia)"
-msgstr "Inglese canadese en_CA"
+msgstr "Inglese (Indonesia)"
 
 #: ../fontforgeexe/fontinfo.c:849
 #, fuzzy
 msgid "English (Hong Kong)"
-msgstr "Inglese americano en_US"
+msgstr "Inglese (Hong Kong)"
 
 #: ../fontforgeexe/fontinfo.c:850
 #, fuzzy
 msgid "English (India)"
-msgstr "Inglese canadese en_CA"
+msgstr "Inglese (India)"
 
 #: ../fontforgeexe/fontinfo.c:851
 #, fuzzy
 msgid "English (Malaysia)"
-msgstr "Inglese canadese en_CA"
+msgstr "Inglese (Malesia)"
 
 #: ../fontforgeexe/fontinfo.c:853
 msgid "Faeroese"
-msgstr ""
+msgstr "Faroese / Faringio"
 
 #: ../fontforgeexe/fontinfo.c:854 ../fontforgeexe/lookupui.c:389
 msgid "Lang|Farsi"
-msgstr ""
+msgstr "Farsi / Persiano"
 
 #: ../fontforgeexe/fontinfo.c:855
 msgid "Filipino"
-msgstr ""
+msgstr "Filippino"
 
 #: ../fontforgeexe/fontinfo.c:857
 msgid "French French"
-msgstr "Francese di Francia fr_FR"
+msgstr "Francese (Francia)"
 
 #: ../fontforgeexe/fontinfo.c:858
 msgid "French Belgium"
-msgstr "Francese belga fr_BE"
+msgstr "Francese (Belgio)"
 
 #: ../fontforgeexe/fontinfo.c:859
 msgid "French Canadian"
-msgstr "Francese canadese fr_CA"
+msgstr "Francese (Canada)"
 
 #: ../fontforgeexe/fontinfo.c:860
 msgid "French Swiss"
-msgstr "Francese svizzero fr_CH"
+msgstr "Francese (Svizzera)"
 
 #: ../fontforgeexe/fontinfo.c:861
 msgid "French Luxembourg"
-msgstr "Francese lussemburghese fr_LU"
+msgstr "Francese (Lussemburgo)"
 
 #: ../fontforgeexe/fontinfo.c:862
 #, fuzzy
 msgid "French Monaco"
-msgstr "Francese di Francia fr_FR"
+msgstr "Francese (Monaco)"
 
 #: ../fontforgeexe/fontinfo.c:863
 #, fuzzy
 msgid "French West Indies"
-msgstr "Francese canadese fr_CA"
+msgstr "Francese (Indie occidentali)"
 
 #: ../fontforgeexe/fontinfo.c:864
 #, fuzzy
 msgid "French Réunion"
-msgstr "Francese canadese fr_CA"
+msgstr "Francese (Réunion)"
 
 #: ../fontforgeexe/fontinfo.c:865
 msgid "French D.R. Congo"
-msgstr ""
+msgstr "Francese (Congo)"
 
 #: ../fontforgeexe/fontinfo.c:866
 #, fuzzy
 msgid "French Senegal"
-msgstr "Francese di Francia fr_FR"
+msgstr "Francese (Senegal)"
 
 #: ../fontforgeexe/fontinfo.c:867
 #, fuzzy
 msgid "French Camaroon"
-msgstr "Francese canadese fr_CA"
+msgstr "Francese (Camerun)"
 
 #: ../fontforgeexe/fontinfo.c:868
 msgid "French Côte d'Ivoire"
-msgstr ""
+msgstr "Francesce (Costa d'Avorio)"
 
 #: ../fontforgeexe/fontinfo.c:869
 #, fuzzy
 msgid "French Mali"
-msgstr "Francese valdostano fr_IT"
+msgstr "Francese (Mali)"
 
 #: ../fontforgeexe/fontinfo.c:870
 #, fuzzy
 msgid "French Morocco"
-msgstr "Francese di Francia fr_FR"
+msgstr "Francese (Marocco)"
 
 #: ../fontforgeexe/fontinfo.c:871
 #, fuzzy
 msgid "French Haiti"
-msgstr "Francese valdostano fr_IT"
+msgstr "Francese (Haiti)"
 
 #: ../fontforgeexe/fontinfo.c:872
 #, fuzzy
 msgid "French North Africa"
-msgstr "Francese valdostano fr_IT"
+msgstr "Francese (Nord Africa)"
 
 #: ../fontforgeexe/fontinfo.c:873 ../fontforgeexe/lookupui.c:397
 msgid "Frisian"
-msgstr ""
+msgstr "Frisone"
 
 #: ../fontforgeexe/fontinfo.c:874
 msgid "Fulfulde"
-msgstr ""
+msgstr "Fula"
 
 #: ../fontforgeexe/fontinfo.c:875
 msgid "Gaelic (Scottish)"
-msgstr ""
+msgstr "Gaelico (Scozzese)"
 
 #: ../fontforgeexe/fontinfo.c:876
 #, fuzzy
 msgid "Gaelic (Irish)"
-msgstr "Inglese d'Irlanda en_IE"
+msgstr "Gaelico (Irlandese)"
 
 #: ../fontforgeexe/fontinfo.c:879
 msgid "German German"
-msgstr "Tedesco di Germania de_DE"
+msgstr "Tedesco (Germania)"
 
 #: ../fontforgeexe/fontinfo.c:880
 msgid "German Swiss"
-msgstr "Tedesco svizzero de_CH"
+msgstr "Tedesco (Svizzera)"
 
 #: ../fontforgeexe/fontinfo.c:881
 msgid "German Austrian"
-msgstr "Tedesco austriaco de_AT"
+msgstr "Tedesco (Austria)"
 
 #: ../fontforgeexe/fontinfo.c:882
 msgid "German Luxembourg"
-msgstr "Tedesco lussemburghese de_LU"
+msgstr "Tedesco (Lussemburgo)"
 
 #: ../fontforgeexe/fontinfo.c:883
 msgid "German Liechtenstein"
-msgstr "Tedesco del Liechtenstein de_LI"
+msgstr "Tedesco (Liechtenstein)"
 
 #: ../fontforgeexe/fontinfo.c:887 ../fontforgeexe/lookupui.c:418
 msgid "Hausa"
-msgstr ""
+msgstr "Hausa"
 
 #: ../fontforgeexe/fontinfo.c:888
 msgid "Hawaiian"
-msgstr ""
+msgstr "Hawaiiano"
 
 #: ../fontforgeexe/fontinfo.c:892
 msgid "Ibibio"
-msgstr ""
+msgstr "Ibibio"
 
 #: ../fontforgeexe/fontinfo.c:894 ../fontforgeexe/lookupui.c:430
 msgid "Igbo"
-msgstr ""
+msgstr "Igbo"
 
 #: ../fontforgeexe/fontinfo.c:898
 msgid "Italian Swiss"
-msgstr "Italiano svizzero it_CH"
+msgstr "Italiano (Svizzera)"
 
 #: ../fontforgeexe/fontinfo.c:901 ../fontforgeexe/lookupui.c:472
 msgid "Kanuri"
-msgstr ""
+msgstr "Kanuri"
 
 #: ../fontforgeexe/fontinfo.c:902
 msgid "Kashmiri (India)"
-msgstr ""
+msgstr "Kashmiri (India)"
 
 #: ../fontforgeexe/fontinfo.c:906 ../fontforgeexe/lookupui.c:475
 msgid "Konkani"
-msgstr ""
+msgstr "Konkani"
 
 #: ../fontforgeexe/fontinfo.c:908
 #, fuzzy
 msgid "Korean (Johab)"
-msgstr "Norvegese Bokmal no_NO"
+msgstr "Koreano (Johab)"
 
 #: ../fontforgeexe/fontinfo.c:913
 msgid "Lithuanian (Classic)"
-msgstr ""
+msgstr "Lituano (Classico)"
 
 #: ../fontforgeexe/fontinfo.c:915 ../fontforgeexe/lookupui.c:538
 #, fuzzy
 msgid "Malay"
-msgstr "Malayalam"
+msgstr "Malese"
 
 #: ../fontforgeexe/fontinfo.c:916
 msgid "Malay (Brunei)"
-msgstr ""
+msgstr "Malese (Brunei)"
 
 #: ../fontforgeexe/fontinfo.c:919 ../fontforgeexe/lookupui.c:541
 msgid "Manipuri"
-msgstr ""
+msgstr "Manipuri"
 
 #: ../fontforgeexe/fontinfo.c:920 ../fontforgeexe/lookupui.c:549
 msgid "Maori"
-msgstr ""
+msgstr "Maori"
 
 #: ../fontforgeexe/fontinfo.c:922
 msgid "Mongolian (Cyrillic)"
-msgstr ""
+msgstr "Mongolo (Cirillico)"
 
 #: ../fontforgeexe/fontinfo.c:925
 msgid "Nepali (India)"
-msgstr ""
+msgstr "Nepalese (India)"
 
 #: ../fontforgeexe/fontinfo.c:926
 msgid "Norwegian (Bokmal)"
-msgstr "Norvegese Bokmal no_NO"
+msgstr "Norvegese (Bokmal)"
 
 #: ../fontforgeexe/fontinfo.c:927
 msgid "Norwegian (Nynorsk)"
-msgstr "Norvegese Nynorsk no_NO"
+msgstr "Norvegese (Nynorsk)"
 
 #: ../fontforgeexe/fontinfo.c:929 ../fontforgeexe/lookupui.c:578
 msgid "Oromo"
-msgstr ""
+msgstr "Oromo"
 
 #: ../fontforgeexe/fontinfo.c:930
 msgid "Papiamentu"
-msgstr ""
+msgstr "Papamiento"
 
 #: ../fontforgeexe/fontinfo.c:933
 #, fuzzy
 msgid "Portuguese (Portugal)"
-msgstr "Portoghese di Portogallo pt_PT"
+msgstr "Portoghese (Portogallo)"
 
 #: ../fontforgeexe/fontinfo.c:934
 #, fuzzy
 msgid "Portuguese (Brasil)"
-msgstr "Portoghese brasiliano pt_BR"
+msgstr "Portoghese (Brasile)"
 
 #: ../fontforgeexe/fontinfo.c:935
 msgid "Punjabi (India)"
-msgstr ""
+msgstr "Punjabi (India)"
 
 #: ../fontforgeexe/fontinfo.c:936
 msgid "Punjabi (Pakistan)"
-msgstr ""
+msgstr "Punjabi (Pakistan)"
 
 #: ../fontforgeexe/fontinfo.c:937
 msgid "Quecha (Bolivia)"
-msgstr ""
+msgstr "Quecha (Bolivia)"
 
 #: ../fontforgeexe/fontinfo.c:938
 msgid "Quecha (Ecuador)"
-msgstr ""
+msgstr "Quecha (Ecuador)"
 
 #: ../fontforgeexe/fontinfo.c:939
 msgid "Quecha (Peru)"
-msgstr ""
+msgstr "Quecha (Peru)"
 
 #: ../fontforgeexe/fontinfo.c:940 ../fontforgeexe/lookupui.c:596
 msgid "Rhaeto-Romanic"
-msgstr ""
+msgstr "Retoromanzo"
 
 #: ../fontforgeexe/fontinfo.c:942
 msgid "Romanian (Moldova)"
-msgstr ""
+msgstr "Rumeno (Moldavia)"
 
 #: ../fontforgeexe/fontinfo.c:944
 msgid "Russian (Moldova)"
-msgstr ""
+msgstr "Russo (Moldavia)"
 
 #: ../fontforgeexe/fontinfo.c:947
 msgid "Sepedi"
-msgstr ""
+msgstr "Sepedi"
 
 #: ../fontforgeexe/fontinfo.c:948
 #, fuzzy
 msgid "Serbian (Cyrillic)"
-msgstr "KOI8-R (Cirillico)"
+msgstr "Serbo (Cirillico)"
 
 #: ../fontforgeexe/fontinfo.c:949
 msgid "Serbian (Latin)"
-msgstr ""
+msgstr "Serbo (Latino)"
 
 #: ../fontforgeexe/fontinfo.c:950
 msgid "Sindhi India"
-msgstr ""
+msgstr "Sindhi (India)"
 
 #: ../fontforgeexe/fontinfo.c:951
 msgid "Sindhi Pakistan"
-msgstr ""
+msgstr "Sindhi (Pakistan)"
 
 #: ../fontforgeexe/fontinfo.c:955
 msgid "Sorbian"
-msgstr ""
+msgstr "Sorabo"
 
 #: ../fontforgeexe/fontinfo.c:956
 msgid "Spanish (Traditional)"
-msgstr "Spagnolo di Spagna tradizionale es_ES"
+msgstr "Spagnolo (Tradizionale)"
 
 #: ../fontforgeexe/fontinfo.c:957
 msgid "Spanish Mexico"
-msgstr "Spagnolo messicano es_MX"
+msgstr "Spagnolo (Messico)"
 
 #: ../fontforgeexe/fontinfo.c:958
 msgid "Spanish (Modern)"
-msgstr "Spagnolo di Spagna moderno es_ES"
+msgstr "Spagnolo (Moderno)"
 
 #: ../fontforgeexe/fontinfo.c:959
 #, fuzzy
 msgid "Spanish (Guatemala)"
-msgstr "Spagnolo di Spagna tradizionale es_ES"
+msgstr "Spagnolo (Guatemala)"
 
 #: ../fontforgeexe/fontinfo.c:960
 #, fuzzy
 msgid "Spanish (Costa Rica)"
-msgstr "Spagnolo di Spagna tradizionale es_ES"
+msgstr "Spagnolo (Costa Rica)"
 
 #: ../fontforgeexe/fontinfo.c:961
 #, fuzzy
 msgid "Spanish (Panama)"
-msgstr "Spagnolo di Spagna tradizionale es_ES"
+msgstr "Spagnolo (Panama)"
 
 #: ../fontforgeexe/fontinfo.c:962
 msgid "Spanish (Dominican Republic)"
-msgstr ""
+msgstr "Spagnolo (Repubblica Dominicana)"
 
 #: ../fontforgeexe/fontinfo.c:963
 #, fuzzy
 msgid "Spanish (Venezuela)"
-msgstr "Spagnolo di Spagna moderno es_ES"
+msgstr "Spagnolo (Venezuela)"
 
 #: ../fontforgeexe/fontinfo.c:964
 #, fuzzy
 msgid "Spanish (Colombia)"
-msgstr "Spagnolo di Spagna moderno es_ES"
+msgstr "Spagnolo (Colombia)"
 
 #: ../fontforgeexe/fontinfo.c:965
 #, fuzzy
 msgid "Spanish (Peru)"
-msgstr "Spagnolo di Spagna moderno es_ES"
+msgstr "Spagnolo (Perù)"
 
 #: ../fontforgeexe/fontinfo.c:966
 #, fuzzy
 msgid "Spanish (Argentina)"
-msgstr "Spagnolo di Spagna tradizionale es_ES"
+msgstr "Spagnolo (Argentina)"
 
 #: ../fontforgeexe/fontinfo.c:967
 #, fuzzy
 msgid "Spanish (Ecuador)"
-msgstr "Spagnolo di Spagna moderno es_ES"
+msgstr "Spagnolo (Ecuador)"
 
 #: ../fontforgeexe/fontinfo.c:968
 #, fuzzy
 msgid "Spanish (Chile)"
-msgstr "Spagnolo di Spagna moderno es_ES"
+msgstr "Spagnolo (Cile)"
 
 #: ../fontforgeexe/fontinfo.c:969
 #, fuzzy
 msgid "Spanish (Uruguay)"
-msgstr "Spagnolo di Spagna moderno es_ES"
+msgstr "Spagnolo (Uruguay)"
 
 #: ../fontforgeexe/fontinfo.c:970
 #, fuzzy
 msgid "Spanish (Paraguay)"
-msgstr "Spagnolo di Spagna tradizionale es_ES"
+msgstr "Spagnolo (Paraguay)"
 
 #: ../fontforgeexe/fontinfo.c:971
 #, fuzzy
 msgid "Spanish (Bolivia)"
-msgstr "Spagnolo di Spagna tradizionale es_ES"
+msgstr "Spagnolo (Bolivia)"
 
 #: ../fontforgeexe/fontinfo.c:972
 #, fuzzy
 msgid "Spanish (El Salvador)"
-msgstr "Spagnolo di Spagna moderno es_ES"
+msgstr "Spagnolo (El Salvador)"
 
 #: ../fontforgeexe/fontinfo.c:973
 #, fuzzy
 msgid "Spanish (Honduras)"
-msgstr "Spagnolo di Spagna moderno es_ES"
+msgstr "Spagnolo (Honduras)"
 
 #: ../fontforgeexe/fontinfo.c:974
 #, fuzzy
 msgid "Spanish (Nicaragua)"
-msgstr "Spagnolo di Spagna tradizionale es_ES"
+msgstr "Spagnolo (Nicaragua)"
 
 #: ../fontforgeexe/fontinfo.c:975
 #, fuzzy
 msgid "Spanish (Puerto Rico)"
-msgstr "Spagnolo messicano es_MX"
+msgstr "Spagnolo (Porto Rico)"
 
 #: ../fontforgeexe/fontinfo.c:976
 #, fuzzy
 msgid "Spanish (United States)"
-msgstr "Spagnolo di Spagna moderno es_ES"
+msgstr "Spagnolo (Stati Uniti)"
 
 #: ../fontforgeexe/fontinfo.c:977
 #, fuzzy
 msgid "Spanish (Latin America)"
-msgstr "Spagnolo di Spagna tradizionale es_ES"
+msgstr "Spagnolo (America Latina)"
 
 #: ../fontforgeexe/fontinfo.c:978 ../fontforgeexe/lookupui.c:637
 msgid "Sutu"
-msgstr ""
+msgstr "Sutu"
 
 #: ../fontforgeexe/fontinfo.c:979
 msgid "Swahili (Kenyan)"
-msgstr ""
+msgstr "Swahili (Kenya)"
 
 #: ../fontforgeexe/fontinfo.c:980
 msgid "Swedish (Sweden)"
-msgstr "Svedese sv_SE"
+msgstr "Svedese (Svezia)"
 
 #: ../fontforgeexe/fontinfo.c:981
 #, fuzzy
 msgid "Swedish (Finland)"
-msgstr "Svedese sv_SE"
+msgstr "Svedese (Finlandia)"
 
 #: ../fontforgeexe/fontinfo.c:982 ../fontforgeexe/lookupui.c:638
 msgid "Lang|Syriac"
-msgstr ""
+msgstr "Siriaco"
 
 #: ../fontforgeexe/fontinfo.c:984
 msgid "Tajik"
-msgstr ""
+msgstr "Tagico"
 
 #: ../fontforgeexe/fontinfo.c:985
 msgid "Tamazight (Arabic)"
-msgstr ""
+msgstr "Berbero (Arabo)"
 
 #: ../fontforgeexe/fontinfo.c:986
 msgid "Tamazight (Latin)"
-msgstr ""
+msgstr "Berbero (Latino)"
 
 #: ../fontforgeexe/fontinfo.c:988
 msgid "Tatar (Tatarstan)"
-msgstr ""
+msgstr "Tartaro (Tatarstan)"
 
 #: ../fontforgeexe/fontinfo.c:991
 msgid "Tibetan (PRC)"
-msgstr ""
+msgstr "Tibetano (Repubblica Popolare Cinese)"
 
 #: ../fontforgeexe/fontinfo.c:992
 msgid "Tibetan Bhutan"
-msgstr ""
+msgstr "Tibetano (Bhutan)"
 
 #: ../fontforgeexe/fontinfo.c:993
 msgid "Tigrinya Ethiopia"
-msgstr ""
+msgstr "Tigrino (Etiopia)"
 
 #: ../fontforgeexe/fontinfo.c:994
 msgid "Tigrinyan Eritrea"
-msgstr ""
+msgstr "Tigrino (Eritrea)"
 
 #: ../fontforgeexe/fontinfo.c:995 ../fontforgeexe/lookupui.c:658
 msgid "Tsonga"
-msgstr ""
+msgstr "Tsonga"
 
 #: ../fontforgeexe/fontinfo.c:996 ../fontforgeexe/lookupui.c:653
 msgid "Tswana"
-msgstr ""
+msgstr "Tswana"
 
 #: ../fontforgeexe/fontinfo.c:1001
 msgid "Urdu (Pakistan)"
-msgstr ""
+msgstr "Urdu (Pakistan)"
 
 #: ../fontforgeexe/fontinfo.c:1002
 msgid "Urdu (India)"
-msgstr ""
+msgstr "Urdu (India)"
 
 #: ../fontforgeexe/fontinfo.c:1003
 msgid "Uzbek (Latin)"
-msgstr ""
+msgstr "Uzbeco (Latino)"
 
 #: ../fontforgeexe/fontinfo.c:1004
 #, fuzzy
 msgid "Uzbek (Cyrillic)"
-msgstr "KOI8-R (Cirillico)"
+msgstr "Uzbeco (Cirillico)"
 
 #: ../fontforgeexe/fontinfo.c:1005 ../fontforgeexe/lookupui.c:669
 msgid "Venda"
-msgstr ""
+msgstr "Venda"
 
 #: ../fontforgeexe/fontinfo.c:1008 ../fontforgeexe/lookupui.c:677
 msgid "Xhosa"
-msgstr ""
+msgstr "Xhosa"
 
 #: ../fontforgeexe/fontinfo.c:1009
 msgid "Lang|Yi"
-msgstr ""
+msgstr "Yi"
 
 #: ../fontforgeexe/fontinfo.c:1011 ../fontforgeexe/lookupui.c:679
 msgid "Yoruba"
-msgstr ""
+msgstr "Yoruba"
 
 #: ../fontforgeexe/fontinfo.c:1012 ../fontforgeexe/lookupui.c:688
 msgid "Zulu"
-msgstr ""
+msgstr "Zulu"
 
 #: ../fontforgeexe/fontinfo.c:1019
 msgid "Styles (SubFamily)"
@@ -20863,7 +20890,7 @@ msgstr "_Versione"
 
 #: ../fontforgeexe/fontinfo.c:1026
 msgid "Trademark"
-msgstr "Marca commerciale"
+msgstr "Marchio registrato"
 
 #: ../fontforgeexe/fontinfo.c:1027
 msgid "Manufacturer"
@@ -20872,7 +20899,7 @@ msgstr "Fabbricante"
 #: ../fontforgeexe/fontinfo.c:1028 ../fontforgeexe/oflib.c:732
 #: ../fontforgeexe/oflib.c:1961
 msgid "Designer"
-msgstr "Disegnatore"
+msgstr "Designer"
 
 #: ../fontforgeexe/fontinfo.c:1029
 msgid "Descriptor"
@@ -20884,7 +20911,7 @@ msgstr "URL del venditore"
 
 #: ../fontforgeexe/fontinfo.c:1031
 msgid "Designer URL"
-msgstr "URL del disegnatore"
+msgstr "URL del designer"
 
 #: ../fontforgeexe/fontinfo.c:1032 ../fontforgeexe/oflib.c:735
 msgid "License"
@@ -23106,15 +23133,15 @@ msgstr ""
 
 #: ../fontforgeexe/fontinfo.c:9817
 #, fuzzy
-msgid "ΤεΧ General"
+msgid "?e? General"
 msgstr "Generale"
 
 #: ../fontforgeexe/fontinfo.c:9826
-msgid "ΤεΧ Math Symbol"
+msgid "?e? Math Symbol"
 msgstr ""
 
 #: ../fontforgeexe/fontinfo.c:9835
-msgid "ΤεΧ Math Extension"
+msgid "?e? Math Extension"
 msgstr ""
 
 #: ../fontforgeexe/fontinfo.c:9910 ../fontforgeexe/fontinfo.c:9928
@@ -23322,7 +23349,7 @@ msgid "Grid Fitting"
 msgstr "Modifica"
 
 #: ../fontforgeexe/fontinfo.c:10513
-msgid "ΤεΧ"
+msgid "?e?"
 msgstr ""
 
 #: ../fontforgeexe/fontinfo.c:10526
@@ -24058,103 +24085,104 @@ msgstr ""
 msgid ""
 "Glyph names should be limited to characters in the ASCII character set, but "
 "there are names in this namelist which use characters outside that range."
-msgstr ""
+msgstr "I nomi dei glifi dovrebbero essere limitati a caratteri nel set ASCII, "
+"ma ci sono nomi in questa lista che usano caratteri fuori da quel range."
 
 #: ../fontforgeexe/fontview.c:5064
 #, fuzzy
 msgid "Load glyph names"
-msgstr "Nomi PS"
+msgstr "Carica nomi dei glifi"
 
 #: ../fontforgeexe/fontview.c:5121
 #, fuzzy
 msgid "_Reencode"
-msgstr "Unicode"
+msgstr "Ricodifica"
 
 #: ../fontforgeexe/fontview.c:5122
 #, fuzzy
 msgid "_Compact"
-msgstr "Compatto"
+msgstr "Compatta"
 
 #: ../fontforgeexe/fontview.c:5123
 msgid "_Force Encoding"
-msgstr "Imponi l'encoding(_F)"
+msgstr "Imponi codi_fica"
 
 #: ../fontforgeexe/fontview.c:5125
 #, fuzzy
 msgid "_Add Encoding Slots..."
-msgstr "Caricamanto dell'encoding"
+msgstr "_Aggiungi slot di codifica"
 
 #: ../fontforgeexe/fontview.c:5126
 #, fuzzy
 msgid "Remove _Unused Slots"
-msgstr "Canc_ella gli 'undo'"
+msgstr "Cancella gli slot in_utilizzati"
 
 #: ../fontforgeexe/fontview.c:5127
 #, fuzzy
 msgid "_Detach Glyphs"
-msgstr "Carattere successivo(_P)"
+msgstr "Stacca Glifi(_D)"
 
 #: ../fontforgeexe/fontview.c:5128
 msgid "Detach & Remo_ve Glyphs..."
-msgstr ""
+msgstr "Stacca e rimuo_vi Glifi"
 
 #: ../fontforgeexe/fontview.c:5130
 #, fuzzy
 msgid "Add E_ncoding Name..."
-msgstr "Caricamanto dell'encoding"
+msgstr "Aggiungi nome della Codifica"
 
 #: ../fontforgeexe/fontview.c:5131
 msgid "_Load Encoding..."
-msgstr "Caricamanto dell'encoding"
+msgstr "Caricamanto della Codifica..."
 
 #: ../fontforgeexe/fontview.c:5132
 msgid "Ma_ke From Font..."
-msgstr "Esegui a partire da(_K)"
+msgstr "Crea da un Font...(_K)"
 
 #: ../fontforgeexe/fontview.c:5133
 msgid "Remove En_coding..."
-msgstr "Soppressione dell'encoding"
+msgstr "Rimuovi _Codifica"
 
 #: ../fontforgeexe/fontview.c:5135
 #, fuzzy
 msgid "Display By _Groups..."
-msgstr "Mostra...(_D)"
+msgstr "Mostra per _Gruppi..."
 
 #: ../fontforgeexe/fontview.c:5136
 msgid "D_efine Groups..."
-msgstr ""
+msgstr "D_efinisci Gruppi..."
 
 #: ../fontforgeexe/fontview.c:5138
 msgid "_Save Namelist of Font..."
-msgstr ""
+msgstr "_Salva lista di nomi del Font..."
 
 #: ../fontforgeexe/fontview.c:5139
 #, fuzzy
 msgid "L_oad Namelist..."
-msgstr "Carica da...(_L)"
+msgstr "Carica da _lista di nomi..."
 
 #: ../fontforgeexe/fontview.c:5140
 #, fuzzy
 msgid "Rename Gl_yphs..."
-msgstr "Getta il glifo(_Y)"
+msgstr "Rinomina Glifi...(_Y)"
 
 #: ../fontforgeexe/fontview.c:5141
 msgid "Cre_ate Named Glyphs..."
-msgstr ""
+msgstr "Cre_a Glifi con nome..."
 
 #: ../fontforgeexe/fontview.c:5229
 #, fuzzy
 msgid "_Show ATT"
-msgstr "Mo_stra"
+msgstr "Mo_stra ATT"
 
 #: ../fontforgeexe/fontview.c:5230
 #, fuzzy
 msgid "Display S_ubstitutions..."
-msgstr "_Sostituzione..."
+msgstr "Mostra Sostit_uzione..."
 
 #: ../fontforgeexe/fontview.c:5233
 msgid "Label Gl_yph By"
-msgstr ""
+msgstr "Classifica Glifo per(_Y)"
 
 #: ../fontforgeexe/fontview.c:5235
 msgid "S_how H. Metrics..."
@@ -24166,53 +24194,53 @@ msgstr "Mostra le metriche _V."
 
 #: ../fontforgeexe/fontview.c:5238
 msgid "32x8 cell window"
-msgstr ""
+msgstr "Finestra 32x8 caselle"
 
 #: ../fontforgeexe/fontview.c:5239
 msgid "_16x4 cell window"
-msgstr ""
+msgstr "Finestra _16x4 caselle"
 
 #: ../fontforgeexe/fontview.c:5240
 msgid "_8x2  cell window"
-msgstr ""
+msgstr "Finestra _8x2 caselle"
 
 #: ../fontforgeexe/fontview.c:5242
 msgid "_24 pixel outline"
-msgstr "_24 pixel outline"
+msgstr "Contorno da _24 pixel"
 
 #: ../fontforgeexe/fontview.c:5243
 msgid "_36 pixel outline"
-msgstr "_36 pixel outline"
+msgstr "Contorno da _36 pixel"
 
 #: ../fontforgeexe/fontview.c:5244
 msgid "_48 pixel outline"
-msgstr "_48 pixel outline"
+msgstr "Contorno da _48 pixel"
 
 #: ../fontforgeexe/fontview.c:5245
 msgid "_72 pixel outline"
-msgstr "_72 pixel outline"
+msgstr "Contorno da _72 pixel"
 
 #: ../fontforgeexe/fontview.c:5246
 msgid "_96 pixel outline"
-msgstr "_96 pixel outline"
+msgstr "Contorno da _96 pixel"
 
 #: ../fontforgeexe/fontview.c:5247
 #, fuzzy
 msgid "_128 pixel outline"
-msgstr "_48 pixel outline"
+msgstr "Contorno da _128 pixel outline"
 
 #: ../fontforgeexe/fontview.c:5249
 msgid "_Fit to em"
-msgstr "Aggiusta all'em(_F)"
+msgstr "Adatta all'em(_F)"
 
 #: ../fontforgeexe/fontview.c:5251 ../fontforgeexe/fontview.c:5271
 msgid "Bitmap _Magnification..."
-msgstr ""
+msgstr "Ingrandi_mento Bitmap"
 
 #: ../fontforgeexe/fontview.c:5286 ../fontforgeexe/metricsview.c:4236
 #, c-format
 msgid "%d@%d pixel bitmap"
-msgstr "itmap con %d@%d pixel"
+msgstr "Bitmap con %d@%d pixel"
 
 #: ../fontforgeexe/fontview.c:5389
 #, fuzzy
@@ -24222,40 +24250,40 @@ msgstr "Bleu"
 #: ../fontforgeexe/fontview.c:5401
 #, fuzzy
 msgid "Edit 'fpgm'..."
-msgstr "Modifica...(_E)"
+msgstr "Modifica 'fpgm'..."
 
 #: ../fontforgeexe/fontview.c:5402
 #, fuzzy
 msgid "Edit 'prep'..."
-msgstr "Modifica...(_E)"
+msgstr "Modifica 'prep'..."
 
 #: ../fontforgeexe/fontview.c:5403
 #, fuzzy
 msgid "Edit 'maxp'..."
-msgstr "Modifica...(_E)"
+msgstr "Modifica 'maxp'..."
 
 #: ../fontforgeexe/fontview.c:5404
 #, fuzzy
 msgid "Edit 'cvt '..."
-msgstr "Modifica...(_E)"
+msgstr "Modifica 'cvt'..."
 
 #: ../fontforgeexe/fontview.c:5405
 #, fuzzy
 msgid "Remove Instr Tables"
-msgstr "Canc_ella gli 'undo'"
+msgstr "Rimuovi le Tabelle Instr"
 
 #: ../fontforgeexe/fontview.c:5408
 msgid "_Clear Hints"
-msgstr "_Cancella gli hint"
+msgstr "_Cancella gli Hint"
 
 #: ../fontforgeexe/fontview.c:5412
 #, fuzzy
 msgid "Histograms"
-msgstr "Forme storiche"
+msgstr "Istogrammi"
 
 #: ../fontforgeexe/fontview.c:5428
 msgid "_Auto Width..."
-msgstr "_Auto larghezza..."
+msgstr "Larghezza _Automatica..."
 
 #: ../fontforgeexe/fontview.c:5430
 msgid "Remove All Kern _Pairs"
@@ -24268,19 +24296,19 @@ msgstr "Cancellare tutte le crenature(_P)"
 
 #: ../fontforgeexe/fontview.c:5440
 msgid "_Convert to CID"
-msgstr "_Conversione verso CID"
+msgstr "_Converti a CID"
 
 #: ../fontforgeexe/fontview.c:5441
 msgid "Convert By C_Map"
-msgstr "Conversione con C_Map"
+msgstr "Converti con C_Map"
 
 #: ../fontforgeexe/fontview.c:5443
 msgid "_Flatten"
-msgstr "_Flatten"
+msgstr "_Appiattisci"
 
 #: ../fontforgeexe/fontview.c:5444
 msgid "Fl_attenByCMap"
-msgstr "Fl_atten con CMap"
+msgstr "_Appiattisci con CMap"
 
 #: ../fontforgeexe/fontview.c:5446
 msgid "Insert F_ont..."
@@ -24288,11 +24316,11 @@ msgstr "Inserisci f_ont..."
 
 #: ../fontforgeexe/fontview.c:5447
 msgid "Insert _Blank"
-msgstr "Inserisci uno spazio(_B)"
+msgstr "Inserisci uno spazio _bianco"
 
 #: ../fontforgeexe/fontview.c:5450
 msgid "_Change Supplement..."
-msgstr ""
+msgstr "_Cambia supplemento..."
 
 #: ../fontforgeexe/fontview.c:5451
 msgid "C_ID Font Info..."
@@ -24302,74 +24330,74 @@ msgstr "_Informazioni sul font CID..."
 #: ../fontforgeexe/fontview.c:5542
 #, fuzzy
 msgid "_Create MM..."
-msgstr "Crea hint..."
+msgstr "_Crea MM..."
 
 #: ../fontforgeexe/fontview.c:5543
 msgid "MM _Validity Check"
-msgstr ""
+msgstr "Controlla _Validità MM"
 
 #: ../fontforgeexe/fontview.c:5544
 #, fuzzy
 msgid "MM _Info..."
-msgstr "Mostra _informazioni..."
+msgstr "_Informazioni MM..."
 
 #: ../fontforgeexe/fontview.c:5545
 #, fuzzy
 msgid "_Blend to New Font..."
-msgstr "_Crea i font..."
+msgstr "Uunisci ad un nuovo font...(_B)"
 
 #: ../fontforgeexe/fontview.c:5546
 msgid "MM Change Default _Weights..."
-msgstr ""
+msgstr "Cambia Peso di default MM...(_W)"
 
 #: ../fontforgeexe/fontview.c:5764
 msgid "Connect to Collab Server"
-msgstr ""
+msgstr "Connettiti al Server Collaborativo"
 
 #: ../fontforgeexe/fontview.c:5765
 msgid "Select a collab server to connect to..."
-msgstr ""
+msgstr "Seleziona un server collaborativo a cui connettersi..."
 
 #: ../fontforgeexe/fontview.c:5837
 msgid "Close Collab Server(s)"
-msgstr ""
+msgstr "Chiudi Server Collaborativo/i"
 
 #: ../fontforgeexe/fontview.c:5839
 msgid "Select which servers you wish to close..."
-msgstr ""
+msgstr "Seleziona quali server vuoi chiudere..."
 
 #: ../fontforgeexe/fontview.c:5979
 msgid "_Start Session..."
-msgstr ""
+msgstr "Inizia _Sessione..."
 
 #: ../fontforgeexe/fontview.c:5980
 msgid "_Connect to Session..."
-msgstr ""
+msgstr "_Connettiti alla Sessione..."
 
 #: ../fontforgeexe/fontview.c:5981
 msgid "_Connect to Session (ip:port)..."
-msgstr ""
+msgstr "_Connettiti alla Sessione (ip:porta)..."
 
 #: ../fontforgeexe/fontview.c:5984
 msgid "Close local server"
-msgstr ""
+msgstr "Chiudi server locale"
 
 #: ../fontforgeexe/fontview.c:5986
 msgid "Start Webfont server"
-msgstr ""
+msgstr "Inizia server Webfont"
 
 #: ../fontforgeexe/fontview.c:5987
 msgid "Stop Webfont server"
-msgstr ""
+msgstr "Ferma server Webfont"
 
 #: ../fontforgeexe/fontview.c:5994
 msgid "_Overview"
-msgstr ""
+msgstr "Pan_oramica"
 
 #: ../fontforgeexe/fontview.c:5995
 #, fuzzy
 msgid "_Index"
-msgstr "Lig Index:"
+msgstr "_Indice"
 
 #: ../fontforgeexe/fontview.c:5996
 msgid "_About..."
@@ -24378,11 +24406,11 @@ msgstr "_A proposito..."
 #: ../fontforgeexe/fontview.c:5997
 #, fuzzy
 msgid "_License..."
-msgstr "Licenza"
+msgstr "Licenza..."
 
 #: ../fontforgeexe/fontview.c:6041
 msgid "E_ncoding"
-msgstr "_Encoding"
+msgstr "Codifica(_E)"
 
 #: ../fontforgeexe/fontview.c:6044
 msgid "_CID"
@@ -24390,81 +24418,83 @@ msgstr "_CID"
 
 #: ../fontforgeexe/fontview.c:6049
 msgid "C_ollaborate"
-msgstr ""
+msgstr "C_ollabora"
 
 #: ../fontforgeexe/fontview.c:7558
 #, fuzzy
 msgid "Glyph Info Color"
-msgstr "Informazioni sul carattere di %.40s"
+msgstr "Informazioni sul colore del Glifo"
 
 #: ../fontforgeexe/fontview.c:7558
 msgid "Color of the font used to display glyph information in the fontview"
-msgstr ""
+msgstr "Colore del font usato per mostrare le informazioni nel glifo nell'anteprima"
 
 #: ../fontforgeexe/fontview.c:7559
 msgid "Empty Slot FG Color"
-msgstr ""
+msgstr "Colore degli slot vuoti in primo piano"
 
 #: ../fontforgeexe/fontview.c:7559
 msgid "Color used to draw the foreground of empty slots"
-msgstr ""
+msgstr "Colore usato per disegnare il primo piano degli slot vuoti"
 
 #: ../fontforgeexe/fontview.c:7560
 #, fuzzy
 msgid "Selected BG Color"
-msgstr "_Scegli il colore"
+msgstr "Colore di sfondo selezionato"
 
 #: ../fontforgeexe/fontview.c:7560
 msgid "Color used to draw the background of selected glyphs"
-msgstr ""
+msgstr "Colore usato per disegnare lo sfondo dei glifi selezionati"
 
 #: ../fontforgeexe/fontview.c:7561
 #, fuzzy
 msgid "Selected FG Color"
-msgstr "_Scegli il colore"
+msgstr "Colore di primo piano selezionato"
 
 #: ../fontforgeexe/fontview.c:7561
 msgid "Color used to draw the foreground of selected glyphs"
-msgstr ""
+msgstr "Colore usato per disegnare il primo piano dei glifi selezionati"
 
 #: ../fontforgeexe/fontview.c:7562
 #, fuzzy
 msgid "Changed Color"
-msgstr "C_ambia tutto "
+msgstr "C_ambia colore"
 
 #: ../fontforgeexe/fontview.c:7562
 msgid "Color used to mark a changed glyph"
-msgstr ""
+msgstr "Colore usato per segnalare i glifi cambiati"
 
 #: ../fontforgeexe/fontview.c:7563
 msgid "Hinting Needed Color"
-msgstr ""
+msgstr "Colore necessario per gli Hint"
 
 #: ../fontforgeexe/fontview.c:7563
 msgid "Color used to mark glyphs that need hinting"
-msgstr ""
+msgstr "Colore usato per segnalare i glifi che hanno bisogno di Hint"
 
 #: ../fontforgeexe/fontview.c:7564
 #, fuzzy
 msgid "Font Size"
-msgstr "Ammontare della crenatura"
+msgstr "Dimensione del font"
 
 #: ../fontforgeexe/fontview.c:7564
 msgid ""
 "Size (in points) of the font used to display information and glyph labels in "
 "the fontview"
-msgstr ""
+msgstr "Dimensione (in punti( del font usato per mostrare informazioni ed etichette "
+"dei glifi nell'anteprima"
 
 #: ../fontforgeexe/fontview.c:7565
 #, fuzzy
 msgid "Font Family"
-msgstr "_Famiglia PFM"
+msgstr "_Famiglia del font"
 
 #: ../fontforgeexe/fontview.c:7565
 msgid ""
 "A comma separated list of font family names used to display small example "
 "images of glyphs over the user designed glyphs"
-msgstr ""
+msgstr "Una lista separata da virgole dei nomi delle famiglie dei font usata "
+"per mostrare piccole immagini di esempio di glifi sopra i glifi selezionati"
 
 #: ../fontforgeexe/fontview.c:7865 ../gdraw/ggadgets.c:93
 #: ../gdraw/gprogress.c:191
@@ -25648,7 +25678,7 @@ msgstr ""
 #: ../fontforgeexe/lookupui.c:365
 #, fuzzy
 msgid "German (Standard)"
-msgstr "Adobe Standard"
+msgstr "Tedesco (Standard)"
 
 #: ../fontforgeexe/lookupui.c:366
 msgid "Dogri"
@@ -25701,7 +25731,7 @@ msgstr ""
 #: ../fontforgeexe/lookupui.c:385
 #, fuzzy
 msgid "Evenki"
-msgstr "Larghezza uniforme"
+msgstr "Evenki"
 
 #: ../fontforgeexe/lookupui.c:386
 msgid "Even"
@@ -25714,7 +25744,7 @@ msgstr ""
 #: ../fontforgeexe/lookupui.c:388
 #, fuzzy
 msgid "French Antillean"
-msgstr "Francese valdostano fr_IT"
+msgstr "Francese (Antille)"
 
 #: ../fontforgeexe/lookupui.c:391
 msgid "Fijian"
@@ -25731,7 +25761,7 @@ msgstr "Trovato "
 
 #: ../fontforgeexe/lookupui.c:395
 msgid "Faroese"
-msgstr ""
+msgstr "Faroese / Faringio"
 
 #: ../fontforgeexe/lookupui.c:396
 #, fuzzy
@@ -25740,7 +25770,7 @@ msgstr "Francese canadese fr_CA"
 
 #: ../fontforgeexe/lookupui.c:398
 msgid "Friulian"
-msgstr ""
+msgstr "Friulano"
 
 #: ../fontforgeexe/lookupui.c:399
 msgid "Futa"
@@ -25854,7 +25884,7 @@ msgstr ""
 #: ../fontforgeexe/lookupui.c:438
 #, fuzzy
 msgid "Irish Traditional"
-msgstr "Spagnolo di Spagna tradizionale es_ES"
+msgstr "Irlandese (tradizionale)"
 
 #: ../fontforgeexe/lookupui.c:440
 msgid "Inari Sami"
@@ -26089,7 +26119,7 @@ msgstr ""
 #: ../fontforgeexe/lookupui.c:514
 #, fuzzy
 msgid "Luxembourgish"
-msgstr "Francese lussemburghese fr_LU"
+msgstr "Lussemburghese"
 
 #: ../fontforgeexe/lookupui.c:515
 msgid "Luba"
@@ -26119,7 +26149,7 @@ msgstr ""
 #: ../fontforgeexe/lookupui.c:522
 #, fuzzy
 msgid "Malayalam Traditional"
-msgstr "Graduale/Transizionale"
+msgstr "Malayalam (tradizionale)"
 
 #: ../fontforgeexe/lookupui.c:523
 msgid "Mansi"
@@ -26164,7 +26194,7 @@ msgstr ""
 #: ../fontforgeexe/lookupui.c:536
 #, fuzzy
 msgid "Malinke"
-msgstr "Sconcatenare"
+msgstr "Malinke"
 
 #: ../fontforgeexe/lookupui.c:537
 msgid "Malayalam Reformed"
@@ -26263,12 +26293,12 @@ msgstr ""
 #: ../fontforgeexe/lookupui.c:570
 #, fuzzy
 msgid "Northern Sami"
-msgstr "Nessuna coppia da crenare"
+msgstr ""
 
 #: ../fontforgeexe/lookupui.c:571
 #, fuzzy
 msgid "Northern Tai"
-msgstr "Nessuna coppia da crenare"
+msgstr ""
 
 #: ../fontforgeexe/lookupui.c:573
 msgid "Nynorsk"
@@ -26763,17 +26793,17 @@ msgstr ""
 #: ../fontforgeexe/lookupui.c:1787 ../fontforgeexe/statemachine.c:1382
 #, fuzzy
 msgid "Right To Left"
-msgstr "Alternative da destra a sinistra"
+msgstr "Da destra a sinistra"
 
 #: ../fontforgeexe/lookupui.c:1796
 #, fuzzy
 msgid "Ignore Base Glyphs"
-msgstr "Base Glyph"
+msgstr "Ignora glifi base"
 
 #: ../fontforgeexe/lookupui.c:1805
 #, fuzzy
 msgid "Ignore Ligatures"
-msgstr "Nuova legatura"
+msgstr "Ignora legature"
 
 #: ../fontforgeexe/lookupui.c:1814
 msgid "Ignore Combining Marks"
@@ -26802,7 +26832,7 @@ msgstr ""
 #: ../fontforgeexe/lookupui.c:2073 ../fontforgeexe/lookupui.c:2114
 #, fuzzy
 msgid "Name in use"
-msgstr "Indice già usato"
+msgstr "Nome già in uso"
 
 #: ../fontforgeexe/lookupui.c:2073 ../fontforgeexe/lookupui.c:2114
 #, fuzzy, c-format
@@ -26813,7 +26843,7 @@ msgstr "Il nome, %s, è già usato per una targhetta diversa."
 
 #: ../fontforgeexe/lookupui.c:2104
 msgid "Name used twice"
-msgstr ""
+msgstr "Nome usato due volte"
 
 #: ../fontforgeexe/lookupui.c:2104
 #, c-format
@@ -26853,17 +26883,17 @@ msgstr "Nuova classe d'ancore"
 #: ../fontforgeexe/lookupui.c:2583
 #, fuzzy
 msgid "Base Glyph Name"
-msgstr "Base Glyph"
+msgstr "Nome del glifo base"
 
 #: ../fontforgeexe/lookupui.c:2561
 #, fuzzy
 msgid "Ligature Glyph Name"
-msgstr "Nomi PS"
+msgstr "Nome della legatura del glifo"
 
 #: ../fontforgeexe/lookupui.c:2599
 #, fuzzy
 msgid "First Glyph Name"
-msgstr "Nomi PS"
+msgstr "Nome del primo glifo"
 
 #: ../fontforgeexe/lookupui.c:3477
 msgid ""
@@ -26874,12 +26904,12 @@ msgstr ""
 #: ../fontforgeexe/lookupui.c:3975
 #, fuzzy, c-format
 msgid "There is no glyph named %s in the font"
-msgstr "Nome di un carattere nel font"
+msgstr "Non c'è un glifo chiamato %s nel font"
 
 #: ../fontforgeexe/lookupui.c:3987
 #, c-format
 msgid "You must specify a replacement glyph for %s"
-msgstr ""
+msgstr "Devi specificare un glifo di sostituzione per %s"
 
 #: ../fontforgeexe/lookupui.c:4000
 #, c-format
@@ -26891,7 +26921,7 @@ msgstr ""
 #: ../fontforgeexe/lookupui.c:4022 ../fontforgeexe/lookupui.c:4027
 #, fuzzy
 msgid "Duplicate data"
-msgstr "Targhetta ripetuta"
+msgstr "Dati ripetuti"
 
 #: ../fontforgeexe/lookupui.c:4022
 #, fuzzy, c-format
@@ -26964,7 +26994,7 @@ msgstr ""
 #: ../fontforgeexe/lookupui.c:4612
 #, fuzzy
 msgid "Auto_Kern"
-msgstr "Crenatura Auto...(_K)"
+msgstr "Crenatura Automatica...(_K)"
 
 #: ../fontforgeexe/lookupui.c:4622
 msgid ""
@@ -27699,7 +27729,7 @@ msgstr "C_ontorno"
 #: ../fontforgeexe/metricsview.c:3745
 #, fuzzy
 msgid "_Shadow"
-msgstr "_Sfumature"
+msgstr "Ombre(_S)"
 
 #: ../fontforgeexe/metricsview.c:3746
 msgid "_Wireframe"
@@ -32302,7 +32332,7 @@ msgstr "_Inclinazione del corsivo:"
 msgid ""
 "This italic conversion will be incomplete!\n"
 "You will probably want to do manual fixups on e, g, k, and v-z\n"
-"And on в, г, д, е, ж, л, м, ц, щ, ъ, ђ\n"
+"And on ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?\n"
 "And on all Greek lower case letters. And maybe everything else."
 msgstr ""
 
@@ -33562,21 +33592,21 @@ msgid "Current Subs:"
 msgstr "Mult Subs"
 
 #: ../fontforgeexe/statemachine.c:708
-msgid "_Up↑"
+msgid "_Up?"
 msgstr ""
 
 #: ../fontforgeexe/statemachine.c:720
 #, fuzzy
-msgid "←_Left"
+msgid "?_Left"
 msgstr "Sinistra(_L)"
 
 #: ../fontforgeexe/statemachine.c:731
 #, fuzzy
-msgid "_Right→"
+msgid "_Right?"
 msgstr "_Right"
 
 #: ../fontforgeexe/statemachine.c:742
-msgid "↓_Down"
+msgid "?_Down"
 msgstr ""
 
 #: ../fontforgeexe/statemachine.c:914
@@ -35505,34 +35535,34 @@ msgstr ""
 
 #: ../gdraw/gresedit.c:1096
 msgid "Outline Inner Border"
-msgstr ""
+msgstr "Bordo esterno all'interno"
 
 #: ../gdraw/gresedit.c:1124
 #, fuzzy
 msgid "Outline Outer Border"
-msgstr "Non in ordine"
+msgstr "Bordo esterno all'esterno"
 
 #: ../gdraw/gresedit.c:1155
 msgid "Show Active Border"
-msgstr ""
+msgstr "Mostra bordo attivo"
 
 #: ../gdraw/gresedit.c:1183
 msgid "Outer Shadow"
-msgstr ""
+msgstr "Ombra esterna"
 
 #: ../gdraw/gresedit.c:1214
 #, fuzzy
 msgid "Depressed Background"
-msgstr "Sfondo"
+msgstr "Sfondo deselezionato"
 
 #: ../gdraw/gresedit.c:1242
 msgid "Outline Default Button"
-msgstr ""
+msgstr "Pulsante default bordo esterno"
 
 #: ../gdraw/gresedit.c:1273
 #, fuzzy
 msgid "Background Gradient"
-msgstr "Sfondo"
+msgstr "Sfondo con gradiente"
 
 #. GT: "I." is an abreviation for "Inherits"
 #: ../gdraw/gresedit.c:1304 ../gdraw/gresedit.c:1339 ../gdraw/gresedit.c:1376
@@ -35547,112 +35577,112 @@ msgstr ""
 
 #: ../gdraw/gresedit.c:1314
 msgid "Normal Text Color:"
-msgstr ""
+msgstr "Colore testo normale:"
 
 #: ../gdraw/gresedit.c:1349
 msgid "Disabled Text Color:"
-msgstr ""
+msgstr "Colore testo disabilitato:"
 
 #: ../gdraw/gresedit.c:1386
 #, fuzzy
 msgid "Normal Background:"
-msgstr "Sfondo"
+msgstr "Sfondo normale:"
 
 #: ../gdraw/gresedit.c:1421
 #, fuzzy
 msgid "Disabled Background:"
-msgstr "Sfondo"
+msgstr "Sfondo disabilitato:"
 
 #: ../gdraw/gresedit.c:1458
 #, fuzzy
 msgid "Depressed Background:"
-msgstr "Sfondo"
+msgstr "Sfondo deselezionato:"
 
 #: ../gdraw/gresedit.c:1493
 #, fuzzy
 msgid "Background Gradient:"
-msgstr "Sfondo"
+msgstr "Sfondo con gradiente:"
 
 #: ../gdraw/gresedit.c:1530
 msgid "Brightest Border:"
-msgstr ""
+msgstr "Bordo con luminosità max:"
 
 #: ../gdraw/gresedit.c:1565
 msgid "Brighter Border:"
-msgstr ""
+msgstr "Bordo più luminoso:"
 
 #: ../gdraw/gresedit.c:1603
 msgid "Darker Border:"
-msgstr ""
+msgstr "Bordo più scuro:"
 
 #: ../gdraw/gresedit.c:1638
 msgid "Darkest Border:"
-msgstr ""
+msgstr "Bordo con scurezza max:"
 
 #: ../gdraw/gresedit.c:1676
 msgid "Inner Border:"
-msgstr ""
+msgstr "Bordo interno:"
 
 #: ../gdraw/gresedit.c:1711
 #, fuzzy
 msgid "Outer Border:"
-msgstr "Non in ordine"
+msgstr "Bordo esterno:"
 
 #: ../gdraw/gresedit.c:1749
 msgid "Active Border:"
-msgstr ""
+msgstr "Bordo attivo:"
 
 #: ../gdraw/gresedit.c:1790
 msgid "Border Type:"
-msgstr ""
+msgstr "Tipo di bordo:"
 
 #: ../gdraw/gresedit.c:1826
 msgid "Border Shape:"
-msgstr ""
+msgstr "Forma del bordo:"
 
 #: ../gdraw/gresedit.c:1864
 #, fuzzy
 msgid "Border Width:"
-msgstr "Quarti di larghezza"
+msgstr "Larghezza del bordo:"
 
 #: ../gdraw/gresedit.c:1903
 #, fuzzy
 msgid "Padding:"
-msgstr "Encoding difettoso"
+msgstr "Distanza:"
 
 #: ../gdraw/gresedit.c:1944
 msgid "Radius:"
-msgstr ""
+msgstr "Raggio:"
 
 #: ../gdraw/gresedit.c:1998
 #, fuzzy
 msgid "Font:"
-msgstr "Font errato"
+msgstr "Font:"
 
 #: ../gdraw/gresedit.c:2031
 msgid "See also:"
-msgstr ""
+msgstr "Vedi anche:"
 
 #: ../gdraw/gresedit.c:2428 ../gdraw/gresedit.c:2434
 #, fuzzy
 msgid "Default Background"
-msgstr "Cancella lo sfondo(_B)"
+msgstr "Sfondo di default"
 
 #: ../gdraw/gresedit.c:2428 ../gdraw/gresedit.c:2434
 msgid "Default background color for windows"
-msgstr ""
+msgstr "Colore sfondo di default per la finestra"
 
 #: ../gdraw/gresedit.c:2429 ../gdraw/gresedit.c:2435
 msgid "Default Foreground"
-msgstr ""
+msgstr "Primo piano di default"
 
 #: ../gdraw/gresedit.c:2429 ../gdraw/gresedit.c:2435
 msgid "Default foreground color for windows"
-msgstr ""
+msgstr "Colore primo piano di default per la finestra"
 
 #: ../gdraw/gresedit.c:2430
 msgid "Screen Width in Centimeters"
-msgstr ""
+msgstr "Larghezza dello schermo in Centimetri"
 
 #: ../gdraw/gresedit.c:2430
 msgid ""
@@ -35660,11 +35690,14 @@ msgid ""
 "For this to take effect you must save the resource data (press the [Save] "
 "button)\n"
 "and restart fontforge"
-msgstr ""
+msgstr "Larghezza fisica dello schermo, misurata in centimetri\n"
+"Perché abbia effetto, devi salvare i dati delle risorse (premi il "
+"pulsante [Salva])\n"
+"e riavvia FontForge"
 
 #: ../gdraw/gresedit.c:2436
 msgid "Screen Width in Inches"
-msgstr ""
+msgstr "Larghezza dello schermo in Pollici"
 
 #: ../gdraw/gresedit.c:2436
 msgid ""
@@ -35672,11 +35705,14 @@ msgid ""
 "For this to take effect you must save the resource data (press the [Save] "
 "button)\n"
 "and restart fontforge"
-msgstr ""
+msgstr "Larghezza fisica dello schermo, misurata in pollici\n"
+"Perché abbia effetto, devi salvare i dati delle risorse (premi il "
+"pulsante [Salva])\n"
+"e riavvia FontForge"
 
 #: ../gdraw/gresedit.c:2445
 msgid "GDraw"
-msgstr ""
+msgstr "Gdraw"
 
 #: ../gdraw/gresedit.c:2446
 msgid "General facts about the windowing system"
@@ -35688,7 +35724,9 @@ msgid ""
 "Couldn't create directory: %1$s\n"
 "%2$s\n"
 "%3$s"
-msgstr "Non posso creare la cartella"
+msgstr "Non posso creare la cartella: %1$s\n"
+"%2$s\n"
+"%3$s"
 
 #: ../gdraw/gscrollbar.c:54
 #, fuzzy
@@ -35770,11 +35808,11 @@ msgstr "Impossibile leggere il file"
 
 #: ../gdraw/gtextfield.c:1042
 msgid "_Save in UTF8"
-msgstr ""
+msgstr "Salva in UTF8"
 
 #: ../gdraw/gtextfield.c:1043
 msgid "Save in _UCS2"
-msgstr ""
+msgstr "Salva in _UCS2"
 
 #. GT: This is an unusual string. It is used to get around a limitation in
 #. GT: FontForge's widget set. You should put a number here (do NOT translate
@@ -35991,7 +36029,7 @@ msgstr ""
 #~ msgstr "Arrotondato"
 
 #~ msgid "Tedesco altoatesino"
-#~ msgstr "Tedesco altoatesino de_IT"
+#~ msgstr "Tedesco (altoatesino)"
 
 #~ msgid "Bits per Pixel in the greymap"
 #~ msgstr "Bits per pixel nella lista dei grigi"
@@ -36052,14 +36090,14 @@ msgstr ""
 #~ msgid "Edit Multiple List"
 #~ msgstr "Modifica la lista multipla"
 
-#~ msgid "∆Y:"
-#~ msgstr "∆Y:"
+#~ msgid "?Y:"
+#~ msgstr "?Y:"
 
-#~ msgid "∆XAdvance:"
-#~ msgstr "∆XAdvance:"
+#~ msgid "?XAdvance:"
+#~ msgstr "?XAdvance:"
 
-#~ msgid "∆YAdvance:"
-#~ msgstr "∆YAdvance:"
+#~ msgid "?YAdvance:"
+#~ msgstr "?YAdvance:"
 
 #~ msgid ""
 #~ "This will change both BlueValues and OtherBlues.\n"
@@ -36140,11 +36178,11 @@ msgstr ""
 #~ msgid "A-Za-z0-9"
 #~ msgstr "A-Za-z0-9"
 
-#~ msgid "Α-ΡΣ-Ωα-ω"
-#~ msgstr "Α-ΡΣ-Ωα-ω"
+#~ msgid "?-?S-Oa-?"
+#~ msgstr "?-?S-Oa-?"
 
-#~ msgid "ЂЄ-ІЈ-ЋЏ-ИК-Яа-ик-яђє-іј-ћџ"
-#~ msgstr "ЂЄ-ІЈ-ЋЏ-ИК-Яа-ик-яђє-іј-ћџ"
+#~ msgid "??-??-??-??-??-??-???-??-??"
+#~ msgstr "??-??-??-??-??-??-???-??-??"
 
 #~ msgid "A-Za-z"
 #~ msgstr "A-Za-z"
@@ -36155,17 +36193,17 @@ msgstr ""
 #~ msgid "A-Za-z.,:;-"
 #~ msgstr "A-Za-z.,:;-"
 
-#~ msgid "а-ик-яђє-іј-ћџ.,:;-"
-#~ msgstr "а-ик-яђє-іј-ћџ.,:;-"
+#~ msgid "?-??-???-??-??.,:;-"
+#~ msgstr "?-??-???-??-??.,:;-"
 
-#~ msgid "ЂЄ-ІЈ-ЋЏ-ИК-Яа-ик-яђє-іј-ћџ.,:;-"
-#~ msgstr "ЂЄ-ІЈ-ЋЏ-ИК-Яа-ик-яђє-іј-ћџ.,:;-"
+#~ msgid "??-??-??-??-??-??-???-??-??.,:;-"
+#~ msgstr "??-??-??-??-??-??-???-??-??.,:;-"
 
-#~ msgid "α-ω.,:;-"
-#~ msgstr "α-ω.,:;-"
+#~ msgid "a-?.,:;-"
+#~ msgstr "a-?.,:;-"
 
-#~ msgid "Α-ΡΣ-Ωα-ω.,:;-"
-#~ msgstr "Α-ΡΣ-Ωα-ω.,:;-"
+#~ msgid "?-?S-Oa-?.,:;-"
+#~ msgstr "?-?S-Oa-?.,:;-"
 
 #~ msgid ""
 #~ "Browse for a file containing a list of kerning pairs\n"
@@ -36252,7 +36290,7 @@ msgstr ""
 #~ msgstr "Esempio di _testo:"
 
 #~ msgid "Try Again"
-#~ msgstr "Provaci di nuovo"
+#~ msgstr "Riprova"
 
 #~ msgid "Cho-Sung"
 #~ msgstr "Cho-Sung"
@@ -36304,10 +36342,10 @@ msgstr ""
 #~ msgstr "Unicode %04X, Variante %d, %s"
 
 #~ msgid "Building Korean Font"
-#~ msgstr "Costruzione di un font coreano"
+#~ msgstr "Costruzione di un font Koreano"
 
 #~ msgid "Replace/Find"
-#~ msgstr "Sostituisci/cerca"
+#~ msgstr "Sostituisci/Cerca"
 
 #~ msgid "AntiAlias (greymap) glyphs, or bitmap glyphs"
 #~ msgstr "Caratteri AntiAlias (greymap), o caratteri bitmap"
