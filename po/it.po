@@ -3380,7 +3380,7 @@ msgid "Bopomofo"
 msgstr "Bopomofo"
 
 #: lookups.c:1316 ../fontforgeexe/lookupui.c:186
-msgid "Brahmi"
+msgid "Brāhmī"
 msgstr ""
 
 #: lookups.c:1317 ../fontforgeexe/lookupui.c:187
@@ -3584,23 +3584,23 @@ msgstr "Lineare B"
 
 #: lookups.c:1372 unicoderange.c:252
 msgid "Lycian"
-msgstr ""
+msgstr "Licio"
 
 #: lookups.c:1373 unicoderange.c:266
 msgid "Lydian"
-msgstr ""
+msgstr "Lidio"
 
 #: lookups.c:1374 ../fontforgeexe/lookupui.c:240
 msgid "Script|Mandaean"
-msgstr ""
+msgstr "Mandaico"
 
 #: lookups.c:1376 ../fontforgeexe/lookupui.c:242
-msgid "Script|Malayalam"
-msgstr "Malayalam"
+msgid "Script|Malayālam"
+msgstr "Malayālam"
 
 #: lookups.c:1377 ../fontforgeexe/lookupui.c:243
-msgid "Script|Malayalam2"
-msgstr "Malayalam"
+msgid "Script|Malayālam2"
+msgstr "Malayālam"
 
 #: lookups.c:1378 unicoderange.c:303 ../fontforgeexe/fontinfo.c:1160
 #: ../fontforgeexe/lookupui.c:244
@@ -3639,11 +3639,11 @@ msgstr "Ol Chiki"
 
 #: lookups.c:1386 ../fontforgeexe/lookupui.c:250
 msgid "Old Italic (Etruscan, Oscan, etc.)"
-msgstr "Vecchio Corsivo (Etrisco, Oscan, ecc.)"
+msgstr "Vecchio Corsivo (Etrisco, Osco, ecc.)"
 
 #: lookups.c:1387 ../fontforgeexe/lookupui.c:251
 msgid "Script|Old Permic"
-msgstr ""
+msgstr "Vecchio Permico"
 
 #: lookups.c:1388 ../fontforgeexe/lookupui.c:252
 msgid "Old Persian cuneiform"
@@ -3672,7 +3672,7 @@ msgstr ""
 
 #: lookups.c:1394 ../fontforgeexe/lookupui.c:258
 msgid "Script|Phoenician"
-msgstr ""
+msgstr "Fenicio"
 
 #: lookups.c:1395 ../fontforgeexe/lookupui.c:259
 msgid "Phaistos"
@@ -4372,7 +4372,7 @@ msgstr "Oriya"
 
 #: macenc.c:2308 ../fontforgeexe/fontinfo.c:917 ../fontforgeexe/macencui.c:152
 msgid "Lang|Malayalam"
-msgstr "Malayalam"
+msgstr "Malayālam"
 
 #: macenc.c:2309 ../fontforgeexe/fontinfo.c:900 ../fontforgeexe/lookupui.c:451
 #: ../fontforgeexe/macencui.c:153
@@ -4437,7 +4437,7 @@ msgstr "Malese (arabo)"
 #: macenc.c:2321 ../fontforgeexe/fontinfo.c:792 ../fontforgeexe/lookupui.c:305
 #: ../fontforgeexe/macencui.c:165
 msgid "Lang|Amharic"
-msgstr ""
+msgstr "Amarico"
 
 #: macenc.c:2322 ../fontforgeexe/lookupui.c:647 ../fontforgeexe/macencui.c:166
 msgid "Tigrinya"
@@ -21428,39 +21428,40 @@ msgstr "Copy_right:"
 msgid ""
 "Copyright text (in the Names pane) must be entirely ASCII. So, use (c) "
 "instead of ©."
-msgstr ""
+msgstr "Il testo del Copyright (nel pannello dei nomi) dev'essere completamente "
+"ASCII. Usa (c) invece di ©."
 
 #: ../fontforgeexe/fontinfo.c:4063
-#, fuzzy
 msgid "Bad Human Fontname"
-msgstr "Nome del font errato"
+msgstr "Errore nel nome per umani del font"
 
 #: ../fontforgeexe/fontinfo.c:4063
 msgid ""
 "The human-readable fontname text (in the Names pane) must be entirely ASCII."
-msgstr ""
+msgstr "Il testo del nome del font leggibile dagli umani (nel pannello dei nomi) "
+"dev'essere completamente ASCII."
 
 #: ../fontforgeexe/fontinfo.c:4064
-#, fuzzy
 msgid "Bad Weight"
-msgstr "Peso(_W)"
+msgstr "Errore nel peso"
 
 #: ../fontforgeexe/fontinfo.c:4064
 msgid "The weight text (in the Names pane) must be entirely ASCII."
-msgstr ""
+msgstr "Il testo del peso (nel pannello dei nomi) dev'essere completamente ASCII."
 
 #: ../fontforgeexe/fontinfo.c:4065
 #, fuzzy
 msgid "Bad Version"
-msgstr "_Versione"
+msgstr "Errore nella versione"
 
 #: ../fontforgeexe/fontinfo.c:4065
 msgid "The version text (in the Names pane) must be entirely ASCII."
-msgstr ""
+msgstr "Il testo della versione (nel pannello dei nomi) dev'essere completamente "
+"ASCII."
 
 #: ../fontforgeexe/fontinfo.c:4078
 msgid "Deleting a layer cannot be UNDONE!"
-msgstr ""
+msgstr "Non si può ANNULLARE la cancellazione di un livello!"
 
 #: ../fontforgeexe/fontinfo.c:4079
 msgid ""
@@ -21476,7 +21477,7 @@ msgstr ""
 
 #: ../fontforgeexe/fontinfo.c:4087
 msgid "Removing instructions cannot be UNDONE!"
-msgstr ""
+msgstr "Non si può ANNULLARE la cancellazione di istruzioni!"
 
 #: ../fontforgeexe/fontinfo.c:4088
 msgid ""
@@ -21496,7 +21497,7 @@ msgstr ""
 
 #: ../fontforgeexe/fontinfo.c:4107
 msgid "Too many Unique Font IDs"
-msgstr ""
+msgstr "Ci sono troppi ID unici del font"
 
 #: ../fontforgeexe/fontinfo.c:4107
 msgid ""
@@ -29082,15 +29083,15 @@ msgstr ""
 
 #: ../fontforgeexe/problems.c:2948 ../fontforgeexe/problems.c:3138
 msgid "_X near¹"
-msgstr "_X vicino"
+msgstr "_X vicino¹"
 
 #: ../fontforgeexe/problems.c:2950 ../fontforgeexe/problems.c:3168
 msgid "_Y near¹"
-msgstr "_Y vicino"
+msgstr "_Y vicino¹"
 
 #: ../fontforgeexe/problems.c:2952 ../fontforgeexe/problems.c:3568
 msgid "Hint _Width Near¹"
-msgstr "Larghezza degli hint circa(_W)"
+msgstr "Larghezza degli hint vicino¹(_W)"
 
 #: ../fontforgeexe/problems.c:2954
 #, fuzzy
@@ -29179,7 +29180,7 @@ msgstr ""
 
 #: ../fontforgeexe/problems.c:3198
 msgid "Y near¹ _standard heights"
-msgstr "Y vicino all'altezza _standard"
+msgstr "Y vicino¹ all'altezza _standard"
 
 #: ../fontforgeexe/problems.c:3206
 #, fuzzy
@@ -29439,7 +29440,7 @@ msgstr ""
 
 #: ../fontforgeexe/problems.c:3555
 msgid "_Points near¹ hint edges"
-msgstr "_Punti vicino ai bordi di un hint"
+msgstr "_Punti vicino¹ ai bordi di un hint"
 
 #: ../fontforgeexe/problems.c:3563
 msgid ""
@@ -32948,29 +32949,29 @@ msgstr "Mult Subs"
 
 #: ../fontforgeexe/statemachine.c:708
 msgid "_Up↑"
-msgstr ""
+msgstr "_Su↑"
 
 #: ../fontforgeexe/statemachine.c:720
 #, fuzzy
 msgid "←_Left"
-msgstr "Sinistra(_L)"
+msgstr "←S_inistra"
 
 #: ../fontforgeexe/statemachine.c:731
 #, fuzzy
 msgid "_Right→"
-msgstr "_Right"
+msgstr "_Destra→"
 
 #: ../fontforgeexe/statemachine.c:742
 msgid "↓_Down"
-msgstr ""
+msgstr "↓_Giù"
 
 #: ../fontforgeexe/statemachine.c:914
 msgid "{Start of Input}"
-msgstr ""
+msgstr "{Inizio dell'Input}"
 
 #: ../fontforgeexe/statemachine.c:916
 msgid "{Start of Line}"
-msgstr ""
+msgstr "{Inizio della riga}"
 
 #: ../fontforgeexe/statemachine.c:1327
 msgid "Edit Indic Rearrangement"
