@@ -5,7 +5,7 @@
 #
 # Translators:
 # Claudio Beccari, 2005-08-29 17:43+0800
-# Martino Deotto, 2018-09-05
+# Martino Deotto, 2018-09-15
 #
 msgid ""
 msgstr ""
