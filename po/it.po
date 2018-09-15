@@ -1668,7 +1668,7 @@ msgid ""
 "please add the former and remake your accented glyphs"
 msgstr ""
 "Il tuo font non contiene il glifo uni0237,\n"
-"e il glifo depcrecato dotlessj.\n""
+"e il glifo depcrecato dotlessj.\n"
 "Aggiungi il primo e rifai i tuoi glifi accentati"
 
 #: fvfonts.c:310
@@ -3552,7 +3552,7 @@ msgstr ""
 
 #: lookups.c:1364 ../fontforgeexe/lookupui.c:232
 msgid "Script|Khmer"
-msgstr "Khmer
+msgstr "Khmer"
 
 #: lookups.c:1365 ../fontforgeexe/lookupui.c:233
 msgid "Script|Kharosthi"
@@ -5192,7 +5192,7 @@ msgstr ""
 
 #: mm.c:506
 msgid "This glyph contains different kerning pairs in different instances"
-"Questo glifo contiene coppie di crenature differenti in diverse istanze"
+msgstr "Questo glifo contiene coppie di crenature differenti in diverse istanze"
 
 #: mm.c:671 mm.c:673 mm.c:984 mm.c:987 mm.c:998 mm.c:1006 mm.c:1011 mm.c:1019
 #: mm.c:1027 mm.c:1041 mm.c:1044 mm.c:1054 mm.c:1064 mm.c:1072 mm.c:1079
@@ -9430,7 +9430,7 @@ msgid ""
 msgstr ""
 "Questo font è segnato con un FSType di 2\n"
 "(Licenza ristretta). Questo significa che non è\n"
-modificabile senza il permesso del proprietario.\n"
+"modificabile senza il permesso del proprietario.\n"
 "\n"
 "Hai il permesso dal detentore dei diritti?"
 
@@ -10168,7 +10168,7 @@ msgstr "Myanmar"
 
 #: unicoderange.c:83 ../fontforgeexe/fontinfo.c:1096
 msgid "Georgian"
-msgstr "Georgian""
+msgstr "Georgian"
 
 #: unicoderange.c:84
 msgid "Hangul Jamo, Choseong"
@@ -10799,7 +10799,7 @@ msgstr "Old Persian"
 
 #: unicoderange.c:259 ../fontforgeexe/fontinfo.c:1158
 msgid "Deseret"
-msgstr Deseret"
+msgstr "Deseret"
 
 #: unicoderange.c:262
 msgid "Alphabetic and syllabic RTL scripts"
@@ -11999,7 +11999,7 @@ msgstr "Selezion_a tutto"
 
 #: ../fontforgeexe/bitmapview.c:2146 ../fontforgeexe/fontview.c:4625
 msgid "Remo_ve Undoes"
-msgstr "Canc_ella gli "Annulla""
+msgstr "Canc_ella gli Annulla"
 
 #: ../fontforgeexe/bitmapview.c:2148 ../fontforgeexe/charview.c:11224
 #: ../fontforgeexe/fontview.c:4621 ../fontforgeexe/fontview.c:6011
@@ -26413,7 +26413,7 @@ msgstr "Ci sono due voci per lo stesso glifo (%.80s and %.80s)"
 #: ../fontforgeexe/lookupui.c:4027
 #, c-format
 msgid "There are two entries for the same glyph (%.80s)"
-msgstr Ci sono due voci per lo stesso glifo (%.80s)
+msgstr "Ci sono due voci per lo stesso glifo (%.80s)
 
 #: ../fontforgeexe/lookupui.c:4203
 msgid "Lookup Table Edit"
@@ -27513,7 +27513,7 @@ msgstr "Punti intermedi:"
 
 #: ../fontforgeexe/mmdlg.c:2892
 msgid "Source from which this design is to be taken"
-msgstr "L'origine da cui questo design viene preso""
+msgstr "L'origine da cui questo design viene preso"
 
 #: ../fontforgeexe/mmdlg.c:2925
 msgid "Master Designs"
@@ -35432,7 +35432,7 @@ msgstr "Ragione:5s\n"
 #~ msgstr "∆Y:"
 
 #~ msgid "∆XAdvance:"
-#~ msgstr ∆XAdvance:"
+#~ msgstr "∆XAdvance:"
 
 #~ msgid "∆YAdvance:"
 #~ msgstr "∆YAdvance:"
