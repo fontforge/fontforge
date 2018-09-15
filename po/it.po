@@ -165,7 +165,8 @@ msgstr "Troppo complesso o sbagliato"
 msgid ""
 "I'm sorry this file is too complex for me to understand (or is erroneous, or "
 "is empty)"
-msgstr "Mi dispiace, trovo questo file troppo complesso da comprendere (o è "
+msgstr ""
+"Mi dispiace, trovo questo file troppo complesso da comprendere (o è "
 "sbagliato, oppure vuoto)"
 
 #: cvimages.c:205 cvimages.c:213 cvimages.c:218 cvimages.c:241
@@ -176,34 +177,39 @@ msgstr "Non ci sono file plate"
 msgid ""
 "This does not seem to be a plate file\n"
 "First line wrong"
-msgstr "Questo non sembra essere un file plate\n"
+msgstr ""
+"Questo non sembra essere un file plate\n"
 "Prima riga sbagliata"
 
 #: cvimages.c:213
 msgid ""
 "This does not seem to be a plate file\n"
 "Expected left paren"
-msgstr "Questo non sembra essere un file plate\n"
+msgstr ""
+"Questo non sembra essere un file plate\n"
 "Aspettavo parentesi sinistra"
 
 #: cvimages.c:218
 msgid ""
 "This does not seem to be a plate file\n"
 "Expected one of 'voc[]z'"
-msgstr "Questo non sembra essere un file plate\n"
+msgstr ""
+"Questo non sembra essere un file plate\n"
 "PAspettavo uno di 'voc[]z'"
 
 #: cvimages.c:241
 msgid ""
 "This does not seem to be a plate file\n"
 "Expected two real numbers"
-msgstr "Questo non sembra essere un file plate\n"
+msgstr ""
+"Questo non sembra essere un file plate\n"
 "Aspettavo due numeri reali"
 
 #: cvimages.c:311 cvimages.c:341
 msgid ""
 "I'm sorry this file is too complex for me to understand (or is erroneous)"
-msgstr "Mi dispiace, trovo questo file troppo complesso da comprendere (o è "
+msgstr ""
+"Mi dispiace, trovo questo file troppo complesso da comprendere (o è "
 "sbagliato)"
 
 #: cvimages.c:830
@@ -448,7 +454,8 @@ msgid ""
 "Generally this will not work unless the 'prep', 'fpgm' and 'cvt ' tables are "
 "the same.\n"
 "Do you want to continue anyway?"
-msgstr "Stai provando ad incollare istruzioni di un glifo da un font ad un altro. "
+msgstr ""
+"Stai provando ad incollare istruzioni di un glifo da un font ad un altro. "
 "Generalmente non funzionerà, a meno che le tavole 'prep', 'fpgm' e 'cvt' siano "
 "le stesse.\n"
 "Vuoi continuare comunque?"
@@ -477,7 +484,8 @@ msgstr "Non ci sono metriche verticali"
 msgid ""
 "This font does not have vertical metrics enabled.\n"
 "Use Element->Font Info to enable them."
-msgstr "Le metriche verticali non sono state attivate in questo font.\n"
+msgstr ""
+"Le metriche verticali non sono state attivate in questo font.\n"
 "Usa Elemento->Informazioni sul font per abilitarle."
 
 #: cvundoes.c:2846 cvundoes.c:2985 ../fontforgeexe/charinfo.c:890
@@ -663,7 +671,8 @@ msgstr "Formato del file di codifica errato"
 #: encoding.c:614
 msgid ""
 "This file contains an unnamed encoding, which cannot be named in a script"
-msgstr "Questo file contiene una codifica senza nome, che non può essere nominata in uno script"
+msgstr ""
+"Questo file contiene una codifica senza nome, che non può essere nominata in uno script"
 
 #: encoding.c:618 ../fontforgeexe/encodingui.c:195
 msgid "Please name this encoding"
@@ -718,7 +727,8 @@ msgstr "File cidmap errato"
 msgid ""
 "%s is not a cidmap file, please download\n"
 "http://fontforge.sourceforge.net/cidmaps.tgz"
-msgstr "%s non è un file cidmap, scarica \n"
+msgstr ""
+"%s non è un file cidmap, scarica \n"
 "http://fontforge.sourceforge.net/cidmaps.tgz"
 
 #: encoding.c:1039
@@ -1592,7 +1602,8 @@ msgstr "File sfd vecchio"
 msgid ""
 "This font comes from an old format sfd file. Not all aspects of it can be "
 "reverted successfully."
-msgstr "Il font deriva da un vecchio file di formato sfd. Non tutti i suoi "
+msgstr ""
+"Il font deriva da un vecchio file di formato sfd. Non tutti i suoi "
 "aspetti possono essere ripristinati con successo."
 
 #: fontviewbase.c:1769
@@ -1975,7 +1986,8 @@ msgstr "Il glifo “%s” differisce\n"
 #, c-format
 msgid ""
 "Glyph “%s” refers to %s with a different truetype point matching scheme\n"
-msgstr "“%s” si riferisce a %s con un diverso schema di confronto del punto truetype\n"
+msgstr ""
+"“%s” si riferisce a %s con un diverso schema di confronto del punto truetype\n"
 
 #: glyphcomp.c:1041 glyphcomp.c:1056
 #, c-format
@@ -2353,7 +2365,8 @@ msgstr "Impossibile trovare l'host"
 msgid ""
 "Could not find \"%s\"\n"
 "Are you connected to the internet?"
-msgstr "Impossibile trovare \"%s\"\n"
+msgstr ""
+"Impossibile trovare \"%s\"\n"
 "Sei connesso ad internet?"
 
 #: http.c:735
@@ -5168,7 +5181,8 @@ msgstr ""
 msgid ""
 "A reference in this glyph refers to a different encoding in different "
 "instances"
-msgstr "Un riferimento a questo glifo punta ad un'altra codifica in differenti "
+msgstr ""
+"Un riferimento a questo glifo punta ad un'altra codifica in differenti "
 "istanze"
 
 #: mm.c:433 mm.c:445
@@ -5275,7 +5289,8 @@ msgstr ""
 msgid ""
 "The glyph %1$.30s has a different number of contours in font %2$.30s than in "
 "%3$.30s"
-msgstr "Il glifo %1$.30s ha un diverso numero di contorni nel font %2$.30hs "
+msgstr ""
+"Il glifo %1$.30s ha un diverso numero di contorni nel font %2$.30hs "
 "rispetto a %3$.30s"
 
 #: mm.c:1079
@@ -5283,7 +5298,8 @@ msgstr "Il glifo %1$.30s ha un diverso numero di contorni nel font %2$.30hs "
 msgid ""
 "The glyph %1$.30s in font %2$.30s has a different number of points (or "
 "control points) on its contours than in %3$.30s"
-msgstr "Il glifo %1$.30s nel font %2$.30s ha un diverso numero di punti (o "
+msgstr ""
+"Il glifo %1$.30s nel font %2$.30s ha un diverso numero di punti (o "
 "punti di controllo) sui suoi contorni rispetto a %3$.30s"
 
 #: mm.c:1086
@@ -5291,7 +5307,8 @@ msgstr "Il glifo %1$.30s nel font %2$.30s ha un diverso numero di punti (o "
 msgid ""
 "The glyph %1$.30s in font %2$.30s has contours running in a different "
 "direction than in %3$.30s"
-msgstr "Il glifo %1$.30s nel font %2$.30s ha contorni rivolti in una direzione "
+msgstr ""
+"Il glifo %1$.30s nel font %2$.30s ha contorni rivolti in una direzione "
 "diversa rispetto a %3$.30s"
 
 #: mm.c:1093
@@ -5299,7 +5316,8 @@ msgstr "Il glifo %1$.30s nel font %2$.30s ha contorni rivolti in una direzione "
 msgid ""
 "The glyph %1$.30s in font %2$.30s has a different number of references than "
 "in %3$.30s"
-msgstr "Il glifo %1$.30s nel font %2$.30s ha un diverso numero di riferimenti "
+msgstr ""
+"Il glifo %1$.30s nel font %2$.30s ha un diverso numero di riferimenti "
 "rispetto a %3$.30s"
 
 #: mm.c:1100
@@ -5307,7 +5325,8 @@ msgstr "Il glifo %1$.30s nel font %2$.30s ha un diverso numero di riferimenti "
 msgid ""
 "The glyph %1$.30s in font %2$.30s has references with different scaling or "
 "rotation (etc.) than in %3$.30s"
-msgstr "Il glifo %1$.30s nel font %2$.30s ha una riferimenti con scala o rotazione "
+msgstr ""
+"Il glifo %1$.30s nel font %2$.30s ha una riferimenti con scala o rotazione "
 "(ecc.) diverse rispetto a %3$.30s"
 
 #: mm.c:1107
@@ -5315,7 +5334,8 @@ msgstr "Il glifo %1$.30s nel font %2$.30s ha una riferimenti con scala o rotazio
 msgid ""
 "The glyph %1$.30s in font %2$.30s has a different set of kern pairs than in "
 "%3$.30s"
-msgstr "Il glifo %1$.30s nel font %2$.30s ha un diverso set di coppie di crenature"
+msgstr ""
+"Il glifo %1$.30s nel font %2$.30s ha un diverso set di coppie di crenature"
 "rispetto a %3$.30s"
 
 #: mm.c:1116
@@ -5337,7 +5357,8 @@ msgstr ""
 msgid ""
 "The glyph %1$.30s in font %2$.30s has a different hint mask on its contours "
 "than in %3$.30s"
-msgstr "Il font %1$.30s nel font %2$.30hs ha una diversa maschera hint sui suoi "
+msgstr ""
+"Il font %1$.30s nel font %2$.30hs ha una diversa maschera hint sui suoi "
 "contorni rispetto a %3$.30s"
 
 #: mm.c:1159
@@ -5809,7 +5830,9 @@ msgstr "Autot_race"
 msgid ""
 "Extra arguments for configuring the autotrace program\n"
 "(either autotrace or potrace)"
-msgstr "Parametri supplementari da passare ad 'autotrace'"
+msgstr ""
+"Parametri supplementari per configurare il programma autotrace\n"
+"(o autotrace o potrace)"
 
 #: noprefs.c:205 ../fontforgeexe/prefs.c:390
 #, fuzzy
@@ -7632,7 +7655,8 @@ msgid ""
 "Windows has decided that fonts with 'name' tables bigger than 5K are\n"
 "insecure and will refuse to load them. Don't ask me why they believe this.\n"
 "This font has a name table which is %d bytes and is bigger than this limit.\n"
-msgstr "Windows ha deciso che i font con tabelle 'nome' più grandi di 5k sono\n"
+msgstr ""
+"Windows ha deciso che i font con tabelle 'nome' più grandi di 5k sono\n"
 "insicure e rifiuterà di caricarle. Non chiedermi perché lo pensano.\n"
 "Questo font ha la tabella del nome che è di %d byte ed è più grande del limite.\n"
 
@@ -7654,14 +7678,16 @@ msgstr ""
 msgid ""
 "This font contains both truetype and PostScript glyph descriptions\n"
 "  only one will be used.\n"
-msgstr "Questo font contiene descrizioni di glifi sia truetype che PostScript\n"
+msgstr ""
+"Questo font contiene descrizioni di glifi sia truetype che PostScript\n"
 "  solo una sarà usata.\n"
 
 #: parsettf.c:1209
 msgid ""
 "This font contains multiple glyph descriptions\n"
 "  only one will be used.\n"
-msgstr "Questo file contiene descrizioni di glifi multiple\n"
+msgstr ""
+"Questo file contiene descrizioni di glifi multiple\n"
 "  solo una sarà usata.\n"
 
 #: parsettf.c:1211
@@ -7669,7 +7695,8 @@ msgid ""
 "This font contains both a 'kern' table and a 'GPOS' table.\n"
 "  The 'kern' table will only be read if there is no 'kern' feature in "
 "'GPOS'.\n"
-msgstr "Questo file contiene una tabella 'kern' e una 'GPOS'.\n"
+msgstr ""
+"Questo file contiene una tabella 'kern' e una 'GPOS'.\n"
 " La tabella 'kern' sarà in sola lettura se non c'è una funzione 'kern' "
 "in 'GPOS'.\n"
 
@@ -7684,7 +7711,8 @@ msgstr ""
 msgid ""
 "This font contains both a 'BASE' table and a 'bsln' table.\n"
 "  FontForge will only read one of them ('BASE').\n"
-msgstr "Questo font contiene sia una tabella 'BASE' che una 'bsln'.\n"
+msgstr ""
+"Questo font contiene sia una tabella 'BASE' che una 'bsln'.\n"
 "  FontForge leggerà solo una di loro ('BASE').\n"
 
 #: parsettf.c:1327
@@ -8132,7 +8160,8 @@ msgstr "Tenta di codificare il glifo mancante %d a %d (0x%x)\n"
 msgid ""
 "Multiple glyphs map to the same unicode encoding U+%04X, only one will be "
 "used\n"
-msgstr "Più glifi mappano alla stessa codifica unicode U+%04X, solo una sarà "
+msgstr ""
+"Più glifi mappano alla stessa codifica unicode U+%04X, solo una sarà "
 "usata\n"
 
 #: parsettf.c:4776
@@ -8169,7 +8198,8 @@ msgstr "Attenzione: il glifo %d ha lo stesso nome (%s) del glifo %d\n"
 msgid ""
 "Warning: Glyph %d is named %s which should mean it is mapped to\n"
 " Unicode U+%04X, but Glyph %d already has that encoding.\n"
-msgstr "Attenzione: il glifo %d è chiamato %s che significa è mappato all'\n"
+msgstr ""
+"Attenzione: il glifo %d è chiamato %s che significa è mappato all'\n"
 "Unicode U+%04X, ma il glifo %d ha già quella codifica.\n"
 
 #: parsettf.c:5143
@@ -9230,7 +9260,8 @@ msgstr "Interpretazione dei glifi"
 msgid ""
 "Bad sfd file. Glyph %s has width %d even though it should be\n"
 "  bound to the width of %s which is %d.\n"
-msgstr "Errore del file sfd. Il glifo %s ha larghezza %d anche se dovrebbe\n"
+msgstr ""
+"Errore del file sfd. Il glifo %s ha larghezza %d anche se dovrebbe\n"
 "  essere legata alla larghezza di %s che è %d.\n"
 
 #: sfd.c:6406
@@ -9271,7 +9302,8 @@ msgstr "_Recupera vecchie modifiche"
 msgid ""
 "You appear to have an old editing session on %s.\n"
 "Would you like to recover it?"
-msgstr "Sembra che tu abbia una vecchia sessione di modifiche su %s.\n"
+msgstr ""
+"Sembra che tu abbia una vecchia sessione di modifiche su %s.\n"
 "Vorresti recuperarla?"
 
 #: sfd.c:8942
@@ -9414,7 +9446,8 @@ msgstr "Non hai i permessi per leggere %.100s"
 msgid ""
 "%.100s is not in a known format (or uses features of that format fontforge "
 "does not support, or is so badly corrupted as to be unreadable)"
-msgstr "%.100s non è un formato conosciuto (o usa funzioni di quel formato che "
+msgstr ""
+"%.100s non è un formato conosciuto (o usa funzioni di quel formato che "
 "FontForge non supporta, o è talmente corrotto da risultare illeggibile)"
 
 #: splinefont.c:1239
@@ -9757,7 +9790,8 @@ msgstr "Troppi glifi"
 msgid ""
 "The 'sfnt' format is currently limited to 65535 glyphs, and your font has %d "
 "of them."
-msgstr "Il formato 'sfnt' è al momento limitato a 65535 glifi, e il tuo font ne "
+msgstr ""
+"Il formato 'sfnt' è al momento limitato a 65535 glifi, e il tuo font ne "
 "ha %d."
 
 #: tottf.c:6062
@@ -9774,14 +9808,16 @@ msgstr "Non ci sono glifi codificati"
 msgid ""
 "This font contains no glyphs with unicode encodings.\n"
 "Would you like to use a \"Symbol\" encoding instead of Unicode?"
-msgstr "Questo font non contiene glifi con codifica unicode.\n"
+msgstr ""
+"Questo font non contiene glifi con codifica unicode.\n"
 "Vuoi usare una codifica \"Symbol\" invece di Unicode?"
 
 #: tottf.c:6212
 msgid ""
 "This font contains no glyphs with unicode encodings.\n"
 "You will probably not be able to use the output."
-msgstr "Questo font non contiene glifi con codifica unicode.\n"
+msgstr ""
+"Questo font non contiene glifi con codifica unicode.\n"
 "Probabilmente non potrai usarne il risultato."
 
 #: tottf.c:6282
@@ -12307,15 +12343,17 @@ msgid ""
 "A glyph name must be ASCII, without spaces and may not contain the "
 "characters \"([{<>}])/%%\", and should contain only alphanumerics, periods "
 "and underscores"
-msgstr "Il nome di un glifo dev'essere ASCII, senza spazi e non può "
-"contenere i caratteri \"([{<>}])/%%\", e dovrebbe contenere solo alfanumerici, "
-"punti ed underscore"
+msgstr ""
+"Il nome di un glifo dev'essere ASCII, senza spazi e non può "
+"contenere i caratteri \"([{<>}])/%%\", e dovrebbe contenere solo "
+"alfanumerici, punti ed underscore"
 
 #: ../fontforgeexe/charinfo.c:530
 msgid ""
 "A glyph name should contain only alphanumerics, periods and underscores\n"
 "Do you want to use this name in spite of that?"
-msgstr "Il nome di un glifo dovrebbe contenere solo alfanumerici, punti ed underscores\n"
+msgstr ""
+"Il nome di un glifo dovrebbe contenere solo alfanumerici, punti ed underscores\n"
 "Vuoi usare il nome scelto nonostante questo?"
 
 #: ../fontforgeexe/charinfo.c:833
@@ -12923,7 +12961,8 @@ msgstr "Glifi varianti"
 msgid ""
 "A list of the names of pre defined glyphs which represent\n"
 "bigger versions of the current glyph."
-msgstr "Una lista dei nomi di glifi predefiniti che rappresenta\n"
+msgstr ""
+"Una lista dei nomi di glifi predefiniti che rappresenta\n"
 "versioni più grandi dei glifi attuali."
 
 #: ../fontforgeexe/charinfo.c:4695
@@ -13764,10 +13803,10 @@ msgid ""
 "define a new anchor class with\n"
 "Element->Font Info"
 msgstr ""
-"Non cino più classi d'ancore inutilizzate\n"
-" alle quali assegnare un nuovo punto. Se vuoi\n"
-"una nuova ancora, devi\n"
-"definire una nuova classe d'ancore\n"
+"Non trovo una classe d'ancoraggio inutilizzata\n"
+"alla quale assegnare un nuovo punto. Se vuoi\n"
+"un nuovo punto di ancoraggio, devi\n"
+"definire una nuova classe d'ancoraggio\n"
 "mediante Elemento->Informazioni sul font"
 
 #: ../fontforgeexe/charview.c:10111 ../fontforgeexe/metricsview.c:2608
@@ -21429,7 +21468,8 @@ msgstr "Copy_right:"
 msgid ""
 "Copyright text (in the Names pane) must be entirely ASCII. So, use (c) "
 "instead of ©."
-msgstr "Il testo del Copyright (nel pannello dei nomi) dev'essere completamente "
+msgstr ""
+"Il testo del Copyright (nel pannello dei nomi) dev'essere completamente "
 "ASCII. Usa (c) invece di ©."
 
 #: ../fontforgeexe/fontinfo.c:4063
@@ -21439,7 +21479,8 @@ msgstr "Errore nel nome per umani del font"
 #: ../fontforgeexe/fontinfo.c:4063
 msgid ""
 "The human-readable fontname text (in the Names pane) must be entirely ASCII."
-msgstr "Il testo del nome del font leggibile dagli umani (nel pannello dei nomi) "
+msgstr ""
+"Il testo del nome del font leggibile dagli umani (nel pannello dei nomi) "
 "dev'essere completamente ASCII."
 
 #: ../fontforgeexe/fontinfo.c:4064
@@ -22220,7 +22261,8 @@ msgstr "_Revisione sfnt"
 msgid ""
 "If you leave this field blank FontForge will use a default based on\n"
 "either the version string above, or one in the 'name' table."
-msgstr "Se lasci questo campo vuoto FontForge userà uno di default basato sulla\n"
+msgstr ""
+"Se lasci questo campo vuoto FontForge userà uno di default basato sulla\n"
 "stringa di versione sopra, o una nella tabella 'nome'."
 
 #: ../fontforgeexe/fontinfo.c:7662
@@ -22231,7 +22273,8 @@ msgstr "Nome del file base:"
 msgid ""
 "Use this as the default base for the filename\n"
 "when generating a font."
-msgstr "Usa questo come base default per il nome del file\n"
+msgstr ""
+"Usa questo come base default per il nome del file\n"
 "quando crei un font."
 
 #. GT: The space in front of "Same" makes things line up better
@@ -22248,7 +22291,8 @@ msgstr "Copy_right:"
 msgid ""
 "This must be ASCII, so you may not use the copyright symbol (use (c) "
 "instead)."
-msgstr "Dev'essere ASCII, non puoi usare il simbolo del copyright (usa (c) "
+msgstr ""
+"Dev'essere ASCII, non puoi usare il simbolo del copyright (usa (c) "
 "piuttosto)."
 
 #: ../fontforgeexe/fontinfo.c:7752
@@ -22374,7 +22418,8 @@ msgstr ""
 msgid ""
 "\n"
 "Layers:"
-msgstr "\n"
+msgstr ""
+"\n"
 "Livelli:"
 
 #: ../fontforgeexe/fontinfo.c:8273
@@ -23677,7 +23722,8 @@ msgstr "Rinomina per lista di nomi"
 #: ../fontforgeexe/fontview.c:5044
 msgid ""
 "Rename the glyphs in this font to the names found in the selected namelist"
-msgstr "Rinomina il glifo in questo font con i nomi trovati nella lista selezionata"
+msgstr ""
+"Rinomina il glifo in questo font con i nomi trovati nella lista selezionata"
 
 #: ../fontforgeexe/fontview.c:5052 ../fontforgeexe/openfontdlg.c:453
 #: ../fontforgeexe/prefs.c:1911 ../fontforgeexe/prefs.c:2751
@@ -23685,7 +23731,8 @@ msgstr "Rinomina il glifo in questo font con i nomi trovati nella lista selezion
 msgid ""
 "Glyph names should be limited to characters in the ASCII character set, but "
 "there are names in this namelist which use characters outside that range."
-msgstr "I nomi dei glifi dovrebbero essere limitati a caratteri nel set ASCII, "
+msgstr ""
+"I nomi dei glifi dovrebbero essere limitati a caratteri nel set ASCII, "
 "ma ci sono nomi in questa lista che usano caratteri fuori da quel range."
 
 #: ../fontforgeexe/fontview.c:5064
@@ -24052,7 +24099,8 @@ msgstr "Dimensione del font"
 msgid ""
 "Size (in points) of the font used to display information and glyph labels in "
 "the fontview"
-msgstr "Dimensione (in punti( del font usato per mostrare informazioni ed etichette "
+msgstr ""
+"Dimensione (in punti( del font usato per mostrare informazioni ed etichette "
 "dei glifi nell'anteprima"
 
 #: ../fontforgeexe/fontview.c:7565
@@ -24063,8 +24111,9 @@ msgstr "_Famiglia del font"
 msgid ""
 "A comma separated list of font family names used to display small example "
 "images of glyphs over the user designed glyphs"
-msgstr "Una lista separata da virgole dei nomi delle famiglie dei font usata "
-"per mostrare piccole immagini di esempio di glifi sopra i glifi selezionati"
+msgstr ""
+"Una lista separata da virgole dei nomi delle famiglie dei font usata per "
+"mostrare piccole immagini di esempio di glifi sopra i glifi selezionati"
 
 #: ../fontforgeexe/fontview.c:7865 ../gdraw/ggadgets.c:93
 #: ../gdraw/gprogress.c:191
@@ -24421,7 +24470,8 @@ msgstr "Nessun gruppo"
 msgid ""
 "None of the glyphs in the current font match any names or code points in the "
 "selected groups"
-msgstr "Nessuno dei glifi nell'attuale font combacia con nomi o codici nel "
+msgstr ""
+"Nessuno dei glifi nell'attuale font combacia con nomi o codici nel "
 "gruppo selezionato"
 
 #: ../fontforgeexe/groupsdlg.c:1532
@@ -24475,8 +24525,9 @@ msgid ""
 "There are so few glyphs selected that it seems unlikely to me that you will "
 "get a representative sample of this aspect of your font. If you deselect "
 "everything the command will apply to all glyphs in the font"
-msgstr "Ci sono così pochi glifi selezionati che mi sembra improbabile avrai "
-"un esempio rappresentativo dell'aspetto del tuo font. Se deselezioni tutto "
+msgstr ""
+"Ci sono così pochi glifi selezionati che mi sembra improbabile avrai un "
+"esempio rappresentativo dell'aspetto del tuo font. Se deselezioni tutto "
 "il comando si applicherà su tutti i glifi nel font."
 
 #: ../fontforgeexe/histograms.c:784
@@ -26112,7 +26163,8 @@ msgstr "Script e Lingua/e"
 #, c-format
 msgid ""
 "The language, '%s', is not in the list of known languages and will be omitted"
-msgstr "La lingua, '%s', non è nella lista di lingue conosciute e sarà omessa"
+msgstr ""
+"La lingua, '%s', non è nella lista di lingue conosciute e sarà omessa"
 
 #: ../fontforgeexe/lookupui.c:825
 #, c-format
@@ -26329,7 +26381,9 @@ msgstr "Nome già in uso"
 msgid ""
 "The name, %.80s, has already been used to identify an anchor class in a "
 "different lookup subtable (%.80s)"
-msgstr "Il nome, %s, è già usato per una targhetta diversa."
+msgstr ""
+"Il nome, %.80s, è già usato per identificare una classe di ancoraggio in "
+"una diversa sottotabella (%.80s)"
 
 #: ../fontforgeexe/lookupui.c:2104
 msgid "Name used twice"
@@ -26728,7 +26782,8 @@ msgstr "Non ci sono abbastanza glifi"
 msgid ""
 "There aren't enough glyphs in the encoding to name all the selected "
 "characters"
-msgstr "Non ci sono abbastanza glifi nella codifica per nominare tutti i "
+msgstr ""
+"Non ci sono abbastanza glifi nella codifica per nominare tutti i "
 "caratteri selezionati"
 
 #: ../fontforgeexe/lookupui.c:6298
@@ -26739,7 +26794,8 @@ msgstr "Errore di selezione"
 msgid ""
 "You may not rename any of the base glyphs, but your selection overlaps the "
 "set of base glyphs."
-msgstr "Non puoi rinominare uno dei glifi base, ma la tua selezione sovrappone "
+msgstr ""
+"Non puoi rinominare uno dei glifi base, ma la tua selezione sovrappone "
 "il set di glifi base."
 
 #: ../fontforgeexe/lookupui.c:6311
@@ -28011,7 +28067,8 @@ msgstr ""
 #, fuzzy
 msgid ""
 "Have the measure tool show horizontal and vertical distances on the canvas."
-msgstr "Controlli distinti per gli hint orizzontali e verticali."
+msgstr ""
+"Controlli distinti per gli hint orizzontali e verticali."
 
 #: ../fontforgeexe/prefs.c:354
 msgid "XORRubberLines"
@@ -28502,7 +28559,8 @@ msgstr ""
 msgid ""
 "This glyph is mapped to a unicode code point which is different from its "
 "name."
-msgstr "Questo glifo è mappato ad un codice unicode che è differente dal "
+msgstr ""
+"Questo glifo è mappato ad un codice unicode che è differente dal "
 "suo nome."
 
 #: ../fontforgeexe/problems.c:284
@@ -28514,7 +28572,8 @@ msgstr "Impossibile correggere"
 msgid ""
 "The name FontForge would like to assign to this glyph, %.30s, is already "
 "used by a different glyph."
-msgstr "Il nome che FontForge vorrebbe assegnare a questo glifo, %.30s, è già "
+msgstr ""
+"Il nome che FontForge vorrebbe assegnare a questo glifo, %.30s, è già "
 "usato da un glifo diverso."
 
 #: ../fontforgeexe/problems.c:322 ../fontforgeexe/problems.c:594
@@ -28672,7 +28731,8 @@ msgstr "_Stop"
 msgid ""
 "This glyph contains a substitution or ligature entry which refers to an "
 "empty char"
-msgstr "Questo glifo contiene una sostituzione o una legatura che si riferisce "
+msgstr ""
+"Questo glifo contiene una sostituzione o una legatura che si riferisce "
 "ad un carattere vuoto"
 
 #: ../fontforgeexe/problems.c:618
@@ -28684,7 +28744,8 @@ msgstr "%2$.20s si riferisce al carattere vuoto \"%1$.20s\""
 msgid ""
 "This glyph contains anchor points from some, but not all anchor classes in a "
 "subtable"
-msgstr "Questo glifo contiene punti di ancoraggio da alcune, ma non tutte, le classi "
+msgstr ""
+"Questo glifo contiene punti di ancoraggio da alcune, ma non tutte, le classi "
 "di ancoraggio in una sottotabella"
 
 #: ../fontforgeexe/problems.c:622
@@ -28697,7 +28758,8 @@ msgid ""
 "Two glyphs share the same unicode code point.\n"
 "Change the encoding to \"Glyph Order\" and use\n"
 "Edit->Select->Wildcard with the following code point"
-msgstr "Due glifi condividono lo stesso codice unicode.\n"
+msgstr ""
+"Due glifi condividono lo stesso codice unicode.\n"
 "Cambia la codifica a \"Ordine dei glifi\" ed usa\n"
 "Modifica->Seleziona->Simbolo con il seguente codice"
 
@@ -28711,7 +28773,8 @@ msgid ""
 "Two glyphs have the same name.\n"
 "Change the encoding to \"Glyph Order\" and use\n"
 "Edit->Select->Wildcard with the following name"
-msgstr "Due glifi hanno lo stesso nome.\n"
+msgstr ""
+"Due glifi hanno lo stesso nome.\n"
 "Cambia la codifica a \"Ordine dei glifi\" ed usa\n"
 "Modifica->Seleziona->Simbolo con il seguente nome"
 
@@ -28820,7 +28883,8 @@ msgstr "Il punto scelto è vicino a un hint di tratto orizzontale"
 #, fuzzy
 msgid ""
 "The selected points (or the intermediate control points) are too far apart"
-msgstr "I due punti scelti sono gli estremi di una curva aperta"
+msgstr ""
+"I due punti scelti sono gli estremi di una curva aperta"
 
 #: ../fontforgeexe/problems.c:1197
 msgid "The selected points are too close to each other"
@@ -28912,7 +28976,8 @@ msgstr "Questo carattere vettoriale manca della versione bitmap"
 #, fuzzy
 msgid ""
 "This outline glyph's advance width is different from that of the bitmap's"
-msgstr "L'avanzamento di questo carattere è diverso dall'avanzamento standard"
+msgstr ""
+"L'avanzamento di questo carattere è diverso dall'avanzamento standard"
 
 #: ../fontforgeexe/problems.c:1972
 msgid "This glyph is taller than desired"
@@ -29256,7 +29321,7 @@ msgid ""
 "emunits apart they will cause problems for some of FontForge's\n"
 "commands. PostScript shouldn't care though."
 msgstr ""
-"Sse due punti su un percorso sono troppo vicini,\n"
+"Se due punti su un percorso sono troppo vicini,\n"
 "alcuni comandi di FontForge potrebbero avere problemi.\n"
 "Ma questi problemi non influenzano PostScript."
 
@@ -30372,7 +30437,8 @@ msgstr "Nomi PS"
 #: ../fontforgeexe/savefontdlg.c:705
 msgid ""
 "Do you want the font file to contain the names of each glyph in the font?"
-msgstr "Vuoi che il file contegna i nomi di tutti i caratteri del font?"
+msgstr ""
+"Vuoi che il file contegna i nomi di tutti i caratteri del font?"
 
 #: ../fontforgeexe/savefontdlg.c:715
 #, fuzzy
@@ -30612,7 +30678,8 @@ msgstr ""
 msgid ""
 "OpenType fonts must have a version greater than 1\n"
 "Use Element->Font Info->OS/2->Misc to change this."
-msgstr "Le metriche verticali non sono state attivate in questo font"
+msgstr ""
+"Le metriche verticali non sono state attivate in questo font"
 
 #: ../fontforgeexe/savefontdlg.c:1451 ../fontforgeexe/savefontdlg.c:1469
 msgid "Non-standard Em-Size"
@@ -32515,7 +32582,8 @@ msgstr "_Accetta inesatto"
 msgid ""
 "Accept an outline which is a close approximation to the original.\n"
 "It may be off by an em-unit, or have a reference which matches a contour."
-msgstr "Accetta un contorno esterno che è una vicina approssimazione all'originale.\n"
+msgstr ""
+"Accetta un contorno esterno che è una vicina approssimazione all'originale.\n"
 "Può essere diverso di un'unità-em, o avere un riferimento che coincide "
 "con un contorno."
 
@@ -32650,7 +32718,8 @@ msgstr "Accetta il cambiamento delle pendenze(_S)"
 #: ../fontforgeexe/simplifydlg.c:219
 msgid ""
 "Normally simplify will not change the slope of the contour at the points."
-msgstr "Normalmente semplificare non cambia la pendenza delle corve nei nodi."
+msgstr ""
+"Normalmente semplificare non cambia la pendenza delle corve nei nodi."
 
 #: ../fontforgeexe/simplifydlg.c:223
 msgid "Start contours at e_xtrema"
@@ -32687,7 +32756,8 @@ msgstr "Bordi quasi orizzontali o v_erticali"
 msgid ""
 "If the slope of an adjusted point is near horizontal or vertical\n"
 "snap to that"
-msgstr "Il punto scelto è vicino a un hint di tratto orizzontale"
+msgstr ""
+"Il punto scelto è vicino a un hint di tratto orizzontale"
 
 #: ../fontforgeexe/simplifydlg.c:308
 msgid "_Flatten bumps on lines"
@@ -35030,7 +35100,8 @@ msgid ""
 "For this to take effect you must save the resource data (press the [Save] "
 "button)\n"
 "and restart fontforge"
-msgstr "Larghezza fisica dello schermo, misurata in centimetri\n"
+msgstr ""
+"Larghezza fisica dello schermo, misurata in centimetri\n"
 "Perché abbia effetto, devi salvare i dati delle risorse (premi il "
 "pulsante [Salva])\n"
 "e riavvia FontForge"
@@ -35045,7 +35116,8 @@ msgid ""
 "For this to take effect you must save the resource data (press the [Save] "
 "button)\n"
 "and restart fontforge"
-msgstr "Larghezza fisica dello schermo, misurata in pollici\n"
+msgstr ""
+"Larghezza fisica dello schermo, misurata in pollici\n"
 "Perché abbia effetto, devi salvare i dati delle risorse (premi il "
 "pulsante [Salva])\n"
 "e riavvia FontForge"
@@ -35064,7 +35136,8 @@ msgid ""
 "Couldn't create directory: %1$s\n"
 "%2$s\n"
 "%3$s"
-msgstr "Non è possibile creare la cartella: %1$s\n"
+msgstr ""
+"Non è possibile creare la cartella: %1$s\n"
 "%2$s\n"
 "%3$s"
 
