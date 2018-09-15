@@ -5,7 +5,7 @@
 #
 # Translators:
 # Claudio Beccari, 2005-08-29 17:43+0800
-# Martino Deotto, 2018-09-05
+# Martino Deotto, 2018-09-15
 #
 msgid ""
 msgstr ""
@@ -26413,7 +26413,7 @@ msgstr "Ci sono due voci per lo stesso glifo (%.80s and %.80s)"
 #: ../fontforgeexe/lookupui.c:4027
 #, c-format
 msgid "There are two entries for the same glyph (%.80s)"
-msgstr "Ci sono due voci per lo stesso glifo (%.80s)
+msgstr "Ci sono due voci per lo stesso glifo (%.80s)"
 
 #: ../fontforgeexe/lookupui.c:4203
 msgid "Lookup Table Edit"
