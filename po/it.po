@@ -5,7 +5,7 @@
 #
 # Translators:
 # Claudio Beccari, 2005-08-29 17:43+0800
-# Martino Deotto, 2018-09-15
+# Martino Deotto, 2018-09-05
 #
 msgid ""
 msgstr ""
@@ -2491,7 +2491,7 @@ msgstr "Invio del font..."
 
 #: http.c:1437
 msgid "FTP passive Data Connect failed\n"
-msgstr "Errore di connessione passiva FTP"
+msgstr "Errore di connessione passiva FTP\n"
 
 #: http.c:1445 http.c:1464
 msgid "Could not find file."
@@ -5283,7 +5283,7 @@ msgstr "Il glifo %1$.30s ha un diverso numero di contorni nel font %2$.30hs "
 msgid ""
 "The glyph %1$.30s in font %2$.30s has a different number of points (or "
 "control points) on its contours than in %3$.30s"
-msgstr "Il glifo %1$.30s nel font %2.30s ha un diverso numero di punti (o "
+msgstr "Il glifo %1$.30s nel font %2$.30s ha un diverso numero di punti (o "
 "punti di controllo) sui suoi contorni rispetto a %3$.30s"
 
 #: mm.c:1086
@@ -5291,7 +5291,7 @@ msgstr "Il glifo %1$.30s nel font %2.30s ha un diverso numero di punti (o "
 msgid ""
 "The glyph %1$.30s in font %2$.30s has contours running in a different "
 "direction than in %3$.30s"
-msgstr "Il glifo %1$.30s nel font %2.30s ha contorni rivolti in una direzione "
+msgstr "Il glifo %1$.30s nel font %2$.30s ha contorni rivolti in una direzione "
 "diversa rispetto a %3$.30s"
 
 #: mm.c:1093
@@ -5299,7 +5299,7 @@ msgstr "Il glifo %1$.30s nel font %2.30s ha contorni rivolti in una direzione "
 msgid ""
 "The glyph %1$.30s in font %2$.30s has a different number of references than "
 "in %3$.30s"
-msgstr "Il glifo %1$.30s nel font %2.30s ha un diverso numero di riferimenti "
+msgstr "Il glifo %1$.30s nel font %2$.30s ha un diverso numero di riferimenti "
 "rispetto a %3$.30s"
 
 #: mm.c:1100
@@ -5307,7 +5307,7 @@ msgstr "Il glifo %1$.30s nel font %2.30s ha un diverso numero di riferimenti "
 msgid ""
 "The glyph %1$.30s in font %2$.30s has references with different scaling or "
 "rotation (etc.) than in %3$.30s"
-msgstr "Il glifo %1$.30s nel font %2.30s ha una riferimenti con scala o rotazione "
+msgstr "Il glifo %1$.30s nel font %2$.30s ha una riferimenti con scala o rotazione "
 "(ecc.) diverse rispetto a %3$.30s"
 
 #: mm.c:1107
@@ -5315,7 +5315,8 @@ msgstr "Il glifo %1$.30s nel font %2.30s ha una riferimenti con scala o rotazion
 msgid ""
 "The glyph %1$.30s in font %2$.30s has a different set of kern pairs than in "
 "%3$.30s"
-msgstr "Il font %1$.30s ha un encoding uguale a quello di %3$.30hs"
+msgstr "Il glifo %1$.30s nel font %2$.30s ha un diverso set di coppie di crenature"
+"rispetto a %3$.30s"
 
 #: mm.c:1116
 #, c-format
@@ -9030,7 +9031,7 @@ msgstr "Errore: trovato %s inaspettato"
 #: scripting.c:277
 #, c-format
 msgid "%s: %d Unexpected %s found"
-msgstr "%s: trovato %s inaspettato %d"
+msgstr "%s: inaspettato %d trovato %s"
 
 #: scripting.c:299 scripting.c:344
 #, c-format
@@ -9178,7 +9179,7 @@ msgstr "Legatura %s"
 #: sfd.c:2110
 #, c-format
 msgid "Failed to read a file. Bytes read:%ld file size:%ld\n"
-msgstr "Impossibile leggere il file. Byte letti:%1d dimensioni del file:%1d\n"
+msgstr ""
 
 #: sfd.c:2766
 msgid "Saving Bitmaps"
@@ -28513,7 +28514,7 @@ msgstr "Impossibile correggere"
 msgid ""
 "The name FontForge would like to assign to this glyph, %.30s, is already "
 "used by a different glyph."
-msgstr "Il nome che FontForge vorrebbe assegnare a questo glifo, %30, è già "
+msgstr "Il nome che FontForge vorrebbe assegnare a questo glifo, %.30s, è già "
 "usato da un glifo diverso."
 
 #: ../fontforgeexe/problems.c:322 ../fontforgeexe/problems.c:594
@@ -35197,7 +35198,7 @@ msgstr "Impossibile rinominare il tuo file delle scorciatoie sopra quello vecchi
 #: ../gdraw/hotkeys.c:336
 #, c-format
 msgid "Reason:%s\n"
-msgstr "Ragione:5s\n"
+msgstr "Ragione:%s\n"
 
 #~ msgid "File, "
 #~ msgstr "Il file, "
