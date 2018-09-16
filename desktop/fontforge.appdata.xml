@@ -71,6 +71,16 @@
   Aprendre a utilitzar el FontForge és senzill; podeu consultar els tutorials
   existents que van de les funcions més bàsiques del programa fins a les més complicades,
   com ara escriure i usar scripts.</p>
+  <p xml:lang="it">
+  FontForge è un editor di font per i caratteri di testo outline e bitmap che ti permette di creare,
+  modificare o convertire diversi tipi di font, inclusi PostScript, TrueType, OpenType,
+  CID, multi-master, cff, SVG e BitMap (bdf, FON, NFNT).</p>
+  <p xml:lang="it">
+  FontForge è un Software Open Source gratuito, scritto per funzionare su vari sistemi
+  operativi. Puoi usare FontForge con interfaccia grafica o tramite riga di comando.</p>
+  <p xml:lang="it">
+  Imparare ad usare FontForge è facile, e sono disponibili vari tutorial che iniziano dalle basi
+  fino ad arrivare alle funzioni avanzate, come la creazione e l'uso di script.</p>
  </description>
  <screenshots>
   <screenshot type="default" width="1200" height="675">https://github.com/fontforge/fontforge/raw/master/doc/html/ff-screenshot.png</screenshot>
