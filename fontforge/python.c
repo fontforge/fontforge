@@ -16100,15 +16100,22 @@ static PyObject *PyFFFont_MergeFonts(PyFF_Font *self, PyObject *args) {
 return (NULL);
     fv = self->fv;
     if ( !PyArg_ParseTuple(args,"es|ii","UTF-8",&filename,
-	    &preserveCrossFontKerning, &openflags) )
+	    &preserveCrossFontKerning, &openflags) ) {
+	PyFF_Font *other;
+	PyErr_Clear();
+	if ( !PyArg_ParseTuple(args,"O!|i",&PyFF_FontType,&other,
+		&preserveCrossFontKerning) || CheckIfFontClosed(other) )
 return( NULL );
-    locfilename = utf82def_copy(filename);
-    PyMem_Free(filename);
-    sf = LoadSplineFont(locfilename,openflags);
-    if ( sf==NULL ) {
-	PyErr_Format(PyExc_EnvironmentError, "No font found in file \"%s\"", locfilename);
-	free(locfilename);
+	sf = other->fv->sf;
+    } else {
+	locfilename = utf82def_copy(filename);
+	PyMem_Free(filename);
+	sf = LoadSplineFont(locfilename,openflags);
+	if ( sf==NULL ) {
+	    PyErr_Format(PyExc_EnvironmentError, "No font found in file \"%s\"", locfilename);
+	    free(locfilename);
 return( NULL );
+	}
     }
     free(locfilename);
     if ( sf->fv==NULL )
