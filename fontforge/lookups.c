@@ -975,13 +975,15 @@ static void RemoveNestedReferences(SplineFont *sf,int isgpos) {
 		otl->lookup_type==gpos_context || otl->lookup_type==gpos_contextchain ) {
 	    for ( sub=otl->subtables; sub!=NULL; sub=sub->next ) {
 		FPST *fpst = sub->fpst;
-		for ( i=0; i<fpst->rule_cnt; ++i ) {
-		    for ( j=0; j<fpst->rules[i].lookup_cnt; ++j ) {
-			if ( fpst->rules[i].lookups[j].lookup == otl ) {
-			    for ( k=j+1; k<fpst->rules[i].lookup_cnt; ++k )
-				fpst->rules[i].lookups[k-1] = fpst->rules[i].lookups[k];
-			    --fpst->rules[i].lookup_cnt;
-			    --j;
+		if (fpst!=NULL) {
+		    for ( i=0; i<fpst->rule_cnt; ++i ) {
+			for ( j=0; j<fpst->rules[i].lookup_cnt; ++j ) {
+			    if ( fpst->rules[i].lookups[j].lookup == otl ) {
+				for ( k=j+1; k<fpst->rules[i].lookup_cnt; ++k )
+				    fpst->rules[i].lookups[k-1] = fpst->rules[i].lookups[k];
+				--fpst->rules[i].lookup_cnt;
+				--j;
+			    }
 			}
 		    }
 		}
@@ -3065,6 +3067,8 @@ static int ContextualMatch(struct lookup_subtable *sub,struct lookup_data *data,
     int lookup_flags = sub->lookup->lookup_flags;
     const char *pt;
 
+    if (fpst==NULL)
+        return 0;
     /* If we should skip the current glyph then don't try for a match here */
     cpos = skipglyphs(lookup_flags,data,pos);
     if ( cpos!=pos )
@@ -4157,10 +4161,12 @@ static void AddOTLToSllk(struct sllk *sllk, OTLookup *otl, struct scriptlanglist
 	struct lookup_subtable *sub;
 	for ( sub=otl->subtables; sub!=NULL; sub=sub->next ) {
 	    FPST *fpst = sub->fpst;
-	    for ( j=0; j<fpst->rule_cnt; ++j ) {
-		struct fpst_rule *r = &fpst->rules[j];
-		for ( k=0; k<r->lookup_cnt; ++k )
-		    AddOTLToSllk(sllk,r->lookups[k].lookup,sl);
+	    if (fpst!=NULL) {
+		for ( j=0; j<fpst->rule_cnt; ++j ) {
+		     struct fpst_rule *r = &fpst->rules[j];
+		     for ( k=0; k<r->lookup_cnt; ++k )
+			AddOTLToSllk(sllk,r->lookups[k].lookup,sl);
+		}
 	    }
 	}
     }
