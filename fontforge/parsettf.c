@@ -5185,11 +5185,9 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
      * data and so we don't rewind it (if info->uwidth is odd we are possibly
      * introducing a rounding error).
      */
-	if (info->cff_start==0) {
 	info->upos = (short) getushort(ttf);
 	info->uwidth = (short) getushort(ttf);
 	info->upos -= info->uwidth/2;		/* 'post' defn of this field is different from FontInfo defn and I didn't notice */
-	}
 	info->isFixedPitch = getlong(ttf);
 	/* mem1 = */ getlong(ttf);
 	/* mem2 = */ getlong(ttf);
