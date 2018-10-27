@@ -935,13 +935,38 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
     </TR>
     <TR>
       <TD><CODE>on_curve</CODE></TD>
-      <TD colspan=2>Whether this is an on curve point or an off curve point (a
-	control point)</TD>
+      <TD colspan=2>True for a point on the curve and false for (in the
+      case of a cubic contour) a control point.</TD>
     </TR>
     <TR>
       <TD><CODE>selected</CODE></TD>
-      <TD colspan=2>Whether this point is selected in the UI. If an off-curve point
-	is selected in means the preceding (interpolated) on-curve point is selected.</TD>
+      <TD colspan=2>For an on-curve point, whether it is selected.
+	For a control point, whether its on-curve point is selected.
+	<P>Most transformations of on-curve points should also include
+	their control points. The <CODE>selected</CODE> flag makes it easier
+	to pick all relevant points using on-curve selection.
+        <P>Setting or clearing the flag will change the selection status of
+	an on-curve point but have no effect for an off-curve point.
+	<P>For quadratic points off-curve points, selected should be true
+	if the preceding <em>interpolated</em> on-curve point is selected. 
+      </TD>
+    </TR>
+    <TR>
+      <TD><CODE>highlighted</CODE></TD>
+      <TD colspan=2>For an on-curve point this will be false. For an off-curve
+	point, whether it is selected.
+	<P>The <CODE>highlighted</CODE> flag can be used when the selection
+	status of a cubic control point is relevant in the python interface.
+	If, for example, a transformation should include all selected on-curve
+	points and their associated off-curve points, and also any additional
+	selected off-curve points, the script can use <CODE>p.selected or
+	p.highlighted</CODE>
+        <P>Setting or clearing the flag will change the selection status of
+	a control point but have no effect for an on-curve point.
+	<P>This interface is only partially implemented for quadratic
+	contours, and some selected off-curve points may not be marked
+	correctly. 
+      </TD>
     </TR>
     <TR>
       <TD><CODE>name</CODE></TD>
