@@ -323,7 +323,7 @@ unichar_t *u_copynallocm(const unichar_t *pt, long n, long m) {
     if ( pt && ++n>0 && ++m>0 && m>=n ) {
 #ifdef MEMORY_MASK
 	if ( n>MEMORY_MASK/sizeof(unichar_t) )
-	    n = MEMORY_MASK/sizeof(unichar_t)-1;
+	    n = MEMORY_MASK/sizeof(unichar_t);
 #endif
 	if ( (res=(unichar_t *)(calloc(m,sizeof(unichar_t)))) ) {
 	    if ( (--n) ) memcpy(res,pt,n*sizeof(unichar_t));
@@ -355,38 +355,40 @@ return( u_copy( s1 ));
 return( pt );
 }
 
-unichar_t *uc_copyn(const char *pt,int len) {
-    unichar_t *res, *rpt;
+unichar_t *uc_copyn(const char *pt, int n) {
+/* Copy n unsigned chars{0..255} to a unichar_t type */
+/* string. If not printable, return an empty string. */
+    unichar_t *res, *rpt, t;
 
-    if(!pt)
-return((unichar_t *)0);
-
+    if ( pt && ++n>0 ) {
 #ifdef MEMORY_MASK
-    if ( (len+1)*sizeof(unichar_t)>=MEMORY_MASK )
-	len = MEMORY_MASK/sizeof(unichar_t)-1;
+	if ( n>MEMORY_MASK/sizeof(unichar_t) )
+	    n = MEMORY_MASK/sizeof(unichar_t);
 #endif
-    res = (unichar_t *) malloc((len+1)*sizeof(unichar_t));
-    for ( rpt=res; --len>=0 ; *rpt++ = *(unsigned char *) pt++ );
-    *rpt = '\0';
-return(res);
+	if ( (res=rpt=(unichar_t *)(malloc(n*sizeof(unichar_t)))) ) {
+	    if ( (--n) ) {
+		while ( --n>=0 ) {
+		    t = (unichar_t)(*(unsigned char *) pt++);
+		    *rpt++ = t & 0xff;
+		}
+	    }
+	    *rpt = 0;
+	    return( res );
+	}
+    }
+    return( calloc(1,sizeof(unichar_t)) );
 }
 
 unichar_t *uc_copy(const char *pt) {
+/* Copy unsigned char{0..255} string to unichar type */
+/* string. If not printable, return an empty string. */
     unichar_t *res, *rpt;
     int n;
 
-    if(!pt)
-return((unichar_t *)0);
+    if ( pt && (n=strlen(pt))>0 )
+	return( uc_copyn(pt,n) );
 
-    n = strlen(pt);
-#ifdef MEMORY_MASK
-    if ( (n+1)*sizeof(unichar_t)>=MEMORY_MASK )
-	n = MEMORY_MASK/sizeof(unichar_t)-1;
-#endif
-    res = (unichar_t *) malloc((n+1)*sizeof(unichar_t));
-    for ( rpt=res; --n>=0 ; *rpt++ = *(unsigned char *) pt++ );
-    *rpt = '\0';
-return(res);
+    return( calloc(1,sizeof(unichar_t)) );
 }
 
 char *cu_copyn(const unichar_t *pt,int len) {
