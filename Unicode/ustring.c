@@ -301,26 +301,36 @@ return( NULL );
 
 unichar_t *u_copyn(const unichar_t *pt, long n) {
     unichar_t *res;
+
+    if ( pt && ++n>0 ) {
 #ifdef MEMORY_MASK
-    if ( n*sizeof(unichar_t)>=MEMORY_MASK )
-	n = MEMORY_MASK/sizeof(unichar_t)-1;
+	if ( n>MEMORY_MASK/sizeof(unichar_t) )
+	    n = MEMORY_MASK/sizeof(unichar_t);
 #endif
-    res = (unichar_t *) malloc((n+1)*sizeof(unichar_t));
-    memcpy(res,pt,n*sizeof(unichar_t));
-    res[n]='\0';
-return(res);
+	if ( (res=(unichar_t *)(malloc(n*sizeof(unichar_t)))) ) {
+	    if ( (--n) ) memcpy(res,pt,n*sizeof(unichar_t));
+	    res[n] = 0;
+	    return( res );
+	}
+    }
+    return( NULL );
 }
 
 unichar_t *u_copynallocm(const unichar_t *pt, long n, long m) {
+/* Alloc space for m unichar chars and copy n unichar chars */
     unichar_t *res;
+
+    if ( pt && ++n>0 && ++m>0 && m>=n ) {
 #ifdef MEMORY_MASK
-    if ( n*sizeof(unichar_t)>=MEMORY_MASK )
-	n = MEMORY_MASK/sizeof(unichar_t)-1;
+	if ( n>MEMORY_MASK/sizeof(unichar_t) )
+	    n = MEMORY_MASK/sizeof(unichar_t)-1;
 #endif
-    res = malloc((m+1)*sizeof(unichar_t));
-    memcpy(res,pt,n*sizeof(unichar_t));
-    res[n]='\0';
-return(res);
+	if ( (res=(unichar_t *)(calloc(m,sizeof(unichar_t)))) ) {
+	    if ( (--n) ) memcpy(res,pt,n*sizeof(unichar_t));
+	    return( res );
+	}
+    }
+    return( NULL );
 }
 
 unichar_t *u_copy(const unichar_t *pt) {
