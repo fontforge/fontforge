@@ -32,7 +32,7 @@ addons:
       - deadsnakes
     packages: [autoconf, automake, autotools-dev, bzip2, gcc-7, libtool,
       libjpeg-dev, libtiff4-dev, libpng12-dev, libfreetype6-dev, libgif-dev,
-      libx11-dev, libxml2-dev, libpango1.0-dev, libcairo2-dev, python3.6-dev, lcov]
+      libx11-dev, libxml2-dev, libpango1.0-dev, libpangoxft-1.0-dev, libcairo2-dev, python3.6-dev, lcov]
   coverity_scan:
     project:
       name: "fontforge/fontforge"
