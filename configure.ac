@@ -419,7 +419,15 @@ if test x"${have_glib}" != xpkg; then
 fi
 
 if test x"${i_do_have_x}" = xyes; then
-   PKG_CHECK_MODULES([PANGO],[pango >= 1.10 pangoxft])
+   # pango depends on glib2. Required by GUI for {cairo or gtk/gtk2 or Mac CoreText}
+   # pangoxft is submodule of pango (used in gxcdraw) (there are other versions of Xft)
+   PKG_CHECK_MODULES([PANGO],[pango >= 1.10 pangoft2 pangoxft])
+   have_libpango=no
+   AC_CHECK_HEADER([pangoxft.h],
+      AC_CHECK_FUNC([pango_xft_get_font_map],[have_libpango=yes]))
+   if test x"${have_libpango}" != xyes; then
+      AC_MSG_FAILURE([ERROR: Please install Developer version of pango, pangoft2, pangoxft.],[1])
+   fi
 fi
 
 PKG_CHECK_MODULES([FREETYPE],[freetype2 >= 2.3.7])
@@ -936,7 +944,6 @@ Summary of optional features:
 Summary of optional dependencies:
 
 Optional Library	UseIt?	HaveIt?	WebsiteURL
-  cairo			${with_cairo}	${i_do_have_cairo}	${cairo_url}
   giflib		${with_giflib}	${i_do_have_giflib}	${giflib_url}
   libjpeg		${with_libjpeg}	${i_do_have_libjpeg}	${libjpeg_url}
   libpng		${with_libpng}	${i_do_have_libpng}	${libpng_url}
@@ -945,10 +952,13 @@ Optional Library	UseIt?	HaveIt?	WebsiteURL
   libtiff		${with_libtiff}	${i_do_have_libtiff}	${libtiff_url}
   libuninameslist	${with_libuninameslist}	${i_do_have_libuninameslist}	${libuninameslist_url}
   python-dev		${enable_python_scripting}	${i_do_have_python_scripting}	${python_url}
-  zeromq (libzmq)		${i_do_have_libzmq}	${libzmq_url}
   woff2			${fontforge_can_use_woff2}	${fontforge_has_woff2}	${woff2_url}
+
+Graphical UI Choices	UseIt?	HaveIt?	WebsiteURL
   X Window System		${i_do_have_x}	${libxorg_url}
+    cairo		${with_cairo}	${i_do_have_cairo}	${cairo_url}
   GDK backend		${fontforge_can_use_gdk}	${fontforge_gdk_version}	${gdk_url}
+  zeromq (libzmq)		${i_do_have_libzmq}	${libzmq_url}
 ])
 
 #--------------------------------------------------------------------------
