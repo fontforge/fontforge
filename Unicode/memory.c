@@ -47,11 +47,10 @@ char *copyn(const char *str,long n) {
      *      https://github.com/fontforge/fontforge/issues/1239
      */
     char *ret;
-    if ( str==NULL )
-    	return( NULL );
-
-    ret = (char *) malloc(n+1);
-    memcpy(ret,str,n);
-    ret[n]='\0';
-    return( ret );
+    if ( str!=NULL && ++n>0 && (ret=(char *)(malloc(n)))!=NULL ) {
+	if ( (--n) ) memcpy(ret,str,n);
+	ret[n]='\0';
+	return( ret );
+    }
+    return( NULL );
 }
