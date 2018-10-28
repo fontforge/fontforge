@@ -334,10 +334,13 @@ unichar_t *u_copynallocm(const unichar_t *pt, long n, long m) {
 }
 
 unichar_t *u_copy(const unichar_t *pt) {
-    if(pt)
-return u_copyn(pt,u_strlen(pt));
+/* Copy unichar_t string and if error, return( "" ). */
+    long n;
 
-return((unichar_t *)0);
+    if ( pt && (n=u_strlen(pt))>0 )
+	return( u_copyn(pt,n) );
+
+    return( calloc(1,sizeof(unichar_t)) );
 }
 
 unichar_t *u_concat(const unichar_t *s1, const unichar_t *s2) {
@@ -382,7 +385,6 @@ unichar_t *uc_copyn(const char *pt, int n) {
 unichar_t *uc_copy(const char *pt) {
 /* Copy unsigned char{0..255} string to unichar type */
 /* string. If not printable, return an empty string. */
-    unichar_t *res, *rpt;
     int n;
 
     if ( pt && (n=strlen(pt))>0 )
@@ -391,38 +393,44 @@ unichar_t *uc_copy(const char *pt) {
     return( calloc(1,sizeof(unichar_t)) );
 }
 
-char *cu_copyn(const unichar_t *pt,int len) {
+char *cu_copyn(const unichar_t *pt, int n) {
+/* Copy unichar string to str. Assume values 0..255. */
     char *res, *rpt;
+    unichar_t t;
 
-    if(!pt)
-return(NULL);
-
+    if ( pt && ++n>0 ) {
 #ifdef MEMORY_MASK
-    if ( (len+1)>=MEMORY_MASK )
-	len = MEMORY_MASK-1;
+	if ( n>MEMORY_MASK )
+	    n = MEMORY_MASK;
 #endif
-    res = (char *) malloc(len+1);
-    for ( rpt=res; --len>=0 ; *rpt++ = *pt++ );
-    *rpt = '\0';
-return(res);
+	if ( (res=rpt=malloc(n)) ) {
+	    if ( (--n) ) {
+		while ( --n>=0 ) {
+		    if ( (t=*pt++)>0xff ) {
+			free(res);
+			return( NULL );
+		    }
+		    *rpt++ = t;
+		}
+	    }
+	    *rpt = '\0';
+	    return( res );
+	}
+    }
+    return( NULL );
 }
 
 char *cu_copy(const unichar_t *pt) {
-    char *res, *rpt;
+/* Copy unichar to char string, assume values 0..255 */
+/* and if error, return( "" ) which can be made free */
+    char *res;
     int n;
 
-    if(!pt)
-return((char *)0);
+    if ( pt && (n=u_strlen(pt))>0 )
+	if ( (res=cu_copyn(pt,n))!=NULL )
+	    return( res );
 
-    n = u_strlen(pt);
-#ifdef MEMORY_MASK
-    if ( (n+1)>=MEMORY_MASK )
-	n = MEMORY_MASK/sizeof(unichar_t)-1;
-#endif
-    res = (char *) malloc(n+1);
-    for ( rpt=res; --n>=0 ; *rpt++ = *pt++ );
-    *rpt = '\0';
-return(res);
+    return( calloc(1,sizeof(unichar_t)) );
 }
 
 double u_strtod(const unichar_t *str, unichar_t **ptr) {
