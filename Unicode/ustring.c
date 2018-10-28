@@ -845,7 +845,7 @@ long utf8_strlen(const char *utf8_str) {
     long len = 0;
 
     while ( utf8_ildb(&utf8_str)>0 && ++len>0 );
-    return( len );
+    return( len < 0 ? -1 : len );
 }
 
 long utf82u_strlen(const char *utf8_str) {
@@ -856,7 +856,7 @@ long utf82u_strlen(const char *utf8_str) {
     while ( (ch = utf8_ildb(&utf8_str))>0 && ++len>0 )
 	if ( ch>=0x10000 )
 	    ++len;
-    return( len );
+    return( len < 0 ? -1 : len );
 }
 
 void utf8_strncpy(register char *to, const char *from, int len) {
