@@ -3495,6 +3495,8 @@ int SFLFindOrder(SplineFont *sf, int layerdest) {
     int i, ret;
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+            if (layerdest >= sf->glyphs[i]->layer_cnt)
+                continue;
 	ret = SPLFindOrder(sf->glyphs[i]->layers[layerdest].splines);
 	if ( ret!=-1 )
 return( ret );
