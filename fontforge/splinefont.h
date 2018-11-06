@@ -1181,6 +1181,22 @@ typedef struct imagelist {
     unsigned int selected: 1;
 } ImageList;
 
+struct guidelineset;
+typedef struct guidelineset {
+    // This is a UFO construct. We implement it only for round-tripping.
+    // The FontForge way is to have a global "grid".
+    // If it is necessary to have per-character guides, one would use a background layer.
+    // Having per glyph-layer guides is sort of ridiculous.
+    // Life is much easier the FontForge way.
+    char *name;
+    char *identifier; // Duplicative, but in the UFO specification.
+    BasePoint point;
+    real angle;
+    uint32 color; // Red, green, blue, and alpha, 8 bits apiece.
+    int flags; // 0x20 means that the color is set. 0x10 means that the point was imported clean (one numeric parameter).
+    struct guidelineset *next;
+} GuidelineSet;
+
 struct reflayer {
     unsigned int background: 1;
     unsigned int order2: 1;
@@ -1300,6 +1316,7 @@ typedef struct layer /* : reflayer */{
     SplinePointList *splines;
     ImageList *images;			/* Only in background or type3 layer(s) */
     RefChar *refs;			/* Only in foreground layer(s) */
+    GuidelineSet *guidelines;		/* Only in UFO imports, we hope. Inefficient otherwise. */
     Undoes *undoes;
     Undoes *redoes;
     uint32 validation_state;
@@ -2063,7 +2080,7 @@ enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_mma, ff_mmb,
 	ff_ptype3, ff_ptype0, ff_cid, ff_cff, ff_cffcid,
 	ff_type42, ff_type42cid,
 	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_ttc, ff_ttfdfont, ff_otf, ff_otfdfont,
-	ff_otfcid, ff_otfciddfont, ff_svg, ff_ufo, ff_woff, ff_woff2, ff_none };
+	ff_otfcid, ff_otfciddfont, ff_svg, ff_ufo, ff_ufo3, ff_woff, ff_woff2, ff_none };
 extern struct pschars *SplineFont2ChrsSubrs(SplineFont *sf, int iscjk,
 	struct pschars *subrs,int flags,enum fontformat format,int layer);
 struct cidbytes;
@@ -2085,7 +2102,7 @@ enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, bf_sfnt_ms, bf_otb,
 	bf_ptype3,
 	bf_none };
 extern const char *GetAuthor(void);
-extern int WriteUFOFont(const char *fontname, SplineFont *sf, enum fontformat format,int flags, const EncMap *enc,int layer);
+extern int WriteUFOFont(const char *fontname, SplineFont *sf, enum fontformat format, int flags, const EncMap *enc,int layer, int version);
 extern int SLIContainsR2L(SplineFont *sf,int sli);
 extern void SFFindNearTop(SplineFont *);
 extern void SFRestoreNearTop(SplineFont *);
@@ -2408,7 +2425,7 @@ extern int HasUFO(void);
 extern void SCImportPS(SplineChar *sc,int layer,char *path,int doclear, int flags);
 extern void SCImportPDF(SplineChar *sc,int layer,char *path,int doclear, int flags);
 
-extern int _ExportGlif(FILE *glif,SplineChar *sc,int layer);
+extern int _ExportGlif(FILE *glif,SplineChar *sc,int layer,int version);
 
 extern void SCCopyWidth(SplineChar *sc,enum undotype);
 extern void SCClearBackground(SplineChar *sc);

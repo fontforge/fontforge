@@ -149,9 +149,11 @@ static char base64[64] = {
 
 static const char *end_tt_instrs = "EndTTInstrs";
 static void SFDDumpRefs(FILE *sfd,RefChar *refs, int *newgids);
+static void SFDDumpGuidelines(FILE *sfd,GuidelineSet *gl);
 static RefChar *SFDGetRef(FILE *sfd, int was_enc);
 static void SFDDumpImage(FILE *sfd,ImageList *img);
 static AnchorPoint *SFDReadAnchorPoints(FILE *sfd,SplineChar *sc,AnchorPoint** alist, AnchorPoint *lastap);
+static GuidelineSet *SFDReadGuideline(FILE *sfd, GuidelineSet **gll, GuidelineSet *lastgl);
 static void SFDDumpTtfInstrs(FILE *sfd,SplineChar *sc);
 static void SFDDumpTtfInstrsExplicit(FILE *sfd,uint8 *ttf_instrs, int16 ttf_instrs_len );
 static void SFDDumpHintList(FILE *sfd,const char *key, StemInfo *h);
@@ -1206,6 +1208,25 @@ static void SFDDumpRefs(FILE *sfd,RefChar *refs, int *newgids) {
     }
 }
 
+static void SFDDumpGuidelines(FILE *sfd, GuidelineSet *gl) {
+    if (gl==NULL) {
+	return;
+    }
+
+    for ( ; gl!=NULL; gl=gl->next )
+    {
+	fprintf( sfd, "Guideline: " );
+	SFDDumpUTF7Str(sfd,gl->name);
+	putc(' ',sfd);
+	SFDDumpUTF7Str(sfd,gl->identifier);
+	putc(' ',sfd);
+	fprintf( sfd, "%g %g %g %lu %d",
+		(double) gl->point.x, (double) gl->point.y,
+		(double) gl->angle, gl->color, gl->flags);
+	putc('\n',sfd);
+    }
+}
+
 static void SFDDumpMathVertex(FILE *sfd,struct mathkernvertex *vert,const char *name) {
     int i;
 
@@ -1519,11 +1540,6 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 	    sc->top_accent_horiz!=TEX_UNDEF || sc->vert_variants!=NULL ||
 	    sc->horiz_variants!=NULL || sc->mathkern!=NULL )
 	SFDDumpCharMath(sfd,sc);
-#if 0
-    // This is now layer-specific.
-    if ( sc->python_persistent!=NULL )
-	SFDPickleMe(sfd,sc->python_persistent,sc->python_persistent_has_lists);
-#endif // 0
 #if HANYANG
     if ( sc->compositionunit )
 	fprintf( sfd, "CompositionUnit: %d %d\n", sc->jamo, sc->varient );
@@ -1622,6 +1638,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 	    SFDDumpSplineSet(sfd,sc->layers[i].splines);
 	}
 	SFDDumpRefs(sfd,sc->layers[i].refs,newgids);
+	SFDDumpGuidelines(sfd, sc->layers[i].guidelines);
 	if ( sc->layers[i].validation_state&vs_known )
 	    fprintf( sfd, "Validated: %d\n", sc->layers[i].validation_state );
         if ( sc->layers[i].python_persistent!=NULL )
@@ -4130,6 +4147,7 @@ Undoes *SFDGetUndo( FILE *sfd, SplineChar *sc,
     RefChar *lastr=NULL;
     ImageList *lasti=NULL;
     AnchorPoint *lastap = NULL;
+    GuidelineSet *lastgl = NULL;
     SplineChar* tsc = 0;
 
     if ( getname(sfd,tok)!=1 )
@@ -4573,6 +4591,23 @@ return( lastap );
 	lastap->next = ap;
 
     return( ap );
+}
+
+static GuidelineSet *SFDReadGuideline(FILE *sfd, GuidelineSet **gll, GuidelineSet *lastgl)
+{
+    GuidelineSet *gl = chunkalloc(sizeof(GuidelineSet));
+    gl->name = SFDReadUTF7Str(sfd);
+    gl->identifier = SFDReadUTF7Str(sfd);
+    getreal(sfd,&gl->point.x);
+    getreal(sfd,&gl->point.y);
+    getreal(sfd,&gl->angle);
+    getint(sfd,&gl->color);
+    getint(sfd,&gl->flags);
+    if ( lastgl!=NULL )
+	lastgl->next = gl;
+    else if (gll)
+        *gll = gl;
+    return( gl );
 }
 
 static RefChar *SFDGetRef(FILE *sfd, int was_enc) {
@@ -5139,6 +5174,7 @@ static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf, int had_sf_layer_cnt) {
     RefChar *lastr=NULL, *ref;
     ImageList *lasti=NULL, *img;
     AnchorPoint *lastap = NULL;
+    GuidelineSet *lastgl = NULL;
     int isliga = 0, ispos, issubs, ismult, islcar, ispair, temp, i;
     PST *last = NULL;
     uint32 script = 0;
@@ -5374,6 +5410,7 @@ return( NULL );
 		sc->layers[ly_fore].splines = SFDGetSplineSet(sfd,sc->layers[ly_fore].order2);
 	    }
 	    current_layer = ly_fore;
+	    lastgl = NULL;
 	} else if ( strmatch(tok,"MinimumDistance:")==0 ) {
 	    SFDGetMinimumDistances(sfd,sc);
 	} else if ( strmatch(tok,"Validated:")==0 ) {
@@ -5389,6 +5426,7 @@ return( NULL );
 		oldback = true;
 	    }
 	    current_layer = ly_back;
+	    lastgl = NULL;
 	} else if ( strmatch(tok,"LayerCount:")==0 ) {
 	    getint(sfd,&temp);
 	    if ( temp>sc->layer_cnt ) {
@@ -5466,6 +5504,7 @@ return( NULL );
 	    current_layer = layer;
 	    lasti = NULL;
 	    lastr = NULL;
+	    lastgl = NULL;
 	} else if ( strmatch(tok,"FillGradient:")==0 ) {
 	    sc->layers[current_layer].fill_brush.gradient = SFDParseGradient(sfd,tok);
 	} else if ( strmatch(tok,"FillPattern:")==0 ) {
@@ -5536,6 +5575,8 @@ return( NULL );
 	    }
 	} else if ( strmatch(tok,"SplineSet")==0 ) {
 	    sc->layers[current_layer].splines = SFDGetSplineSet(sfd,sc->layers[current_layer].order2);
+	} else if ( strmatch(tok,"Guideline:")==0 ) {
+	    SFDReadGuideline(sfd, &sc->layers[current_layer].guidelines, lastgl);
 	} else if ( strmatch(tok,"Ref:")==0 || strmatch(tok,"Refer:")==0 ) {
 	    /* I should be depending on the version number here, but I made */
 	    /*  a mistake and bumped the version too late. So the version is */

@@ -283,7 +283,7 @@ static void DoExport(struct gfc_data *d,unichar_t *path) {
     else if ( format==2 )
 	good = ExportSVG(temp,d->sc,d->layer);
     else if ( format==3 )
-	good = ExportGlif(temp,d->sc,d->layer);
+	good = ExportGlif(temp,d->sc,d->layer,2);
     else if ( format==4 )
 	good = ExportPDF(temp,d->sc,d->layer);
     else if ( format==5 )

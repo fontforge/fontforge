@@ -5338,6 +5338,22 @@ void AnchorPointsFree(AnchorPoint *ap) {
     }
 }
 
+void GuidelineSetFree(GuidelineSet *gl) {
+    GuidelineSet *glnext;
+    for ( ; gl!=NULL; gl = glnext ) {
+	glnext = gl->next;
+	if (gl->name != NULL) {
+		free(gl->name);
+		gl->name = NULL;
+	}
+	if (gl->identifier != NULL) {
+		free(gl->identifier);
+		gl->identifier = NULL;
+	}
+	chunkfree(gl,sizeof(GuidelineSet));
+    }
+}
+
 void ValDevFree(ValDevTab *adjust) {
     if ( adjust==NULL )
 return;
@@ -5868,6 +5884,7 @@ void LayerFreeContents(SplineChar *sc,int layer) {
     GradientFree(sc->layers[layer].stroke_pen.brush.gradient);
     PatternFree(sc->layers[layer].stroke_pen.brush.pattern);
     RefCharsFree(sc->layers[layer].refs);
+    GuidelineSetFree(sc->layers[layer].guidelines);
     ImageListsFree(sc->layers[layer].images);
     /* image garbage collection????!!!! */
     UndoesFree(sc->layers[layer].undoes);
@@ -6561,6 +6578,13 @@ return;
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	struct splinechar *sc = sf->glyphs[i];
 	if (sc->glif_name != NULL) { free(sc->glif_name); sc->glif_name = NULL; }
+	// Go through layers.
+	int lyi;
+	for ( lyi=0; lyi<sc->layer_cnt; ++lyi ) {
+		// Free guidelines.
+		GuidelineSetFree(sc->layers[lyi].guidelines);
+		sc->layers[lyi].guidelines = NULL;
+	}
     }
     for ( i=0; i<sf->subfontcnt; ++i )
 	SplineFontClearSpecial(sf->subfonts[i]);

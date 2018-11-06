@@ -67,7 +67,7 @@ const char *savefont_extensions[] = { ".pfa", ".pfb", ".res", "%s.pfb", ".pfa", 
 	".cid", ".cff", ".cid.cff",
 	".t42", ".t11",
 	".ttf", ".ttf", ".suit", ".ttc", ".dfont", ".otf", ".otf.dfont", ".otf",
-	".otf.dfont", ".svg", ".ufo", ".woff",
+	".otf.dfont", ".svg", ".ufo", ".ufo3", ".woff",
 #ifdef FONTFORGE_CAN_USE_WOFF2
 	".woff2",
 #endif
@@ -81,6 +81,7 @@ const char *savefont_extensions[] = { ".pfa", ".pfb", ".bin", "%s.pfb", ".pfa", 
 	".ttf", ".ttf", ".ttf.bin", ".ttc", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg",
 	".ufo",
+	".ufo3",
 	".woff",
 #ifdef FONTFORGE_CAN_USE_WOFF2
 	".woff2",
@@ -817,6 +818,7 @@ return( WriteMultiplePSFont(sf,newname,sizes,subfontdefinition,map,layer));
 		  oldformatstate==ff_mma || oldformatstate==ff_mmb ?_("Saving multi-master font") :
 		  oldformatstate==ff_svg ?_("Saving SVG font") :
 		  oldformatstate==ff_ufo ?_("Saving Unified Font Object") :
+		  oldformatstate==ff_ufo3 ?_("Saving Unified Font Object") :
 		 _("Saving PostScript Font"),
 	    path,sf->glyphcnt,1);
     free(path);
@@ -828,7 +830,7 @@ return( WriteMultiplePSFont(sf,newname,sizes,subfontdefinition,map,layer));
 	    if ( oldformatstate==ff_pfbmacbin || oldformatstate==ff_ttfmacbin ) {
 		ff_post_error(_("Mac Resource Not Remote"),_("You may not save a mac resource file to a remote location"));
 		oerr = true;
-	    } else if ( oldformatstate==ff_ufo ) {
+	    } else if ( oldformatstate==ff_ufo || oldformatstate==ff_ufo3 ) {
 		ff_post_error(_("Directory Not Remote"),_("You may not save ufo directory to a remote location"));
 		oerr = true;
 	    }
@@ -872,7 +874,13 @@ return( true );
 	    tmpstore = sf->preferred_kerning; // We toggle this flag in order to force native kerning output.
 	    if (flags & ttf_native_kern) sf->preferred_kerning = 1; // 1 flags native kerning.
 	    sf->preferred_kerning |= 4; // 4 flags old-style naming for the starting name in UFONameKerningClasses.
-	    oerr = !WriteUFOFont(newname,sf,oldformatstate,flags,map,layer);
+	    oerr = !WriteUFOFont(newname,sf,oldformatstate,flags,map,layer,2);
+	    if (flags & ttf_native_kern) sf->preferred_kerning = tmpstore;
+	  break;
+	  case ff_ufo3:
+	    tmpstore = sf->preferred_kerning; // We toggle this flag in order to force native kerning output.
+	    if (flags & ttf_native_kern) sf->preferred_kerning = 1; // 1 flags native kerning.
+	    oerr = !WriteUFOFont(newname,sf,oldformatstate,flags,map,layer,3);
 	    if (flags & ttf_native_kern) sf->preferred_kerning = tmpstore;
 	  break;
 	  default:

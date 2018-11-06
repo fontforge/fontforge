@@ -130,6 +130,7 @@ extern void GlyphVariantsFree(struct glyphvariants *gv);
 extern void GradientFree(struct gradient *grad);
 extern void GrowBufferAdd(GrowBuf *gb, int ch);
 extern void GrowBufferAddStr(GrowBuf *gb, char *str);
+extern void GuidelineSetFree(GuidelineSet *gl);
 extern void ImageListsFree(ImageList *imgs);
 extern void JstfLangFree(struct jstf_lang *jl);
 extern void JustifyFree(Justify *just);
