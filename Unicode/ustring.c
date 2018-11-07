@@ -265,19 +265,20 @@ unichar_t *uc_strstrmatch(const unichar_t *longer, const char *substr) {
     long ch1, ch2;
     const unichar_t *lpt, *str1; const unsigned char *str2;
 
+    if ( longer==NULL || substr==NULL )
+	return( NULL );
+
     for ( lpt=longer; *lpt!='\0'; ++lpt ) {
 	str1 = lpt; str2 = (unsigned char *) substr;
 	for (;;) {
 	    ch1 = *str1++; ch2 = *str2++ ;
-	    ch1 = tolower(ch1);
-	    ch2 = tolower(ch2);
 	    if ( ch2=='\0' )
-return((unichar_t *) lpt);
-	    if ( ch1!=ch2 )
-	break;
+		return( (unichar_t *)(lpt) );
+	    if ( ch1>=FF_UTYPE_MAXC || tolower(ch1)!=tolower(ch2) )
+		break;
 	}
     }
-return( NULL );
+    return( NULL );
 }
 
 unichar_t *u_strstrmatch(const unichar_t *longer, const unichar_t *substr) {
@@ -300,45 +301,64 @@ return( NULL );
 }
 
 unichar_t *u_copyn(const unichar_t *pt, long n) {
+/* Copy n chars of input string to a new res string. */
     unichar_t *res;
 
-    if ( pt && ++n>0 ) {
+    /* verify input valid for pt, and n>=0 and n+1>0 */
+    if ( pt==NULL || ++n<=0 )
+	return( NULL );
+
 #ifdef MEMORY_MASK
-	if ( n>MEMORY_MASK/sizeof(unichar_t) )
-	    n = MEMORY_MASK/sizeof(unichar_t);
+    if ( n>MEMORY_MASK/sizeof(unichar_t) )
+	n = MEMORY_MASK/sizeof(unichar_t);
 #endif
-	if ( (res=(unichar_t *)(malloc(n*sizeof(unichar_t)))) ) {
-	    if ( (--n) ) memcpy(res,pt,n*sizeof(unichar_t));
-	    res[n] = 0;
-	    return( res );
-	}
-    }
-    return( NULL );
+
+    res = (unichar_t *)(malloc(n*sizeof(unichar_t)));
+    if ( res==NULL )
+	return( NULL );
+
+    if ( (--n) )
+	memcpy(res,pt,n*sizeof(unichar_t));
+    res[n] = 0;
+    return( res );
 }
 
 unichar_t *u_copynallocm(const unichar_t *pt, long n, long m) {
-/* Alloc space for m unichar chars and copy n unichar chars */
+/* Alloc a new string of length m, and copy n chars. */
     unichar_t *res;
 
-    if ( pt && ++n>0 && ++m>0 && m>=n ) {
+    /* verify pt!=NULL, n>=0 && n+1>0, m>=0 && m+1>0 */
+    if ( pt==NULL || ++n<=0 || ++m<=0 || n>m )
+	return( NULL );
+
 #ifdef MEMORY_MASK
-	if ( n>MEMORY_MASK/sizeof(unichar_t) )
-	    n = MEMORY_MASK/sizeof(unichar_t);
-#endif
-	if ( (res=(unichar_t *)(calloc(m,sizeof(unichar_t)))) ) {
-	    if ( (--n) ) memcpy(res,pt,n*sizeof(unichar_t));
-	    return( res );
+    if ( m>MEMORY_MASK/sizeof(unichar_t) ) {
+	m = MEMORY_MASK/sizeof(unichar_t);
+	if ( n>m )
+	    n = m;
 	}
-    }
-    return( NULL );
+#endif
+
+    res=(unichar_t *)(calloc(m,sizeof(unichar_t)));
+    if ( res==NULL )
+	return( NULL );
+
+    if ( (--n) )
+	memcpy(res,pt,n*sizeof(unichar_t));
+    return( res );
 }
 
 unichar_t *u_copy(const unichar_t *pt) {
 /* Copy unichar_t string and if error, return( "" ). */
-    long n;
+    unichar_t *res;
+    register long n;
 
-    if ( pt && (n=u_strlen(pt))>0 )
-	return( u_copyn(pt,n) );
+    /* verify pt and n>=0, if n==0 use calloc below. */
+    if ( pt!=NULL && (n=u_strlen(pt))>0 ) {
+	res = u_copyn(pt,n);
+	if ( res!=NULL )
+	    return( res );
+    }
 
     return( calloc(1,sizeof(unichar_t)) );
 }
@@ -358,17 +378,19 @@ return( u_copy( s1 ));
 return( pt );
 }
 
-unichar_t *uc_copyn(const char *pt, int n) {
+unichar_t *uc_copyn(const char *pt,int n) {
 /* Copy n unsigned chars{0..255} to a unichar_t type */
 /* string. If not printable, return an empty string. */
     unichar_t *res, *rpt, t;
 
-    if ( pt && ++n>0 ) {
+    /* verify input valid for pt, and n>=0 and n+1>0 */
+    if ( pt!=NULL && ++n>0 ) {
 #ifdef MEMORY_MASK
 	if ( n>MEMORY_MASK/sizeof(unichar_t) )
 	    n = MEMORY_MASK/sizeof(unichar_t);
 #endif
-	if ( (res=rpt=(unichar_t *)(malloc(n*sizeof(unichar_t)))) ) {
+	res = rpt = (unichar_t *)(malloc(n*sizeof(unichar_t)));
+	if ( res!=NULL ) {
 	    if ( (--n) ) {
 		while ( --n>=0 ) {
 		    t = (unichar_t)(*(unsigned char *) pt++);
@@ -385,25 +407,28 @@ unichar_t *uc_copyn(const char *pt, int n) {
 unichar_t *uc_copy(const char *pt) {
 /* Copy unsigned char{0..255} string to unichar type */
 /* string. If not printable, return an empty string. */
-    int n;
+    register int n;
 
-    if ( pt && (n=strlen(pt))>0 )
+    /* verify pt and n>=0, if n==0 use calloc below. */
+    if ( pt!=NULL && (n=strlen(pt))>0 )
 	return( uc_copyn(pt,n) );
 
     return( calloc(1,sizeof(unichar_t)) );
 }
 
-char *cu_copyn(const unichar_t *pt, int n) {
-/* Copy unichar string to str. Assume values 0..255. */
+char *cu_copyn(const unichar_t *pt,int n) {
+/* Copy unichar string to res. Assume values 0..255. */
     char *res, *rpt;
     unichar_t t;
 
-    if ( pt && ++n>0 ) {
+    /* verify input valid for pt, and n>=0 and n+1>0 */
+    if ( pt!=NULL && ++n>0 ) {
 #ifdef MEMORY_MASK
-	if ( n>MEMORY_MASK )
-	    n = MEMORY_MASK;
+	if ( n>MEMORY_MASK/sizeof(unichar_t) )
+	    n = MEMORY_MASK/sizeof(unichar_t);
 #endif
-	if ( (res=rpt=malloc(n)) ) {
+	res = rpt = (char *)(malloc(n));
+	if ( res!=NULL ) {
 	    if ( (--n) ) {
 		while ( --n>=0 ) {
 		    if ( (t=*pt++)>0xff ) {
@@ -424,9 +449,10 @@ char *cu_copy(const unichar_t *pt) {
 /* Copy unichar to char string, assume values 0..255 */
 /* and if error, return( "" ) which can be made free */
     char *res;
-    int n;
+    register int n;
 
-    if ( pt && (n=u_strlen(pt))>0 )
+    /* verify pt and n>=0, if n==0 use calloc below. */
+    if ( pt!=NULL && (n=u_strlen(pt))>0 )
 	if ( (res=cu_copyn(pt,n))!=NULL )
 	    return( res );
 
@@ -487,29 +513,40 @@ unsigned long u_strtoul(const unichar_t *str, unichar_t **ptr, int base) {
 return( val );
 }
 
-unichar_t *cu_strstartmatch(const char *key,const unichar_t *str) {
-    if ( key && str ) {
-	while( *key ) {
-	    if(tolower(*key) != tolower(*str))
-return 0;
-	    key++;
-	    str++;
+unichar_t *cu_strstartmatch(const char *initial, const unichar_t *full) {
+/* Check if unichar_t string full starts with string */
+/* initial. If yes, point to the next unichar_t char */
+/* which is location full[strlen(initial)] otherwise */
+/* return( 0 ) on fail. Tests are done in lowercase. */
+/* NOTE: Comparisons use libgunicode unicode tables. */
+    if ( initial && full ) {
+	while( *initial ) {
+	    if( tolower((const unsigned char)(*initial++))!=tolower(*full++) )
+		return( 0 );
 	}
     }
-return (unichar_t *)str;
+    return( (unichar_t *)(full) );
 }
 
 unichar_t *u_strstartmatch(const unichar_t *initial, const unichar_t *full) {
-    int ch1, ch2;
-    for (;;) {
-	ch1 = *initial++; ch2 = *full++ ;
-	if ( ch1=='\0' )
-return( (unichar_t *) full );
-	ch1 = tolower(ch1);
-	ch2 = tolower(ch2);
-	if ( ch1!=ch2 || ch1=='\0' )
-return(NULL);
+/* This test is similar to cu_strstartmatch() but is */
+/* a unichar_t initial to unichar_t full comparison, */
+/* therefore we need to limit the char range between */
+/* 0...<FF_UTYPE_MAXC for lowercase to lowercase and */
+/* do char to char equivalent tests for other chars. */
+/* NOTE: Comparisons use libgunicode unicode tables. */
+    if ( initial && full ) {
+	while( *initial ) {
+	    if( (unsigned long)(*initial)<FF_UTYPE_MAXC) {
+		if ( tolower(*initial)!=tolower(*full) ) /* use tables */
+		    return( NULL );
+	    } else
+		if( *initial!=*full || *initial==-1 ) /* beyond tables */
+		    return( NULL );
+	    initial++; full++;
+	}
     }
+    return( (unichar_t *)(full) );
 }
 
 char *u_to_c(const unichar_t *ubuf) {
@@ -855,7 +892,7 @@ long utf8_strlen(const char *utf8_str) {
     long len = 0;
 
     while ( utf8_ildb(&utf8_str)>0 && ++len>0 );
-    return( len < 0 ? -1 : len );
+    return( len );
 }
 
 long utf82u_strlen(const char *utf8_str) {
@@ -866,7 +903,7 @@ long utf82u_strlen(const char *utf8_str) {
     while ( (ch = utf8_ildb(&utf8_str))>0 && ++len>0 )
 	if ( ch>=0x10000 )
 	    ++len;
-    return( len < 0 ? -1 : len );
+    return( len );
 }
 
 void utf8_strncpy(register char *to, const char *from, int len) {
@@ -941,33 +978,49 @@ return( newcr );
 }
 
 int AllAscii(const char *txt) {
-    for ( ; *txt!='\0'; ++txt ) {
-	if ( *txt=='\t' || *txt=='\n' || *txt=='\r' )
+/* Verify string only All Ascii printable characters */
+    register unsigned char ch;
+
+    if ( txt==NULL )
+	return( false );
+
+    for ( ; (ch=(unsigned char) *txt)!='\0'; ++txt ) {
+	if ( (ch>=' ' && ch<'\177' ) || \
+	     ch=='\t' || ch=='\n' || ch=='\r' )
 	    /* All right */;
-	else if ( *txt<' ' || *txt>='\177' )
-return( false );
+	else
+	    return( false );
     }
-return( true );
+    return( true );
 }
 
 int uAllAscii(const unichar_t *txt) {
+/* Verify string only All Ascii printable characters */
+
+    if ( txt==NULL )
+	return( false );
+
     for ( ; *txt!='\0'; ++txt ) {
-	if ( *txt=='\t' || *txt=='\n' || *txt=='\r' )
+	if ( (*txt>=' ' && *txt<'\177' ) || \
+	     *txt=='\t' || *txt=='\n' || *txt=='\r' )
 	    /* All right */;
-	else if ( *txt<' ' || *txt>='\177' )
-return( false );
+	else
+	    return( false );
     }
-return( true );
+    return( true );
 }
 
 char* chomp( char* line ) {
-    if( !line )
-	return line;
-    if ( line[strlen(line)-1]=='\n' )
-	line[strlen(line)-1] = '\0';
-    if ( line[strlen(line)-1]=='\r' )
-	line[strlen(line)-1] = '\0';
-    return line;
+/* Chomp-off the last '\r' '\n' in string (not utf8) */
+    int x;
+
+    if( line==NULL || (x=strlen(line)-1)<0 )
+	return( line );
+    if ( line[x]=='\n' )
+	line[x--] = '\0';
+    if ( x>=0 && line[x]=='\r' )
+	line[x] = '\0';
+    return( line );
 }
 
 char *copytolower(const char *input)
