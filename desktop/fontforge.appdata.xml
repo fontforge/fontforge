@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright 2014 Joe Da Silva <digital@joescat.com> -->
 <application>
- <id type="desktop">fontforge.desktop</id>
+ <id type="desktop">fontforge</id>
+ ​<launchable type="desktop-id">fontforge.desktop</launchable>
  <licence>CC0</licence>
  <description>
   <p xml:lang="C">
@@ -87,4 +88,11 @@
  </screenshots>
   <url type="homepage">https://github.com/fontforge/fontforge</url>
  <updatecontact>fontforge-devel@lists.sourceforge.net</updatecontact>
+
+ <content_rating type="oars-1.1" />
+
+ <releases>
+    <release version="20170731" date="2017-07-31" />
+    <release version="20161005" date="2016-10-05" />
+ </releases>
 </application>
