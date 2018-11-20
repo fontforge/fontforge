@@ -378,6 +378,228 @@ static void xmlSetPropPrintf(xmlNodePtr target, const xmlChar * name, char * for
 }
 
 /* ************************************************************************** */
+/* ****************************    PList Output    ************************** */
+/* ************************************************************************** */
+
+int count_occurrence(const char* big, const char* little) {
+    const char * tmp = big;
+    int output = 0;
+    while (tmp = strstr(tmp, little)) { output ++; tmp ++; }
+    return output;
+}
+
+static char* normalizeToASCII(char *str) {
+    if ( str!=NULL && !AllAscii(str))
+        return StripToASCII(str);
+    else
+        return copy(str);
+}
+
+xmlDocPtr PlistInit() {
+    // Some of this code is pasted from libxml2 samples.
+    xmlDocPtr doc = NULL;
+    xmlNodePtr root_node = NULL, dict_node = NULL;
+    xmlDtdPtr dtd = NULL;
+    
+    char buff[256];
+    int i, j;
+
+    LIBXML_TEST_VERSION;
+
+    doc = xmlNewDoc(BAD_CAST "1.0");
+    dtd = xmlCreateIntSubset(doc, BAD_CAST "plist", BAD_CAST "-//Apple Computer//DTD PLIST 1.0//EN", BAD_CAST "http://www.apple.com/DTDs/PropertyList-1.0.dtd");
+    root_node = xmlNewNode(NULL, BAD_CAST "plist");
+    xmlSetProp(root_node, BAD_CAST "version", BAD_CAST "1.0");
+    xmlDocSetRootElement(doc, root_node);
+    return doc;
+}
+
+static void PListAddInteger(xmlNodePtr parent, const char *key, int value) {
+    xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key);
+    xmlNewChildPrintf(parent, NULL, BAD_CAST "integer", "%d", value);
+}
+
+static void PListAddReal(xmlNodePtr parent, const char *key, double value) {
+    xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key);
+    xmlNewChildPrintf(parent, NULL, BAD_CAST "real", "%g", value);
+}
+
+static void PListAddIntegerOrReal(xmlNodePtr parent, const char *key, double value) {
+    if (value == floor(value)) PListAddInteger(parent, key, (int)value);
+    else PListAddReal(parent, key, value);
+}
+
+static void PListAddBoolean(xmlNodePtr parent, const char *key, int value) {
+    xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key);
+    xmlNewChild(parent, NULL, BAD_CAST (value ? "true": "false"), NULL);
+}
+
+static void PListAddDate(xmlNodePtr parent, const char *key, time_t timestamp) {
+/* openTypeHeadCreated = string format as \"YYYY/MM/DD HH:MM:SS\".	*/
+/* \"YYYY/MM/DD\" is year/month/day. The month is in the range 1-12 and	*/
+/* the day is in the range 1-end of month.				*/
+/*  \"HH:MM:SS\" is hour:minute:second. The hour is in the range 0:23.	*/
+/* Minutes and seconds are in the range 0-59.				*/
+    struct tm *tm = gmtime(&timestamp);
+    xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key);
+    xmlNewChildPrintf(parent, NULL, BAD_CAST "string",
+            "%4d/%02d/%02d %02d:%02d:%02d", tm->tm_year+1900, tm->tm_mon+1,
+	    tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+}
+
+void PListAddString(xmlNodePtr parent, const char *key, const char *value) {
+    if ( value==NULL ) value = "";
+    xmlNodePtr keynode = xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key); // "<key>%s</key>" key
+#ifdef ESCAPE_LIBXML_STRINGS
+    size_t main_size = strlen(value) +
+                       (count_occurrence(value, "<") * (strlen("&lt")-strlen("<"))) +
+                       (count_occurrence(value, ">") * (strlen("&gt")-strlen("<"))) +
+                       (count_occurrence(value, "&") * (strlen("&amp")-strlen("<")));
+    char *tmpstring = malloc(main_size + 1); tmpstring[0] = '\0';
+    off_t pos1 = 0;
+    while ( *value ) {
+	if ( *value=='<' ) {
+	    strcat(tmpstring, "&lt;");
+            pos1 += strlen("&lt;");
+	} else if ( *value=='>' ) {
+	    strcat(tmpstring, "&gt;");
+            pos1 += strlen("&gt;");
+	} else if ( *value == '&' ) {
+	    strcat(tmpstring, "&amp;");
+	    pos1 += strlen("&amp;");
+	} else {
+	    tmpstring[pos1++] = *value;
+            tmpstring[pos1] = '\0';
+        }
+	++value;
+    }
+    xmlNodePtr valnode = xmlNewChild(parent, NULL, BAD_CAST "string", tmpstring); // "<string>%s</string>" tmpstring
+#else
+    xmlNodePtr valnode = xmlNewTextChild(parent, NULL, BAD_CAST "string", value); // "<string>%s</string>" tmpstring
+#endif
+}
+
+static void PListAddNameString(xmlNodePtr parent, const char *key, const SplineFont *sf, int strid) {
+    char *value=NULL, *nonenglish=NULL, *freeme=NULL;
+    struct ttflangname *nm;
+
+    for ( nm=sf->names; nm!=NULL; nm=nm->next ) {
+	if ( nm->names[strid]!=NULL ) {
+	    nonenglish = nm->names[strid];
+	    if ( nm->lang == 0x409 ) {
+		value = nm->names[strid];
+    break;
+	    }
+	}
+    }
+    if ( value==NULL && strid==ttf_version && sf->version!=NULL ) {
+	char versionStr[6];
+	paddedVersionStr(sf->version, versionStr);
+	value = freeme = strconcat("Version ", versionStr);
+    }
+    if ( value==NULL && strid==ttf_copyright && sf->copyright!=NULL )
+	value = sf->copyright;
+    if ( value==NULL )
+	value=nonenglish;
+    if ( value!=NULL ) {
+	PListAddString(parent,key,value);
+    }
+    free(freeme);
+}
+
+static void PListAddIntArray(xmlNodePtr parent, const char *key, const char *entries, int len) {
+    int i;
+    xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key);
+    xmlNodePtr arrayxml = xmlNewChild(parent, NULL, BAD_CAST "array", NULL);
+    for ( i=0; i<len; ++i ) {
+      xmlNewChildInteger(arrayxml, NULL, BAD_CAST "integer", entries[i]);
+    }
+}
+
+static void PListAddPrivateArray(xmlNodePtr parent, const char *key, struct psdict *private) {
+    char *value;
+    if ( private==NULL )
+return;
+    value = PSDictHasEntry(private,key);
+    if ( value==NULL )
+return;
+    xmlNewChildPrintf(parent, NULL, BAD_CAST "key", "postscript%s", key); // "<key>postscript%s</key>" key
+    xmlNodePtr arrayxml = xmlNewChild(parent, NULL, BAD_CAST "array", NULL); // "<array>"
+    while ( *value==' ' || *value=='[' ) ++value;
+    for (;;) {
+	int havedot=0;
+	int skipping=0;
+        size_t tmpsize = 8;
+        char * tmp = malloc(tmpsize);
+        off_t tmppos = 0;
+	while ( *value!=']' && *value!='\0' && *value!=' ' && tmp!=NULL) {
+            // We now deal with non-integers as necessary.
+            if (*value=='.') {
+              if (havedot) skipping = true;
+              else havedot = 1;
+            }
+	    if (skipping)
+		++value;
+	    else
+                tmp[tmppos++] = *value++;
+            if (tmppos == tmpsize) { tmpsize *= 2; tmp = realloc(tmp, tmpsize); }
+	}
+        tmp[tmppos] = '\0';
+        if (tmp != NULL) {
+          if (havedot)
+            xmlNewChildString(arrayxml, NULL, BAD_CAST "real", BAD_CAST tmp); // "<real>%s</real>" tmp
+          else
+            xmlNewChildString(arrayxml, NULL, BAD_CAST "integer", BAD_CAST tmp); // "<integer>%s</integer>" tmp
+          free(tmp); tmp = NULL;
+        }
+	while ( *value==' ' ) ++value;
+	if ( *value==']' || *value=='\0' ) break;
+    }
+    // "</array>"
+}
+
+static void PListAddPrivateThing(xmlNodePtr parent, const char *key, struct psdict *private, char *type) {
+    char *value;
+
+    if ( private==NULL ) return;
+    value = PSDictHasEntry(private,key);
+    if ( value==NULL ) return;
+
+    while ( *value==' ' || *value=='[' ) ++value;
+
+    xmlNewChildPrintf(parent, NULL, BAD_CAST "key", "postscript%s", key); // "<key>postscript%s</key>" key
+    while ( *value==' ' || *value=='[' ) ++value;
+    {
+	int havedot=0;
+	int skipping=0;
+        size_t tmpsize = 8;
+        char * tmp = malloc(tmpsize);
+        off_t tmppos = 0;
+	while ( *value!=']' && *value!='\0' && *value!=' ' && tmp!=NULL) {
+            // We now deal with non-integers as necessary.
+            if (*value=='.') {
+              if (havedot) skipping = true;
+              else havedot = 1;
+            }
+	    if (skipping)
+		++value;
+	    else
+                tmp[tmppos++] = *value++;
+            if (tmppos == tmpsize) { tmpsize *= 2; tmp = realloc(tmp, tmpsize); }
+	}
+        tmp[tmppos] = '\0';
+        if (tmp != NULL) {
+          if (havedot)
+            xmlNewChildString(parent, NULL, BAD_CAST "real", BAD_CAST tmp); // "<real>%s</real>" tmp
+          else
+            xmlNewChildString(parent, NULL, BAD_CAST "integer", BAD_CAST tmp); // "<integer>%s</integer>" tmp
+          free(tmp); tmp = NULL;
+        }
+	while ( *value==' ' ) ++value;
+    }
+}
+
+/* ************************************************************************** */
 /* *************************   Python lib Output    ************************* */
 /* ************************************************************************** */
 #ifndef _NO_PYTHON
@@ -617,7 +839,7 @@ static int refcomp(const void *_r1, const void *_r2) {
 return( strcmp( ref1->sc->name, ref2->sc->name) );
 }
 
-real realMod(real dividend, real divisor) {
+real RealMod(real dividend, real divisor) {
 	real remainder = dividend;
 	while (remainder >= divisor)
 		remainder -= divisor;
@@ -681,12 +903,12 @@ xmlNodePtr _GlifToXML(const SplineChar *sc, int layer, int version) {
 		for ( gl=sc->layers[layer].guidelines; gl != NULL; gl = gl->next ) {
 		    xmlNodePtr guidelinexml = xmlNewChild(topglyphxml, NULL, BAD_CAST "guideline", NULL);
 		    // gl->flags & 0x10 indicates whether to use the abbreviated format in the UFO specification if possible.
-		    if (realMod(gl->angle, 180) || !(gl->flags & 0x10))
+		    if (RealMod(gl->angle, 180) || !(gl->flags & 0x10))
 		        xmlSetPropPrintf(guidelinexml, BAD_CAST "x", "%g", gl->point.x);
-		    if (realMod(gl->angle + 90, 180) || !(gl->flags & 0x10))
+		    if (RealMod(gl->angle + 90, 180) || !(gl->flags & 0x10))
 		        xmlSetPropPrintf(guidelinexml, BAD_CAST "y", "%g", gl->point.y);
-		    if (realMod(gl->angle, 90) || !(gl->flags & 0x10))
-		        xmlSetPropPrintf(guidelinexml, BAD_CAST "angle", "%g", realMod(gl->angle + 360, 360));
+		    if (RealMod(gl->angle, 90) || !(gl->flags & 0x10))
+		        xmlSetPropPrintf(guidelinexml, BAD_CAST "angle", "%g", RealMod(gl->angle + 360, 360));
 		    if (gl->name != NULL)
 		        xmlSetPropPrintf(guidelinexml, BAD_CAST "name", "%s", gl->name);
 		    if (gl->flags & 0x20) // color is set. Repack RGBA from a uint32 to a string with 0-1 scaled values comma-joined.
@@ -701,33 +923,36 @@ xmlNodePtr _GlifToXML(const SplineChar *sc, int layer, int version) {
 		    // "<guideline/>\n"
 		    
 		}
-		// Handle the anchors.
-		for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
-		    int ismark = (ap->type==at_mark || ap->type==at_centry);
-		    xmlNodePtr anchorxml = xmlNewChild(topglyphxml, NULL, BAD_CAST "anchor", NULL);
-		    xmlSetPropPrintf(anchorxml, BAD_CAST "x", "%g", ap->me.x);
-		    xmlSetPropPrintf(anchorxml, BAD_CAST "y", "%g", ap->me.y);
-		    xmlSetPropPrintf(anchorxml, BAD_CAST "name", "%s%s", ismark ? "_" : "", ap->anchor->name);
-		    // "<anchor x=\"%g\" y=\"%g\" name=\"%s%s\"/>" ap->me.x ap->me.y ap->anchor->name
-		}
+		// Handle the anchors. Put global anchors only in the foreground layer.
+		if (layer == ly_fore)
+			for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
+			    int ismark = (ap->type==at_mark || ap->type==at_centry);
+			    xmlNodePtr anchorxml = xmlNewChild(topglyphxml, NULL, BAD_CAST "anchor", NULL);
+			    xmlSetPropPrintf(anchorxml, BAD_CAST "x", "%g", ap->me.x);
+			    xmlSetPropPrintf(anchorxml, BAD_CAST "y", "%g", ap->me.y);
+			    xmlSetPropPrintf(anchorxml, BAD_CAST "name", "%s%s", ismark ? "_" : "", ap->anchor->name);
+			    // "<anchor x=\"%g\" y=\"%g\" name=\"%s%s\"/>" ap->me.x ap->me.y ap->anchor->name
+			}
 	}
+    if (sc->comment) PListAddString(topglyphxml, "note", sc->comment);
     if ( sc->layers[layer].refs!=NULL || sc->layers[layer].splines!=NULL ) {
       xmlNodePtr outlinexml = xmlNewChild(topglyphxml, NULL, BAD_CAST "outline", NULL);
 	// "<outline>"
 	// Distinguish UFO 3 from UFO 2.
 	if (version < 3) {
-		for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
-		    int ismark = (ap->type==at_mark || ap->type==at_centry);
-		    xmlNodePtr contourxml = xmlNewChild(outlinexml, NULL, BAD_CAST "contour", NULL);
-		    // "<contour>"
-		    xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
-		    xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", ap->me.x);
-		    xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", ap->me.y);
-		    xmlSetPropPrintf(pointxml, BAD_CAST "type", "move");
-		    xmlSetPropPrintf(pointxml, BAD_CAST "name", "%s%s", ismark ? "_" : "", ap->anchor->name);
-		    // "<point x=\"%g\" y=\"%g\" type=\"move\" name=\"%s%s\"/>" ap->me.x ap->me.y (ismark ? "_" : "") ap->anchor->name
-		    // "</contour>"
-		}
+		if (layer == ly_fore)
+			for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
+			    int ismark = (ap->type==at_mark || ap->type==at_centry);
+			    xmlNodePtr contourxml = xmlNewChild(outlinexml, NULL, BAD_CAST "contour", NULL);
+			    // "<contour>"
+			    xmlNodePtr pointxml = xmlNewChild(contourxml, NULL, BAD_CAST "point", NULL);
+			    xmlSetPropPrintf(pointxml, BAD_CAST "x", "%g", ap->me.x);
+			    xmlSetPropPrintf(pointxml, BAD_CAST "y", "%g", ap->me.y);
+			    xmlSetPropPrintf(pointxml, BAD_CAST "type", "move");
+			    xmlSetPropPrintf(pointxml, BAD_CAST "name", "%s%s", ismark ? "_" : "", ap->anchor->name);
+			    // "<point x=\"%g\" y=\"%g\" type=\"move\" name=\"%s%s\"/>" ap->me.x ap->me.y (ismark ? "_" : "") ap->anchor->name
+			    // "</contour>"
+			}
 	}
 	for ( spl=sc->layers[layer].splines; spl!=NULL; spl=spl->next ) {
             xmlNodePtr contourxml = xmlNewChild(outlinexml, NULL, BAD_CAST "contour", NULL);
@@ -942,72 +1167,6 @@ void clear_cached_ufo_point_starts(SplineFont * sf) {
   }
 }
 
-xmlDocPtr PlistInit() {
-    // Some of this code is pasted from libxml2 samples.
-    xmlDocPtr doc = NULL;
-    xmlNodePtr root_node = NULL, dict_node = NULL;
-    xmlDtdPtr dtd = NULL;
-    
-    char buff[256];
-    int i, j;
-
-    LIBXML_TEST_VERSION;
-
-    doc = xmlNewDoc(BAD_CAST "1.0");
-    dtd = xmlCreateIntSubset(doc, BAD_CAST "plist", BAD_CAST "-//Apple Computer//DTD PLIST 1.0//EN", BAD_CAST "http://www.apple.com/DTDs/PropertyList-1.0.dtd");
-    root_node = xmlNewNode(NULL, BAD_CAST "plist");
-    xmlSetProp(root_node, BAD_CAST "version", BAD_CAST "1.0");
-    xmlDocSetRootElement(doc, root_node);
-    return doc;
-}
-
-static void PListAddInteger(xmlNodePtr parent, const char *key, int value) {
-    xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key);
-    xmlNewChildPrintf(parent, NULL, BAD_CAST "integer", "%d", value);
-}
-
-static void PListAddReal(xmlNodePtr parent, const char *key, double value) {
-    xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key);
-    xmlNewChildPrintf(parent, NULL, BAD_CAST "real", "%g", value);
-}
-
-static void PListAddIntegerOrReal(xmlNodePtr parent, const char *key, double value) {
-    if (value == floor(value)) PListAddInteger(parent, key, (int)value);
-    else PListAddReal(parent, key, value);
-}
-
-static void PListAddBoolean(xmlNodePtr parent, const char *key, int value) {
-    xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key);
-    xmlNewChild(parent, NULL, BAD_CAST (value ? "true": "false"), NULL);
-}
-
-static void PListAddDate(xmlNodePtr parent, const char *key, time_t timestamp) {
-/* openTypeHeadCreated = string format as \"YYYY/MM/DD HH:MM:SS\".	*/
-/* \"YYYY/MM/DD\" is year/month/day. The month is in the range 1-12 and	*/
-/* the day is in the range 1-end of month.				*/
-/*  \"HH:MM:SS\" is hour:minute:second. The hour is in the range 0:23.	*/
-/* Minutes and seconds are in the range 0-59.				*/
-    struct tm *tm = gmtime(&timestamp);
-    xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key);
-    xmlNewChildPrintf(parent, NULL, BAD_CAST "string",
-            "%4d/%02d/%02d %02d:%02d:%02d", tm->tm_year+1900, tm->tm_mon+1,
-	    tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
-}
-
-int count_occurrence(const char* big, const char* little) {
-    const char * tmp = big;
-    int output = 0;
-    while (tmp = strstr(tmp, little)) { output ++; tmp ++; }
-    return output;
-}
-
-static char* normalizeToASCII(char *str) {
-    if ( str!=NULL && !AllAscii(str))
-        return StripToASCII(str);
-    else
-        return copy(str);
-}
-
 static char* fetchTTFAttribute(const SplineFont *sf, int strid) {
     char *value=NULL, *nonenglish=NULL;
     struct ttflangname *nm;
@@ -1025,158 +1184,6 @@ static char* fetchTTFAttribute(const SplineFont *sf, int strid) {
     return value;
 }
 
-void PListAddString(xmlNodePtr parent, const char *key, const char *value) {
-    if ( value==NULL ) value = "";
-    xmlNodePtr keynode = xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key); // "<key>%s</key>" key
-#ifdef ESCAPE_LIBXML_STRINGS
-    size_t main_size = strlen(value) +
-                       (count_occurrence(value, "<") * (strlen("&lt")-strlen("<"))) +
-                       (count_occurrence(value, ">") * (strlen("&gt")-strlen("<"))) +
-                       (count_occurrence(value, "&") * (strlen("&amp")-strlen("<")));
-    char *tmpstring = malloc(main_size + 1); tmpstring[0] = '\0';
-    off_t pos1 = 0;
-    while ( *value ) {
-	if ( *value=='<' ) {
-	    strcat(tmpstring, "&lt;");
-            pos1 += strlen("&lt;");
-	} else if ( *value=='>' ) {
-	    strcat(tmpstring, "&gt;");
-            pos1 += strlen("&gt;");
-	} else if ( *value == '&' ) {
-	    strcat(tmpstring, "&amp;");
-	    pos1 += strlen("&amp;");
-	} else {
-	    tmpstring[pos1++] = *value;
-            tmpstring[pos1] = '\0';
-        }
-	++value;
-    }
-    xmlNodePtr valnode = xmlNewChild(parent, NULL, BAD_CAST "string", tmpstring); // "<string>%s</string>" tmpstring
-#else
-    xmlNodePtr valnode = xmlNewTextChild(parent, NULL, BAD_CAST "string", value); // "<string>%s</string>" tmpstring
-#endif
-}
-
-static void PListAddNameString(xmlNodePtr parent, const char *key, const SplineFont *sf, int strid) {
-    char *value=NULL, *nonenglish=NULL, *freeme=NULL;
-    struct ttflangname *nm;
-
-    for ( nm=sf->names; nm!=NULL; nm=nm->next ) {
-	if ( nm->names[strid]!=NULL ) {
-	    nonenglish = nm->names[strid];
-	    if ( nm->lang == 0x409 ) {
-		value = nm->names[strid];
-    break;
-	    }
-	}
-    }
-    if ( value==NULL && strid==ttf_version && sf->version!=NULL ) {
-	char versionStr[6];
-	paddedVersionStr(sf->version, versionStr);
-	value = freeme = strconcat("Version ", versionStr);
-    }
-    if ( value==NULL && strid==ttf_copyright && sf->copyright!=NULL )
-	value = sf->copyright;
-    if ( value==NULL )
-	value=nonenglish;
-    if ( value!=NULL ) {
-	PListAddString(parent,key,value);
-    }
-    free(freeme);
-}
-
-static void PListAddIntArray(xmlNodePtr parent, const char *key, const char *entries, int len) {
-    int i;
-    xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key);
-    xmlNodePtr arrayxml = xmlNewChild(parent, NULL, BAD_CAST "array", NULL);
-    for ( i=0; i<len; ++i ) {
-      xmlNewChildInteger(arrayxml, NULL, BAD_CAST "integer", entries[i]);
-    }
-}
-
-static void PListAddPrivateArray(xmlNodePtr parent, const char *key, struct psdict *private) {
-    char *value;
-    if ( private==NULL )
-return;
-    value = PSDictHasEntry(private,key);
-    if ( value==NULL )
-return;
-    xmlNewChildPrintf(parent, NULL, BAD_CAST "key", "postscript%s", key); // "<key>postscript%s</key>" key
-    xmlNodePtr arrayxml = xmlNewChild(parent, NULL, BAD_CAST "array", NULL); // "<array>"
-    while ( *value==' ' || *value=='[' ) ++value;
-    for (;;) {
-	int havedot=0;
-	int skipping=0;
-        size_t tmpsize = 8;
-        char * tmp = malloc(tmpsize);
-        off_t tmppos = 0;
-	while ( *value!=']' && *value!='\0' && *value!=' ' && tmp!=NULL) {
-            // We now deal with non-integers as necessary.
-            if (*value=='.') {
-              if (havedot) skipping = true;
-              else havedot = 1;
-            }
-	    if (skipping)
-		++value;
-	    else
-                tmp[tmppos++] = *value++;
-            if (tmppos == tmpsize) { tmpsize *= 2; tmp = realloc(tmp, tmpsize); }
-	}
-        tmp[tmppos] = '\0';
-        if (tmp != NULL) {
-          if (havedot)
-            xmlNewChildString(arrayxml, NULL, BAD_CAST "real", BAD_CAST tmp); // "<real>%s</real>" tmp
-          else
-            xmlNewChildString(arrayxml, NULL, BAD_CAST "integer", BAD_CAST tmp); // "<integer>%s</integer>" tmp
-          free(tmp); tmp = NULL;
-        }
-	while ( *value==' ' ) ++value;
-	if ( *value==']' || *value=='\0' ) break;
-    }
-    // "</array>"
-}
-
-static void PListAddPrivateThing(xmlNodePtr parent, const char *key, struct psdict *private, char *type) {
-    char *value;
-
-    if ( private==NULL ) return;
-    value = PSDictHasEntry(private,key);
-    if ( value==NULL ) return;
-
-    while ( *value==' ' || *value=='[' ) ++value;
-
-    xmlNewChildPrintf(parent, NULL, BAD_CAST "key", "postscript%s", key); // "<key>postscript%s</key>" key
-    while ( *value==' ' || *value=='[' ) ++value;
-    {
-	int havedot=0;
-	int skipping=0;
-        size_t tmpsize = 8;
-        char * tmp = malloc(tmpsize);
-        off_t tmppos = 0;
-	while ( *value!=']' && *value!='\0' && *value!=' ' && tmp!=NULL) {
-            // We now deal with non-integers as necessary.
-            if (*value=='.') {
-              if (havedot) skipping = true;
-              else havedot = 1;
-            }
-	    if (skipping)
-		++value;
-	    else
-                tmp[tmppos++] = *value++;
-            if (tmppos == tmpsize) { tmpsize *= 2; tmp = realloc(tmp, tmpsize); }
-	}
-        tmp[tmppos] = '\0';
-        if (tmp != NULL) {
-          if (havedot)
-            xmlNewChildString(parent, NULL, BAD_CAST "real", BAD_CAST tmp); // "<real>%s</real>" tmp
-          else
-            xmlNewChildString(parent, NULL, BAD_CAST "integer", BAD_CAST tmp); // "<integer>%s</integer>" tmp
-          free(tmp); tmp = NULL;
-        }
-	while ( *value==' ' ) ++value;
-    }
-}
-
 static int UFOOutputMetaInfo(const char *basedir, SplineFont *sf, int version) {
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
@@ -1189,6 +1196,50 @@ static int UFOOutputMetaInfo(const char *basedir, SplineFont *sf, int version) {
     xmlFreeDoc(plistdoc); // Free the memory.
     xmlCleanupParser();
     return true;
+}
+
+static real PointsDistance(BasePoint p0, BasePoint p1) {
+	return sqrt(pow((p1.x - p0.x), 2) + pow((p1.y - p0.y), 2));
+}
+
+static real AngleFromPoints(BasePoint p0, BasePoint p1) {
+	// Handle vertical lines.
+	if (p0.x == p1.x) {
+		if (p0.y < p1.y)
+			return acos(-1)/2;
+		else if (p0.y > p1.y)
+			return 3*acos(-1)/2;
+	}
+	// Handle horizontal lines.
+	if (p0.y == p1.y) {
+		if (p0.x < p1.x)
+			return 0;
+		else if (p0.y > p1.y)
+			return acos(-1);
+	}
+	// Handle majority vertical lines.
+	if (p1.y - p0.y > p1.x - p0.x)
+		return asin((p1.y - p0.y) / PointsDistance(p0, p1));
+	// Handle majority horizontal lines.
+	if (p1.y - p0.y < p1.x - p0.x)
+		return acos((p1.x - p0.x) / PointsDistance(p0, p1));
+	return 0;
+}
+
+static GuidelineSet *SplineToGuideline(SplineFont *sf, SplineSet *ss) {
+	SplinePoint *sp1, *sp2;
+	if (ss == NULL) return NULL;
+	if (ss->first == NULL || ss->last == NULL || ss->first == ss->last)
+	return NULL;
+	GuidelineSet *gl = chunkalloc(sizeof(GuidelineSet));
+	gl->point.x = (ss->first->me.x + ss->last->me.x) / 2;
+	gl->point.y = (ss->first->me.y + ss->last->me.y) / 2;
+	real angle_radians = AngleFromPoints(ss->first->me, ss->last->me);
+	real angle_degrees = 180.0*angle_radians/acos(-1);
+	gl->angle = RealMod(angle_degrees, 360);
+	if (ss->first->name != NULL)
+		gl->name = copy(ss->first->name);
+	return gl;
 }
 
 static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer, int version) {
@@ -1265,7 +1316,7 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer, int
 	PListAddIntegerOrReal(dictnode,"descender",-sf->descent);
     }
     PListAddReal(dictnode,"italicAngle",sf->italicangle);
-    PListAddString(dictnode,"note",sf->comments);
+    if (sf->comments) PListAddString(dictnode,"note",sf->comments);
     PListAddDate(dictnode,"openTypeHeadCreated",sf->creationtime);
     SplineFontFindBounds(sf,&bb);
 
@@ -1400,6 +1451,36 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer, int
     }
     if ( sf->fondname!=NULL )
     PListAddString(dictnode,"macintoshFONDName",sf->fondname);
+    // TODO: Emit guidelines.
+    // If the version is 3 and the grid layer exists, emit a guidelines group.
+    if (version > 2) {
+        xmlNodePtr glkeynode = xmlNewChild(dictnode, NULL, BAD_CAST "key", "guidelines");
+        xmlNodePtr gllistnode = xmlNewChild(dictnode, NULL, BAD_CAST "array", NULL);
+        SplineSet *ss = NULL;
+        for (ss = sf->grid.splines; ss != NULL; ss = ss->next) {
+            // Convert to a standard guideline.
+            GuidelineSet *gl = SplineToGuideline(sf, ss);
+            if (gl) {
+                xmlNodePtr gldictnode = xmlNewChild(gllistnode, NULL, BAD_CAST "dict", NULL);
+                {
+		    // These are figured from splines, so we have a synthetic set of flags.
+		    int glflags = 0x10; // This indicates that we want to omit unnecessary values, which seems to be standard.
+		    // We also output all coordinates if there is a non-zero coordinate.
+		    if (RealMod(gl->angle, 180) || !(glflags & 0x10) || gl->point.x != 0)
+		        PListAddReal(gldictnode, "x", gl->point.x);
+		    if (RealMod(gl->angle + 90, 180) || !(glflags & 0x10) || gl->point.x != 0)
+		        PListAddReal(gldictnode, "y", gl->point.y);
+		    // If x and y are both present, we must add angle.
+		    if (RealMod(gl->angle, 90) || !(glflags & 0x10) || (gl->point.x != 0 && gl->point.y != 0))
+		        PListAddReal(gldictnode, "angle", RealMod(gl->angle + 360, 360));
+		    if (gl->name != NULL)
+		        PListAddString(gldictnode, "name", gl->name);
+                }
+                free(gl);
+                gl = NULL;
+            }
+        }
+    }
     // TODO: Output unrecognized data.
     char *fname = buildname(basedir, "fontinfo.plist"); // Build the file name.
     xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
@@ -2476,24 +2557,116 @@ static AnchorPoint *UFOLoadAnchor(SplineFont *sf, SplineChar *sc, xmlNodePtr xml
         return NULL;
 }
 
-static GuidelineSet *UFOLoadGuideline(SplineFont *sf, SplineChar *sc, int layer, xmlNodePtr xmlGuideline, AnchorPoint **lastgl) {
+static real PointsSame(BasePoint p0, BasePoint p1) {
+	if (p0.x == p1.x && p0.y == p1.y)
+		return 1;
+	return 0;
+}
+
+static SplineSet *GuidelineToSpline(SplineFont *sf, GuidelineSet *gl) {
+	SplinePoint *sp1, *sp2;
+	SplineSet *ss;
+	real emsize = sf->ascent+sf->descent;
+	fprintf(stderr, "Em: %g.\n", emsize);
+	real angle_radians = acos(-1)*gl->angle/180;
+	real x_off = emsize*cos(angle_radians);
+	real y_off = emsize*sin(angle_radians);
+	fprintf(stderr, "Offsets: %g, %g.\n", x_off, y_off);
+	sp1 = SplinePointCreate(gl->point.x-x_off,gl->point.y-y_off);
+	if (gl->name != NULL)
+		sp1->name = copy(gl->name);
+	sp2 = SplinePointCreate(gl->point.x+x_off,gl->point.y+y_off);
+	SplineMake(sp1,sp2,sf->grid.order2);
+	ss = chunkalloc(sizeof(SplineSet));
+	ss->first = sp1; ss->last = sp2;
+	return ss;
+}
+
+static GuidelineSet *UFOLoadGuideline(SplineFont *sf, SplineChar *sc, int layer, xmlDocPtr doc, xmlNodePtr xmlGuideline, GuidelineSet **lastgl, SplinePointList **lastspl) {
 	// It is easier to use the free mechanism for the guideline to clean up than to do it manually.
 	// So we create one speculatively and then check whether it is valid.
 	GuidelineSet *gl = chunkalloc(sizeof(GuidelineSet));
-	gl->name = (char *) xmlGetProp(xmlGuideline, (xmlChar *) "name");
-	gl->identifier = (char *) xmlGetProp(xmlGuideline, (xmlChar *) "identifier");
-	char *xs = (char *) xmlGetProp(xmlGuideline, (xmlChar *) "x");
-	char *ys = (char *) xmlGetProp(xmlGuideline, (xmlChar *) "y");
-	char *as = (char *) xmlGetProp(xmlGuideline, (xmlChar *) "angle");
-	char *colors = (char *) xmlGetProp(xmlGuideline, (xmlChar *) "color");
+	char *xs = NULL;
+	char *ys = NULL;
+	char *as = NULL;
+	char *colors = NULL;
+	if (xmlStrcmp(xmlGuideline->name, (const xmlChar *)"guideline") == 0) {
+		// Guidelines in the glif have attributes.
+		gl->name = (char *) xmlGetProp(xmlGuideline, (xmlChar *) "name");
+		gl->identifier = (char *) xmlGetProp(xmlGuideline, (xmlChar *) "identifier");
+		xs = (char *) xmlGetProp(xmlGuideline, (xmlChar *) "x");
+		ys = (char *) xmlGetProp(xmlGuideline, (xmlChar *) "y");
+		as = (char *) xmlGetProp(xmlGuideline, (xmlChar *) "angle");
+		colors = (char *) xmlGetProp(xmlGuideline, (xmlChar *) "color");
+	} else if (xmlStrcmp(xmlGuideline->name, (const xmlChar *)"dict") == 0) {
+		// fprintf(stderr, "Got global guideline definition.\n");
+		// Guidelines in fontinfo.plist are in a dictionary format.
+		xmlNodePtr dictnode = xmlGuideline;
+		{
+		    xmlNodePtr keynode = NULL;
+		    for (keynode=dictnode->children; keynode!=NULL; keynode=keynode->next ) {
+			if (xmlStrcmp(keynode->name, (const xmlChar *)"key") == 0) {
+			    // fprintf(stderr, "Got key.\n");
+			    char *keyname2 = (char *) xmlNodeListGetString(doc,keynode->children,true);
+			    if (keyname2 != NULL) {
+				    // Skip unstructured data.
+				    xmlNodePtr valnode = NULL;
+				    for ( valnode=keynode->next; valnode!=NULL; valnode=valnode->next ) {
+					if ( xmlStrcmp(valnode->name,(const xmlChar *) "text")!=0 )
+				    break;
+				    }
+				    char *valtext = valnode->children ?
+					(char *) xmlNodeListGetString(doc,valnode->children,true) : NULL;
+				    if (valtext != NULL) {
+					if (xmlStrcmp(valnode->name, (const xmlChar *)"string") == 0) {
+						// Parse strings.
+						if (gl->name == NULL && strcmp(keyname2,"name") == 0)
+						    gl->name = valtext;
+						else if (gl->identifier == NULL && strcmp(keyname2,"identifier") == 0)
+						    gl->identifier = valtext;
+						else if (colors == NULL && strcmp(keyname2,"color") == 0)
+						    colors = valtext;
+						else {
+						    // Free the temporary value if not assigned to a field.
+						    free(valtext);
+						    valtext = NULL;
+						}
+					} else if (xmlStrcmp(valnode->name, (const xmlChar *)"integer") == 0 ||
+							xmlStrcmp(valnode->name, (const xmlChar *)"real") == 0 ||
+							xmlStrcmp(valnode->name, (const xmlChar *)"float") == 0) {
+						// Parse numbers.
+						if (xs == NULL && strcmp(keyname2,"x") == 0)
+						    xs = valtext;
+						else if (ys == NULL && strcmp(keyname2,"y") == 0)
+						    ys = valtext;
+						else if (as == NULL && strcmp(keyname2,"angle") == 0)
+						    as = valtext;
+						else {
+						    // Free the temporary value if not assigned to a field.
+						    free(valtext);
+						    valtext = NULL;
+						}
+					} else {
+					    // Free the temporary value if not assigned to a field.
+					    free(valtext);
+					    valtext = NULL;
+					}
+				    }
+				    free(keyname2);
+				    keyname2 = NULL;
+			    }
+			}
+		    }
+		}
+	}
 	int what_is_defined = 0x0;
 	if (xs) { gl->point.x = strtod(xs,NULL); what_is_defined |= 0x1; xmlFree(xs); xs = NULL; }
 	if (ys) { gl->point.y = strtod(ys,NULL); what_is_defined |= 0x2; xmlFree(ys); ys = NULL; }
 	if (as) { gl->angle = strtod(as,NULL); what_is_defined |= 0x4; xmlFree(as); as = NULL; }
 	if (colors) {
-		fprintf(stderr, "Checking color.\n");
+		// fprintf(stderr, "Checking color.\n");
 		// The color arrives as a set of 0-1-range values for RGBA in a string.
-		// We need to repack those into a single 
+		// We need to repack those into a single 32-bit word.
 		what_is_defined |= 0x20;
 		gl->flags |= 0x20;
 		int colori;
@@ -2511,14 +2684,17 @@ static GuidelineSet *UFOLoadGuideline(SplineFont *sf, SplineChar *sc, int layer,
 		xmlFree(colors);
 		colors = NULL;
 	}
-	fprintf(stderr, "Checking validity.\n");
+	// fprintf(stderr, "Checking validity.\n");
+	// fprintf(stderr, "Definition flags: %x.\n", what_is_defined);
+	// fprintf(stderr, "x: %g, y: %f, angle: %f.\n", gl->point.x, gl->point.y, gl->angle);
 	if (
-		(realMod(gl->angle, 180) && !(what_is_defined & 0x1)) || // Non-horizontal guideline without x.
-		(realMod(gl->angle + 90, 180) && !(what_is_defined & 0x2)) || // Non-vertical guideline without y.
+		(RealMod(gl->angle, 180) && !(what_is_defined & 0x1)) || // Non-horizontal guideline without x.
+		(RealMod(gl->angle + 90, 180) && !(what_is_defined & 0x2)) || // Non-vertical guideline without y.
 		isnan(gl->point.x) || isnan(gl->point.y) || isnan(gl->angle) ||
 		isinf(gl->point.x) || isinf(gl->point.y) || isinf(gl->angle)
 	) {
 		// Invalid data; abort.
+		// fprintf(stderr, "Invalid guideline.\n");
 		LogError(_("Invalid guideline.\n"));
 		GuidelineSetFree(gl);
 		gl = NULL;
@@ -2527,16 +2703,51 @@ static GuidelineSet *UFOLoadGuideline(SplineFont *sf, SplineChar *sc, int layer,
 	// If the guideline is valid but not all values are defined, we flag it as using abbreviated syntax.
 	if (what_is_defined & 7 != 7)
 		gl->flags |= 0x10;
-	fprintf(stderr, "Setting reference.\n");
-	if ( *lastgl==NULL ) {
-		// If there are no existing guidelines, we point the main reference to this one.
-		sc->layers[layer].guidelines = gl;
+	// fprintf(stderr, "Setting reference.\n");
+	if (sc) {
+		if ( *lastgl==NULL ) {
+			// If there are no existing guidelines, we point the main reference to this one.
+			sc->layers[layer].guidelines = gl;
+		} else {
+			// If there are existing anchors, we attach to the last one.
+			(*lastgl)->next = gl;
+		}
+		*lastgl = gl;
+		return gl;
 	} else {
-		// If there are existing anchors, we attach to the last one.
-		(*lastgl)->next = gl;
+		// fprintf(stderr, "Creating spline for guideline.");
+		// Convert from a guideline to a spline.
+		SplineSet *spl = GuidelineToSpline(sf, gl);
+		// Free the guideline.
+		GuidelineSetFree(gl);
+		// Attach the spline.
+		if ( *lastspl==NULL ) {
+			// fprintf(stderr, "First guideline spline.");
+			// If there are no existing guidelines, we point the main reference to this one.
+			sf->grid.splines = spl;
+		} else {
+			// fprintf(stderr, "Not first guideline spline.");
+			// If there are existing anchors, we attach to the last one.
+			(*lastspl)->next = spl;
+		}
+		*lastspl = spl;
+		return spl;
 	}
-	*lastgl = gl;
-	return gl;
+}
+
+static GuidelineSet *UFOLoadGuidelines(SplineFont *sf, SplineChar *sc, int layer, xmlDocPtr doc, xmlNodePtr xmlGuidelines, GuidelineSet **lastgl, SplinePointList **lastspl) {
+	if (xmlStrcmp(xmlGuidelines->name, (const xmlChar *)"array") == 0) {
+		// fprintf(stderr, "Got global guidelines array.\n");
+		// Guidelines in fontinfo.plist are in a dictionary format.
+		xmlNodePtr array = xmlGuidelines;
+		if ( array!=NULL ) {
+			xmlNodePtr dictnode = NULL;
+			for ( dictnode = array->children; dictnode != NULL; dictnode = dictnode->next )
+				if (xmlStrcmp(dictnode->name, (const xmlChar *)"dict") == 0)
+					UFOLoadGuideline(sf, sc, layer, doc, dictnode, lastgl, lastspl);
+		}
+	}
+	return sf->grid.splines;
 }
 
 static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, char* glyphname, SplineChar* existingglyph, int layerdest) {
@@ -2649,11 +2860,18 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			AltUniAdd(sc,uni);
 			free(u);
 		}
+	} else if ( xmlStrcmp(kids->name,(const xmlChar *) "note")==0 ) {
+		char *tval = xmlNodeListGetString(doc,kids->children,true);
+		if (tval != NULL) {
+			sc->comment = copy(tval);
+			free(tval);
+			tval = NULL;
+		}
 	} else if ( xmlStrcmp(kids->name,(const xmlChar *) "anchor")==0 ){
 		if (UFOLoadAnchor(sf, sc, kids, &lastap))
 			continue;
 	} else if ( xmlStrcmp(kids->name,(const xmlChar *) "guideline")==0 ){
-		if (UFOLoadGuideline(sf, sc, layerdest, kids, &lastgl))
+		if (UFOLoadGuideline(sf, sc, layerdest, doc, kids, &lastgl, NULL))
 			continue;
 	} else if ( xmlStrcmp(kids->name,(const xmlChar *) "outline")==0 ) {
 	    for ( contour = kids->children; contour!=NULL; contour=contour->next ) {
@@ -3887,8 +4105,10 @@ return;
 
 SplineFont *SFReadUFO(char *basedir, int flags) {
     xmlNodePtr plist, dict, keys, value;
+    xmlNodePtr guidelineNode = NULL;
     xmlDocPtr doc;
     SplineFont *sf;
+    SplineSet *lastglspl = NULL;
     xmlChar *keyname, *valname;
     char *stylename=NULL;
     char *temp, *glyphlist, *glyphdir;
@@ -4169,12 +4389,13 @@ return( NULL );
 		versionMinor = strtol((char *) valname,&end, 10);
 		if ( *end!='\0' ) versionMinor = -1;
 		free(valname);
+	    } else if ( xmlStrcmp(keyname,(xmlChar *) "guidelines")==0 ) {
+		guidelineNode = value; // Guideline figuring needs ascent and descent, so we must parse this later.
 	    } else
 		free(valname);
 	    free(keyname);
 	}
       }
-      xmlFreeDoc(doc);
     }
     if ( em==-1 && as>=0 && ds>=0 )
 	em = as + ds;
@@ -4190,6 +4411,8 @@ return( NULL );
 	em = 1000;
     }
     sf->ascent = as; sf->descent = ds;
+    // Ascent and descent are set, so we can parse the guidelines now.
+    UFOLoadGuidelines(sf, NULL, 0, doc, guidelineNode, NULL, &lastglspl);
     if ( sf->fontname==NULL ) {
 	if ( stylename!=NULL && sf->familyname!=NULL )
 	    sf->fontname = strconcat3(sf->familyname,"-",stylename);
@@ -4209,6 +4432,9 @@ return( NULL );
         sf->styleMapFamilyName = ""; // Empty default to disable fallback at export (not user-accessible anyway as of now).
     if ( sf->weight==NULL )
 	sf->weight = copy("Regular");
+    // We can now free the document.
+    if ( doc!=NULL )
+        xmlFreeDoc(doc);
     // We first try to set the SplineFont version by using the native numeric U. F. O. values.
     if ( sf->version==NULL && versionMajor != -1 )
       injectNumericVersion(&sf->version, versionMajor, versionMinor);
