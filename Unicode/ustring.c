@@ -300,34 +300,63 @@ return( NULL );
 }
 
 unichar_t *u_copyn(const unichar_t *pt, long n) {
+/* Copy n chars of input string to a new res string. */
     unichar_t *res;
+
+    /* verify input valid for pt, and n>=0 and n+1>0 */
+    if ( pt==NULL || ++n<=0 )
+	return( NULL );
+
 #ifdef MEMORY_MASK
-    if ( n*sizeof(unichar_t)>=MEMORY_MASK )
-	n = MEMORY_MASK/sizeof(unichar_t)-1;
+    /* ensure n+1 unichar_t fits inside MEMORY_MASK. */
+    if ( n>MEMORY_MASK/sizeof(unichar_t) )
+	n = MEMORY_MASK/sizeof(unichar_t);
 #endif
-    res = (unichar_t *) malloc((n+1)*sizeof(unichar_t));
-    memcpy(res,pt,n*sizeof(unichar_t));
-    res[n]='\0';
-return(res);
+
+    res = (unichar_t *)(malloc(n*sizeof(unichar_t)));
+    if ( res==NULL )
+	return( NULL );
+
+    if ( (--n) )
+	memcpy(res,pt,n*sizeof(unichar_t));
+    res[n] = 0;
+    return( res );
 }
 
 unichar_t *u_copynallocm(const unichar_t *pt, long n, long m) {
+/* Alloc a new string of length m, and copy n chars. */
     unichar_t *res;
+
+    /* verify pt!=NULL, n>=0 && n+1>0, m>=0 && m+1>0 */
+    if ( pt==NULL || ++n<=0 || ++m<=0 || n>m )
+	return( NULL );
+
 #ifdef MEMORY_MASK
-    if ( n*sizeof(unichar_t)>=MEMORY_MASK )
-	n = MEMORY_MASK/sizeof(unichar_t)-1;
+    /* ensure m+1 unichar_t fits inside MEMORY_MASK. */
+    if ( m>MEMORY_MASK/sizeof(unichar_t) ) {
+	m = MEMORY_MASK/sizeof(unichar_t);
+	if ( n>m )
+	    n = m;
+    }
 #endif
-    res = malloc((m+1)*sizeof(unichar_t));
-    memcpy(res,pt,n*sizeof(unichar_t));
-    res[n]='\0';
-return(res);
+
+    res=(unichar_t *)(calloc(m,sizeof(unichar_t)));
+    if ( res==NULL )
+	return( NULL );
+
+    if ( (--n) )
+	memcpy(res,pt,n*sizeof(unichar_t));
+    return( res );
 }
 
 unichar_t *u_copy(const unichar_t *pt) {
-    if(pt)
-return u_copyn(pt,u_strlen(pt));
+/* This routine is generally used to display info so */
+/* we need to copy strings or return( "" ). If there */
+/* is nothing to copy we can free results when done. */
+    if( pt!=NULL )
+	return( u_copyn(pt,u_strlen(pt)) );
 
-return((unichar_t *)0);
+    return( calloc(1,sizeof(unichar_t)) );
 }
 
 unichar_t *u_concat(const unichar_t *s1, const unichar_t *s2) {
@@ -345,72 +374,87 @@ return( u_copy( s1 ));
 return( pt );
 }
 
-unichar_t *uc_copyn(const char *pt,int len) {
+unichar_t *uc_copyn(const char *pt,int n) {
+/* Copy n unsigned chars{0..255} to a unichar_t type */
+/* string. If not printable, return an empty string. */
+/* This routine is generally used to display info so */
+/* we need to copy strings, or return( "" ) if there */
+/* is nothing to copy. We can free results when done */
     unichar_t *res, *rpt;
 
-    if(!pt)
-return((unichar_t *)0);
+    /* verify input valid for pt, and n>=0 and n+1>0 */
+    if( pt==NULL || ++n<=0 )
+	goto emptyuc_copyn;
 
 #ifdef MEMORY_MASK
-    if ( (len+1)*sizeof(unichar_t)>=MEMORY_MASK )
-	len = MEMORY_MASK/sizeof(unichar_t)-1;
+    /* if memory limitation, ensure n+1<=MEMORY_MASK */
+    if ( n>MEMORY_MASK/sizeof(unichar_t) )
+	n = MEMORY_MASK/sizeof(unichar_t);
 #endif
-    res = (unichar_t *) malloc((len+1)*sizeof(unichar_t));
-    for ( rpt=res; --len>=0 ; *rpt++ = *(unsigned char *) pt++ );
-    *rpt = '\0';
-return(res);
+
+    res = (unichar_t *)(malloc(n*sizeof(unichar_t)));
+    if ( res==NULL )
+	goto emptyuc_copyn;
+
+    for ( rpt=res; --n>0 ; *rpt++ = (*(unsigned char *) pt++)&0xff );
+    *rpt = 0;
+    return( res );
+
+emptyuc_copyn:
+    return( calloc(1,sizeof(unichar_t)) );
 }
 
 unichar_t *uc_copy(const char *pt) {
-    unichar_t *res, *rpt;
-    int n;
+/* Copy unsigned char{0..255} string to unichar type */
+/* string. If not printable, return an empty string. */
+/* This routine is generally used to display info so */
+/* we need to copy strings, or return( "" ) if there */
+/* is nothing to copy. We can free results when done */
+    if( pt!=NULL )
+	return( uc_copyn(pt,strlen(pt)) );
 
-    if(!pt)
-return((unichar_t *)0);
-
-    n = strlen(pt);
-#ifdef MEMORY_MASK
-    if ( (n+1)*sizeof(unichar_t)>=MEMORY_MASK )
-	n = MEMORY_MASK/sizeof(unichar_t)-1;
-#endif
-    res = (unichar_t *) malloc((n+1)*sizeof(unichar_t));
-    for ( rpt=res; --n>=0 ; *rpt++ = *(unsigned char *) pt++ );
-    *rpt = '\0';
-return(res);
+    return( calloc(1,sizeof(unichar_t)) );
 }
 
-char *cu_copyn(const unichar_t *pt,int len) {
+char *cu_copyn(const unichar_t *pt,int n) {
+/* Copy unichar string to res. Assume values 0..255. */
     char *res, *rpt;
 
-    if(!pt)
-return(NULL);
+    /* verify input valid for pt, and n>=0 and n+1>0 */
+    if ( pt==NULL || ++n<=0 )
+	return( NULL );
 
 #ifdef MEMORY_MASK
-    if ( (len+1)>=MEMORY_MASK )
-	len = MEMORY_MASK-1;
+    /* if memory limitation, ensure n+1<=MEMORY_MASK */
+    if ( n>MEMORY_MASK )
+	n = MEMORY_MASK;
 #endif
-    res = (char *) malloc(len+1);
-    for ( rpt=res; --len>=0 ; *rpt++ = *pt++ );
+
+    res = (char *)(malloc(n));
+    if ( res==NULL )
+	return( NULL );
+
+    for ( rpt=res; --n>0; *rpt++ = *pt++ );
     *rpt = '\0';
-return(res);
+    return( res );
 }
 
 char *cu_copy(const unichar_t *pt) {
-    char *res, *rpt;
-    int n;
+/* Copy unichar to char string, assume values 0..255 */
+/* and if error, return( "" ) which can be made free */
+/* This routine is generally used to display info so */
+/* we need to copy strings, or return( "" ) if there */
+/* is nothing to copy. We can free results when done */
+    char *res;
+    register int n;
 
-    if(!pt)
-return((char *)0);
+    /* verify pt and n>=0. If res==NULL due to error */
+    /* use calloc below. If n==0 use calloc instead. */
+    if ( pt!=NULL && (n=u_strlen(pt))>0 )
+	if ( (res=cu_copyn(pt,n))!=NULL )
+	    return( res );
 
-    n = u_strlen(pt);
-#ifdef MEMORY_MASK
-    if ( (n+1)>=MEMORY_MASK )
-	n = MEMORY_MASK/sizeof(unichar_t)-1;
-#endif
-    res = (char *) malloc(n+1);
-    for ( rpt=res; --n>=0 ; *rpt++ = *pt++ );
-    *rpt = '\0';
-return(res);
+    return( calloc(1,sizeof(unichar_t)) );
 }
 
 double u_strtod(const unichar_t *str, unichar_t **ptr) {
@@ -921,33 +965,54 @@ return( newcr );
 }
 
 int AllAscii(const char *txt) {
-    for ( ; *txt!='\0'; ++txt ) {
-	if ( *txt=='\t' || *txt=='\n' || *txt=='\r' )
+/* Verify string only All ASCII printable characters */
+    register unsigned char ch;
+
+    if ( txt==NULL )
+	return( false );
+
+    for ( ; (ch=(unsigned char) *txt)!='\0'; ++txt ) {
+	if ( (ch>=' ' && ch<'\177' ) || \
+	     ch=='\t' || ch=='\n' || ch=='\r' )
 	    /* All right */;
-	else if ( *txt<' ' || *txt>='\177' )
-return( false );
+	else
+	    return( false );
     }
-return( true );
+    return( true );
 }
 
 int uAllAscii(const unichar_t *txt) {
+/* Verify string only All ASCII printable unichar_t. */
+
+    if ( txt==NULL )
+	return( false );
+
     for ( ; *txt!='\0'; ++txt ) {
-	if ( *txt=='\t' || *txt=='\n' || *txt=='\r' )
+	if ( (*txt>=' ' && *txt<'\177' ) || \
+	     *txt=='\t' || *txt=='\n' || *txt=='\r' )
 	    /* All right */;
-	else if ( *txt<' ' || *txt>='\177' )
-return( false );
+	else
+	    return( false );
     }
-return( true );
+    return( true );
 }
 
-char* chomp( char* line ) {
-    if( !line )
-	return line;
-    if ( line[strlen(line)-1]=='\n' )
-	line[strlen(line)-1] = '\0';
-    if ( line[strlen(line)-1]=='\r' )
-	line[strlen(line)-1] = '\0';
-    return line;
+char *chomp( char *line ) {
+/* Chomp the last '\r' and '\n' in character string. */
+/* \r = CR used as a newline char in MAC OS before X */
+/* \n = LF used as a newline char in MAC OSX & Linux */
+/* \r\n = CR + LF used as a newline char in Windows. */
+    int x;
+
+    if( line==NULL || (x=strlen(line)-1)<0 )
+	return( line );
+    if ( line[x]=='\n' ) {
+	line[x] = '\0';
+	--x;
+    }
+    if ( x>=0 && line[x]=='\r' )
+	line[x] = '\0';
+    return( line );
 }
 
 char *copytolower(const char *input)
