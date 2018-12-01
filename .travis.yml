@@ -54,9 +54,13 @@ install:
   - |
     set -e
     export DEPSPREFIX=$TRAVIS_BUILD_DIR/travisdeps
-    export PREFIX=$TRAVIS_BUILD_DIR/target
-    export PATH=$PATH:$DEPSPREFIX/bin:$PREFIX/bin
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DEPSPREFIX/lib:$PREFIX/lib
+    if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+      export PREFIX=/usr
+    else
+      export PREFIX=$TRAVIS_BUILD_DIR/target
+    fi
+    export PATH=$PATH:$DEPSPREFIX/bin:$PREFIX/bin:$TRAVIS_BUILD_DIR/target/$DEPSPREFIX/bin:$TRAVIS_BUILD_DIR/target/$PREFIX/bin
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DEPSPREFIX/lib:$PREFIX/lib:$TRAVIS_BUILD_DIR/target/$DEPSPREFIX/lib:$TRAVIS_BUILD_DIR/target/$PREFIX/lib
     export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$DEPSPREFIX/lib/pkgconfig
     export FFCONFIG="--prefix=$PREFIX --enable-fontforge-extras"
 
@@ -99,7 +103,7 @@ install:
 
       # These are FF-specific mods (set here so it runs also in Coverity)
       export PYTHON=python3.6
-      export PYTHONPATH=$PYTHONPATH:$PREFIX/lib/python$($PYTHON -c "import sys; print('{0}.{1}'.format(sys.version_info.major, sys.version_info.minor))")/site-packages
+      export PYTHONPATH=$PYTHONPATH:$PREFIX/lib/python$($PYTHON -c "import sys; print('{0}.{1}'.format(sys.version_info.major, sys.version_info.minor))")/site-packages:$TRAVIS_BUILD_DIR/target/$PREFIX/lib/python$($PYTHON -c "import sys; print('{0}.{1}'.format(sys.version_info.major, sys.version_info.minor))")/site-packages
       export CFLAGS="-fdiagnostics-color=always -Wall -Wno-switch -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wrestrict -Wnull-dereference -Wjump-misses-init -Wdouble-promotion -Wshadow"
     else
       export FFCONFIG="$FFCONFIG --enable-gdk=gdk3 --enable-woff2"
@@ -122,13 +126,15 @@ install:
 script:
   - ./bootstrap
   - ./configure $FFCONFIG
-  - make
-  - make install
+  - make -j$(nproc)
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then mkdir -p $TRAVIS_BUILD_DIR/target ; make install DESTDIR=$(readlink -f $TRAVIS_BUILD_DIR/target); fi
+  - if [ "$TRAVIS_OS_NAME" != "linux" ]; then make install; fi
   - make check
   - if [ ! -z "$LINUX_FULL" ]; then make distcheck; fi
   - fontforge -version
   - if [ -z "$LINUX_NOX" ]; then $PYTHON -c "import fontforge; import psMat; print(fontforge.__version__, fontforge.version()); fontforge.font();"; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]; then travis-scripts/ffosxbuild.sh $PREFIX $TRAVIS_COMMIT; fi
+  - if [ ! -z "$LINUX_FULL" ]; then bash -ex travis-scripts/ffappimagebuild.sh; fi
 
 after_success:
   - if [ ! -z "$LINUX_FULL" ]; then coveralls --gcov-options '\-bulp' --gcov $(which $GCOV) || true; fi
