@@ -62,7 +62,7 @@ pushd $outdir/Contents/Frameworks/Python.framework && \
 
 pushd $outdir/Contents/Resources/opt/local
 echo "Collecting and patching dependent libraries..."
-$BASE/lddx --recursive --ignore-prefix /opt/X11 --collect lib \
+$BASE/lddx --modify-special-paths --recursive --ignore-prefix /opt/X11 --collect lib \
     bin/ libexec/bin/FontForgeInternal/fontforge-internal-collab-server \
     $outdir/Contents/Frameworks/Python.framework/
 popd
