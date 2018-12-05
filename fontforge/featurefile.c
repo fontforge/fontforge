@@ -1528,10 +1528,12 @@ static void note_nested_lookups_used_twice(OTLookup *base) {
 		otl->lookup_type==gpos_context || otl->lookup_type==gpos_contextchain ) {
 	    for ( sub = otl->subtables; sub!=NULL; sub=sub->next ) {
 		FPST *fpst = sub->fpst;
-		for ( r=0; r<fpst->rule_cnt; ++r ) {
-		    for ( s=0; s<fpst->rules[r].lookup_cnt; ++s ) {
-			OTLookup *nested = fpst->rules[r].lookups[s].lookup;
-			++ nested->lookup_length;
+		if (fpst != NULL) {
+		    for ( r=0; r<fpst->rule_cnt; ++r ) {
+			for ( s=0; s<fpst->rules[r].lookup_cnt; ++s ) {
+			    OTLookup *nested = fpst->rules[r].lookups[s].lookup;
+			    ++ nested->lookup_length;
+			}
 		    }
 		}
 	    }
