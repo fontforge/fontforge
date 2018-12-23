@@ -1252,7 +1252,15 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer, int
 
 /* Same keys in both formats */
     PListAddString(dictnode,"familyName",sf->familyname_with_timestamp ? sf->familyname_with_timestamp : sf->familyname);
-    PListAddString(dictnode,"styleName",SFGetModifiers(sf));
+    char *styleNameSynthetic = NULL;
+    if (sf->fontname) {
+        styleNameSynthetic = SFGetModifiers(sf);
+	char *lastdash = strrchr(sf->fontname, (int)"-");
+	if (lastdash && strlen(lastdash) > 2)
+	    styleNameSynthetic = lastdash + 1;
+    }
+    if (styleNameSynthetic)
+	    PListAddString(dictnode,"styleName",styleNameSynthetic);
     {
         char* preferredFamilyName = fetchTTFAttribute(sf,ttf_preffamilyname);
         char* preferredSubfamilyName = fetchTTFAttribute(sf,ttf_prefmodifiers);
@@ -4412,7 +4420,8 @@ return( NULL );
     }
     sf->ascent = as; sf->descent = ds;
     // Ascent and descent are set, so we can parse the guidelines now.
-    UFOLoadGuidelines(sf, NULL, 0, doc, guidelineNode, NULL, &lastglspl);
+    if (guidelineNode)
+	UFOLoadGuidelines(sf, NULL, 0, doc, guidelineNode, NULL, &lastglspl);
     if ( sf->fontname==NULL ) {
 	if ( stylename!=NULL && sf->familyname!=NULL )
 	    sf->fontname = strconcat3(sf->familyname,"-",stylename);
