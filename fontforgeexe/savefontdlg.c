@@ -2058,7 +2058,7 @@ int SFGenerateFont(SplineFont *sf,int layer,int family,EncMap *map) {
 	    if ( family==gf_ttc ) {
 		fc = fondcnt;
 		psstyle = 0;
-	    } else if ( family==gf_macfamily && strcmp(fv->b.sf->familyname,sf->familyname)==0 ) {
+	    } else if ( family==gf_macfamily && sf->familyname && fv->b.sf->familyname && strcmp(fv->b.sf->familyname,sf->familyname)==0 ) {
 		MacStyleCode(fv->b.sf,&psstyle);
 		if ( fv->b.sf->fondname==NULL ) {
 		    fc = 0;
