@@ -219,7 +219,7 @@ if test x$use_gdk = xyes ; then
             AC_MSG_NOTICE([building the GUI with the GDK2 backend...])
         ],
         [
-            AC_MSG_ERROR([Cannot build GDK backend without GDK installed. Please install the GDK Developer Package.])
+            AC_MSG_ERROR([Cannot build GDK backend without GDK installed. Please install the GTK+ Developer Package.])
         ])
     else
         PKG_CHECK_MODULES([GDK],[gdk-3.0 >= 3.10],
@@ -230,7 +230,7 @@ if test x$use_gdk = xyes ; then
             AC_MSG_NOTICE([building the GUI with the GDK3 backend...])
         ],
         [
-            AC_MSG_ERROR([Cannot build GDK backend without GDK installed. Please install the GDK Developer Package.])
+            AC_MSG_ERROR([Cannot build GDK backend without GDK installed. Please install the GTK+ Developer Package.])
         ])
     fi
 else
