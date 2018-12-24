@@ -909,7 +909,7 @@ int fontforge_main( int argc, char **argv ) {
     }
 
     if (!quiet) {
-        fprintf( stderr, "Copyright (c) 2000-2014 by George Williams. See AUTHORS for Contributors.\n" );
+        fprintf( stderr, "Copyright (c) 2000-2018 by George Williams. See AUTHORS for Contributors.\n" );
         fprintf( stderr, " License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n" );
         fprintf( stderr, " with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.\n" );
         fprintf( stderr, " Based on sources from %s"

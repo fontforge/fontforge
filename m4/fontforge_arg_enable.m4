@@ -198,8 +198,13 @@ fi
 
 dnl FONTFORGE_ARG_ENABLE_GDK
 dnl ------------------------
+dnl The default action  is to check for Xwindows and use it if available,
+dnl but this can be overridden by using --enable-gdk to use gdk2 or gdk3.
+dnl If no option {gdk2/gdk3} is specified, then the default is to try use
+dnl gdk3. If no gdk development module is found then come to a hard stop.
 AC_DEFUN([FONTFORGE_ARG_ENABLE_GDK],
 [
+fontforge_gdk_version=no
 AC_ARG_ENABLE([gdk],
         [AS_HELP_STRING([--enable-gdk=TYPE],
                 [Enable the GDK GUI backend. TYPE is either gdk2 or gdk3.])],
@@ -214,7 +219,7 @@ if test x$use_gdk = xyes ; then
             AC_MSG_NOTICE([building the GUI with the GDK2 backend...])
         ],
         [
-            AC_MSG_ERROR([Cannot build GDK backend without GDK installed.])
+            AC_MSG_ERROR([Cannot build GDK backend without GDK installed. Please install the GTK+ Developer Package.])
         ])
     else
         PKG_CHECK_MODULES([GDK],[gdk-3.0 >= 3.10],
@@ -225,7 +230,7 @@ if test x$use_gdk = xyes ; then
             AC_MSG_NOTICE([building the GUI with the GDK3 backend...])
         ],
         [
-            AC_MSG_ERROR([Cannot build GDK backend without GDK installed.])
+            AC_MSG_ERROR([Cannot build GDK backend without GDK installed. Please install the GTK+ Developer Package.])
         ])
     fi
 else

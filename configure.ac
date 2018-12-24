@@ -35,6 +35,8 @@ AC_PREREQ([2.68])
 #--------------------------------------------------------------------------
 # PackageTimestamp version
 m4_define([fontforge_package_stamp], [20170731])
+# reminder: When updating FontForge, also take note of desktop/* dates and
+# startnoui.c, startui.c
 #--------------------------------------------------------------------------
 # Making point releases:
 #   fontforge_major_version += 0;
@@ -936,7 +938,6 @@ Summary of optional features:
 Summary of optional dependencies:
 
 Optional Library	UseIt?	HaveIt?	WebsiteURL
-  cairo			${with_cairo}	${i_do_have_cairo}	${cairo_url}
   giflib		${with_giflib}	${i_do_have_giflib}	${giflib_url}
   libjpeg		${with_libjpeg}	${i_do_have_libjpeg}	${libjpeg_url}
   libpng		${with_libpng}	${i_do_have_libpng}	${libpng_url}
@@ -945,10 +946,13 @@ Optional Library	UseIt?	HaveIt?	WebsiteURL
   libtiff		${with_libtiff}	${i_do_have_libtiff}	${libtiff_url}
   libuninameslist	${with_libuninameslist}	${i_do_have_libuninameslist}	${libuninameslist_url}
   python-dev		${enable_python_scripting}	${i_do_have_python_scripting}	${python_url}
-  zeromq (libzmq)		${i_do_have_libzmq}	${libzmq_url}
   woff2			${fontforge_can_use_woff2}	${fontforge_has_woff2}	${woff2_url}
+
+Graphical UI Choices	UseIt?	HaveIt?	WebsiteURL
   X Window System		${i_do_have_x}	${libxorg_url}
+    cairo		${with_cairo}	${i_do_have_cairo}	${cairo_url}
   GDK backend		${fontforge_can_use_gdk}	${fontforge_gdk_version}	${gdk_url}
+  zeromq (libzmq)		${i_do_have_libzmq}	${libzmq_url}
 ])
 
 #--------------------------------------------------------------------------
