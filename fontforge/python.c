@@ -2842,13 +2842,21 @@ static PyObject *PyFFContour_MakeFirst(PyFF_Contour *self, PyObject *args) {
     PyFF_Point **temp, **old;
 
     if ( !PyArg_ParseTuple( args, "i", &pos ))
-return( NULL );
+	return( NULL );
+    if ( pos<0 || pos>=self->pt_cnt ) {
+	PyErr_Format(PyExc_TypeError, "Position argument out of bounds");
+	return( NULL );
+    }
+    if ( ! self->points[pos]->on_curve ) {
+	PyErr_Format(PyExc_TypeError, "First point must be on curve");
+	return( NULL );
+    }
 
     temp = PyMem_New(PyFF_Point *,self->pt_max);
     old = self->points;
     for ( i=pos; i<self->pt_cnt; ++i )
 	temp[i-pos] = old[i];
-    off = i;
+    off = i-pos;
     for ( i=0; i<pos; ++i )
 	temp[i+off] = old[i];
     self->points = temp;
