@@ -5024,7 +5024,7 @@ static void fea_ParseLookupDef(struct parseState *tok, int could_be_stat ) {
     struct feat_item *item, *first_after_mark;
     enum otlookup_type lookuptype;
     int ret;
-    int has_single, has_multiple;
+    int has_single, has_multiple, has_ligature, has_alternate;
 
     /* keywords are allowed in lookup names */
     fea_ParseTokWithKeywords(tok, false);
@@ -5110,23 +5110,37 @@ return;
     }
     fea_end_statement(tok);
 
-    /* Now a multiple substitution may have a single destination. In which case*/
-    /*  it will look just like a single substitution. So if there are both */
-    /*  multiple and single subs in a lookup, translate all the singles into */
-    /*  multiples */
-    has_single = has_multiple = false;
+    /* Any of a multiple, alternate, or ligature substitution may have */
+    /* a single destination. In either case it will look just like a single */
+    /* substitution. So if there are both multiple/alternate/ligature and */
+    /* single subs in a lookup translate all the singles into the */
+    /* corresponding type */
+    has_single = has_multiple = has_ligature = has_alternate = false;
     for ( item=tok->sofar ; item!=NULL && item->type!=ft_lookup_start; item=item->next ) {
 	enum otlookup_type cur = fea_LookupTypeFromItem(item);
 	if ( cur==gsub_multiple )
 	    has_multiple = true;
+	else if ( cur==gsub_alternate )
+	    has_alternate = true;
+	else if ( cur==gsub_ligature )
+	    has_ligature = true;
 	else if ( cur==gsub_single )
 	    has_single = true;
     }
-    if ( has_multiple && has_single ) {
-	for ( item=tok->sofar ; item!=NULL && item->type!=ft_lookup_start; item=item->next ) {
-	    enum otlookup_type cur = fea_LookupTypeFromItem(item);
-	    if ( cur==gsub_single )
-		item->u2.pst->type = pst_multiple;
+    if ( has_single ) {
+	enum possub_type psttype = pst_pair;
+	if ( has_multiple && !( has_alternate || has_ligature ) )
+	    psttype = pst_multiple;
+	else if ( has_alternate && !( has_multiple || has_ligature ) )
+	    psttype = pst_alternate;
+	else if ( has_ligature && !( has_multiple || has_alternate ) )
+	    psttype = pst_ligature;
+	if ( psttype!=pst_pair ) {
+	    for ( item=tok->sofar ; item!=NULL && item->type!=ft_lookup_start; item=item->next ) {
+		enum otlookup_type cur = fea_LookupTypeFromItem(item);
+		if ( cur==gsub_single )
+		    item->u2.pst->type = psttype;
+	    }
 	}
     }
 
@@ -5354,7 +5368,8 @@ static void fea_ParseFeatureDef(struct parseState *tok) {
     uint32 feat_tag;
     struct feat_item *item, *size_item = NULL;
     int type, ret;
-    int has_single, has_multiple;
+    enum otlookup_type lookuptype;
+    int has_single, has_multiple, has_ligature, has_alternate;
 
     fea_ParseTag(tok);
     if ( tok->type!=tk_name || !tok->could_be_tag ) {
@@ -5489,24 +5504,53 @@ return;
     }
     fea_end_statement(tok);
 
-    /* Now a multiple substitution may have a single destination. In which case*/
-    /*  it will look just like a single substitution. So if there are both */
-    /*  multiple and single subs in a feature, translate all the singles into */
-    /*  multiples */
-    /* Another approach would be to make two lookups, but this is easier... */
-    has_single = has_multiple = false;
+    /* Any of a multiple, alternate, or ligature substitution may have */
+    /* a single destination. In either case it will look just like a single */
+    /* substitution. So if there are both multiple/alternate/ligature and */
+    /* single subs in a lookup translate all the singles into the */
+    /* corresponding type */
+    has_single = has_multiple = has_ligature = has_alternate = false;
     for ( item=tok->sofar ; item!=NULL && item->type!=ft_feat_start; item=item->next ) {
 	enum otlookup_type cur = fea_LookupTypeFromItem(item);
 	if ( cur==gsub_multiple )
 	    has_multiple = true;
+	else if ( cur==gsub_alternate )
+	    has_alternate = true;
+	else if ( cur==gsub_ligature )
+	    has_ligature = true;
 	else if ( cur==gsub_single )
 	    has_single = true;
     }
-    if ( has_multiple && has_single ) {
-	for ( item=tok->sofar ; item!=NULL && item->type!=ft_feat_start; item=item->next ) {
-	    enum otlookup_type cur = fea_LookupTypeFromItem(item);
-	    if ( cur==gsub_single )
-		item->u2.pst->type = pst_multiple;
+    if ( has_single ) {
+	enum possub_type psttype = pst_pair;
+	if ( has_multiple && !( has_alternate || has_ligature ) )
+	    psttype = pst_multiple;
+	else if ( has_alternate && !( has_multiple || has_ligature ) )
+	    psttype = pst_alternate;
+	else if ( has_ligature && !( has_multiple || has_alternate ) )
+	    psttype = pst_ligature;
+	if ( psttype!=pst_pair ) {
+	    for ( item=tok->sofar ; item!=NULL && item->type!=ft_feat_start; item=item->next ) {
+		enum otlookup_type cur = fea_LookupTypeFromItem(item);
+		if ( cur==gsub_single )
+		    item->u2.pst->type = psttype;
+	    }
+	}
+    }
+
+    /* Make sure all entries in this lookup of the same lookup type */
+    lookuptype = ot_undef;
+    for ( item=tok->sofar ; item!=NULL && item->type!=ft_feat_start; item=item->next ) {
+	enum otlookup_type cur = fea_LookupTypeFromItem(item);
+	if ( cur==ot_undef )	/* Some entries in the list (lookupflags) have no type */
+	    /* Tum, ty, tum tum */;
+	else if ( lookuptype==ot_undef )
+	    lookuptype = cur;
+	else if ( lookuptype!=cur ) {
+	    LogError(_("All entries in a lookup must have the same type on line %d of %s"),
+		    tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	    ++tok->err_count;
+	    break;
 	}
     }
 
