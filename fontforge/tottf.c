@@ -4147,7 +4147,7 @@ static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format)
 
     putlong(at->post,shorttable?0x00030000:0x00020000);	/* formattype */
     putfixed(at->post,sf->italicangle);
-    putshort(at->post,sf->upos-sf->uwidth/2);		/* 'post' defn says top of rect, while FontInfo def says center of rect */
+    putshort(at->post,sf->upos+sf->uwidth/2);		/* 'post' defn says top of rect, while FontInfo def says center of rect */
     putshort(at->post,sf->uwidth);
     putlong(at->post,at->isfixed);
     putlong(at->post,0);		/* no idea about memory */
