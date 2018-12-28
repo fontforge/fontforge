@@ -1459,7 +1459,6 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer, int
     }
     if ( sf->fondname!=NULL )
     PListAddString(dictnode,"macintoshFONDName",sf->fondname);
-    // TODO: Emit guidelines.
     // If the version is 3 and the grid layer exists, emit a guidelines group.
     if (version > 2) {
         xmlNodePtr glkeynode = xmlNewChild(dictnode, NULL, BAD_CAST "key", "guidelines");
@@ -1476,7 +1475,7 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer, int
 		    // We also output all coordinates if there is a non-zero coordinate.
 		    if (RealMod(gl->angle, 180) || !(glflags & 0x10) || gl->point.x != 0)
 		        PListAddReal(gldictnode, "x", gl->point.x);
-		    if (RealMod(gl->angle + 90, 180) || !(glflags & 0x10) || gl->point.x != 0)
+		    if (RealMod(gl->angle + 90, 180) || !(glflags & 0x10) || gl->point.y != 0)
 		        PListAddReal(gldictnode, "y", gl->point.y);
 		    // If x and y are both present, we must add angle.
 		    if (RealMod(gl->angle, 90) || !(glflags & 0x10) || (gl->point.x != 0 && gl->point.y != 0))
