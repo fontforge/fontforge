@@ -7322,8 +7322,8 @@ return( base );
 
 static OTLookup **SFDLookupList(FILE *sfd,SplineFont *sf) {
     int ch;
-    OTLookup *space[100], **buf=space, *otl, **ret;
-    int lcnt=0, lmax=100;
+    OTLookup **ret=NULL, *otl;
+    int lcnt=0, lmax=0;
     char *name;
 
     for (;;) {
@@ -7335,21 +7335,16 @@ static OTLookup **SFDLookupList(FILE *sfd,SplineFont *sf) {
 	otl = SFFindLookup(sf,name);
 	free(name);
 	if ( otl!=NULL ) {
-	    if ( lcnt>lmax ) {
-		if ( buf==space ) {
-		    buf = malloc((lmax=lcnt+50)*sizeof(OTLookup *));
-		    memcpy(buf,space,sizeof(space));
-		} else
-		    buf = realloc(buf,(lmax+=50)*sizeof(OTLookup *));
+	    if ( lcnt>=lmax ) {
+	        lmax += 100;
+	        ret = realloc(ret, lmax * sizeof(OTLookup *));
 	    }
-	    buf[lcnt++] = otl;
+	    ret[lcnt++] = otl;
 	}
     }
     if ( lcnt==0 )
 return( NULL );
-
-    ret = malloc((lcnt+1)*sizeof(OTLookup *));
-    memcpy(ret,buf,lcnt*sizeof(OTLookup *));
+    ret = realloc(ret, (lcnt+1) * sizeof(OTLookup *));
     ret[lcnt] = NULL;
 return( ret );
 }
