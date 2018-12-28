@@ -819,8 +819,8 @@ return( WriteMultiplePSFont(sf,newname,sizes,subfontdefinition,map,layer));
 		  oldformatstate==ff_mma || oldformatstate==ff_mmb ?_("Saving multi-master font") :
 		  oldformatstate==ff_svg ?_("Saving SVG font") :
 		  oldformatstate==ff_ufo ?_("Saving Unified Font Object") :
-		  oldformatstate==ff_ufo2 ?_("Saving Unified Font Object") :
-		  oldformatstate==ff_ufo3 ?_("Saving Unified Font Object") :
+		  oldformatstate==ff_ufo2 ?_("Saving Unified Font Object 2") :
+		  oldformatstate==ff_ufo3 ?_("Saving Unified Font Object 3") :
 		 _("Saving PostScript Font"),
 	    path,sf->glyphcnt,1);
     free(path);
