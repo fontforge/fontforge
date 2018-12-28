@@ -734,7 +734,7 @@ return;
     else if ( format==2 )
 	good = ExportSVG(buffer,sc,ly_fore);
     else if ( format==3 )
-	good = ExportGlif(buffer,sc,ly_fore,2);
+	good = ExportGlif(buffer,sc,ly_fore,3);
     else if ( format==4 )
 	good = ExportPDF(buffer,sc,ly_fore);
     else if ( format==5 )
