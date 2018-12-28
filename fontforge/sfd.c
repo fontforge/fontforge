@@ -5576,7 +5576,7 @@ return( NULL );
 	} else if ( strmatch(tok,"SplineSet")==0 ) {
 	    sc->layers[current_layer].splines = SFDGetSplineSet(sfd,sc->layers[current_layer].order2);
 	} else if ( strmatch(tok,"Guideline:")==0 ) {
-	    SFDReadGuideline(sfd, &sc->layers[current_layer].guidelines, lastgl);
+	    lastgl = SFDReadGuideline(sfd, &sc->layers[current_layer].guidelines, lastgl);
 	} else if ( strmatch(tok,"Ref:")==0 || strmatch(tok,"Refer:")==0 ) {
 	    /* I should be depending on the version number here, but I made */
 	    /*  a mistake and bumped the version too late. So the version is */

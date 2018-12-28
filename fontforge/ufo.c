@@ -2574,11 +2574,11 @@ static SplineSet *GuidelineToSpline(SplineFont *sf, GuidelineSet *gl) {
 	SplinePoint *sp1, *sp2;
 	SplineSet *ss;
 	real emsize = sf->ascent+sf->descent;
-	fprintf(stderr, "Em: %g.\n", emsize);
+	// fprintf(stderr, "Em: %g.\n", emsize);
 	real angle_radians = acos(-1)*gl->angle/180;
 	real x_off = emsize*cos(angle_radians);
 	real y_off = emsize*sin(angle_radians);
-	fprintf(stderr, "Offsets: %g, %g.\n", x_off, y_off);
+	// fprintf(stderr, "Offsets: %g, %g.\n", x_off, y_off);
 	sp1 = SplinePointCreate(gl->point.x-x_off,gl->point.y-y_off);
 	if (gl->name != NULL)
 		sp1->name = copy(gl->name);
