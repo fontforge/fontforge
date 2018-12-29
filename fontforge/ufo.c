@@ -113,9 +113,10 @@ static void extractNumericVersion(const char * textVersion, int * versionMajor, 
 
 static void injectNumericVersion(char ** textVersion, int versionMajor, int versionMinor) {
   // We generate a version string from numeric values if available.
-  if (versionMajor == -1) asprintf(textVersion, "%s", "");
-  else if (versionMinor == -1) asprintf(textVersion, "%d", versionMajor);
-  else asprintf(textVersion, "%d.%d", versionMajor, versionMinor);
+  int err = 0;
+  if (versionMajor == -1) err |= (asprintf(textVersion, "%s", "") < 0);
+  else if (versionMinor == -1) err |= (asprintf(textVersion, "%d", versionMajor) < 0);
+  else err |= (asprintf(textVersion, "%d.%d", versionMajor, versionMinor) < 0);
   return;
 }
 
@@ -228,6 +229,7 @@ int index, const char * input, const char * prefix, const char * suffix, int fla
         // But the name length cannot exceed 255 characters, so it is necessary to crop the base name if it is too long.
         // Name exclusions are case insensitive, so we uppercase.
         // flags & 16 forces appending a number.
+	int err = 0; // Not terribly useful but for suppressing warnings.
         char * name_numbered = upper_case(input);
         char * full_name_base = same_case(input); // This is in case we do not need a number added.
         if (strlen(input) > (255 - strlen(prefix) - strlen(suffix))) {
@@ -252,7 +254,7 @@ int index, const char * input, const char * prefix, const char * suffix, int fla
             while (glif_name_search_glif_name(glif_name_hash, name_numbered) != NULL || number_once) {
               name_number++; // Remangle the name until we have no more matches.
               free(name_numbered); name_numbered = NULL;
-              asprintf(&name_numbered, "%s%015ld", name_base_upper, name_number);
+              err |= (asprintf(&name_numbered, "%s%015ld", name_base_upper, name_number) < 0);
               number_once = 0;
             }
             free(name_base_upper); name_base_upper = NULL;
@@ -264,12 +266,17 @@ int index, const char * input, const char * prefix, const char * suffix, int fla
         // Now we want the correct capitalization.
         free(name_numbered); name_numbered = NULL;
         if (name_number > 0) {
-          asprintf(&name_numbered, "%s%015ld", name_base, name_number);
+          err |= (asprintf(&name_numbered, "%s%015ld", name_base, name_number) < 0);
         } else {
-          asprintf(&name_numbered, "%s", full_name_base);
+          err |= (asprintf(&name_numbered, "%s", full_name_base) < 0);
         }
         free(name_base); name_base = NULL;
         free(full_name_base); full_name_base = NULL;
+	if (err) {
+	  // This is not really good error handling.
+	  // But we are mostly just trying to make the compiler happy.
+          LogError(_("Error generating names in ufo_name_number."));
+	}
         return name_numbered;
 }
 
@@ -607,7 +614,7 @@ static int PyObjDumpable(PyObject *value, int has_lists);
 xmlNodePtr PyObjectToXML( PyObject *value, int has_lists );
 #endif
 
-int stringInStrings(char *target, char **reference) {
+int stringInStrings(const char *target, const char **reference) {
 	if (reference == NULL) return false;
 	off_t pos;
 	for (pos = 0; reference[pos] != NULL; pos++)
@@ -616,7 +623,7 @@ int stringInStrings(char *target, char **reference) {
 	return false;
 }
 
-xmlNodePtr PythonDictToXML(const void *dict, xmlNodePtr *target, const char **exclusions, int has_lists) {
+xmlNodePtr PythonDictToXML(const void *dict, xmlNodePtr target, const char **exclusions, int has_lists) {
 	// dict is the Python dictionary from which to extract data.
 	// target is the xml node to which to add the contents of that dict.
 	// exclusions is a NULL-terminated array of strings naming keys to exclude.
@@ -1223,7 +1230,7 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer, int
 
 /* Same keys in both formats */
     PListAddString(dictnode,"familyName",sf->familyname_with_timestamp ? sf->familyname_with_timestamp : sf->familyname);
-    char *styleNameSynthetic = NULL;
+    const char *styleNameSynthetic = NULL;
     if (sf->fontname) {
         styleNameSynthetic = SFGetModifiers(sf);
 	char *lastdash = strrchr(sf->fontname, (int)"-");
@@ -1811,10 +1818,11 @@ void ufo_kerning_tree_destroy_contents(struct ufo_kerning_tree_session *session)
 }
 
 int ufo_kerning_tree_attempt_insert(struct ufo_kerning_tree_session *session, const char *left_name, const char *right_name, int value) {
+  int err = 0;
   struct glif_name_index *left_group_name_hash = &(session->_left_group_name_hash);
   struct glif_name_index *class_pair_hash = &(session->_class_pair_hash);
   char *tmppairname = NULL;
-  asprintf(&tmppairname, "%s %s", left_name, right_name);
+  err |= (asprintf(&tmppairname, "%s %s", left_name, right_name) < 0);
   struct ufo_kerning_tree_left *first_left = NULL;
   struct ufo_kerning_tree_left *last_left = NULL;
   if (!glif_name_search_glif_name(class_pair_hash, tmppairname)) {
@@ -1841,12 +1849,15 @@ int ufo_kerning_tree_attempt_insert(struct ufo_kerning_tree_session *session, co
       else current_left->first_right = current_right;
       current_left->last_right = current_right;
       char *newpairname = NULL;
-      asprintf(&newpairname, "%s %s", left_name, right_name);
+      err |= (asprintf(&newpairname, "%s %s", left_name, right_name) < 0);
       glif_name_track_new(class_pair_hash, session->class_pair_count++, newpairname);
       free(newpairname); newpairname = NULL;
     }
   }
   free(tmppairname); tmppairname = NULL;
+  if (err) {
+    LogError(_("Error generating names in ufo_kerning_tree_attempt_insert."));
+  }
   return 0;
 }
 
@@ -2064,10 +2075,13 @@ int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer, int version
         // TODO: Optionally skip rewriting an untouched glyph.
         // Do we track modified glyphs carefully enough for this?
         char * final_name;
-        asprintf(&final_name, "%s%s%s", "", sc->glif_name, ".glif"); // Generate the final name with prefix and suffix.
-	PListAddString(dictnode,sc->name,final_name); // Add the glyph to the table of contents.
-	err |= !GlifDump(glyphdir,final_name,sc,layer,version);
-        free(final_name); final_name = NULL;
+        if (asprintf(&final_name, "%s%s%s", "", sc->glif_name, ".glif") >=0) { // Generate the final name with prefix and suffix.
+		PListAddString(dictnode,sc->name,final_name); // Add the glyph to the table of contents.
+		err |= !GlifDump(glyphdir,final_name,sc,layer,version);
+        	free(final_name); final_name = NULL;
+	} else {
+		err |= 1;
+	}
     }
 
     char *fname = buildname(glyphdir, "contents.plist"); // Build the file name for the contents.
@@ -2075,6 +2089,9 @@ int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer, int version
     free(fname); fname = NULL;
     xmlFreeDoc(plistdoc); // Free the memory.
     xmlCleanupParser();
+    if (err) {
+	LogError(_("Error in WriteUFOLayer."));
+    }
     return err;
 }
 
@@ -2177,25 +2194,30 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff, in
         char * layer_path_start = NULL;
         char * numberedlayerpath = NULL;
         char * numberedlayerpathwithglyphs = NULL;
+	int name_err = 0;
         if (layer_pos == ly_fore) {
           numberedlayerpath = strdup("glyphs");
-          asprintf(&numberedlayerpathwithglyphs, "%s", numberedlayerpath);
+          name_err |= (asprintf(&numberedlayerpathwithglyphs, "%s", numberedlayerpath) < 0);
         } else if (sf->layers[layer_pos].ufo_path != NULL) {
           layer_path_start = strdup(sf->layers[layer_pos].ufo_path);
           numberedlayerpath = ufo_name_number(layer_path_hash, layer_pos, layer_path_start, "", "", 7);
-          asprintf(&numberedlayerpathwithglyphs, "%s", numberedlayerpath);
+          name_err |= (asprintf(&numberedlayerpathwithglyphs, "%s", numberedlayerpath) < 0);
         } else {
           layer_path_start = ufo_name_mangle(sf->layers[layer_pos].name, "glyphs.", "", 7);
           numberedlayerpath = ufo_name_number(layer_path_hash, layer_pos, layer_path_start, "glyphs.", "", 7);
-          asprintf(&numberedlayerpathwithglyphs, "glyphs.%s", numberedlayerpath);
+          name_err |= (asprintf(&numberedlayerpathwithglyphs, "glyphs.%s", numberedlayerpath) < 0);
         }
         if (layer_path_start != NULL) { free(layer_path_start); layer_path_start = NULL; }
-        // We write to the layer contents.
-        xmlNewTextChild(layernode, NULL, BAD_CAST "string", numberedlayername);
-        xmlNewTextChild(layernode, NULL, BAD_CAST "string", numberedlayerpathwithglyphs);
-        glyphdir = buildname(basedir, numberedlayerpathwithglyphs);
-        // We write the glyph directory.
-        err |= WriteUFOLayer(glyphdir, sf, layer_pos, version);
+	if (name_err) {
+          err |= name_err;
+	} else {
+	  // We write to the layer contents.
+	  xmlNewTextChild(layernode, NULL, BAD_CAST "string", numberedlayername);
+	  xmlNewTextChild(layernode, NULL, BAD_CAST "string", numberedlayerpathwithglyphs);
+	  glyphdir = buildname(basedir, numberedlayerpathwithglyphs);
+	  // We write the glyph directory.
+	  err |= WriteUFOLayer(glyphdir, sf, layer_pos, version);
+	}
         free(numberedlayername); numberedlayername = NULL;
         free(numberedlayerpath); numberedlayerpath = NULL;
         free(numberedlayerpathwithglyphs); numberedlayerpathwithglyphs = NULL;
@@ -2560,7 +2582,7 @@ static SplineSet *GuidelineToSpline(SplineFont *sf, GuidelineSet *gl) {
 	return ss;
 }
 
-static GuidelineSet *UFOLoadGuideline(SplineFont *sf, SplineChar *sc, int layer, xmlDocPtr doc, xmlNodePtr xmlGuideline, GuidelineSet **lastgl, SplinePointList **lastspl) {
+static void *UFOLoadGuideline(SplineFont *sf, SplineChar *sc, int layer, xmlDocPtr doc, xmlNodePtr xmlGuideline, GuidelineSet **lastgl, SplinePointList **lastspl) {
 	// It is easier to use the free mechanism for the guideline to clean up than to do it manually.
 	// So we create one speculatively and then check whether it is valid.
 	GuidelineSet *gl = chunkalloc(sizeof(GuidelineSet));
@@ -2655,8 +2677,13 @@ static GuidelineSet *UFOLoadGuideline(SplineFont *sf, SplineChar *sc, int layer,
 			colorps = colorp;
 			while (colors[colorp] >= '0' && colors[colorp] <= '9') colorp++;
 			if (colorp > colorps) {
-				colorv = strtod(colors + colorps, colors + colorp);
+				char *after_color = NULL;
+				colorv = strtod(colors + colorps, &after_color);
+				if (after_color != colors + colorp)
+					LogError(_("Error parsing color component.\n"));
 				gl->color |= (((uint32)(colorv * 255.0)) << (8 * (4 - colori)));
+			} else {
+				LogError(_("Missing color component.\n"));
 			}
 		}
 		xmlFree(colors);
@@ -2691,7 +2718,7 @@ static GuidelineSet *UFOLoadGuideline(SplineFont *sf, SplineChar *sc, int layer,
 			(*lastgl)->next = gl;
 		}
 		*lastgl = gl;
-		return gl;
+		return (void *)gl;
 	} else {
 		// fprintf(stderr, "Creating spline for guideline.");
 		// Convert from a guideline to a spline.
@@ -2709,11 +2736,11 @@ static GuidelineSet *UFOLoadGuideline(SplineFont *sf, SplineChar *sc, int layer,
 			(*lastspl)->next = spl;
 		}
 		*lastspl = spl;
-		return spl;
+		return (void *)spl;
 	}
 }
 
-static GuidelineSet *UFOLoadGuidelines(SplineFont *sf, SplineChar *sc, int layer, xmlDocPtr doc, xmlNodePtr xmlGuidelines, GuidelineSet **lastgl, SplinePointList **lastspl) {
+static void UFOLoadGuidelines(SplineFont *sf, SplineChar *sc, int layer, xmlDocPtr doc, xmlNodePtr xmlGuidelines, GuidelineSet **lastgl, SplinePointList **lastspl) {
 	if (xmlStrcmp(xmlGuidelines->name, (const xmlChar *)"array") == 0) {
 		// fprintf(stderr, "Got global guidelines array.\n");
 		// Guidelines in fontinfo.plist are in a dictionary format.
@@ -2722,10 +2749,11 @@ static GuidelineSet *UFOLoadGuidelines(SplineFont *sf, SplineChar *sc, int layer
 			xmlNodePtr dictnode = NULL;
 			for ( dictnode = array->children; dictnode != NULL; dictnode = dictnode->next )
 				if (xmlStrcmp(dictnode->name, (const xmlChar *)"dict") == 0)
-					UFOLoadGuideline(sf, sc, layer, doc, dictnode, lastgl, lastspl);
+					if (!UFOLoadGuideline(sf, sc, layer, doc, dictnode, lastgl, lastspl))
+						LogError(_("Failed to read guideline."));
 		}
 	}
-	return sf->grid.splines;
+	return;
 }
 
 static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, char* glyphname, SplineChar* existingglyph, int layerdest) {
