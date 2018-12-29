@@ -6,6 +6,15 @@ platform:
 branches:
   only:
   - master
+  - /release\/.*/
+for:
+  -
+    branches:
+      only:
+        - /release\/.*/
+    environment:
+      global:
+        APPVEYOR_CONFIG_PROD: 1
 clone_depth: 10
 environment:
   global:
@@ -26,7 +35,7 @@ environment:
       MBITS: 32
       VCXSRV: VcXsrv-1.14.2-minimal.tar.xz
       BACKEND: gdk
-      GDKOPT: --enable-gdk=gdk2
+      GDKOPT: --enable-gdk=gdk3
 #    - MSYSTEM: MINGW64
 #      MBITS: 64
 #      VCXSRV: VcXsrv-1.17.0.0-x86_64-minimal.tar.xz
@@ -38,17 +47,11 @@ environment:
 #  - 'C:\msys64\var\cache\pacman\pkg'
 install:
   - git clone --depth=1 --branch=master https://github.com/fontforge/fontforgebuilds.git
-  - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds/original-archives/binaries; exec 0</dev/null; wget --tries 4 https://dl.bintray.com/jtanx/fontforgelibs/build-system-extras/potrace-1.15.win$MBITS.tar.gz"
-  - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds/original-archives/binaries; exec 0</dev/null; wget --tries 4 https://dl.bintray.com/jtanx/fontforgelibs/build-system-extras/$VCXSRV"
-  - >-
-    call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds/original-archives/sources; exec 0</dev/null;
-    wget --tries 1 http://download.savannah.gnu.org/releases/freetype/freetype-2.9.tar.bz2 || 
-    wget --tries 4 https://sourceforge.net/projects/freetype/files/freetype2/2.9/freetype-2.9.tar.bz2"
 # These steps will update msys2 to the latest version
-# Uncomment these if builds fail because of pacman not installing dependencies due to version conflicts
-#  - call %MBASH% "pacman -Syuu --noconfirm"
-#  - call %MBASH% "pacman -Suu --noconfirm"
-#  - call %MBASH% "pacman -Suu --noconfirm"
+# Run unconditionally if builds fail because of pacman not installing dependencies due to version conflicts
+  - if "%APPVEYOR_REPO_BRANCH:~0,8%"=="release/" call %MBASH% "pacman -Syuu --noconfirm"
+  - if "%APPVEYOR_REPO_BRANCH:~0,8%"=="release/" call %MBASH% "pacman -Suu --noconfirm"
+  - if "%APPVEYOR_REPO_BRANCH:~0,8%"=="release/" call %MBASH% "pacman -Suu --noconfirm"
   - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds; exec 0</dev/null; ./ffbuild.sh $GDKOPT --appveyor --depsonly"
 build_script:
   - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds; exec 0</dev/null; ./ffbuild.sh $GDKOPT --appveyor"
@@ -59,3 +62,5 @@ artifacts:
     name: FontForge $(MBITS)-bit $(BACKEND) build
   - path: fontforgebuilds\*-debugging-symbols.7z
     name: FontForge $(MBITS)-bit $(BACKEND) debugging symbols
+  - path: fontforgebuilds\fontforge-setup\*.exe
+    name: FontForge $(MBITS)-bit setup
