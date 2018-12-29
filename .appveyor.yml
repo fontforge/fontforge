@@ -1,6 +1,3 @@
-# The SourceForge servers are really unreliable to download from.
-# Half the time, the downloads time-out, causing the build to fail.
-# As such, I have made a bintray mirror, which should be more reliable.
 platform:
   - x64
 branches:
@@ -56,6 +53,7 @@ install:
 build_script:
   - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds; exec 0</dev/null; ./ffbuild.sh $GDKOPT --appveyor"
   - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds; exec 0</dev/null; FFPATH=`cygpath -m $APPVEYOR_BUILD_FOLDER` ./make-portable-package.sh appveyor"
+  - if "%APPVEYOR_REPO_BRANCH:~0,8%"=="release/" cd "%APPVEYOR_BUILD_FOLDER%/fontforgebuilds/fontforge-setup" && "C:\Program Files (x86)\Inno Setup 5\ISCC.exe" -Qp fontforgesetup.iss
 test: off
 artifacts:
   - path: fontforgebuilds\*-appveyor.7z
