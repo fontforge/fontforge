@@ -741,7 +741,7 @@ return( onlyname );
     if ( pt!=NULL ) {
 	if (( pt-files[0]>4 && (strncasecmp(pt-4,".ufo",4)==0 || strncasecmp(pt-4,"_ufo",4)==0)) ||
 		( pt-files[0]>4 && (strncasecmp(pt-5,".ufo2",4)==0 || strncasecmp(pt-5,"_ufo2",4)==0)) ||
-		( pt-files[0]>4 && (strncasecmp(pt-5,".ufo3",4)==0 || strncasecmp(pt-5,"_ufo3",4)==0)) ||
+ 		( pt-files[0]>5 && (strncasecmp(pt-5,".ufo3",5)==0 || strncasecmp(pt-5,"_ufo3",5)==0)) ||
 		( pt-files[0]>6 && (strncasecmp(pt-6,".sfdir",6)==0 || strncasecmp(pt-6,"_sfdir",6)==0)) ) {
 	    /* Ok, looks like a potential directory font. Now is EVERYTHING */
 	    /*  in the archive inside this guy? */
