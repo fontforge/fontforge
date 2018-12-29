@@ -1194,27 +1194,7 @@ static real PointsDistance(BasePoint p0, BasePoint p1) {
 }
 
 static real AngleFromPoints(BasePoint p0, BasePoint p1) {
-	// Handle vertical lines.
-	if (p0.x == p1.x) {
-		if (p0.y < p1.y)
-			return acos(-1)/2;
-		else if (p0.y > p1.y)
-			return 3*acos(-1)/2;
-	}
-	// Handle horizontal lines.
-	if (p0.y == p1.y) {
-		if (p0.x < p1.x)
-			return 0;
-		else if (p0.y > p1.y)
-			return acos(-1);
-	}
-	// Handle majority vertical lines.
-	if (p1.y - p0.y > p1.x - p0.x)
-		return asin((p1.y - p0.y) / PointsDistance(p0, p1));
-	// Handle majority horizontal lines.
-	if (p1.y - p0.y < p1.x - p0.x)
-		return acos((p1.x - p0.x) / PointsDistance(p0, p1));
-	return 0;
+	return atan2(p1.y - p0.y, p1.x - p0.x);
 }
 
 static GuidelineSet *SplineToGuideline(SplineFont *sf, SplineSet *ss) {
@@ -1225,7 +1205,7 @@ static GuidelineSet *SplineToGuideline(SplineFont *sf, SplineSet *ss) {
 	GuidelineSet *gl = chunkalloc(sizeof(GuidelineSet));
 	gl->point.x = (ss->first->me.x + ss->last->me.x) / 2;
 	gl->point.y = (ss->first->me.y + ss->last->me.y) / 2;
-	real angle_radians = atan2(ss->last->me.y - ss->first->me.y, ss->last->me.x - ss->first->me.x);
+	real angle_radians = AngleFromPoints(ss->first->me, ss->last->me);
 	real angle_degrees = 180.0*angle_radians/acos(-1);
 	gl->angle = fmod(angle_degrees, 360);
 	if (ss->first->name != NULL)
