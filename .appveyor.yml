@@ -43,7 +43,7 @@ environment:
 #cache:
 #  - 'C:\msys64\var\cache\pacman\pkg'
 install:
-  - git clone --depth=1 --branch=master https://github.com/fontforge/fontforgebuilds.git
+  - git clone --depth=1 --branch=master https://github.com/jtanx/fontforgebuilds.git
 # These steps will update msys2 to the latest version
 # Run unconditionally if builds fail because of pacman not installing dependencies due to version conflicts
   - if "%APPVEYOR_REPO_BRANCH:~0,8%"=="release/" call %MBASH% "pacman -Syuu --noconfirm"
