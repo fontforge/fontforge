@@ -1225,7 +1225,7 @@ static GuidelineSet *SplineToGuideline(SplineFont *sf, SplineSet *ss) {
 	GuidelineSet *gl = chunkalloc(sizeof(GuidelineSet));
 	gl->point.x = (ss->first->me.x + ss->last->me.x) / 2;
 	gl->point.y = (ss->first->me.y + ss->last->me.y) / 2;
-	real angle_radians = atan2(ss->first->me.y - ss->last->me.y, ss->first->me.x - ss->last->me.x);
+	real angle_radians = atan2(ss->last->me.y - ss->first->me.y, ss->last->me.x - ss->first->me.x);
 	real angle_degrees = 180.0*angle_radians/acos(-1);
 	gl->angle = fmod(angle_degrees, 360);
 	if (ss->first->name != NULL)
