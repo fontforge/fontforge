@@ -4327,7 +4327,11 @@ return( NULL );
     else if ( strcasecmp(pt,".svg")==0 )
 	_ExportSVG(file,&sc,ly_fore);
     else if ( strcasecmp(pt,".glif")==0 )
-	_ExportGlif(file,&sc,ly_fore);
+	_ExportGlif(file,&sc,ly_fore,3);
+    else if ( strcasecmp(pt,".glif2")==0 )
+	_ExportGlif(file,&sc,ly_fore,2);
+    else if ( strcasecmp(pt,".glif3")==0 )
+	_ExportGlif(file,&sc,ly_fore,3);
     else if ( strcasecmp(pt,".plate")==0 )
 	_ExportPlate(file,&sc,ly_fore);
     /* else if ( strcasecmp(pt,".fig")==0 )*/
@@ -8083,7 +8087,11 @@ return( NULL );
 	else if ( strcasecmp(pt,".svg")==0 )
 	    _ExportSVG(file,sc,layer);
 	else if ( strcasecmp(pt,".glif")==0 )
-	    _ExportGlif(file,sc,layer);
+	    _ExportGlif(file,sc,layer,3);
+	else if ( strcasecmp(pt,".glif2")==0 )
+	    _ExportGlif(file,sc,layer,2);
+	else if ( strcasecmp(pt,".glif3")==0 )
+	    _ExportGlif(file,sc,layer,3);
 	else if ( strcasecmp(pt,".plate")==0 )
 	    _ExportPlate(file,sc,layer);
 	/* else if ( strcasecmp(pt,".fig")==0 )*/

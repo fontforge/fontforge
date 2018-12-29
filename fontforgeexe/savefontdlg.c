@@ -156,7 +156,9 @@ static GTextInfo formattypes[] = {
     { (unichar_t *) N_("OpenType CID"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("OpenType CID (dfont)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("SVG font"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
-    { (unichar_t *) N_("Unified Font Object"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Unified Font Object (UFO3)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Unified Font Object 2"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Unified Font Object 3"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("Web Open Font (WOFF)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("Web Open Font (WOFF2)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("No Outline Font"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
@@ -1398,7 +1400,7 @@ return;
 	    psfnlenwarned = true;
 	}
     } else if ( oldformatstate!=ff_none && oldformatstate!=ff_svg &&
-	    oldformatstate!=ff_ufo ) {
+	    oldformatstate!=ff_ufo && oldformatstate!=ff_ufo2 && oldformatstate!=ff_ufo3 ) {
 	int val = d->sf->ascent+d->sf->descent;
 	int bit;
 	for ( bit=0x800000; bit!=0; bit>>=1 )
@@ -2057,7 +2059,7 @@ int SFGenerateFont(SplineFont *sf,int layer,int family,EncMap *map) {
 	    if ( family==gf_ttc ) {
 		fc = fondcnt;
 		psstyle = 0;
-	    } else if ( family==gf_macfamily && strcmp(fv->b.sf->familyname,sf->familyname)==0 ) {
+	    } else if ( family==gf_macfamily && sf->familyname && fv->b.sf->familyname && strcmp(fv->b.sf->familyname,sf->familyname)==0 ) {
 		MacStyleCode(fv->b.sf,&psstyle);
 		if ( fv->b.sf->fondname==NULL ) {
 		    fc = 0;
@@ -2283,6 +2285,8 @@ return( 0 );
 	formattypes[ff_otfcid].disabled = true;
 	formattypes[ff_cffcid].disabled = true;
 	formattypes[ff_ufo].disabled = true;
+	formattypes[ff_ufo2].disabled = true;
+	formattypes[ff_ufo3].disabled = true;
 	if ( ofs!=ff_svg )
 	    ofs = ff_ptype3;
     } else if ( sf->strokedfont ) {
@@ -2291,6 +2295,8 @@ return( 0 );
 	formattypes[ff_ttfmacbin].disabled = true;
 	formattypes[ff_ttfdfont].disabled = true;
 	formattypes[ff_ufo].disabled = true;
+	formattypes[ff_ufo2].disabled = true;
+	formattypes[ff_ufo3].disabled = true;
 	if ( ofs==ff_ttf || ofs==ff_ttfsym || ofs==ff_ttfmacbin || ofs==ff_ttfdfont )
 	    ofs = ff_otf;
     }
@@ -2305,7 +2311,7 @@ return( 0 );
 	    ofs = ff_ttfmacbin;
 	else if ( ofs==ff_otf || ofs==ff_cff )
 	    ofs = ff_otfdfont;
-	else if ( ofs==ff_ufo || ofs==ff_ttc )
+	else if ( ofs==ff_ufo || ofs==ff_ufo2 || ofs==ff_ufo3 || ofs==ff_ttc )
 	    ofs = ff_ttfdfont;
 	formattypes[ff_pfa].disabled = true;
 	formattypes[ff_pfb].disabled = true;
@@ -2324,6 +2330,8 @@ return( 0 );
 	formattypes[ff_cffcid].disabled = true;
 	formattypes[ff_svg].disabled = true;
 	formattypes[ff_ufo].disabled = true;
+	formattypes[ff_ufo2].disabled = true;
+	formattypes[ff_ufo3].disabled = true;
     } else if ( family == gf_ttc ) {
 	for ( i=0; i<=ff_none; ++i )
 	    formattypes[i].disabled = true;

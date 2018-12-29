@@ -740,6 +740,8 @@ return( onlyname );
     pt = strrchr(files[0],'/');
     if ( pt!=NULL ) {
 	if (( pt-files[0]>4 && (strncasecmp(pt-4,".ufo",4)==0 || strncasecmp(pt-4,"_ufo",4)==0)) ||
+ 		( pt-files[0]>5 && (strncasecmp(pt-5,".ufo2",5)==0 || strncasecmp(pt-5,"_ufo2",5)==0)) ||
+ 		( pt-files[0]>5 && (strncasecmp(pt-5,".ufo3",5)==0 || strncasecmp(pt-5,"_ufo3",5)==0)) ||
 		( pt-files[0]>6 && (strncasecmp(pt-6,".sfdir",6)==0 || strncasecmp(pt-6,"_sfdir",6)==0)) ) {
 	    /* Ok, looks like a potential directory font. Now is EVERYTHING */
 	    /*  in the archive inside this guy? */
@@ -1182,7 +1184,9 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
 	    sf = SFReadTTF(fullname,0,openflags);
     } else if ( strmatch(fullname+strlen(strippedname)-4, ".svg")==0 && checked!='S' ) {
 	    sf = SFReadSVG(fullname,0);
-    } else if ( strmatch(fullname+strlen(fullname)-4, ".ufo")==0 && checked!='u' ) {
+    } else if ( strmatch(fullname+strlen(fullname)-4, ".ufo")==0 && checked!='u' ||
+		 strmatch(fullname+strlen(fullname)-5, ".ufo2")==0 && checked!='u' ||
+		 strmatch(fullname+strlen(fullname)-5, ".ufo3")==0 && checked!='u' ) {
 	    sf = SFReadUFO(fullname,0);
     } else if ( strmatch(fullname+strlen(fullname)-4, ".bdf")==0 && checked!='b' ) {
 	    sf = SFFromBDF(fullname,0,false);

@@ -377,7 +377,7 @@ return(0);
 return( ret );
 }
 
-int ExportGlif(char *filename,SplineChar *sc,int layer) {
+int ExportGlif(char *filename,SplineChar *sc,int layer,int version) {
     FILE *glif;
     int ret;
 
@@ -385,7 +385,7 @@ int ExportGlif(char *filename,SplineChar *sc,int layer) {
     if ( glif==NULL ) {
 return(0);
     }
-    ret = _ExportGlif(glif,sc,layer);
+    ret = _ExportGlif(glif,sc,layer,version);
 return( ret );
 }
 
@@ -734,7 +734,7 @@ return;
     else if ( format==2 )
 	good = ExportSVG(buffer,sc,ly_fore);
     else if ( format==3 )
-	good = ExportGlif(buffer,sc,ly_fore);
+	good = ExportGlif(buffer,sc,ly_fore,3);
     else if ( format==4 )
 	good = ExportPDF(buffer,sc,ly_fore);
     else if ( format==5 )
