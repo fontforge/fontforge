@@ -839,15 +839,6 @@ static int refcomp(const void *_r1, const void *_r2) {
 return( strcmp( ref1->sc->name, ref2->sc->name) );
 }
 
-real RealMod(real dividend, real divisor) {
-	real remainder = dividend;
-	while (remainder >= divisor)
-		remainder -= divisor;
-	while (remainder < 0)
-		remainder += divisor;
-	return remainder;
-}
-
 xmlNodePtr _GlifToXML(const SplineChar *sc, int layer, int version) {
     if (layer > sc->layer_cnt) return NULL;
     const struct altuni *altuni;
@@ -903,12 +894,12 @@ xmlNodePtr _GlifToXML(const SplineChar *sc, int layer, int version) {
 		for ( gl=sc->layers[layer].guidelines; gl != NULL; gl = gl->next ) {
 		    xmlNodePtr guidelinexml = xmlNewChild(topglyphxml, NULL, BAD_CAST "guideline", NULL);
 		    // gl->flags & 0x10 indicates whether to use the abbreviated format in the UFO specification if possible.
-		    if (RealMod(gl->angle, 180) || !(gl->flags & 0x10))
+		    if (fmod(gl->angle, 180) || !(gl->flags & 0x10))
 		        xmlSetPropPrintf(guidelinexml, BAD_CAST "x", "%g", gl->point.x);
-		    if (RealMod(gl->angle + 90, 180) || !(gl->flags & 0x10))
+		    if (fmod(gl->angle + 90, 180) || !(gl->flags & 0x10))
 		        xmlSetPropPrintf(guidelinexml, BAD_CAST "y", "%g", gl->point.y);
-		    if (RealMod(gl->angle, 90) || !(gl->flags & 0x10))
-		        xmlSetPropPrintf(guidelinexml, BAD_CAST "angle", "%g", RealMod(gl->angle + 360, 360));
+		    if (fmod(gl->angle, 90) || !(gl->flags & 0x10))
+		        xmlSetPropPrintf(guidelinexml, BAD_CAST "angle", "%g", fmod(gl->angle + 360, 360));
 		    if (gl->name != NULL)
 		        xmlSetPropPrintf(guidelinexml, BAD_CAST "name", "%s", gl->name);
 		    if (gl->flags & 0x20) // color is set. Repack RGBA from a uint32 to a string with 0-1 scaled values comma-joined.
@@ -1234,9 +1225,9 @@ static GuidelineSet *SplineToGuideline(SplineFont *sf, SplineSet *ss) {
 	GuidelineSet *gl = chunkalloc(sizeof(GuidelineSet));
 	gl->point.x = (ss->first->me.x + ss->last->me.x) / 2;
 	gl->point.y = (ss->first->me.y + ss->last->me.y) / 2;
-	real angle_radians = AngleFromPoints(ss->first->me, ss->last->me);
+	real angle_radians = atan2(ss->first->me.y - ss->last->me.y, ss->first->me.x - ss->last->me.x);
 	real angle_degrees = 180.0*angle_radians/acos(-1);
-	gl->angle = RealMod(angle_degrees, 360);
+	gl->angle = fmod(angle_degrees, 360);
 	if (ss->first->name != NULL)
 		gl->name = copy(ss->first->name);
 	return gl;
@@ -1473,13 +1464,13 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer, int
 		    // These are figured from splines, so we have a synthetic set of flags.
 		    int glflags = 0x10; // This indicates that we want to omit unnecessary values, which seems to be standard.
 		    // We also output all coordinates if there is a non-zero coordinate.
-		    if (RealMod(gl->angle, 180) || !(glflags & 0x10) || gl->point.x != 0)
+		    if (fmod(gl->angle, 180) || !(glflags & 0x10) || gl->point.x != 0)
 		        PListAddReal(gldictnode, "x", gl->point.x);
-		    if (RealMod(gl->angle + 90, 180) || !(glflags & 0x10) || gl->point.y != 0)
+		    if (fmod(gl->angle + 90, 180) || !(glflags & 0x10) || gl->point.y != 0)
 		        PListAddReal(gldictnode, "y", gl->point.y);
 		    // If x and y are both present, we must add angle.
-		    if (RealMod(gl->angle, 90) || !(glflags & 0x10) || (gl->point.x != 0 && gl->point.y != 0))
-		        PListAddReal(gldictnode, "angle", RealMod(gl->angle + 360, 360));
+		    if (fmod(gl->angle, 90) || !(glflags & 0x10) || (gl->point.x != 0 && gl->point.y != 0))
+		        PListAddReal(gldictnode, "angle", fmod(gl->angle + 360, 360));
 		    if (gl->name != NULL)
 		        PListAddString(gldictnode, "name", gl->name);
                 }
@@ -2695,8 +2686,8 @@ static GuidelineSet *UFOLoadGuideline(SplineFont *sf, SplineChar *sc, int layer,
 	// fprintf(stderr, "Definition flags: %x.\n", what_is_defined);
 	// fprintf(stderr, "x: %g, y: %f, angle: %f.\n", gl->point.x, gl->point.y, gl->angle);
 	if (
-		(RealMod(gl->angle, 180) && !(what_is_defined & 0x1)) || // Non-horizontal guideline without x.
-		(RealMod(gl->angle + 90, 180) && !(what_is_defined & 0x2)) || // Non-vertical guideline without y.
+		(fmod(gl->angle, 180) && !(what_is_defined & 0x1)) || // Non-horizontal guideline without x.
+		(fmod(gl->angle + 90, 180) && !(what_is_defined & 0x2)) || // Non-vertical guideline without y.
 		isnan(gl->point.x) || isnan(gl->point.y) || isnan(gl->angle) ||
 		isinf(gl->point.x) || isinf(gl->point.y) || isinf(gl->angle)
 	) {
