@@ -1,24 +1,42 @@
 #!/bin/bash 
+set -ex
 
-mkdir -p $TRAVIS_BUILD_DIR/target/usr/share/applications/ # FIXME: #3372
-cp desktop/fontforge.desktop $TRAVIS_BUILD_DIR/target/usr/share/applications/ # FIXME: #3372
-mkdir -p $TRAVIS_BUILD_DIR/target/usr/share/icons/hicolor/ # FIXME: #3372
-cp -r desktop/icons/* $TRAVIS_BUILD_DIR/target/usr/share/icons/hicolor/ ; rm -rf $TRAVIS_BUILD_DIR/target/usr/share/icons/hicolor/src # FIXME: #3372
-mkdir -p $TRAVIS_BUILD_DIR/target/usr/share/fontforge/hotkeys ; cp share/default $TRAVIS_BUILD_DIR/target/usr/share/fontforge/hotkeys/ # FIXME: #3372
-find .  | grep "pixmaps/resources"
-mkdir -p $TRAVIS_BUILD_DIR/target/usr/share/fontforge/pixmaps ; find . -type f -name "resources" -exec cp {} $TRAVIS_BUILD_DIR/target/usr/share/fontforge/pixmaps/ \;
+export APPDIR=appdir
+
+echo "Starting appimage build, folder is $APPDIR"
+
+mkdir -p $APPDIR
+cp -rP $PREFIX $APPDIR/usr
+
+find $APPDIR/
+
 # TODO: AppStream metainfo
-( cd $TRAVIS_BUILD_DIR/target ; dpkg -x /var/cache/apt/archives/libpython3.6-minimal*.deb . )
-( cd $TRAVIS_BUILD_DIR/target ; dpkg -x /var/cache/apt/archives/libpython3.6-stdlib*.deb . )
-find $TRAVIS_BUILD_DIR/target/
+PYVER=$($PYTHON -c "import sys; print('{0}.{1}'.format(sys.version_info.major, sys.version_info.minor))")
+
+( cd $APPDIR ; dpkg -x /var/cache/apt/archives/libpython${PYVER}-minimal*.deb . )
+( cd $APPDIR ; dpkg -x /var/cache/apt/archives/libpython${PYVER}-stdlib*.deb . )
+find $APPDIR/
+
 wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
 chmod a+x linuxdeployqt-continuous-x86_64.AppImage
+
 export VERSION=$(git rev-parse --short HEAD) # linuxdeployqt uses this for naming the file
-./linuxdeployqt*.AppImage $TRAVIS_BUILD_DIR/target/usr/share/applications/*.desktop -bundle-non-qt-libs
+./linuxdeployqt*.AppImage $APPDIR/usr/share/applications/*.desktop -bundle-non-qt-libs #-unsupported-allow-new-glibc
 # Manually invoke appimagetool so that the custom AppRun stays intact
 ./linuxdeployqt*.AppImage --appimage-extract
+
 export PATH=$(readlink -f ./squashfs-root/usr/bin):$PATH
-rm $TRAVIS_BUILD_DIR/target/AppRun ; cp Packaging/AppDir/AppRun $TRAVIS_BUILD_DIR/target/AppRun ; chmod +x $TRAVIS_BUILD_DIR/target/AppRun # custom AppRun
-./squashfs-root/usr/bin/appimagetool -g $TRAVIS_BUILD_DIR/target/
-find $TRAVIS_BUILD_DIR/target -executable -type f -exec ldd {} \; | grep " => /usr" | cut -d " " -f 2-3 | sort | uniq
-curl --upload-file FontForge*.AppImage https://transfer.sh/FontForge-git.$(git rev-parse --short HEAD)-x86_64.AppImage # For testing only
+rm $APPDIR/AppRun ; cp Packaging/AppDir/AppRun $APPDIR/AppRun ; chmod +x $APPDIR/AppRun # custom AppRun
+./squashfs-root/usr/bin/appimagetool -g $APPDIR/
+find $APPDIR -executable -type f -exec ldd {} \; | grep " => /usr" | cut -d " " -f 2-3 | sort | uniq
+
+# Update the bintray descriptor... sigh. If this fails, then oh well, no bintray
+echo "Updating the bintray descriptor..."
+BINTRAY_DESCRIPTOR=$TRAVIS_BUILD_DIR/travis-scripts/bintray_descriptor.json
+sed -i "s/ciXXXX/$(date +appimage-ci-%Y-%m-%d)/g" $BINTRAY_DESCRIPTOR || true
+sed -i "s/releaseXXXX/$(date +%Y-%m-%d)/g" $BINTRAY_DESCRIPTOR || true
+echo "Bintray descriptor:"
+cat $BINTRAY_DESCRIPTOR
+
+pwd
+ls -lh

@@ -1,7 +1,7 @@
 language: c
 compiler: gcc
 sudo: false
-dist: trusty
+dist: xenial
 osx_image: xcode9.2
 
 branches:
@@ -22,17 +22,24 @@ matrix:
       env: LINUX_NOX=true
     - os: linux
       env: LINUX_FULL=true
+    - os: linux
+      env:
+        - LINUX_RELEASE=true
+        - BINTRAY_DEPLOY=true
     - os: osx
-      env: OSX_ONLY=true
+      env:
+        - OSX_ONLY=true
+        - BINTRAY_DEPLOY=true
 
 addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
       - deadsnakes
-    packages: [autoconf, automake, autotools-dev, bzip2, gcc-7, libtool,
-      libjpeg-dev, libtiff4-dev, libpng12-dev, libfreetype6-dev, libgif-dev,
-      libx11-dev, libxml2-dev, libpango1.0-dev, libcairo2-dev, python3.6-dev, lcov]
+    packages: [autoconf, automake, autotools-dev, bzip2, gcc-8, g++-8, libtool,
+      libjpeg-dev, libtiff5-dev, libpng12-dev, libfreetype6-dev, libgif-dev,
+      libx11-dev, libxml2-dev, libpango1.0-dev, libcairo2-dev, python3.7-dev,
+      libbrotli-dev, ninja-build, cmake, lcov]
   coverity_scan:
     project:
       name: "fontforge/fontforge"
@@ -53,23 +60,24 @@ before_install:
 install:
   - |
     set -e
+    export PREFIX=$TRAVIS_BUILD_DIR/target
     export DEPSPREFIX=$TRAVIS_BUILD_DIR/travisdeps
-    if [ "$TRAVIS_OS_NAME" == "linux" ]; then
-      export PREFIX=/usr
-    else
-      export PREFIX=$TRAVIS_BUILD_DIR/target
-    fi
-    export PATH=$PATH:$DEPSPREFIX/bin:$PREFIX/bin:$TRAVIS_BUILD_DIR/target/$DEPSPREFIX/bin:$TRAVIS_BUILD_DIR/target/$PREFIX/bin
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DEPSPREFIX/lib:$PREFIX/lib:$TRAVIS_BUILD_DIR/target/$DEPSPREFIX/lib:$TRAVIS_BUILD_DIR/target/$PREFIX/lib
+    export PATH=$PATH:$DEPSPREFIX/bin:$PREFIX/bin
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DEPSPREFIX/lib:$PREFIX/lib
     export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$DEPSPREFIX/lib/pkgconfig
-    export FFCONFIG="--prefix=$PREFIX --enable-fontforge-extras"
+    export FFCONFIG="--prefix=$PREFIX --enable-fontforge-extras --with-libspiro --with-libuninameslist"
+    # Required for finding libuninameslist/libspiro properly...
+    export LDFLAGS="$LDFLAGS -L$DEPSPREFIX/lib"
 
     if [ ! -z "$LINUX_FULL" ] ; then
-      export FFCONFIG="$FFCONFIG --enable-code-coverage --enable-debug"
+      export FFCONFIG="$FFCONFIG --enable-code-coverage --enable-debug --enable-woff2"
     elif [ ! -z "$LINUX_NOX" ]; then
       export FFCONFIG="$FFCONFIG --without-x --disable-python-extension --disable-python-scripting"
+    elif [ ! -z "$LINUX_RELEASE" ];then
+      export FFCONFIG="$FFCONFIG --without-libzmq --enable-woff2"
     fi
 
+    echo $PYTHON_CFLAGS
     # For some inane reason Travis defines this to '-g -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security'
     # This prevents pkg-config from setting the CFLAGS properly.
     unset PYTHON_CFLAGS
@@ -78,8 +86,9 @@ install:
       export FTVER=`dpkg -s libfreetype6-dev | perl -ne 'print $1 if /^Version: (\d+(?:\.\d+)+)/'`
       export SFFTVER=`echo $FTVER | perl -ne 'print $1 if /^(\d+(?:\.\d+){1,2})/'`
       export FFCONFIG="$FFCONFIG --with-freetype-source=$DEPSPREFIX/freetype-$FTVER"
-      export CC=gcc-7
-      export GCOV=gcov-7
+      export CC=gcc-8
+      export CXX=g++-8
+      export GCOV=gcov-8
 
       # This block only runs if the cache isn't present.
       if [ ! "$(ls -A $DEPSPREFIX)" ]; then
@@ -87,24 +96,24 @@ install:
         wget 'https://github.com/zeromq/zeromq4-1/releases/download/v4.1.5/zeromq-4.1.5.tar.gz' -O - |tar -zxf -
         wget 'https://github.com/zeromq/czmq/releases/download/v3.0.2/czmq-3.0.2.tar.gz' -O - |tar -zxf -
         wget 'https://github.com/fontforge/libspiro/releases/download/0.5.20150702/libspiro-0.5.20150702.tar.gz' -O - | tar -zxf -
-        wget 'https://github.com/fontforge/libuninameslist/releases/download/20180408/libuninameslist-dist-20180408.tar.gz' -O - | tar -zxf -
-        wget 'https://bitbucket.org/sortsmill/libunicodenames/downloads/libunicodenames-1.1.0_beta1.tar.xz' -O - | tar -Jxf -
+        wget 'https://github.com/fontforge/libuninameslist/releases/download/20190305/libuninameslist-dist-20190305.tar.gz' -O - | tar -zxf -
+        git clone --branch v1.0.2 https://github.com/google/woff2 --depth 1
         wget --tries 1 "http://download.savannah.gnu.org/releases/freetype/freetype-$FTVER.tar.gz" || \
           wget "https://sourceforge.net/projects/freetype/files/freetype2/$SFFTVER/freetype-$FTVER.tar.gz"
 
         pushd zeromq-4.1.5 && ./configure --prefix=$DEPSPREFIX && make && make install && popd
-        pushd czmq-3.0.2 && CFLAGS="-Wno-format-truncation" ./configure --prefix=$DEPSPREFIX && make && make install && popd
+        pushd czmq-3.0.2 && CFLAGS="$CFLAGS -Wno-format-truncation" ./configure --prefix=$DEPSPREFIX && make && make install && popd
         pushd libspiro-0.5.20150702 && ./configure --prefix=$DEPSPREFIX && make && make install && popd
-        pushd libuninameslist-20180408 && ./configure --enable-pscript --prefix=$DEPSPREFIX && make && make install && popd
-        pushd libunicodenames-1.1.0_beta1 && ./configure --prefix=$DEPSPREFIX && make && make install && popd
+        pushd libuninameslist-20190305 && ./configure --enable-pscript --prefix=$DEPSPREFIX && make && make install && popd
+        pushd woff2 && mkdir build && cd build && cmake -GNinja .. -DCMAKE_INSTALL_PREFIX=$DEPSPREFIX -DCMAKE_INSTALL_LIBDIR=lib && ninja install && popd
         tar -zxf freetype-$FTVER.tar.gz -C $DEPSPREFIX
         popd
       fi
 
       # These are FF-specific mods (set here so it runs also in Coverity)
-      export PYTHON=python3.6
-      export PYTHONPATH=$PYTHONPATH:$PREFIX/lib/python$($PYTHON -c "import sys; print('{0}.{1}'.format(sys.version_info.major, sys.version_info.minor))")/site-packages:$TRAVIS_BUILD_DIR/target/$PREFIX/lib/python$($PYTHON -c "import sys; print('{0}.{1}'.format(sys.version_info.major, sys.version_info.minor))")/site-packages
-      export CFLAGS="-fdiagnostics-color=always -Wall -Wno-switch -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wrestrict -Wnull-dereference -Wjump-misses-init -Wdouble-promotion -Wshadow"
+      export PYTHON=python3.7
+      export PYTHONPATH=$PYTHONPATH:$PREFIX/lib/python$($PYTHON -c "import sys; print('{0}.{1}'.format(sys.version_info.major, sys.version_info.minor))")/site-packages
+      export CFLAGS="$CFLAGS -fdiagnostics-color=always -Wall -Wno-switch -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wrestrict -Wnull-dereference -Wjump-misses-init -Wdouble-promotion -Wshadow"
     else
       export FFCONFIG="$FFCONFIG --enable-gdk=gdk3 --enable-woff2"
       export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig:/usr/local/opt/libffi/lib/pkgconfig
@@ -118,23 +127,24 @@ install:
       # 10 billion years later...
     fi
 
-    #Why.
-    export LIBSPIRO_CFLAGS=`pkg-config --cflags libspiro` && export LIBSPIRO_LIBS=`pkg-config --libs libspiro`
-    export LIBUNINAMESLIST_CFLAGS=`pkg-config --cflags libuninameslist` && export LIBUNINAMESLIST_LIBS=`pkg-config --libs libuninameslist`
+    # This is so terrible...
+    # DO NOT SET LIBS OR FEATURE DETECTION WILL BE BROKEN
+    export LIBSPIRO_CFLAGS=`pkg-config --cflags libspiro`
+    export LIBUNINAMESLIST_CFLAGS=`pkg-config --cflags libuninameslist`
+
     set +e
 
 script:
   - ./bootstrap
   - ./configure $FFCONFIG
-  - make -j$(nproc)
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then mkdir -p $TRAVIS_BUILD_DIR/target ; make install DESTDIR=$(readlink -f $TRAVIS_BUILD_DIR/target); fi
-  - if [ "$TRAVIS_OS_NAME" != "linux" ]; then make install; fi
+  - make
+  - make install
   - make check
   - if [ ! -z "$LINUX_FULL" ]; then make distcheck; fi
   - fontforge -version
   - if [ -z "$LINUX_NOX" ]; then $PYTHON -c "import fontforge; import psMat; print(fontforge.__version__, fontforge.version()); fontforge.font();"; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]; then travis-scripts/ffosxbuild.sh $PREFIX $TRAVIS_COMMIT; fi
-  - if [ ! -z "$LINUX_FULL" ]; then bash -ex travis-scripts/ffappimagebuild.sh; fi
+  - if [ ! -z "$LINUX_RELEASE" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then travis-scripts/ffappimagebuild.sh; fi
 
 after_success:
   - if [ ! -z "$LINUX_FULL" ]; then coveralls --gcov-options '\-bulp' --gcov $(which $GCOV) || true; fi
@@ -142,6 +152,7 @@ after_success:
 after_failure:
   - which python
   - env
+  - cat tests/testsuite.log || true
 
 deploy:
   provider: bintray
@@ -152,7 +163,7 @@ deploy:
   key:
     secure: "YBvK5QLZ4LNE3WQPXjDYalLsTgmiGyRGYY87ep5knQ0YGyt3Q9OiBCtQ3GvhHNKOa2L2QlctJi2VWcUu+ftrS72mi5j2tvse9wRF3V8EVFIPb3bxjnN6E11FjXtLIqU8WR7HlAHJpOL2bhO+RleIhSVZm0MsiSjekFOoA5tfll4="
   on:
-    condition: $TRAVIS_OS_NAME = osx
+    condition: -v BINTRAY_DEPLOY
     branch:
       - master
       - travis

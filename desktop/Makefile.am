@@ -28,6 +28,7 @@
 include $(top_srcdir)/mk/layout.am
 
 dist_desktop_DATA = fontforge.desktop
+dist_metainfo_DATA = fontforge.appdata.xml
 dist_hicolor16x16_DATA = icons/16x16/apps/fontforge.png
 dist_hicolor22x22_DATA = icons/22x22/apps/fontforge.png
 dist_hicolor24x24_DATA = icons/24x24/apps/fontforge.png
@@ -39,6 +40,8 @@ dist_hicolor256x256_DATA = icons/256x256/apps/fontforge.png
 dist_hicolorscalable_DATA = icons/scalable/apps/fontforge.svg
 dist_mimepackages_DATA = fontforge.xml
 
+if XDG_DESKTOP
+
 install-data-hook: update-mime-database update-desktop-database
 uninstall-hook: update-mime-database update-desktop-database
 
@@ -48,9 +51,10 @@ update-mime-database:
 update-desktop-database:
 	if test -z "$(DESTDIR)"; then $(UPDATE_DESKTOP_DATABASE) ${desktopdir} || : ; fi
 
+endif XDG_DESKTOP
+
 EXTRA_DIST = icons/src/icon-16x16-apps-fontforge.svg	\
 	icons/src/icon-24x24-apps-fontforge.svg		\
-	icons/src/icon-32x32-apps-fontforge.svg		\
-	fontforge.appdata.xml fontforge.desktop
+	icons/src/icon-32x32-apps-fontforge.svg
 
 -include $(top_srcdir)/git.mk

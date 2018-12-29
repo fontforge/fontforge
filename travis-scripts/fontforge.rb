@@ -26,8 +26,8 @@ class Fontforge < Formula
   depends_on "jpeg" => :recommended
   depends_on "libtiff" => :recommended
   depends_on "giflib" => :optional
-  depends_on "libspiro" => :optional
-  depends_on "libuninameslist" => :optional
+  depends_on "libspiro"
+  depends_on "libuninameslist"
   depends_on "gtk+3"
   depends_on "python@2"
   depends_on "woff2" => :recommended
