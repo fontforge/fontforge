@@ -612,6 +612,7 @@ static void PListAddPrivateThing(xmlNodePtr parent, const char *key, struct psdi
 #ifndef _NO_PYTHON
 static int PyObjDumpable(PyObject *value, int has_lists);
 xmlNodePtr PyObjectToXML( PyObject *value, int has_lists );
+xmlNodePtr PythonDictToXML(PyObject *dict, xmlNodePtr target, const char **exclusions, int has_lists);
 #endif
 
 int stringInStrings(const char *target, const char **reference) {
@@ -621,39 +622,6 @@ int stringInStrings(const char *target, const char **reference) {
 		if (strcmp(target, reference[pos]) == 0)
 			return true;
 	return false;
-}
-
-xmlNodePtr PythonDictToXML(const void *dict, xmlNodePtr target, const char **exclusions, int has_lists) {
-	// dict is the Python dictionary from which to extract data.
-	// target is the xml node to which to add the contents of that dict.
-	// exclusions is a NULL-terminated array of strings naming keys to exclude.
-	PyObject *items, *key, *value;
-	int i, len;
-	char *str;
-	items = PyMapping_Items(dict);
-	len = PySequence_Size(items);
-	for ( i=0; i<len; ++i ) {
-		// According to the Python reference manual,
-		// PySequence_GetItem returns a reference that we must release,
-		// but PyTuple_GetItem returns a borrowed reference.
-		PyObject *item = PySequence_GetItem(items,i);
-		key = PyTuple_GetItem(item,0);
-		if ( !PyBytes_Check(key))		/* Keys need not be strings */
-			{ Py_DECREF(item); item = NULL; continue; }
-		str = PyBytes_AsString(key);
-		if ( !str || (stringInStrings(str, exclusions)) )	/* Already done */ // TODO: Fix this!
-			{ Py_DECREF(item); item = NULL; continue; }
-		value = PyTuple_GetItem(item,1);
-		if ( !value || !PyObjDumpable(value, has_lists))
-			{ Py_DECREF(item); item = NULL; continue; }
-		// "<key>%s</key>" str
-		xmlNewChild(target, NULL, BAD_CAST "key", str);
-		xmlNodePtr tmpNode = PyObjectToXML(value, has_lists);
-		xmlAddChild(target, tmpNode);
-		// "<...>...</...>"
-		Py_DECREF(item); item = NULL;
-	}
-	return target;
 }
 
 xmlNodePtr PythonLibToXML(void *python_persistent, const SplineChar *sc, int has_lists) {
@@ -732,7 +700,7 @@ xmlNodePtr PythonLibToXML(void *python_persistent, const SplineChar *sc, int has
 	if ( python_persistent != NULL ) {
           if (!PyMapping_Check((PyObject *)python_persistent)) fprintf(stderr, "python_persistent is not a mapping.\n");
           else {
-		PythonDictToXML(python_persistent, dictnode, (sc ? sc_exclusions : no_exclusions), has_lists);
+		PythonDictToXML((PyObject *)python_persistent, dictnode, (sc ? sc_exclusions : no_exclusions), has_lists);
 	  }
 	}
 #endif
@@ -833,6 +801,39 @@ xmlNodePtr PyObjectToXML( PyObject *value, int has_lists ) {
         // "</array>"
     }
     return childtmp;
+}
+
+xmlNodePtr PythonDictToXML(PyObject *dict, xmlNodePtr target, const char **exclusions, int has_lists) {
+	// dict is the Python dictionary from which to extract data.
+	// target is the xml node to which to add the contents of that dict.
+	// exclusions is a NULL-terminated array of strings naming keys to exclude.
+	PyObject *items, *key, *value;
+	int i, len;
+	char *str;
+	items = PyMapping_Items(dict);
+	len = PySequence_Size(items);
+	for ( i=0; i<len; ++i ) {
+		// According to the Python reference manual,
+		// PySequence_GetItem returns a reference that we must release,
+		// but PyTuple_GetItem returns a borrowed reference.
+		PyObject *item = PySequence_GetItem(items,i);
+		key = PyTuple_GetItem(item,0);
+		if ( !PyBytes_Check(key))		/* Keys need not be strings */
+			{ Py_DECREF(item); item = NULL; continue; }
+		str = PyBytes_AsString(key);
+		if ( !str || (stringInStrings(str, exclusions)) )	/* Already done */ // TODO: Fix this!
+			{ Py_DECREF(item); item = NULL; continue; }
+		value = PyTuple_GetItem(item,1);
+		if ( !value || !PyObjDumpable(value, has_lists))
+			{ Py_DECREF(item); item = NULL; continue; }
+		// "<key>%s</key>" str
+		xmlNewChild(target, NULL, BAD_CAST "key", str);
+		xmlNodePtr tmpNode = PyObjectToXML(value, has_lists);
+		xmlAddChild(target, tmpNode);
+		// "<...>...</...>"
+		Py_DECREF(item); item = NULL;
+	}
+	return target;
 }
 #endif
 
@@ -2753,7 +2754,6 @@ static void UFOLoadGuidelines(SplineFont *sf, SplineChar *sc, int layer, xmlDocP
 						LogError(_("Failed to read guideline."));
 		}
 	}
-	return;
 }
 
 static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, char* glyphname, SplineChar* existingglyph, int layerdest) {
