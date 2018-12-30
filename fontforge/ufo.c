@@ -1234,7 +1234,7 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer, int
     const char *styleNameSynthetic = NULL;
     if (sf->fontname) {
         styleNameSynthetic = SFGetModifiers(sf);
-	char *lastdash = strrchr(sf->fontname, (int)"-");
+	char *lastdash = strrchr(sf->fontname, '-');
 	if (lastdash && strlen(lastdash) > 2)
 	    styleNameSynthetic = lastdash + 1;
     }
