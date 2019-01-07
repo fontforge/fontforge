@@ -628,7 +628,7 @@ extern int CVPaletteIsVisible(CharView *cv,int which);
 extern void CVPaletteSetVisible(CharView *cv,int which,int visible);
 extern void CVPalettesRaise(CharView *cv);
 extern void CVLayersSet(CharView *cv);
-extern void _CVPaletteActivate(CharView *cv,int force);
+extern void _CVPaletteActivate(CharView *cv,int force,int docking_changed);
 extern void CVPaletteActivate(CharView *cv);
 extern void CVPalettesHideIfMine(CharView *cv);
 extern int BVPaletteIsVisible(BitmapView *bv,int which);

@@ -3689,7 +3689,7 @@ void CVChangeSC( CharView *cv, SplineChar *sc )
     GDrawSetWindowTitles8(cv->gw,buf,title);
     CVInfoDraw(cv,cv->gw);
     free(title);
-    _CVPaletteActivate(cv,true);
+    _CVPaletteActivate(cv,true,false);
 
     if ( cv->tabs!=NULL ) {
 	for ( i=0; i<cv->former_cnt; ++i )
@@ -4701,7 +4701,7 @@ static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
     GDrawSetWindowTitles8(cv->gw,buf,title);
     CVInfoDraw(cv,cv->gw);
     free(title);
-    _CVPaletteActivate(cv,true);
+    _CVPaletteActivate(cv,true,false);
     
     TRACE("CVSwitchActiveSC() idx:%d\n", idx );
 
@@ -6445,7 +6445,7 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 
 	    // X11 on Windows is broken, non-active windows
 	    // receive this event on mouseover
-#if !defined(_WIN32) || !defined(FONTFORGE_CAN_USE_GDK)
+#if !defined(_WIN32) || defined(FONTFORGE_CAN_USE_GDK)
 	    CVPaletteActivate(cv);
 #endif
 	}

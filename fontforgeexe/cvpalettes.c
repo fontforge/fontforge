@@ -3765,7 +3765,7 @@ void CVPalettesRaise(CharView *cv) {
 	GDrawRaise(cvlayers2);
 }
 
-void _CVPaletteActivate(CharView *cv,int force) {
+void _CVPaletteActivate(CharView *cv, int force, int docking_changed) {
     CharView *old;
 
     CVPaletteCheck(cv);
@@ -3791,16 +3791,20 @@ void _CVPaletteActivate(CharView *cv,int force) {
 		SaveOffsets(old->gw,cvlayers,&cvlayersoff);
 	}
 
-    // Now recreate cvtools
-    GDrawDestroyWindow(cvtools);
+    if (palettes_docked || docking_changed) {
+        // When docked, we need to recreate the palettes
+        // Because they were created as a child of the old charview
+        GDrawDestroyWindow(cvtools);
 
-    if (cvlayers != NULL)
-        GDrawDestroyWindow(cvlayers);
-    if (cvlayers2 != NULL)
-        GDrawDestroyWindow(cvlayers2);
+        if (cvlayers != NULL)
+            GDrawDestroyWindow(cvlayers);
+        if (cvlayers2 != NULL)
+            GDrawDestroyWindow(cvlayers2);
 
-    cvtools = cvlayers = cvlayers2 = NULL;
-    CVPaletteCheck(cv);
+        cvtools = cvlayers = cvlayers2 = NULL;
+        CVPaletteCheck(cv);
+    }
+
     GDrawSetUserData(cvtools,cv);
 
 	if ( cv->b.sc->parent->multilayer ) {
@@ -3860,7 +3864,7 @@ void _CVPaletteActivate(CharView *cv,int force) {
 }
 
 void CVPaletteActivate(CharView *cv) {
-    _CVPaletteActivate(cv,false);
+    _CVPaletteActivate(cv,false,false);
 }
 
 void CV_LayerPaletteCheck(SplineFont *sf) {
@@ -3869,7 +3873,7 @@ void CV_LayerPaletteCheck(SplineFont *sf) {
     if ( cvlayers!=NULL ) {
 	if ( (old = GDrawGetUserData(cvlayers))!=NULL ) {
 	    if ( old->b.sc->parent==sf )
-		_CVPaletteActivate(old,true);
+		_CVPaletteActivate(old,true,false);
 	}
     }
 }
@@ -3893,7 +3897,7 @@ return;					/* No charviews open */
     old = GDrawGetUserData(cvtools);
     if ( old==NULL || old->b.sc->parent!=sf )	/* Irrelevant */
 return;
-    _CVPaletteActivate(old,true);
+    _CVPaletteActivate(old,true,false);
 }
 
 void CVPalettesHideIfMine(CharView *cv) {
@@ -4568,7 +4572,7 @@ void BVPaletteSetVisible(BitmapView *bv,int which,int visible) {
     SavePrefs(true);
 }
 
-static void _BVPaletteActivate(BitmapView *bv, int force) {
+static void _BVPaletteActivate(BitmapView *bv, int force, int docking_changed) {
     BitmapView *old;
 
     BVPaletteCheck(bv);
@@ -4579,12 +4583,14 @@ static void _BVPaletteActivate(BitmapView *bv, int force) {
 	    SaveOffsets(old->gw,bvshades,&bvshadesoff);
 	}
 
-    // Recreate the bvtools
-    GDrawDestroyWindow(bvtools);
-    GDrawDestroyWindow(bvlayers);
-    GDrawDestroyWindow(bvshades);
-    bvtools = bvlayers = bvshades = NULL;
-    BVPaletteCheck(bv);
+    if (palettes_docked || docking_changed) {
+        // Recreate the bvtools if docked, similar to cvtools
+        GDrawDestroyWindow(bvtools);
+        GDrawDestroyWindow(bvlayers);
+        GDrawDestroyWindow(bvshades);
+        bvtools = bvlayers = bvshades = NULL;
+        BVPaletteCheck(bv);
+    }
 
 	GDrawSetUserData(bvtools,bv);
 	GDrawSetUserData(bvlayers,bv);
@@ -4638,7 +4644,7 @@ static void _BVPaletteActivate(BitmapView *bv, int force) {
 }
 
 void BVPaletteActivate(BitmapView *bv) {
-    _BVPaletteActivate(bv, false);
+    _BVPaletteActivate(bv, false, false);
 }
 
 void BVPalettesHideIfMine(BitmapView *bv) {
@@ -4722,9 +4728,9 @@ void PalettesChangeDocking() {
     palettes_docked = !palettes_docked;
 
     if (cvtools != NULL)
-        _CVPaletteActivate((CharView*)GDrawGetUserData(cvtools), true);
+        _CVPaletteActivate((CharView*)GDrawGetUserData(cvtools), true, true);
     if (bvtools != NULL)
-        _BVPaletteActivate((BitmapView*)GDrawGetUserData(bvtools), true);
+        _BVPaletteActivate((BitmapView*)GDrawGetUserData(bvtools), true, true);
 
     SavePrefs(true);
 }
