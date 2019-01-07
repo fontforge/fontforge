@@ -6442,6 +6442,12 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 	    ActiveCharView = cv;
 	    if ( cv->gic!=NULL )
 		GDrawSetGIC(gw,cv->gic,0,20);
+
+	    // X11 on Windows is broken, non-active windows
+	    // receive this event on mouseover
+#if !defined(_WIN32) || !defined(FONTFORGE_CAN_USE_GDK)
+	    CVPaletteActivate(cv);
+#endif
 	}
       break;
     }
