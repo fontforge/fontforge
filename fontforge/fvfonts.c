@@ -1079,62 +1079,60 @@ static void FVMergeRefigureMapSel(FontViewBase *fv,SplineFont *into,SplineFont *
 
 static void _MergeFont(SplineFont *into,SplineFont *other,struct sfmergecontext *mc) {
     int i, cnt, doit, emptypos, index, k;
-    SplineFont *o_sf, *bitmap_into;
+    SplineFont *bitmap_into;
     BDFFont *bdf;
     FontViewBase *fvs;
     int *mapping;
 
     emptypos = into->glyphcnt;
+
     mapping = malloc(other->glyphcnt*sizeof(int));
-    memset(mapping,-1,other->glyphcnt*sizeof(int));
+    for (i = 0; i<other->glyphcnt; ++i)
+	mapping[i] = -1;
 
     bitmap_into = into->cidmaster!=NULL? into->cidmaster : into;
 
+    /* If other starts as CID it should be flattened before calling */
+    cnt = 0;
     for ( doit=0; doit<2; ++doit ) {
-	cnt = 0;
-	k = 0;
-	do {
-	    o_sf = ( other->subfonts==NULL ) ? other : other->subfonts[k];
-	    for ( i=0; i<o_sf->glyphcnt; ++i ) if ( o_sf->glyphs[i]!=NULL ) {
-		if ( doit && (index = mapping[i])!=-1 ) {
-		    /* Bug here. Suppose someone has a reference to our empty */
-		    /*  char */
-		    SplineCharFree(into->glyphs[index]);
-		    into->glyphs[index] = SplineCharCopy(o_sf->glyphs[i],into,mc);
-		    into->glyphs[index]->orig_pos = index;
-		    if ( into->bitmaps!=NULL && other->bitmaps!=NULL )
-			BitmapsCopy(bitmap_into,other,index,i);
-		} else if ( !doit ) {
-		    if ( !SCWorthOutputting(o_sf->glyphs[i] ))
-			/* Don't bother to copy it */;
-		    else if ( !SFHasChar(into,o_sf->glyphs[i]->unicodeenc,o_sf->glyphs[i]->name)) {
-			/* Possible for a font to contain a glyph not worth outputting */
-			if ( (index = _SFFindExistingSlot(into,o_sf->glyphs[i]->unicodeenc,o_sf->glyphs[i]->name))==-1 )
-			    index = emptypos+cnt++;
-			mapping[i] = index;
+	for ( i=0; i<other->glyphcnt; ++i ) if ( other->glyphs[i]!=NULL ) {
+	    if ( doit && (index = mapping[i])!=-1 ) {
+		/* Bug here. Suppose someone has a reference to our empty */
+		/*  char */
+		SplineCharFree(into->glyphs[index]);
+		into->glyphs[index] = SplineCharCopy(other->glyphs[i],into,mc);
+		into->glyphs[index]->orig_pos = index;
+		if ( into->bitmaps!=NULL && other->bitmaps!=NULL )
+		    BitmapsCopy(bitmap_into,other,index,i);
+	    } else if ( !doit ) {
+		if ( !SCWorthOutputting(other->glyphs[i] ))
+		    /* Don't bother to copy it */;
+		else if ( !SFHasChar(into,other->glyphs[i]->unicodeenc,other->glyphs[i]->name)) {
+		    /* Possible for a font to contain a glyph not worth outputting */
+		    if ( (index = _SFFindExistingSlot(into,other->glyphs[i]->unicodeenc,other->glyphs[i]->name))==-1 )
+			index = emptypos+cnt++;
+		    mapping[i] = index;
+		}
+	    }
+	}
+	if ( !doit ) {
+	    if ( emptypos+cnt >= into->glyphcnt && emptypos+cnt>0 ) {
+		into->glyphs = realloc(into->glyphs,(emptypos+cnt)*sizeof(SplineChar *));
+		memset(into->glyphs+emptypos,0,cnt*sizeof(SplineChar *));
+		for ( bdf = bitmap_into->bitmaps; bdf!=NULL; bdf=bdf->next )
+		    if ( emptypos+cnt > bdf->glyphcnt ) {
+			bdf->glyphs = realloc(bdf->glyphs,(emptypos+cnt)*sizeof(BDFChar *));
+			memset(bdf->glyphs+emptypos,0,cnt*sizeof(BDFChar *));
+			bdf->glyphmax = bdf->glyphcnt = emptypos+cnt;
 		    }
-		}
+		for ( fvs = into->fv; fvs!=NULL; fvs=fvs->nextsame )
+		    FVBiggerGlyphCache(fvs,emptypos+cnt);
+		for ( fvs = into->fv; fvs!=NULL; fvs=fvs->nextsame )
+		    if ( fvs->sf == into )
+			FVMergeRefigureMapSel(fvs,into,other,mapping,emptypos,cnt);
+		into->glyphcnt = into->glyphmax = emptypos+cnt;
 	    }
-	    if ( !doit ) {
-		if ( emptypos+cnt >= into->glyphcnt && emptypos+cnt>0 ) {
-		    into->glyphs = realloc(into->glyphs,(emptypos+cnt)*sizeof(SplineChar *));
-		    memset(into->glyphs+emptypos,0,cnt*sizeof(SplineChar *));
-		    for ( bdf = bitmap_into->bitmaps; bdf!=NULL; bdf=bdf->next )
-			if ( emptypos+cnt > bdf->glyphcnt ) {
-			    bdf->glyphs = realloc(bdf->glyphs,(emptypos+cnt)*sizeof(BDFChar *));
-			    memset(bdf->glyphs+emptypos,0,cnt*sizeof(BDFChar *));
-			    bdf->glyphmax = bdf->glyphcnt = emptypos+cnt;
-			}
-		    for ( fvs = into->fv; fvs!=NULL; fvs=fvs->nextsame )
-			FVBiggerGlyphCache(fvs,emptypos+cnt);
-		    for ( fvs = into->fv; fvs!=NULL; fvs=fvs->nextsame )
-			if ( fvs->sf == into )
-			    FVMergeRefigureMapSel(fvs,into,o_sf,mapping,emptypos,cnt);
-		    into->glyphcnt = into->glyphmax = emptypos+cnt;
-		}
-	    }
-	    ++k;
-	} while ( k<other->subfontcnt );
+	}
     }
     for ( i=0; i<other->glyphcnt; ++i ) {
 	if ( (index=mapping[i])!=-1 )
@@ -1256,8 +1254,11 @@ return;
     /*  If both are CID then merge each subfont separately */
     if ( fv->sf->cidmaster!=NULL && other->subfonts!=NULL )
 	CIDMergeFont(fv->sf->cidmaster,other,preserveCrossFontKerning);
-    else
+    else {
+	if (other->subfonts!=NULL)
+	    SFFlatten(other); /* Harmless because other is freed in _MergeFont() */
 	__MergeFont(fv->sf,other,preserveCrossFontKerning);
+    }
 }
 
 /******************************************************************************/
