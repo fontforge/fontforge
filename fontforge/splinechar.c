@@ -261,7 +261,7 @@ static int _SCRefNumberPoints2(SplineSet **_rss,SplineChar *sc,int pnum,int laye
 		rsp->nextcpindex = 0xffff;
 	    else
 		rsp->nextcpindex = pnum++;
-	    if ( sp->next==NULL )
+	    if ( sp->next==NULL || rsp->next==NULL )
 	break;
 	    sp = sp->next->to;
 	    rsp = rsp->next->to;
