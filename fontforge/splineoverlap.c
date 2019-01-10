@@ -537,7 +537,7 @@ static void MonotonicElide(struct mlist ** base, struct monotonic * input1) {
 static void CleanMonotonics(struct monotonic ** base_pointer) {
   // It is necessary to use double pointers so that we can set the previous reference.
   struct monotonic ** current_pointer = base_pointer;
-  struct monotonic * tmp_pointer;
+  struct monotonic * tmp_pointer, * last_pointer = NULL;
   while (*current_pointer) {
     if (((*current_pointer)->next == NULL) || ((*current_pointer)->prev == NULL)) {
       if (((*current_pointer)->next != NULL) || ((*current_pointer)->prev != NULL)) {
@@ -546,9 +546,13 @@ static void CleanMonotonics(struct monotonic ** base_pointer) {
         tmp_pointer = (*current_pointer)->linked;
         chunkfree(*current_pointer, sizeof(struct monotonic));
         (*current_pointer) = tmp_pointer;
+	if (last_pointer!=NULL)
+          last_pointer->linked = tmp_pointer;
       }
+    } else {
+      last_pointer = *current_pointer;
+      current_pointer = &((*current_pointer)->linked);
     }
-    current_pointer = &((*current_pointer)->linked);
   }
   return;
 }
