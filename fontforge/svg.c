@@ -2376,7 +2376,7 @@ static void DecodeBase64ToFile(FILE *tmp,char *str) {
     while ( *str ) {
 	fourchars[0] = fourchars[1] = fourchars[2] = fourchars[3] = 64;
 	for ( i=0; i<4; ++i ) {
-	    while ( isspace(*str) || base64ch(*str)==-1 ) ++str;
+	    while ( *str!='\0' && ( isspace(*str) || base64ch(*str)==-1 ) ) ++str;
 	    if ( *str=='\0' )
 	break;
 	    fourchars[i] = base64ch(*str++);
