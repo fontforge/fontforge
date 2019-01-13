@@ -129,5 +129,6 @@ check_python([libnameslist checks],[test1010.py])
 #check_python([find overlap bug],[findoverlapbugs.py])
 check_python([Validate WOFF output],[test926.py],[DejaVuSerif.sfd])
 check_python([WOFF2 round tripping],[test927.py],[Ambrosia.woff2])
+check_python([String Conversion],[test928.py],[DejaVuSerif.sfd])
 
 #--------------------------------------------------------------------------
