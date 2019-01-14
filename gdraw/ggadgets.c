@@ -554,7 +554,7 @@ return( false );
     popup_timer = NULL;
 
     /* Is the cursor still in the original window? */
-    if (GDrawGetPointerWindow(root) != popup_info.gw)
+    if (GDrawGetPointerWindow(popup_info.gw) != popup_info.gw)
         return true;
 
     lines = 0; width = 1;
