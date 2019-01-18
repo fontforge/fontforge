@@ -155,7 +155,7 @@ If you don't need to handle SVG fonts you don't need libxml2, etc.
 If you want to do autotracing around character images you should also download either
 
 - Peter Selinger's [potrace](http://potrace.sf.net/)
-- Martin Weber's [autotrace program.](http://sourceforge.net/projects/autotrace/)
+- Martin Weber's [autotrace program.](http://sourceforge.net/projects/autotrace/) (discontinued)
 
 #### Libraries
 
