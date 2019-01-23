@@ -938,9 +938,9 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
     char ubuf[251], *temp;
     int fromsfd = false;
     int i;
-    char *pt, *ext2, *strippedname = 0, *oldstrippedname = 0, *tmpfile=NULL, *paren=NULL, *fullname, *rparen;
+    char *pt, *ext2, *strippedname = 0, *oldstrippedname = 0, *tmpfile=NULL, *paren=NULL, *fullname;
     char *archivedir=NULL;
-    int len;
+    int len, fnamelen;
     int checked;
     int compression=0;
     int wasurl = false, nowlocal = true, wasarchived=false;
@@ -948,6 +948,7 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
     fullname = fname;
 
     if ( filename==NULL ) return NULL;
+    fnamelen = strlen(fname);
 
     // Some explorers (PCManFM) may pass a file:// URL, special case it
     // here so that we don't defer to the HTTP code.
@@ -959,25 +960,32 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
 
     // For non-URLs:
     // treat /whatever/foo.ufo/ as simply /whatever/foo.ufo
-    if ( !strstr(fname,"://")) {
-	    int filenamelen = strlen(filename);
-	
-	    if( filenamelen && filename[ filenamelen-1 ] == '/' ) {
-	        fname[filenamelen-1] = '\0';
-	    }
-    }
+    if (!strstr(fname,"://") && fnamelen && fname[filenamelen-1] == '/')
+        fname[fnamelen-1] = '\0';
 
     strippedname = fname;
     pt = strrchr(fname,'/');
     if ( pt==NULL ) pt = fname;
-    /* Someone gave me a font "Nafees Nastaleeq(Updated).ttf" and complained */
-    /*  that ff wouldn't open it */
-    /* Now someone will complain about "Nafees(Updated).ttc(fo(ob)ar)" */
-    if ( (paren = strrchr(pt,'('))!=NULL &&
-	    (rparen = strrchr(paren,')'))!=NULL &&
-	    rparen[1]=='\0' ) {
-	    strippedname = copy(fname);
-	    strippedname[paren-fname] = '\0';
+
+    // Handle font name specifiers in fname.
+    // "filename(fontname)" -> "filename\0fontname)"
+    if (fname[fnamelen-1] == ')') {
+        strippedname = copy(fname);
+        // Count number of parens seen, starting from the right.
+        // Add 1 for close parens and subtract 1 for open parens.
+        // End when count is 0.
+        int count = 1;
+        for (paren = fname + fnamelen - 2; paren >= fname; --paren) {
+            if (*paren == ')') ++count;
+            else if (*paren == '(') --count;
+            if (count == 0) {
+                strippedname[i] = '\0';
+                break;
+            }
+        }
+
+        // Parens could not be matched.
+        if (paren < fname) paren = NULL;
     }
 
     if ( strstr(strippedname,"://")!=NULL ) {
