@@ -3974,18 +3974,20 @@ return( 0 );
     else {
 	fseek(ttf,info->cff_start+dicts[which]->fdarrayoff,SEEK_SET);
 	subdicts = readcfftopdicts(ttf,NULL,info->cff_start,info,dicts[which]);
-	fseek(ttf,info->cff_start+dicts[which]->fdselectoff,SEEK_SET);
-	fdselect = readfdselect(ttf,dicts[which]->glyphs.cnt,info);
-	for ( j=0; subdicts[j]!=NULL; ++j ) {
-	    if ( subdicts[j]->private_offset!=-1 )
-		readcffprivate(ttf,subdicts[j],info);
-	    if ( subdicts[j]->charsetoff!=-1 )
-		readcffset(ttf,subdicts[j],info);
+	if ( subdicts!=NULL ) {
+	    fseek(ttf,info->cff_start+dicts[which]->fdselectoff,SEEK_SET);
+	    fdselect = readfdselect(ttf,dicts[which]->glyphs.cnt,info);
+	    for ( j=0; subdicts[j]!=NULL; ++j ) {
+		if ( subdicts[j]->private_offset!=-1 )
+		    readcffprivate(ttf,subdicts[j],info);
+		if ( subdicts[j]->charsetoff!=-1 )
+		    readcffset(ttf,subdicts[j],info);
+	    }
+	    cidfigure(info,dicts[which],strings,scnt,&gsubs,subdicts,fdselect);
+	    for ( j=0; subdicts[j]!=NULL; ++j )
+		TopDictFree(subdicts[j]);
+	    free(subdicts); free(fdselect);
 	}
-	cidfigure(info,dicts[which],strings,scnt,&gsubs,subdicts,fdselect);
-	for ( j=0; subdicts[j]!=NULL; ++j )
-	    TopDictFree(subdicts[j]);
-	free(subdicts); free(fdselect);
     }
     if ( dicts[which]->encodingoff!=-1 )
 	readcffenc(ttf,dicts[which],info,strings,scnt);
@@ -4016,7 +4018,11 @@ return( 0 );
 	free(gsubs.values[i]);
     free(gsubs.values); free(gsubs.lens);
 
-return( 1 );
+    if (info->chars==NULL) {
+	return( 0 );
+    }
+
+    return( 1 );
 }
 
 static int readtyp1glyphs(FILE *ttf,struct ttfinfo *info) {
