@@ -226,12 +226,8 @@ static unichar_t wildpk[] = { '*', '{', 'p', 'k', ',', 'g', 'f', '}',  '\0' };		
 static unichar_t wildmac[] = { '*', '{', 'b', 'i', 'n', ',', 'h', 'q', 'x', ',', 'd','f','o','n','t', '}',  '\0' };
 static unichar_t wildwin[] = { '*', '{', 'f', 'o', 'n', ',', 'f', 'n', 't', '}',  '\0' };
 static unichar_t wildpalm[] = { '*', 'p', 'd', 'b',  '\0' };
-static unichar_t *wildchr[] = { wildimg, wildps, wildpdf,
-wildsvg,
-wildglif,
-wildplate,
-wildfig };
-static unichar_t *wildfnt[] = { wildbdf, wildttf, wildpk, wildpcf, wildmac,
+/* Must match enum baseviews.h:fvformats */
+static unichar_t *wildfmt[] = { wildbdf, wildttf, wildpk, wildpcf, wildmac,
 wildwin, wildpalm,
 wildimg, wildtemplate, wildps, wildepstemplate,
 wildpdf, wildpdftemplate,
@@ -374,7 +370,7 @@ return( oldflags );
 
 /****************************** Import picker *********************************/
 
-static int last_format, flast_format;
+static int last_format, flast_format, last_lpos, flast_lpos;
 struct gfc_data {
     int done;
     int ret;
@@ -422,7 +418,7 @@ static int GFD_ImportOk(GGadget *g, GEvent *e) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	unichar_t *ret = GGadgetGetTitle(d->gfc);
 	char *temp = u2def_copy(ret);
-	int pos = GGadgetGetFirstListSelectedItem(d->format);
+	int lpos = GGadgetGetFirstListSelectedItem(d->format);
 	int format = (intpt) (GGadgetGetListItemSelected(d->format)->userdata);
 	GGadget *tf;
 
@@ -430,10 +426,13 @@ static int GFD_ImportOk(GGadget *g, GEvent *e) {
 	if ( *_GGadgetGetTitle(tf)=='\0' )
 return( true );
 	GDrawSetCursor(GGadgetGetWindow(g),ct_watch);
-	if ( d->fv!=NULL )
-	    flast_format = pos;
-	else
-	    last_format = pos;
+	if ( d->fv!=NULL ) {
+	    flast_format = format;
+	    flast_lpos = lpos;
+	} else {
+	    last_format = format;
+	    last_lpos = lpos;
+	}
 	free(ret);
 	if ( d->fv!=NULL ) {
 	    int toback = GGadgetIsChecked(d->background);
@@ -519,7 +518,7 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	int format = (intpt) (GGadgetGetListItemSelected(d->format)->userdata);
 	if ( format<fv_pythonbase )
-	    GFileChooserSetFilterText(d->gfc,wildfnt[format]);
+	    GFileChooserSetFilterText(d->gfc,wildfmt[format]);
 #ifndef _NO_PYTHON
 	else {
 	    char *text;
@@ -588,7 +587,7 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     GGadgetCreateData gcd[9], boxes[4], *varray[9], *harray[5], *buttons[10];
     GTextInfo label[9];
     struct gfc_data d;
-    int i, format;
+    int i, format, lpos;
     int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid, scalewid;
     static int done= false;
     GTextInfo *cur_formats, *base;
@@ -598,6 +597,8 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 	    formats[i].text = (unichar_t *) _((char *) formats[i].text);
 	for ( i=0; fvformats[i].text!=NULL; ++i )
 	    fvformats[i].text = (unichar_t *) _((char *) fvformats[i].text);
+	last_format = (int) fv_image;
+	flast_format = (int) fv_bdf;
 	done = true;
     }
     base = cur_formats = fv==NULL?formats:fvformats;
@@ -641,7 +642,7 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     wattrs.cursor = ct_pointer;
     wattrs.utf8_window_title = _("Import");
     pos.x = pos.y = 0;
-    totwid = 223;
+    totwid = 240;
     if ( fv!=NULL ) totwid += 60;
     scalewid = GGadgetScale(totwid);
     bsbigger = 3*bs+4*14>scalewid; scalewid = bsbigger?3*bs+4*12:scalewid;
@@ -706,13 +707,16 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 	last_format=0;
     }
     format = fv==NULL?last_format:flast_format;
+    lpos = fv==NULL?last_lpos:flast_lpos;
     gcd[5].gd.u.list = cur_formats;
-    gcd[5].gd.label = &gcd[5].gd.u.list[format];
+    gcd[5].gd.label = &gcd[5].gd.u.list[lpos];
     gcd[5].gd.handle_controlevent = GFD_Format;
     gcd[5].creator = GListButtonCreate;
-    for ( i=0; i<sizeof(formats)/sizeof(formats[0]); ++i )
+    /* This won't iterate over python imports but those were rebuilt above */
+    for ( i=0; gcd[5].gd.u.list[i].text!=NULL; ++i )
 	gcd[5].gd.u.list[i].selected = false;
-    gcd[5].gd.u.list[format].selected = true;
+    /* Safe as long as python imports cannot be removed */
+    gcd[5].gd.u.list[lpos].selected = true;
     harray[1] = &gcd[5];
 
     if ( fv!=NULL ) {
@@ -753,7 +757,7 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     GGadgetSetUserData(gcd[2].ret,gcd[0].ret);
 
     GFileChooserConnectButtons(gcd[0].ret,gcd[1].ret,gcd[2].ret);
-    GFileChooserSetFilterText(gcd[0].ret,fv!=NULL?wildfnt[format]:wildchr[format]);
+    GFileChooserSetFilterText(gcd[0].ret,wildfmt[format]);
     GFileChooserRefreshList(gcd[0].ret);
     GHVBoxFitWindow(boxes[0].ret);
 
