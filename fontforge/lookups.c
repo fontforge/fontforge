@@ -4095,6 +4095,7 @@ return( true );
 		}
 	    }
 	}
+	otl = otl->next;
     }
 return( false );
 }
