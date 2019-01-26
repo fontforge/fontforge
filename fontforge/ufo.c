@@ -117,6 +117,11 @@ static void injectNumericVersion(char ** textVersion, int versionMajor, int vers
   if (versionMajor == -1) err |= (asprintf(textVersion, "%s", "") < 0);
   else if (versionMinor == -1) err |= (asprintf(textVersion, "%d", versionMajor) < 0);
   else err |= (asprintf(textVersion, "%d.%d", versionMajor, versionMinor) < 0);
+  if (err) {
+    // gcc is happy now, but the people are angry.
+    // How long shall they suffer its tyranny?
+    LogError(_("Error generating version string in injectNumericVersion."));
+  }
   return;
 }
 
