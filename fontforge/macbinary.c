@@ -2574,7 +2574,6 @@ static FOND *PickFOND(FOND *fondlist,char *filename,char **name, int *style) {
     if ( lparen = SFSubfontnameStart(pt) ) {
 	find = copy(lparen+1);
 	find[strlen(find)-1] = '\0';
-	find = copy(lparen+1);
 	for ( test=fondlist; test!=NULL; test=test->next ) {
 	    for ( i=0; i<48; ++i )
 		if ( test->psnames[i]!=NULL && strcmp(find,test->psnames[i])==0 ) {

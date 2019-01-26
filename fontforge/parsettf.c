@@ -581,6 +581,8 @@ char *TTFGetFontName(FILE *ttf,int32 offset,int32 off2) {
 /*           asked to select one, and then that N'th font is chosen.         */
 /*   4)  when there is no UI, then font index zero is used.                  */
 /*                                                                           */
+/* When used, info->chosenname must be a string that can be free()d          */
+/*                                                                           */
 /* On failure and no font is chosen, returns false.                          */
 /*                                                                           */
 /* On success, true is returned.  The chosen font name (allocated) pointer   */
@@ -6281,6 +6283,8 @@ SplineFont *_SFReadTTF(FILE *ttf, int flags,enum openflags openflags, char *file
     info.weight_width_slope_only = false;
     info.openflags = openflags;
     info.fd = fd;
+    /* Pass the subfont name (if present) via info->chosenname. This may
+     * be free()d and replaced so make a copy */
     if ( chosenname!=NULL) 
 	info.chosenname = copy(chosenname);
     ret = readttf(ttf,&info,filename);
@@ -6296,6 +6300,7 @@ SplineFont *SFReadTTF(char *filename, int flags, enum openflags openflags) {
 
     pt = strrchr(filename,'/');
     if ( pt==NULL ) pt = filename;
+    /* Extract the subfont name if present */
     if ( lparen = SFSubfontnameStart(pt) ) {
         strippedname = copy(filename);
         strippedname[lparen-filename] = '\0';

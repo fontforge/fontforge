@@ -931,7 +931,18 @@ return(copy(tmpfilename));			/* The filename does not exist */
     }
 }
 
-/* The following won't work if the fontname has unbalanced
+/* Returns a pointer to the start of the parenthesized 
+ * subfont name (optionally) used when opening TTC or Macbinary
+ * files, or NULL if no subfont is specified.
+ *
+ * The subfont specification must extend to the end of the string
+ * so that font filenames containing parentheses will not be
+ * misinterpreted. 
+ *
+ * Because the name *must* be in parentheses, a non-NULL pointer
+ * will be to a string of at least two characters.
+ * 
+ * The following won't work if the fontname has unbalanced
  * parentheses, but short of requiring those to be escaped
  * somehow that case is tricky. (One could guess the cutoff
  * by looking for a file extension.)
