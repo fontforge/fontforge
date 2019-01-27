@@ -1069,8 +1069,7 @@ int _ExportSVG(FILE *svg,SplineChar *sc,int layer) {
     switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     fprintf(svg, "<?xml version=\"1.0\" standalone=\"no\"?>\n" );
     fprintf(svg, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\" >\n" );
-    fprintf(svg, "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" viewBox=\"%d %d %d %d\">\n",
-	    (int) floor(b.minx), (int) floor(b.miny),
+    fprintf(svg, "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" viewBox=\"0 0 %d %d\">\n",
 	    (int) ceil(sc->width), (int) ceil(em_size));
     fprintf(svg, "  <g transform=\"matrix(1 0 0 -1 0 %d)\">\n",
 	    sc->parent->ascent );
@@ -1264,16 +1263,15 @@ static void SVGTraceArc(SplineSet *cur,BasePoint *current,
 	   lambda = sqrt(lambda);
 	   rx *= lambda;
 	   ry *= lambda;
-	}
-	factor = rx*rx*ry*ry - rx*rx*y1p*y1p - ry*ry*x1p*x1p;
-	if ( RealNear(factor,0))
-	    factor = 0;		/* Avoid rounding errors that lead to small negative values */
-	else
+	   cxp = cyp = 0;
+	} else {
+	    factor = rx*rx*ry*ry - rx*rx*y1p*y1p - ry*ry*x1p*x1p;
 	    factor = sqrt(factor/(rx*rx*y1p*y1p+ry*ry*x1p*x1p));
-	if ( large_arc==sweep )
-	    factor = -factor;
-	cxp = factor*(rx*y1p)/ry;
-	cyp =-factor*(ry*x1p)/rx;
+	    if ( large_arc==sweep )
+		factor = -factor;
+	    cxp = factor*(rx*y1p)/ry;
+	    cyp =-factor*(ry*x1p)/rx;
+	}
 	cx = cosr*cxp - sinr*cyp + (current->x+x)/2;
 	cy = sinr*cxp + cosr*cyp + (current->y+y)/2;
 
@@ -2376,7 +2374,7 @@ static void DecodeBase64ToFile(FILE *tmp,char *str) {
     while ( *str ) {
 	fourchars[0] = fourchars[1] = fourchars[2] = fourchars[3] = 64;
 	for ( i=0; i<4; ++i ) {
-	    while ( isspace(*str) || base64ch(*str)==-1 ) ++str;
+	    while ( *str!='\0' && ( isspace(*str) || base64ch(*str)==-1 ) ) ++str;
 	    if ( *str=='\0' )
 	break;
 	    fourchars[i] = base64ch(*str++);

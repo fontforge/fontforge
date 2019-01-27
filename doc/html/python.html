@@ -3326,8 +3326,7 @@ pen = None;				# Finalize the pen. This tells FontForge
 	extent</CODE> tuples.
 	<P>
 	A <CODE>feature extent</CODE> tuple is<BR>
-	<CODE>(feature-tag,min-extent,max-extent, (tuple of feature
-	extents))</CODE><BR>
+	<CODE>(feature-tag,min-extent,max-extent)</CODE><BR>
 	<CODE>feature-tag</CODE> is a 4 letter string specifying an opentype (GPOS
 	or GSUB) feature tag,<CODE>min</CODE>/<CODE>max-extent</CODE> are numbers
 	specifying how far above and below the baseline characters go in this
@@ -3339,14 +3338,18 @@ pen = None;				# Finalize the pen. This tells FontForge
   (("cyrl","romn",(1405,-288,0),()),
    ("grek","romn",(1405,-288,0),()),
    ("latn","romn",(1405,-288,0),
-    ("dflt",-576,1913,
-     ("NoAc",-576,1482))
-    ("ENG ",-576,1482,())
+    (("dflt",-576,1913,
+      (("NoAc",-576,1482),
+       ("ENG ",-576,1482))
+     ),
+    )
    )
   )
 )
 </PRE>
 	</BLOCKQUOTE>
+	(Note: The comma after the <CODE>dflt</CODE> tuple puts it into a
+	one-element tuple.)
       </TD>
     </TR>
     <TR>
