@@ -1263,16 +1263,15 @@ static void SVGTraceArc(SplineSet *cur,BasePoint *current,
 	   lambda = sqrt(lambda);
 	   rx *= lambda;
 	   ry *= lambda;
-	}
-	factor = rx*rx*ry*ry - rx*rx*y1p*y1p - ry*ry*x1p*x1p;
-	if ( RealNear(factor,0))
-	    factor = 0;		/* Avoid rounding errors that lead to small negative values */
-	else
+	   cxp = cyp = 0;
+	} else {
+	    factor = rx*rx*ry*ry - rx*rx*y1p*y1p - ry*ry*x1p*x1p;
 	    factor = sqrt(factor/(rx*rx*y1p*y1p+ry*ry*x1p*x1p));
-	if ( large_arc==sweep )
-	    factor = -factor;
-	cxp = factor*(rx*y1p)/ry;
-	cyp =-factor*(ry*x1p)/rx;
+	    if ( large_arc==sweep )
+		factor = -factor;
+	    cxp = factor*(rx*y1p)/ry;
+	    cyp =-factor*(ry*x1p)/rx;
+	}
 	cx = cosr*cxp - sinr*cyp + (current->x+x)/2;
 	cy = sinr*cxp + cosr*cyp + (current->y+y)/2;
 
