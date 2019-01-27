@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 #Needs: fonts/DejaVuSerif.sfd
 
 import sys, fontforge
 
 plain = 'Comment without em-dash'
-uni = 'Comment with — em dash'
+uni = u'Comment with — em dash'
 
 f=fontforge.open(sys.argv[1])
 
