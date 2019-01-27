@@ -931,6 +931,39 @@ return(copy(tmpfilename));			/* The filename does not exist */
     }
 }
 
+/* Returns a pointer to the start of the parenthesized 
+ * subfont name (optionally) used when opening TTC or Macbinary
+ * files, or NULL if no subfont is specified.
+ *
+ * The subfont specification must extend to the end of the string
+ * so that font filenames containing parentheses will not be
+ * misinterpreted. 
+ *
+ * Because the name *must* be in parentheses, a non-NULL pointer
+ * will be to a string of at least two characters.
+ * 
+ * The following won't work if the fontname has unbalanced
+ * parentheses, but short of requiring those to be escaped
+ * somehow that case is tricky. (One could guess the cutoff
+ * by looking for a file extension.)
+ * */
+char *SFSubfontnameStart(char *fname) {
+    char *rparen, *paren;
+    int cnt = 1;
+    if ( fname==NULL || (rparen = strrchr(fname,')'))==NULL || rparen[1]!='\0' )
+	return NULL;
+    paren = rparen;
+    while ( --paren>=fname ) {
+	if ( *paren == '(' )
+	    --cnt;
+	else if ( *paren == ')' ) 
+	    ++cnt;
+	if ( cnt==0 )
+	    return paren;
+    }
+    return NULL;
+}
+
 /* This does not check currently existing fontviews, and should only be used */
 /*  by LoadSplineFont (which does) and by RevertFile (which knows what it's doing) */
 SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags openflags) {
@@ -938,7 +971,8 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
     char ubuf[251], *temp;
     int fromsfd = false;
     int i;
-    char *pt, *ext2, *strippedname = 0, *oldstrippedname = 0, *tmpfile=NULL, *paren=NULL, *fullname, *rparen;
+    char *pt, *ext2, *strippedname = NULL, *chosenname = NULL, *oldstrippedname = NULL;
+    char *tmpfile=NULL, *paren=NULL, *fullname;
     char *archivedir=NULL;
     int len;
     int checked;
@@ -970,14 +1004,12 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
     strippedname = fname;
     pt = strrchr(fname,'/');
     if ( pt==NULL ) pt = fname;
-    /* Someone gave me a font "Nafees Nastaleeq(Updated).ttf" and complained */
-    /*  that ff wouldn't open it */
-    /* Now someone will complain about "Nafees(Updated).ttc(fo(ob)ar)" */
-    if ( (paren = strrchr(pt,'('))!=NULL &&
-	    (rparen = strrchr(paren,')'))!=NULL &&
-	    rparen[1]=='\0' ) {
-	    strippedname = copy(fname);
-	    strippedname[paren-fname] = '\0';
+
+    if ( paren = SFSubfontnameStart(pt) ) {
+	strippedname = copy(fname);
+	strippedname[paren-fname] = '\0';
+	chosenname = copy(paren+1);
+	chosenname[strlen(chosenname)-1] = '\0';
     }
 
     if ( strstr(strippedname,"://")!=NULL ) {
@@ -1116,14 +1148,14 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
 		(ch1=='O' && ch2=='T' && ch3=='T' && ch4=='O') ||
 		(ch1=='t' && ch2=='r' && ch3=='u' && ch4=='e') ||
 		(ch1=='t' && ch2=='t' && ch3=='c' && ch4=='f') ) {
-	    sf = _SFReadTTF(file,0,openflags,fullname,NULL);
+	    sf = _SFReadTTF(file,0,openflags,strippedname,chosenname,NULL);
 	    checked = 't';
 	} else if ( ch1=='w' && ch2=='O' && ch3=='F' && ch4=='F' ) {
-	    sf = _SFReadWOFF(file,0,openflags,fullname,NULL);
+	    sf = _SFReadWOFF(file,0,openflags,strippedname,chosenname,NULL);
 	    checked = 'w';
 	} else if ( ch1=='w' && ch2=='O' && ch3=='F' && ch4=='2' ) {
 #ifdef FONTFORGE_CAN_USE_WOFF2
-	    sf = _SFReadWOFF2(file,0,openflags,fullname,NULL);
+	    sf = _SFReadWOFF2(file,0,openflags,strippedname,chosenname,NULL);
 	    checked = 'w';
 #endif
 	} else if (( ch1=='%' && ch2=='!' ) ||
@@ -1273,6 +1305,8 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
 	    free(oldstrippedname);
     if ( fullname!=fname && fullname!=strippedname )
 	    free(fullname);
+    if ( chosenname!=NULL )
+	    free(chosenname);
     if ( tmpfile!=NULL ) {
 	    unlink(tmpfile);
 	    free(tmpfile);

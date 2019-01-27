@@ -574,19 +574,21 @@ char *TTFGetFontName(FILE *ttf,int32 offset,int32 off2) {
 /*                                                                           */
 /* There are five ways that one enclosed font is selected:                   */
 /*   1)  there is only one font enclosed, so we force defaulting to that one.*/
-/*   2a) the filename has a font index appended, we choose that N'th font.   */
-/*   2b) the filename has a font name appended, we try to match that name    */
+/*   2a) info->chosenname is a number, we choose that N'th font.             */
+/*   2b) info->chosenname is a non-number, we try to match that string       */
 /*           in list of discovered font names and select that named font.    */
 /*   3)  the user is prompted with a list of all discovered font names, and  */
 /*           asked to select one, and then that N'th font is chosen.         */
 /*   4)  when there is no UI, then font index zero is used.                  */
 /*                                                                           */
+/* When used, info->chosenname must be a string that can be free()d          */
+/*                                                                           */
 /* On failure and no font is chosen, returns false.                          */
 /*                                                                           */
 /* On success, true is returned.  The chosen font name (allocated) pointer   */
-/*   is returned via 'chosenname'. Additionally, the file position is set    */
-/*   pointing to the chosen TTF font offset table, ready for reading the     */
-/*   TTF header.                                                             */
+/*   is returned via 'info->chosenname'. Additionally, the file position     */
+/*   is set pointing to the chosen TTF font offset table, ready for          */
+/*   reading the TTF header.                                                 */
 /*                                                                           */
 /* Example filename strings with appended font selector:                     */
 /*     ./tests/fonts/mingliu.windows.ttc(PMingLiU)                           */
@@ -600,10 +602,9 @@ char *TTFGetFontName(FILE *ttf,int32 offset,int32 off2) {
 /*    call fseek() to position to the chosen TTF header offset table. Then   */
 /*    the chosen font name is copied into 'chosenname'.                      */
 
-static int PickTTFFont(FILE *ttf,char *filename,char **chosenname) {
+static int PickTTFFont(FILE *ttf, struct ttfinfo *info) {
     int32 *offsets, cnt, i, choice;
     char **names;
-    char *pt, *lparen, *rparen;
 
     /* TTCF version = */ getlong(ttf);
     cnt = getlong(ttf);
@@ -623,38 +624,25 @@ static int PickTTFFont(FILE *ttf,char *filename,char **chosenname) {
         if ( names[i]==NULL ) 
             asprintf(&names[i], "<Unknown font name %d>", i+1);
     }
-    pt = strrchr(filename,'/');
-    if ( pt==NULL ) pt = filename;
-    /* Someone gave me a font "Nafees Nastaleeq(Updated).ttf" and complained */
-    /*  that ff wouldn't open it */
-    /* Now someone will complain about "Nafees(Updated).ttc(fo(ob)ar)" */
-    if ( (lparen = strrchr(pt,'('))!=NULL &&
-	    (rparen = strrchr(lparen,')'))!=NULL &&
-	    rparen[1]=='\0' ) {
-        char *find = copyn(lparen+1, rparen-lparen-1);
+    if ( info->chosenname!=NULL ) {
 	for ( choice=cnt-1; choice>=0; --choice )
             if ( names[choice]!=NULL )
-	        if ( strcmp(names[choice],find)==0 )
+	        if ( strcmp(names[choice],info->chosenname)==0 )
 	            break;
 	if ( choice==-1 ) {
 	    char *end;
-	    choice = strtol(find,&end,10);
+	    choice = strtol(info->chosenname,&end,10);
 	    if ( *end!='\0' )
 		choice = -1;
             else if ( choice < 0 || choice >= cnt )
 		choice = -1;
 	}
 	if ( choice==-1 ) {
-	    char *fn = copy(filename);
-	    fn[lparen-filename] = '\0';
 	    ff_post_error(_("Not in Collection"),
 /* GT: The user is trying to open a font file which contains multiple fonts and */
 /* GT: has asked for a font which is not in that file. */
-/* GT: The string will look like: <fontname> is not in <filename> */
-		    _("%1$s is not in %2$.100s"),find,fn);
-	    free(fn);
+		    _("%1$s is not in font file"),info->chosenname);
 	}
-	free(find);
     } else if ( no_windowing_ui )
 	choice = 0;
     else
@@ -664,7 +652,9 @@ static int PickTTFFont(FILE *ttf,char *filename,char **chosenname) {
     if ( choice!=-1 ) {
         /* position file to start of the chosen TTF font header */
 	fseek(ttf,offsets[choice],SEEK_SET);
-	*chosenname = names[choice];
+	if (info->chosenname != NULL)
+	    free(info->chosenname);
+	info->chosenname = names[choice];
 	names[choice] = NULL;
     }
     for ( i=0; i<cnt; ++i )
@@ -995,8 +985,7 @@ static struct tablenames { uint32 tag; const char *name; } stdtables[] = {
     { 0, NULL }
 };
 
-static int readttfheader(FILE *ttf, struct ttfinfo *info,char *filename,
-	char **choosenname) {
+static int readttfheader(FILE *ttf, struct ttfinfo *info) {
     int i, j, k, offset, length, version;
     uint32 tag;
     int first = true;
@@ -1005,7 +994,7 @@ static int readttfheader(FILE *ttf, struct ttfinfo *info,char *filename,
     if ( version==CHR('t','t','c','f')) {
 	/* TrueType font collection */
 	info->is_ttc = true;
-	if ( !PickTTFFont(ttf,filename,choosenname))
+	if ( !PickTTFFont(ttf,info) )
 return( 0 );
 	/* If they picked a font, then we should be left pointing at the */
 	/*  start of the Table Directory for that font */
@@ -5515,7 +5504,7 @@ static int readttf(FILE *ttf, struct ttfinfo *info, char *filename) {
     fseek(ttf,0,SEEK_SET);
 
     ff_progress_change_stages(3);
-    if ( !readttfheader(ttf,info,filename,&info->chosenname)) {
+    if ( !readttfheader(ttf,info) ) {
 return( 0 );
     }
     /* TrueType doesn't need this but opentype dictionaries do */
@@ -6289,7 +6278,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 return( sf );
 }
 
-SplineFont *_SFReadTTF(FILE *ttf, int flags,enum openflags openflags, char *filename,struct fontdict *fd) {
+SplineFont *_SFReadTTF(FILE *ttf, int flags,enum openflags openflags, char *filename,char *chosenname,struct fontdict *fd) {
     struct ttfinfo info;
     int ret;
 
@@ -6300,6 +6289,10 @@ SplineFont *_SFReadTTF(FILE *ttf, int flags,enum openflags openflags, char *file
     info.weight_width_slope_only = false;
     info.openflags = openflags;
     info.fd = fd;
+    /* Pass the subfont name (if present) via info->chosenname. This may
+     * be free()d and replaced so make a copy */
+    if ( chosenname!=NULL) 
+	info.chosenname = copy(chosenname);
     ret = readttf(ttf,&info,filename);
     if ( !ret )
 return( NULL );
@@ -6309,23 +6302,24 @@ return( SFFillFromTTF(&info));
 SplineFont *SFReadTTF(char *filename, int flags, enum openflags openflags) {
     FILE *ttf;
     SplineFont *sf;
-    char *temp=filename, *pt, *lparen, *rparen;
+    char *strippedname=filename, *chosenname=NULL, *pt, *lparen;
 
     pt = strrchr(filename,'/');
     if ( pt==NULL ) pt = filename;
-    if ( (lparen = strrchr(pt,'('))!=NULL &&
-	    (rparen = strrchr(lparen,')'))!=NULL &&
-	    rparen[1]=='\0' ) {
-	temp = copy(filename);
-	pt = temp + (lparen-filename);
-	*pt = '\0';
+    /* Extract the subfont name if present */
+    if ( lparen = SFSubfontnameStart(pt) ) {
+        strippedname = copy(filename);
+        strippedname[lparen-filename] = '\0';
+        chosenname = copy(lparen+1);
+        chosenname[strlen(chosenname)-1] = '\0';
     }
-    ttf = fopen(temp,"rb");
-    if ( temp!=filename ) free(temp);
+    ttf = fopen(strippedname,"rb");
     if ( ttf==NULL )
 return( NULL );
 
-    sf = _SFReadTTF(ttf,flags,openflags,filename,NULL);
+    sf = _SFReadTTF(ttf,flags,openflags,strippedname,chosenname,NULL);
+    if ( strippedname!=filename ) free(strippedname);
+    if ( chosenname!=NULL ) free(chosenname);
     fclose(ttf);
 return( sf );
 }

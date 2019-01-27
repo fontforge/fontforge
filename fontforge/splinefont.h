@@ -2290,6 +2290,7 @@ extern char *Unarchive(char *name, char **_archivedir);
 extern char *Decompress(char *name, int compression);
 extern uint16 MacStyleCode( SplineFont *sf, uint16 *psstyle );
 extern char **NamesReadUFO(char *filename);
+extern char *SFSubfontnameStart(char *fname);
 
 
 extern const char *UnicodeRange(int unienc);

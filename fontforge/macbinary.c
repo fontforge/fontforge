@@ -2080,8 +2080,8 @@ static SplineFont *SearchTtfResources(FILE *f,long rlistpos,int subcnt,long rdat
     SplineFont *sf;
     int which = 0;
     char **names;
-    char *pt,*lparen, *rparen;
-    char *chosenname=NULL;
+    char *pt,*lparen;
+    char *find=NULL,*chosenname=NULL;
 
     fseek(f,rlistpos,SEEK_SET);
     if ( subcnt>1 || (flags&ttf_onlynames) ) {
@@ -2106,15 +2106,9 @@ static SplineFont *SearchTtfResources(FILE *f,long rlistpos,int subcnt,long rdat
 return( (SplineFont *) names );
 	}
 	if ((pt = strrchr(filename,'/'))==NULL ) pt = filename;
-	/* Someone gave me a font "Nafees Nastaleeq(Updated).ttf" and complained */
-	/*  that ff wouldn't open it */
-	/* Now someone will complain about "Nafees(Updated).ttc(fo(ob)ar)" */
-	if ( (lparen = strrchr(pt,'('))!=NULL &&
-		(rparen = strrchr(lparen,')'))!=NULL &&
-		rparen[1]=='\0' ) {
-	    char *find = copy(lparen+1);
-	    pt = strchr(find,')');
-	    if ( pt!=NULL ) *pt='\0';
+	if ( lparen = SFSubfontnameStart(pt) ) {
+	    find = copy(lparen+1);
+	    find[strlen(find)-1] = '\0';
 	    for ( which=subcnt-1; which>=0; --which )
 		if ( strcmp(names[which],find)==0 )
 	    break;
@@ -2180,7 +2174,7 @@ return( (SplineFont *) names );
 	    len += temp;
 	}
 	rewind(ttf);
-	sf = _SFReadTTF(ttf,flags,openflags,NULL,NULL);
+	sf = _SFReadTTF(ttf,flags,openflags,NULL,NULL,NULL);
 	fclose(ttf);
 	if ( sf!=NULL ) {
 	    free(buffer);
@@ -2577,10 +2571,9 @@ static FOND *PickFOND(FOND *fondlist,char *filename,char **name, int *style) {
     char *find = NULL;
 
     if ((pt = strrchr(filename,'/'))!=NULL ) pt = filename;
-    if ( (lparen = strchr(filename,'('))!=NULL && strchr(lparen,')')!=NULL ) {
+    if ( lparen = SFSubfontnameStart(pt) ) {
 	find = copy(lparen+1);
-	pt = strchr(find,')');
-	if ( pt!=NULL ) *pt='\0';
+	find[strlen(find)-1] = '\0';
 	for ( test=fondlist; test!=NULL; test=test->next ) {
 	    for ( i=0; i<48; ++i )
 		if ( test->psnames[i]!=NULL && strcmp(find,test->psnames[i])==0 ) {
@@ -2810,7 +2803,7 @@ return( (SplineFont *) ret );
 	dlen -= len;
     }
     rewind(temp);
-    sf = _SFReadTTF(temp,flags,openflags,NULL,NULL);
+    sf = _SFReadTTF(temp,flags,openflags,NULL,NULL,NULL);
     fclose(temp);
     free(buffer);
 return( sf );

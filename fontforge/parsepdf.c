@@ -1978,7 +1978,7 @@ return( NULL );
 	sf = SplineFontFromPSFont(fd);
 	PSFontFree(fd);
     } else if ( type==2 ) {
-	sf = _SFReadTTF(file,0,pc->openflags,pc->fontnames[font_num],NULL);
+	sf = _SFReadTTF(file,0,pc->openflags,pc->fontnames[font_num],NULL,NULL);
     } else {
 	int len;
 	fseek(file,0,SEEK_END);

@@ -187,7 +187,7 @@ return( strm.total_out );
     }
 }
 
-SplineFont *_SFReadWOFF(FILE *woff,int flags,enum openflags openflags, char *filename,struct fontdict *fd) {
+SplineFont *_SFReadWOFF(FILE *woff,int flags,enum openflags openflags, char *filename,char *chosenname,struct fontdict *fd) {
     int flavour;
     int iscff;
     int len, len_stated;
@@ -315,7 +315,7 @@ return( NULL );
 	putlong(sfnt,checksum);
     }
     rewind(sfnt);
-    sf = _SFReadTTF(sfnt,flags,openflags,filename,fd);
+    sf = _SFReadTTF(sfnt,flags,openflags,filename,chosenname,fd);
     fclose(sfnt);
 
     if ( sf!=NULL ) {
@@ -671,7 +671,7 @@ int _WriteWOFF2Font(FILE *fp, SplineFont *sf, enum fontformat format, int32_t *b
     return ret;
 }
 
-SplineFont *_SFReadWOFF2(FILE *fp, int flags, enum openflags openflags, char *filename, struct fontdict *fd)
+SplineFont *_SFReadWOFF2(FILE *fp, int flags, enum openflags openflags, char *filename,char *chosenname,struct fontdict *fd)
 {
     size_t raw_input_length = 0;
     uint8_t *raw_input = ReadFileToBuffer(fp, &raw_input_length);
@@ -701,7 +701,7 @@ SplineFont *_SFReadWOFF2(FILE *fp, int flags, enum openflags openflags, char *fi
         return NULL;
     }
 
-    SplineFont *ret = _SFReadTTF(tmp, flags, openflags, filename, fd);
+    SplineFont *ret = _SFReadTTF(tmp, flags, openflags, filename, chosenname, fd);
     fclose(tmp);
     return ret;
 }

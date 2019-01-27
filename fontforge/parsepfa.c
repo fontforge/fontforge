@@ -2617,7 +2617,7 @@ return;
 		parseline(fp,buffer,in);
 	}
     } else if (( fp->fd->fonttype==42 || fp->fd->cidfonttype==2 ) && fp->sfnts!=NULL ) {
-	fp->fd->sf = _SFReadTTF(fp->sfnts,0,0,"<Temp File>",fp->fd);
+	fp->fd->sf = _SFReadTTF(fp->sfnts,0,0,"<Temp File>",NULL,fp->fd);
 	fclose(fp->sfnts);
     }
 }
