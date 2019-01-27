@@ -515,7 +515,7 @@ static uint32 StrToTag(char *tag_name, int *was_mac) {
     int feat, set;
 
     if ( tag_name==NULL ) {
-	PyErr_Format(PyExc_TypeError, "OpenType tags must be represented strings" );
+	PyErr_Format(PyExc_TypeError, "OpenType tags must be represented as strings" );
 return( BAD_TAG );
     }
 
@@ -547,6 +547,16 @@ return( BAD_TAG );
 	}
     }
 return( (foo[0]<<24) | (foo[1]<<16) | (foo[2]<<8) | foo[3] );
+}
+
+static uint32 StrObjToTag(PyObject *obj, int *was_mac) {
+    char *str;
+    uint32 r;
+
+    PYGETSTR(obj, str, BAD_TAG);
+    r = StrToTag(str, was_mac);
+    ENDPYGETSTR();
+    return r;
 }
 
 static PyObject *TagToPythonString(uint32 tag,int ismac) {
@@ -8540,14 +8550,19 @@ static PyObject *PyFFGlyph_addPosSub(PyObject *self, PyObject *args) {
 	PyErr_Format(PyExc_TypeError,"The first argument must be a subtable name");
 return( NULL );
     }
-    subname = PyBytes_AsString(PySequence_GetItem(args,0));
-    if ( subname==NULL )
-return( NULL );
+    PYGETSTR(PySequence_GetItem(args,0), subname, NULL);
+    /* This clause is probably only needed for python 2, if that */
+    if (subname == NULL) {
+        ENDPYGETSTR();
+	return NULL;
+    }
     sub = SFFindLookupSubtable(sf,subname);
     if ( sub==NULL ) {
 	PyErr_Format(PyExc_KeyError, "Unknown lookup subtable: %s",subname);
-return( NULL );
+        ENDPYGETSTR();
+	return( NULL );
     }
+    ENDPYGETSTR(); /* subname is also used below, but only after reparsing */
 
     temp.subtable = sub;
 
@@ -12268,7 +12283,7 @@ return( -1 );
 	    BaseFree(base);
 return( -1 );
 	}
-	base->baseline_tags[i] = StrToTag(PyBytes_AsString(str),NULL);
+	base->baseline_tags[i] = StrObjToTag(str,NULL);
 	if ( base->baseline_tags[i]==BAD_TAG ) {
 	    BaseFree(base);
 return( -1 );
@@ -12290,6 +12305,8 @@ return( -1 );
 	    BaseFree(base);
 return( -1 );
 	}
+	bs = chunkalloc(sizeof(struct basescript));
+	bs->next = NULL;
 	if ( lastbs==NULL )
 	    base->scripts = bs;
 	else
@@ -14798,25 +14815,35 @@ static struct flaglist lookup_flags[] = {
 };
 
 static int ParseLookupFlagsItem(SplineFont *sf,PyObject *flagstr) {
-    char *str = PyBytes_AsString(flagstr);
+    char *str;
     int i;
 
-    if ( str==NULL )
-return( -1 );
+    PYGETSTR(flagstr, str, -1);
+    if ( str==NULL ) {
+	ENDPYGETSTR();
+	return( -1 );
+    }
     for ( i=0; lookup_flags[i].name!=NULL; ++i )
-	if ( strcmp(lookup_flags[i].name,str)==0 )
-return( lookup_flags[i].flag );
+	if ( strcmp(lookup_flags[i].name,str)==0 ) {
+	    ENDPYGETSTR();
+	    return( lookup_flags[i].flag );
+	}
 
     for ( i=1; i<sf->mark_class_cnt; ++i ) /* Start at 1 because class 0 is unused */
-	if ( strcmp(sf->mark_class_names[i],str)==0 )
-return( i<<8 );
+	if ( strcmp(sf->mark_class_names[i],str)==0 ) {
+	    ENDPYGETSTR();
+	    return( i<<8 );
+	}
 
     for ( i=0; i<sf->mark_set_cnt; ++i )
-	if ( strcmp(sf->mark_set_names[i],str)==0 )
-return( (i<<16) | pst_usemarkfilteringset );
+	if ( strcmp(sf->mark_set_names[i],str)==0 ) {
+	    ENDPYGETSTR();
+	    return( (i<<16) | pst_usemarkfilteringset );
+	}
 
     PyErr_Format(PyExc_ValueError, "Unknown lookup flag %s", str );
-return( -1 );
+    ENDPYGETSTR();
+    return( -1 );
 }
 
 static int ParseLookupFlags(SplineFont *sf,PyObject *flagtuple) {
@@ -14870,7 +14897,7 @@ return( BAD_FEATURE_LIST );
 return( BAD_FEATURE_LIST );
 	}
 	fl = chunkalloc(sizeof(FeatureScriptLangList));
-	fl->featuretag = StrToTag(PyBytes_AsString(PySequence_GetItem(subs,0)),&wasmac);
+	fl->featuretag = StrObjToTag(PySequence_GetItem(subs,0),&wasmac);
 	if ( fl->featuretag == BAD_TAG ) {
 	    free(fl);
 	    FeatureScriptLangListFree(flhead);
@@ -14910,7 +14937,7 @@ return( BAD_FEATURE_LIST );
 return( BAD_FEATURE_LIST );
 	    }
 	    sl = chunkalloc(sizeof(struct scriptlanglist));
-	    sl->script = StrToTag(PyBytes_AsString(PySequence_GetItem(scriptsubs,0)),NULL);
+	    sl->script = StrObjToTag(PySequence_GetItem(scriptsubs,0),NULL);
 	    if ( sl->script==BAD_TAG ) {
 		free(sl);
 		FeatureScriptLangListFree(flhead);
@@ -14923,7 +14950,7 @@ return( BAD_FEATURE_LIST );
 	    sltail = sl;
 	    langs = PySequence_GetItem(scriptsubs,1);
 	    if ( STRING_CHECK(langs) ) {
-		uint32 lang = StrToTag(PyBytes_AsString(langs),NULL);
+		uint32 lang = StrObjToTag(langs,NULL);
 		if ( lang==BAD_TAG ) {
 		    FeatureScriptLangListFree(flhead);
 return( BAD_FEATURE_LIST );
@@ -14942,7 +14969,7 @@ return( BAD_FEATURE_LIST );
 		if ( sl->lang_cnt>MAX_LANG )
 		    sl->morelangs = malloc((sl->lang_cnt-MAX_LANG)*sizeof(uint32));
 		for ( l=0; l<sl->lang_cnt; ++l ) {
-		    uint32 lang = StrToTag(PyBytes_AsString(PySequence_GetItem(langs,l)),NULL);
+		    uint32 lang = StrObjToTag(PySequence_GetItem(langs,l),NULL);
 		    if ( lang==BAD_TAG ) {
 			FeatureScriptLangListFree(flhead);
 return( BAD_FEATURE_LIST );
@@ -16221,6 +16248,7 @@ return( NULL );
 	if ( name!=NULL ) {
 	    free(sc->name);
 	    sc->name = copy(name);
+	    GlyphHashFree(fv->sf);
 	}
     } else {
 	sc = SFGetOrMakeChar(fv->sf,uni,name);
