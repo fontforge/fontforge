@@ -1069,8 +1069,7 @@ int _ExportSVG(FILE *svg,SplineChar *sc,int layer) {
     switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     fprintf(svg, "<?xml version=\"1.0\" standalone=\"no\"?>\n" );
     fprintf(svg, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\" >\n" );
-    fprintf(svg, "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" viewBox=\"%d %d %d %d\">\n",
-	    (int) floor(b.minx), (int) floor(b.miny),
+    fprintf(svg, "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" viewBox=\"0 0 %d %d\">\n",
 	    (int) ceil(sc->width), (int) ceil(em_size));
     fprintf(svg, "  <g transform=\"matrix(1 0 0 -1 0 %d)\">\n",
 	    sc->parent->ascent );
