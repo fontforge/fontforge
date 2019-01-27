@@ -1876,6 +1876,8 @@ return( vs_maskttf );
 return( vs_maskps );
     else if ( format==ff_svg )
 return( vs_maskttf );
+    else if ( format==ff_woff2 )
+return( vs_maskttf );
     else
 return( sf->subfontcnt!=0 || sf->cidmaster!=NULL ? vs_maskcid :
 	sf->layers[layer].order2 ? vs_maskttf : vs_maskps );
