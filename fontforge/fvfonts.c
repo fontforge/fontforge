@@ -1087,8 +1087,7 @@ static void _MergeFont(SplineFont *into,SplineFont *other,struct sfmergecontext 
     emptypos = into->glyphcnt;
 
     mapping = malloc(other->glyphcnt*sizeof(int));
-    for (i = 0; i<other->glyphcnt; ++i)
-	mapping[i] = -1;
+    memset(mapping,-1,other->glyphcnt*sizeof(int));
 
     bitmap_into = into->cidmaster!=NULL? into->cidmaster : into;
 
