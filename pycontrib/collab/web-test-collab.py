@@ -68,7 +68,7 @@ def OnCollabUpdate(f):
             "end": "null" # this is simply so we dont have to manage keeping the last item with no terminating ,
             }, 
             sort_keys=True, indent=4, separators=(',', ': '))
-    print js
+    print(js)
     fi = open(fontJsonOnDisk, 'w')
     fi.write(js)
 
