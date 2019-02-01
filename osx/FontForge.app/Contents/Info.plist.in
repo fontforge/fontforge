@@ -54,6 +54,12 @@
 			<array>
 			    <string>vnd.font-fontforge-sfd</string>
 			</array>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>net.sourceforge.fontforge.sfd</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
 		</dict>
 		<dict>
 			<key>CFBundleTypeExtensions</key>
@@ -164,6 +170,24 @@
 			<key>LSIsAppleDefaultForType</key>
 			<true/>
 		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>sfdir</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>fontforge_sfd</string>
+			<key>CFBundleTypeName</key>
+			<string>Spline Font Database Directory</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>net.sourceforge.fontforge.sfdir</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<true/>
+		</dict>
 	</array>
 	<key>CFBundleName</key>
 	<string>FontForge</string>
@@ -191,5 +215,50 @@
 	<string>NSApplication</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.graphics-design</string>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.text</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Spline Font Database</string>
+			<key>UTTypeIconFile</key>
+			<string>fontforge_sfd</string>
+			<key>UTTypeIdentifier</key>
+			<string>net.sourceforge.fontforge.sfd</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>sfd</string>
+				</array>
+				<key>public.mime-type</key>
+				<array>
+					<string>vnd.font-fontforge-sfd</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>com.apple.package</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Spline Font Database Directory</string>
+			<key>UTTypeIconFile</key>
+			<string>fontforge_sfd</string>
+			<key>UTTypeIdentifier</key>
+			<string>net.sourceforge.fontforge.sfdir</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>sfdir</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
 </dict>
 </plist>
