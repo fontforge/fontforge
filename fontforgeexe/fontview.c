@@ -7120,7 +7120,7 @@ static void FontView_ReformatAll(SplineFont *sf) {
     MetricsView *mvs;
     extern int use_freetype_to_rasterize_fv;
 
-    if ( ((FontView *) (sf->fv))->v==NULL || ((FontView *) (sf->fv))->colcnt==0 )			/* Can happen in scripts */
+    if ( sf->fv==NULL || ((FontView *) (sf->fv))->v==NULL || ((FontView *) (sf->fv))->colcnt==0 )			/* Can happen in scripts */
 return;
 
     for ( fv=(FontView *) (sf->fv); fv!=NULL; fv=(FontView *) (fv->b.nextsame) ) {
