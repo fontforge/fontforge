@@ -2844,7 +2844,7 @@ static void sethead(struct head *head,SplineFont *sf,struct alltabs *at,
     head->checksumAdj = 0;
     head->magicNum = 0x5f0f3cf5;
     head->flags = 8|2|1;		/* baseline at 0, lsbline at 0, round ppem */
-    if ( format>=ff_ttf && format<=ff_ttfdfont ) {
+    if ( isttf_ff(format) ) {
 	if ( AnyInstructions(sf) )
 	    head->flags = 0x10|8|4|2|1;	/* baseline at 0, lsbline at 0, round ppem, instructions may depend on point size, instructions change metrics */
 	else if ( AnyMisleadingBitmapAdvances(sf,bsizes))
@@ -3366,7 +3366,7 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
 	os2->version = 4;
     if ( sf->os2_version > os2->version )
 	os2->version = sf->os2_version;
-    if (( format>=ff_ttf && format<=ff_otfdfont) && (at->gi.flags&ttf_flag_symbol))
+    if ( isttflike_ff(format) && (at->gi.flags&ttf_flag_symbol))
 	modformat = ff_ttfsym;
 
     os2->weightClass = sf->pfminfo.weight;
@@ -3445,8 +3445,8 @@ docs are wrong.
 	    /*  BMP then last is 0xffff */
 	    /* sc->ttf_glyph>2 is to skip the first few truetype glyphs but */
 	    /*  that doesn't work for cff files which only have .notdef to ignore */
-	    if ( ( format>=ff_ttf && format<=ff_otfdfont && sc->ttf_glyph>2) ||
-		    ( format>=ff_ttf && format<=ff_otfdfont && sc->ttf_glyph>0) ) {
+	    if ( ( isttflike_ff(format) && sc->ttf_glyph>2 ) ||
+		    ( isttflike_ff(format) && sc->ttf_glyph>0 ) ) {
 		if ( sc->unicodeenc<=0xffff ) {
 		    if ( sc->unicodeenc<first ) first = sc->unicodeenc;
 		    if ( sc->unicodeenc>last ) last = sc->unicodeenc;
@@ -4052,7 +4052,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     nt.format	     = format;
     nt.applemode     = at->applemode;
     nt.strings	     = tmpfile();
-    if (( format>=ff_ttf && format<=ff_otfdfont) && (at->gi.flags&ttf_flag_symbol))
+    if (isttflike_ff(format) && (at->gi.flags&ttf_flag_symbol))
 	nt.format    = ff_ttfsym;
 
     memset(&dummy,0,sizeof(dummy));
@@ -4830,7 +4830,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
     int mspos, ucs4pos, cjkpos, applecjkpos, vspos, start_of_macroman;
     int modformat = format;
 
-    if (( format>=ff_ttf && format<=ff_otfdfont) && (at->gi.flags&ttf_flag_symbol))
+    if (isttflike_ff(format) && (at->gi.flags&ttf_flag_symbol))
 	modformat = ff_ttfsym;
 
     at->cmap = tmpfile();
