@@ -25,7 +25,6 @@ for x in range(0, len(c)):
     fontforge.logWarning( "old x:" + str(p.x) + " y:" + str(p.y) )
     p.x = p.x * mag
     p.y = p.y * mag
-    c[x] = p
 
 for x in range(0, len(c)):
     p = c[x]

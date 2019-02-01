@@ -729,7 +729,12 @@ if test x"${i_do_have_python_scripting}" = xyes; then
    fi
 fi
 
-AM_CONDITIONAL([HAVE_IPYTHON],[test x"${have_ipython}" = xyes])
+AC_ARG_ENABLE([python-graphicore],
+        [AS_HELP_STRING([--enable-python-graphicore],
+                [enable a menu entry for IPython interactive shell])],
+        [have_python_graphicore=yes])
+
+AM_CONDITIONAL([HAVE_IPYTHON],[test x"${have_ipython}" = xyes && test x"${have_python_graphicore}" = xyes])
 
 #--------------------------------------------------------------------------
 #--------------------------------------------------------------------------
