@@ -24,6 +24,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "fontforge-config.h"
+
 #include <gutils.h>
 #include <stdio.h>
 #include <math.h>
@@ -32,7 +34,6 @@
 #if !defined(__MINGW32__)
 #include <sys/wait.h>
 #endif
-#include "fontforge-config.h"
 #include <unistd.h>
 
 #include "gpsdrawP.h"
