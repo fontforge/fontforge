@@ -40,7 +40,7 @@ extern unichar_t *u_copynallocm(const unichar_t *pt, long n, long m);
 extern unichar_t *uc_copyn(const char *, int);
 extern unichar_t *uc_copy(const char*);
 extern unichar_t *u_concat(const unichar_t*,const unichar_t*);
-extern char      *cu_copyn(const unichar_t *pt,int n);
+extern char      *cu_copyn(const unichar_t *pt,int len);
 extern char      *cu_copy(const unichar_t*);
 
 extern long uc_strcmp(const unichar_t *,const char *);
