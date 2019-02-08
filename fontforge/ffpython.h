@@ -109,7 +109,7 @@ extern void PyFF_Glyph_Set_Layer(SplineChar *sc,int layer);
 typedef struct ff_point {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    float x,y;
+    double x,y;
     uint8 on_curve;
     uint8 selected;
     char *name;
