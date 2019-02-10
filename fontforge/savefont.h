@@ -32,6 +32,35 @@
 
 #include "splinefont.h"
 
+enum fm_flags { fm_flag_afm = 0x1,
+                fm_flag_pfm = 0x2,
+                fm_flag_shortps = 0x4,
+                fm_flag_nopshints = 0x8,
+                fm_flag_apple = 0x10,
+                fm_flag_pfed_comments = 0x20,
+                fm_flag_pfed_colors = 0x40,
+                fm_flag_opentype = 0x80,
+                fm_flag_glyphmap = 0x100,
+                fm_flag_TeXtable = 0x200,
+                fm_flag_ofm = 0x400,
+                fm_flag_applemode = 0x800,
+                // fm_flag_??? = 0x1000,
+                fm_flag_symbol = 0x2000,
+                fm_flag_dummyDSIG = 0x4000,
+                // fm_flag_??? = 0x8000,
+                fm_flag_tfm = 0x10000,
+                fm_flag_nohintsubs = 0x20000,
+                fm_flag_noflex = 0x40000,
+                fm_flag_nottfhints = 0x80000,
+                fm_flag_restrict256 = 0x100000,
+                fm_flag_round = 0x200000,
+                fm_flag_afmwithmarks = 0x400000,
+                fm_flag_pfed_lookups = 0x800000,
+                fm_flag_pfed_guides = 0x1000000,
+                fm_flag_pfed_layers = 0x2000000,
+                fm_flag_winkern = 0x4000000
+              };
+
 extern const char (*savefont_extensions[]), (*bitmapextensions[]);
 extern int old_sfnt_flags;
 
