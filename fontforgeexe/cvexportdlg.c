@@ -638,8 +638,8 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
 #ifndef _NO_PYTHON
     if ( _format>=fv_pythonbase )
 	ext = py_ie[_format-fv_pythonbase].extension;
-#endif
     else
+#endif
 	ext = _format==0?"eps":_format==1?"fig":_format==2?"svg":
 		_format==3?"glif":
 		_format==4?"pdf":_format==5?"plate":

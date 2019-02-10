@@ -63,7 +63,7 @@ install:
     if [ ! -z "$LINUX_FULL" ] ; then
       export FFCONFIG="$FFCONFIG --enable-code-coverage --enable-debug"
     elif [ ! -z "$LINUX_NOX" ]; then
-      export FFCONFIG="$FFCONFIG --without-x"
+      export FFCONFIG="$FFCONFIG --without-x --disable-python-extension --disable-python-scripting"
     fi
 
     # For some inane reason Travis defines this to '-g -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security'
@@ -127,16 +127,15 @@ script:
   - make check
   - if [ ! -z "$LINUX_FULL" ]; then make distcheck; fi
   - fontforge -version
-  - $PYTHON -c "import fontforge; import psMat; print(fontforge.__version__, fontforge.version()); fontforge.font();"
+  - if [ -z "$LINUX_NOX" ]; then $PYTHON -c "import fontforge; import psMat; print(fontforge.__version__, fontforge.version()); fontforge.font();"; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]; then travis-scripts/ffosxbuild.sh $PREFIX $TRAVIS_COMMIT; fi
 
 after_success:
   - if [ ! -z "$LINUX_FULL" ]; then coveralls --gcov-options '\-bulp' --gcov $(which $GCOV) || true; fi
 
 after_failure:
-  - cat config.log
-  - cat Makefile
   - which python
+  - env
 
 deploy:
   provider: bintray
