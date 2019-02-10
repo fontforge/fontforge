@@ -127,16 +127,15 @@ script:
   - make check
   - if [ ! -z "$LINUX_FULL" ]; then make distcheck; fi
   - fontforge -version
-  - $PYTHON -c "import fontforge; import psMat; print(fontforge.__version__, fontforge.version()); fontforge.font();"
+  - if [ -z "$LINUX_NOX" ]; then $PYTHON -c "import fontforge; import psMat; print(fontforge.__version__, fontforge.version()); fontforge.font();"; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]; then travis-scripts/ffosxbuild.sh $PREFIX $TRAVIS_COMMIT; fi
 
 after_success:
   - if [ ! -z "$LINUX_FULL" ]; then coveralls --gcov-options '\-bulp' --gcov $(which $GCOV) || true; fi
 
 after_failure:
-  - cat config.log
-  - cat Makefile
   - which python
+  - env
 
 deploy:
   provider: bintray
