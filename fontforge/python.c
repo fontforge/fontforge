@@ -15818,6 +15818,7 @@ struct flaglist gen_flags[] = {
     { "PfEd-lookups", 0x800000 },
     { "PfEd-guidelines", 0x1000000 },
     { "PfEd-background", 0x2000000 },
+    { "winkern", 0x4000000 },
     { "glyph-map-file", 0x0100 },
     { "TeX-table", 0x0200 },
     { "ofm", 0x0400 },
