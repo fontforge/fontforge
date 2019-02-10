@@ -53,6 +53,7 @@ m4_defun([run_python],[(${abs_top_builddir}/fontforgeexe/fontforge -lang py -scr
 m4_defun([check_python],[
 AT_SETUP([$1])
 AT_SKIP_IF([test ! -r "${abs_srcdir}/$2"])
+AT_SKIP_IF([test ! -z "$FONTFORGE_NO_PYTHON"])
 check_file([test_input], [$3])
 AT_CHECK([run_python([$2],[$test_input])],[0],[ignore],[ignore])
 AT_CLEANUP

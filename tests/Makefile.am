@@ -48,6 +48,10 @@ noinst_FILES = * fonts/* results/* results
 TESTSUITE = $(srcdir)/testsuite
 EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE) atlocal.in
 
+if !PYTHON_SCRIPTING
+TESTSUITEFLAGS = FONTFORGE_NO_PYTHON=1
+endif !PYTHON_SCRIPTING
+
 FONTFORGE = $(top_builddir)/fontforgeexe/fontforge
 
 check-local: $(builddir)/fonts atconfig atlocal $(TESTSUITE) $(FONTFORGE) $(GENERATED_INPUTS) $(FETCHED_INPUTS)
@@ -117,11 +121,11 @@ prefetch-nonfree-fonts: $(FETCHED_INPUTS_NONFREE)
 # Inputs we can generate from files in git
 fonts/Ambrosia.pt3: fonts/Ambrosia.sfd
 	$(MKDIR_P) $(builddir)/fonts
-	$(FONTFORGE) -c 'open(argv[1]).generate(argv[2])' $< $@
+	$(FONTFORGE) -lang=ff -c 'Open($$1); Generate($$2)' $< $@
 
 fonts/Ambrosia.woff2: fonts/Ambrosia.sfd
 	$(MKDIR_P) $(builddir)/fonts
-	$(FONTFORGE) -c 'open(argv[1]).generate(argv[2])' $< $@
+	$(FONTFORGE) -lang=ff -c 'Open($$1); Generate($$2)' $< $@
 
 fonts/MunhwaGothic-Bold:
 	$(MKDIR_P) $(builddir)/fonts
