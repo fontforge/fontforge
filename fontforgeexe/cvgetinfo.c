@@ -1755,23 +1755,23 @@ static void PI_DoCancel(GIData *ci) {
 
 static int pi_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
-	GIData  *d = GDrawGetUserData(gw);
-	if( d->nonmodal ) {
-	    PI_Destroy((struct dlistnode *)d);
-	} else {
-	    PI_DoCancel( GDrawGetUserData(gw));
-	}
+        GIData  *d = GDrawGetUserData(gw);
+        if( !d->nonmodal ) {
+            PI_DoCancel(d);
+        }
+        PI_Destroy((struct dlistnode *)d);
     } else if ( event->type==et_char ) {
-	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("getinfo.html");
-return( true );
-	}
-return( false );
+        if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+            help("getinfo.html");
+            return( true );
+        } else {
+            return( false );
+        } 
     } else if ( event->type == et_map ) {
-	/* Above palettes */
-	GDrawRaise(gw);
+        /* Above palettes */
+        GDrawRaise(gw);
     }
-return( true );
+    return( true );
 }
 
 static void PIFillup(GIData *ci, int except_cid);
