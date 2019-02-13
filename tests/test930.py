@@ -5,6 +5,8 @@ import fontforge as f
 
 # point
 
+co = f.splineCorner
+
 # Embedded tuple
 p = f.point((2.3,2.4))
 if p.x != 2.3 or p.y != 2.4 or not p.on_curve or p.selected:
@@ -14,7 +16,7 @@ p = f.point((2.3,2.4,False))
 if p.x != 2.3 or p.y != 2.4 or p.on_curve or p.selected:
     raise ValueError("Bad point values" )
 
-p = f.point((2.3,2.4,False,True))
+p = f.point((2.3,2.4),False,co,True)
 if p.x != 2.3 or p.y != 2.4 or p.on_curve or not p.selected:
     raise ValueError("Bad point values" )
 
@@ -27,7 +29,7 @@ p = f.point([2.3,2.4,False])
 if p.x != 2.3 or p.y != 2.4 or p.on_curve or p.selected:
     raise ValueError("Bad point values" )
 
-p = f.point([2.3,2.4,False,True])
+p = f.point([2.3,2.4],False,co,True)
 if p.x != 2.3 or p.y != 2.4 or p.on_curve or not p.selected:
     raise ValueError("Bad point values" )
 
@@ -40,7 +42,7 @@ p = f.point(2.3,2.4,False)
 if p.x != 2.3 or p.y != 2.4 or p.on_curve or p.selected:
     raise ValueError("Bad point values" )
 
-p = f.point(2.3,2.4,False,True)
+p = f.point(2.3,2.4,False,co,True)
 if p.x != 2.3 or p.y != 2.4 or p.on_curve or not p.selected:
     raise ValueError("Bad point values" )
 

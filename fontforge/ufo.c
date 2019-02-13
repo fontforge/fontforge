@@ -3225,7 +3225,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 	}
     }
     xmlFreeDoc(doc);
-    SPLCategorizePointsKeepCorners(sc->layers[layerdest].splines);
+    _SPLCategorizePoints(sc->layers[layerdest].splines, pconvert_flag_smooth|pconvert_flag_by_geom);
 return( sc );
 }
 

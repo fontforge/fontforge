@@ -112,6 +112,7 @@ typedef struct ff_point {
     double x,y;
     uint8 on_curve;
     uint8 selected;
+    uint8 type;
     uint8 interpolated;
     char *name;
 } PyFF_Point;
