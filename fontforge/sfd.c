@@ -6042,7 +6042,7 @@ static void SFDFixupBitmapRefs( BDFFont *bdf ) {
 
 static int SFDGetBitmapFont(FILE *sfd,SplineFont *sf,int fromdir,char *dirname) {
     BDFFont *bdf, *prev;
-    char tok[200];
+    char tok[2000];
     int pixelsize, ascent, descent, depth=1;
     int ch, enccount;
 
