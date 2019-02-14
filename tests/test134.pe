@@ -1,0 +1,46 @@
+New()
+
+Select("A")
+SetGlyphName("A")
+SetWidth(100)
+
+Select("B")
+SetGlyphName("B")
+SetWidth(100)
+
+Select("C")
+SetGlyphName("C")
+SetWidth(100)
+
+Select("D")
+SetGlyphName("D")
+SetWidth(100)
+
+MergeFeature($1)
+
+lookups = GetLookups("GSUB")
+if (SizeOf(lookups) != 2)
+  Error("There should be two lookups")
+endif
+
+i = 0
+while (i < SizeOf(lookups))
+  subtables = GetLookupSubtables(lookups[i])
+  if (SizeOf(subtables) != 1)
+    Print("Lookup: ", lookups[i])
+    Error("There should be one subtable")
+  endif
+  if (i == 1)
+    Select("A")
+    sub = GetPosSub(subtables[0])
+    if (SizeOf(sub) != 1)
+      Error("Incorrect number of substitutions")
+    endif
+    if (SizeOf(sub[0]) != 4 || sub[0][1] != "MultSubs" || sub[0][2] != "C" || sub[0][3] != "D")
+      Error("Incorrect substitution")
+    endif
+  endif
+  i++
+endloop
+
+Close()

@@ -4423,6 +4423,39 @@ return( sofar );
 return( sofar );
 }
 
+static struct feat_item *fea_process_sub_multiple(struct parseState *tok,
+	struct markedglyphs *glyphs, struct markedglyphs *rpl,
+	struct feat_item *sofar ) {
+    int len=0;
+    char *mult;
+    struct markedglyphs *g;
+    struct feat_item *item;
+    SplineChar *sc;
+
+    for ( g=rpl; g!=NULL; g=g->next )
+	len += strlen(g->name_or_class)+1;
+    mult = malloc(len+1);
+    len = 0;
+    for ( g=rpl; g!=NULL; g=g->next ) {
+	strcpy(mult+len,g->name_or_class);
+	len += strlen(g->name_or_class);
+	mult[len++] = ' ';
+    }
+    mult[len-1] = '\0';
+    sc = fea_glyphname_get(tok,glyphs->name_or_class);
+    if ( sc!=NULL ) {
+	item = chunkalloc(sizeof(struct feat_item));
+	item->type = ft_pst;
+	item->next = sofar;
+	sofar = item;
+	item->u1.sc = sc;
+	item->u2.pst = chunkalloc(sizeof(PST));
+	item->u2.pst->type = pst_multiple;
+	item->u2.pst->u.mult.components = mult;
+    }
+return( sofar );
+}
+
 static struct feat_item *fea_process_sub_ligature(struct parseState *tok,
 	struct markedglyphs *glyphs, struct markedglyphs *rpl,
 	struct feat_item *sofar ) {
@@ -4700,6 +4733,7 @@ static void fea_ParseSubstitute(struct parseState *tok) {
     /* name from <class> => alternate subs */
     /* <glyph sequence> by name => ligature */
     /* <marked glyph sequence> by <name> => context chaining */
+    /* <marked glyph sequence> by <glyph sequence> => context chaining */
     /* <marked glyph sequence> by <lookup name>* => context chaining */
     /* [ignore sub] <marked glyph sequence> (, <marked g sequence>)* */
     /* reversesub <marked glyph sequence> by <name> => reverse context chaining */
@@ -4754,29 +4788,7 @@ static void fea_ParseSubstitute(struct parseState *tok) {
 		    tok->sofar = fea_process_sub_single(tok,glyphs,rpl,tok->sofar);
 		} else if ( cnt==1 && glyphs->is_name && rpl->next!=NULL && rpl->is_name ) {
 		    /* Multiple substitution */
-		    int len=0;
-		    char *mult;
-		    for ( g=rpl; g!=NULL; g=g->next )
-			len += strlen(g->name_or_class)+1;
-		    mult = malloc(len+1);
-		    len = 0;
-		    for ( g=rpl; g!=NULL; g=g->next ) {
-			strcpy(mult+len,g->name_or_class);
-			len += strlen(g->name_or_class);
-			mult[len++] = ' ';
-		    }
-		    mult[len-1] = '\0';
-		    sc = fea_glyphname_get(tok,glyphs->name_or_class);
-		    if ( sc!=NULL ) {
-			item = chunkalloc(sizeof(struct feat_item));
-			item->type = ft_pst;
-			item->next = tok->sofar;
-			tok->sofar = item;
-			item->u1.sc = sc;
-			item->u2.pst = chunkalloc(sizeof(PST));
-			item->u2.pst->type = pst_multiple;
-			item->u2.pst->u.mult.components = mult;
-		    }
+		    tok->sofar = fea_process_sub_multiple(tok,glyphs,rpl,tok->sofar);
 		} else if ( cnt>1 && rpl->is_name && rpl->next==NULL ) {
 		    tok->sofar = fea_process_sub_ligature(tok,glyphs,rpl,tok->sofar);
 		    /* Ligature */
@@ -4819,26 +4831,27 @@ static void fea_ParseSubstitute(struct parseState *tok) {
 		    LogError(_("No substitution specified on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 		    ++tok->err_count;
 		} else {
-		    for ( i=0, rp=rpl; g!=NULL && rp!=NULL; ++i, rp=rp->next ) {
-		        if ( rp->lookupname!=NULL ) {
-			    head = chunkalloc(sizeof(struct feat_item));
-			    head->type = ft_lookup_ref;
-			    head->u1.lookup_name = copy(rp->lookupname);
-		        } else if ( g->next==NULL || g->next->mark_count!=g->mark_count ) {
-			    head = fea_process_sub_single(tok,g,rp,NULL);
-		        } else if ( g->next!=NULL && g->mark_count==g->next->mark_count ) {
-			    head = fea_process_sub_ligature(tok,g,rpl,NULL);
-		        } else {
-			    head = NULL;
-			    LogError(_("Unparseable contextual sequence on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
-			    ++tok->err_count;
-		        }
-		        r->lookups[i].lookup = (OTLookup *) head;
-		        cnt = g->mark_count;
-		        while ( g!=NULL && g->mark_count == cnt )	/* skip everything involved here */
-			    g=g->next;
-		        for ( ; g!=NULL && g->mark_count!=0; g=g->next ); /* skip any uninvolved glyphs */
+		    if ( rpl->lookupname!=NULL ) {
+			head = chunkalloc(sizeof(struct feat_item));
+			head->type = ft_lookup_ref;
+			head->u1.lookup_name = copy(rpl->lookupname);
+		    } else if ( g->next==NULL || g->next->mark_count!=g->mark_count ) {
+			if (rpl->next)
+			    head = fea_process_sub_multiple(tok,g,rpl,NULL);
+			else
+			    head = fea_process_sub_single(tok,g,rpl,NULL);
+		    } else if ( g->next!=NULL && g->mark_count==g->next->mark_count ) {
+			head = fea_process_sub_ligature(tok,g,rpl,NULL);
+		    } else {
+			head = NULL;
+			LogError(_("Unparseable contextual sequence on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+			++tok->err_count;
 		    }
+		    r->lookups[0].lookup = (OTLookup *) head;
+		    cnt = g->mark_count;
+		    while ( g!=NULL && g->mark_count == cnt )	/* skip everything involved here */
+			g=g->next;
+		    for ( ; g!=NULL && g->mark_count!=0; g=g->next ); /* skip any uninvolved glyphs */
 		}
 	    }
 	    fea_markedglyphsFree(rpl);
