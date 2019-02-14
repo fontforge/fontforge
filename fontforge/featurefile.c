@@ -5827,7 +5827,7 @@ static void fea_ParseGDEFTable(struct parseState *tok) {
 		fea_ParseTok(tok);
 		if ( tok->type==tk_char && (( i<3 && tok->tokbuf[0]==',' ) || ( i==3 && tok->tokbuf[0]==';' )) )
 		    ; /* Skip the placeholder for a missing class definition or a final semicolon */
-		else if ( tok->type==tk_class ) {
+		else if ( tok->type==tk_class || ( tok->type==tk_char && tok->tokbuf[0]=='[' ) ) {
 		    item->u1.gdef_classes[i] = fea_ParseGlyphClassGuarded(tok);
 		    fea_ParseTok(tok);
 		    if ( tok->type==tk_char && (( i<3 && tok->tokbuf[0]==',' ) || ( i==3 && tok->tokbuf[0]==';' )) )
