@@ -23,6 +23,12 @@ See [Github Guides](https://guides.github.com/) to learn more, but the basic pro
 
 Fontforge supports Python `>=` 2.6, but the testsuite is solely Python 3-compatible.
 
+### Debugging FontForge
+
+FontForge is most commonly debugged by contributors with the [GNU Debugger](https://www.gnu.org/software/gdb/) (`gdb`). While hacking on FontForge, it is common to have multiple different versions of FontForge on your system. Depending on your `PATH`. `LD_LIBRARY_PATH`, `gdb`'s internal `solib-search-path`, whether FontForge was compiled statically, in some cases the shell you are using, and potentially other subtle factors, you could be testing the wrong version of FontForge even if you are pointing `gdb` to the right `fontforge` executable.
+
+**If testing Git patches locally, be sure to run `gdb` as `libtool --mode=execute gdb fontforgeexe/fontforge`** instead of just `gdb fontforgeexe/.libs/fontforge` or similar to avoid `gdb` potentially loading the system's FontForge library while executing the local `fontforge` binary.
+
 ### Coding Style
 
 Some of these guidelines are not followed in the oldest code in the repository, however we want to use them for all new code since 2012 when FontForge transitioned from a lone-genius project to a collaborative community project.
