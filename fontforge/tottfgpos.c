@@ -425,7 +425,7 @@ void AnchorClassDecompose(SplineFont *sf,AnchorClass *_ac, int classcnt, int *su
 	    heads[i].glyphs[heads[i].cnt] = NULL;
     }
     for ( i=0; i<classcnt; ++i ) {
-        if ( subcnts[k]!=0 )
+        if ( subcnts[i]!=0 )
             SFOrderedGlyphs(marks[i]);
     }
 
