@@ -1,0 +1,5 @@
+@ABC_def-123.test = [A B];
+
+lookup test {
+  sub @ABC_def-123.test by @ABC_def-123.test;
+} test;
