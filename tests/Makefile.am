@@ -163,7 +163,7 @@ EXTRA_DIST += helper107.pe helper118A.pe helper118B.pe		\
 	test122.pe test123.pe test124.pe test125.pe		\
 	test126.pe test127.pe test128.pe test129.pe		\
 	test130.pe test131.pe test132.pe test133.pe		\
-	test134.pe test135.pe
+	test134.pe test135.pe test136.pe
 
 # python test scripts
 EXTRA_DIST += findoverlapbugs.py test0001.py test0101.py	\
@@ -191,6 +191,7 @@ GITIGNOREFILES = $(MAYBE_GENERATED_INPUTS)			\
 	fonts/nuvo-medium-woff-demo.woff		\
 	fonts/test134.fea					\
 	fonts/test135.fea					\
+	fonts/test136.fea					\
 	$(FETCHED_INPUTS)						\
 	$(FETCHED_INPUTS_NONFREE)
 

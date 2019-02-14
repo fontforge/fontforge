@@ -3148,6 +3148,9 @@ static int fea_ParseMarkAttachClass(struct parseState *tok, int is_set) {
 
     for ( i=0; i<tok->gm_cnt[is_set]; ++i ) {
 	if ( strcmp(tok->tokbuf,tok->gdef_mark[is_set][i].name)==0 )
+	    if (is_set)
+return( (tok->gdef_mark[is_set][i].index << 16) | pst_usemarkfilteringset );
+	    else
 return( tok->gdef_mark[is_set][i].index << 8 );
     }
     glyphs = fea_lookup_class_complain(tok,tok->tokbuf);
