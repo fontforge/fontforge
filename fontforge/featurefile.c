@@ -4423,6 +4423,39 @@ return( sofar );
 return( sofar );
 }
 
+static struct feat_item *fea_process_sub_multiple(struct parseState *tok,
+	struct markedglyphs *glyphs, struct markedglyphs *rpl,
+	struct feat_item *sofar ) {
+    int len=0;
+    char *mult;
+    struct markedglyphs *g;
+    struct feat_item *item;
+    SplineChar *sc;
+
+    for ( g=rpl; g!=NULL; g=g->next )
+	len += strlen(g->name_or_class)+1;
+    mult = malloc(len+1);
+    len = 0;
+    for ( g=rpl; g!=NULL; g=g->next ) {
+	strcpy(mult+len,g->name_or_class);
+	len += strlen(g->name_or_class);
+	mult[len++] = ' ';
+    }
+    mult[len-1] = '\0';
+    sc = fea_glyphname_get(tok,glyphs->name_or_class);
+    if ( sc!=NULL ) {
+	item = chunkalloc(sizeof(struct feat_item));
+	item->type = ft_pst;
+	item->next = sofar;
+	sofar = item;
+	item->u1.sc = sc;
+	item->u2.pst = chunkalloc(sizeof(PST));
+	item->u2.pst->type = pst_multiple;
+	item->u2.pst->u.mult.components = mult;
+    }
+return( sofar );
+}
+
 static struct feat_item *fea_process_sub_ligature(struct parseState *tok,
 	struct markedglyphs *glyphs, struct markedglyphs *rpl,
 	struct feat_item *sofar ) {
@@ -4754,29 +4787,7 @@ static void fea_ParseSubstitute(struct parseState *tok) {
 		    tok->sofar = fea_process_sub_single(tok,glyphs,rpl,tok->sofar);
 		} else if ( cnt==1 && glyphs->is_name && rpl->next!=NULL && rpl->is_name ) {
 		    /* Multiple substitution */
-		    int len=0;
-		    char *mult;
-		    for ( g=rpl; g!=NULL; g=g->next )
-			len += strlen(g->name_or_class)+1;
-		    mult = malloc(len+1);
-		    len = 0;
-		    for ( g=rpl; g!=NULL; g=g->next ) {
-			strcpy(mult+len,g->name_or_class);
-			len += strlen(g->name_or_class);
-			mult[len++] = ' ';
-		    }
-		    mult[len-1] = '\0';
-		    sc = fea_glyphname_get(tok,glyphs->name_or_class);
-		    if ( sc!=NULL ) {
-			item = chunkalloc(sizeof(struct feat_item));
-			item->type = ft_pst;
-			item->next = tok->sofar;
-			tok->sofar = item;
-			item->u1.sc = sc;
-			item->u2.pst = chunkalloc(sizeof(PST));
-			item->u2.pst->type = pst_multiple;
-			item->u2.pst->u.mult.components = mult;
-		    }
+		    tok->sofar = fea_process_sub_multiple(tok,glyphs,rpl,tok->sofar);
 		} else if ( cnt>1 && rpl->is_name && rpl->next==NULL ) {
 		    tok->sofar = fea_process_sub_ligature(tok,glyphs,rpl,tok->sofar);
 		    /* Ligature */
