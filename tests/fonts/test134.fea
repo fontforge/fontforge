@@ -1,0 +1,3 @@
+lookup test {
+  sub A' B by C D;
+} test;

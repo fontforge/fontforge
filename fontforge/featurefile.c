@@ -4733,6 +4733,7 @@ static void fea_ParseSubstitute(struct parseState *tok) {
     /* name from <class> => alternate subs */
     /* <glyph sequence> by name => ligature */
     /* <marked glyph sequence> by <name> => context chaining */
+    /* <marked glyph sequence> by <glyph sequence> => context chaining */
     /* <marked glyph sequence> by <lookup name>* => context chaining */
     /* [ignore sub] <marked glyph sequence> (, <marked g sequence>)* */
     /* reversesub <marked glyph sequence> by <name> => reverse context chaining */
@@ -4835,7 +4836,10 @@ static void fea_ParseSubstitute(struct parseState *tok) {
 			head->type = ft_lookup_ref;
 			head->u1.lookup_name = copy(rpl->lookupname);
 		    } else if ( g->next==NULL || g->next->mark_count!=g->mark_count ) {
-			head = fea_process_sub_single(tok,g,rpl,NULL);
+			if (rpl->next)
+			    head = fea_process_sub_multiple(tok,g,rpl,NULL);
+			else
+			    head = fea_process_sub_single(tok,g,rpl,NULL);
 		    } else if ( g->next!=NULL && g->mark_count==g->next->mark_count ) {
 			head = fea_process_sub_ligature(tok,g,rpl,NULL);
 		    } else {
