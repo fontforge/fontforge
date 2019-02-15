@@ -1,0 +1,3 @@
+table GDEF {
+  GlyphClassDef [A], [B], [C], [D];
+} GDEF;

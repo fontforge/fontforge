@@ -110,6 +110,7 @@ check_pedit([libnameslist checks],[test131.pe])
 check_pedit([WOFF2 round tripping],[test132.pe],[Ambrosia.woff2])
 check_pedit([Allowed characters in glyph class names],[test133.pe],[test133.fea])
 check_pedit([Short-hand contextual multiple substitution],[test134.pe],[test134.fea])
+check_pedit([GDEF glyph classes],[test135.pe],[test135.fea])
 
 AT_BANNER([FontForge Python Scripting Tests])
 
