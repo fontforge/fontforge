@@ -58,7 +58,8 @@ enum fm_flags { fm_flag_afm = 0x1,
                 fm_flag_pfed_lookups = 0x800000,
                 fm_flag_pfed_guides = 0x1000000,
                 fm_flag_pfed_layers = 0x2000000,
-                fm_flag_winkern = 0x4000000
+                fm_flag_winkern = 0x4000000,
+                fm_flag_nomacnames = 0x8000000,
               };
 
 extern const char (*savefont_extensions[]), (*bitmapextensions[]);
