@@ -1756,9 +1756,6 @@ static void PI_DoCancel(GIData *ci) {
 static int pi_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
         GIData  *d = GDrawGetUserData(gw);
-        if( !d->nonmodal ) {
-            PI_DoCancel(d);
-        }
         PI_Destroy((struct dlistnode *)d);
     } else if ( event->type==et_char ) {
         if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
