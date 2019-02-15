@@ -92,6 +92,8 @@ EXTRA_DIST += fonts/AddExtremaTest2.sfd fonts/AddExtremumTest.sfd	\
 	fonts/SimplifyBugs.sfd fonts/SplineOverlapBug1.sfd		\
 	fonts/StrokeTests.sfd fonts/VKern.sfd fonts/MunhwaGothic-Bold \
 	fonts/NotoSans-Regular.ttc fonts/n019003l.pfb fonts/cmbsy10.pfb	\
+	fonts/test133.fea fonts/test134.fea fonts/test135.fea		\
+	fonts/test136.fea						\
 	README
 
 # generated test inputs
@@ -189,9 +191,6 @@ GITIGNOREFILES = $(MAYBE_GENERATED_INPUTS)			\
 	fonts/MinionPro-Regular.otf				\
 	fonts/LucidaGrande.ttc					\
 	fonts/nuvo-medium-woff-demo.woff		\
-	fonts/test134.fea					\
-	fonts/test135.fea					\
-	fonts/test136.fea					\
 	$(FETCHED_INPUTS)						\
 	$(FETCHED_INPUTS_NONFREE)
 
