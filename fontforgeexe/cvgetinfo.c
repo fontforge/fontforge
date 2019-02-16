@@ -62,6 +62,7 @@ typedef struct gidata {
     GGadgetCreateData* gcd;
     GGadget *group1ret, *group2ret;
     int nonmodal;
+    bool isspiro;
 } GIData;
 
 #define CID_BaseX	2001
@@ -2065,6 +2066,9 @@ static void PIShowHide(GIData *ci) {
 }
 
 void PIChangePoint(GIData *ci) {
+
+    if (ci->isspiro) return;
+
     int aspect = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_TabSet));
     GGadget *list = GWidgetGetControl(ci->gw,CID_HintMask);
     int32 i, len;
@@ -3496,7 +3500,7 @@ static void SpiroPointGetInfo(CharView *cv, spiro_cp *scp, SplinePointList *spl)
     GDrawGetSize(root,&screensize);
 
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_positioned|wam_isdlg|wam_restrict;
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_positioned|wam_isdlg;
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
 	wattrs.positioned = 1;
@@ -3745,6 +3749,9 @@ static void SpiroPointGetInfo(CharView *cv, spiro_cp *scp, SplinePointList *spl)
 
 	GHVBoxFitWindow(pb[0].ret);
 
+    gip->nonmodal = 1;
+    gip->isspiro = true;
+    dlist_pushfront( &cv->pointInfoDialogs, (struct dlistnode *)gip );
     GWidgetHidePalettes();
     GDrawSetVisible(gip->gw,true);
     while ( !gip->done )
