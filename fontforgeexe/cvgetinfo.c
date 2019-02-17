@@ -2066,9 +2066,6 @@ static void PIShowHide(GIData *ci) {
 }
 
 void PIChangePoint(GIData *ci) {
-
-    if (ci->isspiro) return;
-
     int aspect = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_TabSet));
     GGadget *list = GWidgetGetControl(ci->gw,CID_HintMask);
     int32 i, len;
@@ -3375,8 +3372,15 @@ static void SpiroFillup(GIData *ci, int except_cid) {
 }
 
 static void SpiroChangePoint(GIData *ci) {
-
     SpiroFillup(ci,0);
+}
+
+void ChangePoint(GIData *ci) {
+    if (ci->isspiro) {
+        SpiroChangePoint(ci);
+    } else {
+        PIChangePoint(ci);
+    }
 }
 
 static int PI_SpiroNextPrev(GGadget *g, GEvent *e) {

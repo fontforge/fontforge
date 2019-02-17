@@ -5631,7 +5631,7 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
     if ( cv->needsrasterize || cv->recentchange )
 	_CV_CharChangedUpdate(cv,2);
 
-    dlist_foreach( &cv->pointInfoDialogs, (dlist_foreach_func_type)PIChangePoint );
+    dlist_foreach( &cv->pointInfoDialogs, (dlist_foreach_func_type)ChangePoint );
     collabclient_sendRedo( &cv->b );
 }
 

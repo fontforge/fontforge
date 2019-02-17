@@ -1319,6 +1319,7 @@ extern void ME_SetCheckUnique(GGadget *g,int r, int c, SplineFont *sf);
 extern void ME_ClassCheckUnique(GGadget *g,int r, int c, SplineFont *sf);
 extern void PI_Destroy(struct dlistnode *node);
 struct gidata;
+extern void ChangePoint(struct gidata *ci);
 extern void PIChangePoint(struct gidata *ci);
 
 extern void CVRegenFill(CharView *cv);
