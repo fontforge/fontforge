@@ -87,6 +87,7 @@ static int nfnt_warned = false, post_warned = false;
 #define CID_TTF_OldKern		1109
 #define CID_TTF_GlyphMap	1110
 #define CID_TTF_OFM		1111
+#define CID_TTF_NoMacNames	1112
 #define CID_TTF_PfEdLookups	1113
 #define CID_TTF_PfEdGuides	1114
 #define CID_TTF_PfEdLayers	1115
@@ -366,6 +367,8 @@ return( false );
 		    d->sfnt_flags |= ttf_native_kern; // This applies mostly to U. F. O. right now.
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_OldKernMappedOnly)) )
 		    d->sfnt_flags |= ttf_flag_oldkernmappedonly;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_NoMacNames)) )
+		    d->sfnt_flags |= ttf_flag_nomacnames;
 	    } else {				/* PS + OpenType Bitmap */
 		d->ps_flags = d->psotb_flags = 0;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_AFMmarks)) )
@@ -401,6 +404,8 @@ return( false );
 		    d->psotb_flags |= ttf_flag_glyphmap;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_OFM)) )
 		    d->psotb_flags |= ttf_flag_ofm;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_NoMacNames)) )
+		    d->psotb_flags |= ttf_flag_nomacnames;
 	    }
 	    d->sod_invoked = true;
 	}
@@ -462,6 +467,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetChecked(GWidgetGetControl(gw,CID_FontLog),flags&ps_flag_outputfontlog);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_NativeKern),flags&ttf_native_kern);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OldKernMappedOnly),flags&ttf_flag_oldkernmappedonly);
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_NoMacNames),flags&ttf_flag_nomacnames);
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Hints),which!=1);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Flex),which!=1);
@@ -495,6 +501,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_OFM),which!=0);
     
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_OldKernMappedOnly),which!=0 );
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_NoMacNames),which!=0 );
 
     d->optset[which] = true;
 }
@@ -506,10 +513,10 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     int k,fontlog_k,group,group2;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[34];
-    GTextInfo label[34];
+    GGadgetCreateData gcd[35];
+    GTextInfo label[35];
     GRect pos;
-    GGadgetCreateData *hvarray1[21], *hvarray2[42], *hvarray3[6], *harray[7], *varray[11];
+    GGadgetCreateData *hvarray1[21], *hvarray2[42], *hvarray3[8], *harray[7], *varray[11];
     GGadgetCreateData boxes[6];
 
     d->sod_done = false;
@@ -863,9 +870,19 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_OldKernMappedOnly;
     gcd[k++].creator = GCheckBoxCreate;
-    hvarray3[3] = &gcd[k-1];
+    hvarray3[3] = &gcd[k-1]; hvarray3[4] = NULL;
 
-    hvarray3[4] = NULL; hvarray3[5] = NULL;
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    label[k].text = (unichar_t *) _("No Mac Names");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Do not add duplicated name entries for legacy Mac platform. These name entries are only needed for some legacy Mac applications.");
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_TTF_NoMacNames;
+    gcd[k++].creator = GCheckBoxCreate;
+    hvarray3[5] = &gcd[k-1];
+
+    hvarray3[6] = NULL; hvarray3[7] = NULL;
 
     boxes[4].gd.flags = gg_enabled|gg_visible;
     boxes[4].gd.u.boxelements = hvarray3;

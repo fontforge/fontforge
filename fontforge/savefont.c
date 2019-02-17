@@ -1196,6 +1196,7 @@ int GenerateScript(SplineFont *sf,char *filename,const char *bitmaptype, int fmf
 		if ( fmflags&fm_flag_pfed_guides ) old_sfnt_flags |= ttf_flag_pfed_guides;
 		if ( fmflags&fm_flag_pfed_layers ) old_sfnt_flags |= ttf_flag_pfed_layers;
 		if ( fmflags&fm_flag_winkern ) old_sfnt_flags |= ttf_flag_oldkernmappedonly;
+		if ( fmflags&fm_flag_nomacnames ) old_sfnt_flags |= ttf_flag_nomacnames;
 	    }
 	} else {
 	    old_sfnt_flags = 0;
@@ -1239,6 +1240,7 @@ int GenerateScript(SplineFont *sf,char *filename,const char *bitmaptype, int fmf
 	    if ( fmflags&fm_flag_pfed_guides ) old_sfnt_flags |= ttf_flag_pfed_guides;
 	    if ( fmflags&fm_flag_pfed_layers ) old_sfnt_flags |= ttf_flag_pfed_layers;
 	    if ( fmflags&fm_flag_winkern ) old_sfnt_flags |= ttf_flag_oldkernmappedonly;
+	    if ( fmflags&fm_flag_nomacnames ) old_sfnt_flags |= ttf_flag_nomacnames;
 	}
     }
 

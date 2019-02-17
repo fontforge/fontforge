@@ -15831,6 +15831,7 @@ struct flaglist gen_flags[] = {
     { "no-hints", fm_flag_nottfhints },
     { "round", fm_flag_round },
     { "composites-in-afm", fm_flag_afmwithmarks },
+    { "no-mac-names", fm_flag_nomacnames },
     FLAGLIST_EMPTY /* Sentinel */
 };
 /* Generate TrueType Collection flags: see 'enum ttc_flags' in splinefont.h */
