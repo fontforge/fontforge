@@ -1747,24 +1747,13 @@ BDFFont *SplineFontPieceMeal(SplineFont *sf,int layer,int ptsize,int dpi,
 	if ( bb.minx<-10*(sf->ascent+sf->descent) ) bb.minx = -2*(sf->ascent+sf->descent);
 	scale = pixelsize/ (real) (bb.maxy-bb.miny);
 	bdf->ascent = rint(bb.maxy*scale);
+	truesize = rint( (sf->ascent+sf->descent)*scale );
+	if ( pixelsize!=0 )
+	    ptsize = rint( ptsize*(double) truesize/pixelsize );
     } else {
-	real ascent = sf->pfminfo.os2_typoascent;
-	real descent = sf->pfminfo.os2_typodescent;
-	ascent += sf->pfminfo.typoascent_add ? sf->ascent : 0;
-	descent -= sf->pfminfo.typodescent_add ? sf->descent: 0;
-	// 1.2 is just an arbitrary value to make the glyph look less tightly fit
-	// in the font view.
-	ascent *= 1.2;
-	descent *= 1.2;
-
-	scale = pixelsize / (real) (ascent - descent);
-	bdf->ascent = rint (ascent * scale);
+	scale = pixelsize / (real) (sf->ascent+sf->descent);
+	bdf->ascent = rint(sf->ascent*scale);
     }
-
-    truesize = rint ((sf->ascent + sf->descent) * scale);
-    if (pixelsize != 0)
-	ptsize = rint (ptsize * (double) truesize / pixelsize);
-
     if ( flags&pf_ft_nohints )
     {
 //	printf("SplineFontPieceMeal() going unhinted...\n");

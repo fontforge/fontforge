@@ -54,6 +54,12 @@
 			<array>
 			    <string>vnd.font-fontforge-sfd</string>
 			</array>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>net.sourceforge.fontforge.sfd</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
 		</dict>
 		<dict>
 			<key>CFBundleTypeExtensions</key>
@@ -164,6 +170,172 @@
 			<key>LSIsAppleDefaultForType</key>
 			<true/>
 		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>sfdir</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>fontforge_sfd</string>
+			<key>CFBundleTypeName</key>
+			<string>Spline Font Database Directory</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>net.sourceforge.fontforge.sfdir</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>woff</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>fontforge_sfd</string>
+			<key>CFBundleTypeName</key>
+			<string>WOFF font</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleTypeMIMETypes</key>
+			<array>
+				<string>font/woff</string>
+				<string>application/font-woff</string>
+			</array>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>org.w3c.woff</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>dfont</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>fontforge_dfont</string>
+			<key>CFBundleTypeName</key>
+			<string>dFont</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>dfon</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.apple.truetype-datafork-suitcase-font</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>otf</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>fontforge_otf</string>
+			<key>CFBundleTypeName</key>
+			<string>OpenType</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>OTTO</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.opentype-font</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeIconFile</key>
+			<string>fontforge_ps</string>
+			<key>CFBundleTypeName</key>
+			<string>Mac PostScript outline</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>LWFN</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.adobe.postscript-lwfn-font</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>pfa</string>
+				<string>pfb</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>fontforge_ps</string>
+			<key>CFBundleTypeName</key>
+			<string>PostScript outline</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.adobe.postscript-pfb-font</string>
+				<string>com.adobe.postscript-pfa-font</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>suit</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>fontforge_sfd</string>
+			<key>CFBundleTypeName</key>
+			<string>Font Suitcase</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>FFIL</string>
+				<string>ffil</string>
+				<string>sfnt</string>
+				<string>tfil</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.apple.font-suitcase</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>ttf</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>fontforge_ttf</string>
+			<key>CFBundleTypeName</key>
+			<string>TrueType Font</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.truetype-ttf-font</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
 	</array>
 	<key>CFBundleName</key>
 	<string>FontForge</string>
@@ -191,5 +363,77 @@
 	<string>NSApplication</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.graphics-design</string>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.text</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Spline Font Database</string>
+			<key>UTTypeIconFile</key>
+			<string>fontforge_sfd</string>
+			<key>UTTypeIdentifier</key>
+			<string>net.sourceforge.fontforge.sfd</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>sfd</string>
+				</array>
+				<key>public.mime-type</key>
+				<array>
+					<string>vnd.font-fontforge-sfd</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>com.apple.package</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Spline Font Database Directory</string>
+			<key>UTTypeIconFile</key>
+			<string>fontforge_sfd</string>
+			<key>UTTypeIdentifier</key>
+			<string>net.sourceforge.fontforge.sfdir</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>sfdir</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.font</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>WOFF Compressed Font</string>
+			<key>UTTypeIdentifier</key>
+			<string>org.w3c.woff</string>
+			<key>UTTypeReferenceURL</key>
+			<string>www-font@w3.org</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>woff</string>
+				</array>
+				<key>public.mime-type</key>
+				<array>
+					<string>font/woff</string>
+					<string>application/font-woff</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
 </dict>
 </plist>

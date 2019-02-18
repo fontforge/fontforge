@@ -1,0 +1,10 @@
+New()
+Select("A")
+SetGlyphName("A")
+Select("B")
+SetGlyphName("B")
+MergeFeature($1)
+if ( SizeOf(GetLookupSubtables("test"))<=0 )
+  Error("No lookup subtables")
+endif
+Close()

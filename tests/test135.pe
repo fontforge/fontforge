@@ -1,0 +1,41 @@
+New()
+
+Select("A")
+SetGlyphName("A")
+SetWidth(100)
+
+Select("B")
+SetGlyphName("B")
+SetWidth(100)
+
+Select("C")
+SetGlyphName("C")
+SetWidth(100)
+
+Select("D")
+SetGlyphName("D")
+SetWidth(100)
+
+MergeFeature($1)
+
+Select("A")
+if (GlyphInfo("Class") != "base")
+  Error("Incorrect glyph class")
+endif
+
+Select("B")
+if (GlyphInfo("Class") != "ligature")
+  Error("Incorrect glyph class")
+endif
+
+Select("C")
+if (GlyphInfo("Class") != "mark")
+  Error("Incorrect glyph class")
+endif
+
+Select("D")
+if (GlyphInfo("Class") != "component")
+  Error("Incorrect glyph class")
+endif
+
+Close()

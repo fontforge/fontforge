@@ -1,0 +1,11 @@
+@test = [B];
+
+lookup test1 {
+  lookupflag UseMarkFilteringSet @test;
+  sub A' B by C;
+} test1;
+
+lookup test2 {
+  lookupflag UseMarkFilteringSet @test;
+  sub B' C by A;
+} test2;
