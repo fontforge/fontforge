@@ -11,8 +11,9 @@ ff = fontforge.font()
 
 g = ff.createMappedChar('a')
 
+cl = [(0,0,True,hv),(0,0,False),(5,-1,False),(5,0,True,hv),(5,1,False),(5,3,False),(4,4,True,hv),(3,5,False),(0,3,False),(0,2,True,hv)]
 c = fontforge.contour()
-c[:] = [(0,0,True,hv),(0,0,False),(5,-1,False),(5,0,True,hv),(5,1,False),(5,3,False),(4,4,True,hv),(3,5,False),(0,3,False),(0,2,True,hv)]
+c[:] = cl
 c.closed = True
 
 l = fontforge.layer()
@@ -97,3 +98,60 @@ except:
     pass
 else:
     raise ValueError("setLayer did not raise error for incompatible conversion mode flags")
+
+# Round-trip contour and layer conversion tests. 
+
+c2 = fontforge.contour()
+c3 = c2.simplify(1)
+
+c2[:] = [(0,0,True)]
+c3 = c2.simplify(1)
+
+c2[:] = [(0,0,False)]
+try:
+    c3 = c2.simplify(1)
+except:
+    pass
+else:
+    raise ValueError("No error on round-trip for invalid contour")
+
+c2[:] = [(0,0,False),(1,1,False),(2,2,False),(3,3,True)]
+try:
+    c3 = c2.simplify(1)
+except:
+    pass
+else:
+    raise ValueError("No error on round-trip for invalid contour")
+
+l = fontforge.layer()
+c[:] = cl
+l += c
+c2[:] = []
+l += c2
+g.setLayer(l,1)
+l2 = g.layers[1]
+if len(l) != 2 or len(l2) != 1:
+    raise ValueError("Expected setLayer to drop empty contour.")
+
+l.correctDirection()
+if len(l) != 1:
+    raise ValueError("Expected round trip to drop empty contour.")
+
+l += c2
+c2[:] = [(0,0,True)]
+g.setLayer(l,1)
+l2 = g.layers[1]
+if len(l) != 2 or len(l2) != 2:
+    raise ValueError("Setlayer lost open contour.")
+
+c2[:] = [(0,0,False)]
+try:
+    l.correctDirection()
+except:
+    pass
+else:
+    raise ValueError("No error on round-trip for layer with invalid contour")
+
+p = l[1][0]
+if len(l) != 2 or p.x != 0 or p.y != 0 or p.on_curve:
+    raise ValueError("Contours not retained on layer error.")

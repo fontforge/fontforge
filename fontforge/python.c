@@ -2260,11 +2260,16 @@ return( -1 );
 return( 0 );
     if ( self->pt_cnt!=0 ) {
 	ss = SSFromContour(self,NULL);
-        if ( ss==NULL ) {
-            /* SSFromContour() will have set an exception */
-            return( -1 );
-        }
 	PyFFContour_clear(self);
+        if ( ss==NULL ) {
+	    if ( PyErr_Occurred() != NULL ) {
+                return( -1 );
+	    } else {
+		// Empty contour
+		self->is_quadratic = (val!=0);
+		return ( 0 );
+	    }
+        }
 	if ( val )
 	    ss2 = SplineSetsTTFApprox(ss);
 	else
@@ -2274,7 +2279,7 @@ return( 0 );
 	SplinePointListFree(ss2);
     }
     self->is_quadratic = (val!=0);
-return( 0 );
+    return( 0 );
 }
 
 static PyObject *PyFF_Contour_get_closed(PyFF_Contour *self, void *UNUSED(closure)) {
@@ -2322,7 +2327,9 @@ return( NULL );
 	uint16 cnt;
 	ss = SSFromContour(self,NULL);
         if ( ss==NULL ) {
-            PyErr_SetString(PyExc_AttributeError, "Empty Contour");
+	    if ( PyErr_Occurred() == NULL )
+		// XXX Should this really be an error?
+		PyErr_SetString(PyExc_AttributeError, "Empty Contour");
             return( NULL );
         }
 	self->spiros = SplineSet2SpiroCP(ss,&cnt);
@@ -3056,8 +3063,9 @@ static PyObject *PyFFContour_IsClockwise(PyFF_Contour *self, PyObject *UNUSED(ar
 
     ss = SSFromContour(self,NULL);
     if ( ss==NULL ) {
-	PyErr_SetString(PyExc_AttributeError, "Empty Contour");
-return( NULL );
+	if ( PyErr_Occurred() == NULL )
+	    PyErr_SetString(PyExc_AttributeError, "Empty Contour");
+	return( NULL );
     }
     ret = SplinePointListIsClockwise(ss);
     SplinePointListFree(ss);
@@ -3116,8 +3124,9 @@ static PyObject *PyFFContour_Merge(PyFF_Contour *self, PyObject *args) {
 
     ss = SSFromContour(self,NULL);
     if ( ss==NULL ) {
-	PyErr_SetString(PyExc_AttributeError, "Empty Contour");
-return( NULL );
+	if ( PyErr_Occurred() == NULL )
+	    PyErr_SetString(PyExc_AttributeError, "Empty Contour");
+	return( NULL );
     }
     for ( i=0; i<PySequence_Size(args); ++i ) {
 	pos = PyInt_AsLong(PySequence_GetItem(args,i));
@@ -3176,8 +3185,12 @@ static PyObject *PyFFContour_Simplify(PyFF_Contour *self, PyObject *args) {
     smpl.linelenmax = 10;
 
     ss = SSFromContour(self,NULL);
-    if ( ss==NULL )
-Py_RETURN( self );		/* As simple as it can be */
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self );	/* As simple as it can be */
+    }
 
     if ( PySequence_Size(args)>=1 )
 	smpl.err = PyFloat_AsDouble(PySequence_GetItem(args,0));
@@ -3283,8 +3296,13 @@ static PyObject *PyFFContour_Cluster(PyFF_Contour *self, PyObject *args) {
 return( NULL );
 
     ss = SSFromContour(self,NULL);
-    if ( ss==NULL )
-Py_RETURN( self );		/* no points=> no clusters */
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self );	// no points=> no clusters
+    }
+
     memset(&sc,0,sizeof(sc));
     memset(layers,0,sizeof(layers));
     sc.layers = layers;
@@ -3321,8 +3339,12 @@ return( NULL );
     }
 
     ss = SSFromContour(self,NULL);
-    if ( ss==NULL )
-Py_RETURN( self );		/* no points=> nothing to do */
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self );	// no points=> nothing to do
+    }
     SplineSetAddExtrema(NULL,ss,ae,emsize);
     ContourFromSS(ss,self);
     SplinePointListFree(ss);
@@ -4105,8 +4127,12 @@ static PyObject *PyFFLayer_Simplify(PyFF_Layer *self, PyObject *args) {
     smpl.linelenmax = 10;
 
     ss = SSFromLayer(self);
-    if ( ss==NULL )
-Py_RETURN( self );		/* As simple as it can be */
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self );	/* As simple as it can be */
+    }
 
     if ( PySequence_Size(args)>=1 )
 	smpl.err = PyFloat_AsDouble(PySequence_GetItem(args,0));
@@ -4174,8 +4200,12 @@ static PyObject *PyFFLayer_NLTransform(PyFF_Layer *self, PyObject *args) {
 return( NULL );
 
     ss = SSFromLayer(self);
-    if ( ss==NULL )
-Py_RETURN( self );
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self );
+    }
 
     if ( !SSNLTrans(ss,xexpr,yexpr) ) {
 	PyErr_Format(PyExc_TypeError, "Unparseable expression.");
@@ -4234,8 +4264,13 @@ static PyObject *PyFFLayer_Cluster(PyFF_Layer *self, PyObject *args) {
 return( NULL );
 
     ss = SSFromLayer(self);
-    if ( ss==NULL )
-Py_RETURN( self );		/* no contours=> no clusters */
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self ); /* no contours=> no clusters */
+    }
+
     memset(&sc,0,sizeof(sc));
     memset(layers,0,sizeof(layers));
     sc.layers = layers;
@@ -4262,8 +4297,13 @@ return( NULL );
     }
 
     ss = SSFromLayer(self);
-    if ( ss==NULL )
-Py_RETURN( self );		/* no contours=> nothing to do */
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self ); // no contours=> nothing to do
+    }
+
     SplineCharAddExtrema(NULL,ss,ae,emsize);
     LayerFromSS(ss,self);
     SplinePointListsFree(ss);
@@ -4406,14 +4446,16 @@ return( -1 );
 	    order2 = ((PyFF_Contour *) poly)->is_quadratic;
 	    ss = SSFromContour((PyFF_Contour *) poly,&start);
             if ( ss==NULL ) {
-                PyErr_SetString(PyExc_AttributeError, "Empty Contour");
+		if ( PyErr_Occurred() != NULL )
+                    PyErr_SetString(PyExc_AttributeError, "Empty Contour");
                 return( -1 );
             }
 	} else if ( PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(poly)) ) {
 	    order2 = ((PyFF_Layer *) poly)->is_quadratic;
 	    ss = SSFromLayer((PyFF_Layer *) poly);
             if ( ss==NULL ) {
-                PyErr_SetString(PyExc_AttributeError, "Empty Layer");
+		if ( PyErr_Occurred() != NULL )
+                    PyErr_SetString(PyExc_AttributeError, "Empty Layer");
                 return( -1 );
             }
 	} else {
@@ -4525,14 +4567,18 @@ static PyObject *PyFFLayer_Stroke(PyFF_Layer *self, PyObject *args) {
 return( NULL );
 
     ss = SSFromLayer(self);
-    if ( ss==NULL )
-Py_RETURN( self );		/* no contours=> nothing to do */
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self ); // no contours=> nothing to do
+    }
     newss = SplineSetStroke(ss,&si,self->is_quadratic);
     SplinePointListFree(ss);
     LayerFromSS(newss,self);
     SplinePointListsFree(newss);
     SplinePointListsFree(si.poly); si.poly = NULL;
-Py_RETURN( self );
+    Py_RETURN( self );
 }
 
 static PyObject *PyFFLayer_Correct(PyFF_Layer *self, PyObject *UNUSED(args)) {
@@ -4540,8 +4586,12 @@ static PyObject *PyFFLayer_Correct(PyFF_Layer *self, PyObject *UNUSED(args)) {
     int changed = false;
 
     ss = SSFromLayer(self);
-    if ( ss==NULL )
-Py_RETURN( self );		/* no contours=> nothing to do */
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self ); // no contours=> nothing to do
+    }
     newss = SplineSetsCorrect(ss,&changed);
     /* same old splinesets */
     LayerFromSS(newss,self);
@@ -4561,8 +4611,12 @@ static PyObject *PyFFLayer_RemoveOverlap(PyFF_Layer *self, PyObject *UNUSED(args
     SplineSet *ss, *newss;
 
     ss = SSFromLayer(self);
-    if ( ss==NULL )
-Py_RETURN( self );		/* no contours=> nothing to do */
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self ); // no contours=> nothing to do
+    }
     newss = SplineSetRemoveOverlap(NULL,ss,over_remove);
     /* Frees the old splinesets */
     LayerFromSS(newss,self);
@@ -4574,8 +4628,12 @@ static PyObject *PyFFLayer_Intersect(PyFF_Layer *self, PyObject *UNUSED(args)) {
     SplineSet *ss, *newss;
 
     ss = SSFromLayer(self);
-    if ( ss==NULL )
-Py_RETURN( self );		/* no contours=> nothing to do */
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self ); // no contours=> nothing to do
+    }
     newss = SplineSetRemoveOverlap(NULL,ss,over_intersect);
     /* Frees the old splinesets */
     LayerFromSS(newss,self);
@@ -4595,8 +4653,12 @@ return( NULL );
     }
 
     ss = SSFromLayer(self);
-    if ( ss==NULL )
-Py_RETURN( self );		/* no contours=> nothing to do */
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self ); // no contours=> nothing to do
+    }
     excludes = SSFromLayer((PyFF_Layer *) obj);
     for ( tail=ss; tail->next!=NULL; tail=tail->next );
     tail->next = excludes;
@@ -4645,8 +4707,12 @@ static PyObject *PyFFLayer_stemControl(PyObject *self, PyObject *args) {
 return( NULL );
 
     ss = SSFromLayer((PyFF_Layer *) self);
-    if ( ss==NULL )
-Py_RETURN( self );		/* no contours=> nothing to do */
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self ); // no contours=> nothing to do
+    }
     ss = SSControlStems(ss,stemwidthscale,stemheightscale,hscale,vscale,xheight);
     LayerFromSS(ss,(PyFF_Layer *) self);
     SplinePointListsFree(ss);
@@ -4899,6 +4965,8 @@ static int CheckPConvertFlags(int flags, int defaults) {
 	return flags;
 }
 
+// Will return NULL on error or empty contour, can check python error
+// status to tell which.
 static SplineSet *_SSFromContour(PyFF_Contour *c,int *tt_start, int flags) {
     int start = 0, next;
     int i, skipped=0, index, ok;
@@ -4936,6 +5004,7 @@ return( NULL );
 		ss->first->name = copy(c->points[0]->name);
 		ok = _SPLCategorizePoints(ss, flags);
 		if ( !ok ) {
+		    SplinePointListsFree(ss);
 		    // assert ( flags&pconvert_flag_check );
 		    PyErr_Format(PyExc_TypeError, "At least one point has a geometry incompatible with its type");
 		    return( NULL );
@@ -5058,6 +5127,7 @@ return( NULL );
 		else
 		    ++nexti;
 		if ( c->points[nexti]->on_curve ) {
+		    SplinePointListsFree(ss);
 		    PyErr_Format(PyExc_TypeError, "In cubic splines there must be exactly 2 control points between on curve points");
 return( NULL );
 		}
@@ -5066,6 +5136,7 @@ return( NULL );
 		else
 		    ++nexti;
 		if ( !c->points[nexti]->on_curve ) {
+		    SplinePointListsFree(ss);
 		    PyErr_Format(PyExc_TypeError, "In cubic splines there must be exactly 2 control points between on curve points");
 return( NULL );
 		}
@@ -5078,7 +5149,8 @@ return( NULL );
 	    ss->last = sp;
 	}
 	if ( ss->last==NULL ) {
-	    PyErr_Format(PyExc_TypeError, "Empty contour");
+	    SplinePointListsFree(ss);
+	    PyErr_Format(PyExc_TypeError, "Contour has points but none are on-curve");
 return( NULL );
 	}
     }
@@ -5098,6 +5170,7 @@ return( NULL );
 	*tt_start = next;
     ok = _SPLCategorizePoints(ss, flags);
     if ( !ok ) {
+	SplinePointListsFree(ss);
 	// assert ( flags&pconvert_flag_check );
 	PyErr_Format(PyExc_TypeError, "At least one point has a geometry incompatible with its type");
 	return( NULL );
@@ -5198,9 +5271,13 @@ static SplineSet *_SSFromLayer(PyFF_Layer *layer, int flags) {
 	    else
 		tail->next = cur;
 	    tail = cur;
+	} else if ( PyErr_Occurred() != NULL ) {
+	    SplinePointListsFree(head);
+	    return( NULL );
 	}
+	// Ignore empty contours
     }
-return( head );
+    return( head );
 }
 
 static SplineSet *SSFromLayer(PyFF_Layer *layer) {
@@ -5720,7 +5797,7 @@ static int PyFF_Glyph_CSetLayer(PyFF_Glyph *self, PyObject *value, int layeri, i
 
     if ( layeri<ly_grid || layeri>=sc->layer_cnt ) {
 	PyErr_Format(PyExc_ValueError, "Layer is out of range" );
-return( -1 );
+	return( -1 );
     } else if ( layeri==ly_grid )
 	layer = &sc->parent->grid;
     else
@@ -5733,7 +5810,11 @@ return( -1 );
 	ss = _SSFromContour( (PyFF_Contour *) value, NULL, flags);
     } else {
 	PyErr_Format(PyExc_TypeError, "Argument must be a layer or a contour" );
-return( -1 );
+	return( -1 );
+    }
+
+    if ( PyErr_Occurred() != NULL ) {
+	return( -1 );
     }
 
     CharView* cv = (CharView*)get_pyFF_maybeCallCVPreserveState_Func()( self );
@@ -6377,6 +6458,9 @@ return( ret );
     } else {
 	PyErr_Format(PyExc_TypeError, "Unexpected type");
 return( -1 );
+    }
+    if ( PyErr_Occurred() != NULL ) {
+	return( -1 );
     }
     if ( self->sc->layers[self->layer].refs!=NULL )
 return( SS_NoMatch | SS_RefMismatch );
@@ -9093,6 +9177,9 @@ return( NULL );
     }
 
     excludes = SSFromLayer((PyFF_Layer *) obj);
+    if ( PyErr_Occurred() != NULL ) {
+	return( NULL );
+    }
     ss = self->sc->layers[self->layer].splines;
     for ( tail=ss; tail->next!=NULL; tail=tail->next );
     tail->next = excludes;
@@ -9155,8 +9242,8 @@ static PyObject *PyFFGlyph_setLayer(PyFF_Glyph *self, PyObject *args) {
 	}
 
 	layer = PySequence_GetItem(args,0);
-	if ( !PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(layer)) ) {
-		PyErr_Format(PyExc_ValueError, "First argument must be a layer" );
+	if ( ! (PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(layer)) || PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(layer)) ) ) {
+		PyErr_Format(PyExc_ValueError, "First argument must be a layer or contour" );
 		return NULL;
 	}
 
@@ -13181,6 +13268,9 @@ return( -1 );
 	PyErr_Format( PyExc_TypeError, "Unexpected type" );
 return( -1 );
     }
+    if ( PyErr_Occurred() != NULL ) {
+	return( -1 );
+    }
     sf = self->fv->sf;
     guide = &sf->grid;
     SplinePointListsFree(guide->splines);
@@ -15854,6 +15944,9 @@ return( NULL );
 	PyErr_Format(PyExc_TypeError, "Expected a contour or layer");
 return( NULL );
     }
+    if ( PyErr_Occurred() != NULL ) {
+	return( NULL );
+    }
 
     if ( PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(rpl)) ) {
 	rpl_ss = SSFromLayer((PyFF_Layer *) rpl);
@@ -15862,6 +15955,10 @@ return( NULL );
     } else {
 	PyErr_Format(PyExc_TypeError, "Expected a contour or layer");
 return( NULL );
+    }
+    if ( PyErr_Occurred() != NULL ) {
+	SplinePointListsFree(srch_ss);
+	return( NULL );
     }
 
     /* srch_ss and rpl_ss will be freed by ReplaceAll */
@@ -15899,6 +15996,9 @@ return( NULL );
     } else {
 	PyErr_Format(PyExc_TypeError, "Expected a contour or layer");
 return( NULL );
+    }
+    if ( PyErr_Occurred() != NULL ) {
+	return( NULL );
     }
     if (pyflags) {
 	flags = FlagsFromTuple(pyflags, find_flags, "search flag");
