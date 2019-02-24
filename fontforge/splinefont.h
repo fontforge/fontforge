@@ -2339,7 +2339,7 @@ extern void SFLayerSetBackground(SplineFont *sf,int layer,int is_back);
 extern void SplineSetsRound2Int(SplineSet *spl,real factor,int inspiro,int onlysel);
 extern void SCRound2Int(SplineChar *sc,int layer, real factor);
 
-extern void SFFlatten(SplineFont *cidmaster);
+extern void SFFlatten(SplineFont **cidmaster);
 
 extern void SCCopyLayerToLayer(SplineChar *sc, int from, int to,int doclear);
 

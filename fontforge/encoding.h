@@ -61,7 +61,7 @@ extern int CIDFromName(char *name, SplineFont *cidmaster);
 extern int CountOfEncoding(Encoding *encoding_name);
 extern int MaxCID(struct cidmap *map);
 extern int NameUni2CID(struct cidmap *map, int uni, const char *name);
-extern int SFFlattenByCMap(SplineFont *sf, char *cmapname);
+extern int SFFlattenByCMap(SplineFont **sf, char *cmapname);
 extern int SFForceEncoding(SplineFont *sf, EncMap *old, Encoding *new_enc);
 extern int SFReencode(SplineFont *sf, const char *encname, int force);
 extern SplineFont *CIDFlatten(SplineFont *cidmaster, SplineChar **glyphs, int charcnt);

@@ -6638,7 +6638,7 @@ static void bCIDFlatten(Context *c) {
     if ( sf->cidmaster==NULL )
 	ScriptErrorString( c, "Not a cid-keyed font", sf->fontname );
 
-    SFFlatten(sf->cidmaster);
+    SFFlatten(&(sf->cidmaster));
 }
 
 static void bCIDFlattenByCMap(Context *c) {
@@ -6650,7 +6650,7 @@ static void bCIDFlattenByCMap(Context *c) {
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
     locfilename = utf82def_copy(t);
-    if ( !SFFlattenByCMap(sf,locfilename))
+    if ( !SFFlattenByCMap(&sf,locfilename))
 	ScriptErrorString( c, "Can't find (or can't parse) cmap file",c->a.vals[1].u.sval);
     free(t); free(locfilename);
 }
