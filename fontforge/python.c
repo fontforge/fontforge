@@ -2542,7 +2542,7 @@ static int PyFFContour_IndexAssign( PyObject *self, Py_ssize_t pos, PyObject *va
     old = cont->points[pos];
 
     if ( val==NULL ) {
-	for ( i=pos; i<=cont->pt_cnt-1; ++i )
+	for ( i=pos; i<cont->pt_cnt-1; ++i )
 	    cont->points[i] = cont->points[i+1];
 	cont->pt_cnt -= 1;
     } else {
@@ -3997,7 +3997,7 @@ static int PyFFLayer_IndexAssign( PyObject *self, Py_ssize_t pos, PyObject *val 
     old = layer->contours[pos];
 
     if ( val==NULL) {
-	for ( i=pos; i<=layer->cntr_cnt-1; ++i )
+	for ( i=pos; i<layer->cntr_cnt-1; ++i )
 	    layer->contours[i] = layer->contours[i+1];
 	layer->cntr_cnt -= 1;
     } else {
