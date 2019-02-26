@@ -1313,6 +1313,9 @@ static int gmenu_key(struct gmenu *m, GEvent *event) {
     GMenu *top;
     unichar_t keysym = event->u.chr.keysym;
 
+    if ( m->dying )
+	return( false );
+
     if ( islower(keysym)) keysym = toupper(keysym);
     if ( event->u.chr.state&ksm_meta && !(event->u.chr.state&(menumask&~(ksm_meta|ksm_shift)))) {
 	/* Only look for mneumonics in the child */
