@@ -61,7 +61,6 @@ typedef struct gidata {
     int interp_start, interp_end;
     GGadgetCreateData* gcd;
     GGadget *group1ret, *group2ret;
-    int nonmodal;
 } GIData;
 
 #define CID_BaseX	2001
@@ -1753,27 +1752,6 @@ static void PI_DoCancel(GIData *ci) {
     SCUpdateAll(cv->b.sc);
 }
 
-static int pi_e_h(GWindow gw, GEvent *event) {
-    if ( event->type==et_close ) {
-	GIData  *d = GDrawGetUserData(gw);
-	if( d->nonmodal ) {
-	    PI_Destroy((struct dlistnode *)d);
-	} else {
-	    PI_DoCancel( GDrawGetUserData(gw));
-	}
-    } else if ( event->type==et_char ) {
-	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("getinfo.html");
-return( true );
-	}
-return( false );
-    } else if ( event->type == et_map ) {
-	/* Above palettes */
-	GDrawRaise(gw);
-    }
-return( true );
-}
-
 static void PIFillup(GIData *ci, int except_cid);
 
 static void PI_FigureNext(GIData *ci) {
@@ -1869,32 +1847,49 @@ void PI_Destroy(struct dlistnode *node) {
     free(d);
 }
 
-static void PI_Close(GGadget *g) {
-    GWindow gw = GGadgetGetWindow(g);
-    GIData  *d = GDrawGetUserData(gw);
+static void PI_Close(GIData *d) {
     PI_Destroy((struct dlistnode *)d);
 }
 
 static int PI_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	PI_DoCancel( GDrawGetUserData(GGadgetGetWindow(g)));
-	PI_Close(g);
+	GIData *d = GDrawGetUserData(GGadgetGetWindow(g));
+	PI_DoCancel(d);
+	PI_Close(d);
     }
 return( true );
 }
 
-static int PI_Ok(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
-
+static void PI_DoOk(GIData *ci) {
 	PI_FixStuff(ci);
 	_PI_ShowHints(ci,false);
 
 	ci->done = true;
 	/* All the work has been done as we've gone along */
-	PI_Close(g);
-    }
+	PI_Close(ci);
+}
 
+static int PI_Ok(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	PI_DoOk(ci);
+    }
+    return( true );
+}
+
+static int pi_e_h(GWindow gw, GEvent *event) {
+    if ( event->type==et_close ) {
+	PI_DoOk(GDrawGetUserData(gw));
+    } else if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("getinfo.html");
+return( true );
+	}
+return( false );
+    } else if ( event->type == et_map ) {
+	/* Above palettes */
+	GDrawRaise(gw);
+    }
 return( true );
 }
 
@@ -3338,7 +3333,6 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 
 	GHVBoxFitWindow(mb[0].ret);
 
-	gi->nonmodal = 1;
 	dlist_pushfront( &cv->pointInfoDialogs, (struct dlistnode *)gi );
 	GWidgetHidePalettes();
 	GDrawResize(gi->gw,
@@ -3462,13 +3456,32 @@ static int PI_SpiroChanged(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static void PI_SpiroDoOk(GIData *ci) {
+	ci->done = true;
+	/* All the work has been done as we've gone along */
+	PI_Close(ci);
+}
+
 static int PI_SpiroOk(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	PI_SpiroDoOk(ci);
+    }
+    return( true );
+}
 
-	ci->done = true;
-	/* All the work has been done as we've gone along */
-	PI_Close(g);
+static int spi_e_h(GWindow gw, GEvent *event) {
+    if ( event->type==et_close ) {
+	PI_SpiroDoOk(GDrawGetUserData(gw));
+    } else if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("getinfo.html");
+return( true );
+	}
+return( false );
+    } else if ( event->type == et_map ) {
+	/* Above palettes */
+	GDrawRaise(gw);
     }
 return( true );
 }
@@ -3519,7 +3532,7 @@ static void SpiroPointGetInfo(CharView *cv, spiro_cp *scp, SplinePointList *spl)
 	if ( pos.y+pos.height+20 > screensize.height )
 	    pos.y = screensize.height - pos.height - 20;
 	if ( pos.y<0 ) pos.y = 0;
-	gip->gw = GDrawCreateTopWindow(NULL,&pos,pi_e_h,gip,&wattrs);
+	gip->gw = GDrawCreateTopWindow(NULL,&pos,spi_e_h,gip,&wattrs);
 
 	memset(&gcd,0,sizeof(gcd));
 	memset(&label,0,sizeof(label));
