@@ -1884,7 +1884,9 @@ static int PyFFPoint_set_name(PyFF_Point *self,PyObject *value, void *UNUSED(clo
 	self->name = NULL;
     }
     if ( value!=Py_None ) {
-	PYGETSTR(value, self->name, -1);
+	char *name;
+	PYGETSTR(value, name, -1);
+	self->name = copy(name);
 	ENDPYGETSTR();
     }
 return( 0 );
