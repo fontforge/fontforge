@@ -4956,6 +4956,7 @@ return( ss );
 	    if ( !c->points[previ]->on_curve ) {
 		sp->prevcp.x = c->points[previ]->x;
 		sp->prevcp.y = c->points[previ]->y;
+		sp->prevcpselected = c->points[previ]->selected;
 		// if ( sp->prevcp.x!=sp->me.x || sp->prevcp.y!=sp->me.y ) // This is unnecessary since the other converter only makes a control point if there is supposed to be one.
 		    sp->noprevcp = false;
 	    }
@@ -4966,6 +4967,7 @@ return( ss );
 	    if ( !c->points[nexti]->on_curve ) {
 		sp->nextcp.x = c->points[nexti]->x;
 		sp->nextcp.y = c->points[nexti]->y;
+		sp->nextcpselected = c->points[nexti]->selected;
 		next += 2;
 		// if ( sp->nextcp.x!=sp->me.x || sp->nextcp.y!=sp->me.y ) // This is unnecessary since the other converter only makes a control point if there is supposed to be one.
 		    sp->nonextcp = false;
@@ -5066,8 +5068,8 @@ static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
 	    break;
 		if ( !sp->nonextcp || !sp->next->to->noprevcp ) {
 		    if ( k ) {
-			ret->points[cnt  ] = PyFFPoint_CNew(sp->nextcp.x,sp->nextcp.y,false,false,NULL);
-			ret->points[cnt+1] = PyFFPoint_CNew(sp->next->to->prevcp.x,sp->next->to->prevcp.y,false,false,NULL);
+			ret->points[cnt  ] = PyFFPoint_CNew(sp->nextcp.x,sp->nextcp.y,false,sp->nextcpselected,NULL);
+			ret->points[cnt+1] = PyFFPoint_CNew(sp->next->to->prevcp.x,sp->next->to->prevcp.y,false,sp->next->to->prevcpselected,NULL);
 		    }
 		    cnt += 2;		/* not a line => 2 control points */
 		}

@@ -942,8 +942,15 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
     </TR>
     <TR>
       <TD><CODE>selected</CODE></TD>
-      <TD colspan=2>Whether this point is selected in the UI. If an off-curve point
-	is selected in means the preceding (interpolated) on-curve point is selected.</TD>
+      <TD colspan=2>Whether this point is selected in the UI. In the case of
+        an off-curve point of a quadratic spline, selected is true when the
+	preceding (interpolated) on-curve point is selected. Otherwise (as with
+	a cubic curve) selected for an off-curve point also corresponds to 
+	UI selection.
+	<P>The value can also be set to change the selected status in the UI.
+        When not running with a UI FontForge will retain point selection status
+        between most calls and will usually mark the status in saved files as
+        it would when a UI is present.</TD>
     </TR>
     <TR>
       <TD><CODE>name</CODE></TD>
