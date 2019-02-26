@@ -44,6 +44,17 @@
 #define ENDPYGETSTR()
 #endif
 
+#if PY_VERSION_HEX > 0x03000000
+#define PYCMPF(a) NULL
+#define PYRCMPF(b) b
+#elif PY_VERSION_HEX > 0x02020000
+#define PYCMPF(a) a
+#define PYRCMPF(b) b
+#else
+#define PYCMPF(a) a
+#define PYRCMPF(b) NULL
+#endif
+
 extern int old_sfnt_flags;
 
 #include "autohint.h"
@@ -345,7 +356,7 @@ static void FreeStringArray( int cnt, char **names ) {
     free(names);
 }
 
-#if PY_MAJOR_VERSION >= 3
+#if PY_VERSION_HEX > 0x02020000
 
 typedef int (*cmpfunc)(PyObject*, PyObject*);
 
@@ -398,7 +409,7 @@ static PyObject *enrichened_compare(cmpfunc compare, PyObject *a, PyObject *b, i
     return result;
 }
 
-#endif /* PY_MAJOR_VERSION >= 3 */
+#endif /* PY_VERSION_HEX > 0x02020000 */
 
 static int FlagsFromString(const char *str, struct flaglist *flags, const char *flagkind) {
     int i;
@@ -1739,16 +1750,65 @@ return( reto );
 /* ************************************************************************** */
 /* Points */
 /* ************************************************************************** */
-static PyObject *PyFFPoint_dup(PyFF_Point *self) {
-    PyFF_Point *ret = (PyFF_Point *)PyFF_PointType.tp_alloc(&PyFF_PointType, 0);
-    if ( ret==NULL )
+
+static PyFF_Point *PyFFPoint_CNew(double x, double y, int on_curve, int sel, char *name) {
+    /* Convenience routine for creating a new point from C */
+    PyFF_Point *self = (PyFF_Point *)PyFF_PointType.tp_alloc(&PyFF_PointType, 0);
+    if ( self==NULL )
 	return( NULL );
-    ret->x = self->x;
-    ret->y = self->y;
-    ret->on_curve = self->on_curve;
-    ret->selected = self->selected;
-    ret->name = copy(self->name);
-return( (PyObject *) ret );
+    self->x = x;
+    self->y = y;
+    self->on_curve = on_curve;
+    self->selected = sel;
+    self->name = copy(name);
+    return( self );
+}
+
+static PyObject *PyFFPoint_dup(PyFF_Point *self) {
+    PyFF_Point *ret = PyFFPoint_CNew(self->x, self->y, self->on_curve,
+                                     self->selected, self->name);
+    return( (PyObject *) ret );
+}
+
+static PyFF_Point *PyFFPoint_Parse(PyObject *args, bool dup, bool always) {
+    double x,y;
+    PyFF_Point *p=NULL;
+    int i, on, sel;
+
+    if ( args==NULL && !always )
+	return NULL;
+
+    x = y = 0.0;
+    on = true;
+    sel = false;
+    if ( !PyArg_ParseTuple( args, "(ddii)", &x, &y, &on, &sel )) {
+	PyErr_Clear();
+	if ( !PyArg_ParseTuple( args, "(ddi)|i", &x, &y, &on, &sel )) {
+	    PyErr_Clear();
+	    if ( !PyArg_ParseTuple( args, "(dd)|ii", &x, &y, &on, &sel )) {
+		PyErr_Clear();
+		if ( !PyArg_ParseTuple( args, "dd|ii", &x, &y, &on, &sel )) {
+		    PyErr_Clear();
+		    if ( PyType_IsSubtype(&PyFF_PointType, Py_TYPE(args)) ) { 
+			p = (PyFF_Point *) args;
+		    } else if ( !always ) {
+			return( NULL );
+		    }
+		}
+	    }
+	}
+    }
+
+    if ( p==NULL ) {
+	p = PyFFPoint_CNew(x,y,on,sel,NULL);
+	if ( p==NULL )
+	    return( NULL );
+    } else if ( dup ) {
+	p = (PyFF_Point *) PyFFPoint_dup(p);
+    } else {
+	Py_INCREF( p );
+    }
+    return p;
 }
 
 static void PyFF_TransformPoint(PyFF_Point *self, double transform[6]) {
@@ -1790,17 +1850,17 @@ return( reductionTuple );
 static int PyFFPoint_compare(PyFF_Point *self,PyObject *other) {
     double x, y;
 
-    /* I'd like to accept general sequences but there is no PyArg_ParseSequence*/
-    if ( PyTuple_Check(other) && PyTuple_Size(other)==2 ) {
-	if ( !PyArg_ParseTuple(other,"dd", &x, &y ))
-return( -1 );
-    } else if ( PyType_IsSubtype(&PyFF_PointType, Py_TYPE(other)) ) {
-	x = ((PyFF_Point *) other)->x;
-	y = ((PyFF_Point *) other)->y;
-    } else {
-	PyErr_Format(PyExc_TypeError, "Unexpected type");
-return( -1 );
+    if ( !PyArg_ParseTuple(other,"dd", &x, &y ) ) {
+	PyErr_Clear();
+	if ( PyType_IsSubtype(&PyFF_PointType, Py_TYPE(other)) ) {
+	    x = ((PyFF_Point *) other)->x;
+	    y = ((PyFF_Point *) other)->y;
+	} else {
+	    PyErr_Format(PyExc_TypeError, "Unexpected type");
+	    return( -1 );
+	}
     }
+
     if ( RealNear(self->x,x) ) {
 	if ( RealNear(self->y,y))
 return( 0 );
@@ -1830,11 +1890,11 @@ static int PyFFPoint_set_name(PyFF_Point *self,PyObject *value, void *UNUSED(clo
 return( 0 );
 }
 
-#if PY_MAJOR_VERSION >= 3
+#if PY_VERSION_HEX > 0x02020000
 static PyObject *PyFFPoint_richcompare(PyObject *a, PyObject *b, int op) {
     return enrichened_compare((cmpfunc) PyFFPoint_compare, a, b, op);
 }
-#endif /* PY_MAJOR_VERSION >= 3 */
+#endif /* PY_VERSION_HEX > 0x02020000 */
 
 static PyObject *PyFFPoint_Repr(PyFF_Point *self) {
     char buffer[200];
@@ -1852,9 +1912,9 @@ return( STRING_TO_PY(buffer));
 }
 
 static PyMemberDef FFPoint_members[] = {
-    {(char *)"x", T_FLOAT, offsetof(PyFF_Point, x), 0,
+    {(char *)"x", T_DOUBLE, offsetof(PyFF_Point, x), 0,
      (char *)"x coordinate"},
-    {(char *)"y", T_FLOAT, offsetof(PyFF_Point, y), 0,
+    {(char *)"y", T_DOUBLE, offsetof(PyFF_Point, y), 0,
      (char *)"y coordinate"},
     {(char *)"on_curve", T_UBYTE, offsetof(PyFF_Point, on_curve), 0,
      (char *)"whether this point lies on the curve or is a control point"},
@@ -1880,22 +1940,8 @@ static PyGetSetDef FFPoint_getset[] = {
     PYGETSETDEF_EMPTY /* Sentinel */
 };
 
-static PyObject *PyFFPoint_New(PyTypeObject *type, PyObject *args, PyObject *UNUSED(kwds)) {
-    double x,y;
-    int on, sel;
-    PyFF_Point *self;
-
-    x = y = 0.0; on = 1; sel = 0;
-    if ( args!=NULL && !PyArg_ParseTuple(args, "|ffii", &x, &y, &on, &sel) )
-	return( NULL );
-
-    self = (PyFF_Point *)type->tp_alloc(type, 0);
-    if ( self!=NULL ) {
-	self->x = x; self->y = y;
-	self->on_curve = on;
-	self->selected = sel;
-    }
-
+static PyObject *PyFFPoint_New(PyTypeObject *UNUSED(type), PyObject *args, PyObject *UNUSED(kwds)) {
+    PyFF_Point *self = PyFFPoint_Parse(args, true, true);
     return( (PyObject *)self );
 }
 
@@ -1908,7 +1954,7 @@ static PyTypeObject PyFF_PointType = {
     NULL,                      /* tp_print */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
-    PY3OR2(NULL, (cmpfunc) PyFFPoint_compare), /* tp_reserved / tp_compare */
+    PYCMPF((cmpfunc) PyFFPoint_compare), /* tp_reserved / tp_compare */
     (reprfunc) PyFFPoint_Repr, /* tp_repr */
     NULL,                      /* tp_as_number */
     NULL,                      /* tp_as_sequence */
@@ -1923,7 +1969,7 @@ static PyTypeObject PyFF_PointType = {
     "fontforge Point objects", /* tp_doc */
     NULL,                      /* tp_traverse */
     NULL,                      /* tp_clear */
-    PY3OR2((richcmpfunc) PyFFPoint_richcompare, NULL), /* tp_richcompare */
+    PYRCMPF((richcmpfunc) PyFFPoint_richcompare), /* tp_richcompare */
     0,                         /* tp_weaklistoffset */
     NULL,                      /* tp_iter */
     NULL,                      /* tp_iternext */
@@ -1948,19 +1994,6 @@ static PyTypeObject PyFF_PointType = {
     NULL,                      /* tp_del */
     0,                         /* tp_version_tag */
 };
-
-static PyFF_Point *PyFFPoint_CNew(double x, double y, int on_curve, int sel, char *name) {
-    /* Convenience routine for creating a new point from C */
-    PyFF_Point *self = (PyFF_Point *) PyFFPoint_New(&PyFF_PointType,NULL,NULL);
-    if ( self==NULL )
-	return( NULL );
-    self->x = x;
-    self->y = y;
-    self->on_curve = on_curve;
-    self->selected = sel;
-    self->name = copy(name);
-    return( self );
-}
 
 /* ************************************************************************** */
 /* Contour iterator type */
@@ -2059,6 +2092,7 @@ static PyTypeObject PyFF_ContourIterType = {
 /* ************************************************************************** */
 /* Contours */
 /* ************************************************************************** */
+
 static int PyFFContour_clear(PyFF_Contour *self) {
     int i;
 
@@ -2074,6 +2108,7 @@ static void PyFFContour_dealloc(PyFF_Contour *self) {
     PyMem_Del(self->points);
     if ( self->spiro_cnt!=0 )
 	PyMem_Del(self->spiros);
+    free(self->name);
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
@@ -2082,7 +2117,6 @@ static void PyFFContour_ClearSpiros(PyFF_Contour *self) {
 	free(self->spiros);
     self->spiros = NULL;
     self->spiro_cnt = 0;
-    free(self->name);
 }
 
 static PyObject *PyFFContour_new(PyTypeObject *type, PyObject *UNUSED(args), PyObject *UNUSED(kwds)) {
@@ -2092,12 +2126,12 @@ static PyObject *PyFFContour_new(PyTypeObject *type, PyObject *UNUSED(args), PyO
     if ( self!=NULL ) {
 	self->points = NULL;
 	self->pt_cnt = self->pt_max = 0;
-	self->is_quadratic = self->closed = 0;
+	self->is_quadratic = false;
+	self->closed = 0;
 	self->spiro_cnt = 0;
 	self->name = NULL;
     }
-
-return (PyObject *)self;
+    return (PyObject *)self;
 }
 
 static int PyFFContour_init(PyFF_Contour *self, PyObject *args, PyObject *UNUSED(kwds)) {
@@ -2170,11 +2204,11 @@ return( ret );
 return( -1 );		/* Arbitrary... but we can't get here=>all points same */
 }
 
-#if PY_MAJOR_VERSION >= 3
+#if PY_VERSION_HEX > 0x02020000
 static PyObject *PyFFContour_richcompare(PyObject *a, PyObject *b, int op) {
     return enrichened_compare((cmpfunc) PyFFContour_compare, a, b, op);
 }
-#endif /* PY_MAJOR_VERSION >= 3 */
+#endif /* PY_VERSION_HEX > 0x02020000 */
 
 /* ************************************************************************** */
 /* Contour getters/setters */
@@ -2391,33 +2425,31 @@ static Py_ssize_t PyFFContour_Length( PyObject *self ) {
 return( ((PyFF_Contour *) self)->pt_cnt );
 }
 
+static PyFF_Contour *PyFFPointList_Parse(PyObject *args);
+
 static PyObject *PyFFContour_Concat( PyObject *_c1, PyObject *_c2 ) {
-    PyFF_Contour *c1 = (PyFF_Contour *) _c1, *c2 = (PyFF_Contour *) _c2;
+    PyFF_Contour *c1 = (PyFF_Contour *) _c1, *c2 = (PyFF_Contour *)_c2;
     PyFF_Contour *self;
     int i;
     PyFF_Contour dummy;
     PyFF_Point *dummies[1];
     double x,y;
 
-    if ( PyType_IsSubtype(&PyFF_PointType, Py_TYPE(c2)) ) {
+    if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(c1)) &&
+         PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(c2)) ) {
+	if ( c1->is_quadratic != c2->is_quadratic ) {
+	    PyErr_Format(PyExc_TypeError, "Both contours must be either cubic or quadratic.");
+	    return( NULL );
+	}
+    } else if ( ( dummies[0] = PyFFPoint_Parse(_c2, false, false) ) != NULL ) {
 	memset(&dummy,0,sizeof(dummy));
 	dummy.pt_cnt = 1;
-	dummy.points = dummies; dummies[0] = (PyFF_Point *) _c2;
+	dummy.points = dummies;
 	c2 = &dummy;
-    } else if ( !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(c1)) ||
-                !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(c2)) ||
-	    c1->is_quadratic != c2->is_quadratic ) {
-	if ( PyTuple_Check(_c2) && PyArg_ParseTuple(_c2,"dd",&x,&y)) {
-	    PyFF_Point *pt = PyFFPoint_CNew(x,y,true,false,NULL);
-	    memset(&dummy,0,sizeof(dummy));
-	    dummy.pt_cnt = 1;
-	    dummy.points = dummies; dummies[0] = pt;
-	    c2 = &dummy;
-	} else {
-	    PyErr_Format(PyExc_TypeError, "Both arguments must be Contours of the same order");
-return( NULL );
-	}
+    } else if ( ( c2 = PyFFPointList_Parse(_c2) ) == NULL ) {
+	PyErr_Format(PyExc_TypeError, "Both arguments must be contours or encode a point or point list");
     }
+
     self = (PyFF_Contour *)PyFF_ContourType.tp_alloc(&PyFF_ContourType, 0);
     self->is_quadratic = c1->is_quadratic;
     self->closed = c1->closed;
@@ -2428,10 +2460,13 @@ return( NULL );
 	self->points[i] = c1->points[i];
     }
     for ( i=0; i<c2->pt_cnt; ++i ) {
-	Py_INCREF(c2->points[i]);
+	if ( c2!=&dummy )
+	    Py_INCREF(c2->points[i]);
 	self->points[c1->pt_cnt+i] = c2->points[i];
     }
-Py_RETURN( (PyObject *) self );
+    if ( ((PyObject *)c2)!=_c2 && c2!=&dummy )
+	PyFFContour_dealloc(c2);
+    Py_RETURN( (PyObject *) self );
 }
 
 static PyObject *PyFFContour_InPlaceConcat( PyObject *_self, PyObject *_c2 ) {
@@ -2441,44 +2476,47 @@ static PyObject *PyFFContour_InPlaceConcat( PyObject *_self, PyObject *_c2 ) {
     PyFF_Point *dummies[1];
     double x,y;
 
-    if ( PyType_IsSubtype(&PyFF_PointType, Py_TYPE(c2)) ) {
+    if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(self)) &&
+         PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(c2)) ) {
+	if ( self->is_quadratic != c2->is_quadratic ) {
+	    PyErr_Format(PyExc_TypeError, "Both contours must be either cubic or quadratic.");
+	    return( NULL );
+	}
+    } else if ( ( dummies[0] = PyFFPoint_Parse(_c2, false, false) ) != NULL ) {
 	memset(&dummy,0,sizeof(dummy));
 	dummy.pt_cnt = 1;
-	dummy.points = dummies; dummies[0] = (PyFF_Point *) _c2;
+	dummy.points = dummies;
 	c2 = &dummy;
-    } else if ( !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(self)) ||
-                !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(c2)) ||
-	    self->is_quadratic != c2->is_quadratic ) {
-	if ( PyTuple_Check(_c2) && PyArg_ParseTuple(_c2,"dd",&x,&y)) {
-	    PyFF_Point *pt = PyFFPoint_CNew(x,y,true,false,NULL);
-	    memset(&dummy,0,sizeof(dummy));
-	    dummy.pt_cnt = 1;
-	    dummy.points = dummies; dummies[0] = pt;
-	    c2 = &dummy;
-	} else {
-	    PyErr_Format(PyExc_TypeError, "Both arguments must be Contours of the same order");
-return( NULL );
-	}
+    } else if ( ( c2 = PyFFPointList_Parse(_c2) ) == NULL ) {
+	PyErr_Format(PyExc_TypeError, "Both arguments must be contours or encode a point or point list");
     }
+
     old_cnt = self->pt_cnt;
     self->pt_max = self->pt_cnt = self->pt_cnt + c2->pt_cnt;
     PyMem_Resize(self->points,PyFF_Point *,self->pt_max); /* Messes with self->points */
     for ( i=0; i<c2->pt_cnt; ++i ) {
-	Py_INCREF(c2->points[i]);
+	if ( c2!=&dummy )
+	    Py_INCREF(c2->points[i]);
 	self->points[old_cnt+i] = c2->points[i];
     }
+    if ( ((PyObject *)c2)!=_c2 && c2!=&dummy )
+	PyFFContour_dealloc(c2);
     PyFFContour_ClearSpiros((PyFF_Contour *) self);
-Py_RETURN( self );
+    Py_RETURN( self );
 }
 
 static PyObject *PyFFContour_Index( PyObject *self, Py_ssize_t pos ) {
     PyFF_Contour *cont = (PyFF_Contour *) self;
     PyObject *ret;
 
-    if ( pos<0 || pos>=cont->pt_cnt ) {
+    if ( pos<-cont->pt_cnt || pos>=cont->pt_cnt ) {
 	PyErr_Format(PyExc_TypeError, "Index out of bounds");
-return( NULL );
+	return( NULL );
     }
+
+    if (pos < 0)
+	pos += cont->pt_cnt;
+
     ret = (PyObject *) cont->points[pos];
     Py_INCREF(ret);
 return( ret );
@@ -2486,124 +2524,50 @@ return( ret );
 
 static int PyFFContour_IndexAssign( PyObject *self, Py_ssize_t pos, PyObject *val ) {
     PyFF_Contour *cont = (PyFF_Contour *) self;
-    PyObject *old;
+    PyFF_Point *old, *vpoint = NULL;
+    int i;
 
-    if ( !PyType_IsSubtype(&PyFF_PointType, Py_TYPE(val)) ) {
-	PyErr_Format(PyExc_TypeError, "Value must be a (FontForge) Point");
-return( -1 );
+    if ( val!=NULL && ( vpoint = PyFFPoint_Parse(val, false, false) ) == NULL ) {
+	PyErr_Format(PyExc_TypeError, "Unknown point format");
+	return( -1 );
     }
-    if ( pos<0 || pos>=cont->pt_cnt ) {
+    if ( pos<-cont->pt_cnt || pos>=cont->pt_cnt ) {
 	PyErr_Format(PyExc_TypeError, "Index out of bounds");
-return( -1 );
-    }
-    if ( cont->points[pos]->on_curve != ((PyFF_Point *) val)->on_curve &&
-	    !cont->is_quadratic ) {
-	PyErr_Format(PyExc_TypeError, "Replacement point must have the same on_curve setting as original in a cubic contour");
-return( -1 );
+	return( -1 );
     }
 
-    old = (PyObject *) cont->points[pos];
-    cont->points[pos] = (PyFF_Point *) val;
+    if (pos < 0)
+	pos += cont->pt_cnt;
+
+    old = cont->points[pos];
+
+    if ( val==NULL ) {
+	for ( i=pos; i<cont->pt_cnt-1; ++i )
+	    cont->points[i] = cont->points[i+1];
+	cont->pt_cnt -= 1;
+    } else {
+	/* Be consistent about allowing the point array to be temporarily inconsistent
+	if ( cont->points[pos]->on_curve != vpoint->on_curve && !cont->is_quadratic ) {
+	    PyErr_Format(PyExc_TypeError, "Replacement point must have the same on_curve setting as original in a cubic contour");
+	    return( -1 );
+	}
+	*/
+	// PyFFPoint_Parse already incremented refcount
+	cont->points[pos] = vpoint;
+    }
     PyFFContour_ClearSpiros((PyFF_Contour *) self);
     Py_DECREF( old );
-return( 0 );
+    return( 0 );
 }
 
-static PyObject *PyFFContour_Slice( PyObject *self, Py_ssize_t start, Py_ssize_t end ) {
-    PyFF_Contour *cont = (PyFF_Contour *) self;
-    PyFF_Contour *ret;
-    int len, i;
-
-    /* When passed in, start,end >= -cont->pt_cnt */
-    /* However, start,end can be arbitrarily large, particularly when the notation c[i:]
-	is used, in which case end is a very large value (max size of uint). */
-    if ( start<0 )
-	start += cont->pt_cnt;
-    if ( start>cont->pt_cnt )
-	start = cont->pt_cnt;
-    if ( end<0 )
-	end += cont->pt_cnt;
-    if ( end>cont->pt_cnt )
-	end = cont->pt_cnt;
-
-    if ( end<start )
-	len = end - start + cont->pt_cnt;
-    else
-	len = end - start;
-
-    ret = (PyFF_Contour *)PyFF_ContourType.tp_alloc(&PyFF_ContourType, 0);
-    ret->is_quadratic = cont->is_quadratic;
-    ret->closed = false;
-    ret->pt_max = ret->pt_cnt = len;
-    ret->points = PyMem_New(PyFF_Point *,ret->pt_max);
-
-    if ( end<start ) {
-	for ( i=start; i<cont->pt_cnt; ++i )
-	    ret->points[i-start] = cont->points[i];
-	for ( i=0; i<end; ++i )
-	    ret->points[(cont->pt_cnt-start)+i] = cont->points[i];
-    } else {
-	for ( i=start; i<end; ++i )
-	    ret->points[i-start] = cont->points[i];
-    }
-    for ( i=0; i<ret->pt_cnt; ++i )
-	Py_INCREF(ret->points[i]);
-return( (PyObject *) ret );
-}
-
-static int PyFFContour_SliceAssign( PyObject *_self, Py_ssize_t start, Py_ssize_t end, PyObject *_rpl ) {
-    PyFF_Contour *self = (PyFF_Contour *) _self, *rpl = (PyFF_Contour *) _rpl;
-    int i, diff;
-
-    if ( !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(rpl)) ) {
-	PyErr_Format(PyExc_TypeError, "Replacement must be a (FontForge) Contour");
-return( -1 );
-    }
-
-    if ( start<0 )
-	start += self->pt_cnt;
-    if ( start>self->pt_cnt )
-	start = self->pt_cnt;
-    if ( end<0 )
-	end += self->pt_cnt;
-    if ( end>self->pt_cnt )
-	end = self->pt_cnt;
-
-    if ( end<start ) {
-	PyErr_Format(PyExc_ValueError, "Slice specification out of order" );
-return( -1 );
-    }
-
-    diff = rpl->pt_cnt - ( end-start );
-    for ( i=start; i<end; ++i )
-	Py_DECREF(self->points[i]);
-    if ( diff>0 ) {
-	if ( self->pt_cnt+diff >= self->pt_max ) {
-	    self->pt_max = self->pt_cnt + diff;
-	    PyMem_Resize(self->points,PyFF_Point *,self->pt_max); /* Messes with self->points */
-	}
-	for ( i=self->pt_cnt-1; i>=end; --i )
-	    self->points[i+diff] = self->points[i];
-    } else if ( diff<0 ) {
-	for ( i=end; i<self->pt_cnt; ++i )
-	    self->points[i+diff] = self->points[i];
-    }
-    self->pt_cnt += diff;
-    for ( i=0; i<rpl->pt_cnt; ++i ) {
-	self->points[i+start] = rpl->points[i];
-	Py_INCREF(rpl->points[i]);
-    }
-    PyFFContour_ClearSpiros((PyFF_Contour *) self);
-return( 0 );
-}
 
 static int PyFFContour_Contains(PyObject *_self, PyObject *_pt) {
     PyFF_Contour *self = (PyFF_Contour *) _self;
-    float x,y;
+    double x,y;
     int i;
 
     if ( PySequence_Check(_pt)) {
-	if ( !PyArg_ParseTuple(_pt,"ff", &x, &y ))
+	if ( !PyArg_ParseTuple(_pt,"dd", &x, &y ))
 return( -1 );
     } else if ( !PyType_IsSubtype(&PyFF_PointType, Py_TYPE(_pt)) ) {
 	PyErr_Format(PyExc_TypeError, "Value must be a (FontForge) Point");
@@ -2625,12 +2589,170 @@ static PySequenceMethods PyFFContour_Sequence = {
     PyFFContour_Concat,		/* concat */
     NULL,			/* repeat */
     PyFFContour_Index,		/* subscript */
-    PyFFContour_Slice,		/* slice */
+    NULL,			/* slice */
     PyFFContour_IndexAssign,	/* subscript assign */
-    PyFFContour_SliceAssign,	/* slice assign */
+    NULL,			/* slice assign */
     PyFFContour_Contains,	/* contains */
     PyFFContour_InPlaceConcat,	/* inplace_concat */
     NULL			/* inplace repeat */
+};
+
+static PyObject *PyFFContour_Sub( PyObject *self, PyObject *key ) {
+    PyFF_Contour *cont = (PyFF_Contour *) self;
+    PyFF_Contour *ret;
+    Py_ssize_t start, end, step, len;
+    int i;
+
+    if ( PyInt_Check(key)) {
+        return PyFFContour_Index(self, PyNumber_AsSsize_t(key, PyExc_IndexError));
+    }
+    if ( !PySlice_Check(key) ) { 
+	PyErr_Format(PyExc_IndexError, "Contour indexed by integer only");
+	return( NULL );
+    }
+#if PY_VERSION_HEX > 0x03060100
+    if (PySlice_Unpack(key, &start, &end, &step) < 0) {
+	return( NULL );
+    }
+    len = PySlice_AdjustIndices(cont->pt_cnt, &start, &end, step);
+#elif PY_VERSION_HEX > 0x03020000
+    if (PySlice_GetIndicesEx(key, cont->pt_cnt, &start, &end, &step, &len) < 0) {
+	return( NULL );
+    }
+#else
+    if (PySlice_GetIndicesEx((PySliceObject *) key, cont->pt_cnt, &start, &end, &step, &len) < 0) {
+	return( NULL );
+    }
+#endif
+    if ( !(step == 1 || step == -1) ) {
+	PyErr_Format(PyExc_IndexError, "Only supported steps are 1 and -1");
+	return( NULL );
+    }
+
+    ret = (PyFF_Contour *)PyFF_ContourType.tp_alloc(&PyFF_ContourType, 0);
+    ret->is_quadratic = cont->is_quadratic;
+    ret->closed = false;
+    ret->pt_max = ret->pt_cnt = len;
+    ret->points = PyMem_New(PyFF_Point *,ret->pt_max);
+
+    for ( i = 0; i < len; i++ ) {
+	ret->points[i] = cont->points[i*step + start];
+	Py_INCREF(ret->points[i]);
+    }
+    return( (PyObject *) ret );
+}
+
+// Caller responsible for incrementing reference count
+static void PyFFContour_CInsertPoint(PyFF_Contour *self, PyFF_Point *p, int pos) {
+	int i;
+
+	if ( pos<0 || pos>=self->pt_cnt-1 )
+		pos = self->pt_cnt-1;
+	if ( self->pt_cnt >= self->pt_max ) {
+		/* Messes with self->points */
+		PyMem_Resize(self->points,PyFF_Point *,self->pt_max += 10);
+	}
+	for ( i=self->pt_cnt-1; i>pos; --i )
+	self->points[i+1] = self->points[i];
+	self->points[pos+1] = p;
+	PyFFContour_ClearSpiros(self);
+	self->pt_cnt += 1;
+}
+
+// Uses a Contour object as a temporary home for the point list
+static PyFF_Contour *PyFFPointList_Parse(PyObject *args) {
+	PyFF_Contour *self = (PyFF_Contour *) PyFFContour_new(&PyFF_ContourType,NULL,NULL);
+	PyFF_Point *p;
+	int len, i;
+	bool ok = true;
+
+	if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(args) ) ) {
+		PyFFContour_InPlaceConcat((PyObject *) self, args);
+	} else if ( PySequence_Check(args) ) {
+		len = PySequence_Size(args);
+		for (i = 0; i < len; ++i) {
+			p = PyFFPoint_Parse(PySequence_GetItem(args, i), false, false);
+			if ( p!=NULL ) {
+				PyFFContour_CInsertPoint(self, p, -1);
+			} else {
+				ok = false;
+				break;
+			}
+		}
+	} else {
+		ok = false;
+	}
+	if ( ! ok ) {
+		PyFFContour_dealloc(self);
+		return NULL;
+	}
+	return self;
+}
+
+static int PyFFContour_SubAssign( PyObject *self, PyObject *key, PyObject *val ) {
+    PyFF_Contour *cont = (PyFF_Contour *) self, *rpl;
+    int i, diff;
+    Py_ssize_t len, start, end, step;
+
+    if ( PyInt_Check(key)) {
+        return PyFFContour_IndexAssign(self, PyNumber_AsSsize_t(key, PyExc_IndexError), val);
+    }
+    rpl = PyFFPointList_Parse(val);
+    if ( rpl==NULL ) { 
+	PyErr_Format(PyExc_TypeError, "Replacement must encode a point list");
+	return( -1 );
+    }
+    if ( !PySlice_Check(key) ) { 
+	PyErr_Format(PyExc_IndexError, "Contour indexed by integer only");
+	return( -1 );
+    }
+#if PY_VERSION_HEX > 0x03060100
+    if (PySlice_Unpack(key, &start, &end, &step) < 0) {
+	return( -1 );
+    }
+    len = PySlice_AdjustIndices(cont->pt_cnt, &start, &end, step);
+#elif PY_VERSION_HEX > 0x03020000
+    if (PySlice_GetIndicesEx(key, cont->pt_cnt, &start, &end, &step, &len) < 0) {
+	return( -1 );
+    }
+#else
+    if (PySlice_GetIndicesEx((PySliceObject *) key, cont->pt_cnt, &start, &end, &step, &len) < 0) {
+	return( -1 );
+    }
+#endif
+    if ( !(step == 1 || step == -1) ) {
+	PyErr_Format(PyExc_IndexError, "Only supported steps are 1 and -1");
+	return( -1 );
+    }
+
+    diff = ( rpl!=NULL ? rpl->pt_cnt : 0 ) - len;
+    for ( i=start; i<end; ++i )
+	Py_DECREF(cont->points[i]);
+    if ( diff>0 ) {
+	if ( cont->pt_cnt+diff >= cont->pt_max ) {
+	    cont->pt_max = cont->pt_cnt + diff;
+	    PyMem_Resize(cont->points,PyFF_Point *,cont->pt_max); /* Messes with cont->points */
+	}
+	for ( i=cont->pt_cnt-1; i>=end; --i )
+	    cont->points[i+diff] = cont->points[i];
+    } else if ( diff<0 ) {
+	for ( i=end; i<cont->pt_cnt; ++i )
+	    cont->points[i+diff] = cont->points[i];
+    }
+    cont->pt_cnt += diff;
+    for ( i=0; i<rpl->pt_cnt; ++i ) {
+	cont->points[i*step+start] = rpl->points[i];
+	Py_INCREF(rpl->points[i]);
+    }
+    PyFFContour_ClearSpiros(cont);
+    PyFFContour_dealloc(rpl);
+    return( 0 );
+}
+
+static PyMappingMethods PyFFContour_Mapping = {
+    PyFFContour_Length,			/* length */
+    PyFFContour_Sub,			/* subscript */
+    PyFFContour_SubAssign		/* subscript assign */
 };
 
 /* ************************************************************************** */
@@ -2807,42 +2929,35 @@ Py_RETURN( self );
 static PyObject *PyFFContour_InsertPoint(PyFF_Contour *self, PyObject *args) {
     double x,y;
     PyFF_Point *p=NULL;
-    int i, on, pos;
+    int i, on, pos, sel;
 
-    x = y = 0.0; pos = -1; on = true;
-    if ( !PyArg_ParseTuple( args, "(ddi)|i", &x, &y, &on, &pos )) {
+    x = y = 0.0;
+    pos = -1;
+    on = true;
+    sel = false;
+    if ( !PyArg_ParseTuple( args, "(ddii)|i", &x, &y, &on, &sel, &pos )) {
 	PyErr_Clear();
-	if ( !PyArg_ParseTuple( args, "(dd)|ii", &x, &y, &on, &pos )) {
+	if ( !PyArg_ParseTuple( args, "(ddi)|i", &x, &y, &on, &pos )) {
 	    PyErr_Clear();
-	    if ( !PyArg_ParseTuple( args, "dd|ii", &x, &y, &on, &pos )) {
+	    if ( !PyArg_ParseTuple( args, "(dd)|i", &x, &y, &pos )) {
 		PyErr_Clear();
 		if ( !PyArg_ParseTuple( args, "O|i", &p, &pos ) ||
-		     !PyType_IsSubtype(&PyFF_PointType, Py_TYPE(p)) )
+		     !PyType_IsSubtype(&PyFF_PointType, Py_TYPE(p)) ) {
 		    return( NULL );
+		}
 	    }
 	}
     }
 
-    if ( pos<0 || pos>=self->pt_cnt-1 )
-	pos = self->pt_cnt-1;
-    if ( self->pt_cnt >= self->pt_max ) {
-         /* Messes with self->points */
-        PyMem_Resize(self->points,PyFF_Point *,self->pt_max += 10);
-    }
-    for ( i=self->pt_cnt-1; i>pos; --i )
-	self->points[i+1] = self->points[i];
     if ( p==NULL ) {
 	p = PyFFPoint_CNew(x,y,on,false,NULL);
 	if ( p==NULL )
 	    return( NULL );
-	self->points[pos+1] = p;
     } else {
-	self->points[pos+1] = p;
-	Py_INCREF( (PyObject *) p);
+	Py_INCREF( p );
     }
-    PyFFContour_ClearSpiros((PyFF_Contour *) self);
-    ++self->pt_cnt;
-
+    
+    PyFFContour_CInsertPoint(self, p, pos);
     Py_RETURN( self );
 }
 
@@ -3181,7 +3296,7 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFContour_BoundingBox(PyFF_Contour *self, PyObject *UNUSED(args)) {
-    float xmin, xmax, ymin, ymax;
+    double xmin, xmax, ymin, ymax;
     int i;
 
     if ( self->pt_cnt==0 )
@@ -3195,7 +3310,7 @@ static PyObject *PyFFContour_BoundingBox(PyFF_Contour *self, PyObject *UNUSED(ar
 	if ( self->points[i]->y < ymin ) ymin = self->points[i]->y;
 	if ( self->points[i]->y > ymax ) ymax = self->points[i]->y;
     }
-return( Py_BuildValue("(dddd)", (double)xmin,(double)ymin, (double)xmax,(double)ymax ));
+return( Py_BuildValue("(dddd)", xmin, ymin, xmax, ymax ));
 }
 
 static PyObject *PyFFContour_GetSplineAfterPoint(PyFF_Contour *self, PyObject *args) {
@@ -3471,11 +3586,11 @@ static PyTypeObject PyFF_ContourType = {
     NULL,                      /*tp_print*/
     NULL,                      /*tp_getattr*/
     NULL,                      /*tp_setattr*/
-    PY3OR2(NULL, (cmpfunc)PyFFContour_compare), /*tp_reserved/tp_compare*/
+    PYCMPF((cmpfunc)PyFFContour_compare), /*tp_reserved/tp_compare*/
     NULL,                      /*tp_repr*/
     NULL,                      /*tp_as_number*/
     &PyFFContour_Sequence,     /*tp_as_sequence*/
-    NULL,                      /*tp_as_mapping*/
+    &PyFFContour_Mapping,      /*tp_as_mapping*/
     NULL,                      /*tp_hash */
     NULL,                      /*tp_call*/
     (reprfunc)PyFFContour_Str, /*tp_str*/
@@ -3487,7 +3602,7 @@ static PyTypeObject PyFF_ContourType = {
     "fontforge Contour objects", /* tp_doc */
     NULL /*(traverseproc)FFContour_traverse*/,  /* tp_traverse */
     (inquiry)PyFFContour_clear,  /* tp_clear */
-    PY3OR2((richcmpfunc)PyFFContour_richcompare, NULL), /*tp_richcompare*/
+    PYRCMPF((richcmpfunc)PyFFContour_richcompare), /*tp_richcompare*/
     0,                         /* tp_weaklistoffset */
     contouriter_new,           /* tp_iter */
     NULL,                      /* tp_iternext */
@@ -3736,11 +3851,11 @@ return( ret );
 return( -1 );		/* Arbitrary... but we can't get here=>all points same */
 }
 
-#if PY_MAJOR_VERSION >= 3
+#if PY_VERSION_HEX > 0x02020000
 static PyObject *PyFFLayer_richcompare(PyObject *a, PyObject *b, int op) {
     return enrichened_compare((cmpfunc) PyFFLayer_compare, a, b, op);
 }
-#endif /* PY_MAJOR_VERSION >= 3 */
+#endif /* PY_VERSION_HEX > 0x02020000 */
 
 /* ************************************************************************** */
 /* Layer getters/setters */
@@ -3867,27 +3982,36 @@ return( ret );
 
 static int PyFFLayer_IndexAssign( PyObject *self, Py_ssize_t pos, PyObject *val ) {
     PyFF_Layer *layer = (PyFF_Layer *) self;
-    PyFF_Contour *contour;
-    PyFF_Contour *old;
+    PyFF_Contour *old, *contour;
+    int i;
 
-    if ( !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(val)) ) {
+    if ( val!=NULL && !PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(val)) ) {
 	PyErr_Format(PyExc_TypeError, "Value must be a (FontForge) Contour");
-return( -1 );
+	return( -1 );
     }
-    contour = (PyFF_Contour *) val;
     if ( pos<0 || pos>=layer->cntr_cnt ) {
 	PyErr_Format(PyExc_TypeError, "Index out of bounds");
-return( -1 );
-    }
-    if ( contour->is_quadratic!=layer->is_quadratic ) {
-	PyErr_Format(PyExc_TypeError, "Replacement contour must have the same order as the layer");
-return( -1 );
+	return( -1 );
     }
 
     old = layer->contours[pos];
-    layer->contours[pos] = contour;
+
+    if ( val==NULL) {
+	for ( i=pos; i<layer->cntr_cnt-1; ++i )
+	    layer->contours[i] = layer->contours[i+1];
+	layer->cntr_cnt -= 1;
+    } else {
+	contour = (PyFF_Contour *) val;
+	if ( contour->is_quadratic!=layer->is_quadratic ) {
+	    PyErr_Format(PyExc_TypeError, "Replacement contour must have the same order as the layer");
+	    return( -1 );
+	}
+	layer->contours[pos] = contour;
+	Py_INCREF( contour );
+    }
+
     Py_DECREF( old );
-return( 0 );
+    return( 0 );
 }
 
 static PySequenceMethods PyFFLayer_Sequence = {
@@ -4496,7 +4620,7 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFLayer_BoundingBox(PyFF_Layer *self, PyObject *UNUSED(args)) {
-    float xmin, xmax, ymin, ymax;
+    double xmin, xmax, ymin, ymax;
     int i,j,none;
     PyFF_Contour *cntr;
 
@@ -4519,7 +4643,7 @@ static PyObject *PyFFLayer_BoundingBox(PyFF_Layer *self, PyObject *UNUSED(args))
     if ( none )
 return( Py_BuildValue("(dddd)", 0.0,0.0,0.0,0.0 ));
 
-return( Py_BuildValue("(dddd)", (double)xmin,(double)ymin, (double)xmax,(double)ymax ));
+return( Py_BuildValue("(dddd)", xmin, ymin, xmax, ymax ));
 }
 
 static PyObject *PyFFLayer_xBoundsAtY(PyFF_Layer *self, PyObject *args) {
@@ -4637,7 +4761,7 @@ static PyTypeObject PyFF_LayerType = {
     NULL,                      /* tp_print */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
-    PY3OR2(NULL, (cmpfunc)PyFFLayer_compare),/* tp_reserved/tp_compare */
+    PYCMPF((cmpfunc)PyFFLayer_compare),/* tp_reserved/tp_compare */
     NULL,                      /* tp_repr */
     NULL,                      /* tp_as_number */
     &PyFFLayer_Sequence,       /* tp_as_sequence */
@@ -4653,7 +4777,7 @@ static PyTypeObject PyFF_LayerType = {
     "fontforge Layer objects", /* tp_doc */
     NULL /*(traverseproc)FFLayer_traverse*/,  /* tp_traverse */
     (inquiry)PyFFLayer_clear,  /* tp_clear */
-    PY3OR2((richcmpfunc)PyFFLayer_richcompare, NULL), /* tp_richcompare */
+    PYRCMPF((richcmpfunc)PyFFLayer_richcompare), /* tp_richcompare */
     0,                         /* tp_weaklistoffset */
     layeriter_new,             /* tp_iter */
     NULL,                      /* tp_iternext */
@@ -6173,11 +6297,11 @@ return( -1 );
 return( sc1<sc2 ? -1 : 1 );
 }
 
-#if PY_MAJOR_VERSION >= 3
+#if PY_VERSION_HEX > 0x02020000
 static PyObject *PyFFGlyph_richcompare(PyObject *a, PyObject *b, int op) {
     return enrichened_compare((cmpfunc) PyFFGlyph_compare, a, b, op);
 }
-#endif /* PY_MAJOR_VERSION >= 3 */
+#endif /* PY_VERSION_HEX > 0x02020000 */
 
 /* ************************************************************************** */
 /* Glyph getters/setters */
@@ -8985,7 +9109,7 @@ static PyTypeObject PyFF_GlyphType = {
     NULL,                      /* tp_print */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
-    PY3OR2(NULL, (cmpfunc)PyFFGlyph_compare),/* tp_reserved/tp_compare */
+    PYCMPF((cmpfunc)PyFFGlyph_compare),/* tp_reserved/tp_compare */
     (reprfunc) PyFFGlyph_Repr, /* tp_repr */
     NULL,                      /* tp_as_number */
     NULL,                      /* tp_as_sequence */
@@ -9000,7 +9124,7 @@ static PyTypeObject PyFF_GlyphType = {
     "FontForge Glyph object",  /* tp_doc */
     NULL,                      /* tp_traverse */
     NULL,                      /* tp_clear */
-    PY3OR2((richcmpfunc)PyFFGlyph_richcompare, NULL), /* tp_richcompare */
+    PYRCMPF((richcmpfunc)PyFFGlyph_richcompare), /* tp_richcompare */
     0,                         /* tp_weaklistoffset */
     NULL,                      /* tp_iter */
     NULL,                      /* tp_iternext */

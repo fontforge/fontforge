@@ -915,8 +915,10 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
     </TR>
     <TR>
       <TD><CODE>fontforge.point</CODE></TD>
-      <TD><CODE>([x,y,on-curve])</CODE></TD>
-      <TD>Creates a new point. Optionally specifying its location</TD>
+      <TD><CODE>([x,y,on-curve,selected])</CODE></TD>
+      <TD>Creates a new point. Optionally specifying its x,y
+         location, on-curve status and selected status. x and y
+         must be supplied together</TD>
     </TR>
     <TR>
       <TH colspan=3>Members</TH>
@@ -1107,25 +1109,35 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
     </TR>
     <TR>
       <TD colspan=2><CODE>c[i]</CODE></TD>
-      <TD>The <EM>i</EM>th point on the contour. You may assign to this</TD>
+      <TD>The <EM>i</EM>th point on the contour. You may assign a point or
+	 point initializer to this (keeping the number of points constant) or
+         use "del c[i]" to remove the entry (reducing the number by one)</TD>
     </TR>
     <TR>
       <TD colspan=2><CODE>c[i:j]</CODE></TD>
-      <TD>The contour containing points between i and j. You may assign to this</TD>
+      <TD>The contour containing points between i and j; i must be &gt;= j. 
+	Alternatively, c[j:i:-1] returns those points in reverse order 
+	(larger strides are not supported).</TD>
+    </TR>
+    <TR>
+      <TD colspan=2><CODE>c[i:j] = d</CODE></TD>
+      <TD>The points between i and j are replaced by those in d; i must be &gt;= j.
+        d can be a contour or a sequence of point initializers, as in [(1,1,False),(2,1)].
+        If c[j:i:-1] is used instead the points of d are assigned in reverse order.</TD>
     </TR>
     <TR>
       <TD colspan=2><CODE>c + d</CODE></TD>
-      <TD>A contour concatenating c and d. D may be either another contour or a
+      <TD>A contour concatenating c and d. d may be or encode either another contour or a
 	point.</TD>
     </TR>
     <TR>
       <TD colspan=2><CODE>c += d</CODE></TD>
-      <TD>Appends d to c. D may be either another contour or a point.</TD>
+      <TD>Appends d to c. d may be or encode either another contour or a point.</TD>
     </TR>
     <TR>
       <TD colspan=2><CODE>p in c</CODE></TD>
-      <TD>Returns whether the point p is in the contour c. p may be either a point
-	or a tuple of two numbers</TD>
+      <TD>When p i sa point returns whether some point (p.x,p.y) is in the contour c. 
+        p can also be a tuple of two numbers</TD>
     </TR>
     <TR>
       <TD colspan=3>Does not support the repeat concept</TD>
@@ -1417,20 +1429,22 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
       <TH colspan=3>Sequence Protocol</TH>
     </TR>
     <TR>
-      <TD colspan=2><CODE>len(c)</CODE></TD>
+      <TD colspan=2><CODE>len(l)</CODE></TD>
       <TD>The number of contours in the layer</TD>
     </TR>
     <TR>
-      <TD colspan=2><CODE>c[i]</CODE></TD>
-      <TD>The <EM>i</EM>th contour on the layer. You may assign to this</TD>
+      <TD colspan=2><CODE>l[i]</CODE></TD>
+      <TD>The <EM>i</EM>th contour in the layer. You may assign a contour 
+	 to this (keeping the number of contours constant) or use "del l[i]"
+	 to remove the entry (reducing the number by one)</TD>
     </TR>
     <TR>
-      <TD colspan=2><CODE>c + d</CODE></TD>
-      <TD>A layer concatenating c and d. D may be either another layer or a contour.</TD>
+      <TD colspan=2><CODE>l + m</CODE></TD>
+      <TD>A layer concatenating l and m. m may be either another layer or a contour.</TD>
     </TR>
     <TR>
-      <TD colspan=2><CODE>c += d</CODE></TD>
-      <TD>Appends d to c. D may be either another layer or a contour.</TD>
+      <TD colspan=2><CODE>l += m</CODE></TD>
+      <TD>Appends m to l. m may be either another layer or a contour.</TD>
     </TR>
     <TR>
       <TD colspan=3>Does not support the repeat, slice and contains concepts</TD>
