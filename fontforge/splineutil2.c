@@ -2012,7 +2012,9 @@ static SplinePointList *SplinePointListMerge(SplineChar *sc, SplinePointList *sp
 
     /* If the entire splineset is selected, it should merge into oblivion */
     first = NULL;
-    if ( sc->inspiro && hasspiro() ) {
+    /* The python contour merge code calls with NULL, but that interface
+       currently only works for bezier contours */
+    if ( sc!=NULL && sc->inspiro && hasspiro() ) {
 	int i,j;
 	any = false; all = true;
 	for ( i=0; i<spl->spiro_cnt-1; ++i )
