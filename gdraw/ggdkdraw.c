@@ -791,25 +791,25 @@ static bool _GGDKDraw_FilterByModal(GdkEvent *event, GGDKWindow gw) {
     GPtrArray *stack = gw->display->transient_stack;
 
     if ( gww && gw->display->restrict_count == 0 )
-	return false;
+        return false;
 
     while (gww != NULL) {
-		GGDKWindow last_modal = NULL;
+        GGDKWindow last_modal = NULL;
 
-		for (int i = ((int)stack->len)-1; i >= 0; --i) {
-			GGDKWindow ow = (GGDKWindow)stack->pdata[i];
-			if (ow == gww || ow->restrict_input_to_me) { // fudged
-				last_modal = ow;
-				break;
-			}
-		}
+        for (int i = ((int)stack->len)-1; i >= 0; --i) {
+            GGDKWindow ow = (GGDKWindow)stack->pdata[i];
+            if (ow == gww || ow->restrict_input_to_me) { // fudged
+                last_modal = ow;
+                break;
+            }
+        }
 
-		if (last_modal == NULL || last_modal == gww) {
-			return false;
-		}
+        if (last_modal == NULL || last_modal == gww) {
+            return false;
+        }
 
-		gww = gww->parent;
-	}
+        gww = gww->parent;
+    }
 
     if (event->type != GDK_MOTION_NOTIFY && event->type != GDK_BUTTON_RELEASE) {
         gdk_window_beep(gw->w);
@@ -998,7 +998,7 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
                         gw == gdisp->bs.release_w &&
                         gevent.u.mouse.button == gdisp->bs.release_button &&
                         (int32_t)(gevent.u.mouse.time - gdisp->bs.last_press_time) < gdisp->bs.double_time &&
-                        gevent.u.mouse.time >= gdisp->bs.last_press_time) {	// Time can wrap
+                        gevent.u.mouse.time >= gdisp->bs.last_press_time) {  // Time can wrap
 
                     gdisp->bs.cur_click++;
                 } else {
@@ -1576,19 +1576,19 @@ static void GGDKDrawSetTransientFor(GWindow transient, GWindow owner) {
         gdk_window_set_transient_for(gw->w, ow->w);
         gdk_window_set_modal_hint(gw->w, true);
         gw->istransient = true;
-	g_ptr_array_add(gdisp->transient_stack, gw);
-	if (gw->restrict_input_to_me)
-	    _GGDKDraw_ChangeRestrictCount(gdisp, 1);
+        g_ptr_array_add(gdisp->transient_stack, gw);
+        if (gw->restrict_input_to_me)
+            _GGDKDraw_ChangeRestrictCount(gdisp, 1);
     } else {
         gdk_window_set_modal_hint(gw->w, false);
         gdk_window_set_transient_for(gw->w, gw->display->groot->w);
         gw->istransient = false;
 
-	// Be extra careful and ensure the window was on the list, in
-	// case there are spurious remove calls.
+        // Be extra careful and ensure the window was on the list, in
+        // case there are spurious remove calls.
         // TODO: optimise; search from the back; it is meant to be a stack...
         if ( g_ptr_array_remove(gdisp->transient_stack, gw) && gw->restrict_input_to_me )
-	    _GGDKDraw_ChangeRestrictCount(gdisp, -1);
+            _GGDKDraw_ChangeRestrictCount(gdisp, -1);
     }
 
     gw->transient_owner = ow;
