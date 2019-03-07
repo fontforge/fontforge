@@ -1305,6 +1305,13 @@ void SplineRefigure2(Spline *spline) {
 	spline->islinear = false;
 	if ( ysp->b==0 && xsp->b==0 )
 	    spline->islinear = true;	/* This seems extremely unlikely... */
+	if ( from->nextcpselected || to->prevcpselected ) {
+            // The convention for tracking selection of quadratic control
+	    // points is to use nextcpselected except at the tail of the
+	    // list, where it's prevcpselected on the first point.
+	    from->nextcpselected = true;
+	    to->prevcpselected = false;
+	}
     }
     if ( isnan(ysp->b) || isnan(xsp->b) )
 	IError("NaN value in spline creation");

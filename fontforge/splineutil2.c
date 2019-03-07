@@ -4617,6 +4617,9 @@ return( spl );			/* Only one point, reversal is meaningless */
     flag = spline->from->nextcpdef;
     spline->from->nextcpdef = spline->from->prevcpdef;
     spline->from->prevcpdef = flag;
+    flag = spline->from->nextcpselected;
+    spline->from->nextcpselected = spline->from->prevcpselected;
+    spline->from->prevcpselected = flag;
 
     for ( ; spline!=NULL && spline!=first; spline=next ) {
 	next = spline->to->next;
@@ -4631,6 +4634,9 @@ return( spl );			/* Only one point, reversal is meaningless */
 	    flag = spline->to->nextcpdef;
 	    spline->to->nextcpdef = spline->to->prevcpdef;
 	    spline->to->prevcpdef = flag;
+	    flag = spline->to->nextcpselected;
+	    spline->to->nextcpselected = spline->to->prevcpselected;
+	    spline->to->prevcpselected = flag;
 	}
 
 	temp = spline->to;

@@ -942,15 +942,31 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
     </TR>
     <TR>
       <TD><CODE>selected</CODE></TD>
-      <TD colspan=2>Whether this point is selected in the UI. In the case of
-        an off-curve point of a quadratic spline, selected is true when the
-	preceding (interpolated) on-curve point is selected. Otherwise (as with
-	a cubic curve) selected for an off-curve point also corresponds to 
-	UI selection.
-	<P>The value can also be set to change the selected status in the UI.
-        When not running with a UI FontForge will retain point selection status
-        between most calls and will usually mark the status in saved files as
-        it would when a UI is present.</TD>
+      <TD colspan=2>Whether this point is selected in the UI.</TD>
+	<P>
+	The value of this member also determines the selected status in the UI
+	on setting a layer.  FontForge usually retains the selection status of
+	any point between and that of an on-curve point when saving, whether or
+	not a UI is present.
+      </TD>
+    </TR>
+    <TR>
+      <TD><CODE>interpolated</CODE></TD>
+      <TD colspan=2>True if FontForge treats this (quadratic, on-curve) point as
+        interpolated. All interpolated points should be mid-way between their off-curve
+        points, but some such points are not treated as interpolated. This flag is
+        ignored when setting a layer.
+        <P>
+        Older versions of FontForge omitted interpolated points. This
+	was equivalent to executing the following on a contour:
+	<P>
+	<TT>c[:] = [ p for p in c if not p.interpolated ]</TT> </TD>
+	<P>
+	This member will be false for a point marked "Never interpolate" in FontForge
+	but there is currently no way of setting or preserving that mark when a
+	layer is replaced using the Python interfaces. A "round trip" through a Python
+	contour therefore clears that mark on any points that have it, and FontForge
+	treats mid-placed and omitted on_curve points as equivalent.
     </TR>
     <TR>
       <TD><CODE>name</CODE></TD>
@@ -1122,8 +1138,8 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
     </TR>
     <TR>
       <TD colspan=2><CODE>c[i:j]</CODE></TD>
-      <TD>The contour containing points between i and j; i must be &gt;= j. 
-	Alternatively, c[j:i:-1] returns those points in reverse order 
+      <TD>The contour containing points between i and j; i must be &gt;= j.
+	Alternatively, c[j:i:-1] returns those points in reverse order
 	(larger strides are not supported).</TD>
     </TR>
     <TR>
@@ -1143,7 +1159,7 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
     </TR>
     <TR>
       <TD colspan=2><CODE>p in c</CODE></TD>
-      <TD>When p i sa point returns whether some point (p.x,p.y) is in the contour c. 
+      <TD>When p i sa point returns whether some point (p.x,p.y) is in the contour c.
         p can also be a tuple of two numbers</TD>
     </TR>
     <TR>
@@ -1441,7 +1457,7 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
     </TR>
     <TR>
       <TD colspan=2><CODE>l[i]</CODE></TD>
-      <TD>The <EM>i</EM>th contour in the layer. You may assign a contour 
+      <TD>The <EM>i</EM>th contour in the layer. You may assign a contour
 	 to this (keeping the number of contours constant) or use "del l[i]"
 	 to remove the entry (reducing the number by one)</TD>
     </TR>

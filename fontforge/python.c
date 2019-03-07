@@ -1767,6 +1767,7 @@ static PyFF_Point *PyFFPoint_CNew(double x, double y, int on_curve, int sel, cha
 static PyObject *PyFFPoint_dup(PyFF_Point *self) {
     PyFF_Point *ret = PyFFPoint_CNew(self->x, self->y, self->on_curve,
                                      self->selected, self->name);
+    ret->interpolated = self->interpolated;
     return( (PyObject *) ret );
 }
 
@@ -1838,12 +1839,13 @@ static PyObject *PyFFPoint_pickleReducer(PyFF_Point *self, PyObject *UNUSED(args
     reductionTuple = PyTuple_New(2);
     Py_INCREF(_new_point);
     PyTuple_SetItem(reductionTuple,0,_new_point);
-    argTuple = PyTuple_New(4);
+    argTuple = PyTuple_New(5);
     PyTuple_SetItem(reductionTuple,1,argTuple);
     PyTuple_SetItem(argTuple,0,Py_BuildValue("d", (double)self->x));
     PyTuple_SetItem(argTuple,1,Py_BuildValue("d", (double)self->y));
     PyTuple_SetItem(argTuple,2,Py_BuildValue("i", self->on_curve));
     PyTuple_SetItem(argTuple,3,Py_BuildValue("i", self->selected));
+    PyTuple_SetItem(argTuple,4,Py_BuildValue("i", self->interpolated));
 return( reductionTuple );
 }
 
@@ -1922,6 +1924,8 @@ static PyMemberDef FFPoint_members[] = {
      (char *)"whether this point lies on the curve or is a control point"},
     {(char *)"selected", T_UBYTE, offsetof(PyFF_Point, selected), 0,
      (char *)"whether this point is selected"},
+    {(char *)"interpolated", T_UBYTE, offsetof(PyFF_Point, interpolated), 0,
+     (char *)"whether this (quadratic) point is interpolated"},
     {NULL, 0, 0, 0, NULL}  /* Sentinel */
 };
 
@@ -4857,6 +4861,7 @@ return( NULL );
     if ( c->is_quadratic ) {
 	if ( !c->points[0]->on_curve ) {
 	    if ( c->pt_cnt==1 ) {
+		// XXX One off-curve point -- shouldn't this throw an error? 
 		ss->first = ss->last = SplinePointCreate(c->points[0]->x,c->points[0]->y);
 		ss->start_offset = 0;
 		ss->first->selected = c->points[0]->selected;
@@ -4882,6 +4887,7 @@ return( ss );
 		if ( index!=-1 ) {
 		    sp->prevcp.x = c->points[index]->x;
 		    sp->prevcp.y = c->points[index]->y;
+		    sp->prevcpselected = c->points[index]->selected;
 		    sp->noprevcp = false;
 		}
 		if ( ss->last==NULL ) {
@@ -4893,11 +4899,10 @@ return( ss );
 	    } else {
 		if ( !c->points[i-1]->on_curve ) {
 		    sp = SplinePointCreate((c->points[i]->x+c->points[i-1]->x)/2,(c->points[i]->y+c->points[i-1]->y)/2);
-		    sp->selected = c->points[i]->selected;
-		    sp->name = copy(c->points[i]->name);
 		    sp->ttfindex = -1;
 		    sp->prevcp.x = c->points[i-1]->x;
 		    sp->prevcp.y = c->points[i-1]->y;
+		    sp->prevcpselected = c->points[i-1]->selected;
 		    sp->noprevcp = false;
 		    if ( ss->last==NULL ) {
 			ss->first = sp;
@@ -4908,6 +4913,7 @@ return( ss );
 		}
 		ss->last->nextcp.x = c->points[i]->x;
 		ss->last->nextcp.y = c->points[i]->y;
+		ss->last->nextcpselected = c->points[i]->selected;
 		ss->last->nonextcp = false;
 		ss->last->nextcpindex = next++;
 	    }
@@ -4917,11 +4923,10 @@ return( ss );
 	    i = c->pt_cnt;
 	    if ( !c->points[i-1]->on_curve ) {
 		sp = SplinePointCreate((c->points[0]->x+c->points[i-1]->x)/2,(c->points[0]->y+c->points[i-1]->y)/2);
-		sp->selected = c->points[0]->selected;
-		sp->name = copy(c->points[0]->name);
 		sp->ttfindex = -1;
 		sp->prevcp.x = c->points[i-1]->x;
 		sp->prevcp.y = c->points[i-1]->y;
+		sp->prevcpselected = c->points[i-1]->selected;
 		sp->noprevcp = false;
 		if ( ss->last==NULL ) {
 		    ss->first = sp;
@@ -4932,6 +4937,7 @@ return( ss );
 	    }
 	    ss->last->nextcp.x = c->points[0]->x;
 	    ss->last->nextcp.y = c->points[0]->y;
+	    ss->last->nextcpselected = c->points[0]->selected;
 	    ss->last->nonextcp = false;
 	    ss->last->nextcpindex = start;
 	}
@@ -5001,7 +5007,15 @@ return( NULL );
 	}
     }
     if ( c->closed ) {
+
 	SplineMake(ss->last,ss->first,c->is_quadratic);
+	if ( c->is_quadratic && ss->last->nextcpselected || ss->first->prevcpselected ) {
+            // The convention for tracking selection of quadratic control
+	    // points is to use nextcpselected except at the tail of the
+	    // list, where it's prevcpselected on the first point.
+	     ss->last->nextcpselected = false;
+	     ss->first->prevcpselected = true;
+	}
 	ss->last = ss->first;
     }
     if ( tt_start!=NULL )
@@ -5032,24 +5046,15 @@ static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
 	} else if ( ss->first->next->order2 ) {
 	    ret->is_quadratic = true;
 	    cnt = 0;
-	    skip = NULL;
-	    if ( SPInterpolate(ss->first) ) {
-		skip = ss->first->prev->from;
-		if ( k )
-		    ret->points[cnt] = PyFFPoint_CNew(skip->nextcp.x,skip->nextcp.y,false,skip->selected,skip->name);
-		++cnt;
-	    }
 	    for ( sp=ss->first; ; ) {
-		if ( !SPInterpolate(sp) ) {
-		    if ( k )
-			ret->points[cnt] = PyFFPoint_CNew(sp->me.x,sp->me.y,true,sp->selected, sp->name);
-		    ++cnt;
+		if ( k ) {
+		    ret->points[cnt] = PyFFPoint_CNew(sp->me.x,sp->me.y,true,sp->selected, sp->name);
+		    ret->points[cnt]->interpolated = SPInterpolate(sp);
 		}
-		if ( !sp->nonextcp && sp!=skip ) {
+		++cnt;
+		if ( !sp->nonextcp ) {
 		    if ( k )
-			ret->points[cnt] = PyFFPoint_CNew(sp->nextcp.x,sp->nextcp.y,false,
-							  sp->selected && SPInterpolate(sp),
-							  sp->name);
+			ret->points[cnt] = PyFFPoint_CNew(sp->nextcp.x,sp->nextcp.y,false,sp->nextcpselected,sp->name);
 		    ++cnt;
 		}
 		if ( sp->next==NULL )
@@ -5058,6 +5063,8 @@ static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
 		if ( sp==ss->first )
 	    break;
 	    }
+	    if ( k && ss->first->prevcpselected && ! ret->points[cnt-1]->on_curve )
+		ret->points[cnt-1]->selected = true;
 	} else {
 	    ret->is_quadratic = false;
 	    for ( sp=ss->first, cnt=0; ; ) {
