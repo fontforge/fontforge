@@ -172,7 +172,7 @@ static bool _GGDKDraw_TransmitSelection(GGDKDisplay *gdisp, GdkEventSelection *e
     return true;
 }
 
-static void GGDK_ChangeRestrictCount(GGDKDisplay *gdisp, int c) {
+static void _GGDKDraw_ChangeRestrictCount(GGDKDisplay *gdisp, int c) {
     gdisp->restrict_count += c;
 }
 
@@ -196,18 +196,17 @@ static gboolean _GGDKDraw_OnWindowDestroyed(gpointer data) {
 
     if (!gw->is_pixmap) {
         if (gw != gw->display->groot) {
-			for (int i = ((int)gw->display->transient_stack->len) - 1; i >= 0; --i) {
-				GGDKWindow tw = (GGDKWindow)gw->display->transient_stack->pdata[i];
-				if (tw->transient_owner == gw) {
-					g_ptr_array_remove_index(gw->display->transient_stack, i);
-					gdk_window_set_transient_for(tw->w, gw->display->groot->w);
-					tw->transient_owner = NULL;
-					tw->istransient = false;
-					if ( tw->restrict_input_to_me )
-					    GGDK_ChangeRestrictCount(gw->display, -1);
-				}
-			}
-
+            for (int i = ((int)gw->display->transient_stack->len) - 1; i >= 0; --i) {
+                GGDKWindow tw = (GGDKWindow)gw->display->transient_stack->pdata[i];
+                if (tw->transient_owner == gw) {
+                    g_ptr_array_remove_index(gw->display->transient_stack, i);
+                    gdk_window_set_transient_for(tw->w, gw->display->groot->w);
+                    tw->transient_owner = NULL;
+                    tw->istransient = false;
+                    if (tw->restrict_input_to_me)
+                        _GGDKDraw_ChangeRestrictCount(gw->display, -1);
+                    }
+            }
             if (!gdk_window_is_destroyed(gw->w)) {
                 gdk_window_destroy(gw->w);
                 // Wait for it to die
@@ -774,7 +773,6 @@ static int _GGDKDraw_WindowOrParentsDying(GGDKWindow gw) {
 }
 
 static bool _GGDKDraw_FilterByModal(GdkEvent *event, GGDKWindow gw) {
-
     switch (event->type) {
         case GDK_KEY_PRESS:
         case GDK_KEY_RELEASE:
@@ -791,16 +789,6 @@ static bool _GGDKDraw_FilterByModal(GdkEvent *event, GGDKWindow gw) {
 
     GGDKWindow gww = gw;
     GPtrArray *stack = gw->display->transient_stack;
-
-#ifdef FONTFORGE_CAN_USE_GTK_BRIDGE
-    if ( gtkb_Grabbed(gww->display->gtkb_state) ) {
-	// If gtk has an active grab, push the (already filtered)
-	// event up to it.
-	gtkb_ProcessEvent(gww->display->gtkb_state, event);
-	// Keep the "beep" (XXX?)
-	gww = NULL;
-    }
-#endif
 
     if ( gww && gw->display->restrict_count == 0 )
 	return false;
@@ -1590,7 +1578,7 @@ static void GGDKDrawSetTransientFor(GWindow transient, GWindow owner) {
         gw->istransient = true;
 	g_ptr_array_add(gdisp->transient_stack, gw);
 	if (gw->restrict_input_to_me)
-	    GGDK_ChangeRestrictCount(gdisp, 1);
+	    _GGDKDraw_ChangeRestrictCount(gdisp, 1);
     } else {
         gdk_window_set_modal_hint(gw->w, false);
         gdk_window_set_transient_for(gw->w, gw->display->groot->w);
@@ -1600,7 +1588,7 @@ static void GGDKDrawSetTransientFor(GWindow transient, GWindow owner) {
 	// case there are spurious remove calls.
         // TODO: optimise; search from the back; it is meant to be a stack...
         if ( g_ptr_array_remove(gdisp->transient_stack, gw) && gw->restrict_input_to_me )
-	    GGDK_ChangeRestrictCount(gdisp, -1);
+	    _GGDKDraw_ChangeRestrictCount(gdisp, -1);
     }
 
     gw->transient_owner = ow;
