@@ -218,6 +218,8 @@ typedef struct ggdkdisplay { /* :GDisplay */
     GGDKKeyState ks;
     GGDKWindow default_icon;
     GGDKWindow last_nontransient_window;
+    GPtrArray *transient_stack; // When can a transient window have a transient child?
+    int restrict_count;
 
     GMainLoop  *main_loop;
     GdkDisplay *display;
@@ -263,7 +265,6 @@ struct ggdkwindow { /* :GWindow */
     unsigned int has_had_faked_configure: 1;
 
     int reference_count; // Knowing when to destroy is tricky...
-    GPtrArray *transient_childs; // Handling transients is tricky...
     guint resize_timeout; // Resizing is tricky...
 
     GWindow redirect_from;		/* only redirect input from this window and its children */
