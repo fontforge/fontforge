@@ -914,6 +914,7 @@ return;
 	    
 static struct tablenames { uint32 tag; const char *name; } stdtables[] = {
     { CHR('a','c','n','t'), N_("accent attachment table") },
+    { CHR('a','n','k','r'), N_("anchor point table") },
     { CHR('a','v','a','r'), N_("axis variation table") },
     { CHR('B','A','S','E'), N_("Baseline table (OT version)") },
     { CHR('b','d','a','t'), N_("bitmap data table (AAT version)") },
@@ -939,9 +940,11 @@ static struct tablenames { uint32 tag; const char *name; } stdtables[] = {
     { CHR('F','e','a','t'), N_("SIL Graphite layout feature table") },
     { CHR('F','F','T','M'), N_("FontForge time stamp table") },
     { CHR('f','m','t','x'), N_("font metrics table") },
+    { CHR('f','o','n','d'), N_("'FOND' and 'NFNT' family compatibility table") },
     { CHR('f','p','g','m'), N_("font program table") },
     { CHR('f','v','a','r'), N_("font variation table") },
     { CHR('g','a','s','p'), N_("grid-fitting and scan-conversion procedure table") },
+    { CHR('g','c','i','d'), N_("glyph to CID mapping table (AAT version)") },
     { CHR('G','D','E','F'), N_("glyph definition table") },
     { CHR('G','l','a','t'), N_("Graphite glyph attribute table") },
     { CHR('G','l','o','c'), N_("Graphite glyph location in Glat table") },
@@ -960,6 +963,7 @@ static struct tablenames { uint32 tag; const char *name; } stdtables[] = {
     { CHR('k','e','r','n'), N_("kerning table") },
     { CHR('l','c','a','r'), N_("ligature caret table") },
     { CHR('l','o','c','a'), N_("glyph location table") },
+    { CHR('l','t','a','g'), N_("language tag table") },
     { CHR('L','T','S','H'), N_("linear threshold table") },
     { CHR('M','A','T','H'), N_("math table") },
     { CHR('m','a','x','p'), N_("maximum profile table") },
