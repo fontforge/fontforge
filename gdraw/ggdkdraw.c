@@ -205,7 +205,7 @@ static gboolean _GGDKDraw_OnWindowDestroyed(gpointer data) {
                     tw->istransient = false;
                     if (tw->restrict_input_to_me)
                         _GGDKDraw_ChangeRestrictCount(gw->display, -1);
-                    }
+                }
             }
             if (!gdk_window_is_destroyed(gw->w)) {
                 gdk_window_destroy(gw->w);
