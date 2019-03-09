@@ -218,7 +218,7 @@ typedef struct ggdkdisplay { /* :GDisplay */
     GGDKKeyState ks;
     GGDKWindow default_icon;
     GGDKWindow last_nontransient_window;
-    GPtrArray *transient_stack; // When can a transient window have a transient child?
+    GPtrArray *transient_stack;
     int restrict_count;
 
     GMainLoop  *main_loop;
