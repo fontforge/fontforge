@@ -1532,14 +1532,18 @@ return(NULL);
 return( new );
 }
 
-void SFFlatten(SplineFont *cidmaster) {
+void SFFlatten(SplineFont **cidmasterpp) {
     SplineChar **glyphs;
+    SplineFont *cidmaster = *cidmasterpp;
     int i,j,max;
 
     if ( cidmaster==NULL )
-return;
-    if ( cidmaster->cidmaster!=NULL )
+	return;
+
+    if ( cidmaster->cidmaster!=NULL ) {
 	cidmaster = cidmaster->cidmaster;
+	cidmasterpp = &cidmaster;
+    }
     /* This doesn't change the ordering, so no need for special tricks to */
     /*  preserve scrolling location. */
     for ( i=max=0; i<cidmaster->subfontcnt; ++i ) {
@@ -1556,18 +1560,21 @@ return;
 	    }
 	}
     }
-    CIDFlatten(cidmaster,glyphs,max);
+    *cidmasterpp = CIDFlatten(cidmaster,glyphs,max);
 }
 
-int SFFlattenByCMap(SplineFont *sf,char *cmapname) {
+int SFFlattenByCMap(SplineFont **sfpp,char *cmapname) {
     struct cmap *cmap;
     int i,j,k,l,m, extras, max, curmax, warned;
     int found[4];
     SplineChar **glyphs = NULL, *sc;
+    SplineFont *sf = *sfpp;
     FontViewBase *fvs;
 
-    if ( sf->cidmaster!=NULL )
+    if ( sf->cidmaster!=NULL ) {
 	sf = sf->cidmaster;
+	sfpp = &sf;
+    }
     if ( sf->subfontcnt==0 ) {
 	ff_post_error(_("Not a CID-keyed font"),_("Not a CID-keyed font"));
 return( false );
@@ -1604,7 +1611,7 @@ return( false );
 	break;
 	    }
     }
-    sf = CIDFlatten(sf,glyphs,curmax);
+    *sfpp = sf = CIDFlatten(sf,glyphs,curmax);
 
     warned = false;
     for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {

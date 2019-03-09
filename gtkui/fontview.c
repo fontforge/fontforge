@@ -2501,7 +2501,7 @@ void FontViewMenu_Flatten(GtkMenuItem *menuitem, gpointer user_data) {
 
     if ( cidmaster==NULL )
 return;
-    SFFlatten(cidmaster);
+    SFFlatten(&cidmaster);
 }
 
 void FontViewMenu_FlattenByCMap(GtkMenuItem *menuitem, gpointer user_data) {
@@ -2515,7 +2515,7 @@ return;
     if ( cmapname==NULL )
 return;
     SFFindNearTop(fv->b.sf);
-    SFFlattenByCMap(cidmaster,cmapname);
+    SFFlattenByCMap(&cidmaster,cmapname);
     SFRestoreNearTop(fv->b.sf);
     free(cmapname);
 }

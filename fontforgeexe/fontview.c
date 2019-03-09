@@ -3705,7 +3705,7 @@ static void FVMenuFlatten(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUS
 
     if ( cidmaster==NULL )
 return;
-    SFFlatten(cidmaster);
+    SFFlatten(&cidmaster);
 }
 
 static void FVMenuFlattenByCMap(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -3719,7 +3719,7 @@ return;
     if ( cmapname==NULL )
 return;
     SFFindNearTop(fv->b.sf);
-    SFFlattenByCMap(cidmaster,cmapname);
+    SFFlattenByCMap(&cidmaster,cmapname);
     SFRestoreNearTop(fv->b.sf);
     free(cmapname);
 }

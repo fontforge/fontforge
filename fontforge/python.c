@@ -14057,7 +14057,7 @@ return (NULL);
 return( NULL );
     }
 
-    SFFlatten(sf->cidmaster);
+    SFFlatten(&(sf->cidmaster));
 Py_RETURN( self );
 }
 
@@ -14076,7 +14076,7 @@ return( NULL );
     if ( !PyArg_ParseTuple(args,"s", &locfilename ))
 return( NULL );
 
-    if ( !SFFlattenByCMap(sf,locfilename)) {
+    if ( !SFFlattenByCMap(&sf,locfilename)) {
 	PyErr_Format(PyExc_EnvironmentError,"Can't find (or can't parse) cmap file: %s", locfilename);
 return( NULL );
     }

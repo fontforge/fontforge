@@ -1255,7 +1255,7 @@ return;
 	CIDMergeFont(fv->sf->cidmaster,other,preserveCrossFontKerning);
     else {
 	if (other->subfonts!=NULL)
-	    SFFlatten(other); /* Harmless because other is freed in _MergeFont() */
+	    SFFlatten(&other); /* Non-corrupting because other is freed in _MergeFont() */
 	__MergeFont(fv->sf,other,preserveCrossFontKerning);
     }
 }
