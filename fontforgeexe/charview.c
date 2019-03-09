@@ -6691,9 +6691,12 @@ static void CVMenuCloseTab(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNU
 return;
     pos = GTabSetGetSel(cv->tabs);
     free(cv->former_names[pos]);
-    for ( i=pos+1; i<cv->former_cnt; ++i )
+    for ( i=pos+1; i<cv->former_cnt; ++i ) {
 	cv->former_names[i-1] = cv->former_names[i];
+    cv->cvtabs[i-1] = cv->cvtabs[i];
+    }
     --cv->former_cnt;
+    CVChangeSC_fetchTab(cv, pos);
     GTabSetRemoveTabByPos(cv->tabs,pos);	/* This should send an event that the selection has changed */
     GTabSetRemetric(cv->tabs);
 }
