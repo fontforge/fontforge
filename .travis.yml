@@ -103,7 +103,7 @@ install:
       export CFLAGS="-fdiagnostics-color=always -Wall -Wno-switch -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wrestrict -Wnull-dereference -Wjump-misses-init -Wdouble-promotion -Wshadow"
     else
       export FFCONFIG="$FFCONFIG --enable-gdk=gdk3 --enable-woff2"
-      export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig
+      export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig:/usr/local/opt/libffi/lib/pkgconfig
       export MSGFMT=/usr/local/opt/gettext/bin/msgfmt
       export PYTHON=python
       export PYTHONPATH=$PYTHONPATH:$PREFIX/lib/python2.7/site-packages
