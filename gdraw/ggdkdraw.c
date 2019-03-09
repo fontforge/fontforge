@@ -197,7 +197,6 @@ static gboolean _GGDKDraw_OnWindowDestroyed(gpointer data) {
                     GGDKWindow tw = (GGDKWindow)gw->display->transient_stack->pdata[i];
                     if (tw->transient_owner == gw) {
                         GGDKDrawSetTransientFor((GWindow)tw, NULL);
-                        break;
                     }
                 }
             }
