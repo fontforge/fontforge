@@ -5009,7 +5009,7 @@ return( NULL );
     if ( c->closed ) {
 
 	SplineMake(ss->last,ss->first,c->is_quadratic);
-	if ( c->is_quadratic && ss->last->nextcpselected || ss->first->prevcpselected ) {
+	if ( c->is_quadratic && (ss->last->nextcpselected || ss->first->prevcpselected) ) {
             // The convention for tracking selection of quadratic control
 	    // points is to use nextcpselected except at the tail of the
 	    // list, where it's prevcpselected on the first point.
