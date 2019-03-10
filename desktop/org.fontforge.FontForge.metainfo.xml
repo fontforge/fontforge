@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2014 Joe Da Silva <digital@joescat.com> -->
+<component type="desktop">
+  <id>org.fontforge.FontForge</id>
+  <launchable type="desktop-id">org.fontforge.FontForge.desktop</launchable>
+  <metadata_license>CC0-1.0</metadata_license>
+  <name>FontForge</name>
+  <name xml:lang="zh-TW">=字型鍛造廠</name>
+  <summary>An outline font editor</summary>
+  <summary xml:lang="de">Ein Font-Editor</summary>
+  <summary xml:lang="eo">Tipar dosiero-redaktilo</summary>
+  <summary xml:lang="es">Un editor de fuentes</summary>
+  <summary xml:lang="fr">Un constructeur des polices</summary>
+  <summary xml:lang="it">Un profilo editor di font</summary>
+  <summary xml:lang="pt">Um editor de fontes</summary>
+  <summary xml:lang="pl_PL">Edytor fontów</summary>
+  <summary xml:lang="ru">Редактор шрифтов</summary>
+  <summary xml:lang="uk">Редактор шрифтів</summary>
+  <summary xml:lang="zh-TW">FontForge 描邊字型編輯器</summary>
+  <description>
+    <p xml:lang="C">
+  FontForge is a font editor for outline and bitmap fonts that lets you create,
+  edit, or convert, a range of fonts, including PostScript, TrueType, OpenType,
+  cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) fonts.</p>
+    <p xml:lang="C">
+  FontForge is free Open Source Software written to run on various computer operating
+  systems. You can use FontForge Graphically or as a command-line tool.</p>
+    <p xml:lang="C">
+  Learning to use FontForge is easy, and there are various tutorials available beginning
+  with the basics up to more advanced features such as making and using scripts.</p>
+    <p xml:lang="es">
+  FontForge es un editor tipográfico que permite crear, editar y convertir una gran
+  gama de fuentes en formatos vectoriales y basados en mapas de bits, entre los cuales están
+  PostScript, TrueType, OpenType, CID, «multi-master», CFF, SVG, BDF, FON y NFNT.</p>
+    <p xml:lang="es">
+  FontForge es software libre y de código abierto, compatible con varios sistemas operativos.
+  Es posible usar FontForge mediante su interfaz gráfica o en la consola de texto.</p>
+    <p xml:lang="es">
+  Es fácil aprender a utilizar FontForge, y existen diversos tutoriales que cubren desde los
+  conceptos básicos hasta las funcionalidades avanzadas, como la creación y uso de «scripts».</p>
+    <p xml:lang="fr">
+  FontForge est un éditeur de polices de caractères numériques qui vous permet de créer, éditer,
+  ou convertir une large gamme de polices incluant PostScript, TrueType, OpenType, cid-keyed, 
+  multi-master, cff, SVG et BitMap (bdf, FON, NFNT).</p>
+    <p xml:lang="fr">
+  FontForge est un logiciel libre, gratuit et disponible pour divers systèmes d’exploitation.
+  Vous pouvez utiliser l'interface graphique de FontForge ou comme un outil à la ligne de commande.</p>
+    <p xml:lang="fr">
+  Apprendre à utiliser FontForge est facile, et il y a plusieurs tutoriels disponibles en commençant
+  par les bases jusqu'à des fonctionnalités plus avancées telles que la fabrication et l'utilisation de scripts.</p>
+    <p xml:lang="uk">
+  FontForge — редактор контурних та растрових шрифтів, за допомогою якого ви можете
+  створювати, редагувати та перетворювати шрифти у форматах PostScript, TrueType, OpenType,
+  cid-keyed, multi-master, cff, SVG та растрових (bdf, FON, NFNT).</p>
+    <p xml:lang="pt">
+  FontForge — um editor de fontes para fontes outline e de bitmap que lhe permite criar,
+  editar ou converter, uma série de fontes, incluindo PostScript, TrueType, OpenType,
+  cid-keyed, multi-master, cff, SVG e de bitmap (bdf, FON, NFNT) fontes.</p>
+    <p xml:lang="pt">
+  Aprender a usar FontForge é fácil, e existem vários tutoriais disponíveis que começam
+  com o básico até mais recursos avançados, como fazer e usar scripts.</p>
+    <p xml:lang="zh_CN">
+  FontForge是一个矢量字体和位图字体的编辑器。你可以用它来创造，编辑或者转换一些字体。支持的字体格式包括PostScript，TrueType，OpenType，CID-keyed，multi-master，CFF，SVG和位图（bdf，PON，NFNT）。</p>
+    <p xml:lang="zh_CN">
+  FontForge是一个自由开源软件，可以运行在多种计算机操作系统上。你可以使用FontForge的图形界面，也可以将其作为一个命令行工具来使用。</p>
+    <p xml:lang="zh_CN">
+  学习使用FontForge并不难，有各种各样的教程涵盖了基础知识到更高级的特性，比如制作和使用脚本。</p>
+    <p xml:lang="ko">
+  폰트포지는 외곽선 및 비트맵 글꼴 편집기입니다. 포스트스크립트, 트루타입, 오픈타입, CID 폰트,
+  멀티마스터, CFF, SVG 그리고 비트맵(bdf, FON, NFNT) 글꼴을 제작, 편집, 변환할 수 있습니다.</p>
+    <p xml:lang="ko">
+  폰트포지는 여러 컴퓨터 운영체제에서 작동하도록 쓰여진 오픈소스 소프트웨어입니다.
+  명령어 인터페이스 또는 GUI로 사용할 수 있습니다.</p>
+    <p xml:lang="ko">
+  폰트포지는 배우기 쉽습니다. 기본적인 것부터 시작해서, 스크립트를 짜서 쓰는 고급 기능까지
+  다양한 튜토리얼들이 준비되어 있습니다.</p>
+    <p xml:lang="ca">
+  El FontForge és un editor de tipus de lletra, tant vectorials com de mapa de bits,
+  que permet crear, editar o convertir tipus de diferents formats, com ara PostScript,
+  TrueType, OpenType, CID, MM, CFF, SVG i BitMap (BDF, FON, NFNT).</p>
+    <p xml:lang="ca">
+  El FontForge és programari lliure dissenyat per poder ser utilitzat en diversos
+  sistemes operatius, tant des de la interfície gràfica com des de la línia d'ordres.</p>
+    <p xml:lang="ca">
+  Aprendre a utilitzar el FontForge és senzill; podeu consultar els tutorials
+  existents que van de les funcions més bàsiques del programa fins a les més complicades,
+  com ara escriure i usar scripts.</p>
+    <p xml:lang="it">
+  FontForge è un editor di font per i caratteri di testo outline e bitmap che ti permette di creare,
+  modificare o convertire diversi tipi di font, inclusi PostScript, TrueType, OpenType,
+  CID, multi-master, cff, SVG e BitMap (bdf, FON, NFNT).</p>
+    <p xml:lang="it">
+  FontForge è un Software Open Source gratuito, scritto per funzionare su vari sistemi
+  operativi. Puoi usare FontForge con interfaccia grafica o tramite riga di comando.</p>
+    <p xml:lang="it">
+  Imparare ad usare FontForge è facile, e sono disponibili vari tutorial che iniziano dalle basi
+  fino ad arrivare alle funzioni avanzate, come la creazione e l'uso di script.</p>
+  </description>
+  <screenshots>
+    <screenshot type="default" height="675" width="1200">
+      <image>https://github.com/fontforge/fontforge/raw/master/doc/html/ff-screenshot.png</image>
+      <caption>Fontforge showing a glyph being edited</caption>
+    </screenshot>
+  </screenshots>
+  <url type="homepage">https://github.com/fontforge/fontforge</url>
+  <update_contact>fontforge-devel@lists.sourceforge.net</update_contact>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release date="2017-07-31" version="20170731"/>
+    <release date="2016-10-05" version="20161005"/>
+  </releases>
+  <project_license>GPL-3.0-or-later</project_license>
+  <developer_name>FontForge developers</developer_name>
+  <url type="bugtracker">https://github.com/fontforge/fontforge/issues</url>
+  <url type="donation">https://fontforge.github.io/en-US/funding/</url>
+  <url type="help">https://fontforge.github.io/en-US/documentation/</url>
+</component>
