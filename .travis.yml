@@ -77,7 +77,6 @@ install:
       export FFCONFIG="$FFCONFIG --without-libzmq --enable-woff2"
     fi
 
-    echo $PYTHON_CFLAGS
     # For some inane reason Travis defines this to '-g -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security'
     # This prevents pkg-config from setting the CFLAGS properly.
     unset PYTHON_CFLAGS

@@ -30,6 +30,8 @@ rm $APPDIR/AppRun ; cp Packaging/AppDir/AppRun $APPDIR/AppRun ; chmod +x $APPDIR
 ./squashfs-root/usr/bin/appimagetool -g $APPDIR/
 find $APPDIR -executable -type f -exec ldd {} \; | grep " => /usr" | cut -d " " -f 2-3 | sort | uniq
 
+mv FontForge*.AppImage FontForge-$(date +%Y-%m-%d)-$VERSION-x86_64.AppImage
+
 # Update the bintray descriptor... sigh. If this fails, then oh well, no bintray
 echo "Updating the bintray descriptor..."
 BINTRAY_DESCRIPTOR=$TRAVIS_BUILD_DIR/travis-scripts/bintray_descriptor.json
@@ -37,6 +39,3 @@ sed -i "s/ciXXXX/$(date +appimage-ci-%Y-%m-%d)/g" $BINTRAY_DESCRIPTOR || true
 sed -i "s/releaseXXXX/$(date +%Y-%m-%d)/g" $BINTRAY_DESCRIPTOR || true
 echo "Bintray descriptor:"
 cat $BINTRAY_DESCRIPTOR
-
-pwd
-ls -lh
