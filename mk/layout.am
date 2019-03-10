@@ -84,6 +84,10 @@ PACKAGEROOTDIR = ${datarootdir}
 DESKTOPDIR = ${PACKAGEROOTDIR}/applications
 desktopdir = ${DESKTOPDIR}
 
+# Where metainfo xml files go
+METAINFODIR = ${PACKAGEROOTDIR}/metainfo
+metainfodir = ${METAINFODIR}
+
 # Where MIME data goes. (Support for .sfd files, for instance.)
 MIMEDIR = ${PACKAGEROOTDIR}/mime
 mimedir= ${MIMEDIR}
