@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright 2014 Joe Da Silva <digital@joescat.com> -->
 <component type="desktop">
-  <id>fontforge</id>
-  <launchable type="desktop-id">fontforge.desktop</launchable>
+  <id>org.fontforge.FontForge</id>
+  <launchable type="desktop-id">org.fontforge.FontForge.desktop</launchable>
   <metadata_license>CC0-1.0</metadata_license>
   <description>
     <p xml:lang="C">
@@ -97,7 +97,7 @@
     <release date="2016-10-05" version="20161005"/>
   </releases>
   <project_license>GPL-3.0-or-later</project_license>
-  <developer_name>Fontforge developers</developer_name>
+  <developer_name>FontForge developers</developer_name>
   <url type="bugtracker">https://github.com/fontforge/fontforge/issues</url>
   <url type="donation">https://fontforge.github.io/en-US/funding/</url>
   <url type="help">https://fontforge.github.io/en-US/documentation/</url>

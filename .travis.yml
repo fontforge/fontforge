@@ -162,7 +162,7 @@ deploy:
   key:
     secure: "YBvK5QLZ4LNE3WQPXjDYalLsTgmiGyRGYY87ep5knQ0YGyt3Q9OiBCtQ3GvhHNKOa2L2QlctJi2VWcUu+ftrS72mi5j2tvse9wRF3V8EVFIPb3bxjnN6E11FjXtLIqU8WR7HlAHJpOL2bhO+RleIhSVZm0MsiSjekFOoA5tfll4="
   on:
-    condition: -v BINTRAY_DEPLOY
+    condition: "$BINTRAY_DEPLOY" = "true"
     branch:
       - master
       - travis

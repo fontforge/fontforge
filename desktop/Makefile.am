@@ -27,17 +27,17 @@
 
 include $(top_srcdir)/mk/layout.am
 
-dist_desktop_DATA = fontforge.desktop
-dist_metainfo_DATA = fontforge.appdata.xml
-dist_hicolor16x16_DATA = icons/16x16/apps/fontforge.png
-dist_hicolor22x22_DATA = icons/22x22/apps/fontforge.png
-dist_hicolor24x24_DATA = icons/24x24/apps/fontforge.png
-dist_hicolor32x32_DATA = icons/32x32/apps/fontforge.png
-dist_hicolor48x48_DATA = icons/48x48/apps/fontforge.png
-dist_hicolor64x64_DATA = icons/64x64/apps/fontforge.png
-dist_hicolor128x128_DATA = icons/128x128/apps/fontforge.png
-dist_hicolor256x256_DATA = icons/256x256/apps/fontforge.png
-dist_hicolorscalable_DATA = icons/scalable/apps/fontforge.svg
+dist_desktop_DATA = org.fontforge.FontForge.desktop
+dist_metainfo_DATA = org.fontforge.FontForge.appdata.xml
+dist_hicolor16x16_DATA = icons/16x16/apps/org.fontforge.FontForge.png
+dist_hicolor22x22_DATA = icons/22x22/apps/org.fontforge.FontForge.png
+dist_hicolor24x24_DATA = icons/24x24/apps/org.fontforge.FontForge.png
+dist_hicolor32x32_DATA = icons/32x32/apps/org.fontforge.FontForge.png
+dist_hicolor48x48_DATA = icons/48x48/apps/org.fontforge.FontForge.png
+dist_hicolor64x64_DATA = icons/64x64/apps/org.fontforge.FontForge.png
+dist_hicolor128x128_DATA = icons/128x128/apps/org.fontforge.FontForge.png
+dist_hicolor256x256_DATA = icons/256x256/apps/org.fontforge.FontForge.png
+dist_hicolorscalable_DATA = icons/scalable/apps/org.fontforge.FontForge.svg
 dist_mimepackages_DATA = fontforge.xml
 
 EXTRA_DIST = icons/src/icon-16x16-apps-fontforge.svg	\

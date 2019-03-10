@@ -1,14 +1,6 @@
 [Desktop Entry]
 Name=FontForge
-Name[ru]=FontForge
-Name[fr]=FontForge
 Name[zh_TW]=字型鍛造廠
-Name[uk]=FontForge
-Name[de]=FontForge
-Name[eo]=FontForge
-Name[es]=FontForge
-Name[it]=FontForge
-Name[pt]=FontForge
 GenericName=Font Editor
 Comment=An outline font editor
 Comment[ru]=Редактор шрифтов
@@ -23,7 +15,7 @@ Comment[it]=Un profilo editor di font
 Comment[pt]=Um editor de fontes
 Exec=fontforge %U
 TryExec=fontforge
-Icon=fontforge
+Icon=org.fontforge.FontForge
 StartupWMClass=fontforge
 Terminal=false
 Type=Application
