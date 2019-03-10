@@ -249,8 +249,6 @@ AC_PATH_PROG([PLUTIL],[plutil],[:])
 dnl###############################
 dnl###############################
 
-AM_CONDITIONAL([XDG_DESKTOP],[test x"$UPDATE_MIME_DATABASE" != "x:" -a x"$UPDATE_DESKTOP_DATABASE" != "x:"])
-
 FONTFORGE_ARG_ENABLE_REAL
 
 AC_ARG_ENABLE([programs],
