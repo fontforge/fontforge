@@ -1774,7 +1774,7 @@ static PyObject *PyFFPoint_dup(PyFF_Point *self) {
 static PyFF_Point *PyFFPoint_Parse(PyObject *args, bool dup, bool always) {
     double x,y;
     PyFF_Point *p=NULL;
-    int i, on, sel;
+    int i, on, sel, interp;
 
     if ( args==NULL && !always )
 	return NULL;
@@ -1782,13 +1782,14 @@ static PyFF_Point *PyFFPoint_Parse(PyObject *args, bool dup, bool always) {
     x = y = 0.0;
     on = true;
     sel = false;
+    interp = false;
     if ( !PyArg_ParseTuple( args, "(ddii)", &x, &y, &on, &sel )) {
 	PyErr_Clear();
 	if ( !PyArg_ParseTuple( args, "(ddi)|i", &x, &y, &on, &sel )) {
 	    PyErr_Clear();
 	    if ( !PyArg_ParseTuple( args, "(dd)|ii", &x, &y, &on, &sel )) {
 		PyErr_Clear();
-		if ( !PyArg_ParseTuple( args, "dd|ii", &x, &y, &on, &sel )) {
+		if ( !PyArg_ParseTuple( args, "dd|iii", &x, &y, &on, &sel, &interp )) {
 		    PyErr_Clear();
 		    if ( PyType_IsSubtype(&PyFF_PointType, Py_TYPE(args)) ) { 
 			p = (PyFF_Point *) args;
@@ -1804,6 +1805,8 @@ static PyFF_Point *PyFFPoint_Parse(PyObject *args, bool dup, bool always) {
 	p = PyFFPoint_CNew(x,y,on,sel,NULL);
 	if ( p==NULL )
 	    return( NULL );
+	if ( interp )
+	    p->interpolated = true;
     } else if ( dup ) {
 	p = (PyFF_Point *) PyFFPoint_dup(p);
     } else {
