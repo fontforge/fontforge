@@ -141,7 +141,7 @@ script:
   - make check
   - if [ ! -z "$LINUX_FULL" ]; then make distcheck; fi
   - fontforge -version
-  - if [ -z "$LINUX_NOX" ]; then $PYTHON -c "import fontforge; import psMat; print(fontforge.__version__, fontforge.version()); fontforge.font();"; fi
+  - if [ -z "$LINUX_NOX" ]; then $PYTHON travis-scripts/pyhook_smoketest.py; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]; then travis-scripts/ffosxbuild.sh $PREFIX $TRAVIS_COMMIT; fi
   - if [ ! -z "$LINUX_RELEASE" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then travis-scripts/ffappimagebuild.sh; fi
 
