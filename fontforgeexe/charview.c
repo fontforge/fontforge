@@ -1597,14 +1597,12 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 		GDrawPathClose(pixmap);
 
 	    switch( strokeFillMode ) {
-            case sfm_stroke_trans:
-                GDrawPathStroke( pixmap, fc );
-                break;
             case sfm_stroke:
                 GDrawPathStroke( pixmap, fc | 0xff000000 );
                 break;
             case sfm_clip_preserve:
                 GDrawClipPreserve( pixmap );
+            case sfm_stroke_trans:
             case sfm_fill:
             case sfm_nothing:
                 break;
