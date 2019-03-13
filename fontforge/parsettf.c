@@ -6316,7 +6316,7 @@ return( SFFillFromTTF(&info));
 
 SplineFont *SFReadTTF(char *filename, int flags, enum openflags openflags) {
     FILE *ttf;
-    SplineFont *sf;
+    SplineFont *sf=NULL;
     char *strippedname=filename, *chosenname=NULL, *pt, *lparen;
 
     pt = strrchr(filename,'/');
@@ -6329,16 +6329,12 @@ SplineFont *SFReadTTF(char *filename, int flags, enum openflags openflags) {
         chosenname[strlen(chosenname)-1] = '\0';
     }
     ttf = fopen(strippedname,"rb");
-    if ( ttf==NULL ) {
-        if ( strippedname!=filename ) free(strippedname);
-        if ( chosenname!=NULL ) free(chosenname);
-        return( NULL );
+    if ( ttf!=NULL ) {
+        sf = _SFReadTTF(ttf,flags,openflags,strippedname,chosenname,NULL);
+        fclose(ttf);
     }
-
-    sf = _SFReadTTF(ttf,flags,openflags,strippedname,chosenname,NULL);
     if ( strippedname!=filename ) free(strippedname);
     if ( chosenname!=NULL ) free(chosenname);
-    fclose(ttf);
 return( sf );
 }
 
