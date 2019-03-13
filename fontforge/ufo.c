@@ -2712,7 +2712,7 @@ static void *UFOLoadGuideline(SplineFont *sf, SplineChar *sc, int layer, xmlDocP
 		return NULL;
 	}
 	// If the guideline is valid but not all values are defined, we flag it as using abbreviated syntax.
-	if (what_is_defined & 7 != 7)
+	if ((what_is_defined & 7) != 7)
 		gl->flags |= 0x10;
 	// fprintf(stderr, "Setting reference.\n");
 	if (sc) {
