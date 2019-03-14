@@ -38,8 +38,8 @@
 #
 #--------------------------------------------------------------------------
 
-# Where the application's icons for internal use go. (For the
-# locations of desktop icons, see below.)
+# Where the application's icons for internal use go.
+# (Free desktop icons handled in dir desktop)
 pixmapsdir = ${pkgdatadir}/pixmaps
 
 # Where to put binaries which are really only interesting to fontforge itself.
@@ -73,39 +73,3 @@ plugindir = ${pkglibdir}/plugins
 MY_SHAREDIR = ${pkgdatadir}
 MY_DOCDIR = ${htdocsdir}
 MY_PLUGINDIR = ${plugindir}
-
-#--------------------------------------------------------------------------
-#
-# Layout of the freedesktop.org support.
-
-PACKAGEROOTDIR = ${datarootdir}
-
-# Where .desktop files go.
-DESKTOPDIR = ${PACKAGEROOTDIR}/applications
-desktopdir = ${DESKTOPDIR}
-
-# Where metainfo xml files go
-METAINFODIR = ${PACKAGEROOTDIR}/metainfo
-metainfodir = ${METAINFODIR}
-
-# Where MIME data goes. (Support for .sfd files, for instance.)
-MIMEDIR = ${PACKAGEROOTDIR}/mime
-mimedir= ${MIMEDIR}
-mimepackagesdir = ${MIMEDIR}/packages
-
-# Where desktop icons go.
-ICONSDIR = ${PACKAGEROOTDIR}/icons
-HICOLORDIR = ${ICONSDIR}/hicolor
-iconsdir = ${ICONSDIR}
-hicolordir = ${HICOLORDIR}
-hicolor16x16dir = ${hicolordir}/16x16/apps
-hicolor22x22dir = ${hicolordir}/22x22/apps
-hicolor24x24dir = ${hicolordir}/24x24/apps
-hicolor32x32dir = ${hicolordir}/32x32/apps
-hicolor48x48dir = ${hicolordir}/48x48/apps
-hicolor64x64dir = ${hicolordir}/64x64/apps
-hicolor128x128dir = ${hicolordir}/128x128/apps
-hicolor256x256dir = ${hicolordir}/256x256/apps
-hicolorscalabledir = ${hicolordir}/scalable/apps
-
-#--------------------------------------------------------------------------
