@@ -1220,7 +1220,7 @@ static void SFDDumpGuidelines(FILE *sfd, GuidelineSet *gl) {
 	putc(' ',sfd);
 	SFDDumpUTF7Str(sfd,gl->identifier);
 	putc(' ',sfd);
-	fprintf( sfd, "%g %g %g %lu %d",
+	fprintf( sfd, "%g %g %g %u %d",
 		(double) gl->point.x, (double) gl->point.y,
 		(double) gl->angle, gl->color, gl->flags);
 	putc('\n',sfd);
