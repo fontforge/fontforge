@@ -3,9 +3,9 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Feb-2002 -->
   <!-- AP: Last modified: 11-Dec-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!--<TITLE>Building Accented and other Composite Characters</TITLE>-->
-    <TITLE>�A�N�Z���g����������т��̑��̕����������\�z������@</TITLE>
+    <TITLE>アクセントつき文字およびその他の複合文字を構築する方法</TITLE>
   <LINK REL="icon" href="../fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
@@ -13,7 +13,7 @@
 <DIV id="in">
   <H1 ALIGN=Center>
 <!--  Building Accented and other Composite Glyphs-->
-      �A�N�Z���g����������т��̑��̕����������\�z������@
+      アクセントつき文字およびその他の複合文字を構築する方法
   </H1>
   <P>
 <!--
@@ -27,81 +27,81 @@
   good, in the case of "fi" the dot on the "i" needs to be fused into the hook
   of the "f", and if you are careless with the command you might destroy your
   work inadvertently. -->
-  <CODE>�G�������g(<U>L</U>)</CODE>��<CODE>�g�ݗ���(<U>U</U>)</CODE>��<CODE>�A�N�Z���g���O���t���\�z(<U>B</U>)</CODE> �R�}���h���g���āA�A�N�Z���g���O���t��g�ݗ��Ă邱�Ƃ��ł��܂��B�܂��́A<CODE>�G�������g(<U>L</U>)</CODE>��<CODE>�g�ݗ���(<U>U</U>)</CODE>��<CODE>�����O���t���\�z(<U>C</U>)</CODE> ���g���΁A�킸���Ɉ�ʓI�� (�O���Ȃǂ��܂�) �����O���t�̑g�ݗ��Ă��s���܂��B�u�A�N�Z���g���v�̕��́A�����̍쐬��A���t�@�� A �ő�p����悤�Ȃ��Ƃ͍s���܂���B�u�����O���t�v�̂ق��́A���̂ǂ�����s���܂��B���̌��ς���ł́A�����������鍇�� (�gfi�h�����̂悤��) ����邽�߂ɂ͈�ʓI�Ƀ��[�U���ōs���K�v�̂����Ƃ�����������������Ȃ�܂��B�gfi�h�̏ꍇ�A�gi�h�̃h�b�g�́gf�h�̐�[�ƗZ��������K�v������A���̃R�}���h�̎g�p���ɂ������肵�Ă���ƁA���ׂĂ̍�Ƃ�s���ӂŉ󂵂Ă��܂��\��������܂��B
+  <CODE>エレメント(<U>L</U>)</CODE>→<CODE>組み立て(<U>U</U>)</CODE>→<CODE>アクセントつきグリフを構築(<U>B</U>)</CODE> コマンドを使って、アクセントつきグリフを組み立てることができます。または、<CODE>エレメント(<U>L</U>)</CODE>→<CODE>組み立て(<U>U</U>)</CODE>→<CODE>複合グリフを構築(<U>C</U>)</CODE> を使えば、わずかに一般的な (外字などを含む) 複合グリフの組み立てが行えます。「アクセントつき」の方は、合字の作成やアルファを A で代用するようなことは行えません。「複合グリフ」のほうは、そのどちらも行えます。私の見積もりでは、美しく見える合字 (“fi”合字のような) を作るためには一般的にユーザ側で行う必要のある作業がそれよりも少し多くなります。“fi”の場合、“i”のドットは“f”の先端と融合させる必要があり、このコマンドの使用時にうっかりしていると、すべての作業を不注意で壊してしまう可能性があります。
   <P>
 <!--
   What can be built? -->
-  �ǂ̂悤�ȕ���g�ݗ��Ă��邩?
+  どのような物を組み立てられるか?
   <UL>
     <LI>
 <!--  Unicode specifies various normative glyph decompositions. So "Aacute" is
       defined to be an "A" with an "acute" accent centered on top. Any of these
       can be built (though if the glyph contains no accents it will need to be
       built with the build composite command).<BR> -->
-      Unicode �ł́A�����̐��K�O���t�������d�l�Œ�߂Ă��܂��B�Ⴆ�΁gAacute�h�́gA�h�̏�Ɂgacute�h�A�N�Z���g�𒆉������Œu�������̂ƒ�`����Ă��܂��B���̎�̕����͂��ׂđg�ݗ��Ă邱�Ƃ��ł��܂� (�������A�O���t�ɃA�N�Z���g���܂܂�Ă��Ȃ��Ƃ��ɂ� <CODE>�����O���t���\�z(<U>C</U>)</CODE> �R�}���h�őg�ݗ��Ă�K�v������܂�)�B<BR>
+      Unicode では、多数の正規グリフ分解を仕様で定めています。例えば“Aacute”は“A”の上に“acute”アクセントを中央揃えで置いたものと定義されています。その種の文字はすべて組み立てることができます (ただし、グリフにアクセントが含まれていないときには <CODE>複合グリフを構築(<U>C</U>)</CODE> コマンドで組み立てる必要があります)。<BR>
 <!--  Sometimes Unicode's normative definition is not as informative as it might
       be (many of the greek accents are "unified" with latin accents that they
       don't really look like, the result is that following Unicode slavishly will
       yield the wrong glyph). So in some cases FontForge will use a slightly different
       set of glyphs than the normative decomposition.<BR> -->
-      Unicode �̐��K�����̒�`�́A���҂����قǏ��Ƃ��Ė𗧂��Ȃ��ꍇ������܂� (�M���V�������̃A�N�Z���g�̑����͌`���S�R�Ⴄ���e�������̃A�N�Z���g�Ɓu�����v����Ă���̂ŁA�l���Ȃ��� Unicode �ɏ]���ƊԈ�����O���t���o���オ��܂�)�B���̂悤�ȏꍇ�́AFontForge �͐��K�����Ə����قȂ�O���t�̑g�������g�p���܂��B<BR>
+      Unicode の正規分解の定義は、期待されるほど情報として役立たない場合があります (ギリシャ文字のアクセントの多くは形が全然違うラテン文字のアクセントと「統合」されているので、考えなしに Unicode に従うと間違ったグリフが出来上がります)。そのような場合は、FontForge は正規分解と少し異なるグリフの組合せを使用します。<BR>
 <!--  This includes:-->
-      �ȉ��̂悤�ȕ����܂܂�Ă��܂�:
+      以下のような物が含まれています:
       <UL>
 	<LI>
 <!--	  Latin accented characters -->
-	  �A�N�Z���g�����e������
+	  アクセントつきラテン文字
 	<LI>
 <!--	  Latin ligatures (ae, oe, fi, fl, etc) -->
-	  ���e�������̍��� (ae, oe, fi, fl �Ȃ�)
+	  ラテン文字の合字 (ae, oe, fi, fl など)
 	<LI>
 <!--	  Greek accented characters -->
-	  �A�N�Z���g���M���V������
+	  アクセントつきギリシャ文字
 	<LI>
 <!--	  Cyrillic accented characters -->
-	  �A�N�Z���g���L��������
+	  アクセントつきキリル文字
 	<LI>
 <!--	  Hebrew ligatures -->
-	  �w�u���C�����̍���
+	  ヘブライ文字の合字
 	<LI>
 <!--	  Arabic ligatures -->
-	  �A���r�A�����̍���
+	  アラビア文字の合字
 	<LI>
 <!--	  Fractions, digits inside parens, roman numerals, etc. -->
-	  �����A���ʂ������A���[�}�����Ȃ�
+	  分数、括弧つき数字、ローマ数字など
 	<LI>
 <!--	  The predefined Hangul characters (0xac00-0xdfaf) -->
-	  �����^�n���O������ (0xac00-0xdfaf)
+	  完成型ハングル文字 (0xac00-0xdfaf)
       </UL>
     <LI>
 <!--  Many of the Korean Jamo are actually ligatures of other Jamo (ssangkiyoeok
       (0x1101) is composed of two kiyoeok (0x1100)). For some reason this information
       is not normative unicode, but FontForge is aware of it anyway and will build
       those glyphs if you ask it to. -->
-      �n���O������(Jamo)�̑����͎��ۂɂ͑��̎���̍����ł� (ssangkiyeok (0x1101) �́A2 �� kiyoeok (0x1100) �̑g��������Ȃ�܂��B�������̗��R�ɂ�肱�̏��� Unicode �̐��K�����Ɋ܂܂�Ă��܂��񂪁AFotnForge �͂��̎�����m���Ă���̂ŁA�K�؂Ȏw���ɂ��A���̃O���t��g�ݗ��Ă邱�Ƃ��ł��܂��B
+      ハングル字母(Jamo)の多くは実際には他の字母の合字です (ssangkiyeok (0x1101) は、2 個の kiyoeok (0x1100) の組合せからなります。いくつかの理由によりこの情報は Unicode の正規分解に含まれていませんが、FotnForge はこの事実を知っているので、適切な指示により、そのグリフを組み立てることができます。
     <LI>
 <!--  The glyphs "i" and "j" can be built by adding a dot accent to the dotlessi
       and dotlessj glyphs -->
-      �O���t�gi�h�Ɓgj�h�́Adotlessi �� dotlessj �̃O���t�Ƀh�b�g�A�N�Z���g��ǉ����邱�Ƃɂ���đg�ݗ��Ă邱�Ƃ��ł��܂��B
+      グリフ“i”と“j”は、dotlessi と dotlessj のグリフにドットアクセントを追加することによって組み立てることができます。
     <LI>
 <!--  The dotlessi and dotlessj glyphs can be built by removing the dot from an
       "i" or "j" glyph -->
-       dotlessi �� dotlessj �̃O���t�́A�gi�h�Ɓgj�h�̃O���t����h�b�g����菜�����Ƃɂ���đg�ݗ��Ă邱�Ƃ��ł��܂��B
+       dotlessi と dotlessj のグリフは、“i”と“j”のグリフからドットを取り除くことによって組み立てることができます。
     <LI>
 <!--  FontForge knows a few other things. It knows that Greek "Alpha" and Cyrillic
       A both look like the Latin "A" and will replace either if you ask. (as well
       as all the other similar glyphs in latin, greek, cyrillic, cherokee, etc.) -->
-      FontForge �͂���ȊO�ɂ������΂����̎�����m���Ă��܂��B�M���V�������́g�A���t�@�h�ƃL���������̄@�͂ǂ�������e�������́gA�h�Ɠ����`�����Ă��邱�Ƃ�m���Ă���̂ŁA�w�肷��΂ǂꂩ 1 �ő���u�������邱�Ƃ��ł��܂� (���e���A�M���V���A�L�����A�`�F���L�[�Ȃǂ̗p���n�Ɋ܂܂�邻�̑��̓��`�̃O���t�����l�ł�)�B
+      FontForge はそれ以外にもいくばくかの事柄を知っています。ギリシャ文字の“アルファ”とキリル文字のАはどちらもラテン文字の“A”と同じ形をしていることを知っているので、指定すればどれか 1 つで他を置き換えることができます (ラテン、ギリシャ、キリル、チェロキーなどの用字系に含まれるその他の同形のグリフも同様です)。
     <LI>
 <!--  Some glyphs are just extremely simple to build. There are a whole slew of
       glyphs which correspond to zero-width spaces. FontForge will build any of
       them. More usefully it will build any of the fixed size spaces 0x2000-0x200f,
       and the fixed sized rules 0x2010-0x2015). -->
-      �������̃O���t�͔��ɊȒP�ɑg�ݗ��Ă邱�Ƃ��ł��܂��B���[���̃X�y�[�X�ɑΉ����镶�����������񂠂�܂��BFontForge �͂��̂ǂ�ł��g�ݗ��Ă邱�Ƃ��ł��܂��B�����Ɩ��ɗ���Ƃ��ẮA0x2000�`0x200f �̌Œ蕝�̃X�y�[�X �ƁA0x2010�`0x2015 �ɂ���Œ蕝�̌r���ł��B
+      いくつかのグリフは非常に簡単に組み立てることができます。幅ゼロのスペースに対応する文字がたくさんあります。FontForge はそのどれでも組み立てることができます。もっと役に立つ例としては、0x2000〜0x200f の固定幅のスペース と、0x2010〜0x2015 にある固定幅の罫線です。
     <LI>
 <!--  You may use the Element-&gt;Char Info dialog to define a ligature yourself,
       and FontForge will build it for you. -->
-      <CODE>�G�������g(<U>L</U>)</CODE>��<CODE>�O���t���(<U>I</U>)...</CODE> ���g���āA�����ō������`����΁AFontForge �͂����g�ݗ��ĂĂ���܂��B
+      <CODE>エレメント(<U>L</U>)</CODE>→<CODE>グリフ情報(<U>I</U>)...</CODE> を使って、自分で合字を定義すれば、FontForge はそれを組み立ててくれます。
     <LI>
 <!--  In Adobe's CID glyph sets there are some pre-rotated versions of latin glyphs.
       When CJK text is written vertically the convention is that any text in western
@@ -113,8 +113,8 @@
       at &lt;cid&gt;. In non-cid-keyed fonts, if a glyph's name is
       "vertuni&lt;uni&gt;" where &lt;uni&gt; is a four digit hex number, then it
       is assumed to be a vertically rotated version of that unicode glyph. -->
-      Adobe �� CID �O���t�W���̒��ɂ́A���炩���߉�]�ς݂̔ł̃��e���������������܂܂�Ă��܂��BCJK �̃e�L�X�g���c��������Ƃ��ɂ́A���m�̃A���t�@�x�b�g�ŏ����ꂽ���ׂẴe�L�X�g�͎��v���� 90����]����K�v������܂��B�����̃O���t�ʒu�� <CODE>�A�N�Z���g���O���t���\�z(<U>B</U>)</CODE> ��K�p����ƁA�K���ȃ��e�������������āA�����K�؂ɉ�]���܂��B<BR>
-      �O���t�����gvertcid_&lt;cid;&gt;�h(������ &lt;cid;&gt; �� 10 �i��) �Ƃ����`���̂Ƃ��́A���̃O���t�� &lt;cid;&gt; �̃O���t���c�����p�ɉ�]�������ł���ƌ��Ȃ���܂��B�� CID �t�H���g�ł́A�O���t�����gvertuni&lt;uni;&gt;�h(������ &lt;uni;&gt; �� 4 ���� 16 �i��) �̏ꍇ�́A���� Unicode �O���t���c�����p�ɉ�]�������ł���ƌ��Ȃ���܂��B
+      Adobe の CID グリフ集合の中には、あらかじめ回転済みの版のラテン文字がいくつか含まれています。CJK のテキストを縦書きするときには、西洋のアルファベットで書かれたすべてのテキストは時計回りに 90°回転する必要があります。これらのグリフ位置で <CODE>アクセントつきグリフを構築(<U>B</U>)</CODE> を適用すると、適当なラテン文字を見つけて、それを適切に回転します。<BR>
+      グリフ名が“vertcid_&lt;cid;&gt;”(ここで &lt;cid;&gt; は 10 進数) という形式のときは、そのグリフは &lt;cid;&gt; のグリフを縦書き用に回転した物であると見なされます。非 CID フォントでは、グリフ名が“vertuni&lt;uni;&gt;”(ここで &lt;uni;&gt; は 4 桁の 16 進数) の場合は、その Unicode グリフを縦書き用に回転した物であると見なされます。
   </UL>
   <P>
 <!--
@@ -127,8 +127,8 @@
   to "`" would be centered above the "A". <BR>
   If <A HREF="editmenu.html#From">Copy From</A> is set to All Fonts then any
   bitmaps will have a similar process done (even in the outline glyph view). -->
-  ����ɂ��A�t�H���g�r���[��őI�������e�O���t (�܂��́A�A�E�g���C���r���[�̏ꍇ�͌��݂̃O���t) �ɑ΂��āA���̃O���t���K�v�Ƃ��邷�ׂĂ̊��O���t�ƃA�N�Z���g�����ɍ쐬����Ă���ꍇ�Ɍ���A���̃R�}���h�͑O�ʂɊ܂܂�镨�����ׂč폜���A���̑���ɁA���O���t�ւ̎Q�ƂƃA�N�Z���g���O���t�ւ̕ʂ̎Q�Ƃ�O�ʂɔz�u���܂��B�Ⴆ�Ό��݂̃O���t���g&Agrave;�h�ł���ꍇ�A�gA�h�ւ̎Q�Ƃ����̃O���t�ɒǉ�����A�g`�h�ւ̎Q�Ƃ��gA�h�̏�ɒ��������Ŕz�u����܂��B<BR>
-  ���� <A HREF="editmenu.html#From"><CODE>�R�s�[���̎w��(<U>F</U>)</A></CODE> �� <CODE>���ׂẴt�H���g(<U>A</U>)</CODE> �ɐݒ肳��Ă���ꍇ�A�e�r�b�g�}�b�v�ɂ����l�̏������{����܂� (�A�E�g���C���O���t�r���[�Ŏ��s�����ꍇ�ł�����͓����ł�)�B
+  それにより、フォントビュー上で選択した各グリフ (または、アウトラインビューの場合は現在のグリフ) に対して、そのグリフが必要とするすべての基底グリフとアクセントが既に作成されている場合に限り、このコマンドは前面に含まれる物をすべて削除し、その代わりに、基底グリフへの参照とアクセントつきグリフへの別の参照を前面に配置します。例えば現在のグリフが“&Agrave;”である場合、“A”への参照がそのグリフに追加され、“`”への参照が“A”の上に中央揃えで配置されます。<BR>
+  もし <A HREF="editmenu.html#From"><CODE>コピー元の指定(<U>F</U>)</A></CODE> が <CODE>すべてのフォント(<U>A</U>)</CODE> に設定されている場合、各ビットマップにも同様の処理が施されます (アウトライングリフビューで実行した場合でもこれは同じです)。
   <P>
 <!--
   Choosing accents can be a slightly tricky process. Unicode says that accented
@@ -140,7 +140,7 @@
   Even worse, Unicode unifies the greek and latin accents, so for greek letters
   FontForge will look for accents around 0x1fbd (FontForge will also require
   the presence of the double accents like 0x1fdd). -->
-  �A�N�Z���g�̑I���ł́A�킸���ɍ��ݓ������������s���邱�Ƃ�����܂��BUnicode �́A�A�N�Z���g�������� 0x300�`0x340 �͈̔͂Ɋ܂܂��A�N�Z���g����g�ݗ��ĂȂ���΂Ȃ�Ȃ��ƒ�`���Ă��܂����APostScript �ł͂���͂��܂肤�܂����삵�܂���BType1 �t�H���g�́A�A�N�Z���g���O���t�� Adobe Standard Encoding �ɏ]���Ĕz�u����Ă���Ƃ� (�܂�A0x2d0 �t�߂̃A�N�Z���g�܂��� ASCII �̃O���t���g�p���Ă���Ƃ�) �̂ق������܂����삵�܂��BFontForge �͂܂� 0x2d0 �߂��̃A�N�Z���g��T�����Ƃ��A���� ASCII �̒���T���A�Ō�� 0x300�`0x340 �͈̔͂�T���܂��B�X�Ɉ������ƂɁAUnicode �̓M���V�������ƃ��e�������̃A�N�Z���g�𓝍����Ă���̂ŁA�M���V�������ɑ΂��Ă� FontForge �� 0x1fbd �t�߂̃A�N�Z���g��T���܂� (FontForge �́A���̑��ɂ� 0x1fdd �̂悤�ȓ�d�A�N�Z���g�̑��݂�v�����邱�Ƃ�����܂�)�B
+  アクセントの選択では、わずかに込み入った処理が行われることがあります。Unicode は、アクセントつき文字は 0x300〜0x340 の範囲に含まれるアクセントから組み立てなければならないと定義していますが、PostScript ではこれはあまりうまく動作しません。Type1 フォントは、アクセントつきグリフが Adobe Standard Encoding に従って配置されているとき (つまり、0x2d0 付近のアクセントまたは ASCII のグリフを使用しているとき) のほうがうまく動作します。FontForge はまず 0x2d0 近くのアクセントを探そうとし、次に ASCII の中を探し、最後に 0x300〜0x340 の範囲を探します。更に悪いことに、Unicode はギリシャ文字とラテン文字のアクセントを統合しているので、ギリシャ文字に対しては FontForge は 0x1fbd 付近のアクセントを探します (FontForge は、その他にも 0x1fdd のような二重アクセントの存在を要求することがあります)。
   <P>
 <!--
   Some of Adobe's fonts have accents designed for use over upper case letters
@@ -148,27 +148,27 @@
   use over cyrillic letters. So in such a font, if you attempt to build "Agrave"
   FontForge will build it out of "A" and "Grave" (or "grave.cap", not the standard
   "grave"). -->
-  Adobe �̃t�H���g�̂������͑啶���p�Ƀf�U�C�����ꂽ�A�N�Z���g (�ʏ�̃A�N�Z���g�͏������p�Ƀf�U�C������Ă��܂�) ����сA�L���������p�̃A�N�Z���g���܂�ł��܂��B���̂悤�ȃt�H���g�ɂ����ẮA�gAgrave�h��g�ݗ��Ă悤�Ƃ������AFontForge �́gA�h�� (�W���́ggrave�h�ł͂Ȃ�)�gGrave�h(�܂��́ggrave.cap�h) ���炻���g�ݗ��Ă܂��B
+  Adobe のフォントのいくつかは大文字用にデザインされたアクセント (通常のアクセントは小文字用にデザインされています) および、キリル文字用のアクセントを含んでいます。そのようなフォントにおいては、“Agrave”を組み立てようとした時、FontForge は“A”と (標準の“grave”ではなく)“Grave”(または“grave.cap”) からそれを組み立てます。
   <P>
 <!--
   Not all accents should be centered above the base glyph, a cedilla is (usually)
   centered underneath the base, while other accents need to be placed to the
   left or right, or even overstruck. FontForge should know about proper placement
   of most accents (or at least a rough approximation thereto). -->
-  ���ׂẴA�N�Z���g����ꕶ���ƒ��������Ŕz�u�����킯�ł͂���܂���B�Z�f�B���� (�ʏ�) ��ꕶ���̉��ɒ��������Œu����܂����A���̃A�N�Z���g�͉E�����ɒu���K�v����������A�d�˂Ĉ󎚂���ꍇ���炠��܂��BFontForge �͂قƂ�ǂ̃A�N�Z���g�̐������z�u (�܂��́A���Ȃ��Ƃ����̑e���ߎ�) ��m���Ă���͂��ł��B
+  すべてのアクセントが基底文字と中央揃えで配置されるわけではありません。セディラは (通常) 基底文字の下に中央揃えで置かれますが、他のアクセントは右か左に置く必要があったり、重ねて印字する場合すらあります。FontForge はほとんどのアクセントの正しい配置 (または、少なくともその粗い近似) を知っているはずです。
   <P>
 <!--
   Some Unicode glyphs contain more than one accent. Additional accents will
   be treated similarly. This command can also be used to generate more general
   composite glyphs . -->
-  Unicode �̃O���t�̂������� 2 �ȏ�̃A�N�Z���g���܂�ł��܂��B�ǉ��̃A�N�Z���g�����l�Ɉ�����ł��傤�B���̃R�}���h�́A����ʓI�ȕ����O���t�𐶐�����̂Ɏg�����Ƃ��ł��܂��B
+  Unicode のグリフのいくつかは 2 つ以上のアクセントを含んでいます。追加のアクセントも同様に扱われるでしょう。このコマンドは、より一般的な複合グリフを生成するのに使うこともできます。
   <P>
 <!--
   Some accents (for example cedilla) are treated unexpectedly on certain letters
   (different ways in different languages), so be careful of g-cedilla. &Aring;
   often merges the ring into the top of the A, but here it will float above
   it. <FONT COLOR="Red"><STRONG>Be alert</STRONG></FONT>. -->
-  �����̃A�N�Z���g (�Ⴆ�΃Z�f�B���̂悤��) �́A�������̕����ɂ����Ă� (����ɂ���Ĉ������قȂ���) �v�������Ȃ��������󂯂܂��̂ŁA�Z�f�B���� g �ɂ͂����ӂ��������B&Aring; ���AA �̍ŏ㕔�ƃ����O���Z������f�U�C���͂悭�����܂����A�����ł͏㕔�ɕ����񂾌`�ƂȂ�܂��B<FONT COLOR="Red"><STRONG>�����ӂ�������</STRONG></FONT>�B
+  ある種のアクセント (例えばセディラのような) は、いくつかの文字においては (言語によって扱いが異なった) 思いがけない扱いを受けますので、セディラつき g にはご注意ください。&Aring; も、A の最上部とリングが融合するデザインはよく見られますが、ここでは上部に浮かんだ形となります。<FONT COLOR="Red"><STRONG>ご注意ください</STRONG></FONT>。
   <P>
 <!--
   Placing an accent above a glyph is surprisingly tricky. Centered accents
@@ -181,17 +181,17 @@
   many oddities of accent placement, but it will never know all of them (some
   letters have multiple forms depending on the font, or perhaps on the humidity
   and phase of the moon). -->
-  �A�N�Z���g���O���t�̏㕔�ɔz�u���鏈���͋����قǍ��ݓ����Ă��܂��B���������̃A�N�Z���g (�O���[�u�A�N�Z���g�A�A�L���[�g�A�N�Z���g�Ȃ�) �̓O���t�̂��傤�ǐ^���ɔz�u���Ă͂Ȃ�Ȃ�����ł��B�Ⴆ�΁A�A�L���[�g�A�N�Z���g���ga�h�̏�ɒu�����ɂ́A���ۂ̃A�N�Z���g�̈ʒu�́ga�h�̍ł��������� (�O���t�̂قڒ����ł����A���m�Ȓ��S�ł͂���܂���) �̏�ɔz�u���Ȃ���΂Ȃ�܂���B�܂��A�gk�h�̏�ɃA�L���[�g�A�N�Z���g��z�u����ꍇ (�߂����Ɍ��Ȃ��g�����ł����A���݂��܂�) �A�A�N�Z���g�́gk�h�̃X�e���ɒ��������Ŕz�u����܂��B�M���V����̃A�N�Z���g�͂�����͂邩�ɕ��G����ł��BFontForge �͓��قȃA�N�Z���g�z�u����������m���Ă��܂����A���ׂĂ�m�邱�Ƃ͉i�v�ɖ����ł��傤 (�����̌`�����݂��镶��������������A����̓t�H���g�ɂ��A�܂��͂����炭���x�⌎���ɂ��قȂ�܂�)�B
+  アクセントをグリフの上部に配置する処理は驚くほど込み入っています。中央揃えのアクセント (グレーブアクセント、アキュートアクセントなど) はグリフのちょうど真中に配置してはならないからです。例えば、アキュートアクセントを“a”の上に置く時には、実際のアクセントの位置は“a”の最も高い部分 (グリフのほぼ中央ですが、正確な中心ではありません) の上に配置しなければなりません。また、“k”の上にアキュートアクセントを配置する場合 (めったに見ない組合せですが、実在します) 、アクセントは“k”のステムに中央揃えで配置されます。ギリシャ語のアクセントはそれよりはるかに複雑怪奇です。FontForge は特異なアクセント配置をたくさん知っていますが、すべてを知ることは永久に無いでしょう (複数の形が存在する文字がいくつかあり、それはフォントにより、またはおそらく湿度や月相により異なります)。
   <TABLE BORDER CELLPADDING="2" ALIGN=Center>
     <TR>
       <TD><P ALIGN=Center>
 	<IMG SRC="../acenter.png" WIDTH="208" HEIGHT="281"><BR>
 <!--    Center point of the glyph</TD>-->
-	�O���t�̒��S�_</TD>
+	グリフの中心点</TD>
       <TD><P ALIGN=Center>
 	<IMG SRC="../ahighest.png" WIDTH="208" HEIGHT="281"><BR>
 <!--    Highest point of the glyph</TD> -->
-	�O���t�̍ł������_</TD>
+	グリフの最も高い点</TD>
     </TR>
   </TABLE>
   <P>
@@ -201,17 +201,17 @@
   glyph's "center". But that doesn't always work either. The grave and acute
   accents are usually (but not always) centered only on the bottom part of
   the glyph. -->
-  ����ɁA�A�N�Z���g�̒��������̕��@�̓A�N�Z���g���̂��̂Ɉˑ����܂��BFontForge �͒ʏ�A�A�N�Z���g�̒������O���t�́u�����v�ɑ����悤�Ƃ��܂����A����͏�ɂ��܂������킯�ł͂���܂���B�O���[�u�A�N�Z���g����уA�L���[�g�A�N�Z���g�͒ʏ� (��ɂł͂���܂���) ���̃O���t�̍ŉ����݂̂����������̑ΏۂƂȂ�܂��B
+  さらに、アクセントの中央揃えの方法はアクセントそのものに依存します。FontForge は通常、アクセントの中央をグリフの「中央」に揃えようとしますが、これは常にうまく動くわけではありません。グレーブアクセントおよびアキュートアクセントは通常 (常にではありませんが) そのグリフの最下部のみが中央揃えの対象となります。
   <TABLE BORDER CELLPADDING="2" ALIGN=Center>
     <TR>
       <TD><P ALIGN=Center>
 	<IMG SRC="../aacutemid.png" WIDTH="131" HEIGHT="228"><BR>
 <!--    Midpoint of accent</TD>-->
-	�A�N�Z���g�̒��_</TD>
+	アクセントの中点</TD>
       <TD><P ALIGN=Center>
 	<IMG SRC="../aacutebase.png" WIDTH="132" HEIGHT="225"><BR>
 <!--    Centered on base of accent</TD>-->
-	�A�N�Z���g�̍ŉ����ւ̒�������</TD>
+	アクセントの最下部への中央揃え</TD>
     </TR>
   </TABLE>
   <P>
@@ -219,7 +219,7 @@
   FontForge gives you a minuscule amount of control over where it puts accents.
   There are two preference items you can set
   (<A HREF="filemenu.html#prefs">File-&gt;Preferences</A>) -->
-  FontForge �́A�A�N�Z���g���ǂ��ɒu���������킸���Ȓ�����i��^���Ă��܂��B(<A HREF="filemenu.html#prefs"><CODE>�t�@�C��(<U>F</U>)</CODE>��<CODE>���ݒ�(<U>E</U>)</CODE></A> ��) �ݒ�\�Ȋ��ݒ荀�ڂ� 2 ���݂��܂��B
+  FontForge は、アクセントをどこに置くかごくわずかな調整手段を与えています。(<A HREF="filemenu.html#prefs"><CODE>ファイル(<U>F</U>)</CODE>→<CODE>環境設定(<U>E</U>)</CODE></A> で) 設定可能な環境設定項目が 2 つ存在します。
   <UL>
     <LI>
 <!--  AccentOffsetPercent - - This allows you to control the amount of space between
@@ -231,11 +231,11 @@
       but the letter "o" is usually slightly higher than the letter "u". So all
       the lower case accents will be placed at the appropriate height for "o",
       even those over "u". A similar trick is done for upper case letters). -->
-      AccentOffsetPercent �\ ���̍��ڂŁA�����̍ŏ㕔�ƃA�N�Z���g�̍ŉ���  (�܂��́A�����̉��ɂ��A�N�Z���g�ɂ����ẮA�����̍ŉ����ƃA�N�Z���g�̍ŏ㕔) �̊Ԃɒu���󂫂̗ʂ𒲐߂��邱�Ƃ��ł��܂��B����� em �T�C�Y�ɑ΂���S�����ŕ\����A�f�t�H���g�� 6% �ł��B(�������̏ꍇ�ł́A��������킸���ɑ����󂫂��u�����ꍇ������܂��B�������̏�ɂ��A�N�Z���g�͂��ׂē��������ɂ���K�v������܂����A�����go�h�͕����gu�h�����킸���ɍ����ʒu�ɒu�����̂����ʂł��B���������킯�ŁA�������̃A�N�Z���g�͂��ׂāgo�h�ɍ��킹�������ɔz�u����A�gu�h�ɂ��A�N�Z���g�ł����̍����͕ς��܂���B�啶���̕����ɑ΂��Ă��A���l�̃g���b�N���{����܂��B
+      AccentOffsetPercent — この項目で、文字の最上部とアクセントの最下部  (または、文字の下につくアクセントにおいては、文字の最下部とアクセントの最上部) の間に置く空きの量を調節することができます。これは em サイズに対する百分率で表され、デフォルトは 6% です。(いくつかの場合では、それよりもわずかに多い空きが置かれる場合があります。小文字の上につくアクセントはすべて同じ高さにある必要がありますが、文字“o”は文字“u”よりもわずかに高い位置に置かれるのが普通です。そういうわけで、小文字のアクセントはすべて“o”に合わせた高さに配置され、“u”につくアクセントでもその高さは変わりません。大文字の文字に対しても、同様のトリックが施されます。
     <LI>
 <!--  AcuteCenterBottom - - This controls whether acute and grave (and double acute
       and grave) accents are centered on the entire glyph, or just on the bottom. -->
-      ���̍��ڂ́A�A�L���[�g�A�N�Z���g����уO���[�u�A�N�Z���g (�܂��A�_�u���A�L���[�g�ƃ_�u���O���[�u��) ���O���t�S�̂���Ƃ��Ē����������邩�A�P�ɉ��[�𒆉��Ƃ��邩�𐧌䂵�܂��B
+      この項目は、アキュートアクセントおよびグレーブアクセント (また、ダブルアキュートとダブルグレーブも) がグリフ全体を基準として中央揃えするか、単に下端を中央とするかを制御します。
   </UL>
   <P>
 <!--
@@ -244,23 +244,23 @@
   ignorant or my taste doesn't match yours or the program has a bug. I strongly
   recommend that you examine all your accented glyphs after building them and
   be prepared to adjust things. -->
-  <FONT COLOR="Red"><STRONG><SMALL>����:</SMALL></STRONG></FONT> ������ FontForge �͉����ԈႢ��Ƃ��ɈႢ����܂���B�����m��Ȃ��̈�͂��܂�ɂ������񂠂�܂����A���̎�����Ȃ��̂��C�ɏ����Ȃ��ꍇ������܂����A�v���O�����Ƀo�O������\��������܂��B�A�N�Z���g���̕������쐬�����炻�������ׂĊm���߁A�܂����_����������C������S�\���ł���悤�ɋ����������܂��B
+  <FONT COLOR="Red"><STRONG><SMALL>注意:</SMALL></STRONG></FONT> ここで FontForge は何か間違いを犯すに違いありません。私が知らない領域はあまりにたくさんありますし、私の趣味があなたのお気に召さない場合もありますし、プログラムにバグがある可能性もあります。アクセントつきの文字を作成したらそれらをすべて確かめ、まずい点があったら修正する心構えでいるように強く推奨します。
   <P>
 <!--
   The algorithms take some account of the italicangle, but when working on
   an italic (or oblique) font FontForge is even more likely to do something
   you don't like. -->
-  �A���S���Y���� italicangle �̒l�ɂ�����x�e�����󂯂܂����A�C�^���b�N (�܂��̓I�u���[�N) �̃t�H���g�ō�Ƃ����Ă��鎞�́AFontForge �͂��Ȃ��̖]�ނƂ���ɓ��삵�Ȃ��\�����͂邩�ɍ����Ȃ�܂��B
+  アルゴリズムは italicangle の値にある程度影響を受けますが、イタリック (またはオブリーク) のフォントで作業をしている時は、FontForge はあなたの望むとおりに動作しない可能性がはるかに高くなります。
   <P>
 <!--
   If all else fails you can build your own accented glyphs with
   <A HREF="editmenu.html#Reference">Edit-&gt;Copy Reference</A> and
   <A HREF="editmenu.html#Paste">Edit-&gt;Paste</A> -->
-  ���̑��A�������܂������Ȃ��_������ꍇ�A������ <A HREF="editmenu.html#Reference"><CODE>�ҏW(<U>E</U>)</CODE>��<CODE>�Q�Ƃ��R�s�[(<U>O</U>)</CODE></A> �� <A HREF="editmenu.html#Paste"><CODE>�ҏW(<U>E</U>)</CODE>��<CODE>�\��t��(<U>P</U>)</CODE></A> ���g���ăA�N�Z���g���O���t��g�ݗ��Ă邱�Ƃ��ł��܂��B
+  その他、何かうまくいかない点がある場合、自分で <A HREF="editmenu.html#Reference"><CODE>編集(<U>E</U>)</CODE>→<CODE>参照をコピー(<U>O</U>)</CODE></A> と <A HREF="editmenu.html#Paste"><CODE>編集(<U>E</U>)</CODE>→<CODE>貼り付け(<U>P</U>)</CODE></A> を使ってアクセントつきグリフを組み立てることができます。
   <P>
   <P ALIGN=Center>
-  �\ <A HREF="elementmenu.html"><CODE>�G�������g(<U>L</U>)</CODE> ���j���[</A> �\
-  <A HREF="overview.html">�ڎ�</A> �\ <A HREF="editexample.html">�`���[�g���A��</A>
-  �\
+  — <A HREF="elementmenu.html"><CODE>エレメント(<U>L</U>)</CODE> メニュー</A> —
+  <A HREF="overview.html">目次</A> — <A HREF="editexample.html">チュートリアル</A>
+  —
 </DIV>
 </BODY></HTML>

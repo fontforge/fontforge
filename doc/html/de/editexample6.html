@@ -3,6 +3,7 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
   <!-- AP: Last modified: 11-Dec-2005 -->
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <TITLE>Mehr fortgeschrittene Funktionen, Ligaturen, Markierungspositionierung, Zeichenvarianten</TITLE>
   <LINK REL="icon" href="../fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="../FontForge.css">
@@ -20,7 +21,7 @@
     </li><li>
     <a href="editexample2.html#Navigating">Navigation zu weiteren Bildzeichen</a>
     </li><li>
-    <a href="editexample2.html#Creating-o">Auf zum nächsten Bildzeichen (konsistente Richtungen)</a>
+    <a href="editexample2.html#Creating-o">Auf zum nÃ¤chsten Bildzeichen (konsistente Richtungen)</a>
     </li><li>
     <a href="editexample3.html#consistent-stems">Konsistente Serifen und Stammbreiten</a>
     </li><li>
@@ -42,7 +43,7 @@
     </li><li>
       <a href="editexample6-5.html#Conditional">Bedingte Eigenschaften</a>
     </li><li>
-      <a href="editexample7.html#checking">Überprüfen des Schriftsatzes</a>
+      <a href="editexample7.html#checking">ÃœberprÃ¼fen des Schriftsatzes</a>
     </li><li>
       <a href="editexample7.html#Bitmaps">Bitmaps</a>
     </li><li>
@@ -58,28 +59,28 @@
   <A NAME="Variants">Bildzeichenvarianten</A>
   </H2>
   <P>
-  In vielen Zeichensätzen existieren mehrere Varianten eines Zeichens. Das offensichtlichste
-  Beispiel ist bei lateinischen Schriften, daß jeder Buchstabe eine
-  kleingeschriebene und eine großgeschriebene Variante besitzt.
+  In vielen ZeichensÃ¤tzen existieren mehrere Varianten eines Zeichens. Das offensichtlichste
+  Beispiel ist bei lateinischen Schriften, daÃŸ jeder Buchstabe eine
+  kleingeschriebene und eine groÃŸgeschriebene Variante besitzt.
   Ein etwas esoterisches Beispiel ist die in der Renaissance verwendete
-  lange s-Variante am Anfang und in der Mitte eines Wortes, während das
+  lange s-Variante am Anfang und in der Mitte eines Wortes, wÃ¤hrend das
   kurze s nur am Ende eines Wortes verwendet wurde.
   <P>
     Die meisten arabischen Zeichen haben vier Varianten (Anfang, im Wort,
     am Ende und alleinestehend).
   <P>
     Ziffern haben oft mehrere Varianten: Tabellarische Ziffern (in denen
-    alle Ziffern die selbe Schrittweite besitzen, so daß Zahlentabellen
-    nicht unregelmäßig aussehen), proportionale Ziffern (jede Ziffer
+    alle Ziffern die selbe Schrittweite besitzen, so daÃŸ Zahlentabellen
+    nicht unregelmÃ¤ÃŸig aussehen), proportionale Ziffern (jede Ziffer
     besitzt eine ihrer Form entsprechende Breite) und altmodische oder
     kleingeschriebene Ziffern
   (<IMG SRC="../lcdigits.png" WIDTH="76" HEIGHT="18" ALIGN="Middle">).
   <P>
     Einige der genannten Varianten sind in den Codierungen enthalten
-    (wie die Unterscheidung zwischen Klein- und Großschreibung),
-    in anderen Fällen sollte dem Schriftsatz Zusatzinformation hinzugefügt
-    werden, so daß die Textverarbeitung diese Varianten erkennt (Arabisch
-    liegt zwischen diesen beiden Fällen, die verschiedenen Formen sind
+    (wie die Unterscheidung zwischen Klein- und GroÃŸschreibung),
+    in anderen FÃ¤llen sollte dem Schriftsatz Zusatzinformation hinzugefÃ¼gt
+    werden, so daÃŸ die Textverarbeitung diese Varianten erkennt (Arabisch
+    liegt zwischen diesen beiden FÃ¤llen, die verschiedenen Formen sind
     in der Codierung enthalten, aber es muss auch Zusatzinformation
     bereitgestellt werden).
   <P>
@@ -87,50 +88,50 @@
     enthalte die tabellarische Variante der eins, das Zeichen "eins.prop"
     enthalte die proportionale Variante und "eins.altmodisch" die
     kleingeschriebene Variante. "Eins" wird aus der Schriftsatzansicht
-    ausgewählt, dann, <CODE>Bearbeiten-&gt;Zeicheninformation</CODE>,
-    und im <CODE>Subs</CODE>-Tab der <CODE>[Neu]</CODE> Knopf gedrückt,
+    ausgewÃ¤hlt, dann, <CODE>Bearbeiten-&gt;Zeicheninformation</CODE>,
+    und im <CODE>Subs</CODE>-Tab der <CODE>[Neu]</CODE> Knopf gedrÃ¼ckt,
     woraufhin ein neuer Dialog erscheint.
     Im Komponenten-Feld wird "eins.prop" eingegeben,
-    "Proportionale Zahlen" aus der Auswahlliste eingestellt (verändert sich nach "pnum"),
-    und der gewünschte Schriftsatz gewählt (die Schrift 'latn' und Sprache
-    'dflt' decken viele Fälle ab). Anschliessend wird mit <CODE>[Ok]</CODE>
-    bestätigt.
+    "Proportionale Zahlen" aus der Auswahlliste eingestellt (verÃ¤ndert sich nach "pnum"),
+    und der gewÃ¼nschte Schriftsatz gewÃ¤hlt (die Schrift 'latn' und Sprache
+    'dflt' decken viele FÃ¤lle ab). Anschliessend wird mit <CODE>[Ok]</CODE>
+    bestÃ¤tigt.
   <P>
     Einige Variantenformen sind in FontForge eingebaut und wenn
     <CODE>Element-&gt;Typo. Eigenschaften-&gt;Default ATT-&gt;(Variantenname)</CODE>
     verwendet wird, kann FontForge diesen Prozess u.U. automatisieren.
   <P>
   (Anmerkung: Type0, Type1 und Type3 PostScript-Schriften haben keine Notation,
-  um dies zu behandeln. Um diese Varianten zu erzeugen, muß entweder eine OpenType or
+  um dies zu behandeln. Um diese Varianten zu erzeugen, muÃŸ entweder eine OpenType or
   TrueType-Schrift verwendet werden).
   <H3>
     <A NAME="Conditional">Bedingte</A> Varianten
   </H3>
   <P>
-  FontForge unterstützt die kontextbezogenen Ersetzungstabellen und die verketteten
+  FontForge unterstÃ¼tzt die kontextbezogenen Ersetzungstabellen und die verketteten
   kontextbezogenen Ersetzungstabellen von OpenType und in geringerem Umfang
-  die kontextbezogenen Zeichenersetzungstabellen von Apple. Das bedeutet, daß
-    bedingte Varianten im Schriftsatz eingesetzt werden können.
-    <A HREF="editexample6-5.html#Conditional">Auf der nächsten Seite</A>
+  die kontextbezogenen Zeichenersetzungstabellen von Apple. Das bedeutet, daÃŸ
+    bedingte Varianten im Schriftsatz eingesetzt werden kÃ¶nnen.
+    <A HREF="editexample6-5.html#Conditional">Auf der nÃ¤chsten Seite</A>
     wird hierauf im Detail eingegangen.
   <H2>
   <A NAME="Marks">Ankermarkierungen</A>
   </H2>
   <P>
-    Einige Schreibschriften (Arabisch, Hebräisch) erfordern Vokalmarkierungen um
-    die Haupttextzeichen herum. Für andere (einige Varianten von Latein und
-    Griechisch) gibt es so viele mögliche Akzentkombinationen, daß
-    vorgefertigte Zeichen für alle Kombinationen nicht handbar sind.
+    Einige Schreibschriften (Arabisch, HebrÃ¤isch) erfordern Vokalmarkierungen um
+    die Haupttextzeichen herum. FÃ¼r andere (einige Varianten von Latein und
+    Griechisch) gibt es so viele mÃ¶gliche Akzentkombinationen, daÃŸ
+    vorgefertigte Zeichen fÃ¼r alle Kombinationen nicht handbar sind.
   <P>
-  In OpenType (einschliesslich Microsofts TrueType) ist es möglich,
+  In OpenType (einschliesslich Microsofts TrueType) ist es mÃ¶glich,
   an allen Basiszeichen einzustellen, an welchen Stellen Markierungen angebracht werden
   sollten und an allen Markierungen, wo Basiszeichen angebracht werden sollten.
-  Folglich könnte ein Anker zentriert über ein großes A gesetzt werden, der
-  angibt, daß alle Akzente (aigu, grave, Umlaut, circonflex, tilde,
+  Folglich kÃ¶nnte ein Anker zentriert Ã¼ber ein groÃŸes A gesetzt werden, der
+  angibt, daÃŸ alle Akzente (aigu, grave, Umlaut, circonflex, tilde,
   macron, ring, caron, ....) dort ansetzen sollten. Unterhalb aller
-  Akzente könnte ein weiterer Anker gesetzt werden, so daß wenn diese zwei
+  Akzente kÃ¶nnte ein weiterer Anker gesetzt werden, so daÃŸ wenn diese zwei
   Zeichen im Text adjazent sind, die Textverarbeitung den Akzent
-  automatisch über das "A" setzt.
+  automatisch Ã¼ber das "A" setzt.
   <TABLE>
     <TR>
       <TD><IMG SRC="../a_with_anchor.png" WIDTH=104 HEIGHT=208></TD>
@@ -141,30 +142,30 @@
     </TR>
   </TABLE>
   <P>
-  Nicht alle Akzente sitzen zentriert über dem Buchstaben
-  (Punkt und ogonek liegen unterhalb) des Zeichens, so daß u.U. mehrere
-  Anker für verschiedene Markierungsstile benötigt werden.
+  Nicht alle Akzente sitzen zentriert Ã¼ber dem Buchstaben
+  (Punkt und ogonek liegen unterhalb) des Zeichens, so daÃŸ u.U. mehrere
+  Anker fÃ¼r verschiedene Markierungsstile benÃ¶tigt werden.
   <P>
-    Schließlich können einige Buchstaben auch mehrere Akzente besitzen,
+    SchlieÃŸlich kÃ¶nnen einige Buchstaben auch mehrere Akzente besitzen,
     z.B. ist U+1EA4 ein A mit einem Circonflex und einem Aigu. Normalerweise
     setzen Circonflex und Aigu an der selben Stelle an, was in diesem
-    Fall sowohl wenig attraktiv als auch verwirrend wäre. Stattdessen kann eine
+    Fall sowohl wenig attraktiv als auch verwirrend wÃ¤re. Stattdessen kann eine
     andere Art Anker an dem Circonflex erzeugt werden
     (ein Markierung-zu-Markierung-Anker), dem Accent Aigu wird dann
-    mitgeteilt, daß er an diesem Anker ansetzen soll.
+    mitgeteilt, daÃŸ er an diesem Anker ansetzen soll.
   <P>
-    Bevor in einem Zeichen Anker erzeugt werden können, muß FontForge
-    mitgeteilt werden, daß die Schriftart Anker verwendet.
-    Hierzu wird für jede Art von Zeichenanhang jeweils eine
+    Bevor in einem Zeichen Anker erzeugt werden kÃ¶nnen, muÃŸ FontForge
+    mitgeteilt werden, daÃŸ die Schriftart Anker verwendet.
+    Hierzu wird fÃ¼r jede Art von Zeichenanhang jeweils eine
     <A HREF="../overview.html#Anchors">Ankerklasse</A> definiert,
     im oben beschriebenen Beispiel oben also zwei. Der Dialog
-    für den Befehl
+    fÃ¼r den Befehl
     <CODE><A HREF="../fontinfo.html#Anchors">Element-&gt;Schriftinformation-&gt;Ankerklassen</A></CODE>
     erlaubt die Eingabe dieser Information.
   <P>
-  Dann wird in jedem Zeichen, daß Anhänge besitzen soll, zunächst die
+  Dann wird in jedem Zeichen, daÃŸ AnhÃ¤nge besitzen soll, zunÃ¤chst die
   Stelle angeklickt, an der der Anker erstellt werden soll und dann der
-  Befehl <CODE><A HREF="../pointmenu.html#AddAnchor">Punkt-&gt;Anker hinzufügen</A></CODE>
+  Befehl <CODE><A HREF="../pointmenu.html#AddAnchor">Punkt-&gt;Anker hinzufÃ¼gen</A></CODE>
   aufgerufen.
   <P>
     Das Aussehen eines Zeichens im Zusammenspiel mit anderen kann mit
@@ -172,13 +173,13 @@
     betrachtet und korrigiert werden.
   <P>
   <FONT COLOR="Red"><STRONG>Eine Warnung zu Anhangsmarkierungen:</STRONG></FONT>
-    Sie werden nicht von jeder Software unterstützt, schlimmer noch, einige
-    Programme könnten diese für gewisse Schriften unterstützen, 
-    für andere dagegen nicht.
+    Sie werden nicht von jeder Software unterstÃ¼tzt, schlimmer noch, einige
+    Programme kÃ¶nnten diese fÃ¼r gewisse Schriften unterstÃ¼tzen, 
+    fÃ¼r andere dagegen nicht.
   <P>
   <P>
   <P ALIGN=Center>
   -- <A HREF="editexample5.html">Vorherige Seite</A> -- <A HREF="../overview.html">Inhalt</A>
-  -- <A HREF="editexample6-5.html">Nächste Seite</A> --
+  -- <A HREF="editexample6-5.html">NÃ¤chste Seite</A> --
 </DIV>
 </BODY></HTML>

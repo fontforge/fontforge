@@ -3,9 +3,9 @@
 <!--   Created with AOLpress/2.0 -->
 <!--   AP: Created on: 27-Jan-2003 -->
 <!--   AP: Last modified: 11-Dec-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!-- <TITLE>Using FontForge with TeX</TITLE> -->
-     <TITLE>FontForge �� TeX �ƂƂ��Ɏg�p������@</TITLE>
+     <TITLE>FontForge を TeX とともに使用する方法</TITLE>
   <LINK REL="icon" href="../fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
@@ -13,219 +13,219 @@
 <DIV id="in">
   <H1 ALIGN=Center>
 <!--   <A NAME="TeX">FontForge and TeX</A> -->
-       <A NAME="TeX">FontForge �� TeX</A>
+       <A NAME="TeX">FontForge と TeX</A>
   </H1>
   <P>
 <!--
   FontForge has a number of features built in to it to deal with TeX. -->
-  FontForge �ɂ́ATeX ����舵�����߂̑����̋@�\���g�ݍ��܂�Ă��܂��B
+  FontForge には、TeX を取り扱うための多数の機能が組み込まれています。
   <P>
 <!--
   It can read "pk" and "gf" bitmap files and
   <A HREF="elementmenu.html#AutoTrace">autotrace</A> them to generate outline
   fonts. It can even invoke metafont directly on a ".mf" file, generate a "gf"
   bitmap from that, autotrace it and generate an outline font. -->
-  �gpk�h�`���Ɓggf�h�`���̃r�b�g�}�b�v��ǂݍ��ނ��Ƃ��ł��A������ <A HREF="elementmenu.html#AutoTrace">autotrace</A> ��K�p���ăA�E�g���C���t�H���g�𐶐����邱�Ƃ��ł��܂��B
-  �g.mf�h�t�@�C���� metafont �𒼐ڌĂяo���āggf�h�r�b�g�}�b�v�𐶐����Aautotrace �ɂ����ăA�E�g���C���t�H���g���o�͂��邱�Ƃ����\�ł��B
+  “pk”形式と“gf”形式のビットマップを読み込むことができ、それらに <A HREF="elementmenu.html#AutoTrace">autotrace</A> を適用してアウトラインフォントを生成することができます。
+  “.mf”ファイルに metafont を直接呼び出して“gf”ビットマップを生成し、autotrace にかけてアウトラインフォントを出力することさえ可能です。
   <P>
 <!--
   It can read ligature, kerning information from a ".tfm" file. It can create
   a tfm file. -->
-  �����ƃJ�[�j���O�̏����g.tfm�h�t�@�C������ǂݍ��ނ��Ƃ��ł��܂��B
-  TFM �t�@�C�����쐬���邱�Ƃ��ł��܂��B
+  合字とカーニングの情報を“.tfm”ファイルから読み込むことができます。
+  TFM ファイルを作成することもできます。
   <P>
 <!--
-  The <A HREF="Encodings.ps.gz">encodings</A> file has a number of standard
+  The <A HREF="../Encodings.ps.gz">encodings</A> file has a number of standard
   TeX encodings built in to it. -->
-  <A HREF="Encodings.ps.gz">�G���R�[�f�B���O</A> �t�@�C���ɂ́A�����̕W�� TeX �G���R�[�f�B���O���g�ݍ��܂�Ă��܂��B
+  <A HREF="../Encodings.ps.gz">エンコーディング</A> ファイルには、多数の標準 TeX エンコーディングが組み込まれています。
   <P>
 <!--
   For large CJK truetype fonts it can read a sub-font definition file as defined
   in the ttf2tfm man page and <A HREF="generate.html">generate</A> a series
   of postscript type-1 fonts based on those two. -->
-  ��K�͂� CJK �� TrueType �t�H���g�ɑ΂��ẮAttf2tfm �̃}�j���A���y�[�W�Ŏ�c����Ă���Ƃ���̃T�u�t�H���g��`�t�@�C����ǂݍ��ނ��Ƃ��ł��A���� 2 �̃t�@�C�������Ɉꑵ���� PostScript Type 1 �t�H���g�� <A HREF="generate.html">�o��</A> ���邱�Ƃ��ł��܂��B
+  大規模な CJK の TrueType フォントに対しては、ttf2tfm のマニュアルページで手議されているとおりのサブフォント定義ファイルを読み込むことができ、この 2 つのファイルを元に一揃いの PostScript Type 1 フォントを <A HREF="generate.html">出力</A> することができます。
   <P>
 <!--
   In consultation with the lilypond group we have designed a new
   <A HREF="non-standard.html">SFNT table 'TeX </A>' for storing TeX specific
   information in True/OpenType files. -->
-  Lilypond �J���҃O���[�v�Ƌ��c���āATeX �ŗL�̏��� True/OpenType �t�@�C���Ɋi�[���� <A HREF="non-standard.html">SFNT �e�[�u��&lsquo;TeX&rsquo;</A> ��V���ɐ݌v���܂����B
+  Lilypond 開発者グループと協議して、TeX 固有の情報を True/OpenType ファイルに格納する <A HREF="non-standard.html">SFNT テーブル&lsquo;TeX&rsquo;</A> を新たに設計しました。
   <H3>
 <!--   Generating a tfm file (and an enc file). -->
-       TFM �t�@�C�� (�� ENC �t�@�C��) ���o�͂�����@
+       TFM ファイル (と ENC ファイル) を出力する方法
   </H3>
   <P>
 <!--
   Before you generate a tfm file you should perform some of the following -->
-  TFM �t�@�C�����o�͂���O�ɁA�ȉ��̎菇�̂����������s���Ȃ���΂Ȃ�܂���B
+  TFM ファイルを出力する前に、以下の手順のいくつかを実行しなければなりません。
   <DL>
     <DT>
 <!--  Set the font parameters -->
-      �t�H���g�̃p�����[�^��ݒ肷��
+      フォントのパラメータを設定する
     <DD>
 <!--  Do this with Element-&gt;Font Info-&gt;TeX. -->
-      ����́A<CODE>�G�������g(<U>L</U>)</CODE>��<CODE>�t�H���g���(<U>F</U>)...</CODE>��<CODE>[���Ã�]</CODE> �ōs���܂��B
+      これは、<CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[ΤεΧ]</CODE> で行います。
     <DT>
 <!--  Optionally set <A NAME="Italic">Italic</A> Correction values for glyphs-->
-      �K�v�ɉ����āA�O���t��<A NAME="Italic">�C�^���b�N</A>�␳�l����͂���
+      必要に応じて、グリフの<A NAME="Italic">イタリック</A>補正値を入力する
     <DD>
 <!--  (FontForge will generate default values for italic fonts, so you only need
       do this if FontForge gets it wrong). -->
-      (FontForge �̓C�^���b�N�t�H���g�ɑ΂��ăf�t�H���g�̒l�𐶐����܂��̂ŁA���̍�Ƃ́AFontForge �̌��ς肪�Ԉ���Ă���Ƃ��̂ݍs���Ώ\���ł�)
+      (FontForge はイタリックフォントに対してデフォルトの値を生成しますので、この作業は、FontForge の見積りが間違っているときのみ行えば十分です)
       <UL>
 	<LI>
 <!--  	Select a glyph which should have an Italic Correction -->
-  	�C�^���b�N�␳���܂ނׂ��O���t��I������
+  	イタリック補正を含むべきグリフを選択する
 	<LI>
 <!--  	Element-&gt;Glyph Info-&gt;Alt Pos -->
-  	<CODE>�G�������g(<U>L</U>)</CODE>��<CODE>�O���t���(<U>I</U>)...��<CODE>[�I���^�̒u��]</CODE> �^�u��I��
+  	<CODE>エレメント(<U>L</U>)</CODE>→<CODE>グリフ情報(<U>I</U>)...→<CODE>[選択型の置換]</CODE> タブを選ぶ
 	<LI>
 <!--  	Press [New] -->
-  	<CODE>[�V�K(<U>N</U>)]</CODE> ������
+  	<CODE>[新規(<U>N</U>)]</CODE> を押す
 	<LI>
 <!--  	Set the tag to <CODE>Italic Correction</CODE> from the pulldown list -->
-  	�v���_�E�����X�g <CODE>�^�O(<U>T</U>)</CODE> �� <CODE>�C�^���b�N�␳</CODE> ��I��
+  	プルダウンリスト <CODE>タグ(<U>T</U>)</CODE> で <CODE>イタリック補正</CODE> を選ぶ
 	<LI>
 <!--  	Set the XAdvance to the italic correction -->
-  	�C�^���b�N�␳�l�� <CODE>��Xadvance</CODE> �ɓ��͂���
+  	イタリック補正値を <CODE>ΔXadvance</CODE> に入力する
       </UL>
     <DT>
 <!--  Optionally set any <A NAME="charlist">glyphlists</A>-->
-      �K�v�ɉ����āA���炩�� TeX <A NAME="charlist">�O���t���X�g</A>��ݒ肷��
+      必要に応じて、何らかの TeX <A NAME="charlist">グリフリスト</A>を設定する
     <DD>
       <UL>
 	<LI>
 <!--  	Select the first glyph in the charlist (the smallest one) -->
-  	TeX �������X�g�Ɋ܂߂�ŏ��̕��� (�R�[�h���ŏ��̕���) ���Z���N�g���� 
+  	TeX 文字リストに含める最初の文字 (コードが最小の文字) をセレクトする 
 	<LI>
 <!--  	Element-&gt;Glyph Info-&gt;Alt Subs -->
-  	<CODE>�G�������g(<U>L</U>)</CODE>��<CODE>�������(<U>I</U>)</CODE>��<CODE>[�ʂ̈ʒu]</CODE> �^�u��I��
+  	<CODE>エレメント(<U>L</U>)</CODE>→<CODE>文字情報(<U>I</U>)</CODE>→<CODE>[別の位置]</CODE> タブを選ぶ
 	<LI>
 <!--  	Press [New] -->
-  	<CODE>[�V�K(<U>N</U>)...]</CODE> ������
+  	<CODE>[新規(<U>N</U>)...]</CODE> を押す
 	<LI>
 <!--  	Set the tag to <CODE>TeX Glyphlist</CODE> from the pulldown list -->
-  	�v���_�E�����X�g <CODE>�^�O(<U>T</U>)</CODE> �� <CODE>TeX�O���t���X�g</CODE> ��I��
+  	プルダウンリスト <CODE>タグ(<U>T</U>)</CODE> で <CODE>TeXグリフリスト</CODE> を選ぶ
 	<LI>
 <!--  	Type the names of all the other glyphs in the charlist into the Components
   	field<BR>
-  	�������X�g�Ɋ܂܂�鑼�̑S�ẴO���t�̖��O�� <CODE>�\���v�f</CODE> �t�B�[���h�ɓ��͂���<BR>
+  	文字リストに含まれる他の全てのグリフの名前を <CODE>構成要素</CODE> フィールドに入力する<BR>
 <!--  	So if the charlist is for left parenthesis<BR> -->
-  	�Ⴆ�΁A�����ʂɑ΂��镶�����X�g�̏ꍇ:<BR>
+  	例えば、左括弧に対する文字リストの場合:<BR>
 <!--  	You would select the lparen glyph and might type in "lparen.big lparen.bigger
   	lparen.biggest" -->
-  	�O���t lparen ��I�����A�g<CODE>lparen.big lparen.bigger lparen.biggest</CODE>�h�Ƒł����ނ��ƂɂȂ�B
+  	グリフ lparen を選択し、“<CODE>lparen.big lparen.bigger lparen.biggest</CODE>”と打ち込むことになる。
       </UL>
     <DT>
 <!--  Optionally set any <A NAME="extension">extension</A> characters. -->
-      �K�v�ɉ����āA���炩��<A NAME="extension">�g��</a>������ݒ肷��
+      必要に応じて、何らかの<A NAME="extension">拡張</a>文字を設定する
     <DD>
       <UL>
 	<LI>
 <!--  	If the glyph is in a charlist then Select the last glyph in the charlist
   	(the largest one) -->
-  	���̃O���t�� TeX �O���t���X�g�ɑ��݂���ꍇ�A�O���t���X�g�̍Ō�̃O���t (�C���f�b�N�X���ő�̕���) ���Z���N�g����
+  	そのグリフが TeX グリフリストに存在する場合、グリフリストの最後のグリフ (インデックスが最大の文字) をセレクトする
 	<LI>
 <!--  	Element-&gt;Glyph Info-&gt;Mult Subs -->
-  	<CODE>�G�������g(<U>L</U>)</CODE>��<CODE>�������(<U>I</U>)</CODE>��<CODE>[�����̒u����]</CODE> �^�u��I��
+  	<CODE>エレメント(<U>L</U>)</CODE>→<CODE>文字情報(<U>I</U>)</CODE>→<CODE>[複数の置換先]</CODE> タブを選ぶ
 	<LI>
 <!--  	Press [New] -->
-  	<CODE>[�V�K(<U>N</U>)]</CODE> ������
+  	<CODE>[新規(<U>N</U>)]</CODE> を押す
 	<LI>
 <!--  	Set the tag to <CODE>TeX Extension list </CODE>from the pulldown list -->
-  	�v���_�E�����X�g <CODE>�^�O(<CODE>T</CODE>)</CODE> �� <CODE>TeX�g�����X�g</CODE> ��I��
+  	プルダウンリスト <CODE>タグ(<CODE>T</CODE>)</CODE> で <CODE>TeX拡張リスト</CODE> を選ぶ
 	<LI>
 <!--  	Type the names of the glyphs that this character decomposes into in the order:
   	top middle bottom extension<BR>
   	If a field is not present use .notdef<BR> -->
-  	���̕��������������e�O���t�̖��O���A�ȉ��̏��Ԃœ��͂���:<BR>
-  	�㕔�A�����A�����A�g��<BR>
-  	�t�B�[���h�����݂��Ȃ��ꍇ�A.notdef ���g�p����<BR>
+  	この文字が分解される各グリフの名前を、以下の順番で入力する:<BR>
+  	上部、中央、下部、拡張<BR>
+  	フィールドが存在しない場合、.notdef を使用する<BR>
 <!--  	So if the extension list is for left parenthesis<BR>
   	You would select the lparen.biggest glyph and might type in "lparen.top
   	lparen.mid lparen.bottom lparen.ext" -->
-  	�Ⴆ�΁A�����ʂɑΉ�����g�����X�g�̏ꍇ:
-  	lparen.biggest ��I�����A�g<CODE>lparen.top lparen.mid lparen.bottom lparen.ext</CODE>" �Ɠ��͂��邱�ƂɂȂ�B
+  	例えば、左括弧に対応する拡張リストの場合:
+  	lparen.biggest を選択し、“<CODE>lparen.top lparen.mid lparen.bottom lparen.ext</CODE>" と入力することになる。
       </UL>
   </DL>
   <P>
 <!--
   Note: When FontForge does a File-&gt;Merge Kern Info on a tfm file, it will
   set these values appropriately. -->
-  ����: FontForge �� <CODE>�t�@�C��(<U>F</U>)</CODE>��<CODE>�J�[�j���O���̓���(<U>M</U>)</CODE> �� TFM �t�@�C���ɑ΂��čs�����ꍇ�A�����̒l�͓K�؂ɐݒ肳��܂��B
+  注意: FontForge が <CODE>ファイル(<U>F</U>)</CODE>→<CODE>カーニング情報の統合(<U>M</U>)</CODE> を TFM ファイルに対して行った場合、これらの値は適切に設定されます。
   <P>
 <!--
   Having done this to your satisfaction you are ready to generate a tfm file.
   Go to File-&gt;Generate Fonts, select one of the postscript encodings from
   the pulldown list, press the [Options] button and turn on the [*] Tfm &amp;
   Enc check box. -->
-  �����̍s���܂ł�����s�����Ȃ�΁ATFM �t�@�C�����o�͂��鏀�����ł��Ă��܂��B
-  <CODE>�t�@�C��(<U>F</U>)</CODE>��<CODE>�t�H���g���o��(<U>G</U>)</CODE> �ŏo�Ă���v���_�E�����X�g���� PostScript �G���R�[�f�B���O�̂ǂꂩ 1 ��I�сA<CODE>[�I�v�V����]</CODE> �{�^���������� <CODE>[*]TFM��ENC���o��</CODE> �`�F�b�N�{�b�N�X���I���ɂ��܂��B
+  満足の行くまでこれを行ったならば、TFM ファイルを出力する準備ができています。
+  <CODE>ファイル(<U>F</U>)</CODE>→<CODE>フォントを出力(<U>G</U>)</CODE> で出てくるプルダウンリストから PostScript エンコーディングのどれか 1 つを選び、<CODE>[オプション]</CODE> ボタンを押して <CODE>[*]TFMとENCを出力</CODE> チェックボックスをオンにします。
   <P>
 <!--
   I'm not sure what you <EM>do</EM> with these files yet, but this should create
   them. -->
-  ���Ȃ��������̃t�@�C�����g���ĉ���<EM>�s��</EM>�̂��M�҂͊��S�ɗ������Ă��܂��񂪁A�����͂��̎菇�ō쐬�ł���ł��傤�B
+  あなたがこれらのファイルを使って何を<EM>行う</EM>のか筆者は完全に理解していませんが、それらはこの手順で作成できるでしょう。
   <H3>
 <!--  <A NAME="TeX-Install">Installing a type1 (pfb) postscript font for TeX</A> -->
-      <A NAME="TeX-Install">TeX �� Type1 (PFB) PostScript �t�H���g���C���X�g�[��������@</a>
+      <A NAME="TeX-Install">TeX に Type1 (PFB) PostScript フォントをインストールする方法</a>
   </H3>
   <P>
 <!--
   I am a novice TeX/LaTeX user so my comments should be taken with a grain
   of salt. I did manage to get this process to work on my own system. -->
-  �M�҂͏��S�҂� TeX/LaTeX ���[�U�Ȃ̂ŁA�R�����g�͔��ɑ������ēǂ�ł��������B
-  �茳�̃V�X�e���ł͂��̎菇�œ��������Ƃɐ������܂����B
+  筆者は初心者の TeX/LaTeX ユーザなので、コメントは眉に唾をつけて読んでください。
+  手元のシステムではこの手順で動かすことに成功しました。
   <P>
 <!--
   Installing a PostScript font for TeX is more complicated than one would hope
   (and so far I've only figured out how to install a Latin font). Instead of
   just moving the font file to some standard directory you must: -->
-  PostScript �t�H���g�� TeX �ɃC���X�g�[������̂͗\�z��肸���ƕ��G�ł� (���̂��߁A���̓��e�������̃t�H���g���C���X�g�[��������@���������ł��܂���)�B
-  �t�H���g�t�@�C����P�ɕW���f�B���N�g���Ɉړ����邾���ł͂Ȃ��ȉ��̂��Ƃ����Ȃ���΂Ȃ�܂���:
+  PostScript フォントを TeX にインストールするのは予想よりずっと複雑です (そのため、私はラテン文字のフォントをインストールする方法しか説明できません)。
+  フォントファイルを単に標準ディレクトリに移動するだけではなく以下のことをしなければなりません:
   <UL>
     <LI>
 <!--  &lt;configure TeX so that it is prepared for local additions&gt; -->
-      &lt;TeX �����[�J���Ȓǉ��ɑΉ��ł���悤�ɐݒ肵�Ă���&gt;
+      &lt;TeX をローカルな追加に対応できるように設定しておく&gt;
     <LI>
 <!--  Rename the font file so that the filename is in a format TeX understands<BR>
       (I'm told this isn't required, but I couldn't get things to work without
       doing this. Perhaps I have an old system. Perhaps I didn't try hard enough) -->
-      �t�H���g�t�@�C���̖��O�� TeX �������\�ȃt�H�[�}�b�g�ɕύX����<BR>
-      (����͕s�v���ƕ������̂ł����A���̎菇�����ł͂��܂������܂���ł����B
-       �M�҂̃V�X�e�����Â��̂��A�������菇�𓥂�ł��Ȃ��̂��Ǝv���܂�)
+      フォントファイルの名前を TeX が理解可能なフォーマットに変更する<BR>
+      (これは不要だと聞いたのですが、この手順抜きではうまく動きませんでした。
+       筆者のシステムが古いのか、正しい手順を踏んでいないのだと思います)
     <LI>
 <!--  Create several helper files that TeX will use for its own purposes -->
-      TeX �������̖ړI�̂��߂Ɏg���������̃w���p�[�t�@�C�����쐬����
+      TeX が自分の目的のために使ういくつかのヘルパーファイルを作成する
     <LI>
 <!--  Move each file type into its own special directory -->
-      �t�@�C�������ꂼ��̃t�@�C���^�C�v���Ƃɐ�p�̃f�B���N�g���Ɉړ�����
+      ファイルをそれぞれのファイルタイプごとに専用のディレクトリに移動する
     <LI>
 <!--  Optionally: Create a package file to make it easy for LaTeX to find the font -->
-      �K�v�ɉ�����: LaTeX ���t�H���g�������₷�����邽�߂̃p�b�P�[�W�t�@�C�����쐬����
+      必要に応じて: LaTeX がフォントを見つけやすくするためのパッケージファイルを作成する
     <LI>
 <!--  Optionally: Move the package file into its own directory -->
-      �K�v�ɉ�����: �p�b�P�[�W�t�@�C�������ꎩ�g�̃f�B���N�g���Ɉړ�����
+      必要に応じて: パッケージファイルをそれ自身のディレクトリに移動する
     <LI>
 <!--  Use the updmap script or manually: -->
-      updmap �X�N���v�g���g�p���邩�蓮�ňȉ����s��:
+      updmap スクリプトを使用するか手動で以下を行う:
       <UL>
 	<LI>
 <!--  	Update dvips's configuration files so that it knows where to look for the
   	postscript fonts -->
-  	dvips �̐ݒ�t�@�C�����X�V���APostScript �t�H���g��T���ꏊ��m�点��
+  	dvips の設定ファイルを更新し、PostScript フォントを探す場所を知らせる
   
 	<LI>
 <!--  	Optionally: Update pdftex's configuration files so that it knows where to
   	look too. -->
-  	�K�v�ɉ����āAPdfTeX �̐ݒ�t�@�C�����X�V���A�t�H���g��T���ꏊ��m�点��
+  	必要に応じて、PdfTeX の設定ファイルも更新し、フォントを探す場所を知らせる
       </UL>
   </UL>
   <P>
 <!--
   I suggest that before you read further you look at the following resources
   on the web: -->
-  ���̐��ǂޑO�ɁAweb ��̈ȉ��̃��\�[�X���Q�Ƃ��邱�Ƃ������߂��܂�:
+  この先を読む前に、web 上の以下のリソースを参照することをお奨めします:
   <UL>
     <LI>
 <!--  It is possible to add your fonts to the standard TeX directory structure,
@@ -237,39 +237,39 @@
       installation but that is better explained in
       <A HREF="http://www.ctan.org/tex-archive/info/Type1fonts/fontinstallationguide.pdf">the
       LaTeX font-faq</A>.-->
-      ����t�H���g�� TeX �̕W���f�B���N�g���\���ɒǉ����邱�Ƃ��\�ł����A������s���� TeX �̃A�b�v�O���[�h������Ȃ�̂ŁATeX �O�������E�������ł��傤�B
-      �ނ�́A����Ɠ����f�B���N�g���K�w��ʂ̏ꏊ�ɍ���� <A HREF="http://www.ctan.org/installationadvice/">TeX �t�H���g�ƃf�B���N�g���Ɋւ���C���X�g�[����̏���</A> �ɂ���悤�Ɏw�肷�邱�Ƃ�i�߂�ł��傤�B
-      �ނ�́A���ڂ����������ꂽ�t�H���g�̃C���X�g�[���̗�� <A HREF="http://www.ctan.org/tex-archive/info/Type1fonts/fontinstallationguide.pdf">the LaTeX font-faq</A> �Œ񋟂��Ă��܂��B
+      自作フォントを TeX の標準ディレクトリ構造に追加することも可能ですが、これを行うと TeX のアップグレードが難しくなるので、TeX グルの顰蹙をかうでしょう。
+      彼らは、それと同じディレクトリ階層を別の場所に作って <A HREF="http://www.ctan.org/installationadvice/">TeX フォントとディレクトリに関するインストール上の助言</A> にあるように指定することを進めるでしょう。
+      彼らは、より詳しく説明されたフォントのインストールの例を <A HREF="http://www.ctan.org/tex-archive/info/Type1fonts/fontinstallationguide.pdf">the LaTeX font-faq</A> で提供しています。
     <LI>
 <!--  Old versions of TeX (ie. mine) are still worried about the old 8 character
       limitation on DOS filenames. This means that the tools I was using don't
       accept understandable filenames instead they require a format described in
       <A HREF="http://www.tug.org/fontname/html/index.html">TeX font file naming
       conventions</A>. If you are creating your own fonts this boils down to: -->
-      �Â��o�[�W������ TeX (�Ⴆ�ΕM�҂̃V�X�e��) �́A���܂��ɐ̂� DOS �t�@�C������ 8 �����������C�ɂ����܂��B
-      �܂�A�M�҂��g�����c�[���� <A HREF="http://www.tug.org/fontname/html/index.html">TeX font file naming conventions</A> �̋L�q�ɏ]��Ȃ��t�@�C�����𗝉����܂���B
-      ����t�H���g�̏ꍇ�A�ꌾ�Ō����΂����������Ƃł�:
+      古いバージョンの TeX (例えば筆者のシステム) は、いまだに昔の DOS ファイル名の 8 文字制限を気にかけます。
+      つまり、筆者が使ったツールは <A HREF="http://www.tug.org/fontname/html/index.html">TeX font file naming conventions</A> の記述に従わないファイル名を理解しません。
+      自作フォントの場合、一言で言えばこういうことです:
       <UL>
 	<LI>
 <!--  	the first letter of the font should be "f" (which means the font wasn't made
   	by one of the big-name font vendors) -->
-  	�t�H���g�̍ŏ��̕����́gf�h�ɂ��܂� (����́A�t�H���g���L���ȃt�H���g�x���_���̂��̂ł͂Ȃ����Ƃ��Ӗ����܂�)
+  	フォントの最初の文字は“f”にします (これは、フォントが有名なフォントベンダ製のものではないことを意味します)
 	<LI>
 <!--  	the next two letters are some abbreviation of the family-name for your font -->
-  	���� 2 �����͂��Ȃ��̃t�H���g�̃t�@�~���[����\������̗��̂ł��B
+  	続く 2 文字はあなたのフォントのファミリー名を表す特定の略称です。
 	<LI>
 <!--  	the next letter (or two) should be "r" for a roman font, "i" for italic,
   	"o" for oblique, "b" for bold, and "bi" for bold italic -->
-  	���� 1�`2 �����́A���[�}���̂̃t�H���g�ɂ́gr�h, �C�^���b�N�ɂ́gi�h, �I�u���[�N�ɂ́go�h, �{�[���h�ɂ́gb�h, �{�[���h�C�^���b�N�ɂ́gbi�h�����܂��B
+  	続く 1〜2 文字は、ローマン体のフォントには“r”, イタリックには“i”, オブリークには“o”, ボールドには“b”, ボールドイタリックには“bi”をつけます。
 	<LI>
 <!--  	the last two letters should be "8a" (which means your font is in Adobe Standard
   	Encoding. And your font <EM>must be</EM> in that encoding or things don't
   	work).<BR> -->
-  	�Ō�� 2 �����́g8a�h�Ƃ��܂� (����́A�t�H���g�� Adobe �W���G���R�[�f�B���O�ł���Ƃ������Ƃł���A�쐬����t�H���g��<EM>�K��</EM>���̃G���R�[�f�B���O�łȂ���΂Ȃ�܂���B�����łȂ��Ɠ����܂���)<BR>
+  	最後の 2 文字は“8a”とします (これは、フォントが Adobe 標準エンコーディングであるということであり、作成するフォントは<EM>必ず</EM>このエンコーディングでなければなりません。そうでないと動きません)<BR>
   
 <!--  	(Again I am told that you can use any encoding as long as you register it
   	with TeX. I was unable to get this to work. But my system is out of date) -->
-  	(�t������ƁA�ǂ�ȃG���R�[�f�B���O�ł��A������Ɠo�^����� TeX �Ŏg����悤�ɂȂ�ƕ����܂����B����͂��܂������܂���ł������A�M�҂̃V�X�e���������̕�������ł��傤)
+  	(付言すると、どんなエンコーディングでも、きちんと登録すれば TeX で使えるようになると聞きました。これはうまく動きませんでしたが、筆者のシステムが旧式の物だからでしょう)
       </UL>
     <LI>
 <!--  Finally
@@ -277,56 +277,56 @@
       LaTeX font-faq</A> describes the gory details of how to go about installing
       the font. It's only (minor) drawback is that it assumes you are installing
       a font from Adobe. That is easily glossed over it means that: -->
-      �Ō��
+      最後に
       <A HREF="http://www.ctan.org/tex-archive/info/Type1fonts/fontinstallationguide.pdf">the
-      LaTeX font-faq</A> �̓t�H���g�̃C���X�g�[�����ǂ������i�߂邩�ɂ��Ă̌��܂݂�̍ו��ɂ��Č���Ă��܂��B
-      �B��� (���ׂ�) ��_�́A�C���X�g�[������t�H���g�� Adobe ���ł���Ɖ��肵�Ă��邱�Ƃł��B
-      �ȉ��̓_�ɒ��ӂ���Γǂݑւ��邱�Ƃ͊ȒP�ł�:
+      LaTeX font-faq</A> はフォントのインストールをどう押し進めるかについての血まみれの細部について語っています。
+      唯一の (些細な) 難点は、インストールするフォントが Adobe 製であると仮定していることです。
+      以下の点に注意すれば読み替えることは簡単です:
       <UL>
 	<LI>
 <!--  	fonts from Adobe should have font names beginning with "p" rather than "f". -->
-  	Adobe ���t�H���g�́gf�h�ł͂Ȃ��gp�h�Ŏn�܂閼�O�����邱�ƂɂȂ��Ă��܂��B
+  	Adobe 製フォントは“f”ではなく“p”で始まる名前をつけることになっています。
 	<LI>
 <!--  	the translation from adobe's font-families to 2 character abbreviations has
   	already been done, when using an adobe font you look the family up in a table
   	to get the 2 character abbreviation, when creating your own font you make
   	up your own. -->
-  	Adobe �̃t�H���g�t�@�~���[������ 2 �����̗��̂ւ̕ϊ��K���͊��ɑ��݂��Ă���AAdobe �t�H���g���g�����͂��̕\����t�@�~���[����T���� 2 �����̗��̂𓾂܂��B
-  	����̃t�H���g�t�@�~���[����鎞�͎����Ō��߂܂��B
+  	Adobe のフォントファミリー名から 2 文字の略称への変換規則は既に存在しており、Adobe フォントを使う時はその表からファミリー名を探して 2 文字の略称を得ます。
+  	自作のフォントファミリーを作る時は自分で決めます。
 	<LI>
 <!--  	the vendor directory for adobe is "adobe", but the vendor directory for fonts
   	you make should be "public" -->
-  	Adobe �p�̃x���_�f�B���N�g���́gadobe�h�ł����A����t�H���g�p�̃x���_�f�B���N�g���́gpublic�h�ɂȂ�ł��傤�B
+  	Adobe 用のベンダディレクトリは“adobe”ですが、自作フォント用のベンダディレクトリは“public”になるでしょう。
 	<LI>
 <!--  	(I hope these comments will make sense after you've read the above links) -->
-  	(��̃����N���ǂނƂ��ɁA���̃R�����g�����ɗ��Ă΍K���ł�)
+  	(上のリンク先を読むときに、このコメントが役に立てば幸いです)
       </UL>
     <LI>
 <!--  I've not tried to work with truetype fonts, but here's a document that talks
       about it to some extent. <A HREF="http://www.radamir.com/tex/ttf-tex.htm">LaTeX
       and TTF</A> -->
-      TrueType �t�H���g���g���邩��M�҂͎����Ă݂Ă��܂��񂪁A���̓_�ɂ��Ă������̏�񂪂��̕����ɂ͂���܂��B<A HREF="http://www.radamir.com/tex/ttf-tex.htm">LaTeX �� TTF</a>
+      TrueType フォントが使えるかを筆者は試してみていませんが、その点についていくつかの情報がこの文書にはあります。<A HREF="http://www.radamir.com/tex/ttf-tex.htm">LaTeX と TTF</a>
     <LI>
 <!--  If you are interested in the basics, here's the documentation on
       <A HREF="http://www.ctan.org/tex-archive/fonts/utilities/fontinst/doc/fontinst.ps">fontinst</A>
       itself. -->
-      ��b�I�Ȏ����ɋ���������l�ɂ́A������ <A HREF="http://www.ctan.org/tex-archive/fonts/utilities/fontinst/doc/fontinst.ps">fontinst</A> �̃h�L�������e�[�V�������̂��̂�����܂��B
+      基礎的な事柄に興味がある人には、ここに <A HREF="http://www.ctan.org/tex-archive/fonts/utilities/fontinst/doc/fontinst.ps">fontinst</A> のドキュメンテーションそのものがあります。
     <LI>
 <!--  I don't know how to deal with cyrillic (except that cyrillic T2 encodings
       are called 6a), greek or CJK fonts yet. -->
-      �M�҂́A�L����������M���V�������ACJK �̃t�H���g���ǂ��������ɂ��Ă͂܂��m��܂��� (�L���������� T2 �G���R�[�f�B���O�� 6a �ƌ������Ƃ����͒m���Ă��܂�)�B
+      筆者は、キリル文字やギリシャ文字、CJK のフォントをどう扱うかについてはまだ知りません (キリル文字の T2 エンコーディングは 6a と言うことだけは知っています)。
     <LI>
 <!--  Here's some info on how to use fonts once they are installed:
       <A HREF="http://www-h.eng.cam.ac.uk/help/tpl/textprocessing/fonts.html">LaTeX
       and fonts</A> -->
-      �C���X�g�[�����ꂽ�t�H���g���ǂ��g�����ɂ��Ă������̏�񂪂���܂��B
-      <A HREF="http://www-h.eng.cam.ac.uk/help/tpl/textprocessing/fonts.html">LaTeX �ƃt�H���g</A>
+      インストールされたフォントをどう使うかについていくつかの情報があります。
+      <A HREF="http://www-h.eng.cam.ac.uk/help/tpl/textprocessing/fonts.html">LaTeX とフォント</A>
   </UL>
   <P>
   <P>
 <!--
   I did the following: -->
-  �M�҂͈ȉ��̂悤�ɂ��܂���:
+  筆者は以下のようにしました:
   <UL>
     <LI>
 <!--  I created a directory structure as described in
@@ -334,63 +334,63 @@
       (and also in
       <A HREF="http://www.ctan.org/tex-archive/info/Type1fonts/fontinstallationguide.pdf">the
       LaTeX font-faq</A>). -->
-      <A HREF="http://www.ctan.org/installationadvice/">Installation advice</A> �ɂ���Ƃ���Ƀf�B���N�g���\�������܂��� (����� <A HREF="http://www.ctan.org/tex-archive/info/Type1fonts/fontinstallationguide.pdf">the LaTeX font-faq</A> �ɂ�����܂�)�B
+      <A HREF="http://www.ctan.org/installationadvice/">Installation advice</A> にあるとおりにディレクトリ構造を作りました (これは <A HREF="http://www.ctan.org/tex-archive/info/Type1fonts/fontinstallationguide.pdf">the LaTeX font-faq</A> にもあります)。
     <LI>
 <!--  I made a font (which I will call Cupola), initially I encoded it with the
       TeX Base Encoding (this was to make sure I had all the characters I needed)
   -->
-      �t�H���g����� (Cupola �Ƃ������O�ł�), �܂������ TeX �x�[�X�G���R�[�f�B���O�ŃG���R�[�h���܂��� (����́A�K�v�ȑS�Ă̕�������������Ƃ��m�F���邽�߂ł�)
+      フォントを作り (Cupola という名前です), まずこれを TeX ベースエンコーディングでエンコードしました (これは、必要な全ての文字を作ったことを確認するためです)
     <LI>
 <!--  Then just before generating it I reencoded it into Adobe Standard Encoding
       (because TeX's fontinst routine expects that) -->
-      �t�H���g�̐������s�����O�ɁA����� Adobe �W���G���R�[�f�B���O�ŃG���R�[�h�������܂��� (TeX �� fontinst ���[�`�����������肵�Ă��邩��ł�)
+      フォントの生成を行う直前に、これを Adobe 標準エンコーディングでエンコードし直しました (TeX の fontinst ルーチンがそう仮定しているからです)
     <LI>
 <!--  I generated the font naming it "fcur8a.pfb" which means: -->
-      �t�H���g���gfcur8a.pfb�h�Ƃ������O�ŏo�͂��܂����B�Ӗ��͈ȉ��̂Ƃ���ł�:
+      フォントを“fcur8a.pfb”という名前で出力しました。意味は以下のとおりです:
       <UL>
 	<LI>
 <!--  	f -- made by a small font vendor, public domain, etc. -->
-  	f �\ �����ȃt�H���g�x���_�̐��i��p�u���b�N�h���C���̃t�H���g�Ȃ�
+  	f — 小さなフォントベンダの製品やパブリックドメインのフォントなど
 	<LI>
 <!--  	cu - - abbreviation for the family name "Cupola" -->
-  	cu �\ �t�@�~���[���gCupola�h�̗���
+  	cu — ファミリー名“Cupola”の略称
 	<LI>
 <!--  	r - - roman face -->
-  	r �\ ���[�}����
+  	r — ローマン体
 	<LI>
 <!--  	8a - - Adobe Standard Encoding -->
-  	8a �\ Adobe �W���G���R�[�f�B���O
+  	8a — Adobe 標準エンコーディング
       </UL>
     <LI>
 <!--  I applied the following script: -->
-      �ȉ��̃X�N���v�g�����s���܂���:
+      以下のスクリプトを実行しました:
       <BLOCKQUOTE>
       <PRE>#!/bin/bash <!--
 # You will need to change the next two lines to suit your font.
 # You may need to change the two after that as well. -->
-# �ȉ��� 2 �s�͂��Ȃ��̍��t�H���g�ɍ��킹�ďC������K�v������ł��傤�B
-# ���̌��� 2 �s���ύX��������������܂���B
+# 以下の 2 行はあなたの作るフォントに合わせて修正する必要があるでしょう。
+# その後ろの 2 行も変更したいかもしれません。
 BASE=fcu
 PACKAGE=cupola
 VENDOR=public
 LOCALTEXMF=/usr/local/share/texmf
 <!--
 # remove any old files that might be lying around and might confuse us later on -->
-# ��ō����̌��ɂȂ肻���ȃt�@�C���������炠��ΑS�č폜���܂�
+# 後で混乱の元になりそうなファイルが元からあれば全て削除します
 csh -c "rm fi.tex *.mtx *.pl *.vpl"
 <!--
 # create a little script to get TeX to create various useful files it needs -->
-# TeX ���K�v�Ƃ���e��̃t�@�C���𐶐��ł���悤�ɁA�����ȃX�N���v�g���쐬���܂�
+# TeX が必要とする各種のファイルを生成できるように、小さなスクリプトを作成します
 echo "\\input fontinst.sty" &gt;fi.tex
 echo "\\latinfamily{$BASE}{}" &gt;&gt;fi.tex
 echo "\\bye" &gt;&gt;fi.tex
 <!--
 #execute that script -->
-# ���̃X�N���v�g�����s���܂�
+# そのスクリプトを実行します
 tex fi
 <!--
 # But we need to do a bit more processing on some of those files -->
-# �������A�����̃t�@�C���͂�����ƒǉ��̉��H���s���K�v������܂�
+# しかし、これらのファイルはちょっと追加の加工を行う必要があります
 for file in *.pl ; do
 pltotf $file
 done
@@ -399,11 +399,11 @@ vptovf $file
 done
 <!--
 # Get rid of stuff we don't need any more -->
-# �����K�v�łȂ��Ȃ����S�~���폜���܂�
+# もう必要でなくなったゴミを削除します
 rm fi.tex *.mtx *.pl *.vpl
 <!--
 # create the directories we need for the various components -->
-# ���܂��܂ȃR���|�[�l���g���K�v�Ƃ���f�B���N�g�����쐬���܂�
+# さまざまなコンポーネントが必要とするディレクトリを作成します
 mkdir -p $LOCALTEXMF/fonts/type1/$VENDOR/$PACKAGE \
 	$LOCALTEXMF/fonts/afm/$VENDOR/$PACKAGE \
 	$LOCALTEXMF/fonts/tfm/$VENDOR/$PACKAGE \
@@ -411,7 +411,7 @@ mkdir -p $LOCALTEXMF/fonts/type1/$VENDOR/$PACKAGE \
 	$LOCALTEXMF/tex/latex/$VENDOR/$PACKAGE
 <!--
 # move everything into its expected directory -->
-# �S�Ă̕�������ׂ��f�B���N�g���ɒu���܂�
+# 全ての物をあるべきディレクトリに置きます
 cp $BASE*.pfb $LOCALTEXMF/fonts/type1/$VENDOR/$PACKAGE
 cp $BASE*.afm $LOCALTEXMF/fonts/afm/$VENDOR/$PACKAGE
 mv $BASE*.tfm $LOCALTEXMF/fonts/tfm/$VENDOR/$PACKAGE
@@ -419,44 +419,44 @@ mv $BASE*.vf $LOCALTEXMF/fonts/vf/$VENDOR/$PACKAGE
 mv *$BASE*.fd $LOCALTEXMF/tex/latex/$VENDOR/$PACKAGE
 <!--
 # finally create the LaTeX package for this font (and put it in the right place) -->
-# �Ō�ɂ��̃t�H���g�� LaTeX �p�b�P�[�W���쐬�� (�āA�������ꏊ�ɒu��) �܂�
+# 最後にこのフォントの LaTeX パッケージを作成し (て、正しい場所に置き) ます
 echo "\\ProvidesPackage{$PACKAGE}" &gt; $LOCALTEXMF/tex/latex/$VENDOR/$PACKAGE/$PACKAGE.sty
 echo "\\renewcommand{\\rmdefault}{$BASE}" &gt;&gt; $LOCALTEXMF/tex/latex/$VENDOR/$PACKAGE/$PACKAGE.sty
 echo "\\endinput" &gt;&gt; $LOCALTEXMF/tex/latex/$VENDOR/$PACKAGE/$PACKAGE.sty <!--
 # but updating the map files required a bit more knowlege than this script has
 # so I left that to be done by hand -->
-# ������ map �t�@�C���̍X�V�ɂ͂��̃X�N���v�g���m���Ă����肿����Ɨ]����
-# �m�����K�v�ł��B�M�҂͂�����蓮�ōs���Ă��炤���Ƃɂ��܂���
+# しかし map ファイルの更新にはこのスクリプトが知っているよりちょっと余分に
+# 知識が必要です。筆者はこれを手動で行ってもらうことにしました
 echo "*********************************************************************" <!--
 echo You need to create your own map files
 echo One should be called $LOCALTEXMF/dvips/config/$BASE.map and should
 echo " contain a line for each file in the family. One might look like this:"
 -->
-echo ���Ȃ��͎����̃}�b�v�t�@�C�����쐬����K�v������܂��B
-echo ��� $LOCALTEXMF/dvips/config/$BASE.map �Ƃ������O�ŁA�t�@�~���[��
-echo "�܂܂��e�t�H���g��񋓂��� 1 �s����Ȃ�܂� �ȉ��̂悤�Ȋ����ł�:"
+echo あなたは自分のマップファイルを作成する必要があります。
+echo 一つは $LOCALTEXMF/dvips/config/$BASE.map という名前で、ファミリーに
+echo "含まれる各フォントを列挙した 1 行からなります 以下のような感じです:"
 echo "${BASE}r8a $PACKAGE-Regular \"TexBase1Encoding ReEncodeFont\" &lt;8r.enc &lt;${BASE}r8a.pfb" <!--
 echo Then change the config.ps file by looking for the location defining the
 echo " standard map file and adding:" -->
-echo ���ꂩ�� config.ps �t�@�C���ŕW���̃}�b�v�t�@�C�����`���Ă���ꏊ��
-echo �T���āA���̌����ȉ��̂悤�ɏ��������Ă�������:
+echo それから config.ps ファイルで標準のマップファイルを定義している場所を
+echo 探して、その後ろを以下のように書き換えてください:
 echo "p +$BASE.map" <!--
 echo " after it."
 echo Then go to $LOCALTEXMF/pdftex/config/
 echo Make a copy "(or a link)" of $LOCALTEXMF/dvips/config/$BASE.map
 echo and edit pdftex.cfg and insert -->
-echo ���ꂩ�� $LOCALTEXMF/pdftex/config/ �Ɉړ����A
-echo $LOCALTEXMF/dvips/config/$BASE.map ���R�s�[ "(�܂��̓����N)" ����
-echo pdftex.cfg ��ҏW���A��������l��
+echo それから $LOCALTEXMF/pdftex/config/ に移動し、
+echo $LOCALTEXMF/dvips/config/$BASE.map をコピー "(またはリンク)" して
+echo pdftex.cfg を編集し、これも同様に
 echo "p +$BASE.map" <!--
 echo at the appropriate place in it too. -->
-echo �Ƃ����L�q��K�؂ȏꏊ�ɒǉ����Ă��������B
+echo という記述を適切な場所に追加してください。
 </PRE>
       </BLOCKQUOTE>
     <LI>
   </UL>
   <P ALIGN=Center>
-  �\ <A HREF="scripting.html">�O</A> �\ <A HREF="overview.html">�ڎ�</A> �\
-  <A HREF="locale.html">��</A> �\
+  — <A HREF="scripting.html">前</A> — <A HREF="overview.html">目次</A> —
+  <A HREF="locale.html">次</A> —
 </DIV>
 </BODY></HTML>

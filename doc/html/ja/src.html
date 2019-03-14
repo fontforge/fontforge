@@ -4,9 +4,9 @@
   <!-- AP: Created on: 11-Feb-2001 -->
   <!-- AP: Last modified: 16-Apr-2004 -->
   <LINK REL="icon" href="../fftype16.png">
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!--<TITLE>High level description of what each source file contains...</TITLE> -->
-    <TITLE>�e�\�[�X�t�@�C���ɉ����܂܂�邩�̊T�v���x���̋L�q�c�c</TITLE>
+    <TITLE>各ソースファイルに何が含まれるかの概要レベルの記述……</TITLE>
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
@@ -17,28 +17,28 @@
   contains...<FONT COLOR="Red"><BR>
   <SMALL><SMALL><STRONG>This page is grievously out of
   date</STRONG></SMALL></SMALL></FONT> -->
-  �e�\�[�X�t�@�C���ɉ����܂܂�邩�̊T�v���x���̋L�q�c�c<FONT COLOR="Red"><BR>
-  <SMALL><SMALL><STRONG>���̃y�[�W�͂Ђǂ�����x��ł�</STRONG></SMALL></SMALL></FONT>
+  各ソースファイルに何が含まれるかの概要レベルの記述……<FONT COLOR="Red"><BR>
+  <SMALL><SMALL><STRONG>このページはひどく時代遅れです</STRONG></SMALL></SMALL></FONT>
 </H1>
 <UL>
   <LI>
 <!--<A HREF="#Header">Header files</A>-->
-    <A HREF="#Header">�w�b�_�t�@�C��</A>
+    <A HREF="#Header">ヘッダファイル</A>
   <LI>
 <!--<A HREF="#Source">Source files</A>-->
-    <A HREF="#Source">�\�[�X�t�@�C��</A>
+    <A HREF="#Source">ソースファイル</A>
   <LI>
 <!--<A HREF="http://bibliofile.duhs.duke.edu/gww/FreeWare/LibGUnicode/index.html">unicode
     library docs</A> -->
-    <A HREF="http://bibliofile.duhs.duke.edu/gww/FreeWare/LibGUnicode/index.html">Unicode ���C�u�����̕���</A>
+    <A HREF="http://bibliofile.duhs.duke.edu/gww/FreeWare/LibGUnicode/index.html">Unicode ライブラリの文書</A>
   <LI>
 <!--<A HREF="http://bibliofile.duhs.duke.edu/gww/FreeWare/LibGDraw/index.html">unicode
     widget docs</A> -->
-    <A HREF="http://bibliofile.duhs.duke.edu/gww/FreeWare/LibGDraw/index.html">Unicode �E�B�W�F�b�g�̕���</A>
+    <A HREF="http://bibliofile.duhs.duke.edu/gww/FreeWare/LibGDraw/index.html">Unicode ウィジェットの文書</A>
 </UL>
 <H2>
 <!--<A NAME="Header">Header Files</A> -->
-    <A NAME="Header">�w�b�_�t�@�C��</A>
+    <A NAME="Header">ヘッダファイル</A>
 </H2>
 <DL>
   <DT>
@@ -47,140 +47,140 @@
 <!--This contains the data structures used by the rasterizer routines (splinefill.c),
     but it turns out that the same basic mechanism is used for a number of other
     things, autohint.c, splineoverlap.c, perhaps others.-->
-    �����ɂ̓��X�^���C�U���[�`�� (splinefill.c) ���g�p����f�[�^�\�����܂܂�Ă��܂����A�������̊�{���J�j�Y���͑����̑��̏ꏊ�Aautohint.c, splineoverlap.c �₽�Ԃ񑼂̏ꏊ�ł��g���邱�Ƃ������Ă��܂��B
+    ここにはラスタライザルーチン (splinefill.c) が使用するデータ構造が含まれていますが、いくつかの基本メカニズムは多数の他の場所、autohint.c, splineoverlap.c やたぶん他の場所でも使われることが判っています。
   <DT>
     fontforge.h
   <DD>
 <!--This is a general header which just includes other headers. Every source
     file in this directory should include it. -->
-    ����͑��̃w�b�_���C���N���[�h���邾���̔ėp�I�ȃw�b�_�ł��B���̃f�B���N�g���Ɋ܂܂��e�\�[�X�t�@�C���͂�����C���N���[�h����ׂ��ł��B
+    これは他のヘッダをインクルードするだけの汎用的なヘッダです。このディレクトリに含まれる各ソースファイルはこれをインクルードするべきです。
   <DT>
     fontforgeui.h
   <DD>
 <!--Another general header file which includes others and defines a few global
     variables. All UI source files should include this. -->
-    ���̃t�@�C������荞�݁A2, 3 �̃O���[�o���ϐ����`����A���� 1 �̔ėp�I�w�b�_�t�@�C���ł��B���ׂĂ� UI �֘A�̃\�[�X�t�@�C���͂�����C���N���[�h����ׂ��ł��B
+    他のファイルを取り込み、2, 3 のグローバル変数を定義する、もう 1 つの汎用的ヘッダファイルです。すべての UI 関連のソースファイルはこれをインクルードするべきです。
   <DT>
     psfont.h
   <DD>
 <!--These data structures are used by parsepfa.c as a temporary resting place
     for a postscript font before it gets converted into a SplineFont (splinefont.h)
     by calling SplineFontFromPSFont in splineutil.c -->
-    �����̃f�[�^�\���́A PostScript �t�H���g�̈ꎞ�I�Ȉ��u�ꏊ�Ƃ��āAsplineutil.c �� SplineFontFromPSFont ���Ă΂�� SplineFont (splinefont.h) �ɕϊ�����܂ł̊ԁAparsepfa.c �Ŏg�p����܂��B
+    これらのデータ構造は、 PostScript フォントの一時的な安置場所として、splineutil.c の SplineFontFromPSFont が呼ばれて SplineFont (splinefont.h) に変換するまでの間、parsepfa.c で使用されます。
   <DT>
     splinefont.h
   <DD>
 <!--<A HREF="splinefont.html">This one contains all the basic data structures
     of the program.</A> -->
-    <A HREF="splinefont.html">����̓v���O�����̂��ׂĂ̊�{�I�f�[�^�\�����܂�ł��܂��B</A>
+    <A HREF="splinefont.html">これはプログラムのすべての基本的データ構造を含んでいます。</A>
   <DT>
     views.h
   <DD>
 <!--<A HREF="views.html">This contains the basic UI data structures.</A> -->
-    <A HREF="views.html">����͊�{�I�� UI �f�[�^�\�����܂�ł��܂��B</A>
+    <A HREF="views.html">これは基本的な UI データ構造を含んでいます。</A>
   <DT>
 </DL>
 <H2>
 <!--<A NAME="Source">Source Files</A> -->
-    <A NAME="Source">�\�[�X�t�@�C��</A>
+    <A NAME="Source">ソースファイル</A>
 </H2>
 <DL>
   <DT>
     autohint.c
   <DD>
 <!--Contains the routines which guess at postscript hints.-->
-    PostScript �q���g�̐������s�����[�`�����܂�ł��܂��B
+    PostScript ヒントの推測を行うルーチンを含んでいます。
   <DT>
     autosave.c
   <DD>
 <!--Contains a few basic routines that handle autosaving, but most of the real
     work is done in sfd.c -->
-    �����Z�[�u����舵�� 2,3 �̊�{�I���[�`�����܂�ł��܂����A���ۂ̍�Ƃ͂قƂ�� sfd.c �̒��ōs���Ă��܂��B
+    自動セーブを取り扱う 2,3 の基本的ルーチンを含んでいますが、実際の作業はほとんど sfd.c の中で行われています。
   <DT>
     autowidth.c
   <DD>
 <!--Guesses at good widths for characters and good kerning for them. Creates
     a dialog to get guidance from the user and the goes off and tries to guess
     reasonable values. -->
-    �����̓K�؂ȕ��ƓK�؂ȃJ�[�j���O�ʂ𐄑����܂��B���[�U����w�����󂯂邽�߂̂��_�C�A���O���쐬���A���ꂪ�I��ΑÓ��Ȓl�𐄑����悤�Ƃ��܂��B
+    文字の適切な幅と適切なカーニング量を推測します。ユーザから指示を受けるためのがダイアログを作成し、それが終れば妥当な値を推測しようとします。
   <DT>
     bitmapdlg.c
   <DD>
 <!--Handles the two dialogs for creating and recreating bitmaps. (The creating
     one creates an entire new bitmap font, the recreating one modifies an already
     existing font by regenerating the selected characters). -->
-    �r�b�g�}�b�v�̍쐬�ƍč쐬�̂��߂� 2 ��ނ̃_�C�A���O����舵���܂��B(�쐬�p�̂͐V�����r�b�g�}�b�v�t�H���g�S�̂��쐬���A�č쐬�p�̂͑I�����ꂽ�������Đ������邱�Ƃɂ��A�����̃r�b�g�}�b�v��ύX���܂�)�B
+    ビットマップの作成と再作成のための 2 種類のダイアログを取り扱います。(作成用のは新しいビットマップフォント全体を作成し、再作成用のは選択された文字を再生成することにより、既存のビットマップを変更します)。
   <DT>
     bitmapview.c
   <DD>
 <!--Does much of the basic work of the bitmap editor. Handles menus, events,
     etc. -->
-    �r�b�g�}�b�v�G�f�B�^�̊�{�I�����̑������s���܂��B���j���[�E�C�x���g�Ȃǂ������܂��B
+    ビットマップエディタの基本的処理の多くを行います。メニュー・イベントなどを扱います。
   <DT>
     bvedit.c
   <DD>
 <!--Some extra routines for editing bitmaps (bv =&gt; bitmapview). Handles floating
     selections, paste, translations, etc. -->
-    �r�b�g�}�b�v�ҏW�̂��߂̂������̒ǉ����[�`���ł� (bv �� bitmapview)�B���I��̈�E�\��t���E���s�ړ��Ȃǂ��s���܂��B
+    ビットマップ編集のためのいくつかの追加ルーチンです (bv ⇒ bitmapview)。可動選択領域・貼り付け・平行移動などを行います。
   <DT>
     charview.c
   <DD>
 <!--Does the basic work for the spline glyph editor. Handles menus, events,
     dispatches mouse events to the appropriate tools, etc. -->
-    �X�v���C���O���t�G�f�B�^�̊�{�I�������s���܂��B���j���[�E�C�x���g�̈�����A�}�E�X�C�x���g����K�؂ȃc�[���ւ̃f�B�X�p�b�`�Ȃǂ̏������s���܂��B
+    スプライングリフエディタの基本的処理を行います。メニュー・イベントの扱いや、マウスイベントから適切なツールへのディスパッチなどの処理を行います。
   <DT>
     charviewicons.c
   <DD>
 <!--These are the icon resources for the images that appear in the info area
     of the spline editor above. -->
-    ��L�̂̃X�v���C���G�f�B�^�̏��̈�Ɍ����摜�̂��߂̃A�C�R�����\�[�X�ł��B
+    上記ののスプラインエディタの情報領域に現れる画像のためのアイコンリソースです。
   <DT>
     cursors.c
   <DD>
 <!--Defines the various cursors used.-->
-    �g�p�����e��̃J�[�\�����`���܂��B
+    使用される各種のカーソルを定義します。
   <DT>
     cvaddpoints.c
   <DD>
 <!--Handles mouse events when the current tool is a point generator. charview.c
     will dispatch events to us. (cv =&gt; charview) -->
-    ���݂̃c�[�����_�W�F�l���[�^�ł���Ƃ��̃}�E�X�C�x���g�������܂��Bcharview.c ���A�C�x���g�̃f�B�X�p�b�`���󂯎����܂��B(cv �� charview)
+    現在のツールが点ジェネレータであるときのマウスイベントを扱います。charview.c が、イベントのディスパッチを受け持ちます。(cv ⇒ charview)
   <DT>
     cvexport.c
   <DD>
 <!--The dialog to export data into a different format. Also (some of) the conversion
     routines for that format. (Also used to export xbm files from the bitmapview) -->
-    �f�[�^�𑼂̃t�H�[�}�b�g�ɏ����o�����߂̃_�C�A���O�ł��B���̃t�H�[�}�b�g�̂��߂̕ϊ����[�`�� (�̈ꕔ) ���܂܂�܂��B(�r�b�g�}�b�v�r���[����� xbm �t�@�C���̏����o���ɂ��p�����܂�)
+    データを他のフォーマットに書き出すためのダイアログです。そのフォーマットのための変換ルーチン (の一部) も含まれます。(ビットマップビューからの xbm ファイルの書き出しにも用いられます)
   <DT>
     cvgetinfo.c
   <DD>
 <!--Contains the Get Info dispatcher and dialogs for the charview. There are
     several different types of info depending on the current selection and there's
     a dialog for each -->
-    ���𓾂�(I) �̃f�B�X�p�b�`���� charview (��:���݂̃O���t�r���[) �̃_�C�A���O���܂݂܂��B���݂̑I����e�ɂ���ĈقȂ���̃^�C�v������ޑ��݂��A���ꂼ��ɑ΂��ă_�C�A���O�����݂��܂��B
+    情報を得る(I) のディスパッチャと charview (訳注:現在のグリフビュー) のダイアログを含みます。現在の選択内容によって異なる情報のタイプが数種類存在し、それぞれに対してダイアログが存在します。
     <UL>
       <LI>
 <!--	A point is selected -->
-	�_���I������Ă���
+	点が選択されている
       <LI>
 <!--	A reference to another character is selected (in the foreground) -->
-	���̕����ւ̎Q�Ƃ� (�O�ʂ�) �I������Ă���
+	他の文字への参照が (前面で) 選択されている
       <LI>
 <!--	An image is selected (in the background) -->
-	�摜�� (�w�ʂ�) �I������Ă���
+	画像が (背面で) 選択されている
       <LI>
 <!--	Or if more than one thing is (or no things are) selected, then general
 	information on the character itself<BR>
 	This last is also used by the fontview. -->
-	�܂��� 2 �ȏ�̕����I������Ă��� (���A�����I������Ă��Ȃ�) �ꍇ�A�������̂��̂̈�ʓI�ȏ��<BR>
-	���̍Ō�̍��ڂ̓t�H���g�r���[�ł��g�p����܂��B
+	または 2 個以上の物が選択されている (か、何も選択されていない) 場合、文字そのものの一般的な情報<BR>
+	この最後の項目はフォントビューでも使用されます。
     </UL>
   <DT>
     cvhints.c
   <DD>
 <!--A series of trivial little dialogs and commands that allow the user to set
     postscript hints manually. -->
-    PostScript �q���g�����[�U���蓮�Őݒ�ł���R�}���h�ƈ�A�̎����ȃ_�C�A���O���܂݂܂��B
+    PostScript ヒントをユーザが手動で設定できるコマンドと一連の自明なダイアログを含みます。
   <DT>
     cvimages.c
   <DD>
@@ -193,74 +193,74 @@
     (not too well). BitmapViews can only import images into their foreground.
     I think only bitmaps but I forget. FontViews can import bdf fonts into their
     list of bitmaps. -->
-    CharView, BitmapView, �܂��� FontView �ւ̎�荞�݂��s���R�[�h���܂݂܂��B�����́A����� CharView �ւ̉摜��荞�݂������s���Ă��܂������A���݂ł͂��̖��O���z���Đ������Ă��܂��BCharView �ɂ͉摜 (gif, png, tiff, jpeg, xbm, xpm, sun raster, windows bmp, �c) ��w�i�Ɏ�荞�ނ��Ƃ��ł��܂��B������N���b�v�{�[�h����g����悤�ɂ������̂ł����A�N���b�v�{�[�h�ɉ摜�𕡐�����W���I�ȕ��@�����Ȃ̂��m��܂���B���̑��A(���Ɍ��肳�ꂽ) eps �t�@�C���� xfig (���܂肤�܂������܂���) �̎�荞�݂��\�ł��BBitmapView �ɂ͉摜��O�ʂɎ�荞�ނ��Ƃ����ł��܂���B���̓r�b�g�}�b�v�݂̂��l���Ă��܂����A���͖Y��܂��BFontView �� BDF �t�H���g���r�b�g�}�b�v�̃��X�g�Ɏ�荞�݂܂��B
+    CharView, BitmapView, または FontView への取り込みを行うコードを含みます。当初は、これは CharView への画像取り込みだけを行っていましたが、現在ではその名前を越えて成長しています。CharView には画像 (gif, png, tiff, jpeg, xbm, xpm, sun raster, windows bmp, …) を背景に取り込むことができます。これをクリップボードから使えるようにしたいのですが、クリップボードに画像を複製する標準的な方法が何なのか知りません。その他、(非常に限定された) eps ファイルと xfig (あまりうまくいきません) の取り込みが可能です。BitmapView には画像を前面に取り込むことしかできません。私はビットマップのみを考えていますが、私は忘れます。FontView は BDF フォントをビットマップのリストに取り込みます。
   <DT>
     cvknife.c
   <DD>
 <!--The dispatch file for mouse events when the knife tool is selected.-->
-    �i�C�t�c�[�����I������Ă���Ƃ��̃}�E�X�C�x���g�̃f�B�X�p�b�`�t�@�C���ł��B
+    ナイフツールが選択されているときのマウスイベントのディスパッチファイルです。
   <DT>
     cvpalettes.c
   <DD>
 <!--Handles the two palettes associated with a CharvView, and the two palettes
     for a BitmapView, and the Char and BitmapView popup menus. -->
-    CharView �ɕt������ 2 �̃p���b�g�ƁABitmapView �t���� 2 �̃p���b�g�A����� CharView �� BitmapView �̃|�b�v�A�b�v���j���[�������܂��B
+    CharView に付属する 2 個のパレットと、BitmapView 付属の 2 個のパレット、および CharView と BitmapView のポップアップメニューを扱います。
   <DT>
     cvpointer.c
   <DD>
 <!--The dispatch file for mouse events when the pointer tool is selected. -->
-    �|�C���^�c�[�����I������Ă���Ƃ��̃}�E�X�C�x���g�̃f�B�X�p�b�`�t�@�C���ł��B
+    ポインタツールが選択されているときのマウスイベントのディスパッチファイルです。
   <DT>
     cvruler.c
   <DD>
 <!--The dispatch file for mouse events when the ruler tool is selected.-->
-    ���̂����c�[�����I������Ă���Ƃ��̃}�E�X�C�x���g�̃f�B�X�p�b�`�t�@�C���ł��B
+    ものさしツールが選択されているときのマウスイベントのディスパッチファイルです。
   <DT>
     cvshapes.c
   <DD>
 <!--The dispatch file for mouse events when one of the shape tools (rectangle,
     ellipse, polygon, star) is selected. -->
   <DD>
-    �}�`�c�[�� (�����`�A�ȉ~�A���p�`�A���`) �̂����ꂩ���I������Ă���Ƃ��̃}�E�X�C�x���g�̃f�B�X�p�b�`�t�@�C���ł��B
+    図形ツール (長方形、楕円、多角形、星形) のいずれかが選択されているときのマウスイベントのディスパッチファイルです。
   <DT>
     cvstroke.c
   <DD>
 <!--The dialog for the expand stroke command. Also some of the routines which
     do the work. See also splinestroke.c -->
-    <CODE>�֊s�𑾂点��(<U>E</U>)...</CODE> �R�}���h�p�̃_�C�A���O�ł��B���̍�Ƃ��s�����߂̂������̃��[�`�����܂܂�Ă��܂��Bsplinestroke.c ���Q�Ƃ��Ă��������B
+    <CODE>輪郭を太らせる(<U>E</U>)...</CODE> コマンド用のダイアログです。その作業を行うためのいくつかのルーチンも含まれています。splinestroke.c も参照してください。
   <DT>
     cvtranstools.c
   <DD>
 <!--The dispatch file for mouse events when one of the transform tools (scale,
     rotate, flip, skew) is selected. -->
-    �ό`�c�[�� (�g��E�k���A��]�A���]�A�ό`) �̂����ꂩ���I������Ă���Ƃ��̃}�E�X�C�x���g�̃f�B�X�p�b�`�t�@�C���ł��B
+    変形ツール (拡大・縮小、回転、反転、変形) のいずれかが選択されているときのマウスイベントのディスパッチファイルです。
   <DT>
     cvundoes.c
   <DD>
 <!--Contains the routines that handle Undoes, Redoes and Copy/Paste for CharViews,
     BitmapViews and FontViews. -->
-    CharView, BitmapView ����� FontView �ɂ�����A���h�D�A���h�D�ƃR�s�[/�y�[�X�g����舵�����[�`�����܂݂܂��B
+    CharView, BitmapView および FontView におけるアンドゥ、リドゥとコピー/ペーストを取り扱うルーチンを含みます。
   <DT>
     dumpbdf.c
   <DD>
 <!--Writes a bdf file.-->
-    BDF �t�@�C���������o���܂��B
+    BDF ファイルを書き出します。
   <DT>
     dumppfa.c
   <DD>
 <!--Writes a postscript file. pfa, pfb, type3, type0. See also splinesave.c.-->
-    PostScirpt �t�@�C���������o���܂��Bpfa, pfb, type3, type0 �ł��Bsplinesave.c ���Q�Ƃ��Ă��������B
+    PostScirpt ファイルを書き出します。pfa, pfb, type3, type0 です。splinesave.c も参照してください。
   <DT>
     fontinfo.c
   <DD>
 <!--Contains the fontinfo dialog and the routines to reencode a font.-->
-    �t�H���g���_�C�A���O�ƃt�H���g�̃G���R�[�f�B���O�ϊ��̂��߂̃��[�`�����܂݂܂��B
+    フォント情報ダイアログとフォントのエンコーディング変換のためのルーチンを含みます。
   <DT>
     fontview.c
   <DD>
 <!--The main file for the fontview. Menu dispatcher, event handler. Basic Font
     level routines. -->
-    fontview �̃��C���t�@�C���ł��B���j���[�f�B�X�p�b�`���A�C�x���g�n���h���ƁA��{�I�ȃt�H���g�x���̃��[�`���ł��B
+    fontview のメインファイルです。メニューディスパッチャ、イベントハンドラと、基本的なフォントベルのルーチンです。
   <DT>
     fvcomposit.c
   <DD>
@@ -268,41 +268,41 @@
     for Agrave will put a reference to A in your character, and a reference to
     grave and then will position the accent on top of A nicely). Operates on
     both the splines and the bitmaps. -->
-    �����O���t���ǂ��g�ݗ��Ă邩���L�q����t�@�C���ł� (���Ȃ킿�AAgrave �̓t�H���g���� A �̕����ւ̎Q�Ƃ� grave �ւ̎Q�Ƃ̑g�����ŁAA �̏�ɃA�N�Z���g�����܂��͈ʒu���邱�Ƃɂ��쐬���܂�)�B�X�v���C���ƃr�b�g�}�b�v�̗����ɑ΂��ē����܂��B
+    複合グリフをどう組み立てるかを記述するファイルです (すなわち、Agrave はフォント内の A の文字への参照と grave への参照の組合せで、A の上にアクセントをうまくは位置することにより作成します)。スプラインとビットマップの両方に対して働きます。
   <DT>
     fvfonts.c
   <DD>
 <!--Contains the dialogs and the functions for the Merge Fonts and Interpolate
     Fonts commands -->
-    <CODE>�t�H���g�̓���(<U>M</U>)...</CODE> �R�}���h�� <CODE>�t�H���g�̕��(<U>L</U>)...</CODE> �R�}���h�̃_�C�A���O�Ƃ��̋@�\���܂݂܂��B
+    <CODE>フォントの統合(<U>M</U>)...</CODE> コマンドと <CODE>フォントの補間(<U>L</U>)...</CODE> コマンドのダイアログとその機能を含みます。
   <DT>
     fvimportbdf.c
   <DD>
 <!--The routine which reads in a bdf font. (note the font selection dialog is
     in cvimages.c) -->
-    BDF �t�H���g��ǂݍ��ރ��[�`���ł��B(�t�H���g�I���_�C�A���O�� cvimages.c �ɂ��邱�Ƃɂ����ӂ�������)
+    BDF フォントを読み込むルーチンです。(フォント選択ダイアログは cvimages.c にあることにご注意ください)
   <DT>
     fvmetrics.c
   <DD>
 <!--The dialog and routines for autowidth and autokern.-->
-    ���̎����ݒ�Ǝ����J�[�j���O�̂��߂̃_�C�A���O�ƃ��[�`���ł��B
+    幅の自動設定と自動カーニングのためのダイアログとルーチンです。
   <DT>
     images.c
   <DD>
 <!--icon resources for the images used in the palettes. There's no good reason
     why this isn't merged in with charviewicons.c -->
-    �p���b�g���Ŏg�p�����摜�̂��߂̃A�C�R�����\�[�X�ł��B���ꂪ charviewicons.c �Ƀ}�[�W����Ȃ��͂Ȃ����Ƃ����^��ɂ��܂�����������܂���B
+    パレット内で使用される画像のためのアイコンリソースです。これが charviewicons.c にマージされないはなぜかという疑問にうまい答えがありません。
   <DT>
     metricsview.c
   <DD>
 <!--The main file for the metricsview. Menu dispatcher, event hander. Most of
     the functionality. -->
-    ���g���b�N�r���[�̎�̂ƂȂ�t�@�C���ł��B���j���[�f�B�X�p�b�`���ƃC�x���g�n���h���̂ق��A�r���[�̂قƂ�ǂ̋@�\���܂܂�܂��B
+    メトリックビューの主体となるファイルです。メニューディスパッチャとイベントハンドラのほか、ビューのほとんどの機能が含まれます。
   <DT>
     print.c
   <DD>
 <!--Handles the print and pagesetup dialogs.-->
-    ����_�C�A���O�ƃy�[�W�ݒ�_�C�A���O�������܂��B
+    印刷ダイアログとページ設定ダイアログを扱います。
   <DT>
     parsepfa.c
   <DD>
@@ -310,40 +310,40 @@
     are too free form for me to be able to interpret all (or even most?) of them.
     But we can at least read in the type3s we write out (unless they contain
     images). Some of the work also done in psread.c and splineutil.c -->
-    PostScript �t�H���g����͂��܂��BType0 �t�H���g�̃G���R�[�f�B���O�̎擾�͍s���܂���BType3 �́A���܂�Ɏ��R�x�������̂ŁA���ׂ� (�Ƃ������قƂ�ǂ�?) �t�H���g�͉��߂ł��܂���B�������A�����Ȃ��Ƃ������ŏ����o���� Type3 (�摜���܂�ł�����̂�����) �͓ǂ߂�K�v������܂��B���̍�Ƃ̈ꕔ�� psread.c �� splineutil.c �ōs���܂��B
+    PostScript フォントを解析します。Type0 フォントのエンコーディングの取得は行いません。Type3 は、あまりに自由度が高いので、すべて (というかほとんどの?) フォントは解釈できません。しかし、すくなくとも自分で書き出した Type3 (画像を含んでいるものを除く) は読める必要があります。この作業の一部は psread.c と splineutil.c で行われます。
   <DT>
     parsettf.c
   <DD>
 <!--Parses a TTF (or OTF) font file, and converts from quadratic B&eacute;zier
     to cubic B&eacute;zier (easy). -->
-    TTF (����� OTF) �t�H���g�t�@�C������͂��A2 �� B&eacute;zier �Ȑ����� 3 �� B&eacute;zier �Ȑ��ɕϊ����܂� (�ȒP)�B
+    TTF (および OTF) フォントファイルを解析し、2 次 B&eacute;zier 曲線から 3 次 B&eacute;zier 曲線に変換します (簡単)。
   <DT>
     prefs.c
   <DD>
 <!--Preference dialog.-->
-    �v���t�@�����X (���ݒ�) �_�C�A���O�ł��B
+    プリファレンス (環境設定) ダイアログです。
   <DT>
     psread.c
   <DD>
 <!--This is our postscript interpreter for various flavors of postscript- - eps
     files, type3s, type1s, type2s, etc. It can't handle much. -->
-    ����́A�e��̃^�C�v�� PostScript �\ EPS �t�@�C���AType3, Type1, Type2 �Ȃǂ����߂���C���^�v���^�ł��B���܂葽���͈����܂���B
+    これは、各種のタイプの PostScript — EPS ファイル、Type3, Type1, Type2 などを解釈するインタプリタです。あまり多くは扱えません。
   <DT>
     psunicodenames.c
   <DD>
 <!--A list of all the adobe standard names for unicode characters in postscript.
     Any NULL entry in this array gets an algorithmically generated name uni%04X -->
-    PostScript �ɂ�����AUnicode �����ɑ΂��� Adobe �W���̖��O�����ׂĊ܂ރ��X�g�ł��B���̔z��� NULL �ɂȂ��Ă��鍀�ڂ͂��ׂāAuni%04X �Ƃ����A���S���Y���Ő������ꂽ���O�ł��B
+    PostScript における、Unicode 文字に対する Adobe 標準の名前をすべて含むリストです。この配列で NULL になっている項目はすべて、uni%04X というアルゴリズムで生成された名前です。
   <DT>
     scripting.c
   <DD>
 <!--All the routines to handle scripts-->
-    �X�N���v�g���������ׂẴ��[�`���ł��B
+    スクリプトを扱うすべてのルーチンです。
   <DT>
     savefontdlg.c
   <DD>
 <!--Dialog and dispatcher for the Generate Fonts command.-->
-    <CODE>�t�H���g���o��(<U>G</U>)...</CODE> �R�}���h�̃_�C�A���O�ƃf�B�X�p�b�`���ł��B
+    <CODE>フォントを出力(<U>G</U>)...</CODE> コマンドのダイアログとディスパッチャです。
   <DT>
     sfd.c
   <DD>
@@ -352,39 +352,39 @@
     which are basically just the bits of the font which have changed written
     out in sfd format with a few extra headers to say what these changes should
     be applied to. -->
-    �Ǝ��̃X�v���C���t�H���g�f�[�^�x�[�X�t�H�[�}�b�g (<A HREF="sfdformat.html">sfd</A>) ��ǂݏ������郋�[�`���ł��B�܂��A�����Z�[�u�t�@�C���������܂��B����͊�{�I�ɂ́A�ύX���������t�H���g�̈ꕔ�������� SFD �t�H�[�}�b�g�ŏ����o���A�����̕ύX���ǂ̕����ɓK�p�����ׂ����L�������ʂ̒ǉ��w�b�_��t�����������̂ł��B
+    独自のスプラインフォントデータベースフォーマット (<A HREF="sfdformat.html">sfd</A>) を読み書きするルーチンです。また、自動セーブファイルも扱います。これは基本的には、変更を加えたフォントの一部分だけを SFD フォーマットで書き出し、それらの変更がどの文字に適用されるべきを記した少量の追加ヘッダを付け加えたものです。
   <DT>
     splashimage.c
   <DD>
 <!--The resource containing the splash image.-->
-    �X�v���b�V���摜���܂ރ��\�[�X�ł��B
+    スプラッシュ画像を含むリソースです。
   <DT>
     splinefill.c
   <DD>
 <!--The routines that do rasterizing (and anti-aliasing). Also provides skeleton
     routines for autohinting, remove overlap, etc. which use a similar structure. -->
-    ���X�^���C�Y (����уA���`�G�C���A�X����) ���s�����[�`���ł��B���l�̃f�[�^�\�����g�p����A�����q���g�̂��߂̃X�P���g������d�������Ȃǂ̋@�\���񋟂��Ă��܂��B
+    ラスタライズ (およびアンチエイリアス処理) を行うルーチンです。同様のデータ構造を使用する、自動ヒントのためのスケルトン化や重複除去などの機能も提供しています。
   <DT>
     splineoverlap.c
   <DD>
 <!--The routines which implement the remove overlap command.-->
-    �d�������R�}���h���������郋�[�`���ł��B
+    重複除去コマンドを実装するルーチンです。
   <DT>
     splinesave.c
   <DD>
 <!--Various helper routines when saving a postscript (and to a lesser extent
     TTF) font. Converts to type1 or type2 commands. Figures out optimal referencing. -->
-    PostScript (����قǂł͂���܂��� TrueType ��) �̏o�͗p���[�`���ł��BType1 �܂��� Type2 �ւ̕ϊ��R�}���h���܂݂܂��B�œK�ȎQ�Ƃ��Z�o���܂��B
+    PostScript (それほどではありませんが TrueType も) の出力用ルーチンです。Type1 または Type2 への変換コマンドを含みます。最適な参照を算出します。
   <DT>
     splinesaveafm.c
   <DD>
 <!--Generates an afm file.-->
-    AFM �t�@�C�����o�͂��܂��B
+    AFM ファイルを出力します。
   <DT>
     splinestroke.c
   <DD>
 <!--More routines to handle expand stroke.-->
-    �X�g���[�N�̑������������������߂̒ǉ����[�`���ł��B
+    ストロークの太線化処理を扱うための追加ルーチンです。
   <DT>
     splineutil.c
   <DD>
@@ -395,7 +395,7 @@
     fonts. Copies SplinePointLists. Transforms SplinePointLists. Solves (approximates
     a solution) cubic equations. Finds points of inflection. Figures out if a
     point is "near" a spline. -->
-    ���[�e�B���e�B���[�`���̑��ł��BPostScript Type1 ������� SplineChar �ɕϊ����܂��B�o�E���f�B���O�{�b�N�X���v�Z���܂��B�Q�Ƃƈˑ����̍X�V���������܂��B�`��̂��߂̃X�v���C���̒����ߎ����v�Z���܂��B���v���E�����v�������o���܂��BPostScript/TTF �t�H���g�̓ǂݍ��ݎ��ɓK�؂ȓ_�̃^�C�v�𐄑����܂��BSplinePointList ���R�s�[���܂��BSplienPointList �����W�ϊ����܂��B3 ���������� (�ߎ��I��) �����܂��B�ҋȓ_�����o���܂��B�_���X�v���C���ɑ΂��āg�߂��h���ǂ������Z�o���܂��B
+    ユーティリティルーチンの束です。PostScript Type1 文字列を SplineChar に変換します。バウンディングボックスを計算します。参照と依存性の更新を処理します。描画のためのスプラインの直線近似を計算します。時計回り・反時計回りを検出します。PostScript/TTF フォントの読み込み時に適切な点のタイプを推測します。SplinePointList をコピーします。SplienPointList を座標変換します。3 次方程式を (近似的に) 解きます。編曲点を検出します。点がスプラインに対して“近い”かどうかを算出します。
   <DT>
     splineutil2.c
   <DD>
@@ -413,59 +413,59 @@
     user has not set the control points him/herself when that point is moved).
     Determines if any point on a path is selected. Reverses the direction of
     a closed path. -->
-    ����ɒǉ��̃��[�e�B���e�B�֐��ł��B�X�v���C�������s�ł��邩�ǂ��������肵�܂� (����_���k�ނ��Ă��Ȃ��Ƃ��ł���A�������g���[�X����Ƃ��ɐ�����_���ł��邱�Ƃ�����܂��B�Ⴆ�΁A�����̐���_���[�_�̊Ԃ̓_�ɂ���Ƃ��ł�)�B2 �{�̃X�v���C���̌�_�� (�ߎ��I��) �������܂��B�_�̗񂩂�X�v���C�����ߎ����܂� (MergePoint ��A�X�v���C���ւ̓_�̑}���A���̑������̏����Ŏg�p����܂�)�B<CODE>����(<U>M</U>)</CODE> �R�}���h���̂��́B<CODE>�P����(<U>S</U>)</CODE> �R�}���h�B����������X�v���C�� (�����͏d���������[�`��������������̂ŁA���ׂĂ̏������s���O�ɍ폜������΂Ȃ�܂���) ���폜����R�}���h�B�V���� SplineFont ���쐬���郋�[�`���Btangent point (�Ȑ��̊J�n�_) �ŁA���̓_�̐���_���ړ������Ƃ��ɂ��A���̕��������������Ƃ�ۏ؂��邽�߂̃��[�`���B�V�����_ (����сA�_���������ꂽ�Ƃ��ɁA���̓_�ɐ���_��ݒ肵�Ă��Ȃ������ꍇ�j�̐���_�Ƃ��ēK�؂ȃf�t�H���g�l���Z�o���郋�[�`���B�p�X��̔C�ӂ̓_���I�����ꂽ���ǂ����̌���B�����p�X�̔��]�B
+    さらに追加のユーティリティ関数です。スプラインが平行であるかどうかを決定します (制御点が縮退していないときですら、直線をトレースするときに尖った点ができることがあります。例えば、両方の制御点が端点の間の点にあるときです)。2 本のスプラインの交点を (近似的に) 発見します。点の列からスプラインを近似します (MergePoint や、スプラインへの点の挿入、その他多くの処理で使用されます)。<CODE>合併(<U>M</U>)</CODE> コマンドそのもの。<CODE>単純化(<U>S</U>)</CODE> コマンド。小さすぎるスプライン (これらは重複除去ルーチンを混乱させるので、すべての処理を行う前に削除しければなりません) を削除するコマンド。新しい SplineFont を作成するルーチン。tangent point (曲線の開始点) で、その点の制御点を移動したときにも、その方向が正しいことを保証するためのルーチン。新しい点 (および、点が動かされたときに、その点に制御点を設定していなかった場合）の制御点として適切なデフォルト値を算出するルーチン。パス上の任意の点が選択されたかどうかの決定。閉じたパスの反転。
   <DT>
     stamp.c
   <DD>
 <!--Time stamp of when I last built.-->
-    �����ŋ߃r���h���s�����Ƃ��̃^�C���X�^���v�ł��B
+    私が最近ビルドを行ったときのタイムスタンプです。
   <DT>
     stamper.c
   <DD>
 <!--Program which generates time stamp. (stamp.c)-->
-    �^�C���X�^���v (stamp.c) �𐶐�����v���O�����ł��B
+    タイムスタンプ (stamp.c) を生成するプログラムです。
   <DT>
     start.c
   <DD>
 <!--main routine. Initializes things and reads comand line arguments. Handles
     the splash screen. Top dispatcher for autosave. -->
-    ���C�����[�`���ł��B�f�[�^�����������A�R�}���h���C��������ǂݍ��݂܂��B�X�v���b�V���X�N���[���������܂��B�����Z�[�u�p�̍ď�ʂ̃f�B�X�p�b�`���ł��B
+    メインルーチンです。データを初期化し、コマンドライン引数を読み込みます。スプラッシュスクリーンを扱います。自動セーブ用の再上位のディスパッチャです。
   <DT>
     threaddummy.c
   <DD>
 <!--contains a dummy pthread_create so I don't need to drag in pthreads when
     I'm not interested in that section of gio. -->
-    �_�~�[�� pthread_create ���܂�ł��܂��̂ŁAGIO �̂��̕����ɋ����������Ƃ��� pthreads ����������o���K�v�������Ȃ�܂��B
+    ダミーの pthread_create を含んでいますので、GIO のその部分に興味が無いときに pthreads を引っ張り出す必要が無くなります。
   <DT>
     tottf.c
   <DD>
 <!--Saves a true type or open type font. see also splinesave.c for reference
     character optimization and for OpenType Type2 conversion routines. -->
-    TrueType �܂��� OpenType �t�H���g��ۑ����܂��B�Q�ƕ����̍œK���� Opentype Type2 �ϊ����[�`���ɂ��Ă� splinesave.c ���Q�Ƃ��Ă��������B
+    TrueType または OpenType フォントを保存します。参照文字の最適化と Opentype Type2 変換ルーチンについては splinesave.c も参照してください。
   <DT>
     transform.c
   <DD>
 <!--Transform dialog and dispatch routines. -->
-    �ό`�_�C�A���O�ƃf�B�X�p�b�`���[�`���Q�ł��B
+    変形ダイアログとディスパッチルーチン群です。
   <DT>
     uiutil.c
   <DD>
 <!--Utilities for the user interface. -->
-    ���[�U�C���^�[�t�F�C�X�p�̃��[�e�B���e�B�ł��B
+    ユーザインターフェイス用のユーティリティです。
   <DT>
     utils.c
   <DD>
 <!--Hmm. this is blank.-->
-    ��[�B����͋�ł��B
+    んー。これは空です。
   <DT>
     windowmenu.c
   <DD>
 <!--Builds and dispatches the window menu.-->
-    �E�B���h�E���j���[�̍쐬�ƃf�B�X�p�b�`���s���܂��B
+    ウィンドウメニューの作成とディスパッチを行います。
 </DL>
 <P>
 <P ALIGN=Center>
-�\ <A HREF="files.html">�O</A> �\ <A HREF="overview.html">�ڎ�</A> �\
-<A HREF="sfdformat.html">��</A> �\
+— <A HREF="files.html">前</A> — <A HREF="overview.html">目次</A> —
+<A HREF="sfdformat.html">次</A> —
 </DIV>
 </BODY></HTML>

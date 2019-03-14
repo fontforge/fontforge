@@ -4,9 +4,9 @@
   <!-- AP: Created on: 9-Mar-2002 -->
   <!-- AP: Last modified: 2-Mar-2004 -->
   <LINK REL="icon" href="../fftype16.png">
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!--<TITLE>sfddiff - - A program for comparing fonts</TITLE> -->
-    <TITLE>sfddiff -- �t�H���g�̔�r���s���v���O����</A></TITLE>
+    <TITLE>sfddiff -- フォントの比較を行うプログラム</A></TITLE>
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
@@ -15,7 +15,7 @@
 <!--sfddiff<BR>
     <SMALL>A program for comparing fonts</SMALL> -->
     sfddiff<BR>
-    <SMALL>�t�H���g�̔�r���s���v���O����</SMALL>
+    <SMALL>フォントの比較を行うプログラム</SMALL>
 </H1>
 <P>
 <CODE>sfddiff [-merge outfile] [-ignorehints] [-version] [-help] sfdfile1
@@ -24,25 +24,25 @@ sfdfile2</CODE>
 <!--
 <EM>Sfddiff</EM> compares (or merges) two of
 <A HREF="overview.html">fontforge</A>'s sfd files and checks for differences. -->
-<EM>sfddiff</EM> �́A<A HREF="overview.html">FontForge</A> �� SFD �t�@�C�� 2 �̔�r (�܂��͕���) ���s���A����_���`�F�b�N���܂��B
+<EM>sfddiff</EM> は、<A HREF="overview.html">FontForge</A> の SFD ファイル 2 個の比較 (または併合) を行い、相違点をチェックします。
 <P>
 <!--
 It will notice:-->
-���̃v���O�����͈ȉ��̌������s���܂�:
+このプログラムは以下の検査を行います:
 <OL>
   <LI>
 <!--if the two fonts have different encodings-->
-    2 �̃t�H���g�̃G���R�[�f�B���O���قȂ邩
+    2 個のフォントのエンコーディングが異なるか
   <LI>
 <!--any characters present in one font but not in the other-->
-    �Е��̃t�H���g�݂̂ɑ��݂��A�����Е��ɂ͖����O���t�����邩
+    片方のフォントのみに存在し、もう片方には無いグリフがあるか
   <LI>
 <!--any characters present in both fonts but which have different sets of outlines
     or references. -->
-    �����̃t�H���g�ɑ��݂��邪�A�A�E�g���C���ƎQ�ƂɈႤ���������邩�ǂ���
+    両方のフォントに存在するが、アウトラインと参照に違う部分があるかどうか
   <LI>
 <!--optionally will check if the hints are different.-->
-    �q���g�ɈقȂ肪���邩�ǂ����̃`�F�b�N���I���\�ł��B
+    ヒントに異なりがあるかどうかのチェックも選択可能です。
 </OL>
 <P>
 <!--
@@ -53,37 +53,37 @@ characters present in sfdfile2 but not in sfdfile1. For any characters with
 different outlines or references, the background of the character will
 contain the splines from sfdfile2 (sadly references can not be placed in
 the background). -->
-<CODE>-merge</CODE> �t���O���w�肳��Ă���΁A���̎��̈����͏o�̓t�@�C�����Ƃ��Ĉ����Asfddiff �� 2 �̃t�H���g�𕹍��������̂������ɕۑ����܂��B���̃t�@�C���ɂ́Asfdfile1 �Ɋ܂܂�邷�ׂĂ̂��̂ƁAsfdfile2 �Ɋ܂܂�Ă��� sfdfile1 �Ɋ܂܂�Ȃ��S�ẴO���t���܂݂܂��B�A�E�g���C���܂��͎Q�Ƃ��قȂ�S�Ă̕����ɑ΂��ẮA�����̔w�i�� sfdfile2 �̃X�v���C�����i�[����܂� (�c�O�Ȃ���Q�Ƃ͔w�i�ɔz�u���邱�Ƃ��ł��܂���)�B
+<CODE>-merge</CODE> フラグが指定されていれば、その次の引数は出力ファイル名として扱われ、sfddiff は 2 つのフォントを併合したものをそこに保存します。このファイルには、sfdfile1 に含まれるすべてのものと、sfdfile2 に含まれていて sfdfile1 に含まれない全てのグリフを含みます。アウトラインまたは参照が異なる全ての文字に対しては、文字の背景に sfdfile2 のスプラインが格納されます (残念ながら参照は背景に配置することができません)。
 <P>
 <!--
 If the <CODE>-ignorehints</CODE> flag is specified, then no hint differences
 will be reported. -->
-���� <CODE>-ignorehints</CODE> �t���O���w�肳��Ă���΁A�q���g�̈Ⴂ�͕񍐂��܂���B
+もし <CODE>-ignorehints</CODE> フラグが指定されていれば、ヒントの違いは報告しません。
 <P>
 <!--
 <CODE>-help</CODE> will provide a mini description and will list the available
 options. -->
-<CODE>-help</CODE> �́A�ȒP�ȉ���Ǝg�p�\�ȃI�v�V�����ꗗ��\�����܂��B
+<CODE>-help</CODE> は、簡単な解説と使用可能なオプション一覧を表示します。
 <P>
 <!--
 <CODE>-usage</CODE> will list the available options. -->
-<CODE>-usage</CODE> �́A�g�p�\�ȃI�v�V�����ꗗ��\�����܂��B
+<CODE>-usage</CODE> は、使用可能なオプション一覧を表示します。
 <P>
 <!--
 <CODE>-version</CODE> will display the current version of <EM>sfddiff</EM>
 (a six digit string containing the date stamp of the source files). -->
-<CODE>-version</CODE> �́A���݂� <EM>sfddiff</EM> �̃o�[�W���� (�\�[�X�t�@�C���̓��t�X�^���v��\������ 6 ���̕�����) ��\�����܂��B
+<CODE>-version</CODE> は、現在の <EM>sfddiff</EM> のバージョン (ソースファイルの日付スタンプを表す数字 6 桁の文字列) を表示します。
 <H3>
 <!--Bugs-->
-    �o�O
+    バグ
 </H3>
 <P>
 <!--
 Doesn't work on CID keyed fonts yet. -->
-���݁ACID �L�[�w��t�H���g�ł͓��삵�܂���B
+現在、CID キー指定フォントでは動作しません。
 <H3>
 <!--See Also-->
-    �Q��
+    参照
 </H3>
 <P>
 <A HREF="overview.html">FontForge</A>

@@ -3,9 +3,9 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 3-May-2001 -->
   <!-- AP: Last modified: 13-Oct-2004 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!--<TITLE>Hinting</TITLE>-->
-    <TITLE>�q���g�Â�</TITLE>
+    <TITLE>ヒントづけ</TITLE>
   <LINK REL="icon" href="../fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
@@ -13,21 +13,21 @@
 <DIV id="in">
 <H1 ALIGN=Center>
 <!--Hinting-->
-    �q���g�Â�
+    ヒントづけ
 </H1>
 <P>
 <!--
 Postscript originally required that hints should not overlap. Now it requires
 that any active set of hints be non-overlapping, but it allows you to change
 sets as you move through the glyph. -->
-PostScript �ł͌����A�q���g���m���d�Ȃ荇��Ȃ��K�v������܂����B���݂ł́A�L���ȃq���g�̃Z�b�g�ɂ͏�ɏd�Ȃ荇�����̂������K�v������܂����A�O���t�����ړ����Ȃ���Z�b�g��ύX���邱�Ƃ��ł��܂��B
+PostScript では元来、ヒント同士が重なり合わない必要がありました。現在では、有効なヒントのセットには常に重なり合うものが無い必要がありますが、グリフ内を移動しながらセットを変更することができます。
 <P>
 <!--
 So to implement hinting with hint substitution FontForge needs to know not
 only the position and width of the stem being hinted, but also where the
 stem should be active. And it needs to know what stems overlap which other
 stems. -->
-���̂��߁A�q���g�u���𔺂��q���g�Â��������������邽�߂ɂ́AFontForge �̓q���g�Â����s�Ȃ��X�e���̈ʒu�ƕ���m�邾���łȂ��A�ǂ��ŗL�������邩��m��K�v������܂��B�܂��A�ǂ̃X�e�������̃X�e���Əd�Ȃ荇�������m��K�v������܂��B
+そのため、ヒント置換を伴うヒントづけ処理を実装するためには、FontForge はヒントづけを行なうステムの位置と幅を知るだけでなく、どこで有効化するかを知る必要があります。また、どのステムが他のステムと重なり合うかも知る必要があります。
 <P>
 <IMG SRC="../Hints.png" WIDTH="406" HEIGHT="399" ALIGN="Left"> <!--The horizontal
 stems are drawn in light green. The vertical stems are drawn in light blue.
@@ -38,7 +38,7 @@ stems conflict with each other. All the non-overlapping stem hints may be
 active at the same time, but only one of the two conflicting stem hints may
 be active. As FontForge outputs the glyph it decides at each point what stems
 need to be active, and activates them. -->
-�����X�e���͖��邢�΂ŕ\������Ă��܂��B�����X�e���͖��邢�ŕ\������Ă��܂��B�X�e�����L��������Ă���̈�͒����`�Ƃ��ēh��Ԃ���A���̗̈�̊O���ł́A�X�e���̃A�E�g���C���͓_���ŕ`����Ă��܂��B�����̃X�e���̂قƂ�ǂ͑��̃X�e���ƏՓ˂��܂��񂪁A2 �����A�����΂񉺂� 2 �̐����X�e���݂͌��ɏՓ˂������Ă��܂��B���Əd�Ȃ荇��Ȃ��X�e���q���g�͂��ׂē����ɗL�������邱�Ƃ��ł��܂����A2 �̏Փ˃X�e���q���g�̂����A�L�����ł���͕̂Е������ł��BFontForge ���O���t���o�͂���Ƃ��ɂ́A�e�_�łǂ̃X�e�����L��������K�v�����邩�𔻒f���āA�K�v�Ȃ��̂�L�������܂��B
+水平ステムは明るい緑で表示されています。垂直ステムは明るい青で表示されています。ステムが有効化されている領域は長方形として塗りつぶされ、その領域の外側では、ステムのアウトラインは点線で描かれています。これらのステムのほとんどは他のステムと衝突しませんが、2 つだけ、いちばん下の 2 個の水平ステムは互いに衝突し合っています。他と重なり合わないステムヒントはすべて同時に有効化することができますが、2 個の衝突ステムヒントのうち、有効化できるのは片方だけです。FontForge がグリフを出力するときには、各点でどのステムが有効化する必要があるかを判断して、必要なものを有効化します。
 <P>
 <!--
 Postscript now allows FontForge to control relative counter sizes. Counters
@@ -48,22 +48,22 @@ counters of equal sizes on the right. These form two independent counter
 groups, and FontForge's Hints-&gt;Auto Counter command will generate a counter
 description for each of them. You may also control the counters directly
 by using the Counters pane of the Element-&gt;Char Info dialog. -->
-���݂� PostScript �̎d�l�ɂ��AFontForge �͑��΃J�E���^�T�C�Y�𐧌䂷�邱�Ƃ��ł��܂��B�J�E���^�Ƃ́A�אڂ���X�e���̊Ԃ̋�Ԃ̂��Ƃł��B���̗�ł́A�΂��\�����鐅���X�e���̊ԂɁA�T�C�Y�̓����� 2 �̃J�E���^�����݂��A�ӂ̑��ɂ� 3 �̋ϓ��ȃX�e�������݂��܂��B������ 2 �̓Ɨ������J�E���^�O���[�v���\�����Ă���AFontForge �� <CODE>�q���g(<U>I</U>)</CODE>��<CODE>�����J�E���^�q���g(<U>C</U>)</CODE> �R�}���h�����s����Ƃ��̂��ꂼ��ɑ΂���J�E���^�L�q����������܂��B�J�E���^�̑傫���́A<CODE>�G�������g(<U>L</U>)</CODE>��<CODE>�O���t���(<U>I</U>)...</CODE> �_�C�A���O�� <CODE>[�J�E���^]</CODE> �y�C���Œ��ڎw�肷�邱�Ƃ��ł��܂��B
+現在の PostScript の仕様により、FontForge は相対カウンタサイズを制御することができます。カウンタとは、隣接するステムの間の空間のことです。左の例では、偏を構成する水平ステムの間に、サイズの等しい 2 個のカウンタが存在し、旁の側には 3 個の均等なステムが存在します。これらは 2 個の独立したカウンタグループを構成しており、FontForge の <CODE>ヒント(<U>I</U>)</CODE>→<CODE>自動カウンタヒント(<U>C</U>)</CODE> コマンドを実行するとそのそれぞれに対するカウンタ記述が生成されます。カウンタの大きさは、<CODE>エレメント(<U>L</U>)</CODE>→<CODE>グリフ情報(<U>I</U>)...</CODE> ダイアログの <CODE>[カウンタ]</CODE> ペインで直接指定することもできます。
 <P>
 <!--
 Counters spaces appear between vertical stems too, and in this case FontForge
 would output one counter group for the vertical stems. -->
-�J�E���^��Ԃ͐����X�e���Ԃɂ�����Ă��āA���̏ꍇ�� FontForge �͐����X�e���ɑ΂��� 1 �̃J�E���^�O���[�v���o�͂��܂��B
+カウンタ空間は垂直ステム間にも現れていて、この場合は FontForge は垂直ステムに対する 1 個のカウンタグループを出力します。
 <H2 Clear=All>
 <!--Serifs-->
-    �Z���t
+    セリフ
 </H2>
 <P>
 <IMG SRC="../serif.png" WIDTH="248" HEIGHT="227" ALIGN="Right"><!--One of the major
 advantages of hint substitution is that it allows certain standard serif
 situations to be described. In the example at right, the serif one the left
 is smaller than the stem a bit further right. -->
-�q���g�u���̑傫�ȗ��_�̈�́A�������̕W���I�ȃZ���t�̏�Ԃ��L�q���邱�Ƃ��ł��邱�Ƃł��B�E�̗�ł́A�����ɓ˂��o���Z���t�͉E���̃Z���t�����킸���ɔ����Ȃ��Ă��܂��B
+ヒント置換の大きな利点の一つは、いくつかの標準的なセリフの状態を記述することができることです。右の例では、左側に突き出たセリフは右側のセリフよりもわずかに薄くなっています。
 <P>
 <IMG SRC="../serif2.png" WIDTH="158" HEIGHT="110" ALIGN="Left"><!--But it doesn't
 solve all problems (or I don't know how to use it to do so). Consider the
@@ -74,10 +74,10 @@ between the left edge of the serif and the left edge of the stem be the same
 as the distance between the right edge of the stem and the right edge of
 the serif. But doing so would require overlapping hints, active at the same
 time. <SMALL>I think</SMALL> -->
-�����͌����Ă��A���ׂĂ̖�肪�����ł���킯�ł͂���܂��� (����Ƃ��A���̋@�\�̂��ׂẲ��p�@�������m��Ȃ�������������܂���)�B�E���̃Z���t���l���Ă݂܂��傤�B�q���g�u�����g���΁A�����̐����X�e������уZ���t�ɑ�������Z�������X�e���ɑ΂���q���g���`���邱�Ƃ��ł���ł��傤�B�Ƃ��낪�A�������Ȃ���΂Ȃ�Ȃ����́A�Z���t�̍��[�ƃX�e���̍��[�̊Ԋu���A�Z���t�̉E�[�ƃX�e���̉E�[�̊Ԋu�Ɠ��������邱�Ƃł��B������������s�Ȃ��ɂ́A�����Ɋ��������ꂽ�d�Ȃ荇���q���g���K�v�ł��B<SMALL>���̍l���ł́B</SMALL>
+そうは言っても、すべての問題が解決できるわけではありません (それとも、この機能のすべての応用法を私が知らないだけかもしれません)。右側のセリフを考えてみましょう。ヒント置換を使えば、中央の垂直ステムおよびセリフに相当する短い垂直ステムに対するヒントを定義することができるでしょう。ところが、解決しなければならない問題は、セリフの左端とステムの左端の間隔を、セリフの右端とステムの右端の間隔と等しくすることです。しかしこれを行なうには、同時に活性化された重なり合うヒントが必要です。<SMALL>私の考えでは。</SMALL>
 <H2>
 <!--Automatic Hinting-->
-    �����q���g�Â�
+    自動ヒントづけ
 </H2>
 <P>
 <!--
@@ -85,7 +85,7 @@ FontForge's AutoHint command can be used to figure out horizontal and vertical
 stem hints. It will also find hint substitution points (if any are needed),
 and will check for the simple counter description allowed by OpenType for
 non-Asian fonts (the equivalent of h/vstem3 hints in type1 fonts). -->
-FontForge �� <CODE>�����q���g(<U>H</U>)</CODE> �R�}���h���g���ƁA�����X�e���q���g����ѐ����X�e���q���g���Z�o���邱�Ƃ��ł��܂��B�܂��A�q���g�u�����s�Ȃ��_�� (�K�v�ȏꍇ) ��������A�A�W�A�ȊO�� OpenType �t�H���g�Ŏg�p�\�ȁA�P���ȃJ�E���^�L�q (����� Type1 �t�H���g�� h/vstem3 �q���g�Ɠ����ł�) �̃`�F�b�N���s�Ȃ��܂��B
+FontForge の <CODE>自動ヒント(<U>H</U>)</CODE> コマンドを使うと、水平ステムヒントおよび垂直ステムヒントを算出することができます。また、ヒント置換を行なう点も (必要な場合) 発見され、アジア以外の OpenType フォントで使用可能な、単純なカウンタ記述 (これは Type1 フォントの h/vstem3 ヒントと等価です) のチェックが行なわれます。
 <P>
 <!--
 Whenever you change a glyph FontForge keeps track of that fact that the hints
@@ -93,22 +93,22 @@ are out of date (when you autohint a glyph, or make a manual change to the
 hints FontForge resets this flag). If you generate a postscript font from
 something that contains glyphs with out of date hints, then FontForge will
 automagically regenerate them. -->
-�O���t�̕ύX���s�Ȃ����Ƃ��͏�ɁA���̃q���g���Â��Ȃ������Ƃ� FontForge �ɋL�^����Ă��܂� (�O���t�̎����q���g�Â����s�Ȃ������A�܂��̓q���g����ŕҏW�������� FontForge �͂��̃t���O��߂��܂�)�B�Â��q���g�������O���t���܂ރf�[�^���� PostScript �t�H���g���o�͂���ƁAFontForge �͎����I�Ƀq���g�𐶐��������܂��B
+グリフの変更を行なったときは常に、そのヒントが古くなったことが FontForge に記録されています (グリフの自動ヒントづけを行なった時、またはヒントを手で編集した時に FontForge はこのフラグを戻します)。古いヒントがついたグリフを含むデータから PostScript フォントを出力すると、FontForge は自動的にヒントを生成し直します。
 <P>
 <!--
 This may not always be appropriate. You can turn this off in general with
 the HintForGen preference item. You may turn it off for an individual glyph
 with the Hints-&gt;Don't AutoHint command. -->
-���̓��삪�]�v�Ȃ����b�ł���ꍇ������ł��傤�B���ݒ荀�� HintForGen ��ݒ肷��ƁA�t�H���g�S�̂ł�����I�t�ɂ��邱�Ƃ��ł��܂��B<CODE>�q���g(<U>I</U>)</CODE>��<CODE>�����q���g���~(<U>D</U>)</CODE> �R�}���h�Ōʂ̃O���t�ɑ΂��ăI�t�ɂ��邱�Ƃ��ł��܂��B
+この動作が余計なお世話である場合もあるでしょう。環境設定項目 HintForGen を設定すると、フォント全体でこれをオフにすることができます。<CODE>ヒント(<U>I</U>)</CODE>→<CODE>自動ヒントを停止(<U>D</U>)</CODE> コマンドで個別のグリフに対してオフにすることができます。
 <H2>
 <!--Manual Hinting -->
-    �蓮�q���g�Â�
+    手動ヒントづけ
 </H2>
 <P>
 <!--
 I hope that the FontForge's autohint command will be good enough that manual
 efforts will not be needed. But hopes like this are rarely fulfilled. -->
-���́AFontForge �̎����q���g�R�}���h���蓮������K�v�Ƃ��Ȃ��قǗD�G�ł��邱�Ƃ�����Ă��܂��B���������̎�̊肢�͖ő��Ɋ������Ȃ����̂ł��B
+私は、FontForge の自動ヒントコマンドが手動調整を必要としないほど優秀であることを願っています。しかしこの手の願いは滅多に叶えられないものです。
 <P>
 <!--
 The AutoHint command should find all stems in a glyph. Some of them it deems
@@ -116,43 +116,43 @@ to be useless and will remove them. If you find that FontForge is removing
 a hint that you think is important then invoke Hint-&gt;AutoHint with the
 shift key held down, this will tell FontForge not to prune any of the stems.
 You may then use Review Hints to prune things yourself. -->
-<CODE>�����q���g(<U>H</U>)</CODE> �R�}���h�̓O���t���̂��ׂẴX�e���𒊏o���܂��B���̂����̈ꕔ���s�v�ł���Ɣ��f�����΍폜����܂��B���Ȃ����d�v���ƍl����q���g�� FontForge ���폜���Ă���̂ɋC�Â����Ƃ��́AShift �L�[���������܂� <CODE>�q���g(<U>I</U>)</CODE>��<CODE>�����q���g(<U>H</U>)</CODE> ���Ăяo���ƁAFontForge �ɃX�e���̍폜����؍s��Ȃ��悤�ɒʒm�������Ɩ��ɂȂ�܂��B���̌�A�蓮�Ńq���g���폜����ɂ� <CODE>�q���g���m�F(<U>R</U>)...</CODE> ���g�p���Ă��������B
+<CODE>自動ヒント(<U>H</U>)</CODE> コマンドはグリフ内のすべてのステムを抽出します。そのうちの一部が不要であると判断されれば削除されます。あなたが重要だと考えるヒントを FontForge が削除しているのに気づいたときは、Shift キーを押したまま <CODE>ヒント(<U>I</U>)</CODE>→<CODE>自動ヒント(<U>H</U>)</CODE> を呼び出すと、FontForge にステムの削除を一切行わないように通知したこと名になります。その後、手動でヒントを削除するには <CODE>ヒントを確認(<U>R</U>)...</CODE> を使用してください。
 <P>
 <!--
 If you find that you must create your own hints, FontForge will only allow
 you to specify the position and width of the hint, it will then go off and
 try to guess the extents where the hint should be active. -->
-�����Ńq���g���쐬����K�v������Ƃ��ɁA����\�Ȃ̂̓q���g�̈ʒu�ƕ������ł��B�������w�肷��ƁAFontForge �̓q���g���L���������ׂ��͈͂̐����������ōs�Ȃ��܂��B
+自分でヒントを作成する必要があるときに、操作可能なのはヒントの位置と幅だけです。それらを指定すると、FontForge はヒントが有効化されるべき範囲の推測を自動で行ないます。
 <P>
 <!--
 You may manually: -->
-�蓮�ōs�Ȃ����Ƃ��ł���͈̂ȉ��̑���ł�:
+手動で行なうことができるのは以下の操作です:
 <UL>
   <LI>
 <!--Clear all horizontal stem hints-->
-    ���ׂĂ̐����X�e���q���g���폜����
+    すべての水平ステムヒントを削除する
   <LI>
 <!--Clear all vertical stem hints-->
-    ���ׂĂ̐����X�e���q���g���폜����
+    すべての垂直ステムヒントを削除する
   <LI>
 <!--Select two points and create a vertical stem hint that whose width is horizontal
     distance between the two points -->
-    2 �̓_��I�����A�����̊Ԃ̐��������̋����Ɠ����������������X�e���q���g���쐬����
+    2 個の点を選択し、それらの間の水平方向の距離と等しい幅をもつ垂直ステムヒントを作成する
   <LI>
 <!--Select two points and create a horizontal stem hint whose width is the vertical
     distance between the two points -->
-    2 �̓_��I�����A�����̊Ԃ̐��������̋����Ɠ����������������X�e���q���g���쐬����
+    2 個の点を選択し、それらの間の垂直方向の距離と等しい幅をもつ水平ステムヒントを作成する
   <LI>
 <!--Create a horizontal hint starting at an arbitrary y location with an arbitrary
     vertical width. -->
-    �C�ӂ� y ���W����n�܂�A�C�ӂ̕����������q���g���쐬����
+    任意の y 座標から始まり、任意の幅をもつ水平ヒントを作成する
   <LI>
 <!--Create a vertical hint starting at an arbitrary x location with an arbitrary
     horizontal width. -->
-    �C�ӂ� x ���W����n�܂�A�C�ӂ̕����������q���g���쐬����
+    任意の x 座標から始まり、任意の幅をもつ垂直ヒントを作成する
   <LI>
 <!--Review all your hints, manually changing or removing any (or all).-->
-    ���ׂẴq���g��\�����A�ǂꂩ (�܂��͑S��) ���蓮�ŕύX�܂��͍폜����B
+    すべてのヒントを表示し、どれか (または全部) を手動で変更または削除する。
 </UL>
 <P>
 <!--
@@ -161,26 +161,26 @@ commands, that glyph will be marked "Don't AutoHint" until you explicitly
 call the AutoHint command on it. You may also explicitly use the
 Hints-&gt;Don't AutoHint command to turn off FontForge's automatic hinting
 attempts. -->
-�O���t�̃q���g�Ɏ蓮�ŕύX��������΁A�O���t�́u�����q���g���~�v�ƈ�Â�����A���̕����ɖ����I�� <CODE>�����q���g(<U>H</U>)</CODE> �R�}���h���Ă΂Ȃ�����
+グリフのヒントに手動で変更を加えれば、グリフは「自動ヒントを停止」と印づけされ、その文字に明示的に <CODE>自動ヒント(<U>H</U>)</CODE> コマンドを呼ばない限り
 <P>
 <!--
 You may also manually -->
-�蓮�ňȉ��̑�����s�Ȃ����Ƃ��\�ł�:
+手動で以下の操作を行なうことも可能です:
 <UL>
   <LI>
 <!--Set hint change-over points-->
-    �q���g��؂�ւ���_�̐ݒ�
+    ヒントを切り替える点の設定
   <LI>
 <!--Set counter groups for a glyph-->
-    �O���t�ɑ΂���J�E���^�O���[�v�̐ݒ�
+    グリフに対するカウンタグループの設定
 </UL>
 <P>
 <!--
 These do not set the "Don't AutoHint" bit.-->
-�����́u�����q���g���~�v�r�b�g��ݒ肵�܂���B
+これらは「自動ヒントを停止」ビットを設定しません。
 <H3>
 <!--Manual Hint Substitution Points-->
-    �蓮�ɂ��q���g�u���_�̎w��
+    手動によるヒント置換点の指定
 </H3>
 <P>
 <!--
@@ -189,41 +189,41 @@ out where hint substitution should occur, but if this isn't good enough you
 may do it manually with the <A HREF="getinfo.html#HintMask">Element-&gt;Get
 Info</A> command (when the selection is a single point to which you want
 to attach a hintmask). -->
-FontForge �� <CODE>�q���g(<U>I</U>)</CODE>��<CODE>�q���g���u������_(<U>S</U>)</CODE> �R�}���h�́A�q���g�u�����N����_�������I�Ɍ��o���܂����A���ꂪ�\�����܂������Ă��Ȃ��Ƃ��́A(�q���g�}�X�N�ɏ������������_ 1 ���������炩���ߑI�����Ă����) <A HREF="getinfo.html#HintMask"><CODE>�G�������g(<U>L</U>)<CODE>��<CODE>���𓾂�(<U>I</U>)</CODE></A> �R�}���h����蓮�Őݒ���s�����Ƃ��ł��܂��B
+FontForge の <CODE>ヒント(<U>I</U>)</CODE>→<CODE>ヒントが置換する点(<U>S</U>)</CODE> コマンドは、ヒント置換が起こる点を自動的に検出しますが、これが十分うまく働いていないときは、(ヒントマスクに所属させたい点 1 個だけをあらかじめ選択してあれば) <A HREF="getinfo.html#HintMask"><CODE>エレメント(<U>L</U>)<CODE>→<CODE>情報を得る(<U>I</U>)</CODE></A> コマンドから手動で設定を行うことができます。
 <P>
 <!--
 If a glyph has conflicting hints then the first point in the glyph (the first
 point on the first contour) MUST have a hintmask attached to it. If it does
 not, the FontForge will automatically figure substitution points when it
 generates the font. Other points are not required (but may) have a hintmask.-->
-1 �̃O���t���ɂ��݂��ɏՓ˂���q���g���܂܂�Ă���ꍇ�A�O���t�̍ŏ��̓_ (�ŏ��̗֊s�̍ŏ��̓_) �ɂ́A���̓_����������q���g�}�X�N�����݂��Ȃ���΂Ȃ�܂���B�����Ȃ��Ă��Ȃ��ꍇ�AFontForge �̓t�H���g���o�͂��鎞�ɁA�u������_���������o���܂��B���̓_�̓q���g�}�X�N�ɏ������Ă���K�v�͂���܂��� (���Ă����܂��܂���)�B
+1 個のグリフ内にお互いに衝突するヒントが含まれている場合、グリフの最初の点 (最初の輪郭の最初の点) には、その点が所属するヒントマスクが存在しなければなりません。そうなっていない場合、FontForge はフォントを出力する時に、置換する点を自動検出します。他の点はヒントマスクに所属している必要はありません (してもかまいません)。
 <P>
 <!--
 The hintmask specifies what hints should be active when that point is positioned,
 and will control all subsequent points until a new hintmask is established.
 So in the
-following<IMG SRC="charwithhintmask.png" WIDTH="309" HEIGHT="322" ALIGN="Left"><IMG
-    SRC="hintmaskinfo.png" WIDTH="321" HEIGHT="459" ALIGN="Right"> example, the
+following<IMG SRC="../charwithhintmask.png" WIDTH="309" HEIGHT="322" ALIGN="Left"><IMG
+    SRC="../hintmaskinfo.png" WIDTH="321" HEIGHT="459" ALIGN="Right"> example, the
 selected point (on left) has the highlit hints active at it, In the glyph
 view the currently active stems are drawn much darker than the inactive ones.
 Points with hintmasks attached to them have circles drawn around them. -->
-�q���g�}�X�N�́A���̓_�̈ʒu��ݒ肷��Ƃ��ɁA�ǂ̃q���g���L��������Ă���ׂ������w�肵�A����ȍ~�E�V�����q���g�}�X�N���ݒ肳���܂ł̂��ׂĂ̓_�𐧌䂵�܂��B
-�Ⴆ�΁A�ȉ���<IMG SRC="../charwithhintmask.png" WIDTH="309" HEIGHT="322" ALIGN="Left"><IMG SRC="../hintmaskinfo.png" WIDTH="321" HEIGHT="459" ALIGN="Right"> ��ł́A(����) �I�����ꂽ�_�́A�����ŗL���ɂȂ��Ă���_���n�C���C�g�\������Ă��܂��B�O���t�r���[�ł͌��ݗL���ȃX�e���͖����ɂȂ��Ă���X�e���ɔ�ׂė�R�ƈÂ��F�ŕ\������Ă��܂��B
-��������q���g�}�X�N������_�́A�ۂň͂��ĕ\������Ă��܂��B
+ヒントマスクは、その点の位置を設定するときに、どのヒントが有効化されているべきかを指定し、それ以降・新しいヒントマスクが設定されるまでのすべての点を制御します。
+例えば、以下の<IMG SRC="../charwithhintmask.png" WIDTH="309" HEIGHT="322" ALIGN="Left"><IMG SRC="../hintmaskinfo.png" WIDTH="321" HEIGHT="459" ALIGN="Right"> 例では、(左の) 選択された点は、そこで有効になっている点がハイライト表示されています。グリフビューでは現在有効なステムは無効になっているステムに比べて歴然と暗い色で表示されています。
+所属するヒントマスクがある点は、丸で囲って表示されています。
 <P>
 <!--
 Remember to hold the control key down when making disjoint
 selections.<BR CLEAR=ALL> -->
-�A�����Ă��Ȃ��_��I������Ƃ��ɁAControl �L�[�������̂����Y��Ȃ��B<BR CLEAR=ALL>
+連続していない点を選択するときに、Control キーを押すのをお忘れなく。<BR CLEAR=ALL>
 <H3>
 <!--Manual <A NAME="Counter">Counter</A> Groups-->
-    �蓮�ɂ��<A NAME="Counter">�J�E���^�[</A>�̃O���[�v��
+    手動による<A NAME="Counter">カウンター</A>のグループ化
 </H3>
 <P>
 <!--
 FontForge also has a Hints-&gt;Auto Counter command which tries to figure
 out what stems form a counter group. -->
-FontForge �ɂ́A�J�E���^�O���[�v���\������X�e�������o���邽�߂� <CODE>�q���g(<U>I</U>)</CODE>��<CODE>�����J�E���^�q���g(<U>C</U>)</CODE> �R�}���h���p�ӂ���Ă��܂��B
+FontForge には、カウンタグループを構成するステムを検出するための <CODE>ヒント(<U>I</U>)</CODE>→<CODE>自動カウンタヒント(<U>C</U>)</CODE> コマンドも用意されています。
 <P>
 <!--
 Again you can do this manually, with the
@@ -231,10 +231,10 @@ Again you can do this manually, with the
 Info dialog. When creating a new counter group you are presented with a dialog
 very similar to the one above in which you must select a set of hints that
 bound a set of counters. -->
-���̏ꍇ���A<CODE>�G�������g(<U>L</U>)</CODE>��<CODE>�O���t���(<U>I</U>)</CODE> �� <A HREF="charinfo.html#CounterMasks"><CODE>[�J�E���^]</CODE></A> �^�u���g�p���āA�蓮�Őݒ���s�����Ƃ��ł��܂��B�V�����J�E���^�O���[�v�̍쐬������Ƃ��ɂ́A��̗�Ɣ��ɂ悭�����_�C�A���O���񎦂���A�����ł͗֊s�̑g�����ƌ��т������A�̃q���g��I������K�v������܂��B
+この場合も、<CODE>エレメント(<U>L</U>)</CODE>→<CODE>グリフ情報(<U>I</U>)</CODE> の <A HREF="charinfo.html#CounterMasks"><CODE>[カウンタ]</CODE></A> タブを使用して、手動で設定を行うことができます。新しいカウンタグループの作成をするときには、上の例と非常によく似たダイアログが提示され、そこでは輪郭の組合せと結びつけられる一連のヒントを選択する必要があります。
 <H2>
 <!--Hints and previously existing fonts.-->
-    �q���g�ƈȑO���݂����t�H���g
+    ヒントと以前存在したフォント
 </H2>
 <P>
 <!--
@@ -242,42 +242,42 @@ FontForge will not be able to convert TrueType instructions into PostScript
 hints when it reads a TrueType font (the format is too complex, there are
 too many possibilities, instead FontForge stores all the truetype instructions
 and writes them back out uninterpretted). -->
-FontForge �� TrueType �t�H���g�̓ǂݍ��ݎ��ɂ́A TrueType �̖��߂� PostScript �q���g�ɕϊ����܂��� (���̃t�H�[�}�b�g�͕��G�����Ă��܂�ɑ����̉\�����l�����邩��ł��B���̑���ɁAFontForge �͂��ׂĂ� TrueType ���߂�ۑ����āA���߂����ɂ��̂܂܏����߂��܂�)�B
+FontForge は TrueType フォントの読み込み時には、 TrueType の命令を PostScript ヒントに変換しません (そのフォーマットは複雑すぎてあまりに多数の可能性が考えられるからです。その代わりに、FontForge はすべての TrueType 命令を保存して、解釈せずにそのまま書き戻します)。
 <P>
 <!--
 From a Type1 font it will happily read all the hints in a glyph, and keep
 track of hint substitution points. It will not read counter hints though. -->
-Type1 �t�H���g����́A�O���t�ɑ��݂��邷�ׂẴq���g����Ȃ��ǂݍ��݁A�q���g���u������_���L�^���Ă��܂��B�������A�J�E���^�q���g�͓ǂݍ��݂܂���B
+Type1 フォントからは、グリフに存在するすべてのヒントを問題なく読み込み、ヒントが置換する点を記録しています。ただし、カウンタヒントは読み込みません。
 <P>
 <!--
 In an OpenType (Type2) font FontForge will read in all the hints, keep track
 of hint substitution points and the counter hints. -->
-OpenType (Type2) �t�H���g����́AFontForge �͂��ׂẴq���g��ǂݍ��݁A�q���g�u���_�ƃJ�E���^�q���g���L�^���Ă��܂��B
+OpenType (Type2) フォントからは、FontForge はすべてのヒントを読み込み、ヒント置換点とカウンタヒントを記録しています。
 <H2>
 <!--Hinting and TrueType-->
-    �q���g�Â��� TrueType
+    ヒントづけと TrueType
 </H2>
 <P>
 <!--
 FontForge does a really bad job of "hinting" (actually generating instructions
 for) truetype. Generally you will get better results with unhinted glyphs
 than with glyphs autoinstructed by fontforge. -->
-FontForge �� TrueType �t�H���g�ɑ΂��čs���u�q���g�Â��v (���ۂɖ��߂𐶐����܂�) �͂܂������Ђǂ����ł��B��ʓI�ɁA�q���g�Â����Ȃ��O���t�̕��� FontForge �ɂ���Ď����q���g�Â����ꂽ�O���t�����悢���ʂ�������ł��傤�B
+FontForge が TrueType フォントに対して行う「ヒントづけ」 (実際に命令を生成します) はまったくひどい物です。一般的に、ヒントづけしないグリフの方が FontForge によって自動ヒントづけされたグリフよりもよい結果が得られるでしょう。
 <P>
 <!--
 Hinting TrueType fonts opens a far wider range of possibilities. I have added
 several types of hints that are specific to truetype (and will be ignored
 by the postscript generation routines). These by no means exhaust the
 capabilities of TrueType. -->
-TrueType �t�H���g�̃q���g�Â��ɂ́A�����ƍL���͈͂̉\�����J���Ă��܂��B���� TrueType �ɌŗL�Ȃ������̃^�C�v�̃q���g��ǉ����܂��� (������ PostScript �o�̓��[�`���ł͖�������܂�)�B�����́ATrueType �̉\���𗘗p�������Ă���Ƃ͂ƂĂ������܂���B
+TrueType フォントのヒントづけには、ずっと広い範囲の可能性が開けています。私は TrueType に固有ないくつかのタイプのヒントを追加しました (これらは PostScript 出力ルーチンでは無視されます)。これらは、TrueType の可能性を利用しきっているとはとても言えません。
 <UL>
   <LI>
 <!--Diagonal Stem Hints<BR>
     These look similar to the horizontal and vertical stem hints that postscript
     understands but they allow you to constrain the width of diagonal stems as
     well.-->
-    �΍s�X�e���q���g<BR>
-    ������ PostScript ���������鐅������ѐ����X�e���q���g�Ǝ��Ă��܂����A����͓��l�̕��@�Ŏ΂߂̃X�e���̕��𐧌����邱�Ƃ��ł��܂��B
+    斜行ステムヒント<BR>
+    これらは PostScript が理解する水平および垂直ステムヒントと似ていますが、これは同様の方法で斜めのステムの幅を制限することができます。
   <LI>
 <!--Minimum Distance Hints<BR>
     TrueType allows you to say that the distance between two features should
@@ -287,19 +287,19 @@ TrueType �t�H���g�̃q���g�Â��ɂ́A�����ƍL���͈͂̉\�����J���Ă��܂��B���� Tr
     a minimum distance hint between a point on the right edge of that glyph and
     the width line, also these hints can be used to solve the serif problems
     mentioned above.-->
-    �ŏ������q���g<BR>
-    TrueType �ł́A2 �̓����̊Ԃ̋����������ă[���ɂȂ�Ȃ��悤�ɐݒ肷�邱�Ƃ��ł��܂��B�e�X�e���q���g�̊Ԃɂ͎����I�ɂ��ꂪ�ݒ肳��܂����A���̏ꏊ�ł������ݒ肷��Ɩ��ɗ����Ƃ�����܂��B�Ƃ��ɁA�O���t�̉E�[�Ɖ����̐��̊Ԃɍŏ������q���g��ݒ肷�邱�Ƃɂ��A�O���t�̌�ɕK���󔒂�����悤�ɐݒ肷�邱�Ƃ��ł��܂��B�܂��A���̃q���g�́A��قǌ��y�����Z���t�̖����������邱�Ƃ��ł��܂��B
+    最小距離ヒント<BR>
+    TrueType では、2 個の特徴の間の距離が決してゼロにならないように設定することができます。各ステムヒントの間には自動的にこれが設定されますが、他の場所でもこれを設定すると役に立つことがあります。とくに、グリフの右端と横幅の線の間に最小距離ヒントを設定することにより、グリフの後に必ず空白が入るように設定することができます。また、このヒントは、先ほど言及したセリフの問題を解決することもできます。
   <LI>
 <!--Round to Grid<BR>
     TrueType can move points to the rasterization grid before rasterizing glyphs.
     Stem hints and minimum distance hints will automagically be rounded, but
     there might be other cases where rounding is useful. -->
-    �O���b�h�ւ̊ۂ�<BR>
-    TrueType �ł́A�O���t�����X�^���C�Y����O�ɁA���X�^���C�Y���̃O���b�h�ɓ_���ړ����邱�Ƃ��ł��܂��B�X�e���q���g�ƍŏ������q���g�͎����I�Ɋۂ߂��s���܂����A�ۂߏ������𗧂ꍇ�͑��ɂ����݂��܂��B
+    グリッドへの丸め<BR>
+    TrueType では、グリフをラスタライズする前に、ラスタライズ時のグリッドに点を移動することができます。ステムヒントと最小距離ヒントは自動的に丸めが行われますが、丸め処理が役立つ場合は他にも存在します。
 </UL>
 <H2>
 <!--Examples of Minimum Distance Hinting-->
-    �ŏ������q���g�̗�
+    最小距離ヒントの例
 </H2>
 <P>
 <TABLE BORDER CELLPADDING="2">
@@ -311,10 +311,10 @@ TrueType �t�H���g�̃q���g�Â��ɂ́A�����ƍL���͈͂̉\�����J���Ă��܂��B���� Tr
       the difference between<BR>
       stem lengths is lost.</SMALL></TD> -->
       <SMALL>
-      ���S�Ƀq���g�Â���ꂽ�O���t��<BR>
-      ���S�ɃO���b�h���킹���s����<BR>
-      ���܂����A�X�e���Ԃ̋����̍���<BR>
-      �����Ă��܂��܂��B</SMALL></TD>
+      完全にヒントづけられたグリフは<BR>
+      完全にグリッド合わせが行われて<BR>
+      いますが、ステム間の距離の差は<BR>
+      失われてしまいます。</SMALL></TD>
   </TR>
   <TR>
     <TD><IMG SRC="../Efore.png" WIDTH="188" HEIGHT="208"></TD>
@@ -322,9 +322,9 @@ TrueType �t�H���g�̃q���g�Â��ɂ́A�����ƍL���͈͂̉\�����J���Ă��܂��B���� Tr
 <!--  One attempt to solve the<BR>
       above problem, compare<BR>
       to below.</SMALL></TD> -->
-      <SMALL>��̖�����������<BR>
-      ���݂̈�ł��B���Ɣ�ׂ�<BR>
-      �݂Ă��������B</SMALL></TD>
+      <SMALL>上の問題を解決する<BR>
+      試みの一つです。下と比べて<BR>
+      みてください。</SMALL></TD>
   </TR>
   <TR>
     <TD><IMG SRC="../Eback.png" WIDTH="189" HEIGHT="208"></TD>
@@ -332,50 +332,50 @@ TrueType �t�H���g�̃q���g�Â��ɂ́A�����ƍL���͈͂̉\�����J���Ă��܂��B���� Tr
 <!--  Note how the different<BR>
       directions in the md hint<BR>
       change the rasterization</SMALL></TD>-->
-      <SMALL>�ŏ������q���g���̈قȂ閽�߂�<BR>
-      �ǂ̂悤�Ƀ��X�^���C�Y���ʂ�<BR>
-      �e�����邩�ɂ����ӂ��������B</SMALL></TD>
+      <SMALL>最小距離ヒント内の異なる命令が<BR>
+      どのようにラスタライズ結果に<BR>
+      影響するかにご注意ください。</SMALL></TD>
   </TR>
 </TABLE>
 <H2>
 <!--Hint questions:-->
-    �q���g�Ɋւ���^��_:
+    ヒントに関する疑問点:
 </H2>
 <P>
 <!--
 I find the hint documentation inadequate for me to do a good job at hinting. -->
-�q���g�Â������ɍs�Ȃ����߂ɂ́A�q���g�Ɋւ��镶���͕s�K�؂ł��邱�ƂɋC�Â��܂����B
+ヒントづけを上手に行なうためには、ヒントに関する文書は不適切であることに気づきました。
 <UL>
   <LI>
 <!--Section 2.4 of
     <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5015.Type1_Supp.pdf">T1_Supp.pdf
     </A>says that vertical counters are offset from the lbearing, but the example
     2.6 shows them being offset from 0. -->
-    <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5015.Type1_Supp.pdf">T1_Supp.pdf</A> �̃Z�N�V���� 2.4 �ł́A�����J�E���^�͍��T�C�h�x�A�����O����̃I�t�Z�b�g�ł���ƌ����Ă��܂����A�� 2.6 �ł͂����̃I�t�Z�b�g�� 0 ����ł���Ɛ}�����Ă��܂��B
+    <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5015.Type1_Supp.pdf">T1_Supp.pdf</A> のセクション 2.4 では、垂直カウンタは左サイドベアリングからのオフセットであると言っていますが、例 2.6 ではそれらのオフセットは 0 からであると図示しています。
   <LI>
 <!--In
     <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5177.Type2.pdf">Type2</A>
     is it ok to use Counter mask if LanguageGroup is not 1 and the stems don't
     fit into a *stem3 pattern? Or can cntrmask only be used for *stem3 in latin
     letters? -->
-    <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5177.Type2.pdf">Type2</A> �ŁALanguageGroup �� 1 �łȂ��A�X�e���� *stem3 �p�^�[���ɓ��Ă͂܂�Ȃ��Ƃ��ɃJ�E���^�}�X�N���g���Ă������̂�? ����Ƃ� cntrmask �̓��e�������ł� *stem3 �ɂ����g���Ȃ��̂�?
+    <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5177.Type2.pdf">Type2</A> で、LanguageGroup が 1 でなく、ステムが *stem3 パターンに当てはまらないときにカウンタマスクを使ってもいいのか? それとも cntrmask はラテン文字では *stem3 にしか使えないのか?
   <LI>
     <IMG SRC="../NoPointHint.png" WIDTH="194" HEIGHT="232" ALIGN="Right"><!--How do
     hints work? Is a hint meaningful if there are no points associated with it?
     As in the "O" at right, where the two vertical stems have no points associated
     with them. -->
-    �q���g�͂ǂ̂悤�ɓ��삷��̂�? �q���g�ɕt������_�����݂��Ȃ��Ƃ��A���̃q���g�͗L���Ȃ̂�? (�E�̗�́gO�h�̂悤�ɁA2 �{�̐����q���g������ɔ����_�������Ȃ��ꍇ)�B
+    ヒントはどのように動作するのか? ヒントに付随する点が存在しないとき、そのヒントは有効なのか? (右の例の“O”のように、2 本の垂直ヒントがそれに伴う点をもたない場合)。
   <LI>
 <!--Is it meaningful for a hint to have points only on one side of it? Can reasonable
     hints be written for the serif cap above left? -->
-    �q���g�̕Е��̒[�ɂ����_�����݂��Ȃ��ꍇ�͂���͗L���Ȃ̂�? ����̃Z���t�̒��_�ɑ΂��āA�Ó��ȃq���g���o�͂��邱�Ƃ��\��?
+    ヒントの片方の端にしか点が存在しない場合はそれは有効なのか? 左上のセリフの頂点に対して、妥当なヒントを出力することが可能か?
 </UL>
 <P>
 <!--
 <A HREF="overview.html#Hints">Overview of Hinting in Postscript and
 TrueType</A>.<BR>
 <A HREF="hintsmenu.html">Hinting menu.</A> -->
-<A HREF="overview.html#Hints">Postscript �� TrueType �ł̃q���g�����̊T�v</A>.<BR>
-<A HREF="hintsmenu.html"><CODE>�q���g(<U>I</U>)</CODE>���j���[</A>
+<A HREF="overview.html#Hints">Postscript と TrueType でのヒント処理の概要</A>.<BR>
+<A HREF="hintsmenu.html"><CODE>ヒント(<U>I</U>)</CODE>メニュー</A>
 </DIV>
 </BODY></HTML>

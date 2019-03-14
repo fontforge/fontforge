@@ -3,9 +3,9 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 26-Oct-2005 -->
   <!-- AP: Last modified: 8-May-2006 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!--<TITLE>FontForge install procedures for unix/linux based systems</TITLE>-->
-    <TITLE>Unix/Linux �x�[�X�̃V�X�e����ւ� FontForge �̃C���X�g�[���菇</TITLE>
+    <TITLE>Unix/Linux ベースのシステム上への FontForge のインストール手順</TITLE>
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
@@ -13,68 +13,68 @@
   <H1 ALIGN=Center>
 <!--FontForge install procedures<BR>
     <SMALL>for unix/linux based systems</SMALL> -->
-    <SMALL>unix/linux �x�[�X�̃V�X�e����ւ�</SMALL><BR>
-    FontForge �̃C���X�g�[���菇
+    <SMALL>unix/linux ベースのシステム上への</SMALL><BR>
+    FontForge のインストール手順
   </H1>
   <UL>
     <LI>
 <!--  <A HREF="#Installing">Installing from a pre-built unix package</A> -->
-      <A HREF="#Installing">Unix �p�̍\�z�ς݂̃p�b�P�[�W�̃C���X�g�[�����@</A>
+      <A HREF="#Installing">Unix 用の構築済みのパッケージのインストール方法</A>
       <UL>
 	<LI>
 <!--  	<A HREF="#Obtaining">Obtaining one of my pre-built packages</A> -->
-	<A HREF="#Obtaining">�K�v�ȍ\�z�ς݂̃p�b�P�[�W����肷����@</A>
+	<A HREF="#Obtaining">必要な構築済みのパッケージを入手する方法</A>
 	  <UL>
 	    <LI>
 <!--  	    <A HREF="#Elsewhere">Obtaining a package from another source</A> -->
-	    <A HREF="#Elsewhere">���̒񋟌�����̃p�b�P�[�W�̓�����@</A>
+	    <A HREF="#Elsewhere">他の提供元からのパッケージの入手方法</A>
 	  </UL>
 	<LI>
 <!--  	<A HREF="#rpm">Installing from an rpm</A> (linux)-->
-	<A HREF="#rpm">RPM �̃C���X�g�[�����@</A> (Linux)
+	<A HREF="#rpm">RPM のインストール方法</A> (Linux)
 	<LI>
 <!--  	<A HREF="#executable">Installing from an executable tarball</A> (solaris) -->
-	<A HREF="#executable">���s�t�@�C���� tarball �̃C���X�g�[�����@</A> (Solaris)
+	<A HREF="#executable">実行ファイルの tarball のインストール方法</A> (Solaris)
 	<LI>
 <!--  	<A HREF="#package">What's in a package (in case you are interested)</A> -->
-	<A HREF="#package">�p�b�P�[�W�̓��e (�����̂���l����)</A>
+	<A HREF="#package">パッケージの内容 (興味のある人向け)</A>
 	<LI>
 <!--  	<A HREF="#Ports">Ports that I am aware of</A> -->
-	<A HREF="#Ports">�������݂�m���Ă���ڐA��</A>
+	<A HREF="#Ports">私が存在を知っている移植版</A>
       </UL>
     <LI>
 <!--  <A HREF="mac-install.html">Installing on a mac</A>-->
-      <A HREF="mac-install.html">Mac �ւ̃C���X�g�[�����@</A>
+      <A HREF="mac-install.html">Mac へのインストール方法</A>
     <LI>
 <!--  <A HREF="ms-install.html">Installing on MS/Windows</A>-->
-      <A HREF="ms-install.html">MS-Windows �ւ̃C���X�g�[�����@</A>
+      <A HREF="ms-install.html">MS-Windows へのインストール方法</A>
     <LI>
 <!--  <A HREF="vms-install.html">Installing on VMS</A>-->
-      <A HREF="vms-install.html">VMS �ւ̃C���X�g�[�����@</A>
+      <A HREF="vms-install.html">VMS へのインストール方法</A>
     <LI>
 <!--  <A HREF="source-build.html#source">Building and installing from source</A>-->
-      <A HREF="source-build.html#source">�\�[�X����̍\�z�E�C���X�g�[�����@</A>
+      <A HREF="source-build.html#source">ソースからの構築・インストール方法</A>
     <LI>
 <!--  <A HREF="source-build.html#Dependencies">Dependencies (external libraries/helper
       programs)</A> -->
-      <A HREF="source-build.html#Dependencies">�ˑ��� (�O�����C�u����/�⏕�v���O����)</A>
+      <A HREF="source-build.html#Dependencies">依存性 (外部ライブラリ/補助プログラム)</A>
     <LI>
 <!--  <A HREF="source-build.html#Documentation">Installing documentation</A>-->
-      <A HREF="source-build.html#Documentation">�����̃C���X�g�[�����@</A>
+      <A HREF="source-build.html#Documentation">文書のインストール方法</A>
     <LI>
 <!--  <A HREF="running.html">Running FontForge</A>-->
-      <A HREF="running.html">FontForge �̋N�����@</A>
+      <A HREF="running.html">FontForge の起動方法</A>
     <LI>
 <!--  <A HREF="uninstall.html">Uninstalling</A> -->
-      <A HREF="uninstall.html">�폜���@</A>
+      <A HREF="uninstall.html">削除方法</A>
   </UL>
   <H2>
 <!--<A NAME="Installing">Installing</A> from a pre-built package-->
-    �\�z�ς݃p�b�P�[�W�����<A NAME="Installing">�C���X�g�[�����@</A>
+    構築済みパッケージからの<A NAME="Installing">インストール方法</A>
   </H2>
   <H3>
 <!--<A NAME="Obtaining">Obtaining</A> one of my pre-built packages-->
-    �K�v�ȍ\�z�ς݃p�b�P�[�W��<A NAME="Obtaining">������@</A>
+    必要な構築済みパッケージの<A NAME="Obtaining">入手方法</A>
   </H3>
   <P>
 <!--
@@ -83,7 +83,7 @@
   <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040">sourceforge's
   file release system</A>. There's a certain amount of pother involved in using
   this system, but you get the file eventually. -->
-  ���� i386 Linux �V�X�e���p�̍\�z�ς݃p�b�P�[�W�ƁASparc Solaris �V�X�e���p�̃p�b�P�[�W�����J���Ă��܂��B�����́A<A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040">Sourceforge �̃t�@�C�����J�V�X�e��</A>�ɂ���܂��B�����̃V�X�e���̗��p�Ɋւ��Ă͂����炩�ʓ|�ȓ_������܂����A����𑱂���΃t�@�C�������ł���͂��ł��B
+  私は i386 Linux システム用の構築済みパッケージと、Sparc Solaris システム用のパッケージを公開しています。それらは、<A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040">Sourceforge のファイル公開システム</A>にあります。これらのシステムの利用に関してはいくらか面倒な点がありますが、操作を続ければファイルを入手できるはずです。
   <UL>
     <LI>
 <!--  If you follow the
@@ -91,79 +91,79 @@
       above </A>you will end up on a page showing many releases of FontForge for
       many systems<BR>
       in most cases you will want the most recent release. -->
-      <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040">���̃����N</A>�����ǂ��Ă����΁A�e��V�X�e���p�� FontForge �̂��܂��܂ȃ����[�X��\������y�[�W�ɍs�������ł��傤�B<BR>
-      �قƂ�ǂ̏ꍇ�A�ŐV�̃����[�X����肷��̂������ł��傤�B
+      <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040">このリンク</A>をたどっていけば、各種システム用の FontForge のさまざまなリリースを表示するページに行き着くでしょう。<BR>
+      ほとんどの場合、最新のリリースを入手するのがいいでしょう。
     <LI>
 <!--  Then click on the executable package you want to download:-->
-      ���ꂩ��_�E�����[�h���������s�t�@�C���̃p�b�P�[�W���N���b�N���܂�:
+      それからダウンロードしたい実行ファイルのパッケージをクリックします:
       <UL>
 	<LI>
 <!--      For i386 linux you will want the rpm file for the i386 (This happens to have
 	  been built on RedHat 9, but it should work on any i386 linux system that
 	  supports rpm - - RedHat, Fedora, Suse, Mandrake, etc.) -->
-	  i386 Linux ���g���Ă���Ȃ�΁Ai386 �p�� RPM �t�@�C�����_�E�����[�h����̂��悢�ł��傤 (����̍\�z�͂��܂��� RedHat 9 ��ōs���Ă��܂����ARPM ���T�|�[�g���Ă��� i386 ��� Linux �V�X�e���\�\RedHat, Fedora, Suse, Mandrake ���\�\�Ȃ�ǂ�ł������͂��ł�)�B
+	  i386 Linux を使っているならば、i386 用の RPM ファイルをダウンロードするのがよいでしょう (これの構築はたまたま RedHat 9 上で行っていますが、RPM をサポートしている i386 上の Linux システム——RedHat, Fedora, Suse, Mandrake 等——ならどれでも動くはずです)。
 	<LI>
 <!--  	  For Sparc Solaris you will want the tar.bz2 file for sparc. -->
-	  Sparc ��� Solaris ���g���Ă���Ȃ�ASparc �p�� tar.bz2 �t�@�C�����_�E�����[�h����K�v������ł��傤�B
+	  Sparc 上の Solaris を使っているなら、Sparc 用の tar.bz2 ファイルをダウンロードする必要があるでしょう。
       </UL>
     <LI>
 <!--  Then you have the joy of choosing a mirror site (pick one that's on the same
       continent you are) and click on the little icon in the download column -->
-      ���ɁA�~���[�T�C�g��I�Ԋ�т𖡂키���Ƃ��ł��܂� (�����Ɠ����嗤�̃T�C�g�̂ǂꂩ��I�т܂�)�BDownload ���ɂ��鏬���ȃA�C�R�����N���b�N���܂��B
+      次に、ミラーサイトを選ぶ喜びを味わうことができます (自分と同じ大陸のサイトのどれかを選びます)。Download 欄にある小さなアイコンをクリックします。
     <LI>
 <!--  Then you wait. After a bit you get another copy of this same page. After
       an even longer time your browser notices that you've started a download. -->
-      �҂��܂��B���΂炭����ƁA����Ɠ����y�[�W���Ăѕ\������܂��B�u���E�U���A�_�E�����[�h���J�n�����Ƃ������b�Z�[�W��\������̂͂��̂����ƌ�ł��B
+      待ちます。しばらくすると、これと同じページが再び表示されます。ブラウザが、ダウンロードを開始したというメッセージを表示するのはそのずっと後です。
   </UL>
   <H4>
 <!--<A NAME="Elsewhere">Obtaining</A> a package from another source -->
-    ���̒񋟌�����̃p�b�P�[�W��<A NAME="Elsewhere">���肷��</A>���@
+    他の提供元からのパッケージを<A NAME="Elsewhere">入手する</A>方法
   </H4>
   <P>
 <!--
   Most of the linux distributions have packages for fontforge. These will often
   be a little older than my packages, but perhaps more stable. I shall not
   try to provide a complete list, but I am aware of the following sites: -->
-  �قƂ�ǂ� Linux �f�B�X�g���r���[�V������ FontForge �̃p�b�P�[�W��񋟂��Ă��܂��B���΂��Ύ��̃p�b�P�[�W���Â����̂ł����A�����炭�����萫���������̂ł��傤�B���S�ȃ��X�g��񋟂������͂���܂��񂪁A�ȉ��̃T�C�g�ɂ��Ă͒m���Ă��܂�:
+  ほとんどの Linux ディストリビューションは FontForge のパッケージを提供しています。しばしば私のパッケージより古いものですが、おそらくより安定性が高いものでしょう。完全なリストを提供するつもりはありませんが、以下のサイトについては知っています:
   <UL>
     <LI>
 <!--  <A HREF="http://packages.debian.org/unstable/x11/fontforge.html">debian</A>
       - - has builds for (alpha, amd64, arm, hppa, hurd-i386, i386, ia64, m68k,
       mips, mipsel, ppc, s390, sparc) -->
-      <A HREF="http://packages.debian.org/unstable/x11/fontforge.html">Debian</A> �\ (alpha, amd64, arm, hppa, hurd-i386, i386, ia64, m68k, mips, mipsel, ppc, s390, sparc) �p�̊e�r���h������܂��B
+      <A HREF="http://packages.debian.org/unstable/x11/fontforge.html">Debian</A> — (alpha, amd64, arm, hppa, hurd-i386, i386, ia64, m68k, mips, mipsel, ppc, s390, sparc) 用の各ビルドがあります。
     <LI>
 <!--  <A HREF="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/fonts/fontforge/README.html">netbsd</A>
       - - has builds for (alpha, i386, ppc, sparc, x86_64) -->
-      <A HREF="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/fonts/fontforge/README.html">NetBSD</A> �\ (alpha, i386, ppc, sparc, x86_64) �p�̊e�r���h������܂��B
+      <A HREF="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/fonts/fontforge/README.html">NetBSD</A> — (alpha, i386, ppc, sparc, x86_64) 用の各ビルドがあります。
     <LI>
 <!--  <A HREF="http://www.rpmfind.com/">rpmfind</A> - - will point you toward builds
       for Fedora, Suse, Mandrake, and others -->
-      <A HREF="http://www.rpmfind.com/">rpmfind</A> �\ Fedora, SUSE, Mandrake �Ȃǂ̂��߂̃r���h���w�E���܂��B
+      <A HREF="http://www.rpmfind.com/">rpmfind</A> — Fedora, SUSE, Mandrake などのためのビルドを指摘します。
     <LI>
 <!--  Apostolos Syropoulos has a Solaris x86 package at
       <A HREF="http://ocean1.ee.duth.gr/Solaris/PfaEdit.pkg.gz">his site</A> -->
-      Apostolos Syropoulos �́A<A HREF="http://ocean1.ee.duth.gr/Solaris/PfaEdit.pkg.gz">�ނ̃T�C�g</A>�� Solaris x86 �p�p�b�P�[�W��z�z���Ă��܂��B
+      Apostolos Syropoulos は、<A HREF="http://ocean1.ee.duth.gr/Solaris/PfaEdit.pkg.gz">彼のサイト</A>で Solaris x86 用パッケージを配布しています。
     <LI>
 <!--  <A HREF="mac-install.html">Mac OS/X </A>- - Although the Mac is now a unix
       system its install procedure is sufficiently different that I have a page
       devoted to it specifically. -->
-      <A HREF="mac-install.html">Mac OS X</A> �\ ���݂� Mac �� Unix �V�X�e���ł͂���܂����A�C���X�g�[���菇�����Ȃ�قȂ�̂ŁA������p�Ɉ����y�[�W�����܂����B
+      <A HREF="mac-install.html">Mac OS X</A> — 現在の Mac は Unix システムではありますが、インストール手順がかなり異なるので、それを専用に扱うページを作りました。
   </UL>
   <H3>
 <!--Installing from an <A NAME="rpm">rpm</A>-->
-    <A NAME="rpm">RPM</A> ����̃C���X�g�[�����@
+    <A NAME="rpm">RPM</A> からのインストール方法
   </H3>
   <P>
 <!--
   The i386 package I provide, and many of the linux packages others provide
   are "rpm" files. -->
-  �����񋟂��� i386 �p�p�b�P�[�W�ƁA�����̑��� Linux �p�p�b�P�[�W�́grpm�h�t�@�C���ł��B
+  私が提供する i386 用パッケージと、多くの他の Linux 用パッケージは“rpm”ファイルです。
   <P>
 <!--
   Installing an rpm package is relatively straight forward. You will need to
   be root. Move to the directory containing the downloaded rpm, and then type
   (do not type the "$" or "#"): -->
-  rpm �p�b�P�[�W�̃C���X�g�[���͔�r�I�P���ȍ�Ƃł��B�܂� root �ɂȂ�K�v������܂��Brpm ���܂ރf�B���N�g���Ɉړ����A�ȉ��̂悤�Ƀ^�C�v���܂� (�g<CODE>$</CODE>�h��g<CODE>#</CODE>�h �̓^�C�v���܂���):
+  rpm パッケージのインストールは比較的単純な作業です。まず root になる必要があります。rpm を含むディレクトリに移動し、以下のようにタイプします (“<CODE>$</CODE>”や“<CODE>#</CODE>” はタイプしません):
   <BLOCKQUOTE>
     <PRE><FONT COLOR="Gray"># </FONT>rpm -i fontforge-*.rpm
 </PRE>
@@ -172,14 +172,14 @@
 <!--
   If you've already installed fontforge and are updating an earlier version
   then you should type: -->
-  ���� FontForge �����ɃC���X�g�[������Ă��āA�Â��o�[�W�������A�b�v�f�[�g����ꍇ�́A�ȉ��̂悤�Ƀ^�C�v����K�v������܂�:
+  もし FontForge が既にインストールされていて、古いバージョンをアップデートする場合は、以下のようにタイプする必要があります:
   <BLOCKQUOTE>
     <PRE><FONT COLOR="Gray"># </FONT>rpm -U fontforge-*.rpm
 </PRE>
   </BLOCKQUOTE>
   <H3>
 <!--Installing from an <A NAME="executable">executable</A> tarball -->
-    <A NAME="executable">���s�\�t�@�C��</A> �� tarball ����̃C���X�g�[�����@
+    <A NAME="executable">実行可能ファイル</A> の tarball からのインストール方法
   </H3>
   <P>
 <!--
@@ -187,7 +187,7 @@
   of ".tar.bz2"). You will probably need to be root for some of this process.
   Move to the directory containing the downloaded tarball and type (do not
   type the "$" or "#"): -->
-  ���̒񋟂��� Solaris �p�b�P�[�W�� bzip ���k���ꂽ tarball �ł� (�܂�A�t�@�C���̊g���q�́g.tar.bz2�h�ł�)�B���̎菇���s�����߂ɂ� root �ɂȂ�K�v������ł��傤�B�_�E�����[�h ���� tarball ���܂ރf�B���N�g���Ɉړ����Ĉȉ��̂悤�Ƀ^�C�v���Ă������� (�g<CODE>$</CODE>�h��g<CODE>#</CODE>�h�͓��͂��܂���):
+  私の提供する Solaris パッケージは bzip 圧縮された tarball です (つまり、ファイルの拡張子は“.tar.bz2”です)。この手順を行うためには root になる必要があるでしょう。ダウンロード した tarball を含むディレクトリに移動して以下のようにタイプしてください (“<CODE>$</CODE>”や“<CODE>#</CODE>”は入力しません):
   <BLOCKQUOTE>
     <PRE><FONT COLOR="Gray">$ </FONT>bunzip2 fontforge-*.tar.bz2
 <FONT COLOR="Gray">$ </FONT>tar xf fontforge-*.tar
@@ -201,13 +201,13 @@
   (Older versions may have an extension of .tgz. In this case you would replace
   the first two lines with "<CODE><FONT COLOR="Gray">$ </FONT>tar xfz
   fontforge-*.tgz</CODE>") -->
-  (���Â��o�[�W������ .tgz �Ƃ����g���q�����Ă���͂��ł��B���̏ꍇ�A�ŏ��� 2 �s���g<CODE><FONT COLOR="Gray"$ </FONT>tar xfz fontforge-*.tgz</CODE>�h�Ƃ����s�ɒu��������K�v������ł��傤)
+  (より古いバージョンは .tgz という拡張子がついているはずです。その場合、最初の 2 行を“<CODE><FONT COLOR="Gray"$ </FONT>tar xfz fontforge-*.tgz</CODE>”という行に置き換える必要があるでしょう)
   <P>
 <!--
   <FONT COLOR="Red"><STRONG>Caveat:</STRONG></FONT> My packages generally install
   to /usr/local, and this may not be in your default PATH. You may need to
   add a line like -->
-  <FONT COLOR="Red"><STRONG>�x��:</STRONG></FONT> ���̃p�b�P�[�W�͈�ʂ� /usr/local �փC���X�g�[�����s���܂����A�f�t�H���g�� PATH �ɂ͈�ʂɂ����͊܂܂�Ă��܂���B�Ⴆ��
+  <FONT COLOR="Red"><STRONG>警告:</STRONG></FONT> 私のパッケージは一般に /usr/local へインストールを行いますが、デフォルトの PATH には一般にここは含まれていません。例えば
   <BLOCKQUOTE>
     <PRE>PATH=$PATH:/usr/local/bin ; export PATH
 </PRE>
@@ -215,53 +215,53 @@
   <P>
 <!--
   to your ~/.bashrc file (or equivalent if you use a different shell). -->
-  �̂悤�ȋL�q (�܂��͂��Ȃ��̎g�p����ʂ̃V�F���œ����ȑ���) �� ~/.bashrc �ɉ����Ă����K�v������ł��傤
+  のような記述 (またはあなたの使用する別のシェルで等価な操作) を ~/.bashrc に加えておく必要があるでしょう
   <H3>
 <!--What's in a <A NAME="package">package</A>-->
-    <A NAME="package">�p�b�P�[�W�̓��e</A>
+    <A NAME="package">パッケージの内容</A>
   </H3>
   <P>
 <!--
   Just in case you are interested. My packages contain: -->
-  �����̂�����������ǂ݂��������B���̃p�b�P�[�W�ɂ͈ȉ��̃t�@�C�����܂܂�Ă��܂�:
+  興味のある方だけお読みください。私のパッケージには以下のファイルが含まれています:
   <UL>
     <LI>
 <!--  fontforge - - the executable itself -->
-      fontforge �\ ���s�t�@�C�����̂���
+      fontforge — 実行ファイルそのもの
     <LI>
 <!--  libgunicode*.so - - a shared library containing functions for manipulating
       UCS2 strings, and various data about unicode code points. -->
-      libgunicode*.so �\ UCS2 ������𑀍삷�邽�߂̊֐��ƁAUnicode �����ʒu�Ɋւ��邳�܂��܂ȃf�[�^���܂ދ��L���C�u����
+      libgunicode*.so — UCS2 文字列を操作するための関数と、Unicode 符号位置に関するさまざまなデータを含む共有ライブラリ
     <LI>
 <!--  libgdraw*.so - - the graphics and widget library used by fontforge -->
-      libgdraw*.so �\ FontForge ���g�p����O���t�B�b�N�ƃE�B�W�F�b�g�̃��C�u����
+      libgdraw*.so — FontForge が使用するグラフィックとウィジェットのライブラリ
     <LI>
 <!--  pfaedit-ui.{es,fr,it,ja,ru} - - translated strings to provide a user interface
       for non-English users. -->
-      pfaedit-ui.{es,fr,it,ja,ru} �\ �p��ȊO�̃��[�U�p�Ƀ��[�U�C���^�t�F�[�X��񋟂��邽�߂̖|�󕶎���
+      pfaedit-ui.{es,fr,it,ja,ru} — 英語以外のユーザ用にユーザインタフェースを提供するための翻訳文字列
     <LI>
 <!--  *.cidmap - - not present in all packages. These are useful when editing CID-keyed
       Asian fonts. -->
-      *.cidmap �\ �K���������ׂẴp�b�P�[�W�ɂ���킯�ł͂���܂���B�A�W�A�� CID �L�[�w��t�H���g��ҏW����̂ɖ𗧂��܂��B
+      *.cidmap — 必ずしもすべてのパッケージにあるわけではありません。アジアの CID キー指定フォントを編集するのに役立ちます。
     <LI>
       README*
     <LI>
 <!--  fontforge.1 - - a manual page for fontforge-->
-      fontforge.1 �\ FontForge �̃}�j���A���y�[�W
+      fontforge.1 — FontForge のマニュアルページ
   </UL>
   <H3>
 <!--<A NAME="Ports">Ports</A> that I am aware of -->
-    �������݂�m���Ă���<A NAME="Ports">�ڐA��</A>
+    私が存在を知っている<A NAME="Ports">移植版</A>
   </H3>
   <P>
 <!--
   FontForge has been ported to the following systems (at some point in its
   life) -->
-  FontForge �́A(���Ȃ��Ƃ��ǂꂩ 1 �̔ł�) �ȉ��̃V�X�e���ɈڐA����Ă��܂��B
+  FontForge は、(少なくともどれか 1 つの版が) 以下のシステムに移植されています。
   <UL>
     <LI>
 <!--  Linux (obviously, (redhat, debian, suse, mandrake), -->
-      Linux (���R�Ȃ��� (redhat, debian, suse, mandrake) ��,
+      Linux (当然ながら (redhat, debian, suse, mandrake) の,
       386,spark,arm,alpha,ia64,m68k,mips,mipsel,powerpc,s390)
     <LI>
       Solaris
@@ -277,10 +277,10 @@
       Mac OS/X
     <LI>
 <!--  OpenVMS7.3 for Alpha -->
-      Alpha ��� OpenVMS 7.3
+      Alpha 上の OpenVMS 7.3
     <LI>
 <!--  <A HREF="http://cygwin.com/">cygwin</A> with X running on top of MS windows. -->
-      MS-Windows ��� <A HREF="http://cygwin.com/">cygwin</A> �� X
+      MS-Windows 上の <A HREF="http://cygwin.com/">cygwin</A> と X
   </UL>
   <P>
   <P>
@@ -288,17 +288,17 @@
   <UL>
     <LI>
 <!--  <A HREF="source-build.html#source">Building and installing from source</A>-->
-      <A HREF="source-build.html#source">�\�[�X����̍\�z�E�C���X�g�[�����@</A>
+      <A HREF="source-build.html#source">ソースからの構築・インストール方法</A>
     <LI>
 <!--  <A HREF="source-build.html#Dependencies">Dependencies (external libraries/helper
       programs)</A> -->
-      <A HREF="source-build.html#Dependencies">�ˑ��� (�O�����C�u����/�⏕�v���O����)</A>
+      <A HREF="source-build.html#Dependencies">依存性 (外部ライブラリ/補助プログラム)</A>
     <LI>
 <!--  <A HREF="source-build.html#Documentation">Installing documentation</A>-->
-      <A HREF="source-build.html#Documentation">�����̃C���X�g�[�����@</A>
+      <A HREF="source-build.html#Documentation">文書のインストール方法</A>
     <LI>
 <!--  <A HREF="running.html">Running FontForge</A>-->
-      <A HREF="running.html">FontForge �̎��s���@</A>
+      <A HREF="running.html">FontForge の実行方法</A>
   </UL>
   <P>
 </DIV>

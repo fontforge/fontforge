@@ -3,17 +3,17 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 3-Feb-2002 -->
   <!-- AP: Last modified: 16-Apr-2004 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
   <LINK REL="icon" href="../fftype16.png">
 <!--<TITLE>Format for X11 pcf bitmap font files</TITLE>-->
-    <TITLE>X11 �� PCF �r�b�g�}�b�v�t�H���g�t�@�C���̃t�H�[�}�b�g</TITLE>
+    <TITLE>X11 の PCF ビットマップフォントファイルのフォーマット</TITLE>
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
 <H1 ALIGN=Center>
 <!--Format for X11 pcf bitmap font files -->
-    X11 �� PCF �r�b�g�}�b�v�t�H���g�t�@�C���̃t�H�[�}�b�g
+    X11 の PCF ビットマップフォントファイルのフォーマット
 </H1>
 <P>
 <!--
@@ -21,22 +21,22 @@ This file is based on the
 <A HREF="http://ftp.x.org/pub/R6.4/xc/lib/font/bitmap/">X11 sources</A>.
 If something here disagrees with what is found in the sources, my statement
 is incorrect. The sources are definitive. -->
-���̃t�@�C����<A HREF="http://ftp.x.org/pub/R6.4/xc/lib/font/bitmap/"> X11 �̃\�[�X</A>�Ɋ�Â��Ă��܂��B�\�[�X�ɏ�����Ă�����e�Ɖ��炩�̐H���Ⴂ������΁A���̋L�q���Ԉ���Ă��܂��B�\�[�X����`�ł��B
+このファイルは<A HREF="http://ftp.x.org/pub/R6.4/xc/lib/font/bitmap/"> X11 のソース</A>に基づいています。ソースに書かれている内容と何らかの食い違いがあれば、私の記述が間違っています。ソースが定義です。
 <P>
 <!--
 The pcf (portable compiled format) file format is a binary representation
 of a bitmap font used by the XServer. It consists of a file header followed
 by a series of tables, with the header containing pointers to all the tables. -->
-PCF (portable compile format) �t�@�C���t�H�[�}�b�g�� X �T�[�o���g�p����r�b�g�}�b�v�t�H���g�̔{�Ȃ�\���ł��B�t�@�C���w�b�_�ɑ�����A�̃e�[�u���ƁA���ׂẴe�[�u���ɂւ̃|�C���^���܂ރw�b�_�������܂��B
+PCF (portable compile format) ファイルフォーマットは X サーバが使用するビットマップフォントの倍なり表現です。ファイルヘッダに続き一連のテーブルと、すべてのテーブルにへのポインタを含むヘッダが続きます。
 <H2>
 <!--File Header-->
-    �t�@�C���w�b�_
+    ファイルヘッダ
 </H2>
 <P>
 <!--
 The file header contains 32 bit integers stored with the least significant
 byte first. -->
-�t�@�C���w�b�_�͍ŉ��ʃo�C�g��擪�u���� 32 �r�b�g�̐����l�̕��т���Ȃ�܂��B
+ファイルヘッダは最下位バイトを先頭置いた 32 ビットの整数値の並びからなります。
 <!--
 <BLOCKQUOTE>
   <PRE>char header[4];			/* always "\1fcp" */
@@ -50,20 +50,20 @@ struct toc_entry {
 </PRE>
 </BLOCKQUOTE> -->
 <BLOCKQUOTE>
-  <PRE>char header[4];			/* ��� "\1fcp" */
+  <PRE>char header[4];			/* 常に "\1fcp" */
 lsbint32 table_count;
 struct toc_entry {
-    lsbint32 type;		/* ���L�Q��, �ǂ̃e�[�u�������w�� */
-    lsbint32 format;		/* ���L�Q��, �f�[�^���e�[�u�����ɂǂ�ȃt�H�[�}�b�g�Ŋi�[����邩���w�� */
-    lsbint32 size;		/* �o�C�g�� */
-    lsbint32 offset;		/* �t�@�C���̐擪���� */
+    lsbint32 type;		/* 下記参照, どのテーブルかを指定 */
+    lsbint32 format;		/* 下記参照, データがテーブル内にどんなフォーマットで格納されるかを指定 */
+    lsbint32 size;		/* バイト数 */
+    lsbint32 offset;		/* ファイルの先頭から */
 } tables[table_count];
 </PRE>
 </BLOCKQUOTE>
 <P>
 <!--
 The type field may be one of: -->
-type �t�B�[���h�͈ȉ��̂ǂꂩ 1 �ł�:
+type フィールドは以下のどれか 1 つです:
 <BLOCKQUOTE>
   <PRE>#define PCF_PROPERTIES		    (1&lt;&lt;0)
 #define PCF_ACCELERATORS	    (1&lt;&lt;1)
@@ -79,7 +79,7 @@ type �t�B�[���h�͈ȉ��̂ǂꂩ 1 �ł�:
 <P>
 <!--
 The format field may be one of: -->
-format �t�B�[���h�͈ȉ��̂ǂꂩ 1 �ł�:
+format フィールドは以下のどれか 1 つです:
 <BLOCKQUOTE>
   <PRE>#define PCF_DEFAULT_FORMAT	0x00000000
 #define PCF_INKBOUNDS		0x00000200
@@ -90,7 +90,7 @@ format �t�B�[���h�͈ȉ��̂ǂꂩ 1 �ł�:
 <P>
 <!--
 The format field may be modified by: -->
-format �t�B�[���h�͈ȉ��̃t���O�ŏC���\�ł�:
+format フィールドは以下のフラグで修飾可能です:
 <!--
 <BLOCKQUOTE>
   <PRE>#define PCF_GLYPH_PAD_MASK	(3&lt;&lt;0)		/* See the bitmap table for explanation */
@@ -100,10 +100,10 @@ format �t�B�[���h�͈ȉ��̃t���O�ŏC���\�ł�:
 </PRE>
 </BLOCKQUOTE> -->
 <BLOCKQUOTE>
-  <PRE>#define PCF_GLYPH_PAD_MASK	(3&lt;&lt;0)		/* �����̓r�b�g�}�b�v�e�[�u���̍����Q�� */
-#define PCF_BYTE_MASK		(1&lt;&lt;2)		/* ��ʃo�C�g���悩 */
-#define PCF_BIT_MASK		(1&lt;&lt;3)		/* ��ʃr�b�g���悩 */
-#define PCF_SCAN_UNIT_MASK	(3&lt;&lt;4)		/* �����̓r�b�g�}�b�v�e�[�u���̍����Q�� */
+  <PRE>#define PCF_GLYPH_PAD_MASK	(3&lt;&lt;0)		/* 説明はビットマップテーブルの項を参照 */
+#define PCF_BYTE_MASK		(1&lt;&lt;2)		/* 上位バイトが先か */
+#define PCF_BIT_MASK		(1&lt;&lt;3)		/* 上位ビットが先か */
+#define PCF_SCAN_UNIT_MASK	(3&lt;&lt;4)		/* 説明はビットマップテーブルの項を参照 */
 </PRE>
 </BLOCKQUOTE>
 <P>
@@ -112,14 +112,14 @@ The format will be repeated as the first word in each table. Most tables
 only have one format (default), but some have alternates. The high order
 three bytes of the format describe the gross format. The way integers and
 bits are stored can be altered by adding one of the mask bits above. -->
-format �t�B�[���h�́A�e�e�[�u���̍ŏ��̃��[�h�Ƃ��ČJ��Ԃ���܂��B�قƂ�ǂ̃e�[�u���� 1 ��ނ̃t�H�[�}�b�g (�f�t�H���g) �����܂�ł��܂��񂪁A�t�H���g�ɂ���Ă͈قȂ�t�H�[�}�b�g���g�p���Ă��܂��Bformat �̏�ʂ� 3 �o�C�g���A�S�̂̃t�H�[�}�b�g���L�q���܂��B�����ƃr�b�g���i�[���������́A��̃}�X�N�r�b�g�� 1 �������邱�Ƃɂ���ĕύX���邱�Ƃ��ł��܂��B
+format フィールドは、各テーブルの最初のワードとして繰り返されます。ほとんどのテーブルは 1 種類のフォーマット (デフォルト) しか含んでいませんが、フォントによっては異なるフォーマットを使用しています。format の上位の 3 バイトが、全体のフォーマットを記述します。整数とビットが格納される方式は、上のマスクビットの 1 つを加えることによって変更することができます。
 <P>
 <!--
 All tables begin on a 32bit boundary (and will be padded with zeroes). -->
-���ׂẴe�[�u���� 32 �r�b�g���E����n�܂�܂� (�[���� 0 �Ńp�f�B���O����܂�)�B
+すべてのテーブルは 32 ビット境界から始まります (端数は 0 でパディングされます)。
 <H2>
 <!--Properties Table-->
-    �����e�[�u��
+    属性テーブル
 </H2>
 <!--
 <BLOCKQUOTE>
@@ -137,15 +137,15 @@ char padding2[];
 </PRE>
 </BLOCKQUOTE> -->
 <BLOCKQUOTE>
-  <PRE>lsbint32 format; 		/* ��ɍŉ��ʃr�b�g���ŏ��Ɋi�[�����! */
-int32 nprops;			/* format �Ŏw�肳�ꂽ�o�C�g�I�[�_�Ŋi�[����� */
+  <PRE>lsbint32 format; 		/* 常に最下位ビットが最初に格納される! */
+int32 nprops;			/* format で指定されたバイトオーダで格納される */
 struct props {
-    int32 name_offset;		/* �ȉ��̕�����e�[�u���ւ̃I�t�Z�b�g */
+    int32 name_offset;		/* 以下の文字列テーブルへのオフセット */
     int8 isStringProp;
-    int32 value;		/* ���������̑��l, �����񑮐��̃I�t�Z�b�g */
+    int32 value;		/* 整数属性の即値, 文字列属性のオフセット */
 } props[nprops];
-char padding[(nprops&amp;3)==0?0:(4-(nprops&amp;3))];	/* ���� int32 ���E�܂Ŗ��߂� */
-int string_size;		/* ������̑��T�C�Y (������ NUL ���܂�) */
+char padding[(nprops&amp;3)==0?0:(4-(nprops&amp;3))];	/* 次の int32 境界まで埋める */
+int string_size;		/* 文字列の総サイズ (末尾の NUL を含む) */
 char strings[string_size];
 char padding2[];
 </PRE>
@@ -159,14 +159,14 @@ or
 <A HREF="http://rpmfind.net/linux/RPM/redhat/6.2/i386/XFree86-doc-3.3.6-20.i386.html">here</A>
 (the X protocol does not limit these atoms so others could be defined for
 some fonts). -->
-�����̑����́AX �����[�U�ɒ񋟂���t�H���g�A�g���ł��B�����̑����� <A HREF="http://ftp.x.org/pub/R6.4/xc/doc/specs/XLFD/xlfd.tbl.ms">xc/doc/specs/XLFD/xlfd.tbl.ms</A> �܂���<A HREF="http://rpmfind.net/linux/RPM/redhat/6.2/i386/XFree86-doc-3.3.6-20.i386.html">���̕���</A>�ŉ������Ă��܂��B (X �v���g�R���͂����̃A�g���ɐ����������Ă��Ȃ��̂ŁA��O�҂����炩�̃t�H���g�̒�`���s�����Ƃ��ł��܂�)
+これらの属性は、X がユーザに提供するフォントアトムです。これらの多くは <A HREF="http://ftp.x.org/pub/R6.4/xc/doc/specs/XLFD/xlfd.tbl.ms">xc/doc/specs/XLFD/xlfd.tbl.ms</A> または<A HREF="http://rpmfind.net/linux/RPM/redhat/6.2/i386/XFree86-doc-3.3.6-20.i386.html">この文書</A>で解説されています。 (X プロトコルはこれらのアトムに制限を加えていないので、第三者が何らかのフォントの定義を行うことができます)
 <P>
 <!--
 To find the name of a property: <CODE>strings + props[i].name_offset</CODE> -->
-�����̖��O�́A<CODE>strings + props[i].name_offset</CODE> �ɏ�����Ă��܂��B
+属性の名前は、<CODE>strings + props[i].name_offset</CODE> に書かれています。
 <H2>
 <!--<A NAME="MetricsData">Metrics Data</A>-->
-    <A NAME="MetricsData">���g���b�N�̃f�[�^</A>
+    <A NAME="MetricsData">メトリックのデータ</A>
 </H2>
 <P>
 <!--
@@ -177,9 +177,9 @@ format uses bytes to contain values, while the uncompressed uses shorts.
 The (compressed) bytes are unsigned bytes which are offset by 0x80 (so the
 actual value will be <CODE>(getc(pcf_file)-0x80)</CODE>. The data are stored
 as:<BR> -->
-�������̃e�[�u�� (PCF_METRICS, PCF_INK_METRICS ����уA�N�Z�����[�^�e�[�u���̓���) �ɂ́A���k�t�H�[�}�b�g (PCF_COMPRESSED_METRICS) �܂��͔񈳏k�t�H�[�}�b�g (DEFAULT) �̂ǂ��炩�Ń��g���b�N�f�[�^���i�[����Ă��܂��B���k�t�H�[�}�b�g�́A�l���i�[����̂� byte �^���g�p����̂ɑ΂��A�񈳏k�t�H�[�}�b�g�� short �^���g�p���܂��B(���k���ꂽ) �o�C�g�l�͕����Ȃ� byte �l�ŁA0x80 �̃I�t�Z�b�g���������Ă��܂� (����āA���ۂ̒l�� <CODE>(getc(pcf_file)-0x80)</CODE> �ɂȂ�܂�)�B�f�[�^�͈ȉ��̂悤�Ɋi�[����Ă��܂�:<BR>
+いくつかのテーブル (PCF_METRICS, PCF_INK_METRICS およびアクセラレータテーブルの内部) には、圧縮フォーマット (PCF_COMPRESSED_METRICS) または非圧縮フォーマット (DEFAULT) のどちらかでメトリックデータが格納されています。圧縮フォーマットは、値を格納するのに byte 型を使用するのに対し、非圧縮フォーマットは short 型を使用します。(圧縮された) バイト値は符号なし byte 値で、0x80 のオフセットが加えられています (よって、実際の値は <CODE>(getc(pcf_file)-0x80)</CODE> になります)。データは以下のように格納されています:<BR>
 <!--Compressed-->
-���k�t�H�[�}�b�g
+圧縮フォーマット
 <!--
 <BLOCKQUOTE>
   <PRE>uint8 left_sided_bearing;
@@ -196,12 +196,12 @@ uint8 right_side_bearing;
 uint8 character_width;
 uint8 character_ascent;
 uint8 character_descent;
- /* �Öق̕��������t�B�[���h = 0 */
+ /* 暗黙の文字属性フィールド = 0 */
 </PRE>
 </BLOCKQUOTE>
 <P>
 <!-- Uncompressed -->
-�񈳏k�t�H�[�}�b�g:
+非圧縮フォーマット:
 <BLOCKQUOTE>
   <PRE>int16 left_sided_bearing;
 int16 right_side_bearing;
@@ -214,10 +214,10 @@ uint16 character_attributes;
 <P>
 <!--
 This provides the data needed for an XCharStruct. -->
-����́AXCharStruct �ŕK�v�Ƃ����f�[�^��񋟂��܂��B
+これは、XCharStruct で必要とされるデータを提供します。
 <H2>
 <!--Accelerator Tables-->
-    �A�N�Z�����[�^�e�[�u��
+    アクセラレータテーブル
 </H2>
 <P>
 <!--
@@ -226,11 +226,11 @@ This data structure is used by two tables PCF_ACCELERATORS and
 PCF_BDF_ACCELERATORS. The tables may either be in DEFAULT format or in
 PCF_ACCEL_W_INKBOUNDS (in which case they will have some extra metrics data
 at the end. -->
-�����̃f�[�^�́A�t�H���g�̑S�̂Ɋւ�鑽���ׁ̍X�Ƃ�������񋟂��܂��B�̃f�[�^�\���� PCF_ACCELERATORS �� PCF_BDF_ACCELERATORS �� 2 �̃e�[�u���Ŏg�p����܂��B�e�[�u���� DEFAULT �� PCF_ACCEL_W_INKBOUNDS �̂����ꂩ�̃t�H�[�}�b�g���g�p���邱�Ƃ��ł��܂� (��҂̏ꍇ�A�Ō�ɂ������̊g�����g���b�N�f�[�^���ǉ�����܂�)�B
+これらのデータは、フォントの全体に関わる多数の細々とした情報を提供します。個のデータ構造は PCF_ACCELERATORS と PCF_BDF_ACCELERATORS の 2 個のテーブルで使用されます。テーブルは DEFAULT か PCF_ACCEL_W_INKBOUNDS のいずれかのフォーマットを使用することができます (後者の場合、最後にいくつかの拡張メトリックデータが追加されます)。
 <P>
 <!--
 The accelerator tables look like: -->
-�A�N�Z�����[�^�e�[�u���͈ȉ��̂悤�Ȍ`�����Ă��܂�:
+アクセラレータテーブルは以下のような形をしています:
 <!--
 <BLOCKQUOTE>
   <PRE>lsbint32 format; 		/* Always stored with least significant byte first! */
@@ -260,30 +260,30 @@ Uncompressed_Metrics maxbounds;
 </PRE>
 </BLOCKQUOTE>
 <BLOCKQUOTE>
-  <PRE>lsbint32 format; 		/* ��ɉ��ʃr�b�g���擪�Ɋi�[�����! */
-uint8 noOverlap;		/* �S�Ă�i�ɑ΂�, max(metrics[i].rightSideBearing - metrics[i].characterWidth) �����藧�� */
+  <PRE>lsbint32 format; 		/* 常に下位ビットが先頭に格納される! */
+uint8 noOverlap;		/* 全てのiに対し, max(metrics[i].rightSideBearing - metrics[i].characterWidth) が成り立つか */
 				/* 	&lt;= minbounds.leftSideBearing */
-uint8 constantMetrics;		/* XFontStruct �� perchar �t�B�[���h�� NULL �ɂȂ邱�Ƃ������� */
-uint8 terminalFont;		/* constantMetrics ���^��, �S�Ă̕����ňȉ������藧��: */
-				/* 	���T�C�h�x�A�����O==0 */
-				/*	�E�T�C�h�x�A�����O== �����̕� */
-				/*	�����̍���==�t�H���g�̍��� */
-				/*	�����̐[��==�t�H���g�̐[�� */
-uint8 constantWidth;		/* courier �̂悤�ȒP�ꕝ�t�H���g */
-uint8 inkInside;		/* �h��ׂ����S�r�b�g�� [0,charwidth] ���� x ���W�� */
-				/*  [-descent,ascent] ���� y ���W����Ȃ��`�Ɋ܂܂�邱�Ƃ��Ӗ�����B���̂��߁A�`�掞�ɓh��ׂ��̈悪�d�Ȃ荇�����Ƃ͂Ȃ� */
-uint8 inkMetrics;		/* �ǂ������̏��̃��g���b�N�ƁA�h��ׂ��̈�̃��g���b�N�ɈႢ������ΐ^ */
-uint8 drawDirection;		/* 0=&gt;������E, 1=&gt;�E���獶 */
+uint8 constantMetrics;		/* XFontStruct の perchar フィールドが NULL になることを許すか */
+uint8 terminalFont;		/* constantMetrics が真で, 全ての文字で以下が成り立つ: */
+				/* 	左サイドベアリング==0 */
+				/*	右サイドベアリング== 文字の幅 */
+				/*	文字の高さ==フォントの高さ */
+				/*	文字の深さ==フォントの深さ */
+uint8 constantWidth;		/* courier のような単一幅フォント */
+uint8 inkInside;		/* 塗り潰される全ビットが [0,charwidth] 内の x 座標と */
+				/*  [-descent,ascent] 内の y 座標からなる矩形に含まれることを意味する。そのため、描画時に塗り潰す領域が重なり合うことはない */
+uint8 inkMetrics;		/* どこか他の所のメトリックと、塗り潰し領域のメトリックに違いがあれば真 */
+uint8 drawDirection;		/* 0=&gt;左から右, 1=&gt;右から左 */
 uint8 padding;
-int32 fontAscent;		/* format �Ŏw�肳�ꂽ�o�C�g�I�[�_�� */
+int32 fontAscent;		/* format で指定されたバイトオーダで */
 int32 fontDescent;
 int32 maxOverlap;		/* ??? */
 Uncompressed_Metrics minbounds;
 Uncompressed_Metrics maxbounds;
-/* �t�H�[�}�b�g�� PCF_ACCEL_W_INKBOUNDS �Ȃ�A�ȉ��̃t�B�[���h���܂�: */
+/* フォーマットが PCF_ACCEL_W_INKBOUNDS なら、以下のフィールドを含む: */
     Uncompressed_Metrics ink_minbounds;
     Uncompressed_Metrics ink_maxbounds;
-/* ����ȊO�̏ꍇ�A�����̃t�B�[���h�̓t�@�C���ɑ��݂����A��L�� min/maxbound ���J��Ԃ��ďꏊ�𖄂߂�ׂ��ł��� */
+/* それ以外の場合、これらのフィールドはファイルに存在せず、上記の min/maxbound を繰り返して場所を埋めるべきである */
 </PRE>
 </BLOCKQUOTE>
 <P>
@@ -292,10 +292,10 @@ BDF Accelerators should be preferred to plain Accelerators if both tables
 are present. BDF Accelerators contain data that refers only to the encoded
 characters in the font (while the simple Accelerator table includes all glyphs),
 therefore the BDF Accelerators are more accurate. -->
-�����̃e�[�u�������݂���ꍇ�ABDF �A�N�Z�����[�^�̂ق����W���A�N�Z�����[�^�����D�悳��܂��BBDF �A�N�Z�����[�^�̓t�H���g���̕��������ꂽ�������Q�Ƃ���f�[�^�݂̂��܂݂܂� (����ɑ΂��A�P���A�N�Z�����[�^�e�[�u���͑S�ẴO���t���܂ނ̂ŁABDF �A�N�Z�����[�^�̕�����萳�m�Ȃ̂ł�)�B
+両方のテーブルが存在する場合、BDF アクセラレータのほうが標準アクセラレータよりも優先されます。BDF アクセラレータはフォント内の符号化された文字を参照するデータのみを含みます (それに対し、単純アクセラレータテーブルは全てのグリフを含むので、BDF アクセラレータの方がより正確なのです)。
 <H2>
 <!--Metrics Tables-->
-    ���g���b�N�e�[�u��
+    メトリックテーブル
 </H2>
 <P>
 <!--
@@ -305,7 +305,7 @@ the minimum bounding box. The two may contain the same data, but many CJK
 fonts pad the bitmaps so all bitmaps are the same size. The table format
 may be either DEFAULT or PCF_COMPRESSED_METRICS (see the section on
 <A HREF="#MetricsData">Metrics Data</A> for an explanation). -->
-���g���b�N�e�[�u���ɂ� PCF_METRICS �� PCF_INK_METRICS �̈قȂ� 2 ��ނ̃e�[�u�������݂��܂��B�O�҂ɂ́A�i�[���ꂽ�r�b�g�}�b�v�̃T�C�Y���܂�ł���̂ɑ΂��A��҂͍ŏ��o�E���f�B���O�{�b�N�X���܂݂܂��B���҂͓����f�[�^���܂ނ��Ƃ��ł��܂����A������ CJK �t�H���g�̓r�b�g�}�b�v�Ƀp�f�B���O�����Ă��邽�߁A���ׂẴr�b�g�}�b�v�͓����T�C�Y�ł��B�e�[�u���t�H�[�}�b�g�� DEFAULT �܂��� PCF_CONPRESSED_METRICS �̂ǂ��炩���g�p�\�ł� (����̐����́A<A HREF="#MetricsData">���g���b�N�f�[�^</A> �Ɋւ���Z�N�V�������Q�Ƃ��Ă�������)�B
+メトリックテーブルには PCF_METRICS と PCF_INK_METRICS の異なる 2 種類のテーブルが存在します。前者には、格納されたビットマップのサイズを含んでいるのに対し、後者は最小バウンディングボックスを含みます。両者は同じデータを含むことができますが、多くの CJK フォントはビットマップにパディングをしているため、すべてのビットマップは同じサイズです。テーブルフォーマットは DEFAULT または PCF_CONPRESSED_METRICS のどちらかが使用可能です (これの説明は、<A HREF="#MetricsData">メトリックデータ</A> に関するセクションを参照してください)。
 <!--
 <BLOCKQUOTE>
   <PRE>lsbint32 format; 		/* Always stored with least significant byte first! */
@@ -319,11 +319,11 @@ may be either DEFAULT or PCF_COMPRESSED_METRICS (see the section on
 </PRE>
 </BLOCKQUOTE> -->
 <BLOCKQUOTE>
-  <PRE>lsbint32 format; 		/* ��ɍŉ��ʃr�b�g���ŏ��Ɋi�[�����! */
-/* �t�H�[�}�b�g�� compressed �̏ꍇ */
+  <PRE>lsbint32 format; 		/* 常に最下位ビットが最初に格納される! */
+/* フォーマットが compressed の場合 */
     int16 metrics_count;
     Compressed_Metrics metrics[metrics_count];
-/* ����ȊO�ŁA�t�H�[�}�b�g���f�t�H���g (uncompressed) �̏ꍇ */
+/* それ以外で、フォーマットがデフォルト (uncompressed) の場合 */
     int32 metrics_count;
     Uncompressed_Metrics metrics[metrics_count];
 /* endif */
@@ -331,12 +331,12 @@ may be either DEFAULT or PCF_COMPRESSED_METRICS (see the section on
 </BLOCKQUOTE>
 <H2>
 <!--The Bitmap Table-->
-    �r�b�g�}�b�v�e�[�u��
+    ビットマップテーブル
 </H2>
 <P>
 <!--
 The bitmap table has type PCF_BITMAPS. Its format must be PCF_DEFAULT. -->
-�r�b�g�}�b�v�e�[�u���̃^�C�v�� PCF_BITMAPS �ł��B�t�H�[�}�b�g�� PCF_DEFAULT �łȂ���΂Ȃ�܂���B
+ビットマップテーブルのタイプは PCF_BITMAPS です。フォーマットは PCF_DEFAULT でなければなりません。
 <!--
 <BLOCKQUOTE>
   <PRE>lsbint32 format; 		/* Always stored with least significant byte first! */
@@ -355,28 +355,28 @@ char bitmap_data[bitmapsizes[format&amp;3]];	/* the bitmap data. format contains
 </PRE>
 </BLOCKQUOTE> -->
 <BLOCKQUOTE>
-  <PRE>lsbint32 format; 		/* ��ɍŉ��ʃr�b�g���ŏ��Ɋi�[�����! */
-int32 glyph_count;		/* �o�C�g�I�[�_�� format �Ɉˑ�����B���g���b�N�̌��Ɠ����ɂȂ�ׂ� */
-int32 offsets[glyph_count];	/* �r�b�g�}�b�v�f�[�^�ւ̃o�C�g�I�t�Z�b�g */
-int32 bitmapSizes[4];		/* �e��p�f�B���O�I�v�V�����Ɉˑ�����r�b�g�}�b�v�f�[�^�̃T�C�Y */
-				/*  �ǂ̃I�v�V�������g���Ă��邩�� (format&amp;3) �Ŏw�肵�Ă��� */
-char bitmap_data[bitmapsizes[format&amp;3]];	/* �r�b�g�}�b�v�f�[�^�Bformat �͈ȉ��̃t���O���܂�: */
-				/* �o�C�g�I�[�_ (format&amp;4 =&gt; �ŏ�ʃo�C�g���擪)*/
-				/* �r�b�g�I�[�_ (format&amp;8 =&gt; �ŏ�ʃr�b�g���擪) */
-				/* �e�O���t�̃r�b�g�}�b�v�̊e����ǂ��p�f�B���O���邩 (format&amp;3) */
-				/*  0=&gt;byte��, 1=&gt;short��, 2=&gt;int�� */
-				/* �r�b�g�� (byte, short, int ��)�ǂ̒P�ʂŊi�[����邩  (format&gt;&gt;4)&amp;3 */
-				/*  0=&gt;byte�P��, 1=&gt;short�P��, 2=&gt;int�P�� */
+  <PRE>lsbint32 format; 		/* 常に最下位ビットが最初に格納される! */
+int32 glyph_count;		/* バイトオーダは format に依存する。メトリックの個数と同じになるべき */
+int32 offsets[glyph_count];	/* ビットマップデータへのバイトオフセット */
+int32 bitmapSizes[4];		/* 各種パディングオプションに依存するビットマップデータのサイズ */
+				/*  どのオプションが使われているかは (format&amp;3) で指定している */
+char bitmap_data[bitmapsizes[format&amp;3]];	/* ビットマップデータ。format は以下のフラグを含む: */
+				/* バイトオーダ (format&amp;4 =&gt; 最上位バイトが先頭)*/
+				/* ビットオーダ (format&amp;8 =&gt; 最上位ビットが先頭) */
+				/* 各グリフのビットマップの各列をどうパディングするか (format&amp;3) */
+				/*  0=&gt;byte毎, 1=&gt;short毎, 2=&gt;int毎 */
+				/* ビットが (byte, short, int の)どの単位で格納されるか  (format&gt;&gt;4)&amp;3 */
+				/*  0=&gt;byte単位, 1=&gt;short単位, 2=&gt;int単位 */
 </PRE>
 </BLOCKQUOTE>
 <H2>
 <!--The Encoding Table-->
-    �G���R�[�f�B���O�e�[�u��
+    エンコーディングテーブル
 </H2>
 <P>
 <!--
 The encoding table has type PCF_BDF_ENCODINGS. Its format must be PCF_DEFAULT. -->
-�G���R�[�f�B���O�e�[�u���� PCF_BDF_ENCODINGS �^�ł��B�t�H�[�}�b�g�� PCF_DEFAULT �łȂ���΂Ȃ�܂���B
+エンコーディングテーブルは PCF_BDF_ENCODINGS 型です。フォーマットは PCF_DEFAULT でなければなりません。
 <!--
 <BLOCKQUOTE>
   <PRE>lsbint32 format; 		/* Always stored with least significant byte first! */
@@ -391,15 +391,15 @@ int16 glyphindeces[(max_char_or_byte2-min_char_or_byte2+1)*(max_byte1-min_byte1+
 </PRE>
 </BLOCKQUOTE>-->
 <BLOCKQUOTE>
-  <PRE>lsbint32 format; 		/* ��ɍŉ��ʃr�b�g���ŏ��Ɋi�[�����! */
-int16 min_char_or_byte2;	/* XFontStruct �̂Ƃ��� */
-int16 max_char_or_byte2;	/* XFontStruct �̂Ƃ��� */
-int16 min_byte1;		/* XFontStruct �̂Ƃ��� */
-int16 max_byte1;		/* XFontStruct �̂Ƃ��� */
-int16 default_char;		/* XFontStruct �̂Ƃ��� */
+  <PRE>lsbint32 format; 		/* 常に最下位ビットが最初に格納される! */
+int16 min_char_or_byte2;	/* XFontStruct のとおり */
+int16 max_char_or_byte2;	/* XFontStruct のとおり */
+int16 min_byte1;		/* XFontStruct のとおり */
+int16 max_byte1;		/* XFontStruct のとおり */
+int16 default_char;		/* XFontStruct のとおり */
 int16 glyphindeces[(max_char_or_byte2-min_char_or_byte2+1)*(max_byte1-min_byte1+1)];
-				/* �e�����ʒu�ɑΉ�����O���t�C���f�b�N�X */
-				/* �l 0xffff �́A���̕����ʒu�ɃO���t�����݂��Ȃ����Ƃ�\�� */
+				/* 各符号位置に対応するグリフインデックス */
+				/* 値 0xffff は、その符号位置にグリフが存在しないことを表す */
 </PRE>
 </BLOCKQUOTE>
 <P>
@@ -407,7 +407,7 @@ int16 glyphindeces[(max_char_or_byte2-min_char_or_byte2+1)*(max_byte1-min_byte1+
 For single byte encodings min_byte1==max_byte1==0, and encoded values are
 between [min_char_or_byte2,max_char_or_byte2]. The glyph index corresponding
 to an encoding is glyphindex[encoding-min_char_or_byte2]. -->
-1 �o�C�g�G���R�[�f�B���O�ł� min_byte1==max_byte1==0 �ł���A�����ʒu�̒l�� [min_char_or_byte2,max_char_or_byte2] �͈̔͂Ɏ��܂�܂��B���镄���ʒu���l encoding �ł���Ƃ��A�Ή�����O���t�C���f�b�N�X�� glyphindex[encoding-min_char_or_byte2] �ɂȂ�܂��B
+1 バイトエンコーディングでは min_byte1==max_byte1==0 であり、符号位置の値は [min_char_or_byte2,max_char_or_byte2] の範囲に収まります。ある符号位置が値 encoding であるとき、対応するグリフインデックスは glyphindex[encoding-min_char_or_byte2] になります。
 <P>
 <!--
 Otherwise [min_byte1,max_byte1] specifies the range allowed for the first
@@ -416,20 +416,20 @@ Otherwise [min_byte1,max_byte1] specifies the range allowed for the first
 glyph index corresponding to a double byte encoding (enc1,enc2) is
 glyph_index[(enc1-min_byte1)*(max_char_or_byte2-min_char_or_byte2+1)+
 enc2-min_char_or_byte2]. -->
-����ȊO�̏ꍇ�A[min_byte1,max_byte1] �́A2 �o�C�g�G���R�[�f�B���O�� 1 �o�C�g�� (��ʃo�C�g) �̎�邱�Ƃ̂ł���l�͈̔͂��w�肵�A��� [min_char_or_byte2,max_char_or_byte2] �� 2 �o�C�g�ڂ͈̔͂��w�肵�܂��B2 �o�C�g�G���R�[�f�B���O (enc1, enc2) �ɑΉ�����O���t�C���f�b�N�X�́Aglyph_index[(enc1-min_byte1)*(max_char_or_byte2-min_char_or_byte2+1)+enc2-min_char_or_byte2] �ɂȂ�܂��B
+それ以外の場合、[min_byte1,max_byte1] は、2 バイトエンコーディングの 1 バイト目 (上位バイト) の取ることのできる値の範囲を指定し、一方 [min_char_or_byte2,max_char_or_byte2] が 2 バイト目の範囲を指定します。2 バイトエンコーディング (enc1, enc2) に対応するグリフインデックスは、glyph_index[(enc1-min_byte1)*(max_char_or_byte2-min_char_or_byte2+1)+enc2-min_char_or_byte2] になります。
 <P>
 <!--
 Not all glyphs need to be encoded. Not all encodings need to be associated
 with glyphs. -->
-���ׂẴO���t�ɕ������������蓖�Ă�K�v�͂���܂���B���ׂĂ̕����ʒu�ɃO���t�����蓖�Ă�K�v�͂���܂���B
+すべてのグリフに文字符号を割り当てる必要はありません。すべての符号位置にグリフを割り当てる必要はありません。
 <H2>
 <!--The Scalable Widths Table-->
-    �X�P�[���u���ȕ��̃e�[�u��
+    スケーラブルな幅のテーブル
 </H2>
 <P>
 <!--
 The encoding table has type PCF_SWIDTHS. Its format must be PCF_DEFAULT. -->
-�X�P�[���u���ȕ��̃e�[�u���� PCF_SWIDTH �ł��B�t�H�[�}�b�g�� PCF_DEFAULT �łȂ���΂Ȃ�܂���B
+スケーラブルな幅のテーブルは PCF_SWIDTH です。フォーマットは PCF_DEFAULT でなければなりません。
 <!--
 <BLOCKQUOTE>
   <PRE>lsbint32 format; 		/* Always stored with least significant byte first! */
@@ -438,28 +438,28 @@ int32 swidths[glyph_count];	/* byte offsets to bitmap data */
 </PRE>
 </BLOCKQUOTE> -->
 <BLOCKQUOTE>
-  <PRE>lsbint32 format; 		/* ��ɍŉ��ʃr�b�g���ŏ��Ɋi�[�����! */
-int32 glyph_count;		/* �o�C�g�I�[�_�� format �Ɉˑ�����B���g���b�N�̌��Ɠ����ɂȂ�ׂ� */
-int32 swidths[glyph_count];	/* �r�b�g�}�b�v�f�[�^�ւ̃o�C�g�I�t�Z�b�g */
+  <PRE>lsbint32 format; 		/* 常に最下位ビットが最初に格納される! */
+int32 glyph_count;		/* バイトオーダは format に依存する。メトリックの個数と同じになるべき */
+int32 swidths[glyph_count];	/* ビットマップデータへのバイトオフセット */
 </PRE>
 </BLOCKQUOTE>
 <P>
 <!--
 The scalable width of a character is the width of the corresponding postscript
 character in em-units (1/1000ths of an em). -->
-�X�P�[���u���ȕ������́Aem ���j�b�g�ŕ\�����Ή����� PostScript �����̕� (em �� 1/1000) �ł��B
+スケーラブルな文字幅は、em ユニットで表した対応する PostScript 文字の幅 (em の 1/1000) です。
 <H2>
 <!--The Glyph Names Table-->
-    �O���t���e�[�u��
+    グリフ名テーブル
 </H2>
 <P>
 <!--
 The encoding table has type PCF_GLYPH_NAMES. Its format must be PCF_DEFAULT. -->
-�O���t���e�[�u���� PCF_GLYPH_NAMES �^�ł��B�t�H�[�}�b�g�� PCF_DEFAULT �łȂ���΂Ȃ�܂���B
+グリフ名テーブルは PCF_GLYPH_NAMES 型です。フォーマットは PCF_DEFAULT でなければなりません。
 <BLOCKQUOTE>
-  <PRE>lsbint32 format; 		/* ��ɍŉ��ʃr�b�g���ŏ��Ɋi�[�����! */
-int32 glyph_count;		/* �o�C�g�I�[�_�� format �Ɉˑ�����B���g���b�N�̌��Ɠ����ɂȂ�ׂ� */
-int32 offsets[glyph_count];	/* ������f�[�^�ւ̃o�C�g�I�t�Z�b�g */
+  <PRE>lsbint32 format; 		/* 常に最下位ビットが最初に格納される! */
+int32 glyph_count;		/* バイトオーダは format に依存する。メトリックの個数と同じになるべき */
+int32 offsets[glyph_count];	/* 文字列データへのバイトオフセット */
 int32 string_size;
 char string[string_size];
 </PRE>
@@ -467,12 +467,12 @@ char string[string_size];
 <P>
 <!--
 The postscript name associated with each character. -->
-�e�����ɂ���ꂽ PostScript ���ł��B
+各文字につけられた PostScript 名です。
 <P>
   <HR>
 <!--
 Other sources of info: -->
-���̑��̏��:
+その他の情報源:
 <UL>
   <LI>
     <A HREF="http://www.tsg.ne.jp/GANA/S/pcf2bdf/pcf.pdf">http://www.tsg.ne.jp/GANA/S/pcf2bdf/pcf.pdf</A>

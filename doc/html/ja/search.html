@@ -3,9 +3,9 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 25-Apr-2002 -->
   <!-- AP: Last modified: 13-Oct-2004 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!--<TITLE>Searching for shapes within characters...</TITLE> -->
-    <TITLE>�O���t�̒�����}�`��T�����@�c�c</TITLE>
+    <TITLE>グリフの中から図形を探す方法……</TITLE>
   <LINK REL="icon" href="../fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
@@ -14,24 +14,24 @@
 <H1 ALIGN=Center>
   <IMG SRC="../rplref.png" WIDTH="466" HEIGHT="381" ALIGN="Right"><!--Finding shapes
   within glyphs -->
-  �O���t�̒�����}�`��T�����@
+  グリフの中から図形を探す方法
 </H1>
 <P>
 <!--
 FontForge will allow you to search a font for all glyphs containing a certain
 shape and optionally replace that shape with another shape. -->
-FontForge �ł́A����̐}�`���܂ނ��ׂẴO���t���������A��]�����ꍇ�͂��̐}�`�𑼂̌`�ɒu�������邱�Ƃ��ł��܂��B
+FontForge では、特定の図形を含むすべてのグリフを検索し、希望した場合はその図形を他の形に置き換えることができます。
 <P>
 <!--
 FontForge allows you to control whether a match will be found even if the
 shape has undergone certain transformations (ie. rotated, scaled, flipped,
 etc.). -->
-�}�`�������̕ϊ� (��]�A�g��E�k���A���]�Ȃ�) ���󂯂Ă��Ă��}�b�`���邩�ǂ������w�肷�邱�Ƃ��ł��܂��B
+図形がある種の変換 (回転、拡大・縮小、反転など) を受けていてもマッチするかどうかを指定することができます。
 <P>
 <!--
 Normally FontForge will search all glyphs in a font, but you may restrict
 the search to only those glyphs which are selected. -->
-FontForge �́A�ʏ�́A�t�H���g���̑S�O���t���������܂����A�����͈͂�I�����ꂽ�����݂̂Ɍ��肷�邱�Ƃ��ł��܂��B
+FontForge は、通常は、フォント内の全グリフを検索しますが、検索範囲を選択された文字のみに限定することができます。
 <P>
 <!--
 The search and replace panes behave very much like the outline glyph views
@@ -40,8 +40,8 @@ The menu at the top of the window is a subset of the menu in the outline
 glyph view. Only one of the two panes is active at a given time, and the
 menu works on the active one. You can make a pane active by clicking in it,
 or by using the [Tab] key. -->
-�����^�u�ƒu���^�u�̓A�E�g���C���O���t�r���[�Ɣ��ɂ悭�����ӂ�܂������A�����ł̓A�E�g���C���r���[�Ŏg�p�\�ȃc�[�����g���ĕ`�悪�ł��܂��B
-�E�B���h�E�̍ŏ㕔�ɂ��郁�j���[�̓A�E�g���C���O���t�r���[�̃��j���[�̃T�u�Z�b�g�ł��B2 �̃y�C���̂����A�����ɕҏW�ł���̂� 1 �݂̂ŁA�ҏW���̕��ł������j���[�͓��삵�܂���B�^�u���N���b�N���邩�A[Tab] �L�[���������Ƃɂ��A�����瑤�ҏW�ł���悤�ɂȂ�܂��B
+検索タブと置換タブはアウトライングリフビューと非常によく似たふるまいをし、そこではアウトラインビューで使用可能なツールを使って描画ができます。
+ウィンドウの最上部にあるメニューはアウトライングリフビューのメニューのサブセットです。2 つのペインのうち、同時に編集できるのは 1 つのみで、編集中の方でしかメニューは動作しません。タブをクリックするか、[Tab] キーを押すことにより、そちら側編集できるようになります。
 <P>
 <!--
 The <CODE>[Find] </CODE>button will start at the beginning of the font and
@@ -50,23 +50,23 @@ outline glyph view looking at that glyph. After <CODE>[Find] </CODE>has been
 used once the button changes to <CODE>[Find Next] </CODE>whose behavior is
 similar excepts that it starts at the last glyph found and displays the next
 glyph in the same window. -->
-<CODE>[����]</CODE> �{�^���̓t�H���g�̐擪���珇�ɁA�����p�^�[�����܂ރO���t���������A��v�����ŏ��̃O���t���܂ރA�E�g���C���O���t�r���[���J���܂��B������ <CODE>[����]</CODE> �{�^�����g�p������́A<CODE>[��������]</CODE> �{�^���������ƁA�Ō�Ɉ�v�����������玟�̕������������āA�����E�B���h�E���ɓ����\���@�ŕ\�����܂��B
+<CODE>[検索]</CODE> ボタンはフォントの先頭から順に、検索パターンを含むグリフを検索し、一致した最初のグリフを含むアウトライングリフビューを開きます。いちど <CODE>[検索]</CODE> ボタンを使用した後は、<CODE>[次を検索]</CODE> ボタンを押すと、最後に一致した文字から次の文字を検索して、同じウィンドウ内に同じ表示法で表示します。
 <P>
 <!--
 The <CODE>[Find All] </CODE>button will select all glyphs containing the
 pattern. -->
-<CODE>[���ׂČ���]</CODE> �{�^���́A���̃p�^�[�����܂ނ��ׂẴO���t��I�����܂��B
+<CODE>[すべて検索]</CODE> ボタンは、そのパターンを含むすべてのグリフを選択します。
 <P>
 <!--
 The <CODE>[Replace]</CODE> button only works after a <CODE>[Find]/[Find
 Next]/[Replace]</CODE>. It replaces the thing found with the replace pattern,
 and does another <CODE>[Find Next]</CODE>. -->
-<CODE>[�u��]</CODE> �{�^���́A<CODE>[����]/[��������]</CODE> �̌ォ�A���� <CODE>[�u��]</CODE> ���g�p���Ă���Ƃ��ɂ̂ݓ��삵�܂��B������������u�������p�^�[���Œu�����Ă���A������x <CODE>[��������]</CODE> ���������̂Ɠ�����������܂��B
+<CODE>[置換]</CODE> ボタンは、<CODE>[検索]/[次を検索]</CODE> の後か、既に <CODE>[置換]</CODE> を使用しているときにのみ動作します。見つかった物を置き換えパターンで置換してから、もう一度 <CODE>[次を検索]</CODE> を押したのと同じ動作をします。
 <P>
 <!--
 The <CODE>[Replace All] </CODE>button replaces all instances of the search
 pattern with the replace pattern and selects all glyphs found. -->
-<CODE>[���ׂĒu��]</CODE> �{�^���́A�����p�^�[���Ɉ�v���邷�ׂĂ̗֊s��u�������p�^�[���ɒu�����Ă���A��v�������ׂẴO���t��I�����܂��B
+<CODE>[すべて置換]</CODE> ボタンは、検索パターンに一致するすべての輪郭を置き換えパターンに置換してから、一致したすべてのグリフを選択します。
 <P>
 <!--
 There are two different kinds of search, and which is used depends on the
@@ -75,21 +75,21 @@ the replace pattern is too) then the search will look for the search pattern
 within any path. But if the search pattern contains a closed path or multiple
 paths, then the search looks for an exact match, ie. for each path in the
 search pattern there must be a path in the glyph which matches it exactly. -->
-�����ɂ� 2 �̈قȂ��ނ�����A�p�^�[���Ɋ܂܂��}�`�ɂ���čs���錟���͈قȂ�܂��B�����p�^�[���� 1 �̊J�����p�X�� (���A�u�������p�^�[����������) ����Ȃ�΁A�����p�^�[�����p�X���̂ǂ̕����Ɋ܂܂�Ă��Ă���v������̂Ƃ���܂��B����A�����p�^�[���������p�X�܂��͕����̃p�X���܂�ł���ꍇ�́A���S�Ɉ�v����p�X�݂̂���������܂��B���Ȃ킿�A�����p�^�[�����̂��ꂼ��̃p�X�ɑ΂��āA����Ɛ��m�Ɉ�v����p�X���O���t�Ɋ܂܂�Ă��Ȃ���΂Ȃ�܂���B
+検索には 2 つの異なる種類があり、パターンに含まれる図形によって行われる検索は異なります。検索パターンが 1 個の開いたパスで (かつ、置き換えパターンも同じで) あるならば、検索パターンがパス内のどの部分に含まれていても一致するものとされます。一方、検索パターンが閉じたパスまたは複数のパスを含んでいる場合は、完全に一致するパスのみが検索されます。すなわち、検索パターン内のそれぞれのパスに対して、それと正確に一致するパスがグリフに含まれていなければなりません。
 <P>
 <!--
 At the moment I see two possible uses for the replace feature: -->
-�����_�ł́A�u���@�\�ɑ΂��Ď��� 2 ��ނ̍l������g�p�@������Ǝv���܂�:
+現時点では、置換機能に対して私は 2 種類の考え得る使用法があると思います:
 <OL>
   <LI>
 <!--It can help you change the style of serifs in your font (see the example
     below) -->
-    �t�H���g���̃Z���t�̃X�^�C����ύX���� (���̗��������������)
+    フォント内のセリフのスタイルを変更する (下の例をご覧ください)
   <LI>
 <!--FontForge can't always detect which glyphs should contain references when
     reading in opentype (and some type1) fonts. You can use the replace feature
-    to fix up all things that look like�gA�hwith a reference to A. -->
-    FontForge �́AOpenType (����шꕔ�� Type1) �t�H���g�̓ǂݍ��ݎ��ɁA�Q�Ƃ��܂ނׂ��O���t����Ɍ����ł���킯�ł͂���܂���B"A" �̌`���������̂����ׂ� A �ւ̎Q�Ƃɒu��������Ƃ����ނ̂��ׂĂ̍�Ƃ��s�����߂ɁA�u�������@�\���g�����Ƃ��ł��܂��B
+    to fix up all things that look like“A”with a reference to A. -->
+    FontForge は、OpenType (および一部の Type1) フォントの読み込み時に、参照を含むべきグリフを常に検索できるわけではありません。"A" の形をしたものをすべて A への参照に置き換えるという類のすべての作業を行うために、置き換え機能を使うことができます。
 </OL>
 <P>
 <IMG SRC="../rplserifs.png" WIDTH="601" HEIGHT="381">

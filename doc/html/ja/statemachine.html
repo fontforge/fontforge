@@ -3,9 +3,9 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Sep-2003 -->
   <!-- AP: Last modified: 21-Mar-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!--<TITLE>The Mac State Machine dialog</TITLE>-->
-    <TITLE>Mac �̏�ԋ@�B�_�C�A���O</TITLE>
+    <TITLE>Mac の状態機械ダイアログ</TITLE>
   <LINK REL="icon" href="../fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
@@ -13,20 +13,20 @@
 <DIV id="in">
 <H1 ALIGN=Center>
 <!--The Mac State Machine Dialog-->
-    Mac ��ԋ@�B�_�C�A���O
+    Mac 状態機械ダイアログ
 </H1>
 <P>
 <IMG SRC="../statemachine-context.png" WIDTH="490" HEIGHT="599" ALIGN="Right"><!--The
 mac uses state machines where opentype would use a contextual lookup. The
 example at right (with appropriate substitutions attached to it) will convert
 an initial or medial short-s into a long-s (for doing renaissance printing). -->
-OpenType �ł͕����ˑ��̎Q�Ƃ�p���Ă���̂ɑ΂��AMac �ł͏�ԋ@�B��p���Ă��܂��B�E�Ɏ����� �� (����ɕt������K�؂Ȓu���Ƒg�ݍ��킳����) �P��̐擪�܂��͒��Ԃɂ���Z�� s �� (���l�b�T���X���̈�����s�����߂�) ���� s �ɒu�����܂��B
+OpenType では文脈依存の参照を用いているのに対し、Mac では状態機械を用いています。右に示す例 は (それに付随する適切な置換と組み合わさって) 単語の先頭または中間にある短い s を (ルネッサンス調の印刷を行うために) 長い s に置換します。
 <P>
 <!--
 FontForge currently supports 4 types of state machines: contextual glyph
 substitution, indic rearrangement, contextual glyph insertion, and contextual
 kerning. The example at right is of contextual glyph substitution. -->
-FontForge �͌��� 4 �̃^�C�v�̏�ԋ@�B���T�|�[�g���Ă��܂�: �����ˑ��̃O���t�u���A�C���h�n�����̍Ĕz�u�A�����ˑ��̃O���t�}���A�����ĕ����ˑ��̃J�[�j���O�ł��B�E�Ɏ�����͕����ˑ��̃O���t�u���ł��B
+FontForge は現在 4 つのタイプの状態機械をサポートしています: 文脈依存のグリフ置換、インド系文字の再配置、文脈依存のグリフ挿入、そして文脈依存のカーニングです。右に示す例は文脈依存のグリフ置換です。
 <P>
 <!--
 State machines have certain similar features. All but kerning be assigned
@@ -36,12 +36,12 @@ combination, they all have a set of flags indicating in what circumstances
 they apply, they all have the glyphs of the font assigned to a set of classes,
 and finally they all have a series of transitions indicating how each state
 behaves when given input from the specified class.
-��ԋ@�B�ɂ͂������̓��l�ȋ@�\������܂��B�J�[�j���O�ȊO�̂��ׂẴ^�C�v�ɂ�<A HREF="http://developer.apple.com/fonts/Registry/index.html">�@�\/�ݒ�</A>�̑g���������蓖�Ă��Ă��܂��B�܂��A�ǂ̃^�C�v�̋@�\�ɂ��A�����Ȃ�󋵉��ł����K�p���ׂ����������t���O�̃Z�b�g�ƁA��A�̃N���X�Ɋ��蓖�Ă�ꂽ�t�H���g�̃O���t�ƁA�����āA�e��Ԃ��e����̃N���X������͂��^����ꂽ�ꍇ�ɂǂ̂悤�ɐU��������������A�̏�ԑJ�ڂƂ��܂܂�Ă��܂��B
+状態機械にはいくつかの同様な機能があります。カーニング以外のすべてのタイプには<A HREF="http://developer.apple.com/fonts/Registry/index.html">機能/設定</A>の組合せが割り当てられています。また、どのタイプの機能にも、いかなる状況下でそれを適用すべきかを示すフラグのセットと、一連のクラスに割り当てられたフォントのグリフと、そして、各状態が各所定のクラスから入力が与えられた場合にどのように振舞うかを示す一連の状態遷移とが含まれています。
 <P>
 <!--
 An example conditional substitution state machine is provided in the
 <A HREF="editexample6-5.html#Apple">tutorial</A>. -->
-�������u�����s����ԋ@�B�̗Ⴊ<A HREF="editexample6-5.html#Apple">�`���[�g���A��</A>�ɂ���܂��B
+条件つき置換を行う状態機械の例が<A HREF="editexample6-5.html#Apple">チュートリアル</A>にあります。
 <P>
 <!--
 On the mac there are four predefined classes, one meaning the end of input,
@@ -53,7 +53,7 @@ this are user defined. In the example at right there is one user defined
 class and it contains the letters in the latin alphabet. Any other glyphs
 in the font (the digits for example) will automatically be assigned to class
 1 ("{Everything Else}"). -->
-Mac �ł� 4 �̒�`�ς݃N���X�����݂��܂��B1 �͓��͂̏I�����Ӗ�������̂ŁA1 �͑��̂ǂ��ł��w�肵�Ȃ��O���t�ɑΉ����A1 �͓��ʂȁgdeleted�h�O���t (Apple ���ł́A�폜���w�������΂����A��ɑ����ɍ폜����̂ł͂Ȃ��A���̃O���t����ō폜���邱�Ƃ��w�肷�����Ȉ���O���t�X�g���[�����ɕێ����邱�Ƃ�����܂�) �ɊY�����A�Ō�̃N���X�̓e�L�X�g�s�̖����ɑΉ�������̂ł��B����� 4 �ɑ����C�ӂ̃N���X�̓��[�U����`�������̂ł��B
+Mac では 4 個の定義済みクラスが存在します。1 個は入力の終わりを意味するもので、1 個は他のどこでも指定しないグリフに対応し、1 個は特別な“deleted”グリフ (Apple 式では、削除を指示したばあい、常に即座に削除するのではなく、そのグリフを後で削除することを指定する特殊な印をグリフストリーム内に保持することがあります) に該当し、最後のクラスはテキスト行の末尾に対応するものです。これら 4 つに続く任意のクラスはユーザが定義したものです。
 <P>
 <!--
 The state machine itself is shown as a two dimensional matrix of transition,
@@ -61,28 +61,28 @@ one transition for every state and class. Classes are shown at the top of
 the matrix, and states down the side. The transition from state 0 when given
 input from class 0 is shown in the upper left corner of the matrix, and so
 on. -->
-��ԋ@�B���̂��̂́A�e��ԂƃN���X�̑΂ɑ΂��� 1 �̏�ԑJ�ڂ��Ή�����悤�ȁA��ԑJ�ڂ� 2 �����s��Ƃ��ĕ\������܂��B�N���X�͍s��̏�ɕ\������A��Ԃ͉��ɏc�����ŕ\������܂��B�N���X 0 �Ɋ܂܂����͂��^����ꂽ���̏�� 0 ����̑J�ڂ�����ɂ���A���̗v�f�����l�ł��B
+状態機械そのものは、各状態とクラスの対に対して 1 個の状態遷移が対応するような、状態遷移の 2 次元行列として表示されます。クラスは行列の上に表示され、状態は横に縦書きで表示されます。クラス 0 に含まれる入力が与えられた時の状態 0 からの遷移が左上にあり、他の要素も同様です。
 <P>
 <!--
 When the state machine starts up it will be in one of the first two states.
 It will be in state 0 at the beginning of input, and in state1 when it starts
 at the beginning of a new line. -->
-��ԋ@�B�̊J�n���ɂ́A�ŏ��� 2 �̏�Ԃ̂ǂ��炩���Ƃ��Ă��܂��B���͂̍ŏ��ł͏�� 0 �ƂȂ�A�V�����s���J�n���ꂽ���ɂ͏��1 �ƂȂ�܂��B
+状態機械の開始時には、最初の 2 個の状態のどちらかをとっています。入力の最初では状態 0 となり、新しい行が開始された時には状態1 となります。
 <P>
 <!--
 The <A NAME="transitions">transitions</A> look slightly differently depending
 on the type of state machine: -->
-<A NAME="transitions">��ԑJ��</A>�̕\���́A��ԋ@�B�̃^�C�v�ɂ��킸���ɈႢ������܂�:
+<A NAME="transitions">状態遷移</A>の表示は、状態機械のタイプによりわずかに違いがあります:
 <TABLE BORDER CELLPADDING="2">
   <TR>
 <!--<TH>Indic</TH>-->
-    <TH>�C���h�n</TH>
+    <TH>インド系</TH>
 <!--<TH>Contextual</TH>-->
-    <TH>�����ˑ�</TH>
+    <TH>文脈依存</TH>
 <!--<TH>Insertion</TH>-->
-    <TH>�}��</TH>
+    <TH>挿入</TH>
 <!--<TH>Kerning</TH>-->
-    <TH>�J�[�j���O</TH>
+    <TH>カーニング</TH>
   </TR>
   <TR>
     <TD><P ALIGN=Center>
@@ -104,29 +104,29 @@ next glyph. For indic tables there is a third flag shown, "L" =&gt; the current
 glyph is the last glyph of the indic rearrangement, while for kerning tables
 there is a "P" flag indicating that the current glyph should be pushed onto
 the kerning stack. -->
-�ǂ̏�ԑJ�ڂł��A�ŏ��̍s�͎��Ɉڂ��Ԃ�\���܂��B���̍s�̓t���O�̏W�܂�ŁA�Ӗ��͈ȉ��̒ʂ�ł�:�gM�h�ˌ��݂̕����Ɉ�Â�������� (���̈Ӗ��͌�Ő������܂�)�A�gA�h�ˏ����͎��̃O���t�ɐi�ށB�C���h�n�̃e�[�u���ł� 3 �Ԗڂ̃t���O������܂�:�gL�h�ˌ��݂̃O���t�̓C���h�n�����̍Ĕz�u�̍Ō�̃O���t�ł���B�J�[�j���O�e�[�u���ł́A���݂̃O���t���J�[�j���O�X�^�b�N�ɐςނ��Ƃ�\���gP�h�t���O�����݂��܂��B
+どの状態遷移でも、最初の行は次に移る状態を表します。次の行はフラグの集まりで、意味は以下の通りです:“M”⇒現在の文字に印づけがされる (この意味は後で説明します)、“A”⇒処理は次のグリフに進む。インド系のテーブルでは 3 番目のフラグがあります:“L”⇒現在のグリフはインド系文字の再配置の最後のグリフである。カーニングテーブルでは、現在のグリフをカーニングスタックに積むことを表す“P”フラグが存在します。
 <P>
 <!--
 The last two lines have varied meanings depending on the type of the state
 machine. -->
-�Ō�� 2 �s�͏�ԋ@�B�̎�ނɂ���Ă��܂��܂ɈقȂ�Ӗ��������܂��B
+最後の 2 行は状態機械の種類によってさまざまに異なる意味をもちます。
 <UL>
   <LI>
 <!--For Indic transitions the two lines should be appended to get the indic
     rearrangement verb (in the example above that would be "Ax =&gt; xA" meaning
     that the first glyph marked should be moved after the last glyph marked) -->
-    �C���h�n�̏�ԑJ�ڂł́A���� 2 �s�̓C���h�n�Ĕz�u�����𓾂邽�߂ɒǉ�����܂� (��̗�́gAx �� xA�h�Ƃ����\���ŁA��Â����ꂽ�ŏ��̃O���t����Â����ꂽ�Ō�̃O���t�̌�Ɉړ�����Ƃ����Ӗ��ł�)�B
+    インド系の状態遷移では、この 2 行はインド系再配置動詞を得るために追加されます (上の例は“Ax ⇒ xA”という表示で、印づけされた最初のグリフが印づけされた最後のグリフの後に移動するという意味です)。
   <LI>
 <!--For contextual transitions the two lines specify the names (as 4 character
     tags) of nested substitutions. The first one is applied to the last glyph
     marked and the second one to the current glyph (if a line is blank, no
     substitution is applied to that glyph here).<BR> -->
-    �����ˑ��̏�ԑJ�ڂł͂��� 2 �s�́A����q�ɂȂ����u���� (4 �����̃^�O�ɂ��) ���O���w�肵�܂��B�ŏ��̒u���͈�Â����ꂽ�Ō�̃O���t�ɓK�p����A2 �Ԗڂ͌��݂̃O���t�ɓK�p����܂� (����s����ł���ꍇ�́A�����ɂ���O���t�ɂ͒u���͓K�p����܂���)<BR>
+    文脈依存の状態遷移ではこの 2 行は、入れ子になった置換の (4 文字のタグによる) 名前を指定します。最初の置換は印づけされた最後のグリフに適用され、2 番目は現在のグリフに適用されます (ある行が空である場合は、ここにあるグリフには置換は適用されません)<BR>
 <!--If a transition has both a "marked substitution" and the "mark current glyph"
     flag, I believe the substitution applies to the glyph that was previously
     marked, and not to the current glyph. (Apple doesn't document
     this)<FONT COLOR="Red"><BR> -->
-    �����ԑJ�ڂ��g����u���h�Ɓg���݂̃O���t�Ɉ������h�t���O�̗����������Ă����ꍇ�A���݂̃O���t�ł͂Ȃ��A�O���Â����ꂽ�O���t�ɒu�����K�p�����̂��Ǝ��͉��߂��Ă��܂��B(Apple �̕����ɂ͂���Ɋւ���L�q������܂���)<BR>
+    ある状態遷移が“印つき置換”と“現在のグリフに印をつける”フラグの両方をもっていた場合、現在のグリフではなく、前回印づけされたグリフに置換が適用されるのだと私は解釈しています。(Apple の文書にはこれに関する記述がありません)<BR>
 <FONT COLOR="Red">
 <!--<STRONG>Caveat: </STRONG></FONT>Apple's 'mort' format was not designed to
     allow fonteditors to figure out what a state machine did. FontForge can usually
@@ -134,7 +134,7 @@ machine. -->
     but it will often include extraneous glyph substitutions when a substitution
     applies to a marked glyph. These should not be harmful (they should never
     get invoked) but they are annoying ('morx' tables should not have this problem). -->
-    <STRONG>�x��: </STRONG></FONT>Apple ��&lsquo;mort&rsquo;�t�H�[�}�b�g�́A��ԋ@�B�������s���������t�H���g�G�f�B�^���\���ł���悤�ɐ݌v����Ă��܂���BFontForge �͑����̏ꍇ�͌��݂̃O���t�ɂǂ̒u�����K�p����邩�����܂������ł��܂����A�}�[�N���O���t�ɒu�����K�p�����ꍇ�͗]���ȃO���t�u�����܂܂�邱�Ƃ����΂��΂���܂��B�����͗L�Q�ł͂���܂��� (����炪�N������邱�Ƃ͌����Ă���܂���) ���A�ς킵���]�v���ł͂���܂� (&lsquo;morx&rsquo;�e�[�u���ɂ͂��̂悤�Ȗ��͖����͂��ł�)�B
+    <STRONG>警告: </STRONG></FONT>Apple の&lsquo;mort&rsquo;フォーマットは、状態機械が何を行ったかをフォントエディタが表示できるように設計されていません。FontForge は多くの場合は現在のグリフにどの置換が適用されるかをうまく推測できますが、マークつきグリフに置換が適用される場合は余分なグリフ置換が含まれることがしばしばあります。これらは有害ではありません (それらが起動されることは決してありません) が、煩わしい余計物ではあります (&lsquo;morx&rsquo;テーブルにはこのような問題は無いはずです)。
   <LI>
 <!--For insertion transitions the lines specify the glyphs that are to be inserted.
     The first line applies to the marked glyph, the second line to current glyph
@@ -142,22 +142,22 @@ machine. -->
     the glyph list is truncated). There are additional flags here that are also
     not shown because of lack of room. They may be viewed by clicking on a
     transition. -->
-    �}���^�C�v�̏�ԑJ�ڂɂ����ẮA�e�s�͑}�������O���t���w�肵�܂��B�ŏ��̍s�̓}�[�N���O���t�ɓK�p����A2 �s�ڂ͌��݂̃O���t�ɓK�p����܂� (�}������镶�������ׂĕ\������ꏊ�������ꍇ�́A�\���͓r���Ő؂�l�߂��܂�)�B�ꏊ�̕s�������\���ł��Ȃ��ǉ��t���O�������ɂ͊܂܂�Ă��܂��B�����́A��ԑJ�ڂ̃}�X���N���b�N����ƕ\������܂��B
+    挿入タイプの状態遷移においては、各行は挿入されるグリフを指定します。最初の行はマークつきグリフに適用され、2 行目は現在のグリフに適用されます (挿入される文字をすべて表示する場所が無い場合は、表示は途中で切り詰められます)。場所の不足似より表示できない追加フラグもここには含まれています。それらは、状態遷移のマスをクリックすると表示されます。
   <LI>
 <!--For kerning transitions the first line shows the first (few) kerning values,
     the second line shows either "..." if there are more kerning values, or
     nothing.<BR> -->
-    �J�[�j���O�̏�ԑJ�ڂɂ����ẮA�ŏ��̍s���ŏ��� (2, 3 ��) �J�[�j���O�l��\���A2 �s�ڂ́A�\��������Ȃ��J�[�j���O�l�����邱�Ƃ������g...�h���A�����\�����Ȃ����̂ǂ��炩�ł��B<BR>
+    カーニングの状態遷移においては、最初の行が最初の (2, 3 の) カーニング値を表し、2 行目は、表示しきれないカーニング値があることを示す“...”か、何も表示しないかのどちらかです。<BR>
 <!--Note: The number of kerning values
     <FONT COLOR="Red"><STRONG>MUST</STRONG></FONT> match the number of glyphs
     pushed on the kern stack, or your application crashes. -->
-    ����: �J�[�j���O�l�̌��̓J�[�j���O�X�^�b�N�ɒu���ꂽ�O���t�̌��ƈ�v<FONT COLOR="Red"><STRONG>���Ȃ���΂Ȃ�܂���</STRONG></FONT>�B�����Ȃ��ƃA�v���P�[�V�������N���b�V�����܂��B
+    注意: カーニング値の個数はカーニングスタックに置かれたグリフの個数と一致<FONT COLOR="Red"><STRONG>しなければなりません</STRONG></FONT>。さもないとアプリケーションがクラッシュします。
 </UL>
 <P>
 <!--
 For a complete description of what these state machines can do you should
 read Apple's documentation -->
-�����̏�ԋ@�B�������s�����Ɋւ����芮�S�Ȑ����ɂ��ẮAApple �̕�����ǂޕK�v������܂��B
+これらの状態機械が何を行うかに関するより完全な説明については、Apple の文書を読む必要があります。
 <UL>
   <LI>
 <!--On the-->
@@ -165,24 +165,24 @@ read Apple's documentation -->
     and
     <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6mort.html">'mort'</A>
     tables -->
-   &lsquo;<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6morx.html">morx</A>&rsquo;�����&lsquo;<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6mort.html">mort</A>&rsquo;�e�[�u���ɂ���
+   &lsquo;<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6morx.html">morx</A>&rsquo;および&lsquo;<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6mort.html">mort</A>&rsquo;テーブルについて
   <LI>
 <!--On the
     <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6kern.html">'kern'</A>
     table (format 1) -->
-    &lsquo;<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6kern.html">kern</A>&rsquo;�e�[�u�� (�t�H�[�}�b�g 1) �ɂ���
+    &lsquo;<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6kern.html">kern</A>&rsquo;テーブル (フォーマット 1) について
   <LI>
 <!--<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6Tables.html#StateTables">On
     state machines in general</A> -->
-    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6Tables.html#StateTables">��ԑJ�ڋ@�B�Ɋւ����ʘ_</A>
+    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6Tables.html#StateTables">状態遷移機械に関する一般論</A>
   <LI>
 <!--<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6feat.html">The
     'feat' (feature) table</A> -->
-    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6feat.html">&lsquo;feat&rsquo;(�@�\) �e�[�u��</A>
+    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6feat.html">&lsquo;feat&rsquo;(機能) テーブル</A>
   <LI>
 <!--<A HREF="http://developer.apple.com/fonts/Registry/index.html">Apple's Font
     Feature registry</A>-->
-    <A HREF="http://developer.apple.com/fonts/Registry/index.html">Apple �̃t�H���g�@�\�o�^��</A>
+    <A HREF="http://developer.apple.com/fonts/Registry/index.html">Apple のフォント機能登録簿</A>
 </UL>
 <P>
 <!--
@@ -195,7 +195,7 @@ current one), it will usually advance to the next glyph (so the new state
 will be indexed by a different glyph) but sometimes you will want to continue
 processing the current glyph in the new state. Also it will perform a set
 of operations which differ depending on the type of state machine. -->
-��ʓI�ȍl���́A���[�h�v���Z�b�T���e�L�X�g���O���t�̗�ɕϊ����A���ꂩ���ԋ@�B�����̃O���t��ɓK�p�����Ƃ������̂ł��B��ԋ@�B�͏�� 0 �܂��� 1 ����n�܂�A�ŏ��̃O���t���ǂ̃N���X�ɑ����邩�𒲂ׁA���݂̏�Ԃɒu���邻�̃N���X�̃C���f�b�N�X�𒲂ׂ܂��B���̈ʒu�ɂ������ԑJ�ڂ͈ړ����ׂ��V������� (���݂̕��Ɠ����ꍇ������܂�) �𖾂炩�ɂ��A�ʏ�͎��̃O���t�Ɉڍs���܂� (����ɂ��A�V������Ԃł͈قȂ�O���t�̃C���f�b�N�X�Â����s���܂�) ���A�ꍇ�ɂ���Ă͐V������Ԃň����������݂̃O���t�̏������s���邱�Ƃ�����܂��B�܂��A��ԋ@�B�̃^�C�v�ɂ���ĈقȂ��A�̑���������Ɏ��s����܂��B
+一般的な考えは、ワードプロセッサがテキストをグリフの列に変換し、それから状態機械がそのグリフ列に適用されるというものです。状態機械は状態 0 または 1 から始まり、最初のグリフがどのクラスに属するかを調べ、現在の状態に置けるそのクラスのインデックスを調べます。その位置における状態遷移は移動すべき新しい状態 (現在の物と同じ場合もあります) を明らかにし、通常は次のグリフに移行します (それにより、新しい状態では異なるグリフのインデックスづけが行われます) が、場合によっては新しい状態で引き続き現在のグリフの処理が行われることもあります。また、状態機械のタイプによって異なる一連の操作も同時に実行されます。
 <P>
 <!--
 Many of the state machines have the concept of a "marked" glyph. This is
@@ -203,17 +203,17 @@ important if the desired change for a given glyph depends on what glyphs
 follow it. In that case when we reach an interesting glyph we "mark" it,
 and then, after reading a few more glyphs when we know what to do, we apply
 a transformation to the marked glyph. -->
-��ԋ@�B�̑����́g��Â����ꂽ�h�O���t�̊T�O�������Ă��܂��B����́A�^����ꂽ�O���t�ɑ΂���]�܂����ύX���A���̌��ɗ���O���t�ɂ���ĈقȂ�ꍇ�ɏd�v�ȈӖ��������܂��B���̂悤�ȏꍇ�A�����[���O���t�ɂ��ǂ蒅�����Ƃ��ɂ���Ɂg��Â��h���s���A���̌�A2, 3 �̒ǉ��̃O���t��ǂ�ŁA�����s���ׂ���������������ɁA�}�[�N�Â������O���t�ɕϊ���K�p���܂��B
+状態機械の多くは“印づけされた”グリフの概念をもっています。これは、与えられたグリフに対する望ましい変更が、その後ろに来るグリフによって異なる場合に重要な意味をもちます。そのような場合、興味深いグリフにたどり着いたときにそれに“印づけ”を行い、その後、2, 3 の追加のグリフを読んで、何を行うべきかが判明した後に、マークづけしたグリフに変換を適用します。
 <TABLE BORDER CELLPADDING="2">
   <TR>
 <!--<TH>Indic</TH>-->
-    <TH>�C���h�n</TH>
+    <TH>インド系</TH>
 <!--<TH>Contextual</TH>-->
-    <TH>�����ˑ�</TH>
+    <TH>文脈依存</TH>
 <!--<TH>Insertion</TH>-->
-    <TH>�}��</TH>
+    <TH>挿入</TH>
 <!--<TH>Kerning</TH>-->
-    <TH>�J�[�j���O</TH>
+    <TH>カーニング</TH>
   </TR>
   <TR VALIGN="Top">
     <TD><P ALIGN=Left>
@@ -226,19 +226,19 @@ a transformation to the marked glyph. -->
       refers to the marked glyph as "A", the last glyph as "D" and everything in
       between as "x", so this would change the glyph stream to<BR>
       &nbsp; &nbsp; dbcaef</TD> -->
-      �g��Â��h���ꂽ�O���t�̑��ɁA�C���h�n�̕ϊ��ɂ����Ắg�Ō�h�̃O���t�Ƃ����T�O������܂��B�g��Â��h���ꂽ�O���t�Ɓg�Ō�h�̃O���t�̊ԂɓK�p�\�ȕϊ��� 16 ��ނ���܂��B<BR>
+      “印づけ”されたグリフの他に、インド系の変換においては“最後”のグリフという概念があります。“印づけ”されたグリフと“最後”のグリフの間に適用可能な変換が 16 種類あります。<BR>
       &nbsp; &nbsp; abcdef<BR>
-      �̂悤�ȃO���t�X�g���[�����l���Ă݂܂��傤�B�����Łga�h���g��Â��h���ꂽ�����ŁA�gd�h���g�Ō�h�̕����ł���Ƃ���ƁA��ԑJ�ځgAxD �� DxA�h�͈�Â���ꂽ�O���t���gA�h�A�Ō�̃O���t���gD�h�A�����Ă��̊Ԃ̂��ׂĂ̕������gx�h�Ƃ��ĎQ�Ƃ���̂ŁA����ɂ��O���t�X�g���[����<BR>
+      のようなグリフストリームを考えてみましょう。ここで“a”が“印づけ”された文字で、“d”が“最後”の文字であるとすると、状態遷移“AxD ⇒ DxA”は印づけられたグリフを“A”、最後のグリフを“D”、そしてその間のすべての文字を“x”として参照するので、これによりグリフストリームは<BR>
       &nbsp; &nbsp; dbcaef<BR>
-      �ɕύX����܂��B</TD>
+      に変更されます。</TD>
 <!--<TD>This can apply a substitution to the current glyph, a different substitution
       to the marked glyph, and it may mark the current glyph. The substitutions
       are indicated by 4 character tags and should be "Nested" substitutions which
       may be created by the Element-&gt;Char Info dialog.</TD> -->
-    <TD>���̋@�\�͌��݂̃O���t�ւ̒u���ƁA��Â����ꂽ�O���t�ɑ΂���ʂ̒u������K�p���邱�Ƃ��ł��A�܂��A���݂̃O���t�Ɉ�Â����s�����Ƃ��ł��܂��B�u���� 4 �����̃^�O�ɂ���ĕ\����A<CODE>�G�������g(<U>L</U>)���O���t���(<U>I</U>)...</CODE> �_�C�A���O�ō쐬���邱�Ƃ��\�ȁg����q�́h�u���łȂ���΂Ȃ�܂���B
+    <TD>この機能は現在のグリフへの置換と、印づけされたグリフに対する別の置換をを適用することができ、また、現在のグリフに印づけを行うことができます。置換は 4 文字のタグによって表され、<CODE>エレメント(<U>L</U>)→グリフ情報(<U>I</U>)...</CODE> ダイアログで作成することが可能な“入れ子の”置換でなければなりません。
 <!--<TD>This can insert a string (up to 31 glyphs) before or after the current
       and the marked glyphs.</TD> -->
-    <TD>���̋@�\�� (31 �܂ł̂̃O���t����Ȃ�) ����������݂̃O���t����у}�[�N�Â����ꂽ�O���t�̑O��ɑ}�����邱�Ƃ��ł��܂��B</TD>
+    <TD>この機能は (31 個までののグリフからなる) 文字列を現在のグリフおよびマークづけされたグリフの前後に挿入することができます。</TD>
 <!--<TD>Kerning does not have a single "mark"ed glyph, instead it can push up
       to 8 glyphs onto a stack, and at a later point a set of kerning values may
       be applied to those glyphs (so the flag which is usually indicated as "M"
@@ -251,33 +251,33 @@ a transformation to the marked glyph. -->
       enter<BR>
       &nbsp; &nbsp; -300 0<BR>
       as kerning values.</TD> -->
-    <TD>�J�[�j���O�ł� 1 �́g��Â��h���ꂽ�O���t�͑��݂����A���̑���ɃX�^�b�N�� 8 �܂ł̃O���t��ς�ł����āA�����̃O���t�ɓK�p������A�̃J�[�j���O�l����Ŏw�肷��Ƃ��ł��܂� (���̂��߁A���̋@�\�ň��\���t���O�́gMark�h�̓������gM�h�ł���̂ɑ΂��A���̋@�\�ł́gPush�h�̓������gP�h�ƂȂ��Ă��܂�)�B�����ǂ��ׂẴO���t��ς񂾌�ŁA��A�̃J�[�j���O�l��K�p���邱�Ƃ��ł��܂��B�X�^�b�N�ɐς񂾊e�O���t���Ƃɒl 1 ���Ή����܂��B����́A�����̃O���t���J�[�j���O���{����邩���������l�ł��B
-      �Ⴆ�΁A�O���t�X�g���[����<BR>
+    <TD>カーニングでは 1 個の“印づけ”されたグリフは存在せず、その代わりにスタックに 8 個までのグリフを積んでおいて、それらのグリフに適用される一連のカーニング値を後で指定する個とができます (そのため、他の機能で印を表すフラグは“Mark”の頭文字“M”であるのに対し、この機能では“Push”の頭文字“P”となっています)。いちどすべてのグリフを積んだ後で、一連のカーニング値を適用することができます。スタックに積んだ各グリフごとに値 1 個が対応します。これは、いくつのグリフがカーニングを施されるかを示す数値です。
+      例えば、グリフストリームが<BR>
       &nbsp; &nbsp; F."<BR>
-      �ł������Ƃ��āA�g.�h�� -300,�g"�h�� 0 em ���j�b�g�����J�[�j���O�������ꍇ�A�J�[�j���O�l��<BR>
+      であったとして、“.”を -300,“"”を 0 em ユニットだけカーニングしたい場合、カーニング値を<BR>
       &nbsp; &nbsp; -300 0<BR>
-      �Ǝw�肷�邱�ƂɂȂ�܂��B
+      と指定することになります。
   </TR>
 </TABLE>
 <H2>
 <!--Editing <A NAME="EditTransition">Transitions</A>-->
-    <A NAME="EditTransition">��ԑJ��</A>�̕ҏW���@
+    <A NAME="EditTransition">状態遷移</A>の編集方法
 </H2>
 <P>
 <!--
 To edit a transition, simply click on it and a dialog will pop up, appropriate
 to the type of state machine. -->
-��ԑJ�ڂ�ҏW����ɂ́A���̏�ŒP�ɃN���b�N����ƁA���̏�ԋ@�B�̃^�C�v�ɍ��킹���_�C�A���O���N�����܂��B
+状態遷移を編集するには、その上で単にクリックすると、その状態機械のタイプに合わせたダイアログが起動します。
 <TABLE BORDER CELLPADDING="2">
   <TR>
 <!--<TH>Indic</TH>-->
-    <TH>�C���h�n</TH>
+    <TH>インド系</TH>
 <!--<TH>Contextual</TH>-->
-    <TH>�����ˑ�</TH>
+    <TH>文脈依存</TH>
 <!--<TH>Insertion</TH>-->
-    <TH>�}��</TH>
+    <TH>挿入</TH>
 <!--<TH>Kerning</TH>-->
-    <TH>�J�[�j���O</TH>
+    <TH>カーニング</TH>
   </TR>
   <TR>
     <TD><P ALIGN=Center>
@@ -294,16 +294,16 @@ to the type of state machine. -->
 <!--
 See <A HREF="statemachine.html#transitions">above</A> for a description of
 what the fields mean. -->
-�e�t�B�[���h�̈Ӗ��̐����́A<A HREF="statemachine.html#transitions">�O�q</A>�̋L�ڂ��Q�Ƃ��Ă��������B
+各フィールドの意味の説明は、<A HREF="statemachine.html#transitions">前述</A>の記載を参照してください。
 <P>
 <!--
 If you wish to add a new state, simply edit a transition so that its next
 state field is the state number desired. FontForge will automatically create
 the state for you. -->
-�V������Ԃ�ǉ��������ꍇ�A����Ԃ̃t�B�[���h�ɕK�v�ȏ�Ԕԍ�����͂��Ă��������BFontForge �͕K�v�ȏ�ԗ��������I�ɒǉ����܂��B
+新しい状態を追加したい場合、次状態のフィールドに必要な状態番号を入力してください。FontForge は必要な状態欄を自動的に追加します。
 <H2>
 <!--<A NAME="EditClass">Classes</A>-->
-    <A NAME="EditClass">�N���X</A>
+    <A NAME="EditClass">クラス</A>
 </H2>
 <P>
 <!--
@@ -315,10 +315,10 @@ a list of the names of the glyphs in this class. Pressing the [Set] button
 will set that field to any selected glyphs in the font view. Pressing the
 [Select] button will change the selection in the font view to match the glyphs
 in the text.<BR Clear=ALL> -->
-<IMG SRC="../statemachine-class.png" WIDTH="490" HEIGHT="587" ALT="�u��ԃ}�V���ւ̃N���X�ǉ��v�_�C�A���O" ALIGN="RIGHT">
-�V�����N���X��ǉ��������Ƃ��́A�_�C�A���O�̉��� <CODE>[�V�K(<U>N</U>)]</CODE> �{�^���������Ă��������B�N���X��ҏW�������ꍇ�́A���̃N���X���_�u���N���b�N���Ă��������B�_�C�A���O�̕\�����E�Ɏ������悤�ɕύX�����͂��ł��B�e�L�X�g�t�B�[���h�ɂ́A�̃N���X�ɑ�����O���t���̃��X�g���܂܂�Ă��܂��B<CODE>[�Z�b�g]</CODE> �{�^���������ƃt�H���g�r���[���őI�𒆂̂��ׂĂ̕�������Ȃ郊�X�g�ɕύX����܂��B<CODE>[�I��]</CODE> �{�^���������ƃt�H���g�r���[���̑I�𕶎����e�L�X�g�t�B�[���h���̃O���t�ƈ�v����悤�ɕύX����܂��B<BR Clear=ALL> 
+<IMG SRC="../statemachine-class.png" WIDTH="490" HEIGHT="587" ALT="「状態マシンへのクラス追加」ダイアログ" ALIGN="RIGHT">
+新しいクラスを追加したいときは、ダイアログの下の <CODE>[新規(<U>N</U>)]</CODE> ボタンを押してください。クラスを編集したい場合は、そのクラスをダブルクリックしてください。ダイアログの表示が右に示したように変更されるはずです。テキストフィールドには、個のクラスに属するグリフ名のリストが含まれています。<CODE>[セット]</CODE> ボタンを押すとフォントビュー内で選択中のすべての文字からなるリストに変更されます。<CODE>[選択]</CODE> ボタンを押すとフォントビュー内の選択文字がテキストフィールド内のグリフと一致するように変更されます。<BR Clear=ALL> 
 <P>
 <P ALIGN=Center>
-�\ <A HREF="fontinfo.html">��</A> �\ <A HREF="overview.html">�ڎ�</A> �\
+— <A HREF="fontinfo.html">上</A> — <A HREF="overview.html">目次</A> —
 </DIV>
 </BODY></HTML>

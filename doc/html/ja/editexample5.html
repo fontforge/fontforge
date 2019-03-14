@@ -3,9 +3,9 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
   <!-- AP: Last modified: 21-Apr-2006 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!--<TITLE>Examining and controling metrics and kerning</TITLE>-->
-    <TITLE>���g���b�N�ƃJ�[�j���O�̌����@�ƒ����@</TITLE>
+    <TITLE>メトリックとカーニングの検査法と調整法</TITLE>
   <LINK REL="icon" href="../fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
@@ -13,78 +13,78 @@
 <DIV id="in">
   <H1 ALIGN=Center>
 <!-- Tutorial #5 -->
-     �`���[�g���A�� (���� 5)
+     チュートリアル (その 5)
   </H1>
   <UL>
     <LI>
 <!--  <A HREF="editexample.html#FontCreate">Font Creation</A>-->
-      <A HREF="editexample.html#FontCreate">�t�H���g�̍쐬</A>
+      <A HREF="editexample.html#FontCreate">フォントの作成</A>
     <LI>
 <!--  <A HREF="editexample.html#CharCreate">Creating a glyph (tracing outlines)</A>-->
-      <A HREF="editexample.html#CharCreate">�O���t�̍쐬 (�A�E�g���C���̃g���[�X) �@</A>
+      <A HREF="editexample.html#CharCreate">グリフの作成 (アウトラインのトレース) 法</A>
     <LI>
 <!--  <A HREF="editexample2.html#Navigating">Navigating to other glyphs</A>-->
-      <A HREF="editexample2.html#Navigating">���̃O���t�̌Ăяo����</A>
+      <A HREF="editexample2.html#Navigating">他のグリフの呼び出し方</A>
     <LI>
 <!--  <A HREF="editexample2.html#Creating-o">On to the next glyph (consistent
       directions)</A>-->
-      <A HREF="editexample2.html#Creating-o">���̃O���t�Ɋւ��� (�����̂Ȃ��p�X�̌���)</A>
+      <A HREF="editexample2.html#Creating-o">次のグリフに関して (矛盾のないパスの向き)</A>
     <LI>
 <!--  <A HREF="editexample3.html#consistent-stems">Consistent serifs and stem
       widths</A>-->
-      <A HREF="editexample3.html#consistent-stems">����̂Ƃꂽ�Z���t�ƃX�e���̑���</A>
+      <A HREF="editexample3.html#consistent-stems">統一のとれたセリフとステムの太さ</A>
     <LI>
 <!--  <A HREF="editexample4.html#accents">Building accented glyphs</A>-->
-      <A HREF="editexample4.html#accents">�A�N�Z���g���O���t�̑g�ݗ��ĕ�</A>
+      <A HREF="editexample4.html#accents">アクセントつきグリフの組み立て方</A>
     <LI>
 <!--  <A HREF="editexample4.html#ligature">Building a ligature</A>-->
-      <A HREF="editexample4.html#ligature">�����̑g�ݗ��ĕ�</A>
+      <A HREF="editexample4.html#ligature">合字の組み立て方</A>
     <LI>
 <!--  <A HREF="editexample5.html#metrics">Examining metrics</A>-->
-      <A HREF="editexample5.html#metrics">���g���b�N�̊m�F�@</A>
+      <A HREF="editexample5.html#metrics">メトリックの確認法</A>
       <UL>
 	<LI>
 <!--  	<A HREF="#Vertical">Vertical metrics</A> -->
-  	<A HREF="#Vertical">�c�������g���b�N</A>
+  	<A HREF="#Vertical">縦書きメトリック</A>
 	<LI>
 <!--  	<A HREF="editexample5.html#baseline">Setting the baseline to baseline spacing
   	of a font</A> -->
-  	<A HREF="editexample5.html#baseline">�t�H���g�̃x�[�X���C���ƃx�[�X���C���̊Ԋu�̐ݒ���@</A>
+  	<A HREF="editexample5.html#baseline">フォントのベースラインとベースラインの間隔の設定方法</A>
       </UL>
     <LI>
 <!--  <A HREF="editexample5.html#Kerning">Kerning</A>-->
-      <A HREF="editexample5.html#Kerning">�J�[�j���O</A>
+      <A HREF="editexample5.html#Kerning">カーニング</A>
     <LI>
 <!--  <A HREF="editexample6.html#Variants">Glyph variants</A>-->
-      <A HREF="editexample6.html#Variants">�ّ̊֌W�ɂ���O���t</A>
+      <A HREF="editexample6.html#Variants">異体関係にあるグリフ</A>
     <LI>
 <!--  <A HREF="editexample6.html#Marks">Anchoring marks</A>-->
-      <A HREF="editexample6.html#Marks">�A���J�[�}�[�N</A>
+      <A HREF="editexample6.html#Marks">アンカーマーク</A>
     <LI>
 <!--  <A HREF="editexample6-5.html#Conditional">Conditional features</A>-->
-      <A HREF="editexample6-5.html#Conditional">�������@�\</A>
+      <A HREF="editexample6-5.html#Conditional">条件つき機能</A>
     <LI>
 <!--  <A HREF="editexample7.html#checking">Checking your font</A>-->
-      <A HREF="editexample7.html#checking">�t�H���g�̃`�F�b�N�@</A>
+      <A HREF="editexample7.html#checking">フォントのチェック法</A>
     <LI>
 <!--  <A HREF="editexample7.html#generating">Generating it</A>-->
-      <A HREF="editexample7.html#generating">�t�H���g�̏o�͕��@</A>
+      <A HREF="editexample7.html#generating">フォントの出力方法</A>
     <LI>
 <!--  <A HREF="editexample7.html#Families">Font Families</A>-->
-      <A HREF="editexample7.html#Families">�t�H���g�t�@�~���[</A>
+      <A HREF="editexample7.html#Families">フォントファミリー</A>
     <LI>
 <!--  <A HREF="editexample7.html#summary">Final Summary</A>-->
-      <A HREF="editexample7.html#summary">�Ō�̂܂Ƃ�</A>
+      <A HREF="editexample7.html#summary">最後のまとめ</A>
     <LI>
 <!--  <A HREF="scripting-tutorial.html">Scripting Tutorial</A> -->
-      <A HREF="scripting-tutorial.html">�X�N���v�g�����̃`���[�g���A��</A>
+      <A HREF="scripting-tutorial.html">スクリプト処理のチュートリアル</A>
     <LI>
 <!--  <A HREF="scriptnotes.html#Special">Notes on various scripts</A>-->
-      <A HREF="scriptnotes.html#Special">�e��̗p���n�ɂ����钍�ӓ_</A>
+      <A HREF="scriptnotes.html#Special">各種の用字系における注意点</A>
   </UL>
   <H2>
 <!--<A NAME="metrics">Examining</A> and controlling metrics-->
-    ���g���b�N��<A NAME="metrics">����</A>�Ɛ���
+    メトリックの<A NAME="metrics">検査</A>と制御
   </H2>
   <P>
   <IMG SRC="../sidebearings.png" WIDTH="111" HEIGHT="191" ALIGN="Right"> <!-- After
@@ -93,9 +93,9 @@
   after the first glyph, and the space before the second glyph. In a left to
   right world these two are called the right side bearing and the left side
   bearing respectively. -->
-  �O���t�̌`��݌v���Ă���A���ɂ���K�v������̂̓O���t�̊Ԃ̋�Ԃ𐳂����ݒ肷�邱�Ƃł��B
-  2 �̃O���t�̊Ԃ̊Ԋu�͂��ׂāA�ŏ��̃O���t�̌�̋󔒂Ǝ��̃O���t�̑O�̋󔒂� 2 �̍\���v�f����Ȃ�܂��B
-  ������E�ɕ������������E�ł́A�����͂��ꂼ��E�T�C�h�x�A�����O�ƍ��T�C�h�x�A�����O�ƌĂ΂�܂��B
+  グリフの形を設計してから、次にする必要があるのはグリフの間の空間を正しく設定することです。
+  2 個のグリフの間の間隔はすべて、最初のグリフの後の空白と次のグリフの前の空白の 2 つの構成要素からなります。
+  左から右に文字を書く世界では、これらはそれぞれ右サイドベアリングと左サイドベアリングと呼ばれます。
   <P>
 <!--
   The left side bearing may be changed by the simple expedient of
@@ -103,30 +103,30 @@
   the selected objects to the appropriate place. The right side bearing may
   be changed by selecting the advance width line and adjusting it
   appropriately.<BR CLEAR=ALL> -->
-  ���T�C�h�x�A�����O�́A�ȒP�ȑ���ŕύX���邱�Ƃ��ł��܂��B
-  <CODE>�ҏW(<U>E</U>)</CODE>��<CODE>�I��(<U>S</U>)</CODE>��<CODE>���ׂđI��(<U>A</U>)</CODE> �� (�A�E�g���C���r���[��) �s���A�I�����ꂽ�I�u�W�F�N�g��K�؂ȏꏊ�Ɉړ����܂��B�E�T�C�h�x�A�����O�͑��蕝��\������I�����A�K�؂Ȉʒu�ɒ������邱�Ƃɂ���ĕύX�ł��܂��B<BR CLEAR=ALL>
+  左サイドベアリングは、簡単な操作で変更することができます。
+  <CODE>編集(<U>E</U>)</CODE>→<CODE>選択(<U>S</U>)</CODE>→<CODE>すべて選択(<U>A</U>)</CODE> を (アウトラインビューで) 行い、選択されたオブジェクトを適切な場所に移動します。右サイドベアリングは送り幅を表す線を選択し、適切な位置に調整することによって変更できます。<BR CLEAR=ALL>
   <P>
 <!--
   However it is generally better not to set the metrics of a single glyph in
   isolation, you should see the glyph in the context of other glyphs and set
   it from that perspective. Use the <CODE>Window-&gt;Open
   <A HREF="metricsview.html">Metrics Window </A></CODE>command.<BR> -->
-  �������Ȃ���A��ʓI�ɂ͌ʂ̃O���t�̃��g���b�N��P�ƂŐݒ肷��̂ł͂Ȃ��A���̃O���t�̊ԂɈ͂܂ꂽ�����̒��Œ��߁A���̊ϓ_����ݒ肵���ق��������̂ł��B
-  <CODE>�E�B���h�E(<U>W</U>)</CODE>��<CODE><A HREF="metricsview.html">���g���b�N�E�B���h�E���J��(M)</A></CODE> �R�}���h���g�p���Ă��������B
+  しかしながら、一般的には個別のグリフのメトリックを単独で設定するのではなく、他のグリフの間に囲まれた文脈の中で眺め、その観点から設定したほうがいいのです。
+  <CODE>ウィンドウ(<U>W</U>)</CODE>→<CODE><A HREF="metricsview.html">メトリックウィンドウを開く(M)</A></CODE> コマンドを使用してください。
   <IMG SRC="MetricsView.png" WIDTH="600" HEIGHT="331"><BR>
 <!--
   Any glyphs selected in the fontview (when you invoke the metrics view) will
   be displayed in the metrics view. You may change which glyphs are displayed
   by either typing new ones in to the text field at the top of the view, or
   by dragging a glyph from the fontview. -->
-  �t�H���g�r���[���őI�����ꂽ�C�ӂ̃O���t�� (���g���b�N�r���[���Ăяo�����Ƃ�) ���g���b�N�r���[�̒��ɕ\������܂��B�\�������O���t�̕��т́A�V�����E�B���h�E�̍ŏ㕔�̃e�L�X�g�t�B�[���h�ɕ�������^�C�v���邩�A�܂��̓t�H���g�r���[����O���t���h���b�O���邱�Ƃɂ���ĕύX���邱�Ƃ��ł��܂��B
+  フォントビュー内で選択された任意のグリフは (メトリックビューを呼び出したとき) メトリックビューの中に表示されます。表示されるグリフの並びは、新しくウィンドウの最上部のテキストフィールドに文字列をタイプするか、またはフォントビューからグリフをドラッグすることによって変更することができます。
   <P>
 <!--
   From here you may adjust any glyph's metrics by typing into the textfields
   below it, or you may select a glyph (by clicking on its image) and drag it
   around (to adjust the left side bearing), or drag its width line (to adjust
   its right side bearing). -->
-  ���̉�ʂ���C�ӂ̃O���t�̃��g���b�N���A���̉��̃e�L�X�g�t�B�[���h�ɕ������^�C�v���邩�A�O���t�� (���̉摜���N���b�N����) �I�����Ă��� (���T�C�h�x�A�����O�𒲐����邽�߂�) ���������� (�E�T�C�h�x�A�����O�𒲐����邽�߂�) �O���t�̕���\�������h���b�O�����肷�邱�Ƃɂ���Ē������邱�Ƃ��ł��܂��B
+  この画面から任意のグリフのメトリックを、その下のテキストフィールドに文字をタイプするか、グリフを (その画像をクリックして) 選択してから (左サイドベアリングを調整するために) 動かしたり (右サイドベアリングを調整するために) グリフの幅を表す線をドラッグしたりすることによって調整することができます。
   <P>
 <!--
   If you want to generate a "typewriter" style font (where all glyphs have
@@ -135,7 +135,7 @@
   all glyphs to the same value. After doing that you might also want to execute
   <CODE>Metrics-&gt;Center in Width</CODE> to even out the left and right spacing
   on each glyph. -->
-  �u�^�C�v���C�^�v�X�^�C�� (�S�ẴO���t�̕�������) �̃t�H���g�𐶐��������ꍇ�A<CODE>�ҏW(<U>E</U>)</CODE>��<CODE>�I��(<U>S</U>)</CODE>��<CODE>���ׂđI��(<U>A</U>)</CODE> ���t�H���g�r���[������s���A���� <CODE>���g���b�N(<U>M</U>)</CODE>��<CODE>����ݒ�(<U>W</U>)...</CODE> �����s���܂��B����ɂ��A���ׂẴO���t�̕��������l�ɐݒ肳��܂��B������s������A<CODE>���g���b�N(<U>M</U>)</CODE>��<CODE>���̒�����(<U>C</U>)</CODE> �����s���Ċe�O���t�̍��ƉE�̋󂫂��ϓ��ɂ����ق��������ł��傤�B
+  「タイプライタ」スタイル (全てのグリフの幅が同じ) のフォントを生成したい場合、<CODE>編集(<U>E</U>)</CODE>→<CODE>選択(<U>S</U>)</CODE>→<CODE>すべて選択(<U>A</U>)</CODE> をフォントビューから実行し、次に <CODE>メトリック(<U>M</U>)</CODE>→<CODE>幅を設定(<U>W</U>)...</CODE> を実行します。これにより、すべてのグリフの幅が同じ値に設定されます。これを行った後、<CODE>メトリック(<U>M</U>)</CODE>→<CODE>幅の中央に(<U>C</U>)</CODE> を実行して各グリフの左と右の空きを均等にしたほうがいいでしょう。
   <P>
   <I><IMG SRC="../autowidth.png" WIDTH="276" HEIGHT="268" ALIGN="Right"></I> <!-- If
   all this manual operation seems too complicated, try
@@ -143,12 +143,12 @@
   This will automagically assign widths to characters. These widths are not
   up to professional standards, but they are generally reasonable approximations.
   -->
-  ���̎蓮���삪���G������Ǝv���l�́A
-  <A HREF="autowidth.html#AutoWidth"><CODE>���g���b�N(<U>M</U>)</CODE>��<CODE>���̎����ݒ�(<U>A</U>)...</CODE></A> �������Ă݂Ă��������B
-  ����͑S�����Ŋe�����̕���ݒ肵�܂��B���̕��̓v���̐����ɂ͒B���Ă��܂��񂪁A��ʐl�����Ă܂��܂��̋ߎ��ł��B
+  この手動動作が複雑すぎると思う人は、
+  <A HREF="autowidth.html#AutoWidth"><CODE>メトリック(<U>M</U>)</CODE>→<CODE>幅の自動設定(<U>A</U>)...</CODE></A> を試してみてください。
+  これは全自動で各文字の幅を設定します。この幅はプロの水準には達していませんが、一般人が見てまあまあの近似です。
   <H3>
 <!--<A NAME="Vertical">Vertical</A> Metrics -->
-    <A NAME="Vertical">�c����</A>�p���g���b�N
+    <A NAME="Vertical">縦書き</A>用メトリック
   </H3>
   <P>
 <!--
@@ -157,26 +157,26 @@
   do this with <CODE>Element-&gt;Font Info-&gt;General-&gt;Has Vertical
   Metrics</CODE>. Then in each outline glyph enable VMetrics in the Layers
   palette. -->
-  FontForge �� CJK �t�H���g�ɕK�v�ȏc�������g���b�N��������x�T�|�[�g���Ă��܂��B�܂��AFontForge �ɁA���̃t�H���g���c�������g���b�N���܂ނ悤�Ɏw������K�v������܂��B������s���ɂ� <CODE>�G�������g(<U>L</U>)</CODE>��<CODE>�t�H���g���(<U>F</U>)...</CODE>��<CODE>[��ʏ��]</CODE>��<CODE>[ ]�c�������g���b�N������(<U>V</U>)</CODE> ���g�p���܂��B���ꂩ�烌�C���p���b�g�Ŋe�A�E�g���C���O���t�̏c�������g���b�N��L���ɂ��܂��B
+  FontForge は CJK フォントに必要な縦書きメトリックをある程度サポートしています。まず、FontForge に、このフォントが縦書きメトリックを含むように指示する必要があります。これを行うには <CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[一般情報]</CODE>→<CODE>[ ]縦書きメトリックが存在(<U>V</U>)</CODE> を使用します。それからレイヤパレットで各アウトライングリフの縦書きメトリックを有効にします。
   <P>
 <!--
   You should now see a vertical advance line somewhere underneath your glyph.
   You may drag this line just as you would the horizontal advance (width) line.
   -->
-  �c�����̎�����̍��������������O���t�̉��̂ق��Ɍ�����͂��ł��B���̐����A�������̑��蕝�̐��Ɠ��l�Ƀh���b�O���邱�Ƃ��ł��܂��B
+  縦書きの字送りの高さを示す線がグリフの下のほうに見えるはずです。この線を、横書きの送り幅の線と同様にドラッグすることができます。
   <H3>
 <!--Setting the <A NAME="baseline">baseline</A> to baseline spacing of a font. -->
-    �t�H���g��<A NAME="baseline">�x�[�X���C��</A>�ƃx�[�X���C���̊Ԋu�̐ݒ���@
+    フォントの<A NAME="baseline">ベースライン</A>とベースラインの間隔の設定方法
   </H3>
   <P>
 <!--
   You might imagine that there would be an easy way to set this seemingly important
   quantity. Unfortunately there is not. -->
-  ���́A�O�Ϗ�d�v�ȈӖ������ʂ�ݒ肷��ȒP�ȕ��@������Ƃ��l���ɂȂ邩������܂���B�c�O�Ȃ��疳���̂ł��B
+  この、外観上重要な意味をもつ量を設定する簡単な方法があるとお考えになるかもしれません。残念ながら無いのです。
   <DL>
     <DT>
 <!--  In a PostScript Type1 font (or bare CFF font) -->
-      PostScript Type1 �t�H���g (�܂��͗��� CFF �t�H���g) �ɂ�������@
+      PostScript Type1 フォント (または裸の CFF フォント) における方法
     <DD>
 <!--  There is no way to set this value.<BR>
       At all, ever.<BR>
@@ -184,15 +184,15 @@
       is the ascent+descent of a font). Some applications will use this. Other
       applications will use the font's bounding box (summing the maximum ascender
       height with the minimum descender depth) - - a very bad, but very common approach. -->
-      ���̒l��ݒ肷����@�͂���܂���B<BR>
-      �{���ɁA�܂����������̂ł��B</BR>
-      �`���I�Ȋ��ň���ł͍s�ƍs�̊Ԋu�� 1em �ł� (����́AFontForge �ł̓t�H���g�̍���+�[���ɑ������܂�)�B�������̃A�v���P�[�V�����͂��̒l���g�p����ł��傤�B���̃A�v���P�[�V�����̓t�H���g�̃o�E���f�B���O�{�b�N�X (�A�Z���_�̍ő卂���ƃf�B�Z���_�̍ŏ��[���𑫂������l) ���g�p����ł��傤�\�\���ɖ��̂���A�������Ȃ�����ɂ悭�g���Ă���A�v���[�`�ł��B
+      この値を設定する方法はありません。<BR>
+      本当に、まったく無いのです。</BR>
+      伝統的な活版印刷では行と行の間隔は 1em です (これは、FontForge ではフォントの高さ+深さに相当します)。いくつかのアプリケーションはこの値を使用するでしょう。他のアプリケーションはフォントのバウンディングボックス (アセンダの最大高さとディセンダの最小深さを足した数値) を使用するでしょう——非常に問題のある、しかしながら非常によく使われているアプローチです。
     <DT>
 <!--  In a TrueType or OpenType font-->
-      TrueType �܂��� OpenType �t�H���g�ɂ�������@
+      TrueType または OpenType フォントにおける方法
     <DD>
 <!--  Unfortunately this depends on the platform-->
-      �c�O�Ȃ��炱��̓v���b�g�t�H�[���Ɉˑ����܂��B
+      残念ながらこれはプラットフォームに依存します。
       <DL>
 	<DT>
   	Mac
@@ -201,10 +201,10 @@
   	box values of the font, specified in the 'hhea' table, possibly modified
   	by a linegap (Which you can set in FontForge with
   	<A HREF="fontinfo.html">Element-&gt;FontInfo-&gt;OS/2</A>. -->
-  	Mac �ł́A�x�[�X���C���ƃx�[�X���C���̊Ԋu�́A�����ł�&lsquo;hhea&rsquo;�e�[�u���Ŏw�肳��Ă���t�H���g�̃o�E���f�B���O�{�b�N�X�̒l�ɂ���Č��܂�A���̒l�͍s�� (FontForge �ł� <A HREF="fontinfo.html"><CODE>�G�������g(<U>L</U>)</CODE>��<CODE>�t�H���g���(<U>F</U>)...</CODE>��<CODE>[OS/2]</CODE></A> �Őݒ�ł��܂��B
+  	Mac では、ベースラインとベースラインの間隔は、ここでも&lsquo;hhea&rsquo;テーブルで指定されているフォントのバウンディングボックスの値によって決まり、この値は行間 (FontForge では <A HREF="fontinfo.html"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[OS/2]</CODE></A> で設定できます。
 	<DT>
 <!--  	On Windows -->
-  	Windows �ł�
+  	Windows では
 	<DD>
 <!--  	According to the OpenType spec, the baseline to baseline distance is set
   	by the values of Typographic Ascent and Descent of the 'OS/2' table. These
@@ -213,38 +213,38 @@
   	allowed to default to the Ascent and Descent values of FontForge -- they
   	generally sum to 1em and are equivalent to the traditional unleaded
   	default.<BR> -->
-  	OpenType �̎d�l���ɂ��ƁA�x�[�X���C���Ԃ̋�����&lsquo;OS/2&rsquo;�e�[�u���� Typpographic Ascent �� Descent �̒l�ɂ���Đݒ肳��܂��B������<A HREF="fontinfo.html"><CODE>�G�������g(<U>L</U>)</CODE>��<CODE>�t�H���g���(<U>F</U>)...</CODE>��<CODE>[OS/2]</CODE></A> �ɂ���Đݒ�ł��܂����A��ʂɂ� FontForge �̃f�t�H���g�l�̂܂܂ɂ��Ă������Ƃ��L���s���Ă��܂��\�\�����̒l�̍��v�͈�ʂ� 1 em �ɂȂ�A�`���I�ȍs�ԃA�L�����̂Ƃ��̂Ƃ��̃f�t�H���g�Ɠ����ł��B<BR>
+  	OpenType の仕様書によると、ベースライン間の距離は&lsquo;OS/2&rsquo;テーブルの Typpographic Ascent と Descent の値によって設定されます。これらは<A HREF="fontinfo.html"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[OS/2]</CODE></A> によって設定できますが、一般には FontForge のデフォルト値のままにしておくことが広く行われています——それらの値の合計は一般に 1 em になり、伝統的な行間アキ無しのときのときのデフォルトと等価です。<BR>
 <!--  	Again this may be modified by a linegap field.<BR> -->
-  	���̒l���s�� (linegap) �t�B�[���h�ŕ␳�ł��܂��B
+  	この値も行間 (linegap) フィールドで補正できます。
 <!--  	Unfortunately Windows programs rarely follow the standard (which I expect
   	doesn't supprise anyone), and generally they will use the font's bounding
   	box as specified in the Win Ascent/Descent fields of the 'OS/2' table. -->
-  	�c�O�Ȃ��� Windows �̃v���O�����͂قƂ�ǕW���ɏ]�킸 (������N�������Ȃ��Ƃ͎v���܂���)�A��ʂɃt�H���g�̃o�E���f�B���O�{�b�N�X��&lsquo;OS/2&rsquo;�e�[�u���� Win Ascent/Descent �t�B�[���h�Ŏw�肳�ꂽ���̂Ƃ��Ďg�p����ł��傤�B
+  	残念ながら Windows のプログラムはほとんど標準に従わず (今さら誰も驚かないとは思いますが)、一般にフォントのバウンディングボックスを&lsquo;OS/2&rsquo;テーブルの Win Ascent/Descent フィールドで指定されたものとして使用するでしょう。
 	<DT>
 <!--  	On linux/unix -->
-  	Linux/Unix �ł�
+  	Linux/Unix では
 	<DD>
 <!--  	I doubt there is any standard behavior. Unix apps will probably choose one
   	of the above. -->
-  	�W���I�ȐU���������݂���̂��^��Ɏv���܂��BUnix �̃A�v���P�[�V�����͂����炭�����̂ǂꂩ 1 ��I�Ԃł��傤�B
+  	標準的な振舞いが存在するのか疑問に思います。Unix のアプリケーションはおそらくこれらのどれか 1 つを選ぶでしょう。
       </DL>
   </DL>
   <P>
 <!--
   Typographically ept applications will allow users to adjust baseline to baseline
   spacing, so the default value may not be all that relevant. -->
-  �^�C�|�O���t�B��̋@�\���L�x�ȃA�v���P�[�V�����́A���[�U���x�[�X���C���Ԃ̃X�y�[�V���O�𒲐��ł���悤�ɂ��Ă��܂��̂ŁA�f�t�H���g�l���ǂ�Ȓl�ł����֌W�ł��B
+  タイポグラフィ上の機能が豊富なアプリケーションは、ユーザがベースライン間のスペーシングを調整できるようにしていますので、デフォルト値がどんな値でも無関係です。
   <H2>
 <!--<A NAME="Kerning">Kerning</A>-->
-    <A NAME="Kerning">�J�[�j���O</A>
+    <A NAME="Kerning">カーニング</A>
   </H2>
   <P>
 <!--
   If you are careful in setting the left and right side-bearings you can design
   your font so that the spacing looks nice in almost all cases. But there are
   always some cases which confound simple solutions. -->
-  ���E�̃T�C�h�x�A�����O�𒍈Ӑ[���ݒ肵�Ă���΁A�قƂ�ǂ̏ꍇ�Ɏ��Ԃ�������������悤�Ƀt�H���g���f�U�C�����邱�Ƃ��ł���ł��傤�B
-  �������A��ɂ������͒P���ɉ����ł��Ȃ��ꍇ�����݂��܂��B
+  左右のサイドベアリングを注意深く設定していれば、ほとんどの場合に字間が美しく見えるようにフォントをデザインすることができるでしょう。
+  しかし、常にいくつかは単純に解決できない場合が存在します。
   <P>
 <!--
   Consider "<FONT FACE="helvetica">To</FONT>" or
@@ -253,11 +253,11 @@
   to the left and snuggle under the top bar of the
   "<FONT FACE="helvetica">T</FONT>". This is called kerning, and it is used
   to control inter-glyph spacing on a pair-by-pair basis. -->
-  �����ł́g<FONT FACE="helvetica">To</FONT>�h��g<FONT FACE="helvetica">Av</FONT>�h�Ȃǂ̕W���I�ݒ肪�s�K�؂������ꍇ���l���܂��傤�B�����g<FONT FACE="helvetica">o</FONT>�h�́A��荶�ɂ��炵�āg<FONT FACE="helvetica">T</FONT>" �̃g�b�v�o�[�̉��ɂ����荞�ނ悤�ɂ����ق���������������ł��傤�B����̓J�[�j���O�ƌĂ΂�A�O���t�Ԃ̋󂫂��e�����΂Ɋ�Â��Đ��䂵�܂��B
+  ここでは“<FONT FACE="helvetica">To</FONT>”や“<FONT FACE="helvetica">Av</FONT>”などの標準的設定が不適切だった場合を考えましょう。文字“<FONT FACE="helvetica">o</FONT>”は、より左にずらして“<FONT FACE="helvetica">T</FONT>" のトップバーの下にもぐり込むようにしたほうが美しく見えるでしょう。これはカーニングと呼ばれ、グリフ間の空きを各文字対に基づいて制御します。
   <TABLE BORDER CELLPADDING="2">
     <CAPTION>
 <!--  Kerning-->
-      �J�[�j���O
+      カーニング
     </CAPTION>
     <TR>
       <TD><IMG SRC="../To-unkerned.png" WIDTH="204" HEIGHT="323"></TD>
@@ -271,17 +271,17 @@
   of the pair, the line (normally the horizontal advance) between the two should
   go green (and becomes the kerned advance). Drag this line around until the
   spacing looks nice. -->
-  ��̗�ł͍��̉摜�̓J�[�j���O�����̃e�L�X�g���A�E�̓J�[�j���O�L��̃e�L�X�g�������Ă��܂��B
-  �J�[�j���O�̃y�A���쐬����̂͊ȒP�ł�: �E�̃O���t���N���b�N����ƁA2 �̃O���t�̊Ԃ̐� (�ʏ�͉������̑��蕝) ���ΐF�ɂȂ�܂��B������A�󂫂̗ʂ�������������悤�ɂȂ�܂Ńh���b�O���Ă��������B
+  上の例では左の画像はカーニング無しのテキストを、右はカーニング有りのテキストを示しています。
+  カーニングのペアを作成するのは簡単です: 右のグリフをクリックすると、2 つのグリフの間の線 (通常は横書きの送り幅) が緑色になります。これを、空きの量が美しく見えるようになるまでドラッグしてください。
   <P>
 <!--
   (Some glyph combinations are better treated by
   <A HREF="editexample4.html#ligature">creating a ligature </A>than by kerning
   the letters) -->
-  (�����̃O���t�̑g�ݍ��킹�́A�J�[�j���O��ݒ肷�����<A HREF="editexample4.html#ligature">�������쐬</A>�����ق����K�؂Ɉ����܂�)
+  (ある種のグリフの組み合わせは、カーニングを設定するよりも<A HREF="editexample4.html#ligature">合字を作成</A>したほうが適切に扱えます)
   <H3>
 <!--Kerning classes -->
-    �J�[�j���O�N���X
+    カーニングクラス
   </H3>
   <P>
 <!--
@@ -289,10 +289,10 @@
   wish to create a set of <A HREF="metricsview.html#kernclass">kerning
   classes</A> (which might say that A, &Agrave;, &Aacute;, &Acirc;, &Acirc;,
   &Atilde; and &Auml; all kern alike). -->
-  �����悤�ȃJ�[�j���O�@�\�����O���t���������񂠂�ꍇ�ɂ́A�����̑���� 1 �g��<A HREF="metricsview.html#kernclass">�J�[�j���O�N���X���쐬</A>�����ق����y�ł��傤 (����ɂ�� A �� &Agrave;, &Aacute;, &Acirc;, &Acirc;, &Atilde;, &Auml; �Ȃǂ��J�[�j���O�̏�ł��ׂē������Ƃ��Ĉ����܂�)�B
+  同じようなカーニング機能をもつグリフがたくさんある場合には、それらの代わりに 1 組の<A HREF="metricsview.html#kernclass">カーニングクラスを作成</A>したほうが楽でしょう (これにより A と &Agrave;, &Aacute;, &Acirc;, &Acirc;, &Atilde;, &Auml; などがカーニングの上ですべて同じ物として扱われます)。
   <H3>
 <!--<A NAME="VKern">Vertical</A> Kerning -->
-    <A NAME="VKern">�c����</A>�J�[�j���O
+    <A NAME="VKern">縦書き</A>カーニング
   </H3>
   <P>
 <!--
@@ -303,16 +303,16 @@
   a command which will copy horizontal kerning information to the vertically
   rotated glyphs (That is, if the combination "A" "V" is horizontally kerned
   by -200, then "A.vert" "V.vert" should be vertically kerned by -200. -->
-  FontForge �͏c�����J�[�j���O�ɂ��Ă����������l�ɃT�|�[�g���Ă��܂��BTrueType, OpenType ����� SVG �t�H���g����c�����J�[�j���O��ǂݍ��񂾂菑���o�����肷�邱�Ƃ��ł��܂��B�c�����J�[�j���O���쐬���邱�Ƃ��\�ł��B���g���b�N�E�B���h�E�ɂ́A�c�����J�[�j���O�y�A��ݒ�ł���c�������[�h������܂��B�����čŌ�ɁA�������̃J�[�j���O�����c�����ɉ�]�����O���t�ɃR�s�[����R�}���h������܂� (�܂�A�gA�h�ƁgV�h�̑g�������������� -200 �����l�߂��Ă���ꍇ�A�gA.vert�h�ƁgV.vert�h�� -200 �����c�ɋl�߂���Ƃ������Ƃł�)�B
+  FontForge は縦書きカーニングについても横書き同様にサポートしています。TrueType, OpenType および SVG フォントから縦書きカーニングを読み込んだり書き出したりすることができます。縦書きカーニングを作成することも可能です。メトリックウィンドウには、縦書きカーニングペアを設定できる縦書きモードがあります。そして最後に、横書きのカーニング情報を縦向きに回転したグリフにコピーするコマンドがあります (つまり、“A”と“V”の組合せが横書きで -200 だけ詰められている場合、“A.vert”と“V.vert”は -200 だけ縦に詰められるということです)。
   <P>
 <!--
   (Vertical kerning is only available if the font has vertical metrics) -->
-  (�c�����J�[�j���O�́A�t�H���g�ɏc�������g���b�N�����݂���Ƃ��ɂ����藘�p�\�ł�)
+  (縦書きカーニングは、フォントに縦書きメトリックが存在するときにかぎり利用可能です)
   <P>
   <P>
   <P ALIGN=Center>
-  �\ <A HREF="editexample4.html">�O</A> �\ <A HREF="overview.html">�ڎ�</A>
-  �\ <A HREF="editexample6.html">��</A> �\
+  — <A HREF="editexample4.html">前</A> — <A HREF="overview.html">目次</A>
+  — <A HREF="editexample6.html">次</A> —
 </DIV>
 </BODY></HTML>
   

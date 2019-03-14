@@ -4,9 +4,10 @@
   <!-- AP: Created on: 13-Nov-2005 -->
   <!-- AP: Last modified: 11-Dec-2005 -->
 <!--<TITLE>Caveats about References</TITLE>-->
-    <TITLE>�Q�ƂɊւ���x��</TITLE>
+    <TITLE>参照に関する警告</TITLE>
   <LINK REL="icon" href="../fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 </HEAD>
 <BODY>
 <div id="in">
@@ -18,11 +19,11 @@ encapsulating information even if the font format cannot support them directly.
 If FontForge finds a situation where it can't use a refered glyph as a reference
 it will fix it up somehow, usually this means replacing it with the equivalent
 outlines. -->
-�e��̃t�H���g�t�H�[�}�b�g�ɂ͎Q�Ƃ̎g�p���@�Ɋւ��鐧��������A���̓��e�͂��ꂼ�ꏭ�����قȂ��Ă��܂��B������ƌ����āA�Q�Ƃ��g���Ȃƌ��������킯�ł�<em>����܂���</em>�\�\���Ƃ��t�H���g�t�H�[�}�b�g�̃T�|�[�g�ɂ���Ē��ڂ���������Ȃ��ꍇ�ł��A�Q�Ƃ������J�v�Z��������L�p�ȕ��@�ł��邱�Ƃɕς�肠��܂���B�O���t�Q�Ƃ��Q�Ƃ̌`�̂܂܂Ńt�H���g�ɏ����o���Ȃ��ꍇ�ł��AFontForge �͂Ȃ�Ƃ����Ė����������悤�Ǝ��݂܂��B��̓I�ȉ�����Ƃ��ẮA�Q�Ƃ�����Ɠ����ȃA�E�g���C���ɒu��������̂����ʂł��B
+各種のフォントフォーマットには参照の使用方法に関する制限があり、その内容はそれぞれ少しずつ異なっています。だからと言って、参照を使うなと言いたいわけでは<em>ありません</em>——たとえフォントフォーマットのサポートによって直接それを扱えない場合でも、参照が情報をカプセル化する有用な方法であることに変わりありません。グリフ参照を参照の形のままでフォントに書き出せない場合でも、FontForge はなんとかして問題を解決しようと試みます。具体的な解決策としては、参照をそれと等価なアウトラインに置き換えるのが普通です。
 <P>
 <!--
 Let us examine the most common font formats: -->
-�ł�����ӂꂽ�t�H���g�t�H�[�}�b�g�ɂ��Ċm�F���Ă݂܂��傤:
+最もありふれたフォントフォーマットについて確認してみましょう:
 <DL>
   <DT>
     TrueType
@@ -31,15 +32,15 @@ Let us examine the most common font formats: -->
     range of linear transformations that may be applied to a reference, however
     if a reference is scaled by 200% or more (or -200% or less) it cannot be
     represented in TrueType. -->
-    TrueType �ł́A�C�ӂ̃O���t���Q�Ƃ��邱�Ƃ��ł��܂��B�܂��ATrueType �ł͎Q�ƂɓK�p�����\����������`�ϊ��̂قƂ�ǑS�Ă͈̔͂��T�|�[�g���Ă��܂����A�Q�Ƃ� 200% �ȏ� (�܂��� -200% �ȉ�) �̔䗦�Ŋg�債���Ƃ��ɂ́ATrueType �ł͕\���s�\�ł��B
+    TrueType では、任意のグリフを参照することができます。また、TrueType では参照に適用される可能性がある線形変換のほとんど全ての範囲をサポートしていますが、参照を 200% 以上 (または -200% 以下) の比率で拡大したときには、TrueType では表現不可能です。
     <P>
 <!--TrueType also does not support mixing outlines and references. -->
-    �܂��ATrueType �́A�A�E�g���C���ƎQ�ƂƂ̍��݂��T�|�[�g���Ă��܂���B
+    また、TrueType は、アウトラインと参照との混在をサポートしていません。
     <P>
 <!--If you have a glyph containing a reference which cannot be used (or that
     mixes outlines and references) then ALL references will be converted to outlines
     during output. -->
-    ����O���t�Ɏg�p�ł��Ȃ��Q�Ƃ� 1 �ł��܂܂�Ă���ꍇ (�܂��́A�A�E�g���C���ƎQ�Ƃ����݂��Ă���ꍇ)�A�O���t�Ɋ܂܂��<strong>�S�Ă�</strong>�Q�Ƃ��o�͎��ɃA�E�g���C���ɕϊ�����܂��B
+    あるグリフに使用できない参照が 1 つでも含まれている場合 (または、アウトラインと参照が混在している場合)、グリフに含まれる<strong>全ての</strong>参照が出力時にアウトラインに変換されます。
     <P>
 <!--This means that any instructions in the glyph itself will be meaningless,
     and any instructions in referred glyphs will not be executed.<BR>
@@ -47,8 +48,8 @@ Let us examine the most common font formats: -->
     a good idea to use them. If you flip a reference, the rasterizer will probably
     have difficulties with it (its contours will run in the wrong direction).
     If you rotate a reference any instructions inside it will not work well. -->
-    ���_�������΁A�O���t���Ɋ܂܂�閽�߂͂��ׂĈӖ��������A�Q�Ƃ���Ă���O���t�Ɋ܂܂��Q�Ƃ��ꂽ�O���t�Ɋ܂܂�邱�Ƃ��Ӗ����܂��B<BR>
-    ����: ��ʓI�ȕϊ����T�|�[�g����Ă��邩��ƌ��������ŁA������g�p����̂͏�ɂ悢�l���ł���킯�ł͂���܂���B�Q�Ƃ𔽓]����ƁA���X�^���C�U�͂��Ԃ񂻂�ɑ΂��č��������邱�ƂɂȂ�ł��傤 (�֊s���̌����������������̋t�ɂȂ�ł��傤)�B�Q�Ƃ���]����ƁA�����Ɋ܂܂�閽�߂͂����炭�͐����������Ȃ��Ȃ�ł��傤�B
+    結論を言えば、グリフ内に含まれる命令はすべて意味を失い、参照されているグリフに含まれる参照されたグリフに含まれることを意味します。<BR>
+    注意: 一般的な変換がサポートされているからと言うだけで、それを使用するのは常によい考えであるわけではありません。参照を反転すると、ラスタライザはたぶんそれに対して困難を抱えることになるでしょう (輪郭線の向きが正しい方向の逆になるでしょう)。参照を回転すると、そこに含まれる命令はおそらくは正しく働かなくなるでしょう。
   <DT>
     Type1
   <DD>
@@ -56,7 +57,7 @@ Let us examine the most common font formats: -->
     that may be applied to a reference is translation no scaling, rotating or
     flipping are allowed. Type1 fonts have two different mechanisms for using
     references. The first is the simplest to describe. -->
-    Type1 (����� Type2) �t�H���g�́A�Q�ƂɓK�p���邱�Ƃ̂ł���ϊ��͕��s�ړ������ł���A�g��/�k���E��]�E���]�͋�����Ȃ��Ƃ������{�I�Ȑ���������܂��BType1 �t�H���g�ł́A�Q�Ƃ��g�p���邽�߂̋@�\�Ƃ��� 2 �̈قȂ�������p�ӂ���Ă��܂��B�ŏ��̕����͐������ł��ȒP�ł��B
+    Type1 (および Type2) フォントは、参照に適用することのできる変換は平行移動だけであり、拡大/縮小・回転・反転は許されないという根本的な制限があります。Type1 フォントでは、参照を使用するための機構として 2 つの異なる方式が用意されています。最初の方式は説明が最も簡単です。
     <P>
 <!--If you have a glyph which contains exactly two references to characters which
     are themselves part of the Adobe Standard Encoding, and one of those references
@@ -66,15 +67,15 @@ Let us examine the most common font formats: -->
     (possibly by 0, but not scaled, rotated, flipped, etc.) THEN FontForge can
     generate two references (this is done with the 'seac' instruction). CID-keyed
     fonts do not support this.<BR> -->
-    ����O���t�ɁAAdobe �W���G���R�[�f�B���O�ɑ����镶���ւ̎Q�� 2 �������܂܂�ł��āA���̂����̂ǂ��炩�̎Q�ƂɓK�p����Ă���ϊ��s�񂪒P�ʍs��ł��� (���Ȃ킿�A�ړ��E�g��/�k���E���]�Ȃǂ���؍s���Ă��Ȃ�)�A�����Е��͕��s�ړ������s���Ă��Ȃ� (�ړ��ʂ� 0 �ł��\���܂��񂪁A�g��/�k���E��]�E���]�Ȃǂ͕s��) �Ƃ�����������������Ă���Ƃ���<STRONG>������</STRONG>�AFontForge �͂���� 2 ���Q�ƂƂ��ď����o�����Ƃ��ł��܂� (����ɂ�&lsquo;seac&rsquo;���߂��g���܂�)�BCID �L�[�w��t�H���g�͂�����T�|�[�g���Ă��܂���B<BR>
+    あるグリフに、Adobe 標準エンコーディングに属する文字への参照 2 個だけが含まれでいて、そのうちのどちらかの参照に適用されている変換行列が単位行列であり (すなわち、移動・拡大/縮小・反転などが一切行われていない)、もう片方は平行移動しか行われていない (移動量が 0 でも構いませんが、拡大/縮小・回転・反転などは不可) という条件が満たされているときに<STRONG>限って</STRONG>、FontForge はこれら 2 つを参照として書き出すことができます (それには&lsquo;seac&rsquo;命令を使います)。CID キー指定フォントはこれをサポートしていません。<BR>
 <!--The implications of this are that this form of referencing is useless for
     non-latin scripts (except for glyphs shared by latin and another script,
     Greek and Cyrillic often share the glyph used for latin A).<BR>
     FontForge makes a slight extension, in that if you have a glyph which contains
     one single untranslated reference, then FontForge will add a dummy reference
     to the space glyph to make it fit the two reference requirement. -->
-    ���ꂩ����邱�Ƃ́A���̕����̎Q�Ƃ̓��e�������ȊO�̗p���n�ɂ͖��ɗ����Ȃ��Ƃ������Ƃł� (���e�������Ƃ��̑��̗p���n�ŋ��L����Ă���O���t�͏����܂��B���e�������� A �Ɠ����`�̃O���t���M���V��������L���������Ŏg���̂͂悭���邱�Ƃł�)�B<BR>
-    FontForge �͂�����Ƃ����g�����s���Ă���A���s�ړ����܂܂Ȃ� 1 �̎Q�Ƃ݂̂���Ȃ�O���t������ꍇ�AFontForge �͋󔒂ւ̃_�~�[�Q�Ƃ�ǉ����āA�Q�Ƃ̌��������� 2 �ɂȂ�悤�ɂ��܂��B
+    これから解ることは、この方式の参照はラテン文字以外の用字系には役に立たないということです (ラテン文字とその他の用字系で共有されているグリフは除きます。ラテン文字の A と同じ形のグリフをギリシャ文字やキリル文字で使うのはよくあることです)。<BR>
+    FontForge はちょっとした拡張を行っており、平行移動を含まない 1 個の参照のみからなるグリフがある場合、FontForge は空白へのダミー参照を追加して、参照の個数がちゃんと 2 個になるようにします。
     <P>
 <!--The second format is more general in some ways but has more arcane restrictions
     imposed on it. PostScript fonts have the concept of "subroutines" which can
@@ -87,41 +88,41 @@ Let us examine the most common font formats: -->
     affair, that is not true of PostScript subroutines). If a reference cannot
     be put in a subroutine, FF may still be able to put some of its components
     (assuming it is a glyph with references) in a subroutine. -->
-    �� 2 �̃t�H�[�}�b�g�͂���Ӗ��ł͂��ėp�I�ł͂���܂����A��L�̕����ɔ�ׂĈ�w���G�Ȑ�������𖞂����Ă���K�v������܂��BPostScript �t�H���g�ɂ́A�������̃O���t�ŋ��p�����֊s���`����̂Ɏg�p�\�ȁg�T�u���[�`���h�̊T�O������܂��BFontForge �̃A���S���Y���͋ɂ߂ĕ��G�ŁA�ǂ̂悤�ɂ��ăO���t�Q�Ƃ��s�������ɂ���Ă����ʂ��ς��܂��B��������{�I�ɂ́A����O���t���q���g�u���� flex �q���g���܂�ł��Ȃ��Ȃ�΁A���̃f�[�^���T�u���[�`���ɒu�����Ƃ��ł��܂��B����炪�܂܂�Ă���ꍇ�́A���s�ړ����s��Ȃ��Ƃ��Ɍ���T�u���[�`�����\�ł��B�����̎Q�Ƃ��܂ރO���t�ł́A����Q�Ƃ��T�u���[�`�����ł��Ȃ��ꍇ�ł��A���̑��̎Q�Ƃ̓T�u���[�`�����ł���\��������܂� (TrueType �ł͏�ɑS�ĎQ�Ƃɂ��邩���Ȃ����̂ǂ��炩�Ɍ����邪�APostScript �ł͂����Ƃ͌���Ȃ��Ƃ������Ƃł�)�B�Q�Ƃ��T�u���[�`�����ł��Ȃ��ꍇ�ł��A(�Q�Ɛ�̃O���t���Q�Ƃ��܂ޏꍇ�ł����) �ꕔ�̍\���v�f���T�u���[�`�����ł��邱�Ƃ�����܂��B
+    第 2 のフォーマットはある意味ではより汎用的ではありますが、上記の方式に比べて一層複雑な制約条件を満たしている必要があります。PostScript フォントには、いくつかのグリフで共用される輪郭を定義するのに使用可能な“サブルーチン”の概念があります。FontForge のアルゴリズムは極めて複雑で、どのようにしてグリフ参照を行ったかによっても結果が変わります。しかし基本的には、あるグリフがヒント置換も flex ヒントも含んでいないならば、そのデータをサブルーチンに置くことができます。それらが含まれている場合は、平行移動を行わないときに限りサブルーチン化可能です。複数の参照を含むグリフでは、ある参照をサブルーチン化できない場合でも、その他の参照はサブルーチン化できる可能性があります (TrueType では常に全て参照にするかしないかのどちらかに限られるが、PostScript ではそうとは限らないということです)。参照をサブルーチン化できない場合でも、(参照先のグリフが参照を含む場合であれば) 一部の構成要素をサブルーチン化できることもあります。
     <P>
 <!--FontForge will recognize 'seac' as defining references, but it does not recognize
     subroutine calls. Use <A HREF="editmenu.html#ReplaceRef">Edit-&gt;Replace
     With Reference</A> after loading a Type1 font. -->
-    FontForge ��&lsquo;seac&rsquo;���Q�Ƃ̒�`�Ɖ��߂��܂����A�T�u���[�`���ďo���͎Q�ƂƂ͌��Ȃ��܂���B�������� Type1 �t�H���g��ǂݍ���ł��� <A HREF="editmenu.html#ReplaceRef"><CODE>�ҏW(<U>E</U>)</CODE>��<CODE>�Q�Ƃɒu��</CODE></A> ���g�p���Ă��������B
+    FontForge は&lsquo;seac&rsquo;を参照の定義と解釈しますが、サブルーチン呼出しは参照とは見なしません。いったん Type1 フォントを読み込んでから <A HREF="editmenu.html#ReplaceRef"><CODE>編集(<U>E</U>)</CODE>→<CODE>参照に置換</CODE></A> を使用してください。
   <DT>
 <!--Type2 ("OpenType") -->
-    Type2 (�gOpenType�h)
+    Type2 (“OpenType”)
   <DD>
 <!--does not have anything equivalent to the 'seac' instruction (well, it sort
     of does, but the instruction is depreciated and FontForge will not generate
     it) but does support subroutines. -->
-    Type1 �Ɠ��l�ɁA�Q�Ƃ͕��s�ړ��݂̂��\ (�g��/�k���A��]�Ȃǂ͕s��) �ł��BType2 ��&lsquo;seac&rsquo;���߂Ɠ����ȃ��J�j�Y���͑S�����݂��܂��� (�܂��A�������Ƃ͂Ȃ��̂ł������̖��߂͔p�~����Ă���̂� FontForge �͂�����o�͂��Ȃ����Ƃɂ��Ă��܂�) ���A�T�u���[�`���̓T�|�[�g���Ă��܂��B
+    Type1 と同様に、参照は平行移動のみが可能 (拡大/縮小、回転などは不可) です。Type2 は&lsquo;seac&rsquo;命令と等価なメカニズムは全く存在しません (まあ、無いことはないのですがその命令は廃止されているので FontForge はそれを出力しないことにしています) が、サブルーチンはサポートしています。
     <P>
 <!--Here a referenced glyph can be put into a subroutine if it contains no hint
     substitutions, or if it is not translated and none of the other components
     of the final composite contain any hints at all. Again this is not an all
     or nothing affair. -->
-    Type2 �ł́A�Q�Ƃ��ꂽ�O���t�L�q���T�u���[�`���ɒu�����Ƃ��ł���̂́A�q���g�u�����S���܂܂�Ă��Ȃ��ꍇ���A�q���g�u�����܂ގQ�Ƃ����Ɠ����ʒu�ɒu����A�Ō�ȊO�̍\���v�f�ɂ̓q���g���S���܂܂�Ă��Ȃ��ꍇ�Ɍ����܂��BType1 �Ɠ��l�A�����I�ɎQ�Ƃ��g�p���邱�Ƃ��ł��܂��B
+    Type2 では、参照されたグリフ記述をサブルーチンに置くことができるのは、ヒント置換が全く含まれていない場合か、ヒント置換を含む参照が元と同じ位置に置かれ、最後以外の構成要素にはヒントが全く含まれていない場合に限られます。Type1 と同様、部分的に参照を使用することができます。
     <P>
 <!--FontForge will not recognize any references when loading a Type2 (otf, cff,
     cef, gai) font. Use <A HREF="editmenu.html#ReplaceRef">Edit-&gt;Replace With
     Reference</A> after loading the font. -->
-    FontForge �� Type2 (OTF, CFF, CEF, GAI) �t�H���g�̓ǂݍ��ݎ��ɎQ�Ƃ����������F�����܂���B�t�H���g��ǂݍ��񂾌�� <A HREF="editmenu.html#ReplaceRef"><CODE>�ҏW(<U>E</U>)</CODE>��<CODE>�Q�Ƃɒu��</CODE></A> ���g�p���Ă��������B
+    FontForge は Type2 (OTF, CFF, CEF, GAI) フォントの読み込み時に参照をいっさい認識しません。フォントを読み込んだ後に <A HREF="editmenu.html#ReplaceRef"><CODE>編集(<U>E</U>)</CODE>→<CODE>参照に置換</CODE></A> を使用してください。
   <DT>
     Type3
   <DD>
 <!--There are no restrictions on references.-->
-    �Q�ƂɊւ��鐧��͑��݂��܂���B
+    参照に関する制約は存在しません。
   <DT>
     SVG
   <DD>
 <!--Does not seem to have an easy way of handling references.-->
-    �Q�Ƃ���舵����y�ȕ��@�͑��݂��Ȃ��悤�ł��B
+    参照を取り扱う手軽な方法は存在しないようです。
 </DL>
 <P>
 </div>

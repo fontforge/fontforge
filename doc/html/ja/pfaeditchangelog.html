@@ -3,9 +3,9 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 16-Sep-2001 -->
   <!-- AP: Last modified: 14-Dec-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!--<TITLE>Changes to pfaedit (predecessor to fontforge)</TITLE> -->
-    <TITLE>PfaEdit (FontForge �̋�����) �ւ̕ύX�_</TITLE>
+    <TITLE>PfaEdit (FontForge の旧名称) への変更点</TITLE>
   <LINK REL="icon" href="../fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
@@ -14,324 +14,324 @@
 <P>
 <!--
 <A HREF="changelog.html">Current fontforge changes</A><BR> -->
-<A HREF="changelog.html">FontForge �̍ŋ߂̕ύX�_</A><BR>
+<A HREF="changelog.html">FontForge の最近の変更点</A><BR>
 <!--
 <A HREF="oldchangelog.html">Older fontforge changes</A> -->
-<A HREF="oldchangelog.html">�ȑO�� FontForge �ւ̕ύX�_</A><BR>
+<A HREF="oldchangelog.html">以前の FontForge への変更点</A><BR>
 <P>
 <UL>
   <LI>
 <!--1-Mar-2004-->
-    2004�N3��1��
+    2004年3月1日
     <UL>
       <LI>
 <!--	The Check directions option of Find Problems caused multilayer mode to crash. -->
-	�������C�����[�h�Łu���_�𔭌��v�́u�������`�F�b�N�v�I�v�V�������I���ɂ���ƃN���b�V�����Ă��܂����B
+	複数レイヤモードで「問題点を発見」の「方向をチェック」オプションをオンにするとクラッシュしていました。
       <LI>
 <!--	Expand stroke would produce counter-clockwise paths when given an open contour
 	and asked to fill it with a circular (or elliptical) pen -->
-	�u�֊s�𑾂点��(E)�v�ŁA�J�����p�X���~�` (�܂��͑ȉ~�`) �̃y���ŕ`���悤�Ɏw�肷��ƁA�����v���̃p�X����������Ă��܂����B
+	「輪郭を太らせる(E)」で、開いたパスを円形 (または楕円形) のペンで描くように指定すると、反時計回りのパスが生成されていました。
       <LI>
 <!--	Try to do a better job of guessing the correct direction of a path in an
 	eps file (or a type3 or svg font) -->
-	EPS �t�@�C���Ɋ܂܂��p�X�̐��m�ȕ����������ɐ���������P�����݂܂����B
+	EPS ファイルに含まれるパスの正確な方向をより上手に推測する改善を試みました。
       <LI>
 <!--	FontForge would crash when editing in the grid layer -->
-	FontForge �̓O���b�h���C�����ŕҏW���s���ƕҏW���N�����\��������܂����B
+	FontForge はグリッドレイヤ内で編集を行うと編集を起こす可能性がありました。
       <LI>
 <!--	When the control key is down, make the scroll wheel do a magnify/minify. -->
-	Control �L�[��������Ă���Ƃ��A�X�N���[���z�C�[���Ŋg��/�k�����s���悤�ɂ��܂����B
+	Control キーが押されているとき、スクロールホイールで拡大/縮小を行うようにしました。
       <LI>
 <!--	Various cosmetic changes to find problems -->
-	�u���_�𔭌��v�̊e��̔��I�ȕύX
+	「問題点を発見」の各種の美的な変更
 	<OL>
 	  <LI>
 <!--	    Specify that "nearness" is measured in em-units -->
-	    �u�߂��v�� em ���j�b�g�Ōv��悤�Ɏw��
+	    「近さ」を em ユニットで計るように指定
 	  <LI>
 <!--	    change "refs deeper than" to "refs nested deeper than" -->
-	    �u�Q�Ƃ̍ő�[���v���A�u�Q�Ƃ̓���q�̏���v�ɕύX
+	    「参照の最大深さ」を、「参照の入れ子の上限」に変更
 	  <LI>
 <!--	    make check dir be on by default -->
-	    �u�������`�F�b�N�v���f�t�H���g��
+	    「方向をチェック」をデフォルトに
 	</OL>
       <LI>
 <!--	Put in more comments about fontforge. We now have a domain under
 	<A HREF="http://fontforge.sf.net/">fontforge</A>, future releases will be
 	found there. -->
-	FontForge �Ɋւ���R�����g��ǉ��B���� <A HREF="http://fontforge.sf.net/">fontforge</A> �h���C������肵���̂ŁA�����̃����[�X�͂����ōs���邱�ƂɂȂ�܂��B
+	FontForge に関するコメントを追加。ついに <A HREF="http://fontforge.sf.net/">fontforge</A> ドメインを入手したので、将来のリリースはここで行われることになります。
     </UL>
   <LI>
 <!--29-Feb-2004-->
-    2004�N2��29��
+    2004年2月29日
     <UL>
       <LI>
 <!--	FontForge could crash if given a bad 'cmap' subtable -->
-	�s����&lsquo;cmap&rsquo;�T�u�e�[�u�����^����ꂽ���ɁAFontForge ���N���b�V������\��������܂����B
+	不正な&lsquo;cmap&rsquo;サブテーブルが与えられた時に、FontForge がクラッシュする可能性がありました。
       <LI>
 <!--	Clean up generation of OS/2 a bit -->
-	OS/2 �e�[�u���̐����������������B
+	OS/2 テーブルの生成部を少し整理。
       <LI>
 <!--	Pass motion events to windows even when a dlg is active (so that the mouse
 	location will be shown in an outline window when the Point info dlg is active). -->
-	�_�C�A���O���A�N�e�B�u�Ȏ��ł��A�ړ��C�x���g���E�B���h�E�ɓn���悤�ɂ��܂��� (����ɂ��A�_�̏��_�C�A���O���A�N�e�B�u�Ȏ��ł��A�E�g���C���E�B���h�E��Ƀ}�E�X�ʒu���\�������悤�ɂȂ�܂���)�B
+	ダイアログがアクティブな時でも、移動イベントをウィンドウに渡すようにしました (それにより、点の情報ダイアログがアクティブな時でもアウトラインウィンドウ上にマウス位置が表示されるようになりました)。
       <LI>
 <!--	Put in a comment about changing to FontForge in the copyright notice the
 	program prints at start up. -->
-	�v���O�����N�����ɕ\������钘�쌠�\���ɁAFontForge �ւ̖��̕ύX�Ɋւ���R�����g��ǉ��B
+	プログラム起動時に表示される著作権表示に、FontForge への名称変更に関するコメントを追加。
       <LI>
 <!--	The "preflight" script on the mac had problems if the program had never been
 	installed before -->
-	�v���O�����̏���C���X�g�[�����ɁAMac �́gpreflight�h�X�N���v�g�ɖ�肪����܂����B
+	プログラムの初回インストール時に、Mac の“preflight”スクリプトに問題がありました。
     </UL>
   <LI>
 <!--27-Feb-2004-->
-    2004�N2��27��
+    2004年2月27日
     <UL>
       <LI>
 <!--	Redid the way menus respond to arrow keys -->
-	���j���[�����L�[�ɔ���������@����蒼���܂����B
+	メニューが矢印キーに反応する方法をやり直しました。
       <LI>
 <!--	a multilayer enabled FontForge would crash when editing a normal font. -->
-	�������C���ҏW�\�� FontForge �Œʏ�t�H���g��ҏW����ƃN���b�V�����Ă��܂����B
+	複数レイヤ編集可能な FontForge で通常フォントを編集するとクラッシュしていました。
     </UL>
   <LI>
 <!--24-Feb-2004-->
-    2004�N2��24��
+    2004年2月24日
     <UL>
       <LI>
 <!--	Remove the AddHint command and replace it with AddHHint and AddVHint. -->
-	AddHint() �R�}���h���폜���AAddHHint() �� AddVHint() �ɒu�������B
+	AddHint() コマンドを削除し、AddHHint() と AddVHint() に置き換え。
       <LI>
 <!--	FontForge would crash when generating a mac family with NFNT bitmaps. -->
-	NFNT �r�b�g�}�b�v���܂� Mac �t�@�~���[�𐶐������ FontForge ���N���b�V�����Ă��܂����B
+	NFNT ビットマップを含む Mac ファミリーを生成すると FontForge がクラッシュしていました。
       <LI>
 <!--	Added support of exporting a character into PDF format. -->
-	1 �̕����� PDF �t�H�[�}�b�g�ɏ����o���@�\��ǉ��B
+	1 個の文字を PDF フォーマットに書き出す機能を追加。
       <LI>
 <!--	Oh dear, I was figuring out hintmasks in the wrong direction (because PS
 	splines get reversed before output, so I now reverse them during the hintmask
 	calculation too). -->
-	����A�q���g�}�X�N���t�����Ɏw�肵�Ă��܂��� (PS �X�v���C�����o�͑O�ɔ��]���Ă��邩��ł��B������q���g�}�X�N�v�Z���������ɔ��]����悤�ɂ��܂���)�B
+	おや、ヒントマスクを逆向きに指定していました (PS スプラインを出力前に反転しているからです。だからヒントマスク計算も処理中に反転するようにしました)。
       <LI>
 <!--	At Werner's suggestion, added code to show what hints are currently active
 	at a point. -->
-	Werner �̎����ɂ��A�q���g�����݂��̂���_�̏�ŃA�N�e�B�u���ǂ�����\������R�[�h��ǉ��B
+	Werner の示唆により、ヒントが現在そのある点の上でアクティブかどうかを表示するコードを追加。
       <LI>
 <!--	At Werner's suggestion added code to show what points are affected by a hintmask -->
-	Werner �̎����ɂ��A�q���g�}�X�N�ɂ��ǂ̓_���e�����󂯂邩��\������R�[�h��ǉ��B
+	Werner の示唆により、ヒントマスクによりどの点が影響を受けるかを表示するコードを追加。
       <LI>
 <!--	Added support for real editing of type3 (and svg) fonts. Support for editing
 	stroked paths, different fill colors, multiple stroke/fill operations, etc.
 	Because this involves a lot of extra overhead it is wrong for people who
 	want to edit CJK fonts, so this mode is off by default. It may be turned
 	on by -->
-	Type3 (����� SVG) �t�H���g�����ۂɕҏW�ł���@�\��ǉ��B�����̂���p�X�A���ƈقȂ�h��ׂ��F�A������ stroke/fill ����ȂǁB�����L���ɂ���Ƒ����̃I�[�o�[�w�b�h���K�v�ɂȂ�̂ŁACJK �t�H���g��ҏW�������l�͎g�p���Ȃ������������낤�ƍl�����邽�߁A�f�t�H���g�ł͂��̋@�\�̓I�t�ɂ��Ă���܂��B�����L���ɂ���ꍇ��
+	Type3 (および SVG) フォントを実際に編集できる機能を追加。太さのあるパス、線と異なる塗り潰し色、複数の stroke/fill 操作など。これを有効にすると多くのオーバーヘッドが必要になるので、CJK フォントを編集したい人は使用しない方がいいだろうと考えられるため、デフォルトではこの機能はオフにしてあります。これを有効にする場合は
 	<BLOCKQUOTE>
 	  <PRE>$ configure --with-multilayer
 </PRE>
 	</BLOCKQUOTE>
-	�Ɛݒ肷�邱�ƁB
+	と設定すること。
       <LI>
 <!--	FontForge failed to interpret h/vstem3 commands properly when building a
 	hintmask (when reading a type1 font with hint substitution) -->
-	FontForge �� (�q���g�u�����܂� Type1 �t�H���g�̓ǂݍ��ݎ���) �q���g�}�X�N���\�z����Ƃ��A�R�}���h hstem3 �� vstem3 �𐳂������߂ł��Ă��܂���ł����B
+	FontForge は (ヒント置換を含む Type1 フォントの読み込み時に) ヒントマスクを構築するとき、コマンド hstem3 と vstem3 を正しく解釈できていませんでした。
     </UL>
   <LI>
 <!--11-Feb-2004-->
-    2004�N2��11��
+    2004年2月11日
     <UL>
       <LI>
 <!--	FontForge would crash when saving a non-multi master font. -->
-	��}���`�v���}�X�^�[�t�H���g�̕ۑ����� FontForge ���N���b�V�����N�����\��������܂����B
+	非マルチプルマスターフォントの保存時に FontForge がクラッシュを起こす可能性がありました。
       <LI>
 <!--	Adding new scripting commands ClearCharCounterMasks, SetCharCounterMask -->
-	�X�N���v�g�R�}���h ClearCharCounterMasks(), SetCharCounterMask() ��V���ɒǉ��B
+	スクリプトコマンド ClearCharCounterMasks(), SetCharCounterMask() を新たに追加。
     </UL>
   <LI>
 <!--10-Feb-2004-->
-    2004�N2��10��
+    2004年2月10日
     <UL>
       <LI>
 <!--	FontForge could produce bad tfm files. -->
-	FontForge ���s���� TFM �t�@�C���𐶐�����\��������܂����B
+	FontForge が不正な TFM ファイルを生成する可能性がありました。
       <LI>
 <!--	Added CheckForAnchorClass scripting command -->
-	�X�N���v�g�R�}���h CheckForAnchorClass() ��ǉ��B
+	スクリプトコマンド CheckForAnchorClass() を追加。
       <LI>
 <!--	Added SetFontHasVerticalMetrics scripting command. -->
-	SetFonthasVerticalMetrics �X�N���v�g�R�}���h��ǉ��B
+	SetFonthasVerticalMetrics スクリプトコマンドを追加。
       <LI>
 <!--	FontForge would crash if asked to generate a contextual lookup which refered
 	to a lookup which only was activated by a character(s) which was not worth
 	outputting. -->
-	���g�̂Ȃ������݂̂�u�������ΏۂƂ���ƍ����Q�Ƃ��Ă��镶���ˑ��Q�Ƃ�����ƁA���̏o�͎��� FontForge ���N���b�V�����Ă��܂����B
+	中身のない文字のみを置き換え対象とする照合を参照している文脈依存参照があると、その出力時に FontForge がクラッシュしていました。
       <LI>
 <!--	FontForge did the wrong thing when evaluating the PostScript "index" command
 	(it returned the wrong value from the stack (stack index off by one)) -->
-	FontForge �� PostScript �́gindex�h�R�}���h������ĉ��߂��Ă��܂��� (�X�^�b�N���� (�C���f�b�N�X�� 1 ���ꂽ�ꏊ����) �̊Ԉ�����l��Ԃ��Ă��܂���)�B
+	FontForge は PostScript の“index”コマンドを誤って解釈していました (スタックから (インデックスが 1 個ずれた場所から) の間違った値を返していました)。
       <LI>
 <!--	Added support for the PostScript "for" loop. -->
-	PostScript�́gfor�h���[�v�̃T�|�[�g��ǉ��B
+	PostScriptの“for”ループのサポートを追加。
       <LI>
 <!--	I have created a simple (1 axis) Multiple Master Type1 font with FontForge.
 	It works with both ghostview and freetype. -->
-	�P���� (1 ����) �}���`�v���}�X�^�[ Type1 �t�H���g�� FontForge �ō쐬���܂����Bghostview �� FreeType �̗����œ��삵�Ă��܂��B
+	単純な (1 軸の) マルチプルマスター Type1 フォントを FontForge で作成しました。ghostview と FreeType の両方で動作しています。
       <LI>
 <!--	FontForge would crash when generating a ttf file from an sfd file which contain
 	an invalid script/lang index. Put in code to warn user about this, and in
 	some cases to correct it. -->
-	�s���ȗp���n/����C���f�b�N�X���܂� SFD �t�@�C������ TTF ���o�͂��悤�Ƃ���ƁAFontForge ���N���b�V�����Ă��܂����B���[�U�ɂ�����x������R�[�h��ǉ����A�������̏ꍇ�ɂ�����C������悤�ɂ��܂����B
+	不正な用字系/言語インデックスを含む SFD ファイルから TTF を出力しようとすると、FontForge がクラッシュしていました。ユーザにこれを警告するコードを追加し、いくつかの場合にそれを修正するようにしました。
       <LI>
 <!--	FontForge had problems reading sfd files in the old point count format, this
 	meant we still got bad point count errors. -->
-	FontForge ���ȑO�p���Ă����_�̌���\�����鏑�������� SFD �t�@�C������̓ǂݍ��݂ɖ�肪����܂����B�v����ɁA�_�̐������̂Ђǂ��ԈႢ���܂��c���Ă����Ƃ������Ƃł��B
+	FontForge が以前用いていた点の個数を表現する書式をもつ SFD ファイルからの読み込みに問題がありました。要するに、点の数え方のひどい間違いがまだ残っていたということです。
       <LI>
 <!--	FontForge wrote bad sfd files if there were countermasks (all the contours
 	of the glyph would be lost) -->
-	FontForge �̓J�E���^�}�X�N�����݂���Ƃ��ɕs���� SFD �t�@�C���������o���Ă��܂��� (�O���t�̑S�֊s�������Ă��܂���)�B
+	FontForge はカウンタマスクが存在するときに不正な SFD ファイルを書き出していました (グリフの全輪郭が失われていました)。
       <LI>
 <!--	I finally figured out why FontForge kept crashing when palettes were docked
 	and an outline view was closed. -->
-	�p���b�g��A�����Ă���A�E�g���C���r���[������ FontForge ���N���b�V������͉̂��̂Ȃ̂��A�悤�₭�˂��~�߂܂����B
+	パレットを連結してからアウトラインビューを閉じると FontForge がクラッシュするのは何故なのか、ようやく突き止めました。
       <LI>
 <!--	Fixed various crashes in Interpolate fonts -->
-	�t�H���g�̕�ԏ����ŋN���邳�܂��܂ȃN���b�V�����C���B
+	フォントの補間処理で起こるさまざまなクラッシュを修正。
       <LI>
 <!--	FontForge had problems with using subroutines to express references in PostScript
 	(introduced 30-Jan) -->
-	PostScript �ŎQ�Ƃ�\�����邽�߂ɃT�u���[�`�����g�p������@�ɁA(1��30���ȗ�) ��肪����܂����B
+	PostScript で参照を表現するためにサブルーチンを使用する方法に、(1月30日以来) 問題がありました。
       <LI>
 <!--	Added a new scripting commands AddHint and ReplaceCharCounterMasks. -->
-	�X�N���v�g�R�}���h AddHint() �� ReplaceCharCounterMask ��V���ɒǉ��B
+	スクリプトコマンド AddHint() と ReplaceCharCounterMask を新たに追加。
     </UL>
   <LI>
 <!--4-Feb-2004-->
-    2004�N2��4��
+    2004年2月4日
     <UL>
       <LI>
 <!--	Make it illegal to select both "Condense" and "Extend" in the mac style. -->
-	Mac �X�^�C���ŁgCondense�h�ƁgExtend�h�𓯎��ɑI�ׂȂ��悤�ɕύX�B
+	Mac スタイルで“Condense”と“Extend”を同時に選べないように変更。
     </UL>
   <LI>
 <!--3-Feb-2004-->
-    2004�N2��3��
+    2004年2月3日
     <UL>
       <LI>
 <!--	Point Info dlg crashed on the mac -->
-	Mac �ŁA�_�̏��_�C�A���O���N���b�V���������N�����Ă��܂����B
+	Mac で、点の情報ダイアログがクラッシュを引き起こしていました。
       <LI>
 <!--	Add UI control over Mac Style through the Font Info dlg -->
-	�t�H���g���_�C�A���O�� Mac Stle �𐧌�ł��� UI ��ǉ��B
+	フォント情報ダイアログに Mac Stle を制御できる UI を追加。
       <LI>
 <!--	more prep work for mm fonts -->
-	�}���`�v���}�X�^�[�t�H���g�� prep �e�[�u���Ɋւ���ǉ���ƁB
+	マルチプルマスターフォントの prep テーブルに関する追加作業。
     </UL>
   <LI>
 <!--2-Feb-2004-->
-    2004�N2��2��
+    2004年2月2日
     <UL>
       <LI>
 <!--	Generating a postscript font from a database with quadratic splines didn't
 	work -->
-	2 ���X�v���C�����܂ރf�[�^�x�[�X����� PostScript �t�H���g�̏o�͂����삵�Ă��܂���ł����B
+	2 次スプラインを含むデータベースからの PostScript フォントの出力が動作していませんでした。
       <LI>
 <!--	FontForge crashed on a font with two /CharStrings entries -->
-	/CharStrings �� 2 �܂܂��t�H���g��ǂނ� FontForge ���N���b�V�����Ă��܂����B
+	/CharStrings が 2 個含まれるフォントを読むと FontForge がクラッシュしていました。
       <LI>
 <!--	Small tweak to menubar behavior given left/right arrow (for Werner) -->
-	��/�E�����������������̃��j���[�o�[�̂ӂ�܂��� (Werner �̂��߂�) �������B
+	左/右向き矢印を押した時のメニューバーのふるまいを (Werner のために) 微調整。
       <LI>
 <!--	Composite glyphs created with seac (type1) had the wrong transformation for
 	the accent. -->
-	seac (Type1 ��) ���ō쐬���ꂽ�����O���t�ɂ����āA�A�N�Z���g�̕ό`���Ԉ���Ă��܂����B
+	seac (Type1 の) つきで作成された複合グリフにおいて、アクセントの変形が間違っていました。
       <LI>
 <!--	more prep work for mm fonts -->
-	�}���`�v���}�X�^�[�t�H���g�� prep �e�[�u���̒ǉ���ƁB
+	マルチプルマスターフォントの prep テーブルの追加作業。
       <LI>
 <!--	Still have problems with ttf point counts -->
-	TTF �̓_�̌����܂������ԈႦ�Ă��܂����B
+	TTF の点の個数をまだ数え間違えていました。
       <LI>
 <!--	If a user loaded a ttf file and made it monospace and then generated it as
 	ttf, all glyphs except the .notdef had an advance width of 0 -->
-	���[�U�� TTF ��ǂݍ���œ����ɐݒ肵�A���ꂩ�� TTF �Ƃ��ďo�͂���ƁA.notdef �ȊO�̕����̑��蕝�����ׂ� 0 �ɂȂ��Ă��܂����B
+	ユーザが TTF を読み込んで等幅に設定し、それから TTF として出力すると、.notdef 以外の文字の送り幅がすべて 0 になっていました。
     </UL>
   <LI>
 <!--1-Feb-2004-->
-    2004�N2��1��
+    2004年2月1日
     <UL>
       <LI>
 <!--	sfd reader had a bug. Went into an infinite loop if a hintmask contained
 	any of the characters [a-fA-F]. -->
-	SFD �ǂݍ��݃��[�`���Ƀo�O������܂����B�q���g�}�X�N�ɕ��� [a-fA-F] �̂����ꂩ�̕������܂܂�Ă���Ɩ������[�v�Ɋׂ��Ă��܂����B
+	SFD 読み込みルーチンにバグがありました。ヒントマスクに文字 [a-fA-F] のいずれかの文字が含まれていると無限ループに陥っていました。
     </UL>
   <LI>
 <!--31-Jan-2004-->
-    2004�N1��31��
+    2004年1月31日
     <UL>
       <LI>
 <!--	In Type2 output, when putting a glyph into a subroutine, if that glyph had
 	no conflicts but had a hintmask fontforge produced a bad font (which crashed
 	FontForge when it tried to read it in). -->
-	Type2 �̏o�͂ɂ����āA�O���t���T�u���[�`���ɓo�^����Ƃ��ɁA���̃O���t�ɏՓ˂��Ȃ��A���� 1 �̃q���g�}�X�N�����݂����Ƃ��AFontForge �͕s���ȃt�H���g���o�͂��Ă��܂��� (FontForge ��������Ăѓǂݍ������Ƃ���ƃN���b�V�����Ă��܂���)�B
+	Type2 の出力において、グリフをサブルーチンに登録するときに、そのグリフに衝突がなく、かつ 1 個のヒントマスクが存在したとき、FontForge は不正なフォントを出力していました (FontForge がそれを再び読み込もうとするとクラッシュしていました)。
       <LI>
 <!--	configure script still wasn't working on solaris (or mac with libiconv probably) -->
-	configure �X�N���v�g���܂� Solaris �œ��삵�Ă��܂���ł��� (libiconv ���܂� Mac �ł������炭���l�ł��傤)�B
+	configure スクリプトがまだ Solaris で動作していませんでした (libiconv を含む Mac でもおそらく同様でしょう)。
     </UL>
   <LI>
 <!--30-Jan-2004-->
-    2004�N1��30��
+    2004年1月30日
     <UL>
       <LI>
 <!--	The kerning state machine addition broke the indic state machine dialog -->
-	�J�[�j���O��ԋ@�B�̒ǉ��ɂ��A�C���h�n�����̏�ԋ@�B�_�C�A���O���󂳂�Ă��܂����B
+	カーニング状態機械の追加により、インド系文字の状態機械ダイアログが壊されていました。
       <LI>
 <!--	The mac docs claim that the 'feat' table should be sorted by feature id.
 	But if you do this WorldText can't find features. All Apple fonts seem to
 	be sorted by the order the features are used in the 'morx' table's chains.
 	WorldText works if you do this. -->
-	Mac �̕����́A&lsquo;feat&rsquo;�e�[�u���͋@�\ ID ���Ƀ\�[�g����Ă��Ȃ���΂Ȃ�Ȃ��Ǝ咣���܂��B�������A���̒ʂ�ɂ���� WorldText �͂����̋@�\�����o���邱�Ƃ��ł��܂���B�ǂ� Apple �t�H���g�ł��A�@�\��&lsquo;morx&rsquo;�e�[�u���̘A���Ŏg�p����鏇�Ԃɏ]���ă\�[�g����Ă���悤�ł��B���̒ʂ�ɂ���� WorldText �͓��삵�܂��B
+	Mac の文書は、&lsquo;feat&rsquo;テーブルは機能 ID 順にソートされていなければならないと主張します。しかし、その通りにすると WorldText はそれらの機能を検出することができません。どの Apple フォントでも、機能が&lsquo;morx&rsquo;テーブルの連鎖で使用される順番に従ってソートされているようです。その通りにすると WorldText は動作します。
       <LI>
 <!--	Yannis proposed several extensions to the State Machine editor, most notably
 	the ability to move the edit dialog with Up/Down/Left/Right buttons. -->
-	��ԃ}�V���G�f�B�^�ւ̂������̊g���� Yannis ����Ă��܂����B�Ƃ��ɏd�v�Ȃ̂́A�ҏW�_�C�A���O�̒��� Up/Down/Left/Right �{�^���ňړ��ł���@�\�ł��B
+	状態マシンエディタへのいくつかの拡張を Yannis が提案しました。とくに重要なのは、編集ダイアログの中で Up/Down/Left/Right ボタンで移動できる機能です。
       <LI>
 <!--	I had the feature settings for Linguistic Rearrangement and Vertical Subs.
 	reversed. -->
-	�u����w�I�Ĕz�u�v�Ɓu�c�����u���v�̋@�\�ݒ肪�t�ɂȂ��Ă��܂����B
+	「言語学的再配置」と「縦書き置換」の機能設定が逆になっていました。
       <LI>
 <!--	In some cases I wasn't outputting anything to turn a feature off. -->
-	�@�\���I�t�ɂ��邽�߂̏o�͂������s���Ă��Ȃ��ꍇ������������܂����B
+	機能をオフにするための出力を何も行っていない場合がいくつかありました。
       <LI>
 <!--	Fixed many problems with kerning state machine dlg -->
-	�J�[�j���O��ԋ@�B�_�C�A���O�Ɋւ��鑽���̖����C���B
+	カーニング状態機械ダイアログに関する多くの問題を修正。
       <LI>
 <!--	Fixed several problems with insertion state machines -->
-	�}����ԋ@�B�Ɋւ��邢�����̖����C���B
+	挿入状態機械に関するいくつかの問題を修正。
       <LI>
 <!--	Fixed several problems with reading in state machines. -->
-	��ԋ@�B�̓ǂݍ��݂Ɋւ��邢�����̖����C���B
+	状態機械の読み込みに関するいくつかの問題を修正。
       <LI>
 <!--	Added SetMacStyle() to give the user control over how mac families are built. -->
-	Mac �t�@�~���[�̍\�z���@�𐧌䂷�邽�߂� SetMacStyle() �R�}���h��ǉ��B
+	Mac ファミリーの構築方法を制御するための SetMacStyle() コマンドを追加。
       <LI>
 <!--	Added a fflush after doing Print()s in scripting -->
-	�X�N���v�g�������� Print() ���s������� fflush �̌Ăяo����ǉ��B
+	スクリプト処理内の Print() を行った後に fflush の呼び出しを追加。
       <LI>
 <!--	FontForge would crash when given an extremely long real number in a cff
 	dictionary (in this case the font itself was in error) -->
-	CFF �������ɒ[�Ɍ����̑��������l���܂�ł���ƁAFontForge ���N���b�V�����Ă��܂��� (���̏ꍇ�A�t�H���g���̂��̂��Ԉ���Ă��܂���)�B
+	CFF 辞書が極端に桁数の多い実数値を含んでいると、FontForge がクラッシュしていました (この場合、フォントそのものが間違っていますが)。
       <LI>
 <!--	FontForge did not copy a bitmap character's width when it copied the bitmap. -->
-	FontForge �́A�r�b�g�}�b�v����̃R�s�[���s�������Ƀr�b�g�}�b�v�����̕����R�s�[���Ă��܂���ł����B
+	FontForge は、ビットマップからのコピーを行った時にビットマップ文字の幅をコピーしていませんでした。
       <LI>
 <!--	Char Info didn't handle pairwise positioning properly. -->
-	�O���t���_�C�A���O���y�A�P�ʂ̈ʒu�w��𐳂�����舵���Ă��܂���ł����B
+	グリフ情報ダイアログがペア単位の位置指定を正しく取り扱っていませんでした。
       <LI>
 <!--	Some more pangrams from
 	<A HREF="http://shair.net/misc/txt/pangram.en">http://shair.net/misc/txt/pangram.en</A>
 	(link provided by David Shaal) -->
-	<A HREF="http://shair.net/misc/txt/pangram.en">http://shair.net/misc/txt/pangram.en</A> (David Shaal �̒񋟂������ɂ�郊���N) ����A�ǉ��̑S�����g�p����ǉ��B
+	<A HREF="http://shair.net/misc/txt/pangram.en">http://shair.net/misc/txt/pangram.en</A> (David Shaal の提供した情報によるリンク) から、追加の全文字使用文を追加。
       <LI>
 <!--	My old approach to hint substitution caused problems with multiple master
 	fonts. So now I keep track of which points are substitution points and what
@@ -343,112 +343,112 @@
 	new command to try and make a guess as to what they should be, and the user
 	may control them directly through Element-&gt;Char Info. (new scripting commands,
 	SubstitutionPoints() and AutoCounter() do the obvious). -->
-	�q���g�u���Ɋւ��鎄�̈ȑO�̃A�v���[�`�́A�}���`�v���}�X�^�[�t�H���g�Ŗ��������N�����Ă��܂����B���������킯�ŁA�ǂ̓_���u���_�ŁA���̓_�ɂ͂ǂ̃q���g�}�X�N������̂����L�^���Ă����悤�ɕύX���܂����B�����̓_�������I�Ɍ��o����V�����R�}���h��ǉ������̂ŁA���[�U���_�̏��_�C�A���O (�G�������g�����𓾂�) �ł���𒼐ڐ���ł���悤�ɂȂ�܂����B����Ɠ����ɁA���l�̎����J�E���^�}�X�N�ɑ΂��Ă��\�ɂȂ�悤�ɂ���K�v�����鎖�ɋC�Â����̂ŁAFontForeg �̓J�E���^�}�X�N�� OTF �t�@�C������ǂݍ��݂܂� (Type1 �ɑ΂��Ă͂�����������Ă��܂���)�B�V�����R�}���h�́A�������l�ɂ��Đ������s���A���[�U�͂�����G�������g���O���t���Œ��ڕҏW�ł��܂� (�V�����X�N���v�g�R�}���h SubstitutionPoints() �� AutoCounter() �͂��̖��̂Ƃ���̏������s���܂�)�B
+	ヒント置換に関する私の以前のアプローチは、マルチプルマスターフォントで問題を引き起こしていました。そういうわけで、どの点が置換点で、その点にはどのヒントマスクがあるのかを記録しておくように変更しました。それらの点を自動的に検出する新しいコマンドを追加したので、ユーザが点の情報ダイアログ (エレメント→情報を得る) でそれを直接制御できるようになりました。それと同時に、同様の事がカウンタマスクに対しても可能になるようにする必要がある事に気づいたので、FontForeg はカウンタマスクを OTF ファイルから読み込みます (Type1 に対してはこれを実装していません)。新しいコマンドは、正しい値について推測を行い、ユーザはそれをエレメント→グリフ情報で直接編集できます (新しいスクリプトコマンド SubstitutionPoints() と AutoCounter() はその名のとおりの処理を行います)。
       <LI>
 <!--	Added a Hints-&gt;Don't AutoHint command to mark a character as having hints
 	the user likes which should not be modified until the user explicitly calls
 	AutoHint(). (and a matching scripting command). -->
-	���镶�������[�U�̎v���ʂ�̃q���g���܂�ł��āA���[�U�������� AutoHint() ���ĂԂ܂ł͍X�V���Ă͂Ȃ�Ȃ����Ƃ�\�� �q���g(H)�������q���g���~(D) �R�}���h (�ƁA����ɑΉ�����X�N���v�g�R�}���h) ��ǉ��B
+	ある文字がユーザの思い通りのヒントを含んでいて、ユーザが自分で AutoHint() を呼ぶまでは更新してはならないことを表す ヒント(H)→自動ヒントを停止(D) コマンド (と、それに対応するスクリプトコマンド) を追加。
       <LI>
 <!--	Added ability to control whether a PostScript font (type1&amp;type2) is output
 	with rounding. -->
-	PostScript �t�H���g (Type1 �� Type2) ���o�͎��ɍ��W���ۂ߂邩�𐧌䂷��@�\��ǉ��B
+	PostScript フォント (Type1 と Type2) を出力時に座標を丸めるかを制御する機能を追加。
       <LI>
 <!--	FontForge could generate a bad 'post' table for bitmap only fonts. -->
-	FontForge �́A�r�b�g�}�b�v�݂̂̃t�H���g�ɑ΂��A��ꂽ&lsquo;post&rsquo;�e�[�u�����o�͂���\��������܂����B
+	FontForge は、ビットマップのみのフォントに対し、壊れた&lsquo;post&rsquo;テーブルを出力する可能性がありました。
       <LI>
 <!--	FontForge didn't allow you to create two pairwise positioning items with
 	the same tag. -->
-	FontForge �ł́A�����^�O���܂ރy�A�P�ʂ̈ʒu�w��� 2 �쐬���邱�Ƃ��ł��܂���ł����B
+	FontForge では、同じタグを含むペア単位の位置指定を 2 つ作成することができませんでした。
       <LI>
 <!--	Hungarian names for mac features and for some standard names like "Bold",
 	etc. provided by Laszlo Karoly. -->
-	Mac �̋@�\���ƁgBold�h�Ȃǂ̂������̕W���I�Ȗ��̂̃n���K���[����ǉ��BLaszlo Karoly �̒񋟁B
+	Mac の機能名と“Bold”などのいくつかの標準的な名称のハンガリー語訳を追加。Laszlo Karoly の提供。
       <LI>
 <!--	Pierre HANSER noticed that if FontForge mapped a single glyph to two encodings
 	then bitmap generation through freetype got confused. -->
-	FontForge �� 1 �̕����� 2 �̃G���R�[�f�B���O��Ή������Ă���Ƃ��AFreeType ��p�����r�b�g�}�b�v�����������𗈂��Ă��邱�Ƃ� Pierre HANSER ���C�Â��܂����B
+	FontForge が 1 個の文字に 2 つのエンコーディングを対応させているとき、FreeType を用いたビットマップ生成が混乱を来していることに Pierre HANSER が気づきました。
       <LI>
 <!--	If a font contained a non-.notdef character at encoding 0, then generating
 	an opentype font from it had a fair chance of crashing. -->
-	�t�H���g�̃G���R�[�f�B���O 0 �� .notdef �ȊO�̕������܂܂�Ă���ƁA���ꂩ�� OpenType �t�H���g�𐶐��������ɂ��Ȃ�̍����ŃN���b�V�����Ă��܂����B
+	フォントのエンコーディング 0 に .notdef 以外の文字が含まれていると、それから OpenType フォントを生成した時にかなりの高率でクラッシュしていました。
       <LI>
 <!--	Added a couple of new select menu items: Select-&gt;Contours, Select-&gt;First
 	Point, Next Contour -->
-	�I���Ɋւ��郁�j���[���ڂ� 2 �ǉ�: �I��(S)���֊s�S��(C)�A�I�����ŏ��̒[�_(F), ���̒[�_(N)�B
+	選択に関するメニュー項目を 2 個追加: 選択(S)→輪郭全体(C)、選択→最初の端点(F), 次の端点(N)。
       <LI>
 <!--	Added a new sub-menu to allow ordering contours within a glyph. This is almost
 	totally useless (the final look of the character should not be affected by
 	the order in which the contours are drawn), but for multiple master fonts,
 	the contour list must have the same ordering in corresponding glyphs. -->
-	�������̗֊s�̏�����ݒ肷�邱�Ƃ��ł���T�u���j���[��ǉ��B����͂قƂ�ǖ��Ӗ� (�ŏI�I�ȕ����̕\���́A������\������֊s���ǂ̏����ŕ`�悵�����ɂ͉e������Ȃ��͂�) �ł����A�}���`�v���}�X�^�[�t�H���g�ɂ����ẮA�Ή�����O���t���ł͗֊s���X�g�̏����������łȂ���΂Ȃ�܂���B
+	文字内の輪郭の順序を設定することができるサブメニューを追加。これはほとんど無意味 (最終的な文字の表示は、それを構成する輪郭をどの順序で描画したかには影響されないはず) ですが、マルチプルマスターフォントにおいては、対応するグリフ内では輪郭リストの順序が同じでなければなりません。
     </UL>
   <LI>
 <!--11-Jan-2004-->
-    2004�N1��11��
+    2004年1月11日
     <UL>
       <LI>
 <!--	A patch for reading broken mac tables got lost. I've reinstated it. -->
-	��ꂽ Mac �e�[�u������̓ǂݍ��݂Ɋւ���p�b�`�������Ă����̂ŁA�p�b�`�𓖂Ē����܂����B
+	壊れた Mac テーブルからの読み込みに関するパッチが失われていたので、パッチを当て直しました。
     </UL>
   <LI>
 <!--10-Jan-2004-->
-    2004�N1��10��
+    2004年1月10日
     <UL>
       <LI>
 <!--	FontForge would crash when asked to use the truetype debugger on fpgm -->
-	TrueType �f�o�b�K�� fpgm �ɓK�p���悤�Ƃ���� FontForge ���N���b�V�����N�����Ă��܂����B
+	TrueType デバッガを fpgm に適用しようとすると FontForge がクラッシュを起こしていました。
       <LI>
 <!--	FontForge always coloured the background of debugger windows grey. -->
-	FontForge �f�o�b�K�E�B���h�E�̔w�i�F����ɊD�F�ɂȂ��Ă��܂����B
+	FontForge デバッガウィンドウの背景色が常に灰色になっていました。
       <LI>
 <!--	The Points window did not show any points. -->
-	�_�E�B���h�E���܂������_��\�����Ă��܂���ł����B
+	点ウィンドウがまったく点を表示していませんでした。
       <LI>
 <!--	Changed the Points window and the character view to show whether a point
 	has a watch point set on it. -->
-	�_�E�B���h�E��ύX���A�O���t�r���[�ŁA�ʂ̓_�ɃE�H�b�`�|�C���g���ݒ肳��Ă��邩�ǂ�����\������悤�ɂ��܂����B
+	点ウィンドウを変更し、グリフビューで、個別の点にウォッチポイントが設定されているかどうかを表示するようにしました。
       <LI>
 <!--	Display the code range ('fpgm'/'prep'/Glyph) in the character's info line
 	when debugging. -->
-	�O���t�̃f�o�b�O���ɏ��\���s�ɃR�[�h�͈� (&lsquo;fpgm&rsquo;/&lsquo;prep&rsquo;/�O���t) ��\������悤�ɂ��܂����B
+	グリフのデバッグ中に情報表示行にコード範囲 (&lsquo;fpgm&rsquo;/&lsquo;prep&rsquo;/グリフ) を表示するようにしました。
       <LI>
 <!--	When creating a 'fpgm'/'prep' table we created one with some garbage instructions
 	in it. -->
-	&lsquo;fpgm&rsquo;/&lsquo;prep&rsquo; �e�[�u���̍쐬���ɁA�S�~���߂��܂܂ꂽ�e�[�u��������Ă��܂����B
+	&lsquo;fpgm&rsquo;/&lsquo;prep&rsquo; テーブルの作成時に、ゴミ命令が含まれたテーブルを作っていました。
       <LI>
 <!--	Somehow I neglected to put in a dlg for editing the 'cvt ' table. This has
 	been rectified. -->
-	�Ȃ������A&lsquo;cvt &rsquo;�e�[�u���ҏW�p�̃_�C�A���O�����Y��Ă��܂����B�C�����܂����B
+	なぜだか、&lsquo;cvt &rsquo;テーブル編集用のダイアログを入れ忘れていました。修正しました。
       <LI>
 <!--	There was a bug in the postscript interpreter (the thing used for reading
 	.eps files and type3 fonts) and transforming a point by a matrix with diagonal
 	entries (rotation, skew, etc.) gave the wrong value. -->
-	PostScript �C���^�v���^ (�́A.eps �t�@�C���� Type �t�H���g�̓ǂݍ��݂ɗp���镔��) �Ƀo�O������A�΂ߐ������������ϊ��s�� (��]�E�X���Ȃ�) �œ_�����W�ϊ�����ƊԈ�����l��Ԃ��Ă��܂����B
+	PostScript インタプリタ (の、.eps ファイルと Type フォントの読み込みに用いる部分) にバグがあり、斜め成分を持った変換行列 (回転・傾きなど) で点を座標変換すると間違った値を返していました。
       <LI>
 <!--	Added code to preserve more of the PS graphic state when eps file does a
 	gsave -->
-	EPS �t�@�C���� gsave ���s�����ɂ�葽���� PS �O���t�B�b�N��Ԃ�ۑ����邽�߂̃R�[�h��ǉ��B
+	EPS ファイルが gsave を行う時により多くの PS グラフィック状態を保存するためのコードを追加。
       <LI>
 <!--	Merge Fonts would crash when merging a font with references into an empty
 	font -->
-	�t�H���g�̕���(M) ���A��̃t�H���g�ւ̎Q�Ƃ��܂ރt�H���g�𕹍�����ƃN���b�V�����Ă��܂����B
+	フォントの併合(M) が、空のフォントへの参照を含むフォントを併合するとクラッシュしていました。
       <LI>
 <!--	I wasn't providing default values for width/weight classes in the OS/2 table -->
-	OS/2 �e�[�u���̕�/�E�F�C�g�N���X�Ƀf�t�H���g�l��ݒ肵�Ă��܂���ł����B
+	OS/2 テーブルの幅/ウェイトクラスにデフォルト値を設定していませんでした。
       <LI>
 <!--	The bitmap dlg could write one byte beyond the area allocated in some cases. -->
-	�������̏ꍇ�ɁA�r�b�g�}�b�v�_�C�A���O������t������������� 1 �o�C�g�����������މ\��������܂����B
+	いくつかの場合に、ビットマップダイアログが割り付けたメモリより 1 バイト多く書き込む可能性がありました。
       <LI>
 <!--	Changed the outline character popup menu to include an Add Anchor Point entry -->
-	�A�E�g���C�������|�b�v�A�b�v���j���[��ύX���A�u�A���J�[�|�C���g��ǉ��v�Ƃ������ڂ�ǉ��B
+	アウトライン文字ポップアップメニューを変更し、「アンカーポイントを追加」という項目を追加。
       <LI>
 <!-	The Ligature index wasn't correctly enabled in some cases. -->
-	�����C���f�b�N�X���������ݒ肳��Ȃ��ꍇ������������܂����B
+	合字インデックスが正しく設定されない場合がいくつかありました。
       <LI>
 <!--	Add little arrows near the first point of each contour (in the outline character
 	view) showing the direction of the contour. -->
-	(�A�E�g���C���O���t�r���[��) �e�֊s�̍ŏ��̓_�̂��΂ɁA�֊s�̌�����\�������Ȗ���ǉ�
+	(アウトライングリフビューの) 各輪郭の最初の点のそばに、輪郭の向きを表す小さな矢印を追加
       <LI>
 <!--	The mac's interpretation of the CFF spec is very picky, but correct. If a
 	font contained no references then FontForge would generate an empty subroutine
@@ -456,347 +456,347 @@
 	empty one. (Strangely, global subroutines have the reverse requirement. Stupid).
 	Now if there are no references, then FontForge will not generate a local
 	subroutine index. -->
-	Mac �́ACFF �̎d�l����Ɍ��i�ɁA���������������߂��Ă��܂��B�t�H���g���Q�Ƃ��܂܂Ȃ��ꍇ�AFontForge �͋�̃T�u���[�`���C���f�b�N�X���o�͂��Ă��܂����B����͊ԈႢ�ł����B��̃T�u���[�`���C���f�b�N�X�������o���̂ł͂Ȃ��A��؏����o���Ȃ��̂��������̂ł� (��Ȃ��ƂɁA�O���[�o���T�u���[�`���͂��̔��΂łȂ���΂Ȃ�܂���B�����Ă܂��˂�)�B�Q�Ƃ����݂��Ȃ��ꍇ�A���[�J���T�u���[�`�����o�͂��Ȃ��悤�� FontForge ��ύX���܂����B
+	Mac は、CFF の仕様を非常に厳格に、しかし正しく解釈しています。フォントが参照を含まない場合、FontForge は空のサブルーチンインデックスを出力していました。これは間違いでした。空のサブルーチンインデックスを書き出すのではなく、一切書き出さないのが正しいのです (奇妙なことに、グローバルサブルーチンはその反対でなければなりません。腐ってますねえ)。参照が存在しない場合、ローカルサブルーチンを出力しないように FontForge を変更しました。
       <LI>
 <!--	Yannis Haralambous has corrected the French UI. -->
-	Yannis Haralambous ���t�����X��� UI ���C�����܂����B
+	Yannis Haralambous がフランス語の UI を修正しました。
       <LI>
 <!--	Three new scripting commands: AddAnchorClass, AddAnchorPoint, RemoveAnchorClass -->
-	�V�����X�N���v�g�R�}���h�� 3 �ǉ�: AddAnchorClass(), AddAnchorPoint(), RemoveAnchorClass()�B
+	新しいスクリプトコマンドを 3 つ追加: AddAnchorClass(), AddAnchorPoint(), RemoveAnchorClass()。
       <LI>
 <!--	Show ATT did not show glyph classes properly. -->
-	ATT��\��(S)�̓O���t�N���X�𐳂����\�����Ă��܂���ł����B
+	ATTを表示(S)はグリフクラスを正しく表示していませんでした。
       <LI>
 <!--	Made scripting dlg be resizable. -->
-	�X�N���v�g�_�C�A���O���T�C�Y�ςɂ��܂����B
+	スクリプトダイアログをサイズ可変にしました。
       <LI>
 <!--	Save As &amp; Import dlgs looked bad in French. Various other improvements
 	to make things look better on non-english systems. -->
-	�t�@�C�������w�肵�ĕۑ�(A) �� ��荞��(I) �̗��_�C�A���O�̓t�����X��ł̌��h��Ⱅ҂ł����B��p��V�X�e���ł̌��h�������シ�邽�߂̂��̑��̉��ǂ𑽐��s���܂����B
+	ファイル名を指定して保存(A) と 取り込み(I) の両ダイアログはフランス語での見栄か箍編でした。非英語システムでの見栄えが向上するためのその他の改良を多数行いました。
       <LI>
 <!-- 	Added the ability to set the glyph class from Char Info. -->
-	�O���t���_�C�A���O�ŃO���t�N���X��ݒ�ł���@�\��ǉ��B
+	グリフ情報ダイアログでグリフクラスを設定できる機能を追加。
       <LI>
 <!--	FontsInFile did not work on pfb files (nor on cff) -->
-	FontsInFile() �� PFB �t�@�C�� (�ƁACFF) �œ����Ă��܂���ł����B
+	FontsInFile() は PFB ファイル (と、CFF) で動いていませんでした。
       <LI>
 <!--	Opening a mac resource file with multiple FONDs from a script would crash. -->
-	������ FOND ������ Mac ���\�[�X�t�@�C�����X�N���v�g����J���ƃN���b�V�����Ă��܂����B
+	複数の FOND をもつ Mac リソースファイルをスクリプトから開くとクラッシュしていました。
       <LI>
 <!--	In Font Info-&gt;TTF Names the languages now appear in unicode ordering no
 	matter what the locale (used to be the langs were in alphabetical ordering
 	for English, even if they were actually French) -->
-	�t�H���g���(I)��[TTF��] �ŁA���P�[�����ɂ�炸����� Unicode ���ɕ��ׂ�悤�ɂ��܂��� (���܂ł͌���́A���Ƃ��t�����X�ꃍ�P�[���ł������Ƃ��Ă��A�p��ł̃A���t�@�x�b�g���ɕ��ׂ��Ă��܂���)�B
+	フォント情報(I)→[TTF名] で、ロケール名によらず言語を Unicode 順に並べるようにしました (今までは言語は、たとえフランス語ロケールであったとしても、英語でのアルファベット順に並べられていました)。
     </UL>
   <LI>
 <!--2-Jan-2004-->
-    2004�N1��2��
+    2004年1月2日
     <UL>
       <LI>
 <!--	More accurate round joints in stroking. -->
-	�X�g���[�N�����Ő��̐ڍ����̊ۂ߂̐��x������B
+	ストローク処理で線の接合部の丸めの精度を向上。
       <LI>
 <!--	Better approximations to splines which turn through 180 degrees or more -->
-	180���ȏ�]�񂷂�X�v���C���̋ߎ������P�B
+	180°以上転回するスプラインの近似を改善。
       <LI>
 <!--	Support for reading cff files. -->
-	CFF �t�@�C���̓ǂݍ��݂��T�|�[�g�B
+	CFF ファイルの読み込みをサポート。
       <LI>
 <!--	Yet more problems counting ttf points -->
-	TTF �̓_�̐������ɂ܂���肪����܂����B
+	TTF の点の数え方にまだ問題がありました。
       <LI>
 <!--	Update copyright notices. -->
-	���쌠�\�����X�V�B
+	著作権表示を更新。
       <LI>
 <!--	Add code to protect FontForge against reading bad Apple lookup tables (I
 	think the Zapfino.dfont that ships with 10.3 has two bad lookups, but perhaps
 	I just don't understand them). -->
-	FontForge ���s���� Apple �ƍ��e�[�u����ǂ񂾎��̕ی�R�[�h��ǉ� (�����v���ɂ́A10.3 �t���� Zapfino.dfont �ɂ� 2 �̕s���ȏƍ����܂܂�Ă���Ǝv���܂����A�����P�Ɏd�l��������Ă��邾���̉\���������ł�)�B
+	FontForge が不正な Apple 照合テーブルを読んだ時の保護コードを追加 (私が思うには、10.3 付属の Zapfino.dfont には 2 個の不正な照合が含まれていると思いますが、私が単に仕様を誤解しているだけの可能性が高いです)。
       <LI>
 <!--	Try harder to avoid using 'DFLT' script when coming up with a default script
 	for glyphs with no innate script. -->
-	�{���I�ȗp���n�������Ȃ��O���t�ɑ΂���f�t�H���g�p���n��&lsquo;DFLT&rsquo;�p���n���g�p����̂������ꍇ���ȑO��葝�₵�Ă݂܂����B
+	本来的な用字系を持たないグリフに対するデフォルト用字系に&lsquo;DFLT&rsquo;用字系を使用するのを避ける場合を以前より増やしてみました。
       <LI>
 <!--	Add a Find Problems to detect 'DFLT' -->
-	���_�𔭌� �_�C�A���O��&lsquo;DFLT&rsquo;�̌��o��ǉ��B
+	問題点を発見 ダイアログに&lsquo;DFLT&rsquo;の検出を追加。
       <LI>
 <!--	I've been generating bad Simple Positioning subtables for GPOS all along. -->
-	�����ƈȑO����A�s���� GPOS �P���ʒu�w��T�u�e�[�u�����o�͂��Ă��܂����B
+	ずっと以前から、不正な GPOS 単純位置指定サブテーブルを出力していました。
       <LI>
 <!--	Be pickier about what glyph names I let the user choose. -->
-	���[�U���ݒ肷��O���t���̃`�F�b�N�̌��i���B
+	ユーザが設定するグリフ名のチェックの厳格化。
       <LI>
 <!--	On cygwin (perhaps elsewhere, but I was never able to find the bug elsewhere)
 	if you invoked one command from the menu while another was still executing,
 	then fontforge would probably crash. -->
-	Cygwin ��ł� (�����炭���ł������ł��傤���A���͍��܂ő��̂ǂ��ł����̃o�O�ɋC�Â��܂���ł���)�A���̃R�}���h���s���I����Ă��Ȃ������Ƀ��j���[����R�}���h���N������ƁAFontForge ���قڊm���ɃN���b�V�����Ă��܂����B
+	Cygwin 上では (おそらく他でもそうでしょうが、私は今まで他のどこでもこのバグに気づきませんでした)、他のコマンド実行が終わっていないうちにメニューからコマンドを起動すると、FontForge がほぼ確実にクラッシュしていました。
       <LI>
 <!--	Support for reading and writing bare cff files. -->
-	���� CFF �t�@�C���̓ǂݏ������T�|�[�g�B
+	裸の CFF ファイルの読み書きをサポート。
       <LI>
 <!--	Build Accents crashed when asked to build accented chars for iacute, etc.
 	in a font without dotlessi. -->
-	�A�N�Z���g�������̍\�z(B) �́Adotlessi ���܂܂�Ă��Ȃ��t�H���g�� iacute ���̃A�N�Z���g���������\�z���悤�Ƃ���ƃN���b�V�����Ă��܂����B
+	アクセントつき文字の構築(B) は、dotlessi が含まれていないフォントで iacute 等のアクセントつき文字を構築しようとするとクラッシュしていました。
     </UL>
   <LI>
 <!--28-Dec-2003-->
-    2003�N12��28��
+    2003年12月28日
     <UL>
       <LI>
 <!--	RemoveATT scripting command didn't work if the third argument were "*" -->
-	RemoveATT �X�N���v�g�R�}���h�� 3 �Ԗڂ̈����Ƃ��� "*" ���w�肵���Ƃ��ɓ��삵�ĂĂ��܂���ł����B
+	RemoveATT スクリプトコマンドに 3 番目の引数として "*" を指定したときに動作してていませんでした。
       <LI>
 <!--	FontForge's clipping in the character view left something to be desired. -->
-	FontForge �̃O���t�r���[���ŃN���b�s���O������s�����Ƃ��ɃS�~���c�邱�Ƃ�����܂����B
+	FontForge のグリフビュー内でクリッピング操作を行ったときにゴミが残ることがありました。
       <LI>
 <!--	Make Meta-Arrow move selected points by 10 times what Arrow would move them
 	by. -->
-	Meta �L�[�Ɠ����ɖ��L�[�������ƁA�I�����ꂽ�_����L�[�P�Ƃŉ������Ƃ��� 10 �{�̋��������ړ�����悤�ɂ��܂����B
+	Meta キーと同時に矢印キーを押すと、選択された点を矢印キー単独で押したときの 10 倍の距離だけ移動するようにしました。
       <LI>
 <!--	Grabbed the feature ordering for GPOS/GSUB specified on the
 	<A HREF="http://www.microsoft.com/typography/specs/default.htm">microsoft
 	site</A> and taught it to FontForge. -->
-	GPOS/GSUB �ł̍���̕��я��� <A HREF="http://www.microsoft.com/typography/specs/default.htm">Microsoft �̃T�C�g</a>����擾���AFontForge �ɂ��̒m����g�ݍ��݂܂����B
+	GPOS/GSUB での昨日の並び順を <A HREF="http://www.microsoft.com/typography/specs/default.htm">Microsoft のサイト</a>から取得し、FontForge にその知識を組み込みました。
       <LI>
 <!--	Change the Point Info dlg -->
-	�_�̏��_�C�A���O�̕ύX
+	点の情報ダイアログの変更
 	<UL>
 	  <LI>
 <!--	    to allow the user to control the point type from there. -->
-	    ���̃_�C�A���O�œ_�̃^�C�v��ݒ�ł���悤�ɂ��܂����B
+	    このダイアログで点のタイプを設定できるようにしました。
 	  <LI>
 <!--	    to enforce constraints on control points (ie. the control points of a curve
 	    point must be in line with the point itself) -->
-	    ����_�Ɋւ��鐧����ۂ��悤�ɂ��܂��� (�Ⴆ�΁A�Ȑ���̓_�̗����̐���_�́A���̓_�ƈ꒼���ɂȂ�悤�ɂ���Ȃ�)�B
+	    制御点に関する制約を課すようにしました (例えば、曲線上の点の両側の制御点は、元の点と一直線になるようにするなど)。
 	  <LI>
 <!--	    by adding an alternated mode of entering data, by distance and angle (rather
 	    than just offset) -->
-	    �f�[�^���͂� (�I�t�Z�b�g�w��ɉ���) �����Ɗp�x���w�肵�čs��������̃��[�h��t�������܂����B
+	    データ入力に (オフセット指定に加え) 距離と角度を指定して行うもう一つのモードを付け加えました。
 	</UL>
       <LI>
 <!--	Some MF fonts have glyph names with characters which aren't allowed in PostScript
 	names -->
-	�������� MF �t�H���g�̃O���t���ɂ́APostScript ���Ƃ��ċ�����Ȃ��������܂܂�Ă��܂��B
+	いくつかの MF フォントのグリフ名には、PostScript 名として許されない文字が含まれています。
       <LI>
 <!--	FontForge failed to set widthset when it read in glyphs from a windows FNT
 	(FON) file. This meant that some glyphs might be ignored. -->
-	FontForge �́AWindows �� FNT (FON) �t�@�C������O���t��ǂݍ��ގ��ɕ������ݒ�Ɏ��s���Ă��܂����B����ɂ��A����̃O���t�����������댯��������܂����B
+	FontForge は、Windows の FNT (FON) ファイルからグリフを読み込む時に文字幅設定に失敗していました。これにより、幾つかのグリフが無視される危険性がありました。
       <LI>
 <!--	The context chaining dialog had a bad test for valid glyph names and complained
 	about any name containing digits -->
-	�����A���_�C�A���O�ŊԈ�����`�F�b�N���s���Ă���A�������܂ސ������O���t���ɑ΂��G���[���b�Z�[�W���o�͂���Ă��܂����B
+	文脈連鎖ダイアログで間違ったチェックを行っており、数字を含む正しいグリフ名に対しエラーメッセージが出力されていました。
       <LI>
 <!--	The histogram dlg would crash if the mouse moved across it when the window
 	was so wide that it could contain more stem widths than were actually in
 	use. -->
-	�q�X�g�O�����_�C�A���O�́A�E�B���h�E�̕������ɍL���A���ۂɎg���Ă�����������̃X�e�������܂މ\�������鎞�Ƀ}�E�X�����̏�����؂��Ĉړ������Ƃ��ɃN���b�V�����N�����Ă��܂����B
+	ヒストグラムダイアログは、ウィンドウの幅が非常に広く、実際に使われているよりも多くのステム幅を含む可能性がある時にマウスがその上を横切って移動したときにクラッシュを起こしていました。
       <LI>
 <!--	Added three commands to the metrics view view menu to allow users to insert
 	glyphs by name or encoding. -->
-	���g���b�N�r���[�� �\��(V) ���j���[�ɁA���[�U�����O�܂��͕����ʒu���w�肵�ăO���t��}�����邱�Ƃ��ł��� 3 �̃R�}���h��ǉ��B
+	メトリックビューの 表示(V) メニューに、ユーザが名前または符号位置を指定してグリフを挿入することができる 3 つのコマンドを追加。
       <LI>
 <!--	Yannis points out that afm files produced on fonts with vertical metrics
 	did not contain "WY" values (vertical advance width), also that the vkerns
 	in the file actually contained the values of horizontal kerns. -->
-	�c�������g���b�N���܂ރt�H���g���琶������ AFM �t�@�C���� "WY" (�c�����̑��蕝) �̒l���܂�ł��炸�A�t�@�C������ vkern �̒l�����ۂɂ͉������̃J�[�j���O�̑傫���������Ă��邱�Ƃ� Yannis ���w�E���܂����B
+	縦書きメトリックを含むフォントから生成した AFM ファイルが "WY" (縦書きの送り幅) の値を含んでおらず、ファイル内の vkern の値が実際には横書きのカーニングの大きさが入っていることを Yannis が指摘しました。
       <LI>
 <!--	The 'kern' table did not contain pairwise vertical kerns (it did contain
 	vertical kerning by class). -->
-	'kern' �e�[�u���ɂ̓y�A�P�ʂ̏c�����J�[�j���O�� (�N���X�P�ʂ̏c�����J�[�j���O���܂܂�Ă��Ȃ��ꍇ) �܂������܂܂�Ă��܂���ł����B
+	'kern' テーブルにはペア単位の縦書きカーニングが (クラス単位の縦書きカーニングが含まれていない場合) まったく含まれていませんでした。
       <LI>
 <!--	The View-&gt;Substitutions sub menu of the metricsview was not being cleared
 	properly if the current glyph had no substitutions. -->
-	�ҏW���̃O���t�ɒu�����܂܂�Ă��Ȃ��ꍇ�A���g���b�N�r���[�̕\��(V)���u�� �T�u���j���[�������������삵�Ă��܂���ł����B
+	編集中のグリフに置換が含まれていない場合、メトリックビューの表示(V)→置換 サブメニューがただしく動作していませんでした。
       <LI>
 <!--	Yannis wants the View-&gt;Substitutions menu to have a way to return to the
 	original glyph. -->
-	�\��(V)���u�� ���j���[�ɁA�I���W�i���̃O���t�ɖ߂����@��ǉ�����悤�� Yannis ���v�����܂����B
+	表示(V)→置換 メニューに、オリジナルのグリフに戻れる方法を追加するように Yannis が要求しました。
       <LI>
 <!--	Yannis points out that the metricsview in vertical mode changed the top side
 	bearing in an unexpected way. Also the vertical advance width did not refresh
 	the display properly. -->
-	�c�������[�h�ł̃��g���b�N�r���[���v�������Ȃ����@�ŏ�T�C�h�x�A�����O��ύX���Ă��邱�Ƃ��w�E���܂����B�c�����̑��蕝����ʂ�K�؂ɍX�V���Ă��܂���ł����B
+	縦書きモードでのメトリックビューが思いがけない方法で上サイドベアリングを変更していることを指摘しました。縦書きの送り幅も画面を適切に更新していませんでした。
       <LI>
 <!--	Thanks to David Opstad, I now have an example of a format 1 kerning table
 	and have extended FontForge to support kerning by state machine. -->
-	David Opstad �̂������ŁA�t�H�[�}�b�g 1 �̃J�[�j���O�e�[�u���̎������肵���̂ŁAFontForge �ɏ�ԃ}�V���ɂ��J�[�j���O�̃T�|�[�g��ǉ����܂����B
+	David Opstad のおかげで、フォーマット 1 のカーニングテーブルの実例を入手したので、FontForge に状態マシンによるカーニングのサポートを追加しました。
       <LI>
 <!--	The code for generating and loading otb (OpenType bitmap) fonts was broken. -->
-	OTB (OpenType �r�b�g�}�b�v) �t�H���g�̐����Ɠǂݍ��݂��s���R�[�h�����Ă��܂����B
+	OTB (OpenType ビットマップ) フォントの生成と読み込みを行うコードが壊れていました。
       <LI>
 <!--	And the code for generating my own weird bitmap only fonts for windows had
 	some flaws too (different flaws). -->
-	����̊�ȃr�b�g�}�b�v�݂̂̃t�H���g�� Windows �p�ɏo�͂��邽�߂̃R�[�h�Ɋ���� (�ʌ�) �t���O�֘A�̌��ׂ�����܂����B
+	自作の奇妙なビットマップのみのフォントを Windows 用に出力するためのコードに幾つかの (別個の) フラグ関連の欠陥がありました。
       <LI>
 <!--	If I typed a character into a fontview (or char view) and the font did not
 	contain the character, fontforge would not select that slot that encoded
 	the character, even if the character was in the encoding. -->
-	�t�H���g�r���[ (�܂��̓O���t�r���[) ��ŕ������^�C�v�������A�t�H���g���������܂�ł��Ȃ��ꍇ�AFontForge �͂��̕����̕����ʒu�ɑΉ�����X���b�g�� (���̕����ʒu�ɂ��̕���������ꍇ�ł���) �I�����Ă��܂���ł����B
+	フォントビュー (またはグリフビュー) 上で文字をタイプした時、フォントが文字を含んでいない場合、FontForge はその文字の符号位置に対応するスロットを (その符号位置にその文字がある場合でさえ) 選択していませんでした。
       <LI>
 <!--	When loading a ps type3 font, make sure that the glyph name is available
 	when parsing glyphs so we can produce reasonable error msgs. (mostly this
 	means "Spline stroke is too big"  )-->
-	PS Type3 �t�H���g�̓ǂݍ��ݎ��ɁA�O���t�̉�͒��ɃO���t�������p�\�ł��邩�ǂ����m�F����悤�ɂ����̂ŁA�������₷���G���[���b�Z�[�W (�قƂ�ǂ̏ꍇ�́A"�X�v���C���̕����������܂�" �Ƃ������̂ł���) ���\���ł���悤�ɂȂ�܂����B
+	PS Type3 フォントの読み込み時に、グリフの解析中にグリフ名が利用可能であるかどうか確認するようにしたので、理解しやすいエラーメッセージ (ほとんどの場合は、"スプラインの幅が太すぎます" というものですが) が表示できるようになりました。
       <LI>
 <!--	Only generate Spline stroke too big errors once per font. -->
-	�X�v���C���̕�����������Ƃ����G���[���b�Z�[�W���t�H���g1�ɂ�1�񂵂��o�͂��Ȃ��悤�ɕύX�B
+	スプラインの幅が太すぎるというエラーメッセージをフォント1個につき1回しか出力しないように変更。
       <LI>
 <!--	Adam Goode tells me that the format 12 (32bit unicode) cmap was wrong, and
 	provided a patch to fix it. -->
-	Adam Goode ���A�t�H�[�}�b�g 12 (32 �r�b�g Unicode) �� CMap ���Ԉ���Ă��邱�Ƃ��w�E���A�C���p�b�`��񋟂��܂����B
+	Adam Goode が、フォーマット 12 (32 ビット Unicode) の CMap が間違っていることを指摘し、修正パッチを提供しました。
       <LI>
 <!--	Pretty much rewrote the stroking command from scratch. -->
-	�X�g���[�N�R�}���h���X�N���b�`�����X�I�ɏ��������B
+	ストロークコマンドをスクラッチから大々的に書き直し。
       <LI>
 <!--	Merge fonts would crash when merging in a font containing either a ligature
 	caret or a nested lookup. -->
-	�����L�����b�g�܂��͓���q�ɂȂ����ƍ����܂ރt�H���g�ɕʂ̃t�H���g�𕹍����悤�Ƃ���ƃN���b�V�����Ă��܂����B
+	合字キャレットまたは入れ子になった照合を含むフォントに別のフォントを併合しようとするとクラッシュしていました。
       <LI>
 <!--	Made FontForge cognizant of the proposed unicode dotlessj character (0237),
 	it will now use either this or the dotlessj in adobe's private use area
 	(depending on which is in the font) -->
-	FontForge ����čς݂̕��� dotlessj (U+0237) ��F������悤�ɂ����̂ŁA������ Adobe �̎��p�̈�̂ǂ��炩 (�t�H���g�ɂǂ��炪�܂܂�邩�ɂ��قȂ�) ��p����悤�ɂȂ�܂����B
+	FontForge が提案済みの文字 dotlessj (U+0237) を認識するようにしたので、ここか Adobe の私用領域のどちらか (フォントにどちらが含まれるかにより異なる) を用いるようになりました。
       <LI>
 <!--	FontForge would crash when trying to build an accented character based on
 	inverted breve in pala.ttf -->
-	FontForge �́Apala.ttf �Ɋ܂܂��t�����̃u���[�u�Ɉˑ�����A�N�Z���g���������\�z���悤�Ƃ���ƃN���b�V�����N�����Ă��܂����B
+	FontForge は、pala.ttf に含まれる逆向きのブリーブに依存するアクセントつき文字を構築しようとするとクラッシュを起こしていました。
 	<UL>
 	  <LI>
 <!--	    It wrongly considered pala.ttf to be slightly italic (.0005&#176;) -->
-	    pala.ttf �������ɌX���Ă��� (0.0005��) �ƊԈ���ĉ��߂��Ă��܂����B
+	    pala.ttf が微妙に傾いている (0.0005°) と間違って解釈していました。
 	  <LI>
 <!--	    It would crash when doing this in an italic font -->
-	    �\�z���C�^���b�N�t�H���g�ōs���ƃN���b�V������悤�ɂȂ��Ă��܂����B
+	    構築をイタリックフォントで行うとクラッシュするようになっていました。
 	</UL>
 	<P>
 	  <HR>
       <LI>
 <!--	When importing postscript (type3 fonts, eps files) counter-clockwise paths
 	which are both stroked and filled cause problems -->
-	PostScript (Type3 �t�H���g�AEPS �t�@�C��) �̔����v���́A���`���Ɠh��Ԃ��̗������܂ރp�X����荞�����Ƃ���Ɩ����N�����Ă��܂����B
+	PostScript (Type3 フォント、EPS ファイル) の反時計回りの、線描きと塗りつぶしの両方を含むパスを取り込もうとすると問題を起こしていました。
       <LI>
 <!--	Changed the version stamp of otb fonts from 'OTTO' to 1.0 -->
-	OTB �t�H���g�̃o�[�W�����X�^���v�� 'OTTO' ���� 1.0 �ɕύX�B
+	OTB フォントのバージョンスタンプを 'OTTO' から 1.0 に変更。
     </UL>
   <LI>
 <!--10-Dec-2003-->
-    2003�N12��10��
+    2003年12月10日
     <UL>
       <LI>
 <!--	When there were multiple features with the same tag (different scripts with
 	'kern' for instance) FontForge would produce multiple copies of the same
 	lookup instead of different lookups. -->
-	�����^�O�ɕ����̋@�\�����݂���ꍇ�� (�Ⴆ�΁A�p���n�̈قȂ� 'kern' ������Ƃ�) FontForge �͈قȂ�ƍ����쐬���Ȃ��œ����ƍ��̃R�s�[�𕡐��쐬���Ă��܂����B
+	同じタグに複数の機能が存在する場合に (例えば、用字系の異なる 'kern' があるとき) FontForge は異なる照合を作成しないで同じ照合のコピーを複数作成していました。
       <LI>
 <!--	FontForge was not setting the right to left lookup flag bit properly for
 	hebrew (and presumably arabic) kerning -->
-	FontForge �́A�E�������ƍ��t���O�r�b�g���w�u���C�����ɑ΂��� (�܂��A�����炭�A���r�A�����ɑ΂��Ă�) �������Z�b�g���Ă��܂���ł����B
+	FontForge は、右横書き照合フラグビットをヘブライ文字に対して (また、おそらくアラビア文字に対しても) 正しくセットしていませんでした。
       <LI>
 <!--	Remove overlap was coalescing some splines that it should not have. -->
-	�d���������A���̂��Ă͂Ȃ�Ȃ��X�v���C�������̂����Ă���ꍇ������܂����B
+	重複除去が、合体してはならないスプラインを合体させている場合がありました。
       <LI>
 <!--	Typo in expand stroke meant that some round line joins were really weird -->
-	�����g��̌뎚���A���E���h�W���C���̎��ɔ��Ɋ�Ȍ��ʂ������炵�����Ƃ�����܂����B
+	線幅拡大の誤字が、ラウンドジョインの時に非常に奇妙な結果をもたらしすことがありました。
     </UL>
   <LI>
 <!--5-Dec-2003-->
-    2003�N12��5��
+    2003年12月5日
     <UL>
       <LI>
 <!--	When changing the ascent/descent with fontinfo or scaletoem some of the OS/2
 	fields did not get updated properly. -->
-	�t�H���g���_�C�A���O�� ScaleToEm() �ō���/�[����ύX�����Ƃ��ɁAOS/2 �t�B�[���h�̂��������m�ɍX�V����Ă��܂���ł����B
+	フォント情報ダイアログや ScaleToEm() で高さ/深さを変更したときに、OS/2 フィールドのいくつが正確に更新されていませんでした。
       <LI>
 <!--	The OS/2 TypoDescent field was set positive instead of negative. -->
-	OS/2 �� TypoDescent �t�B�[���h�����̒l�łȂ����̒l�ɐݒ肳��Ă��܂����B
+	OS/2 の TypoDescent フィールドが負の値でなく正の値に設定されていました。
       <LI>
 <!--	Added two scripting functions SetTTFName and GetTTFName to give scripts access
 	to the truetype names as well as the PS ones -->
-	�X�N���v�g�� PS ���O������Ɠ��l�� TrueType ���O������ɃA�N�Z�X�ł���悤�� SetTTFName() �� GetTTFName() ��ǉ����܂����B
+	スクリプトが PS 名前文字列と同様に TrueType 名前文字列にアクセスできるように SetTTFName() と GetTTFName() を追加しました。
       <LI>
 <!--	Patch from Kazuyuki. SetPanose didn't work when argument was an array. -->
-	Kazuyuki ����̃p�b�`�BSetPanose �ɔz��������ɗ^�����Ƃ��ɂ��܂������Ă��܂���ł����B
+	Kazuyuki からのパッチ。SetPanose に配列を引数に与えたときにうまく動いていませんでした。
       <LI>
 <!--	New French translations from Pierre -->
-	Pierre ����̐V�����t�����X���B
+	Pierre からの新しいフランス語訳。
       <LI>
 <!--	$copyright didn't return the correct thing (Patch from Giuseppe Ghibo) -->
-	$copyright ���������f�[�^��Ԃ��Ă��܂���ł��� (Giuseppe Ghibo ����̃p�b�`)
+	$copyright が正しいデータを返していませんでした (Giuseppe Ghibo からのパッチ)
       <LI>
 <!--	Kerning pair data for non-ASCII unicode characters did not get output properly
 	into SVG fonts -->
-	�� ASCII �� Unicode �����̃J�[�j���O�y�A���ASVG �t�H���g�ɐ������o�͂���Ă��܂���ł����B
+	非 ASCII の Unicode 文字のカーニングペアが、SVG フォントに正しく出力されていませんでした。
       <LI>
 <!--	The AddATT scripting command did not add ligatures correctly leading to problems
 	when time came to generate a font. -->
-	AddATT() �X�N���v�g�R�}���h�������𐳂����ǉ����Ă��炸�A�t�H���g�o�͎��ɖ����N�����Ă��܂����B
+	AddATT() スクリプトコマンドが合字を正しく追加しておらず、フォント出力時に問題を起こしていました。
     </UL>
   <LI>
 <!--23-Nov-2003-->
-    2003�N11��23��
+    2003年11月23日
     <UL>
       <LI>
 <!--	FontForge would crash if given an encoding for the locale which it didn't
 	understand -->
-	FontForge �������ł��Ȃ��G���R�[�f�B���O����^����ꂽ��N���b�V�����Ă��܂����B
+	FontForge が理解できないエンコーディング名を与えられたらクラッシュしていました。
       <LI>
 <!--	Center/Thirds in width from the font view would change the width -->
-	�t�H���g�r���[���璆������/1:2�̑������s���ƃN���b�V�����Ă��܂����B
+	フォントビューから中央揃え/1:2の揃えを行うとクラッシュしていました。
       <LI>
 <!--	There was a synchronization problem and the truetype debugger window could
 	deadlock -->
-	TrueType �f�o�b�K�ɓ�����肪�����ăf�b�h���b�N�������N�����Ă��܂����B
+	TrueType デバッガに同期問題があってデッドロックを引き起こしていました。
       <LI>
 <!--	FontForge failed to read a Contextual (but not Contextual chaining) Coverage
 	lookup properly. -->
-	FontForge �͕����ˑ��͈̔͏ƍ��𐳂����ǂݍ��߂Ă��܂���ł���  (�����A���ˑ��̏ƍ��͖�肠��܂���)�B
+	FontForge は文脈依存の範囲照合を正しく読み込めていませんでした  (文脈連鎖依存の照合は問題ありません)。
     </UL>
   <LI>
 <!--10-Nov-2003-->
-    2003�N11��10��
+    2003年11月10日
     <UL>
       <LI>
 <!--	FontForge was crashing when loading a bitmap font with encoded characters
 	outside the range specified by the encoding (ie. a character 0x10000 in a
 	unicode BMP font). -->
-	�����������ɂ���Ďw�肳�ꂽ�͈͂̊O�̕������������r�b�g�}�b�v�t�H���g (��: ���� 0x10000 ���܂� Unicode BMP �t�H���g) ��ǂݍ��ނƁAFontForge ���N���b�V�����Ă��܂����B
+	符号化方式によって指定された範囲の外の文字符号をもつビットマップフォント (例: 文字 0x10000 を含む Unicode BMP フォント) を読み込むと、FontForge がクラッシュしていました。
       <LI>
 <!--	Fixes for several memory leaks provided by Kazuki Ohta -->
-	���c����ɂ�邢�����̃��������[�N�C���B
+	太田一樹によるいくつかのメモリリーク修正。
       <LI>
 <!--	Slight improvements to the View-&gt;Combinations-&gt;Ligature dlg -->
-	�\�����g���������� �_�C�A���O�̂������ׂ̍������ǁB
+	表示→組合せ→合字 ダイアログのいくつかの細かい改良。
     </UL>
   <LI>
 <!--8-Nov-2003-->
-    2003�N11��8��
+    2003年11月8日
     <UL>
       <LI>
 <!--	Bug introduced 6-Nov, FontForge generated a bad 'loca' table when outputting
 	a ttf outline font with bitmaps. -->
-	11/6 �Ɏ������܂ꂽ�o�O�BFontForge �̓r�b�g�}�b�v���܂� TTF �A�E�g���C���t�H���g�̏o�͎��ɕs����&lsquo;loca&rsquo;�e�[�u�����o�͂��Ă��܂����B
+	11/6 に持ち込まれたバグ。FontForge はビットマップを含む TTF アウトラインフォントの出力時に不正な&lsquo;loca&rsquo;テーブルを出力していました。
       <LI>
 <!--	FontForge was getting the truetype point number wrong when reading outlines
 	from an sfd file. -->
-	SFD �t�@�C������A�E�g���C����ǂݍ��ގ��ɁAFontForge �� TrueType �̓_�ԍ����ԈႦ�Ă��Ă��܂����B
+	SFD ファイルからアウトラインを読み込む時に、FontForge は TrueType の点番号を間違えてつけていました。
       <LI>
 <!--	If the loca table was 2 or 4 bytes long, FontForge failed to warn about a
 	bad glyph count. -->
-	loca �e�[�u���̒����� 2 �o�C�g�� 4 �o�C�g�̎��AFontForge �̓O���t�̌����Ԉ���Ă���ƌx�����Ă��܂����B
+	loca テーブルの長さが 2 バイトか 4 バイトの時、FontForge はグリフの個数が間違っていると警告していました。
       <LI>
 <!--	FontForge got confused if two truetype glyphs had the same name. -->
-	FontForge �́A2 �� TrueType �O���t���������O�������Ă���ƍ������Ă��܂����B
+	FontForge は、2 つの TrueType グリフが同じ名前をもっていると混乱していました。
       <LI>
 <!--	When dumping out embedded ttf bitmaps, FontForge got confused by the extra
 	glyphs (.null and return) and generated garbage. -->
-	���ߍ��܂ꂽ TTF �r�b�g�}�b�v�������o�����AFontForge �͗]���ȃO���t (.null �� return) �ō������āA�S�~�������o���Ă��܂����B
+	埋め込まれた TTF ビットマップを書き出す時、FontForge は余分なグリフ (.null と return) で混乱して、ゴミを書き出していました。
       <LI>
 <!--	Make View-&gt;Combinations-&gt;ligature dlg a bit better for non-latin glyphs -->
-	�\�����g���������� �_�C�A���O��񃉃e�������Ɋւ��ď������ǂ��܂����B
+	表示→組合せ→合字 ダイアログを非ラテン文字に関して少し改良しました。
     </UL>
   <LI>
 <!--6-Nov-2003-->
-    2003�N11��6��
+    2003年11月6日
     <UL>
       <LI>
 	The clut used for drawing anti-alias bitmaps in the metrics view was wrong.
@@ -821,7 +821,7 @@
     </UL>
   <LI>
 <!--4-Nov-2003-->
-    2003�N11��4��
+    2003年11月4日
     <UL>
       <LI>
 	When FontForge removes glyphs with Font Info-&gt;Encoding-&gt;Number of
@@ -860,7 +860,7 @@
     </UL>
   <LI>
 <!--29-Oct-2003-->
-    2003�N10��29��
+    2003年10月29日
     <UL>
       <LI>
 	When removing an ATT feature from a glyph using a script, FontForge would
@@ -868,7 +868,7 @@
     </UL>
   <LI>
 <!--28-Oct-2003-->
-    2003�N10��28��
+    2003年10月28日
     <UL>
       <LI>
 	FontForge would crash when converting from cubic to quadratic splines in
@@ -879,7 +879,7 @@
     </UL>
   <LI>
 <!--27-Oct-2003-->
-    2003�N10��27��
+    2003年10月27日
     <UL>
       <LI>
 	FontForge would crash when changing the encoding of a font with a .notdef
@@ -894,7 +894,7 @@
     </UL>
   <LI>
 <!--26-Oct-2003-->
-    2003�N10��26��
+    2003年10月26日
     <UL>
       <LI>
 	Simplify sometimes removed points at extrema even when it should not have
@@ -911,7 +911,7 @@
     </UL>
   <LI>
 <!--23-Oct-2003-->
-    2003�N10��23��
+    2003年10月23日
     <UL>
       <LI>
 	The change on the 20th to make custom encoding support 32bit unicode was
@@ -939,7 +939,7 @@
     </UL>
   <LI>
 <!--20-Oct-2003-->
-    2003�N10��20��
+    2003年10月20日
     <UL>
       <LI>
 	Windows XP &amp; 2000 insist on having (what cygwin describes as) the execute
@@ -965,7 +965,7 @@
     </UL>
   <LI>
 <!--16-Oct-2003-->
-    2003�N10��16��
+    2003年10月16日
     <UL>
       <LI>
 	FontForge was still outputting a disordered name table.
@@ -976,7 +976,7 @@
     </UL>
   <LI>
 <!--15-Oct-2003-->
-    2003�N10��15��
+    2003年10月15日
     <UL>
       <LI>
 	FontForge did not bother to open files in binary mode. If cygwin was configured
@@ -989,7 +989,7 @@
     </UL>
   <LI>
 <!--12-Oct-2003-->
-    2003�N10��12��
+    2003年10月12日
     <UL>
       <LI>
 	Several bad bugs in last night's build (name table was (usually) all screwed
@@ -1002,7 +1002,7 @@
     </UL>
   <LI>
 <!--11-Oct-2003-->
-    2003�N10��11��
+    2003年10月11日
     <UL>
       <LI>
 	Another patch from Kanou to recognize encodings better in bdf files.
@@ -1035,7 +1035,7 @@
     </UL>
   <LI>
 <!--6-Oct-2003-->
-    2003�N10��6��
+    2003年10月6日
     <UL>
       <LI>
 	Give the Metrics View a vertical mode in which it does vertical kerning,
@@ -1045,7 +1045,7 @@
     </UL>
   <LI>
 <!--6-Oct-2003-->
-    2003�N10��6��
+    2003年10月6日
     <UL>
       <LI>
 	Fixed a number of bugs in the new kerning class dlg including:
@@ -1068,7 +1068,7 @@
     </UL>
   <LI>
 <!--5-Oct-2003-->
-    2003�N10��5��
+    2003年10月5日
     <UL>
       <LI>
 	Got rid of GreekFixup and added Interpretations of encodings to FontInfo
@@ -1093,7 +1093,7 @@
     </UL>
   <LI>
 <!--2-Oct-2003-->
-    2003�N10��2��
+    2003年10月2日
     <UL>
       <LI>
 	got rid of my strange 94x94 encodings for JIS/KSC/GB (based on the kuten
@@ -1117,7 +1117,7 @@
     </UL>
   <LI>
 <!--29-Sept-2003-->
-    2003�N9��29��
+    2003年9月29日
     <UL>
       <LI>
 	When a path was both stroked and filled (in a postscript/eps file), fontforge
@@ -1203,7 +1203,7 @@
     </UL>
   <LI>
 <!--4-Sept-2003-->
-    2003�N9��4��
+    2003年9月4日
     <UL>
       <LI>
 	the 17-Aug addition of context/chaining broke anchor classes. Should be fixed
@@ -1223,7 +1223,7 @@
     </UL>
   <LI>
 <!--31-Aug-2003-->
-    2003�N8��31��
+    2003年8月31日
     <UL>
       <LI>
 	Add problems for maximum number of hints (96) and maximum number of subroutine
@@ -1245,7 +1245,7 @@
     </UL>
   <LI>
 <!--29-Aug-2003-->
-    2003�N8��29��
+    2003年8月29日
     <UL>
       <LI>
 	FontForge failed to display the morx table if all it contained were simple
@@ -1266,13 +1266,13 @@
     </UL>
   <LI>
 <!--27-Aug-2003-->
-    2003�N8��27��
+    2003年8月27日
     <UL>
       <LI>
 <!--	<FONT COLOR="Red"><STRONG><BIG>The preference dlg has been broken since about
 	12 July. Anything on the Preference-&gt;Font Info tab is probably
 	wrong.</BIG></STRONG></FONT> -->
-	<FONT COLOR="Red"><STRONG><BIG>���ݒ�_�C�A���O��7��12���ȗ����Ă��܂����B���ݒ�_�C�A���O�� [�t�H���g���] �^�u�Őݒ肵�����͂����炭�S���ł���߂ȃf�[�^�ł��傤�B</BIG></STRONG></FONT>
+	<FONT COLOR="Red"><STRONG><BIG>環境設定ダイアログが7月12日以来壊れていました。環境設定ダイアログの [フォント情報] タブで設定した情報はおそらく全部でたらめなデータでしょう。</BIG></STRONG></FONT>
       <LI>
 	FontForge wasn't always getting the script/lang right when filling in the
 	fields of the New Substitution dlg.
@@ -1288,7 +1288,7 @@
     </UL>
   <LI>
 <!--26-Aug-2003-->
-    2003�N8��26��
+    2003年8月26日
     <UL>
       <LI>
 	When I added metadata to svg fonts (20-Aug) I inadvertently put in two closing
@@ -1305,7 +1305,7 @@
     </UL>
   <LI>
 <!--25-Aug-2003-->
-    2003�N8��25��
+    2003年8月25日
     <UL>
       <LI>
 	View-&gt;Show ATT didn't show contextual/chaining tables even if they would
@@ -1331,7 +1331,7 @@
     </UL>
   <LI>
 <!--22-Aug-2003-->
-    2003�N8��22��
+    2003年8月22日
     <UL>
       <LI>
 	Fix simplify again
@@ -1345,7 +1345,7 @@
     </UL>
   <LI>
 <!--20-Aug-2003-->
-    2003�N8��20��
+    2003年8月20日
     <UL>
       <LI>
 	Support for <A HREF="http://potrace.sf.net/">potrace</A>
@@ -1364,7 +1364,7 @@
     </UL>
   <LI>
 <!--18-Aug-2003-->
-    2003�N8��18��
+    2003年8月18日
     <UL>
       <LI>
 <!--	<FONT COLOR="Red"><STRONG><BIG>FontForge did not interpret SVG relative paths
@@ -1373,7 +1373,7 @@
 	be interpreted as in the Type1 rrcurveto operator (where each point is relative
 	to the previous point in the operator) rather than the rcurveto operator
 	(where each point is relative to the initial point). -->
-	<FONT COLOR="Red"><STRONG><BIG>FontForge �� SVG �̑��΃p�X�𐳂������߂��Ă��炸�ASVG �o�͂�����������܂���ł���</BIG></STRONG></FONT>�BFontForge �͌���āAType1 �� rcurveto (�e�_�̍��W���J�n�_����̑��Βl�Ŏw�肷��) �Ɠ��l�̉��߂ł͂Ȃ� rrcurveto (�e�_�̍��W�����Z�q���̑O�̓_����̑��Βl�Ŏw�肷��) �Ɠ��l�̉��߂� SVG �����߂��Ă��܂����B
+	<FONT COLOR="Red"><STRONG><BIG>FontForge は SVG の相対パスを正しく解釈しておらず、SVG 出力も正しくありませんでした</BIG></STRONG></FONT>。FontForge は誤って、Type1 の rcurveto (各点の座標を開始点からの相対値で指定する) と同様の解釈ではなく rrcurveto (各点の座標を演算子中の前の点からの相対値で指定する) と同様の解釈で SVG を解釈していました。
       <LI>
 	If FontForge opened a Bold font stored in OTF CFF format, then when it closed
 	that font it would either crash, or screw up memory so that a crash would
@@ -1381,7 +1381,7 @@
     </UL>
   <LI>
 <!--17-Aug-2003-->
-    2003�N8��17��
+    2003年8月17日
     <UL>
       <LI>
 	Support for contextual, chaining contextual and reverse chaining contextual
@@ -1457,7 +1457,7 @@
     </UL>
   <LI>
 <!--3-Aug-2003-->
-    2003�N8��3��
+    2003年8月3日
     <UL>
       <LI>
 	I still wasn't getting r2l kerns correct
@@ -1491,7 +1491,7 @@
 		Add a "VKern" item to CharInfo
 	      <LI>
 <!--		<FONT COLOR="Red"><B>Type argument to SelectByATT has changed</B></FONT>!!! -->
-		<FONT COLOR="Red"><B>SelectByATT() �� type �����̉��߂��ύX����܂���</B></FONT>!!!
+		<FONT COLOR="Red"><B>SelectByATT() の type 引数の解釈が変更されました</B></FONT>!!!
 	    </UL>
 	</UL>
       <LI>
@@ -1505,7 +1505,7 @@
     </UL>
   <LI>
 <!--31-Jul-2003-->
-    2003�N7��31��
+    2003年7月31日
     <UL>
       <LI>
 	Installed KANOU's fix for a buffer overrun
@@ -1532,7 +1532,7 @@
     </UL>
   <LI>
 <!--30-Jul-2003-->
-    2003�N7��30��
+    2003年7月30日
     <UL>
       <LI>
 	Add support for <A HREF="http://www.w3c.org/TR/SVG11/fonts.html">svg fonts</A>
@@ -1553,7 +1553,7 @@
     </UL>
   <LI>
 <!--20-Jul-2003-->
-    2003�N7��20��
+    2003年7月20日
     <UL>
       <LI>
 	made the default linux browser be mozilla rather than netscape.
@@ -1570,7 +1570,7 @@
     </UL>
   <LI>
 <!--15-Jul-2003-->
-    2003�N7��15��
+    2003年7月15日
     <UL>
       <LI>
 	We weren't parsing any type3 fonts properly any more
@@ -1590,7 +1590,7 @@
     </UL>
   <LI>
 <!--14-Jul-2003-->
-    2003�N7��14�� (Bastille Day!)
+    2003年7月14日 (Bastille Day!)
     <UL>
       <LI>
 	There are still cases where I'm getting the truetype point count wrong. If
@@ -1613,7 +1613,7 @@
     </UL>
   <LI>
 <!--12-Jul-2003-->
-    2003�N7��12��
+    2003年7月12日
     <UL>
       <LI>
 	Remove weirdness in scripting interface to TeX font parameters
@@ -1664,7 +1664,7 @@
 <!--	Upgraded to Unicode 4.0 (<FONT COLOR="Red"><STRONG>Note:
 	<A HREF="http://libuninameslist.sf.net/">libuninameslist</A> has also been
 	upgraded</STRONG></FONT>) -->
-	Unicode 4.0 �ɍX�V (<FONT COLOR="Red"><STRONG>����: <A HREF="http://libuninameslist.sf.net/">libuninameslist</A> ���ꏏ�ɍX�V����܂���</STRONG></FONT>)
+	Unicode 4.0 に更新 (<FONT COLOR="Red"><STRONG>注意: <A HREF="http://libuninameslist.sf.net/">libuninameslist</A> も一緒に更新されました</STRONG></FONT>)
       <LI>
 	Added a new preference item CharCenterHighest to assist in accent placement.
 	  <HR>
@@ -1684,7 +1684,7 @@
     </UL>
   <LI>
 <!--4-July-2003-->
-    2003�N7��4��
+    2003年7月4日
     <UL>
       <LI>
 	Added a page to the font info dlg which allows users to set TeX font parameters
@@ -1698,7 +1698,7 @@
     </UL>
   <LI>
 <!--2-July-2003-->
-    2003�N7��2��
+    2003年7月2日
     <UL>
       <LI>
 	Add an Options dialog to the Generate Font window, and remove the check boxes
@@ -1714,7 +1714,7 @@
     </UL>
   <LI>
 <!--30-June-2003-->
-    2003�N6��30��
+    2003年6月30日
     <UL>
       <LI>
 <!--	I<FONT COLOR="Red"><STRONG>n the table of contents at the start of a true/open
@@ -1722,7 +1722,7 @@
 	many applications to ignore it, which in turn meant that Mark to Base GPOS
 	tables were ignored </STRONG></FONT>(at least I hope that's what was going
 	on). -->
-	<FONT COLOR="Red"><STRONG>TrueType/OpenType �t�@�C���̐擪�ɂ���e�[�u���ꗗ�ɏo�͂��ꂽ GDEF �e�[�u���̃T�C�Y���Ԉ���Ă��܂����B����ɂ��A�����̃A�v���P�[�V���������̃e�[�u���𖳎����Ă��܂����B����ɂ��A�}�[�N�����ꕶ���ֈʒu�w����s�� GPOS �e�[�u������������錋�ʂƂȂ��Ă��܂����B</STRONG></FONT> (���Ȃ��Ƃ����݂����肪���ꂾ���ł��邱�Ƃ��F��܂�)�B
+	<FONT COLOR="Red"><STRONG>TrueType/OpenType ファイルの先頭にあるテーブル一覧に出力された GDEF テーブルのサイズが間違っていました。それにより、多くのアプリケーションがこのテーブルを無視していました。それにより、マークから基底文字へ位置指定を行う GPOS テーブルが無視される結果となっていました。</STRONG></FONT> (少なくとも存在する問題がこれだけであることを祈ります)。
       <LI>
 	On the mac local help files weren't working properly.
       <LI>
@@ -1742,14 +1742,14 @@
     </UL>
   <LI>
 <!--19-June-2003-->
-    2003�N6��19��
+    2003年6月19日
     <UL>
       <LI>
 	Added a histogram dialog to help figure values for StemSnap[H/V]
     </UL>
   <LI>
 <!--17-June-2003-->
-    2003�N6��17��
+    2003年6月17日
     <UL>
       <LI>
 	Scripting interface to SelectByATT
@@ -1761,7 +1761,7 @@
     </UL>
   <LI>
 <!--15-June-2003-->
-    2003�N6��15��
+    2003年6月15日
     <UL>
       <LI>
 	Cleaned up the spelling of some scripts.
@@ -1797,7 +1797,7 @@
 	hand I believe some arabic ligatures may depend on it (at least arabtype-volt.ttf
 	uses it). So... now we only set this bit for arabic ligatures which do not
 	contain combining marks. Dunno if that is right either.</STRONG></FONT> -->
-	<FONT COLOR="Red"><STRONG>FontForge �͂��ׂĂ̍����ɑ΂��ď�Ɂu�����}�[�N�𖳎��v�r�b�g���Z�b�g���Ă��܂����B������ yudit (�����炭 gedit ��) �͂��̃r�b�g���ݒ肳��Ă���ƒu�����������܂���B���̈���A�������̃A���r�A�����̍����͂��̃r�b�g�Ɉˑ����Ă���Ǝv���܂� (���Ȃ��Ƃ� arabtype-volt.ttf �͂�����g�p���Ă��܂�)�B���������킯�Łc����͂��̃r�b�g�������������܂܂Ȃ��A���r�A�����̍����ɑ΂��Ă̂݃Z�b�g���邱�ƂɌ��߂܂����B���ꂪ���������ǂ����̓V���l�B</STRONG></FONT>
+	<FONT COLOR="Red"><STRONG>FontForge はすべての合字に対して常に「結合マークを無視」ビットをセットしていました。しかし yudit (おそらく gedit も) はこのビットが設定されていると置換を処理しません。その一方、いくつかのアラビア文字の合字はこのビットに依存していると思います (少なくとも arabtype-volt.ttf はこれを使用しています)。そういうわけで…今後はこのビットを結合符号を含まないアラビア文字の合字に対してのみセットすることに決めました。これが正しいかどうかはシラネ。</STRONG></FONT>
 	<UL>
 	  <LI>
 <!--	    I have created a little tool,
@@ -1805,12 +1805,12 @@
 	    which will take an sfd file with the "ignore combining marks" bit in ligatures
 	    and turn it off. It does not try to guess what should be done, it ALWAYS
 	    turns the bit off. -->
-	    ���� <A HREF="http://cvs.sourceforge.net/viewcvs.cgi/pfaedit/pfaedit/fonttools/rmligamarks.c">rmligamarks</A> �Ƃ����ASFD �t�@�C���������ɂƂ�A�u�����}�[�N�𖳎��v�r�b�g���Z�b�g����Ă͂��邪�����ɑ΂��Ă͂�����I�t�ɂ��邽�߂̏����ȃc�[�����쐬���܂����B����͉�������ׂ����𐄑������ɁA<STRONG>���</STRONG>���̃r�b�g���I�t�ɂ��܂��B
+	    私は <A HREF="http://cvs.sourceforge.net/viewcvs.cgi/pfaedit/pfaedit/fonttools/rmligamarks.c">rmligamarks</A> という、SFD ファイルを引数にとり、「結合マークを無視」ビットがセットされてはいるが合字に対してはそれをオフにするための小さなツールを作成しました。これは何をするべきかを推測せずに、<STRONG>常に</STRONG>そのビットをオフにします。
 	</UL>
     </UL>
   <LI>
 <!--5-June-2003-->
-    2003�N6��5��
+    2003年6月5日
     <UL>
       <LI>
 	FontForge was generating Apple 'morx' tables with the right to left bit reversed
@@ -1824,7 +1824,7 @@
     </UL>
   <LI>
 <!--4-Jun-2003-->
-    2003�N6��4��
+    2003年6月4日
     <UL>
       <LI>
 	Added a Shadow effect
@@ -1848,7 +1848,7 @@
     </UL>
   <LI>
 <!--18-May-2003-->
-    2003�N5��18��
+    2003年5月18日
     <UL>
       <LI>
 	FontForge would crash when asked to produce a ttf font where there was an
@@ -1894,7 +1894,7 @@
     </UL>
   <LI>
 <!--12-May-2003-->
-    2003�N5��12��
+    2003年5月12日
     <UL>
       <LI>
 	Added a command to do non-linear transformations (but made it require user
@@ -1904,7 +1904,7 @@
     </UL>
   <LI>
 <!--9-May-2003-->
-    2003�N5��9��
+    2003年5月9日
     <UL>
       <LI>
 	Apple's 'lcar' (ligature caret) table was being generated incorrectly
@@ -1915,7 +1915,7 @@
     </UL>
   <LI>
 <!--8-May-2003-->
-    2003�N5��8��
+    2003年5月8日
     <UL>
       <LI>
 	FontForge did not recognize "filename(fontname)" notation for loading a specific
@@ -1926,7 +1926,7 @@
     </UL>
   <LI>
 <!--7-May-2003-->
-    2003�N5��7��
+    2003年5月7日
     <UL>
       <LI>
 	Oops. It should be legal for a 'mkmk' anchor class to have two points in
@@ -1948,7 +1948,7 @@
     </UL>
   <LI>
 <!--6-May-2003-->
-    2003�N5��6��
+    2003年5月6日
     <UL>
       <LI>
 	Although undocumented, digits behave just like lower case letters in macintosh
@@ -1963,7 +1963,7 @@
     </UL>
   <LI>
 <!--5-May-2003-->
-    2003�N5��5��
+    2003年5月5日
     <UL>
       <LI>
 	Made it possible to select kerning class 0 (ie. everything that isn't specified)
@@ -1974,11 +1974,11 @@
 <!--	<FONT COLOR="Red"><STRONG>FontForge was dumping out a full GSUB sub-table
 	for each character that sub-table applied to (rather than one sub-table for
 	all characters). So there were tons of duplicates.</STRONG></FONT> -->
-	<FONT COLOR="Red"><STRONG>FontForge �́A�T�u�e�[�u�����K�p�����e�����ɑ΂��Ċ��S�� GSUB �T�u�e�[�u�����_���v���Ă��܂��� (�S���̕����ɑ΂��� 1 �̃T�u�e�[�u�����_���v����̂ł͂Ȃ�)�B����ɂ��R�قǏd�����Ă��܂����B</STRONG></FONT>
+	<FONT COLOR="Red"><STRONG>FontForge は、サブテーブルが適用される各文字に対して完全な GSUB サブテーブルをダンプしていました (全部の文字に対して 1 個のサブテーブルをダンプするのではなく)。それにより山ほど重複していました。</STRONG></FONT>
       <LI>
 <!--	<FONT COLOR="Red"><STRONG>FontForge was producing extension sub-tables that
 	held an incorrect offset. -->
-	<FONT COLOR="Red"><STRONG>FontForge �͕s���ȃI�t�Z�b�g��ێ������g���T�u�e�[�u�����o�͂��Ă��܂����B</STRONG></FONT>
+	<FONT COLOR="Red"><STRONG>FontForge は不正なオフセットを保持した拡張サブテーブルを出力していました。</STRONG></FONT>
       <LI>
 	Added some code to protect FontForge when it read incorrect ttf fonts like
 	those generated above.
@@ -1994,7 +1994,7 @@
     </UL>
   <LI>
 <!--4-May-2003-->
-    2003�N5��4��
+    2003年5月4日
     <UL>
       <LI>
 	Added code to determine better defaults for the script lang index
@@ -2017,11 +2017,11 @@
 	<FONT COLOR="Red"><SMALL><STRONG>WRONG</STRONG></SMALL></FONT>. they claim
 	class data are stored in an array of uint8, but they really are in an array
 	of uint16). -->
-	Apple �� 'kern' �e�[�u���̃t�H�[�}�b�g 2 �T�u�e�[�u���̃T�|�[�g��ǉ� (����� OpenType �� kern �e�[�u���� �t�H�[�}�b�g 2 �T�u�e�[�u���Ƃ͕ʕ��ł�) ���AApple ���[�h���w�肵���Ƃ��̃J�[�j���O�N���X�T�u�e�[�u���ƂȂ�܂�(����: <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6kern.html">Apple �̕���</A> ��<FONT COLOR="Red"><SMALL><STRONG>�Ԉ���Ă��܂�</STRONG></SMALL></FONT>�B�ނ�́A�N���X�f�[�^�� uint8 �̔z��Ɋi�[���Ă���Ə����Ă��܂����A���ۂ̃t�H���g�ł� uint16 �̔z��Ɋi�[���Ă��܂��B
+	Apple の 'kern' テーブルのフォーマット 2 サブテーブルのサポートを追加 (これは OpenType の kern テーブルの フォーマット 2 サブテーブルとは別物です) し、Apple モードを指定したときのカーニングクラスサブテーブルとなります(注意: <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6kern.html">Apple の文書</A> は<FONT COLOR="Red"><SMALL><STRONG>間違っています</STRONG></SMALL></FONT>。彼らは、クラスデータは uint8 の配列に格納していると書いていますが、実際のフォントでは uint16 の配列に格納しています。
     </UL>
   <LI>
 <!--29-Apr-2003-->
-    2003�N4��29��
+    2003年4月29日
     <UL>
       <LI>
 	Oops, one more fix to remove overlap
@@ -2037,7 +2037,7 @@
     </UL>
   <LI>
 <!--28-Apr-2003-->
-    2003�N4��28��
+    2003年4月28日
     <UL>
       <LI>
 	Yet more fixes for Remove overlap
@@ -2065,7 +2065,7 @@
     </UL>
   <LI>
 <!--20-Apr-2003-->
-    2003�N4��20��
+    2003年4月20日
     <UL>
       <LI>
 	One of FontForge's deficiencies is that it handles multiple encodings for
@@ -2105,7 +2105,7 @@
     </UL>
   <LI>
 <!--14-Apr-2003-->
-    2003�N4��14��
+    2003年4月14日
     <UL>
       <LI>
 	Change a tab in Font Info from "PS General" to "General"
@@ -2121,7 +2121,7 @@
     </UL>
   <LI>
 <!--7-Apr-2003-->
-    2003�N4��7��
+    2003年4月7日
     <UL>
       <LI>
 	Program generated divide by zero errors when using Meta-Shift to move a control
@@ -2143,7 +2143,7 @@
     </UL>
   <LI>
 <!--04-Apr-2003-->
-    2003�N4��04��
+    2003年4月04日
     <UL>
       <LI>
 	autosave sometimes lost track of which font it should be applying changes
@@ -2172,7 +2172,7 @@
     </UL>
   <LI>
 <!--2-Apr-2003-->
-    2003�N4��2��
+    2003年4月2日
     <UL>
       <LI>
 	Problems with script/lang when: Pasting or Merging ligatures and substitutions
@@ -2189,7 +2189,7 @@
     </UL>
   <LI>
 <!--1-Apr-2003-->
-    2003�N4��1�� (April Fish!)
+    2003年4月1日 (April Fish!)
     <UL>
       <LI>
 	Fixed a crash in the Join command
@@ -2215,7 +2215,7 @@
     </UL>
   <LI>
 <!--31-Mar-2003-->
-    2003�N3��31��
+    2003年3月31日
     <UL>
       <LI>
 	FontForge was not reading pfb fonts properly if they had more than one binary
@@ -2309,7 +2309,7 @@
     </UL>
   <LI>
 <!--13-Mar-2003-->
-    2003�N3��13��
+    2003年3月13日
     <UL>
       <LI>
 	Add a preference item to control the number of undoes saved per character
@@ -2343,12 +2343,12 @@
     </UL>
   <LI>
 <!--10-Mar-2003-->
-    2003�N3��10��
+    2003年3月10日
     <UL>
       <LI>
 <!--	Added a TrueType instruction debugger (actually an interface to FreeType's
 	truetype bytecode interpreter) -->
-	TrueType ���߃f�o�b�K��ǉ� (���ۂɂ� FreeType �� TrueType �o�C�g�R�[�h�C���^�v���^�ւ̃C���^�[�t�F�C�X�ł�)�B
+	TrueType 命令デバッガを追加 (実際には FreeType の TrueType バイトコードインタプリタへのインターフェイスです)。
 	<TABLE BORDER CELLPADDING="6" WIDTH="50%" ALIGN=CENTER>
 	  <TR>
 <!--	    <TD BGCOLOR="#ffff00">This command depend on your compiling freetype with
@@ -2359,11 +2359,11 @@
 	      by setting the appropriate macro in .../include/freetype/config/ftoption.h
 	      before you build the library (see the README.UNX file on the top level of
 	      the freetype distribution). -->
-	    <TD BGCOLOR="#ffff00">���̃R�}���h�𗘗p����ɂ́AFreeFype ���o�C�g�R�[�h�C���^�v���^��L���ɂ��ăR���p�C�����Ă����K�v������܂��B����́A<A HREF="http://freetype.sourceforge.net/patents.html">Apple �ɗ^����ꂽ�������̓���</A>�ɒ�G���邽�߁A�f�t�H���g�ł̓I�t�ɂȂ��Ă��܂��B�������Ȃ��� Apple ���烉�C�Z���X�𓾂Ă���<SMALL>���AApple �����Y�������擾���Ă��Ȃ����ɍݏZ���Ă���</SMALL>�Ȃ�΁A���C�u�������r���h����O�� �c/include/freetype/config/ftoption.h ���̓K�؂ȃ}�N����ݒ肷�邱�Ƃɂ��A�o�C�g�R�[�h������L�������邱�Ƃ��ł��܂� (FreeType �z�z���̃g�b�v�f�B���N�g���ɂ��� README.UNX �t�@�C�����Q�Ƃ��Ă�������)�B
+	    <TD BGCOLOR="#ffff00">このコマンドを利用するには、FreeFype をバイトコードインタプリタを有効にしてコンパイルしておく必要があります。これは、<A HREF="http://freetype.sourceforge.net/patents.html">Apple に与えられたいくつかの特許</A>に抵触するため、デフォルトではオフになっています。もしあなたが Apple からライセンスを得ている<SMALL>か、Apple が当該特許を取得していない国に在住している</SMALL>ならば、ライブラリをビルドする前に …/include/freetype/config/ftoption.h 内の適切なマクロを設定することにより、バイトコード処理を有効化することができます (FreeType 配布物のトップディレクトリにある README.UNX ファイルを参照してください)。
 	      <P>
 <!--	      FontForge needs to have the freetype source directories available when it
 	      is built (there are some include files there which it depends on)</TD> -->
-	      FontForge ���\�z����Ƃ��ɂ� FreeType �\�[�X�z�z�����ǂ߂�悤�ɓW�J����Ă���K�v������܂� (�ˑ�����\�[�X�t�@�C�������������̒��Ɋ܂܂�Ă��܂�)�B</TD>
+	      FontForge を構築するときには FreeType ソース配布物が読めるように展開されている必要があります (依存するソースファイルがいくつかその中に含まれています)。</TD>
 	  </TR>
 	</TABLE>
       <LI>
@@ -2386,7 +2386,7 @@
     </UL>
   <LI>
 <!--03-Mar-2003-->
-    2003�N3��03��
+    2003年3月03日
     <UL>
       <LI>
 	Memory got screwed up when converting TTF splines to PS ones
@@ -2399,7 +2399,7 @@
     </UL>
   <LI>
 <!--02-Mar-2003-->
-    2003�N3��02��
+    2003年3月02日
     <UL>
       <LI>
 	Changed the Show Instructions command to be an Edit Instructions
@@ -2412,7 +2412,7 @@
     </UL>
   <LI>
 <!--28-Feb-2003-->
-    2003�N2��28��
+    2003年2月28日
     <UL>
       <LI>
 	New dialog in outline view to examine ttf instructions
@@ -2428,7 +2428,7 @@
     </UL>
   <LI>
 <!--27-Feb-2003-->
-    2003�N2��27��
+    2003年2月27日
     <UL>
       <LI>
 	Didn't get the SetLBearing change right yesterday.
@@ -2451,7 +2451,7 @@
     </UL>
   <LI>
 <!--26-Feb-2003-->
-    2003�N2��26��
+    2003年2月26日
     <UL>
       <LI>
 	configure scripts got confused in the freetype libraries were findable but
@@ -2468,7 +2468,7 @@
     </UL>
   <LI>
 <!--25-Feb-2003-->
-    2003�N2��25��
+    2003年2月25日
     <UL>
       <LI>
 	Bad bug in GSUB generation introduced yesterday
@@ -2497,7 +2497,7 @@
     </UL>
   <LI>
 <!--24-Feb-2003-->
-    2003�N2��24��
+    2003年2月24日
     <UL>
       <LI>
 	Claudio Beccari has provided an Italian UI.
@@ -2523,7 +2523,7 @@
     </UL>
   <LI>
 <!--18-Feb-2003-->
-    2003�N2��18��
+    2003年2月18日
     <UL>
       <LI>
 	Hmm. It looks as though apple uses the "ascending glyph" flag on the features
@@ -2539,14 +2539,14 @@
     </UL>
   <LI>
 <!--12-Feb-2003-->
-    2003�N2��12��
+    2003年2月12日
     <UL>
       <LI>
 	Support direct editing of quadratic (truetype) splines
     </UL>
   <LI>
 <!--11-Feb-2003-->
-    2003�N2��11��
+    2003年2月11日
     <UL>
       <LI>
 	Change made on 8 Feb 2003 broke the code that read type1 flex hints
@@ -2557,7 +2557,7 @@
     </UL>
   <LI>
 <!--08-Feb-2003-->
-    2003�N2��08��
+    2003年2月08日
     <UL>
       <LI>
 	Support for Apple's 'opbd' (Optical Bounds) table
@@ -2581,7 +2581,7 @@
     </UL>
   <LI>
 <!--01-Feb-2003-->
-    2003�N2��01��
+    2003年2月01日
     <UL>
       <LI>
 	Add some support for Apple Advanced Typography tables ('prop', 'lcar')
@@ -2599,7 +2599,7 @@
     </UL>
   <LI>
 <!--30-Jan-2003-->
-    2003�N1��30��
+    2003年1月30日
     <UL>
       <LI>
 	Should figure out the default windows browser under cygwin now.
@@ -2611,7 +2611,7 @@
     </UL>
   <LI>
 <!--29-Jan-2003-->
-    2003�N1��29��
+    2003年1月29日
     <UL>
       <LI>
 	Fix a crash introduced yesterday.
@@ -2620,7 +2620,7 @@
     </UL>
   <LI>
 <!--28-Jan-2003-->
-    2003�N1��28��
+    2003年1月28日
     <UL>
       <LI>
 	The title of the Anchor Pair dialog was wrong (said Kern Pairs)
@@ -2643,14 +2643,14 @@
     </UL>
   <LI>
 <!--25-Jan-2003-->
-    2003�N1��25��
+    2003年1月25日
     <UL>
       <LI>
 	More cygwin fixes for invoking browsers.
     </UL>
   <LI>
 <!--24-Jan-2003-->
-    2003�N1��24��
+    2003年1月24日
     <UL>
       <LI>
 	Added a preference item to control whether autohinting happens before a font
@@ -2662,7 +2662,7 @@
     </UL>
   <LI>
 <!--20-Jan-2003-->
-    2003�N1��20��
+    2003年1月20日
     <UL>
       <LI>
 	Put in a number of errors and warnings related to a glyph not having a script.
@@ -2697,7 +2697,7 @@
     </UL>
   <LI>
 <!--16-Jan-2003-->
-    2003�N1��16��
+    2003年1月16日
     <UL>
       <LI>
 	Recent char info changes broke copy &amp; paste within text fields of the
@@ -2714,7 +2714,7 @@
     </UL>
   <LI>
 <!--14-Jan-2003-->
-    2003�N1��14��
+    2003年1月14日
     <UL>
       <LI>
 	Fixed a couple of bugs loading pcf files with complex encodings
@@ -2736,7 +2736,7 @@
     </UL>
   <LI>
 <!--12-Jan-2003-->
-    2003�N1��12��
+    2003年1月12日
     <UL>
       <LI>
 	Support for xkb extension
@@ -2755,7 +2755,7 @@
     </UL>
   <LI>
 <!--9-Jan-2003-->
-    2003�N1��9��
+    2003年1月9日
     <UL>
       <LI>
 	Support for round rects in xfig files
@@ -2771,7 +2771,7 @@
     </UL>
   <LI>
 <!--8-Jan-2003-->
-    2003�N1��8��
+    2003年1月8日
     <UL>
       <LI>
 	Update copyright notices
@@ -2839,7 +2839,7 @@
     </UL>
   <LI>
 <!--29-Dec-2002-->
-    2002�N12��29��
+    2002年12月29日
     <UL>
       <LI>
 	FontForge now supports <A HREF="overview.html#Anchors">anchor points</A>
@@ -2866,7 +2866,7 @@
     </UL>
   <LI>
 <!--23-Dec-2002-->
-    2002�N12��23��
+    2002年12月23日
     <UL>
       <LI>
 	Various improvements to cubic-&gt;quadratic (truetype) conversion.
@@ -2915,7 +2915,7 @@
     </UL>
   <LI>
 <!--15-Dec-2002-->
-    2002�N12��15��
+    2002年12月15日
     <UL>
       <LI>
 	Add support for Big5HKSCS
@@ -2926,7 +2926,7 @@
     </UL>
   <LI>
 <!--14-Dec-2002-->
-    2002�N12��14��
+    2002年12月14日
     <UL>
       <LI>
 	Add support for reading windows .FON and .FNT files.
@@ -2951,7 +2951,7 @@
     </UL>
   <LI>
 <!--13-Dec-2002-->
-    2002�N12��13��
+    2002年12月13日
     <UL>
       <LI>
 	FontForge will now open a ttf/otf font that contains only bitmap strikes
@@ -2976,7 +2976,7 @@
     </UL>
   <LI>
 <!--11-Dec-2002-->
-    2002�N12��11��
+    2002年12月11日
     <UL>
       <LI>
 	Revert Glyph is now undoable
@@ -3003,7 +3003,7 @@
     </UL>
   <LI>
 <!--08-Dec-2002-->
-    2002�N12��08��
+    2002年12月08日
     <UL>
       <LI>
 	Oops. Can't use Alt-Shift for menus (it's treated as a mnemonic) use
@@ -3017,7 +3017,7 @@
     </UL>
   <LI>
 <!--06-Dec-2002-->
-    2002�N12��06��
+    2002年12月06日
     <UL>
       <LI>
 	Fixed a problem where FontForge still picked bad fonts sometimes.
@@ -3048,7 +3048,7 @@
     </UL>
   <LI>
 <!--05-Dec-2002-->
-    2002�N12��05��
+    2002年12月05日
     <UL>
       <LI>
 	Fixed a crash in menus, if the cursor was moved from a submenu (a cascaded
@@ -3084,7 +3084,7 @@
     </UL>
   <LI>
 <!--2-Dec-2002-->
-    2002�N12��2��
+    2002年12月2日
     <UL>
       <LI>
 	If the fontview were only one line high FontForge would not scroll to the
@@ -3101,7 +3101,7 @@
     </UL>
   <LI>
 <!--25-Nov-2002-->
-    2002�N11��25��
+    2002年11月25日
     <UL>
       <LI>
 	Harald Harders provides a patch to allow SetItalicAngle to deal with real
@@ -3122,7 +3122,7 @@
     </UL>
   <LI>
 <!--24-Nov-2002-->
-    2002�N11��24��
+    2002年11月24日
     <UL>
       <LI>
 	Harald Harders points out that UniqueID needs to be in both the font and
@@ -3134,7 +3134,7 @@
     </UL>
   <LI>
 <!--20-Nov-2002-->
-    2002�N11��20��
+    2002年11月20日
     <UL>
       <LI>
 	Changed the Simplify More command to bring up a dlg giving the user control
@@ -3162,7 +3162,7 @@
     </UL>
   <LI>
 <!--13-Nov-2002-->
-    2002�N11��13��
+    2002年11月13日
     <UL>
       <LI>
 	Two new tools in the outline character view.
@@ -3189,7 +3189,7 @@
     </UL>
   <LI>
 <!--05-Nov-2002-->
-    2002�N11��05��
+    2002年11月05日
     <UL>
       <LI>
 	Improved behavior of Remove Overlap. Fix inspired by Kanou.
@@ -3204,7 +3204,7 @@
     </UL>
   <LI>
 <!--04-Nov-2002-->
-    2002�N11��04��
+    2002年11月04日
     <UL>
       <LI>
 	KDE has the lovely habit of losing some resize events when in continuous
@@ -3223,7 +3223,7 @@
     </UL>
   <LI>
 <!--02-Nov-2002-->
-    2002�N11��02��
+    2002年11月02日
     <UL>
       <LI>
 	Png reading failed on greyscale images with an alpha channel
@@ -3234,14 +3234,14 @@
     </UL>
   <LI>
 <!--30-Oct-2002-->
-    2002�N10��30��
+    2002年10月30日
     <UL>
       <LI>
 	GenerateFamily() scripting command had a number of problems.
     </UL>
   <LI>
 <!--26-Oct-2002-->
-    2002�N10��26��
+    2002年10月26日
     <UL>
       <LI>
 	The "Apple" checkbox was sometimes (incorrectly) invisible in the Generate
@@ -3256,7 +3256,7 @@
     </UL>
   <LI>
 <!--25-Oct-2002-->
-    2002�N10��25��
+    2002年10月25日
     <UL>
       <LI>
 	Problems when reading an sfd with references to cleaned up characters.
@@ -3270,7 +3270,7 @@
     </UL>
   <LI>
 <!--24-Oct-2002-->
-    2002�N10��24��
+    2002年10月24日
     <UL>
       <LI>
 	Change the default configuration process to use dynamic libaries
@@ -3296,7 +3296,7 @@
     </UL>
   <LI>
 <!--22-Oct-2002-->
-    2002�N10��22��
+    2002年10月22日
     <UL>
       <LI>
 	Initial version of Mac Family (FOND) generation
@@ -3307,7 +3307,7 @@
     </UL>
   <LI>
 <!--21-Oct-2002-->
-    2002�N10��21��
+    2002年10月21日
     <UL>
       <LI>
 	Verbose addition to scripting broke loops
@@ -3327,7 +3327,7 @@
     </UL>
   <LI>
 <!--20-Oct-2002-->
-    2002�N10��20��
+    2002年10月20日
     <UL>
       <LI>
 	Updated French and Japanese UI translations
@@ -3345,7 +3345,7 @@
     </UL>
   <LI>
 <!--18-Oct-2002-->
-    2002�N10��18��
+    2002年10月18日
     <UL>
       <LI>
 	Tweaked metrics view so that null kerning now displays as an empty string
@@ -3360,7 +3360,7 @@
     </UL>
   <LI>
 <!--17-Oct-2002-->
-    2002�N10��17��
+    2002年10月17日
     <UL>
       <LI>
 	More work on Ik format files
@@ -3417,7 +3417,7 @@
     </UL>
   <LI>
 <!--11-Sept-2002-->
-    2002�N9��11��
+    2002年9月11日
     <UL>
       <LI>
 	Added a menu in textfields (right mouse button)
@@ -3437,14 +3437,14 @@
     </UL>
   <LI>
 <!--10-Sept-2002-->
-    2002�N9��10��
+    2002年9月10日
     <UL>
       <LI>
 	Added support for UTF8 in display/print dlg imports.
     </UL>
   <LI>
 <!--9-Sept-2002-->
-    2002�N9��9��
+    2002年9月9日
     <UL>
       <LI>
 	Added support for loading Ikarus .IK font files
@@ -3456,7 +3456,7 @@
     </UL>
   <LI>
 <!--8-Sept-2002-->
-    2002�N9��8��
+    2002年9月8日
     <UL>
       <LI>
 	Display crashed on systems without freetype
@@ -3467,7 +3467,7 @@
     </UL>
   <LI>
 <!--7-Sept-2002-->
-    2002�N9��7��
+    2002年9月7日
     <UL>
       <LI>
 	The ruler tool will give the length of a spline if applied between the spline's
@@ -3512,7 +3512,7 @@
     </UL>
   <LI>
 <!--2-Sept-2002-->
-    2002�N9��2��
+    2002年9月2日
     <UL>
       <LI>
 	When in no-x mode, fontforge did not notice any arguments (except -script).
@@ -3536,14 +3536,14 @@
     </UL>
   <LI>
 <!--1-Sept-2002-->
-    2002�N9��1��
+    2002年9月1日
     <UL>
       <LI>
 	Added an #ifdef to an include file to make it work when built without X11
     </UL>
   <LI>
 <!--31-August-2002-->
-    2002�N8��31��
+    2002年8月31日
     <UL>
       <LI>
 	Making a font be a cid-keyed font might screw up all other fontviews and
@@ -3569,7 +3569,7 @@
     </UL>
   <LI>
 <!--29-August-2002-->
-    2002�N8��29��
+    2002年8月29日
     <UL>
       <LI>
 	Merge and Elide were backwards
@@ -3607,7 +3607,7 @@
     </UL>
   <LI>
 <!--27-August-2002-->
-    2002�N8��27��
+    2002年8月27日
     <UL>
       <LI>
 	Further attempts to fix the fact that FontForge in some ways does not believe
@@ -3630,7 +3630,7 @@
     </UL>
   <LI>
 <!--21-August-2002-->
-    2002�N8��21��
+    2002年8月21日
     <UL>
       <LI>
 	Broke cid-keyed otf generation on 27 July when I enabled the [Stop] button.
@@ -3657,7 +3657,7 @@
     </UL>
   <LI>
 <!--20-August-2002-->
-    2002�N8��20��
+    2002年8月20日
     <UL>
       <LI>
 	Under KDE my tools palettes are made too wide and without borders. That's
@@ -3692,7 +3692,7 @@
     </UL>
   <LI>
 <!--18-August-2002-->
-    2002�N8��18��
+    2002年8月18日
     <UL>
       <LI>
 	Added a dlg to show all kern pairs (and another to show all ligatures)
@@ -3731,7 +3731,7 @@
     </UL>
   <LI>
 <!--9-August-2002-->
-    2002�N8��9��
+    2002年8月9日
     <UL>
       <LI>
 	I've decided to encourage use of the <A HREF="index.html#Mail">mailing
@@ -3755,11 +3755,11 @@
 	bitmap font stored in an sfd file. <FONT COLOR="Red"><STRONG><BIG>Please
 	check any sfd files to see if they are missing bitmaps of space, exclamation
 	point, etc. </BIG></STRONG></FONT>Probably introduced 11-June. -->
-	FontForge �� SFD �t�@�C���Ɋi�[���ꂽ�e�r�b�g�}�b�v�̍ŏ��̃r�b�g�}�b�v������Y��Ă��܂����Ƃ����܂ɂ���܂����B<FONT COLOR="Red"><STRONG><BIG>���莝���̑S�Ă� SFD �t�@�C�����m�F���āA�X�y�[�X�⊴�Q���Ȃǂ̃r�b�g�}�b�v�����������Ă��Ȃ����ǂ������m�F��������</BIG></STRONG></FONT>�B�����炭 6 �� 11 ���ɂ��̃o�O���������܂ꂽ�Ǝv���܂��B
+	FontForge が SFD ファイルに格納された各ビットマップの最初のビットマップ文字を忘れてしまうことがたまにありました。<FONT COLOR="Red"><STRONG><BIG>お手持ちの全ての SFD ファイルを確認して、スペースや感嘆符などのビットマップ文字が欠けていないかどうかご確認ください</BIG></STRONG></FONT>。おそらく 6 月 11 日にこのバグが持ち込まれたと思います。
     </UL>
   <LI>
 <!--8-Aug-2002-->
-    2002�N8��8��
+    2002年8月8日
     <UL>
       <LI>
 	After yesterday's fix textfields ignored backspaces
@@ -3779,7 +3779,7 @@
     </UL>
   <LI>
 <!--7-Aug-2002-->
-    2002�N8��7��
+    2002年8月7日
     <UL>
       <LI>
 	The 21-July autowidth/kern change broke autowidth/kern scripting.
@@ -3805,7 +3805,7 @@
     </UL>
   <LI>
 <!--4-Aug-2002-->
-    2002�N8��4��
+    2002年8月4日
     <UL>
       <LI>
 	Yesterday's resize fix didn't quite work
@@ -3818,7 +3818,7 @@
     </UL>
   <LI>
 <!--3-Aug-2002-->
-    2002�N8��3��
+    2002年8月3日
     <UL>
       <LI>
 	Failed to read ttf fontnames properly for some dfonts (probably some ttc
@@ -3840,7 +3840,7 @@
     </UL>
   <LI>
 <!--30-July-2002-->
-    2002�N7��30��
+    2002年7月30日
     <UL>
       <LI>
 	Fixed a couple of problems found by
@@ -3876,7 +3876,7 @@
     </UL>
   <LI>
 <!--28-July-2002-->
-    2002�N7��28��
+    2002年7月28日
     <UL>
       <LI>
 	Pressing the [Filter] button on a blank field will show the current filter
@@ -3898,7 +3898,7 @@
     </UL>
   <LI>
 <!--27-July-2002-->
-    2002�N7��27��
+    2002年7月27日
     <UL>
       <LI>
 	Oops. I was calling TeX sfd files Sub Font Directories and their proper name
@@ -3924,7 +3924,7 @@
     </UL>
   <LI>
 <!--26-July-2002-->
-    2002�N7��26��
+    2002年7月26日
     <UL>
       <LI>
 	Added support for Werner's (TeX's) Sub Font Definition files which provide
@@ -3940,7 +3940,7 @@
     </UL>
   <LI>
 <!--24-July-2002-->
-    2002�N7��24��
+    2002年7月24日
     <UL>
       <LI>
 	Code for finding the style still not working as it should.
@@ -3961,7 +3961,7 @@
     </UL>
   <LI>
 <!--23-July-2002-->
-    2002�N7��23��
+    2002年7月23日
     <UL>
       <LI>
 	Crash bug introduced yesterday by the duplicate name work.
@@ -3978,7 +3978,7 @@
     </UL>
   <LI>
 <!--22-July-2002-->
-    2002�N7��22��
+    2002年7月22日
     <UL>
       <LI>
 	Introduced a crash yesterday if a postscript font contained an name in an
@@ -3999,7 +3999,7 @@
     </UL>
   <LI>
 <!--21-July-2002-->
-    2002�N7��21��
+    2002年7月21日
     <UL>
       <LI>
 	Various small bugs in build accented characters
@@ -4038,7 +4038,7 @@
     </UL>
   <LI>
 <!--15-July-2002-->
-    2002�N7��15��
+    2002年7月15日
     <UL>
       <LI>
 	Correct Direction should now only set the changed bit when it actually changes
@@ -4059,7 +4059,7 @@
     </UL>
   <LI>
 <!--14-July-2002-->
-    2002�N7��14��
+    2002年7月14日
     <UL>
       <LI>
 	Valek points out that bitmaps generated by freetype were one pixel too high.
@@ -4084,7 +4084,7 @@
     </UL>
   <LI>
 <!--13-July-2002-->
-    2002�N7��13��
+    2002年7月13日
     <UL>
       <LI>
 	I think I've finally worked out Apple's scaled offset
@@ -4106,7 +4106,7 @@
     </UL>
   <LI>
 <!--9-July-2002-->
-    2002�N7��9��
+    2002年7月9日
     <UL>
       <LI>
 	Bug in generating ttf fonts with embedded bitmaps.
@@ -4143,21 +4143,21 @@
     </UL>
   <LI>
 <!--27-June-2002-->
-    2002�N6��27��
+    2002年6月27日
     <UL>
       <LI>
 	A couple more vms patches
     </UL>
   <LI>
 <!--26-June-2002-->
-    2002�N6��26��
+    2002年6月26日
     <UL>
       <LI>
 	Merged in Jouk Jansen changes for OpenVMS
     </UL>
   <LI>
 <!--23-June-2002-->
-    2002�N6��23��
+    2002年6月23日
     <UL>
       <LI>
 	Valek wanted to be able to add comments to characters and to flag characters
@@ -4174,7 +4174,7 @@
     </UL>
   <LI>
 <!--22-June-2002-->
-    2002�N6��22��
+    2002年6月22日
     <UL>
       <LI>
 	Yesterday's unicode sprintf change introduced another bug. Fixed
@@ -4187,7 +4187,7 @@
     </UL>
   <LI>
 <!--21-June-2002-->
-    2002�N6��21��
+    2002年6月21日
     <UL>
       <LI>
 	Ttf fonts seem to be unhappy if they contain a glyph with a single contour
@@ -4212,7 +4212,7 @@
     </UL>
   <LI>
 <!--11-June-2002-->
-    2002�N6��11��
+    2002年6月11日
     <UL>
       <LI>
 	CID fix on 3 June was wrong, it broke all non-CID keyed postscript fonts
@@ -4229,7 +4229,7 @@
     </UL>
   <LI>
 <!--7-June-2002-->
-    2002�N6��7��
+    2002年6月7日
     <UL>
       <LI>
 	Fixed some more CID font problems
@@ -4238,7 +4238,7 @@
     </UL>
   <LI>
 <!--6-June-2002-->
-    2002�N6��6��
+    2002年6月6日
     <UL>
       <LI>
 	FontForge now supports greymap strikes in truetype files
@@ -4257,7 +4257,7 @@
     </UL>
   <LI>
 <!--4-June-2002-->
-    2002�N6��4��
+    2002年6月4日
     <UL>
       <LI>
 	Oops, more bug fixes for the new greymap format.
@@ -4267,7 +4267,7 @@
     </UL>
   <LI>
 <!--3-June-2002-->
-    2002�N6��3��
+    2002年6月3日
     <UL>
       <LI>
 	Stopped using my extension to bdf to make it support greymaps and started
@@ -4278,7 +4278,7 @@
     </UL>
   <LI>
 <!--18-May-2002-->
-    2002�N5��18��
+    2002年5月18日
     <UL>
       <LI>
 	Font Info will prompt user about changing the UniqueID/XUID if the font name
@@ -4288,7 +4288,7 @@
     </UL>
   <LI>
 <!--16-May-2002-->
-    2002�N5��16��
+    2002年5月16日
     <UL>
       <LI>
 	FontForge would not compile when trying to used libjpeg as a static library
@@ -4300,7 +4300,7 @@
     </UL>
   <LI>
 <!--14-May-2002-->
-    2002�N5��14��
+    2002年5月14日
     <UL>
       <LI>
 	Made fontforge work without X (ie. the scripting engine can be linked without
@@ -4320,14 +4320,14 @@
     </UL>
   <LI>
 <!--13-May-2002-->
-    2002�N5��13��
+    2002年5月13日
     <UL>
       <LI>
 	Various fixes for greek accented characters
     </UL>
   <LI>
 <!--7-May-2002-->
-    2002�N5��7��
+    2002年5月7日
     <UL>
       <LI>
 	FontForge would crash when attempting to Flatten a CID keyed font (introduced
@@ -4341,7 +4341,7 @@
     </UL>
   <LI>
 <!--6-May-2002-->
-    2002�N5��6��
+    2002年5月6日
     <UL>
       <LI>
 	Oops. Adobe describes two naming conventions for ligatures and I only supported
@@ -4373,7 +4373,7 @@
     </UL>
   <LI>
 <!--16-Apr-2002-->
-    2002�N4��16��
+    2002年4月16日
     <UL>
       <LI>
 	BDF fonts did not mark the missing (.notdef, undefined, etc.) character properly.
@@ -4393,7 +4393,7 @@
     </UL>
   <LI>
 <!--9-Apr-2002-->
-    2002�N4��9��
+    2002年4月9日
     <UL>
       <LI>
 	Under KDE we could get two textfields flashing cursors (thinking they had
@@ -4409,7 +4409,7 @@
     </UL>
   <LI>
 <!--5-Apr-2002-->
-    2002�N4��5��
+    2002年4月5日
     <UL>
       <LI>
 	Applied various patches from KANOU Hiroki
@@ -4452,7 +4452,7 @@
     </UL>
   <LI>
 <!--3-Apr-2002-->
-    2002�N4��3��
+    2002年4月3日
     <UL>
       <LI>
 	Various scrollbar enhancements
@@ -4487,7 +4487,7 @@
     </UL>
   <LI>
 <!--14-Mar-2002-->
-    2002�N3��14��
+    2002年3月14日
     <UL>
       <LI>
 	Nifty. The modifier keys auto-repeat under cygwin (if Control is down one
@@ -4502,7 +4502,7 @@
     </UL>
   <LI>
 <!--10-Mar-2002-->
-    2002�N3��10��
+    2002年3月10日
     <UL>
       <LI>
 	Oops. I broke CID-keyed postscript input (ie. none-otf) when I added the
@@ -4512,14 +4512,14 @@
     </UL>
   <LI>
 <!--9-Mar-2002-->
-    2002�N3��9��
+    2002年3月9日
     <UL>
       <LI>
 	added docs for sfddiff.
     </UL>
   <LI>
 <!--8-Mar-2002-->
-    2002�N3��8��
+    2002年3月8日
     <UL>
       <LI>
 	Added a new program, <A HREF="sfddiff.html">sfddiff</A>, to compare fonts
@@ -4527,7 +4527,7 @@
     </UL>
   <LI>
 <!--6-Mar-2002-->
-    2002�N3��6��
+    2002年3月6日
     <UL>
       <LI>
 	Small change to the format of cidmap files (to bring names into conformance
@@ -4539,7 +4539,7 @@
     </UL>
   <LI>
 <!--4-Mar-2002-->
-    2002�N3��4��
+    2002年3月4日
     <UL>
       <LI>
 	Fixed more problems with reading eps files (these were mostly within Expand
@@ -4562,7 +4562,7 @@
     </UL>
   <LI>
 <!--3-Mar-2002-->
-    2002�N3��3��
+    2002年3月3日
     <UL>
       <LI>
 	Fixed a number of problems involved in reading in eps files.
@@ -4571,7 +4571,7 @@
     </UL>
   <LI>
 <!--2-Mar-2002-->
-    2002�N3��2��
+    2002年3月2日
     <UL>
       <LI>
 	Rounding errors could accumulate when generating Type1 fonts.
@@ -4589,7 +4589,7 @@
     </UL>
   <LI>
 <!--28-Feb-2002-->
-    2002�N2��28��
+    2002年2月28日
     <UL>
       <LI>
 	When running under Mac OS/X FontForge is now able to open/create mac resource
@@ -4605,7 +4605,7 @@
     </UL>
   <LI>
 <!--24-Feb-2002-->
-    2002�N2��24��
+    2002年2月24日
     <UL>
       <LI>
 	Substr() did not work when given three arguments
@@ -4636,7 +4636,7 @@
     </UL>
   <LI>
 <!--20-Feb-2002-->
-    2002�N2��20��
+    2002年2月20日
     <UL>
       <LI>
 	Made Shift-Arrow keys move along italic axis.
@@ -4645,7 +4645,7 @@
     </UL>
   <LI>
 <!--19-Feb-2002-->
-    2002�N2��19��
+    2002年2月19日
     <UL>
       <LI>
 	Bugs in the generation of MacRoman encoding tables in ttf output (introduced
@@ -4658,7 +4658,7 @@
     </UL>
   <LI>
 <!--18-Feb-2002-->
-    2002�N2��18��
+    2002年2月18日
     <UL>
       <LI>
 	Cancelling the Point Info dlg would leave minimum distance hints in a bad
@@ -4679,7 +4679,7 @@
     </UL>
   <LI>
 <!--16-Feb-2002-->
-    2002�N2��16��
+    2002年2月16日
     <UL>
       <LI>
 	Created a "Select" submenu of the edit menu in the outline view. Moved
@@ -4708,7 +4708,7 @@
     </UL>
   <LI>
 <!--14-Feb-2002-->
-    2002�N2��14��
+    2002年2月14日
     <UL>
       <LI>
 	My TrueType parser will now read cmap subtable formats 8,10 and 12 (the 4
@@ -4730,7 +4730,7 @@
     </UL>
   <LI>
 <!--12-Feb-2002-->
-    2002�N2��12��
+    2002年2月12日
     <UL>
       <LI>
 	Added sjis and Wansung encodings
@@ -4758,7 +4758,7 @@
     </UL>
   <LI>
 <!--9-Feb-2002-->
-    2002�N2��9��
+    2002年2月9日
     <UL>
       <LI>
 	FontForge will now use freetype (if available) to generate bitmaps for the
@@ -4770,7 +4770,7 @@
     </UL>
   <LI>
 <!--8-Feb-2002-->
-    2002�N2��8��
+    2002年2月8日
     <UL>
       <LI>
 	FontForge would crash when generating a PostScript font from ARIAL.TTF.
@@ -4786,7 +4786,7 @@
     </UL>
   <LI>
 <!--7-Feb-2002-->
-    2002�N2��7��
+    2002年2月7日
     <UL>
       <LI>
 	I think I've figured out how Apple does asian bitmaps now. They don't use
@@ -4811,7 +4811,7 @@
     </UL>
   <LI>
 <!--5-Feb-2002-->
-    2002�N2��5��
+    2002年2月5日
     <UL>
       <LI>
 	Sometimes popup windows (tool tips) would show up with nothing in them. That
@@ -4827,7 +4827,7 @@
     </UL>
   <LI>
 <!--4-Feb-2002-->
-    2002�N2��4��
+    2002年2月4日
     <UL>
       <LI>
 	Oops. FontForge was misusing the type1 "seac" command in some cases. I had
@@ -4848,7 +4848,7 @@
     </UL>
   <LI>
 <!--1-Feb-2002-->
-    2002�N2��1��
+    2002年2月1日
     <UL>
       <LI>
 	Nifty! SUSE ships some greek (bitmap) fonts with iso8859-1 encodings rather
@@ -4863,7 +4863,7 @@
     </UL>
   <LI>
 <!--31-Jan-2002-->
-    2002�N1��31��
+    2002年1月31日
     <UL>
       <LI>
 	Conversion tables between JIS0201 (Katakana) and Unicode were wrong. KANOU
@@ -4871,7 +4871,7 @@
     </UL>
   <LI>
 <!--30-Jan-2002-->
-    2002�N1��30��
+    2002年1月30日
     <UL>
       <LI>
 	Oops. I'd left diagonal stems enabled in ttf generation. Caused problems.
@@ -4881,14 +4881,14 @@
     </UL>
   <LI>
 <!--29-Jan-2002-->
-    2002�N1��29��
+    2002年1月29日
     <UL>
       <LI>
 	Sped up background image drawing (finally)
     </UL>
   <LI>
 <!--28-Jan-2002-->
-    2002�N1��28��
+    2002年1月28日
     <UL>
       <LI>
 	Added
@@ -4908,7 +4908,7 @@
     </UL>
   <LI>
 <!--25-Jan-2002-->
-    2002�N1��25��
+    2002年1月25日
     <UL>
       <LI>
 	Oops. Generate command in scripting language only generated pfb fonts
@@ -4937,14 +4937,14 @@
     </UL>
   <LI>
 <!--24-Jan-2002-->
-    2002�N1��24��
+    2002年1月24日
     <UL>
       <LI>
 	Added a way to scale dlgs in different languages.
     </UL>
   <LI>
 <!--23-Jan-2002-->
-    2002�N1��23��
+    2002年1月23日
     <UL>
       <LI>
 	Fixed a crash in merge (caused by selecting all points on a path and merging
@@ -4954,7 +4954,7 @@
     </UL>
   <LI>
 <!--22-Jan-2002-->
-    2002�N1��22��
+    2002年1月22日
     <UL>
       <LI>
 	Added:
@@ -4983,7 +4983,7 @@
     </UL>
   <LI>
 <!--21-Jan-2002-->
-    2002�N1��21��
+    2002年1月21日
     <UL>
       <LI>
 	Import will now allow you to import background images from the font view<BR>
@@ -5021,7 +5021,7 @@
     </UL>
   <LI>
 <!--19-Jan-2002-->
-    2002�N1��19��
+    2002年1月19日
     <UL>
       <LI>
 	Initial version of <A HREF="scripting.html">scripting</A>.
@@ -5034,7 +5034,7 @@
     </UL>
   <LI>
 <!--17-Jan-2002-->
-    2002�N1��17��
+    2002年1月17日
     <UL>
       <LI>
 	FontForge used to crash (sometimes anyway) if a list popup were active when
@@ -5065,7 +5065,7 @@
     </UL>
   <LI>
 <!--14 Jan 2002-->
-    2002�N1��14��
+    2002年1月14日
     <UL>
       <LI>
 	The 9 Jan metrics view fix caused crashes when changing the last character
@@ -5092,7 +5092,7 @@
     </UL>
   <LI>
 <!--12 Jan 2002-->
-    2002�N1��12��
+    2002年1月12日
     <UL>
       <LI>
 	Russian ui had an unexpected space in it which confused makenomenh. Have
@@ -5110,7 +5110,7 @@
     </UL>
   <LI>
 <!--11 Jan 2002-->
-    2002�N1��11��
+    2002年1月11日
     <UL>
       <LI>
 	bdf "fix" of 9 Jan. lost the encoding of the font.
@@ -5130,7 +5130,7 @@
     </UL>
   <LI>
 <!--9 Jan 2002-->
-    2002�N1��9��
+    2002年1月9日
     <UL>
       <LI>
 	destroy window fix on 2 Jan was not enough, it popped up again. Hope I've
@@ -5150,14 +5150,14 @@
     </UL>
   <LI>
 <!--8 Jan 2002-->
-    2002�N1��8��
+    2002年1月8日
     <UL>
       <LI>
 	Fixed a bug in gdf output
     </UL>
   <LI>
 <!--7 Jan 2002-->
-    2002�N1��7��
+    2002年1月7日
     <UL>
       <LI>
 	Added a traditional chinese sample
@@ -5183,7 +5183,7 @@
     </UL>
   <LI>
 <!--4 Jan 2002-->
-    2002�N1��4��
+    2002年1月4日
     <UL>
       <LI>
 	if a dfont (or other mac resource file) contains multiple truetype fonts,
@@ -5230,7 +5230,7 @@
     </UL>
   <LI>
 <!--2 Jan 2002-->
-    2002�N1��2��
+    2002年1月2日
     <UL>
       <LI>
 	Copy From has been made global and sticky (each font used to have a separate
@@ -5280,7 +5280,7 @@
     </UL>
   <LI>
 <!--29-Dec-2001-->
-    2001�N12��29��
+    2001年12月29日
     <UL>
       <LI>
 	TextFields had numerous display problems. Should have fewer now.
@@ -5315,7 +5315,7 @@
     </UL>
   <LI>
 <!--19-Dec-2001-->
-    2001�N12��19��
+    2001年12月19日
     <UL>
       <LI>
 	The german ui file should be in better german
@@ -5331,13 +5331,13 @@
     </UL>
   <LI>
 <!--18-Dec-2001-->
-    2001�N12��18��
+    2001年12月18日
     <UL>
       <LI>
 <!--	<FONT COLOR="Red"><STRONG>TrueType hints were terrible</STRONG></FONT>. I
 	fixed one huge bug. There are still problems with diagonals and the results
 	are not as nice as Fontographer's, but they are better. -->
-	<FONT COLOR="Red"><STRONG>TrueType �q���g�����낵�����ƂɂȂ��Ă��܂���</STRONG></FONT>�B���͂��鋐��ȃo�O���C�����܂����B�΍s�q���g�Ɋւ��Ă͂܂����_���c���Ă��܂����A���ʂ� Fontgrapher �قǂ��܂��͂���܂��񂪁A���܂ł��͉��ǂ���Ă��܂��B
+	<FONT COLOR="Red"><STRONG>TrueType ヒントが恐ろしいことになっていました</STRONG></FONT>。私はある巨大なバグを修正しました。斜行ヒントに関してはまだ問題点が残っていますし、結果は Fontgrapher ほどうまくはありませんが、今までよりは改良されています。
       <LI>
 	Some more greek fixes.
       <LI>
@@ -5352,7 +5352,7 @@
     </UL>
   <LI>
 <!--17-Dec-2001-->
-    2001�N12��17��
+    2001年12月17日
     <UL>
       <LI>
 	Fixed another bug with cid fonts, this one when attempting to create such
@@ -5368,7 +5368,7 @@
     </UL>
   <LI>
 <!--16-Dec-2001-->
-    2001�N12��16��
+    2001年12月16日
     <UL>
       <LI>
 	Scrollbars didn't always update in big textfields
@@ -5400,7 +5400,7 @@
     </UL>
   <LI>
 <!--15-Dec-2001-->
-    2001�N12��15��
+    2001年12月15日
     <UL>
       <LI>
 	Copying a background image caused a crash at some indeterminate future time
@@ -5433,7 +5433,7 @@
     </UL>
   <LI>
 <!--14-Dec-2001-->
-    2001�N12��14��
+    2001年12月14日
     <UL>
       <LI>
 	Oops Edward Lee points out that I was missing some colons in my eps file
@@ -5446,7 +5446,7 @@
     </UL>
   <LI>
 <!--11-Dec-2001-->
-    2001�N12��11��
+    2001年12月11日
     <UL>
       <LI>
 	Fixed a crash if there were no .cidmap files and FontForge was not installed
@@ -5461,7 +5461,7 @@
     </UL>
   <LI>
 <!--10-Dec-2001-->
-    2001�N12��10��
+    2001年12月10日
     <UL>
       <LI>
 	Fixed a crash when adding (manually) a minimum distance hint to the width.
@@ -5470,7 +5470,7 @@
     </UL>
   <LI>
 <!--9-Dec-2001-->
-    2001�N12��9��
+    2001年12月9日
     <UL>
       <LI>
 	Added proper names for Hangul Syllables
@@ -5485,7 +5485,7 @@
     </UL>
   <LI>
 <!--3-Dec-2001-->
-    2001�N12��3��
+    2001年12月3日
     <UL>
       <LI>
 	Merge Kern Info dlg crashed if you cancelled it.
@@ -5515,7 +5515,7 @@
     </UL>
   <LI>
 <!--1-Dec-2001-->
-    2001�N12��1��
+    2001年12月1日
     <UL>
       <LI>
 	Figured out the format of mac .dfont files
@@ -5531,7 +5531,7 @@
     </UL>
   <LI>
 <!--27-Nov-2001-->
-    2001�N11��27��
+    2001年11月27日
     <UL>
       <LI>
 	Build Accented Character failed to update bitmaps in CID keyed fonts
@@ -5564,7 +5564,7 @@
     </UL>
   <LI>
 <!--26-Nov-2001-->
-    2001�N11��26��
+    2001年11月26日
     <UL>
       <LI>
 	Adobe has upgraded their cid version for traditional chinese, so I generated
@@ -5588,7 +5588,7 @@
     </UL>
   <LI>
 <!--24-Nov-2001-->
-    2001�N11��24��
+    2001年11月24日
     <UL>
       <LI>
 	Oops. Urich Klauer found a bug in my parsing of ttf/otf tables (introduced
@@ -5602,7 +5602,7 @@
     </UL>
   <LI>
 <!--23-Nov-2001-->
-    2001�N11��23��
+    2001年11月23日
     <UL>
       <LI>
 	Fixed a potential crash from popups in the fontview.
@@ -5628,14 +5628,14 @@
     </UL>
   <LI>
 <!--17-Nov-2001-->
-    2001�N11��17��
+    2001年11月17日
     <UL>
       <LI>
 	Changed the configure script to deal with Mac OS/X properly (I hope)
     </UL>
   <LI>
 <!--15-Nov-2001-->
-    2001�N11��15��
+    2001年11月15日
     <UL>
       <LI>
 	FontForge had a bug when loading some ttc files which caused it to crash.
@@ -5651,7 +5651,7 @@
     </UL>
   <LI>
 <!--12-Nov-2001-->
-    2001�N11��12��
+    2001年11月12日
     <UL>
       <LI>
 	Some nearly horizontal (but non-linear) splines could not be selected.
@@ -5676,7 +5676,7 @@
     </UL>
   <LI>
 <!--11-Nov-2001-->
-    2001�N11��11��
+    2001年11月11日
     <UL>
       <LI>
 	Added support for macintosh resource fonts (by reading them from and writing
@@ -5687,7 +5687,7 @@
     </UL>
   <LI>
 <!--8-Nov-2001-->
-    2001�N11��8��
+    2001年11月8日
     <UL>
       <LI>
 	FontForge will now save ligature information in the GSUB table when creating
@@ -5725,7 +5725,7 @@
     </UL>
   <LI>
 <!--2-Nov-2001-->
-    2001�N11��2��
+    2001年11月2日
     <UL>
       <LI>
 	FontForge would not notice certain disk errors when generating truetype fonts.
@@ -5744,7 +5744,7 @@
     </UL>
   <LI>
 <!--31-Oct-2001-->
-    2001�N10��31��
+    2001年10月31日
     <UL>
       <LI>
 	Added a command to remove width MDs &amp; changed ttf generation to check
@@ -5758,7 +5758,7 @@
     </UL>
   <LI>
 <!--29-Oct-2001-->
-    2001�N10��29��
+    2001年10月29日
     <UL>
       <LI>
 	Change type1 encoding vectors so that they start with a for loop setting
@@ -5820,14 +5820,14 @@
     </UL>
   <LI>
 <!--21-Oct-2001-->
-    2001�N10��21��
+    2001年10月21日
     <UL>
       <LI>
 	FontForge could crash when autohinting a diagonal hint.
     </UL>
   <LI>
 <!--20-Oct-2001-->
-    2001�N10��20��
+    2001年10月20日
     <UL>
       <LI>
 	FontForge generated awful instructions (hints) for truetype characters. I've
@@ -5863,7 +5863,7 @@
     </UL>
   <LI>
 <!--11-Oct-2001-->
-    2001�N10��11��
+    2001年10月11日
     <UL>
       <LI>
 	Hmm. Apple has some very strange things to say about how offsets and scaling
@@ -5888,7 +5888,7 @@
     </UL>
   <LI>
 <!--3-Oct-2001-->
-    2001�N10��3��
+    2001年10月3日
     <UL>
       <LI>
 	Added support for saving bitmaps into ttf files. I don't know that I've got
@@ -5905,7 +5905,7 @@
     </UL>
   <LI>
 <!--1-Oct-2001-->
-    2001�N10��1��
+    2001年10月1日
     <UL>
       <LI>
 	makefile wouldn't build ui files if "." wasn't in PATH environment variable.
@@ -5917,7 +5917,7 @@
     </UL>
   <LI>
 <!--30-Sept-2001-->
-    2001�N9��30��/1-Oct-2001
+    2001年9月30日/1-Oct-2001
     <UL>
       <LI>
 	Improved importing background bitmap fonts (scaling factor set more accurately,
@@ -5934,7 +5934,7 @@
     </UL>
   <LI>
 <!--24-Sept-2001-->
-    2001�N9��24��
+    2001年9月24日
     <UL>
       <LI>
 	<A HREF="Problems-MacOSX.html">Mac OS/X port </A>done (or at least a semi-working
@@ -5951,7 +5951,7 @@
     </UL>
   <LI>
 <!--22-Sept-2001-->
-    2001�N9��22��
+    2001年9月22日
     <UL>
       <LI>
 	Can now read bitmap fonts out of a truetype EBDT (or bdat) table
@@ -5962,7 +5962,7 @@
     </UL>
   <LI>
 <!--19-Sept-2001-->
-    2001�N9��19��
+    2001年9月19日
     <UL>
       <LI>
 	Major rewrite of Remove Overlap.
@@ -5974,7 +5974,7 @@
     </UL>
   <LI>
 <!--15-Sept-2001-->
-    2001�N9��15��
+    2001年9月15日
     <UL>
       <LI>
 	Fixed more remove overlap/merge/simplify problems related to having many
@@ -5984,7 +5984,7 @@
     </UL>
   <LI>
 <!--14-Sept-2001-->
-    2001�N9��14��
+    2001年9月14日
     <UL>
       <LI>
 	Fixed a couple more memory problems (caused by the chunk allocation), one
@@ -5995,7 +5995,7 @@
     </UL>
   <LI>
 <!--13-Sept-2001-->
-    2001�N9��13��
+    2001年9月13日
     <UL>
       <LI>
 	Fixed a crash when joining two paths
@@ -6004,7 +6004,7 @@
     </UL>
   <LI>
 <!--11-Sept-2001-->
-    2001�N9��11��
+    2001年9月11日
     <UL>
       <LI>
 	more configuration fixes
@@ -6015,7 +6015,7 @@
     </UL>
   <LI>
 <!--8-Sept-2001-->
-    2001�N9��8��
+    2001年9月8日
     <UL>
       <LI>
 	Font View Paste has changed slightly. If the copy buffer contains more than
@@ -6034,7 +6034,7 @@
     </UL>
   <LI>
 <!--5-Sept-2001-->
-    2001�N9��5��
+    2001年9月5日
     <UL>
       <LI>
 	Ug. yesterday's install changes weren't complete. I forgot to remove the
@@ -6051,7 +6051,7 @@
     </UL>
   <LI>
 <!--4-Sept-2001-->
-    2001�N9��4�� (but posted as 5-Sept-2001)
+    2001年9月4日 (but posted as 5-Sept-2001)
     <UL>
       <LI>
 	Menubar should be redrawn properly after a resize now.
@@ -6072,7 +6072,7 @@
     </UL>
   <LI>
 <!--1-Sept-2001-->
-    2001�N9��1��
+    2001年9月1日
     <UL>
       <LI>
 	Small fixes to (my implementation of) Adobe Standard Encoding.
@@ -6081,7 +6081,7 @@
     </UL>
   <LI>
 <!--31-August-2001-->
-    2001�N8��31��
+    2001年8月31日
     <UL>
       <LI>
 	If you dragged on a new spline, and then translated one or both of its end-points
@@ -6092,7 +6092,7 @@
     </UL>
   <LI>
 <!--30-August-2001-->
-    2001�N8��30��
+    2001年8月30日
     <UL>
       <LI>
 	Fixed some bugs in otf output:
@@ -6191,7 +6191,7 @@
     </UL>
   <LI>
 <!--8-August-2001-->
-    2001�N8��8��
+    2001年8月8日
     <UL>
       <LI>
 	Some minor fixes to gchardlg.c
@@ -6204,7 +6204,7 @@
     </UL>
   <LI>
 <!--6-August-2001-->
-    2001�N8��6��
+    2001年8月6日
     <UL>
       <LI>
 	KSC5601-1987 was still wrong.
@@ -6213,7 +6213,7 @@
     </UL>
   <LI>
 <!--4-August-2001-->
-    2001�N8��4��
+    2001年8月4日
     <UL>
       <LI>
 	Eek. FontInfo-&gt;Panose,TTF Values never got stored into the font.
@@ -6238,7 +6238,7 @@
     </UL>
   <LI>
 <!--26-July-2001-->
-    2001�N7��26��
+    2001年7月26日
     <UL>
       <LI>
 	Added a constrain points command to align a collection of points, or to space
@@ -6246,7 +6246,7 @@
     </UL>
   <LI>
 <!--25-July-2001-->
-    2001�N7��25��
+    2001年7月25日
     <UL>
       <LI>
 	Fixed a rare crash from closing the outline (or bitmap) view
@@ -6259,7 +6259,7 @@
     </UL>
   <LI>
 <!--24-July-2001-->
-    2001�N7��24��
+    2001年7月24日
     <UL>
       <LI>
 	Although the family name accepted spaces, it then silently removed them.
@@ -6292,7 +6292,7 @@
     </UL>
   <LI>
 <!--22-July-2001-->
-    2001�N7��22��
+    2001年7月22日
     <UL>
       <LI>
 	wrote a unicode printf which is now used by most of the error routines. Should
@@ -6321,7 +6321,7 @@
     </UL>
   <LI>
 <!--17-July-2001-->
-    2001�N7��17��
+    2001年7月17日
     <UL>
       <LI>
 	Using almost any stringized error routine would munch memory. Many inexplicable
@@ -6335,7 +6335,7 @@
     </UL>
   <LI>
 <!--16-July-2001-->
-    2001�N7��16��
+    2001年7月16日
     <UL>
       <LI>
 	FontForge did not do a very good job of guessing at where hints should be
@@ -6367,7 +6367,7 @@
     </UL>
   <LI>
 <!--15-July-2001-->
-    2001�N7��15��
+    2001年7月15日
     <UL>
       <LI>
 	FontForge should now be able to read truetype collection files and do something
@@ -6388,7 +6388,7 @@
     </UL>
   <LI>
 <!--11-July-2001-->
-    2001�N7��11��
+    2001年7月11日
     <UL>
       <LI>
 	Eek! Memory problem in metrics view (writing beyond what was allocated).
@@ -6399,7 +6399,7 @@
     </UL>
   <LI>
 <!--10-July-2001-->
-    2001�N7��10��
+    2001年7月10日
     <UL>
       <LI>
 	Did significant improvement to arabic ligature creation (at least it's done
@@ -6415,7 +6415,7 @@
     </UL>
   <LI>
 <!--7-July-2001-->
-    2001�N7��7��
+    2001年7月7日
     <UL>
       <LI>
 	Fixed a crash when referring to a character whose encoding was bigger than
@@ -6438,7 +6438,7 @@
     </UL>
   <LI>
 <!--30-June-2001-->
-    2001�N6��30��
+    2001年6月30日
     <UL>
       <LI>
 	Fixed another crash from putting strings in resources.
@@ -6450,7 +6450,7 @@
     </UL>
   <LI>
 <!--28-June-2001-->
-    2001�N6��28��
+    2001年6月28日
     <UL>
       <LI>
 	Oops. Now all empty characters are nameless, not just controls.
@@ -6461,7 +6461,7 @@
     </UL>
   <LI>
 <!--27-June-2001-->
-    2001�N6��27��
+    2001年6月27日
     <UL>
       <LI>
 	When generating truetype (or opentype) fonts, FontForge failed to set the
@@ -6479,14 +6479,14 @@
     </UL>
   <LI>
 <!--24-June-2001-->
-    2001�N6��24��
+    2001年6月24日
     <UL>
       <LI>
 	Change configure script to work on solaris
     </UL>
   <LI>
 <!--23-June-2001-->
-    2001�N6��23��
+    2001年6月23日
     <UL>
       <LI>
 	Make giofile.c compile on solaris
@@ -6499,7 +6499,7 @@
     </UL>
   <LI>
 <!--21-June-2001-->
-    2001�N6��21��
+    2001年6月21日
     <UL>
       <LI>
 	Copy Width did not work from the font view
@@ -6549,7 +6549,7 @@
     </UL>
   <LI>
 <!--19-June-2001-->
-    2001�N6��19��
+    2001年6月19日
     <UL>
       <LI>
 	Initial version of russian menus
@@ -6565,7 +6565,7 @@
     </UL>
   <LI>
 <!--18-June-2001-->
-    2001�N6��18��
+    2001年6月18日
     <UL>
       <LI>
 	Oops. FontForge looked in the current directory, not the executable's directory
@@ -6587,7 +6587,7 @@
     </UL>
   <LI>
 <!--17-June-2001-->
-    2001�N6��17��
+    2001年6月17日
     <UL>
       <LI>
 	Added a minimal help menu
@@ -6600,7 +6600,7 @@
     </UL>
   <LI>
 <!--13-June-2001-->
-    2001�N6��13��
+    2001年6月13日
     <UL>
       <LI>
 	Palettes would vanish when the first outline character view was closed. That
@@ -6630,7 +6630,7 @@
     </UL>
   <LI>
 <!--11-June-2001-->
-    2001�N6��11��
+    2001年6月11日
     <UL>
       <LI>
 	Added ability to create a pfm file (for ATM under windows)
@@ -6649,14 +6649,14 @@
     </UL>
   <LI>
 <!--6-June-2001-->
-    2001�N6��6��
+    2001年6月6日
     <UL>
       <LI>
 	Cleaned up Exit, close and fontinfo commands to avoid possible race conditions.
     </UL>
   <LI>
 <!--5-June-2001-->
-    2001�N6��5��
+    2001年6月5日
     <UL>
       <LI>
 	Added a command to look for common problems
@@ -6676,7 +6676,7 @@
     </UL>
   <LI>
 <!--12-May-2001-->
-    2001�N5��12��
+    2001年5月12日
     <UL>
       <LI>
 	That was a stupid idea (yesterday's). I've backed it out. Instead I've done
@@ -6684,7 +6684,7 @@
     </UL>
   <LI>
 <!--11-May-2001-->
-    2001�N5��11��
+    2001年5月11日
     <UL>
       <LI>
 	Made a preference item so that palettes could live within the outline view.
@@ -6693,7 +6693,7 @@
     </UL>
   <LI>
 <!--10-May-2001-->
-    2001�N5��10��
+    2001年5月10日
     <UL>
       <LI>
 	Fixed a crash bug which occurred when doing Transformations with the origin
@@ -6711,7 +6711,7 @@
     </UL>
   <LI>
 <!--7 May 2001-->
-    2001�N5��7��
+    2001年5月7日
     <UL>
       <LI>
 	Fixed more locale problems (I hope)
@@ -6732,7 +6732,7 @@
     </UL>
   <LI>
 <!--6 May 2001-->
-    2001�N5��6��
+    2001年5月6日
     <UL>
       <LI>
 	Redid <A HREF="hinting.html">hinting</A> to support hint substitution and
@@ -6766,7 +6766,7 @@
 	  <LI>
 <!--	    <FONT COLOR="Red"><STRONG>No longer saves Type1 charstrings when loading
 	    a type1 font</STRONG></FONT> -->
-	    <FONT COLOR="Red"><STRONG>Type 1 �t�H���g��ǂݍ��񂾂Ƃ��ɁAType1 charstrings ��ێ����Ă����̂͂�����߂܂���</STRONG></FONT>�B
+	    <FONT COLOR="Red"><STRONG>Type 1 フォントを読み込んだときに、Type1 charstrings を保持しておくのはもうやめました</STRONG></FONT>。
 	</UL>
       <LI>
 	The icon for outline character windows was <EM>still</EM> wrong for anti-alias
@@ -6786,7 +6786,7 @@
     </UL>
   <LI>
 <!--3 May 2001-->
-    2001�N5��3��
+    2001年5月3日
     <UL>
       <LI>
 	Opps. Generating postscript could crash if there were many blank characters.
@@ -6794,11 +6794,11 @@
 <!--	<FONT COLOR="Red"><STRONG>This is the last version which will allow you to
 	make small modifications to fonts while retaining the original hint
 	substitution</STRONG></FONT> -->
-	<FONT COLOR="Red"><STRONG>�I���W�i���̃q���g�u����ێ����A�t�H���g�ɏ����ȏC���������邱�Ƃ��ł���o�[�W�����͂��ꂪ�Ō�ł�</STRONG></FONT>
+	<FONT COLOR="Red"><STRONG>オリジナルのヒント置換を保持しつつ、フォントに小さな修正を加えることができるバージョンはこれが最後です</STRONG></FONT>
     </UL>
   <LI>
 <!--28 Apr 2001-->
-    2001�N4��28��
+    2001年4月28日
     <UL>
       <LI>
 	Transform from the font view will (for some transformations and if
@@ -6817,7 +6817,7 @@
     </UL>
   <LI>
 <!--27 Apr 2001-->
-    2001�N4��27��
+    2001年4月27日
     <UL>
       <LI>
 	Tangent points should display a little better now.
@@ -6841,7 +6841,7 @@
     </UL>
   <LI>
 <!--23 Apr 2001-->
-    2001�N4��23��
+    2001年4月23日
     <UL>
       <LI>
 	Fixed a clipping problem
@@ -6855,7 +6855,7 @@
     </UL>
   <LI>
 <!--22 Apr 2001-->
-    2001�N4��22��
+    2001年4月22日
     <UL>
       <LI>
 	Added code to allow users to select more than one bitmap font at a time to
@@ -6881,7 +6881,7 @@
     </UL>
   <LI>
 <!--20 Apr 2001-->
-    2001�N4��20��
+    2001年4月20日
     <UL>
       <LI>
 	Addition improvements to the handling of format0 (1byte) encodings
@@ -6892,7 +6892,7 @@
     </UL>
   <LI>
 <!--19 Apr 2001-->
-    2001�N4��19��
+    2001年4月19日
     <UL>
       <LI>
 	Yesterday's builds were transferred as ASCII not BINARY and are totally useless.
@@ -6903,7 +6903,7 @@
     </UL>
   <LI>
 <!--18 Apr 2001-->
-    2001�N4��18��
+    2001年4月18日
     <UL>
       <LI>
 	Crash when reading a ttf font fixed (introduced by ligature code).
@@ -6921,7 +6921,7 @@
     </UL>
   <LI>
 <!--17 Apr 2001-->
-    2001�N4��17��
+    2001年4月17日
     <UL>
       <LI>
 	Menus would go into an infinite loop if you: depressed the mouse on the menu
@@ -6930,7 +6930,7 @@
     </UL>
   <LI>
 <!--12 Apr 2001-->
-    2001�N4��12��
+    2001年4月12日
     <UL>
       <LI>
 	Added a submenu of recent files and a pull down list in the open dlg.
@@ -6940,7 +6940,7 @@
     </UL>
   <LI>
 <!--10 Apr 2001-->
-    2001�N4��10��
+    2001年4月10日
     <UL>
       <LI>
 	Fixed a crash bug when making an encoding from a font with a non-unicode
@@ -6963,7 +6963,7 @@
     </UL>
   <LI>
 <!--2 Apr 2001-->
-    2001�N4��2��
+    2001年4月2日
     <UL>
       <LI>
 	FontForge provides some support for XUIDs
@@ -6986,7 +6986,7 @@
     </UL>
   <LI>
 <!--29 Mar 2001-->
-    2001�N3��29��
+    2001年3月29日
     <UL>
       <LI>
 	It is now possible to edit bdf fonts directly (without first creating a dummy
@@ -6996,7 +6996,7 @@
     </UL>
   <LI>
 <!--28 Mar 2001-->
-    2001�N3��28��
+    2001年3月28日
     <UL>
       <LI>
 	Made it possible to for the user to new encodings
@@ -7007,7 +7007,7 @@
     </UL>
   <LI>
 <!--26 Mar 2001-->
-    2001�N3��26��
+    2001年3月26日
     <UL>
       <LI>
 	Fixed a clipping problem in the Metricsview
@@ -7024,7 +7024,7 @@
     </UL>
   <LI>
 <!--25 Mar 2001-->
-    2001�N3��25��
+    2001年3月25日
     <UL>
       <LI>
 	Oops. Fixed a typo in auto-kerning code. It should work now...
@@ -7044,7 +7044,7 @@
     </UL>
   <LI>
 <!--24 Mar 2001-->
-    2001�N3��24��
+    2001年3月24日
     <UL>
       <LI>
 	AutoKerning now lets you specify the number of kerning pairs the font may
@@ -7068,14 +7068,14 @@
     </UL>
   <LI>
 <!--21 Mar 2001-->
-    2001�N3��21��
+    2001年3月21日
     <UL>
       <LI>
 	Fixed yet another remove overlap bug.
     </UL>
   <LI>
 <!--12 Mar 2001-->
-    2001�N3��12��
+    2001年3月12日
     <UL>
       <LI>
 	a number of small improvements
@@ -7085,7 +7085,7 @@
     </UL>
   <LI>
 <!--9 Mar 2001-->
-    2001�N3��9��
+    2001年3月9日
     <UL>
       <LI>
 	Fixed a small bug in the hinting of glyph 0 (the unknown character)
@@ -7109,7 +7109,7 @@
     </UL>
   <LI>
 <!--5 Mar 2001-->
-    2001�N3��5��
+    2001年3月5日
     <UL>
       <LI>
 	Minimal truetype instructing (hinting) is now in place.
@@ -7132,7 +7132,7 @@
     </UL>
   <LI>
 <!--4 Mar 2001-->
-    2001�N3��4��
+    2001年3月4日
     <UL>
       <LI>
 	When Get Info is applied to a single selected reference character the dialog
@@ -7170,7 +7170,7 @@
     </UL>
   <LI>
 <!--25 Feb 2001-->
-    2001�N2��25��
+    2001年2月25日
     <UL>
       <LI>
 	FontForge no longer crashes on high-end systems where the default visual
@@ -7209,7 +7209,7 @@
     </UL>
   <LI>
 <!--20 Feb 2001-->
-    2001�N2��20��
+    2001年2月20日
     <UL>
       <LI>
 	Fixed some problems in saving both Type1s and TrueType fonts.
@@ -7221,7 +7221,7 @@
     </UL>
   <LI>
 <!--13 Feb 2001-->
-    2001�N2��13��
+    2001年2月13日
     <UL>
       <LI>
 	Fixed some problems with the configure script (handles libraries now)
@@ -7237,7 +7237,7 @@
     </UL>
   <LI>
 <!--11 Feb 2001-->
-    2001�N2��11��
+    2001年2月11日
     <UL>
       <LI>
 	Added a configure script
@@ -7254,7 +7254,7 @@
     </UL>
   <LI>
 <!--9 Feb 2001-->
-    2001�N2��9��
+    2001年2月9日
     <UL>
       <LI>
 	Tweaked some include files so fontforge might compile under Irix
@@ -7268,7 +7268,7 @@
     </UL>
   <LI>
 <!--7 Feb 2001-->
-    2001�N2��7��
+    2001年2月7日
     <UL>
       <LI>
 	Some improvement in processing of postscript names in true type fonts (will
@@ -7294,7 +7294,7 @@
     </UL>
   <LI>
 <!--26 Jan 2001-->
-    2001�N1��26��
+    2001年1月26日
     <UL>
       <LI>
 	Fixed a bug that kept the file chooser (the open file dlg, etc.) from browsing
@@ -7308,7 +7308,7 @@
     </UL>
   <LI>
 <!--21 Jan 2001-->
-    2001�N1��21��
+    2001年1月21日
     <UL>
       <LI>
 	Added a preference dlg. Not much in it as yet.
@@ -7333,7 +7333,7 @@
     </UL>
   <LI>
 <!--9 Jan 2001-->
-    2001�N1��9��
+    2001年1月9日
     <UL>
       <LI>
 	Added Tom Harvey's man page to the distribution (Thanks Tom!)
@@ -7346,7 +7346,7 @@
     </UL>
   <LI>
 <!--6 Jan 2001-->
-    2001�N1��6��
+    2001年1月6日
     <UL>
       <LI>
 	More distribution bug fixes
@@ -7357,7 +7357,7 @@
     </UL>
   <LI>
 <!--4 Jan 2001-->
-    2001�N1��4��
+    2001年1月4日
     <UL>
       <LI>
 	Fixed a distribution bug
@@ -7366,7 +7366,7 @@
     </UL>
   <LI>
 <!--2 Jan 2001-->
-    2001�N1��2��
+    2001年1月2日
     <UL>
       <LI>
 	Many small improvements and bug fixes.
@@ -7375,7 +7375,7 @@
     </UL>
   <LI>
 <!--21 Dec 2000-->
-    2000�N12��21��
+    2000年12月21日
     <UL>
       <LI>
 	I think I'm reading xfig splines properly now. The conversion to postscript
@@ -7384,14 +7384,14 @@
     </UL>
   <LI>
 <!--20 Dec 2000-->
-    2000�N12��20��
+    2000年12月20日
     <UL>
       <LI>
 	Generate Fonts can produce TrueType
     </UL>
   <LI>
 <!--17 Dec 2000-->
-    2000�N12��17��
+    2000年12月17日
     <UL>
       <LI>
 	TrueType reader now gets (horizontal) kerning info
@@ -7403,7 +7403,7 @@
     </UL>
   <LI>
 <!--16 Dec 2000-->
-    2000�N12��16��
+    2000年12月16日
     <UL>
       <LI>
 	FontForge will now read in a TrueType font
@@ -7416,7 +7416,7 @@
     </UL>
   <LI>
 <!--14 Dec 2000-->
-    2000�N12��14��
+    2000年12月14日
     <UL>
       <LI>
 	Got FontForge to build on a netbsd alpha box
@@ -7430,7 +7430,7 @@
     </UL>
   <LI>
 <!--12 Dec 2000-->
-    2000�N12��12��
+    2000年12月12日
     <UL>
       <LI>
 	Added a skew command to the bitmap view
@@ -7439,7 +7439,7 @@
     </UL>
   <LI>
 <!--11 Dec 2000-->
-    2000�N12��11��
+    2000年12月11日
     <UL>
       <LI>
 	fixed more remove overlap bugs (don't know of any left)
@@ -7448,7 +7448,7 @@
     </UL>
   <LI>
 <!--10 Dec 2000-->
-    2000�N12��10��
+    2000年12月10日
     <UL>
       <LI>
 	fixed many small bugs with constrained movements
@@ -7461,7 +7461,7 @@
     </UL>
   <LI>
 <!--5 Dec 2000-->
-    2000�N12��5��
+    2000年12月5日
     <UL>
       <LI>
 	Added a command that automagically builds an accented (or general composite)
@@ -7485,7 +7485,7 @@
     </UL>
   <LI>
 <!--1 Dec 2000-->
-    2000�N12��1��
+    2000年12月1日
     <UL>
       <LI>
 	Generate &amp; save bitmaps
@@ -7510,7 +7510,7 @@
     </UL>
   <LI>
 <!--28 Nov 2000-->
-    2000�N11��28��
+    2000年11月28日
     <UL>
       <LI>
 	Improved star tool
@@ -7539,7 +7539,7 @@
     </UL>
   <LI>
 <!--19 Nov 2000-->
-    2000�N11��19��
+    2000年11月19日
     <UL>
       <LI>
 	Added Calligraphic expand stroke
@@ -7562,7 +7562,7 @@
     </UL>
   <LI>
 <!--14 Nov 2000-->
-    2000�N11��14��
+    2000年11月14日
     <UL>
       <LI>
 	Added expand stroke
@@ -7571,7 +7571,7 @@
     </UL>
   <LI>
 <!--13 Nov 2000-->
-    2000�N11��13��
+    2000年11月13日
     <UL>
       <LI>
 	Added the equivalent of a .fog file (Spline Font Database, sfd files)
@@ -7582,7 +7582,7 @@
     </UL>
   <LI>
 <!--11 Nov 2000-->
-    2000�N11��11��
+    2000年11月11日
     <UL>
       <LI>
 	Imports and exports simple eps files for characters
@@ -7604,17 +7604,17 @@
     </UL>
   <LI>
 <!--9 Nov 2000-->
-    2000�N11��9��
+    2000年11月9日
     <UL>
       <LI>
 <!--	It can now calculate hints, font wide stem hints and character specific hints. -->
-	�q���g�̌v�Z���ł���悤�ɂȂ�܂����B�t�H���g�P�ʂ̃X�e���q���g�ƕ����ŗL�̃q���g�ł��B
+	ヒントの計算ができるようになりました。フォント単位のステムヒントと文字固有のヒントです。
       <LI>
 <!--	Transform should do rotations right now. -->
-	�ό`�_�C�A���O�ŉ�]���w��ł���悤�ɂȂ�܂����B
+	変形ダイアログで回転も指定できるようになりました。
       <LI>
 <!--	Metamorphosis file format bug should be fixed -->
-	���^�����t�H�[�[�t�@�C���t�H�[�}�b�g�̃o�O�͏C���ł����͂��ł��B
+	メタモルフォーゼファイルフォーマットのバグは修正できたはずです。
     </UL>
 </UL>
 <P>
@@ -7622,6 +7622,6 @@
 FontForge was initially made available (on the web) on 7 Nov 2000, and moved
 to sourceforge 21 Apr 2001. I started coding it in approximately Sept of
 2000. -->
-FontForge �� (Web ���) �ŏ��ɗ��p�\�ɂȂ����̂� 2000 �N 11 �� 7 ���ŁA sourceforge �� 2001 �N 1 �� 21 ���Ɉڍs���܂����B�����R�[�f�B���O���n�߂��̂� 2000 �N 9 �����̂��Ƃł��B
+FontForge が (Web 上で) 最初に利用可能になったのは 2000 年 11 月 7 日で、 sourceforge に 2001 年 1 月 21 日に移行しました。私がコーディングを始めたのは 2000 年 9 月頃のことです。
 </DIV>
 </BODY></HTML>

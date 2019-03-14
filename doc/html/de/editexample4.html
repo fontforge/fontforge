@@ -3,6 +3,7 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
   <!-- AP: Last modified: 11-Dec-2005 -->
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>Erzeugung akzentuierter Bildzeichen</title>
   <link rel="icon" href="../fftype16.png">
   <link rel="stylesheet" type="text/css" href="../FontForge.css">
@@ -20,7 +21,7 @@
     </li><li>
     <a href="editexample2.html#Navigating">Navigation zu weiteren Bildzeichen</a>
     </li><li>
-    <a href="editexample2.html#Creating-o">Auf zum nächsten Bildzeichen (konsistente Richtungen)</a>
+    <a href="editexample2.html#Creating-o">Auf zum nÃ¤chsten Bildzeichen (konsistente Richtungen)</a>
     </li><li>
     <a href="editexample3.html#consistent-stems">Konsistente Serifen und Stammbreiten</a>
     </li><li>
@@ -42,7 +43,7 @@
     </li><li>
       <a href="editexample6-5.html#Conditional">Bedingte Eigenschaften</a>
     </li><li>
-      <a href="editexample7.html#checking">Überprüfen des Schriftsatzes</a>
+      <a href="editexample7.html#checking">ÃœberprÃ¼fen des Schriftsatzes</a>
     </li><li>
       <a href="editexample7.html#Bitmaps">Bitmaps</a>
     </li><li>
@@ -58,51 +59,51 @@
     <a name="accents">Building</A> accented glyphs
   </h2>
   <p>
-    In lateinischen, griechischen und kyrillischen Zeichensätzen existieren
+    In lateinischen, griechischen und kyrillischen ZeichensÃ¤tzen existieren
     jeweils eine Anzahl akzentuierter Zeichen.
-    FontForge bietet eine Reihe von Möglichkeiten, 
+    FontForge bietet eine Reihe von MÃ¶glichkeiten, 
     akzentuierte Varianten aus deren Grundformen zu erstellen.
   </p>
   <p>
-    Die offensichtlichste Methode ist über einfaches Kopieren und Einfügen:
+    Die offensichtlichste Methode ist Ã¼ber einfaches Kopieren und EinfÃ¼gen:
     <a href="editmenu.html#Copy">Kopieren</A> des Buchstabens "A" und
-    <a href="editmenu.html#Paste">Einfügen</A> in "&Atilde;" und
+    <a href="editmenu.html#Paste">EinfÃ¼gen</A> in "&Atilde;" und
     <a href="editmenu.html#Copy">Kopieren</A> des Tilde-Zeichens und
-    <a href="editmenu.html#PasteInto">Einfügen in</A> nach "&Atilde;" 
-    (das Verhalten von "Einfügen" und "Einfügen in" untescheidet sich
-    geringfügig voneinander. Während "Einfügen" den Zeicheninhalt vor dem
-    Einfügen löscht, fügt "Einfügen in" den Inhalt der Zwischenablage
+    <a href="editmenu.html#PasteInto">EinfÃ¼gen in</A> nach "&Atilde;" 
+    (das Verhalten von "EinfÃ¼gen" und "EinfÃ¼gen in" untescheidet sich
+    geringfÃ¼gig voneinander. WÃ¤hrend "EinfÃ¼gen" den Zeicheninhalt vor dem
+    EinfÃ¼gen lÃ¶scht, fÃ¼gt "EinfÃ¼gen in" den Inhalt der Zwischenablage
     an den Inhalt des Zeichens an).
-    Danach wird das Bearbeitungsfenster für "&Atilde;" geöffnet und
-    die Position des Akzents angepasst, so daß er an der richtigen
-    Stelle über dem A steht.
+    Danach wird das Bearbeitungsfenster fÃ¼r "&Atilde;" geÃ¶ffnet und
+    die Position des Akzents angepasst, so daÃŸ er an der richtigen
+    Stelle Ã¼ber dem A steht.
   </p>
   <p>
     Diese Methode ist nicht besonders effizient: wenn die Form des
-    Buchstabens "A" geändert wird, müssen auch alle akzentuierten
+    Buchstabens "A" geÃ¤ndert wird, mÃ¼ssen auch alle akzentuierten
     Formen von "A" angepasst werden. Daher bietet FontForge die
-    Möglichkeit, eine <a href="../overview.html#References">Referenz</a>
+    MÃ¶glichkeit, eine <a href="../overview.html#References">Referenz</a>
     zu einem Zeichen zu erstellen. So kann in diesem Beispiel eine Referenz
-    zu "A" kopiert und eingefügt werden und dann eine Referenz des
-    Tildezeichens kopiert und mit "Einfügen in" eingefügt werden, welches
-    hinterher über der Referenz zu A positioniert wird.
+    zu "A" kopiert und eingefÃ¼gt werden und dann eine Referenz des
+    Tildezeichens kopiert und mit "EinfÃ¼gen in" eingefÃ¼gt werden, welches
+    hinterher Ã¼ber der Referenz zu A positioniert wird.
   </p>
   <p>
-    Wenn danach die Form des Originals von "A" verändert wird, ändert
+    Wenn danach die Form des Originals von "A" verÃ¤ndert wird, Ã¤ndert
     sich automatisch auch dessen Form in "&Atilde;", und ggf. auch dessen
     Breite.
   </p>
   <p>
-    FontForge "weiß", daß "&Atilde;" aus "A" und dem Tildezeichen
+    FontForge "weiÃŸ", daÃŸ "&Atilde;" aus "A" und dem Tildezeichen
     zusammengesetzt wurde und kann akzentuierte
     Zeichen automatisch selbst erstellen, indem die Referenzen in "&Atilde;"
-    gesetzt werden und der Akzent über dem A positioniert wird.
-    (Für Unicode steht eine Datenbank zu Verfügung, in der die einzelnen
+    gesetzt werden und der Akzent Ã¼ber dem A positioniert wird.
+    (FÃ¼r Unicode steht eine Datenbank zu VerfÃ¼gung, in der die einzelnen
     Komponenten jedes akzentuierten Zeichens als Unicodes aufgelistet sind).
   </p>
   <p>
     Als Beispiel wird die Datei <code>tutorial/Ambrosia.sfd</code>
-    geöffnet und alle Zeichen im Codebereich 0xc0-0xff selektiert.
+    geÃ¶ffnet und alle Zeichen im Codebereich 0xc0-0xff selektiert.
     Nach Auswahl des Befehls
     <a href="../elementmenu.html#Accented"><code>Element-&gt;Erzeugen-&gt;Akzentuiert erzeugen</code></a>
     erscheinen alle akzentuierten Zeichen auf magische Weise
@@ -110,31 +111,31 @@
     bleiben daher leer).
   </p>
   <p>
-    FontForge enthält eine Heuristik für die Positionierung von Akzenten
-    (die meisten Akzente liegen zentriert über dem höchsten Punkt des
+    FontForge enthÃ¤lt eine Heuristik fÃ¼r die Positionierung von Akzenten
+    (die meisten Akzente liegen zentriert Ã¼ber dem hÃ¶chsten Punkt des
     Zeichens), welche gelegentlich schlechte Ergebnisse produziert
-    (wenn z.B. einer der beiden Stämme des "u" ein wenig höher ist als
-    der andere, wird der Akzent über diesem positioniert anstatt über
+    (wenn z.B. einer der beiden StÃ¤mme des "u" ein wenig hÃ¶her ist als
+    der andere, wird der Akzent Ã¼ber diesem positioniert anstatt Ã¼ber
     dem gesamten Zeichen). Aus diesem Grunde sollte nach der Erzeugung der
-    akzentuierten Zeichen immer nachkontrolliert werden, ggf. müssen
+    akzentuierten Zeichen immer nachkontrolliert werden, ggf. mÃ¼ssen
     ein oder zwei davon korrigiert werden (evtl. sollte sogar das
-    Ausgangszeichen leicht verändert werden).
+    Ausgangszeichen leicht verÃ¤ndert werden).
   <h2>
     <a name="ligature">Erzeugung</a> einer Ligatur
   </H2>
   </p>
   <p>
-    Unicode enthält eine Reihe von Ligaturzeichen (im Lateinischen
-    sind dies: &AElig;, OE, fi, etc. während es in arabische
-    Zeichensätzen hunderte sind). Auch hier gibt es für Unicode eine
-    Datenbank für die einzelnen Komponenten jeder Standardligatur.
+    Unicode enthÃ¤lt eine Reihe von Ligaturzeichen (im Lateinischen
+    sind dies: &AElig;, OE, fi, etc. wÃ¤hrend es in arabische
+    ZeichensÃ¤tzen hunderte sind). Auch hier gibt es fÃ¼r Unicode eine
+    Datenbank fÃ¼r die einzelnen Komponenten jeder Standardligatur.
   </p>
   <p>
     FontForge kann leider Ligaturen nicht automatisch erzeugen,
-    stattdessen können die Komponenten der Ligatur mit
+    stattdessen kÃ¶nnen die Komponenten der Ligatur mit
     <a href="../elementmenu.html#Accented"><code>Element-&gt;Erzeugen-&gt;Zusammengesetzt erzeugen</code></a>.
     in das Zeichen kopiert werden. Dies macht es ein wenig einfacher
-    (zumindest für lateinische Schriftsätze), Ligaturen zu gestalten.
+    (zumindest fÃ¼r lateinische SchriftsÃ¤tze), Ligaturen zu gestalten.
     <table border cellpadding="2">
       <caption>
         Schritte zur Erstellung einer Ligatur
@@ -154,22 +155,22 @@
 	    HEIGHT="277"></TD>
     </TR>
     <tr valign="Top">
-      <td>Über den Dialog des Befehls
+      <td>Ãœber den Dialog des Befehls
         <a href="../elementmenu.html#CharInfo">Element -&gt;Zeicheninformation</a>
         wird das Zeichen benannt und als Ligatur gekennzeichnet.
         Mit <a href="../elementmenu.html#Accented">Element -&gt; Erzeugen -&gt; Zusammengesetzt erzeugen</a>
-        werden die Referenzen zu den Ligaturkomponenten eingefügt.</td>
+        werden die Referenzen zu den Ligaturkomponenten eingefÃ¼gt.</td>
       <td>Mit Hilfe des Befehls
         <a href="../editmenu.html#Unlink">Bearbeiten-&gt; Referenzen trennen</A>
         werden die Referenzen in Konturen umgewandelt.
 	    </td>
       <td>
-        Die Komponenten werden so angepasst, daß ihr gemeinsames Erscheinungsbild
+        Die Komponenten werden so angepasst, daÃŸ ihr gemeinsames Erscheinungsbild
         besser aussieht. In diesem Fall wurde der Stamm des ersten "f" ein wenig
-        verkürzt.
+        verkÃ¼rzt.
 	    </td>
       <td>
-        Mit <a href="../elementmenu.html#Remove">Element -&gt; Überlappungen entfernen</A>
+        Mit <a href="../elementmenu.html#Remove">Element -&gt; Ãœberlappungen entfernen</A>
           wird das Zeichen bereinigt.  
       </td>
       <td>
@@ -182,44 +183,44 @@
   <p>
     Einige Textverabeitungsprogramme erlauben es, die Textmarkierung innerhalb
     einer Ligatur zu positionieren (mit einer Position zwischen jeder Komponente
-    der Ligatur). Das hat den Vorteil, daß der Benutzer einer Textverarbeitung
-    nicht zu wissen braucht, daß er/sie es mit einer Ligatur zu tun hat und
+    der Ligatur). Das hat den Vorteil, daÃŸ der Benutzer einer Textverarbeitung
+    nicht zu wissen braucht, daÃŸ er/sie es mit einer Ligatur zu tun hat und
     sondern stattdessen so gearbeitet werden kann, als wenn die Komponenten
     einzeln vorliegen.
     Wenn die Textverarbeitung damit umgehen soll, muss der Schriftgestalter
     Zusatzinformation bereitstellen, um die Textmarkierung an die richtigen
     Stellen zu setzen.
-    Wenn FontForge weiß, daß es sich bei dem Zeichen um eine Ligatur handelt,
-    werden genügend Textmarkierungslinien erzeugt, um diese zwischen die
-    Einzelkomponenten setzen zu können. Diese werden in den Ursprung gesetzt,
+    Wenn FontForge weiÃŸ, daÃŸ es sich bei dem Zeichen um eine Ligatur handelt,
+    werden genÃ¼gend Textmarkierungslinien erzeugt, um diese zwischen die
+    Einzelkomponenten setzen zu kÃ¶nnen. Diese werden in den Ursprung gesetzt,
     und wenn sie dort gelassen werden, ignoriert FontForge diese. Im
     Normalfall ist es allerdings empfehlenswert, mit Hilfe des Selektionswerkzeugs
     die Textmarkierungslinien vom Ursprung zu den jeweiligen Positionen
-    zu verschieben (wird lediglich von TrueType und OpenType unterstützt).
+    zu verschieben (wird lediglich von TrueType und OpenType unterstÃ¼tzt).
   </p>
   <p>
   <font color="red"><strong><big>Warnung: </big></strong></font>
   OpenType-Engines verwenden nur solche Features, von denen sie
-  glauben, daß sie für die aktuelle Schrift relevant sind (für
+  glauben, daÃŸ sie fÃ¼r die aktuelle Schrift relevant sind (fÃ¼r
   lateinischen Schriften verwendet Uniscribe 'liga').
-  Schlimmer noch, einige Anwendungen unterstützen u.U. diese
-  Funktionen überhaupt nicht (Word unterstützt keine Ligaturen für Latein).
+  Schlimmer noch, einige Anwendungen unterstÃ¼tzen u.U. diese
+  Funktionen Ã¼berhaupt nicht (Word unterstÃ¼tzt keine Ligaturen fÃ¼r Latein).
   <a href="http://www.microsoft.com/typography/specs/default.htm">Microsoft
-    versucht zu dokumentieren</a> welche Eigenschaften für welche Schriften in Uniscribe
+    versucht zu dokumentieren</a> welche Eigenschaften fÃ¼r welche Schriften in Uniscribe
     zur Anwendung kommen, allerdings ist dies wenig hilfreich, da sich Word und Office
     nicht standardkonform verhalten.
   </p>
   <p>
-    Für indische Schriften werden viele Ligaturen benötigt, allerdings
-    stellt Unicode für diese keine Kodierung zur Verfügung. Wenn eine
+    FÃ¼r indische Schriften werden viele Ligaturen benÃ¶tigt, allerdings
+    stellt Unicode fÃ¼r diese keine Kodierung zur VerfÃ¼gung. Wenn eine
     Ligatur erstellt werden soll, die nicht Bestandteil von Unicode
-    ist, ist dies trotzdem möglich.
-    Dafür muß zunächst ein
+    ist, ist dies trotzdem mÃ¶glich.
+    DafÃ¼r muÃŸ zunÃ¤chst ein
     <a href="../faq.html#new-name">unkodiertes Zeichen erstellt</a>
     (oder wenn der Schriftsatz ein Unicode-Font ist, kann ein Codepunkt
-    in dem Codebereich für die private Nutzung gewählt werden) und
+    in dem Codebereich fÃ¼r die private Nutzung gewÃ¤hlt werden) und
     das Zeichen benannt werden. Der Name ist wichtig, da FontForge
-    bei korrekter Bennenung erkennen kann, daß es sich um eine Ligatur
+    bei korrekter Bennenung erkennen kann, daÃŸ es sich um eine Ligatur
     handelt und aus welchen Komponenten sie zusammengesetzt ist.
     Wenn beispielsweise eine Ligatur aus den Zeichen "longs", "longs"
     und "l" erstellt werden soll, sollte der Name "longs_longs_l" sein,
@@ -228,31 +229,31 @@
     genannt werden.
   </p>
   <p>
-    Nach der Benennung der Ligatur und dem Einfügen der Komponenten
+    Nach der Benennung der Ligatur und dem EinfÃ¼gen der Komponenten
     (mit "Zusammengesetzt erzeugen"), kann das Zeichen zur Bearbeitung
-    geöffnet werden, die <a href="../editmenu.html#Unlink">Referenzen getrennt</A>
-    und dann wie im obigen Beispiel gezeigt in die gewünschte Form gebracht
+    geÃ¶ffnet werden, die <a href="../editmenu.html#Unlink">Referenzen getrennt</A>
+    und dann wie im obigen Beispiel gezeigt in die gewÃ¼nschte Form gebracht
     werden.
   </p>
   <p>
     <IMG SRC="../charinfo-akhn.png" WIDTH="307" HEIGHT="401" ALT="Char Info for Akhand ligature type"
      ALIGN="Right">
-    Abschliessend sollte überprüft werden, ob das Zeichen als Ligatur
+    Abschliessend sollte Ã¼berprÃ¼ft werden, ob das Zeichen als Ligatur
     markiert wurde (und die richtige Art von Ligatur).
     Mit <a href="../charinfo.html#ligature">Element-&gt;Zeicheninformation-&gt;Ligatur</A>
-    wird der Ligaturdialog geöffnet. Zu sehen sein sollte etwas wie:<br>
+    wird der Ligaturdialog geÃ¶ffnet. Zu sehen sein sollte etwas wie:<br>
     <tt>&nbsp; &nbsp; liga &nbsp;m longs longs l</tt><br>
     oder <br>
     <tt>&nbsp; &nbsp; liga &nbsp;m uni0D15 uni0D4D uni0D15</tt><br>
-    Im ersten Fall kann eine zusätzliche Zeile durch Klicken des
+    Im ersten Fall kann eine zusÃ¤tzliche Zeile durch Klicken des
     "Neu..."-Knopfes erzeugt werden:
     <tt>&nbsp; &nbsp; liga &nbsp;m longs_longs l</tt><br>
-    (unter der Annahme, daß bereits eine longs_longs ligatur existiert).
-    Im zweiten Fall könnte die Zeile ausgewählt werden, und nach
+    (unter der Annahme, daÃŸ bereits eine longs_longs ligatur existiert).
+    Im zweiten Fall kÃ¶nnte die Zeile ausgewÃ¤hlt werden, und nach
     Klick auf den "Bearbeiten..."-Knopf der Ligaturtyp von
-    "liga" zu "akhn" geädert werden (ich weiss selbst nicht genug über
+    "liga" zu "akhn" geÃ¤dert werden (ich weiss selbst nicht genug Ã¼ber
     indische Schriften, um diese Unterscheidung zu verstehen), so
-    daß hinterher folgende Zeile angezeigt wird:<br>
+    daÃŸ hinterher folgende Zeile angezeigt wird:<br>
     <tt>&nbsp; &nbsp; akhn &nbsp;m uni0D15 uni0D4D uni0D15</tt>
   </p>
   <P>
@@ -261,7 +262,7 @@
   </p>
   <p align="center">
   -- <a href="editexample3.html">Vorherige Seite</a> -- <a href="../overview.html">Inhalt</A>
-  -- <a href="editexample5.html">Nächste Seite</a> --
+  -- <a href="editexample5.html">NÃ¤chste Seite</a> --
   </p>
 </div>
 </body></html>

@@ -3,9 +3,9 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
   <!-- AP: Last modified: 14-Jun-2006 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!--<TITLE>Spline Font Database File Format</TITLE>-->
-    <TITLE>�X�v���C���t�H���g�f�[�^�x�[�X�t�@�C���t�H�[�}�b�g</TITLE>
+    <TITLE>スプラインフォントデータベースファイルフォーマット</TITLE>
   <LINK REL="icon" href="../fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
@@ -13,7 +13,7 @@
 <DIV id="in">
   <H1 ALIGN=Center>
 <!--Spline Font Database-->
-    �X�v���C���t�H���g�f�[�^�x�[�X
+    スプラインフォントデータベース
   </H1>
   <P>
 <!--
@@ -25,72 +25,72 @@
   and see what it parses. Some descriptions of esoteric features are not complete,
   but I hope they give you enough hints that you can figure the format out
   (especially after looking it up in sfd.c) -->
-  <FONT COLOR="Red"><STRONG>���̃y�[�W�͔߂����Ȃ�قǎ���x��ł��B�����2005�N12��13���Ɏ������������Ƃ̑�܂��ȋߎ��ł��B</STRONG></FONT>����x��ł����Ă��A����͖��ɗ��ł��傤���A���݂̃t�H�[�}�b�g�ɂ��Ė{���ɒm�肽���ꍇ�� <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fontforge/sfd.c">sfd.c</A> ���Q�Ƃ��āA���ꂪ�ǂ̂悤�ɓǂݍ��݂��s�����𒲂ׂĂ��������B�������̔鋳�߂����@�\�̐����͊��S�ł͂���܂��񂪁A���Ȃ��� (�Ƃ��� sfd.c �𒲂ׂ����) �t�H�[�}�b�g���L�q�ł���悤�ɂȂ邽�߂̃q���g�ƂȂ邱�Ƃ����͖]��ł��܂��B
+  <FONT COLOR="Red"><STRONG>このページは悲しくなるほど時代遅れです。これは2005年12月13日に事実だったことの大まかな近似です。</STRONG></FONT>時代遅れであっても、これは役に立つでしょうが、現在のフォーマットについて本当に知りたい場合は <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fontforge/sfd.c">sfd.c</A> を参照して、それがどのように読み込みを行うかを調べてください。いくつかの秘教めいた機能の説明は完全ではありませんが、あなたが (とくに sfd.c を調べた後に) フォーマットを記述できるようになるためのヒントとなることを私は望んでいます。
   <P>
 <!--
   FontForge's <A HREF="sfd.html">sfd</A> files are ASCII files (so they can
   be copied easily across the internet and so that diffs are somewhat meaningful).
   They contain a full description of your font. -->
-  FontForge �� <A HREF="sfd.html">sfd</A> �t�@�C���� ASCII �t�@�C���ł� (�Ȃ̂ł����� Internet ����ĊȒP�ɃR�s�[�ł��Adiff ����邱�Ƃɂ͉��炩�ً̈`������܂��B����ɂ͂��Ȃ��̃t�H���g�̊��S�ȋL�q���܂܂�܂��B
+  FontForge の <A HREF="sfd.html">sfd</A> ファイルは ASCII ファイルです (なのでそれらは Internet を介して簡単にコピーでき、diff を取ることには何らかの異義があります。それにはあなたのフォントの完全な記述が含まれます。
   <P>
 <!--
   They are vaguely modeled on bdf files. The first few lines contain general
   font properties, then there's a section for each character, then a section
   for each bitmap font. -->
-  �����͂������� BDF �t�@�C������͂��Ƃ��Ă��܂��B�ŏ��̂����킸���ȍs�Ƀt�H���g�S�̂̑������܂܂�A����ɑ����Ċe�����̃Z�N�V�����������A�Ō�Ɋe�r�b�g�}�b�v�t�H���g�̃Z�N�V���������܂��B
+  それらはかすかに BDF ファイルから範をとっています。最初のごくわずかな行にフォント全体の属性が含まれ、それに続いて各文字のセクションが続き、最後に各ビットマップフォントのセクションがきます。
   <UL>
     <LI>
 <!--  <A HREF="sfdformat.html#Font-Header">Font Header</A>-->
-      <A HREF="sfdformat.html#Font-Header">�t�H���g�w�b�_</A>
+      <A HREF="sfdformat.html#Font-Header">フォントヘッダ</A>
     <LI>
 <!--  <A HREF="sfdformat.html#Outline-Char-Data">Outline Character Data</A> -->
-      <A HREF="sfdformat.html#Outline-Char-Data">�A�E�g���C�������f�[�^</A>
+      <A HREF="sfdformat.html#Outline-Char-Data">アウトライン文字データ</A>
     <LI>
 <!--  <A HREF="sfdformat.html#Bitmap-Fonts">Bitmap Fonts</A>-->
-      <A HREF="sfdformat.html#Bitmap-Fonts">�r�b�g�}�b�v�t�H���g</A>
+      <A HREF="sfdformat.html#Bitmap-Fonts">ビットマップフォント</A>
     <LI>
 <!--  <A HREF="sfdformat.html#CID-keyed-fonts">CID keyed fonts</A>-->
-      <A HREF="sfdformat.html#CID-keyed-fonts">CID �L�[�w��t�H���g</A>
+      <A HREF="sfdformat.html#CID-keyed-fonts">CID キー指定フォント</A>
     <LI>
 <!--  <A HREF="sfdformat.html#Multiple-Master-fonts">Multiple Master fonts</A>-->
-      <A HREF="sfdformat.html#Multiple-Master-fonts">�}���`�v���}�X�^�[�t�H���g</A>
+      <A HREF="sfdformat.html#Multiple-Master-fonts">マルチプルマスターフォント</A>
     <LI>
 <!--  <A HREF="sfdformat.html#Autosave-Format">AutoSave Format</A>-->
-      <A HREF="sfdformat.html#Autosave-Format">�����ۑ��t�H�[�}�b�g</A>
+      <A HREF="sfdformat.html#Autosave-Format">自動保存フォーマット</A>
   </UL>
   <P>
 <!--
   <FONT COLOR="Red"><STRONG><BIG>WARNING: </BIG></STRONG></FONT>It is tempting
   to cut and paste information from one sfd file to another. This is usually
   ok, but there are a couple of cases than need to be avoided: -->
-  <FONT COLOR="Red"><STRONG><BIG>�x��: </BIG></STRONG></FONT>���� SFD �t�@�C�����瑼�̃t�@�C���֏����J�b�g&amp;�y�[�X�g�������Ƃ����U�f���o���܂��B����͑��̏ꍇ�͖�肠��܂��񂪁A���������Ȃ���΂Ȃ�Ȃ��ꍇ�� 2 ����܂�:
+  <FONT COLOR="Red"><STRONG><BIG>警告: </BIG></STRONG></FONT>ある SFD ファイルから他のファイルへ情報をカット&amp;ペーストしたいという誘惑を覚えます。これは大抵の場合は問題ありませんが、これを避けなければならない場合が 2 つあります:
   <UL>
     <LI>
 <!--  If you copy a glyph with truetype instructions, those instructions may call
       subroutines defined in the old font but not the new. Unexpected things may
       happen when the glyph is grid fit (including system crashes) -->
-      TrueType ���߂��܂ރO���t���R�s�[�����ꍇ�A�����̖��߂��Â��t�H���g�ɂ͒�`����Ă��Ă��V�����t�H���g�ɂ͖���`�̃T�u���[�`�����Ă�ł���\��������܂��B�O���t���O���b�h���킹���s�����Ƃ��A�\�z�O�̎��� (�V�X�e���N���b�V�����܂�) ���N����\��������܂��B
+      TrueType 命令を含むグリフをコピーした場合、それらの命令が古いフォントには定義されていても新しいフォントには未定義のサブルーチンを呼んでいる可能性があります。グリフがグリッド合わせを行ったとき、予想外の事柄 (システムクラッシュを含む) が起こる可能性があります。
     <LI>
 <!--  If you copy a substitution (ligature, kern, contextual chaining, ...) item
       from one font to another, the substitution contains an index into a table
       of script/languages maintained by the font. Bad things (FontForge crashes)
       can happen if these tables do not match. -->
-      �u�� (�����A�J�[�j���O�A�A���^�����ˑ��A�c) ������t�H���g����ʂ̃t�H���g�ɃR�s�[�����Ƃ��ɂ́A�u���ɂ̓t�H���g�ɕۑ�����Ă���X�N���v�g/����e�[�u�����̃C���f�b�N�X���ۑ�����Ă��܂��B�����̃e�[�u������v���Ă��Ȃ���΁A������ (FontForge �̃N���b�V��) ���N���邩������܂���B
+      置換 (合字、カーニング、連鎖型文脈依存、…) をあるフォントから別のフォントにコピーしたときには、置換にはフォントに保存されているスクリプト/言語テーブル内のインデックスが保存されています。それらのテーブルが一致していなければ、悪い事 (FontForge のクラッシュ) が起こるかもしれません。
     <LI>
 <!--  If you copy a glyph containing references these are done by glyph index (which
       is probably different from font to font). You may end up refering to the
       wrong glyph. -->
-      �O���t�C���f�b�N�X (����̓t�H���g��ƂɈقȂ�܂�) �ɂ���Ďw�肳�ꂽ�Q�Ƃ��܂ރO���t���R�s�[����ƁA�Ԉ�����O���t���Q�Ƃ��錋�ʂƂȂ�ł��傤�B
+      グリフインデックス (これはフォント語とに異なります) によって指定された参照を含むグリフをコピーすると、間違ったグリフを参照する結果となるでしょう。
   </UL>
   <H3>
 <!--<A NAME="Font-Header">Font Header</A>-->
-    <A NAME="Font-Header">�t�H���g�w�b�_</A>
+    <A NAME="Font-Header">フォントヘッダ</A>
   </H3>
   <P>
 <!--
   Here is an example of what the first few lines look like (order is largely
   irrelevant within this section): -->
-  �����Ɏ����̂́A�ŏ��̂����͂��ȍs���ǂ̂悤�Ȋ�������������ł� (���̃Z�N�V�����ł́A���Ԃ͂قƂ�ǈӖ��������܂���):
+  ここに示すのは、最初のごく僅かな行がどのような感じかを示す例です (このセクションでは、順番はほとんど意味をもちません):
   <BLOCKQUOTE>
     <PRE>SplineFontDB: 1.0
 FontName: Ambrosia
@@ -124,7 +124,7 @@ TeXData: 1 10485760 0 269484 134742 89828 526385 1048576 89828
   some fairly self-explanatory items (if they don't make sense, look them up
   in the <A HREF="fontinfo.html">font info</A> dlg). A few things need some
   explanation: -->
-  �ŏ��̍s�́A�P�ɂ��̃t�@�C���� SFD �t�@�C���ł��邱�Ƃ����������̂��̂ł��B���̉��� 3 �s�́APostScript �Ńt�H���g�ɐݒ肷�邱�Ƃ��ł���e��̈قȂ閼�O�������Ă��܂��B����ɑ������ڌQ�́A�܂��������̖��̒ʂ�ɗp�����܂� (�Ӗ���������Ȃ��ꍇ�́A<A HREF="fontinfo.html">�t�H���g���</A>�_�C�A���O�Œ��ׂĂ݂Ă�������)�B2, 3 �̍��ڂɂ͂�����Ɛ������K�v�ł��傤:
+  最初の行は、単にこのファイルが SFD ファイルであることを示すだけのものです。その下の 3 行は、PostScript でフォントに設定することができる各種の異なる名前を示しています。それに続く項目群は、まったくその名の通りに用いられます (意味が分からない場合は、<A HREF="fontinfo.html">フォント情報</A>ダイアログで調べてみてください)。2, 3 の項目にはちょっと説明が必要でしょう:
   <DL>
     <DT>
       TeXData
@@ -135,7 +135,7 @@ TeXData: 1 10485760 0 269484 134742 89828 526385 1048576 89828
       the font parameters. These values are usually in TeX fix_word format where
       there is a binary point after the first 20 binary digits (so to get the number
       divide by (1&lt;&lt;20)). -->
-      ������ TeX �̃t�H���g�p�����[�^ (����т������̓���̏��) �ł��B�ŏ��̐��l�� 1, 2 �܂��� 3 �ŁA�t�H���g���e�L�X�g�A���w�܂��͐��w�g���t�H���g�̂ǂ�ł��邩�������܂��B���̐��l�̓f�U�C���|�C���g�T�C�Y (�~(1&lt;&lt;20)) �ł��B���̌�Ƀt�H���g�p�����[�^�������܂��B�����̐��l�͒ʏ� TeX �� fix_word �t�H�[�}�b�g�ŕ\����܂��B���̃t�H�[�}�b�g�ł� 2 �i���Ő擪 20 ���ڂɏ����_�����܂� (�ł�����A���ۂ̐��l�𓾂邽�߂ɂ� (1&lt;&lt;20) �Ŋ����Ă�������)�B
+      これらは TeX のフォントパラメータ (およびいくつかの同種の情報) です。最初の数値は 1, 2 または 3 で、フォントがテキスト、数学または数学拡張フォントのどれであるかを示します。次の数値はデザインポイントサイズ (×(1&lt;&lt;20)) です。その後にフォントパラメータが続きます。これらの数値は通常 TeX の fix_word フォーマットで表されます。このフォーマットでは 2 進数で先頭 20 桁目に小数点が来ます (ですから、実際の数値を得るためには (1&lt;&lt;20) で割ってください)。
     <DT>
       DisplaySize
     <DD>
@@ -143,19 +143,19 @@ TeXData: 1 10485760 0 269484 134742 89828 526385 1048576 89828
       the font in fontviews (it may be changed of course). Negative numbers mean
       to rasterize the display from the outlines, positive numbers mean to use
       a prebuilt bitmap font of that size. -->
-      ����́A�t�H���g�r���[���Ńt�H���g��\������ۂ̃f�t�H���g�Ƃ��ėp������A1 em ������̃s�N�Z�����ł� (�������ύX�\�ł�)�B���̐����́A�A�E�g���C�������X�^���C�Y���ĕ\�����邱�Ƃ��Ӗ����A���̐����́A���̃T�C�Y�Ɉ�v����쐬�ς݂̃r�b�g�}�b�v���g�p���邱�Ƃ��Ӗ����܂��B
+      これは、フォントビュー内でフォントを表示する際のデフォルトとして用いられる、1 em あたりのピクセル数です (もちろん変更可能です)。負の数字は、アウトラインをラスタライズして表示することを意味し、正の数字は、そのサイズに一致する作成済みのビットマップを使用することを意味します。
     <DT>
       AntiAlias
     <DD>
 <!--  Whether the fontview should display the font as antialiased or black and
       white. (AntiAliased looks better, but will be slower) -->
-      �t�H���g�r���[�ŁA�t�H���g���A���`�G�C���A�X�\�����邩�A�����\�����邩�B(�A���`�G�C���A�X�̕������ꂢ�ɕ\������܂����A�x���Ȃ�܂�)
+      フォントビューで、フォントをアンチエイリアス表示するか、白黒表示するか。(アンチエイリアスの方がきれいに表示されますが、遅くなります)
     <DT>
       FitToEm
     <DD>
 <!--  Controls whether Fit to Em is checked by default in a fontview that displays
       this font. -->
-      ���̃t�H���g��\������t�H���g�r���[�ŁA<CODE>�\����S�p�ɌŒ�(<U>F</U>)</CODE> �Ƀf�t�H���g�Ń`�F�b�N�����Ă������B
+      このフォントを表示するフォントビューで、<CODE>表示を全角に固定(<U>F</U>)</CODE> にデフォルトでチェックを入れておくか。
     <DT>
       WinInfo
     <DD>
@@ -164,14 +164,14 @@ TeXData: 1 10485760 0 269484 134742 89828 526385 1048576 89828
       at encoding 64 should be visible, the second that the window should have
       16 character columns horizontally, and the last that there should be 4 character
       rows vertically. -->
-      ���̃t�H���g��\������E�B���h�E�̃f�t�H���g��ʂ�\�� 3 �̒l�ł��B�ŏ��̒l�́A�E�B���h�E�͕����ʒu 64 �ɂ���O���t��������悤�ɃX�N���[�����邩��\���A2 �Ԗڂ̒l�́A�E�B���h�E������ 16 �������̗��������ǂ������A�Ō�̒l�͌��Ă� 4 �������̗��������ǂ�����\���܂��B
+      このフォントを表示するウィンドウのデフォルト画面を表す 3 つの値です。最初の値は、ウィンドウは符号位置 64 にあるグリフが見えるようにスクロールするかを表し、2 番目の値は、ウィンドウが横幅 16 文字分の欄をもつかどうかを、最後の値は建てに 4 文字分の欄を持つかどうかを表します。
     <DT>
       Encoding
     <DD>
 <!--  For normal fonts this will be one of the names (or a close approximation
       thereto) that appears in the Encoding pulldown list. CID keyed fonts will
       not have encodings. Instead they'll have something like: -->
-      ���ʂ̃t�H���g�ł́A����� <CODE>�G���R�[�f�B���O(<U>E</U>)</CODE> �v���_�E�����X�g�ɕ\������閼�O�̂ǂꂩ�Ɠ��� (���A����ɔ��ɋ߂�) ���̂ƂȂ�ł��傤�BCID �L�[�w��t�H���g�́AEncoding �s���܂܂��A�ȉ��̂悤�Ȃ��̂��܂܂��ł��傤�B
+      普通のフォントでは、これは <CODE>エンコーディング(<U>E</U>)</CODE> プルダウンリストに表示される名前のどれかと同じ (か、それに非常に近い) ものとなるでしょう。CID キー指定フォントは、Encoding 行を含まず、以下のようなものが含まれるでしょう。
   </DL>
   <BLOCKQUOTE>
     <PRE>Registry: Adobe
@@ -185,7 +185,7 @@ CIDVersion: 1.2
   Some fonts will have some TrueType information in them too (look at the
   <A HREF="http://www.microsoft.com/typography/tt/tt.htm">truetype spec</A>
   for the meanings of these, they usually live in the OS/2, hhea, or vhea tables). -->
-  �t�H���g�ɂ���ẮA�������� TrueType ���������Ɋ܂܂��ł��傤 (�����̈Ӗ��ɂ��Ă� <A HREF="http://www.microsoft.com/typography/tt/tt.htm">TrueType �̎d�l��</A>���Q�Ƃ��Ă��������B�����͑�� OS/2, hhea, vhea �e�[�u���̂����ꂩ�ɂ���͂��ł��B
+  フォントによっては、いくつかの TrueType 情報もここに含まれるでしょう (それらの意味については <A HREF="http://www.microsoft.com/typography/tt/tt.htm">TrueType の仕様書</A>を参照してください。それらは大抵 OS/2, hhea, vhea テーブルのいずれかにあるはずです。
   <BLOCKQUOTE>
     <PRE>FSType: 4
 PFMFamily: 17
@@ -211,7 +211,7 @@ OS2FamilyClass: 2050
   <CODE>HheadAscent</CODE> should be and then add "0" to it to get the value
   stored in a truetype font's OS/2 table. However if the Offset flag is set
   to 0 (false) then the Ascent would be used exactly as specified. -->
-  �ȉ��̍��ڂ� OS/2 ����� hhea �e�[�u��������擾����܂����A�����͋͂��ɂ�蕡�G�ł��B�����̃L�[���[�h�͑΂ɂȂ��Ă���̂� <CODE>HheadAscent</CODE> �� <CODE>HheadAOffset</CODE> �͈ꏏ�ɓ��삵�܂��B*Offset �L�[���[�h�� 1 (�^) �ł���ꍇ�A�����Е��̃L�[���[�h�́AFontForge ���������l�Ƃ��ĔF������l����Ƃ������Βl�Ƃ��Ĉ����܂��B���̏ꍇ FontForge �͓K�؂Ǝv����l���v�Z���āA����ɃL�[���[�h�Ŏw�肳�ꂽ�l�������܂��B�ł�����ȉ��̗�ł́AFF �� TrueType �t�H���g�� OS/2 �e�[�u���Ɋi�[���ꂽ�l�𓾂邽�߂� <CODE>HheadAscent</CODE> �Ɂg0�h��������ׂ��ƍl���܂��B���̈���AOffset �t���O�� 0 (�U) �ɐݒ肳��Ă���ꍇ�A�A�Z���g�̒l�͎w�肳�ꂽ�Ƃ���̕����g�p����܂��B
+  以下の項目は OS/2 および hhea テーブルからも取得されますが、それらは僅かにより複雑です。それらのキーワードは対になっているので <CODE>HheadAscent</CODE> と <CODE>HheadAOffset</CODE> は一緒に動作します。*Offset キーワードが 1 (真) である場合、もう片方のキーワードは、FontForge が正しい値として認識する値を基準とした相対値として扱われます。その場合 FontForge は適切と思われる値を計算して、それにキーワードで指定された値を加えます。ですから以下の例では、FF は TrueType フォントの OS/2 テーブルに格納された値を得るために <CODE>HheadAscent</CODE> に“0”を加えるべきと考えます。その一方、Offset フラグが 0 (偽) に設定されている場合、アセントの値は指定されたとおりの物が使用されます。
   <BLOCKQUOTE>
     <PRE>HheadAscent: 0
 HheadAOffset: 1
@@ -231,7 +231,7 @@ OS2WinDOffset: 1
 <!--
   The OS/2 table contains information on the position of subscripts, superscripts
   and strike throughs: -->
-  OS/2 �e�[�u���ɂ͉��t�������A��t����������ю��������̈ʒu��񂪊܂܂�Ă��܂�:
+  OS/2 テーブルには下付き文字、上付き文字および取り消し線の位置情報が含まれています:
   <BLOCKQUOTE>
     <PRE>OS2SubXSize: 1351
 OS2SubYSize: 1228
@@ -249,12 +249,12 @@ OS2StrikeYPos: 614
 <!--
   The MacStyle field (if present) indicates whether the font is bold, italic,
   condensed, extended, etc. -->
-  MacStyle �t�B�[���h�́A(���݂����) ���̃t�H���g���{�[���h�A�C�^���b�N�A�R���f���X�g�A�G�N�X�e���f�B�h�ȂǂɊY�����邩�ǂ����������܂��B
+  MacStyle フィールドは、(存在すれば) そのフォントがボールド、イタリック、コンデンスト、エクステンディドなどに該当するかどうかを示します。
   <P>
 <!--
   Some fonts will have Postscript specific information contained in the Private
   dictionary -->
-  �ꕔ�̃t�H���g�́APrivate �����Ɋ܂܂�� PostScript �ŗL�̏��������Ă��܂��B
+  一部のフォントは、Private 辞書に含まれる PostScript 固有の情報をもっています。
   <BLOCKQUOTE>
     <PRE>BeginPrivate: 1
 BlueValues 23 [-19 0 502 517 750 768]
@@ -265,7 +265,7 @@ EndPrivate
 <!--
   If the font has any opentype features it will have a list of
   <A HREF="charinfo.html#ScriptLang">script language</A> entries: -->
-  �t�H���g�� OpenType �@�\���܂܂�Ă���Ȃ�΁A<A HREF="charinfo.html#ScriptLang">�p���n�E����</A>���ڂ̃��X�g������͂��ł�:
+  フォントに OpenType 機能が含まれているならば、<A HREF="charinfo.html#ScriptLang">用字系・言語</A>項目のリストもあるはずです:
   <BLOCKQUOTE>
     <PRE>ScriptLang: 3
  1 latn 1 ROM   
@@ -282,7 +282,7 @@ EndPrivate
   time any of the four languages 'DEU ', 'ROM ', 'VIT ' or the default language
   apply to it. And the last line gives an example of an entry that is active
   for several scripts with several languages. -->
-  �ŏ��̍s�́A�p���n�E���ꍀ�ڂ� 3 �Z�b�g���݂��邱�Ƃ������A���̌�� 3 �s�ɂ����̍��ڂ��܂܂�܂��B2 �s�ڂ́A���̍��ڂ��L���ɂȂ�̂����� 1 �̗p���n (&lsquo;latn&rsquo;) �݂̂ŁA�Ȃ������ꂪ&lsquo;ROM &rsquo;�ł���Ƃ��Ɍ����邱�Ƃ������܂��B���̎��̍s�� 1 �̗p���n�݂̂ɑ΂��ėL���ł��邱�Ƃ������܂����A���x�� 4 �̌��� (&lsquo;DEU &rsquo;,&lsquo;ROM &rsquo;,&lsquo;VIT &rsquo;�܂��̓f�t�H���g����) �ɑ΂��ēK�p����邱�Ƃ�\���܂��B�Ō�̍s�ł́A�����̗p���n�ƕ����̌���ɂ����ėL���ƂȂ鍀�ڂ̗�������Ă��܂��B
+  最初の行は、用字系・言語項目が 3 セット存在することを示し、その後の 3 行にそれらの項目が含まれます。2 行目は、この項目が有効になるのがただ 1 個の用字系 (&lsquo;latn&rsquo;) のみで、なおかつ言語が&lsquo;ROM &rsquo;であるときに限られることを示します。その次の行も 1 個の用字系のみに対して有効であることを示しますが、今度は 4 個の言語 (&lsquo;DEU &rsquo;,&lsquo;ROM &rsquo;,&lsquo;VIT &rsquo;またはデフォルト言語) に対して適用されることを表します。最後の行では、複数の用字系と複数の言語において有効となる項目の例を示しています。
   <P>
 <!--
   OpenType features are stored with an index into this list. If a feature has
@@ -292,11 +292,11 @@ EndPrivate
   is "Nested", that is it is never activated by itself, but its activation
   is controlled by a contextual or contextual chaining lookup (which in turn
   will have its own script language index). -->
-  OpenType �@�\�͂��̃��X�g���̃C���f�b�N�X��p���Ċi�[����܂��B���̏ꍇ�A����@�\���C���f�b�N�X�g0�h�ł���Ȃ�΁A���̋@�\�̓��[�}�j�A��̃��e�������\�L�̂Ƃ��ɂ̂ݗL���ɂȂ�܂��B�C���f�b�N�X�� 2 �ł���Ȃ�΁A���̋@�\�̓L���������E�M���V����������у��e�������ɑ΂��ėL���ɂȂ�킯�ł��B���̋@�\���u����q�v�ɂȂ������ł��邱�Ƃ�\�����߂̓��ʂȗp���n�C���f�b�N�X�Ƃ��āA65535 ���g���Ă��܂��B����͂��ꎩ�̂ŋN������邱�Ƃ͌����ĂȂ��A�����ˑ��܂��͕����ˑ��A���̏ƍ�  (���ꎩ�̂́A�Ǝ��̗p���n�E����C���f�b�N�X������Ă��܂�) �ɂ���ċN�������䂳�����̂ł��B
+  OpenType 機能はこのリスト内のインデックスを用いて格納されます。この場合、ある機能がインデックス“0”であるならば、その機能はルーマニア語のラテン文字表記のときにのみ有効になります。インデックスが 2 であるならば、その機能はキリル文字・ギリシャ文字およびラテン文字に対して有効になるわけです。その機能が「入れ子」になった物であることを表すための特別な用字系インデックスとして、65535 を使っています。これはそれ自体で起動されることは決してなく、文脈依存または文脈依存連鎖の照合  (これ自体は、独自の用字系・言語インデックスを備えています) によって起動が制御されるものです。
   <P>
 <!--
   If your font has any kerning classes -->
-  �t�H���g�ɉ��炩�̃J�[�j���O�N���X���܂܂�Ă���΁A
+  フォントに何らかのカーニングクラスが含まれていれば、
   <BLOCKQUOTE>
     <PRE>KernClass: 31 64 2 0
  1 F
@@ -330,13 +330,13 @@ EndPrivate
   of the given classes of left and right characters (ie. if char1 was in left
   class 2 and char2 was in right class 4 then we would index this array with
   3*&lt;char2 class cnt&gt; + 4). -->
-  �ŏ��̍s�́A���̃J�[�j���O�N���X�Ɋ܂܂��擪�����̃N���X�� 31 ��ޑ��݂��A��񕶎��̃N���X�� 64 ��ޑ��݂��邱�Ƃ�\���Ă��܂��B����́A��L�̗p���n�E���ꃊ�X�g�̍��� 2 �ɑ΂��ėL���ɂȂ�܂��B<A HREF="charinfo.html#lookup-flags">OpenType �t���O</A> �� 0 �ƂȂ�܂��B���̍s�́A�ŏ��̕��� (�N���X 0 �͗\��ς݂ŁA�ʏ�͒�`����K�v���Ȃ��̂ŁA���̔ԍ��� 1 �ƂȂ�܂�) �̐擪�����N���X�͕����gF�h1 ��������Ȃ邱�Ƃ�\���܂� (�gF�h�̑O�ɂ��鐔���͍s�̕������ł��B����� SFD �t�@�C���̏������x�̌���ɖ𗧂��܂����A���ꎩ�̂ňӖ��������ł͂���܂���)�B���̍s�́A�擪�����̃N���X 2 �ŁA��葽���̕������܂�ł��邽�ߕ����񒷂������Ȃ��Ă��܂��B30 �̍��ڂ���������ɁA��񕶎��̃N���X���n�܂�܂��B����́A�擪�����̃N���X�ƑS�����l�ł��B��񕶎��̃N���X��S����`���I�������ɁA����(���m�ɂ� &lt;�擪�����N���X�̌��~��񕶎��N���X�̌�&gt;) �̐��l����Ȃ� 1 �̔z�񂪗��܂��B����́A�Y������N���X�̑΂ɂ����鍶�E�̕����ԂɎ{�����J�[�j���O�̗ʂ��w�肵�Ă��܂� (�Ⴆ�΁A����1 ���擪�����N���X 2 �ɑ����A����2 ����񕶎��N���X 4 �ɑ����Ă���ꍇ�A���̔z��̃C���f�b�N�X 3�~&lt;����2 �̃N���X�ԍ�&gt; + 4 �Ŏw�肷�邱�ƂɂȂ�܂�)
+  最初の行は、このカーニングクラスに含まれる先頭文字のクラスが 31 種類存在し、第二文字のクラスが 64 種類存在することを表しています。これは、上記の用字系・言語リストの項目 2 に対して有効になります。<A HREF="charinfo.html#lookup-flags">OpenType フラグ</A> は 0 となります。次の行は、最初の文字 (クラス 0 は予約済みで、通常は定義する必要がないので、この番号は 1 となります) の先頭文字クラスは文字“F”1 文字からなることを表します (“F”の前にある数字は行の文字数です。これは SFD ファイルの処理速度の向上に役立ちますが、それ自体で意味を持つ情報ではありません)。次の行は、先頭文字のクラス 2 で、より多くの文字を含んでいるため文字列長も長くなっています。30 個の項目が続いた後に、第二文字のクラスが始まります。これは、先頭文字のクラスと全く同様です。第二文字のクラスを全部定義し終わった後に、多数(正確には &lt;先頭文字クラスの個数×第二文字クラスの個数&gt;) の数値からなる 1 個の配列が来ます。これは、該当するクラスの対における左右の文字間に施されるカーニングの量を指定しています (例えば、文字1 が先頭文字クラス 2 に属し、文字2 が第二文字クラス 4 に属している場合、この配列のインデックス 3×&lt;文字2 のクラス番号&gt; + 4 で指定することになります)
   <P>
 <!--
   If your fontforge has been configured with device table support you may find
   <A HREF="#device-table">device</A> tables interspersed among the kerning
   offsets array: -->
-  ���g���� FontForge ���f�o�C�X�e�[�u���T�|�[�g���̐ݒ�ŃR���p�C������Ă���ꍇ�A<A HREF="#device-table">�f�o�C�X</A>�e�[�u�����J�[�j���O�I�t�Z�b�g�z��̊Ԃɑg�ݍ��܂�Ă���̂�������ł��傤:
+  お使いの FontForge がデバイステーブルサポートつきの設定でコンパイルされている場合、<A HREF="#device-table">デバイス</A>テーブルがカーニングオフセット配列の間に組み込まれているのが見つかるでしょう:
   <BLOCKQUOTE>
     <PRE>...
 0 {} 0 {} 0 {} ...
@@ -346,7 +346,7 @@ EndPrivate
   <P>
 <!--
   The order of opentype features within GPOS/GSUB tables may be stored: -->
-  GPOS/GSUB �e�[�u���Ɋ܂܂�� OpenType �@�\�̏��Ԃ��ۑ����邱�Ƃ��ł��܂�:
+  GPOS/GSUB テーブルに含まれる OpenType 機能の順番も保存することができます:
   <BLOCKQUOTE>
     <PRE>TableOrder: GPOS 4
 	'subs'
@@ -363,7 +363,7 @@ TableOrder: GSUB 2
   If the font contains ttf hinting, then the file may contain unparsed truetype
   tables (understanding ttf hinting is beyond FontForge's abilities, but it
   can at least preserve the data): -->
-  �t�H���g�� TTF �̃q���g��񂪊܂܂�Ă���ꍇ�A�t�@�C���ɂ� TrueType �e�[�u������͂��Ȃ��Ŋi�[���邱�Ƃ��ł��܂� (TTF �̃q���g�𗝉����邱�Ƃ� FontForge �̔\�͂𒴂��Ă��܂����A���Ȃ��Ƃ��f�[�^��ۑ����邱�Ƃ͂ł��܂�):
+  フォントに TTF のヒント情報が含まれている場合、ファイルには TrueType テーブルを解析しないで格納することができます (TTF のヒントを理解することは FontForge の能力を超えていますが、少なくともデータを保存することはできます):
   <BLOCKQUOTE>
     <PRE>TtfTable: prep 4360
 5S;o3()It?eJ8r@H[HSJH[H^@!b&amp;BQ*?Vcm@'XSh+1MACZ&gt;Up/\,o1+Ca't2!&lt;ocH+Wn2p"@,t&amp;
@@ -379,7 +379,7 @@ TableOrder: GSUB 2
   data and packs it into ASCII without too much expansion. See the PostScript
   Reference Manual (3rd edition, pages 131-132) for a description of this packing,
   or <CODE>$&nbsp;man&nbsp;btoa</CODE>). -->
-  �ŏ��̍s�́A&lsquo;prep&rsquo;�e�[�u���̒����� 4360 �o�C�g�ł��邱�Ƃ�\���܂��B���ɑ����s�ɂ́A4360 �o�C�g�̃f�[�^�� <A HREF="#ASCII85Encode">ASCII85Encode<SUP>1</SUP></A> (���͂��ꂽ�o�C�i���f�[�^�����܂�T�C�Y��傫�����Ȃ��� ASCII �Ƀp�b�N���܂��B���̕����̐����́APostScript ���t�@�����X�}�j���A�� (��3�ŁA���� 131�`132 �y�[�W) ���Q�Ƃ��邩�A<CODE>$&nbsp;man&nbsp;btoa</CODE> �Œ��ׂĂ�������) �Ƀp�b�N����Ĕ[�߂��Ă��܂��B
+  最初の行は、&lsquo;prep&rsquo;テーブルの長さが 4360 バイトであることを表します。後ろに続く行には、4360 バイトのデータが <A HREF="#ASCII85Encode">ASCII85Encode<SUP>1</SUP></A> (入力されたバイナリデータをあまりサイズを大きくしないで ASCII にパックします。この方式の説明は、PostScript リファレンスマニュアル (第3版、原書 131〜132 ページ) を参照するか、<CODE>$&nbsp;man&nbsp;btoa</CODE> で調べてください) にパックされて納められています。
   <P>
 <!--
   The <CODE>LangName</CODE> entries represent the TrueType name table: the
@@ -390,7 +390,7 @@ TableOrder: GSUB 2
   equivalent postscript item then that name will be omitted (this makes it
   easier to handle updates, users only have to change the copyright in one
   place) -->
-  TrueType �� name �e�[�u���͕����� <CODE>LangName</CODE> ���ڂɂ���ĕ\����܂�: �����͌����\���A���̌��ɑ����̂� UTF-7 �ŕ��������ꂽ������̃��X�g�ł��B�ŏ��̕������ ID=0 (���쌠) �ɑΉ����A2 �Ԗڂ� ID=1 (�t�@�~���[) �ɑΉ����A�c�Ƃ�����ŁA�����ɂ���󕶎���͂��ׂďȗ�����܂��B�A�����J�p�� (1033) �̃Z�N�V�����ł́A�����̖��O�̂ǂꂩ���A������ PostScript ���ڂƐ��m�Ɉ�v���Ă���ꍇ�A���̖��O�͏ȗ�����܂� (����ɂ��X�V�̎戵�����ȒP�ɂȂ�A���[�U�� 1 �ӏ��Œ��쌠�\����ύX���邾���ł悭�Ȃ�܂�)�B
+  TrueType の name テーブルは複数の <CODE>LangName</CODE> 項目によって表されます: 数字は言語を表し、その後ろに続くのは UTF-7 で符号化された文字列のリストです。最初の文字列は ID=0 (著作権) に対応し、2 番目は ID=1 (ファミリー) に対応し、…という具合で、末尾にある空文字列はすべて省略されます。アメリカ英語 (1033) のセクションでは、これらの名前のどれかが、等価な PostScript 項目と正確に一致している場合、その名前は省略されます (これにより更新の取扱いが簡単になり、ユーザは 1 箇所で著作権表示を変更するだけでよくなります)。
   <BLOCKQUOTE>
     <PRE>LangName: 1033 "" "" "Regular" "GWW:Caliban Regular: Version 1.0" "" "Version 1.0"
 LangName: 1032 "" "" "+A5oDsQ09A78DvQ05A7oDrAAA"
@@ -399,7 +399,7 @@ LangName: 1032 "" "" "+A5oDsQ09A78DvQ05A7oDrAAA"
   <P>
 <!--
   If your font has any anchor classes: -->
-  �t�H���g�ɉ��炩�̃A���J�[�N���X���܂܂�Ă���ꍇ:
+  フォントに何らかのアンカークラスが含まれている場合:
   <BLOCKQUOTE>
     <PRE>AnchorClass: "top" mark 4 7 1 "bottom" mark 4 7 1 "Anchor-2" mark 4 7 1 "Anchor-3" mark 4 7 2 "Anchor-4" mark 4 7 2 "Anchor-5" mark 4 7 3 "Anchor-6" mark 4 7 4 
 </PRE>
@@ -410,7 +410,7 @@ LangName: 1032 "" "" "+A5oDsQ09A78DvQ05A7oDrAAA"
   flags 4, a script lang index of 7, and it should be merged with other anchor
   classes marked with "1". The next class is named "bottom", the next "Anchor-2"
   and so forth. (Anchor class names are output in UTF7) -->
-  �����ɂ́gtop�h�Ƃ������O�ŁA�@�\�^�O�gmark�h���܂݁AOpenType �t���O�� 4 �ŁA�p���n/����C���f�b�N�X�� 7 �ł���A���J�[�N���X�����݂��A���ꂪ�g1�h�ƈ�Â���ꂽ���̃A���J�[�N���X�ƕ������ׂ��ł��邱�Ƃ������܂��B���̃N���X�́gbottom�h�Ƃ������O�ŁA���̎��́gAnchor-2�h�Ƃ������O�ŁA�ȉ����l�ɑ����܂��B(�A���J�[�N���X���� UTF-7 �ŏo�͂���܂�)
+  ここには“top”という名前で、機能タグ“mark”を含み、OpenType フラグが 4 で、用字系/言語インデックスが 7 であるアンカークラスが存在し、これが“1”と印づけられた他のアンカークラスと併合すべきであることを示します。次のクラスは“bottom”という名前で、その次は“Anchor-2”という名前で、以下同様に続きます。(アンカークラス名は UTF-7 で出力されます)
   <P>
 <!--
   Contextual or contextual chaining lookups are also stored in the font header.
@@ -419,9 +419,9 @@ LangName: 1032 "" "" "+A5oDsQ09A78DvQ05A7oDrAAA"
   chaining lookups may check previous glyphs (called backtracking), current
   glyphs and lookahead glyphs, while Contextual lookups only check for a string
   of current glyphs. There are four formats:<BR> -->
-  �����ˑ��܂��͕����ˑ��A���̏ƍ����A�t�H���g�w�b�_�Ɋi�[����܂��B�����̓L�[���[�h�gContextPos�h,�gContextSub�h,�gChainPos�h,�gChainSub�h�܂��́gReverseChain�h�Ŏn�܂�A�L�[���[�h�gENDFPST�h�ŏI�����܂��B�����ˑ��̏ƍ��͌��݈ʒu�ɂ���O���t�������̕�����Q�Əƍ����邱�Ƃ����ł��܂��񂪁A�����ˑ��A���̏ƍ��͌��݂̃O���t�A����ѐ�ǂ݃O���t�����łȂ���s����O���t���`�F�b�N���邱�Ƃ��ł��܂� (������o�b�N�g���b�N�Ƃ����܂�)�B���̃t�H�[�}�b�g�ɂ� 4 ��ނ���܂��B<BR>
+  文脈依存または文脈依存連鎖の照合も、フォントヘッダに格納されます。それらはキーワード“ContextPos”,“ContextSub”,“ChainPos”,“ChainSub”または“ReverseChain”で始まり、キーワード“ENDFPST”で終了します。文脈依存の照合は現在位置にあるグリフ列を所定の文字列群と照合することしかできませんが、文脈依存連鎖の照合は現在のグリフ、および先読みグリフだけでなく先行するグリフをチェックすることができます (これをバックトラックといいます)。このフォーマットには 4 種類あります。<BR>
 <!--   By coverage tables -->
-  �K�p�͈̓e�[�u���ɂ����@
+  適用範囲テーブルによる方法
   <BLOCKQUOTE>
     <PRE>ChainSub: coverage 0 0 'abvs' 0 0 0 1
  1 1 0
@@ -439,7 +439,7 @@ EndFPST
   There are no classes, no backtracking classes and no lookahead classes defined
   (it's by coverage table). There is one rule. (For a greater explanation of
   these cryptic comments see the OpenType specs on contextual lookups). -->
-  ����͓K�p�͈̓N���X�ɂ��P�������A���ˑ��̒u�����`���Ă��܂��BOpenType �t���O�� 0, �p���n/����C���f�b�N�X�� 0 �ŁA�@�\�^�O��&lsquo;abvs&rsquo;�ł��B�N���X���o�b�N�g���b�N�N���X����ǂ݃N���X����`����Ă��܂��� (�K�p�͈̓e�[�u���Ŏw�肵�Ă��܂�)�B���[���� 1 ����܂� (�����̈Í��̂悤�ȃR�����g�̂��ڂ��������ɂ��ẮAOpenType �d�l���́A�����ˑ��ƍ� (contextual lookup) �ɂ��ďq�ׂ��ӏ��𒲂ׂĂ�������)�B
+  これは適用範囲クラスによる単純文脈連鎖依存の置換を定義しています。OpenType フラグは 0, 用字系/言語インデックスは 0 で、機能タグは&lsquo;abvs&rsquo;です。クラスもバックトラッククラスも先読みクラスも定義されていません (適用範囲テーブルで指定しています)。ルールが 1 個あります (これらの暗号のようなコメントのより詳しい説明については、OpenType 仕様書の、文脈依存照合 (contextual lookup) について述べた箇所を調べてください)。
   <P>
 <!--
   Then follows the first rule. The first line, "1 1 0", says how many coverage
@@ -448,17 +448,17 @@ EndFPST
   table, which describes a single glyph (uni0C40). Then one backtracking coverage
   table which also defines one glyph (glyph388). Finally there is one sequence
   lookup, at normal position 0, we should apply the substitution named '0013'. -->
-  ���̌�ɍŏ��̃��[���������܂��B1 �s�ڂ́g1 1 0�h�Ƃ����̂́A���̓K�p�͈̓e�[�u�����ʏ탊�X�g (1 ��)�A�o�b�N�g���b�N���X�g (1 ��) ����ѐ�ǂ݃��X�g (0 ��) ���܂܂�Ă��邩��\���܂��B���̎��ɂ���̂� 1 �̒ʏ�K�p�͈̓e�[�u���ŁA����� 1 �̃O���t (uni0C40) ���L�q���Ă��܂��B������ 1 �̃o�b�N�g���b�N�K�p�͈̓e�[�u��������A����� 1 �̃O���t  (glyph388) ���`���Ă��܂��B�Ō�ɂ���̂� 1 �̘A���^�ƍ��ŁA�ʏ�ʒu 0 �ɂ�����&lsquo;0013&rsquo;�Ƃ������O�̒u����K�p����K�v�����邱�Ƃ�\���܂��B
+  その後に最初のルールが続きます。1 行目の“1 1 0”というのは、何個の適用範囲テーブルが通常リスト (1 個)、バックトラックリスト (1 個) および先読みリスト (0 個) が含まれているかを表します。その次にあるのが 1 個の通常適用範囲テーブルで、これは 1 個のグリフ (uni0C40) を記述しています。続いて 1 個のバックトラック適用範囲テーブルがあり、これも 1 個のグリフ  (glyph388) を定義しています。最後にあるのが 1 個の連鎖型照合で、通常位置 0 において&lsquo;0013&rsquo;という名前の置換を適用する必要があることを表します。
   <P>
 <!--
   That is to say: If we find the glyph stream "glyph388 uni0C40", then it will
   match this lookup and we should apply substitution '0013' (found elsewhere)
   to uni0C40. -->
-  �ꌾ�Ō����Ƃ����Ȃ�܂�: �O���t�̘A���gglyph388 uni0C40�h������������A����͂��̏ƍ��Ɉ�v���A���̎��� (�悻�Œ�`����Ă���) �u��&lsquo;0013&rsquo;�� uni0C40 �ɓK�p���邱�ƁB
+  一言で言うとこうなります: グリフの連鎖“glyph388 uni0C40”が見つかったら、それはこの照合に一致し、その時は (よそで定義されている) 置換&lsquo;0013&rsquo;を uni0C40 に適用すること。
   <P>
 <!--
   By classes -->
-  �N���X�ɂ����@
+  クラスによる方法
   <BLOCKQUOTE>
     <PRE>ChainSub: class 0 0 'calt' 3 3 0 1
   Class: 52 b o v w b.high o.high v.high w.high r.alt.high r.alt
@@ -485,17 +485,17 @@ EndFPST
   class 2 to be "a,c,d,e,...". And then we define the backtracking classes
   (which here happen to be the same as the classes for the normal match, but
   that isn't always the case). -->
-  ����́A�N���X�ɂ�镶���A���^�u���� 1 ��`���Ă��܂��B�ŏ��̍s�̃t�H�[�}�b�g�͏�Ő��������̂Ɠ����ł��B�����ł͒ʏ�̈�v�ɑ΂��� 3 �̃N���X�ƃo�b�N�g���b�N�ɂ���v�ɑ΂��� 3 �̃N���X����`����Ă��܂��B���̌��� 4 �s�̓N���X���`���Ă��܂��B�N���X�ɂ��J�[�j���O�̏ꍇ�Ɠ������A�N���X 0 �͖����I�ɒ�`����K�v�͂Ȃ��A�u���̃N���X�̂ǂ�ɂ���`����Ă��Ȃ��C�ӂ̃O���t�v�Ƃ��ĈÖقɒ�`����܂��B�����ŁA�N���X 1 ���gb,o,v,�c�h�ƒ�`���A�N���X 2 ���ga,c,d,e,�c�h�ƒ�`���邱�ƂɂȂ�܂��B���ɁA�N���X�Q�̃o�b�N�g���b�N���`���܂��i�����ł͒ʏ�̈�v�̂��߂̃N���X�Ƃ��܂��ܓ����ł����A��ɂ����ł���킯�ł͂���܂���)�B
+  これは、クラスによる文脈連鎖型置換を 1 つ定義しています。最初の行のフォーマットは上で説明したのと同じです。ここでは通常の一致に対する 3 つのクラスとバックトラックによる一致に対する 3 つのクラスが定義されています。その後ろの 4 行はクラスを定義しています。クラスによるカーニングの場合と同じく、クラス 0 は明示的に定義する必要はなく、「他のクラスのどれにも定義されていない任意のグリフ」として暗黙に定義されます。そこで、クラス 1 を“b,o,v,…”と定義し、クラス 2 を“a,c,d,e,…”と定義することになります。次に、クラス群のバックトラックを定義します（ここでは通常の一致のためのクラスとたまたま同じですが、常にそうであるわけではありません)。
   <P>
 <!--
   The one rule says that if we get something in normal class 2 following something
   in backtracking class 1 (that is, if we get something like "ba" or "oc")
   then apply substitution 'high' -->
-  ���[���� 1 �ł́A�ʏ�N���X 2 �Ɋ܂܂�鉽���̌�Ƀo�b�N�g���b�N�N���X 1 �������ꍇ (�܂�A�gba�h��goc�h�̂悤�ȉ��炩�̕����񂪂���ꍇ) �u��&lsquo;high&rsquo;��K�p���Ă��܂��B
+  ルールの 1 つでは、通常クラス 2 に含まれる何かの後にバックトラッククラス 1 が来た場合 (つまり、“ba”や“oc”のような何らかの文字列がある場合) 置換&lsquo;high&rsquo;を適用しています。
   <P>
 <!--
   By glyphs -->
-  �O���t�ɂ����@
+  グリフによる方法
   <BLOCKQUOTE>
     <PRE>ChainSub: glyph 0 1 'calt' 0 0 0 1
  String: 1 D
@@ -510,11 +510,11 @@ EndFPST
 <!--
   Again we have one rule. That rule says that if we get the sequence of glyphs
   "c b D e" then we should apply substitution 'rig1' to glyph "D". -->
-  ���̗�ł� 1 �̃��[������`����Ă��܂��B���̃��[���ł́A�O���t�̘A���gc b D e�h�����݂����ꍇ�A�u��&lsquo;rig1&rsquo;���O���t�gD�h�ɓK�p����悤�Ɏw�����Ă��܂��B
+  この例でも 1 個のルールが定義されています。このルールでは、グリフの連鎖“c b D e”が存在した場合、置換&lsquo;rig1&rsquo;をグリフ“D”に適用するように指示しています。
   <P>
 <!--
   And finally by reverse coverage tables -->
-  �Ō�́A�t���̓K�p�͈̓e�[�u���ɂ����@�ł��B
+  最後は、逆順の適用範囲テーブルによる方法です。
   <BLOCKQUOTE>
     <PRE>ChainSub: revcov 0 0 'foo ' 0 0 0 1
  1 1 0
@@ -529,13 +529,13 @@ EndFPST
 <!--
   Which says that when glyph388 precedes uni0C40 then uni0C40 should be replaced
   by uni0C40.alt -->
-  ����́A�O���t 388 �̑O�� uni0C40 �������ꍇ�Auni0C40 �� uni0C40.alt �ɒu��������ׂ��ł��邱�Ƃ�\���Ă��܂��B
+  これは、グリフ 388 の前に uni0C40 が来た場合、uni0C40 を uni0C40.alt に置き換えるべきであることを表しています。
   <P>
 <!--
   There may be apple state machines. These are introduced by one of the keywords:
   "MacIndic", "MacContext", "MacInsert" and "MacKern", and they are terminated
   with "EndASM". -->
-  Apple ��ԋ@�B���܂߂邱�Ƃ��ł��܂��B����̓L�[���[�h�gMacIndic�h,�gMacContext�h,�gMacInsert�h�܂��́gMacKern�h�Ŏn�܂�A�gEndASM�h�ŏI�����܂��B
+  Apple 状態機械を含めることができます。それはキーワード“MacIndic”,“MacContext”,“MacInsert”または“MacKern”で始まり、“EndASM”で終了します。
   <BLOCKQUOTE>
     <PRE>MacContext: 2,2 16384 9 5
   Class: 320 yehhamzaabovearabic beharabic teharabic theharabic jeemarabic haharabic khaharabic seenarabic sheenarabic sadarabic dadarabic taharabic zaharabic ainarabic ghainarabic feharabic qafarabic kafarabic lamarabic meemarabic noonarabic heharabic alefmaksuraarabic yeharabic peharabic tteharabic tcheharabic veharabic gafarabic
@@ -563,18 +563,18 @@ EndASM
   classes&gt;*&lt;number of states&gt; lines describing transitions. We begin
   with the transition for state 0, class 0, then the transition for state 0,
   class 1, ... -->
-  ��ԋ@�B�́A�ǂ� Mac �@�\/�ݒ�̑΂ɂ���ČĂяo����邩�̒�`�ƁA�������� Mac �t���O����ы@�B�Ɋ܂܂���Ԃ̌����܂ލs����n�܂�܂��B
-  Mac ��̍ŏ��� 4 ��Ԃ͒�`�ς݂Ȃ̂ŁA�N���X 4 (yehhamzaabovearabic) ����n�܂邱�ƂɂȂ�܂��B�Ō�ɁA��ԑJ�ڂ�\���s�� &lt;�N���X�̌�&gt;�~&lt;��Ԃ̌�&gt; �����̍s���ɂ킽���đ����܂��B��� 0, �N���X 0 �̒�`���ŏ��ɂ���A�����ď�� 0, �N���X 1 �c�Ƒ����܂��B
+  状態機械は、どの Mac 機能/設定の対によって呼び出されるかの定義と、いくつかの Mac フラグおよび機械に含まれる状態の個数を含む行から始まります。
+  Mac 上の最初の 4 状態は定義済みなので、クラス 4 (yehhamzaabovearabic) から始まることになります。最後に、状態遷移を表す行が &lt;クラスの個数&gt;×&lt;状態の個数&gt; だけの行数にわたって続きます。状態 0, クラス 0 の定義が最初にあり、続いて状態 0, クラス 1 …と続きます。
   <P>
 <!--
   Each transition contains the next state to go to, a set of flags. There may
   also be other arguments depending on the type of the state machine. -->
-  �e��ԑJ�ڂɂ́A���Ɉڂ��ԂƁA��A�̃t���O���܂܂�܂��B���̂ق��́A��ԋ@�B�̃^�C�v�Ɉˑ�����������u�����Ƃ��ł��܂��B
+  各状態遷移には、次に移る状態と、一連のフラグが含まれます。そのほかの、状態機械のタイプに依存する引数も置くことができます。
   <TABLE BORDER CELLPADDING="2">
     <TR>
       <TD VALIGN="Top">MacIndic</TD>
 <!--  <TD>This format has no additional arguments</TD>-->
-      <TD>���̃t�H�[�}�b�g�ɂ͒ǉ��̈����͂���܂���</TD>
+      <TD>このフォーマットには追加の引数はありません</TD>
     </TR>
     <TR>
       <TD VALIGN="Top">MacContext</TD>
@@ -582,13 +582,13 @@ EndASM
 	to be applied to the marked glyph, one to be applied to the current glyph
 	(the special substitution "~" means do nothing and is used as a place holder).
 	See above.</TD> -->
-      <TD>���̃t�H�[�}�b�g�� 2 �̒u���̖��O����ݓI�Ɋ܂݂܂��B1 �̓}�[�N�t���O���t�ɓK�p����镨�ŁA���� 1 �͌��݂̃O���t�ɓK�p����镨�ł� (����Ȓu���g~�h�͉������Ȃ����Ƃ��Ӗ����A�v���[�X�z���_�Ƃ��ėp�����܂��B</TD>
+      <TD>このフォーマットは 2 個の置換の名前を潜在的に含みます。1 個はマーク付きグリフに適用される物で、もう 1 個は現在のグリフに適用される物です (特殊な置換“~”は何もしないことを意味し、プレースホルダとして用いられます。</TD>
     </TR>
     <TR>
       <TD VALIGN="Top">MacInsert</TD>
 <!--  <TD>This format contains two glyph lists, each preceded by a number indicating
 	how many bytes follow. -->
-      <TD>���̃t�H�[�}�b�g�ɂ� 2 �̃O���t���X�g���܂܂�A���ꂼ��̑O�ɂ́A���ɉ��o�C�g��������\�����l���u����܂��B</TD>
+      <TD>このフォーマットには 2 個のグリフリストが含まれ、それぞれの前には、後ろに何バイト続くかを表す数値が置かれます。</TD>
 	<BLOCKQUOTE>
 	  <PRE>2 0 <B>0 3 a b</B>
 0 32768 <B>4 fi q 0</B>
@@ -600,21 +600,21 @@ EndASM
 	line indicates that "fi" and "q" should be insert at the marked glyph and
 	no characters at the current glyph. The flags determine whether characters
 	are insert before or after the glyph.</TD> -->
-	�ŏ��̍s�́A�}�[�N�t���O���t�̉ӏ��ɂ͑}�����镨���Ȃɂ��������A���݃O���t�̈ʒu�ɂ́ga�h�Ɓgb�h��}�����邱�Ƃ�\���Ă��܂��B2 �s�ڂ́gfi�h�Ɓgq�h�̓}�[�N�t���O���t�̈ʒu�ɑ}������A���݃O���t�̈ʒu�ɂ͉����}�����Ȃ����Ƃ�\���܂��B�O���t�̑O�ɕ�����}�����邩�A���ɑ}�����邩�̓t���O�ɂ���Č��܂�܂��B</TD>
+	最初の行は、マーク付きグリフの箇所には挿入する物がなにも無いが、現在グリフの位置には“a”と“b”を挿入することを表しています。2 行目は“fi”と“q”はマーク付きグリフの位置に挿入され、現在グリフの位置には何も挿入しないことを表します。グリフの前に文字を挿入するか、後ろに挿入するかはフラグによって決まります。</TD>
     </TR>
     <TR>
       <TD VALIGN="Top">MacKern</TD>
 <!--  <TD>This format contains a list of kerning offsets. First is a count field
 	saying how many numbers follow, then a list of numbers which adjust the kerning
 	for glyphs that have previously been pushed on the kerning stack.</TD> -->
-      <TD>���̃t�H�[�}�b�g�̓J�[�j���O�I�t�Z�b�g�̃��X�g���܂݂܂��B�ŏ��ɂ���̂͌��t�B�[���h�ŁA���ɉ��̐��l����������\���Ă���A����ɑ����āA���炩���߃J�[�j���O�X�^�b�N�Ƀv�b�V�����ꂽ�O���t�̃J�[�j���O�𒲐����鐔�l�̃��X�g���u����܂��B</TD>
+      <TD>このフォーマットはカーニングオフセットのリストを含みます。最初にあるのは個数フィールドで、後ろに何個の数値が続くかを表しており、それに続いて、あらかじめカーニングスタックにプッシュされたグリフのカーニングを調整する数値のリストが置かれます。</TD>
     </TR>
   </TABLE>
   <P>
 <!--
   The GenTags entry describes a list of feature tags that FontForge has generated
   itself -->
-  ���� GenTags �́AFontForge �������Ő��������@�\�^�O�̃��X�g���L�q���܂��B
+  項目 GenTags は、FontForge が自分で生成した機能タグのリストを記述します。
   <BLOCKQUOTE>
     <PRE>GenTags: 1 sb'rigl'
 </PRE>
@@ -623,11 +623,11 @@ EndASM
 <!--
   This line says that FontForge has generated 1 tag, the generated tag is used
   for a substitution lookup (sb=&gt;substitution), and the tag is 'rig1'. -->
-  ���̍s�́AFontForge �� 1 �̃^�O�𐶐����Ă���A�������ꂽ�^�O�͒u���Q�Ƃɗp����� (sb��substitution)�A���̃^�O����&lsquo;rig1&rsquo;�ł��邱�Ƃ�\���Ă��܂��B
+  この行は、FontForge が 1 個のタグを生成しており、生成されたタグは置換参照に用いられ (sb⇒substitution)、そのタグ名が&lsquo;rig1&rsquo;であることを表しています。
   <P>
 <!--
   There may be a list of Mac Feature/Setting names -->
-  Mac �̋@�\/�ݒ�̖��O���X�g��u�����Ƃ��ł��܂��B
+  Mac の機能/設定の名前リストを置くことができます。
   <BLOCKQUOTE>
     <PRE>MacFeat: 0 0 0
 MacName: 0 0 24 "All Typographic Features"
@@ -647,7 +647,7 @@ MacFeat: 2 1 2
   There may be a Grid entry near the top of the font, this specifies the splines
   to be drawn in the grid layer for the font, <A HREF="#splineset">see below
   for a description of the splineset format</A>: -->
-  �t�H���g�̐擪�߂��ɍ��� Grid ��u�����Ƃ��ł��܂��B����̓t�H���g�̃O���b�h���C���ɕ`�悳���X�v���C�����w�肵�܂��B<A HREF="#splineset">�X�v���C���Z�b�g�̃t�H�[�}�b�g�̐����ɂ��Ă͈ȉ����Q�Ƃ��Ă�������</A>:
+  フォントの先頭近くに項目 Grid を置くことができます。これはフォントのグリッドレイヤに描画されるスプラインを指定します。<A HREF="#splineset">スプラインセットのフォーマットの説明については以下を参照してください</A>:
   <BLOCKQUOTE>
     <PRE>Grid
 678 -168 m 5
@@ -661,12 +661,12 @@ EndSplineSet
   </BLOCKQUOTE>
   <H3>
 <!--<A NAME="Outline-Char-Data">Outline Character Data</A>-->
-    <A NAME="Outline-Char-Data">�A�E�g���C�������f�[�^</A>
+    <A NAME="Outline-Char-Data">アウトライン文字データ</A>
   </H3>
   <P>
 <!--
   Then for non-CID fonts you should find a line like: -->
-  ���̎��ɁA�� CID �t�H���g�ł́A�ȉ��̂悤�ȍs������܂�:
+  その次に、非 CID フォントでは、以下のような行が現れます:
   <BLOCKQUOTE>
     <PRE>BeginChars: 285 253
 </PRE>
@@ -676,7 +676,7 @@ EndSplineSet
   This means that the font's encoding has room for 285 characters and that
   there are a total of 253 glyphs defined (usually control characters are not
   defined). A character looks like: -->
-  ����́A�t�H���g�̃G���R�[�f�B���O�ɂ� 285 �����Ԃ�̏ꏊ������Ă���A�S���� 253 ����`�ς݂ł��邱�Ƃ�\���܂� (�ʏ�A���䕶���͒�`����܂���)�B�����͈ȉ��̂悤�ɕ\������܂�:
+  これは、フォントのエンコーディングには 285 文字ぶんの場所が取られており、全部で 253 個が定義済みであることを表します (通常、制御文字は定義されません)。文字は以下のように表現されます:
   <BLOCKQUOTE>
     <PRE>StartChar: exclam
 Encoding: 33 33 3
@@ -710,7 +710,7 @@ EndChar
   The first line names the character, the next line gives the encoding, first
   in the current font, then in unicode, and finally the original position (GID).
   Then the advance width. -->
-  �ŏ��̍s�ł͕��������`���Ă��܂��B���̍s�ł͕����������`���Ă��āA�ŏ��Ɍ��݂̃t�H���g���̕����l������A���� Unicode �ł̕����l�����āA�Ō�Ƀt�H���g�Ǝ��̈ʒu (GID) �����܂��B���ꂩ��A���̍s�ɑ��蕝�����܂��B
+  最初の行では文字名を定義しています。次の行では文字符号を定義していて、最初に現在のフォント内の符号値があり、次に Unicode での符号値がきて、最後にフォント独自の位置 (GID) が来ます。それから、次の行に送り幅が来ます。
   <P>
 <!--
   Then a set of flags (there are currently five flags: "H" =&gt; the character
@@ -718,18 +718,18 @@ EndChar
   manually, "W" the width has been set explicitly, "O" =&gt; the character
   was open when last saved, and "I" the character's instructions are out of
   date). -->
-  ���̎��̍s�Ƀt���O��������ׂ������񂪗��܂� (���� 5 �̃t���O����`����Ă��܂�:�gH�h�� �Ō�Ƀq���g�t�����s���Ĉȍ~�������ύX���ꂽ�A�gM�h�� �����̃q���g���蓮�Œ������ꂽ�A�gW�h�� �������[�U�̎w��Őݒ肳�ꂽ�A����сgO�h�� �Ō�ɕۑ������Ƃ��ɂ��̕������J���Ă����A�gI�h�˂��̕����̖��߂��ŐV�̏�Ԃƈ�v���Ȃ�) 
+  その次の行にフラグ文字を並べた文字列が来ます (現在 5 つのフラグが定義されています:“H”⇒ 最後にヒント付けを行って以降文字が変更された、“M”⇒ 文字のヒントが手動で調整された、“W”⇒ 幅がユーザの指定で設定された、および“O”⇒ 最後に保存したときにその文字が開いていた、“I”⇒その文字の命令が最新の状態と一致しない) 
   <P>
 <!--
   Then horizontal and vertical (postscript) stem hints (set of several two
   number pairs, the first number in the pair is the location of the stem, the
   next number is the width of the stem, the numbers in brokets (&lt;&gt;) indicate
   where the hint is valid). -->
-  ���ɐ�������ѐ��������� (PostScript) �X�e���q���g�����܂� (�������� 2 �̐��l�΂̏W�܂�ŁA�΂̍ŏ��̐��l�̓X�e���̈ʒu��\���A���̐��l���X�e���̕���\���A�p���� (&lt;&gt;) �ň͂܂ꂽ���l�΂͂��̃q���g���ǂ��ŗL������\���܂�)�B
+  次に水平および垂直方向の (PostScript) ステムヒントが来ます (いくつかの 2 個の数値対の集まりで、対の最初の数値はステムの位置を表し、次の数値がステムの幅を表し、角括弧 (&lt;&gt;) で囲まれた数値対はそのヒントがどこで有効かを表します)。
   <P>
 <!--
   For fonts with vertical metrics there may also be a -->
-  �c�������g���b�N���܂ރt�H���g�ł́A�c�����̑��蕝���w�肷��
+  縦書きメトリックを含むフォントでは、縦書きの送り幅を指定する
   <BLOCKQUOTE>
     <PRE>VWidth: 1000
 </PRE>
@@ -737,7 +737,7 @@ EndChar
   <P>
 <!--
   specifying the vertical advance width. -->
-  �Ƃ�����`��u�����Ƃ��ł��܂��B
+  という定義を置くことができます。
   <P>
 <!--
   The entry <CODE>Fore</CODE> starts the foreground
@@ -745,53 +745,53 @@ EndChar
   with moveto abbreviated to m, curveto to c and lineto to l (lower case el).
   The digit after after the letter is a set of flags whose bits have the following
   meanings: -->
-  ���� <CODE>Fore</CODE> �͑O��<A NAME="splineset">�X�v���C��</A>�̎n�܂���w�肵�܂��B������ PostScript �R�}���h�ŕ\����܂����Amoveto �� m �ɁAcurveto �� c �ɁAlineto �� l (�������G��) �ɏȗ����Ă��܂��B�����̌��ɗ��鐔�l�̓t���O�̑g�ŁA�e�r�b�g�ɂ͈ȉ��̂悤�ȈӖ�������܂��B
+  項目 <CODE>Fore</CODE> は前面<A NAME="splineset">スプライン</A>の始まりを指定します。それらは PostScript コマンドで表されますが、moveto を m に、curveto を c に、lineto を l (小文字エル) に省略しています。文字の後ろに来る数値はフラグの組で、各ビットには以下のような意味があります。
   <TABLE CELLPADDING="2">
     <TR>
 <!--  <TH>mask</TH>-->
-      <TH>�}�X�N</TH>
+      <TH>マスク</TH>
 <!--  <TH>meaning</TH>-->
-      <TH>�Ӗ�</TH>
+      <TH>意味</TH>
     </TR>
     <TR>
       <TD>0x3</TD>
 <!--  <TD>indicates whether the point is curve (0), corner (1) or tangent (2).</TD> -->
-      <TD>���̓_���Ȑ���̓_ (0) ���A�p�̓_ (1) ���Ȑ��̊J�n�_ (2) �ł��邩�������܂��B</TD>
+      <TD>その点が曲線上の点 (0) か、角の点 (1) か曲線の開始点 (2) であるかを示します。</TD>
     </TR>
     <TR>
       <TD>0x4</TD>
 <!--  <TD>point selected</TD>-->
-      <TD>���̓_�͑I������Ă���</TD>
+      <TD>この点は選択されている</TD>
     </TR>
     <TR>
       <TD>0x8</TD>
 <!--  <TD>point has default next control point</TD>-->
-      <TD>���̓_�ɁA�f�t�H���g�̎��̐���_�����݂���</TD>
+      <TD>この点に、デフォルトの次の制御点が存在する</TD>
     </TR>
     <TR>
       <TD>0x10</TD>
 <!--  <TD>pont has default prev control point</TD>-->
-      <TD>���̓_�ɁA�f�t�H���g�̑O�̐���_�����݂���</TD>
+      <TD>この点に、デフォルトの前の制御点が存在する</TD>
     </TR>
     <TR>
       <TD>0x20</TD>
 <!--  <TD>point is to be rounded in x (truetype hinting. doesn't really work)</TD>-->
-      <TD>���̓_�� x �����Ɋۂ߂���K�v������ (TrueType �̃q���g�Â��ł��B���ۂɂ͓��삵�܂���)</TD>
+      <TD>この点は x 方向に丸められる必要がある (TrueType のヒントづけです。実際には動作しません)</TD>
     </TR>
     <TR>
       <TD>0x40</TD>
 <!--  <TD>point is to be rounded in y (truetype hinting. doesn't really work)</TD>-->
-      <TD>���̓_�� y �����Ɋۂ߂���K�v������ (TrueType �̃q���g�Â��ł��B���ۂɂ͓��삵�܂���)</TD>
+      <TD>この点は y 方向に丸められる必要がある (TrueType のヒントづけです。実際には動作しません)</TD>
     </TR>
     <TR>
       <TD>0x80</TD>
 <!--  <TD>point was interpolated between two control points (when<BR>
 	read from a ttf file) and so has no point number of its own</TD> -->
-      <TD>���̓_�� (TTF �t�@�C������̓ǂݍ��ݎ���)  2 �̐���_�̒��_��<BR>��Ԃ��ꂽ�̂ŁA�Ǝ��̓_�ԍ������݂��Ȃ�</TD>
+      <TD>この点は (TTF ファイルからの読み込み時に)  2 個の制御点の中点に<BR>補間されたので、独自の点番号が存在しない</TD>
     <TR>
       <TD>0x100</TD>
 <!--  <TD>point should never be interpolated</TD> -->
-      <TD>���̓_�͌����ĕ�Ԃ��Ă͂Ȃ�Ȃ�</TD>
+      <TD>この点は決して補間してはならない</TD>
     </TR>
   </TABLE>
   <P>
@@ -799,13 +799,13 @@ EndChar
   Splines for a truetype font will have two additional numbers after the flags.
   These are the truetype point numbers for the point itself and for the subsequent
   control point. If the value is -1 then this point has no number. -->
-  TrueType �t�H���g�p�̃X�v���C���ɂ́A�t���O�̌��� 2 �̒ǉ��̐��l�����݂��܂��B
-  �_���ꎩ�g�ƁA������������_�ɑ΂��Ă� TrueType �_�ԍ����U���Ă��܂��B�l�� -1 �̏ꍇ�́A���̓_�ɂ͔ԍ����U���Ă��Ȃ����Ƃ�\���܂��B
+  TrueType フォント用のスプラインには、フラグの後ろに 2 個の追加の数値が存在します。
+  点それ自身と、引き続く制御点に対しては TrueType 点番号が振られています。値が -1 の場合は、その点には番号が振られていないことを表します。
   <P>
 <!--
   Splines for a font with hint substitution will have a hint mask after any
   point before which hint substitution occurs, -->
-  �q���g�u�����܂ރt�H���g�̃X�v���C���́A�q���g�u������������S�Ă̓_�̑O�Ƀq���g�}�X�N�����݂��܂�:
+  ヒント置換を含むフォントのスプラインは、ヒント置換が発生する全ての点の前にヒントマスクが存在します:
   <BLOCKQUOTE>
     <PRE>459 422 m 1xc0
  339 442 l 1xa0
@@ -818,16 +818,16 @@ EndChar
   be (almost) arbitrarily long, depending on the number of hints in the glyph.
   "xc0" means that the first two hints are active (0x80 &amp; 0x40) while "xa0"
   means that the first and third are (0x80 and 0x20). -->
-  �����ł͍ŏ��� 2 �̓_�̓q���g�}�X�N�gxc0�h����сgxa0�h���܂݂܂��B�����̃}�X�N�̓O���t���̃q���g�̌��ɉ����� (�قƂ��) �C�ӂ̒����������Ƃ��ł��܂��B�gxc0�h�́A�ŏ��� 2 �̃q���g (0x80 �� 0x40) ���L���ɂȂ��Ă��邱�Ƃ������A�gxa0�h�́A�ŏ��� 3 �Ԗ� (0x80 �� 0x20) ���L���ł��邱�Ƃ��Ӗ����܂��B
+  ここでは最初の 2 個の点はヒントマスク“xc0”および“xa0”を含みます。これらのマスクはグリフ内のヒントの個数に応じて (ほとんど) 任意の長さを持つことができます。“xc0”は、最初の 2 個のヒント (0x80 と 0x40) が有効になっていることを示し、“xa0”は、最初と 3 番目 (0x80 と 0x20) が有効であることを意味します。
   <P>
 <!--
   A set of splines in the background is similar, it will be introduced by a
   <CODE>Back</CODE> entry. -->
-  �w�i�ɒu������A�̃X�v���C�������ꓯ�l�ł����A���� <CODE>Back</CODE> �Ŏn�܂�܂��B
+  背景に置かれる一連のスプラインもこれ同様ですが、項目 <CODE>Back</CODE> で始まります。
   <P>
 <!--
   While a background image is stored in the following horrible format: -->
-  ����A�w�i�C���[�W�͈ȉ��̋��낵���ȃt�H�[�}�b�g�Ŋi�[����܂�:
+  一方、背景イメージは以下の恐ろしげなフォーマットで格納されます:
   <BLOCKQUOTE>
     <PRE>StartChar: A
 ...
@@ -851,7 +851,7 @@ EndChar
   follows a bunch of binary data encoded using Adobe's Encode85 filter (See
   the PostScript Reference manual for a description). These data contain all
   the colors in the color table followed by a dump of the image pixel data. -->
-  �����ŁAImage: �s�̊e���l�͂��ꂼ��ȉ��̈Ӗ��������܂�: (�摜��) �� (�s�N�Z���P��)�A�����A�摜�̃^�C�v (0�˒P�F�A1�˃C���f�b�N�X�J���[�A2�˃g�D���[�J���[)�A1 �s������̃o�C�g���A�J���[�e�[�u�����̃J���[���ڂ̌��A�J���[�e�[�u�����̓����F�̃C���f�b�N�X (�g�D���[�J���[�摜�ɂ����Ă͓����F���̂���)�A�摜�̍���� x ���W����� y ���W�A�摜�s�N�Z���𕶎����j�b�g�ɕϊ����邽�߂� x, y �����̊g�嗦�ł��B���ꂩ�� Adobe �� Encode85 �t�B���^�ɂ��o�C�i���f�[�^�̑��������܂� (���̐����� PostScript ���t�@�����X�}�j���A�����Q�Ƃ��Ă�������)�B�����̃f�[�^�̓J���[�e�[�u���Ɋ܂܂��S�Ă̒l�ƁA����ɑ����摜�s�N�Z���f�[�^�̃_���v�ł��B
+  ここで、Image: 行の各数値はそれぞれ以下の意味をもちます: (画像の) 幅 (ピクセル単位)、高さ、画像のタイプ (0⇒単色、1⇒インデックスカラー、2⇒トゥルーカラー)、1 行あたりのバイト数、カラーテーブル内のカラー項目の個数、カラーテーブル内の透明色のインデックス (トゥルーカラー画像においては透明色そのもの)、画像の左上の x 座標および y 座標、画像ピクセルを文字ユニットに変換するための x, y 方向の拡大率です。それから Adobe の Encode85 フィルタによるバイナリデータの束が続きます (この説明は PostScript リファレンスマニュアルを参照してください)。これらのデータはカラーテーブルに含まれる全ての値と、それに続く画像ピクセルデータのダンプです。
   <P>
 <!--
   Bitmap data will be compressed by run length encoding. I'm not going to go
@@ -860,11 +860,11 @@ EndChar
   compressed using rle and then output as above, only now there is one more
   parameter on the "Image:" line which gives the number of bytes to be read
   from the data stream. -->
-  �r�b�g�}�b�v�f�[�^�̓��������O�X�G���R�[�f�B���O�ň��k����܂��B����̏ڍׂ�����������͂���܂���̂ŁA����𗝉�����K�v������ꍇ�̓t�@�C�� sfd.c ���� image2rle ���������āA�ǂ��������s���Ă��邩�𒲂ׂ邱�Ƃ������߂��܂��B�摜�̓��������O�X�G���R�[�f�B���O (RLE) �ň��k����A��L�̌`���ŏo�͂���܂��B���̏ꍇ�̂݁A�gImage:�h�ɂ̓f�[�^�X�g���[������ǂݍ��܂��o�C�g����\������ 1 �̃p�����[�^���K�v�ƂȂ�܂��B
+  ビットマップデータはランレングスエンコーディングで圧縮されます。これの詳細を説明するつもりはありませんので、それを理解する必要がある場合はファイル sfd.c から image2rle を検索して、どう処理を行っているかを調べることをお勧めします。画像はランレングスエンコーディング (RLE) で圧縮され、上記の形式で出力されます。この場合のみ、“Image:”にはデータストリームから読み込まれるバイト数を表すもう 1 つのパラメータが必要となります。
   <P>
 <!--
   A character need not contain any splines: -->
-  �����ɂ́A�K���������炩�̃X�v���C�����܂܂�Ȃ��ƂȂ�Ȃ��킯�ł͂���܂���B
+  文字には、必ずしも何らかのスプラインが含まれないとならないわけではありません。
   <BLOCKQUOTE>
     <PRE>StartChar: semicolon
 Encoding: 59 59
@@ -887,21 +887,21 @@ EndChar
   are a postscript transformation matrix, the one for comma (unicode 44) is
   the identity matrix, while the one for period (unicode 46) just translates
   it vertically 414 units. The final number is a set of truetype flags: -->
-  ��̗�́A���̕����ւ̎Q�Ƃ݂̂��܂�ł�����ł� (�Z�~�R�������A�J���}��`�悵�āA���̏�Ƀs���I�h���ڂ��邱�Ƃɂ���ĕ`�悵�Ă��܂�)�B�ŏ��̐��l�͎Q�Ɛ�̕����̃O���t�C���f�b�N�X (���R�A���݂̃t�H���g���ł�) �ł��B2 �Ԗڂ̐��l�� Unicode �̕����ʒu�ŁAN �́A�Q�Ƃ��I������Ă��Ȃ����Ƃ�\���A����ɑ��� 6 �̐��l�� PostScript �̕ϊ��s���\���܂��B�J���} (Unicode 44) �̍s��͍P���s��ŁA�s���I�h (Unicode 46) �ɑ΂���s��͐��������� 414 ���j�b�g���s�ړ����Ă��܂��B�Ō�̐��l�� TrueType �t���O�̏W���ł�:
+  上の例は、他の文字への参照のみを含んでいる一例です (セミコロンを、カンマを描画して、その上にピリオドを載せることによって描画しています)。最初の数値は参照先の文字のグリフインデックス (当然、現在のフォント内での) です。2 番目の数値は Unicode の符号位置で、N は、参照が選択されていないことを表し、それに続く 6 個の数値は PostScript の変換行列を表します。カンマ (Unicode 44) の行列は恒等行列で、ピリオド (Unicode 46) に対する行列は垂直方向に 414 ユニット平行移動しています。最後の数値は TrueType フラグの集合です:
   <UL>
     <LI>
 <!--  1 =&gt; Use My Metrics -->
-      1 �� ���g���b�N�Ŏg�p
+      1 ⇒ メトリックで使用
     <LI>
 <!--  2 =&gt; Round to Grid -->
-      2 �� �O���b�h�ɍ��킹�Ċۂ߂�
+      2 ⇒ グリッドに合わせて丸める
     <LI>
 <!--  4 =&gt; Position reference by point match (rather than by offset)<BR>
       If this is set there will be two additional numbers, the first indicating
       the point number in the base glyph, and the second the point number in the
       current reference. -->
-      4 �� (�I�t�Z�b�g�łȂ�) �_�̈�v�ɂ��ʒu�Q��<BR>
-      ���̃t���O���Z�b�g����Ă���ꍇ�A2 �̐������ǉ�����܂��B�ŏ��̐����͊��O���t���̓_�ԍ��ŁA2 �Ԗڂ̐����͌��݂̎Q�Ƃɂ�����_�ԍ��ł��B
+      4 ⇒ (オフセットでなく) 点の一致による位置参照<BR>
+      このフラグがセットされている場合、2 個の数字が追加されます。最初の数字は基底グリフ内の点番号で、2 番目の数字は現在の参照における点番号です。
       <BLOCKQUOTE>
 	<PRE>Ref: 33 44 N 1 0 0 1 0 0 1
 Ref: 35 46 N 1 0 0 1 0 414 6 3 7 O
@@ -911,12 +911,12 @@ Ref: 35 46 N 1 0 0 1 0 414 6 3 7 O
 <!--  The bottom line indicates that point 3 and point 7 will be positioned together.
       The optional "O" is a flag which indicates that this information is out of
       date. -->
-      �Ō�̍s�́A�_ 3 �Ɠ_ 7 ���ꏏ�ɂ͈ʒu����邱�Ƃ������Ă��܂��B�Ō�̏ȗ��\�� �gO�h�́A���̏�񂪍ŐV�̏�Ԃƈ�v���Ȃ����Ƃ�\���܂��B
+      最後の行は、点 3 と点 7 が一緒には位置されることを示しています。最後の省略可能な “O”は、この情報が最新の状態と一致しないことを表します。
   </UL>
   <P>
 <!--
   Old versions of sfd files will use the format: -->
-  �Â��ł� SFD �t�@�C���͈ȉ��̃t�H�[�}�b�g���g���Ă��܂���:
+  古い版の SFD ファイルは以下のフォーマットを使っていました:
   <BLOCKQUOTE>
     <PRE>Ref: 44 44 N 1 0 0 1 0 0
 Ref: 46 46 N 1 0 0 1 0 414
@@ -925,11 +925,11 @@ Ref: 46 46 N 1 0 0 1 0 414
   <P>
 <!--
   Where the first number gives the refered components' encoding. -->
-  ���̍ŏ��̐��l�́A��Q�Ɨv�f�̕����ʒu���w�肵�Ă��܂��B
+  この最初の数値は、被参照要素の符号位置を指定しています。
   <P>
 <!--
   A postscript glyph may also contain countermasks: -->
-  PostScript �̃O���t�ɂ̓J�E���^�}�X�N���܂߂邱�Ƃ��ł��܂�:
+  PostScript のグリフにはカウンタマスクを含めることもできます:
   <BLOCKQUOTE>
     <PRE>StartChar: m
 Encoding: 109 109 77
@@ -957,13 +957,13 @@ EndChar
   four more VStem hints to the glyph, making nine hints in all, then the mask
   would have to be given as 0x3800 (because two bytes are needed to accommodate
   nine bits).-->
-  ���̗�ł́ACounterMasks: �s�� 1 �̃J�E���^�O���[�v�� (�ŏ��̈�����) �錾���Ă��܂��B�g38�h(����т���ɑ������̂��ׂĂ̒l) �́A16 �i�\�L�̃r�b�g�}�X�N�ŁA�O���[�v��\���Ă��܂��B�r�b�g�}�X�N�̃T�C�Y�͏�� 8 �̔{���ł� (�܂�A16 �i���͏�ɋ������ƂȂ�܂�)�B�}�X�N���̍ŏ�ʃr�b�g�́A�ŏ��̃X�e���q���g�����݂���(1) �����݂��Ȃ�(0) ����\���܂��B2 �Ԗڂ̏�ʃr�b�g�͓��l�� 2 �Ԗڂ̃q���g�ɑ������A�ȉ����l�ł��B�ǂ̃q���g�ɂ��Ή����Ȃ��]�v�ȉ��ʃr�b�g�͂��ׂĖ�������܂��B(�ŉ��ʃr�b�g�łȂ��ŏ�ʃr�b�g����n�߂�̂͊���Ǝ����m���Ă��܂����A����� Adobe �̋Z�p�I����ł�)�B�����ł́A3 �Ԗ� (0x20), 4 �Ԗ� (0x10) ����� 5 �Ԗ� (0x08) �̃X�e���q���g���O���[�v���ɑ��݂��A�J�E���^�}�X�N�l�� 0x38 �ƂȂ��Ă��܂��B�O���t�� 4 �� VSTEM �q���g��ǉ������ꍇ�A�S���Ńq���g�� 9 �ƂȂ�̂ŁA�}�X�N�� 0x3800 �ƂȂ�܂� (9 �r�b�g���i�[����ɂ� 2 �o�C�g�K�v������ł�)�B
+  この例では、CounterMasks: 行は 1 個のカウンタグループを (最初の引数で) 宣言しています。“38”(およびそれに続く他のすべての値) は、16 進表記のビットマスクで、グループを表しています。ビットマスクのサイズは常に 8 の倍数です (つまり、16 進数は常に偶数桁となります)。マスク内の最上位ビットは、最初のステムヒントが存在する(1) か存在しない(0) かを表します。2 番目の上位ビットは同様に 2 番目のヒントに相当し、以下同様です。どのヒントにも対応しない余計な下位ビットはすべて無視されます。(最下位ビットでなく最上位ビットから始めるのは奇妙だと私も知っていますが、これは Adobe の技術的決定です)。ここでは、3 番目 (0x20), 4 番目 (0x10) および 5 番目 (0x08) のステムヒントがグループ内に存在し、カウンタマスク値は 0x38 となっています。グリフに 4 個の VSTEM ヒントを追加した場合、全部でヒントは 9 個となるので、マスクは 0x3800 となります (9 ビットを格納するには 2 バイト必要だからです)。
   <P>
 <!--
   If a font has been loaded from a truetype file it may containing hinting
   information (FontForge does not attempt to understand truetype hints, just
   to preserve them) -->
-  �t�H���g�� TrueType �t�@�C������ǂݍ��܂ꂽ�ꍇ�A�q���g�����܂߂邱�Ƃ��ł��܂� (FontForge �� TrueType �q���g�𗝉����悤�Ƃ͎��݂��A�P�ɕێ����邾���ł�)�B
+  フォントが TrueType ファイルから読み込まれた場合、ヒント情報を含めることができます (FontForge は TrueType ヒントを理解しようとは試みず、単に保持するだけです)。
   <BLOCKQUOTE>
     <PRE>TtfInstrs: 107
 5Xtqo&amp;gTLA(_S)TQj!Kq"UP8&lt;!&lt;rr:&amp;$QcW!"K,K&amp;kWe?(^pl]#mUY&lt;!s\f7"U&gt;G:!%\s-3WRec
@@ -974,11 +974,11 @@ EndTtf
   <P>
 <!--
   This is 107 bytes of ASCII85Encode encoded binary data. -->
-  ����� ASCII85Encode �ŕ��������ꂽ 107 �o�C�g�̃o�C�i���f�[�^�ł��B
+  これは ASCII85Encode で符号化された 107 バイトのバイナリデータです。
   <P>
 <!--
   If the character contains Anchor Points these will be included: -->
-  �������A���J�[�|�C���g���܂�ł���΁A�����͈ȉ��̂悤�Ɏ�荞�܂�܂�:
+  文字がアンカーポイントを含んでいれば、それらは以下のように取り込まれます:
   <BLOCKQUOTE>
     <PRE>AnchorPoint: "bottom" 780 -60 basechar 0
 AnchorPoint: "top" 803 1487 basechar 0
@@ -991,7 +991,7 @@ AnchorPoint: "top" 803 1487 basechar 0
   and for ligatures a number indicating which ligature component it refers
   to. If you have configured fontforge with support for device tables, you
   may also see: -->
-  �A���J�[�N���X����������_�̖��O (UTF-7 ��)�A�ʒu�A�_�̃^�C�v�� (��ꕶ���A�}�[�N�A��ꍇ���A���}�[�N�A�n�M�A���M�̂���) �ǂ�ł��邩�A�����č����ɂ��ẮA���ꂪ�ǂ̍����v�f���Q�Ƃ��Ă��邩�������ԍ��ł��B�f�o�C�X�e�[�u�����T�|�[�g����ݒ�ŃR���p�C�����ꂽ FontForge ���g�p���Ă���ꍇ�A�ȉ��̂悤�ȋL�q���܂܂�Ă��邩������܂���:
+  アンカークラスが所属する点の名前 (UTF-7 で)、位置、点のタイプが (基底文字、マーク、基底合字、基底マーク、始筆、収筆のうち) どれであるか、そして合字については、それがどの合字要素を参照しているかを示す番号です。デバイステーブルをサポートする設定でコンパイルされた FontForge を使用している場合、以下のような記述が含まれているかもしれません:
   <BLOCKQUOTE>
     <PRE>AnchorPoint: "bottom" 780 -60 basechar 0 {12-13 -1,-1} {8-14 1,0,-1,-1,-2,-2,-2}
 </PRE>
@@ -1004,12 +1004,12 @@ AnchorPoint: "top" 803 1487 basechar 0
   adjustments of -1 pixel each. The second indicates a vertical device table
   applies to pixel sizes 8 through 14 with pixel adjustments of 1, 0, -1, -1,
   -2, -2, -2 pixels. -->
-  �����ŁA�g���ʓ��̍��ڂ͐���/����<A NAME="device-table">�f�o�C�X</A>�e�[�u���ł��B�ŏ��̊��ʂ́A(����) �f�o�C�X�e�[�u���� 12�`13 �s�N�Z���͈̔͂̃T�C�Y�ŁA���ꂼ�� -1 �s�N�Z���̕␳���{�����Ƃ�\���Ă��܂��B2 �Ԗڂ́A�����f�o�C�X�e�[�u���� 8�`14 �s�N�Z���͈̔͂ɂ����Ăł��ꂼ�� 1, 0, -1, -1, -2, -2, -2 �s�N�Z���̕␳���{�����Ƃ�\���܂��B
+  ここで、波括弧内の項目は水平/垂直<A NAME="device-table">デバイス</A>テーブルです。最初の括弧は、(水平) デバイステーブルが 12〜13 ピクセルの範囲のサイズで、それぞれ -1 ピクセルの補正を施すことを表しています。2 番目は、垂直デバイステーブルが 8〜14 ピクセルの範囲においてでそれぞれ 1, 0, -1, -1, -2, -2, -2 ピクセルの補正を施すことを表します。
   <P>
 <!--
   Finally a TrueType font may position an anchor point based on a normal point
   within the glyph (if this is done a device table may not be present). -->
-  �Ō�ɁATrueType �t�H���g�� 1 �̃A���J�[�|�C���g���O���t���� 1 �̊�_�Ɋ�Â��Ĕz�u���邱�Ƃ��ł��܂� (���ꂪ�s����ꍇ�A�f�o�C�X�e�[�u����u�����Ƃ͂ł��܂���)�B
+  最後に、TrueType フォントは 1 個のアンカーポイントをグリフ内の 1 個の基準点に基づいて配置することができます (これが行われる場合、デバイステーブルを置くことはできません)。
   <BLOCKQUOTE>
     <PRE>AnchorPoint: "bottom" 780 -60 basechar 0 23
   </PRE>
@@ -1019,11 +1019,11 @@ AnchorPoint: "top" 803 1487 basechar 0
   Indicates that this anchor point will be positioned at the same location
   (which is normally 780,-60 but which might be moved by an instruction) as
   truetype point 23. -->
-  �́A���̃A���J�[�|�C���g�� TrueType �O���t�̓_�ԍ� 23 �Ɠ����ʒu (�ʏ�� (780,-60) �ł����A���߂ɂ���Ĉړ����邱�Ƃ��ł��܂�) �ɔz�u����邱�Ƃ�\���Ă��܂��B
+  は、このアンカーポイントが TrueType グリフの点番号 23 と同じ位置 (通常は (780,-60) ですが、命令によって移動することができます) に配置されることを表しています。
   <P>
 <!--
   If the user has set the glyph class -->
-  ���[�U���O���t�N���X��ݒ肵�Ă���ꍇ�A
+  ユーザがグリフクラスを設定している場合、
   <BLOCKQUOTE>
     <PRE>GlyphClass: 2
 </PRE>
@@ -1032,12 +1032,12 @@ AnchorPoint: "top" 803 1487 basechar 0
 <!--
   Where the number is 1 more than the 'GDEF' glyph class it represents. (so
   the 2 above means a base glyph (class 1)). -->
-  ���̔ԍ��́A���ꂪ�\��&lsquo;GDEF&rsquo;�O���t�N���X���� 1 �傫���l�ɂȂ��Ă��܂� (�ł�����A���̗�� 2 �̓x�[�X�O���t (�N���X 1) ���Ӗ����܂�)
+  この番号は、それが表す&lsquo;GDEF&rsquo;グリフクラスよりも 1 つ大きい値になっています (ですから、この例の 2 はベースグリフ (クラス 1) を意味します)
   <P>
 <!--
   If the character is the first in any kern pairs (not a pair defined by a
   kern class, however) -->
-  ���̕������J�[�j���O�y�A�̂ǂꂩ (�������A�J�[�j���O�N���X�ɒ�`����Ă���y�A������) �̐擪�����ł���ꍇ:
+  その文字がカーニングペアのどれか (ただし、カーニングクラスに定義されているペアを除く) の先頭文字である場合:
   <BLOCKQUOTE>
     <PRE>KernsSLIFO: 60 -100 1 0 {12-13 -1,-1} 63 -92 1 0 70 -123 1 0 45 -107 1 0 76 -107 1 0
 </PRE>
@@ -1049,11 +1049,11 @@ AnchorPoint: "top" 803 1487 basechar 0
   is the original position of the second character (in the current font), the
   next is the horizontal kerning amount, then the script lang index, and finally
   the open type flags. Then we start over with the next kernpair. -->
-  �����ł͊e�J�[�j���O�y�A�� 4 �̐��l (����яȗ��\��<A HREF="sfdformat.html#device-table">�f�o�C�X</A>�e�[�u���B��L�Q��) �ŕ\����܂��B�ŏ��ɗ���̂� 2 �Ԗڂ̕����� (���݂̃t�H���g���ł�) �ʒu�ŁA���ɗ���͉̂������̃J�[�j���O�ʂŁA�X�N���v�g�E����C���f�b�N�X�����̎��ɒu����A�Ō�� OpenType �̃t���O�����܂��B���ꂩ��A���̃J�[�j���O�y�A�̋L�q���n�܂�܂��B
+  ここでは各カーニングペアは 4 個の数値 (および省略可能な<A HREF="sfdformat.html#device-table">デバイス</A>テーブル。上記参照) で表されます。最初に来るのは 2 番目の文字の (現在のフォント内での) 位置で、次に来るのは横書きのカーニング量で、スクリプト・言語インデックスがその次に置かれ、最後に OpenType のフラグが来ます。それから、次のカーニングペアの記述が始まります。
   <P>
 <!--
   Old sfd files may contain a slightly different format:-->
-  �Â� SFD �t�@�C���͈ȉ��̋͂��ɈقȂ�t�H�[�}�b�g�̍s���܂�ł��邩������܂���:
+  古い SFD ファイルは以下の僅かに異なるフォーマットの行を含んでいるかもしれません:
   <BLOCKQUOTE>
     <PRE>KernsSLIF: 114 -100 1 0 {12-13 -1,-1} 117 -92 1 0 101 -123 1 0 97 -107 1 0 111 -107 1 0
 </PRE>
@@ -1061,12 +1061,12 @@ AnchorPoint: "top" 803 1487 basechar 0
   <P>
 <!--
   where the first number is the encoding of the second glyph in the kern pair. -->
-  �����ŁA�ŏ��̐��l�̓J�[�j���O�y�A�� 2 �Ԗڂ̃O���t�̕����ʒu�ł��B
+  ここで、最初の数値はカーニングペアの 2 番目のグリフの符号位置です。
   <P>
 <!--
   Data that are to go into other GPOS, GSUB or GDEF sub-tables are stored like
   this: -->
-  ���̑��� GPOS, GSUB �܂��� GDEF �T�u�e�[�u���ɑ�����f�[�^�́A�ȉ��̂悤�Ȍ`�Ŋi�[����܂�:
+  その他の GPOS, GSUB または GDEF サブテーブルに送られるデータは、以下のような形で格納されます:
   <BLOCKQUOTE>
     <PRE>Position: 12 0 'sinf' dx=0 dy=-900 dh=0 dv=0
 PairPos: 12 0 'dist' B dx=0 dy=0 dh=0 dv=0  dx=-10 dy=0 dh=0 dv=0
@@ -1092,12 +1092,12 @@ LCarets: 0 0 '    ' 1 650
   contains the characters the current glyph is to be decomposed into. A ligature
   caret contains a count of the number of carets defined, and the a list of
   the locations of those carets. -->
-  �����̍s�̂قƂ�ǂ́A�ŏ��� 2 �̐��l�ł͗p���n/����C���f�b�N�X�ƁA��A�� OpenType �t���O�̏���񋟂��Ă��܂� (LCaret �͗�O�ŁA�����͖�������܂�)�B���̌��� OpenType �����܂� (�����L�����b�g�ł͂�������������܂�)�B�P���ʒu�ύX�̓O���t�̈ړ��ʂƃO���t�̑��蕝�ɂ���ĕ\������܂��B�y�A�P�ʂ̈ʒu�w��� 2 �ׂ̗荇���O���t�̈ʒu���w�肵�܂� (�J�[�j���O�͂��̓���ȏꍇ�ł�)�B�����ɂ́A������\������e�����̖��O���܂܂�܂��B�P���u���ɂ́A���ꂪ�u���������镶���̖��O���܂܂�܂��B�I���^�u���ɂ́A���[�U���I�ԕ����̃��X�g���܂܂�܂��B�����u���͌��݂̃O���t����������镶���Q���܂܂�܂��B�����L�����b�g�ɂ́A��`�����L�����b�g�̌��ƁA�����̃L�����b�g�̈ʒu�̃��X�g���܂܂�܂��B
+  これらの行のほとんどは、最初の 2 個の数値では用字系/言語インデックスと、一連の OpenType フラグの情報を提供しています (LCaret は例外で、それらは無視されます)。その後ろに OpenType が来ます (合字キャレットではこれらも無視されます)。単純位置変更はグリフの移動量とグリフの送り幅によって表現されます。ペア単位の位置指定は 2 個の隣り合うグリフの位置を指定します (カーニングはこの特殊な場合です)。合字には、それを構成する各文字の名前が含まれます。単純置換には、それが置き換えられる文字の名前が含まれます。選択型置換には、ユーザが選ぶ文字のリストが含まれます。複数置換は現在のグリフが分解される文字群が含まれます。合字キャレットには、定義されるキャレットの個数と、それらのキャレットの位置のリストが含まれます。
   <P>
 <!--
   A glyph may have an arbitrary comment associated with it, this will be output
   in UTF-7 -->
-  �O���t�ɂ́A����ɕt������C�ӂ̃R�����g (UTF-7 �ŏo�͂���܂�) ��A
+  グリフには、それに付随する任意のコメント (UTF-7 で出力されます) や、
   <BLOCKQUOTE>
     <PRE>Comment: Hi
 </PRE>
@@ -1105,20 +1105,20 @@ LCarets: 0 0 '    ' 1 650
   <P>
 <!--
   or a color -->
-  �܂��͐F���������邱�Ƃ��ł��܂��B
+  または色をもたせることができます。
   <BLOCKQUOTE>
     <PRE>Colour: ff0000
 </PRE>
   </BLOCKQUOTE>
   <H4>
 <!--Outline character extensions for multilayered fonts (type3)-->
-    �������C���t�H���g (Type3) �̂��߂̃A�E�g���C���t�H���g�̊g��
+    複数レイヤフォント (Type3) のためのアウトラインフォントの拡張
   </H4>
   <P>
 <!--
   (these are only supported if FontForge has been configured for multi-layered
   editing) -->
-  �����́AFontForge �̕������C���ҏW�@�\���L���Ȑݒ�̂Ƃ��݂̂ɃT�|�[�g����܂��B
+  これらは、FontForge の複数レイヤ編集機能が有効な設定のときのみにサポートされます。
   <P>
 <!--
   Instead of having a single "Fore"ground layer, multilayered fonts have
@@ -1126,7 +1126,7 @@ LCarets: 0 0 '    ' 1 650
   things like filling and stroking info for this layer, within each layer are
   a splineset, a list of references and a list of images (any or all may be
   omitted). The syntax for these is the same as in the normal case above. -->
-  �������C���t�H���g�́gFore�h�őO�ʃ��C���� 1 ��`���邾���łȂ��A�����̃��C�������� (���Ƃ��\��) ���̂ŁA�e���C���ɂ́A���̃��C���̓h��Ԃ��⑾���̂悤�ȕ����w�肷�� Layer: �s�����݂��A�e���C���ɂ̓X�v���C���Z�b�g�A�Q�Ƃ̃��X�g��摜�̃��X�g���܂܂�܂� (�����̔C�ӂ̕����ȗ����邱�Ƃ��ł��܂�)�B�����̍\���́A��Ő��������ʏ�̏ꍇ�Ɠ����ł��B
+  複数レイヤフォントは“Fore”で前面レイヤを 1 個定義するだけでなく、複数のレイヤをもつ (ことが可能な) もので、各レイヤには、そのレイヤの塗りつぶしや太線のような物を指定する Layer: 行が存在し、各レイヤにはスプラインセット、参照のリストや画像のリストが含まれます (これらの任意の物を省略することができます)。これらの構文は、上で説明した通常の場合と同じです。
   <BLOCKQUOTE>
     <PRE>LayerCount: 3
 Layer: 1  1 1 1  #fffffffe 1  #fffffffe 1 40 round round [1 0 0 1] []
@@ -1146,7 +1146,7 @@ EndSplineSet
   will actually be specified -- the background layer is still specified the
   way it was before, but is included in this count). This line is not required,
   if omitted (or wrong) FontForge will figure that out. -->
-  LayerCount: �s�́A�O���t���̃��C���̌����w�肵�܂� (�w�i���C���̓��C�� 0 �Ȃ̂ŁA���̌��͎��ۂɎw�肳��Ă������� 1 �����Ȃ�܂��\�\�w�i���C���͒ʏ�t�H���g�Ɠ��l�̕��@�Ŋi�[����܂����A���̊���ɂ͓���܂�)�B���̍s�͕K�{�ł͂Ȃ��A�ȗ����ꂽ (�܂��͊ԈႢ��) �ꍇ�AFontForge �͎����Ō����Z�肵�܂��B
+  LayerCount: 行は、グリフ内のレイヤの個数を指定します (背景レイヤはレイヤ 0 なので、この個数は実際に指定されている個数より 1 多くなります——背景レイヤは通常フォントと同様の方法で格納されますが、個数の勘定には入ります)。この行は必須ではなく、省略された (または間違いの) 場合、FontForge は自分で個数を算定します。
   <P>
 <!--
   The Layer line contains too much information. First is a number saying which
@@ -1159,21 +1159,21 @@ EndSplineSet
   the linejoin type (miter, round, bevel, inherited), the linecap type (butt,
   round,square,inherited), the transformation matrix to be applied to the pen
   and finally the dash array. -->
-  Layer: �s�ɂ͂��܂�ɂ����ʂ���������܂�ł��܂��B�ŏ��͉��Ԗڂ̃��C������\�������ł��B���̎��ɂ� 3 �̃u�[���l������A1 �ڂ̓X�v���C���Z�b�g��h��ׂ����ǂ�����\���A2 �Ԗڂ̓X�v���C���Z�b�g���X�g���[�N�Ƃ��ĕ`�����ǂ�����\���A3 �Ԗڂ͌��݂̂Ƃ���S�����Ӗ��ł��B���̎��ɁA�h��ׂ��F�� RGB �l������ (���ʂȒl #fffffffe �́A�F���p������邱�Ƃ��Ӗ����܂�)�A���ɓ����x (���ʂȒl -1 �́A�p�����Ӗ����܂�)�B���ɃX�g���[�N�̐F�Ɠ����x�������܂��B���ꂩ��X�g���[�N�̑��� (���̏ꍇ�� -1 ���p������邱�Ƃ�\���܂�)�A���̌��т̃^�C�v (miter, round, bevel, inherited �̂����ꂩ), ���[�̃^�C�v (butt, round, square, inherited �̂����ꂩ)�A�y���ɓK�p�����ϊ��s�񂪗��āA�Ō�ɁA�j����\���z�񂪗��܂��B
+  Layer: 行にはあまりにも多量すぎる情報を含んでいます。最初は何番目のレイヤかを表す数字です。その次には 3 個のブール値があり、1 個目はスプラインセットを塗り潰すかどうかを表し、2 番目はスプラインセットをストロークとして描くかどうかを表し、3 番目は現在のところ全く無意味です。その次に、塗り潰し色の RGB 値が続き (特別な値 #fffffffe は、色が継承されることを意味します)、次に透明度 (特別な値 -1 は、継承を意味します)。次にストロークの色と透明度が続きます。それからストロークの太さ (この場合も -1 が継承されることを表します)、線の結びのタイプ (miter, round, bevel, inherited のいずれか), 線端のタイプ (butt, round, square, inherited のいずれか)、ペンに適用される変換行列が来て、最後に、破線を表す配列が来ます。
   <P>
 <!--
   Any SplineSet, Ref, Images between this Layer and the next (or the end of
   the character) are part of this layer. -->
-  ���� Layer �s���玟�� Layer �s (�܂��͂��̕����̏I��) �܂łɗ��邷�ׂĂ� SplineSet, Ref, Images �͂��̃��C���̈ꕔ�ł���Ƃ��Ĉ����܂��B
+  この Layer 行から次の Layer 行 (またはこの文字の終り) までに来るすべての SplineSet, Ref, Images はこのレイヤの一部であるとして扱われます。
   <H3>
 <!--<A NAME="Bitmap-Fonts">Bitmap Fonts</A> -->
-    <A NAME="Bitmap-Fonts">�r�b�g�}�b�v�t�H���g</A>
+    <A NAME="Bitmap-Fonts">ビットマップフォント</A>
   </H3>
   <P>
 <!--
   After all the outline characters have been described there is an EndChars
   entry and then follow any bitmap fonts: -->
-  �A�E�g���C�������̋L�q�����ׂďI������A���� EndChars �� 1 ����A�r�b�g�}�b�v�t�H���g�͂��ׂĂ��̌�ɏo�����܂��B
+  アウトライン文字の記述がすべて終った後、項目 EndChars が 1 個あり、ビットマップフォントはすべてその後に出現します。
   <BLOCKQUOTE>
     <PRE>EndChars
 BitmapFont: 12 285 10 2 1
@@ -1193,14 +1193,14 @@ BDFChar: 3 33 3 0 1 0 9
   The bitmap font line contains the following numbers: the pixelsize of the
   font, the number of potential characters in the font, the ascent and the
   descent of the font and the depth of font (number of bits in a pixel). -->
-  BitmapFont: �s�ɂ͈ȉ��̐��l���܂܂�܂�: �t�H���g�̃s�N�Z���T�C�Y�A�t�H���g���̉\�ȕ����̌��A�t�H���g�̍�������ѐ[��������~�� (1 �s�N�Z��������̃r�b�g��) �ł��B
+  BitmapFont: 行には以下の数値が含まれます: フォントのピクセルサイズ、フォント内の可能な文字の個数、フォントの高さおよび深さおよび諧調 (1 ピクセルあたりのビット数) です。
   <P>
 <!--
   Optionally there may be a set of BDF properties. If there are any properties
   there will be a line "BDFStartProperties:" with a count of properties. There
   should be that many property lines, and then a "BDFEndProperties" line. Each
   property is of the form:<BR> -->
-  �����ɂ͏ȗ��\�� BDF �̑����l���������ނ��Ƃ��ł��܂��B���炩�̑���������ꍇ�ɂ́A�gBDFStartProperties:�h�̌�ɑ����̌�����ׂ��s���u����܂��B�w�肵���������̑����s����ׁA�Ō�ɁgBDFEndProperties�h�Ƃ����s������K�v������܂��B�e�����͈ȉ��̂悤�Ȍ`�Ŏw�肵�܂�:<BR>
+  そこには省略可能な BDF の属性値を書き込むことができます。何らかの属性がある場合には、“BDFStartProperties:”の後に属性の個数を並べた行が置かれます。指定した個数だけの属性行を並べ、最後に“BDFEndProperties”という行がくる必要があります。各属性は以下のような形で指定します:<BR>
   <CODE>&lt;NAME&gt; &lt;TYPE&gt; &lt;VALUE&gt;</CODE><BR>
 <!--
   Where &lt;NAME&gt; is the property name, &lt;TYPE&gt; is 0 for a string,
@@ -1208,12 +1208,12 @@ BDFChar: 3 33 3 0 1 0 9
   &lt;TYPE&gt; may have a 16 ored to one of the above values indicating the
   line is a true property (rather than information from somewhere else in the
   BDF header). &lt;VALUE&gt; will either be a quoted string or an integer. -->
-  ������ &lt;NAME&gt; �͑������A&lt;TYPE&gt; �� 0: ������E1: �A�g���A2: �����A3: �����Ȃ�������\���܂��B����ɁA�����̒l�� (BDF �w�b�_�̑��̂ǂ������玝���Ă����l�ł͂Ȃ�) �^�̐ݒ�l��\���ꍇ�� &lt;TYPE&gt; �̒l�� 16 �Ƃ̘_���a��������l���i�[���܂��B&lt;VALUE&gt; �͈��p���ň͂��������񂩐������̂����ꂩ�ł��B
+  ここで &lt;NAME&gt; は属性名、&lt;TYPE&gt; は 0: 文字列・1: アトム、2: 整数、3: 符号なし整数を表します。さらに、それらの値が (BDF ヘッダの他のどこかから持ってきた値ではなく) 真の設定値を表す場合に &lt;TYPE&gt; の値は 16 との論理和を取った値を格納します。&lt;VALUE&gt; は引用符で囲った文字列か整数かのいずれかです。
   <P>
 <!--
   Optionally there may be a resolution line, which specifies the design resolution
   of the font. -->
-  �t�H���g�̃f�U�C���𑜓x���w�肷��gResolution:�h�s (�ȗ��\) ���Ō�ɒu�����Ƃ��ł��܂��B
+  フォントのデザイン解像度を指定する“Resolution:”行 (省略可能) を最後に置くことができます。
   <P>
 <!--
   This is followed by a list of bitmap characters, the bitmap character line
@@ -1224,11 +1224,11 @@ BDFChar: 3 33 3 0 1 0 9
   as above. There will be (ymax-ymin+1)* ((xmax-xmin)/(8/depth)+1) (unencoded)
   bytes, there is no color table here (the high order bit comes first in the
   image, set bits should be colored black, clear bits transparent). -->
-����ɑ����A�r�b�g�}�b�v�����̃��X�g�������܂��BBDFChar: �s�ɂ͈ȉ��̐��l���܂܂�܂�: ���̈ʒu�A(�t�H���g���ł�) �����ʒu�A���Ax ���W�̍ŏ��l�Ay ���W�̍ŏ��l�Ax ���W�̍ő�l����� y ���W�̍ő�l�ł��B�����A�r�b�g�}�b�v�ɏc�����g���b�N�����݂���ꍇ�A�c�����̑��蕝���ǉ�����܂��B���̌��ɂ́A��L�̗�̂悤�ɃG���R�[�h���ꂽ 1 �g�̃f�[�^������ɑ����A���̃f�[�^�� (�G���R�[�h�O��) �T�C�Y�� (ymax-ymin-1)*((xmax-xmin+8)/8) �o�C�g�ɂȂ�܂��B�����ɂ̓J���[�e�[�u���͂���܂��� (��ʃr�b�g���摜�̍ŏ��ɗ��āA1 �ɂȂ��Ă���r�b�g�������h���A0 �̃r�b�g�������ɂȂ�܂�)�B
+これに続き、ビットマップ文字のリストが続きます。BDFChar: 行には以下の数値が含まれます: 元の位置、(フォント内での) 符号位置、幅、x 座標の最小値、y 座標の最小値、x 座標の最大値および y 座標の最大値です。もし、ビットマップに縦書メトリックが存在する場合、縦方向の送り幅が追加されます。この後ろには、上記の例のようにエンコードされた 1 組のデータがさらに続き、このデータの (エンコード前の) サイズは (ymax-ymin-1)*((xmax-xmin+8)/8) バイトになります。ここにはカラーテーブルはありません (上位ビットが画像の最初に来て、1 になっているビットが黒く塗られ、0 のビットが透明になります)。
   <P>
 <!--
   A bitmap font is ended by: -->
-  �r�b�g�}�b�v�t�H���g�͎��̂悤�ɂ��ďI�����܂�:
+  ビットマップフォントは次のようにして終了します:
   <BLOCKQUOTE>
     <PRE>EndBitmapFont
 BitmapFont: 17 285 14 3 1
@@ -1241,7 +1241,7 @@ EndSplineFont
   </BLOCKQUOTE>
   <H3>
 <!--<A NAME="CID-keyed-fonts">CID keyed fonts</A>-->
-    <A NAME="CID-keyed-fonts">CID �L�[�w��t�H���g</A>
+    <A NAME="CID-keyed-fonts">CID キー指定フォント</A>
   </H3>
   <P>
 <!--
@@ -1249,7 +1249,7 @@ EndSplineFont
   header which contains the information in the top level CID font dictionary.
   As mentioned above this will include special keys that specify the CID charset
   (registry, ordering, supplement). It will also include: -->
-  CID �t�H���g�͂킸���ɈقȂ�`�ŕۑ�����܂��B����͒ʏ�̃t�H���g�w�b�_�Ŏn�܂�܂����A�����ɂ̓g�b�v���x���� CID �t�H���g�����Ɋ܂܂���񂪊i�[����܂��B��ŏq�ׂ��悤�ɁA����ɂ� CID �����W�� (�o�^��A�����Â��A���ԍ�) ���w�肷����ʂȃL�[���܂�ł���ł��傤�B�����ɂ͈ȉ��̂悤�ȍs���܂܂��͂��ł�:
+  CID フォントはわずかに異なる形で保存されます。それは通常のフォントヘッダで始まりますが、そこにはトップレベルの CID フォント辞書に含まれる情報が格納されます。上で述べたように、これには CID 文字集合 (登録簿、順序づけ、補遺番号) を指定する特別なキーを含んでいるでしょう。そこには以下のような行も含まれるはずです:
   <BLOCKQUOTE>
     <PRE>CIDVersion: 2.0
 BeginSubFonts: 5 8318
@@ -1263,10 +1263,10 @@ BeginSubFonts: 5 8318
   be defined). This will be followed by a list of the subfonts (dumped out
   just like normal fonts) and their characters. Only the top level font will
   contain any bitmap characters, anchor classes, etc. -->
-  <CODE>CIDVersion</CODE> �͂��̖��̒ʂ�ł��B<CODE>BeginSubFonts</CODE> �s�ł́A 5 �̃T�u�t�H���g�����݂��A���̂����̍ő�̂��̂� 8318 �����Ԃ�̃X���b�g���܂܂�邱�Ƃ������܂� (���̏ꍇ���A���̂����̂������͒�`�ł��܂���)�B����ɑ����T�u�t�H���g�̃��X�g (�ʏ�̃t�H���g�Ɠ����`�ŏo�͂���܂�) �ƁA�����Ɋ܂܂�镶���������܂��B�g�b�v���x���t�H���g�݂̂��r�b�g�}�b�v�����A�A���J�[�N���X�Ȃǂ��܂ނ��Ƃ��ł��܂��B
+  <CODE>CIDVersion</CODE> はその名の通りです。<CODE>BeginSubFonts</CODE> 行では、 5 個のサブフォントが存在し、そのうちの最大のものは 8318 文字ぶんのスロットが含まれることを示します (この場合も、そのうちのいくつかは定義できません)。これに続きサブフォントのリスト (通常のフォントと同じ形で出力されます) と、それらに含まれる文字が続きます。トップレベルフォントのみがビットマップ文字、アンカークラスなどを含むことができます。
   <H3>
 <!--<A NAME="Multiple-Master-fonts">Multiple Master fonts</A>-->
-    <A NAME="Multiple-Master-fonts">�}���`�v���}�X�^�[�t�H���g</A>
+    <A NAME="Multiple-Master-fonts">マルチプルマスターフォント</A>
   </H3>
   <P>
 <!--
@@ -1274,7 +1274,7 @@ BeginSubFonts: 5 8318
   followed by a set of sub fonts. If the mm font has 4 instances then there
   will be 5 subfonts (one for each instance, and one for the blended font).
   The font header looks like: -->
-  �}���`�v���}�X�^�[�t�H���g�͈قȂ�X�^�C���̃t�@�C���w�b�_����n�܂�A����ɑ����Ĉ�A�̃T�u�t�H���g�̒u����܂��B�}���`�v���}�X�^�[�t�H���g�� 4 �̃C���X�^���X������ꍇ�́A5 �̃T�u�t�H���g�����݂��܂� (�e�C���X�^���X�ɂ� 1 �A�������킹���t�H���g�ɂ��� 1 ��)�B�t�H���g�w�b�_�͈ȉ��̂悤�Ȍ`�ł�:
+  マルチプルマスターフォントは異なるスタイルのファイルヘッダから始まり、それに続いて一連のサブフォントの置かれます。マルチプルマスターフォントに 4 個のインスタンスがある場合は、5 個のサブフォントが存在します (各インスタンスにつき 1 個、混ぜ合わせたフォントにもう 1 個)。フォントヘッダは以下のような形です:
   <BLOCKQUOTE>
     <PRE>SplineFontDB: 1.0
 MMCounts: 4 2 0 0
@@ -1312,7 +1312,7 @@ BeginMMFonts: 5 0
   instance fonts to which, when interpolated, yield the default font. There
   will be one AxisMap line for each axis, it provides the mapping from design
   space to normalized space. The first line -->
-  "MMCounts" �s �ł́A���̃t�H���g�Ɋ܂܂��C���X�^���X�̌� (4) �Ǝ��̖{�� (2) �ɉ����A���ꂪ Apple �ό`�\�t�H���g�ł��邩 (0) �ƁA���̏ꍇ�A���̃t�H���g�Ɋ܂܂�閼�O���X�^�C���̌� (0) ���w�肵�܂��B"MMAxis" �s�́A���̖��O���w�肵�܂��BMMPositions �s�� (�C���X�^���X�̌��~���̖{�� �̗v�f����Ȃ�) �����̔z��ŁA�e�C���X�^���X�̊e���ɉ��������W���L�q���܂��BMMWeights �s�́A��Ԃ��s�����Ƃ��Ƀf�t�H���g�t�H���g�ƂȂ�C���X�^���X�t�H���g�̃E�F�C�g (�������킹) ���L�q���܂��BAxisMap �s���e�����Ƃ� 1 ���݂��A����́A�f�U�C����Ԃ��琳�K�����ꂽ��Ԃւ̑Ή��Â���񋟂��܂��B�ŏ��̍s
+  "MMCounts" 行 では、このフォントに含まれるインスタンスの個数 (4) と軸の本数 (2) に加え、これが Apple 変形可能フォントであるか (0) と、その場合、そのフォントに含まれる名前つきスタイルの個数 (0) を指定します。"MMAxis" 行は、軸の名前を指定します。MMPositions 行は (インスタンスの個数×軸の本数 個の要素からなる) 実数の配列で、各インスタンスの各軸に沿った座標を記述します。MMWeights 行は、補間を行ったときにデフォルトフォントとなるインスタンスフォントのウェイト (混ぜ合わせ) を記述します。AxisMap 行が各軸ごとに 1 個存在し、これは、デザイン空間から正規化された空間への対応づけを提供します。最初の行
   <BLOCKQUOTE>
     <PRE>MMAxisMap: 0 2 0=&gt;50 1=&gt;1450
 </PRE>
@@ -1324,17 +1324,17 @@ BeginMMFonts: 5 0
   1 and corresponds to design position 1450. There are two subroutines stored
   here, both are simple postscript. The first is the /NormalizeDesignVector
   routine and the second is the /ConvertDesignVector routine. -->
-  �ł́A�� 0 �ɂ� 2 �ӏ��̓_�̑Ή��Â������݂��邱�Ƃ�\���܂��B�Е��͐��K�����ꂽ�ʒu 0 �ŁA�f�U�C���ʒu 50 �ɊY�����A�����Е��͐��K�����ꂽ�ʒu 1 �Ńf�U�C���ʒu 1450 �ɊY�����܂��B�����Ɋi�[���ꂽ 2 �̃T�u���[�`�������݂��A�ǂ�����P���� PostScript �ł��B�ŏ��� /NormalizeDesignVector ���[�`���ŁA2 �Ԗڂ� /ConvertDesignVector ���[�`���ł��B
+  では、軸 0 には 2 箇所の点の対応づけが存在することを表します。片方は正規化された位置 0 で、デザイン位置 50 に該当し、もう片方は正規化された位置 1 でデザイン位置 1450 に該当します。ここに格納された 2 個のサブルーチンが存在し、どちらも単純な PostScript です。最初は /NormalizeDesignVector ルーチンで、2 番目は /ConvertDesignVector ルーチンです。
   <P>
 <!--
   Finally we have the actual instance fonts.  -->
-  �Ō�ɁA���ۂ̃C���X�^���X�t�H���g�����܂��B
+  最後に、実際のインスタンスフォントが来ます。
     <HR>
   <P>
 <!--
   Fonts with information for Apple's '*var' tables ('fvar', 'gvar', 'avar'
   and 'cvar') have a slightly different format: -->
-  Apple ��&lsquo;*var&rsquo;�e�[�u���Q (&lsquo;fvar&rsquo;,&lsquo;gvar&rsquo;,&lsquo;avar&rsquo;�����&lsquo;cvar&rsquo;) �̏����܂ރt�H���g�͂킸���Ƀt�H�[�}�b�g���قȂ�܂��B
+  Apple の&lsquo;*var&rsquo;テーブル群 (&lsquo;fvar&rsquo;,&lsquo;gvar&rsquo;,&lsquo;avar&rsquo;および&lsquo;cvar&rsquo;) の情報を含むフォントはわずかにフォーマットが異なります。
   <BLOCKQUOTE>
     <PRE>MMCounts: 8 2 1 10
 MMAxis: Weight Width
@@ -1365,21 +1365,21 @@ MacName: 0 1 9 "Tr\217s gras"
   for that axis translated into various languages. Finally Apple allows certain
   points in design space to be given names, here the point Weight=3.2, Width=1
   is named "Black" or "Tr&eacute;s gras". -->
-  Adobe �̃t�H�[�}�b�g�ł́A���W�͋�� [0, 1] ���Ƃ�܂����AApple �̃t�H�[�}�b�g�ł͔͈͂� [-1, 1] �ƂȂ�܂��BAdobe �ł͈�ʂɁA�����Ƃ� 2 �̃C���X�^���X��(�ɒl��) �w�肵�܂����AApple �ł� 3 �� (�ɒl�ƁA0 �ɂ�����f�t�H���g�̐ݒ�) ��z�肵�Ă��܂��B�ł����� Adobe ������ 2 ���̃t�H���g�ł͒ʏ� 4 �̃C���X�^���X�ƃf�t�H���g�̔ł��܂ނ��ƂɂȂ�܂����AApple �����̃t�H���g�ł� 8 �̃C���X�^���X�ƃf�t�H���g�̔ł��܂ނ��ƂɂȂ�܂��BMMWeights �t�B�[���h�́AApple �ł͕s�K�؂ł��B�e���ɂ� 1 �g�̖��O������A�e��̌���ɖ|�󂳂ꂽ���̎��̖��O��\���܂��B�Ō�ɁAApple �ł̓f�U�C����ԏ�̂������̓_�ɖ��O�����邱�Ƃ��ł��܂��B�����ł� Weight=3.2, Width=1 �̓_�ɂ́gBlack�h�܂��́gTr&eacute;s gras�h�Ƃ������O�������Ă��܂��B
+  Adobe のフォーマットでは、座標は区間 [0, 1] をとりますが、Apple のフォーマットでは範囲は [-1, 1] となります。Adobe では一般に、軸ごとに 2 個のインスタンスを(極値で) 指定しますが、Apple では 3 つ (極値と、0 におけるデフォルトの設定) を想定しています。ですから Adobe 方式の 2 軸のフォントでは通常 4 個のインスタンスとデフォルトの版を含むことになりますが、Apple 方式のフォントでは 8 個のインスタンスとデフォルトの版を含むことになります。MMWeights フィールドは、Apple では不適切です。各軸には 1 組の名前があり、各種の言語に翻訳されたその軸の名前を表します。最後に、Apple ではデザイン空間上のいくつかの点に名前をつけることができます。ここでは Weight=3.2, Width=1 の点には“Black”または“Tr&eacute;s gras”という名前がつけられています。
   <H2>
 <!--<A NAME="Autosave-Format">Autosave Format</A>-->
-    <A NAME="Autosave-Format">�����ۑ��t�H�[�}�b�g</A>
+    <A NAME="Autosave-Format">自動保存フォーマット</A>
   </H2>
   <P>
 <!--
   <A HREF="errrecovery.html">Error recovery</A> files are saved in
   ~/.FontForge/autosave, they have quite random looking names and end in .asfd.
   They look very similar to .sfd files above. -->
-  <A HREF="errrecovery.html">�G���[��</A>�t�@�C���� ~/.FontForge/autosave �ɕۑ�����A�����̓����_���Ɍ����閼�O�����Ă��čŌ�� .asfd �ŏI��܂��B����͏�L�� .sfd �t�@�C���Ɣ��ɂ悭���Ă��܂��B
+  <A HREF="errrecovery.html">エラー回復</A>ファイルは ~/.FontForge/autosave に保存され、それらはランダムに見える名前がついていて最後に .asfd で終ります。これは上記の .sfd ファイルと非常によく似ています。
   <P>
 <!--
   If an asfd file starts with a line: -->
-  ���� asfd �t�@�C�������̍s�Ŏn�܂�Ƃ�����:
+  ある asfd ファイルが次の行で始まるとしたら:
   <BLOCKQUOTE>
     <PRE>Base: /home/gww/myfonts/fontforge/Ambrosia.sfd
 </PRE>
@@ -1393,22 +1393,22 @@ MacName: 0 1 9 "Tr\217s gras"
   line. The number given on the line is not the number of characters in the
   file, but is the maximum number that could appear in the font. Then follows
   a list of all changed characters in the font (in the format described above). -->
-  ���̏ꍇ�A����͂��̃t�@�C�� (����� SFD �t�@�C���ł��t�H���g�t�@�C���ł��\���܂���) �ɓK�p���ꂽ�ύX�̃��X�g�ł���Ƒz�肳��܂��B�ŏ��̍s�� "<CODE>Base:</CODE>" �łȂ��ꍇ�A�V�����t�H���g�ł���Ƒz�肳��܂��B���̍s�ɂ͒ʏ�Ɠ��l�̕����������܂܂�܂��B���̎��̍s�� <CODE>BeginChars</CODE> �s�ł��B���̍s�̐��l�̓t�@�C�����̕������ł͂Ȃ��A�t�H���g���Ɍ���邱�Ƃ̂ł���ő�̐��l�ł��B���̌��Ƀt�H���g���̕ύX���ꂽ�S�Ă̕����̃��X�g�� (��Ő��������t�H�[�}�b�g��) �����܂��B
+  この場合、それはそのファイル (これは SFD ファイルでもフォントファイルでも構いません) に適用された変更のリストであると想定されます。最初の行が "<CODE>Base:</CODE>" でない場合、新しいフォントであると想定されます。次の行には通常と同様の文字符号が含まれます。その次の行が <CODE>BeginChars</CODE> 行です。この行の数値はファイル内の文字数ではなく、フォント内に現れることのできる最大の数値です。その後ろにフォント内の変更された全ての文字のリストが (上で説明したフォーマットで) 続きます。
   <P>
 <!--
   Bitmaps are not preserved. Grid changes are not preserved. -->
-  �r�b�g�}�b�v�͕ۑ�����܂���B�O���b�h�̕ύX�͕ۑ�����܂���B
+  ビットマップは保存されません。グリッドの変更は保存されません。
   <P>
   <P ALIGN=Center>
-  �\ <A HREF="src.html">�O</A> �\ <A HREF="overview.html">�ڎ�</A> �\
-  <A HREF="bezier.html">��</A> �\
+  — <A HREF="src.html">前</A> — <A HREF="overview.html">目次</A> —
+  <A HREF="bezier.html">次</A> —
   <P ALIGN=Left>
 <!--
   <A NAME="ASCII85Encode"><SUP>1</SUP>ASCII85Encode</A>: an encoding which
   takes 4 binary bytes and converts them to 5 ASCII characters between '!'
   and 'u'. Suppose we have 4 binary bytes: (b1 b2 b3 b4) then we want to find
   (c1 c2 c3 c4 c5) such that: -->
-  <A NAME="ASCII85Encode"><SUP>1</SUP>ASCII85Encode</A>: 4 �o�C�g�̃o�C�i����&lsquo;!&rsquo;����&lsquo;u&rsquo;�܂ł� ASCII ���� 5 �����ɕϊ����镄���������̈�ł��B�o�C�i�� 4 �o�C�g (b1 b2 b3 b4) ������Ƃ��āA����ɑ΂��Ď��̏����𖞂��� (c1 c2 c3 c4 c5) ��T�����Ƃ��l���܂��傤:
+  <A NAME="ASCII85Encode"><SUP>1</SUP>ASCII85Encode</A>: 4 バイトのバイナリを&lsquo;!&rsquo;から&lsquo;u&rsquo;までの ASCII 文字 5 文字に変換する符号化方式の一つです。バイナリ 4 バイト (b1 b2 b3 b4) があるとして、それに対して次の条件を満たす (c1 c2 c3 c4 c5) を探すことを考えましょう:
   <BLOCKQUOTE>
     <PRE><I>b<SUB>1</SUB> * 256<SUP>3</SUP>  +  b<SUB>2</SUB> * 256<SUP>2</SUP>  +  b<SUB>3</SUB> * 256  +  b<SUB>4</SUB> =</I>
 <I>	c<SUB>1</SUB> * 85<SUP>4</SUP>  +  c<SUB>2</SUB> * 85<SUP>3</SUP>  +  c<SUB>3</SUB> * 85<SUP>2</SUP>  +  c<SUB>4</SUB> * 85  +  c<SUB>5</SUB></I>
@@ -1419,7 +1419,7 @@ MacName: 0 1 9 "Tr\217s gras"
   The final output is obtained by adding 33 ('!') to each of the
   <I>c<SUB>i</SUB></I>. If all four bytes are 0, then rather than writing '!!!!!',
   the letter 'z' may be used instead. -->
-  �ŏI�I�ȏo�͂́A<I>c<SUB>i</SUB></I> �̂��ꂼ��̒l�� 33 (&lsquo;!&rsquo;) �������邱�Ƃɂ���ē����܂��B4 �̃o�C�g�����ׂ� 0 �̏ꍇ�A&lsquo;!!!!!&rsquo;�������o���Ȃ��ő���ɕ���&lsquo;z&rsquo;���g�����Ƃ��ł��܂��B
+  最終的な出力は、<I>c<SUB>i</SUB></I> のそれぞれの値に 33 (&lsquo;!&rsquo;) を加えることによって得られます。4 つのバイトがすべて 0 の場合、&lsquo;!!!!!&rsquo;を書き出さないで代わりに文字&lsquo;z&rsquo;を使うことができます。
   <P>
 <!--
   Unfortunately, not all streams of binary data have a length divisible by
@@ -1427,24 +1427,24 @@ MacName: 0 1 9 "Tr\217s gras"
   <I>4-n</I> zero bytes to the data stream, and apply the above transformation
   (without the 'z' special case for all zeros), and output <I>n+1 </I>of the
   <I>c<SUB>i</SUB></I> bytes. -->
-  �c�O�Ȃ���A�o�C�i���f�[�^�̃X�g���[���̒����͕K������ 4 �Ŋ���؂��킯�ł͂���܂���B�����ŁA��A�̃f�[�^�̍Ō�� <I>n</I> �o�C�g���c���Ă����Ƃ��܂��傤�B���̏ꍇ�A<I>4-n</I> �̃[���o�C�g���f�[�^�X�g���[���̖����ɕt�������A��L�̕ϊ���K�p�� (���ׂă[���̏ꍇ��&lsquo;z&rsquo;���o�͂�����ʂȏ���������)�A<I>c<SUB>i</SUB></I> �̃o�C�g��̂����ŏ��� <I>n+1</I> ���o�͂��܂��B
+  残念ながら、バイナリデータのストリームの長さは必ずしも 4 で割り切れるわけではありません。そこで、一連のデータの最後に <I>n</I> バイトが残っていたとしましょう。その場合、<I>4-n</I> 個のゼロバイトをデータストリームの末尾に付け加え、上記の変換を適用し (すべてゼロの場合に&lsquo;z&rsquo;を出力する特別な処理を除く)、<I>c<SUB>i</SUB></I> のバイト列のうち最初の <I>n+1</I> 個を出力します。
   <P>
 <!--
   So to encode a single 0 byte we would: -->
-  �ł�����A1 �̃o�C�g�l 0 ��ϊ����邵���ꍇ�ɂ͈ȉ��̂悤�ɂȂ�܂�:
+  ですから、1 個のバイト値 0 を変換するした場合には以下のようになります:
   <UL>
     <LI>
 <!--  append 3 additional 0 bytes (n==1 =&gt; add 4-1=3 bytes)-->
-      3 �̒ǉ��� 0 �����ɒǉ����� (n==1 �� 4-1=3 �o�C�g��ǉ�)
+      3 個の追加の 0 を後ろに追加する (n==1 ⇒ 4-1=3 バイトを追加)
     <LI>
 <!--  find that all the <I>c<SUB>i</SUB></I> were also zero-->
-      ���ׂĂ� <I>c<SUB>i</SUB></I> �� 0 �ɂȂ�
+      すべての <I>c<SUB>i</SUB></I> が 0 になる
     <LI>
 <!--  add '!' to each (all are now '!')-->
-      ���ꂼ���&lsquo;!&rsquo;�������� (�S�o�C�g��&lsquo;!&rsquo;�ɂȂ�)
+      それぞれに&lsquo;!&rsquo;を加える (全バイトが&lsquo;!&rsquo;になる)
     <LI>
 <!--  output two&lsquo;!&rsquo;(n+1 = 2)-->
-      2 ��&lsquo;!&rsquo;��ǉ����� (n+1 = 2 ������)
+      2 個の&lsquo;!&rsquo;を追加する (n+1 = 2 だから)
   </UL>
   <P>
 </DIV>

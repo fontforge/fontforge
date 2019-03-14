@@ -3,9 +3,9 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 16-Sep-2001 -->
   <!-- AP: Last modified: 15-Jul-2006 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!--<TITLE>Older changes to FontForge</TITLE> -->
-    <TITLE>FontForge �ւ̈ȑO�̕ύX�_</TITLE>
+    <TITLE>FontForge への以前の変更点</TITLE>
   <LINK REL="icon" href="../fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
@@ -14,108 +14,108 @@
   <P>
 <!--
   <A HREF="changelog.html">Current changes</A><BR> -->
-  <A HREF="changelog.html">�ŋ߂̕ύX�_</A><BR>
+  <A HREF="changelog.html">最近の変更点</A><BR>
 <!--
   <A HREF="pfaeditchangelog.html">Changes to PfaEdit (predecessor to
 FontForge)</A> -->
-  <A HREF="pfaeditchangelog.html">PfaEdit (FontForge �̋�����) �̕ύX�_</A>
+  <A HREF="pfaeditchangelog.html">PfaEdit (FontForge の旧名称) の変更点</A>
   <UL>
     <LI>
 <!--  31-August-2005-->
-      2005�N8��31��
+      2005年8月31日
       <UL>
 	<LI>
 <!--	  The mac fix for 25-Aug wasn't quite enough. -->
-	  8/25 �� Mac �̏C���͏\���ł͂���܂���ł����B
+	  8/25 の Mac の修正は十分ではありませんでした。
 	<LI>
 <!--	  I used to maintain a hidden value of the os2 linegap. This didn't change
 	  when users set linegap with font info, leaving users annoyed. -->
-	  ���܂ŁAOS/2 �� linegap �t�B�[���h�̉B�ꂽ�l��ێ����Ă��܂����B����̓��[�U���t�H���g���_�C�A���O�� linegap ��ݒ肵���Ƃ��ɕύX����Ă��炸�A���[�U�ɕs�����c���Ă��܂����B
+	  今まで、OS/2 の linegap フィールドの隠れた値を保持していました。これはユーザがフォント情報ダイアログで linegap を設定したときに変更されておらず、ユーザに不満を残していました。
 	<LI>
 <!--	  It used to be that both the Hint-&gt;Add Hint and Hint-&gt;Create Hint commands
 	  would destroy all hint masks. Now we update those hint masks appropriately. -->
-	  �u�q���g���q���g��ǉ��v����сu�q���g���q���g���쐬�v�R�}���h�͗����Ƃ����ׂẴq���g�}�X�N���󂵂Ă��܂����B���₻���̃q���g�}�X�N�𐳂����X�V����܂����B
+	  「ヒント→ヒントを追加」および「ヒント→ヒントを作成」コマンドは両方ともすべてのヒントマスクを壊していました。今やそれらのヒントマスクを正しく更新されました。
 	<LI>
 <!--	  The "Original" encoding was broken, and reencoding to it gaves us 256 blank
 	  glyphs before glyph0. Sigh. -->
-	  �u�I���W�i���v�G���R�[�f�B���O�����Ă���A�u�I���W�i���v�ւ̃G���R�[�f�B���O�ϊ����s���ƃO���t 0 �̑O�� 256 �̋�O���t��ǉ����Ă��܂����B�����B
+	  「オリジナル」エンコーディングが壊れており、「オリジナル」へのエンコーディング変換を行うとグリフ 0 の前に 256 個の空グリフを追加していました。やれやれ。
 	<LI>
 <!--	  The CodeRange bit for symbol doesn't mean the font contains any standard
 	  set of "symbol" glyphs, but rather either that it has a 3,0 cmap sub-table,
 	  or that there are glyphs mapped to 0xf000-0xf0ff in the 3,1 (unicode) sub-table. -->
-	  CodeRange �r�b�g�� symbol �r�b�g�̈Ӗ��́A�W���� "Symbol" �t�H���g�Ɋ܂܂��O���t�̂ǂꂩ���܂܂��ƌ����Ӗ��ł͂Ȃ��āA3,0 cmap �T�u�e�[�u�����܂܂�Ă��邩�A3�A1 (Unicode) �T�u�e�[�u���� 0xf000-0xf0ff �Ƀ}�b�v���ꂽ�O���t�����݂���ƌ����Ӗ��ł����B
+	  CodeRange ビットの symbol ビットの意味は、標準の "Symbol" フォントに含まれるグリフのどれかが含まれると言う意味ではなくて、3,0 cmap サブテーブルが含まれているか、3、1 (Unicode) サブテーブルの 0xf000-0xf0ff にマップされたグリフが存在すると言う意味でした。
 	  <P>
 <!--	  Setting this bit should give you a symbol encoding as well as all the other
 	  encodings you've set bits for. It doesn't work under windows. It doesn't
 	  work. TrueType fonts do not provide a symbol encoding, while 'CFF ' fonts
 	  only provide a symbol encoding. But hey, let's support it anyway! -->
-	  ���̃r�b�g���Z�b�g����ƁA�r�b�g�𗧂Ă����̑��̃G���R�[�f�B���O�ɉ����� Symbol �G���R�[�f�B���O���g�p�ł���悤�ɂȂ�܂��B����� Windows �ł͓��삵�܂���B���삵�܂���BTrueType �t�H���g�� Symbol �G���R�[�f�B���O��񋟂����ASymbol �G���R�[�f�B���O��񋟂���̂͂��� 'CFF ' �t�H���g�����ł��B����ł��A������T�|�[�g���邱�Ƃɂ��܂��傤!
+	  そのビットをセットすると、ビットを立てたその他のエンコーディングに加えて Symbol エンコーディングが使用できるようになります。これは Windows では動作しません。動作しません。TrueType フォントは Symbol エンコーディングを提供せず、Symbol エンコーディングを提供するのはただ 'CFF ' フォントだけです。それでも、これをサポートすることにしましょう!
 	  <P>
 <!--	  change View-&gt;Goto to know about this range as MS Symbol. -->
-	  �u�\�����ړ��v�� MS Symbol �̈ʒu��m���Ă���悤�ɕύX�B
+	  「表示→移動」が MS Symbol の位置を知っているように変更。
 	<LI>
 <!--	  Importing an eps file (or pasting the x clipboard) made use of an uninitialized
 	  variable. (introduced 7-Aug) -->
-	  EPS �t�@�C���̎�荞�� (�܂��� X �N���b�v�{�[�h�̓\��t��) �����������ϐ����g�p���Ă��܂��� (8/7 �ȗ�)�B
+	  EPS ファイルの取り込み (または X クリップボードの貼り付け) が未初期化変数を使用していました (8/7 以来)。
 	<LI>
 <!--	  Cleanup pasting references from one font to another (gave some very strange
 	  results when pasting refs with no unicode encodings). -->
-	  �t�H���g���܂������Q�Ƃ̓\��t�������𐮔� (�Q�Ƃ� Unicode �����ʒu���܂܂�Ă��Ȃ��Ƃ��A���ɕςȌ��ʂ������Ă��܂���)�B
+	  フォントをまたいだ参照の貼り付け処理を整備 (参照に Unicode 符号位置が含まれていないとき、非常に変な結果を招いていました)。
       </UL>
     <LI>
 <!--  25-August-2005-->
-      2005�N8��25��
+      2005年8月25日
       <UL>
 	<LI>
 <!--	  Recode the mac resource fork routines so that they no longer use the FSSpec
 	  structure. 10.4 complains about it. -->
-	  Mac ���\�[�X�t�H�[�N�̃��[�`�������������AFSSpec �\���̂��g�p���Ȃ��Ȃ�܂����B��������Ă���� 10.4 ������������̂ł��B
+	  Mac リソースフォークのルーチンを書き直し、FSSpec 構造体を使用しなくなりました。それをしていると 10.4 が文句を言うのです。
 	<LI>
 <!--	  Bug in mm font charstring generation. -->
-	  �}���`�v���}�X�^�[�t�H���g�� charstring �����̃o�O�C���B
+	  マルチプルマスターフォントの charstring 生成のバグ修正。
 	<LI>
 <!--	  If a font contained mac feature setting names, then when ff generated it,
 	  ff would produce duplicate entries in the 'name' table for these guys. One
 	  for the name in the font itself, and one for the name ff thought that feature
 	  setting should have. -->
-	  Mac �@�\�̐ݒ薼���܂ރt�H���g�ł́AFF ������𐶐������Ƃ��� 'name' �e�[�u���ɓ������ڂ��d�����Đ������Ă��܂����B1 �̓t�H���g���ꎩ�g�Ɋ܂܂�閼�O�ŁA���� 1 �� ff ���A���̐ݒ肪�܂ނׂ��Ɣ��f�������O�ł��B
+	  Mac 機能の設定名を含むフォントでは、FF がそれを生成したときに 'name' テーブルに同じ項目を重複して生成していました。1 つはフォントそれ自身に含まれる名前で、もう 1 つは ff が、その設定が含むべきと判断した名前です。
 	<LI>
 <!--	  Nobody else puts apple unicode names into the 'name' table so I probably
 	  should not either. Adobe says one should not. Apple's website implies one
 	  should - - but Apple doesn't and its ttf website is not very accurate. -->
-	  Apple Unicode �� 'name' �e�[�u���ɖ��O��o�^�����l���N�����Ȃ��̂ŁA������������ׂ��ł͂Ȃ��̂ł��傤�BAdobe �͂�������ׂ��łȂ��ƌ�����l�ł��BApple �� Web �T�C�g�ł́A��������ׂ����Ǝ������Ă��܂����A�����ł͂͂������Ă��܂��񂵁AApple �� TTF �Ɋւ��� Web �T�C�g�͔��ɕs���m�Ȃ̂ł��B
+	  Apple Unicode で 'name' テーブルに名前を登録した人が誰もいないので、私もそうするべきではないのでしょう。Adobe はそうするべきでないと言う一人です。Apple の Web サイトでは、そうするべきだと示唆していますが、自分でははそうしていませんし、Apple の TTF に関する Web サイトは非常に不正確なのです。
 	<LI>
 <!--	  When ff generated a ttf/otf font with applemode set and opentype off then
 	  the font would have version 'true'. Which means windows would reject it.
 	  That's probably not a good idea given that this situation is default on the
 	  mac - - even if we don't have a GSUB/GPOS table we should at least let the
 	  glyphs show on windows. -->
-	  ff �� TTF/OTF �� Apple ���[�h���ŁAOpenType ���[�h���I�t�ɂ��ďo�͂����Ƃ��A�t�H���g�̃o�[�W������ 'true' �ƂȂ�܂��B����ɂ��AWindows �͂��̃t�H���g�����ۂ��܂��B����� Mac �ł̃f�t�H���g�Ȃ̂ŁA�����炭�ǂ��l���ł͂���܂���\�\GSUB/GPOS �e�[�u�����܂܂�Ă��Ȃ��Ƃ��ł��A���Ȃ��Ƃ��O���t���E�B���h�E�ɕ\�����ׂ��ł��傤�B
+	  ff が TTF/OTF を Apple モードつきで、OpenType モードをオフにして出力したとき、フォントのバージョンは 'true' となります。これにより、Windows はこのフォントを拒否します。これは Mac でのデフォルトなので、おそらく良い考えではありません——GSUB/GPOS テーブルが含まれていないときでも、少なくともグリフをウィンドウに表示すべきでしょう。
 	  <P>
 <!--	  On the other hand some people might want to make fonts that only work on
 	  macs. So add a configure flag. -->
-	  ���̈���AMac �ł̂ݓ��삷��t�H���g���쐬�������ƍl����l�����l�����܂��B���������킯�� configure �Ƀt���O��ǉ����܂����B
+	  その一方、Mac でのみ動作するフォントを作成したいと考える人が何人かいます。そういうわけで configure にフラグを追加しました。
 	<LI>
 <!--	  ff couldn't undo changing the lig carets (if it weren't compiled for multilayer) -->
-	  FF �͍����L�����b�g�̕ύX���������܂��� (�������C���@�\���ŃR���p�C�����Ȃ�������)�B
+	  FF は合字キャレットの変更を取り消せません (複数レイヤ機能つきでコンパイルしないかぎり)。
 	<LI>
 <!--	  Copying a pairwise positioning left memory in a bad state. -->
-	  �y�A�P�ʂ̈ʒu�w����R�s�[����ƃ��������s���ȏ�Ԃ̂܂܂ɂȂ��Ă��܂����B
+	  ペア単位の位置指定をコピーするとメモリが不正な状態のままになっていました。
 	<LI>
 <!--	  Coalesce all lookups with the same feature &amp; script lang. This makes
 	  ATM happy about kerning on windows. -->
-	  �@�\�Ȃ�тɗp���n�E���ꂪ���������ׂĂ̏ƍ��𓝍����܂��B����ɂ��AWindows ��ł̃J�[�j���O�Ɋւ��� ATM �����܂������悤�ɂȂ�܂��B
+	  機能ならびに用字系・言語が等しいすべての照合を統合します。これにより、Windows 上でのカーニングに関して ATM がうまく動くようになります。
 	<LI>
 <!--	  When rasterizing a multilayer font we would sometimes get warnings from the
 	  stroker about how the stroke self-intersected. Get rid of those warnings. -->
-	  �������C���t�H���g�����X�^���C�Y����Ƃ��A��X�́A�X�g���[�N�������[�`������A�X�g���[�N�����Ȍ������Ă���Ƃ̌x�����󂯂邱�Ƃ��Ƃ��ǂ�����܂����B�����̌x�����폜�B
+	  複数レイヤフォントをラスタライズするとき、我々は、ストローク処理ルーチンから、ストロークが自己交差しているとの警告を受けることがときどきありました。これらの警告を削除。
 	<LI>
 <!--	  Pasting from a multilayered font into a normal one crashed -->
-	  �������C���t�H���g����ʏ�t�H���g�Ƀy�[�X�g����ƃN���b�V�����Ă��܂����B
+	  複数レイヤフォントから通常フォントにペーストするとクラッシュしていました。
 	<LI>
 <!--	  If an order2 font were turned into a PS font, then characters with hint conflicts
 	  got no hints. -->
-	  2 ���t�H���g�� PS �t�H���g�ɕϊ�����ƁA�q���g���������q���g�̖������Ƃɍ������Ă��܂����B
+	  2 次フォントを PS フォントに変換すると、ヒントつき文字がヒントの無いことに混乱していました。
 	<LI>
 <!--	  Makers of fonts on the mac often use out of bound GIDs as flags in contextual
 	  su bstitutions. What I have seen is that one sub-table will insert such a
@@ -129,41 +129,41 @@ FontForge)</A> -->
 	  that c reates dummy glyphs for all these bizarre GIDs so (I hope) the font
 	  will work af ter passing through ff (only there will be some real blank glyphs
 	  at the end of the font rather than vaper-ware glyphs). -->
-	  Mac �̃t�H���g����҂͕����ˑ��u���ɂ����ăt���O�Ƃ��āA���΂��Δ͈͊O�� GID ���g�p���邱�Ƃ�����܂��B����������ł́A����T�u�e�[�u�����A�}�b�`�������������ɂ��̂悤�ȁu�O���t�v��}�����A���̃T�u�e�[�u�����t���O���폜���A���������ϊ����s���܂��BMac �ɂ����Ă� 1 �̃}�b�`�̔������ɍs�����Ƃ̂ł���u���̌��������Ă���̂ɑ΂��āA�}�b�`���擪�� (�܂�A���炩�̃}�W�b�N�}�[�J�O���t�ł���Ƃ����}�b�`��) �N���������͒u���𖳐����ɍs�����Ƃ��ł���̂ŁA���̋Z�@�͏d�v�ł��BFF ���ŏ��ɂ����̃t�H���g�ɂ܂Â������ɂ̓N���b�V�����N�����Ă��܂����B���̌� gid&gt;glyph_cnt ���G���[�Ƃ��Ĉ����悤�ɂ��܂��� (�܂�u���𖳎����Ă��܂���)�B���̂قǕςĂ��� GID ���o���������ɂ͏�Ƀ_�~�[�O���t���쐬���Aff ��ʂ�����ł��t�H���g�����삷��悤�ɂȂ�܂��� (�Ǝv���܂��B�ύX�����̂́A��A�̎��̖̂����O���t�����̂����������̋�O���t�ɂȂ�_�����ł�)�B
+	  Mac のフォント製作者は文脈依存置換においてフラグとして、しばしば範囲外の GID を使用することがあります。私が見た例では、あるサブテーブルが、マッチが発生した時にそのような「グリフ」を挿入し、次のサブテーブルがフラグを削除し、引き続き変換を行います。Mac においては 1 個のマッチの発見時に行うことのできる置換の個数が限られているのに対して、マッチが先頭で (つまり、何らかのマジックマーカグリフであるというマッチが) 起こった時は置換を無制限に行うことができるので、この技法は重要です。FF が最初にこれらのフォントにつまづいた時にはクラッシュを起こしていました。その後 gid&gt;glyph_cnt をエラーとして扱うようにしました (つまり置換を無視していました)。このほど変てこな GID が出現した時には常にダミーグリフを作成し、ff を通した後でもフォントが動作するようになりました (と思います。変更されるのは、一連の実体の無いグリフが実体をもついくつかの空グリフになる点だけです)。
 	<LI>
 <!--	  The Active Hints pane (of Point Info) didn't always work if a glyph had more
 	  than one contour. -->
-	  [�L���ȃq���g] �^�u (�u�_�̏��v�̂̓O���t�� 1 ��葽���̗֊s�������Ă������ɏ�Ɏ��s���܂��B
+	  [有効なヒント] タブ (「点の情報」のはグリフが 1 個より多くの輪郭をもっていた時に常に失敗します。
 	<LI>
 <!--	  Be more canny in the use of subroutines for references in type1/2 output. -->
-	  Type1/Type2 �̏o�͂ŎQ�Ƃɂ�葽���̃T�u���[�`�����g�p����悤�ɂ��܂����B
+	  Type1/Type2 の出力で参照により多くのサブルーチンを使用するようにしました。
 	<LI>
 <!--	  When generating contextual lookups, ff did not set the lookup count between
 	  gpos and gsub. So if a font had both contextual gpos &amp; gsub elements
 	  ff got confused. -->
-	  �����ˑ��̏ƍ��𐶐�����Ƃ��Aff �� GPOS �� GSUB �̊e�X�Ɋ܂܂��ƍ��̌���ݒ肵�Ă��܂���ł����B����ɂ��A�t�H���g�������ˑ��� GPOS �� GSUB �̗��v�f���܂�ł����ꍇ�AFF �͍������Ă��܂����B
+	  文脈依存の照合を生成するとき、ff は GPOS と GSUB の各々に含まれる照合の個数を設定していませんでした。それにより、フォントが文脈依存の GPOS と GSUB の両要素を含んでいた場合、FF は混乱していました。
 	<LI>
 <!--	  The code for cff encodings (ie. in bare cff non-cid fonts) didn't handle
 	  multiply encoded glyphs -->
-	  CFF ������ (�܂�A���� CFF �� CID �t�H���g�ł�) �̃R�[�h�͑��d���������ꂽ�O���t�������Ă��܂���ł����B
+	  CFF 符号化 (つまり、裸の CFF 非 CID フォントでの) のコードは多重符号化されたグリフを扱っていませんでした。
 	<LI>
 <!--	  Change the default color of the prev control point (so it's easier for me
 	  to see) -->
-	  �O�̐���_�̃f�t�H���g�̐F��ύX (����ɂ��A��茩�₷���Ȃ�܂���)�B
+	  前の制御点のデフォルトの色を変更 (これにより、より見やすくなりました)。
       </UL>
     <LI>
 <!--  11-August-2005-->
-      2005�N8��11��
+      2005年8月11日
       <UL>
 	<LI>
 <!--	  The configure script did not find libfreetype when it lived (solely) in
 	  /usr/X11R6/libs -->
-	  /usr/X11R6/libs ������ libfreetype ������Ƃ��Aconfigure �X�N���v�g�����o�Ɏ��s���Ă��܂����B
+	  /usr/X11R6/libs だけに libfreetype があるとき、configure スクリプトが検出に失敗していました。
 	<LI>
 <!--	  On the Mac, menus incorrectly suggested using Cmd rather than Ctl. (Cmd used
 	  to work on earlier versions of the X server, but now it is snagged by the
 	  X11 menubar itself.) -->
-	  Mac �ł́A����ă��j���[�� Ctl �ł͂Ȃ� Cmd ��\�����Ă��܂��� (Cmd �͂��ȑO�� X �T�[�o�œ����悤�Ɏg���Ă��܂������A����� X11 ���j���[�o�[���ꎩ�g�ɉ���肳��Ă��܂��܂�)�B
+	  Mac では、誤ってメニューに Ctl ではなく Cmd を表示していました (Cmd はより以前の X サーバで動くように使っていましたが、それは X11 メニューバーそれ自身に横取りされていまいます)。
 	<LI>
 <!--	  ff uses the Alt/Meta key to alter the behavior of some tools (magnify, ruler,
 	  pointer, pencil, etc.) in the editing windows. This doesn't work well on
@@ -171,231 +171,231 @@ FontForge)</A> -->
 	  or Command it will generally already be used to turn the single button mouse
 	  into a three button mouse (Option - mouse =&gt; button 2, Command - mouse
 	  =&gt; button 3). So instead use the CapsLock key. -->
-	  FF �́A�ҏW�E�B���h�E�œ����c�[��  (�g��E�������E�|�C���^�E���M�Ȃ�) �ɕʂ̂ӂ�܂��������邽�߂� Alt/Meta �L�[���g�p���܂��B����� Mac �ł͂悭�����܂���B���̗��R�Ƃ��āA�{���� Alt/Meta �L�[��������ł��BOption �܂��� Command �L�[�ő�p���悤�Ƃ��Ă��A��ʂɂ́A1 �{�^���}�E�X�� 3 �{�^���}�E�X�Ƃ��Ďg�p���邽�߂Ɋ��Ɏg�p�ς݂ł� (Option-�}�E�X���{�^��2, Command-�}�E�X���{�^��3)�B���������� CapsLock �L�[���g�p���܂��B
+	  FF は、編集ウィンドウで同じツール  (拡大・物差し・ポインタ・鉛筆など) に別のふるまいをさせるために Alt/Meta キーを使用します。これは Mac ではよく動きません。第一の理由として、本物の Alt/Meta キーが内からです。Option または Command キーで代用しようとしても、一般には、1 ボタンマウスを 3 ボタンマウスとして使用するために既に使用済みです (Option-マウス→ボタン2, Command-マウス→ボタン3)。だから代わりに CapsLock キーを使用します。
       </UL>
     <LI>
 <!--  9-August-2005-->
-      2005�N8��9��
+      2005年8月9日
       <UL>
 	<LI>
 <!--	  The big5 encoding stopped at 64000, which confused routines which expected
 	  unencoded glyphs to start at 65536. -->
-	  Big5 �G���R�[�f�B���O�� 64000 �Ŏ~�܂��Ă���A���ꂪ����������Ă��Ȃ��O���t�� 65536 ����n�܂邱�Ƃ�O��Ƃ��Ă������[�`�������������Ă��܂����B
+	  Big5 エンコーディングは 64000 で止まっており、これが符号化されていないグリフが 65536 から始まることを前提としていたルーチンを混乱させていました。
 	<LI>
 <!--	  We would crash when reencoding a font with enough unencoded alternate unicode
 	  code points. -->
-	  ����������Ă��Ȃ���� Unicode �����ʒu��������x�ȏ�܂܂��t�H���g�̃G���R�[�f�B���O�ϊ����s���ƃN���b�V�����Ă��܂����B
+	  符号化されていない代替 Unicode 符号位置がある程度以上含まれるフォントのエンコーディング変換を行うとクラッシュしていました。
 	<LI>
 <!--	  The code for creating an 8/16 cmap subtable didn't work. -->
-	  8/16 cmap �T�u�e�[�u�����쐬����R�[�h�������Ă��܂���ł����B
+	  8/16 cmap サブテーブルを作成するコードが動いていませんでした。
 	<LI>
 <!--	  ff would crash if it had two windows open on the same font and one got reencoded -->
-	  �����t�H���g�̃E�B���h�E�𕡐��J���Ă��āA�Е��ŃG���R�[�f�B���O�ϊ����s���ƃN���b�V�����Ă��܂����B
+	  同じフォントのウィンドウを複数開いていて、片方でエンコーディング変換を行うとクラッシュしていました。
 	<LI>
 <!--	  Didn't set the length of the format4 'cmap' sub-table, so the offset to the
 	  format12 (32bit unicode) table was wrong. -->
-	  �t�H�[�}�b�g 4 'cmap' �T�u�e�[�u���̒�����ݒ肵�Ă��Ȃ������̂ŁA�t�H�[�}�b�g 12 (32 �r�b�g Unicode) �e�[�u���ւ̃I�t�Z�b�g���Ԉ���Ă��܂����B
+	  フォーマット 4 'cmap' サブテーブルの長さを設定していなかったので、フォーマット 12 (32 ビット Unicode) テーブルへのオフセットが間違っていました。
 	<LI>
 <!--	  ttfcopyfile can complain about a ttf table offset being wrong. Give it the
 	  info so that it will now tell us which table has the wrong offset. -->
-	  ttfcopyfile ���ATTF �e�[�u���I�t�Z�b�g���Ԉ���Ă���ƕ���������\��������܂����B�ǂ̃e�[�u���̃I�t�Z�b�g���Ԉ���Ă���̂���\���ł��邾���̏���񋟂��܂����B
+	  ttfcopyfile が、TTF テーブルオフセットが間違っていると文句をいう可能性がありました。どのテーブルのオフセットが間違っているのかを表示できるだけの情報を提供しました。
 	<LI>
 <!--	  Uninitialized variable in metricsview when creating a popup window. -->
-	  �|�b�v�A�b�v�쐬���A���g���b�N�r���[�ɖ��������ϐ�������܂����B
+	  ポップアップ作成時、メトリックビューに未初期化変数がありました。
 	<LI>
 <!--	  Redo the ttfnames pane of the font info dlg. Now show the names as an editable
 	  list. -->
-	  �t�H���g���_�C�A���O�� [TTF ��] �̍��Ȃ����B���O��ҏW���̓���X�g�Ƃ��ĕ\������悤�ɂȂ�܂����B
+	  フォント情報ダイアログの [TTF 名] の作りなおし。名前を編集かの得りストとして表示するようになりました。
 	<LI>
 <!--	  Histogram dlg still used wrong encodings for selected glyphs when historgrams
 	  invoked from Hints menu. -->
-	  �u����O���t�v�_�C�A���O�́A�q���g���j���[����q�X�g�O�������N�������Ƃ��ɑI�����ꂽ�O���t�̕����ʒu���܂��Ԉ���Ă��܂����B
+	  「柱状グラフ」ダイアログは、ヒントメニューからヒストグラムを起動したときに選択されたグリフの符号位置をまだ間違っていました。
       </UL>
     <LI>
 <!--  7-August-2005-->
-      2005�N8��7��
+      2005年8月7日
       <UL>
 	<LI>
 <!--	  SelectIf failed when passed an encoding which was out of bounds -->
-	  SelectIf() �ɔ͈͊O�̕���������^����Ɛ��������삵�܂���ł����B
+	  SelectIf() に範囲外の文字符号を与えると正しく動作しませんでした。
 	<LI>
 <!--	  Added a new scripting command: ToString -->
-	  �V�����X�N���v�g�R�}���h ToString() ��ǉ��B
+	  新しいスクリプトコマンド ToString() を追加。
 	<LI>
 <!--	  Using the X clipboard to paste a glyph into a glyph that contained stuff
 	  caused a crash. -->
-	  X �̃N���b�v�{�[�h���g���āA���炩�̃f�[�^���܂܂�Ă���O���t�ɃO���t���y�[�X�g���悤�Ƃ���ƃN���b�V�����Ă��܂����B
+	  X のクリップボードを使って、何らかのデータが含まれているグリフにグリフをペーストしようとするとクラッシュしていました。
 	<LI>
 <!--	  Using the X clipboard to paste a glyph with references or with multilayer
 	  did no t work. -->
-	  X �̃N���b�v�{�[�h���g���āA�Q�Ƃ����O���t�̒���t�����s�����Ƃ����Ƃ��╡�����C���t�H���g�̓\��t�����s���ƃN���b�V�����Ă��܂����B
+	  X のクリップボードを使って、参照をもつグリフの張り付けを行おうとしたときや複数レイヤフォントの貼り付けを行うとクラッシュしていました。
 	<LI>
 <!--	  None of ttf, otf nor svg got multiply encoded glyphs output properly. -->
-	  TTF, OTF, SVG �̂ǂ�������̕������������O���t�𐳂����o�͂ł��Ă��܂���ł����B
+	  TTF, OTF, SVG のどれも複数の文字符号をもつグリフを正しく出力できていませんでした。
 	<LI>
 <!--	  FF screwed up memory when creating ligatures from an svg font. -->
-	  SVG �t�H���g���獇�����쐬�����Ƃ��Ƀ�������j�󂵂Ă��܂����B
+	  SVG フォントから合字を作成したときにメモリを破壊していました。
 	<LI>
 <!--	  Merge fonts was writing to bad memory. -->
-	  �t�H���g�̕������ɕs���ȃ������ɏ�������ł��܂����B
+	  フォントの併合時に不正なメモリに書き込んでいました。
 	<LI>
 <!--	  FF was confused by a strange MM font -->
-	  FF �́A�������� MM �t�H���g�ɍ����������Ă��܂����B
+	  FF は、おかしな MM フォントに混乱させられていました。
 	<LI>
 <!--	  FindExistingSlot should understand altuni. -->
-	  FindExistingSlot() �� altuni �𗝉�����ׂ��ł��B
+	  FindExistingSlot() は altuni を理解するべきです。
 	<LI>
 <!--	  Font View didn't display current unicode of multiply encoded glyphs. (same
 	  for popups). -->
-	  �t�H���g�r���[�������̕������������O���t�̌��݂� Unicode ��\�����Ă��܂���ł��� (�|�b�v�A�b�v�Ɠ���)�B
+	  フォントビューが複数の文字符号をもつグリフの現在の Unicode を表示していませんでした (ポップアップと同じ)。
 	<LI>
 <!--	  Still having problems generating type1 code for complicated reference glyphs. -->
-	  ���G�ȎQ�ƃO���t�� Type1 �R�[�h�����ɂ܂���肪����܂����B
+	  複雑な参照グリフの Type1 コード生成にまだ問題がありました。
 	<LI>
 <!--	  Retain knowlege of multiple unicode encodings for some glyphs. Used when
 	  a glyph has multiple encodings and is reencoded. -->
-	  �����O���t�̕��� Unicode �����ʒu�̏���ێ��B�O���t�������̕����ʒu�������Ă��āA�G���R�[�f�B���O�ϊ����s�����Ƃ��Ɏg�p����܂��B
+	  同じグリフの複数 Unicode 符号位置の情報を保持。グリフが複数の符号位置をもっていて、エンコーディング変換を行ったときに使用されます。
 	<LI>
 <!--	  Add back an option to compact an encoding. It's not the same as the old compact
 	  which kept track of the former encoding. This just compacts, user must explicitly
 	  reencode. -->
-	  �G���R�[�f�B���O�̃R���p�N�g�\�����Ēǉ��B�Â��G���R�[�f�B���O���o���Ă����ȑO�́u�R���p�N�g���v�Ɠ����ł͂���܂���B�P���ɃR���p�N�g�\�������邾���Ȃ̂ŁA���[�U�͖����I�ɃG���R�[�f�B���O�̍ĕϊ����s���K�v������܂��B
+	  エンコーディングのコンパクト表示を再追加。古いエンコーディングを覚えていた以前の「コンパクト化」と同じではありません。単純にコンパクト表示をするだけなので、ユーザは明示的にエンコーディングの再変換を行う必要があります。
 	<LI>
 <!--	  Force encoding didn't work if the new encoding had more slots than the old. -->
-	  �V�����G���R�[�f�B���O�̃X���b�g���A�ȑO���������ꍇ�Ɂu�G���R�[�f�B���O�������v�������Ă��܂���ł����B
+	  新しいエンコーディングのスロットが、以前よりも多い場合に「エンコーディングを強制」が動いていませんでした。
 	<LI>
 <!--	  FF also failed to parse glyph based contextual lookups properly -->
-	  FF �͕����ˑ��̏ƍ��Ɋ�Â��O���t�̉�͂��������ł��Ă��܂���ł����B
+	  FF は文脈依存の照合に基づくグリフの解析も正しくできていませんでした。
       </UL>
     <LI>
 <!--  3-August-2005-->
-      2005�N8��3��
+      2005年8月3日
       <UL>
 	<LI>
 <!--	  FF failed to parse class based contextual lookups properly (contextual chaining
 	  lookups were ok) -->
-	  FF �̓N���X�x�[�X�̕����ˑ��̏ƍ��𐳂�����͂ł��Ă��܂���ł��� (�����A���ˑ��̏ƍ��͑��v)
+	  FF はクラスベースの文脈依存の照合を正しく解析できていませんでした (文脈連鎖依存の照合は大丈夫)
       </UL>
     <LI>
 <!--  2-August-2005-->
-      2005�N8��2��
+      2005年8月2日
       <UL>
 	<LI>
 <!--	  <FONT COLOR="Red"><STRONG><BIG>The OS/2 ulCodeRanges field has been broken
 	  for a long time, and has failed to mark the presence of any latin code
 	  pages.</BIG></STRONG></FONT> -->
-	  <FONT COLOR="Red"><STRONG><BIG>OS/2 �� ulCodeRanges �t�B�[���h�������ԉ��Ă���A���e�������̃R�[�h�y�[�W�̑��݂���،��o�ł��Ă��܂���ł����B</BIG></STRONG></FONT>
+	  <FONT COLOR="Red"><STRONG><BIG>OS/2 の ulCodeRanges フィールドが長い間壊れており、ラテン文字のコードページの存在を一切検出できていませんでした。</BIG></STRONG></FONT>
 	<LI>
 <!--	  The ulCodeRanges field never set Vietnamese, TradChinese, Mac nor PC OEM -->
-	  ulCodeRange �̃x�g�i����A�ɑ̎�������AMac ����� PC OEM �̊e�t�B�[���h�͏�ɃZ�b�g����Ȃ��܂܂ɂȂ��Ă��܂����B
+	  ulCodeRange のベトナム語、繁体字中国語、Mac および PC OEM の各フィールドは常にセットされないままになっていました。
 	<LI>
 <!--	  FF did not support EUC-CN, ISO-2022-CN, ISO=2022-KR iconv encodings properly. -->
-	  FF �� iconv �� EUC-CN, ISO-2022-CN, ISO-2022-KR �e������������K�؂ɃT�|�[�g�ł��Ă��܂���ł����B
+	  FF は iconv の EUC-CN, ISO-2022-CN, ISO-2022-KR 各符号化方式を適切にサポートできていませんでした。
 	<LI>
 <!--	  Work around a bug in iconv's support for CP1258 -->
-	  iconv �� CP1258 �T�|�[�g�̃o�O������B
+	  iconv の CP1258 サポートのバグを回避。
 	<LI>
 <!--	  Put some code in to warn users about unknown language/locales in the ttf
 	  'name' table. -->
-	  TTF �� 'name' �e�[�u�����Ɋ܂܂�関�m�̌���/���P�[�����ɑ΂���x���R�[�h��ǉ��B
+	  TTF の 'name' テーブル内に含まれる未知の言語/ロケール名に対する警告コードを追加。
 	<LI>
 <!--	  Enter some new language/locale codes for ms. -->
-	  �V���� MS �̌���/���P�[���R�[�h���������o�^�B
+	  新しい MS の言語/ロケールコードをいくつか登録。
 	<LI>
 <!--	  Crash when moving the end of an open path in an order2 font. -->
-	  2 ���X�v���C���t�H���g�̊J�����p�X�̒[���ړ�����ƃN���b�V�����Ă��܂����B
+	  2 次スプラインフォントの開いたパスの端を移動するとクラッシュしていました。
 	<LI>
 <!--	  If one loaded an encoding specified by codepoint and then cancelled the dlg
 	  which asked for a name for that encoding, then ff would crash. -->
-	  �����ʒu�ɂ���Ďw�肳�ꂽ�G���R�[�f�B���O��ǂݍ��݁A���̃G���R�[�f�B���O�̖��O�𕷂��ꂽ�Ƃ��ɃL�����Z������ƁAff �̓N���b�V�����N�����Ă��܂����B
+	  符号位置によって指定されたエンコーディングを読み込み、そのエンコーディングの名前を聞かれたときにキャンセルすると、ff はクラッシュを起こしていました。
 	<LI>
 <!--	  Don't use Adobe's glyphnames when they are obviously wrong (use uni???? instead) -->
-	  ���炩�ɊԈ���Ă��邱�Ƃ��������� Adobe �̃O���t���̎g�p��p�~ (����� uni???? ���g�p)
+	  明らかに間違っていることが判明した Adobe のグリフ名の使用を廃止 (代わりに uni???? を使用)
 	<LI>
 <!--	  Add (better) support for the new dotlessj -->
-	  �V���� dotlessj �� (���ǂ�) �T�|�[�g��ǉ��B
+	  新しい dotlessj の (より良い) サポートを追加。
 	<LI>
 <!--	  Put a check into the context chain dlg to make sure that people don't add
 	  sequence/lookup pairs where the sequence number is too big. -->
-	  �R���e�L�X�g�A���_�C�A���O�ɁA�V�[�P���X�ԍ����傫������V�[�P���X/�ƍ��y�A��ǉ����Ȃ��悤�ɂ��邽�߂̃`�F�b�N��ǉ��B
+	  コンテキスト連鎖ダイアログに、シーケンス番号が大きすぎるシーケンス/照合ペアを追加しないようにするためのチェックを追加。
 	<LI>
 <!--	  Make class be the default format for contextual/chaining substitutions rather
 	  than coverage tables. -->
-	  �͈͎w��e�[�u���ɑ���A�����ˑ�/�����A���ˑ��̒u�����N���X�쐬���̃f�t�H���g�t�H�[�}�b�g�ɕύX�B
+	  範囲指定テーブルに代わり、文脈依存/文脈連鎖依存の置換をクラス作成時のデフォルトフォーマットに変更。
 	<LI>
 <!--	  <FONT COLOR="Red"><STRONG><BIG>The format of the LineBreak.txt file changed
 	  with Unicode 4.1, so all the line break info is wrong (essentially lines
 	  never broke in text fields).</BIG></STRONG></FONT> -->
-	  <FONT COLOR="Red"><STRONG><BIG>LineBreak.txt �t�@�C���̃t�H�[�}�b�g�� Unicode 4.1 �ŕύX���ꂽ�̂ŁA���s�\���͑S���Ԉ���Ă��܂��� (��{�I�Ƀe�L�X�g�t�B�[���h���̍s�͑S�����s����Ă��܂���ł���)�B</BIG></STRONG></FONT>
+	  <FONT COLOR="Red"><STRONG><BIG>LineBreak.txt ファイルのフォーマットが Unicode 4.1 で変更されたので、改行可能情報は全部間違っていました (基本的にテキストフィールド内の行は全く改行されていませんでした)。</BIG></STRONG></FONT>
 	<LI>
 <!--	  Reference to bad memory when creating a popup in combinations list. -->
-	  �g�ݍ��킹���X�g���̃|�b�v�A�b�v���쐬���ɕs���ȃ��������Q�Ƃ��Ă��܂����B
+	  組み合わせリスト内のポップアップを作成時に不正なメモリを参照していました。
 	<LI>
 <!--	  Still problems in the 'name' table when Mac &amp; Mac Unicode strings don't
 	  match. -->
-	  'name' �e�[�u���ɂ́AMac �� Mac Unicode �̕����񂪈�v���Ȃ����ɂ͂܂���肪����܂����B
+	  'name' テーブルには、Mac と Mac Unicode の文字列が一致しない時にはまだ問題がありました。
 	<LI>
 <!--	  Use of the X clipboard for transfering glyphs resulted in a crash -->
-	  �O���t�𕽍s�ړ�����̂� X �N���b�v�{�[�h���g�p����ƃN���b�V�����Ă��܂����B
+	  グリフを平行移動するのに X クリップボードを使用するとクラッシュしていました。
 	<LI>
 <!--	  When generating an old-style 'kern' table (either OpenType nor Apple modes
 	  set) decompose all kerning classes into kern pairs as we do for AFM files. -->
-	  ���X�^�C���� 'kern' �e�[�u����  (OpenType ���[�h�AApple ���[�h�̂ǂ�����Z�b�g������) �������鎞�AAFM �t�@�C���̏����Ɠ����悤�ɁA���ׂẴJ�[�j���O�N���X���J�[�j���O�y�A�ɕ������Ă��܂����B
+	  旧スタイルの 'kern' テーブルを  (OpenType モード、Apple モードのどちらもセットせずに) 生成する時、AFM ファイルの処理と同じように、すべてのカーニングクラスをカーニングペアに分解していました。
 	<LI>
 <!--	  Scripting didn't have a way to generate a font with neither Apple nor OpenType
 	  tables. Add one. -->
-	  �X�N���v�g�����ɂ́AApple �� OpenType �e�[�u���̂ǂ�����������Ȃ����@������܂���ł����B�ǉ����܂����B
+	  スクリプト処理には、Apple と OpenType テーブルのどちらも生成しない方法がありませんでした。追加しました。
 	<LI>
 <!--	  Oops. wrong default extension for otb fonts from scripts. -->
-	  �����ƁA�X�N���v�g�� OTB �t�H���g����������Ƃ��̃f�t�H���g�̊g���q���Ԉ���Ă��܂����B
+	  おっと、スクリプトで OTB フォントを処理するときのデフォルトの拡張子が間違っていました。
 	<LI>
 <!--	  Fix some potential crashes where loading font types left a new field unset. -->
-	  �V�����t�B�[���h���Z�b�g����Ȃ��܂܂ɂȂ��Ă���t�H���g�^��ǂݍ��ގ��ɁA�N���b�V������\�������鏊���������C�����܂����B
+	  新しいフィールドがセットされないままになっているフォント型を読み込む時に、クラッシュする可能性がある所をいくつか修正しました。
       </UL>
     <LI>
 <!--  28-July-2005-->
-      2005�N7��28��
+      2005年7月28日
       <UL>
 	<LI>
 <!--	  <FONT COLOR="Red"><STRONG><BIG>Redesigned the way encodings are handled.
 	  From the user's perspective Encodings are no longer controlled by FontInfo,
 	  but via an encoding menu.</BIG></STRONG></FONT> -->
-	  <FONT COLOR="Red"><STRONG><BIG>�G���R�[�f�B���O�̈�����݌v�ύX���܂����B���[�U�̎��_����́A�G���R�[�f�B���O�̓t�H���g���_�C�A���O����ł͂Ȃ��A�G���R�[�f�B���O���j���[����ύX�����悤�ɂȂ�܂����B</BIG></STRONG></FONT>
+	  <FONT COLOR="Red"><STRONG><BIG>エンコーディングの扱いを設計変更しました。ユーザの視点からは、エンコーディングはフォント情報ダイアログからではなく、エンコーディングメニューから変更されるようになりました。</BIG></STRONG></FONT>
 	<LI>
 <!--	  If we create a bitmap strike in an empty font then change the fontview to
 	  look at the strike. -->
-	  ��̃t�H���g�Ńr�b�g�}�b�v���쐬����ƁA�t�H���g�r���[�����̃r�b�g�}�b�v���Q�Ƃ���悤�ɂ��܂����B
+	  空のフォントでビットマップを作成すると、フォントビューがそのビットマップを参照するようにしました。
 	<LI>
 <!--	  The SetWidth command of FontView produced garbage defaults for empty fonts -->
-	  ��̃t�H���g�̃t�H���g�r���[�� SetWidth() �R�}���h�����s�������̃f�t�H���g�l�����Ă��܂����B
+	  空のフォントのフォントビューで SetWidth() コマンドを実行した時のデフォルト値が壊れていました。
 	<LI>
 <!--	  Don't set the hinting needed bit on: bitmap only fonts, multilayered fonts,
 	  stroked fonts nor quadratic fonts. -->
-	  �r�b�g�}�b�v�݂̂̃t�H���g�A�}���`���C���t�H���g�A�X�g���[�N�t�H���g�� 2 ���t�H���g�ł́u�q���g���K�v�v�r�b�g���I���ɂ��Ȃ��悤�ɂ��܂����B
+	  ビットマップのみのフォント、マルチレイヤフォント、ストロークフォントや 2 次フォントでは「ヒントが必要」ビットをオンにしないようにしました。
 	<LI>
 <!--	  Fix some problems with the generated names in File-&gt;Generate multiple -->
-	  �u�t�@�C���������t�H���g���o�́v�ŏo�͂��ꂽ���O�Ɋւ�������C���B
+	  「ファイル→複数フォントを出力」で出力された名前に関する問題を修正。
 	<LI>
 <!--	  The Save command failed to reset the font window's title (so it still looked
 	  modified) -->
-	  �ۑ��R�}���h���t�H���g�E�B���h�E�̃^�C�g�������܂��X�V�ł��Ă��܂���ł��� (�u�ύX�ρv�̂܂܂ɂȂ��Ă��܂���)�B
+	  保存コマンドがフォントウィンドウのタイトルをうまく更新できていませんでした (「変更済」のままになっていました)。
 	<LI>
 <!--	  The enabled state of Encoding-&gt;Detach Glyphs was wrong -->
-	  �u�G���R�[�f�B���O���O���t��؂藣���v���\�ɂȂ�������Ԉ���Ă��܂����B
+	  「エンコーディング→グリフを切り離し」が可能になる条件が間違っていました。
 	<LI>
 <!--	  FF still didn't allow two ligatures to be created for the same glyph (ie.
 	  it complained if you tried to make both "f + f + i =&gt; ffi" and "ff + i
 	  =&gt; ffi" -->
-	  FF �́A�����O���t�ɑ΂��� 2 ��ނ̍�����ݒ肷�邱�Ƃ��܂��ł��Ă��܂���ł��� (�܂�A"f + f + i �� ffi" �� "ff + i �� ffi" �̗Ö@����낤�Ƃ���ƕ��������Ă��܂���)�B
+	  FF は、同じグリフに対して 2 種類の合字を設定することがまだできていませんでした (つまり、"f + f + i → ffi" と "ff + i → ffi" の療法を作ろうとすると文句をたれていました)。
 	<LI>
 <!--	  Added a TypeOf command to scripting -->
-	  �X�N���v�g�� TypeOf() �R�}���h��ǉ��B
+	  スクリプトに TypeOf() コマンドを追加。
 	<LI>
 <!--	  Added a GetPosSub command to scripting. -->
-	  �X�N���v�g�� GetPosSub() �R�}���h��ǉ��B
+	  スクリプトに GetPosSub() コマンドを追加。
 	<LI>
 <!--	  Werner says negative widths and depths be set to 0 in tfm files. -->
-	  ���̕��Ɛ[���̒l�� TFM �t�@�C���ł� 0 �ɂȂ��Ă���� Werner ���w�E���܂����B
+	  負の幅と深さの値が TFM ファイルでは 0 になっていると Werner が指摘しました。
 	<LI>
 <!--	  FontForge was generating an incorrect warning message. If a 'name' table
 	  contains a duplicate entry for a given platform/specific/language/id that's
@@ -404,29 +404,29 @@ FontForge)</A> -->
 	  (which is probably a bad design idea, but not an error) ff said it was wrong.
 	  It can also be caused by using a character in the string which is not in
 	  the Mac Encoding for that language. -->
-	  FontForge �͕s���Ȍx�����b�Z�[�W���o�͂��Ă��܂����B�����A�������̃v���b�g�t�H�[��/�ŗL/����/������ID �� 'name' �e�[�u���̕����̍��ڂɊ܂܂�Ă���Ȃ�΁A����̓t�H���g�̃G���[�ł��B������ ff �� Mac �p�̖��O�� Windows �p�̖��O�ƕ������Ă���̂ŁA����/ID �� 2 �����`�F�b�N���Ă��܂���ł����B�ł�����AMac �� Windows �ňقȂ閼�O���g�p���Ă���� (����͂����炭�ǂ��Ȃ��݌v�v�z�ł����A�G���[�ł͂���܂���) ff �͂��ꂪ�Ԉ���Ă���ƕ\�����Ă��܂����B����́A���̌���� Mac �G���R�[�f�B���O�Ɋ܂܂�Ă��Ȃ��Ƃ��ɂ͕�������̕������g�p���邱�Ƃɂ���Ă������N�������\��������܂��B
+	  FontForge は不正な警告メッセージを出力していました。もし、ある特定のプラットフォーム/固有/言語/文字列ID が 'name' テーブルの複数の項目に含まれているならば、それはフォントのエラーです。しかし ff は Mac 用の名前を Windows 用の名前と併合しているので、言語/ID の 2 つしかチェックしていませんでした。ですから、Mac と Windows で異なる名前を使用していると (これはおそらく良くない設計思想ですが、エラーではありません) ff はそれが間違っていると表示していました。これは、その言語の Mac エンコーディングに含まれていないときには文字列内の文字を使用することによっても引き起こされる可能性があります。
 	<LI>
 <!--	  Don't set "Hinting needed" flag in bitmap only fonts. -->
-	  �r�b�g�}�b�v�݂̂̃t�H���g�ł́u�q���g�Â����K�v�v�t���O��ݒ肵�Ȃ��悤�ɕύX�B
+	  ビットマップのみのフォントでは「ヒントづけが必要」フラグを設定しないように変更。
 	<LI>
 <!--	  AutoHint had a crash if there were open contours in a glyph being hinted. -->
-	  �q���g�Â��̑ΏۂƂȂ�O���t�ɊJ�����֊s���܂܂�Ă���Ǝ����q���g�Â����ɃN���b�V�����Ă��܂����B
+	  ヒントづけの対象となるグリフに開いた輪郭が含まれていると自動ヒントづけ時にクラッシュしていました。
 	<LI>
 <!--	  Add a couple of browsers to the list to check by default. -->
-	  �f�t�H���g�Ń`�F�b�N����u���E�U�̃��X�g�� 2 ��ޒǉ��B
+	  デフォルトでチェックするブラウザのリストに 2 種類追加。
 	<LI>
 <!--	  Using the kerning pair closeup dlg to create a new kerning pair caused a
 	  crash (eventually). -->
-	  �J�[�j���O�y�A�̊g��_�C�A���O���g�p���ăJ�[�j���O�y�A��V�����쐬����� (�Ƃ��ǂ�) �N���b�V�����Ă��܂����B
+	  カーニングペアの拡大ダイアログを使用してカーニングペアを新しく作成すると (ときどき) クラッシュしていました。
 	<LI>
 <!--	  When saving a block of ttf bitmap glyphs all with about the same metrics, -->
-	  TTF �r�b�g�}�b�v�O���t�̃u���b�N��ۑ�����Ƃ��A�S���������g���b�N�ɂȂ��Ă��܂����B
+	  TTF ビットマップグリフのブロックを保存するとき、全部同じメトリックになっていました。
 	<LI>
 <!--	  Kern pairs were not scaled to emsize when loading from an afm file. -->
-	  AFM �t�@�C���̓ǂݍ��ݎ��ɁA�J�[�j���O�y�A�� EM �T�C�Y�Ɋg��E�k������Ă��܂���ł����B
+	  AFM ファイルの読み込み時に、カーニングペアが EM サイズに拡大・縮小されていませんでした。
 	<LI>
 <!--	  Add a series of new selection commands, to the font view and to scripting: -->
-	  ��A�̑I���R�}���h���t�H���g�r���[�ƃX�N���v�g�ɒǉ����܂����B
+	  一連の選択コマンドをフォントビューとスクリプトに追加しました。
 	  <UL>
 	    <LI>
 	      SelectChangedGlyphs
@@ -435,7 +435,7 @@ FontForge)</A> -->
 	  </UL>
 	  <P>
 <!--	  (just to scripting) -->
-	  (�X�N���v�g�̂�)
+	  (スクリプトのみ)
 	  <UL>
 	    <LI>
 	      SelectSingletons
@@ -447,103 +447,103 @@ FontForge)</A> -->
 	<LI>
 <!--	  Revert Glyph didn't work. One bug caused by multilayer, one caused by encoding
 	  changes, and one really old one. -->
-	  �O���t�̕��������삵�Ă��܂���ł����B�������C���ҏW�@�\�ɔ����Đ������o�O�� 1 �A�G���R�[�f�B���O�̕ύX�ɂ��o�O�� 1 �A�����Ă��� 1 ���ɌÂ��o�O������܂����B
+	  グリフの復元が動作していませんでした。複数レイヤ編集機能に伴って生じたバグが 1 つ、エンコーディングの変更によるバグが 1 つ、そしてもう 1 つ非常に古いバグがありました。
 	<LI>
 <!--	  GetFontNames returned an uninitialized value on bad ttf files. -->
-	  GetFontNames() ���A�s���� TTF �t�@�C���ɑ΂��ď���������Ă��Ȃ��l��Ԃ��Ă��܂����B
+	  GetFontNames() が、不正な TTF ファイルに対して初期化されていない値を返していました。
 	<LI>
 <!--	  Add some new scripting commands to access the TeX per-glyph fields. -->
-	  TeX �̃O���t�P�ʂ̃t�B�[���h�ɃA�N�Z�X���邽�߂̐V�����X�N���v�g�R�}���h���������ǉ��B
+	  TeX のグリフ単位のフィールドにアクセスするための新しいスクリプトコマンドをいくつか追加。
 	<LI>
 <!--	  Werner suggested some improvements to tfm output. -->
-	  Werner �̎������󂯂� TFM �o�͂��������̓_�ŉ��ǁB
+	  Werner の示唆を受けて TFM 出力をいくつかの点で改良。
 	<LI>
 <!--	  Cleanup behavior of generating ttf bitmaps in a script. -->
-	  TTF �r�b�g�}�b�v���X�N���v�g���ŏo�͂���Ƃ��̂ӂ�܂��𖾊m���B
+	  TTF ビットマップをスクリプト内で出力するときのふるまいを明確化。
 	<LI>
 <!--	  I was attaching script/langs to lookups when parsing GPOS/GSUB. That wasn't
 	  good enough. Each sub-table and have it's own set, so attach script/langs
 	  to subtables as well. Still a flaw in that sub-tables could be referenced
 	  through severel extension sub-tables or directly and I don't unravel that
 	  complexity until too late. -->
-	  GPOS/GSUB �̉�͎��ɁA�p���n/������e�X�̏ƍ��Ɋ��蓖�ĂĂ��܂����B����͏\���悭�͂���܂���B�e�T�u�e�[�u���͂��ꂼ��Ǝ��̃Z�b�g�������Ă���̂ŁA�T�u�e�[�u���ɂ����l�ɗp���n/��������蓖�Ă�K�v������܂��B���ꂾ���ł͂܂��s���S�ȓ_������A�T�u�e�[�u�����������̊g���T�u�e�[�u���o�R�ŁA�܂��͒��ڎQ�Ƃ����ꍇ���l�����Ă��܂���B���̕��G���ꍇ�ɒ����ԋC�Â����ɂ��܂����B
+	  GPOS/GSUB の解析時に、用字系/言語を各々の照合に割り当てていました。これは十分よくはありません。各サブテーブルはそれぞれ独自のセットをもっているので、サブテーブルにも同様に用字系/言語を割り当てる必要があります。それだけではまだ不完全な点があり、サブテーブルがいくつかの拡張サブテーブル経由で、または直接参照される場合を考慮していません。この複雑さ場合に長い間気づかずにいました。
 	<LI>
 <!--	  ATM which handles some kerning for otf fonts for Word, does not handle 'kern'
 	  features where the feature contains more than one lookup. So whenever we
 	  have a feature with multiple lookups try to compress them into one lookup
 	  with multiple sub-tables. -->
-	  Word �̂��߂� OTF �t�H���g�̉��炩�̃J�[�j���O����舵�� ATM �́A'kern' �@�\�� 2 �ȏ�̏ƍ����܂ޏꍇ�A������������邱�Ƃ��ł��܂���B���������킯�ŁA�����̏ƍ����܂ދ@�\���������ꍇ�́A����𕡐��̃T�u�e�[�u�����܂� 1 �̏ƍ��ɋl�ߍ��ނ��Ƃ��ł��Ȃ������񎎂��܂��B
+	  Word のために OTF フォントの何らかのカーニングを取り扱う ATM は、'kern' 機能に 2 個以上の照合を含む場合、それを処理することができません。そういうわけで、複数の照合を含む機能があった場合は、それを複数のサブテーブルを含む 1 個の照合に詰め込むことができないか毎回試します。
 	<LI>
 <!--	  Transform (in fontview) and Scale To Em do not scale the vertical advance. -->
-	  (�t�H���g�r���[����)�u�ό`�v�܂��́u�\����S�p�ɕϊ��v���Ăяo�������ɁA�c�����̑��蕝��ό`���Ă��܂���ł����B
+	  (フォントビュー内で)「変形」または「表示を全角に変換」を呼び出した時に、縦書きの送り幅を変形していませんでした。
 	<LI>
 <!--	  We didn't test the right thing when deciding where a subroutine containing
 	  refs began. -->
-	  �Q�Ƃ��܂ރT�u���[�`�����ǂ�����n�܂邩�����肷�鎞�ɁA�������e�X�g���s���Ă��܂���ł����B
+	  参照を含むサブルーチンがどこから始まるかを決定する時に、正しいテストを行っていませんでした。
 	<LI>
 <!--	  Remove Undoes was broken by the encoding changes. -->
-	  �G���R�[�f�B���O�̏C�����s���āA�u�A���h�D�����̃N���A(N)�v�������Ȃ��Ȃ��Ă��܂����B
+	  エンコーディングの修正を行って、「アンドゥ履歴のクリア(N)」が動かなくなっていました。
 	<LI>
 <!--	  When saving multiple, make sure we don't get extraneous kerns. (to glyphs
 	  not in the current sub-font). -->
-	  �����t�H���g��ۑ����鎞�A(���݂̃T�u�t�H���g�Ɋ܂܂�Ȃ��O���t�ɑ΂���) �]�v�ȃJ�[�j���O���܂�ł��Ȃ����̊m�F��ǉ��B
+	  複数フォントを保存する時、(現在のサブフォントに含まれないグリフに対する) 余計なカーニングを含んでいないかの確認を追加。
 	<LI>
 <!--	  Make sure the blue lines (marking hints needing to be updated) get cleared
 	  properly. -->
-	  (�q���g�̍X�V���K�v�ł��邱�Ƃ�����) �����̕\���������Ə����ꂽ���̊m�F��ǉ��B
+	  (ヒントの更新が必要であることを示す) 青い線の表示がちゃんと消されたかの確認を追加。
 	<LI>
 <!--	  Some display problems in the SameGlyphAs command. -->
-	  SameGlyphAs() �R�}���h�ɂ������\����̖��B
+	  SameGlyphAs() コマンドにいくつか表示上の問題。
 	<LI>
 <!--	  The Apply Substitutions code did not consider the possibility of loops:<BR>
 	  a-&gt;b-&gt;c-&gt;d-&gt;a -->
-	  �u�u����K�p�v�̃R�[�h�� a��b��c��d��a �Ƃ������[�v�̉\�����l�����Ă��܂���ł����B
+	  「置換を適用」のコードが a→b→c→d→a というループの可能性を考慮していませんでした。
 	<LI>
 <!--	  Werner suggests indicating multi-layer in the version string. -->
-	  �o�[�W����������Ƀ}���`���C�����ǂ������������Ƃ� Werner ����Ă��܂����B
+	  バージョン文字列にマルチレイヤかどうかを示すことを Werner が提案しました。
 	<LI>
 <!--	  Mark to Mark anchor classes should allow each mark glyph also to contain
 	  a base mark entry. -->
-	  �}�[�N����}�[�N�ւ̃A���J�[�N���X�Q�͊e�}�[�N�O���t�Ɋ��}�[�N���ڂ��܂܂�邱�Ƃ��ł���K�v������܂��B
+	  マークからマークへのアンカークラス群は各マークグリフに基底マーク項目が含まれることもできる必要があります。
 	<LI>
 <!--	  Give unicode name data (in grey) for dotted names. (ie for A.super give unicode
 	  name data for "A", but in grey so it stands out as modified). -->
-	  �h�b�g�������̖��O�ɑ΂��� Unicode ���O�f�[�^�� (�D�F��) �\���B(�܂�AA.super �� Unicode �� "A" �ł����A���ꂪ�ύX���ꂽ���Ƃ��������߂ɊD�F�ŕ\�����܂�)
+	  ドットつき文字の名前に対する Unicode 名前データを (灰色で) 表示。(つまり、A.super は Unicode 名 "A" ですが、それが変更されたことを示すために灰色で表示します)
 	<LI>
 <!--	  Add scripting routines to detach glyphs from the encoding and to remove them
 	  from the font. -->
-	  �O���t���G���R�[�f�B���O����؂藣�����߂̃X�N���v�g�R�}���h�ƁA�t�H���g����폜���邽�߂̃R�}���h��ǉ��B
+	  グリフをエンコーディングから切り離すためのスクリプトコマンドと、フォントから削除するためのコマンドを追加。
 	<LI>
 <!--	  FF produced some very strange 'gasp' tables... depending on the bitmap fonts
 	  in the sfd and not on the bitmaps in the output ttf for one thing. -->
-	  FF �͂�����Ɋ�� 'gasp' �e�[�u���𐶐����Ă��܂����c�c SFD ���̃r�b�g�}�b�v�t�H���g �Ɉˑ����Ă��āA�o�͂���� TTF ���̃r�b�g�}�b�v�𔽉f���Ă��܂���ł����B
+	  FF はある非常に奇妙な 'gasp' テーブルを生成していました…… SFD 内のビットマップフォント に依存していて、出力される TTF 内のビットマップを反映していませんでした。
 	<LI>
 <!--	  Werner wants an Invert Selection command. -->
-	  Werner ���A[�I��͈͂𔽓]] �R�}���h��~�������Ă��܂��B
+	  Werner が、[選択範囲を反転] コマンドを欲しがっています。
 	<LI>
 <!--	  The position of Coptic and Glagolithic has been shifted in Unicode 4.1 (shifted
 	  from some earlier proposal). -->
-	  �R�v�g�����ƃO���S�������̈ʒu�� Unicode 4.1 �ŃV�t�g����܂��� (�������̂��ȑO�̒�ĂŁA���ɃV�t�g����Ă��܂���)�B
+	  コプト文字とグラゴル文字の位置は Unicode 4.1 でシフトされました (いくつかのより以前の提案で、既にシフトされていました)。
 	<LI>
 <!--	  Patch by KANOU, ttc files were broken. -->
-	  ��삩��̃p�b�`�BTTC �t�@�C�������Ă��܂����B
+	  狩野からのパッチ。TTC ファイルが壊れていました。
 	<LI>
 <!--	  Some english language strings in the ttfnames pane of fontinfo where sort
 	  of bound to equivalent fields in the names pane. Make this clearer, and
 	  consistent. -->
-	  �t�H���g���_�C�A���O�� [TTF ��] �^�u���̂������̉p�ꕶ���񂪁A[���O] �^�u�̓����ȃt�B�[���h�Ƃ����̌��ѕt���������Ă��܂����B�������薾���ɂ��A��ѐ����������܂����B
+	  フォント情報ダイアログの [TTF 名] タブ内のいくつかの英語文字列が、[名前] タブの等価なフィールドとある種の結び付きをもっていました。これをより明白にし、一貫性をもたせました。
   
 	<LI>
 <!--	  Werner thinks my error messages for scripts should be improved. -->
-	  Werner �̍l���ɂ��A�X�N���v�g�̃G���[���b�Z�[�W�����ǁB
+	  Werner の考えにより、スクリプトのエラーメッセージを改良。
 	<LI>
 <!--	  Add a check in case sfd files contain unreasonable values for pixelsize,
 	  etc. -->
-	  SFD �t�@�C���ɕs���ȃs�N�Z���T�C�Y�Ȃǂ̒l���܂܂�Ă��Ȃ����ǂ����̃`�F�b�N��ǉ��B
+	  SFD ファイルに不正なピクセルサイズなどの値が含まれていないかどうかのチェックを追加。
 	<LI>
 <!--	  Werner suggests a -- dry &lt;scriptfile&gt; argument which does syntax checking
 	  without actually executing the script. I think it is trivial. -->
-	  �X�N���v�g�����s�����ɍ\���`�F�b�N�������s�� --dry &lt;�X�N���v�g�t�@�C��&gt; �R�}���h�̒ǉ��� Werner ����Ă��܂����B����͊ȒP�Ȃ��Ƃ��Ǝv���܂��B
+	  スクリプトを実行せずに構文チェックだけを行う --dry &lt;スクリプトファイル&gt; コマンドの追加を Werner が提案しました。それは簡単なことだと思います。
 	<LI>
 <!--	  Werner points out that the DSC Version comment has a very specific syntax:<BR>
 	  %%Version: &lt;version&gt; &lt;revision&gt;<BR>
@@ -552,266 +552,266 @@ FontForge)</A> -->
 	  a version comment<BR>
 	  %Version: &lt;string&gt;<BR>
 	  rather than a DSC Comment. -->
-	  Werner �̎w�E�ɂ��ƁADSC �o�[�W�����R�����g�̍\���͔��Ɍ��i�ł�:
+	  Werner の指摘によると、DSC バージョンコメントの構文は非常に厳格です:
 	  %%Version: &lt;version&gt; &lt;revision&gt;<BR>
-	  &lt;version&gt; �͎�����, &lt;revision&gt; �͔񕉂̐����ł��B�ł����炱���� (�ǂ�Ȓl�ł��������) �o�[�W������������g���킯�ɂ͂����܂���BDSC �R�����g�̑���ɁA�o�[�W�����R�����g<BR>
+	  &lt;version&gt; は実数で, &lt;revision&gt; は非負の整数です。ですからここに (どんな値でも許される) バージョン文字列を使うわけにはいきません。DSC コメントの代わりに、バージョンコメント<BR>
 	  %Version: &lt;string&gt;<BR>
-  ���o�͂���悤�ɂ��܂����B
+  を出力するようにしました。
 	<LI>
 <!--	  We used to assign a unicode value to ".notdef"s when reading ps encoding
 	  file, if the encoding was in the region of control chars (so location 1 would
 	  get uni0001, while location 65 would get -1). Seems inconsistent. -->
-	  PS �G���R�[�f�B���O�t�@�C���̓ǂݍ��ݎ��ɁA�G���R�[�f�B���O����������͈͓̔��Ɋ܂܂�Ă���Ƃ��� Unicode �l ".notdef" �����蓖�ĂĂ��܂��� (����ɂ��A�ʒu 1 �� uni0001 �ƂȂ�̂ɑ΂��A�ʒu 65 �� -1 �ƂȂ�܂�)�B��ѐ����Ȃ��悤�Ɏv���܂��B
+	  PS エンコーディングファイルの読み込み時に、エンコーディングが制御も時の範囲内に含まれているときに Unicode 値 ".notdef" を割り当てていました (それにより、位置 1 は uni0001 となるのに対し、位置 65 は -1 となります)。一貫性がないように思います。
 	<LI>
 <!--	  Oops. I failed to provide a mechanism to add other iconv encoding names into
 	  my menu. -->
-	  �����ƁB���̃G���R�[�f�B���O�������j���[�ɒǉ����郁�J�j�Y����񋟂������˂Ă����悤�ł��B
+	  おっと。他のエンコーディング名をメニューに追加するメカニズムを提供しそこねていたようです。
 	<LI>
 <!--	  Code to support group display. -->
-	  �O���[�v�\�����T�|�[�g���邽�߂̃R�[�h�B
+	  グループ表示をサポートするためのコード。
 	<LI>
 <!--	  Was not reading ps encoding files properly. -->
-	  PS �G���R�[�f�B���O�t�@�C���𐳂����ǂݍ���ł��܂���ł����B
+	  PS エンコーディングファイルを正しく読み込んでいませんでした。
 	<LI>
 <!--	  Remove encoding should always be available. -->
-	  �u�G���R�[�f�B���O���폜�v�͏�ɗ��p�\�ł���ׂ��ł��B
+	  「エンコーディングを削除」は常に利用可能であるべきです。
       </UL>
     <LI>
 <!--  19-July-2005-->
-      2005�N7��19��
+      2005年7月19日
       <UL>
 	<LI>
 <!--	  Extend to Unicode 4.1 -->
-	  Unicode 4.1 �֊g���B
+	  Unicode 4.1 へ拡張。
 	<LI>
 <!--	  Change to configuration system to allow relative pathspecs for
 	  --with-freetype-src didn't work. -->
-	  configure �X�N���v�g�ɑ΂��� --with-freetype-src �ő��΃p�X���w��ł���悤�ɂ��邽�߂̕ύX�������Ă��܂���ł����B
+	  configure スクリプトに対して --with-freetype-src で相対パスを指定できるようにするための変更が動いていませんでした。
 	<LI>
 <!--	  Context chain dlg had problems with empty patterns (no terminal NUL in empty
 	  string used to represent them) -->
-	  �����A���ˑ��_�C�A���O�ɂ͋�p�^�[���Ɋւ����肪����܂��� (�󕶎����\���̂Ɏg���� NUL �������ɂ���܂���ł���)
+	  文脈連鎖依存ダイアログには空パターンに関する問題がありました (空文字列を表すのに使われる NUL が末尾にありませんでした)
 	<LI>
 <!--	  The [EditData] button in contextual fontinfo pane was disabled due to reasons
 	  which are no longer valid.. -->
-	  �����ˑ��t�H���g���^�u���� [�f�[�^��ҏW] �{�^���́A���݂������藧���Ȃ����R�ɂ��g�p�s�\�ɂȂ��Ă��܂����B
+	  文脈依存フォント情報タブ内の [データを編集] ボタンは、現在もう成り立たない理由により使用不可能になっていました。
 	<LI>
 <!--	  Transforming by a negative scale factor screwed up the hints. -->
-	  �g�嗦�ɕ��̒l���w�肷��ƁA�q���g�����Ă��܂����B
+	  拡大率に負の値を指定すると、ヒントが壊れていました。
 	<LI>
 <!--	  Add move up/down buttons to the kerning class dlg (class lists area) Use
 	  the selection from the class lists to highlight offsets. -->
-	  �J�[�j���O�N���X�_�C�A���O (�N���X���X�g�G���A) �ɏ�/���Ɉړ�����{�^����ǉ����܂����B�I�t�Z�b�g���n�C���C�g���邽�߂ɂ́A�N���X���X�g����̑I�����s���Ă��������B
+	  カーニングクラスダイアログ (クラスリストエリア) に上/下に移動するボタンを追加しました。オフセットをハイライトするためには、クラスリストからの選択を行ってください。
 	<LI>
 <!--	  Print sample did not handle kerning by classes. -->
-	  �T���v���e�L�X�g�̈󎚂��A�N���X�P�ʂ̃J�[�j���O�������s���Ă��܂���ł����B
+	  サンプルテキストの印字が、クラス単位のカーニング処理を行っていませんでした。
 	<LI>
 <!--	  When we had: a glyph which contained refs where that glyph was itself used
 	  as a reference in another glyph and all glyphs (except the last) lived in
 	  subroutines then we got multiple declarations of hints and the middle glyph
 	  was translated from where it should have been. -->
-	  ����O���t�������̎Q�Ƃ��܂�ł���A���̃O���t�����ꎩ�g�܂��ʂ̃O���t����Ƃ��Ďg�p����ĎQ�Ƃ���Ă����ꍇ�A�T�u���[�`���Ɋ܂܂ꂽ (�Ō�̃O���t��������) ���ׂẴO���t�́A������q���g���錾����āA���Ԃ̃O���t�͖{������ׂ��ʒu���炸��Ă��܂��Ă��܂����B
+	  あるグリフが複数の参照を含んでおり、そのグリフがそれ自身また別のグリフからとして使用されて参照されていた場合、サブルーチンに含まれた (最後のグリフを除いて) すべてのグリフは、複数回ヒントが宣言されて、中間のグリフは本来あるべき位置からずれてしまっていました。
 	<LI>
 <!--	  When changing lists they should not scroll back to the beginning. -->
-	  ���X�g�ɕύX�������邽�тɁA�ŏ��ɖ߂�Ƃ�������ɂ͖�肪����܂����B
+	  リストに変更を加えるたびに、最初に戻るという動作には問題がありました。
 	<LI>
 <!--	  Various fixes regarding hints: changing hints should set the char changed
 	  flag changing a glyph should mark all glyphs that refer to it as having out
 	  of date hints display out of date hints in font view. hints weren't being
 	  preserved (and should have been) in charview in Paste and transform. -->
-	  �q���g�Ɋւ���e��̏C��: �q���g�̕ύX���ɁA�����̕ύX�t���O�𗧂Ă�ׂ��ł����B�O���t�̕ύX���ɁA������Q�Ƃ��邷�ׂẴO���t�ɂ̓q���g���Â��Ȃ����Ƃ����\�����t�H���g�r���[���ōs���ׂ��ł����B���܂ŁA�����r���[���ł̓\��t���ƕό`���s�������ɂ́A�q���g��ێ�����ׂ��ł͂���܂���ł����B
+	  ヒントに関する各種の修正: ヒントの変更時に、文字の変更フラグを立てるべきでした。グリフの変更時に、それを参照するすべてのグリフにはヒントが古くなったという表示をフォントビュー内で行うべきでした。今まで、文字ビュー内での貼り付けと変形を行った時には、ヒントを保持するべきではありませんでした。
 	<LI>
 <!--	  Apply Substitutions was badly broken when ff compiled with multilayer. -->
-	  ff �𕡐����C���g�p�\�ȏ�ԂŃR���p�C���������A�u�u����K�p�v���Ђǂ����Ă��܂����B
+	  ff を複数レイヤ使用可能な状態でコンパイルした時、「置換を適用」がひどく壊れていました。
 	<LI>
 <!--	  Kern Pair dlg looked at garbage memory when it closed (and crashed sometimes). -->
-	  �u�J�[�j���O�y�A�v�_�C�A���O����鎞�ɁA��ꂽ���������Q�Ƃ��Ă��܂��� (����ɂ�莞�X�N���b�V�����Ă��܂���)�B
+	  「カーニングペア」ダイアログを閉じる時に、壊れたメモリを参照していました (それにより時々クラッシュしていました)。
 	<LI>
 <!--	  ff decides whether to add a 'gasp' table to a font based on whether the font
 	  has instructions or not. ff's own ttf fonts contain instructions in .notdef
 	  but nowhere else, so ignore .notdef when making this check. -->
-	  ff �́A�t�H���g�ɖ��߂��܂܂�Ă��邩�ۂ��Ɋ�Â��� 'gasp' �e�[�u�����t�H���g�ɒǉ����邩�ǂ����𔻒f���܂��Bff �ō���� TTF �t�@�C���� .notdef �ɖ��߂��܂�ł��܂������ɂ͒N���������Ă��Ȃ��̂ŁA���̃`�F�b�N���s�����ɂ� .notdef �𖳎�����悤�ɂ��܂����B
+	  ff は、フォントに命令が含まれているか否かに基づいて 'gasp' テーブルをフォントに追加するかどうかを判断します。ff で作った TTF ファイルは .notdef に命令を含んでいますが他には誰もそうしていないので、このチェックを行う時には .notdef を無視するようにしました。
 	<LI>
 <!--	  One more attempt to rule out absurd results in simplify(). -->
-	  simplify() ���Ƃ�ł��Ȃ����ʂ�Ԃ��̂��֎~���鎎�݂����� 1 �ǉ����܂����B
+	  simplify() がとんでもない結果を返すのを禁止する試みをもう 1 つ追加しました。
 	<LI>
 <!--	  if the lsb/rsb dlg was given a negative value it complained about negative
 	  widths. (whether the width would have been negative or not). -->
-	  �u�T�C�h�x�A�����O�v�_�C�A���O�ɕ��̒l��^�������A(���ۂɕ����������ł��邩�ǂ������킸) �u�����������̕��ł���v�Ƃ��������\�����Ă��܂����B
+	  「サイドベアリング」ダイアログに負の値を与えた時、(実際に文字幅が負であるかどうかを問わず) 「文字幅が負の幅である」という文句を表示していました。
 	<LI>
 <!--	  $italicangle has been broken since I added reals to scripting. -->
-	  $italicangle ���A�X�N���v�g�Ɏ�����t�������Ĉȗ����Ă��܂����B
+	  $italicangle が、スクリプトに実数を付け加えて以来壊れていました。
 	<LI>
 <!--	  The kernclass dialog did not handle deleted classes properly. -->
-	  �J�[�j���O�N���X�_�C�A���O���A�폜���ꂽ�N���X�𐳂��������Ă��܂���ł����B
+	  カーニングクラスダイアログが、削除されたクラスを正しく扱っていませんでした。
 	<LI>
 <!--	  Add ability to undo hints. -->
-	  �q���g�̃A���h�D�@�\��ǉ��B
+	  ヒントのアンドゥ機能を追加。
 	<LI>
 <!--	  Once again starting a browser on windows is broken. -->
-	  �܂�����AWindows �ł̃u���E�U�N�������Ă��܂����B
+	  またもや、Windows でのブラウザ起動が壊れていました。
 	<LI>
 <!--	  We didn't do a bounds check when indexing into the names array of an encoding
 	  (when building a character from scratch). If the index was huge the result
 	  was garbage, generally leading to a crash sometime thereafter. -->
-	  �G���R�[�f�B���O�� names �z����̃C���f�b�N�X�쐬�̍ۂɁA(�������X�N���b�`����g�ݗ��Ă�Ƃ�) ���E�`�F�b�N���s���Ă��܂���ł����B�C���f�b�N�X�����傾�ƁA���ʂ̓S�~�ƂȂ�A��ʂɂ͂��̌サ�΂炭���ăN���b�V���������N�������ʂƂȂ��Ă��܂����B
+	  エンコーディングの names 配列内のインデックス作成の際に、(文字をスクラッチから組み立てるとき) 境界チェックを行っていませんでした。インデックスが巨大だと、結果はゴミとなり、一般にはその後しばらくしてクラッシュを引き起こす結果となっていました。
 	<LI>
 <!--	  An open path consisting of a single point caused replace with reference to
 	  crash. -->
-	  1 �̓_�������܂ފJ�����p�X�����݂���ƁA�u�Q�Ƃɒu���v�̎��s���ɃN���b�V���������N�����Ă��܂����B
+	  1 個の点だけを含む開いたパスが存在すると、「参照に置換」の実行時にクラッシュを引き起こしていました。
 	<LI>
 <!--	  Generating a postscript resource font on the mac from a script did not work. -->
-	  Mac ��ŁA�X�N���v�g����� PostScript ���\�[�X�t�H���g�̐��������܂������Ă��܂���ł����B
+	  Mac 上で、スクリプトからの PostScript リソースフォントの生成がうまく動いていませんでした。
 	<LI>
 <!--	  Werner points out that afm files generated by FontForge still claim to have
 	  been made by pfaedit. Oops. -->
-	  Werner �́AFontForge ���o�͂��� AFM �t�@�C�����܂��uPfaEdit �ō��ꂽ�v�ƕ\�����Ă��邱�Ƃ��w�E���܂����B�����B
+	  Werner は、FontForge が出力する AFM ファイルがまだ「PfaEdit で作られた」と表示していることを指摘しました。ありゃ。
 	<LI>
 <!--	  Didn't parse user defined encodings properly and often omitted the first
 	  glyph. -->
-	  ���[�U��`�̃G���R�[�f�B���O�𐳂����\����͂��Ă��炸�A�悭�ŏ��̃O���t�𗎂Ƃ��Ă��܂����B
+	  ユーザ定義のエンコーディングを正しく構文解析しておらず、よく最初のグリフを落としていました。
       </UL>
     <LI>
 <!--  24-June-2005-->
-      2005�N6��24��
+      2005年6月24日
       <UL>
 	<LI>
 <!--	  Improvements in the way type42 fonts where handled in printing. -->
-	  ������� Type42 �t�H���g�̈��������ǁB
+	  印刷時の Type42 フォントの扱いを改良。
 	<LI>
 <!--	  Fix a crash when parsing mangled cff files -->
-	  ��ꂽ CFF �t�@�C���̉�͎��ɃN���b�V������̂��C���B
+	  壊れた CFF ファイルの解析時にクラッシュするのを修正。
 	<LI>
 <!--	  Marvelous triple bug: -->
-	  ���ق̎O�d�o�O:
+	  驚異の三重バグ:
 	  <UL>
 	    <LI>
 <!--	      Adobe's Tech Note 5176 (cff format) says that a private dict is required.
 	      They mean it's required in a type1 font. -->
-	      Adobe �� Tech Note 5176 (CFF �t�H�[�}�b�g) �ɂ��ƁA�v���C�x�[�g�����͕K�{�ł��B����́AType1 �t�H���g�ɂ͕K���K�v�Ƃ����Ӗ��ł��B
+	      Adobe の Tech Note 5176 (CFF フォーマット) によると、プライベート辞書は必須です。これは、Type1 フォントには必ず必要という意味です。
 	    <LI>
 <!--	      Because of this I put a null private dict entry into my cid cff fonts. -->
-	      ���������킯�ŁACID CFF �t�H���g�ɋ�̍��ڂ� 1 �܂񂾃v���C�x�[�g������u�����Ƃɂ��܂����B
+	      そういうわけで、CID CFF フォントに空の項目を 1 個含んだプライベート辞書を置くことにしました。
 	    <LI>
 <!--	      ghostview finds the null private dict entry and tries to read data from it
 	      even though it is of 0 length. -->
-	      ghostview �͋�̃v���C�x�[�g�������ڂ𔭌����A���Ƃ����ꂪ���� 0 �ł����Ă��f�[�^��ǂݍ������Ƃ��܂��B
+	      ghostview は空のプライベート辞書項目を発見し、たとえそれが長さ 0 であってもデータを読み込もうとします。
 	  </UL>
 	<LI>
 <!--	  Add postscript code necessary for loading a cff font to my cff font output. -->
-	  CFF �t�H���g�̓ǂݍ��݂ɕK�v�� PostScripto �R�[�h���A�����o����� CFF �t�H���g�ɒǉ��B
+	  CFF フォントの読み込みに必要な PostScripto コードを、書き出される CFF フォントに追加。
 	<LI>
 <!--	  Fix some uninitialized variables in the display dlg. -->
-	  �\���_�C�A���O�̖��������ϐ����������C���B
+	  表示ダイアログの未初期化変数をいくつか修正。
 	<LI>
 <!--	  We didn't get DSC pages properly when printing a CID keyed font. -->
-	  CID �t�H���g���󎚂��鎞�ɁADSC �y�[�W�𐳂����l�����Ă��܂���ł����B
+	  CID フォントを印字する時に、DSC ページを正しく獲得していませんでした。
 	<LI>
 <!--	  The default (notdef) glyph generated by my palm output routines was a little
 	  wonky. -->
-	  Palm �o�̓��[�`���ŏo�͂����A�f�t�H���g�� (notdef) �O���t�ɂ͂�����ƕs����ȂƂ��낪����܂����B
+	  Palm 出力ルーチンで出力した、デフォルトの (notdef) グリフにはちょっと不安定なところがありました。
 	<LI>
 <!--	  The rle image reader in my sfd routines had an off by one error causing it
 	  to reject some images. -->
-	  SFD �������[�`���̒��̃��������O�X���k�摜�ǂݍ��ݕ��� 1 ����G���[������A�摜��ǂݍ��߂Ȃ����Ƃ�����܂����B
+	  SFD 処理ルーチンの中のランレングス圧縮画像読み込み部に 1 ずれエラーがあり、画像を読み込めないことがありました。
 	<LI>
 <!--	  We used to munch memory when loading empty glyphs from mac NFNT resources. -->
-	  Mac �� NFNT ���\�[�X�����̃O���t��ǂݍ��ނƂ��A���������g�������Ă��܂����B
+	  Mac の NFNT リソースから空のグリフを読み込むとき、メモリを使いすぎていました。
 	<LI>
 <!--	  It used to be that we didn't set the default background until the first font
 	  view window was opened. This meant that if we loaded a grey scale bitmap
 	  before opening a window (ie. from the command line) then that bitmap's clut
 	  would be relative to white rather than the appropriate background. -->
-	  �ŏ��Ƀt�H���g�r���[�E�B���h�E���J���܂ł̃f�t�H���g�̔w�i�F�����΂��ΐ������Z�b�g���Ă��Ȃ����Ƃ�����܂����B��̓I�ɂ́A�E�B���h�E���J���O�� (�܂�A�R�}���h���C���Ŏw�肵��) �O���C�X�P�[���r�b�g�}�b�v���J�����Ƃ��ɁA�r�b�g�}�b�v�� clut �t�B�[���h���K�؂Ȕw�i�F�̑��Βl�ɂȂ炸�A���F����̑��Βl�ŕ\������Ă��܂����B
+	  最初にフォントビューウィンドウを開くまでのデフォルトの背景色をしばしば正しくセットしていないことがありました。具体的には、ウィンドウを開く前に (つまり、コマンドラインで指定して) グレイスケールビットマップを開いたときに、ビットマップの clut フィールドが適切な背景色の相対値にならず、白色からの相対値で表示されていました。
 	<LI>
 <!--	  Add some code to protect against badly generated bitmap strikes in sfnts. -->
-	  sfnt �Ɋ܂܂��s���ȃr�b�g�}�b�v�̃f�[�^�Ђɑ΂���h����s���R�[�h���������ǉ��B
+	  sfnt に含まれる不正なビットマップのデータ片に対する防御を行うコードをいくつか追加。
 	<LI>
 <!--	  vhea &amp; vmtx tables were generally wrong in otf fonts (unless the last
 	  full vmetric happened to be the last full hmetric). Also fix problems with
 	  cid hmtx output. -->
-	  OTF �t�H���g�ł́A��ʂ� vhea ����� vmtx �e�[�u�����������o�͂ł��Ă��܂���ł��� (�c��S�����p�̏c�������g���b�N���c��S�����p�̉��������g���b�N�Ƃ��܂��܈�v����ꍇ��������)�BCID �� hmtx �����o�����[�`�����C���B
+	  OTF フォントでは、一般に vhea および vmtx テーブルが正しく出力できていませんでした (残り全文字用の縦書きメトリックが残り全文字用の横書きメトリックとたまたま一致する場合を除いて)。CID の hmtx 書き出しルーチンも修正。
 	<LI>
 <!--	  The sfd reader looked in the wrong place for sli information in cid keyed
 	  fonts. -->
-	  CID �L�[�w��t�H���g�̓ǂݍ��ݎ��ɁASFD �ǂݍ��ݕ����A�p���n/����C���f�b�N�X��������ꏊ����ǂݍ���ł��܂����B
+	  CID キー指定フォントの読み込み時に、SFD 読み込み部が、用字系/言語インデックスを誤った場所から読み込んでいました。
 	<LI>
 <!--	  Damn. Default output (for stdout) encoding never gets initialized when in
 	  a script. -->
-	  �����B�f�t�H���g�̏o�� (�W���o��) �̕������������A�X�N���v�g����S���������ł��ĂȂ������B
+	  くそ。デフォルトの出力 (標準出力) の符号化方式が、スクリプトから全く初期化できてなかった。
 	<LI>
 <!--	  I realized a few months ago that there is a difference between encodings
 	  based on names and encoding based on unicode codepoints. Unfortunately I
 	  was only saving encodings as though they were based on names (generating
 	  default names if necessary). This patch retains the distinction even when
 	  encodings are saved to the preferences folder. -->
-	  ���O�ƁAUnicode �̕����ʒu�Ɋ�Â������������ɐH���Ⴂ�����邱�ƂɁA2, 3 �����O����C�Â��Ă��܂����B�c�O�Ȃ��ƂɁA���O�݂̂Ɋ�Â��� (�K�v�Ȃ�K�v�Ȃ�f�t�H���g�̖��O�𐶐�����) ������̂́A���������݂̂�ۑ����Ă��܂����B���̃p�b�`�́A�������������ݒ�t�H���_�ɕۑ����Ă���ꍇ�ł����Ă��A��������ʂ���悤�ɂ��܂��B
+	  名前と、Unicode の符号位置に基づいた文字符号に食い違いがあることに、2, 3 ヶ月前から気づいていました。残念なことに、名前のみに基づいて (必要なら必要ならデフォルトの名前を生成して) いるものの、文字符号のみを保存していました。このパッチは、文字符号が環境設定フォルダに保存している場合であっても、それらを区別するようにします。
 	<LI>
 <!--	  AddAccent behaved differently when passed a glyphname and a unicode code
 	  point. In the first case it used the glyph specified. In the second it performed
 	  an arcane search which would not always use the specified glyph (left over
 	  from the days when it was important to use a glyph in Adobe Standard so you
 	  could do a seac). -->
-	  AddAccent �́A�O���t����^�����Ƃ��� Unicode �����ʒu��^�����Ƃ��ŐU�����قȂ��Ă��܂����B�O���t����^�����ꍇ�A�w�肳�ꂽ�O���t���g�p���܂��BUnicode �l��^�����ꍇ�A�w�肳�ꂽ�O���t����Ɏg�p����Ƃ͌���Ȃ��s�v�c�Ȍ��������s���܂� (����́Aseac ���g����悤�� Adobe �W���G���R�[�f�B���O���O���t���Ŏg�p���邱�Ƃ��d�v���������납��c���Ă��܂���)�B
+	  AddAccent は、グリフ名を与えたときと Unicode 符号位置を与えたときで振舞が異なっていました。グリフ名を与えた場合、指定されたグリフを使用します。Unicode 値を与えた場合、指定されたグリフを常に使用するとは限らない不可思議な検索を実行します (これは、seac が使えるように Adobe 標準エンコーディングをグリフ内で使用することが重要だったころから残っていました)。
 	<LI>
 <!--	  When debugging composite glyphs ff failed to notice when we switched from
 	  one glyph to another and so failed to reset the instruction list to those
 	  of the new glyph. -->
-	  �����O���t�̃f�o�b�O���ɁA����O���t����ʂ̃O���t�Ɉڂ������Ƃ� ff �����o����̂Ɏ��s���A���߃��X�g��V�����O���t�̕��ɍĐݒ�ł��Ȃ��ł��܂����B
+	  複合グリフのデバッグ時に、あるグリフから別のグリフに移ったことを ff が検出するのに失敗し、命令リストを新しいグリフの物に再設定できないでいました。
 	<LI>
 <!--	  Problem with cubic to quadratic spline approximation. Fixed by a more careful
 	  comparison between original and resulting spline. -->
-	  3 ������ 2 ���ւ̃X�v���C���ߎ��ɖ�肪����܂����B�I���W�i���Ƌߎ����ʂ̃X�v���C����r����蒍�Ӑ[���s���悤�ɂ��ďC�����܂����B
+	  3 次から 2 次へのスプライン近似に問題がありました。オリジナルと近似結果のスプライン比較をより注意深く行うようにして修正しました。
 	<LI>
 <!--	  Kerning (and Anchor positioning) didn't work when printing to pdf. -->
-	  �J�[�j���O (����уA���J�[�ʒu�w��) ���APDF �ւ̏o�͎��ɓ��삵�Ă��܂���ł����B
+	  カーニング (およびアンカー位置指定) が、PDF への出力時に動作していませんでした。
 	<LI>
 <!--	  Won-kyu Park points out that ff's internal utf7 parser (deep in the guts
 	  of sfd.c) only parses utf7 strings as produced by ff. He took a utf7 string
 	  produced by python and inserted it and ff could not read it. He provides
 	  a patch to fix the problem. -->
-	  Won-kyu Park �́Aff ������ UTF-7 �p�[�T (sfd.c �̉��[���ɂ���) ���Aff �̏o�͂��� UTF-7 �����񂵂��ǂݍ��߂Ȃ����Ƃ��w�E���܂����B�ނ� Python �Ő������� UTF-7 �������}�������Ƃ���Aff �͓ǂ߂܂���ł����B�ނ͂��̖�����������p�b�`��񋟂��܂����B
+	  Won-kyu Park は、ff 内蔵の UTF-7 パーサ (sfd.c の奥深くにある) が、ff の出力した UTF-7 文字列しか読み込めないことを指摘しました。彼が Python で生成した UTF-7 文字列を挿入したところ、ff は読めませんでした。彼はこの問題を解決するパッチを提供しました。
 	<LI>
 <!--	  If we got an invalid second order spline, let's fix it up into some vaguely
 	  reasonable form, so the poor user doesn't keep getting errors. -->
-	  �s���� 2 ���X�v���C��������ꂽ���A�Ó��ƌ����Ό����Ȃ����Ȃ��`�ɕ␳���邱�Ƃɂ��܂��傤�B��������Έ���ȃ��[�U���G���[�ƂȂ邱�Ƃ��Ȃ��Ȃ�܂��B
+	  不正な 2 次スプラインが得られた時、妥当と言えば言えなくもない形に補正することにしましょう。そうすれば哀れなユーザがエラーとなることもなくなります。
 	<LI>
 <!--	  Extra "-" in type42 header removed. -->
-	  Type42 �w�b�_�̗]�v�� "-" ���폜�B
+	  Type42 ヘッダの余計な "-" を削除。
 	<LI>
 <!--	  The anchor dialog was all screwed up. -->
-	  �A���J�[�_�C�A���O�����S�ɉ��Ă��܂����B
+	  アンカーダイアログが完全に壊れていました。
 	<LI>
 <!--	  The test in show att that all components of a substitution existed failed
 	  to handle a trailing space. -->
-	  �uATT��\��(S)�v���ł́A�u���̑S�v�f�����݂��邩�̃e�X�g���A�����ɂ���X�y�[�X�̏����Ɏ��s���Ă��܂����B
+	  「ATTを表示(S)」内での、置換の全要素が存在するかのテストが、末尾にあるスペースの処理に失敗していました。
 	<LI>
 <!--	  Make page Up/Down work in Show ATT -->
-	  �uATT��\��(S)�v�� Up/Down �L�[�����삷��悤�ɕύX�B
+	  「ATTを表示(S)」で Up/Down キーが動作するように変更。
 	<LI>
 <!--	  Sometimes the simplify algorithem fails to converge. -->
-	  �P�����A���S���Y�������܂��������Ȃ����Ƃ����܂ɂ���܂����B
+	  単純かアルゴリズムがうまく収束しないことがたまにありました。
 	<LI>
 <!--	  When generating a tfm file the width (height, depth, ic) table was being
 	  scaled twice. -->
-	  TFM �t�@�C���̐������ɕ� (�����A�[���Aic) �e�[�u�� �� 2 ��k�ڕϊ�����Ă��܂����B
+	  TFM ファイルの生成時に幅 (高さ、深さ、ic) テーブル が 2 回縮尺変換されていました。
 	<LI>
 <!--	  Remove a NaN that occurred when moving quadratic splines. -->
-	  2 ���X�v���C���̈ړ����ɔ������� NaN �������B
+	  2 次スプラインの移動時に発生する NaN を除去。
 	<LI>
 <!--	  Oops. The unicode code point of a glyph was restricted to BMP by Glyph Info
 	  dlg. -->
-	  �����ƁA�O���t���_�C�A���O���Ŏw��ł��� Unicode �����ʒu�� BMP �ɐ�������Ă��܂����B
+	  おっと、グリフ情報ダイアログ内で指定できる Unicode 符号位置が BMP に制限されていました。
 	<LI>
 <!--	  Werner gave me a font where the glyphs were not properly ordered. So you
 	  can't tell the length of a glyph by loca[i+1]-loca[i]. The data appear valid
 	  in spite of that. So put in a warning for this particular case (we were
 	  generating a warning, but it wasn't as meaningful as it might be.) -->
-	  �O���t�����Ԃɕ���ł��Ȃ��t�H���g�� Werner �������ė��܂����B���̏ꍇ�A�O���t�̑傫���� loca[i+1]-loca[i] �ł͋��߂��܂���B����ɂ��ւ�炸�A�f�[�^�͊m���ɐ������̂ł��B���������킯�ŁA���̓���ȏꍇ�̂��߂̌x����ǉ����܂��� (���܂ł��x�����o�͂��Ă��܂������A���̏󋵂ɍ������Ӗ��̌x���ł͂���܂���ł���)�B
+	  グリフが順番に並んでいないフォントを Werner が送って来ました。この場合、グリフの大きさは loca[i+1]-loca[i] では求められません。それにも関わらず、データは確かに正しいのです。そういうわけで、この特殊な場合のための警告を追加しました (今までも警告を出力していましたが、その状況に合った意味の警告ではありませんでした)。
 	<LI>
 <!--	  Make View-&gt;Show ATT aware of the mark attachment class info so it can
 	  show the classes. -->
-	  �u�\��(V)��ATT��\��(S)�v���}�[�N�ڑ��N���X����F�����A�N���X��\���ł���悤�ɂ��܂����B
+	  「表示(V)→ATTを表示(S)」がマーク接続クラス情報を認識し、クラスを表示できるようにしました。
 	<LI>
 <!--	  When interpolating to quadratic fonts where the two designs didn't match
 	  then the various possible errors gave us bad splines: Different numbers of
@@ -819,414 +819,414 @@ FontForge)</A> -->
 	  the end of the contour in one design but not the other) didn't match. Different
 	  designs meant that interpolating a line (with no control points) to a curved
 	  spline again produced nasties. -->
-	  2 ���A�E�g���C���̃t�H���g���Ԃ��鎞�A2 �̃f�U�C������v���Ȃ��ӏ��ŁA�s���ȃX�v���C���𐶐�����悤�ȃG���[��������\������������܂���: �p�X��̓_�̌����قȂ�Ƃ������Ƃ́A�[�_�ɂ����鐧��_�̌��� (�Е��̃f�U�C���ŗ֊s�̒[�ɒB���A�����Е��ł͂����łȂ��ꍇ) �قȂ�Ƃ������Ƃł����B�قȂ�f�U�C��������Ƃ��ɂ́A(����_�������Ȃ�) �������Ԃ���ƁA�Ȑ�����������錋�ʂƂȂ�A���ꂪ�܂������o�͂𓾂錋�ʂƂȂ��Ă��܂����B
+	  2 次アウトラインのフォントを補間する時、2 つのデザインが一致しない箇所で、不正なスプラインを生成するようなエラーが生じる可能性が多数ありました: パス上の点の個数が異なるということは、端点における制御点の個数が (片方のデザインで輪郭の端に達し、もう片方ではそうでない場合) 異なるということでした。異なるデザインがあるときには、(制御点を持たない) 直線を補間すると、曲線が生成される結果となり、これがまた汚い出力を得る結果となっていました。
 	<LI>
 <!--	  Drag and drop was broken. -->
-	  �h���b�O&amp;�h���b�v�����Ă��܂����B
+	  ドラッグ&amp;ドロップが壊れていました。
 	<LI>
 <!--	  Extend lookup flags support to include mark attachment classes (as defined
 	  in GDEF). -->
-	  �ƍ��t���O�� (GDEF �Œ�`���ꂽ) �}�[�N�ڑ��N���X���T�|�[�g����悤�Ɋg���B
+	  照合フラグが (GDEF で定義された) マーク接続クラスをサポートするように拡張。
 	<LI>
 <!--	  Bad argument type checking on the AddAccent scripting command. -->
-	  AddAccent �X�N���v�g�R�}���h�ɂ���������̌^�`�F�b�N������Ă��܂����B
+	  AddAccent スクリプトコマンドにおける引数の型チェックが誤っていました。
 	<LI>
 <!--	  Infinite loop in a rare case involving a flex hint at the start of a contour. -->
-	  �֊s�̍ŏ��̓_�� flex �q���g������H�ȏꍇ�ɁA�������[�v�Ɋׂ��Ă��܂����B
+	  輪郭の最初の点に flex ヒントがある稀な場合に、無限ループに陥っていました。
 	<LI>
 <!--	  The merge fonts command would crash. -->
-	  �u�t�H���g�𕹍��v�R�}���h���N���b�V���������N�����Ă��܂����B
+	  「フォントを併合」コマンドがクラッシュを引き起こしていました。
 	<LI>
 <!--	  Problems parsing some bare cff fonts. -->
-	  ���� CFF �t�H���g�̉�͂ɔ����������̖��������B
+	  裸の CFF フォントの解析に伴ういくつかの問題を解決。
       </UL>
   <LI>
 <!--  2-May-2005-->
-      2005�N5��2��
+      2005年5月2日
       <UL>
 	<LI>
 <!--	  Add support for Mark Classes. -->
-	  �}�[�N�N���X�̃T�|�[�g��ǉ��B
+	  マーククラスのサポートを追加。
 	  <UL>
 	    <LI>
 <!--	      New pane in Font Info to create them -->
-	      �쐬�̂��߂̃y�C�����t�H���g���_�C�A���O�ɒǉ��B
+	      作成のためのペインをフォント情報ダイアログに追加。
 	    <LI>
 <!--	      New field in the feature tag dlg to use them -->
-	      �g�p���邽�߂̃t�B�[���h���@�\�^�O�_�C�A���O�ɒǉ��B
+	      使用するためのフィールドを機能タグダイアログに追加。
 	    <LI>
 <!--	      Input/Output routines -->
-	      ���o�̓��[�`��
+	      入出力ルーチン
 	  </UL>
 	<LI>
 <!--	  Drag and drop was broken -->
-	  �h���b�O�A���h�h���b�v�����Ă��܂����B
+	  ドラッグアンドドロップが壊れていました。
 	<LI>
 <!--	  Infinite loop in some bizarre cases when generating a hinted opentype font. -->
-	  �q���g���� OpenType �t�H���g���o�͂��鎞�ɁA����ُ̈�ȏꍇ�ɖ������[�v�Ɋׂ��Ă��܂����B
+	  ヒントつきの OpenType フォントを出力する時に、幾つかの異常な場合に無限ループに陥っていました。
 	<LI>
 <!--	  The Merge Fonts command was broken -->
-	  �t�H���g�̓���(M) �R�}���h�����Ă��܂����B
+	  フォントの統合(M) コマンドが壊れていました。
 	<LI>
 <!--	  The scripting command: AddAccent checked for the wrong argument type -->
-	  �X�N���v�g�R�}���h: AddAccent �̈����^�`�F�b�N������Ă��܂����B
+	  スクリプトコマンド: AddAccent の引数型チェックが誤っていました。
 	<LI>
 <!--	  ff generated an error when loading some bare cff fonts. -->
-	  ff �́A�������̗��� CFF �t�H���g�̓ǂݍ��ݎ��ɃG���[���N�����Ă��܂����B
+	  ff は、いくつかの裸の CFF フォントの読み込み時にエラーを起こしていました。
 	<LI>
 <!--	  Store desired fontview sizes in prefs file -->
-	  prefs �t�@�C���Ƀt�H���g�r���[�T�C�Y�̖]�܂����T�C�Y���i�[����悤�ɂ��܂����B
+	  prefs ファイルにフォントビューサイズの望ましいサイズを格納するようにしました。
 	<LI>
 <!--	  Add a tweak to make the mac's dynamic loader look for fink libraries -->
-	  Mac �̃_�C�i�~�b�N���[�_�� Fink ���C�u������T����悤�ɏ��׍H���s���܂����B
+	  Mac のダイナミックローダが Fink ライブラリを探せるように小細工を行いました。
 	<LI>
 <!--	  Problems parsing bare cff cid-keyed fonts -->
-	  CFF �� CID �L�[�w��t�H���g�̉�͂ɖ�肪����܂����B
+	  CFF の CID キー指定フォントの解析に問題がありました。
 	<LI>
 <!--	  recognize that code page 932 is a variant of SJIS -->
-	  �R�[�h�y�[�W 932 �� SJIS �̈�ώ�ł���ƔF������悤�ɂ��܂����B
+	  コードページ 932 が SJIS の一変種であると認識するようにしました。
 	<LI>
 <!--	  The feature tag 'nutf' is an obsolete name for 'afrc' -->
-	  �@�\�^�O 'nutf' �� 'afrc' �̔p�~���ꂽ���̂ł����B
+	  機能タグ 'nutf' は 'afrc' の廃止された名称でした。
 	<LI>
 <!--	  Add a couple of new scripting functions -->
-	  2 �̃X�N���v�g�֐���ǉ�
+	  2 個のスクリプト関数を追加
 	  <UL>
 	    <LI>
 <!--	      Int() which casts its real/int/unicode argument to int -->
-	      ����/����/Unicode �����𐮐��ɃL���X�g���� Int()
+	      実数/整数/Unicode 引数を整数にキャストする Int()
 	    <LI>
 <!--	      UCodePoint() which casts its real/int/unicode argument to unicode -->
-	      ����/����/Unicode �� Unicode �ɃL���X�g���� UCodePoint()
+	      実数/整数/Unicode を Unicode にキャストする UCodePoint()
 	  </UL>
 	<LI>
 <!--	  scripting CharInfo no longer creates the glyph it is asked about -->
-	  �X�N���v�g�� CharInfo ���A�₢���킹��ꂽ�������쐬���Ȃ��悤�ɂ��܂����B
+	  スクリプトの CharInfo が、問い合わせられた文字を作成しないようにしました。
 	<LI>
 <!--	  WorthOutputting/DrawsSomething can now be applied to the current selection -->
-	  WorthOutputting/DrawsSomething �����݂̑I��͈͂ɓK�p���邱�Ƃ��ł���悤�ɂȂ�܂����B
+	  WorthOutputting/DrawsSomething を現在の選択範囲に適用することができるようになりました。
 	<LI>
 <!--	  When using the freetype rasterizer don't do an automatic close of open paths. -->
-	  FreeType ���X�^���C�U���g�p���ɁA�J�����p�X�������I�ɕ��Ȃ��悤�ɂ��܂����B
+	  FreeType ラスタライザを使用時に、開いたパスを自動的に閉じないようにしました。
 	<LI>
 <!--	  For SCWorthOutputting I used to check both that !widthset and width==em-size.
 	  Remove the em-size check, should be redundant and somethimes (marks) is wrong. -->
-	  SCWorthOutputting �ɂ����āA!widthset �� width==em-size �̗������`�F�b�N���Ă��܂����Bem-size �̃`�F�b�N���폜���܂����B�璷�ł��傤���A���ɂ� (�}�[�N�Ɋւ���) ����Ă���Ƃ����邩��ł��B
+	  SCWorthOutputting において、!widthset と width==em-size の両方をチェックしていました。em-size のチェックを削除しました。冗長でしょうし、時には (マークに関して) 誤っている個とがあるからです。
 	<LI>
 <!--	  The various FindBounds routines didn't pad stroked fonts appropriately -->
-	  �e��� FindBounds ���[�`���́A�X�g���[�N�̑��������̗]�T������Ă��܂���ł����B
+	  各種の FindBounds ルーチンは、ストロークの太さだけの余裕を取っていませんでした。
 	<LI>
 <!--	  Discrepency in docs and code on spelling of scripting Auto[tT]race command.
 	  Accept both variants -->
-	  Auto[tT]race �R�}���h�̃X�y�����O�ɕ����ƃR�[�h�ňႢ���������̂ŁA�ǂ�����󂯕t����悤�ɂ��܂����B
+	  Auto[tT]race コマンドのスペリングに文書とコードで違いがあったので、どちらも受け付けるようにしました。
 	<LI>
 <!--	  A debug statement was left in the ps interpreter -->
-	  PS �C���^�v���^�Ƀf�o�b�O�����c���Ă��܂����B
+	  PS インタプリタにデバッグ文が残っていました。
 	<LI>
 <!--	  Make the help command look for japanese docs in the ja locale -->
-	  ja ���P�[���ł̓w���v�R�}���h�����{��̕�����T���悤�ɂ��܂����B
+	  ja ロケールではヘルプコマンドが日本語の文書を探すようにしました。
 	<LI>
 <!--	  Add a select fewer scripting command -->
-	  SelectFewer() �X�N���v�g�R�}���h��ǉ��B
+	  SelectFewer() スクリプトコマンドを追加。
 	<LI>
 <!--	  Fix some problems with custom encodings -->
-	  �J�X�^���G���R�[�f�B���O�Ɋւ��邢�����̖����C���B
+	  カスタムエンコーディングに関するいくつかの問題を修正。
 	<LI>
 <!--	  Support '\r' and '\r\n' as line-endings for backslash continuation -->
-	  �o�b�N�X���b�V���ɂ��p���s�ŁA'\r' �� '\r\n' �����s�Ƃ��ăT�|�[�g
+	  バックスラッシュによる継続行で、'\r' と '\r\n' を改行としてサポート
 	<LI>
 <!--	  New version of Japanese UI -->
-	  ���{�� UI �̐V�o�[�W����
+	  日本語 UI の新バージョン
 	<LI>
 <!--	  The kerning pair dlg would sometimes fail to display a pair when searching
 	  on the second char of the pair. -->
-	  �J�[�j���O�y�A�_�C�A���O���A�y�A�� 2 �Ԗڂ̕������������Ƀy�A��\���ł��Ȃ����Ƃ�����܂����B	
+	  カーニングペアダイアログが、ペアの 2 番目の文字を検索中にペアを表示できないことがありました。	
 	<LI>
 <!--	  Danish translation of some style names, courtesy of Anders Lund -->
-	  �������̃X�^�C�����̃f���}�[�N��̖|��BAnders Lund �ɒ񋟂��������܂����B
+	  いくつかのスタイル名のデンマーク語の翻訳。Anders Lund に提供いただきました。
 	<LI>
 <!--	  Fix some problems with SJIS encoding -->
-	  SJIS �G���R�[�f�B���O�Ɋւ��邢�����̖����C��
+	  SJIS エンコーディングに関するいくつかの問題を修正
 	<LI>
 <!--	  The point info dlg was quite unusable if you typed in somethng which wasn't
 	  a number -->
-	  �_�̏��_�C�A���O���A���l�ȊO�̂��̂���͂���ƑS���g���Ȃ��Ȃ��Ă��܂����B
+	  点の情報ダイアログが、数値以外のものを入力すると全く使えなくなっていました。
 	<LI>
 <!--	  When in debug mode display pointer position in pixels -->
-	  �f�o�b�O���[�h�ł̓|�C���^�ʒu���s�N�Z���x�[�X�ŕ\������悤�ɂ��܂����B
+	  デバッグモードではポインタ位置をピクセルベースで表示するようにしました。
 	<LI>
 <!--	  Point Info had problems with order2 splines -->
-	  �_�̏��_�C�A���O�ɁA2 ���X�v���C���Ɋւ����肪����܂����B
+	  点の情報ダイアログに、2 次スプラインに関する問題がありました。
 	<LI>
 <!--	  The instruction pane of the debug window was interpretting keystrokes it
 	  should not have -->
-	  �f�o�b�O�E�B���h�E�̃q���g���߃y�C�����A�����ɂȂ��͂��̃L�[�X�g���[�N�����߂��Ă��܂����B
+	  デバッグウィンドウのヒント命令ペインが、そこにないはずのキーストロークを解釈していました。
 	<LI>
 <!--	  Peter Selinger has changed the way potrace is built so it no longer uses
 	  cygwin (it uses MinGW instead). This means ff can't pass it the name of a
 	  temp file as '/tmp/foo' because (on windows) /tmp is a cygwin fiction. So
 	  continue to put the file on cygwin's /tmp, but cd to that directory and then
 	  pass the bare filename. -->
-	  Peter Selinger �� potrace �̃r���h������ύX���Acygwin ���g���̂��~�߂܂��� (����� MinGW ���g�p���Ă��܂�)�B�܂�A(Windows �ł�) /tmp �� cygwin �̉��\�Ȃ̂ŁAff �͈ꎞ�t�@�C������ '/tmp/foo' �Ƃ��ēn���Ȃ��Ȃ����Ƃ����킯�ł��B���̂��߁ACygwin �� /tmp �Ƀt�@�C���������o���̂͏]���ʂ�ł����A���̃f�B���N�g���� cd ���Ă��症�̃t�@�C������n���悤�ɕύX���܂����B
+	  Peter Selinger が potrace のビルド方式を変更し、cygwin を使うのを止めました (代わりに MinGW を使用しています)。つまり、(Windows では) /tmp は cygwin の仮構なので、ff は一時ファイル名を '/tmp/foo' として渡せなくなったというわけです。そのため、Cygwin の /tmp にファイルを書き出すのは従来通りですが、そのディレクトリに cd してから裸のファイル名を渡すように変更しました。
 	<LI>
 <!--	  Add some more greek PUA small caps -->
-	  PUA �Ɋ��蓖�Ă�ꂽ�M���V����̃X���[���L���b�v�X���������ǉ����܂����B
+	  PUA に割り当てられたギリシャ語のスモールキャップスをいくつか追加しました。
 	<LI>
 <!--	  Add scroll bars to debug windows which lacked them -->
-	  �f�o�b�O�E�B���h�E�ɃX�N���[���o�[���Ȃ������̂Œǉ����܂����B
+	  デバッグウィンドウにスクロールバーがなかったので追加しました。
 	<LI>
 <!--	  Add a gloss window which explains what a ttf instruction is going to use
 	  and what it is going to do. -->
-	  �ǂ� TTF ���߂��g�p���悤�Ƃ��Ă��āA�����s�����Ƃ��Ă���̂����������u���߂̐����v�E�B���h�E��ǉ����܂����B
+	  どの TTF 命令を使用しようとしていて、何を行おうとしているのかを説明する「命令の説明」ウィンドウを追加しました。
 	<LI>
 <!--	  Was using the wrong accent to build cyrillic breves. -->
-	  �L���������̃u���[�u���������\�z����̂Ɍ�����A�N�Z���g���g�p���Ă��܂����B
+	  キリル文字のブリーブつき文字を構築するのに誤ったアクセントを使用していました。
 	<LI>
 <!--	  Remove the adobe private use defs from libgunicode and put them in fontforge. -->
-	  Adobe �ɂ�鎄�p�̈�̒�`�� libgunicode ����폜���AFontForge �ɒu���܂����B
+	  Adobe による私用領域の定義を libgunicode から削除し、FontForge に置きました。
 	<LI>
 <!--	  ff had problems reading pfm files containing kerning pairs using non-existant
 	  chars -->
-	  ff �ɂ́A���݂��Ȃ��������g�p����J�[�j���O�y�A���܂� PFM �t�@�C���̓ǂݍ��݂ɖ�肪����܂����B
+	  ff には、存在しない文字を使用するカーニングペアを含む PFM ファイルの読み込みに問題がありました。
 	<LI>
 <!--	  Add pixels per em in register view. -->
-	  ���W�X�^�r���[�ɁAem ������̃s�N�Z������ǉ����܂����B
+	  レジスタビューに、em あたりのピクセル数を追加しました。
 	<LI>
 <!--	  No contours in twilight zone -->
-	  �g���C���C�g�]�[���ɂ͗֊s�͂���܂���B
+	  トワイライトゾーンには輪郭はありません。
 	<LI>
 <!--	  When generating tt fonts we did not set bit 8 in 'head'.Flags. This gives
 	  bad results when ppem is not an integer -->
-	  TT �t�H���g�̏o�͎��ɁA'head' �t���O�̃r�b�g 8 ���Z�b�g���Ă��܂���ł����B����́Aem ������s�N�Z�����������łȂ����ɖ�肪����܂����B
+	  TT フォントの出力時に、'head' フラグのビット 8 をセットしていませんでした。これは、em あたりピクセル数が整数でない時に問題がありました。
 	<LI>
 <!--	  When reencoding to adobe standard (or any encoding where glyph names are
 	  more important than code points) make sure we use glyph names rather than
 	  code points (so "f_i" is not in AdobeStd while "fi" is. But they map to the
 	  same code point). -->
-	  Adobe standard �ɕ�����������ϊ������� (�܂��̓O���t���̂ق����R�[�h�|�C���g�����d�v�Ȃ��ׂĂ̏ꍇ)�A�R�[�h�|�C���g�łȂ��O���t�����g�p����悤�ɂ��܂����B(�ł����� AdobeStd �ł� "f_i" �ł͂Ȃ� "fi" �����݂��܂��B�ł��������͓����R�[�h�|�C���g�Ƀ}�b�s���O����܂�)�B
+	  Adobe standard に符号化方式を変換した時 (またはグリフ名のほうがコードポイントよりも重要なすべての場合)、コードポイントでなくグリフ名を使用するようにしました。(ですから AdobeStd では "f_i" ではなく "fi" が存在します。ですがそれらは同じコードポイントにマッピングされます)。
 	<LI>
 <!--	  When creating a debug window in a glyph with no instructions (or in which
 	  'gasp' has turned off hinting) we used not to rasterize it. -->
-	  �f�o�b�O�E�B���h�E�𖽗߂��܂܂Ȃ��O���t���ŊJ�����Ƃ� (�܂��� 'gasp' �ɂ���ăq���g�Â����I�t�ɂȂ��Ă���Ƃ�)�A��������X�^���C�Y���Ă��܂���ł����B
+	  デバッグウィンドウを命令を含まないグリフ内で開いたとき (または 'gasp' によってヒントづけがオフになっているとき)、それをラスタライズしていませんでした。
 	<LI>
 <!--	  Script/lang count was wrong in a number of places -->
-	  �������̏ꏊ�ŁA�p���n/����̌��𐔂��ԈႦ�Ă��܂����B
+	  いくつもの場所で、用字系/言語の個数を数え間違えていました。
 	<LI>
 <!--	  Oops, the transform dlg and menu both used the "round to int" string. Then
 	  I changed what it looked like in the menu, a change which is not appropriate
 	  for the transform dlg. Add a new string just for the dlg. -->
-	  �����ƁA���W�ϊ��_�C�A���O�ƃ��j���[�̗����ŁA"�����Ɋۂ߂�" �Ƃ�����������g�p���Ă��܂����B��������j���[�\���ɂ���悤�ɕύX�������ɁA�ϊ��_�C�A���O�ł͓K�؂łȂ��u���������s���Ă��܂��Ă��܂����B�_�C�A���O�ł̂ݎg�p����V�����������ǉ��B
+	  おっと、座標変換ダイアログとメニューの両方で、"整数に丸める" という文字列を使用していました。それをメニュー表示にあるように変更した時に、変換ダイアログでは適切でない置き換えを行ってしまっていました。ダイアログでのみ使用する新しい文字列を追加。
 	<LI>
 <!--	  Tavmjong Bah added something to the "ypogegrammeni" list. -->
-	  Tavmjong Bah �� "ypogegrammeni" ���X�g�ɉ�����ǉ����܂����B
+	  Tavmjong Bah が "ypogegrammeni" リストに何かを追加しました。
 	<LI>
 <!--	  Fix problems with multiple text fields in the same window all wanting input
 	  contexts (for input methods). -->
-	  �����E�B���h�E�Ɋ܂܂�镡���̃e�L�X�g�t�B�[���h�����ׂ� (�C���v�b�g���\�b�h��) ���̓R���e�L�X�g��K�v�Ƃ��Ă���Ƃ��̖����C���B
+	  同じウィンドウに含まれる複数のテキストフィールドがすべて (インプットメソッドの) 入力コンテキストを必要としているときの問題を修正。
 	<LI>
 <!--	  We generated ligature code in morx for ligatures that were not worth outputting. -->
-	  �o�͂ɉ����Ȃ������ɑ΂��� morx �̍����R�[�h�𐶐����Ă��܂����B
+	  出力に価しない合字に対して morx の合字コードを生成していました。
 	<LI>
 <!--	  Pierre Hanser points out that a recent change to SetWidth broke the scritping
 	  SetWidth command. -->
-	  Pierre Hanser ���A�ŋ߂� SetWidth �̕ύX���X�N���v�g�� SetWidth �R�}���h���󂵂Ă��邱�Ƃ��w�E���܂����B
+	  Pierre Hanser が、最近の SetWidth の変更がスクリプトの SetWidth コマンドを壊していることを指摘しました。
 	<LI>
 <!--	  Yet more effort to remove rounding errors from remove overlap. If a control
 	  point causes a slight overshoot we get an unexpected extremum very close
 	  to one of the endpoints. If it's close enough this can cause problems. Tweak
 	  cps so this does not happen -->
-	  �d����������ۂߏ����̃G���[���������邽�߂̂���Ȃ�w�́B����_���͂��ȃI�[�o�[�V���[�g���N�����Ă���ƁA�[�_�ɔ��ɋ߂����Ɏv��ʋɑ�l���ł��Ă��܂����B���܂�ɂ��߂��Ƃ��ꂪ�����N�����\��������܂��B���ꂪ�N����Ȃ��悤�ɐ���_����������܂��B
+	  重複除去から丸め処理のエラーを除去するためのさらなる努力。制御点が僅かなオーバーシュートを起こしていると、端点に非常に近い所に思わぬ極大値ができていました。あまりにも近いとこれが問題を起こす可能性があります。これが起こらないように制御点を微調整します。
 	<LI>
 <!--	  Solaris stores isnan &amp; friends in ieeefp.h not in math.h -->
-	  Solaris �� isnan �Ƃ��̗ގ��i�� math.h �ł͂Ȃ� ieeefp.h �Ɋi�[���Ă��܂��B
+	  Solaris は isnan とその類似品を math.h ではなく ieeefp.h に格納しています。
 	<LI>
 <!--	  Add scripting access to standard math functions (trig, exp log) -->
-	  �W�����w�֐� (�O�p�֐�, exp, log) �ւ̃X�N���v�g�A�N�Z�X��ǉ��B
+	  標準数学関数 (三角関数, exp, log) へのスクリプトアクセスを追加。
 	<LI>
 <!--	  Unary minus didn't work on reals -->
-	  �����ւ̒P���}�C�i�X�������������Ă��܂���ł����B
+	  実数への単項マイナスが正しく動いていませんでした。
 	<LI>
 <!--	  The recalculate bitmaps button in bitmap view was getting munched when we
 	  updated the cursor position. -->
-	  �r�b�g�}�b�v�r���[�́u�r�b�g�}�b�v�̍Čv�Z�v�{�^���́A�J�[�\���ʒu���X�V�������ɔj�󂳂�Ă��܂����B
+	  ビットマップビューの「ビットマップの再計算」ボタンは、カーソル位置を更新した時に破壊されていました。
 	<LI>
 <!--	  CharInfo("BBox") returned gibberish -->
-	  CharInfo("BBox") ���S�~��Ԃ��Ă��܂����B
+	  CharInfo("BBox") がゴミを返していました。
       </UL>
     <LI>
 <!--  9-Mar-2005-->
-      2005�N3��9��
+      2005年3月9日
       <UL>
 	<LI>
 <!--	  Deleting a glyph class within a kerning by classes object caused a crash -->
-	  �N���X�ɂ��J�[�j���O�w��Ɋ܂܂��N���X���폜����ƃN���b�V�������肪����܂����B
+	  クラスによるカーニング指定に含まれるクラスを削除するとクラッシュする問題がありました。
 	<LI>
 <!--	  Added some support for palm bitmap fonts -->
-	  Palm �r�b�g�}�b�v�t�H���g�̂�����x�̃T�|�[�g��ǉ��B
+	  Palm ビットマップフォントのある程度のサポートを追加。
 	<LI>
 <!--	  Replace with reference only replaced the first instance. -->
-	  �Q�Ƃɂ��u���ł́A�ŏ��̃C���X�^���X�����u�������Ă��܂���ł����B
+	  参照による置換では、最初のインスタンスしか置き換えていませんでした。
 	<LI>
 <!--	  The Options dlg behaved oddly with respect to Apple &amp; OpenType modes -->
-	  Apple ����� OpenType ���[�h�Ɋւ��āA�I�v�V�����_�C�A���O���ςȓ�������Ă��܂����B
+	  Apple および OpenType モードに関して、オプションダイアログが変な動作をしていました。
 	<LI>
 <!--	  When given a glyph with conflicting hints for which the first contour contained
 	  no hints, then in type2 output the glyph was drawn at a strange offset from
 	  its correct position. -->
-	  ��������q���g�������A�ŏ��̗֊s�Ƀq���g���܂܂�Ȃ��O���t���^����ꂽ�Ƃ��AType2 �o�͂ɂ����ăO���t���������ʒu�ɔ�וςɂ���ĕ`�悳��Ă��܂����B
+	  矛盾するヒントをもち、最初の輪郭にヒントが含まれないグリフが与えられたとき、Type2 出力においてグリフが正しい位置に比べ変にずれて描画されていました。
 	<LI>
 <!--	  When generating an opentype font from a script, and specifying flags, the
 	  round coordinates flag was ignored -->
-	  �X�N���v�g���� OpenType �t�H���g���o�͂���ہA�t���O���w�肷��Ƃ��A���W�l�𐮐��֊ۂ߂�t���O�w�肪��������Ă��܂����B
+	  スクリプトから OpenType フォントを出力する際、フラグを指定するとき、座標値を整数へ丸めるフラグ指定が無視されていました。
 	<LI>
 <!--      When generating a font from a script using the default flag setting, we would
 	  always generate afm/tfm/pfm files -->
-	  �X�N���v�g����f�t�H���g�̃t���O�ݒ�Ńt�H���g���o�͂���Ƃ��A��� AFM/TFM/PFM �t�@�C�����o�͂��Ă��܂����B
+	  スクリプトからデフォルトのフラグ設定でフォントを出力するとき、常に AFM/TFM/PFM ファイルを出力していました。
 	<LI>
 <!--	  KANOU pointed out that the stroked font import glyph command only worked
 	  if multilayer set. -->
-	  �X�g���[�N�t�H���g�̃O���t��荞�݃R�}���h������ɓ��삷��̂̓}���`���C���̂Ƃ��݂̂ł��邱�Ƃ���삪�w�E���܂����B
+	  ストロークフォントのグリフ取り込みコマンドが正常に動作するのはマルチレイヤのときのみであることを狩野が指摘しました。
 	<LI>
 <!--	  Added a preview bitmap to eps files. -->
-	  EPS �t�@�C���ɁA�v���r���[�p�̃r�b�g�}�b�v��ǉ��B
+	  EPS ファイルに、プレビュー用のビットマップを追加。
 	<LI>
 <!--	  In a bitmap only font the font metrics menu items behaved in unexpected ways
 	  (as if they referred to a postscript font rather than the bitmap fonts) -->
-	  �r�b�g�}�b�v�݂̂̃t�H���g�ł́A�t�H���g���g���b�N���j���[�̍��ڂ͗\�z�O�̐U�������Ă��܂��� (�r�b�g�}�b�v�t�H���g�łȂ��APostScript �t�H���g�Ƃ��ĎQ�Ƃ��ꂽ���̂悤�ɐU�����Ă��܂���)�B
+	  ビットマップのみのフォントでは、フォントメトリックメニューの項目は予想外の振舞をしていました (ビットマップフォントでなく、PostScript フォントとして参照されたかのように振舞っていました)。
 	<LI>
 <!--	  Various fixes to make importing stroked eps files into stroked fonts work
 	  better. -->
-	  �X�g���[�N�t�H���g�ւ�EPS �t�@�C���̎�荞�݂����ǍD�ɓ��삷��悤�ɂ��邽�߂̑����̏C���B
+	  ストロークフォントへのEPS ファイルの取り込みがより良好に動作するようにするための多数の修正。
 	<LI>
 <!--	  KANOU requests a preference item to turn off use of freetype in font view. -->
-	  �t�H���g�r���[�� FreeType ���g��Ȃ��悤�ɂ��邽�߂̊��ݒ荀�ڂ���삪���N�G�X�g���܂����B
+	  フォントビューで FreeType を使わないようにするための環境設定項目を狩野がリクエストしました。
 	<LI>
 <!--	  Fix more rounding errors in remove overlap. -->
-	  �d�������ɂ�����ۂ߃G���[�̒ǉ��C���B
+	  重複除去における丸めエラーの追加修正。
 	<LI>
 <!--	  Fix some problems in the routine which finds roots of an arbetrary quartic. -->
-	  �C�ӂ� 4 �����̍������߂郋�[�`���̂������̖��C���B
+	  任意の 4 次式の根を求めるルーチンのいくつかの問題修正。
 	<LI>
 <!--	  The remove bump option of simplify could screw up memory. -->
-	  �P�����R�}���h�̃R�u����菜���I�v�V�������A��������j�󂵂Ă��܂����B
+	  単純化コマンドのコブを取り除くオプションが、メモリを破壊していました。
 	<LI>
 <!--	  Remove overlap got unhappy about control points which caused a very tiny
 	  overlap between adjacent splines -->
-	  �d�����������́A�אڂ���X�v���C���Ԃɔ��ɏ����ȏd�Ȃ荇��������悤�Ȑ���_������ƕs�K�Ȍ��ʂ������炵�Ă��܂����B
+	  重複除去処理は、隣接するスプライン間に非常に小さな重なり合い生じるような制御点があると不幸な結果をもたらしていました。
 	<LI>
 <!--	  Redo from the fontview usually caused a crash. -->
-	  �t�H���g�r���[�ł̂��Ȃ������������т��уN���b�V���������N�����Ă��܂����A�B
+	  フォントビューでのやりなおし処理がたびたびクラッシュを引き起こしていました、。
 	<LI>
 <!--	  KANOU provides a MakeLine scripting command -->
-	  MakeLine �X�N���v�g�R�}���h����삪�񋟁B
+	  MakeLine スクリプトコマンドを狩野が提供。
 	<LI>
 <!--	  If TYPE3 (multilayer) was not enabled, there was a flow of control through
 	  a function which did not return anything. -->
-	  Type3 (�}���`���C��) ���g�p�\�ɂ��Ă��Ȃ��Ƃ��A�֐��������Ԃ��Ȃ����Ƃɂ�鐧��̔×�������܂����B
+	  Type3 (マルチレイヤ) を使用可能にしていないとき、関数が何も返さないことによる制御の氾濫がありました。
 	<LI>
 <!--	  Recovery files did not contain multilayer marks which lead to strange behavior
 	  and crashes -->
-	  �G���[�񕜃t�@�C���ɕ������C���}�X�N���܂܂�Ă��炸�A��ȐU������N���b�V���������N�����Ă��܂����B
+	  エラー回復ファイルに複数レイヤマスクが含まれておらず、奇妙な振舞いやクラッシュを引き起こしていました。
 	<LI>
 <!--	  Converting a font to multilayer caused a crash if there were outline glyph
 	  windows open. -->
-	  �t�H���g���}���`���C���t�H���g�ɕϊ�����Ƃ��A�A�E�g���C���O���t�E�B���h�E���J���Ă���ƃN���b�V���������N�����Ă��܂����B
+	  フォントをマルチレイヤフォントに変換するとき、アウトライングリフウィンドウが開いているとクラッシュを引き起こしていました。
 	<LI>
 <!--	  Make the encoding for scripts be utf8 consistently -->
-	  �X�N���v�g�̃G���R�[�f�B���O����� UTF-8 �ƌ��Ȃ��悤�ɕύX�B
+	  スクリプトのエンコーディングを常に UTF-8 と見なすように変更。
 	<LI>
 <!--	  Allow the scripting Export command to take a format spec -->
-	  Export �X�N���v�g�R�}���h���t�H�[�}�b�g�������Ŏw��ł���悤�ɕύX�B
+	  Export スクリプトコマンドがフォーマットを引数で指定できるように変更。
 	<LI>
 <!--	  Add support for reals to the scripting language -->
-	  �X�N���v�g����ւ̎����T�|�[�g�̒ǉ��B
+	  スクリプト言語への実数サポートの追加。
 	<LI>
 <!--	  NearlyHv{Cps,Lines} scripting commands erroneously complained about too many
 	  args -->
-	  NearlyHv{Cps,Lines} �X�N���v�g�R�}���h�́A��������������Ƃ����G���[������ďo���Ă��܂����B
+	  NearlyHv{Cps,Lines} スクリプトコマンドは、引数が多すぎるというエラーを誤って出していました。
 	<LI>
 <!--	  ff had a bug when outputting otf contextual ligatures -->
-	  OTF �����ˑ��̍����̏o�͕����Ƀo�O������܂����B
+	  OTF 文脈依存の合字の出力部分にバグがありました。
 	<LI>
 <!--	  Fix various crashes and infinite loops involved in parsing bad font files. -->
-	  ��ꂽ�t�H���g�t�@�C���̉�͏����Ŗ������[�v���N����e��̃o�O���C���B
+	  壊れたフォントファイルの解析処理で無限ループが起こる各種のバグを修正。
 	<LI>
 <!--	  ff had problems with user defined encodings. -->
-	  ���[�U��`�̃G���R�[�f�B���O�����ɖ�肪����܂����B
+	  ユーザ定義のエンコーディング処理に問題がありました。
 	<LI>
 <!--	  Made ff work if the psuedo-type "real" was defined to be a double. -->
-	  ���z�f�[�^�^ "real" �� double �� typedef ���Ă������悤�ɕύX�B
+	  仮想データ型 "real" を double に typedef しても動くように変更。
 	<LI>
 <!--	  the string += concattonation operator in scripting screwed up memory -->
-	  �X�N���v�g�ŕ������ += �Ō����������Ƀ�������j�󂵂Ă��܂����B
+	  スクリプトで文字列を += で結合した時にメモリを破壊していました。
 	<LI>
 <!--	  Problems with -c &lt;arg&gt; syntax -->
-	  -c &lt;arg&gt; �\���ɖ�肪����܂����B
+	  -c &lt;arg&gt; 構文に問題がありました。
 	<LI>
 <!--	  The font type detector could fail to notice an svg file as such if it began
 	  with a byte order character. -->
-	  �t�H���g�^�C�v���o���[�`�����A�o�C�g�I�[�_���ʕ����Ŏn�܂� SVG �t�@�C���̌��o�Ɏ��s���Ă��܂����B
+	  フォントタイプ検出ルーチンが、バイトオーダ識別文字で始まる SVG ファイルの検出に失敗していました。
 	<LI>
 <!--	  Ord didn't do proper type checking on its second argument -->
-	  Ord �́A2 �Ԗڂ̈����̌^�����������̃`�F�b�N�𐳂����s���Ă��܂���ł����B
+	  Ord は、2 番目の引数の型が正しいかのチェックを正しく行っていませんでした。
       </UL>
     <LI>
 <!--  9-Feb-2005-->
-      2005�N2��9��
+      2005年2月9日
       <UL>
 	<LI>
 <!--	  Use freetype's FT_Outline_Get_Bitmap to make freetype rasterize from our
 	  internal data structures. Use freetype by default for the fontview and
 	  metricsview (except in some cases). -->
-	  ff �̓����f�[�^�\���� FreeType �Ń��X�^���C�Y���邽�߂ɁAFT_Outline_Get_Bitmap �����悤�B�t�H���g�r���[�ƃ��g���b�N�r���[�ł� (�������̏ꍇ������) FreeType ���f�t�H���g�ɕύX�B
+	  ff の内部データ構造を FreeType でラスタライズするために、FT_Outline_Get_Bitmap をしよう。フォントビューとメトリックビューでは (いくつかの場合を除き) FreeType をデフォルトに変更。
 	<LI>
 <!--	  The bitmap dlg didn't work for multilayered fonts when told to use freetype
 	  to rasterize. -->
-	  FreeType �����X�^���C�Y�Ɏg�p����悤�Ɏw�肵���Ƃ��A�}���`���C���t�H���g�ł̓r�b�g�}�b�v�_�C�A���O�������Ă��܂���ł����A�B
+	  FreeType をラスタライズに使用するように指定したとき、マルチレイヤフォントではビットマップダイアログが動いていませんでした、。
 	<LI>
 <!--	  If we had a contour nested inside another, and did an Overlap Exclude with
 	  the nested contour selected, then that contour was not excluded. -->
-	  ����֊s���ʂ̗֊s�̓����ɓ���q�ɂȂ��Ă��鎞�A�����̗֊s��I�����āu�d������������(E)�v���Ăяo���Ă����̗֊s����������܂���ł����B
+	  ある輪郭が別の輪郭の内側に入れ子になっている時、内側の輪郭を選択して「重複部分を除去(E)」を呼び出してもその輪郭が除去されませんでした。
 	<LI>
 <!--	  The []Correct Direction check box when importing PostScript, didn't do anything.
 	  (or rather it did, but got overrulled later) -->
-	  PostScript �̎�荞�ݎ��ɂ́A[]�A�E�g���C���̌������C��(C) �`�F�b�N�{�b�N�X�����̖��ɂ������Ă��܂���ł��� (�ƌ������A�C���͂��Ă����̂ł����A��Ŏ�������Ă��܂���)�B
+	  PostScript の取り込み時には、[]アウトラインの向きを修正(C) チェックボックスが何の役にも立っていませんでした (と言うか、修正はしていたのですが、後で取り消されていました)。
 	<LI>
 <!--	  In bitmap only fonts, bitmaps created without moving the width line would
 	  get lost. -->
-	  �r�b�g�}�b�v�݂̂̃f�[�^�ł́A�������̐����ړ����Ȃ��ꍇ�ɂ͍쐬���ꂽ�r�b�g�}�b�v�͎����Ă��܂����B
+	  ビットマップのみのデータでは、文字幅の線を移動しない場合には作成されたビットマップは失われていました。
 	<LI>
 <!--	  Added a scripting command "SelectByColor" -->
-	  �X�N���v�g�R�}���h "SelectByColor" �̒ǉ��B
+	  スクリプトコマンド "SelectByColor" の追加。
 	<LI>
 <!--	  Don't apply transformations to glyphs which aren't worth outputting -->
-	  �o�͂���Ӗ��̂Ȃ��O���t�ɂ͍��W�ϊ���K�p���Ȃ��悤�ɕύX�B
+	  出力する意味のないグリフには座標変換を適用しないように変更。
 	<LI>
 <!--	  Moving control points with the get point info command had problems in quadratic
 	  splines. -->
-	  2 ���X�v���C���̐���_���A�u���𓾂�(I)�v�_�C�A���O�Ő��l���͂��Ĉړ��������̏����ɖ�肪����܂����B
+	  2 次スプラインの制御点を、「情報を得る(I)」ダイアログで数値入力して移動した時の処理に問題がありました。
 	<LI>
 <!--	  When adding type42 support I broke multiple master support. -->
-	  Type42 �T�|�[�g��ǉ��������Ƀ}���`�v���}�X�^�[�T�|�[�g�𓮂��Ȃ����Ă��܂����B
+	  Type42 サポートを追加した時にマルチプルマスターサポートを動かなくしていました。
 	<LI>
 <!--	  Werner provided a patch to add a trailing newline to my type1 fonts. -->
-	  Type1 �t�H���g�̃t�@�C�������ɉ��s��t�������邽�߂̃p�b�`�� Werner ���񋟂��܂����B
+	  Type1 フォントのファイル末尾に改行を付け加えるためのパッチを Werner が提供しました。
 	<LI>
 <!--	  Support for PaintType==2 and stroked fonts. -->
-	  PaintType == 2 ����уX�g���[�N�t�H���g�̃T�|�[�g�B
+	  PaintType == 2 およびストロークフォントのサポート。
 	<LI>
 <!--	  Various problems with the clustering command -->
-	  �߂��l�̂܂Ƃߏ����̑����̖��������B
+	  近い値のまとめ処理の多数の問題を解決。
 	<LI>
 <!--	  Oops, somehow a patch reverted and things didn't work on systems without
 	  iconv -->
-	  �����ƁA�Ȃ����p�b�`���t�߂肵�āAiconv �̂Ȃ��V�X�e���œ����Ȃ��Ȃ��Ă܂����B
+	  おっと、なぜかパッチが逆戻りして、iconv のないシステムで動かなくなってました。
 	<LI>
 <!--	  worked on a couple of other configuration problems for the mac -->
-	  Mac �ł̐ݒ��肪���� 2, 3 �������̂𒼂��܂����B
+	  Mac での設定問題が他に 2, 3 あったのを直しました。
 	<LI>
 <!--	  Some people install libraries without headers. Be prepared. -->
-	  �w�b�_�̂Ȃ����C�u�������C���X�g�[�����Ă���l�����܂ɂ��܂��B�����Ă����悤�ɂ��܂����B
+	  ヘッダのないライブラリをインストールしている人がたまにいます。備えておくようにしました。
 	<LI>
 <!--	  Uniscribe (MS unicode text layout routines) may ignore either the GPOS or
 	  the GSUB table depending on the script, and may even refuse to use the font
@@ -1234,86 +1234,86 @@ FontForge)</A> -->
 	  have both a GPOS and a GSUB. If it doesn't the font is not used. A latin
 	  font need not have either, but if it doesn't have GSUB then GPOS won't be
 	  used. -->
-	  Uniscribe (MS �� Unicode �e�L�X�g���C�A�E�g���[�`��) �́A�p���n�ɂ���� GPOS �܂��� GSUB �e�[�u���̑��݂𖳎����邱�Ƃ�����A�ꍇ�ɂ���Ă� GPOS/GSUB �ɓK�؂ȃf�[�^���Ȃ��ƃt�H���g�̎d�l�����S�ɋ��ۂ���\�����炠��܂��B�w�u���C��t�H���g�� GPOS �� GSUB �̗������܂�ł���K�v������܂��B�ǂ��炩���t�H���g�Ɋ܂܂�Ă��Ȃ��Ƃ���͎g�p����܂���B���e�������̃t�H���g�͂ǂ�����܂�ł���K�v�͂���܂��񂪁AGSUB ���܂܂�Ă��Ȃ��ƁAGPOS �͎g�p����܂���B
+	  Uniscribe (MS の Unicode テキストレイアウトルーチン) は、用字系によって GPOS または GSUB テーブルの存在を無視することがあり、場合によっては GPOS/GSUB に適切なデータがないとフォントの仕様を完全に拒否する可能性すらあります。ヘブライ語フォントは GPOS と GSUB の両方を含んでいる必要があります。どちらかがフォントに含まれていないとそれは使用されません。ラテン文字のフォントはどちらも含んでいる必要はありませんが、GSUB が含まれていないと、GPOS は使用されません。
 	  <P>
 <!--	  So the script sub-table of both GPOS/GSUB should contain all scripts used
 	  in either (rather than just the scripts used in the current one). -->
-	  ���������킯�ŁAGPOS/GSUB ���e�[�u���� GPOS/GSUB �́A(���ݑ��݂��鎚�`�����Ɋւ�镶�������łȂ�) �t�H���g���Ɋ܂܂��S�Ă̕����̗p���n���܂�ł���ׂ����Ƃ������ƂɂȂ�܂��B
+	  そういうわけで、GPOS/GSUB 両テーブルの GPOS/GSUB は、(現在存在する字形処理に関わる文字だけでなく) フォント内に含まれる全ての文字の用字系を含んでいるべきだということになります。
 	<LI>
 <!--	  The AddATT scripting command didn't understand Nested. -->
-	  AddATT �X�N���v�g�R�}���h�� Nested �𗝉����Ă��܂���ł����B
+	  AddATT スクリプトコマンドは Nested を理解していませんでした。
 	<LI>
 <!--	  Add a cli argument "-c" to introduce a scripting command in an argument. -->
-	  �R�}���h���C������ "-c" ���A�����ł̃X�N���v�g�R�}���h���ڎw��𓱓����邽�߂ɒǉ��B
+	  コマンドライン引数 "-c" を、引数でのスクリプトコマンド直接指定を導入するために追加。
 	<LI>
 <!--	  Someone ran ff on a solaris box without iconv. (Odd because iconv is there
 	  by default). FF ran fine (Odder, why didn't it demand the library?), but
 	  crashed when it tried to use a conversion which didn't exist. -->
-	  FF �� iconv �̍ڂ��ĂȂ� Solaris �Ŏ��s�����l�����܂� (iconv �̓f�t�H���g�œ����Ă���̂ŁA�s�v�c�Șb�ł�)�BFF �͂����Ɠ����܂��� (�����ƕs�v�c�ł��B���C�u������v�����Ȃ������̂͂Ȃ��ł��傤?) ���A���݂��Ȃ��ϊ����[�`�����g�����Ƃ������ɃN���b�V�����N�����Ă��܂����B
+	  FF を iconv の載ってない Solaris で実行した人がいます (iconv はデフォルトで入っているので、不思議な話です)。FF はちゃんと動きました (もっと不思議です。ライブラリを要求しなかったのはなぜでしょう?) が、存在しない変換ルーチンを使おうとした時にクラッシュを起こしていました。
 	<LI>
 <!--	  There's another ASCII map in Unicode (0xe0000-0xe007f). -->
-	  ASCII �Ƃ̂��� 1 �̑Ή� (0xe0000-0xe007f) �� Unicode �ɒǉ��B
+	  ASCII とのもう 1 つの対応 (0xe0000-0xe007f) を Unicode に追加。
 	<LI>
 <!--	  Allow user to supply their own OtherSubrs routines (Some people object to
 	  Adobe's copyright). -->
-	  ���[�U���������g�� OtherSubr ���[�`����񋟂��邱�Ƃ��ł���悤�ɂ��܂��� (Adobe �̒��쌠�ɔ���ꂽ���Ȃ��l�X�����邩��ł�)�B
+	  ユーザが自分自身の OtherSubr ルーチンを提供することができるようにしました (Adobe の著作権に縛られたくない人々がいるからです)。
 	<LI>
 <!--	  Codes to handle identifying a loaded font by relative filespec didn't work. -->
-	  ���΃t�@�C���w��ɂ���ēǂݍ��񂾃t�H���g�̎��ʏ����R�[�h�������Ă��܂���ł����B
+	  相対ファイル指定によって読み込んだフォントの識別処理コードが動いていませんでした。
 	<LI>
 <!--	  Change Add Extrema so that it only adds extrema if -->
-	  �u�ɑ�_�̒ǉ�(X)�v�R�}���h��ύX���A�ȉ��̏ꍇ�̂ݓ_��ǉ�����悤�ɂ��܂���:
+	  「極大点の追加(X)」コマンドを変更し、以下の場合のみ点を追加するようにしました:
 	  <OL>
 	    <LI>
 <!--	      The spline length is &gt;= em_size/32 -->
-	      �X�v���C���̒��� �� em_size/32 �ł���
+	      スプラインの長さ ≧ em_size/32 である
 	    <LI>
 <!--	      The extremum is an extremum of the entire contour containing the spline. -->
-	      �X�v���C���̋ɒl���A���̃X�v���C�����܂ދȐ��S�̂̋ɒl�ł���
+	      スプラインの極値が、そのスプラインを含む曲線全体の極値である
 	  </OL>
 	  <P>
 <!--	  (Behavior in the outline view when there is a selection remains the same.
 	  So if the endpoints of a spline are both selected then all local extrema
 	  will be added to that spline, no matter how long it may be). -->
-	  (�A�E�g���C���r���[�Ŕ͈͑I�����s���Ă���Ƃ��̂ӂ�܂��͍��܂łƓ����ł��B�ł�����A����X�v���C���̒[�_�������I������Ă���Ƃ��́A�X�v���C���̒����Ɋւ�炸�A�S�Ă̋Ǐ��I�ȋɒl���X�v���C���ɒǉ�����܂�)�B
+	  (アウトラインビューで範囲選択を行っているときのふるまいは今までと同じです。ですから、あるスプラインの端点が両方選択されているときは、スプラインの長さに関わらず、全ての局所的な極値がスプラインに追加されます)。
 	<LI>
 <!--	  Patch by Ralf Stubner. Fonts without UniqueID had a bad syntax. -->
-	  UniqueID �̂Ȃ��t�H���g�̍\��������Ă����̂� Ralf Stubner �̃p�b�`�ɂ��C���B
+	  UniqueID のないフォントの構文が誤っていたのを Ralf Stubner のパッチにより修正。
       </UL>
     <LI>
 <!--  17-Jan-2005-->
-      2005�N1��17��
+      2005年1月17日
       <UL>
 	<LI>
 <!--	  CapsLock now makes the arrow keys scroll in the outline view -->
-	  �A�E�g���C���r���[�ŁACapsLock �L�[�������Ă���Ɩ��L�[�ŉ�ʃX�N���[���ł���悤�ɕύX�B
+	  アウトラインビューで、CapsLock キーを押していると矢印キーで画面スクロールできるように変更。
 	<LI>
 <!--	  We lost count of hints when generating type2 fonts in glyphs with references
 	  to something containing hints which did not overlap. If we were unlucky,
 	  &lt;new-cnt+7&gt;/8 was different than &lt;real-cnt+7&gt;/8 and we ended
 	  up with garbage in the charstring. -->
-	  Type2 �t�H���g���o�͂����Ƃ��ɁA�d�Ȃ荇��Ȃ��q���g���܂ޕʃO���t�ւ̎Q�Ƃ��܂ރO���t����q���g�̌��������Ă��܂����B�^�������ƁA&lt;�Ԉ������+7&gt;/8 �� &lt;�{���̌�+7&gt;/8 �ƈႤ�l�ɂȂ�Acharstring ���ɃS�~�f�[�^�������o����錋�ʂƂȂ�܂����B
+	  Type2 フォントを出力したときに、重なり合わないヒントを含む別グリフへの参照を含むグリフからヒントの個数が失われていました。運が悪いと、&lt;間違った個数+7&gt;/8 が &lt;本当の個数+7&gt;/8 と違う値になり、charstring 内にゴミデータが書き出される結果となりました。
 	<LI>
 <!--	  Add a TeX table to contain TeX metrics. -->
-	  TeX �̃��g���b�N���i�[���� TeX �e�[�u����ǉ��B
+	  TeX のメトリックを格納する TeX テーブルを追加。
 	<LI>
 <!--	  TFM output was wrong. the TFtoPL doc says " -->
-	  TFM �o�͂��Ԉ���Ă��܂����BTFtoPL �̕����ɂ� " �Ə����Ă���܂��B
+	  TFM 出力が間違っていました。TFtoPL の文書には " と書いてあります。
 	<LI>
 <!--	  reencoding with original encoding could create a glyph table one too small
 	  resulting in writing/reading garbage and an eventual crash. -->
-	  Original �G���R�[�f�B���O�ɕ�����������ϊ�����ƃO���t�e�[�u���̕������� 1 ���Ȃ��Ȃ邱�Ƃ�����A���̌��ʂƂ��ăS�~��ǂݏ���������A�N���b�V�������肵�Ă��܂����B
+	  Original エンコーディングに符号化方式を変換するとグリフテーブルの文字数が 1 個少なくなることがあり、その結果としてゴミを読み書きしたり、クラッシュしたりしていました。
 	<LI>
 <!--	  KANOU fixed a couple of problems in reading glyph names from bdf fonts. -->
-	  BDF �t�H���g����̃O���t���̓ǂݍ��݂ɂ����� 2,3 �̖�����삪�C�����܂����B
+	  BDF フォントからのグリフ名の読み込みにあった 2,3 の問題を狩野が修正しました。
 	<LI>
 <!--	  KANOU needed to disambiguate between "Point" a unit of measurement and "Point"
 	  a geometric object. -->
-	  ���́A"Point" �𒷂��̒P�ʁu�|�C���g�v�Ɗ􉽊w�I�Ώہu�_�v�ɖ󂵕�����K�v������܂����B
+	  狩野は、"Point" を長さの単位「ポイント」と幾何学的対象「点」に訳し分ける必要がありました。
       </UL>
     <LI>
 <!--  16-Jan-2005-->
-      2005�N1��16��
+      2005年1月16日
       <UL>
 	<LI>
 <!--
@@ -1321,773 +1321,773 @@ FontForge)</A> -->
 	  corrections to things like kerning at a given point size. Often at small
 	  point sizes kerning and advance widths will round in such a way as to produce
 	  unpleasing results. Device tables allow you to correct for that). -->
-	  OpenType �f�o�C�X�e�[�u���̃T�|�[�g��ǉ� (�����̃e�[�u�����g���āA����̃|�C���g�T�C�Y�̃J�[�j���O�Ȃǂ̔��ׂȕ␳���o����悤�ɂȂ�܂����B�����ȃT�C�Y�ł̓J�[�j���O�⑗�蕝���ۂ߂�ꂽ�l���s�����Ȍ��ʂ������炷���Ƃ��悭����܂��B�f�o�C�X�e�[�u�����g���ƁA������C�����邱�Ƃ��ł��܂�)
+	  OpenType デバイステーブルのサポートを追加 (これらのテーブルを使って、特定のポイントサイズのカーニングなどの微細な補正が出来るようになりました。小さなサイズではカーニングや送り幅が丸められた値が不愉快な結果をもたらすことがよくあります。デバイステーブルを使うと、それを修正することができます)
 	<LI>
 <!--	  Add dialogs for kerning pairs and anchors to allow users to set device tables.
 	  Extend dlg for kerning classes for this. -->
-	  �J�[�j���O�y�A�ƃA���J�[�Ɋւ���_�C�A���O��ǉ����A���[�U���f�o�C�X�e�[�u����ǉ��ł���悤�ɂ��܂����B�J�[�j���O�N���X�̊g���_�C�A���O������ł��B
+	  カーニングペアとアンカーに関するダイアログを追加し、ユーザがデバイステーブルを追加できるようにしました。カーニングクラスの拡張ダイアログがそれです。
 	<LI>
 <!--	  Neil Parker suggested a patch for panose values that didn't apply to latin
 	  fonts -->
-	  ���e�������̃t�H���g�ɓK�p����Ȃ� Panose �l�Ɋւ���p�b�`�� Neil Parker ����Ă��܂����B
+	  ラテン文字のフォントに適用されない Panose 値に関するパッチを Neil Parker が提案しました。
 	<LI>
 <!--	  Doing a Get Info on a single point caused a crash on the mac -->
-	  Mac ��ŁA1 �̓_�ɑ΂��āu���𓾂�v���s���ƃN���b�V�����N�����Ă��܂����B
+	  Mac 上で、1 個の点に対して「情報を得る」を行うとクラッシュを起こしていました。
 	<LI>
 <!--	  Further attempts to improve spline approximation, underlying Merge &amp;
 	  Simplify commands -->
-	  ����(M)����ђP����(S)�R�}���h���g���Ă���X�v���C���ߎ�������ɉ��ǂ��悤�Ǝ��݂܂����B
+	  合併(M)および単純化(S)コマンドが使っているスプライン近似をさらに改良しようと試みました。
 	<LI>
 <!--	  Relaxed simplify's definition of parallel so it will merge a few more straight
 	  lines. -->
-	  �P����(S)�Ŏg�p���Ă��镽�s�̒�`���ɂ₩�ȕ��ɂ��A�����ȊO�̕��������ł���悤�ɂ��܂����B
+	  単純化(S)で使用している平行の定義を緩やかな物にし、直線以外の物を合併できるようにしました。
 	<LI>
 <!--	  Make the behavior of Simplify More consistant across font/outline view. Simplify
 	  More can now set the default behavior for future simplify commands. -->
-	  �u����ɒP�����v�̂ӂ�܂����t�H���g�r���[�ƃA�E�g���C���r���[�ň�ѐ��̂��镨�ɂ��܂����B����A�����́u�P�����v�R�}���h�Ƃ��āu�X�ɒP�����v���f�t�H���g�̂ӂ�܂��Ƃ��ĕi���㍷���x���Ȃ��ł��傤�B
+	  「さらに単純化」のふるまいをフォントビューとアウトラインビューで一貫性のある物にしました。今や、将来の「単純化」コマンドとして「更に単純化」をデフォルトのふるまいとして品質上差し支えないでしょう。
 	<LI>
 <!--	  Provide a menu command to round to hundredths of a em-unit -->
-	  em ���j�b�g�� 100 ���� 1 �Ɋۂ߂�R�}���h��ǉ��B
+	  em ユニットの 100 分の 1 に丸めるコマンドを追加。
 	<LI>
 <!--	  Add a new facility to cluster coordinates to the same value. Useful as a
 	  prepass to Remove Overlap. -->
-	  ���W�𓯂��l�ɂ܂Ƃ߂�V�@�\��ǉ��B�d�������̑O�����Ƃ��Ė𗧂��܂��B
+	  座標を同じ値にまとめる新機能を追加。重複除去の前処理として役立ちます。
 	<LI>
 <!--	  Bug reading ligature data from a tfm file -->
-	  TFM �t�@�C�����獇���f�[�^��ǂݍ��ޏ����Ƀo�O������܂����B
+	  TFM ファイルから合字データを読み込む処理にバグがありました。
 	<LI>
 <!--	  Add support for GPOS 'size' feature. Create a 'size' pane of the fontinfo
 	  dlg -->
-	  GPOS �� 'size' �@�\�̃T�|�[�g��ǉ��B�t�H���g���_�C�A���O�Ɂu�T�C�Y�v�^�u��ǉ��B
+	  GPOS の 'size' 機能のサポートを追加。フォント情報ダイアログに「サイズ」タブを追加。
 	<LI>
 <!--	  Replace with Reference had an interesting flaw. Consider the open and closed
 	  bullet characters. If the (single) contour in closed bullet matched the outer
 	  contour in open bullet then it would replace it with a reference. But this
 	  is incorrect as the two contours of open bullet need to be treated as a unit. -->
-	  �u�Q�Ƃɒu���v�ɂ͋����[�����ׂ�����܂����B���ە����Ɣ��ە������������Ƃ��܂��傤�B���ۂ� (1 �����Ȃ�) �֊s���A���ۂ̊O���̗֊s�ƈ�v�����Ƃ���ƁA����͎Q�ƂŒu���������܂��B����������͌��ł��B�Ȃ��Ȃ�A���ۂ� 2 �̗֊s�� 1 �̒P�ʂƂ��Ĉ���Ȃ���΂Ȃ�Ȃ�����ł��B
+	  「参照に置換」には興味深い欠陥がありました。黒丸文字と白丸文字があったとしましょう。黒丸の (1 個しかない) 輪郭が、白丸の外側の輪郭と一致したとすると、それは参照で置き換えられます。しかしこれは誤りです。なぜなら、白丸の 2 個の輪郭を 1 個の単位として扱わなければならないからです。
 	<LI>
 <!--	  Could get a bad memory reference in the font view if the mouse were to extend
 	  the selection outside of the window. -->
-	  �t�H���g�r���[�őI��͈͂��L���邽�߂Ƀ}�E�X���E�B���h�E�̊O���Ɉړ����Ȃ���΂Ȃ�Ȃ��Ƃ��A�s���ȃ������Q�Ƃ��N�����Ă��܂����B
+	  フォントビューで選択範囲を広げるためにマウスをウィンドウの外側に移動しなければならないとき、不正なメモリ参照を起こしていました。
 	<LI>
 <!--	  Add a scripting function to return whether a file exists. -->
-	  �t�@�C�������݂��邩�ǂ�����Ԃ��X�N���v�g�֐���ǉ��B
+	  ファイルが存在するかどうかを返すスクリプト関数を追加。
 	<LI>
 <!--	  In a Type1 font, if a glyph had no conflicting hints (and no flex hints)
 	  and got put in a subroutine, then we'd get no hints at all. -->
-	  Type1 �t�H���g�ł́A����O���t�ɏՓ˂���q���g�����݂��� (�Ȃ����� flex �q���g�����݂���)�A���ꂪ�T�u���[�`�����ɑ��݂����Ƃ��A�q���g�����S�Ɏ����Ă��܂����B
+	  Type1 フォントでは、あるグリフに衝突するヒントが存在せず (なおかつ flex ヒントが存在せず)、それがサブルーチン内に存在したとき、ヒントが完全に失われていました。
 	<LI>
 <!--	  Be more willing to generate format12 cmap subtables (unicode, non-bmp tables) -->
-	  �t�H�[�}�b�g 12 �� cmap �T�u�e�[�u�� (Unicode �̔� BMP �Ή��̃e�[�u��) �����ϋɓI�ɏo�͂���悤�ɂ��܂����B
+	  フォーマット 12 の cmap サブテーブル (Unicode の非 BMP 対応のテーブル) をより積極的に出力するようにしました。
       </UL>
     <LI>
 <!--  6-Jan-2005-->
-      2005�N1��6��
+      2005年1月6日
       <UL>
 	<LI>
 <!--	  New Copyright message, etc. Get rid of pfaedit message. -->
-	  ���b�Z�[�W�Ȃǂ̒��쌠�\�����X�V�B���� PfaEdit �Ɋւ��郁�b�Z�[�W���폜�B
+	  メッセージなどの著作権表示を更新。旧称 PfaEdit に関するメッセージを削除。
 	<LI>
 <!--	  Simplify produced strange results on quadratic splines. -->
-	  2 ���X�v���C���ŒP�����R�}���h���ςȌ��ʂ��o���Ă��܂����B
+	  2 次スプラインで単純化コマンドが変な結果を出していました。
 	<LI>
 <!--	  Simplify had problems with tangent points -->
-	  �����ƋȐ��̐ړ_ (�Ȑ��̊J�n�_) �̒P�����ɖ�肪����܂����B
+	  直線と曲線の接点 (曲線の開始点) の単純化に問題がありました。
 	<LI>
 <!--	  Changing a point's type from a tangent to a curve usually had unexpected
 	  results. -->
-	  �Ȑ��̊J�n�_���Ȑ���̓_�ɕϊ������Ƃ��A��ʂɗ\�z�O�̌��ʂ������N�����Ă��܂����B
+	  曲線の開始点を曲線上の点に変換したとき、一般に予想外の結果を引き起こしていました。
 	<LI>
 <!--	  Add a warning message in remove overlap when user passes us two intersecting
 	  contours which are oriented in oposite directions. Unfortunately it also
 	  complains about some other things. -->
-	  ���[�U���A2 �{�̌������锽�Ό����̗֊s���d�����������ɓn�����Ƃ��ɁA�x���������o���悤�ɂ��܂����B�c�O�Ȃ��炻�̑��̏ꍇ�ɂ����̌x�����o�Ă��܂����Ƃ�����܂��B
+	  ユーザが、2 本の交差する反対向きの輪郭を重複除去処理に渡したときに、警告処理を出すようにしました。残念ながらその他の場合にもこの警告が出てしまうことがあります。
 	<LI>
 <!--	  The 18 Dec changes to remove overlap introduced an infinite loop in some
 	  rare cases. (When there is a gradient of 0 in distance function between two
 	  splines). -->
-	  12 �� 18 ���ɉ������d�����������ւ̕ύX�ɂ��A����H�ȏꍇ (2 �{�̃X�v���C���Ԃ̋��������߂�Ƃ��ɌX���� 0 �̏ꍇ) �ɖ������[�v���N�����悤�ɂȂ��Ă��܂��Ă��܂����B
+	  12 月 18 日に加えた重複除去処理への変更により、ある稀な場合 (2 本のスプライン間の距離を求めるときに傾きが 0 の場合) に無限ループを起こすようになってしまっていました。
 	<LI>
 <!--	  In a conditional operator (like &amp;&amp; or ||) in scripting where the
 	  second operand was not evaluated and the second operand contained a procedure
 	  call, then ff would crash -->
-	  �X�N���v�g�����ŏ������Z�q (&amp;&amp; �� || �Ȃ�) �� 2 �Ԗڂ̈������]�����ꂸ�A�����Ɏ葱���Ăяo�����܂܂�Ă����ꍇ�Aff �̓N���b�V�����Ă��܂����B
+	  スクリプト処理で条件演算子 (&amp;&amp; や || など) の 2 番目の引数が評価されず、そこに手続き呼び出しが含まれていた場合、ff はクラッシュしていました。
 	<LI>
 <!--	  Tweaked the point info dialog to show small offsets better -->
-	  �u�_�̏��v�_�C�A���O���A�����ȃI�t�Z�b�g�����悭�\���ł���悤�ɔ������B
+	  「点の情報」ダイアログが、小さなオフセットをよりよく表示できるように微調整。
 	<LI>
 <!--	  Tweaked the merge command to behave better when merging tiny spline segments
 	  (where the length of the spline segment is so small that it should just be
 	  treated as a zero length spline and its slope ignored). -->
-	  �����ȃX�v���C�����i����������Ƃ��ɂ��悭���삷��悤�� ����(M) �R�}���h��������B
-	  (�X�v���C�����i�̒��������ɏ������A�����㒷�� 0 �̃X�v���C���ƌ��Ȃ��ׂ��Ƃ��́A�X���𖳎����܂�)�B
+	  小さなスプライン部品を合併するときによりよく動作するように 合併(M) コマンドを微調整。
+	  (スプライン部品の長さが非常に小さく、事実上長さ 0 のスプラインと見なすべきときは、傾きを無視します)。
 	<LI>
 <!--	  Added an "Invert selection" command to the outline view, from Yoshiki Hayashi -->
-	  �A�E�g���C���r���[�Ɂu�I��͈͂𔽓]�v�R�}���h���A�іF���̒񋟂ɂ��ǉ��B
+	  アウトラインビューに「選択範囲を反転」コマンドを、林芳樹の提供により追加。
 	<LI>
 <!--	  Pasting from the font view did not clear a glyph's instructions. -->
-	  �t�H���g�r���[����̓\��t���̓O���t�̖��߂��N���A���Ă��܂���ł����B
+	  フォントビューからの貼り付けはグリフの命令をクリアしていませんでした。
 	<LI>
 <!--	  New version of AutoHint. I've removed Diagonal Stem hints and mimum distance
 	  hints for now. -->
-	  �����q���g�Â��̐V�o�[�W�����B�Ό��X�e���q���g�ƍŏ������q���g�����폜���܂����B
+	  自動ヒントづけの新バージョン。斜交ステムヒントと最小距離ヒントをを削除しました。
       </UL>
     <LI>
 <!--  31-Dec-2004-->
-      2004�N12��31��
+      2004年12月31日
       <UL>
 	<LI>
 <!--	  Ah, windows pfm files expect the metrics to be output in win latin encoding
 	  order, not in the encoding defined by the pfb file. (Actually there are other
 	  posibilities for encoding, but as none is documented, I must ignore them). -->
-	  �����AWindows �� PFM �t�@�C���́A���g���b�N�� PFB �t�@�C���ł̒�`���ł͂Ȃ��AWindows �̃��e���G���R�[�f�B���O�̏����ŏo�͂����Ƒz�肵�Ă��܂����B(���ۂɂ̓G���R�[�f�B���O�͑��̂��̂ł���\��������܂����A��������������Ă��Ȃ��̂ŁA����𖳎�������𓾂܂���B)
+	  ああ、Windows の PFM ファイルは、メトリックを PFB ファイルでの定義順ではなく、Windows のラテンエンコーディングの順序で出力されると想定していました。(実際にはエンコーディングは他のものである可能性もありますが、何も文書化されていないので、それを無視せざるを得ません。)
 	<LI>
 <!--	  ReplaceWithReference broke at some point -->
-	  ReplaceWithReference �́A�����̓_�ŉ��邱�Ƃ��킩��܂����B
+	  ReplaceWithReference は、ある種の点で壊れることがわかりました。
 	<LI>
 <!--	  Add an argument-pair to the ReplaceWithReference() scripting command to allow
 	  the user to specify the amount of error that will be accepted. -->
-	  ReplaceWithReference() �X�N���v�g�R�}���h�ɁA���[�U�����e�ł���덷�̗ʂ��w��ł���悤�� 2 �̈����y�A��ǉ��B
+	  ReplaceWithReference() スクリプトコマンドに、ユーザが許容できる誤差の量を指定できるように 2 個の引数ペアを追加。
 	<LI>
 <!--	  When generating a Type1 font, if a glyph had a single reference to a glyph
 	  not in adobe encoding, and that glyph itself had a single reference (in adobe
 	  enc) and some splines, then ff would make a reference to the ref in adobe
 	  enc and ignore the splines. -->
-	  Type 1 �t�H���g���o�͂��鎞�A����O���t�ɁAAdobe �G���R�[�f�B���O�Ɋ܂܂�Ȃ��O���t�ւ̎Q�Ƃ�����A���̃O���t���g�� (Adobe �G���R�[�f�B���O����) �P��Q�Ƃ��������Ƃ��Aff �� Adobe �G���R�[�f�B���O�ւ̎Q�Ƃ��s���A�X�v���C���𖳎����Ă��܂����B
+	  Type 1 フォントを出力する時、あるグリフに、Adobe エンコーディングに含まれないグリフへの参照があり、そのグリフ自身に (Adobe エンコーディング内の) 単一参照があったとき、ff は Adobe エンコーディングへの参照を行い、スプラインを無視していました。
 	<LI>
 <!--	  Upgrade to Adobe-Japan1-6 -->
-	  Adobe-Japan1-6 �ւ̍X�V
+	  Adobe-Japan1-6 への更新
 	<LI>
 <!--	  Various fixes to svg output -->
-	  SVG �o�͂̊e��̏C��
+	  SVG 出力の各種の修正
 	  <UL>
 	    <LI>
 <!--	      export glyph to svg didn't work -->
-	      �O���t�� SVG �����o���������Ă��܂���ł����B
+	      グリフの SVG 書き出しが動いていませんでした。
 	    <LI>
 <!--	      multilayered generation had problems -->
-	      �}���`���C���t�H���g�̏o�͂ɖ�肪����܂����B
+	      マルチレイヤフォントの出力に問題がありました。
 	  </UL>
 	<LI>
 <!--	  Ghost hints could get outside a glyphs bounding box in a type2 font. -->
-	  Type2 �t�H���g�ł́Aghost �q���g���O���t�̃o�E���f�B���O�{�b�N�X���͂ݏo�����Ƃ�����܂����B
+	  Type2 フォントでは、ghost ヒントがグリフのバウンディングボックスをはみ出すことがありました。
 	<LI>
 <!--	  The generated truetype unique id string had an off by one error in the month -->
-	  TrueType ���j�[�N ID ��������o�͂������A���t��1��������Ă��܂����B
+	  TrueType ユニーク ID 文字列を出力した時、日付が1ヶ月ずれていました。
 	<LI>
 <!--	  Add support for dashed lines in multilayered mode -->
-	  �}���`���C�����[�h�ł̓_���T�|�[�g�̒ǉ��B
+	  マルチレイヤモードでの点線サポートの追加。
 	<LI>
 <!--	  In Full Page Glyph printing, the glyph was offset slightly from where it
 	  should have been. -->
-	  �y�[�W�S�̂ɃO���t���󎚂���Ƃ��A�O���t���{������ׂ��ꏊ����͂��ɂ���Ă��܂����B
+	  ページ全体にグリフを印字するとき、グリフが本来あるべき場所から僅かにずれていました。
 	<LI>
 <!--	  Pasting a reference into a multi-layered font produced a very odd layer -->
-	  �}���`���C���t�H���g�ɎQ�Ƃ�\��t�����Ƃ��A�ƂĂ��������ȃ��C���f�[�^���ł��Ă��܂����B
+	  マルチレイヤフォントに参照を貼り付けたとき、とてもおかしなレイヤデータができていました。
 	<LI>
 <!--	  ff didn't update the metrics view if the user pasted the selection with the
 	  middle mouse button. -->
-	  ff �́A���[�U���}�E�X���{�^���őI����e��\��t�����Ƃ��Ƀ��g���b�N�r���[�̍X�V�����Ă��܂���ł����B
+	  ff は、ユーザがマウス中ボタンで選択内容を貼り付けたときにメトリックビューの更新をしていませんでした。
 	<LI>
 <!--	  if a character were not in the current encoding then ff would not display
 	  it in the metrics view (even if it were in the font) -->
-	  ���������݂̃G���R�[�f�B���O�̒��ɑ��݂��Ȃ��ꍇ�Aff �� (���ꂪ�t�H���g���ɑ��݂��Ă�) ���g���b�N�r���[�ŕ\�����Ă��܂���ł����B
+	  文字が現在のエンコーディングの中に存在しない場合、ff は (それがフォント内に存在しても) メトリックビューで表示していませんでした。
 	<LI>
 <!--	  Make the behavior of control points at the ends of open paths more reasonable. -->
-	  �J�����p�X�̒[�_�ɂ��鐧��_�̂ӂ�܂������[���̂������ɂ��܂����B
+	  開いたパスの端点にある制御点のふるまいをより納得のいく物にしました。
 	<LI>
 <!--	  The Point-&gt;Curve command did not adust control points correctly. -->
-	  �u�_(P)���Ȑ�(C)�v�R�}���h�́A����_�𐳂����␳���Ă��܂���ł����B
+	  「点(P)→曲線(C)」コマンドは、制御点を正しく補正していませんでした。
 	<LI>
 <!--	  The View-&gt;Display Substitutions had numerous problems. -->
-	  �u�\��(V)���u���O���t��\��(U)�v�ɂ͂��낢���肪����܂����B
+	  「表示(V)→置換グリフを表示(U)」にはいろいろ問題がありました。
 	<LI>
 <!--	  Fix several problems from unicode unification of accents. Many characters
 	  which are said to be based on cedilla actually use a comma, other characters
 	  said to be carons also use comma. Make the n-with-apostrophe character be
 	  treated as an accented letter. -->
-	  Unicode �ɂ�����A�N�Z���g�̕�ۂɔ����������̖����C�����܂����B�Z�f�B�������ɂ����ƂɂȂ��Ă��镶���̑��������ۂ̏����ł̓J���}��p���Ă���A�L���������g�p����ƌ����Ă��镶�������ۂɂ̓J���}��p���Ă��܂����B�A�|�X�g���t�B�� n �̕������A�N�Z���g�������ɕύX���܂����B
+	  Unicode におけるアクセントの包摂に伴ういくつかの問題を修正しました。セディラが下につくことになっている文字の多くが実際の処理ではカンマを用いており、キャロンを使用すると言われている文字が実際にはカンマを用いていました。アポストロフィつき n の文字をアクセントつき文字に変更しました。
 	<LI>
 <!--	  Werner points out that straight lines should generally not be simplified
 	  (as they will no longer be straight afterwards). Add this knowledge to the
 	  simplify command. -->
-	  ������ (��Œ����ł͂Ȃ��Ȃ邽��) ��ʂɒP�������Ă͂Ȃ�Ȃ��� Werner ���w�E���܂����B���̒m����P�����R�}���h�ɓ������܂����B
+	  直線は (後で直線ではなくなるため) 一般に単純化してはならないと Werner が指摘しました。この知識を単純化コマンドに導入しました。
       </UL>
     <LI>
 <!--  18-Dec-2004-->
-      2004�N12��18��
+      2004年12月18日
       <UL>
 	<LI>
 <!--	  Added a raster debugger wndow-->
-	  ���X�^�f�o�b�K�E�B���h�E��ǉ��B
+	  ラスタデバッガウィンドウを追加。
 	<LI>
 <!--	  Each time debugger starts, remember what debug windows were open last time
 	  it was used. -->
-	  �f�o�b�K���N�����邽�тɁA�O��f�o�b�K���g�������ɂǂ̃E�B���h�E���J���Ă��������v���o���悤�ɂ��܂����B
+	  デバッガが起動するたびに、前回デバッガを使った時にどのウィンドウが開いていたかを思い出すようにしました。
 	<LI>
 <!--	  Constraining the pen tool did not do what I expected -->
-	  �y���c�[���̌��肪�Ӑ}�ʂ�ɓ����Ă��܂���ł����A�B
+	  ペンツールの限定が意図通りに動いていませんでした、。
 	<LI>
 <!--	  If a glyph was encoded twice (or more) in a font, and an opentype font (or
 	  perhaps a bitmap only sfnt) were generated, then any glyphs after the second
 	  encoding would have the wrong width (ie. there would be an extra entry in
 	  the horizontal metrics table corresponding to a (non-existant) copy of the
 	  doubly encoded glyph) -->
-	  1 �̃t�H���g���œ����O���t�� 2 �� (�T������ȏ�) �̕������������蓖�Ă��Ă����ꍇ�AOpenType (����сA�����炭�r�b�g�}�b�v�݂̂�sfnt��) �̐������ɁA2�Ԗڂ̃G���R�[�f�B���O�̌�ɂ���S�ẴO���t�̕������Ԉ�����l�ɂȂ��Ă��܂��� (���Ȃ킿�A�������g���b�N�e�[�u���ɁA��d���������ꂽ�O���t�� (���݂��Ȃ�) �R�s�[�ɑΉ�����]�v�ȍ��ڂ� hmtx �e�[�u���Ɋ܂܂�Ă��܂���)�B
+	  1 個のフォント内で同じグリフに 2 個 (乃至それ以上) の文字符号が割り当てられていた場合、OpenType (および、おそらくビットマップのみのsfntも) の生成時に、2番目のエンコーディングの後にある全てのグリフの幅がが間違った値になっていました (すなわち、水平メトリックテーブルに、二重符号化されたグリフの (存在しない) コピーに対応する余計な項目が hmtx テーブルに含まれていました)。
 	<LI>
 <!--	  If a type1 font never defined .notdef but used it at least twice it the Encoding
 	  vector, then ff would crash. -->
-	  Type1 �t�H���g�� .notdef �O���t����`����Ă��Ȃ��ɂ�������炸�AEncoding �x�N�^�� 2 ��ȏ�g���Ă����ꍇ�Aff �̓N���b�V�����Ă��܂����B
+	  Type1 フォントに .notdef グリフが定義されていないにもかかわらず、Encoding ベクタで 2 回以上使われていた場合、ff はクラッシュしていました。
 	<LI>
 <!--	  Updated Japanese UI (by KANOU) -->
-	  ���{�� UI �̍X�V (���ɂ��)
+	  日本語 UI の更新 (狩野による)
 	<LI>
 <!--	  Werner found some crashes related to calling isalnum (etc.) using an index
 	  outside of bmp. -->
-	  BMP �Ɏ��܂�Ȃ��C���f�b�N�X�� isalnum (�Ȃ�) �ɗ^���邱�ƂɊ֘A���邢�����̃N���b�V���� Werner ���������܂����B
+	  BMP に収まらないインデックスを isalnum (など) に与えることに関連するいくつかのクラッシュを Werner が発見しました。
 	<LI>
 <!--	  More changes (I hope improvements) to remove overlap -->
-	  �d�������̂���Ȃ�ύX (���ǂł��邱�Ƃ��肢�܂�)
+	  重複除去のさらなる変更 (改良であることを願います)
       </UL>
     <LI>
 <!--  13-Dec-2004-->
-      2004�N12��13��
+      2004年12月13日
       <UL>
 	<LI>
 <!--	  Some fixes to the raster display of the debug window -->
-	  �f�o�b�O�E�B���h�E�̃��X�^�\�����������C��
+	  デバッグウィンドウのラスタ表示をいくつか修正
 	<LI>
 <!--	  Conversion of cubic to quadratic had a rounding error introduced by -O2.
 	  Made it a bit more forgiving about rounding errors. -->
-	  3 ���� 2 ���ϊ��ɂ́A-O2 �ɂ���Đ�����ۂ߃G���[������܂����B�ۂߌ덷�ɂ�芰�e�ł���悤�ɏC���B
+	  3 次→ 2 次変換には、-O2 によって生じる丸めエラーがありました。丸め誤差により寛容であるように修正。
 	<LI>
 <!--	  Added two new buttons to the point info dialog to allow the user to walk
 	  around the current contour (Normally the Next button skips to the start of
 	  the next contour if you are at the end of the current one, the "Next On Contour"
 	  button returns to the first point on the contour) -->
-	  �_�̏��_�C�A���O�ɁA���݂̗֊s������ĉ�邽�߂� 2 �̃{�^����V�� (�ʏ�A[��]�{�^���͌��݂̗֊s�̍Ō�̓_�ɂ��鎞�ɂ͎��̗֊s�̐擪�Ɉړ����܂����A[�����֊s��̎��̓_]�{�^���͗֊s��̍ŏ��̓_�ɖ߂�܂�)�B
+	  点の情報ダイアログに、現在の輪郭を歩いて回るための 2 つのボタンを新設 (通常、[次]ボタンは現在の輪郭の最後の点にいる時には次の輪郭の先頭に移動しますが、[同じ輪郭上の次の点]ボタンは輪郭上の最初の点に戻ります)。
 	<LI>
 <!--	  improve interpretation of some type3 fonts (including those produced by
 	  fontographer 4) -->
-	  ������ Type 3 �t�H���g (Fontographer 4 �ŏo�͂��ꂽ���̂��܂�) �ɑΉ�������� 
+	  ある種の Type 3 フォント (Fontographer 4 で出力されたものを含む) に対応する改良 
 	<LI>
 <!--	  patch by Yoshki Hayashi to fix mnemonic crash in layers palette -->
-	  ���C���p���b�g�ł̃j���j�b�N�ɂ��N���b�V�����C������іF���̃p�b�`�𓖂Ă܂����B
+	  レイヤパレットでのニモニックによるクラッシュを修正する林芳樹のパッチを当てました。
 	<LI>
 <!--	  Added a rand() scripting command -->
-	  Rand() �X�N���v�g�R�}���h�̒ǉ�
+	  Rand() スクリプトコマンドの追加
 	<LI>
 <!--	  Support backslash newline to break up lines in a scrpt -->
-	  �X�N���v�g���ł̍s�����̂��߂̍s���̃o�b�N�X���b�V���̃T�|�[�g
+	  スクリプト内での行分割のための行末のバックスラッシュのサポート
 	<LI>
 <!--	  The internal adobe standard encoding thought it was unicode causing strange
 	  effects -->
-	  Adobe Standard �G���R�[�f�B���O
+	  Adobe Standard エンコーディング
 	<LI>
 <!--	  Type3 fonts that set colour/grey didn't work -->
-	  �J���[/�O���[���w�肵�� Type3 �t�H���g�����삵�Ă��܂���ł����B
+	  カラー/グレーを指定した Type3 フォントが動作していませんでした。
 	<LI>
 <!--	  Printing at 140pt tried printing 4 glyphs across although there was only
 	  room for 3 -->
-	  140 �|�C���g�ł̈󎚎��ɁA3 ���������\���ł��Ȃ��ɂ�������炸 4 ����������悤�Ƃ��Ă��܂����B
+	  140 ポイントでの印字時に、3 文字しか表示できないにもかかわらず 4 文字印刷しようとしていました。
 	<LI>
 <!--	  At install tell pkg-config the verson of fontforge -->
-	  �C���X�g�[�����ɁApkg-config �� FontForge �̃o�[�W������������悤�ɂ��܂����B
+	  インストール時に、pkg-config に FontForge のバージョンを教えるようにしました。
       </UL>
     <LI>
 <!--  3-Dec-2004-->
-      2004�N12��3��
+      2004年12月3日
       <UL>
 	<LI>
 <!--	  If a cff file contained unencoded glyphs then ff would crash when loading
 	  it. -->
-	  CFF  �t�@�C���ɕ��������������Ȃ��O���t���܂܂�Ă����ꍇ�Aff ���ǂݍ��ݎ��ɃN���b�V�����Ă��܂����B
+	  CFF  ファイルに文字符号をもたないグリフが含まれていた場合、ff が読み込み時にクラッシュしていました。
 	<LI>
 <!--	  When converting from cubic to quadratic splines, ff would sometimes produce
 	  a line when it should have found a spline -->
-	  3 ������ 2 ���X�v���C���ɕϊ������Ƃ��Aff �̓X�v���C����u���ׂ��ꏊ�ɒ������쐬���Ă��邱�Ƃ����΂��΂���܂����B
+	  3 次から 2 次スプラインに変換したとき、ff はスプラインを置くべき場所に直線を作成していることがしばしばありました。
 	<LI>
 <!--	  During debugging of a ttf glyph, show what rasterization would produce if
 	  the current splines were used (highlight pixels which change) -->
-	  TTF �O���t�̃f�o�b�O���ɁA���݂̃X�v���C�����g�p����Ă����ꍇ�A���X�^���C�Y�������ǂ̂悤�Ȍ��ʂƂȂ邩��\������悤�ɂ��܂��� (�ύX�����s�N�Z�����n�C���C�g�\��)�B
+	  TTF グリフのデバッグ中に、現在のスプラインが使用されていた場合、ラスタライズ処理がどのような結果となるかを表示するようにしました (変更されるピクセルをハイライト表示)。
 	<LI>
 <!--	  The debugger windows didn't always say "&lt;empty&gt;" when they should have. -->
-	  �f�o�b�K�E�B���h�E�́A"&lt;��&gt;" ��\�����ׂ��Ƃ��ɕK�������\�����Ă��܂���ł����B
+	  デバッガウィンドウは、"&lt;空&gt;" を表示すべきときに必ずしも表示していませんでした。
 	<LI>
 <!--	  The debugger would often crash the second time we closed its window -->
-	  �f�o�b�K�E�B���h�E�� 2 ��ڂɕ����Ƃ��ɃN���b�V�����N���Ă��܂����B
+	  デバッガウィンドウを 2 回目に閉じたときにクラッシュが起きていました。
 	<LI>
 <!--	  Asking for the script (as latin, greek, cyrillic...) of ".notdef" caused
 	  us to look at unallocated memory. -->
-	  ".notdef" �̑�����p���n�𒲂ׂ�Ƃ��ɁA���蓖�ĂĂ��Ȃ����������Q�Ƃ��悤�Ƃ��Ă��܂����B
+	  ".notdef" の属する用字系を調べるときに、割り当てていないメモリを参照しようとしていました。
 	<LI>
 <!--	  We weren't labelling control points in the debugger -->
-	  �f�o�b�K���Ő���_�����x���Â����Ă��܂���ł����B
+	  デバッガ内で制御点をラベルづけしていませんでした。
 	<LI>
 <!--	  debugger and grid fitter for tt fonts showed curved splines as lines -->
-	  TTF �̃f�o�b�K�ƃO���b�h���킹�@�ŁA�Ȃ������X�v���C���𒼐��Ƃ��ĕ\�����Ă��܂����B
+	  TTF のデバッガとグリッド合わせ機で、曲がったスプラインを直線として表示していました。
 	<LI>
 <!--	  Kerning pairs did not get scaled when changing em-size -->
-	  em �T�C�Y�̕ύX�l�ɃJ�[�j���O�y�A���ړx�ϊ�����Ă��܂���ł����B
+	  em サイズの変更値にカーニングペアが尺度変換されていませんでした。
 	<LI>
 <!--	  Add a preference for turning off automatic gotos as the user types in the
 	  glyph window -->
-	  ���[�U���O���t�E�B���h�E�ŕ����L�[���������Ƃ��ɂ��̕����Ɏ����ړ����Ȃ��悤�ɂł�����ݒ荀�ڂ�ǉ����܂����B
+	  ユーザがグリフウィンドウで文字キーを押したときにその文字に自動移動しないようにできる環境設定項目を追加しました。
 	<LI>
 <!--	  Add a command to the glyph window to toggle between the two most recent glyphs
 	  used in that window (a mini history) -->
-	  �O���t�E�B���h�E���ŋߊJ���� 2 �̃O���t���s�����ł���R�}���h (�ȈՃq�X�g��) ��ǉ��B
+	  グリフウィンドウが最近開いた 2 個のグリフを行き来できるコマンド (簡易ヒストリ) を追加。
 	<LI>
 <!--	  Improved the points debugger window to show -->
-	  �_�̃f�o�b�K�E�B���h�E���ȉ��̏���\���ł���悤�ɉ��ǁB
+	  点のデバッガウィンドウが以下の情報を表示できるように改良。
 	  <UL>
 	    <LI>
 <!--	      implied points -->
-	      �Öق̓_ (2 �̃I�t�J�[�u�_�̒��_)
+	      暗黙の点 (2 個のオフカーブ点の中点)
 	    <LI>
 <!--	      whether a point is on or off the curve (normal or control) -->
-	      �_���Ȑ���̓_�܂��̓I�t�J�[�u�_ (�ʏ�܂��͐���_) �̂ǂ��炩
+	      点が曲線上の点またはオフカーブ点 (通常または制御点) のどちらか
 	    <LI>
 <!--	      added a scroll bar -->
-	      �X�N���[���o�[�̒ǉ�
+	      スクロールバーの追加
 	  </UL>
 	<LI>
 <!--	  Provide info on debugging points as mouse moves over them. -->
-	  �}�E�X��_�̏�ɒu�����Ƃ��ɁA�_�̃f�o�b�O����\������悤�ɂ��܂����B
+	  マウスを点の上に置いたときに、点のデバッグ情報を表示するようにしました。
 	<LI>
 <!--	  Fix (an innocuous) reference to unallocated memory -->
-	  ���蓖�Ă��Ă��Ȃ��������� (���Q��) �Q�Ƃ��C���B
+	  割り当てられていないメモリの (無害な) 参照を修正。
 	<LI>
 <!--	  Added ability to insert an uninterpreted table into an SFNT -->
-	  ���߂���Ȃ��e�[�u���� SFNT ���ɑ}���ł���@�\��ǉ�
+	  解釈されないテーブルを SFNT 中に挿入できる機能を追加
 	  <UL>
 	    <LI>
 <!--	      New preference item: PreserveTables which lists a comma separated set of
 	      table tags which are to be loaded from SFNT files without interpretation
 	      (Note if ff thinks it understands a table it will parse it rather than preserving
 	      it) -->
-	      �V�������ݒ荀��: PreserveTables�B����́ASFNT �t�@�C��������߂����ɓǂݍ��ރe�[�u���^�O�̃J���}��؂胊�X�g�ł� (ff �����̃e�[�u�������߉\���Ɣ��f�����ꍇ�ɂ́A���̃e�[�u����ێ������ɉ�͂��邱�Ƃɂ����ӂ�������)
+	      新しい環境設定項目: PreserveTables。これは、SFNT ファイルから解釈せずに読み込むテーブルタグのカンマ区切りリストです (ff がそのテーブルを解釈可能だと判断した場合には、そのテーブルを保持せずに解析することにご注意ください)
 	    <LI>
 <!--	      Scripting command LoadTableFromFile("tag ","filename") -->
-	      �X�N���v�g�R�}���h LoadTableFromFile("tag ","filename")�B
+	      スクリプトコマンド LoadTableFromFile("tag ","filename")。
 	    <LI>
 <!--	      Scripting command SaveTableToFile("tag ","filename") -->
-	      �X�N���v�g�R�}���h SaveTableToFile("tag ","filename")
+	      スクリプトコマンド SaveTableToFile("tag ","filename")
 	    <LI>
 <!--	      Scripting command RemovePreservedTable("tag ") -->
-	      �X�N���v�g�R�}���h RemovePreservedTable("tag ")
+	      スクリプトコマンド RemovePreservedTable("tag ")
 	    <LI>
 <!--	      Scripting command HasPreservedTable("tag ") -->
-	      �X�N���v�g�R�}���h HasPreservedTable("tag ")
+	      スクリプトコマンド HasPreservedTable("tag ")
 	  </UL>
       </UL>
     <LI>
 <!--  22-Nov-2004-->
-      2004�N11��22��
+      2004年11月22日
       <UL>
 	<LI>
 <!--	  Kevin Schoedel suggests a new scripting command DrawsSomething() -->
-	  �V�����X�N���v�g�R�}���h DrawsSomething() �� Kevin Schoedel ����Ă��܂����B
+	  新しいスクリプトコマンド DrawsSomething() を Kevin Schoedel が提案しました。
 	<LI>
 <!--	  Kevin Schoedel requests that PrintFont be able to print a string sample (as
 	  opposed to a sample file) -->
-	  PrintFont �֐��� (�T���v���t�@�C���łȂ�) �����ŗ^����������T���v�����󎚂ł���悤�� Kevin Schoedel �����N�G�X�g���܂����B
+	  PrintFont 関数が (サンプルファイルでなく) 引数で与えた文字列サンプルを印字できるように Kevin Schoedel がリクエストしました。
 	<LI>
 <!--	  Kevin Schoedel points out that type1 fonts stuffed into mac resource forks
 	  are to be read in resource order rather than file order (often the two are
 	  the same) and provides a patch to fix this. -->
-	  Mac �̃��\�[�X�t�H�[�N�ɋl�ߍ��܂ꂽ Type1 �t�H���g�́A�t�@�C�����łȂ����\�[�X���ɓǂݍ��܂��悤�ɂȂ��Ă��� (���΂��Η��҂͓���ł�) ���Ƃ� Kevin Schoedel ���w�E���A������C������p�b�`���쐬���܂����B
+	  Mac のリソースフォークに詰め込まれた Type1 フォントは、ファイル順でなくリソース順に読み込まれるようになっている (しばしば両者は同一です) ことを Kevin Schoedel が指摘し、これを修正するパッチを作成しました。
 	<LI>
 <!--	  Change the way the default language/locale is picked in fontinfo-&gt;TTF
 	  Names -->
-	  �t�H���g���(F)��[TTF��]�ŁA�f�t�H���g�̌���/���P�[���𒊏o������@��ύX�B
+	  フォント情報(F)→[TTF名]で、デフォルトの言語/ロケールを抽出する方法を変更。
 	<LI>
 <!--	  Remember (across invocations) whether palettes should be hidden or not. -->
-	  �ǂ̃p���b�g���B����Ă���A�ǂꂪ�����łȂ����� (���̌Ăяo�����ɂ�) �o���Ă���悤�ɂ��܂����B
+	  どのパレットが隠されており、どれがそうでないかを (次の呼び出し時にも) 覚えているようにしました。
 	<LI>
 <!--	  Ignore NUL chars when reading PostScript strings (PS supports NULs in strings,
 	  I'm not going to bother, but I don't want to parse incorrectly because of
 	  them). -->
-	  PostScript �������ǂݍ��ނƂ��� NUL �����𖳎�����悤�ɕύX (PS �� NUL ���܂܂�镶������T�|�[�g���Ă��܂����A�ʓ|�Ȃ̂Ŏ��͂�����͂���܂���B���v�킢�A����ɂ���ĕ�����𐳂�����͂ł��Ȃ��͍̂���܂�)�B
+	  PostScript 文字列を読み込むときに NUL 文字を無視するように変更 (PS は NUL が含まれる文字列をサポートしていますが、面倒なので私はやるつもりはありません。し思わい、それによって文字列を正しく解析できないのは困ります)。
 	<LI>
 <!--	  ff lost the ability to Select("U+xxxx") or Select("=") from a script. -->
-	  ff �́A�X�N���v�g�� Select("U+xxxx") �܂��� Select("=") ���s���\�͂������܂����B
+	  ff は、スクリプトで Select("U+xxxx") または Select("=") を行う能力を失いました。
 	<LI>
 <!--	  Oops, the routine to read PostScript FontNames from a ttf file was broken
 	  by the encoding change. -->
-	  �����ƁAPostScript �� FontName �� TTF �t�@�C������ǂݏo�����[�`�����A�G���R�[�f�B���O�����̏��������ŉ��Ă��܂����B
+	  おっと、PostScript の FontName を TTF ファイルから読み出すルーチンが、エンコーディング処理の書き換えで壊れていました。
 	<LI>
 <!--	  If a ttf file contained an erroneous composite glyph with flags indicating
 	  more components after the glyph had run out of data, then ff might attempt
 	  to read instructions also and have problems. -->
-	  TTF �t�@�C���ɁA����O���t�̌��ɂ���Ȃ�\���v�f�����݂��邱�Ƃ������t���O�̐ݒ肳�ꂽ�A�G���[�̂��镡���O���t���܂܂�Ă����ꍇ�A�f�[�^���g���s������Aff �͖��߂�ǂݍ������Ƃ��Ė����N�����Ă��܂����B
+	  TTF ファイルに、あるグリフの後ろにさらなる構成要素が存在することを示すフラグの設定された、エラーのある複合グリフが含まれていた場合、データが使い尽くされ、ff は命令を読み込もうとして問題を起こしていました。
 	<LI>
 <!--	  If a font contains multiple ttf names for a given string in a language then
 	  allow the user to pick which one s/he likes best. -->
-	  �t�H���g���ɁA����̕�����ɑ΂��ĕ����̓��ꌾ��� TTF �����܂܂�Ă����ꍇ�A���[�U���]�ނ��̂�I���ł���悤�ɂ��܂����B
+	  フォント内に、特定の文字列に対して複数の同一言語の TTF 名が含まれていた場合、ユーザが望むものを選択できるようにしました。
 	<LI>
 <!--	  Another case where a bad otf table crashes fontforge -->
-	  ��ꂽ OTF �e�[�u���� FontForge ���N���b�V��������Ⴊ�܂�����܂����B
+	  壊れた OTF テーブルが FontForge をクラッシュさせる例がまだありました。
 	<LI>
 <!--	  If a ttf/otf font does not contain a postscript FontName string in the name
 	  table, then ff's attempt to synthesize one out of fullname/familyname did
 	  not check for a valid name. -->
-	  TTF/OTF �t�H���g�� PostScript FontName �����񂪊܂܂�Ă��Ȃ������ꍇ�ɁAff �� FullName/FamilyName �̂ǂ��炩�Ɠ������悤�Ƃ��鏈���ŁA���O�����񂪐��������ǂ����̃`�F�b�N�����Ă��܂���ł����B
+	  TTF/OTF フォントに PostScript FontName 文字列が含まれていなかった場合に、ff が FullName/FamilyName のどちらかと同期しようとする処理で、名前文字列が正しいかどうかのチェックをしていませんでした。
       </UL>
     <LI>
 <!--  15-Nov-2004-->
-      2004�N11��15��
+      2004年11月15日
       <UL>
 	<LI>
 <!--	  If ff started without a prefs file, then creating a new font would crash -->
-	  ff �� prefs �t�@�C���̂Ȃ����ŋN�������Ƃ��A�t�H���g�̐V�K�쐬���ɃN���b�V�����Ă��܂����B
+	  ff を prefs ファイルのない環境で起動したとき、フォントの新規作成時にクラッシュしていました。
 	<LI>
 <!--	  If a copyright string contained a newline then ff would generate bad postscript -->
-	  ���쌠�\��������ɉ��s�������Ă���Ƃ��ɁAff �͊Ԉ���� PostScript ���o�͂��Ă��܂����B
+	  著作権表示文字列に改行が入っているときに、ff は間違った PostScript を出力していました。
 	<LI>
 <!--	  If user added a comment to an empty glyph then the comment wasn't saved in
 	  the sfd file. -->
-	  ���[�U����̃O���t�ɃR�����g��ǉ����Ă��A���̃R�����g�� SFD �t�@�C���ɕۑ�����Ă��܂���ł����B
+	  ユーザが空のグリフにコメントを追加しても、そのコメントは SFD ファイルに保存されていませんでした。
 	<LI>
 <!--	  If ff saved a utf7 string to an sfd file (ttf names, etc.) and that string
 	  contained a hyphen that followed immediately after something that needed
 	  to be encoded in base64, then the hyphen would be lost. -->
-	  ff �� UTF-7 ������� SFD �t�@�C���� (TTF ���Ȃǂ�) �ۑ����Ă��āA���̕������ base64 �ŃG���R�[�h���ׂ�������̒���Ƀn�C�t���������ďo�����Ă����Ƃ��A�n�C�t�������������Ă��܂����B
+	  ff が UTF-7 文字列を SFD ファイルに (TTF 名などで) 保存していて、その文字列に base64 でエンコードすべき文字列の直後にハイフンが続いて出現していたとき、ハイフンが抜け落ちていました。
 	<LI>
 <!--	  new french UI -->
-	  �t�����X�� UI �̍X�V�B
+	  フランス語 UI の更新。
 	<LI>
 <!--	  ff was (usually) setting the ascent/descent fields of the 'hhea' table to
 	  0. When the font was drawn on the mac it was clipped to nothing.
 	  <FONT COLOR="Red"><STRONG><BIG>Caveat: Old sfd files are still broken and
 	  there is no UI for fixing them. Instead you must edit them manually, and
 	  change:</BIG></STRONG></FONT> -->
-	  ff �� (�����ɂ�) hhea �e�[�u���� ascent/descent �t�B�[���h�� 0 �ɐݒ肵�Ă��܂����B�t�H���g�� Mac �ŕ`�悵���Ƃ��A�\�����N���b�s���O����ĉ����\������Ă��܂���ł����B
-	  <FONT COLOR="Red"><STRONG><BIG>�x��: �Â� SFD �t�@�C���͂܂���ꂽ�܂܂ł���A������C�����邽�߂� UI �͑��݂��܂���B���̒l����ŕҏW���āA����Ɉȉ��̂悤�ɏ��������Ȃ���΂Ȃ�܂���:</BIG></STRONG></FONT>
+	  ff は (公式には) hhea テーブルの ascent/descent フィールドを 0 に設定していました。フォントを Mac で描画したとき、表示がクリッピングされて何も表示されていませんでした。
+	  <FONT COLOR="Red"><STRONG><BIG>警告: 古い SFD ファイルはまだ壊れたままであり、これを修正するための UI は存在しません。その値を手で編集して、さらに以下のように書き換えなければなりません:</BIG></STRONG></FONT>
 	  <PRE>HheadAOffset: 0
   HheadDOffset: 0
   </PRE>
 	  <P>
 <!--	  to be: -->
-	  ���ȉ��̂悤�ɂ��܂�:
+	  を以下のようにします:
 	  <PRE>HheadAOffset: 1
   HheadDOffset: 1
   </PRE>
       </UL>
     <LI>
 <!--  12-Nov-2004-->
-      2004�N11��12��
+      2004年11月12日
       <UL>
 	<LI>
 <!--	  ff would crash on postscript fonts where the encoding included a glyph name
 	  not defined in CharStrings (probably broken on 12-Oct) -->
-	  PostScript �t�H���g���ACharstrings �Œ�`����Ă��Ȃ��O���t�����G���R�[�f�B���O�Ɋ܂�ł����Ƃ��Aff ��������J�����Ƃ����Ƃ��ɃN���b�V�����Ă��܂��� (�����炭10��12���ȗ����Ă��܂���)�B
+	  PostScript フォントが、Charstrings で定義されていないグリフ名をエンコーディングに含んでいたとき、ff がそれを開こうとしたときにクラッシュしていました (おそらく10月12日以来壊れていました)。
 	<LI>
 <!--	  More remove overlap work -->
-	  �d�����������̂���Ȃ���
+	  重複除去処理のさらなる作業
 	<LI>
 <!--	  In the glyph window, when the scaled distance between the top and bottom
 	  of the window is less than 1 em-unit, then the vertical ruler was drawn with
 	  the top and bottom labels reversed. -->
-	  �O���t�E�B���h�E���ŁA�E�B���h�E�̏�[�Ɖ��[�̊ԂŊg��E�k�����ꂽ������ 1 em���j�b�g�����������ꍇ�A�������[���[�̏㉺�̃��x�����t�]���Ă��܂����B
+	  グリフウィンドウ内で、ウィンドウの上端と下端の間で拡大・縮小された距離が 1 emユニットよりも小さい場合、垂直ルーラーの上下のラベルが逆転していました。
 	<LI>
 <!--	  sfd files used to have a limit of 1023 characters in ttf 'name' table strings. -->
-	  TTF �� 'name' �e�[�u��������̒������A1023 �����܂łɌ����Ă��܂����B
+	  TTF の 'name' テーブル文字列の長さが、1023 文字までに限られていました。
       </UL>
     <LI>
 <!--  6-Nov-2004-->
-      2004�N11��6��
+      2004年11月6日
       <UL>
 	<LI>
 <!--	  Encoding change broke prefs dialog -->
-	  �G���R�[�f�B���O�����̕ύX�ɂ��A���ݒ�_�C�A���O�����Ă��܂����B
+	  エンコーディング処理の変更により、環境設定ダイアログが壊れていました。
       </UL>
     <LI>
 <!--  5-Nov-2004-->
-      2004�N11��5��
+      2004年11月5日
       <UL>
 	<LI>
 <!--	  Encoding change didn't work on libiconv systems -->
-	  �ύX���ꂽ�G���R�[�f�B���O������ libiconv �̂���V�X�e���ł͓����Ă��܂���ł����B
+	  変更されたエンコーディング処理は libiconv のあるシステムでは動いていませんでした。
       </UL>
     <LI>
 <!--  4-Nov-2004-->
-      2004�N11��4��
+      2004年11月4日
       <UL>
 	<LI>
 <!--	  Added a new scripting command: AddAccent() to add an arbetrary accent to
 	  an arbetrary glyph. -->
-	  �V�����X�N���v�g�R�}���h�̒ǉ�: �C�ӂ̃O���t�ɔC�ӂ̃A�N�Z���g��ǉ����邽�߂� AddAccent() �R�}���h�B
+	  新しいスクリプトコマンドの追加: 任意のグリフに任意のアクセントを追加するための AddAccent() コマンド。
       </UL>
     <LI>
 <!--  3-Nov-2004-->
-      2004�N11��3��
+      2004年11月3日
       <UL>
 	<LI>
 <!--	  KANOU has a <A HREF="http://khdd.net/fontforge-jman/">Japanese version</A>
 	  of this reference manual under construction. -->
-	  ���̃��t�@�����X�}�j���A����<A HREF="http://khdd.net/fontforge-jman/">���{���</a>����삪�\�z���ł��B
+	  このリファレンスマニュアルの<A HREF="http://khdd.net/fontforge-jman/">日本語版</a>を狩野が構築中です。
 	<LI>
 <!--	  In MultiLayered mode, the "New Layer" menu item left a dangling pointer which
 	  caused a crash if anyone looked at the background layer. -->
-	  �}���`���C�����[�h�ŁA�u�V�K���C���v���j���[���ڂ��_���O�����O�|�C���^���c���Ă���A�w�ʃ��C����\�����悤�Ƃ����Ƃ��ɃN���b�V���������N�����Ă��܂����B
+	  マルチレイヤモードで、「新規レイヤ」メニュー項目がダングリングポインタを残しており、背面レイヤを表示しようとしたときにクラッシュを引き起こしていました。
 	<LI>
 <!--	  In MultiLayered mode, if one clicked beyond the last layer in the Layers
 	  palette, ff would crash. -->
-	  �������C�����[�h�ŁA���C���p���b�g�ōŌ�̃��C��������N���b�N����� ff ���N���b�V�����Ă��܂����B
+	  複数レイヤモードで、レイヤパレットで最後のレイヤより後をクリックすると ff がクラッシュしていました。
 	<LI>
 <!--	  KANOU provided a patch to fix another crash in the layers palette. -->
-	  ���C���p���b�g�ŃN���b�V�����N������� 1 �̏ꍇ�̃p�b�`����삪�񋟂��܂����B
+	  レイヤパレットでクラッシュが起こるもう 1 つの場合のパッチを狩野が提供しました。
 	<LI>
 <!--	  KANOU has provided a new Japanese UI. -->
-	  �V�������{�� UI ����삪�񋟂��܂����B
+	  新しい日本語 UI を狩野が提供しました。
 	<LI>
 <!--	  Made an addition to CharInfo() scripting command so user can determine the
 	  horizontal extrema of a glyph at a given vertical position. Similar addition
 	  for vertical extrema at horizontal pos. -->
-	  CharInfo() �X�N���v�g�R�}���h�ɁA���[�U������̐����ʒu�ɂ����鐅�������̋ɑ�l��m�邱�Ƃ��ł���@�\�ǉ����s���܂����B���l�̒ǉ��́A����̐����ʒu�ł̐��������̋ɑ�l�ɑ΂��Ă��s���Ă��܂��B
+	  CharInfo() スクリプトコマンドに、ユーザが特定の垂直位置における水平方向の極大値を知ることができる機能追加を行いました。同様の追加は、特定の水平位置での垂直方向の極大値に対しても行っています。
 	<LI>
 <!--	  Add a scripting command (PasteWithOffset) to allow user to apply an offset
 	  when pasting. For building accented letters by hand. -->
-	  ���[�U���\��t�����ɃI�t�Z�b�g��K�p�ł���X�N���v�g�R�}���h (PasteWithOffset) ��ǉ����܂����B�蓮�ŃA�N�Z���g���������\�z����̂Ɏg���܂��B
+	  ユーザが貼り付け時にオフセットを適用できるスクリプトコマンド (PasteWithOffset) を追加しました。手動でアクセントつき文字を構築するのに使えます。
 	<LI>
 <!--	  KANOU provides a patch to fix a problem in the new encoding stuff. -->
-	  �V�����G���R�[�f�B���O�����ŋN���������������p�b�`����삪�񋟂��܂����B
+	  新しいエンコーディング処理で起こる問題を解決するパッチを狩野が提供しました。
 	<LI>
 <!--	  Select(".notdef") usually didn't work. -->
-	  Select(".notdef") �͈�ʂɓ��삵�Ă��܂���ł����B
+	  Select(".notdef") は一般に動作していませんでした。
       </UL>
     <LI>
 <!--  28-Oct-2004-->
-      2004�N10��28��
+      2004年10月28日
       <UL>
 	<LI>
 <!--	  Kanou noticed that ISO 15924 has been updated and provide a patch including
 	  new scripts. -->
-	  ISO 15924 ���X�V����Ă������ƂɎ�삪�C�Â��A�V�����p���n���܂ރp�b�`��񋟂��܂����B
+	  ISO 15924 が更新されていたことに狩野が気づき、新しい用字系を含むパッチを提供しました。
 	<LI>
 <!--	  I have redone the way ff handles encodings internally. We used to depend
 	  on the encodings builtin to gdraw/gunicode. Now we use iconv() (if there
 	  is no iconv, then ff will use a dummy iconv which understands the encodings
 	  of gdraw/gunicode). Encodings are identified by name rather than by number
 	  now. -->
-	  ff �������G���R�[�f�B���O������I�Ɉ������@�����������܂����B���܂ł� gdraw/gunicode �ɑg�ݍ��܂ꂽ�G���R�[�f�B���O�Ɉˑ����Ă��܂����B����Aiconv() ���g�p���邱�Ƃɂ��܂� (iconv �����݂��Ȃ��ꍇ�Aff �� gdraw/gunicode �g�ݍ��݂̕����������𗝉�����_�~�[�� iconv ���g�p���܂�)�B�G���R�[�f�B���O�͐����łȂ����O�ɂ���Ď��ʂ����悤�ɂȂ�܂��B
+	  ff が文字エンコーディングを内部的に扱う方法を書き直しました。今までは gdraw/gunicode に組み込まれたエンコーディングに依存していました。今後、iconv() を使用することにします (iconv が存在しない場合、ff は gdraw/gunicode 組み込みの符号化方式を理解するダミーの iconv を使用します)。エンコーディングは数字でなく名前によって識別されるようになります。
 	<LI>
 <!--	  Further fixes to the extremum detector -->
-	  �ɑ�l���o�����̒ǉ��C���B
+	  極大値検出処理の追加修正。
 	<LI>
 <!--	  Further fixes to remove overlap -->
-	  �d�����������̒ǉ��C���B
+	  重複除去処理の追加修正。
 	<LI>
 <!--	  Added an extra argument to scripting RoundToInt, so that you can have control
 	  over what it rounds to (ie. round to hundredths, tenths, etc.) -->
-	  �X�N���v�g�� RoundToInt �ɒǉ�������ǉ����A�ۂߏ����̒P�� (��: 1/100, 1/10 �Ȃ�) �𒲐߂ł���悤�ɂ��܂����B
+	  スクリプトの RoundToInt に追加引数を追加し、丸め処理の単位 (例: 1/100, 1/10 など) を調節できるようにしました。
 	<LI>
 <!--	  Added two new scripting commands NearlyHvCps() and NearlyHvLines() which
 	  look for control points or lines that are nearly horizontal or vertical and
 	  force them to be horizontal or vertical. -->
-	  �w��ǐ����E�����ɋ߂�����_�܂��͒��������o���A����������I�ɐ����E�����ɑ����� 2 �̐V�K�X�N���v�g�R�}���h NearlyHvCps() ����� NearlyHvLines() ��ǉ��B
+	  殆んど水平・垂直に近い制御点または直線を検出し、それを強制的に水平・垂直に揃える 2 つの新規スクリプトコマンド NearlyHvCps() および NearlyHvLines() を追加。
 	<LI>
 <!--	  Kanou provided a patch so that the GRadio.Font resource controls the font
 	  in the layers palette of the glyph view. -->
-	  GRadio.Font ���\�[�X���O���t�r���[�̃��C���p���b�g�����䂷��悤�ȃp�b�`����삪�񋟂��܂����B
+	  GRadio.Font リソースがグリフビューのレイヤパレットも制御するようなパッチを狩野が提供しました。
       </UL>
     <LI>
 <!--  23-Oct-2004-->
-      2004�N10��23��
+      2004年10月23日
       <UL>
 	<LI>
 <!--	  Remove overlap had problems with splines which made abrupt turns (ie. tiny
 	  splines after we found extrema points and divided the spline into bits between
 	  extrema) -->
-	  �d�����������́A�ˑR�����ω�����X�v���C�� (���Ȃ킿�A�ɑ�_�𔭌�������ɔ����ȃX�v���C�����������A�X�v���C�����ɑ�_�̊Ԃŕ��������ꍇ) �̈����ɖ�肪����܂��� 
+	  重複除去処理は、突然方向変化するスプライン (すなわち、極大点を発見した後に微小なスプラインが発生し、スプラインを極大点の間で分割した場合) の扱いに問題がありました 
 	<LI>
 <!--	  Remove overlap could munch memory -->
-	  �d���������������������򂢐s�������Ƃ�����܂����B
+	  重複除去処理がメモリを喰い尽くすことがありました。
 	<LI>
 <!--	  The ruler tool showed all tiny splines as having a length of 0-->
-	  ���̂����c�[���́A���ׂĂ̔����ȃX�v���C���𒷂� 0 �ƕ\�����Ă��܂����B
+	  ものさしツールは、すべての微小なスプラインを長さ 0 と表示していました。
 	<LI>
 <!--	  Autorecovery had problems with glyphs containing features (would complain
 	  about sli) -->
-	  �@�\���܂ރO���t�̎����񕜂ɖ�肪����܂��� (�p���n/����C���f�b�N�X�Ɋւ����肪����ƕ\�����Ă��܂���)�B
+	  機能を含むグリフの自動回復に問題がありました (用字系/言語インデックスに関する問題があると表示していました)。
 	<LI>
 <!--	  KANOU wants to be able to scale greymap fonts -->
-	  �O���C�}�b�v�t�H���g���g��E�k���ł���悤�Ɏ�삪�]�݂܂����B
+	  グレイマップフォントを拡大・縮小できるように狩野が望みました。
 	<LI>
 <!--	  removed routines from fvcomposit.c, metricsview.c that were duplicates of
 	  fvfonts.c -->
-	  fvfonts.c �Əd������ fvcomposit.c, metricsview.c �̃��[�`�����폜�B
+	  fvfonts.c と重複する fvcomposit.c, metricsview.c のルーチンを削除。
 	<LI>
 <!--	  Oops, the default mac filesystem isn't case concious either, extend the windows
 	  export patch to the mac. -->
-	  �����ƁAMac �̃f�t�H���g�t�@�C���V�X�e���͑啶��/����������ʂ��Ȃ���ł����BWindows �̏����o�������̃p�b�`�� Mac �ɂ��K�p���܂����B
+	  おっと、Mac のデフォルトファイルシステムは大文字/小文字を区別しないんでした。Windows の書き出し処理のパッチを Mac にも適用しました。
 	<LI>
 <!--	  Simplify didn't have a very good extremum detector and would sometimes delete
 	  extrema. -->
-	  �P�����R�}���h�͂��܂�悢�ɑ�l���o���[�`���������Ă��Ȃ������̂ŁA���܂ɋɑ�l���폜���邱�Ƃ�����܂����B
+	  単純化コマンドはあまりよい極大値検出ルーチンを持っていなかったので、たまに極大値を削除することがありました。
       </UL>
     <LI>
 <!--  14-Oct-2004-->
-      2004�N10��14��
+      2004年10月14日
       <UL>
 	<LI>
 <!--	  Remove overlap had problems with tiny splines. -->
-	  �����ȃX�v���C��������Ƃ��ɏd�����������ɖ�肪����܂����B
+	  微小なスプラインがあるときに重複除去処理に問題がありました。
       </UL>
     <LI>
 <!--  13-Oct-2004-->
-      2004�N10��13��
+      2004年10月13日
       <UL>
 	<LI>
 <!--	  I notice (in Fontes &amp; Codages) that the labels in the metrics view aren't
 	  translatable -->
-	  ���g���b�N�r���[���̃��x�������s�ړ��ł��Ȃ����Ƃ� (Fontes &amp; Codages ��ǂ�ł���) �C�Â��܂����B
+	  メトリックビュー内のラベルが平行移動できないことに (Fontes &amp; Codages を読んでいて) 気づきました。
 	<LI>
 <!--	  Fontes &amp; Codages suggests that it would be nice if the glyph labels in
 	  the fontview could be something other than an image of the glyph (glyph name,
 	  unicode code point, encoding, etc.)
-	  Fontes &amp; Codages �́A�t�H���g�r���[���̃O���t���x�����O���t�̉摜�ȊO�̉��� (�O���t���AUnicode �R�[�h�|�C���g�A���������Ȃ�) �ł��������������Ǝ������Ă��܂��B
+	  Fontes &amp; Codages は、フォントビュー内のグリフラベルがグリフの画像以外の何か (グリフ名、Unicode コードポイント、文字符号など) であった方がいいと示唆しています。
 	<LI>
 <!--	  Change the word "Character" to "Glyph" where appropriate. -->
-	  ���� (character) �Ƃ����P����O���t (glyph) �ɏ��������������悢�ꏊ�͕ύX���܂����B
+	  文字 (character) という単語をグリフ (glyph) に書き換えた方がよい場所は変更しました。
 	<LI>
 <!--	  Move the Open Outline/Bitmap/Metrics commands to the Window menu, and change
 	  "Open" to "New". -->
-	  �E�B���h�E���j���[�̃A�E�g���C��/�r�b�g�}�b�v/���g���b�N�R�}���h���ړ����A�u�c���J���v���u�V�K�c�v�ɏ��������܂����B
+	  ウィンドウメニューのアウトライン/ビットマップ/メトリックコマンドを移動し、「…を開く」を「新規…」に書き換えました。
       </UL>
     <LI>
 <!--  12-Oct-2004-->
-      2004�N10��12��
+      2004年10月12日
       <UL>
 	<LI>
 <!--	  We have a Spanish UI now, courtesy of Walter Echarri. Yeah! -->
-	  �X�y�C����� UI ���AWalter Echarri �̂������Ŏg�p�\�ł��B�C�F�C!
+	  スペイン語の UI が、Walter Echarri のおかげで使用可能です。イェイ!
 	<LI>
 <!--	  Support for loading type3 fonts (that ff produced) was broken. Note: ff is
 	  still unable to load many type3 fonts (any that are filtered, or that use
 	  images for example), but it should be able to read its own fonts. -->
-	  Type3 �t�H���g (ff ���o�͂�������) �̓ǂݍ��݃T�|�[�g�����Ă��܂����B����: ff �͌����_�ł������� Type3 �t�H���g��ǂݍ��߂܂��� (�t�B���^������v������́A�܂��͉摜�Ȃǂ��g�p�������) ���A�����ŏ����o�����t�H���g�͓ǂ߂�悤�ɂ��Ă����ׂ��ł��B
+	  Type3 フォント (ff が出力したもの) の読み込みサポートが壊れていました。注意: ff は現時点でも多くの Type3 フォントを読み込めません (フィルタ処理を要するもの、または画像などを使用するもの) が、自分で書き出したフォントは読めるようにしておくべきです。
 	<LI>
 <!--	  (I hope) minor change to the way .notdef is handled when reading postscript
 	  files. -->
-	  PostScript �t�@�C������̓ǂݍ��ݎ��� .notdef �̈����������ύX���܂��� (�Ǝv���܂�)�B
+	  PostScript ファイルからの読み込み時の .notdef の扱いを少し変更しました (と思います)。
 	<LI>
 <!--	  Added support for printing to pdf file -->
-	  PDF �t�@�C���ւ̈���T�|�[�g��ǉ����܂����B
+	  PDF ファイルへの印刷サポートを追加しました。
 	<LI>
 <!--	  (fixed a bug in pdf generation from the export command) -->
-	  (�����o���R�}���h����� PDF �o�͂̃o�O���C���B)
+	  (書き出しコマンドからの PDF 出力のバグを修正。)
 	<LI>
 <!--	  Fixed various problems from turning off the multilayer bit in fontinfo -->
-	  �t�H���g���_�C�A���O�Ń}���`���C���r�b�g���I�t�ɂ����Ƃ��ɔ������邳�܂��܂Ȗ����C���B
+	  フォント情報ダイアログでマルチレイヤビットをオフにしたときに発生するさまざまな問題を修正。
 	<LI>
 <!--	  KANOU needs a couple more strings disambiguated. -->
-	  ����� 2 �̕�����̌����ȋ�ʂ���삪�v�����܂����B
+	  さらに 2 個の文字列の厳密な区別を狩野が要求しました。
 	<LI>
 <!--	  Add support for generating type42 and type 11 (type42 cid) fonts, add support
 	  for loading type42 (but I'm not bothering with type11s) and use these guys
 	  when printing order2 fonts. -->
-	  Type42 �� Type 11 (Type42 CID) �t�H���g�̏o�̓T�|�[�g����сAType42 �ǂݍ��݂̃T�|�[�g (Type11 �̓ǂݍ��݂܂ł͑Ή����Ȃ�����ł�) �̒ǉ��Ȃ�тɁA2 ���A�E�g���C���̃t�H���g���������Ƃ��ɂ������g���悤�ɂ��܂����B
+	  Type42 と Type 11 (Type42 CID) フォントの出力サポートおよび、Type42 読み込みのサポート (Type11 の読み込みまでは対応しないつもりです) の追加ならびに、2 次アウトラインのフォントを印刷するときにそれらを使うようにしました。
 	<LI>
 <!--	  Check to make sure the PostScript Fontname is valid when reading in a truetype
 	  (or svg) font (syntax doesn't enforce this), and if not warn the user and
 	  fix it up. -->
-	  TrueType (����� SVG) �t�H���g�̓ǂݍ��ݎ��ɁAPostScript �t�H���g�������������̃`�F�b�N������ (�\����s���Ȃ��̂��\�ł�)�A�s���ȏꍇ�̓��[�U�Ɍx�����ďC������悤�ɂ��܂����B
+	  TrueType (および SVG) フォントの読み込み時に、PostScript フォント名が正しいかのチェックを加え (構文上不正なものも可能です)、不正な場合はユーザに警告して修正するようにしました。
 	<LI>
 <!--	  Add some new scripting commands for handling MM fonts since someone seems
 	  to want them. -->
-	  �N�����~�������Ă���悤�ł��̂ŁAMM �t�H���g�̏����̂��߂̃X�N���v�g�R�}���h��ǉ����܂����B
+	  誰かが欲しがっているようですので、MM フォントの処理のためのスクリプトコマンドを追加しました。
 	<LI>
 <!--	  Used to complain if there were more than one Unique Font ID in the truetype
 	  'name' table. (because the OpenType list said there should only be one, else
 	  it would not be unique). But both Apple and MS ship with fonts containing
 	  multiple Unique Font IDs. God knows what that means, or when you pick one
 	  over the other... Anyway I changed my error into a warning. -->
-	  ���j�[�N�t�H���g ID �� TrueType 'name' �e�[�u���� 2 �ȏ�܂܂�Ă���Ƃ��Ɍx������悤�ɂ��܂����B(OpenType ���[�����O���X�g�ŁA����� 1 �������݂���ׂ��ł͂Ȃ��A�����łȂ���΃��j�[�N�ł͂Ȃ�����ł�)�B������ Apple �� MS �������� Font ID ���܂ރt�H���g���o�ׂ��Ă��܂��B���̐^�ӂ͐_�݂̂��m��ł����A�܂��͂ǂꂩ 1 ��I�����Ă��炤�K�v������܂��c�B����ɂ��ւ�炸�A�G���[���x���ɕύX���܂����B
+	  ユニークフォント ID が TrueType 'name' テーブルに 2 個以上含まれているときに警告するようにしました。(OpenType メーリングリストで、それは 1 個しか存在するべきではなく、そうでなければユニークではないからです)。しかし Apple も MS も複数の Font ID を含むフォントを出荷しています。その真意は神のみぞ知るですが、またはどれか 1 個を選択してもらう必要があります…。それにも関わらず、エラーを警告に変更しました。
       </UL>
     <LI>
 <!--  30-Sept-2004-->
-      2004�N9��30��
+      2004年9月30日
       <UL>
 	<LI>
 <!--	  I have rewritten Remove Overlap from scratch. I seems less likely to crash,
 	  but I'm not sure that in any other respect it is improved. -->
-	  �d�������������ꂩ�珑�������܂����B�N���b�V�����������悤�Ɏv���܂����A���̓_�ŕi�������サ�����͋^��ł��B
+	  重複除去処理を一から書き直しました。クラッシュが減ったように思いますが、他の点で品質が向上したかは疑問です。
 	<LI>
 <!--	  In the character view the Remove Overlap (and Intersect and Find Intersections)
 	  now only work on selected contours, or, if no contours are selected then
 	  on all contours. This change makes these commands consistant with most other
 	  commands in the character view, but it is a change from past behavior. -->
-	  �����r���[��ł́A�d������ (����сu�d�������𒊏o�v�u��_�𔭌��v) �͑I������Ă���֊s�A�܂��͗֊s��I�����Ă��Ȃ��Ƃ��͂��ׂĂ̗֊s�ɓK�p�����悤�ɕύX���܂����B���̕ύX�ɂ��A�����̃R�}���h�������r���[��̂قƂ�ǂ̑��̃R�}���h�ƈ�т����ӂ�܂�������悤�ɂȂ�܂������A���܂ł̂ӂ�܂��Ƃ͈Ⴂ�܂��B
+	  文字ビュー上では、重複除去 (および「重複部分を抽出」「交点を発見」) は選択されている輪郭、または輪郭を選択していないときはすべての輪郭に適用されるように変更しました。この変更により、これらのコマンドが文字ビュー上のほとんどの他のコマンドと一貫したふるまいをするようになりましたが、今までのふるまいとは違います。
 	<LI>
 <!--	  The Import scripting command has been extended to give the user control over
 	  the stroking flags (correct direction, remove overlap, handle erasers). And
 	  the background flag has been extended a bit to apply to other things than
 	  bitmaps. -->
-	  �X�N���v�g�R�}���h Import ���A���[�U���X�g���[�N�����t���O (�����̕␳�A�d�������A�����S���̈���) �𐧌�ł���悤�Ɋg�����܂����B�܂��A�w�i�t���O���r�b�g�}�b�v�ȊO�̂��̂ɓK�p�ł���悤�Ɋg�����܂����B
+	  スクリプトコマンド Import を、ユーザがストローク処理フラグ (方向の補正、重複除去、消しゴムの扱い) を制御できるように拡張しました。また、背景フラグをビットマップ以外のものに適用できるように拡張しました。
 	<LI>
 <!--	  ff had a pointer dangling to a freed block after loading a font containing
 	  multiple versions of some greek letters. -->
-	  ff �́A�����M���V�������̕����̃o�[�W�������܂ރt�H���g��ǂݍ��񂾂Ƃ��ɁA��������������u���b�N���w���_���O�����O�|�C���^���c���Ă��܂����B
+	  ff は、同じギリシャ文字の複数のバージョンを含むフォントを読み込んだときに、解放したメモリブロックを指すダングリングポインタが残っていました。
 	<LI>
 <!--	  U+1D400-U+1D7FF are stylized variants of the latin and greek alphabets as
 	  used in Mathematics. The font view will now display (in the glyph header)
 	  the proper variant of the glyph (assuming it can find a font with that style). -->
-	  U+1D400�`U+1D7FF �͈̔͂̓��e������уM���V���A���t�@�x�b�g�́A���w�Ŏg�p�����e��X�^�C�����̃O���t�ł��B�t�H���g�r���[�� (�O���t�w�b�_��) �O���t�̓K�؂ȃX�^�C����\������悤�ɂ���܂��� (���̃X�^�C���̃t�H���g�������邱�Ƃ��O��ł�)�B
+	  U+1D400〜U+1D7FF の範囲はラテンおよびギリシャアルファベットの、数学で使用される各種スタイルつきのグリフです。フォントビューで (グリフヘッダに) グリフの適切なスタイルを表示するようにありました (そのスタイルのフォントが見つかることが前提です)。
 	<LI>
 <!--	  The AMS (American Mathematical Society) has their own interpretation of the
 	  public use area. FF now understands their glyph names as alternates for those
 	  glyphs, and has an AMS interpretation (under FontInfo-&gt;Encoding) that
 	  will make ff use those names in new fonts. -->
-	  AMS (�A�����J���w��) �́AUnicode �̎��p�̈�ɑ΂���Ǝ��̉��߂������Ă��܂��BFF �͂����̃O���t���������̃O���t�̕ʖ��Ɨ������Aff ���V�K�ɍ쐬����t�H���g�� AMS �̉��� (�t�H���g���[�G���R�[�f�B���O]��) �ɂ�閼�O���g�p�ł���悤�ɂȂ�܂����B
+	  AMS (アメリカ数学会) は、Unicode の私用領域に対する独自の解釈をもっています。FF はそれらのグリフ名をそれらのグリフの別名と理解し、ff が新規に作成するフォントで AMS の解釈 (フォント情報→[エンコーディング]で) による名前を使用できるようになりました。
 	<LI>
 <!--	  Many of code points in the AMS PUA are reencodings of other glyphs. FontForge
 	  will automatically generate these reencodings for you. -->
-	  AMS �� PUA �ɂ��镶���̑����͕ʂ̏ꏊ�ɂ���O���t���d���������������̂ł��BFontForge �͂����̍ĕ������������I�ɐ������܂��B
+	  AMS の PUA にある文字の多くは別の場所にあるグリフを重複符号化したものです。FontForge はそれらの再符号化を自動的に生成します。
 	<LI>
 <!--	  The AMS also describes how some TeX glyph names map to unicode. So include
 	  those names in our alternate list too (so we can map them correctly, not
 	  as a way of encouraging people to use them). -->
-	  AMS �́A�������� TeX �O���t���� �ǂ̂悤�� Unicode �ɑΉ������邩���߂Ă��܂��B�����̖��O����X�̕ʖ����X�g�Ɏ�荞�݂܂��� (����ɂ�萳�����Ή��Â����ł���悤�ɂȂ�܂������A�l�X�ɂ������g���悤�ɐ������邽�߂ł͂���܂���)�B
+	  AMS は、いくつかの TeX グリフ名を どのように Unicode に対応させるかを定めています。これらの名前も我々の別名リストに取り込みました (これにより正しい対応づけができるようになりましたが、人々にこれらを使うように推奨するためではありません)。
 	<LI>
 <!--	  Both the AMS defn. of the PUA and the Big5 defn. map characters which are
 	  properly in other unicode planes into the BMP. FF now understands this, and
 	  converting between a BMP encoding and a full unicode encoding will move things
 	  from the PUA to their proper unicode slot in higher planes. -->
-	  AMS �ɂ�� PUA �̒�`�� Big5 �̒�`�̗����Ƃ��AUnicode �̕ʂ̖ʂɐ��K�ɒ�`���ꂽ������ BMP �Ɋ���t���Ă��܂��Bff �͂���𗝉��ł���悤�ɂȂ�ABMP �G���R�[�f�B���O���犮�S�� Unicode �G���R�[�f�B���O���s���Ƃ��ɁAPUA �����ʖʂɂ��邻���̓K�؂ȕ����ʒu�Ɉړ��ł���悤�ɂȂ�܂����B
+	  AMS による PUA の定義と Big5 の定義の両方とも、Unicode の別の面に正規に定義された文字を BMP に割り付けています。ff はこれを理解できるようになり、BMP エンコーディングから完全な Unicode エンコーディングを行うときに、PUA から上位面にあるそれらの適切な符号位置に移動できるようになりました。
 	<LI>
 <!--	  Find Problems thought that adjacent splines intersected at their common
 	  end-point. I suppose they do, but it isn't useful information -->
-	  ���_�𔭌��_�C�A���O�́A�́A�ד��m�̃X�v���C���͋��ʂ̒[�_�Ō�������ƍl���Ă��܂����B���͂������Ǝv���܂����A����͗L�v�ȏ��ł͂���܂���B
+	  問題点を発見ダイアログは、は、隣同士のスプラインは共通の端点で交差すると考えていました。私はそうだと思いますが、これは有益な情報ではありません。
 	<LI>
 <!--	  In the char view, I used to blank out the status line when the mouse moved
 	  outside the window. But some of that info is still valid. So only blank out
 	  the meaningless bits. -->
-	  �����r���[���ł́A�}�E�X���E�B���h�E�̊O���Ɉړ������Ƃ��ɃX�e�[�^�X���C�����������Ă��܂����B����������͐������܂܂Ȃ̂ŁA�Ӗ����Ȃ��Ȃ������݂̂���������悤�ɂ��܂����B
+	  文字ビュー内では、マウスをウィンドウの外側に移動したときにステータスラインを消去していました。しかし一情報は正しいままなので、意味をなさない部分のみを消去するようにしました。
 	<LI>
 <!--	  Kanou requests a disambiguation between two strings with the same label in
 	  English but different meanings in Japanese. (Vertical/VerticalWriting) -->
-	  �p��ł͓������x���������Ă��Ă��A���{��ł͈قȂ�Ӗ������u�����v�Ɓu�c�����v����ʂ���悤�Ɏ�삪���N�G�X�g���܂����B
+	  英語では同じラベルをもっていても、日本語では異なる意味をもつ「垂直」と「縦書き」を区別するように狩野がリクエストしました。
 	<LI>
 <!--	  The Point-&gt;Make Line command would crash if either of the two points
 	  was missing a previous or next spline. -->
-	  �_(P)�������ɕϊ�(L)�R�}���h�́A2�̓_�̂ǂ��炩���O�܂��͎��̃X�v���C���������Ȃ��Ƃ��ɃN���b�V���������N�����Ă��܂����B
+	  点(P)→直線に変換(L)コマンドは、2個の点のどちらかが前または次のスプラインをもたないときにクラッシュを引き起こしていました。
 	<LI>
 <!--	  Pierre HANSER provides a patch to problems.c (it would crash when dealing
 	  with fonts with an encoding with &lt; 32 code points. -->
-	  problems.c �ɑ΂���p�b�`�� Pierre HANSER ���񋟂��܂��� (���܂ł́A32 �����̃R�[�h�|�C���g���g�p���Ă���t�H���g�������ƃN���b�V�����Ă��܂���)�B
+	  problems.c に対するパッチを Pierre HANSER が提供しました (今までは、32 未満のコードポイントを使用しているフォントを扱うとクラッシュしていました)。
 	<LI>
 <!--	  Pierre HANSER provides a patch to merge fonts (it would crash when merging
 	  bitmap fonts. -->
-	  �t�H���g�̍��������ɑ΂���p�b�`�� Pierre HANSER ���񋟂��܂��� (�r�b�g�}�b�v�t�H���g����������ƃN���b�V�����Ă��܂���)�B
+	  フォントの合併処理に対するパッチを Pierre HANSER が提供しました (ビットマップフォントを合併するとクラッシュしていました)。
 	<LI>
 <!--	  Closing a charview window with a docked palette could cause a crash if the
 	  cursor was moved quickly into another charview which needed a new cursor. -->
-	  �A���\�������p���b�g���������r���[�E�B���h�E�����Ƃ��A�}�E�X�J�[�\�����A�V�����J�[�\����K�v�Ƃ���ʂ̕����r���[�ɑf�����ړ�����ƃN���b�V�����Ă��܂����B
+	  連結表示したパレットをもつ文字ビューウィンドウを閉じるとき、マウスカーソルが、新しいカーソルを必要とする別の文字ビューに素早く移動するとクラッシュしていました。
 	<LI>
 <!--	  The perspective icon had the wrong background -->
-	  �����ϊ��A�C�R���̔w�i���Ԉ���Ă��܂����B
+	  透視変換アイコンの背景が間違っていました。
 	<LI>
 <!--	  Piska keeps complaining about the way ff handles 0 width strokes. He wants
 	  it to have zero width (disappear, I guess), but PS says it should be stroked
@@ -2095,80 +2095,80 @@ FontForge)</A> -->
 	  it as a 1em-unit stroke). But METAPOST uses a 0 width stroke in cases where
 	  it wants no stroking (with a fill) so in the special case of a fill with
 	  a 0 width stroke, turn off stroking. -->
-	  ff ���� 0 �̃X�g���[�N�����������ɑ΂��āAPiska �ɂ͂܂��s��������܂����B�ނ́A���[�������������������̂ł� (���́A�\����������Ǝv���܂���) ���APS �́A�f�o�C�X���\���\�Ȃ����Ƃ��ׂ����������悤�ɒ�߂Ă���̂ł� (���ꂪ ff �łǂ̂悤�ȈӖ��������͖��Ăł͂���܂��񂪁A���͕� 1 em �̃X�g���[�N�Ɖ��߂��܂���)�B������ METAPOST �ł́A�� 0 �̃X�g���[�N���A�֊s���������� (�h��Ԃ�������) �s�������Ƃ��Ɏg�p���Ă��܂��̂ŁA�� 0 �̃X�g���[�N�œh��Ԃ����s���Ƃ��ɂ́A�֊s�������Ȃ��悤�ɂ��܂����B	
+	  ff が幅 0 のストロークを扱うやり方に対して、Piska にはまだ不満がありました。彼は、幅ゼロをもたせたかったのです (私は、表示が消えると思いました) が、PS は、デバイスが表示可能なもっとも細い線を引くように定めているのです (これが ff でどのような意味をもつかは明瞭ではありませんが、私は幅 1 em のストロークと解釈しました)。しかし METAPOST では、幅 0 のストロークを、輪郭を引かずに (塗りつぶしだけを) 行いたいときに使用していますので、幅 0 のストロークで塗りつぶしを行うときには、輪郭を引かないようにしました。	
 	<LI>
 <!--	  Use a different approach to approximating a set of points with fixed slopes
 	  at the end points. Used to do least squares (fixup slopes), least squares
 	  again (fixup slopes). Now I do least squares (fixup slopes), perturb the
 	  lengths of the slope vectors until we find the best fit. -->
-	  �[�_�ɂ����ČX�����Œ肳�ꂽ�_�̏W�����ߎ�����̂ɁA���܂łƈႤ�A�v���[�`���g���悤�ɂ��܂����B(�X���̕␳��) �ŏ�����@��K�p���A(�X���̕␳��) �ŏ�����@��������x�K�p���Ă��܂����B���ꂩ��́A(�X���̕␳��) �ŏ�����@��K�p���A�ŗǋߎ���������܂ŌX���x�N�g���̒��������������悤�ɂȂ�܂��B
+	  端点において傾きが固定された点の集合を近似するのに、今までと違うアプローチを使うようにしました。(傾きの補正に) 最小自乗法を適用し、(傾きの補正に) 最小自乗法をもう一度適用していました。これからは、(傾きの補正に) 最小自乗法を適用し、最良近似が見つかるまで傾きベクトルの長さを微調整するようになります。
 	<LI>
 <!--	  I was generating flex hints when I should not have done so. Add a heuristic
 	  so that ff doesn't add flexes to small circles. -->
-	  flex �q���g���o�͂��ׂ��łȂ��Ƃ��ɏo�͂��Ă��܂����Bff �������ȉ~�ɑ΂��� flex ��ǉ����Ȃ��悤�ȃq���[���X�e�B�b�N��ǉ����܂����B
+	  flex ヒントを出力すべきでないときに出力していました。ff が小さな円に対して flex を追加しないようなヒューリスティックを追加しました。
 	<LI>
 <!--	  Failed to read long format pk bitmaps. -->
-	  �����t�H�[�}�b�g�� pk �r�b�g�}�b�v�̓ǂݍ��݂��ł��Ă��܂���ł����B
+	  長いフォーマットの pk ビットマップの読み込みができていませんでした。
 	<LI>
 <!--	  Patch by Mchael Ghrken to make the Skew scripting command take a
 	  numerator/denominator style argument. -->
-	  �X�N���v�e�B���g�R�}���h Skew �����q/����`���̈������Ƃ��悤�ɁAMchael Ghrken ���p�b�`��񋟂��܂����B
+	  スクリプティントコマンド Skew が分子/分母形式の引数をとれるように、Mchael Ghrken がパッチを提供しました。
       </UL>
     <LI>
 <!--  24-Aug-2004-->
-      2004�N8��24��
+      2004年8月24日
       <UL>
 	<LI>
 	  Oops, didn't get the expand stroke scripting patch quite right
 	<LI>
 <!--	  <FONT COLOR="Red"><STRONG><BIG>Changed the way preferences are handled in
 	  scripts</BIG></STRONG></FONT> -->
-	  <FONT COLOR="Red"><STRONG><BIG>�X�N���v�g�ł̊��ݒ荀�ڂ̈�����ύX:</BIG></STRONG></FONT>
+	  <FONT COLOR="Red"><STRONG><BIG>スクリプトでの環境設定項目の扱いを変更:</BIG></STRONG></FONT>
 	  <UL>
 	    <LI>
 <!--	      By default preferences are no longer loaded when starting a script. -->
-	      �f�t�H���g�ŁA�X�N���v�g�J�n���Ɋ��ݒ�t�@�C����ǂݍ��ނ��Ƃ͂Ȃ��Ȃ�܂����B
+	      デフォルトで、スクリプト開始時に環境設定ファイルを読み込むことはなくなりました。
 	    <LI>
 <!--	      Preferences are not saved in a script unless explicitly requested. -->
-	      ���ݒ�́A���[�U���w�肵�Ȃ�����t�@�C���ɕۑ�����Ȃ��Ȃ�܂����B
+	      環境設定は、ユーザが指定しない限りファイルに保存されなくなりました。
 	    <LI>
 <!--	      Added 2 new scripting functions LoadPrefs() and SavePrefs() -->
-	      LoadPrefs() �� SavePrefs() �� 2 �̐V�X�N���v�g�R�}���h��ǉ��B
+	      LoadPrefs() と SavePrefs() の 2 つの新スクリプトコマンドを追加。
 	    <LI>
 <!--	      Added an environment variable FONTFORGE_LOADPREFS to give the user control
 	      over loading of preferences. -->
-	      ���[�U�����ݒ��ǂݍ��ނ���ݒ�ł��� FONTFORGE_LOADPREFS ��ǉ��B
+	      ユーザが環境設定を読み込むかを設定できる FONTFORGE_LOADPREFS を追加。
 	  </UL>
 	<LI>
 <!--	  Used to have a preference item DumpGlyphMap. Now we have an equivalent flag
 	  in the Generate Fonts [Options] dialog. -->
-	  DumpGlyphMap �Ƃ������ݒ荀�ڂ�p�~���܂����B����Ɠ����t���O���A�t�H���g�o�͂� [�I�v�V����] �_�C�A���O�ɍ��܂����B
+	  DumpGlyphMap という環境設定項目を廃止しました。これと同じフラグを、フォント出力の [オプション] ダイアログに作りました。
 	<LI>
 <!--	  The SetPanose scripting command didn't work. MURAOKA Taro provides a patch -->
-	  SetPanose �X�N���v�g�R�}���h�������Ă��܂���ł����B�������Y���p�b�`��񋟂��Ă���܂����B
+	  SetPanose スクリプトコマンドが動いていませんでした。村岡太郎がパッチを提供してくれました。
 	<LI>
 <!--	  It was not possible to get or set NewCharset preference item with GetPref/SetPref
 	  scripting commands. Now GetPref returns a magic number, which may be used
 	  in SetPref. SetPref will accept either a number or one of the encodings accepted
 	  by Reencode(). -->
-	  ���ݒ荀�� NewCharset() �� GetPref/SetPref �X�N���v�g�R�}���h�Ŋl���E�ݒ肷�邱�Ƃ��ł��Ă��܂���ł����BGetPref �́ASetPref �̈����Ɏg�p�ł���}�W�b�N�i���o�[��Ԃ��悤�ɂȂ�܂����BSetPref �ł́A�}�W�b�N�i���o�[���AReencode() �Ŏg�p�\�ȃG���R�[�f�B���O���̂ǂ��炩���g�p���邱�Ƃ��ł��܂��B
+	  環境設定項目 NewCharset() を GetPref/SetPref スクリプトコマンドで獲得・設定することができていませんでした。GetPref は、SetPref の引数に使用できるマジックナンバーを返すようになりました。SetPref では、マジックナンバーか、Reencode() で使用可能なエンコーディング名のどちらかを使用することができます。
 	<LI>
 <!--	  If you copied a glyph feature from a glyph that didn't have that feature,
 	  and then did a paste ff would crash. -->
-	  �O���t���炻�̃O���t�Ɋ܂܂�Ă��Ȃ��O���t�@�\���R�s�[�����݂āA���ɂ�����y�[�X�g����� ff �̓N���b�V�����Ă��܂����B
+	  グリフからそのグリフに含まれていないグリフ機能をコピーを試みて、次にそれをペーストすると ff はクラッシュしていました。
 	<LI>
 <!--	  Added two new tools to the outline character view. One allows you to rotated
 	  your glyph through 3dimensions (and project it back on the xy plane), the
 	  other allows you to do a perspective transformation. -->
-	  �A�E�g���C�������r���[�� 2 �̐V�����c�[����ǉ����܂����B��̓O���t�� 3 ������]���s�����Ƃ��ł��� (����� XY ���ʂɍĂѓ��e�������ʂ�������) �c�[���ŁA������͓����ϊ����s�����Ƃ��ł���c�[���ł��B
+	  アウトライン文字ビューに 2 個の新しいツールを追加しました。一つはグリフの 3 次元回転を行うことができる (それを XY 平面に再び投影した結果が得られる) ツールで、もう一つは透視変換を行うことができるツールです。
 	<LI>
 <!--	  Extended the Transformation dialog to handle 3D rotation+projection. After
 	  all it's just: -->
-	  3 ������] + ���e����������ł���悤�ɁA�ϊ��_�C�A���O���g�����܂����B���ۂɉ������̂͂��ꂾ���ł�:
+	  3 次元回転 + 投影を処理するできるように、変換ダイアログを拡張しました。実際に加えたのはこれだけです:
 	  <TABLE BORDER CELLPADDING="2" ALIGN="Center">
 	    <TR>
 <!--	      <TD>cos(y-axis-rotation)</TD> -->
-	      <TD>cos(Y���̉�]��)</TD>
+	      <TD>cos(Y軸の回転量)</TD>
 	      <TD><P ALIGN=Center>
 		0</TD>
 	    </TR>
@@ -2176,414 +2176,414 @@ FontForge)</A> -->
 	      <TD><P ALIGN=Center>
 		0</TD>
 <!--	      <TD>cos(x-axis-rotation)</TD> -->
-	      <TD>cos(X���̉�]��)</TD>
+	      <TD>cos(X軸の回転量)</TD>
 	    </TR>
 	  </TABLE>
 	<LI>
 <!--	  Add a Point of View dialog to do real perspective projections -->
-	  �{���̓����ϊ����s�����߂̓����ϊ��_�C�A���O��ǉ����܂����B
+	  本物の透視変換を行うための透視変換ダイアログを追加しました。
 	<LI>
 <!--	  Remove the FONTFORGE_CONFIG_NONLINEAR flag, and enable the nonlinear dlg
 	  perminantly. I need some of its routines to do the perspective projections. -->
-	  FONTFORGE_CONFIG_NONLINEAR �t���O���폜���A����^�ϊ��̃_�C�A���O����Ɏg�p�ł���悤�ɂ��܂����B�����ϊ����s���̂ɁA���̈ꕔ�̃��[�`�����K�v�Ȃ��߂ł��B
+	  FONTFORGE_CONFIG_NONLINEAR フラグを削除し、非線型変換のダイアログを常に使用できるようにしました。透視変換を行うのに、その一部のルーチンが必要なためです。
 	<LI>
 <!--	  There was a path through LoadEncodingFile (in a script) where it would silently
 	  fail. -->
-	  (�X�N���v�g����) LoadEncodingFile ��ʂ鏈���̗���ɁA���s���ɉ����o�͂��Ȃ����̂�����܂����B
+	  (スクリプト内で) LoadEncodingFile を通る処理の流れに、失敗時に何も出力しないものがありました。
 	<LI>
 <!--	  LoadEncodingFile would save default encodings even though it hadn't loaded
 	  them. It no longer does this, but now SavePrefs does it instead. -->
-	  LoadEncodingFile �̓f�t�H���g�̕�����������ǂݍ���ł��Ȃ����ł���A�����ۑ����Ă��܂����B������s��Ȃ��悤�ɕύX�����̂ŁA����� SavePref �������ōs���K�v������܂��B
+	  LoadEncodingFile はデフォルトの符号化方式を読み込んでいない時ですら、それを保存していました。それを行わないように変更したので、今後は SavePref を自分で行う必要があります。
 	<LI>
 <!--	  Added the ability to see (and create) simple substitutions in the font view. -->
-	  �t�H���g�r���[���ŒP���u�������� (�����ĎB�e����) �@�\��ǉ����܂����B
+	  フォントビュー内で単純置換を見る (そして撮影する) 機能を追加しました。
 	<LI>
 <!--	  The embossed box around the fontinfo dlg wasn't always in the right place -->
-	  �t�H���g���_�C�A���O�̎���̉��ʂ̂���{�b�N�X���������ꏊ�ɒu����Ă��Ȃ����Ƃ�����܂����B
+	  フォント情報ダイアログの周りの凹凸のあるボックスが正しい場所に置かれていないことがありました。
       </UL>
     <LI>
 <!--  8-Aug-2004-->
-      2004�N8��8��
+      2004年8月8日
       <UL>
 	<LI>
 <!--	  Zhang Lin-bo reports two bugs (which were really three) -->
-	  Zhang Lin-bo �� 2 �̃o�O��񍐂��܂��� (�m���ɂ���܂���)
+	  Zhang Lin-bo が 2 つのバグを報告しました (確かにありました)
 	  <UL>
 	    <LI>
 <!--	      Expand Stroke failed when given a path consisting of a single point had a
 	      zero length spline returning to itself. -->
-	      �p�X�� 1 �̓_�ƁA���ꎩ�g�ɖ߂钷�� 0 �̃X�v���C������Ȃ�ꍇ�ɁA�u�֊s�𑾂点��v�̏��������s���Ă��܂����B
+	      パスが 1 個の点と、それ自身に戻る長さ 0 のスプラインからなる場合に、「輪郭を太らせる」の処理が失敗していました。
 	    <LI>
 <!--	      AddExtrema falls into an infinite loop if the initial spline of a path needs
 	      an extremum added to it. -->
-	      AddExtrema �́A�p�X�̍ŏ��̃X�v���C���ɋǒn��ǉ�����K�v������ꍇ�A�������[�v�Ɋׂ��Ă��܂����B
+	      AddExtrema は、パスの最初のスプラインに局地を追加する必要がある場合、無限ループに陥っていました。
 	    <LI>
 <!--	      Expand Stroke generates garbage output in some very obscure conditions. -->
-	      �u�֊s�𑾂点��v�͂�����ɐ������������������ɂ����ăS�~���o�͂��Ă��܂����B
+	      「輪郭を太らせる」はある非常に説明しがたい条件化においてゴミを出力していました。
 	    <LI>
 <!--	      AutoHint crashes when given garbage input. -->
-	      ���f�[�^��^����Ǝ����q���g�Â����N���b�V�����Ă��܂����B
+	      屑データを与えると自動ヒントづけがクラッシュしていました。
 	  </UL>
 	<LI>
 <!--	  Michael G&auml;hrken points out that ExpandStroke scripting command doesn't
 	  work for caligraphic stroking, provides a patch and an extension.
-	  Michael G&auml;hrken ���AExpandStroke �X�N���v�g�R�}���h���J���O���t�B�b�N�ȃX�g���[�N�œ����Ȃ����Ƃ��w�E���A�p�b�`�Ɗg����񋟂��܂����B
+	  Michael G&auml;hrken が、ExpandStroke スクリプトコマンドがカリグラフィックなストロークで動かないことを指摘し、パッチと拡張を提供しました。
 	<LI>
 <!--	  KANOU provides a patch for BDFMakeChar in CID keyed fonts. -->
-	  CID �L�[�w��t�H���g�̂��߂� BDFMakeChar �̃p�b�`����삪�񋟂��܂����B
+	  CID キー指定フォントのための BDFMakeChar のパッチを狩野が提供しました。
 	<LI>
 <!--	  Change the Shades palette in the bitmap view so that it shows what grey level
 	  is underneath the cursor. -->
-	  �r�b�g�}�b�v�r���[���~���p���b�g��ύX���A���݂̃J�[�\���ʒu�̊D�F�̔Z�x��\������悤�ɂ��܂����B
+	  ビットマップビューの諧調パレットを変更し、現在のカーソル位置の灰色の濃度を表示するようにしました。
 	<LI>
 <!--	  When the width is huge, then moving it causes it to wrap into negative values.
 	  It should probably stick at SHRT_MAX instead. -->
-	  �������ɑ傫���ƁA������ړ��������ɕ��̒l�ɉ�荞��ł��܂����B�����炭�A���̑���� SHRT_MAX �ɌŒ肷�ׂ��ł��傤�B
+	  幅が非常に大きいと、それを移動した時に負の値に回り込んでいました。おそらく、その代わりに SHRT_MAX に固定すべきでしょう。
 	<LI>
 <!--	  If one moves to a negative width and releases the mouse, an error message
 	  pops up warning of this. If you move the cursor around the width continued
 	  to change. -->
-	  �������𕉂̒l�Ɉړ����ă}�E�X�𗣂��ƁA������x������G���[���b�Z�[�W���|�b�v�A�b�v���܂��B�J�[�\���𕝂̑��œ�����������ƁA�ړ��͂������܂��B
+	  文字幅を負の値に移動してマウスを離すと、それを警告するエラーメッセージがポップアップします。カーソルを幅の側で動かし続けると、移動はし続けます。
 	<LI>
 <!--	  If one moves to a negative width, and in response to the width warning says
 	  [No] then the width reverted to the wrong value. -->
-	  �������𕉂̒l�Ɉړ����āA�������̌x���� [������(N)] �Ɠ�����ƁA����������l�ɐݒ肳��Ă��܂����B
+	  文字幅を負の値に移動して、文字幅の警告に [いいえ(N)] と答えると、幅が誤った値に設定されていました。
 	<LI>
 <!--	  ff would crash on a postscript sequence containing "{}" if that was the first
 	  function defined. -->
-	  ff �́A�V�[�P���X "{}" ���܂� PostScript ����`���ꂽ�ŏ��̊֐��ɂ���ƃN���b�V�����Ă��܂����B
+	  ff は、シーケンス "{}" を含む PostScript が定義された最初の関数にあるとクラッシュしていました。
 	<LI>
 <!--	  I got the locale wrong for Hong Kong -->
-	  ���`�̃��P�[�����ԈႦ�Ă��܂����B
+	  香港のロケールを間違えていました。
 	<LI>
 <!--	  If nothing was selected in the import dlg (or any of the file open dlgs)
 	  and the user pressed [OK], then the directory would be returned. -->
-	  ��荞�݃_�C�A���O�� (�܂��̓t�@�C�����J���_�C�A���O�̂ǂ�ł���) �����I������Ă��炸�� [OK] �����������A�f�B���N�g���ɖ߂�悤�ɂ��܂����B
+	  取り込みダイアログで (またはファイルを開くダイアログのどれであれ) 何も選択されておらずに [OK] を押した時、ディレクトリに戻るようにしました。
 	<LI>
 <!--	  Improved error message for Import dlg. -->
-	  ��荞�݃_�C�A���O�̃G���[���b�Z�[�W�����ǁB
+	  取り込みダイアログのエラーメッセージを改良。
 	<LI>
 <!--	  In spanish various dlgs had buttons that were too close together (and similar
 	  problems) -->
-	  �X�y�C����łŁA�_�C�A���O�̃{�^�����߂Â������Ă��܂��� (���ɂ��e��̓��l�Ȗ�肪����܂���)�B
+	  スペイン語版で、ダイアログのボタンが近づきすぎていました (他にも各種の同様な問題がありました)。
       </UL>
     <LI>
 <!--  01-Aug-2004-->
-      2004�N8��8��
+      2004年8月8日
       <UL>
 	<LI>
 <!--	  ff did not generate amfm files correctly -->
-	  ff �� amfm �t�@�C���𐳂����o�͂��Ă��܂���ł����B
+	  ff は amfm ファイルを正しく出力していませんでした。
 	<LI>
 <!--	  Changed the Merge Kern Infor (menu item and scripting command) to -->
-	  �J�[�j���O���̎�荞�� (���j���[���ڂƃX�N���v�g�R�}���h) ��ύX:
+	  カーニング情報の取り込み (メニュー項目とスクリプトコマンド) を変更:
 	  <UL>
 	    <LI>
 <!--	      support pfm files -->
-	      PFM �t�@�C���̃T�|�[�g
+	      PFM ファイルのサポート
 	    <LI>
 <!--	      detect file type from the file header rather than from the extension -->
-	      �g���q�łȂ��t�@�C���w�b�_����t�@�C���^�C�v�����o����悤�ɕύX
+	      拡張子でなくファイルヘッダからファイルタイプを検出するように変更
 	  </UL>
 	<LI>
 <!--	  Added InterpolateFonts as a scripting command -->
-	  �X�N���v�g�R�}���h InterpolateFonts ��ǉ�
+	  スクリプトコマンド InterpolateFonts を追加
 	<LI>
 <!--	  Added GetEnv as a scripting command -->
-	  �X�N���v�g�R�}���h GetEnv ��ǉ�
+	  スクリプトコマンド GetEnv を追加
 	<LI>
 <!--	  The scripting $fontversion and $copyright psuedo variables broke when I added
 	  the fond name changes. -->
-	  �X�N���v�g�^���ϐ� $fontversion �� $copyright ���Afond ���̕ύX��ǉ��������ɉ󂵂Ă��܂����B
+	  スクリプト疑似変数 $fontversion と $copyright を、fond 名の変更を追加した時に壊していました。
 	<LI>
 <!--	  More problems with tfm files. -->
-	  TFM �t�@�C���Ɋւ��邳��Ȃ���B
+	  TFM ファイルに関するさらなる問題。
 	<LI>
 <!--	  Fixed a couple of problems related to dialog sizing for different languages. -->
-	  �قȂ錾��ɂ�����_�C�A���O�̑傫���Ɋւ��� 2 �̖����C���B
+	  異なる言語におけるダイアログの大きさに関する 2 個の問題を修正。
 	<LI>
 <!--	  In Windows 3.1 some chinese fonts were released with a ttf version of 2 (rather
 	  than 1). Add this to the list of supported TrueType/OpenType versions (see
 	  discussion on freetype mailing list, july 2004 for more info) -->
-	  Windows 3.1 �ł͂������̒�����t�H���g�� TTF �o�[�W���� 2 (1 �łȂ�) �Ō��J����Ă��܂����B�T�|�[�g���Ă��� TrueType/OpenType �̃o�[�W�����ɒǉ��B(FreeType ���[�����O���X�g�̋c�_���Q�Ƃ̂��ƁB���ڂ������ 2004 �N 7 ������)
+	  Windows 3.1 ではいくつかの中国語フォントは TTF バージョン 2 (1 でなく) で公開されていました。サポートしている TrueType/OpenType のバージョンに追加。(FreeType メーリングリストの議論を参照のこと。より詳しい情報が 2004 年 7 月分に)
 	<LI>
 <!--	  Added both a menu and scripting command to copy kerning &amp; substitution
 	  info from one glyph to another. -->
-	  �J�[�j���O�ƒu���̏�������O���t���瑼�̃O���t�ɃR�s�[����R�}���h�����j���[�ƃX�N���v�g�̗����ɒǉ��B
+	  カーニングと置換の情報をあるグリフから他のグリフにコピーするコマンドをメニューとスクリプトの両方に追加。
 	<LI>
 <!--	  FontForge fails to load some svg fonts properly (if they use the "t" directive
 	  within a path =&gt; quadratic splines, control point implied, relative to
 	  last point). Result is a nasty scribble. -->
-	  FontForge �͈ꕔ�� SVG �t�H���g�𐳂����ǂݍ��߂܂���ł��� ("t" �f�B���N�e�B�u���A2 ���X�v���C���ŁA�Öق̐���_���Ō�̓_����̑��Έʒu�Ŏw�肵�Ă���p�X�Ŏg�p�����ꍇ)�B���ʂ͉��炵�������Ⴒ����ł����B
+	  FontForge は一部の SVG フォントを正しく読み込めませんでした ("t" ディレクティブを、2 次スプラインで、暗黙の制御点を最後の点からの相対位置で指定しているパスで使用した場合)。結果は汚らしいごちゃごちゃでした。
 	<LI>
 <!--	  Windows file systems are not case conscious. The file names generated for
 	  Export use glyph names (which are case conscious). So on windows exporting
 	  "a" and "A" will overwrite the same file. (Add a "$" in front of capital
 	  letters to distinguish). -->
-	  Windows �̃t�@�C���V�X�e���͑啶��/����������ʂ��܂���B�����o���Ɏg�p����t�@�C�����́A�O���t�� (����͑啶��/�������̋�ʂ�����܂�) ���g�p���Ă��܂��B���̂��� Windows �ł� "a" �� "A" �������o���ƁA�����t�@�C�����㏑�����邱�ƂɂȂ�܂��B(�啶���̑O�ɂ͋�ʂ̂��߂� "$" �����邱�Ƃɂ��܂���)�B
+	  Windows のファイルシステムは大文字/小文字を区別しません。書き出しに使用するファイル名は、グリフ名 (これは大文字/小文字の区別があります) を使用しています。そのため Windows では "a" と "A" を書き出すと、同じファイルを上書きすることになります。(大文字の前には区別のために "$" をつけることにしました)。
 	<LI>
 <!--	  We were not scaling refs/images uniformly when we dragged corners. Instead
 	  we changed the sides by the same amount (this works for squares, but nothing
 	  else). -->
-	  �p���h���b�O�������ɂ͎Q��/�摜���g��/�k�����Ă��炸�A���ӂ𓯂��䗦�Ŋg��/�k�����Ă��܂��� (����͐����`�ł͐��������삵�܂����A����ȊO�ł͊ԈႢ�ł�)�B
+	  角をドラッグした時には参照/画像を拡大/縮小しておらず、両辺を同じ比率で拡大/縮小していました (これは正方形では正しく動作しますが、それ以外では間違いです)。
 	<LI>
 <!--	  XML does not allow backspace as an input character, even when specified by
 	  an entity. This means we can't specify the unicode code point for backspace
 	  in a an svg font (and many ttf fonts contain a blank backspace char, god
 	  only knows why). -->
-	  XML �ł́A���Ƃ����̎Q�Ƃɂ��w��ł����Ă��A�o�b�N�X�y�[�X����͕����ɔF�߂Ă��܂���B����́ASVG �t�H���g�ł̓o�b�N�X�y�[�X�ɑ΂��āAUnicode �̕����ʒu���w�肷�邱�Ƃ��ł��Ȃ��Ƃ������Ƃł� (�����āA������ TTF �t�H���g�͋󔒂̃o�b�N�X�y�[�X�������w�肵�Ă��܂��B���̗��R�͐_�݂̂��m��ł��B)
+	  XML では、たとえ実体参照による指定であっても、バックスペースを入力文字に認めていません。これは、SVG フォントではバックスペースに対して、Unicode の符号位置を指定することができないということです (そして、多くの TTF フォントは空白のバックスペース文字を指定しています。その理由は神のみぞ知るです。)
 	<LI>
   < !--	The Default ATT-&gt;Unicode decomposition didn't work. -->
-	  �f�t�H���g�� ATT��Unicode �����͓��삵�Ă��܂���ł����B
+	  デフォルトの ATT→Unicode 分解は動作していませんでした。
 	<LI>
 <!--	  Added a new entry to Default ATT, Caps-&gt;Small Caps (and cleaned up lower
 	  case-&gt;small caps too). -->
-	  �f�t�H���g�� ATT�ɁA�V�K���ځu�啶�������^�啶���v��ǉ����܂��� (�����āA�u�����������^�啶���v�𐮗����܂���)�B
+	  デフォルトの ATTに、新規項目「大文字→小型大文字」を追加しました (そして、「小文字→小型大文字」を整理しました)。
 	<LI>
 <!--	  Eschew 0 width hints. -->
-	  �� 0 �̃q���g�������悤�ɂ��܂����B
+	  幅 0 のヒントを避けるようにしました。
 	<LI>
 <!--	  Add support for localized unicode glyph names (currently only french is
 	  available) -->
-	  �e����ł� Unicode �O���t���̃T�|�[�g��ǉ����܂��� (���݂̓t�����X��݂̂��g�p�\�ł�)
+	  各国語版の Unicode グリフ名のサポートを追加しました (現在はフランス語のみが使用可能です)
       </UL>
     <LI>
 <!--  3-July-2004-->
-      2004�N7��3��
+      2004年7月3日
       <UL>
 	<LI>
 <!--	  Undoes in the Guide layer caused a crash (introduced with multi-layer) -->
-	  �K�C�h���C���ŃA���h�D���s���ƃN���b�V�����Ă��܂��� (�}���`���C����ǉ����ȗ�)�B
+	  ガイドレイヤでアンドゥを行うとクラッシュしていました (マルチレイヤを追加時以来)。
 	<LI>
 <!--	  Fixed another problem with subroutine references in type1 output -->
-	  Type1 �����o�����̃T�u���[�`���Q�ƂɊւ������ 1 �̖��������B
+	  Type1 書き出し時のサブルーチン参照に関するもう 1 つの問題を解決。
 	<LI>
 <!--	  Preserve hhea.ascent/descent and some OS/2 values (no UI for these, but they
 	  are retained) -->
-	  hhea.ascent/descent �Ƃ������� OS/2 �l��ۑ�����悤�ɂ��܂��� (�����Ɋւ��� UI �͂���܂��񂪁A�����͕ۑ�����܂�)�B
+	  hhea.ascent/descent といくつかの OS/2 値を保存するようにしました (これらに関する UI はありませんが、それらは保存されます)。
 	<LI>
 <!--	  KANOU provided two patches -->
-	  ��삪 2 �̃p�b�`��񋟂��܂����B
+	  狩野が 2 個のパッチを提供しました。
 	  <UL>
 	    <LI>
 <!--	      One to set the average Char Width field of OS/2 properly -->
-	      OS/2 �e�[�u���̕��ϕ������t�B�[���h�𐳂����ݒ肷��p�b�`
+	      OS/2 テーブルの平均文字幅フィールドを正しく設定するパッチ
 	    <LI>
 <!--	      One to set the 'gasp' table so that Windows would actually use embedded bitmaps -->
-	      'gasp' �e�[�u����ݒ肵�āAWindows �����ۂɖ��ߍ��݃r�b�g�}�b�v���g���悤�ɂ���p�b�`
+	      'gasp' テーブルを設定して、Windows が実際に埋め込みビットマップを使うようにするパッチ
 	  </UL>
 	<LI>
 <!--	  Added support (in build accent) to look for upper case and cyrillic variants
 	  of accents (use grave.cap rather than grave, use breve.cyr rather than breve)
 	  when building upper case or cyrillic letters. -->
-	  (�A�N�Z���g��g�ݗ��Ă�Ƃ���) �A�N�Z���g�̑啶���p�ƃL���������p��T���������T�|�[�g���܂��� (grave �łȂ� grave.cap ���Abreve �łȂ� breve.cyr ���g�p���܂�)
+	  (アクセントを組み立てるときに) アクセントの大文字用とキリル文字用を探す処理をサポートしました (grave でなく grave.cap を、breve でなく breve.cyr を使用します)
 	<LI>
 <!--	  Points were not being properly renumbered if they were out of order (when
 	  editing in quadratic mode) -->
-	  (2 ���X�v���C�����[�h�ŕҏW���鎞��) �_�������������Ȃ��Ƃ��ɁA���������בւ����Ă��܂���ł����B
+	  (2 次スプラインモードで編集する時に) 点が順序正しくないときに、正しく並べ替えられていませんでした。
 	<LI>
 <!--	  When a character had a color attached to it, it looked very strange if the
 	  user changed it. -->
-	  �����ɐF���ݒ肳��Ă��鎞�A���[�U�������ύX����ƕ\�������������Ȃ��Ă��܂����B
+	  文字に色が設定されている時、ユーザがそれを変更すると表示がおかしくなっていました。
 	<LI>
 <!--	  Added an "x" to check boxes when checked -->
-	  �`�F�b�N�{�b�N�X�Ƀ`�F�b�N������Ă���Ƃ��u�~�v���\������悤�ɂ��܂����B
+	  チェックボックスにチェックがされているとき「×」印を表示するようにしました。
 	<LI>
 <!--	  FF did not realize that tonos should be treated as an accent (it is spacing,
 	  which confused ff) -->
-	  FF �́A�g�m�X���A�N�Z���g�ƌ��Ȃ��ׂ����ƋC�Â��Ă��܂���ł��� (���̂��镶���ł��������߁Aff �����������Ă��܂���)�B
+	  FF は、トノスをアクセントと見なすべきだと気づいていませんでした (幅のある文字であったため、ff を混乱させていました)。
 	<LI>
 <!--	  Cleaned up an ancient message in the nomen files. Used to be three separate
 	  strings, now one with format specs in it. -->
-	  nomen �t�@�C���Ɋ܂܂��͂邩�̂̃��b�Z�[�W�𐮗����܂����B���� 3 �̃o���o���ȕ�������g�p���Ă����̂��A�t�H�[�}�b�g�w����g�p����悤�ɂȂ�܂����B
+	  nomen ファイルに含まれるはるか昔のメッセージを整理しました。かつて 3 個のバラバラな文字列を使用していたのを、フォーマット指定を使用するようになりました。
       </UL>
     <LI>
 <!--  18-June-2004 -->
-      2004�N6��18��
+      2004年6月18日
       <UL>
 	<LI>
 <!--	  Point types were not set properly after conversion from quadratic to cubic
 	  splines. -->
-	  2 ���X�v���C������ 3 ���ɕϊ��������A�_�̃^�C�v���������ݒ肳��Ă��܂���ł����B
+	  2 次スプラインから 3 次に変換した時、点のタイプが正しく設定されていませんでした。
 	<LI>
 <!--	  Several preference items were not being saved and were not accessable from
 	  scripts. -->
-	  ���ݒ荀�ڂ̂����A�ۑ����ꂸ�A�X�N���v�g����A�N�Z�X�s�\�Ȃ��̂�����������܂����B
+	  環境設定項目のうち、保存されず、スクリプトからアクセス不可能なものがいくつかありました。
 	<LI>
 <!--	  Scripts could not set the resolution for bdf fonts -->
-	  �X�N���v�g�� BDF �t�H���g�̉𑜓x��ݒ�ł��܂���ł����B
+	  スクリプトで BDF フォントの解像度を設定できませんでした。
 	<LI>
 <!--	  Still having problems with references to references in type1 subroutines. -->
-	  Type1 �T�u���[�`���ɂ�����Q�Ƃւ̎Q�Ƃɖ�肪�܂��c���Ă��܂����B
+	  Type1 サブルーチンにおける参照への参照に問題がまだ残っていました。
 	<LI>
 <!--	  AutoTrace had problems with multi-layered mode. -->
-	  �������C�����[�h�ŁA�����g���[�X�ɖ�肪����܂����B
+	  複数レイヤモードで、自動トレースに問題がありました。
 	<LI>
 <!--	  Enhance "ItalicConstrained" in the Character View to allow vertical constrains
 	  as well as those parallel to the italic angle. -->
-	  �����r���[�ŁA"ItalicConstrained" ���C�^���b�N�p�ɕ��s�Ȑ��񂾂��łȂ��A���������̐��񂳂ꂽ�������\�ɂȂ�悤�ɂ��܂����B
+	  文字ビューで、"ItalicConstrained" がイタリック角に平行な制約だけでなく、垂直方向の制約された動きも可能になるようにしました。
 	<LI>
 <!--	  Build Accented Characters had problems when there were bitmap characters
 	  involved. -->
-	  �r�b�g�}�b�v�������֌W���Ă���Ƃ��A�A�N�Z���g�������̑g�ݗ��Ăɖ�肪����܂����B
+	  ビットマップ文字が関係しているとき、アクセントつき文字の組み立てに問題がありました。
 	<LI>
 <!--	  Can no longer blindly rotate splinesets in type2 fonts to avoid an initial
 	  flex. -->
-	  �ŏ��� flex ������邽�߁AType2 �t�H���g�ł� SplineSet �𖳏����ɉ�]�ł��Ȃ��Ȃ�܂����B
+	  最初の flex を避けるため、Type2 フォントでは SplineSet を無条件に回転できなくなりました。
 	<LI>
 <!--	  Add three new problems to Find Problems -->
-	  �u���_�𔭌��v�� 3 �̐V�������_��ǉ��B
+	  「問題点を発見」に 3 個の新しい問題点を追加。
 	  <UL>
 	    <LI>
 <!--	      Check for intersecting contours -->
-	      ���������_���`�F�b�N
+	      交差する交点をチェック
 	    <LI>
 <!--	      Check for mulitple glyphs with same unicode code point -->
-	      ���� Unicode �R�[�h�|�C���g���������̃O���t���`�F�b�N
+	      同じ Unicode コードポイントをもつ複数のグリフをチェック
 	    <LI>
 <!--	      Check for multiple glyphs with same name -->
-	      �������O���������̃O���t���`�F�b�N
+	      同じ名前をもつ複数のグリフをチェック
 	  </UL>
       </UL>
     <LI>
 <!--  31-May-2004-->
-      2004�N5��31��
+      2004年5月31日
       <UL>
 	<LI>
 <!--	  In the 19-May build I introduced a bug which could generate NaN values for
 	  control points. -->
-	  5 �� 19 ���̃r���h�ŁA����_�̒l�� NaN �ɂȂ�o�O����������ł��܂����B
+	  5 月 19 日のビルドで、制御点の値が NaN になるバグを持ち込んでいました。
       </UL>
     <LI>
 <!--  29-May-2004-->
-      2004�N5��29��
+      2004年5月29日
       <UL>
 	<LI>
 <!--	  The MergeKern scripting command didn't have the capabilities of its menu
 	  counterpart. -->
-	  MergeKern �X�N���v�g�R�}���h�ɑ�������@�\�������ȃ��j���[���ڂɂ���܂���ł����B
+	  MergeKern スクリプトコマンドに相当する機能が同等なメニュー項目にありませんでした。
 	<LI>
 <!--	  Enhance the pattern matching capabilities on font names when loading kerning
 	  information from a mac FOND (there is no place in the FOND that names the
 	  styles, so best we can do is make reasonable guesses). -->
-	  �J�[�j���O���� Mac �� FOND ���\�[�X����p�^�[���}�b�`�Ŏ擾����@�\���g�����܂��� (FOND �ɂ́A�X�^�C������ۑ�����ꏊ���Ȃ��̂ŁA�Ó��Ȑ������s���̂��ł���őP�̂��Ƃł�)�B
+	  カーニング情報を Mac の FOND リソースからパターンマッチで取得する機能を拡張しました (FOND には、スタイル名を保存する場所がないので、妥当な推測を行うのができる最善のことです)。
 	<LI>
 <!--	  When editing quadratic fonts (truetype), changing the type of a point to
 	  be a tangent caused the previous control point to be set the to same location
 	  as the next control point. Bleah. -->
-	  2 ���t�H���g (TrueType) ��ҏW���ɁA�_�̃^�C�v���Ȑ��̊J�n�_�ɕύX����ƒ��O�̐���_�����̐���_�Ɠ����ꏊ�ɐݒ肳��Ă��܂����B�{�P�B
+	  2 次フォント (TrueType) を編集中に、点のタイプを曲線の開始点に変更すると直前の制御点が次の制御点と同じ場所に設定されていました。ボケ。
 	<LI>
 <!--	  New versions of libpng will not automagically load libz when they are loaded.
 	  Needed a patch to load libz manually. -->
-	  �V�����o�[�W������ libpng �͎������ǂݍ��܂ꂽ�Ƃ��Ɏ����I�� libz ��ǂݍ���ł͂���Ȃ��̂ŁAlibz �������œǂݍ��ރp�b�`���K�v�ɂȂ�܂����B
+	  新しいバージョンの libpng は自分が読み込まれたときに自動的に libz を読み込んではくれないので、libz を自分で読み込むパッチが必要になりました。
 	<LI>
 <!--	  Fixed a couple of bugs in contextual / chaining dialog. -->
-	  �����ˑ�/�����ˑ��A�� �_�C�A���O�̃o�O�� 2 �C���B
+	  文脈依存/文脈依存連鎖 ダイアログのバグを 2 個修正。
 	<LI>
 <!--	  When reading PostScript arrays FF failed to parse negative numbers properly. -->
-	  PostScript �z��̓ǂݍ��ݎ��ɁAFF �͕��̒l�̓ǂݍ��݂ɂ˂Ɏ��s���Ă��܂����B
+	  PostScript 配列の読み込み時に、FF は負の値の読み込みにつねに失敗していました。
 	<LI>
 <!--	  Make it an error (which it should be) to create a mac postscript resource
 	  file without also generating an NFNT. -->
-	  NFNT �𐶐������� Mac �� PostScript ���\�[�X���쐬����̂��G���[�Ƃ��܂��� (��������ׂ��ł��傤)�B
+	  NFNT を生成せずに Mac の PostScript リソースを作成するのをエラーとしました (こうするべきでしょう)。
 	<LI>
 <!--	  Warn that NFNTs don't work under OS/X, warn that POST resources are probably
 	  depreciated. -->
-	  OS X �ł� NFNT �͓��삹���APOST���\�[�X�͂����炭�p�~���ꂽ�ł��낤���Ƃ��x������悤�ɂ��܂����B
+	  OS X では NFNT は動作せず、POSTリソースはおそらく廃止されたであろうことを警告するようにしました。
 	<LI>
 <!--	  WinAscent/Descent were being saved incorrectly in sfd files, leading to bad
 	  WinAscent/Descent in t/otf OS/2 tables. -->
-	  WinAscent/Descent �� SFD �t�@�C���Ɍ���ĕۑ�����Ă���ATTF/OTF �� OS/2 �e�[�u���� WinAscent/Descent ��������l�ɂȂ��Ă��܂����B
+	  WinAscent/Descent が SFD ファイルに誤って保存されており、TTF/OTF の OS/2 テーブルの WinAscent/Descent が誤った値になっていました。
 	<LI>
 <!--	  Crash in ExpandStroke from a NaN when try to intersect parallel lines -->
-	  ���s���̌�_�����߂悤�Ƃ����Ƃ��� Nan ���������� ExpandStroke ���N���b�V�����Ă��܂����B
+	  平行線の交点を求めようとしたときに Nan が発生して ExpandStroke がクラッシュしていました。
 	<LI>
 <!--	  Improved Merge a little bit for quadratic splines -->
-	  2 ���X�v���C���̍������������P���܂����B
+	  2 次スプラインの合併を少し改善しました。
       </UL>
     <LI>
 <!--  23-May-2004-->
-      2004�N5��23��
+      2004年5月23日
       <UL>
 	<LI>
 <!--	  Added popups in the Open Font dialog to show the fontname(s) of any font(s)
 	  in a file. -->
-	  �u�t�H���g���J���v�_�C�A���O�ŁA�t�@�C���Ɋ܂܂��p�Ƃ̃t�H���g����\������|�b�v�A�b�v��ǉ����܂����B
+	  「フォントを開く」ダイアログで、ファイルに含まれる術とのフォント名を表示するポップアップを追加しました。
 	<LI>
 <!--	  FontForge failed to load background images. A bug introduced 24-Feb (part
 	  of multi-layer) -->
-	  FontForge �͔w�i�摜�̓ǂݍ��݂Ɏ��s���Ă��܂����B2 �� 24 ���� (�������C���T�|�[�g�ƂƂ���) �������o�O�ł��B
+	  FontForge は背景画像の読み込みに失敗していました。2 月 24 日に (複数レイヤサポートとともに) 入ったバグです。
 	<LI>
 <!--	  Reordered the which glyph FF would pick when searching for accents. It used
 	  to use ASCII versions of the accents over those in the U+03xx range. -->
-	  �A�N�Z���g����������Ƃ��AFF ���ǂ̃O���t���E�����̗D�揇�ʂ�ύX���܂����B���܂ł� U+03xx �͈̔͂̂��̂��D�悵�� ASCII �ł��g�p���Ă��܂����B
+	  アクセントを検索するとき、FF がどのグリフを拾うかの優先順位を変更しました。今までは U+03xx の範囲のものより優先して ASCII 版を使用していました。
       </UL>
     <LI>
 <!--  20-May-2004-->
-      2004�N5��20��
+      2004年5月20日
       <UL>
 	<LI>
 <!--	  Bug in scripting change for mac families. -->
-	  Mac �t�@�~���[�̃X�N���v�g�ł̕ύX�Ƀo�O������܂����B
+	  Mac ファミリーのスクリプトでの変更にバグがありました。
 	<LI>
 <!--	  Added a Paste After command (which isn't visible by default) which will allow
 	  you to build up words more easily. -->
-	  �P����ȒP�ɑg�ݗ��Ă���悤�ɁA�u�ׂɓ\����v�R�}���h��ǉ����܂��� (�f�t�H���g�ł͌����Ȃ��悤�ɂȂ��Ă��܂�)�B
+	  単語を簡単に組み立てられるように、「隣に貼りつけ」コマンドを追加しました (デフォルトでは見えないようになっています)。
       </UL>
     <LI>
 <!--  19-May-2004 -->
-      2004�N5��19��
+      2004年5月19日
       <UL>
 	<LI>
 <!--	  Give the user access to the OS/2 fields WinAscent and WinDescent. -->
-	  ���[�U�� OS/2 �t�B�[���h WInAscent �� WinDescent ���A�N�Z�X�ł���悤�ɂ��܂����B
+	  ユーザに OS/2 フィールド WInAscent と WinDescent がアクセスできるようにしました。
 	<LI>
 <!--	  Add a new command (Points-&gt;Make Line) which will turn a spline between
 	  two selected points into a line. -->
-	  �I�����ꂽ 2 �̓_�̊Ԃ𒼐��ɂ���V�R�}���h (�_(P)�������ɕϊ�(L)) ��ǉ��B
+	  選択された 2 個の点の間を直線にする新コマンド (点(P)→直線に変換(L)) を追加。
 	<LI>
 <!--	  Improve the behavior of defaulting control points so we don't get
 	  self-intersecting loops -->
-	  ����_�̃f�t�H���g�ʒu�̐ݒ�����ǂ��A���Ȍ������郋�[�v������Ȃ��悤�ɂ��܂����B
+	  制御点のデフォルト位置の設定を改良し、自己交差するループが作られないようにしました。
 	<LI>
 <!--	  Add a mode to the pointer tool. Holding down the &lt;Alt&gt; key now means
 	  we don't join two open contours if they make contact while dragging. -->
-	  �|�C���^�c�[���Ƀ��[�h��ǉ��B&lt;Alt&gt; �L�[�������Ȃ��瓮����s���ƁA�h���b�O���ɓ_���ڐG���Ă� 2 �{�̊J�����֊s��ڑ����Ȃ��悤�ɂȂ�܂����B
+	  ポインタツールにモードを追加。&lt;Alt&gt; キーを押しながら動作を行うと、ドラッグ中に点が接触しても 2 本の開いた輪郭を接続しないようになりました。
 	<LI>
 <!--	  When loading an otf file and saving it as ttf, sometimes the space glyph
 	  would become zero width. -->
-	  OTF �t�@�C����ǂݍ���� TTF �Ƃ��ĕۑ�����ƁA�Ƃ��ǂ��X�y�[�X�O���t�̕��� 0 �ɂȂ��Ă��܂����B
+	  OTF ファイルを読み込んで TTF として保存すると、ときどきスペースグリフの幅が 0 になっていました。
 	<LI>
 <!--	  Redid the way mac families were output. Should be more flexible under OS/X -->
-	  Mac �t�@�~���[�̏o�͖@����蒼���BOS X �ł͂��_��ɂȂ����͂��ł��B
+	  Mac ファミリーの出力法をやり直し。OS X ではより柔軟になったはずです。
       </UL>
     <LI>
 <!--  9-May-2004-->
-      2004�N5��9��
+      2004年5月9日
       <UL>
 	<LI>
 <!--	  Several problems with tfm files. Didn't handle tfms with more that 128 lig/kerns. -->
-	  TFM �t�@�C���Ɋւ��邢�����̖��������B128 ���z���鍇��/�J�[�j���O���܂� TFM �t�@�C���������Ă��܂���ł����B
+	  TFM ファイルに関するいくつかの問題を解決。128 個を越える合字/カーニングを含む TFM ファイルを扱えていませんでした。
 	<LI>
 <!--	  Failed to set the r2l flag properly in 'morx' tables -->
-	  'morx' �e�[�u���ŉE�������t���O���ݒ�ł��Ă��܂���ł����B
+	  'morx' テーブルで右横書きフラグが設定できていませんでした。
 	<LI>
 <!--	  More typos in the ghost hint code-->
-	  �S�[�X�g�q���g�̃R�[�h�ɂ܂��뎚������܂����B
+	  ゴーストヒントのコードにまだ誤字がありました。
 	<LI>
 <!--	  Allow users to express error term of the scripting Simplify command as a
 	  fraction. -->
-	  �X�N���v�g�� Simplify �R�}���h�ł̃G���[���𕪐��ŕ\���ł���悤�ɂ��܂����B
+	  スクリプトの Simplify コマンドでのエラー項を分数で表現できるようにしました。
 	<LI>
 <!--	  The strings in the context / chaining dlg's initial pane were wrong -->
-	  �����ˑ�/�����ˑ��A���_�C�A���O�N�����ɕ\�������^�u������Ă��܂����B
+	  文脈依存/文脈依存連鎖ダイアログ起動時に表示されるタブが誤っていました。
 	<LI>
 <!--	  Fixed some bugs in converting OT contextual substitutions to Mac state machines -->
-	  OpenType �����ˑ��u������ Mac ��ԋ@�B�ւ̕ϊ��Ɋւ���o�O���������C���B
+	  OpenType 文脈依存置換から Mac 状態機械への変換に関するバグをいくつか修正。
 	<LI>
 <!--	  If we wanted to put a glyph with references into a subroutine (in type1 output)
 	  we failed miserably -->
-	  (Type1 �o�͂�) �Q�Ƃ��܂ރO���t���T�u���[�`���ɕϊ����悤�Ƃ���ƂЂǂ����s���Ă��܂����B
+	  (Type1 出力で) 参照を含むグリフをサブルーチンに変換しようとするとひどく失敗していました。
 	<LI>
 <!--	  Added a new command
 	  <A HREF="editmenu.html#ReplaceRef">Edit-&gt;ReplaceWithReference </A>(and
@@ -2591,361 +2591,361 @@ FontForge)</A> -->
 	  glyphs, and for each embedded occurance it replaces the outlines of the glyph
 	  with a reference to it. This is because reading a postscript (type2 or type1)
 	  font generally loses all reference information. -->
-	  �V�R�}���h <A HREF="editmenu.html#ReplaceRef">�ҏW(E)���Q�Ƃɒu��</A> (�ƁA�X�N���v�g�ł�) ��ǉ��B�t�H���g���̑S�ẴO���t����A�I�����ꂽ�O���t�Ɠ������̂��������A���ꂪ���ߍ��܂�Ă���̂𔭌����邽�тɁA�����̃O���t�ւ̎Q�Ƃɒu�������܂��B����́A��ʂ� (Type2 �܂��� Type1) PostScript �t�H���g��ǂݍ��ނƑS�Ă̎Q�Ə�񂪎����邩��ł��B
+	  新コマンド <A HREF="editmenu.html#ReplaceRef">編集(E)→参照に置換</A> (と、スクリプト版も) を追加。フォント内の全てのグリフから、選択されたグリフと同じものを検索し、それが埋め込まれているのを発見するたびに、それらのグリフへの参照に置き換えます。これは、一般に (Type2 または Type1) PostScript フォントを読み込むと全ての参照情報が失われるからです。
 	<LI>
 <!--	  The documentation for OS/2.winAscent makes no sense. I shall ignore it and
 	  set winAscent to hhea.ascent -->
-	  OS2.winAscent �̃h�L�������g�̋L�q�͈Ӗ����Ȃ��܂���B����𖳎����āA winAscent �� hhea.ascent �ɐݒ肷�邱�Ƃɂ��܂��B
+	  OS2.winAscent のドキュメントの記述は意味をなしません。これを無視して、 winAscent を hhea.ascent に設定することにします。
 	<LI>
 <!--	  Sivan says that hebrew kerning is broken again. -->
-	  Sivan �́A�w�u���C�����̃J�[�j���O���܂����Ă���ƕ񍐂��܂����B
+	  Sivan は、ヘブライ文字のカーニングがまた壊れていると報告しました。
 	<LI>
 <!--	  The search dlg didn't work on quadratic (truetype) fonts -->
-	  �����_�C�A���O�� 2 �� (TrueType) �t�H���g�œ����Ă��܂���ł����B
+	  検索ダイアログが 2 次 (TrueType) フォントで動いていませんでした。
       </UL>
     <LI>
 <!--  2-May-2004 -->
-      2004�N5��2��
+      2004年5月2日
       <UL>
 	<LI>
 <!--	  I've changed the colour of check boxes because people found black confusing -->
-	  �`�F�b�N�{�b�N�X���������Ƃ��̐F�������ƊF����������̂ŁA�ύX���܂����B
+	  チェックボックスを押したときの色が黒だと皆が混乱するので、変更しました。
 	<LI>
 <!--	  FontForge read Italic Correction incorrectly out of tfm files and had minor
 	  problems generating tfm files. -->
-	  FontForge �̓C�^���b�N�␳�� TFM �t�@�C�����琳�����ǂ߂��ATFM �t�@�C���̐����ɏ��X��肪����܂����B
+	  FontForge はイタリック補正を TFM ファイルから正しく読めず、TFM ファイルの生成に少々問題がありました。
 	<LI>
 <!--	  the kern class dlg had an uninitialized variable (introduced with the multiple
 	  master code I think) -->
-	  �J�[�j���O�N���X�_�C�A���O�ɏ���������Ă��Ȃ��ϐ�������܂��� (�}���`�v���}�X�^�[�������������Ƃ��ɓ������o�O���Ǝv���܂�)�B
+	  カーニングクラスダイアログに初期化されていない変数がありました (マルチプルマスター処理を加えたときに入ったバグだと思います)。
 	<LI>
 <!--	  FontForge would sometimes crash when generating a GDEF table for some types
 	  of otf font. -->
-	  FontForge �͂����� OTF �t�H���g�� GDEF �e�[�u�����o�͂���Ƃ��ɃN���b�V�����邱�Ƃ�����܂����B
+	  FontForge はある種の OTF フォントの GDEF テーブルを出力するときにクラッシュすることがありました。
 	<LI>
 <!--	  Pierre Hanser has updated the french UI, and pointed out some problems with
 	  the english UI. -->
-	  Pierre Hanser ���t�����X�� UI ���X�V���A�p�� UI �̂������̖��_���w�E���܂����B
+	  Pierre Hanser がフランス語 UI を更新し、英語 UI のいくつかの問題点を指摘しました。
 	<LI>
 <!--	  In a version of FontForge compiled with MultiLayer on, Pasting something
 	  containing a reference screwed up memory -->
-	  �������C���@�\���I���ɂ��ăR���p�C�������o�[�W������ FontForge �ł́A���炩�̎Q�Ƃ��܂ޕ����y�[�X�g�����Ƃ���������j�󂵂Ă��܂����B
+	  複数レイヤ機能をオンにしてコンパイルしたバージョンの FontForge では、何らかの参照を含む物をペーストしたときメモリを破壊していました。
       </UL>
     <LI>
 <!--  25-Apr-2004-->
-      2004�N4��25��
+      2004年4月25日
       <UL>
 	<LI>
 <!--	  AutoHint produced ghost hints for curved stems that sometimes were outside
 	  of the character. -->
-	  �����q���g�Â��ɂ��A�Ȃ������X�e���ɑ΂���S�[�X�g�q���g���Ƃ��ǂ������̊O���ɔ�яo�����Ƃ�����܂����B
+	  自動ヒントづけにより、曲がったステムに対するゴーストヒントがときどき文字の外側に飛び出すことがありました。
 	<LI>
 <!--	  Fixed some uninitialized variables in MetaFont (but the algorthim is still
 	  flawed) -->
-	  MetaFont �@�\�̖��������ϐ����������C�� (�������A���S���Y���̌��ׂ͂��̂܂܂ł�)
+	  MetaFont 機能の未初期化変数をいくつか修正 (ただしアルゴリズムの欠陥はそのままです)
 	<LI>
 <!--	  FontForge had problems when the fontview was maximized. -->
-	  FontForge �ɂ́A�t�H���g�r���[���ő剻�����Ƃ��ɂ������̖�肪����܂����B
+	  FontForge には、フォントビューを最大化したときにいくつかの問題がありました。
 	<LI>
 <!--	  The 18-Apr patch for cubic-&gt;quadratic conversion had a bug which generally
 	  resulted in a crash. -->
-	  4 �� 18 ���� 3 ���� 2 ���ϊ��̃p�b�`�ɂ́A��ʂɃN���b�V���������N�����悤�ȃo�O������܂����B
+	  4 月 18 日の 3 次→ 2 次変換のパッチには、一般にクラッシュを引き起こすようなバグがありました。
 	<LI>
 <!--	  When flickering in and out of compacted mode, during a Generate Fonts, the
 	  encodings in the displayed bitmap could get out of sync with those of the
 	  font leading to a crash. -->
-	  �t�H���g�̏o�͂̍Œ��ɃR���p�N�g���[�h���o����������肷�鎞�ɁA�\������Ă���r�b�g�}�b�v�̃G���R�[�f�B���O�����̃t�H���g�Ɠ������Ă��Ȃ������̂ŁA�N���b�V���������N�����Ă��܂����B
+	  フォントの出力の最中にコンパクトモードを出たり入ったりする時に、表示されているビットマップのエンコーディングが元のフォントと同期していなかったので、クラッシュを引き起こしていました。
 	<LI>
 <!--	  Don't mess with the control points in point type conversion
 	  (corner-&gt;curve/tangent) when the they are already reasonable. -->
-	  �_�̃^�C�v�̕ϊ� (�p�̓_ �� �Ȑ���̓_/�Ȑ��̊J�n�_) ���s�����Ƃ��ɐ���_��񂪂��Ƃ��ƓK�؂ł������ꍇ�́A�����ύX���Ȃ��悤�ɂ��܂����B
+	  点のタイプの変換 (角の点 → 曲線上の点/曲線の開始点) を行ったときに制御点情報がもともと適切であった場合は、それを変更しないようにしました。
 	<LI>
 <!--	  Allow rectangles and ellipses to have separate settings of the center out
 	  flag. -->
-	  �����`�Ƒȉ~�̑I�����A��������̈ʒu�w��Ƃ͓Ɨ��ɐݒ�ł���悤�ɂ��܂����B
+	  長方形と楕円の選択が、中央からの位置指定とは独立に設定できるようにしました。
 	<LI>
 <!--	  Add a dialog which allows you to specify exactly where rectangles/ellipses
 	  should go. -->
-	  �����`/�ȉ~���ǂ��ɒu�����𐳊m�Ɏw�肷�邱�Ƃ��ł���_�C�A���O��ǉ��B
+	  長方形/楕円をどこに置くかを正確に指定することができるダイアログを追加。
 	<LI>
 <!--	  Double-clicking on the scale/flap/rotate/skew tool brings up the transform
 	  dialog. -->
-	  �g��k��/���Ԃ�/��]/�䂪�݃c�[���Ń_�u���N���b�N����ƕϊ��_�C�A���O���N������悤�ɂ��܂����B
+	  拡大縮小/裏返し/回転/ゆがみツールでダブルクリックすると変換ダイアログを起動するようにしました。
 	<LI>
 <!--	  Add a couple of entries in the transform dlg option menus which copy information
 	  from the last ruler measurement. -->
-	  �ϊ��_�C�A���O�I�v�V�������j���[�ɁA�����Ō�̂��̂����c�[���ő��������ʂ���擾����I�����ڂ� 2 �ǉ��B
+	  変換ダイアログオプションメニューに、情報を最後のものさしツールで測った結果から取得する選択項目を 2 個追加。
 	<LI>
 <!--	  Give the user control over how long the ruler window hangs around. -->
-	  ���̂����E�B���h�E���\������钷�������[�U���ύX�ł���悤�ɂ��܂����B
+	  ものさしウィンドウが表示される長さをユーザが変更できるようにしました。
       </UL>
     <LI>
 <!--  18-Apr-2004-->
-      2004�N4��18��
+      2004年4月18日
       <UL>
 	<LI>
 <!--	  Fix a couple of bugs dealing with references in multilayered editing. -->
-	  �������C���ҏW�ɂ�����Q�Ƃ̎�舵���Ɋւ���o�O�� 2 �C���B
+	  複数レイヤ編集における参照の取り扱いに関するバグを 2 個修正。
 	<LI>
 <!--	  Uninitialized variable in creation of 'name' table (introduced on 10-Apr) -->
-	  'name' �e�[�u���̍쐬���ɏ���������Ă��Ȃ��ϐ�������܂��� (4��10���ȗ�)
+	  'name' テーブルの作成時に初期化されていない変数がありました (4月10日以来)
 	<LI>
 <!--	  Edit-&gt;Merge didn't work properly on quadratic splines -->
-	  �ҏW(E)������ �� 2 ���X�v���C���ł͐����������Ă��܂���ł����B
+	  編集(E)→合併 は 2 次スプラインでは正しく動いていませんでした。
 	<LI>
 <!--	  LCarets should have ignored the script assigned to them, but they didn't. -->
-	  LCaret �̓X�N���v�g�ő�����ꂽ���ɂ͖��������ׂ��ł����A�����Ȃ��Ă��܂���ł����B
+	  LCaret はスクリプトで代入された時には無視されるべきですが、そうなっていませんでした。
 	<LI>
 <!--	  Put in more protection against bad GSUB/GPOS tables. In particular mangal.ttf
 	  has a bad GSUB table (with erroneous class specifications). -->
-	  ��ꂽ GSUB/GPOS �e�[�u���ɑ΂���h�������ɒǉ��B�Ƃ��ɁAmangal.ttf �͉�ꂽ GSUB �e�[�u�����܂�ł��܂� (�Ԉ�����N���X�w����܂�ł��܂�)�B
+	  壊れた GSUB/GPOS テーブルに対する防護をさらに追加。とくに、mangal.ttf は壊れた GSUB テーブルを含んでいます (間違ったクラス指定を含んでいます)。
 	<LI>
 <!--	  FontForge wasn't setting <TT>'hhea'.caretSlopeRun</TT> appropriately in italic
 	  fonts (should match <TT>tan(italicAngle)</TT>). -->
-	  FontForge �� <TT>'hhea'.caretSlopeRun</TT> ���C�^���b�N�t�H���g�œK�؂ɐݒ肵�Ă��܂���ł��� (<TT>tan(italicAngle)</TT> �ƈ�v����K�v������܂�)
+	  FontForge は <TT>'hhea'.caretSlopeRun</TT> をイタリックフォントで適切に設定していませんでした (<TT>tan(italicAngle)</TT> と一致する必要があります)
 	<LI>
 <!--	  Oops. Can do much better converting from cubic to quadratic splines. We were
 	  getting far too many linear segments. -->
-	  �����ƁB3 ������ 2 ���X�v���C���ɂ͑啝�ȉ��ǂ̗]�n������܂����B���s�ȃZ�O�����g�����܂�ɂ��������肷���Ă��܂����B
+	  おっと。3 次から 2 次スプラインには大幅な改良の余地がありました。平行なセグメントをあまりにたくさん作りすぎていました。
 	<LI>
 <!--	  Our cubic-&gt;quadratic conversion could generate splines where the endpoints
 	  were less than 1 unit apart. Since ttf rounds all coords to ints, this meant
 	  we'd get the two endpoints on top of one another. -->
-	  ��X�� 3 �� �� 2 ���ϊ��͒[�_�̊Ԃ̋����� 1 ���j�b�g�ɖ����Ȃ��X�v���C�����쐬����\��������܂����BTTF �͑S�Ă̍��W�𐮐��ɕϊ�����̂ŁA����͂܂�[�_�����̒[�_�ɏd�Ȃ��Ă��܂��Ƃ������Ƃ��Ӗ����܂��B
+	  我々の 3 次 → 2 次変換は端点の間の距離が 1 ユニットに満たないスプラインを作成する可能性がありました。TTF は全ての座標を整数に変換するので、これはつまり端点が他の端点に重なってしまうということを意味します。
 	<LI>
 <!--	  When generating a truetype font from a cubic database, FontForge calculated
 	  'maxp'.maxCompositePoints incorrectly. -->
-	  TrueType �t�H���g�� 3 ���Ȑ����܂� SFD ����o�͂���Ƃ��AFontForge �� 'max'.maxCompositePoints �̌v�Z���ԈႦ�Ă��܂����B
+	  TrueType フォントを 3 次曲線を含む SFD から出力するとき、FontForge は 'max'.maxCompositePoints の計算を間違えていました。
 	<LI>
 <!--	  Gave the user control over when point numbers are visible (even for cubic
 	  fonts) -->
-	  (���Ƃ� 3 ���t�H���g�ł�) �_�̔ԍ�����������ǂ��������[�U�����߂ł���悤�ɂ��܂���
+	  (たとえ 3 次フォントでも) 点の番号が見えかるどうかをユーザが調節できるようにしました
       </UL>
     <LI>
 <!--  10-Apr-2004-->
-      2004�N4��10��
+      2004年4月10日
       <UL>
 	<LI>
 <!--	  The flatten commands didn't preserve the ttf 'name' table nor the 'OS/2'
 	  table -->
-	  �P�ꉻ�R�}���h�� TTF �� 'name' �e�[�u���� 'OS/2' �e�[�u�����ێ����Ă��܂���ł����B
+	  単一化コマンドは TTF の 'name' テーブルも 'OS/2' テーブルも保持していませんでした。
 	<LI>
 <!--	  Redid the way 'name' table was generated, hopefully we do better for the
 	  mac now. -->
-	  'name' �e�[�u�����o�͂������@���Ď������܂����BMac �ł̏o�͂��������ꂽ�Ɗ��҂��Ă��܂��B
+	  'name' テーブルが出力される方法を再実装しました。Mac での出力が改造されたと期待しています。
 	<LI>
 <!--	  the 'kern' table had a bad rangeShift value (it was the negative of what
 	  it should be) -->
-	  'kern' �e�[�u���� rangeShift �l���Ԉ���Ă��܂��� (�������l�Ɛ������t�ł���)�B
+	  'kern' テーブルの rangeShift 値が間違っていました (正しい値と正負が逆でした)。
 	<LI>
 <!--	  Pasting a reference from one font to another could crash if the destination
 	  font did not have the refered character. -->
-	  ����t�H���g����ʂ̃t�H���g�ɎQ�Ƃ��y�[�X�g�����Ƃ��A�󂯑��̃t�H���g�ɎQ�Ƃ���Ă��镶�����Ȃ��ƃN���b�V�����Ă��܂����B
+	  あるフォントから別のフォントに参照をペーストしたとき、受け側のフォントに参照されている文字がないとクラッシュしていました。
 	<LI>
 <!--	  ".null" was appearing twice in the 'post' table when saving a ttf file a
 	  second time. -->
-	  TTF �t�@�C���� 2 ��ڂɕۑ������Ƃ��A'post' �e�[�u���� ".null" �� 2 ��o�����Ă��܂����B
+	  TTF ファイルを 2 回目に保存したとき、'post' テーブルに ".null" が 2 回出現していました。
 	<LI>
 <!--	  Markus Schwarzenberg points out that the ScaleToEm() scripting command didn't
 	  work when given a single argument. -->
-	  ScaleToEm() �X�N���v�g�R�}���h�������� 1 �����^�����Ƃ��ɐ����������Ȃ����Ƃ� Markus Schwarzenberg ���w�E���܂����B
+	  ScaleToEm() スクリプトコマンドが引数を 1 個だけ与えたときに正しく動かないことを Markus Schwarzenberg が指摘しました。
 	<LI>
 <!--	  Pierre Hanser points out that the version fix on 4-Apr had a bug that caused
 	  crashes on Macs (perhaps elsewhere). -->
-	  4 �� 4 ���̃o�[�W�����ɂ́AMac �� (�����炭���ł�) �N���b�V������悤�ȃo�O�����邱�Ƃ� Pierre Hanser ���w�E���܂����B
+	  4 月 4 日のバージョンには、Mac で (おそらく他でも) クラッシュするようなバグがあることを Pierre Hanser が指摘しました。
       </UL>
     <LI>
 <!--  04-Apr-2004 -->
-      2004�N4��4��
+      2004年4月4日
       <UL>
 	<LI>
 <!--	  Several more fixes for cff output. -->
-	  CFF �o�͂Ɋւ��邳��ɂ������̏C���B
+	  CFF 出力に関するさらにいくつかの修正。
 	<LI>
 <!--	  We had a bad habit of including extraneous hintmask operators in output -->
-	  �]�v�ȃq���g�}�X�N������o�͂Ɋ܂߂鈫���Ȃ�����܂����B
+	  余計なヒントマスク操作を出力に含める悪い癖がありました。
 	<LI>
 <!--	  Add a proper ff version (well, as much as my versions be proper) to
 	  postscript/svg output -->
-	  ������ ff �̃o�[�W���� (�܂��A���̃o�[�W�����Â����K���ł������) �� PostScript/SVG �̏o�͂Ɋ܂߂�悤�ɂ��܂����B
+	  正しい ff のバージョン (まあ、私のバージョンづけが適正である限り) を PostScript/SVG の出力に含めるようにしました。
 	<LI>
 <!--	  Patch from Kanou about reading format 2 bitmaps in a sfnt -->
-	  sfnt �Ɋ܂܂��t�H�[�}�b�g 2 �r�b�g�}�b�v�̓ǂݍ��݂Ɋւ����삩��̃p�b�`������܂����B
+	  sfnt に含まれるフォーマット 2 ビットマップの読み込みに関する狩野からのパッチがありました。
 	<LI>
 <!--	  Patch from Kanou. MS requires a weird format for GSUB in vertical writing. -->
-	  ��삩��̃p�b�`�BMS �͏c�����p�t�H���g�� GSUB �̃t�H�[�}�b�g�Ɋ�Ȑ�����ۂ��Ă��܂��B
+	  狩野からのパッチ。MS は縦書き用フォントの GSUB のフォーマットに奇妙な制約を課しています。
       </UL>
     <LI>
 <!--  29-Mar-2004-->
-      2004�N3��29��
+      2004年3月29日
       <UL>
 	<LI>
 <!--	  When Type1 output needed to output a reference as inline splines (as opposed
 	  to a subroutine call or using a seac command) then it would lose any translation
 	  applied to that reference. -->
-	  Type1 �o�͂ɂ����āA�Q�Ƃ� (�T�u���[�`���R�[���� seac �R�}���h�ł͂Ȃ�) �C�����C���X�v���C���Ƃ��ďo�͂���K�v������ꍇ�A���̎Q�ƂɓK�p���ꂽ���ׂĂ̕��s�ړ��������Ă��܂����B
+	  Type1 出力において、参照を (サブルーチンコールや seac コマンドではなく) インラインスプラインとして出力する必要がある場合、その参照に適用されたすべての平行移動が失われていました。
 	<LI>
 <!--	  Patch to Type3 output from R.L.Horn -->
-	  R.L.Horn �ɂ�� Type3 �o�͂ւ̃p�b�`�B
+	  R.L.Horn による Type3 出力へのパッチ。
 	<LI>
 	  FontForge used to crash when reading in a bdf glyph with a bad bounding box.
-	  �o�E���f�B���O�{�b�N�X���s���� BDF �O���t��ǂݍ��ނ� FontForge ���N���b�V�����Ă��܂����B
+	  バウンディングボックスが不正な BDF グリフを読み込むと FontForge がクラッシュしていました。
 	<LI>
 <!--	  Reading a kerning class from an sfd file when that class had more second
 	  character classes than first character classes would screw up memory and
 	  probably cause a crash. -->
-	  SFD �t�@�C������̃J�[�j���O�N���X��ǂݍ��񂾂Ƃ��ɁA���̃N���X�̑� 1 �����N���X������ 2 �����N���X�̂ق��������ꍇ�A���������g���s�����Ă����炭�N���b�V�����Ă��܂����B
+	  SFD ファイルからのカーニングクラスを読み込んだときに、そのクラスの第 1 文字クラスよりも第 2 文字クラスのほうが多い場合、メモリを使い尽くしておそらくクラッシュしていました。
 	<LI>
 <!--	  Attempting to edit a 'cvt ' table in a font without one caused a crash.
 	  Attempting to edit a 'cvt ' table in a font with one showed an empty table. -->
-	  'cvt ' �e�[�u�������݂��Ȃ��t�H���g�ŁA�e�[�u����ҏW���悤�Ƃ���ƃN���b�V�����N�����Ă��܂����B
-	  'cvt ' �e�[�u���� 1 ���݂���t�H���g�Ńe�[�u����ҏW���悤�Ƃ���Ɓ`�̃e�[�u�����\������Ă��܂����B
+	  'cvt ' テーブルが存在しないフォントで、テーブルを編集しようとするとクラッシュを起こしていました。
+	  'cvt ' テーブルが 1 個存在するフォントでテーブルを編集しようとすると〜のテーブルが表示されていました。
 	<LI>
 <!--	  Make scaling from the fontview apply to kerning and positioning data. -->
-	  �t�H���g�r���[����̊g��E�k�����J�[�j���O�ƈʒu�w��̃f�[�^�ɂ��K�p�B
+	  フォントビューからの拡大・縮小をカーニングと位置指定のデータにも適用。
 	<LI>
 <!--	  Drawing a rectangle by dragging from center out didn't work -->
-	  ��������̃h���b�O�ɂ�钷���`�̕`�悪���܂��ł��܂���ł����B
+	  中央からのドラッグによる長方形の描画がうまくできませんでした。
 	<LI>
 <!--	  Display phantom points when debugging. Be prepared to find either 2 (horizontal
 	  metrics) or 4 (both horizontal or vertical) depending on what version of
 	  freetype we've got. -->
-	  �f�o�b�O���Ƀt�@���g���|�C���g��\���B�C���X�g�[������Ă��� FreeType �̃o�[�W�����ɂ��A�_�� 2 �� (�������g���b�N) �T�����܂��� 4 �� (�����Ɛ����̗���) �T�����̂ǂ���ɂ��Ή��B
+	  デバッグ時にファントムポイントを表示。インストールされている FreeType のバージョンにより、点を 2 個 (水平メトリック) 探すかまたは 4 個 (水平と垂直の両方) 探すかのどちらにも対応。
 	<LI>
 <!--	  Bug in both reading and writing encoding format 0 of cff fonts. I forgot
 	  to ignore .notdef so everything was off by 1. -->
-	  �G���R�[�f�B���O�t�H�[�}�b�g 0 �� CFF �t�H���g�̓ǂݏ��������Ƀo�O������܂����B.notdef �𖳎�����̂�Y��Ă����̂ŁA�S���� 1 ����Ă��܂����B
+	  エンコーディングフォーマット 0 の CFF フォントの読み書き両方にバグがありました。.notdef を無視するのを忘れていたので、全部が 1 個ずれていました。
 	<LI>
 <!--	  If a glyph was used as a reference in another glyph, and we put it in a
 	  subroutine (type1 output), and it had hint conflicts, then the first group
 	  of hints never got output. -->
-	  �O���t�����̃O���t�ւ̎Q�ƂƂ��Ďg���Ă���A���̃O���t (�� Type1 �o��) �ɃT�u���[�`����ǉ������ꍇ�A�q���g�ɏՓ˂�����ƁA�ŏ��̃q���g�O���[�v���S���o�͂���Ă��܂���ł����B
+	  グリフが他のグリフへの参照として使われており、そのグリフ (の Type1 出力) にサブルーチンを追加した場合、ヒントに衝突があると、最初のヒントグループが全く出力されていませんでした。
 	<LI>
 <!--	  In multilayered mode, the Revert Glyph command left memory in a potentially
 	  bad state. (If you immediately closed the charview, then nothing bad would
 	  happen, but if you tried any editing in it, then nasty things happened.) -->
-	  �}���`���C�����[�h�ł́A�u�O���t��߂�(Y)�v�R�}���h�����s��ɁA�������ɐ��ݓI�Ȗ����̂����Ԃ��c���Ă��܂����B(���̒���ɕ����r���[�����Ή������͋N����܂��񂪁A�����ҏW���悤�Ƃ���ƁA�s�����Ȏ����N����܂��B
+	  マルチレイヤモードでは、「グリフを戻す(Y)」コマンドを実行語に、メモリに潜在的な矛盾のある状態が残っていました。(その直後に文字ビューを閉じれば何も問題は起こりませんが、それを編集しようとすると、不愉快な事が起こります。
       </UL>
     <LI>
 <!--  21-Mar-2004-->
-      2004�N3��21��
+      2004年3月21日
       <UL>
 	<LI>
 <!--	  When flattening a CID file fontforge lost track of the script/lang list (and
 	  other things) which caused bugs when dealing with substitutions -->
-	  CID �t�@�C����P�ꉻ���鎞�AFontForge �͗p���n/���ꃊ�X�g�̋L�^ (�Ƃ��̑��̃f�[�^) �������Ă���A���ꂪ�u�����s���Ƃ��̃o�O��U�����Ă��܂����B
+	  CID ファイルを単一化する時、FontForge は用字系/言語リストの記録 (とその他のデータ) を失っており、それが置換を行うときのバグを誘発していました。
 	<LI>
 <!--	  When saving multiply, fontforge could free a fonts hash table several times -->
-	  �����ۑ����s���ƁAFontForge ���n�b�V���e�[�u��������� free ����\��������܂����B
+	  複数保存を行うと、FontForge がハッシュテーブルを何回も free する可能性がありました。
 	<LI>
 <!--	  When flattening by a CMAP file from a script fontforge could crash -->
-	  �X�N���v�g���� CMap �t�@�C���w��ɂ��P�ꉻ���s�����Ƃ���ƁAFontForge ���N���b�V������\��������܂����B
+	  スクリプトから CMap ファイル指定による単一化を行おうとすると、FontForge がクラッシュする可能性がありました。
 	<LI>
 <!--	  Added a CIDFlatten command to scripting. -->
-	  �X�N���v�g�� CIDFlatten �R�}���h��ǉ��B
+	  スクリプトに CIDFlatten コマンドを追加。
 	<LI>
 <!--	  The "cleanup of OS/2" on 29-Feb actually broke WinAscent/Descent -->
-	  2��29���́uOS/2 �e�[�u���̃o�O���v�ŁA���ۂɂ� WinAscent/Descent �����Ă��܂����B
+	  2月29日の「OS/2 テーブルのバグ取り」で、実際には WinAscent/Descent が壊れていました。
 	<LI>
 <!--	  When loading a mac unicode string from the 'name' table, fontforge failed
 	  to convert the language correctly. -->
-	  'name' �e�[�u������ Mac �� Unicode �������ǂݍ��ނƂ��AFontForge �͌���𐳂����ϊ��ł��Ă��܂���ł����B
+	  'name' テーブルから Mac の Unicode 文字列を読み込むとき、FontForge は言語を正しく変換できていませんでした。
 	<LI>
 <!--	  When loading a mac contextual substitution statemachine, fontforge made egregious
 	  errors in guessing to what glyphs were usable for a substitution of the marked
 	  glyph. -->
-	  Mac �̕����ˑ��u���̏�ԋ@�B��ǂݍ��ނƂ��AFontForge �̓}�[�N���O���t�̒u���ɂǂ̃O���t���g�p�ł��邩�𐄑�����̂ɂƂ�ł��Ȃ��ԈႢ��Ƃ��Ă��܂����B
+	  Mac の文脈依存置換の状態機械を読み込むとき、FontForge はマークつきグリフの置換にどのグリフが使用できるかを推測するのにとんでもない間違いを犯していました。
 	<LI>
 <!--	  Added the current encoding to the font's window title (also display a flag
 	  to show whether the font has been changed) -->
-	  �t�H���g�̃E�B���h�E�^�C�g���Ɍ��݂̕�����������ǉ����܂��� (�܂��A�t�H���g���ύX���ꂽ���ǂ����������t���O���ǉ����܂���)�B
+	  フォントのウィンドウタイトルに現在の符号化方式を追加しました (また、フォントが変更されたかどうかを示すフラグも追加しました)。
 	<LI>
 <!--	  When moving points around on an order2 contour fontforge could end up with
 	  bad control points and would then produce annoying internal errors alerting
 	  the user to this fact. -->
-	  2 ���̗֊s��ɂ���_�𓮂����Ă���Ƃ��ɁAFontForge ���Z�o���鐧��_���s���Ȉʒu�ɓ��B���邱�Ƃ�����A���̎��������[�U�Ɍx������ς킵�������G���[�\�����o�Ă��܂����B
+	  2 次の輪郭上にある点を動かしているときに、FontForge が算出する制御点が不正な位置に到達することがあり、その事実をユーザに警告する煩わしい内部エラー表示が出ていました。
 	<LI>
 <!--	  The CID Flatten commands did not work when the view was compacted. -->
-	  CID �̒P�ꉻ�R�}���h���A��`�ς݂̃O���t�݂̂�\�����Ă���Ƃ��ɂ͓����Ă��܂���ł����B
+	  CID の単一化コマンドが、定義済みのグリフのみを表示しているときには動いていませんでした。
 	<LI>
 <!--	  CharInfo had been deliberately disabled in CID fonts -->
-	  CID �t�H���g�ł͕�����񂪂킴�Ǝg�p�ł��Ȃ��悤�ɂȂ��Ă��܂����B
+	  CID フォントでは文字情報がわざと使用できないようになっていました。
 	<LI>
 <!--	  Show ATT didn't work with CID keyed fonts -->
-	  CID �L�[�w��t�H���g�ł́uATT ��\��(S)�v�������Ă��܂���ł����B
+	  CID キー指定フォントでは「ATT を表示(S)」が動いていませんでした。
 	<LI>
 <!--	  The preference mapping between mac and opentype small caps features was wrong. -->
-	  Mac �� OpenType �̃X���[���L���b�v�X�@�\�Ԃ�Ή��Â���I����������Ă��܂����B
+	  Mac と OpenType のスモールキャップス機能間を対応づける選択肢が誤っていました。
 	<LI>
 <!--	  Werner found a strange bug in splinefill that I can't reproduce (and can't
 	  understand how it could happen) but the fix appears obvious. -->
-	  Werner �́A�����Č��ł��Ȃ� (���A�Ȃ����ꂪ�N����̂������ł��Ȃ�) splinefill �̊�ȃo�O�𔭌����܂������A���̏C���͎����ȕ��ł����B
+	  Werner は、私が再現できない (し、なぜそれが起こるのか理解できない) splinefill の奇妙なバグを発見しましたが、その修正は自明な物でした。
 	<LI>
 <!--	  Add a command to show what glyphs use the current glyph in a substitution
 	  (so "A.swash" would show that "A" used it, and "i" would show that "fi" used
 	  it). -->
-	  ���݂̃O���t���u���ɂ����Ăǂ̃O���t���g�p���邩��\������R�}���h��ǉ����܂��� (�Ⴆ�� "A.swash" �ł� "A" ��\�����A"i" �ł� "fi" ��������g�p����|��\������ł��傤)�B
+	  現在のグリフが置換においてどのグリフを使用するかを表示するコマンドを追加しました (例えば "A.swash" では "A" を表示し、"i" では "fi" がそれを使用する旨を表示するでしょう)。
 	<LI>
 <!--	  Changed the extension shown in the Generate Fonts dlg for multiple saves
 	  to ".pfb". Put in a %s to make it obvious that more will be added to the
 	  name. Support people who want .pfa fonts too. -->
-	  �����ۑ�
-	  ".pfb" �̕����ۑ��ɑ΂��ăt�H���g�o�̓_�C�A���O�ŕ\�������g���q�ύX���܂����B���O�ɉ������ǉ�����邱�Ƃ���薾���Ɏ����悤�� %s ��}�����܂����B.pfa �t�H���g�ł��A�����̃��[�U�⏕���s���悤�ɂ��܂����B
+	  複数保存
+	  ".pfb" の複数保存に対してフォント出力ダイアログで表示される拡張子変更しました。名前に何かが追加されることをより明白に示すように %s を挿入しました。.pfa フォントでも、それらのユーザ補助を行うようにしました。
 	<LI>
 <!--	  The dialog for adding/editing correspondences between mac feature/settings
 	  and opentype features never went away. -->
-	  Mac �̋@�\/�ݒ�� OpenType �̋@�\�̊Ԃ̑Ή���ǉ�/�ҏW���邽�߂̃_�C�A���O���S�������܂���ł����B
+	  Mac の機能/設定と OpenType の機能の間の対応を追加/編集するためのダイアログが全く消えませんでした。
 	<LI>
 <!--	  Disable the Default ATT menu if no char is selected in the fontview. -->
-	  �t�H���g�r���[�ŕ������I������Ă��Ȃ��Ƃ��ɂ́u�f�t�H���g��ATT�v���j���[���g�p�s�\�ɂ��܂����B
+	  フォントビューで文字が選択されていないときには「デフォルトのATT」メニューを使用不可能にしました。
 	<LI>
 <!--	  FontForge sometimes had trouble drawing the correct rotated glyph in cid
 	  fonts on the display lines of the fontview. -->
-	  FontForge �́ACID �t�H���g�Ő�������]���ꂽ�O���t���t�H���g�r���[�̕\���s�ŕ`�悷��̂ɖ�肪����܂����B
+	  FontForge は、CID フォントで正しく回転されたグリフをフォントビューの表示行で描画するのに問題がありました。
 	<LI>
 <!--	  Changed the way names used in cidmap files, so there are new cidmap files
 	  now. -->
-	  ���O�� cidmap �t�@�C���Ŏg�p�������@��ύX�����̂ŁAcidmap �t�@�C�������̂��эX�V���܂����B
+	  名前が cidmap ファイルで使用される方法を変更したので、cidmap ファイルをこのたび更新しました。
 	<LI>
 <!--	  The ShowAtt dialog could overwrite itself if there were enough aats in it.
 	  (and at one point the vertical scroll bar was set to the bounds of the horizontal
 	  scroll bar) -->
-	  [ATT ��\��] �_�C�A���O�́AAAT �������܂܂�Ă���Ǝ������g���㏑������\��������܂��� (�����āA�����_�ɂ����āA�����X�N���[���o�[�������X�N���[���o�[�̋��E��ɐݒ肳��Ă��܂���)�B
+	  [ATT を表示] ダイアログは、AAT が多数含まれていると自分自身を上書きする可能性がありました (そして、ある一点において、垂直スクロールバーが水平スクロールバーの境界上に設定されていました)。
 	<LI>
 <!--	  Still getting the windows ascent/descent wrong. This time in CID keyed fonts. -->
-	  �E�B���h�E�̃A�Z���g/�f�B�Z���g���܂��Ԉ���Ă��܂����B����� CID �L�[�w��t�H���g�ł��B
+	  ウィンドウのアセント/ディセントがまだ間違っていました。今回は CID キー指定フォントです。
 	<LI>
 <!--	  Add some new language translations for things like "Bold" (dutch, swedish,
 	  norwegian) -->
-	  "Bold" �Ȃǂ̒P��̖|��ɐV���Ȍ���� (�I�����_��A�X�E�F�[�f����A�m���E�F�[��) ��ǉ����܂����B
+	  "Bold" などの単語の翻訳に新たな言語版 (オランダ語、スウェーデン語、ノルウェー語) を追加しました。
 	<LI>
 <!--	  Dragging and dropping a char from the font view into the char info dlg (to
 	  create a substitution) created a crash instead. -->
-	  �t�H���g�r���[���當���r���[�_�C�A���O�ւ̃h���b�O&amp;�h���b�v�� (�u�����쐬���邽�߂�) �s����悤�ɂ����͂����A�N���b�V���������N�����Ă��܂����B
+	  フォントビューから文字ビューダイアログへのドラッグ&amp;ドロップが (置換を作成するために) 行えるようにしたはずが、クラッシュを引き起こしていました。
 	<LI>
 <!--	  Support more of postscript in the interpreter -->
-	  �C���^�v���^���A��蕡�G�� PostScript ���T�|�[�g�B
+	  インタプリタが、より複雑な PostScript をサポート。
 	<LI>
 <!--	  Our svg fonts pointed to a not-yet-existing dtd file -->
-	  �o�͂��� SVG �t�H���g���܂����݂��Ȃ� DTD �t�@�C�����w���Ă��܂����B
+	  出力した SVG フォントがまだ存在しない DTD ファイルを指していました。
 	<LI>
 <!--	  Support for Apple's distortable fonts (sort of like truetype multi-master
 	  fonts) -->
-	  Apple �̕ό`�\�t�H���g (TrueType �ɂ�������̃}���`�v���}�X�^�[�t�H���g) �̃T�|�[�g�B
+	  Apple の変形可能フォント (TrueType における一種のマルチプルマスターフォント) のサポート。
 	<LI>
 <!--	  Depressing the control key now makes popups live longer (until the mouse
 	  moves). -->
-	  Control �L�[�������ƁA�|�b�v�A�b�v���\������鎞�Ԃ� (�}�E�X�𓮂����܂�) ��������悤�ɂ��܂����B
+	  Control キーを押すと、ポップアップが表示される時間を (マウスを動かすまで) 延長するようにしました。
 	<LI>
 <!--	  new command in MM menu: Blend to new font -->
-	  MM ���j���[�ւ̐V�R�}���h: ��Ԍ��ʂ�V�t�H���g��(B)
+	  MM メニューへの新コマンド: 補間結果を新フォントに(B)
       </UL>
     <LI>
       2-Mar-2004
       <UL>
 	<LI>
 <!--	  Changed name from pfaedit to fontforge -->
-	  PfaEdit ���� FontForge �ւ̖��̕ύX
+	  PfaEdit から FontForge への名称変更
       </UL>
   </UL>
   <P>
@@ -2953,6 +2953,6 @@ FontForge)</A> -->
   FontForge was first released on 2-Mar-2004. An earlier version of the program,
   called PfaEdit, was begun in Sept of 2000, released on the web 7-Nov-2000,
   and moved to pfaedit.sf.net on 21-Apr-2001. -->
-  FontForge �̍ŏ��̔ł� 2004 �N 3 �� 2 ���Ɍ��J����܂����B���̃v���O�����͂���ȑO PfaEdit �ƌĂ΂�Ă��܂������A2000 �N 9 ���ɊJ�����n�܂�A2000 �N 11 �� 7 ���ɍŏ��Ɍ��J����A2001 �N 1 �� 21 ���� pfaedit.sf.net �Ɉڍs���܂����B
+  FontForge の最初の版は 2004 年 3 月 2 日に公開されました。このプログラムはそれ以前 PfaEdit と呼ばれていましたが、2000 年 9 月に開発が始まり、2000 年 11 月 7 日に最初に公開され、2001 年 1 月 21 日に pfaedit.sf.net に移行しました。
 </DIV>
 </BODY></HTML>
