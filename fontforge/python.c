@@ -18818,6 +18818,8 @@ static void RegisterAllPyModules(void) {
      * It allows an 'import some_module' to always work, as python
      * knows where to find the module in already-loaded code without
      * having to search the filesystem for module files/libraries.
+     * NOTE: This should only be called from the embedded python,
+     *       when used from the pyhook, we can't (or shouldn't) do this
      */
     fixup_module_definitions();
     for ( unsigned i=0; i<NUM_MODULES; i++ ) {
@@ -19297,10 +19299,15 @@ PyMODINIT_FUNC FFPY_PYTHON_ENTRY_FUNCTION(const char* modulename) {
         doinitFontForgeMain();
         no_windowing_ui = running_script = true;
 
-#if PY_MAJOR_VERSION <= 2
-        RegisterAllPyModules();
-#endif
         CreateAllPyModules();
+
+        // Register the internal module
+        PyObject* modules = PySys_GetObject("modules");
+        PyObject* ref = PyDict_GetItemString(modules, module_def_ff_internals.module_name);
+        if (ref == NULL) {
+            PyDict_SetItemString(modules, module_def_ff_internals.module_name, module_def_ff_internals.runtime.module);
+        }
+
         initted = true;
     }
 
