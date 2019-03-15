@@ -25,8 +25,6 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-PACKAGEROOTDIR = ${datarootdir}
-
 # Where .desktop files go.
 desktopdir = $(PACKAGEROOTDIR)/applications
 desktop_DATA = org.fontforge.FontForge.desktop

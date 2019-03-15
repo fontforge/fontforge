@@ -651,6 +651,43 @@ fi
 AM_CONDITIONAL([FONTTOOLS],[test x"${fontforge_extras}" = xyes])
 
 #--------------------------------------------------------------------------
+# Enable Free Desktop support files in default path datarootdir, or provide
+# another path using "--enable-fontforge-desktop=alternate_dir".
+# If FontForge is built without programs or without a GUI, then this leaves
+# freedesktop support off too.
+fontforge_desktop=yes
+AC_ARG_ENABLE([fontforge-desktop],
+   [AS_HELP_STRING([--enable-fontforge-desktop[[=DIR]]],
+   [Install freedesktop.org support files (default=datarootdir).])],
+   [fontforge_desktop=${enableval}])
+case $fontforge_desktop in
+   no | false)
+      fontforge_desktop=no
+      ;;
+   yes | true)
+      enable_fontforge_desktop=${datarootdir}
+      fontforge_desktop=yes
+      ;;
+   *)
+      enable_fontforge_desktop=${enableval}
+      fontforge_desktop=yes
+      ;;
+esac
+# If user chose "./configure --disable-programs" or FontForge is built as a
+# command line program (without GUI) then don't install free desktop files.
+i_have_desktop=yes
+if test x"${i_do_have_programs}" != xyes || test x"${i_do_have_gui}" != xyes; then
+   fontforge_desktop=no
+   i_have_desktop=no
+fi
+
+if test x"${fontforge_desktop}" = xno; then
+   enable_fontforge_desktop=no
+fi
+AC_SUBST([PACKAGEROOTDIR],[${enable_fontforge_desktop}])
+AM_CONDITIONAL([XDG_DESKTOP],[test x"${i_have_desktop}" = "xyes"])
+
+#--------------------------------------------------------------------------
 # Create and Set FontForge Compiler Flags
 
 my_cflags="${my_cflags} ${WARNING_CFLAGS}"
@@ -931,6 +968,7 @@ Summary of optional features:
   native scripting	yes	${i_do_have_native_scripting}
   python scripting	${enable_python_scripting}	${i_do_have_python_scripting}${i_want_python_ver}
   python extension	${enable_python_extension}	${i_do_have_python_extension}
+  freedesktop support	${fontforge_desktop}	${enable_fontforge_desktop}
   freetype debugger		${i_do_have_freetype_debugger}
   raw points mode		${i_do_have_debug_raw_points}
   tile path			${i_do_have_tile_path}
