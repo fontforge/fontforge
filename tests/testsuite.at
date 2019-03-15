@@ -59,7 +59,7 @@ AT_CHECK([run_python_ff([$2],[$test_input])],[0],[ignore],[ignore])
 AT_CLEANUP
 ])
 
-m4_defun([run_python_py],[(PYTHONPATH="$PYTHONPATH:${abs_top_builddir}/pyhook/.libs" ${python_exec} "${abs_srcdir}/$1" "$2" || /bin/false)])
+m4_defun([run_python_py],[(PYTHONPATH="${abs_top_builddir}/pyhook/.libs:$PYTHONPATH" ${python_exec} "${abs_srcdir}/$1" "$2" || /bin/false)])
 
 m4_defun([check_python_py],[
 AT_SETUP([$1 "(with Python)"])
