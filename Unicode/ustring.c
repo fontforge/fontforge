@@ -921,33 +921,55 @@ return( newcr );
 }
 
 int AllAscii(const char *txt) {
-    for ( ; *txt!='\0'; ++txt ) {
-	if ( *txt=='\t' || *txt=='\n' || *txt=='\r' )
+/* Verify string only All ASCII printable characters */
+    register unsigned char ch;
+
+    if ( txt==NULL )
+	return( false );
+
+    for ( ; (ch=(unsigned char) *txt)!='\0'; ++txt )
+	if ( (ch>=' ' && ch<'\177' ) || \
+	     ch=='\t' || ch=='\n' || ch=='\r' )
 	    /* All right */;
-	else if ( *txt<' ' || *txt>='\177' )
-return( false );
-    }
-return( true );
+	else
+	    return( false );
+
+    return( true );
 }
 
 int uAllAscii(const unichar_t *txt) {
-    for ( ; *txt!='\0'; ++txt ) {
-	if ( *txt=='\t' || *txt=='\n' || *txt=='\r' )
+/* Verify string only All ASCII printable unichar_t. */
+
+    if ( txt==NULL )
+	return( false );
+
+    for ( ; *txt!='\0'; ++txt )
+	if ( (*txt>=' ' && *txt<'\177' ) || \
+	     *txt=='\t' || *txt=='\n' || *txt=='\r' )
 	    /* All right */;
-	else if ( *txt<' ' || *txt>='\177' )
-return( false );
-    }
-return( true );
+	else
+	    return( false );
+
+    return( true );
 }
 
-char* chomp( char* line ) {
-    if( !line )
-	return line;
-    if ( line[strlen(line)-1]=='\n' )
-	line[strlen(line)-1] = '\0';
-    if ( line[strlen(line)-1]=='\r' )
-	line[strlen(line)-1] = '\0';
-    return line;
+char *chomp( char *line ) {
+/* Chomp the last '\r' and '\n' in character string. */
+/* \r = CR used as a newline char in MAC OS before X */
+/* \n = LF used as a newline char in MAC OSX & Linux */
+/* \r\n = CR + LF used as a newline char in Windows. */
+    int x;
+
+    if( line==NULL || (x=strlen(line)-1)<0 )
+	return( line );
+
+    if ( line[x]=='\n' ) {
+	line[x] = '\0';
+	--x;
+    }
+    if ( x>=0 && line[x]=='\r' )
+	line[x] = '\0';
+    return( line );
 }
 
 char *copytolower(const char *input)
