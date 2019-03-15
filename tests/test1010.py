@@ -5,11 +5,11 @@ import sys, fontforge
 cnt = fontforge.UnicodeBlockCountFromLib()
 if cnt < 1:
   print("No NamesList library - Nothing to test.")
-  quit()
+  sys.exit()
 
 if cnt < 294:
   print("Pre-20170701 or older library - Nothing to test beyond here.")
-  quit()
+  sys.exit()
 
 ver = fontforge.UnicodeNamesListVersion()
 print("Libuninameslist version is : %s" % ver)
@@ -17,7 +17,7 @@ print("Libuninameslist version is : %s" % ver)
 # test Names2 functions (if we have libuninameslist version>=10.9)
 if cnt < 305:
   print("Pre-20180408 or older library - Nothing to test beyond here.")
-  quit()
+  sys.exit()
 
 cnt = fontforge.UnicodeNames2GetCntFromLib()
 print("Libuninameslist internal table has %s Names2." % cnt)

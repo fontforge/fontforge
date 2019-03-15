@@ -48,9 +48,13 @@ noinst_FILES = * fonts/* results/* results
 TESTSUITE = $(srcdir)/testsuite
 EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE) atlocal.in
 
+TESTSUITEFLAGS =
 if !PYTHON_SCRIPTING
-TESTSUITEFLAGS = FONTFORGE_NO_PYTHON=1
+TESTSUITEFLAGS += FONTFORGE_NO_PYTHON=1
 endif !PYTHON_SCRIPTING
+if !PYTHON_EXTENSION
+TESTSUITEFLAGS += FONTFORGE_NO_PYTHON_EXTENSION=1
+endif !PYTHON_EXTENSION
 
 FONTFORGE = $(top_builddir)/fontforgeexe/fontforge
 
