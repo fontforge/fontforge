@@ -1,6 +1,6 @@
 #include <chardata.h>
 
-/* This file was generated using the program 'makeutype' for Unicode_version 11.0 */
+/* This file was generated using the program 'makeutype' for Unicode_version 12.1 */
 
 static const unichar_t str_a0[] = { 0x0020, 0 };
 static const unichar_t str_a8[] = { 0x0020, 0x0308, 0 };
@@ -2576,6 +2576,7 @@ static const unichar_t str_32fb[] = { 0x30ef, 0x20dd, 0 };
 static const unichar_t str_32fc[] = { 0x30f0, 0x20dd, 0 };
 static const unichar_t str_32fd[] = { 0x30f1, 0x20dd, 0 };
 static const unichar_t str_32fe[] = { 0x30f2, 0x20dd, 0 };
+static const unichar_t str_32ff[] = { 0x5de6, 0x53f3, 0 };
 static const unichar_t str_3300[] = { 0x30a2, 0x30d1, 0x30fc, 0x30c8, 0 };
 static const unichar_t str_3301[] = { 0x30a2, 0x30eb, 0x30d5, 0x30a1, 0 };
 static const unichar_t str_3302[] = { 0x30a2, 0x30f3, 0x30da, 0x30a2, 0 };
@@ -7066,7 +7067,8 @@ str_32fb,
 str_32fc,
 str_32fd,
 str_32fe,
-0, 0};
+str_32ff,
+0};
 
 static const unichar_t * const tab_33[] = {
 str_3300,
