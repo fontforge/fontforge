@@ -10685,6 +10685,7 @@ static void CVMenuReverseDir(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *U
 	if ( PointListIsSelected(ss)) {
 	    if ( !changed ) {
 		CVPreserveState(&cv->b);
+	        cv->lastselpt = NULL; cv->lastselcp = NULL;
 		changed = true;
 	    }
 	    SplineSetReverse(ss);
