@@ -2,7 +2,7 @@
 /* License: BSD-3-clause */
 /* Contributions: Khaled Hosny, Joe Da Silva */
 
-/* This file was generated using the program 'makeutype' for Unicode_version 11.0 */
+/* This file was generated using the program 'makeutype' for Unicode_version 12.1 */
 
 #include "utype.h"
 

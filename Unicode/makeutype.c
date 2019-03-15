@@ -52,8 +52,8 @@
  */
 #include <fontforge-config.h>
 
-#define UnicodeMajor	11
-#define UnicodeMinor	0
+#define UnicodeMajor	12
+#define UnicodeMinor	1
 
 /* Build a ctype array out of the UnicodeData.txt and PropList.txt files */
 #include <stdio.h>
@@ -178,6 +178,7 @@ static const long lig_alt_overrides[] = {
     0xfe27, 0,
     0xfe28, 0,
     0x10f27, 0,
+    0x10ff6, 2, 0x10fe6, 0x10fe9,
     0x11176, 0, /* ? */
     0x1f670, 0, 0x1f671, 0, 0x1f672, 0, 0x1f673, 0, /* chars? keep? */
     -1
@@ -200,7 +201,12 @@ static const long frac_alt_overrides[] = {
     0x10a48, 0 /*10a40+?*/,
     0x10e7b, 0, 0x10e7c, 0, 0x10e7d, 0, 0x10e7e, 0,
     0x10f26, 0,
+    0x11fc0, 0, 0x11fc1, 0, 0x11fc2, 0, 0x11fc3, 0, 0x11fc4, 0, 0x11fc5, 0,
+    0x11fc6, 0, 0x11fc7, 0, 0x11fc8, 0, 0x11fc9, 0, 0x11fca, 0, 0x11fcb, 0,
+    0x11fcc, 0, 0x11fcd, 0, 0x11fce, 0, 0x11fcf, 0, 0x11fd0, 0, 0x11fd1, 0,
+    0x11fd2, 0, 0x11fd3, 0, 0x11fd4, 0,
     0x1ecad, 0, 0x1ecae, 0, 0x1ecaf, 0,
+    0x1ed3c, 0, 0x1ed3d, 0,
     -1
 };
 
