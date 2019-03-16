@@ -2160,6 +2160,21 @@ extern void SCAddRef(SplineChar *sc,SplineChar *rsc,int layer, real xoff, real y
 extern void SplineCharFree(SplineChar *sc);
 extern void ScriptLangListFree(struct scriptlanglist *sl);
 
+enum pconvert_flags {
+	// Point selection (mutually exclusive)
+	pconvert_flag_none = 0x01,
+	pconvert_flag_all = 0x02,
+	pconvert_flag_smooth = 0x04,
+	pconvert_flag_incompat = 0x08,
+	// Conversion modes (mutually exclusive)
+	pconvert_flag_by_geom = 0x100,
+	pconvert_flag_force_type = 0x200,
+	pconvert_flag_downgrade = 0x400,
+	pconvert_flag_check_compat = 0x0800,
+	// Additional
+	pconvert_flag_hvcurve = 0x4000
+};
+
 #if 1
 // These relate to experimental support for U. F. O. groups.
 #define GROUP_NAME_KERNING_UFO 1
@@ -2171,6 +2186,7 @@ extern void MMSetFree(MMSet *mm);
 extern void SFRemoveUndoes(SplineFont *sf,uint8 *selected,EncMap *map);
 extern void SplineRefigure(Spline *spline);
 extern void SPLCategorizePoints(SplinePointList *spl);
+extern int _SPLCategorizePoints(SplinePointList *spl, int flags);
 extern SplinePointList *SplinePointListCopy(const SplinePointList *base);
 /* The order of the enum elements below doesn't make much sense, but it's done*/
 /*  this way to preserve binary compatibility */

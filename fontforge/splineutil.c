@@ -1066,19 +1066,19 @@ void SplineFontQuickConservativeBounds(SplineFont *sf,DBounds *b) {
     if ( b->maxy<-65536 ) b->maxy = 0;
 }
 
-void SplinePointCategorize(SplinePoint *sp) {
-    int oldpointtype = sp->pointtype;
+static int SplinePointCategory(SplinePoint *sp) {
+    enum pointtype pt;
 
-    sp->pointtype = pt_corner;
+    pt = pt_corner;
     if ( sp->next==NULL && sp->prev==NULL )
 	;
     else if ( (sp->next!=NULL && sp->next->to->me.x==sp->me.x && sp->next->to->me.y==sp->me.y) ||
 	    (sp->prev!=NULL && sp->prev->from->me.x==sp->me.x && sp->prev->from->me.y==sp->me.y ))
 	;
     else if ( sp->next==NULL ) {
-	sp->pointtype = sp->noprevcp ? pt_corner : pt_curve;
+	pt = sp->noprevcp ? pt_corner : pt_curve;
     } else if ( sp->prev==NULL ) {
-	sp->pointtype = sp->nonextcp ? pt_corner : pt_curve;
+	pt = sp->nonextcp ? pt_corner : pt_curve;
     } else if ( sp->nonextcp && sp->noprevcp ) {
 	;
     } else {
@@ -1110,7 +1110,7 @@ void SplinePointCategorize(SplinePoint *sp) {
 	/*  result is less than 1 em-unit then we've got colinear control points */
 	/*  (within the resolution of the integer grid) */
 	/* Not quite... they could point in the same direction */
-        if ( oldpointtype==pt_curve )
+        if ( sp->pointtype==pt_curve )
             bounds = 4.0;
         else
             bounds = 1.0;
@@ -1118,73 +1118,110 @@ void SplinePointCategorize(SplinePoint *sp) {
 		((nclen>=pclen && (cross = pcdir.x*ncunit.y - pcdir.y*ncunit.x)<bounds && cross>-bounds ) ||
 		 (pclen>nclen && (cross = ncdir.x*pcunit.y - ncdir.y*pcunit.x)<bounds && cross>-bounds )) &&
 		 ncdir.x*pcdir.x + ncdir.y*pcdir.y < 0 )
-	    sp->pointtype = pt_curve;
+	    pt = pt_curve;
 	/* Cross product of control point with unit vector normal to line in */
 	/*  opposite direction should be less than an em-unit for a tangent */
 	else if (( nclen==0 && pclen!=0 && (cross = pcdir.x*ndir.y-pcdir.y*ndir.x)<bounds && cross>-bounds ) ||
 		( pclen==0 && nclen!=0 && (cross = ncdir.x*pdir.y-ncdir.y*pdir.x)<bounds && cross>-bounds ))
-	    sp->pointtype = pt_tangent;
+	    pt = pt_tangent;
 
-	/* If a point started out hv, and could still be hv, them make it so */
-	/*  but don't make hv points de novo, Alexey doesn't like change */
-	/*  (this only works because hv isn't a default setting, so if it's */
-	/*   there it was done intentionally) */
-	if ( sp->pointtype == pt_curve && oldpointtype == pt_hvcurve &&
+	if (pt == pt_curve &&
 		((sp->nextcp.x==sp->me.x && sp->prevcp.x==sp->me.x && sp->nextcp.y!=sp->me.y) ||
 		 (sp->nextcp.y==sp->me.y && sp->prevcp.y==sp->me.y && sp->nextcp.x!=sp->me.x)))
-	    sp->pointtype = pt_hvcurve;
+	    pt = pt_hvcurve;
     }
+    return pt;
 }
 
 int SplinePointIsACorner(SplinePoint *sp) {
-    enum pointtype old = sp->pointtype, new;
+	return SplinePointCategory(sp) == pt_corner;
+}
 
-    SplinePointCategorize(sp);
-    new = sp->pointtype;
-    sp->pointtype = old;
-return( new==pt_corner );
+static enum pointtype SplinePointDowngrade(int current, int geom) {
+	enum pointtype np = current;
+
+	if ( current==pt_curve && geom!=pt_curve ) {
+		if ( geom==pt_hvcurve )
+			np = pt_curve;
+		else 
+			np = pt_corner;
+	} else if ( current==pt_hvcurve && geom!=pt_hvcurve ) {
+		if ( geom==pt_curve )
+			np = pt_curve;
+		else
+			np = pt_corner;
+	} else if ( current==pt_tangent && geom!=pt_tangent ) {
+		np = pt_corner;
+	}
+
+	return np;
+}
+
+// Assumes flag combinations are already verified. Only returns false
+// when called with check_compat
+int _SplinePointCategorize(SplinePoint *sp, int flags) {
+	enum pointtype geom, dg, cur;
+
+	if ( flags & pconvert_flag_none )
+		// No points selected for conversion -- keep type as is
+		return true;
+	if ( flags & pconvert_flag_smooth && sp->pointtype == pt_corner )
+		// Convert only "smooth" points, not corners
+		return true;
+
+	geom = SplinePointCategory(sp);
+	dg = SplinePointDowngrade(sp->pointtype, geom);
+
+	if ( flags & pconvert_flag_incompat && sp->pointtype == dg )
+		// Only convert points incompatible with current type
+		return true;
+
+	if ( flags & pconvert_flag_by_geom ) {
+		if ( ! ( flags & pconvert_flag_hvcurve ) && geom == pt_hvcurve )
+			sp->pointtype = pt_curve;
+		else
+			sp->pointtype = geom;
+	} else if ( flags & pconvert_flag_downgrade ) {
+		sp->pointtype = dg;
+	} else if ( flags & pconvert_flag_force_type ) {
+		if ( sp->pointtype != dg ) {
+			cur = sp->pointtype;
+			sp->pointtype = dg;
+			SPChangePointType(sp,cur);
+		}
+	} else if ( flags & pconvert_flag_check_compat ) {
+		if ( sp->pointtype != dg )
+			return false;
+	}
+	return true;
+}
+
+void SplinePointCategorize(SplinePoint *sp) {
+	_SplinePointCategorize(sp, pconvert_flag_all|pconvert_flag_by_geom);
+}
+
+// _SplinePointCategorize only returns false when called with check_compat flag,
+// in which case no point values are altered and the "early" return will not leave
+// splines partially adjusted.
+int _SPLCategorizePoints(SplinePointList *spl, int flags) {
+    Spline *spline, *first, *last=NULL;
+    int ok = true;
+
+    for ( ; spl!=NULL; spl = spl->next ) {
+	first = NULL;
+	for ( spline = spl->first->next; spline!=NULL && spline!=first && ok; spline=spline->to->next ) {
+	    ok = _SplinePointCategorize(spline->from, flags);
+	    last = spline;
+	    if ( first==NULL ) first = spline;
+	}
+	if ( spline==NULL && last!=NULL && ok )
+	    _SplinePointCategorize(last->to, flags);
+    }
+    return ok;
 }
 
 void SPLCategorizePoints(SplinePointList *spl) {
-    Spline *spline, *first, *last=NULL;
-
-    for ( ; spl!=NULL; spl = spl->next ) {
-	first = NULL;
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-	    SplinePointCategorize(spline->from);
-	    last = spline;
-	    if ( first==NULL ) first = spline;
-	}
-	if ( spline==NULL && last!=NULL )
-	    SplinePointCategorize(last->to);
-    }
-}
-
-void SPLCategorizePointsKeepCorners(SplinePointList *spl) {
-    // It's important when round-tripping U. F. O. data that we keep corners as corners and non-corners as non-corners.
-    Spline *spline, *first, *last=NULL;
-    int old_type;
-
-    for ( ; spl!=NULL; spl = spl->next ) {
-	first = NULL;
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-	    // If it is a corner, we leave it as a corner.
-	    if ((old_type = spline->from->pointtype) != pt_corner) {
-	      SplinePointCategorize(spline->from);
-	      // If it was not a corner, we do not let it change to a corner.
-	      if (spline->from->pointtype == pt_corner) spline->from->pointtype = old_type;
-	    }
-	    last = spline;
-	    if ( first==NULL ) first = spline;
-	}
-	if ( spline==NULL && last!=NULL )
-	    // If it is a corner, we leave it as a corner.
-	    if ((old_type = last->to->pointtype) != pt_corner) {
-	      SplinePointCategorize(last->to);
-	      // If it was not a corner, we do not let it change to a corner.
-	      if (last->to->pointtype == pt_corner) last->to->pointtype = old_type;
-	    }
-    }
+	_SPLCategorizePoints(spl, pconvert_flag_all|pconvert_flag_by_geom);
 }
 
 void SCCategorizePoints(SplineChar *sc) {

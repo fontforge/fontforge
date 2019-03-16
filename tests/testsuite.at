@@ -150,6 +150,7 @@ check_python([WOFF2 round tripping],[test927.py],[Ambrosia.woff2])
 check_python([String Conversion],[test928.py],[DejaVuSerif.sfd])
 check_python([Open Subfonts],[test929.py],[NotoSans-Regular.ttc])
 check_python([Point, contour, and Layer fidelity],[test930.py])
+check_python([Point type conversion tests],[test931.py])
 check_python([Round-trip point selection tests],[test932.py])
 
 #--------------------------------------------------------------------------

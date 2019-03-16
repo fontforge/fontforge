@@ -291,8 +291,10 @@ static void PyFF_PickleTypesInit(void);
 
 static int SSSelectOnCurve(SplineSet *ss,int pos);
 static SplineSet *SSFromContour(PyFF_Contour *, int *start);
+static SplineSet *_SSFromContour(PyFF_Contour *, int *start, int flags);
 static PyFF_Contour *ContourFromSS(SplineSet *,PyFF_Contour *);
 static SplineSet *SSFromLayer(PyFF_Layer *);
+static SplineSet *_SSFromLayer(PyFF_Layer *, int flags);
 static PyFF_Layer *LayerFromSS(SplineSet *,PyFF_Layer *);
 static PyFF_Layer *LayerFromLayer(Layer *,PyFF_Layer *);
 
@@ -1751,7 +1753,37 @@ return( reto );
 /* Points */
 /* ************************************************************************** */
 
-static PyFF_Point *PyFFPoint_CNew(double x, double y, int on_curve, int sel, char *name) {
+static const char *py_point_types[] = { "splineCorner", "splineCurve", "splineHVCurve",
+				     "splineTangent", NULL };
+#define MAX_POINTTYPE_VAL 3
+
+static enum pointtype PyFF_ConvertToPointType(int val) {
+    switch(val) {
+	case 0: return pt_corner;
+	case 1: return pt_curve;
+	case 2: return pt_hvcurve;
+	case 3: return pt_tangent;
+    }
+    return pt_corner;
+}
+
+static int PyFF_ConvertFromPointType(enum pointtype pt) {
+    switch(pt) {
+	case pt_curve: return 1;
+	case pt_corner: return 0;
+	case pt_tangent: return 3;
+	case pt_hvcurve: return 2;
+    }
+    return 0;
+}
+
+static void AddPointConstants( PyObject *module ) {
+    int i;
+    for ( i=0; py_point_types[i]!=NULL; ++i )
+        PyModule_AddObject(module, py_point_types[i], Py_BuildValue("i",i));
+}
+
+static PyFF_Point *PyFFPoint_CNew(double x, double y, int on_curve, int sel, int type, char *name) {
     /* Convenience routine for creating a new point from C */
     PyFF_Point *self = (PyFF_Point *)PyFF_PointType.tp_alloc(&PyFF_PointType, 0);
     if ( self==NULL )
@@ -1760,13 +1792,14 @@ static PyFF_Point *PyFFPoint_CNew(double x, double y, int on_curve, int sel, cha
     self->y = y;
     self->on_curve = on_curve;
     self->selected = sel;
+    self->type = type;
     self->name = copy(name);
     return( self );
 }
 
 static PyObject *PyFFPoint_dup(PyFF_Point *self) {
     PyFF_Point *ret = PyFFPoint_CNew(self->x, self->y, self->on_curve,
-                                     self->selected, self->name);
+                                     self->selected, self->type, self->name);
     ret->interpolated = self->interpolated;
     return( (PyObject *) ret );
 }
@@ -1774,7 +1807,7 @@ static PyObject *PyFFPoint_dup(PyFF_Point *self) {
 static PyFF_Point *PyFFPoint_Parse(PyObject *args, bool dup, bool always) {
     double x,y;
     PyFF_Point *p=NULL;
-    int i, on, sel, interp;
+    int i, on, sel, type, interp;
 
     if ( args==NULL && !always )
 	return NULL;
@@ -1783,26 +1816,28 @@ static PyFF_Point *PyFFPoint_Parse(PyObject *args, bool dup, bool always) {
     on = true;
     sel = false;
     interp = false;
-    if ( !PyArg_ParseTuple( args, "(ddii)", &x, &y, &on, &sel )) {
+    type = PyFF_ConvertFromPointType(pt_corner);
+    if ( !PyArg_ParseTuple( args, "(ddi)|ii", &x, &y, &on, &type, &sel )) {
 	PyErr_Clear();
-	if ( !PyArg_ParseTuple( args, "(ddi)|i", &x, &y, &on, &sel )) {
+	if ( !PyArg_ParseTuple( args, "(dd)|iii", &x, &y, &on, &type, &sel )) {
 	    PyErr_Clear();
-	    if ( !PyArg_ParseTuple( args, "(dd)|ii", &x, &y, &on, &sel )) {
+	    if ( !PyArg_ParseTuple( args, "dd|iiii", &x, &y, &on, &type, &sel, &interp )) {
 		PyErr_Clear();
-		if ( !PyArg_ParseTuple( args, "dd|iii", &x, &y, &on, &sel, &interp )) {
-		    PyErr_Clear();
-		    if ( PyType_IsSubtype(&PyFF_PointType, Py_TYPE(args)) ) { 
-			p = (PyFF_Point *) args;
-		    } else if ( !always ) {
-			return( NULL );
-		    }
+		if ( PyType_IsSubtype(&PyFF_PointType, Py_TYPE(args)) ) { 
+		    p = (PyFF_Point *) args;
+		} else if ( !always ) {
+		    return( NULL );
 		}
 	    }
 	}
     }
 
+    if ( type < 0 || type > MAX_POINTTYPE_VAL ) {
+	PyErr_Format(PyExc_TypeError, "Unrecognized point type");
+	return NULL;
+    }
     if ( p==NULL ) {
-	p = PyFFPoint_CNew(x,y,on,sel,NULL);
+	p = PyFFPoint_CNew(x,y,on,sel,type,NULL);
 	if ( p==NULL )
 	    return( NULL );
 	if ( interp )
@@ -1842,13 +1877,14 @@ static PyObject *PyFFPoint_pickleReducer(PyFF_Point *self, PyObject *UNUSED(args
     reductionTuple = PyTuple_New(2);
     Py_INCREF(_new_point);
     PyTuple_SetItem(reductionTuple,0,_new_point);
-    argTuple = PyTuple_New(5);
+    argTuple = PyTuple_New(6);
     PyTuple_SetItem(reductionTuple,1,argTuple);
     PyTuple_SetItem(argTuple,0,Py_BuildValue("d", (double)self->x));
     PyTuple_SetItem(argTuple,1,Py_BuildValue("d", (double)self->y));
     PyTuple_SetItem(argTuple,2,Py_BuildValue("i", self->on_curve));
-    PyTuple_SetItem(argTuple,3,Py_BuildValue("i", self->selected));
-    PyTuple_SetItem(argTuple,4,Py_BuildValue("i", self->interpolated));
+    PyTuple_SetItem(argTuple,3,Py_BuildValue("i", self->type));
+    PyTuple_SetItem(argTuple,4,Py_BuildValue("i", self->selected));
+    PyTuple_SetItem(argTuple,5,Py_BuildValue("i", self->interpolated));
 return( reductionTuple );
 }
 
@@ -1927,6 +1963,8 @@ static PyMemberDef FFPoint_members[] = {
      (char *)"whether this point lies on the curve or is a control point"},
     {(char *)"selected", T_UBYTE, offsetof(PyFF_Point, selected), 0,
      (char *)"whether this point is selected"},
+    {(char *)"type", T_UBYTE, offsetof(PyFF_Point, type), 0,
+     (char *)"the FontForge spline point type"},
     {(char *)"interpolated", T_UBYTE, offsetof(PyFF_Point, interpolated), 0,
      (char *)"whether this (quadratic) point is interpolated"},
     {NULL, 0, 0, 0, NULL}  /* Sentinel */
@@ -2239,11 +2277,16 @@ return( -1 );
 return( 0 );
     if ( self->pt_cnt!=0 ) {
 	ss = SSFromContour(self,NULL);
-        if ( ss==NULL ) {
-            /* SSFromContour() will have set an exception */
-            return( -1 );
-        }
 	PyFFContour_clear(self);
+        if ( ss==NULL ) {
+	    if ( PyErr_Occurred() != NULL ) {
+                return( -1 );
+	    } else {
+		// Empty contour
+		self->is_quadratic = (val!=0);
+		return ( 0 );
+	    }
+        }
 	if ( val )
 	    ss2 = SplineSetsTTFApprox(ss);
 	else
@@ -2253,7 +2296,7 @@ return( 0 );
 	SplinePointListFree(ss2);
     }
     self->is_quadratic = (val!=0);
-return( 0 );
+    return( 0 );
 }
 
 static PyObject *PyFF_Contour_get_closed(PyFF_Contour *self, void *UNUSED(closure)) {
@@ -2274,7 +2317,7 @@ return( 0 );
     if ( !val ) {
 	self->closed = false;
 	if ( self->pt_cnt>1 && self->points[0]->on_curve )
-	    self->points[self->pt_cnt++] = PyFFPoint_CNew(self->points[0]->x,self->points[0]->y,true,false,NULL);
+	    self->points[self->pt_cnt++] = PyFFPoint_CNew(self->points[0]->x,self->points[0]->y,true,false,0,NULL);
     } else {
 	self->closed = true;
 	if ( self->pt_cnt>1 && self->points[0]->on_curve &&
@@ -2301,7 +2344,9 @@ return( NULL );
 	uint16 cnt;
 	ss = SSFromContour(self,NULL);
         if ( ss==NULL ) {
-            PyErr_SetString(PyExc_AttributeError, "Empty Contour");
+	    if ( PyErr_Occurred() == NULL )
+		// XXX Should this really be an error?
+		PyErr_SetString(PyExc_AttributeError, "Empty Contour");
             return( NULL );
         }
 	self->spiros = SplineSet2SpiroCP(ss,&cnt);
@@ -2806,7 +2851,7 @@ return( NULL );
         /* Messes with self->points */
         PyMem_Resize(self->points,PyFF_Point *,self->pt_max += 10);
     }
-    self->points[0] = PyFFPoint_CNew(x,y,true,false,NULL);
+    self->points[0] = PyFFPoint_CNew(x,y,true,false,0,NULL);
     self->pt_cnt = 1;
     PyFFContour_ClearSpiros((PyFF_Contour *) self);
 
@@ -2840,7 +2885,7 @@ return( NULL );
     }
     for ( i=self->pt_cnt-1; i>pos; --i )
 	self->points[i+1] = self->points[i];
-    self->points[pos+1] = PyFFPoint_CNew(x,y,true,false,NULL);
+    self->points[pos+1] = PyFFPoint_CNew(x,y,true,false,0,NULL);
     PyFFContour_ClearSpiros((PyFF_Contour *) self);
     ++self->pt_cnt;
 
@@ -2861,9 +2906,9 @@ return( NULL );
 	if ( !PyArg_ParseTuple( args, "dddddd|i", &x[0], &y[0], &x[1], &y[1], &x[2], &y[2], &pos ))
 return( NULL );
     }
-    np = PyFFPoint_CNew(x[0],y[0],false,false,NULL);
-    pp = PyFFPoint_CNew(x[1],y[1],false,false,NULL);
-    p = PyFFPoint_CNew(x[2],y[2],true,false,NULL);
+    np = PyFFPoint_CNew(x[0],y[0],false,false,0,NULL);
+    pp = PyFFPoint_CNew(x[1],y[1],false,false,0,NULL);
+    p = PyFFPoint_CNew(x[2],y[2],true,false,0,NULL);
     if ( p==NULL ) {
 	Py_XDECREF(pp);
 	Py_XDECREF(np);
@@ -2907,8 +2952,8 @@ return( NULL );
 	if ( !PyArg_ParseTuple( args, "dddd|i", &x[0], &y[0], &x[1], &y[1], &pos ))
 return( NULL );
     }
-    cp = PyFFPoint_CNew(x[0],y[0],false,false,NULL);
-    p = PyFFPoint_CNew(x[1],y[1],true,false,NULL);
+    cp = PyFFPoint_CNew(x[0],y[0],false,false,0,NULL);
+    p = PyFFPoint_CNew(x[1],y[1],true,false,0,NULL);
     if ( p==NULL ) {
 	Py_XDECREF(cp);
 return( NULL );
@@ -2938,13 +2983,16 @@ Py_RETURN( self );
 static PyObject *PyFFContour_InsertPoint(PyFF_Contour *self, PyObject *args) {
     double x,y;
     PyFF_Point *p=NULL;
-    int i, on, pos, sel;
+    int i, on, pos, sel, type;
 
     x = y = 0.0;
     pos = -1;
     on = true;
     sel = false;
-    if ( !PyArg_ParseTuple( args, "(ddii)|i", &x, &y, &on, &sel, &pos )) {
+    type = PyFF_ConvertFromPointType(pt_corner);
+    if ( !PyArg_ParseTuple( args, "(ddiii)|i", &x, &y, &on, &type, &sel, &pos )) {
+	PyErr_Clear();
+    if ( !PyArg_ParseTuple( args, "(ddii)|i", &x, &y, &on, &type, &pos )) {
 	PyErr_Clear();
 	if ( !PyArg_ParseTuple( args, "(ddi)|i", &x, &y, &on, &pos )) {
 	    PyErr_Clear();
@@ -2957,9 +3005,10 @@ static PyObject *PyFFContour_InsertPoint(PyFF_Contour *self, PyObject *args) {
 	    }
 	}
     }
+    }
 
     if ( p==NULL ) {
-	p = PyFFPoint_CNew(x,y,on,false,NULL);
+	p = PyFFPoint_CNew(x,y,on,sel,type,NULL);
 	if ( p==NULL )
 	    return( NULL );
     } else {
@@ -3031,8 +3080,9 @@ static PyObject *PyFFContour_IsClockwise(PyFF_Contour *self, PyObject *UNUSED(ar
 
     ss = SSFromContour(self,NULL);
     if ( ss==NULL ) {
-	PyErr_SetString(PyExc_AttributeError, "Empty Contour");
-return( NULL );
+	if ( PyErr_Occurred() == NULL )
+	    PyErr_SetString(PyExc_AttributeError, "Empty Contour");
+	return( NULL );
     }
     ret = SplinePointListIsClockwise(ss);
     SplinePointListFree(ss);
@@ -3091,8 +3141,9 @@ static PyObject *PyFFContour_Merge(PyFF_Contour *self, PyObject *args) {
 
     ss = SSFromContour(self,NULL);
     if ( ss==NULL ) {
-	PyErr_SetString(PyExc_AttributeError, "Empty Contour");
-return( NULL );
+	if ( PyErr_Occurred() == NULL )
+	    PyErr_SetString(PyExc_AttributeError, "Empty Contour");
+	return( NULL );
     }
     for ( i=0; i<PySequence_Size(args); ++i ) {
 	pos = PyInt_AsLong(PySequence_GetItem(args,i));
@@ -3151,8 +3202,12 @@ static PyObject *PyFFContour_Simplify(PyFF_Contour *self, PyObject *args) {
     smpl.linelenmax = 10;
 
     ss = SSFromContour(self,NULL);
-    if ( ss==NULL )
-Py_RETURN( self );		/* As simple as it can be */
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self );	/* As simple as it can be */
+    }
 
     if ( PySequence_Size(args)>=1 )
 	smpl.err = PyFloat_AsDouble(PySequence_GetItem(args,0));
@@ -3258,8 +3313,13 @@ static PyObject *PyFFContour_Cluster(PyFF_Contour *self, PyObject *args) {
 return( NULL );
 
     ss = SSFromContour(self,NULL);
-    if ( ss==NULL )
-Py_RETURN( self );		/* no points=> no clusters */
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self );	// no points=> no clusters
+    }
+
     memset(&sc,0,sizeof(sc));
     memset(layers,0,sizeof(layers));
     sc.layers = layers;
@@ -3296,8 +3356,12 @@ return( NULL );
     }
 
     ss = SSFromContour(self,NULL);
-    if ( ss==NULL )
-Py_RETURN( self );		/* no points=> nothing to do */
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self );	// no points=> nothing to do
+    }
     SplineSetAddExtrema(NULL,ss,ae,emsize);
     ContourFromSS(ss,self);
     SplinePointListFree(ss);
@@ -4080,8 +4144,12 @@ static PyObject *PyFFLayer_Simplify(PyFF_Layer *self, PyObject *args) {
     smpl.linelenmax = 10;
 
     ss = SSFromLayer(self);
-    if ( ss==NULL )
-Py_RETURN( self );		/* As simple as it can be */
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self );	/* As simple as it can be */
+    }
 
     if ( PySequence_Size(args)>=1 )
 	smpl.err = PyFloat_AsDouble(PySequence_GetItem(args,0));
@@ -4149,8 +4217,12 @@ static PyObject *PyFFLayer_NLTransform(PyFF_Layer *self, PyObject *args) {
 return( NULL );
 
     ss = SSFromLayer(self);
-    if ( ss==NULL )
-Py_RETURN( self );
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self );
+    }
 
     if ( !SSNLTrans(ss,xexpr,yexpr) ) {
 	PyErr_Format(PyExc_TypeError, "Unparseable expression.");
@@ -4209,8 +4281,13 @@ static PyObject *PyFFLayer_Cluster(PyFF_Layer *self, PyObject *args) {
 return( NULL );
 
     ss = SSFromLayer(self);
-    if ( ss==NULL )
-Py_RETURN( self );		/* no contours=> no clusters */
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self ); /* no contours=> no clusters */
+    }
+
     memset(&sc,0,sizeof(sc));
     memset(layers,0,sizeof(layers));
     sc.layers = layers;
@@ -4237,8 +4314,13 @@ return( NULL );
     }
 
     ss = SSFromLayer(self);
-    if ( ss==NULL )
-Py_RETURN( self );		/* no contours=> nothing to do */
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self ); // no contours=> nothing to do
+    }
+
     SplineCharAddExtrema(NULL,ss,ae,emsize);
     LayerFromSS(ss,self);
     SplinePointListsFree(ss);
@@ -4381,14 +4463,16 @@ return( -1 );
 	    order2 = ((PyFF_Contour *) poly)->is_quadratic;
 	    ss = SSFromContour((PyFF_Contour *) poly,&start);
             if ( ss==NULL ) {
-                PyErr_SetString(PyExc_AttributeError, "Empty Contour");
+		if ( PyErr_Occurred() != NULL )
+                    PyErr_SetString(PyExc_AttributeError, "Empty Contour");
                 return( -1 );
             }
 	} else if ( PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(poly)) ) {
 	    order2 = ((PyFF_Layer *) poly)->is_quadratic;
 	    ss = SSFromLayer((PyFF_Layer *) poly);
             if ( ss==NULL ) {
-                PyErr_SetString(PyExc_AttributeError, "Empty Layer");
+		if ( PyErr_Occurred() != NULL )
+                    PyErr_SetString(PyExc_AttributeError, "Empty Layer");
                 return( -1 );
             }
 	} else {
@@ -4500,14 +4584,18 @@ static PyObject *PyFFLayer_Stroke(PyFF_Layer *self, PyObject *args) {
 return( NULL );
 
     ss = SSFromLayer(self);
-    if ( ss==NULL )
-Py_RETURN( self );		/* no contours=> nothing to do */
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self ); // no contours=> nothing to do
+    }
     newss = SplineSetStroke(ss,&si,self->is_quadratic);
     SplinePointListFree(ss);
     LayerFromSS(newss,self);
     SplinePointListsFree(newss);
     SplinePointListsFree(si.poly); si.poly = NULL;
-Py_RETURN( self );
+    Py_RETURN( self );
 }
 
 static PyObject *PyFFLayer_Correct(PyFF_Layer *self, PyObject *UNUSED(args)) {
@@ -4515,8 +4603,12 @@ static PyObject *PyFFLayer_Correct(PyFF_Layer *self, PyObject *UNUSED(args)) {
     int changed = false;
 
     ss = SSFromLayer(self);
-    if ( ss==NULL )
-Py_RETURN( self );		/* no contours=> nothing to do */
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self ); // no contours=> nothing to do
+    }
     newss = SplineSetsCorrect(ss,&changed);
     /* same old splinesets */
     LayerFromSS(newss,self);
@@ -4536,8 +4628,12 @@ static PyObject *PyFFLayer_RemoveOverlap(PyFF_Layer *self, PyObject *UNUSED(args
     SplineSet *ss, *newss;
 
     ss = SSFromLayer(self);
-    if ( ss==NULL )
-Py_RETURN( self );		/* no contours=> nothing to do */
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self ); // no contours=> nothing to do
+    }
     newss = SplineSetRemoveOverlap(NULL,ss,over_remove);
     /* Frees the old splinesets */
     LayerFromSS(newss,self);
@@ -4549,8 +4645,12 @@ static PyObject *PyFFLayer_Intersect(PyFF_Layer *self, PyObject *UNUSED(args)) {
     SplineSet *ss, *newss;
 
     ss = SSFromLayer(self);
-    if ( ss==NULL )
-Py_RETURN( self );		/* no contours=> nothing to do */
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self ); // no contours=> nothing to do
+    }
     newss = SplineSetRemoveOverlap(NULL,ss,over_intersect);
     /* Frees the old splinesets */
     LayerFromSS(newss,self);
@@ -4570,8 +4670,12 @@ return( NULL );
     }
 
     ss = SSFromLayer(self);
-    if ( ss==NULL )
-Py_RETURN( self );		/* no contours=> nothing to do */
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self ); // no contours=> nothing to do
+    }
     excludes = SSFromLayer((PyFF_Layer *) obj);
     for ( tail=ss; tail->next!=NULL; tail=tail->next );
     tail->next = excludes;
@@ -4620,8 +4724,12 @@ static PyObject *PyFFLayer_stemControl(PyObject *self, PyObject *args) {
 return( NULL );
 
     ss = SSFromLayer((PyFF_Layer *) self);
-    if ( ss==NULL )
-Py_RETURN( self );		/* no contours=> nothing to do */
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self ); // no contours=> nothing to do
+    }
     ss = SSControlStems(ss,stemwidthscale,stemheightscale,hscale,vscale,xheight);
     LayerFromSS(ss,(PyFF_Layer *) self);
     SplinePointListsFree(ss);
@@ -4835,9 +4943,50 @@ return( true );
 return( 0 );
 }
 
-static SplineSet *SSFromContour(PyFF_Contour *c,int *tt_start) {
+/* Point convertion flags: see 'enum pconvert_flags' in splinefont.h */
+struct flaglist pconvertflags[] = {
+    { "select_none", pconvert_flag_none },
+    { "select_all", pconvert_flag_all },
+    { "select_smooth", pconvert_flag_smooth },
+    { "select_incompat", pconvert_flag_incompat },
+    { "by_geom", pconvert_flag_by_geom },
+    { "force", pconvert_flag_force_type },
+    { "downgrade", pconvert_flag_downgrade },
+    { "check", pconvert_flag_check_compat },
+    { "hvcurve", pconvert_flag_hvcurve },
+    FLAGLIST_EMPTY /* Sentinel */
+};
+
+static int CheckPConvertFlags(int flags, int defaults) {
+	const int sels = pconvert_flag_none|pconvert_flag_all|pconvert_flag_smooth;
+	const int modes = pconvert_flag_by_geom|pconvert_flag_force_type
+	                  |pconvert_flag_downgrade|pconvert_flag_check_compat;
+	int defsel = defaults&sels, defmode = defaults&modes, sel, mode;
+
+	sel = flags&sels;
+	if ( sel==0 )
+		flags |= defsel;
+	else if ( ( sel & (sel-1) ) != 0 ) {
+		PyErr_Format(PyExc_ValueError, "At most one point selection flag is allowed.");
+		return -1;
+	}
+
+	mode = flags&modes;
+	if ( mode==0 )
+		flags |= defmode; // Harmless if sel == pconvert_flag_none
+	else if ( ( mode & (mode-1) ) != 0 ) {
+		PyErr_Format(PyExc_ValueError, "At most one point conversion mode flag is allowed.");
+		return -1;
+	}
+	// Don't worry about extraneous bits for now.
+	return flags;
+}
+
+// Will return NULL on error or empty contour, can check python error
+// status to tell which.
+static SplineSet *_SSFromContour(PyFF_Contour *c,int *tt_start, int flags) {
     int start = 0, next;
-    int i, skipped=0, index;
+    int i, skipped=0, index, ok;
     int nexti, previ;
     SplineSet *ss;
     SplinePoint *sp;
@@ -4868,9 +5017,16 @@ return( NULL );
 		ss->first = ss->last = SplinePointCreate(c->points[0]->x,c->points[0]->y);
 		ss->start_offset = 0;
 		ss->first->selected = c->points[0]->selected;
+		ss->first->pointtype = PyFF_ConvertToPointType(c->points[0]->type);
 		ss->first->name = copy(c->points[0]->name);
-		SPLCategorizePoints(ss);
-return( ss );
+		ok = _SPLCategorizePoints(ss, flags);
+		if ( !ok ) {
+		    SplinePointListsFree(ss);
+		    // assert ( flags&pconvert_flag_check );
+		    PyErr_Format(PyExc_TypeError, "At least one point has a geometry incompatible with its type");
+		    return( NULL );
+		}
+		return( ss );
 	    }
 	    ++i;
 	    ++next;
@@ -4879,6 +5035,7 @@ return( ss );
 	while ( i<c->pt_cnt ) {
 	    if ( c->points[i]->on_curve ) {
 		sp = SplinePointCreate(c->points[i]->x,c->points[i]->y);
+		sp->pointtype = PyFF_ConvertToPointType(c->points[i]->type);
 		sp->selected = c->points[i]->selected;
 		sp->name = copy(c->points[i]->name);
 		sp->ttfindex = next++;
@@ -4902,6 +5059,7 @@ return( ss );
 	    } else {
 		if ( !c->points[i-1]->on_curve ) {
 		    sp = SplinePointCreate((c->points[i]->x+c->points[i-1]->x)/2,(c->points[i]->y+c->points[i-1]->y)/2);
+		    sp->pointtype = PyFF_ConvertToPointType(c->points[i]->type);
 		    sp->ttfindex = -1;
 		    sp->prevcp.x = c->points[i-1]->x;
 		    sp->prevcp.y = c->points[i-1]->y;
@@ -4954,6 +5112,7 @@ return( ss );
 	    if ( !c->points[i]->on_curve )
 	continue;
 	    sp = SplinePointCreate(c->points[i]->x,c->points[i]->y);
+	    sp->pointtype = PyFF_ConvertToPointType(c->points[i]->type);
 	    sp->selected = c->points[i]->selected;
 	    sp->name = copy(c->points[i]->name);
 	    sp->ttfindex = next++;
@@ -4985,6 +5144,7 @@ return( ss );
 		else
 		    ++nexti;
 		if ( c->points[nexti]->on_curve ) {
+		    SplinePointListsFree(ss);
 		    PyErr_Format(PyExc_TypeError, "In cubic splines there must be exactly 2 control points between on curve points");
 return( NULL );
 		}
@@ -4993,6 +5153,7 @@ return( NULL );
 		else
 		    ++nexti;
 		if ( !c->points[nexti]->on_curve ) {
+		    SplinePointListsFree(ss);
 		    PyErr_Format(PyExc_TypeError, "In cubic splines there must be exactly 2 control points between on curve points");
 return( NULL );
 		}
@@ -5005,7 +5166,8 @@ return( NULL );
 	    ss->last = sp;
 	}
 	if ( ss->last==NULL ) {
-	    PyErr_Format(PyExc_TypeError, "Empty contour");
+	    SplinePointListsFree(ss);
+	    PyErr_Format(PyExc_TypeError, "Contour has points but none are on-curve");
 return( NULL );
 	}
     }
@@ -5023,8 +5185,18 @@ return( NULL );
     }
     if ( tt_start!=NULL )
 	*tt_start = next;
-    SPLCategorizePoints(ss);
-return( ss );
+    ok = _SPLCategorizePoints(ss, flags);
+    if ( !ok ) {
+	SplinePointListsFree(ss);
+	// assert ( flags&pconvert_flag_check );
+	PyErr_Format(PyExc_TypeError, "At least one point has a geometry incompatible with its type");
+	return( NULL );
+    }
+    return( ss );
+}
+
+static SplineSet *SSFromContour(PyFF_Contour *c,int *tt_start) {
+	return _SSFromContour(c, tt_start, pconvert_flag_none);
 }
 
 static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
@@ -5044,20 +5216,24 @@ static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
     for ( k=0; k<2; ++k ) {
 	if ( ss->first->next == NULL ) {
 	    if ( k )
-		ret->points[0] = PyFFPoint_CNew(ss->first->me.x,ss->first->me.y,true,ss->first->selected,ss->first->name);
+		ret->points[0] = PyFFPoint_CNew(ss->first->me.x,ss->first->me.y,true,
+		                                ss->first->selected,PyFF_ConvertFromPointType(ss->first->pointtype),
+						ss->first->name);
 	    cnt = 1;
 	} else if ( ss->first->next->order2 ) {
 	    ret->is_quadratic = true;
 	    cnt = 0;
 	    for ( sp=ss->first; ; ) {
 		if ( k ) {
-		    ret->points[cnt] = PyFFPoint_CNew(sp->me.x,sp->me.y,true,sp->selected, sp->name);
+		    ret->points[cnt] = PyFFPoint_CNew(sp->me.x,sp->me.y,true,sp->selected,
+		                                      PyFF_ConvertFromPointType(sp->pointtype), sp->name);
 		    ret->points[cnt]->interpolated = SPInterpolate(sp);
 		}
 		++cnt;
 		if ( !sp->nonextcp ) {
 		    if ( k )
-			ret->points[cnt] = PyFFPoint_CNew(sp->nextcp.x,sp->nextcp.y,false,sp->nextcpselected,sp->name);
+			ret->points[cnt] = PyFFPoint_CNew(sp->nextcp.x,sp->nextcp.y,false,
+			                                  sp->nextcpselected,0,sp->name);
 		    ++cnt;
 		}
 		if ( sp->next==NULL )
@@ -5072,14 +5248,15 @@ static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
 	    ret->is_quadratic = false;
 	    for ( sp=ss->first, cnt=0; ; ) {
 		if ( k )
-		    ret->points[cnt] = PyFFPoint_CNew(sp->me.x,sp->me.y,true, sp->selected, sp->name);
+		    ret->points[cnt] = PyFFPoint_CNew(sp->me.x,sp->me.y,true, sp->selected,
+		                                      PyFF_ConvertFromPointType(sp->pointtype), sp->name);
 		++cnt;			/* Sp itself */
 		if ( sp->next==NULL )
 	    break;
 		if ( !sp->nonextcp || !sp->next->to->noprevcp ) {
 		    if ( k ) {
-			ret->points[cnt  ] = PyFFPoint_CNew(sp->nextcp.x,sp->nextcp.y,false,sp->nextcpselected,NULL);
-			ret->points[cnt+1] = PyFFPoint_CNew(sp->next->to->prevcp.x,sp->next->to->prevcp.y,false,sp->next->to->prevcpselected,NULL);
+			ret->points[cnt  ] = PyFFPoint_CNew(sp->nextcp.x,sp->nextcp.y,false,sp->nextcpselected,0,NULL);
+			ret->points[cnt+1] = PyFFPoint_CNew(sp->next->to->prevcp.x,sp->next->to->prevcp.y,false,sp->next->to->prevcpselected,0,NULL);
 		    }
 		    cnt += 2;		/* not a line => 2 control points */
 		}
@@ -5099,22 +5276,30 @@ static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
 return( ret );
 }
 
-static SplineSet *SSFromLayer(PyFF_Layer *layer) {
+static SplineSet *_SSFromLayer(PyFF_Layer *layer, int flags) {
     int start = 0;
     SplineSet *head=NULL, *tail, *cur;
     int i;
 
     for ( i=0; i<layer->cntr_cnt; ++i ) {
-	cur = SSFromContour( layer->contours[i],&start );
+	cur = _SSFromContour( layer->contours[i], &start, flags );
 	if ( cur!=NULL ) {
 	    if ( head==NULL )
 		head = cur;
 	    else
 		tail->next = cur;
 	    tail = cur;
+	} else if ( PyErr_Occurred() != NULL ) {
+	    SplinePointListsFree(head);
+	    return( NULL );
 	}
+	// Ignore empty contours
     }
-return( head );
+    return( head );
+}
+
+static SplineSet *SSFromLayer(PyFF_Layer *layer) {
+	return _SSFromLayer(layer, pconvert_flag_none);
 }
 
 static PyFF_Layer *LayerFromSS(SplineSet *ss,PyFF_Layer *layer) {
@@ -5565,10 +5750,11 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_a_layer(PyFF_Glyph *self,int layeri) {
+static PyObject *PyFF_Glyph_get_a_layer(PyFF_Glyph *self,void *vli) {
     SplineChar *sc = self->sc;
     Layer *layer;
     PyFF_Layer *ly;
+    int layeri = (int)(size_t)vli;
 
     if ( layeri<ly_grid || layeri>=sc->layer_cnt ) {
 	PyErr_Format(PyExc_ValueError, "Layer is out of range" );
@@ -5621,10 +5807,7 @@ void set_pyFF_sendRedoIfInSession_Func( pyFF_sendRedoIfInSession_Func_t f )
     pyFF_sendRedoIfInSession_Func = f;
 }
 
-
-
-
-static int PyFF_Glyph_set_a_layer(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure), int layeri) {
+static int PyFF_Glyph_CSetLayer(PyFF_Glyph *self, PyObject *value, int layeri, int flags) {
     SplineChar *sc = self->sc;
     Layer *layer;
     SplineSet *ss, *newss;
@@ -5632,20 +5815,24 @@ static int PyFF_Glyph_set_a_layer(PyFF_Glyph *self,PyObject *value, void *UNUSED
 
     if ( layeri<ly_grid || layeri>=sc->layer_cnt ) {
 	PyErr_Format(PyExc_ValueError, "Layer is out of range" );
-return( -1 );
+	return( -1 );
     } else if ( layeri==ly_grid )
 	layer = &sc->parent->grid;
     else
 	layer = &sc->layers[layeri];
     if ( PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(value)) ) {
 	isquad = ((PyFF_Layer *) value)->is_quadratic;
-	ss = SSFromLayer( (PyFF_Layer *) value);
+	ss = _SSFromLayer( (PyFF_Layer *) value, flags);
     } else if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(value)) ) {
 	isquad = ((PyFF_Contour *) value)->is_quadratic;
-	ss = SSFromContour( (PyFF_Contour *) value,NULL);
+	ss = _SSFromContour( (PyFF_Contour *) value, NULL, flags);
     } else {
 	PyErr_Format(PyExc_TypeError, "Argument must be a layer or a contour" );
-return( -1 );
+	return( -1 );
+    }
+
+    if ( PyErr_Occurred() != NULL ) {
+	return( -1 );
     }
 
     CharView* cv = (CharView*)get_pyFF_maybeCallCVPreserveState_Func()( self );
@@ -5663,6 +5850,10 @@ return( -1 );
     SCCharChangedUpdate(sc,self->layer);
     get_pyFF_sendRedoIfInSession_Func()( cv );
 return( 0 );
+}
+
+static int PyFF_Glyph_set_a_layer(PyFF_Glyph *self,PyObject *value, void *vli) {
+	return PyFF_Glyph_CSetLayer(self, value, (int)(size_t)vli, pconvert_flag_all|pconvert_flag_by_geom);
 }
 
 static int SFFindLayerIndexByName(SplineFont *sf,char *name) {
@@ -5832,7 +6023,7 @@ return( NULL );
 	PyErr_Format(PyExc_TypeError, "Index must be a layer name or index" );
 return( NULL );
     }
-return( PyFF_Glyph_get_a_layer((PyFF_Glyph *) PySC_From_SC(sc),layer));
+return( PyFF_Glyph_get_a_layer((PyFF_Glyph *) PySC_From_SC(sc),(void *)(size_t)layer));
 }
 
 static int PyFF_LayerArrayIndexAssign( PyObject *self, PyObject *index, PyObject *value ) {
@@ -5852,7 +6043,7 @@ return( -1 );
 	PyErr_Format(PyExc_TypeError, "Index must be a layer name or index" );
 return( -1 );
     }
-return( PyFF_Glyph_set_a_layer((PyFF_Glyph *) PySC_From_SC(sc),value,NULL,layer));
+return( PyFF_Glyph_CSetLayer((PyFF_Glyph *) PySC_From_SC(sc),value,layer,pconvert_flag_all|pconvert_flag_by_geom));
 }
 
 static PyGetSetDef PyFF_LayerArray_getset[] = {
@@ -6285,6 +6476,9 @@ return( ret );
     } else {
 	PyErr_Format(PyExc_TypeError, "Unexpected type");
 return( -1 );
+    }
+    if ( PyErr_Occurred() != NULL ) {
+	return( -1 );
     }
     if ( self->sc->layers[self->layer].refs!=NULL )
 return( SS_NoMatch | SS_RefMismatch );
@@ -6891,22 +7085,6 @@ static int PyFF_Glyph_set_glyphclass(PyFF_Glyph *self,PyObject *value, void *UNU
         return( -1 );
     self->sc->glyph_class = gc;
     return( 0 );
-}
-
-static PyObject *PyFF_Glyph_get_foreground(PyFF_Glyph *self, void *UNUSED(closure)) {
-return( PyFF_Glyph_get_a_layer(self,ly_fore));
-}
-
-static int PyFF_Glyph_set_foreground(PyFF_Glyph *self,PyObject *value, void *closure) {
-return( PyFF_Glyph_set_a_layer(self,value,closure,ly_fore));
-}
-
-static PyObject *PyFF_Glyph_get_background(PyFF_Glyph *self, void *UNUSED(closure)) {
-return( PyFF_Glyph_get_a_layer(self,ly_back));
-}
-
-static int PyFF_Glyph_set_background(PyFF_Glyph *self,PyObject *value, void *closure) {
-return( PyFF_Glyph_set_a_layer(self,value,closure,ly_back));
 }
 
 static PyObject *PyFF_Glyph_get_layers(PyFF_Glyph *self, void *UNUSED(closure)) {
@@ -7609,11 +7787,11 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
      (getter)PyFF_Glyph_get_encoding, NULL,
      (char *)"Returns the glyph's encoding in the current font (readonly)", NULL},
     {(char *)"foreground",
-     (getter)PyFF_Glyph_get_foreground, (setter)PyFF_Glyph_set_foreground,
-     (char *)"Returns the foreground layer of the glyph", NULL},
+     (getter)PyFF_Glyph_get_a_layer, (setter)PyFF_Glyph_set_a_layer,
+     (char *)"Returns the foreground layer of the glyph", (void *)ly_fore},
     {(char *)"background",
-     (getter)PyFF_Glyph_get_background, (setter)PyFF_Glyph_set_background,
-     (char *)"Returns the background layer of the glyph", NULL},
+     (getter)PyFF_Glyph_get_a_layer, (setter)PyFF_Glyph_set_a_layer,
+     (char *)"Returns the background layer of the glyph", (void *)ly_back},
     {(char *)"layers",
      (getter)PyFF_Glyph_get_layers, NULL,
      (char *)"Returns an array of layers", NULL},
@@ -8012,7 +8190,7 @@ static PyObject *PyFFGlyph_draw(PyObject *self, PyObject *args) {
     if ( !PyArg_ParseTuple(args,"O", &pen ) )
 return( NULL );
 
-    layer = PyFF_Glyph_get_a_layer((PyFF_Glyph *) self,((PyFF_Glyph *) self)->layer);
+    layer = PyFF_Glyph_get_a_layer((PyFF_Glyph *) self,(void *)(size_t)((PyFF_Glyph *) self)->layer);
     result = PyFFLayer_draw( (PyFF_Layer *) layer,args);
     Py_XDECREF(layer);
 
@@ -9017,6 +9195,9 @@ return( NULL );
     }
 
     excludes = SSFromLayer((PyFF_Layer *) obj);
+    if ( PyErr_Occurred() != NULL ) {
+	return( NULL );
+    }
     ss = self->sc->layers[self->layer].splines;
     for ( tail=ss; tail->next!=NULL; tail=tail->next );
     tail->next = excludes;
@@ -9068,6 +9249,52 @@ static PyObject *PyFFGlyph_isWorthOutputting(PyFF_Glyph *self, PyObject *UNUSED(
 return( ret );
 }
 
+static PyObject *PyFFGlyph_setLayer(PyFF_Glyph *self, PyObject *args) {
+	int arglen = PySequence_Size(args);
+	PyObject *layer, *index;
+	int layeri, flags = 0;
+
+	if (arglen < 2 || arglen > 3) {
+		PyErr_Format(PyExc_ValueError, "Must be called with a layer, a layer identifier, and an optional flags tuple" );
+		return NULL;
+	}
+
+	layer = PySequence_GetItem(args,0);
+	if ( ! (PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(layer)) || PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(layer)) ) ) {
+		PyErr_Format(PyExc_ValueError, "First argument must be a layer or contour" );
+		return NULL;
+	}
+
+	index = PySequence_GetItem(args,1);
+	if ( STRING_CHECK(index)) {
+		char *name;
+		PYGETSTR(index, name, NULL);
+		layeri = SFFindLayerIndexByName(self->sc->parent,name);
+		if ( layeri<0 ) {
+			PyErr_Format(PyExc_ValueError, "Layer '%s' not found", name);
+			ENDPYGETSTR();
+			return NULL;
+		}
+		ENDPYGETSTR();
+	} else if ( PyInt_Check(index)) {
+		layeri = PyInt_AsLong(index);
+	} else {
+		PyErr_Format(PyExc_TypeError, "Index must be a layer name or index" );
+		return NULL;
+	}
+	if ( arglen>2 ) {
+		flags = FlagsFromTuple( PySequence_GetItem(args,2),pconvertflags,"Point Conversion flags");
+	}
+	flags = CheckPConvertFlags(flags, pconvert_flag_all|pconvert_flag_by_geom);
+	if ( flags < 0 ) 
+		return NULL;
+
+	if ( PyFF_Glyph_CSetLayer(self,layer,layeri,flags) == 0 ) 
+		Py_RETURN (self);
+
+	return NULL;
+}
+
 static PyMethodDef PyFF_Glyph_methods[] = {
     { "glyphPen", (PyCFunction) PyFFGlyph_GlyphPen, METH_VARARGS | METH_KEYWORDS, "Create a pen object which can draw into this glyph"},
     { "draw", (PyCFunction) PyFFGlyph_draw, METH_VARARGS , "Draw the glyph's outline to the pen argument"},
@@ -9099,6 +9326,7 @@ static PyMethodDef PyFF_Glyph_methods[] = {
     { "removePosSub", PyFFGlyph_removePosSub, METH_VARARGS, "Removes position/substitution data from the glyph"},
     { "round", (PyCFunction)PyFFGlyph_Round, METH_VARARGS, "Rounds point coordinates (and reference translations) to integers"},
     { "selfIntersects", (PyCFunction)PyFFGlyph_selfIntersects, METH_NOARGS, "Returns whether this glyph intersects itself" },
+    { "setLayer", (PyCFunction)PyFFGlyph_setLayer, METH_VARARGS, "Replaces the content of the specified layer" },
     { "validate", (PyCFunction)PyFFGlyph_validate, METH_VARARGS, "Returns whether this glyph is valid for output (if not check validation_state" },
     { "simplify", (PyCFunction)PyFFGlyph_Simplify, METH_VARARGS, "Simplifies a glyph" },
     { "stroke", (PyCFunction)PyFFGlyph_Stroke, METH_VARARGS, "Strokes the contours in a glyph"},
@@ -13058,6 +13286,9 @@ return( -1 );
 	PyErr_Format( PyExc_TypeError, "Unexpected type" );
 return( -1 );
     }
+    if ( PyErr_Occurred() != NULL ) {
+	return( -1 );
+    }
     sf = self->fv->sf;
     guide = &sf->grid;
     SplinePointListsFree(guide->splines);
@@ -15731,6 +15962,9 @@ return( NULL );
 	PyErr_Format(PyExc_TypeError, "Expected a contour or layer");
 return( NULL );
     }
+    if ( PyErr_Occurred() != NULL ) {
+	return( NULL );
+    }
 
     if ( PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(rpl)) ) {
 	rpl_ss = SSFromLayer((PyFF_Layer *) rpl);
@@ -15739,6 +15973,10 @@ return( NULL );
     } else {
 	PyErr_Format(PyExc_TypeError, "Expected a contour or layer");
 return( NULL );
+    }
+    if ( PyErr_Occurred() != NULL ) {
+	SplinePointListsFree(srch_ss);
+	return( NULL );
     }
 
     /* srch_ss and rpl_ss will be freed by ReplaceAll */
@@ -15776,6 +16014,9 @@ return( NULL );
     } else {
 	PyErr_Format(PyExc_TypeError, "Expected a contour or layer");
 return( NULL );
+    }
+    if ( PyErr_Occurred() != NULL ) {
+	return( NULL );
     }
     if (pyflags) {
 	flags = FlagsFromTuple(pyflags, find_flags, "search flag");
@@ -18332,6 +18573,7 @@ static void AddHookDictionary( PyObject *module );
 static void AddSpiroConstants( PyObject *module );
 static void FinalizeFontforgeModule( PyObject* module ) {
     AddHookDictionary( module );
+    AddPointConstants( module );
     AddSpiroConstants( module );
     PyModule_AddObject( module, "unspecifiedMathValue",
                         Py_BuildValue("i", TEX_UNDEF) );
