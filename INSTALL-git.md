@@ -135,7 +135,17 @@ Then edit then your shell profile (eg, `~/.bash_profile` or `~/.zprofile`) and a
 export PATH=${PATH}:/usr/local/opt/gettext/bin
 ```
 
-## On Mac OS X with Homebrew
+### Python modules on Debian
+
+Debian-provided python executables by default only look for modules in
+`dist-packages` and not `site-packages`. FontForge's build environment uses
+`Autoconf`, which does not provide an easy means of specifying an alternate
+installation location for python modules. Users building on Debian may
+therefore have to move the modules to the appropriate location after running
+`make install`, and anyone designing Debian packaging may have to add a hook to
+do this.
+
+## On Mac OS X with Homebrew
 
 Homebrew no longer packages FontForge with a UI, but the release GUI app bundles are available from Cask. 
 You can install FontForge from the current github source code using a package manager, such as MacPorts or Fink. 
