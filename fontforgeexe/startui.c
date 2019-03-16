@@ -1226,7 +1226,11 @@ int fontforge_main( int argc, char **argv ) {
     wattrs.utf8_window_title = "FontForge";
     wattrs.border_width = 2;
     wattrs.background_color = 0xffffff;
+#ifdef FONTFORGE_CAN_USE_GDK
+    wattrs.is_dlg = true;
+#else
     wattrs.is_dlg = !listen_to_apple_events;
+#endif
     pos.x = pos.y = 200;
     pos.width = splashimage.u.image->width;
     pos.height = splashimage.u.image->height-56;		/* 54 */
@@ -1381,8 +1385,11 @@ exit( 0 );
 	// WARNING: See declaration of RunApplicationEventLoop() above as to
 	// why you might not want to call that function anymore.
 	// RunApplicationEventLoop();
-	
+#ifndef FONTFORGE_CAN_USE_GDK
     } else
+#else
+    }
+#endif
 #endif
     if ( doopen || !any )
 	_FVMenuOpen(NULL);
