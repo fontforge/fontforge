@@ -915,10 +915,15 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
     </TR>
     <TR>
       <TD><CODE>fontforge.point</CODE></TD>
-      <TD><CODE>([x,y,on-curve,selected])</CODE></TD>
+      <TD><CODE>([x,y,on-curve,type,selected])</CODE></TD>
       <TD>Creates a new point. Optionally specifying its x,y
          location, on-curve status and selected status. x and y
-         must be supplied together</TD>
+         must be supplied together.
+	<P>A "point initializer tuple" is any tuple
+	<CODE>(x,y[,True|False[,0|1|2|3[,True|False]]])</CODE>, where
+	<CODE>x</CODE> and <CODE>y</CODE> are numbers, the third value
+	corresponds to <CODE>on-curve</CODE>, the fourth to <CODE>type</CODE>,
+	and the fifth to <CODE>selected</CODE>.</TD>
     </TR>
     <TR>
       <TH colspan=3>Members</TH>
@@ -948,6 +953,21 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
 	on setting a layer.  FontForge usually retains the selection status of
 	any point between and that of an on-curve point when saving, whether or
 	not a UI is present.
+      </TD>
+    </TR>
+    <TR>
+      <TD><CODE>type</CODE></TD>
+      <TD colspan=2>For an on-curve point, its FontForge point type.
+	<P>
+	There are four types: <CODE>fontforge.splineCorner</CODE>==0,
+	<CODE>fontforge.splineCurve</CODE>==1,
+	<CODE>fontforge.splineHVCurve</CODE>==2, and
+	<CODE>fontforge.splineTangent</CODE>==3. A new point will have
+	type <CODE>splineCorner</CODE>. When assigning a layer to
+	<CODE>glyph.layers</CODE>, <CODE>glyph.background</CODE> or
+	<CODE>glyph.foreground</CODE> the type value is ignored. To
+	influence the type FontForge will associate with an on-curve point
+	use <CODE><A HREF="python.html#g-setLayer">glyph.setLayer</A></CODE>
       </TD>
     </TR>
     <TR>
@@ -1145,7 +1165,7 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
     <TR>
       <TD colspan=2><CODE>c[i:j] = d</CODE></TD>
       <TD>The points between i and j are replaced by those in d; i must be &gt;= j.
-        d can be a contour or a sequence of point initializers, as in [(1,1,False),(2,1)].
+        d can be a contour or a sequence of point initializer tuples, as in [(1,1,False),(2,1)].
         If c[j:i:-1] is used instead the points of d are assigned in reverse order.</TD>
     </TR>
     <TR>
@@ -1227,8 +1247,8 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
       <TD><CODE>(point[,pos])</CODE></TD>
       <TD>Adds point to the contour. If the optional third argument is give, the
 	line will be added after the pos'th point, otherwise it will be at the end
-	of the contour. The point may be either a point or a tuple with three members
-	(x,y,on_curve)</TD>
+	of the contour. The point may be either a point or a point initializer tuple.
+	</TD>
     </TR>
     <TR>
       <TD><CODE>makeFirst</CODE></TD>
@@ -2703,6 +2723,64 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD><CODE>()</CODE></TD>
       <TD>Returns whether any of the contours in this glyph intersects any other
 	contour in the glyph (including itself).</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="g-setLayer">setLayer</A></CODE></TD>
+      <TD><CODE>(layer,layer-index[,flags])</CODE></TD>
+      <TD>An alternative to assigning to <CODE>layers</CODE>, <CODE>background</CODE>,
+	or <CODE>foreground</CODE>, and equivalent to those when not using the optional
+	<CODE>flags</CODE> argument. When present <CODE>flags</CODE> can be used to
+	influence the types FontForge will assign to on-curve points. It
+	should be a tuple of up to three of the following strings. (In the following
+	descriptions "<em>selected</em>" refers to points picked out by the
+	chosen "select_" flag, which is unrelated to the <CODE>point.selected</CODE>
+	field. At most one "select_" flag and one mode flag should be included.)
+	<DL>
+	  <DT>select_none
+	  <DD>Each (on-curve) point will be assigned a type corresponding to its
+	  <CODE>point.type</CODE> value.
+	  <DT>select_all
+	  <DD>(default) Each point will have a type assigned according to the
+	  chosen mode.
+	  <DT>select_smooth
+	  <DD>Each point with the type <CODE>splineCorner</CODE> will retain
+	  that type, others will be assigned a type according to the chosen 
+	  mode. This makes the <CODE>point.type</CODE> field function like
+	  the <CODE>smooth</CODE> tag in the UFO glif format and some other
+	  spline storage formats. 
+	  <DT>select_incompat
+	  <DD>Each point with a type compatible with its current geometry will
+	  retain that type, others will be assigned a type according to the chosen
+	  mode.
+	  <DT>by_geom
+	  <DD>(default) In this mode, each <EM>selected</EM> point will be assigned
+	  a type based on only its geometry. (However, see "hvcurve" below.)
+	  <DT>downgrade
+	  <DD>In this mode, each <EM>selected</EM> point will be assigned the 
+	  most specific type compatible with its geometry and its <CODE>point.type</CODE>.
+	  A point marked <CODE>splineHVCurve</CODE> can keep that type or be 
+	  downgraded to <CODE>splineCurve</CODE> or <CODE>splineCorner</CODE>, while
+	  a <CODE>splineCurve</CODE> or <CODE>splineTangent</CODE> can keep that 
+	  (respective) type or be downgraded to <CODE>splineCorner</CODE>. 
+	  (<CODE>splineCorner</CODE> is compatible with any geometry.)
+	  <DT>check
+	  <DD>In this mode, the type of each <EM>selected</EM> point is verified to be 
+	  compatible with its geometry. If it is not compatible the function
+	  raises an exception. (At present this exception is
+	  not very informative. However, to identify the specific problem
+	  one can duplicate the layer, use <CODE>setLayer</CODE> with 'downgrade', 
+	  and then retrieve the layer and compare it with the original.)
+	  <DT>force
+	  <DD>In this mode, the geometry of each <EM>selected</EM> point is 
+	  altered to match its <CODE>point.type</CODE>, similar to changing a 
+	  point's type using the UI. Note that FontForge's point conversion
+	  algorithm is not sophisticated and may not have the desired result.
+	  <DT>hvcurve
+	  <DD>This extra flag can be used to include <CODE>splineHVCurve</CODE>
+	  among the types that can be assigned "by geometry". Normally FontForge
+	  assigns <CODE>splineCurve</CODE> to on-curve points with strictly 
+	  horizontal or vertical off-curve points. 
+	</DL></TD>
     </TR>
     <TR>
       <TD><CODE>simplify</CODE></TD>
