@@ -1755,10 +1755,25 @@ return( reto );
 
 static const char *py_point_types[] = { "splineCorner", "splineCurve", "splineHVCurve",
 				     "splineTangent", NULL };
-// point types: see 'enum pointtype' in splinefont.h
-static const int typemap_from_python[] = { 1, 0, 3, 2 };
-static const int typemap_to_python[] = { 1, 0, 3, 2 };
 #define MAX_POINTTYPE_VAL 3
+
+static enum pointtype PyFF_ConvertToPointType(int val) {
+    switch(val) {
+	case 0: return pt_corner;
+	case 1: return pt_curve;
+	case 2: return pt_hvcurve;
+	case 3: return pt_tangent;
+    }
+}
+
+static int PyFF_ConvertFromPointType(enum pointtype pt) {
+    switch(pt) {
+	case pt_curve: return 1;
+	case pt_corner: return 0;
+	case pt_tangent: return 3;
+	case pt_hvcurve: return 2;
+    }
+}
 
 static void AddPointConstants( PyObject *module ) {
     int i;
@@ -1799,7 +1814,7 @@ static PyFF_Point *PyFFPoint_Parse(PyObject *args, bool dup, bool always) {
     on = true;
     sel = false;
     interp = false;
-    type = typemap_to_python[pt_corner];
+    type = PyFF_ConvertFromPointType(pt_corner);
     if ( !PyArg_ParseTuple( args, "(ddi)|ii", &x, &y, &on, &type, &sel )) {
 	PyErr_Clear();
 	if ( !PyArg_ParseTuple( args, "(dd)|iii", &x, &y, &on, &type, &sel )) {
@@ -2972,7 +2987,7 @@ static PyObject *PyFFContour_InsertPoint(PyFF_Contour *self, PyObject *args) {
     pos = -1;
     on = true;
     sel = false;
-    type = typemap_to_python[pt_corner];
+    type = PyFF_ConvertFromPointType(pt_corner);
     if ( !PyArg_ParseTuple( args, "(ddiii)|i", &x, &y, &on, &type, &sel, &pos )) {
 	PyErr_Clear();
     if ( !PyArg_ParseTuple( args, "(ddii)|i", &x, &y, &on, &type, &pos )) {
@@ -5000,7 +5015,7 @@ return( NULL );
 		ss->first = ss->last = SplinePointCreate(c->points[0]->x,c->points[0]->y);
 		ss->start_offset = 0;
 		ss->first->selected = c->points[0]->selected;
-		ss->first->pointtype = typemap_from_python[c->points[0]->type];
+		ss->first->pointtype = PyFF_ConvertToPointType(c->points[0]->type);
 		ss->first->name = copy(c->points[0]->name);
 		ok = _SPLCategorizePoints(ss, flags);
 		if ( !ok ) {
@@ -5018,7 +5033,7 @@ return( NULL );
 	while ( i<c->pt_cnt ) {
 	    if ( c->points[i]->on_curve ) {
 		sp = SplinePointCreate(c->points[i]->x,c->points[i]->y);
-		sp->pointtype = typemap_from_python[c->points[i]->type];
+		sp->pointtype = PyFF_ConvertToPointType(c->points[i]->type);
 		sp->selected = c->points[i]->selected;
 		sp->name = copy(c->points[i]->name);
 		sp->ttfindex = next++;
@@ -5042,7 +5057,7 @@ return( NULL );
 	    } else {
 		if ( !c->points[i-1]->on_curve ) {
 		    sp = SplinePointCreate((c->points[i]->x+c->points[i-1]->x)/2,(c->points[i]->y+c->points[i-1]->y)/2);
-		    sp->pointtype = typemap_from_python[c->points[i]->type];
+		    sp->pointtype = PyFF_ConvertToPointType(c->points[i]->type);
 		    sp->ttfindex = -1;
 		    sp->prevcp.x = c->points[i-1]->x;
 		    sp->prevcp.y = c->points[i-1]->y;
@@ -5095,7 +5110,7 @@ return( NULL );
 	    if ( !c->points[i]->on_curve )
 	continue;
 	    sp = SplinePointCreate(c->points[i]->x,c->points[i]->y);
-	    sp->pointtype = typemap_from_python[c->points[i]->type];
+	    sp->pointtype = PyFF_ConvertToPointType(c->points[i]->type);
 	    sp->selected = c->points[i]->selected;
 	    sp->name = copy(c->points[i]->name);
 	    sp->ttfindex = next++;
@@ -5200,7 +5215,7 @@ static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
 	if ( ss->first->next == NULL ) {
 	    if ( k )
 		ret->points[0] = PyFFPoint_CNew(ss->first->me.x,ss->first->me.y,true,
-		                                ss->first->selected,typemap_to_python[ss->first->pointtype],
+		                                ss->first->selected,PyFF_ConvertFromPointType(ss->first->pointtype),
 						ss->first->name);
 	    cnt = 1;
 	} else if ( ss->first->next->order2 ) {
@@ -5209,7 +5224,7 @@ static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
 	    for ( sp=ss->first; ; ) {
 		if ( k ) {
 		    ret->points[cnt] = PyFFPoint_CNew(sp->me.x,sp->me.y,true,sp->selected,
-		                                      typemap_to_python[sp->pointtype], sp->name);
+		                                      PyFF_ConvertFromPointType(sp->pointtype), sp->name);
 		    ret->points[cnt]->interpolated = SPInterpolate(sp);
 		}
 		++cnt;
@@ -5231,7 +5246,8 @@ static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
 	    ret->is_quadratic = false;
 	    for ( sp=ss->first, cnt=0; ; ) {
 		if ( k )
-		    ret->points[cnt] = PyFFPoint_CNew(sp->me.x,sp->me.y,true, sp->selected,typemap_to_python[sp->pointtype], sp->name);
+		    ret->points[cnt] = PyFFPoint_CNew(sp->me.x,sp->me.y,true, sp->selected,
+		                                      PyFF_ConvertFromPointType(sp->pointtype), sp->name);
 		++cnt;			/* Sp itself */
 		if ( sp->next==NULL )
 	    break;

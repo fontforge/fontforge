@@ -1066,7 +1066,7 @@ void SplineFontQuickConservativeBounds(SplineFont *sf,DBounds *b) {
     if ( b->maxy<-65536 ) b->maxy = 0;
 }
 
-int SplinePointCategory(SplinePoint *sp) {
+static int SplinePointCategory(SplinePoint *sp) {
     enum pointtype pt;
 
     pt = pt_corner;
@@ -1137,7 +1137,7 @@ int SplinePointIsACorner(SplinePoint *sp) {
 	return SplinePointCategory(sp) == pt_corner;
 }
 
-enum pointtype SplinePointDowngrade(int current, int geom) {
+static enum pointtype SplinePointDowngrade(int current, int geom) {
 	enum pointtype np = current;
 
 	if ( current==pt_curve && geom!=pt_curve ) {
