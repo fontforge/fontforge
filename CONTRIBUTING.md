@@ -8,12 +8,12 @@ See [When Things Go Wrong With FontForge Itself](http://designwithfontforge.com/
 
 Merging into the master branch requires review and approval of the pull request
 by an active core contributor to the project. The reviewer must fully
-comprehend the code being modified, and any changes must be strictly positive
-unless discussed in advance on the mailing list. FontForge is an extremely
-complex piece of software, and keeping it in top form requires this level of
-care. Please understand that large pull requests may take a long time to be
-approved or may be declined, even if well written, due to limited code review
-resources.
+comprehend the code being modified, and any changes must be strictly
+non-regressive and non-breaking unless discussed in advance on the mailing
+list. FontForge is an extremely complex piece of software, and keeping it in
+top form requires this level of care. Please understand that large pull
+requests may take a long time to be approved or may be declined, even if well
+written, due to limited code review resources.
 
 ### How To Contribute, Step by Step
 
