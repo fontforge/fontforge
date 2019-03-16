@@ -2016,23 +2016,26 @@ typedef struct anchorpos {
     unsigned int ticked: 1;	/* Used as a mark to mark */
 } AnchorPos;
 
-enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2,
-		    ttf_flag_applemode=4,
-		    ttf_flag_pfed_comments=8, ttf_flag_pfed_colors=0x10,
-		    ttf_flag_otmode=0x20,
-		    ttf_flag_glyphmap=0x40,
-		    ttf_flag_TeXtable=0x80,
-		    ttf_flag_ofm=0x100,
-		    ttf_flag_oldkern=0x200,	/* never set in conjunction with applemode */
-		    ttf_flag_pfed_lookupnames=0x800,
-		    ttf_flag_pfed_guides=0x1000,
-		    ttf_flag_pfed_layers=0x2000,
-		    ttf_flag_symbol=0x4000,
-		    ttf_flag_dummyDSIG=0x8000,
-		    ttf_native_kern=0x10000, // This applies mostly to U. F. O. right now.
-		    ttf_flag_oldkernmappedonly=0x20000000, // Allow only mapped glyphs in the old-style "kern" table, required for Windows compatibility
-		    ttf_flag_nomacnames=0x40000 // Don't autogenerate mac name entries
-		};
+enum ttf_flags {
+    ttf_flag_shortps           = 1 <<  0,
+    ttf_flag_nohints           = 1 <<  1,
+    ttf_flag_applemode         = 1 <<  2,
+    ttf_flag_pfed_comments     = 1 <<  3,
+    ttf_flag_pfed_colors       = 1 <<  4,
+    ttf_flag_otmode            = 1 <<  5,
+    ttf_flag_glyphmap          = 1 <<  6,
+    ttf_flag_TeXtable          = 1 <<  7,
+    ttf_flag_ofm               = 1 <<  8,
+    ttf_flag_oldkern           = 1 <<  9, // never set in conjunction with applemode
+    ttf_flag_pfed_lookupnames  = 1 << 11,
+    ttf_flag_pfed_guides       = 1 << 12,
+    ttf_flag_pfed_layers       = 1 << 13,
+    ttf_flag_symbol            = 1 << 14,
+    ttf_flag_dummyDSIG         = 1 << 15,
+    ttf_native_kern            = 1 << 16, // This applies mostly to U. F. O. right now.
+    ttf_flag_oldkernmappedonly = 1 << 29, // Allow only mapped glyphs in the old-style "kern" table, required for Windows compatibility
+    ttf_flag_nomacnames        = 1 << 30  // Don't autogenerate mac name entries
+};
 enum ttc_flags { ttc_flag_trymerge=0x1, ttc_flag_cff=0x2 };
 enum openflags { of_fstypepermitted=1, of_askcmap=2, of_all_glyphs_in_ttc=4,
 	of_fontlint=8, of_hidewindow=0x10, of_all_tables=0x20 };
