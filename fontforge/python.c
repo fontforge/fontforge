@@ -1764,6 +1764,7 @@ static enum pointtype PyFF_ConvertToPointType(int val) {
 	case 2: return pt_hvcurve;
 	case 3: return pt_tangent;
     }
+    return pt_corner;
 }
 
 static int PyFF_ConvertFromPointType(enum pointtype pt) {
@@ -1773,6 +1774,7 @@ static int PyFF_ConvertFromPointType(enum pointtype pt) {
 	case pt_tangent: return 3;
 	case pt_hvcurve: return 2;
     }
+    return 0;
 }
 
 static void AddPointConstants( PyObject *module ) {
