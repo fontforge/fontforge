@@ -10,5 +10,6 @@ abs_srcdir="@abs_srcdir@"
 abs_builddir="@abs_builddir@"
 abs_top_srcdir="@abs_top_srcdir@"
 abs_top_builddir="@abs_top_builddir@"
+python_exec="@PYTHON@"
 
 MKDIR_P="@MKDIR_P@"

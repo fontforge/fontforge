@@ -43,21 +43,34 @@ AT_CLEANUP
 #--------------------------------------------------------------------------
 # Fontforge Python Scripting test functions
 
-m4_defun([run_python],[(${abs_top_builddir}/fontforgeexe/fontforge -lang py -script "${abs_srcdir}/$1" "$2" || /bin/false)])
+m4_defun([run_python_ff],[(${abs_top_builddir}/fontforgeexe/fontforge -lang py -script "${abs_srcdir}/$1" "$2" || /bin/false)])
 
 # check_python( name_of_test=$1, use test#=$2, skip_if_file_not_exist=$3 )
 # Test FontForge Python Scripting commands using various testXXXX.py files.
 # $1 descriptive title of test
 # $2 is test to run (skipped if FontForge built without python scripting)
 # $3 test for this file
-m4_defun([check_python],[
-AT_SETUP([$1])
+m4_defun([check_python_ff],[
+AT_SETUP([$1 "(with FontForge)"])
 AT_SKIP_IF([test ! -r "${abs_srcdir}/$2"])
 AT_SKIP_IF([test ! -z "$FONTFORGE_NO_PYTHON"])
 check_file([test_input], [$3])
-AT_CHECK([run_python([$2],[$test_input])],[0],[ignore],[ignore])
+AT_CHECK([run_python_ff([$2],[$test_input])],[0],[ignore],[ignore])
 AT_CLEANUP
 ])
+
+m4_defun([run_python_py],[(PATH="${abs_top_builddir}/fontforge/.libs:${abs_top_builddir}/gutils/.libs:${abs_top_builddir}/Unicode/.libs:$PATH" PYTHONPATH="${abs_top_builddir}/pyhook/.libs" ${python_exec} -Ss "${abs_srcdir}/$1" "$2" || /bin/false)])
+
+m4_defun([check_python_py],[
+AT_SETUP([$1 "(with Python)"])
+AT_SKIP_IF([test ! -r "${abs_srcdir}/$2"])
+AT_SKIP_IF([test ! -z "$FONTFORGE_NO_PYTHON_EXTENSION"])
+check_file([test_input], [$3])
+AT_CHECK([run_python_py([$2],[$test_input])],[0],[ignore],[ignore])
+AT_CLEANUP
+])
+
+m4_defun([check_python],[check_python_ff([$1],[$2],[$3]),check_python_py([$1],[$2],[$3])])
 
 #--------------------------------------------------------------------------
 
@@ -123,7 +136,7 @@ check_python([Point count check],[test1001a.py],[Zapfino-4.0d3.dfont])
 check_python([Odd morx test without crashing],[test1001b.py],[Zapfino-4.1d6.dfont])
 check_python([Make new font],[test1001c.py])
 check_python([WOFF major minor meta check],[test1002.py],[nuvo-medium-woff-demo.woff])
-check_python([Various stroke tests],[test1003.py],[StrokeTests.sfd])
+check_python_ff([Various stroke tests],[test1003.py],[StrokeTests.sfd])
 check_python([Clockwise direction test],[test1004.py],[DirectionTest.sfd])
 check_python([Generate duplicate fonts test],[test1005.py],[AddExtremaTest2.sfd])
 check_python([Math table test],[test1006.py])
