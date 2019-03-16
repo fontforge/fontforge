@@ -6,9 +6,14 @@ See [When Things Go Wrong With FontForge Itself](http://designwithfontforge.com/
 
 ## Contributing Code
 
-We request that all pull requests be actively reviewed by at least one other developer.
-Developer volunteers monitor the pull request queue, but the time it takes for a given
-review depends on what files are edited and the degree of change. 
+Merging into the master branch requires review and approval of the pull request
+by an active core contributor to the project. The reviewer must fully
+comprehend the code being modified, and any changes must be strictly positive
+unless discussed in advance on the mailing list. FontForge is an extremely
+complex piece of software, and keeping it in top form requires this level of
+care. Please understand that large pull requests may take a long time to be
+approved or may be declined, even if well written, due to limited code review
+resources.
 
 ### How To Contribute, Step by Step
 
@@ -37,7 +42,6 @@ Some of these guidelines are not followed in the oldest code in the repository, 
 1. One statement per line, to make semi-automatic processing and reading of diffs much easier.
 2. Boolean Variables should use `stdbool.h`'s names `true` and `false`, not an integer ([reference](https://github.com/fontforge/fontforge/issues/724)).
 3. `return` statements should be inline with the indentation level they are being put on; don't put them at the left margin as in much of the existing code ([reference](https://github.com/fontforge/fontforge/issues/1208)).
-4. Use POSIX/gnulib APIs in preference to glib, e.g. `strdup` instead of `g_strdup` and `xvasprintf` instead of `g_printf_strdup`. This minimizes the impact of non-standard types and functions.
 
 Beyond these guidelines, try to follow the style used in the file being modified.
 
@@ -49,6 +53,7 @@ Various areas of the codebase have been worked on by different people in recent 
 * Build System: OS X (Application bundle, Homebrew) - Jeremy Tan (jtanx)
 * Build System: Windows - Jeremy Tan (jtanx)
 * Feature: UFO import/export - Frank Trampe (frank-trampe)
+* Feature: Collab - Dr Ben Martin (monkeyiq)
 * Feature: Python interface - Skef Iterum (skef)
 * Crashes: Frank Trampe, Adrien Tetar (adrientetar)
 
@@ -62,8 +67,9 @@ tab.
 Note: `Appveyor` builds with the `FF_PORTABLE` flag, which changes various
 initialization and configuration search paths. 
 
-The Travis system also attempts to build a Mac OS X application. When
-those builds are successful they can be downloaded from:
+The Travis system also attempts to build a Mac OS X application and a
+Linux Appimage. When those builds are successful they can be downloaded
+from:
 
     https://dl.bintray.com/fontforge/fontforge/
 
