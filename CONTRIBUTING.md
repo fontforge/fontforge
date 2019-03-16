@@ -6,8 +6,9 @@ See [When Things Go Wrong With FontForge Itself](http://designwithfontforge.com/
 
 ## Contributing Code
 
-We request that all pull requests be actively reviewed by at least one other developer, and in 2014 and for 2015, Frank Trampe has volunteered to do that if no one else gets there first. 
-He aims to review your PR within 1 week of your most recent commit.
+We request that all pull requests be actively reviewed by at least one other developer.
+Developer volunteers monitor the pull request queue, but the time it takes for a given
+review depends on what files are edited and the degree of change. 
 
 ### How To Contribute, Step by Step
 
@@ -19,9 +20,9 @@ See [Github Guides](https://guides.github.com/) to learn more, but the basic pro
 - From the main page of your fork, click on the green “Fork” button in order to submit a Pull
   Request.
 - Your pull request will be tested via [Travis CI](https://travis-ci.org/) to automatically indicate that your changes do not prevent compilation. FontForge is a big program, so Travis can easily take over 20 minutes to confirm your changes are buildable. Please be patient. More details about using Travis are below.
-- If it reports back that there are problems, you can log into the Travis system and check the log report for your pull request to see what the problem was. If no error is shown, just re-run the Travis test for your pull-request (that failed) to see a fresh report since the last report may be for someone else that did a later pull request, or for mainline code. If you add new code to fix your issue/problem, then take note that you need to check the next pull request in the Travis system. Travis issue numbers are different from GitHub issue numbers.
+- If it reports back that there are problems, you can follow the "Details" link to check the log report for your pull request to see what the problem was. 
 
-Fontforge supports Python `>=` 2.6, but the testsuite is solely Python 3-compatible.
+Fontforge supports Python `>=` 2.6 and is fully compatible with Python 3 through at least version 3.7. 
 
 ### Debugging FontForge
 
@@ -36,113 +37,86 @@ Some of these guidelines are not followed in the oldest code in the repository, 
 1. One statement per line, to make semi-automatic processing and reading of diffs much easier.
 2. Boolean Variables should use `stdbool.h`'s names `true` and `false`, not an integer ([reference](https://github.com/fontforge/fontforge/issues/724)).
 3. `return` statements should be inline with the indentation level they are being put on; don't put them at the left margin as in much of the existing code ([reference](https://github.com/fontforge/fontforge/issues/1208)).
-4. Use POSIX/gnulib APIs in preference to glib, e.g. `strdup` instead of `g_strdup` and `xvasprintf` instead of `g_printf_strdup`. 
-This minimizes the impact of non-standard types and functions.
+4. Use POSIX/gnulib APIs in preference to glib, e.g. `strdup` instead of `g_strdup` and `xvasprintf` instead of `g_printf_strdup`. This minimizes the impact of non-standard types and functions.
+
+Beyond these guidelines, try to follow the style used in the file being modified.
 
 ### People To Ask
 
 Various areas of the codebase have been worked on by different people in recent years, so if you are unfamiliar with the general area you're working in, please feel free to chat with people who have experience in that area:
 
 * Build System: Debian - Frank Trampe (frank-trampe)
-* Build System: OS X (Application bundle, Homebrew) - Dr Ben Martin (monkeyiq)
-* Build System: Windows - Jeremie Tan (jtanx)
-* Feature: Collab - Dr Ben Martin
-* Feature: Multi Glyph CharView - Dr Ben Martin
+* Build System: OS X (Application bundle, Homebrew) - Jeremy Tan (jtanx)
+* Build System: Windows - Jeremy Tan (jtanx)
 * Feature: UFO import/export - Frank Trampe (frank-trampe)
+* Feature: Python interface - Skef Iterum (skef)
 * Crashes: Frank Trampe, Adrien Tetar (adrientetar)
 
-### Using Travis CI
+### Accessing Travis and Appveyor Build Archives
 
-The Travis CI system is used to verify changes that a pull request
-makes. The CI run will also build binary osx packages to allow members
-of the FontForge team to quickly test out your changes. Because it is
-a security risk to allow github forks access to secure variables you
-have to push your branch into the main fontforge repository for binary
-packages to be built. 
+After each push request `Appveyor` will attempt to build and package
+a Windows installer. When that build is successful it can be accessed
+by following the `Appveyor` "Details" link and choosing the "Artifacts"
+tab. 
 
-To have Travis CI build OSX packages, first create a branch with your username 
-as the first part and push it to the main repository using the following setup:
+Note: `Appveyor` builds with the `FF_PORTABLE` flag, which changes various
+initialization and configuration search paths. 
 
-    $ cat .git/config
-    ...
-    [remote "upstreampush"]
-            url = git@github.com:fontforge/fontforge.git
-    ...
-    $ git push --verbose upstreampush johndoe/2014/aug/this-will-help-because-of-yyy
+The Travis system also attempts to build a Mac OS X application. When
+those builds are successful they can be downloaded from:
 
-That will make a branch this-will-help-because-of-yyy in the
-fontforge/fontforge repository which you can then create a pull
-request from. Because that pull request is coming from the
-fontforge/fontforge repository, Travis CI will allow secure
-environment variables to be used and an OSX bundle will be created for
-the pull request.
-
-You can update your local branch, commit to it, and then run the above
-to push that update upstream to your branch in fontforge/fontforge and
-that will trigger another OSX bundle build.
-
-Builds are synced over to the bigv server, currently at /tmp/bigvbase
-though the base directory may change in the future. Relative to the
-base directory you will see subdirectories of the form shown below. If
-all has gone well you should see a FontForge.app.zip file in that
-subdirectory which is around 60mb in size. If you have access to OSX
-10.9.3 or later you can install that app.zip and test it out.
-
-    2014-08-20-1664-0d986d9242da9e741d50c5f543faba2f37b7723d
-    yyyy-mm-dd-PRnum-githash
-
-#### Travis SSH keys
-
-Inside the travis-scripts subdirectory you will see a encrypt-key.sh
-script which can be used to marshal and carve up an SSH key to setup
-Travis CI secure environment variables that allow the CI system to
-reconstitute the SSH key.
-
-Usage of encrypt-key.sh is as follows, where fontforge/fontforge is
-the github repository that you want to encrypt the SSH key for.
-
-    ./encrypt-key.sh the-ssh-private-key-filename fontforge/fontforge
-
-The Linux and OSX Travis build scripts have been updated to
-reconstitute the SSH key. See the travis-scripts/common.sh file for
-how to easily use the key to upload information to the server.
+    https://dl.bintray.com/fontforge/fontforge/
 
 ## Building Packages
 
 ### Building Latest Source
 
-If you're not familiar with compiling source code, the follow provides some introductory guidance.
+If you're not familiar with compiling source code, the follow provides some
+introductory guidance.
 
-Building FontForge from the latest source is described in [INSTALL-git.md](https://github.com/fontforge/fontforge/blob/master/INSTALL-git.md)
+Building FontForge from the latest source is described in
+[INSTALL-git.md](https://github.com/fontforge/fontforge/blob/master/INSTALL-git.md)
 
-You can download the latest source as a snapshot of the repository's current state as a zip, [master.zip](https://github.com/fontforge/fontforge/archive/master.zip), or clone it using git with this command:
+You can download the latest source as a snapshot of the repository's current
+state as a zip,
+[master.zip](https://github.com/fontforge/fontforge/archive/master.zip), or
+clone it using git with this command:
 
     git clone git://github.com/fontforge/fontforge.git
 
-For building from source for a release versions, go to the [Release Page](https://github.com/fontforge/fontforge/releases) to find out a release tag, and in your cloned copy of the repo use that tag. For example:
+For building from source for a release versions, go to the [Release
+Page](https://github.com/fontforge/fontforge/releases) to find out a release
+tag, and in your cloned copy of the repo use that tag. For example:
 
      git checkout tags/20141014
 
-After the checkout, you need to first run the bootsrap script to checkout dependencies and generate the configure script:
+After the checkout, you need to first run the bootsrap script to checkout
+dependencies and generate the configure script:
 
     ./bootstrap
 
-The configure script allows you to turn off and on various features of FontForge that might not be appropriate for your system. For a complete list of options, type
+The configure script allows you to turn off and on various features of
+FontForge that might not be appropriate for your system. For a complete list of
+options, type
 
      ./configure --help
 
 Some of the most useful options are:
 
 - **Building FontForge without X.**
-  If you don't want to install X11 on your system, you can use FontForge as a command line tool which can execute scripts to manipulate fonts.
-  FontForge's scripting language is described in detail [in the section on scripting](scripting.html), or the [section on python scripting](python.html).
+  If you don't want to install X11 on your system, you can use FontForge as a
+  command line tool which can execute scripts to manipulate fonts.
+  FontForge's scripting language is described in detail [in the section 
+  on scripting](scripting.html), or the [section on python scripting](python.html).
 
      `./configure --without-x`
 
-- **Building FontForge (also) as a python extension**
-  If you want to write python scripts in normal python (as opposed to within the python embedded in FontForge)
+- **Building with the GDK UI**
+  FontForge now supports a GDK compatibility layer. This is compatible with X,
+  but also works with other "native" GDK compatibility layers. To use this
+  alternate UI implementation use
 
-     `./configure --enable-pyextension`
+     `./configure --enable-gdk`
 
 - **Installing FontForge somewhere other than `/usr/local`**
   If you want to install FontForge in a different directory (say in `/usr/bin`)
