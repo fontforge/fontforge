@@ -595,7 +595,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
         } else if (nw->restrict_input_to_me) {
             if (gdisp->last_nontransient_window != NULL) {
                 GGDKDrawSetTransientFor((GWindow)nw, (GWindow) - 1);
-            } else {
+            } else if (gdisp->top_window_count > 0) {
                 Log(LOGWARN, "Could not call GGDKDrawSetTransientFor on a restricted window (%p %s), restrict count %d, transient window count %d",
                     nw, nw->window_title, gdisp->restrict_count, (int)gdisp->transient_stack->len);
             }
