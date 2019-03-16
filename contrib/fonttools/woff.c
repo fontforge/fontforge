@@ -292,6 +292,7 @@ return;
     fseek(woff,8,SEEK_SET);
     putlong(woff,len);
     fclose(woff);
+    free(outname);
 }
 	
 

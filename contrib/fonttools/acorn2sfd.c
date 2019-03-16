@@ -624,6 +624,7 @@ return;
 	}
     }
     fclose(file);
+    free(filename);
 }
 
 static void FixupKerns(SplineFont *sf,struct Outlines *outline) {

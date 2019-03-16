@@ -2595,7 +2595,7 @@ static void gsubSingleSubTable(FILE *ttf, int which, int stoffset, struct ttfinf
 		    val >= info->glyph_cnt ? "!!! Bad glyph !!!" : info->glyph_names == NULL ? "" : info->glyph_names[val]);
 	}
     }
-    
+    free(glyphs);
 }
 
 static void gsubMultipleSubTable(FILE *ttf, int which, int stoffset, struct ttfinfo *info) {
@@ -2622,6 +2622,7 @@ static void gsubMultipleSubTable(FILE *ttf, int which, int stoffset, struct ttfi
 	}
 	putchar('\n');
     }
+    free(glyphs);
     free(seq_offsets);
 }
 

@@ -4426,6 +4426,10 @@ static struct feat_item *fea_process_sub_multiple(struct parseState *tok,
     struct feat_item *item;
     SplineChar *sc;
 
+    sc = fea_glyphname_get(tok,glyphs->name_or_class);
+    if ( !sc )
+        return ( sofar );
+
     for ( g=rpl; g!=NULL; g=g->next )
 	len += strlen(g->name_or_class)+1;
     mult = malloc(len+1);
@@ -4436,17 +4440,14 @@ static struct feat_item *fea_process_sub_multiple(struct parseState *tok,
 	mult[len++] = ' ';
     }
     mult[len-1] = '\0';
-    sc = fea_glyphname_get(tok,glyphs->name_or_class);
-    if ( sc!=NULL ) {
-	item = chunkalloc(sizeof(struct feat_item));
-	item->type = ft_pst;
-	item->next = sofar;
-	sofar = item;
-	item->u1.sc = sc;
-	item->u2.pst = chunkalloc(sizeof(PST));
-	item->u2.pst->type = pst_multiple;
-	item->u2.pst->u.mult.components = mult;
-    }
+    item = chunkalloc(sizeof(struct feat_item));
+    item->type = ft_pst;
+    item->next = sofar;
+    sofar = item;
+    item->u1.sc = sc;
+    item->u2.pst = chunkalloc(sizeof(PST));
+    item->u2.pst->type = pst_multiple;
+    item->u2.pst->u.mult.components = mult;
 return( sofar );
 }
 
@@ -5055,6 +5056,7 @@ return;
     if ( tok->type!=tk_char || tok->tokbuf[0]!='{' ) {
 	LogError(_("Expected '{' in feature definition on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	++tok->err_count;
+        free(lookup_name);
 	fea_skip_to_semi(tok);
 return;
     }
