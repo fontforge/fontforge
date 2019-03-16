@@ -2484,10 +2484,13 @@ static void gposPairSubTable(FILE *ttf, int which, int stoffset, struct ttfinfo 
 	free(ps_offsets);
     } else if ( subformat==2 ) {
 	printf( "\t   Class based kerning (not displayed)\n" );
-	PrintGlyphs( showCoverageTable(ttf,stoffset+coverage,-1),info);
+	glyphs = showCoverageTable(ttf,stoffset+coverage,-1);
+	PrintGlyphs(glyphs,info);
     } else {
 	printf( "\t   !!! unknown sub-table format !!!!\n" );
     }
+    if (glyphs)
+        free(glyphs);
 }
 
 static void ShowAttach(FILE *ttf) {
@@ -2595,7 +2598,8 @@ static void gsubSingleSubTable(FILE *ttf, int which, int stoffset, struct ttfinf
 		    val >= info->glyph_cnt ? "!!! Bad glyph !!!" : info->glyph_names == NULL ? "" : info->glyph_names[val]);
 	}
     }
-    free(glyphs);
+    if (glyphs)
+        free(glyphs);
 }
 
 static void gsubMultipleSubTable(FILE *ttf, int which, int stoffset, struct ttfinfo *info) {
@@ -2622,7 +2626,8 @@ static void gsubMultipleSubTable(FILE *ttf, int which, int stoffset, struct ttfi
 	}
 	putchar('\n');
     }
-    free(glyphs);
+    if (glyphs)
+        free(glyphs);
     free(seq_offsets);
 }
 
@@ -2650,6 +2655,8 @@ static void gsubAlternateSubTable(FILE *ttf, int which, int stoffset, struct ttf
 	}
 	putchar('\n');
     }
+    if (glyphs)
+        free(glyphs);
     free(seq_offsets);
 }
 
@@ -4699,6 +4706,8 @@ static void readttfapplefvar(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	nameid = getushort(ttf);
 	name = getttfname(util,info,nameid);
 	printf( "\t    nameid=%d (%s)\n", nameid, name==NULL ? "Not Found" : name );
+        if (name)
+            free(name);
     }
     for ( i=0; i<instancecount; ++i ) {
 	printf( "\t  Instance %d\n", i );
@@ -4710,6 +4719,8 @@ static void readttfapplefvar(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	for ( j=0; j<axiscount; ++j )
 	    printf( "%g, ", getfixed(ttf));
 	printf( "\n" );
+        if (name)
+            free(name);
     }
     printf( "\n" );
 }
@@ -5849,6 +5860,8 @@ static int readcff(FILE *ttf,FILE *util, struct ttfinfo *info) {
 	    }
 	}
     }
+    if (fontnames)
+        free(fontnames);
 return( 1 );
 }
 
