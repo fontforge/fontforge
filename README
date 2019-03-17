@@ -1,0 +1,8 @@
+FontForge is a free (libre) font editor for Windows, Mac OS X and GNU+Linux.
+
+Building FontForge:
+
+For general build instructions, refer to INSTALL.
+
+For more detailed build instructions, please refer back to:
+https://github.com/fontforge/fontforge/blob/master/CONTRIBUTING.md#building-latest-source
