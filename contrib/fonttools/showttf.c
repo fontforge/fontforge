@@ -2436,7 +2436,7 @@ static void PrintGlyphs(uint16 *glyphs, struct ttfinfo *info) {
 
 static void gposPairSubTable(FILE *ttf, int which, int stoffset, struct ttfinfo *info) {
     int coverage, cnt, i, subformat, vf1, vf2, j, pair_cnt;
-    uint16 *glyphs;
+    uint16 *glyphs = NULL;
     uint16 *ps_offsets;
 
     printf( "\t  Pair Sub Table[%d]\n", which );
@@ -2569,7 +2569,7 @@ static void gposMarkToBaseSubTable(FILE *ttf, int which, int stoffset, struct tt
 
 static void gsubSingleSubTable(FILE *ttf, int which, int stoffset, struct ttfinfo *info) {
     int coverage, cnt, i, type;
-    uint16 *glyphs;
+    uint16 *glyphs = NULL;
 
     printf( "\t  Single Sub Table[%d] (varient forms)\n", which );
     printf( "\t   Type=%d\n", type = getushort(ttf));
