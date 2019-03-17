@@ -203,7 +203,8 @@ LDADD = $(LIBADD) $(GUILIBADD)
 # optimization turns out to have disastrous effects. Compile it
 # without optimization.
 splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
-	$(LIBTOOL) --mode=compile $(CC) $(RAW_COMPILE_PLATFORM_CFLAGS) -g -c -o \
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) \
+		--mode=compile $(CC) $(RAW_COMPILE_PLATFORM_CFLAGS) -g -c -o \
 		splinerefigure.lo $(AM_CPPFLAGS) $(srcdir)/splinerefigure.c
 
 #--------------------------------------------------------------------------
