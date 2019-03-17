@@ -312,7 +312,7 @@ FONTFORGE_ARG_ENABLE([theme-2012],
                 [use old circa 2012 icons instead of using the tango default icons])],
         [FONTFORGE_THEME_TANGO])
 if test x$enable_theme_2012 = xyes; then
-   themename=2012
+   themename="2012"
 fi
 
 # select the theme.
@@ -955,6 +955,7 @@ Graphical UI Choices	UseIt?	HaveIt?	WebsiteURL
   X Window System		${i_do_have_x}	${libxorg_url}
     cairo		${with_cairo}	${i_do_have_cairo}	${cairo_url}
   GDK backend		${fontforge_can_use_gdk}	${fontforge_gdk_version}	${gdk_url}
+  Desktop theme		${themename}
   zeromq (libzmq)		${i_do_have_libzmq}	${libzmq_url}
 ])
 
