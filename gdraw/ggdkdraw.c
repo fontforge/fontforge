@@ -592,8 +592,13 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
             nw->is_dlg = true;
         } else if (!nw->is_dlg) {
             ++gdisp->top_window_count;
-        } else if (nw->restrict_input_to_me && gdisp->last_nontransient_window != NULL) {
-            GGDKDrawSetTransientFor((GWindow)nw, (GWindow) - 1);
+        } else if (nw->restrict_input_to_me) {
+            if (gdisp->last_nontransient_window != NULL) {
+                GGDKDrawSetTransientFor((GWindow)nw, (GWindow) - 1);
+            } else if (gdisp->top_window_count > 0) {
+                Log(LOGWARN, "Could not call GGDKDrawSetTransientFor on a restricted window (%p %s), restrict count %d, transient window count %d",
+                    nw, nw->window_title, gdisp->restrict_count, (int)gdisp->transient_stack->len);
+            }
         }
         nw->isverytransient = (wattrs->mask & wam_verytransient) ? 1 : 0;
         nw->is_toplevel = true;
@@ -882,7 +887,7 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
     if (event->type == GDK_KEY_PRESS || event->type == GDK_BUTTON_PRESS || event->type == GDK_BUTTON_RELEASE) {
         if (gw->transient_owner != NULL && gw->isverytransient && !gw->transient_owner->is_dying) {
             gdisp->last_nontransient_window = gw->transient_owner;
-        } else {
+        } else if (!gw->istransient && !gw->is_dying) {
             gdisp->last_nontransient_window = gw;
         }
     }
