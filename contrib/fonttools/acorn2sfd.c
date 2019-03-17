@@ -255,6 +255,7 @@ static SplineChar *ReadChar(FILE *file,struct Outlines *outline,int enc) {
     flags = getc(file);
     if ( !(flags&(1<<3)) ) {
 	fprintf( stderr, "Character %d is a bitmap character\n", enc );
+        free(sc);
 return( NULL );
     }
 
