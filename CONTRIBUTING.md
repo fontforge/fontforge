@@ -269,22 +269,29 @@ You may need to install dependencies, typically packaged for Fedora-derived syst
 There are two scripts to build an app bundle, which one you use will depend on if you are using homebrew or macports on your OSX machine.
 Both scripts aim to create a complete stand alone bundle of FontForge and all the libraries, data files, and dependencies that it needs, including Python.
 
-The `osx/create-osx-app-bundle.sh` works on a macports machine whereas the `travis-scripts/create-osx-app-bundle-homebrew.sh` script is for homebrew. 
+The `osx/create-osx-app-bundle.sh` works on a macports machine whereas the `travis-scripts/ffosxbuild.sh` script is for homebrew.
 It is possible that these scripts will be merged into a single script that can work on both platforms in the future.
+
+It's highly recommended to not have both macports and homebrew installed, as it can cause conflicts in which dependencies are used at build time.
 
 For macports there is an `osx/Portfile` and for homebrew you might like to see `travis-scripts/fontforge.rb` for changes. 
 Both of these files are geared to build current git master.
 
-The `osx/create-osx-app-bundle.sh` script has been used since early 2013 to create the daily bundle for FontForge.
-Both the bundle scripts expect to be run from the root directory of where FontForge was compiled. 
+The `travis-scripts/ffosxbuild.sh` has been used to create bundles off Travis CI builds. It expects that FontForge will be installed to a prefix (i.e. with the `--prefix` option). It is then invoked as such:
+
+```
+./ffosxbuild.sh /path/to/prefix version-hash
+```
+
+This will create an app bundle as `FontForge.app`, and also create a corresponding dmg. The application bundle is relocatable.
+
+The `osx/create-osx-app-bundle.sh` script was used since early 2013 to create the daily bundle for FontForge.
+It is no longer actively used, having been superseded by `travis-scripts/ffosxbuild.sh`.
+
+This script expects to be run from the root directory of where FontForge was compiled.
 For example, doing the below command to install fontforge on OSX:
 
     sudo port -v -k install fontforge
 
 and then move to the `/opt/local/var/macports/build/.../work/fontforge-2.0.0_beta1` and run the `./osx/create-osx-app-bundle.sh` script from that directory.
-
-On homebrew you have to run the `travis-scripts/create-osx-app-bundle-homebrew.sh` from the directory in `/private/tmp` that homebrew uses to compile the FontForge source tree at. 
-Note that the bundle-homebrew.sh script is used on Travis CI to build a bundle and has not been extensively tested outside that environment.
-
-In both cases you will see a new file at `~/FontForge.app.zip` (or perhaps a dmg in the future) which is the output from running the `create-osx-app-bundle` script.
 
