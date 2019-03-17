@@ -154,12 +154,12 @@ If your machine doesn't have them and you want them they are available from:
 
 -   Image Libraries (to allow FontForge to import images in those
     formats generally used as backgrounds for autotracing)
-    -   [libpng](http://www.libpng.org/pub/png/libpng.html) (and required helper [zlib](http://www.gzip.org/zlib/))
+    -   [libpng](http://www.libpng.org/pub/png/libpng.html) (and required helper [zlib](http://www.zlib.net/))
     -   [libtiff](http://www.libtiff.org/)
     -   [libungif](http://gnuwin32.sourceforge.net/packages/libungif.htm)
     -   [libjpeg](http://www.ijg.org/)
 -   [libxml2](http://xmlsoft.org/) To parse SVG files and fonts
--   [libspiro](https://github.com/fonrforge/libspiro) Raph Levien's clothoid to bezier spline conversion routines. If this is available FontForge will allow you to edit with clothoid splines (spiro).
+-   [libspiro](https://github.com/fontforge/libspiro) Raph Levien's clothoid to bezier spline conversion routines. If this is available FontForge will allow you to edit with clothoid splines (spiro).
 -   [libuninameslist](https://github.com/fontforge/libuninameslist) To display unicode names and annotations.
 -   [libiconv](http://www.gnu.org/software/libiconv/) Only important for systems with no built-in iconv().
     If not present FontForge contains a minimal version of the library which allows it to work.
@@ -183,9 +183,7 @@ If you want to edit CID keyed fonts you need the character set descriptions in [
 
 You might want to pull down some old unicode bitmap fonts.
 
--   [Kanou's fontview fonts](http://khdd.net/kanou/fonts/ff/fontviewfont-en.html) [![](flags/Nisshoki-Japan.png)](http://khdd.net/kanou/fonts/ff/fontviewfont.html)
 -   [The unifont](http://czyborra.com/unifont/)
--   [ClearlyU's font](http://clr.nmsu.edu/~mleisher/cu.html)
 -   [The FreeFont project](http://www.nongnu.org/freefont/)
 -   [X fixed](http://www.cl.cam.ac.uk/~mgk25/ucs-fonts.html)
 -   [Computer Modern Unicode fonts](http://canopus.iacp.dvo.ru/~panov/cm-unicode/) - [Unicode Font Guide for Free/Libre Open Source Operating Systems](http://eyegene.ophthy.med.umich.edu/unicode/fontguide/)
