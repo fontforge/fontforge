@@ -34,7 +34,7 @@ AC_PREREQ([2.68])
 
 #--------------------------------------------------------------------------
 # PackageTimestamp version
-m4_define([fontforge_package_stamp], [20170731])
+m4_define([fontforge_package_stamp], [20190316])
 # reminder: When updating FontForge, also take note of desktop/* dates and
 # startnoui.c, startui.c
 #--------------------------------------------------------------------------
@@ -50,18 +50,18 @@ m4_define([fontforge_package_stamp], [20170731])
 #   fontforge_major_version += 1;
 #   fontforge_minor_version = 0;
 #
-m4_define([fontforge_major_version], [2]) dnl 20120731-b was 1.0
+m4_define([fontforge_major_version], [3]) dnl 20120731-b was 1.0
 m4_define([fontforge_minor_version], [0])
-m4_define([libgdraw_major_version], [5]) dnl 20120731-b was 4.10
+m4_define([libgdraw_major_version], [6]) dnl 20120731-b was 4.10
 m4_define([libgdraw_minor_version], [0])
 m4_define([libgioftp_major_version], [2]) dnl 20120731-b was 1.0
-m4_define([libgioftp_minor_version], [0])
-m4_define([libgunicode_major_version], [4]) dnl 20120731-b was 3.2
+m4_define([libgioftp_minor_version], [1])
+m4_define([libgunicode_major_version], [5]) dnl 20120731-b was 3.2
 m4_define([libgunicode_minor_version], [0])
-m4_define([libgutils_major_version], [2]) dnl 20120731-b was 1.3
-m4_define([libgutils_minor_version], [0])
+m4_define([libgutils_major_version], [3]) dnl 20120731-b was 1.3
+m4_define([libgutils_minor_version], [1])
 m4_define([libzmqcollab_major_version], [2]) dnl n/a
-m4_define([libzmqcollab_minor_version], [0])
+m4_define([libzmqcollab_minor_version], [1])
 m4_define([libfontforgeexe_major_version], [fontforge_major_version]) dnl matches fontforge
 m4_define([libfontforgeexe_minor_version], [fontforge_minor_version])
 m4_define([libfontforge_major_version], [fontforge_major_version]) dnl matches fontforge
