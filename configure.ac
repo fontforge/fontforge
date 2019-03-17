@@ -89,7 +89,7 @@ BLANK1=''; AC_SUBST(BLANK1)
 AC_SUBST([BLANK2],[""])
 
 #--------------------------------------------------------------------------
-AC_INIT([fontforge],[fontforge_version],[fontforge-devel@lists.sourceforge.net],
+AC_INIT([fontforge],[fontforge_package_stamp],[fontforge-devel@lists.sourceforge.net],
 	[fontforge_package_name],[https://github.com/fontforge/fontforge])
 AC_CONFIG_SRCDIR([Unicode/ArabicForms.c])
 AC_CONFIG_MACRO_DIR([m4])
