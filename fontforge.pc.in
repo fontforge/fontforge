@@ -9,4 +9,4 @@ localedir=@localedir@
 
 Name: FontForge
 Description: Outline font editor.
-Version: @FONTFORGE_VERSION@
+Version: @FONTFORGE_PACKAGE_STAMP@
