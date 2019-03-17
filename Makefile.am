@@ -114,13 +114,10 @@ EXTRA_DIST += \
 	bootstrap.conf \
 	COPYING.gplv3 \
 	LICENSE \
-	doc/README-Mac.html \
-	doc/README-MS.html \
-	doc/README-unix	\
-	doc/README-Unix.html \
 	Packaging/FontForge-doc.spec \
 	Packaging/FontForge.spec \
 	Packaging/FontForge.static.spec \
+	README \
 	uthash/src \
 	$(NULL)
 
