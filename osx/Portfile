@@ -106,11 +106,7 @@ depends_build \
     port:pkgconfig port:autoconf port:automake
 
 post-extract {
-    if {[file exists "/usr/local/src/github-fontforge/gnulib"]} {
-        system "cd ${worksrcpath} && ./bootstrap --gnulib-srcdir=/usr/local/src/github-fontforge/gnulib "
-    } else {
-        system "cd ${worksrcpath} && ./bootstrap "
-    }
+    system "cd ${worksrcpath} && ./bootstrap "
     foreach fn { "${worksrcpath}/configure.ac" "${worksrcpath}/configure" } {
         set fn [ subst $fn ]
         if {[file exists "${fn}"]} {

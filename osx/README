@@ -25,12 +25,6 @@ cd fontforge/osx
 cd /opt/local/var/macports/build/_usr_local_src_github-fontforge_fontforge_osx/fontforge/work/fontforge-2.0.0_beta1
 bash ./osx/create-osx-app-bundle.sh
 
-As you can see in the post-extract of the Portfile a copy of gnulib is
-also expected to be found at /usr/local/src/github-fontforge/gnulib.
-This is not strictly needed and you can modify the Portfile to avoid
-it but having a reliance on that local copy means much less network
-traffic and thus is useful for repeated builds.
-
 You will also want to configure your macports environment to include
 in binaries so that the link paths can be modified for packaged
 execution.

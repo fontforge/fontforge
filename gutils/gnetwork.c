@@ -25,14 +25,12 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <fontforge-config.h>
+#ifdef BUILD_COLLAB
 
 #include "inc/gnetwork.h"
 #include "inc/ustring.h"
 
-#ifdef BUILD_COLLAB
-#include "czmq.h"
-#endif
-
+#include <czmq.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -44,10 +42,9 @@
 #  include <winsock2.h>
 #else
 extern int h_errno;
+#  include <arpa/inet.h>
 #  include <netdb.h>
 #endif
-
-#include <arpa/inet.h>
 
 char* ff_gethostname( char* outstring, int outstring_sz )
 {
@@ -120,14 +117,9 @@ char* HostPortUnpack( char* packed, int* port, int port_default )
 //
 char* ff_uuid_generate( char* target )
 {
-#ifdef BUILD_COLLAB
     zuuid_t *uuid = zuuid_new ();
     strcpy (target, zuuid_str (uuid));
     zuuid_destroy (&uuid);
-#else
-    strcpy( target, "" );
-#endif // collab guard.
-
     return target;
 }
 
@@ -138,3 +130,4 @@ int ff_uuid_isValid( char* uuid )
     return 1;
 }
 
+#endif // BUILD_COLLAB

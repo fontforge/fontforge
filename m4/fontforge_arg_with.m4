@@ -10,7 +10,7 @@ AC_DEFUN([FONTFORGE_ARG_WITH_BASE],
 [
 AC_ARG_WITH([$1],[$2],
         [eval AS_TR_SH(i_do_have_$1)="${withval}"],
-        [eval AS_TR_SH(i_do_have_$1)=yes])
+        [eval AS_TR_SH(i_do_have_$1)=no])
 if test x"${AS_TR_SH(i_do_have_$1)}" = xyes; then
    # First try pkg-config, then try a possible package-specific hack.
    PKG_CHECK_MODULES(m4_toupper([$1]),[$3],[:],[$6])
@@ -401,7 +401,7 @@ dnl -------------------------
 AC_DEFUN([FONTFORGE_ARG_WITH_ZEROMQ],
 [
 FONTFORGE_ARG_WITH([libzmq],
-        [AS_HELP_STRING([--without-libzmq],[build without libzmq])],
+        [AS_HELP_STRING([--with-libzmq],[build with libzmq])],
         [ libczmq >= 2.2.0 libczmq < 4 libzmq >= 4.0.4 ],
         [FONTFORGE_WARN_PKG_NOT_FOUND([LIBZMQ])],
         [_NO_LIBZMQ], [NO_LIBZMQ=1])

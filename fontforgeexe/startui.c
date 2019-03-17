@@ -825,7 +825,7 @@ static void ffensuredir( const char* basedir, const char* dirname, mode_t mode )
 
     snprintf(buffer,buffersz,"%s/%s", basedir, dirname );
     // ignore errors, this is just to help the user aftre all.
-    mkdir( buffer, mode );
+    GFileMkDir( buffer, mode );
 }
 
 static void ensureDotFontForgeIsSetup() {

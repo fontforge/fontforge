@@ -2072,7 +2072,7 @@ int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer, int version
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
     xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (dictnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Make the dict.
 
-    GFileMkDir( glyphdir );
+    GFileMkDir( glyphdir, 0755 );
     int i;
     SplineChar * sc;
     int err = 0;
@@ -2115,7 +2115,7 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff, in
     }
 
     /* Create it */
-    if (GFileMkDir( basedir ) == -1) return false;
+    if (GFileMkDir( basedir, 0755 ) == -1) return false;
 
     locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
     switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
@@ -2322,6 +2322,12 @@ return( NULL );
 return( NULL );
 }
 
+#ifndef HAVE_ICONV_H
+# undef iconv
+# undef iconv_t
+# undef iconv_open
+# undef iconv_close
+#endif
 #include <libxml/parser.h>
 
 static int libxml_init_base() {

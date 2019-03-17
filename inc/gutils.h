@@ -27,6 +27,7 @@
 #ifndef _GUTILS_H
 #define _GUTILS_H
 
+#include <fontforge-config.h>
 #include <time.h>
 #include <sys/stat.h>
 

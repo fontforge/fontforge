@@ -827,7 +827,7 @@ return( NULL );
     if ( dir==NULL ) dir = P_tmpdir;
     archivedir = malloc(strlen(dir)+100);
     sprintf( archivedir, "%s/ffarchive-%d-%d", dir, getpid(), ++cnt );
-    if ( GFileMkDir(archivedir)!=0 ) {
+    if ( GFileMkDir(archivedir, 0755)!=0 ) {
 	free(archivedir);
 return( NULL );
     }

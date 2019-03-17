@@ -41,6 +41,7 @@
 #include "tottf.h"
 #include <math.h>
 #include <locale.h>
+#include <ffglib.h>
 # include <ustring.h>
 # include <utype.h>
 # include <gresource.h>
@@ -48,7 +49,6 @@
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
 #include "ttf.h"
-#include "c-strtod.h"
 
 int adjustwidth = true;
 int adjustlbearing = true;
@@ -1203,7 +1203,7 @@ static int CheckBluePair(char *blues, char *others, int bluefuzz,
 	    while ( *others==' ' ) ++others;
 	    if ( *others==']' || *others=='}' )
 	break;
-	    temp = c_strtod(others,&end);
+	    temp = g_ascii_strtod(others,&end);
 	    if ( temp!=rint(temp))
 		err |= pds_notintegral;
 	    else if ( end==others ) {
@@ -1227,7 +1227,7 @@ static int CheckBluePair(char *blues, char *others, int bluefuzz,
 	while ( *blues==' ' ) ++blues;
 	if ( *blues==']' || *blues=='}' )
     break;
-	temp = c_strtod(blues,&end);
+	temp = g_ascii_strtod(blues,&end);
 	if ( temp!=rint(temp))
 	    err |= pds_notintegral;
 	else if ( end==blues ) {
@@ -1275,7 +1275,7 @@ return( true );
 return( false );
     ++str_val;
 
-    val = c_strtod(str_val,&end);
+    val = g_ascii_strtod(str_val,&end);
     while ( *end==' ' ) ++end;
     if ( *end!=']' && *end!='}' )
 return( false );
@@ -1297,7 +1297,7 @@ static int CheckStemSnap(struct psdict *dict,char *snapkey, char *stdkey ) {
     if ( (str_val = PSDictHasEntry(dict,stdkey))!=NULL ) {
 	while ( *str_val==' ' ) ++str_val;
 	if ( *str_val=='[' && *str_val!='{' ) ++str_val;
-	std_val = c_strtod(str_val,&end);
+	std_val = g_ascii_strtod(str_val,&end);
     }
 
     if ( (str_val = PSDictHasEntry(dict,snapkey))==NULL )
@@ -1312,7 +1312,7 @@ return( false );
 	while ( *str_val==' ' ) ++str_val;
 	if ( *str_val==']' && *str_val!='}' )
     break;
-	temp = c_strtod(str_val,&end);
+	temp = g_ascii_strtod(str_val,&end);
 	if ( end==str_val )
 return( false );
 	str_val = end;
@@ -1347,7 +1347,7 @@ return( pds_missingblue );
     }
 
     if ( (test=PSDictHasEntry(sf->private,"BlueScale"))!=NULL ) {
-	bluescale = c_strtod(test,&end);
+	bluescale = g_ascii_strtod(test,&end);
 	if ( *end!='\0' || end==test || bluescale<0 )
 	    errs |= pds_badbluescale;
     }

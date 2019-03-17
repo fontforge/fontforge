@@ -42,7 +42,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include "ttf.h"
-#include "xvasprintf.h"
 
 struct opentype_feature_friendlynames friendlies[] = {
     { CHR('a','a','l','t'),	"aalt", N_("Access All Alternates"),	gsub_single_mask|gsub_alternate_mask },
@@ -4754,29 +4753,29 @@ char *FPSTRule_From_Str(SplineFont *sf,FPST *fpst,struct fpst_rule *rule,
 	start = lpt;
 	if ( *start=='|' ) {
 	    if ( fpst->type==pst_contextpos || fpst->type==pst_contextsub )
-return( xasprintf( _("Separation marks only meaningful in contextual chaining lookups, starting at: %.20s..."), lpt ));
+return( smprintf( _("Separation marks only meaningful in contextual chaining lookups, starting at: %.20s..."), lpt ));
 	    if ( first==-1 )
 		first = cnt;
 	    else if ( last==-1 )
 		last = cnt-1;
 	    else
-return( xasprintf( _("Too many separation marks, starting at: %.20s..."), lpt ));
+return( smprintf( _("Too many separation marks, starting at: %.20s..."), lpt ));
 	    ++lpt;
     continue;
 	} else if ( *start=='[' ) {
 	    /* A coverage table */
 	    if ( fpst->format!=pst_coverage && fpst->format!=pst_reversecoverage )
-return( xasprintf( _("A coverage table was found in a glyph or class based contextual lookup, starting at: %.20s..."), lpt ));
+return( smprintf( _("A coverage table was found in a glyph or class based contextual lookup, starting at: %.20s..."), lpt ));
 	    ++start;
 	    for ( lpt = start; *lpt!='\0' && *lpt!=']'; ++lpt );
 	    if ( *lpt!=']' )
-return( xasprintf( _("Unterminated coverage table, starting at: %.20s..."), start-1 ));
+return( smprintf( _("Unterminated coverage table, starting at: %.20s..."), start-1 ));
 	    end = lpt++;
 	    if ( do_replacements==1 ) {
 		int rcnt, ecnt;
 		do_replacements = 2;
 		if ( cnt==0 )
-return( xasprintf( _("Replacements must follow the coverage table to which they apply: %s"), start-4 ));
+return( smprintf( _("Replacements must follow the coverage table to which they apply: %s"), start-4 ));
 		ch = *end; *end = '\0';
 		parsed[cnt].replacements = copy(start);
 		*end = ch;
@@ -4796,7 +4795,7 @@ return( xasprintf( _("Replacements must follow the coverage table to which they 
 		    free(parsed[cnt].replacements);
 		    parsed[cnt].replacements = newr;
 		} else
-return( xasprintf( _("There must be as many replacement glyphs as there are match glyphs: %s => %s"),
+return( smprintf( _("There must be as many replacement glyphs as there are match glyphs: %s => %s"),
 		    parsed[cnt].entity, parsed[cnt].replacements));
     continue;
 	    }
@@ -4808,39 +4807,39 @@ return( xasprintf( _("There must be as many replacement glyphs as there are matc
 	} else if ( *start=='=' && start[1]=='>' ) {
 	    /* A reverse contextual chaining */
 	    if ( fpst->format!=pst_reversecoverage )
-return( xasprintf( _("No replacement lists may be specified in this contextual lookup, use a nested lookup instead, starting at: %.20s..."), lpt ));
+return( smprintf( _("No replacement lists may be specified in this contextual lookup, use a nested lookup instead, starting at: %.20s..."), lpt ));
 	    if ( do_replacements )
-return( xasprintf( _("Only one replacement list may be specified in a reverse contextual chaining lookup, starting at: %.20s..."), lpt ));
+return( smprintf( _("Only one replacement list may be specified in a reverse contextual chaining lookup, starting at: %.20s..."), lpt ));
 	    do_replacements = true;
 	    lpt += 2;
 	} else {
 	    /* A lookup invocation */
 	    if ( fpst->format==pst_reversecoverage )
-return( xasprintf( _("No lookups may be specified in a reverse contextual lookup (use a replacement list instead), starting at: %.20s..."), lpt ));
+return( smprintf( _("No lookups may be specified in a reverse contextual lookup (use a replacement list instead), starting at: %.20s..."), lpt ));
 
 	    if ( *start=='@' ) {
 		for ( lpt=start+1; isspace( *lpt ); ++lpt );
 		if ( *lpt!='<' )
-return( xasprintf( _("A lookup invocation must be started by the sequence '@<' and ended with '>', starting at: %.20s..." ), start ) );
+return( smprintf( _("A lookup invocation must be started by the sequence '@<' and ended with '>', starting at: %.20s..." ), start ) );
 	    }
 	    start= ++lpt;
 	    for ( lpt = start; *lpt!='\0' && *lpt!='>'; ++lpt );
 	    if ( *lpt!='>' )
-return( xasprintf( _("Unterminated lookup invocation, starting at: %.20s..."), start-1 ));
+return( smprintf( _("Unterminated lookup invocation, starting at: %.20s..."), start-1 ));
 	    *lpt = '\0';
 	    lookup = SFFindLookup(sf,start);
 	    if ( lookup==NULL ) {
-		ret = xasprintf( _("Unknown lookup: %s"), start );
+		ret = smprintf( _("Unknown lookup: %s"), start );
 		*lpt = '>';
 return( ret );
 	    } else if ( (isgpos && lookup->lookup_type<gpos_start) || (!isgpos && lookup->lookup_type>gpos_start)) {
-		ret = xasprintf( isgpos ? _("GSUB lookup refered to in this GPOS contextual lookup: %s"):
+		ret = smprintf( isgpos ? _("GSUB lookup refered to in this GPOS contextual lookup: %s"):
 			    _("GPOS lookup refered to in this GSUB contextual lookup: %s"),
 			start );
 		*lpt = '>';
 return( ret );
 	    } else if ( cnt==0 ) {
-		ret = xasprintf( _("Lookups must follow the glyph, class or coverage table to which they apply: %s"), start );
+		ret = smprintf( _("Lookups must follow the glyph, class or coverage table to which they apply: %s"), start );
 		*lpt = '>';
 return( ret );
 	    }
@@ -4907,7 +4906,7 @@ return( copy( _("A reverse contextual chaining lookup can only match one coverag
 	for ( i=0; i<cnt; ++i ) {
 	    if ( SFGetChar(sf,-1,parsed[i].entity)==NULL ) {
 		if ( ret==NULL ) {
-		    ret = xasprintf( _("There is no glyph named \"%s\" in the font."), parsed[i].entity );
+		    ret = smprintf( _("There is no glyph named \"%s\" in the font."), parsed[i].entity );
 		    *return_is_warning = true;
 		}
 	    }
@@ -4984,11 +4983,11 @@ return( copy( _("A reverse contextual chaining lookup can only match one coverag
 		free( rule->u.class.fclasses ); rule->u.class.fclasses = NULL;
 		rule->u.class.bcnt = rule->u.class.fcnt = rule->u.class.ncnt = 0;
 		if ( i<first )
-return( xasprintf( _("%s is not a class name for the backtracking classes." ), parsed[i].entity ) );
+return( smprintf( _("%s is not a class name for the backtracking classes." ), parsed[i].entity ) );
 		else if ( i<=last )
-return( xasprintf( _("%s is not a class name for the matching classes." ), parsed[i].entity ) );
+return( smprintf( _("%s is not a class name for the matching classes." ), parsed[i].entity ) );
 		else
-return( xasprintf( _("%s is not a class name for the forward classes." ), parsed[i].entity ) );
+return( smprintf( _("%s is not a class name for the forward classes." ), parsed[i].entity ) );
 	    }
 	    if ( i<first )
 		rule->u.class.bclasses[first-1-i] = j;	/* Reverse the backtrack classes */
@@ -5011,7 +5010,7 @@ return( xasprintf( _("%s is not a class name for the forward classes." ), parsed
 		ch = *lpt; *lpt='\0';
 		if ( SFGetChar(sf,-1,start)==NULL ) {
 		    if ( ret==NULL ) {
-			ret = xasprintf( _("There is no glyph named \"%s\" in the font."), start );
+			ret = smprintf( _("There is no glyph named \"%s\" in the font."), start );
 			*return_is_warning = true;
 		    }
 		}

@@ -593,7 +593,7 @@ static int encmatch(const char *enc,int subok) {
     };
     int i;
     char buffer[80];
-#if HAVE_ICONV
+#if HAVE_ICONV_H
     static char *last_complaint;
 
     iconv_t test;
@@ -616,7 +616,7 @@ return( encs[i].enc );
 	    if ( strstrmatch(enc,encs[i].name)!=NULL )
 return( encs[i].enc );
 
-#if HAVE_ICONV
+#if HAVE_ICONV_H
 	/* I only try to use iconv if the encoding doesn't match one I support*/
 	/*  loading iconv unicode data takes a while */
 	test = iconv_open(enc,FindUnicharName());

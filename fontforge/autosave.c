@@ -56,7 +56,7 @@ static char *getAutoDirName(char *buffer) {
         sprintf(buffer,"%s/autosave", dir);
         free(dir);
         if ( access(buffer,F_OK)==-1 )
-            if ( GFileMkDir(buffer)==-1 )
+            if ( GFileMkDir(buffer, 0755)==-1 )
                 return( NULL );
         dir = copy(buffer);
     }

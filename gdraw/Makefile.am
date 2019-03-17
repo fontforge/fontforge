@@ -63,8 +63,7 @@ endif
 
 libgdraw_la_LIBADD += $(MY_LIBS) $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgutils.la \
-	$(top_builddir)/fontforge/libfontforge.la \
-	$(top_builddir)/lib/libgnu.la
+	$(top_builddir)/fontforge/libfontforge.la
 
 if GRAPHICAL_USER_INTERFACE
 libgdraw_la_LIBADD += $(XINPUT_LIBS)

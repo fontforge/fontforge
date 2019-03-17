@@ -30,7 +30,7 @@
 #include "autohint.h"
 #include "bitmapchar.h"
 #include "bvedit.h"
-#include "config.h"
+#include "fontforge-config.h"
 #include "cvexport.h"
 #include "cvimages.h"
 #include "fontforgevw.h"

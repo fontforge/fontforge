@@ -480,7 +480,11 @@ exit(1);
     g_random_set_seed(now);
 
     FindFonts(dirs,exts);
+#ifdef _WIN32
+	mkdir(results_dir);
+#else
     mkdir(results_dir,0755);
+#endif
     for (;;)
 	do_test();
 

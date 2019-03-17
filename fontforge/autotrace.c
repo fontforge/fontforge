@@ -226,7 +226,7 @@ static char *mytempdir(void) {
     eon = buffer+strlen(buffer);
     while ( 1 ) {
 	sprintf( eon, "%04X_mf%d", getpid(), ++cnt );
-	if ( mkdir(buffer,0770)==0 )
+	if ( GFileMkDir(buffer,0770)==0 )
 return( copy(buffer) );
 	else if ( errno!=EEXIST )
 return( NULL );
