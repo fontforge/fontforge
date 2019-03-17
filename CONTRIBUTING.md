@@ -188,14 +188,6 @@ You might want to pull down some old unicode bitmap fonts.
 -   [X fixed](http://www.cl.cam.ac.uk/~mgk25/ucs-fonts.html)
 -   [Computer Modern Unicode fonts](http://canopus.iacp.dvo.ru/~panov/cm-unicode/) - [Unicode Font Guide for Free/Libre Open Source Operating Systems](http://eyegene.ophthy.med.umich.edu/unicode/fontguide/)
 
-FontForge has [conventions for non-BMP unicode bitmap fonts](http://fontforge.github.io/nonBMP/). 
-To install these, put them in a directory, and in that directory type:
-
-     mkfontdir
-     xset fp+ `pwd`
-
-You should make sure that the xset line happens whenever X is started on your machine (put it in your .xsession file).
-
 ### Building a Debian source package
 
 A Debian source package consists of a source tarball (with specific metadata) and several accompanying files and allows one to build a product in a neutral build environment.
