@@ -674,10 +674,11 @@ int _WriteWOFF2Font(FILE *fp, SplineFont *sf, enum fontformat format, int32_t *b
 SplineFont *_SFReadWOFF2(FILE *fp, int flags, enum openflags openflags, char *filename,char *chosenname,struct fontdict *fd)
 {
     size_t raw_input_length = 0;
-    uint8_t *raw_input = ReadFileToBuffer(fp, &raw_input_length);
     if (!fp) {
         return NULL;
     }
+
+    uint8_t *raw_input = ReadFileToBuffer(fp, &raw_input_length);
 
     size_t decomp_size = woff2_compute_woff2_final_size(raw_input, raw_input_length);
     if (decomp_size > WOFF2_DEFAULT_MAX_SIZE) {

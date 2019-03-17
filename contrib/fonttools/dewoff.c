@@ -180,6 +180,7 @@ return( we_mbz );
     sfnt = fopen( outname,"wb+" );
     if ( sfnt==NULL ) {
         free(outname);
+        fclose(woff);
 return( we_cantopenout );
     }
 
