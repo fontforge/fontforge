@@ -15,7 +15,8 @@ if [ -z $workdir ]; then
 fi
 
 builddate=`date +%Y-%m-%d`
-outdir=FontForge-$builddate-${hash:0:7}.app
+#outdir=FontForge-$builddate-${hash:0:7}.app
+outdir=FontForge.app
 
 if [ ! -f $BASE/lddx ]; then
     echo "Fetching lddx..."
@@ -107,11 +108,13 @@ sed -i -e "s/CFBundleVersionChangeMe/$FONTFORGE_VERSIONDATE_RAW/g" $outdir/Conte
 rm /tmp/fontforge-config-sorted
 
 # Package it up
+dmgname=FontForge-$builddate-${hash:0:7}.app.dmg
+
 hdiutil create -size 800m   \
    -volname   FontForge     \
    -srcfolder $outdir       \
    -ov        -format UDBZ  \
-   $outdir.dmg
+   $dmgname
 
 # Update the bintray descriptor... sigh. If this fails, then oh well, no bintray
 echo "Updating the bintray descriptor..."
