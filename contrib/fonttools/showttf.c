@@ -5855,8 +5855,16 @@ static int readcff(FILE *ttf,FILE *util, struct ttfinfo *info) {
 	    }
 	}
     }
+    for ( i = 0; strings[i] != NULL; ++i)
+        free(strings[i]);
     free(strings);
+
+    for ( i = 0; dicts[i] != NULL; ++i)
+        free(dicts[i]);
     free(dicts);
+
+    for ( i = 0; fontnames[i] != NULL; ++i)
+        free(fontnames[i]);
     free(fontnames);
 return( 1 );
 }
