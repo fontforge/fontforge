@@ -184,7 +184,7 @@ const char *StdGlyphName(char *buffer, int uni,enum uni_interp interp,NameList *
     if ( (uni>=0 && uni<' ') ||
 	    (uni>=0x7f && uni<0xa0) )
 	/* standard controls */;
-    else if ( uni!=-1  ) {
+    else if ( uni>0 && uni <= 0x10ffff ) {
 	if ( uni>=0xe000 && uni<=0xf8ff &&
 		(interp==ui_trad_chinese || for_this_font==&ams)) {
 	    const int *pua = interp==ui_trad_chinese ? cns14pua : amspua;
@@ -200,15 +200,23 @@ const char *StdGlyphName(char *buffer, int uni,enum uni_interp interp,NameList *
 			(name = nl->unicode[up][ub][uc])!=NULL )
 	    break;
 	}
+    } else {
+	LogError( _("Warning: StdGlyphName returning name for value %d outside of Unicode range\n"), uni );
     }
     if ( name==NULL ) {
-	if ( uni>=0x10000 )
+	if ( uni>=0x10000 || uni < 0 )
 	    sprintf( buffer, "u%04X", uni);
 	else
 	    sprintf( buffer, "uni%04X", uni);
 	name = buffer;
     }
 return( name );
+}
+
+const char *StdGlyphNameBoundsCheck(char *buffer, int uni,enum uni_interp interp,NameList *for_this_font) {
+    if ( uni<0 || uni > 0x10ffff )
+	return NULL;
+    return StdGlyphName(buffer, uni, interp, for_this_font);
 }
 
 #define RefMax	40
