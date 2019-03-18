@@ -1159,7 +1159,7 @@ return( 2 );
 		if ( l!=0 ) {
 		    GDrawLayoutInit(gt->g.base,gt->utf8_text+gt->lines8[l-1],gt->lines8[l]-gt->lines8[l-1],NULL);
 		    pos = GDrawLayoutXYToIndex(gt->g.base,xpos,0);
-		    pos = utf82u_index(pos,gt->utf8_text+gt->lines8[l-1]);
+		    pos = utf82u_index(pos+gt->lines8[l-1],gt->utf8_text);
 		}
 		if ( event->u.chr.state&ksm_shift ) {
 		    if ( pos<gt->sel_base ) {
@@ -1200,7 +1200,7 @@ return( 2 );
 		    ll = gt->lines8[l+2]==-1 ? -1 : gt->lines8[l+2]-gt->lines8[l+1];
 		    GDrawLayoutInit(gt->g.base,gt->utf8_text+gt->lines8[l+1],ll,NULL);
 		    pos = GDrawLayoutXYToIndex(gt->g.base,xpos,0);
-		    pos = utf82u_index(pos,gt->utf8_text+gt->lines8[l+1]);
+		    pos = utf82u_index(pos+gt->lines8[l+1],gt->utf8_text);
 		}
 		if ( event->u.chr.state&ksm_shift ) {
 		    if ( pos<gt->sel_base ) {
