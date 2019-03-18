@@ -763,9 +763,10 @@ return( ret );
 
 static PyObject *PyFF_NameFromUnicode(PyObject *UNUSED(self), PyObject *args) {
     char buffer[400], *nlist = NULL;
+    const char *name;
     int uniinterp, uni;
     NameList *for_new_glyphs;
-    PyObject *ret;
+    PyObject *ret = NULL;
 
     if ( !PyArg_ParseTuple(args, "i|s", &uni, &nlist) )
 return( NULL );
@@ -785,8 +786,12 @@ return( NULL );
 	for_new_glyphs = fv_active_in_ui->sf->for_new_glyphs;
     }
 
-    ret = Py_BuildValue("s", StdGlyphName(buffer,uni,uniinterp,for_new_glyphs));
-return( ret );
+    name = StdGlyphNameBoundsCheck(buffer,uni,uniinterp,for_new_glyphs);
+    if ( name!=NULL )
+	ret = Py_BuildValue("s", name);
+    else
+	PyErr_Format(PyExc_ValueError, "Value %d has no Unicode name.", uni);
+    return( ret );
 }
 
 static PyObject *PyFF_UnicodeAnnotationFromLib(PyObject *UNUSED(self), PyObject *args) {
