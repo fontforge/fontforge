@@ -2691,7 +2691,10 @@ return( 0 );
 		master->fontname;
 	unichar_t *temp = malloc(sizeof(unichar_t)*(strlen(fn)+30));
 	uc_strcpy(temp,fn);
-	uc_strcat(temp,savefont_extensions[ofs]!=NULL?savefont_extensions[ofs]:bitmapextensions[old]);
+	if ( ofs==ff_none )
+	    uc_strcat(temp,bitmapextensions[old]);
+	else
+	    uc_strcat(temp,savefont_extensions[ofs]);
 	GGadgetSetTitle(gcd[0].ret,temp);
 	free(temp);
     }

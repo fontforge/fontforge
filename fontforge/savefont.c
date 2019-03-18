@@ -68,9 +68,7 @@ const char *savefont_extensions[] = { ".pfa", ".pfb", ".res", "%s.pfb", ".pfa", 
 	".t42", ".t11",
 	".ttf", ".ttf", ".suit", ".ttc", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg", ".ufo", ".ufo2", ".ufo3", ".woff",
-#ifdef FONTFORGE_CAN_USE_WOFF2
 	".woff2",
-#endif
 	NULL };
 const char *bitmapextensions[] = { "-*.bdf", ".ttf", ".dfont", ".ttf", ".otb", ".bmap", ".dfont", ".fon", "-*.fnt", ".pdb", "-*.pt3", ".none", NULL };
 #else
@@ -84,9 +82,7 @@ const char *savefont_extensions[] = { ".pfa", ".pfb", ".bin", "%s.pfb", ".pfa", 
 	".ufo2",
 	".ufo3",
 	".woff",
-#ifdef FONTFORGE_CAN_USE_WOFF2
 	".woff2",
-#endif
 NULL };
 const char *bitmapextensions[] = { "-*.bdf", ".ttf", ".dfont", ".ttf", ".otb", ".bmap.bin", ".fon", "-*.fnt", ".pdb", "-*.pt3", ".none", NULL };
 #endif
