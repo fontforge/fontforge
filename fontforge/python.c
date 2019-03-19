@@ -5155,6 +5155,7 @@ return( NULL );
 		if ( !c->points[nexti]->on_curve ) {
 		    SplinePointListsFree(ss);
 		    PyErr_Format(PyExc_TypeError, "In cubic splines there must be exactly 2 control points between on curve points");
+                    free(sp);
 return( NULL );
 		}
 	    }
@@ -5810,7 +5811,7 @@ void set_pyFF_sendRedoIfInSession_Func( pyFF_sendRedoIfInSession_Func_t f )
 static int PyFF_Glyph_CSetLayer(PyFF_Glyph *self, PyObject *value, int layeri, int flags) {
     SplineChar *sc = self->sc;
     Layer *layer;
-    SplineSet *ss, *newss;
+    SplineSet *ss = NULL, *newss;
     int isquad;
 
     if ( layeri<ly_grid || layeri>=sc->layer_cnt ) {
@@ -5832,6 +5833,7 @@ static int PyFF_Glyph_CSetLayer(PyFF_Glyph *self, PyObject *value, int layeri, i
     }
 
     if ( PyErr_Occurred() != NULL ) {
+        free(ss);
 	return( -1 );
     }
 
@@ -9191,7 +9193,7 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyph_Exclude(PyFF_Glyph *self, PyObject *args) {
-    SplineSet *ss, *excludes, *tail;
+    SplineSet *ss, *excludes = NULL, *tail;
     PyObject *obj;
 
     if ( !PyArg_ParseTuple(args,"O", &obj ) )
@@ -9203,6 +9205,7 @@ return( NULL );
 
     excludes = SSFromLayer((PyFF_Layer *) obj);
     if ( PyErr_Occurred() != NULL ) {
+        free(excludes);
 	return( NULL );
     }
     ss = self->sc->layers[self->layer].splines;
@@ -13294,6 +13297,7 @@ return( -1 );
 return( -1 );
     }
     if ( PyErr_Occurred() != NULL ) {
+        free(ss);
 	return( -1 );
     }
     sf = self->fv->sf;

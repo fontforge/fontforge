@@ -5542,7 +5542,7 @@ static void readcffprivate(FILE *ttf, struct topdicts *td, char **strings, int s
 	fseek(ttf,td->cff_start+td->private_offset+td->subrsoff,SEEK_SET);
 	readcffsubrs(ttf,td,&td->local_subrs, 1, name );
     }
-    if (name != "<Nameless>") free(name);
+    if (name != NULL && *name != "<Nameless>") free(name);
 }
 
 static struct topdicts **readcfftopdicts(FILE *ttf, char **fontnames, int cff_start) {
