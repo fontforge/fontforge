@@ -1098,6 +1098,7 @@ static void DumpGlyph(FILE *ttf, struct ttfinfo *info, int glyph) {
     trans[1] = trans[2] = trans[4] = trans[5] = 0;
     DoDumpGlyph(ttf, eps, info, glyph, trans, 1);
     fprintf( eps, "%%%%EOF\n" );
+    free(name);
     fclose(eps);
 }
 

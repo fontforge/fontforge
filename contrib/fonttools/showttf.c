@@ -2489,8 +2489,7 @@ static void gposPairSubTable(FILE *ttf, int which, int stoffset, struct ttfinfo 
     } else {
 	printf( "\t   !!! unknown sub-table format !!!!\n" );
     }
-    if (glyphs)
-        free(glyphs);
+    free(glyphs);
 }
 
 static void ShowAttach(FILE *ttf) {
@@ -2598,8 +2597,7 @@ static void gsubSingleSubTable(FILE *ttf, int which, int stoffset, struct ttfinf
 		    val >= info->glyph_cnt ? "!!! Bad glyph !!!" : info->glyph_names == NULL ? "" : info->glyph_names[val]);
 	}
     }
-    if (glyphs)
-        free(glyphs);
+    free(glyphs);
 }
 
 static void gsubMultipleSubTable(FILE *ttf, int which, int stoffset, struct ttfinfo *info) {
@@ -2626,8 +2624,7 @@ static void gsubMultipleSubTable(FILE *ttf, int which, int stoffset, struct ttfi
 	}
 	putchar('\n');
     }
-    if (glyphs)
-        free(glyphs);
+    free(glyphs);
     free(seq_offsets);
 }
 
@@ -2655,8 +2652,7 @@ static void gsubAlternateSubTable(FILE *ttf, int which, int stoffset, struct ttf
 	}
 	putchar('\n');
     }
-    if (glyphs)
-        free(glyphs);
+    free(glyphs);
     free(seq_offsets);
 }
 
@@ -4706,8 +4702,7 @@ static void readttfapplefvar(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	nameid = getushort(ttf);
 	name = getttfname(util,info,nameid);
 	printf( "\t    nameid=%d (%s)\n", nameid, name==NULL ? "Not Found" : name );
-        if (name)
-            free(name);
+        free(name);
     }
     for ( i=0; i<instancecount; ++i ) {
 	printf( "\t  Instance %d\n", i );
@@ -4719,8 +4714,7 @@ static void readttfapplefvar(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	for ( j=0; j<axiscount; ++j )
 	    printf( "%g, ", getfixed(ttf));
 	printf( "\n" );
-        if (name)
-            free(name);
+        free(name);
     }
     printf( "\n" );
 }
@@ -5414,7 +5408,7 @@ static void readcffprivate(FILE *ttf, struct topdicts *td, char **strings, int s
     int ival, oval, sp, ret, i;
     double stack[50];
     int32 end = td->cff_start+td->private_offset+td->private_size;
-    char *name;
+    char *name = NULL;
 
     fseek(ttf,td->cff_start+td->private_offset,SEEK_SET);
 
@@ -5548,6 +5542,7 @@ static void readcffprivate(FILE *ttf, struct topdicts *td, char **strings, int s
 	fseek(ttf,td->cff_start+td->private_offset+td->subrsoff,SEEK_SET);
 	readcffsubrs(ttf,td,&td->local_subrs, 1, name );
     }
+    if (name != "<Nameless>") free(name);
 }
 
 static struct topdicts **readcfftopdicts(FILE *ttf, char **fontnames, int cff_start) {
@@ -5860,8 +5855,17 @@ static int readcff(FILE *ttf,FILE *util, struct ttfinfo *info) {
 	    }
 	}
     }
-    if (fontnames)
-        free(fontnames);
+    for ( i = 0; strings[i] != NULL; ++i)
+        free(strings[i]);
+    free(strings);
+
+    for ( i = 0; dicts[i] != NULL; ++i)
+        free(dicts[i]);
+    free(dicts);
+
+    for ( i = 0; fontnames[i] != NULL; ++i)
+        free(fontnames[i]);
+    free(fontnames);
 return( 1 );
 }
 
