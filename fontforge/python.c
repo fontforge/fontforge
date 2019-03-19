@@ -6677,6 +6677,7 @@ static int PyFF_Glyph_set_altuni(PyFF_Glyph *self,PyObject *value, void *UNUSED(
     struct altuni *head, *last=NULL, *cur;
     int uni, vs, fid;
     PyObject *obj;
+    FontViewBase *fvs;
 
     if ( value == Py_None )
 	head = NULL;
@@ -6705,7 +6706,13 @@ return( -1 );
 
     AltUniFree(self->sc->altuni);
     self->sc->altuni = head;
-return( 0 );
+
+    for ( fvs=self->sc->parent->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	fvs->map->enc = &custom;
+	FVSetTitle(fvs);
+    }
+
+    return( 0 );
 }
 
 static PyObject *PyFF_Glyph_get_changed(PyFF_Glyph *self, void *UNUSED(closure)) {
