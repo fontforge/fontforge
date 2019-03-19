@@ -134,7 +134,6 @@ if MACINTOSH
 CLEANFILES = libfontforgeexe_objc.la
 noinst_LTLIBRARIES = libfontforgeexe_objc.la
 libfontforgeexe_objc_la_SOURCES = macobjective.h macobjective.m
-libfontforgeexe_objc_la_OBJCFLAGS = -I../osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Headers
 libfontforgeexe_la_LIBADD += libfontforgeexe_objc.la
 endif
 
@@ -145,7 +144,7 @@ libfontforgeexe_la_SOURCES = startnoui.c
 endif !GRAPHICAL_USER_INTERFACE
 
 
-libfontforgeexe_la_LIBADD += $(LTDLDEPS) $(LIBADD) $(GUILIBADD) $(MY_LIBS) $(GTK2_LIBS) $(top_builddir)/fontforge/libfontforge.la $(BREAKPAD_LIBADD)
+libfontforgeexe_la_LIBADD += $(LTDLDEPS) $(LIBADD) $(GUILIBADD) $(MY_LIBS) $(GTK2_LIBS) $(top_builddir)/fontforge/libfontforge.la
 
 libfontforgeexe_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBFONTFORGEEXE_VERSION) \
 	${MY_LIB_LDFLAGS}

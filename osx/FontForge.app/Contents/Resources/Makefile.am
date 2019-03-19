@@ -26,7 +26,7 @@
 
 include $(top_srcdir)/mk/layout.am
 
-SUBDIRS = English.lproj opt breakpad
+SUBDIRS = English.lproj opt
 FFAPP_FILES = buttonFF.icns fontforge_backup.icns fontforge_dfont.icns FontForge.icns \
                 fontforge_otf.icns fontforge_ps3.icns fontforge_ps.icns fontforge_sfd.icns \
                 fontforge_ttf.icns

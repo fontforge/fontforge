@@ -29,27 +29,3 @@
 
 #include "fontforge-config.h"
 
-#ifdef USE_BREAKPAD
-
-#import <Breakpad.h>
-
-
-
-@interface BreakpadTest : NSObject {
-   BreakpadRef breakpad;
-}
-- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender;
-@end
-
-
-
-@interface MyApplication : NSApplication {
-   BreakpadRef breakpad;
-
-}
-
--(NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender;
-
-@end
-
-#endif

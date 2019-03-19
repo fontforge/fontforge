@@ -63,7 +63,7 @@ include $(top_srcdir)/mk/layout.am
 
 #--------------------------------------------------------------------------
 
-SUBDIRS = inc lib libltdl Unicode gutils breakpad
+SUBDIRS = inc lib libltdl Unicode gutils
 
 if LIBZMQ
 SUBDIRS += collab
