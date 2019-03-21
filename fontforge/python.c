@@ -13296,7 +13296,7 @@ return( -1 );
 return( -1 );
     }
     if ( PyErr_Occurred() != NULL ) {
-        free(ss);
+        SplinePointListsFree(ss);
 	return( -1 );
     }
     sf = self->fv->sf;
