@@ -83,6 +83,19 @@ void _GIO_reporterror(GIOControl *gc, int errn) {
     (gc->receiveerror)(gc);
 }
 
+char *_GIO_decomposeURL(const unichar_t *uri) {
+    unichar_t *pt;
+
+    // file:///path/to.something, or /path/to/something
+    pt = uc_strstr(uri, "://");
+    if (pt == NULL) {
+        return cu_copy(uri);
+    }
+    pt += 3;
+
+    return cu_copy(pt);
+}
+
 static void _gio_file_dir(GIOControl *gc,char *path) {
     DIR *dir;
     struct dirent *ent;
@@ -262,11 +275,9 @@ void _GIO_localDispatch(GIOControl *gc) {
 /* pathname preceded by "file://" just strip off the "file://" and treat as a */
 /*  filename */
 void *_GIO_fileDispatch(GIOControl *gc) {
-    char *username, *password, *host, *path, *topath;
-    int port;
+    char *path, *topath;
 
-    path = _GIO_decomposeURL(gc->path,&host,&port,&username,&password);
-    free(host); free(username); free(password);
+    path = _GIO_decomposeURL(gc->path);
     switch ( gc->gf ) {
       case gf_dir:
 	_gio_file_dir(gc,path);
@@ -284,8 +295,7 @@ void *_GIO_fileDispatch(GIOControl *gc) {
 	_gio_file_deldir(gc,path);
       break;
       case gf_renamefile:
-	topath = _GIO_decomposeURL(gc->topath,&host,&port,&username,&password);
-	free(host); free(username); free(password);
+	topath = _GIO_decomposeURL(gc->topath);
 	_gio_file_renamefile(gc,path,topath);
 	free(topath);
       break;

@@ -29,23 +29,6 @@
 #include <ustring.h>
 #include <errno.h>
 
-struct stdfuncs _GIO_stdfuncs = {
-    _GIO_decomposeURL, _GIO_PostSuccess, _GIO_PostInter,
-    _GIO_PostError, _GIO_RequestAuthorization, _GIO_LookupHost,
-    NULL,			/* default authorizer */
-    GIOFreeDirEntries,
-#ifdef GWW_TEST
-    _GIO_ReportHeaders,		/* set to NULL when not debugging */
-#else
-    NULL,
-#endif
-
-#ifdef HAVE_PTHREAD_H
-    PTHREAD_MUTEX_INITIALIZER,
-#endif
-    NULL,
-    NULL
-};
 static struct protocols {
     int index;
     unichar_t *proto;
@@ -56,7 +39,6 @@ static struct protocols {
     unsigned int dothread: 1;
 } *protocols;
 static int plen, pmax;
-typedef void *(ptread_startfunc_t)(void *);
 
 static unichar_t err501[] = { ' ','N','o','t',' ','I','m','p','l','e','m','e','n','t','e','d', '\0' };
 
@@ -91,9 +73,6 @@ static void GIOdispatch(GIOControl *gc, enum giofuncs gf) {
     int i;
 
     gc->gf = gf;
-
-    if ( _GIO_stdfuncs.useragent == NULL )
-	_GIO_stdfuncs.useragent = copy("someone@somewhere.com");
 
     temp = _GIO_translateURL(gc->path,gf);
     if ( temp!=NULL ) {
@@ -149,32 +128,29 @@ return;
 	if ( !protocols[i].dothread )
 	    (protocols[i].dispatcher)(gc);
 	else {
-#ifndef HAVE_PTHREAD_H
 	    gc->return_code = 501;
 	    gc->error = err501;
 	    uc_strcpy(gc->status,"No support for protocol");
 	    gc->done = true;
 	    (gc->receiveerror)(gc);
 return;
-#else
-	    static pthread_cond_t initcond = PTHREAD_COND_INITIALIZER;
-	    static pthread_mutex_t initmutex = PTHREAD_MUTEX_INITIALIZER;
-	    /* could put stuff here to queue functions if we get too many */
-	    /*  threads, or perhaps even a thread pool */
-	    uc_strcpy(gc->status,"Queued");
-	    gc->threaddata = (struct gio_threaddata *) malloc(sizeof(struct gio_threaddata));
-	    gc->threaddata->mutex = initmutex;
-	    gc->threaddata->cond = initcond;
-	    if ( _GIO_stdfuncs.gdraw_sync_thread!=NULL )
-		(_GIO_stdfuncs.gdraw_sync_thread)(NULL,NULL,NULL);
-	    pthread_create(&gc->threaddata->thread,NULL,
-		    (ptread_startfunc_t *) (protocols[i].dispatcher), gc);
-#endif
 	}
     } else {
 	gc->protocol_index = -1;
 	_GIO_localDispatch(gc);
     }
+}
+
+void _GIO_PostError(GIOControl *gc) {
+    gc->receiveerror(gc);
+}
+
+void _GIO_PostInter(GIOControl *gc) {
+    gc->receiveintermediate(gc);
+}
+
+void _GIO_PostSuccess(GIOControl *gc) {
+    gc->receivedata(gc);
 }
 
 void GIOdir(GIOControl *gc) {
@@ -227,15 +203,6 @@ return( NULL );
 }
 
 void GIOcancel(GIOControl *gc) {
-#ifdef HAVE_PTHREAD_H
-    if ( gc->protocol_index>=0 && protocols[gc->protocol_index].dothread &&
-	    gc->threaddata!=NULL && !gc->done ) {
-	void *ret;
-	gc->abort = true;
-	pthread_cancel(gc->threaddata->thread);
-	pthread_join(gc->threaddata->thread, &ret);
-    }
-#endif
     if ( gc->protocol_index>=0 && protocols[gc->protocol_index].cancel!=NULL )
 	/* Per connection cleanup, cancels io if not done and removes from any queues */
 	(protocols[gc->protocol_index].cancel)(gc);
@@ -243,7 +210,6 @@ void GIOcancel(GIOControl *gc) {
 	GIOFreeDirEntries((GDirEntry *) gc->iodata);
     else
 	free(gc->iodata);
-    free(gc->threaddata);
     free(gc->path);
     free(gc->origpath);
     free(gc->topath);
@@ -264,17 +230,4 @@ GIOControl *GIOCreate(unichar_t *path,void *userdata,
     gc->receivedata = receivedata;
     gc->receiveerror = receiveerror;
 return(gc);
-}
-
-void GIOSetDefAuthorizer(int32 (*getauth)(struct giocontrol *)) {
-    _GIO_stdfuncs.getauth = getauth;
-}
-
-void GIOSetUserAgent(unichar_t *agent) {
-    free( _GIO_stdfuncs.useragent );
-    _GIO_stdfuncs.useragent = cu_copy(agent);
-}
-
-void GIO_SetThreadCallback(void (*callback)(void *,void *,void *)) {
-    _GIO_stdfuncs.gdraw_sync_thread = callback;
 }

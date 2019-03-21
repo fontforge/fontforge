@@ -27,7 +27,6 @@
 #include "gdrawP.h"
 #include <gkeysym.h>
 #include <ustring.h>
-#include <gio.h>
 #include "gdraw.h"
 #if __Mac
 #  include <sys/select.h>
@@ -944,7 +943,6 @@ void GDrawDestroyDisplays() {
 }
 
 void GDrawCreateDisplays(char *displayname,char *programname) {
-    GIO_SetThreadCallback((void (*)(void *,void *,void *)) GDrawSyncThread);
 #ifndef FONTFORGE_CAN_USE_GDK
     screen_display = _GXDraw_CreateDisplay(displayname,programname);
 #else
