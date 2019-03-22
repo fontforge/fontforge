@@ -714,19 +714,22 @@ static int get_mac_x11_prop(char *keystr) {
     CFStringRef key, appID;
     int val;
 
-    appID = CFStringCreateWithBytes(NULL,(uint8 *) "com.apple.x11",strlen("com.apple.x11"), kCFStringEncodingISOLatin1, 0);
+    appID = CFSTR("com.apple.x11");
     key   = CFStringCreateWithBytes(NULL,(uint8 *) keystr,strlen(keystr), kCFStringEncodingISOLatin1, 0);
     ret = CFPreferencesCopyAppValue(key,appID);
     if ( ret==NULL ) {
 	/* Sigh. Apple uses a different preference file under 10.5.6 I really */
 	/*  wish they'd stop making stupid, unnecessary changes */
-	appID = CFStringCreateWithBytes(NULL,(uint8 *) "org.x.X11",strlen("org.x.X11"), kCFStringEncodingISOLatin1, 0);
+	appID = CFSTR("org.x.X11");
 	ret = CFPreferencesCopyAppValue(key,appID);
     }
+    CFRelease(key);
     if ( ret==NULL )
 return( -1 );
-    if ( CFGetTypeID(ret)!=CFBooleanGetTypeID())
+    if ( CFGetTypeID(ret)!=CFBooleanGetTypeID()) {
+    CFRelease(ret);
 return( -2 );
+    }
     val = CFBooleanGetValue(ret);
     CFRelease(ret);
 return( val );
