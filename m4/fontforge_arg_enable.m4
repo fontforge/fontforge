@@ -216,6 +216,7 @@ if test x$use_gdk = xyes ; then
             fontforge_can_use_gdk=yes
             fontforge_gdk_version=GDK2
             AC_DEFINE(FONTFORGE_CAN_USE_GDK,[],[FontForge will build the GUI with the GDK2 backend])
+            AC_DEFINE(BUILT_WITH_GDK2,[],[Built with GDK2])
             AC_MSG_NOTICE([building the GUI with the GDK2 backend...])
         ],
         [
@@ -227,6 +228,7 @@ if test x$use_gdk = xyes ; then
             fontforge_can_use_gdk=yes
             fontforge_gdk_version=GDK3
             AC_DEFINE(FONTFORGE_CAN_USE_GDK,[],[FontForge will build the GUI with the GDK3 backend])
+            AC_DEFINE(BUILT_WITH_GDK3,[],[Built with GDK3])
             AC_MSG_NOTICE([building the GUI with the GDK3 backend...])
         ],
         [
