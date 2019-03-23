@@ -39,7 +39,6 @@ bundle=/Applications/FontForge.app
 scriptdir=/Applications/FontForge.app/Contents/MacOS/
 bundle_contents="$bundle"/Contents
 bundle_res="$bundle_contents"/Resources
-bundle_fw="$bundle_contents"/Frameworks
 bundle_lib="$bundle_res"/opt/local/lib
 bundle_bin="$bundle_res"/opt/local/bin
 bundle_data="$bundle_res"/opt/local/share
@@ -129,7 +128,6 @@ if [ "$( ps -o comm= $PPID)" = "/sbin/launchd" ] ; then
 fi
 
 # starting more than one does nothing, and it will close itself.
-# /Applications/FontForge.app/Contents/MacOS/fontforge-crash-reporter.py &
 
 export PATH="$PATH:$bundle_bin"
 # echo $WRAPPER $bundle_bin/fontforge > /tmp/oo

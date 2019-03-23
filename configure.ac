@@ -747,22 +747,6 @@ AM_CONDITIONAL([HAVE_PYTHON_EVEN],[test x"${have_python_even}" = xyes && test x"
 #--------------------------------------------------------------------------
 #--------------------------------------------------------------------------
 #--------------------------------------------------------------------------
-
-AC_ARG_ENABLE([breakpad],
-        [AS_HELP_STRING([--enable-breakpad],
-                [Use Breakpad for crash reporting (currently osx only)])],
-        [have_breakpad=yes])
-AM_CONDITIONAL([HAVE_BREAKPAD],[test x"${have_breakpad}" = xyes])
-if test x$have_breakpad = xyes ; then
-   echo "Taking advantage of Breakpad for debug reporting. You must roll a bundle for this to work..."
-   BREAKPAD_LIBADD=' -L$(top_builddir)/osx/FontForge.app/Contents/Frameworks/Breakpad.framework -lBreakpad '
-   AC_DEFINE(USE_BREAKPAD,[1],[Build support and use Breakpad])
-fi
-AC_SUBST(BREAKPAD_LIBADD)
-
-#--------------------------------------------------------------------------
-#--------------------------------------------------------------------------
-#--------------------------------------------------------------------------
 # We do not use GTK2 unless explicitly told it is OK to try to do that
 #
 AC_ARG_ENABLE([gtk2-use],
@@ -836,9 +820,6 @@ osx/FontForge.app/Contents/Resources/opt/Makefile
 osx/FontForge.app/Contents/Resources/opt/local/Makefile
 osx/FontForge.app/Contents/Resources/opt/local/etc/Makefile
 osx/FontForge.app/Contents/Resources/opt/local/etc/fonts/Makefile
-osx/FontForge.app/Contents/Resources/breakpad/Makefile
-osx/FontForge.app/Contents/Resources/breakpad/webinterface/Makefile
-osx/FontForge.app/Contents/Resources/breakpad/webinterface/support/Makefile
 osx/FontForge.app/Contents/MacOS/Makefile
 osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Makefile
 osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Makefile
@@ -851,19 +832,6 @@ osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/PopUpButton.
 osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/Progressbar.nib/Makefile
 osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/SecureInputbox.nib/Makefile
 osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/Textbox.nib/Makefile
-osx/FontForge.app/Contents/Frameworks/Makefile
-osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Makefile
-osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/Makefile
-osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Makefile
-osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Headers/Makefile
-osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Resources/Makefile
-osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Resources/crash_report_sender.app/Makefile
-osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Resources/crash_report_sender.app/Contents/Makefile
-osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Resources/crash_report_sender.app/Contents/MacOS/Makefile
-osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Resources/crash_report_sender.app/Contents/Resources/Makefile
-osx/FontForge.app/Contents/Frameworks/Breakpad.framework/Versions/A/Resources/crash_report_sender.app/Contents/Resources/English.lproj/Makefile
-breakpad/Makefile
-breakpad/server/Makefile
 
 fontforge.pc
 osx/FontForge.app/Contents/Info.plist

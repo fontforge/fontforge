@@ -2,36 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-        <key>BreakpadProductDisplay</key>
-        <string>FontForge</string>
-        <key>BreakpadVendor</key>
-        <string>The FontForge Developers</string>
-        <key>BreakpadURL</key>
-        <string>http://localhost:8000</string>
-        <key>BreakpadVersion</key>
-        <string>@FONTFORGE_GIT_VERSION@ - @FONTFORGE_MODTIME_STR@</string>
-        <key>BreakpadReportInterval</key>
-        <string>0</string>
-	<key>BreakpadSkipConfirm</key>
-        <string>YES</string>
-
-        <!-- these look *really* handy, but do not allow user input on the
-             text boxes on osx -->
-<!--
-        <key>BreakpadRequestComments</key>
-        <string>YES</string>
-        <key>BreakpadRequestEmail</key>
-        <string>YES</string>
--->
-
-        <key>BreakpadServerParameters</key>
-        <dict>
-            <key>FontForgeGitHash</key>
-            <string>@FONTFORGE_GIT_VERSION@</string>
-            <key>FontForgeBuildTime</key>
-            <string>@FONTFORGE_MODTIME_STR@</string>
-        </dict>
-
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleDocumentTypes</key>

@@ -26,7 +26,7 @@
 
 include $(top_srcdir)/mk/layout.am
 
-SUBDIRS = Resources MacOS Frameworks
+SUBDIRS = Resources MacOS
 EXTRA_DIST = PkgInfo
 
 if PLATFORM_OSX
