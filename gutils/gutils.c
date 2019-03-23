@@ -31,6 +31,18 @@
 #include <ffglib.h>
 
 const char *GetAuthor(void) {
+    static char author[200] = {0};
+
+    if (author[0]) {
+        return author;
+    } else if (getenv("SOURCE_DATE_EPOCH")) {
+        const char *username = getenv("USER");
+        if (username) {
+            snprintf(author, sizeof(author), "%s", username);
+            return author;
+        }
+    }
+
     return g_get_real_name(); // static buffer, should not be freed
 }
 
