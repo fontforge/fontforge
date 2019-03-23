@@ -145,7 +145,7 @@ script:
   - if [ ! -z "$LINUX_FULL" ]; then make distcheck; fi
   - fontforge -version
   - if [ -z "$LINUX_NOX" ]; then $PYTHON travis-scripts/pyhook_smoketest.py; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ] && ([ "$TRAVIS_BRANCH" == "master" ] || [ "$TRAVIS_BRANCH" == "travis" ]); then travis-scripts/ffosxbuild.sh $PREFIX $TRAVIS_COMMIT; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then travis-scripts/ffosxbuild.sh $PREFIX $TRAVIS_COMMIT; fi
   - if [ ! -z "$LINUX_RELEASE" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then travis-scripts/ffappimagebuild.sh; fi
 
 after_success:
@@ -168,4 +168,4 @@ deploy:
     condition: '"$BINTRAY_DEPLOY" = "true"'
     branch:
       - master
-      - travis
+      #- travis

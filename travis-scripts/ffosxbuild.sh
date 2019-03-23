@@ -51,8 +51,10 @@ echo "Bundling Python libraries..."
 otool -L $workdir/bin/fontforge
 
 pylib=$(otool -L $workdir/bin/fontforge | grep -i python | sed -e 's/ \(.*\)//')
-pycruft=$(dirname $pylib)/../../..
-cp -a $pycruft/Python.framework $outdir/Contents/Frameworks
+pycruft=$(realpath $(dirname $pylib)/../../..)
+echo "pycruft: $pycruft"
+mkdir -p $outdir/Contents/Frameworks
+cp -av $pycruft/Python.framework $outdir/Contents/Frameworks
 pushd $outdir/Contents/Frameworks/Python.framework/Versions/2.7/lib/python2.7/
 rm site-packages || rm -rf site-packages
 ln -s ../../../../../../Resources/opt/local/lib/python2.7/site-packages
