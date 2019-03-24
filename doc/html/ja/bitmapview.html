@@ -3,9 +3,9 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
   <!-- AP: Last modified: 11-Aug-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!-- <TITLE>Bitmap Character View</TITLE> -->
-     <TITLE>�r�b�g�}�b�v�O���t�r���[</TITLE>
+     <TITLE>ビットマップグリフビュー</TITLE>
   <LINK REL="icon" href="../fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
@@ -13,7 +13,7 @@
 <DIV id="in">
 <H1 ALIGN=Center>
 <!-- Bitmap Glyph View -->
-     �r�b�g�}�b�v�O���t�r���[
+     ビットマップグリフビュー
 </H1>
 <P>
 <IMG SRC="BitmapView.png" WIDTH="271" HEIGHT="319">
@@ -22,7 +22,7 @@
 The bitmap view is vaguely similar to the <A HREF="charview.html">outline
 view</A>. It is also designed for editing glyph shapes, but here bitmap glyph
 shapes. -->
-�r�b�g�}�b�v�r���[�͏�������<A HREF="charview.html">�A�E�g���C���r���[</A>�Ɏ��Ă��܂��B������O���t�̌`��ҏW����悤�ɐ݌v����Ă��܂����A�����ł̓r�b�g�}�b�v�O���t�̌`���Ώۂł��B
+ビットマップビューは少しだけ<A HREF="charview.html">アウトラインビュー</A>に似ています。これもグリフの形を編集するように設計されていますが、ここではビットマップグリフの形が対象です。
 <P>
 <!--
 At the top of the view is a small region showing an unmagnified view of the
@@ -33,20 +33,20 @@ where the mouse was pressed to the current pointer location. The coordinate
 system here is in pixels with the origin at the glyph's origin. Next to this
 is a button (here truncated) that allows you to recalculate the bitmap (rasterize
 the outline and place the result in the window for editing). -->
-�r���[�̏㕔�ɂ́A�O���t���g�債�Ȃ��ŕ\�������̈悪����A���̉E�ɂ� 2 �̏��\����������܂��B�ŏ��̏��\�����̓}�E�X�|�C���^�̌��݈ʒu�������A2 �Ԗڂ� (�}�E�X�{�^�������݉������܂܂ɂȂ��Ă���Ȃ��) �}�E�X�������ꂽ�ʒu���猻�݈ʒu�܂ł̃I�t�Z�b�g��\�����܂��B���̍��W�n�̓s�N�Z����P�ʂƂ��A���_�̓O���t�̌��_�ɒu����Ă��܂��B���ׂ̗ɂ���{�^�� (�}�ł͈ꕔ�B��Ă��܂�) �������ƁA�r�b�g�}�b�v�̍Čv�Z���s���܂� (�A�E�g���C�������X�^���C�Y���A���ʂ�ҏW�p�ɂ��̃E�B���h�E�ɕ\�����܂�)�B
+ビューの上部には、グリフを拡大しないで表示した領域があり、その右には 2 個の情報表示欄があります。最初の情報表示欄はマウスポインタの現在位置を示し、2 番目は (マウスボタンが現在押したままになっているならば) マウスが押された位置から現在位置までのオフセットを表示します。この座標系はピクセルを単位とし、原点はグリフの原点に置かれています。その隣にあるボタン (図では一部隠れています) を押すと、ビットマップの再計算を行います (アウトラインをラスタライズし、結果を編集用にこのウィンドウに表示します)。
 <P>
 <!--
 Underneath is the main display, showing the bits in the image, the outline
 of the character and a grid. -->
-���ɂ���̂̓��C����ʂŁA�摜���̃r�b�g�A�����̃A�E�g���C���ƃO���b�h��\�����Ă��܂��B
+下にあるのはメイン画面で、画像内のビット、文字のアウトラインとグリッドを表示しています。
 <P>
 <!--
 As in the outline view you may choose to dock the palettes in the window
 with View-&gt;Palettes-&gt;Dock Palettes. -->
-�A�E�g���C���r���[�Ɠ��l�ɁA<CODE>�\��(<U>V</U>)</CODE>��<CODE>�p���b�g(<U>P</U>)</CODE>��<CODE>�p���b�g��A���\��(<U>D</U>)</CODE> �ŃE�B���h�E���Ƀp���b�g�𖄂ߍ��ނ��ǂ�����I�ׂ܂��B
+アウトラインビューと同様に、<CODE>表示(<U>V</U>)</CODE>→<CODE>パレット(<U>P</U>)</CODE>→<CODE>パレットを連結表示(<U>D</U>)</CODE> でウィンドウ内にパレットを埋め込むかどうかを選べます。
 <H2>
 <!--<A NAME="Layers">Layers</A>-->
-    <A NAME="Layers">���C��</A>
+    <A NAME="Layers">レイヤ</A>
 </H2>
 <P>
 <IMG SRC="../bvlayers.png" WIDTH="77" HEIGHT="77">
@@ -56,10 +56,10 @@ There are three layers to the bitmap view, the bitmap itself, the outline
 glyph and the grid lines. You are always editing in the bitmap layer so there
 is no control over what layer is editable, just which ones are visible.
 -->
-�r�b�g�}�b�v�r���[�ɂ� 3 �̃��C��������܂��B�r�b�g�}�b�v���ꎩ�g�A�A�E�g���C���O���t�ƃO���b�h�̐��ł��B�ҏW�͂˂Ƀr�b�g�}�b�v���C���ōs���̂ŁA�ǂ̃��C����ҏW���邩��I�����邱�Ƃ͂ł����A�ǂ��\�����邩�������I���ł��܂��B
+ビットマップビューには 3 つのレイヤがあります。ビットマップそれ自身、アウトライングリフとグリッドの線です。編集はつねにビットマップレイヤで行うので、どのレイヤを編集するかを選択することはできず、どれを表示するかだけが選択できます。
 <H2>
 <!--<A NAME="Tools">Tools</A>-->
-    <A NAME="Tools">�c�[��</A>
+    <A NAME="Tools">ツール</A>
 </H2>
 <P>
 <IMG SRC="../bvtools.png" WIDTH="57" HEIGHT="83">
@@ -67,86 +67,86 @@ is no control over what layer is editable, just which ones are visible.
 <!--
 There are only six tools on the bitmap palette (there are some others available
 by right clicking in the view, this generates a popup menu. -->
-�r�b�g�}�b�v�r���[�ɂ� 6 �����c�[��������܂��� (�r���[���E�N���b�N���邱�Ƃɂ��A�|�b�v�A�b�v���j���[���N�����邱�Ƃ��ł��A����ɂ�肢�����̒ǉ��̋@�\���g�����Ƃ��ł��܂�)�B
+ビットマップビューには 6 つしかツールがありません (ビューを右クリックすることにより、ポップアップメニューを起動することができ、これによりいくつかの追加の機能を使うことができます)。
 <P>
 <!--
 The pointer tool allows you to select a region of the screen, and move it
 around or copy it (a copy when nothing is selected copies the entire bitmap).
 The arrow keys will also move the selection around. In a bitmap only font
 the pointer tool can change the advance width. -->
-�|�C���^�c�[�����g���ƁA�X�N���[����͈̔͂�I�����āA������ړ����邩�R�s�[���邱�Ƃ��ł��܂� (�����I�������ɃR�s�[���s�����ꍇ�A�r�b�g�}�b�v�S�̂��R�s�[���܂�)�B�I��͈͂̈ړ��ɂ͖��L�[���g�p���邱�Ƃ��ł��܂��B�r�b�g�}�b�v�݂̂̃t�H���g�ł́A�|�C���^�c�[���͑��蕝�̕ύX�Ɏg�����Ƃ��ł��܂��B
+ポインタツールを使うと、スクリーン上の範囲を選択して、それを移動するかコピーすることができます (何も選択せずにコピーを行った場合、ビットマップ全体をコピーします)。選択範囲の移動には矢印キーを使用することもできます。ビットマップのみのフォントでは、ポインタツールは送り幅の変更に使うことができます。
 <P>
 <!--
 The if you click with the magnifying tool the view is magnified, centered
 around the point at which you clicked. If you hold down the
 <A HREF="charview.html#alt-meta-capslock">Meta (or Alt or CapsLock)</A> key
 during the click then the view will be minified. -->
-�g��c�[���ŃN���b�N����ƁA�N���b�N�����_�𒆐S�Ƀr���[���g�傳��܂��B<A HREF="charview.html#alt-meta-capslock">Meta (�܂��� Alt �� CapsLock)</A> �L�[���������܂܃N���b�N����ƁA�r���[�͏k������܂��B
+拡大ツールでクリックすると、クリックした点を中心にビューが拡大されます。<A HREF="charview.html#alt-meta-capslock">Meta (または Alt か CapsLock)</A> キーを押したままクリックすると、ビューは縮小されます。
 <P>
 <!--
 The pencil tool allows you to set or clear bits. If you depress the mouse
 button then the pencil will toggle the bit under the cursor, if you then
 drag it over other bits they will be set if the first bit was set, and cleared
 if the first was cleared. -->
-���M�c�[���̓r�b�g��h��Ԃ������������邱�Ƃ��ł��܂��B�}�E�X�{�^���������ƁA���M�c�[���̓J�[�\���ʒu�ɂ���r�b�g�𔽓]���܂��B���̂܂܃h���b�O����ƁA���̑��̃r�b�g�͍ŏ��̃r�b�g���h��Ԃ��ꂽ�ꍇ�͓h��Ԃ���A�����ꂽ�ꍇ�͏�����܂��B
+鉛筆ツールはビットを塗りつぶすか消すかすることができます。マウスボタンを押すと、鉛筆ツールはカーソル位置にあるビットを反転します。そのままドラッグすると、その他のビットは最初のビットが塗りつぶされた場合は塗りつぶされ、消された場合は消されます。
 <P>
 <!--
 The line tool (the pencil with the line beside it) will draw straight lines.
 It behaves like the pencil tool on whether it sets or clears a line. The
 Shift key does not constrain this window. -->
-�����c�[�� (���ɐ���������Ă��鉔�M) �͒����������܂��B�r�b�g��h��Ԃ����������Ɋւ��ẮA��������M�c�[���Ɠ��l�ɂӂ�܂��܂��B���̃E�B���h�E�ł́AShift �L�[�������Ă��ړ������͐�������܂���B
+直線ツール (横に線が引かれている鉛筆) は直線を引きます。ビットを塗りつぶすか消すかに関しては、これも鉛筆ツールと同様にふるまいます。このウィンドウでは、Shift キーを押しても移動方向は制限されません。
 <P>
 <!--
 The four-arrow tool moves the entire bitmap. -->
-�l�����c�[���̓r�b�g�}�b�v�S�̂��ړ����܂��B
+四方矢印ツールはビットマップ全体を移動します。
 <P>
 <!--
 The hand scrolls the screen. -->
-��̂Ђ�c�[���͉�ʂ��X�N���[�����܂��B
+手のひらツールは画面をスクロールします。
 <H3>
 <!-- Additional tools from the popup menu. -->
-     �|�b�v�A�b�v�E�B���h�E����g����ǉ��c�[��
+     ポップアップウィンドウから使える追加ツール
 </H3>
 <UL>
   <LI>
 <!--Draw an open rectangle -->
-    �g�����̒����`��`��
+    枠だけの長方形を描く
   <LI>
 <!--Draw a filled rectangle -->
-    �h��Ԃ��ꂽ�����`��`��
+    塗りつぶされた長方形を描く
   <LI>
 <!--Draw an open ellipse -->
-    �g�����̑ȉ~��`��
+    枠だけの楕円を描く
   <LI>
 <!--Draw a filled ellipse -->
-    �h��Ԃ��ꂽ�ȉ~��`��
+    塗りつぶされた楕円を描く
   <LI>
 <!--Rotate the bitmap 90&#176; Counter Clockwise.
-    �����v���� 90����]����
+    反時計回りに 90°回転する
   <LI>
 <!--Rotate it 90&#176; Clockwise. -->
-    ���v���� 90����]����
+    時計回りに 90°回転する
   <LI>
 <!--Rotate it 180&#176;. -->
-    180����]����
+    180°回転する
   <LI>
 <!--Flip it horizontally -->
-    ���������ɔ��]����
+    水平方向に反転する
   <LI>
 <!--Flip it vertically. -->
-    ���������ɔ��]����
+    垂直方向に反転する
   <LI>
 <!--Set Width<BR>
     This is only available if there is no outline font (ie. if you opened a bdf
     file directly).<BR>
     It sets the width (glyph advance) of the bitmap. -->
-    ����ݒ肷��<BR>
-    �A�E�g���C���t�H���g�����݂��Ȃ��Ƃ� (��. BDF �t�@�C���𒼐ڊJ�����ꍇ) �̂ݗ��p�\.<BR>
-    �r�b�g�}�b�v�̕� (�O���t�̑��蕝) ��ݒ肷��B
+    幅を設定する<BR>
+    アウトラインフォントが存在しないとき (例. BDF ファイルを直接開いた場合) のみ利用可能.<BR>
+    ビットマップの幅 (グリフの送り幅) を設定する。
 </UL>
 <H2>
 <!--<A NAME="AA">Anti-Aliased Glyphs</A> -->
-    <A NAME="AA">�A���`�G�C���A�X�\���̃O���t</A>
+    <A NAME="AA">アンチエイリアス表示のグリフ</A>
 </H2>
 <P>
 <IMG SRC="../greymapedit.png" WIDTH="274" HEIGHT="273" ALIGN="Right"><!-- This window
@@ -154,33 +154,33 @@ may also be used to edit anti-aliased glyphs (glyphs which are represented
 by shades of grey rather than by black and white. In the information area
 there is a little rectangle which shows the current color that will be used
 by the pencil (line, rectangle, etc.) tool. -->
-���̃E�B���h�E�́A�A���`�G�C���A�X�\���̃O���t (���� 2 �F�łȂ��A�D�F�̊K���ŕ\�����ꂽ�O���t) ��ҏW����̂ɂ��g�����Ƃ��ł��܂��B���\���̈�ɁA���M (�����E�����`��) �c�[���Ŏg�p�����F�������Ȓ����`�ŕ\������Ă��܂��B
+このウィンドウは、アンチエイリアス表示のグリフ (白黒 2 色でなく、灰色の階調で表現されたグリフ) を編集するのにも使うことができます。情報表示領域に、鉛筆 (直線・長方形等) ツールで使用される色が小さな長方形で表示されています。
 <P>
 <!--
 The behavior of the drawing tools is slightly different here. In a bitmap
 glyph the color used for drawing is the opposite of whatever color is currently
 under the cursor, but that doesn't work in an environment with more than
 two colors. So you must select what color you are going to draw with manually. -->
-�`��p�c�[���Q�̂ӂ�܂��́A�����ł͂킸���ɈقȂ�܂��B�r�b�g�}�b�v�O���t�ł́A���݃J�[�\���ʒu�̐F�����ł����Ă�����𔽓]���܂����A2 �F�����������ł͂��̕��@�͎g���܂���B���̂��߁A�ǂ̐F�ŕ`�悷�邩���蓮�őI�΂Ȃ���΂Ȃ�܂���B
+描画用ツール群のふるまいは、ここではわずかに異なります。ビットマップグリフでは、現在カーソル位置の色が何であってもそれを反転しますが、2 色よりも多い環境ではこの方法は使えません。そのため、どの色で描画するかを手動で選ばなければなりません。
 <P>
 <!--
 There are two ways to select the drawing color: -->
-�`��F��I�Ԃɂ� 2 �̕��@������܂�:
+描画色を選ぶには 2 つの方法があります:
 <UL>
   <LI>
 <!--With the pencil tool selected, hold down the Alt (Meta) key. The cursor changes
     to an eyedropper. Position the cursor over a pixel with the right color and
     click the mouse. -->
-    ���M�c�[����I��� Alt (Meta) �L�[�������܂��B�J�[�\�����X�|�C�g�ɕς��܂��B�J�[�\����`�悵�����F�ɍ��킹�ă}�E�X���N���b�N���܂��B
+    鉛筆ツールを選んで Alt (Meta) キーを押します。カーソルがスポイトに変わります。カーソルを描画したい色に合わせてマウスをクリックします。
   <LI>
 <!--Use the <A HREF="#Shades">Shades</A> palette.-->
-    <A HREF="#Shades">�K��</A>�p���b�g���g���܂��B
+    <A HREF="#Shades">階調</A>パレットを使います。
 </UL>
 <P>
 <BR Clear=Right>
 <H2>
 <!--<A NAME="Shades">Shades</A>-->
-    <A NAME="Shades">�K��</A>
+    <A NAME="Shades">階調</A>
 </H2>
 <TABLE CELLPADDING="2">
   <TR>
@@ -188,20 +188,20 @@ There are two ways to select the drawing color: -->
       <IMG SRC="../Shades.png" WIDTH="156" HEIGHT="175"><BR>
 <!--  Shades of grey available<BR>
       with 8 bits/pixel</TD> -->
-      8 �r�b�g/�s�N�Z����<BR>
-      ���p�\�ȊK��</TD>
+      8 ビット/ピクセルで<BR>
+      利用可能な階調</TD>
     <TD><P ALIGN=Center>
       <IMG SRC="../Shades4.png" WIDTH="156" HEIGHT="175"><BR>
 <!--  Shades of grey available<BR>
       with 4 bits/pixel</TD> -->
-      4 �r�b�g/�s�N�Z����<BR>
-      ���p�\�ȊK��</TD>
+      4 ビット/ピクセルで<BR>
+      利用可能な階調</TD>
     <TD><P ALIGN=Center>
       <IMG SRC="../Shades2.png" WIDTH="156" HEIGHT="175"><BR>
 <!--  Shades of grey available<BR>
       with 2 bits/pixel</TD> -->
-      2 �r�b�g/�s�N�Z����<BR>
-      ���p�\�ȊK��</TD>
+      2 ビット/ピクセルで<BR>
+      利用可能な階調</TD>
   </TR>
 </TABLE>
 <P>
@@ -209,20 +209,20 @@ There are two ways to select the drawing color: -->
 The shades palette is only visible in an anti-aliased glyph. The palette
 displays all the possible shades of grey available to this glyph. Glyphs
 with more bits per pixel will have more shades of grey. -->
-�K���p���b�g�̓A���`�G�C���A�X�O���t�����Ŏg�p�\�ł��B�p���b�g�́A���̃O���t�ŗ��p�\�ȊD�F�̊K����S�ĕ\�����܂��B1 �s�N�Z��������̃r�b�g���������قǁA�����̊K���̊D�F���g�p�ł��܂��B
+階調パレットはアンチエイリアスグリフだけで使用可能です。パレットは、このグリフで利用可能な灰色の階調を全て表示します。1 ピクセルあたりのビット数が多いほど、多くの階調の灰色を使用できます。
 <P>
 <!--
 The currently selected drawing color is outlined in green. To select a new
 color, move the cursor to the desired color and click the mouse. -->
-���ݑI������Ă���`��F�͗΂̘g���ň͂܂�Ă��܂��B�V�����F��I������ɂ́A�ړI�̐F�ɃJ�[�\�������킹�ă}�E�X���N���b�N���܂��B
+現在選択されている描画色は緑の枠線で囲まれています。新しい色を選択するには、目的の色にカーソルを合わせてマウスをクリックします。
 <P>
 <!--
 As the cursor moves over the bitmap in the bitmap view, the color under the
 cursor will be outlined in white. -->
-�J�[�\�����r�b�g�}�b�v�r���[���̃r�b�g�}�b�v����ړ�����ƁA�J�[�\���̉��ɂ���F�͔����g���ň͂ݕ\������܂��B
+カーソルがビットマップビュー内のビットマップ上を移動すると、カーソルの下にある色は白い枠線で囲み表示されます。
 <P>
 <P ALIGN=Center>
-�\ <A HREF="charview.html">�O</A> �\ <A HREF="overview.html">�ڎ�</A> �\
-<A HREF="metricsview.html">��</A> �\
+— <A HREF="charview.html">前</A> — <A HREF="overview.html">目次</A> —
+<A HREF="metricsview.html">次</A> —
 </DIV>
 </BODY></HTML>

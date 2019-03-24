@@ -3,9 +3,9 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 17-Dec-2000 -->
   <!-- AP: Last modified: 13-Oct-2004 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!--<TITLE>Error Recovery</TITLE>-->
-    <TITLE>�G���[��</TITLE>
+    <TITLE>エラー回復</TITLE>
   <LINK REL="icon" href="../fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
@@ -13,46 +13,46 @@
 <DIV id="in">
 <H1 ALIGN=Center>
 <!--Error Recovery -->
-    �G���[��
+    エラー回復
 </H1>
 <P>
 <!--
 All programs crash, and new programs (like this one) crash a lot. -->
-������v���O�����̓N���b�V��������̂ł���A�܂��ĐV�����v���O���� (����̂悤��) �͕p�ɂɃN���b�V��������̂ł��B
+あらゆるプログラムはクラッシュするものであり、まして新しいプログラム (これのように) は頻繁にクラッシュするものです。
 <P>
 <!--
 Every minute or so FontForge looks around and sees if anything has changed
 since the last time it checked. If it finds a font that has had changes,
 it will save a small file in its private directory (~/.FontForge/autosave)
 which consists of all changed glyphs in the changed font. -->
-FontForge �͂قږ������ƂɌ��݂̏�Ԃ𒲂ׁA�O��̃`�F�b�N���ȗ��A�����ύX����Ă��Ȃ����m�F���܂��B�ύX����������t�H���g�����������ꍇ�A�ύX���ꂽ�t�H���g���̕ύX���ꂽ�S�O���t����Ȃ鏬���ȃt�@�C�����A��p�̃f�B���N�g�� (~/.PfaEdit/autosave) �ɕۑ����܂��B
+FontForge はほぼ毎分ごとに現在の状態を調べ、前回のチェック時以来、何か変更されていないか確認します。変更が加わったフォントが見つかった場合、変更されたフォント内の変更された全グリフからなる小さなファイルを、専用のディレクトリ (~/.PfaEdit/autosave) に保存します。
 <P>
 <!--
 When FontForge starts up it checks this directory, and if it finds anything
 there it attempts to apply those changes to the original font. So if FontForge
 crashes, or if your machine crashes, the next time you start FontForge it
 will figure out what you were doing and recover it as best it can. -->
-FontForge �͋N�����ɂ��̃f�B���N�g�����`�F�b�N���A�����ɉ����c���Ă���΁A�I���W�i���̃t�H���g�ɉ�����ꂽ�ύX��K�p���悤�Ǝ��݂܂��BFontForge ���N���b�V�������A�}�V�����ƃN���b�V�������Ƃ��ɂ́A���� FontForge ���N���������ɁA�O�񉽂����悤�Ƃ��Ă�������\�����A�����̂��߂ɉ\�Ȍ���̍őP��s�����܂��B
+FontForge は起動時にこのディレクトリをチェックし、そこに何か残っていれば、オリジナルのフォントに加えられた変更を適用しようと試みます。FontForge がクラッシュ下か、マシンごとクラッシュしたときには、次に FontForge を起動した時に、前回何をしようとしていたかを表示し、復元のために可能な限りの最善を尽くします。
 <P>
 <!--
 When editing CID-keyed fonts there are a few potential gotchas: -->
-CID �L�[�w��t�H���g��ҏW���Ă���Ƃ��ɂ́A���s���N����\��������������܂��B
+CID キー指定フォントを編集しているときには、失敗が起こる可能性がいくつかあります。
 <UL>
   <LI>
 <!--FontForge does not keep track of gross changes (like adding or removing a
     sub font) -->
-    FontForge �̓t�H���g�S�̂̕ύX (�T�u�t�H���g�̒ǉ���폜�Ȃ�) �͋L�^���܂���B
+    FontForge はフォント全体の変更 (サブフォントの追加や削除など) は記録しません。
   <LI>
 <!--FontForge does not keep track of which sub font a change occurred in, instead
     at recovery time it will look for a subfont that is contains a glyph at the
     CID that was changed. In almost all cases this will be right, but if you
     add glyphs or if you have two sub-fonts defining the same CID, FontForge
     may guess wrong. -->
-    FontForge �͂ǂ̃T�u�t�H���g�ŕύX���s�Ȃ�ꂽ���͋L�^�����A���̑���ɁA�ύX���ꂽ�O���t���܂�ł���T�u�t�H���g���񕜎��ɒT���܂��B�قƂ�ǂ̏ꍇ����͐��������삵�܂����A�O���t��ǉ������ꍇ�⓯�� CID ���`���镡���̃T�u�t�H���g������ꍇ�AFontForge �͊Ԉ��������������\��������܂��B
+    FontForge はどのサブフォントで変更が行なわれたかは記録せず、その代わりに、変更されたグリフを含んでいるサブフォントを回復時に探します。ほとんどの場合これは正しく動作しますが、グリフを追加した場合や同じ CID を定義する複数のサブフォントがある場合、FontForge は間違った推測をする可能性があります。
 </UL>
 <P>
 <P ALIGN=Center>
-�\ <A HREF="locale.html">�O</A> �\ <A HREF="overview.html">�ڎ�</A> �\
-<A HREF="xres.html">��</A> �\
+— <A HREF="locale.html">前</A> — <A HREF="overview.html">目次</A> —
+<A HREF="xres.html">次</A> —
 </DIV>
 </BODY></HTML>

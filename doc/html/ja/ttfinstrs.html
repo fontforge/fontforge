@@ -3,10 +3,10 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 1-Mar-2003 -->
   <!-- AP: Last modified: 16-Apr-2004 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
   <LINK REL="icon" href="../fftype16.png">
 <!--<TITLE>Viewing and Editing truetype instructions in FontForge.</TITLE>-->
-    <TITLE>FontForge �� TrueType ���߂��{������ѕҏW������@</TITLE>
+    <TITLE>FontForge で TrueType 命令を閲覧および編集する方法</TITLE>
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
@@ -19,25 +19,25 @@
 </TABLE>
 <H1 ALIGN=Center>
 <!--Viewing and Editing truetype instructions in FontForge.-->
-    FontForge �� TrueType ���߂��{������ѕҏW������@
+    FontForge で TrueType 命令を閲覧および編集する方法
 </H1>
 <UL>
   <LI>
 <!--<A HREF="http://developer.apple.com/fonts/TTRefMan/RM03/Chap3.html">Apple's
     overview on instructing glyphs</A> -->
-    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM03/Chap3.html">Apple �ɂ��A�O���t�̖��߂Â��Ɋւ���T��</A>
+    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM03/Chap3.html">Apple による、グリフの命令づけに関する概説</A>
   <LI>
 <!--<A HREF="http://developer.apple.com/fonts/TTRefMan/RM05/Chap5.html">Apple's
     list of truetype instructions</A> -->
-    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM05/Chap5.html">Apple �ɂ��ATrueType ���߂̃��X�g</A>
+    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM05/Chap5.html">Apple による、TrueType 命令のリスト</A>
   <LI>
 <!--<A HREF="http://developer.apple.com/fonts/TTRefMan/RM04/Chap4.html">Apple's
     description of the truetype graphics state</A>-->
-    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM04/Chap4.html">Apple �ɂ��ATrueType �O���t�B�b�N��Ԃ̐���</A>
+    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM04/Chap4.html">Apple による、TrueType グラフィック状態の説明</A>
   <LI>
 <!--<A HREF="http://developer.apple.com/fonts/TTRefMan/RM07/appendixA.html">Apple's
     summary of truetype instructions</A> -->
-    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM07/appendixA.html">Apple �ɂ��ATrueType ���߂̂܂Ƃ�</A>
+    <A HREF="http://developer.apple.com/fonts/TTRefMan/RM07/appendixA.html">Apple による、TrueType 命令のまとめ</A>
 </UL>
 <P>
 <!--
@@ -45,8 +45,8 @@ I shall not attempt to describe the mechanics of instructing truetype, if
 you want to understand it I refer you to the above links.
 (<A HREF="http://www.microsoft.com/typography/OTSPEC/ttinst.htm">Microsoft
 has a similar set </A>in but they are in word format). -->
-TrueType �̖��߂Â��̋@�\�ɂ��Đ������悤�Ƃ͎v���܂���B���Ȃ�������𗝉�����K�v������Ȃ�΁A��L�̃����N���Q�Ƃ��Ă��������B
-(<A HREF="http://www.microsoft.com/typography/OTSPEC/ttinst.htm">Microsoft �����l�̕������o���Ă��܂�</A>���A����� Word �t�H�[�}�b�g�ŏ�����Ă��܂�</A>)�B
+TrueType の命令づけの機構について説明しようとは思いません。あなたがそれを理解する必要があるならば、上記のリンクを参照してください。
+(<A HREF="http://www.microsoft.com/typography/OTSPEC/ttinst.htm">Microsoft も同様の文書を出しています</A>が、それは Word フォーマットで書かれています</A>)。
 <P>
 <!--
 This dialog shows the instructions associated with a glyph or truetype table
@@ -56,19 +56,19 @@ the [Edit] button the dlg will change and you will be presented with a editable
 textarea containing the same instructions. You may modify these to your heart's
 content. Pressing the [Parse] will parse your modifications and (if they
 parse) return you to the "help" mode. -->
-���̃_�C�A���O�́A�O���t�܂��� TrueType �e�[�u�� (fpgm �� prep �Ȃ�) �ɕt�����閽�߂�\�����܂��B�}�E�X�J�[�\�����ǂꂩ�̖��߂̏�ɒu���ƁA���̖��߂��������ȒP�ȃw���v���b�Z�[�W���\������܂��B<CODE>[�ҏW(<U>E</U>)]</CODE> �{�^���������ƁA�_�C�A���O���ύX����āA����Ɠ������߂��ҏW�\�ȃe�L�X�g�G���A�Ɋ܂܂ꂽ�`�ŕ\������܂��B�����͎v�����܂܂ɕҏW���邱�Ƃ��ł��܂��B<CODE>[���(<U>P</U>)]</CODE> �{�^���������ƁA�ύX����͂���A(��͂����������)�g�w���v�h���[�h�ɖ߂�܂��B
+このダイアログは、グリフまたは TrueType テーブル (fpgm や prep など) に付随する命令を表示します。マウスカーソルをどれかの命令の上に置くと、その命令を解説する簡単なヘルプメッセージが表示されます。<CODE>[編集(<U>E</U>)]</CODE> ボタンを押すと、ダイアログが変更されて、それと同じ命令が編集可能なテキストエリアに含まれた形で表示されます。それらは思うがままに編集することができます。<CODE>[解析(<U>P</U>)]</CODE> ボタンを押すと、変更が解析され、(解析が成功すれば)“ヘルプ”モードに戻ります。
 <P>
 <!--
 Instructions like MIRP may be entered either in FontForge's peculiar (but
 marginally more mnemonic) style: <CODE>MIRP[rnd,white] </CODE>or as
 <CODE>MIRP[00110]</CODE>, and <CODE>PUSHB_1</CODE> may be
 <CODE>PUSHB[000]</CODE>. -->
-MIRP �̂悤�Ȗ��߂� FontForge �̌ŗL�� (���������������o���₷��) �X�^�C���� <CODE>MIRP[rnd,white]</CODE> �Ə������Ƃ��ł��A<CODE>MIRP[00110]</CODE> �Ə������Ƃ��ł��܂��B�܂��A<CODE>PUSHB_1</CODE> �Ə������Ƃ��A<CODE>PUSHB[000]</CODE>�Ə������Ƃ��ł��܂��B
+MIRP のような命令は FontForge の固有の (しかし少しだけ覚えやすい) スタイルで <CODE>MIRP[rnd,white]</CODE> と書くこともでき、<CODE>MIRP[00110]</CODE> と書くこともできます。また、<CODE>PUSHB_1</CODE> と書くことも、<CODE>PUSHB[000]</CODE>と書くこともできます。
 <P>
 <!--
 You may also include an stack arguments on the same line as the instruction
 and FontForge will convert them into the appropriate pushes. So... -->
-�X�^�b�N�����𖽗߂Ɠ����s�Ɋ܂߂邱�Ƃ��ł��AFontForge �͂����K�؂� push ���߂ɕϊ����܂��B�Ⴆ�΁A
+スタック引数を命令と同じ行に含めることができ、FontForge はそれを適切な push 命令に変換します。例えば、
 <BLOCKQUOTE>
   <PRE>5 SRP0
 </PRE>
@@ -76,14 +76,14 @@ and FontForge will convert them into the appropriate pushes. So... -->
 <P>
 <!--
 is equivalent to -->
-��
+は
 <BLOCKQUOTE>
   <PRE>PUSHB_1
 5
 SRP0
 </PRE>
 </BLOCKQUOTE>
-�Ɠ����ł��B
+と等価です。
 <P>
 <!--
 You may also use the expression <CODE>cvt(&lt;val&gt;)</CODE> instead of
@@ -91,11 +91,11 @@ a number. This will be replaced by the index in the 'cvt ' table of an entry
 which is (within one em-unit of) &lt;val&gt;. So <CODE>cvt(100)</CODE> would
 return the index in 'cvt ' of 100. If there is no such entry, FontForge will
 create one. -->
-�� <CODE>cvt(&lt;val&gt;)</CODE> �𐔒l�̕ς��ɗp���邱�Ƃ��ł��܂��B������ (1 em ���j�b�g�ȓ��̌덷��) &lt;val&gt; �ł��鍀�ڂ�&lsquo;cvt &rsquo;�e�[�u�����̃C���f�b�N�X�ɒu������܂��B�Ⴆ�� <CODE>cvt(100)</CODE> �́A&lsquo;cvt &rsquo;�e�[�u�����ł� 100 �̃C���f�b�N�X��Ԃ��܂��B���̂悤�ȍ��ڂ����݂��Ȃ��ꍇ�́AFontForge �͍��ڂ��쐬���܂��B
+式 <CODE>cvt(&lt;val&gt;)</CODE> を数値の変わりに用いることもできます。これらは (1 em ユニット以内の誤差で) &lt;val&gt; である項目の&lsquo;cvt &rsquo;テーブル内のインデックスに置換されます。例えば <CODE>cvt(100)</CODE> は、&lsquo;cvt &rsquo;テーブル内での 100 のインデックスを返します。そのような項目が存在しない場合は、FontForge は項目を作成します。
 <H2>
   <IMG SRC="../editcvt.png" WIDTH="194" HEIGHT="320" ALIGN="Right"><!--Editing the
   &lsquo;<A NAME="cvt">cvt</A> &rsquo;table directly -->
-  &lsquo;<A NAME="cvt">cvt</A> &rsquo;�e�[�u���𒼐ڕҏW������@
+  &lsquo;<A NAME="cvt">cvt</A> &rsquo;テーブルを直接編集する方法
 </H2>
 <P>
 <!--
@@ -103,11 +103,11 @@ This dialog shows the initial contents of the 'cvt ' table (before it has
 been modified by the 'prep' program). It is simply a list of signed 16bit
 values. You may change any value by clicking on it and typing a new value.
 You may add new entries (at the end) with the [change length] button. -->
-���̃_�C�A���O��&lsquo;cvt &rsquo;�e�[�u���̏����� (&lsquo;prep&rsquo; �v���O�����ŕύX�����O��) ���e��\�����܂��B����͒P���ɕ����� 16 �r�b�g�l�̃��X�g�ł��B�l���N���b�N���āA�V�����l����͂��邱�Ƃɂ���ĔC�ӂ̒l��ύX���邱�Ƃ��ł��܂��B�V�������ڂ� (�Ō��) <CODE>[������ύX]</CODE> �{�^�����������Ƃɂ���ĕύX�\�ł��B
+このダイアログは&lsquo;cvt &rsquo;テーブルの初期の (&lsquo;prep&rsquo; プログラムで変更される前の) 内容を表示します。それは単純に符号つき 16 ビット値のリストです。値をクリックして、新しい値を入力することによって任意の値を変更することができます。新しい項目を (最後に) <CODE>[長さを変更]</CODE> ボタンを押すことによって変更可能です。
 <P>
 <!--
 (You may also use the "<CODE>cvt(&lt;val&gt;)</CODE>" notation described
 above to edit the cvt table.) -->
-(cvt �e�[�u����ҏW����̂ɁA��L�́g<CODE>cvt(&lt;val&gt;)</CODE>�h�L�@���g�����Ƃ��ł��܂��B)
+(cvt テーブルを編集するのに、上記の“<CODE>cvt(&lt;val&gt;)</CODE>”記法を使うこともできます。)
 </DIV>
 </BODY></HTML>

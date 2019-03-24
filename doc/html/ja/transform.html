@@ -3,9 +3,9 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
   <!-- AP: Last modified: 22-Mar-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!--<TITLE>Transform Dialog</TITLE> -->
-    <TITLE>�ό`�_�C�A���O</TITLE>
+    <TITLE>変形ダイアログ</TITLE>
   <LINK REL="icon" href="../fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
@@ -13,7 +13,7 @@
 <DIV id="in">
 <H1 ALIGN=Center>
 <!--Transform Dialog-->
-    �ό`�_�C�A���O
+    変形ダイアログ
 </H1>
 <P>
 <IMG SRC="../transform.png" WIDTH="379" HEIGHT="395">
@@ -23,101 +23,101 @@ This dialog is available in the font, outline and metrics views. In the font
 view it applies to all selected glyphs. In the outline view if there is a
 selection then it applies to that. if there is no selection then it applies
 to the entire glyph. -->
-���̃_�C�A���O�̓t�H���g�r���[�A�A�E�g���C���r���[����у��g���b�N�r���[�Ŏg�p�\�ł��B�t�H���g�r���[�ł͑I�����ꂽ���ׂĂ̓_�ɕό`���K�p����܂��B�A�E�g���C���r���[�ł́A�������I������Ă���Εό`�͂���ɓK�p����A�I������Ă��Ȃ���΃O���t�S�̂��ό`�̑ΏۂƂȂ�܂��B
+このダイアログはフォントビュー、アウトラインビューおよびメトリックビューで使用可能です。フォントビューでは選択されたすべての点に変形が適用されます。アウトラインビューでは、何かが選択されていれば変形はそれに適用され、選択されていなければグリフ全体が変形の対象となります。
 <P>
 <!--
 You may choose whether you want the transformation to be centered at the
 glyph's origin, the center of the selection (or of the glyph as a whole if
 there is no selection), or the location of the last point on which you clicked
 the mouse. -->
-�ό`�̒��S�́A�O���t�̌��_�E�I��͈͂̒��S (�����I������Ă��Ȃ��Ƃ��̓O���t�̒��S)�E�}�E�X���Ō�ɃN���b�N�����_�̂����ꂩ����I�����邱�Ƃ��ł��܂��B
+変形の中心は、グリフの原点・選択範囲の中心 (何も選択されていないときはグリフの中心)・マウスを最後にクリックした点のいずれかから選択することができます。
 <P>
 <!--
 You may apply several different transformations at once: -->
-�������̈قȂ�ϊ��������؂�Ɏw�肷�邱�Ƃ��ł��܂��B
+いくつかの異なる変換をいっぺんに指定することができます。
 <DL>
   <DT>
 <!--Do Nothing-->
-    <CODE>�������Ȃ�</CODE>
+    <CODE>何もしない</CODE>
   <DD>
 <!--A very simple transformation.-->
-    ���̏�Ȃ��P���ȕϊ��ł��B
+    この上なく単純な変換です。
   <DT>
 <!--Move-->
-    <CODE>�ړ�...</CODE>
+    <CODE>移動...</CODE>
   <DD>
 <!--You may move the selection an arbitrary amount in the x and y directions-->
-    �I��͈͂��Ax ������� y �������ɔC�ӂ̋��������ړ��ł��܂��B
+    選択範囲を、x 軸および y 軸方向に任意の距離だけ移動できます。
   <DT>
 <!--Rotate-->
-    <CODE>��]...</CODE>
+    <CODE>回転...</CODE>
   <DD>
 <!--You may rotate the selection an arbitrary number of degrees.-->
-    �I��͈͂�C�ӂ̓x��������]�ł��܂��B
+    選択範囲を任意の度数だけ回転できます。
   <DT>
 <!--Scale-->
-    <CODE>�g��E�k��...</CODE>
+    <CODE>拡大・縮小...</CODE>
   <DD>
 <!--You may scale the two coordinates differently-->
-    �����̍��W���ɉ����āA�قȂ�䗦�Ŋg��E�k���ł��܂��B
+    両方の座標軸に沿って、異なる比率で拡大・縮小できます。
   <DT>
 <!--Scale Uniformly-->
-    <CODE>��l�Ɋg��E�k��...</CODE>
+    <CODE>一様に拡大・縮小...</CODE>
   <DD>
 <!--You may scale the two coordinates the same amount (which can of course be
     done above, but it's slightly easier only to set one number). -->
-    2 �̍��W���𓯂��䗦�Ŋg��E�k���ł��܂� (��������̕��@�ł��ł��܂����A1 �̐��l�������w�肷��ق����킸���ɊȒP�ł�)�B
+    2 つの座標軸を同じ比率で拡大・縮小できます (もちろん上の方法でもできますが、1 個の数値だけを指定するほうがわずかに簡単です)。
   <DT>
 <!--Flip-->
-    <CODE>���]...</CODE>
+    <CODE>反転...</CODE>
   <DD>
 <!--You may flip either horizontally or vertically<FONT COLOR="Red"><BR>
     <STRONG>Note: After flipping an outline you will almost certainly want to
     apply <A HREF="elementmenu.html#Correct">Element-&gt;Correct
     Direction</A>.</STRONG></FONT> -->
-    �����܂��͐����ɔ��]���邱�Ƃ��ł��܂�<BR>
-    <FONT COLOR="Red"><STRONG>����: �A�E�g���C���𔽓]�����ꍇ�A�قƂ�Ǌm���� <A HREF="elementmenu.html#Correct"><CODE>�G�������g(<U>L</U>)</CODE>��<CODE>�A�E�g���C���̌������C��(<U>C</U>)</CODE></A> ��K�p����K�v��������ł��傤�B</STRONG></FONT>
+    水平または垂直に反転することができます<BR>
+    <FONT COLOR="Red"><STRONG>注意: アウトラインを反転した場合、ほとんど確実に <A HREF="elementmenu.html#Correct"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>アウトラインの向きを修正(<U>C</U>)</CODE></A> を適用する必要が生じるでしょう。</STRONG></FONT>
   <DT>
 <!--Skew-->
-    <CODE>�X��...</CODE>
+    <CODE>傾き...</CODE>
   <DD>
 <!--You may skew the selection a certain number of degrees (to create an oblique
     font for example). -->
-    �I��͈͂��w�肵���x�������X���邱�Ƃ��ł��܂� (�Ⴆ�ΎΑ̃t�H���g�̍쐬�Ɏg���܂�)�B
+    選択範囲を指定した度数だけ傾けることができます (例えば斜体フォントの作成に使えます)。
   <DT>
 <!--Rotate 3D Around...-->
-    <CODE>3�����̉�]...</CODE>
+    <CODE>3次元の回転...</CODE>
   <DD>
 <!--You may do a three dimensional rotation of the glyph around either the X
     axis or the Y axis. This operation is immediately followed by a projection
     of the result back into the xy-plane (A rotation around the Z axis is a normal
     rotaton (and isn't included here). <BR> -->
-    �O���t�� 3 ������]�� X ���܂��� Y ���ɉ����čs�����Ƃ��ł��܂��B���̑���̌�A���ʂ͑����� XY ���ʂɎˉe����܂� (Z ���̎���̉�]�͒ʏ�̉�]�ł� (�����炱���ɂ͊܂܂�Ă��܂���)�B
+    グリフの 3 次元回転を X 軸または Y 軸に沿って行うことができます。この操作の後、結果は即座に XY 平面に射影されます (Z 軸の周りの回転は通常の回転です (だからここには含まれていません)。
 <!--Following the rotation by a projection produces the same results no matter
     what the sign of the angle (so there are no Clockwise/CounterClockwise options
     here). -->
-    ��]�̌�Ɏˉe���s���Ă��A���̊p�x�̐����ɂ�炸�������ʂ������܂� (������ ���v���/�����v��� �̃I�v�V�����͂����ɂ͂���܂���)�B
+    回転の後に射影を行っても、その角度の正負によらず同じ結果が得られます (だから 時計回り/反時計回り のオプションはここにはありません)。
   <DT>
 <!--Move by Ruler-->
-    <CODE>���̂������g���Ĉړ�...</CODE>
+    <CODE>ものさしを使って移動...</CODE>
   <DD>
 <!--Fill in the amount to move from the x and y offsets of the last measurements
     made with the <A HREF="charview.html#Ruler">ruler tool</A>. -->
-    <A HREF="charview.html#Ruler">���̂����c�[��</A>�ōŌ�ɍs�����ړ��� x ����� y �����̃I�t�Z�b�g���ړ��ʂ̗��ɓ��͂��܂��B
+    <A HREF="charview.html#Ruler">ものさしツール</A>で最後に行った移動の x および y 方向のオフセットを移動量の欄に入力します。
   <DT>
 <!--Rotate by Ruler-->
-    <CODE>���̂������g���ĉ�]...</CODE>
+    <CODE>ものさしを使って回転...</CODE>
   <DD>
 <!--Fill in the rotation angle from the angle of the last measurements made with
     the <A HREF="charview.html#Ruler">ruler tool</A>. -->
-    <A HREF="charview.html#Ruler">���̂����c�[��</A>�ōŌ�ɍs�����ړ��̊p�x����]�p�x�̗��ɓ��͂��܂��B
+    <A HREF="charview.html#Ruler">ものさしツール</A>で最後に行った移動の角度を回転角度の欄に入力します。
   <DT>
 <!--Skew by Ruler -->
-    <CODE>���̂������g���ĕό`...</CODE>
+    <CODE>ものさしを使って変形...</CODE>
   <DD>
 <!--Fill in the skew angle from the angle of the last measurements made with
     the <A HREF="charview.html#Ruler">ruler tool</A>. -->
-    <A HREF="charview.html#Ruler">���̂����c�[��</A>�ōŌ�ɍs�����ό`�̊p�x��ό`�p�x�̗��ɓ��͂��܂��B
+    <A HREF="charview.html#Ruler">ものさしツール</A>で最後に行った変形の角度を変形角度の欄に入力します。
 </DL>
 <P>
 <!--
@@ -126,7 +126,7 @@ is set to all fonts, then the transformation will also be applied to the
 bitmaps. Not all of these transforms can be mapped to ones on the bitmap
 font (arbitrary rotations, scales, etc. do not map). Only rotations by 90
 degrees, flips, skews and moves will be approximated on the bitmap glyphs. -->
-�t�H���g�r���[�ō�ƒ��̏ꍇ�A����  <A HREF="editmenu.html#From"><CODE>�R�s�[���̎w��(<U>F</U>)</CODE><A> �� <CODE>���ׂẴt�H���g(<U>A</U>)</CODE> �ɐݒ肳��Ă���Ȃ�΁A�ϊ�����̓r�b�g�}�b�v�ɂ��K�p����܂��B�S�Ă̕ϊ����r�b�g�}�b�v�ɓK�p�ł���킯�ł͂���܂��� (�C�ӂ̊p�x�̉�]�A�g��E�k���Ȃǂ͓K�p�ł��܂���)�B90 �x�P�ʂ̉�]�A���]�A�X���ƈړ��݂̂��r�b�g�}�b�v�O���t�ɋߎ��I�ɓK�p����܂��B
+フォントビューで作業中の場合、もし  <A HREF="editmenu.html#From"><CODE>コピー元の指定(<U>F</U>)</CODE><A> が <CODE>すべてのフォント(<U>A</U>)</CODE> に設定されているならば、変換操作はビットマップにも適用されます。全ての変換がビットマップに適用できるわけではありません (任意の角度の回転、拡大・縮小などは適用できません)。90 度単位の回転、反転、傾きと移動のみがビットマップグリフに近似的に適用されます。
 </A>
 <P>
 <!--
@@ -135,34 +135,34 @@ first glyph is selected will be scaled (but not translated) by the transformatio
 matrix. Similarly and simple positioning features that apply to a selected
 glyph will be transformed by the matrix (but again not translated). You may
 choose to scale kerning class as well.-->
-�t�H���g�r���[�ő�����s�����ꍇ�A�y�A�P�ʂ̃J�[�j���O���̂����A�ŏ��̃O���t���I������Ă��邷�ׂĂ̂��̂��A�ϊ��s��ɏ]���Ċg��E�k������܂� (�����s�ړ��͂��܂���)�B���l�ɁA�I�𒆂̃O���t�ɓK�p�����P���ʒu�w��@�\���A�ϊ��s��ɏ]���Ċg��E�k������܂� (��������s�ړ��͂��܂���)�B�J�[�j���O�N���X�������Ɋg��E�k�����邩�I�����邱�Ƃ��ł��܂��B
+フォントビューで操作を行った場合、ペア単位のカーニング情報のうち、最初のグリフが選択されているすべてのものが、変換行列に従って拡大・縮小されます (が平行移動はしません)。同様に、選択中のグリフに適用される単純位置指定機能も、変換行列に従って拡大・縮小されます (これも平行移動はしません)。カーニングクラスも同時に拡大・縮小するか選択することができます。
 <P>
 <!--
 If you are in the font view or the outline view and there is no selection
 (and you are in the foreground) there is a "[] Transform Background Too"
 check box. If you check this then anything in the background will be transformed
 with the foreground. -->
-������t�H���g�r���[���A�E�g���C���r���[�ōs���A���̂Ƃ������I������Ă��Ȃ� (�����ĕҏW���Ă���̂��O�ʂł���) �ꍇ�A�g[] �w�i���ꏏ�ɕϊ�����(<U>B</U>)</CODE>�h�Ƃ����`�F�b�N�{�b�N�X���o�Ă��܂��B���̍��ڂɃ`�F�b�N������ƁA�w�i�̂��ׂĂ̕����O�ʂƈꏏ�ɍ��W�ϊ�����܂��B
+操作をフォントビューかアウトラインビューで行い、そのとき何も選択されていない (そして編集しているのが前面である) 場合、“[] 背景も一緒に変換する(<U>B</U>)</CODE>”というチェックボックスが出てきます。この項目にチェックを入れると、背景のすべての物も前面と一緒に座標変換されます。
 <P>
 <!--
 If you check [] Round to Int then after the transformation has been applied
 everything will be rounded to an integer value. -->
-�g<CODE>[] �����l�ɕϊ�(<U>D</U>)</CODE>�h�Ƀ`�F�b�N�������Ă���ƁA�ύX���K�p���ꂽ��ɂ��ׂĂ̍��W�l�������l�Ɋۂ߂��܂��B
+“<CODE>[] 整数値に変換(<U>D</U>)</CODE>”にチェックが入っていると、変更が適用された後にすべての座標値が整数値に丸められます。
 <P>
 <!--
 Transformations in the Outline glyph view are not applied to any bitmaps.
 (Nor are transformations in the bitmap window mapped back to the outline). -->
-�A�E�g���C���O���t�r���[�ɂ�����ϊ��̓r�b�g�}�b�v�ɂ͈�ؓK�p����܂��� (�r�b�g�}�b�v�E�B���h�E�ł̕ϊ����A�A�E�g���C���ɂ͓K�p����܂���)�B
+アウトライングリフビューにおける変換はビットマップには一切適用されません (ビットマップウィンドウでの変換も、アウトラインには適用されません)。
 <H2>
 <!--<A NAME="Non-Linear">Non-Linear </A>Transformations -->
-    <A NAME="Non-Linear">����`��</A>�ϊ�
+    <A NAME="Non-Linear">非線形の</A>変換
 </H2>
 <P>
 <IMG SRC="../non-linear.png" WIDTH="282" HEIGHT="166" ALIGN="Right"><!--Non-linear
 transformations are defined by providing two expressions, one of which results
 in the transformed value for the X coordinate, the other provides the y
 coordinate. In the example at right: -->
-����`�̍��W�ϊ��� X ���W�̕ϊ����� Y ���W�̕ϊ����� 2 �̐������w�肷�邱�Ƃɂ���`����܂��B�E�̗�́A�ȉ��̂悤�ɒ�`����Ă��܂��B
+非線形の座標変換は X 座標の変換式と Y 座標の変換式の 2 個の数式を指定することにより定義されます。右の例は、以下のように定義されています。
 <BLOCKQUOTE>
   <I>x' = 5&#183;x<SUP>2</SUP> + x + 3&#183;sin(y)<BR>
   y' = y</I>
@@ -174,17 +174,17 @@ Expressions may be made up of the usual C operators: "+", "-", "*", "/",
 and "? :" as well as "^" which means "raise to the power of". They may also
 contain the standard functions: "log", "exp", "sqrt", "sin", "cos", "tan",
 "atan2", "abs", "rint", "floor", "ceil". -->
-������g�ݗ��Ă�̂Ɏg���鉉�Z�q�́A C �Ɠ����Ӗ������A�ȉ��̉��Z�q (�g+�h,�g-�h,�g*�h,�g/�h,�g%�h,�g!�h,�g==�h,�g&lt;�h,�g&gt;�h,�g&lt;=�h,�g&gt;=�h,�g!=�h,�g&amp;&amp;�h,�g||" ����сg? :�h) �ɉ����āA �p���\���g^�h�ł��B�����ɂ́A�ȉ��̕W���֐����g�p���邱�Ƃ��ł��܂�:�glog�h,�gexp�h,�gsqrt�h,�gsin�h,�gcos�h,�gtan�h,�gatan2�h,�gabs�h,�grint�h,�gfloor�h,�gceil�h.
+数式を組み立てるのに使える演算子は、 C と同じ意味をもつ、以下の演算子 (“+”,“-”,“*”,“/”,“%”,“!”,“==”,“&lt;”,“&gt;”,“&lt;=”,“&gt;=”,“!=”,“&amp;&amp;”,“||" および“? :”) に加えて、 冪乗を表す“^”です。数式には、以下の標準関数を使用することもできます:“log”,“exp”,“sqrt”,“sin”,“cos”,“tan”,“atan2”,“abs”,“rint”,“floor”,“ceil”.
 <P>
 <!--
 Note: In non-linear transformations the result is only an approximation to
 the correct result (A linear transformation will transform a cubic spline
 to another cubic spline. A non-linear transformation may not). -->
-����: ����`�̕ϊ��ł́A�ϊ����ʂ͐��������ʂ̋ߎ��ł�������܂��� (���`�ϊ��� 3 ���X�v���C����ʂ� 3 ���X�v���C���Ɉڂ��܂����A����`�ϊ��ł͕s�\������ł�)�B
+注意: 非線形の変換では、変換結果は正しい結果の近似でしかありません (線形変換は 3 次スプラインを別の 3 次スプラインに移しますが、非線形変換では不可能だからです)。
 <H2>
   <IMG SRC="../PoV.png" WIDTH="337" HEIGHT="331" ALIGN="Right"><!--<A NAME="PoV">Point
   of View Projection</A> -->
-  <A NAME="PoV">�����ϊ�</A>
+  <A NAME="PoV">透視変換</A>
 </H2>
 <P>
 <!--
@@ -192,7 +192,7 @@ I have a hard time describing this. There are three different coordinate
 systems involved. There is the (2D) coordinate system in which your glyph
 has been drawn. There is a 3D coordinate system in which we embed it, and
 finally there is another 2D coordinate system onto which we project it. -->
-������������̂͑�ςł��B����ɂ� 3 �̈قȂ���W�n���֘A���Ă��܂��B�O���t���`�悳��� (2 ����) ���W�n�����݂��܂��B���ꂪ���ߍ��܂�Ă��� 3 �������W�n�����݂��A�Ō�ɁA���e�̑ΏۂƂȂ������� 2 �������W�n����܂��B
+これを説明するのは大変です。これには 3 個の異なる座標系が関連しています。グリフが描画される (2 次元) 座標系が存在します。それが埋め込まれている 3 次元座標系が存在し、最後に、投影の対象となるもう一つの 2 次元座標系あります。
 <P>
 <!--
 Assume your eye is at the origin of 3 space, and you are looking up along
@@ -201,30 +201,30 @@ is tilted by an angle theta (from the XY plane in 3 space) and the intersection
 between the Z axis and the drawing plane is z units along the Z axis. Assume
 that the projection plane is parallel to the XY plane and is at a distance
 d along the Z axis. -->
-���Ȃ��̖ڂ������ 3 �Ԗڂ̋�Ԃ̌��_�ɂ���Ɖ��肵�āAZ ���̏�̕����Ɏ����������Ă���Ƃ��܂��傤�B�����ăO���t���`����Ă��镽�ʂ��p�x�Ƃ��� (3 �Ԗڂ̋�Ԃ� XY ���ʂ���) �X���Ă��āAZ ���Ƃ��̕��ʂƂ̌�_�́AZ ���ɉ����� z ��������Ă���Ƃ��܂��傤�B���e�ʂ� XY ���ʂɕ��s�ŁAZ ���ɉ����� d ��������Ă���Ƃ��܂��傤�B
+あなたの目がこれら 3 番目の空間の原点にあると仮定して、Z 軸の上の方向に視線が向いているとしましょう。そしてグリフが描かれている平面が角度θだけ (3 番目の空間の XY 平面から) 傾いていて、Z 軸とその平面との交点は、Z 軸に沿って z だけ離れているとしましょう。投影面は XY 平面に平行で、Z 軸に沿って d だけ離れているとしましょう。
 <P>
 <IMG SRC="../Bperspective.png" WIDTH="186" HEIGHT="180" ALIGN="Left"><!--Then for
 each point in the glyph we draw a line between that point and your eye (which
 is at the origin). The location where that line intersects the projection
 plane is the transformed location of that point. Again the result is only
 an approximation. -->
-���̎��A��X���`�悷��O���t�̊e�_�ɑ΂��A(���_�ɂ���) ���Ȃ��̖ڂ��炻�̓_�Ɍ����Ē����������܂��B���̐������e�ʂƌ����ʒu���A���̓_�̕ϊ���̈ʒu�ł��B���̏ꍇ���A���ʂ͋ߎ��ł�������܂���B
+その時、我々が描画するグリフの各点に対し、(原点にある) あなたの目からその点に向けて直線を引きます。その線が投影面と交わる位置が、その点の変換後の位置です。この場合も、結果は近似でしかありません。
 <P>
 <!--
 The Point Of View dialog gives you a little more freedom than is described
 above. It allows you to set the location of the eye (instead of fixing it
 at the origin), and allows you to change in what direction the vanishing
 point will lie (instead of fixing it on the y axis). -->
-�����ϊ��_�C�A���O�́A��̐����������R�x�����������Ȃ��Ă��܂��B�ڂ̈ʒu�� (���_�Œ�ł͂Ȃ�) �ݒ�ł��܂����A�����_����������� (y �������Œ�ł͂Ȃ�) �w�肷�邱�Ƃ��ł��܂��B
+透視変換ダイアログは、上の説明よりも自由度が少し高くなっています。目の位置を (原点固定ではなく) 設定できますし、消失点がある方向を (y 軸方向固定ではなく) 指定することができます。
 <P>
 <!--
 The dialog also calculates the location of the vanishing point as you change
 fields (Note: It cannot figure out meta information like "Center of Selection",
 so whenever the eye is positioned with this value, it just assumes a value
 of 0 for that coordinate. -->
-���̃_�C�A���O�́A���͒l��ύX���邲�Ƃɏ����_�̈ʒu���Čv�Z���܂� (����: �u<CODE>�I��̈�̒��S�_</CODE>�v�̂悤�ȃ��^���͎Z�o���邱�Ƃ͂ł����A���̍��W�� 0 �ɂ���ƒP���ɉ��肵�Ă��܂�)�B
+このダイアログは、入力値を変更するごとに消失点の位置を再計算します (注意: 「<CODE>選択領域の中心点</CODE>」のようなメタ情報は算出することはできず、その座標の 0 にあると単純に仮定しています)。
 <P ALIGN=Center>
-�\ <A HREF="elementmenu.html">�O</A> �\ <A HREF="overview.html">�ڎ�</A>
-�\ <A HREF="elementmenu.html">��</A> �\
+— <A HREF="elementmenu.html">前</A> — <A HREF="overview.html">目次</A>
+— <A HREF="elementmenu.html">次</A> —
 </DIV>
 </BODY></HTML>

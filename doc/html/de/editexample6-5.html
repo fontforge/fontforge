@@ -3,6 +3,7 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 21-Mar-2005 -->
   <!-- AP: Last modified: 22-Mar-2005 -->
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <TITLE>Kontextbezogene Funktionen</TITLE>
   <LINK REL="icon" href="../fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="../FontForge.css">
@@ -20,7 +21,7 @@
     </li><li>
     <a href="editexample2.html#Navigating">Navigation zu weiteren Bildzeichen</a>
     </li><li>
-    <a href="editexample2.html#Creating-o">Auf zum nächsten Bildzeichen (konsistente Richtungen)</a>
+    <a href="editexample2.html#Creating-o">Auf zum nÃ¤chsten Bildzeichen (konsistente Richtungen)</a>
     </li><li>
     <a href="editexample3.html#consistent-stems">Konsistente Serifen und Stammbreiten</a>
     </li><li>
@@ -42,7 +43,7 @@
     </li><li>
       <a href="editexample6-5.html#Conditional">Bedingte Eigenschaften</a>
     </li><li>
-      <a href="editexample7.html#checking">Überprüfen des Schriftsatzes</a>
+      <a href="editexample7.html#checking">ÃœberprÃ¼fen des Schriftsatzes</a>
     </li><li>
       <a href="editexample7.html#Bitmaps">Bitmaps</a>
     </li><li>
@@ -58,9 +59,9 @@
 <A NAME="Conditional">Bedingte</A> Eigenschaften
 </H2>
   <P>
-    Sowohl OpenType als auch Apple-Schriften unterstützen kontextbezogene
+    Sowohl OpenType als auch Apple-Schriften unterstÃ¼tzen kontextbezogene
     Eingeschaften. Dies sind Eigenschaften, die nur in einem bestimmten
-    Kontext auftreten und sind notwendig für das Setzen von indischer und
+    Kontext auftreten und sind notwendig fÃ¼r das Setzen von indischer und
     arabischer Schreibschrift. In OpenType wird ein Kontext durch eine Menge
     von Mustern spezifiziert, die gegen den Zeichenstrom des Dokuments
     getestet werden. Wenn ein Muster erkannt wird, werden die auf ihm
@@ -68,30 +69,30 @@
     der Kontext mit Hilfe eines Zustandsautomaten definiert, ein
     Miniprogramm, welches den Zeichenstrom analysiert und transformiert.
 <P>
-    Bedingte Eigenschaften können Ersetzungen, Ligaturen oder Unterschneidung
+    Bedingte Eigenschaften kÃ¶nnen Ersetzungen, Ligaturen oder Unterschneidung
     (und einige andere obskure Verhaltensweisen) einbeziehen. Im folgenden
     wird ein Beispiel einer kontextbezogenen Ersetzung demonstriert.
 <P>
 <IMG SRC="../bed-script.png" WIDTH="259" HEIGHT="81" ALIGN="Right">Anstelle
 eines indischen oder arabischen Beispiels wird hier ein lateinisches verwendet,
 mit dem die meisten westlichen Anwender (wie auch der Autor) vertrauter sind.
-Das Problem beim Setzen lateinischer Schreibschriftsätze ist,  daß die
+Das Problem beim Setzen lateinischer SchreibschriftsÃ¤tze ist,  daÃŸ die
 Buchstaben "b", "o", "v" und "w" an den darauffolgenden Buchstaben nahe
-der x-Höhe anschliessen, während alle anderen Buchstaben nahe der
+der x-HÃ¶he anschliessen, wÃ¤hrend alle anderen Buchstaben nahe der
 Grundlinie anschliessen.
-Aus diesem Grunde werden für jedes Zeichen zwei Varianten benötigt,
+Aus diesem Grunde werden fÃ¼r jedes Zeichen zwei Varianten benÃ¶tigt,
 eine die an der Grundlinie ansetzt (die links gezeigte, Grundeinstellung)
-und eine, die an der x-Höhe ansetzt. Diese zweite Variante wird im
+und eine, die an der x-HÃ¶he ansetzt. Diese zweite Variante wird im
 folgenden "high" Buchstaben genannt: "a.high", "b.high" usw.
 <H3>
   <A NAME="OpenType">OpenType</A> Beispiel
 </H3>
 <P>
-  Die Menge der möglichen Zeichen wird in drei Klassen aufgeteilt:
+  Die Menge der mÃ¶glichen Zeichen wird in drei Klassen aufgeteilt:
   die Buchstaben "bovw", alle anderen Buchstaben und alle anderen
-  Zeichen. Es werden zwei Muster benötigt, das erste erkennt ein
+  Zeichen. Es werden zwei Muster benÃ¶tigt, das erste erkennt ein
   Zeichen in der "bovw"-Klasse gefolgt von einem Zeichen in der "bovw"-
-  Klasse, während das andere ein Zeichen in der "bovw"-Klasse gefolgt
+  Klasse, wÃ¤hrend das andere ein Zeichen in der "bovw"-Klasse gefolgt
   von irgendeinem anderen Zeichen erkennt. Wenn eines dieser Muster auf das
   zweite Zeichen passt, sollte dieses in seine "high"-Variante transformiert
   werden.
@@ -101,189 +102,189 @@ folgenden "high" Buchstaben genannt: "a.high", "b.high" usw.
   Ersetzung wird im folgenden mit dem OpenType-Tag "high" bezeichnet.
   Um diese zu definieren wird der Befehl
   <A HREF="../charinfo.html#substitution">Element -&gt;Zeicheninformation</A> 
-  wie bereits verwendet, ausser daß hier die Option "--- verschachtelt ---"
-  aus "Schreibschrift/Sprache" aus dem Pulldown-Menü benutzt wird.
+  wie bereits verwendet, ausser daÃŸ hier die Option "--- verschachtelt ---"
+  aus "Schreibschrift/Sprache" aus dem Pulldown-MenÃ¼ benutzt wird.
 <P>
 <IMG SRC="../ott1.png" WIDTH="261" HEIGHT="328" ALIGN="Right">
 Der knifflige Teil ist die Definition des Kontexts. Dies wird im
-Reiter "Kontextuell" aus dem Dialog für
+Reiter "Kontextuell" aus dem Dialog fÃ¼r
 <A HREF="../fontinfo.html#Contextual">Element -&gt;Zeichensatzinformation</A> gemacht,
-in dem fünf verschiedene Typen kontextbezogenen Verhaltens zur Auswahl
+in dem fÃ¼nf verschiedene Typen kontextbezogenen Verhaltens zur Auswahl
 stehen, in diesem Beispiel interessieren die kontextbezogen verketteten
 Ersetzungen.
 <P>
 Ein neuer Eintrag wird mit dem Knopf "Neu" angelegt, woraufhin eine
 Reihe von Dialogen erscheinen. Der erste erwartet die Vergabe eines
-OpenType-Tags der Länge von vier Zeichen und eine Schreibschrift/Sprache
+OpenType-Tags der LÃ¤nge von vier Zeichen und eine Schreibschrift/Sprache
 Selektion (wie bereits <A HREF="../charinfo.html#Feature-Tag">vorher gesehen</A>).
 <P>
 In diesem Beispiel wird "calt" als Tagname vergeben. Dies scheint ein
-geeignetes Tag zu sein, leider ist es nicht für die lateinische
+geeignetes Tag zu sein, leider ist es nicht fÃ¼r die lateinische
 Schreibschrift implementiert. Das Beispiel erzeugt eine Schriftart,
 die zwar syntaktisch korrekt ist, aber keinen Effekt hat. Es ist frustrierend,
-daß OpenType die Möglichkeiten bietet, wundervolle Dinge zu tun, um
-dann herauszufinden, daß
+daÃŸ OpenType die MÃ¶glichkeiten bietet, wundervolle Dinge zu tun, um
+dann herauszufinden, daÃŸ
 <A HREF="http://www.microsoft.com/typography/OpenType%20Dev/standard/shaping.mspx">Microsoft</A>
-diese nicht für Latein ermöglicht.
+diese nicht fÃ¼r Latein ermÃ¶glicht.
 <P>
 <IMG SRC="../ott2_5.png" WIDTH="329" HEIGHT="263" ALIGN="Left">
-Im nächsten Dialogfenster wird das generelle Format der Ersetzung
+Im nÃ¤chsten Dialogfenster wird das generelle Format der Ersetzung
 festgelegt. Es soll ein klassenbasiertes System verwendet werden -
-es wurde oben bereits erwähnt welche Klassen definiert werden.<BR CLEAR=ALL>
+es wurde oben bereits erwÃ¤hnt welche Klassen definiert werden.<BR CLEAR=ALL>
 <P>
 <IMG SRC="../ott3.png" WIDTH="330" HEIGHT="357" ALIGN="Right">
-Im nächsten Dialog werden oben eine Reihe von Mustern und
+Im nÃ¤chsten Dialog werden oben eine Reihe von Mustern und
 Ersetzungen angezeigt, die angewendet werden, wenn eine
 Zeichenkette erkannt wurde. Darunter befinden sich die Zeichenklassen,
-die diese Ersetzung verwendet. Ein Dialog für kontextbezogene
+die diese Ersetzung verwendet. Ein Dialog fÃ¼r kontextbezogene
 Verkettung teilt den Zeichenstrom in drei Kategorien ein. Bildzeichen
-vor dem aktuellen Zeichen (diese werden Rückverfolgungszeichen genannt),
-das aktuelle Bildzeichen (es können mehr als eine spezifiziert werden),
-auf welche(s) möglicherweise einfache Ersetzungen angewendet wurden
+vor dem aktuellen Zeichen (diese werden RÃ¼ckverfolgungszeichen genannt),
+das aktuelle Bildzeichen (es kÃ¶nnen mehr als eine spezifiziert werden),
+auf welche(s) mÃ¶glicherweise einfache Ersetzungen angewendet wurden
 und zuletzt Bildzeichen, die nach dem aktuellen Zeichen auftreten
 (sog. "Vorschau"- oder "Lookahead"-Zeichen).
 <P>
 Jede Kategorie von Bildzeichen kann verschiedene Mengen
 von Klassen besitzen, in diesem Beispiel werden die selben
-Klassen für alle Kategorien verwendet (was die Konvertierung
+Klassen fÃ¼r alle Kategorien verwendet (was die Konvertierung
 der Ersetzungen in das Apple-Format vereinfacht).
 Die erste Zeile (in dem "Liste von Listen"-Feld) liest sich
-folglich: wenn ein Rückverfolgungszeichen (das Zeichen vor
+folglich: wenn ein RÃ¼ckverfolgungszeichen (das Zeichen vor
 dem aktuellen) in Klasse 1 gefolgt wird vom aktuellen Zeichen
 in Klasse 2, dann wird die einfache Ersetzung "high" auf
 die Position 0 - die einzige Position - in der zu durchsuchenden
 Zeichenkette (d.h. das aktuelle Zeichen) angewendet.
 <P>
-Bei Betrachtung der Zeichenklassendefinitionen fällt auf, daß
+Bei Betrachtung der Zeichenklassendefinitionen fÃ¤llt auf, daÃŸ
 in Klasse 1 die Zeichen enthalten sind, die von einer "high"-
-Variante gefolgt werden müssen, so daß die Definition
+Variante gefolgt werden mÃ¼ssen, so daÃŸ die Definition
 dieser Regel nachvollziehbar ist.
 <P>
-Die zweite Zeile ist der ersten ähnlich, nur daß hier Zeichen in
+Die zweite Zeile ist der ersten Ã¤hnlich, nur daÃŸ hier Zeichen in
 Klasse 1 erkannt werden. Bei Betrachtung der Klassendefinitionen
-ist zu sehen, daß die Klassen 1 und 2 alle Buchstaben enthalten,
+ist zu sehen, daÃŸ die Klassen 1 und 2 alle Buchstaben enthalten,
 also bedeuten diese zwei Zeilen: wenn irgendein Buchstabe auf
 "b", "o", "v" oder "w" folgt, dann wird dieser Buchstabe in
 seine "high"-Variante umgewandelt.<BR CLEAR=ALL>
 <P>
 <IMG SRC="../ott4.png" WIDTH="330" HEIGHT="357" ALIGN="Left">
 Um, eine Zeichenklasse zu bearbeiten, wird ein Doppelklick darauf
-ausgeführt. Für das Hinzufügen einer neuen wird der Knopf "Neu"
-direkt unter der Klassenliste gedrückt. Daraufhin wird ein neuer
+ausgefÃ¼hrt. FÃ¼r das HinzufÃ¼gen einer neuen wird der Knopf "Neu"
+direkt unter der Klassenliste gedrÃ¼ckt. Daraufhin wird ein neuer
 Dialog angezeigt, der die Namen aller Zeichen in der aktuellen
 Klasse anzeigt.
-Wenn der Knopf "Auswählen" gedrückt wird, werden im Zeichensatzfenster
-die Zeichen ausgewählt, die in der Klasse enthalten sind, während
+Wenn der Knopf "AuswÃ¤hlen" gedrÃ¼ckt wird, werden im Zeichensatzfenster
+die Zeichen ausgewÃ¤hlt, die in der Klasse enthalten sind, wÃ¤hrend
 "Setzen" das Umgekehrte macht und die Zeichen in der Klasse and die
 Auswahl im Zeichensatzfenster anpasst. Dies ist als Eingabehilfe
 gedacht, um die Eingabe einer Menge von Zeichennamen zu sparen.
 <P>
 Ein Druck auf den "Weiter"-Knopf legt die Klassendefinition fest
-und kehrt zum Übersichtsdialog zurück.<BR CLEAR=ALL>
+und kehrt zum Ãœbersichtsdialog zurÃ¼ck.<BR CLEAR=ALL>
 <P>
 <IMG SRC="../ott3.png" WIDTH="330" HEIGHT="357" ALIGN="Right">
 Um ein Muster zu bearbeiten, wird auf dessen Eintrag ein
-Doppelklick ausgeführt, oder um einen neuen Eintrag zu erstellen,
-der "Neu"-Knopf gedrückt (direkt unter der Liste von Listen).
+Doppelklick ausgefÃ¼hrt, oder um einen neuen Eintrag zu erstellen,
+der "Neu"-Knopf gedrÃ¼ckt (direkt unter der Liste von Listen).
 Wieder wird das Muster in drei Kategorien eingeteilt,
 <IMG SRC="../ott5.png" WIDTH="330" HEIGHT="357" ALIGN="Left">
 die Zeichen, die vor dem aktuellen auftreten, das aktuelle Zeichen
-selbst und Zeichen, die nach dem aktuellen auftreten können.
-Mit Hilfe der Reiter oben im Dialog kann ausgewählt werden, welche
+selbst und Zeichen, die nach dem aktuellen auftreten kÃ¶nnen.
+Mit Hilfe der Reiter oben im Dialog kann ausgewÃ¤hlt werden, welche
 Kategorie des Musters bearbeitet werden soll.
 <P>
-Darunter wird die Untermenge des Musters angezeigt, die für die
-aktuelle Kategorie gültig ist, die für diese Kategorie definierten
-Klassen und die Ersetzungen für das (die) aktuelle(n) Zeichen.
+Darunter wird die Untermenge des Musters angezeigt, die fÃ¼r die
+aktuelle Kategorie gÃ¼ltig ist, die fÃ¼r diese Kategorie definierten
+Klassen und die Ersetzungen fÃ¼r das (die) aktuelle(n) Zeichen.
 Mit einem Klick auf eine der Klassen wird die Klassennummer zum
-Muster hinzugefügt.
+Muster hinzugefÃ¼gt.
 <P>
 Um eine Erzetzung zu bearbeiten, wird ein Doppelklick auf
-deren Eintrag durchgeführt, für einen neuen Eintrag der
-Knopf "Neu" (unter "Eine sortierte Liste...") gedrückt.
+deren Eintrag durchgefÃ¼hrt, fÃ¼r einen neuen Eintrag der
+Knopf "Neu" (unter "Eine sortierte Liste...") gedrÃ¼ckt.
 Die Sequenznummer spezifiziert welches Zeichen von den
-aktuellen Zeichen geändert wird und das Tag spezifiziert
-den Namen der Ersetzung mit einer Länge von vier Zeichen.<BR CLEAR=ALL>
+aktuellen Zeichen geÃ¤ndert wird und das Tag spezifiziert
+den Namen der Ersetzung mit einer LÃ¤nge von vier Zeichen.<BR CLEAR=ALL>
 <P>
 <FONT COLOR="Red"><STRONG>Eine Warnung zu kontextbezogenen
 Verhalten:</STRONG></FONT>
-Es wird nicht von jeder Software unterstützt oder könnte
-sie evtl. nur für gewisse Schreibschriften unterstützen.
+Es wird nicht von jeder Software unterstÃ¼tzt oder kÃ¶nnte
+sie evtl. nur fÃ¼r gewisse Schreibschriften unterstÃ¼tzen.
 <H3>
 <A NAME="Apple">Apple</A> fortgeschrittene Typographie
 </H3>
 <P>
 Apple spezifiziert einen Kontext mit Hilfe eines endlichen Zustandsautomaten.
-Dies ist grob gesagt ein kleines Programm, daß den Zeichenstrom
+Dies ist grob gesagt ein kleines Programm, daÃŸ den Zeichenstrom
 analysiert und entscheidet, welche Ersetzungen angewendet werden.
 Jeder Zustandsautomat hat eine Menge von Zeichenklassendefinitionen
-(genau so wie im OpenType-Beispiel) und eine Menge von Zuständen.
+(genau so wie im OpenType-Beispiel) und eine Menge von ZustÃ¤nden.
 Die Verarbeitung startet in Zustand 0 am Beginn des Eingabestroms.
 Der Computer ermittelt, in welcher Klasse das aktuelle Zeichen ist und
-bestimmt mit Hilfe des aktuellen Zustands die Aktion, die für
-diesen Zustand und diese Klasse auszuführen ist. Die Aktion beinhaltet
+bestimmt mit Hilfe des aktuellen Zustands die Aktion, die fÃ¼r
+diesen Zustand und diese Klasse auszufÃ¼hren ist. Die Aktion beinhaltet
 den Wechsel in einen anderen Zustand, das Inkrementieren der Eingabeposition
 und die Anwendung einer Ersetzung auf entweder das aktuelle oder ein
 vorheriges Zeichen (das "markierte" Zeichen).
 <P>
 <IMG SRC="../sm-picture.png" WIDTH="386" HEIGHT="130" ALIGN="Right">Es wird
 im folgenden wieder das Beispiel eines lateinischen Schreibschrift-
-Zeichensatzes bemüht und es wird wieder eine einfache Ersetzung
-benötigt, um jeden Buchstaben in seine "high"-Variante zu konvertieren.
-Der Vorgang ist der gleiche wie für OpenType und es kann die selbe
+Zeichensatzes bemÃ¼ht und es wird wieder eine einfache Ersetzung
+benÃ¶tigt, um jeden Buchstaben in seine "high"-Variante zu konvertieren.
+Der Vorgang ist der gleiche wie fÃ¼r OpenType und es kann die selbe
 Ersetzung verwendet werden. Erneut werden die Zeichen in drei
-Klassen aufgeteilt (Apple definiert einige zusätzliche Klassen,
-aber grundsätzlich werden die gleichen Klassen wie bei OpenType
-verwendet). Es wird ein Zustandsautomat mit zwei Zuständen
-definiert (Apple definiert einen zusätzlichen, im Beispiel wird
+Klassen aufgeteilt (Apple definiert einige zusÃ¤tzliche Klassen,
+aber grundsÃ¤tzlich werden die gleichen Klassen wie bei OpenType
+verwendet). Es wird ein Zustandsautomat mit zwei ZustÃ¤nden
+definiert (Apple definiert einen zusÃ¤tzlichen, im Beispiel wird
 dies ignoriert): der Startzustand (der Grundzustand in dem
-sich nichts ändert), der andere Zustand wird erreicht, wenn vorher
+sich nichts Ã¤ndert), der andere Zustand wird erreicht, wenn vorher
 ein Zeichen aus der "bovw"-Klasse gelesen wurde.<BR CLEAR=ALL>
 <P>
 <IMG SRC="../asm1.png" WIDTH="261" HEIGHT="323" ALIGN="Left">
 Auch hier wird der Dialog des Befehls
 <A HREF="../fontinfo.html#Mac-SM">Element-&gt;Zeichensatzinformation</A>
-verwendet (bei selektierter "Mac SM"-Option), um die verfügbaren
+verwendet (bei selektierter "Mac SM"-Option), um die verfÃ¼gbaren
 kontextbezogenen Ersetzungen zu betrachten.
 Wieder stehen eine Anzahl verschiedener Typen kontextbezogenen
-Verhaltens zur Auswahl, es werden natürlich kontextbezogene
-Ersetzungen ausgewählt. Ein Doppelklick auf den Eintrag eines
+Verhaltens zur Auswahl, es werden natÃ¼rlich kontextbezogene
+Ersetzungen ausgewÃ¤hlt. Ein Doppelklick auf den Eintrag eines
 existierenden Zustandsautomaten oder ein Druck auf den Knopf
-"Neu" führt zu einer Übersicht des Zustandsautomaten.
+"Neu" fÃ¼hrt zu einer Ãœbersicht des Zustandsautomaten.
 <P>
 <IMG SRC="../asm2.png" WIDTH="309" HEIGHT="381" ALIGN="Right">
-Oben im Dialog ist ein Auswahlfeld für die Eigenschaft / Einstellung
-des Automaten, dies ist Apples Gegenstück zu dem 4-Zeichen
+Oben im Dialog ist ein Auswahlfeld fÃ¼r die Eigenschaft / Einstellung
+des Automaten, dies ist Apples GegenstÃ¼ck zu dem 4-Zeichen
 Eigenschaftstag von OpenType. Darunter befindet sich eine Menge von
-Klassendefinitionen und ganz unten die Repräsentation des
+Klassendefinitionen und ganz unten die ReprÃ¤sentation des
 Zustandsautomaten selbst.<BR CLEAR=Left>
 <P>
 <IMG SRC="../asm3.png" WIDTH="309" HEIGHT="206" ALIGN="Left">
-Ein Doppelklick auf einen Klasseneintrag öffnet einen Dialog,
-der dem in OpenType verwendeten ähnlich ist.<BR CLEAR=Right>
+Ein Doppelklick auf einen Klasseneintrag Ã¶ffnet einen Dialog,
+der dem in OpenType verwendeten Ã¤hnlich ist.<BR CLEAR=Right>
 <P>
 <IMG SRC="../asm4.png" WIDTH="196" HEIGHT="307" ALIGN="Right">
-Ein Klick auf einen Zustandsübergang im Automaten
-(für jede Zustand/Klassen-Kombination gibt es einen Übergang) öffnet
-den Zustandsübergangsdialog. Dieser kontrolliert wie sich der
-Automat in einem bestimmten Zustand verhält, wenn eine Eingabe
+Ein Klick auf einen ZustandsÃ¼bergang im Automaten
+(fÃ¼r jede Zustand/Klassen-Kombination gibt es einen Ãœbergang) Ã¶ffnet
+den ZustandsÃ¼bergangsdialog. Dieser kontrolliert wie sich der
+Automat in einem bestimmten Zustand verhÃ¤lt, wenn eine Eingabe
 eines Zeichens in einer bestimmten Klasse gelesen wird.
 In diesem Beispiel wird Zustand 2 gezeigt (es wurde bereits
 ein "bovw"-Zeichen gelesen) und es wurde ein Zeichen aus Klasse
 4 gelesen (ein anderes "bovw"-Zeichen). In diesem Fall ist
 wird wieder nach Zustand 2 gewechselt (weil wieder "bovw" gelesen wurde),
-das nächste Zeichen gelesen und die "high"-Ersetzung auf das aktuelle
+das nÃ¤chste Zeichen gelesen und die "high"-Ersetzung auf das aktuelle
 Zeichen angewendet.
 <P>
-Am unteren Ende des Fensters befinden sich einige Knöpfe für die
-Navigation durch die Zustände des Zustandsautomaten.
+Am unteren Ende des Fensters befinden sich einige KnÃ¶pfe fÃ¼r die
+Navigation durch die ZustÃ¤nde des Zustandsautomaten.
 <P>
-Mehrfacher Druck auf "Ok" verlässt diese Kette von Dialogen und
-fügt dem Zeichensatz einen neuen Zustandsautomaten hinzu.
+Mehrfacher Druck auf "Ok" verlÃ¤sst diese Kette von Dialogen und
+fÃ¼gt dem Zeichensatz einen neuen Zustandsautomaten hinzu.
 <P>
 <P>
 <P ALIGN=Center>
 -- <A HREF="editexample6.html">Vorherige Seite</A> -- <A HREF="../overview.html">Inhalt</A>
--- <A HREF="editexample7.html">Nächste Seite</A> --
+-- <A HREF="editexample7.html">NÃ¤chste Seite</A> --
 </DIV>
 </BODY></HTML>

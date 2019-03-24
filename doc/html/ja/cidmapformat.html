@@ -3,22 +3,22 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Aug-2005 -->
   <!-- AP: Last modified: 10-Aug-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!--<TITLE>Cidmap files</TITLE>-->
-    <TITLE>cidmap �t�@�C��</TITLE>
+    <TITLE>cidmap ファイル</TITLE>
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
 <H1 ALIGN=Center>
 <!--Cidmap files-->
-    cidmap �t�@�C��
+    cidmap ファイル
 </H1>
 <P>
 <!--
 These are FontForge's own files which it uses to map from CIDs in one
 Registry-Ordering-Supplement to unicode code points. -->
-FontForge �́A����̃��W�X�g��-�����Â�-���ԍ��ɂ�����  CID ���� Unicode �̕����ʒu�ւ̑Ή��Â��Ɏ������g�̃t�@�C�����g�p���Ă��܂��B
+FontForge は、特定のレジストリ-順序づけ-補遺番号における  CID から Unicode の符号位置への対応づけに自分自身のファイルを使用しています。
 <P>
 <!--
 Cidmap files generally live in $(PREFIX)/share/fontforge (often
@@ -27,16 +27,16 @@ be found if they are in the directory containing fontforge itself or the
 current directory. They are named
 &lt;registry&gt;-&lt;Ordering&gt;-&lt;Supplement&gt;.cidmap. So
 "Adobe-Japan1-6.cidmap", or "Adobe-CNS1-4.cidmap". -->
-��ʂɁAcidmap �t�@�C���� $(PREFIX)/share/fontforge (���� /usr/local/share/fontforge �܂��� /usr/share/fontforge) �ɒu����Ă��܂����AFontForge �̎��s�t�@�C�����܂ރf�B���N�g���܂��̓J�����g�f�B���N�g���ɂ��� cidmap �����݂���Ƃ��́A�������F�����܂��B�����̃t�@�C���� &lt;���W�X�g��&gt;-&lt;�����Â�&gt;-&lt;���ԍ�;.cidmap �Ɩ�������Ă��܂��B�Ⴆ�� "Adobe-Japan1-6.cidmap" �� "Adobe-CNS1-4.cidmap" �Ƃ������O�ł��B
+一般に、cidmap ファイルは $(PREFIX)/share/fontforge (大抵は /usr/local/share/fontforge または /usr/share/fontforge) に置かれていますが、FontForge の実行ファイルを含むディレクトリまたはカレントディレクトリにある cidmap が存在するときは、それらも認識します。それらのファイルは &lt;レジストリ&gt;-&lt;順序づけ&gt;-&lt;補遺番号;.cidmap と命名されています。例えば "Adobe-Japan1-6.cidmap" や "Adobe-CNS1-4.cidmap" という名前です。
 <P>
 <!--
 The first line of the file consists of two numbers, usually the same, which
 are the total number of CIDs defined by this ROS. -->
-�t�@�C���̍ŏ��̍s�� 2 �̐��l (�ʏ�� 2 �Ƃ�����) ����Ȃ�A���̃��W�X�g���E�����Â��E���ԍ��Œ�`���ꂽ CID �̑����ł��B
+ファイルの最初の行は 2 個の数値 (通常は 2 つとも同じ) からなり、このレジストリ・順序づけ・補遺番号で定義された CID の総数です。
 <P>
 <!--
 Subsequent lines have one of three formats -->
-����ɑ����s�͈ȉ��� 3 �̃t�H�[�}�b�g�̂����ꂩ�ł��B
+それに続く行は以下の 3 つのフォーマットのいずれかです。
 <UL>
   <LI>
     &lt;cid&gt; &lt;unicode&gt;
@@ -46,11 +46,11 @@ Subsequent lines have one of three formats -->
     &lt;cid&gt; &lt;postscript-name&gt;
 </UL>
 <P>
-&lt;cid&gt; �� 10 �i���ŁA&lt;unicode&gt; �� 16 �i���ł��B�܂��A &lt;postscript-name&gt; �́A�擪�ɃX���b�V�������� PostScript ���ł��B
+&lt;cid&gt; は 10 進数で、&lt;unicode&gt; は 16 進数です。また、 &lt;postscript-name&gt; は、先頭にスラッシュがついた PostScript 名です。
 <P>
 <!--
 The first few lines of Adobe-Japan1-6.cidmap look like: -->
-Adobe-Japan1-6.cidmap �̍ŏ��̐��s�͈ȉ��̂悤�ɂȂ��Ă��܂�:
+Adobe-Japan1-6.cidmap の最初の数行は以下のようになっています:
 <BLOCKQUOTE>
   <PRE>23057 23057
 0 /.notdef
@@ -65,6 +65,6 @@ Adobe-Japan1-6.cidmap �̍ŏ��̐��s�͈ȉ��̂悤�ɂȂ��Ă��܂�:
 So there are 23057 cids in this ROS. CID 0 is mapped to the postscript name
 "/.notdef", cids 1-60 are mapped to space (U+0020), exclam (U+0021), ...,
 lbracket (U+005b), CID 61 is mapped to yen (U+00a5), and so forth. -->
-���̃O���t�W���ɂ� 23057 �� CID ���܂܂�܂��BCID 0 �ɂ� PostScript �� "/.notdef" ���Ή����ACID 1�`60 �� space (U+0020), exclam (U+0021), �c lbracket (U+005B) �ɑΉ����ACID 61 �� yen (U+00A5) �ɑΉ����c�c�Ƃ�������ł��B
+このグリフ集合には 23057 個の CID が含まれます。CID 0 には PostScript 名 "/.notdef" が対応し、CID 1〜60 は space (U+0020), exclam (U+0021), … lbracket (U+005B) に対応し、CID 61 は yen (U+00A5) に対応し……といった具合です。
 </DIV>
 </BODY></HTML>

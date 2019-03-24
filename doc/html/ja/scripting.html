@@ -3,9 +3,9 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
   <!-- AP: Last modified: 14-Jul-2006 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!--<TITLE>Writing scripts to change fonts in FontForge</TITLE>-->
-    <TITLE>FontForge �Ńt�H���g��ύX���邽�߂̃X�N���v�g�̏�����</TITLE>
+    <TITLE>FontForge でフォントを変更するためのスクリプトの書き方</TITLE>
   <LINK REL="icon" href="../fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
@@ -13,49 +13,49 @@
 <DIV id="in">
   <H1 ALIGN=Center>
 <!--Writing scripts to change fonts in FontForge-->
-    FontForge �Ńt�H���g��ύX���邽�߂̃X�N���v�g�̏�����
+    FontForge でフォントを変更するためのスクリプトの書き方
   </H1>
   <P>
 <!--
   FontForge includes an interpreter so you can write scripts to modify fonts. -->
-  FontForge �̓C���^�v���^��������Ă���̂ŁA�t�H���g��ύX���邽�߂̃X�N���v�g���������Ƃ��ł��܂��B
+  FontForge はインタプリタを内蔵しているので、フォントを変更するためのスクリプトを書くことができます。
   <UL>
     <LI>
 <!--  <A HREF="scripting-tutorial.html">Scripting tutorial</A> -->
-      <A HREF="scripting-tutorial.html">�X�N���v�g�����̃`���[�g���A��</A>
+      <A HREF="scripting-tutorial.html">スクリプト処理のチュートリアル</A>
     <LI>
 <!--  <A HREF="#Starting">Invoking a script</A> -->
-      <A HREF="#Starting">�X�N���v�g�̌Ăяo����</A>
+      <A HREF="#Starting">スクリプトの呼び出し方</A>
     <LI>
 <!--  <A HREF="#Language">Scripting language</A> -->
-      <A HREF="#Language">�X�N���v�g����</A>
+      <A HREF="#Language">スクリプト言語</A>
       <UL>
 	<LI>
 <!--  	<A HREF="#variables">Built in variables</A> -->
-  	<A HREF="#variables">�g���ݕϐ�</A>
+  	<A HREF="#variables">組込み変数</A>
 	<LI>
 <!--  	<A HREF="#procedures">Built in procedures</A> -->
-  	<A HREF="#procedures">�g���ݎ葱��</A>
+  	<A HREF="#procedures">組込み手続き</A>
 	<LI>
 <!--  	<A HREF="#Example">Examples</A> -->
-  	<A HREF="#Example">��</A>
+  	<A HREF="#Example">例</A>
       </UL>
     <LI>
 <!--  <A HREF="scripting.html#Execute">The Execute Script dialog</A> -->
-      <A HREF="scripting.html#Execute">�u�X�N���v�g�����s�v�_�C�A���O</A>
+      <A HREF="scripting.html#Execute">「スクリプトを実行」ダイアログ</A>
     <LI>
 <!--  <A HREF="#menu">The Scripts menu</A> -->
-      <A HREF="#menu">�u�X�N���v�g�v���j���[</A>
+      <A HREF="#menu">「スクリプト」メニュー</A>
   </UL>
   <H2>
 <!--  <A NAME="Starting">Invoking scripts</A> -->
-      <A NAME="Starting">�X�N���v�g�̌Ăяo����</A>
+      <A NAME="Starting">スクリプトの呼び出し方</A>
   </H2>
   <P>
 <!--
   If you start fontforge with a script on the command line it will not put
   up any windows and it will exit when the script is done. -->
-  �X�N���v�g���w�肵�� FontForge ���R�}���h���C������N�������Ƃ��̓E�B���h�E�͕\�����ꂸ�A�X�N���v�g���I���������Ƀv���O�����̏I���ƂȂ�܂��B
+  スクリプトを指定して FontForge をコマンドラインから起動したときはウィンドウは表示されず、スクリプトが終了した時にプログラムの終了となります。
   <BLOCKQUOTE>
     <PRE>$ fontforge -script scriptfile.pe {fontnames}
 </PRE>
@@ -70,29 +70,29 @@
   (or wherever fontforge happens to reside on your system) then you can invoke
   the script just by typing<BR>
   <CODE>&nbsp; &nbsp; $ scriptfile.pe {fontnames}</CODE> -->
-  FontForge �́A�V�F���������I�ɃX�N���v�g��n���悤�ȃC���^�v���^�Ƃ��Ďg�����Ƃ��ł��܂��B
-  �X�N���v�g�t�@�C�������s�\�ɂȂ�悤��<BR>
+  FontForge は、シェルが自動的にスクリプトを渡すようなインタプリタとして使うこともできます。
+  スクリプトファイルが実行可能になるように<BR>
   <CODE>&nbsp; &nbsp; $ chmod +x scriptfile.pe</CODE><BR>
-  �Ƃ��āA�����̃t�@�C���̐擪�̍s��<BR>
+  として、それらのファイルの先頭の行に<BR>
   <CODE>&nbsp; &nbsp; #!/usr/local/bin/fontforge</CODE><BR>
-  (�܂��́A�V�X�e����� FontForge ���u����Ă���ǂ����ʂ̏ꏊ) �����������邱�Ƃɂ��A<BR>
+  (または、システム上で FontForge が置かれているどこか別の場所) を書き加えることにより、<BR>
   <CODE>&nbsp; &nbsp; $ scriptfile.pe {fontnames}</CODE><BR>
-  �Ƒł����ŃX�N���v�g���N���ł���悤�ɂȂ�܂��B
+  と打つだけでスクリプトを起動できるようになります。
   <P>
 <!--
   If you wish FontForge to read a script from stdin then you can use "-" as
   a "filename" for stdin. (If you build FontForge without X11 then fontforge
   will attempt to read a script file from <CODE>stdin</CODE> if none is given
   on the command line.) -->
-  FontForge �ɕW�����͂���X�N���v�g��ǂݍ��܂������ꍇ�́A�g-�h��W�����͂�\���t�@�C�����Ƃ��Ďg�p���邱�Ƃ��ł��܂��B
-  (���� FontForge �� X11 �����ō쐬�����ꍇ�A�R�}���h���C���ɉ����w�肵�Ȃ���΁AFontForge �̓X�N���v�g��W�����͂���ǂ����Ǝ��݂܂��B)
+  FontForge に標準入力からスクリプトを読み込ませたい場合は、“-”を標準入力を表すファイル名として使用することができます。
+  (もし FontForge を X11 無しで作成した場合、コマンドラインに何も指定しなければ、FontForge はスクリプトを標準入力から読もうと試みます。)
   <P>
 <!--
   You can also start a script from within FontForge with
   <CODE>File-&gt;Execute Script</CODE>, and you can use the Preference Dlg
   to define a set of frequently used scripts which can be invoked directly
   by menu. -->
-  �܂��AFontForge ���g�p���ɁA<CODE>�t�@�C��(<U>F</U>)</CODE>��<CODE>�X�N���v�g�����s(<U>X</U>)...</CODE> ���j���[��p���ăX�N���v�g���N�����邱�Ƃ��ł��܂����A�p�ɂɗp����X�N���v�g���v���t�@�����X�_�C�A���O�œo�^���ă��j���[���璼�ڋN���\�Ȃ悤�ɐݒ肷�邱�Ƃ��ł��܂��B
+  また、FontForge を使用中に、<CODE>ファイル(<U>F</U>)</CODE>→<CODE>スクリプトを実行(<U>X</U>)...</CODE> メニューを用いてスクリプトを起動することもできますし、頻繁に用いるスクリプトをプリファレンスダイアログで登録してメニューから直接起動可能なように設定することもできます。
   <P>
 <!--
   The scripting language provides access to much of the functionality found
@@ -100,45 +100,45 @@
   provide access to everything. (If you find a lack let me know, I may put
   it in for you). It does not provide commands for building up a glyph out
   of splines, instead it allows you to do high level modifications to glyphs. -->
-  �X�N���v�g����ɂ��A�t�H���g�\����ʂ̃��j���[�Ɍ�����@�\�̑������g�p���邱�Ƃ��ł��܂��B
-  ���݂̂Ƃ��� (�����������ł��傤��) �S�Ă̑ΏۂɃA�N�Z�X�ł���킯�ł͂���܂���B
-  (�������������Ă���@�\�����������҂ɒm�点�Ă��������B�����ǉ����܂��傤)�B
-  �X�N���v�g����͋Ȑ�����O���t��g�ݗ��Ă�R�}���h��񋟂��镨�ł͂Ȃ��A�O���t�ɑ΂��鍂���x���ȏC�����\�ɂ��邽�߂̕��ł��B
+  スクリプト言語により、フォント表示画面のメニューに見られる機能の多くを使用することができます。
+  現在のところ (将来もそうでしょうが) 全ての対象にアクセスできるわけではありません。
+  (もし何か欠けている機能があったら作者に知らせてください。それを追加しましょう)。
+  スクリプト言語は曲線からグリフを組み立てるコマンドを提供する物ではなく、グリフに対する高レベルな修正を可能にするための物です。
   <P>
 <!--
   If you set the environment variable <CODE>PFAEDIT_VERBOSE</CODE> (it doesn't
   need a value, just needs to be set) then FontForge will print scripts to
   stdout as it executes them. -->
-  ���ϐ� <CODE>PFAEDIT_VERBOSE</CODE> ����`����Ă���ꍇ (�l��ݒ肷��K�v�͂Ȃ��A��`���邾���ŏ\���ł�) FontForge �́A�X�N���v�g�����s���邲�Ƃɂ��̓��e��W���o�͂ɏ����o���܂��B
+  環境変数 <CODE>PFAEDIT_VERBOSE</CODE> が定義されている場合 (値を設定する必要はなく、定義するだけで十分です) FontForge は、スクリプトを実行するごとにその内容を標準出力に書き出します。
   <P>
   <P>
 <!--
   In general I envision this as being useful for things like taking a latin
   font and extending it to contain cyrillic glyphs. So the script might: -->
-  ��ʓI�Ɍ����āA��҂͂��̋@�\��Ⴆ�΃��e�������t�H���g����͂Ƃ��ăL���������̃O���t���܂ނ悤�Ɋg������悤�ȍ�Ƃɖ𗧂��Ƃ��v���`���Ă��܂��B���̏ꍇ�A�X�N���v�g�͂��̂悤�ȕ��ɂȂ�ł��傤:
+  一般的に言って、作者はこの機能を例えばラテン文字フォントを入力としてキリル文字のグリフを含むように拡張するような作業に役立つことを思い描いています。この場合、スクリプトはこのような物になるでしょう:
   <UL>
     <LI>
 <!--  Reencode the font -->
-      �t�H���g�̃R�[�h�ϊ����s���B
+      フォントのコード変換を行う。
     <LI>
 <!--  Place a reference to Latin "A" at Cyrillic "A" -->
-      ���e�������gA�h�ւ̎Q�Ƃ��L���������g�@�h�ɔz�u����
+      ラテン文字“A”への参照をキリル文字“А”に配置する
     <LI>
 <!--  Copy Latin "R" to Cyrillic "YA" -->
-      ���e�������gR�h���L���������g�`�h�ɃR�s�[����
+      ラテン文字“R”をキリル文字“Я”にコピーする
     <LI>
 <!--  Flip "YA" horizontally -->
-      �g�`�h�𐅕������ɔ��]����
+      “Я”を水平方向に反転する
     <LI>
 <!--  Correct its direction -->
-      �p�X�̌������C������
+      パスの向きを修正する
     <LI>
 <!--  ... and so forth -->
-      �c�c���X
+      ……等々
   </UL>
   <H2>
 <!--  Scripting <A NAME="Language">Language</A>-->
-      �X�N���v�g<A NAME="Language">����</A>
+      スクリプト<A NAME="Language">言語</A>
   </H2>
   <P>
 <!--
@@ -147,148 +147,148 @@
   file are identified as $1, $2, ... $n. $0 is the file name itself. $argc
   gives the number of arguments. $argv[&lt;expr&gt;] provides array access
   to the arguments. -->
-  �X�N���v�g�̍\���́AC �ƃV�F���R�}���h���������킹�����ɂ��Ȃ莗�Ă��܂��B
-  �e�t�@�C���͎葱���ɑΉ����܂��B
-  �V�F���X�N���v�g�Ɠ��l�ɁA�X�N���v�g�t�@�C���ɓn���ꂽ������
-  $1, $2, �c, $n �Ƃ������ʎq�ŗp���邱�Ƃ��ł��܂��B
-  $0 �̓X�N���v�g���ꎩ�g�ł��B
-  $argc �͈����̌���\���܂��B
-  $argv[&lt;��&gt;] �̌`�ŁA�R�}���h�̈�����z��Ƃ��ăA�N�Z�X���邱�Ƃ��ł��܂��B
+  スクリプトの構文は、C とシェルコマンドを混ぜ合わせた物にかなり似ています。
+  各ファイルは手続きに対応します。
+  シェルスクリプトと同様に、スクリプトファイルに渡された引数は
+  $1, $2, …, $n という識別子で用いることができます。
+  $0 はスクリプトそれ自身です。
+  $argc は引数の個数を表します。
+  $argv[&lt;式&gt;] の形で、コマンドの引数を配列としてアクセスすることができます。
   <P>
 <!--
   Terms can be -->
-  ���͈ȉ��̂����ꂩ����邱�Ƃ��ł��܂��B
+  項は以下のいずれかを取ることができます。
   <UL>
     <LI>
 <!--  A variable name (like "$1" or "i" or "@fontvar" or "_global")<BR>
       The scope of the variable depends on the initial character of its name. -->
-      �ϐ��� (�Ⴆ�΁g$1�h��gi�h��g@fontvar�h��g_global�h�̂悤��)<BR>
-      �ϐ��̃X�R�[�v�́A���O�� 1 �����ڂɂ���Č��܂�܂��B
+      変数名 (例えば“$1”や“i”や“@fontvar”や“_global”のような)<BR>
+      変数のスコープは、名前の 1 文字目によって決まります。
       <UL>
 	<LI>
 <!--  	A '$' signifies that it is a built-in variable. The user cannot create any
   	new variables beginning with '$'. Some, but not all, of these may be assigned
   	to. -->
-  	&lsquo;$&rsquo;�͑g���ݕϐ��������܂��B���[�U��&lsquo;$&rsquo;�Ŏn�܂�ϐ���V������邱�Ƃ͂ł��܂���B�����̈ꕔ (�S���ł͂���܂���) �́A�l�������邱�Ƃ��ł��܂��B
+  	&lsquo;$&rsquo;は組込み変数を示します。ユーザは&lsquo;$&rsquo;で始まる変数を新しく作ることはできません。それらの一部 (全部ではありません) は、値を代入することができます。
 	<LI>
 <!--  	A '_' signifies that the variable is global, it is always available. You
   	can use these to store context across different script files (or to access
   	data within nested script files). -->
-  	&lsquo;_&rsquo;�̓O���[�o���ϐ��������܂��B����͏�ɗ��p�\�ł��B�����́A�قȂ�X�N���v�g�t�@�C���Ԃ� (�܂��́A�l�X�g�����X�N���v�g�t�@�C������) ���ʂ̃R���e�L�X�g���i�[����̂ɗp���邱�Ƃ��ł��܂��B
+  	&lsquo;_&rsquo;はグローバル変数を示します。これは常に利用可能です。これらは、異なるスクリプトファイル間で (または、ネストしたスクリプトファイル内で) 共通のコンテキストを格納するのに用いることができます。
 	<LI>
 <!--  	A '@' signifies that the variable is associated with the font. Any two scripts
   	looking at the same font will have access to the same variables. -->
-  	&lsquo;@&rsquo;�́A�ϐ����t�H���g�ɌŗL�̕��ł��邱�Ƃ������܂��B�����t�H���g���Q�Ƃ��� 2 �̃X�N���v�g�͏�ɓ����ϐ��ɃA�N�Z�X���܂��B
+  	&lsquo;@&rsquo;は、変数がフォントに固有の物であることを示します。同じフォントを参照する 2 つのスクリプトは常に同じ変数にアクセスします。
 	<LI>
 <!--  	A variable which begins with a letter is a local variable. It is only meaningful
   	within the current script file. Nested script files may have different variables
   	with the same names. -->
-  	�p�����Ŏn�܂�ϐ��̓��[�J���ϐ��ł��B�����͌��݂̃X�N���v�g�t�@�C���̒��ł����Ӗ��������܂���B�l�X�g�����X�N���v�g�t�@�C���̒��ł͓������O�̈قȂ�ϐ����g�p���邱�Ƃ��ł��܂��B
+  	英文字で始まる変数はローカル変数です。それらは現在のスクリプトファイルの中でしか意味を持ちません。ネストしたスクリプトファイルの中では同じ名前の異なる変数を使用することができます。
       </UL>
     <LI>
 <!--  an integer expressed in decimal, hex or octal -->
-      10 �i, 8 �i�܂��� 16 �i�\�L�̐���
+      10 進, 8 進または 16 進表記の整数
     <LI>
 <!--  a unicode code point (which has a prefix of "0u" or "0U" and is followed
       by a string of hex digits. This is only used by the select command. -->
-      Unicode �̃R�[�h�|�C���g (�v���t�B�N�X�g0u�h�܂��́g0U�h�̌��� 16 �i���\���Ȃ�������)�B����� Select() �R�}���h�ł̂ݎg�����Ƃ��ł��܂��B
+      Unicode のコードポイント (プレフィクス“0u”または“0U”の後ろに 16 進数表をつないだもの)。これは Select() コマンドでのみ使うことができます。
     <LI>
 <!--  a real number (in "C" locale format - - "." as the decimal point character)-->
-      ���� (�gC�h���P�[���̏��� �\ �����_�́g.�h)
+      実数 (“C”ロケールの書式 — 小数点は“.”)
     <LI>
 <!--  A string which may be enclosed in either double or single quotes. String
 	tokens are limited to 256 bytes. "\n" can be used to represent a newline
 	character. (If you need longer strings use the concatenation operator). -->
-      ��d���p���܂��͈�d���p���ň͂܂ꂽ������B������g�[�N���� 256 �o�C�g�܂łɐ�������Ă��܂��B���s������\���̂� "\n" ���g�p���邱�Ƃ��ł��܂��B(��蒷�������񂪕K�v�ȏꍇ�A�A�����Z�q���g�p���Ă�������)�B
+      二重引用符または一重引用符で囲まれた文字列。文字列トークンは 256 バイトまでに制限されています。改行文字を表すのに "\n" を使用することができます。(より長い文字列が必要な場合、連結演算子を使用してください)。
     <LI>
 <!--  a procedure to call or file to invoke. -->
-      �葱���̌Ăяo���܂��͎��s����t�@�C��
+      手続きの呼び出しまたは実行するファイル
     <LI>
 <!--  an expression within parentheses -->
-      ���ʂɈ͂܂ꂽ��
+      括弧に囲まれた式
     <LI>
 <!--  a series of expressions (separated by commas) within brackets, as <CODE>[1,
       2, 3, 5, 8]</CODE>, used to create an array. -->
-      (�J���}�ŋ�؂�ꂽ) ���̗���p���ʂɓ��ꂽ���́B�Ⴆ�΁A<CODE>[1, 2, 3, 5, 8]</CODE> �̂悤�ɁB�z��̍쐬�Ɏg�p����܂��B
+      (カンマで区切られた) 式の列を角括弧に入れたもの。例えば、<CODE>[1, 2, 3, 5, 8]</CODE> のように。配列の作成に使用されます。
   </UL>
   <P>
 <!--   There are three different comments supported: -->
-  �ȉ��� 3 ��ނ̃R�����g�`�����T�|�[�g����Ă��܂�:
+  以下の 3 種類のコメント形式がサポートされています:
   <UL>
     <LI>
 <!--  Starting with a "#" character and proceeding to end of line -->
-      �����g#�h����s���܂�
+      文字“#”から行末まで
     <LI>
 <!--  Starting with "//" and proceeding to end of line -->
-      �g//�h����s���܂�
+      “//”から行末まで
     <LI>
 <!--  Starting with "/*" and proceeding to "*/" -->
-      �g/*�h����g*/�h�܂�
+      “/*”から“*/”まで
   </UL>
   <P>
 <!--
   <A NAME="Expressions">Expressions</A> are similar to those in C, a few operators
   have been omitted, a few added from shell scripts. Operator precedence has
   been simplified slightly. So operators (and their precedences) are: -->
-  <A NAME="Expressions">��</A>�� C �Ƃقړ����ł����A��A�O�̉��Z�q�͏Ȃ���A��A�O���V�F���X�N���v�g����ǉ�����Ă��܂��B���Z�q�̗D�揇�ʂ͂킸���ɒP��������Ă��܂��B
-  ���̌��ʁA���Z�q (�Ƃ����̗D�揇��) �͈ȉ��̂悤�ɂȂ��Ă��܂�:
+  <A NAME="Expressions">式</A>は C とほぼ同じですが、二、三の演算子は省かれ、二、三がシェルスクリプトから追加されています。演算子の優先順位はわずかに単純化されています。
+  その結果、演算子 (とそれらの優先順位) は以下のようになっています:
   <UL>
     <LI>
 <!--  unary operators (+, -, !, ~, ++ (prefix and postfix), --(prefix and postfix),
       () (procedure call), [] (array index), :h, :t, :r, :e<BR> -->
-      �P�����Z�q (+, -, !, ~, ++ (�O�u����ь�u), -- (�O�u����ь�u),
-      () (�葱���Ăяo��), [] (�z��C���f�b�N�X), :h, :t, :r, :e<BR>
+      単項演算子 (+, -, !, ~, ++ (前置および後置), -- (前置および後置),
+      () (手続き呼び出し), [] (配列インデックス), :h, :t, :r, :e<BR>
 <!--  Most of these are as expected in C, the last four are borrowed from shell
       scripts and are applied to strings -->
-      �����̖w��ǂ́AC �Ɠ����Ӗ��ł��B�Ō�� 4 �̓V�F���X�N���v�g����؂�Ă������ŁA�����Ɉȉ��̂悤�ɓK�p����܂��B
+      これらの殆んどは、C と同じ意味です。最後の 4 個はシェルスクリプトから借りてきた物で、数式に以下のように適用されます。
       <UL>
 	<LI>
 <!--  	:h gives the head (directory) of a pathspec -->
-  	:h �́A�p�X�w��̐擪���� (�f�B���N�g��) ��Ԃ��܂��B
+  	:h は、パス指定の先頭部分 (ディレクトリ) を返します。
 	<LI>
 <!--  	:t gives the tail (filename) of a pathspec -->
-  	:t �́A�p�X�w��̖��� (�t�@�C����) ��Ԃ��܂��B
+  	:t は、パス指定の末尾 (ファイル名) を返します。
 	<LI>
 <!--  	:r gives the pathspec without the extension (if any) -->
-  	:r �́A�p�X�w�肩��g���q (�������) ����菜�������̂�Ԃ��܂��B
+  	:r は、パス指定から拡張子 (があれば) を取り除いたものを返します。
 	<LI>
 <!--  	:e gives the extension -->
-  	:e �́A�g���q��Ԃ��܂��B
+  	:e は、拡張子を返します。
       </UL>
     <LI>
 <!--  *, /, % (binary multiplicative operators) -->
-      *, /, % (�񍀏�@���Z�q)
+      *, /, % (二項乗法演算子)
     <LI>
 <!--  +, - (binary arithmetic operators)<BR> -->
-      +, - (�񍀎Z�p���Z�q)<BR>
+      +, - (二項算術演算子)<BR>
 <!--  If the first operand of + is a string then + will be treated as concatenation
       rather than addition. If the second operand is a number it will be converted
       to a string (decimal representation) and then concatenated. -->
-      + �̍ŏ��̈�����������Ȃ�΁A+ �͉��Z�ł͂Ȃ�������A���Ƃ��ē����܂��B2 �Ԗڂ̕����񂪐��Ȃ當���� (10 �i�\�L) �ɕϊ�����Ă��猋������܂��B
+      + の最初の引数が文字列ならば、+ は加算ではなく文字列連結として働きます。2 番目の文字列が数なら文字列 (10 進表記) に変換されてから結合されます。
     <LI>
 <!--  ==, !=, &gt;, &lt;, &gt;=, &lt;= (comparison operators, may be applied to
       either two integers or two strings) -->
-      ==, !=, &gt;, &lt;, &gt;=, &lt;= (��r���Z�q�B2 �̐����܂��� 2 �̕�����ɓK�p�ł��܂�)
+      ==, !=, &gt;, &lt;, &gt;=, &lt;= (比較演算子。2 個の整数または 2 個の文字列に適用できます)
     <LI>
 <!--  &amp;&amp;, &amp; (logical and, bitwise and. (logical and will do short circuit
       evaluation)) -->
-      &amp;&amp;, &amp; (�_���I AND �ƃr�b�g���� AND�B(�_���I AND �́A�Z���]�����s���܂�))
+      &amp;&amp;, &amp; (論理的 AND とビット毎の AND。(論理的 AND は、短絡評価を行います))
     <LI>
 <!--  ||, |, ^ (logical or, bitwise or, bitwise exclusive or (logical or will do
       short circuit evaluation)) -->
-      ||, |, ^ (�_���I OR �ƃr�b�g���� OR, �r���I�_�� OR�B(�_���I OR �́A�Z���]�����s���܂�))
+      ||, |, ^ (論理的 OR とビット毎の OR, 排他的論理 OR。(論理的 OR は、短絡評価を行います))
     <LI>
 <!--  =, +=, -=, *=, /=, %= (assignment operators as in C. The += will act as
       concatenation if the first operand is a string.) -->
-      =, +=, -=, *=, /=, %= (C �Ɠ��l�̑�����Z�q�B�ŏ��̈�����������ł���ꍇ�A+= �͕�������������܂�)
+      =, +=, -=, *=, /=, %= (C と同様の代入演算子。最初の引数が文字列である場合、+= は文字列を結合します)
   </UL>
   <P>
 <!--
   Note there is no comma operator, and no "?:" operator. The precedence of
   "and" and "or" has been simplified, as has that of the assignment operators.
   -->
-  �J���}���Z�q�A"?:" ���Z�q�����݂��Ȃ����Ƃɒ��ӂ��Ă��������B
-  �gAND�h,�gOR�h�ƁA������Z�q�̗D�揇�ʂ͒P��������Ă��܂��B
+  カンマ演算子、"?:" 演算子が存在しないことに注意してください。
+  “AND”,“OR”と、代入演算子の優先順位は単純化されています。
   <P>
 <!--
   Procedure calls may be applied either to a name token, or to a string. If
@@ -299,13 +299,13 @@
   general strings to specify filenames). If the procedure name does not contain
   a directory then it is assumed to be in the same directory as the current
   script file. At most 25 arguments can be passed to a procedure. -->
-  �葱���Ăяo���͖��O�g�[�N���܂��͕�����ɑ΂��ēK�p���邱�Ƃ��ł��܂��B
-  ���O�܂��͕����� FontForge �̓����葱���̂ǂꂩ�ƔF�����ꂽ�ꍇ�A���ꂪ���s����܂��B����ȊO�̏ꍇ�͎��s����t�@�C���̖��O�ł���ƌ��Ȃ���A���̃t�@�C�����Ăяo����܂� (�t�@�C�����ɂ́A�g�[�N���Ƃ��Ďg�p�ł��Ȃ��������܂ނ��Ƃ��ł��邽�߁A�t�@�C�������w�肷�邽�߂ɕ������ʂ��w��ł���̗̂͊v�ł�)�B
-  �葱�������f�B���N�g�����܂܂Ȃ��ꍇ�A���݂̃X�N���v�g�t�@�C���Ɠ����f�B���N�g���ɂ��镨�ƌ��Ȃ���܂��B�葱���ɓn�����Ƃ̂ł�������͍ő�� 25 �ł��B
+  手続き呼び出しは名前トークンまたは文字列に対して適用することができます。
+  名前または文字列が FontForge の内部手続きのどれかと認識された場合、それが実行されます。それ以外の場合は実行するファイルの名前であると見なされ、そのファイルが呼び出されます (ファイル名には、トークンとして使用できない文字を含むことができるため、ファイル名を指定するために文字列一般を指定できるのは肝要です)。
+  手続き名がディレクトリを含まない場合、現在のスクリプトファイルと同じディレクトリにある物と見なされます。手続きに渡すことのできる引数は最大で 25 個です。
   <P>
 <!--
   Arrays are passed by reference, strings and integers are passed by value. -->
-  �z��͎Q�Ɠn������܂��B������Ɛ����͒l�n������܂��B
+  配列は参照渡しされます。文字列と整数は値渡しされます。
   <P>
 <!--
   Variables may be created by assigning a value to them (only with the "="),
@@ -313,18 +313,18 @@
   <CODE>&nbsp; &nbsp; i=3</CODE><BR>
   could be used to define "i" as a variable. Variables are limited in scope
   to the current file, they will not be inherited by called procedures. -->
-  �ϐ��́A�l�������邱�Ƃɂ���� (�g=�h�݂̂�) �쐬���邱�Ƃ��ł��܂��B
-  �ł�����<BR>
+  変数は、値を代入することによって (“=”のみで) 作成することができます。
+  ですから<BR>
   <CODE>&nbsp; &nbsp; i=3</CODE><BR>
-  �ɂ���āA�gi�h�̕ϐ���`���s�����Ƃ��ł��܂��B�ϐ��̃X�R�[�v�͌��݂̃t�@�C���݂̂Ɍ��肳��Ă���̂ŁA�Ăяo���ꂽ�葱���ɂ͈����p����܂���B
+  によって、“i”の変数定義を行うことができます。変数のスコープは現在のファイルのみに限定されているので、呼び出された手続きには引き継がれません。
   <P>
 <!--
   A statement may be -->
-  ���͈ȉ��̂����ꂩ���Ƃ邱�Ƃ��ł��܂��B
+  文は以下のいずれかをとることができます。
   <UL>
     <LI>
 <!--  an expression-->
-      1 �̎�
+      1 個の式
     <LI>
 <!--  <CODE>if ( expression )<BR>
       &nbsp; &nbsp; statements<BR>
@@ -333,30 +333,30 @@
       [else<BR>
       &nbsp; &nbsp; statements]<BR>
       endif</CODE>-->
-      <CODE>if ( �� )<BR>
-      &nbsp; &nbsp; ���̕���<BR>
-      {elseif ( �� )<BR>
-      &nbsp; &nbsp; ���̕���}<BR>
+      <CODE>if ( 式 )<BR>
+      &nbsp; &nbsp; 文の並び<BR>
+      {elseif ( 式 )<BR>
+      &nbsp; &nbsp; 文の並び}<BR>
       [else<BR>
-      &nbsp; &nbsp; ���̕���]<BR>
+      &nbsp; &nbsp; 文の並び]<BR>
       endif</CODE>
     <LI>
 <!--  <CODE>while ( expression )<BR>
       &nbsp; &nbsp; statements<BR>
       endloop</CODE>-->
-      <CODE>while ( �� )<BR>
-      &nbsp; &nbsp; ���̕���<BR>
+      <CODE>while ( 式 )<BR>
+      &nbsp; &nbsp; 文の並び<BR>
       endloop</CODE>
     <LI>
 <!--  <CODE>foreach<BR>
       &nbsp; &nbsp; statements<BR>
       endloop</CODE>-->
       <CODE>foreach<BR>
-      &nbsp; &nbsp; ���̕���<BR>
+      &nbsp; &nbsp; 文の並び<BR>
       endloop</CODE>
     <LI>
 <!--  <CODE>return [ expression ]</CODE>-->
-      <CODE>return [ �� ]</CODE>
+      <CODE>return [ 式 ]</CODE>
     <LI>
       <CODE>shift</CODE>
   </UL>
@@ -374,27 +374,27 @@
   within a foreach statement).<BR>
   Statements are terminated either by a new line (you can break up long lines
   with backslash newline) or a semicolon. -->
-  C �Ɠ��l�ɁA��[���ƂȂ鎮�͐^�ł���ƒ�`����Ă��܂��B<BR>
-  return ���́A���̌��ɕԂ�l (��) ���w�肷�邩�A�܂��͎葱���͉����l��Ԃ����� return �ŏI�����邱�Ƃ��\�ł��B<BR>
-  shift ���̓V�F���X�N���v�g����q�؂����\���ŁA�S�Ă̈�����
-  1 ���V�t�g���܂��B
-  (���� 0 �̃X�N���v�g�t�@�C�����͕ύX����܂���B)<BR>
-  foreach ���́A�J�����g�t�H���g�����݂��鎞�̂ݎg�p�ł��܂��B
-  foreach ���́A�I�������O���t�Q�Ɋ܂܂��e�O���t�ɑ΂��� 1 �񂸂��s����܂��B
-  ���̓����ł́A��x�� 1 �̃O���t�݂̂��I������܂��B
-  ���s����������ƁA�ŏ��ɑI������Ă����O���t�Q�����ʂ�ɖ߂���܂��B
-  (�x��: foreach ���̓����Ńt�H���g�̃R�[�h�ϊ����s���Ă͂����܂���)�B<BR>
-  ���͉��s (���s�̑O�Ƀo�b�N�X���b�V����u�����Ƃɂ���āA�����s�𕪊����邱�Ƃ��ł��܂�) �܂��̓Z�~�R�����Ŋ������܂��B
+  C と同様に、非ゼロとなる式は真であると定義されています。<BR>
+  return 文は、その後ろに返り値 (式) を指定するか、または手続きは何も値を返さずに return で終了することも可能です。<BR>
+  shift 文はシェルスクリプトから拝借した構文で、全ての引数を
+  1 個ずつシフトします。
+  (引数 0 のスクリプトファイル名は変更されません。)<BR>
+  foreach 文は、カレントフォントが存在する時のみ使用できます。
+  foreach 文は、選択したグリフ群に含まれる各グリフに対して 1 回ずつ実行されます。
+  文の内部では、一度に 1 個のグリフのみが選択されます。
+  実行が完了すると、最初に選択されていたグリフ群が元通りに戻されます。
+  (警告: foreach 文の内部でフォントのコード変換を行ってはいけません)。<BR>
+  文は改行 (改行の前にバックスラッシュを置くことによって、長い行を分割することができます) またはセミコロンで完結します。
   <P>
 <!--
   Trivial example: -->
-  �܂�Ȃ���:
+  つまらない例:
   <BLOCKQUOTE>
 <!--<PRE>i=0;	#semicolon is not needed here, but it's ok -->
-    <PRE>i=0;	# ���̃Z�~�R�����͕s�v�ł����A�����Ă��\���܂���
+    <PRE>i=0;	# このセミコロンは不要ですが、あっても構いません
 while ( i&lt;3 )
-   if ( i==1 /* <!--pointless comment -->���Ӗ��ȃR�����g */ )
-	Print( "Got to one" )	// <!--Another comment-->������R�����g
+   if ( i==1 /* <!--pointless comment -->無意味なコメント */ )
+	Print( "Got to one" )	// <!--Another comment-->もう一つコメント
    endif
    ++i
 endloop
@@ -409,187 +409,187 @@ endloop
   New() and Close() commands all change the current font. FontForge also maintains
   a list of all fonts that are currently open. This list is in no particular
   order. The list starts with $firstfont. -->
-  FontForge �ɂ́u�J�����g�t�H���g�v�Ƃ����T�O������܂��\�\�قڑS�ẴR�}���h�̓J�����g�t�H���g�݂̂��Q�Ƃ��܂� (�ł�����A�J�����g�t�H���g����`����Ă���K�v������܂�)�B
-  <CODE>�t�@�C��(<U>F</U>)</CODE>��<CODE>�X�N���v�g�����s(<U>X</U>)...</CODE> �ŃX�N���v�g���N�������ꍇ�A���ݕҏW���̃t�H���g���J�����g�t�H���g�ƂȂ�A�����łȂ���Ώ�����Ԃł̓J�����g�t�H���g�͑��݂��܂���B
-  �J�����g�t�H���g��ύX����ɂ� Open() �� New(), Close() �̊e�R�}���h���g���܂��B
-  FontForge �́A���݊J���ꂽ�t�H���g�̃��X�g���ێ����Ă��܂��B
-  ���̃��X�g�̕��я��ɂ͂Ƃ��ɈӖ��͂���܂���B
-  ���X�g���̍ŏ��̃t�H���g�� $firstfont �ł��B
+  FontForge には「カレントフォント」という概念があります——ほぼ全てのコマンドはカレントフォントのみを参照します (ですから、カレントフォントが定義されている必要があります)。
+  <CODE>ファイル(<U>F</U>)</CODE>→<CODE>スクリプトを実行(<U>X</U>)...</CODE> でスクリプトを起動した場合、現在編集中のフォントがカレントフォントとなり、そうでなければ初期状態ではカレントフォントは存在しません。
+  カレントフォントを変更するには Open() と New(), Close() の各コマンドを使います。
+  FontForge は、現在開かれたフォントのリストも保持しています。
+  このリストの並び順にはとくに意味はありません。
+  リスト内の最初のフォントは $firstfont です。
   <P>
 <!--
   Similarly when working with cid keyed fonts, FontForge works in the "current
   sub font", and most commands refer to this font. The CIDChangeSubFont() command
   can alter that. -->
-  ���l�ɁACID �L�[�w��t�H���g�𑀍삷�鎞�ɂ́AFontForge �̑���Ώۂ́u���݂̃T�u�t�H���g�v�ł���A�قƂ�ǂ̃R�}���h�͂��̃t�H���g���Q�Ƃ��܂��B�����ύX����̂ɂ� CIDChageSubFont() ���g�����Ƃ��ł��܂��B
+  同様に、CID キー指定フォントを操作する時には、FontForge の操作対象は「現在のサブフォント」であり、ほとんどのコマンドはそのフォントを参照します。それを変更するのには CIDChageSubFont() を使うことができます。
   <P>
 <!--
   All builtin <A NAME="variables">variables</A> begin with "$", you may not
   create any variables that start with "$" yourself (though you may assign
   to (some) already existing ones) -->
-  �S�Ă̑g����<A NAME="variables">�ϐ�</A> �́g$�h�Ŏn�܂�̂ŁA�����ŐV�����g$�h�Ŏn�܂�ϐ�����邱�Ƃ͂ł��܂��� (�����̕ϐ� (�̈ꕔ) �ɒl�������邱�Ƃ͂ł��܂���)�B
+  全ての組込み<A NAME="variables">変数</A> は“$”で始まるので、自分で新しく“$”で始まる変数を作ることはできません (既存の変数 (の一部) に値を代入することはできますが)。
   <UL>
     <LI>
 <!--  <CODE>$0 </CODE>the current script filename -->
-      <CODE>$0 </CODE>���ݎ��s���̃X�N���v�g�t�@�C���̖��O
+      <CODE>$0 </CODE>現在実行中のスクリプトファイルの名前
     <LI>
 <!--  <CODE>$1 </CODE>the first argument to the script file -->
-      <CODE>$1 </CODE>�X�N���v�g�t�@�C���ɓn���ꂽ�ŏ��̈���
+      <CODE>$1 </CODE>スクリプトファイルに渡された最初の引数
     <LI>
 <!--  <CODE>$2 </CODE>the second argument to the script file -->
-      <CODE>$2 </CODE>�X�N���v�g�t�@�C���ɓn���ꂽ 2 �Ԗڂ̈���
+      <CODE>$2 </CODE>スクリプトファイルに渡された 2 番目の引数
     <LI>
       ...
     <LI>
 <!--  <CODE>$argc</CODE> the number of arguments passed to the script file (this
       will always be at least 1 as $0 is always present) -->
-      <CODE>$argc</CODE> �X�N���v�g�t�@�C���ɓn���ꂽ�����̌� ($0 �͏�ɑ��݂���̂ŁA
-      �ŏ��l�� 1 �ƂȂ�܂�)
+      <CODE>$argc</CODE> スクリプトファイルに渡された引数の個数 ($0 は常に存在するので、
+      最小値は 1 となります)
     <LI>
 <!--  <CODE>$argv </CODE>allows you to access the array of all the arguments -->
-      <CODE>$argv </CODE>�ɂ��A�S�Ă̈�����z��Ƃ��ăA�N�Z�X���邱�Ƃ��ł��܂�
+      <CODE>$argv </CODE>により、全ての引数を配列としてアクセスすることができます
     <LI>
 <!--  <CODE>$curfont </CODE>the name of the filename in which the current font
       resides -->
-      <CODE>$curfont </CODE>�J�����g�t�H���g���܂܂�Ă���t�@�C���̖��O
+      <CODE>$curfont </CODE>カレントフォントが含まれているファイルの名前
     <LI>
 <!--  <CODE>$firstfont </CODE>the name of the filename of the font which is first
       on the font list (Can be used by Open()), if there are no fonts loaded this
       returns an empty string. This can be used to determine if any font at all
       is loaded into fontforge. -->
       <CODE>$firstfont </CODE>
-      �t�H���g���X�g (Open() �ɂ��쐬�\�ł�) �̍ŏ��Ɉʒu����t�H���g�̃t�@�C�����B
-      �t�H���g��ǂݍ���ł��Ȃ���΁A���̒l�͋󕶎���ƂȂ�܂��B
-      ���̒l�ɂ���āAFontForge ���t�H���g��ǂݍ��ݍς݂��ǂ����𔻕ʂł��܂��B
+      フォントリスト (Open() により作成可能です) の最初に位置するフォントのファイル名。
+      フォントを読み込んでいなければ、この値は空文字列となります。
+      この値によって、FontForge がフォントを読み込み済みかどうかを判別できます。
     <LI>
 <!--  <CODE>$nextfont </CODE>the name of the filename of the font which follows
       the current font on the list (or the empty string if the current font is
       the last one on the list) -->
-      <CODE>$nextfont </CODE>���X�g���ŃJ�����g�t�H���g�̎��Ɉʒu����t�@�C���̖��O�B
-      (�J�����g�t�H���g�����X�g�̍Ō�ł���ꍇ�́A�󕶎���)
+      <CODE>$nextfont </CODE>リスト内でカレントフォントの次に位置するファイルの名前。
+      (カレントフォントがリストの最後である場合は、空文字列)
     <LI>
 <!--  <CODE>$fontchanged</CODE> returns 1 if the current font has changed, 0 if
       it has not changed since it was read in (or saved). -->
-      <CODE>$fontchanged </CODE>�J�����g�t�H���g���ύX����Ă���� 1, 
-      �t�H���g��ǂݍ���ł��� (�܂��͕ۑ����Ă���) �ύX��������� 0�B
+      <CODE>$fontchanged </CODE>カレントフォントが変更されていれば 1, 
+      フォントを読み込んでから (または保存してから) 変更が無ければ 0。
     <LI>
 <!--  <CODE>$fontname</CODE> the name contained in the postscript FontName field-->
-      <CODE>$fontname </CODE>postscript �� FontName �t�B�[���h�Ɋ܂܂�閼�O
+      <CODE>$fontname </CODE>postscript の FontName フィールドに含まれる名前
     <LI>
 <!--  <CODE>$familyname </CODE>the name contained in the postscript FamilyName
       field -->
-      <CODE>$familyname </CODE>postscript �� FamilyName �t�B�[���h�Ɋ܂܂�閼�O
+      <CODE>$familyname </CODE>postscript の FamilyName フィールドに含まれる名前
     <LI>
 <!--  <CODE>$fullname </CODE>the name contained in the postscript FullName field-->
-      <CODE>$fullname </CODE>postscript �� FullName �t�B�[���h�Ɋ܂܂�閼�O
+      <CODE>$fullname </CODE>postscript の FullName フィールドに含まれる名前
     <LI>
 <!--  <CODE>$fondname </CODE>if set this name indicates what FOND the current font
       should be put in under Generate Mac Family.-->
-      <CODE>$fondname </CODE>���ꂪ�Z�b�g����Ă���ꍇ�A�J�����g�t�H���g�� <CODE>Mac�t�@�~���[���o��(<U>F</U>)</CODE> �ŏo�͂����Ƃ��� FOND �̖��O
+      <CODE>$fondname </CODE>これがセットされている場合、カレントフォントを <CODE>Macファミリーを出力(<U>F</U>)</CODE> で出力したときの FOND の名前
     <LI>
 <!--  <CODE>$weight </CODE>the name contained in the postscript Weight field-->
-      <CODE>$weight </CODE>postscript �� Weight �t�B�[���h�Ɋ܂܂�閼�O
+      <CODE>$weight </CODE>postscript の Weight フィールドに含まれる名前
     <LI>
 <!--  <CODE>$copyright </CODE>the name contained in the postscript Notice field-->
-      <CODE>$copyright </CODE>postscript �� Notice �t�B�[���h�Ɋ܂܂�閼�O
+      <CODE>$copyright </CODE>postscript の Notice フィールドに含まれる名前
     <LI>
 <!--  <CODE>$filename </CODE>the name of the file containing the font.-->
-      <CODE>$filename </CODE>�t�H���g���܂܂��t�@�C���̖��O
+      <CODE>$filename </CODE>フォントが含まれるファイルの名前
     <LI>
 <!--  <CODE>$fontversion</CODE> the string containing the font's version-->
-      <CODE>$fontversion </CODE>�t�H���g�̃o�[�W����������������
+      <CODE>$fontversion </CODE>フォントのバージョンを示す文字列
     <LI>
 <!--  <CODE>$cidfontname </CODE>returns the fontname of the top-level cid-keyed
       font (or the empty string if there is none)<BR>
       Can be used to detect if this is a cid keyed font. -->
-      <CODE>$cidfontname </CODE>�̓g�b�v���x���� CID-Keyed �t�H���g�̖��O
-      (���݂��Ȃ��ꍇ�͋󕶎���) ��Ԃ��܂��B<BR>
-      �t�H���g�� CID-Keyed �t�H���g�ł���̔��ʂɗ��p�ł��܂��B
+      <CODE>$cidfontname </CODE>はトップレベルの CID-Keyed フォントの名前
+      (存在しない場合は空文字列) を返します。<BR>
+      フォントが CID-Keyed フォントであるの判別に利用できます。
     <LI>
 <!--  <CODE>$cidfamilyname, $cidfullname, $cidweight, $cidcopyright </CODE>similar
       to above -->
-      <CODE>$cidfamilyname, $cidfullname, $cidweight, $cidcopyright </CODE>��L�̊e���ڂƓ��l�ł��B
+      <CODE>$cidfamilyname, $cidfullname, $cidweight, $cidcopyright </CODE>上記の各項目と同様です。
     <LI>
 <!--  <CODE>$mmcount </CODE>returns 0 for non multiple master fonts, returns the
       number of instances in a multiple master font. -->
-      <CODE>$mmcount </CODE>�}���`�v���}�X�^�[�t�H���g�Ɋ܂܂��C���X�^���X�̌� (�}���`�v���}�X�^�[�t�H���g�łȂ��ꍇ�� 0)
+      <CODE>$mmcount </CODE>マルチプルマスターフォントに含まれるインスタンスの個数 (マルチプルマスターフォントでない場合は 0)
     <LI>
 <!--  <CODE>$italicangle </CODE>the value of the postscript italic angle field -->
-      <CODE>$italicangle </CODE>PostScript �� italic angle �t�B�[���h�̒l
+      <CODE>$italicangle </CODE>PostScript の italic angle フィールドの値
     <LI>
 <!--  <CODE>$curcid </CODE>returns the fontname of the current font-->
-      <CODE>$curcid </CODE>�J�����g�t�H���g�̃t�H���g����Ԃ��܂��B
+      <CODE>$curcid </CODE>カレントフォントのフォント名を返します。
     <LI>
 <!--  <CODE>$firstcid </CODE>returns the fontname of the first font within this
       cid font-->
-      <CODE>$firstcid </CODE>���݂� CID �t�H���g�Ɋ܂܂��ŏ��̃t�H���g�̖��O��Ԃ��܂��B
+      <CODE>$firstcid </CODE>現在の CID フォントに含まれる最初のフォントの名前を返します。
     <LI>
 <!--  <CODE>$nextcid </CODE>returns the fontname of the next font within this cid
       font (or the empty string if the current sub-font is the last)-->
-      <CODE>$nextcid </CODE>���݂� CID �t�H���g�Ɋ܂܂�鎟�̃t�H���g�̖��O (���݂̃T�u�t�H���g���Ō�� 1 �ł���ꍇ�͋󕶎���) ��Ԃ��܂�
+      <CODE>$nextcid </CODE>現在の CID フォントに含まれる次のフォントの名前 (現在のサブフォントが最後の 1 個である場合は空文字列) を返します
     <LI>
 <!--  <CODE>$macstyle </CODE>returns the value of the macstyle field (a set of
       bits indicating whether the font is bold, italic, condensed, etc.)-->
-      <CODE>$macstyle </CODE>MacStyle �t�B�[���h (�t�H���g���{�[���h�E�C�^���b�N�E�R���f���X�g���ł��邩�ǂ����������r�b�g�̏W�܂�) ��Ԃ��܂��B
+      <CODE>$macstyle </CODE>MacStyle フィールド (フォントがボールド・イタリック・コンデンスト等であるかどうかを示すビットの集まり) を返します。
     <LI>
 <!--  <CODE>$bitmaps </CODE>returns an array containing all bitmap pixelsizes generated
       for this font. (If the font database contains greymaps then they will be
       indicated in the array as
       <CODE>(&lt;BitmapDepth&gt;&lt;&lt;16)|&lt;PixelSize&gt;</CODE>)-->
-      <CODE>$bitmaps </CODE>���̃t�H���g�ɂ����č쐬���ꂽ�r�b�g�}�b�v�̃s�N�Z���T�C�Y��S�Ċ܂ޔz���Ԃ��܂� 
-      (�t�H���g�f�[�^�x�[�X�ɃO���C�}�b�v���܂܂��ꍇ�A���̒l��
+      <CODE>$bitmaps </CODE>このフォントにおいて作成されたビットマップのピクセルサイズを全て含む配列を返します 
+      (フォントデータベースにグレイマップが含まれる場合、その値は
       <CODE>(&lt;BitmapDepth&gt;&lt;&lt;16)|&lt;PixelSize&gt;</CODE> 
-      �Ƃ����z��ŕ\����܂�)�B
+      という配列で表されます)。
      <LI>
 <!--  <CODE>$order </CODE>returns an integer containing either 2 (for truetype
       fonts) or 3 (for postscript fonts). This indicates whether the font uses
       quadratic or cubic splines.
-      <CODE>$order</CODE> �� 2 (TrueType �t�H���g�̏ꍇ) �܂��� 3 (PostScript �t�H���g�̏ꍇ) �̂ǂ��炩�̐����l��Ԃ��܂��B����́A�t�H���g�� 2 ���X�v���C���� 3 ���X�v���C���̂ǂ�����g�p���Ă��邩��\���܂��B
+      <CODE>$order</CODE> は 2 (TrueType フォントの場合) または 3 (PostScript フォントの場合) のどちらかの整数値を返します。これは、フォントが 2 次スプラインと 3 次スプラインのどちらを使用しているかを表します。
     <LI>
 <!--  <CODE>$em</CODE> returns the number of em-units used by the font. -->
-      <CODE>$em</CODE> �̓t�H���g���g�p���� em ���j�b�g�̑傫����Ԃ��܂��B
+      <CODE>$em</CODE> はフォントが使用する em ユニットの大きさを返します。
     <LI>
 <!--  <CODE>$ascent </CODE>returns the ascent of the font -->
-      <CODE>$ascent</CODE> �̓t�H���g�̍�����Ԃ��܂��B
+      <CODE>$ascent</CODE> はフォントの高さを返します。
     <LI>
 <!--  <CODE>$descent </CODE>returns the descent of the font. -->
-      <CODE>$descent</CODE> �̓t�H���g�̐[����Ԃ��܂��B
+      <CODE>$descent</CODE> はフォントの深さを返します。
     <LI>
 <!--  <CODE>$selection</CODE> returns an array containing one entry for each glyph
       in the current font indicating whether that glyph is selected or not
       (0=&gt;not, 1=&gt;selected) -->
-      <CODE>$selection</CODE> �J�����g�t�H���g�̊e�O���t�� 1 ���ڂɑΉ����A���̃O���t���I������Ă��邩�ۂ� (0=&gt;��I��, 1=&gt;�I��)�������z���Ԃ��܂��B
+      <CODE>$selection</CODE> カレントフォントの各グリフが 1 項目に対応し、そのグリフが選択されているか否か (0=&gt;非選択, 1=&gt;選択)を示す配列を返します。
     <LI>
 <!--  <CODE>$panose</CODE> returns an array containing the 10 panose values for
       the font. -->
-      <CODE>$panose</CODE> �J�����g�t�H���g�� 10 �v�f�� panose �l���܂ޔz���Ԃ��܂��B
+      <CODE>$panose</CODE> カレントフォントの 10 要素の panose 値を含む配列を返します。
     <LI>
 <!--  <CODE>$trace</CODE> if this is set to one then FontForge will trace each
       procedure call. -->
-      <CODE>$trace</CODE> ���̒l�� (��: �� 0 ��) �Z�b�g����Ă���ƁAFontForge
-      �́A�葱�����Ăяo�����ƂɃg���[�X�\�����s���܂��B
+      <CODE>$trace</CODE> この値が (訳註: 非 0 に) セットされていると、FontForge
+      は、手続きを呼び出すごとにトレース表示を行います。
     <LI>
 <!--  <CODE>$version</CODE> returns a string containing the current version of
       fontforge. This should look something like "20050817". -->
-      <CODE>$version</CODE> ���ݎ��s���� FontForge �̃o�[�W�������܂ޕ������Ԃ��܂��B
-      ���̒l�́g20050817�h�̂悤�ȏ����ł��B
+      <CODE>$version</CODE> 現在実行中の FontForge のバージョンを含む文字列を返します。
+      この値は“20050817”のような書式です。
     <LI>
 <!--  <CODE>$</CODE>&lt;<A NAME="Preference">Preference</A> Item&gt; (for example
       <CODE>$AutoHint</CODE>) allows you to examine the value of that preference
       item (to set it use
       <CODE><A HREF="scripting-alpha.html#SetPref">SetPref</A></CODE>) -->
-      <CODE>$</CODE>&lt;<A NAME="Preference">���ݒ�</A>����&gt; (�Ⴆ��
-      <CODE>$AutoHint</CODE>) �ɂ��A���̊��ݒ荀�ڂɑΉ�����l�𒲂ׂ邱�Ƃ��ł��܂� (�l�̐ݒ�ɂ�
-      <CODE><A HREF="scripting-alpha.html#SetPref">SetPref</A></CODE> ���g�p���Ă�������)
+      <CODE>$</CODE>&lt;<A NAME="Preference">環境設定</A>項目&gt; (例えば
+      <CODE>$AutoHint</CODE>) により、その環境設定項目に対応する値を調べることができます (値の設定には
+      <CODE><A HREF="scripting-alpha.html#SetPref">SetPref</A></CODE> を使用してください)
   </UL>
   <P>
 <!--
   The following example will perform an action on all loaded fonts: -->
-  �ȉ��̗�ł́A�ǂݍ��ݍς݂̑S�t�H���g�ɑ΂��ē�����������s���܂��B
+  以下の例では、読み込み済みの全フォントに対して同じ操作を実行します。
   <BLOCKQUOTE>
     <PRE>file = $firstfont
 while ( file != "" )
    Open(file)
-   <!--/* Do Stuff */-->/* ��������s */
+   <!--/* Do Stuff */-->/* 操作を実行 */
    file = $nextfont
 endloop
 </PRE>
@@ -599,81 +599,81 @@ endloop
   The built in <A NAME="procedures">procedures</A> are very similar to the
   menu items with the same names. Often the description here is sketchy, look
   at the menu item for more information. -->
-  �g���� <A NAME="procedures">�葱��</A> �̓���́A�������O�̃��j���[���ڂƂقƂ�Ǔ����ł��B�����ł̐����͂��΂��ΊT�v����������Ă��܂���̂ŁA���ڂ������͓��Y�̃��j���[���ڂ𒲂ׂĂ��������B
+  組込み <A NAME="procedures">手続き</A> の動作は、同じ名前のメニュー項目とほとんど同じです。ここでの説明はしばしば概要しか示されていませんので、より詳しい情報は当該のメニュー項目を調べてください。
   <UL>
     <LI>
 <!--  <A HREF="scripting-alpha.html">Built-in procedures in alphabetic order</A> -->
-      <A HREF="scripting-alpha.html">�g���ݎ葱���̃A���t�@�x�b�g���ꗗ</A>
+      <A HREF="scripting-alpha.html">組込み手続きのアルファベット順一覧</A>
     <LI>
 <!--  <A HREF="#no-font">Built-in procedures that do not require a font</A> -->
-      <A HREF="#no-font">�t�H���g��K�v�Ƃ��Ȃ��g���ݎ葱��</A>
+      <A HREF="#no-font">フォントを必要としない組込み手続き</A>
     <LI>
 <!--  <A HREF="#file-menu">File menu</A> -->
-      <A HREF="#file-menu"><CODE>�t�@�C��(<U>F</U>)</CODE>���j���[</A>
+      <A HREF="#file-menu"><CODE>ファイル(<U>F</U>)</CODE>メニュー</A>
     <LI>
 <!--  <A HREF="#files">File manipulation</A> -->
-      <A HREF="#files">�t�@�C������</A>
+      <A HREF="#files">ファイル操作</A>
     <LI>
 <!--  <A HREF="#edit-menu">Edit menu</A> -->
-      <A HREF="#edit-menu"><CODE>�ҏW(<U>E</U>)</CODE>���j���[</A>
+      <A HREF="#edit-menu"><CODE>編集(<U>E</U>)</CODE>メニュー</A>
     <LI>
 <!--  <A HREF="#select-menu">Select menu</A> -->
-      <A HREF="#select-menu"><CODE>�I��(<U>S</U>)</CODE>�T�u���j���[</A>
+      <A HREF="#select-menu"><CODE>選択(<U>S</U>)</CODE>サブメニュー</A>
     <LI>
 <!--  <A HREF="#element-menu">Element menu</A> -->
-      <A HREF="#element-menu"><CODE>�G�������g(<U>L</U>)</CODE>���j���[</A>
+      <A HREF="#element-menu"><CODE>エレメント(<U>L</U>)</CODE>メニュー</A>
     <LI>
 <!--  <A HREF="#font-info">Font information</A> -->
-      <A HREF="#font-info">�t�H���g���</A>
+      <A HREF="#font-info">フォント情報</A>
     <LI>
 <!--  <A HREF="#glyph-info">Glyph information</A> -->
-      <A HREF="#glyph-info">�O���t���</A>
+      <A HREF="#glyph-info">グリフ情報</A>
     <LI>
 <!--  <A HREF="#ATT">Advanced Typography</A> -->
-      <A HREF="#ATT">���x�g�ŋ@�\</A>
+      <A HREF="#ATT">高度組版機能</A>
     <LI>
 <!--  <A HREF="#encoding-menu">Encoding menu</A> -->
-      <A HREF="#encoding-menu"><CODE>�G���R�[�f�B���O(<U>N</U>)</CODE>���j���[</A>
+      <A HREF="#encoding-menu"><CODE>エンコーディング(<U>N</U>)</CODE>メニュー</A>
     <LI>
 <!--  <A HREF="#hint-menu">Hint menu</A> -->
-      <A HREF="#hint-menu"><CODE>�q���g(<U>H</U>)</CODE>���j���[</A>
+      <A HREF="#hint-menu"><CODE>ヒント(<U>H</U>)</CODE>メニュー</A>
     <LI>
 <!--  <A HREF="#metrics-menu">Metrics menu</A> -->
-      <A HREF="#metrics-menu"><CODE>���g���b�N(<U>M</U>)</CODE>���j���[</A>
+      <A HREF="#metrics-menu"><CODE>メトリック(<U>M</U>)</CODE>メニュー</A>
     <LI>
 <!--  <A HREF="#MM">Multiple master</A> -->
-      <A HREF="#MM">�}���`�v���}�X�^�[</A>
+      <A HREF="#MM">マルチプルマスター</A>
     <LI>
 <!--  <A HREF="#CID">CID keyed fonts</A> -->
-      <A HREF="#CID">CID �L�[�w��t�H���g</A>
+      <A HREF="#CID">CID キー指定フォント</A>
     <LI>
 <!--  <A HREF="#user">User interaction</A> -->
-      <A HREF="#user">���[�U�Ƃ̂��Ƃ�</A>
+      <A HREF="#user">ユーザとのやりとり</A>
     <LI>
 <!--  <A HREF="#prefs">Preferences</A> -->
-      <A HREF="#prefs">���ݒ�</A>
+      <A HREF="#prefs">環境設定</A>
     <LI>
 <!--  <A HREF="#math">Math</A> -->
-      <A HREF="#math">���w�֐�</A>
+      <A HREF="#math">数学関数</A>
     <LI>
       <A HREF="#unicode">Unicode</A>
     <LI>
 <!--  <A HREF="#strings">String manipulation</A> -->
-      <A HREF="#strings">�����񑀍�</A>
+      <A HREF="#strings">文字列操作</A>
     <LI>
 <!--  <A HREF="#arrays">Arrays</A> -->
-      <A HREF="#arrays">�z��</A>
+      <A HREF="#arrays">配列</A>
     <LI>
 <!--  <A HREF="#misc">Miscellaneous</A> -->
-      <A HREF="#misc">���̑�</A>
+      <A HREF="#misc">その他</A>
     <LI>
 <!--  <A HREF="#Deprecated">Deprecated</A> Names -->
-      <A HREF="#Deprecated">�p�~���ꂽ</A>���O
+      <A HREF="#Deprecated">廃止された</A>名前
   </UL>
 <!--
   <H3 ALIGN=Center>
 <!--Built-in procedures in <A NAME="alpha">alphabetic</A> order -->
-    �g���ݎ葱����<A NAME="alpha">�A���t�@�x�b�g��</A>�ꗗ
+    組込み手続きの<A NAME="alpha">アルファベット順</A>一覧
   </H3>
   <P ALIGN=Center>
   - <A HREF="scripting-alpha.html#A">A</A> -
@@ -701,7 +701,7 @@ endloop
   <A HREF="scripting-alpha.html#Z">Z </A>-
   <H3 ALIGN=Center>
 <!--Built-in procedures that do not require a <A NAME="no-font">loaded font</A> -->
-    <A NAME="no-font">�t�H���g��ǂݍ���</A>�K�v���Ȃ��g���ݎ葱��</A></H3>
+    <A NAME="no-font">フォントを読み込む</A>必要がない組込み手続き</A></H3>
   </H3>
   <UL>
     <LI>
@@ -819,7 +819,7 @@ endloop
   </UL>
 <!--
   <H3 ALIGN=Center>Built-in procedures that act like the <A NAME="file-menu">File Menu</A></H3> -->
-  <H3 ALIGN=Center><A NAME="file-menu"><CODE>�t�@�C��(<U>F</U>)</CODE>���j���[</A>�Ɠ����悤�ɂӂ�܂��g���ݎ葱��</H3>
+  <H3 ALIGN=Center><A NAME="file-menu"><CODE>ファイル(<U>F</U>)</CODE>メニュー</A>と同じようにふるまう組込み手続き</H3>
   <UL>
     <LI>
       <A HREF="scripting-alpha.html#Close">Close()</A>
@@ -852,7 +852,7 @@ endloop
   </UL>
 <!--
   <H3 ALIGN=Center><A NAME="files">File Manipulation</A></H3> -->
-  <H3 ALIGN=Center><A NAME="files">�t�@�C������</A></H3>
+  <H3 ALIGN=Center><A NAME="files">ファイル操作</A></H3>
   <UL>
     <LI>
       <A HREF="scripting-alpha.html#FileAccess">FileAccess(filename[,prot])</A>
@@ -863,7 +863,7 @@ endloop
   </UL>
 <!--
   <H3 ALIGN=Center>Built-in procedures that act like the <A NAME="edit-menu">Edit Menu</A></H3> -->
-  <H3 ALIGN=Center><A NAME="edit-menu"><CODE>�ҏW(<U>E</U>)</CODE>���j���[</A>�̂悤�ɂӂ�܂��g���ݎ葱��</H3>
+  <H3 ALIGN=Center><A NAME="edit-menu"><CODE>編集(<U>E</U>)</CODE>メニュー</A>のようにふるまう組込み手続き</H3>
   <UL>
     <LI>
       <A HREF="scripting-alpha.html#Clear">Clear</A>
@@ -904,7 +904,7 @@ endloop
   </UL>
 <!--
   <H3 ALIGN=Center>Built-in procedures that act like the <A NAME="select-menu">Select Menu</A></H3> -->
-  <H3 ALIGN=Center><A NAME="select-menu"><CODE>�I��(<U>S</U>)</CODE>�T�u���j���[</A>�̂悤�ɂӂ�܂��g���ݎ葱��</H3>
+  <H3 ALIGN=Center><A NAME="select-menu"><CODE>選択(<U>S</U>)</CODE>サブメニュー</A>のようにふるまう組込み手続き</H3>
   <UL>
     <LI>
       <A HREF="scripting-alpha.html#Select">Select(arg1, arg2, ...)</A>
@@ -941,7 +941,7 @@ endloop
  </UL>
 <!--
   <H3 ALIGN=Center>Built-in procedures that act like the <A NAME="element-menu">Element Menu</A></H3> -->
-  <H3 ALIGN=Center><A NAME="element-menu"><CODE>�G�������g(<U>L</U>)</CODE>���j���[</A>�̂悤�ɂӂ�܂��g���ݎ葱��</H3>
+  <H3 ALIGN=Center><A NAME="element-menu"><CODE>エレメント(<U>L</U>)</CODE>メニュー</A>のようにふるまう組込み手続き</H3>
   <UL>
     <LI>
       <A HREF="scripting-alpha.html#AddAccent">AddAccent(accent[,pos])</A>
@@ -1032,7 +1032,7 @@ endloop
   </UL>
 <!--
   <H3 ALIGN=Center><A NAME="font-info">Font Info</A></H3> -->
-  <H3 ALIGN=Center><A NAME="font-info">�t�H���g���</A></H3>
+  <H3 ALIGN=Center><A NAME="font-info">フォント情報</A></H3>
   <UL>
     <LI>
       <A HREF="scripting-alpha.html#ChangePrivateEntry">ChangePrivateEntry(key,val)</A>
@@ -1082,7 +1082,7 @@ endloop
   </UL>
 <!--
   <H3 ALIGN=Center><A NAME="glyph-info">Glyph Info</A></H3> -->
-  <H3 ALIGN=Center><A NAME="glyph-info">�O���t���</A></H3>
+  <H3 ALIGN=Center><A NAME="glyph-info">グリフ情報</A></H3>
   <UL>
     <LI>
       <A HREF="scripting-alpha.html#DrawsSomething">DrawsSomething([arg])</A>
@@ -1109,7 +1109,7 @@ endloop
   </UL>
 <!--
   <H3 ALIGN=Center>Built-in procedures that handle <A NAME="ATT">Advanced Typography</A></H3> -->
-  <H3 ALIGN=Center><A NAME="ATT">���x�g�ŋ@�\</A>�𑀍삷��g���ݎ葱��</H3>
+  <H3 ALIGN=Center><A NAME="ATT">高度組版機能</A>を操作する組込み手続き</H3>
   <UL>
     <LI>
       <A HREF="scripting-alpha.html#AddAnchorClass">AddAnchorClass(name,type,script-lang,tag,flags,merge-with)</A>
@@ -1140,7 +1140,7 @@ endloop
   </UL>
 <!--
   <H3 ALIGN=Center>Built-in procedures that act like the <A NAME="encoding-menu">Encoding Menu</A></H3> -->
-  <H3 ALIGN=Center><A NAME="encoding-menu"><CODE>�G���R�[�f�B���O(<U>N</U>)</CODE>���j���[</A>�̂悤�ɂӂ�܂��g���ݎ葱��</H3>
+  <H3 ALIGN=Center><A NAME="encoding-menu"><CODE>エンコーディング(<U>N</U>)</CODE>メニュー</A>のようにふるまう組込み手続き</H3>
   <UL>
     <LI>
       <A HREF="scripting-alpha.html#CharCnt">CharCnt()</A>
@@ -1165,7 +1165,7 @@ endloop
   </UL>
 <!--
   <H3 ALIGN=Center>Built-in procedures that act like the <A NAME="hint-menu">Hint Menu</A></H3> -->
-  <H3 ALIGN=Center><A NAME="hint-menu"><CODE>�q���g(<U>H</U>)</CODE>���j���[</A>�̂悤�ɂӂ�܂��g���ݎ葱��</H3>
+  <H3 ALIGN=Center><A NAME="hint-menu"><CODE>ヒント(<U>H</U>)</CODE>メニュー</A>のようにふるまう組込み手続き</H3>
   <UL>
     <LI>
       <A HREF="scripting-alpha.html#AddHHint">AddHHint(start,width)</A>
@@ -1214,7 +1214,7 @@ endloop
   </UL>
 <!--
   <H3 ALIGN=Center>Built-in procedures that act like the <A NAME="metrics-menu">Metrics Menu</A></H3> -->
-  <H3 ALIGN=Center><A NAME="metrics-menu"><CODE>���g���b�N(<U>M</U>)</CODE>���j���[</A>�̂悤�ɂӂ�܂��g���ݎ葱��</H3>
+  <H3 ALIGN=Center><A NAME="metrics-menu"><CODE>メトリック(<U>M</U>)</CODE>メニュー</A>のようにふるまう組込み手続き</H3>
   <UL>
     <LI>
       <A HREF="scripting-alpha.html#AutoKern">AutoKern(spacing,threshold[,kernfile])</A>
@@ -1243,7 +1243,7 @@ endloop
   </UL>
 <!--
   <H3 ALIGN=Center><A NAME="MM">Multiple master routines</A></H3> -->
-  <H3 ALIGN=Center><A NAME="MM">�}���`�v���}�X�^�[���샋�[�`��</A></H3>
+  <H3 ALIGN=Center><A NAME="MM">マルチプルマスター操作ルーチン</A></H3>
     <LI>
       <A HREF="scripting-alpha.html#MMAxisBounds">MMAxisBounds(axis)</A>
     <LI>
@@ -1261,7 +1261,7 @@ endloop
   </UL>
 <!--
   <H3 ALIGN=Center><A NAME="CID">CID routines</A></H3> -->
-  <H3 ALIGN=Center><A NAME="CID">CID �t�H���g���샋�[�`��</A></H3>
+  <H3 ALIGN=Center><A NAME="CID">CID フォント操作ルーチン</A></H3>
     <LI>
       <A HREF="scripting-alpha.html#CIDChangeSubFont">CIDChangeSubFont(new-sub-font-name)</A>
     <LI>
@@ -1278,7 +1278,7 @@ endloop
   </UL>
 <!--
   <H3 ALIGN=Center><A NAME="user">User Interaction</A></H3> -->
-  <H3 ALIGN=Center><A NAME="user">���[�U�Ƃ̂��Ƃ�</A></H3>
+  <H3 ALIGN=Center><A NAME="user">ユーザとのやりとり</A></H3>
   <UL>
     <LI>
       <A HREF="scripting-alpha.html#AskUser">AskUser(question[,default-answer])</A>
@@ -1292,7 +1292,7 @@ endloop
   </UL>
 <!--
   <H3 ALIGN=Center><A NAME="prefs">Preferences</A></H3> -->
-  <H3 ALIGN=Center><A NAME="prefs">���ݒ�</A></H3>
+  <H3 ALIGN=Center><A NAME="prefs">環境設定</A></H3>
   <UL>
     <LI>
       <A HREF="scripting-alpha.html#DefaultOtherSubrs">DefaultOtherSubrs()</A>
@@ -1319,11 +1319,11 @@ endloop
 <!--
     <LI>It it also possible to get the value of a preference item by preceding its
 name with a dollar sign. -->
-    <LI>���ݒ荀�ڂ̒l�́A���ږ��̑O�Ƀh���L�� ($) ���������O�̕ϐ��ɂ���ē��邱�Ƃ��ł��܂��B
+    <LI>環境設定項目の値は、項目名の前にドル記号 ($) をつけた名前の変数によって得ることもできます。
   </UL>
 <!--
   <H3 ALIGN=Center><A NAME="math">Math</A></H3> -->
-  <H3 ALIGN=Center><A NAME="math">���w�֐�</A></H3>
+  <H3 ALIGN=Center><A NAME="math">数学関数</A></H3>
   <UL>
     <LI>
       <A HREF="scripting-alpha.html#ATan2">ATan2(val1,val2)</A>
@@ -1384,7 +1384,7 @@ name with a dollar sign. -->
   </UL>
 <!--
   <H3 ALIGN=Center><A NAME="strings">String manipulation</A></H3> -->
-  <H3 ALIGN=Center><A NAME="strings">�����񑀍�</A></H3>
+  <H3 ALIGN=Center><A NAME="strings">文字列操作</A></H3>
   <UL>
     <LI>
       <A HREF="scripting-alpha.html#Chr">Chr(int)</A>
@@ -1419,7 +1419,7 @@ name with a dollar sign. -->
   </UL>
 <!--
   <H3 ALIGN=Center><A NAME="arrays">Arrays</A></H3> -->
-  <H3 ALIGN=Center><A NAME="arrays">�z�񑀍�</A></H3>
+  <H3 ALIGN=Center><A NAME="arrays">配列操作</A></H3>
   <UL><LI>
       <A HREF="scripting-alpha.html#Array">Array(size)</A>
     <LI>
@@ -1427,7 +1427,7 @@ name with a dollar sign. -->
   </UL>
 <!--
   <H3 ALIGN=Center><A NAME="misc">Miscellaneous</A></H3> -->
-  <H3 ALIGN=Center><A NAME="misc">���̑�</A></H3>
+  <H3 ALIGN=Center><A NAME="misc">その他</A></H3>
   <UL>
     <LI>
       <A HREF="scripting-alpha.html#InFont">InFont(arg)</A>
@@ -1435,7 +1435,7 @@ name with a dollar sign. -->
       <A HREF="scripting-alpha.html#TypeOf">TypeOf(any)</A>
   <H3 ALIGN=Center>
 <!--<A NAME="Deprecated">Deprecated Names</A> -->
-    <A NAME="Deprecated">�p�~���ꂽ���O</A>
+    <A NAME="Deprecated">廃止された名前</A>
   </H3>
   <UL>
     <LI>
@@ -1457,35 +1457,35 @@ name with a dollar sign. -->
     <HR>
   <H2>
 <!--  <A NAME="Example">Example</A>s -->
-      <A NAME="Example">��</A>
+      <A NAME="Example">例</A>
   </H2>
   <UL>
     <LI>
 <!--  <A HREF="http://cvs.sourceforge.net/viewcvspy/fontforge/fontforge/test/">FontForge's
       testsuite</A> (such as it is) -->
       <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/test/">FontForge 
-      �̃e�X�g�X�C�[�g</A> (�Ƃ������̕��ł͂Ȃ���)
+      のテストスイート</A> (という程の物ではないが)
     <LI>
 <!--  <A HREF="scripts/">Directory of donated scripts</A>-->
-      <A HREF="scripts/">�񑡂��ꂽ�X�N���v�g�̃f�B���N�g��</A>
+      <A HREF="scripts/">寄贈されたスクリプトのディレクトリ</A>
     <LI>
 <!--  Scripts used in other projects-->
-      ���̑��̃v���W�F�N�g�Ŏg�p����Ă���X�N���v�g
+      その他のプロジェクトで使用されているスクリプト
       <UL>
 	<LI>
 	  <A HREF="http://sourceforge.net/projects/x-symbol/">x-symbol</A>
       </UL>
     <LI>
 <!--  <A HREF="scripting-tutorial.html">the scripting tutorial</A> -->
-      <A HREF="scripting-tutorial.html">�X�N���v�g�����̃`���[�g���A��</A>
+      <A HREF="scripting-tutorial.html">スクリプト処理のチュートリアル</A>
   </UL>
   <H3>
 <!--Example 1:-->
-    �� 1:
+    例 1:
   </H3>
   <BLOCKQUOTE>
-    <PRE>#<!--Set the color of all selected glyphs to be yellow--> �I�𒆂̂��ׂẴO���t�̐F�����F�ɐݒ肷��B
-#<!--designed to be run within an interactive fontforge session.--> FontForge �̑Θb�I�ȃZ�b�V�������œ������悤�ɍ���Ă���B
+    <PRE>#<!--Set the color of all selected glyphs to be yellow--> 選択中のすべてのグリフの色を黄色に設定する。
+#<!--designed to be run within an interactive fontforge session.--> FontForge の対話的なセッション中で動かすように作られている。
 foreach
   SetCharColor(0xffff00)
 endloop
@@ -1493,14 +1493,14 @@ endloop
   </BLOCKQUOTE>
   <H3>
 <!--Example 2:-->
-    �� 2:
+    例 2:
   </H3>
   <BLOCKQUOTE>
     <PRE>#!/usr/local/bin/fontforge
-<!--#This is the sfddiff script which compares two fonts --># 2�̃t�H���g���r���� sfddiff �X�N���v�g
+<!--#This is the sfddiff script which compares two fonts --># 2つのフォントを比較する sfddiff スクリプト
 
 if ( Strtol($version)<20060330 )
-  Error( <!-- "Please upgrade to a more recent version of fontforge" -->"FontForge ��V�����o�[�W�����ɍX�V���Ă�������" )
+  Error( <!-- "Please upgrade to a more recent version of fontforge" -->"FontForge を新しいバージョンに更新してください" )
 endif
 
 flags=0x789
@@ -1532,22 +1532,22 @@ while ( $argc > 1 && Strsub($1,0,1)=="-" )
     outfile = $1
   elseif ( temp=="-help" )
     Print( "sfddiff: [--version] [--help] [--usage] [--ignorehints] [--ignorenames] [--ignoregpos] [--ignoregsup] [--ignorebitmaps] [--warn] [--exact] fontfile1 fontfile2" )
-    Print( <!-- " Compares two fontfiles" -->" 2�̃t�H���g�t�@�C�����r����." )
-    Print( <!-- " - -ignorehints: Do not compare postscript hints or truetype instructions" -->" --ignorehints: PostScript �q���g�� TrueType ���߂��r���Ȃ�" )
-    Print( <!-- " - -ignorenames: Do not compare font names" -->" --ignorenames: �t�H���g�����r���Ȃ�"  )
-    Print( <!-- " - -ignoregpos:  Do not compare kerning, etc." -->" --ignoregpos:  �J�[�j���O���̎w����r���Ȃ�" )
-    Print( <!-- " - -ignoregsub:  Do not compare ligatures, etc." -->" --ignoregsub:  �������̎w����r���Ȃ�" )
-    Print( <!-- " - -ignorebitmaps: Do not compare bitmap strikes" -->" --ignorebitmaps: �r�b�g�}�b�v���r���Ȃ�" )
-    Print( <!-- " --exact:       Normally sfddiff will match contours which are not exact" -->" --exact:       �ʏ�� sfddiff �͌����ɓ���ł͂Ȃ����̗��҂̈Ⴂ�����ׂ�" )
-    Print( <!-- "                but where the differences are slight (so you could compare" -->"                ���������v�������ƌ��Ȃ��܂� (���̂������ŁATrueType ��" )
-    Print( <!-- "                truetype and postscript and get reasonable answers). Also" -->"                PostScirpt �t�H���g���r���Ă܂Ƃ��ȓ����������܂�)." )
-    Print( <!-- "                normally sfddiff will unlink references before it compares" -->"                �܂�, sfddiff �͔�r���s���O�ɎQ�Ƃ�W�J���܂� (�����" )
-    Print( <!-- "                (so you can compare a postscript font (with no references)" -->"                ���, (�Q�Ƃ��܂܂Ȃ�) PostScript �t�H���g�� (�Q�Ƃ��܂�)" )
-    Print( <!-- "                to the original source (which does have references)). Setting" -->"                ���f�[�^���r���邱�Ƃ��ł��܂�). ���̃t���O��ݒ肵��")
-    Print( <!-- "                this flag means glyphs must match exactly." -->"                �ꍇ, �O���t����v���邩�ǂ����̔���������ɍs���܂�.")
-    Print( <!-- " --warn:        Provides a warning when an exact match is not found" -->" --warn:        ���m�Ɉ�v���Ȃ����������Ƃ���, �ڂ��������o�͂���" )
-    Print( <!-- " --merge outfile: Put any outline differences in the backgrounds of" -->" --merge outfile: �A�E�g���C���̑��ٓ_������Ƃ�, �K�؂ȃO���t�̔w�i��" )
-    Print( <!-- "                appropriate glyphs" -->"                �����������o��" )
+    Print( <!-- " Compares two fontfiles" -->" 2つのフォントファイルを比較する." )
+    Print( <!-- " - -ignorehints: Do not compare postscript hints or truetype instructions" -->" --ignorehints: PostScript ヒントや TrueType 命令を比較しない" )
+    Print( <!-- " - -ignorenames: Do not compare font names" -->" --ignorenames: フォント名を比較しない"  )
+    Print( <!-- " - -ignoregpos:  Do not compare kerning, etc." -->" --ignoregpos:  カーニング等の指定を比較しない" )
+    Print( <!-- " - -ignoregsub:  Do not compare ligatures, etc." -->" --ignoregsub:  合字等の指定を比較しない" )
+    Print( <!-- " - -ignorebitmaps: Do not compare bitmap strikes" -->" --ignorebitmaps: ビットマップを比較しない" )
+    Print( <!-- " --exact:       Normally sfddiff will match contours which are not exact" -->" --exact:       通常は sfddiff は厳密に同一ではないもの両者の違いが微細な" )
+    Print( <!-- "                but where the differences are slight (so you could compare" -->"                文字列を一致した物と見なします (そのおかげで、TrueType と" )
+    Print( <!-- "                truetype and postscript and get reasonable answers). Also" -->"                PostScirpt フォントを比較してまともな答えが得られます)." )
+    Print( <!-- "                normally sfddiff will unlink references before it compares" -->"                また, sfddiff は比較を行う前に参照を展開します (それに" )
+    Print( <!-- "                (so you can compare a postscript font (with no references)" -->"                より, (参照を含まない) PostScript フォントと (参照を含む)" )
+    Print( <!-- "                to the original source (which does have references)). Setting" -->"                元データを比較することができます). このフラグを設定した")
+    Print( <!-- "                this flag means glyphs must match exactly." -->"                場合, グリフが一致するかどうかの判定を厳密に行います.")
+    Print( <!-- " --warn:        Provides a warning when an exact match is not found" -->" --warn:        正確に一致しない物が無いときに, 詳しい情報を出力する" )
+    Print( <!-- " --merge outfile: Put any outline differences in the backgrounds of" -->" --merge outfile: アウトラインの相異点があるとき, 適切なグリフの背景に" )
+    Print( <!-- "                appropriate glyphs" -->"                差分を書き出す" )
 return(0)
   elseif ( temp=="-version" )
     Print( "Version 1.0" )
@@ -1573,21 +1573,21 @@ endif
 </BLOCKQUOTE>
   <H3>
 <!--Example 3:-->
-    �� 3:
+    例 3:
   </H3>
   <BLOCKQUOTE>
     <PRE>#!/usr/local/bin/fontforge
-#<!--Take a Latin font and apply some simple transformations to it--> ���e�������̃t�H���g���Ƃ�A�L���������̒ǉ��ɐ悾���āA
-#<!--prior to adding cyrillic letters.--> �������̒P���ȕό`��K�p����B
-#<!--can be run in a non-interactive fontforge session.--> ��Θb�I�� FontForge �̃Z�b�V������������s�\�B
+#<!--Take a Latin font and apply some simple transformations to it--> ラテン文字のフォントをとり、キリル文字の追加に先だって、
+#<!--prior to adding cyrillic letters.--> いくつかの単純な変形を適用する。
+#<!--can be run in a non-interactive fontforge session.--> 非対話的な FontForge のセッションからも実行可能。
 Open($1);
 Reencode("KOI8-R");
 Select(0xa0,0xff);
-//<!--Copy those things which look just like latin--> ���e�������Ɠ����Ǝv���邱���̕������R�s�[����
+//<!--Copy those things which look just like latin--> ラテン文字と同じと思われるこれらの文字をコピーする
 BuildComposit();
 BuildAccented();
 
-//<!--Handle Ya which looks like a backwards "R"--> "R" �𗠕Ԃ��ɂ����悤�Ɍ����� "�`"(Ya) ����������
+//<!--Handle Ya which looks like a backwards "R"--> "R" を裏返しにしたように見える "Я"(Ya) を処理する
 Select("R");
 Copy();
 Select("afii10049");
@@ -1600,7 +1600,7 @@ Paste();
 CopyFgToBg();
 Clear();
   
-//<!--Gamma looks like an upside-down L--> "�C"(Gamma) �� "L" ���㉺�t���܂ɂ����悤�Ɍ�����
+//<!--Gamma looks like an upside-down L--> "Г"(Gamma) は "L" を上下逆さまにしたように見える
 Select("L");
 Copy();
 Select(0u0413);
@@ -1613,7 +1613,7 @@ Paste();
 CopyFgToBg();
 Clear();
   
-//<!--Prepare for editing small caps K, etc.--> ���^�啶���� "K" �Ȃǂ̕ҏW�̏���������
+//<!--Prepare for editing small caps K, etc.--> 小型大文字の "K" などの編集の準備をする
 Select("K");
 Copy();
 Select(0u043a);
@@ -1655,7 +1655,7 @@ Quit(0);
   </BLOCKQUOTE>
   <H2>
 <!--The <A NAME="Execute">Execute</A> Script dialog -->
-    �u<A NAME="Execute">�X�N���v�g�����s</A>�v�_�C�A���O
+    「<A NAME="Execute">スクリプトを実行</A>」ダイアログ
   </H2>
   <P>
 <!--
@@ -1667,18 +1667,18 @@ Quit(0);
   sequence and pressing the [Filter] button). After you have selected your
   script the appropriate text to text to invoke it will be placed in the text
   area. -->
-  ���̃_�C�A���O�ɂ��AFontForge �̒��ŃX�N���v�g�𒼐ڑł�����Ŏ��s���邱�Ƃ��ł��܂��B
-  �������A��ԑ����P�[�X�́A���s�������X�N���v�g�����ɂǂ����ɑ��݂���ꍇ�ł��傤�B���̂��߂� <CODE>[�Ăяo��(<U>A</U>)]</CODE> �{�^�����_�C�A���O�̉��ɂ��Ă��܂��B
-  <CODE>[�Ăяo��(<U>A</U>)]</CODE> �{�^���������ƁA*.pe �̊g���q�����t�@�C����T�����߂̃t�@�C���I���_�C�A���O������܂� (���C���h�J�[�h�V�[�P���X����͂��� <CODE>[�t�B���^]</CODE> �{�^�����������Ƃɂ��A�����ύX���邱�Ƃ��ł��܂�)�B
-  �X�N���v�g��I������ƁA���̃X�N���v�g���N�����邽�߂̃R�}���h���_�C�A���O�̃e�L�X�g�G���A�ɑ}������܂��B
+  このダイアログにより、FontForge の中でスクリプトを直接打ち込んで実行することができます。
+  もちろん、一番多いケースは、実行したいスクリプトが既にどこかに存在する場合でしょう。そのために <CODE>[呼び出す(<U>A</U>)]</CODE> ボタンがダイアログの下についています。
+  <CODE>[呼び出す(<U>A</U>)]</CODE> ボタンを押すと、*.pe の拡張子を持つファイルを探すためのファイル選択ダイアログが現れます (ワイルドカードシーケンスを入力して <CODE>[フィルタ]</CODE> ボタンを押すことにより、これを変更することができます)。
+  スクリプトを選択すると、そのスクリプトを起動するためのコマンドがダイアログのテキストエリアに挿入されます。
   <P>
 <!--
   The current font of the script will be set to whatever font you invoked it
   from. -->
-  �X�N���v�g�̃J�����g�t�H���g�́A�˂ɃX�N���v�g�̌Ăяo�����̃t�H���g�ɐݒ肳��܂��B
+  スクリプトのカレントフォントは、つねにスクリプトの呼び出し元のフォントに設定されます。
   <H2>
 <!--  The Scripts <A NAME="menu">Menu</A>-->
-      �X�N���v�g<A NAME="menu">���j���[</A>
+      スクリプト<A NAME="menu">メニュー</A>
   </H2>
   <P>
 <!--
@@ -1687,23 +1687,23 @@ Quit(0);
   Scripts tag. In this dialog are ten possible entries, each one should have
   a name (to be displayed in the menu) and an associated script file to be
   run. -->
-  �p�ɂɎg���X�N���v�g�̃��X�g���A�v���t�@�����X�_�C�A���O��p���č쐬���邱�Ƃ��ł��܂��B<CODE><A HREF="prefs.html#scripts">�t�@�C��(<U>F</U>)</CODE>��<CODE>���ݒ�(<U>E</U>)...</A></CODE> ���N�����A<CODE>[�X�N���v�g���j���[]</CODE> �^�u��I�����Ă��������B���̃_�C�A���O�ɂ́A10 �̓��͉\�ȍ��ڂ�����A���ꂼ��ɖ��O (���ꂪ���j���[���ɕ\������܂�) �ƁA������w�肵�����Ɏ��s�����X�N���v�g�t�@�C�����̓��͗����܂܂�Ă��܂��B
+  頻繁に使うスクリプトのリストを、プリファレンスダイアログを用いて作成することができます。<CODE><A HREF="prefs.html#scripts">ファイル(<U>F</U>)</CODE>→<CODE>環境設定(<U>E</U>)...</A></CODE> を起動し、<CODE>[スクリプトメニュー]</CODE> タブを選択してください。このダイアログには、10 個の入力可能な項目があり、それぞれに名前 (これがメニュー内に表示されます) と、それを指定した時に実行されるスクリプトファイル名の入力欄が含まれています。
   <P>
 <!--
   After you have set up your preferences you can invoke scripts from the font
   view, either directly from the menu (File-&gt;Scripts-&gt;&lt;your name&gt;)
   or by a hot key. The first script you added will be invoked by Cnt-Alt-1,
   then second by Cnt-Alt-2, and the tenth by Cnt-Alt-0. -->
-  �v���t�@�����X��ݒ肵����A�t�H���g�r���[����X�N���v�g���N�����邱�Ƃ��ł��܂��B�N���ɂ́A���j���[���璼�� (<CODE>�t�@�C��(<U>F</U>)</CODE>��<CODE>�X�N���v�g���j���[</CODE>��<CODE><I>(�ݒ肵�����O)</I></CODE>) �N�����邩�A�z�b�g�L�[���g�p���邱�Ƃ��ł��܂��B
-  �ŏ��ɒǉ������X�N���v�g�� Ctl-Alt-1, 2 �Ԗڂ� Ctl-Alt-2 �ŋN���ł��A10 �Ԗڂ� Ctl-Alt-0 �ƂȂ�܂��B
+  プリファレンスを設定した後、フォントビューからスクリプトを起動することができます。起動には、メニューから直接 (<CODE>ファイル(<U>F</U>)</CODE>→<CODE>スクリプトメニュー</CODE>→<CODE><I>(設定した名前)</I></CODE>) 起動するか、ホットキーを使用することができます。
+  最初に追加したスクリプトは Ctl-Alt-1, 2 番目は Ctl-Alt-2 で起動でき、10 番目は Ctl-Alt-0 となります。
   <P>
 <!--
   The current font of the script will be set to whatever font you invoked it
   from. -->
-  �X�N���v�g���ł̃J�����g�t�H���g�́A��ɁA������Ăяo�����t�H���g�ɃZ�b�g����܂��B
+  スクリプト内でのカレントフォントは、常に、それを呼び出したフォントにセットされます。
   <P>
   <P ALIGN=Center>
-  �\ <A HREF="HotKeys.html">�O</A> �\ <A HREF="overview.html">�ڎ�</A> �\
-  <A HREF="PfaEdit-TeX.html">��</A> �\
+  — <A HREF="HotKeys.html">前</A> — <A HREF="overview.html">目次</A> —
+  <A HREF="PfaEdit-TeX.html">次</A> —
 </DIV>
 </BODY></HTML>

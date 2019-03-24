@@ -3,9 +3,9 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Nov-2005 -->
   <!-- AP: Last modified: 10-Nov-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!--<TITLE>Plugins in FontForge</TITLE>-->
-    <TITLE>FontForge �̃v���O�C��</TITLE>
+    <TITLE>FontForge のプラグイン</TITLE>
   <LINK REL="icon" href="../fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
@@ -13,37 +13,37 @@
 <DIV id="in">
 <H1 ALIGN=Center>
 <!--Plugins in FontForge -->
-    FontForge �̃v���O�C��
+    FontForge のプラグイン
 </H1>
 <P>
 <!--
 FontForge supports a plugin mechanism for extending its functionality. -->
-FontForge �́A�@�\���g�����邽�߂Ƀv���O�C���̋@�\��񋟂��Ă��܂��B
+FontForge は、機能を拡張するためにプラグインの機構を提供しています。
 <P>
 <!--
 Plugins are shared libraries that can be loaded at runtime. When fontforge
 starts up (actually, when it loads its preferences) it will automatically
 load all files that look like shared libraries and that live in the two
 directories: -->
-�v���O�C���͎��s���ɓǂݍ��ނ��Ƃ��ł��鋤�L���C�u�����̌`���ł��BFontForge �̋N���� (���m�ɂ́A���ݒ�̓ǂݍ��ݎ�)�A�ȉ��� 2 �̃f�B���N�g���Ɋ܂܂��A���L���C�u�����Ǝv����t�@�C�������ׂēǂݍ��݂܂��B
+プラグインは実行時に読み込むことができる共有ライブラリの形式です。FontForge の起動時 (正確には、環境設定の読み込み時)、以下の 2 つのディレクトリに含まれる、共有ライブラリと思われるファイルをすべて読み込みます。
 <UL>
   <LI>
     <CODE>/usr/local/share/fontforge/plugins</CODE><BR>
 <!--(more precisely: <CODE>$(PREFIX)/share/fontforge/plugins</CODE>)-->
-    (��萳�m�ɂ�:  <CODE>$(PREFIX)/share/fontforge/plugins</CODE>)
+    (より正確には:  <CODE>$(PREFIX)/share/fontforge/plugins</CODE>)
   <LI>
     <CODE>~/.PfaEdit/plugins</CODE>
 </UL>
 <H2>
 <!--Installing a one of my example plugins-->
-    �T���v���v���O�C���̃C���X�g�[�����@
+    サンプルプラグインのインストール方法
 </H2>
 <P>
 <!--
 Currently none of my pre-built packages contain any plugins. If you want
 to play with them you must <A HREF="source-build.html">grab a source
 distribution</A>, build it, and install it. Having done that type the following: -->
-���݁A�o�C�i���p�b�P�[�W�ɂ̓v���O�C���͊܂܂�Ă��܂���B�v���O�C���ŗV�т������� <A HREF="source-build.html">�\�[�X�z�z�����</A>���č\�z���A�C���X�g�[������K�v������܂��B������s���ɂ́A�ȉ��̂悤�ɓ��͂��Ă�������:
+現在、バイナリパッケージにはプラグインは含まれていません。プラグインで遊びたい方は <A HREF="source-build.html">ソース配布を入手</A>して構築し、インストールする必要があります。それを行うには、以下のように入力してください:
 <BLOCKQUOTE>
   <PRE>$ cd plugins
 $ make install
@@ -51,46 +51,46 @@ $ make install
 </BLOCKQUOTE>
 <H2>
 <!--Creating your own plugin-->
-    ���Ȃ����g�̃v���O�C���̍쐬���@
+    あなた自身のプラグインの作成方法
 </H2>
 <P>
 <!--
 FontForge currently supports two types of plugins: -->
-���� FontForge �͈ȉ��� 2 �̃^�C�v�̃v���O�C�����T�|�[�g���Ă��܂�: 
+現在 FontForge は以下の 2 つのタイプのプラグインをサポートしています: 
 <UL>
   <LI>
 <!--plugins which add a 2byte encoding-->
-    2 �o�C�g������������ǉ�����v���O�C��
+    2 バイト符号化方式を追加するプラグイン
   <LI>
 <!--plugins which add a scripting command -->
-    �X�N���v�g�R�}���h��ǉ�����v���O�C��
+    スクリプトコマンドを追加するプラグイン
 </UL>
 <P>
 <!--
 (Actually I suppose there is a third type. When it loads a plugin FF calls
 an initialization routine. I suppose the plugin could just start running
 and doing things without ever returning to fontforge). -->
-(���ۂɂ� 3 �Ԗڂ̃^�C�v�̃v���O�C�������݂���Ǝv���܂��B�v���O�C�����Ăяo�������AFF �͏��������[�`�����Ăяo���܂��B�v���O�C�������s�𑱂��AFontForge �ɖ߂�������Ɏd�����s���Ă��܂����Ƃ͉\���Ǝv���܂�)�B
+(実際には 3 番目のタイプのプラグインが存在すると思います。プラグインを呼び出した時、FF は初期化ルーチンを呼び出します。プラグインが実行を続け、FontForge に戻りもせずに仕事を行ってしまうことは可能だと思います)。
 <P>
 <!--
 I expect I will add -->
-�ǉ��\��ɂ��镨�͈ȉ��̂Ƃ���ł�:
+追加予定にある物は以下のとおりです:
 <UL>
   <LI>
 <!--plugins which add new menu items-->
-    ���j���[���ڂ�ǉ�����v���O�C��
+    メニュー項目を追加するプラグイン
 </UL>
 <P>
 <!--
 (but I haven't yet). -->
-(���������͂܂�����Ă��܂���)�B
+(しかし私はまだやっていません)。
 <P>
 <!--
 When FontForge loads a plugin it calls a routine <CODE>int
 FontForgeInit(void)</CODE>. This routine is responsible for registering the
 plugin with FontForge, and then returning to allow FontForge to continue.
 FontForge provides two registration routines:-->
-FontForge  �́A�v���O�C���̓ǂݍ��ݎ��Ƀ��[�`�� <CODE>int FontForgeInit(void)</CODE> ���Ăяo���܂��B���̃��[�`���͐ӔC�������� FontForge �̃v���O�C����o�^���A���ꂩ�� FontForge �̎��s�𑱂��邽�߂ɌĂяo�����ɋA��܂��BFontForge �� 2 �̓o�^���[�`����񋟂��܂��B
+FontForge  は、プラグインの読み込み時にルーチン <CODE>int FontForgeInit(void)</CODE> を呼び出します。このルーチンは責任を持って FontForge のプラグインを登録し、それから FontForge の実行を続けるために呼び出し元に帰ります。FontForge は 2 つの登録ルーチンを提供します。
 <DL>
   <DT>
     <CODE>AddEncoding(char *name,int (*enc_to_uni)(int), int
@@ -104,12 +104,12 @@ FontForge  �́A�v���O�C���̓ǂݍ��ݎ��Ƀ��[�`�� <CODE>int FontForgeInit(void)</C
     if you have an 8/16 encoding (like EUC or SJIS) then the encoding of a character
     will be a number between 0 and 65535. A single byte will be a number &lt;256,
     while a double byte character will be a number like 0xa1a1. -->
-    ���̊֐��́Aname �Ŏw�肵�����O�����V����������������o�^���܂��B���̂��߂ɂ́A���[�J���ȕ����������� Unicode �֕ϊ�����֐��� Unicode ���當�������ɕϊ�����ʂ̊֐��Ƃ� 2 �̊֐���񋟂���K�v������܂��B<FONT COLOR="Red"><STRONG><BIG>����:</BIG></STRONG></FONT> FontForge �͕��������̈������ʏ�̕����Ƃ͈قȂ�܂��B�o�C�g�X�g���[������������̂ł͂Ȃ��A���l��Ώۂɂ��܂��B�ł����� (EUC �� SJIS �Ȃǂ�) 8/16 �r�b�g�������������������́A�����̕����l�� 0 ���� 65535 �͈̔͂̒l�ɂȂ�܂��B1 �o�C�g������ 256 �����̐��l�ł���A2 �o�C�g������ 0xa1a1 �̂悤�Ȑ��l�ƂȂ�ł��傤�B
+    この関数は、name で指定した名前をもつ新しい符号化方式を登録します。そのためには、ローカルな文字符号から Unicode へ変換する関数と Unicode から文字符号に変換する別の関数との 2 つの関数を提供する必要があります。<FONT COLOR="Red"><STRONG><BIG>注意:</BIG></STRONG></FONT> FontForge は文字符号の扱いが通常の方式とは異なります。バイトストリームを処理するのではなく、数値を対象にします。ですから (EUC や SJIS などの) 8/16 ビット符号化方式を扱う時は、文字の符号値は 0 から 65535 の範囲の値になります。1 バイト文字は 256 未満の数値であり、2 バイト文字は 0xa1a1 のような数値となるでしょう。
     <P>
 <!--This will return 0 if it failed (if you tried to replace a built in encoding
     for example), 1 if it added the encoding, 2 if it replaced a previous plugin
     with that name. -->
-    ���̊֐��͎��s�����Ƃ� (�Ⴆ�΁A�g���݂̕��������������������悤�Ƃ����ꍇ) 0 ��Ԃ��A�w�肳�ꂽ������������ǉ������Ƃ��ɂ� 1 ���A�O�ɌĂяo���ꂽ�v���O�C�����o�^���������̕����������������������Ƃ��ɂ� 2 ��Ԃ��܂��B
+    この関数は失敗したとき (例えば、組込みの符号化方式を書き換えようとした場合) 0 を返し、指定された符号化方式を追加したときには 1 を、前に呼び出されたプラグインが登録した同名の符号化方式を書き換えたときには 2 を返します。
   <DT>
     <CODE>AddScriptingCommand(char *name, void (*UserScriptFunc)(Context *),
     int needs_font)</CODE>
@@ -120,33 +120,33 @@ FontForge  �́A�v���O�C���̓ǂݍ��ݎ��Ƀ��[�`�� <CODE>int FontForgeInit(void)</C
     set the return value (if any) of your function). The final argument indicates
     whether your command needs a font to be loaded or not. (the command Open()
     does not need a font loaded. The command Close() does). -->
-    ���̊֐��́Aname �Ŏw�肵�����O�����V�����X�N���v�g�R�}���h��o�^���܂��B���̖��O���Ăяo���ꂽ�Ƃ��AUserScriptFunc �Ŏw�肵���֐����A���� Context �ɂ��̎��̃R���e�L�X�g (�n���ꂽ�����A�J�����g�t�H���g����ѕԂ�l (�������) ���Z�b�g����ꏊ�Ȃǂ��܂܂�Ă��܂�) �������ČĂяo���܂��B�Ō�̈����́A�t�H���g���ǂݍ��܂�Ă���K�v�����邩���������w�肵�܂��B(�R�}���h Open() �̓t�H���g���ǂݍ��܂�Ă��Ȃ��Ă��\���܂��񂪁A�R�}���h Close() �̓t�H���g���K�v�ł�)�B
+    この関数は、name で指定した名前をもつ新しいスクリプトコマンドを登録します。その名前が呼び出されたとき、UserScriptFunc で指定した関数を、引数 Context にその時のコンテキスト (渡された引数、カレントフォントおよび返り値 (があれば) をセットする場所などが含まれています) を代入して呼び出します。最後の引数は、フォントが読み込まれている必要があるか無いかを指定します。(コマンド Open() はフォントが読み込まれていなくても構いませんが、コマンド Close() はフォントが必要です)。
     <P>
 <!--This will return 0 if it failed (if you tried to replace a built in scripting
     command for example), 1 if it added the command, 2 if it replaced a previous
     plugin with that name. -->
-    ���̊֐��͎��s�����Ƃ� (�Ⴆ�΁A�g���݂̃X�N���v�g�֐����Ē�`���悤�Ƃ����ꍇ) 0 ��Ԃ��A�w�肳�ꂽ�R�}���h��ǉ������Ƃ��ɂ� 1 ���A�O�ɌĂяo���ꂽ�v���O�C�����o�^���������̃R�}���h�������������Ƃ��ɂ� 2 ��Ԃ��܂��B
+    この関数は失敗したとき (例えば、組込みのスクリプト関数を再定義しようとした場合) 0 を返し、指定されたコマンドを追加したときには 1 を、前に呼び出されたプラグインが登録した同名のコマンドを書き換えたときには 2 を返します。
 </DL>
 <P>
 <!--
 You may register more than one thing in from <CODE>FontForgeInit</CODE>.
 For example, many encodings have an EUC form and an ISO-2022 form and it
 makes sense for one plugin to handle both. -->
-<CODE>FontForgeInit</CODE> �̒��� 2 �ȏ�̕���o�^���邱�Ƃ��ł��܂��B�Ⴆ�΁A�����̕����������� EUC �`�� ISO-2022 �`�������Ă���̂ŁA1 �̃v���O�C������������舵�����Ƃɂ͈Ӗ�������܂��B
+<CODE>FontForgeInit</CODE> の中で 2 個以上の物を登録することができます。例えば、多くの符号化方式は EUC 形と ISO-2022 形をもっているので、1 個のプラグインが両方を取り扱うことには意味があります。
 <P>
 <!--
 <CODE>FontForgeInit</CODE> should return 1 if it succeeds, and 0 if it fails.
 If it fails FontForge will dlclose() the library. -->
-<CODE>FontForgeInit</CODE> �͐������ɂ� 1 ��Ԃ��A���s���ɂ� 0 ��Ԃ��܂��B���s�����ꍇ�ɂ́AFontForge �� dlclose() ���Ăяo���ă��C�u�������폜���܂��B
+<CODE>FontForgeInit</CODE> は成功時には 1 を返し、失敗時には 0 を返します。失敗した場合には、FontForge は dlclose() を呼び出してライブラリを削除します。
 <P>
 <!--
 When you write your plugin you should include "plugins.h" from the fontforge
 directory. -->
-�v���O�C�����������ɂ́Afontforge �f�B���N�g���ɂ���gplugins.h�h���Ăяo���ׂ��ł��B
+プラグインを書く時には、fontforge ディレクトリにある“plugins.h”を呼び出すべきです。
 <P>
 <!--
 Look in the plugins subdirectory for an example on how to create, build &amp;
 install a plugin. -->
-�ǂ̂悤�ɂ��ăv���O�C�����쐬���A�r���h���ăC���X�g�[�����邩�ɂ��ẮAplugins �T�u�f�B���N�g���̗���Q�Ƃ��Ă��������B
+どのようにしてプラグインを作成し、ビルドしてインストールするかについては、plugins サブディレクトリの例を参照してください。
 </DIV>
 </BODY></HTML>

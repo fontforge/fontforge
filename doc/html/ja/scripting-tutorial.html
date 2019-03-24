@@ -4,82 +4,83 @@
   <!-- AP: Created on: 21-Apr-2006 -->
   <!-- AP: Last modified: 21-Apr-2006 -->
 <!--<TITLE>FontForge Scripting Tutorial</TITLE>-->
-    <TITLE>FontForge �X�N���v�g�̃`���[�g���A��</TITLE>
+    <TITLE>FontForge スクリプトのチュートリアル</TITLE>
   <LINK REL="icon" href="../fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 </HEAD>
 <BODY>
 <DIV id="in">
   <H1 ALIGN=Center>
 <!--FontForge Scripting Tutorial-->
-    FontForge �X�N���v�g�̃`���[�g���A��
+    FontForge スクリプトのチュートリアル
   </H1>
   <P>
   <UL>
     <LI>
 <!--  <A HREF="scripting-tutorial.html#simple">A simple example</A> -->
-      <A HREF="scripting-tutorial.html#simple">�ȒP�ȗ�</A>
+      <A HREF="scripting-tutorial.html#simple">簡単な例</A>
       <UL>
 	<LI>
 <!--	  <A HREF="scripting-tutorial.html#simple">Stating the problem</A> -->
-	  <A HREF="scripting-tutorial.html#simple">���̉��</A>
+	  <A HREF="scripting-tutorial.html#simple">問題の解説</A>
 	<LI>
 <!--	  <A HREF="scripting-tutorial.html#Intial">Initial solution</A> -->
-	  <A HREF="scripting-tutorial.html#Intial">�Ƃ肠�����̉����@</A>
+	  <A HREF="scripting-tutorial.html#Intial">とりあえずの解決法</A>
 	<LI>
 <!--	  <A HREF="#RealWorld">Real world considerations</A> -->
-	  <A HREF="#RealWorld">�����E�ōl�����ׂ�����</A>
+	  <A HREF="#RealWorld">実世界で考慮すべき事柄</A>
 	<LI>
 <!--	  <A HREF="#Invoking">Invoking a script and passing it arguments</A> -->
-	  <A HREF="#Invoking">�X�N���v�g�̋N���@�E�����̓n����</A>
+	  <A HREF="#Invoking">スクリプトの起動法・引数の渡し方</A>
 	<LI>
 <!--	  <A HREF="scripting-tutorial.html#loops">Using loops</A> -->
-	  <A HREF="scripting-tutorial.html#loops">���[�v�̎g����</A>
+	  <A HREF="scripting-tutorial.html#loops">ループの使い方</A>
 	<LI>
 <!--	  <A HREF="scripting-tutorial.html#Complexities">Complexities</A> -->
-	  <A HREF="scripting-tutorial.html#Complexities">��蕡�G�ȗ�</A>
+	  <A HREF="scripting-tutorial.html#Complexities">より複雑な例</A>
       </UL>
     <LI>
 <!--  <A HREF="scripting-tutorial.html#OtherExamples">Other Examples</A> -->
-      <A HREF="scripting-tutorial.html#OtherExamples">���̑��̎���</A>
+      <A HREF="scripting-tutorial.html#OtherExamples">その他の実例</A>
       <UL>
 	<LI>
 <!--	  <A HREF="#Accented">Adding accented characters to a type1 font</A> -->
-	  <A HREF="#Accented">Type1 �t�H���g�ɃA�N�Z���g��������ǉ�����</A>
+	  <A HREF="#Accented">Type1 フォントにアクセントつき文字を追加する</A>
 	<LI>
 <!--	  <A HREF="#GSUB">Merging a type1 and type1 expert font and creating appropriate
 	  GSUB tables.</A> -->
-	  <A HREF="#GSUB">Type1 �t�H���g�� Type1 �G�L�X�p�[�g�t�H���g�𕹍����A�K�؂� GSUB �e�[�u�����쐬����</A>
+	  <A HREF="#GSUB">Type1 フォントと Type1 エキスパートフォントを併合し、適切な GSUB テーブルを作成する</A>
       </UL>
     <LI>
 <!--  <A HREF="scripting.html#Example">Examples elsewhere</A> -->
-      <A HREF="scripting.html#Example">���̑��̎���W</A>
+      <A HREF="scripting.html#Example">この他の実例集</A>
   </UL>
   <P>
 <!--
   I try to keep things at a fairly elementary level, but this is <EM>not</EM>
   an attempt to teach programming. -->
-  �������ƂĂ�����₷���������ł͂���܂����A�����Ńv���O����������������<EM>����܂���</EM>�B
+  説明をとても解りやすくするつもりではありますが、ここでプログラムを教えるつもりは<EM>ありません</EM>。
   <H2>
 <!--<A NAME="simple">A simple example</A>-->
-    <A NAME="simple">�ȒP�ȗ�</A>
+    <A NAME="simple">簡単な例</A>
   </H2>
   <P>
 <!--
   Suppose you have a Type1 PostScript font (a pfb/afm combination) and you
   would like to convert it into a TrueType font. What would a script look like
   that could do this? -->
-  (PFB �� AFM ���΂ɂȂ���) Type1 �`���� PostScript �t�H���g�������āA����� TrueType�t�H���g��ϊ����������̂Ƃ��܂��傤�B������s���̂ɂ͂ǂ̂悤�ȃX�N���v�g�������΂����̂ł��傤?
+  (PFB と AFM が対になった) Type1 形式の PostScript フォントがあって、それを TrueTypeフォントを変換したいものとしましょう。これを行うのにはどのようなスクリプトを書けばいいのでしょう?
   <P>
 <!--
   If you were doing this with the UI you would first
   <A HREF="filemenu.html#Open">File-&gt;Open</A> the font and then
   <A HREF="filemenu.html#Generate">File-&gt;Generate</A> a truetype font. You
   do essentially the same thing when writing a script: -->
-  ����� UI ��ōs���ꍇ�ɂ́A�t�H���g�� <A HREF="filemenu.html#Open">�t�@�C��((<U>F</U>)���J��(<U>O</U>)</A> �ŊJ���A������ <A HREF="filemenu.html#Generate">�t�@�C��((<U>F</U>)���t�H���g���o��(<U>G</U>)...</A> �� TrueType �t�H���g�������o���܂��B�X�N���v�g���������ɂ́A����Ɩ{���I�ɓ��������s�����ƂɂȂ�܂��B
+  これを UI 上で行う場合には、フォントを <A HREF="filemenu.html#Open">ファイル((<U>F</U>)→開く(<U>O</U>)</A> で開き、続いて <A HREF="filemenu.html#Generate">ファイル((<U>F</U>)→フォントを出力(<U>G</U>)...</A> で TrueType フォントを書き出します。スクリプトを書く時には、これと本質的に同じ事を行うことになります。
   <H3>
 <!--<A NAME="Intial">Intial Solution</A> -->
-    <A NAME="Intial">�Ƃ肠�����̉����@</A>
+    <A NAME="Intial">とりあえずの解決法</A>
   </H3>
   <BLOCKQUOTE>
     <PRE><A HREF="scripting-alpha.html#Open">Open</A>($1)
@@ -90,46 +91,46 @@
 <!--
   There is usually a scripting function with the same name as a menu command
   (well, the same as the English name of the menu command). -->
-  ��̂ɂ����āA���j���[�R�}���h�Ɠ������O�̃X�N���v�g�֐������݂��܂� (�܂��A�p�ꃁ�j���[�̃R�}���h���Ɠ����������ł���)�B
+  大体において、メニューコマンドと同じ名前のスクリプト関数が存在します (まあ、英語メニューのコマンド名と同じ物だけですが)。
   <P>
 <!--
   '<A HREF="scripting.html#variables">$1</A>' is magic. It means the
   <A HREF="#Invoking">first argument passed to the script</A>. -->
-  '<A HREF="scripting.html#variables">$1</A>' �͂��܂��Ȃ��ł��B�����<A HREF="#Invoking">�X�N���v�g�ɓn���ŏ��̈���</A>�̈Ӗ��ł��B
+  '<A HREF="scripting.html#variables">$1</A>' はおまじないです。これは<A HREF="#Invoking">スクリプトに渡す最初の引数</A>の意味です。
   <P>
 <!--
   '<A HREF="scripting.html#Expressions">$1:r + ".ttf" </A>' is even more
   complicated magic. It means: 'take the first argument ($1) and remove the
   extension (which is probably ".pfb") and then append the string ".ttf" to
   the filename.' -->
-  '<A HREF="scripting.html#Expressions">$1:r + ".ttf" </A>' �͂����ƕ��G�Ȃ��܂��Ȃ��ł��B���̈Ӗ��́A�u�ŏ��̈��� (<CODE>$1</CODE>) �����A�g���q (�����炭 ".pfb" ) ���폜���A������ ".ttf" ���t�@�C�����ɕt��������v�Ƃ������̂ł��B
+  '<A HREF="scripting.html#Expressions">$1:r + ".ttf" </A>' はずっと複雑なおまじないです。その意味は、「最初の引数 (<CODE>$1</CODE>) を取り、拡張子 (おそらく ".pfb" ) を削除し、文字列 ".ttf" をファイル名に付け加える」というものです。
   <P>
 <!--
   The Generate scripting command decides what type of font to generate depending
   on the extension of the filename you give it. Here we give it an extension
   of "ttf" which means truetype. -->
-  �X�N���v�g�R�}���h Generate �́A�ǂ̃^�C�v�̃t�H���g���o�͂��邩��^����ꂽ�g���q�ɂ���Č��肵�܂��B���̗�ł́gttf�h�Ȃ̂� TrueType ���w�肵�Ă��܂��B
+  スクリプトコマンド Generate は、どのタイプのフォントを出力するかを与えられた拡張子によって決定します。この例では“ttf”なので TrueType を指定しています。
   <P>
 <!--
   Note that I make no attempt to load an afm file. That's because the Open
   command will do this automagically if it is in the same directory as the
   pfb. -->
-  AFM �t�@�C����ǂݍ��ނ悤�Ɏw�肵�Ă��Ȃ����Ƃɒ��ӂ��ĉ������B����́AOpen �R�}���h�� PFB �Ɠ����f�B���N�g���ɂ��邩�ǂ����������I�Ƀ`�F�b�N���Ă��邩��ł��B
+  AFM ファイルを読み込むように指定していないことに注意して下さい。これは、Open コマンドが PFB と同じディレクトリにあるかどうかを自動的にチェックしているからです。
   <H3>
 <!--<A NAME="RealWorld">Real World Considerations</A> -->
-    <A NAME="RealWorld">�����E�ōl�����ׂ�����</A>
+    <A NAME="RealWorld">実世界で考慮すべき事柄</A>
   </H3>
   <P>
 <!--
   So that's what the script looks like. To be useful it should probably live
   in a file of its own. So create a file called "convert.pe" and store the
   above script in it. -->
-  �X�N���v�g���ǂ̂悤�Ȃ��̂��ɂ��Đ������܂����B��������p�I�ȕ��ɂ���ɂ́A���̃f�[�^���i�[�����p�̃t�@�C���������炭�K�v�ł��傤�B�gconvert.pe�h�Ƃ������O�̃t�@�C�����쐬���A��L�̃X�N���v�g������Ɋi�[���܂��B
+  スクリプトがどのようなものかについて説明しました。これを実用的な物にするには、このデータを格納する専用のファイルがおそらく必要でしょう。“convert.pe”という名前のファイルを作成し、上記のスクリプトをそれに格納します。
   <P>
 <!--
   But to be even more useful you should add a comment line to the beginning
   of the script (a comment line is one that starts with the '#' character: -->
-  �������A�����y���ɗL�p�ȕ��ɂ��邽�߂ɁA�X�N���v�g�̐擪�� 1 �s�̃R�����g�s��ǉ�����ׂ��ł� (�R�����g�s�Ƃ͕����e#�f�Ŏn�܂�s�̂��Ƃł�)�B
+  しかし、それを遥かに有用な物にするために、スクリプトの先頭に 1 行のコメント行を追加するべきです (コメント行とは文字‘#’で始まる行のことです)。
   <BLOCKQUOTE>
     <PRE>#!/usr/local/bin/fontforge
 Open($1)
@@ -139,7 +140,7 @@ Generate($1:r + ".ttf")
   <P>
 <!--
   Having done that type: -->
-  ���̂悤�ɋL�q�����Ȃ�Έȉ��̂悤�Ƀ^�C�v���܂�:
+  このように記述したならば以下のようにタイプします:
   <BLOCKQUOTE id="shell">
     <PRE>$ chmod +x convert.pe
 </PRE>
@@ -148,19 +149,19 @@ Generate($1:r + ".ttf")
 <!--
   This comment is not important to fontforge, but it is meaningful to the unix
   shell, as we will see in the next section. -->
-  ���̃R�����g�� FontForge �ɂƂ��ďd�v�ł͂���܂��񂪁AUnix �V�F���ł͈Ӗ�������܂��B����ɂ��Ă͎��̃Z�N�V�����Ő������܂��B
+  このコメントは FontForge にとって重要ではありませんが、Unix シェルでは意味があります。これについては次のセクションで説明します。
   <H3>
 <!--<A NAME="Invoking">Invoking a script and passing it arguments</A>-->
-    <A NAME="Invoking">�X�N���v�g�̋N���@�ƈ����̎w����@</A>
+    <A NAME="Invoking">スクリプトの起動法と引数の指定方法</A>
   </H3>
   <P>
 <!--
   Ok, now we've got basic script. How do we use it? -->
-  OK, ����Ŋ�{�I�ȃX�N���v�g���ł��܂����B�g���ɂ͂ǂ�����̂ł��傤��?
+  OK, これで基本的なスクリプトができました。使うにはどうするのでしょうか?
   <P>
 <!--
   Well we can pass it to FontForge directly by typing -->
-  �܂��A�ȉ��̂悤�Ƀ^�C�v���� FontForge �ɒ��ړn�����Ƃ��ł��܂����A
+  まあ、以下のようにタイプして FontForge に直接渡すこともできますが、
   <BLOCKQUOTE id="shell">
     <PRE>$ fontforge -script convert.pe foo.pfb
 </PRE>
@@ -168,7 +169,7 @@ Generate($1:r + ".ttf")
   <P>
 <!--
   But if you added the comment above you can also type: -->
-  �O�q�̃R�����g��ǉ����Ă���Ȃ�΁A�ȉ��̂悤�Ƀ^�C�v����Ώ\���ł�:
+  前述のコメントを追加しているならば、以下のようにタイプすれば十分です:
   <BLOCKQUOTE id="shell">
     <PRE>$ convert.pe foo.pfb
 </PRE>
@@ -176,17 +177,17 @@ Generate($1:r + ".ttf")
   <P>
 <!--
   And the shell knows to call fontforge to process the script. -->
-  ���̏ꍇ�V�F���́A�X�N���v�g���������邽�߂� FontForge ���Ăяo�����Ƃ�m���Ă��܂��B
+  この場合シェルは、スクリプトを処理するために FontForge を呼び出すことを知っています。
   <H3>
 <!--<A NAME="loops">Using loops</A> -->
-    <A NAME="loops">���[�v�̎g����</A>
+    <A NAME="loops">ループの使い方</A>
   </H3>
   <P>
 <!--
   That's all well and good, but if you have lots of fonts to convert this might
   get tedious. So let's change our script so it will take lots of filenames
   which we can then process one at a time. -->
-  ����łǂ��ɂ����͖����̂ł����A�����̃t�H���g��ϊ��������ƂȂ������ɂ́A����͖ʓ|�ȍ�ƂƂȂ�ł��傤�B���������킯�ŁA�����̃t�@�C�������Ƃ�悤�ɕύX���A��x�ɂ����������ł���悤�ɂ��܂��傤�B
+  これでどこにも問題は無いのですが、多数のフォントを変換したいとなった時には、それは面倒な作業となるでしょう。そういうわけで、多数のファイル名をとるように変更し、一度にそれらを処理できるようにしましょう。
   <BLOCKQUOTE>
     <PRE>#!/usr/local/bin/fontforge
 i=1
@@ -203,11 +204,11 @@ endloop
   <CODE>$argv</CODE>. The first is simple the number of arguments passed to
   this script, while the second is an array containing all those arguments,
   and <CODE>$argv[i]</CODE> means the i'th argument passed. -->
-  �����ŉ�X�� <CODE>$argc</CODE> �� <CODE>$argv</CODE> �Ƃ����ϐ��𓱓����܂����B�O�҂͂��̃X�N���v�g�ɑ΂��Ďw�肵������P�ɕ\���A��҂͂����̈��������ׂĊ܂ޔz��ł�����A<CODE>$argv[i]</CODE> �� i �ԖڂɎw�肵�������Ƃ������ƂɂȂ�܂��B
+  ここで我々は <CODE>$argc</CODE> と <CODE>$argv</CODE> という変数を導入しました。前者はこのスクリプトに対して指定した個数を単に表し、後者はそれらの引数をすべて含む配列ですから、<CODE>$argv[i]</CODE> は i 番目に指定した引数ということになります。
   <P>
 <!--
   Then we have: -->
-  ���ɁA�ȉ��̋L�q������܂�:
+  次に、以下の記述が現れます:
   <BLOCKQUOTE>
     <PRE>i=1
 </PRE>
@@ -216,18 +217,18 @@ endloop
 <!--
   This declares that we have a local variable called "i" and assigns it the
   value 1. -->
-  ����́A�gi�h�Ƃ������[�J���ϐ���p���邱�Ƃ�錾���A����ɒl 1 �������Ă��܂��B
+  これは、“i”というローカル変数を用いることを宣言し、それに値 1 を代入しています。
   <P>
 <!--
   The while loop will execute all statements between the "<CODE>while</CODE>"
   keyword and the "<CODE>endloop</CODE>" keyword as long as the condition <CODE>(
   i&lt;$argv ) </CODE>is true. In other words as long as there are more arguments
   to convert the loop will keep going. -->
-  while ���[�v�́g"<CODE>while</CODE>�h�L�[���[�h�Ɓg<CODE>endloop</CODE>�h�L�[���[�h�̊Ԃɂ��邷�ׂĂ̕����A���� <CODE>(i&lt;$argv )</CODE> ���^�ł��������s���܂��B�����ւ���΁A�܂��ϊ����s���ׂ����������݂������A���̃��[�v�͎��s���ꑱ���܂��B
+  while ループは“"<CODE>while</CODE>”キーワードと“<CODE>endloop</CODE>”キーワードの間にあるすべての文を、条件 <CODE>(i&lt;$argv )</CODE> が真である限り実行します。言い替えれば、まだ変換を行うべき引数が存在する限り、このループは実行され続けます。
   <P>
 <!--
   And we can invoke this script with -->
-  ����ɂ��A��X�͂��̃X�N���v�g��
+  これにより、我々はこのスクリプトを
   <BLOCKQUOTE id="shell">
     <PRE>$ convert.pe *.pfb
 </PRE>
@@ -235,17 +236,17 @@ endloop
   <P>
 <!--
   Or something similar. -->
-  �܂��͉��炩�̓��l�̃R�}���h�ɂ����s���邱�Ƃ��ł��܂��B
+  または何らかの同様のコマンドにより実行することができます。
   <H3>
 <!--<A NAME="Complexities">Complexities</A> -->
-    <A NAME="Complexities">��蕡�G�ȗ�</A>
+    <A NAME="Complexities">より複雑な例</A>
   </H3>
   <P>
 <!--
   Now suppose that you wanted a script that could convert a truetype font to
   an opentype font as well as a type1 font to a truetype. Well let's make our
   script even more complex: -->
-  �����ŁAType1 �t�H���g���� TrueType �ւ̕ϊ��ɉ����ATrueType �t�H���g�� OpenType �t�H���g�ɕϊ����邱�Ƃ��ł���X�N���v�g���K�v�ɂȂ����Ƃ��܂��傤�B�ł͂��̃X�N���v�g�������ƕ��G�ɂ��Ă݂܂��傤:
+  ここで、Type1 フォントから TrueType への変換に加え、TrueType フォントを OpenType フォントに変換することができるスクリプトが必要になったとしましょう。ではこのスクリプトをもっと複雑にしてみましょう:
   <BLOCKQUOTE>
     <PRE>#!/usr/local/bin/fontforge
 i=1
@@ -265,7 +266,7 @@ endloop
   <P>
 <!--
   And this could be invoked with something like: -->
-  �����āA���̃X�N���v�g�̋N���@�͈ȉ��̂悤�ɂȂ�܂�:
+  そして、このスクリプトの起動法は以下のようになります:
   <BLOCKQUOTE id="shell">
     <PRE>$ convert.pe --format ".ttf" *.pfb --format ".otf" *.ttf
 </PRE>
@@ -276,7 +277,7 @@ endloop
   of output we want to use from now on. We initialize it to truetype, ".ttf",
   but if the user gives us an argument called "- -format" (or "-format") then
   we change the output to be whatever the user asked for. -->
-  �����ł́A<CODE>format</CODE> �Ƃ����V�����ϐ��𓱓����Ă��܂��B����́A���������Ŏg�p����o�͌`����\���܂��B���̒l�͂܂� TrueType �́g.ttf�h�ŏ���������܂����A���[�U���g--format�h(�܂��́g-format�h) �Ƃ����������w�肵���Ȃ�΁A�ǂ�ȏo�͌`���ɂł��A���[�U���w�肵�Đ؂�ւ��邱�Ƃ��ł��܂��B
+  ここでは、<CODE>format</CODE> という新しい変数を導入しています。これは、そこから先で使用する出力形式を表します。この値はまず TrueType の“.ttf”で初期化されますが、ユーザが“--format”(または“-format”) という引数を指定したならば、どんな出力形式にでも、ユーザが指定して切り替えることができます。
   <P>
 <!--
   We've introduced the "<CODE>if</CODE>" statement here. This statement will
@@ -285,18 +286,18 @@ endloop
   is true, otherwise it will execute the statements between "<CODE>else</CODE>"
   and "<CODE>endif</CODE>". The || operator means "or", so the condition is
   true if $argv[i] is either "-format" or "- -format". -->
-  �����ŐV�����g<CODE>if</CODE>�h��t�������Ă��܂��B���̕��́A���� <CODE>( $argv[i]=="-format" || $argv[i]=="--format" )</CODE> ���^�ł���ꍇ�Ɂg<CODE>if</CODE>�h�Ɓg<CODE>else</CODE>�h�̊Ԃ̊e�������s���A�U�̏ꍇ�ɂ́g<CODE>else</CODE>�h�Ɓg<CODE>endif</CODE>�h�̊Ԃ̊e�������s���܂��B || ���Z�q�́g�܂��́h���Ӗ����܂��̂ŁA���̏������� $argv[i] ���g-format�h�܂��́g--format�h�̂ǂ��炩�ł��鎞�ɐ^�ɂȂ�܂��B
+  ここで新しく“<CODE>if</CODE>”を付け加えています。この文は、条件 <CODE>( $argv[i]=="-format" || $argv[i]=="--format" )</CODE> が真である場合に“<CODE>if</CODE>”と“<CODE>else</CODE>”の間の各文を実行し、偽の場合には“<CODE>else</CODE>”と“<CODE>endif</CODE>”の間の各文を実行します。 || 演算子は“または”を意味しますので、この条件文は $argv[i] が“-format”または“--format”のどちらかである時に真になります。
   <P>
 <!--
   We really should do some error checking to make sure: -->
-  ���ۂɂ́A�ȉ��̎����m�F���邽�߂ɁA�������̃G���[�`�F�b�N���s���K�v������܂�:
+  実際には、以下の事を確認するために、いくつかのエラーチェックを行う必要があります:
   <UL>
     <LI>
 <!--  There was another argument to store into the <CODE>format</CODE> variable -->
-      <CODE>format</CODE> �ϐ��Ɋi�[���邽�߂̎��̈������w�肳��Ă��邩
+      <CODE>format</CODE> 変数に格納するための次の引数が指定されているか
     <LI>
 <!--  The argument contained a reasonable value (.ttf, .pfb, .otf, .svg, ...) -->
-      �������K�؂Ȓl (.ttf, .pfb, .otf, .svg, �c) ���܂�ł��邩
+      引数が適切な値 (.ttf, .pfb, .otf, .svg, …) を含んでいるか
   </UL>
   <P>
   <BLOCKQUOTE>
@@ -326,12 +327,12 @@ endloop
   Note that when we had a long line we broke it in two by using a backslash.
   Normally the end of a line marks the end of a statement, so we need the backslash
   to indicate the statement continues onto the next line. -->
-  �����s���܂܂�Ă��邽�߁A�o�b�N�X���b�V����p���� 2 �s�ɕ������Ă��邱�Ƃɒ��ӂ��Ă��������B�ʏ�s���͕��̏I����\���܂��̂ŁA�o�b�N�X���b�V����p���Ď��̍s�܂ŕ��������Ă��邱�Ƃ������K�v������̂ł��B
+  長い行が含まれているため、バックスラッシュを用いて 2 行に分割していることに注意してください。通常行末は文の終わりを表しますので、バックスラッシュを用いて次の行まで文が続いていることを示す必要があるのです。
   <P>
 <!--
   Now that will produce a valid postscript font from a truetype one if we want...
   But we can improve on that conversion: -->
-  ����ŁATrueType ���� PostScript �t�H���g��ϊ��������ꍇ�ɂ��A�������o�͂��ł���悤�ɂȂ�܂����B�������A���̕ϊ��������P���邱�Ƃ��ł��܂�:
+  これで、TrueType から PostScript フォントを変換したい場合にも、正しく出力ができるようになりました。しかし、この変換をより改善することができます:
   <BLOCKQUOTE>
     <PRE>#!/usr/local/bin/fontforge
 i=1
@@ -371,14 +372,14 @@ endloop
   to the em while TrueType fonts should have a power of 2 units/em (generally
   2048 or 1024), so enforce these conventions. Finally TrueType fonts only
   support integral (or in some cases half-integral) coordinates for points. -->
-  TrueType �͂��̐�����APostScript ���������̓_���܂ތX��������܂��B�������ASimplify �R�}���h��p����΁A����t�H�[�}�b�g����ʂ̃t�H�[�}�b�g�ւ̕ϊ����s���ۂɁA�_�̌������炷���Ƃ��ł��܂��B�܂��ATrueType �t�H���g�� em �����胆�j�b�g���� 2 �̙p�ł���ׂ��Ȃ̂ɑ΂��APostScript �t�H���g�� em ������ 1000 ���j�b�g�ł���ׂ��ł��B�Ō�ɁATrueType �t�H���g�͓_�̍��W�ɐ����l (�܂��A����ꍇ�ɂ͔������l) �����g�p���邱�Ƃ��ł��܂���B
+  TrueType はその性質上、PostScript よりも多くの点を含む傾向があります。しかし、Simplify コマンドを用いれば、あるフォーマットから別のフォーマットへの変換を行う際に、点の個数を減らすことができます。また、TrueType フォントが em あたりユニット数が 2 の冪であるべきなのに対し、PostScript フォントは em あたり 1000 ユニットであるべきです。最後に、TrueType フォントは点の座標に整数値 (また、ある場合には半整数値) しか使用することができません。
   <H2>
 <!--<A NAME="OtherExamples">Other Examples</A> -->
-    <A NAME="OtherExamples">���̑��̎���</A>
+    <A NAME="OtherExamples">その他の実例</A>
   </H2>
   <H3>
 <!--Adding <A NAME="Accented">Accented</A> Characters -->
-    Type1 �t�H���g��<A NAME="Accented">�A�N�Z���g��</A>������ǉ�����
+    Type1 フォントに<A NAME="Accented">アクセントつき</A>文字を追加する
   </H3>
   <P>
 <!--
@@ -386,7 +387,7 @@ endloop
   With FontForge it is fairly easy to load a Type1 font, add as many possible
   accented characters as the font permits (If the font does not contain ogonek,
   then FF won't be able to create Aogonek). -->
-  Unicode �Œ�`���ꂽ�A�N�Z���g�������̑S�͈͂��܂� Type1 �t�H���g�͂قƂ�ǂ���܂���BFontForge ���g���΁AType1 �t�H���g��ǂݍ��݁A�t�H���g����������  (�t�H���g�ɃI�S�l�N���܂܂�Ă��Ȃ���΁AFF �̓I�S�l�N�� A ���쐬���邱�Ƃ͂ł��܂���) �ł��邾�������̃A�N�Z���g��������ǉ����邱�Ƃ͊ȒP�ł��B
+  Unicode で定義されたアクセントつき文字の全範囲を含んだ Type1 フォントはほとんどありません。FontForge を使えば、Type1 フォントを読み込み、フォントが許す限り  (フォントにオゴネクが含まれていなければ、FF はオゴネクつき A を作成することはできません) できるだけ多くのアクセントつき文字を追加することは簡単です。
   <BLOCKQUOTE>
     <PRE>#!/usr/local/bin/fontforge
 Open($1)
@@ -400,7 +401,7 @@ Generate($1:r + ".otf")
   <H3>
 <!--<A NAME="GSUB">Merging a type1 and type1 expert font and creating appropriate
     GSUB tables.</A> -->
-    <A NAME="GSUB">Type1 �t�H���g�� Type1 �G�L�X�p�[�g�t�H���g�𕹍����A�K�؂� GSUB �e�[�u�����쐬����</A>
+    <A NAME="GSUB">Type1 フォントと Type1 エキスパートフォントを併合し、適切な GSUB テーブルを作成する</A>
   </H3>
   <P>
 <!--
@@ -408,7 +409,7 @@ Generate($1:r + ".otf")
   which included small caps, lower case numbers, etc. Now-a-days that should
   all be stuffed into one otf font with appropriate GSUB entries linking the
   glyphs. -->
-  ���� Adobe �͒ʏ�t�H���g���܂ރt�H���g�p�b�N�ƁA���^�啶���E�m�����C�j���O�����Ȃǂ��܂ށg�G�L�X�p�[�g�h�t�H���g���܂ރt�H���g�p�b�N���o�ׂ��Ă��܂����B���݂ł́A�����͂��ׂāA�K�؂� GSUB ���ڂɂ���ăO���t���m�Ƀ����N������ꂽ 1 �� OTF �t�H���g�ɋl�ߍ��܂�Ă��܂��B
+  かつて Adobe は通常フォントを含むフォントパックと、小型大文字・ノンライニング数字などを含む“エキスパート”フォントを含むフォントパックを出荷していました。現在では、それらはすべて、適切な GSUB 項目によってグリフ同士にリンクが張られた 1 個の OTF フォントに詰め込まれています。
   <BLOCKQUOTE>
     <PRE>#!/usr/local/bin/fontforge
 Open($1)
@@ -420,11 +421,11 @@ SelectAll()
   </BLOCKQUOTE>
   <H3>
 <!--More examples-->
-    ��葽���̗�
+    より多くの例
   </H3>
   <P>
 <!--
   See the <A HREF="scripting.html#Example">page on scripting</A>. -->
-  <A HREF="scripting.html#Example">�X�N���v�g�����Ɋւ���y�[�W</A>���Q�Ƃ��Ă��������B
+  <A HREF="scripting.html#Example">スクリプト処理に関するページ</A>を参照してください。
 </DIV>
 </BODY></HTML>

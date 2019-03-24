@@ -3,9 +3,9 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Dec-2000 -->
   <!-- AP: Last modified: 5-Apr-2006 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!--<TITLE>B&eacute;zier Splines</TITLE>-->
-    <TITLE>B&eacute;zier �X�v���C��</TITLE>
+    <TITLE>B&eacute;zier スプライン</TITLE>
   <LINK REL="icon" href="../fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
@@ -13,7 +13,7 @@
 <DIV id="in">
   <H1 ALIGN=Center>
 <!--  B&eacute;zier<SUP><SMALL><A HREF="#bezier">1</A></SMALL></SUP> Splines -->
-      B&eacute;zier<SUP><SMALL><A HREF="#bezier">1</A></SMALL></SUP> �X�v���C��
+      B&eacute;zier<SUP><SMALL><A HREF="#bezier">1</A></SMALL></SUP> スプライン
   </H1>
   <P>
   <IMG SRC="../splines.gif" WIDTH="172" HEIGHT="179" ALIGN="Left"><!-- Technically
@@ -23,21 +23,21 @@
   end points and that point determines the slope of the spline at both end
   points. Both formats also use lines (which are linear B&eacute;zier splines).
    -->
-  �Z�p�I�ɂ́APostScript �� 3 �� B&eacute;zier �X�v���C�����g�p���܂��B�e����_�́A�Ή�����[�_�ɂ�����X�v���C���̌X�������肵�܂��BTrueType ���g�p���Ă��� 2 �� B&eacute;zier �X�v���C���ł́A2 �̒[�_�̊Ԃɂ� 1 �̐���_�����Ȃ��A���̓_���אڂ��闼���̒[�_�ɂ�����X�������肵�܂��B���t�H�[�}�b�g�Ƃ����� (����͐��`�� B&eacute;zier �X�v���C���ł�) �����p���܂��B
+  技術的には、PostScript は 3 次 B&eacute;zier スプラインを使用します。各制御点は、対応する端点におけるスプラインの傾きを決定します。TrueType が使用している 2 次 B&eacute;zier スプラインでは、2 個の端点の間には 1 個の制御点しかなく、その点が隣接する両方の端点における傾きを決定します。両フォーマットとも直線 (これは線形な B&eacute;zier スプラインです) も併用します。
   <P>
   <IMG SRC="../quadbezier.gif" WIDTH="113" HEIGHT="88" ALIGN="Right"><!--It is also
   possible to have other degree B&eacute;zier splines. For a quartic spline
   there would be 3 control points, for a quintic 4 control points, etc. Of
   these only the linear, quadratic and cubic splines are interesting to us--
   those used by TrueType and PostScript. -->
-  ���̎����� B&eacute;zier �X�v���C�����쐬���邱�Ƃ��\�ł��B4 ���X�v���C���ł� 3 �̐���_�����݂��A5 ���X�v���C���ł� 4 �̐���_���A�Ƃ�����ł��B���̂Ȃ��ŉ�X���֐S�������Ă���̂͐��`, 2 ���� 3 ���̃X�v���C���ł��\�\������ TrueType �� PostScript �Ŏg�p����Ă��܂��B
+  他の次数の B&eacute;zier スプラインを作成することも可能です。4 次スプラインでは 3 個の制御点が存在し、5 次スプラインでは 4 個の制御点が、という具合です。そのなかで我々が関心をもっているのは線形, 2 次と 3 次のスプラインです——それらは TrueType と PostScript で使用されています。
   <P>
 <!--
   The examples at left are cubic splines with two control points, each determining
   the slope at the nearest end point, while the example at right shows a quadratic
   spline with one control point used to determine the slopes at both end points.
   -->
-  ���̗�� 2 �̐���_������ 3 ���X�v���C���ŁA���ꂼ��߂����̒[�_�ɂ�����X�������肵�Ă��܂��B����A�E�Ɏ�������� 2 ���X�v���C���ŁA1 �̐���_�������̒[�_�ɂ�����X�������肵�Ă��܂��B
+  左の例は 2 個の制御点をもつ 3 次スプラインで、それぞれ近い側の端点における傾きを決定しています。一方、右に示した例は 2 次スプラインで、1 個の制御点が両側の端点における傾きを決定しています。
   <P>
 <!--
   In general if there are n+1 points labeled P<SUB>0</SUB>, P<SUB>1</SUB>,
@@ -47,11 +47,11 @@
   If there are two points then this is just the line between the two end points,
   if three then the quadratic spline used by TrueType, if four then the cubic
   spline used by PostScript. -->
-  ��ʓI�ɁAP<SUB>0</SUB>, P<SUB>1</SUB>,... P<SUB>n</SUB> �Ƃ������x���̂��� (n+1) �̓_������ꍇ�AP<SUB>0</SUB> �� P<SUB>n</SUB> ���[�_�ƂȂ� (���̑��͂��ׂĐ���_�ł�)�AB&eacute;zier �X�v���C�����`���铙���́A<IMG SRC="../bezier.gif" WIDTH="137" HEIGHT="56" ALIGN="Middle"> �ƂȂ�܂��B�_�� 2 �̂Ƃ��́A����͒P�� 2 �̒[�_�����Ԑ����ƂȂ�܂��B�_�� 3 �̂Ƃ��� TrueType �ŗp�����Ă��� 2 ���X�v���C���ŁA4 �̂Ƃ��� PostScript �ŗp�����Ă��� 3 ���X�v���C���ł��B
+  一般的に、P<SUB>0</SUB>, P<SUB>1</SUB>,... P<SUB>n</SUB> というラベルのついた (n+1) 個の点がある場合、P<SUB>0</SUB> と P<SUB>n</SUB> が端点となり (その他はすべて制御点です)、B&eacute;zier スプラインを定義する等式は、<IMG SRC="../bezier.gif" WIDTH="137" HEIGHT="56" ALIGN="Middle"> となります。点が 2 個のときは、これは単に 2 個の端点を結ぶ線分となります。点が 3 個のときは TrueType で用いられている 2 次スプラインで、4 個のときは PostScript で用いられている 3 次スプラインです。
   <P>
 <!--
   A cubic B&eacute;zier curve may be viewed as: -->
-  3 �� B&eacute;zier �Ȑ��͂̂悤�ɕ\�����邱�Ƃ��ł��܂�:
+  3 次 B&eacute;zier 曲線はのように表示することができます:
   <BLOCKQUOTE>
     x = a<SUB>x</SUB>*t<SUP>3</SUP> + b<SUB>x</SUB>*t<SUP>2</SUP> +
     c<SUB>x</SUB>*t +d<SUB>x</SUB><BR>
@@ -61,7 +61,7 @@
   <P>
 <!--
   Where -->
-  ������
+  ここで
   <TABLE CELLPADDING="2">
     <TR>
       <TD>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
@@ -84,11 +84,11 @@
       <TD>a<SUB>y</SUB> = P3.y-3*P2.y+3*P1.y-P0.y</TD>
     </TR>
   </TABLE>
-  �ł��B
+  です。
   <P>
 <!--
   And a quadratic B&eacute;zier curve: -->
-  �܂��A2 �� B&eacute;zier �Ȑ��͈ȉ��̂悤�ɂȂ�܂�:
+  また、2 次 B&eacute;zier 曲線は以下のようになります:
   <TABLE CELLPADDING="2">
     <TR>
       <TD>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
@@ -109,7 +109,7 @@
   <P>
 <!--
   And a line: -->
-  �����Ē����͈ȉ��̂Ƃ���ł�:
+  そして直線は以下のとおりです:
   <TABLE CELLPADDING="2">
     <TR>
       <TD>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
@@ -124,17 +124,17 @@
   </TABLE>
   <H2>
 <!--  Converting <A NAME="ttf2ps">TrueType to PostScript</A>-->
-      <A NAME="ttf2ps">TrueType �� PostScript ��</A>�ϊ�������@
+      <A NAME="ttf2ps">TrueType を PostScript に</A>変換する方法
   </H2>
   <P>
 <!--
   Lines convert with no math whatsoever. -->
-  �����̃t�H�[�}�b�g�ϊ��ɂ͐��w�͈�ؕK�v����܂���.
+  直線のフォーマット変換には数学は一切必要ありません.
   <P>
 <!--
   Any quadratic spline can be expressed as a cubic (where the cubic term is
   zero). The end points of the cubic will be the same as the quadratic's. -->
-  �C�ӂ� 2 ���X�v���C���� 3 ���̕\���������܂� (���̏ꍇ�A3 ���̍��� 0 �ƂȂ�)�B3 ���̂Ƃ��̒[�_�� 2 ���̂Ƃ��Ɠ����ł��B
+  任意の 2 次スプラインは 3 次の表現をもちます (その場合、3 次の項が 0 となる)。3 次のときの端点は 2 次のときと同じです。
   <BLOCKQUOTE>
     CP<SUB>0</SUB> = QP<SUB>0</SUB><BR>
     CP<SUB>3</SUB> = QP<SUB>2</SUB>
@@ -142,7 +142,7 @@
   <P>
 <!--
   The two control points for the cubic are: -->
-  3 ���\���ł� 2 �̐���_�́A�ȉ��̂悤�ɂȂ�܂��B
+  3 次表現での 2 個の制御点は、以下のようになります。
   <BLOCKQUOTE>
     CP<SUB>1</SUB> = QP<SUB>0</SUB> + 2/3
     *(QP<SUB>1</SUB>-QP<SUB>0</SUB>)<BR>
@@ -152,7 +152,7 @@
 <!--
   So converting from TrueType to PostScript is trivial. There is a slight error
   introduced due to rounding, but it is unlikely to be noticeable. -->
-  �ł�����ATrueType ���� PostScript �ւ̕ϊ��͎����ł��B�ۂ߂ɔ��������Ȍ덷�͂���܂����A����͂قƂ�ǋC�Â��Ȃ����x�̂��̂ł��B
+  ですから、TrueType から PostScript への変換は自明です。丸めに伴う微小な誤差はありますが、それはほとんど気づかない程度のものです。
   <P>
 <!--
   (Anish Mehta points out that in truetype it is possible to specify points
@@ -160,17 +160,17 @@
   These will also introduce rounding errors when converted to postscript, but
   here the solution is simple: Scale the em-square of the font by a factor
   of 2 and the problem vanishes). -->
-  (Anish Mehta ����ATrueType �ł̓s�N�Z���̒��ԂɈʒu����_���w�肷�� (���Ȃ킿�Ax �� y �̒l�� 1/2 �̒[��������) ���Ƃ��ł���Ƃ����w�E���󂯂܂����B����� PostScript �ւ̕ϊ����s���Ƃ��Ɋۂߌ덷���������ތ����ƂȂ蓾�܂��B�������������@�͒P���ł�: �t�H���g�� EM �����`�� 2 �{�Ɋg�傷��΁A���͂Ȃ��Ȃ�܂�)�B
+  (Anish Mehta から、TrueType ではピクセルの中間に位置する点を指定する (すなわち、x や y の値が 1/2 の端数をもつ) ことができるという指摘を受けました。これも PostScript への変換を行うときに丸め誤差を持ち込む原因となり得ます。しかし解決方法は単純です: フォントの EM 正方形を 2 倍に拡大すれば、問題はなくなります)。
   <H2>
 <!--  Converting <A NAME="ps2ttf">Postscript to TrueType</A>-->
-      <A NAME="ps2ttf">PostScript �� TrueType ��</A>�ϊ�������@
+      <A NAME="ps2ttf">PostScript を TrueType に</A>変換する方法
   </H2>
   <P>
 <!--
   Most cubic splines cannot be represented exactly by a quadratic (or even
   by a series of quadratics). The best that can be done is to approximate the
   cubic to within some margin of error. Here is a way to do that: -->
-  �قƂ�ǂ��ׂĂ� 3 ���X�v���C���� 2 ���X�v���C���Ő��m�ɕ\�����邱�Ƃ��ł��܂��� (����ǂ��납�A2 ���X�v���C����A�����Ă��\���ł��܂���)�B�\�ȍŗǂ̎�i�́A3 ���Ȑ���������x�̋��e�덷�͈̔͂ŋߎ����邱�Ƃł��B�����ɂ�����s�����@�������܂�:
+  ほとんどすべての 3 次スプラインは 2 次スプラインで正確に表現することができません (それどころか、2 次スプラインを連結しても表現できません)。可能な最良の手段は、3 次曲線をある程度の許容誤差の範囲で近似することです。ここにそれを行う方法を示します:
   <P>
 <!--
   Given a cubic spline. Look at two points on the spline. Then there is only
@@ -178,10 +178,10 @@
   slope at those two points. (the one quadratic has its end points as the end
   points of the interval, and its control point is determined by the intersections
   of the lines tangent to the cubic at the start and end of the interval). -->
-  3 ���X�v���C�����^����ꂽ�Ƃ��܂��傤�B�X�v���C����� 2 �̓_�ɒ��ڂ��܂��傤�B���̏ꍇ�A������ 2 �_�ɂ�����X�������߂�l�ł���X�v���C���́A����� 2 �̓_�̊Ԃ� 1 �{�����������Ƃ��ł��܂���B(���� 2 ���Ȑ��́A���̋�Ԃ̒[�_��[�_�Ƃ��A���̐���_�́A3 ���Ȑ��̂��̋�Ԃ̎n�_�ƏI�_�ɂ�����ڐ��̌�_�ł�)�B
+  3 次スプラインが与えられたとしましょう。スプライン上の 2 個の点に注目しましょう。その場合、それらの 2 点における傾きが求める値であるスプラインは、それら 2 個の点の間に 1 本しか引くことができません。(その 2 次曲線は、その区間の端点を端点とし、その制御点は、3 次曲線のその区間の始点と終点における接線の交点です)。
   <P>
 <!--
-  <IMG SRC="cubic2quad.png" WIDTH="482" HEIGHT="180" ALIGN="Right">I cannot
+  <IMG SRC="../cubic2quad.png" WIDTH="482" HEIGHT="180" ALIGN="Right">I cannot
   prove this, but have determined empirically (after being told it worked)
   that if a cubic spline - - like the quarter ellipse at right - - is divided
   "evenly" into n quadratic splines (here n==3) then the control points will
@@ -189,19 +189,19 @@
   control points - - this means that truetype can represent them as interpolated
   points. An even division means means that each sub-point is placed where
   t=i/n (where 0&lt;i&lt;n). -->
-  <IMG SRC="../cubic2quad.png" WIDTH="482" HEIGHT="180" ALIGN="Right">���͂�����ؖ��ł��Ă��܂��񂪁A3 ���X�v���C�����\�\�E�}�� 4 ���� 1 �ȉ~�̂��Ƃ��An �{�� 2 ���X�v���C�� (�}�ł́An=3) �ւƁ\�\�u�ϓ��Ɂv��������΁A���̐���_���m�̒��_���Ȑ���̓_�ƂȂ�̂ɂ��傤�ǂ悢�䗦�ɂȂ�Ƃ������Ƃ� (������������) �o���I�ȑ��茋�ʂɂ��m���Ă��܂��B����͂܂�ATrueType �ł͂���炪��Ԃ��ꂽ�_�Ƃ��ĕ\���ł���Ƃ������ƂɂȂ�܂��B(�u�ϓ��ȁv�����Ƃ́At=i/n (������ 0&lt;i&lt;n) �̈ʒu�ɓ_��u�����Ƃ��w���܂��B)
+  <IMG SRC="../cubic2quad.png" WIDTH="482" HEIGHT="180" ALIGN="Right">私はこれを証明できていませんが、3 次スプラインを——右図の 4 分の 1 楕円のごとく、n 本の 2 次スプライン (図では、n=3) へと——「均等に」分割すれば、その制御点同士の中点が曲線上の点となるのにちょうどよい比率になるということが (そう教えられて) 経験的な測定結果により知られています。これはつまり、TrueType ではそれらが補間された点として表現できるということになります。(「均等な」分割とは、t=i/n (ただし 0&lt;i&lt;n) の位置に点を置くことを指します。)
   <P>
 <!--
   FontForge first checks to see if the curve is already a quadratic - - this
   might happen if the cubic originally came from a truetype font. If it is
   it simply converts the control point. -->
-  FontForge �́A�Ȑ������� 2 ���Ȑ��ŕ\���\�ɂȂ��Ă��邩���ŏ��Ƀ`�F�b�N���܂��\�\TrueType ����ϊ����� 3 ���Ȑ���������ꍇ�A���̂悤�Ȏ����N����ł��傤�B����ɊY������ꍇ�A����_��P���ɕϊ����邾���ł��B
+  FontForge は、曲線が既に 2 次曲線で表現可能になっているかを最初にチェックします——TrueType から変換して 3 次曲線を作った場合、そのような事が起こるでしょう。それに該当する場合、制御点を単純に変換するだけです。
   <P>
 <!--
   Otherwise FontForge start inserting points. It begins by inserting a single
   point mid-way on the spline. If this produces a good approximation it stops,
   otherwise it tries again with two, three ... additional points. -->
-  ����ȊO�̏ꍇ�AFontForge �͓_�̑}�����J�n���܂��B�܂��ŏ��ɁA�X�v���C���̒����� 1 �̓_��ǉ����邱�Ƃ���n�߂܂��B�����\���ɂ悢�ߎ���������Ȃ炻���Œ�~���܂��B�s�\���Ȃ�� 2 �A3 �c�c�Ɠ_�̌��𑝂₵�ċߎ�����蒼���܂��B
+  それ以外の場合、FontForge は点の挿入を開始します。まず最初に、スプラインの中央に 1 個の点を追加することから始めます。もし十分によい近似が得られるならそこで停止します。不十分ならば 2 個、3 個……と点の個数を増やして近似をやり直します。
   <P>
 <!--
   On each test it will round the control points to integer values because truetype
@@ -209,44 +209,44 @@
   they are interpolated between control points and will be ok if the control
   points are). Then it checks to see if the resultant quadratics are close
   to the original curve. -->
-  TrueType �̍��W�l�͐���������K�v������̂ŁA����̌������ɂ́A����_�𐮐��l�Ɋۂ߂܂� (�Ȑ���̓_�ɑ΂��Ă͂�����s��Ȃ����Ƃɒ��ӂ��Ă��������B����͐���_�̒��_�Ƃ��ĕ�Ԃ����̂ŁA����_�������ɂȂ��Ă���Ώ\���Ȃ̂ł�)�B���ɁA���̌��ʂƂ��Đ������ꂽ 2 ���Ȑ������̋Ȑ��ɋ߂����ǂ������`�F�b�N���܂��B
+  TrueType の座標値は整数しする必要があるので、毎回の検査時には、制御点を整数値に丸めます (曲線上の点に対してはこれを行わないことに注意してください。これは制御点の中点として補間されるので、制御点が整数になっていれば十分なのです)。次に、その結果として生成された 2 次曲線が元の曲線に近いかどうかをチェックします。
   <P>
 <!--
   FontForge may also break the curve at its points of inflection (because no
   quadratic can have one there should be a point there to start a new quadratic)
   and apply the above algorithm to the components. -->
-  FontForge �́A�Ȑ��̕ϋȓ_�ɐV�����_�������ĕ������s���\��������܂� (2 ���Ȑ��̋ȗ������͈��Ȃ̂ŁA�ʏ�͋ȗ��������ω�����_������V���� 2 ���Ȑ��ɕ����A���ꂼ��ɏ�L�̃A���S���Y����K�p����K�v�����邾�낤����ł�)�B
+  FontForge は、曲線の変曲点に新しく点を加えて分割を行う可能性があります (2 次曲線の曲率方向は一定なので、通常は曲率方向が変化する点から先を新しい 2 次曲線に分け、それぞれに上記のアルゴリズムを適用する必要があるだろうからです)。
   <P>
 <!--
   If FontForge can find no good approximation using the above algorithm it
   will fall back to its old method, which is: -->
-  FontForge ����L�̃A���S���Y�����g�p���Ă��܂��ߎ����ł��Ȃ������ꍇ�A�]���̕��@�Ɉڍs���܂��B���̎菇�͈ȉ��̒ʂ�ł�:
+  FontForge が上記のアルゴリズムを使用してうまく近似ができなかった場合、従来の方法に移行します。その手順は以下の通りです:
   <P>
 <!--
   Start from the end of the spline and every so often (ie. within the margin
   of error) check to see if the one permissible quadratic approximation actually
   matches the cubic closely enough . -->
-  �X�v���C����̕Е��̒[�_����n�߁A���� (���Ȃ킿�A���e�덷�͈͓̔���) ���鋖����� 2 ���ߎ����{���ɁA3 ���Ȑ��ɏ\�����ڂɍ��v���Ă��邩���`�F�b�N���܂��B
+  スプライン上の片方の端点から始め、時折 (すなわち、許容誤差の範囲内で) ある許される 2 次近似が本当に、3 次曲線に十分密接に合致しているかをチェックします。
   <P>
 <!--
   If this approximation works then keep it as part of the result, and continue
   the process by advancing our start point along to the cubic spline to the
   end of the quadratic we just created. -->
-  �������̋ߎ������܂��s������A���ʂ̈ꕔ�Ƃ��Ă�����ۑ����A�J�n�_�� 3 ���X�v���C���ɉ����āA�����������܍쐬���� 2 ���Ȑ��̒[�_�Ɍ������ĉ������܂��B
+  もしこの近似がうまく行ったら、結果の一部としてそれらを保存し、開始点を 3 次スプラインに沿って、私たちがいま作成した 2 次曲線の端点に向かって延長します。
   <P>
 <!--
   (There are some slight complexities introduced because there may not be a
   quadratic approximation at a given point (if the tangents happen to be parallel)
   or because the approximation happens to be linear, but these are easily dealt
   with). -->
-  (�w�肳�ꂽ�_�ɂ����� 2 ���ߎ������݂���Ƃ͌���Ȃ� (�Ⴆ�Ό�_�����܂��܌�_�������ꍇ�Ȃ�) ���߁A���炩�̔����ȕ��G�����܂܂�Ă���ꍇ������܂��B�����������͊ȒP�ɉ������邱�Ƃ��ł��܂�)�B
+  (指定された点において 2 次近似が存在するとは限らない (例えば交点がたまたま交点だった場合など) ため、何らかの微妙な複雑さが含まれている場合があります。しかしこれらは簡単に解消することができます)。
   <P>
 <!--
   It may, of course, happen that the "cubic" we are given is actually a quadratic
   (if it's third degree term is 0), the most likely cause is that the font
   came from a truetype source. In that case the control point for the quadratic
   is at: -->
-  �������A�ꍇ�ɂ���ẮA�^����ꂽ�g3 ���Ȑ��h�����ۂɂ� 2 ���Ȑ��ł��邱�Ƃ�����܂� (3 ���̍��� 0 �ł���ꍇ)�B���̍ł�����ӂꂽ�����́A���̃t�H���g�̌��f�[�^�� TrueType �ł���ꍇ�ł��B���̏ꍇ�A2 ���Ȑ��̐���_�͈ȉ��̂悤�ɂȂ�܂�:
+  もちろん、場合によっては、与えられた“3 次曲線”が実際には 2 次曲線であることもあります (3 次の項が 0 である場合)。その最もありふれた原因は、そのフォントの元データが TrueType である場合です。この場合、2 次曲線の制御点は以下のようになります:
   <BLOCKQUOTE>
     QP<SUB>1</SUB> = CP<SUB>0</SUB> + 3/2 * (CP<SUB>1</SUB> - CP<SUB>0</SUB>)
   </BLOCKQUOTE>
@@ -257,10 +257,10 @@
   there. To my eye this actually makes the result worse, it uses more points
   and the approximation does not look as close as it does when ignoring the
   points of inflection. So I ignore them. -->
-  �����l�b�g��œǂ񂾑��̏�񌹂ł́A3 ���X�v���C���ɕϋȓ_ (����� 2 ���Ȑ��ɂ͑��݂��܂���) �����邩�ǂ������`�F�b�N���A�����ŋ����I�ɕ������邱�Ƃ��Ă��Ă��܂��B���̖ڂɂ́A���̕��@�͎��ۂɂ͂�舫�����ʂ������炷�悤�Ɍ����܂��B��葽���̓_���K�v�ɂȂ�A�ߎ����ʂ́A�ϋȓ_�𖳎������Ƃ��قǌ��̐��ɋ߂��Ȃ��悤�Ɍ����܂��B���������킯�ŁA���̒�Ă͖������邱�Ƃɂ��܂����B
+  私がネット上で読んだ他の情報源では、3 次スプラインに変曲点 (これは 2 次曲線には存在しません) があるかどうかをチェックし、そこで強制的に分割することを提案しています。私の目には、この方法は実際にはより悪い結果をもたらすように見えます。より多くの点が必要になり、近似結果は、変曲点を無視したときほど元の線に近くないように見えます。そういうわけで、その提案は無視することにしました。
   <H2>
 <!--  Open Type, another solution-->
-      OpenType, ������̉����@
+      OpenType, もう一つの解決法
   </H2>
   <P>
 <!--
@@ -269,25 +269,25 @@
   essentially a superset of TrueType. Any TrueType font is a valid Open Type
   font, but Open Type fonts can also contain postscript. Anything that supports
   Open Type will not require converting between PostScript and True Type. -->
-  Adobe �� Microsoft �� TrueType �t�H���g�� PostScript �t�H���g�̂ǂ�����i�[���邱�Ƃ��\�ȃt�H���g�t�H�[�}�b�g���쐬���邱�ƂɌ��肵�܂����B����� OpenType �ƌĂ΂�Ă��܂��B����͖{���I�ɂ� TrueType �̊g���ł��B���ׂĂ� TrueType �t�H���g�͐����� OpenType �t�H���g�ł����A OpenType �t�H���g�� PostScript ���܂ނ��Ƃ��ł��܂��BOpenType ���T�|�[�g����V�X�e���ł͂ǂ���APostScript �� TrueType �̊Ԃ̕ϊ���K�v�Ƃ��Ȃ��ł��傤�B
+  Adobe と Microsoft は TrueType フォントと PostScript フォントのどちらを格納することも可能なフォントフォーマットを作成することに決定しました。これは OpenType と呼ばれています。これは本質的には TrueType の拡張です。すべての TrueType フォントは正しい OpenType フォントですが、 OpenType フォントは PostScript を含むこともできます。OpenType をサポートするシステムではどれも、PostScript と TrueType の間の変換を必要としないでしょう。
   <H3>
 <!--  See Also-->
-      �Q��
+      参照
   </H3>
   <UL>
     <LI>
 <!--  <A HREF="pfaeditmath.html">FontForge's math</A>-->
-      <A HREF="pfaeditmath.html">FontForge �̐��w</A>
+      <A HREF="pfaeditmath.html">FontForge の数学</A>
   </UL>
   <P>
   <P>
 <!--
   <SUP><A NAME="bezier">1 </A></SUP>B&eacute;zier splines were developed by
   Pierre B&eacute;zier (1910-1999). -->
-  <SUP><A NAME="bezier">1 </A></SUP>B&eacute;zier �X�v���C���� Pierre B&eacute;zier (1910-1999) �ɂ���ĊJ������܂����B
+  <SUP><A NAME="bezier">1 </A></SUP>B&eacute;zier スプラインは Pierre B&eacute;zier (1910-1999) によって開発されました。
   <P>
   <P ALIGN=Center>
-  �\ <A HREF="sfdformat.html">�O</A> �\ <A HREF="overview.html">�ڎ�</A> �\
-  <A HREF="corpchar.html">��</A> �\
+  — <A HREF="sfdformat.html">前</A> — <A HREF="overview.html">目次</A> —
+  <A HREF="corpchar.html">次</A> —
 </DIV>
 </BODY></HTML>

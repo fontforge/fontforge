@@ -4,10 +4,10 @@
   <!-- AP: Created on: 5-Jun-2002 -->
   <!-- AP: Last modified: 2-Mar-2004 -->
   <LINK REL="icon" href="../fftype16.png">
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!--<TITLE>Extensions to Adobe's Bitmap Distribution Format for greymap (anti-aliased)
   fonts</TITLE> -->
-  <TITLE>Adobe �̃r�b�g�}�b�v�z�z�t�H�[�}�b�g(BDF)�̃O���C�}�b�v(�A���`�G�C���A�X)�t�H���g�ւ̊g��</TITLE>
+  <TITLE>Adobe のビットマップ配布フォーマット(BDF)のグレイマップ(アンチエイリアス)フォントへの拡張</TITLE>
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
@@ -17,7 +17,7 @@
   Extensions to
   <A HREF="http://partners.adobe.com/asn/developer/PDFS/TN/5005.BDF_Spec.pdf">Adobe's
   BDF</A> for greymap fonts -->
-  <A HREF="http://partners.adobe.com/asn/developer/PDFS/TN/5005.BDF_Spec.pdf">Adobe �� BDF</A> �̃O���C�}�b�v�t�H���g�ւ̊g��
+  <A HREF="http://partners.adobe.com/asn/developer/PDFS/TN/5005.BDF_Spec.pdf">Adobe の BDF</A> のグレイマップフォントへの拡張
 </H1>
 <P>
 <!--
@@ -28,15 +28,15 @@ Recently others have started using this same format
 (<A HREF="http://math.nmsu.edu/~mleisher/Software/gbdfed/">gbdfed</A>,
 <A HREF="http://freetype.sf.net/">freetype</A> and
 <A HREF="index.html">fontforge</A>). -->
-Adobe �̓r�b�g�}�b�v�t�H���g��z�z���邽�߂́ABDF �ƌĂ΂��t�H�[�}�b�g���`���Ă��܂��BMicrosoft �͂��̃t�H�[�}�b�g���A�O���C�}�b�v (�A���`�G�C���A�X�B�e�s�N�Z�������ƍ������łȂ��A�����̊D�F�̒��Ԓ���\��) �t�H���g���T�|�[�g���邽�߂Ɋg�����Ă��܂��B�ŋ߁A���̓����t�H�[�}�b�g�����ł�
+Adobe はビットマップフォントを配布するための、BDF と呼ばれるフォーマットを定義しています。Microsoft はこのフォーマットを、グレイマップ (アンチエイリアス。各ピクセルが白と黒だけでなく、多数の灰色の中間調を表す) フォントをサポートするために拡張しています。最近、この同じフォーマットが他でも
 (<A HREF="http://math.nmsu.edu/~mleisher/Software/gbdfed/">gbdfed</A>,
-<A HREF="http://freetype.sf.net/">freetype</A> �����
-<A HREF="index.html">fontforge</A>) �Ŏg���n�߂Ă��܂��B
+<A HREF="http://freetype.sf.net/">freetype</A> および
+<A HREF="index.html">fontforge</A>) で使われ始めています。
 <P>
 <!--
 In Section 3.1 of the format description Adobe defines a "SIZE" keyword.
 MicroSoft has added an optional fourth parameter to this keyword<BR> -->
-�t�H�[�}�b�g�L�q�̃Z�N�V���� 3.1 �� Adobe �́gSIZE�h�L�[���[�h���`���Ă��܂��BMicrosoft �͂��̃L�[���[�h�ɕt���I�� 4 �Ԗڂ̃p�����[�^��ǉ����܂����B<BR>
+フォーマット記述のセクション 3.1 で Adobe は“SIZE”キーワードを定義しています。Microsoft はこのキーワードに付加的な 4 番目のパラメータを追加しました。<BR>
 <BIG><CODE>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;SIZE <I>PointSize XRes YRes
 [Bits_Per_Pixel]</I></CODE></BIG><BR>
 <!--
@@ -44,20 +44,20 @@ This fourth parameter may take the values 1, 2, 4 and 8. If omitted it is
 assumed to be 1. (FontForge will also read in fonts with values of 16 and
 32, but it will simply ignore any low order data and only retain the high
 order byte). -->
-���� 4 �Ԗڂ̃p�����[�^�� 1, 2, 4 ����� 8 �̒l����邱�Ƃ��ł��܂��B�ȗ������ꍇ�́A���̒l�� 1 �ł���ƌ��Ȃ���܂� (FontForge �͒l 16 ����� 32 �̃t�H���g������ǂݍ��ނ��Ƃ��ł��܂����A���ʂ̃f�[�^�͒P���ɖ�������A��ʃo�C�g�݂̂�ێ����܂�)�B
+この 4 番目のパラメータは 1, 2, 4 および 8 の値を取ることができます。省略した場合は、この値は 1 であると見なされます (FontForge は値 16 および 32 のフォントからも読み込むことができますが、下位のデータは単純に無視され、上位バイトのみを保持します)。
 <P>
 <!--
 FontForge will also include a font property<BR> -->
-FontForge �͂܂��A�t�H���g����<BR>
+FontForge はまた、フォント属性<BR>
 <BIG><CODE>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;BITS_PER_PIXEL
 <I>Value</I></CODE></BIG><BR>
 <!--
 in all greymap fonts it generates. -->
-���A�������邷�ׂẴO���C�}�b�v�t�H���g�Ɋ܂߂܂��B
+を、生成するすべてのグレイマップフォントに含めます。
 <P>
 <!--
 FontForge will also mark all such fonts as version 2.3 of the bdf standard -->
-FontForge �͂��̎�̃t�H���g�����ׂ� BDF �K�i�̃o�[�W���� 2.3 �Ƃ��Ĉ�Â��܂��B
+FontForge はこの種のフォントをすべて BDF 規格のバージョン 2.3 として印づけます。
 <BR>
 <BIG><CODE>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;STARTFONT 2.3</CODE></BIG>
 <P>
@@ -65,17 +65,17 @@ FontForge �͂��̎�̃t�H���g�����ׂ� BDF �K�i�̃o�[�W���� 2.3 �Ƃ��Ĉ�Â��܂��B
 The bitmap data are stored with 8, 4, 2 or 1 pixels packed into a byte depending
 on whether BITS_PER_PIXEL is 1, 2, 4 or 8. As in Adobe's spec all data are
 presented in hex and an even number of nibbles must be present. -->
-�r�b�g�}�b�v�f�[�^�� BITS_PER_PIXEL �̒l�� 1, 2, 4 �܂��� 8 �̂�����ł��邩�ɏ]���āA8, 4, 2 �܂��� 1 �s�N�Z�������p�b�N�����`���Ŋi�[����܂��BAdobe �̎d�l���ɂ���悤�ɁA���ׂẴf�[�^�� 16 �i���ŕ\������A�����̃j�u�������݂��Ȃ���΂Ȃ�܂���B
+ビットマップデータは BITS_PER_PIXEL の値が 1, 2, 4 または 8 のいずれであるかに従って、8, 4, 2 または 1 ピクセル分をパックした形式で格納されます。Adobe の仕様書にあるように、すべてのデータは 16 進数で表現され、偶数個のニブルが存在しなければなりません。
 <P>
 <!--
 <B>Example:</B><BR>-->
-<B>��:</B><BR>
+<B>例:</B><BR>
 <CODE>&nbsp; BITMAP<BR>
 &nbsp; C8<BR>
 &nbsp; ENDCHAR</CODE><BR>
 <!--
 Would represent the pixel sequences -->
-�̓s�N�Z����
+はピクセル列
 <TABLE BORDER CELLPADDING="2">
   <TR>
     <TH>Bits/Pixel</TH>
@@ -98,7 +98,7 @@ Would represent the pixel sequences -->
     <TD>C8</TD>
   </TR>
 </TABLE>
-��\���܂��B
+を表します。
 <P>
 </DIV>
 </BODY></HTML>

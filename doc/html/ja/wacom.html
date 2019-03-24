@@ -3,9 +3,9 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 13-Nov-2002 -->
   <!-- AP: Last modified: 30-May-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!--<TITLE>Wacom graphics tablets and FontForge</TITLE>-->
-    <TITLE>���R���̃O���t�B�N�X�^�u���b�g�� FontForge</TITLE>
+    <TITLE>ワコムのグラフィクスタブレットと FontForge</TITLE>
   <LINK REL="icon" href="../fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
@@ -13,32 +13,32 @@
 <DIV id="in">
 <H1 ALIGN=Center>
 <!--Wacom graphics tablets and FontForge-->
-    ���R���̃O���t�B�N�X�^�u���b�g�� FontForge
+    ワコムのグラフィクスタブレットと FontForge
 </H1>
 <P>
 <!--
 I have added support to FontForge for the wacom graphics tablet. Eventually
 I will write some drawing tools that depend on pressure (and tilt perhaps). -->
-���� FontForge �Ƀ��R���̃O���t�B�N�X�^�u���b�g���T�|�[�g����@�\��ǉ����܂����B���̂����A�M�� (�����ƌX����) �ɂ���ĕω�����悤�ȕ`��c�[����������ł��B
+私は FontForge にワコムのグラフィクスタブレットをサポートする機能を追加しました。そのうち、筆圧 (きっと傾きも) によって変化するような描画ツールを作るつもりです。
 <P>
 <!--
 To install a wacom tablet on your (linux) machine you must do two things: -->
-���R���̃^�u���b�g�� (Linux) �}�V���ɃC���X�g�[������ɂ́A2 �̂��Ƃ�����K�v������܂�:
+ワコムのタブレットを (Linux) マシンにインストールするには、2 つのことをする必要があります:
 <UL>
   <LI>
 <!--Install a kernel module "wacom.o" into your system<BR>
     Unfortunately the module which ships with linux (Nov 2002) does not work
     but John Joganic has <A HREF="http://linuxwacom.sf.net/">an excellent
     website</A> that will help you install a working driver. -->
-    �J�[�l�����W���[�� "wacom.o" ���V�X�e���ɃC���X�g�[������<BR>
-    �c�O�Ȃ��� Linux (2002�N11����) �ɕt���̃��W���[���͓��삵�܂��񂪁AJohn Joganic �́A�����Ɠ��삷��h���C�o���C���X�g�[�����鏕���ƂȂ�<A HREF="http://linuxwacom.sf.net/">�f���炵�� Web �T�C�g</A>������Ă��܂��B
+    カーネルモジュール "wacom.o" をシステムにインストールする<BR>
+    残念ながら Linux (2002年11月版) に付属のモジュールは動作しませんが、John Joganic は、ちゃんと動作するドライバをインストールする助けとなる<A HREF="http://linuxwacom.sf.net/">素晴らしい Web サイト</A>を作っています。
   <LI>
 <!--
     Install an X11 driver "wacom_drv.o"<BR>
     Again the X11 driver that ships with X does not work for USB tablets. Again
     John's website provides a patched driver.-->
-    X11 �p�̃h���C�o�gwacom_drv.o�h���C���X�g�[������<BR>
-    X �ɕt���� X11 �̃h���C�o����͂� USB �^�u���b�g�ł͓��삵�܂���B����� John �� Web �T�C�g�Ƀp�b�`�𓖂Ă��h���C�o���u����Ă��܂��B
+    X11 用のドライバ“wacom_drv.o”をインストールする<BR>
+    X に付属の X11 のドライバもやはり USB タブレットでは動作しません。これも John の Web サイトにパッチを当てたドライバが置かれています。
 </UL>
 <P>
 <!--
@@ -48,7 +48,7 @@ the kernel driver working). Since the configure script can't detect that
 you have a non-working X11 driver on your machine (or a tablet) you must
 configure this option by hand. So after the normal configure script has run
 (and before typing make): -->
-X11 �p�̃h���C�o�������Ȃ��Ȃ�΁A�����n�b�N���������ȃh���C�o�� FontForge �ɑg�ݍ��܂�Ă���̂� (����� X11 �̃h���C�o�̑��Ɏg�p�ł��܂����A�g���邩�ǂ����̓J�[�l���h���C�o�������Ă��邩�ǂ����ɂ��܂�)�Bconfigure �X�N���v�g�̓}�V����ɂ��� X11 �h���C�o (�܂��̓^�u���b�g) �������Ȃ����ǂ����͌��o�ł��܂���̂ŁA�蓮�ŃI�v�V������ݒ肷��K�v������܂��B�ʏ�� configure �X�N���v�g�����s������ (make ���^�C�v����O��) �ȉ��̂悤�ɂ��Ă�������:
+X11 用のドライバが動かないならば、私がハックした小さなドライバが FontForge に組み込まれているので (これは X11 のドライバの代りに使用できますが、使えるかどうかはカーネルドライバが動いているかどうかによります)。configure スクリプトはマシン上にある X11 ドライバ (またはタブレット) が動かないかどうかは検出できませんので、手動でオプションを設定する必要があります。通常の configure スクリプトを実行した後 (make をタイプする前に) 以下のようにしてください:
 <BLOCKQUOTE>
   <PRE>
 $ su
@@ -63,6 +63,6 @@ $ vi Makefile
 Add <CODE>gdrawwacomdriver.lo</CODE> to the list of
 <CODE>libgdraw_OBJECTS</CODE> And add <CODE>-D_WACOM_DRV_BROKEN</CODE> to
 <CODE>CFLAGS</CODE>. -->
-<CODE>libgdraw_OBJECTS</CODE> �̃��X�g�� <CODE>gdrawwacomdriver.lo</CODE> ��ǉ����āA<CODE>-D_WACOM_DRV_BROKEN</CODE> �� <CODE>CFLAGS</CODE> �ɒǉ����Ă��������B
+<CODE>libgdraw_OBJECTS</CODE> のリストに <CODE>gdrawwacomdriver.lo</CODE> を追加して、<CODE>-D_WACOM_DRV_BROKEN</CODE> を <CODE>CFLAGS</CODE> に追加してください。
 </DIV>
 </BODY></HTML>

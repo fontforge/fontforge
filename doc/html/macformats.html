@@ -20,23 +20,23 @@ them in data forks.
 Apple (and Adobe) provide some documentation on the mac's formats:
 <UL>
   <LI>
-    <A HREF="http://developer.apple.com/documentation/mac/MoreToolbox/MoreToolbox-9.html">Mac
+    <A HREF="https://developer.apple.com/legacy/library/documentation/mac/MoreToolbox/MoreToolbox-9.html">Mac
     Resource Fork</A>
   <LI>
     Mac
-    <A HREF="http://developer.apple.com/documentation/mac/Text/Text-250.html">NFNT/FONT</A>
+    <A HREF="https://developer.apple.com/legacy/library/documentation/mac/Text/Text-250.html">NFNT/FONT</A>
     resource
   <LI>
     Mac
-    <A HREF="http://developer.apple.com/documentation/mac/Text/Text-269.html">FOND</A>
+    <A HREF="https://developer.apple.com/legacy/library/documentation/mac/Text/Text-269.html">FOND</A>
     resource
   <LI>
     Mac
-    <A HREF="http://developer.apple.com/documentation/mac/Text/Text-253.html">sfnt</A>
+    <A HREF="https://developer.apple.com/legacy/library/documentation/mac/Text/Text-253.html">sfnt</A>
     resource
     <UL>
       <LI>
-	This is basically a <A HREF="http://fonts.apple.com/TTRefMan/">truetype</A>
+	This is basically a <A HREF="https://developer.apple.com/fonts/TrueType-Reference-Manual/">truetype</A>
 	font file stuffed into a resource
     </UL>
   <LI>
@@ -44,32 +44,32 @@ Apple (and Adobe) provide some documentation on the mac's formats:
     <UL>
       <LI>
 	The connection between postscript file and FOND is described in the
-	<A HREF="http://developer.apple.com/documentation/mac/Text/Text-275.html">Style
+	<A HREF="https://developer.apple.com/legacy/library/documentation/mac/Text/Text-275.html">Style
 	Mapping Table</A> of the FOND
       <LI>
-	<A HREF="http://partners.adobe.com/asn/developer/PDFS/TN/T1_SPEC.PDF">Type1
+	<A HREF="https://www.adobe.com/content/dam/Adobe/en/devnet/font/pdfs/T1_SPEC.pdf">Type1
 	postscript fonts </A>are described by Adobe
       <LI>
 	Adobe also describes how they are
-	<A HREF="http://partners.adobe.com/asn/developer/PDFS/TN/0091.Mac_Fond.pdf">wrapped
+	<A HREF="https://www.adobe.com/content/dam/Adobe/en/devnet/font/pdfs/0091.Mac_Fond.pdf">wrapped
 	up on the mac.</A>
     </UL>
   <LI>
-    <A HREF="http://developer.apple.com/documentation/mac/Text/Text-354.html">Macintosh
+    <A HREF="https://developer.apple.com/legacy/library/documentation/mac/Text/Text-354.html">Macintosh
     scripts</A>
     <UL>
       <LI>
-	<A HREF="http://developer.apple.com/documentation/mac/Text/Text-367.html#HEADING367-0">Script
+	<A HREF="https://developer.apple.com/legacy/library/documentation/mac/Text/Text-367.html#HEADING367-0">Script
 	codes</A>
     </UL>
   <LI>
-    <A HREF="http://developer.apple.com/documentation/macosx/Carbon/carbon.html">Carbon
+    <A HREF="https://developer.apple.com/legacy/library/documentation/Carbon/Conceptual/newtocarbon/Introduction.html">Carbon
     (Mac OS/X) docs</A>
 </UL>
 <P>
 <A NAME="dfont">I</A> have not yet found a description of a data fork resource
 file. I have determined empirically that they look almost the same as
-<A HREF="http://developer.apple.com/documentation/mac/MoreToolbox/MoreToolbox-9.html">resource
+<A HREF="https://developer.apple.com/legacy/library/documentation/mac/MoreToolbox/MoreToolbox-9.html">resource
 fork resource files</A> except that the map table begins with 16 bytes of
 zeros rather than a copy of the first 16 bytes of the file. To date I have
 only seen sfnt (and FOND) resources in a data fork resource file (often called

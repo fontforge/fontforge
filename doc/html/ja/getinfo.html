@@ -3,9 +3,9 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
   <!-- AP: Last modified: 29-Jun-2006 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!--<TITLE>Get Info</TITLE>-->
-    <TITLE>���𓾂�</TITLE>
+    <TITLE>情報を得る</TITLE>
   <LINK REL="icon" href="../fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
@@ -13,7 +13,7 @@
   <DIV id="in">
   <H1 ALIGN=Center>
 <!--  Get Info-->
-      ���𓾂�
+      情報を得る
   </H1>
   <P>
 <!--
@@ -25,10 +25,10 @@
   if it is a background image then the <A HREF="getinfo.html#Image">image
   dialog</A> is brought up. If it is an anchor point then the
   <A HREF="getinfo.html#Anchors">anchor point </A>dialog is brought up. -->
-  �A�E�g���C���r���[�ł́A<CODE>���𓾂�(I)</CODE> �R�}���h�����s����ƁA���̎��I�����Ă�����e�ɂ���ĈقȂ� 4 ��ނ̃_�C�A���O�𐶐����邱�Ƃ��ł��܂��B1 �̕�������I�����Ă���ꍇ�A���ꂪ�_�ł���� <A HREF="getinfo.html#Point"><CODE>�_�̏��</CODE></A> �_�C�A���O���N�����A�Q�Ƃł���� <A HREF="getinfo.html#GetReferenceInfo"><CODE>�Q��</CODE></A> �_�C�A���O���N�����A�w�i�摜�ł���� <A HREF="getinfo.html#Image"><CODE>�摜</CODE></A> �_�C�A���O���N�����܂��B�I������Ă���̂��A���J�[�|�C���g 1 �����̂Ƃ��� <A HREF="getinfo.html#Anchors"><CODE>�A���J�[�|�C���g</CODE></A> �_�C�A���O���N�����܂��B
+  アウトラインビューでは、<CODE>情報を得る(I)</CODE> コマンドを実行すると、その時選択している内容によって異なる 4 種類のダイアログを生成することができます。1 個の物だけを選択している場合、それが点であれば <A HREF="getinfo.html#Point"><CODE>点の情報</CODE></A> ダイアログが起動し、参照であれば <A HREF="getinfo.html#GetReferenceInfo"><CODE>参照</CODE></A> ダイアログが起動し、背景画像であれば <A HREF="getinfo.html#Image"><CODE>画像</CODE></A> ダイアログが起動します。選択されているのがアンカーポイント 1 個だけのときは <A HREF="getinfo.html#Anchors"><CODE>アンカーポイント</CODE></A> ダイアログが起動します。
   <H2>
 <!--  <A NAME="Point">Point</A> Info-->
-      <A NAME="Point">�_</A>�̏��
+      <A NAME="Point">点</A>の情報
   </H2>
   <P>
 <!--
@@ -36,7 +36,7 @@
   information about the current point. The Base position is where the point
   itself is. -->
   <IMG SRC="pointinfo.png" WIDTH="277" HEIGHT="403" ALIGN="Right">
-  �����ł͌��݂̓_�Ɋւ������\�����܂��B<CODE>��_(<U>B</U>):</CODE> �́A���̓_���g�̒u���ꂽ�ʒu��\���܂��B
+  ここでは現在の点に関する情報を表示します。<CODE>基点(<U>B</U>):</CODE> は、その点自身の置かれた位置を表します。
   <P>
 <!--
   The Next CP shows both the location of the next control point, and the offset
@@ -45,17 +45,17 @@
   button will be grey), underneath the offsets it shows the same information
   in a different format -- as a distance from the point itself, and the angle 
   to it. -->
-  ���̓_: �͎��̐���_�̈ʒu�ƁA��_����̃I�t�Z�b�g (����сA���̈ʒu�ݒ肪���̓_�ɑ΂���f�t�H���g���ǂ����B�������̓_���J�����p�X�̍Ō�Ɉʒu����ꍇ�́A<CODE>[]�f�t�H���g</CODE> �{�^���͊D�F�\���ɂȂ�܂�) �̗�����\�����܂��B���̉��ɕ\������Ă���̂́A���������قȂ�\���\�\�_���̂���̋����ƁA���̊p�x�\�\�ŕ\�������ł��B
+  次の点: は次の制御点の位置と、基準点からのオフセット (および、その位置設定がその点に対するデフォルトかどうか。もしその点が開いたパスの最後に位置する場合は、<CODE>[]デフォルト</CODE> ボタンは灰色表示になります) の両方を表示します。その下に表示されているのは、同じ情報を異なる表現——点自体からの距離と、その角度——で表した物です。
   <P>
 <!--
   The Prev CP does the same for the previous control point. -->
-  <CODE>�O�̓_:</CODE> �͓�������O�̐���_�ɑ΂��ĕ\�����܂��B
+  <CODE>前の点:</CODE> は同じ情報を前の制御点に対して表示します。
   <P>
 <!--
   You may change any of these and the change is reflected in the outline view.
   Your changes are constrained by the point type (for instance with tangent
   points, you may not change the angle fields as these are fixed). -->
-  �����̒l�͂��ׂĕύX�\�ŁA�ύX�̓A�E�g���C���r���[�ɔ��f����܂��B�\�ȕύX�́A�_�̌^�ɂ���Đ��񂳂�Ă��܂� (�Ⴆ�΁A�Ȑ��̊J�n�_�ł� <CODE>�p�x</CODE> �t�B�[���h�͌Œ肳��Ă���̂ŕύX�ł��܂���B
+  これらの値はすべて変更可能で、変更はアウトラインビューに反映されます。可能な変更は、点の型によって制約されています (例えば、曲線の開始点では <CODE>角度</CODE> フィールドは固定されているので変更できません。
   <P>
 <!--
   FontForge also shows you the curvature of the two splines on either side
@@ -68,7 +68,7 @@
   small). To make it easier to read, FontForge scales it by the em-size of
   the font - - this is equivalent to expressing it in units where 1 corresponds
   to an em (rather than 1000 or 2048). -->
-  �܂��AFontForge �� 2 �{�̃X�v���C���̂��ꂼ��̑��̋ȗ���\�����܂��B���z��͋Ȑ���̓_�̏ꍇ�A�����͓����l�ɂȂ�A�����ӏ��͊��炩�Ɍ�����ł��傤�B�܂��A2 �̊Ԃ̈Ⴂ���\�����܂��B�ȗ��Ƃ́A�Ȑ��ւ̐ڐG�~�̔��a�̋t���ł� (�����̋ȗ��� 0 �ƂȂ�܂��B�Ȃ��Ȃ炻��͖����̔��a�����~�ƂȂ�A���̋t���� 0 �ƂȂ邩��ł�)�B�����ɗp������Ȑ��̂قƂ�ǂɂ����Ă͂��̋ȗ��� em ���j�b�g�\���ł��Ȃ�傫�Ȓl�ɂȂ�܂� (�ȗ��͂���ɉ����ď������l�ƂȂ�܂�)�B�ǂ݂₷�����邽�߂ɁAFontForge �͂���Ƀt�H���g�� em �T�C�Y���|���܂��\�\����́Aem �� (1000 �� 2048 �ł͂Ȃ���) 1 �ɂȂ�P�ʌn�ŕ\������̂Ɠ������Ƃł��B
+  また、FontForge は 2 本のスプラインのそれぞれの側の曲率を表示します。理想上は曲線上の点の場合、これらは同じ値になり、結合箇所は滑らかに見えるでしょう。また、2 つの間の違いも表示します。曲率とは、曲線への接触円の半径の逆数です (直線の曲率は 0 となります。なぜならそれは無限の半径をもつ円となり、その逆数が 0 となるからです)。文字に用いられる曲線のほとんどにおいてはこの曲率は em ユニット表示でかなり大きな値になります (曲率はそれに応じて小さい値となります)。読みやすくするために、FontForge はそれにフォントの em サイズを掛けます——これは、em が (1000 や 2048 ではなくて) 1 になる単位系で表現するのと同じことです。
   <P>
 <!--
   You may also change whether a point is a curve, corner or tangent point (Caution:
@@ -76,13 +76,13 @@
   is NOT a no op. It may change the control points) You may move on to the
   next or previous point on the path, or the next/previous point of the current
   contour. If you cancel then all changes to all points are canceled. -->
-  �_���Ȑ���̓_���A�p�̓_�A����Ƃ��Ȑ��̊J�n�_�̂ǂ�ł��邩��ύX���邱�Ƃ��ł��܂��B(�x��: �p�̓_���Ȑ���̓_�ɕϊ����A�܂��p�̓_�ɖ߂��͉̂������Ȃ��̂Ɠ����ł�<EM>����܂���</EM>)�B�p�X��̑O�܂��͎��̓_�Ɉڂ邩�A���݂̗֊s��̎�/�O�̓_�Ɉړ����邱�Ƃ��ł��܂��B������L�����Z������ƁA���ׂĂ̓_�ɑ΂��邷�ׂĂ̓��삪��������܂��B
+  点が曲線上の点か、角の点、それとも曲線の開始点のどれであるかを変更することもできます。(警告: 角の点を曲線上の点に変換し、また角の点に戻すのは何もしないのと同じでは<EM>ありません</EM>)。パス上の前または次の点に移るか、現在の輪郭上の次/前の点に移動することができます。操作をキャンセルすると、すべての点に対するすべての動作が取り消されます。
   <P>
 <!--
   The colors of the labels reflect the colors of the items they refer to. The
   point itself will be drawn in red, the previous control point will be drawn
   in magenta and the next control point will be drawn in dull cyan. -->
-  ���x���̐F�́A���ꂪ�Q�Ƃ��Ă�����̂̐F�𔽉f���Ă��܂��B�_���̂��̂͐Ԃŕ\������A�O�̐���_�̓}�[���^�A���̐���_�͓݂��V�A���ŕ\������܂��B
+  ラベルの色は、それが参照しているものの色を反映しています。点そのものは赤で表示され、前の制御点はマゼンタ、次の制御点は鈍いシアンで表示されます。
   <P>
 <!--
   <IMG SRC="pointinfo-interp.png" WIDTH="321" HEIGHT="405" ALIGN="Right">When
@@ -90,17 +90,17 @@
   points and let the base point continue to be interpolated. The &lt;&gt; Normal
   and &lt;&gt;Interpolated radio buttons control which view is active. -->
   <IMG SRC="pointinfo-interp.png" WIDTH="277" HEIGHT="403" ALIGN="Right">
-  TrueType �̕⊮���ꂽ�_��ҏW���Ă���Ƃ��ɂ́A����_�����āA��_���ˑR�⊮�����悤�ɒ������邱�Ƃ����d�v�ƂȂ�܂��B�ǂ���̕\���@��L���ɂ��邩�́A<CODE>�� �ʏ�(<U>N</U>)</CODE> �܂��� <CODE>�� �⊮�����_(<U>I</U>)</CODE> �̃��W�I�{�^���Őؑւ��܂��B
+  TrueType の補完された点を編集しているときには、制御点を見て、基点が依然補完されるように調整することがより重要となります。どちらの表示法を有効にするかは、<CODE>◇ 通常(<U>N</U>)</CODE> または <CODE>◇ 補完される点(<U>I</U>)</CODE> のラジオボタンで切替えます。
   <P>
 <!--
   Pressing &lt;&gt; Interpolated may move the point to position it correctly
   for interpolation.<BR CLEAR=ALL> -->
-  <CODE>�� �⊮�����_(<U>I</U>)</CODE> �������ƁA�⊮����鐳�����ʒu�܂œ_���ړ������ł��傤�B
+  <CODE>◇ 補完される点(<U>I</U>)</CODE> を押すと、補完される正しい位置まで点が移動されるでしょう。
   <BR CLEAR=ALL>
   <H3>
     <IMG SRC="../hintmaskinfo.png" WIDTH="321" HEIGHT="459" ALIGN="Right"><!--<A NAME="HintMask">Hint</A>
     Mask-->
-    <A NAME="HintMask">�q���g�}�X�N</A>
+    <A NAME="HintMask">ヒントマスク</A>
   </H3>
   <P>
   <IMG SRC="../charwithhintmask.png" WIDTH="309" HEIGHT="322" ALIGN="Left"><!-- If
@@ -108,47 +108,47 @@
   points until an new hintmask is given) you can use the hint mask pane. This
   provides you with a list of all hints in the current glyph, you should select
   the ones which you want active. -->
-  �����A�w�肳�ꂽ�_ (����сA���̌�ŁA�V�����q���g�}�X�N���쐬�����O�ɍ쐬����邷�ׂĂ̓_) �łǂ̃q���g���L���ɂȂ��Ă��邩�𐧌䂵�����Ȃ�΁A�q���g�}�X�N ��ʂ��g�����Ƃ��ł��܂��B����́A���݂̃O���t���̂��ׂẴq���g�̃��X�g��񋟂��܂��B���̒�����A�L���ɂ������q���g�� 1 �I��ł��������B
+  もし、指定された点 (および、この後で、新しいヒントマスクが作成される前に作成されるすべての点) でどのヒントが有効になっているかを制御したいならば、ヒントマスク 画面を使うことができます。これは、現在のグリフ内のすべてのヒントのリストを提供します。その中から、有効にしたいヒントを 1 つ選んでください。
   <P>
 <!--
   As you select hints, the glyph view will darken those hints so you can see
   what you've selected.-->
-  �q���g��I������ƁA�O���t�r���[�̃q���g���Â��F�ŕ\�������̂ŁA�I�����ꂽ�q���g��ڂŊm�F�ł��܂��B
+  ヒントを選択すると、グリフビューのヒントが暗い色で表示されるので、選択されたヒントを目で確認できます。
   <P>
 <!--
   Points with circles drawn around them have hintmasks. -->
-  �ۂň͂܂ꂽ�_�́A�q���g�}�X�N�����邱�Ƃ������Ă��܂��B
+  丸で囲まれた点は、ヒントマスクがあることを示しています。
   <P>
 <!--
   According to Adobe's documentation you should never have two hints which
   conflict active at the same time. FontForge will warn you if you do this.
   Unfortunately there are fonts (even fonts from Adobe) which do not follow
   this rule, so I have made this a warning rather than an error. -->
-  Adobe �̕����ɂ��ƁA�����ɗL���ƂȂ��Ă��Ė������� 2 �̃q���g���܂܂�邱�Ƃ͑S���ւ����Ă��܂��BFontForge �́A������s���ƌx���𔭂��܂��B�c�O�Ȃ��Ƃɂ��̃��[���ɏ]��Ȃ��t�H���g (Adobe ���̔����Ă���t�H���g�ł���) �����݂���̂ŁA������G���[�Ƃ͂����Ɍx���Ɏ~�߂Ă��܂��B
+  Adobe の文書によると、同時に有効となっていて矛盾する 2 つのヒントが含まれることは全く禁じられています。FontForge は、それを行うと警告を発します。残念なことにこのルールに従わないフォント (Adobe が販売しているフォントですら) が実在するので、これをエラーとはせずに警告に止めています。
   <P>
 <!--
   Remember to hold the control key down when making disjoint selections. -->
-  �A�����Ă��Ȃ������̗v�f��I������Ƃ��ɂ� Control �L�[���������Ƃɗ��ӂ��Ă��������B
+  連続していない複数の要素を選択するときには Control キーを押すことに留意してください。
   <P>
 <!--
   Sadly the direction in which hintmasks apply is backwards from what you would
   expect (the hintmask applies to this point an all previous points on the
   contour, rather than all subsequent ones). -->
-  �c�O�Ȃ���q���g�}�X�N���K�p���������͕��ʂɍl��������Ƃ͋t���܂ł� (�q���g�}�X�N�́A���̓_����֊s��̂��ׂĂ̑O�̓_�ɑ΂��ēK�p�����̂ł����āA���̌�̓_�ɑ΂��ēK�p�����̂ł͂���܂���)�B
+  残念ながらヒントマスクが適用される方向は普通に考える向きとは逆さまです (ヒントマスクは、この点から輪郭上のすべての前の点に対して適用されるのであって、その後の点に対して適用されるのではありません)。
   <H4>
 <!--  Active Hints-->
-      �L���ȃq���g
+      有効なヒント
   </H4>
   <P>
 <!--
   This looks just like the hint mask, except you cannot change anything it
   in. It shows you what hints are currently selected at this point. If a point
   has a hint mask then the two will be identical.<BR Clear=All> -->
-  ����̓q���g�}�X�N�ƌ����ڏ㓯���ł����A�����ł͉����ύX�ł��Ȃ��_���قȂ�܂��B���݂̓_�ɂ����Ăǂ̃q���g�����ݑI������Ă��邩��\�����܂��B�_�Ƀq���g�}�X�N���ݒ肳��Ă���Ȃ�΁A����� 2 �͓���ɂȂ�܂��B<BR Clear=ALL>
+  これはヒントマスクと見た目上同じですが、ここでは何も変更できない点が異なります。現在の点においてどのヒントが現在選択されているかを表示します。点にヒントマスクが設定されているならば、これら 2 つは同一になります。<BR Clear=ALL>
   <H2>
     <IMG SRC="agetinfo.png" WIDTH="196" HEIGHT="292" ALIGN="Right"><!--<A NAME="Anchors">Anchor
     Points</A> Info-->
-    <A NAME="Anchors">�A���J�[�|�C���g���</A>
+    <A NAME="Anchors">アンカーポイント情報</A>
   </H2>
   <P>
 <!--
@@ -157,36 +157,36 @@
   You may change any of these attributes (as long as your changes are reasonable).
   You may create new points or delete the current one. As with normal points
   above you may step through all the anchor points in your glyph. -->
-  ���̃_�C�A���O�͑I�𒆂�<A HREF="overview.html#Anchors">�A���J�[�|�C���g</A>���A���J�[�N���X�A�ʒu�A�^�C�v�� (�����ɂ��Ă�) �����̃C���f�b�N�X��\�����܂��B�����̔C�ӂ̑�����ύX�\�ł� (���̕ύX���؂��ʂ��Ă���ꍇ)�B�_��V�K�ɍ쐬�����茻�݂���_���폜������ł��܂��B��Ő��������ʏ�̓_�Ɠ��l�A�O���t���ɑ��݂���A���J�[�|�C���g�������؂�ւ��ĕ\�����邱�Ƃ��ł��܂��B
+  このダイアログは選択中の<A HREF="overview.html#Anchors">アンカーポイント</A>をアンカークラス、位置、タイプと (合字については) 合字のインデックスを表示します。これらの任意の属性を変更可能です (その変更が筋が通っている場合)。点を新規に作成したり現在ある点を削除したりできます。上で説明した通常の点と同様、グリフ内に存在するアンカーポイントを順次切り替えて表示することができます。
   <P>
 <!--
   In a truetype font you can force the anchor to track a contour point in the
   truetype glyph. This point can then be manipulated with truetype instructions
   to grid fit it properly with the current rasterization. -->
-  TrueType �t�H���g�ł́A
-  TrueType �O���t���� 1 �̗֊s�_��ێ����邽�߂ɃA���J�[���������邱�Ƃ��ł��܂��B���̓_�͂��̌� TrueType ���߂ɂ���Č��݂̃��X�^���C�Y�����ɓK�����O���b�h���킹������s�����Ƃ��ł��܂��B
+  TrueType フォントでは、
+  TrueType グリフ内の 1 個の輪郭点を保持するためにアンカーを強制することができます。この点はその後 TrueType 命令によって現在のラスタライズ処理に適したグリッド合わせ操作を行うことができます。
   <P>
 <!--
   Anchor points may also be created with the
   <A HREF="pointmenu.html#AddAnchor">Point-&gt;Add Anchor</A> command.-->
-  �A���J�[�|�C���g�� <A HREF="pointmenu.html#AddAnchor"><CODE>�_(<U>P</U>)</CODE>��<CODE>�A���J�[��ǉ�(<U>A</U>)</CODE></A> �R�}���h�ō쐬���邱�Ƃ��ł��܂��B
+  アンカーポイントは <A HREF="pointmenu.html#AddAnchor"><CODE>点(<U>P</U>)</CODE>→<CODE>アンカーを追加(<U>A</U>)</CODE></A> コマンドで作成することもできます。
   <BR Clear=All>
   <H2>
     <IMG SRC="rgetinfo.png" WIDTH="273" HEIGHT="292" ALIGN="Right"><!--<A NAME="GetReferenceInfo">Reference</A>
     Info -->
-    <A NAME="GetReferenceInfo">�Q��</A>�̏��
+    <A NAME="GetReferenceInfo">参照</A>の情報
   </H2>
   <P>
 <!--
   This dialog shows the name of the selected reference, its encoding in the
   font and its postscript transformation matrix. You may alter the transformation
   matrix if you desire. -->
-  ���̃_�C�A���O�͑I�����ꂽ�Q�Ƃ̖��O�A���̃t�H���g���ł̃R�[�h�ʒu�� PostScript �ϊ��s���\�����܂��B�K�v�Ȃ�Εϊ��s���ύX���邱�Ƃ��ł��܂��B
+  このダイアログは選択された参照の名前、そのフォント内でのコード位置と PostScript 変換行列を表示します。必要ならば変換行列を変更することもできます。
   <P>
 <!--
   The transformation matrix maps points in the glyph being refered to into
   their location in the current glyph: <BR> -->
-  �ϊ��s��̓O���t���̓_���A�Q�Ƃ���Ă���O���t�ł̌��̈ʒu����A���݂̃O���t��̈ʒu�ɕϊ����܂�:<BR>
+  変換行列はグリフ内の点を、参照されているグリフでの元の位置から、現在のグリフ上の位置に変換します:<BR>
   <CODE>&nbsp; &nbsp; x<SUB>current</SUB> = TM[1,1]*x<SUB>ref</SUB> +
   TM[2,1]*y<SUB>ref</SUB> + TM[3,1]<BR>
   &nbsp; &nbsp; y<SUB>current</SUB> = TM[1,2]*y<SUB>ref</SUB> +
@@ -197,14 +197,14 @@
   metrics (width) of a composite glyph (for exampe acute a) is the same as
   the metrics of one of its components (for example a). This is especially
   important in fonts containing instructions that might modify a glyph's width. -->
-  <CODE>[ ]���̎Q�Ƃ��g�p</CODE> �`�F�b�N�{�b�N�X�� TrueType �����O���t (�Ⴆ�� a �A�L���[�g) �̃��g���b�N (��) ���A���̍\���v�f�̈�� (�Ⴆ�� a) �̕��Ɠ��������Ƃ������������Ƃ��ɖ𗧂��܂��B����́A�O���t�̕���ύX����\���̂��閽�߂��܂񂾃t�H���g�ɂ����ē��ɏd�v�ł��B
+  <CODE>[ ]この参照を使用</CODE> チェックボックスは TrueType 複合グリフ (例えば a アキュート) のメトリック (幅) が、その構成要素の一つ (例えば a) の幅と等しいことを強制したいときに役立ちます。これは、グリフの幅を変更する可能性のある命令を含んだフォントにおいて特に重要です。
   <P>
 <!--
   The Round To Grid checkbox is also used in truetype hints and indicates that
   the translation should be rounded to the rasterizer's grid before being applied
   to the points of the reference. This means that the grid-fitting done by
   the reference's instructions will still be useful in the composite. -->
-  <CODE>[ ]�O���b�h�P�ʂɊۂ߂�</CODE> �`�F�b�N�{�b�N�X�� TrueType �q���g�ł��p�����A���s�ړ����Q�Ƃ̓_�ɓK�p�����O�ɁA�ړ��ʂ����X�^���C�Y���̃O���b�h�Ɋۂ߂�K�v�����邱�Ƃ�\���܂��B���̌��ʁA�Q�Ƃ̖��߂ɂ���čs��ꂽ�O���b�h���킹�������O���t�ł��L���ɗ��p�ł��܂��B
+  <CODE>[ ]グリッド単位に丸める</CODE> チェックボックスは TrueType ヒントでも用いられ、平行移動を参照の点に適用される前に、移動量をラスタライズ時のグリッドに丸める必要があることを表します。その結果、参照の命令によって行われたグリッド合わせが複合グリフでも有効に利用できます。
   <P>
 <!--
   In a truetype font a reference may be positioned by matching two points,
@@ -214,7 +214,7 @@
   glory of this method is that the truetype instructions assocated with the
   glyphs can move these points around to an appropriate location for the current
   pixelsize. -->
-  TrueType �t�H���g�ł́A�Q�Ƃ̈ʒu�w����A��ꕶ���ƎQ�Ƃ��ꎩ�̂��� 1 ���I�� 2 �̓_���d�ˍ��킹�邱�Ƃɂ���čs�����Ƃ��ł��܂��B�E�̗�ł́A�Q�Ɓgacute�h�́A���O���t (���̔@�����킸) �̓_ 0 �Ɂgacute�h�̓_ 2 ���d�Ȃ荇���܂ňړ�����܂��B���̕��@�̑f���炵���Ƃ���́A�O���t�ɕt������ TrueType ���߂��A���݂̃s�N�Z���T�C�Y�ɂӂ��킵���ʒu�܂ł����̓_���ړ����邱�Ƃ��ł��邱�Ƃł��B
+  TrueType フォントでは、参照の位置指定を、基底文字と参照それ自体から 1 個ずつ選んだ 2 個の点を重ね合わせることによって行うことができます。右の例では、参照“acute”は、基底グリフ (その如何を問わず) の点 0 に“acute”の点 2 が重なり合うまで移動されます。この方法の素晴らしいところは、グリフに付随する TrueType 命令が、現在のピクセルサイズにふさわしい位置までそれらの点を移動することができることです。
   <P>
 <!--
   Points in a composite glyph are numbered by counting the points of the first
@@ -225,41 +225,41 @@
   by the current reference. The current reference must be drawn after the base
   point. You may use <A HREF="elementmenu.html#Order">Element-&gt;Order</A>
   to reorder the references. -->
-  �����O���t�Ɋ܂܂��_�́A�ŏ��̗v�f�Ɋ܂܂��_�̌��𐔂��A����� 4 (�t�@���g�� (���g���b�N) �|�C���g 4 ��) ��������A���� 2 �Ԗڂ̍\���v�f�̓_�̌��𐔂��A4 �����킦�A�Ƃ����悤�ɂ��Ĕԍ��Â�����܂��B�ŏ��̍\���v�f�͍ŏ��ɕ`�悳���v�f�ł���A�ŏ��ɒǉ������v�f�ł͂���܂���B���O���t�̔ԍ��Â������͕����O���t�S�̂ɗR�����܂����A�Q�Ɠ_�͌��݂̎Q�Ƃɂ��ԍ��Â���ꂽ����p���܂��B���݂̎Q�Ƃ͊�ꕶ���̌�ɕ`�悵�Ȃ���΂Ȃ�܂���B�Q�Ƃ̕��я���<A HREF="elementmenu.html#Order"><CODE>�G�������g(<U>L</U>)</CODE>��<CODE>����</CODE></A>���g���ĕύX���邱�Ƃ��ł��܂��B
+  複合グリフに含まれる点は、最初の要素に含まれる点の個数を数え、それに 4 (ファントム (メトリック) ポイント 4 個分) を加える、次に 2 番目の構成要素の点の個数を数え、4 をくわえ、というようにして番号づけされます。最初の構成要素は最初に描画される要素であり、最初に追加される要素ではありません。基底グリフの番号づけ方式は複合グリフ全体に由来しますが、参照点は現在の参照により番号づけられた物を用います。現在の参照は基底文字の後に描画しなければなりません。参照の並び順は<A HREF="elementmenu.html#Order"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>順序</CODE></A>を使って変更することができます。
   <P>
 <!--
   (You should probably not set Round To Grid when doing point matching) -->
-  (�����炭�A�_�̏d�ˍ��킹���s�����́A<CODE>[*]�O���b�h�P�ʂɊۂ߂�</CODE> ���`�F�b�N���Ă����ׂ��ł��傤)
+  (おそらく、点の重ね合わせを行う時は、<CODE>[*]グリッド単位に丸める</CODE> をチェックしておくべきでしょう)
   <P>
 <!--
   The [Show] button will open a glyph outline view showing the character being
   referred to.<BR CLEAR=ALL> -->
-  <CODE>[�\��(<U>S</U>)]</CODE> �{�^���������ƁA�Q�Ƃ���Ă���O���t�̃A�E�g���C���r���[���J���܂��B
+  <CODE>[表示(<U>S</U>)]</CODE> ボタンを押すと、参照されているグリフのアウトラインビューを開きます。
   <H2>
 <!--  <A NAME="Image">Image</A> Info-->
-      <A NAME="Image">�摜</A>���
+      <A NAME="Image">画像</A>情報
   </H2>
   <P>
 <!--
   This dialog gives the offset to the lower left corner of the image and the
   scale factors applied to the image. Currently you may not alter anything
   here, it is purely informational. -->
-  ���̃_�C�A���O�́A�摜�̍������̃I�t�Z�b�g�ƁA�摜�ɓK�p���ꂽ�g��/�k������\�����܂��B���݂̂Ƃ���A�����ł͉����ҏW�ł��܂���B�P�ɏ��񋟂̖��ɂ��������܂���B
+  このダイアログは、画像の左下隅のオフセットと、画像に適用された拡大/縮小率を表示します。現在のところ、ここでは何も編集できません。単に情報提供の役にしか立ちません。
   <P>
 <!--
   See Also: -->
-  �Q��:
+  参照:
   <UL>
     <LI>
 <!--  <A HREF="fontinfo.html">The font info dialog</A> -->
-      <A HREF="fontinfo.html">�t�H���g���_�C�A���O</A>
+      <A HREF="fontinfo.html">フォント情報ダイアログ</A>
     <LI>
 <!--  <A HREF="charinfo.html">The glyph info dialog</A>-->
-      <A HREF="charinfo.html">�O���t���_�C�A���O</A>
+      <A HREF="charinfo.html">グリフ情報ダイアログ</A>
   </UL>
   <P ALIGN=Center>
-  �\ <A HREF="elementmenu.html">�O</A> �\ <A HREF="overview.html">�ڎ�</A>
-  �\ <A HREF="elementmenu.html">��</A> �\
+  — <A HREF="elementmenu.html">前</A> — <A HREF="overview.html">目次</A>
+  — <A HREF="elementmenu.html">次</A> —
 </DIV>
 </BODY></HTML>
   

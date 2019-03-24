@@ -3,25 +3,25 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 5-Feb-2004 -->
   <!-- AP: Last modified: 16-Apr-2004 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
   <LINK REL="icon" href="../fftype16.png">
 <!--<TITLE>Multiple Master Dialog</TITLE>-->
-    <TITLE>�}���`�v���}�X�^�[�_�C�A���O</TITLE>
+    <TITLE>マルチプルマスターダイアログ</TITLE>
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
 <H1 ALIGN=Center>
 <!--Multiple Master Dialog-->
-    �}���`�v���}�X�^�[�_�C�A���O
+    マルチプルマスターダイアログ
 </H1>
 <P>
 <!--
 Allows you to create or modify a multiple master font -->
-�}���`�v���}�X�^�[�t�H���g�̍쐬�E�ύX���ł��܂��B
+マルチプルマスターフォントの作成・変更ができます。
 <H2>
 <!--<A NAME="MM">What is a multiple master font?</A>-->
-    <A NAME="MM">�}���`�v���}�X�^�[�t�H���g�Ƃ͉���?</A>
+    <A NAME="MM">マルチプルマスターフォントとは何か?</A>
 </H2>
 <P>
 <!--
@@ -33,7 +33,7 @@ designs. Apple has a
 <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6fvar.html">similar
 concept </A>for TrueType -- The only name I've seen given to this is "Apple
 Distortable Font" -- I call both multiple master. -->
-�}���`�v���}�X�^�[�t�H���g�Ƃ́A(<A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5015.Type1_Supp.pdf">PostScript Type 1</A>) �t�H���g�̈��ŁA1 �̃t�H���g�L�q�̒��ɁA���ʂ̃t�H���g�t�@�~���[�ɑ����鐔�̋ɒ[�ȃX�^�C���̃t�H���g�ƁA���ԓI�ȃf�U�C���𐶐����邽�߂ɂ������Ԃ���R�[�h���܂񂾂��̂ł��BApple ��<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6fvar.html">���l�̊T�O</A>�� TrueType �ɉ��p���Ă��܂��\�\�ǌ��ɓ������ł͂ǂ���uApple �ό`�\�t�H���g�v�ƌĂ�ł��܂����\�\�����ł͗����Ƃ��}���`�v���}�X�^�[�ƌĂԂ��Ƃɂ��܂��B
+マルチプルマスターフォントとは、(<A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5015.Type1_Supp.pdf">PostScript Type 1</A>) フォントの一種で、1 個のフォント記述の中に、共通のフォントファミリーに属する数個の極端なスタイルのフォントと、中間的なデザインを生成するためにそれらを補間するコードを含んだものです。Apple は<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6fvar.html">同様の概念</A>を TrueType に応用しています——管見に入る限りではどれも「Apple 変形可能フォント」と呼んでいますが——ここでは両方ともマルチプルマスターと呼ぶことにします。
 <P>
 <!--
 A multiple master font has several axes along which variation may occur.
@@ -42,7 +42,7 @@ from Thin to Black), along the Width axis (Condensed to Extended) and along
 the Optical Size axis (from 6pt to 72pt). The Type1 spec requires that there
 be a design for every extreme combination along each axis. In the above example
 there should be: -->
-�}���`�v���}�X�^�[�t�H���g�́A�ώ�𔭐������邱�Ƃ��ł�����W���������������Ă��܂��B�Ⴆ�΁A����t�H���g�� Weight �� (Thin ���� Black �܂ł̂��ׂ�) �̕ώ�ɉ����AWidth �� (Condensed ���� Extended) �ƁAOptical Size �� (6pt ���� 72pt) ������Ă��܂��BType1 �̎d�l�ł́A�e�����Ƃ̋ɒl�̂��ׂĂ̑g�ݍ��킹�����݂���K�v������܂��B��̗�ł͂����Ȃ�ł��傤:
+マルチプルマスターフォントは、変種を発生させることができる座標軸をいくつか持っています。例えば、あるフォントは Weight 軸 (Thin から Black までのすべて) の変種に加え、Width 軸 (Condensed から Extended) と、Optical Size 軸 (6pt から 72pt) を備えています。Type1 の仕様では、各軸ごとの極値のすべての組み合わせが存在する必要があります。上の例ではこうなるでしょう:
 <UL>
   <LI>
     Thin Condensed 6pt
@@ -64,19 +64,19 @@ there should be: -->
 <P>
 <!--
 A font designer may also add intermediate designs as well. -->
-�t�H���g�f�U�C�i�[�͒��ԃf�U�C����ǉ����邱�Ƃ��ł��܂��B
+フォントデザイナーは中間デザインを追加することもできます。
 <P>
 <!--
 From these extreme designs PostScript is able to interpolate any intermediate
 style desired (as Normal Normal 12pt). -->
-�����̗��ɂ̃f�U�C������APostScript �̃��X�^���C�U�͗~�����X�^�C�� (Normal Normal 12pt �̂悤��) ���Ԃ��邱�Ƃ��ł��܂��B
+これらの両極のデザインから、PostScript のラスタライザは欲しいスタイル (Normal Normal 12pt のような) を補間することができます。
 <P>
 <!--
 Apple has a slightly different format, not only must the extreme designs
 be specified but the default designs must be as well (so Apple requires 3
 designs per axis as opposed to 2 for PostScript). In the above example there
 would be 27 designs: -->
-Apple �͂킸���ɈقȂ�t�H�[�}�b�g���g���Ă���A�Ɍ��̃f�U�C�������łȂ��A�f�t�H���g�̃f�U�C�����w�肷��K�v������܂� (�ł�����APostScript �ł͎����Ƃ� 2 ��ނ̃f�U�C����K�v�Ƃ���̂ɑ΂��AApple �� 3 ��ނ̃f�U�C����K�v�Ƃ��܂�)�B��̗�ł� 27 ��ނ̃f�U�C���ƂȂ�ł��傤:
+Apple はわずかに異なるフォーマットを使っており、極限のデザインだけでなく、デフォルトのデザインも指定する必要があります (ですから、PostScript では軸ごとに 2 種類のデザインを必要とするのに対し、Apple は 3 種類のデザインを必要とします)。上の例では 27 種類のデザインとなるでしょう:
 <UL>
   <LI>
     Thin Condensed 6pt
@@ -107,29 +107,29 @@ Apple �͂킸���ɈقȂ�t�H�[�}�b�g���g���Ă���A�Ɍ��̃f�U�C�������łȂ��A�f�t�H
 <!--
 Apple also allows for intermediate designs, but FontForge does not currently
 support this. -->
-Apple ���܂��A���ԃf�U�C����F�߂Ă��܂����AFontForge �͌��݂�����T�|�[�g���Ă��܂���B
+Apple もまた、中間デザインを認めていますが、FontForge は現在これをサポートしていません。
 <P>
 <!--
 A font designer first determines how many axes s/he will need. PostScript
 allows a maximum of 4 axes in a Type1 font. FontForge only supports 4 axes
 for Apple's fonts too. -->
-�t�H���g�f�U�C�i�[�́A�ŏ��ɂ����̎����K�v�����肷��K�v������܂��BPostScript �ł́AType1 �t�H���g�ɍő� 4 �̎����g�����Ƃ��ł��܂��BFontForge �� Apple �̃t�H���g�ɑ΂��Ă� 4 ���܂ł����T�|�[�g���Ă��܂���B
+フォントデザイナーは、最初にいくつの軸が必要か決定する必要があります。PostScript では、Type1 フォントに最大 4 個の軸を使うことができます。FontForge は Apple のフォントに対しても 4 軸までしかサポートしていません。
 <P>
 <!--
 Then s/he provides information about each axis, specifically: -->
-���ꂩ��A�e���Ɋւ������񋟂��܂��B���ɁA
+それから、各軸に関する情報を提供します。特に、
 <UL>
   <LI>
 <!--The axis type (Weight, Width, Optical Size, etc) -->
-    ���̃^�C�v (�E�F�C�g Weight�A�� Width�A�I�v�e�B�J���T�C�Y Optical Size �Ȃ�)
+    軸のタイプ (ウェイト Weight、幅 Width、オプティカルサイズ Optical Size など)
   <LI>
 <!--The range of design values over which this axis will vary<BR>
     Typically 1-999 for Weight and Width (1 being extremely thin or condensed,
     999 being extremely black or extended) or 6-72 for Optical Size<BR>
     Apple fonts seem to have a different default range, .05-2.0 -->
-    ���̎��̃f�U�C���l���ϓ��ł���͈�<BR>
-    �T�^�I�ɂ̓E�F�C�g�ƕ��ł� 1�`999 (1 ���Ɍ��ׂ̍��܂��͕����A999 �͋Ɍ��̑����܂��͕��L)�A�܂��̓I�v�e�B�J���T�C�Y�ł� 6�`72�ł��B<BR>
-    Apple �̃t�H���g�͈قȂ�f�t�H���g�͈́A0.05�`2.0 ���g�p���Ă���悤�ł��B
+    その軸のデザイン値が変動できる範囲<BR>
+    典型的にはウェイトと幅では 1〜999 (1 が極限の細さまたは幅狭、999 は極限の太さまたは幅広)、またはオプティカルサイズでは 6〜72です。<BR>
+    Apple のフォントは異なるデフォルト範囲、0.05〜2.0 を使用しているようです。
   <LI>
 <!--A mapping from the design value range to the range [0 1] called the normalized
     range. (Apple maps to [-1,1] with the default design mapped to 0)<BR>
@@ -137,23 +137,23 @@ Then s/he provides information about each axis, specifically: -->
     (1=&gt;0.0, 999=&gt;1.0) but it is possible to add intermediate points so
     that 500=&gt;.3 which would give a different scaling between 1&amp;500 than
     between 500&amp;999. -->
-    �f�U�C���l�̒�`�悩��͈� [0, 1] �ւ̕ϊ��͐��K�����ꂽ�͈͂ƌĂ΂�܂��B(Apple �� [-1,1] �͈̔͂ɕϊ����A�f�t�H���g�̃f�U�C���� 0 �ɂȂ�܂�)<BR>
-    ���̑Ή��Â��͕������Ƃ̐��`�ϊ��ł��B��ʓI�ȏꍇ�͑Ή��͎��� (1��0.0, 999��1.0) �ł����A���Ԃ̓_��ǉ����邱�Ƃ��ł��A�Ⴆ�� 500��0.3 �Ƃ����ꍇ�́A1�`500 �̕ϊ��ƁA500�`999 �̕ϊ��ɂ͈Ⴂ�������܂��B
+    デザイン値の定義域から範囲 [0, 1] への変換は正規化された範囲と呼ばれます。(Apple は [-1,1] の範囲に変換し、デフォルトのデザインは 0 になります)<BR>
+    この対応づけは部分ごとの線形変換です。一般的な場合は対応は自明 (1⇒0.0, 999⇒1.0) ですが、中間の点を追加することもでき、例えば 500⇒0.3 とした場合は、1〜500 の変換と、500〜999 の変換には違いが生じます。
   <LI>
 <!--In an apple distortable font, each axis must be given a name which may be
     translated into multiple languages. -->
-    Apple �ό`�\�t�H���g�ł́A�e���ɂ͕����̌���ɕϊ��ł��閼�O�������Ă��Ȃ���΂Ȃ�܂���B
+    Apple 変形可能フォントでは、各軸には複数の言語に変換できる名前がつけられていなければなりません。
 </UL>
 <P>
 <!--
 Then s/he determines the number of designs needed. In a Type1 font there
 may be at most 16, and at least 2^axis-count. So in a 3 axis font there must
 be at least 8 designs, one for each extreme. -->
-���ɁA�f�U�C���̌���I�т܂��BType 1 �t�H���g�ł͍ő� 16 �ŁA�Œ� 2^���̌� �ƂȂ�܂��B���̂��߁A3 ���̃t�H���g�ł͍Œ� 8 �̃f�U�C�����A�e�Ɍ��̒l�ɂ� 1 �K�v�ƂȂ�܂��B
+次に、デザインの個数を選びます。Type 1 フォントでは最大 16 個で、最低 2^軸の個数 となります。そのため、3 軸のフォントでは最低 8 個のデザインが、各極限の値につき 1 個必要となります。
 <P>
 <!--
 For Type1 fonts s/he needs to write two postscript functions -->
-Type1 �t�H���g�����ꍇ�A2 �� PostScript �֐��������K�v������܂��B
+Type1 フォントを作る場合、2 個の PostScript 関数を書く必要があります。
 <DL>
   <DT>
     NormalizeDesignVector
@@ -162,7 +162,7 @@ Type1 �t�H���g�����ꍇ�A2 �� PostScript �֐��������K�v������܂��B
     user wants something non-linear). This maps a vector of design values to
     their normalized values (in our three axis case above it might map [400 500
     12] to [.4 .5 .09]) -->
-    FontForge �̓��[�U�ɑ����Ă��̊֐�����ɐ����ł��܂� (���[�U�����炩�̔���`�̏�����K�v�Ƃ���ꍇ������)�B���̊֐��̓f�U�C���l�̃x�N�g���𐳋K�����ꂽ�l�ɕϊ����܂� (��قǂ� 3 ���̗�ł́A[400 500 12] �� [0.4 0.5 0.09] �ɕϊ����邱�ƂɂȂ�܂�)�B
+    FontForge はユーザに代わってこの関数を常に生成できます (ユーザが何らかの非線形の処理を必要とする場合を除く)。この関数はデザイン値のベクトルを正規化された値に変換します (先ほどの 3 軸の例では、[400 500 12] を [0.4 0.5 0.09] に変換することになります)。
   <DT>
     ConvertDesignVector
   <DD>
@@ -170,7 +170,7 @@ Type1 �t�H���g�����ꍇ�A2 �� PostScript �֐��������K�v������܂��B
     (but in more complicated cases, with intermediate designs it is unable to
     do so). This function takes a normalized vector (as produced above) and figures
     out how much each weight to give each design in the final blend. -->
-    �ʏ�̏ꍇ�́AFontForge �͂��̋@�\�����[�U�ɑ����č쐬���邱�Ƃ��ł��܂� (�������A��蕡�G�ȁA���ԃf�U�C�����܂܂��ꍇ�͎����쐬�ł��܂���)�B���̊֐��͐��K�����ꂽ�x�N�g�� (��L�̂Ƃ��萶�����ꂽ����) �����A�e�f�U�C�����A�ŏI�I�ȍ������킹�̌��ʂɂǂꂾ���̏d�݂�^���邩��Ԃ��܂��B
+    通常の場合は、FontForge はこの機能をユーザに代わって作成することができます (しかし、より複雑な、中間デザインが含まれる場合は自動作成できません)。この関数は正規化されたベクトル (上記のとおり生成されたもの) を取り、各デザインが、最終的な混ぜ合わせの結果にどれだけの重みを与えるかを返します。
 </DL>
 <P>
 <!--
@@ -180,40 +180,40 @@ information being provided. It should describe the normal variant of the
 font. The sum of all the weights must be 1.0. In the above example, if we
 take [400 500 12] as our definition of "normal" this vector might look like:
 [.273 .027 .273 .027 .182 .018 .182 .018]. -->
-�Ō�ɁA�f�U�C���̏d�݂Â��̃f�t�H���g�x�N�g���� (�e�f�U�C�����Ƃ� 1 ����) �񋟂��Ȃ���΂Ȃ�܂���B����́A�}���`�v���}�X�^�[�t�H���g�ɉ����ǉ�����^�����Ɏg�p�����Ƃ��ɗp������d�݂Â��ł��B�����ɂ̓t�H���g�̒ʏ�ł��L�q����ׂ��ł��B�u�ʏ�v�̒�`�Ƃ��āA[400 500 12] ��������Ȃ�΁A���̃x�N�g���� [.273 .027 .273 .027 .182 .018 .182 .018] �̂悤�ɂȂ�ł��傤�B
+最後に、デザインの重みづけのデフォルトベクトルを (各デザインごとに 1 つずつ) 提供しなければなりません。これは、マルチプルマスターフォントに何も追加情報を与えずに使用したときに用いられる重みづけです。ここにはフォントの通常版を記述するべきです。「通常」の定義として、[400 500 12] を取ったならば、このベクトルは [.273 .027 .273 .027 .182 .018 .182 .018] のようになるでしょう。
 <P>
 <!--
 Apple distortable fonts do not need the postscript functions, nor the default
 weight vector mentioned above. Instead they need a set of named styles which
 map a particular coordinate in design space to a name (which may be provided
 in several languages). -->
-Apple �ό`�\�t�H���g�� PostScript �֐���K�v�Ƃ��܂��񂵁A��L�̃f�t�H���g�d�݂Â��x�N�g�����s�v�ł��B���̑���A�f�U�C����Ԃɒu�������̍��W�l�𖼑O�ɑΉ��Â���A���O���X�^�C���̑g���K�v�ɂȂ�܂� (���O�͕����̌���Ŏw�肷�邱�Ƃ��ł��܂�)�B
+Apple 変形可能フォントは PostScript 関数を必要としませんし、上記のデフォルト重みづけベクトルも不要です。その代わり、デザイン空間に置ける特定の座標値を名前に対応づける、名前つきスタイルの組が必要になります (名前は複数の言語で指定することができます)。
 <P>
 <!--
 Corresponding glyphs in each design must have certain similarities: -->
-�e�f�U�C���ɂ�����Ή�����O���t�ɂ́A������x�̗ގ������K�v�ł�:
+各デザインにおける対応するグリフには、ある程度の類似性が必要です:
 <UL>
   <LI>
 <!--There must be the same number of contours (or references)-->
-    �֊s (�܂��͎Q��) �̌��������łȂ���΂Ȃ�Ȃ�
+    輪郭 (または参照) の個数が同じでなければならない
   <LI>
 <!--There must be the same number of points on each contour-->
-    �e�֊s�ɂ͓������̓_��������΂Ȃ�Ȃ�
+    各輪郭には同じ個数の点が無ければならない
   <LI>
 <!--Corresponding contours must be oriented in the same direction-->
-    �Ή�����֊s�͓��������������Ă��Ȃ���΂Ȃ�Ȃ�
+    対応する輪郭は同じ方向を向いていなければならない
   <LI>
 <!--In a Type1 fonts there must be corresponding hints, and hint substitution
     points. -->
-    Type1 �t�H���g�ł́A�q���g����уq���g���u������_�͑Ή����Ă��Ȃ���΂Ȃ�Ȃ��B
+    Type1 フォントでは、ヒントおよびヒントが置換する点は対応していなければならない。
   <LI>
 <!--In a TrueType font corresponding glyphs share the same instructions (and
     'fpgm' and 'prep' tables), but may have different 'cvt ' tables. -->
-    TrueType �t�H���g�ł͑Ή�����O���t�͓������� (���т�&lsquo;fpgm&rsquo;�����&lsquo;prep&rsquo;�e�[�u��) �����L���Ă��Ȃ���΂Ȃ�Ȃ��B�������A&lsquo;cvt &rsquo;�e�[�u���͈قȂ��Ă��Ă��悢�B
+    TrueType フォントでは対応するグリフは同じ命令 (並びに&lsquo;fpgm&rsquo;および&lsquo;prep&rsquo;テーブル) を共有していなければならない。ただし、&lsquo;cvt &rsquo;テーブルは異なっていてもよい。
 </UL>
 <H2>
 <!--The Dialog-->
-    �_�C�A���O
+    ダイアログ
 </H2>
 <P>
 <!--
@@ -221,33 +221,33 @@ This dialog is used for creating and modifying multiple master fonts. It
 contains several sub-dialogs which must be processed in sequence, and follows
 pretty closely to the process described above. I will first show the sequence
 for Adobe's fonts, and then explain Apple's fonts. -->
-���̃_�C�A���O�̓}���`�v���}�X�^�[�t�H���g�̍쐬�ƏC���ɗp�����܂��B���̃_�C�A���O�́A���Ԃɏ������Ȃ���΂Ȃ�Ȃ��������̃T�u�_�C�A���O���܂݁A��Ő��������v���Z�X�ɔ��ɖ��ڂɑΉ����Ă��܂��B�܂��ŏ��� Adobe �̃t�H���g�ɑ΂���菇�������A���� Apple �̃t�H���g��������܂��B
+このダイアログはマルチプルマスターフォントの作成と修正に用いられます。このダイアログは、順番に処理しなければならないいくつかのサブダイアログを含み、上で説明したプロセスに非常に密接に対応しています。まず最初に Adobe のフォントに対する手順を示し、次に Apple のフォントを説明します。
 <P>
 <IMG SRC="../mmcounts.png" WIDTH="476" HEIGHT="448" ALIGN="Right"><!--The first
 screen allows you to choose the type of distortable font you wish to generate
 (Adobe Multiple Master, or Apple), the number of axes in your font, and the
 number of master designs, and a family name (which will be used for creating
 new fonts, if you need any new ones).<BR CLEAR=ALL> -->
-�ŏ��̉�ʂł́A�쐬�������ό`�\�t�H���g�̃^�C�v (Adobe �}���`�v���}�X�^�[�܂��� Apple)�A�t�H���g�Ɋ܂܂�鎲�̐��A�}�X�^�[�f�U�C���̌�����уt�@�~���[�� (����́A�V�����t�H���g���K�v�ȂƂ��ɂ�����쐬����̂ɗp�����܂�) ��I�����邱�Ƃ��ł��܂��B<BR CLEAR=ALL>
+最初の画面では、作成したい変形可能フォントのタイプ (Adobe マルチプルマスターまたは Apple)、フォントに含まれる軸の数、マスターデザインの個数およびファミリー名 (これは、新しいフォントが必要なときにそれを作成するのに用いられます) を選択することができます。<BR CLEAR=ALL>
 <P>
 <IMG SRC="../mmaxes.png" WIDTH="476" HEIGHT="448" ALIGN="Right"><!--The second screen
 gives you control of each axis. There are a few standard axis types defined
 by Adobe (and by Apple), but you could define your own. Note that there are
 fields which are disabled here, they only apply to Apple's fonts.<BR CLEAR=ALL> -->
-2 �Ԗڂ̉�ʂł́A�e���̐�����s�����Ƃ��ł��܂��BAdobe (�� Apple) �ɂ���Ē�`���ꂽ���̃^�C�v�� 2, 3 ��ނ�������܂��񂪁A�Ǝ��̎���V������`���邱�Ƃ��ł��܂��B�����ł͎g�p�s�\�ɂȂ��Ă��闓�����邱�Ƃɂ����ӂ��������B������ Apple �̃t�H���g�ł����g�p�ł��܂���B<BR CLEAR=ALL>
+2 番目の画面では、各軸の制御を行うことができます。Adobe (と Apple) によって定義された軸のタイプは 2, 3 種類しかありませんが、独自の軸を新しく定義することもできます。ここでは使用不可能になっている欄があることにご注意ください。それらは Apple のフォントでしか使用できません。<BR CLEAR=ALL>
 <P>
 <IMG SRC="../mmdesigns.png" WIDTH="476" HEIGHT="448" ALIGN="Right"><!-- Then you
 must assign a font to each of the master designs. You can either have FontForge
 create a new font for you (as here), or use an already loaded font, or browse
 your disk for a font (don't try to use the same font twice). -->
-���ɁA�e�}�X�^�[�f�U�C���ɑ�����t�H���g�����蓖�ĂȂ���΂Ȃ�܂���B(���̗�̂悤��) FontForge �ɐV�����t�H���g���쐬�����邱�Ƃ��ł��܂����A���ɓǂݍ��ݍς݂̃t�H���g���g�p������A�f�B�X�N��̃t�H���g���g�p���邽�߂Ƀf�B���N�g�����������邱�Ƃ��ł��܂� (�����t�H���g�� 2 ��g��Ȃ��悤�ɂ��Ă�������)�B
+次に、各マスターデザインに属するフォントを割り当てなければなりません。(この例のように) FontForge に新しいフォントを作成させることもできますし、既に読み込み済みのフォントを使用したり、ディスク上のフォントを使用するためにディレクトリを検索することもできます (同じフォントを 2 回使わないようにしてください)。
 <P>
 <!--
 You must also specify the coordinates of this design along the axes. If you
 use the minimum number of designs they will all be extremes and the coordinate
 values will be either 0 or 1. Unless you are working with intermediate designs
 it is best to let FontForge initialize this field for you.<BR CLEAR=ALL> -->
-���̃f�U�C���̎���ł̍��W�l���w�肷�邱�Ƃ��ł��܂��B�����f�U�C���̌����ŏ��ɗ}����Ȃ�΁A�����͂��ׂċɒl�łƂȂ�A���W�l�� 0 �� 1 �̂ǂ��炩�ɂȂ�܂��B���ԃf�U�C���̍�Ƃ�����̂łȂ���΁AFontForge �����̃t�B�[���h������������̂ɔC����̂��őP�ł��B<BR CLEAR=ALL>
+このデザインの軸上での座標値を指定することもできます。もしデザインの個数を最少に抑えるならば、それらはすべて極値でとなり、座標値は 0 か 1 のどちらかになります。中間デザインの作業をするのでなければ、FontForge がこのフィールドを初期化するのに任せるのが最善です。<BR CLEAR=ALL>
 <P>
 <IMG SRC="../mmfuncs.png" WIDTH="476" HEIGHT="448" ALIGN="Right"><!--This screen
 shows the postscript functions needed to map a design vector to a weight
@@ -256,34 +256,34 @@ coefficients for each master design). In most useful case FontForge is able
 to generate these functions automatically, but if you use intermediate designs
 things get too complicated for FontForge and you must enter the functions
 manually.<BR CLEAR=ALL> -->
-���̉�ʂɕ\������Ă���̂́A�f�U�C���x�N�g�����d�݃x�N�g���ɑΉ��Â���̂ɕK�v�� PostScript �֐��ł� (�����ւ���΁A�e�f�U�C�����ł̈ʒu���w�肵���Ƃ��A�����͊e�}�X�^�[�f�U�C������̍������킹�̔䗦�𐶐����܂�)�B�قƂ�ǂ̗L�v�ȏꍇ�ł́AFontForge �͂����̊֐��������������܂����A���ԃf�U�C�����g�p�����Ƃ��ɂ́AFontForge �ň����ɂ͔��ɕ��G�ɂȂ�̂ŁA�֐����蓮�œ��͂��Ȃ���΂Ȃ�܂���B<BR CLEAR=ALL>
+この画面に表示されているのは、デザインベクトルを重みベクトルに対応づけるのに必要な PostScript 関数です (言い替えれば、各デザイン軸での位置を指定したとき、これらは各マスターデザインからの混ぜ合わせの比率を生成します)。ほとんどの有益な場合では、FontForge はこれらの関数を自動生成しますが、中間デザインを使用したときには、FontForge で扱うには非常に複雑になるので、関数を手動で入力しなければなりません。<BR CLEAR=ALL>
 <P>
 <IMG SRC="../mmfinal.png" WIDTH="476" HEIGHT="448" ALIGN="Right"><!--The last screen
 shows the default weights (which you may either enter directly or as coordinates
 along the design axes), the ForceBoldThreshold private dictionary
 entry).<BR CLEAR=ALL> -->
-�Ō�̉�ʂ��\�����Ă���̂́A�f�t�H���g�̏d�݂Â� (����͒��ړ��͂��邱�Ƃ��ł��܂����A�f�U�C�����ɉ��������W�l�ł��w��ł��܂�) ����сA�v���C�x�[�g�����̍��� ForceBoldThreshold �ł��B<BR CLEAR=ALL>
+最後の画面が表示しているのは、デフォルトの重みづけ (これは直接入力することもできますし、デザイン軸に沿った座標値でも指定できます) および、プライベート辞書の項目 ForceBoldThreshold です。<BR CLEAR=ALL>
 <H3>
 <!--An Apple distortable font.-->
-    Apple �ό`�\�t�H���g
+    Apple 変形可能フォント
 </H3>
 <P>
 <IMG SRC="../mmappleaxes.png" WIDTH="476" HEIGHT="448" ALIGN="Right"><!--The dialog
 looks very similar, but there are a few differences. In the Axis pane of
 the dlg, you must also specify a default value for the axis, and a translatable
 name.<BR Clear=ALL>-->
-�_�C�A���O�̌������͔��ɂ悭���Ă��܂����A2,3 �̑���_������܂��B�_�C�A���O�́u���v�y�C���ŁA���̎��̃f�t�H���g�l�ƕϊ��\�Ȗ��O���w�肵�Ȃ���΂Ȃ�܂���B<BR CLEAR=ALL>
+ダイアログの見かけは非常によく似ていますが、2,3 の相違点があります。ダイアログの「軸」ペインで、その軸のデフォルト値と変換可能な名前を指定しなければなりません。<BR CLEAR=ALL>
 <P>
 <IMG SRC="../mmnamedstyles.png" WIDTH="476" HEIGHT="448" ALIGN="Right"><!--Apple
 allows coordinates in design space to be named. Here the name "Black" is
 given to the location where Weight=3.2 (the darkest value) and
-<IMG SRC="mmnamingastyle.png" WIDTH="368" HEIGHT="470" ALIGN="Left">Width=1
+<IMG SRC="../mmnamingastyle.png" WIDTH="368" HEIGHT="470" ALIGN="Left">Width=1
 (the default value). Again these names can be translated into multiple
 languages.<BR Clear=ALL>
-Apple �t�H���g�ł̓f�U�C����Ԃɂ�������W�ʒu�ɖ��O�����邱�Ƃ��ł��܂��B�����ł͖��O "Black" �́AWeight=3.2 (�ł����݂̋����l) ���� <IMG SRC="../mmnamingastyle.png" WIDTH="368" HEIGHT="470" ALIGN="Left">Width=1 (�f�t�H���g�l) �ɂ������O�ł��B�����ł������̖��O�͕����̌���ɖ|�󂷂邱�Ƃ��ł��܂��B<BR Clear=ALL>
+Apple フォントではデザイン空間における座標位置に名前をつけることができます。ここでは名前 "Black" は、Weight=3.2 (最も黒みの強い値) かつ <IMG SRC="../mmnamingastyle.png" WIDTH="368" HEIGHT="470" ALIGN="Left">Width=1 (デフォルト値) につけた名前です。ここでもこれらの名前は複数の言語に翻訳することができます。<BR Clear=ALL>
 <H2>
 <!--A suggestion-->
-    ��
+    提言
 </H2>
 <P>
 <!--
@@ -293,7 +293,7 @@ only seems to expect interpolation to be used. On the other hand in many
 cases extrapolation can be used to generate some of these designs. In the
 3 axis case you only need to produces 4 designs (one for the base, and one
 each to express the variation on each axis). -->
-Adobe �� Type1 �t�H���g�͋Ɍ��ɂ���f�U�C����S���w�肷��K�v������̂ŁA3 ���̃}���`�v���}�X�^�[�t�H���g�ł́A8 ��ނ̃f�U�C�����K�v�ł��B����́AAdobe ����Ԃ݂̂��g�����Ƃ�z�肵�Ă��邩��̂悤�ł��B����A�����̏ꍇ�ł͂����̃f�U�C���̂������쐬����̂ɕ�O���g�p���邱�Ƃ��ł��܂��B3 ���̏ꍇ�A�K�v�ȃf�U�C���� 4 ��ނ����ɂȂ�܂� (��{�f�U�C���̂��߂� 1 �A����ъe���̃o���G�[�V������\���̂� 1 ����)�B
+Adobe の Type1 フォントは極限にあるデザインを全部指定する必要があるので、3 軸のマルチプルマスターフォントでは、8 種類のデザインが必要です。これは、Adobe が補間のみを使うことを想定しているからのようです。一方、多くの場合ではそれらのデザインのいくつを作成するのに補外を使用することができます。3 軸の場合、必要なデザインは 4 種類だけになります (基本デザインのために 1 個、および各軸のバリエーションを表すのに 1 個ずつ)。
 <P>
 <!--
 I will describe the 2 axis case in detail (because it is easier to visualize):
@@ -302,7 +302,7 @@ on the Width axis from 100 to 1000. And suppose you have created fonts for
 Weight=50,Width=100 &amp; Weight=50, Width=100 &amp; Weight=900,Width=100.
 Call these designs 0, 1 and 2. We wish to produce a design, 3, with Weight=900,
 Width=1000. -->
-���́A2 ���̏ꍇ�݂̂��ڂ��������������ł� (���o�����ȒP�Ȃ̂�): Weight ���� 50�`900, Width ���� 100�`1000 �͈̔͂ŕϓ�����t�H���g������Ƃ��܂��B�����āAWeight=50,Width=100, Weight=50,Width=1000 �� Weight=900,Width=100 �̃t�H���g���쐬�ς݂��Ƃ��܂��B�������f�U�C�� 0, 1, 2 �ƌĂт܂��傤�B�����ō쐬�������̂� Weight = 900, Width=1000 �̃f�U�C�� 3 �ł��B
+私は、2 軸の場合のみを詳しく説明するつもりです (視覚化が簡単なので): Weight 軸が 50〜900, Width 軸が 100〜1000 の範囲で変動するフォントがあるとします。そして、Weight=50,Width=100, Weight=50,Width=1000 と Weight=900,Width=100 のフォントが作成済みだとします。それらをデザイン 0, 1, 2 と呼びましょう。ここで作成したいのは Weight = 900, Width=1000 のデザイン 3 です。
 <P ALIGN=Center>
 <IMG SRC="../mmextrapolate2.png" WIDTH="132" HEIGHT="132">
 <P>
@@ -312,16 +312,16 @@ call it "I". Use FontForge's Element-&gt;Interpolate Fonts command to produce
 a design which is 50% of the way from design 1 to design 2 (This will be
 Weight=475, Width=550). Then produce another design with is 200% of the way
 from design 0 to design "I". This will be the desired extreme design. -->
-�ŏ��ɒ��ԃf�U�C�����쐬����K�v������܂� (����͌�ō폜���܂�)�B������gI�h�ƌĂԂ��Ƃɂ��܂��BFontForge �� <CODE>�G�������g(<U>L</U>)</CODE>��<CODE>�t�H���g�̕��(<U>L</U>)...</CODE> �R�}���h���g���āA�f�U�C�� 1 ���� 2 �̊Ԃ� 50% �Ɉʒu����f�U�C���𐶐����Ă������� (����� Weight=475, Width=550 �ƂȂ�܂�)�B���ꂩ��f�U�C�� 0 ���� �f�U�C���gI�h�̉����� 200% �Ɉʒu���������̃f�U�C�����쐬���܂��B���ꂪ�K�v�ȋɌ��̃f�U�C���ƂȂ�܂��B
+最初に中間デザインを作成する必要があります (これは後で削除します)。これを“I”と呼ぶことにします。FontForge の <CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォントの補間(<U>L</U>)...</CODE> コマンドを使って、デザイン 1 から 2 の間の 50% に位置するデザインを生成してください (これは Weight=475, Width=550 となります)。それからデザイン 0 から デザイン“I”の延長上 200% に位置するもう一つのデザインを作成します。これが必要な極限のデザインとなります。
 <P>
 <!--
 Adobe's Type2 designs appear to have been prepared to allow this approach,
 but the multiple master operators were dropped from the Type2 spec, and the
 question is moot. -->
-Adobe �� Type2 �f�U�C���͂��̃A�v���[�`���\�ɂ��鏀�����������悤�Ɏv���܂����AType2 �̎d�l����}���`�v���}�X�^�[�֘A�̉��Z�q���폜����Ă��܂����̂ŁA���̋^��̓����͕s���ł��B
+Adobe の Type2 デザインはこのアプローチを可能にする準備があったように思いますが、Type2 の仕様からマルチプルマスター関連の演算子が削除されてしまったので、この疑問の答えは不明です。
 <P>
 <P ALIGN=Center>
-�\ <A HREF="mmmenu.html">��</A> �\ <A HREF="overview.html">�ڎ�</A> �\
+— <A HREF="mmmenu.html">上</A> — <A HREF="overview.html">目次</A> —
 <P>
 </DIV>
 </BODY></HTML>

@@ -3,9 +3,9 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 23-Feb-2004 -->
   <!-- AP: Last modified: 11-Dec-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!--<TITLE>Multi Layered Editing of Type3 and SVG fonts</TITLE>-->
-    <TITLE>Type3 ����� SVG �t�H���g�̕������C���ҏW</TITLE>
+    <TITLE>Type3 および SVG フォントの複数レイヤ編集</TITLE>
   <LINK REL="icon" href="../fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
@@ -13,14 +13,14 @@
 <DIV id="in">
   <H1 ALIGN=Center>
 <!--Multi Layered Editing of Type3 and SVG fonts-->
-    Type3 ����� SVG �t�H���g�̕������C���ҏW
+    Type3 および SVG フォントの複数レイヤ編集
   </H1>
   <P>
 <!--
   Normal builds of fontforge do not have this mode enabled (it can eat up a
   lot of memory), if you wish to edit type3 fonts then configure fontforge
   with -->
-  �ʏ�ݒ�� FontForge �̃r���h�ł͂��̃��[�h�͗��p�\�ɂȂ��Ă��܂��� (����͔��ɑ����̃�������Q���\��������܂�)�B�������Ȃ��� Type3 �t�H���g��ҏW�������Ȃ�΁AFontForge �̃r���h���Ɉȉ��̐ݒ�� configure ���N�����Ă�������:
+  通常設定の FontForge のビルドではこのモードは利用可能になっていません (これは非常に多くのメモリを浪費する可能性があります)。もしあなたが Type3 フォントを編集したいならば、FontForge のビルド時に以下の設定で configure を起動してください:
   <BLOCKQUOTE>
     <PRE>$ configure --with-multilayer
   $ make
@@ -33,23 +33,23 @@
   in a similar fashion) will cause FontForge to retain information on each
   stroke and fill command. Each command is placed in a separate layer and may
   be edited in isolation. -->
-  ������s�����Ȃ�΁AType3 �t�H���g (�܂��͓��l�̗��V�ŕҐ����ꂽ SVG �t�H���g) ��ǂݍ��ނƁAFontForge �͊e�X�g���[�N�� fill �R�}���h�̏���ێ�����悤�ɂȂ�܂��B�e�R�}���h�͓Ɨ��������C���ɒu����A�������ĕҏW���邱�Ƃ��ł��܂��B
+  これを行ったならば、Type3 フォント (または同様の流儀で編成された SVG フォント) を読み込むと、FontForge は各ストロークと fill コマンドの情報を保持するようになります。各コマンドは独立したレイヤに置かれ、分離して編集することができます。
   <P>
 <!--
   A new font may be converted to a multi-layered font by selecting
   Element-&gt;Font Info-&gt;General-&gt;Multi Layered Font. -->
-  �V�����t�H���g�� <CODE>�G�������g(<U>L</U>)</CODE>��<CODE>�t�H���g���(<U>F</U>)...</CODE>��<CODE>[��ʏ��]</CODE>��<CODE>�������C���[�t�H���g(<U>M</U>)</CODE> ��I������΁A�������C���t�H���g�ɕϊ����邱�Ƃ��ł��܂��B
+  新しいフォントは <CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[一般情報]</CODE>→<CODE>複数レイヤーフォント(<U>M</U>)</CODE> を選択すれば、複数レイヤフォントに変換することができます。
   <H2>
     <IMG SRC="../charview-multilayer.png" WIDTH="348" HEIGHT="571" ALIGN="Right"><!--Multi
     Layered editing in the outline view-->
-   �A�E�g���C���r���[�ł̕������C���ҏW
+   アウトラインビューでの複数レイヤ編集
   </H2>
   <P>
 <!--
   In the image at left we have a glyph drawn by stroking two paths. One layer
   (containing one of the paths) is currently selected and is drawn in full.
   All its points are editable. The other layer is shown as a dashed line. -->
-  ���̐}�ɂ́A2 �{�̃p�X�̃X�g���[�N�ɂ���ĕ`���ꂽ�O���t������܂��B1 �̃��C�� (�p�X�� 1 �{���܂�) �͌��ݑI������Ă���A�����ŕ`�悳��Ă��܂��B�����Ɋ܂܂�邷�ׂĂ̓_�͕ҏW�\�ł��B���̃��C���͓_���ŕ`�悳��Ă��܂��B
+  左の図には、2 本のパスのストロークによって描かれたグリフがあります。1 個のレイヤ (パスの 1 本を含む) は現在選択されており、実線で描画されています。そこに含まれるすべての点は編集可能です。他のレイヤは点線で描画されています。
   <P>
 <!--
   The Layer palette looks a little different here. There is no hinting information
@@ -58,73 +58,73 @@
   <A HREF="charview.html">normally</A> do. They may be made active by clicking
   on their names. They may be made invisible by turning off the check box
   associated with them. -->
-  ���C���p���b�g�̌������́A�ʏ�Ƃ͏�������Ă��܂��B�q���g���͂Ȃ� (Type3 �t�H���g�ł̓q���g�͎g�p�s�\�ł�)�A���̑��ɁA<A HREF="charview.html">�ʏ�</A>�Ƃ悭�����ӂ�܂������� 2 �̖��O�����C�� (�w�ʂƃK�C�h) �����݂��܂��B�����̖��O���N���b�N����Ǝg�p�\�ɂȂ�܂��B���ɂ���`�F�b�N�{�b�N�X���N���b�N����ƁA�����͌����Ȃ��Ȃ�܂��B
+  レイヤパレットの見かけは、通常とは少し違っています。ヒント情報はなく (Type3 フォントではヒントは使用不能です)、その代りに、<A HREF="charview.html">通常</A>とよく似たふるまいをする 2 つの名前つきレイヤ (背面とガイド) が存在します。それらの名前をクリックすると使用可能になります。横にあるチェックボックスをクリックすると、それらは見えなくなります。
   <P>
 <!--
   Under these two are the layers that make up the glyph in the font. Each layer
   is identified by a small picture of what that layer looks like when rasterized.
   Clicking on the layer makes it editable. -->
-  ����� 2 �̉��ɂ���̂́A�t�H���g�Ɋ܂܂��O���t���\�����郌�C���ł��B�e���C���́A���̃��C�������X�^���C�Y���ꂽ�Ƃ��ɂǂ̂悤�Ɍ����邩��\�������ȉ摜�ɂ���Ď��ʂł��܂��B���C�����N���b�N����ƁA���ꂪ�ҏW�\�ɂȂ�܂��B
+  それら 2 つの下にあるのは、フォントに含まれるグリフを構成するレイヤです。各レイヤは、そのレイヤがラスタライズされたときにどのように見えるかを表す小さな画像によって識別できます。レイヤをクリックすると、それが編集可能になります。
   <P>
 <!--
   The layers are ordered in the list as they will be drawn on the screen. The
   topmost layer is drawn first, the bottommost is drawn last. Regions drawn
   earlier will be overwritten by Regions drawn later. -->
-  ���C���́A��ʏ�ɕ`�悳��鏇�ԂŃ��X�g�ɕ���ł��܂��B�����΂��̃��C�����ŏ��ɕ`�悳��A�����΂񉺂̃��C�����Ō�ƂȂ�܂��B�ŏ��ɕ`�悵���̈�́A�ォ��`�悵���̈�ɂ���ēh��Ԃ���܂��B
+  レイヤは、画面上に描画される順番でリストに並んでいます。いちばん上のレイヤが最初に描画され、いちばん下のレイヤが最後となります。最初に描画した領域は、後から描画した領域によって塗りつぶされます。
   <P>
 <!--
   Double clicking on a layer brings up the <A HREF="#Layer">Layer Info
   dialog</A>. -->
-  ���C�����_�u���N���b�N�����<A HREF="#Layer">���C�����_�C�A���O</A>���N�����܂��B
+  レイヤをダブルクリックすると<A HREF="#Layer">レイヤ情報ダイアログ</A>が起動します。
   <P>
 <!--
   Clicking with the right button brings up the layer menu which contains: -->
-  �E�{�^���ŃN���b�N����ƁA�ȉ��̓��e���܂ރ��C�����j���[���N�����܂�:
+  右ボタンでクリックすると、以下の内容を含むレイヤメニューが起動します:
   <DL>
     <DT>
 <!--  Layer Info...-->
-      ���C���[���...
+      レイヤー情報...
     <DD>
 <!--  Brings up the <A HREF="multilayer.html#Layer">Layer Info</A> dialog on the
       current layer (same as double clicking)
-      ���݂̃��C���Ɋւ���<A HREF="#Layer">���C�����</A>�_�C�A���O���N�����܂� (�_�u���N���b�N�Ɠ����ł�)�B
+      現在のレイヤに関する<A HREF="#Layer">レイヤ情報</A>ダイアログを起動します (ダブルクリックと同じです)。
     <DT>
 <!--  New Layer...-->
-      �V�������C���[...
+      新しいレイヤー...
     <DD>
 <!--  Creates a new layer and brings up the <A HREF="multilayer.html#Layer">Layer
       Info</A> dialog to describe it. (the new layer will appear at the bottom
       of the layer list and will be drawn last) -->
-      �V�������C�����쐬���A����̏����܂�<A HREF="#Layer">���C�����</A>�_�C�A���O���N�����܂��B(�V�������C���̓��C�����X�g�̂����΂񉺂Ɍ���A�Ō�ɕ`�悳��܂�)�B
+      新しいレイヤを作成し、それの情報を含む<A HREF="#Layer">レイヤ情報</A>ダイアログを起動します。(新しいレイヤはレイヤリストのいちばん下に現れ、最後に描画されます)。
     <DT>
 <!--  Del Layer-->
-      ���C���[���폜
+      レイヤーを削除
     <DD>
 <!--  Deletes the current layer (you may not delete the last layer in a glyph)-->
-      ���݂̃��C�����폜���܂� (�O���t�Ƀ��C���� 1 �����Ȃ��Ƃ��͍폜�ł��܂���)�B
+      現在のレイヤを削除します (グリフにレイヤが 1 つしかないときは削除できません)。
     <DT>
 <!--  First-->
-      �ŏ�(F)
+      最初(F)
     <DD>
 <!--  Make the current layer the first one to be drawn.-->
-      ���݂̃��C�����ŏ��ɕ`�悳���悤�Ɉړ����܂��B
+      現在のレイヤを最初に描画されるように移動します。
     <DT>
 <!--  Earlier-->
-      �O��(E)
+      前に(E)
     <DD>
 <!--  Make the current layer be drawn earlier. (swaps it with the layer above it) -->
-      ���݂̃��C���̕`�揇���J��グ�܂� (1 �O�̃��C���Ɠ��ꊷ���܂�)�B
+      現在のレイヤの描画順を繰り上げます (1 つ前のレイヤと入れ換えます)。
     <DT>
 <!--  Later-->
-      ���(A)
+      後に(A)
     <DD>
 <!--  Makes the current layer be drawn later. (swaps it with the layer below it) -->
-      ���݂̃��C���̕`�揇���J�艺���܂��B (1 �O�̃��C���Ɠ��ꊷ���܂�)�B
+      現在のレイヤの描画順を繰り下げます。 (1 つ前のレイヤと入れ換えます)。
     <DT>
 <!--  Last-->
     <DD>
 <!--  Makes the current layer be drawn last.-->
-      ���݂̃��C�����Ō�ɕ`�悳���悤�Ɉړ����܂��B
+      現在のレイヤを最後に描画されるように移動します。
   </DL>
   <P>
 <!--
@@ -135,26 +135,26 @@
   bitmap will be drawn with the fill color), otherwise the image will be drawn
   with the colors specified in the image (Transparent images are not supported
   here). -->
-  Type3 �t�H���g�ł͉摜���g�p�ł��܂� (SVG �t�H���g�ł͂ł��܂���)�B<A HREF="filemenu.html#Import"><CODE>�t�@�C��(<U>F</U>)</CODE>��<CODE>��荞��(<U>I</U>)...</CODE></A>�R�}���h�ŉ摜���D���ȑO�ʃ��C���ɓǂݍ��ނ��Ƃ��ł��܂��B�摜���r�b�g�}�b�v�摜�ł���A���ꂪ�u���ꂽ���C���œh��Ԃ����[�h�̕`����s���ꍇ�A���̉摜�� imagemask �R�}���h�ɂ���ďo�͂��� (�r�b�g�}�b�v�͓h��Ԃ��F�ŕ`�悳��܂�)�A����ȊO�̏ꍇ�͉摜�Ŏw�肳��Ă���F�ŕ`�悳��܂� (�����ł͓����摜�̓T�|�[�g����Ă��܂���)�B
+  Type3 フォントでは画像を使用できます (SVG フォントではできません)。<A HREF="filemenu.html#Import"><CODE>ファイル(<U>F</U>)</CODE>→<CODE>取り込み(<U>I</U>)...</CODE></A>コマンドで画像を好きな前面レイヤに読み込むことができます。画像がビットマップ画像であり、それが置かれたレイヤで塗りつぶしモードの描画を行う場合、その画像は imagemask コマンドによって出力され (ビットマップは塗りつぶし色で描画されます)、それ以外の場合は画像で指定されている色で描画されます (ここでは透明画像はサポートされていません)。
   <P>
 <!--
   FontForge will not skew, flip or rotate images. -->
-  FontForge �͉摜�̘c�݁A���]�܂��͉�]�ϊ����s���܂���B
+  FontForge は画像の歪み、反転または回転変換を行いません。
   <H2>
     <IMG SRC="layerdlg.png" WIDTH="362" HEIGHT="372" ALIGN="Right"><!--The
     <A NAME="Layer">Layer</A> dialog -->
-    <A NAME="Layer">���C��</A>�_�C�A���O
+    <A NAME="Layer">レイヤ</A>ダイアログ
   </H2>
   <P>
 <!--
   This dialog describes various attributes of the way the splines in the current
   layer are drawn. -->
-  ���̃_�C�A���O�́A���݂̃��C���ŃX�v���C�����`�悳���ۂ̂��܂��܂ȑ������L�q���Ă��܂��B
+  このダイアログは、現在のレイヤでスプラインが描画される際のさまざまな属性を記述しています。
   <P>
 <!--
   A layer may be either stroked or filled. Or both. Or neither (layers containing
   only images need not be filled or stroked). -->
-  ���C���́A�X�g���[�N�Ƃ��Đ����������A������h��Ԃ����A���̗����A�܂��͂ǂ�����g�p���Ȃ����̂ǂꂩ���I���ł��܂� (�摜�����܂܂Ȃ����C���̓X�g���[�N���h��Ԃ����K�v����܂���)�B
+  レイヤは、ストロークとして線を引くか、内部を塗りつぶすか、その両方、またはどちらも使用しないかのどれかが選択できます (画像しか含まないレイヤはストロークも塗りつぶしも必要ありません)。
   <P>
 <!--
   You may either specify a color to be used for stroking or filling the splines
@@ -162,19 +162,19 @@
   conventional fonts the color will be inherited so that the font user can
   specify the font's color). If you do want to specify a color, use a 6 hex-digit
   rgb value "#rrggbb". -->
-  ���C�����̃X�g���[�N��h��Ԃ��ɗp������F�̂ǂ�����w�肷�邱�Ƃ��ł��܂����A�w�肳�ꂽ�F�������p�����Ƃ��ł��܂� (�ʏ�̃t�H���g�ł͐F�͈����p�����̂ŁA���[�U�͐F���w�肷�邱�Ƃ��ł��܂�)�B�����ŐF���w�肵�����ꍇ�A16 �i 6 ���� RGB �l�g#rrggbb�h���g�p���Ă��������B
+  レイヤ内のストロークや塗りつぶしに用いられる色のどちらも指定することができますし、指定された色を引き継ぐこともできます (通常のフォントでは色は引き継がれるので、ユーザは色を指定することができます)。自分で色を指定したい場合、16 進 6 桁の RGB 値“#rrggbb”を使用してください。
   <P>
 <!--
   SVG fonts may include an opacity level (type3 fonts may not). 0 is fully
   transparent, 1.0 is fully opaque, .5 is translucent. Again this value may
   be inherited from the environment. -->
-  SVG �t�H���g�͓����x���x�����܂ނ��Ƃ��ł��܂� (Type3 �t�H���g�͂ł��܂���)�B0 �͊��S�ɓ����ŁA1.0 �͊��S�ɕs�����A0.5 ���������ł��B���̒l������������p�����Ƃ��ł��܂��B
+  SVG フォントは透明度レベルを含むことができます (Type3 フォントはできません)。0 は完全に透明で、1.0 は完全に不透明、0.5 が半透明です。この値も環境から引き継ぐことができます。
   <P>
 <!--
   A stroke has a width (which again may be inherited, but probably should not
   be). Strokes are drawn using a circular pen. An elliptical pen may be specified
   by giving a transformation matrix here. -->
-  �X�g���[�N�ɂ͕����w�肳��Ă��܂� (����������p�����Ƃ��ł��܂����A����͑����s���ׂ��ł͂Ȃ��ł��傤)�B�X�g���[�N�͉~�`�̃y���ŕ`�悳��܂��B�����ŕϊ��s����w�肷�邱�Ƃɂ��A�ȉ~�`�̃y�����g�p���邱�Ƃ��ł��܂��B
+  ストロークには幅が指定されています (これも引き継ぐことができますが、これは多分行うべきではないでしょう)。ストロークは円形のペンで描画されます。ここで変換行列を指定することにより、楕円形のペンを使用することもできます。
   <P>
 <!--
   A line may be dashed. Dash patterns are specified as a list of numbers, the
@@ -185,22 +185,22 @@
   entry indicates that many units should be skipped. So "10" would mean a line
   which alternates being drawn every 10 units, while "20 10" would draw 20
   units, skip 10, draw 20 and so on. -->
-  ���͔j���ɂ��邱�Ƃ��ł��܂��B�j���p�^�[���͐��l�̃��X�g�ɂ���Ďw�肳��܂��B���X�g���̍ŏ��̐��l�́A�w�肵�� em ���j�b�g���̒����̐��̑f�Ђ��������Ƃ������A���̐��l�͂��� em ���j�b�g�������̂����Ԃ��󂭂��Ƃ�\���܂��B3 �Ԗڂ͐���������A�ȉ����l�ɉ��߂���܂��B���X�g�̍Ō�܂Ŏg����ƁA�Ăѐ擪�ɖ߂�܂��B���X�g�̗v�f����ł���ꍇ�A2 ��ڂɂ͍ŏ��̗v�f���j���̌��Ԃ̑傫����\���܂��B�ł�����g10�h�Ƃ����w��́A10 ���j�b�g���Ƃɓ���ւ��j����\���A�g20 10�h�� 20 ���j�b�g�`�悵�A10 ���j�b�g�̌��Ԃ��󂫁A20 ���j�b�g�`�悵�c�c�Ƒ����j���ɂȂ�܂��B
+  線は破線にすることもできます。破線パターンは数値のリストによって指定されます。リスト内の最初の数値は、指定した em ユニット分の長さの線の素片を引くことを示し、次の数値はその em ユニット分だけのすき間が空くことを表します。3 番目は線が引かれ、以下同様に解釈されます。リストの最後まで使われると、再び先頭に戻ります。リストの要素が奇数個である場合、2 回目には最初の要素が破線の隙間の大きさを表します。ですから“10”という指定は、10 ユニットごとに入れ替わる破線を表し、“20 10”は 20 ユニット描画し、10 ユニットの隙間が空き、20 ユニット描画し……と続く破線になります。
   <P>
 <!--
   Finally a stroke needs to know how to treat the ends of paths, and how to
   join non-tangent path-segments. -->
-  �Ō�ɁA�X�g���[�N�ł́A�p�X�̏I�[�ƁA�p�X���܂�Ȃ����Ă��鏊���ǂ��`�悷�邩���w�肵�Ȃ���΂Ȃ�܂���B
+  最後に、ストロークでは、パスの終端と、パスが折れ曲がっている所をどう描画するかを指定しなければなりません。
   <P>
   <P>
 <!--
   FontForge's rasterization leaves much to be desired. It does not support
   full color (rounding everything to a shade of grey), and its stroking algorithm
   is quite poor. (it does not rasterize dash) -->
-  FontForge �̃��X�^���C�Y�́A�]�܂����Ƃ͂ƂĂ������܂���B�t���J���[���T�|�[�g���Ă��܂��� (���ׂĂ̐F���D�F�̔Z�W�ɒu�������܂�) ���A�X�g���[�N�`��A���S���Y���͔��ɒt�قł��B(���X�^���C�U�́A�j���̕`����s���܂���)
+  FontForge のラスタライズは、望ましいとはとても言えません。フルカラーをサポートしていません (すべての色を灰色の濃淡に置き換えます) し、ストローク描画アルゴリズムは非常に稚拙です。(ラスタライザは、破線の描画を行いません)
   <P>
   <P ALIGN=Center>
-  �\ <A HREF="charview.html">�߂�</A> �\ <A HREF="overview.html">�ڎ�</A> �\
+  — <A HREF="charview.html">戻る</A> — <A HREF="overview.html">目次</A> —
   <P>
   <P>
 </DIV>

@@ -3,10 +3,10 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Sep-2003 -->
   <!-- AP: Last modified: 27-Sep-2003 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
   <LINK REL="icon" href="../fftype16.png">
 <!--<TITLE>The Typographic Features manipulation dialogs</TITLE>-->
-    <TITLE>�g�ŋ@�\����_�C�A���O</TITLE>
+    <TITLE>組版機能操作ダイアログ</TITLE>
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
@@ -17,12 +17,12 @@ These dialogs manipulate features which already exist. See the
 <A HREF="fontinfo.html#Contextual">Element-&gt;Font Info</A> and
 <A HREF="charinfo.html#features">Element-&gt;Char Info</A> dialogs for
 information on how to create these features in the first place. -->
-�����̃_�C�A���O�́A�����̑g�ŋ@�\�𑀍삵�܂��B�ŏ��ɂ����̋@�\���쐬������@�ɂ��ẮA<A HREF="fontinfo.html#Contextual"><CODE>�G�������g(<U>L</U>)</CODE>��<CODE>�t�H���g���(<U>F</U>)...</CODE></A> ����� <A HREF="charinfo.html#features"><CODE>�G�������g(<U>L</U>)</CODE>��<CODE>�O���t���(<U>I</U>)...</CODE></A> �_�C�A���O���Q�Ƃ��Ă��������B
+これらのダイアログは、既存の組版機能を操作します。最初にこれらの機能を作成する方法については、<A HREF="fontinfo.html#Contextual"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE></A> および <A HREF="charinfo.html#features"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>グリフ情報(<U>I</U>)...</CODE></A> ダイアログを参照してください。
 <H2>
-<!--<IMG SRC="/copyfeatures.png" WIDTH="282" HEIGHT="503" ALT="Copy Feature(s) to Font dialog"
+<!--<IMG SRC="../copyfeatures.png" WIDTH="282" HEIGHT="503" ALT="Copy Feature(s) to Font dialog"
       ALIGN="Right"><A NAME="Copy-Feat">Copy Feature(s) to Font...</A> -->
-    <IMG SRC="../copyfeatures.png" WIDTH="282" HEIGHT="503" ALT="�@�\���t�H���g�ɃR�s�[(C) �_�C�A���O"
-      ALIGN="Right"><A NAME="Copy-Feat">�@�\���t�H���g�ɃR�s�[...</A>
+    <IMG SRC="../copyfeatures.png" WIDTH="282" HEIGHT="503" ALT="機能をフォントにコピー(C) ダイアログ"
+      ALIGN="Right"><A NAME="Copy-Feat">機能をフォントにコピー...</A>
 </H2>
 <P>
 <!--
@@ -30,32 +30,32 @@ This dialog allows you to copy a feature or related set of features from
 one font to another. You may select the feature by specifying its opentype
 tag (or apple feature/setting), the scripts and languages to which it applies,
 and its flags. -->
-���̃_�C�A���O�ł́A�@�\�܂��͊֘A����@�\�̃Z�b�g������t�H���g����ʂ̃t�H���g�ɃR�s�[���邱�Ƃ��ł��܂��B�@�\�̑I���́AOpenType �^�O (�܂��� Apple �̋@�\/�ݒ�) ���тɁA�@�\���K�p�����X�N���v�g�ƌ���A�@�\�̃t���O���w�肷�邱�Ƃɂ���čs�����Ƃ��ł��܂��B
+このダイアログでは、機能または関連する機能のセットをあるフォントから別のフォントにコピーすることができます。機能の選択は、OpenType タグ (または Apple の機能/設定) 並びに、機能が適用されるスクリプトと言語、機能のフラグを指定することによって行うことができます。
 <P>
 <!--
 If you leave the Tag field blank then it will match any tag. Similarly you
 may select either a specific set of scripts and languages or "Any Script".
 And a specific set of flags, or Any flags. -->
-<CODE>�^�O(<U>T</U>)</CODE> �t�B�[���h���󔒂̂܂܂��ƁA���ׂẴ^�O�Ɉ�v���邱�ƂɂȂ�܂��B���l�ɁA����̗p���n�E�����I�ԑ���Ɂg<CODE>�C�ӂ̗p���n</CODE>�h���w�肷�邱�Ƃ��ł��܂��B�܂��A����̃t���O�̃Z�b�g��I�ԑ���ɁA�g<CODE>�C�ӂ̃t���O</CODE>�h���w�肷�邱�Ƃ��ł��܂��B 
+<CODE>タグ(<U>T</U>)</CODE> フィールドが空白のままだと、すべてのタグに一致することになります。同様に、特定の用字系・言語を選ぶ代わりに“<CODE>任意の用字系</CODE>”を指定することができます。また、特定のフラグのセットを選ぶ代わりに、“<CODE>任意のフラグ</CODE>”を指定することができます。 
 <P>
 <!--
 Finally you must select the font (or fonts) to which you wish the information
 copied. -->
-�Ō�ɁA���̃R�s�[��̃t�H���g (�܂��͂��̈ꗗ) ��I������K�v������܂��B
+最後に、情報のコピー先のフォント (またはその一覧) を選択する必要があります。
 <P>
 <!--
 When copying contextual/chaining dialogs or apple statemachines this will
 also copy any nested lookups on which these features depend. -->
-�����ˑ�/�A���^�̋@�\�� Apple �̏�ԋ@�B���R�s�[����Ƃ��́A�����̋@�\���ˑ����邷�ׂĂ̓���q�ɂȂ����ƍ����R�s�[���܂��B
+文脈依存/連鎖型の機能や Apple の状態機械をコピーするときは、それらの機能が依存するすべての入れ子になった照合もコピーします。
 <P>
 <!--
 (This does not copy kerning information)<BR CLEAR=ALL> -->
-(����̓J�[�j���O�����R�s�[���܂���)<BR CLEAR=ALL>
+(これはカーニング情報をコピーしません)<BR CLEAR=ALL>
 <H2>
 <!--
-  <IMG SRC="removefeature.png" WIDTH="282" HEIGHT="344" ALT="Remove Feature(s) dialog"
+  <IMG SRC="../removefeature.png" WIDTH="282" HEIGHT="344" ALT="Remove Feature(s) dialog"
       ALIGN="Right"><A NAME="Rm-Feat">Remove Feature(s)...</A> -->
-  <IMG SRC="../removefeature.png" WIDTH="282" HEIGHT="344" ALT="�@�\���폜(E) �_�C�A���O" ALIGN="Right"><A NAME="Rm-Feat">�@�\���폜...</A>
+  <IMG SRC="../removefeature.png" WIDTH="282" HEIGHT="344" ALT="機能を削除(E) ダイアログ" ALIGN="Right"><A NAME="Rm-Feat">機能を削除...</A>
 </H2> 
 <P>
 <!--
@@ -63,28 +63,28 @@ This dialog allows you to remove a feature or related set of features from
 a font. You may select the feature by specifying its opentype tag (or apple
 feature/setting), the scripts and languages to which it applies, and its
 flags. -->
-���̃_�C�A���O���g�p����ƁA1 �̋@�\�܂��͊֘A����@�\�Q���t�H���g����폜���邱�Ƃ��ł��܂��B�@�\�� OpenType �^�O (�܂��� Apple �̋@�\/�ݒ�) �ƁA���ꂪ�K�p�����p���n�ƌ���A���тɂ��̃t���O�ɂ���đI���\�ł��B
+このダイアログを使用すると、1 個の機能または関連する機能群をフォントから削除することができます。機能は OpenType タグ (または Apple の機能/設定) と、それが適用される用字系と言語、並びにそのフラグによって選択可能です。
 <P>
 <!--
 If you leave the Tag field blank then it will match any tag. Similarly you
 may select either a specific set of scripts and languages or "Any Script".
 And a specific set of flags, or Any flags. -->
-<CODE>�^�O(<U>T</U>)</CODE> �t�B�[���h���󔒂̂܂܂��ƁA���ׂẴ^�O�Ɉ�v���邱�ƂɂȂ�܂��B���l�ɁA����̗p���n�E�����I�ԑ���Ɂg�C�ӂ̗p���n�h���w�肷�邱�Ƃ��ł��܂��B�܂��A����̃t���O�̃Z�b�g���g�C�ӂ̃t���O�h�̂ǂ��炩���w��ł��܂��B 
+<CODE>タグ(<U>T</U>)</CODE> フィールドが空白のままだと、すべてのタグに一致することになります。同様に、特定の用字系・言語を選ぶ代わりに“任意の用字系”を指定することができます。また、特定のフラグのセットか“任意のフラグ”のどちらかを指定できます。 
 <P>
 <!--
 The example at right will remove all common ligatures that apply to the latin
 script (to the French and default languages) with no flags set. -->
-�E�̗�ł́A���e������ (�t�����X�ꂨ��уf�t�H���g����) �ɓK�p������ʓI�ȍ����ŁA�t���O���ݒ肳��Ă��Ȃ����̂����ׂč폜���܂��B
+右の例では、ラテン文字 (フランス語およびデフォルト言語) に適用される一般的な合字で、フラグが設定されていないものをすべて削除します。
 <P>
 <!--
 (This does not remove kerning information)<BR CLEAR=ALL> -->
-(����͍��������폜���܂���)<BR CLEAR=ALL>
+(これは合字情報を削除しません)<BR CLEAR=ALL>
 <H2>
 <!--
-  <IMG SRC="retagfeature.png" ALT="Retag Feature(s) dialog" ALIGN="Right" WIDTH="282"
+  <IMG SRC="../retagfeature.png" ALT="Retag Feature(s) dialog" ALIGN="Right" WIDTH="282"
       HEIGHT="621"><A NAME="Retag-Feat">Retag Feature(s)...</A> -->
-  <IMG SRC="../retagfeature.png" ALT="�@�\�^�O�������� �_�C�A���O" ALIGN="Right" WIDTH="282"
-      HEIGHT="621"><A NAME="Retag-Feat">�@�\�^�O��������...</A>
+  <IMG SRC="../retagfeature.png" ALT="機能タグをつけ直す ダイアログ" ALIGN="Right" WIDTH="282"
+      HEIGHT="621"><A NAME="Retag-Feat">機能タグをつけ直す...</A>
 </H2>
 <P>
 <!--
@@ -92,13 +92,13 @@ This dialog allows you to give a feature (or related set of features) a new
 opentype tag (or new apple feature/setting). You may select the feature by
 specifying its opentype tag (or apple feature/setting), the scripts and languages
 to which it applies, and its flags. -->
-���̃_�C�A���O���g�p����ƁA1 �̋@�\ (�܂��͊֘A����@�\�Q) �ɐV���� OpenType �^�O (�܂��͐V���� Apple �@�\/�ݒ�) ��ݒ肷�邱�Ƃ��ł��܂��B�@�\�� OpenType �^�O (�܂��� Apple �̋@�\/�ݒ�) �ƁA���ꂪ�K�p�����p���n�ƌ���A���тɂ��̃t���O�ɂ���đI���\�ł��B
+このダイアログを使用すると、1 個の機能 (または関連する機能群) に新しい OpenType タグ (または新しい Apple 機能/設定) を設定することができます。機能は OpenType タグ (または Apple の機能/設定) と、それが適用される用字系と言語、並びにそのフラグによって選択可能です。
 <P>
 <!--
 If you leave the Tag field blank then it will match any tag. Similarly you
 may select either a specific set of scripts and languages or "Any Script".
 And a specific set of flags, or Any flags. -->
-<CODE>�^�O(<U>T</U>)</CODE> �t�B�[���h���󔒂̂܂܂��ƁA���ׂẴ^�O�Ɉ�v���邱�ƂɂȂ�܂��B���l�ɁA����̗p���n�E�����I�ԑ���Ɂg<CODE>�C�ӂ̗p���n</CODE>�h���w�肷�邱�Ƃ��ł��܂��B�܂��A����̃t���O�̃Z�b�g���g<CODE>�C�ӂ̃t���O</CODE>�h�̂ǂ��炩���w��ł��܂��B 
+<CODE>タグ(<U>T</U>)</CODE> フィールドが空白のままだと、すべてのタグに一致することになります。同様に、特定の用字系・言語を選ぶ代わりに“<CODE>任意の用字系</CODE>”を指定することができます。また、特定のフラグのセットか“<CODE>任意のフラグ</CODE>”のどちらかを指定できます。 
 <P>
 <!--
 In the second half of the dialog you select the same information to specify
@@ -107,13 +107,13 @@ with the opentype tag 'isol' will be retagged with the apple feature/setting
 &lt;2,2&gt; (Cursive connection). Anything left unspecified in the second
 half will remain unchanged (so the script and flags are both unspecified
 at right). -->
-�_�C�A���O�̉������ł́A����Ɠ�����ނ̏����A�ǂ̂悤�ɒu�������邩��I�����邱�Ƃ��ł��܂��B�E�̃_�C�A���O�ł́AOpenType �^�O&lsquo;isol&rsquo;���������ׂĂ̕����� Apple �@�\/�ݒ� &lt;2,2&gt; (�M�L�̂̐ڑ�) �ɍĐݒ肵�Ă��܂��B�������ł́A�����w�肵�Ȃ����������͕ύX���ꂸ�Ɏc��܂� (�E�̗�ŗp���n�ƃt���O�𗼕��Ƃ��w�肵�Ă��Ȃ��̂͂��̂��߂ł�)�B
+ダイアログの下半分では、これと同じ種類の情報を、どのように置き換えるかを選択することができます。右のダイアログでは、OpenType タグ&lsquo;isol&rsquo;がついたすべての文字を Apple 機能/設定 &lt;2,2&gt; (筆記体の接続) に再設定しています。下半分では、何も指定しなかった部分は変更されずに残ります (右の例で用字系とフラグを両方とも指定していないのはそのためです)。
 <P>
 <!--
 (This does not retag kerning information)<BR CLEAR=ALL> -->
-(����̓J�[�j���O���ɂ̓^�O�����������܂���)<BR CLEAR=ALL>
+(これはカーニング情報にはタグをつけ直ししません)<BR CLEAR=ALL>
 <P ALIGN=Center>
-�\ <A HREF="elementmenu.html">�O</A> �\ <A HREF="overview.html">�ڎ�</A>
-�\
+— <A HREF="elementmenu.html">前</A> — <A HREF="overview.html">目次</A>
+—
 </DIV>
 </BODY></HTML>

@@ -4,16 +4,16 @@
   <!-- AP: Created on: 1-Nov-2002 -->
   <!-- AP: Last modified: 2-Mar-2004 -->
   <LINK REL="icon" href="../fftype16.png">
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!--<TITLE>X Selections and the X Clipboard</TITLE>-->
-    <TITLE>X �ł̑I���� X �̃N���b�v�{�[�h</TITLE>
+    <TITLE>X での選択と X のクリップボード</TITLE>
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
   <H1 ALIGN=Center>
 <!--X Selections and the X Clipboard -->
-    X �ł̑I���� X �̃N���b�v�{�[�h
+    X での選択と X のクリップボード
   </H1>
   <P>
 <!--
@@ -21,12 +21,12 @@
   is given in
   <A HREF="http://www.freedesktop.org/standards/clipboards.txt">clipboards.txt</A>.
   FontForge tries to follow this. -->
-  �I����N���b�v�{�[�h�� X �łǂ̂悤�ɓ��삷�邩�̈�ʓI�Ȑ����� <A HREF="http://freedesktop.org/wiki/Standards_2fClipboardsWiki">clipboards.txt</A> ���Q�Ƃ��Ă��������B
+  選択やクリップボードが X でどのように動作するかの一般的な説明は <A HREF="http://freedesktop.org/wiki/Standards_2fClipboardsWiki">clipboards.txt</A> を参照してください。
   <P>
 <!--
   FontForge only supports the PRIMARY selection within textfields. Text is
   exported as -->
-  FontForge ���T�|�[�g����̂́A�e�L�X�g�t�B�[���h���ōs��ꂽ PRIMARY �ւ̑I�������ł��B�e�L�X�g�͈ȉ��̃t�H�[�}�b�g�ŏ����o����܂�:
+  FontForge がサポートするのは、テキストフィールド内で行われた PRIMARY への選択だけです。テキストは以下のフォーマットで書き出されます:
   <UL>
     <LI>
       STRING
@@ -42,7 +42,7 @@
 <!--
   Traditionally the PRIMARY selection is available for pasting by clicking
   on the middle mouse button. -->
-  �`���I�ɂ́APRIMARY �̑I����e�́A�}�E�X�̒��{�^�����N���b�N���ăy�[�X�g���s�����Ƃɂ���ē��邱�Ƃ��ł��܂��B
+  伝統的には、PRIMARY の選択内容は、マウスの中ボタンをクリックしてペーストを行うことによって得ることができます。
   <P>
 <!--
   After a Copy command FontForge will place data in the X CLIPBOARD. For text
@@ -53,6 +53,6 @@
   of the point (to make it easier for people to identify points when sending
   me email, or in the comment field). For bitmap image data either "image/bmp"
   or "image/png" (assuming you have libpng on your system). -->
-  <CODE>�R�s�[(<U>C</U>)</CODE> �R�}���h��ǂяo������ł́AFontForge �̓f�[�^�� X_CLIPBOARD �Ɋi�[���܂��B(�e�L�X�g�t�B�[���h���ł�) �e�L�X�g�I���ɑ΂��ẮA��L�̃t�H�[�}�b�g���T�|�[�g���Ă��܂��B�֊s�f�[�^ (�܂�A�A�E�g���C�������̓��e) �ɑ΂��ẮA�t�H�[�}�b�g�gimage/eps�h�܂��́gimage/svg�h���g�p���܂��B����ȏꍇ�Ƃ��āA�N���b�v�{�[�h���ɓ_�� 1 �����܂܂�Ă���Ƃ��́A���̓_�̍��W���܂� STRING �Ƃ��Ă������o����܂� (�d�q���[����R�����g�t�B�[���h�ɓ_�̈ʒu���������ނ̂��ȒP�ɂ��邽�߂ł�)�B�r�b�g�}�b�v�摜�f�[�^�ɑ΂��ẮA�gimage/bmp�h�܂��́gimage/png�h(libpng ���V�X�e����ɂ���ꍇ) ���p�����܂��B
+  <CODE>コピー(<U>C</U>)</CODE> コマンドを読び出した後では、FontForge はデータを X_CLIPBOARD に格納します。(テキストフィールド内での) テキスト選択に対しては、上記のフォーマットをサポートしています。輪郭データ (つまり、アウトライン文字の内容) に対しては、フォーマット“image/eps”または“image/svg”を使用します。特殊な場合として、クリップボード内に点が 1 個だけ含まれているときは、その点の座標を含む STRING としても書き出されます (電子メールやコメントフィールドに点の位置を書き込むのを簡単にするためです)。ビットマップ画像データに対しては、“image/bmp”または“image/png”(libpng がシステム上にある場合) が用いられます。
 </DIV>
 </BODY></HTML>

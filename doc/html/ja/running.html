@@ -3,9 +3,9 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 26-Oct-2005 -->
   <!-- AP: Last modified: 14-Jan-2006 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!--<TITLE>Starting fontforge</TITLE>-->
-    <TITLE>FontForge �̋N�����@</TITLE>
+    <TITLE>FontForge の起動方法</TITLE>
   <LINK REL="icon" href="../fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
@@ -13,68 +13,68 @@
 <DIV id="in">
   <H1 ALIGN=Center>
 <!--Starting fontforge-->
-    FontForge �̋N�����@
+    FontForge の起動方法
   </H1>
   <UL>
     <LI>
 <!--  <A HREF="nix-install.html#Installing">Installing from a pre-built unix
       package</A> -->
-      <A HREF="nix-install.html#Installing">Unix �p�\�z�ς݃p�b�P�[�W����̃C���X�g�[�����@</A>
+      <A HREF="nix-install.html#Installing">Unix 用構築済みパッケージからのインストール方法</A>
     <LI>
 <!--  <A HREF="mac-install.html#Installing">Installing on a Mac</A>-->
-      <A HREF="mac-install.html#Installing">Mac �ւ̃C���X�g�[�����@</A>
+      <A HREF="mac-install.html#Installing">Mac へのインストール方法</A>
     <LI>
 <!--  <A HREF="ms-install.html#Installing">Installing on MS/Windows</A>-->
-      <A HREF="ms-install.html#Installing">MS-Windows �ւ̃C���X�g�[�����@</A>
+      <A HREF="ms-install.html#Installing">MS-Windows へのインストール方法</A>
     <LI>
 <!--  <A HREF="source-build.html#mac">Before you build (on a mac)</A>-->
-      <A HREF="source-build.html#src-mac">(Mac ���) �\�[�X���\�z����O�̏���</A>
+      <A HREF="source-build.html#src-mac">(Mac 上で) ソースを構築する前の準備</A>
     <LI>
 <!--  <A HREF="source-build.html#MS">Before you build (on MS/Windows)</A>-->
-      <A HREF="source-build.html#src-MS">(Windows ���) �\�[�X���\�z����O�̏���</A>
+      <A HREF="source-build.html#src-MS">(Windows 上で) ソースを構築する前の準備</A>
     <LI>
 <!--  <A HREF="source-build.html#source">Building and installing from source</A>-->
-      <A HREF="source-build.html#source">�\�[�X����̍\�z�ƃC���X�g�[��</A>
+      <A HREF="source-build.html#source">ソースからの構築とインストール</A>
     <LI>
 <!--  <A HREF="source-build.html#Dependencies">Dependencies (external libraries/helper programs)</A> -->
-      <A HREF="source-build.html#Dependencies">�ˑ��� (�O�����C�u����/�⏕�v���O����)</A>
+      <A HREF="source-build.html#Dependencies">依存性 (外部ライブラリ/補助プログラム)</A>
     <LI>
 <!--  <A HREF="#Documentation">Installing documentation</A>-->
-      <A HREF="source-build.html#Documentation">�����̃C���X�g�[�����@</A>
+      <A HREF="source-build.html#Documentation">文書のインストール方法</A>
     <LI>
 <!--  <A HREF="running.html">Running FontForge</A>-->
-      <A HREF="running.html">FontForge �̋N�����@</A>
+      <A HREF="running.html">FontForge の起動方法</A>
       <UL>
 	<LI>
 <!--	  <A HREF="running.html#cygwin">Before starting fontforge on cygwin</A>-->
-	  <A HREF="running.html#cygwin">cygwin �� FontForge ���N������O��</A>
+	  <A HREF="running.html#cygwin">cygwin で FontForge を起動する前に</A>
 	<LI>
 <!--	  <A HREF="running.html#PATH">Notes on the PATH variable</A> -->
-	  <A HREF="running.html#PATH">���ϐ� PATH �Ɋւ��钍��</A>
+	  <A HREF="running.html#PATH">環境変数 PATH に関する注意</A>
 	<LI>
 <!--	  <A HREF="running.html#Starting">Starting fontforge from the command line</A> -->
-	  <A HREF="running.html#Starting">�R�}���h���C������ FontForge ���N��������@</A>
+	  <A HREF="running.html#Starting">コマンドラインから FontForge を起動する方法</A>
 	<LI>
 <!--	  <A HREF="#mac">On the mac</A> -->
-	  <A HREF="#mac">Mac �ł�</A>
+	  <A HREF="#mac">Mac では</A>
       </UL>
   </UL>
   <H2>
 <!--Starting <A NAME="FontForge">FontForge</A>-->
-    <A NAME="FontForge">FontForge</A> �̋N�����@
+    <A NAME="FontForge">FontForge</A> の起動方法
   </H2>
   <H3>
 <!--Before starting fontforge on <A NAME="cygwin">cygwin</A>-->
-    <A NAME="cygwin">cygwin</A> �� FontForge ���N������O��
+    <A NAME="cygwin">cygwin</A> で FontForge を起動する前に
   </H3>
   <P>
 <!--
   Before you can start fontforge on cygwin you must start the X11 server. -->
-  cygwin ��� FontForge �����s�ł���悤�ɂ���ɂ́AX11 �T�[�o���N�����Ă����K�v������܂��B
+  cygwin 上で FontForge を実行できるようにするには、X11 サーバを起動しておく必要があります。
   <P>
 <!--
   Open a cygwin window and type -->
-  cygwin �̃E�B���h�E���J���Ĉȉ������s���܂�:
+  cygwin のウィンドウを開いて以下を実行します:
   <BLOCKQUOTE>
     <PRE><FONT COLOR="Gray">$ </FONT>xinit
 </PRE>
@@ -84,18 +84,18 @@
   This should create a task window that covers your entire screen, inside of
   which there should be an xterm (sort of like the cygwin window earlier).
   Be prepared to type commands in this window. -->
-  ����ɂ���ʑS�̂�����^�X�N�E�B���h�E���쐬����A���̓����� xterm (cygwin �E�B���h�E�Ǝ����悤�Ȃ��̂ŁA����ɐ̂��炠��v���O�����ł�) ���\�������͂��ł��B����ŁA���̃E�B���h�E����R�}���h�����͂ł���悤�ɂȂ�܂����B
+  これにより画面全体を蔽うタスクウィンドウが作成され、その内部に xterm (cygwin ウィンドウと似たようなもので、さらに昔からあるプログラムです) が表示されるはずです。これで、このウィンドウからコマンドが入力できるようになりました。
   <P>
 <!--
   You should then type -->
-  ���ꂩ��ȉ������s����ׂ��ł��傤:
+  それから以下を実行するべきでしょう:
   <BLOCKQUOTE>
     <PRE><FONT COLOR="Gray">$ </FONT>twm &amp;
 </PRE>
   </BLOCKQUOTE>
   <H3>
 <!--Notes on the <A NAME="PATH">PATH</A> variable-->
-    ���ϐ� <A NAME="PATH">PATH</A> �Ɋւ��钍��
+    環境変数 <A NAME="PATH">PATH</A> に関する注意
   </H3>
   <P>
 <!--
@@ -105,16 +105,16 @@
   everything properly installed, but nothing actually works. If you see messages
   like <KBD>"fontforge: command not found."</KBD> this has (probably) happened
   to you.-->
-  �قƂ�ǂ̃V�X�e���ł́AFontForge �� <KBD>/usr/local/bin</KBD> �ɃC���X�g�[�������̂ł��� (����͒ǉ��̃\�t�g�E�F�A�̕W���I�Ȓu���ꏊ�ł�)�A�����̓f�t�H���g�̃R�}���h�T�[�`�p�X�ɓo�^����Ă���Ƃ͌���Ȃ��̂ł� (�K������)�B���̏ꍇ�A�C���X�g�[���͑S�Đ������s��ꂽ�ɂ��ւ�炸�A���ۂɂ͉����N�����Ȃ��Ƃ������ƂɂȂ�܂��B�����A�g<KBD>fontforge: command not found.</KBD>�h�Ƃ��g<KBD>fontforge: �R�}���h��������܂���.</KBD>�h�̂悤�ȃ��b�Z�[�W���\�����ꂽ�Ȃ�΁A(�����炭) ���̂悤�Ȏ����N�����Ă���̂ł��B
+  ほとんどのシステムでは、FontForge は <KBD>/usr/local/bin</KBD> にインストールされるのですが (これは追加のソフトウェアの標準的な置き場所です)、ここはデフォルトのコマンドサーチパスに登録されているとは限らないのです (ガルルル)。その場合、インストールは全て正しく行われたにも関わらず、実際には何も起動しないということになります。もし、“<KBD>fontforge: command not found.</KBD>”とか“<KBD>fontforge: コマンドが見つかりません.</KBD>”のようなメッセージが表示されたならば、(おそらく) そのような事が起こっているのです。
   <P>
 <!--
   So what do you do? -->
-  �Ȃ�ǂ�����΂����̂ł��傤?
+  ならどうすればいいのでしょう?
   <P>
 <!--
   You need to set the PATH environment variable so that it includes /usr/local/bin.
   The value of the PATH variable is a set of directories separated by colons. -->
-  ���ϐ� PATH �� /usr/local/bin ���܂ނ悤�ɐݒ肷��K�v������܂��BPATH �ϐ��̒l�́A�f�B���N�g�����R���� (:) �ŋ�؂��ĕ��ׂ����̂ł��B
+  環境変数 PATH を /usr/local/bin を含むように設定する必要があります。PATH 変数の値は、ディレクトリをコロン (:) で区切って並べたものです。
   <BLOCKQUOTE>
     <PRE><FONT COLOR="Gray">$ </FONT>echo $PATH
 /home/gww/bin:/usr/bin:/bin:/usr/X11R6/bin:/sbin
@@ -124,7 +124,7 @@
 <!--
   Unfortunately there are two ways of doing this because there are two different
   conventions used by unix shells. Type: -->
-  �s�K�Ȃ��ƂɁAUnix �V�F���ɂ� 2 �̈قȂ闬�V�ɕ�����Ă��邽�߁A�����ݒ肷����@�� 2 ����̂ł��B�ȉ��̂悤�ɂ��Ċm���߂Ă�������:
+  不幸なことに、Unix シェルには 2 つの異なる流儀に分かれているため、これを設定する方法は 2 つあるのです。以下のようにして確かめてください:
   <BLOCKQUOTE>
     <PRE><FONT COLOR="Gray">$ </FONT>echo $SHELL
 /bin/bash
@@ -134,7 +134,7 @@
 <!--
   If the name of your shell is <KBD>bash</KBD> (as above), <KBD>ksh</KBD> or
   <KBD>sh</KBD> then you want to type -->
-  ���ݎg���Ă���V�F���̖��O�� (��̗�̂悤��) <KBD>bash</KBD>, <KBD>ksh</KBD> �܂��� <KBD>sh</KBD> �ƕ\�����ꂽ�Ȃ�΁A���̂悤�ɐݒ肷��̂������ł��傤:
+  現在使っているシェルの名前が (上の例のように) <KBD>bash</KBD>, <KBD>ksh</KBD> または <KBD>sh</KBD> と表示されたならば、次のように設定するのがいいでしょう:
   <BLOCKQUOTE>
     <PRE><FONT COLOR="Gray">$ </FONT>PATH=/usr/local/bin:$PATH ; export PATH
 </PRE>
@@ -142,7 +142,7 @@
   <P>
 <!--
   If the name of your shell is <KBD>tcsh</KBD> or <KBD>csh</KBD> then you say -->
-  ���Ȃ��̎g���Ă���V�F���� <KBD>tcsh</KBD> �܂��� <KBD>csh</KBD> �Ȃ�΁A�ȉ��̂悤�ɂ��܂�:
+  あなたの使っているシェルが <KBD>tcsh</KBD> または <KBD>csh</KBD> ならば、以下のようにします:
   <BLOCKQUOTE>
     <PRE><FONT COLOR="Gray">$ </FONT>setenv PATH /usr/local/bin:$PATH
 </PRE>
@@ -155,7 +155,7 @@
   <KBD>~/.profile</KBD> while for the <KBD>csh</KBD> family you want to edit
   the file <KBD>~/.login</KBD>. On a bash system the following command is generally
   sufficient: -->
-  ���������̕��@�ł̓��O�C�����邽�тɏ�̎菇�����s���Ȃ���΂Ȃ�܂���B�������Ȃ��ōςނ悤�ɁA���̏������V�F���̏������菇�ɒǉ����邱�Ƃ��ł��܂��B���̏ꍇ�������� 2 �ɕ�����Ă��āA<KBD>bash</KBD> �Ƃ��̒��Ԃł̓t�@�C�� <KBD>~/.profile</KBD> ��ҏW����̂ɑ΂��A<KBD>csh</KBD> �� <KBD>tcsh</KBD> �ł̓t�@�C�� <KBD>~/.login</KBD> ��ҏW���܂��Bbash ���g���Ă���ꍇ�A��ʂɈȉ��̃R�}���h�����s����΂����ł��傤:
+  しかしこの方法ではログインするたびに上の手順を実行しなければなりません。そうしないで済むように、この処理をシェルの初期化手順に追加することができます。この場合もやり方は 2 つに分かれていて、<KBD>bash</KBD> とその仲間ではファイル <KBD>~/.profile</KBD> を編集するのに対し、<KBD>csh</KBD> と <KBD>tcsh</KBD> ではファイル <KBD>~/.login</KBD> を編集します。bash を使っている場合、一般に以下のコマンドを実行すればいいでしょう:
   <BLOCKQUOTE>
     <PRE><FONT COLOR="Gray">$ </FONT>cat &gt;&gt;~/.profile
 PATH=/usr/local/bin:$PATH ; export PATH
@@ -167,8 +167,8 @@ PATH=/usr/local/bin:$PATH ; export PATH
   (where <KBD>^D</KBD> represents control-D, obtained by holding down the control
   key while depressing <KBD>d</KBD>. <BR>
   And for the csh family you would type: -->
-  (������ <KBD>^D</KBD> �� Control-D �̂��ƂŁAControl (Ctrl) �L�[���������܂ܗ������� <KBD>d</KBD> �L�[���������Ƃ�\���܂��B<BR>
-  csh �̒��Ԃ̏ꍇ�A�ȉ��̂悤�Ƀ^�C�v���܂�:
+  (ここで <KBD>^D</KBD> は Control-D のことで、Control (Ctrl) キーを押したまま離さずに <KBD>d</KBD> キーを押すことを表します。<BR>
+  csh の仲間の場合、以下のようにタイプします:
   <BLOCKQUOTE>
     <PRE><FONT COLOR="Gray">$ </FONT>cat &gt;&gt;~/.login
 setenv PATH /usr/local/bin:$PATH
@@ -177,7 +177,7 @@ setenv PATH /usr/local/bin:$PATH
    </BLOCKQUOTE>
   <H3>
 <!--<A NAME="Starting">Starting</A> fontforge from the command line-->
-    �R�}���h���C������ FontForge ��<A NAME="Starting">�N��������@</A>
+    コマンドラインから FontForge を<A NAME="Starting">起動する方法</A>
   </H3>
   <BLOCKQUOTE>
     <PRE><FONT COLOR="Gray">$ </FONT>fontforge font.pfa font2.sfd font3.ttf font4.otf </PRE>
@@ -188,13 +188,13 @@ setenv PATH /usr/local/bin:$PATH
   It can read either pfb or pfa fonts, and some ps fonts (type 0 fonts based
   on a type 1 dictionary) as well as truetype fonts, open type fonts and many
   other formats. -->
-  ��������s����ƁAFontForge �̓R�}���h���C���Ŏw�肵���t�H���g��T���܂��BTrueType �t�H���g�AOpenType �t�H���g�����łȂ��APFB �� PFA �t�H���g�A����т����� PS �t�H���g (Type1 �����Ɋ�Â� Type0 �t�H���g) �Ȃǂ̊e��̈قȂ�t�H�[�}�b�g�̃t�H���g��ǂݍ��ނ��Ƃ��ł��܂��B
+  これを実行すると、FontForge はコマンドラインで指定したフォントを探します。TrueType フォント、OpenType フォントだけでなく、PFB や PFA フォント、およびある種の PS フォント (Type1 辞書に基づく Type0 フォント) などの各種の異なるフォーマットのフォントを読み込むことができます。
   <P>
 <!--
   <SMALL>(If you get a message from your computer saying: "<KBD>fontforge:
   Command not found</KBD>" you should read the
   <A HREF="running.html#PATH">previous section</A>)</SMALL> -->
-  <SMALL>(�����A��������s��������:�g<KBD>fontforge:Command not found</KBD>�h��g<KBD>fontforge:�R�}���h��������܂���</KBD>�h�Ƃ������b�Z�[�W���[���ɕ\�������ꍇ�A<A HREF="running.html#PATH">�O�̃Z�N�V����</A>�����ǂ݂�������)</SMALL>
+  <SMALL>(もし、これを実行した時に:“<KBD>fontforge:Command not found</KBD>”や“<KBD>fontforge:コマンドが見つかりません</KBD>”というメッセージが端末に表示される場合、<A HREF="running.html#PATH">前のセクション</A>をお読みください)</SMALL>
   <BLOCKQUOTE>
     <PRE><FONT COLOR="Gray">$ </FONT>fontforge -new
 </PRE>
@@ -202,7 +202,7 @@ setenv PATH /usr/local/bin:$PATH
   <P>
 <!--
   will cause fontforge to create a new font (in iso-8859-1 encoding) -->
-  ���̂悤�ɂ���ƁAFontForge �� (ISO8859-1 �G���R�[�f�B���O��) �V�����t�H���g���쐬���܂��B
+  このようにすると、FontForge は (ISO8859-1 エンコーディングの) 新しいフォントを作成します。
   <BLOCKQUOTE>
     <PRE><FONT COLOR="Gray">$ </FONT>fontforge
 </PRE>
@@ -211,7 +211,7 @@ setenv PATH /usr/local/bin:$PATH
 <!--
   will open up a file picker dialog and allow you to browse till you've found
   a font file (or have created a new one). -->
-  �Ƃ݂̂���ƃt�@�C���I���_�C�A���O���J���A�t�H���g�t�@�C����������܂� (���A�V�K�ɍ쐬����܂�) �u���E�Y���邱�Ƃ��ł��܂�
+  とのみするとファイル選択ダイアログが開き、フォントファイルが見つかるまで (か、新規に作成するまで) ブラウズすることができます
   <BLOCKQUOTE>
     <PRE><FONT COLOR="Gray">$ </FONT>fontforge -script script.pe fonts...
 </PRE>
@@ -221,15 +221,15 @@ setenv PATH /usr/local/bin:$PATH
   This will invoke fontforge in a non-interactive mode, and have it run the
   named script. Any further arguments on the command line will be passed as
   arguments to the script and processed (or not) by it. -->
-  ����� FontForge ���Θb�I�ȃ��[�h�ŋN�����Ascript �Ƃ������O�̃X�N���v�g�t�@�C�������s���܂��B�R�}���h���C����ł��̌�ɑ������ׂĂ̈����́A�X�N���v�g�ւ̈����Ƃ���n����A�X�N���v�g�ɂ���ď������s��� (�邩��������) �܂��B
+  これは FontForge を非対話的なモードで起動し、script という名前のスクリプトファイルを実行します。コマンドライン上でその後に続くすべての引数は、スクリプトへの引数とし手渡され、スクリプトによって処理が行われ (るか無視され) ます。
   <P>
 <!--
   For a complete description of possible arguments see <A HREF="cliargs.html">the
   section on the command line</A>. -->
-  �w��\�Ȉ����̊��S�ȃ��X�g�́A<A HREF="cliargs.html">�R�}���h���C���̃Z�N�V����</A>���Q�Ƃ��Ă��������B
+  指定可能な引数の完全なリストは、<A HREF="cliargs.html">コマンドラインのセクション</A>を参照してください。
   <H3>
 <!--On the <A NAME="mac">mac</A>-->
-    <A NAME="mac">Mac</A> �ł�
+    <A NAME="mac">Mac</A> では
   </H3>
   <P>
 <!--
@@ -238,14 +238,14 @@ setenv PATH /usr/local/bin:$PATH
   folder, and then double-clicking on "X11". (If you don't have X11 there then
   refer back to the <A HREF="mac-install.html#Before">instructions for installing
   it</A>) -->
-  FontForge �� Mac �ŋN������O�ɁAX11 �T�[�o���N������K�v������܂��B������s���ɂ́AApplications �t�H���_���J���A���̒��� Utilities �t�H���_���J���Ă���gX11�h���_�u���N���b�N���Ă��������B(X11 �������Ă��Ȃ��ꍇ�́A<A HREF="mac-install.html#Before">�C���X�g�[���̎菇�̐���</A> �܂Ŗ߂��āA�ݒ���s���Ă��������B
+  FontForge を Mac で起動する前に、X11 サーバを起動する必要があります。これを行うには、Applications フォルダを開き、その中の Utilities フォルダを開いてから“X11”をダブルクリックしてください。(X11 が入っていない場合は、<A HREF="mac-install.html#Before">インストールの手順の説明</A> まで戻って、設定を行ってください。
   <P>
 <!--
   Having done that there should be a menubar with a menu labeled "Applications".
   Click on this. There should be a "FontForge" entry in it. Selecting FontForge
   will start fontforge and bring up a dialog allowing you to open a font or
   create a new one. -->
-  ���ꂪ�s���ƁA�gApplications�h�Ƃ������x���̃��j���[�����j���[�o�[�ɕ\�������͂��ł��B������N���b�N���Ă��������B�����ɁgFontForge�h�Ƃ������ڂ�����͂��ł��BFontForge ��I������ƁAFontForge �v���O�������N�����A�t�H���g���J������V�K�쐬���邱�Ƃ��ł���_�C�A���O�������オ��܂��B
+  これが行うと、“Applications”というラベルのメニューがメニューバーに表示されるはずです。それをクリックしてください。そこに“FontForge”という項目があるはずです。FontForge を選択すると、FontForge プログラムが起動し、フォントを開いたり新規作成することができるダイアログが立ち上がります。
   <P>
 <!--
   <FONT COLOR="Red"><STRONG>Caveat: </STRONG></FONT>FontForge does not normally
@@ -253,53 +253,53 @@ setenv PATH /usr/local/bin:$PATH
   it it isn't displayed. Simply type in the name of the file containing it.
   (or, if you prefer, type a "*" in the textfield and then press the [Filter]
   button. This should show you all files). -->
-  <FONT COLOR="Red"><STRONG>�x��: </STRONG></FONT>FontForge �͒ʏ�� Mac ���\�[�X�t�H���g�����̈ꗗ�ɕ\�����܂���\�\���Ƃ��t�@�C�����\������Ă��Ȃ��ꍇ�ł��A���̒��� 1 ���J�����Ƃ͉\�ł��B����ɁA���̃f�B���N�g���ɂ���t�@�C���̖��O���^�C�v���邾���ł� (�܂��́A�����������Ȃ��ꍇ�A�e�L�X�g�t�B�[���h�Ɂg*�h�Ɠ��͂��Ă��� <CODE>[�t�B���^]</CODE> �{�^���������Ă��������B���ׂẴt�@�C�����ꗗ�\������܂�)�B
+  <FONT COLOR="Red"><STRONG>警告: </STRONG></FONT>FontForge は通常は Mac リソースフォントをこの一覧に表示しません——たとえファイルが表示されていない場合でも、その中の 1 個を開くことは可能です。たんに、そのディレクトリにあるファイルの名前をタイプするだけです (または、そうしたくない場合、テキストフィールドに“*”と入力してから <CODE>[フィルタ]</CODE> ボタンを押してください。すべてのファイルが一覧表示されます)。
   <P>
 <!--
   If the Applications menu does not contain a "FontForge" entry, you can add
   one yourself: -->
-  �gFontForge�h�Ƃ������ڂ� Applications ���j���[�Ɋ܂܂�Ă��Ȃ��Ȃ�΁A�ȉ��̎菇�ł��̍��ڂ�ǉ����邱�Ƃ��ł��܂�:
+  “FontForge”という項目が Applications メニューに含まれていないならば、以下の手順でその項目を追加することができます:
   <UL>
     <LI>
 <!--  Select Applications-&gt;Customize Menu-->
-      <CODE>Applications</CODE>��<CODE>Customize</CODE> ���j���[��I��
+      <CODE>Applications</CODE>→<CODE>Customize</CODE> メニューを選択
     <LI>
 <!--  Then press the (Add) button in the dialog that appears-->
-      �\�����ꂽ�_�C�A���O�� <CODE>(Add)</CODE> �{�^�����N���b�N
+      表示されたダイアログの <CODE>(Add)</CODE> ボタンをクリック
     <LI>
 <!--  Double click in the left-most section of the blank line which just appeared
       and then type "FontForge" -->
-      ���ꂽ�΂���̋󔒍s�̈�ԍ��̗����_�u���N���b�N���āA�g<CODE>FontForge</CODE>�h�ƃL�[���́B
+      現れたばかりの空白行の一番左の欄をダブルクリックして、“<CODE>FontForge</CODE>”とキー入力。
     <LI>
 <!--  Press the [Tab] key and type "/usr/local/bin/fontforge"-->
-      [Tab] �L�[�������āg<CODE>/usr/local/bin/fontforge</CODE>�h�ƃL�[���́B
+      [Tab] キーを押して“<CODE>/usr/local/bin/fontforge</CODE>”とキー入力。
     <LI>
 <!--  Press the [Tab] key again and type "f"-->
-      ������x [Tab] �L�[�������āgf�h�L�[������
+      もう一度 [Tab] キーを押して“f”キーを押す
     <LI>
 <!--  Then press (Done)-->
-      ���ꂩ�� <CODE>(Done)</CODE> �{�^�����N���b�N
+      それから <CODE>(Done)</CODE> ボタンをクリック
   </UL>
   <P>
 <!--
   (You may also start fontforge from the command line here. Go to the Applications
   menu and select xterm, and then type <A HREF="running.html#Starting">one
   of the commands listed above</A>) -->
-  (������ FontForge ���R�}���h���C������N�����邱�Ƃ��ł��܂��BApplications ���j���[�Ɉړ����� xterm ��I�����Ă���Axterm ���<A HREF="running.html#Starting">�����ɗᎦ�����R�}���h���C���̂ǂꂩ</A>����͂��Ă��������B
+  (ここで FontForge をコマンドラインから起動することもできます。Applications メニューに移動して xterm を選択してから、xterm 上で<A HREF="running.html#Starting">ここに例示したコマンドラインのどれか</A>を入力してください。
   <P>
 <!--
   <FONT COLOR="Red"><STRONG>Caveat: </STRONG></FONT>FontForge does not use
   the Command key to invoke menu items. (Any use of the Command key is intercepted
   by X11, so Command-Q will quit out of X11 (and abort fontforge), it will
   not quit fontforge cleanly) -->
-  <FONT COLOR="Red"><STRONG>�x��:</STRONG></FONT> FontForge �̓��j���[���ڂ��Ăяo���̂� Command �L�[���g�p���܂���B(Command �L�[���g�p����ƁA����͂��ׂ� X11 �ɂ���ĉ���肳���̂ŁACommand-Q �� X11 ���I�������� (������ FontForge ���ُ�I��������) ���ƂɂȂ�AFontForge �𐳂����I�������邱�Ƃɂ͂Ȃ�܂���B
+  <FONT COLOR="Red"><STRONG>警告:</STRONG></FONT> FontForge はメニュー項目を呼び出すのに Command キーを使用しません。(Command キーを使用すると、それはすべて X11 によって横取りされるので、Command-Q は X11 を終了させる (同時に FontForge を異常終了させる) ことになり、FontForge を正しく終了させることにはなりません。
   <P>
 <!--
   <FONT COLOR="Red"><STRONG>Caveat: </STRONG></FONT>FontForge was written assuming
   the availability of a three button mouse. X11 simulates this by creating
   a virtual three button mouse where the middle button is invoked by Option-Mouse
   click and the right button by Command-Mouse click. -->
-  <FONT COLOR="Red"><STRONG>�x��:</STRONG></FONT> FontForge �� 3 �{�^���}�E�X�����p�\�ł��邱�Ƃ�O��Ƃ��č쐬����Ă��܂��BX11 �͂�����AOption-�}�E�X�N���b�N�𒆃{�^���ACommand-�}�E�X�N���b�N���E�{�^���ƌ��Ȃ����z 3 �{�^���}�E�X���쐬���邱�Ƃɂ���ăV�~�����[�g���Ă��܂��B
+  <FONT COLOR="Red"><STRONG>警告:</STRONG></FONT> FontForge は 3 ボタンマウスが利用可能であることを前提として作成されています。X11 はこれを、Option-マウスクリックを中ボタン、Command-マウスクリックを右ボタンと見なす仮想 3 ボタンマウスを作成することによってシミュレートしています。
   <P>
 </DIV>
 </BODY></HTML>

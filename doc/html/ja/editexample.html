@@ -3,10 +3,10 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
   <!-- AP: Last modified: 3-Jul-2006 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!--
   <TITLE>Steps to creating a font...</TITLE> -->
-  <TITLE>�t�H���g�쐬�̂��߂̎菇�c</TITLE>
+  <TITLE>フォント作成のための手順…</TITLE>
   <LINK REL="icon" href="../fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
@@ -14,7 +14,7 @@
 <DIV id="in">
   <H1 ALIGN=Center>
 <!--Tutorial<BR>--> 
-    �`���[�g���A��<BR>
+    チュートリアル<BR>
     <A HREF="editexample.html"><IMG SRC="../flags/Nisshoki-Japan.png" WIDTH="39"
 	HEIGHT="26"></A>
     <A HREF="http://edt1023.sayya.org/fontforge/editexample.html"><IMG SRC="../flags/taiwan.png"
@@ -26,77 +26,77 @@
 <!--
   I shall not presume to teach aesthetics, I concentrate solely on the mechanics
   here.<BR>-->
-  ���ɔ��w��������\�͂�����Ƃ͎v���܂���B�����ł͋@�\�݂̂ɏW�����܂��B<BR>
+  私に美学を教える能力があるとは思いません。ここでは機能のみに集中します。<BR>
 <!--
   <SMALL>(this tutorial is also available as a
-  <A HREF="fontforge-tutorial.pdf">pdf version</A>)</SMALL> -->
-  <SMALL>(���̃`���[�g���A�� (�p���) �� <A HREF="http://fontforge.sourceforge.net/fontforge-tutorial.pdf">PDF ��</A>�ł�����\�ł�)</SMALL>
+  <A HREF="../fontforge-tutorial.pdf">pdf version</A>)</SMALL> -->
+  <SMALL>(このチュートリアル (英語版) は <A HREF="http://fontforge.sourceforge.net/fontforge-tutorial.pdf">PDF 版</A>でも入手可能です)</SMALL>
   <UL>
     <LI>
 <!--  <A HREF="editexample.html#FontCreate">Font Creation</A>-->
-      <A HREF="editexample.html#FontCreate">�t�H���g�̍쐬</A>
+      <A HREF="editexample.html#FontCreate">フォントの作成</A>
     <LI>
 <!--  <A HREF="editexample.html#CharCreate">Creating a glyph (tracing outlines)</A>-->
-      <A HREF="editexample.html#CharCreate">�O���t�̍쐬 (�A�E�g���C���̃g���[�X) �@</A>
+      <A HREF="editexample.html#CharCreate">グリフの作成 (アウトラインのトレース) 法</A>
     <LI>
 <!--  <A HREF="editexample2.html#Navigating">Navigating to other glyphs</A>-->
-      <A HREF="editexample2.html#Navigating">���̃O���t�̌Ăяo����</A>
+      <A HREF="editexample2.html#Navigating">他のグリフの呼び出し方</A>
     <LI>
 <!--  <A HREF="editexample2.html#Creating-o">On to the next glyph (consistent
       directions)</A>-->
-      <A HREF="editexample2.html#Creating-o">���̃O���t�Ɋւ��� (�����̂Ȃ��p�X�̌���)</A>
+      <A HREF="editexample2.html#Creating-o">次のグリフに関して (矛盾のないパスの向き)</A>
     <LI>
 <!--  <A HREF="editexample3.html#consistent-stems">Consistent serifs and stem
       widths</A>-->
-      <A HREF="editexample3.html#consistent-stems">����̂Ƃꂽ�Z���t�ƃX�e���̑���</A>
+      <A HREF="editexample3.html#consistent-stems">統一のとれたセリフとステムの太さ</A>
     <LI>
 <!--  <A HREF="editexample4.html#accents">Building accented glyphs</A>-->
-      <A HREF="editexample4.html#accents">�A�N�Z���g���O���t�̑g�ݗ��ĕ�</A>
+      <A HREF="editexample4.html#accents">アクセントつきグリフの組み立て方</A>
     <LI>
 <!--  <A HREF="editexample4.html#ligature">Building a ligature</A>-->
-      <A HREF="editexample4.html#ligature">�����̑g�ݗ��ĕ�</A>
+      <A HREF="editexample4.html#ligature">合字の組み立て方</A>
     <LI>
 <!--  <A HREF="editexample5.html#metrics">Examining metrics</A>-->
-      <A HREF="editexample5.html#metrics">���g���b�N�̊m�F�@</A>
+      <A HREF="editexample5.html#metrics">メトリックの確認法</A>
       <UL>
         <LI>
 <!--  	<A HREF="editexample5.html#baseline">Setting the baseline to baseline spacing
   	of a font</A> -->
-  	<A HREF="editexample5.html#baseline">�t�H���g�̃x�[�X���C���ƃx�[�X���C���̊Ԋu�̐ݒ���@</A>
+  	<A HREF="editexample5.html#baseline">フォントのベースラインとベースラインの間隔の設定方法</A>
       </UL>
     <LI>
 <!--  <A HREF="editexample5.html#Kerning">Kerning</A>-->
-      <A HREF="editexample5.html#Kerning">�J�[�j���O</A>
+      <A HREF="editexample5.html#Kerning">カーニング</A>
     <LI>
 <!--  <A HREF="editexample6.html#Variants">Glyph variants</A>-->
-      <A HREF="editexample6.html#Variants">�ّ̊֌W�ɂ���O���t</A>
+      <A HREF="editexample6.html#Variants">異体関係にあるグリフ</A>
     <LI>
 <!--  <A HREF="editexample6.html#Marks">Anchoring marks</A>-->
-      <A HREF="editexample6.html#Marks">�A���J�[�}�[�N</A>
+      <A HREF="editexample6.html#Marks">アンカーマーク</A>
     <LI>
 <!--  <A HREF="editexample6-5.html#Conditional">Conditional features</A>-->
-      <A HREF="editexample6-5.html#Conditional">�������@�\</A>
+      <A HREF="editexample6-5.html#Conditional">条件つき機能</A>
     <LI>
 <!--  <A HREF="editexample7.html#checking">Checking your font</A>-->
-      <A HREF="editexample7.html#checking">�t�H���g�̃`�F�b�N�@</A>
+      <A HREF="editexample7.html#checking">フォントのチェック法</A>
     <LI>
 <!--  <A HREF="editexample7.html#Bitmaps">Bitmaps</A>-->
-      <A HREF="editexample7.html#Bitmaps">�r�b�g�}�b�v</A>
+      <A HREF="editexample7.html#Bitmaps">ビットマップ</A>
     <LI>
 <!--  <A HREF="editexample7.html#generating">Generating it</A>-->
-      <A HREF="editexample7.html#generating">�t�H���g�̏o�͕��@</A>
+      <A HREF="editexample7.html#generating">フォントの出力方法</A>
     <LI>
 <!--  <A HREF="editexample7.html#Families">Font Families</A>-->
-      <A HREF="editexample7.html#Families">�t�H���g�t�@�~���[</A>
+      <A HREF="editexample7.html#Families">フォントファミリー</A>
     <LI>
 <!--  <A HREF="editexample7.html#summary">Final Summary</A>-->
-      <A HREF="editexample7.html#summary">�Ō�̂܂Ƃ�</A>
+      <A HREF="editexample7.html#summary">最後のまとめ</A>
     <LI>
 <!--  <A HREF="scripting-tutorial.html">Scripting Tutorial</A> -->
-      <A HREF="scripting-tutorial.html">�X�N���v�g�����̃`���[�g���A��</A>
+      <A HREF="scripting-tutorial.html">スクリプト処理のチュートリアル</A>
     <LI>
 <!--  <A HREF="scriptnotes.html#Special">Notes on various scripts</A>-->
-      <A HREF="scriptnotes.html#Special">�e��̗p���n�ɂ����钍�ӓ_</A>
+      <A HREF="scriptnotes.html#Special">各種の用字系における注意点</A>
   </UL>
   <BLOCKQUOTE ID="lit">
 <!--<B><SMALL>NOBLEMAN:</SMALL></B><SMALL> </SMALL>Now this is what I call
@@ -105,23 +105,23 @@
     illuminated pictures cunningly inset. But nowadays, instead of looking at
     books, people read them. A book might as well be one of those orders for
     bacon and bran that you are scribbling. -->
-    <p><B><SMALL>�M��:</SMALL></B><SMALL> </SMALL>���ꂾ��A�E�l�킴�Ƃ����̂́B�����������ȏ�ɐ��k������߂����̂͂܂��Ƃ���܂��B���������ǂ�Ɏ��߂�ꂽ�����̕����̌����Ȕz��A�I�݂ɑ}�����ꂽ�F����̊G�B�Ƃ��낪���̍��̐l�Ԃ́A�����𒭂߂悤�Ƃ����A�ǂ�ł΂��肢��B����ł͏������A���܌N�������Ȃ����Ă���x�[�R���⋛�̒����`�[�ƁA�Ȃ�̕ς�������͂��Ȃ��B
+    <p><B><SMALL>貴族:</SMALL></B><SMALL> </SMALL>これだよ、職人わざというのは。美しい書物以上に精緻をきわめたものはまたとあるまい。美しい縁どりに収められた漆黒の文字の見事な配列、巧みに挿入された色刷りの絵。ところがこの頃の人間は、書物を眺めようとせず、読んでばかりいる。これでは書物も、いま君が書きなぐっているベーコンや魚の注文伝票と、なんの変わりもありはしない。
     <P ALIGN=Right>
 <!-- - - Saint Joan, Scene IV<BR>
     George Bernard Shaw, 1924 -->
-    �\�w�����W���E���x��l��<BR>
-    �W���[�W�E�o�[�i�[�h�E�V���[, 1924 �N<BR>
-    (���열��E���c���Y�u��)
+    —『聖女ジョウン』第四場<BR>
+    ジョージ・バーナード・ショー, 1924 年<BR>
+    (中川龍一・小田島雄志訳)
   </BLOCKQUOTE>
   <H2>
 <!--<A NAME="FontCreate">Font creation</A>-->
-    <A NAME="FontCreate">�t�H���g�̍쐬</A>
+    <A NAME="FontCreate">フォントの作成</A>
   </H2>
   <P>
 <!--
   First create a new font with the <CODE>New</CODE> command in the
   <CODE>File</CODE> menu (or by using the <KBD>-new</KBD> argument at startup). -->
-  �܂��A�t�H���g�� <CODE>�t�@�C��(<U>F</U>)</CODE> ���j���[�� <CODE>�V�K(<U>N</U>)</CODE> �R�}���h�� (�܂��́A�N�����Ɉ��� <KBD>-new</KBD> ���w�肵��) �쐬���܂��B
+  まず、フォントを <CODE>ファイル(<U>F</U>)</CODE> メニューの <CODE>新規(<U>N</U>)</CODE> コマンドで (または、起動時に引数 <KBD>-new</KBD> を指定して) 作成します。
   <P>
   <IMG SRC="../newfont.png" WIDTH="419" HEIGHT="189">
   <P>
@@ -135,7 +135,7 @@
   you are planning on making a truetype font you might want to check the Quadratic
   Splines checkbox to use the native truetype format. Editing is a little more
   difficult in this mode though)</SMALL> -->
-  �t�H���g�ɂ� <CODE>�G�������g(<U>L</U>)</CODE> ���j���[�� <CODE><A HREF="fontinfo.html">�t�H���g���(<U>F</U>)...</A></CODE> �R�}���h�Ŗ��O�����Ă��������B���̃R�}���h�͑��ɂ��A���쌠�\����ݒ肵���荂�� (ascent)�E�[�� (descent) ��ݒ肷��̂Ɏg���܂��B�����Ɛ[���A2 �̒l�̍��v�̓t�H���g�̑S�p�����` (em square) �����肵�܂��B��ʂɂ� PostScript �t�H���g�ł� 1000, TrueType �t�H���g�ł� 2 �̙p�� (������ 2048 �� 4096), Ikarus �t�H���g�ł� 15000 �ł��B<SMALL>(���� TrueType �����\��Ȃ�΁A<CODE>2 ���X�v���C��(<U>Q</U>)</CODE> �`�F�b�N�{�b�N�X���I���ɂ��āATrueType �t�H�[�}�b�g���̂��̂ŕҏW��������������������܂���B�������A���̃��[�h�ł͕ҏW����������Ȃ�܂�)</SMALL>  
+  フォントには <CODE>エレメント(<U>L</U>)</CODE> メニューの <CODE><A HREF="fontinfo.html">フォント情報(<U>F</U>)...</A></CODE> コマンドで名前をつけてください。このコマンドは他にも、著作権表示を設定したり高さ (ascent)・深さ (descent) を設定するのに使えます。高さと深さ、2 つの値の合計はフォントの全角正方形 (em square) を決定します。一般には PostScript フォントでは 1000, TrueType フォントでは 2 の冪乗 (多くは 2048 か 4096), Ikarus フォントでは 15000 です。<SMALL>(もし TrueType を作る予定ならば、<CODE>2 次スプライン(<U>Q</U>)</CODE> チェックボックスをオンにして、TrueType フォーマットそのもので編集した方がいいかもしれません。ただし、このモードでは編集が少し難しくなります)</SMALL>  
   <P>
   <IMG SRC="fontinfo.png" WIDTH="325" HEIGHT="454">
   <P>
@@ -144,17 +144,17 @@
   are available in your font. FontForge generally creates new fonts with an
   ISO-8859-1, which contains (most of) the characters needed for Western Europe
   (the latin letters, some accented letters, digits, and symbols). -->
-  �t�H���g���łǂ̕��������p�ł��邩��ύX�������ꍇ�́A<CODE>�G���R�[�f�B���O(<U>N</U>)</CODE>��<CODE>�G���R�[�f�B���O�ϊ�(<U>R</U>)</CODE> ���g�p���邱�Ƃ��ł��܂��B���ɐݒ肵�Ă��Ȃ���΁AFontForge �͐V�����t�H���g�� ISO-8859-1 �ō쐬���܂��B���̃G���R�[�f�B���O�ɂ́A�����[���b�p�ŕK�v�Ƃ���� (�قƂ�ǂ�) ���� (���e�������A�������̃A�N�Z���g�������A��������ыL��) ���܂܂�Ă��܂��B
+  フォント内でどの文字が利用できるかを変更したい場合は、<CODE>エンコーディング(<U>N</U>)</CODE>→<CODE>エンコーディング変換(<U>R</U>)</CODE> を使用することができます。特に設定していなければ、FontForge は新しいフォントを ISO-8859-1 で作成します。このエンコーディングには、西ヨーロッパで必要とされる (ほとんどの) 文字 (ラテン文字、いくつかのアクセントつき文字、数字および記号) が含まれています。
   <H2>
 <!--<A NAME="CharCreate">Creating a glyph</A>-->
-    <A NAME="CharCreate">�O���t�̍쐬�@</A>
+    <A NAME="CharCreate">グリフの作成法</A>
   </H2>
   <P>
 <!--
   Once you have done that you are ready to start editing characters. Double
   click on the entry for "C" in the font view above. You should now have an
   empty Outline Character window: -->
-  ���ꂪ�I�������A�����̕ҏW���n�߂�p�ӂ��ł��Ă��܂��B��̃t�H���g�r���[�́gC�h�̍��ڂ��_�u���N���b�N���ĉ������B��̕����A�E�g���C���E�B���h�E���\������܂��B
+  それが終わったら、文字の編集を始める用意ができています。上のフォントビューの“C”の項目をダブルクリックして下さい。空の文字アウトラインウィンドウが表示されます。
   <P>
   <IMG SRC="../C1.png" WIDTH="272" HEIGHT="283">
   <P>
@@ -163,7 +163,7 @@
   of the window. The top palette contains a set of editing tools, and the bottom
   palette controls which layers of the window are visible or editable.
   -->
-  ���̃A�E�g���C���O���t�E�B���h�E�̍��[�ɂ́A2 �̃p���b�g�����ߍ��܂�Ă��܂��B��̃p���b�g�͕ҏW�c�[���̈ꗗ���܂݁A���̃p���b�g�̓E�B���h�E�̂ǂ̃��C���������A�ǂꂪ�ҏW�\���𐧌䂵�Ă��܂��B
+  このアウトライングリフウィンドウの左端には、2 個のパレットが埋め込まれています。上のパレットは編集ツールの一覧を含み、下のパレットはウィンドウのどのレイヤが見え、どれが編集可能かを制御しています。
   <P>
 <!--
   The foreground layer contains the outline that will become part of the font.
@@ -171,7 +171,7 @@
   this particular glyph. The guide layer contains lines that are useful on
   a font-wide basis (such as the x-height). Currently all layers are empty.
   -->
-  �O�ʃ��C���̓t�H���g�̕��i�ƂȂ�A�E�g���C�����܂�ł��܂��B�w�ʃ��C���͂��̓���̃O���t��`�悷��⏕�ƂȂ�摜�܂��͕`�����܂�ł��܂��B�K�C�h���C���̓t�H���g���Ƃ̊�Ƃ��Ė𗧂� (x �n�C�g�Ȃ�) ���܂�ł��܂��B���̂Ƃ���A�S�Ẵ��C���͋�ł��B
+  前面レイヤはフォントの部品となるアウトラインを含んでいます。背面レイヤはこの特定のグリフを描画する補助となる画像または描線を含んでいます。ガイドレイヤはフォントごとの基準として役立つ線 (x ハイトなど) を含んでいます。今のところ、全てのレイヤは空です。
   <P>
 <!--
   This window also shows the glyph's internal coordinate system with the x
@@ -180,13 +180,13 @@
   width of one em (in PostScript that will usually be 1000 units) to the advance
   width of a new glyph.
   -->
-  ���̃E�B���h�E�ɂ́A�O���t�̓������W�n�� x ���� y ���ƂƂ��ɔ����D�F�Ŏ�����Ă��܂��B�O���t�̑��蕝 (advance width) �������������ŁA�E�B���h�E�̉E�[�ɕ`����Ă��܂��BFontForge �́A�V�K�ɍ��O���t�̑��蕝�Ƃ��ẮA1 em �̕������蓖�Ă܂� (PostScript �ł́A����͒ʏ� 1000 ���j�b�g�ł�)�B
+  このウィンドウには、グリフの内部座標系が x 軸と y 軸とともに薄い灰色で示されています。グリフの送り幅 (advance width) を示す線が黒で、ウィンドウの右端に描かれています。FontForge は、新規に作るグリフの送り幅としては、1 em の幅を割り当てます (PostScript では、これは通常 1000 ユニットです)。
   <P>
 <!--
   Select the Import command from the File menu and import an image of the glyph
   you are creating. It will be scaled so that it is as high as the em-square.
   -->
-  <CODE>�t�@�C��(<U>F</U>)</CODE> ���j���[���� <CODE>��荞��(<U>I</U>)...</CODE> �R�}���h��I�сA���Ȃ����쐬�����O���t�̉摜����荞��ł��������B�O���t�̍������S�p�����` (em-square) �Ɉ�v����悤�Ɋg��/�k������܂��B 
+  <CODE>ファイル(<U>F</U>)</CODE> メニューから <CODE>取り込み(<U>I</U>)...</CODE> コマンドを選び、あなたが作成したグリフの画像を取り込んでください。グリフの高さが全角正方形 (em-square) に一致するように拡大/縮小されます。 
   <P>
   <IMG SRC="../C2.png" WIDTH="272" HEIGHT="283">
   <P>
@@ -196,7 +196,7 @@
   depress and drag the corner until the image is a reasonable size, then move
   the pointer onto the dark part of the image, depress the mouse and drag until
   the image is properly positioned. -->
-  ���C���p���b�g�Ŕw�ʃ��C����I�����āA�ҏW�\�ȏ�Ԃɂ��܂��B�}�E�X�|�C���^���摜�̒[�̂ǂ����ɍ��킹�A�V�t�g�L�[�������Ȃ�������N���b�N���A�摜���K�؂ȃT�C�Y�ɂȂ�܂Ńh���b�O���܂��B���̂̂��A�|�C���^���摜�̈ÐF�̕����ɍڂ��ă}�E�X�{�^�����������A�摜���K�؂Ȉʒu�ɗ���܂Ńh���b�O���܂��B
+  レイヤパレットで背面レイヤを選択して、編集可能な状態にします。マウスポインタを画像の端のどこかに合わせ、シフトキーを押しながら隅をクリックし、画像が適切なサイズになるまでドラッグします。そののち、ポインタを画像の暗色の部分に載せてマウスボタンを押下し、画像が適切な位置に来るまでドラッグします。
   <P>
   <IMG SRC="../C3.png" WIDTH="272" HEIGHT="283">
   <P>
@@ -212,7 +212,7 @@
   inflection (A change of inflection occurs in a curve like "S" where the curve
   changes from being open to the left to being open on the right. If you follow
   these rules hinting will work better. -->
-  �������Ȃ��� <A HREF="http://sourceforge.net/projects/autotrace/">autotrace</A> �v���O�������_�E�����[�h�ς݂Ȃ�΁A<CODE>�G�������g(<U>L</U>)</CODE>��<CODE>�����g���[�X(<U>R</U>)</CODE> �ŉ摜����A�E�g���C���𐶐����邱�Ƃ��ł��܂��B�������A�C���X�g�[�����Ă��Ȃ��ꍇ�͎����œ_��ǉ����Ȃ���΂Ȃ�܂���B�O�ʂ��A�N�e�B�u���C���ɕύX���Ă���A�c�[���p���b�g�Ŋۂ� (�Ȑ����) �_��I�����܂��B���̌�Ń|�C���^���摜�̉��Ɉڂ��A�_��ǉ����܂��B���̌o���ł́A�Ȑ��������܂��͐����ɂȂ��Ă���_��A�p�A�����ĕϋȓ_ (�ȗ������̕ω��́AS ���`�̋Ȑ����A�E���ɊJ�����������獶������J���������ֈڂ�Ƃ���ŋN����܂�) �ɓ_��ǉ�����̂��ŗǂł��B���̕��j�ɏ]���΁A�q���g���������K�؂ɓ����悤�ɂȂ�ł��傤�B
+  もしあなたが <A HREF="http://sourceforge.net/projects/autotrace/">autotrace</A> プログラムをダウンロード済みならば、<CODE>エレメント(<U>L</U>)</CODE>→<CODE>自動トレース(<U>R</U>)</CODE> で画像からアウトラインを生成することができます。しかし、インストールしていない場合は自分で点を追加しなければなりません。前面をアクティブレイヤに変更してから、ツールパレットで丸い (曲線上の) 点を選択します。その後でポインタを画像の縁に移し、点を追加します。私の経験では、曲線が水平または垂直になっている点や、角、そして変曲点 (曲率方向の変化は、S 字形の曲線が、右側に開いた部分から左側から開いた部分へ移るところで起こります) に点を追加するのが最良です。この方針に従えば、ヒント処理がより適切に働くようになるでしょう。
   <P>
   <IMG SRC="../C4.png" WIDTH="272" HEIGHT="283">
   <P>
@@ -223,7 +223,7 @@
   is (this looks like a little triangle on the tools palette). A tangent point
   makes a nice transition from curves to straight lines because the curve leaves
   the point with the same slope the line had when it entered. -->
-  �Ȑ��͎��v���ɓ��͂��Ă����̂��őP�ł��B��������΁A���̓_�́A�摜�̏�[�̕���ȕ����ɒǉ�����܂��B�֊s���������Œ����ɂ���������̂ŁA�Ȑ���̓_�͕s�K�؂ŁA(�Ȑ��ƒ�����) �ړ_ (�c�[���p���b�g��ł͏����ȎO�p�`�̂悤�Ɍ����܂�) �̂ق����K�؂ł��B�ړ_�͋Ȑ����璼���ւ̔������ڂ�ς����`�Â���܂��B����́A���̓_�ɂ�����Ȑ��̌X�����A�����������������͂��ꂽ���̌X���Ɠ����ɕۂ���邩��ł��B
+  曲線は時計回りに入力していくのが最善です。そうすれば、次の点は、画像の上端の平らな部分に追加されます。輪郭線がそこで直線にさしかかるので、曲線上の点は不適切で、(曲線と直線の) 接点 (ツールパレット上では小さな三角形のように見えます) のほうが適切です。接点は曲線から直線への美しい移り変わりを形づくります。これは、その点における曲線の傾きが、引き続く直線が入力された時の傾きと同じに保たれるからです。
   <P>
   <IMG SRC="../C5.png" WIDTH="272" HEIGHT="283">
   <P>
@@ -235,22 +235,22 @@
   abruptly. Neither a curve nor a tangent point is appropriate here, instead
   we must use a corner point (one of the little squares on the tools palette).
   -->
-  ���̂Ƃ��낱�́u�Ȑ��v�͉摜�ƑS����v���Ă��܂���B��ŏC�����܂����A��Ƃ𑱂���ɏ]���Ă�����ɂ���ό`����̂ł���͋C�ɂ��������Ă��������B����_���ړ_ (�����Ȑ��~��) �ɂȂ����Ă��邱�Ƃɒ��ӂ��Ă��������B�摜�ŗ֊s�̕������ˑR�ω����Ă���ӏ��Ɏ��̓_��u���Ȃ���΂Ȃ�܂���B�Ȑ���̓_���ړ_���s�K�؂ł�����A�p�̓_ (�c�[���p���b�g��̏����Ȏl�p�̈��) ���g�p���Ȃ��Ă͂Ȃ�܂���B
+  今のところこの「曲線」は画像と全く一致していません。後で修正しますし、作業を続けるに従っていずれにしろ変形するのでこれは気にせず続けてください。制御点が接点 (小さな青い×印) につながっていることに注意してください。画像で輪郭の方向が突然変化している箇所に次の点を置かなければなりません。曲線上の点も接点も不適切ですから、角の点 (ツールパレット上の小さな四角の一つ) を使用しなくてはなりません。
   <P>
   <IMG SRC="../C6.png" WIDTH="272" HEIGHT="283">
   <P>
 <!--
   As you see the old curve now follows the image a bit more closely. We continue
   adding points until we are ready to close the path. -->
-  �}�Ɍ���悤�ɁA��قǂ̋Ȑ��͂킸���Ȃ���O��薧�ڂɉ摜�ɉ����Ă��܂��B
-  �p�X�����钼�O�̂Ƃ���܂ŁA�_�̒ǉ��𑱂��܂��傤�B
+  図に見るように、先ほどの曲線はわずかながら前より密接に画像に沿っています。
+  パスが閉じる直前のところまで、点の追加を続けましょう。
   <P>
   <IMG SRC="../C7.png" WIDTH="272" HEIGHT="283">
   <P>
 <!--
   Then we close the path just by adding a new point on top of the old start
   point -->
-  ���̌�A�ȑO�̊J�n�_�̏�ɏd�˂ĐV�����_��ǉ�����΁A����Ńp�X�͕��܂��B
+  その後、以前の開始点の上に重ねて新しく点を追加すれば、それでパスは閉じます。
   <P>
   <IMG SRC="../C8.png" WIDTH="272" HEIGHT="283">
   <P>
@@ -259,8 +259,8 @@
   adjust the control points (the blue "x"es). To make all the control points
   visible select the pointer tool and double-click on the curve and then move
   the control points around until the curve looks right. -->
-  �����ŁA�Ȑ����摜����萳�m�ɂ��ǂ�悤�ɂ���K�v������܂����A���̂��߂ɂ͐���_ (���~��) �𒲐�����K�v������܂��B
-  �S�Ă̐���_��������悤�ɂ��邽�߁A�|�C���^�c�[����I��ŋȐ���Ń_�u���N���b�N���A���ꂩ��Ȑ����摜�Ɠ����`�ɂȂ�悤�ɐ���_�𓮂����܂��B
+  ここで、曲線が画像をより正確にたどるようにする必要がありますが、そのためには制御点 (青い×印) を調整する必要があります。
+  全ての制御点が見えるようにするため、ポインタツールを選んで曲線上でダブルクリックし、それから曲線が画像と同じ形になるように制御点を動かします。
   <P>
   <IMG SRC="../C9.png" WIDTH="266" HEIGHT="279">
   <P>
@@ -268,50 +268,50 @@
   Finally we set width. Again with the pointer tool, move the mouse to the
   width line on the right edge of the screen, depress and drag the line back
   to a reasonable location. -->
-  �Ō�ɕ���ݒ肵�܂��B�|�C���^�c�[���ɖ߂�A�}�E�X����ʂ̉E�[�ɂ��鎚�����ɍ��킹�ăN���b�N���A���������K�؂Ȉʒu�ɗ���܂Ńh���b�O���Ė߂��܂��B
+  最後に幅を設定します。ポインタツールに戻り、マウスを画面の右端にある字幅線に合わせてクリックし、文字幅が適切な位置に来るまでドラッグして戻します。
   <P>
   <IMG SRC="../C10.png" WIDTH="266" HEIGHT="279">
   <P>
 <!--
   And we are done with this glyph. -->
-  ����ł��̃O���t�ɂ��Ă͊����ł��B
+  これでこのグリフについては完成です。
   <P>
 <!--
   If you are mathematically inclined you may be interested in the coordinates
   that fontforge shows in the upper left of the window. Generally you can draw
   glyphs quite happily without bothering about these, but for those who are
   interested here is some basic info: -->
-  �������Ȃ������w�ɋ����̂��鐫�i�Ȃ�΁AFontForge ���E�B���h�E�̍���ɕ\��������W�l�ɋ����������ꂽ���Ƃł��傤�B��ʂɂ͂����̒l���C�ɂ��Ȃ��Ă����ɉ��K�ɃO���t��`�悷�邱�Ƃ��ł��܂����A�������������̕��̂��߂Ɋ�{�I�ȏ���񋟂��Ă����܂�:
+  もしあなたが数学に興味のある性格ならば、FontForge がウィンドウの左上に表示する座標値に興味を持たれたことでしょう。一般にはこれらの値を気にしなくても非常に快適にグリフを描画することができますが、興味をお持ちの方のために基本的な情報を提供しておきます:
   <UL>
     <LI>
 <!--  Each glyph has its own coordinate system. -->
-      �e�O���t�͂��ꎩ�g�̍��W�n�������Ă��܂��B
+      各グリフはそれ自身の座標系をもっています。
     <LI>
 <!--  The vertical origin is the font's baseline (the line on which most latin
       letters rest) -->
-      ���������̌��_�̓t�H���g�̃x�[�X���C�� (�قƂ�ǂ̃��e���������ڂ������Ă����) �̏�ɂ���܂��B
+      垂直方向の原点はフォントのベースライン (ほとんどのラテン文字が載っかっている線) の上にあります。
     <LI>
 <!--  The horizontal origin is the place where drawing the glyph will commence.
       In the example above what gets drawn initially is empty space, that is fairly
       common, and that empty space (the distance from the origin to the left edge
       of the glyph) is called the left side bearing. -->
-      ���������̌��_���A�O���t�̕`�悪�J�n������ʒu�ł��B��̗�ł́A�ŏ��ɕ`�悳���̂͋���ۂ̋�Ԃł����A����͔��ɂ悭���邱�ƂŁA���̋���ۂ̋�� (���_����O���t�̍��[�܂ł̋���) �����T�C�h�x�A�����O�ƌĂт܂��B
+      水平方向の原点が、グリフの描画が開始される基準位置です。上の例では、最初に描画されるのは空っぽの空間ですが、これは非常によくあることで、この空っぽの空間 (原点からグリフの左端までの距離) を左サイドベアリングと呼びます。
     <LI>
 <!--  The units of the coordinate system are determined by the em-size of the font.
       This is the sum of the font's ascent and descent. In the example above the
       font's ascent is 800 and descent is 200, and the ascent line (the one just
       above the top of the "C") is 800 units from the baseline, while the descent
       line is 200 units below. -->
-      ���W�n�̒P�ʂ̓t�H���g�� em �T�C�Y�ɂ�茈�܂�܂��B����̓t�H���g�̍����Ɛ[�� �̘a�ł��B��̗�ł̓t�H���g�̍����� 800 �ŁA�[���� 200 �ł��B�����č����̊�� (�gC�h�̍ŏ㕔�̂�����ɂ����) �̓x�[�X���C������ 800 ���j�b�g����Ă���A�[���̊���� 200 ���j�b�g���ɂ���܂��B
+      座標系の単位はフォントの em サイズにより決まります。これはフォントの高さと深さ の和です。上の例ではフォントの高さは 800 で、深さは 200 です。そして高さの基準線 (“C”の最上部のすぐ上にある線) はベースラインから 800 ユニット離れており、深さの基準線は 200 ユニット下にあります。
     <LI>
 <!--  So a position of 282,408 (as above) means that the cursor is 282 units right
       of the horizontal origin and 408 units above the baseline (or halfway between
       baseline and ascent). -->
-      �ł�����A(��̐}��) <CODE>282,408</CODE> �Ƃ����ʒu�́A�J�[�\�������������̌��_���� 282 ���j�b�g�E�ɁA�x�[�X���C������ 408 ���j�b�g��� (���Ȃ킿�A��[�Ɖ��[�̂قڒ��Ԃ�) ���� �Ƃ������Ƃ��Ӗ����Ă��܂��B
+      ですから、(上の図の) <CODE>282,408</CODE> という位置は、カーソルが水平方向の原点から 282 ユニット右に、ベースラインから 408 ユニット上に (すなわち、上端と下端のほぼ中間に) ある ということを意味しています。
   </UL>
   <P ALIGN=Center>
-  �\ <A HREF="overview.html">�O</A> �\ <A HREF="overview.html">�ڎ�</A> �\
-  <A HREF="editexample2.html">��</A> �\
+  — <A HREF="overview.html">前</A> — <A HREF="overview.html">目次</A> —
+  <A HREF="editexample2.html">次</A> —
 </DIV>
 </BODY></HTML>
   

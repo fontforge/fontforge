@@ -3,9 +3,9 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 30-Jul-2001 -->
   <!-- AP: Last modified: 3-Mar-2005 -->
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=Shift_JIS">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
 <!--<TITLE>The CID Menu and CID keyed fonts</TITLE>-->
-    <TITLE>CID ���j���[�� CID �L�[�w��t�H���g</TITLE>
+    <TITLE>CID メニューと CID キー指定フォント</TITLE>
   <LINK REL="icon" href="../fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
@@ -13,48 +13,48 @@
 <DIV id="in">
 <H1 ALIGN=Center>
 <!--The CID Menu-->
-    CID ���j���[
+    CID メニュー
 </H1>
 <P>
 <!--
 The CID Menu provides a few commands for manipulating CID keyed fonts. If
 the current font is a CID keyed font the menu also includes a list of all
 subfonts that make up this one. This menu is only available in the font view. -->
-CID ���j���[�ɂ́ACID �t�H���g�𑀍삷�邽�߂̏����̃R�}���h������܂��B���݂̃t�H���g�� CID �t�H���g�̏ꍇ�A���̃��j���[�ɂ͂��̍\�����i�ł���T�u�t�H���g���ׂĂ��܂ރ��X�g�����j���[�Ɋ܂܂�܂��B���̃��j���[�̓t�H���g�r���[�ł̂ݎg�p�\�ł��B
+CID メニューには、CID フォントを操作するための少数のコマンドがあります。現在のフォントが CID フォントの場合、このメニューにはその構成部品であるサブフォントすべてを含むリストもメニューに含まれます。このメニューはフォントビューでのみ使用可能です。
 <P>
 <UL>
   <LI>
 <!--<A HREF="#Convert">Convert to CID</A>-->
-    <A HREF="#Convert">CID�ɕϊ�</A>
+    <A HREF="#Convert">CIDに変換</A>
   <LI>
 <!--<A HREF="#ConvertCMap">Convert By CMap</A>-->
-    <A HREF="#ConvertCMap">CMap���w�肵�ĕϊ�</A>
+    <A HREF="#ConvertCMap">CMapを指定して変換</A>
   <LI>
 <!--<A HREF="#Flatten">Flatten</A>-->
-    <A HREF="#Flatten">�P�ꉻ(<U>F</U>)</A>
+    <A HREF="#Flatten">単一化(<U>F</U>)</A>
   <LI>
 <!--<A HREF="#FlattenCMap">Flatten By CMap</A>-->
-    <A HREF="#FlattenCMap">�w�肵��CMap�ŒP�ꉻ</A>
+    <A HREF="#FlattenCMap">指定したCMapで単一化</A>
   <LI>
 <!--<A HREF="#Insert">Insert Font</A>-->
-    <A HREF="#Insert">�t�H���g��}��(<U>O</U>)...</A>
+    <A HREF="#Insert">フォントを挿入(<U>O</U>)...</A>
   <LI>
 <!--<A HREF="#Blank">Insert Blank</A>-->
-    <A HREF="#Blank">��̃t�H���g��}��(<U>B</U>)</A>
+    <A HREF="#Blank">空のフォントを挿入(<U>B</U>)</A>
   <LI>
 <!--<A HREF="#Remove">Remove Font</A>-->
-    <A HREF="#Remove">�t�H���g���폜(<U>R</U>)</A>
+    <A HREF="#Remove">フォントを削除(<U>R</U>)</A>
   <LI>
 <!--<A HREF="#FontInfo">CID Font Info</A> -->
-    <A HREF="#FontInfo">CID�t�H���g���(<U>I</U>)</A>
+    <A HREF="#FontInfo">CIDフォント情報(<U>I</U>)</A>
       <HR>
   <LI>
 <!--&lt;sub font names&gt;-->
-    &lt;�T�u�t�H���g���̈ꗗ&gt;
+    &lt;サブフォント名の一覧&gt;
 </UL>
 <H2>
 <!--Er... What is a <A NAME="CID">CID</A> keyed Font?-->
-    ���́[�c�c<A NAME="CID">CID</A> keyed �t�H���g���ĉ��ł���?
+    あのー……<A NAME="CID">CID</A> keyed フォントって何ですか?
 </H2>
 <P>
 <!--
@@ -64,144 +64,144 @@ a collection of several sub-fonts each with certain common features (one
 might hold all the latin letters, another all the kana, a third all the kanji).
 This allows font-wide hinting to be crafted for subsets of glyphs to which
 have something in common. -->
-CID �L�[�w��t�H���g�́A������A���{�ꂨ��ъ؍���̕����������I�Ɋi�[�ł���悤�ɐ݌v���ꂽ PostScript (�܂��� OpenType) �t�H���g�ł��B��萳�m�Ɍ����΁ACID �t�H���g�͂������̋��ʂ̓��������T�u�t�H���g (���̂����� 1 �̓��e�������������܂�ł���ł��傤���A�ʂ� 1 �͉����΂���A3 �ڂ͊����΂���Ƃ�����ł�) �̏W�܂�ł��B����ɂ��A�t�H���g�P�ʂ̃q���g�w����A���ʓ_�����O���t�̃T�u�Z�b�g�ɍ��킹�Ă��炦�邱�Ƃ��ł��܂��B
+CID キー指定フォントは、中国語、日本語および韓国語の文字を効率的に格納できるように設計された PostScript (または OpenType) フォントです。より正確に言えば、CID フォントはいくつかの共通の特徴をもつサブフォント (そのうちの 1 つはラテン文字だけを含んでいるでしょうし、別の 1 つは仮名ばかり、3 つ目は漢字ばかりという具合です) の集まりです。これにより、フォント単位のヒント指定を、共通点をもつグリフのサブセットに合わせてあつらえることができます。
 <P>
 <!--
 CID keyed fonts do not have an encoding built into the font, and the glyphs
 do not have names. Instead the font is associated with a glyph set and on
 each glyph set there are several character mappings defined. These mappings
 are similar to encodings but allow for a wider range of behaviors. -->
-CID �L�[�w��t�H���g�ɂ̓G���R�[�f�B���O���g�ݍ��܂�Ă��炸�A�O���t�ɖ��O�������Ă����܂���B���̑��A�t�H���g�͓���̃O���t�Z�b�g�Ɍ��т����Ă���A�e�O���t�Z�b�g���Ƃɕ����̕����Z�b�g�ւ̑Ή��Â������݂��܂��B�����̑Ή��Â��̓G���R�[�f�B���O�Ǝ��Ă��܂����A���L���͈͂̂ӂ�܂����\�ɂȂ��Ă��܂��B
+CID キー指定フォントにはエンコーディングが組み込まれておらず、グリフに名前がつけられてもいません。その代り、フォントは特定のグリフセットに結びつけられており、各グリフセットごとに複数の文字セットへの対応づけが存在します。これらの対応づけはエンコーディングと似ていますが、より広い範囲のふるまいが可能になっています。
 <P>
 <!--
 A CID is a glyph index and is used to look up glyph descriptions instead
 of glyph names in other types of fonts. Using a glyph set FontForge will
 often be able to map a CID to a unicode character name (but not always),
 so FontForge will give glyphs names when it can. -->
-CID �̓O���t�̃C���f�b�N�X�ŁA���̃O���t�ԍ��́A���̃^�C�v�̃t�H���g�ŗp�����Ă���O���t���̑��ɃO���t�L�q���Q�Ƃ���̂ɗp�����Ă��܂��BFontForge �͑����̏ꍇ�����Z�b�g���g�p���� CID �� Unicode �̕������ɑΉ��Â��邱�Ƃ��ł��܂� (���A�����ł͂���܂���)�B���̂��߁AFontForge �͉\�ȂƂ������O���t�̖��O��\�����܂��B
+CID はグリフのインデックスで、このグリフ番号は、他のタイプのフォントで用いられているグリフ名の代りにグリフ記述を参照するのに用いられています。FontForge は多くの場合文字セットを使用して CID を Unicode の文字名に対応づけることができます (が、いつもではありません)。そのため、FontForge は可能なときだけグリフの名前を表示します。
 <P>
 <!--
 For more information see the <A HREF="fontview.html#CID">section on CID keyed
 fonts on the font view page</A>.-->
-���ڂ������ɂ��ẮA<A HREF="fontview.html#CID">�t�H���g�r���[�̃y�[�W��CID�L�[�w��t�H���g�Ɋւ���Z�N�V����</A>���Q�Ƃ��Ă��������B
+より詳しい情報については、<A HREF="fontview.html#CID">フォントビューのページのCIDキー指定フォントに関するセクション</A>を参照してください。
 <P>
 <DL>
   <DT>
 <!--<A NAME="Convert">Convert to CID</A>-->
-    <A NAME="Convert">CID�ɕϊ�</A>
+    <A NAME="Convert">CIDに変換</A>
   <DD>
 <!--If the current font is not a CID font then this command will convert it into
     one containing one subfont (with the glyphs in this font). You will be prompted
     for a character set.-->
-    ���݂̃t�H���g�� CID �t�H���g�łȂ��ꍇ�A���̃R�}���h�͂���� 1 �� (���̃t�H���g�ɂ���O���t���܂�) �T�u�t�H���g����Ȃ� CID �t�H���g�ɕϊ����܂��B�����Z�b�g����͂���悤�ɑ�����܂��B
+    現在のフォントが CID フォントでない場合、このコマンドはそれを 1 個の (このフォントにあるグリフを含む) サブフォントからなる CID フォントに変換します。文字セットを入力するように促されます。
   <DT>
 <!--<A NAME="ConvertCMap">Convert By CMap</A>-->
-    <A NAME="ConvertCMap">CMap���w�肵�ĕϊ�</A>
+    <A NAME="ConvertCMap">CMapを指定して変換</A>
   <DD>
 <!--If the current font is not a CID font then this command will convert it into
     one containing a single subfont. You will be prompted for an Adobe CMap file. -->
-    ���݂̃t�H���g�� CID �t�H���g�łȂ��ꍇ�A���̃R�}���h�͂�����T�u�t�H���g�� 1 �����܂� CID �t�H���g�ɕϊ����܂��BAdobe CMap �t�@�C����I������悤�ɑ�����܂��B
+    現在のフォントが CID フォントでない場合、このコマンドはそれをサブフォントを 1 個だけ含む CID フォントに変換します。Adobe CMap ファイルを選択するように促されます。
   <DT>
 <!--<A NAME="Flatten">Flatten</A>-->
-    <A NAME="Flatten">�P�ꉻ</A>
+    <A NAME="Flatten">単一化</A>
   <DD>
 <!--If the current font is a CID font then this command will convert it into
     a normal (flat) font by taking all the glyphs from all the sub-fonts and
     merging them into one normal font. The new font should be in the same order
     as the CID font (ie. ordered by CID). After this operation you may re-encode
     it into whatever encoding is appropriate.
-    ���݂̃t�H���g�� CID �t�H���g�̏ꍇ�A���̃R�}���h�͂���Ɋ܂܂�邷�ׂẴT�u�t�H���g���炷�ׂẴO���t�����o���A�P��̒ʏ�t�H���g�ɂ܂Ƃ߂邱�Ƃɂ��A�ʏ�� (�K�w�\���̂Ȃ��t���b�g��) �t�H���g�ɕϊ����܂��B�V�����t�H���g�͂��� CID �t�H���g�Ɠ���������ۂ��Ă���͂��ł� (�܂�ACID ���ɕ���ł���͂��ł�)�B���̑���̌�A���������������ǂ�ł��K���Ȃ��̂ɕύX���邱�Ƃ��ł��܂��B
+    現在のフォントが CID フォントの場合、このコマンドはそれに含まれるすべてのサブフォントからすべてのグリフを取り出し、単一の通常フォントにまとめることにより、通常の (階層構造のないフラットな) フォントに変換します。新しいフォントはその CID フォントと同じ順序を保っているはずです (つまり、CID 順に並んでいるはずです)。この操作の後、符号化方式ををどれでも適当なものに変更することができます。
   <DT>
 <!--<A NAME="FlattenCMap">Flatten</A> By CMap-->
-    <A NAME="FlattenCMap">�w�肵��CMap�ŒP�ꉻ</A>
+    <A NAME="FlattenCMap">指定したCMapで単一化</A>
   <DD>
 <!--If the current font is a CID font then this command will convert it into
     a normal font. It prompts you for an Adobe CMap file and uses that to define
     an encoding for the resultant font.-->
-    ���݂̃t�H���g�� CID �t�H���g�̏ꍇ�A���̃R�}���h�͂����ʏ�̃t�H���g�ɕϊ����܂��BAdobe CMap �t�@�C�����w�肷��悤�ɑ����A������쐬���ʂ̃t�H���g�̃G���R�[�f�B���O���`����̂Ɏg���܂��B
+    現在のフォントが CID フォントの場合、このコマンドはそれを通常のフォントに変換します。Adobe CMap ファイルを指定するように促し、それを作成結果のフォントのエンコーディングを定義するのに使います。
   <DT>
 <!--<A NAME="Insert">Insert Font</A>-->
-    <A NAME="Insert">�t�H���g��}��(<U>O</U>)</A>
+    <A NAME="Insert">フォントを挿入(<U>O</U>)</A>
   <DD>
 <!--Will allow you to browse for a normal font which will be added as another
     sub font to the current CID font.-->
-    ���݂� CID �t�H���g�ɕʂ̃T�u�t�H���g�Ƃ��Ēǉ������ʏ�t�H���g���ꗗ����I�����邱�Ƃ��ł��܂��B
+    現在の CID フォントに別のサブフォントとして追加される通常フォントを一覧から選択することができます。
   <DT>
 <!--<A NAME="Blank">Insert Blank</A>-->
-    <A NAME="Blank">��̃t�H���g��}��(<U>B</U>)</A>
+    <A NAME="Blank">空のフォントを挿入(<U>B</U>)</A>
   <DD>
 <!--Inserts a blank sub-font into the current CID font.-->
-    ���݂�CID�t�H���g�ɋ�̃T�u�t�H���g��}�����܂��B
+    現在のCIDフォントに空のサブフォントを挿入します。
   <DT>
 <!--<A NAME="Remove">Remove</A> Font-->
-    �t�H���g��<A NAME="Remove">�폜(<U>R</U>)</A>
+    フォントを<A NAME="Remove">削除(<U>R</U>)</A>
   <DD>
 <!--Removes the current font from the CID font. Anything in it will be lost.
     (If you want to save it first then use Generate Font and save it as a pfb
     file (or any other simple format).-->
-    ���݂̃t�H���g�� CID �t�H���g����폜���܂��B���̒��Ɋ܂܂��f�[�^�͂��ׂĎ����܂��B(�����ۑ��������ꍇ�͂܂� <CODE>�t�H���g���o��(<U>G</U>)</CODE> ���g�p���āApfb �t�@�C�� (�����̒P���ȃt�H�[�}�b�g) �ŕۑ����Ă�������)�B
+    現在のフォントを CID フォントから削除します。その中に含まれるデータはすべて失われます。(それを保存したい場合はまず <CODE>フォントを出力(<U>G</U>)</CODE> を使用して、pfb ファイル (か他の単純なフォーマット) で保存してください)。
   <DT>
 <!--CID <A NAME="FontInfo">Font</A> Info-->
-    CID <A NAME="FontInfo">�t�H���g</A>���(I)
+    CID <A NAME="FontInfo">フォント</A>情報(I)
   <DD>
 <!--This allows you to provide information on the entire collection of subfonts
     rather than just the current subfont. It provides access to the standard
     <A HREF="fontinfo.html">font info dialog</A>. -->
-    ������g���ƁA���݂̃T�u�t�H���g�ł͂Ȃ��A�T�u�t�H���g�̏W�܂�ł��� CID �t�H���g�S�̂̏��𓾂邱�Ƃ��ł��܂��B���̃R�}���h�͕W����<A HREF="fontinfo.html">�t�H���g���_�C�A���O</A>�Ɠ������@�ŏ��ɃA�N�Z�X�ł��܂��B
+    これを使うと、現在のサブフォントではなく、サブフォントの集まりである CID フォント全体の情報を得ることができます。このコマンドは標準の<A HREF="fontinfo.html">フォント情報ダイアログ</A>と同じ方法で情報にアクセスできます。
       <HR>
   <DT>
 <!--&lt;sub font name&gt;-->
-    &lt;�T�u�t�H���g��&gt;
+    &lt;サブフォント名&gt;
   <DD>
 <!--Clicking on a different sub font name in the menu will cause that sub-font
     to be displayed instead of the current one.-->
-    ���j���[�ɂ���ʂ̃T�u�t�H���g�����N���b�N����ƁA���݂̃t�H���g�̑��ɂ��̃T�u�t�H���g���\������܂��B
+    メニューにある別のサブフォント名をクリックすると、現在のフォントの代りにそのサブフォントが表示されます。
 </DL>
 <P>
 <H2>
 <!-- Other menus -->
-     ���̑��̃��j���[
+     その他のメニュー
 </H2>
 <UL>
   <LI>
 <!--<A HREF="filemenu.html">File</A>-->
-    <A HREF="filemenu.html">�t�@�C��(<U>F</U>)</A>
+    <A HREF="filemenu.html">ファイル(<U>F</U>)</A>
   <LI>
 <!--<A HREF="editmenu.html">Edit</A>-->
-    <A HREF="editmenu.html">�ҏW(<U>E</U>)</A>
+    <A HREF="editmenu.html">編集(<U>E</U>)</A>
   <LI>
 <!--<A HREF="pointmenu.html">Point</A>-->
-    <A HREF="pointmenu.html">�_(<U>P</U>)</A>
+    <A HREF="pointmenu.html">点(<U>P</U>)</A>
   <LI>
 <!--<A HREF="elementmenu.html">Element</A>-->
-    <A HREF="elementmenu.html">�G�������g(<U>L</U>)</A>
+    <A HREF="elementmenu.html">エレメント(<U>L</U>)</A>
   <LI>
 <!--<A HREF="hintsmenu.html">Hints</A>-->
-    <A HREF="hintsmenu.html">�q���g(<U>I</U>)</A>
-    <LI> <A HREF="encodingmenu.html">�G���R�[�f�B���O(<U>N</U>)</A>
+    <A HREF="hintsmenu.html">ヒント(<U>I</U>)</A>
+    <LI> <A HREF="encodingmenu.html">エンコーディング(<U>N</U>)</A>
   <LI>
 <!--<A HREF="viewmenu.html">View</A>-->
-    <A HREF="viewmenu.html">�\��(<U>V</U>)</A>
+    <A HREF="viewmenu.html">表示(<U>V</U>)</A>
   <LI>
 <!--<A HREF="metricsmenu.html">Metrics</A>-->
-    <A HREF="metricsmenu.html">���g���b�N(<U>M</U>)</A>
+    <A HREF="metricsmenu.html">メトリック(<U>M</U>)</A>
   <LI>
     <A HREF="cidmenu.html"><U>C</U>ID</A>
   <LI>
     <A HREF="mmmenu.html">MM</A>
   <LI>
 <!--<A HREF="windowmenu.html">Window</A>-->
-    <A HREF="windowmenu.html">�E�B���h�E(<U>W</U>)</A>
+    <A HREF="windowmenu.html">ウィンドウ(<U>W</U>)</A>
   <LI>
 <!--<A HREF="helpmenu.html">Help</A>-->
-    <A HREF="helpmenu.html">�w���v(<U>H</U>)</A>
+    <A HREF="helpmenu.html">ヘルプ(<U>H</U>)</A>
   <LI>
 <!--<A HREF="HotKeys.html">Hot Keys</A>-->
-    <A HREF="HotKeys.html">�z�b�g�L�[�ꗗ</A>
+    <A HREF="HotKeys.html">ホットキー一覧</A>
 </UL>
 <P ALIGN=Center>
-�\ <A HREF="metricsmenu.html">�O</A> �\ <A HREF="overview.html">�ڎ�</A>
-�\ <A HREF="mmmenu.html">��</A> �\
+— <A HREF="metricsmenu.html">前</A> — <A HREF="overview.html">目次</A>
+— <A HREF="mmmenu.html">次</A> —
 <P>
 </DIV>
 </BODY></HTML>
