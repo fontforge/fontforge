@@ -1005,7 +1005,7 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
     pt = strrchr(fname,'/');
     if ( pt==NULL ) pt = fname;
 
-    if ( paren = SFSubfontnameStart(pt) ) {
+    if ( (paren = SFSubfontnameStart(pt)) ) {
 	strippedname = copy(fname);
 	strippedname[paren-fname] = '\0';
 	chosenname = copy(paren+1);

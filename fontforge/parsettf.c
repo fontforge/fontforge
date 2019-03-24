@@ -6322,7 +6322,7 @@ SplineFont *SFReadTTF(char *filename, int flags, enum openflags openflags) {
     pt = strrchr(filename,'/');
     if ( pt==NULL ) pt = filename;
     /* Extract the subfont name if present */
-    if ( lparen = SFSubfontnameStart(pt) ) {
+    if ( (lparen = SFSubfontnameStart(pt)) ) {
         strippedname = copy(filename);
         strippedname[lparen-filename] = '\0';
         chosenname = copy(lparen+1);

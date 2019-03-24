@@ -2106,7 +2106,7 @@ static SplineFont *SearchTtfResources(FILE *f,long rlistpos,int subcnt,long rdat
 return( (SplineFont *) names );
 	}
 	if ((pt = strrchr(filename,'/'))==NULL ) pt = filename;
-	if ( lparen = SFSubfontnameStart(pt) ) {
+	if ( (lparen = SFSubfontnameStart(pt)) ) {
 	    find = copy(lparen+1);
 	    find[strlen(find)-1] = '\0';
 	    for ( which=subcnt-1; which>=0; --which )
@@ -2571,7 +2571,7 @@ static FOND *PickFOND(FOND *fondlist,char *filename,char **name, int *style) {
     char *find = NULL;
 
     if ((pt = strrchr(filename,'/'))!=NULL ) pt = filename;
-    if ( lparen = SFSubfontnameStart(pt) ) {
+    if ( (lparen = SFSubfontnameStart(pt)) ) {
 	find = copy(lparen+1);
 	find[strlen(find)-1] = '\0';
 	for ( test=fondlist; test!=NULL; test=test->next ) {
