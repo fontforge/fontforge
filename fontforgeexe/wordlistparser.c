@@ -293,7 +293,7 @@ u_WordlistEscapedInputStringToRealString_readGlyphName(
                 SplineChar* tmp = 0;
 		TRACE("uni prefix, codepoint: %ld\n", unicodepoint );
 		sc = SFGetChar( sf, unicodepoint, 0 );
-                if (tmp = SFGetChar( sf, -1, u_to_c(glyphname) )) {
+                if ((tmp = SFGetChar( sf, -1, u_to_c(glyphname) ))) {
 		    TRACE("have subst. char: %s\n", tmp->name );
                     sc = tmp;
                 } else {

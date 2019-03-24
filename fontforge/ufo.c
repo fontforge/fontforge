@@ -396,7 +396,7 @@ static void xmlSetPropPrintf(xmlNodePtr target, const xmlChar * name, char * for
 int count_occurrence(const char* big, const char* little) {
     const char * tmp = big;
     int output = 0;
-    while (tmp = strstr(tmp, little)) { output ++; tmp ++; }
+    while ((tmp = strstr(tmp, little))) { output ++; tmp ++; }
     return output;
 }
 
