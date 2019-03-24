@@ -1622,7 +1622,7 @@ return( SplineFontRasterize(_sf,layer,pixelsize,true));
     strcpy(aa,_("Generating anti-alias font"));
     if ( sf->fontname!=NULL ) {
 	strcat(aa,": ");
-	strncat(aa,sf->fontname,sizeof(aa)-strlen(aa));
+	strncat(aa,sf->fontname,sizeof(aa)-strlen(aa)-1);
 	aa[sizeof(aa)-1] = '\0';
     }
     ff_progress_start_indicator(10,_("Rasterizing..."),
