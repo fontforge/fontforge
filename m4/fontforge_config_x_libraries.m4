@@ -20,7 +20,6 @@ if test x"${i_do_have_x}" = xyes; then
                   [XKB_LIBS="${found_lib}"],
                   [AC_DEFINE(_NO_XKB,1,[Define if not using xkb.])],
                   [$X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS])
-   AC_DEFINE([BUILT_WITH_XORG],[],[Define if using X.org])
 fi
 AC_SUBST([XINPUT_LIBS])
 AC_SUBST([XKB_LIBS])
