@@ -99,7 +99,7 @@
     <TR>
       <TD><CODE>skew</CODE></TD>
       <TD><CODE>(theta)</CODE></TD>
-      <TD>returns a matrix which will skew by <CODE>theta</CODE> (to produce a
+      <TD>returns a matrix which will skew by <CODE>theta</CODE> (to produce an
 	oblique font). <CODE>Theta</CODE> is expressed in radians</TD>
     </TR>
     <TR>
@@ -204,7 +204,7 @@
       <TD>Loads an encoding file, returns the name of the encoding or None.
         When loading encodings in Unicode consortium format, an encname has to
         be specefied or the encoding will be ignored and None will be
-        reterned.</TD>
+        returned.</TD>
     </TR>
     <TR>
       <TD><CODE>loadNamelist</CODE></TD>
@@ -554,7 +554,7 @@
     <TR>
       <TD><CODE>open</CODE></TD>
       <TD><CODE>(filename[,flags])</CODE></TD>
-      <TD>Opens a filename and returns the font it contains. If it does.
+      <TD>Opens a filename and returns the font it contains (if any).
 	<P>
 	If the flags argument is 4, then ff will load all glyphs in the 'glyf' table
 	of a ttc file (rather than just the glyphs used in the font picked). This
@@ -586,7 +586,7 @@
     <TR>
       <TD><CODE>registerGlyphSeparationHook</CODE></TD>
       <TD><CODE>(hook)</CODE></TD>
-      <TD>The GlpyphSeparationHook is a python routine which FontForge will call
+      <TD>The GlyphSeparationHook is a python routine which FontForge will call
 	when it wants to figure out the optical separation between two glyphs. If
 	you neve call this, or if you call it with a value of <CODE>None</CODE> FontForge
 	will use a built-in default. This routine gets called during AutoWidth, AutoKern,
@@ -1154,19 +1154,19 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
       <TD colspan=2><CODE>c[i]</CODE></TD>
       <TD>The <EM>i</EM>th point on the contour. You may assign a point or
 	 point initializer to this (keeping the number of points constant) or
-         use "del c[i]" to remove the entry (reducing the number by one)</TD>
+	 use "<CODE>del c[i]</CODE>" to remove the entry (reducing the number by one)</TD>
     </TR>
     <TR>
       <TD colspan=2><CODE>c[i:j]</CODE></TD>
       <TD>The contour containing points between i and j; i must be &gt;= j.
-	Alternatively, c[j:i:-1] returns those points in reverse order
+	Alternatively, <CODE>c[j:i:-1]</CODE> returns those points in reverse order
 	(larger strides are not supported).</TD>
     </TR>
     <TR>
       <TD colspan=2><CODE>c[i:j] = d</CODE></TD>
       <TD>The points between i and j are replaced by those in d; i must be &gt;= j.
-        d can be a contour or a sequence of point initializer tuples, as in [(1,1,False),(2,1)].
-        If c[j:i:-1] is used instead the points of d are assigned in reverse order.</TD>
+      d can be a contour or a sequence of point initializer tuples, as in <CODE>[(1,1,False),(2,1)]</CODE>.
+      If <CODE>c[j:i:-1]</CODE> is used instead the points of d are assigned in reverse order.</TD>
     </TR>
     <TR>
       <TD colspan=2><CODE>c + d</CODE></TD>
@@ -1179,8 +1179,8 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
     </TR>
     <TR>
       <TD colspan=2><CODE>p in c</CODE></TD>
-      <TD>When p i sa point returns whether some point (p.x,p.y) is in the contour c.
-        p can also be a tuple of two numbers</TD>
+      <TD>When p is a point, returns whether some point (p.x,p.y) is in the contour c.
+        p can also be a tuple of two numbers.</TD>
     </TR>
     <TR>
       <TD colspan=3>Does not support the repeat concept</TD>
@@ -1478,8 +1478,8 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
     <TR>
       <TD colspan=2><CODE>l[i]</CODE></TD>
       <TD>The <EM>i</EM>th contour in the layer. You may assign a contour
-	 to this (keeping the number of contours constant) or use "del l[i]"
-	 to remove the entry (reducing the number by one)</TD>
+	to this (keeping the number of contours constant) or use "<CODE>del l[i]</CODE>"
+	to remove the entry (reducing the number by one)</TD>
     </TR>
     <TR>
       <TD colspan=2><CODE>l + m</CODE></TD>
@@ -4216,8 +4216,8 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TD><a name="addContextualSubtable"><CODE>addContextualSubtable</CODE></a></TD>
       <TD><CODE>(lookup-name,<BR>
-	&nbsp;new-subtable-name<BR>
-	&nbsp;type<BR>
+	&nbsp;new-subtable-name,<BR>
+	&nbsp;type,<BR>
 	&nbsp;rule<BR>
 	&nbsp;[,afterSubtable=]
 	&nbsp;[,bclasses=]
