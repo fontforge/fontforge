@@ -16,8 +16,8 @@
  BLOCKQUOTE PRE { background: #ffd; color: #000; }
  BLOCKQUOTE#shell PRE { background: #ccf; color: #000; }
  H1 { display: inline }
- TABLE#module { background: #ddf }
- TABLE#type { background: #ffd }
+ TABLE.module { background: #ddf }
+ TABLE.type { background: #ffd }
 
 /* menubar, stolen and modified from the sourceforge stylesheet */
 .menucontainer li
