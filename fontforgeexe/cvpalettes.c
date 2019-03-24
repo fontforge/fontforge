@@ -3540,14 +3540,14 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
             mi[i].mid = MID_SpiroCorner;
             mi[i].invoke = CVMenuPointType;
             i++;
-            mi[i].ti.text = (unichar_t *) _("Left Constraint ([)");
+            mi[i].ti.text = (unichar_t *) _("Left Constraint");
             mi[i].ti.text_is_1byte = true;
             mi[i].ti.fg = COLOR_DEFAULT;
             mi[i].ti.bg = COLOR_DEFAULT;
             mi[i].mid = MID_SpiroLeft;
             mi[i].invoke = CVMenuPointType;
             i++;
-            mi[i].ti.text = (unichar_t *) _("Right Constraint (])");
+            mi[i].ti.text = (unichar_t *) _("Right Constraint");
             mi[i].ti.text_is_1byte = true;
             mi[i].ti.fg = COLOR_DEFAULT;
             mi[i].ti.bg = COLOR_DEFAULT;
