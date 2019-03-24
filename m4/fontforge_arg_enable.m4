@@ -205,38 +205,35 @@ dnl gdk3. If no gdk development module is found then come to a hard stop.
 AC_DEFUN([FONTFORGE_ARG_ENABLE_GDK],
 [
 fontforge_gdk_version=no
+fontforge_can_use_gdk=no
 AC_ARG_ENABLE([gdk],
         [AS_HELP_STRING([--enable-gdk=TYPE],
                 [Enable the GDK GUI backend. TYPE is either gdk2 or gdk3.])],
-        [use_gdk=yes])
-if test x$use_gdk = xyes ; then
-    if test "x$enableval" = "xgdk2"; then
-        PKG_CHECK_MODULES([GDK], [gdk-2.0 >= 2.10],
-        [
-            fontforge_can_use_gdk=yes
-            fontforge_gdk_version=GDK2
-            AC_DEFINE(FONTFORGE_CAN_USE_GDK,[],[FontForge will build the GUI with the GDK2 backend])
-            AC_DEFINE(BUILT_WITH_GDK2,[],[Built with GDK2])
-            AC_MSG_NOTICE([building the GUI with the GDK2 backend...])
-        ],
-        [
-            AC_MSG_ERROR([Cannot build GDK backend without GDK installed. Please install the GTK+ Developer Package.])
-        ])
-    else
-        PKG_CHECK_MODULES([GDK],[gdk-3.0 >= 3.10],
-        [
-            fontforge_can_use_gdk=yes
-            fontforge_gdk_version=GDK3
-            AC_DEFINE(FONTFORGE_CAN_USE_GDK,[],[FontForge will build the GUI with the GDK3 backend])
-            AC_DEFINE(BUILT_WITH_GDK3,[],[Built with GDK3])
-            AC_MSG_NOTICE([building the GUI with the GDK3 backend...])
-        ],
-        [
-            AC_MSG_ERROR([Cannot build GDK backend without GDK installed. Please install the GTK+ Developer Package.])
-        ])
-    fi
-else
-    fontforge_can_use_gdk=no
+        [],
+        [enable_gdk=no])
+if test "x$enable_gdk" = "xgdk2"; then
+    PKG_CHECK_MODULES([GDK], [gdk-2.0 >= 2.10],
+    [
+        fontforge_gdk_version=GDK2
+        AC_DEFINE(FONTFORGE_CAN_USE_GDK,[],[FontForge will build the GUI with the GDK2 backend])
+        AC_DEFINE(BUILT_WITH_GDK2,[],[Built with GDK2])
+        AC_MSG_NOTICE([building the GUI with the GDK2 backend...])
+    ],
+    [
+        AC_MSG_ERROR([Cannot build GDK backend without GDK installed. Please install the GTK+ Developer Package.])
+    ])
+elif ! test "x$enable_gdk" = "xno"; then
+    PKG_CHECK_MODULES([GDK],[gdk-3.0 >= 3.10],
+    [
+        fontforge_can_use_gdk=yes
+        fontforge_gdk_version=GDK3
+        AC_DEFINE(FONTFORGE_CAN_USE_GDK,[],[FontForge will build the GUI with the GDK3 backend])
+        AC_DEFINE(BUILT_WITH_GDK3,[],[Built with GDK3])
+        AC_MSG_NOTICE([building the GUI with the GDK3 backend...])
+    ],
+    [
+        AC_MSG_ERROR([Cannot build GDK backend without GDK installed. Please install the GTK+ Developer Package.])
+    ])
 fi
 AM_CONDITIONAL([FONTFORGE_CAN_USE_GDK],[test x"${fontforge_can_use_gdk}" = xyes])
 ])
