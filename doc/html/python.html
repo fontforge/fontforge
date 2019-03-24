@@ -99,7 +99,7 @@
     <TR>
       <TD><CODE>skew</CODE></TD>
       <TD><CODE>(theta)</CODE></TD>
-      <TD>returns a matrix which will skew by <CODE>theta</CODE> (to produce a
+      <TD>returns a matrix which will skew by <CODE>theta</CODE> (to produce an
 	oblique font). <CODE>Theta</CODE> is expressed in radians</TD>
     </TR>
     <TR>
@@ -554,7 +554,7 @@
     <TR>
       <TD><CODE>open</CODE></TD>
       <TD><CODE>(filename[,flags])</CODE></TD>
-      <TD>Opens a filename and returns the font it contains. If it does.
+      <TD>Opens a filename and returns the font it contains (if any).
 	<P>
 	If the flags argument is 4, then ff will load all glyphs in the 'glyf' table
 	of a ttc file (rather than just the glyphs used in the font picked). This
@@ -586,7 +586,7 @@
     <TR>
       <TD><CODE>registerGlyphSeparationHook</CODE></TD>
       <TD><CODE>(hook)</CODE></TD>
-      <TD>The GlpyphSeparationHook is a python routine which FontForge will call
+      <TD>The GlyphSeparationHook is a python routine which FontForge will call
 	when it wants to figure out the optical separation between two glyphs. If
 	you neve call this, or if you call it with a value of <CODE>None</CODE> FontForge
 	will use a built-in default. This routine gets called during AutoWidth, AutoKern,
@@ -4216,8 +4216,8 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TD><a name="addContextualSubtable"><CODE>addContextualSubtable</CODE></a></TD>
       <TD><CODE>(lookup-name,<BR>
-	&nbsp;new-subtable-name<BR>
-	&nbsp;type<BR>
+	&nbsp;new-subtable-name,<BR>
+	&nbsp;type,<BR>
 	&nbsp;rule<BR>
 	&nbsp;[,afterSubtable=]
 	&nbsp;[,bclasses=]
