@@ -3668,7 +3668,7 @@ static int get_counters_cut_in(InstrCt *ct,  int m1, int m2, int c1, int c2) {
     for (i=7; i<32768; i++) {
         swidth1 = (int)rint((rint(fabs(width1)) * i * 64.0)/EM);
         swidth2 = (int)rint((rint(fabs(width2)) * i * 64.0)/EM);
-        if ( fabs(swidth1 - swidth2) >= SNAP_THRESHOLD )
+        if ( abs(swidth1 - swidth2) >= SNAP_THRESHOLD )
             break;
     }
     return( i );
@@ -4937,7 +4937,7 @@ static int AddEdge(InstrCt *ct, StemData *stem, int is_l, struct stemedge *edgel
             ((real *) &stem->left.x)[!ct->xdir] : ((real *) &stem->right.x)[!ct->xdir];
         refidx = is_l ? stem->leftidx : stem->rightidx;
         for (i=skip=0; i<cnt; i++)
-            if (abs(coord - edgelist[i].pos) <= ct->gic->fudge ||
+            if (fabs(coord - edgelist[i].pos) <= ct->gic->fudge ||
                 edgelist[i].refpt == refidx) {
                 skip=1;
                 break;
