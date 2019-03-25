@@ -406,7 +406,7 @@ static FILE *logfile;
 
 /* These are the four apple events to which we currently respond */
 static pascal OSErr OpenApplicationAE( const AppleEvent * theAppleEvent,
-	AppleEvent * reply, SInt32 handlerRefcon) {
+	AppleEvent * reply, SRefCon handlerRefcon) {
  fprintf( logfile, "OPENAPP event received.\n" ); fflush( logfile );
     if ( localsplash )
 	start_splash_screen();
@@ -420,7 +420,7 @@ return( noErr );
 }
 
 static pascal OSErr ReopenApplicationAE( const AppleEvent * theAppleEvent,
-	AppleEvent * reply, SInt32 handlerRefcon) {
+	AppleEvent * reply, SRefCon handlerRefcon) {
  fprintf( logfile, "ReOPEN event received.\n" ); fflush( logfile );
     if ( localsplash )
 	start_splash_screen();
@@ -434,7 +434,7 @@ return( noErr );
 }
 
 static pascal OSErr ShowPreferencesAE( const AppleEvent * theAppleEvent,
-	AppleEvent * reply, SInt32 handlerRefcon) {
+	AppleEvent * reply, SRefCon handlerRefcon) {
  fprintf( logfile, "PREFS event received.\n" ); fflush( logfile );
     if ( localsplash )
 	start_splash_screen();
@@ -447,9 +447,8 @@ return( noErr );
 }
 
 static pascal OSErr OpenDocumentsAE( const AppleEvent * theAppleEvent,
-	AppleEvent * reply, SInt32 handlerRefcon) {
+	AppleEvent * reply, SRefCon handlerRefcon) {
     AEDescList  docList;
-    FSRef       theFSRef;
     long        index;
     long        count = 0;
     OSErr       err;
@@ -463,10 +462,16 @@ static pascal OSErr OpenDocumentsAE( const AppleEvent * theAppleEvent,
                          typeAEList, &docList);
     err = AECountItems(&docList, &count);
     for(index = 1; index <= count; index++) {
-        err = AEGetNthPtr(&docList, index, typeFSRef,
-                        NULL, NULL, &theFSRef,
-                        sizeof(theFSRef), NULL);// 4
-	err = FSRefMakePath(&theFSRef,(unsigned char *) buffer,sizeof(buffer));
+        AEDesc aDoc;
+        err = AEGetNthDesc(&docList, index, typeFileURL, NULL, &aDoc);
+        size_t bytecount = AEGetDescDataSize(&aDoc);
+        void *pathPtr = malloc(bytecount);
+        err = AEGetDescData(&aDoc, pathPtr, bytecount);
+        CFURLRef url = CFURLCreateWithBytes(nil, pathPtr, bytecount,
+                                            kCFStringEncodingUTF8, nil);
+        free(pathPtr);
+        CFURLGetFileSystemRepresentation(url, true, (UInt8*)buffer, sizeof(buffer));
+        CFRelease(url);
 	ViewPostScriptFont(buffer,0);
  fprintf( logfile, " file: %s\n", buffer );
     }
