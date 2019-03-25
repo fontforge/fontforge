@@ -281,14 +281,14 @@ static void SplashLayout() {
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
     uc_strcat(pt,"-D");
 #endif
-#ifdef BUILT_WITH_GDK2
-    uc_strcat(pt,"-GDK2");
-#endif
-#ifdef BUILT_WITH_GDK3
+#ifdef FONTFORGE_CAN_USE_GDK
+#  if GDK_MAJOR_VERSION >= 3
     uc_strcat(pt,"-GDK3");
-#endif
-#ifdef BUILT_WITH_XORG
-    uc_strcat(pt,"-Xorg");
+#  else
+    uc_strcat(pt,"-GDK2");
+#  endif
+#else
+    uc_strcat(pt,"-X11");
 #endif
     uc_strcat(pt,")");
     pt += u_strlen(pt);
