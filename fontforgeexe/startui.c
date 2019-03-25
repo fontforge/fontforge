@@ -900,9 +900,6 @@ int fontforge_main( int argc, char **argv ) {
 #if !(GLIB_CHECK_VERSION(2, 35, 0))
     g_type_init();
 #endif
-#ifdef FONTFORGE_CAN_USE_GDK
-    gdk_init(&argc, &argv);
-#endif
 
     /* Must be done before we cache the current directory */
     /* Change to HOME dir if specified on the commandline */
@@ -1093,6 +1090,9 @@ int fontforge_main( int argc, char **argv ) {
     CheckIsScript(argc,argv); /* Will run the script and exit if it is a script */
 					/* If there is no UI, there is always a script */
 			                /*  and we will never return from the above */
+#ifdef FONTFORGE_CAN_USE_GDK
+    gdk_init(&argc, &argv);
+#endif
     if ( load_prefs==NULL ||
 	    (strcasecmp(load_prefs,"Always")!=0 &&	/* Already loaded */
 	     strcasecmp(load_prefs,"Never")!=0 ))
