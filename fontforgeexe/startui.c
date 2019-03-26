@@ -463,12 +463,22 @@ static pascal OSErr OpenDocumentsAE( const AppleEvent * theAppleEvent,
     err = AECountItems(&docList, &count);
     for(index = 1; index <= count; index++) {
         AEDesc aDoc;
+        size_t bytecount;
+        void *pathPtr;
+        CFURLRef url;
         err = AEGetNthDesc(&docList, index, typeFileURL, NULL, &aDoc);
-        size_t bytecount = AEGetDescDataSize(&aDoc);
-        void *pathPtr = malloc(bytecount);
+        if (err != noErr) {
+            continue;
+        }
+        bytecount = AEGetDescDataSize(&aDoc);
+        pathPtr = malloc(bytecount);
         err = AEGetDescData(&aDoc, pathPtr, bytecount);
-        CFURLRef url = CFURLCreateWithBytes(nil, pathPtr, bytecount,
-                                            kCFStringEncodingUTF8, nil);
+        if (err != noErr) {
+            free(pathPtr);
+            continue;
+        }
+        url = CFURLCreateWithBytes(nil, pathPtr, bytecount,
+                                   kCFStringEncodingUTF8, nil);
         free(pathPtr);
         CFURLGetFileSystemRepresentation(url, true, (UInt8*)buffer, sizeof(buffer));
         CFRelease(url);
