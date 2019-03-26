@@ -178,6 +178,7 @@ return;
 	    BCCompressBitmap(bdfc);
 	}
     }
+    free(fontImage);
 }
 
 static SplineFont *PalmTestFont(FILE *file,int end, char *family,const char *style) {
@@ -440,6 +441,7 @@ return( NULL );
 	putlong(file,0);
 	putlong(file,0);
     }
+free(fn);
 return(file);
 }
 
