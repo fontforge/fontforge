@@ -327,8 +327,10 @@ static int WriteFontLog(char *filename,SplineFont *sf) {
     char *buf = malloc(strlen(filename)+12), *pt;
     FILE *flog;
 
-    if ( sf->fontlog==NULL || *sf->fontlog=='\0' )
+    if ( sf->fontlog==NULL || *sf->fontlog=='\0' ) {
+      free(buf);
 return( true );
+    }
 
     strcpy(buf,filename);
     pt = strrchr(buf,'/');

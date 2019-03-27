@@ -840,7 +840,7 @@ static int SMD_Ok(GGadget *g, GEvent *e) {
     for ( i=4; i<sm->class_cnt; ++i ) {
         upt = strstr(classes[i].u.md_str,": ");
         if ( upt==NULL ) upt = classes[i].u.md_str; else upt += 2;
-        sm->classes[i] = copy(GlyphNameListDeUnicode(upt));
+        sm->classes[i] = GlyphNameListDeUnicode(upt);
     }
 
 	StatesFree(sm->state,sm->state_cnt,sm->class_cnt,
