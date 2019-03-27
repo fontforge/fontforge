@@ -251,6 +251,7 @@ return;
 	} else {
 	    if ( fscanf(plate,"%lg %lg )", &spiros[cnt].x, &spiros[cnt].y)!=2 ) {
 		ff_post_error( _("Not a plate file"), _("This does not seem to be a plate file\nExpected two real numbers"));
+                free(spiros);
 return;
 	    }
 	    ++cnt;

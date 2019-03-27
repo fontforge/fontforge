@@ -77,6 +77,7 @@ return;
 	sprintf( buffer, "%s/auto%06x-%d.asfd", autosavedir, getpid(), ++cnt );
 	if ( access(buffer,F_OK)==-1 ) {
 	    sf->autosavename = copy(buffer);
+            free(autosavedir);
 return;
 	}
     }
@@ -90,13 +91,15 @@ int DoAutoRecoveryExtended(int inquire)
     DIR *dir;
     struct dirent *entry;
     int any = false;
-    SplineFont *sf;
+    SplineFont *sf = NULL;
     int inquire_state=0;
 
     if ( recoverdir==NULL )
 return( false );
-    if ( (dir = opendir(recoverdir))==NULL )
+    if ( (dir = opendir(recoverdir))==NULL ) {
+        free(recoverdir);
 return( false );
+    }
     while ( (entry=readdir(dir))!=NULL ) {
 	if ( strcmp(entry->d_name,".")==0 || strcmp(entry->d_name,"..")==0 )
     continue;
@@ -109,6 +112,8 @@ return( false );
 	    fprintf( stderr, " Done\n" );
 	}
     }
+    free(sf);
+    free(recoverdir);
     closedir(dir);
 return( any );
 }
@@ -127,8 +132,10 @@ void CleanAutoRecovery(void) {
 
     if ( recoverdir==NULL )
 return;
-    if ( (dir = opendir(recoverdir))==NULL )
+    if ( (dir = opendir(recoverdir))==NULL ) {
+        free(recoverdir);
 return;
+    }
     while ( (entry=readdir(dir))!=NULL ) {
 	if ( strcmp(entry->d_name,".")==0 || strcmp(entry->d_name,"..")==0 )
     continue;
@@ -138,6 +145,7 @@ return;
 	    perror(buffer);
 	}
     }
+    free(recoverdir);
     closedir(dir);
 }
 
