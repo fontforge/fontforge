@@ -28,6 +28,7 @@
 #include "autosave.h"
 
 #include "baseviews.h"
+#include "splineutil.h"
 #include "fontforgevw.h"
 #include "sfd.h"
 /*#include "ustring.h"*/
