@@ -112,7 +112,7 @@ return( false );
 	    fprintf( stderr, " Done\n" );
 	}
     }
-    free(sf);
+    SplineFontFree(sf);
     free(recoverdir);
     closedir(dir);
 return( any );

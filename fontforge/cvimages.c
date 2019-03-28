@@ -223,11 +223,13 @@ return;
     break;
 	if ( ch!='(' ) {
 	    ff_post_error( _("Not a plate file"), _("This does not seem to be a plate file\nExpected left paren"));
+            free(spiros);
 return;
 	}
 	ch = getc(plate);
 	if ( ch!='v' && ch!='o' && ch!='c' && ch!='[' && ch!=']' && ch!='z' ) {
 	    ff_post_error( _("Not a plate file"), _("This does not seem to be a plate file\nExpected one of 'voc[]z'"));
+            free(spiros);
 return;
 	}
 	if ( cnt>=max )
