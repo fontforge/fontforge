@@ -836,6 +836,7 @@ return( NULL );
 	ff_post_error(_("Can't run mf"),_("Can't run mf"));
     free(arglist[1]);
     cleantempdir(tempdir);
+    free(tempdir);
 return( sf );
 #endif
 }
