@@ -35,6 +35,7 @@
 #include "encoding.h"
 #include "fontforgeui.h"
 #include "lookups.h"
+#include "splinesaveafm.h"
 #include "start.h"
 
 #ifndef _NO_LIBUNICODENAMES
@@ -134,6 +135,7 @@ static void _dousage(void) {
     printf( "\t-quiet\t\t\t (don't print non-essential information to stderr)\n" );
     printf( "\t-unique\t\t\t (if a fontforge is already running open\n\t\t\t all arguments in it and have this process exit)\n" );
     printf( "\t-display display-name\t (sets the X display)\n" );
+    printf( "\t-featurefile filename\t (automatically load feature file)\n" );
     printf( "\t-depth val\t\t (sets the display depth if possible)\n" );
     printf( "\t-vc val\t\t\t (sets the visual class if possible)\n" );
     printf( "\t-cmap current|copy|private\t (sets the type of colormap)\n" );
@@ -902,10 +904,12 @@ int fontforge_main( int argc, char **argv ) {
     int i;
     int recover=2;
     int any;
+    FontViewBase *openedfont;
     int next_recent=0;
     GRect pos;
     GWindowAttrs wattrs;
     char *display = NULL;
+    char *featurefile = NULL;
     FontRequest rq;
     int ds, ld;
     int openflags=0;
@@ -1131,6 +1135,8 @@ int fontforge_main( int argc, char **argv ) {
 	    AddR(argv[0],"Gdraw.Keyboard", argv[++i]);
 	else if ( strcmp(pt,"-display")==0 && i<argc-1 )
 	    display = argv[++i];
+	else if ( strcmp(pt,"-featurefile")==0 && i<argc-1 )
+	    featurefile = argv[++i];
 # if MyMemory
 	else if ( strcmp(pt,"-memory")==0 )
 	    __malloc_debug(5);
@@ -1339,7 +1345,7 @@ exit( 0 );
 	    // already handled above.
 	} else if ( strcmp(pt,"-last")==0 ) {
 	    if ( next_recent<RECENT_MAX && RecentFiles[next_recent]!=NULL )
-		if ( ViewPostScriptFont(RecentFiles[next_recent++],openflags))
+		if ( openedfont = ViewPostScriptFont(RecentFiles[next_recent++],openflags))
 		    any = 1;
 	} else if ( strcmp(pt,"-sync")==0 || strcmp(pt,"-memory")==0 ||
 		    strcmp(pt,"-nosplash")==0 || strcmp(pt,"-recover=none")==0 ||
@@ -1357,6 +1363,9 @@ exit( 0 );
 		    strcmp(pt,"-display")==0 || strcmp(pt,"-recover")==0 ) &&
 		i<argc-1 )
 	    ++i; /* Already done, needed to be before display opened */
+    else if ( (strcmp(pt,"-featurefile")==0) && i<argc-1 ) {
+        ++i;// added to prevent argument being treated as a filename.
+    }
 	else if ( strcmp(pt,"-allglyphs")==0 )
 	    openflags |= of_all_glyphs_in_ttc;
 	else if ( strcmp(pt,"-open")==0 )
@@ -1375,14 +1384,14 @@ exit( 0 );
 		if ( GFileExists(fname)) {
 		    /* It's probably a Unified Font Object directory */
 		    free(fname);
-		    if ( ViewPostScriptFont(buffer,openflags) )
+		    if ( openedfont = ViewPostScriptFont(buffer,openflags) )
 			any = 1;
 		} else {
 		    strcpy(fname,buffer); strcat(fname,"/font.props");
 		    if ( GFileExists(fname)) {
 			/* It's probably a sf dir collection */
 			free(fname);
-			if ( ViewPostScriptFont(buffer,openflags) )
+			if ( openedfont = ViewPostScriptFont(buffer,openflags) )
 			    any = 1;
 		    } else {
 			free(fname);
@@ -1393,17 +1402,24 @@ exit( 0 );
 			}
 			fname = GetPostScriptFontName(buffer,false);
 			if ( fname!=NULL )
-			    ViewPostScriptFont(fname,openflags);
+			    openedfont = ViewPostScriptFont(fname,openflags);
 			any = 1;	/* Even if we didn't get a font, don't bring up dlg again */
 			free(fname);
 		    }
 		}
-	    } else if ( ViewPostScriptFont(buffer,openflags)!=0 )
+	    } else if ( (openedfont = ViewPostScriptFont(buffer,openflags))!=0 )
 		any = 1;
 	}
     }
     if ( !any && !doopen )
 	any = ReopenLastFonts();
+
+    if (any != 0 && featurefile != NULL && openedfont != NULL && access(featurefile, R_OK) != -1) {
+        if (!LoadKerningDataFromMetricsFile(openedfont->sf, featurefile, openedfont->map)) {
+            fprintf(stderr, "Failed to load feature file %s\n", featurefile);
+        }
+    }
+
 
     collabclient_ensureClientBeacon();
     collabclient_sniffForLocalServer();
