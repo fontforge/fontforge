@@ -3829,7 +3829,7 @@ void _CVPaletteActivate(CharView *cv, int force, int docking_changed) {
 		SaveOffsets(old->gw,cvlayers,&cvlayersoff);
 	}
 
-    if (palettes_docked || docking_changed) {
+    if ((palettes_docked && old != cv) || docking_changed) {
         // When docked, we need to recreate the palettes
         // Because they were created as a child of the old charview
         GDrawDestroyWindow(cvtools);
@@ -4621,7 +4621,7 @@ static void _BVPaletteActivate(BitmapView *bv, int force, int docking_changed) {
 	    SaveOffsets(old->gw,bvshades,&bvshadesoff);
 	}
 
-    if (palettes_docked || docking_changed) {
+    if ((palettes_docked && old != bv) || docking_changed) {
         // Recreate the bvtools if docked, similar to cvtools
         GDrawDestroyWindow(bvtools);
         GDrawDestroyWindow(bvlayers);

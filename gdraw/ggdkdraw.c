@@ -249,7 +249,8 @@ static gboolean _GGDKDraw_OnWindowDestroyed(gpointer data) {
 
         assert(gw->display->dirty_window != gw);
 
-        Log(LOGDEBUG, "Window destroyed: %p[%p][%s][%d]", gw, gw->w, gw->window_title, gw->is_toplevel);
+        Log(LOGDEBUG, "Window destroyed: %p[%p][%s][toplevel:%d][pixmap:%d]",
+            gw, gw->w, gw->window_title, gw->is_toplevel, gw->is_pixmap);
         free(gw->window_title);
         if (gw != gw->display->groot) {
             // Unreference our reference to the window
@@ -640,7 +641,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     g_hash_table_add(gdisp->windows, nw);
     //gdk_window_move_resize(nw->w, nw->pos.x, nw->pos.y, nw->pos.width, nw->pos.height);
 
-    Log(LOGDEBUG, "Window created: %p[%p][%s][%d]", nw, nw->w, nw->window_title, nw->is_toplevel);
+    Log(LOGDEBUG, "Window created: %p[%p][%s][toplevel:%d]", nw, nw->w, nw->window_title, nw->is_toplevel);
     return (GWindow)nw;
 }
 
@@ -1332,8 +1333,9 @@ static void GGDKDrawDestroyCursor(GDisplay *disp, GCursor gcursor) {
 }
 
 static void GGDKDrawDestroyWindow(GWindow w) {
-    Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow) w;
+    Log(LOGDEBUG, "%p[%p][%s][toplevel:%d][pixmap:%d]",
+        gw, gw->w, gw->window_title, gw->is_toplevel, gw->is_pixmap);
 
     if (gw->is_dying) {
         return;
@@ -1561,7 +1563,7 @@ static char *GGDKDrawGetWindowTitle8(GWindow gw) {
 }
 
 static void GGDKDrawSetTransientFor(GWindow transient, GWindow owner) {
-    Log(LOGDEBUG, " ");
+    Log(LOGDEBUG, "transient=%p, owner=%p", transient, owner);
     GGDKWindow gw = (GGDKWindow) transient, ow;
     GGDKDisplay *gdisp = gw->display;
     assert(owner == NULL || gw->is_toplevel);
