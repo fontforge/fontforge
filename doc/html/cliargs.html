@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Jan-2002 -->
-  <!-- AP: Last modified: 22-Aug-2008 -->
+  <!-- AP: Last modified: 29-Mar-2019 -->
   <TITLE>Command Line Arguments</TITLE>
   <LINK REL="icon" href="fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -70,6 +70,16 @@ $ fontforge -c script-string [arguments]
       -display name
     <DD>
       Specifies the name of the display on which FontForge will open its windows
+    <DT>
+      -featurefile filename
+    <DD>
+      Automatically loads the specified feature file on start up. (This performs
+      the same action as would manually clicking <a
+      href="filemenu.html#Merge-feature">Merge Feature Info&hellip;</a> in the
+      UI.) <BR/> This is useful if you primarily add OpenType features to your fonts
+      via feature (<tt>fea</tt>) files. You could use this, for example, to tweak the
+      kerning in your feature file and test it conveniently in FontForge's <a
+      href="metricsview.html">Metrics window</a>.
     <DT>
       -dontopenxdevices
     <DD>
