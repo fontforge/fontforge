@@ -758,6 +758,7 @@ return( NULL );
 	if ( item->enc_name==NULL ) {
 	    if ( no_windowing_ui ) {
 		ff_post_error(_("Bad encoding file format"),_("This file contains an unnamed encoding, which cannot be named in a script"));
+                EncodingFree(head);
 		return( NULL );
 	    }
 	    if ( item==head && item->next==NULL )
@@ -1053,6 +1054,7 @@ struct cidmap *LoadMapFromFile(char *file,char *registry,char *ordering,
     } else if ( fscanf( f, "%d %d", &ret->cidmax, &ret->namemax )!=2 ) {
 	ff_post_error(_("Bad cidmap file"),_("%s is not a cidmap file, please download\nhttp://fontforge.sourceforge.net/cidmaps.tgz"), file );
 	fprintf( stderr, _("%s is not a cidmap file, please download\nhttp://fontforge.sourceforge.net/cidmaps.tgz"), file );
+	fclose(f);
     } else {
 	ret->unicode = calloc(ret->namemax+1,sizeof(uint32));
 	ret->name = calloc(ret->namemax+1,sizeof(char *));

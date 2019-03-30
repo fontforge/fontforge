@@ -251,6 +251,7 @@ static SplineChar *ReadChar(FILE *file,struct Outlines *outline,int enc) {
     RefChar *r1, *r2;
     SplineFont *sf = outline->sf;
     SplineChar *sc = SFSplineCharCreate(sf);
+    SplineSet * spUnused = NULL;
 
     flags = getc(file);
     if ( !(flags&(1<<3)) ) {
@@ -305,8 +306,10 @@ return(sc);
 	/*fprintf( stderr, "There are some stroked paths in %s, you should run\n  Element->Expand Stroke on this character\n", sc->name );*/
 	if ( includestrokes )
 	    sc->layers[ly_fore].splines = ReadSplineSets(file,flags,sc->layers[ly_fore].splines,false);
-	else
-	    ReadSplineSets(file,flags,NULL,false);	/* read and ignore */
+	else {
+	    spUnused = ReadSplineSets(file,flags,NULL,false);	/* read and ignore */
+	    SplinePointListsFree(spUnused);
+        }
 	verb = getc(file);
     }
     if ( verb!=EOF && verb&(1<<3)) {
