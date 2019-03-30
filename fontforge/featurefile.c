@@ -1613,8 +1613,10 @@ static void dump_gdef(FILE *out,SplineFont *sf) {
 	glyphs[lcnt].sc = NULL;
     }
 
-    if ( !needsclasses && lcnt==0 && sf->mark_class_cnt==0 )
+    if ( !needsclasses && lcnt==0 && sf->mark_class_cnt==0 ) {
+        free(glyphs);
 return;					/* No anchor positioning, no ligature carets */
+    }
 
     if ( sf->mark_class_cnt!=0 ) {
 	fprintf( out, "#Mark attachment classes (defined in GDEF, used in lookupflags)\n" );
@@ -1792,9 +1794,12 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
 				}
 			}
 		    }
+                    free(langs);
 		}
 	    }
+            free(scripts);
 	}
+        free(feats);
     }
     if (has_DFLT) { dump_header_languagesystem_hash_fe((gpointer)"DFLT dflt", (gpointer)"", (gpointer)out); }
     g_tree_foreach( ht, dump_header_languagesystem_hash_fe, out );
@@ -3255,15 +3260,17 @@ static void fea_ParseGlyphClassDef(struct parseState *tok) {
 	LogError(_("Expected '=' in glyph class definition on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	++tok->err_count;
 	fea_skip_to_semi(tok);
+	free(classname);
 return;
     }
     fea_ParseTok(tok);
     contents = fea_ParseGlyphClass(tok); // Make a list of referenced glyphs.
     if ( contents==NULL ) {
 	fea_skip_to_semi(tok);
+    free(classname);
 return;
     }
-    fea_AddClassDef(tok,classname,copy(contents)); // Put the list into a class.
+    fea_AddClassDef(tok,classname,contents); // Put the list into a class.
     fea_end_statement(tok);
 }
 
@@ -3513,6 +3520,7 @@ static void fea_ParseAnchorDef(struct parseState *tok) {
 	LogError(_("Expected name in anchor definition on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	++tok->err_count;
 	fea_skip_to_semi(tok);
+	chunkfree(ap,sizeof(AnchorPoint));
 return;
     }
     for ( nap=tok->namedAnchors; nap!=NULL; nap=nap->next )
@@ -3621,6 +3629,7 @@ static void fea_ParseValueRecordDef(struct parseState *tok) {
     vr = fea_ParseValueRecord(tok);
     if ( tok->type!=tk_name ) {
 	LogError(_("Expected name in value record definition on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	chunkfree(vr,sizeof(struct vr));
 	++tok->err_count;
 	fea_skip_to_semi(tok);
 return;
@@ -3667,6 +3676,7 @@ return;
 	LogError(_("Expected anchor in mark class definition on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	++tok->err_count;
 	fea_skip_to_semi(tok);
+	free(class_string);
 return;
     }
     fea_ParseTok(tok);
@@ -3677,6 +3687,7 @@ return;
 	LogError(_("Expected class name in mark class definition on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	++tok->err_count;
 	fea_skip_to_semi(tok);
+	free(class_string);
 return;
     }
     gm = chunkalloc(sizeof(*gm));
@@ -3786,6 +3797,7 @@ return( NULL );
     if ( tok->type!=tk_char || tok->tokbuf[0]!='<' ) {
 	LogError(_("Expected two anchors (after cursive) on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	++tok->err_count;
+	free(cur->name_or_class); chunkfree(cur, sizeof(markedglyphs));
 return( NULL );
     }
     fea_TokenMustBe(tok,tk_anchor,' ');
@@ -3899,7 +3911,7 @@ return( NULL );
     if ( tok->type!=tk_char || tok->tokbuf[0]!='<' ) {
 	LogError(_("Expected an anchor (after ligature) on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	++tok->err_count;
-	free(cur->name_or_class); free(cur);
+	free(cur->name_or_class); chunkfree(cur, sizeof(markedglyphs));
 return( NULL );
     }
     lc_max = 8;
