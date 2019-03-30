@@ -73,7 +73,7 @@ CharView.Menu.Edit.Select.Width:No Shortcut
 CharView.Menu.Edit.Select.VWidth:No Shortcut
 CharView.Menu.Edit.Select.Select Points Affected by HM:No Shortcut
 CharView.Menu.Edit.Unlink Reference:Ctrl+U
-CharView.Menu.Edit.Remove Undoes:No Shortcut
+CharView.Menu.Edit.Remove Undoes...:No Shortcut
 
 
 CharView.Menu.Point.Tools.Ruler:R
@@ -105,8 +105,8 @@ CharView.Menu.Point.HVCurve:Ctrl+5
 +CharView.Menu.Point.G2 Curve:Ctrl+1
 +CharView.Menu.Point.G4 Curve:Ctrl+2
 +CharView.Menu.Point.Corner:Ctrl+3
-+CharView.Menu.Point.Prev Constraint:Ctrl+4
-+CharView.Menu.Point.Next Constraint:Ctrl+5
++CharView.Menu.Point.Left Constraint:Ctrl+4
++CharView.Menu.Point.Right Constraint:Ctrl+5
 CharView.Menu.Point.Can Be Interpolated:No Shortcut
 CharView.Menu.Point.Can't Be Interpolated:No Shortcut
 CharView.Menu.Point.Center Between Control Points:No Shortcut
@@ -131,12 +131,12 @@ CharView.Menu.Element.Tile Pattern...:No Shortcut
 CharView.Menu.Element.Add Extrema:Ctrl+Shift+X
 CharView.Menu.Element.Autotrace:Ctrl+Shift+T
 CharView.Menu.Element.Clockwise:No Shortcut
-CharView.Menu.Element.Clockwise:No Shortcut
-CharView.Menu.Element.Clockwise:No Shortcut
+CharView.Menu.Element.Check Self-Intersection:No Shortcut
+CharView.Menu.Element.Glyph Self-Intersects:No Shortcut
 CharView.Menu.Element.Counter Clockwise:No Shortcut
 CharView.Menu.Element.Correct Direction:Ctrl+Shift+D
 CharView.Menu.Element.Reverse Direction:No Shortcut
-CharView.Menu.Element.Insert Text Outlines:No Shortcut
+CharView.Menu.Element.Insert Text Outlines...:No Shortcut
 CharView.Menu.Element.Compare Layers...:No Shortcut
 CharView.Menu.Element.Align.Align Points:Ctrl+Shift+@
 CharView.Menu.Element.Align.Space Points:No Shortcut
@@ -158,13 +158,13 @@ CharView.Menu.Element.Overlap.Find Intersections:No Shortcut
 CharView.Menu.Element.Styles.Change Weight...:Ctrl+Shift+!
 CharView.Menu.Element.Styles.Italic...:No Shortcut
 CharView.Menu.Element.Styles.Oblique...:No Shortcut
-CharView.Menu.Element.Styles.Condense...:No Shortcut
-CharView.Menu.Element.Styles.Change XHeight...:No Shortcut
+CharView.Menu.Element.Styles.Condense/Extend...:No Shortcut
+CharView.Menu.Element.Styles.Change X-Height...:No Shortcut
 CharView.Menu.Element.Styles.Change Glyph...:No Shortcut
-CharView.Menu.Element.Styles.Inline:No Shortcut
-CharView.Menu.Element.Styles.Outline:No Shortcut
-CharView.Menu.Element.Styles.Shadow:No Shortcut
-CharView.Menu.Element.Styles.Wireframe:No Shortcut
+CharView.Menu.Element.Styles.Inline...:No Shortcut
+CharView.Menu.Element.Styles.Outline...:No Shortcut
+CharView.Menu.Element.Styles.Shadow...:No Shortcut
+CharView.Menu.Element.Styles.Wireframe...:No Shortcut
 CharView.Menu.Element.Build.Build Accented Glyph:Ctrl+Shift+A
 CharView.Menu.Element.Build.Build Composite Glyph:No Shortcut
 CharView.Menu.Element.Show Dependent.References...:Alt+Ctrl+I
@@ -184,7 +184,7 @@ CharView.Menu.Hints.Don't AutoHint:No Shortcut
 CharView.Menu.Hints.AutoInstr:Ctrl+T
 CharView.Menu.Hints.Edit Instructions...:No Shortcut
 CharView.Menu.Hints.Debug...:No Shortcut
-CharView.Menu.Hints.Suggest Deltas:No Shortcut
+CharView.Menu.Hints.Suggest Deltas...:No Shortcut
 CharView.Menu.Hints.Clear HStem:No Shortcut
 CharView.Menu.Hints.Clear VStem:No Shortcut
 CharView.Menu.Hints.Clear DStem:No Shortcut
@@ -218,7 +218,7 @@ CharView.Menu.View.Number Points.TrueType:Alt+T
 CharView.Menu.View.Number Points.PostScript:No Shortcut
 CharView.Menu.View.Number Points.SVG:No Shortcut
 CharView.Menu.View.Grid Fit.Show Grid Fit...:Ctrl+Shift+#
-CharView.Menu.View.Grid Fit.Grid Fit Off:Alt+Ctrl+#
+CharView.Menu.View.Grid Fit.Off:Alt+Ctrl+#
 CharView.Menu.View.Grid Fit.Bigger Point Size:Alt+=
 CharView.Menu.View.Grid Fit.Smaller Point Size:Alt+-
 CharView.Menu.View.Grid Fit.Anti Alias:Alt+Ctrl+Shift+#
@@ -229,7 +229,7 @@ CharView.Menu.View.Show.Extrema:No Shortcut
 CharView.Menu.View.Show.Points of Inflection:No Shortcut
 CharView.Menu.View.Show.Almost Horizontal/Vertical Lines:No Shortcut
 CharView.Menu.View.Show.Almost Horizontal/Vertical Curves:No Shortcut
-CharView.Menu.View.Show.(Define \Almost\):No Shortcut
+CharView.Menu.View.Show.(Define "Almost"):No Shortcut
 CharView.Menu.View.Show.Side Bearings:No Shortcut
 CharView.Menu.View.Show.Reference Names:No Shortcut
 CharView.Menu.View.Show.Fill:No Shortcut
@@ -241,10 +241,10 @@ CharView.Menu.View.Show.Horizontal Hints:No Shortcut
 CharView.Menu.View.Show.Vertical Hints:No Shortcut
 CharView.Menu.View.Show.Diagonal Hints:No Shortcut
 CharView.Menu.View.Show.BlueValues:No Shortcut
-CharView.Menu.View.Show.Family Blues:No Shortcut
+CharView.Menu.View.Show.FamilyBlues:No Shortcut
 CharView.Menu.View.Show.Anchors:No Shortcut
 CharView.Menu.View.Show.Debug Raster Changes:No Shortcut
-CharView.Menu.View.Show.Hori_zontal Metric Lines:No Shortcut
+CharView.Menu.View.Show.Horizontal Metric Lines:No Shortcut
 CharView.Menu.View.Show.Vertical Metric Lines:No Shortcut
 CharView.Menu.View.Show.Snap Outlines to Pixel Grid:No Shortcut
 CharView.Menu.View.Zoom out:Alt+Ctrl+-
@@ -312,7 +312,7 @@ FontView.Menu.Edit.Copy From.All Fonts:No Shortcut
 FontView.Menu.Edit.Copy From.Displayed Font:No Shortcut
 FontView.Menu.Edit.Copy From.Glyph Metadata:No Shortcut
 FontView.Menu.Edit.Copy From.TrueType Instructions:No Shortcut
-FontView.Menu.Edit.Select.Select by Color.Color Choose:No Shortcut
+FontView.Menu.Edit.Select.Select by Color.Choose...:No Shortcut
 FontView.Menu.Edit.Select.Select by Color.Default:No Shortcut
 FontView.Menu.Edit.Select.Select All:Ctrl+A
 FontView.Menu.Edit.Select.Invert Selection:Ctrl+Escape
@@ -365,15 +365,15 @@ FontView.Menu.Element.Overlap.Find Intersections:No Shortcut
 FontView.Menu.Element.Style.Change Weight...:Ctrl+Shift+!
 FontView.Menu.Element.Style.Italic...:No Shortcut
 FontView.Menu.Element.Style.Oblique...:No Shortcut
-FontView.Menu.Element.Style.Condense...:No Shortcut
-FontView.Menu.Element.Style.Change XHeight...:No Shortcut
+FontView.Menu.Element.Style.Condense/Extend...:No Shortcut
+FontView.Menu.Element.Style.Change X-Height...:No Shortcut
 FontView.Menu.Element.Style.Change Glyph...:No Shortcut
-FontView.Menu.Element.Style.Add Small Caps...:No Shortcut
+FontView.Menu.Element.Style.Add Small Capitals...:No Shortcut
 FontView.Menu.Element.Style.Add Subscripts/Superscripts...:No Shortcut
-FontView.Menu.Element.Style.Inline:No Shortcut
-FontView.Menu.Element.Style.Outline:No Shortcut
-FontView.Menu.Element.Style.Shadow:No Shortcut
-FontView.Menu.Element.Style.Wireframe:No Shortcut
+FontView.Menu.Element.Style.Inline...:No Shortcut
+FontView.Menu.Element.Style.Outline...:No Shortcut
+FontView.Menu.Element.Style.Shadow...:No Shortcut
+FontView.Menu.Element.Style.Wireframe...:No Shortcut
 FontView.Menu.Element.Build.Build Accented Glyph:Ctrl+Shift+A
 FontView.Menu.Element.Build.Build Composite Glyph:No Shortcut
 FontView.Menu.Element.Build.Build Duplicate Glyph:No Shortcut
@@ -396,7 +396,7 @@ FontView.Menu.Element.Other Info.Mass Glyph Rename...:No Shortcut
 FontView.Menu.Element.Other Info.Set Color:No Shortcut
 FontView.Menu.Element.Validation.Find Problems...:Ctrl+E
 FontView.Menu.Element.Validation.Validate...:No Shortcut
-FontView.Menu.Element.Validation.Set Extremum bound...:No Shortcut
+FontView.Menu.Element.Validation.Set Extremum Bound...:No Shortcut
 FontView.Menu.Element.Font Info...:Ctrl+Shift+F
 FontView.Menu.Element.Glyph Info...:Ctrl+I
 FontView.Menu.Element.Bitmap Strikes Available...:Ctrl+Shift+B
@@ -438,7 +438,7 @@ FontView.Menu.View.72 pixel outline:Ctrl+7
 FontView.Menu.View.96 pixel outline:Ctrl+9
 FontView.Menu.View.128 pixel outline:Ctrl+1
 FontView.Menu.View.Anti Alias:Ctrl+5
-FontView.Menu.View.Fit to em:Ctrl+6
+FontView.Menu.View.Fit to font bounding box:Ctrl+6
 FontView.Menu.View.Bitmap Magnification...:No Shortcut
 FontView.Menu.Encoding.Reencode:No Shortcut
 FontView.Menu.Encoding.Compact:No Shortcut
@@ -471,7 +471,7 @@ FontView.Menu.Hints.Edit 'prep'...:No Shortcut
 FontView.Menu.Hints.Edit 'maxp'...:No Shortcut
 FontView.Menu.Hints.Edit 'cvt '...:No Shortcut
 FontView.Menu.Hints.Remove Instr Tables:No Shortcut
-FontView.Menu.Hints.Suggest Deltas:No Shortcut
+FontView.Menu.Hints.Suggest Deltas...:No Shortcut
 FontView.Menu.Hints.Clear Hints:No Shortcut
 FontView.Menu.Hints.Clear Width MD:No Shortcut
 FontView.Menu.Hints.Clear Instructions:No Shortcut
@@ -544,7 +544,7 @@ MetricsView.Menu.Edit.Paste:Ctrl+V
 MetricsView.Menu.Edit.Clear:No Shortcut
 MetricsView.Menu.Edit.Join:Ctrl+Shift+J
 MetricsView.Menu.Edit.Select All:Ctrl+A
-MetricsView.Menu.Edit.Clear Selection:Escape
+MetricsView.Menu.Edit.Deselect All:Escape
 MetricsView.Menu.Edit.Unlink Reference:Ctrl+U
 MetricsView.Menu.Element.Simplify.Simplify:Ctrl+Shift+M
 MetricsView.Menu.Element.Simplify.Simplify More...:Alt+Ctrl+Shift+M
