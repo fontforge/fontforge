@@ -299,6 +299,7 @@ static struct resource *PSToResources(FILE *res,FILE *pfbfile) {
     for (;;) {
 	if ( getc(pfbfile)!=0x80 ) {
 	    IError("We made a pfb file, but didn't get one. Hunh?" );
+            free(resstarts);
 return( NULL );
 	}
 	type = getc(pfbfile);
@@ -1981,6 +1982,7 @@ static SplineFont *SearchPostScriptResources(FILE *f,long rlistpos,int subcnt,lo
 	LogError( _("Can't open temporary file for postscript output\n") );
 	fseek(f,here,SEEK_SET );
 	free(offsets);
+	free(rsrcids);
 return(NULL);
     }
 
@@ -2579,6 +2581,7 @@ static FOND *PickFOND(FOND *fondlist,char *filename,char **name, int *style) {
 		if ( test->psnames[i]!=NULL && strcmp(find,test->psnames[i])==0 ) {
 		    *style = (i&3) | ((i&~3)<<1);	/* PS styles skip underline bit */
 		    *name = copy(test->psnames[i]);
+		    free(find);
 return( test );
 		}
 	}
@@ -2661,8 +2664,10 @@ static SplineFont *SearchBitmapResources(FILE *f,long rlistpos,int subcnt,long r
     SplineChar *sc;
 
     fond = PickFOND(fondlist,filename,&name,&style);
-    if ( fond==NULL )
+    if ( fond==NULL ) {
+	free(name);
 return( NULL );
+    }
 
     find_id=-1;
     if ( flags&ttf_onlyonestrike ) {
@@ -2738,8 +2743,10 @@ static SplineFont *FindFamilyStyleKerns(SplineFont *into,EncMap *map,FOND *fondl
     SplineChar *sc1, *sc2;
 
     fond = PickFOND(fondlist,filename,&name,&style);
-    if ( fond==NULL || into==NULL )
+    if ( fond==NULL || into==NULL ) {
+        free(name);
 return( NULL );
+    }
     for ( i=0; i<fond->stylekerncnt; ++i )
 	if ( fond->stylekerns[i].style==style )
     break;
@@ -2771,29 +2778,32 @@ return( NULL );
 	}
 	kp->off = offset;
     }
+    free(name);
 return( into );
 }
 
 /* Look for a bare truetype font in a binhex/macbinary wrapper */
 static SplineFont *MightBeTrueType(FILE *binary,int32 pos,int32 dlen,int flags,
 	enum openflags openflags) {
-    FILE *temp = tmpfile();
-    char *buffer = malloc(8192);
+    FILE *temp = NULL;
+    char *buffer = NULL;
     int len;
     SplineFont *sf;
 
     if ( flags&ttf_onlynames ) {
 	char **ret;
-	char *temp = TTFGetFontName(binary,pos,pos);
-	if ( temp==NULL )
+	char *tempFontName = TTFGetFontName(binary,pos,pos);
+	if ( tempFontName==NULL )
 return( NULL );
 	ret = malloc(2*sizeof(char *));
-	ret[0] = temp;
+	ret[0] = tempFontName;
 	ret[1] = NULL;
 return( (SplineFont *) ret );
     }
 
     fseek(binary,pos,SEEK_SET);
+    buffer = malloc(8192);
+    temp = tmpfile();
     while ( dlen>0 ) {
 	len = dlen > 8192 ? 8192 : dlen;
 	len = fread(buffer,1,dlen > 8192 ? 8192 : dlen,binary);

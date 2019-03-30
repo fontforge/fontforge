@@ -540,14 +540,14 @@ return( false );
     if ( !findFTPhost(&addr, host, port)) {
 	ff_progress_end_indicator();
 	ff_post_error(_("Could not find host"),_("Could not find \"%s\"\nAre you connected to the internet?"), host );
-	free( host ); free( filename );
+	free( host ); free( filename ); free(username); free(password);
 return( false );
     }
     soc = makeConnection(&addr);
     if ( soc==-1 ) {
 	ff_progress_end_indicator();
 	ff_post_error(_("Could not connect to host"),_("Could not connect to \"%s\"."), host );
-	free( host ); free( filename );
+	free( host ); free( filename ); free(username); free(password);
 return( false );
     }
 
