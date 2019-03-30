@@ -89,7 +89,7 @@ CharView.Menu.Point.Tools.Corner:3
 CharView.Menu.Point.Tools.Tangent:4
 CharView.Menu.Point.Tools.HVCurve:5
 
-CharView.Menu.Point.Tools.Toggle Spiro:S
+CharView.Menu.Point.Tools.Activate Spiro:S
 +CharView.Menu.Point.Tools.G2:1
 +CharView.Menu.Point.Tools.G4:2
 +CharView.Menu.Point.Tools.Corner:3
