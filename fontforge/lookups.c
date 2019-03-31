@@ -5041,6 +5041,10 @@ return( xasprintf( _("%s is not a class name for the forward classes." ), parsed
 	}
       break;
       default:
+	  for ( i=0; i<cnt; i++ ) {
+	      free( parsed[i].entity );
+	      free( parsed[i].replacements );
+	  }
 return( copy( _("Bad FPST format")) );
     }
     if ( fpst->format!=pst_reversecoverage ) {
