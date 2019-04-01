@@ -790,6 +790,7 @@ static AnchorClass **MarkGlyphsProcessMarks(FILE *ttf,int markoffset,
     if ( feof(ttf) ) {
 	LogError( _("Bad mark table.\n") );
 	info->bad_ot = true;
+        free(classes);
 return( NULL );
     }
 
@@ -1178,6 +1179,7 @@ return;
 	    if ( feof(ttf)) {
 		LogError( _("Unexpected end of file in contextual chaining subtable.\n") );
 		info->bad_ot = true;
+                free(glyphs);
 return;
 	    }
 	    rules[i].subrules[j].bglyphs = malloc((rules[i].subrules[j].bcnt+1)*sizeof(uint16));
@@ -2504,6 +2506,7 @@ return( NULL );
 	if ( pos+features[i].offset>=info->g_bounds ) {
 	    LogError(_("Attempt to read feature data beyond end of %s table"), isgpos ? "GPOS" : "GSUB" );
 	    info->bad_ot = true;
+            free(features);
 return( NULL );
 	}
 	fseek(ttf,pos+features[i].offset,SEEK_SET);
@@ -2520,6 +2523,7 @@ return( NULL );
 	if ( feof(ttf) ) {
 	    LogError(_("End of file when reading features in %s table"), isgpos ? "GPOS" : "GSUB" );
 	    info->bad_ot = true;
+            free(features);
 return( NULL );
 	}
 	features[i].lookups = malloc(features[i].lcnt*sizeof(uint16));
@@ -6065,6 +6069,7 @@ return;
 	    LogError( _("JSTF table is too long.\n") );
 	    info->bad_ot = true;
 	    free(soff);
+	    free(loff);
 return;
 	}
 

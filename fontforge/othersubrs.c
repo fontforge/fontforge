@@ -526,8 +526,11 @@ return( false );
     }
     fclose( os );
     /* we just read a copyright notice? That's no use */
-    if ( sub_num<=0 )
+    if ( sub_num<=0 ) {
+	free(co);
+	free(lines);
 return( false );
+    }
     while ( sub_num<14 ) {
 	osubs[sub_num] = calloc(2,sizeof(char *));
 	osubs[sub_num][0] = copy("{}");
