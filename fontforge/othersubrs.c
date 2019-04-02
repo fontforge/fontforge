@@ -527,7 +527,11 @@ return( false );
     fclose( os );
     /* we just read a copyright notice? That's no use */
     if ( sub_num<=0 ) {
+        for ( i=0; co[i]!=NULL; i++)
+            free(co[i]);
 	free(co);
+        for ( i=0; i<l; i++)
+            free(lines[i]);
 	free(lines);
 return( false );
     }
@@ -540,6 +544,8 @@ return( false );
     othersubrs_copyright[0] = co;
     for ( i=0; i<14; ++i )
 	othersubrs[i] = osubs[i];
+    for ( i=0; i<l; i++)
+        free(lines[i]);
     free(lines);
 return( true );
 }

@@ -1177,9 +1177,20 @@ return;
 	    fseek(ttf,rules[i].subrules[j].offset,SEEK_SET);
 	    rules[i].subrules[j].bcnt = getushort(ttf);
 	    if ( feof(ttf)) {
+                int k = 0;
 		LogError( _("Unexpected end of file in contextual chaining subtable.\n") );
 		info->bad_ot = true;
                 free(glyphs);
+    		for ( k=0; k<= i ; ++k ) {
+	            for ( j=0; j<rules[k].scnt; ++j ) {
+	    	        free(rules[k].subrules[j].bglyphs);
+	    		free(rules[k].subrules[j].glyphs);
+	    		free(rules[k].subrules[j].fglyphs);
+	    		free(rules[k].subrules[j].sl);
+	            }
+		    free(rules[k].subrules);
+    		}
+                free(rules);
 return;
 	    }
 	    rules[i].subrules[j].bglyphs = malloc((rules[i].subrules[j].bcnt+1)*sizeof(uint16));
@@ -1189,8 +1200,20 @@ return;
 
 	    rules[i].subrules[j].gcnt = getushort(ttf);
 	    if ( feof(ttf)) {
+                int k = 0;
 		LogError( _("Unexpected end of file in contextual chaining subtable.\n") );
 		info->bad_ot = true;
+                free(glyphs);
+    		for ( k=0; k<= i ; ++k ) {
+	            for ( j=0; j<rules[k].scnt; ++j ) {
+	    	        free(rules[k].subrules[j].bglyphs);
+	    		free(rules[k].subrules[j].glyphs);
+	    		free(rules[k].subrules[j].fglyphs);
+	    		free(rules[k].subrules[j].sl);
+	            }
+		    free(rules[k].subrules);
+    		}
+                free(rules);
 return;
 	    }
 	    rules[i].subrules[j].glyphs = malloc((rules[i].subrules[j].gcnt+1)*sizeof(uint16));
@@ -1201,8 +1224,20 @@ return;
 
 	    rules[i].subrules[j].fcnt = getushort(ttf);
 	    if ( feof(ttf)) {
+                int k = 0;
 		LogError( _("Unexpected end of file in contextual chaining subtable.\n") );
 		info->bad_ot = true;
+                free(glyphs);
+    		for ( k=0; k<= i ; ++k ) {
+	            for ( j=0; j<rules[k].scnt; ++j ) {
+	    	        free(rules[k].subrules[j].bglyphs);
+	    		free(rules[k].subrules[j].glyphs);
+	    		free(rules[k].subrules[j].fglyphs);
+	    		free(rules[k].subrules[j].sl);
+	            }
+		    free(rules[k].subrules);
+    		}
+                free(rules);
 return;
 	    }
 	    rules[i].subrules[j].fglyphs = malloc((rules[i].subrules[j].fcnt+1)*sizeof(uint16));
@@ -1227,6 +1262,18 @@ return;
 	    if ( feof(ttf)) {
 		LogError( _("Unexpected end of file in contextual chaining subtable.\n") );
 		info->bad_ot = true;
+                int k = 0;
+                free(glyphs);
+    		for ( k=0; k<= i ; ++k ) {
+	            for ( j=0; j<rules[k].scnt; ++j ) {
+	    	        free(rules[k].subrules[j].bglyphs);
+	    		free(rules[k].subrules[j].glyphs);
+	    		free(rules[k].subrules[j].fglyphs);
+	    		free(rules[k].subrules[j].sl);
+	            }
+		    free(rules[k].subrules);
+    		}
+                free(rules);
 return;
 	    }
 	    rules[i].subrules[j].sl = malloc(rules[i].subrules[j].scnt*sizeof(struct seqlookup));
@@ -6022,7 +6069,7 @@ void readttfjstf(FILE *ttf,struct ttfinfo *info) {
     int version;
     int scnt, lcnt, lmax;
     int i,j;
-    struct tagoff { uint32 tag; int offset; } *soff, *loff;
+    struct tagoff { uint32 tag; int offset; } *soff, *loff = NULL;
     Justify *last=NULL, *cur;
     struct jstf_lang *llast, *lcur;
     int extendOff, defOff;
