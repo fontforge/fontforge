@@ -44,6 +44,7 @@
 
 int accent_offset = 6;
 int GraveAcuteCenterBottom = 1;
+int UnicodeStrict = false;
 int PreferSpacingAccents = true;
 int CharCenterHighest = 1;
 
@@ -1155,6 +1156,10 @@ return( adobes_pua_alts[base-0xf600]);
     if ( base==-1 || base>=65536 || unicode_alternates[base>>8]==NULL ||
 	    (upt = unicode_alternates[base>>8][base&0xff])==NULL )
 return( SFAlternateFromLigature(sf,base,sc));
+
+    if (UnicodeStrict) {
+        return upt;
+    }
 
 	    /* The definitions of some of the greek letters may make some */
 	    /*  linguistic sense, but I can't use it to place the accents */

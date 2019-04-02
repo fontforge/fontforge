@@ -72,6 +72,7 @@ extern Encoding *default_encoding;
 extern int autohint_before_generate;
 extern int use_freetype_to_rasterize_fv;
 extern int use_freetype_with_aa_fill_cv;
+extern int UnicodeStrict;
 extern int OpenCharsInNewWindow;
 extern int ItalicConstrained;
 extern int accent_offset;
@@ -313,6 +314,7 @@ static struct prefs_list {
 	{ N_("AutoSaveFrequency"), pr_int, &AutoSaveFrequency, NULL, NULL, '\0', NULL, 0, N_( "The number of seconds between autosaves. If you set this to 0 there will be no autosaves.") },
 	{ N_("RevisionsToRetain"), pr_int, &prefRevisionsToRetain, NULL, NULL, '\0', NULL, 0, N_( "When Saving, keep this number of previous versions of the file. file.sfd-01 will be the last saved file, file.sfd-02 will be the file saved before that, and so on. If you set this to 0 then no revisions will be retained.") },
 	{ N_("UndoRedoLimitToSave"), pr_int, &UndoRedoLimitToSave, NULL, NULL, '\0', NULL, 0, N_( "The number of undo and redo operations which will be saved in sfd files.\nIf you set this to 0 undo/redo information is not saved to sfd files.\nIf set to -1 then all available undo/redo information is saved without limit.") },
+	{ N_("UnicodeStrict"), pr_bool, &UnicodeStrict, NULL, NULL, '\0', NULL, 0, N_( "Whether or not the Unicode Standard should be strictly adhered to even in cases its contents may be dubious, controversial, or even wrong.\nThis currently only changes certain build procedures when using “Make Accented Glyph”, but can likely be extended to other parts of FontForge.") },
 	PREFS_LIST_EMPTY
 },
   new_list[] = {
