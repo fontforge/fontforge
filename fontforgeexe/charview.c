@@ -1555,9 +1555,6 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 	if ( GDrawHasCairo(pixmap)&gc_buildpath ) {
 	    Spline *first, *spline;
 	    double x,y, cx1, cy1, cx2, cy2, dx,dy;
-	    if (strokeFillMode == sfm_outline) {
-	        GDrawPushClipOnly(pixmap);
-	    }
 	    GDrawPathStartSubNew(pixmap);
 	    x = rpt(cv,  cv->xoff + spl->first->me.x*cv->scale);
 	    y = rpt(cv, -cv->yoff + cv->height - spl->first->me.y*cv->scale);
@@ -1606,16 +1603,12 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
             case sfm_stroke:
                 GDrawPathStroke( pixmap, fc | 0xff000000 );
                 break;
-            case sfm_outline:
-                GDrawClipPreserve( pixmap );
-                GDrawPathStroke( pixmap, fc );
-                GDrawPopClip( pixmap, NULL );
-                break;
+            case sfm_clip:
             case sfm_fill:
             case sfm_nothing:
                 break;
 	    }
-	} else if (strokeFillMode != sfm_outline) {
+	} else if (strokeFillMode != sfm_clip) {
 	    GPointList *gpl = MakePoly(cv,spl), *cur;
 	    for ( cur=gpl; cur!=NULL; cur=cur->next )
 		GDrawDrawPoly(pixmap,cur->gp,cur->cnt,fc);
@@ -1623,7 +1616,12 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 	}
     }
 
-    if (strokeFillMode == sfm_fill) {
+    if (strokeFillMode == sfm_clip && (GDrawHasCairo(pixmap) & gc_buildpath)) {
+        // Really only cairo_clip needs to be called
+        // But then I'd have to change the GDraw interface, ew...
+        GDrawClipPreserve( pixmap );
+        GDrawPathStartNew( pixmap );
+    } else if (strokeFillMode == sfm_fill) {
         Color c = cv->inPreviewMode ? previewfillcol : fillcol;
         GDrawPathFill(pixmap, c|0xff000000);
     }
@@ -1711,11 +1709,16 @@ void CVDrawSplineSetSpecialized( CharView *cv, GWindow pixmap, SplinePointList *
 
             int16 oldwidth = GDrawGetLineWidth( pixmap );
             GDrawSetLineWidth( pixmap, strokeWidth );
+            GDrawPushClipOnly( pixmap );
 
             CVDrawSplineSetOutlineOnly( cv, pixmap, set,
                                         strokefg, dopoints, clip,
-                                        sfm_outline );
+                                        sfm_clip );
+            CVDrawSplineSetOutlineOnly( cv, pixmap, set,
+                                        strokefg, dopoints, clip,
+                                        sfm_stroke_trans );
 
+            GDrawPopClip( pixmap, NULL );
             GDrawSetLineWidth( pixmap, oldwidth );
         }
     }

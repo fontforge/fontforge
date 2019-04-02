@@ -869,7 +869,7 @@ enum outlinesfm_flags {
     sfm_fill=0x2,
     sfm_nothing=0x4,
     sfm_stroke_trans = 0x8,
-    sfm_outline = 0x16
+    sfm_clip = 0x16
 };
 extern void CVDrawSplineSetSpecialized( CharView *cv, GWindow pixmap, SplinePointList *set,
 					Color fg, int dopoints, DRect *clip,
