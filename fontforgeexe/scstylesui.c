@@ -2305,7 +2305,7 @@ return;
 	ff_post_error( _("Bad Number"),_("Bad Number") );
 return;
     }
-
+    free(ret);
     last_ii.italic_angle = temp;
     memset(transform,0,sizeof(transform));
     transform[0] = transform[3] = 1;

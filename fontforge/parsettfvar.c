@@ -744,6 +744,7 @@ return;
 		    if ( j==info->variations->axis_count )
 		break;
 		}
+                free(coords);
 		ti = -1;
 		if ( k!=info->variations->tuple_count )
 		    ti = k;

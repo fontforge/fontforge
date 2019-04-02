@@ -287,10 +287,12 @@ static void InsertSubMenus(PyObject *args,GMenuItem2 **mn, int is_cv) {
 	    if ( i!=cnt-1 )
 		mn = &mmn[j].sub;
 	    else {
+		char *temp = u2utf8_copy(submenuu);
 		mmn[j].shortcut = shortcut_str;
 		mmn[j].invoke = is_cv ? cvpy_menuactivate : fvpy_menuactivate;
 		mmn[j].mid = MenuDataAdd(func,check,data,is_cv);
-		fprintf( stderr, "Redefining menu item %s\n", u2utf8_copy(submenuu) );
+		fprintf( stderr, "Redefining menu item %s\n", temp );
+		free(temp);
 		free(submenuu);
 	    }
 	}

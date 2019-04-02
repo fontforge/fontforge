@@ -326,7 +326,7 @@ static int SMD_DoChange(SMD *smd) {
     OTLookup *mlook, *clook;
     const unichar_t *ret;
     unichar_t *end;
-    char *ret8;
+    char *ret8=NULL;
     int16 kbuf[9];
     int kerns;
     int oddcomplain=false;
@@ -438,6 +438,7 @@ return( false );
 
     /* Show changes in main window */
     GDrawRequestExpose(smd->gw,NULL,false);
+    free(ret8);
 return( true );
 }
 

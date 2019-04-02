@@ -1976,6 +1976,7 @@ static void readttfsimpleglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, in
 	    info->bad_glyph_data = true;
 	    LogError( _("Bad tt font: contour ends make no sense in glyph %d.\n"),
 		    sc->orig_pos );
+	    free(endpt);
 return;
 	}
     }

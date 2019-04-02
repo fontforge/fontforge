@@ -2050,6 +2050,7 @@ char **NamesReadPDF(char *filename) {
 /* if errors, then free memory, close files, and return a NULL */
 NamesReadPDFlist_error:
     while ( --i>=0 ) free(list[i]);
+    free(list);
 NamesReadPDF_error:
     pcFree(&pc);
     fclose(pc.pdf);
