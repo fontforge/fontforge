@@ -188,6 +188,7 @@ extern int AutoSaveFrequency;			/* autosave.c */
 extern int UndoRedoLimitToSave;  /* sfd.c */
 extern int UndoRedoLimitToLoad;  /* sfd.c */
 extern int prefRevisionsToRetain; /* sfd.c */
+extern int WriteModificationTime; /* sfd.c */
 extern int prefs_cv_show_control_points_always_initially; /* from charview.c */
 extern int prefs_create_dragging_comparison_outline;      /* from charview.c */
 extern int prefs_cv_outline_thickness; /* from charview.c */
@@ -399,6 +400,7 @@ static struct prefs_list {
 	{ N_("RecognizePUANames"), pr_bool, &recognizePUA, NULL, NULL, 'U', NULL, 0, N_("Once upon a time, Adobe assigned PUA (public use area) encodings\nfor many stylistic variants of characters (small caps, old style\nnumerals, etc.). Adobe no longer believes this to be a good idea,\nand recommends that these encodings be ignored.\n\n The assignments were originally made because most applications\ncould not handle OpenType features for accessing variants. Adobe\nnow believes that all apps that matter can now do so. Applications\nlike Word and OpenOffice still can't handle these features, so\n fontforge's default behavior is to ignore Adobe's current\nrecommendations.\n\nNote: This does not affect figuring out unicode from the font's encoding,\nit just controls determining unicode from a name.") },
 	{ N_("UnicodeGlyphNames"), pr_bool, &allow_utf8_glyphnames, NULL, NULL, 'O', NULL, 0, N_("Allow the full unicode character set in glyph names.\nThis does not conform to adobe's glyph name standard.\nSuch names should be for internal use only and\nshould NOT end up in production fonts." ) },
 	{ N_("AddCharToNameList"), pr_bool, &add_char_to_name_list, NULL, NULL, 'O', NULL, 0, N_( "When displaying a list of glyph names\n(or sometimes just a single glyph name)\nFontForge will add the unicode character\nthe name refers to in parenthesis after\nthe name. It does this because some names\nare obscure.\nSome people would prefer not to see this,\nso this preference item lets you turn off\n this behavior" ) },
+	{ N_("WriteModificationTime"), pr_bool, &WriteModificationTime, NULL, NULL, 'U', NULL, 0, N_("Whether or not to write the modification time into the SFD file.\nDisabling this might make working with version control systems such as Git easier.") },
 	PREFS_LIST_EMPTY
 },
  generate_list[] = {

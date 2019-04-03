@@ -75,6 +75,7 @@
 
 int UndoRedoLimitToSave = 0;
 int UndoRedoLimitToLoad = 0;
+int WriteModificationTime = true;
 
 static const char *joins[] = { "miter", "round", "bevel", "inher", NULL };
 static const char *caps[] = { "butt", "round", "square", "inher", NULL };
@@ -2318,7 +2319,9 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
     fprintf(sfd, "OS2_WeightWidthSlopeOnly: %d\n", sf->weight_width_slope_only );
     fprintf(sfd, "OS2_UseTypoMetrics: %d\n", sf->use_typo_metrics );
     fprintf(sfd, "CreationTime: %lld\n", sf->creationtime );
+    if (WriteModificationTime) {
     fprintf(sfd, "ModificationTime: %lld\n", sf->modificationtime );
+    }
     if ( sf->pfminfo.pfmset ) {
 	fprintf(sfd, "PfmFamily: %d\n", sf->pfminfo.pfmfamily );
 	fprintf(sfd, "TTFWeight: %d\n", sf->pfminfo.weight );
