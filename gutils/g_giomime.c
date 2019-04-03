@@ -135,7 +135,7 @@ char* GIOGetMimeType(const char *path) {
 	size_t res=fread(sniff_buffer,1,sniff_length,fp);
 	int err=ferror(fp);
 	fclose (fp);
-	if ( !err ) {
+	if ( !err && res>0 ) {
 	    // first force guessing file type from the content only by passing
 	    // NULL for file name, if the result is not certain try again with
 	    // file name
