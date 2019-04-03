@@ -255,6 +255,7 @@ void *GResource_font_cvt(char *val, void *def) {
 
     if ( fi==NULL )
 return( def );
+    free(def);
 return( (void *) fi );
 }
 
