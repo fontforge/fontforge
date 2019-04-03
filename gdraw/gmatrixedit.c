@@ -98,6 +98,7 @@ static GResInfo gmatrixedit2_ri = {
 
 static void _GMatrixEdit_Init(void) {
     FontRequest rq;
+    FontInstance* tmp;
 
     if ( gmatrixedit_inited )
 return;
@@ -130,7 +131,8 @@ return;
     gmatrixedit_button_box.flags |= box_foreground_border_inner;
     gmatrixedit_button_box.main_background = gmatrixedit_box.main_background;
     gmatrixedit_button_box.disabled_background = gmatrixedit_box.disabled_background;
-    _GGadgetInitDefaultBox("GMatrixEditButton.",&gmatrixedit_button_box,NULL);
+    tmp = _GGadgetInitDefaultBox("GMatrixEditButton.",&gmatrixedit_button_box,NULL);
+    free(tmp);
 }
 
 static void MatrixDataFree(GMatrixEdit *gme) {

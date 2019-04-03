@@ -488,6 +488,7 @@ struct gfuncs gscrollbar_funcs = {
 };
 
 static void GScrollBarInit() {
+    FontInstance* tmp = NULL;
     _GGadgetCopyDefaultBox(&scrollbar_box);
     _GGadgetCopyDefaultBox(&thumb_box);
     scrollbar_box.border_type = bt_lowered;
@@ -498,8 +499,10 @@ static void GScrollBarInit() {
     thumb_box.main_background = GDrawColorDarken(thumb_box.main_background,0x8);
     thumb_box.border_width = 1;
     thumb_box.padding = 0;
-    _GGadgetInitDefaultBox("GScrollBar.",&scrollbar_box,NULL);
-    _GGadgetInitDefaultBox("GScrollBarThumb.",&thumb_box,NULL);
+    tmp = _GGadgetInitDefaultBox("GScrollBar.",&scrollbar_box,NULL);
+    free(tmp);
+    tmp = _GGadgetInitDefaultBox("GScrollBarThumb.",&thumb_box,NULL);
+    free(tmp);
     _GScrollBar_Width = GResourceFindInt("GScrollBar.Width",_GScrollBar_Width);
     _GScrollBar_StartTime = GResourceFindInt("GScrollBar.StartupTime",_GScrollBar_StartTime);
     _GScrollBar_RepeatTime = GResourceFindInt("GScrollBar.RepeatTime",_GScrollBar_RepeatTime);

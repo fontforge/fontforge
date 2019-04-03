@@ -59,6 +59,7 @@ GResInfo ghvgroupbox_ri = {
 };
 
 static void _GHVBox_Init(void) {
+    FontInstance* tmp = NULL;
     if ( ghvbox_inited )
 return;
     _GGadgetCopyDefaultBox(&hvgroup_box);
@@ -72,8 +73,10 @@ return;
     /*hvgroup_box.flags = hvbox_box.flags = 0;*/
     hvgroup_box.main_background = COLOR_TRANSPARENT;
     hvgroup_box.disabled_background = COLOR_TRANSPARENT;
-    _GGadgetInitDefaultBox("GHVBox.",&hvbox_box,NULL);
-    _GGadgetInitDefaultBox("GGroup.",&hvgroup_box,NULL);
+    tmp = _GGadgetInitDefaultBox("GHVBox.",&hvbox_box,NULL);
+    free(tmp);
+    tmp = _GGadgetInitDefaultBox("GGroup.",&hvgroup_box,NULL);
+    free(tmp);
     ghvbox_inited = true;
 }
 

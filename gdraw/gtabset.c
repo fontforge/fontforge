@@ -79,6 +79,7 @@ static GResInfo gvtabset_ri = {
 #define NEST_INDENT	4
 
 static void GTabSetInit() {
+    FontInstance *tmp = NULL;
 
     if ( gtabset_inited )
 return;
@@ -91,7 +92,8 @@ return;
     gtabset_font = _GGadgetInitDefaultBox("GTabSet.",&gtabset_box,NULL);
 
     gvtabset_box = gtabset_box; /* needs this to figure inheritance */
-    _GGadgetInitDefaultBox("GVTabSet.",&gvtabset_box,NULL);
+    tmp = _GGadgetInitDefaultBox("GVTabSet.",&gvtabset_box,NULL);
+    free(tmp);
 
     gtabset_inited = true;
 }

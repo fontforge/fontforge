@@ -1105,7 +1105,7 @@ void GWidgetCreateInsChar(void) {
 	GGadgetsCreate(inschr.icw,gcd);
 
 	memset(&rq,0,sizeof(rq));
-	rq.utf8_family_name = copy(GResourceFindString("InsChar.Family"));
+	rq.utf8_family_name = GResourceFindString("InsChar.Family");
 	if ( rq.utf8_family_name==NULL )
 	    rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = /*15*/12;
