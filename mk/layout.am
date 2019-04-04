@@ -25,19 +25,6 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#--------------------------------------------------------------------------
-#
-# Some variables controlling the file layout, and which you may want
-# to override when running make.
-#
-# For example, you may want to install the help system in
-# ${docdir}/html instead of in ${docdir} itself:
-#
-#      make HTDOCS_SUBDIR=/html
-#      make HTDOCS_SUBDIR=/html install
-#
-#--------------------------------------------------------------------------
-
 # Where the application's icons for internal use go.
 # (Free desktop icons handled in dir desktop)
 pixmapsdir = ${pkgdatadir}/pixmaps
@@ -48,8 +35,7 @@ pixmapsdir = ${pkgdatadir}/pixmaps
 internal_bindir = ${libexecdir}/bin/FontForgeInternal
 
 # Where the FontForge help system goes.
-HTDOCS_SUBDIR =
-htdocsdir = ${docdir}$(HTDOCS_SUBDIR)
+htdocsdir = ${htmldir}
 
 # Where pkg-config files go.
 pkgconfigdir = ${libdir}/pkgconfig
