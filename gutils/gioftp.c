@@ -589,7 +589,7 @@ void *GIO_dispatch(GIOControl *gc) {
     char cmd[300];
     struct ftpconnectiondata *ftp;
     int tzoff= -9999;
-    struct ftphostaccessdata *had;
+    struct ftphostaccessdata *had = NULL;
 
     path = (stdfuncs->decomposeURL)(gc->path,&host,&port,&username,&password);
     if ( host==NULL || path==NULL ) {
@@ -690,14 +690,14 @@ void *GIO_dispatch(GIOControl *gc) {
     (stdfuncs->PostSuccess)(gc);
     if ( ctl!=-1 ) close(ctl);
     free(path);
-    free(host); free(username); free(password);
+    free(host); free(username); free(password); free(had);
 return( NULL );
   leave:
     gc->done = true;
     (stdfuncs->PostError)(gc);
     if ( ctl!=-1 ) close(ctl);
     free(path);
-    free(host); free(username); free(password);
+    free(host); free(username); free(password); free(had);
 return( NULL );
 }
 
