@@ -2535,6 +2535,7 @@ struct gfuncs glistfield_funcs = {
 
 static void GTextFieldInit() {
     FontRequest rq;
+    FontInstance *tmp = NULL;
 
     memset(&rq,0,sizeof(rq));
     GGadgetInit();
@@ -2547,17 +2548,21 @@ static void GTextFieldInit() {
     /*_GGadget_gtextfield_box.flags = box_active_border_inner;*/
     _gtextfield_font = _GGadgetInitDefaultBox("GTextField.",&_GGadget_gtextfield_box,_gtextfield_font);
     glistfield_box = _GGadget_gtextfield_box;
-    _GGadgetInitDefaultBox("GComboBox.",&glistfield_box,_gtextfield_font);
+    tmp = _GGadgetInitDefaultBox("GComboBox.",&glistfield_box,_gtextfield_font);
+    free(tmp);
     glistfieldmenu_box = glistfield_box;
     glistfieldmenu_box.padding = 1;
-    _GGadgetInitDefaultBox("GComboBoxMenu.",&glistfieldmenu_box,_gtextfield_font);
+    tmp = _GGadgetInitDefaultBox("GComboBoxMenu.",&glistfieldmenu_box,_gtextfield_font);
+    free(tmp);
     gnumericfield_box = _GGadget_gtextfield_box;
-    _GGadgetInitDefaultBox("GNumericField.",&gnumericfield_box,_gtextfield_font);
+    tmp = _GGadgetInitDefaultBox("GNumericField.",&gnumericfield_box,_gtextfield_font);
+    free(tmp);
     gnumericfieldspinner_box = gnumericfield_box;
     gnumericfieldspinner_box.border_type = bt_none;
     gnumericfieldspinner_box.border_width = 0;
     gnumericfieldspinner_box.padding = 0;
-    _GGadgetInitDefaultBox("GNumericFieldSpinner.",&gnumericfieldspinner_box,_gtextfield_font);
+    tmp = _GGadgetInitDefaultBox("GNumericFieldSpinner.",&gnumericfieldspinner_box,_gtextfield_font);
+    free(tmp);
     gtextfield_inited = true;
 }
 
