@@ -313,7 +313,6 @@ GImage *GImageReadRgb(char *filename) {
 	    free(r); free(g); free(b); free(a);
 	}
     }
-    fclose(fp);
     return( ret );
 
 errorGImageReadRgbFile:

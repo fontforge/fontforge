@@ -639,7 +639,6 @@ struct gfuncs gradio_funcs = {
 };
 
 static void GRadioInit() {
-    FontInstance* tmp = NULL;
     _GGadgetCopyDefaultBox(&radio_box);
     _GGadgetCopyDefaultBox(&radio_on_box);
     _GGadgetCopyDefaultBox(&radio_off_box);
@@ -669,18 +668,12 @@ static void GRadioInit() {
     visibility_off_box.border_type=bt_none;
     visibility_off_box.padding=1;
 
-    tmp = _GGadgetInitDefaultBox("GRadioOn.",&radio_on_box,NULL);
-    free(tmp);
-    tmp = _GGadgetInitDefaultBox("GRadioOff.",&radio_off_box,NULL);
-    free(tmp);
-    tmp = _GGadgetInitDefaultBox("GCheckBoxOn.",&checkbox_on_box,NULL);
-    free(tmp);
-    tmp = _GGadgetInitDefaultBox("GCheckBoxOff.",&checkbox_off_box,NULL);
-    free(tmp);
-    tmp = _GGadgetInitDefaultBox("GVisibilityBoxOn.",&visibility_on_box,NULL);
-    free(tmp);
-    tmp = _GGadgetInitDefaultBox("GVisibitityBoxOff.",&visibility_off_box,NULL);
-    free(tmp);
+    _GGadgetInitDefaultBox("GRadioOn.",&radio_on_box,NULL);
+    _GGadgetInitDefaultBox("GRadioOff.",&radio_off_box,NULL);
+    _GGadgetInitDefaultBox("GCheckBoxOn.",&checkbox_on_box,NULL);
+    _GGadgetInitDefaultBox("GCheckBoxOff.",&checkbox_off_box,NULL);
+    _GGadgetInitDefaultBox("GVisibilityBoxOn.",&visibility_on_box,NULL);
+    _GGadgetInitDefaultBox("GVisibitityBoxOff.",&visibility_off_box,NULL);
 
     if ( radio_on_box.depressed_background == radio_off_box.depressed_background ) {
 	radio_on_box.depressed_background = radio_on_box.active_border;

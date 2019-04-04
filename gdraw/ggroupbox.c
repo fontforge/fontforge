@@ -58,7 +58,6 @@ GResInfo gline_ri = {
 };
 
 void _GGroup_Init(void) {
-    FontInstance* tmp = NULL;
     if ( ggroup_inited )
 return;
     _GGadgetCopyDefaultBox(&_GGroup_LineBox);
@@ -69,10 +68,8 @@ return;
     /*group_box.flags = _GGroup_LineBox.flags = 0;*/
     group_box.main_background = COLOR_TRANSPARENT;
     group_box.disabled_background = COLOR_TRANSPARENT;
-    tmp = _GGadgetInitDefaultBox("GLine.",&_GGroup_LineBox,NULL);
-    free(tmp);
-    tmp = _GGadgetInitDefaultBox("GGroup.",&group_box,NULL);
-    free(tmp);
+    _GGadgetInitDefaultBox("GLine.",&_GGroup_LineBox,NULL);
+    _GGadgetInitDefaultBox("GGroup.",&group_box,NULL);
     ggroup_inited = true;
 }
 

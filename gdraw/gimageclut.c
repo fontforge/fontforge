@@ -453,11 +453,9 @@ GClut *GImageFindCLUT(GImage *image,GClut *clut,int clutmax) {
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     char grey_clut[256];
 
-    if ( clutmax < 2)
-return( 0 );
     if ( clut==NULL )
 	clut = malloc(sizeof(GClut));
-    if ( clut==NULL )
+    if ( clutmax<2 || clut==NULL )
 return( 0 );
 
     clut->clut_len = 0; clut->is_grey = false;

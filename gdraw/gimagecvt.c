@@ -976,11 +976,6 @@ void GImageResize(struct _GImage *tobase, struct _GImage *fbase,
 	      break;
 	    }
     }}
-    free(vert);
-    free(hor);
-    free(red_dith);
-    free(green_dith);
-    free(blue_dith);
     if ( oldrev!=rev )
 	    GClut_RevCMapFree(rev);
 }

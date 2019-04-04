@@ -690,14 +690,14 @@ void *GIO_dispatch(GIOControl *gc) {
     (stdfuncs->PostSuccess)(gc);
     if ( ctl!=-1 ) close(ctl);
     free(path);
-    free(host); free(username); free(password); free(had);
+    free(host); free(username); free(password);
 return( NULL );
   leave:
     gc->done = true;
     (stdfuncs->PostError)(gc);
     if ( ctl!=-1 ) close(ctl);
     free(path);
-    free(host); free(username); free(password); free(had);
+    free(host); free(username); free(password);
 return( NULL );
 }
 

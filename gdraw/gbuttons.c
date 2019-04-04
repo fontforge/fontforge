@@ -952,7 +952,6 @@ return;
 }
 
 void _GButtonInit(void) {
-    FontInstance* tmp = NULL;
 #ifdef __Mac
     extern GBox _ggadget_Default_Box;
 #endif
@@ -993,14 +992,10 @@ return;
     _GGadget_droplist_box.border_shape = _ggadget_Default_Box.border_shape;
 #endif
     _GGadget_colorbutton_box  = _GGadget_button_box;
-    tmp = _GGadgetInitDefaultBox("GDefaultButton.",&_GGadget_defaultbutton_box,NULL);
-    free(tmp);
-    tmp = _GGadgetInitDefaultBox("GCancelButton.",&_GGadget_cancelbutton_box,NULL);
-    free(tmp);
-    tmp = _GGadgetInitDefaultBox("GDropList.",&_GGadget_droplist_box,NULL);
-    free(tmp);
-    tmp = _GGadgetInitDefaultBox("GColorButton.",&_GGadget_colorbutton_box,NULL);
-    free(tmp);
+    _GGadgetInitDefaultBox("GDefaultButton.",&_GGadget_defaultbutton_box,NULL);
+    _GGadgetInitDefaultBox("GCancelButton.",&_GGadget_cancelbutton_box,NULL);
+    _GGadgetInitDefaultBox("GDropList.",&_GGadget_droplist_box,NULL);
+    _GGadgetInitDefaultBox("GColorButton.",&_GGadget_colorbutton_box,NULL);
     gbutton_inited = true;
 }
 
