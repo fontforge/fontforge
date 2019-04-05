@@ -6158,13 +6158,8 @@ int WriteTTFFont(char *fontname,SplineFont *sf,enum fontformat format,
     FILE *ttf;
     int ret;
 
-    if ( strstr(fontname,"://")!=NULL ) {
-	if (( ttf = tmpfile())==NULL )
+    if (( ttf=fopen(fontname,"wb+"))==NULL )
 return( 0 );
-    } else {
-	if (( ttf=fopen(fontname,"wb+"))==NULL )
-return( 0 );
-    }
     ret = _WriteTTFFont(ttf,sf,format,bsizes,bf,flags,map,layer);
     if ( ret && (flags&ttf_flag_glyphmap) )
 	DumpGlyphToNameMap(fontname,sf);
@@ -6960,13 +6955,8 @@ int WriteTTC(const char *filename,struct sflist *sfs,enum fontformat format,
     struct alltabs *ret;
     SplineFont dummysf;
 
-    if ( strstr(filename,"://")!=NULL ) {
-	if (( ttc = tmpfile())==NULL )
+    if (( ttc=fopen(filename,"wb+"))==NULL )
 return( 0 );
-    } else {
-	if (( ttc=fopen(filename,"wb+"))==NULL )
-return( 0 );
-    }
 
     format = (ttcflags & ttc_flag_cff) ? ff_otf : ff_ttf;
 

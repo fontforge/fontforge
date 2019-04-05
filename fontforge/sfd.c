@@ -3098,10 +3098,7 @@ int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal,int todir)
 	strcpy(tempfilename,filename); strcat(tempfilename,"/" FONT_PROPS);
     }
 
-    if ( !todir && strstr(filename,"://")!=NULL )
-	sfd = tmpfile();
-    else
-	sfd = fopen(tempfilename,"w");
+    sfd = fopen(tempfilename,"w");
     if ( tempfilename!=filename ) free(tempfilename);
     if ( sfd==NULL )
 return( 0 );

@@ -1370,7 +1370,7 @@ return( NULL );
 
     sf = NULL;
     sf = FontWithThisFilename(fname);
-    if ( sf==NULL && *fname!='/' && strstr(fname,"://")==NULL )
+    if ( sf==NULL && *fname!='/' )
 	fname = tobefreed2 = ToAbsolute(fname);
     if ( sf==NULL )
 	sf = ReadSplineFont(fname,openflags);

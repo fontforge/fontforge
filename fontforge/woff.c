@@ -548,13 +548,8 @@ int WriteWOFFFont(char *fontname,SplineFont *sf, enum fontformat format,
     FILE *woff;
     int ret;
 
-    if ( strstr(fontname,"://")!=NULL ) {
-	if (( woff = tmpfile())==NULL )
+    if (( woff=fopen(fontname,"wb+"))==NULL )
 return( 0 );
-    } else {
-	if (( woff=fopen(fontname,"wb+"))==NULL )
-return( 0 );
-    }
     ret = _WriteWOFFFont(woff,sf,format,bsizes,bf,flags,enc,layer);
     if ( fclose(woff)==-1 )
 return( 0 );
