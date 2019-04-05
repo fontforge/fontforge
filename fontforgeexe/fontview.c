@@ -718,8 +718,10 @@ return( 0 );
 	}
 	SplineFontSetUnChanged(sf);
 	FVSetTitles(fv->b.sf);
-    } else
+    } else {
+	ff_post_error(_("Save Failed"),_("Save Failed"));
 	free(filename);
+    }
 return( ok );
 }
 
