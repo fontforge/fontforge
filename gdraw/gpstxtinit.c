@@ -506,6 +506,7 @@ return( true );
 	}
     }
     fonts->names_loaded = true;
+    free(path);
 return( fonts->names_loaded );
 }
 
