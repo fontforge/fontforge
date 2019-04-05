@@ -529,7 +529,7 @@ return( false );
     if ( sub_num<=0 ) {
         if (co) {
             for ( i=0; co[i]!=NULL; i++)
-                free(co[i]);
+                free((char*) co[i]);
 	    free(co);
         }
         if (lines) {
