@@ -1746,22 +1746,30 @@ return( true );
 	if ( gt->pressed==NULL )
 	    gt->pressed = GDrawRequestTimer(gt->g.base,200,100,NULL);
 	if ( gt->sel_start > u_strlen( gt->text ))	/* Ok to have selection at end, but beyond is an error */
-	    fprintf( stderr, "About to crash\n" );
-	_ggadget_redraw(g);
-return( true );
+        _ggadget_redraw(g);
+        return( true );
     } else if ( gt->pressed && (event->type == et_mousemove || event->type == et_mouseup )) {
 	int refresh = true;
 
 	if ( gt->drag_and_drop ) {
 	    refresh = GTextFieldDoDrop(gt,event,end-gt->text);
 	} else if ( gt->linesel ) {
-	    int j, e;
+        int j = 0;
+        int e = 0;
 	    gt->sel_start = gt->lines[i]; gt->sel_end = gt->lines[i+1];
-	    if ( gt->sel_end==-1 ) gt->sel_end = u_strlen(gt->text);
-	    for ( j=0; gt->lines[i+1]!=-1 && gt->sel_base>=gt->lines[i+1]; ++j );
-	    if ( gt->sel_start<gt->lines[i] ) gt->sel_start = gt->lines[i];
-	    e = gt->lines[j+1]==-1 ? u_strlen(gt->text): gt->lines[j+1];
-	    if ( e>gt->sel_end ) gt->sel_end = e;
+
+        while ( gt->lines[i+1]!=-1 && gt->sel_base>=gt->lines[i+1] && j<sizeof(gt->lines) ) {
+            if ( gt->sel_end==-1 ) gt->sel_end = u_strlen(gt->text);
+            j++;
+        }
+
+	    e = gt->lines[j+1]==-1 ?
+            u_strlen(gt->text) :
+            gt->lines[j+1];
+
+        if ( e>gt->sel_end ) {
+            gt->sel_end = e;
+        }
 	} else if ( gt->wordsel )
 	    GTextFieldSelectWords(gt,end-gt->text);
 	else if ( event->u.mouse.button!=2 ) {
@@ -1783,8 +1791,6 @@ return( true );
 		(_GDraw_InsCharHook)(GDrawGetDisplayOfWindow(gt->g.base),
 			gt->text[gt->sel_start]);
 	}
-	if ( gt->sel_end > u_strlen( gt->text ))
-	    fprintf( stderr, "About to crash\n" );
 	if ( refresh )
 	    _ggadget_redraw(g);
 return( true );
