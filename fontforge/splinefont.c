@@ -990,14 +990,10 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
         fullname = fname;
     }
 
-    // For non-URLs:
     // treat /whatever/foo.ufo/ as simply /whatever/foo.ufo
-    if ( !strstr(fname,"://")) {
-	    int filenamelen = strlen(filename);
-	
-	    if( filenamelen && filename[ filenamelen-1 ] == '/' ) {
-	        fname[filenamelen-1] = '\0';
-	    }
+    len = strlen(filename);
+    if( len>0 && filename[ len-1 ] == '/' ) {
+	fname[len-1] = '\0';
     }
 
     strippedname = fname;
