@@ -697,7 +697,7 @@ return( NULL );
     (stdfuncs->PostError)(gc);
     if ( ctl!=-1 ) close(ctl);
     free(path);
-    free(host); free(username); free(password); free(had);
+    free(host); free(username); free(password);
 return( NULL );
 }
 
