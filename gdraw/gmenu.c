@@ -139,6 +139,7 @@ static void GMenuInit() {
 	else if ( strmatch(keystr,"ibm")==0 || strmatch(keystr,"pc")==0 ) keyboard = kb_ibm;
 	else if ( strtol(keystr,&end,10), *end=='\0' )
 	    keyboard = strtol(keystr,NULL,10);
+        free(keystr);
     }
     menu_grabs = GResourceFindBool("GMenu.Grab",menu_grabs);
     mac_menu_icons = GResourceFindBool("GMenu.MacIcons",mac_menu_icons);
@@ -388,8 +389,10 @@ static char* GMenuGetMenuPath( GMenuItem *basemi, GMenuItem *targetmi ) {
 	    strcat(buffer,".");
 	if( stack[i]->ti.text_untranslated )
 	{
+            char* tmp = HKTextInfoToUntranslatedTextFromTextInfo( &stack[i]->ti );
 //	    TRACE("adding %s\n", HKTextInfoToUntranslatedTextFromTextInfo( &stack[i]->ti ));
-	    strcat( buffer, HKTextInfoToUntranslatedTextFromTextInfo( &stack[i]->ti ));
+            strcat( buffer, tmp);
+            free(tmp);
 	}
 	else if( stack[i]->ti.text )
 	{
