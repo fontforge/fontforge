@@ -33,7 +33,6 @@
 #include "fvcomposite.h"
 #include "fvfonts.h"
 #include "fvimportbdf.h"
-#include "http.h"
 #include "ikarus.h"
 #include "macbinary.h"
 #include "namelist.h"
@@ -977,7 +976,7 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
     int len;
     int checked;
     int compression=0;
-    int wasurl = false, nowlocal = true, wasarchived=false;
+    int nowlocal = true, wasarchived=false;
     char * fname = copy(filename);
     fullname = fname;
 
@@ -991,14 +990,10 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
         fullname = fname;
     }
 
-    // For non-URLs:
     // treat /whatever/foo.ufo/ as simply /whatever/foo.ufo
-    if ( !strstr(fname,"://")) {
-	    int filenamelen = strlen(filename);
-	
-	    if( filenamelen && filename[ filenamelen-1 ] == '/' ) {
-	        fname[filenamelen-1] = '\0';
-	    }
+    len = strlen(filename);
+    if( len>0 && filename[ len-1 ] == '/' ) {
+	fname[len-1] = '\0';
     }
 
     strippedname = fname;
@@ -1010,14 +1005,6 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
 	strippedname[paren-fname] = '\0';
 	chosenname = copy(paren+1);
 	chosenname[strlen(chosenname)-1] = '\0';
-    }
-
-    if ( strstr(strippedname,"://")!=NULL ) {
-	    if ( file==NULL )
-	        file = URLToTempFile(strippedname,NULL);
-	    if ( file==NULL )
-            return NULL;
-	    wasurl = true; nowlocal = false;
     }
 
     pt = strrchr(strippedname,'.');
@@ -1083,7 +1070,7 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
     /*  immediately. Otherwise delay a bit */
     strncpy(ubuf,_("Loading font from "),sizeof(ubuf)-1);
     len = strlen(ubuf);
-    if ( !wasurl || i==-1 )	/* If it wasn't compressed, or it wasn't an url, then the fullname is reasonable, else use the original name */
+    if ( i==-1 )	/* If it wasn't compressed then the fullname is reasonable, else use the original name */
 	    strncat(ubuf,temp = def2utf8_copy(GFileNameTail(fullname)),100);
     else
 	    strncat(ubuf,temp = def2utf8_copy(GFileNameTail(fname)),100);
@@ -1112,7 +1099,7 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
 /* checked == 'F'   => sfdir */
 /* checked == 'b'   => bdf */
 /* checked == 'i'   => ikarus */
-    if ( !wasurl && GFileIsDir(strippedname) ) {
+    if ( GFileIsDir(strippedname) ) {
 	char *temp = malloc(strlen(strippedname)+strlen("/glyphs/contents.plist")+1);
 	strcpy(temp,strippedname);
 	strcat(temp,"/glyphs/contents.plist");
@@ -1383,7 +1370,7 @@ return( NULL );
 
     sf = NULL;
     sf = FontWithThisFilename(fname);
-    if ( sf==NULL && *fname!='/' && strstr(fname,"://")==NULL )
+    if ( sf==NULL && *fname!='/' )
 	fname = tobefreed2 = ToAbsolute(fname);
     if ( sf==NULL )
 	sf = ReadSplineFont(fname,openflags);

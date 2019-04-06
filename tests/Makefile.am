@@ -169,7 +169,7 @@ EXTRA_DIST += helper107.pe helper118A.pe helper118B.pe		\
 	test122.pe test123.pe test124.pe test125.pe		\
 	test126.pe test127.pe test128.pe test129.pe		\
 	test130.pe test131.pe test132.pe test133.pe		\
-	test134.pe test135.pe test136.pe
+	test134.pe test135.pe test136.pe test137.pe
 
 # python test scripts
 EXTRA_DIST += findoverlapbugs.py test0001.py test0101.py	\

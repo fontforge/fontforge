@@ -460,20 +460,6 @@ static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
     GGadgetSetList(&gfc->directories->g,ti,false);
     GGadgetSelectOneListItem(&gfc->directories->g,0);
 
-    /* Password management for URLs */
-    if ( (pt = uc_strstr(dir,"://"))!=NULL ) {
-	int port;
-	char proto[40];
-	char *host, *username, *password;
-	free( _GIO_decomposeURL(dir,&host,&port,&username,&password));
-	if ( username!=NULL && password==NULL ) {
-	    password = gwwv_ask_password(_("Password?"),"",_("Enter password for %s@%s"), username, host );
-	    cu_strncpy(proto,dir,pt-dir<sizeof(proto)?pt-dir:sizeof(proto));
-	    password = GIO_PasswordCache(proto,host,username,password);
-	}
-	free(host); free(username); free(password);
-    }
-
     if ( gfc->outstanding!=NULL ) {
 	GIOcancel(gfc->outstanding);
 	gfc->outstanding = NULL;

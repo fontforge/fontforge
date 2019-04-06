@@ -34,7 +34,6 @@
 #include "encoding.h"
 #include "fontforge.h"
 #include "fvfonts.h"
-#include "http.h"
 #include "lookups.h"
 #include "mem.h"
 #include "namelist.h"
@@ -3099,10 +3098,7 @@ int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal,int todir)
 	strcpy(tempfilename,filename); strcat(tempfilename,"/" FONT_PROPS);
     }
 
-    if ( !todir && strstr(filename,"://")!=NULL )
-	sfd = tmpfile();
-    else
-	sfd = fopen(tempfilename,"w");
+    sfd = fopen(tempfilename,"w");
     if ( tempfilename!=filename ) free(tempfilename);
     if ( sfd==NULL )
 return( 0 );
@@ -3122,8 +3118,6 @@ return( 0 );
 	err = SFDDump(sfd,sf,map,normal,todir,filename);
     switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     if ( ferror(sfd) ) err = true;
-    if ( !err && !todir && strstr(filename,"://")!=NULL )
-	err = !URLFromFile(filename,sfd);
     if ( fclose(sfd) ) err = true;
     if ( todir )
 	SFFinalDirClean(filename);

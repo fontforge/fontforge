@@ -32,7 +32,6 @@
 #include "woff.h"
 
 #include "fontforge.h"
-#include "http.h"
 #include "mem.h"
 #include "parsettf.h"
 #include "tottf.h"
@@ -549,16 +548,9 @@ int WriteWOFFFont(char *fontname,SplineFont *sf, enum fontformat format,
     FILE *woff;
     int ret;
 
-    if ( strstr(fontname,"://")!=NULL ) {
-	if (( woff = tmpfile())==NULL )
+    if (( woff=fopen(fontname,"wb+"))==NULL )
 return( 0 );
-    } else {
-	if (( woff=fopen(fontname,"wb+"))==NULL )
-return( 0 );
-    }
     ret = _WriteWOFFFont(woff,sf,format,bsizes,bf,flags,enc,layer);
-    if ( strstr(fontname,"://")!=NULL && ret )
-	ret = URLFromFile(fontname,woff);
     if ( fclose(woff)==-1 )
 return( 0 );
 return( ret );

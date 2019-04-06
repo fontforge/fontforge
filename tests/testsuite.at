@@ -125,6 +125,7 @@ check_pedit([Allowed characters in glyph class names],[test133.pe],[test133.fea]
 check_pedit([Short-hand contextual multiple substitution],[test134.pe],[test134.fea])
 check_pedit([GDEF glyph classes],[test135.pe],[test135.fea])
 check_pedit([Re-using mark filtering set],[test136.pe],[test136.fea])
+check_pedit([file:// protocol],[test137.pe],[Ambrosia.sfd])
 
 AT_BANNER([FontForge Python Scripting Tests])
 

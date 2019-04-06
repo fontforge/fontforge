@@ -31,7 +31,6 @@
 #include "bvedit.h"
 #include "fontforge.h"
 #include "fvfonts.h"
-#include "http.h"
 #include "parsepfa.h"
 #include "psread.h"
 #include "splineorder2.h"
@@ -2672,16 +2671,9 @@ int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,
     FILE *out;
     int ret;
 
-    if ( strstr(fontname,"://")!=NULL ) {
-	if (( out = tmpfile())==NULL )
+    if (( out=fopen(fontname,"wb"))==NULL )
 return( 0 );
-    } else {
-	if (( out=fopen(fontname,"wb"))==NULL )
-return( 0 );
-    }
     ret = _WritePSFont(out,sf,format,flags,map,fullsf,layer);
-    if ( strstr(fontname,"://")!=NULL && ret )
-	ret = URLFromFile(fontname,out);
     if ( fclose(out)==-1 )
 	ret = 0;
 return( ret );

@@ -55,7 +55,6 @@ noinst_HEADERS = \
 	fvcomposite.h \
 	fvfonts.h \
 	fvimportbdf.h \
-	http.h\
 	ikarus.h\
 	langfreq.h\
 	libstamp.h\
@@ -117,7 +116,6 @@ pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 
 LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgutils.la	\
-	$(top_builddir)/gutils/libgioftp.la	\
 	$(top_builddir)/lib/libgnu.la
 
 AM_CFLAGS = $(WARN_CFLAGS)
@@ -138,7 +136,7 @@ libfontforge_la_SOURCES = activeinui.c asmfpst.c autohint.c autosave.c	\
 	cvundoes.c dumpbdf.c dumppfa.c effects.c encoding.c		\
 	featurefile.c flaglist.c fontviewbase.c freetype.c		\
 	fvcomposite.c fvfonts.c fvimportbdf.c fvmetrics.c ftdelta.c	\
-	glyphcomp.c groups.c http.c ikarus.c langfreq.c			\
+	glyphcomp.c groups.c ikarus.c langfreq.c			\
 	lookups.c macbinary.c macenc.c mathconstants.c mm.c namelist.c	\
 	nonlineartrans.c noprefs.c nouiutil.c nowakowskittfinstr.c	\
 	ofl.c othersubrs.c palmfonts.c parsepdf.c parsepfa.c		\

@@ -25,7 +25,7 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-lib_LTLIBRARIES = libgutils.la libgioftp.la
+lib_LTLIBRARIES = libgutils.la
 
 #--------------------------------------------------------------------------
 
@@ -35,8 +35,8 @@ libgutils_la_SOURCES = dlist.c fsys.c g_giomime.c gcol.c	\
 	gimagereadras.c gimagereadrgb.c gimagereadtiff.c		\
 	gimagereadxbm.c gimagereadxpm.c gimagewritebmp.c		\
 	gimagewritegimage.c gimagewritejpeg.c gimagewritepng.c		\
-	gimagewritexbm.c gimagewritexpm.c gio.c giofile.c giohosts.c	\
-	giothread.c giotrans.c giofuncP.h gioP.h gnetwork.c gutils.c	\
+	gimagewritexbm.c gimagewritexpm.c gio.c giofile.c		\
+	giotrans.c giofuncP.h  gnetwork.c gutils.c			\
 	gwwintl.c prefs.c prefs.h unicodelibinfo.c unicodelibinfo.h
 
 libgutils_la_CFLAGS = $(WARN_CFLAGS)
@@ -52,18 +52,6 @@ libgutils_la_CFLAGS += $(LIBZMQ_CFLAGS)
 endif
 
 libgutils_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBGUTILS_VERSION) \
-	${MY_LIB_LDFLAGS}
-
-#--------------------------------------------------------------------------
-
-libgioftp_la_SOURCES = gioftp.c gioftpP.h
-
-libgioftp_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
-	$(MY_CFLAGS)
-
-libgioftp_la_LIBADD = $(MY_LIBS) $(top_builddir)/Unicode/libgunicode.la
-
-libgioftp_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBGIOFTP_VERSION) \
 	${MY_LIB_LDFLAGS}
 
 #--------------------------------------------------------------------------

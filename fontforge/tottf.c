@@ -33,7 +33,6 @@
 #include "encoding.h"
 #include "fontforge.h"
 #include "fvfonts.h"
-#include "http.h"
 #include "lookups.h"
 #include "macenc.h"
 #include "mem.h"
@@ -6159,16 +6158,9 @@ int WriteTTFFont(char *fontname,SplineFont *sf,enum fontformat format,
     FILE *ttf;
     int ret;
 
-    if ( strstr(fontname,"://")!=NULL ) {
-	if (( ttf = tmpfile())==NULL )
+    if (( ttf=fopen(fontname,"wb+"))==NULL )
 return( 0 );
-    } else {
-	if (( ttf=fopen(fontname,"wb+"))==NULL )
-return( 0 );
-    }
     ret = _WriteTTFFont(ttf,sf,format,bsizes,bf,flags,map,layer);
-    if ( strstr(fontname,"://")!=NULL && ret )
-	ret = URLFromFile(fontname,ttf);
     if ( ret && (flags&ttf_flag_glyphmap) )
 	DumpGlyphToNameMap(fontname,sf);
     if ( fclose(ttf)==-1 )
@@ -6963,13 +6955,8 @@ int WriteTTC(const char *filename,struct sflist *sfs,enum fontformat format,
     struct alltabs *ret;
     SplineFont dummysf;
 
-    if ( strstr(filename,"://")!=NULL ) {
-	if (( ttc = tmpfile())==NULL )
+    if (( ttc=fopen(filename,"wb+"))==NULL )
 return( 0 );
-    } else {
-	if (( ttc=fopen(filename,"wb+"))==NULL )
-return( 0 );
-    }
 
     format = (ttcflags & ttc_flag_cff) ? ff_otf : ff_ttf;
 
@@ -7031,8 +7018,6 @@ return( true );
 	    IError("Miscalculated offsets in ttc");
     } else
 
-    if ( strstr(filename,"://")!=NULL && ok )
-	ok = URLFromFile(filename,ttc);
     if ( ferror(ttc))
 	ok = false;
     if ( fclose(ttc)==-1 )

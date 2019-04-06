@@ -82,12 +82,10 @@ FontForge provides a complete suite of tools for producing high-quality typeface
 
 %files -n libfontforge1
 %defattr(-,root,root)
-`'PREFIX`'/lib/libgioftp.so
 `'PREFIX`'/lib/libgunicode.so
 `'PREFIX`'/lib/libfontforge.so
 `'PREFIX`'/lib/libfontforgeexe.so
 `'PREFIX`'/lib/libgutils.so
-`'PREFIX`'/lib/libgioftp.so.*
 `'PREFIX`'/lib/libgunicode.so.*
 `'PREFIX`'/lib/libfontforge.so.*
 `'PREFIX`'/lib/libfontforgeexe.so.*

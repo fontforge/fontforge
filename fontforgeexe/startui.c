@@ -1363,12 +1363,8 @@ exit( 0 );
 	    doopen = true;
 	else {
 //	    printf("else argv[i]:%s\n", argv[i] );
-	    if ( strstr(argv[i],"://")!=NULL ) {		/* Assume an absolute URL */
-		strncpy(buffer,argv[i],sizeof(buffer));
-		buffer[sizeof(buffer)-1]= '\0';
-	    } else
-		GFileGetAbsoluteName(argv[i],buffer,sizeof(buffer));
-	    if ( GFileIsDir(buffer) || (strstr(buffer,"://")!=NULL && buffer[strlen(buffer)-1]=='/')) {
+	    GFileGetAbsoluteName(argv[i],buffer,sizeof(buffer));
+	    if ( GFileIsDir(buffer) ) {
 		char *fname;
 		fname = malloc(strlen(buffer)+strlen("/glyphs/contents.plist")+1);
 		strcpy(fname,buffer); strcat(fname,"/glyphs/contents.plist");
