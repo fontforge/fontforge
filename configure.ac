@@ -879,7 +879,6 @@ Summary of optional features:
   freetype debugger		${i_do_have_freetype_debugger}
   raw points mode		${i_do_have_debug_raw_points}
   tile path			${i_do_have_tile_path}
-  gb12345 encoding		${i_do_have_gb12345}
   fontforge-extras	yes	${fontforge_extras}
   potrace or autotrace	${i_do_find_auto_po_trace}
 
