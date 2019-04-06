@@ -28,7 +28,6 @@
 #include "autosave.h"
 
 #include "baseviews.h"
-#include "splineutil.h"
 #include "fontforgevw.h"
 #include "sfd.h"
 /*#include "ustring.h"*/
@@ -113,7 +112,6 @@ return( false );
 	    fprintf( stderr, " Done\n" );
 	}
     }
-    SplineFontFree(sf);
     free(recoverdir);
     closedir(dir);
 return( any );
