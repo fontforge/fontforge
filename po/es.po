@@ -8743,18 +8743,6 @@ msgstr ""
 msgid "Processing Variations"
 msgstr "Procesando variaciones"
 
-#: pluginloading.c:77
-#, c-format
-msgid ""
-"Failed to dlopen: %s\n"
-"%s"
-msgstr ""
-
-#: pluginloading.c:85
-#, fuzzy, c-format
-msgid "Failed to find init function in %s"
-msgstr "No se pudo encontrar una fuente en mapa de bits en %s"
-
 #: print.c:1498 print.c:3120 ../fontforgeexe/displayfonts.c:697
 msgid "Failed to open temporary output file"
 msgstr "No se puede abrir archivo temporal de salida"

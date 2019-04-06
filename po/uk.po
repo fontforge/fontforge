@@ -9006,20 +9006,6 @@ msgstr ""
 msgid "Processing Variations"
 msgstr "Обробка варіантів"
 
-#: ../fontforge/pluginloading.c:77
-#, c-format
-msgid ""
-"Failed to dlopen: %s\n"
-"%s"
-msgstr ""
-"Не вдалося виконати dlopen: %s\n"
-"%s"
-
-#: ../fontforge/pluginloading.c:85
-#, c-format
-msgid "Failed to find init function in %s"
-msgstr "Не вдалося знайти функцію init у %s"
-
 #: ../fontforge/print.c:1499 ../fontforge/print.c:3081
 #: ../fontforgeexe/displayfonts.c:697
 msgid "Failed to open temporary output file"

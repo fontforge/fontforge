@@ -80,7 +80,6 @@ extern int old_sfnt_flags;
 #include "nonlineartrans.h"
 #include "othersubrs.h"
 #include "ttf.h"
-#include "plugins.h"
 #include "print.h"
 #include "psread.h"
 #include "savefont.h"
@@ -707,31 +706,6 @@ static PyObject *PyFF_LoadNamelistDir(PyObject *UNUSED(self), PyObject *args) {
 return( NULL );
 
     LoadNamelistDir((char *) filename);
-
-Py_RETURN_NONE;
-}
-
-
-static PyObject *PyFF_LoadPlugin(PyObject *UNUSED(self), PyObject *args) {
-    const char *filename;
-
-    /* here we do want the default encoding */
-    if ( !PyArg_ParseTuple(args,"s", &filename) )
-return( NULL );
-
-    LoadPlugin((char *) filename);
-
-Py_RETURN_NONE;
-}
-
-static PyObject *PyFF_LoadPluginDir(PyObject *UNUSED(self), PyObject *args) {
-    const char *filename;
-
-    /* here we do want the default encoding */
-    if ( !PyArg_ParseTuple(args,"s", &filename) )
-return( NULL );
-
-    LoadPluginDir((char *) filename);
 
 Py_RETURN_NONE;
 }
@@ -18452,8 +18426,6 @@ PyMethodDef module_fontforge_methods[] = {
     { "loadEncodingFile", PyFF_LoadEncodingFile, METH_VARARGS, "Load an encoding file into the list of encodings" },
     { "loadNamelist", PyFF_LoadNamelist, METH_VARARGS, "Load a namelist into the list of namelists" },
     { "loadNamelistDir", PyFF_LoadNamelistDir, METH_VARARGS, "Load a directory of namelist files into the list of namelists" },
-    { "loadPlugin", PyFF_LoadPlugin, METH_VARARGS, "Load a FontForge plugin" },
-    { "loadPluginDir", PyFF_LoadPluginDir, METH_VARARGS, "Load a directory of FontForge plugin files" },
     { "preloadCidmap", PyFF_PreloadCidmap, METH_VARARGS, "Load a cidmap file" },
     { "unicodeFromName", PyFF_UnicodeFromName, METH_VARARGS, "Given a name, look it up in the namelists and find what unicode code point it maps to (returns -1 if not found)" },
     { "nameFromUnicode", PyFF_NameFromUnicode, METH_VARARGS, "Given a unicode code point and (optionally) a namelist, find the corresponding glyph name" },

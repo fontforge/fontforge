@@ -67,8 +67,6 @@ static const char *jongsung[] = { "", "G", "GG", "GS", "N", "NJ", "NH", "D",	\
 
 void inituninameannot(void) {
 /* Initialize unicode name-annotation library access for FontForge */
-/* TODO: Library pluginloading currently disabled - see 20120731-b */
-/* for existing code if you want to re-enable this feature again.  */
 
 #if _NO_LIBUNINAMESLIST
     _UnicodeNameAnnot = NULL; /* libuninameslist not available */

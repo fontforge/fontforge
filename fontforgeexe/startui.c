@@ -45,7 +45,6 @@ extern uninm_blocks_db blocks_db;
 #include <gfile.h>
 #include <gresource.h>
 #include <ustring.h>
-#include <ltdl.h>
 #include <time.h>
 #include <sys/time.h>
 #include <locale.h>
@@ -1448,8 +1447,6 @@ exit( 0 );
     uninm_names_db_close(names_db);	/* close this database before exiting */
     uninm_blocks_db_close(blocks_db);
 #endif
-
-    lt_dlexit();
 
 return( 0 );
 }

@@ -35,7 +35,6 @@ GITIGNOREFILES = \
 	config/ \
 	gnulib/ \
 	lib/ \
-	libltdl/ \
 	uthash/ \
 	'**/*.gcno' \
 	'**/*.gcda'
@@ -63,7 +62,7 @@ include $(top_srcdir)/mk/layout.am
 
 #--------------------------------------------------------------------------
 
-SUBDIRS = inc lib libltdl Unicode gutils
+SUBDIRS = inc lib Unicode gutils
 
 if LIBZMQ
 SUBDIRS += collab
@@ -97,7 +96,6 @@ SUBDIRS += \
 	contrib \
 	doc \
 	nodejs \
-	plugins \
 	po \
 	pycontrib \
 	share \

@@ -32,7 +32,6 @@
 #include "macenc.h"
 #include "namelist.h"
 #include "othersubrs.h"
-#include "plugins.h"
 #include "sfd.h"
 #include "splineutil.h"
 #include <charset.h>
@@ -1209,7 +1208,6 @@ static void PrefsUI_LoadPrefs(void)
     char *pt, *real_xdefs_filename = NULL;
     struct prefs_list *pl;
 
-    LoadPluginDir(NULL);
     LoadPfaEditEncodings();
     LoadGroupList();
 

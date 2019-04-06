@@ -8811,18 +8811,6 @@ msgstr ""
 msgid "Processing Variations"
 msgstr "處理變體"
 
-#: pluginloading.c:77
-#, fuzzy, c-format
-msgid ""
-"Failed to dlopen: %s\n"
-"%s"
-msgstr "寫入 %s 時失敗\n"
-
-#: pluginloading.c:85
-#, fuzzy, c-format
-msgid "Failed to find init function in %s"
-msgstr "尋找上傳識別號時失敗。"
-
 #: print.c:1498 print.c:3120 ../fontforgeexe/displayfonts.c:697
 msgid "Failed to open temporary output file"
 msgstr "開啟臨時輸出檔案時失敗 "

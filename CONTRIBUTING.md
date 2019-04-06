@@ -252,7 +252,7 @@ Upon success, this will leave binary packages in `~/rpmbuild/RPMS` and source pa
 
 You may need to install dependencies, typically packaged for Fedora-derived systems as:
 
-    rpm-devel rpm-build git perl autoconf automake tar libtool glibc-devel m4 gcc cpp python-devel libjpeg-turbo-devel libtiff-devel libpng-devel giflib-devel freetype-devel uuid-devel libtool-ltdl-devel bzip2-devel libxml2-devel libuninameslist-devel libspiro-devel pango-devel cairo-devel chrpath;
+    rpm-devel rpm-build git perl autoconf automake tar libtool glibc-devel m4 gcc cpp python-devel libjpeg-turbo-devel libtiff-devel libpng-devel giflib-devel freetype-devel uuid-devel bzip2-devel libxml2-devel libuninameslist-devel libspiro-devel pango-devel cairo-devel chrpath;
 
 ### Building a Mac OS X app bundle
 

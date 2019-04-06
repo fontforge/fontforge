@@ -26,7 +26,6 @@
  */
 #include "fontforgegtk.h"
 #include <fontforge/groups.h>
-#include <fontforge/plugins.h>
 #include <charset.h>
 #include <gfile.h>
 #include <ustring.h>
@@ -789,7 +788,6 @@ static void PrefsUI_LoadPrefs(void) {
     char *pt;
     struct prefs_list *pl;
 
-    LoadPluginDir(NULL);
     LoadPfaEditEncodings();
     LoadGroupList();
 

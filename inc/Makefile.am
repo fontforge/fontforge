@@ -40,6 +40,5 @@ pkginclude_HEADERS = basics.h chardata.h charset.h dynamic.h	\
 	ffglib.h ffgdk.h
 
 nodist_pkginclude_HEADERS = fontforge-config.h
-noinst_HEADERS = pluginloading.h
 
 -include $(top_srcdir)/git.mk

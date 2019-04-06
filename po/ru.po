@@ -8327,18 +8327,6 @@ msgstr ""
 msgid "Processing Variations"
 msgstr ""
 
-#: ../fontforge/pluginloading.c:77
-#, fuzzy, c-format
-msgid ""
-"Failed to dlopen: %s\n"
-"%s"
-msgstr "Не удалось открыть временный файл"
-
-#: ../fontforge/pluginloading.c:85
-#, fuzzy, c-format
-msgid "Failed to find init function in %s"
-msgstr "Не удалось загрузить данные о кернинге из %s"
-
 #: ../fontforge/print.c:1499 ../fontforge/print.c:3081
 #: ../fontforgeexe/displayfonts.c:697
 msgid "Failed to open temporary output file"

@@ -67,13 +67,6 @@
       the file [.libs]libfontforge.exe should be in a directory defined by the
       logical SYS$SHARE. So either copy it to it or redefine it i.e.: assign
       dev:[fontforge.fontforge.fontforge.libs],sys$sysroot:[syslib] sys$share
-    <LI>
-      To use the plugins (an example is in the [.plugins] directory) you have to
-      create a logical FONTFORGE$PLUGINS pointing to all directories to be scanned
-      for plugins i.e. define/job/trans=(concealed)/nolog fontforge$plugins
-      dev:[fontforge.fontforge.fontforge.plugins.] Note that the final "." before
-      the "]" is essential. Note that both logicals FONTFORGE$PLUGINS and SYS$SHARE
-      can be defined system-wide, for a group of users or for a single user only.
   </UL>
   <P>
 </DIV>

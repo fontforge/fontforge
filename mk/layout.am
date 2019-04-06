@@ -52,10 +52,6 @@ hotkeysdir = $(pkgdatadir)/hotkeys
 # Where stuff that is in $top/share goes
 fontforgesharesdir = $(pkgdatadir)
 
-# Where plugin modules go.
-plugindir = ${pkglibdir}/plugins
-
 # What gets passed as macros to the C sources.
 MY_SHAREDIR = ${pkgdatadir}
 MY_DOCDIR = ${htdocsdir}
-MY_PLUGINDIR = ${plugindir}

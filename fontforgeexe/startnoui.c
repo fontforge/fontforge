@@ -36,7 +36,6 @@ extern uninm_blocks_db blocks_db;
 #endif
 #include <gfile.h>
 #include <ustring.h>
-#include <ltdl.h>
 #include <time.h>
 #include <sys/time.h>
 #include <locale.h>
@@ -133,6 +132,5 @@ int fontforge_main( int argc, char **argv ) {
     uninm_blocks_db_close(blocks_db);
 #endif
 
-    lt_dlexit();
 return( 0 );
 }

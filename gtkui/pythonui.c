@@ -34,7 +34,6 @@
 
 #include "fontforgegtk.h"
 #include <fontforge/ttf.h>
-#include <fontforge/plugins.h>
 #include <ustring.h>
 #include <fontforge/scripting.h>
 #include <fontforge/scriptfuncs.h>

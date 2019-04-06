@@ -8387,18 +8387,6 @@ msgstr ""
 msgid "Processing Variations"
 msgstr ""
 
-#: pluginloading.c:77
-#, fuzzy, c-format
-msgid ""
-"Failed to dlopen: %s\n"
-"%s"
-msgstr "Αποτυχία ανοίγματος του αρχείου %s για έξοδο δεδομένων"
-
-#: pluginloading.c:85
-#, c-format
-msgid "Failed to find init function in %s"
-msgstr ""
-
 #: print.c:1498 print.c:3120 ../fontforgeexe/displayfonts.c:697
 msgid "Failed to open temporary output file"
 msgstr "Αποτυχία ανοίγματος παρωδικού αρχείου εξόδου"

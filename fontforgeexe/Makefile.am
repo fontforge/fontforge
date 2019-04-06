@@ -86,7 +86,7 @@ AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 	"-I$(top_builddir)/lib" "-I$(top_srcdir)/lib"			\
               "-I$(top_srcdir)/fontforge" \
 	"-DSHAREDIR=\"${MY_SHAREDIR}\"" "-DDOCDIR=\"${MY_DOCDIR}\""	\
-	"-DPLUGINDIR=\"${MY_PLUGINDIR}\"" $(MY_CFLAGS)
+	$(MY_CFLAGS)
 #--------------------------------------------------------------------------
 
 if THE_PROGRAMS
@@ -143,7 +143,7 @@ libfontforgeexe_la_SOURCES = startnoui.c
 endif !GRAPHICAL_USER_INTERFACE
 
 
-libfontforgeexe_la_LIBADD += $(LTDLDEPS) $(LIBADD) $(GUILIBADD) $(MY_LIBS) $(GTK2_LIBS) $(top_builddir)/fontforge/libfontforge.la
+libfontforgeexe_la_LIBADD += $(LIBADD) $(GUILIBADD) $(MY_LIBS) $(GTK2_LIBS) $(top_builddir)/fontforge/libfontforge.la
 
 libfontforgeexe_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBFONTFORGEEXE_VERSION) \
 	${MY_LIB_LDFLAGS}
