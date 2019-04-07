@@ -27,6 +27,8 @@
 #ifndef _GFILE_H
 #define _GFILE_H
 
+#include "basics.h"
+
 /* For mode_t */
 #include <sys/types.h>
 
@@ -69,6 +71,7 @@ extern int GFileExists(const char *file);
 extern int GFileModifyable(const char *file);
 extern int GFileModifyableDir(const char *file);
 extern int GFileReadable(const char *file);
+extern FILE* GFileTmpfile();
 extern int GFileRemove(const char *path, int recursive);
 extern int GFileMkDir(const char *name, int mode);
 extern int GFileRmDir(const char *name);

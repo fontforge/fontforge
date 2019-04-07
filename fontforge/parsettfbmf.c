@@ -31,6 +31,7 @@
 #include "bvedit.h"
 #include "fontforge.h"
 #include "chardata.h"
+#include <gfile.h>
 #include "mem.h"
 #include "splinefill.h"
 #include "tottf.h"
@@ -1036,7 +1037,7 @@ static struct bitmapSizeTable *ttfdumpstrikelocs(FILE *bloc,FILE *bdat,
     struct bitmapSizeTable *size = calloc(1,sizeof(struct bitmapSizeTable));
     struct indexarray *cur, *last=NULL, *head=NULL;
     int i,j, final,cnt;
-    FILE *subtables = tmpfile();
+    FILE *subtables = GFileTmpfile();
     int32 pos = ftell(bloc), startofsubtables, base, stlen;
     BDFChar *bc, *bc2;
     int depth = BDFDepth(bdf), format, mwidth, mheight;
@@ -1212,8 +1213,8 @@ void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes) {
     BDFChar *bc;
     struct bdfcharlist *bl;
 
-    at->bdat = tmpfile();
-    at->bloc = tmpfile();
+    at->bdat = GFileTmpfile();
+    at->bloc = GFileTmpfile();
     /* aside from the names the version number is about the only difference */
     /*  I'm aware of. Oh MS adds a couple new sub-tables, but I haven't seen */
     /*  them used, and Apple also has a subtable MS doesn't support, but so what? */
@@ -1328,7 +1329,7 @@ void ttfdumpbitmapscaling(SplineFont *sf,struct alltabs *at,int32 *sizes) {
 	    ++cnt;
     }
 
-    at->ebsc = tmpfile();
+    at->ebsc = GFileTmpfile();
     putlong( at->ebsc, 0x20000 );
     putlong( at->ebsc, cnt );
     for ( i=0; expected_sizes[i]!=0; ++i ) {

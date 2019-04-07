@@ -410,7 +410,7 @@ return;
 	/* We can't use AutoTrace's own "background-color" ignorer because */
 	/*  it ignores counters as well as surrounds. So "O" would be a dark */
 	/*  oval, etc. */
-	ps = tmpfile();
+	ps = GFileTmpfile();
 	if ( (pid=fork())==0 ) {
 	    /* Child */
 	    close(1);

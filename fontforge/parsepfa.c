@@ -29,6 +29,7 @@
 #include "fontforge.h"
 #include "parsettf.h"
 #include "psread.h"
+#include <gfile.h>
 #include <gutils.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1362,7 +1363,7 @@ static void sfnts2tempfile(struct fontparse *fp,FILE *in,char *line) {
     int complained = false;
     int ch=0;
 
-    fp->sfnts = tmpfile();
+    fp->sfnts = GFileTmpfile();
 
     /* first finish off anything in the current line */
     while ( (pt=strpbrk(line,"<]" ))!=NULL ) {
@@ -2627,7 +2628,7 @@ FontDict *_ReadPSFont(FILE *in) {
     struct fontparse fp;
     struct stat b;
 
-    temp = tmpfile();
+    temp = GFileTmpfile();
     if ( temp==NULL ) {
 	LogError( _("Cannot open a temporary file\n") );
 	fclose(in); 

@@ -33,6 +33,7 @@
 #include "encoding.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
+#include <gfile.h>
 #include "lookups.h"
 #include "namelist.h"
 #include "parsettf.h"
@@ -392,7 +393,7 @@ static void DataURI_ImageDump(FILE *file,struct gimage *img) {
 
     /* Technically we can only put a file into an URI if the whole thing is */
     /*  less than 1024 bytes long. But I shall ignore that issue */
-    imgf = tmpfile();
+    imgf = GFileTmpfile();
 #if !defined(_NO_LIBJPEG)
     if ( base->image_type == it_true ) {
 	done = GImageWrite_Jpeg(img,imgf,78,false);
@@ -2422,7 +2423,7 @@ return( NULL );
 	LogError(_("Unsupported mime type in data URI: %s\n"), mimetype );
 return( NULL );
     }
-    tmp = tmpfile();
+    tmp = GFileTmpfile();
     if ( is_base64 )
 	DecodeBase64ToFile(tmp,uri);
     else {

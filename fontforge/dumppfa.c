@@ -31,6 +31,7 @@
 #include "bvedit.h"
 #include "fontforge.h"
 #include "fvfonts.h"
+#include <gfile.h>
 #include "parsepfa.h"
 #include "psread.h"
 #include "splineorder2.h"
@@ -2236,13 +2237,13 @@ static void dumpfontdict(FILE *out, SplineFont *sf, int format, int flags,
 /*  is least significant */
     if ( format==ff_pfb || format==ff_mmb ) {
 	FILE *temp;
-	temp = tmpfile();
+	temp = GFileTmpfile();
 	dumpinitialascii((DumpChar) fputc,temp,sf,format,map,fullsf,layer );
 	mkheadercopyfile(temp,out,1);
-	temp = tmpfile();
+	temp = GFileTmpfile();
 	dumpencodedstuff((DumpChar) fputc,temp,sf,format,flags,map,layer);
 	mkheadercopyfile(temp,out,2);
-	temp = tmpfile();
+	temp = GFileTmpfile();
 	dumpfinalascii((DumpChar) fputc,temp,sf,format);
 	mkheadercopyfile(temp,out,1);
 /* final header, 3=>eof??? */
@@ -2438,7 +2439,7 @@ return( NULL );
     ff_progress_next_stage();
     ff_progress_change_line1(_("Saving PostScript Font"));
 
-    chrs = tmpfile();
+    chrs = GFileTmpfile();
     for ( i=0; i<chars->next; ++i ) {
 	if ( chars->lens[i]!=0 ) {
 	    leniv = cidbytes->fds[cidbytes->fdind[i]].leniv;
@@ -2452,7 +2453,7 @@ return( NULL );
 		chars->lens[i] += leniv;
 	}
     }
-    subrs = tmpfile(); subrtot = 0;
+    subrs = GFileTmpfile(); subrtot = 0;
     for ( i=0; i<cidbytes->fdcnt; ++i ) {
 	fd = &cidbytes->fds[i];
 	leniv = fd->leniv;
@@ -2479,7 +2480,7 @@ return( NULL );
 
     offset = (cidbytes->cidcnt+1)*(cidbytes->fdbytes+cidbytes->gdbytes) +
 	    (subrtot+1) * cidbytes->gdbytes + ftell(subrs);
-    binary = tmpfile();
+    binary = GFileTmpfile();
     for ( i=0; i<cidbytes->cidcnt; ++i ) {
 	dump_index(binary,cidbytes->fdbytes,cidbytes->fdind[i]);
 	dump_index(binary,cidbytes->gdbytes,offset);

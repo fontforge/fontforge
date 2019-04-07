@@ -29,6 +29,7 @@
 #include "fontforgevw.h"
 #include "fffreetype.h"
 #include "fvfonts.h"
+#include <gfile.h>
 #include "splinefill.h"
 #include "splineorder2.h"
 #include "splinesaveafm.h"
@@ -188,7 +189,7 @@ return( NULL );
 	ftc->file = NULL;
 	ftc->layer = layer;
 
-	ftc->file = tmpfile();
+	ftc->file = GFileTmpfile();
 	if ( ftc->file==NULL ) {
 	    free(ftc);
 return( NULL );

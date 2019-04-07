@@ -29,6 +29,7 @@
 
 #include "cvundoes.h"
 #include "fontforgeui.h"
+#include <gfile.h>
 #include <gresource.h>
 #include <utype.h>
 #include <ustring.h>
@@ -99,7 +100,7 @@ static void ExecNative(GGadget *g, GEvent *e) {
 return;			/* Error return */
     }
 
-    c.script = tmpfile();
+    c.script = GFileTmpfile();
     if ( c.script==NULL )
 	ScriptError(&c, "Can't create temporary file");
     else {

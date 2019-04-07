@@ -26,6 +26,7 @@
  */
 #include "fontforge-config.h"
 
+#include <gfile.h>
 #include <gutils.h>
 #include <stdio.h>
 #include <math.h>
@@ -1230,7 +1231,7 @@ return( NULL );
 	free(oldfn); free(oldpn); free(oldea);
     }
     if ( gdisp->filename==NULL ) {
-	init = tmpfile();
+	init = GFileTmpfile();
 	if ( init==NULL ) {
 	    GDrawError("Can't open printer temporary file" );
 return( NULL );
@@ -1240,7 +1241,7 @@ return( NULL );
 		gdisp->filename);
 return( NULL );
     }
-    output = tmpfile();
+    output = GFileTmpfile();
     if ( output==NULL )
 	output = init;
 

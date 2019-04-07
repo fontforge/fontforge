@@ -27,6 +27,7 @@
  */
 #include "fontforgeui.h"
 #include "fvfonts.h"
+#include <gfile.h>
 #include "glyphcomp.h"
 #include "lookups.h"
 #include "splinefill.h"
@@ -2940,7 +2941,7 @@ static void ReadKids(struct nested_file *nf,int desired_nest,struct node *parent
 }
     
 static void BuildFCmpNodes(struct att_dlg *att, SplineFont *sf1, SplineFont *sf2,int flags) {
-    FILE *tmp = tmpfile();
+    FILE *tmp = GFileTmpfile();
     struct node *tables;
     struct nested_file nf;
 

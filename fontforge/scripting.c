@@ -49,6 +49,7 @@
 #include "fvfonts.h"
 #include "fvimportbdf.h"
 #include "fvmetrics.h"
+#include <gfile.h>
 #include "lookups.h"
 #include "macbinary.h"
 #include "mem.h"
@@ -10702,11 +10703,11 @@ void ff_statement(Context *c) {
 }
 
 static FILE *CopyNonSeekableFile(FILE *former) {
-/* Copy input stream or Standard input into an internal tmpfile  */
+/* Copy input stream or Standard input into an internal temp file  */
 /* that can then be used for running FontForge or Python scripts */
-/* The tmpfile automatically closes/deletes when FontForge exits */
+/* The temp file automatically closes/deletes when FontForge exits */
     int ch;
-    FILE *temp = tmpfile();
+    FILE *temp = GFileTmpfile();
     int istty = isatty(fileno(former)) && former==stdin;
 
     if ( temp==NULL ) return( former );
@@ -10790,7 +10791,7 @@ _Noreturn void ProcessNativeScript(int argc, char *argv[], FILE *script) {
     } else if ( string!=NULL ) {
 		// If command line has a command string, copy it into a temporary file for easier use.
 		c.filename = "<command-string>";
-		c.script = tmpfile();
+		c.script = GFileTmpfile();
 		fwrite(string,1,strlen(string),c.script);
 		rewind(c.script);
     } else if ( i<argc && strcmp(argv[i],"-")!=0 ) {
@@ -10807,7 +10808,7 @@ _Noreturn void ProcessNativeScript(int argc, char *argv[], FILE *script) {
     /*  for terminals. They should return -1, EBADF */
     if ( c.script!=NULL && (ftell(c.script)==-1 || isatty(fileno(c.script))) ) {
 		if (c.script == stdin) {
-			c.script = tmpfile();
+			c.script = GFileTmpfile();
 			if (c.script)
 				c.interactive = true;
 		} else {

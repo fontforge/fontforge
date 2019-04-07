@@ -30,6 +30,7 @@
 #include "ustring.h"
 #include "fileutil.h"
 #include "gfile.h"
+#include <fcntl.h>
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>		/* for mkdir */
@@ -390,6 +391,61 @@ int GFileModifyableDir(const char *file) {
 
 int GFileReadable(const char *file) {
 return( access(file,04)==0 );
+}
+
+/**
+ *  Creates a temporary file, similar to tmpfile.
+ *  Used because the default tmpfile implementation on Windows is broken
+ */
+FILE *GFileTmpfile() {
+#ifndef _WIN32
+    return tmpfile();
+#else
+    wchar_t temp_path[MAX_PATH + 1];
+    DWORD ret = GetTempPathW(MAX_PATH + 1, temp_path);
+    if (!ret) {
+        return NULL;
+    }
+
+    while(true) {
+        wchar_t *temp_name = _wtempnam(temp_path, L"FF_");
+        if (!temp_name) {
+            return NULL;
+        }
+
+        HANDLE handle = CreateFileW(
+            temp_name,
+            GENERIC_READ | GENERIC_WRITE,
+            0,
+            NULL,
+            CREATE_NEW,
+            FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE,
+            NULL
+        );
+        free(temp_name);
+
+        if (handle == INVALID_HANDLE_VALUE) {
+            if (GetLastError() != ERROR_FILE_EXISTS) {
+                return NULL;
+            }
+        } else {
+            int fd = _open_osfhandle((intptr_t)handle, _O_RDWR|_O_CREAT|_O_TEMPORARY|_O_BINARY);
+            if (fd == -1) {
+                CloseHandle(handle);
+                return NULL;
+            }
+
+            FILE *fp = _fdopen(fd, "w+");
+            if (!fp) {
+                _close(fd);
+                return NULL;
+            }
+
+            return fp;
+        }
+    }
+    return NULL;
+#endif
 }
 
 /**

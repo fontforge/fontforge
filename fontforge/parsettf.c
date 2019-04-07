@@ -31,6 +31,7 @@
 #include "encoding.h"
 #include "fontforge.h"
 #include "fvimportbdf.h"
+#include <gfile.h>
 #include "lookups.h"
 #include "splinefont.h"
 #include "macenc.h"
@@ -4052,7 +4053,7 @@ static int readtyp1glyphs(FILE *ttf,struct ttfinfo *info) {
 	fseek(ttf,info->typ1_start+i,SEEK_SET);
     }
     
-    tmp = tmpfile();
+    tmp = GFileTmpfile();
     for ( i=0; i<info->typ1_length; ++i )
 	putc(getc(ttf),tmp);
     rewind(tmp);

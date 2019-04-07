@@ -1685,16 +1685,16 @@ return;
 	char *buf = malloc(strlen(old->filename)+20);
 	strcpy(buf,old->filename);
 	if ( old->compression!=0 ) {
-	    char *tmpfile;
+	    char *tmpf;
 	    strcat(buf,compressors[old->compression-1].ext);
 	    strcat(buf,"~");
-	    tmpfile = Decompress(buf,old->compression-1);
-	    if ( tmpfile==NULL )
+	    tmpf = Decompress(buf,old->compression-1);
+	    if ( tmpf==NULL )
 		temp = NULL;
 	    else {
-		temp = ReadSplineFont(tmpfile,0);
-		unlink(tmpfile);
-		free(tmpfile);
+		temp = ReadSplineFont(tmpf,0);
+		unlink(tmpf);
+		free(tmpf);
 	    }
 	} else {
 	    strcat(buf,"~");
@@ -1703,17 +1703,17 @@ return;
 	free(buf);
     } else {
 	if ( old->compression!=0 ) {
-	    char *tmpfile;
+	    char *tmpf;
 	    char *buf = malloc(strlen(old->filename)+20);
 	    strcpy(buf,old->filename);
 	    strcat(buf,compressors[old->compression-1].ext);
-	    tmpfile = Decompress(buf,old->compression-1);
-	    if ( tmpfile==NULL )
+	    tmpf = Decompress(buf,old->compression-1);
+	    if ( tmpf==NULL )
 		temp = NULL;
 	    else {
-		temp = ReadSplineFont(tmpfile,0);
-		unlink(tmpfile);
-		free(tmpfile);
+		temp = ReadSplineFont(tmpf,0);
+		unlink(tmpf);
+		free(tmpf);
 	    }
 	} else
 	    temp = ReadSplineFont(old->origname,0);

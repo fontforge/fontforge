@@ -29,6 +29,7 @@
 #include "autotrace.h"
 #include "cvundoes.h"
 #include "fontforgeui.h"
+#include <gfile.h>
 #include "lookups.h"
 #include "print.h"
 #include "sftextfieldP.h"
@@ -699,7 +700,7 @@ return(true);
 		}
 	    } else {
 		file = NULL;
-		pi->pi.out = tmpfile();
+		pi->pi.out = GFileTmpfile();
 		if ( pi->pi.out==NULL ) {
 		    ff_post_error(_("Failed to open temporary output file"),_("Failed to open temporary output file"));
 return(true);

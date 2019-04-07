@@ -33,6 +33,7 @@
 #include "encoding.h"
 #include "fontforge.h"
 #include "fvfonts.h"
+#include <gfile.h>
 #include "lookups.h"
 #include "macenc.h"
 #include "mem.h"
@@ -1512,10 +1513,10 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     gi->pointcounts = malloc((gi->maxp->numGlyphs+1)*sizeof(int32));
     memset(gi->pointcounts,-1,(gi->maxp->numGlyphs+1)*sizeof(int32));
     gi->next_glyph = 0;
-    gi->glyphs = tmpfile();
-    gi->hmtx = tmpfile();
+    gi->glyphs = GFileTmpfile();
+    gi->hmtx = GFileTmpfile();
     if ( sf->hasvmetrics )
-	gi->vmtx = tmpfile();
+	gi->vmtx = GFileTmpfile();
     FigureFullMetricsEnd(sf,gi,true);
 
     if ( fixed>0 ) {
@@ -1582,7 +1583,7 @@ return( true );
 
 /* Generate a null glyph and loca table for X opentype bitmaps */
 static int dumpnoglyphs(struct glyphinfo *gi) {
-    gi->glyphs = tmpfile();
+    gi->glyphs = GFileTmpfile();
     gi->glyph_len = 0;
     /* loca gets built in dummyloca */
 return( true );
@@ -1604,7 +1605,7 @@ return( i );
     pos = ftell(at->sidf)+1;
     if ( pos>=65536 && !at->sidlongoffset ) {
 	at->sidlongoffset = true;
-	news = tmpfile();
+	news = GFileTmpfile();
 	rewind(at->sidh);
 	for ( i=0; i<at->sidcnt; ++i )
 	    putlong(news,getushort(at->sidh));
@@ -1952,7 +1953,7 @@ static void _dumpcffstrings(FILE *file, struct pschars *strs) {
 }
 
 static FILE *dumpcffstrings(struct pschars *strs) {
-    FILE *file = tmpfile();
+    FILE *file = GFileTmpfile();
     _dumpcffstrings(file,strs);
     PSCharsFree(strs);
 return( file );
@@ -2483,9 +2484,9 @@ static int dumpcffhmtx(struct alltabs *at,SplineFont *sf,int bitmaps) {
     int dovmetrics = sf->hasvmetrics;
     int width = at->gi.fixed_width;
 
-    at->gi.hmtx = tmpfile();
+    at->gi.hmtx = GFileTmpfile();
     if ( dovmetrics )
-	at->gi.vmtx = tmpfile();
+	at->gi.vmtx = GFileTmpfile();
     FigureFullMetricsEnd(sf,&at->gi,bitmaps);	/* Bitmap fonts use ttf convention of 3 magic glyphs */
     if ( at->gi.bygid[0]!=-1 && (sf->glyphs[at->gi.bygid[0]]->width==width || width<=0 )) {
 	putshort(at->gi.hmtx,sf->glyphs[at->gi.bygid[0]]->width);
@@ -2558,9 +2559,9 @@ static void dumpcffcidhmtx(struct alltabs *at,SplineFont *_sf) {
     SplineFont *sf;
     int dovmetrics = _sf->hasvmetrics;
 
-    at->gi.hmtx = tmpfile();
+    at->gi.hmtx = GFileTmpfile();
     if ( dovmetrics )
-	at->gi.vmtx = tmpfile();
+	at->gi.vmtx = GFileTmpfile();
     FigureFullMetricsEnd(_sf,&at->gi,false);
 
     max = 0;
@@ -2615,12 +2616,12 @@ static int dumptype2glyphs(SplineFont *sf,struct alltabs *at) {
     int i;
     struct pschars *subrs, *chrs;
 
-    at->cfff = tmpfile();
-    at->sidf = tmpfile();
-    at->sidh = tmpfile();
-    at->charset = tmpfile();
-    at->encoding = tmpfile();
-    at->private = tmpfile();
+    at->cfff = GFileTmpfile();
+    at->sidf = GFileTmpfile();
+    at->sidh = GFileTmpfile();
+    at->charset = GFileTmpfile();
+    at->encoding = GFileTmpfile();
+    at->private = GFileTmpfile();
 
     dumpcffheader(at->cfff);
     dumpcffnames(sf,at->cfff);
@@ -2659,17 +2660,17 @@ static int dumpcidglyphs(SplineFont *sf,struct alltabs *at) {
     int i;
     struct pschars *glbls = NULL, *chrs;
 
-    at->cfff = tmpfile();
-    at->sidf = tmpfile();
-    at->sidh = tmpfile();
-    at->charset = tmpfile();
-    at->fdselect = tmpfile();
-    at->fdarray = tmpfile();
-    at->globalsubrs = tmpfile();
+    at->cfff = GFileTmpfile();
+    at->sidf = GFileTmpfile();
+    at->sidh = GFileTmpfile();
+    at->charset = GFileTmpfile();
+    at->fdselect = GFileTmpfile();
+    at->fdarray = GFileTmpfile();
+    at->globalsubrs = GFileTmpfile();
 
     at->fds = calloc(sf->subfontcnt,sizeof(struct fd2data));
     for ( i=0; i<sf->subfontcnt; ++i ) {
-	at->fds[i].private = tmpfile();
+	at->fds[i].private = GFileTmpfile();
 	ATFigureDefWidth(sf->subfonts[i],at,i);
     }
     if ( (chrs = CID2ChrsSubrs2(sf,at->fds,at->gi.flags,&glbls,at->gi.layer))==NULL )
@@ -3587,7 +3588,7 @@ docs are wrong.
 static void redoloca(struct alltabs *at) {
     int i;
 
-    at->loca = tmpfile();
+    at->loca = GFileTmpfile();
     if ( at->head.locais32 ) {
 	for ( i=0; i<=at->maxp.numGlyphs; ++i )
 	    putlong(at->loca,at->gi.loca[i]);
@@ -3607,7 +3608,7 @@ static void redoloca(struct alltabs *at) {
 
 static void dummyloca(struct alltabs *at) {
 
-    at->loca = tmpfile();
+    at->loca = GFileTmpfile();
     if ( at->head.locais32 ) {
 	putlong(at->loca,0);
 	at->localen = sizeof(int32);
@@ -3620,7 +3621,7 @@ static void dummyloca(struct alltabs *at) {
 
 static void redohead(struct alltabs *at) {
     if (at->headf) fclose(at->headf);
-    at->headf = tmpfile();
+    at->headf = GFileTmpfile();
 
     putlong(at->headf,at->head.version);
     putlong(at->headf,at->head.revision);
@@ -3653,10 +3654,10 @@ static void redohhead(struct alltabs *at,int isv) {
     FILE *f;
 
     if ( !isv ) {
-	f = at->hheadf = tmpfile();
+	f = at->hheadf = GFileTmpfile();
 	head = &at->hhead;
     } else {
-	f = at->vheadf = tmpfile();
+	f = at->vheadf = GFileTmpfile();
 	head = &at->vhead;
     }
 
@@ -3687,7 +3688,7 @@ static void redohhead(struct alltabs *at,int isv) {
 }
 
 static void redomaxp(struct alltabs *at,enum fontformat format) {
-    at->maxpf = tmpfile();
+    at->maxpf = GFileTmpfile();
 
     putlong(at->maxpf,at->maxp.version);
     putshort(at->maxpf,at->maxp.numGlyphs);
@@ -3714,7 +3715,7 @@ static void redomaxp(struct alltabs *at,enum fontformat format) {
 
 static void redoos2(struct alltabs *at) {
     int i;
-    at->os2f = tmpfile();
+    at->os2f = GFileTmpfile();
 
     putshort(at->os2f,at->os2.version);
     putshort(at->os2f,at->os2.avgCharWid);
@@ -3767,7 +3768,7 @@ static void redoos2(struct alltabs *at) {
 static void dumpgasp(struct alltabs *at, SplineFont *sf) {
     int i;
 
-    at->gaspf = tmpfile();
+    at->gaspf = GFileTmpfile();
     if ( sf->gasp_cnt==0 ) {
 	putshort(at->gaspf,0);	/* Old version number */
 	/* For fonts with no instructions always dump a gasp table which */
@@ -4051,7 +4052,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     nt.encoding_name = at->map->enc;
     nt.format	     = format;
     nt.applemode     = at->applemode;
-    nt.strings	     = tmpfile();
+    nt.strings	     = GFileTmpfile();
     if (isttflike_ff(format) && (at->gi.flags&ttf_flag_symbol))
 	nt.format    = ff_ttfsym;
 
@@ -4107,7 +4108,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 
     qsort(nt.entries,nt.cur,sizeof(NameEntry),compare_entry);
 
-    at->name = tmpfile();
+    at->name = GFileTmpfile();
     putshort(at->name,0);				/* format */
     putshort(at->name,nt.cur);				/* numrec */
     putshort(at->name,(3+nt.cur*6)*sizeof(int16));	/* offset to strings */
@@ -4143,7 +4144,7 @@ static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format)
 	    (at->gi.flags&ttf_flag_shortps));
     uint32 here;
 
-    at->post = tmpfile();
+    at->post = GFileTmpfile();
 
     putlong(at->post,shorttable?0x00030000:0x00020000);	/* formattype */
     putfixed(at->post,sf->italicangle);
@@ -4402,7 +4403,7 @@ return( NULL );
 	subheads[i].rangeoff = subheads[i].rangeoff*sizeof(uint16) +
 		(subheadcnt-i)*sizeof(struct subhead) + sizeof(uint16);
 
-    sub = tmpfile();
+    sub = GFileTmpfile();
     if ( sub==NULL )
 return( NULL );
 
@@ -4522,7 +4523,7 @@ return(NULL);
     if ( !map->enc->is_unicodefull )
 	map = freeme = EncMapFromEncoding(sf,FindOrMakeEncoding("ucs4"));
 
-    format12 = tmpfile();
+    format12 = GFileTmpfile();
     if ( format12==NULL )
 return( NULL );
 
@@ -4567,7 +4568,7 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
     struct cmapseg { uint16 start, end; uint16 delta; uint16 rangeoff; } *cmapseg;
     uint16 *ranges;
     SplineChar *sc;
-    FILE *format4 = tmpfile();
+    FILE *format4 = GFileTmpfile();
 
     memset(avail,0xff,65536*sizeof(uint32));
     if ( map->enc->is_unicodebmp || map->enc->is_unicodefull ) { int gid;
@@ -4727,7 +4728,7 @@ return( NULL );			/* No variation selectors */
 
     avail = malloc(unicode4_size*sizeof(uint32));
 
-    format14 = tmpfile();
+    format14 = GFileTmpfile();
     putshort(format14,14);
     putlong(format14,0);		/* Length, fixup later */
     putlong(format14,vs_cnt);		/* number of selectors */
@@ -4833,7 +4834,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
     if (isttflike_ff(format) && (at->gi.flags&ttf_flag_symbol))
 	modformat = ff_ttfsym;
 
-    at->cmap = tmpfile();
+    at->cmap = GFileTmpfile();
 
     /* MacRoman encoding table */ /* Not going to bother with making this work for cid fonts */
     /* I now see that Apple doesn't restrict us to format 0 sub-tables (as */
@@ -5234,7 +5235,7 @@ static FILE *dumpstoredtable(SplineFont *sf,uint32 tag,int *len) {
 return( NULL );
     }
 
-    out = tmpfile();
+    out = GFileTmpfile();
     fwrite(tab->data,1,tab->len,out);
     if ( (tab->len&1))
 	putc('\0',out);
@@ -5250,7 +5251,7 @@ static FILE *dumpsavedtable(struct ttf_table *tab) {
     if ( tab==NULL )
 return( NULL );
 
-    out = tmpfile();
+    out = GFileTmpfile();
     fwrite(tab->data,1,tab->len,out);
     if ( (tab->len&1))
 	putc('\0',out);
@@ -6216,7 +6217,7 @@ static void dumphex(struct hexout *hexout,FILE *temp,int length) {
 }
 
 static void dumptype42(FILE *type42,struct alltabs *at, enum fontformat format) {
-    FILE *temp = tmpfile();
+    FILE *temp = GFileTmpfile();
     struct hexout hexout;
     int i, length;
 
@@ -6976,7 +6977,7 @@ return( 0 );
 	/* Generate all the fonts (don't generate DSIGs, there's one DSIG for */
 	/*  the ttc as a whole) */
 	for ( sfitem= sfs, cnt=0; sfitem!=NULL; sfitem=sfitem->next, ++cnt ) {
-	    sfitem->tempttf = tmpfile();
+	    sfitem->tempttf = GFileTmpfile();
 	    if ( sfitem->tempttf==NULL )
 		ok=0;
 	    else
