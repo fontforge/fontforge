@@ -15,8 +15,6 @@ foo = fontforge.hasSpiro()
 # fontforge.loadEncodingFile()
 # fontforge.loadNamelist()
 # fontforge.loadNamelistDir()
-# fontforge.loadPlugin()
-# fontforge.loadPluginDir()
 # fontforge.preloadCidmap()
 
 fontforge.printSetup("lpr")

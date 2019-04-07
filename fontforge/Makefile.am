@@ -105,7 +105,7 @@ pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 	uiinterface.h bezctx_ff.h edgelist.h groups.h nonlineartrans.h		\
 	sd.h unicoderange.h bitmapcontrol.h encoding.h ofl.h search.h		\
 	usermenu.h fffreetype.h PfEd.h sfd1.h ffpython.h			\
-	plugins.h sflayoutP.h print.h splinefont.h cvruler.h           \
+	sflayoutP.h print.h splinefont.h cvruler.h           \
 	flaglist.h \
 	glif_name_hash.h \
 	glyphcomp.h \
@@ -125,7 +125,7 @@ AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
 	"-DSHAREDIR=\"${MY_SHAREDIR}\"" "-DDOCDIR=\"${MY_DOCDIR}\""	\
 	"-I$(top_builddir)/uthash/src" "-I$(top_srcdir)/uthash/src"	\
 	"-DFF_UTHASH_GLIF_NAMES=1"					\
-	"-DPLUGINDIR=\"${MY_PLUGINDIR}\"" $(MY_CFLAGS)
+	$(MY_CFLAGS)
 
 #--------------------------------------------------------------------------
 
@@ -140,8 +140,8 @@ libfontforge_la_SOURCES = activeinui.c asmfpst.c autohint.c autosave.c	\
 	lookups.c macbinary.c macenc.c mathconstants.c mm.c namelist.c	\
 	nonlineartrans.c noprefs.c nouiutil.c nowakowskittfinstr.c	\
 	ofl.c othersubrs.c palmfonts.c parsepdf.c parsepfa.c		\
-	parsettfatt.c parsettfbmf.c parsettf.c parsettfvar.c plugins.c	\
-	pluginloading.c print.c psread.c pua.c python.c savefont.c	\
+	parsettfatt.c parsettfbmf.c parsettf.c parsettfvar.c    	\
+	print.c psread.c pua.c python.c savefont.c	                \
 	scripting.c scstyles.c search.c sfd1.c sfd.c sflayout.c		\
 	sfundo.h spiro.c splinechar.c splinefill.c splinefont.c		\
 	splineorder2.c splineoverlap.c splinesaveafm.c splinesave.c	\
@@ -163,11 +163,7 @@ libfontforge_la_LIBADD += libfontforge_cxx.la -lstdc++
 endif
 
 libfontforge_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_CFLAGS)
-libfontforge_la_LIBADD += splinerefigure.lo $(LIBADD) $(LIBLTDL)
-
-if PLUGIN_GB12345
-libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/gb12345.la
-endif PLUGIN_GB12345
+libfontforge_la_LIBADD += splinerefigure.lo $(LIBADD)
 
 if LIBZMQ
 libfontforge_la_LIBADD += $(top_builddir)/collab/libzmqcollab.la $(LIBZMQ_LIBS)

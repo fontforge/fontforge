@@ -9014,18 +9014,6 @@ msgstr ""
 msgid "Processing Variations"
 msgstr "Đang xử lý các biến thể"
 
-#: pluginloading.c:77
-#, fuzzy, c-format
-msgid ""
-"Failed to dlopen: %s\n"
-"%s"
-msgstr "Lỗi ghi %s\n"
-
-#: pluginloading.c:85
-#, fuzzy, c-format
-msgid "Failed to find init function in %s"
-msgstr "Không tìm thấy mã số tải lên."
-
 #: print.c:1498 print.c:3120 ../fontforgeexe/displayfonts.c:697
 msgid "Failed to open temporary output file"
 msgstr "Lỗi mở tập tin xuất tạm thời"

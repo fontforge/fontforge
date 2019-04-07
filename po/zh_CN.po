@@ -9503,20 +9503,6 @@ msgid "Processing Variations"
 msgstr "i处理变化"
 
 #
-#: pluginloading.c:77
-#, fuzzy, c-format
-msgid ""
-"Failed to dlopen: %s\n"
-"%s"
-msgstr "不能写入 %s\n"
-
-#
-#: pluginloading.c:85
-#, fuzzy, c-format
-msgid "Failed to find init function in %s"
-msgstr "未找到上传账号。"
-
-#
 #: print.c:1498 print.c:3120 ../fontforgeexe/displayfonts.c:697
 msgid "Failed to open temporary output file"
 msgstr "未能打开临时输出文件"

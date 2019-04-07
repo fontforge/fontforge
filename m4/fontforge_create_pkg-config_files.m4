@@ -31,7 +31,6 @@ test x"${i_do_have_libunicodenames}" = xyes && __private_deps="${__private_deps}
 test x"${i_do_have_libreadline}" = xyes && test x"${with_libreadline}" != xno && __private_deps="${__private_deps} ${LIBREADLINE_LIBS}"
 test x"${i_do_have_x}" = xyes && __private_deps="${__private_deps} ${X_PRE_LIBS} ${X_LIBS} ${X_EXTRA_LIBS}"
 __private_deps="${__private_deps} ${PTHREAD_LIBS}"
-__private_deps="${__private_deps} ${LIBLTDL}"
 __private_deps="${__private_deps} ${LIBS}"
 
 __private_exe_deps=""

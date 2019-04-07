@@ -31,7 +31,6 @@
 #include "macenc.h"
 #include "namelist.h"
 #include "othersubrs.h"
-#include "plugins.h"
 #include "sfd.h"
 #include "splineutil.h"
 #include <charset.h>
@@ -737,7 +736,6 @@ static void NOUI_LoadPrefs(void) {
     char *pt;
     struct prefs_list *pl;
 
-    LoadPluginDir(NULL);
     LoadPfaEditEncodings();
     LoadGroupList();
 

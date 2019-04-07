@@ -9072,20 +9072,6 @@ msgstr ""
 msgid "Processing Variations"
 msgstr "Traitement des variations"
 
-#: ../fontforge/pluginloading.c:77
-#, c-format
-msgid ""
-"Failed to dlopen: %s\n"
-"%s"
-msgstr ""
-"Échec de dlopen: %s\n"
-"%s"
-
-#: ../fontforge/pluginloading.c:85
-#, c-format
-msgid "Failed to find init function in %s"
-msgstr "Impossible de trouver la fonction init dans %s"
-
 #: ../fontforge/print.c:1509 ../fontforge/print.c:3091
 #: ../fontforgeexe/displayfonts.c:703
 msgid "Failed to open temporary output file"

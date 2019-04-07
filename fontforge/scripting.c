@@ -96,7 +96,6 @@
 # include <readline/history.h>
 #endif
 #include "ttf.h"
-#include "plugins.h"
 #include "scriptfuncs.h"
 #include "flaglist.h"
 #include "gutils/prefs.h"
@@ -1762,33 +1761,6 @@ static void bWriteStringToFile(Context *c) {
 	c->return_val.u.ival = fwrite(c->a.vals[1].u.sval,1,strlen(c->a.vals[1].u.sval),f);
 	fclose(f);
     }
-}
-
-static void bLoadPlugin(Context *c) {
-    char *name, *_name;
-
-    _name = script2utf8_copy(c->a.vals[1].u.sval);
-    name = utf82def_copy(_name); free(_name);
-    LoadPlugin(name);
-    free(name);
-}
-
-static void bLoadPluginDir(Context *c) {
-    char *dir=NULL, *_dir;
-
-    if ( c->a.argc>2 ) {
-	c->error = ce_wrongnumarg;
-	return;
-    } else if ( c->a.argc==2 ) {
-	if ( c->a.vals[1].type!=v_str ) {
-	    c->error = ce_badargtype;
-	    return;
-	}
-	_dir = script2utf8_copy(c->a.vals[1].u.sval);
-	dir = utf82def_copy(_dir); free(_dir);
-    }
-    LoadPluginDir(dir);
-    free(dir);
 }
 
 static void bLoadNamelist(Context *c) {
@@ -8817,8 +8789,6 @@ static struct builtins {
     { "FileAccess", bFileAccess, 1,0,0 },
     { "LoadStringFromFile", bLoadFileToString, 1,2,v_str },
     { "WriteStringToFile", bWriteStringToFile, 1,0,0 },
-    { "LoadPlugin", bLoadPlugin, 1,2,v_str },
-    { "LoadPluginDir", bLoadPluginDir, 1,0,0 },
     { "LoadNamelist", bLoadNamelist, 1,2,v_str },
     { "LoadNamelistDir", bLoadNamelistDir, 1,0,0 },
 /* File menu */

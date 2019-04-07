@@ -137,20 +137,15 @@ m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 # Disable by passing --disable-silent-rules to configure or using make V=1
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])],[AC_SUBST([AM_DEFAULT_VERBOSITY],[1])])
 
-
-LT_CONFIG_LTDL_DIR([libltdl])
-LT_INIT([dlopen])
-LTDL_INIT([recursive convenience])
-FONTFORGE_CHECK_LTDL_VERSION
+LT_INIT
 
 #--------------------------------------------------------------------------
 # init these early so they can be filled by packages (especially glib-2.0).
 my_cflags=
 my_libs=
 
-# The following is for the benefit of the libltdl Makefile,
-# which expects to find <inc/fontforge-config.h> in top_builddir,
-# and for some other things that use a path relative to top_srcdir.
+# The following is for the benefit of some other things that use a
+# path relative to top_srcdir.
 CPPFLAGS="${CPPFLAGS} AS_ESCAPE([-I${top_builddir}]) AS_ESCAPE([-I${top_srcdir}])"
 
 
@@ -317,12 +312,6 @@ AM_CONDITIONAL([USE_THEME_TANGO],[test x"$themename" = xtango])
 
 #--------------------------------------------------------------------------
 
-FONTFORGE_ARG_ENABLE([gb12345],
-        [AS_HELP_STRING([--enable-gb12345],
-                [build the GB12345 encoding plugin])],
-        [FONTFORGE_CONFIG_GB12345])
-AM_CONDITIONAL([PLUGIN_GB12345],[test x"${i_do_have_gb12345}" = xyes])
-
 FONTFORGE_ARG_ENABLE([maintainer-tools],
         [AS_HELP_STRING([--enable-maintainer-tools],
                 [build programs used normally only by fontforge maintainers and developers])],
@@ -356,11 +345,6 @@ AC_CHECK_HEADER([math.h],
 if test x"${have_libm}" != xyes; then
     AC_MSG_FAILURE([ERROR: Please install Math library and math.h],[1])
 fi
-
-dnl FIXME: Is this needed, given we are using libltdl?
-dnl The dlopen() function is in the C library for *BSD and in libdl on GLIBC-based systems
-dnl AC_SEARCH_LIBS([dlopen], [dl dld])
-AC_CHECK_HEADER([ltdl.h],,AC_MSG_FAILURE([ERROR: Please install ltdl.h developer files],[1]))
 
 if test x"${fontforge_can_use_gdk}" != xyes; then
     FONTFORGE_CONFIG_X_LIBRARIES
@@ -676,7 +660,6 @@ my_cflags="${my_cflags} ${PTHREAD_CFLAGS}"
 my_cflags="${my_cflags} ${LIBREADLINE_CFLAGS}"
 my_cflags="${my_cflags} ${CODE_COVERAGE_CFLAGS}"
 test x"${SDK}" = x || my_cflags="${my_cflags} -I${SDK}"
-test x"${LTDLINCL}" = x || my_cflags="${my_cflags} -I${LTDLINCL}"
 AC_SUBST([MY_CFLAGS],[${my_cflags}])
 
 #--------------------------------------------------------------------------
@@ -772,7 +755,6 @@ AC_CONFIG_FILES([
 Makefile
 inc/Makefile
 lib/Makefile
-libltdl/Makefile
 Unicode/Makefile
 gutils/Makefile
 collab/Makefile
@@ -799,7 +781,6 @@ nodejs/collabwebview/css/Makefile
 nodejs/collabwebview/js/Makefile
 nodejs/collabwebview/js/contentEditable/Makefile
 pyhook/Makefile
-plugins/Makefile
 tests/Makefile
 desktop/Makefile
 contrib/Makefile
@@ -898,7 +879,6 @@ Summary of optional features:
   freetype debugger		${i_do_have_freetype_debugger}
   raw points mode		${i_do_have_debug_raw_points}
   tile path			${i_do_have_tile_path}
-  gb12345 encoding		${i_do_have_gb12345}
   fontforge-extras	yes	${fontforge_extras}
   potrace or autotrace	${i_do_find_auto_po_trace}
 

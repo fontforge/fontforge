@@ -47,7 +47,6 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <gfile.h>
-#include "plugins.h"
 #include "encoding.h"
 #include "psfont.h"
 #include <ffglib.h>

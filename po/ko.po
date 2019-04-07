@@ -8928,18 +8928,6 @@ msgstr ""
 msgid "Processing Variations"
 msgstr "폰트 다양화 처리 중"
 
-#: ../fontforge/pluginloading.c:77
-#, fuzzy, c-format
-msgid ""
-"Failed to dlopen: %s\n"
-"%s"
-msgstr "%s 내보내기에 실패\n"
-
-#: ../fontforge/pluginloading.c:85
-#, fuzzy, c-format
-msgid "Failed to find init function in %s"
-msgstr "이름리스트를 찾을 수 없습니다: %s"
-
 #: ../fontforge/print.c:1499 ../fontforge/print.c:3081
 #: ../fontforgeexe/displayfonts.c:697
 msgid "Failed to open temporary output file"

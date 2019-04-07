@@ -8896,18 +8896,6 @@ msgstr ""
 msgid "Processing Variations"
 msgstr "フォントバリエーションを処理中"
 
-#: pluginloading.c:77
-#, fuzzy, c-format
-msgid ""
-"Failed to dlopen: %s\n"
-"%s"
-msgstr "%sの書き出しに失敗しました.\n"
-
-#: pluginloading.c:85
-#, fuzzy, c-format
-msgid "Failed to find init function in %s"
-msgstr "名前リストが見つかりません: %s"
-
 #: print.c:1498 print.c:3120 ../fontforgeexe/displayfonts.c:697
 msgid "Failed to open temporary output file"
 msgstr "一時ファイルを開くのに失敗しました."

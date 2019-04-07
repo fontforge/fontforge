@@ -40,7 +40,6 @@
 #include "cvundoes.h"
 #include "fontforgeui.h"
 #include "ttf.h"
-#include "plugins.h"
 #include "ustring.h"
 #include "scripting.h"
 #include "scriptfuncs.h"

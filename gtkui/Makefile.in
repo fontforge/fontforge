@@ -10,7 +10,6 @@ top_builddir = ..
 VPATH = @srcdir@
 bindir = @bindir@
 libdir = @libdir@
-plugindir = $(sharedir)/plugins
 
 LIBTOOL = @LIBTOOL@
 CC = @CC@

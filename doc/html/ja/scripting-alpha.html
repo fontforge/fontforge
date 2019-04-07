@@ -1948,35 +1948,6 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	    It can execute with no current font. -->
 	    指定されたディレクトリから FontForge の名前リストらしき物を探して読み込みます。ディレクトリ名を省略した場合、デフォルトのディレクトリから読み込みます。カレントフォントがない状態でも実行できます。
 	  <DT>
-	    <A NAME="LoadPlugin">L</A>oadPlugin(filename)
-	  <DD>
-<!--	    Will load the <A HREF="plugins.html">fontforge plugin </A>stored in the given
-	    file (this should be a shared library). It can execute with no current font. -->
-	    指定されたファイル (これは共有ライブラリでなければなりません) に格納されている <A HREF="plugins.html">FontForge プラグイン</A>を読み込みます。カレントフォントがない状態でも実行できます。
-	  <DT>
-	    <A NAME="LoadPluginDir">L</A>oadPluginDir([directory-name])
-	  <DD>
-<!--	    Searches the given directory for things that look like fontforge plugins
-	    and loads them. If directory is omitted then it will load the default directory: -->
-	    指定したディレクトリから FontForge のプラグインらしき物を探して読み込みます。ディレクトリ名を省略した場合、以下の 2 つのデフォルトのディレクトリから読み込みます:
-	    <UL>
-	      <LI>
-		/usr/local/share/fontforge/plugins
-	      <LI>
-		~/.PfaEdit/plugins
-	    </UL>
-	    <P>
-<!--	    It can execute with no current font. -->
-	    カレントフォントがない状態でも実行することができます。
-	  <DT>
-	    <A NAME="LoadPluginDir">L</A>oadPluginDir([directory-name])
-	  <DD>
-	    <UL>
-	      <LI>
-	    	~/.PfaEdit/
-	    </UL>
-	    から読み込みます。
-	  <DT>
 	    <A NAME="LoadPrefs">L</A>oadPrefs()
 	  <DD>
 <!--	    Loads the user's preferences. This used to happen automatically at startup.

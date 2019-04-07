@@ -125,8 +125,8 @@ displayfonts.c		parsettfatt.c		ttf.h
 dumpbdf.c		parsettfbmf.c		ttfinstrs.c
 dumppfa.c		parsettfvar.c		ttfinstrs.h
 edgelist.h		PfEd.h			ttfinstrsui.c
-edgelist2.h		plugins.c		ttfspecial.c
-effects.c		plugins.h		ufo.c
+edgelist2.h		ttfspecial.c
+effects.c		ufo.c
 effectsui.c		prefs.c			uiinterface.h
 encoding.c		print.c			uiutil.c
 encodingui.c		print.h			unicoderange.c
