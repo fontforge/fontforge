@@ -384,6 +384,31 @@ fi
 FONTFORGE_BUILD_YES_NO_HALT([libjpeg],[LIBJPEG],[Build with JPEG support?])
 ])
 
+dnl FONTFORGE_ARG_WITH_ICONV
+dnl --------------------------
+dnl Add iconv support by default
+AC_DEFUN([FONTFORGE_ARG_WITH_ICONV],[
+FONTFORGE_ARG_WITHOUT([iconv],[ICONV],[build without iconv support])
+
+if test x"${i_do_have_iconv}" = xyes -a x"${ICONV_CFLAGS}" = x; then
+   AC_CHECK_HEADER([iconv.h],[],[i_do_have_iconv=no])
+fi
+if test x"${i_do_have_iconv}" = xyes -a x"${ICONV_LIBS}" = x; then
+   FONTFORGE_SEARCH_LIBS([libiconv_open],[iconv],
+         [ICONV_LIBS="${ICONV_LIBS} ${found_lib}"],
+         [
+            FONTFORGE_SEARCH_LIBS([iconv_open], [iconv],
+                [ICONV_LIBS="${ICONV_LIBS} ${found_lib}"],
+                [i_do_have_iconv=no])
+         ])
+fi
+
+if test x"${i_do_have_iconv}" = xyes; then
+    AC_DEFINE(HAVE_ICONV_H,[1],[Build with iconv support])
+fi
+
+])
+
 
 dnl FONTFORGE_WARN_PKG_NOT_FOUND
 dnl ----------------------------

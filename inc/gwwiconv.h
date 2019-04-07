@@ -47,6 +47,9 @@ extern size_t gww_iconv( gww_iconv_t cd,
 #  define iconv_arg2_t	char **
 # else		/* HAVE_ICONV_H */
 #  include <iconv.h>
+#  ifdef __Mac
+#    include <xlocale.h>
+#  endif
 /* libiconv.h defines iconv as taking a const pointer for inbuf. iconv doesn't*/
 /* OH, JOY! A new version of libiconv does not use the const! Even better, the man page says it does */
 # ifdef _LIBICONV_VERSION

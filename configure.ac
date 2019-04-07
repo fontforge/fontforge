@@ -418,6 +418,7 @@ FONTFORGE_ARG_WITH_LIBUNINAMESLIST
 #FONTFORGE_ARG_WITH_LIBUNICODENAMES
 FONTFORGE_ARG_WITH_ZEROMQ
 FONTFORGE_ARG_WITH_LIBREADLINE
+FONTFORGE_ARG_WITH_ICONV
 
 FONTFORGE_ARG_ENABLE_WOFF2
 
@@ -441,7 +442,6 @@ AC_CHECK_HEADERS([arpa/inet.h fcntl.h ieeefp.h])
 AC_CHECK_HEADERS([langinfo.h libintl.h])
 AC_CHECK_HEADERS([memory.h netdb.h netinet/in.h])
 AC_CHECK_HEADERS([strings.h sys/ioctl.h sys/socket.h sys/time.h unistd.h])
-AC_CHECK_HEADERS([iconv.h])
 AC_CHECK_HEADERS([execinfo.h])
 
 #--------------------------------------------------------------------------
@@ -586,6 +586,7 @@ my_cflags="${my_cflags} ${PYTHON_CFLAGS}"
 my_cflags="${my_cflags} ${PTHREAD_CFLAGS}"
 my_cflags="${my_cflags} ${LIBREADLINE_CFLAGS}"
 my_cflags="${my_cflags} ${CODE_COVERAGE_CFLAGS}"
+my_cflags="${my_cflags} ${ICONV_CFLAGS}"
 test x"${SDK}" = x || my_cflags="${my_cflags} -I${SDK}"
 AC_SUBST([MY_CFLAGS],[${my_cflags}])
 
@@ -600,6 +601,7 @@ test x"${i_do_have_libuninameslist}" = xyes && my_libs="${my_libs} ${LIBUNINAMES
 test x"${i_do_have_libunicodenames}" = xyes && my_libs="${my_libs} ${LIBUNICODENAMES_LIBS}"
 test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${CAIRO_LIBS}"
 test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${PANGOCAIRO_LIBS}"
+test x"${i_do_have_iconv}" = xyes && my_libs="${my_libs} ${ICONV_LIBS}"
 test x"${i_do_have_gui}" = xyes && my_libs="${my_libs} ${PANGO_LIBS}"
 test x"${fontforge_can_use_woff2}" = xyes && my_libs="${my_libs} ${WOFF2_LIBS}"
 
