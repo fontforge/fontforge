@@ -73,6 +73,7 @@ static struct python_menu_info {
 static int cvpy_menu_cnt=0, cvpy_menu_max = 0;
 static int fvpy_menu_cnt=0, fvpy_menu_max = 0;
 
+int fvpy_menu_len=0, cvpy_menu_len=0;
 GMenuItem2 *cvpy_menu, *fvpy_menu;
 
 static void py_tllistcheck(struct gmenuitem *mi,PyObject *owner,
@@ -228,7 +229,9 @@ return( fvpy_menu_cnt++ );
     }
 }
 
-static void InsertSubMenus(PyObject *args,GMenuItem2 **mn, int is_cv) {
+static void InsertSubMenus(PyObject *args, int is_cv) {
+    GMenuItem2 **mn = is_cv ? &cvpy_menu : &fvpy_menu;
+    int *mn_len = is_cv ? &cvpy_menu_len : &fvpy_menu_len;
     int i, j, cnt;
     PyObject *func, *check, *data;
     char *shortcut_str;
@@ -268,6 +271,8 @@ static void InsertSubMenus(PyObject *args,GMenuItem2 **mn, int is_cv) {
 	if ( *mn==NULL || (*mn)[j].ti.text==NULL ) {
 	    *mn = realloc(*mn,(j+2)*sizeof(GMenuItem2));
 	    memset(*mn+j,0,2*sizeof(GMenuItem2));
+	    if ( i==5 )
+		*mn_len = j+1;
 	}
 	mmn = *mn;
 	if ( mmn[j].ti.text==NULL ) {
@@ -348,9 +353,9 @@ return( NULL );
 	    Py_DECREF(utf8_name);
 	}
 	if ( flags&menu_fv )
-	    InsertSubMenus(args,&fvpy_menu,false );
+	    InsertSubMenus(args,false );
 	if ( flags&menu_cv )
-	    InsertSubMenus(args,&cvpy_menu,true );
+	    InsertSubMenus(args,true );
     }
 
 Py_RETURN_NONE;

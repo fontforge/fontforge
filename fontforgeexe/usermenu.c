@@ -43,8 +43,9 @@ static int cv_menu_max = 0;
 static int fv_menu_cnt = 0;
 static int fv_menu_max = 0;
 
-GMenuItem2 *cv_menu;
-GMenuItem2 *fv_menu;
+GMenuItem2 *cv_menu = NULL;
+GMenuItem2 *fv_menu = NULL;
+int cv_menu_len = 0, fv_menu_len = 0;
 
 static void
 tl2listcheck(struct gmenuitem *mi,
@@ -177,12 +178,13 @@ InsertSubMenus(menu_info_func func,
                menu_info_data data,
                char *shortcut_str,
                char **submenu_names,
-               GMenuItem2 **mn,
                int is_cv)
 {
     int i;
     int j;
     GMenuItem2 *mmn;
+    GMenuItem2 **mn = is_cv ? &cv_menu : &fv_menu;
+    int *mn_len = is_cv ? &cv_menu_len : &fv_menu_len;
 
     for (i = 0; submenu_names[i] != NULL; ++i) {
         unichar_t *submenuu = utf82u_copy(submenu_names[i]);
@@ -200,6 +202,8 @@ InsertSubMenus(menu_info_func func,
         if (*mn == NULL || (*mn)[j].ti.text == NULL) {
             *mn = realloc(*mn,(j+2)*sizeof(GMenuItem2));
             memset(*mn+j,0,2*sizeof(GMenuItem2));
+	    if ( i==0 )
+		*mn_len = j+1;
         }
         mmn = *mn;
         if (mmn[j].ti.text == NULL) {
@@ -239,9 +243,9 @@ RegisterMenuItem(menu_info_func func,
     if (!no_windowing_ui) {
         if (flags & menu_fv)
             InsertSubMenus(func, check, data, shortcut_str,
-                           submenu_names, &fv_menu, false);
+                           submenu_names, false);
         if (flags & menu_cv)
             InsertSubMenus(func, check, data, shortcut_str,
-                           submenu_names, &cv_menu, true);
+                           submenu_names, true);
     }
 }

@@ -662,7 +662,6 @@ extern void CharViewFree(CharView *cv);
 extern int CVValid(SplineFont *sf, SplineChar *sc, CharView *cv);
 extern void CVSetCharChanged(CharView *cv,int changed);
 extern int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya);
-extern int CVAnySelPoints(CharView *cv);
 extern void CVSelectPointAt(CharView *cv);
 extern int CVTwoForePointsSelected(CharView *cv, SplinePoint **sp1, SplinePoint **sp2);
 extern int CVNumForePointsSelected(CharView *cv, BasePoint **sp);
