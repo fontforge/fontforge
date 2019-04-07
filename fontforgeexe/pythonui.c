@@ -26,9 +26,6 @@
  */
 /*			   Python Interface to FontForge		      */
 
-// to get asprintf() defined from stdio.h on GNU platforms
-#define _GNU_SOURCE 1
-
 #include <ffglib.h>
 
 #include <fontforge-config.h>
@@ -806,7 +803,7 @@ static void python_ui_setup_callback( bool makefifo )
         return;
     }
 
-    asprintf(&sockPath, "%s/python-socket", userCacheDir);
+    sockPath = smprintf("%s/python-socket", userCacheDir);
     free(userCacheDir);
 
     if( makefifo ) {

@@ -55,6 +55,7 @@ extern unichar_t *u_concat(const unichar_t*,const unichar_t*);
 extern char      *cu_copyn(const unichar_t *pt,int len);
 extern char      *cu_copy(const unichar_t*);
 
+extern char *vsmprintf(const char *fmt, va_list args);
 extern char *smprintf(const char *fmt, ...) PRINTF_FORMAT_ATTRIBUTE(1, 2);
 
 extern long uc_strcmp(const unichar_t *,const char *);

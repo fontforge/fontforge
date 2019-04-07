@@ -623,7 +623,7 @@ static int PickTTFFont(FILE *ttf, struct ttfinfo *info) {
     for ( i=0; i<cnt; ++i ) {
 	names[i] = TTFGetFontName(ttf,offsets[i],0);
         if ( names[i]==NULL ) 
-            asprintf(&names[i], "<Unknown font name %d>", i+1);
+            names[i] = smprintf("<Unknown font name %d>", i+1);
     }
     if ( info->chosenname!=NULL ) {
 	for ( choice=cnt-1; choice>=0; --choice )
