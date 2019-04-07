@@ -47,7 +47,7 @@ int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya) {
     AnchorPoint *ap;
     int i;
 
-    for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL && !anypoints; spl = spl->next ) {
+    for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL && !anypoints && anyp!=NULL; spl = spl->next ) {
 	if ( cv->b.sc->inspiro && hasspiro()) {
 	    for ( i=0; i<spl->spiro_cnt-1; ++i )
 		if ( SPIRO_SELECTED(&spl->spiros[i])) {
@@ -63,14 +63,14 @@ int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya) {
 	    }
 	}
     }
-    for ( rf=cv->b.layerheads[cv->b.drawmode]->refs; rf!=NULL && !anyrefs; rf=rf->next )
+    for ( rf=cv->b.layerheads[cv->b.drawmode]->refs; rf!=NULL && !anyrefs && anyr!=NULL; rf=rf->next )
 	if ( rf->selected ) anyrefs = true;
-    if ( cv->b.drawmode==dm_fore ) {
-	if ( cv->showanchor && anya!=NULL )
+    if ( cv->b.drawmode==dm_fore && anya!=NULL ) {
+	if ( cv->showanchor )
 	    for ( ap=cv->b.sc->anchor; ap!=NULL && !anyanchor; ap=ap->next )
 		if ( ap->selected ) anyanchor = true;
     }
-    for ( il=cv->b.layerheads[cv->b.drawmode]->images; il!=NULL && !anyimages; il=il->next )
+    for ( il=cv->b.layerheads[cv->b.drawmode]->images; il!=NULL && !anyimages && anyi!=NULL; il=il->next )
 	if ( il->selected ) anyimages = true;
     if ( anyp!=NULL ) *anyp = anypoints;
     if ( anyr!=NULL ) *anyr = anyrefs;
@@ -79,29 +79,60 @@ int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya) {
 return( anypoints || anyrefs || anyimages || anyanchor );
 }
 
-int CVAnySelPoints(CharView *cv) {
-    /* if there are any points selected */
+void CVSelCount(CharView *cv, int *sc, int *pc, int *rc, int *ic, int *ac) {
+    int splinecount = 0, pointcount = 0, refcount=0, imagecount=0, anchorcount=0;
+    int splinepointcount;
     SplinePointList *spl;
     Spline *spline, *first;
+    RefChar *rf;
+    ImageList *il;
+    AnchorPoint *ap;
     int i;
 
-    for ( spl= cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl=spl->next ) {
+    for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL && (pc!=NULL || sc!=NULL); spl = spl->next ) {
+	splinepointcount = 0;
 	if ( cv->b.sc->inspiro && hasspiro()) {
 	    for ( i=0; i<spl->spiro_cnt-1; ++i )
-		if ( SPIRO_SELECTED(&spl->spiros[i]))
-return( true );
+		if ( SPIRO_SELECTED(&spl->spiros[i])) {
+		    pointcount += 1;
+		    splinepointcount += 1;
+		}
 	} else {
-	    if ( spl->first->selected )
-return( true );
 	    first = NULL;
-	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-		if ( spline->to->selected )
-return( true );
-		if ( first==NULL ) first = spline;
+	    if ( spl->first->selected ) {
+		pointcount += 1;
+		splinepointcount += 1;
+	    }
+	    for ( spline=spl->first->next; spline!=NULL && spline!=first; spline = spline->to->next ) {
+		if ( spline->to->selected ) {
+		    pointcount += 1;
+		    splinepointcount += 1;
+		}
+		if ( first == NULL )
+		    first = spline;
 	    }
 	}
+	if (splinepointcount > 0)
+	    splinecount += 1;
     }
-return( false );
+    for ( rf=cv->b.layerheads[cv->b.drawmode]->refs; rf!=NULL && rc!=NULL; rf=rf->next )
+	if ( rf->selected )
+	    refcount += 1;
+
+    if ( cv->b.drawmode==dm_fore && ac!=NULL ) {
+	if ( cv->showanchor )
+	    for ( ap=cv->b.sc->anchor; ap!=NULL; ap=ap->next )
+		if ( ap->selected )
+		    anchorcount += 1;
+    }
+    for ( il=cv->b.layerheads[cv->b.drawmode]->images; il!=NULL && ic!=NULL; il=il->next )
+	if ( il->selected )
+	    imagecount = true;
+    if ( sc!=NULL ) *sc = pointcount;
+    if ( pc!=NULL ) *pc = pointcount;
+    if ( rc!=NULL ) *rc = refcount;
+    if ( ic!=NULL ) *ic = imagecount;
+    if ( ac!=NULL ) *ac = anchorcount;
 }
 
 GList_Glib*

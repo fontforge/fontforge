@@ -20,39 +20,38 @@ FontView.Popup.Menu.Thirds in Width:No Shortcut
 FontView.Popup.Menu.Set Width...:Ctrl+Shift+L
 FontView.Popup.Menu.Set Vertical Advance...:No Shortcut
 
+
+CharView.Menu.File.Export.Font...:Ctrl+Shift+G
+CharView.Menu.File.Export.Mac Family...:Alt+Ctrl+G
+CharView.Menu.File.Export.TTC...:No Shortcut
+
 CharView.Menu.File.New:Ctrl+N
-CharView.Menu.File.Open:Ctrl+O
-CharView.Menu.File.Close:Ctrl+W
+CharView.Menu.File.Open...:Ctrl+O
 CharView.Menu.File.Save:Ctrl+S
 CharView.Menu.File.Save as...:Ctrl+Shift+S
 CharView.Menu.File.Save all:Alt+Ctrl+S
-CharView.Menu.File.Generate Fonts...:Ctrl+Shift+G
-CharView.Menu.File.Generate Mac Family...:Alt+Ctrl+G
 CharView.Menu.File.Import...:Ctrl+Shift+I
-CharView.Menu.File.Revert File:Ctrl+Shift+R
-CharView.Menu.File.Revert Glyph:Alt+Ctrl+R
+CharView.Menu.File.Revert.File:Ctrl+Shift+R
 CharView.Menu.File.Print...:Ctrl+P
-CharView.Menu.File.Execute Script...:Alt+Ctrl+R
+CharView.Menu.File.Preferences...:No Shortcut
+CharView.Menu.File.Theme Editor...:No Shortcut
+CharView.Menu.File.Close:Ctrl+W
 CharView.Menu.File.Quit:Ctrl+Q
 
-CharView.Menu.Edit.Undo:Ctrl+Z
-CharView.Menu.Edit.Redo:Ctrl+Y
-CharView.Menu.Edit.Cut:Ctrl+X
-CharView.Menu.Edit.Copy:Ctrl+C
-CharView.Menu.Edit.Copy Reference:Ctrl+G
-CharView.Menu.Edit.Copy Lookup Data:Alt+Ctrl+C
-CharView.Menu.Edit.Copy Width:No Shortcut
-CharView.Menu.Edit.Copy LBearing:No Shortcut
-CharView.Menu.Edit.Copy RBearing:No Shortcut
-CharView.Menu.Edit.Paste:Ctrl+V
-CharView.Menu.Edit.Chop:Delete
-CharView.Menu.Edit.Clear Background:No Shortcut
-CharView.Menu.Edit.Merge:Ctrl+M
-CharView.Menu.Edit.Merge to Line:Alt+Ctrl+M
-CharView.Menu.Edit.Join:Ctrl+Shift+J
-CharView.Menu.Edit.Copy Fg To Bg:Ctrl+Shift+C
-CharView.Menu.Edit.Copy Layer To Layer...:No Shortcut
-CharView.Menu.Edit.Copy Grid Fit:No Shortcut
+CharView.Menu.Edit.Copy.Reference:Ctrl+G
+CharView.Menu.Edit.Copy.Lookup Data:Alt+Ctrl+C
+CharView.Menu.Edit.Copy.Width:No Shortcut
+CharView.Menu.Edit.Copy.VWidth:No Shortcut
+CharView.Menu.Edit.Copy.LBearing:No Shortcut
+CharView.Menu.Edit.Copy.RBearing:No Shortcut
+CharView.Menu.Edit.Copy.Fg To Bg:Ctrl+Shift+C
+CharView.Menu.Edit.Copy.Layer To Layer...:No Shortcut
+CharView.Menu.Edit.Copy.Grid Fit:No Shortcut
+
+CharView.Menu.Edit.Clear.Background:No Shortcut
+
+CharView.Menu.Edit.Reference.Unlink:Ctrl+U
+
 CharView.Menu.Edit.Select.Select All:Ctrl+A
 CharView.Menu.Edit.Select.Invert Selection:Ctrl+Escape
 CharView.Menu.Edit.Select.Deselect All:Escape
@@ -72,9 +71,113 @@ CharView.Menu.Edit.Select.Select Anchors:No Shortcut
 CharView.Menu.Edit.Select.Width:No Shortcut
 CharView.Menu.Edit.Select.VWidth:No Shortcut
 CharView.Menu.Edit.Select.Select Points Affected by HM:No Shortcut
-CharView.Menu.Edit.Unlink Reference:Ctrl+U
-CharView.Menu.Edit.Remove Undoes:No Shortcut
 
+CharView.Menu.Edit.Undo:Ctrl+Z
+CharView.Menu.Edit.Redo:Ctrl+Y
+CharView.Menu.Edit.Cut:Ctrl+X
+CharView.Menu.Edit.Copy:Ctrl+C
+CharView.Menu.Edit.Paste:Ctrl+V
+CharView.Menu.Edit.Find:Ctrl+Shift+<
+CharView.Menu.Edit.Remove Undoes...:No Shortcut
+
+CharView.Menu.Font.Validation.Find Problems...:Ctrl+E
+
+CharView.Menu.Font.Multiple Master (MM).MM Reblend:No Shortcut
+CharView.Menu.Font.Multiple Master (MM).View.All:No Shortcut
+CharView.Menu.Font.Multiple Master (MM).View.None:No Shortcut
+
+CharView.Menu.Font.Show Dependent.References...:Alt+Ctrl+I
+CharView.Menu.Font.Show Dependent.Substitutions...:No Shortcut
+
+CharView.Menu.Font.Font Info...:Ctrl+Shift+F
+CharView.Menu.Font.Compare Layers...:No Shortcut
+CharView.Menu.Font.Bitmap strikes Available...:Ctrl+Shift+B
+CharView.Menu.Font.Regenerate Bitmap Glyphs...:Ctrl+B
+CharView.Menu.Font.Remove Bitmap Glyphs...:No Shortcut
+
+CharView.Menu.Glyph.Hints.AutoHint:Ctrl+Shift+H
+CharView.Menu.Glyph.Hints.Hint Substitution Pts:No Shortcut
+CharView.Menu.Glyph.Hints.Auto Counter Hint:No Shortcut
+CharView.Menu.Glyph.Hints.Don't AutoHint:No Shortcut
+CharView.Menu.Glyph.Hints.AutoInstr:Ctrl+T
+CharView.Menu.Glyph.Hints.Edit Instructions...:No Shortcut
+CharView.Menu.Glyph.Hints.Debug...:No Shortcut
+CharView.Menu.Glyph.Hints.Suggest Deltas...:No Shortcut
+CharView.Menu.Glyph.Hints.Clear HStem:No Shortcut
+CharView.Menu.Glyph.Hints.Clear VStem:No Shortcut
+CharView.Menu.Glyph.Hints.Clear DStem:No Shortcut
+CharView.Menu.Glyph.Hints.Clear Instructions:No Shortcut
+CharView.Menu.Glyph.Hints.Add HHint:No Shortcut
+CharView.Menu.Glyph.Hints.Add VHint:No Shortcut
+CharView.Menu.Glyph.Hints.Add DHint:No Shortcut
+CharView.Menu.Glyph.Hints.Create HHint...:No Shortcut
+CharView.Menu.Glyph.Hints.Create VHint...:No Shortcut
+CharView.Menu.Glyph.Hints.Review Hints...:Alt+Ctrl+H
+
+CharView.Menu.Glyph.Build Glyph.Build Accented Glyph:Ctrl+Shift+A
+CharView.Menu.Glyph.Build Glyph.Build Composite Glyph:No Shortcut
+
+CharView.Menu.Glyph.Glyph Info...:Alt+Ctrl+Shift+I
+CharView.Menu.Glyph.Revert:Alt+Ctrl+R
+CharView.Menu.Glyph.Kern Pairs:No Shortcut
+CharView.Menu.Glyph.Anchored Pairs:No Shortcut
+CharView.Menu.Glyph.Anchor Glyph at Point.Detach:No Shortcut
+CharView.Menu.Glyph.Ligatures:No Shortcut
+CharView.Menu.Glyph.Insert Text Outlines:No Shortcut
+
+CharView.Menu.Extensions.Execute Script...:Alt+Ctrl+R
+
+CharView.Menu.Path.Order.First:No Shortcut
+CharView.Menu.Path.Order.Earlier:No Shortcut
+CharView.Menu.Path.Order.Later:No Shortcut
+CharView.Menu.Path.Order.Last:No Shortcut
+
+CharView.Menu.Path.Make.Line:Ctrl+Shift+|
+CharView.Menu.Path.Make.Arc:No Shortcut
+CharView.Menu.Path.Make.Clip Path:No Shortcut
+
+CharView.Menu.Path.Modify.Weight...:Ctrl+Shift+!
+CharView.Menu.Path.Modify.Italic...:No Shortcut
+CharView.Menu.Path.Modify.Oblique...:No Shortcut
+CharView.Menu.Path.Modify.Condense/Extend...:No Shortcut
+CharView.Menu.Path.Modify.X-Height...:No Shortcut
+CharView.Menu.Path.Modify.Stems and Counters...:No Shortcut
+CharView.Menu.Path.Modify.Inline...:No Shortcut
+CharView.Menu.Path.Modify.Outline...:No Shortcut
+CharView.Menu.Path.Modify.Shadow...:No Shortcut
+CharView.Menu.Path.Modify.Wireframe...:No Shortcut
+
+CharView.Menu.Path.Transform.Transform...:Ctrl+\
+CharView.Menu.Path.Transform.Point of View Projection...:No Shortcut
+CharView.Menu.Path.Transform.Non Linear Transform...:Ctrl+Shift+:
+
+CharView.Menu.Path.Overlap.Remove Overlap:Ctrl+Shift+O
+CharView.Menu.Path.Overlap.Intersect:No Shortcut
+CharView.Menu.Path.Overlap.Exclude:No Shortcut
+CharView.Menu.Path.Overlap.Find Intersections:No Shortcut
+
+CharView.Menu.Path.Simplify.Simplify:Ctrl+Shift+M
+CharView.Menu.Path.Simplify.Simplify More...:Alt+Ctrl+Shift+M
+CharView.Menu.Path.Simplify.Cleanup Glyph:No Shortcut
+CharView.Menu.Path.Simplify.Canonical Start Point:No Shortcut
+CharView.Menu.Path.Simplify.Canonical Contours:No Shortcut
+
+CharView.Menu.Path.Interpolation.Can Be Interpolated:No Shortcut
+CharView.Menu.Path.Interpolation.Can't Be Interpolated:No Shortcut
+
+CharView.Menu.Path.Path Name...:No Shortcut
+CharView.Menu.Path.Join:Ctrl+Shift+J
+CharView.Menu.Path.Clockwise:No Shortcut
+CharView.Menu.Path.Counter Clockwise:No Shortcut
+CharView.Menu.Path.Correct Direction:Ctrl+Shift+D
+CharView.Menu.Path.Reverse Direction:No Shortcut
+CharView.Menu.Path.Transform:No Shortcut
+CharView.Menu.Path.Tile Path...:No Shortcut
+CharView.Menu.Path.Tile Pattern...:No Shortcut
+CharView.Menu.Path.Expand Stroke...:Ctrl+Shift+E
+CharView.Menu.Path.Add Extrema:Ctrl+Shift+X
+CharView.Menu.Path.Acceptable Extrema:No Shortcut
+CharView.Menu.Path.Autotrace:Ctrl+Shift+T
 
 CharView.Menu.Point.Tools.Ruler:R
 CharView.Menu.Point.Tools.Pointer:V
@@ -89,230 +192,244 @@ CharView.Menu.Point.Tools.Corner:3
 CharView.Menu.Point.Tools.Tangent:4
 CharView.Menu.Point.Tools.HVCurve:5
 
-CharView.Menu.Point.Tools.Toggle Spiro:S
+CharView.Menu.Point.Tools.Activate Spiro:S
 +CharView.Menu.Point.Tools.G2:1
 +CharView.Menu.Point.Tools.G4:2
 +CharView.Menu.Point.Tools.Corner:3
 +CharView.Menu.Point.Tools.Left:4
 +CharView.Menu.Point.Tools.Right:5
 
-CharView.Menu.Point.Add Anchor:Ctrl+0
-CharView.Menu.Point.Make First:Ctrl+1
+CharView.Menu.Point.Point Info...:Ctrl+I
 CharView.Menu.Point.Curve:Ctrl+2
+CharView.Menu.Point.HVCurve:Ctrl+5
 CharView.Menu.Point.Corner:Ctrl+3
 CharView.Menu.Point.Tangent:Ctrl+4
-CharView.Menu.Point.HVCurve:Ctrl+5
 +CharView.Menu.Point.G2 Curve:Ctrl+1
 +CharView.Menu.Point.G4 Curve:Ctrl+2
 +CharView.Menu.Point.Corner:Ctrl+3
-+CharView.Menu.Point.Prev Constraint:Ctrl+4
-+CharView.Menu.Point.Next Constraint:Ctrl+5
-CharView.Menu.Point.Can Be Interpolated:No Shortcut
-CharView.Menu.Point.Can't Be Interpolated:No Shortcut
++CharView.Menu.Point.Left Constraint:Ctrl+4
++CharView.Menu.Point.Right Constraint:Ctrl+5
+CharView.Menu.Point.Insert Point:No Shortcut
+CharView.Menu.Point.Set as Start Point:Ctrl+1
+CharView.Menu.Point.Add Anchor:Ctrl+0
+CharView.Menu.Point.To Int:Ctrl+Shift+_
+CharView.Menu.Point.To Hundredths:No Shortcut
+CharView.Menu.Point.Cluster:No Shortcut
+CharView.Menu.Point.Merge:Ctrl+M
+CharView.Menu.Point.Merge to Line:Alt+Ctrl+M
+CharView.Menu.Point.Chop:Delete
+CharView.Menu.Point.Align Points:Ctrl+Shift+@
+CharView.Menu.Point.Space Points:No Shortcut
+CharView.Menu.Point.Space Regions...:No Shortcut
+CharView.Menu.Point.Make Parallel...:No Shortcut
 CharView.Menu.Point.Center Between Control Points:No Shortcut
-CharView.Menu.Point.Acceptable Extrema:No Shortcut
-CharView.Menu.Point.Make Line:Ctrl+Shift+|
-CharView.Menu.Point.Make Arc:No Shortcut
-CharView.Menu.Point.Insert Point On Spline At...:No Shortcut
-CharView.Menu.Point.Name Contour:No Shortcut
-CharView.Menu.Point.Make Clip Path:No Shortcut
 
-CharView.Menu.Element.Font Info...:Ctrl+Shift+F
-CharView.Menu.Element.Glyph Info...:Alt+Ctrl+Shift+I
-CharView.Menu.Element.Get Info...:Ctrl+I
-CharView.Menu.Element.Find Problems...:Ctrl+E
-CharView.Menu.Element.Bitmap strikes Available...:Ctrl+Shift+B
-CharView.Menu.Element.Regenerate Bitmap Glyphs...:Ctrl+B
-CharView.Menu.Element.Remove Bitmap Glyphs...:No Shortcut
-CharView.Menu.Element.Transformations:No Shortcut
-CharView.Menu.Element.Expand Stroke...:Ctrl+Shift+E
-CharView.Menu.Element.Tile Path...:No Shortcut
-CharView.Menu.Element.Tile Pattern...:No Shortcut
-CharView.Menu.Element.Add Extrema:Ctrl+Shift+X
-CharView.Menu.Element.Autotrace:Ctrl+Shift+T
-CharView.Menu.Element.Clockwise:No Shortcut
-CharView.Menu.Element.Clockwise:No Shortcut
-CharView.Menu.Element.Clockwise:No Shortcut
-CharView.Menu.Element.Counter Clockwise:No Shortcut
-CharView.Menu.Element.Correct Direction:Ctrl+Shift+D
-CharView.Menu.Element.Reverse Direction:No Shortcut
-CharView.Menu.Element.Insert Text Outlines:No Shortcut
-CharView.Menu.Element.Compare Layers...:No Shortcut
-CharView.Menu.Element.Align.Align Points:Ctrl+Shift+@
-CharView.Menu.Element.Align.Space Points:No Shortcut
-CharView.Menu.Element.Align.Space Regions...:No Shortcut
-CharView.Menu.Element.Align.Make Parallel...:No Shortcut
-CharView.Menu.Element.Simplify.Simplify:Ctrl+Shift+M
-CharView.Menu.Element.Simplify.Simplify More...:Alt+Ctrl+Shift+M
-CharView.Menu.Element.Simplify.Cleanup Glyph:No Shortcut
-CharView.Menu.Element.Simplify.Canonical Start Point:No Shortcut
-CharView.Menu.Element.Simplify.Canonical Contours:No Shortcut
-CharView.Menu.Element.Order.First:No Shortcut
-CharView.Menu.Element.Order.Earlier:No Shortcut
-CharView.Menu.Element.Order.Later:No Shortcut
-CharView.Menu.Element.Order.Last:No Shortcut
-CharView.Menu.Element.Overlap.Remove Overlap:Ctrl+Shift+O
-CharView.Menu.Element.Overlap.Intersect:No Shortcut
-CharView.Menu.Element.Overlap.Exclude:No Shortcut
-CharView.Menu.Element.Overlap.Find Intersections:No Shortcut
-CharView.Menu.Element.Styles.Change Weight...:Ctrl+Shift+!
-CharView.Menu.Element.Styles.Italic...:No Shortcut
-CharView.Menu.Element.Styles.Oblique...:No Shortcut
-CharView.Menu.Element.Styles.Condense...:No Shortcut
-CharView.Menu.Element.Styles.Change XHeight...:No Shortcut
-CharView.Menu.Element.Styles.Change Glyph...:No Shortcut
-CharView.Menu.Element.Styles.Inline:No Shortcut
-CharView.Menu.Element.Styles.Outline:No Shortcut
-CharView.Menu.Element.Styles.Shadow:No Shortcut
-CharView.Menu.Element.Styles.Wireframe:No Shortcut
-CharView.Menu.Element.Build.Build Accented Glyph:Ctrl+Shift+A
-CharView.Menu.Element.Build.Build Composite Glyph:No Shortcut
-CharView.Menu.Element.Show Dependent.References...:Alt+Ctrl+I
-CharView.Menu.Element.Show Dependent.Substitutions...:No Shortcut
-CharView.Menu.Element.Transformations.Transform...:Ctrl+\
-CharView.Menu.Element.Transformations.Point of View Projection...:No Shortcut
-CharView.Menu.Element.Transformations.Non Linear Transform...:Ctrl+Shift+:
-CharView.Menu.Element.Round.To Int:Ctrl+Shift+_
-CharView.Menu.Element.Round.To Hundredths:No Shortcut
-CharView.Menu.Element.Round.Cluster:No Shortcut
+CharView.Menu.Metrics.Set Width...:Ctrl+Shift+L
+CharView.Menu.Metrics.Set LBearing...:Ctrl+L
+CharView.Menu.Metrics.Set RBearing...:Ctrl+R
+CharView.Menu.Metrics.Set Both Bearings...:No Shortcut
+CharView.Menu.Metrics.Center in Width:No Shortcut
+CharView.Menu.Metrics.Thirds in Width:No Shortcut
+CharView.Menu.Metrics.Kern Pair Closeup...:No Shortcut
+CharView.Menu.Metrics.Remove Kern Pairs:No Shortcut
+CharView.Menu.Metrics.Remove VKern Pairs:No Shortcut
+CharView.Menu.Metrics.Set Vertical Advance...:No Shortcut
 
-
-CharView.Menu.Hints.AutoHint:Ctrl+Shift+H
-CharView.Menu.Hints.Hint Substitution Pts:No Shortcut
-CharView.Menu.Hints.Auto Counter Hint:No Shortcut
-CharView.Menu.Hints.Don't AutoHint:No Shortcut
-CharView.Menu.Hints.AutoInstr:Ctrl+T
-CharView.Menu.Hints.Edit Instructions...:No Shortcut
-CharView.Menu.Hints.Debug...:No Shortcut
-CharView.Menu.Hints.Suggest Deltas:No Shortcut
-CharView.Menu.Hints.Clear HStem:No Shortcut
-CharView.Menu.Hints.Clear VStem:No Shortcut
-CharView.Menu.Hints.Clear DStem:No Shortcut
-CharView.Menu.Hints.Clear Instructions:No Shortcut
-CharView.Menu.Hints.Add HHint:No Shortcut
-CharView.Menu.Hints.Add VHint:No Shortcut
-CharView.Menu.Hints.Add DHint:No Shortcut
-CharView.Menu.Hints.Create HHint...:No Shortcut
-CharView.Menu.Hints.Create VHint...:No Shortcut
-CharView.Menu.Hints.Review Hints...:Alt+Ctrl+H
-
-CharView.Menu.View.Fit:Ctrl+F
-CharView.Menu.View.Display Compositions...:No Shortcut
-CharView.Menu.View.Next Glyph:Ctrl+]
-CharView.Menu.View.Prev Glyph:Ctrl+[
-CharView.Menu.View.Next Defined Glyph:Alt+Ctrl+]
-CharView.Menu.View.Prev Defined Glyph:Alt+Ctrl+[
-CharView.Menu.View.Former Glyph:No Shortcut
-CharView.Menu.View.Goto:Ctrl+Shift+>
-CharView.Menu.View.Goto:.
-CharView.Menu.View.Find In Font View:Ctrl+Shift+<
-CharView.Menu.View.Show.Palettes.Tools:No Shortcut
-CharView.Menu.View.Show.Palettes.Layers:No Shortcut
-CharView.Menu.View.Show.Palettes.Docked Palettes:No Shortcut
-CharView.Menu.View.Combinations.Anchor Glyph at Point.Detach:No Shortcut
-CharView.Menu.View.Combinations.Kern Pairs:No Shortcut
-CharView.Menu.View.Combinations.Anchored Pairs:No Shortcut
-CharView.Menu.View.Combinations.Ligatures:No Shortcut
 CharView.Menu.View.Number Points.None:Alt+N
 CharView.Menu.View.Number Points.TrueType:Alt+T
 CharView.Menu.View.Number Points.PostScript:No Shortcut
 CharView.Menu.View.Number Points.SVG:No Shortcut
+
 CharView.Menu.View.Grid Fit.Show Grid Fit...:Ctrl+Shift+#
-CharView.Menu.View.Grid Fit.Grid Fit Off:Alt+Ctrl+#
+CharView.Menu.View.Grid Fit.Off:Alt+Ctrl+#
 CharView.Menu.View.Grid Fit.Bigger Point Size:Alt+=
 CharView.Menu.View.Grid Fit.Smaller Point Size:Alt+-
 CharView.Menu.View.Grid Fit.Anti Alias:Alt+Ctrl+Shift+#
-CharView.Menu.View.Show.Points:Ctrl+D
-CharView.Menu.View.Show.Control Points (Always):Alt+Ctrl+Shift+D
-CharView.Menu.View.Show.Control Point Info:No Shortcut
-CharView.Menu.View.Show.Extrema:No Shortcut
-CharView.Menu.View.Show.Points of Inflection:No Shortcut
-CharView.Menu.View.Show.Almost Horizontal/Vertical Lines:No Shortcut
-CharView.Menu.View.Show.Almost Horizontal/Vertical Curves:No Shortcut
-CharView.Menu.View.Show.(Define \Almost\):No Shortcut
-CharView.Menu.View.Show.Side Bearings:No Shortcut
-CharView.Menu.View.Show.Reference Names:No Shortcut
-CharView.Menu.View.Show.Fill:No Shortcut
-CharView.Menu.View.Show.Preview:Ctrl+`
-CharView.Menu.View.Show.Dragging Comparison Outline:No Shortcut
-CharView.Menu.View.Show.Glyph Tabs:No Shortcut
-CharView.Menu.View.Show.Rulers:No Shortcut
-CharView.Menu.View.Show.Horizontal Hints:No Shortcut
-CharView.Menu.View.Show.Vertical Hints:No Shortcut
-CharView.Menu.View.Show.Diagonal Hints:No Shortcut
-CharView.Menu.View.Show.BlueValues:No Shortcut
-CharView.Menu.View.Show.Family Blues:No Shortcut
-CharView.Menu.View.Show.Anchors:No Shortcut
-CharView.Menu.View.Show.Debug Raster Changes:No Shortcut
-CharView.Menu.View.Show.Hori_zontal Metric Lines:No Shortcut
-CharView.Menu.View.Show.Vertical Metric Lines:No Shortcut
-CharView.Menu.View.Show.Snap Outlines to Pixel Grid:No Shortcut
+
+CharView.Menu.View.Glyph Elements.Point:Ctrl+D
+CharView.Menu.View.Glyph Elements.Control Point:Alt+Ctrl+Shift+D
+CharView.Menu.View.Glyph Elements.Control Point Info:No Shortcut
+CharView.Menu.View.Glyph Elements.Extrema:No Shortcut
+CharView.Menu.View.Glyph Elements.Points of Inflection:No Shortcut
+CharView.Menu.View.Glyph Elements.Almost Horizontal/Vertical Line:No Shortcut
+CharView.Menu.View.Glyph Elements.Almost Horizontal/Vertical Curve:No Shortcut
+CharView.Menu.View.Glyph Elements.(Define "Almost"):No Shortcut
+CharView.Menu.View.Glyph Elements.Side Bearing:No Shortcut
+CharView.Menu.View.Glyph Elements.Reference Name:No Shortcut
+CharView.Menu.View.Glyph Elements.Fill:No Shortcut
+CharView.Menu.View.Glyph Elements.Preview:Ctrl+`
+CharView.Menu.View.Glyph Elements.Dragging Comparison Outline:No Shortcut
+CharView.Menu.View.Glyph Elements.Horizontal Hints:No Shortcut
+CharView.Menu.View.Glyph Elements.Vertical Hint:No Shortcut
+CharView.Menu.View.Glyph Elements.Diagonal Hint:No Shortcut
+CharView.Menu.View.Glyph Elements.BlueValue:No Shortcut
+CharView.Menu.View.Glyph Elements.FamilyBlue:No Shortcut
+CharView.Menu.View.Glyph Elements.Anchor:No Shortcut
+CharView.Menu.View.Glyph Elements.Debug Raster Changes:No Shortcut
+CharView.Menu.View.Glyph Elements.Hori_zontal Metric Line:No Shortcut
+CharView.Menu.View.Glyph Elements.Vertical Metric Line:No Shortcut
+
+CharView.Menu.View.Glyph Window.Glyph Tabs:No Shortcut
+CharView.Menu.View.Glyph Window.Ruler:No Shortcut
+CharView.Menu.View.Glyph Window.Tool Palette:No Shortcut
+CharView.Menu.View.Glyph Window.Layer Palette:No Shortcut
+CharView.Menu.View.Glyph Window.Docked Palettes:No Shortcut
+
+CharView.Menu.View.Fit:Ctrl+F
 CharView.Menu.View.Zoom out:Alt+Ctrl+-
 CharView.Menu.View.Zoom out:-
 CharView.Menu.View.Zoom out:X
 CharView.Menu.View.Zoom in:Alt+Ctrl+=
 CharView.Menu.View.Zoom in:=
 CharView.Menu.View.Zoom in:Z
+CharView.Menu.View.Display Compositions...:No Shortcut
+CharView.Menu.View.Goto...:Ctrl+Shift+>
+CharView.Menu.View.Goto...:.
+CharView.Menu.View.Next Glyph:Ctrl+]
+CharView.Menu.View.Prev Glyph:Ctrl+[
+CharView.Menu.View.Next Defined Glyph:Alt+Ctrl+]
+CharView.Menu.View.Prev Defined Glyph:Alt+Ctrl+[
+CharView.Menu.View.Former Glyph:No Shortcut
+CharView.Menu.View.Snap Outlines to Pixel Grid:No Shortcut
 CharView.Menu.View.Next Line in Word List:Ctrl+.
 CharView.Menu.View.Previous Line in Word List:Ctrl+,
 
-CharView.Menu.Metrics.Center in Width:No Shortcut
-CharView.Menu.Metrics.Thirds in Width:No Shortcut
-CharView.Menu.Metrics.Set Width...:Ctrl+Shift+L
-CharView.Menu.Metrics.Set LBearing...:Ctrl+L
-CharView.Menu.Metrics.Set RBearing...:Ctrl+R
-CharView.Menu.Metrics.Set Both Bearings...:No Shortcut
-CharView.Menu.Metrics.Set Vertical Advance...:No Shortcut
-CharView.Menu.Metrics.Remove Kern Pairs:No Shortcut
-CharView.Menu.Metrics.Remove VKern Pairs:No Shortcut
-CharView.Menu.Metrics.Kern Pair Closeup...:No Shortcut
-
-CharView.Menu.MM.MM Reblend:No Shortcut
-CharView.Menu.MM.View.All:No Shortcut
-CharView.Menu.MM.View.None:No Shortcut
-
-
-CharView.Menu.Window.New Outline Window:Ctrl+H
+CharView.Menu.Window.New Glyph Window:Ctrl+H
 CharView.Menu.Window.New Bitmap Window:Ctrl+J
 CharView.Menu.Window.New Metrics Window:Ctrl+K
 CharView.Menu.Window.Warnings:No Shortcut
 
-CharView.Menu.Help.Help:F1
-CharView.Menu.Help.Overview:Shift+F1
-CharView.Menu.Help.Index:Ctrl+F1
 CharView.Menu.Help.About...:No Shortcut
 CharView.Menu.Help.License...:No Shortcut
+CharView.Menu.Help.Follow for Updates:Ctrl+F1
+CharView.Menu.Help.Help and Tutorials:F1
+CharView.Menu.Help.Bugs, Questions and Requests:Shift+F1
 
 
+BitmapView.Menu.File.Export.Font...:Ctrl+Shift+G
+BitmapView.Menu.File.Export.Mac Family...:Alt+Ctrl+G
+BitmapView.Menu.File.Export.TTC...:No Shortcut
 
-FontView.Menu.File.New:Ctrl+N
+BitmapView.Menu.File.New:Ctrl+N
+BitmapView.Menu.File.Open...:Ctrl+O
+BitmapView.Menu.File.Save:Ctrl+S
+BitmapView.Menu.File.Save as...:Ctrl+Shift+S
+BitmapView.Menu.File.Save all:Alt+Ctrl+S
+BitmapView.Menu.File.Import...:Ctrl+Shift+I
+BitmapView.Menu.File.Revert.File:Ctrl+Shift+R
+BitmapView.Menu.File.Print...:Ctrl+P
+BitmapView.Menu.File.Preferences...:No Shortcut
+BitmapView.Menu.File.Theme Editor...:No Shortcut
+BitmapView.Menu.File.Close:Ctrl+W
+BitmapView.Menu.File.Quit:Ctrl+Q
+
+BitmapView.Menu.Edit.Copy.Reference:Ctrl+G
+
+BitmapView.Menu.Edit.Reference.Unlink:Ctrl+U
+
+BitmapView.Menu.Edit.Select.Select All:Ctrl+A
+
+BitmapView.Menu.Edit.Undo:Ctrl+Z
+BitmapView.Menu.Edit.Redo:Ctrl+Y
+BitmapView.Menu.Edit.Cut:Ctrl+X
+BitmapView.Menu.Edit.Copy:Ctrl+C
+BitmapView.Menu.Edit.Paste:Ctrl+V
+BitmapView.Menu.Edit.Find:Ctrl+Shift+<
+BitmapView.Menu.Edit.Remove Undoes...:No Shortcut
+
+BitmapView.Menu.Font.Font Info...:Ctrl+Shift+F
+BitmapView.Menu.Font.Bitmap strikes Available...:Ctrl+Shift+B
+BitmapView.Menu.Font.Regenerate Bitmap Glyphs...:Ctrl+B
+BitmapView.Menu.Font.Remove Bitmap Glyphs...:No Shortcut
+
+BitmapView.Menu.Glyph.Glyph Info...:Alt+Ctrl+Shift+I
+
+BitmapView.Menu.Metrics.Set Width...:Ctrl+Shift+L
+BitmapView.Menu.Metrics.Set Vertical Advance...:No Shortcut
+
+BitmapView.Menu.View.Bitmap Window.Tool Palette:No Shortcut
+BitmapView.Menu.View.Bitmap Window.Layer Palette:No Shortcut
+BitmapView.Menu.View.Bitmap Window.Shades Palette:No Shortcut
+BitmapView.Menu.View.Bitmap Window.Docked Palettes:No Shortcut
+
+BitmapView.Menu.View.Fit:Ctrl+F
+BitmapView.Menu.View.Zoom out:Alt+Ctrl+-
+BitmapView.Menu.View.Zoom out:-
+BitmapView.Menu.View.Zoom out:X
+BitmapView.Menu.View.Zoom in:Alt+Ctrl+=
+BitmapView.Menu.View.Zoom in:=
+BitmapView.Menu.View.Zoom in:Z
+BitmapView.Menu.View.Display Compositions...:No Shortcut
+BitmapView.Menu.View.Goto...:Ctrl+Shift+>
+BitmapView.Menu.View.Goto...:.
+BitmapView.Menu.View.Next Glyph:Ctrl+]
+BitmapView.Menu.View.Prev Glyph:Ctrl+[
+BitmapView.Menu.View.Next Defined Glyph:Alt+Ctrl+]
+BitmapView.Menu.View.Prev Defined Glyph:Alt+Ctrl+[
+
+BitmapView.Menu.Window.New Glyph Window:Ctrl+H
+BitmapView.Menu.Window.New Bitmap Window:Ctrl+J
+BitmapView.Menu.Window.New Metrics Window:Ctrl+K
+BitmapView.Menu.Window.Warnings:No Shortcut
+
+BitmapView.Menu.Help.About...:No Shortcut
+BitmapView.Menu.Help.License...:No Shortcut
+BitmapView.Menu.Help.Follow for Updates:Ctrl+F1
+BitmapView.Menu.Help.Help and Tutorials:F1
+BitmapView.Menu.Help.Bugs, Questions and Requests:Shift+F1
+
+
 FontView.Menu.File.Hangul.New Composition...:Ctrl+Shift+N
 FontView.Menu.File.Hangul.Modify Composition...:No Shortcut
 FontView.Menu.File.Hangul.Build Syllables:No Shortcut
+
+FontView.Menu.File.Merge.Fonts...:No Shortcut
+FontView.Menu.File.Merge.Feature File...:Alt+Ctrl+Shift+K
+
+FontView.Menu.File.Export.Font...:Ctrl+Shift+G
+FontView.Menu.File.Export.Mac Family...:Alt+Ctrl+G
+FontView.Menu.File.Export.TTC...:No Shortcut
+
+FontView.Menu.File.Revert.File:Ctrl+Shift+R
+FontView.Menu.File.Revert.To Backup:No Shortcut
+
+FontView.Menu.File.New:Ctrl+N
 FontView.Menu.File.Open:Ctrl+O
-FontView.Menu.File.Close:Ctrl+W
 FontView.Menu.File.Save:Ctrl+S
 FontView.Menu.File.Save as...:Ctrl+Shift+S
 FontView.Menu.File.Save All:Alt+Ctrl+S
-FontView.Menu.File.Generate Fonts...:Ctrl+Shift+G
-FontView.Menu.File.Generate Mac Family...:Alt+Ctrl+G
-FontView.Menu.File.Generate TTC...:No Shortcut
 FontView.Menu.File.Import...:Ctrl+Shift+I
-FontView.Menu.File.Merge Kern Info...:Alt+Ctrl+Shift+K
-FontView.Menu.File.Revert File:Ctrl+Shift+R
-FontView.Menu.File.Revert To Backup:No Shortcut
-FontView.Menu.File.Revert Glyph:Alt+Ctrl+R
 FontView.Menu.File.Print...:Ctrl+P
-FontView.Menu.File.Execute Script...:Ctrl+.
 FontView.Menu.File.Preferences...:No Shortcut
-FontView.Menu.File.X Resource Editor...:No Shortcut
+FontView.Menu.File.Themes Editor...:No Shortcut
+FontView.Menu.File.Close:Ctrl+W
 FontView.Menu.File.Quit:Ctrl+Q
 
-FontView.Menu.Edit.Copy From.All Fonts:No Shortcut
-FontView.Menu.Edit.Copy From.Displayed Font:No Shortcut
-FontView.Menu.Edit.Copy From.Glyph Metadata:No Shortcut
-FontView.Menu.Edit.Copy From.TrueType Instructions:No Shortcut
-FontView.Menu.Edit.Select.Select by Color.Color Choose:No Shortcut
+FontView.Menu.Edit.Copy.Reference:Ctrl+G
+FontView.Menu.Edit.Copy.Lookup Data:Alt+Ctrl+C
+FontView.Menu.Edit.Copy.Width:No Shortcut
+FontView.Menu.Edit.Copy.VWidth:No Shortcut
+FontView.Menu.Edit.Copy.LBearing:No Shortcut
+FontView.Menu.Edit.Copy.RBearing:No Shortcut
+FontView.Menu.Edit.Copy.Fg To Bg:Ctrl+Shift+C
+FontView.Menu.Edit.Copy.Layer To Layer:No Shortcut
+
+FontView.Menu.Edit.Copy.Copy From.All Fonts:No Shortcut
+FontView.Menu.Edit.Copy.Copy From.Displayed Font:No Shortcut
+FontView.Menu.Edit.Copy.Copy From.Glyph Metadata:No Shortcut
+FontView.Menu.Edit.Copy.Copy From.TrueType Instructions:No Shortcut
+
+FontView.Menu.Edit.Paste.Into:Ctrl+Shift+V
+FontView.Menu.Edit.Paste.After:Alt+Ctrl+Shift+V
+
+FontView.Menu.Edit.Clear.Background:No Shortcut
+FontView.Menu.Edit.Clear.Special Data:No Shortcut
+
+FontView.Menu.Edit.References.Replace with Reference:Alt+Ctrl+Shift+F
+FontView.Menu.Edit.References.Correct:No Shortcut
+FontView.Menu.Edit.References.Unlink:Ctrl+U
+
+FontView.Menu.Edit.Select.Select by Color.Choose...:No Shortcut
 FontView.Menu.Edit.Select.Select by Color.Default:No Shortcut
 FontView.Menu.Edit.Select.Select All:Ctrl+A
 FontView.Menu.Edit.Select.Invert Selection:Ctrl+Escape
@@ -323,256 +440,305 @@ FontView.Menu.Edit.Select.Select by Script...:No Shortcut
 FontView.Menu.Edit.Select.Glyphs Worth Outputting:No Shortcut
 FontView.Menu.Edit.Select.Glyphs with only References:No Shortcut
 FontView.Menu.Edit.Select.Glyphs with only Splines:No Shortcut
-FontView.Menu.Edit.Select.Glyphs with both:No Shortcut
+FontView.Menu.Edit.Select.Glyphs with Both:No Shortcut
 FontView.Menu.Edit.Select.Whitespace Glyphs:No Shortcut
 FontView.Menu.Edit.Select.Changed Glyphs:No Shortcut
 FontView.Menu.Edit.Select.Hinting Needed:No Shortcut
 FontView.Menu.Edit.Select.Autohintable:No Shortcut
 FontView.Menu.Edit.Select.Select By Lookup Subtable...:No Shortcut
+
 FontView.Menu.Edit.Undo:Ctrl+Z
 FontView.Menu.Edit.Redo:Ctrl+Y
 FontView.Menu.Edit.Cut:Ctrl+X
 FontView.Menu.Edit.Copy:Ctrl+C
-FontView.Menu.Edit.Copy Reference:Ctrl+G
-FontView.Menu.Edit.Copy Lookup Data:Alt+Ctrl+C
-FontView.Menu.Edit.Copy Width:No Shortcut
-FontView.Menu.Edit.Copy VWidth:No Shortcut
-FontView.Menu.Edit.Copy LBearing:No Shortcut
-FontView.Menu.Edit.Copy RBearing:No Shortcut
 FontView.Menu.Edit.Paste:Ctrl+V
-FontView.Menu.Edit.Paste Into:Ctrl+Shift+V
-FontView.Menu.Edit.Paste After:Alt+Ctrl+Shift+V
-FontView.Menu.Edit.Same Glyph As:No Shortcut
 FontView.Menu.Edit.Clear:No Shortcut
-FontView.Menu.Edit.Clear Background:No Shortcut
-FontView.Menu.Edit.Copy Fg To Bg:Ctrl+Shift+C
-FontView.Menu.Edit.Copy Layer To Layer:No Shortcut
-FontView.Menu.Edit.Join:Ctrl+Shift+J
 FontView.Menu.Edit.Find / Replace...:Alt+Ctrl+F
-FontView.Menu.Edit.Replace with Reference:Alt+Ctrl+Shift+F
-FontView.Menu.Edit.Correct References:No Shortcut
-FontView.Menu.Edit.Unlink Reference:Ctrl+U
 FontView.Menu.Edit.Remove Undoes:No Shortcut
-FontView.Menu.Element.Simplify.Simplify:Ctrl+Shift+M
-FontView.Menu.Element.Simplify.Simplify More...:Alt+Ctrl+Shift+M
-FontView.Menu.Element.Simplify.Canonical Start Point:No Shortcut
-FontView.Menu.Element.Simplify.Cleanup Glyph:No Shortcut
-FontView.Menu.Element.Simplify.Canonical Start Point:No Shortcut
-FontView.Menu.Element.Simplify.Canonical Contours:No Shortcut
-FontView.Menu.Element.Overlap.Remove Overlap:Ctrl+Shift+O
-FontView.Menu.Element.Overlap.Intersect:No Shortcut
-FontView.Menu.Element.Overlap.Find Intersections:No Shortcut
-FontView.Menu.Element.Style.Change Weight...:Ctrl+Shift+!
-FontView.Menu.Element.Style.Italic...:No Shortcut
-FontView.Menu.Element.Style.Oblique...:No Shortcut
-FontView.Menu.Element.Style.Condense...:No Shortcut
-FontView.Menu.Element.Style.Change XHeight...:No Shortcut
-FontView.Menu.Element.Style.Change Glyph...:No Shortcut
-FontView.Menu.Element.Style.Add Small Caps...:No Shortcut
-FontView.Menu.Element.Style.Add Subscripts/Superscripts...:No Shortcut
-FontView.Menu.Element.Style.Inline:No Shortcut
-FontView.Menu.Element.Style.Outline:No Shortcut
-FontView.Menu.Element.Style.Shadow:No Shortcut
-FontView.Menu.Element.Style.Wireframe:No Shortcut
-FontView.Menu.Element.Build.Build Accented Glyph:Ctrl+Shift+A
-FontView.Menu.Element.Build.Build Composite Glyph:No Shortcut
-FontView.Menu.Element.Build.Build Duplicate Glyph:No Shortcut
-FontView.Menu.Element.Other Info.Show Dependent.References...:Alt+Ctrl+I
-FontView.Menu.Element.Other Info.Show Dependent.Substitutions...:No Shortcut
-FontView.Menu.Element.Transformations.Transform...:Ctrl+\
-FontView.Menu.Element.Transformations.Point of View Projection...:No Shortcut
-FontView.Menu.Element.Transformations.Non Linear Transform...:Ctrl+Shift+:
-FontView.Menu.Element.Round.To Int:Ctrl+Shift+_
-FontView.Menu.Element.Round.To Hundredths:No Shortcut
-FontView.Menu.Element.Round.Cluster:No Shortcut
-FontView.Menu.Element.Other Info.Set Color.Color Choose:No Shortcut
-FontView.Menu.Element.Other Info.Set Color.Default:No Shortcut
-FontView.Menu.Element.Other Info.MATH Info...:No Shortcut
-FontView.Menu.Element.Other Info.BDF Info...:No Shortcut
-FontView.Menu.Element.Other Info.Horizontal Baselines...:No Shortcut
-FontView.Menu.Element.Other Info.Vertical Baselines...:No Shortcut
-FontView.Menu.Element.Other Info.Justification...:No Shortcut
-FontView.Menu.Element.Other Info.Mass Glyph Rename...:No Shortcut
-FontView.Menu.Element.Other Info.Set Color:No Shortcut
-FontView.Menu.Element.Validation.Find Problems...:Ctrl+E
-FontView.Menu.Element.Validation.Validate...:No Shortcut
-FontView.Menu.Element.Validation.Set Extremum bound...:No Shortcut
-FontView.Menu.Element.Font Info...:Ctrl+Shift+F
-FontView.Menu.Element.Glyph Info...:Ctrl+I
-FontView.Menu.Element.Bitmap Strikes Available...:Ctrl+Shift+B
-FontView.Menu.Element.Regenerate Bitmap Glyphs...:Ctrl+B
-FontView.Menu.Element.Remove Bitmap Glyphs...:No Shortcut
-FontView.Menu.Element.Expand Stroke...:Ctrl+Shift+E
-FontView.Menu.Element.Tile Path...:No Shortcut
-FontView.Menu.Element.Tile Pattern...:No Shortcut
-FontView.Menu.Element.Add Extrema:Ctrl+Shift+X
-FontView.Menu.Element.Autotrace:Ctrl+Shift+T
-FontView.Menu.Element.Correct Direction:Ctrl+Shift+D
-FontView.Menu.Element.Merge Fonts...:No Shortcut
-FontView.Menu.Element.Interpolate Fonts...:No Shortcut
-FontView.Menu.Element.Compare Fonts...:No Shortcut
-FontView.Menu.Element.Compare Layers...:No Shortcut
-FontView.Menu.View.Combinations.Kern Pairs:No Shortcut
-FontView.Menu.View.Combinations.Anchored Pairs:No Shortcut
-FontView.Menu.View.Combinations.Ligatures:No Shortcut
-FontView.Menu.View.Label Glyph By.Glyph Image:No Shortcut
-FontView.Menu.View.Label Glyph By.Name:No Shortcut
-FontView.Menu.View.Label Glyph By.Unicode:No Shortcut
-FontView.Menu.View.Label Glyph By.Encoding Hex:No Shortcut
-FontView.Menu.View.Next Glyph:Ctrl+]
-FontView.Menu.View.Prev Glyph:Ctrl+[
-FontView.Menu.View.Next Defined Glyph:Alt+Ctrl+]
-FontView.Menu.View.Prev Defined Glyph:Alt+Ctrl+[
-FontView.Menu.View.Goto:Ctrl+Shift+>
-FontView.Menu.View.Show ATT:No Shortcut
-FontView.Menu.View.Display Substitutions...:No Shortcut
-FontView.Menu.View.Show H. Metrics...:No Shortcut
-FontView.Menu.View.Show V. Metrics...:No Shortcut
-FontView.Menu.View.32x8 cell window:Ctrl+Shift+%
-FontView.Menu.View.16x4 cell window:Ctrl+Shift+^
-FontView.Menu.View.8x2  cell window:Ctrl+Shift+*
-FontView.Menu.View.24 pixel outline:Ctrl+2
-FontView.Menu.View.36 pixel outline:Ctrl+3
-FontView.Menu.View.48 pixel outline:Ctrl+4
-FontView.Menu.View.72 pixel outline:Ctrl+7
-FontView.Menu.View.96 pixel outline:Ctrl+9
-FontView.Menu.View.128 pixel outline:Ctrl+1
-FontView.Menu.View.Anti Alias:Ctrl+5
-FontView.Menu.View.Fit to em:Ctrl+6
-FontView.Menu.View.Bitmap Magnification...:No Shortcut
-FontView.Menu.Encoding.Reencode:No Shortcut
-FontView.Menu.Encoding.Compact:No Shortcut
-FontView.Menu.Encoding.Force Encoding:No Shortcut
-FontView.Menu.Encoding.Add Encoding Slots...:No Shortcut
-FontView.Menu.Encoding.Remove Unused Slots:No Shortcut
-FontView.Menu.Encoding.Detach Glyphs:No Shortcut
-FontView.Menu.Encoding.Detach & Remove Glyphs...:No Shortcut
-FontView.Menu.Encoding.Add Encoding Name...:No Shortcut
-FontView.Menu.Encoding.Load Encoding...:No Shortcut
-FontView.Menu.Encoding.Make From Font...:No Shortcut
-FontView.Menu.Encoding.Remove Encoding...:No Shortcut
-FontView.Menu.Encoding.Display By Groups...:No Shortcut
-FontView.Menu.Encoding.Define Groups...:No Shortcut
-FontView.Menu.Encoding.Save Namelist of Font...:No Shortcut
-FontView.Menu.Encoding.Load Namelist...:No Shortcut
-FontView.Menu.Encoding.Rename Glyphs...:No Shortcut
-FontView.Menu.Encoding.Create Named Glyphs...:No Shortcut
-FontView.Menu.Hints.Histograms.HStem:No Shortcut
-FontView.Menu.Hints.Histograms.VStem:No Shortcut
-FontView.Menu.Hints.Histograms.BlueValues:No Shortcut
-FontView.Menu.Hints.AutoHint:Ctrl+Shift+H
-FontView.Menu.Hints.Hint Substitution Pts:No Shortcut
-FontView.Menu.Hints.Auto Counter Hint:No Shortcut
-FontView.Menu.Hints.Don't AutoHint:No Shortcut
-FontView.Menu.Hints.AutoInstr:Ctrl+T
-FontView.Menu.Hints.Edit Instructions...:No Shortcut
-FontView.Menu.Hints.Edit 'fpgm'...:No Shortcut
-FontView.Menu.Hints.Edit 'prep'...:No Shortcut
-FontView.Menu.Hints.Edit 'maxp'...:No Shortcut
-FontView.Menu.Hints.Edit 'cvt '...:No Shortcut
-FontView.Menu.Hints.Remove Instr Tables:No Shortcut
-FontView.Menu.Hints.Suggest Deltas:No Shortcut
-FontView.Menu.Hints.Clear Hints:No Shortcut
-FontView.Menu.Hints.Clear Width MD:No Shortcut
-FontView.Menu.Hints.Clear Instructions:No Shortcut
 
-FontView.Menu.Metrics.Center in Width:No Shortcut
-FontView.Menu.Metrics.Thirds in Width:No Shortcut
+FontView.Menu.Font.Validation.Find Problems...:Ctrl+E
+FontView.Menu.Font.Validation.Validate...:No Shortcut
+FontView.Menu.Font.Validation.Set Extremum Bound...:No Shortcut
+
+FontView.Menu.Font.Encoding.Compact:No Shortcut
+FontView.Menu.Font.Encoding.Force Encoding:No Shortcut
+FontView.Menu.Font.Encoding.Add Encoding Name...:No Shortcut
+FontView.Menu.Font.Encoding.Load Encoding...:No Shortcut
+FontView.Menu.Font.Encoding.Make From Font...:No Shortcut
+FontView.Menu.Font.Encoding.Remove Encoding...:No Shortcut
+
+FontView.Menu.Font.Naming.Create Named Glyphs...:No Shortcut
+FontView.Menu.Font.Naming.Rename Glyphs...:No Shortcut
+FontView.Menu.Font.Naming.Save Namelist...:No Shortcut
+FontView.Menu.Font.Naming.Load Namelist...:No Shortcut
+
+FontView.Menu.Font.Display Groups.Set...:No Shortcut
+FontView.Menu.Font.Display Groups.Define...:No Shortcut
+FontView.Menu.Font.Display Groups.By Substitutions...:No Shortcut
+
+FontView.Menu.Font.Multiple Master (MM).Create...:No Shortcut
+FontView.Menu.Font.Multiple Master (MM).Validity Check:No Shortcut
+FontView.Menu.Font.Multiple Master (MM).Info...:No Shortcut
+FontView.Menu.Font.Multiple Master (MM).Blend to New Font...:No Shortcut
+FontView.Menu.Font.Multiple Master (MM).Change Default Weights...:No Shortcut
+
+FontView.Menu.Font.Composite (CID).Convert to CID:No Shortcut
+FontView.Menu.Font.Composite (CID).Convert By CMap:No Shortcut
+FontView.Menu.Font.Composite (CID).Flatten:No Shortcut
+FontView.Menu.Font.Composite (CID).FlattenByCMap:No Shortcut
+FontView.Menu.Font.Composite (CID).Insert Font...:No Shortcut
+FontView.Menu.Font.Composite (CID).Insert Blank:No Shortcut
+FontView.Menu.Font.Composite (CID).Remove Font:No Shortcut
+FontView.Menu.Font.Composite (CID).Change Supplement...:No Shortcut
+FontView.Menu.Font.Composite (CID).Font Info...:No Shortcut
+
+FontView.Menu.Font.Show Dependent.References...:Alt+Ctrl+I
+FontView.Menu.Font.Show Dependent.Substitutions...:No Shortcut
+
+FontView.Menu.Font.Interpolate Fonts...:No Shortcut
+FontView.Menu.Font.Compare Fonts...:No Shortcut
+FontView.Menu.Font.Compare Layers...:No Shortcut
+FontView.Menu.Font.Reencode:No Shortcut
+FontView.Menu.Font.Bitmap Strikes Available...:Ctrl+Shift+B
+FontView.Menu.Font.Regenerate Bitmap Glyphs...:Ctrl+B
+FontView.Menu.Font.Remove Bitmap Glyphs...:No Shortcut
+FontView.Menu.Font.Show ATT...:No Shortcut
+FontView.Menu.Font.Font Info...:Ctrl+Shift+F
+FontView.Menu.Font.MATH Info...:No Shortcut
+FontView.Menu.Font.BDF Info...:No Shortcut
+FontView.Menu.Font.Horizontal Baselines...:No Shortcut
+FontView.Menu.Font.Vertical Baselines...:No Shortcut
+FontView.Menu.Font.Justification...:No Shortcut
+
+FontView.Menu.Glyph.Set Color.Choose...:No Shortcut
+FontView.Menu.Glyph.Set Color.Default:No Shortcut
+
+FontView.Menu.Glyph.Hints.Histograms.HStem:No Shortcut
+FontView.Menu.Glyph.Hints.Histograms.VStem:No Shortcut
+FontView.Menu.Glyph.Hints.Histograms.BlueValues:No Shortcut
+
+FontView.Menu.Glyph.Hints.AutoHint:Ctrl+Shift+H
+FontView.Menu.Glyph.Hints.Hint Substitution Pts:No Shortcut
+FontView.Menu.Glyph.Hints.Auto Counter Hint:No Shortcut
+FontView.Menu.Glyph.Hints.Don't AutoHint:No Shortcut
+FontView.Menu.Glyph.Hints.AutoInstr:Ctrl+T
+FontView.Menu.Glyph.Hints.Edit Instructions...:No Shortcut
+FontView.Menu.Glyph.Hints.Edit 'fpgm'...:No Shortcut
+FontView.Menu.Glyph.Hints.Edit 'prep'...:No Shortcut
+FontView.Menu.Glyph.Hints.Edit 'maxp'...:No Shortcut
+FontView.Menu.Glyph.Hints.Edit 'cvt '...:No Shortcut
+FontView.Menu.Glyph.Hints.Remove Instr Tables:No Shortcut
+FontView.Menu.Glyph.Hints.Suggest Deltas...:No Shortcut
+FontView.Menu.Glyph.Hints.Clear Hints:No Shortcut
+FontView.Menu.Glyph.Hints.Clear Instructions:No Shortcut
+
+FontView.Menu.Glyph.Build Glyph.Add Small Caps...:No Shortcut
+FontView.Menu.Glyph.Build Glyph.Add Subscripts/Superscripts...:No Shortcut
+FontView.Menu.Glyph.Build Glyph.Build Accented Glyph:Ctrl+Shift+A
+FontView.Menu.Glyph.Build Glyph.Build Composite Glyph:No Shortcut
+FontView.Menu.Glyph.Build Glyph.Build Duplicate Glyph:No Shortcut
+
+FontView.Menu.Glyph.Glyph Info...:Ctrl+I
+FontView.Menu.Glyph.Set Color:No Shortcut
+FontView.Menu.Glyph.Detach:No Shortcut
+FontView.Menu.Glyph.Remove:No Shortcut
+FontView.Menu.Glyph.Revert:Alt+Ctrl+R
+FontView.Menu.Glyph.Add Slots...:No Shortcut
+FontView.Menu.Glyph.Remove Unused Slots:No Shortcut
+FontView.Menu.Glyph.Mass Glyph Rename...:No Shortcut
+FontView.Menu.Glyph.Kern Pairs:No Shortcut
+FontView.Menu.Glyph.Anchored Pairs:No Shortcut
+FontView.Menu.Glyph.Ligatures:No Shortcut
+FontView.Menu.Glyph.Same Glyph As:No Shortcut
+
+FontView.Menu.Extensions.Execute Script...:Ctrl+.
+
+FontView.Menu.Path.Modify.Weight...:Ctrl+Shift+!
+FontView.Menu.Path.Modify.Italic...:No Shortcut
+FontView.Menu.Path.Modify.Oblique...:No Shortcut
+FontView.Menu.Path.Modify.Condense/Extend...:No Shortcut
+FontView.Menu.Path.Modify.X-Height...:No Shortcut
+FontView.Menu.Path.Modify.Stems and Counters...:No Shortcut
+FontView.Menu.Path.Modify.Inline...:No Shortcut
+FontView.Menu.Path.Modify.Outline...:No Shortcut
+FontView.Menu.Path.Modify.Shadow...:No Shortcut
+FontView.Menu.Path.Modify.Wireframe...:No Shortcut
+
+FontView.Menu.Path.Transform.Transform...:Ctrl+\
+FontView.Menu.Path.Transform.Point of View Projection...:No Shortcut
+FontView.Menu.Path.Transform.Non Linear Transform...:Ctrl+Shift+:
+
+FontView.Menu.Path.Overlap.Remove Overlap:Ctrl+Shift+O
+FontView.Menu.Path.Overlap.Intersect:No Shortcut
+FontView.Menu.Path.Overlap.Find Intersections:No Shortcut
+
+FontView.Menu.Path.Simplify.Simplify:Ctrl+Shift+M
+FontView.Menu.Path.Simplify.Simplify More...:Alt+Ctrl+Shift+M
+FontView.Menu.Path.Simplify.Canonical Start Point:No Shortcut
+FontView.Menu.Path.Simplify.Cleanup Glyph:No Shortcut
+FontView.Menu.Path.Simplify.Canonical Contours:No Shortcut
+
+FontView.Menu.Path.Join:Ctrl+Shift+J
+FontView.Menu.Path.Correct Direction:Ctrl+Shift+D
+FontView.Menu.Path.Tile Path...:No Shortcut
+FontView.Menu.Path.Tile Pattern...:No Shortcut
+FontView.Menu.Path.Expand Stroke...:Ctrl+Shift+E
+FontView.Menu.Path.Add Extrema:Ctrl+Shift+X
+FontView.Menu.Path.Autotrace:Ctrl+Shift+T
+
+FontView.Menu.Point.To Int:Ctrl+Shift+_
+FontView.Menu.Point.To Hundredths:No Shortcut
+FontView.Menu.Point.Cluster:No Shortcut
+
 FontView.Menu.Metrics.Set Width...:Ctrl+Shift+L
 FontView.Menu.Metrics.Set LBearing...:Ctrl+L
 FontView.Menu.Metrics.Set RBearing...:Ctrl+R
 FontView.Menu.Metrics.Set Both Bearings...:No Shortcut
-FontView.Menu.Metrics.Set Vertical Advance...:No Shortcut
+FontView.Menu.Metrics.Center in Width:No Shortcut
+FontView.Menu.Metrics.Thirds in Width:No Shortcut
 FontView.Menu.Metrics.Auto Width...:Ctrl+Shift+W
 FontView.Menu.Metrics.Kern By Classes...:No Shortcut
-FontView.Menu.Metrics.Remove All Kern Pairs:No Shortcut
 FontView.Menu.Metrics.Kern Pair Closeup...:No Shortcut
+FontView.Menu.Metrics.Remove All Kern Pairs:No Shortcut
 FontView.Menu.Metrics.VKern By Classes...:No Shortcut
 FontView.Menu.Metrics.VKern From HKern:No Shortcut
 FontView.Menu.Metrics.Remove All VKern Pairs:No Shortcut
-FontView.Menu.CID.Convert to CID:No Shortcut
-FontView.Menu.CID.Convert By CMap:No Shortcut
-FontView.Menu.CID.Flatten:No Shortcut
-FontView.Menu.CID.FlattenByCMap:No Shortcut
-FontView.Menu.CID.Insert Font...:No Shortcut
-FontView.Menu.CID.Insert Blank:No Shortcut
-FontView.Menu.CID.Remove Font:No Shortcut
-FontView.Menu.CID.Change Supplement...:No Shortcut
-FontView.Menu.CID.CID Font Info...:No Shortcut
-FontView.Menu.MM.Create MM...:No Shortcut
-FontView.Menu.MM.MM Validity Check:No Shortcut
-FontView.Menu.MM.MM Info...:No Shortcut
-FontView.Menu.MM.Blend to New Font...:No Shortcut
-FontView.Menu.MM.MM Change Default Weights...:No Shortcut
-FontView.Menu.Window.New Outline Window:Ctrl+H
+FontView.Menu.Metrics.Set Vertical Advance...:No Shortcut
+
+FontView.Menu.View.Glyph Label.Glyph Image:No Shortcut
+FontView.Menu.View.Glyph Label.Name:No Shortcut
+FontView.Menu.View.Glyph Label.Unicode:No Shortcut
+FontView.Menu.View.Glyph Label.Encoding Hex:No Shortcut
+
+FontView.Menu.View.Metrics.Show Horizontal...:No Shortcut
+FontView.Menu.View.Metrics.Show Vertical...:No Shortcut
+
+FontView.Menu.View.Size.32x8 cell window:Ctrl+Shift+%
+FontView.Menu.View.Size.16x4 cell window:Ctrl+Shift+^
+FontView.Menu.View.Size.8x2  cell window:Ctrl+Shift+*
+FontView.Menu.View.Size.24 pixel outline:Ctrl+2
+FontView.Menu.View.Size.36 pixel outline:Ctrl+3
+FontView.Menu.View.Size.48 pixel outline:Ctrl+4
+FontView.Menu.View.Size.72 pixel outline:Ctrl+7
+FontView.Menu.View.Size.96 pixel outline:Ctrl+9
+FontView.Menu.View.Size.128 pixel outline:Ctrl+1
+FontView.Menu.View.Size.Bitmap Magnification...:No Shortcut
+
+FontView.Menu.View.Goto...:Ctrl+Shift+>
+FontView.Menu.View.Next Glyph:Ctrl+]
+FontView.Menu.View.Prev Glyph:Ctrl+[
+FontView.Menu.View.Next Defined Glyph:Alt+Ctrl+]
+FontView.Menu.View.Prev Defined Glyph:Alt+Ctrl+[
+FontView.Menu.View.Anti Alias:Ctrl+5
+FontView.Menu.View.Fit to Bounding Box:Ctrl+6
+
+FontView.Menu.Window.New Glyph Window:Ctrl+H
 FontView.Menu.Window.New Bitmap Window:Ctrl+J
 FontView.Menu.Window.New Metrics Window:Ctrl+K
 FontView.Menu.Window.Warnings:No Shortcut
-FontView.Menu.Help.Help:F1
-FontView.Menu.Help.Overview:Shift+F1
-FontView.Menu.Help.Index:Ctrl+F1
+
 FontView.Menu.Help.About...:No Shortcut
 FontView.Menu.Help.License...:No Shortcut
+FontView.Menu.Help.Follow for Updates:Ctrl+F1
+FontView.Menu.Help.Help and Tutorials:F1
+FontView.Menu.Help.Bugs, Questions and Requests:Shift+F1
 
-MetricsView.Menu.Window.New Outline Window:Ctrl+H
-MetricsView.Menu.Window.New Bitmap Window:Ctrl+J
-MetricsView.Menu.Window.New Metrics Window:Ctrl+K
-MetricsView.Menu.Window.Warnings:No Shortcut
+
+MetricsView.Menu.File.Export.Font...:Ctrl+Shift+G
+MetricsView.Menu.File.Export.Mac Family...:Alt+Ctrl+G
+MetricsView.Menu.File.Export.TTC...:No Shortcut
+
+MetricsView.Menu.File.Merge.Feature File...:Ctrl+Shift+K
+
 MetricsView.Menu.File.New:Ctrl+N
 MetricsView.Menu.File.Open:Ctrl+O
-MetricsView.Menu.File.Close:Ctrl+W
 MetricsView.Menu.File.Save:Ctrl+S
 MetricsView.Menu.File.Save as...:Ctrl+Shift+S
-MetricsView.Menu.File.Generate Fonts...:Ctrl+Shift+G
-MetricsView.Menu.File.Generate Mac Family...:Alt+Ctrl+G
-MetricsView.Menu.File.Generate TTC...:No Shortcut
-MetricsView.Menu.File.Merge Kern Info...:Ctrl+Shift+K
 MetricsView.Menu.File.Print...:Ctrl+P
 MetricsView.Menu.File.Preferences...:No Shortcut
-MetricsView.Menu.File.X Resource Editor...:No Shortcut
+MetricsView.Menu.File.Theme Editor...:No Shortcut
+MetricsView.Menu.File.Close:Ctrl+W
 MetricsView.Menu.File.Quit:Ctrl+Q
+
+MetricsView.Menu.Edit.Copy.Reference:Ctrl+G
+MetricsView.Menu.Edit.Copy.Width:No Shortcut
+MetricsView.Menu.Edit.Copy.VWidth:No Shortcut
+MetricsView.Menu.Edit.Copy.LBearing:No Shortcut
+MetricsView.Menu.Edit.Copy.RBearing:No Shortcut
+
+MetricsView.Menu.Edit.References.Unlink:Ctrl+U
+
+MetricsView.Menu.Edit.Select.Select All:Ctrl+A
+MetricsView.Menu.Edit.Select.Deselect All:Escape
+
 MetricsView.Menu.Edit.Undo:Ctrl+Z
 MetricsView.Menu.Edit.Redo:Ctrl+Y
 MetricsView.Menu.Edit.Cut:Ctrl+X
 MetricsView.Menu.Edit.Copy:Ctrl+C
-MetricsView.Menu.Edit.Copy Reference:Ctrl+G
-MetricsView.Menu.Edit.Copy Width:No Shortcut
-MetricsView.Menu.Edit.Copy VWidth:No Shortcut
-MetricsView.Menu.Edit.Copy LBearing:No Shortcut
-MetricsView.Menu.Edit.Copy RBearing:No Shortcut
 MetricsView.Menu.Edit.Paste:Ctrl+V
 MetricsView.Menu.Edit.Clear:No Shortcut
-MetricsView.Menu.Edit.Join:Ctrl+Shift+J
-MetricsView.Menu.Edit.Select All:Ctrl+A
-MetricsView.Menu.Edit.Clear Selection:Escape
-MetricsView.Menu.Edit.Unlink Reference:Ctrl+U
-MetricsView.Menu.Element.Simplify.Simplify:Ctrl+Shift+M
-MetricsView.Menu.Element.Simplify.Simplify More...:Alt+Ctrl+Shift+M
-MetricsView.Menu.Element.Simplify.Cleanup Glyph:No Shortcut
-MetricsView.Menu.Element.Remove Overlap.Remove Overlap:Ctrl+Shift+O
-MetricsView.Menu.Element.Remove Overlap.Intersect:No Shortcut
-MetricsView.Menu.Element.Remove Overlap.Find Intersections:No Shortcut
-MetricsView.Menu.Element.Effects.Inline:No Shortcut
-MetricsView.Menu.Element.Effects.Outline:No Shortcut
-MetricsView.Menu.Element.Effects.Shadow:No Shortcut
-MetricsView.Menu.Element.Effects.Wireframe:No Shortcut
-MetricsView.Menu.Element.Build.Build Accented Glyph:Ctrl+Shift+A
-MetricsView.Menu.Element.Build.Build Composite Glyph:No Shortcut
-MetricsView.Menu.Element.Font Info...:Ctrl+Shift+F
-MetricsView.Menu.Element.Glyph Info...:Ctrl+I
-MetricsView.Menu.Element.Show Dependent:Alt+Ctrl+I
-MetricsView.Menu.Element.Find Problems...:Ctrl+E
-MetricsView.Menu.Element.Bitmap Strikes Available...:Ctrl+Shift+B
-MetricsView.Menu.Element.Regenerate Bitmap Glyphs...:Ctrl+B
-MetricsView.Menu.Element.Transform...:Ctrl+\
-MetricsView.Menu.Element.Tile Path...:No Shortcut
-MetricsView.Menu.Element.Add Extrema:Ctrl+Shift+X
-MetricsView.Menu.Element.To Int:Ctrl+Shift+_
-MetricsView.Menu.Element.Autotrace:Ctrl+Shift+T
-MetricsView.Menu.Element.Correct Direction:Ctrl+Shift+D
-MetricsView.Menu.View.Combinations.Kern Pairs:No Shortcut
-MetricsView.Menu.View.Combinations.Anchored Pairs:No Shortcut
-MetricsView.Menu.View.Combinations.Ligatures:No Shortcut
+MetricsView.Menu.Edit.Find:Ctrl+Shift+<
+
+MetricsView.Menu.Font.Validation.Find Problems...:Ctrl+E
+
+MetricsView.Menu.Font.Font Info...:Ctrl+Shift+F
+MetricsView.Menu.Font.Bitmap Strikes Available...:Ctrl+Shift+B
+MetricsView.Menu.Font.Regenerate Bitmap Glyphs...:Ctrl+B
+MetricsView.Menu.Font.Show Dependent:Alt+Ctrl+I
+
+MetricsView.Menu.Glyph.Build Glyph.Build Accented Glyph:Ctrl+Shift+A
+MetricsView.Menu.Glyph.Build Glyph.Build Composite Glyph:No Shortcut
+
+MetricsView.Menu.Glyph.Glyph Info...:Ctrl+I
+MetricsView.Menu.Glyph.Kern Pairs:No Shortcut
+MetricsView.Menu.Glyph.Anchored Pairs:No Shortcut
+MetricsView.Menu.Glyph.Ligatures:No Shortcut
+
+MetricsView.Menu.Path.Modify.Inline:No Shortcut
+MetricsView.Menu.Path.Modify.Outline:No Shortcut
+MetricsView.Menu.Path.Modify.Shadow:No Shortcut
+MetricsView.Menu.Path.Modify.Wireframe:No Shortcut
+
+MetricsView.Menu.Path.Transform.Transform...:Ctrl+\
+
+MetricsView.Menu.Path.Overlap.Remove Overlap:Ctrl+Shift+O
+MetricsView.Menu.Path.Overlap.Intersect:No Shortcut
+MetricsView.Menu.Path.Overlap.Find Intersections:No Shortcut
+
+MetricsView.Menu.Path.Simplify.Simplify:Ctrl+Shift+M
+MetricsView.Menu.Path.Simplify.Simplify More...:Alt+Ctrl+Shift+M
+MetricsView.Menu.Path.Simplify.Cleanup Glyph:No Shortcut
+
+MetricsView.Menu.Path.Join:Ctrl+Shift+J
+MetricsView.Menu.Path.Correct Direction:Ctrl+Shift+D
+MetricsView.Menu.Path.Tile Path...:No Shortcut
+MetricsView.Menu.Path.Add Extrema:Ctrl+Shift+X
+MetricsView.Menu.Path.Autotrace:Ctrl+Shift+T
+
+MetricsView.Menu.Point.To Int:Ctrl+Shift+_
+
+MetricsView.Menu.Metrics.Set Width...:Ctrl+Shift+L
+MetricsView.Menu.Metrics.Set LBearing...:Ctrl+L
+MetricsView.Menu.Metrics.Set RBearing...:Ctrl+R
+MetricsView.Menu.Metrics.Set Both Bearings...:No Shortcut
+MetricsView.Menu.Metrics.Center in Width:No Shortcut
+MetricsView.Menu.Metrics.Thirds in Width:No Shortcut
+MetricsView.Menu.Metrics.Auto Width...:Ctrl+Shift+W
+MetricsView.Menu.Metrics.Kern By Classes...:No Shortcut
+MetricsView.Menu.Metrics.Kern Pair Closeup...:No Shortcut
+MetricsView.Menu.Metrics.Remove All Kern Pairs:No Shortcut
+MetricsView.Menu.Metrics.VKern By Classes...:No Shortcut
+MetricsView.Menu.Metrics.VKern From HKern:No Shortcut
+MetricsView.Menu.Metrics.Remove All VKern Pairs:No Shortcut
+MetricsView.Menu.Metrics.Set Vertical Advance...:No Shortcut
+
+MetricsView.Menu.View.Size.Set from Window:No Shortcut
+MetricsView.Menu.View.Size.Set...:No Shortcut
+MetricsView.Menu.View.Size.Bigger:Ctrl+Shift++
+MetricsView.Menu.View.Size.Smaller:Ctrl+-
+
+MetricsView.Menu.View.Show.Outline:No Shortcut
+
 MetricsView.Menu.View.Zoom out:Alt+Ctrl+-
 MetricsView.Menu.View.Zoom in:Alt+Ctrl+=
 MetricsView.Menu.View.Insert Glyph After...:No Shortcut
@@ -582,22 +748,21 @@ MetricsView.Menu.View.Next Glyph:Ctrl+]
 MetricsView.Menu.View.Prev Glyph:Ctrl+[
 MetricsView.Menu.View.Next Defined Glyph:Alt+Ctrl+]
 MetricsView.Menu.View.Prev Defined Glyph:Alt+Ctrl+[
-MetricsView.Menu.View.Find In Font View:Ctrl+Shift+<
-MetricsView.Menu.View.Anti Alias:Ctrl+=
 MetricsView.Menu.View.Vertical:No Shortcut
-MetricsView.Menu.View.Size set from Window:No Shortcut
-MetricsView.Menu.View.Set Point Size:No Shortcut
-MetricsView.Menu.View.Bigger Point Size:Ctrl+Shift++
-MetricsView.Menu.View.Smaller Point Size:Ctrl+-
+MetricsView.Menu.View.Anti Alias:Ctrl+=
 MetricsView.Menu.View.Next Line in Word List:Ctrl+.
 MetricsView.Menu.View.Previous Line in Word List:Ctrl+,
-MetricsView.Menu.View.Outline:No Shortcut
 
-MetricsView.Menu.Help.Help:F1
-MetricsView.Menu.Help.Overview:Shift+F1
-MetricsView.Menu.Help.Index:Ctrl+F1
+MetricsView.Menu.Window.New Glyph Window:Ctrl+H
+MetricsView.Menu.Window.New Bitmap Window:Ctrl+J
+MetricsView.Menu.Window.New Metrics Window:Ctrl+K
+MetricsView.Menu.Window.Warnings:No Shortcut
+
 MetricsView.Menu.Help.About...:No Shortcut
 MetricsView.Menu.Help.License...:No Shortcut
+MetricsView.Menu.Help.Follow for Updates:Ctrl+F1
+MetricsView.Menu.Help.Help and Tutorials:F1
+MetricsView.Menu.Help.Bugs, Questions and Requests:Shift+F1
 
 CharView.Menu.View.Show.Tab.Tab0:Alt+1
 CharView.Menu.View.Show.Tab.Tab1:Alt+2

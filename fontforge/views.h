@@ -958,7 +958,7 @@ extern void CharViewFree(CharView *cv);
 extern int CVValid(SplineFont *sf, SplineChar *sc, CharView *cv);
 extern void CVSetCharChanged(CharView *cv,int changed);
 extern int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya);
-extern int CVAnySelPoints(CharView *cv);
+extern void CVSelCount(CharView *cv, int *sc, int *pc, int *rc, int *ic, int *ac);
 
 /**
  * Get all the selected points in the current cv.
@@ -1270,10 +1270,12 @@ extern void MathInit(void);
 extern void SFMathDlg(SplineFont *sf,int def_layer);
 
 extern GMenuItem2 *cvpy_menu, *fvpy_menu;
+extern int cvpy_menu_len, fvpy_menu_len;
 extern void cvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void fvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
 
 extern GMenuItem2 *cv_menu, *fv_menu;
+extern int cv_menu_len, fv_menu_len;
 extern void cv_tl2listcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void fv_tl2listcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
 
