@@ -61,6 +61,7 @@
 # include "ffpython.h"
 #endif
 
+#include <assert.h>
 #include <stdarg.h>
 #include <string.h>
 
@@ -111,17 +112,13 @@ static void extractNumericVersion(const char * textVersion, int * versionMajor, 
   return;
 }
 
-static void injectNumericVersion(char ** textVersion, int versionMajor, int versionMinor) {
+static char* formatNumericVersion(int versionMajor, int versionMinor) {
   // We generate a version string from numeric values if available.
-  if (versionMajor == -1) *textVersion = copy("");
-  else if (versionMinor == -1) *textVersion = smprintf("%d", versionMajor);
-  else *textVersion = smprintf("%d.%d", versionMajor, versionMinor);
-  if (!*textVersion) {
-    // gcc is happy now, but the people are angry.
-    // How long shall they suffer its tyranny?
-    LogError(_("Error generating version string in injectNumericVersion."));
+  assert(versionMajor != -1);
+  if (versionMinor == -1) {
+      return smprintf("%d", versionMajor);
   }
-  return;
+  return smprintf("%d.%d", versionMajor, versionMinor);
 }
 
 /* The spec does not really require padding the version str but it clears */
@@ -3821,7 +3818,7 @@ return;
 int TryAddRawGroupKern(struct splinefont *sf, int isv, struct glif_name_index *class_name_pair_hash, int *current_groupkern_index_p, struct ff_rawoffsets **current_groupkern_p, const char *left, const char *right, int offset) {
   char *pairtext;
   int success = 0;
-  if (left && right && ((pairtext = smprintf("%s %s", left, right)) != NULL) && pairtext) {
+  if (left && right && ((pairtext = smprintf("%s %s", left, right)) != NULL)) {
     if (!glif_name_search_glif_name(class_name_pair_hash, pairtext)) {
       glif_name_track_new(class_name_pair_hash, (*current_groupkern_index_p)++, pairtext);
       struct ff_rawoffsets *tmp_groupkern = calloc(1, sizeof(struct ff_rawoffsets));
@@ -4444,7 +4441,7 @@ return( NULL );
         xmlFreeDoc(doc);
     // We first try to set the SplineFont version by using the native numeric U. F. O. values.
     if ( sf->version==NULL && versionMajor != -1 )
-      injectNumericVersion(&sf->version, versionMajor, versionMinor);
+      sf->version = formatNumericVersion(versionMajor, versionMinor);
     // If that fails, we attempt to use the TrueType values.
     if ( sf->version==NULL && sf->names!=NULL &&
 	    sf->names->names[ttf_version]!=NULL &&
