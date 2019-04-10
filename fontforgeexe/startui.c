@@ -1409,19 +1409,18 @@ exit( 0 );
 #if defined(__Mac)
     if ( listen_to_apple_events ) {
 	install_apple_event_handlers();
+#ifndef FONTFORGE_CAN_USE_GDK
 	install_mac_timer();
 	setup_cocoa_app();
-
 	
 	// WARNING: See declaration of RunApplicationEventLoop() above as to
 	// why you might not want to call that function anymore.
 	// RunApplicationEventLoop();
-#ifndef FONTFORGE_CAN_USE_GDK
     } else
 #else
     }
-#endif
-#endif
+#endif // FONTFORGE_CAN_USE_GDK
+#endif // __Mac
     if ( doopen || !any )
 	_FVMenuOpen(NULL);
     GDrawEventLoop(NULL);
