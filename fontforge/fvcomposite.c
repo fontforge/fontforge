@@ -1119,11 +1119,14 @@ const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,int noch
     const unichar_t *upt, *pt; unichar_t *gpt;
     char *dot = NULL;
 
-    if ( sc!=NULL && (dot = strchr(sc->name,'.'))!=NULL ) {
-	/* agrave.sc should be built from a.sc and grave or grave.sc */
-	char *temp = copyn(sc->name,dot-sc->name);
-	base = UniFromName(temp,sf->uni_interp,NULL);
-	free(temp);
+    if ( sc!=NULL ) {
+        if ( sc->user_decomp != NULL ) return sc->user_decomp;
+        if ((dot = strchr(sc->name,'.'))!=NULL ) {
+            /* agrave.sc should be built from a.sc and grave or grave.sc */
+            char *temp = copyn(sc->name,dot-sc->name);
+            base = UniFromName(temp,sf->uni_interp,NULL);
+            free(temp);
+        }
     }
 
     if ( base>=0xac00 && base<=0xd7a3 ) { /* Hangul syllables */

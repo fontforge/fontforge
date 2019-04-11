@@ -74,25 +74,29 @@ typedef struct charinfo {
 #define CID_Cancel	1005
 #define CID_ComponentMsg	1006
 #define CID_Components	1007
-#define CID_Comment	1008
-#define CID_Color	1009
-#define CID_GClass	1010
-#define CID_Tabs	1011
+#define CID_ComponentTextField  1008
+#define CID_ComponentChangeMsg  1009
+#define CID_ComponentDefaultCB  1010
+#define CID_ComponentInterpMsg  1011
+#define CID_Comment	1012
+#define CID_Color	1013
+#define CID_GClass	1014
+#define CID_Tabs	1015
 
-#define CID_TeX_Height	1012
-#define CID_TeX_Depth	1013
-#define CID_TeX_Italic	1014
-#define CID_HorAccent	1015
+#define CID_TeX_Height	1016
+#define CID_TeX_Depth	1017
+#define CID_TeX_Italic	1018
+#define CID_HorAccent	1019
 /* Room for one more here, if we need it */
-#define CID_TeX_HeightD	1017
-#define CID_TeX_DepthD	1018
-#define CID_TeX_ItalicD	1019
-#define CID_HorAccentD	1020
+#define CID_TeX_HeightD	1020
+#define CID_TeX_DepthD	1021
+#define CID_TeX_ItalicD	1022
+#define CID_HorAccentD	1023
 
-#define CID_ItalicDevTab	1022
-#define CID_AccentDevTab	1023
+#define CID_ItalicDevTab	1024
+#define CID_AccentDevTab	1025
 
-#define CID_IsExtended	1024
+#define CID_IsExtended	1026
 #define CID_DefLCCount	1040
 #define CID_LCCount	1041
 #define CID_LCCountLab	1042
@@ -1225,6 +1229,7 @@ static SplineChar *CI_SCDuplicate(SplineChar *sc) {
     newsc->unicodeenc = sc->unicodeenc;
     newsc->orig_pos = sc->orig_pos;
     newsc->comment = copy(sc->comment);
+    newsc->user_decomp = sc->user_decomp;
     newsc->unlink_rm_ovrlp_save_undo = sc->unlink_rm_ovrlp_save_undo;
     newsc->glyph_class = sc->glyph_class;
     newsc->color = sc->color;
@@ -1436,6 +1441,7 @@ return( false );
 	ci->cachedsc = chunkalloc(sizeof(SplineChar));
 	ci->cachedsc->orig_pos = ci->sc->orig_pos;
 	ci->cachedsc->parent = ci->sc->parent;
+    ci->cachedsc->user_decomp = ci->sc->user_decomp;
 	scl = chunkalloc(sizeof(struct splinecharlist));
 	scl->sc = ci->cachedsc;
 	scl->next = ci->changes;
@@ -3653,6 +3659,69 @@ static int CI_DefLCChange(GGadget *g, GEvent *e) {
 return( true );
 }
 
+// Turn the user's entered decomposition into the format returned by SFGetAlternate
+unichar_t* CI_ParseUserDecomposition(char* inp) {
+    unsigned long len = strlen(inp);
+    char* end;
+    unichar_t* out = malloc(len*sizeof(unichar_t));
+
+    int j = 0;
+    for (unsigned long i = strtoul(inp, &end, 16); inp != end; i = strtoul(inp, &end, 16)) {
+        inp = end;
+        out[j] = i;
+        j++;
+    }
+
+    out[j] = '\0';
+
+    return out;
+}
+
+char* CI_CreateInterpretedAsLabel(unichar_t* inp) {
+    char* lblprefix = "Interpreted as: ";
+    char* lblerror = "Error: wrong format";
+    // 2 makes it large enough to hold the error string
+    int factor = inp == NULL ? 2 : u_strlen(inp);
+    char* lblbuf = malloc(strlen(lblprefix)+(factor*4));
+
+    // If I don't validate it, the string will become "(null)"
+    bool valid = true;
+    unichar_t* inp_ptr = inp;
+    if (inp != NULL)
+    while (*inp_ptr != '\0') {
+        if (*inp_ptr > 0x10FFFF) valid = false;
+        inp_ptr++;
+    }
+
+    if (inp != NULL && inp[0] != 0 && valid) {
+        sprintf(lblbuf, "%s%s", lblprefix, u2utf8_copy(inp));
+    } else {
+        strcpy(lblbuf, lblerror);
+    }
+
+    return lblbuf;
+}
+
+static int CI_CmpUseNonDefault(GGadget *g, GEvent *e) {
+    int show = !GGadgetIsChecked(g);
+    CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
+    GGadget* cotf = GWidgetGetControl(ci->gw,CID_ComponentTextField);
+    GGadget* coim = GWidgetGetControl(ci->gw,CID_ComponentInterpMsg);
+    GGadgetSetEnabled(cotf, show);
+    if (!show) {
+        ci->sc->user_decomp = NULL;
+        GGadgetSetTitle8(coim, "");
+    } else {
+        unichar_t* ud = CI_ParseUserDecomposition(GGadgetGetTitle8(cotf));
+        ci->sc->user_decomp = ud;
+        char* lbl = CI_CreateInterpretedAsLabel(ud);
+        GGadgetSetTitle8(coim, lbl);
+        free(lbl);
+    }
+
+    return true;
+}
+
 void GV_ToMD(GGadget *g, struct glyphvariants *gv) {
     int cols = GMatrixEditGetColCnt(g), j;
     struct matrix_data *mds;
@@ -3807,6 +3876,7 @@ static void CIFillup(CharInfo *ci) {
     char buffer[400];
     char buf[200];
     const unichar_t *bits;
+    int *d_ptr = sc->user_decomp;
     int i,j,gid, isv;
     struct matrix_data *mds[pst_max];
     int cnts[pst_max];
@@ -3909,7 +3979,12 @@ static void CIFillup(CharInfo *ci) {
     CI_DoHideUnusedPair(ci);
     CI_DoHideUnusedSingle(ci);
 
-    bits = SFGetAlternate(sc->parent,sc->unicodeenc,sc,true);
+	GGadget *cotf = GWidgetGetControl(ci->gw,CID_ComponentTextField);
+	GGadget *codcb = GWidgetGetControl(ci->gw,CID_ComponentDefaultCB);
+	GGadget *coim = GWidgetGetControl(ci->gw,CID_ComponentInterpMsg);
+	GGadget *cola = GWidgetGetControl(ci->gw,CID_ComponentChangeMsg);
+
+    bits = SFGetAlternate(sc->parent,sc->unicodeenc,NULL,true);
     GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_ComponentMsg),
 	bits==NULL ? _("No components") :
 	hascomposing(sc->parent,sc->unicodeenc,sc) ? _("Accented glyph composed of:") :
@@ -3917,18 +3992,69 @@ static void CIFillup(CharInfo *ci) {
     if ( bits==NULL ) {
 	ubuf[0] = '\0';
 	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Components),ubuf);
+    GGadgetSetTitle(cotf,ubuf);
+    GGadgetSetTitle8(coim,"");
+    GGadgetSetEnabled(cotf, false);
+    GGadgetSetEnabled(cola, false);
+    GGadgetSetEnabled(codcb, false);
+    GGadgetSetChecked(codcb, true);
     } else {
-	unichar_t *temp = malloc(11*u_strlen(bits)*sizeof(unichar_t));
+	unichar_t *temp = malloc(18*u_strlen(bits)*sizeof(unichar_t));
 	unichar_t *upt=temp;
+    // i.e. five six hex digit long codepoints with spaces after them
+    char* codepoints_as_hex = malloc((6 * 5) + 5);
+    codepoints_as_hex[0] = '\0';
 	while ( *bits!='\0' ) {
-	    sprintf(buffer, "U+%04x ", *bits );
+	    sprintf(buffer, "U+%04x (", *bits );
 	    uc_strcpy(upt,buffer);
 	    upt += u_strlen(upt);
+	    if (iscombining(*bits)) {
+	        upt += 1;
+	        upt[-1] = 0x25CC; // DOTTED CIRCLE “◌”
+	    }
+	    upt += 1;
+	    upt[-1] = *bits;
+	    sprintf(buffer, ") ");
+	    uc_strcpy(upt,buffer);
+	    upt += u_strlen(upt);
+
+        if (sc->user_decomp == NULL) {
+            sprintf(buffer, "%04x ", *bits);
+            codepoints_as_hex = strcat(codepoints_as_hex, buffer);
+        }
 	    ++bits;
 	}
 	upt[-1] = '\0';
 	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Components),temp);
 	free(temp);
+
+    if (sc->user_decomp != NULL) {
+        while ( *d_ptr!='\0' ) {
+            sprintf(buffer, "%04x ", *d_ptr);
+            codepoints_as_hex = strcat(codepoints_as_hex, buffer);
+            ++d_ptr;
+        }
+    }
+
+    d_ptr = sc->user_decomp;
+
+    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_ComponentTextField),codepoints_as_hex);
+
+    if (!GGadgetIsEnabled(codcb)) GGadgetSetEnabled(codcb, true);
+    char* lbl = CI_CreateInterpretedAsLabel(sc->user_decomp);
+    if (sc->user_decomp != NULL) {
+        GGadgetSetChecked(codcb, false);
+        GGadgetSetEnabled(cotf, true);
+        GGadgetSetEnabled(cola, true);
+        GGadgetSetTitle8(coim,lbl);
+    } else {
+        GGadgetSetChecked(codcb, true);
+        GGadgetSetEnabled(cotf, false);
+        GGadgetSetEnabled(cola, false);
+        GGadgetSetTitle8(coim,"");
+    }
+    free(lbl);
+
     }
 
     GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_Color),0);
@@ -4122,15 +4248,15 @@ void SCCharInfo(SplineChar *sc,int deflayer, EncMap *map,int enc) {
     CharInfo *ci;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData ugcd[14], cgcd[6], psgcd[7][7], cogcd[3], mgcd[9], tgcd[16];
+    GGadgetCreateData ugcd[14], cgcd[6], psgcd[7][7], cogcd[6], mgcd[9], tgcd[16];
     GGadgetCreateData lcgcd[4], vargcd[2][7];
-    GTextInfo ulabel[14], clabel[6], pslabel[7][6], colabel[3], mlabel[9], tlabel[16];
+    GTextInfo ulabel[14], clabel[6], pslabel[7][6], colabel[4], mlabel[9], tlabel[16];
     GTextInfo lclabel[4], varlabel[2][6];
     GGadgetCreateData mbox[4], *mvarray[7], *mharray1[7], *mharray2[8];
     GGadgetCreateData ubox[3], *uhvarray[29], *uharray[6];
     GGadgetCreateData cbox[3], *cvarray[5], *charray[4];
     GGadgetCreateData pstbox[7][4], *pstvarray[7][5], *pstharray1[7][8];
-    GGadgetCreateData cobox[2], *covarray[4];
+    GGadgetCreateData cobox[2], *covarray[8];
     GGadgetCreateData tbox[3], *thvarray[36], *tbarray[4];
     GGadgetCreateData lcbox[2], *lchvarray[4][4];
     GGadgetCreateData varbox[2][2], *varhvarray[2][5][4];
@@ -4466,22 +4592,44 @@ return;
 	colabel[0].text = (unichar_t *) _("Accented glyph composed of:");
 	colabel[0].text_is_1byte = true;
 	cogcd[0].gd.label = &colabel[0];
-	cogcd[0].gd.pos.x = 5; cogcd[0].gd.pos.y = 5; 
 	cogcd[0].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	cogcd[0].gd.cid = CID_ComponentMsg;
 	cogcd[0].creator = GLabelCreate;
 
-	cogcd[1].gd.pos.x = 5; cogcd[1].gd.pos.y = cogcd[0].gd.pos.y+12;
 	cogcd[1].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	cogcd[1].gd.cid = CID_Components;
 	cogcd[1].creator = GLabelCreate;
 
-	covarray[0] = &cogcd[0]; covarray[1] = &cogcd[1]; covarray[2] = GCD_Glue; covarray[3] = NULL;
+	colabel[1].text = (unichar_t *) _("\n\nIf the default decomposition is inappropriate for this font, you may choose your own.");
+	colabel[1].text_is_1byte = true;
+	cogcd[2].gd.label = &colabel[1];
+	cogcd[2].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	cogcd[2].gd.cid = CID_ComponentChangeMsg;
+	cogcd[2].creator = GLabelCreate;
+
+	colabel[2].text = (unichar_t *) _("Use default?");
+	colabel[2].text_is_1byte = true;
+	cogcd[3].gd.flags = gg_enabled | gg_visible | gg_cb_on;
+	cogcd[3].gd.cid = CID_ComponentDefaultCB;
+	cogcd[3].gd.handle_controlevent = CI_CmpUseNonDefault;
+	cogcd[3].gd.label = &colabel[2];
+	cogcd[3].creator = GCheckBoxCreate;
+
+	cogcd[4].gd.flags = gg_visible|gg_utf8_popup;
+	cogcd[4].gd.popup_msg = (unichar_t *) _("For example, to build this character from U+0061 (lowercase a) as the base and U+030C (combining caron), write:\n0061 030C");
+	cogcd[4].gd.cid = CID_ComponentTextField;
+	cogcd[4].gd.handle_controlevent = CI_CmpUseNonDefault;
+	cogcd[4].gd.pos.x = 500; cogcd[4].gd.pos.y = 20;
+	cogcd[4].creator = GTextFieldCreate;
+
+	cogcd[5].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	cogcd[5].gd.cid = CID_ComponentInterpMsg;
+	cogcd[5].creator = GLabelCreate;
+
+	covarray[0] = &cogcd[0]; covarray[1] = &cogcd[1]; covarray[2] = &cogcd[2]; covarray[3] = &cogcd[3]; covarray[4] = &cogcd[4]; covarray[5] = &cogcd[5]; covarray[6] = GCD_Glue; covarray[7] = NULL;
 	cobox[0].gd.flags = gg_enabled|gg_visible;
 	cobox[0].gd.u.boxelements = covarray;
 	cobox[0].creator = GVBoxCreate;
-	
-
 
 	memset(&tgcd,0,sizeof(tgcd));
 	memset(&tbox,0,sizeof(tbox));
@@ -4897,16 +5045,15 @@ return;
 	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = psgcd[5];
 
-	aspects[i].text = (unichar_t *) _("Components");
-	aspects[i].text_is_1byte = true;
-	aspects[i].nesting = 1;
-	aspects[i++].gcd = cobox;
-
 	ci->lc_aspect = i;
 	aspects[i].text = (unichar_t *) _("Lig. Carets");
 	aspects[i].text_is_1byte = true;
 	aspects[i].nesting = 1;
 	aspects[i++].gcd = lcbox;
+
+	aspects[i].text = (unichar_t *) _("Components");
+	aspects[i].text_is_1byte = true;
+	aspects[i++].gcd = cobox;
 
 	aspects[i].text = (unichar_t *) _("Counters");
 	aspects[i].text_is_1byte = true;

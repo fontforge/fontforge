@@ -7242,6 +7242,45 @@ static int PyFF_Glyph_set_vhints(PyFF_Glyph *self,PyObject *value, void *UNUSED(
 return( PyFF_Glyph_set_hints(self,true,value));
 }
 
+static PyObject *PyFF_Glyph_get_user_decomp(PyFF_Glyph *self, void *UNUSED(closure)) {
+    if ( self->sc->user_decomp==NULL ) {
+        return( Py_BuildValue("s", "" ));
+    }
+    else {
+        char* out = u2utf8_copy(self->sc->user_decomp);
+        return( PyUnicode_DecodeUTF8(out, strlen(out), NULL) );
+    }
+}
+
+static int PyFF_Glyph_set_user_decomp(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+    char *newv;
+    PyObject *temp;
+
+    if (value == Py_None) {
+        self->sc->user_decomp = NULL;
+        return 0;
+    }
+
+    if ( PyUnicode_Check(value)) {
+	/* Need to force utf8 encoding rather than accepting the "default" */
+	/*  which would happen if we treated unicode as a string */
+	temp = PyUnicode_AsUTF8String(value);
+	newv = copy( PyBytes_AsString(temp));
+	Py_DECREF(temp);
+    } else {
+        return -1;
+    }
+
+    if ( newv==NULL ) {
+        return -1;
+    }
+
+    free(self->sc->user_decomp);
+    self->sc->user_decomp = utf82u_copy(newv);
+
+    return 0;
+}
+
 static PyObject *PyFF_Glyph_get_comment(PyFF_Glyph *self, void *UNUSED(closure)) {
     if ( self->sc->comment==NULL )
 return( Py_BuildValue("s", "" ));
@@ -7793,6 +7832,9 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
     {(char *)"comment",
      (getter)PyFF_Glyph_get_comment, (setter)PyFF_Glyph_set_comment,
      (char *)"Glyph comment", NULL},
+    {(char *)"user_decomp",
+     (getter)PyFF_Glyph_get_user_decomp, (setter)PyFF_Glyph_set_user_decomp,
+     (char *)"Glyph user decompositon", NULL},
     {(char *)"glyphclass",
      (getter)PyFF_Glyph_get_glyphclass, (setter)PyFF_Glyph_set_glyphclass,
      (char *)"glyph class", NULL},

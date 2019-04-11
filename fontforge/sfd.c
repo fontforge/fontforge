@@ -1707,6 +1707,11 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 	SFDDumpUTF7Str(sfd,sc->comment);
 	putc('\n',sfd);
     }
+    if ( sc->user_decomp != NULL ) {
+	fprintf( sfd, "Decomposition: " );
+	SFDDumpUTF7Str(sfd,u2utf8_copy(sc->user_decomp));
+	putc('\n',sfd);
+    }
     if ( sc->color!=COLOR_DEFAULT )
 	fprintf( sfd, "Colour: %x\n", (int) sc->color );
     if ( sc->parent->multilayer ) {
@@ -5834,6 +5839,8 @@ exit(1);
 	    sc->color = temp;
 	} else if ( strmatch(tok,"Comment:")==0 ) {
 	    sc->comment = SFDReadUTF7Str(sfd);
+	} else if ( strmatch(tok,"Decomposition:")==0 ) {
+	    sc->user_decomp = utf82u_copy(SFDReadUTF7Str(sfd));
 	} else if ( strmatch(tok,"TileMargin:")==0 ) {
 	    getreal(sfd,&sc->tile_margin);
 	} else if ( strmatch(tok,"TileBounds:")==0 ) {
