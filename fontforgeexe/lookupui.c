@@ -5568,7 +5568,7 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
 
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
-    wattrs.restrict_input_to_me = false;
+    wattrs.restrict_input_to_me = true;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
     wattrs.utf8_window_title = _("Kerning format") ;
@@ -6181,11 +6181,11 @@ void AddRmLang(SplineFont *sf, struct lkdata *lk,int add_lang) {
 
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
-    wattrs.restrict_input_to_me = false;
+    wattrs.restrict_input_to_me = true;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
     wattrs.utf8_window_title = add_lang ? _("Add Language(s) to Script") : _("Remove Language(s) from Script");
-    wattrs.is_dlg = false;
+    wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = 100;
     pos.height = 100;
@@ -6501,11 +6501,11 @@ void FVMassGlyphRename(FontView *fv) {
 
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
-    wattrs.restrict_input_to_me = false;
+    wattrs.restrict_input_to_me = true;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
     wattrs.utf8_window_title = _("Mass Glyph Rename");
-    wattrs.is_dlg = false;
+    wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = 100;
     pos.height = 100;
