@@ -1820,7 +1820,9 @@ static void GXDrawPushClip(GWindow w, GRect *rct, GRect *old) {
 }
 
 static void GXDrawPopClip(GWindow w, GRect *old) {
-    w->ggc->clip = *old;
+    if (old) {
+        w->ggc->clip = *old;
+    }
 #ifndef _NO_LIBCAIRO
     if ( ((GXWindow) w)->usecairo )
 	_GXCDraw_PopClip((GXWindow) w);

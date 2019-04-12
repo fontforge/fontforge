@@ -1603,13 +1603,12 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
             case sfm_stroke:
                 GDrawPathStroke( pixmap, fc | 0xff000000 );
                 break;
-            case sfm_clip_preserve:
-                GDrawClipPreserve( pixmap );
+            case sfm_clip:
             case sfm_fill:
             case sfm_nothing:
                 break;
 	    }
-	} else {
+	} else if (strokeFillMode != sfm_clip) {
 	    GPointList *gpl = MakePoly(cv,spl), *cur;
 	    for ( cur=gpl; cur!=NULL; cur=cur->next )
 		GDrawDrawPoly(pixmap,cur->gp,cur->cnt,fc);
@@ -1617,17 +1616,14 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 	}
     }
 
-    Color c = fillcol;
-    switch( strokeFillMode ) {
-        case sfm_fill:
-            if( cv->inPreviewMode ) {
-                c = previewfillcol;
-            }
-            GDrawPathFill( pixmap, c|0xff000000);
-            break;
-        case sfm_stroke:
-        case sfm_nothing:
-            break;
+    if (strokeFillMode == sfm_clip && (GDrawHasCairo(pixmap) & gc_buildpath)) {
+        // Really only cairo_clip needs to be called
+        // But then I'd have to change the GDraw interface, ew...
+        GDrawClipPreserve( pixmap );
+        GDrawPathStartNew( pixmap );
+    } else if (strokeFillMode == sfm_fill) {
+        Color c = cv->inPreviewMode ? previewfillcol : fillcol;
+        GDrawPathFill(pixmap, c|0xff000000);
     }
 }
 
@@ -1683,54 +1679,48 @@ void CVDrawSplineSetSpecialized( CharView *cv, GWindow pixmap, SplinePointList *
     }
 
     if( strokeFillMode != sfm_nothing ) {
+        /*
+         * If we were filling, we have to stroke the outline again to properly show
+         * clip path splines which will possibly have a different stroke color
+         */
+        Color thinfgcolor = fg;
+        enum outlinesfm_flags fgstrokeFillMode = sfm_stroke;
+        if( strokeFillMode==sfm_stroke_trans )
+            fgstrokeFillMode = sfm_stroke_trans;
+        if( shouldShowFilledUsingCairo(cv) ) {
+            if (cv->inPreviewMode)
+                thinfgcolor = (thinfgcolor | 0x01000000) & 0x01ffffff;
+            fgstrokeFillMode = sfm_stroke_trans;
+        }
+        CVDrawSplineSetOutlineOnly( cv, pixmap, set,
+                        thinfgcolor, dopoints, clip,
+                        fgstrokeFillMode );
 
- 	/*
-	 * If we were filling, we have to stroke the outline again to properly show
-	 * clip path splines which will possibly have a different stroke color
-	 */
-	Color thinfgcolor = fg;
-	enum outlinesfm_flags fgstrokeFillMode = sfm_stroke;
-	if( strokeFillMode==sfm_stroke_trans )
-	    fgstrokeFillMode = sfm_stroke_trans;
-	if( shouldShowFilledUsingCairo(cv) ) {
-	    if (cv->inPreviewMode)
-	        thinfgcolor = (thinfgcolor | 0x01000000) & 0x01ffffff;
-	    fgstrokeFillMode = sfm_stroke_trans;
-	}
-	CVDrawSplineSetOutlineOnly( cv, pixmap, set,
-				    thinfgcolor, dopoints, clip,
-				    fgstrokeFillMode );
-
-    if( prefs_cv_outline_thickness > 1 )
-    {
-        SplinePointList *spl = 0;
-        for ( spl = set; spl!=NULL; spl = spl->next )
+        if( prefs_cv_outline_thickness > 1 )
         {
             // we only draw the inner half, so we double the user's expected
             // thickness here.
             int strokeWidth = prefs_cv_outline_thickness * 2 * cv->scale;
             Color strokefg = foreoutthicklinecol;
 
-	    if( shouldShowFilledUsingCairo(cv) && cv->inPreviewMode ) {
-		strokefg = (strokefg | 0x01000000) & 0x01ffffff;
-	    }
+            if( shouldShowFilledUsingCairo(cv) && cv->inPreviewMode ) {
+                strokefg = (strokefg | 0x01000000) & 0x01ffffff;
+            }
 
-            GRect old;
-            GDrawPushClipOnly( pixmap );
-            CVDrawSplineSetOutlineOnly( cv, pixmap, spl,
-                                        strokefg, dopoints, clip,
-                                        sfm_clip_preserve );
             int16 oldwidth = GDrawGetLineWidth( pixmap );
             GDrawSetLineWidth( pixmap, strokeWidth );
-            CVDrawSplineSetOutlineOnly( cv, pixmap, spl,
+            GDrawPushClipOnly( pixmap );
+
+            CVDrawSplineSetOutlineOnly( cv, pixmap, set,
+                                        strokefg, dopoints, clip,
+                                        sfm_clip );
+            CVDrawSplineSetOutlineOnly( cv, pixmap, set,
                                         strokefg, dopoints, clip,
                                         sfm_stroke_trans );
-            GDrawPopClip( pixmap, &old );
+
+            GDrawPopClip( pixmap, NULL );
             GDrawSetLineWidth( pixmap, oldwidth );
         }
-    }
-    
-    
     }
 
     for ( spl = set; spl!=NULL; spl = spl->next ) {
