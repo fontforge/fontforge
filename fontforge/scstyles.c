@@ -4401,7 +4401,7 @@ return( cs_neither );
     under = strchr(sc->name,'_');
     dot   = strchr(sc->name,'.');
     if ( dot!=NULL )
-	smallcaps = strcmp(dot,".sc")==0 || strcmp(dot,".small");
+	smallcaps = strcmp(dot,".sc")==0 || strcmp(dot,".small")==0;
     if ( under!=NULL && (dot==NULL || dot>under))
 	dot = under;
     if ( dot==NULL )
