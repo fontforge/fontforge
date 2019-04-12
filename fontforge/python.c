@@ -7243,46 +7243,57 @@ return( PyFF_Glyph_set_hints(self,true,value));
 }
 
 static PyObject *PyFF_Glyph_get_user_decomp(PyFF_Glyph *self, void *UNUSED(closure)) {
+    PyObject *ret;
+
     if ( self->sc->user_decomp==NULL ) {
         return( Py_BuildValue("s", "" ));
     }
     else {
         char* out = u2utf8_copy(self->sc->user_decomp);
-        return( PyUnicode_DecodeUTF8(out, strlen(out), NULL) );
+        ret = PyUnicode_DecodeUTF8(out, strlen(out), NULL);
         free(out);
+        return ret;
     }
 }
 
 static int PyFF_Glyph_set_user_decomp(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     char *newv;
     PyObject *temp;
+    unichar_t *udbuf;
 
     if (value == Py_None) {
+        if (self->sc->user_decomp != NULL) { free(self->sc->user_decomp); }
         self->sc->user_decomp = NULL;
         return 0;
     }
 
     if ( PyUnicode_Check(value)) {
-	/* Need to force utf8 encoding rather than accepting the "default" */
-	/*  which would happen if we treated unicode as a string */
-	temp = PyUnicode_AsUTF8String(value);
-	newv = copy( PyBytes_AsString(temp));
-	Py_DECREF(temp);
+        /* Need to force utf8 encoding rather than accepting the "default" */
+        /*  which would happen if we treated unicode as a string */
+        temp = PyUnicode_AsUTF8String(value);
+        newv = copy( PyBytes_AsString(temp));
+        Py_DECREF(temp);
     } else {
-        return -1;
+        newv = copy( PyBytes_AsString(value));
+    }
+    
+    if ( newv==NULL ) return -1;
+
+    if (newv[0] == '\0') {
+        if (self->sc->user_decomp != NULL) { free(self->sc->user_decomp); }
+        self->sc->user_decomp = NULL;
+        return 0;
     }
 
-    if ( newv==NULL ) {
-        return -1;
+    udbuf = utf82u_copy(newv);
+
+    if (u_strlen(udbuf) > 5) {
+         PyErr_WarnEx(PyExc_ValueError, "It doesn't make sense for the decomposition to be this long; truncated to five characters", 1);
+         udbuf[5] = '\0';
     }
 
-    if (strlen(newv) > 5) {
-        PyErr_WarnEx(PyExc_ValueError, "It doesn't make sense for the decomposition to be this long; truncated to five characters", 1);
-        newv[5] = '\0';
-    }
-
-    free(self->sc->user_decomp);
-    self->sc->user_decomp = utf82u_copy(newv);
+    if (self->sc->user_decomp != NULL) { free(self->sc->user_decomp); }
+    self->sc->user_decomp = udbuf;
 
     return 0;
 }

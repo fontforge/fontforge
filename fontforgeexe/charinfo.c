@@ -3663,7 +3663,7 @@ return( true );
 unichar_t* CI_ParseUserDecomposition(char* inp) {
     unsigned long len = strlen(inp);
     char* end;
-    unichar_t* out = malloc(len*sizeof(unichar_t)+1);
+    unichar_t* out = malloc((len+1)*sizeof(unichar_t));
 
     int j = 0;
     for (unsigned long i = strtoul(inp, &end, 16); inp != end; i = strtoul(inp, &end, 16)) {
@@ -3678,11 +3678,10 @@ unichar_t* CI_ParseUserDecomposition(char* inp) {
 }
 
 char* CI_CreateInterpretedAsLabel(unichar_t* inp) {
-    char* lblprefix = "Interpreted as: ";
-    char* lblerror = "Error: wrong format";
+    char* lblprefix = _("Interpreted as: ");
+    char* lblerror = _("Error: wrong format");
     // 2 makes it large enough to hold the error string
-    int factor = inp == NULL ? 2 : u_strlen(inp);
-    char* lblbuf = malloc(strlen(lblprefix)+(factor*4));
+    char* lblbuf;
 
     // If I don't validate it, the string will become "(null)"
     bool valid = true;
@@ -3696,9 +3695,11 @@ char* CI_CreateInterpretedAsLabel(unichar_t* inp) {
 
     if (inp != NULL && inp[0] != 0 && valid) {
         char* inp_l = u2utf8_copy(inp);
+        lblbuf = malloc(strlen(lblprefix)+strlen(inp_l)+1);
         sprintf(lblbuf, "%s%s", lblprefix, inp_l);
         free(inp_l);
     } else {
+        lblbuf = malloc(strlen(lblerror)+1);
         strcpy(lblbuf, lblerror);
     }
 
