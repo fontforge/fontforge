@@ -192,14 +192,6 @@ static gboolean _GGDKDraw_OnWindowDestroyed(gpointer data) {
 
     if (!gw->is_pixmap) {
         if (gw != gw->display->groot) {
-            if (gw->is_toplevel) {
-                for (int i = ((int)gw->display->transient_stack->len) - 1; i >= 0; --i) {
-                    GGDKWindow tw = (GGDKWindow)gw->display->transient_stack->pdata[i];
-                    if (tw->transient_owner == gw) {
-                        GGDKDrawSetTransientFor((GWindow)tw, NULL);
-                    }
-                }
-            }
             if (!gdk_window_is_destroyed(gw->w)) {
                 gdk_window_destroy(gw->w);
                 // Wait for it to die
@@ -593,16 +585,24 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
             nw->is_dlg = true;
         } else if (!nw->is_dlg) {
             ++gdisp->top_window_count;
-        } else if (nw->restrict_input_to_me) {
-            if (gdisp->last_nontransient_window != NULL) {
-                GGDKDrawSetTransientFor((GWindow)nw, (GWindow) - 1);
-            } else if (gdisp->top_window_count > 0) {
-                Log(LOGWARN, "Could not call GGDKDrawSetTransientFor on a restricted window (%p %s), restrict count %d, transient window count %d",
-                    nw, nw->window_title, gdisp->restrict_count, (int)gdisp->transient_stack->len);
-            }
+        } else if (nw->restrict_input_to_me && gdisp->mru_windows->length > 0) {
+            GGDKDrawSetTransientFor((GWindow)nw, (GWindow) - 1);
         }
         nw->isverytransient = (wattrs->mask & wam_verytransient) ? 1 : 0;
-        nw->is_toplevel = true;
+
+        // Don't allow popups or 'very transient' windows from entering this list
+        if (!nw->is_popup && !nw->isverytransient) {
+            // This creates a single link with the data being the window, and next/prev NULL
+            nw->mru_link = g_list_append(NULL, (gpointer)nw);
+            if (nw->mru_link == NULL) {
+                Log(LOGDEBUG, "Failed to create mru_link");
+                gdk_window_destroy(nw->w);
+                free(nw->window_title);
+                free(nw->ggc);
+                free(nw);
+                return NULL;
+            }
+        }
     }
 
     // Establish Pango/Cairo context
@@ -610,6 +610,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
         gdk_window_destroy(nw->w);
         free(nw->window_title);
         free(nw->ggc);
+        free(nw->mru_link);
         free(nw);
         return NULL;
     }
@@ -620,6 +621,12 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
 
     // Add a reference to our own structure.
     GGDKDRAW_ADDREF(nw);
+
+    if (nw->mru_link) {
+        // Add it into the mru list
+        Log(LOGDEBUG, "Adding %p(%s) to the mru list", nw, nw->window_title);
+        g_queue_push_tail_link(gdisp->mru_windows, nw->mru_link);
+    }
 
     // Event handler
     if (eh != NULL) {
@@ -780,6 +787,7 @@ static bool _GGDKDraw_FilterByModal(GdkEvent *event, GGDKWindow gw) {
         case GDK_SCROLL:
         case GDK_MOTION_NOTIFY:
         case GDK_DELETE:
+        case GDK_FOCUS_CHANGE:
             break;
         default:
             return false;
@@ -793,10 +801,9 @@ static bool _GGDKDraw_FilterByModal(GdkEvent *event, GGDKWindow gw) {
         return false;
     }
 
+    GGDKWindow last_modal = NULL;
     while (gww != NULL) {
         if (gww->is_toplevel) {
-            GGDKWindow last_modal = NULL;
-
             for (int i = ((int)stack->len) - 1; i >= 0; --i) {
                 GGDKWindow ow = (GGDKWindow)stack->pdata[i];
                 if (ow == gww || ow->restrict_input_to_me) { // fudged
@@ -813,8 +820,11 @@ static bool _GGDKDraw_FilterByModal(GdkEvent *event, GGDKWindow gw) {
         gww = gww->parent;
     }
 
-    if (event->type != GDK_MOTION_NOTIFY && event->type != GDK_BUTTON_RELEASE) {
+    if (event->type != GDK_MOTION_NOTIFY && event->type != GDK_BUTTON_RELEASE && event->type != GDK_FOCUS_CHANGE) {
         gdk_window_beep(gw->w);
+        if (last_modal != NULL) {
+            GDrawRaise((GWindow)last_modal);
+        }
     }
 
     return true;
@@ -885,13 +895,6 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
     gevent.w = (GWindow)gw;
     gevent.native_window = (void *)gw->w;
     gevent.type = et_noevent;
-    if (event->type == GDK_KEY_PRESS || event->type == GDK_BUTTON_PRESS || event->type == GDK_BUTTON_RELEASE) {
-        if (gw->transient_owner != NULL && gw->isverytransient && !gw->transient_owner->is_dying) {
-            gdisp->last_nontransient_window = gw->transient_owner;
-        } else if (!gw->istransient && !gw->is_dying) {
-            gdisp->last_nontransient_window = gw;
-        }
-    }
 
     switch (event->type) {
         case GDK_KEY_PRESS:
@@ -1093,6 +1096,20 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             gevent.type = et_focus;
             gevent.u.focus.gained_focus = ((GdkEventFocus *)event)->in;
             gevent.u.focus.mnemonic_focus = false;
+
+            Log(LOGDEBUG, "Focus change %s %p(%s %d %d)",
+                gevent.u.focus.gained_focus ? "IN" : "OUT",
+                gw, gw->window_title, gw->is_toplevel, gw->istransient);
+
+            if (gw->mru_link && gevent.u.focus.gained_focus) {
+                GGDKWindow cur_toplevel = (GGDKWindow)g_queue_peek_head(gdisp->mru_windows);
+                if (cur_toplevel != gw) {
+                    Log(LOGDEBUG, "Last active toplevel updated: %p(%s)", gw, gw->window_title);
+                    g_queue_unlink(gdisp->mru_windows, gw->mru_link);
+                    g_queue_push_head_link(gdisp->mru_windows, gw->mru_link);
+                }
+            }
+
             break;
         case GDK_ENTER_NOTIFY:
         case GDK_LEAVE_NOTIFY: { // Should only get this on top level
@@ -1356,13 +1373,36 @@ static void GGDKDrawDestroyWindow(GWindow w) {
         }
         g_list_free(list);
 
+        if (gw->is_toplevel) {
+            // Remove itself from the transient list, if present
+            GGDKDrawSetTransientFor((GWindow)gw, NULL);
+
+            // Remove it from the mru window list
+            if (gw->mru_link != NULL) {
+                Log(LOGDEBUG, "Removing %p(%s) from mru window list", gw, gw->window_title);
+                g_queue_delete_link(gw->display->mru_windows, gw->mru_link);
+                gw->mru_link = NULL;
+            } else {
+                // This is so that e.g. popup menus get hidden immediately
+                GDrawSetVisible((GWindow)gw, false);
+            }
+
+            // HACK! Reparent all windows transient to this
+            // If they were truly transient in the normal sense, they would just be
+            // destroyed when this window goes away
+            for (int i = ((int)gw->display->transient_stack->len) - 1; i >= 0; --i) {
+                GGDKWindow tw = (GGDKWindow)gw->display->transient_stack->pdata[i];
+                if (tw->transient_owner == gw) {
+                    Log(LOGWARN, "Resetting transient owner on %p(%s) as %p(%s) is dying",
+                        tw, tw->window_title, gw, gw->window_title);
+                    GGDKDrawSetTransientFor((GWindow)tw, (GWindow)-1);
+                }
+            }
+        }
+
         if (gw->display->last_dd.w == gw) {
             gw->display->last_dd.w = NULL;
         }
-        if (gw->display->last_nontransient_window == gw) {
-            gw->display->last_nontransient_window = NULL;
-        }
-        GGDKDrawSetTransientFor(w, NULL);
         // Ensure an invalid value is returned if someone tries to get this value again.
         g_object_set_data(G_OBJECT(gw->w), "GGDKWindow", NULL);
     }
@@ -1564,7 +1604,7 @@ static char *GGDKDrawGetWindowTitle8(GWindow gw) {
 
 static void GGDKDrawSetTransientFor(GWindow transient, GWindow owner) {
     Log(LOGDEBUG, "transient=%p, owner=%p", transient, owner);
-    GGDKWindow gw = (GGDKWindow) transient, ow;
+    GGDKWindow gw = (GGDKWindow) transient, ow = NULL;
     GGDKDisplay *gdisp = gw->display;
     assert(owner == NULL || gw->is_toplevel);
 
@@ -1573,7 +1613,13 @@ static void GGDKDrawSetTransientFor(GWindow transient, GWindow owner) {
     }
 
     if (owner == (GWindow) - 1) {
-        ow = gdisp->last_nontransient_window;
+        for (GList_Glib *pw = gdisp->mru_windows->head; pw != NULL; pw = pw->next) {
+            GGDKWindow tw = (GGDKWindow)pw->data;
+            if (tw != gw && tw->is_visible) {
+                ow = tw;
+                break;
+            }
+        }
     } else if (owner == NULL) {
         ow = NULL; // Does this work with GDK?
     } else {
@@ -2496,7 +2542,11 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *UNUSED(programname)) 
     // cursors.c creates ~41.
     gdisp->cursors = g_ptr_array_sized_new(50);
     gdisp->windows = g_hash_table_new(g_direct_hash, g_direct_equal);
-    if (gdisp->windows == NULL) {
+    gdisp->mru_windows = g_queue_new();
+    if (gdisp->windows == NULL || gdisp->mru_windows == NULL) {
+        if (gdisp->windows) {
+            g_hash_table_destroy(gdisp->windows);
+        }
         free(gdisp);
         return NULL;
     }
@@ -2554,6 +2604,8 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *UNUSED(programname)) 
     groot = (GGDKWindow)calloc(1, sizeof(struct ggdkwindow));
     if (groot == NULL) {
         g_object_unref(gdisp->pangoc_context);
+        g_queue_free(gdisp->mru_windows);
+        g_hash_table_destroy(gdisp->windows);
         free(gdisp);
         return NULL;
     }
@@ -2616,6 +2668,10 @@ void _GGDKDraw_DestroyDisplay(GDisplay *disp) {
     // Destroy root window
     _GGDKDraw_OnWindowDestroyed(gdisp->groot);
     gdisp->groot = NULL;
+
+    // Destroy the mru window list
+    g_queue_free(gdisp->mru_windows);
+    gdisp->mru_windows = NULL;
 
     // Finally destroy the window table
     g_hash_table_destroy(gdisp->windows);

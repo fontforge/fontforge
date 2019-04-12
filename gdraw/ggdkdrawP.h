@@ -201,7 +201,7 @@ typedef struct ggdkdisplay { /* :GDisplay */
     unsigned int is_space_pressed: 1; // Used for GGDKDrawKeyState. We cheat!
     unsigned int is_dying: 1; // Flag to indicate if we're cleaning up the display.
 
-    int     top_window_count;
+    int     top_window_count; // The number of toplevel, non-dialogue windows. When this drops to 0, the event loop stops
     guint32 last_event_time;
 
     GGDKSelectionInfo selinfo[sn_max]; // We implement the clipboard using the selections model
@@ -213,11 +213,11 @@ typedef struct ggdkdisplay { /* :GDisplay */
     GGDKWindow dirty_window; // Window which called drawing functions outside of an expose event.
     GList_Glib *timers; //List of GGDKTimer's
     GHashTable *windows; // List of windows.
+    GQueue *mru_windows; // MRU list of toplevel windows that are good candidates to make windows transient to
 
     GGDKButtonState bs;
     GGDKKeyState ks;
     GGDKWindow default_icon;
-    GGDKWindow last_nontransient_window;
     GPtrArray *transient_stack;
     int restrict_count;
 
@@ -269,6 +269,7 @@ struct ggdkwindow { /* :GWindow */
 
     GWindow redirect_from;		/* only redirect input from this window and its children */
     struct ggdkwindow *transient_owner;
+    GList_Glib *mru_link; // This window's link in the MRU list; only used for some toplevels, NULL otherwise
 
     char *window_title;
     GCursor current_cursor;
