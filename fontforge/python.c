@@ -7276,6 +7276,11 @@ static int PyFF_Glyph_set_user_decomp(PyFF_Glyph *self,PyObject *value, void *UN
         return -1;
     }
 
+    if (strlen(newv) > 5) {
+        PyErr_WarnEx(PyExc_ValueError, "It doesn't make sense for the decomposition to be this long; truncated to five characters", 1);
+        newv[5] = '\0';
+    }
+
     free(self->sc->user_decomp);
     self->sc->user_decomp = utf82u_copy(newv);
 
