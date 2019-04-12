@@ -1436,7 +1436,7 @@ void FVBuildAccent(FontViewBase *fv,int onlyaccents) {
 	if ( SFIsSomethingBuildable(fv->sf,sc,fv->active_layer,onlyaccents) ) {
 	    sc = SFMakeChar(fv->sf,fv->map,i);
 	    sc->ticked = true;
-	    SCBuildComposit(fv->sf,sc,fv->active_layer,fv->active_bitmap,onlycopydisplayed);
+	    SCBuildComposit(fv->sf,sc,fv->active_layer,fv->active_bitmap,onlycopydisplayed,onlyaccents);
 	}
 	if ( !ff_progress_next())
     break;

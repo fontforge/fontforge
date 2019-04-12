@@ -10651,7 +10651,7 @@ static void CVMenuBuildAccent(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
 	/* It's ok */;
     else if ( !SFIsSomethingBuildable(cv->b.fv->sf,cv->b.sc,layer,true) )
 return;
-    SCBuildComposit(cv->b.fv->sf,cv->b.sc,layer,NULL,onlycopydisplayed);
+    SCBuildComposit(cv->b.fv->sf,cv->b.sc,layer,NULL,onlycopydisplayed,true);
 }
 
 static void CVMenuBuildComposite(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -10663,7 +10663,7 @@ static void CVMenuBuildComposite(GWindow gw, struct gmenuitem *UNUSED(mi), GEven
 	/* It's ok */;
     else if ( !SFIsCompositBuildable(cv->b.fv->sf,cv->b.sc->unicodeenc,cv->b.sc,layer) )
 return;
-    SCBuildComposit(cv->b.fv->sf,cv->b.sc,layer,NULL,onlycopydisplayed);
+    SCBuildComposit(cv->b.fv->sf,cv->b.sc,layer,NULL,onlycopydisplayed,false);
 }
 
 static void CVMenuReverseDir(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {

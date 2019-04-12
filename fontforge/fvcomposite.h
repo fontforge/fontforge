@@ -15,6 +15,6 @@ extern int SFIsCompositBuildable(SplineFont *sf, int unicodeenc, SplineChar *sc,
 extern int SFIsRotatable(SplineFont *sf, SplineChar *sc);
 extern int SFIsSomethingBuildable(SplineFont *sf, SplineChar *sc, int layer, int onlyaccents);
 extern void _SCAddRef(SplineChar *sc, SplineChar *rsc, int layer, real transform[6]);
-extern void SCBuildComposit(SplineFont *sf, SplineChar *sc, int layer, BDFFont *bdf, int disp_only);
+extern void SCBuildComposit(SplineFont *sf, SplineChar *sc, int layer, BDFFont *bdf, int disp_only, int accent_hint);
 
 #endif /* FONTFORGE_FVCOMPOSITE_H */

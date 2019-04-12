@@ -7249,6 +7249,7 @@ static PyObject *PyFF_Glyph_get_user_decomp(PyFF_Glyph *self, void *UNUSED(closu
     else {
         char* out = u2utf8_copy(self->sc->user_decomp);
         return( PyUnicode_DecodeUTF8(out, strlen(out), NULL) );
+        free(out);
     }
 }
 
@@ -7929,12 +7930,20 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
 /*  Glyph Methods  */
 /* ************************************************************************** */
 
-static PyObject *PyFFGlyph_Build(PyObject *self, PyObject *UNUSED(args)) {
+static PyObject *PyFFGlyph_Build(PyObject *self, PyObject *args) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int layer = ((PyFF_Glyph *) self)->layer;
+    int accent_hint = false;
+    PyObject *accent_hint_pyo;
+
+    if ( PyArg_ParseTuple(args, "|O", &accent_hint_pyo) ) {
+        if (accent_hint_pyo == Py_True) {
+            accent_hint = true;
+        }
+    }
 
     if ( SFIsSomethingBuildable(sc->parent,sc,layer,false) )
-	SCBuildComposit(sc->parent,sc,layer,NULL,true);
+	SCBuildComposit(sc->parent,sc,layer,NULL,true,accent_hint);
 
 Py_RETURN( self );
 }
@@ -9333,7 +9342,7 @@ static PyMethodDef PyFF_Glyph_methods[] = {
     { "autoInstr", PyFFGlyph_autoInstr, METH_NOARGS, "Guess at truetype instructions"},
     { "autoTrace", PyFFGlyph_autoTrace, METH_NOARGS, "Autotrace any background images"},
     { "boundingBox", (PyCFunction) PyFFGlyph_BoundingBox, METH_NOARGS, "Finds the minimum bounding box for the glyph (xmin,ymin,xmax,ymax)" },
-    { "build", PyFFGlyph_Build, METH_NOARGS, "If the current glyph is an accented character\nand all components are in the font\nthen build it out of references" },
+    { "build", PyFFGlyph_Build, METH_VARARGS, "If the current glyph is an accented character\nand all components are in the font\nthen build it out of references" },
     { "canonicalContours", (PyCFunction) PyFFGlyph_canonicalContours, METH_NOARGS, "Orders the contours in the current glyph by the x coordinate of their leftmost point. (This can reduce the size of the postscript charstring needed to describe the glyph(s)."},
     { "canonicalStart", (PyCFunction) PyFFGlyph_canonicalStart, METH_NOARGS, "Sets the start point of all the contours of the current glyph to be the leftmost point on the contour."},
     { "changeWeight", (PyCFunction) PyFFGlyph_changeWeight, METH_VARARGS, "Change the weight (thickness) of the stems of the glyph"},

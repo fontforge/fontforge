@@ -1709,7 +1709,9 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
     }
     if ( sc->user_decomp != NULL ) {
 	fprintf( sfd, "Decomposition: " );
-	SFDDumpUTF7Str(sfd,u2utf8_copy(sc->user_decomp));
+	char* temp_ud = u2utf8_copy(sc->user_decomp);
+	SFDDumpUTF7Str(sfd, temp_ud);
+	free(temp_ud);
 	putc('\n',sfd);
     }
     if ( sc->color!=COLOR_DEFAULT )
@@ -5840,7 +5842,9 @@ exit(1);
 	} else if ( strmatch(tok,"Comment:")==0 ) {
 	    sc->comment = SFDReadUTF7Str(sfd);
 	} else if ( strmatch(tok,"Decomposition:")==0 ) {
-	    sc->user_decomp = utf82u_copy(SFDReadUTF7Str(sfd));
+	    char* decomp = SFDReadUTF7Str(sfd);
+	    sc->user_decomp = utf82u_copy(decomp);
+	    free(decomp);
 	} else if ( strmatch(tok,"TileMargin:")==0 ) {
 	    getreal(sfd,&sc->tile_margin);
 	} else if ( strmatch(tok,"TileBounds:")==0 ) {

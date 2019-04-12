@@ -1229,7 +1229,7 @@ static SplineChar *CI_SCDuplicate(SplineChar *sc) {
     newsc->unicodeenc = sc->unicodeenc;
     newsc->orig_pos = sc->orig_pos;
     newsc->comment = copy(sc->comment);
-    newsc->user_decomp = sc->user_decomp;
+    newsc->user_decomp = u_copy(sc->user_decomp);
     newsc->unlink_rm_ovrlp_save_undo = sc->unlink_rm_ovrlp_save_undo;
     newsc->glyph_class = sc->glyph_class;
     newsc->color = sc->color;
@@ -1441,7 +1441,7 @@ return( false );
 	ci->cachedsc = chunkalloc(sizeof(SplineChar));
 	ci->cachedsc->orig_pos = ci->sc->orig_pos;
 	ci->cachedsc->parent = ci->sc->parent;
-    ci->cachedsc->user_decomp = ci->sc->user_decomp;
+	ci->cachedsc->user_decomp = u_copy(ci->sc->user_decomp);
 	scl = chunkalloc(sizeof(struct splinecharlist));
 	scl->sc = ci->cachedsc;
 	scl->next = ci->changes;
@@ -3663,7 +3663,7 @@ return( true );
 unichar_t* CI_ParseUserDecomposition(char* inp) {
     unsigned long len = strlen(inp);
     char* end;
-    unichar_t* out = malloc(len*sizeof(unichar_t));
+    unichar_t* out = malloc(len*sizeof(unichar_t)+1);
 
     int j = 0;
     for (unsigned long i = strtoul(inp, &end, 16); inp != end; i = strtoul(inp, &end, 16)) {
@@ -3687,14 +3687,17 @@ char* CI_CreateInterpretedAsLabel(unichar_t* inp) {
     // If I don't validate it, the string will become "(null)"
     bool valid = true;
     unichar_t* inp_ptr = inp;
-    if (inp != NULL)
-    while (*inp_ptr != '\0') {
-        if (*inp_ptr > 0x10FFFF) valid = false;
-        inp_ptr++;
+    if (inp != NULL) {
+        while (*inp_ptr != '\0') {
+            if (*inp_ptr > 0x10FFFF) valid = false;
+            inp_ptr++;
+        }
     }
 
     if (inp != NULL && inp[0] != 0 && valid) {
-        sprintf(lblbuf, "%s%s", lblprefix, u2utf8_copy(inp));
+        char* inp_l = u2utf8_copy(inp);
+        sprintf(lblbuf, "%s%s", lblprefix, inp_l);
+        free(inp_l);
     } else {
         strcpy(lblbuf, lblerror);
     }
@@ -3708,6 +3711,7 @@ static int CI_CmpUseNonDefault(GGadget *g, GEvent *e) {
     GGadget* cotf = GWidgetGetControl(ci->gw,CID_ComponentTextField);
     GGadget* coim = GWidgetGetControl(ci->gw,CID_ComponentInterpMsg);
     GGadgetSetEnabled(cotf, show);
+    if (ci->sc->user_decomp != NULL) free(ci->sc->user_decomp);
     if (!show) {
         ci->sc->user_decomp = NULL;
         GGadgetSetTitle8(coim, "");
@@ -3875,7 +3879,7 @@ static void CIFillup(CharInfo *ci) {
     unichar_t *temp;
     char buffer[400];
     char buf[200];
-    const unichar_t *bits;
+    const unichar_t *bits, *bits2;
     int *d_ptr = sc->user_decomp;
     int i,j,gid, isv;
     struct matrix_data *mds[pst_max];
@@ -3984,7 +3988,7 @@ static void CIFillup(CharInfo *ci) {
 	GGadget *coim = GWidgetGetControl(ci->gw,CID_ComponentInterpMsg);
 	GGadget *cola = GWidgetGetControl(ci->gw,CID_ComponentChangeMsg);
 
-    bits = SFGetAlternate(sc->parent,sc->unicodeenc,NULL,true);
+    bits = bits2 = SFGetAlternate(sc->parent,sc->unicodeenc,NULL,true);
     GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_ComponentMsg),
 	bits==NULL ? _("No components") :
 	hascomposing(sc->parent,sc->unicodeenc,sc) ? _("Accented glyph composed of:") :
@@ -3993,50 +3997,49 @@ static void CIFillup(CharInfo *ci) {
 	ubuf[0] = '\0';
 	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Components),ubuf);
     GGadgetSetTitle(cotf,ubuf);
-    GGadgetSetTitle8(coim,"");
-    GGadgetSetEnabled(cotf, false);
-    GGadgetSetEnabled(cola, false);
-    GGadgetSetEnabled(codcb, false);
-    GGadgetSetChecked(codcb, true);
     } else {
 	unichar_t *temp = malloc(18*u_strlen(bits)*sizeof(unichar_t));
 	unichar_t *upt=temp;
-    // i.e. five six hex digit long codepoints with spaces after them
-    char* codepoints_as_hex = malloc((6 * 5) + 5);
-    codepoints_as_hex[0] = '\0';
 	while ( *bits!='\0' ) {
 	    sprintf(buffer, "U+%04x (", *bits );
 	    uc_strcpy(upt,buffer);
 	    upt += u_strlen(upt);
 	    if (iscombining(*bits)) {
+	        *upt = 0x25CC; // DOTTED CIRCLE “◌”
 	        upt += 1;
-	        upt[-1] = 0x25CC; // DOTTED CIRCLE “◌”
 	    }
+	    *upt = *bits;
 	    upt += 1;
-	    upt[-1] = *bits;
 	    sprintf(buffer, ") ");
 	    uc_strcpy(upt,buffer);
 	    upt += u_strlen(upt);
 
-        if (sc->user_decomp == NULL) {
-            sprintf(buffer, "%04x ", *bits);
-            codepoints_as_hex = strcat(codepoints_as_hex, buffer);
-        }
 	    ++bits;
 	}
 	upt[-1] = '\0';
 	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Components),temp);
 	free(temp);
 
+    }
+
+    // i.e. five six hex digit long codepoints with spaces after them
+    char* codepoints_as_hex = malloc((6 * 5) + 5);
+    codepoints_as_hex[0] = '\0';
     if (sc->user_decomp != NULL) {
         while ( *d_ptr!='\0' ) {
             sprintf(buffer, "%04x ", *d_ptr);
             codepoints_as_hex = strcat(codepoints_as_hex, buffer);
             ++d_ptr;
         }
+    } else {
+        while ( bits2 != NULL && *bits2!='\0' ) {
+            if (sc->user_decomp == NULL) {
+                sprintf(buffer, "%04x ", *bits2);
+                codepoints_as_hex = strcat(codepoints_as_hex, buffer);
+            }
+            ++bits2;
+        }
     }
-
-    d_ptr = sc->user_decomp;
 
     GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_ComponentTextField),codepoints_as_hex);
 
@@ -4054,8 +4057,6 @@ static void CIFillup(CharInfo *ci) {
         GGadgetSetTitle8(coim,"");
     }
     free(lbl);
-
-    }
 
     GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_Color),0);
 
