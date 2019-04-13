@@ -1647,7 +1647,7 @@ static int gtextfield_mouse(GGadget *g, GEvent *event) {
     GTextField *gt = (GTextField *) g;
     GListField *ge = (GListField *) g;
     unichar_t *end=NULL, *end1, *end2;
-    int i=0,ll;
+    int i=0,ll,curlen;
 
     if ( gt->hidden_cursor ) {
 	GDrawSetCursor(gt->g.base,gt->old_cursor);
@@ -1688,37 +1688,37 @@ return( true );
 	    GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y))
 	GGadgetPreparePopup(g->base,g->popup_msg);
 
+    curlen = u_strlen(gt->text);
+
     if ( event->type == et_mousedown || gt->pressed ) {
 	i = (event->u.mouse.y-g->inner.y)/gt->fh + gt->loff_top;
 	if ( i<0 ) i = 0;
 	if ( !gt->multi_line ) i = 0;
-	if ( i>=gt->lcnt )
-	    end = gt->text+u_strlen(gt->text);
-	else
+	if ( i>=gt->lcnt ) {
+	    end = gt->text+curlen;
+	    i = gt->lcnt - 1;
+	    if (i < 0) i = 0; // Can lcnt ever be 0?
+	} else
 	    end = GTextFieldGetPtFromPos(gt,i,event->u.mouse.x);
     }
 
     if ( event->type == et_mousedown ) {
+	int end8;
 	if ( event->u.mouse.button==3 &&
 		GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y)) {
 	    GTFPopupMenu(gt,event);
 return( true );
 	}
 
-	if ( i>=gt->lcnt )
-	    end1 = end2 = end;
-	else {
-	    int end8;
-	    ll = gt->lines8[i+1]==-1?-1:gt->lines8[i+1]-gt->lines8[i]-1;
-	    GDrawLayoutInit(gt->g.base,gt->utf8_text+gt->lines8[i],ll,NULL);
-	    end8 = GDrawLayoutXYToIndex(gt->g.base,event->u.mouse.x-g->inner.x+gt->xoff_left,0);
-	    end1 = end2 = gt->text + gt->lines[i] + utf82u_index(end8,gt->utf8_text+gt->lines8[i]);
-	}
+	ll = gt->lines8[i+1]==-1?-1:gt->lines8[i+1]-gt->lines8[i]-1;
+	GDrawLayoutInit(gt->g.base,gt->utf8_text+gt->lines8[i],ll,NULL);
+	end8 = GDrawLayoutXYToIndex(gt->g.base,event->u.mouse.x-g->inner.x+gt->xoff_left,0);
+	end1 = end2 = gt->text + gt->lines[i] + utf82u_index(end8,gt->utf8_text+gt->lines8[i]);
 
 	gt->wordsel = gt->linesel = false;
 	if ( event->u.mouse.button==1 && event->u.mouse.clicks>=3 ) {
 	    gt->sel_start = gt->lines[i]; gt->sel_end = gt->lines[i+1];
-	    if ( gt->sel_end==-1 ) gt->sel_end = u_strlen(gt->text);
+	    if ( gt->sel_end==-1 ) gt->sel_end = curlen;
 	    gt->wordsel = false; gt->linesel = true;
 	} else if ( event->u.mouse.button==1 && event->u.mouse.clicks==2 ) {
 	    gt->sel_start = gt->sel_end = gt->sel_base = end-gt->text;
@@ -1739,13 +1739,12 @@ return( true );
 	    gt->sel_start = gt->sel_base;
 	    gt->sel_end = end-gt->text;
 	} else {
-	    gt->sel_start = end-gt->text;
-	    gt->sel_end = gt->sel_base;
+	    gt->sel_start = gt->sel_base = gt->sel_end = end-gt->text;
 	}
 
 	if ( gt->pressed==NULL )
 	    gt->pressed = GDrawRequestTimer(gt->g.base,200,100,NULL);
-	if ( gt->sel_start > u_strlen( gt->text ))	/* Ok to have selection at end, but beyond is an error */
+	if ( gt->sel_start > curlen )	/* Ok to have selection at end, but beyond is an error */
 	    fprintf( stderr, "About to crash\n" );
 	_ggadget_redraw(g);
 return( true );
@@ -1754,14 +1753,15 @@ return( true );
 
 	if ( gt->drag_and_drop ) {
 	    refresh = GTextFieldDoDrop(gt,event,end-gt->text);
+	    // curlen may be inaccurate now, but we recalculate after this guard set.
 	} else if ( gt->linesel ) {
-	    int j, e;
-	    gt->sel_start = gt->lines[i]; gt->sel_end = gt->lines[i+1];
-	    if ( gt->sel_end==-1 ) gt->sel_end = u_strlen(gt->text);
-	    for ( j=0; gt->lines[i+1]!=-1 && gt->sel_base>=gt->lines[i+1]; ++j );
-	    if ( gt->sel_start<gt->lines[i] ) gt->sel_start = gt->lines[i];
-	    e = gt->lines[j+1]==-1 ? u_strlen(gt->text): gt->lines[j+1];
-	    if ( e>gt->sel_end ) gt->sel_end = e;
+	    int j;
+	    for ( j=i; j>0 && gt->text[gt->lines[j]-1] != '\n'; --j )
+		;
+	    gt->sel_start = gt->lines[j];
+	    for ( j=i+1; gt->lines[j]!=-1 && gt->text[gt->lines[j]-1] != '\n'; ++j )
+		;
+	    gt->sel_end = gt->lines[j]!=-1 ? gt->lines[j]-1 : curlen;
 	} else if ( gt->wordsel )
 	    GTextFieldSelectWords(gt,end-gt->text);
 	else if ( event->u.mouse.button!=2 ) {
@@ -1783,7 +1783,7 @@ return( true );
 		(_GDraw_InsCharHook)(GDrawGetDisplayOfWindow(gt->g.base),
 			gt->text[gt->sel_start]);
 	}
-	if ( gt->sel_end > u_strlen( gt->text ))
+	if ( gt->sel_end > u_strlen(gt->text) )
 	    fprintf( stderr, "About to crash\n" );
 	if ( refresh )
 	    _ggadget_redraw(g);
