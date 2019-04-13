@@ -27,7 +27,7 @@
 
 include $(top_srcdir)/mk/layout.am
 
-pkgpythondata_DATA = webcollab.py
+pkgpythondata_DATA =
 
 if PYTHON_SCRIPTING
 pkgpythondata_DATA += excepthook.py test.sfd
@@ -42,12 +42,11 @@ pkgpythondata_DATA += even.py
 endif
 
 
-EXTRA_DIST = excepthook.py test.sfd README graphicore.py even.py webcollab.py
+EXTRA_DIST = excepthook.py test.sfd README graphicore.py even.py
 
 SUBDIRS =
 SUBDIRS += gdraw
 SUBDIRS += simple
-SUBDIRS += collab
 SUBDIRS += graphicore
 
 -include $(top_srcdir)/git.mk

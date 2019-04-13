@@ -36,8 +36,8 @@ libgutils_la_SOURCES = dlist.c fsys.c g_giomime.c gcol.c	\
 	gimagereadxbm.c gimagereadxpm.c gimagewritebmp.c		\
 	gimagewritegimage.c gimagewritejpeg.c gimagewritepng.c		\
 	gimagewritexbm.c gimagewritexpm.c gio.c giofile.c		\
-	giotrans.c giofuncP.h  gnetwork.c gutils.c			\
-	gwwintl.c prefs.c prefs.h unicodelibinfo.c unicodelibinfo.h
+	giotrans.c giofuncP.h gutils.c gwwintl.c prefs.c		\
+	prefs.h unicodelibinfo.c unicodelibinfo.h
 
 libgutils_la_CFLAGS = $(WARN_CFLAGS)
 
@@ -46,11 +46,6 @@ libgutils_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 	$(MY_CFLAGS)
 
 libgutils_la_LIBADD = $(MY_LIBS) $(top_builddir)/Unicode/libgunicode.la
-if LIBZMQ
-libgutils_la_LIBADD += $(LIBZMQ_LIBS)
-libgutils_la_CFLAGS += $(LIBZMQ_CFLAGS)
-endif
-
 libgutils_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBGUTILS_VERSION) \
 	${MY_LIB_LDFLAGS}
 

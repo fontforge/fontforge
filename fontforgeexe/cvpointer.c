@@ -32,7 +32,6 @@
 #include "splineutil2.h"
 #include <utype.h>
 #include <math.h>
-#include "collabclient.h"
 extern void BackTrace( const char* msg );
 
 int stop_at_join = false;
@@ -668,11 +667,8 @@ return;
 	needsupdate = CVClearSel(cv);
     }
 
-//    printf("CVMouseDownPointer() dowidth:%d dolbearing:%d\n", dowidth, dolbearing );
-
     if ( !fs->p->anysel )
     {
-//	printf("mousedown !anysel dow:%d dov:%d doid:%d dotah:%d nearcaret:%d\n", dowidth, dovwidth, doic, dotah, nearcaret );
 	/* Nothing else... unless they clicked on the width line, check that */
 	if ( dowidth )
 	{
@@ -767,16 +763,6 @@ return;
 		cv->expandedge = ee_none;
 	    SetCur(cv);
 	    needsupdate = true;
-	}
-	else
-	{
-//	    printf("mousedown !anysel ELSE\n");
-	    //
-	    // Allow dragging a box around some points to send that information
-	    // to the other clients in the collab session
-	    //
-	    if( collabclient_inSession( &cv->b ))
-		CVPreserveState(&cv->b);
 	}
     }
     else if ( event->u.mouse.clicks<=1 && !(event->u.mouse.state&ksm_shift))

@@ -29,7 +29,6 @@
 #include "cvundoes.h"
 #include "fontforgeui.h"
 #include "spiro.h"
-#include "collabclientui.h"
 #include "splineutil.h"
 #include <math.h>
 
@@ -308,7 +307,6 @@ void CVMouseUpKnife(CharView *cv, GEvent *event)
 	    spl->ticked = false;
 	}
 	CVCharChangedUpdate(   &cv->b );
-	collabclient_sendRedo( &cv->b );
     } else {
         GDrawRequestExpose(cv->v, NULL, false);
     }

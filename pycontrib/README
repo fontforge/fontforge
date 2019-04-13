@@ -1,7 +1,7 @@
 In early 2013 this directory contained one file: excepthook.py.
 
-Ben Martin added the simple and collab directories. Many of these
-newly added scripts depend on the test.sfd example font file to work.
+Ben Martin added the simple directory. Many of these newly
+added scripts depend on the test.sfd example font file to work.
 To keep the scripts simple, they expect to be run in the directory
 that contains them. So they can find the test.sfd file as
 "../test.sfd" for example.

@@ -31,7 +31,6 @@
 #include "splineorder2.h"
 #include "splineutil.h"
 #include "splineutil2.h"
-#include "collabclientui.h"
 #include "ustring.h"
 
 int palettes_docked=1;
@@ -144,22 +143,6 @@ static GFont *toolsfont=NULL, *layersfont=NULL;
 #define CID_LayersMenu  9003
 #define CID_LayerLabel  9004
 
-void onCollabSessionStateChanged( gpointer instance, FontViewBase* fv, gpointer user_data )
-{
-    bool inCollab = collabclient_inSessionFV( fv );
-
-    if (cvlayers != NULL) {
-      GGadgetSetEnabled(GWidgetGetControl(cvlayers,CID_AddLayer),    !inCollab );
-      GGadgetSetEnabled(GWidgetGetControl(cvlayers,CID_RemoveLayer), !inCollab );
-      GGadgetSetEnabled(GWidgetGetControl(cvlayers,CID_RenameLayer), !inCollab );
-    } else if (cvlayers2 != NULL && 0) {
-      // These controls seem not to exist in cvlayers2. We can look deeper into this later.
-      GGadgetSetEnabled(GWidgetGetControl(cvlayers2,CID_AddLayer),    !inCollab );
-      GGadgetSetEnabled(GWidgetGetControl(cvlayers2,CID_RemoveLayer), !inCollab );
-      GGadgetSetEnabled(GWidgetGetControl(cvlayers2,CID_RenameLayer), !inCollab );
-    }
-}
-
 /* Initialize a window that is to be used for a palette. Specific widgets and other functionality are added elsewhere. */
 static GWindow CreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs, GWindow v) {
     GWindow gw;
@@ -203,9 +186,6 @@ static GWindow CreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *),
         gw = GDrawCreateTopWindow(NULL,&newpos,eh,user_data,wattrs);
     }
 
-    collabclient_addSessionJoiningCallback( onCollabSessionStateChanged );
-    collabclient_addSessionLeavingCallback( onCollabSessionStateChanged );
-    
 return( gw );
 }
 
@@ -2243,9 +2223,6 @@ static void CVLayers1Set(CharView *cv) {
  * are created or hid here, only the state of existing gadgets is changed.
  * New layer gadgets are created in CVLCheckLayerCount(). */
 void CVLayersSet(CharView *cv) {
-    if( cv )
-	onCollabSessionStateChanged( NULL, cv->b.fv, NULL );
-    
     if ( cv->b.sc->parent->multilayer ) {
 	CVLayers2Set(cv);
 return;

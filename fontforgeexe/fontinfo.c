@@ -50,7 +50,6 @@
 #include "unicoderange.h"
 #include <locale.h>
 #include "sfundo.h"
-#include "collabclientui.h"
 
 extern int _GScrollBar_Width;
 extern GBox _ggadget_Default_Box;
@@ -4594,9 +4593,6 @@ return(true);
 	SFReplaceFontnameBDFProps(sf);
 	MVReFeatureAll(sf);
 	MVReKernAll(sf);
-
-	collabclient_sendFontLevelRedo( sf );
-
     }
 return( true );
 }
@@ -10893,10 +10889,6 @@ return;
 }
 
 void FontMenuFontInfo(void *_fv) {
-    if ( _fv && collabclient_inSessionFV( _fv) ) {
-	gwwv_post_error(_("Feature Not Available"), _("The Font Information Dialog is not available in collaboration mode yet."));
-	return;
-    }
     FontInfo( ((FontViewBase *) _fv)->sf,((FontViewBase *) _fv)->active_layer,-1,false);
 }
 

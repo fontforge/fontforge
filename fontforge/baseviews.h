@@ -170,13 +170,6 @@ struct fvcontainer_funcs {
 				/* Resize the container so that fv fits */
 };
 
-enum collabState_t {
-    cs_neverConnected, //< No connection or Collab feature used this run
-    cs_disconnected,   //< Was connected at some stage, not anymore
-    cs_server,         //< The localhost is running a server process
-    cs_client          //< Connected to somebody else's server process
-};       
-
 typedef struct fontviewbase {
     struct fontviewbase *next;		/* Next on list of open fontviews */
     struct fontviewbase *nextsame;	/* Next fv looking at this font */
@@ -193,12 +186,7 @@ typedef struct fontviewbase {
 #ifndef _NO_PYTHON
     void *python_fv_object;
 #endif
-    struct fvcontainer *container;
-    void* collabClient;                 /* The data used to talk to the collab server process */
-    enum collabState_t collabState;     /* Since we want to know if we are connected, or used to be
-					 * we have to keep the state variable out of collabClient
-					 * itself */
-    
+    struct fvcontainer *container;    
 } FontViewBase;
 
 enum origins { or_zero, or_center, or_lastpress, or_value, or_undefined };

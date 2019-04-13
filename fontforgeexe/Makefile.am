@@ -44,9 +44,6 @@ endif THE_PROGRAMS
 lib_LTLIBRARIES = libfontforgeexe.la
 
 SUBDIRS = pixmaps
-if LIBZMQ
-SUBDIRS += collab
-endif LIBZMQ
 
 FFSCRIPT_HEADER = "\#!$(bindir)/fontforge -lang=ff"
 
@@ -94,9 +91,6 @@ fontforge_SOURCES = main.c
 fontforge_CPPFLAGS = $(AM_CPPFLAGS)
 fontforge_LDADD = libfontforgeexe.la $(LDADD)
 fontforge_LDFLAGS = $(MY_CFLAGS) -export-dynamic
-if LIBZMQ
-fontforge_LDADD += $(top_builddir)/collab/libzmqcollab.la $(MY_LIBS) $(LIBZMQ_LIBS)
-endif
 
 endif THE_PROGRAMS
 
@@ -123,10 +117,9 @@ libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
 	splashimage.c startui.c statemachine.c tilepath.c transform.c	        \
 	ttfinstrsui.c uiutil.c windowmenu.c justifydlg.c deltaui.c		\
 	usermenu.c macobjective.h                                               \
-	collabclientui.c collabclientui.h                                       \
 	sfundo.c wordlistparser.c wordlistparser.h fontforgeexe.h
 
-libfontforgeexe_la_CPPFLAGS +=  $(LIBZMQ_CFLAGS) $(GTK2_CFLAGS)
+libfontforgeexe_la_CPPFLAGS += $(GTK2_CFLAGS)
 
 if MACINTOSH
 CLEANFILES = libfontforgeexe_objc.la
@@ -146,10 +139,6 @@ libfontforgeexe_la_LIBADD += $(LIBADD) $(GUILIBADD) $(MY_LIBS) $(GTK2_LIBS) $(to
 
 libfontforgeexe_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBFONTFORGEEXE_VERSION) \
 	${MY_LIB_LDFLAGS}
-
-if LIBZMQ
-libfontforgeexe_la_LIBADD += $(top_builddir)/collab/libzmqcollab.la $(LIBZMQ_LIBS)
-endif
 
 if PYTHON_SCRIPTING
 libfontforgeexe_la_LIBADD += $(PYTHON_LIBS)

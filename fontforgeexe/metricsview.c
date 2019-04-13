@@ -49,7 +49,6 @@
 #include <math.h>
 #include <stdio.h>
 
-#include "collabclientui.h"
 #include "gfile.h"
 #include "wordlistparser.h"
 extern char* SFDCreateUndoForLookup( SplineFont *sf, int lookup_type ) ;
@@ -1138,27 +1137,6 @@ static real GGadgetToReal(GGadget *g)
     return val;
 }
 
-static void MV_handle_collabclient_maybeSnapshot( MetricsView *mv, SplineChar *sc ) {
-    if ( collabclient_inSessionFV(&mv->fv->b) ) {
-	int dohints = 0;
-	SCPreserveState( sc, dohints );
-    }
-}
-
-
-/* If we are in a collab session, then send the redo through */
-/* to the server to update other clients to our state.	     */
-static void MV_handle_collabclient_sendRedo( MetricsView *mv, SplineChar *sc ) {
-    if( collabclient_inSessionFV( &mv->fv->b ) ) {
-	collabclient_sendRedo_SC( sc, UNDO_LAYER_UNKNOWN );
-
-	/* CharViewBase* cv = sc->views; */
-	/* if( !cv ) */
-	/*     cv = CharViewCreate( sc, mv->fv, -1 ); */
-	/* collabclient_sendRedo( cv ); */
-    }
-}
-
 static int MV_WidthChanged(GGadget *g, GEvent *e) {
 /* This routines called during "Advanced Width Metrics" viewing */
 /* any time "Width" changed or screen is updated		*/
@@ -1177,12 +1155,7 @@ return( true );
 	if (!isValidInt(end))
 	    GDrawBeep(NULL);
 	else if ( !mv->vertical && val!=sc->width ) {
-//	    dumpUndoChain( "before SCPreserveWidth...", sc, &sc->layers[ly_fore].undoes );
 	    SCPreserveWidth(sc);
-	    if( collabclient_inSessionFV( &mv->fv->b ) ) {
-		int dohints = 0;
-		SCPreserveState( sc, dohints );
-	    }
 
 	    // set i to the correct column that has the active width gadget
 	    for ( i=0; i<mv->glyphcnt; ++i ) {
@@ -1204,8 +1177,6 @@ return( true );
 
 	    SCSynchronizeWidth(sc,val,sc->width,NULL);
 	    SCCharChangedUpdate(sc,ly_none);
-//	    printf("mv_widthChanged() sending collab\n");
-	    MV_handle_collabclient_sendRedo(mv,sc);
 
 	} else if ( mv->vertical && val!=sc->vwidth ) {
 	    SCPreserveVWidth(sc);
@@ -1243,18 +1214,11 @@ return( true );
 	if (!isValidInt(end))
 	    GDrawBeep(NULL);
 	else if ( !mv->vertical && val!=bb.minx ) {
-	    if ( collabclient_inSessionFV(&mv->fv->b) ) {
-		int dohints = 0;
-		SCPreserveState( sc, dohints );
-	    }
 	    real transform[6];
 	    transform[0] = transform[3] = 1.0;
 	    transform[1] = transform[2] = transform[5] = 0;
 	    transform[4] = val-bb.minx;
 	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,0 | fvt_alllayers );
-
-//	    dumpUndoChain( "LBearing Changed...e", sc, &sc->layers[ly_fore].undoes );
-	    MV_handle_collabclient_sendRedo(mv,sc);
 	} else if ( mv->vertical && val!=sc->parent->ascent-bb.maxy ) {
 	    real transform[6];
 	    transform[0] = transform[3] = 1.0;
@@ -1298,10 +1262,6 @@ return( true );
 	    /* Width is an integer. Adjust the lbearing so that the rbearing */
 	    /*  remains what was just typed in */
 	    if ( newwidth!=bb.maxx+val ) {
-		if ( collabclient_inSessionFV(&mv->fv->b) ) {
-		    int dohints = 0;
-		    SCPreserveState( sc, dohints );
-		}
 		real transform[6];
 		transform[0] = transform[3] = 1.0;
 		transform[1] = transform[2] = transform[5] = 0;
@@ -1310,9 +1270,6 @@ return( true );
 	    }
 	    SCSynchronizeWidth(sc,newwidth,sc->width,NULL);
 	    SCCharChangedUpdate(sc,ly_none);
-
-//	    dumpUndoChain( "RBearing Changed...2", sc, &sc->layers[ly_fore].undoes );
-	    MV_handle_collabclient_sendRedo(mv,sc);
 	} else if ( mv->vertical && val!=sc->vwidth-(sc->parent->ascent-bb.miny) ) {
 	    double vw = val+(sc->parent->ascent-bb.miny);
 	    SCPreserveWidth(sc);
@@ -4791,7 +4748,6 @@ return;
 		SCPreserveWidth(sc);
 		SCSynchronizeWidth(sc,sc->width+diff,sc->width,NULL);
 		SCCharChangedUpdate(sc,ly_none);
-		MV_handle_collabclient_sendRedo(mv,sc);
 	    }
 	} else if ( mv->pressedkern ) {
 	    mv->pressedkern = false;
@@ -4802,8 +4758,6 @@ return;
 		MVRefreshValues(mv,i-1);
 	    }
 	} else if ( mv->type!=mv_kernonly ) {
-//	    printf("mvsubmouse() not kern only \n" );
-	    MV_handle_collabclient_maybeSnapshot(mv,sc);
 	    real transform[6];
 	    transform[0] = transform[3] = 1.0;
 	    transform[1] = transform[2] = transform[5] = 0;
@@ -4811,8 +4765,6 @@ return;
 		    (mv->sf->ascent+mv->sf->descent)/(mv->pixelsize*iscale);
 	    if ( transform[4]!=0 )
 		FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL, 0 | fvt_alllayers );
-
-	    MV_handle_collabclient_sendRedo(mv,sc);
 	}
 	mv->pressedwidth = false;
 	mv->pressedkern = false;

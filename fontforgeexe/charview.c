@@ -64,7 +64,6 @@ extern int _GScrollBar_Width;
 #include "dlist.h"
 
 #include "gutils/prefs.h"
-#include "collabclientui.h"
 #include "gutils/unicodelibinfo.h"
 
 #include "gdraw/hotkeys.h"
@@ -4999,37 +4998,12 @@ return;		/* I treat this more like a modifier key change than a button press */
     CVInfoDraw(cv,cv->gw);
     CVSetConstrainPoint(cv,event);
 
-    int selectionChanged = 0;
     switch ( cv->active_tool ) {
       case cvt_pointer:
 	CVMouseDownPointer(cv, &fs, event);
 	CVMaybeCreateDraggingComparisonOutline( cv );
-	if( lastSel.lastselpt != fs.p->sp || lastSel.lastselcp != fs.p->spiro )	{
-#define BASEPOINT_IS_EMPTY(p) ( p.x == (real)0.0 && p.y == (real)0.0 )
-	    // If we are in a collab session, we might like to preserve here
-	    // so that we can send a change of selected points to other members
-	    // of the group
-	    if( collabclient_inSession( &cv->b ) )
-	    {
-		if( BASEPOINT_IS_EMPTY( fs.p->cp ) )
-		{
-		    //
-		    // Do not send clicks on bezier control points.
-		    //
-		    TRACE("skipping!\n");
-		}
-		else
-		{
-		    CVPreserveState(&cv->b);
-		    selectionChanged = 1;
-		}
-	    }
-	}
 	cv->lastselpt = fs.p->sp;
 	cv->lastselcp = fs.p->spiro;
-	if( selectionChanged ) {
-//	    collabclient_sendRedo( &cv->b );
-	}
       break;
       case cvt_magnify: case cvt_minify:
           //When scroll zooming, the old showing tool is the normal pointer.
@@ -5622,7 +5596,6 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 	_CV_CharChangedUpdate(cv,2);
 
     dlist_foreach( &cv->pointInfoDialogs, (dlist_foreach_func_type)PIChangePoint );
-    collabclient_sendRedo( &cv->b );
 }
 
 static void CVTimer(CharView *cv,GEvent *event) {
@@ -8499,17 +8472,6 @@ static void CVUndo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) 
 
     Undoes *undo = cv->b.layerheads[cv->b.drawmode]->undoes;
 
-//    TRACE("CVUndo() undo:%p u->next:%p\n", undo, ( undo ? undo->next : 0 ) );
-    if( undo )
-    {
-	if ( collabclient_inSession( &cv->b ) )	{
-	    collabclient_performLocalUndo( &cv->b );
-	    cv->lastselpt = NULL;
-	    _CVCharChangedUpdate(&cv->b,1);
-	    return;
-	}
-    }
-
     CVDoUndo(&cv->b);
     cv->lastselpt = NULL;
 }
@@ -8518,15 +8480,6 @@ static void CVRedo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) 
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
     Undoes *undo = cv->b.layerheads[cv->b.drawmode]->redoes;
-    if ( undo ) {
-	if ( collabclient_inSession(&cv->b) )	{
-	    TRACE("in-session (redo)!\n");
-	    collabclient_performLocalRedo( &cv->b );
-	    cv->lastselpt = NULL;
-	    _CVCharChangedUpdate(&cv->b,1);
-	    return;
-	}
-    }
 
     CVDoRedo(&cv->b);
     cv->lastselpt = NULL;
@@ -9710,7 +9663,6 @@ static void transfunc(void *d,real transform[6],int otype,BVTFunc *bvts,
     CVPreserveMaybeState( cv, flags&fvt_justapply );
     CVTransFunc(cv,transform,flags);
     CVCharChangedUpdate(&cv->b);
-    collabclient_sendRedo( &cv->b );
 }
 
 void CVDoTransform(CharView *cv, enum cvtools cvt ) {

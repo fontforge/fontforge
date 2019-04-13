@@ -58,8 +58,6 @@ m4_define([libgunicode_major_version], [5]) dnl 20120731-b was 3.2
 m4_define([libgunicode_minor_version], [0])
 m4_define([libgutils_major_version], [3]) dnl 20120731-b was 1.3
 m4_define([libgutils_minor_version], [1])
-m4_define([libzmqcollab_major_version], [2]) dnl n/a
-m4_define([libzmqcollab_minor_version], [1])
 m4_define([libfontforgeexe_major_version], [fontforge_major_version]) dnl matches fontforge
 m4_define([libfontforgeexe_minor_version], [fontforge_minor_version])
 m4_define([libfontforge_major_version], [fontforge_major_version]) dnl matches fontforge
@@ -77,7 +75,6 @@ m4_define([libfontforge_info],[libfontforge_major_version:libfontforge_minor_ver
 m4_define([libgdraw_info],[libgdraw_major_version:libgdraw_minor_version:0])
 m4_define([libgunicode_info],[libgunicode_major_version:libgunicode_minor_version:0])
 m4_define([libgutils_info],[libgutils_major_version:libgutils_minor_version:0])
-m4_define([libzmqcollab_info],[libzmqcollab_major_version:libzmqcollab_minor_version:0])
 
 #--------------------------------------------------------------------------
 
@@ -181,7 +178,6 @@ AC_SUBST([LIBFONTFORGE_VERSION],[libfontforge_info])
 AC_SUBST([LIBGDRAW_VERSION],[libgdraw_info])
 AC_SUBST([LIBGUNICODE_VERSION],[libgunicode_info])
 AC_SUBST([LIBGUTILS_VERSION],[libgutils_info])
-AC_SUBST([LIBZMQCOLLAB_VERSION],[libzmqcollab_info])
 
 AC_SUBST([VERSION_MAJOR],[fontforge_major_version])
 AC_SUBST([VERSION_MINOR],[fontforge_minor_version])
@@ -197,7 +193,6 @@ libpng_url="http://www.libpng.org/"
 libxml_url="http://www.xmlsoft.org/"
 libspiro_url="https://github.com/fontforge/libspiro"
 libuninameslist_url="https://github.com/fontforge/libuninameslist"
-libzmq_url="http://www.zeromq.org/"
 libreadline_url="http://www.gnu.org/software/readline"
 libxorg_url="http://www.x.org/"
 python_url="https://www.python.org/"
@@ -416,17 +411,10 @@ FONTFORGE_ARG_WITH_CAIRO # do this test only 'after' zlib and png checks
 FONTFORGE_ARG_WITH_LIBSPIRO
 FONTFORGE_ARG_WITH_LIBUNINAMESLIST
 #FONTFORGE_ARG_WITH_LIBUNICODENAMES
-FONTFORGE_ARG_WITH_ZEROMQ
 FONTFORGE_ARG_WITH_LIBREADLINE
 FONTFORGE_ARG_WITH_ICONV
 
 FONTFORGE_ARG_ENABLE_WOFF2
-
-if test x"${i_do_have_gui}" = xyes; then
-   if test x"${i_do_have_libzmq}" = xyes; then
-      AC_DEFINE(BUILD_COLLAB,[1],[Build the Collab Code])
-   fi
-fi
 
 if test x"${i_do_have_cairo}" = xyes; then
    PKG_CHECK_MODULES([PANGOCAIRO],[pangocairo])
@@ -685,7 +673,6 @@ Makefile
 inc/Makefile
 Unicode/Makefile
 gutils/Makefile
-collab/Makefile
 share/Makefile
 gdraw/Makefile
 fontforge/Makefile
@@ -693,21 +680,14 @@ fontforgeexe/Makefile
 fontforgeexe/pixmaps/Makefile
 fontforgeexe/pixmaps/2012/Makefile
 fontforgeexe/pixmaps/tango/Makefile
-fontforgeexe/collab/Makefile
 po/Makefile
 mackeys/Makefile
 doc/Makefile
 doc/html/Makefile
 pycontrib/Makefile
 pycontrib/simple/Makefile
-pycontrib/collab/Makefile
 pycontrib/graphicore/Makefile
 pycontrib/gdraw/Makefile
-nodejs/Makefile
-nodejs/collabwebview/Makefile
-nodejs/collabwebview/css/Makefile
-nodejs/collabwebview/js/Makefile
-nodejs/collabwebview/js/contentEditable/Makefile
 pyhook/Makefile
 tests/Makefile
 desktop/Makefile
@@ -828,7 +808,6 @@ Graphical UI Choices	UseIt?	HaveIt?	WebsiteURL
     cairo		${with_cairo}	${i_do_have_cairo}	${cairo_url}
   GDK backend		${fontforge_can_use_gdk}	${fontforge_gdk_version}	${gdk_url}
   Desktop theme		${themename}
-  zeromq (libzmq)		${i_do_have_libzmq}	${libzmq_url}
 ])
 
 #--------------------------------------------------------------------------

@@ -97,7 +97,6 @@ extern void setup_cocoa_app();
 #define sleep(n) Sleep(1000 * (n))
 #endif
 
-#include "collabclientui.h"
 #include "scripting.h"
 
 extern int AutoSaveFrequency;
@@ -1146,8 +1145,6 @@ int fontforge_main( int argc, char **argv ) {
 	    /* already checked for this earlier, no need to do it again */;
 	else if ( strcmp(pt,"-unique")==0 )
 	    unique = 1;
-	else if ( strcmp(pt,"-forceuihidden")==0 )
-	    cmdlinearg_forceUIHidden = 0;
 	else if ( strcmp(pt,"-recover")==0 && i<argc-1 ) {
 	    ++i;
 	    if ( strcmp(argv[i],"none")==0 )
@@ -1400,8 +1397,6 @@ exit( 0 );
     if ( !any && !doopen )
 	any = ReopenLastFonts();
 
-    collabclient_ensureClientBeacon();
-    collabclient_sniffForLocalServer();
 #ifndef _NO_PYTHON
     PythonUI_namedpipe_Init();
 #endif

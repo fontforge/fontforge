@@ -53,7 +53,6 @@ Various areas of the codebase have been worked on by different people in recent 
 * Build System: OS X (Application bundle, Homebrew) - Jeremy Tan (jtanx)
 * Build System: Windows - Jeremy Tan (jtanx)
 * Feature: UFO import/export - Frank Trampe (frank-trampe)
-* Feature: Collab - Dr Ben Martin (monkeyiq)
 * Feature: Python interface - Skef Iterum (skef)
 * Crashes: Frank Trampe, Adrien Tetar (adrientetar)
 
