@@ -3659,28 +3659,43 @@ static int CI_DefLCChange(GGadget *g, GEvent *e) {
 return( true );
 }
 
+struct ParsedDecomp_s {
+    unichar_t* decomp;
+    bool truncated;
+};
+
+typedef struct ParsedDecomp_s ParsedDecomp;
+
 // Turn the user's entered decomposition into the format returned by SFGetAlternate
-unichar_t* CI_ParseUserDecomposition(char* inp) {
+ParsedDecomp CI_ParseUserDecomposition(char* inp) {
     unsigned long len = strlen(inp);
     char* end;
-    unichar_t* out = malloc((len+1)*sizeof(unichar_t));
+    unichar_t* decomp = malloc((len+1)*sizeof(unichar_t));
+    ParsedDecomp out;
+    out.truncated = false;
 
     int j = 0;
     for (unsigned long i = strtoul(inp, &end, 16); inp != end; i = strtoul(inp, &end, 16)) {
+        if (j > 4) {
+            out.truncated = true;
+            break; // limit to five characters
+        }
         inp = end;
-        out[j] = i;
+        decomp[j] = i;
         j++;
     }
 
-    out[j] = '\0';
+    decomp[j] = '\0';
+
+    out.decomp = decomp;
 
     return out;
 }
 
-char* CI_CreateInterpretedAsLabel(unichar_t* inp) {
+char* CI_CreateInterpretedAsLabel(unichar_t* inp, bool truncated) {
     char* lblprefix = _("Interpreted as: ");
     char* lblerror = _("Error: wrong format");
-    // 2 makes it large enough to hold the error string
+    char* lbltrunc = _("(truncated)");
     char* lblbuf;
 
     // If I don't validate it, the string will become "(null)"
@@ -3695,12 +3710,15 @@ char* CI_CreateInterpretedAsLabel(unichar_t* inp) {
 
     if (inp != NULL && inp[0] != 0 && valid) {
         char* inp_l = u2utf8_copy(inp);
-        lblbuf = malloc(strlen(lblprefix)+strlen(inp_l)+1);
-        sprintf(lblbuf, "%s%s", lblprefix, inp_l);
+        lblbuf = malloc(strlen(lblprefix)+strlen(lbltrunc)+strlen(inp_l)+1);
+        if (truncated) {
+            sprintf(lblbuf, "%s%s %s", lblprefix, inp_l);
+        } else {
+            sprintf(lblbuf, "%s%s", lblprefix, inp_l);
+        }
         free(inp_l);
     } else {
-        lblbuf = malloc(strlen(lblerror)+1);
-        strcpy(lblbuf, lblerror);
+        lblbuf = copy(lblerror);
     }
 
     return lblbuf;
@@ -3717,9 +3735,9 @@ static int CI_CmpUseNonDefault(GGadget *g, GEvent *e) {
         ci->sc->user_decomp = NULL;
         GGadgetSetTitle8(coim, "");
     } else {
-        unichar_t* ud = CI_ParseUserDecomposition(GGadgetGetTitle8(cotf));
-        ci->sc->user_decomp = ud;
-        char* lbl = CI_CreateInterpretedAsLabel(ud);
+        ParsedDecomp ud_s = CI_ParseUserDecomposition(GGadgetGetTitle8(cotf));
+        ci->sc->user_decomp = ud_s.decomp;
+        char* lbl = CI_CreateInterpretedAsLabel(ci->sc->user_decomp, ud_s.truncated);
         GGadgetSetTitle8(coim, lbl);
         free(lbl);
     }
@@ -4023,8 +4041,8 @@ static void CIFillup(CharInfo *ci) {
 
     }
 
-    // i.e. five six hex digit long codepoints with spaces after them
-    char* codepoints_as_hex = malloc((6 * 5) + 5);
+    // i.e. five six hex digit long codepoints with spaces after them, + '\0'
+    char* codepoints_as_hex = malloc((6 * 5) + 5 + 1);
     codepoints_as_hex[0] = '\0';
     if (sc->user_decomp != NULL) {
         while ( *d_ptr!='\0' ) {
@@ -4045,7 +4063,7 @@ static void CIFillup(CharInfo *ci) {
     GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_ComponentTextField),codepoints_as_hex);
 
     if (!GGadgetIsEnabled(codcb)) GGadgetSetEnabled(codcb, true);
-    char* lbl = CI_CreateInterpretedAsLabel(sc->user_decomp);
+    char* lbl = CI_CreateInterpretedAsLabel(sc->user_decomp, false);
     if (sc->user_decomp != NULL) {
         GGadgetSetChecked(codcb, false);
         GGadgetSetEnabled(cotf, true);

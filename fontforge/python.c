@@ -7271,21 +7271,20 @@ static int PyFF_Glyph_set_user_decomp(PyFF_Glyph *self,PyObject *value, void *UN
         /* Need to force utf8 encoding rather than accepting the "default" */
         /*  which would happen if we treated unicode as a string */
         temp = PyUnicode_AsUTF8String(value);
-        newv = copy( PyBytes_AsString(temp));
+        udbuf = utf82u_copy(PyBytes_AsString(temp));
         Py_DECREF(temp);
     } else {
-        newv = copy( PyBytes_AsString(value));
+        udbuf = utf82u_copy(PyBytes_AsString(value));
     }
     
-    if ( newv==NULL ) return -1;
+    if ( udbuf==NULL ) return -1;
 
-    if (newv[0] == '\0') {
+    if (udbuf[0] == '\0') {
         if (self->sc->user_decomp != NULL) { free(self->sc->user_decomp); }
         self->sc->user_decomp = NULL;
         return 0;
     }
 
-    udbuf = utf82u_copy(newv);
 
     if (u_strlen(udbuf) > 5) {
          PyErr_WarnEx(PyExc_ValueError, "It doesn't make sense for the decomposition to be this long; truncated to five characters", 1);
@@ -7950,7 +7949,7 @@ static PyObject *PyFFGlyph_Build(PyObject *self, PyObject *args) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int layer = ((PyFF_Glyph *) self)->layer;
     int accent_hint = false;
-    PyObject *accent_hint_pyo;
+    PyObject *accent_hint_pyo = NULL;
 
     if ( PyArg_ParseTuple(args, "|O", &accent_hint_pyo) ) {
         if (accent_hint_pyo == Py_True) {
