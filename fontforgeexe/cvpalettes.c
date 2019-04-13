@@ -306,10 +306,10 @@ GMenuItem2 cvtoollist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("P_en"), (GImage *) "toolspen.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Pen|No Shortcut"), NULL, NULL, CVMenuTool, cvt_pen },
     { { (unichar_t *) N_("_Activate Spiro"), (GImage *) "toolsspiro.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Activate Spiro|No Shortcut"), NULL, NULL, CVMenuSpiroSet, cvt_spiro },
-    { { (unichar_t *) N_("_Curve"), (GImage *) "pointscurve.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("Curve Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_curve },
-    { { (unichar_t *) N_("_HVCurve"), (GImage *) "pointshvcurve.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("HVCurve Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_hvcurve },
-    { { (unichar_t *) N_("C_orner"), (GImage *) "pointscorner.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Corner Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_corner },
-    { { (unichar_t *) N_("_Tangent"), (GImage *) "pointstangent.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Tangent Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_tangent },
+    { { (unichar_t *) N_("_Curve"), (GImage *) "pointscurve.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("Curve|No Shortcut"), NULL, NULL, CVMenuTool, cvt_curve },
+    { { (unichar_t *) N_("_HVCurve"), (GImage *) "pointshvcurve.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("HVCurve|No Shortcut"), NULL, NULL, CVMenuTool, cvt_hvcurve },
+    { { (unichar_t *) N_("C_orner"), (GImage *) "pointscorner.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Corner|No Shortcut"), NULL, NULL, CVMenuTool, cvt_corner },
+    { { (unichar_t *) N_("_Tangent"), (GImage *) "pointstangent.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Tangent|No Shortcut"), NULL, NULL, CVMenuTool, cvt_tangent },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Sca_le"), (GImage *) "toolsscale.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Scale|No Shortcut"), NULL, NULL, CVMenuTool, cvt_scale },
     { { (unichar_t *) N_("Rotate"), (GImage *) "toolsrotate.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Rotate|No Shortcut"), NULL, NULL, CVMenuTool, cvt_rotate },
@@ -336,12 +336,12 @@ GMenuItem2 cvspirotoollist[] = {
     { { (unichar_t *) N_("_Ruler"), (GImage *) "toolsruler.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Ruler|No Shortcut"), NULL, NULL, CVMenuTool, cvt_ruler },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("De_activate Spiro"), (GImage *) "toolsspiro.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Activate Spiro|No Shortcut"), NULL, NULL, CVMenuSpiroSet, cvt_spiro },
-    { { (unichar_t *) N_("C_orner"), (GImage *) "pointscorner.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Corner Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_spirocorner },
+    { { (unichar_t *) N_("C_orner"), (GImage *) "pointscorner.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Corner|No Shortcut"), NULL, NULL, CVMenuTool, cvt_spirocorner },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("G_4"), (GImage *) "pointscurve.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("G4 Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_spirog4 },
-    { { (unichar_t *) N_("G_2"), (GImage *) "pointsG2curve.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("G2 Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_spirog2 },
-    { { (unichar_t *) N_("Lef_t"), (GImage *) "pointsspiroprev.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Left Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_spiroleft },
-    { { (unichar_t *) N_("Rig_ht"), (GImage *) "pointsspironext.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Right Tool|No Shortcut"), NULL, NULL, CVMenuTool, cvt_spiroright },
+    { { (unichar_t *) N_("G_4"), (GImage *) "pointscurve.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("G4|No Shortcut"), NULL, NULL, CVMenuTool, cvt_spirog4 },
+    { { (unichar_t *) N_("G_2"), (GImage *) "pointsG2curve.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("G2|No Shortcut"), NULL, NULL, CVMenuTool, cvt_spirog2 },
+    { { (unichar_t *) N_("Lef_t"), (GImage *) "pointsspiroprev.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Left|No Shortcut"), NULL, NULL, CVMenuTool, cvt_spiroleft },
+    { { (unichar_t *) N_("Rig_ht"), (GImage *) "pointsspironext.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Right|No Shortcut"), NULL, NULL, CVMenuTool, cvt_spiroright },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Sca_le"), (GImage *) "toolsscale.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Scale|No Shortcut"), NULL, NULL, CVMenuTool, cvt_scale },
     { { (unichar_t *) N_("Rotate"), (GImage *) "toolsrotate.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Rotate|No Shortcut"), NULL, NULL, CVMenuTool, cvt_rotate },

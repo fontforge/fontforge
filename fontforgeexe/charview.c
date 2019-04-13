@@ -11829,7 +11829,7 @@ static GMenuItem2 edlist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("U_nlink Reference"), (GImage *) "editunlink.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'U' }, H_("Unlink Reference|No Shortcut"), NULL, NULL, CVUnlinkRef, MID_UnlinkRef },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("Remo_ve Undoes..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Remove Undoes|No Shortcut"), NULL, NULL, CVRemoveUndoes, MID_RemoveUndoes },
+    { { (unichar_t *) N_("Remo_ve Undoes..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Remove Undoes...|No Shortcut"), NULL, NULL, CVRemoveUndoes, MID_RemoveUndoes },
     GMENUITEM2_EMPTY
 };
 
@@ -11865,8 +11865,8 @@ static GMenuItem2 spiroptlist[] = {
     { { (unichar_t *) N_("G4 _Curve"), (GImage *) "pointscurve.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("G4 Curve|No Shortcut"), NULL, NULL, CVMenuPointType, MID_SpiroG4 },
     { { (unichar_t *) N_("_G2 Curve"), (GImage *) "pointsG2curve.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("G2 Curve|No Shortcut"), NULL, NULL, CVMenuPointType, MID_SpiroG2 },
     { { (unichar_t *) N_("C_orner"), (GImage *) "pointscorner.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Corner|No Shortcut"), NULL, NULL, CVMenuPointType, MID_SpiroCorner },
-    { { (unichar_t *) N_("_Left Constraint"), (GImage *) "pointsspiroprev.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Prev Constraint|No Shortcut"), NULL, NULL, CVMenuPointType, MID_SpiroLeft },
-    { { (unichar_t *) N_("_Right Constraint"), (GImage *) "pointsspironext.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Next Constraint|No Shortcut"), NULL, NULL, CVMenuPointType, MID_SpiroRight },
+    { { (unichar_t *) N_("_Left Constraint"), (GImage *) "pointsspiroprev.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Left Constraint|No Shortcut"), NULL, NULL, CVMenuPointType, MID_SpiroLeft },
+    { { (unichar_t *) N_("_Right Constraint"), (GImage *) "pointsspironext.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Right Constraint|No Shortcut"), NULL, NULL, CVMenuPointType, MID_SpiroRight },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
 /* GT: Make this (selected) point the first point in the glyph */
     { { (unichar_t *) N_("_Make First"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Make First|No Shortcut"), NULL, NULL, CVMenuSpiroMakeFirst, MID_SpiroMakeFirst },
@@ -11976,14 +11976,14 @@ static GMenuItem2 eflist[] = {
     { { (unichar_t *) N_("Change _Weight..."), (GImage *) "styleschangeweight.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Change Weight...|No Shortcut"), NULL, NULL, CVMenuEmbolden, MID_Embolden },
     { { (unichar_t *) N_("_Italic..."), (GImage *) "stylesitalic.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Italic...|No Shortcut"), NULL, NULL, CVMenuItalic, MID_Italic },
     { { (unichar_t *) N_("Obli_que..."), (GImage *) "stylesoblique.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Oblique...|No Shortcut"), NULL, NULL, CVMenuOblique, 0 },
-    { { (unichar_t *) N_("_Condense/Extend..."), (GImage *) "stylesextendcondense.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Condense...|No Shortcut"), NULL, NULL, CVMenuCondense, MID_Condense },
-    { { (unichar_t *) N_("Change _X-Height..."), (GImage *) "styleschangexheight.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Change XHeight...|No Shortcut"), NULL, NULL, CVMenuChangeXHeight, MID_ChangeXHeight },
+    { { (unichar_t *) N_("_Condense/Extend..."), (GImage *) "stylesextendcondense.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Condense/Extend...|No Shortcut"), NULL, NULL, CVMenuCondense, MID_Condense },
+    { { (unichar_t *) N_("Change _X-Height..."), (GImage *) "styleschangexheight.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Change X-Height...|No Shortcut"), NULL, NULL, CVMenuChangeXHeight, MID_ChangeXHeight },
     { { (unichar_t *) N_("Change _Glyph..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Change Glyph...|No Shortcut"), NULL, NULL, CVMenuChangeGlyph, MID_ChangeGlyph },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("In_line..."), (GImage *) "stylesinline.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Inline|No Shortcut"), NULL, NULL, CVMenuInline, 0 },
-    { { (unichar_t *) N_("_Outline..."), (GImage *) "stylesoutline.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Outline|No Shortcut"), NULL, NULL, CVMenuOutline, 0 },
-    { { (unichar_t *) N_("S_hadow..."), (GImage *) "stylesshadow.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Shadow|No Shortcut"), NULL, NULL, CVMenuShadow, 0 },
-    { { (unichar_t *) N_("_Wireframe..."), (GImage *) "styleswireframe.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Wireframe|No Shortcut"), NULL, NULL, CVMenuWireframe, 0 },
+    { { (unichar_t *) N_("In_line..."), (GImage *) "stylesinline.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Inline...|No Shortcut"), NULL, NULL, CVMenuInline, 0 },
+    { { (unichar_t *) N_("_Outline..."), (GImage *) "stylesoutline.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Outline...|No Shortcut"), NULL, NULL, CVMenuOutline, 0 },
+    { { (unichar_t *) N_("S_hadow..."), (GImage *) "stylesshadow.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Shadow...|No Shortcut"), NULL, NULL, CVMenuShadow, 0 },
+    { { (unichar_t *) N_("_Wireframe..."), (GImage *) "styleswireframe.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Wireframe...|No Shortcut"), NULL, NULL, CVMenuWireframe, 0 },
     GMENUITEM2_EMPTY
 };
 
@@ -12040,14 +12040,14 @@ static GMenuItem2 ellist[] = {
     { { (unichar_t *) N_("Roun_d"), (GImage *) "elementround.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Round|No Shortcut"), rndlist, rndlistcheck, NULL, MID_Round },
     { { (unichar_t *) N_("_Order"), (GImage *) "elementorder.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Order|No Shortcut"), orlist, orlistcheck, NULL, 0 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("Check Self-Intersection"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Clockwise|No Shortcut"), NULL, NULL, CVMenuCheckSelf, MID_CheckSelf },
-    { { (unichar_t *) N_("Glyph Self-Intersects"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Clockwise|No Shortcut"), NULL, NULL, CVMenuGlyphSelfIntersects, MID_GlyphSelfIntersects },
+    { { (unichar_t *) N_("Check Self-Intersection"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Check Self-Intersection|No Shortcut"), NULL, NULL, CVMenuCheckSelf, MID_CheckSelf },
+    { { (unichar_t *) N_("Glyph Self-Intersects"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Glyph Self-Intersects|No Shortcut"), NULL, NULL, CVMenuGlyphSelfIntersects, MID_GlyphSelfIntersects },
     { { (unichar_t *) N_("Cloc_kwise"), (GImage *) "elementclockwise.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Clockwise|No Shortcut"), NULL, NULL, CVMenuDir, MID_Clockwise },
     { { (unichar_t *) N_("Cou_nter Clockwise"), (GImage *) "elementanticlock.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'n' }, H_("Counter Clockwise|No Shortcut"), NULL, NULL, CVMenuDir, MID_Counter },
     { { (unichar_t *) N_("_Correct Direction"), (GImage *) "elementcorrectdir.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'D' }, H_("Correct Direction|No Shortcut"), NULL, NULL, CVMenuCorrectDir, MID_Correct },
     { { (unichar_t *) N_("Reverse Direction"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'D' }, H_("Reverse Direction|No Shortcut"), NULL, NULL, CVMenuReverseDir, MID_ReverseDir },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("Insert Text Outlines..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'D' }, H_("Insert Text Outlines|No Shortcut"), NULL, NULL, CVMenuInsertText, MID_InsertText },
+    { { (unichar_t *) N_("Insert Text Outlines..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'D' }, H_("Insert Text Outlines...|No Shortcut"), NULL, NULL, CVMenuInsertText, MID_InsertText },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("B_uild"), (GImage *) "elementbuildaccent.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'u' }, H_("Build|No Shortcut"), balist, balistcheck, NULL, MID_BuildAccent },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
@@ -12064,7 +12064,7 @@ static GMenuItem2 htlist[] = {
     { { (unichar_t *) N_("Auto_Instr"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("AutoInstr|No Shortcut"), NULL, NULL, CVMenuNowakAutoInstr, MID_AutoInstr },
     { { (unichar_t *) N_("_Edit Instructions..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Edit Instructions...|No Shortcut"), NULL, NULL, CVMenuEditInstrs, MID_EditInstructions },
     { { (unichar_t *) N_("_Debug..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Debug...|No Shortcut"), NULL, NULL, CVMenuDebug, MID_Debug },
-    { { (unichar_t *) N_("S_uggest Deltas..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Suggest Deltas|No Shortcut"), NULL, NULL, CVMenuDeltas, MID_Deltas },
+    { { (unichar_t *) N_("S_uggest Deltas..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Suggest Deltas...|No Shortcut"), NULL, NULL, CVMenuDeltas, MID_Deltas },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("_Clear HStem"), (GImage *) "hintsclearhstems.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Clear HStem|No Shortcut"), NULL, NULL, CVMenuClearHints, MID_ClearHStem },
     { { (unichar_t *) N_("Clear _VStem"), (GImage *) "hintsclearvstems.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("Clear VStem|No Shortcut"), NULL, NULL, CVMenuClearHints, MID_ClearVStem },
@@ -12267,8 +12267,8 @@ static GMenuItem2 gflist[] = {
     { { (unichar_t *) N_("Show _Grid Fit (Live Update)..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Show Grid Fit (Live Update)...|No Shortcut"), NULL, NULL, CVMenuShowGridFitLiveUpdate, MID_ShowGridFitLiveUpdate },
     { { (unichar_t *) N_("_Bigger Point Size"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Bigger Point Size|No Shortcut"), NULL, NULL, CVMenuChangePointSize, MID_Bigger },
     { { (unichar_t *) N_("_Smaller Point Size"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Smaller Point Size|No Shortcut"), NULL, NULL, CVMenuChangePointSize, MID_Smaller },
-    { { (unichar_t *) N_("_Anti Alias"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'L' }, H_("Grid Fit Anti Alias|No Shortcut"), NULL, NULL, CVMenuChangePointSize, MID_GridFitAA },
-    { { (unichar_t *) N_("_Off"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Grid Fit Off|No Shortcut"), NULL, NULL, CVMenuChangePointSize, MID_GridFitOff },
+    { { (unichar_t *) N_("_Anti Alias"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'L' }, H_("Anti Alias|No Shortcut"), NULL, NULL, CVMenuChangePointSize, MID_GridFitAA },
+    { { (unichar_t *) N_("_Off"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Off|No Shortcut"), NULL, NULL, CVMenuChangePointSize, MID_GridFitOff },
     GMENUITEM2_EMPTY
 };
 
@@ -12297,13 +12297,13 @@ static GMenuItem2 swlist[] = {
 /* GT: You might not want to translate this, it's a keyword in PostScript font files */
     { { (unichar_t *) N_("_BlueValues"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("BlueValues|No Shortcut"), NULL, NULL, CVMenuShowHints, MID_ShowBlueValues },
 /* GT: You might not want to translate this, it's a keyword in PostScript font files */
-    { { (unichar_t *) N_("FamilyBl_ues"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Family Blues|No Shortcut"), NULL, NULL, CVMenuShowHints, MID_ShowFamilyBlues },
+    { { (unichar_t *) N_("FamilyBl_ues"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("FamilyBlues|No Shortcut"), NULL, NULL, CVMenuShowHints, MID_ShowFamilyBlues },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("_Anchors"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Anchors|No Shortcut"), NULL, NULL, CVMenuShowHints, MID_ShowAnchors },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Debug Raster Cha_nges"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Debug Raster Changes|No Shortcut"), NULL, NULL, CVMenuShowHints, MID_ShowDebugChanges },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("Hori_zontal Metric Lines"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Hori_zontal Metric Lines|No Shortcut"), NULL, NULL, CVMenuShowHints, MID_ShowHMetrics },
+    { { (unichar_t *) N_("Hori_zontal Metric Lines"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Horizontal Metric Lines|No Shortcut"), NULL, NULL, CVMenuShowHints, MID_ShowHMetrics },
     { { (unichar_t *) N_("Vertical _Metric Lines"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Vertical Metric Lines|No Shortcut"), NULL, NULL, CVMenuShowHints, MID_ShowVMetrics },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Snap Outlines to Pi_xel Grid"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Snap Outlines to Pixel Grid|No Shortcut"), NULL, NULL, CVMenuSnapOutlines, MID_SnapOutlines },
@@ -12488,7 +12488,7 @@ static GMenuItem2 mblist[] = {
     { { (unichar_t *) N_("_Tools"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Tools|No Shortcut"), NULL, cvpy_tllistcheck, NULL, 0 },
 #endif
 #ifdef NATIVE_CALLBACKS
-    { { (unichar_t *) N_("Tools_2"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Tools 2|No Shortcut"), NULL, cv_tl2listcheck, NULL, 0},
+    { { (unichar_t *) N_("Tools_2"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Tools2|No Shortcut"), NULL, cv_tl2listcheck, NULL, 0},
 #endif
     { { (unichar_t *) N_("H_ints"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Hints|No Shortcut"), htlist, htlistcheck, NULL, 0 },
     { { (unichar_t *) N_("_View"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("View|No Shortcut"), vwlist, vwlistcheck, NULL, 0 },
@@ -12509,7 +12509,7 @@ static GMenuItem2 mblist_nomm[] = {
     { { (unichar_t *) N_("_Tools"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Tools|No Shortcut"), NULL, cvpy_tllistcheck, NULL, 0 },
 #endif
 #ifdef NATIVE_CALLBACKS
-    { { (unichar_t *) N_("Tools_2"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Tools 2|No Shortcut"), NULL, cv_tl2listcheck, NULL, 0},
+    { { (unichar_t *) N_("Tools_2"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Tools2|No Shortcut"), NULL, cv_tl2listcheck, NULL, 0},
 #endif
     { { (unichar_t *) N_("H_ints"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Hints|No Shortcut"), htlist, htlistcheck, NULL, 0 },
     { { (unichar_t *) N_("_View"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("View|No Shortcut"), vwlist, vwlistcheck, NULL, 0 },

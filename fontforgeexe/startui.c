@@ -1439,7 +1439,7 @@ exit( 0 );
     FontViewFinishNonStatic();
 
     ClearImageCache(); // This frees the contents of imagecache.
-    hotkeysSave();
+    // hotkeysSave();
     LastFonts_Save();
 
 #ifndef _NO_LIBUNICODENAMES
