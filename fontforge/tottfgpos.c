@@ -36,6 +36,7 @@
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "tottf.h"
+#include "mathconstants.h"
 #include <utype.h>
 #include <ustring.h>
 
@@ -4030,12 +4031,17 @@ static void ttf_math_dump_glyphvariant(FILE *mathf,struct alltabs *at, SplineFon
 
 void otf_dump_math(struct alltabs *at, SplineFont *sf) {
     FILE *mathf;
+    struct MATH *math;
     int i;
     uint32 devtab_offsets[60], const_start, gi_start, v_start;
     int bits = MathBits(at,sf);
 
-    if ( sf->MATH==NULL )
-return;
+    if ( sf->MATH!=NULL )
+	math = sf->MATH;
+    else if ( bits!=0 )
+	math = MathTableNew(sf);
+    else
+	return;
 
     at->math = mathf = tmpfile();
 
@@ -4048,8 +4054,8 @@ return;
     memset(devtab_offsets,0,sizeof(devtab_offsets));
     const_start = ftell(mathf);
     for ( i=0; math_constants_descriptor[i].script_name!=NULL; ++i ) {
-	int16 *pos = (int16 *) (((char *) (sf->MATH)) + math_constants_descriptor[i].offset );
-	if ( pos == (int16 *) &sf->MATH->MinConnectorOverlap )
+	int16 *pos = (int16 *) (((char *) math) + math_constants_descriptor[i].offset );
+	if ( pos == (int16 *) &math->MinConnectorOverlap )
     continue;		/* Actually lives in the Variant table, not here */
 	putshort(mathf, *pos);
 	if ( math_constants_descriptor[i].devtab_offset != -1 ) {
@@ -4058,9 +4064,9 @@ return;
 	}
     }
     for ( i=0; math_constants_descriptor[i].script_name!=NULL; ++i ) {
-	int16 *pos = (int16 *) (((char *) (sf->MATH)) + math_constants_descriptor[i].offset );
-	DeviceTable **devtab = (DeviceTable **) (((char *) (sf->MATH)) + math_constants_descriptor[i].devtab_offset );
-	if ( pos == (int16 *) &sf->MATH->MinConnectorOverlap )
+	int16 *pos = (int16 *) (((char *) math) + math_constants_descriptor[i].offset );
+	DeviceTable **devtab = (DeviceTable **) (((char *) math) + math_constants_descriptor[i].devtab_offset );
+	if ( pos == (int16 *) &math->MinConnectorOverlap )
     continue;		/* Actually lives in the Variant table, not here */
 	if ( math_constants_descriptor[i].devtab_offset >= 0 && *devtab!=NULL ) {
 	    uint32 here = ftell(mathf);
@@ -4135,6 +4141,9 @@ return;
 	putc('\0',mathf);
     if ( ftell(mathf)&2 )
 	putshort(mathf,0);
+
+    if ( sf->MATH==NULL )
+	free(math);
 }
 
 struct taglist {
