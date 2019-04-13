@@ -1694,28 +1694,26 @@ return( true );
 	i = (event->u.mouse.y-g->inner.y)/gt->fh + gt->loff_top;
 	if ( i<0 ) i = 0;
 	if ( !gt->multi_line ) i = 0;
-	if ( i>=gt->lcnt )
+	if ( i>=gt->lcnt ) {
 	    end = gt->text+curlen;
-	else
+	    i = gt->lcnt - 1;
+	    if (i < 0) i = 0; // Can lcnt ever be 0?
+	} else
 	    end = GTextFieldGetPtFromPos(gt,i,event->u.mouse.x);
     }
 
     if ( event->type == et_mousedown ) {
+	int end8;
 	if ( event->u.mouse.button==3 &&
 		GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y)) {
 	    GTFPopupMenu(gt,event);
 return( true );
 	}
 
-	if ( i>=gt->lcnt )
-	    end1 = end2 = end;
-	else {
-	    int end8;
-	    ll = gt->lines8[i+1]==-1?-1:gt->lines8[i+1]-gt->lines8[i]-1;
-	    GDrawLayoutInit(gt->g.base,gt->utf8_text+gt->lines8[i],ll,NULL);
-	    end8 = GDrawLayoutXYToIndex(gt->g.base,event->u.mouse.x-g->inner.x+gt->xoff_left,0);
-	    end1 = end2 = gt->text + gt->lines[i] + utf82u_index(end8,gt->utf8_text+gt->lines8[i]);
-	}
+	ll = gt->lines8[i+1]==-1?-1:gt->lines8[i+1]-gt->lines8[i]-1;
+	GDrawLayoutInit(gt->g.base,gt->utf8_text+gt->lines8[i],ll,NULL);
+	end8 = GDrawLayoutXYToIndex(gt->g.base,event->u.mouse.x-g->inner.x+gt->xoff_left,0);
+	end1 = end2 = gt->text + gt->lines[i] + utf82u_index(end8,gt->utf8_text+gt->lines8[i]);
 
 	gt->wordsel = gt->linesel = false;
 	if ( event->u.mouse.button==1 && event->u.mouse.clicks>=3 ) {
