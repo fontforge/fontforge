@@ -34,7 +34,7 @@ AC_PREREQ([2.68])
 
 #--------------------------------------------------------------------------
 # PackageTimestamp version
-m4_define([fontforge_package_stamp], [20190317])
+m4_define([fontforge_package_stamp], [20190413])
 # reminder: When updating FontForge, also take note of desktop/* dates and
 # startnoui.c, startui.c
 #--------------------------------------------------------------------------
