@@ -68,9 +68,7 @@
 #undef extended			/* used in xlink.h */
 #include <libxml/tree.h>
 
-#ifdef FF_UTHASH_GLIF_NAMES
 #include "glif_name_hash.h"
-#endif
 
 /* The UFO (Unified Font Object) format ( http://unifiedfontobject.org/ ) */
 /* is a directory containing a bunch of (mac style) property lists and another*/
@@ -219,11 +217,7 @@ char * ufo_name_mangle(const char * input, const char * prefix, const char * suf
 }
 
 char * ufo_name_number(
-#ifdef FF_UTHASH_GLIF_NAMES
 struct glif_name_index * glif_name_hash,
-#else
-void * glif_name_hash,
-#endif
 int index, const char * input, const char * prefix, const char * suffix, int flags) {
         // This does not append the prefix or the suffix.
         // The specification deals with name collisions by appending a 15-digit decimal number to the name.
@@ -239,7 +233,7 @@ int index, const char * input, const char * prefix, const char * suffix, int fla
         }
         char * name_base = same_case(input); // This is in case we need a number added.
         long int name_number = 0;
-#ifdef FF_UTHASH_GLIF_NAMES
+
         if (glif_name_hash != NULL) {
           if (strlen(input) > (255 - 15 - strlen(prefix) - strlen(suffix))) {
             // If the numbered name base is too long, we crop it.
@@ -262,7 +256,7 @@ int index, const char * input, const char * prefix, const char * suffix, int fla
           // Insert the result into the hash table.
           glif_name_track_new(glif_name_hash, index, name_numbered);
         }
-#endif
+
         // Now we want the correct capitalization.
         free(name_numbered); name_numbered = NULL;
         if (name_number > 0) {
@@ -1488,22 +1482,14 @@ void ClassKerningAddExtensions(struct kernclass * target) {
 }
 
 void UFONameKerningClasses(SplineFont *sf, int version) {
-#ifdef FF_UTHASH_GLIF_NAMES
-    struct glif_name_index _class_name_hash;
-    struct glif_name_index * class_name_hash = &_class_name_hash; // Open the hash table.
-    memset(class_name_hash, 0, sizeof(struct glif_name_index));
-#else
-    void * class_name_hash = NULL;
-#endif
+    struct glif_name_index * class_name_hash = glif_name_index_new(); // Open the hash table.
     struct kernclass *current_kernclass;
     int isv;
     int isr;
     int i;
     int absolute_index = 0; // This gives us a unique index for each kerning class.
     // First we catch the existing names.
-#ifdef FF_UTHASH_GLIF_NAMES
     HashKerningClassNamesCaps(sf, class_name_hash); // Note that we use the all-caps hasher for compatibility with the official naming scheme and the following code.
-#endif
     // Next we create names for the unnamed. Note that we currently avoid naming anything that might go into the feature file (since that handler currently creates its own names).
     absolute_index = 0;
     for (isv = 0; isv < 2; isv++)
@@ -1559,9 +1545,7 @@ void UFONameKerningClasses(SplineFont *sf, int version) {
       }
       absolute_index +=i;
     }
-#ifdef FF_UTHASH_GLIF_NAMES
-    glif_name_hash_destroy(class_name_hash); // Close the hash table.
-#endif
+    glif_name_index_destroy(class_name_hash); // Close the hash table.
 }
 
 static int UFOOutputGroups(const char *basedir, SplineFont *sf, int version) {
@@ -1586,14 +1570,8 @@ static int UFOOutputGroups(const char *basedir, SplineFont *sf, int version) {
     int kerning_class_count = CountKerningClasses(sf);
     char *output_done = kerning_class_count ? calloc(kerning_class_count, sizeof(char)) : NULL;
 
-#ifdef FF_UTHASH_GLIF_NAMES
-    struct glif_name_index _class_name_hash;
-    struct glif_name_index * class_name_hash = &_class_name_hash; // Open the hash table.
-    memset(class_name_hash, 0, sizeof(struct glif_name_index));
+    struct glif_name_index * class_name_hash = glif_name_index_new(); // Open the hash table.
     HashKerningClassNames(sf, class_name_hash);
-#else
-    void * class_name_hash = NULL;
-#endif
     struct ff_glyphclasses *current_group;
     for (current_group = sf->groups; current_group != NULL; current_group = current_group->next) {
       if (current_group->classname != NULL) {
@@ -1691,9 +1669,8 @@ static int UFOOutputGroups(const char *basedir, SplineFont *sf, int version) {
       }
     }
 
-#ifdef FF_UTHASH_GLIF_NAMES
-    glif_name_hash_destroy(class_name_hash); // Close the hash table.
-#endif
+    glif_name_index_destroy(class_name_hash); // Close the hash table.
+
     if (output_done != NULL) { free(output_done); output_done = NULL; }
 
     char *fname = buildname(basedir, "groups.plist"); // Build the file name.
@@ -1712,66 +1689,6 @@ static void KerningPListAddGlyph(xmlNodePtr parent, const char *key, const KernP
       kp = kp->next;
     }
 }
-
-#ifndef FF_UTHASH_GLIF_NAMES
-static int UFOOutputKerning(const char *basedir, const SplineFont *sf) {
-    SplineChar *sc;
-    int i;
-    int has_content = 0;
-
-    if (!(sf->preferred_kerning & 1)) return true; // This goes into the feature file by default now.
-
-    xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
-    xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
-    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (dictnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Add the dict.
-
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) && sc->kerns!=NULL ) {
-	KerningPListAddGlyph(dictnode,sc->name,sc->kerns);
-	has_content = 1;
-    }
-
-    char *fname = buildname(basedir, "kerning.plist"); // Build the file name.
-    if (has_content) xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document if it's not empty.
-    free(fname); fname = NULL;
-    xmlFreeDoc(plistdoc); // Free the memory.
-    xmlCleanupParser();
-    return true;
-}
-
-static int UFOOutputVKerning(const char *basedir, const SplineFont *sf) {
-    SplineChar *sc;
-    int i;
-    int has_content = 0;
-
-    if (!(sf->preferred_kerning & 1)) return true; // This goes into the feature file by default now.
-
-    xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
-    xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
-    xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (dictnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Add the dict.
-
-    for ( i=sf->glyphcnt-1; i>=0; --i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) && sc->vkerns!=NULL ) break;
-    if ( i<0 ) return( true );
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL && sc->vkerns!=NULL ) {
-	KerningPListAddGlyph(dictnode,sc->name,sc->vkerns);
-	has_content = 1;
-    }
-
-    char *fname = buildname(basedir, "vkerning.plist"); // Build the file name.
-    if (has_content) xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document if it's not empty.
-    free(fname); fname = NULL;
-    xmlFreeDoc(plistdoc); // Free the memory.
-    xmlCleanupParser();
-    return true;
-}
-
-static int UFOOutputKerning2(const char *basedir, const SplineFont *sf, int isv, int version) {
-  if (isv) return UFOOutputVKerning(basedir, sf);
-  else return UFOOutputKerning(basedir, sf);
-}
-
-#else // FF_UTHASH_GLIF_NAMES
-// New approach.
-// We will build a tree.
 
 struct ufo_kerning_tree_left;
 struct ufo_kerning_tree_right;
@@ -1792,9 +1709,8 @@ struct ufo_kerning_tree_session {
   struct ufo_kerning_tree_left *first_left;
   struct ufo_kerning_tree_left *last_left;
   int left_group_count;
-  struct glif_name_index _left_group_name_hash;
   int class_pair_count;
-  struct glif_name_index _class_pair_hash;
+  struct glif_name_index *class_pair_hash;
 };
 
 void ufo_kerning_tree_destroy_contents(struct ufo_kerning_tree_session *session) {
@@ -1812,16 +1728,15 @@ void ufo_kerning_tree_destroy_contents(struct ufo_kerning_tree_session *session)
     if (current_left->name != NULL) free(current_left->name);
     free(current_left);
   }
+  glif_name_index_destroy(session->class_pair_hash);
   memset(session, 0, sizeof(struct ufo_kerning_tree_session));
 }
 
 int ufo_kerning_tree_attempt_insert(struct ufo_kerning_tree_session *session, const char *left_name, const char *right_name, int value) {
-  struct glif_name_index *left_group_name_hash = &(session->_left_group_name_hash);
-  struct glif_name_index *class_pair_hash = &(session->_class_pair_hash);
   char *tmppairname = smprintf("%s %s", left_name, right_name);
   struct ufo_kerning_tree_left *first_left = NULL;
   struct ufo_kerning_tree_left *last_left = NULL;
-  if (!glif_name_search_glif_name(class_pair_hash, tmppairname)) {
+  if (!glif_name_search_glif_name(session->class_pair_hash, tmppairname)) {
     struct ufo_kerning_tree_left *current_left;
     // We look for a tree node matching the left side of the pair.
     for (current_left = session->first_left; current_left != NULL &&
@@ -1845,7 +1760,7 @@ int ufo_kerning_tree_attempt_insert(struct ufo_kerning_tree_session *session, co
       else current_left->first_right = current_right;
       current_left->last_right = current_right;
       char *newpairname = smprintf("%s %s", left_name, right_name);
-      glif_name_track_new(class_pair_hash, session->class_pair_count++, newpairname);
+      glif_name_track_new(session->class_pair_hash, session->class_pair_count++, newpairname);
       free(newpairname); newpairname = NULL;
     }
   }
@@ -1882,10 +1797,9 @@ static int UFOOutputKerning2(const char *basedir, SplineFont *sf, int isv, int v
     struct ufo_kerning_tree_session _session;
     memset(&_session, 0, sizeof(struct ufo_kerning_tree_session));
     struct ufo_kerning_tree_session *session = &_session;
+    session->class_pair_hash = glif_name_index_new(); // Open the hash table.
 
-    struct glif_name_index _class_name_hash;
-    struct glif_name_index * class_name_hash = &_class_name_hash; // Open the hash table.
-    memset(class_name_hash, 0, sizeof(struct glif_name_index));
+    struct glif_name_index * class_name_hash = glif_name_index_new(); // Open the hash table.
     HashKerningClassNames(sf, class_name_hash);
 
     // We process the raw kerning list first in order to give preference to the original ordering.
@@ -2005,7 +1919,7 @@ static int UFOOutputKerning2(const char *basedir, SplineFont *sf, int isv, int v
       }
     }
 
-    glif_name_hash_destroy(class_name_hash); // Close the hash table.
+    glif_name_index_destroy(class_name_hash); // Close the hash table.
     ufo_kerning_tree_destroy_contents(session);
 
     if (output_done != NULL) { free(output_done); output_done = NULL; }
@@ -2017,8 +1931,6 @@ static int UFOOutputKerning2(const char *basedir, SplineFont *sf, int isv, int v
     xmlCleanupParser();
     return true;
 }
-
-#endif // FF_UTHASH_GLIF_NAMES
 
 static int UFOOutputLib(const char *basedir, const SplineFont *sf, int version) {
 #ifndef _NO_PYTHON
@@ -2120,13 +2032,8 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff, in
         return false;
     }
 
-#ifdef FF_UTHASH_GLIF_NAMES
-    struct glif_name_index _glif_name_hash;
-    struct glif_name_index * glif_name_hash = &_glif_name_hash; // Open the hash table.
-    memset(glif_name_hash, 0, sizeof(struct glif_name_index));
-#else
-    void * glif_name_hash = NULL;
-#endif
+    struct glif_name_index * glif_name_hash = glif_name_index_new();
+
     // First we generate glif names.
     for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) || SCHasData(sf->glyphs[i]) ) {
         char * startname = NULL;
@@ -2149,21 +2056,12 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff, in
 	}
 	numberedname = NULL;
     }
-#ifdef FF_UTHASH_GLIF_NAMES
-    glif_name_hash_destroy(glif_name_hash); // Close the hash table.
-#endif
+    glif_name_index_destroy(glif_name_hash); // Close the hash table.
     
     if (all_layers) {
-#ifdef FF_UTHASH_GLIF_NAMES
-      struct glif_name_index _layer_name_hash;
-      struct glif_name_index * layer_name_hash = &_layer_name_hash; // Open the hash table.
-      memset(layer_name_hash, 0, sizeof(struct glif_name_index));
-      struct glif_name_index _layer_path_hash;
-      struct glif_name_index * layer_path_hash = &_layer_path_hash; // Open the hash table.
-      memset(layer_path_hash, 0, sizeof(struct glif_name_index));
-#else
-      void * layer_name_hash = NULL;
-#endif
+      struct glif_name_index * layer_name_hash = glif_name_index_new(); // Open the hash table.
+      struct glif_name_index * layer_path_hash = glif_name_index_new(); // Open the hash table.
+
       switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
       xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
       xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
@@ -2220,10 +2118,8 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff, in
       free(fname); fname = NULL;
       xmlFreeDoc(plistdoc); // Free the memory.
       xmlCleanupParser();
-#ifdef FF_UTHASH_GLIF_NAMES
-      glif_name_hash_destroy(layer_name_hash); // Close the hash table.
-      glif_name_hash_destroy(layer_path_hash); // Close the hash table.
-#endif
+      glif_name_index_destroy(layer_name_hash); // Close the hash table.
+      glif_name_index_destroy(layer_path_hash); // Close the hash table.
     } else {
         glyphdir = buildname(basedir,"glyphs");
         WriteUFOLayer(glyphdir, sf, layer, version);
@@ -3354,13 +3250,9 @@ static struct ff_glyphclasses *GlyphGroupDeduplicate(struct ff_glyphclasses *gro
   // This removes internal duplicates from the specified group and also, if desired, the groups duplicating entities already named as kerning classes.
   // It takes the list head as its argument and returns the new list head (which may be the same unless the first item duplicates a kerning class).
   int temp_index = 0;
-#ifdef FF_UTHASH_GLIF_NAMES
-  struct glif_name_index _group_name_hash;
-  struct glif_name_index * group_name_hash = &_group_name_hash; // Open the group hash table.
-  memset(group_name_hash, 0, sizeof(struct glif_name_index));
-  struct glif_name_index _class_name_hash;
-  struct glif_name_index * class_name_hash = &_class_name_hash; // Open the class hash table.
-  memset(class_name_hash, 0, sizeof(struct glif_name_index));
+  struct glif_name_index * group_name_hash = glif_name_index_new(); // Open the group hash table.
+  struct glif_name_index * class_name_hash = glif_name_index_new(); // Open the class hash table.
+
   if (check_kerns && sf) HashKerningClassNames(sf, class_name_hash);
   struct ff_glyphclasses *group_current = group_base;
   struct ff_glyphclasses *group_prev = NULL;
@@ -3378,9 +3270,9 @@ static struct ff_glyphclasses *GlyphGroupDeduplicate(struct ff_glyphclasses *gro
       group_prev = group_current; group_current = group_current->next;
     }
   }
-  glif_name_hash_destroy(class_name_hash);
-  glif_name_hash_destroy(group_name_hash);
-#endif
+  glif_name_index_destroy(class_name_hash);
+  glif_name_index_destroy(group_name_hash);
+
   return group_base;
 }
 
@@ -3409,14 +3301,7 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
   // This silently ignores already extant groups for now but avoids duplicates unless group_base has internal duplication.
   int left_count = 0, right_count = 0, above_count = 0, below_count = 0;
   int left_start = 0, right_start = 0, above_start = 0, below_start = 0;
-#ifdef FF_UTHASH_GLIF_NAMES
-    struct glif_name_index _class_name_hash;
-    struct glif_name_index * class_name_hash = &_class_name_hash; // Open the hash table.
-    memset(class_name_hash, 0, sizeof(struct glif_name_index));
-    HashKerningClassNames(sf, class_name_hash);
-#else
-    void * class_name_hash = NULL;
-#endif
+
   // It is very difficult to create speculative indices for the unmerged group members during the size calculation.
   // So we expect that the incoming group list has no duplicates (as after a run through GlyphGroupDeduplicate).
   struct ff_glyphclasses *current_group;
@@ -3866,22 +3751,16 @@ return;
     }
 
     // We want a hash table of group names for reference.
-    struct glif_name_index _group_name_hash;
-    struct glif_name_index * group_name_hash = &_group_name_hash; // Open the group hash table.
-    memset(group_name_hash, 0, sizeof(struct glif_name_index));
+    struct glif_name_index * group_name_hash = glif_name_index_new(); // Open the group hash table.
     struct ff_glyphclasses *current_group = NULL;
     int current_group_index = 0;
     for (current_group = sf->groups, current_group_index = 0; current_group != NULL; current_group = current_group->next, current_group_index++)
       if (current_group->classname != NULL) glif_name_track_new(group_name_hash, current_group_index, current_group->classname);
     // We also want a hash table of kerning class names. (We'll probably standardize on one approach or the other later.)
-    struct glif_name_index _class_name_hash;
-    struct glif_name_index * class_name_hash = &_class_name_hash; // Open the group hash table.
-    memset(class_name_hash, 0, sizeof(struct glif_name_index));
+    struct glif_name_index * class_name_hash = glif_name_index_new(); // Open the group hash table.
     HashKerningClassNames(sf, class_name_hash);
     // We also want a hash table of the lookup pairs.
-    struct glif_name_index _class_name_pair_hash;
-    struct glif_name_index * class_name_pair_hash = &_class_name_pair_hash; // Open the group hash table.
-    memset(class_name_pair_hash, 0, sizeof(struct glif_name_index));
+    struct glif_name_index * class_name_pair_hash = glif_name_index_new(); // Open the group hash table.
     // We need to track the head of the group kerns.
     struct ff_rawoffsets *current_groupkern = NULL;
     int current_groupkern_index = 0;
@@ -3993,9 +3872,9 @@ return;
 	    }
 	}
     }
-    glif_name_hash_destroy(group_name_hash);
-    glif_name_hash_destroy(class_name_hash);
-    glif_name_hash_destroy(class_name_pair_hash);
+    glif_name_index_destroy(group_name_hash);
+    glif_name_index_destroy(class_name_hash);
+    glif_name_index_destroy(class_name_pair_hash);
     xmlFreeDoc(doc);
 }
 

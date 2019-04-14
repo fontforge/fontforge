@@ -55,9 +55,7 @@
 #include <locale.h>
 #include "sfd1.h" // This has the extended SplineFont type SplineFont1 for old file versions.
 #include <ffglib.h>
-#ifdef FF_UTHASH_GLIF_NAMES
-# include "glif_name_hash.h"
-#endif
+#include "glif_name_hash.h"
 
 /*#define DEBUG 1*/
 
@@ -6799,7 +6797,6 @@ char * delimit_null(const char * input, char delimiter) {
   return output;
 }
 
-#ifdef FF_UTHASH_GLIF_NAMES
 int HashKerningClassNamesFlex(SplineFont *sf, struct glif_name_index * class_name_hash, int capitalize) {
     struct kernclass *current_kernclass;
     int isv;
@@ -6832,7 +6829,6 @@ int HashKerningClassNames(SplineFont *sf, struct glif_name_index * class_name_ha
 int HashKerningClassNamesCaps(SplineFont *sf, struct glif_name_index * class_name_hash) {
   return HashKerningClassNamesFlex(sf, class_name_hash, 1);
 }
-#endif
 
 int KerningClassSeekByAbsoluteIndex(const struct splinefont *sf, int seek_index, struct kernclass **okc, int *oisv, int *oisr, int *ooffset) {
     int current = 0;
