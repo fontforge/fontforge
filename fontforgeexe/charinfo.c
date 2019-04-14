@@ -3659,27 +3659,14 @@ static int CI_DefLCChange(GGadget *g, GEvent *e) {
 return( true );
 }
 
-struct ParsedDecomp_s {
-    unichar_t* decomp;
-    bool truncated;
-};
-
-typedef struct ParsedDecomp_s ParsedDecomp;
-
 // Turn the user's entered decomposition into the format returned by SFGetAlternate
-ParsedDecomp CI_ParseUserDecomposition(char* inp) {
+unichar_t* CI_ParseUserDecomposition(char* inp) {
     unsigned long len = strlen(inp);
     char* end;
     unichar_t* decomp = malloc((len+1)*sizeof(unichar_t));
-    ParsedDecomp out;
-    out.truncated = false;
 
     int j = 0;
     for (unsigned long i = strtoul(inp, &end, 16); inp != end; i = strtoul(inp, &end, 16)) {
-        if (j > 4) {
-            out.truncated = true;
-            break; // limit to five characters
-        }
         inp = end;
         decomp[j] = i;
         j++;
@@ -3687,15 +3674,12 @@ ParsedDecomp CI_ParseUserDecomposition(char* inp) {
 
     decomp[j] = '\0';
 
-    out.decomp = decomp;
-
-    return out;
+    return decomp;
 }
 
-char* CI_CreateInterpretedAsLabel(unichar_t* inp, bool truncated) {
+char* CI_CreateInterpretedAsLabel(unichar_t* inp) {
     char* lblprefix = _("Interpreted as: ");
     char* lblerror = _("Error: wrong format");
-    char* lbltrunc = _("(truncated)");
     char* lblbuf;
 
     // If I don't validate it, the string will become "(null)"
@@ -3710,12 +3694,8 @@ char* CI_CreateInterpretedAsLabel(unichar_t* inp, bool truncated) {
 
     if (inp != NULL && inp[0] != 0 && valid) {
         char* inp_l = u2utf8_copy(inp);
-        lblbuf = malloc(strlen(lblprefix)+strlen(lbltrunc)+strlen(inp_l)+1);
-        if (truncated) {
-            sprintf(lblbuf, "%s%s %s", lblprefix, inp_l);
-        } else {
-            sprintf(lblbuf, "%s%s", lblprefix, inp_l);
-        }
+        lblbuf = malloc(strlen(lblprefix)+strlen(inp_l)+1);
+        sprintf(lblbuf, "%s%s", lblprefix, inp_l);
         free(inp_l);
     } else {
         lblbuf = copy(lblerror);
@@ -3735,9 +3715,9 @@ static int CI_CmpUseNonDefault(GGadget *g, GEvent *e) {
         ci->sc->user_decomp = NULL;
         GGadgetSetTitle8(coim, "");
     } else {
-        ParsedDecomp ud_s = CI_ParseUserDecomposition(GGadgetGetTitle8(cotf));
-        ci->sc->user_decomp = ud_s.decomp;
-        char* lbl = CI_CreateInterpretedAsLabel(ci->sc->user_decomp, ud_s.truncated);
+        unichar_t* ud = CI_ParseUserDecomposition(GGadgetGetTitle8(cotf));
+        ci->sc->user_decomp = ud;
+        char* lbl = CI_CreateInterpretedAsLabel(ci->sc->user_decomp);
         GGadgetSetTitle8(coim, lbl);
         free(lbl);
     }
@@ -3892,6 +3872,18 @@ static int CI_PickColor(GGadget *g, GEvent *e) {
 return( true );
 }
 
+int BytesNeeded(unichar_t in) {
+    if (in <= 0xff) {
+        return 1;
+    } else if (in <= 0xffff) {
+        return 2;
+    } else if (in <= 0xffffff) {
+        return 3;
+    } else {
+        return 4;
+    }
+}
+
 static void CIFillup(CharInfo *ci) {
     SplineChar *sc = ci->cachedsc!=NULL ? ci->cachedsc : ci->sc;
     SplineFont *sf = sc->parent;
@@ -3899,7 +3891,7 @@ static void CIFillup(CharInfo *ci) {
     char buffer[400];
     char buf[200];
     const unichar_t *bits, *bits2;
-    int *d_ptr = sc->user_decomp;
+    const unichar_t *d_ptr = sc->user_decomp;
     int i,j,gid, isv;
     struct matrix_data *mds[pst_max];
     int cnts[pst_max];
@@ -4038,32 +4030,44 @@ static void CIFillup(CharInfo *ci) {
 	upt[-1] = '\0';
 	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Components),temp);
 	free(temp);
-
     }
+    if (bits2 == NULL) {
+        bits2 = (unichar_t*) L"\0";
+    } 
 
     // i.e. five six hex digit long codepoints with spaces after them, + '\0'
-    char* codepoints_as_hex = malloc((6 * 5) + 5 + 1);
-    codepoints_as_hex[0] = '\0';
+    int d_length;
     if (sc->user_decomp != NULL) {
-        while ( *d_ptr!='\0' ) {
-            sprintf(buffer, "%04x ", *d_ptr);
-            codepoints_as_hex = strcat(codepoints_as_hex, buffer);
-            ++d_ptr;
-        }
+        d_length = u_strlen(sc->user_decomp);
     } else {
-        while ( bits2 != NULL && *bits2!='\0' ) {
-            if (sc->user_decomp == NULL) {
-                sprintf(buffer, "%04x ", *bits2);
-                codepoints_as_hex = strcat(codepoints_as_hex, buffer);
-            }
-            ++bits2;
+        d_length = u_strlen(bits2);
+    }
+
+    const int MAX_UNICHAR_T_BYTES = 4;
+    char* codepoints_as_hex = malloc(((2 * MAX_UNICHAR_T_BYTES) * d_length) + d_length + 1);
+    codepoints_as_hex[0] = '\0';
+
+    if (d_ptr == NULL) d_ptr = bits2;
+
+    while (d_ptr != NULL && *d_ptr != '\0') {
+        switch (BytesNeeded(*d_ptr)) {
+            case 1:
+                sprintf(buffer, "%02x ", *d_ptr); break;
+            case 2:
+                sprintf(buffer, "%04x ", *d_ptr); break;
+            case 3:
+                sprintf(buffer, "%06x ", *d_ptr); break;
+            default:
+                sprintf(buffer, "%08x ", *d_ptr);
         }
+        codepoints_as_hex = strcat(codepoints_as_hex, buffer);
+        ++d_ptr;
     }
 
     GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_ComponentTextField),codepoints_as_hex);
 
     if (!GGadgetIsEnabled(codcb)) GGadgetSetEnabled(codcb, true);
-    char* lbl = CI_CreateInterpretedAsLabel(sc->user_decomp, false);
+    char* lbl = CI_CreateInterpretedAsLabel(sc->user_decomp);
     if (sc->user_decomp != NULL) {
         GGadgetSetChecked(codcb, false);
         GGadgetSetEnabled(cotf, true);

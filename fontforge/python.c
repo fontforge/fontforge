@@ -7257,7 +7257,6 @@ static PyObject *PyFF_Glyph_get_user_decomp(PyFF_Glyph *self, void *UNUSED(closu
 }
 
 static int PyFF_Glyph_set_user_decomp(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
-    char *newv;
     PyObject *temp;
     unichar_t *udbuf;
 
@@ -7283,12 +7282,6 @@ static int PyFF_Glyph_set_user_decomp(PyFF_Glyph *self,PyObject *value, void *UN
         if (self->sc->user_decomp != NULL) { free(self->sc->user_decomp); }
         self->sc->user_decomp = NULL;
         return 0;
-    }
-
-
-    if (u_strlen(udbuf) > 5) {
-         PyErr_WarnEx(PyExc_ValueError, "It doesn't make sense for the decomposition to be this long; truncated to five characters", 1);
-         udbuf[5] = '\0';
     }
 
     if (self->sc->user_decomp != NULL) { free(self->sc->user_decomp); }
