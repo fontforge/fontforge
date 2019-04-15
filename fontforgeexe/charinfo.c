@@ -4031,14 +4031,10 @@ static void CIFillup(CharInfo *ci) {
 	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Components),temp);
 	free(temp);
     }
+
     if (d_ptr == NULL) d_ptr = bits2;
 
     int d_length = d_ptr ? u_strlen(d_ptr) : 0;
-    if (sc->user_decomp != NULL) {
-        d_length = u_strlen(sc->user_decomp);
-    } else {
-        d_length = u_strlen(bits2);
-    }
 
     const int MAX_UNICHAR_T_BYTES = 4;
     char* codepoints_as_hex = malloc(((2 * MAX_UNICHAR_T_BYTES) * d_length) + d_length + 1);
