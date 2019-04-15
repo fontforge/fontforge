@@ -3298,7 +3298,6 @@ static uint32 script_from_glyph_list(SplineFont *sf, const char *glyph_names) {
 #define GROUP_NAME_RIGHT 8 // Otherwise left (or above).
 
 static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_base) {
-  // This silently ignores already extant groups for now but avoids duplicates unless group_base has internal duplication.
   int left_count = 0, right_count = 0, above_count = 0, below_count = 0;
   int left_start = 0, right_start = 0, above_start = 0, below_start = 0;
 
