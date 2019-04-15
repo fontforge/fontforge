@@ -30,6 +30,7 @@
 #include "bvedit.h"
 #include "encoding.h"
 #include "fontforge.h"
+#include <gfile.h>
 #include "mem.h"
 #include "splinefill.h"
 #include "splineutil.h"
@@ -800,7 +801,7 @@ int FONFontDump(char *filename,SplineFont *sf, int32 *sizes,int resol,
 	    free(fntarray);
 return( false );
 	}
-	fntarray[i] = tmpfile();
+	fntarray[i] = GFileTmpfile();
 	if ( !_FntFontDump(fntarray[i],bdf,map,resol) ) {
 	    for ( j=0; j<=i; ++j )
 		fclose(fntarray[j]);

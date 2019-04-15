@@ -31,6 +31,7 @@
 #include "encoding.h"
 #include "fontforge.h"
 #include "fvimportbdf.h"
+#include <gfile.h>
 #include "lookups.h"
 #include "splinefont.h"
 #include "macenc.h"
@@ -622,7 +623,7 @@ static int PickTTFFont(FILE *ttf, struct ttfinfo *info) {
     for ( i=0; i<cnt; ++i ) {
 	names[i] = TTFGetFontName(ttf,offsets[i],0);
         if ( names[i]==NULL ) 
-            asprintf(&names[i], "<Unknown font name %d>", i+1);
+            names[i] = smprintf("<Unknown font name %d>", i+1);
     }
     if ( info->chosenname!=NULL ) {
 	for ( choice=cnt-1; choice>=0; --choice )
@@ -4052,7 +4053,7 @@ static int readtyp1glyphs(FILE *ttf,struct ttfinfo *info) {
 	fseek(ttf,info->typ1_start+i,SEEK_SET);
     }
     
-    tmp = tmpfile();
+    tmp = GFileTmpfile();
     for ( i=0; i<info->typ1_length; ++i )
 	putc(getc(ttf),tmp);
     rewind(tmp);

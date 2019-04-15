@@ -30,6 +30,7 @@
 #include "ustring.h"
 #include "fileutil.h"
 #include "gfile.h"
+#include <fcntl.h>
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>		/* for mkdir */
@@ -128,39 +129,18 @@ return -ENOTDIR;
 	for(p = tmp + 1; *p; p++)
 	if(*p == '/') {
 		*p = 0;
-		r = mkdir(tmp, mode);
+		r = GFileMkDir(tmp, mode);
 		if (r < 0 && errno != EEXIST)
 return -errno;
 		*p = '/';
 	}
 
 	/* try to make the whole path */
-	r = mkdir(tmp, mode);
+	r = GFileMkDir(tmp, mode);
 	if(r < 0 && errno != EEXIST)
 return -errno;
 	/* creation successful or the file already exists */
 return EXIT_SUCCESS;
-}
-
-/* Wrapper for formatted variable list printing. */
-char *smprintf(const char *fmt, ...) {
-	va_list fmtargs;
-	char *ret;
-	int len;
-
-	va_start(fmtargs, fmt);
-	len = vsnprintf(NULL, 0, fmt, fmtargs);
-	va_end(fmtargs);
-	ret = malloc(++len);
-	if (ret == NULL) {
-	perror("malloc");
-exit(EXIT_FAILURE);
-	}
-
-	va_start(fmtargs, fmt);
-	vsnprintf(ret, len, fmt, fmtargs);
-	va_end(fmtargs);
-return ret;
 }
 
 char *GFileGetHomeDir(void) {
@@ -414,6 +394,61 @@ return( access(file,04)==0 );
 }
 
 /**
+ *  Creates a temporary file, similar to tmpfile.
+ *  Used because the default tmpfile implementation on Windows is broken
+ */
+FILE *GFileTmpfile() {
+#ifndef _WIN32
+    return tmpfile();
+#else
+    wchar_t temp_path[MAX_PATH + 1];
+    DWORD ret = GetTempPathW(MAX_PATH + 1, temp_path);
+    if (!ret) {
+        return NULL;
+    }
+
+    while(true) {
+        wchar_t *temp_name = _wtempnam(temp_path, L"FF_");
+        if (!temp_name) {
+            return NULL;
+        }
+
+        HANDLE handle = CreateFileW(
+            temp_name,
+            GENERIC_READ | GENERIC_WRITE,
+            0,
+            NULL,
+            CREATE_NEW,
+            FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE,
+            NULL
+        );
+        free(temp_name);
+
+        if (handle == INVALID_HANDLE_VALUE) {
+            if (GetLastError() != ERROR_FILE_EXISTS) {
+                return NULL;
+            }
+        } else {
+            int fd = _open_osfhandle((intptr_t)handle, _O_RDWR|_O_CREAT|_O_TEMPORARY|_O_BINARY);
+            if (fd == -1) {
+                CloseHandle(handle);
+                return NULL;
+            }
+
+            FILE *fp = _fdopen(fd, "w+");
+            if (!fp) {
+                _close(fd);
+                return NULL;
+            }
+
+            return fp;
+        }
+    }
+    return NULL;
+#endif
+}
+
+/**
  * Removes a file or folder.
  *
  * @param [in] path The path to be removed.
@@ -444,8 +479,12 @@ int GFileRemove(const char *path, int recursive) {
     return true;
 }
 
-int GFileMkDir(const char *name) {
-return( mkdir(name,0755));
+int GFileMkDir(const char *name, int mode) {
+#ifndef _WIN32
+	return mkdir(name, mode);
+#else
+	return mkdir(name);
+#endif
 }
 
 int GFileRmDir(const char *name) {
@@ -739,7 +778,7 @@ return( access(buffer,04)==0 );
 int u_GFileMkDir(unichar_t *name) {
     char buffer[1024];
     u2def_strncpy(buffer,name,sizeof(buffer));
-return( mkdir(buffer,0755));
+	return GFileMkDir(buffer, 0755);
 }
 
 int u_GFileRmDir(unichar_t *name) {

@@ -49,6 +49,7 @@
 #include "fvfonts.h"
 #include "fvimportbdf.h"
 #include "fvmetrics.h"
+#include <gfile.h>
 #include "lookups.h"
 #include "macbinary.h"
 #include "mem.h"
@@ -101,8 +102,6 @@
 #include "gutils/prefs.h"
 
 #include "gutils/unicodelibinfo.h"
-
-#include "xvasprintf.h"
 
 int no_windowing_ui = false;
 int running_script = false;
@@ -9139,6 +9138,22 @@ static int AddScriptLine(FILE *script, const char *line)
     return getc(script);
 }
 
+#if defined(__MINGW32__)
+
+static ssize_t getline(char **lineptr, size_t *n, FILE *stream)
+{
+	if (!*lineptr || !*n) {
+		*n = 1024;
+		*lineptr = calloc(*n+1, sizeof(char));
+	}
+	if (!fgets(*lineptr, *n, stream)) {
+		return -1;
+	}
+    return 1; // good enough
+}
+
+#endif
+
 static int _buffered_cgetc(Context *c) {
     if (c->interactive) {
 	int ch;
@@ -10688,11 +10703,11 @@ void ff_statement(Context *c) {
 }
 
 static FILE *CopyNonSeekableFile(FILE *former) {
-/* Copy input stream or Standard input into an internal tmpfile  */
+/* Copy input stream or Standard input into an internal temp file  */
 /* that can then be used for running FontForge or Python scripts */
-/* The tmpfile automatically closes/deletes when FontForge exits */
+/* The temp file automatically closes/deletes when FontForge exits */
     int ch;
-    FILE *temp = tmpfile();
+    FILE *temp = GFileTmpfile();
     int istty = isatty(fileno(former)) && former==stdin;
 
     if ( temp==NULL ) return( former );
@@ -10776,7 +10791,7 @@ _Noreturn void ProcessNativeScript(int argc, char *argv[], FILE *script) {
     } else if ( string!=NULL ) {
 		// If command line has a command string, copy it into a temporary file for easier use.
 		c.filename = "<command-string>";
-		c.script = tmpfile();
+		c.script = GFileTmpfile();
 		fwrite(string,1,strlen(string),c.script);
 		rewind(c.script);
     } else if ( i<argc && strcmp(argv[i],"-")!=0 ) {
@@ -10793,7 +10808,7 @@ _Noreturn void ProcessNativeScript(int argc, char *argv[], FILE *script) {
     /*  for terminals. They should return -1, EBADF */
     if ( c.script!=NULL && (ftell(c.script)==-1 || isatty(fileno(c.script))) ) {
 		if (c.script == stdin) {
-			c.script = tmpfile();
+			c.script = GFileTmpfile();
 			if (c.script)
 				c.interactive = true;
 		} else {
@@ -10904,7 +10919,7 @@ return;
 		is_python = PythonLangFromExt(argv[i+1]);
 	    if ( is_python ) {
                 if (strcmp(argv[i],"-c") == 0) /* Make command-line args and Fontforge module more conveniently available for command-line scripts */
-                    argv[i + 1] = xasprintf("from sys import argv; from fontforge import *; %s", argv[i + 1]);
+                    argv[i + 1] = smprintf("from sys import argv; from fontforge import *; %s", argv[i + 1]);
 		PyFF_Main(argc,argv,i);
 	    } else
 		ProcessNativeScript(argc, argv,NULL);

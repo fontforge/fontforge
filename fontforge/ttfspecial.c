@@ -28,6 +28,7 @@
 #include "ttfspecial.h"
 
 #include "fontforge.h"
+#include <gfile.h>
 #include "mem.h"
 #include "splinefill.h"
 #include "splineutil.h"
@@ -72,7 +73,7 @@ static void PfEd_FontComment(SplineFont *sf, struct PfEd_subtabs *pfed, uint32 t
     if ( text==NULL || *text=='\0' )
 return;
     pfed->subtabs[pfed->next].tag = tag;
-    pfed->subtabs[pfed->next++].data = fcmt = tmpfile();
+    pfed->subtabs[pfed->next++].data = fcmt = GFileTmpfile();
 
     putshort(fcmt,1);			/* sub-table version number */
     putshort(fcmt,strlen(text));
@@ -104,7 +105,7 @@ static void PfEd_GlyphComments(SplineFont *sf, struct PfEd_subtabs *pfed,
 return;
 
     pfed->subtabs[pfed->next].tag = cmnt_TAG;
-    pfed->subtabs[pfed->next++].data = cmnt = tmpfile();
+    pfed->subtabs[pfed->next++].data = cmnt = GFileTmpfile();
 
     putshort(cmnt,1);			/* sub-table version number */
 	    /* Version 0 used ucs2, version 1 uses utf8 */
@@ -172,7 +173,7 @@ static void PfEd_CvtComments(SplineFont *sf, struct PfEd_subtabs *pfed ) {
     if ( sf->cvt_names==NULL )
 return;
     pfed->subtabs[pfed->next].tag = cvtc_TAG;
-    pfed->subtabs[pfed->next++].data = cvtcmt = tmpfile();
+    pfed->subtabs[pfed->next++].data = cvtcmt = GFileTmpfile();
 
     for ( i=0; sf->cvt_names[i]!=END_CVT_NAMES; ++i);
 
@@ -215,7 +216,7 @@ static void PfEd_Colours(SplineFont *sf, struct PfEd_subtabs *pfed, struct glyph
 return;
 
     pfed->subtabs[pfed->next].tag = colr_TAG;
-    pfed->subtabs[pfed->next++].data = colr = tmpfile();
+    pfed->subtabs[pfed->next++].data = colr = GFileTmpfile();
 
     putshort(colr,0);			/* sub-table version number */
     for ( j=0; j<2; ++j ) {
@@ -273,7 +274,7 @@ return;
     }
 
     pfed->subtabs[pfed->next].tag = tag;
-    pfed->subtabs[pfed->next++].data = lkf = tmpfile();
+    pfed->subtabs[pfed->next++].data = lkf = GFileTmpfile();
 
     putshort(lkf,0);			/* Subtable version */
     putshort(lkf,lcnt);
@@ -613,7 +614,7 @@ return;
     h = pfed_guide_sortuniq(hs,h);
 
     pfed->subtabs[pfed->next].tag = guid_TAG;
-    pfed->subtabs[pfed->next++].data = guid = tmpfile();
+    pfed->subtabs[pfed->next++].data = guid = GFileTmpfile();
 
     nameoff   = 5*2 + (h+v) * 4;
     namelen   = 0;
@@ -770,7 +771,7 @@ return;
     }
 
     pfed->subtabs[pfed->next].tag = layr_TAG;
-    pfed->subtabs[pfed->next++].data = layr = tmpfile();
+    pfed->subtabs[pfed->next++].data = layr = GFileTmpfile();
 
     putshort(layr,1);			/* sub-table version */
     putshort(layr,cnt);			/* layer count */
@@ -852,7 +853,7 @@ void pfed_dump(struct alltabs *at, SplineFont *sf) {
     if ( pfed.next==0 )
 return;		/* No subtables */
 
-    at->pfed = file = tmpfile();
+    at->pfed = file = GFileTmpfile();
     putlong(file, 0x00010000);		/* Version number */
     putlong(file, pfed.next);		/* sub-table count */
     offset = 2*sizeof(uint32) + 2*pfed.next*sizeof(uint32);
@@ -1695,7 +1696,7 @@ static void TeX_dumpFontParams(SplineFont *sf, struct TeX_subtabs *tex, struct a
     if ( sf->texdata.type==tex_unset )
 return;
     tex->subtabs[tex->next].tag = CHR('f','t','p','m');
-    tex->subtabs[tex->next++].data = fprm = tmpfile();
+    tex->subtabs[tex->next++].data = fprm = GFileTmpfile();
 
     putshort(fprm,0);			/* sub-table version number */
     pcnt = sf->texdata.type==tex_math ? 22 : sf->texdata.type==tex_mathext ? 13 : 7;
@@ -1725,7 +1726,7 @@ static void TeX_dumpHeightDepth(SplineFont *sf, struct TeX_subtabs *tex, struct 
 return;
 
     tex->subtabs[tex->next].tag = CHR('h','t','d','p');
-    tex->subtabs[tex->next++].data = htdp = tmpfile();
+    tex->subtabs[tex->next++].data = htdp = GFileTmpfile();
 
     putshort(htdp,0);				/* sub-table version number */
     putshort(htdp,sf->glyphs[gid]->ttf_glyph+1);/* data for this many glyphs */
@@ -1763,7 +1764,7 @@ static void TeX_dumpItalicCorr(SplineFont *sf, struct TeX_subtabs *tex, struct a
 return;
 
     tex->subtabs[tex->next].tag = CHR('i','t','l','c');
-    tex->subtabs[tex->next++].data = itlc = tmpfile();
+    tex->subtabs[tex->next++].data = itlc = GFileTmpfile();
 
     putshort(itlc,0);				/* sub-table version number */
     putshort(itlc,sf->glyphs[gid]->ttf_glyph+1);/* data for this many glyphs */
@@ -1802,7 +1803,7 @@ return;
     if ( tex.next==0 )
 return;		/* No subtables */
 
-    at->tex = file = tmpfile();
+    at->tex = file = GFileTmpfile();
     putlong(file, 0x00010000);		/* Version number */
     putlong(file, tex.next);		/* sub-table count */
     offset = 2*sizeof(uint32) + 2*tex.next*sizeof(uint32);
@@ -2030,8 +2031,8 @@ int ttf_bdf_dump(SplineFont *sf,struct alltabs *at,int32 *sizes) {
     if ( spcnt==0 )	/* No strikes with properties */
 return(true);
 
-    at->bdf = tmpfile();
-    strings = tmpfile();
+    at->bdf = GFileTmpfile();
+    strings = GFileTmpfile();
 
     putshort(at->bdf,0x0001);
     putshort(at->bdf,spcnt);
@@ -2230,7 +2231,7 @@ return;
 int ttf_fftm_dump(SplineFont *sf,struct alltabs *at) {
     int32 results[2];
 
-    at->fftmf = tmpfile();
+    at->fftmf = GFileTmpfile();
 
     putlong(at->fftmf,0x00000001);	/* Version */
 

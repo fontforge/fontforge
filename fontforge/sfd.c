@@ -64,6 +64,9 @@
 
 #include <ffglib.h>
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 #ifndef NAME_MAX
 # ifndef  _POSIX_NAME_MAX
@@ -2810,7 +2813,7 @@ static int SFD_Dump( FILE *sfd, SplineFont *sf, EncMap *map, EncMap *normal,
 		char *fontprops;
 		FILE *ssfd;
 		sprintf( subfont,"%s/%s" SUBFONT_EXT, dirname, sf->subfonts[i]->fontname );
-		GFileMkDir(subfont);
+		GFileMkDir(subfont, 0755);
 		fontprops = malloc(strlen(subfont)+strlen("/" FONT_PROPS)+1);
 		strcpy(fontprops,subfont); strcat(fontprops,"/" FONT_PROPS);
 		ssfd = fopen( fontprops,"w");
@@ -2888,7 +2891,7 @@ static int SFD_Dump( FILE *sfd, SplineFont *sf, EncMap *map, EncMap *normal,
 	    char *strikeprops;
 	    FILE *ssfd;
 	    sprintf( strike,"%s/%d" STRIKE_EXT, dirname, bdf->pixelsize );
-	    GFileMkDir(strike);
+	    GFileMkDir(strike, 0755);
 	    strikeprops = malloc(strlen(strike)+strlen("/" STRIKE_PROPS)+1);
 	    strcpy(strikeprops,strike); strcat(strikeprops,"/" STRIKE_PROPS);
 	    ssfd = fopen( strikeprops,"w");
@@ -2917,7 +2920,7 @@ static int SFD_MIDump(SplineFont *sf,EncMap *map,char *dirname,	int mm_pos) {
     /* I'd like to use the font name, but the order of the instances is */
     /*  crucial and I must enforce an ordering on them */
     sprintf( instance,"%s/mm%d" INSTANCE_EXT, dirname, mm_pos );
-    GFileMkDir(instance);
+    GFileMkDir(instance, 0755);
     fontprops = malloc(strlen(instance)+strlen("/" FONT_PROPS)+1);
     strcpy(fontprops,instance); strcat(fontprops,"/" FONT_PROPS);
     ssfd = fopen( fontprops,"w");
@@ -3100,7 +3103,7 @@ int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal,int todir)
 
     if ( todir ) {
 	SFDirClean(filename);
-	GFileMkDir(filename);		/* this will fail if directory already exists. That's ok */
+	GFileMkDir(filename, 0755);		/* this will fail if directory already exists. That's ok */
 	tempfilename = malloc(strlen(filename)+strlen("/" FONT_PROPS)+1);
 	strcpy(tempfilename,filename); strcat(tempfilename,"/" FONT_PROPS);
     }

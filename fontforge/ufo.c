@@ -61,6 +61,7 @@
 # include "ffpython.h"
 #endif
 
+#include <assert.h>
 #include <stdarg.h>
 #include <string.h>
 
@@ -111,18 +112,13 @@ static void extractNumericVersion(const char * textVersion, int * versionMajor, 
   return;
 }
 
-static void injectNumericVersion(char ** textVersion, int versionMajor, int versionMinor) {
+static char* formatNumericVersion(int versionMajor, int versionMinor) {
   // We generate a version string from numeric values if available.
-  int err = 0;
-  if (versionMajor == -1) err |= (asprintf(textVersion, "%s", "") < 0);
-  else if (versionMinor == -1) err |= (asprintf(textVersion, "%d", versionMajor) < 0);
-  else err |= (asprintf(textVersion, "%d.%d", versionMajor, versionMinor) < 0);
-  if (err) {
-    // gcc is happy now, but the people are angry.
-    // How long shall they suffer its tyranny?
-    LogError(_("Error generating version string in injectNumericVersion."));
+  assert(versionMajor != -1);
+  if (versionMinor == -1) {
+      return smprintf("%d", versionMajor);
   }
-  return;
+  return smprintf("%d.%d", versionMajor, versionMinor);
 }
 
 /* The spec does not really require padding the version str but it clears */
@@ -234,7 +230,6 @@ int index, const char * input, const char * prefix, const char * suffix, int fla
         // But the name length cannot exceed 255 characters, so it is necessary to crop the base name if it is too long.
         // Name exclusions are case insensitive, so we uppercase.
         // flags & 16 forces appending a number.
-	int err = 0; // Not terribly useful but for suppressing warnings.
         char * name_numbered = upper_case(input);
         char * full_name_base = same_case(input); // This is in case we do not need a number added.
         if (strlen(input) > (255 - strlen(prefix) - strlen(suffix))) {
@@ -259,7 +254,7 @@ int index, const char * input, const char * prefix, const char * suffix, int fla
             while (glif_name_search_glif_name(glif_name_hash, name_numbered) != NULL || number_once) {
               name_number++; // Remangle the name until we have no more matches.
               free(name_numbered); name_numbered = NULL;
-              err |= (asprintf(&name_numbered, "%s%015ld", name_base_upper, name_number) < 0);
+              name_numbered = smprintf("%s%015ld", name_base_upper, name_number);
               number_once = 0;
             }
             free(name_base_upper); name_base_upper = NULL;
@@ -271,24 +266,19 @@ int index, const char * input, const char * prefix, const char * suffix, int fla
         // Now we want the correct capitalization.
         free(name_numbered); name_numbered = NULL;
         if (name_number > 0) {
-          err |= (asprintf(&name_numbered, "%s%015ld", name_base, name_number) < 0);
+          name_numbered = smprintf("%s%015ld", name_base, name_number);
         } else {
-          err |= (asprintf(&name_numbered, "%s", full_name_base) < 0);
+          name_numbered = smprintf("%s", full_name_base);
         }
         free(name_base); name_base = NULL;
         free(full_name_base); full_name_base = NULL;
-	if (err) {
-	  // This is not really good error handling.
-	  // But we are mostly just trying to make the compiler happy.
-          LogError(_("Error generating names in ufo_name_number."));
-	}
         return name_numbered;
 }
 
 static xmlNodePtr xmlNewChildInteger(xmlNodePtr parent, xmlNsPtr ns, const xmlChar * name, long int value) {
-  char * valtmp = NULL;
+  char * valtmp = smprintf("%ld", value);
   // Textify the value to be enclosed.
-  if (asprintf(&valtmp, "%ld", value) >= 0) {
+  if (valtmp != NULL) {
     xmlNodePtr childtmp = xmlNewChild(parent, NULL, BAD_CAST name, BAD_CAST valtmp); // Make a text node for the value.
     free(valtmp); valtmp = NULL; // Free the temporary text store.
     return childtmp;
@@ -296,10 +286,10 @@ static xmlNodePtr xmlNewChildInteger(xmlNodePtr parent, xmlNsPtr ns, const xmlCh
   return NULL;
 }
 static xmlNodePtr xmlNewNodeInteger(xmlNsPtr ns, const xmlChar * name, long int value) {
-  char * valtmp = NULL;
+  char * valtmp = smprintf("%ld", value);
   xmlNodePtr childtmp = xmlNewNode(NULL, BAD_CAST name); // Create a named node.
   // Textify the value to be enclosed.
-  if (asprintf(&valtmp, "%ld", value) >= 0) {
+  if (valtmp != NULL) {
     xmlNodePtr valtmpxml = xmlNewText(BAD_CAST valtmp); // Make a text node for the value.
     xmlAddChild(childtmp, valtmpxml); // Attach the text node as content of the named node.
     free(valtmp); valtmp = NULL; // Free the temporary text store.
@@ -309,9 +299,9 @@ static xmlNodePtr xmlNewNodeInteger(xmlNsPtr ns, const xmlChar * name, long int 
   return childtmp;
 }
 static xmlNodePtr xmlNewChildFloat(xmlNodePtr parent, xmlNsPtr ns, const xmlChar * name, double value) {
-  char * valtmp = NULL;
+  char * valtmp = smprintf("%g", value);
   // Textify the value to be enclosed.
-  if (asprintf(&valtmp, "%g", value) >= 0) {
+  if (valtmp != NULL) {
     xmlNodePtr childtmp = xmlNewChild(parent, NULL, BAD_CAST name, BAD_CAST valtmp); // Make a text node for the value.
     free(valtmp); valtmp = NULL; // Free the temporary text store.
     return childtmp;
@@ -319,10 +309,10 @@ static xmlNodePtr xmlNewChildFloat(xmlNodePtr parent, xmlNsPtr ns, const xmlChar
   return NULL;
 }
 static xmlNodePtr xmlNewNodeFloat(xmlNsPtr ns, const xmlChar * name, double value) {
-  char * valtmp = NULL;
+  char * valtmp = smprintf("%g", value);
   xmlNodePtr childtmp = xmlNewNode(NULL, BAD_CAST name); // Create a named node.
   // Textify the value to be enclosed.
-  if (asprintf(&valtmp, "%g", value) >= 0) {
+  if (valtmp != NULL) {
     xmlNodePtr valtmpxml = xmlNewText(BAD_CAST valtmp); // Make a text node for the value.
     xmlAddChild(childtmp, valtmpxml); // Attach the text node as content of the named node.
     free(valtmp); valtmp = NULL; // Free the temporary text store.
@@ -342,8 +332,8 @@ static xmlNodePtr xmlNewNodeString(xmlNsPtr ns, const xmlChar * name, char * val
   return childtmp;
 }
 static xmlNodePtr xmlNewNodeVPrintf(xmlNsPtr ns, const xmlChar * name, char * format, va_list arguments) {
-  char * valtmp = NULL;
-  if (vasprintf(&valtmp, format, arguments) < 0) {
+  char * valtmp = vsmprintf(format, arguments);
+  if (valtmp == NULL) {
     return NULL;
   }
   xmlNodePtr childtmp = xmlNewNode(NULL, BAD_CAST name); // Create a named node.
@@ -372,9 +362,9 @@ static xmlNodePtr xmlNewChildPrintf(xmlNodePtr parent, xmlNsPtr ns, const xmlCha
   return output;
 }
 static void xmlSetPropVPrintf(xmlNodePtr target, const xmlChar * name, char * format, va_list arguments) {
-  char * valtmp = NULL;
+  char * valtmp = vsmprintf(format, arguments);
   // Generate the value.
-  if (vasprintf(&valtmp, format, arguments) < 0) {
+  if (valtmp == NULL) {
     return;
   }
   xmlSetProp(target, name, valtmp); // Set the property.
@@ -778,7 +768,8 @@ xmlNodePtr PyObjectToXML( PyObject *value, int has_lists ) {
         // "<integer>%ld</integer>"
     } else if (PyFloat_Check(value)) {
         childtmp = xmlNewNode(NULL, BAD_CAST "real");
-        if (asprintf(&valtmp, "%g", PyFloat_AsDouble(value)) >= 0) {
+        valtmp = smprintf("%g", PyFloat_AsDouble(value));
+        if (valtmp != NULL) {
           valtmpxml = xmlNewText(BAD_CAST valtmp);
           xmlAddChild(childtmp, valtmpxml);
           free(valtmp); valtmp = NULL;
@@ -881,7 +872,8 @@ xmlNodePtr _GlifToXML(const SplineChar *sc, int layer, int version) {
     xmlNodePtr tmpxml2 = xmlNewChild(topglyphxml, NULL, BAD_CAST "advance", NULL); // Create the advance node.
     xmlSetPropPrintf(tmpxml2, BAD_CAST "width", "%d", sc->width);
     if ( sc->parent->hasvmetrics ) {
-      if (asprintf(&stringtmp, "%d", sc->width) >= 0) {
+      stringtmp = smprintf("%d", sc->width);
+      if (stringtmp != NULL) {
         xmlSetProp(tmpxml2, BAD_CAST "height", stringtmp);
         free(stringtmp); stringtmp = NULL;
       }
@@ -1824,11 +1816,9 @@ void ufo_kerning_tree_destroy_contents(struct ufo_kerning_tree_session *session)
 }
 
 int ufo_kerning_tree_attempt_insert(struct ufo_kerning_tree_session *session, const char *left_name, const char *right_name, int value) {
-  int err = 0;
   struct glif_name_index *left_group_name_hash = &(session->_left_group_name_hash);
   struct glif_name_index *class_pair_hash = &(session->_class_pair_hash);
-  char *tmppairname = NULL;
-  err |= (asprintf(&tmppairname, "%s %s", left_name, right_name) < 0);
+  char *tmppairname = smprintf("%s %s", left_name, right_name);
   struct ufo_kerning_tree_left *first_left = NULL;
   struct ufo_kerning_tree_left *last_left = NULL;
   if (!glif_name_search_glif_name(class_pair_hash, tmppairname)) {
@@ -1854,16 +1844,12 @@ int ufo_kerning_tree_attempt_insert(struct ufo_kerning_tree_session *session, co
       if (current_left->last_right != NULL) current_left->last_right->next = current_right;
       else current_left->first_right = current_right;
       current_left->last_right = current_right;
-      char *newpairname = NULL;
-      err |= (asprintf(&newpairname, "%s %s", left_name, right_name) < 0);
+      char *newpairname = smprintf("%s %s", left_name, right_name);
       glif_name_track_new(class_pair_hash, session->class_pair_count++, newpairname);
       free(newpairname); newpairname = NULL;
     }
   }
   free(tmppairname); tmppairname = NULL;
-  if (err) {
-    LogError(_("Error generating names in ufo_kerning_tree_attempt_insert."));
-  }
   return 0;
 }
 
@@ -2072,7 +2058,7 @@ int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer, int version
     xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
     xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (dictnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Make the dict.
 
-    GFileMkDir( glyphdir );
+    GFileMkDir( glyphdir, 0755 );
     int i;
     SplineChar * sc;
     int err = 0;
@@ -2080,8 +2066,8 @@ int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer, int version
       ( layer == ly_fore && (SCWorthOutputting(sc) || SCHasData(sc) || sc->glif_name != NULL) ) ) {
         // TODO: Optionally skip rewriting an untouched glyph.
         // Do we track modified glyphs carefully enough for this?
-        char * final_name;
-        if (asprintf(&final_name, "%s%s%s", "", sc->glif_name, ".glif") >=0) { // Generate the final name with prefix and suffix.
+        char * final_name = smprintf("%s%s%s", "", sc->glif_name, ".glif");
+        if (final_name != NULL) { // Generate the final name with prefix and suffix.
 		PListAddString(dictnode,sc->name,final_name); // Add the glyph to the table of contents.
 		err |= !GlifDump(glyphdir,final_name,sc,layer,version);
         	free(final_name); final_name = NULL;
@@ -2115,7 +2101,7 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff, in
     }
 
     /* Create it */
-    if (GFileMkDir( basedir ) == -1) return false;
+    if (GFileMkDir( basedir, 0755 ) == -1) return false;
 
     locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
     switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
@@ -2203,15 +2189,15 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff, in
 	int name_err = 0;
         if (layer_pos == ly_fore) {
           numberedlayerpath = strdup("glyphs");
-          name_err |= (asprintf(&numberedlayerpathwithglyphs, "%s", numberedlayerpath) < 0);
+          numberedlayerpathwithglyphs = copy(numberedlayerpath);
         } else if (sf->layers[layer_pos].ufo_path != NULL) {
           layer_path_start = strdup(sf->layers[layer_pos].ufo_path);
           numberedlayerpath = ufo_name_number(layer_path_hash, layer_pos, layer_path_start, "", "", 7);
-          name_err |= (asprintf(&numberedlayerpathwithglyphs, "%s", numberedlayerpath) < 0);
+          numberedlayerpathwithglyphs = copy(numberedlayerpath);
         } else {
           layer_path_start = ufo_name_mangle(sf->layers[layer_pos].name, "glyphs.", "", 7);
           numberedlayerpath = ufo_name_number(layer_path_hash, layer_pos, layer_path_start, "glyphs.", "", 7);
-          name_err |= (asprintf(&numberedlayerpathwithglyphs, "glyphs.%s", numberedlayerpath) < 0);
+          numberedlayerpathwithglyphs = smprintf("glyphs.%s", numberedlayerpath);
         }
         if (layer_path_start != NULL) { free(layer_path_start); layer_path_start = NULL; }
 	if (name_err) {
@@ -2322,6 +2308,12 @@ return( NULL );
 return( NULL );
 }
 
+#ifndef HAVE_ICONV_H
+# undef iconv
+# undef iconv_t
+# undef iconv_open
+# undef iconv_close
+#endif
 #include <libxml/parser.h>
 
 static int libxml_init_base() {
@@ -3826,7 +3818,7 @@ return;
 int TryAddRawGroupKern(struct splinefont *sf, int isv, struct glif_name_index *class_name_pair_hash, int *current_groupkern_index_p, struct ff_rawoffsets **current_groupkern_p, const char *left, const char *right, int offset) {
   char *pairtext;
   int success = 0;
-  if (left && right && asprintf(&pairtext, "%s %s", left, right) > 0 && pairtext) {
+  if (left && right && ((pairtext = smprintf("%s %s", left, right)) != NULL)) {
     if (!glif_name_search_glif_name(class_name_pair_hash, pairtext)) {
       glif_name_track_new(class_name_pair_hash, (*current_groupkern_index_p)++, pairtext);
       struct ff_rawoffsets *tmp_groupkern = calloc(1, sizeof(struct ff_rawoffsets));
@@ -4449,7 +4441,7 @@ return( NULL );
         xmlFreeDoc(doc);
     // We first try to set the SplineFont version by using the native numeric U. F. O. values.
     if ( sf->version==NULL && versionMajor != -1 )
-      injectNumericVersion(&sf->version, versionMajor, versionMinor);
+      sf->version = formatNumericVersion(versionMajor, versionMinor);
     // If that fails, we attempt to use the TrueType values.
     if ( sf->version==NULL && sf->names!=NULL &&
 	    sf->names->names[ttf_version]!=NULL &&

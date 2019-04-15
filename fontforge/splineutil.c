@@ -54,7 +54,7 @@
 #endif
 #include <locale.h>
 #include "sfd1.h" // This has the extended SplineFont type SplineFont1 for old file versions.
-#include "c-strtod.h"
+#include <ffglib.h>
 #ifdef FF_UTHASH_GLIF_NAMES
 # include "glif_name_hash.h"
 #endif
@@ -2670,7 +2670,7 @@ return( NULL );
     while ( *pt==' ' || *pt=='[' ) ++pt;
     while ( *pt!=']' && *pt!='\0' ) {
 	pscontext->blend_values[ pscontext->instance_count ] =
-		c_strtod(pt,&end);
+		g_ascii_strtod(pt,&end);
 	if ( pt==end )
     break;
 	++(pscontext->instance_count);
@@ -2731,7 +2731,7 @@ return( NULL );
 	    break;
 		}
 		mm->positions[ipos*mm->axis_count+apos] =
-			c_strtod(pt,&end);
+			g_ascii_strtod(pt,&end);
 		if ( pt==end )
 	    break;
 		++apos;
@@ -2765,8 +2765,8 @@ return( NULL );
 		while ( *pt==' ' ) ++pt;
 		if ( *pt=='[' ) {
 		    ++pt;
-		    designs[ppos] = c_strtod(pt,&end);
-		    blends[ppos] = c_strtod(end,&end);
+		    designs[ppos] = g_ascii_strtod(pt,&end);
+		    blends[ppos] = g_ascii_strtod(end,&end);
 		    if ( blends[ppos]<0 || blends[ppos]>1 ) {
 			LogError( _("Bad value for blend in /BlendDesignMap for axis %s.\n"), mm->axes[apos] );
 			if ( blends[ppos]<0 ) blends[ppos] = 0;
@@ -2812,7 +2812,7 @@ return( NULL );
 		if ( pt!=NULL ) {
 		    pt = MMExtractNth(pt,ipos);
 		    if ( pt!=NULL ) {
-			bigreal val = c_strtod(pt,NULL);
+			bigreal val = g_ascii_strtod(pt,NULL);
 			free(pt);
 			switch ( item ) {
 			  case 0: fd->fontinfo->italicangle = val; break;
@@ -6890,7 +6890,7 @@ char **StringExplode(const char *input, char delimiter) {
     while (*pstart == delimiter) pstart++;
     pend = pstart;
     while (*pend != delimiter && *pend != '\0') pend++;
-    if (pend > pstart) output[entry_count++] = strndup(pstart, pend-pstart);
+    if (pend > pstart) output[entry_count++] = copyn(pstart, pend-pstart);
     pstart = pend;
   }
   return output;

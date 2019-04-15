@@ -52,6 +52,7 @@
 #include <locale.h>
 #include <ustring.h>
 #include <utype.h>
+#include <ffglib.h>
 #include <gresource.h>
 #include <gresedit.h>
 #include <dlist.h>
@@ -61,7 +62,6 @@ extern int _GScrollBar_Width;
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
 #include "dlist.h"
-#include "c-strtod.h"
 
 #include "gutils/prefs.h"
 #include "collabclientui.h"
@@ -1964,7 +1964,7 @@ static void CVDrawBlues(CharView *cv,GWindow pixmap,char *bluevals,char *others,
     if ( bluevals!=NULL ) {
 	for ( pt = bluevals; isspace( *pt ) || *pt=='['; ++pt);
 	while ( i<14 && *pt!='\0' && *pt!=']' ) {
-	    blues[i] = c_strtod(pt,&end);
+	    blues[i] = g_ascii_strtod(pt,&end);
 	    if ( pt==end )
 	break;
 	    ++i;
@@ -1976,7 +1976,7 @@ static void CVDrawBlues(CharView *cv,GWindow pixmap,char *bluevals,char *others,
     if ( others!=NULL ) {
 	for ( pt = others; isspace( *pt ) || *pt=='['; ++pt);
 	while ( i<24 && *pt!='\0' && *pt!=']' ) {
-	    blues[i] = c_strtod(pt,&end);
+	    blues[i] = g_ascii_strtod(pt,&end);
 	    if ( pt==end )
 	break;
 	    ++i;

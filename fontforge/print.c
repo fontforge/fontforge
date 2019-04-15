@@ -32,6 +32,7 @@
 #include "dumppfa.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
+#include <gfile.h>
 #include "langfreq.h"
 #include "mm.h"
 #include "psread.h"
@@ -1510,7 +1511,7 @@ static int PIDownloadFont(PI *pi, SplineFont *sf, EncMap *map) {
     if ( pi->pointsize==0 )
 	pi->pointsize = sfbit->iscid && !sfbit->istype42cid?18:20;		/* 18 fits 20 across, 20 fits 16 */
 
-    sfbit->fontfile = tmpfile();
+    sfbit->fontfile = GFileTmpfile();
     if ( sfbit->fontfile==NULL ) {
 	ff_post_error(_("Failed to open temporary output file"),_("Failed to open temporary output file"));
 return(false);
@@ -3092,7 +3093,7 @@ return;
 	}
     } else {
 	outputfile = NULL;
-	pi.out = tmpfile();
+	pi.out = GFileTmpfile();
 	if ( pi.out==NULL ) {
 	    ff_post_error(_("Failed to open temporary output file"),_("Failed to open temporary output file"));
 return;

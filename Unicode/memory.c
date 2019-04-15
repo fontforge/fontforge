@@ -55,3 +55,57 @@ char *copyn(const char *str,long n) {
     ret[n]='\0';
     return( ret );
 }
+
+/**
+ *  Format a string, allocating a buffer as necessary.
+ *  If memory allocation fails, the application is aborted.
+ *  \param [in] fmt The printf-like format string
+ *  \param [in] args Input arguments to the format string
+ *  \return The buffer containing the formatted string.
+ *          Must be freed by the caller.
+ */
+char *vsmprintf(const char *fmt, va_list args) {
+    va_list args2;
+    char* ret;
+    int len;
+
+    va_copy(args2, args);
+    len = vsnprintf(NULL, 0, fmt, args2);
+    va_end(args2);
+
+    if (len < 0) {
+        return NULL;
+    }
+
+    ret = malloc(len + 1);
+    if (ret == NULL) {
+        perror("smprintf");
+        abort();
+        return NULL;
+    }
+
+    len = vsnprintf(ret, len + 1, fmt, args);
+
+    if (len < 0) {
+        free(ret);
+        return NULL;
+    }
+
+    return ret;
+}
+
+/**
+ *  Format a string, allocating a buffer as necessary.
+ *  See vsmprintf for more details.
+ */
+char *smprintf(const char* fmt, ...) {
+    va_list args;
+    char *ret;
+
+    va_start(args, fmt);
+    ret = vsmprintf(fmt, args);
+    va_end(args);
+
+    return ret;
+}
+

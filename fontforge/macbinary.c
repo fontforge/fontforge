@@ -33,6 +33,7 @@
 #include "encoding.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
+#include <gfile.h>
 #include "lookups.h"
 #include "mem.h"
 #include "parsepfa.h"
@@ -1574,7 +1575,7 @@ int WriteMacPSFont(char *filename,SplineFont *sf,enum fontformat format,
     char *pt;
 #endif
 
-    temppfb = tmpfile();
+    temppfb = GFileTmpfile();
     if ( temppfb==NULL )
 return( 0 );
 
@@ -1602,7 +1603,7 @@ return( 0 );
     }
 
     if ( __Mac && format==ff_pfbmacbin )
-	res = tmpfile();
+	res = GFileTmpfile();
     else
 	res = fopen(filename,"wb+");
     if ( res==NULL ) {
@@ -1652,7 +1653,7 @@ int WriteMacTTFFont(char *filename,SplineFont *sf,enum fontformat format,
     struct resource rlist[3][2], *dummynfnts=NULL;
     struct macbinaryheader header;
 
-    tempttf = tmpfile();
+    tempttf = GFileTmpfile();
     if ( tempttf==NULL )
 return( 0 );
 
@@ -1666,7 +1667,7 @@ return( 0 );
 	bsizes = NULL;		/* as far as the FOND for the truetype is concerned anyway */
 
     if ( __Mac && format==ff_ttfmacbin )
-	res = tmpfile();
+	res = GFileTmpfile();
     else
 	res = fopen(filename,"wb+");
     if ( res==NULL ) {
@@ -1743,7 +1744,7 @@ int WriteMacBitmaps(char *filename,SplineFont *sf, int32 *sizes, int is_dfont,
     strcpy(dpt,is_dfont?".bmap.dfont":__Mac?".bmap":".bmap.bin");
 
     if ( __Mac && !is_dfont )
-	res = tmpfile();
+	res = GFileTmpfile();
     else
 	res = fopen(binfilename,"wb+");
     if ( res==NULL ) {
@@ -1835,7 +1836,7 @@ return( 0 );
 	}
     } else if ( format!=ff_none || bf==bf_sfnt_dfont ) {
 	for ( sfi=sfs; sfi!=NULL; sfi = sfi->next ) {
-	    sfi->tempttf = tmpfile();
+	    sfi->tempttf = GFileTmpfile();
 	    if ( sfi->tempttf==NULL ||
 		    _WriteTTFFont(sfi->tempttf,sfi->sf,format==ff_none?ff_none:
 					  format==ff_ttfmacbin?ff_ttf:
@@ -1851,7 +1852,7 @@ return( 0 );
 
     if ( __Mac && (format==ff_ttfmacbin || format==ff_pfbmacbin ||
 	    (format==ff_none && bf==bf_nfntmacbin)))
-	res = tmpfile();
+	res = GFileTmpfile();
     else
 	res = fopen(filename,"wb+");
     if ( res==NULL ) {
@@ -1974,7 +1975,7 @@ static SplineFont *SearchPostScriptResources(FILE *f,long rlistpos,int subcnt,lo
 	/* mbz = */ getlong(f);
     }
 
-    pfb = tmpfile();
+    pfb = GFileTmpfile();
     if ( pfb==NULL ) {
 	LogError( _("Can't open temporary file for postscript output\n") );
 	fseek(f,here,SEEK_SET );
@@ -2147,7 +2148,7 @@ return( (SplineFont *) names );
     continue;
 	here = ftell(f);
 
-	ttf = tmpfile();
+	ttf = GFileTmpfile();
 	if ( ttf==NULL ) {
 	    LogError( _("Can't open temporary file for truetype output.\n") );
     continue;
@@ -2800,7 +2801,7 @@ return( (SplineFont *) ret );
 
     fseek(binary,pos,SEEK_SET);
     buffer = malloc(8192);
-    temp = tmpfile();
+    temp = GFileTmpfile();
     while ( dlen>0 ) {
 	len = dlen > 8192 ? 8192 : dlen;
 	len = fread(buffer,1,dlen > 8192 ? 8192 : dlen,binary);
@@ -3001,7 +3002,7 @@ static SplineFont *IsResourceInHex(FILE *f,char *filename,int flags,enum openfla
 	SplineFont *into,EncMap *map) {
     /* convert file from 6bit to 8bit */
     /* interesting data is enclosed between two colons */
-    FILE *binary = tmpfile();
+    FILE *binary = GFileTmpfile();
     char *sixbit = "!\"#$%&'()*+,-012345689@ABCDEFGHIJKLMNPQRSTUVXYZ[`abcdefhijklmpqr";
     int ch, val, cnt, i, dlen, rlen;
     unsigned char header[20]; char *pt;

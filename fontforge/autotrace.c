@@ -226,7 +226,7 @@ static char *mytempdir(void) {
     eon = buffer+strlen(buffer);
     while ( 1 ) {
 	sprintf( eon, "%04X_mf%d", getpid(), ++cnt );
-	if ( mkdir(buffer,0770)==0 )
+	if ( GFileMkDir(buffer,0770)==0 )
 return( copy(buffer) );
 	else if ( errno!=EEXIST )
 return( NULL );
@@ -410,7 +410,7 @@ return;
 	/* We can't use AutoTrace's own "background-color" ignorer because */
 	/*  it ignores counters as well as surrounds. So "O" would be a dark */
 	/*  oval, etc. */
-	ps = tmpfile();
+	ps = GFileTmpfile();
 	if ( (pid=fork())==0 ) {
 	    /* Child */
 	    close(1);

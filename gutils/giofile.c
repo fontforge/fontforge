@@ -232,7 +232,7 @@ static void _gio_file_renamefile(GIOControl *gc,char *path, char *topath) {
 }
 
 static void _gio_file_mkdir(GIOControl *gc,char *path) {
-    if ( GFileMkDir(path)==-1 ) {
+    if ( GFileMkDir(path, 0755)==-1 ) {
 	_GIO_reporterror(gc,errno);
     } else {
 	gc->return_code = 201;

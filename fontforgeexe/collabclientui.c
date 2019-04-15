@@ -1499,6 +1499,7 @@ int collabclient_getBasePort(void* ccvp)
 
 int collabclient_isAddressLocal( char* address )
 {
+#ifdef BUILD_COLLAB
     char a[IPADDRESS_STRING_LENGTH_T];
     if(getNetworkAddress( a ))
     {
@@ -1509,6 +1510,7 @@ int collabclient_isAddressLocal( char* address )
 	return 1;
     if( !strcmp( address, "localhost" ))
 	return 1;
-    
+#endif
+
     return 0;
 }

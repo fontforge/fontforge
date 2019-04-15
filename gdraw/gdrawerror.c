@@ -25,8 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define _GNU_SOURCE
-// GNU stdio does not enable vasprintf if we fail to define this.
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
@@ -179,9 +177,8 @@ void GDrawIError(const char *fmt,...) {
   char * buffer = NULL;
   va_list ap;
   va_start(ap, fmt);
-  int preret = vasprintf(&buffer, fmt, ap);
+  buffer = vsmprintf(fmt, ap);
   va_end(ap);
-  if (preret < 0 ) return;
   if (buffer != NULL ) {
     if ( gd==NULL ) {
       fprintf(stderr, "%s", buffer); // If there is no display, we write to stderr.
@@ -189,13 +186,12 @@ void GDrawIError(const char *fmt,...) {
       if ((gd->err_flag) && (gd->err_report != NULL)) {
         if (strlen(gd->err_report) + strlen(buffer) + 1 < 2048) {
           // If there is an existing error message, we concatenate if there is space.
-          char * tmp;
-          asprintf(&tmp, "%s%s\n", gd->err_report, buffer);
+          char * tmp = smprintf("%s%s\n", gd->err_report, buffer);
           free(gd->err_report); gd->err_report = tmp;
         }
       } else {
         // If there is no existing error message, we copy to the right spot.
-        asprintf(&gd->err_report, "%s\n", buffer);
+        gd->err_report = smprintf("%s\n", buffer);
       }
       gd->err_flag |= 1;
     }

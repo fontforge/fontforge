@@ -25,16 +25,17 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "fontforge-config.h"
 #include "cvundoes.h"
 
 #include "autohint.h"
 #include "bitmapchar.h"
 #include "bvedit.h"
-#include "config.h"
 #include "cvexport.h"
 #include "cvimages.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
+#include <gfile.h>
 #include "namelist.h"
 #include "sfd.h"
 #include "spiro.h"
@@ -1418,7 +1419,7 @@ static void *copybuffer2svg(void *UNUSED(_copybuffer),int32 *len) {
 return( copy(""));
     }
 
-    svg = tmpfile();
+    svg = GFileTmpfile();
     if ( svg==NULL ) {
 	*len=0;
 return( copy(""));
@@ -1470,7 +1471,7 @@ static void *copybuffer2svgmult(void *UNUSED(_copybuffer),int32 *len) {
 return( copy(""));
     }
 
-    svg = tmpfile();
+    svg = GFileTmpfile();
     if ( svg==NULL ) {
 	*len=0;
 return( copy(""));
@@ -1586,7 +1587,7 @@ return( copy(""));
 	dummy.layers[ly_fore].refs = XCopyInstanciateRefs(cur->u.state.refs,&dummy,ly_fore);
     }
 
-    eps = tmpfile();
+    eps = GFileTmpfile();
     if ( eps==NULL ) {
 	*len=0;
 return( copy(""));
@@ -2157,7 +2158,7 @@ return;
     if ( paste==NULL )
 return;
 
-    temp = tmpfile();
+    temp = GFileTmpfile();
     if ( temp!=NULL ) {
 	fwrite(paste,1,len,temp);
 	rewind(temp);

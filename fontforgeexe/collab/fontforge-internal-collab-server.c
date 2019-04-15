@@ -51,7 +51,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "fontforge/collabclientpriv.h"
 #include "fontforge-internal-collab-server.h"
 #include "collab/zmq_kvmsg.h"
-#include "progname.h"
 
 #define SUBTREE "/client/"
 

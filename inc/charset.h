@@ -63,7 +63,7 @@ enum charset { em_none = -1,
     em_unicode, em_unicode4, em_gb18030 , em_max, em_first2byte=em_jis208, em_last94x94=em_gb2312 };
 
 extern int /*enum charset*/ local_encoding;
-#if HAVE_ICONV
+#if HAVE_ICONV_H
 # include <iconv.h>
 extern char *iconv_local_encoding_name;
 #else

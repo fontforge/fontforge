@@ -30,11 +30,7 @@
 #include <basics.h>
 #include <dlist.h>
 #include "configure-fontforge.h"
-#ifdef HAVE_ICONV
-# include <iconv.h>
-#else
-# include <gwwiconv.h>
-#endif
+#include <gwwiconv.h>
 #include "locale.h"
 #include <gnetwork.h>
 
@@ -1950,7 +1946,9 @@ typedef struct splinefont {
 	    /* ufo_descent is negative */
     char *styleMapFamilyName;
     struct sfundoes *undoes;
+#ifdef BUILD_COLLAB
     char collab_uuid[ FF_UUID_STRING_SIZE ];
+#endif
     int preferred_kerning; // 1 for U. F. O. native, 2 for feature file, 0 undefined. Input functions shall flag 2, I think. This is now in S. F. D. in order to round-trip U. F. O. consistently.
 } SplineFont;
 

@@ -26,11 +26,23 @@
  */
 #ifndef _UCHAR_H
 # define _UCHAR_H
+#include <fontforge-config.h>
 #include <stdarg.h>
 #include <string.h>
 #include <memory.h>
 #include <basics.h>
 #include <charset.h>
+
+#pragma push_macro("PRINTF_FORMAT_ATTRIBUTE")
+#ifdef __GNUC__
+#  if defined(__USE_MINGW_ANSI_STDIO) && __USE_MINGW_ANSI_STDIO != 0
+#    define PRINTF_FORMAT_ATTRIBUTE(x, y) __attribute__((format(gnu_printf, x, y)))
+#  else
+#    define PRINTF_FORMAT_ATTRIBUTE(x, y) __attribute__((format(printf, x, y)))
+#  endif
+#else
+#  define PRINTF_FORMAT_ATTRIBUTE(x, y)
+#endif
 
 extern char *copy(const char *);
 extern char *copyn(const char *,long);
@@ -42,6 +54,9 @@ extern unichar_t *uc_copy(const char*);
 extern unichar_t *u_concat(const unichar_t*,const unichar_t*);
 extern char      *cu_copyn(const unichar_t *pt,int len);
 extern char      *cu_copy(const unichar_t*);
+
+extern char *vsmprintf(const char *fmt, va_list args);
+extern char *smprintf(const char *fmt, ...) PRINTF_FORMAT_ATTRIBUTE(1, 2);
 
 extern long uc_strcmp(const unichar_t *,const char *);
 extern long u_strcmp(const unichar_t *, const unichar_t *);
@@ -208,5 +223,7 @@ extern char* str_replace_all( char* s, char* orig, char* replacement, int free_s
 
 int toint( char* v );
 char* tostr( int v );
+
+#pragma pop_macro("PRINTF_FORMAT_ATTRIBUTE")
 
 #endif

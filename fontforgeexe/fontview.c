@@ -75,9 +75,6 @@
 #include <windows.h>
 #endif
 
-#include "xvasprintf.h"
-
-
 int OpenCharsInNewWindow = 0;
 char *RecentFiles[RECENT_MAX] = { NULL };
 int save_to_dir = 0;			/* use sfdir rather than sfd */
@@ -973,10 +970,12 @@ static void _MenuExit(void *UNUSED(junk)) {
 
     FontView *fv, *next;
 
+#ifdef BUILD_COLLAB
     if( collabclient_haveLocalServer() )
     {
 	AskAndMaybeCloseLocalCollabServers();
     }
+#endif
 #ifndef _NO_PYTHON
     python_call_onClosingFunctions();
 #endif
@@ -5604,7 +5603,6 @@ static void FVMenuCollabStart(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
 	free(res);
     }
 }
-#endif
 
 static int collab_MakeChoicesArray( GHashTable* peers, char** choices, int choices_sz, int localOnly )
 {
@@ -5672,8 +5670,6 @@ static beacon_announce_t* collab_getBeaconFromChoicesArray( GHashTable* peers, i
     return 0;
 }
 
-
-#ifdef BUILD_COLLAB
 static void FVMenuCollabConnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e))
 {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -5753,7 +5749,6 @@ static void FVMenuCollabDisconnect(GWindow gw, struct gmenuitem *UNUSED(mi), GEv
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     collabclient_sessionDisconnect( &fv->b );
 }
-#endif
 
 static void AskAndMaybeCloseLocalCollabServers()
 {
@@ -5853,8 +5848,6 @@ static void collablistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e))
 	}
     }
 }
-
-#ifdef BUILD_COLLAB
 
 static GMenuItem2 collablist[] = {
     { { (unichar_t *) N_("_Start Session..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Start Session...|No Shortcut"), NULL, NULL, FVMenuCollabStart, MID_CollabStart },
@@ -6691,14 +6684,14 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 #endif
 
     if ( upos == -1 ) {
-	msg = xasprintf( "%u 0x%x U+???? \"%.25s\" ",
+	msg = smprintf( "%u 0x%x U+???? \"%.25s\" ",
 		localenc, localenc,
 		(sc->name == NULL) ? "" : sc->name );
     } else {
 	/* unicode name or range name */
 	char *uniname = unicode_name( upos );
 	if( uniname == NULL ) uniname = strdup( UnicodeRange( upos ) );
-	msg = xasprintf ( "%u 0x%x U+%04X \"%.25s\" %.100s",
+	msg = smprintf ( "%u 0x%x U+%04X \"%.25s\" %.100s",
 		localenc, localenc, upos,
 		(sc->name == NULL) ? "" : sc->name, uniname );
 	if ( uniname != NULL ) free( uniname ); uniname = NULL;
@@ -6707,7 +6700,7 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
         char *uniannot = unicode_annot( upos );
         if( uniannot != NULL ) {
             msg_old = msg;
-            msg = xasprintf("%s\n%s", msg_old, uniannot);
+            msg = smprintf("%s\n%s", msg_old, uniannot);
             free(msg_old);
             free( uniannot );
         }
@@ -6716,7 +6709,7 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
     /* user comments */
     if ( sc->comment!=NULL ) {
         msg_old = msg;
-        msg = xasprintf("%s\n%s", msg_old, sc->comment);
+        msg = smprintf("%s\n%s", msg_old, sc->comment);
         free(msg_old);
     }
 

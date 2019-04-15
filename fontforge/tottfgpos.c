@@ -29,6 +29,7 @@
 
 #include "fontforgevw.h"
 #include "fvfonts.h"
+#include <gfile.h>
 #include "lookups.h"
 #include "mem.h"
 #include "namelist.h"
@@ -2650,7 +2651,7 @@ static FILE *G___figureLookups(SplineFont *sf,int is_gpos,
     struct lookup_subtable *sub;
     int index, i,j;
     FILE *final;
-    FILE *lfile = tmpfile();
+    FILE *lfile = GFileTmpfile();
     OTLookup **sizeordered;
     OTLookup *all = is_gpos ? sf->gpos_lookups : sf->gsub_lookups;
     char *buffer;
@@ -2686,7 +2687,7 @@ return( lfile );
 	    sizeordered[ otl->lookup_index ] = otl;
     qsort(sizeordered,index,sizeof(OTLookup *),lookup_size_cmp);
 
-    final = tmpfile();
+    final = GFileTmpfile();
     buffer = malloc(32768);
     for ( i=0; i<index; ++i ) {
 	uint32 diff;
@@ -2985,7 +2986,7 @@ return( NULL );
     /* Now we've worked out which lookups need extension tables and marked them*/
     /* Generate the extension tables, and update the offsets to reflect the size */
     /* of the extensions */
-    efile = tmpfile();
+    efile = GFileTmpfile();
 
     len2 = 0;
     for ( otf=all; otf!=NULL; otf=otf->next ) if ( otf->lookup_index!=-1 ) {
@@ -3065,7 +3066,7 @@ return( NULL );
 return( NULL );
     }
 
-    g___ = tmpfile();
+    g___ = GFileTmpfile();
 
     putlong(g___,0x10000);		/* version number */
     putshort(g___,10);		/* offset to script table */
@@ -3473,7 +3474,7 @@ void otf_dumpgdef(struct alltabs *at, SplineFont *sf) {
     if ( !needsclass && lcnt==0 && sf->mark_class_cnt==0 && sf->mark_set_cnt==0 )
 return;					/* No anchor positioning, no ligature carets */
 
-    at->gdef = tmpfile();
+    at->gdef = GFileTmpfile();
     if ( sf->mark_set_cnt==0 ) {
 	putlong(at->gdef,0x00010000);		/* Version */
         putshort(at->gdef, needsclass ? 12 : 0 ); /* glyph class defn table */
@@ -4043,7 +4044,7 @@ void otf_dump_math(struct alltabs *at, SplineFont *sf) {
     else
 	return;
 
-    at->math = mathf = tmpfile();
+    at->math = mathf = GFileTmpfile();
 
     putlong(mathf,  0x00010000 );		/* Version 1 */
     putshort(mathf, 10);			/* Offset to constants */
@@ -4270,7 +4271,7 @@ return;
 
     SFBaseSort(sf);
 
-    at->base = basef = tmpfile();
+    at->base = basef = GFileTmpfile();
 
     putlong(basef,  0x00010000 );		/* Version 1 */
     putshort(basef,  0 );			/* offset to horizontal baselines, fill in later */
@@ -4578,7 +4579,7 @@ return;
     SFJstfSort(sf);
     for ( jscript=sf->justify, cnt=0; jscript!=NULL; jscript=jscript->next, ++cnt );
 
-    at->jstf = jstf = tmpfile();
+    at->jstf = jstf = GFileTmpfile();
 
     putlong(jstf,  0x00010000 );		/* Version 1 */
     putshort(jstf, cnt );			/* script count */
@@ -4717,7 +4718,7 @@ void otf_dump_dummydsig(struct alltabs *at, SplineFont *sf) {
     /*  told an empty DSIG table works for that. So... a truely pointless   */
     /*  instance of a pointless table. I suppose that's a bit ironic. */
 
-    at->dsigf = dsigf = tmpfile();
+    at->dsigf = dsigf = GFileTmpfile();
     putlong(dsigf,0x00000001);		/* Standard version (and why isn't it 0x10000 like everything else?) */
     putshort(dsigf,0);			/* No signatures in my signature table*/
     putshort(dsigf,0);			/* No flags */

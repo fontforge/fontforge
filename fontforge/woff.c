@@ -32,6 +32,7 @@
 #include "woff.h"
 
 #include "fontforge.h"
+#include <gfile.h>
 #include "mem.h"
 #include "parsettf.h"
 #include "tottf.h"
@@ -131,7 +132,7 @@ return(0);
 	fprintf( stderr,"Compression initialization failed.\n" );
 return(0);
     }
-    tmp = tmpfile();
+    tmp = GFileTmpfile();
 
     do {
 	if ( len<=0 ) {
@@ -234,7 +235,7 @@ return( NULL );
     privOffset = getlong(woff);
     privLength = getlong(woff);
 
-    sfnt = tmpfile();
+    sfnt = GFileTmpfile();
     if ( sfnt==NULL ) {
 	LogError(_("Could not open temporary file."));
 return( NULL );
@@ -425,7 +426,7 @@ int _WriteWOFFFont(FILE *woff,SplineFont *sf, enum fontformat format,
 
     format = sf->subfonts!=NULL ? ff_otfcid :
 		sf->layers[layer].order2 ? ff_ttf : ff_otf;
-    sfnt = tmpfile();
+    sfnt = GFileTmpfile();
     ret = _WriteTTFFont(sfnt,sf,format,bsizes,bf,flags,enc,layer);
     if ( !ret ) {
 	fclose(sfnt);
@@ -607,7 +608,7 @@ static FILE *WriteBufferToFile(FILE *fp, const uint8_t *buf, size_t buflen)
  */
 static FILE *WriteBufferToTempFile(const uint8_t *buf, size_t buflen)
 {
-    FILE *fp = tmpfile();
+    FILE *fp = GFileTmpfile();
     if (!WriteBufferToFile(fp, buf, buflen)) {
         fclose(fp);
         return NULL;
@@ -628,7 +629,7 @@ int WriteWOFF2Font(char *fontname, SplineFont *sf, enum fontformat format, int32
 
 int _WriteWOFF2Font(FILE *fp, SplineFont *sf, enum fontformat format, int32_t *bsizes, enum bitmapformat bf, int flags, EncMap *enc, int layer)
 {
-    FILE *tmp = tmpfile();
+    FILE *tmp = GFileTmpfile();
     if (!tmp) {
         return 0;
     }

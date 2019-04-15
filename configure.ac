@@ -94,7 +94,7 @@ AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_TESTDIR([tests],[fontforge])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
-AC_CONFIG_HEADERS([config.h inc/fontforge-config.h:config.h])
+AC_CONFIG_HEADERS([inc/fontforge-config.h])
 AM_INIT_AUTOMAKE([foreign -Wall subdir-objects tar-pax])
 AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
@@ -108,7 +108,6 @@ AC_PROG_AWK
 AC_PROG_CC
 AC_PROG_CC_C99
 AM_PROG_CC_C_O
-gl_EARLY
 AC_PROG_CXX
 AC_PROG_CPP
 AC_PROG_GREP
@@ -419,6 +418,7 @@ FONTFORGE_ARG_WITH_LIBUNINAMESLIST
 #FONTFORGE_ARG_WITH_LIBUNICODENAMES
 FONTFORGE_ARG_WITH_ZEROMQ
 FONTFORGE_ARG_WITH_LIBREADLINE
+FONTFORGE_ARG_WITH_ICONV
 
 FONTFORGE_ARG_ENABLE_WOFF2
 
@@ -442,11 +442,7 @@ AC_CHECK_HEADERS([arpa/inet.h fcntl.h ieeefp.h])
 AC_CHECK_HEADERS([langinfo.h libintl.h])
 AC_CHECK_HEADERS([memory.h netdb.h netinet/in.h])
 AC_CHECK_HEADERS([strings.h sys/ioctl.h sys/socket.h sys/time.h unistd.h])
-if test x"${i_do_want_iconv}" = xyes; then
-   AC_CHECK_HEADERS([iconv.h])
-fi
 AC_CHECK_HEADERS([execinfo.h])
-gl_INIT
 
 #--------------------------------------------------------------------------
 #
@@ -454,76 +450,6 @@ gl_INIT
 
 AC_C_BIGENDIAN
 AC_TYPE_PID_T
-
-# Error out under certain conditions, please.
-gl_WARN_ADD([-Werror=implicit-function-declaration])
-gl_WARN_ADD([-Werror=int-conversion])
-
-#--------------------------------------------------------------------------
-# Check to see if "this" compiler can use these flags, errors, or warnings.
-# Enable the flags that can be used and skip flags that are unknown.
-AC_ARG_ENABLE([gcc-warnings],
-  [AS_HELP_STRING([--enable-gcc-warnings],
-                  [turn on lots of GCC warnings (for developers)])],
-  [case $enableval in
-     yes|no) ;;
-     *)      AC_MSG_ERROR([bad value $enableval for gcc-warnings option]) ;;
-   esac
-   gl_gcc_warnings=$enableval],
-  [gl_gcc_warnings=no]
-)
-
-if test "$gl_gcc_warnings" = yes; then
-  gl_WARN_ADD([-Werror], [WERROR_CFLAGS])
-
-  # Set up the list of undesired warnings.
-  nw=
-  nw="$nw -Wundef"            # All compiler preprocessors support #if UNDEF
-  nw="$nw -Wtraditional"      # All compilers nowadays support ANSI C
-  nw="$nw -Wstrict-overflow"  # Use a lower level (see below).
-  nw="$nw -Wconversion"       # These warnings usually don’t point to mistakes.
-  nw="$nw -Wsign-conversion"  # Likewise.
-  nw="$nw -Wtraditional-conversion" # Don't care.
-  nw="$nw -Wpadded"           # Don't care.
-  nw="$nw -Wc++-compat"       # Don't care.
-  nw="$nw -Woverlength-strings" # Don't care.
-  nw="$nw -Wmissing-format-attribute" # Don't care.
-  nw="$nw -Wshadow"           # Don't care.
-  nw="$nw -Wunreachable-code" # Seems buggy.
-  nw="$nw -Wsystem-headers"   # glibc headers fail as of glibc 2.17, gcc 4.8
-  nw="$nw -Wsuggest-attribute=format" # glibc headers fail as of glibc 2.17, gcc 4.8
-  nw="$nw -Wstrict-aliasing"  # -Sep2012, There's a bug in <py3 with Py_True/False that will propagate with GCC's "strict-aliasing" rules.
-  nw="$nw -Wsuggest-attribute=pure" # FIXME: Maybe later?
-  nw="$nw -Wbad-function-cast" # We do this on purpose (e.g. double to int)
-  nw="$nw -Wall"
-  nw="$nw -Wunused-macros"    # those macros might come in handy later
-
-  gl_MANYWARN_ALL_GCC([warnings])
-
-  # Enable all GCC warnings not in this list.
-  gl_MANYWARN_COMPLEMENT([warnings], [$warnings], [$nw])
-  for w in $warnings; do
-    gl_WARN_ADD([$w])
-  done
-
-  # Add an extra warning
-  gl_WARN_ADD([-Wformat])
-  gl_WARN_ADD([-Wstrict-overflow=1])
-
-  # Add these explicitly: adding -Wfoo to $nw doesn't work in this case
-  gl_WARN_ADD([-Wno-unused-result]) # FIXME: We should in fact use this, but currently it makes too much noise
-  gl_WARN_ADD([-Wno-comment]) # We use /* in comments with good reason
-
-  # Add some more safety measures
-  gl_WARN_ADD([-D_FORTIFY_SOURCE=2])
-
-  # When compiling with GCC, prefer -isystem to -I when including system
-  # include files, to avoid generating useless diagnostics for the files.
-  ISYSTEM='-isystem '
-else
-  ISYSTEM='-I'
-fi
-AC_SUBST([ISYSTEM])
 
 AC_LANG_PUSH([C]) dnl NOTE: configure.ac - try not to push/pop too often
 # Create LDFLAGS for libraries. Currently used to pass '-no-undefined' to libtool.
@@ -634,6 +560,7 @@ AM_CONDITIONAL([FONTTOOLS],[test x"${fontforge_extras}" = xyes])
 # Create and Set FontForge Compiler Flags
 
 my_cflags="${my_cflags} ${WARNING_CFLAGS}"
+my_cflags="${my_cflags} -Werror=implicit-function-declaration -Werror=int-conversion"
 if test x"${i_do_have_freetype_debugger}" != xno; then
    my_cflags="${my_cflags} -I${FREETYPE_SOURCE}/src/truetype"
    my_cflags="${my_cflags} -I${FREETYPE_SOURCE}/include"
@@ -659,6 +586,7 @@ my_cflags="${my_cflags} ${PYTHON_CFLAGS}"
 my_cflags="${my_cflags} ${PTHREAD_CFLAGS}"
 my_cflags="${my_cflags} ${LIBREADLINE_CFLAGS}"
 my_cflags="${my_cflags} ${CODE_COVERAGE_CFLAGS}"
+my_cflags="${my_cflags} ${ICONV_CFLAGS}"
 test x"${SDK}" = x || my_cflags="${my_cflags} -I${SDK}"
 AC_SUBST([MY_CFLAGS],[${my_cflags}])
 
@@ -673,6 +601,7 @@ test x"${i_do_have_libuninameslist}" = xyes && my_libs="${my_libs} ${LIBUNINAMES
 test x"${i_do_have_libunicodenames}" = xyes && my_libs="${my_libs} ${LIBUNICODENAMES_LIBS}"
 test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${CAIRO_LIBS}"
 test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${PANGOCAIRO_LIBS}"
+test x"${i_do_have_iconv}" = xyes && my_libs="${my_libs} ${ICONV_LIBS}"
 test x"${i_do_have_gui}" = xyes && my_libs="${my_libs} ${PANGO_LIBS}"
 test x"${fontforge_can_use_woff2}" = xyes && my_libs="${my_libs} ${WOFF2_LIBS}"
 
@@ -754,7 +683,6 @@ AM_CONDITIONAL([FONTFORGE_CAN_USE_GTK],[test x"${fontforge_can_use_gtk}" = xyes]
 AC_CONFIG_FILES([
 Makefile
 inc/Makefile
-lib/Makefile
 Unicode/Makefile
 gutils/Makefile
 collab/Makefile

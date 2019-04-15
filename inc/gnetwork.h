@@ -30,6 +30,8 @@
 
 #include <fontforge-config.h>
 
+#ifdef BUILD_COLLAB
+
 #define IPADDRESS_STRING_LENGTH_T 100
 
 /**
@@ -83,5 +85,7 @@ char* ff_uuid_generate( char* target );
  * you passed in conforms to being a uuid.
  */
 extern int ff_uuid_isValid( char* uuid );
+
+#endif
 
 #endif

@@ -26,15 +26,7 @@
  */
 
 #include "fontforge.h"
-#include "progname.h"
 
 int main( int argc, char **argv ) {
-#ifdef FF_USE_LIBGC
-#ifndef __MINGW32__
-    GC_set_handle_fork(1);
-#endif
-    GC_INIT();
-    set_program_name (argv[0]);
-#endif
     return fontforge_main( argc, argv );
 }

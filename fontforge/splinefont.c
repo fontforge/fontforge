@@ -33,6 +33,7 @@
 #include "fvcomposite.h"
 #include "fvfonts.h"
 #include "fvimportbdf.h"
+#include <gfile.h>
 #include "ikarus.h"
 #include "macbinary.h"
 #include "namelist.h"
@@ -827,7 +828,7 @@ return( NULL );
     if ( dir==NULL ) dir = P_tmpdir;
     archivedir = malloc(strlen(dir)+100);
     sprintf( archivedir, "%s/ffarchive-%d-%d", dir, getpid(), ++cnt );
-    if ( GFileMkDir(archivedir)!=0 ) {
+    if ( GFileMkDir(archivedir, 0755)!=0 ) {
 	free(archivedir);
 return( NULL );
     }
@@ -894,18 +895,18 @@ struct compressors compressors[] = {
 char *Decompress(char *name, int compression) {
     char *dir = getenv("TMPDIR");
     char buf[1500];
-    char *tmpfile;
+    char *tmpfn;
 
     if ( dir==NULL ) dir = P_tmpdir;
-    tmpfile = malloc(strlen(dir)+strlen(GFileNameTail(name))+2);
-    strcpy(tmpfile,dir);
-    strcat(tmpfile,"/");
-    strcat(tmpfile,GFileNameTail(name));
-    *strrchr(tmpfile,'.') = '\0';
-    snprintf( buf, sizeof(buf), "%s < %s > %s", compressors[compression].decomp, name, tmpfile );
+    tmpfn = malloc(strlen(dir)+strlen(GFileNameTail(name))+2);
+    strcpy(tmpfn,dir);
+    strcat(tmpfn,"/");
+    strcat(tmpfn,GFileNameTail(name));
+    *strrchr(tmpfn,'.') = '\0';
+    snprintf( buf, sizeof(buf), "%s < %s > %s", compressors[compression].decomp, name, tmpfn );
     if ( system(buf)==0 )
-return( tmpfile );
-    free(tmpfile);
+return( tmpfn );
+    free(tmpfn);
 return( NULL );
 }
 
@@ -971,7 +972,7 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
     int fromsfd = false;
     int i;
     char *pt, *ext2, *strippedname = NULL, *chosenname = NULL, *oldstrippedname = NULL;
-    char *tmpfile=NULL, *paren=NULL, *fullname;
+    char *tmpfn=NULL, *paren=NULL, *fullname;
     char *archivedir=NULL;
     int len;
     int checked;
@@ -1045,13 +1046,13 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
     else {
 	if ( file!=NULL ) {
 	    char *spuriousname = ForceFileToHaveName(file,compressors[i].ext);
-	    tmpfile = Decompress(spuriousname,i);
+	    tmpfn = Decompress(spuriousname,i);
 	    fclose(file); file = NULL;
 	    unlink(spuriousname); free(spuriousname);
 	} else
-	    tmpfile = Decompress(strippedname,i);
-	if ( tmpfile!=NULL ) {
-	    strippedname = tmpfile;
+	    tmpfn = Decompress(strippedname,i);
+	if ( tmpfn!=NULL ) {
+	    strippedname = tmpfn;
 	} else {
 	    ff_post_error(_("Decompress Failed!"),_("Decompress Failed!"));
 	    ArchiveCleanup(archivedir);
@@ -1294,9 +1295,9 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
 	    free(fullname);
     if ( chosenname!=NULL )
 	    free(chosenname);
-    if ( tmpfile!=NULL ) {
-	    unlink(tmpfile);
-	    free(tmpfile);
+    if ( tmpfn!=NULL ) {
+	    unlink(tmpfn);
+	    free(tmpfn);
     }
     if ( wasarchived )
 	    ArchiveCleanup(archivedir);

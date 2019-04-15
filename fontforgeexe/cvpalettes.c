@@ -32,6 +32,7 @@
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "collabclientui.h"
+#include "ustring.h"
 
 int palettes_docked=1;
 int rectelipse=0, polystar=0, regular_star=1;
@@ -1382,14 +1383,14 @@ static void ToolsMouse(CharView *cv, GEvent *event) {
 	    char * menuname = NULL;
 	    Hotkey* toolhotkey = NULL;
             if (mininame != NULL) {
-              if (asprintf(&menuname, "%s%s", "Point.Tools.", mininame) != -1) {
+              if ( (menuname = smprintf("%s%s", "Point.Tools.", mininame)) != NULL) {
 	        toolhotkey = hotkeyFindByMenuPath(cv->gw, menuname);
 	        free(menuname); menuname = NULL;
               }
               free(mininame); mininame = NULL;
             }
 	    char * finalmsg = NULL;
-	    if (toolhotkey != NULL && asprintf(&finalmsg, "%s (%s)", msg, toolhotkey->text) != -1) {
+	    if (toolhotkey != NULL && (finalmsg = smprintf("%s (%s)", msg, toolhotkey->text)) != NULL) {
 	      GGadgetPreparePopup8(cvtools, finalmsg);
 	      free(finalmsg); finalmsg = NULL;
 	    } else GGadgetPreparePopup8(cvtools, msg); // That's what we were doing before. Much simpler.

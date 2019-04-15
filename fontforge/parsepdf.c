@@ -32,6 +32,7 @@
 #include "dumppfa.h"
 #include "encoding.h"
 #include "fontforge.h"
+#include <gfile.h>
 #include "namelist.h"
 #include "parsepfa.h"
 #include "parsettf.h"
@@ -882,7 +883,7 @@ return( NULL );
     while ( (ch=getc(pdf))!=EOF && ch!='m' );	/* Skip over >>\nstream */
     if ( (ch=getc(pdf))=='\r' ) ch = getc(pdf);	/* Skip the newline */
 
-    res = tmpfile();
+    res = GFileTmpfile();
     for ( i=0; i<length; ++i ) {
 	if ( (ch=getc(pdf))!=EOF )
 	    putc(ch,res);
@@ -897,7 +898,7 @@ return( res );
 	for ( end=pt; isalnum(*end); ++end );
 	ch = *end; *end = '\0';
 	old = res;
-	res = tmpfile();
+	res = GFileTmpfile();
 	if ( strmatch("ASCIIHexDecode",pt)==0 ) {
 	    pdf_hexfilter(res,old);
 	    pt += strlen("ASCIIHexDecode");
@@ -1848,7 +1849,7 @@ static int pdf_getcharprocs(struct pdfcontext *pc,char *charprocs) {
 return( false );
 return( pdf_readdict(pc));
     }
-    temp = tmpfile();
+    temp = GFileTmpfile();
     if ( temp==NULL )
 return( false );
     while ( *charprocs ) {
