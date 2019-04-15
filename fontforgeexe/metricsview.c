@@ -2921,7 +2921,7 @@ static void _MVMenuBuildAccent(MetricsView *mv,int onlyaccents) {
     if ( i!=-1 ) {
 	SplineChar *sc = mv->glyphs[i].sc;
 	if ( SFIsSomethingBuildable(mv->sf,sc,mv->layer,onlyaccents) )
-	    SCBuildComposit(mv->sf,sc,mv->layer,NULL,onlycopydisplayed);
+	    SCBuildComposit(mv->sf,sc,mv->layer,NULL,onlycopydisplayed,onlyaccents);
     }
 }
 

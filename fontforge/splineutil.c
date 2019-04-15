@@ -5935,6 +5935,7 @@ void SplineCharFreeContents(SplineChar *sc) {
 return;
     if (sc->name != NULL) free(sc->name);
     if (sc->comment != NULL) free(sc->comment);
+    if (sc->user_decomp != NULL) free(sc->user_decomp);
     for ( i=0; i<sc->layer_cnt; ++i ) {
 #if defined(_NO_PYTHON)
         if (sc->layers[i].python_persistent != NULL) free( sc->layers[i].python_persistent );	/* It's a string of pickled data which we leave as a string */

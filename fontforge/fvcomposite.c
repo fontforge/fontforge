@@ -1119,11 +1119,14 @@ const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,int noch
     const unichar_t *upt, *pt; unichar_t *gpt;
     char *dot = NULL;
 
-    if ( sc!=NULL && (dot = strchr(sc->name,'.'))!=NULL ) {
-	/* agrave.sc should be built from a.sc and grave or grave.sc */
-	char *temp = copyn(sc->name,dot-sc->name);
-	base = UniFromName(temp,sf->uni_interp,NULL);
-	free(temp);
+    if ( sc!=NULL ) {
+        if ( sc->user_decomp != NULL ) return sc->user_decomp;
+        if ((dot = strchr(sc->name,'.'))!=NULL ) {
+            /* agrave.sc should be built from a.sc and grave or grave.sc */
+            char *temp = copyn(sc->name,dot-sc->name);
+            base = UniFromName(temp,sf->uni_interp,NULL);
+            free(temp);
+        }
     }
 
     if ( base>=0xac00 && base<=0xd7a3 ) { /* Hangul syllables */
@@ -1343,6 +1346,8 @@ return( false );
 
 int SFIsSomethingBuildable(SplineFont *sf,SplineChar *sc, int layer, int onlyaccents) {
     int unicodeenc = sc->unicodeenc;
+
+    if (sc->user_decomp) return true;
 
     if ( onlyaccents &&		/* Don't build greek accents out of latin ones */
 	    (unicodeenc==0x1fbd || unicodeenc==0x1fbe || unicodeenc==0x1fbf ||
@@ -2791,7 +2796,13 @@ return;
     SCSynchronizeWidth(sc,sc->width + xoff,sc->width,NULL);
 }
 
-void SCBuildComposit(SplineFont *sf, SplineChar *sc, int layer, BDFFont *bdf, int disp_only ) {
+int SCUserDecompAccent(SplineChar *sc, unichar_t accent, int accent_hint) {
+    return (sc->user_decomp != NULL && 
+            accent != '\0' && 
+            accent_hint);
+}
+
+void SCBuildComposit(SplineFont *sf, SplineChar *sc, int layer, BDFFont *bdf, int disp_only, int accent_hint) {
     const unichar_t *pt, *apt; unichar_t ch;
     real ia;
     char *dot;
@@ -2865,8 +2876,8 @@ return;
 	    /* a reference to space */;
 	else if ( sc->width == base->sc->width )
 	    base->use_my_metrics = true;
-	while ( iscombining(*pt) || (ch=='L' && *pt==0xb7) ||	/* b7, centered dot is used as a combining accent for Ldot but as a lig for ldot */
-		*pt==0x384 || *pt==0x385 || (*pt>=0x1fbd && *pt<=0x1fff ))	/* Special greek accents */
+	while ( iscombining(*pt) || SCUserDecompAccent(sc, *pt, accent_hint) || (ch=='L' && *pt==0xb7) ||	/* b7, centered dot is used as a combining accent for Ldot but as a lig for ldot */
+		*pt==0x384 || *pt==0x385 || (*pt>=0x1fbd && *pt<=0x1fff) )	/* Special greek accents */
 	    SCCenterAccent(sc,base!=NULL?base->sc:NULL,sf,layer,*pt++,bdf,disp_only,ia,ch,dot);
 	while ( *pt ) {
 	    if ( base!=NULL ) base->use_my_metrics = false;

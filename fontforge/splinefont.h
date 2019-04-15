@@ -1542,6 +1542,7 @@ typedef struct splinechar {
     real tile_margin;			/* If the glyph is used as a tile */
     DBounds tile_bounds;
     char * glif_name; // This stores the base name of the glyph when saved to U. F. O..
+    unichar_t* user_decomp; // User decomposition for building this character
 } SplineChar;
 
 #define TEX_UNDEF 0x7fff
