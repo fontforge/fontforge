@@ -3872,7 +3872,7 @@ static int CI_PickColor(GGadget *g, GEvent *e) {
 return( true );
 }
 
-int BytesNeeded(unichar_t in) {
+static int BytesNeeded(unichar_t in) {
     if (in <= 0xff) {
         return 1;
     } else if (in <= 0xffff) {
@@ -4031,12 +4031,9 @@ static void CIFillup(CharInfo *ci) {
 	GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_Components),temp);
 	free(temp);
     }
-    if (bits2 == NULL) {
-        bits2 = (unichar_t*) L"\0";
-    } 
+    if (d_ptr == NULL) d_ptr = bits2;
 
-    // i.e. five six hex digit long codepoints with spaces after them, + '\0'
-    int d_length;
+    int d_length = d_ptr ? u_strlen(d_ptr) : 0;
     if (sc->user_decomp != NULL) {
         d_length = u_strlen(sc->user_decomp);
     } else {
@@ -4065,6 +4062,7 @@ static void CIFillup(CharInfo *ci) {
     }
 
     GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_ComponentTextField),codepoints_as_hex);
+    free(codepoints_as_hex);
 
     if (!GGadgetIsEnabled(codcb)) GGadgetSetEnabled(codcb, true);
     char* lbl = CI_CreateInterpretedAsLabel(sc->user_decomp);
