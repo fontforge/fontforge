@@ -623,29 +623,6 @@ AM_CONDITIONAL([HAVE_PYTHON_EVEN],[test x"${have_python_even}" = xyes && test x"
 #--------------------------------------------------------------------------
 #--------------------------------------------------------------------------
 #--------------------------------------------------------------------------
-# We do not use GTK2 unless explicitly told it is OK to try to do that
-#
-AC_ARG_ENABLE([gtk2-use],
-        [AS_HELP_STRING([--enable-gtk2-use],
-                [Try to detect and use gtk2])],
-        [have_gtk2_use=yes])
-if test x$have_gtk2_use = xyes ; then
-    PKG_CHECK_MODULES([GTK2],[gtk+-2.0],
-	[
-		fontforge_can_use_gtk=yes
-		AC_DEFINE(FONTFORGE_CAN_USE_GTK,[],[FontForge is able to use some GTK2 functions if it wants])
-		echo "building functionality that relies on gtk2..."
-	],
-	[
-		fontforge_can_use_gtk=no
-		echo "NOT building functionality that relies on gtk2..."
-	])
-fi
-AM_CONDITIONAL([FONTFORGE_CAN_USE_GTK],[test x"${fontforge_can_use_gtk}" = xyes])
-
-#--------------------------------------------------------------------------
-#--------------------------------------------------------------------------
-#--------------------------------------------------------------------------
 # Output commands - Create FontForge Portable Makefiles
 
 AC_CONFIG_FILES([
@@ -666,7 +643,6 @@ doc/Makefile
 doc/html/Makefile
 pycontrib/Makefile
 pycontrib/simple/Makefile
-pycontrib/gdraw/Makefile
 pyhook/Makefile
 tests/Makefile
 desktop/Makefile
