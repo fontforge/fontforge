@@ -738,7 +738,6 @@ extern void FVAutoWidth2(FontView *fv);
 extern void SC_MarkInstrDlgAsChanged(SplineChar *sc);
 
 extern void PythonUI_Init(void);
-extern void PythonUI_namedpipe_Init(void);
 
 extern void SCStroke(SplineChar *sc);
 

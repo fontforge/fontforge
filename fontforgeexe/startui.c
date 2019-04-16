@@ -1397,10 +1397,6 @@ exit( 0 );
     if ( !any && !doopen )
 	any = ReopenLastFonts();
 
-#ifndef _NO_PYTHON
-    PythonUI_namedpipe_Init();
-#endif
-
 #if defined(__Mac)
     if ( listen_to_apple_events ) {
 	install_apple_event_handlers();

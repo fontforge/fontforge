@@ -41,7 +41,6 @@ endif
 EXTRA_DIST = excepthook.py test.sfd README even.py
 
 SUBDIRS =
-SUBDIRS += gdraw
 SUBDIRS += simple
 
 -include $(top_srcdir)/git.mk
