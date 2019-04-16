@@ -243,13 +243,4 @@ extern PyMethodDef module_fontforge_methods[];
 
 PyObject *PyFV_From_FV_I(FontViewBase *fv);
 
-// return is really a CharView*
-typedef void* (*pyFF_maybeCallCVPreserveState_Func_t)( PyFF_Glyph *self );
-pyFF_maybeCallCVPreserveState_Func_t get_pyFF_maybeCallCVPreserveState_Func( void );
-void set_pyFF_maybeCallCVPreserveState_Func( pyFF_maybeCallCVPreserveState_Func_t f );
-
-typedef void (*pyFF_sendRedoIfInSession_Func_t)( void* cv );
-pyFF_sendRedoIfInSession_Func_t get_pyFF_sendRedoIfInSession_Func( void );
-void set_pyFF_sendRedoIfInSession_Func( pyFF_sendRedoIfInSession_Func_t f );
-
 #endif /* FONTFORGE_FFPYTHON_H */

@@ -120,11 +120,6 @@ extern int old_sfnt_flags;
 #include <wchar.h>
 #endif
 
-#include "gnetwork.h"
-#ifdef BUILD_COLLAB
-#include "collab/zmq_kvmsg.h"
-#endif
-#include "collabclient.h"
 #include <ffglib.h>
 
 extern int prefRevisionsToRetain;
@@ -5748,46 +5743,6 @@ return( NULL );
 return( (PyObject * ) ly );
 }
 
-
-/**
- * For non-ui/non collab builds we don't need to worry about this
- */
-static void* pyFF_maybeCallCVPreserveState_DoNothinImpl( PyFF_Glyph *UNUSED(self) )
-{
-    return 0;
-}
-
-static pyFF_maybeCallCVPreserveState_Func_t
-/**/   pyFF_maybeCallCVPreserveState_Func = pyFF_maybeCallCVPreserveState_DoNothinImpl;
-
-pyFF_maybeCallCVPreserveState_Func_t
-get_pyFF_maybeCallCVPreserveState_Func( void )
-{
-    return pyFF_maybeCallCVPreserveState_Func;
-}
-
-void set_pyFF_maybeCallCVPreserveState_Func( pyFF_maybeCallCVPreserveState_Func_t f )
-{
-    pyFF_maybeCallCVPreserveState_Func = f;
-}
-
-static void pyFF_sendRedoIfInSession_Func_DoNothingImpl( void* UNUSED(cv) )
-{
-}
-static pyFF_sendRedoIfInSession_Func_t
-/**/   pyFF_sendRedoIfInSession_Func = pyFF_sendRedoIfInSession_Func_DoNothingImpl;
-
-pyFF_sendRedoIfInSession_Func_t
-get_pyFF_sendRedoIfInSession_Func( void )
-{
-    return pyFF_sendRedoIfInSession_Func;
-}
-
-void set_pyFF_sendRedoIfInSession_Func( pyFF_sendRedoIfInSession_Func_t f )
-{
-    pyFF_sendRedoIfInSession_Func = f;
-}
-
 static int PyFF_Glyph_CSetLayer(PyFF_Glyph *self, PyObject *value, int layeri, int flags) {
     SplineChar *sc = self->sc;
     Layer *layer;
@@ -5816,7 +5771,6 @@ static int PyFF_Glyph_CSetLayer(PyFF_Glyph *self, PyObject *value, int layeri, i
 	return( -1 );
     }
 
-    CharView* cv = (CharView*)get_pyFF_maybeCallCVPreserveState_Func()( self );
     if ( layer->order2!=isquad ) {
 	if ( layer->order2 )
 	    newss = SplineSetsTTFApprox(ss);
@@ -5829,7 +5783,6 @@ static int PyFF_Glyph_CSetLayer(PyFF_Glyph *self, PyObject *value, int layeri, i
     layer->splines = ss;
 
     SCCharChangedUpdate(sc,self->layer);
-    get_pyFF_sendRedoIfInSession_Func()( cv );
 return( 0 );
 }
 
@@ -17845,12 +17798,6 @@ PyMethodDef PyFF_Font_methods[] = {
     { "validate", (PyCFunction)PyFFFont_validate, METH_VARARGS, "Check whether a font is valid and return True if it is." },
     { "reencode", (PyCFunction)PyFFFont_reencode, METH_VARARGS, "Reencodes the current font into the given encoding." },
     { "clearSpecialData", (PyCFunction)PyFFFont_clearSpecialData, METH_NOARGS, "Clear special data not accessible in FontForge." },
-
-//    { "CollabSessionStart", (PyCFunction) PyFFFont_CollabSessionStart, METH_VARARGS, "Start a collab session at the given address (or the public IP address by default)" },
-
-//    { "CollabSessionJoin", (PyCFunction) PyFFFont_CollabSessionJoin, METH_VARARGS, "Join a collab session at the given address (or localhost by default)" },
-//    { "CollabSessionRunMainLoop", (PyCFunction) PyFFFont_CollabSessionRunMainLoop, METH_VARARGS, "Run the main loop, checking for and reacting to Collab messages for the given number of milliseconds (or 1 second by default)" },
-//    { "CollabSessionSetUpdatedCallback", (PyCFunction) PyFFFont_CollabSessionSetUpdatedCallback, METH_VARARGS, "Python function to call after a new collab update has been applied" },
 
     // Leave some sentinel slots here so that the UI
     // code can add it's methods to the end of the object declaration.

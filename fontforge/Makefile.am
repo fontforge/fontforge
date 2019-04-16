@@ -130,8 +130,7 @@ AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
 
 libfontforge_la_SOURCES = activeinui.c asmfpst.c autohint.c autosave.c	\
 	autotrace.c autowidth.c autowidth2.c bezctx_ff.c bitmapchar.c	\
-	bitmapcontrol.c bvedit.c collabclient.c collabclient.h		\
-	collabclientpriv.h clipnoui.c crctab.c cvexport.c cvimages.c	\
+	bitmapcontrol.c bvedit.c clipnoui.c crctab.c cvexport.c cvimages.c	\
 	cvundoes.c dumpbdf.c dumppfa.c effects.c encoding.c		\
 	featurefile.c flaglist.c fontviewbase.c freetype.c		\
 	fvcomposite.c fvfonts.c fvimportbdf.c fvmetrics.c ftdelta.c	\
@@ -161,12 +160,8 @@ libfontforge_cxx_la_SOURCES = woff2.cc
 libfontforge_la_LIBADD += libfontforge_cxx.la -lstdc++
 endif
 
-libfontforge_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBZMQ_CFLAGS)
+libfontforge_la_CPPFLAGS = $(AM_CPPFLAGS)
 libfontforge_la_LIBADD += splinerefigure.lo $(LIBADD)
-
-if LIBZMQ
-libfontforge_la_LIBADD += $(top_builddir)/collab/libzmqcollab.la $(LIBZMQ_LIBS)
-endif LIBZMQ
 
 libfontforge_la_LDFLAGS = $(MY_CFLAGS) -version-info $(LIBFONTFORGE_VERSION) \
 	${MY_LIB_LDFLAGS}

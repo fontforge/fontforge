@@ -28,14 +28,6 @@
 extern int cv_auto_goto;
 
 /**
- * If this is set by startui.c then the gdraw stuff will try to keep
- * any windows that are made hidden from the user. This allows code to
- * perform things using window objects but not burden the user from
- * seeing those windows. Used in collab.
- */
-extern int cmdlinearg_forceUIHidden;
-
-/**
  * It might make sense to move to using glib to load prefs in the future?
  * I've left this little stub of code around for then
  */

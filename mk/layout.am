@@ -43,9 +43,6 @@ pkgconfigdir = ${libdir}/pkgconfig
 # Where contributed Python scripts go.
 pkgpythondatadir = $(pkgdatadir)/python
 
-# Where contributed node.js scripts go.
-pkgnodejsdatadir = $(pkgdatadir)/nodejs
-
 # Where hotkey bindings go.
 hotkeysdir = $(pkgdatadir)/hotkeys
 

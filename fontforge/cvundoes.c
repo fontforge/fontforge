@@ -58,7 +58,6 @@
 #else
     #include <execinfo.h>
 #endif
-#include "collabclient.h"
 
 extern char *coord_sep;
 
@@ -608,9 +607,6 @@ static Undoes *CVAddUndo(CharViewBase *cv,Undoes *undo) {
 			   &cv->layerheads[cv->drawmode]->undoes,
 			   &cv->layerheads[cv->drawmode]->redoes );
 
-    /* Let collab system know that a new undo state */
-    /* was pushed now since it last sent a message. */
-    collabclient_CVPreserveStateCalled( cv );
     return( ret );
 }
 
@@ -649,13 +645,6 @@ return(NULL);
     undo->u.state.dostroke = cv->layerheads[cv->drawmode]->dostroke;
     undo->u.state.fillfirst = cv->layerheads[cv->drawmode]->fillfirst;
     undo->layer = cv->drawmode;
-//    printf("CVPreserveState() dm:%d layer:%d new undo is at %p\n", cv->drawmode, layer, undo );
-
-    // MIQ: Note, this is the wrong time to call sendRedo as we are
-    // currently taking the undo state snapshot, after that the app
-    // will modify the local state, and that modification is what we
-    // are interested in sending on the wire, not the old undo state.
-    // collabclient_sendRedo( cv );
 
 return( CVAddUndo(cv,undo));
 }
@@ -756,7 +745,6 @@ Undoes *SCPreserveState(SplineChar *sc,int dohints) {
 	    SCPreserveLayer(sc,i,false);
 
     Undoes* ret = SCPreserveLayer( sc, ly_fore, dohints );
-    collabclient_SCPreserveStateCalled( sc );
     return( ret );
 }
 
@@ -868,9 +856,6 @@ return(NULL);
 
     Undoes* ret = AddUndo(undo,&sc->layers[ly_fore].undoes,&sc->layers[ly_fore].redoes);
 
-    /* Let collab system know that a new undo state */
-    /* was pushed now since it last sent a message. */
-    collabclient_SCPreserveStateCalled( sc );
     return(ret);
 }
 
@@ -1037,9 +1022,7 @@ void CVDoUndo(CharViewBase *cv) {
     undo->next = cv->layerheads[cv->drawmode]->redoes;
     cv->layerheads[cv->drawmode]->redoes = undo;
 
-    if ( !collabclient_generatingUndoForWire(cv) ) {
-	_CVCharChangedUpdate(cv,undo->was_modified);
-    }
+    _CVCharChangedUpdate(cv,undo->was_modified);
 }
 
 void CVDoRedo(CharViewBase *cv) {

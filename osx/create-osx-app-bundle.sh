@@ -87,14 +87,8 @@ dylibbundler --overwrite-dir --bundle-deps --fix-file \
 # rm -rf ./lib-bundle
 # cd ./bin
 cd $bundle_libexec/bin
-dylibbundler --overwrite-dir --bundle-deps --fix-file \
-  ./FontForgeInternal/fontforge-internal-collab-server \
-  --install-path @executable_path/collablib \
-  --dest-dir ./FontForgeInternal/collablib
-cd -
 
 cp -av /usr/lib/libedit* $bundle_lib/
-cp -av /usr/lib/libedit* $bundle_libexec/bin/FontForgeInternal/collablib/
 
 cd $bundle_lib
 for if in libgif.4.dylib libgif.dylib libjpeg.9.dylib libjpeg.dylib libpng16.16.dylib libpng16.dylib libtiff.5.dylib libtiff.dylib libuninameslist.0.dylib libuninames.dylib libpangocairo-1.0.0.dylib libpangocairo-1.0.dylib libcairo-gobject.2.dylib libcairo-gobject.dylib libcairo-script-interpreter.2.dylib libcairo-script-interpreter.dylib libcairo.2.dylib libcairo.dylib libgobject-2.0.0.dylib libgobject-2.0.dylib libpango-1.0.0.dylib libpango-1.0.dylib libpangoft2-1.0.0.dylib libpangoft2-1.0.dylib libpangoxft-1.0.0.dylib libpangoxft-1.0.dylib libXft.2.dylib libXft.dylib libfreetype.6.dylib libfreetype.dylib libfontconfig.1.dylib libfontconfig.dylib libSM.6.dylib libSM.dylib libICE.6.dylib libICE.dylib libreadline.6.2.dylib libreadline.6.3.dylib libreadline.6.dylib libreadline.dylib libspiro.0.0.1.dylib libspiro.0.dylib libspiro.dylib libharfbuzz.0.dylib libharfbuzz.dylib libgio-2.0.0.dylib libgio-2.0.dylib libglib-2.0.0.dylib libglib-2.0.dylib libxml2.2.dylib libxml2.dylib libiconv.2.dylib libiconv.dylib libintl.8.dylib libintl.dylib libX11-xcb.1.dylib libX11-xcb.dylib libX11.6.dylib libX11.dylib libXau.6.dylib libXau.dylib libXdmcp.6.dylib libXdmcp.dylib libXext.6.dylib libXext.dylib libXfixes.dylib libXi.6.dylib libXi.dylib libXrender.1.dylib libXrender.dylib libXt.6.dylib libXt.dylib liblzma.5.dylib libxcb.dylib libxcb.1.dylib libgthread-2.0.dylib libgthread-2.0.0.dylib libffi.dylib libffi.6.dylib libpcre.dylib libpcre.1.dylib libgmodule-2.0.dylib libgmodule-2.0.0.dylib libpixman-1.dylib libpixman-1.0.dylib libxcb-render.dylib libxcb-render.0.dylib libexpat.dylib libexpat.1.dylib libgraphite2.dylib libgraphite2.3.dylib libgraphite2.3.0.1.dylib libncurses.dylib libncurses.6.dylib;
@@ -192,19 +186,9 @@ do
   otool -L  $if | grep libedit
   install_name_tool -change /usr/lib/libedit.3.dylib @executable_path/../lib/libedit.3.dylib $if
 done
-cd $bundle_libexec/bin/FontForgeInternal/collablib/
-for if in *dylib 
-do 
-  echo $if 
-  otool -L  $if | grep libedit
-  install_name_tool -change /usr/lib/libedit.3.dylib @executable_path/../lib/libedit.3.dylib $if
-done
 
 cd $bundle_bin
-install_name_tool -change /usr/lib/libedit.3.dylib @executable_path/../lib/libedit.3.dylib fontforge 
-cd $bundle_libexec/bin/FontForgeInternal/
-install_name_tool -change /usr/lib/libedit.3.dylib @executable_path/collablib/libedit.3.dylib fontforge-internal-collab-server
-cd $bundle_bin
+install_name_tool -change /usr/lib/libedit.3.dylib @executable_path/../lib/libedit.3.dylib fontforge
 
 
 
@@ -370,40 +354,6 @@ cd $bundle_bin
 cd "$bundle_share/fontforge/python"
 rm -f Even
 ln -s /Applications/FontForge.app/Contents/MacOS/Even.app/Contents/MacOS/Even .
-cd $bundle_bin
-
-
-########################
-#
-# we want nodejs in the bundle for collab
-#
-echo "###################"
-echo "bundling up nodejs "
-echo "###################"
-mkdir -p $bundle_lib  $bundle_bin
-cd $bundle_bin
-cp -av /opt/local/bin/node .
-cd $bundle_lib
-if [ ! -f ../lib/libssl.1.0.0.dylib ]; then
-    cp -av /opt/local/lib/libssl*dylib ../lib/
-fi
-if [ ! -f ../lib/libcrypto.1.0.0.dylib ]; then
-    cp -av /opt/local/lib/libcrypto*dylib ../lib/
-fi
-
-cd $bundle_bin
-install_name_tool -change /opt/local/lib/libssl.1.0.0.dylib    @executable_path/../lib/libssl.1.0.0.dylib node 
-install_name_tool -change /opt/local/lib/libcrypto.1.0.0.dylib @executable_path/../lib/libcrypto.1.0.0.dylib node 
-cd $bundle_lib
-for if in libssl.1.0.0.dylib libcrypto.1.0.0.dylib;
-do
-    install_name_tool -change /opt/local/lib/libcrypto.1.0.0.dylib @executable_path/../lib/libcrypto.1.0.0.dylib $if
-    install_name_tool -change /opt/local/lib/libssl.1.0.0.dylib    @executable_path/../lib/libssl.1.0.0.dylib $if
-    install_name_tool -change /opt/local/lib/libz.1.dylib          @executable_path/../lib/libz.1.dylib $if
-done
-cd $bundle_share/fontforge/nodejs/collabwebview
-# this will npm install socket.io locally, without network/build interaction.
-cp -av ~/macports/categories/fontforge/node/node_modules .
 cd $bundle_bin
 
 ######################

@@ -66,13 +66,7 @@ include $(top_srcdir)/mk/layout.am
 
 #--------------------------------------------------------------------------
 
-SUBDIRS = inc Unicode gutils
-
-if LIBZMQ
-SUBDIRS += collab
-endif
-
-SUBDIRS += fontforge
+SUBDIRS = inc Unicode gutils fontforge
 
 if GRAPHICAL_USER_INTERFACE
 SUBDIRS += gdraw
@@ -99,7 +93,6 @@ endif THE_PROGRAMS
 SUBDIRS += \
 	contrib \
 	doc \
-	nodejs \
 	po \
 	pycontrib \
 	share \
@@ -130,7 +123,7 @@ DISTCHECK_CONFIGURE_FLAGS = --enable-theme-2012 --enable-debug
 #	--without-giflib --without-libjpeg --without-libpng	\
 #	--without-libtiff --without-libxml --without-libspiro	\
 #	--without-libuninameslist --without-libunicodenames	\
-#	--without-libzmq  --without-libreadline
+#	--without-libreadline
 
 
 #--------------------------------------------------------------------------

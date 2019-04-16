@@ -420,14 +420,3 @@ dnl FONTFORGE_WARN_PKG_FALLBACK
 dnl ---------------------------
 AC_DEFUN([FONTFORGE_WARN_PKG_FALLBACK],
    [AC_MSG_WARN([No pkg-config file was found for $1, but the library is present and we will try to use it.])])
-
-dnl FONTFORGE_ARG_WITH_ZEROMQ
-dnl -------------------------
-AC_DEFUN([FONTFORGE_ARG_WITH_ZEROMQ],
-[
-FONTFORGE_ARG_WITH([libzmq],
-        [AS_HELP_STRING([--with-libzmq],[build with libzmq])],
-        [ libczmq >= 2.2.0 libczmq < 4 libzmq >= 4.0.4 ],
-        [FONTFORGE_WARN_PKG_NOT_FOUND([LIBZMQ])],
-        [_NO_LIBZMQ], [NO_LIBZMQ=1])
-])
