@@ -1,6 +1,7 @@
 #include "glif_name_hash.h"
 
 #include <ffglib.h>
+#include <stdlib.h>
 
 static void glif_name_destroy(gpointer data) {
   struct glif_name * entry = (struct glif_name *)data;
