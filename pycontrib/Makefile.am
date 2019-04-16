@@ -33,20 +33,15 @@ if PYTHON_SCRIPTING
 pkgpythondata_DATA += excepthook.py test.sfd
 endif PYTHON_SCRIPTING
 
-if HAVE_IPYTHON
-pkgpythondata_DATA += graphicore.py
-endif
-
 if HAVE_PYTHON_EVEN
 pkgpythondata_DATA += even.py
 endif
 
 
-EXTRA_DIST = excepthook.py test.sfd README graphicore.py even.py
+EXTRA_DIST = excepthook.py test.sfd README even.py
 
 SUBDIRS =
 SUBDIRS += gdraw
 SUBDIRS += simple
-SUBDIRS += graphicore
 
 -include $(top_srcdir)/git.mk

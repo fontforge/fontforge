@@ -609,26 +609,6 @@ my_libs="${my_libs} ${GLIB_LIBS}"
 my_libs="${my_libs} ${LIBXML_LIBS}"
 AC_SUBST([MY_LIBS],[${my_libs}])
 
-#--------------------------------------------------------------------------
-
-if test x"${i_do_have_python_scripting}" = xyes; then
-   AC_MSG_CHECKING([for IPython])
-   if $( $PYTHON -c 'import IPython' 2>&5 ); then
-        have_ipython=yes;
-        AC_DEFINE([HAVE_IPYTHON],[1],[have ipython])
-        AC_MSG_RESULT([yes])
-   else
-        have_ipython=no
-        AC_MSG_RESULT([no])
-   fi
-fi
-
-AC_ARG_ENABLE([python-graphicore],
-        [AS_HELP_STRING([--enable-python-graphicore],
-                [enable a menu entry for IPython interactive shell])],
-        [have_python_graphicore=yes])
-
-AM_CONDITIONAL([HAVE_IPYTHON],[test x"${have_ipython}" = xyes && test x"${have_python_graphicore}" = xyes])
 
 #--------------------------------------------------------------------------
 #--------------------------------------------------------------------------
@@ -686,7 +666,6 @@ doc/Makefile
 doc/html/Makefile
 pycontrib/Makefile
 pycontrib/simple/Makefile
-pycontrib/graphicore/Makefile
 pycontrib/gdraw/Makefile
 pyhook/Makefile
 tests/Makefile

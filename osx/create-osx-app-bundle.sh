@@ -26,9 +26,6 @@ DESTDIR=$bundle_res make install
 echo "...setup FontForge.app bundle..."
 rsync -av $bundle_res/opt/local/share/fontforge/osx/FontForge.app $TEMPDIR/
 
-# echo "...patching..."
-# patch -d $TEMPDIR/FontForge.app -p0 < osx/ipython-embed-fix.patch
-
 echo "...on with the rest..."
 sed -i -e "s|Gdraw.ScreenWidthCentimeters:.*|Gdraw.ScreenWidthCentimeters: 34|g" \
        "$bundle_res/opt/local/share/fontforge/pixmaps/resources"
@@ -261,11 +258,6 @@ done
 
 cd $bundle_bin
 
-
-####
-#
-# ipython
-#
 
 cd $bundle_bin
 cd ./Python.framework.2.7/lib/python2.7
