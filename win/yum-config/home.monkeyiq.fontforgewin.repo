@@ -1,7 +1,0 @@
-[home_monkeyiq_fontforgewin]
-name=FontForge from github compiled for windows (mingw32support)
-type=rpm-md
-baseurl=http://download.opensuse.org/repositories/home:/monkeyiq:/fontforgewin/mingw32support/
-gpgcheck=1
-gpgkey=http://download.opensuse.org/repositories/home:/monkeyiq:/fontforgewin/mingw32support/repodata/repomd.xml.key
-enabled=1
