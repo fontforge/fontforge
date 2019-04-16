@@ -1,6 +1,7 @@
 #ifndef FONTFORGE_SPLINEUTIL_H
 #define FONTFORGE_SPLINEUTIL_H
 
+#include "glif_name_hash.h"
 #include "psfont.h"
 #include "splinefont.h"
 #include "ttfinstrs.h"
@@ -206,12 +207,9 @@ extern void TTFLangNamesFree(struct ttflangname *l);
 extern void TtfTablesFree(struct ttf_table *tab);
 extern void ValDevFree(ValDevTab *adjust);
 
-#ifdef FF_UTHASH_GLIF_NAMES
-struct glif_name_index;
 extern int KerningClassSeekByAbsoluteIndex(const struct splinefont *sf, int seek_index, struct kernclass **okc, int *oisv, int *oisr, int *ooffset);
 extern int HashKerningClassNames(SplineFont *sf, struct glif_name_index * class_name_hash);
 extern int HashKerningClassNamesCaps(SplineFont *sf, struct glif_name_index * class_name_hash);
 extern int HashKerningClassNamesFlex(SplineFont *sf, struct glif_name_index * class_name_hash, int capitalize);
-#endif /* FF_UTHASH_GLIF_NAMES */
 
 #endif /* FONTFORGE_SPLINEUTIL_H */

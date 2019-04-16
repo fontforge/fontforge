@@ -23,7 +23,7 @@ sudo apt-get install autotools-dev libjpeg-dev libtiff5-dev libpng-dev libgif-de
 To download all dependencies on Ubuntu, run:
 
 ```sh
-sudo apt-get install packaging-dev pkg-config python-dev libpango1.0-dev libglib2.0-dev libxml2-dev giflib-dbg libjpeg-dev libtiff-dev uthash-dev libspiro-dev build-essential automake flex bison;
+sudo apt-get install packaging-dev pkg-config python-dev libpango1.0-dev libglib2.0-dev libxml2-dev giflib-dbg libjpeg-dev libtiff-dev libspiro-dev build-essential automake flex bison;
 ```
 
 Install the *unifont* package to get a full display of the reference glyphs.

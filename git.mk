@@ -189,7 +189,6 @@ $(srcdir)/.gitignore: Makefile.am $(top_srcdir)/git.mk
 			"*.tab.c" \
 			$(MAINTAINERCLEANFILES) \
 			$(BUILT_SOURCES) \
-			"/uthash/" \
 			$(DEPDIR) \
 			Makefile \
 			Makefile.in \

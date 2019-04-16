@@ -39,7 +39,6 @@ GITIGNOREFILES = \
 	m4/ltsugar.m4 \
 	m4/ltversion.m4 \
 	m4/lt~obsolete.m4 \
-	uthash/ \
 	'**/*.gcno' \
 	'**/*.gcda'
 
@@ -50,7 +49,7 @@ GITIGNOREFILES = \
 AM_CPPFLAGS =
 AM_LDFLAGS =
 
-BUILT_SOURCES = uthash/src
+BUILT_SOURCES =
 EXTRA_DIST =
 CLEANFILES =
 MOSTLYCLEANFILES =
@@ -111,7 +110,6 @@ EXTRA_DIST += \
 	Packaging/FontForge.spec \
 	Packaging/FontForge.static.spec \
 	README \
-	uthash/src \
 	$(NULL)
 
 #--------------------------------------------------------------------------
@@ -125,15 +123,6 @@ DISTCHECK_CONFIGURE_FLAGS = --enable-theme-2012 --enable-debug
 #	--without-libuninameslist --without-libunicodenames	\
 #	--without-libreadline
 
-
-#--------------------------------------------------------------------------
-uthash/src:
-	if [ ! -e uthash/src ]; then \
-	if [ -e uthash ] ; then rm -r uthash ; fi ; \
-	git clone https://github.com/troydhanson/uthash ; \
-	fi ;
-
-# We import a selection of targets from Frank's standard packaging Makefile.
 
 # automake can't parse certain parts of Makefile syntax,
 # and there isn't an easy way to make it copy things that it doesn't
