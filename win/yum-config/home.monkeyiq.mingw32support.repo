@@ -1,7 +1,0 @@
-[home_monkeyiq_mingw32support]
-name=mingw32support (win32_mingw_support)
-type=rpm-md
-baseurl=http://download.opensuse.org/repositories/home:/monkeyiq:/mingw32support/win32_mingw_support/
-gpgcheck=1
-gpgkey=http://download.opensuse.org/repositories/home:/monkeyiq:/mingw32support/win32_mingw_support/repodata/repomd.xml.key
-enabled=1

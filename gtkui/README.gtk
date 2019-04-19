@@ -1,9 +1,0 @@
-This is an incomplete fontforge which uses the gtk toolkit.
-
-About all it can do is open a font and display it. If a menu command does not
-require a dialog then it might work. There are probably scores of bugs even in
-the little bit that supposedly does work.
-
-The open dialog is extremely ugly. That's not my fault, that's gtk's widget.
-The open dialog is far less functional than the one in the gdraw fontforge --
-I can't figure out how to enhance it.

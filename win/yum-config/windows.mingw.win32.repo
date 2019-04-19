@@ -1,7 +1,0 @@
-[windows_mingw_win32]
-name=Cross-toolchain for 32-bit windows and 32-bit windows packages (openSUSE_12.2)
-type=rpm-md
-baseurl=http://download.opensuse.org/repositories/windows:/mingw:/win32/openSUSE_12.2/
-gpgcheck=1
-gpgkey=http://download.opensuse.org/repositories/windows:/mingw:/win32/openSUSE_12.2/repodata/repomd.xml.key
-enabled=1
