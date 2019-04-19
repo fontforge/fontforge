@@ -35,7 +35,6 @@
 #include "splineutil.h"
 #include "splineutil2.h"
 #include <ustring.h>
-#include <gkeysym.h>
 #include <utype.h>
 #include <math.h>
 #include "edgelist.h"

@@ -41,7 +41,6 @@
 #include "tottfgpos.h"
 #include <ustring.h>
 #include <utype.h>
-#include <gkeysym.h>
 #include <math.h>
 #include <ttf.h>
 #include <stemdb.h>
