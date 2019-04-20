@@ -20,5 +20,5 @@ StartupWMClass=fontforge
 Terminal=false
 Type=Application
 Categories=Graphics;
-MimeType=application/vnd.font-fontforge-sfd;application/x-font-ttf;application/x-font-otf;application/x-font-type1;application/x-font-bdf;application/x-font-pcf;application/x-font-tex;
+MimeType=application/vnd.font-fontforge-sfd;application/x-font-ttf;application/x-font-otf;application/x-font-type1;application/x-font-bdf;application/x-font-pcf;application/x-font-tex;application/font-woff;font/otf;font/ttf;font/woff;font/woff2;
 Keywords=font;fonts;editor;TTF;OTF;typeface;
