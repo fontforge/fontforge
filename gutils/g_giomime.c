@@ -46,15 +46,16 @@ const char *MimeListFromExt[] = {
 	/* vnd.font-fontforge-sfd Officially registered with IANA on 14 May 2008 */
 	/*21 .sfd */	"application/vnd.font-fontforge-sfd",
 	/*22 .pdf */	"application/pdf",
-	/*23 .ttf */	"application/x-font-ttf",
-	/*24 .otf */	"application/x-font-otf",
+	/*23 .ttf */	"font/ttf",
+	/*24 .otf */	"font/otf",
 	/*25 ,cid */	"application/x-font-cid",
 	/*26 .pcf */	"application/x-font-pcf",
 	/*27 .snf */	"application/x-font-snf",
 	/*28 .bdf */	"application/x-font-bdf",
-	/*29 .woff */	"application/x-font-woff",
+	/*29 .woff */	"font/woff",
 	/*30 .dfont */	"application/x-mac-dfont",
-	/*31 .ffil */	"application/x-mac-suit"
+	/*31 .ffil */	"application/x-mac-suit",
+	/*32 .woff2 */	"font/woff2"
 };
 
 typedef struct {
@@ -96,6 +97,7 @@ const ext3mime ExtToMimeList[] = {
     {".woff", 29},
     {".dfont", 30},
     {".ffil", 31},
+    {".woff2", 32},
     {0, 0}
 };
 
