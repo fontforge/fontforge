@@ -274,7 +274,11 @@ static GImage *GFileChooserPickIcon(GDirEntry *e) {
     if (strcasecmp("application/x-font-type1", mime) == 0)
 	return( &_GIcon_textfontps );
     if (strcasecmp("application/x-font-ttf", mime) == 0 ||
-	strcasecmp("application/x-font-otf", mime) == 0) {
+	strcasecmp("application/x-font-otf", mime) == 0 ||
+	strcasecmp("font/woff", mime) == 0 ||
+	strcasecmp("font/woff2", mime) == 0 ||
+	strcasecmp("font/ttf", mime) == 0 ||
+	strcasecmp("font/otf", mime) == 0) {
 	return( &_GIcon_ttf );
     }
     if (strcasecmp("application/x-font-cid", mime) == 0 )
