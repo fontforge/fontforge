@@ -5499,56 +5499,6 @@ return;
     }
     fea_end_statement(tok);
 
-    /* Any of a multiple, alternate, or ligature substitution may have */
-    /* a single destination. In either case it will look just like a single */
-    /* substitution. So if there are both multiple/alternate/ligature and */
-    /* single subs in a lookup translate all the singles into the */
-    /* corresponding type */
-    has_single = has_multiple = has_ligature = has_alternate = false;
-    for ( item=tok->sofar ; item!=NULL && item->type!=ft_feat_start; item=item->next ) {
-	enum otlookup_type cur = fea_LookupTypeFromItem(item);
-	if ( cur==gsub_multiple )
-	    has_multiple = true;
-	else if ( cur==gsub_alternate )
-	    has_alternate = true;
-	else if ( cur==gsub_ligature )
-	    has_ligature = true;
-	else if ( cur==gsub_single )
-	    has_single = true;
-    }
-    if ( has_single ) {
-	enum possub_type psttype = pst_pair;
-	if ( has_multiple && !( has_alternate || has_ligature ) )
-	    psttype = pst_multiple;
-	else if ( has_alternate && !( has_multiple || has_ligature ) )
-	    psttype = pst_alternate;
-	else if ( has_ligature && !( has_multiple || has_alternate ) )
-	    psttype = pst_ligature;
-	if ( psttype!=pst_pair ) {
-	    for ( item=tok->sofar ; item!=NULL && item->type!=ft_feat_start; item=item->next ) {
-		enum otlookup_type cur = fea_LookupTypeFromItem(item);
-		if ( cur==gsub_single )
-		    item->u2.pst->type = psttype;
-	    }
-	}
-    }
-
-    /* Make sure all entries in this lookup of the same lookup type */
-    lookuptype = ot_undef;
-    for ( item=tok->sofar ; item!=NULL && item->type!=ft_feat_start; item=item->next ) {
-	enum otlookup_type cur = fea_LookupTypeFromItem(item);
-	if ( cur==ot_undef )	/* Some entries in the list (lookupflags) have no type */
-	    /* Tum, ty, tum tum */;
-	else if ( lookuptype==ot_undef )
-	    lookuptype = cur;
-	else if ( lookuptype!=cur ) {
-	    LogError(_("All entries in a lookup must have the same type on line %d of %s"),
-		    tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
-	    ++tok->err_count;
-	    break;
-	}
-    }
-
     item = chunkalloc(sizeof(struct feat_item));
     item->type = ft_feat_end;
     item->u1.tag = feat_tag;
@@ -6182,30 +6132,39 @@ return( type==ft_lookup_end || type == ft_feat_end ||
 	    type == ft_lookup_ref );
 }
 
+/* This function copies entries of a given lookup type into the
+ * lookup_next list of the first argument.  A given lookup is
+ * considered to end on encountering one of the types in
+ * fea_FeatItemEndsLookup or NULL, which is returned.
+ *
+ * When called with type==ot_undef the types are not checked
+ * and assumed to match, a condition verified by some of the
+ * variants of fea_ApplyLookupList.
+ *
+ * When called with another type the function adds elements of
+ * that type to lookup_next until either a list-terminating element
+ * or one of a different type is found.
+ */
 static struct feat_item *fea_SetLookupLink(struct feat_item *nested,
 	enum otlookup_type type) {
     struct feat_item *prev = NULL;
     enum otlookup_type found_type;
 
-    while ( nested!=NULL ) {
-	/* Stop when we find something which forces a new lookup */
-	if ( fea_FeatItemEndsLookup(nested->type) )
-    break;
-	if ( nested->ticked ) {
-	    nested = nested->next;
-    continue;
-	}
-	found_type = fea_LookupTypeFromItem(nested);
-	if ( type==ot_undef || found_type == ot_undef || found_type == type ) {
-	    if ( nested->type!=ft_ap || nested->u2.ap->type!=at_mark )
-		nested->ticked = true;		/* Marks might get used in more than one lookup */
-	    if ( prev!=NULL )
-		prev->lookup_next = nested;
-	    prev = nested;
+    while ( nested!=NULL && !fea_FeatItemEndsLookup(nested->type) ) {
+	if ( !nested->ticked ) {
+	    found_type = fea_LookupTypeFromItem(nested);
+	    if ( type==ot_undef || found_type == ot_undef || found_type == type ) {
+		if ( nested->type!=ft_ap || nested->u2.ap->type!=at_mark )
+		    nested->ticked = true; /* Marks might get used in more than one lookup */
+		if ( prev!=NULL )
+		    prev->lookup_next = nested;
+		prev = nested;
+	    } else if ( type!=ot_undef && found_type!=type )
+		break;
 	}
 	nested = nested->next;
     }
-return( nested );
+    return( nested );
 }
 
 static void fea_ApplyLookupListPST(struct parseState *tok,
