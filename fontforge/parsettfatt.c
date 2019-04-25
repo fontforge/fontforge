@@ -2953,11 +2953,11 @@ static void LookupsFree(struct lookup *lookups) {
 
 static void ProcessGPOSGSUB(FILE *ttf,struct ttfinfo *info,int gpos,int inusetype) {
     int k;
-    int32 base, lookup_start, st;
+    int32 base, lookup_off, st;
     int32 script_off, feature_off;
     struct scripts *scripts;
     struct feature *features;
-    struct lookup *lookups, *l;
+    struct lookup *lookups = NULL, *l;
     struct lookup_subtable *subtable;
 
     if ( gpos ) {
@@ -2971,13 +2971,14 @@ static void ProcessGPOSGSUB(FILE *ttf,struct ttfinfo *info,int gpos,int inusetyp
     /* version = */ getlong(ttf);
     script_off = getushort(ttf);
     feature_off = getushort(ttf);
-    lookup_start = base+getushort(ttf);
+    lookup_off = getushort(ttf);
 
     scripts = readttfscripts(ttf,base+script_off,info,gpos);
     features = readttffeatures(ttf,base+feature_off,gpos,info);
     /* It is legal to have lookups with no features or scripts */
     /* For example if all the lookups were controlled by the JSTF table */
-    lookups = readttflookups(ttf,lookup_start,info,gpos);
+    if ( lookup_off>0 )
+	lookups = readttflookups(ttf,base+lookup_off,info,gpos);
     if ( lookups==NULL ) {
 	ScriptsFree(scripts);
 	FeaturesFree(features);
