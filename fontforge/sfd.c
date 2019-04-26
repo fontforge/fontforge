@@ -41,6 +41,7 @@
 #include "psread.h"
 #include "splinefont.h"
 #include "splinefill.h"
+#include "splineorder2.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "splineutil2.h"
@@ -670,10 +671,16 @@ static void SFDDumpHintMask(FILE *sfd,HintMask *hintmask) {
 
 static void SFDDumpSplineSet(FILE *sfd, SplineSet *spl, int order2) {
     SplinePoint *first, *sp;
+    SplineSet *nspl;
 
     for ( ; spl!=NULL; spl=spl->next ) {
+	if (order2) {
+	    nspl = SSttfApprox(spl);
+	} else {
+	    nspl = spl;
+	}
 	first = NULL;
-	for ( sp = spl->first; ; sp=sp->next->to ) {
+	for ( sp = nspl->first; ; sp=sp->next->to ) {
 #ifndef FONTFORGE_CONFIG_USE_DOUBLE
 	    if ( first==NULL )
 		fprintf( sfd, "%g %g m ", (double) sp->me.x, (double) sp->me.y );
@@ -763,6 +770,7 @@ static void SFDDumpSplineSet(FILE *sfd, SplineSet *spl, int order2) {
 	    fprintf( sfd, "  PathStart: %d\n", spl->start_offset );
 	}
     }
+    if (order2) free(nspl);
     fprintf( sfd, "EndSplineSet\n" );
 }
 
