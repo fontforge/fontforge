@@ -1049,9 +1049,12 @@ void SCConvertLayerToOrder2(SplineChar *sc,int layer) {
     if ( sc==NULL )
 return;
 
-    new = SplineSetsTTFApprox(sc->layers[layer].splines);
-    SplinePointListsFree(sc->layers[layer].splines);
-    sc->layers[layer].splines = new;
+    if ( sc->layers[layer].splines != NULL && 
+         sc->layers[layer].splines->spiro_cnt <= 0 ) {
+        new = SplineSetsTTFApprox(sc->layers[layer].splines);
+        SplinePointListsFree(sc->layers[layer].splines);
+        sc->layers[layer].splines = new;
+    }
 
     UndoesFree(sc->layers[layer].undoes);
     UndoesFree(sc->layers[layer].redoes);
@@ -1144,9 +1147,12 @@ void SCConvertLayerToOrder3(SplineChar *sc,int layer) {
     AnchorPoint *ap;
     int has_order2_layer_still, i;
 
-    new = SplineSetsPSApprox(sc->layers[layer].splines);
-    SplinePointListsFree(sc->layers[layer].splines);
-    sc->layers[layer].splines = new;
+    if ( sc->layers[layer].splines != NULL && 
+         sc->layers[layer].splines->spiro_cnt <= 0 ) {
+        new = SplineSetsPSApprox(sc->layers[layer].splines);
+        SplinePointListsFree(sc->layers[layer].splines);
+        sc->layers[layer].splines = new;
+    }
 
     UndoesFree(sc->layers[layer].undoes);
     UndoesFree(sc->layers[layer].redoes);

@@ -3021,7 +3021,7 @@ return;
 	}
 	if ( paster->u.state.splines!=NULL ) {
 	    SplinePointList *spl, *new = SplinePointListCopy(paster->u.state.splines);
-	    if ( paster->was_order2 != cv->layerheads[cv->drawmode]->order2 )
+	    if ( paster->was_order2 != cv->layerheads[cv->drawmode]->order2 && paster->u.state.splines->spiro_cnt <= 0 )
 		new = SplineSetsConvertOrder(new,cv->layerheads[cv->drawmode]->order2 );
 	    SplinePointListSelect(new,true);
 	    for ( spl = new; spl->next!=NULL; spl = spl->next );
