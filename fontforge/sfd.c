@@ -668,9 +668,8 @@ static void SFDDumpHintMask(FILE *sfd,HintMask *hintmask) {
     }
 }
 
-static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
+static void SFDDumpSplineSet(FILE *sfd, SplineSet *spl, int order2) {
     SplinePoint *first, *sp;
-    int order2 = spl->first->next==NULL || spl->first->next->order2;
 
     for ( ; spl!=NULL; spl=spl->next ) {
 	first = NULL;
@@ -937,7 +936,7 @@ void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, const char* keyPrefix, int 
             }
 	    if( u->u.state.splines ) {
                 fprintf(sfd, "SplineSet\n" );
-                SFDDumpSplineSet( sfd, u->u.state.splines );
+                SFDDumpSplineSet( sfd, u->u.state.splines, u->was_order2 );
             }
             break;
 
@@ -1637,7 +1636,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 	    SFDDumpImage(sfd,img);
 	if ( sc->layers[i].splines!=NULL ) {
 	    fprintf(sfd, "SplineSet\n" );
-	    SFDDumpSplineSet(sfd,sc->layers[i].splines);
+	    SFDDumpSplineSet(sfd,sc->layers[i].splines,sc->layers[i].order2);
 	}
 	SFDDumpRefs(sfd,sc->layers[i].refs,newgids);
 	SFDDumpGuidelines(sfd, sc->layers[i].guidelines);
@@ -2782,7 +2781,7 @@ static int SFD_Dump( FILE *sfd, SplineFont *sf, EncMap *map, EncMap *normal,
 	if ( sf->grid.order2 )
 	    fprintf(sfd, "GridOrder2: %d\n", sf->grid.order2 );
 	fprintf(sfd, "Grid\n" );
-	SFDDumpSplineSet(sfd,sf->grid.splines);
+	SFDDumpSplineSet(sfd,sf->grid.splines,false);
     }
     if ( sf->texdata.type!=tex_unset ) {
 	fprintf(sfd, "TeXData: %d %d", (int) sf->texdata.type, (int) ((sf->design_size<<19)+2)/5 );
