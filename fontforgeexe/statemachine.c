@@ -808,7 +808,7 @@ static void _SMD_Finish(SMD *smd, int success) {
 
 static void _SMD_Cancel(SMD *smd) {
 
-    StatesFree(smd->states,smd->state_cnt,smd->class_cnt,smd->sm->type);
+    StatesFree(smd->states,smd->class_cnt,smd->state_cnt,smd->sm->type);
     _SMD_Finish(smd,false);
 }
 
@@ -844,7 +844,7 @@ static int SMD_Ok(GGadget *g, GEvent *e) {
         sm->classes[i] = GlyphNameListDeUnicode(upt);
     }
 
-	StatesFree(sm->state,sm->state_cnt,sm->class_cnt,
+	StatesFree(sm->state,sm->class_cnt,sm->state_cnt,
 		sm->type);
 	sm->state_cnt = smd->state_cnt;
 	sm->state = smd->states;
