@@ -2622,7 +2622,7 @@ extern void debug_printHint( StemInfo *h, char* msg );
 
 #include "ustring.h"
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__HAIKU__)
 #define BAD_LOCALE_HACK
 typedef char* locale_t;
 #define LC_GLOBAL_LOCALE ((locale_t)-1)
