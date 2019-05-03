@@ -769,8 +769,8 @@ static void SFDDumpSplineSet(FILE *sfd, SplineSet *spl, int order2) {
 	if ( spl->start_offset ) {
 	    fprintf( sfd, "  PathStart: %d\n", spl->start_offset );
 	}
-    }
     if (order2) free(nspl);
+    }
     fprintf( sfd, "EndSplineSet\n" );
 }
 
