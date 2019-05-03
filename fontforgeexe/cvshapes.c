@@ -307,10 +307,12 @@ void CVMouseUpShape(CharView *cv) {
     if ( cv->active_shape==NULL )
 return;
 
-    if ( cv->b.layerheads[cv->b.drawmode]->order2 ) {
-	SplineSet *prev, *new, *ss;
+    SplineSet *ss = cv->b.layerheads[cv->b.drawmode]->splines;
+    if ( cv->b.layerheads[cv->b.drawmode]->order2 && 
+         ss != NULL && ss->spiro_cnt <= 0 ) {
+	SplineSet *prev, *new;
 	new = SplineSetsTTFApprox(cv->active_shape);
-	for ( ss=cv->b.layerheads[cv->b.drawmode]->splines, prev=NULL;
+	for ( prev=NULL;
 		ss!=NULL && ss!=cv->active_shape;
 		prev = ss, ss=ss->next );
 	if ( ss==NULL )
