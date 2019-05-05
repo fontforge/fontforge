@@ -2789,7 +2789,7 @@ static int SFD_Dump( FILE *sfd, SplineFont *sf, EncMap *map, EncMap *normal,
 	if ( sf->grid.order2 )
 	    fprintf(sfd, "GridOrder2: %d\n", sf->grid.order2 );
 	fprintf(sfd, "Grid\n" );
-	SFDDumpSplineSet(sfd,sf->grid.splines,false);
+	SFDDumpSplineSet(sfd,sf->grid.splines,sf->grid.order2);
     }
     if ( sf->texdata.type!=tex_unset ) {
 	fprintf(sfd, "TeXData: %d %d", (int) sf->texdata.type, (int) ((sf->design_size<<19)+2)/5 );
