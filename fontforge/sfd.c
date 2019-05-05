@@ -679,6 +679,7 @@ static void SFDDumpSplineSet(FILE *sfd, SplineSet *spl, int want_order2) {
     for ( ; spl!=NULL; spl=spl->next ) {
 	if (reduce) {
 	    nspl = SSttfApprox(spl);
+	    order2 = true;
 	} else {
 	    nspl = spl;
 	}
