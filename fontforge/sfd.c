@@ -669,12 +669,15 @@ static void SFDDumpHintMask(FILE *sfd,HintMask *hintmask) {
     }
 }
 
-static void SFDDumpSplineSet(FILE *sfd, SplineSet *spl, int order2) {
+static void SFDDumpSplineSet(FILE *sfd, SplineSet *spl, int want_order2) {
     SplinePoint *first, *sp;
+    int order2 = spl->first->next==NULL || spl->first->next->order2;
+    int reduce = (want_order2 && !order2);
+    if (order2 && !want_order2) IError("Asked for cubic when had quadratic");
     SplineSet *nspl;
 
     for ( ; spl!=NULL; spl=spl->next ) {
-	if (order2) {
+	if (reduce) {
 	    nspl = SSttfApprox(spl);
 	} else {
 	    nspl = spl;
@@ -769,7 +772,7 @@ static void SFDDumpSplineSet(FILE *sfd, SplineSet *spl, int order2) {
 	if ( spl->start_offset ) {
 	    fprintf( sfd, "  PathStart: %d\n", spl->start_offset );
 	}
-    if (order2) free(nspl);
+    if (reduce) SplinePointListFree(nspl);
     }
     fprintf( sfd, "EndSplineSet\n" );
 }
