@@ -41,6 +41,7 @@
 #include "psread.h"
 #include "splinefont.h"
 #include "splinefill.h"
+#include "splineorder2.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "splineutil2.h"
@@ -668,13 +669,22 @@ static void SFDDumpHintMask(FILE *sfd,HintMask *hintmask) {
     }
 }
 
-static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
+static void SFDDumpSplineSet(FILE *sfd, SplineSet *spl, int want_order2) {
     SplinePoint *first, *sp;
     int order2 = spl->first->next==NULL || spl->first->next->order2;
+    int reduce = (want_order2 && !order2);
+    if (order2 && !want_order2) IError("Asked for cubic when had quadratic");
+    SplineSet *nspl;
 
     for ( ; spl!=NULL; spl=spl->next ) {
+	if (reduce) {
+	    nspl = SSttfApprox(spl);
+	    order2 = true;
+	} else {
+	    nspl = spl;
+	}
 	first = NULL;
-	for ( sp = spl->first; ; sp=sp->next->to ) {
+	for ( sp = nspl->first; ; sp=sp->next->to ) {
 #ifndef FONTFORGE_CONFIG_USE_DOUBLE
 	    if ( first==NULL )
 		fprintf( sfd, "%g %g m ", (double) sp->me.x, (double) sp->me.y );
@@ -763,6 +773,7 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
 	if ( spl->start_offset ) {
 	    fprintf( sfd, "  PathStart: %d\n", spl->start_offset );
 	}
+    if (reduce) SplinePointListFree(nspl);
     }
     fprintf( sfd, "EndSplineSet\n" );
 }
@@ -937,7 +948,7 @@ void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, const char* keyPrefix, int 
             }
 	    if( u->u.state.splines ) {
                 fprintf(sfd, "SplineSet\n" );
-                SFDDumpSplineSet( sfd, u->u.state.splines );
+                SFDDumpSplineSet( sfd, u->u.state.splines, u->was_order2 );
             }
             break;
 
@@ -1637,7 +1648,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 	    SFDDumpImage(sfd,img);
 	if ( sc->layers[i].splines!=NULL ) {
 	    fprintf(sfd, "SplineSet\n" );
-	    SFDDumpSplineSet(sfd,sc->layers[i].splines);
+	    SFDDumpSplineSet(sfd,sc->layers[i].splines,sc->layers[i].order2);
 	}
 	SFDDumpRefs(sfd,sc->layers[i].refs,newgids);
 	SFDDumpGuidelines(sfd, sc->layers[i].guidelines);
@@ -2782,7 +2793,7 @@ static int SFD_Dump( FILE *sfd, SplineFont *sf, EncMap *map, EncMap *normal,
 	if ( sf->grid.order2 )
 	    fprintf(sfd, "GridOrder2: %d\n", sf->grid.order2 );
 	fprintf(sfd, "Grid\n" );
-	SFDDumpSplineSet(sfd,sf->grid.splines);
+	SFDDumpSplineSet(sfd,sf->grid.splines,sf->grid.order2);
     }
     if ( sf->texdata.type!=tex_unset ) {
 	fprintf(sfd, "TeXData: %d %d", (int) sf->texdata.type, (int) ((sf->design_size<<19)+2)/5 );
