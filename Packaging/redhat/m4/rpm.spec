@@ -38,7 +38,7 @@ chrpath -d "$RPM_BUILD_ROOT"/`'PREFIX`'/bin/fontforge;
 chmod 0644 "$RPM_BUILD_ROOT"/`'PREFIX`'/lib/lib*.so.*;
 (cd "$RPM_BUILD_ROOT"/`'PREFIX`'/lib; for i in python*; do if [ -e $i/site-packages ] ; then mv $i/site-packages $i/dist-packages; fi ; done)
 mkdir -p "$RPM_BUILD_ROOT"`'PREFIX`'/share/pixmaps ;
-cp -pRP desktop/icons/* "$RPM_BUILD_ROOT"/`'PREFIX`'/share/icons/ ;
+cp -pRP desktop/2012/* "$RPM_BUILD_ROOT"/`'PREFIX`'/share/icons/ ;
 cp -pRP Packaging/debian/cp-src/fontforge.xpm "$RPM_BUILD_ROOT"/`'PREFIX`'/share/pixmaps/ ;
 cp -pRP desktop/org.fontforge.FontForge.desktop "$RPM_BUILD_ROOT"/`'PREFIX`'/share/applications/ ;
 
