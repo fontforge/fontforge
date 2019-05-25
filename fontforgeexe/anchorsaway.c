@@ -967,6 +967,7 @@ return( true );
     AnchorD_FindComplements(a);
     AnchorD_SetDevTabs(a);
     AnchorD_ChangeSize(a);
+    AnchorD_SetSB(a);
     AnchorD_SetTitle(a);
 return( true );
 }
