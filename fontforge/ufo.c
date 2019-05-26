@@ -1975,7 +1975,7 @@ int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer, int version
     SplineChar * sc;
     int err = 0;
     for ( i=0; i<sf->glyphcnt; ++i ) if ( SCLWorthOutputtingOrHasData(sc=sf->glyphs[i], layer) ||
-      ( layer == ly_fore && (SCWorthOutputting(sc) || SCHasData(sc) || sc->glif_name != NULL) ) ) {
+      ( layer == ly_fore && (SCWorthOutputting(sc) || SCHasData(sc) || (sc != NULL && sc->glif_name != NULL)) ) ) {
         // TODO: Optionally skip rewriting an untouched glyph.
         // Do we track modified glyphs carefully enough for this?
         char * final_name = smprintf("%s%s%s", "", sc->glif_name, ".glif");
