@@ -112,7 +112,7 @@ AC_DEFUN([FONTFORGE_CFLAG_CHECK],
       AC_MSG_RESULT([yes])
       $1="$$1 $2"
     ],
-    [AC_MSG_ERROR([no])]
+    [AC_MSG_RESULT([no])]
   )
   CFLAGS="$ac_saved_cflags"
   AC_LANG_POP([C])
