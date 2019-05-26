@@ -50,20 +50,17 @@ int CharCenterHighest = 1;
 #define BottomAccent	0x300
 #define TopAccent	0x345
 
-/* for accents between 0x300 and 345 these are some synonyms */
-/* type1 wants accented chars built with accents in the 0x2c? range */
-/*  except for grave and acute which live in iso8859-1 range */
 /*  this table is ordered on a best try basis */
 static const unichar_t accents[][4] = {
-    { 0x2cb, 0x300, 0x60 },	/* grave */
-    { 0x2ca, 0x301, 0xb4 },	/* acute */
-    { 0x2c6, 0x302, 0x5e },	/* circumflex */
-    { 0x2dc, 0x303, 0x7e },	/* tilde */
-    { 0x2c9, 0x304, 0xaf },	/* macron */
+    { 0x300, 0x2cb, 0x60 },	/* grave */
+    { 0x301, 0x2ca, 0xb4 },	/* acute */
+    { 0x302, 0x2c6, 0x5e },	/* circumflex */
+    { 0x303, 0x2dc, 0x7e },	/* tilde */
+    { 0x304, 0x2c9, 0xaf },	/* macron */
     { 0x305, 0xaf },		/* overline, (macron is suggested as a syn, but it's not quite right) */
-    { 0x2d8, 0x306 },		/* breve */
-    { 0x2d9, 0x307, '.' },	/* dot above */
-    { 0xa8,  0x308 },		/* diaeresis */
+    { 0x306, 0x2d8 },		/* breve */
+    { 0x307, 0x2d9, '.' },	/* dot above */
+    { 0x308, 0xa8 },		/* diaeresis */
     { 0x2c0 },			/* hook above */
     { 0x2da, 0xb0 },		/* ring above */
     { 0x2dd },			/* real acute */
@@ -74,9 +71,9 @@ static const unichar_t accents[][4] = {
     { 0 },			/* cand... */		/* 310 */
     { 0 },			/* inverted breve */
     { 0x2bb },			/* turned comma */
-    { 0x2bc, 0x313, ',' },	/* comma above */
+    { 0x313, 0x2bc, ',' },	/* comma above */
     { 0x2bd },			/* reversed comma */
-    { 0x2bc, 0x315, ',' },	/* comma above right */
+    { 0x315, 0x2bc, ',' },	/* comma above right */
     { 0x316, 0x60, 0x2cb },	/* grave below */
     { 0x317, 0xb4, 0x2ca },	/* acute below */
     { 0 },			/* left tack */
@@ -86,8 +83,8 @@ static const unichar_t accents[][4] = {
     { 0 },			/* half ring */
     { 0x2d4 },			/* up tack */
     { 0x2d5 },			/* down tack */
-    { 0x2d6, 0x31f, '+' },	/* plus below */
-    { 0x2d7, 0x320, '-' },	/* minus below */	/* 320 */
+    { 0x31f, 0x2d6, '+' },	/* plus below */
+    { 0x320, 0x2d7, '-' },	/* minus below */	/* 320 */
     { 0x2b2 },			/* hook */
     { 0 },			/* back hook */
     { 0x323, 0x2d9, '.' },	/* dot below */
