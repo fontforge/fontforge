@@ -97,3 +97,23 @@ AS_CASE([$host],
 AM_CONDITIONAL([PLATFORM_OSX],[test x"${gww_ismac}" = xyes])
 
 ])
+
+dnl FONTFORGE_CFLAG_CHECK(var, flag)
+dnl ----------------------------
+dnl checks if the C compiler supports flag, appending to var if it is
+AC_DEFUN([FONTFORGE_CFLAG_CHECK],
+[
+  AC_MSG_CHECKING([if $CC supports $2])
+  AC_LANG_PUSH([C])
+  ac_saved_cflags="$CFLAGS"
+  CFLAGS="$2"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
+    [
+      AC_MSG_RESULT([yes])
+      $1="$$1 $2"
+    ],
+    [AC_MSG_RESULT([no])]
+  )
+  CFLAGS="$ac_saved_cflags"
+  AC_LANG_POP([C])
+])

@@ -38,9 +38,9 @@ chrpath -d "$RPM_BUILD_ROOT"/`'PREFIX`'/bin/fontforge;
 chmod 0644 "$RPM_BUILD_ROOT"/`'PREFIX`'/lib/lib*.so.*;
 (cd "$RPM_BUILD_ROOT"/`'PREFIX`'/lib; for i in python*; do if [ -e $i/site-packages ] ; then mv $i/site-packages $i/dist-packages; fi ; done)
 mkdir -p "$RPM_BUILD_ROOT"`'PREFIX`'/share/pixmaps ;
-cp -pRP desktop/icons/* "$RPM_BUILD_ROOT"/`'PREFIX`'/share/icons/ ;
+cp -pRP desktop/2012/* "$RPM_BUILD_ROOT"/`'PREFIX`'/share/icons/ ;
 cp -pRP Packaging/debian/cp-src/fontforge.xpm "$RPM_BUILD_ROOT"/`'PREFIX`'/share/pixmaps/ ;
-cp -pRP desktop/fontforge.desktop "$RPM_BUILD_ROOT"/`'PREFIX`'/share/applications/ ;
+cp -pRP desktop/org.fontforge.FontForge.desktop "$RPM_BUILD_ROOT"/`'PREFIX`'/share/applications/ ;
 
 %pre
 
@@ -58,7 +58,7 @@ cp -pRP desktop/fontforge.desktop "$RPM_BUILD_ROOT"/`'PREFIX`'/share/application
 %attr(0755,root,root) `'PREFIX`'/bin/fontimage
 %attr(0755,root,root) `'PREFIX`'/bin/fontlint
 %attr(0755,root,root) `'PREFIX`'/bin/sfddiff
-%attr(0644,root,root) `'PREFIX`'/share/applications/fontforge.desktop
+%attr(0644,root,root) `'PREFIX`'/share/applications/org.fontforge.FontForge.desktop
 %attr(0644,root,root) `'PREFIX`'/share/man/man1/fontforge.1.gz
 %attr(0644,root,root) `'PREFIX`'/share/man/man1/fontimage.1.gz
 %attr(0644,root,root) `'PREFIX`'/share/man/man1/fontlint.1.gz
@@ -169,9 +169,9 @@ FontForge provides a complete suite of tools for producing high-quality typeface
 %files common
 %defattr(-,root,root)
 %attr(0644,root,root) `'PREFIX`'/share/locale/*/LC_MESSAGES/FontForge.mo
-%attr(0644,root,root) `'PREFIX`'/share/icons/*x*/apps/fontforge.png
+%attr(0644,root,root) `'PREFIX`'/share/icons/*x*/apps/org.fontforge.FontForge.png
 %attr(0644,root,root) `'PREFIX`'/share/icons/src/icon-*x*-apps-fontforge.svg
-%attr(0644,root,root) `'PREFIX`'/share/icons/scalable/apps/fontforge.svg
+%attr(0644,root,root) `'PREFIX`'/share/icons/scalable/apps/org.fontforge.FontForge.svg
 %attr(0644,root,root) `'PREFIX`'/share/pixmaps/fontforge.xpm
 
 %package doc

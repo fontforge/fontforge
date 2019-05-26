@@ -547,8 +547,10 @@ AM_CONDITIONAL([FONTTOOLS],[test x"${fontforge_extras}" = xyes])
 #--------------------------------------------------------------------------
 # Create and Set FontForge Compiler Flags
 
+FONTFORGE_CFLAG_CHECK([WARNING_CFLAGS], [-Werror=implicit-function-declaration])
+FONTFORGE_CFLAG_CHECK([WARNING_CFLAGS], [-Werror=int-conversion])
+
 my_cflags="${my_cflags} ${WARNING_CFLAGS}"
-my_cflags="${my_cflags} -Werror=implicit-function-declaration -Werror=int-conversion"
 if test x"${i_do_have_freetype_debugger}" != xno; then
    my_cflags="${my_cflags} -I${FREETYPE_SOURCE}/src/truetype"
    my_cflags="${my_cflags} -I${FREETYPE_SOURCE}/include"
