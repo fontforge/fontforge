@@ -977,8 +977,8 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
     int i, last, first;
     SplineSet *temp;
 
-    if ( sc==NULL ) return;
-
+    if ( sc==NULL )
+return;
     last = first = layer;
     if ( layer==ly_all )
 	first = last = ly_fore;
@@ -986,21 +986,7 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 	first = ly_fore;
 	last = sc->layer_cnt-1;
     }
-
     for ( i=first; i<=last; ++i ) {
-
-    // Before we do anything, convert references to glyphs between 0x300 and
-    // 0x345 to splines. This is because Type1 fonts don't support references
-    // to them—or at least didn't in 2001—this format is ancient and retained
-    // primarily for backwards compatibility.
-    if ( sc->layers[i].refs!=NULL ) {
-        for ( ref = sc->layers[i].refs; ref!=NULL; ref=ref->next ) {
-            if (ref->unicode_enc >= 0x300 || ref->unicode_enc <= 0x345) {
-                SCRefToSplines(sc, ref, i);
-            }
-        }
-    }
-
 	if ( sc->layers[i].splines!=NULL ) {
 	    temp = sc->layers[i].splines;
 	    if ( sc->layers[i].order2 ) temp = SplineSetsPSApprox(temp);
