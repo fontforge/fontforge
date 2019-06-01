@@ -253,6 +253,7 @@ static void DicaNewEntry(struct dictionary *dica,char *name,Val *val) {
     }
     dica->entries[dica->cnt].name = copy(name);
     dica->entries[dica->cnt].val.type = v_void;
+    dica->entries[dica->cnt].val.flags = vf_none;
     val->type = v_lval;
     val->u.lval = &dica->entries[dica->cnt].val;
     ++dica->cnt;
@@ -265,15 +266,17 @@ static void calldatafree(Context *c) {
     /* child may have freed some args itself by shifting,
        but argc will reflect the proper values none the less */
     for ( i=1; i<c->a.argc; ++i ) {
-        if ( c->a.vals[i].type == v_str ) {
-            free( c->a.vals[i].u.sval );
-            c->a.vals[i].u.sval = NULL;
-        }
-	if ( c->a.vals[i].type == v_arrfree || (c->a.vals[i].type == v_arr && c->dontfree[i]!=c->a.vals[i].u.aval )) {
+	if ( c->a.vals[i].flags & vf_dontfree )
+	    c->a.vals[i].flags ^= vf_dontfree;
+	else if ( c->a.vals[i].type == v_str ) {
+	    free( c->a.vals[i].u.sval );
+	    c->a.vals[i].u.sval = NULL;
+	} else if ( c->a.vals[i].type == v_arrfree || c->a.vals[i].type == v_arr ) {
 	    arrayfree( c->a.vals[i].u.aval );
 	    c->a.vals[i].u.aval = NULL;
-    }
+	}
 	c->a.vals[i].type = v_void;
+	c->a.vals[i].flags = vf_none;
     }
     DictionaryFree(&c->locals);
 
@@ -9506,14 +9509,12 @@ void ff_backuptok(Context *c) {
 static void docall(Context *c,char *name,Val *val) {
     /* Be prepared for c->donteval */
     Val args[PE_ARG_MAX];
-    Array *dontfree[PE_ARG_MAX];
     int i;
     enum token_type tok;
     Context sub;
     struct builtins *found;
 
     tok = ff_NextToken(c);
-    dontfree[0] = NULL;
     if ( tok==tt_rparen )
 	i = 1;
     else {
@@ -9525,7 +9526,6 @@ static void docall(Context *c,char *name,Val *val) {
 	    tok = ff_NextToken(c);
 	    if ( tok!=tt_comma )
 		expect(c,tt_rparen,tok);
-	    dontfree[i]=NULL;
 	}
     }
 
@@ -9540,14 +9540,14 @@ static void docall(Context *c,char *name,Val *val) {
 	sub.filename = name;
 	sub.curfv = c->curfv;
 	sub.trace = c->trace;
-	sub.dontfree = dontfree;
 	/* sub.error = ce_false = 0 = implied, no error yet */
 	for ( i=0; i<sub.a.argc; ++i ) {
+	    args[i].flags = vf_none;
 	    dereflvalif(&args[i]);
 	    if ( args[i].type == v_arrfree )
 		args[i].type = v_arr;
 	    else if ( args[i].type == v_arr )
-		dontfree[i] = args[i].u.aval;
+		args[i].flags |= vf_dontfree;
 	}
 
 	if ( c->trace.u.ival ) {
@@ -9712,6 +9712,7 @@ static void buildarray(Context *c,Val *val) {
     if ( c->donteval ) {
 	free(body);
 	val->type = v_void;
+	val->flags = vf_none;
     } else {
 	val->type = v_arrfree;
 	val->u.aval = arraynew(-1);
@@ -9729,6 +9730,7 @@ static void handlename(Context *c,Val *val) {
 
     strcpy(name,c->tok_text);
     val->type = v_void;
+    val->flags = vf_none;
     tok = ff_NextToken(c);
     if ( tok==tt_lparen ) {
 	docall(c,name,val);
@@ -10118,6 +10120,7 @@ static void mul(Context *c,Val *val) {
     tok = ff_NextToken(c);
     while ( tok==tt_mul || tok==tt_div || tok==tt_mod ) {
 	other.type = v_void;
+	other.flags = vf_none;
 	term(c,&other);
 	if ( !c->donteval ) {
 	    dereflvalif(val);
@@ -10163,6 +10166,7 @@ static void add(Context *c,Val *val) {
     tok = ff_NextToken(c);
     while ( tok==tt_plus || tok==tt_minus ) {
 	other.type = v_void;
+	other.flags = vf_none;
 	mul(c,&other);
 	if ( !c->donteval ) {
 	    dereflvalif(val);
@@ -10237,6 +10241,7 @@ static void comp(Context *c,Val *val) {
     tok = ff_NextToken(c);
     while ( tok==tt_eq || tok==tt_ne || tok==tt_gt || tok==tt_lt || tok==tt_ge || tok==tt_le ) {
 	other.type = v_void;
+	other.flags = vf_none;
 	add(c,&other);
 	if ( !c->donteval ) {
 	    dereflvalif(val);
@@ -10280,6 +10285,7 @@ static void _and(Context *c,Val *val) {
     tok = ff_NextToken(c);
     while ( tok==tt_and || tok==tt_bitand ) {
 	other.type = v_void;
+	other.flags = vf_none;
 	if ( !c->donteval )
 	    dereflvalif(val);
 	if ( tok==tt_and && val->u.ival==0 )
@@ -10311,6 +10317,7 @@ static void _or(Context *c,Val *val) {
     tok = ff_NextToken(c);
     while ( tok==tt_or || tok==tt_bitor || tok==tt_xor ) {
 	other.type = v_void;
+	other.flags = vf_none;
 	if ( !c->donteval )
 	    dereflvalif(val);
 	if ( tok==tt_or && val->u.ival!=0 )
@@ -10343,6 +10350,7 @@ static void assign(Context *c,Val *val) {
     tok = ff_NextToken(c);
     if ( tok==tt_assign || tok==tt_pluseq || tok==tt_minuseq || tok==tt_muleq || tok==tt_diveq || tok==tt_modeq ) {
 	other.type = v_void;
+	other.flags = vf_none;
 	assign(c,&other);		/* that's the evaluation order here */
 	if ( !c->donteval ) {
 	    dereflvalif(&other);
@@ -10352,18 +10360,16 @@ static void assign(Context *c,Val *val) {
 		ScriptError( c, "Void found on right side of assignment" );
 	    else if ( tok==tt_assign ) {
 		Val temp;
-		int argi;
 		temp = *val->u.lval;
 		*val->u.lval = other;
 		if ( other.type==v_arr )
 		    val->u.lval->u.aval = arraycopy(other.u.aval);
 		else if ( other.type==v_arrfree )
 		    val->u.lval->type = v_arr;
-		argi = val->u.lval-c->a.vals;
-		/* Have to free things after we copy them */
-		if ( argi>=0 && argi<c->a.argc && temp.type==v_arr &&
-			temp.u.aval==c->dontfree[argi] )
-		    c->dontfree[argi] = NULL;		/* Don't free it */
+
+		/* Free the old value if needed */
+		if (temp.flags & vf_dontfree)
+		    temp.flags ^= vf_dontfree;
 		else if ( temp.type == v_arr )
 		    arrayfree(temp.u.aval);
 		else if ( temp.type == v_str )
@@ -10417,6 +10423,7 @@ static void assign(Context *c,Val *val) {
 
 static void expr(Context *c,Val *val) {
     val->type = v_void;
+    val->flags = vf_none;
     assign(c,val);
 }
 
@@ -10487,6 +10494,7 @@ static void dowhile(Context *c) {
 	tok=ff_NextToken(c);
 	expect(c,tt_lparen,tok);
 	val.type = v_void;
+	val.flags = vf_none;
 	expr(c,&val);
 	tok=ff_NextToken(c);
 	expect(c,tt_rparen,tok);
@@ -10529,6 +10537,7 @@ static void doif(Context *c) {
 	tok=ff_NextToken(c);
 	expect(c,tt_lparen,tok);
 	val.type = v_void;
+	val.flags = vf_none;
 	expr(c,&val);
 	tok=ff_NextToken(c);
 	expect(c,tt_rparen,tok);
@@ -10582,14 +10591,15 @@ static void doshift(Context *c) {
 return;
     if ( c->a.argc==1 )
 	ScriptError(c,"Attempt to shift when there are no arguments left");
-    if ( c->a.vals[1].type==v_str )
+    if ( c->a.vals[1].flags & vf_dontfree )
+	c->a.vals[1].flags ^= vf_dontfree;
+    else if ( c->a.vals[1].type==v_str )
 	free(c->a.vals[1].u.sval );
-    if ( c->a.vals[1].type==v_arr && c->a.vals[1].u.aval != c->dontfree[1] )
+    else if ( c->a.vals[1].type==v_arr )
 	arrayfree(c->a.vals[1].u.aval );
     --c->a.argc;
     for ( i=1; i<c->a.argc ; ++i ) {
 	c->a.vals[i] = c->a.vals[i+1];
-	c->dontfree[i] = c->dontfree[i+1];
     }
 }
 
@@ -10614,6 +10624,7 @@ void ff_statement(Context *c) {
 	ff_backuptok(c);
 	c->returned = true;
 	c->return_val.type = v_void;
+	c->return_val.flags = vf_none;
 	if ( tok!=tt_eos ) {
 	    expr(c,&c->return_val);
 	    dereflvalif(&c->return_val);
@@ -10716,8 +10727,7 @@ _Noreturn void ProcessNativeScript(int argc, char *argv[], FILE *script) {
 	// Clear the context.
     memset( &c,0,sizeof(c));
     c.a.argc = argc-i; // Remaining arguments belong to the context.
-    c.a.vals = malloc(c.a.argc*sizeof(Val));
-    c.dontfree = calloc(c.a.argc,sizeof(Array*));
+    c.a.vals = calloc(c.a.argc, sizeof(Val));
     c.donteval = dry;
 	// Copy the context arguments.
     for ( j=i; j<argc; ++j ) {
@@ -10787,7 +10797,6 @@ _Noreturn void ProcessNativeScript(int argc, char *argv[], FILE *script) {
     else if (c.a.vals[0].type == v_arr || c.a.vals[0].type == v_arrfree)
 	arrayfree(c.a.vals[0].u.aval);
     free(c.a.vals);
-    free(c.dontfree);
     exit(0);
 }
 #endif		/* _NO_FFSCRIPT */
@@ -10914,7 +10923,6 @@ return;		/* No scripts of any sort */
 static void ExecuteNativeScriptFile(FontViewBase *fv, char *filename) {
     Context c;
     Val argv[1];
-    Array *dontfree[1];
     jmp_buf env;
 
     ff_VerboseCheck();
@@ -10922,8 +10930,8 @@ static void ExecuteNativeScriptFile(FontViewBase *fv, char *filename) {
     memset( &c,0,sizeof(c));
     c.a.argc = 1;
     c.a.vals = argv;
-    c.dontfree = dontfree;
     argv[0].type = v_str;
+    argv[0].flags = vf_none;
     argv[0].u.sval = filename;
     c.filename = filename;
     c.return_val.type = v_void;
