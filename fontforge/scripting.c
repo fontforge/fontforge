@@ -10776,11 +10776,16 @@ _Noreturn void ProcessNativeScript(int argc, char *argv[], FILE *script) {
 			ff_backuptok(&c);
 			ff_statement(&c);
 		}
-		if ((c.script != stdin) && (c.script != script) && (c.script !=NULL)) fclose(c.script);
+		// calldatafree will close c.script; don't do that in these cases
+		if (c.script == stdin || c.script == script) c.script = NULL;
     }
-	// Free previously copied arguments.
-    for ( i=0; i<c.a.argc; ++i )
-		free(c.a.vals[i].u.sval);
+
+    calldatafree(&c);
+    // calldatafree doesn't free the first arg
+    if (c.a.vals[0].type == v_str)
+	free(c.a.vals[0].u.sval);
+    else if (c.a.vals[0].type == v_arr || c.a.vals[0].type == v_arrfree)
+	arrayfree(c.a.vals[0].u.aval);
     free(c.a.vals);
     free(c.dontfree);
     exit(0);
