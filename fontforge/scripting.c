@@ -9661,8 +9661,8 @@ docall_expectint:   ScriptError(&sub,"Expected integer argument");
 		}
 		if ( sub.script==NULL )
 		    *pt = '\0';
+		sub.script = fopen(sub.filename,"rb");
 	    }
-	    sub.script = fopen(sub.filename,"rb");
 	    if ( sub.script==NULL ) {
 		ScriptErrorString(c, "No built-in function or script file", name);
 	    } else {
