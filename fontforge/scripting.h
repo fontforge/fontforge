@@ -112,6 +112,7 @@ typedef struct context {
     jmp_buf *err_env;			/* place to longjump to on an error */
 } Context;
 
+Array* arraynew(int sz);
 void arrayfree(Array *);
 
 void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height);

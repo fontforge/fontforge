@@ -1,0 +1,25 @@
+# Inputs to functions are passed by reference
+Print("input:", $1)
+
+copy2 = $1
+
+$1[0] = 10
+$1[1] = 11
+$1[2][0] = "reference"
+$1[2][1] = "passed"
+Print("updated:", $1)
+
+if ($1[0] != 10)
+    Error("Bad array value helper 1")
+elseif ($1[1] != 11)
+    Error("Bad array value helper 2")
+elseif ($1[2][0] != "reference")
+    Error("Bad array value helper 3")
+elseif ($1[2][1] != "passed")
+    Error("Bad array value helper 4")
+endif
+
+$1 = "abcdef"
+Print("assigned:", $1)
+
+Print("copy2:", copy2)

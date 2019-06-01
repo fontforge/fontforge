@@ -126,6 +126,7 @@ check_pedit([Short-hand contextual multiple substitution],[test134.pe],[test134.
 check_pedit([GDEF glyph classes],[test135.pe],[test135.fea])
 check_pedit([Re-using mark filtering set],[test136.pe],[test136.fea])
 check_pedit([file:// protocol],[test137.pe],[Ambrosia.sfd])
+check_pedit([Array sanity checking], [test138.pe])
 
 AT_BANNER([FontForge Python Scripting Tests])
 

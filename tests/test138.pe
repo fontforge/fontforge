@@ -1,0 +1,50 @@
+# Test some basic properties of arrays
+
+arr = Array(3)
+arr[0] = 1
+arr[1] = "abc"
+arr[2] = Array(2)
+arr[2][0] = 2
+arr[2][1] = 2.5
+
+# on assignment, arrays are passed by value
+copy = arr
+copy[0] = "def"
+copy[1] = 3
+copy[2][0] = 4
+copy[2][1] = 5
+
+if (arr[0] != 1)
+    Error("Bad array value 1")
+elseif (arr[1] != "abc")
+    Error("Bad array value 2")
+elseif (arr[2][0] != 2)
+    Error("Bad array value 3")
+elseif (arr[2][1] != 2.5)
+    Error("Bad array value 4")
+endif
+
+if (copy[0] != "def")
+    Error("Bad array value 5")
+elseif (copy[1] != 3)
+    Error("Bad array value 6")
+elseif (copy[2][0] != 4)
+    Error("Bad array value 7")
+elseif (copy[2][1] != 5)
+    Error("Bad array value 8")
+endif
+
+Print("calling helper")
+helper138.pe(arr)
+Print("returned")
+
+if (arr[0] != 10)
+    Error("Bad array value 9")
+elseif (arr[1] != 11)
+    Error("Bad array value 10")
+elseif (arr[2][0] != "reference")
+    Error("Bad array value 11")
+elseif (arr[2][1] != "passed")
+    Error("Bad array value 12")
+endif
+

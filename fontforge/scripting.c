@@ -161,6 +161,15 @@ return( ret );
 
 #endif /* _NO_FFSCRIPT */
 
+Array* arraynew(int count) {
+    Array *ret = calloc(1, sizeof(Array));
+    if (count >= 0) { // < 0 means caller will init this
+	ret->argc = count;
+	ret->vals = calloc(count, sizeof(Val));
+    }
+    return ret;
+}
+
 void arrayfree(Array *a) {
     int i;
 
@@ -176,11 +185,8 @@ void arrayfree(Array *a) {
 
 static Array *arraycopy(Array *a) {
     int i;
-    Array *c;
+    Array *c = arraynew(a->argc);
 
-    c = malloc(sizeof(Array));
-    c->argc = a->argc;
-    c->vals = malloc(c->argc*sizeof(Val));
     memcpy(c->vals,a->vals,c->argc*sizeof(Val));
     for ( i=0; i<a->argc; ++i ) {
 	if ( a->vals[i].type==v_str )
@@ -574,9 +580,7 @@ static void bArray(Context *c) {
     if ( c->a.vals[1].u.ival<=0 )
 	ScriptError( c, "Argument must be positive" );
     c->return_val.type = v_arrfree;
-    c->return_val.u.aval = malloc(sizeof(Array));
-    c->return_val.u.aval->argc = c->a.vals[1].u.ival;
-    c->return_val.u.aval->vals = malloc(c->a.vals[1].u.ival*sizeof(Val));
+    c->return_val.u.aval = arraynew(c->a.vals[1].u.ival);
     for ( i=0; i<c->a.vals[1].u.ival; ++i )
 	c->return_val.u.aval->vals[i].type = v_void;
 }
@@ -653,9 +657,7 @@ static void bStrSplit(Context *c) {
 	    if ( max!=-1 && cnt>max )
 		cnt = max;
 	    c->return_val.type = v_arrfree;
-	    c->return_val.u.aval = malloc(sizeof(Array));
-	    c->return_val.u.aval->argc = cnt;
-	    c->return_val.u.aval->vals = malloc(cnt*sizeof(Val));
+	    c->return_val.u.aval = arraynew(cnt);
 	} else {
 	    if ((*pt!='\0') && ((max==-1) || (cnt<max))) {
 		c->return_val.u.aval->vals[cnt].type = v_str;
@@ -1405,9 +1407,7 @@ static void bUCS4(Context *c) {
 	const char *pt = c->a.vals[1].u.sval;
 	int i, len = g_utf8_strlen( pt, -1 );
 	c->return_val.type = v_arrfree;
-	c->return_val.u.aval = malloc(sizeof(Array));
-	c->return_val.u.aval->argc = len;
-	c->return_val.u.aval->vals = malloc(len*sizeof(Val));
+	c->return_val.u.aval = arraynew(len);
 	for ( i=0; i<len; ++i ) {
 	    c->return_val.u.aval->vals[i].type = v_int;
 	    c->return_val.u.aval->vals[i].u.ival = utf8_ildb(&pt);
@@ -1434,9 +1434,7 @@ static void bOrd(Context *c) {
     } else {
 	int i, len = strlen(c->a.vals[1].u.sval);
 	c->return_val.type = v_arrfree;
-	c->return_val.u.aval = malloc(sizeof(Array));
-	c->return_val.u.aval->argc = len;
-	c->return_val.u.aval->vals = malloc(len*sizeof(Val));
+	c->return_val.u.aval = arraynew(len);
 	for ( i=0; i<len; ++i ) {
 	    c->return_val.u.aval->vals[i].type = v_int;
 	    c->return_val.u.aval->vals[i].u.ival = (uint8) c->a.vals[1].u.sval[i];
@@ -1879,9 +1877,7 @@ static void bFontsInFile(Context *c) {
     cnt = 0;
     if ( ret!=NULL ) for ( cnt=0; ret[cnt]!=NULL; ++cnt );
     c->return_val.type = v_arrfree;
-    c->return_val.u.aval = malloc(sizeof(Array));
-    c->return_val.u.aval->argc = cnt;
-    c->return_val.u.aval->vals = malloc((cnt==0?1:cnt)*sizeof(Val));
+    c->return_val.u.aval = arraynew(cnt);
     if ( ret!=NULL ) for ( cnt=0; ret[cnt]!=NULL; ++cnt ) {
 	c->return_val.u.aval->vals[cnt].type = v_str;
 	c->return_val.u.aval->vals[cnt].u.sval = ret[cnt];
@@ -3904,9 +3900,7 @@ static void bGetOS2Value(Context *c) {
 	os2getint(sf->pfminfo.vlinegap,c);
     } else if ( strmatch(c->a.vals[1].u.sval,"Panose")==0 ) {
 	c->return_val.type = v_arrfree;
-	c->return_val.u.aval = malloc(sizeof(Array));
-	c->return_val.u.aval->argc = 10;
-	c->return_val.u.aval->vals = malloc((10+1)*sizeof(Val));
+	c->return_val.u.aval = arraynew(10);
 	for ( i=0; i<10; ++i ) {
 	    c->return_val.u.aval->vals[i].type = v_int;
 	    c->return_val.u.aval->vals[i].u.ival = sf->pfminfo.panose[i];
@@ -4016,9 +4010,7 @@ static void bGetFontBoundingBox(Context *c) {
 
     SplineFontFindBounds(sf,&b);
     c->return_val.type = v_arrfree;
-    c->return_val.u.aval = malloc(sizeof(Array));
-    c->return_val.u.aval->argc = 4;
-    c->return_val.u.aval->vals = malloc(4*sizeof(Val));
+    c->return_val.u.aval = arraynew(4);
     for ( i=0; i<4; ++i )
 	c->return_val.u.aval->vals[i].type = v_real;
     c->return_val.u.aval->vals[0].u.fval = b.minx;
@@ -6410,9 +6402,7 @@ static void bMMInstanceNames(Context *c) {
 	ScriptError( c, "Not a multiple master font" );
 
     c->return_val.type = v_arrfree;
-    c->return_val.u.aval = malloc(sizeof(Array));
-    c->return_val.u.aval->argc = mm->instance_count;
-    c->return_val.u.aval->vals = malloc(mm->instance_count*sizeof(Val));
+    c->return_val.u.aval = arraynew(mm->instance_count);
     for ( i=0; i<mm->instance_count; ++i ) {
 	c->return_val.u.aval->vals[i].type = v_str;
 	c->return_val.u.aval->vals[i].u.sval = copy(mm->instances[i]->fontname);
@@ -6427,9 +6417,7 @@ static void bMMAxisNames(Context *c) {
 	ScriptError( c, "Not a multiple master font" );
 
     c->return_val.type = v_arrfree;
-    c->return_val.u.aval = malloc(sizeof(Array));
-    c->return_val.u.aval->argc = mm->axis_count;
-    c->return_val.u.aval->vals = malloc(mm->axis_count*sizeof(Val));
+    c->return_val.u.aval = arraynew(mm->axis_count);
     for ( i=0; i<mm->axis_count; ++i ) {
 	c->return_val.u.aval->vals[i].type = v_str;
 	c->return_val.u.aval->vals[i].u.sval = copy(mm->axes[i]);
@@ -6447,9 +6435,7 @@ static void bMMAxisBounds(Context *c) {
     axis = c->a.vals[1].u.ival;
 
     c->return_val.type = v_arrfree;
-    c->return_val.u.aval = malloc(sizeof(Array));
-    c->return_val.u.aval->argc = mm->axis_count;
-    c->return_val.u.aval->vals = malloc(3*sizeof(Val));
+    c->return_val.u.aval = arraynew(3);
     for ( i=0; i<3; ++i )
 	c->return_val.u.aval->vals[i].type = v_int;
     c->return_val.u.aval->vals[0].u.ival = mm->axismaps[axis].min * 65536;
@@ -7279,9 +7265,7 @@ static void bGetLookupInfo(Context *c) {
     if ( otl==NULL )
 	ScriptErrorString(c,"Missing lookup",c->a.vals[1].u.sval);
     c->return_val.type = v_arrfree;
-    c->return_val.u.aval = malloc(sizeof(Array));
-    c->return_val.u.aval->argc = 3;
-    c->return_val.u.aval->vals = malloc(3*sizeof(Val));
+    c->return_val.u.aval = arraynew(3);
     c->return_val.u.aval->vals[0].type = v_str;
     c->return_val.u.aval->vals[0].u.sval = copy(
 	    otl->lookup_type==gpos_single ? "GPOS_single" :
@@ -7305,34 +7289,24 @@ static void bGetLookupInfo(Context *c) {
 		"morx_insert" );
     c->return_val.u.aval->vals[1].type = v_int;
     c->return_val.u.aval->vals[1].u.ival = otl->lookup_flags;
-    c->return_val.u.aval->vals[2].type = v_arrfree;
-    c->return_val.u.aval->vals[2].u.aval = farray = malloc(sizeof(Array));
     for ( fl=otl->features, fcnt=0; fl!=NULL; fl=fl->next, ++fcnt );
-    farray->argc = fcnt;
-    farray->vals = malloc(fcnt*sizeof(Val));
+    c->return_val.u.aval->vals[2].type = v_arrfree;
+    c->return_val.u.aval->vals[2].u.aval = farray = arraynew(fcnt);
     for ( fl=otl->features, fcnt=0; fl!=NULL; fl=fl->next, ++fcnt ) {
 	farray->vals[fcnt].type = v_arrfree;
-	farray->vals[fcnt].u.aval = malloc(sizeof(Array));
-	farray->vals[fcnt].u.aval->argc = 2;
-	farray->vals[fcnt].u.aval->vals = malloc(2*sizeof(Val));
+	farray->vals[fcnt].u.aval = arraynew(2);
 	farray->vals[fcnt].u.aval->vals[0].type = v_str;
 	farray->vals[fcnt].u.aval->vals[0].u.sval = Tag2Str(fl->featuretag,fl->ismac);
-	farray->vals[fcnt].u.aval->vals[1].type = v_arrfree;
-	farray->vals[fcnt].u.aval->vals[1].u.aval = sarray = malloc(sizeof(Array));
 	for ( sl=fl->scripts, scnt=0; sl!=NULL; sl=sl->next, ++scnt );
-	sarray->argc = scnt;
-	sarray->vals = malloc(scnt*sizeof(Val));
+	farray->vals[fcnt].u.aval->vals[1].type = v_arrfree;
+	farray->vals[fcnt].u.aval->vals[1].u.aval = sarray = arraynew(scnt);
 	for ( sl=fl->scripts, scnt=0; sl!=NULL; sl=sl->next, ++scnt ) {
 	    sarray->vals[scnt].type = v_arrfree;
-	    sarray->vals[scnt].u.aval = malloc(sizeof(Array));
-	    sarray->vals[scnt].u.aval->argc = 2;
-	    sarray->vals[scnt].u.aval->vals = malloc(2*sizeof(Val));
+	    sarray->vals[scnt].u.aval = arraynew(2);
 	    sarray->vals[scnt].u.aval->vals[0].type = v_str;
 	    sarray->vals[scnt].u.aval->vals[0].u.sval = Tag2Str(sl->script,false);
 	    sarray->vals[scnt].u.aval->vals[1].type = v_arrfree;
-	    sarray->vals[scnt].u.aval->vals[1].u.aval = larray = malloc(sizeof(Array));
-	    larray->argc = sl->lang_cnt;
-	    larray->vals = malloc(sl->lang_cnt*sizeof(Val));
+	    sarray->vals[scnt].u.aval->vals[1].u.aval = larray = arraynew(sl->lang_cnt);
 	    for ( l=0; l<sl->lang_cnt; ++l ) {
 		larray->vals[l].type = v_str;
 		larray->vals[l].u.sval = Tag2Str(l<MAX_LANG?sl->langs[l]:sl->morelangs[l-MAX_LANG],false);
@@ -7352,9 +7326,7 @@ static void bGetLookupSubtables(Context *c) {
     for ( sub=otl->subtables, cnt=0; sub!=NULL; sub=sub->next, ++cnt );
 
     c->return_val.type = v_arrfree;
-    c->return_val.u.aval = malloc(sizeof(Array));
-    c->return_val.u.aval->argc = cnt;
-    c->return_val.u.aval->vals = malloc(cnt*sizeof(Val));
+    c->return_val.u.aval = arraynew(cnt);
     for ( sub=otl->subtables, cnt=0; sub!=NULL; sub=sub->next, ++cnt ) {
 	c->return_val.u.aval->vals[cnt].type = v_str;
 	c->return_val.u.aval->vals[cnt].u.sval = copy( sub->subtable_name );
@@ -7377,9 +7349,7 @@ static void bGetLookups(Context *c) {
 
     for ( otl=base, cnt=0; otl!=NULL; otl=otl->next, ++cnt );
     c->return_val.type = v_arrfree;
-    c->return_val.u.aval = malloc(sizeof(Array));
-    c->return_val.u.aval->argc = cnt;
-    c->return_val.u.aval->vals = malloc(cnt*sizeof(Val));
+    c->return_val.u.aval = arraynew(cnt);
     for ( otl=base, cnt=0; otl!=NULL; otl=otl->next, ++cnt ) {
 	c->return_val.u.aval->vals[cnt].type = v_str;
 	c->return_val.u.aval->vals[cnt].u.sval = copy( otl->lookup_name );
@@ -7585,9 +7555,7 @@ static void FigureExtrema(Context *c,SplineChar *sc,int pos,int xextrema) {
     }
 
     c->return_val.type = v_arrfree;
-    c->return_val.u.aval = malloc(sizeof(Array));
-    c->return_val.u.aval->argc = 2;
-    c->return_val.u.aval->vals = malloc(2*sizeof(Val));
+    c->return_val.u.aval = arraynew(2);
     c->return_val.u.aval->vals[0].type = v_int;
     c->return_val.u.aval->vals[1].type = v_int;
     if ( minmax[0]>1e10 ) {	/* Unset. Presumably pos is outside bounding box */
@@ -7695,9 +7663,7 @@ maxsect_reached:
     }
 
   c->return_val.type = v_arrfree;
-  c->return_val.u.aval = malloc(sizeof(Array));
-  c->return_val.u.aval->argc = j;
-  c->return_val.u.aval->vals = malloc(j*sizeof(Val));
+  c->return_val.u.aval = arraynew(j);
   for (i = 0; i < j; i++){
     c->return_val.u.aval->vals[i].type = v_real;
     c->return_val.u.aval->vals[i].u.fval = val[i];
@@ -7832,9 +7798,7 @@ return;
 		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i )
 		    ;
 	    c->return_val.type = v_arrfree;
-	    c->return_val.u.aval = malloc(sizeof(Array));
-	    c->return_val.u.aval->argc = i;
-	    c->return_val.u.aval->vals = malloc(i*sizeof(Val));
+	    c->return_val.u.aval = arraynew(i);
 	    for ( i=0, layer=0; layer<sc->layer_cnt; ++layer ) {
 		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i ) {
 		    c->return_val.u.aval->vals[i].u.sval = copy(ref->sc->name);
@@ -7846,15 +7810,11 @@ return;
 		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i )
 		    ;
 	    c->return_val.type = v_arrfree;
-	    c->return_val.u.aval = malloc(sizeof(Array));
-	    c->return_val.u.aval->argc = i;
-	    c->return_val.u.aval->vals = malloc(i*sizeof(Val));
+	    c->return_val.u.aval = arraynew(i);
 	    for ( i=0, layer=0; layer<sc->layer_cnt; ++layer ) {
 		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i ) {
 		    c->return_val.u.aval->vals[i].type = v_arr;
-		    c->return_val.u.aval->vals[i].u.aval = malloc(sizeof(Array));
-		    c->return_val.u.aval->vals[i].u.aval->argc = 6;
-		    c->return_val.u.aval->vals[i].u.aval->vals = malloc(6*sizeof(Val));
+		    c->return_val.u.aval->vals[i].u.aval = arraynew(6);
 		    for ( j=0; j<6; ++j ) {
 			c->return_val.u.aval->vals[i].u.aval->vals[j].type = v_real;
 			c->return_val.u.aval->vals[i].u.aval->vals[j].u.fval = ref->transform[j];
@@ -7874,9 +7834,7 @@ return;
 		    strmatch( c->a.vals[1].u.sval,"BoundingBox")==0 ||
 		    strmatch( c->a.vals[1].u.sval,"BB")==0 ) {
 		c->return_val.type = v_arrfree;
-		c->return_val.u.aval = malloc(sizeof(Array));
-		c->return_val.u.aval->argc = 4;
-		c->return_val.u.aval->vals = malloc(4*sizeof(Val));
+		c->return_val.u.aval = arraynew(4);
 		for ( i=0; i<4; ++i )
 		    c->return_val.u.aval->vals[i].type = v_real;
 		c->return_val.u.aval->vals[0].u.fval = b.minx;
@@ -7911,12 +7869,10 @@ static void bGetAnchorPoints(Context *c) {
 
     for ( ap=sc->anchor, cnt=0; ap!=NULL; ap=ap->next, ++cnt )
         ;
-    ret = malloc(sizeof(Array));
-    ret->argc = cnt;
-    ret->vals = calloc(cnt,sizeof(Val));
+    ret = arraynew(cnt);
     for ( ap=sc->anchor, cnt=0; ap!=NULL; ap=ap->next, ++cnt ) {
 	ret->vals[cnt].type = v_arr;
-	ret->vals[cnt].u.aval = temp = malloc(sizeof(Array));
+	ret->vals[cnt].u.aval = temp = arraynew(-1);
 	if ( ap->type == at_baselig ) {
 	    temp->argc = 5;
 	    temp->vals = calloc(6,sizeof(Val));
@@ -7978,7 +7934,7 @@ static void bGetPosSub(Context *c) {
 	    if ( pst->subtable == sub || sub==NULL ) {
 		if ( i ) {
 		    ret->vals[cnt].type = v_arr;
-		    ret->vals[cnt].u.aval = temp = malloc(sizeof(Array));
+		    ret->vals[cnt].u.aval = temp = arraynew(-1);
 		    switch ( pst->type ) {
 		      default:
 		        free(temp);
@@ -8057,9 +8013,7 @@ static void bGetPosSub(Context *c) {
 		    if ( sub==NULL || sub==kp->subtable ) {
 			if ( i ) {
 			    ret->vals[cnt].type = v_arr;
-			    ret->vals[cnt].u.aval = temp = malloc(sizeof(Array));
-			    temp->argc = 11;
-			    temp->vals = calloc(temp->argc,sizeof(Val));
+			    ret->vals[cnt].u.aval = temp = arraynew(11);
 			    temp->vals[0].type = v_str;
 			    temp->vals[0].u.sval = copy(kp->subtable->subtable_name);
 			    temp->vals[1].type = v_str;
@@ -8083,9 +8037,7 @@ static void bGetPosSub(Context *c) {
 	    }
 	}
 	if ( i==0 ) {
-	    ret = malloc(sizeof(Array));
-	    ret->argc = cnt;
-	    ret->vals = calloc(cnt,sizeof(Val));
+	    ret = arraynew(cnt);
 	}
     }
     c->return_val.type = v_arrfree;
@@ -9762,7 +9714,7 @@ static void buildarray(Context *c,Val *val) {
 	val->type = v_void;
     } else {
 	val->type = v_arrfree;
-	val->u.aval = malloc(sizeof(Array));
+	val->u.aval = arraynew(-1);
 	val->u.aval->argc = cnt;
 	val->u.aval->vals = realloc(body,cnt*sizeof(Val));
     }
@@ -9925,9 +9877,7 @@ static void handlename(Context *c,Val *val) {
 		if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
 		for ( cnt=0, bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) ++cnt;
 		val->type = v_arrfree;
-		val->u.aval = malloc(sizeof(Array));
-		val->u.aval->argc = cnt;
-		val->u.aval->vals = malloc((cnt+1)*sizeof(Val));
+		val->u.aval = arraynew(cnt);
 		for ( cnt=0, bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next, ++cnt) {
 		    val->u.aval->vals[cnt].type = v_int;
 		    val->u.aval->vals[cnt].u.ival = bdf->pixelsize;
@@ -9942,9 +9892,7 @@ static void handlename(Context *c,Val *val) {
 		sf = c->curfv->sf;
 		if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
 		val->type = v_arrfree;
-		val->u.aval = malloc(sizeof(Array));
-		val->u.aval->argc = 10;
-		val->u.aval->vals = malloc((10+1)*sizeof(Val));
+		val->u.aval = arraynew(10);
 		memset(&pfminfo,'\0',sizeof(pfminfo));
 		SFDefaultOS2Info(&pfminfo,sf,sf->fontname);
 		for ( cnt=0; cnt<10; ++cnt ) {
@@ -9957,9 +9905,7 @@ static void handlename(Context *c,Val *val) {
 		if ( c->curfv==NULL ) ScriptError(c,"No current font");
 		map = c->curfv->map;
 		val->type = v_arrfree;
-		val->u.aval = malloc(sizeof(Array));
-		val->u.aval->argc = map->enccount;
-		val->u.aval->vals = malloc((map->enccount+1)*sizeof(Val));
+		val->u.aval = arraynew(map->enccount);
 		for ( i=0; i<map->enccount; ++i) {
 		    val->u.aval->vals[i].type = v_int;
 		    val->u.aval->vals[i].u.ival = c->curfv->selected[i];
@@ -10237,12 +10183,11 @@ static void add(Context *c,Val *val) {
 		val->u.sval = ret;
 	    } else if ( val->type==v_arr || val->type==v_arrfree ) {
 		Array *arr;
-		arr = malloc(sizeof(Array));
-		arr->argc = val->u.aval->argc +
+		int argc = val->u.aval->argc +
 			((other.type==v_arr || other.type== v_arrfree)?
 			    other.u.aval->argc:
 			    1);
-		arr->vals = malloc(arr->argc*sizeof(Val));
+		arr = arraynew(argc);
 		array_copy_into(arr,0,val->u.aval);
 		if ( other.type==v_arr || other.type == v_arrfree ) {
 		    array_copy_into(arr,val->u.aval->argc,other.u.aval);
