@@ -4,6 +4,13 @@ branches:
   only:
   - master
   - /release\/.*/
+environment:
+  global:
+    MBASH: C:\msys64\usr\bin\sh -lc
+    MSYS2_FC_CACHE_SKIP: true
+  matrix:
+    - MSYSTEM: MINGW32
+      MBITS: 32
 for:
   -
     branches:
@@ -12,32 +19,13 @@ for:
     environment:
       global:
         APPVEYOR_CONFIG_PROD: 1
+      matrix:
+        - MSYSTEM: MINGW32
+          MBITS: 32
+        - MSYSTEM: MINGW64
+          MBITS: 64
+
 clone_depth: 10
-environment:
-  global:
-    MBASH: C:\msys64\usr\bin\sh -lc
-    MSYS2_FC_CACHE_SKIP: true
-  matrix:
-#    - MSYSTEM: MINGW32
-#      MBITS: 32
-#      VCXSRV: VcXsrv-1.14.2-minimal.tar.xz
-#      BACKEND: x11
-# For speed, we disable 64-bit builds.
-#    - MSYSTEM: MINGW64
-#      MBITS: 64
-#      VCXSRV: VcXsrv-1.17.0.0-x86_64-minimal.tar.xz
-#      BACKEND: x11
-# No GDK builds yet
-    - MSYSTEM: MINGW32
-      MBITS: 32
-      VCXSRV: VcXsrv-1.14.2-minimal.tar.xz
-      BACKEND: gdk
-      GDKOPT: --enable-gdk=gdk3
-#    - MSYSTEM: MINGW64
-#      MBITS: 64
-#      VCXSRV: VcXsrv-1.17.0.0-x86_64-minimal.tar.xz
-#      BACKEND: gdk
-#      GDKOPT: --enable-gdk
 
 #The cache is slightly slower than just downloading the files
 #cache:
@@ -49,16 +37,16 @@ install:
   - if "%APPVEYOR_REPO_BRANCH:~0,8%"=="release/" call %MBASH% "pacman -Syuu --noconfirm"
   - if "%APPVEYOR_REPO_BRANCH:~0,8%"=="release/" call %MBASH% "pacman -Suu --noconfirm"
   - if "%APPVEYOR_REPO_BRANCH:~0,8%"=="release/" call %MBASH% "pacman -Suu --noconfirm"
-  - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds; exec 0</dev/null; ./ffbuild.sh $GDKOPT --appveyor --depsonly"
+  - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds; exec 0</dev/null; ./ffbuild.sh --appveyor --depsonly"
 build_script:
-  - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds; exec 0</dev/null; ./ffbuild.sh $GDKOPT --appveyor"
+  - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds; exec 0</dev/null; ./ffbuild.sh --appveyor"
   - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds; exec 0</dev/null; FFPATH=`cygpath -m $APPVEYOR_BUILD_FOLDER` ./make-portable-package.sh appveyor"
   - if "%APPVEYOR_REPO_BRANCH:~0,8%"=="release/" cd "%APPVEYOR_BUILD_FOLDER%/fontforgebuilds/fontforge-setup" && "C:\Program Files (x86)\Inno Setup 5\ISCC.exe" -Qp fontforgesetup.iss
 test: off
 artifacts:
   - path: fontforgebuilds\*-appveyor.7z
-    name: FontForge $(MBITS)-bit $(BACKEND) build
+    name: FontForge $(MBITS)-bit build
   - path: fontforgebuilds\*-debugging-symbols.7z
-    name: FontForge $(MBITS)-bit $(BACKEND) debugging symbols
+    name: FontForge $(MBITS)-bit debugging symbols
   - path: fontforgebuilds\fontforge-setup\*.exe
     name: FontForge $(MBITS)-bit setup
