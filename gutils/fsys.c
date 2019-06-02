@@ -530,11 +530,7 @@ int GFileRemove(const char *path, int recursive) {
 }
 
 int GFileMkDir(const char *name, int mode) {
-#ifndef _WIN32
-	return mkdir(name, mode);
-#else
-	return mkdir(name);
-#endif
+    return g_mkdir(name, mode);
 }
 
 char *_GFile_find_program_dir(char *prog) {
