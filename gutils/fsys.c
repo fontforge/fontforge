@@ -108,48 +108,6 @@ unichar_t *u_GFileNormalizePath(unichar_t *path) {
     return path;
 }
 
-/* make directories.  make parent directories as needed,  with no error if
- * the path already exists */
-int mkdir_p(const char *path, mode_t mode) {
-	struct stat st;
-	const char *e;
-	char *p = NULL;
-	char tmp[1024];
-	size_t len;
-	int r;
-
-	/* ensure the path is valid */
-	if(!(e = strrchr(path, '/')))
-return -EINVAL;
-	/* ensure path is a directory */
-	r = stat(path, &st);
-	if (r == 0 && !S_ISDIR(st.st_mode))
-return -ENOTDIR;
-
-	/* copy the pathname */
-	snprintf(tmp, sizeof(tmp),"%s", path);
-	len = strlen(tmp);
-	if(tmp[len - 1] == '/')
-	tmp[len - 1] = 0;
-
-	/* iterate mkdir over the path */
-	for(p = tmp + 1; *p; p++)
-	if(*p == '/') {
-		*p = 0;
-		r = GFileMkDir(tmp, mode);
-		if (r < 0 && errno != EEXIST)
-return -errno;
-		*p = '/';
-	}
-
-	/* try to make the whole path */
-	r = GFileMkDir(tmp, mode);
-	if(r < 0 && errno != EEXIST)
-return -errno;
-	/* creation successful or the file already exists */
-return EXIT_SUCCESS;
-}
-
 char *GFileGetHomeDir(void) {
 #if defined(__MINGW32__)
     char* dir = getenv("HOME");
@@ -1063,7 +1021,7 @@ return NULL;
 	if(buf != NULL) {
 	    /* try to create buf.  If creating the directory fails, return NULL
 	     * because nothing will get saved into an inaccessible directory.  */
-            if ( mkdir_p(buf, 0755) != EXIT_SUCCESS ) {
+            if ( g_mkdir_with_parents(buf, 0755) != EXIT_SUCCESS ) {
                 free(buf);
                 return NULL;
             }
