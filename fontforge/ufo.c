@@ -2057,73 +2057,68 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff, in
     }
     glif_name_index_destroy(glif_name_hash); // Close the hash table.
     
-    if (all_layers) {
-      struct glif_name_index * layer_name_hash = glif_name_index_new(); // Open the hash table.
-      struct glif_name_index * layer_path_hash = glif_name_index_new(); // Open the hash table.
+    struct glif_name_index * layer_name_hash = glif_name_index_new(); // Open the hash table.
+    struct glif_name_index * layer_path_hash = glif_name_index_new(); // Open the hash table.
 
-      switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
-      xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
-      xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
-      xmlNodePtr arraynode = xmlNewChild(rootnode, NULL, BAD_CAST "array", NULL); if (arraynode == NULL) { xmlFreeDoc(plistdoc); return false; } // Make the dict.
-      switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
-      int layer_pos;
-      for (layer_pos = 0; layer_pos < sf->layer_cnt; layer_pos++) {
-        // We don't want to emit the default background layer unless it has stuff in it or was in the input U. F. O..
-        if (layer_pos == ly_back && !LayerWorthOutputting(sf, layer_pos) && sf->layers[layer_pos].ufo_path == NULL) continue;
-        // We start building the layer contents entry.
-        xmlNodePtr layernode = xmlNewChild(arraynode, NULL, BAD_CAST "array", NULL);
-        // We make the layer name.
-        char * layer_name_start = NULL;
-        if (layer_pos == ly_fore) layer_name_start = "public.default";
-        else if (layer_pos == ly_back) layer_name_start = "public.background";
-        else layer_name_start = sf->layers[layer_pos].name;
-        if (layer_name_start == NULL) layer_name_start = "unnamed"; // The remangle step adds any needed numbers.
-        char * numberedlayername = ufo_name_number(layer_name_hash, layer_pos, layer_name_start, "", "", 7);
-        // We make the layer path.
-        char * layer_path_start = NULL;
-        char * numberedlayerpath = NULL;
-        char * numberedlayerpathwithglyphs = NULL;
-	int name_err = 0;
-        if (layer_pos == ly_fore) {
-          numberedlayerpath = strdup("glyphs");
-          numberedlayerpathwithglyphs = copy(numberedlayerpath);
-        } else if (sf->layers[layer_pos].ufo_path != NULL) {
-          layer_path_start = strdup(sf->layers[layer_pos].ufo_path);
-          numberedlayerpath = ufo_name_number(layer_path_hash, layer_pos, layer_path_start, "", "", 7);
-          numberedlayerpathwithglyphs = copy(numberedlayerpath);
-        } else {
-          layer_path_start = ufo_name_mangle(sf->layers[layer_pos].name, "glyphs.", "", 7);
-          numberedlayerpath = ufo_name_number(layer_path_hash, layer_pos, layer_path_start, "glyphs.", "", 7);
-          numberedlayerpathwithglyphs = smprintf("glyphs.%s", numberedlayerpath);
-        }
-        if (layer_path_start != NULL) { free(layer_path_start); layer_path_start = NULL; }
-	if (name_err) {
-          err |= name_err;
-	} else {
-	  // We write to the layer contents.
-	  xmlNewTextChild(layernode, NULL, BAD_CAST "string", numberedlayername);
-	  xmlNewTextChild(layernode, NULL, BAD_CAST "string", numberedlayerpathwithglyphs);
-	  glyphdir = buildname(basedir, numberedlayerpathwithglyphs);
-	  // We write the glyph directory.
-	  err |= WriteUFOLayer(glyphdir, sf, layer_pos, version);
-	}
-        free(numberedlayername); numberedlayername = NULL;
-        free(numberedlayerpath); numberedlayerpath = NULL;
-        free(numberedlayerpathwithglyphs); numberedlayerpathwithglyphs = NULL;
-        free(glyphdir); glyphdir = NULL;
+    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
+    xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
+    xmlNodePtr rootnode = xmlDocGetRootElement(plistdoc); if (rootnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Find the root node.
+    xmlNodePtr arraynode = xmlNewChild(rootnode, NULL, BAD_CAST "array", NULL); if (arraynode == NULL) { xmlFreeDoc(plistdoc); return false; } // Make the dict.
+    switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
+    int layer_pos;
+    for (layer_pos = (all_layers ? 0 : ly_fore); layer_pos < (all_layers ? sf->layer_cnt : ly_fore+1); layer_pos++) {
+      // We don't want to emit the default background layer unless it has stuff in it or was in the input U. F. O..
+      if (layer_pos == ly_back && !LayerWorthOutputting(sf, layer_pos) && sf->layers[layer_pos].ufo_path == NULL) continue;
+      // We start building the layer contents entry.
+      xmlNodePtr layernode = xmlNewChild(arraynode, NULL, BAD_CAST "array", NULL);
+      // We make the layer name.
+      char * layer_name_start = NULL;
+      if (layer_pos == ly_fore) layer_name_start = "public.default";
+      else if (layer_pos == ly_back) layer_name_start = "public.background";
+      else layer_name_start = sf->layers[layer_pos].name;
+      if (layer_name_start == NULL) layer_name_start = "unnamed"; // The remangle step adds any needed numbers.
+      char * numberedlayername = ufo_name_number(layer_name_hash, layer_pos, layer_name_start, "", "", 7);
+      // We make the layer path.
+      char * layer_path_start = NULL;
+      char * numberedlayerpath = NULL;
+      char * numberedlayerpathwithglyphs = NULL;
+      int name_err = 0;
+      if (layer_pos == ly_fore) {
+        numberedlayerpath = strdup("glyphs");
+        numberedlayerpathwithglyphs = copy(numberedlayerpath);
+      } else if (sf->layers[layer_pos].ufo_path != NULL) {
+        layer_path_start = strdup(sf->layers[layer_pos].ufo_path);
+        numberedlayerpath = ufo_name_number(layer_path_hash, layer_pos, layer_path_start, "", "", 7);
+        numberedlayerpathwithglyphs = copy(numberedlayerpath);
+      } else {
+        layer_path_start = ufo_name_mangle(sf->layers[layer_pos].name, "glyphs.", "", 7);
+        numberedlayerpath = ufo_name_number(layer_path_hash, layer_pos, layer_path_start, "glyphs.", "", 7);
+        numberedlayerpathwithglyphs = smprintf("glyphs.%s", numberedlayerpath);
       }
-      char *fname = buildname(basedir, "layercontents.plist"); // Build the file name for the contents.
-      xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
-      free(fname); fname = NULL;
-      xmlFreeDoc(plistdoc); // Free the memory.
-      xmlCleanupParser();
-      glif_name_index_destroy(layer_name_hash); // Close the hash table.
-      glif_name_index_destroy(layer_path_hash); // Close the hash table.
-    } else {
-        glyphdir = buildname(basedir,"glyphs");
-        WriteUFOLayer(glyphdir, sf, layer, version);
-        free(glyphdir); glyphdir = NULL;
+      if (layer_path_start != NULL) { free(layer_path_start); layer_path_start = NULL; }
+      if (name_err) {
+        err |= name_err;
+      } else {
+        // We write to the layer contents.
+        xmlNewTextChild(layernode, NULL, BAD_CAST "string", numberedlayername);
+        xmlNewTextChild(layernode, NULL, BAD_CAST "string", numberedlayerpathwithglyphs);
+        glyphdir = buildname(basedir, numberedlayerpathwithglyphs);
+        // We write the glyph directory.
+        err |= WriteUFOLayer(glyphdir, sf, layer_pos, version);
+      }
+      free(numberedlayername); numberedlayername = NULL;
+      free(numberedlayerpath); numberedlayerpath = NULL;
+      free(numberedlayerpathwithglyphs); numberedlayerpathwithglyphs = NULL;
+      free(glyphdir); glyphdir = NULL;
     }
+    char *fname = buildname(basedir, "layercontents.plist"); // Build the file name for the contents.
+    xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
+    free(fname); fname = NULL;
+    xmlFreeDoc(plistdoc); // Free the memory.
+    xmlCleanupParser();
+    glif_name_index_destroy(layer_name_hash); // Close the hash table.
+    glif_name_index_destroy(layer_path_hash); // Close the hash table.
+
     switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     return !err;
 }
