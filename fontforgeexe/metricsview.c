@@ -1548,6 +1548,7 @@ return( true );
 	    GDrawBeep(NULL);
 	else {
 	    MV_ChangeKerning(mv,which,val, false);
+	    MVRemetric(mv);
 	}
     } else if ( e->u.control.subtype == et_textfocuschanged &&
 	    e->u.control.u.tf_focus.gained_focus ) {
