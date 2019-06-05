@@ -2547,22 +2547,6 @@ msgstr "Турецька"
 msgid "Welsh"
 msgstr "Валійська"
 
-#: ../fontforge/libstamp.c:116
-msgid "Library may be too old"
-msgstr "Можливо, бібліотека занадто застаріла"
-
-#: ../fontforge/libstamp.c:116
-msgid ""
-"The library is older than the executable expects.\n"
-"   This might be ok.\n"
-"Or it may crash on you.\n"
-"You have been warned."
-msgstr ""
-"Версія бібліотеки є старішою ніж та, на яку розраховано програму.\n"
-"   Все може працювати як слід.\n"
-"Або може не працювати взагалі.\n"
-"Вас попереджено."
-
 #: ../fontforge/lookups.c:47
 msgid "Access All Alternates"
 msgstr "Доступ до всіх альтернатив"

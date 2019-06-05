@@ -57,7 +57,6 @@ noinst_HEADERS = \
 	fvimportbdf.h \
 	ikarus.h\
 	langfreq.h\
-	libstamp.h\
 	macbinary.h\
 	macenc.h\
 	mathconstants.h\

@@ -2605,22 +2605,6 @@ msgstr "Turc"
 msgid "Welsh"
 msgstr "Gallois"
 
-#: ../fontforge/libstamp.c:116
-msgid "Library may be too old"
-msgstr "La librairie peut être trop vieille"
-
-#: ../fontforge/libstamp.c:116
-msgid ""
-"The library is older than the executable expects.\n"
-"   This might be ok.\n"
-"Or it may crash on you.\n"
-"You have been warned."
-msgstr ""
-"La librairie est plus ancienne qu'attendu par l'exécutable.\n"
-"    Cela pourrait être ok.\n"
-"Ou cela pourrait planter.\n"
-"Vous avez été averti."
-
 #: ../fontforge/lookups.c:47
 msgid "Access All Alternates"
 msgstr "Activer toutes les variantes"

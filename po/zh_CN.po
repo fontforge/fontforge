@@ -2683,18 +2683,6 @@ msgstr "土耳其语"
 msgid "Welsh"
 msgstr "威尔士语"
 
-#: ../fontforge/libstamp.c:116
-msgid "Library may be too old"
-msgstr "库的版本过旧"
-
-#: ../fontforge/libstamp.c:116
-msgid ""
-"The library is older than the executable expects.\n"
-"   This might be ok.\n"
-"Or it may crash on you.\n"
-"You have been warned."
-msgstr ""
-
 #
 #: ../fontforge/lookups.c:47
 msgid "Access All Alternates"

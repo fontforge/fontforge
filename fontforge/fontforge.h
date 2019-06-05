@@ -30,7 +30,6 @@
 #include <fontforge-config.h>
 #include "configure-fontforge.h"
 #include <basics.h>
-#include "libffstamp.h"
 #include <stdio.h>
 #include <string.h>
 #include <intl.h>

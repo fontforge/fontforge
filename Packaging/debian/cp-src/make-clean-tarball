@@ -3,7 +3,7 @@
 # this should be run from the top-level directory (one above debian/)
 # so run it as: debian/make-clean-tarball
 
-vers=$(awk '/LibFF_VersionDate/{ print $3 }' fontforge/libffstamp.h)
+vers=$(awk '/FONTFORGE_VERSIONDATE_RAW/{ print $3 }' inc/fontforge-config.h)
 
 ## strip these files and directories from the produced archive:
 

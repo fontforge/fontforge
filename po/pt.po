@@ -2416,18 +2416,6 @@ msgstr ""
 msgid "Welsh"
 msgstr ""
 
-#: ../fontforge/libstamp.c:116
-msgid "Library may be too old"
-msgstr ""
-
-#: ../fontforge/libstamp.c:116
-msgid ""
-"The library is older than the executable expects.\n"
-"   This might be ok.\n"
-"Or it may crash on you.\n"
-"You have been warned."
-msgstr ""
-
 #: ../fontforge/lookups.c:47
 msgid "Access All Alternates"
 msgstr ""
