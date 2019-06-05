@@ -57,7 +57,6 @@ G_GNUC_BEGIN_IGNORE_DEPRECATIONS
         gw->cc = gdk_cairo_create(gw->w);
 G_GNUC_END_IGNORE_DEPRECATIONS
 
-#ifndef GGDKDRAW_GDK_2
         // Unlike GDK2, it turns out you can draw over child windows
         // But we don't want that. Must be something to do with alpha transparency.
         if (!gdk_window_has_native(gw->w)) {
@@ -68,7 +67,6 @@ G_GNUC_END_IGNORE_DEPRECATIONS
                 cairo_region_destroy(r);
             }
         }
-#endif
     }
 }
 
@@ -581,62 +579,6 @@ bool _GGDKDraw_InitPangoCairo(GGDKWindow gw) {
     return true;
 }
 
-#ifdef GGDKDRAW_GDK_2
-/**
- *  \brief Destructor for GdkPixbuf created by _GGDKDraw_Cairo2Pixbuf
- *
- *  \param [in] pixels Not used
- *  \param [in] data The cairo surface that we made
- */
-static void _GGDKDraw_OnPixbufDestroy(guchar *pixels, gpointer data) {
-    cairo_surface_destroy((cairo_surface_t *)data);
-}
-
-/**
- *  \brief A poor man's version of gdk_pixbuf_get_from_surface
- *
- *  \param [in] cs The Cairo surface to convert to a GdkPixbuf
- *  \return The Cairo surface converted into a GdkPixbuf
- */
-GdkPixbuf *_GGDKDraw_Cairo2Pixbuf(cairo_surface_t *cs) {
-    g_return_val_if_fail(cairo_surface_get_type(cs) == CAIRO_SURFACE_TYPE_IMAGE, NULL);
-    int width = cairo_image_surface_get_width(cs), height = cairo_image_surface_get_height(cs);
-    cairo_surface_t *csp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-    int stride = cairo_image_surface_get_stride(csp);
-    cairo_t *cc = cairo_create(csp);
-    cairo_set_source_surface(cc, cs, 0, 0);
-    cairo_paint(cc);
-    cairo_destroy(cc);
-    cairo_surface_flush(csp);
-
-    if (cairo_surface_status(csp) != CAIRO_STATUS_SUCCESS) {
-        return NULL;
-    }
-
-    // Must convert to GdkPixbuf format from CAIRO_FORMAT_ARGB32
-    unsigned char *data = cairo_image_surface_get_data(csp);
-    for (int i = 0; i < stride * height; i += 4) {
-        uint32_t p = *((uint32_t *)(data + i));
-        uint8_t alpha = p >> 24;
-        if (p == 0) {
-            *((uint32_t *)(data + i)) = 0;
-        } else {
-            // GdkPixbuf does not premultiply alpha
-            data[i] = (((p & 0xff0000) >> 16) *  255 + alpha / 2) / alpha;
-            data[i + 1] = (((p & 0xff00) >> 8) *  255 + alpha / 2) / alpha;
-            data[i + 2] = ((p & 0xff) *  255 + alpha / 2) / alpha;
-            data[i + 3] = alpha;
-        }
-    }
-    cairo_surface_mark_dirty(csp);
-
-    return gdk_pixbuf_new_from_data(data,
-                                    GDK_COLORSPACE_RGB, true, 8, width, height, stride,
-                                    _GGDKDraw_OnPixbufDestroy, csp);
-}
-
-#else // GDK3
-
 cairo_region_t *_GGDKDraw_ExcludeChildRegions(GGDKWindow gw, cairo_region_t *r, bool force) {
     GList_Glib *children = gdk_window_peek_children(gw->w);
     cairo_region_t *reg = NULL;
@@ -665,8 +607,6 @@ cairo_region_t *_GGDKDraw_ExcludeChildRegions(GGDKWindow gw, cairo_region_t *r, 
     return reg;
 }
 
-#endif // GGDKDRAW_GDK_2
-
 void _GGDKDraw_CleanupAutoPaint(GGDKDisplay *gdisp) {
     if (gdisp->dirty_window != NULL) {
         GGDKWindow gw = gdisp->dirty_window;
@@ -677,7 +617,7 @@ void _GGDKDraw_CleanupAutoPaint(GGDKDisplay *gdisp) {
         }
         if (gw->is_in_paint) {
             //Log(LOGDEBUG, "ENDED PAINT %p", gw);
-#if !defined(GGDKDRAW_GDK_2) && !defined(GDK_WINDOWING_WIN32) && !defined(GDK_WINDOWING_QUARTZ)
+#if !defined(GDK_WINDOWING_WIN32) && !defined(GDK_WINDOWING_QUARTZ)
             if (gw->cs != NULL) {
                 assert(gw->expose_region != NULL);
 #ifdef GGDKDRAW_GDK_3_22
@@ -706,14 +646,6 @@ void _GGDKDraw_CleanupAutoPaint(GGDKDisplay *gdisp) {
             gdk_window_end_paint(gw->w);
 #endif
             gw->is_in_paint = false;
-        } else {
-#ifdef GGDKDRAW_GDK_2
-            // GDK2 likes to bunch up screen refreshes when an expose
-            // event hasn't been explicitly created. But this affects
-            // drawing, especially in the charview, which makes it look
-            // laggy. So force it to process window updates if we drew stuff.
-            gdk_window_process_updates(gw->w, false);
-#endif
         }
         gdisp->dirty_window = NULL;
     }

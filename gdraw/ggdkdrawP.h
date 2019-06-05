@@ -45,10 +45,6 @@
 #    define GGDKDRAW_GDK_3_20
 #endif
 
-#if !defined(GDK_MAJOR_VERSION) || (GDK_MAJOR_VERSION <= 2)
-#    define GGDKDRAW_GDK_2
-#endif
-
 #define GGDKDRAW_ADDREF(x) do { \
     assert((x)->reference_count >= 0); \
     (x)->reference_count++; \
