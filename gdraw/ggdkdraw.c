@@ -62,7 +62,6 @@ static GGC *_GGDKDraw_NewGGC(void) {
 }
 
 static void _GGDKDraw_SetOpaqueRegion(GGDKWindow gw) {
-#ifndef GGDKDRAW_GDK_2
     cairo_rectangle_int_t r = {
         gw->pos.x, gw->pos.y, gw->pos.width, gw->pos.height
     };
@@ -71,9 +70,6 @@ static void _GGDKDraw_SetOpaqueRegion(GGDKWindow gw) {
         gdk_window_set_opaque_region(gw->w, cr);
         cairo_region_destroy(cr);
     }
-#else
-    (void)gw; // Unused
-#endif
 }
 
 static void _GGDKDraw_ClearSelData(GGDKDisplay *gdisp, enum selnames sn) {
@@ -112,11 +108,7 @@ static bool _GGDKDraw_TransmitSelection(GGDKDisplay *gdisp, GdkEventSelection *e
     }
 
     GGDKSelectionInfo *sel = &gdisp->selinfo[sn];
-#ifndef GGDKDRAW_GDK_2
     GdkWindow *requestor = (GdkWindow *)g_object_ref(e->requestor);
-#else
-    GdkWindow *requestor = gdk_window_foreign_new_for_display(gdisp->display, e->requestor);
-#endif
 
     if (e->target == gdk_atom_intern_static_string("TARGETS")) {
         guint i = 0, dlen = g_list_length(sel->datalist);
@@ -334,7 +326,6 @@ static void _GGDKDraw_CallEHChecked(GGDKWindow gw, GEvent *event, int (*eh)(GWin
     }
 }
 
-#ifndef GGDKDRAW_GDK_2
 static GdkDevice *_GGDKDraw_GetPointer(GGDKDisplay *gdisp) {
 #ifdef GGDKDRAW_GDK_3_20
     GdkSeat *seat = gdk_display_get_default_seat(gdisp->display);
@@ -352,7 +343,6 @@ static GdkDevice *_GGDKDraw_GetPointer(GGDKDisplay *gdisp) {
     return gdk_device_manager_get_client_pointer(manager);
 #endif
 }
-#endif // GGDKDRAW_GDK_2
 
 static void _GGDKDraw_CenterWindowOnScreen(GGDKWindow gw) {
     GGDKDisplay *gdisp = gw->display;
@@ -369,21 +359,13 @@ static void _GGDKDraw_CenterWindowOnScreen(GGDKWindow gw) {
     GdkScreen *pointer_screen;
     int monitor = 0;
 
-#ifndef GGDKDRAW_GDK_2
     gdk_device_get_position(_GGDKDraw_GetPointer(gdisp), &pointer_screen, &x, &y);
-#else
-    gdk_display_get_pointer(gdisp->display, &pointer_screen, &x, &y, NULL);
-#endif // GGDKDRAW_GDK_2
 
     if (pointer_screen == gdisp->screen) { // Ensure it's on the same screen
         monitor = gdk_screen_get_monitor_at_point(gdisp->screen, x, y);
     }
 
-#ifndef GGDKDRAW_GDK_2
     gdk_screen_get_monitor_workarea(pointer_screen, monitor, &work_area);
-#else
-    gdk_screen_get_monitor_geometry(pointer_screen, monitor, &work_area);
-#endif // GGDKDRAW_GDK_2
 #endif // GGDKDRAW_GDK_3_22
 
     gdk_window_get_frame_extents(gw->w, &window_size);
@@ -548,11 +530,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
             icon = (GGDKWindow) wattrs->icon;
         }
         if (icon != NULL) {
-#ifndef GGDKDRAW_GDK_2
             GdkPixbuf *pb = gdk_pixbuf_get_from_surface(icon->cs, 0, 0, icon->pos.width, icon->pos.height);
-#else
-            GdkPixbuf *pb = _GGDKDraw_Cairo2Pixbuf(icon->cs);
-#endif
             if (pb != NULL) {
                 GList_Glib ent = {.data = pb};
                 gdk_window_set_icon_list(nw->w, &ent);
@@ -1022,7 +1000,6 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         break;
         case GDK_EXPOSE: {
             GdkEventExpose *expose = (GdkEventExpose *)event;
-#ifndef GGDKDRAW_GDK_2
             // Okay. So on GDK3, we must exclude child window regions to prevent flicker.
             // However, we cannot modify the expose event's region directly, as this is
             // used by GDK to determine what child windows to invalidate. Hence, we must
@@ -1030,10 +1007,6 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             cairo_rectangle_int_t extents;
             cairo_region_t *reg = _GGDKDraw_ExcludeChildRegions(gw, expose->region, true);
             cairo_region_get_extents(reg, &extents);
-#else
-            GdkRegion *reg = expose->region;
-            GdkRectangle extents = expose->area;
-#endif
 
             gevent.type = et_expose;
             gevent.u.expose.rect.x = extents.x;
@@ -1055,7 +1028,6 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             gw->is_in_paint = true;
             gdisp->dirty_window = gw;
 
-#ifndef GGDKDRAW_GDK_2
             // But wait, there's more! On GDK3, if the window isn't native,
             // gdk_window_begin_paint_region does nothing.
             // So we have to (a) ensure we draw to an offscreen surface,
@@ -1082,10 +1054,7 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
                 gdk_cairo_region(gw->cc, reg);
                 cairo_clip(gw->cc);
             }
-#endif
-#ifndef GGDKDRAW_GDK_2
             cairo_region_destroy(reg);
-#endif
         }
         break;
         case GDK_VISIBILITY_NOTIFY:
@@ -1299,13 +1268,7 @@ static GCursor GGDKDrawCreateCursor(GWindow src, GWindow mask, Color fg, Color b
     if (mask == NULL) { // Use src directly
         assert(src != NULL);
         assert(src->is_pixmap);
-#ifdef GGDKDRAW_GDK_2
-        GdkPixbuf *buf = _GGDKDraw_Cairo2Pixbuf(((GGDKWindow)src)->cs);
-        cursor = gdk_cursor_new_from_pixbuf(gdisp->display, buf, x, y);
-        g_object_unref(buf);
-#else
         cursor = gdk_cursor_new_from_surface(gdisp->display, ((GGDKWindow)src)->cs, x, y);
-#endif
     } else { // Assume it's an X11-style cursor
         cairo_surface_t *cs = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, src->pos.width, src->pos.height);
         cairo_t *cc = cairo_create(cs);
@@ -1318,14 +1281,8 @@ static GCursor GGDKDrawCreateCursor(GWindow src, GWindow mask, Color fg, Color b
         cairo_set_source_rgb(cc, COLOR_RED(fg) / 255., COLOR_GREEN(fg) / 255., COLOR_BLUE(fg) / 255.);
         cairo_mask_surface(cc, ((GGDKWindow)src)->cs, 0, 0);
 
-#ifdef GGDKDRAW_GDK_2
-        // Although there's gdk_cursor_new_from_pixmap, it's bugged on Windows.
-        GdkPixbuf *buf = _GGDKDraw_Cairo2Pixbuf(cs);
-        cursor = gdk_cursor_new_from_pixbuf(gdisp->display, buf, x, y);
-        g_object_unref(buf);
-#else
         cursor = gdk_cursor_new_from_surface(gdisp->display, cs, x, y);
-#endif
+
         cairo_destroy(cc);
         cairo_surface_destroy(cs);
     }
@@ -1340,11 +1297,7 @@ static void GGDKDrawDestroyCursor(GDisplay *disp, GCursor gcursor) {
     GGDKDisplay *gdisp = (GGDKDisplay *)disp;
     gcursor -= ct_user;
     if ((int)gcursor >= 0 && gcursor < gdisp->cursors->len) {
-#ifndef GGDKDRAW_GDK_2
         g_object_unref(gdisp->cursors->pdata[gcursor]);
-#else
-        gdk_cursor_unref(gdisp->cursors->pdata[gcursor]);
-#endif
         gdisp->cursors->pdata[gcursor] = NULL;
     }
 }
@@ -1439,7 +1392,6 @@ static void GGDKDrawSetWindowBorder(GWindow UNUSED(gw), int UNUSED(width), Color
 static void GGDKDrawSetWindowBackground(GWindow w, Color gcol) {
     Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
-#ifndef GGDKDRAW_GDK_2
     GdkRGBA col = {
         .red = COLOR_RED(gcol) / 255.,
         .green = COLOR_GREEN(gcol) / 255.,
@@ -1449,15 +1401,6 @@ static void GGDKDrawSetWindowBackground(GWindow w, Color gcol) {
 G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     gdk_window_set_background_rgba(gw->w, &col);
 G_GNUC_END_IGNORE_DEPRECATIONS
-#else
-    GdkColor col = {
-        .red = (65535 * COLOR_RED(gcol)) / 255,
-        .green = (65535 * COLOR_GREEN(gcol)) / 255,
-        .blue = (65535 * COLOR_BLUE(gcol)) / 255,
-    };
-    gdk_rgb_find_color(gdk_drawable_get_colormap(gw->w), &col);
-    gdk_window_set_background(gw->w, &col);
-#endif
 }
 
 static int GGDKDrawSetDither(GDisplay *UNUSED(gdisp), int UNUSED(set)) {
@@ -1660,7 +1603,7 @@ static void GGDKDrawGetPointerPosition(GWindow w, GEvent *ret) {
     GGDKWindow gw = (GGDKWindow)w;
     GdkModifierType mask;
     int x, y;
-#ifndef GGDKDRAW_GDK_2
+
     GdkDevice *pointer = _GGDKDraw_GetPointer(gw->display);
     if (pointer == NULL) {
         ret->u.mouse.x = 0;
@@ -1669,11 +1612,7 @@ static void GGDKDrawGetPointerPosition(GWindow w, GEvent *ret) {
         return;
     }
 
-
     gdk_window_get_device_position(gw->w, pointer, &x, &y, &mask);
-#else
-    gdk_window_get_pointer(gw->w, &x, &y, &mask);
-#endif
     ret->u.mouse.x = x;
     ret->u.mouse.y = y;
     ret->u.mouse.state = _GGDKDraw_GdkModifierToKsm(mask);
@@ -1681,12 +1620,8 @@ static void GGDKDrawGetPointerPosition(GWindow w, GEvent *ret) {
 
 static GWindow GGDKDrawGetPointerWindow(GWindow gw) {
     Log(LOGDEBUG, " ");
-#ifndef GGDKDRAW_GDK_2
     GdkDevice *pointer = _GGDKDraw_GetPointer(((GGDKWindow)gw)->display);
     GdkWindow *window = gdk_device_get_window_at_position(pointer, NULL, NULL);
-#else
-    GdkWindow *window = gdk_window_at_pointer(NULL, NULL);
-#endif
 
     if (window != NULL) {
         return (GWindow)g_object_get_data(G_OBJECT(window), "GGDKWindow");
@@ -1746,11 +1681,7 @@ static void GGDKDrawSetCursor(GWindow w, GCursor gcursor) {
         gdk_window_set_cursor(gw->w, cursor);
         gw->current_cursor = gcursor;
         if (cursor != NULL) {
-#ifndef GGDKDRAW_GDK_2
             g_object_unref(cursor);
-#else
-            gdk_cursor_unref(cursor);
-#endif
         }
     }
 }
@@ -2091,9 +2022,7 @@ static int GGDKDrawSelectionHasOwner(GDisplay *disp, enum selnames sn) {
 
 static void GGDKDrawPointerUngrab(GDisplay *gdisp) {
     Log(LOGDEBUG, " ");
-#ifdef GGDKDRAW_GDK_2
-    gdk_display_pointer_ungrab(((GGDKDisplay *)gdisp)->display, GDK_CURRENT_TIME);
-#elif !defined(GGDKDRAW_GDK_3_20)
+#ifndef GGDKDRAW_GDK_3_20
     GdkDevice *pointer = _GGDKDraw_GetPointer((GGDKDisplay *)gdisp);
     if (pointer == NULL) {
         return;
@@ -2113,11 +2042,7 @@ static void GGDKDrawPointerUngrab(GDisplay *gdisp) {
 static void GGDKDrawPointerGrab(GWindow w) {
     Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
-#ifdef GGDKDRAW_GDK_2
-    gdk_pointer_grab(gw->w, false,
-                     GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_SCROLL_MASK,
-                     NULL, NULL, GDK_CURRENT_TIME);
-#elif !defined(GGDKDRAW_GDK_3_20)
+#ifndef GGDKDRAW_GDK_3_20
     GdkDevice *pointer = _GGDKDraw_GetPointer(gw->display);
     if (pointer == NULL) {
         return;

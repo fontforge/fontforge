@@ -280,11 +280,7 @@ static void SplashLayout() {
     uc_strcat(pt,"-D");
 #endif
 #ifdef FONTFORGE_CAN_USE_GDK
-#  if GDK_MAJOR_VERSION >= 3
-    uc_strcat(pt,"-GDK3");
-#  else
-    uc_strcat(pt,"-GDK2");
-#  endif
+    uc_strcat(pt, "-GDK3");
 #else
     uc_strcat(pt,"-X11");
 #endif
@@ -945,10 +941,7 @@ int fontforge_main( int argc, char **argv ) {
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
 	        "-D"
 #endif
-#ifdef BUILT_WITH_GDK2
-            "-GDK2"
-#endif
-#ifdef BUILT_WITH_GDK3
+#ifdef FONTFORGE_CAN_USE_GDK
             "-GDK3"
 #endif
 #ifdef BUILT_WITH_XORG
