@@ -2235,7 +2235,7 @@ int ttf_fftm_dump(SplineFont *sf,struct alltabs *at) {
 
     putlong(at->fftmf,0x00000001);	/* Version */
 
-    cvt_unix_to_1904(LibFF_ModTime,results);
+    cvt_unix_to_1904(FONTFORGE_MODTIME_RAW,results);
     putlong(at->fftmf,results[1]);
     putlong(at->fftmf,results[0]);
 
