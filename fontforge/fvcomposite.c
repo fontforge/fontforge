@@ -61,67 +61,67 @@ static const unichar_t accents[][4] = {
     { 0x306, 0x2d8 },		/* breve */
     { 0x307, 0x2d9, '.' },	/* dot above */
     { 0x308, 0xa8 },		/* diaeresis */
-    { 0x2c0 },			/* hook above */
-    { 0x2da, 0xb0 },		/* ring above */
-    { 0x2dd },			/* real acute */
-    { 0x2c7 },			/* caron */
-    { 0x2c8, 0x384, 0x30d, '\''  },	/* vertical line, tonos */
+    { 0x309, 0x2c0 },			/* hook above */
+    { 0x30a, 0x2da, 0xb0 },		/* ring above */
+    { 0x30b, 0x2dd },			/* real acute */
+    { 0x30c, 0x2c7 },			/* caron */
+    { 0x30d, 0x2c8, 0x384, '\'' },	/* vertical line, tonos */
     { 0x30e, '"' },		/* real vertical line */
-    { 0 },			/* real grave */
-    { 0 },			/* cand... */		/* 310 */
-    { 0 },			/* inverted breve */
-    { 0x2bb },			/* turned comma */
+    { 0x30f },			/* real grave */
+    { 0x310 },			/* cand... */		/* 310 */
+    { 0x311 },			/* inverted breve */
+    { 0x312 },			/* turned comma */
     { 0x313, 0x2bc, ',' },	/* comma above */
-    { 0x2bd },			/* reversed comma */
+    { 0x314, 0x2bd },			/* reversed comma */
     { 0x315, 0x2bc, ',' },	/* comma above right */
     { 0x316, 0x60, 0x2cb },	/* grave below */
     { 0x317, 0xb4, 0x2ca },	/* acute below */
-    { 0 },			/* left tack */
-    { 0 },			/* right tack */
-    { 0 },			/* left angle */
-    { 0 },			/* horn, sometimes comma but only if nothing better */
-    { 0 },			/* half ring */
-    { 0x2d4 },			/* up tack */
-    { 0x2d5 },			/* down tack */
+    { 0x318 },			/* left tack */
+    { 0x319 },			/* right tack */
+    { 0x31a },			/* left angle */
+    { 0x31b },			/* horn, sometimes comma but only if nothing better */
+    { 0x31c },			/* half ring */
+    { 0x31d, 0x2d4 },			/* up tack */
+    { 0x31e, 0x2d5 },			/* down tack */
     { 0x31f, 0x2d6, '+' },	/* plus below */
     { 0x320, 0x2d7, '-' },	/* minus below */	/* 320 */
-    { 0x2b2 },			/* hook */
-    { 0 },			/* back hook */
+    { 0x321, 0x2b2 },			/* hook */
+    { 0x322 },			/* back hook */
     { 0x323, 0x2d9, '.' },	/* dot below */
     { 0x324, 0xa8 },		/* diaeresis below */
     { 0x325, 0x2da, 0xb0 },	/* ring below */
     { 0x326, 0x2bc, ',' },	/* comma below */
-    { 0xb8 },			/* cedilla */
-    { 0x2db },			/* ogonek */		/* 0x328 */
+    { 0x327, 0xb8 },			/* cedilla */
+    { 0x328, 0x2db },			/* ogonek */		/* 0x328 */
     { 0x329, 0x2c8, 0x384, '\''  },	/* vertical line below */
-    { 0 },			/* bridge below */
-    { 0 },			/* real arch below */
+    { 0x32a },			/* bridge below */
+    { 0x32b },			/* real arch below */
     { 0x32c, 0x2c7 },		/* caron below */
     { 0x32d, 0x2c6, 0x52 },	/* circumflex below */
     { 0x32e, 0x2d8 },		/* breve below */
-    { 0 },			/* inverted breve below */
+    { 0x32f },			/* inverted breve below */
     { 0x330, 0x2dc, 0x7e },	/* tilde below */	/* 0x330 */
     { 0x331, 0xaf, 0x2c9 },	/* macron below */
     { 0x332, '_' },		/* low line */
-    { 0 },			/* real low line */
+    { 0x333 },			/* real low line */
     { 0x334, 0x2dc, 0x7e },	/* tilde overstrike */
     { 0x335, '-' },		/* line overstrike */
     { 0x336, '_' },		/* long line overstrike */
     { 0x337, '/' },		/* short solidus overstrike */
     { 0x338, '/' },		/* long solidus overstrike */	/* 0x338 */
-    { 0 },
-    { 0 },
-    { 0 },
-    { 0 },
-    { 0 },
-    { 0 },
-    { 0 },
+    { 0x339 },
+    { 0x33a },
+    { 0x33b },
+    { 0x33c },
+    { 0x33d },
+    { 0x33e },
+    { 0x33f },
     { 0x340, 0x60, 0x2cb },	/* tone mark, left of circumflex */ /* 0x340 */
     { 0x341, 0xb4, 0x2ca },	/* tone mark, right of circumflex */
     { 0x342, 0x2dc, 0x7e },	/* perispomeni (tilde) */
     { 0x343, 0x2bc, ',' },	/* koronis */
-    { 0 },			/* dialytika tonos (two accents) */
-    { 0x37a },			/* ypogegrammeni */
+    { 0x344 },			/* dialytika tonos (two accents) */
+    { 0x345, 0x37a },			/* ypogegrammeni */
     { 0xffff }
 };
 
