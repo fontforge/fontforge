@@ -31,22 +31,24 @@ AC_DEFUN([FONTFORGE_ARG_WITH],
    [FONTFORGE_ARG_WITH_BASE([$1],[$2],[$3],[$4],[$5],[eval AS_TR_SH(i_do_have_$1)=no])])
 
 
-dnl FONTFORGE_ARG_WITHOUT(library_name, LIBRARY_NAME, without-help-message)
+dnl FONTFORGE_ARG_WITHOUT(library_name, LIBRARY_NAME, without-help-message, should-check)
 dnl -----------------------------------------------------------------------
 dnl Commonly repeated code used in the --without-lib_name routines to create
 dnl CFLAGS and LIBS, plus prompt user if they want to build with or without.
-dnl default is to set as 'check' unless the user specifies 'yes' or 'no'
+dnl default is to set as 'check' unless the user specifies 'yes' or 'no'; 
+dnl setting it to 'yes' will make it so user is prompted to explicitly provide
+dnl --without-lib_name
 AC_DEFUN([FONTFORGE_ARG_WITHOUT],[
 AC_ARG_VAR([$2_CFLAGS],[C compiler flags for $2, overriding automatic detection])
 AC_ARG_VAR([$2_LIBS],[Linker flags for $2, overriding automatic detection])
 
 AC_ARG_WITH([$1],[AS_HELP_STRING([--without-$1],[$3])],
         [AS_TR_SH(i_do_have_$1)="${withval}"; AS_TR_SH(with_$1)="${withval}"],
-        [AS_TR_SH(i_do_have_$1)=yes; AS_TR_SH(with_$1)=check])
+        [AS_TR_SH(i_do_have_$1)=yes; AS_TR_SH(with_$1)=m4_default([$4], [check])])
 ])
 
 
-dnl FONTFORGE_BUILD_YES_NO_HALT(library_name, LIBRARY_NAME, build_message)
+dnl FONTFORGE_BUILD_YES_NO_HALT(library_name, LIBRARY_NAME, build_message, custom_error)
 dnl ----------------------------------------------------------------------
 dnl Commonly repeated code used in the --without-lib_name routines to test
 dnl whether to continue or create a forced-halt. The forced-halt seems to
@@ -67,7 +69,7 @@ if test x"${AS_TR_SH(with_$1)}" = xyes; then
    if test x"${AS_TR_SH(i_do_have_$1)}" != xno; then
       AC_MSG_RESULT([yes])
    else
-      AC_MSG_FAILURE([ERROR: Please install the Developer version of $1],[1])
+      AC_MSG_FAILURE(m4_default([$4], [ERROR: Please install the Developer version of $1]),[1])
    fi
 else
    if test x"${AS_TR_SH(i_do_have_$1)}" = xno || test x"${AS_TR_SH(with_$1)}" = xno; then
@@ -96,7 +98,7 @@ dnl If user defines --without-libuninameslist, then don't use libuninameslist.
 dnl If user defines --with-libuninameslist, then fail with error if there is
 dnl no libuninameslist library OR no uninameslist.h header file.
 AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNINAMESLIST],[
-FONTFORGE_ARG_WITHOUT([libuninameslist],[LIBUNINAMESLIST],[build without Unicode Name or Annotation support])
+FONTFORGE_ARG_WITHOUT([libuninameslist],[LIBUNINAMESLIST],[build without Unicode Name or Annotation support],[yes])
 
 if test x"${i_do_have_libuninameslist}" = xyes -a x"${LIBUNINAMESLIST_CFLAGS}" = x; then
 AC_CHECK_HEADER([uninameslist.h],[],[i_do_have_libuninameslist=no])
@@ -112,7 +114,8 @@ if test x"${i_do_have_libuninameslist}" = xyes -a x"${LIBUNINAMESLIST_LIBS}" = x
       ],[i_do_have_libuninameslist=no])
 fi
 
-FONTFORGE_BUILD_YES_NO_HALT([libuninameslist],[LIBUNINAMESLIST],[Build with LibUniNamesList Unicode support?])
+FONTFORGE_BUILD_YES_NO_HALT([libuninameslist],[LIBUNINAMESLIST],[Build with LibUniNamesList Unicode support?],
+               [You may provide option ˋ--without-libuninameslistˋ to build without this recommended feature])
 
 AC_DEFINE([_NO_LIBUNICODENAMES],[1],[Define if not using libunicodenames])
 i_do_have_libunicodenames=no
