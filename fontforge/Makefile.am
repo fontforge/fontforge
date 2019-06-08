@@ -98,7 +98,7 @@ noinst_HEADERS = \
 	strlist.h cvundoes.h
 
 pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
-	libffstamp.h psfont.h stemdb.h autowidth.h delta.h fontforgevw.h	\
+	psfont.h stemdb.h autowidth.h delta.h fontforgevw.h	\
 	lookups.h savefont.h ttf.h baseviews.h fvmetrics.h mm.h			\
 	scriptfuncs.h ttfinstrs.h edgelist2.h namehash.h scripting.h		\
 	uiinterface.h bezctx_ff.h edgelist.h groups.h nonlineartrans.h		\
