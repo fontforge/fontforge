@@ -26,7 +26,8 @@
  */
 
 #include "fontforge-config.h"
-#include "macobjective.h"
+
+#import <Cocoa/Cocoa.h>
 
 void setup_cocoa_app()
 {

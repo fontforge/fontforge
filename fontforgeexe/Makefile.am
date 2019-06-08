@@ -115,16 +115,15 @@ libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
 	prefs.c problems.c pythonui.c savefontdlg.c scriptingdlg.c		\
 	scstylesui.c searchview.c sftextfield.c showatt.c simplifydlg.c	        \
 	splashimage.c startui.c statemachine.c tilepath.c transform.c	        \
-	ttfinstrsui.c uiutil.c windowmenu.c justifydlg.c deltaui.c		\
-	usermenu.c macobjective.h charview_private.h                    \
-	sfundo.c wordlistparser.c wordlistparser.h
+	ttfinstrsui.c uiutil.c windowmenu.c justifydlg.c deltaui.c sfundo.c	\
+	usermenu.c charview_private.h wordlistparser.c wordlistparser.h
 
 libfontforgeexe_la_CPPFLAGS += $(GTK2_CFLAGS)
 
 if MACINTOSH
 CLEANFILES = libfontforgeexe_objc.la
 noinst_LTLIBRARIES = libfontforgeexe_objc.la
-libfontforgeexe_objc_la_SOURCES = macobjective.h macobjective.m
+libfontforgeexe_objc_la_SOURCES = macobjective.m
 libfontforgeexe_la_LIBADD += libfontforgeexe_objc.la
 endif
 
