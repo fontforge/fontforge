@@ -3603,6 +3603,14 @@ enum math_bits { mb_constants=0x01, mb_italic=0x02, mb_topaccent=0x04,
 	mb_gi=(mb_italic|mb_topaccent|mb_extended|mb_mathkern),
 	mb_gv=(mb_vertvariant|mb_horizvariant) };
 
+static int HasVariants(struct glyphvariants *gv) {
+    if ( gv!=NULL && (gv->variants!=NULL || gv->parts!=NULL ||
+	    gv->italic_correction!=0) )
+return( true );
+
+return( false );
+}
+
 static int MathBits(struct alltabs *at, SplineFont *sf) {
     int i, gid, ret;
     SplineChar *sc;
@@ -3619,9 +3627,9 @@ static int MathBits(struct alltabs *at, SplineFont *sf) {
 		ret |= mb_extended;
 	    if ( sc->mathkern!=NULL )
 		ret |= mb_mathkern;
-	    if ( sc->vert_variants!=NULL )
+	    if ( HasVariants(sc->vert_variants) )
 		ret |= mb_vertvariant;
-	    if ( sc->horiz_variants!=NULL )
+	    if ( HasVariants(sc->horiz_variants) )
 		ret |= mb_horizvariant;
 	    if ( ret==mb_all )
 return( mb_all );
