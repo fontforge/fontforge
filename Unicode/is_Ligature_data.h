@@ -6,6 +6,8 @@ License: BSD-3-clause
 Contributions:
 */
 
+#ifndef FONTFORGE_IS_LIGATURE_DATA_H
+#define FONTFORGE_IS_LIGATURE_DATA_H
 
 /* This file was generated using the program 'makeutype' for Unicode_version 12.1 */
 
@@ -282,3 +284,4 @@ static const uint8 fractionAltIl[] = {
 #define FF_fractionTIS	0
 #define FF_fractionTIL	0
 
+#endif /* FONTFORGE_IS_LIGATURE_DATA_H */

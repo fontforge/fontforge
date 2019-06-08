@@ -25,11 +25,13 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "fontforgeui.h"
 #include "fvfonts.h"
-#include <utype.h>
-#include <ustring.h>
 #include "unicoderange.h"
+#include "ustring.h"
+#include "utype.h"
 
 static int alpha(const void *_t1, const void *_t2) {
     const GTextInfo *t1 = _t1, *t2 = _t2;

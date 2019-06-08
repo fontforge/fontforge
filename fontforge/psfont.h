@@ -24,8 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _PSFONT_H_
-#define _PSFONT_H_
+
+#ifndef FONTFORGE_PSFONT_H
+#define FONTFORGE_PSFONT_H
 
 #include "splinefont.h"
 
@@ -182,4 +183,4 @@ extern const char (*AdobeStandardEncoding[256]);
 extern const char (*AdobeExpertEncoding[256]);
 extern int copymetadata, copyttfinstr;
 
-#endif
+#endif /* FONTFORGE_PSFONT_H */

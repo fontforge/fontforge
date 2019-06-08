@@ -26,13 +26,16 @@
 *******************************************************************************
 ******************************************************************************/
 
+#include <fontforge-config.h>
+
 #include "sfundo.h"
 
 #include "fvfonts.h"
 #include "sfd.h"
-#include "views.h"
-#include <string.h>
 #include "uiinterface.h"
+#include "views.h"
+
+#include <string.h>
 
 void SFUndoFreeAssociated( struct sfundoes *undo )
 {

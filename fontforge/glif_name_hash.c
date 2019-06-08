@@ -1,6 +1,9 @@
+#include <fontforge-config.h>
+
 #include "glif_name_hash.h"
 
-#include <ffglib.h>
+#include "ffglib.h"
+
 #include <stdlib.h>
 
 static void glif_name_destroy(gpointer data) {

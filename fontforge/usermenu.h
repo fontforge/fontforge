@@ -1,7 +1,7 @@
 #ifndef FONTFORGE_USERMENU_H
 #define FONTFORGE_USERMENU_H
 
-#include <ggadget.h>
+#include "ggadget.h"
 
 extern SplineChar *sc_active_in_ui;
 extern FontViewBase *fv_active_in_ui;

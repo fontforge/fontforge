@@ -24,8 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _GROUPS_H
-#define _GROUPS_H
+
+#ifndef FONTFORGE_GROUPS_H
+#define FONTFORGE_GROUPS_H
 
 
 typedef struct ffgroup {
@@ -49,4 +50,5 @@ void SaveGroupList(void);
 void LoadGroupList(void);
 Group *GroupCopy(Group *g);
 void GroupFree(Group *g);
-#endif
+
+#endif /* FONTFORGE_GROUPS_H */

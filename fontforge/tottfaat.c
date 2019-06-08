@@ -25,18 +25,20 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "tottfaat.h"
 
+#include "asmfpst.h"
 #include "fontforge.h"
 #include "fvfonts.h"
-#include <gfile.h>
+#include "gfile.h"
 #include "macenc.h"
-#include "asmfpst.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "tottf.h"
 #include "tottfgpos.h"
-#include <utype.h>
+#include "utype.h"
 
 #include "ttf.h"
 

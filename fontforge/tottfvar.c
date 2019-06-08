@@ -25,16 +25,19 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "tottfvar.h"
 
 #include "fontforge.h"
-#include <gfile.h>
+#include "gfile.h"
 #include "mem.h"
-#include "ttf.h"
 #include "splinesaveafm.h"
 #include "tottf.h"
+#include "ttf.h"
+#include "ustring.h"
+
 #include <math.h>
-#include <ustring.h>
 
 static int PtNumbersAreSet(SplineChar *sc) {
     struct splinecharlist *dep;

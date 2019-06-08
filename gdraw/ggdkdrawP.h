@@ -27,15 +27,16 @@
  *  \brief Private header file for the GDK backend.
  */
 
-#ifndef _GGDKDRAWP_H
-#define _GGDKDRAWP_H
+#ifndef FONTFORGE_GGDKDRAWP_H
+#define FONTFORGE_GGDKDRAWP_H
 
-#include "fontforge-config.h"
+#include <fontforge-config.h>
+
 #ifdef FONTFORGE_CAN_USE_GDK
 
-#include <ffgdk.h>
-#include "gdrawP.h"
+#include "ffgdk.h"
 #include "fontP.h"
+#include "gdrawP.h"
 
 #if (((GDK_MAJOR_VERSION == 3) && (GDK_MINOR_VERSION >= 22)) || (GDK_MAJOR_VERSION > 3))
 #    define GGDKDRAW_GDK_3_22
@@ -348,4 +349,4 @@ void _GGDKDrawCocoa_SetClipboardText(const char *text);
 
 #endif // FONTFORGE_CAN_USE_GDK
 
-#endif // _GGDKDRAWP_H
+#endif /* FONTFORGE_GGDKDRAWP_H */

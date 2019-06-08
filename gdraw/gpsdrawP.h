@@ -24,10 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _PSDRAW_H
-#define _PSDRAW_H
 
-#include <stdio.h>
+#ifndef FONTFORGE_PSDRAW_H
+#define FONTFORGE_PSDRAW_H
 
 #include "gdrawP.h"
 
@@ -133,4 +132,5 @@ extern int _GPSDraw_InitFonts(struct font_state *fonts);
 extern void _GPSDraw_InitPatterns(GPSWindow);
 extern void _GPSDraw_FlushPath(GPSWindow ps);
 extern void _GPSDraw_SetClip(GPSWindow ps);
-#endif
+
+#endif /* FONTFORGE_PSDRAW_H */

@@ -25,39 +25,43 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "splinesaveafm.h"
 
 #include "autohint.h"
+#include "chardata.h"
 #include "featurefile.h"
 #include "fontforgevw.h"		/* For Error */
 #include "fvcomposite.h"
 #include "fvfonts.h"
+#include "gutils.h"
 #include "lookups.h"
 #include "macbinary.h"
 #include "mem.h"
 #include "mm.h"
 #include "namelist.h"
-#include "ttf.h"		/* For AnchorClassDecompose */
-#include "tottf.h"
-#include "tottfgpos.h"
-#include "zapfnomen.h"
-#include <stdio.h>
 #include "splinefont.h"
 #include "splinesave.h"
 #include "splineutil.h"
-#include <time.h>
-#include <utype.h>
-#include <ustring.h>
-#include <gutils.h>
-#include <math.h>
+#include "tottf.h"
+#include "tottfgpos.h"
+#include "ttf.h"		/* For AnchorClassDecompose */
+#include "ustring.h"
+#include "utype.h"
+#include "zapfnomen.h"
 
-#include <sys/types.h>		/* For stat */
+#include <math.h>
+#include <stdio.h>
+#include <time.h>
+
 #include <sys/stat.h>
+#include <sys/types.h>		/* For stat */
 #include <unistd.h>
 
 #ifdef __CygWin
- #include <sys/types.h>
  #include <sys/stat.h>
+ #include <sys/types.h>
  #include <unistd.h>
 #endif
 
@@ -1294,8 +1298,6 @@ return( -1 );
 
 return( u+1 );
 }
-
-#include <chardata.h>
 
 static int FigureUnicodes(int *unicode,SplineChar *sc,int u) {
     const unichar_t *upt;

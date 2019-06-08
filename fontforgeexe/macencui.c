@@ -25,12 +25,15 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "fontforgeui.h"
+#include "gkeysym.h"
 #include "macenc.h"
 #include "splineutil.h"
-#include <gkeysym.h>
-#include <ustring.h>
 #include "ttf.h"
+#include "ustring.h"
 
 extern MacFeat *default_mac_feature_map,
 	*builtin_mac_feature_map,

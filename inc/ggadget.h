@@ -24,8 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _GGADGET_H
-#define _GGADGET_H
+
+#ifndef FONTFORGE_GGADGET_H
+#define FONTFORGE_GGADGET_H
 
 #include "gdraw.h"
 #include "intl.h"
@@ -635,4 +636,4 @@ extern int GGadgetGetSkipHotkeyProcessing( GGadget *g );
 extern void GGadgetSetSkipUnQualifiedHotkeyProcessing( GGadget *g, int v );
 extern int GGadgetGetSkipUnQualifiedHotkeyProcessing( GGadget *g );
 
-#endif
+#endif /* FONTFORGE_GGADGET_H */

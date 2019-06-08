@@ -24,13 +24,16 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
+#include "chardata.h"
 #include "fontforgeui.h"
 #include "fvfonts.h"
+#include "gfile.h"
 #include "splineutil.h"
 #include "ustring.h"
 #include "utype.h"
-#include "gfile.h"
-#include "chardata.h"
 
 static void MergeAskFilename(FontView *fv,int preserveCrossFontKerning) {
     char *filename = GetPostScriptFontName(NULL,true);

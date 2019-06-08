@@ -25,17 +25,21 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "fontforgeui.h"
 #include "fvcomposite.h"
 #include "fvfonts.h"
+#include "gkeysym.h"
 #include "lookups.h"
 #include "psfont.h"
 #include "splinefill.h"
 #include "splineutil.h"
 #include "tottfgpos.h"
-#include <ustring.h>
-#include <gkeysym.h>
-#include <utype.h>
+#include "ustring.h"
+#include "utype.h"
+
 #include <unistd.h>
 
 

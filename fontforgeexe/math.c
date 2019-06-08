@@ -25,15 +25,18 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "fontforgeui.h"
 #include "fvfonts.h"
+#include "gkeysym.h"
 #include "mathconstants.h"
 #include "splineutil.h"
+#include "ustring.h"
+#include "utype.h"
+
 #include <math.h>
 #include <stddef.h>
-#include <gkeysym.h>
-#include <ustring.h>
-#include <utype.h>
 
 extern struct math_constants_descriptor math_constants_descriptor[];
 

@@ -25,6 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef FONTFORGE_PREFS_H
+#define FONTFORGE_PREFS_H
+
 extern int cv_auto_goto;
 
 /**
@@ -33,4 +36,4 @@ extern int cv_auto_goto;
  */
 //extern void loadPrefsFiles(void);
 
-
+#endif /* FONTFORGE_PREFS_H */

@@ -24,12 +24,15 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "cvundoes.h"
 #include "fontforgeui.h"
+#include "gkeysym.h"
 #include "glyphcomp.h"
 #include "splineutil.h"
-#include <ustring.h>
-#include <gkeysym.h>
+#include "ustring.h"
 
 enum l2l_type { l2l_copy, l2l_compare };
 

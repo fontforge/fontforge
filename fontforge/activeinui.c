@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "fontforgeui.h"
 
 FontViewBase *fv_active_in_ui = NULL;

@@ -26,27 +26,30 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "parsepdf.h"
 
+#include "chardata.h"
 #include "cvimages.h"
 #include "dumppfa.h"
 #include "encoding.h"
 #include "fontforge.h"
-#include <gfile.h>
+#include "gfile.h"
+#include "gwidget.h"
 #include "namelist.h"
 #include "parsepfa.h"
 #include "parsettf.h"
+#include "psfont.h"
 #include "psread.h"
+#include "sd.h"
 #include "splineutil.h"
 #include "splineutil2.h"
-#include <chardata.h>
-#include <utype.h>
-#include <ustring.h>
-#include <math.h>
+#include "ustring.h"
+#include "utype.h"
+
 #include <locale.h>
-#include <gwidget.h>
-#include "psfont.h"
-#include "sd.h"
+#include <math.h>
 
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines finite in ieeefp rather than math.h */

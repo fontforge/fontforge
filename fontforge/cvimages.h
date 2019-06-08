@@ -3,8 +3,8 @@
 
 #include "baseviews.h"
 #include "gimage.h"
-#include "splinefont.h"
 #include "sd.h"
+#include "splinefont.h"
 
 extern GImage *ImageAlterClut(GImage *image);
 extern int FVImportImages(FontViewBase *fv, char *path, int format, int toback, int flags);

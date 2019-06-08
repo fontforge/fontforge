@@ -24,12 +24,15 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "gdraw.h"
-#include "gresource.h"
 #include "ggadgetP.h"
+#include "gkeysym.h"
+#include "gresource.h"
 #include "gwidget.h"
 #include "ustring.h"
-#include "gkeysym.h"
 
 static GBox gtabset_box = GBOX_EMPTY; /* Don't initialize here */
 static GBox gvtabset_box = GBOX_EMPTY; /* Don't initialize here */

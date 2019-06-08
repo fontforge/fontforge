@@ -24,13 +24,17 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
+#include "chardata.h"
 #include "fontforgeui.h"
+#include "gkeysym.h"
 #include "lookups.h"
 #include "splineutil.h"
-#include <ustring.h>
-#include <chardata.h>
-#include <utype.h>
-#include <gkeysym.h>
+#include "ustring.h"
+#include "utype.h"
+
 #include <math.h>
 
 extern GTextInfo scripts[], languages[];

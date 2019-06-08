@@ -24,10 +24,11 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _GIOFUNCP_H
-#define _GIOFUNCP_H
 
-#include <gio.h>
+#ifndef FONTFORGE_GIOFUNCP_H
+#define FONTFORGE_GIOFUNCP_H
+
+#include "gio.h"
 
 extern void _GIO_localDispatch(GIOControl *gc);
 extern void *_GIO_fileDispatch(GIOControl *gc);
@@ -40,4 +41,5 @@ extern char *_GIO_decomposeURL(const unichar_t *url);
 
 extern unichar_t *_GIO_translateURL(unichar_t *, enum giofuncs gf);
 extern struct stdfuncs _GIO_stdfuncs;
-#endif
+
+#endif /* FONTFORGE_GIOFUNCP_H */

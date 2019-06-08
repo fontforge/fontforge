@@ -24,6 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #include <fontforge-config.h>
 
 #include "savefont.h"
@@ -34,26 +35,27 @@
 #include "dumppfa.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
+#include "gfile.h"
+#include "gio.h"
+#include "gresource.h"
 #include "macbinary.h"
 #include "namelist.h"
 #include "palmfonts.h"
+#include "psfont.h"
 #include "splinefill.h"
 #include "splineoverlap.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "svg.h"
 #include "tottf.h"
+#include "ustring.h"
+#include "utype.h"
 #include "winfonts.h"
 #include "woff.h"
-#include "ustring.h"
-#include "gfile.h"
-#include "gresource.h"
-#include "utype.h"
-#include "gio.h"
-#include <stdlib.h>
+
 #include <math.h>
+#include <stdlib.h>
 #include <string.h>
-#include "psfont.h"
 
 int old_sfnt_flags = ttf_flag_otmode;
 int old_ps_flags = ps_flag_afm|ps_flag_round;

@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "cvimages.h"
 
 #include "cvundoes.h"
@@ -32,17 +34,18 @@
 #include "fvfonts.h"
 #include "parsepdf.h"
 #include "psread.h"
+#include "sd.h"
 #include "spiro.h"
 #include "splineorder2.h"
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "svg.h"
+#include "ustring.h"
+#include "utype.h"
+
+#include <dirent.h>
 #include <math.h>
 #include <sys/types.h>
-#include <dirent.h>
-#include "sd.h"
-#include <ustring.h>
-#include <utype.h>
 
 void SCAppendEntityLayers(SplineChar *sc, Entity *ent) {
     int cnt, pos;

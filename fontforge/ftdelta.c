@@ -24,10 +24,14 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "fontforgevw.h"
-#include "fffreetype.h"
+
+#include <fontforge-config.h>
+
 #include "delta.h"
+#include "fffreetype.h"
+#include "fontforgevw.h"
 #include "splineutil.h"
+
 #include <math.h>
 
 static int NearestPt(Spline *s,BasePoint *bp) {

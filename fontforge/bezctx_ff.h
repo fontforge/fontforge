@@ -7,8 +7,8 @@ Modified bezctx_ps.h for FontForge by George Williams - 2007
 #ifndef FONTFORGE_BEZCTX_FF_H
 #define FONTFORGE_BEZCTX_FF_H
 
-#include <spiroentrypoints.h>
 #include <bezctx.h>
+#include <spiroentrypoints.h>
 
 bezctx *new_bezctx_ff(void);
 

@@ -1,7 +1,7 @@
-#ifndef _GKEYSYM_H_
-#define _GKEYSYM_H_
+#ifndef FONTFORGE_GKEYSYM_H
+#define FONTFORGE_GKEYSYM_H
 
-#include "fontforge-config.h"
+#include <fontforge-config.h>
 
 #ifdef FONTFORGE_CAN_USE_GDK
 #include <gdk/gdkkeysyms.h>
@@ -430,8 +430,8 @@ SOFTWARE.
 #define GK_Mode_switch 0xff7e
 #endif	/* No X */
 
-#endif
-
-#endif // FONTFORGE_CAN_USE_GDK
+#endif /* FONTFORGE_CAN_USE_GDK */
 
 int GKeysymIsModifier(uint16 keysym);
+
+#endif /* FONTFORGE_GKEYSYM_H */

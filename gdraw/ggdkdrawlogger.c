@@ -22,6 +22,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 /**
  * @file ggdkdrawlogger.c
  * @brief Implement logging and error handling functions
@@ -30,8 +32,8 @@
 #include "ggdkdrawP.h"
 
 #ifdef FONTFORGE_CAN_USE_GDK
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <string.h>
 
 static const char *unspecified_funct = "???";

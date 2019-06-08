@@ -25,6 +25,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "autotrace.h"
 #include "autowidth.h"
 #include "bitmapchar.h"
@@ -33,6 +36,10 @@
 #include "fontforgeui.h"
 #include "fvcomposite.h"
 #include "fvfonts.h"
+#include "gfile.h"
+#include "gkeysym.h"
+#include "gresedit.h"
+#include "gresource.h"
 #include "lookups.h"
 #include "mm.h"
 #include "splinefill.h"
@@ -40,17 +47,12 @@
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "tottfgpos.h"
-#include <gkeysym.h>
-#include <gresource.h>
-#include <gresedit.h>
-#include <string.h>
-#include <ustring.h>
-#include <utype.h>
-#include <math.h>
-#include <stdio.h>
-
-#include "gfile.h"
+#include "ustring.h"
+#include "utype.h"
 #include "wordlistparser.h"
+
+#include <math.h>
+
 extern char* SFDCreateUndoForLookup( SplineFont *sf, int lookup_type ) ;
 
 

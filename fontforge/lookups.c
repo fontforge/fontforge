@@ -26,22 +26,25 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "lookups.h"
 
+#include "chardata.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "macenc.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "tottfgpos.h"
-#include <chardata.h>
-#include <utype.h>
-#include <ustring.h>
-#include <math.h>
-#include <locale.h>
-#include <stdlib.h>
-#include <stdarg.h>
 #include "ttf.h"
+#include "ustring.h"
+#include "utype.h"
+
+#include <locale.h>
+#include <math.h>
+#include <stdarg.h>
+#include <stdlib.h>
 
 struct opentype_feature_friendlynames friendlies[] = {
     { CHR('a','a','l','t'),	"aalt", N_("Access All Alternates"),	gsub_single_mask|gsub_alternate_mask },

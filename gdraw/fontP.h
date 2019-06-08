@@ -24,10 +24,11 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _FONTP_H
-#define _FONTP_H
 
-#include "fontforge-config.h"
+#ifndef FONTFORGE_FONTP_H
+#define FONTFORGE_FONTP_H
+
+#include <fontforge-config.h>
 
 #if !defined(FONTFORGE_CAN_USE_GDK) && !defined(X_DISPLAY_MISSING)
 # include <X11/Xlib.h>		/* For XFontStruct */
@@ -104,13 +105,13 @@ typedef struct {		/* normal 16 bit characters are two bytes */
 } XChar2b;
 #endif		/* NO X */
 
+#include "charset.h"
 #include "gdrawP.h"
 #ifndef FONTFORGE_CAN_USE_GDK
 #  include "gxdrawP.h"
 #else
 #  include "ggdkdrawP.h"
 #endif
-#include "charset.h"
 
 struct fontabbrev {
     char *abbrev;
@@ -198,4 +199,5 @@ extern enum charset _GDraw_ParseMapping(unichar_t *setname);
 extern int _GDraw_FontFigureWeights(unichar_t *weight_str);
 extern struct font_name *_GDraw_HashFontFamily(FState *fonts,unichar_t *name, int prop);
 extern void _GDraw_FreeFD(struct font_data *fd);
-#endif
+
+#endif /* FONTFORGE_FONTP_H */

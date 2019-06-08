@@ -313,7 +313,7 @@ sub print_header {
 /* This file is generated for Fontforge use */
 /* Please refer to Unicode/README.txt for detail */
 
-#include <chardata.h>
+#include "chardata.h"
 
 _EOT_
 	print $out_fh "static const unsigned " . $size[$is_mb] .

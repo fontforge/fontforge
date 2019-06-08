@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 /* This file was generated using the program 'makebuildtables.c' */
 
 #include "gdrawP.h"

@@ -25,8 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _SFLAYOUTP_H
-# define _SFLAYOUTP_H
+#ifndef FONTFORGE_SFLAYOUTP_H
+#define FONTFORGE_SFLAYOUTP_H
 
 enum sftf_fonttype { sftf_pfb, sftf_ttf, sftf_otf, sftf_nohints, sftf_bitmap, sftf_pfaedit };
 
@@ -122,4 +122,5 @@ extern void LayoutInfoSetTitle(LayoutInfo *li,const unichar_t *tit,int width);
 extern struct fontlist *LI_BreakFontList(LayoutInfo *li,int start,int end);
 extern int LI_SetFontData(LayoutInfo *li, int start, int end, SplineFont *sf,
 	int layer, enum sftf_fonttype fonttype, int size, int antialias,int width);
-#endif
+
+#endif /* FONTFORGE_SFLAYOUTP_H */

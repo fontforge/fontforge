@@ -24,14 +24,16 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "gwidgetP.h"
+
+#include <fontforge-config.h>
+
+#include "gdrawP.h"
+#include "ggadget.h"
 #include "ggadgetP.h"
-#include "../gdraw/gdrawP.h"
-#include <ggadget.h>
-#include <gkeysym.h>
-#include <utype.h>
-#include <gresource.h>
-#include <string.h>
+#include "gkeysym.h"
+#include "gresource.h"
+#include "gwidgetP.h"
+#include "utype.h"
 
 static GWindow current_focus_window, previous_focus_window, last_input_window;
     /* in focus follows pointer mode, the current focus doesn't really count */

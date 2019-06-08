@@ -31,8 +31,9 @@
 #include "baseviews.h"
 #include "splinefont.h"
 
-#include <utype.h>
-#include <ustring.h>
+#include "ustring.h"
+#include "utype.h"
+
 #include <math.h>
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */

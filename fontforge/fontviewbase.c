@@ -25,18 +25,25 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "autohint.h"
 #include "autosave.h"
+#include "baseviews.h"
 #include "bitmapchar.h"
 #include "bvedit.h"
+#include "chardata.h"
 #include "cvundoes.h"
 #include "encoding.h"
 #include "fontforge.h"
 #include "fvcomposite.h"
 #include "fvfonts.h"
-#include "namelist.h"
-#include "baseviews.h"
+#include "gfile.h"
+#include "gio.h"
+#include "gresource.h"
 #include "groups.h"
+#include "namelist.h"
 #include "psfont.h"
 #include "pua.h"
 #include "scripting.h"
@@ -46,12 +53,9 @@
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "splineutil2.h"
-#include <gfile.h>
-#include <gio.h>
-#include <ustring.h>
-#include <utype.h>
-#include <chardata.h>
-#include <gresource.h>
+#include "ustring.h"
+#include "utype.h"
+
 #include <math.h>
 #include <unistd.h>
 

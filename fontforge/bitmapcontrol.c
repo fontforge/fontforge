@@ -25,16 +25,19 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "bitmapcontrol.h"
 
 #include "autohint.h"
+#include "bitmapcontrol.h"
 #include "bvedit.h"
 #include "fontforgevw.h"
 #include "splinefill.h"
 #include "splinesaveafm.h"
 #include "ustring.h"
+
 #include <math.h>
-#include "bitmapcontrol.h"
 
 int bdfcontrol_lastwhich = bd_selected;
 

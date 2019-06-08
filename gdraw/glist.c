@@ -24,12 +24,15 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "gdraw.h"
-#include "gkeysym.h"
 #include "ggadgetP.h"
+#include "gkeysym.h"
+#include "gwidget.h"
 #include "gwidget.h"
 #include "ustring.h"
-#include "gwidget.h"
 
 static int GListTypeTime = 500;			/* half a second between keystrokes */
 static int GListScrollTime = 500;		/* half a second between scrolls when mouse out of listbox */

@@ -55,12 +55,13 @@
 
 #include <fontforge-config.h>
 
+#include "basics.h"
+#include "charset.h"
+
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-#include <charset.h>
-#include <basics.h>
 
 char *alphabets[] = { "8859-1.TXT", "8859-2.TXT", "8859-3.TXT", "8859-4.TXT",
     "8859-5.TXT", "8859-6.TXT", "8859-7.TXT", "8859-8.TXT", "8859-9.TXT",

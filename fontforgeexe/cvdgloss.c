@@ -24,10 +24,14 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "fontforgeui.h"
+#include "gkeysym.h"
+#include "ustring.h"
+
 #include <math.h>
-#include <gkeysym.h>
-#include <ustring.h>
 #include <stdarg.h>
 
 extern GBox _ggadget_Default_Box;
@@ -39,7 +43,7 @@ extern GBox _ggadget_Default_Box;
 #include FT_FREETYPE_H
 
 #include <internal/internal.h>
-#include "ttinterp.h"
+#include <ttinterp.h>
 
 #define PPEMX(exc)	((exc)->size->root.metrics.x_ppem)
 #define PPEMY(exc)	((exc)->size->root.metrics.y_ppem)

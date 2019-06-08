@@ -24,9 +24,11 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "gdraw.h"
 #include "ggadgetP.h"
-#include <string.h>
 
 /* If the locale is hebrew or arabic should we lay out boxes right to left???*/
 

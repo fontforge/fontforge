@@ -24,10 +24,12 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "fontforge-config.h"
+
+#include <fontforge-config.h>
+
+#include "gdrawP.h"
+#include "ggadget.h"
 #include "gwidgetP.h"
-#include "../gdraw/gdrawP.h"
-#include <ggadget.h>
 
 /* Temporarily do all drawing in this widget to a pixmap rather than the window */
 /*  if events are orderly then we can share one pixmap for all windows */

@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 /* Support for woff files */
 /* Which are defined here: http://people.mozilla.com/~jkew/woff/woff-2009-09-16.html */
 /* Basically sfnts with compressed tables and some more metadata */
@@ -32,13 +34,14 @@
 #include "woff.h"
 
 #include "fontforge.h"
-#include <gfile.h>
+#include "gfile.h"
 #include "mem.h"
 #include "parsettf.h"
 #include "tottf.h"
-#include <math.h>
+
 #include <ctype.h>
-# include <zlib.h>
+#include <math.h>
+#include <zlib.h>
 
 static void copydata(FILE *to,int off_to,FILE *from,int off_from, int len) {
     int ch, i;

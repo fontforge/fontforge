@@ -25,17 +25,24 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _FFFREETYPE_H
-#define _FFFREETYPE_H
+#ifndef FONTFORGE_FFFREETYPE_H
+#define FONTFORGE_FFFREETYPE_H
+
+#include "baseviews.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_OUTLINE_H
+
 #if FREETYPE_MINOR >= 5
 # include FT_TRUETYPE_DRIVER_H
 #endif
+
 #if defined(FREETYPE_HAS_DEBUGGER)
 # include <internal/internal.h>
+# include <ttdriver.h>
+# include <ttinterp.h>
+# include <ttobjs.h>
 #endif
 
 #if defined(__MINGW32__)
@@ -49,11 +56,6 @@
 
 extern FT_Library ff_ft_context;
 
-#if FREETYPE_HAS_DEBUGGER
-# include "ttobjs.h"
-# include "ttdriver.h"
-# include "ttinterp.h"
-#endif
 
 typedef struct freetypecontext {
     SplineFont *sf;
@@ -76,4 +78,4 @@ extern void *__FreeTypeFontContext(FT_Library context,
 	int layer,
 	enum fontformat ff,int flags,void *shared_ftc);
 
-#endif /* _FFFREETYPE_H */
+#endif /* FONTFORGE_FFFREETYPE_H */

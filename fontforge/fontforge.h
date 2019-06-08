@@ -24,17 +24,20 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _PFAEDIT_H_
-#define _PFAEDIT_H_
+
+#ifndef FONTFORGE_PFAEDIT_H
+#define FONTFORGE_PFAEDIT_H
 
 #include <fontforge-config.h>
+
+#include "basics.h"
 #include "configure-fontforge.h"
-#include <basics.h>
-#include <stdio.h>
-#include <string.h>
-#include <intl.h>
+#include "intl.h"
 #include "splinefont.h"
 #include "uiinterface.h"
+
+#include <stdio.h>
+#include <string.h>
 
 static const unsigned unicode4_size = 17*65536;
     /* Unicode goes up to 0x10ffff */
@@ -82,4 +85,5 @@ extern int quiet;
 extern MacFeat *default_mac_feature_map;
 
 extern int fontforge_main(int, char **);
-#endif
+
+#endif /* FONTFORGE_PFAEDIT_H */

@@ -1,8 +1,6 @@
 #ifndef FONTFORGE_PARSETTFATT_H
 #define FONTFORGE_PARSETTFATT_H
 
-#include <stdio.h>
-
 #include "ttf.h"
 
 /* The MATH table */

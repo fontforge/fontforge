@@ -25,18 +25,22 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "fontforge-config.h"
+#include <fontforge-config.h>
+
 #include "cvundoes.h"
 
 #include "autohint.h"
+#include "basics.h"
 #include "bitmapchar.h"
 #include "bvedit.h"
 #include "cvexport.h"
 #include "cvimages.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
-#include <gfile.h>
+#include "gfile.h"
+#include "gfile.h"
 #include "namelist.h"
+#include "psfont.h"
 #include "sfd.h"
 #include "spiro.h"
 #include "splinefill.h"
@@ -45,13 +49,11 @@
 #include "splineutil2.h"
 #include "svg.h"
 #include "tottfgpos.h"
+#include "ustring.h"
+#include "utype.h"
 #include "views.h"
+
 #include <math.h>
-#include <ustring.h>
-#include <utype.h>
-#include "inc/basics.h"
-#include "inc/gfile.h"
-#include "psfont.h"
 
 #ifndef HAVE_EXECINFO_H
 // no backtrace available

@@ -50,16 +50,19 @@
  * LineBreak.txt, NamesList.txt, PropList.txt,UnicodeData.txt, and the
  * binary executable file makeutype as they are no longer needed now.
  */
+
 #include <fontforge-config.h>
 
 #define UnicodeMajor	12
 #define UnicodeMinor	1
 
 /* Build a ctype array out of the UnicodeData.txt and PropList.txt files */
+#include "basics.h"
+#include "combiners.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <basics.h>
 
 /*#define MAXC		0x600		/* Last upper/lower case dicodomy is Armenian 0x580, er, nope. 1fff (greek and latin extended) then full-width 0xff00 */
 #define MAXC	65536
@@ -117,8 +120,6 @@
 #define FF_UNICODE_RightEdge		0x40000
 #define FF_UNICODE_LeftEdge		0x80000
 #define FF_UNICODE_Touching		0x100000
-
-#include "combiners.h"
 
 int vLVOs=0;	/* debugging!=0*/
 int verbLVOa=0;	/* debugging!=0 verbose {lig/vul/oth}alts */
@@ -1202,6 +1203,8 @@ static void dumpligaturesfractions(FILE *header) {
     fprintf( data, "Copyright: 2016 Gioele Barabucci, Simplify code and create is_Ligature_data.h\n" );
     fprintf( data, "License: BSD-3-clause\n" );
     fprintf( data, "Contributions:\n*/\n\n" );
+    fprintf( data, "#ifndef FONTFORGE_IS_LIGATURE_DATA_H\n");
+    fprintf( data, "#define FONTFORGE_IS_LIGATURE_DATA_H\n\n");
     fprintf( data, GeneratedFileMessage, UnicodeMajor, UnicodeMinor );
 
     /* simple compression using uint16 instead of everything as uint32 */
@@ -1217,6 +1220,9 @@ static void dumpligaturesfractions(FILE *header) {
     build_lvf_alt_tables(data,0,ligature,altsl,l16,lgm,"ligature","Ligature");
     build_lvf_alt_tables(data,1,vulgfrac,altsv,v16,vfm,"vulgfrac","VulgFrac");
     build_lvf_alt_tables(data,2,fraction,altsf,f16,frm,"fraction","Fraction");
+
+    fprintf( data, "#endif /* FONTFORGE_IS_LIGATURE_DATA_H */\n");
+    fclose(data);
 }
 
 static void dump() {
@@ -1568,7 +1574,7 @@ static void dump_alttable() {
 return;
     }
 
-    fprintf(file, "#include <chardata.h>\n" );
+    fprintf(file, "#include \"chardata.h\"\n" );
 
     fprintf(file, GeneratedFileMessage, UnicodeMajor, UnicodeMinor );
 

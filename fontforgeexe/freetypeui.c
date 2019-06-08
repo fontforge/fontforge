@@ -24,11 +24,15 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "fontforgeui.h"
-#include "fffreetype.h"
+
+#include <fontforge-config.h>
+
 #include "edgelist2.h"
-#include <gwidget.h>
-#include <ustring.h>
+#include "fffreetype.h"
+#include "fontforgeui.h"
+#include "gwidget.h"
+#include "ustring.h"
+
 #include <math.h>
 
 /******************************************************************************/
@@ -36,6 +40,7 @@
 /******************************************************************************/
 
 #if FREETYPE_HAS_DEBUGGER
+
 #include <pthread.h>
 #include <tterrors.h>
 

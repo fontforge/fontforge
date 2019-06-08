@@ -24,12 +24,14 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <stdlib.h>
+
+#include <fontforge-config.h>
+
 #include "gdraw.h"
 #include "ggadgetP.h"
-#include "ustring.h"
 #include "gkeysym.h"
 #include "gresource.h"
+#include "ustring.h"
 
 static GBox spacer_box = GBOX_EMPTY;
 static int gspacer_inited = false;

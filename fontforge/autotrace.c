@@ -25,34 +25,36 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "autotrace.h"
 
 #include "cvundoes.h"
+#include "ffglib.h"
 #include "fontforgevw.h"
 #include "fvimportbdf.h"
+#include "gfile.h"
 #include "psread.h"
+#include "sd.h"
 #include "splineorder2.h"
 #include "splinestroke.h"
 #include "splineutil.h"
 #include "splineutil2.h"
-#include <math.h>
-#include <ustring.h>
-#include <utype.h>
-#include "sd.h"
-#include "gfile.h"
+#include "ustring.h"
+#include "utype.h"
 
+#include <dirent.h>		/* for opendir,etc. */
+#include <errno.h>		/* for errors */
+#include <fcntl.h>		/* for open */
+#include <math.h>
+#include <stdlib.h>		/* for getenv */
+#include <sys/stat.h>		/* for open */
 #include <sys/types.h>		/* for waitpid */
+#include <unistd.h>		/* for access, unlink, fork, execvp, getcwd */
+
 #if !defined(__MINGW32__)
 #include <sys/wait.h>		/* for waitpid */
 #endif
-#include <unistd.h>		/* for access, unlink, fork, execvp, getcwd */
-#include <sys/stat.h>		/* for open */
-#include <fcntl.h>		/* for open */
-#include <stdlib.h>		/* for getenv */
-#include <errno.h>		/* for errors */
-#include <dirent.h>		/* for opendir,etc. */
-
-#include <ffglib.h>
 
 int preferpotrace = false;
 

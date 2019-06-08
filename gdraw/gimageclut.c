@@ -24,9 +24,12 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "gdrawP.h"
-#include "colorP.h"
+
+#include <fontforge-config.h>
+
 #include "charset.h"
+#include "colorP.h"
+#include "gdrawP.h"
 #include "ustring.h"
 
 struct clutinf {

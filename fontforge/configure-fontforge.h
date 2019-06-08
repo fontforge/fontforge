@@ -24,8 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _CONFIG_FONTFORGE_H_
-#define _CONFIG_FONTFORGE_H_
+
+#ifndef FONTFORGE_CONFIG_FONTFORGE_H
+#define FONTFORGE_CONFIG_FONTFORGE_H
 
 
 /* Apple suggests using a sfnt version of 'true' for fonts designed for use   */
@@ -78,4 +79,4 @@
 /* **************************** Numeric Settings **************************** */
 /* ************************************************************************** */
 
-#endif
+#endif /* FONTFORGE_CONFIG_FONTFORGE_H */

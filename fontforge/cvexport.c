@@ -25,27 +25,30 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "cvexport.h"
 
 #include "autohint.h"
 #include "bvedit.h"
 #include "dumppfa.h"
 #include "fontforgevw.h"
+#include "gfile.h"
+#include "gicons.h"
+#include "gio.h"
+#include "gutils.h"
+#include "print.h"	/* For pdf output routines */
 #include "spiro.h"
 #include "splinefill.h"
 #include "splineutil.h"
 #include "svg.h"
-#include <math.h>
-#include <locale.h>
-#include <string.h>
-#include "gfile.h"
-#include <gutils.h>
-#include <time.h>
 #include "ustring.h"
-#include "gio.h"
-#include "gicons.h"
-#include "print.h"	/* For pdf output routines */
-#include <utype.h>
+#include "utype.h"
+
+#include <locale.h>
+#include <math.h>
+#include <string.h>
+#include <time.h>
 
 static void EpsGeneratePreview(FILE *eps,SplineChar *sc,int layer,DBounds *b) {
     double scale, temp;

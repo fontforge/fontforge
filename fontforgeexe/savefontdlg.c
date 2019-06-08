@@ -25,31 +25,35 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "encoding.h"
 #include "fontforgeui.h"
+#include "gfile.h"
+#include "gicons.h"
+#include "gio.h"
+#include "gkeysym.h"
+#include "gresource.h"
 #include "macbinary.h"
 #include "mm.h"
 #include "namelist.h"
+#include "psfont.h"
+#include "savefont.h"
 #include "splinefill.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "tottf.h"
+#include "ustring.h"
+#include "utype.h"
 #include "woff.h"
-#include <ustring.h>
+
 #include <locale.h>
-#include <gfile.h>
-#include <gresource.h>
-#include <utype.h>
-#include <gio.h>
-#include <stdlib.h>
 #include <math.h>
-#include <unistd.h>
+#include <stdlib.h>
 #include <string.h>
-#include <gicons.h>
-#include <gkeysym.h>
-#include "psfont.h"
-#include "savefont.h"
 #include <time.h>
+#include <unistd.h>
 
 int ask_user_for_resolution = true;
 int old_fontlog=false;

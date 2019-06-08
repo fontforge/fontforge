@@ -1,8 +1,7 @@
 #ifndef FONTFORGE_WOFF_H
 #define FONTFORGE_WOFF_H
 
-#include "fontforge-config.h"
-#include <stdio.h>
+#include <fontforge-config.h>
 
 #include "splinefont.h"
 

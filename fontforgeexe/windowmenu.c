@@ -24,13 +24,14 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #include <fontforge-config.h>
 
-#include "fontforgeui.h"
 #include "basics.h"
-#include <gfile.h>
-#include "splinefont.h"
+#include "fontforgeui.h"
+#include "gfile.h"
 #include "scripting.h"
+#include "splinefont.h"
 #include "ustring.h"
 
 static void WindowSelect(GWindow base,struct gmenuitem *mi,GEvent *e) {

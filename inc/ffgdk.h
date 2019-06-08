@@ -25,10 +25,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _FFGDK_H
-#define _FFGDK_H
+#ifndef FONTFORGE_FFGDK_H
+#define FONTFORGE_FFGDK_H
 
-#include "fontforge-config.h"
+#include <fontforge-config.h>
+
 #ifdef FONTFORGE_CAN_USE_GDK
 
 // As gdk #includes glib, we must apply the same name mangling here.
@@ -42,4 +43,5 @@
 #undef GTimer
 
 #endif // FONTFORGE_CAN_USE_GDK
-#endif // _FFGDK_H
+
+#endif /* FONTFORGE_FFGDK_H */

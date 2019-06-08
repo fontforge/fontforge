@@ -25,17 +25,19 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "asmfpst.h"
 
+#include "chardata.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
-#include "ttf.h"
 #include "splineutil.h"
 #include "tottfaat.h"
 #include "tottfgpos.h"
-#include <chardata.h>
-#include <utype.h>
-#include <ustring.h>
+#include "ttf.h"
+#include "ustring.h"
+#include "utype.h"
 
 /* ************************************************************************** */
 /* *************** Routines to test conversion from OpenType **************** */

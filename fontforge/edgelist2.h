@@ -24,8 +24,10 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _EDGELIST2_H
-#define _EDGELIST2_H
+
+#ifndef FONTFORGE_EDGELIST2_H
+#define FONTFORGE_EDGELIST2_H
+
 #include "splinefont.h"
 
 struct monotonic;
@@ -79,4 +81,4 @@ typedef struct monotonic {
     struct preintersection *pending;
 } Monotonic;
 
-#endif /* _EDGELIST2_H */
+#endif /* FONTFORGE_EDGELIST2_H */

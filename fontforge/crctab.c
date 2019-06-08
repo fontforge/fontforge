@@ -5,6 +5,8 @@
 /* in 1961. Various examples, including optimizations using lookup tables are */
 /* available in C, assembler (various CPUs), and other programming languages. */
 
+#include <fontforge-config.h>
+
 #include "crctab.h"
 
 static const unsigned long binhex_crcinit = 0;

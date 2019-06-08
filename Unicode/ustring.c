@@ -24,11 +24,14 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #include <fontforge-config.h>
 
-#include <stddef.h>
+#include "chardata.h"
 #include "ustring.h"
 #include "utype.h"
+
+#include <stddef.h>
 
 long uc_strcmp(const unichar_t *str1,const char *str2) {
     long ch1, ch2;
@@ -860,7 +863,6 @@ void utf8_strncpy(register char *to, const char *from, int len) {
     to[old-from] = 0;
 }
 
-#include <chardata.h>
 char *StripToASCII(const char *utf8_str) {
     /* Remove any non-ascii characters: Special case, convert the copyright symbol to (c) */
     char *newcr, *pt, *end;

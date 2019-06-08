@@ -24,10 +24,13 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _UIINTERFACE_H
-#define _UIINTERFACE_H
-# include <basics.h>
+
+#ifndef FONTFORGE_UIINTERFACE_H
+#define FONTFORGE_UIINTERFACE_H
+
 #include <fontforge-config.h>
+
+#include "basics.h"
 
 /* This encapsulates a set of callbacks and stubs. The callbacks get activated*/
 /*  when an event happens (a glyph in a font changes for example, then all */
@@ -511,4 +514,5 @@ extern struct clip_interface *clip_interface;
 
 extern const char *NOUI_TTFNameIds(int id);
 extern const char *NOUI_MSLangString(int language);
-#endif
+
+#endif /* FONTFORGE_UIINTERFACE_H */

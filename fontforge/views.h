@@ -24,18 +24,19 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _VIEWS_H
-#define _VIEWS_H
+
+#ifndef FONTFORGE_VIEWS_H
+#define FONTFORGE_VIEWS_H
 
 #include <fontforge-config.h>
 
 #include "ttfinstrs.h"
 
-#include <ffglib.h>
 #include "baseviews.h"
+#include "ffglib.h"
 
-#include <ggadget.h>
 #include "dlist.h"
+#include "ggadget.h"
 #include "search.h"
 
 
@@ -1483,4 +1484,4 @@ extern void CVMenuConstrain(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e))
 
 
 
-#endif	/* _VIEWS_H */
+#endif /* FONTFORGE_VIEWS_H */

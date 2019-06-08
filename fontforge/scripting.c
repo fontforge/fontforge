@@ -37,6 +37,7 @@
 #include "bitmapchar.h"
 #include "bitmapcontrol.h"
 #include "bvedit.h"
+#include "chardata.h"
 #include "cvexport.h"
 #include "cvimages.h"
 #include "cvundoes.h"
@@ -44,12 +45,18 @@
 #include "effects.h"
 #include "encoding.h"
 #include "featurefile.h"
+#include "ffglib.h"
+#include "flaglist.h"
 #include "fontforge.h"
 #include "fvcomposite.h"
 #include "fvfonts.h"
 #include "fvimportbdf.h"
 #include "fvmetrics.h"
-#include <gfile.h>
+#include "gfile.h"
+#include "gfile.h"
+#include "gutils.h"
+#include "gutils/prefs.h"
+#include "gutils/unicodelibinfo.h"
 #include "lookups.h"
 #include "macbinary.h"
 #include "mem.h"
@@ -61,6 +68,7 @@
 #include "parsettf.h"
 #include "print.h"
 #include "savefont.h"
+#include "scriptfuncs.h"
 #include "scstyles.h"
 #include "search.h"
 #include "sfd.h"
@@ -74,34 +82,27 @@
 #include "svg.h"
 #include "tottf.h"
 #include "tottfgpos.h"
+#include "ttf.h"
 #include "ttfinstrs.h"
-#include <gfile.h>
-#include <gutils.h>
-#include <utype.h>
-#include <ustring.h>
-#include <ffglib.h>
-#include <chardata.h>
-#include <unistd.h>
+#include "ustring.h"
+#include "utype.h"
+
+#include <locale.h>
 #include <math.h>
 #include <setjmp.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
+#include <sys/types.h>
 #include <time.h>
-#include <locale.h>
+#include <unistd.h>
+#include <unistd.h>
+
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
 #ifndef _NO_LIBREADLINE
-# include <readline/readline.h>
 # include <readline/history.h>
+# include <readline/readline.h>
 #endif
-#include "ttf.h"
-#include "scriptfuncs.h"
-#include "flaglist.h"
-#include "gutils/prefs.h"
-
-#include "gutils/unicodelibinfo.h"
 
 int no_windowing_ui = false;
 int running_script = false;

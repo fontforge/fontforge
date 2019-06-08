@@ -25,23 +25,26 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "bitmapchar.h"
 #include "bvedit.h"
 #include "cvundoes.h"
 #include "encoding.h"
 #include "fontforgeui.h"
 #include "fvfonts.h"
+#include "gkeysym.h"
+#include "gresedit.h"
+#include "gresource.h"
+#include "gutils/unicodelibinfo.h"
 #include "splinefill.h"
 #include "splinesaveafm.h"
-#include <gkeysym.h>
-#include <utype.h>
-#include <ustring.h>
-#include <math.h>
-#include <locale.h>
-#include <gresource.h>
-#include <gresedit.h>
+#include "ustring.h"
+#include "utype.h"
 
-#include "gutils/unicodelibinfo.h"
+#include <locale.h>
+#include <math.h>
 
 int bv_width = 270, bv_height=250;
 

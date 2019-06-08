@@ -24,6 +24,10 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#ifndef FONTFORGE_GWIDGET_P_H
+#define FONTFORGE_GWIDGET_P_H
+
 #include "gwidget.h"
 
 struct wfuncs {
@@ -108,3 +112,5 @@ typedef struct gtopleveldata /* : GContainerD */{
 GWidgetD *_GWidget_ChangeInternalFocus(GWidget gw,GWidgetD *to,struct ggadget *gto);
 void _GWidget_RestorePixmap(GWindow gw, GWindow ours, GRect *rect);
 GWindow _GWidget_GetPixmap(GWindow gw,GRect *rect);
+
+#endif /* FONTFORGE_GWIDGET_P_H */

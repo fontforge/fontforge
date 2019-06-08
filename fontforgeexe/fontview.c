@@ -24,6 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #include <fontforge-config.h>
 
 #include "autosave.h"
@@ -32,40 +33,40 @@
 #include "autowidth2.h"
 #include "bitmapchar.h"
 #include "bvedit.h"
+#include "chardata.h"
 #include "cvundoes.h"
 #include "dumppfa.h"
 #include "encoding.h"
+#include "ffglib.h"
 #include "fontforgeui.h"
 #include "fvcomposite.h"
 #include "fvfonts.h"
+#include "gfile.h"
+#include "gio.h"
+#include "gkeysym.h"
+#include "gresedit.h"
+#include "gresource.h"
 #include "groups.h"
+#include "gutils/unicodelibinfo.h"
 #include "mm.h"
 #include "namelist.h"
 #include "nonlineartrans.h"
 #include "psfont.h"
 #include "pua.h"
 #include "scripting.h"
-#include "splinefill.h"
 #include "search.h"
 #include "sfd.h"
+#include "sfundo.h"
+#include "splinefill.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "tottfgpos.h"
-#include <gfile.h>
-#include <gio.h>
-#include <gresedit.h>
-#include <ustring.h>
-#include <ffglib.h>
-#include <gkeysym.h>
-#include <utype.h>
-#include <chardata.h>
-#include <gresource.h>
+#include "ustring.h"
+#include "utype.h"
+
 #include <math.h>
 #include <unistd.h>
-
-#include "gutils/unicodelibinfo.h"
-#include "sfundo.h"
 
 #if defined (__MINGW32__)
 #include <windows.h>

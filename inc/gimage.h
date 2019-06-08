@@ -24,9 +24,11 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _GIMAGE_H
-#define _GIMAGE_H
-#include <basics.h>
+
+#ifndef FONTFORGE_GIMAGE_H
+#define FONTFORGE_GIMAGE_H
+
+#include "basics.h"
 
 typedef uint32 Color;
 
@@ -202,4 +204,4 @@ extern void gColor2Hslrgba(struct hslrgba *col,Color from);
 extern Color gHslrgb2Color(struct hslrgb *col);
 extern Color gHslrgba2Color(struct hslrgba *col);
 
-#endif
+#endif /* FONTFORGE_GIMAGE_H */

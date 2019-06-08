@@ -24,10 +24,11 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <basics.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <ggadget.h>
+
+#include <fontforge-config.h>
+
+#include "basics.h"
+#include "ggadget.h"
 #include "gwidget.h"
 #include "ustring.h"
 

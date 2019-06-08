@@ -14,11 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, see <http://www.gnu.org/licenses/>.
 
+#include <fontforge-config.h>
+
+#include "ffglib.h"
 #include "gio.h"
 #include "gfile.h"
 #include "ustring.h"
-#include <gio/gio.h>
-#include <ffglib.h>
 
 const char *MimeListFromExt[] = {
 /* This list is indexed from list ExtToMimeList */

@@ -24,15 +24,17 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _GUTILS_H
-#define _GUTILS_H
+
+#ifndef FONTFORGE_GUTILS_H
+#define FONTFORGE_GUTILS_H
 
 #include <fontforge-config.h>
-#include <time.h>
+
 #include <sys/stat.h>
+#include <time.h>
 
 extern const char *GetAuthor(void);
 extern time_t GetTime(void);
 extern time_t GetST_MTime(struct stat s);
 
-#endif
+#endif /* FONTFORGE_GUTILS_H */

@@ -25,22 +25,25 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "ttfspecial.h"
 
+#include "PfEd.h" /* This describes the format of the 'PfEd' table and its many subtables. */
 #include "fontforge.h"
-#include <gfile.h>
+#include "gfile.h"
+#include "gimage.h"		/* For COLOR_DEFAULT */
 #include "mem.h"
 #include "splinefill.h"
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "tottf.h"
+#include "ttf.h"
+#include "ustring.h"
+#include "utype.h"
+
 #include <math.h>
 #include <time.h>
-#include <utype.h>
-#include <ustring.h>
-#include <gimage.h>		/* For COLOR_DEFAULT */
-
-#include "ttf.h"
 
 /* This file contains routines to generate non-standard true/opentype tables */
 /* The first is the 'PfEd' table containing PfaEdit specific information */
@@ -50,9 +53,6 @@
 /* *************************    The 'PfEd' table    ************************* */
 /* *************************         Output         ************************* */
 /* ************************************************************************** */
-
-#include "PfEd.h"	/* This describes the format of the 'PfEd' table */
-			/*  and its many subtables. */
 
 #define MAX_SUBTABLE_TYPES	20
 

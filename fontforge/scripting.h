@@ -28,7 +28,7 @@
 #ifndef FONTFORGE_SCRIPTING_H
 #define FONTFORGE_SCRIPTING_H
 
-#include "fontforge-config.h"
+#include <fontforge-config.h>
 
 #include "baseviews.h"
 #include "fontforgevw.h"

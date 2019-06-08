@@ -25,8 +25,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "splinestroke.h"
 
+#include "baseviews.h"
 #include "cvundoes.h"
 #include "fontforge.h"
 #include "splinefont.h"
@@ -34,7 +37,9 @@
 #include "splineoverlap.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+
 #include <math.h>
+
 #define PI      3.1415926535897932
 
 typedef struct strokepoint {
@@ -3879,8 +3884,6 @@ return( NULL );				/* That's an error, must be closed */
     free(c.tpt);
 return( ret );
 }
-
-#include "baseviews.h"
 
 void FVStrokeItScript(void *_fv, StrokeInfo *si,int pointless_argument) {
     FontViewBase *fv = _fv;

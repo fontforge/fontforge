@@ -43,7 +43,7 @@ static void *a_file_must_define_something=(void *) &a_file_must_define_something
 # define int8 _int8
 # define uint8 _uint8
 
-#include "inc/basics.h"
+# include "basics.h"
 # include "gimage.h"
 
 static void *libpng=(void *) 1;

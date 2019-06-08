@@ -24,12 +24,14 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "gimage.h"
-#include <string.h>
-#include <ustring.h>
 
-#include "gio.h"
+#include <fontforge-config.h>
+
+#include "gimage.h"
+#include "ustring.h"
+
 #include "gfile.h"
+#include "gio.h"
 
 GImage *GImageRead(char * filename) {
 /* Go read an input image file. Return NULL if cannot guess file type */

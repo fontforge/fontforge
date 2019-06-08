@@ -24,8 +24,13 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "cvundoes.h"
+#include "dlist.h"
 #include "fontforgeui.h"
+#include "gkeysym.h"
 #include "lookups.h"
 #include "parsettf.h"
 #include "spiro.h"
@@ -33,11 +38,10 @@
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "tottfgpos.h"
-#include <ustring.h>
+#include "ustring.h"
+#include "utype.h"
+
 #include <math.h>
-#include <utype.h>
-#include <gkeysym.h>
-#include <dlist.h>
 
 #define RAD2DEG	(180/3.1415926535897932)
 #define TCnt	3

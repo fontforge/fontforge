@@ -29,8 +29,71 @@
 #include <fontforge-config.h>
 
 #ifndef _NO_PYTHON
-#include "Python.h"
-#include "structmember.h"
+
+#include "autohint.h"
+#include "autotrace.h"
+#include "autowidth2.h"
+#include "bitmapcontrol.h"
+#include "cvexport.h"
+#include "cvimages.h"
+#include "cvundoes.h"
+#include "dumppfa.h"
+#include "encoding.h"
+#include "featurefile.h"
+#include "ffglib.h"
+#include "ffpython.h"
+#include "flaglist.h"
+#include "fontforgevw.h"
+#include "fvcomposite.h"
+#include "fvfonts.h"
+#include "fvimportbdf.h"
+#include "glyphcomp.h"
+#include "gutils/unicodelibinfo.h"
+#include "langfreq.h"
+#include "lookups.h"
+#include "mathconstants.h"
+#include "mem.h"
+#include "namelist.h"
+#include "nonlineartrans.h"
+#include "othersubrs.h"
+#include "print.h"
+#include "psread.h"
+#include "savefont.h"
+#include "scriptfuncs.h"
+#include "scripting.h"
+#include "scstyles.h"
+#include "search.h"
+#include "sfd.h"
+#include "spiro.h"
+#include "splinefill.h"
+#include "splineorder2.h"
+#include "splineoverlap.h"
+#include "splinesaveafm.h"
+#include "splinestroke.h"
+#include "splineutil.h"
+#include "splineutil2.h"
+#include "start.h"
+#include "svg.h"
+#include "tottf.h"
+#include "tottfgpos.h"
+#include "ttf.h"
+#include "ttfinstrs.h"
+#include "ustring.h"
+#include "utype.h"
+
+#include <dirent.h>
+#include <errno.h>
+#include <math.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#if NEED_WIDE_CHAR
+#include <wchar.h>
+#endif
 
 #if PY_MAJOR_VERSION >= 3
 /* Some Python 3+ APIs use C wide characters (wchar_t) */
@@ -56,74 +119,7 @@
 #endif
 
 extern int old_sfnt_flags;
-
-#include "autohint.h"
-#include "autotrace.h"
-#include "autowidth2.h"
-#include "bitmapcontrol.h"
-#include "cvexport.h"
-#include "cvimages.h"
-#include "cvundoes.h"
-#include "dumppfa.h"
-#include "encoding.h"
-#include "featurefile.h"
-#include "fontforgevw.h"
-#include "fvcomposite.h"
-#include "fvfonts.h"
-#include "fvimportbdf.h"
-#include "glyphcomp.h"
-#include "langfreq.h"
-#include "lookups.h"
-#include "mathconstants.h"
-#include "mem.h"
-#include "namelist.h"
-#include "nonlineartrans.h"
-#include "othersubrs.h"
-#include "ttf.h"
-#include "print.h"
-#include "psread.h"
-#include "savefont.h"
-#include "splineorder2.h"
-#include "splinesaveafm.h"
-#include "utype.h"
-#include "ustring.h"
-#include "flaglist.h"
-#include "scripting.h"
-#include "scriptfuncs.h"
-#include "scstyles.h"
-#include "search.h"
-#include "sfd.h"
-#include "spiro.h"
-#include "splinefill.h"
-#include "splineoverlap.h"
-#include "splinestroke.h"
-#include "splineutil.h"
-#include "splineutil2.h"
-#include "start.h"
-#include "svg.h"
-#include "tottf.h"
-#include "tottfgpos.h"
-#include "ttfinstrs.h"
-#include "ffpython.h"
-
-#include <math.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <dirent.h>
-#include <stdarg.h>
-#include <stdio.h>
-#if NEED_WIDE_CHAR
-#include <wchar.h>
-#endif
-
-#include <ffglib.h>
-
 extern int prefRevisionsToRetain;
-
-#include "gutils/unicodelibinfo.h"
 
 
 /* This defines the name of the Python entry function that is expected
@@ -17969,7 +17965,6 @@ static PyTypeObject PyFF_FontType = {
 /* ************************************************************************** */
 /*		     Python Interface to FontForge Auto-Kerning		      */
 /* ************************************************************************** */
-#include "autowidth2.h"
 
 /* To give the user the ability to create his own routine to calculate the */
 /*  visual separation between two glyphs, we must provide a python type which */
@@ -19577,8 +19572,8 @@ PyMODINIT_FUNC FFPY_PYTHON_ENTRY_FUNCTION(const char* modulename) {
 }
 
 #else
-#include "fontforgevw.h"
 #include "flaglist.h"
+#include "fontforgevw.h"
 #endif		/* _NO_PYTHON */
 
 /* These don't get translated. They are a copy of a similar list in fontinfo.c */

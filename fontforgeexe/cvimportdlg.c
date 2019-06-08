@@ -24,20 +24,24 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "bvedit.h"
 #include "cvimages.h"
 #include "cvundoes.h"
 #include "fontforgeui.h"
 #include "fvimportbdf.h"
+#include "gkeysym.h"
+#include "sd.h"
 #include "spiro.h"
 #include "splinefill.h"
+#include "ustring.h"
+#include "utype.h"
+
+#include <dirent.h>
 #include <math.h>
 #include <sys/types.h>
-#include <dirent.h>
-#include "sd.h"
-#include <gkeysym.h>
-#include <ustring.h>
-#include <utype.h>
 
 static void ImportPS(CharView *cv,char *path) {
     FILE *ps = fopen(path,"r");

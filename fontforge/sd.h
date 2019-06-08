@@ -24,9 +24,11 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _SD_H
-#define _SD_H
-# include <gimage.h>
+
+#ifndef FONTFORGE_SD_H
+#define FONTFORGE_SD_H
+
+# include "gimage.h"
 
 /* All coordinates are in millimeters */
 /* they will be displayed to the user scaled by the units field of the design */
@@ -170,4 +172,4 @@ typedef struct retstack {
     real *stack;
 } RetStack;
 
-#endif
+#endif /* FONTFORGE_SD_H */

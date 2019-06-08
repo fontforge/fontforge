@@ -25,44 +25,45 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "dumppfa.h"
 
 #include "autohint.h"
 #include "bvedit.h"
 #include "fontforge.h"
 #include "fvfonts.h"
-#include <gfile.h>
+#include "gdraw.h"		/* For image defn */
+#include "gfile.h"
+#include "gutils.h"
 #include "parsepfa.h"
+#include "print.h"		/* For makePatName */
+#include "psfont.h"
 #include "psread.h"
+#include "splinefont.h"
 #include "splineorder2.h"
 #include "splinesave.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "tottf.h"
+#include "ustring.h"
+#include "utype.h"
 #include "zapfnomen.h"
-#include <stdio.h>
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <ustring.h>
-#include <utype.h>
-#include <unistd.h>
+
 #include <locale.h>
+#include <math.h>
+#include <stdarg.h>
+#include <time.h>
+#include <unistd.h>
+
 #if !defined(__MINGW32__)
 # include <pwd.h>
 #endif
-#include <stdarg.h>
-#include <gutils.h>
-#include "psfont.h"
-#include "splinefont.h"
-#include <gdraw.h>		/* For image defn */
-#include "print.h"		/* For makePatName */
 
 #ifdef __CygWin
- #include <sys/types.h>
  #include <sys/stat.h>
+ #include <sys/types.h>
  #include <unistd.h>
 #endif
 

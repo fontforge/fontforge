@@ -51,37 +51,37 @@ slightly slower, but should make no significant difference on a machine
 capable of using composite.
 */
 
-#ifndef _XDRAW_H
-#define _XDRAW_H
+#ifndef FONTFORGE_XDRAW_H
+#define FONTFORGE_XDRAW_H
 
 #include <fontforge-config.h>
 
 #ifndef FONTFORGE_CAN_USE_GDK
+
+#include "gdrawP.h"
 
 #ifndef X_DISPLAY_MISSING
 # include <X11/X.h>
 # include <X11/Xlib.h>
 # include <X11/Xutil.h>
 # ifndef _NO_XINPUT
-#  include <X11/extensions/XInput.h>
 #  include <X11/extensions/XI.h>
+#  include <X11/extensions/XInput.h>
 # endif
 # ifndef _NO_XKB
 #   include <X11/XKBlib.h>
 /*# include <X11/extensions/XKBgeom.h>*/
 # endif
 # ifndef _NO_LIBCAIRO
-#  include <cairo/cairo.h>
 #  include <cairo/cairo-xlib.h>
+#  include <cairo/cairo.h>
 # endif
 #  define GTimer GTimer_GTK
-#  include <ft2build.h>
 #  include <X11/Xft/Xft.h>
+#  include <ft2build.h>
 #  include <pango/pango.h>
 #  undef GTimer
 #endif
-
-#include "gdrawP.h"
 
 #ifdef HAVE_PTHREAD_H
 # include <pthread.h>
@@ -394,4 +394,4 @@ void _GXDraw_Wacom_TestEvents(GXDisplay *gdisp);
 
 #endif // FONTFORGE_CAN_USE_GDK
 
-#endif
+#endif /* FONTFORGE_XDRAW_H */

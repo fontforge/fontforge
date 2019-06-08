@@ -25,17 +25,19 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
 
 #include "cvundoes.h"
 #include "fontforgeui.h"
-#include <gfile.h>
-#include <gresource.h>
-#include <utype.h>
-#include <ustring.h>
-#include <gkeysym.h>
-#include "scripting.h"
+#include "gfile.h"
+#include "gkeysym.h"
+#include "gresource.h"
 #include "scriptfuncs.h"
+#include "scripting.h"
+#include "ustring.h"
+#include "utype.h"
 
 struct sd_data {
     int done;

@@ -25,20 +25,23 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "dumpbdf.h"
 
 #include "bitmapchar.h"
 #include "bvedit.h"
 #include "encoding.h"
 #include "fontforge.h"
-#include "splinefont.h"
+#include "gdraw.h"			/* for the defn of GClut for greymaps */
 #include "splinefill.h"
+#include "splinefont.h"
 #include "splinesaveafm.h"
-#include <gdraw.h>			/* for the defn of GClut for greymaps */
-#include <string.h>
-#include <ustring.h>
-#include <utype.h>
+#include "ustring.h"
+#include "utype.h"
+
 #include <math.h>
+#include <string.h>
 
 #define MAX_WIDTH	200
 

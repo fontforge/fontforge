@@ -26,8 +26,8 @@
 *******************************************************************************
 ******************************************************************************/
 
-#ifndef _ALREADY_INCLUDED_FF_SFUNDO_H
-#define _ALREADY_INCLUDED_FF_SFUNDO_H
+#ifndef FONTFORGE_SFUNDO_H
+#define FONTFORGE_SFUNDO_H
 
 #include "splinefont.h"
 
@@ -52,4 +52,4 @@ void SFUndoPushFront( struct sfundoes ** undoes, SFUndoes* undo );
 
 
 
-#endif
+#endif /* FONTFORGE_SFUNDO_H */

@@ -24,12 +24,16 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "uiinterface.h"
+
+#include <fontforge-config.h>
+
+#include "basics.h"
 #include "splinefont.h"
+#include "uiinterface.h"
+#include "ustring.h"
+
 #include <stdarg.h>
 #include <stdio.h>
-#include <basics.h>
-#include <ustring.h>
 
 static void NOUI_IError(const char *format,...) {
     va_list ap;

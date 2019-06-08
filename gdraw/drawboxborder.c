@@ -24,8 +24,11 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <gdraw.h>
-#include <ggadget.h>
+
+#include <fontforge-config.h>
+
+#include "gdraw.h"
+#include "ggadget.h"
 #include "ggadgetP.h"
 
 #include <math.h>

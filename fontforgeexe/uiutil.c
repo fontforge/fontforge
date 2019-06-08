@@ -24,14 +24,23 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "fontforgeui.h"
-#include <gfile.h>
+#include "gfile.h"
+#include "gkeysym.h"
+#include "gresource.h"
+#include "ustring.h"
+#include "utype.h"
+
 #include <stdarg.h>
-#include <unistd.h>
-#include <utype.h>
-#include <ustring.h>
 #include <sys/time.h>
-#include <gkeysym.h>
+#include <unistd.h>
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 extern GBox _ggadget_Default_Box;
 #define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
@@ -139,8 +148,6 @@ static void AppendSupportedLocale(char *fullspec) {
 }
 
 #ifdef _WIN32
-#include <gresource.h>
-#include <windows.h>
 void help(char *file) {
     if(file){
 	int   len     = strlen(file);

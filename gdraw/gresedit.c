@@ -24,14 +24,15 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <ggadget.h>
+
+#include <fontforge-config.h>
+
+#include "gdrawP.h"		/* Need resolution of screen */
+#include "ggadget.h"
 #include "ggadgetP.h"
-#include "../gdraw/gdrawP.h"		/* Need resolution of screen */
-#include <gwidget.h>
-#include <gresedit.h>
-#include <string.h>
-#include <stdlib.h>
-#include <ustring.h>
+#include "gresedit.h"
+#include "gwidget.h"
+#include "ustring.h"
 
 struct tofree {
     GGadgetCreateData *gcd;

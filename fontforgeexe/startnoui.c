@@ -24,22 +24,27 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
+#include "encoding.h"
 #include "fontforgevw.h"
+#include "gfile.h"
 #include "scripting.h"
 #include "start.h"
-#include "encoding.h"
+#include "ustring.h"
+
+#include <locale.h>
+#include <sys/time.h>
+#include <time.h>
+#include <unistd.h>
 
 #ifndef _NO_LIBUNICODENAMES
 #include <libunicodenames.h>	/* need to open a database when we start */
 extern uninm_names_db names_db; /* Unicode character names and annotations database */
 extern uninm_blocks_db blocks_db;
 #endif
-#include <gfile.h>
-#include <ustring.h>
-#include <time.h>
-#include <sys/time.h>
-#include <locale.h>
-#include <unistd.h>
+
 #ifdef __Mac
 # include <stdlib.h>		/* getenv,setenv */
 #endif

@@ -1,4 +1,4 @@
-#include <chardata.h>
+#include "chardata.h"
 
 static const unsigned short u_allzeros[256] = { 0 };
 

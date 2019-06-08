@@ -24,19 +24,23 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "autohint.h"
 #include "cvexport.h"
 #include "cvundoes.h"
 #include "fontforgeui.h"
-#include <math.h>
-#include <locale.h>
-#include <string.h>
 #include "gfile.h"
-#include <time.h>
-#include "ustring.h"
-#include "gio.h"
 #include "gicons.h"
-#include <utype.h>
+#include "gio.h"
+#include "ustring.h"
+#include "utype.h"
+
+#include <locale.h>
+#include <math.h>
+#include <string.h>
+#include <time.h>
 
 static char *last = NULL;
 static char *last_bits = NULL;

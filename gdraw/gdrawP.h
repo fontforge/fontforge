@@ -24,10 +24,11 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _GDRAWP_H
-#define _GDRAWP_H
 
-#include <basics.h>
+#ifndef FONTFORGE_GDRAWP_H
+#define FONTFORGE_GDRAWP_H
+
+#include "basics.h"
 
 #include "gdraw.h"
 
@@ -341,4 +342,5 @@ extern const GCol *_GImage_GetIndexedPixelPrecise(Color col,RevCMap *rev);
 
 extern void (*_GDraw_BuildCharHook)(GDisplay *);
 extern void (*_GDraw_InsCharHook)(GDisplay *,unichar_t);
-#endif
+
+#endif /* FONTFORGE_GDRAWP_H */

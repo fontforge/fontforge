@@ -30,6 +30,16 @@
 
 #include "flaglist.h"
 
+#pragma push_macro("real")
+#undef real
+#define real py_real
+
+#include <Python.h>
+#include <structmember.h>
+
+#undef real
+#pragma pop_macro("real")
+
 /*********** PYTHON 3 **********/
 #if PY_MAJOR_VERSION >= 3
 

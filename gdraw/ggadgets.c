@@ -24,15 +24,17 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <basics.h>
-#include <stdlib.h>
-#include "utype.h"
+
+#include <fontforge-config.h>
+
+#include "basics.h"
 #include "gdraw.h"
 #include "ggadgetP.h"
+#include "gkeysym.h"
 #include "gresource.h"
 #include "gwidget.h"
-#include "gkeysym.h"
 #include "ustring.h"
+#include "utype.h"
 
 GBox _ggadget_Default_Box = { bt_raised, bs_rect, 2, 2, 0, 0, 
     COLOR_CREATE(0xd8,0xd8,0xd8),		/* border left */ /* brightest */

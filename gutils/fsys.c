@@ -25,24 +25,27 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
-#include "inc/basics.h"
-#include "ustring.h"
+#include <fontforge-config.h>
+
+#include "basics.h"
+#include "ffglib.h"
 #include "gfile.h"
-#include <fcntl.h>
-#include <sys/param.h>
-#include <sys/types.h>
-#include <sys/stat.h>		/* for mkdir */
-#include <unistd.h>
-#include <ffglib.h>
+#include "ustring.h"
+
 #include <errno.h>			/* for mkdir_p */
+#include <fcntl.h>
+#include <stdio.h>
+#include <sys/param.h>
+#include <sys/stat.h>		/* for mkdir */
+#include <sys/types.h>
+#include <unistd.h>
 
 static char dirname_[MAXPATHLEN+1];
 #if !defined(__MINGW32__)
  #include <pwd.h>
 #else
- #include <windows.h>
  #include <shlobj.h>
+ #include <windows.h>
 #endif
 
 /**

@@ -33,13 +33,14 @@ static int a_file_must_define_something=0;	/* ANSI says so */
 
 #else /* We can build with jpeglib - therefore import jpg files */
 
-#include <basics.h>
-#include <sys/types.h>
-#include <stdio.h>
-#include <jpeglib.h>
-#include <jerror.h>
-#include <setjmp.h>
+#include "basics.h"
 #include "gimage.h"
+
+#include <jerror.h>
+#include <jpeglib.h>
+#include <setjmp.h>
+#include <stdio.h>
+#include <sys/types.h>
 
 /******************************************************************************/
 

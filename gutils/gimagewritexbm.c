@@ -24,8 +24,10 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "gimage.h"
-#include "string.h"
 
 int GImageWriteXbm(GImage *gi, char *filename) {
 /* Export an *.xbm image, return 0 if all done okay */

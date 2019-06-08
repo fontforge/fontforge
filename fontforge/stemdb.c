@@ -25,18 +25,20 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "stemdb.h"
 
 #include "autohint.h"
 #include "dumppfa.h"
-#include "fontforge.h"
 #include "edgelist2.h"
+#include "fontforge.h"
 #include "splineoverlap.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+#include "utype.h"
 
 #include <math.h>
-#include <utype.h>
 
 #define GLYPH_DATA_DEBUG 0
 #define PI 3.14159265358979323846264338327

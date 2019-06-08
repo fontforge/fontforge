@@ -25,11 +25,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _SCRIPTFUNCS_H
-#define _SCRIPTFUNCS_H
+#ifndef FONTFORGE_SCRIPTFUNCS_H
+#define FONTFORGE_SCRIPTFUNCS_H
 
 #include "scripting.h"
 
 #include "glyphcomp.h"
 
-#endif /* _SCRIPTFUNCS_H */
+#endif /* FONTFORGE_SCRIPTFUNCS_H */

@@ -24,8 +24,10 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #ifndef FONTFORGE_SFD1_H
 #define FONTFORGE_SFD1_H
+
 /* This file contains the data structures needed to read in an old sfd file */
 /* features and lookups and scripts are handled differently. That means that */
 /* the KernPair, KernClass, PST, FPST, AnchorClass, StateMachine data structures */

@@ -25,14 +25,16 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <gprogress.h>
-#include <ggadget.h>
-#include <gwidget.h>
-#include <gresource.h>
-#include <ustring.h>
-#include <memory.h>
-#include <sys/time.h>
+#include <fontforge-config.h>
+
+#include "ggadget.h"
 #include "ggadgetP.h"		/* For the font family names */
+#include "gprogress.h"
+#include "gresource.h"
+#include "gwidget.h"
+#include "ustring.h"
+
+#include <sys/time.h>
 
 typedef struct gprogress {
     struct timeval start_time;	/* Don't pop up unless we're after this */

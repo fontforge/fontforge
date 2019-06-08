@@ -1,8 +1,6 @@
 #ifndef FONTFORGE_PARSEPFA_H
 #define FONTFORGE_PARSEPFA_H
 
-#include <stdio.h>
-
 #include "psfont.h"
 #include "splinefont.h"
 

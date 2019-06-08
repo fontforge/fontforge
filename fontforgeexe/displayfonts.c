@@ -24,30 +24,32 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <ffglib.h>
+
+#include <fontforge-config.h>
 
 #include "autotrace.h"
 #include "cvundoes.h"
+#include "ffglib.h"
 #include "fontforgeui.h"
-#include <gfile.h>
+#include "gfile.h"
+#include "gkeysym.h"
 #include "lookups.h"
+#include "print.h"
 #include "print.h"
 #include "sftextfieldP.h"
 #include "splinesaveafm.h"
 #include "splineutil2.h"
 #include "tottfgpos.h"
-#include <stdlib.h>
+#include "ustring.h"
+#include "utype.h"
+
 #include <math.h>
+#include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
-#include <ustring.h>
-#include "utype.h"
-#include <sys/types.h>
 #if !defined(__MINGW32__)
 #include <sys/wait.h>
 #endif
-#include <gkeysym.h>
-#include "print.h"
 
 typedef struct printffdlg {
     struct printinfo pi;

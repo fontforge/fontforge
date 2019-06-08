@@ -24,14 +24,18 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "cvundoes.h"
 #include "fontforgeui.h"
+#include "gkeysym.h"
+#include "gresource.h"
 #include "splineorder2.h"
 #include "splineutil.h"
+#include "ustring.h"
+
 #include <math.h>
-#include <gkeysym.h>
-#include <ustring.h>
-#include <gresource.h>
 
 extern GBox _ggadget_Default_Box;
 #define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
@@ -54,8 +58,9 @@ void CVDebugPointPopup(CharView *cv) {
 #else
 #include <ft2build.h>
 #include FT_FREETYPE_H
+
 #include <internal/internal.h>
-#include "ttinterp.h"
+#include <ttinterp.h>
 
 # define PPEMX(exc)	((exc)->size->root.metrics.x_ppem)
 # define PPEMY(exc)	((exc)->size->root.metrics.y_ppem)

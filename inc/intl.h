@@ -25,10 +25,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _INTL_H
-#define _INTL_H
+#ifndef FONTFORGE_INTL_H
+#define FONTFORGE_INTL_H
 
-#include "fontforge-config.h"
+#include <fontforge-config.h>
 
 #if !defined( HAVE_LIBINTL_H )
 
@@ -73,4 +73,4 @@
 extern void GResourceUseGetText(void);
 char *sgettext(const char *msgid);
 
-#endif	/* _INTL_H */
+#endif /* FONTFORGE_INTL_H */

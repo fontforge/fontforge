@@ -24,6 +24,10 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#ifndef FONTFORGE_GGADGET_P_H
+#define FONTFORGE_GGADGET_P_H
+
 #include "ggadget.h"
 #include "gresedit.h"
 
@@ -594,3 +598,5 @@ extern GResInfo *_GProgressRIHead(void);
 #define SERIF_UI_FAMILIES	"dejavu serif,times,caslon,serif,clearlyu,unifont"
 #define SANS_UI_FAMILIES	"dejavu sans,helvetica,caliban,sans,clearlyu,unifont"
 #define MONO_UI_FAMILIES	"courier,monospace,clearlyu,unifont"
+
+#endif /* FONTFORGE_GGADGET_P_H */

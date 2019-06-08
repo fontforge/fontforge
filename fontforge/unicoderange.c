@@ -27,11 +27,14 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "fontforge.h"
 #include "unicoderange.h"
+#include "utype.h"
+
 #include <stdlib.h>
 #include <string.h>
-#include <utype.h>
 #define ASFIRST (-1)
 
 /* Block lists derived from nameslist.txt and second check with blocks.txt */

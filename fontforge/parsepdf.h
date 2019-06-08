@@ -1,8 +1,6 @@
 #ifndef FONTFORGE_PARSEPDF_H
 #define FONTFORGE_PARSEPDF_H
 
-#include <stdio.h>
-
 #include "sd.h"
 #include "splinefont.h"
 

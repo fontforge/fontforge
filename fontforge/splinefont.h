@@ -24,14 +24,34 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _SPLINEFONT_H
-#define _SPLINEFONT_H
 
-#include <basics.h>
-#include <dlist.h>
+#ifndef FONTFORGE_SPLINEFONT_H
+#define FONTFORGE_SPLINEFONT_H
+
+#include "basics.h"
 #include "configure-fontforge.h"
-#include <gwwiconv.h>
-#include "locale.h"
+#include "dlist.h"
+#include "gwwiconv.h"
+#include "ustring.h"
+
+#include <locale.h>
+
+#ifndef _NO_LIBSPIRO
+# include <spiroentrypoints.h>
+#else
+# define SPIRO_OPEN_CONTOUR	'{'
+# define SPIRO_CORNER		'v'
+# define SPIRO_G4		'o'
+# define SPIRO_G2		'c'
+# define SPIRO_LEFT		'['
+# define SPIRO_RIGHT		']'
+# define SPIRO_END		'z'
+typedef struct {			/* Taken from spiro.h because I want */
+    double x;				/*  to be able to compile for spiro */
+    double y;				/*  even on a system without it */
+    char ty;
+} spiro_cp;
+#endif
 
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
 # define real		double
@@ -1135,23 +1155,6 @@ typedef struct spline {
 	Precalculate min/max/ points of inflection
     */
 } Spline;
-
-#ifndef _NO_LIBSPIRO
-# include "spiroentrypoints.h"
-#else
-# define SPIRO_OPEN_CONTOUR	'{'
-# define SPIRO_CORNER		'v'
-# define SPIRO_G4		'o'
-# define SPIRO_G2		'c'
-# define SPIRO_LEFT		'['
-# define SPIRO_RIGHT		']'
-# define SPIRO_END		'z'
-typedef struct {			/* Taken from spiro.h because I want */
-    double x;				/*  to be able to compile for spiro */
-    double y;				/*  even on a system without it */
-    char ty;
-} spiro_cp;
-#endif
 
 typedef struct splinepointlist {
     SplinePoint *first, *last;
@@ -2620,8 +2623,6 @@ extern bool isSplinePointPartOfGuide( SplineFont *sf, SplinePoint *sp );
 
 extern void debug_printHint( StemInfo *h, char* msg );
 
-#include "ustring.h"
-
 #if defined(_WIN32) || defined(__HAIKU__)
 #define BAD_LOCALE_HACK
 typedef char* locale_t;
@@ -2700,4 +2701,4 @@ static inline void freelocale_hack(locale_t dataset) {
 
 
 
-#endif
+#endif /* FONTFORGE_SPLINEFONT_H */

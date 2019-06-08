@@ -1,8 +1,6 @@
 #ifndef FONTFORGE_DUMPPFA_H
 #define FONTFORGE_DUMPPFA_H
 
-#include <stdio.h>
-
 #include "splinefont.h"
 
 extern char *PSDictHasEntry(struct psdict *dict, const char *key);

@@ -27,13 +27,14 @@
 
 #include <fontforge-config.h>
 
-#include <basics.h>
-#include <gwwiconv.h>
-#include <charset.h>
-#include <chardata.h>
-#include <string.h>
-#include <ustring.h>
+#include "basics.h"
+#include "chardata.h"
+#include "charset.h"
+#include "gwwiconv.h"
+#include "ustring.h"
+
 #include <stdio.h>
+#include <string.h>
 
 #ifndef HAVE_ICONV_H
 

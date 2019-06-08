@@ -26,15 +26,17 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "namelist.h"
 
 #include "fontforgevw.h"
 #include "fvcomposite.h"
 #include "fvfonts.h"
+#include "namehash.h"
 #include "pua.h"
 #include "ustring.h"
-#include <utype.h>
-#include "namehash.h"
+#include "utype.h"
 
 int recognizePUA = false;
 NameList *force_names_when_opening=NULL;
@@ -522,8 +524,8 @@ static void NameListFree(NameList *nl) {
 }
 /* ************************************************************************** */
 
-#include <sys/types.h>
 #include <dirent.h>
+#include <sys/types.h>
 
 NameList *LoadNamelist(char *filename) {
     FILE *file = fopen(filename,"r");

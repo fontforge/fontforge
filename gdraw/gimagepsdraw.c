@@ -24,8 +24,11 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "gpsdrawP.h"
+
+#include <fontforge-config.h>
+
 #include "colorP.h"
+#include "gpsdrawP.h"
 
 static void InitFilter(GPSWindow ps) {
     ps->ascii85encode = 0;

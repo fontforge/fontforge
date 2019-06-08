@@ -24,16 +24,17 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
+#include "ffglib.h"
 #include "gdraw.h"
-#include "../gdraw/gdrawP.h"
-#include "gkeysym.h"
+#include "gdrawP.h"
 #include "ggadgetP.h"
-#include "gwidget.h"
+#include "gkeysym.h"
 #include "gresource.h"
-#include <string.h>
-#include <ustring.h>
-#include <ffglib.h>
-#include <glib/gprintf.h>
+#include "gwidget.h"
+#include "ustring.h"
 
 #define DEL_SPACE	6
 

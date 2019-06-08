@@ -4,7 +4,7 @@
 #include "edgelist.h"
 #include "splinefont.h"
 
-#include <gdraw.h>
+#include "gdraw.h"
 
 enum piecemeal_flags { pf_antialias=1, pf_bbsized=2, pf_ft_nohints=4, pf_ft_recontext=8 };
 

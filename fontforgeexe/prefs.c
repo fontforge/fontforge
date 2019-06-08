@@ -25,42 +25,42 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "autotrace.h"
+#include "charset.h"
 #include "encoding.h"
+#include "ffglib.h"
 #include "fontforgeui.h"
+#include "gfile.h"
+#include "gkeysym.h"
+#include "gresedit.h"
+#include "gresource.h"
 #include "groups.h"
+#include "gutils/prefs.h"
 #include "macenc.h"
 #include "namelist.h"
 #include "othersubrs.h"
 #include "sfd.h"
 #include "splineutil.h"
-#include <charset.h>
-#include <gfile.h>
-#include <gresource.h>
-#include <gresedit.h>
-#include <ustring.h>
-#include <gkeysym.h>
+#include "ttf.h"
+#include "ustring.h"
 
-#include <sys/types.h>
 #include <dirent.h>
 #include <locale.h>
-#include <time.h>
-#include <sys/time.h>
 #include <stdlib.h>
-
-#include "ttf.h"
+#include <sys/time.h>
+#include <sys/types.h>
+#include <time.h>
 
 #if HAVE_LANGINFO_H
 # include <langinfo.h>
 #endif
 
-#include <ffglib.h>
-
 #define RAD2DEG	(180/3.1415926535897932)
 
 static void change_res_filename(const char *newname);
-
-#include "gutils/prefs.h"
 
 extern int splash;
 extern int adjustwidth;
@@ -814,7 +814,6 @@ return( sharedir );
 #endif
 }
 
-#  include <charset.h>		/* we still need the charsets & encoding to set local_encoding */
 static int encmatch(const char *enc,int subok) {
     static struct { char *name; int enc; } encs[] = {
 	{ "US-ASCII", e_usascii },
