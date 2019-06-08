@@ -49,7 +49,6 @@ extern uninm_blocks_db blocks_db;
 #include <sys/time.h>
 #include <locale.h>
 #include <unistd.h>
-#include <dynamic.h>
 #include <stdlib.h>		/* getenv,setenv */
 #include <sys/stat.h>
 #include <sys/types.h>

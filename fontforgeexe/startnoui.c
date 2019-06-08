@@ -40,7 +40,6 @@ extern uninm_blocks_db blocks_db;
 #include <sys/time.h>
 #include <locale.h>
 #include <unistd.h>
-#include <dynamic.h>
 #ifdef __Mac
 # include <stdlib.h>		/* getenv,setenv */
 #endif
