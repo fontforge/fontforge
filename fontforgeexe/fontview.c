@@ -7804,56 +7804,6 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
 return( ret );
 }
 
-
-/****************************************/
-/****************************************/
-/****************************************/
-
-int FontViewFind_bySplineFont( FontViewBase* fv, void* udata )
-{
-    if( !fv || !fv->sf )
-	return 0;
-    return fv->sf == udata;
-}
-
-static int FontViewFind_ActiveWindow( FontViewBase* fvb, void* udata )
-{
-    FontView* fv = (FontView*)fvb;
-    return( fv->gw == udata || fv->v == udata );
-}
-
-FontViewBase* FontViewFindActive()
-{
-    return (FontViewBase*) ActiveFontView;
-    /* GWindow w = GWindowGetCurrentFocusTopWindow(); */
-    /* FontViewBase* ret = FontViewFind( FontViewFind_ActiveWindow, w ); */
-    /* return ret; */
-}
-
-
-
-FontViewBase* FontViewFind( int (*testFunc)( FontViewBase*, void* udata ), void* udata )
-{
-    FontViewBase *fv;
-//    printf("FontViewFind(top) fv_list:%p\n", fv_list );
-    for ( fv = (FontViewBase*)fv_list; fv!=NULL; fv=fv->next )
-    {
-	if( testFunc( fv, udata ))
-	    return fv;
-    }
-    return 0;
-}
-
-FontView* FontViewFindUI( int (*testFunc)( FontViewBase*, void* udata ), void* udata )
-{
-    return (FontView*)FontViewFind( testFunc, udata );
-}
-
-
-/****************************************/
-/****************************************/
-/****************************************/
-
 /* local variables: */
 /* tab-width: 8     */
 /* end:             */

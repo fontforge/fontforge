@@ -117,7 +117,7 @@ libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
 	splashimage.c startui.c statemachine.c tilepath.c transform.c	        \
 	ttfinstrsui.c uiutil.c windowmenu.c justifydlg.c deltaui.c		\
 	usermenu.c macobjective.h charview_private.h                    \
-	sfundo.c wordlistparser.c wordlistparser.h fontforgeexe.h
+	sfundo.c wordlistparser.c wordlistparser.h
 
 libfontforgeexe_la_CPPFLAGS += $(GTK2_CFLAGS)
 
