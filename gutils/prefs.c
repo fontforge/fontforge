@@ -29,7 +29,6 @@
 #include <ffglib.h>
 #include <stdio.h>
 #include "ustring.h"
-#include "fileutil.h"
 #include "gfile.h"
 
 int cv_auto_goto = 0;

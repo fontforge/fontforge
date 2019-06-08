@@ -40,12 +40,12 @@
 #endif
 
 #include "fontP.h"
+#include "gfile.h"
 #include "gpsdrawP.h"
 #include "ustring.h"
 #include "charset.h"
 #include "utype.h"
 #include "gresource.h"
-#include "fileutil.h"
 
 /* standard 35 lazy printer afm files may be found at ftp://ftp.adobe.com/pub/adobe/type/win/all/afmfiles/base35 */
 

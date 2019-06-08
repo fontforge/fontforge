@@ -30,8 +30,8 @@
 #include <ustring.h>
 
 #include <gdraw.h>
+#include <gfile.h>
 #include <gresource.h>
-#include <fileutil.h>
 #include "charset.h"
 #include "fontP.h"
 #include <utype.h>

@@ -42,7 +42,6 @@
 #include "colorP.h"
 #include "fontP.h"
 #include "ustring.h"
-#include "fileutil.h"
 
 /* ************************************************************************** */
 /* ********************** Noops & Meaningless functions ********************* */

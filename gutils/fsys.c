@@ -28,7 +28,6 @@
 #include <stdio.h>
 #include "inc/basics.h"
 #include "ustring.h"
-#include "fileutil.h"
 #include "gfile.h"
 #include <fcntl.h>
 #include <sys/param.h>

@@ -31,8 +31,8 @@
 #include <utype.h>
 
 #include <gdraw.h>
+#include <gfile.h>
 #include <gresource.h>
-#include <fileutil.h>
 
 #include "gresourceP.h"
 

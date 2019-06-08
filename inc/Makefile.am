@@ -34,7 +34,7 @@ DISTCLEANFILES=fontforge-config.h stamp-h1 stamp-h2
 # they should require a "fontforge/" prefix.
 
 pkginclude_HEADERS = basics.h chardata.h charset.h	\
-	fileutil.h gdraw.h gfile.h ggadget.h gicons.h gimage.h gio.h		\
+	gdraw.h gfile.h ggadget.h gicons.h gimage.h gio.h		\
 	gkeysym.h gprogress.h gresedit.h gresource.h gwidget.h gwwiconv.h	\
 	intl.h ustring.h utype.h dlist.h carbon.h gutils.h ffglib.h ffgdk.h
 
