@@ -3955,9 +3955,9 @@ static void ttf_math_dump_glyphvariant(FILE *mathf,struct alltabs *at, SplineFon
     /* Figure out our glyph list (and count) */
     for ( i=vlen=hlen=0; i<at->gi.gcnt; ++i )
 	if ( (gid=at->gi.bygid[i])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
-	    if ( sc->vert_variants!=NULL )
+	    if ( HasVariants(sc->vert_variants) )
 		++vlen;
-	    if ( sc->horiz_variants!=NULL )
+	    if ( HasVariants(sc->horiz_variants) )
 		++hlen;
 	}
 
@@ -3965,9 +3965,9 @@ static void ttf_math_dump_glyphvariant(FILE *mathf,struct alltabs *at, SplineFon
     hglyphs = malloc((hlen+1)*sizeof(SplineChar *));
     for ( i=vlen=hlen=0; i<at->gi.gcnt; ++i )
 	if ( (gid=at->gi.bygid[i])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
-	    if ( sc->vert_variants!=NULL )
+	    if ( HasVariants(sc->vert_variants) )
 		vglyphs[vlen++] = sc;
-	    if ( sc->horiz_variants!=NULL )
+	    if ( HasVariants(sc->horiz_variants) )
 		hglyphs[hlen++] = sc;
 	}
     vglyphs[vlen] = NULL;
