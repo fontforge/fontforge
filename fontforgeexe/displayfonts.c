@@ -35,7 +35,6 @@
 #include "gkeysym.h"
 #include "lookups.h"
 #include "print.h"
-#include "print.h"
 #include "sftextfieldP.h"
 #include "splinesaveafm.h"
 #include "splineutil2.h"

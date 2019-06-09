@@ -38,7 +38,6 @@
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "gfile.h"
-#include "gfile.h"
 #include "namelist.h"
 #include "psfont.h"
 #include "sfd.h"

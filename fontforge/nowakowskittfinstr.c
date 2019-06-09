@@ -37,7 +37,6 @@
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "stemdb.h"
-#include "stemdb.h"
 #include "tottf.h"
 #include "ttf.h"
 #include "utype.h"

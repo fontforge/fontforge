@@ -50,13 +50,6 @@
 #include <math.h>
 #include <stddef.h>
 
-#ifdef __need_size_t
-/* This is a bug on the mac, someone defines this and leaves it defined */
-/*  that means when I load stddef.h it only defines size_t and doesn't */
-/*  do offset_of, which is what I need */
-# undef __need_size_t
-#endif
-
 /* Adobe's opentype feature file */
 /* Which suffers incompatible changes according to Adobe's whim */
 /* Currently trying to support the version of december 2008, Version 1.8. */

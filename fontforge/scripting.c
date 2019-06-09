@@ -53,7 +53,6 @@
 #include "fvimportbdf.h"
 #include "fvmetrics.h"
 #include "gfile.h"
-#include "gfile.h"
 #include "gutils.h"
 #include "gutils/prefs.h"
 #include "gutils/unicodelibinfo.h"
@@ -93,7 +92,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <time.h>
-#include <unistd.h>
 #include <unistd.h>
 
 #ifdef HAVE_IEEEFP_H

@@ -35,7 +35,6 @@
 #include "cvruler.h"
 #include "cvundoes.h"
 #include "dlist.h"
-#include "dlist.h"
 #include "dumppfa.h"
 #include "encoding.h"
 #include "ffglib.h"

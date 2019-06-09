@@ -33,7 +33,6 @@
 #include "featurefile.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
-#include "fvfonts.h"
 #include "gfile.h"
 #include "glif_name_hash.h"
 #include "lookups.h"

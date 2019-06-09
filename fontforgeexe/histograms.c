@@ -33,7 +33,6 @@
 #include "fontforgeui.h"
 #include "gkeysym.h"
 #include "psfont.h"
-#include "psfont.h"
 #include "splineutil.h"
 #include "ustring.h"
 #include "utype.h"

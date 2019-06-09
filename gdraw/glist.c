@@ -31,7 +31,6 @@
 #include "ggadgetP.h"
 #include "gkeysym.h"
 #include "gwidget.h"
-#include "gwidget.h"
 #include "ustring.h"
 
 static int GListTypeTime = 500;			/* half a second between keystrokes */
