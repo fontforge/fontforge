@@ -7669,7 +7669,7 @@ return( 0 );
 }
 
 static PyObject *PyFF_Glyph_get_horizontalComponents(PyFF_Glyph *self, void *UNUSED(closure)) {
-    if ( self->sc->horiz_variants==0 || self->sc->horiz_variants->part_cnt==0 )
+    if ( self->sc->horiz_variants==NULL || self->sc->horiz_variants->part_cnt==0 )
 Py_RETURN_NONE;
 
 return( BuildComponentTuple(self->sc->horiz_variants ));
@@ -7697,7 +7697,7 @@ return( 0 );
 }
 
 static PyObject *PyFF_Glyph_get_verticalComponents(PyFF_Glyph *self, void *UNUSED(closure)) {
-    if ( self->sc->vert_variants==0 || self->sc->vert_variants->part_cnt==0 )
+    if ( self->sc->vert_variants==NULL || self->sc->vert_variants->part_cnt==0 )
 Py_RETURN_NONE;
 
 return( BuildComponentTuple(self->sc->vert_variants ));
