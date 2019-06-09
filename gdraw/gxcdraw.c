@@ -25,7 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "fontforge-config.h"
+#include <fontforge-config.h>
+
 #ifdef FONTFORGE_CAN_USE_GDK
 
 void GDrawEnableCairo(int on) {
@@ -34,15 +35,13 @@ void GDrawEnableCairo(int on) {
 
 #else // FONTFORGE_CAN_USE_GDK
 
-#include "gxdrawP.h"
-#include "gxcdrawP.h"
-
-#include <stdlib.h>
-#include <math.h>
-
-#include <ustring.h>
-#include <utype.h>
 #include "fontP.h"
+#include "gxcdrawP.h"
+#include "gxdrawP.h"
+#include "ustring.h"
+#include "utype.h"
+
+#include <math.h>
 
 #ifdef __Mac
 # include <sys/utsname.h>

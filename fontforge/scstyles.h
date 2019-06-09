@@ -1,8 +1,8 @@
 #ifndef FONTFORGE_SCSTYLES_H
 #define FONTFORGE_SCSTYLES_H
 
-#include "splinefont.h"
 #include "baseviews.h"
+#include "splinefont.h"
 
 // TODO: move structsmallcaps here from baseviews.h
 

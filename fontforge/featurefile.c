@@ -26,37 +26,29 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #include <fontforge-config.h>
 
 #include "featurefile.h"
 
 #include "encoding.h"
+#include "ffglib.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
+#include "gfile.h"
+#include "glif_name_hash.h"
 #include "lookups.h"
 #include "namelist.h"
-#include "ttf.h"
 #include "splineutil.h"
 #include "tottf.h"
 #include "tottfgpos.h"
-#include <stdio.h>
-#include <math.h>
-#include <stdlib.h>
-#ifdef __need_size_t
-/* This is a bug on the mac, someone defines this and leaves it defined */
-/*  that means when I load stddef.h it only defines size_t and doesn't */
-/*  do offset_of, which is what I need */
-# undef __need_size_t
-#endif
-#include <stddef.h>
-#include <string.h>
-#include <utype.h>
-#include <ustring.h>
+#include "ttf.h"
+#include "ustring.h"
+#include "utype.h"
+
 #include <locale.h>
-
-#include <ffglib.h>
-
-#include "glif_name_hash.h"
+#include <math.h>
+#include <stddef.h>
 
 /* Adobe's opentype feature file */
 /* Which suffers incompatible changes according to Adobe's whim */
@@ -2013,8 +2005,6 @@ void FeatDumpFontLookups(FILE *out,SplineFont *sf) {
 /* ************************************************************************** */
 /* ******************************* Parse feat ******************************* */
 /* ************************************************************************** */
-
-#include <gfile.h>
 
 struct nameid {
     uint16 strid;

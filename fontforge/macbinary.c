@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "macbinary.h"
 
 #include "bvedit.h"
@@ -33,11 +35,13 @@
 #include "encoding.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
-#include <gfile.h>
+#include "gfile.h"
+#include "gutils.h"
 #include "lookups.h"
 #include "mem.h"
 #include "parsepfa.h"
 #include "parsettf.h"
+#include "psfont.h"
 #include "splinefill.h"
 #include "splinesave.h"
 #include "splinesaveafm.h"
@@ -45,21 +49,21 @@
 #include "splineutil2.h"
 #include "tottf.h"
 #include "tottfgpos.h"
+#include "ttf.h"
+#include "ustring.h"
+
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <math.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <ustring.h>
-#include <gutils.h>
-#include "ttf.h"
-#include "psfont.h"
+#include <sys/types.h>
+#include <unistd.h>
 #if __Mac
-# include <ctype.h>
 # include "carbon.h"
+
+# include <ctype.h>
 #else
-# include <utype.h>
+# include "utype.h"
 #undef __Mac
 #define __Mac 0
 #endif

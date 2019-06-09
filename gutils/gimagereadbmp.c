@@ -24,9 +24,11 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "gimage.h"
 #include "gimagebmpP.h"
-#include <string.h>
 GImage *_GImage_Create(enum image_type type, int32 width, int32 height);
 
 static int getshort(FILE *fp) {

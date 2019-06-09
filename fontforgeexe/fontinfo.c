@@ -25,12 +25,18 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "autowidth.h"
 #include "bitmapchar.h"
+#include "chardata.h"
 #include "dumppfa.h"
 #include "encoding.h"
 #include "featurefile.h"
 #include "fontforgeui.h"
+#include "gkeysym.h"
+#include "gutils.h"
 #include "lookups.h"
 #include "namelist.h"
 #include "ofl.h"
@@ -38,28 +44,25 @@
 #include "parsettf.h"
 #include "psread.h"
 #include "sfd.h"
+#include "sfundo.h"
 #include "splineorder2.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "tottf.h"
-#include <gutils.h>
-#include <ustring.h>
-#include <chardata.h>
-#include <utype.h>
 #include "unicoderange.h"
+#include "ustring.h"
+#include "utype.h"
+
 #include <locale.h>
-#include "sfundo.h"
+#include <math.h>
+#include <time.h>
+#include <unistd.h>
 
 extern int _GScrollBar_Width;
 extern GBox _ggadget_Default_Box;
 #define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
 #define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
-
-#include <gkeysym.h>
-#include <math.h>
-#include <unistd.h>
-#include <time.h>
 
 static int last_aspect=0;
 

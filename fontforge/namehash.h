@@ -24,8 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _NAMEHASH_H
-# define _NAMEHASH_H
+
+#ifndef FONTFORGE_NAMEHASH_H
+#define FONTFORGE_NAMEHASH_H
 
 #define GN_HSIZE	257
 
@@ -57,4 +58,4 @@ static __inline__ int hashname(const char *pt) {
 return( val );
 }
 
-#endif
+#endif /* FONTFORGE_NAMEHASH_H */

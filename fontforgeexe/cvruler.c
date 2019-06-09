@@ -24,13 +24,16 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
+#include "cvruler.h"
 #include "fontforgeui.h"
 #include "splineutil.h"
 #include "splineutil2.h"
-#include <math.h>
-#include <ustring.h>
+#include "ustring.h"
 
-#include "cvruler.h"
+#include <math.h>
 
 int measuretoolshowhorizontolvertical = true;
 Color measuretoollinecol = 0x000000;

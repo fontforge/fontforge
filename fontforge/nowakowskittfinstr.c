@@ -26,20 +26,22 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "autohint.h"
 #include "dumppfa.h"
 #include "fontforgevw.h"
 #include "mem.h"
-#include <math.h>
-#include <utype.h>
-
-#include "ttf.h"
 #include "splinefont.h"
-#include "stemdb.h"
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "stemdb.h"
 #include "tottf.h"
+#include "ttf.h"
+#include "utype.h"
+
+#include <math.h>
 
 extern int autohint_before_generate;
 

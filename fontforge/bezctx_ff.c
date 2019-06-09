@@ -24,9 +24,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 
 */
 
-#include <basics.h>
-#include <stdio.h>
+#include <fontforge-config.h>
 
+#include "basics.h"
 #include "splineutil.h"
 
 #ifndef _NO_LIBSPIRO

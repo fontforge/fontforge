@@ -24,15 +24,19 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
+#include "chardata.h"
 #include "cvundoes.h"
-#include "fontforgeui.h"
-#include <ustring.h>
-#include <chardata.h>
-#include <utype.h>
-#include <gkeysym.h>
-#include <gimage.h>
-#include <math.h>
 #include "delta.h"
+#include "fontforgeui.h"
+#include "gimage.h"
+#include "gkeysym.h"
+#include "ustring.h"
+#include "utype.h"
+
+#include <math.h>
 
 /* Suggestions for where delta instructions might be wanted */
 

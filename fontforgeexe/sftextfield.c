@@ -24,19 +24,21 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
+#include "chardata.h"
 #include "fontforgeui.h"
+#include "gkeysym.h"
 #include "langfreq.h"
+#include "sftextfieldP.h"
 #include "splinefill.h"
 #include "splineutil.h"
 #include "tottfgpos.h"
-#include <gkeysym.h>
+#include "ustring.h"
+#include "utype.h"
+
 #include <math.h>
-
-
-#include "sftextfieldP.h"
-#include <ustring.h>
-#include <utype.h>
-#include <chardata.h>
 
 static GBox sftextarea_box = GBOX_EMPTY; /* Don't initialize here */
 static int sftextarea_inited = false;

@@ -24,11 +24,15 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "cvundoes.h"
 #include "fontforgeui.h"
+#include "gkeysym.h"
 #include "splineutil.h"
-#include <ustring.h>
-#include <gkeysym.h>
+#include "ustring.h"
+
 #include <math.h>
 
 int gridfit_dpi=72, gridfit_depth=1; float gridfit_pointsizey=12, gridfit_pointsizex=12;

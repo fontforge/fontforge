@@ -26,23 +26,26 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "autowidth2.h"
+#include "chardata.h"
 #include "cvundoes.h"
 #include "fontforgeui.h"
 #include "fvcomposite.h"
 #include "fvfonts.h"
+#include "gkeysym.h"
+#include "gutils/unicodelibinfo.h"
 #include "lookups.h"
 #include "namelist.h"
 #include "splinefill.h"
 #include "splineutil.h"
 #include "tottfgpos.h"
-#include <ustring.h>
-#include <math.h>
-#include <utype.h>
-#include <chardata.h>
 #include "ttf.h"		/* For MAC_DELETED_GLYPH_NAME */
-#include <gkeysym.h>
-#include "gutils/unicodelibinfo.h"
+#include "ustring.h"
+#include "utype.h"
+
+#include <math.h>
 
 extern int lookup_hideunused;
 

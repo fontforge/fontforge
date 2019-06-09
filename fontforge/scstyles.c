@@ -24,6 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "autohint.h"
 #include "cvundoes.h"
 #include "dumppfa.h"
@@ -38,12 +41,13 @@
 #include "splinestroke.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+#include "stemdb.h"
 #include "tottfgpos.h"
-#include <ustring.h>
-#include <utype.h>
+#include "ttf.h"
+#include "ustring.h"
+#include "utype.h"
+
 #include <math.h>
-#include <ttf.h>
-#include <stemdb.h>
 
 static unichar_t lc_stem_str[] = { 'l', 'l', 'l', 'm', 'f', 't', 0x438, 0x43D,
 	0x43f, 0x448, 0x3b9, 0 };

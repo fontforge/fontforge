@@ -25,21 +25,23 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "tottfgpos.h"
 
+#include "asmfpst.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
-#include <gfile.h>
+#include "gfile.h"
 #include "lookups.h"
+#include "mathconstants.h"
 #include "mem.h"
 #include "namelist.h"
-#include "asmfpst.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "tottf.h"
-#include "mathconstants.h"
-#include <utype.h>
-#include <ustring.h>
+#include "ustring.h"
+#include "utype.h"
 
 int coverageformatsallowed=3;
 int use_second_indic_scripts = false;

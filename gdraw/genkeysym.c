@@ -1,5 +1,6 @@
-#include <stdio.h>
 #include "../inc/gkeysym.h"
+
+#include <stdio.h>
 
 struct { char *name; int ks; } keysyms[] = {
 

@@ -24,8 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _DLIST_H
-#define _DLIST_H
+
+#ifndef FONTFORGE_DLIST_H
+#define FONTFORGE_DLIST_H
 
 /**
  * Doubly linked list abstraction. Putting a full member of this
@@ -147,5 +148,5 @@ typedef void (*dlist_visitor_func_type)( struct dlistnode* );
 extern void dlist_trim_to_limit( struct dlistnode** list, int limit, dlist_visitor_func_type f );
 
 
-#endif // _DLIST_H
+#endif /* FONTFORGE_DLIST_H */
 

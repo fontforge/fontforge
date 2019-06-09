@@ -24,16 +24,17 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <stdarg.h>
-#include <stdlib.h>
-#include <string.h>
-#include "ustring.h"
-#include <ffglib.h>
-#include <glib/gprintf.h>
+
+#include <fontforge-config.h>
+
+#include "ffglib.h"
 #include "gdraw.h"
-#include "gwidget.h"
 #include "ggadget.h"
 #include "ggadgetP.h"
+#include "gwidget.h"
+#include "ustring.h"
+
+#include <stdarg.h>
 
 static GWindow last;
 static const char *last_title;

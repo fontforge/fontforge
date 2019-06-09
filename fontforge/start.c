@@ -25,25 +25,25 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "start.h"
 
 #include "encoding.h"
+#include "ffglib.h"
 #include "fontforgevw.h"
+#include "gfile.h"
+#include "gutils/unicodelibinfo.h"
 #include "namelist.h"
-#include <gfile.h>
-#include <time.h>
-#include <sys/time.h>
+#include "psfont.h"
+
 #include <locale.h>
+#include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
-#include <dynamic.h>
 #ifdef __Mac
 # include <stdlib.h>		/* getenv,setenv */
 #endif
-
-#include <ffglib.h>
-
-#include "gutils/unicodelibinfo.h"
-#include "psfont.h"
 
 int32 unicode_from_adobestd[256];
 struct lconv localeinfo;

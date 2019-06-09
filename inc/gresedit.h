@@ -24,12 +24,13 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _GRESEDIT_H
-#define _GRESEDIT_H
 
-#include <basics.h>
-#include <gresource.h>
-#include <ggadget.h>
+#ifndef FONTFORGE_GRESEDIT_H
+#define FONTFORGE_GRESEDIT_H
+
+#include "basics.h"
+#include "ggadget.h"
+#include "gresource.h"
 
 enum res_type2 { rt_stringlong = rt_string+1, rt_coloralpha, rt_image, rt_font };
 
@@ -100,4 +101,5 @@ enum override_mask_flags {
 
 extern void GResEdit(GResInfo *additional,const char *def_res_file,void (*change_res_filename)(const char *));
 extern void GResEditFind( struct resed *resed, char *prefix);
-#endif /* _GRESEDIT_H */
+
+#endif /* FONTFORGE_GRESEDIT_H */

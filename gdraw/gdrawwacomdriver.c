@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 /*
  This file exists because the XFree wacom_drv.o does not work for me.
  When properly configured it sends no device events. It sends no core events.
@@ -81,11 +83,11 @@ static void *a_file_must_define_something = (void *) &a_file_must_define_somethi
 # include <linux/input.h>
 # include <sys/ioctl.h>
 
-# include <sys/types.h>
-# include <sys/stat.h>
-# include <fcntl.h>
 # include <errno.h>
+# include <fcntl.h>
+# include <sys/stat.h>
 # include <sys/time.h>
+# include <sys/types.h>
 
 # include <math.h>
 

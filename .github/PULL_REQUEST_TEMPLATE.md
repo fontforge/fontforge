@@ -7,3 +7,4 @@
 - **Bug fix**
 - **New feature**
 - **Breaking change**
+- **Non-breaking change**

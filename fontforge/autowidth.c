@@ -26,6 +26,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "autowidth.h"
 
 #include "autohint.h"
@@ -35,9 +37,10 @@
 #include "lookups.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
+#include "ustring.h"
+#include "utype.h"
+
 #include <math.h>
-#include <ustring.h>
-#include <utype.h>
 
 SplineFont *aw_old_sf=NULL;
 int aw_old_spaceguess;

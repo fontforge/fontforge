@@ -25,36 +25,41 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ffglib.h>
-#include <ffgdk.h>
-
 #include <fontforge-config.h>
+
+#include "../gdraw/hotkeys.h"
 #include "autosave.h"
 #include "bitmapchar.h"
 #include "clipnoui.h"
 #include "encoding.h"
+#include "ffgdk.h"
+#include "ffglib.h"
 #include "fontforgeui.h"
+#include "gfile.h"
+#include "gresource.h"
+#include "gutils/prefs.h"
 #include "lookups.h"
 #include "start.h"
+#include "ustring.h"
+
+#include <locale.h>
+#include <stdlib.h>		/* getenv,setenv */
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <time.h>
+#include <unistd.h>
+
+#if defined(__MINGW32__)
+#include <windows.h>
+#define sleep(n) Sleep(1000 * (n))
+#endif
 
 #ifndef _NO_LIBUNICODENAMES
 #include <libunicodenames.h>	/* need to open a database when we start */
 extern uninm_names_db names_db; /* Unicode character names and annotations database */
 extern uninm_blocks_db blocks_db;
 #endif
-#include <gfile.h>
-#include <gresource.h>
-#include <ustring.h>
-#include <time.h>
-#include <sys/time.h>
-#include <locale.h>
-#include <unistd.h>
-#include <dynamic.h>
-#include <stdlib.h>		/* getenv,setenv */
-#include <sys/stat.h>
-#include <sys/types.h>
-#include "../gdraw/hotkeys.h"
-#include "gutils/prefs.h"
 
 #ifdef __Mac
 extern void setup_cocoa_app();
@@ -73,7 +78,7 @@ extern void setup_cocoa_app();
 #  endif
 #endif
 #ifdef __Mac
-#  include <carbon.h>
+#  include "carbon.h"
 /* For reasons obscure to me RunApplicationEventLoop is not defined in */
 /*  the mac header files if we are in 64 bit mode. Strangely it seems to */
 /*  be in the libraries and functional */
@@ -92,11 +97,7 @@ extern void setup_cocoa_app();
 //#  endif
 #endif
 
-#if defined(__MINGW32__)
-#include <windows.h>
-#define sleep(n) Sleep(1000 * (n))
-#endif
-
+// Must be included after png.h because it messes with setjmp
 #include "scripting.h"
 
 extern int AutoSaveFrequency;

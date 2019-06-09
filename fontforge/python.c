@@ -29,8 +29,71 @@
 #include <fontforge-config.h>
 
 #ifndef _NO_PYTHON
-#include "Python.h"
-#include "structmember.h"
+
+#include "autohint.h"
+#include "autotrace.h"
+#include "autowidth2.h"
+#include "bitmapcontrol.h"
+#include "cvexport.h"
+#include "cvimages.h"
+#include "cvundoes.h"
+#include "dumppfa.h"
+#include "encoding.h"
+#include "featurefile.h"
+#include "ffglib.h"
+#include "ffpython.h"
+#include "flaglist.h"
+#include "fontforgevw.h"
+#include "fvcomposite.h"
+#include "fvfonts.h"
+#include "fvimportbdf.h"
+#include "glyphcomp.h"
+#include "gutils/unicodelibinfo.h"
+#include "langfreq.h"
+#include "lookups.h"
+#include "mathconstants.h"
+#include "mem.h"
+#include "namelist.h"
+#include "nonlineartrans.h"
+#include "othersubrs.h"
+#include "print.h"
+#include "psread.h"
+#include "savefont.h"
+#include "scriptfuncs.h"
+#include "scripting.h"
+#include "scstyles.h"
+#include "search.h"
+#include "sfd.h"
+#include "spiro.h"
+#include "splinefill.h"
+#include "splineorder2.h"
+#include "splineoverlap.h"
+#include "splinesaveafm.h"
+#include "splinestroke.h"
+#include "splineutil.h"
+#include "splineutil2.h"
+#include "start.h"
+#include "svg.h"
+#include "tottf.h"
+#include "tottfgpos.h"
+#include "ttf.h"
+#include "ttfinstrs.h"
+#include "ustring.h"
+#include "utype.h"
+
+#include <dirent.h>
+#include <errno.h>
+#include <math.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#if NEED_WIDE_CHAR
+#include <wchar.h>
+#endif
 
 #if PY_MAJOR_VERSION >= 3
 /* Some Python 3+ APIs use C wide characters (wchar_t) */
@@ -56,75 +119,7 @@
 #endif
 
 extern int old_sfnt_flags;
-
-#include "autohint.h"
-#include "autotrace.h"
-#include "autowidth2.h"
-#include "bitmapcontrol.h"
-#include "cvexport.h"
-#include "cvimages.h"
-#include "cvundoes.h"
-#include "dumppfa.h"
-#include "encoding.h"
-#include "featurefile.h"
-#include "fontforgevw.h"
-#include "fvcomposite.h"
-#include "fvfonts.h"
-#include "fvimportbdf.h"
-#include "glyphcomp.h"
-#include "langfreq.h"
-#include "lookups.h"
-#include "mathconstants.h"
-#include "mem.h"
-#include "namelist.h"
-#include "nonlineartrans.h"
-#include "othersubrs.h"
-#include "ttf.h"
-#include "print.h"
-#include "psread.h"
-#include "savefont.h"
-#include "splineorder2.h"
-#include "splinesaveafm.h"
-#include "utype.h"
-#include "ustring.h"
-#include "flaglist.h"
-#include "strlist.h"
-#include "scripting.h"
-#include "scriptfuncs.h"
-#include "scstyles.h"
-#include "search.h"
-#include "sfd.h"
-#include "spiro.h"
-#include "splinefill.h"
-#include "splineoverlap.h"
-#include "splinestroke.h"
-#include "splineutil.h"
-#include "splineutil2.h"
-#include "start.h"
-#include "svg.h"
-#include "tottf.h"
-#include "tottfgpos.h"
-#include "ttfinstrs.h"
-#include "ffpython.h"
-
-#include <math.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <dirent.h>
-#include <stdarg.h>
-#include <stdio.h>
-#if NEED_WIDE_CHAR
-#include <wchar.h>
-#endif
-
-#include <ffglib.h>
-
 extern int prefRevisionsToRetain;
-
-#include "gutils/unicodelibinfo.h"
 
 
 /* This defines the name of the Python entry function that is expected
@@ -337,7 +332,7 @@ return( -1 );
 /* Utilities */
 /* ************************************************************************** */
 
-static struct string_list *default_pyinit_dirs(void);
+static GPtrArray *default_pyinit_dirs(void);
 static int dir_exists(const char* path);
 
 
@@ -1135,16 +1130,17 @@ Py_RETURN_NONE;
 
 static PyObject *PyFF_GetScriptPath(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
     PyObject *ret;
-    struct string_list *dpath;
-    struct string_list *p;
-    int cnt, i;
+    GPtrArray *dpath;
+    int cnt;
 
     dpath = default_pyinit_dirs();
-    cnt = string_list_count(dpath);
-    ret = PyTuple_New(cnt);
-    for ( i=0,p=dpath; p!=NULL; p=p->next,i++ ) {
-	PyTuple_SET_ITEM(ret,i,Py_BuildValue("s",p->str));
+    ret = PyTuple_New((int)dpath->len);
+    for (guint i = 0; i < dpath->len; ++i) {
+        PyTuple_SET_ITEM(ret, (int)i, Py_BuildValue("s", dpath->pdata[i]));
     }
+
+    g_ptr_array_free(dpath, true);
+
     return ret;
 }
 
@@ -17969,7 +17965,6 @@ static PyTypeObject PyFF_FontType = {
 /* ************************************************************************** */
 /*		     Python Interface to FontForge Auto-Kerning		      */
 /* ************************************************************************** */
-#include "autowidth2.h"
 
 /* To give the user the ability to create his own routine to calculate the */
 /*  visual separation between two glyphs, we must provide a python type which */
@@ -19347,34 +19342,37 @@ extern void PyFF_FreePythonPersistent(void *python_persistent) {
     Py_XDECREF((PyObject *)python_persistent);
 }
 
+static gint GPtrArrayStrcmp(gconstpointer a, gconstpointer b) {
+    return strcmp(*(const char**)a, *(const char**)b);
+}
+
 static void LoadFilesInPythonInitDir(char *dir) {
     DIR *diro;
     struct dirent *ent;
-    struct string_list *filelist=NULL;
-    struct string_list *item;
+    GPtrArray *filelist;
 
     diro = opendir(dir);
     if ( diro==NULL )		/* It's ok not to have any python init scripts */
 return;
 
+    filelist = g_ptr_array_new_with_free_func(free);
+
     while ( (ent = readdir(diro))!=NULL ) {
-	char buffer[PATH_MAX+2];
 	char *pt = strrchr(ent->d_name,'.');
 	if ( pt==NULL )
     continue;
 	if ( strcmp(pt,".py")==0 ) {
-	    snprintf( buffer, sizeof(buffer), "%s/%s", dir, ent->d_name );
-	    filelist = prepend_string_list( filelist, buffer );
+        g_ptr_array_add(filelist, smprintf("%s/%s", dir, ent->d_name));
 	}
     }
     closedir(diro);
 
-    filelist = sort_string_list( filelist );
+    g_ptr_array_sort(filelist, GPtrArrayStrcmp);
 
     showPythonErrors = 0;
-    for ( item=filelist; item!=NULL; item=item->next ) {
+    for (guint i = 0; i < filelist->len; ++i) {
 	FILE *fp;
-	char *pathname = item->str;
+	char *pathname = (char*)filelist->pdata[i];
 	fp = fopen( pathname, "rb" );
 	if ( fp==NULL ) {
 	    fprintf(stderr,"Failed to open script \"%s\": %s\n",pathname,strerror(errno));
@@ -19383,7 +19381,7 @@ return;
 	PyRun_SimpleFileEx(fp, pathname, 1/*close fp*/);
     }
     showPythonErrors = 1;
-    delete_string_list( filelist );
+    g_ptr_array_free(filelist, true);
 }
 
 static int dir_exists(const char* path) {
@@ -19393,47 +19391,49 @@ static int dir_exists(const char* path) {
     return 0;
 }
 
-static struct string_list *default_pyinit_dirs(void) {
-    static struct string_list *pathlist = NULL;
+static GPtrArray *default_pyinit_dirs(void) {
+    GPtrArray *pathlist;
     const char *sharedir;
     const char *userdir;
     char subdir[16];
-    char buffer[PATH_MAX+2];
+    char *buffer;
 
-    if ( pathlist != NULL ) {
-	/* Re-scan directories, so delete old list */
-	delete_string_list(pathlist);
-	pathlist = NULL;
-    }
+    pathlist = g_ptr_array_new_with_free_func(free);
     snprintf(subdir, sizeof(subdir), "python%d", PY_MAJOR_VERSION);
 
     sharedir = getFontForgeShareDir();
     userdir = getFontForgeUserDir(Config);
 
     if ( sharedir!=NULL ) {
-	snprintf(buffer,sizeof(buffer),"%s/%s",sharedir,subdir);
-	if ( dir_exists(buffer) ) {
-	    pathlist = append_string_list( pathlist, buffer );
-	}
-	else { /* Fall back to version-less python */
-	    snprintf(buffer,sizeof(buffer),"%s/%s",sharedir,"python");
-	    if ( dir_exists(buffer) ) {
-		pathlist = append_string_list( pathlist, buffer );
-	    }
-	}
+        buffer = smprintf("%s/%s", sharedir, subdir);
+        if ( dir_exists(buffer) ) {
+            g_ptr_array_add(pathlist, buffer);
+        }
+        else { /* Fall back to version-less python */
+            free(buffer);
+            buffer = smprintf("%s/%s", sharedir, "python");
+            if ( dir_exists(buffer) ) {
+                g_ptr_array_add(pathlist, buffer);
+            } else {
+                free(buffer);
+            }
+        }
     }
 
     if ( userdir!=NULL ) {
-	snprintf(buffer,sizeof(buffer),"%s/%s",userdir,subdir);
-	if ( dir_exists(buffer) ) {
-	    pathlist = append_string_list( pathlist, buffer );
-	}
-	else { /* Fall back to version-less python */
-	    snprintf(buffer,sizeof(buffer),"%s/%s",userdir,"python");
-	    if ( dir_exists(buffer) ) {
-		pathlist = append_string_list( pathlist, buffer );
-	    }
-	}
+        buffer = smprintf("%s/%s", userdir, subdir);
+        if ( dir_exists(buffer) ) {
+            g_ptr_array_add(pathlist, buffer);
+        }
+        else { /* Fall back to version-less python */
+            free(buffer);
+            buffer = smprintf("%s/%s", userdir, "python");
+            if ( dir_exists(buffer) ) {
+                g_ptr_array_add(pathlist, buffer);
+            } else {
+                free(buffer);
+            }
+        }
     }
 
     return pathlist;
@@ -19441,14 +19441,15 @@ static struct string_list *default_pyinit_dirs(void) {
 
 void PyFF_ProcessInitFiles(void) {
     static int done = false;
-    struct string_list * dpath;
+    GPtrArray *dpath;
 
     if ( done )
 return;
     dpath = default_pyinit_dirs();
-    for ( ; dpath!=NULL; dpath=dpath->next ) {
-	LoadFilesInPythonInitDir( dpath->str );
+    for (guint i = 0; i < dpath->len; ++i ) {
+	LoadFilesInPythonInitDir( (char*)dpath->pdata[i] );
     }
+    g_ptr_array_free(dpath, true);
     done = true;
 }
 
@@ -19571,8 +19572,8 @@ PyMODINIT_FUNC FFPY_PYTHON_ENTRY_FUNCTION(const char* modulename) {
 }
 
 #else
-#include "fontforgevw.h"
 #include "flaglist.h"
+#include "fontforgevw.h"
 #endif		/* _NO_PYTHON */
 
 /* These don't get translated. They are a copy of a similar list in fontinfo.c */

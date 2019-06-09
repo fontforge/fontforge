@@ -24,13 +24,15 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #include <fontforge-config.h>
+
+#include "utype.c"
+#include "utype.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "utype.h"
-#include "utype.c"
 
 #define ACUTE		0x1
 #define GRAVE		0x2

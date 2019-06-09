@@ -25,22 +25,26 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "autohint.h"
 #include "autowidth.h"
 #include "bitmapchar.h"
 #include "bvedit.h"
+#include "chardata.h"
 #include "cvundoes.h"
 #include "encoding.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
+#include "namelist.h"
 #include "splinefill.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
-#include "namelist.h"
-#include <chardata.h>
+#include "ustring.h"
+#include "utype.h"
+
 #include <math.h>
-#include <utype.h>
-#include <ustring.h>
 
 int accent_offset = 6;
 int GraveAcuteCenterBottom = 1;

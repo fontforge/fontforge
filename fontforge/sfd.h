@@ -2,7 +2,6 @@
 #define FONTFORGE_SFD_H
 
 #include <fontforge-config.h>
-#include <stdio.h>
 
 #include "splinefont.h"
 

@@ -24,14 +24,18 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _UCHAR_H
-# define _UCHAR_H
+
+#ifndef FONTFORGE_UCHAR_H
+#define FONTFORGE_UCHAR_H
+
 #include <fontforge-config.h>
+
+#include "basics.h"
+#include "charset.h"
+
+#include <memory.h>
 #include <stdarg.h>
 #include <string.h>
-#include <memory.h>
-#include <basics.h>
-#include <charset.h>
 
 #pragma push_macro("PRINTF_FORMAT_ATTRIBUTE")
 #ifdef __GNUC__
@@ -226,4 +230,4 @@ char* tostr( int v );
 
 #pragma pop_macro("PRINTF_FORMAT_ATTRIBUTE")
 
-#endif
+#endif /* FONTFORGE_UCHAR_H */

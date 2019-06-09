@@ -25,23 +25,26 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "autosave.h"
 
 #include "baseviews.h"
 #include "fontforgevw.h"
 #include "sfd.h"
 /*#include "ustring.h"*/
+#include "gfile.h"
+#include "gwidget.h"
+#include "ustring.h"
+#include "views.h"
+
+#include <dirent.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <fcntl.h>
 #include <unistd.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <dirent.h>
-#include <ustring.h>
-#include "gfile.h"
-#include "views.h"
-#include "gwidget.h"
 
 int AutoSaveFrequency=5;
 

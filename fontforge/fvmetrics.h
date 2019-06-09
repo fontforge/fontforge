@@ -31,8 +31,9 @@
 #include "baseviews.h"
 #include "splinefont.h"
 
+#include "ustring.h"
+
 #include <math.h>
-#include <ustring.h>
 
 enum settype { st_set, st_scale, st_incr };
 

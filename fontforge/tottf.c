@@ -25,15 +25,20 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "tottf.h"
 
 #include "autohint.h"
+#include "chardata.h"
 #include "dumpbdf.h"
 #include "dumppfa.h"
 #include "encoding.h"
 #include "fontforge.h"
 #include "fvfonts.h"
-#include <gfile.h>
+#include "gfile.h"
+#include "gutils.h"
+#include "gwidget.h"
 #include "lookups.h"
 #include "macenc.h"
 #include "mem.h"
@@ -42,31 +47,28 @@
 #include "parsettfbmf.h"
 #include "splinefill.h"
 #include "splineorder2.h"
-#include "splinesaveafm.h"
 #include "splinesave.h"
+#include "splinesaveafm.h"
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "tottfaat.h"
 #include "tottfgpos.h"
 #include "tottfvar.h"
+#include "ttf.h"
 #include "ttfspecial.h"
-#include <math.h>
-#include <unistd.h>
-#include <gutils.h>
+#include "ustring.h"
+#include "utype.h"
+
 #include <locale.h>
+#include <math.h>
 #include <time.h>
-#include <utype.h>
-#include <ustring.h>
-#include <chardata.h>
-#include <gwidget.h>
+#include <unistd.h>
 
 #ifdef __CygWin
- #include <sys/types.h>
  #include <sys/stat.h>
+ #include <sys/types.h>
  #include <unistd.h>
 #endif
-
-#include "ttf.h"
 
 char *TTFFoundry=NULL;
 

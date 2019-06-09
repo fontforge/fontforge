@@ -24,16 +24,20 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "fontforgeui.h"
 #include "fvfonts.h"
+#include "gkeysym.h"
 #include "groups.h"
 #include "namelist.h"
 #include "splineutil.h"
-#include <unistd.h>
-#include <ustring.h>
-#include <utype.h>
-#include <gkeysym.h>
+#include "ustring.h"
+#include "utype.h"
+
 #include <math.h>
+#include <unistd.h>
 
 
 

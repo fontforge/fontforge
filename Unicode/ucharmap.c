@@ -25,13 +25,13 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <fontforge-config.h>		
-#include <gwwiconv.h>
-#include <stddef.h>
-#include <ustring.h>
-#include <utype.h>
-#include <charset.h>
+#include <fontforge-config.h>
+
 #include "chardata.h"
+#include "charset.h"
+#include "gwwiconv.h"
+#include "ustring.h"
+#include "utype.h"
 
 int local_encoding = e_iso8859_1;
 #if HAVE_ICONV_H

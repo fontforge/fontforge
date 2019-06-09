@@ -25,10 +25,12 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "basics.h"
 #include "gutils.h"
 
-#include <ffglib.h>
+#include "ffglib.h"
 
 const char *GetAuthor(void) {
     static char author[200] = {0};

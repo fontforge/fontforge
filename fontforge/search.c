@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "search.h"
 
 #include "cvundoes.h"
@@ -32,9 +34,10 @@
 #include "fvfonts.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+#include "ustring.h"
+#include "utype.h"
+
 #include <math.h>
-#include <ustring.h>
-#include <utype.h>
 
 static int CoordMatches(real real_off, real search_off, SearchData *s) {
     if ( real_off >= search_off-s->fudge && real_off <= search_off+s->fudge )

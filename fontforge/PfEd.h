@@ -25,8 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _PFED_H
-# define _PFED_H
+#ifndef FONTFORGE_PFED_H
+#define FONTFORGE_PFED_H
+
 /* The PfEd table (from PfaEdit, former name of FontForge) is designed to   */
 /*  store information useful for editing the font. This includes stuff like */
 /*  guidelines, background layers, spiro layers, comments, lookup names, etc*/
@@ -215,4 +216,4 @@
 # endif
 # define SPIRO_CLOSE_CONTOUR	'}'
 
-#endif	/* _PFED_H */
+#endif /* FONTFORGE_PFED_H */

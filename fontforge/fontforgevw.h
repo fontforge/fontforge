@@ -24,12 +24,13 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _FONTFORGEVW_H_
-#define _FONTFORGEVW_H_
 
+#ifndef FONTFORGE_FONTFORGEVW_H
+#define FONTFORGE_FONTFORGEVW_H
+
+#include "baseviews.h"
 #include "fontforge.h"
 #include "gfile.h"
 #include "gimage.h"
-#include "baseviews.h"
 
-#endif
+#endif /* FONTFORGE_FONTFORGEVW_H */

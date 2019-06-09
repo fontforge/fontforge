@@ -19,15 +19,20 @@
  * distribution.
  */
 
-#ifndef _FFGLIB_H_
-#define _FFGLIB_H_
+#ifndef FONTFORGE_FFGLIB_H
+#define FONTFORGE_FFGLIB_H
 
-#define GTimer GTimer_GTK
 #define GList  GList_Glib
-#include <glib.h>
-#include <glib-object.h>
-#include <glib/gstdio.h>
-#undef GTimer
-#undef GList
+#define GMenuItem GMenuItem_GIO
+#define GTimer GTimer_GTK
 
-#endif
+#include <gio/gio.h>
+#include <glib-object.h>
+#include <glib.h>
+#include <glib/gstdio.h>
+
+#undef GList
+#undef GMenuItem
+#undef GTimer
+
+#endif /* FONTFORGE_FFGLIB_H */

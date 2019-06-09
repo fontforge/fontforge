@@ -26,15 +26,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _GUTILS_UNICODELIBINFO_C_
-#define _GUTILS_UNICODELIBINFO_C_
-
 #include <fontforge-config.h>
 
+#include "ffglib.h"
 #include "unicodelibinfo.h"
-#include <ustring.h>
-#include <ffglib.h>
-#include <glib/gprintf.h>
+#include "ustring.h"
 
 #ifndef _NO_LIBUNINAMESLIST
 #include <uninameslist.h>
@@ -474,5 +470,3 @@ char *unicode_library_version(void) {
     return( NULL );
 #endif
 }
-
-#endif

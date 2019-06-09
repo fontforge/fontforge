@@ -24,17 +24,18 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "gdraw.h"
-#include "ggadgetP.h"
-#include "gwidgetP.h"
-#include "../gdraw/gdrawP.h"
-#include "gio.h"
+#include "gdrawP.h"
 #include "gfile.h"
+#include "ggadgetP.h"
+#include "gicons.h"
+#include "gio.h"
+#include "gwidgetP.h"
 #include "ustring.h"
 #include "utype.h"
-#include "gicons.h"
-
-#include <stdlib.h>
 
 /* This isn't really a gadget, it's just a collection of gadgets with some glue*/
 /*  to make them work together. Therefore there are no expose routines here, */

@@ -24,11 +24,13 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _GUTILS_UNICODELIBINFO_H_
-#define _GUTILS_UNICODELIBINFO_H_
+
+#ifndef FONTFORGE_GUTILS_UNICODELIBINFO_H
+#define FONTFORGE_GUTILS_UNICODELIBINFO_H
 
 #include <fontforge-config.h>
-#include <basics.h>
+
+#include "basics.h"
 
 /* These functions are used with uninameslist or unicodenames library, if */
 /* available (oldest function listed first, latest function listed last). */
@@ -48,4 +50,4 @@ extern int32 unicode_names2getUtabLoc(int32 unienc);
 extern char *unicode_name2FrmTab(int32 n);
 extern char *unicode_name2(int32 unienc);
 
-#endif
+#endif /* FONTFORGE_GUTILS_UNICODELIBINFO_H */

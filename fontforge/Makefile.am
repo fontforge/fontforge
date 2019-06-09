@@ -95,10 +95,10 @@ noinst_HEADERS = \
 	woff.h \
 	zapfnomen.h \
 	fontforgeui.h sftextfieldP.h configure-fontforge.h \
-	strlist.h charview_private.h cvundoes.h
+	cvundoes.h
 
 pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
-	libffstamp.h psfont.h stemdb.h autowidth.h delta.h fontforgevw.h	\
+	psfont.h stemdb.h autowidth.h delta.h fontforgevw.h	\
 	lookups.h savefont.h ttf.h baseviews.h fvmetrics.h mm.h			\
 	scriptfuncs.h ttfinstrs.h edgelist2.h namehash.h scripting.h		\
 	uiinterface.h bezctx_ff.h edgelist.h groups.h nonlineartrans.h		\
@@ -141,11 +141,9 @@ libfontforge_la_SOURCES = activeinui.c asmfpst.c autohint.c autosave.c	\
 	sfundo.h spiro.c splinechar.c splinefill.c splinefont.c		\
 	splineorder2.c splineoverlap.c splinesaveafm.c splinesave.c	\
 	splinestroke.c splineutil2.c splineutil.c start.c		\
-	stemdb.c strlist.c svg.c tottfaat.c tottfgpos.c tottf.c		\
-	tottfvar.c ttfinstrs.c ttfspecial.c ufo.c unicoderange.c	\
-	winfonts.c woff.c zapfnomen.c \
-	glif_name_hash.c \
-	mem.c
+	stemdb.c svg.c tottfaat.c tottfgpos.c tottf.c tottfvar.c	\
+	ttfinstrs.c ttfspecial.c ufo.c unicoderange.c winfonts.c woff.c	\
+	zapfnomen.c glif_name_hash.c mem.c
 
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 libfontforge_la_LIBADD =
@@ -194,7 +192,7 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 
 #--------------------------------------------------------------------------
 
-EXTRA_DIST = generate_codepoint_selector.py threaddummy.c
+EXTRA_DIST = generate_codepoint_selector.py
 
 if MACINTOSH
 EXTRA_DIST += MacFontForgeApp.zip

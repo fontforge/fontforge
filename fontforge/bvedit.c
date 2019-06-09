@@ -25,13 +25,16 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "bvedit.h"
 
 #include "cvundoes.h"
 #include "fontforgevw.h"
 #include "splinefill.h"
-#include <math.h>
 #include "ustring.h"
+
+#include <math.h>
 
 void skewselect(BVTFunc *bvtf,real t) {
     real off, bestoff;

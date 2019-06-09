@@ -24,19 +24,19 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _BASICS_H
-#define _BASICS_H
+
+#ifndef FONTFORGE_BASICS_H
+#define FONTFORGE_BASICS_H
 
 #include <fontforge-config.h>
-#include <stdio.h>		/* for NULL */
-#ifdef HAVE_STDINT_H
-#include <stdint.h>
-#else
+
 #include <inttypes.h>
-#endif
-#include <stdlib.h>		/* for free */
 #include <limits.h>
+#include <memory.h>
 #include <stdbool.h>
+#include <stdio.h>		/* for NULL */
+#include <stdlib.h>		/* for free */
+#include <string.h>
 
 typedef int32_t		int32;
 typedef uint32_t	uint32;
@@ -122,4 +122,4 @@ static inline int imax(int a, int b)
 		    }
 
 
-#endif
+#endif /* FONTFORGE_BASICS_H */

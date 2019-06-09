@@ -24,21 +24,17 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #include <fontforge-config.h>
 
-#ifndef _NO_PYTHON
-# include "Python.h"
-# include "structmember.h"
-#else
-# include <utype.h>
-#endif
-
 #include "autohint.h"
+#include "chardata.h"
 #include "dumppfa.h"
 #include "featurefile.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
-#include "fvfonts.h"
+#include "gfile.h"
+#include "glif_name_hash.h"
 #include "lookups.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
@@ -46,29 +42,32 @@
 #include "svg.h"
 #include "tottf.h"
 #include "tottfgpos.h"
-#include <unistd.h>
-#include <math.h>
-#include <time.h>
-#include <locale.h>
-#include <chardata.h>
-#include <gfile.h>
-#include <ustring.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <time.h>
+#include "ustring.h"
+#include "utype.h"
+
 #ifndef _NO_PYTHON
 # include "ffpython.h"
 #endif
 
+#include <locale.h>
+#include <math.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <time.h>
+#include <unistd.h>
 #include <assert.h>
 #include <stdarg.h>
-#include <string.h>
 
 #undef extended			/* used in xlink.h */
 #include <libxml/tree.h>
 
-#include "glif_name_hash.h"
+#ifndef HAVE_ICONV_H
+# undef iconv
+# undef iconv_t
+# undef iconv_open
+# undef iconv_close
+#endif
+#include <libxml/parser.h>
 
 /* The UFO (Unified Font Object) format ( http://unifiedfontobject.org/ ) */
 /* is a directory containing a bunch of (mac style) property lists and another*/
@@ -2203,14 +2202,6 @@ return( NULL );
     fclose(info);
 return( NULL );
 }
-
-#ifndef HAVE_ICONV_H
-# undef iconv
-# undef iconv_t
-# undef iconv_open
-# undef iconv_close
-#endif
-#include <libxml/parser.h>
 
 static int libxml_init_base() {
 return( true );

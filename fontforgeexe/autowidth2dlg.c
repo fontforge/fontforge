@@ -24,12 +24,16 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "autowidth2.h"
 #include "fontforgeui.h"
+#include "gkeysym.h"
+#include "ustring.h"
+#include "utype.h"
+
 #include <math.h>
-#include <ustring.h>
-#include <utype.h>
-#include <gkeysym.h>
 
 static int width_last_em_size=1000;
 static int width_separation=150;

@@ -2,10 +2,9 @@
 #define FONTFORGE_PSREAD_H
 
 #include <fontforge-config.h>
-#include <stdio.h>
 
-#include "splinefont.h"
 #include "sd.h"
+#include "splinefont.h"
 
 extern Encoding *PSSlurpEncodings(FILE *file);
 extern Entity *EntityInterpretPS(FILE *ps, int *width);

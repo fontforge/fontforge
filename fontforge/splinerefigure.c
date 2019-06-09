@@ -25,14 +25,17 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "splinerefigure.h"
 
 #include "fontforge.h"
-#include <stdio.h>
-#include <math.h>
 #include "splinefont.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+
+#include <math.h>
+#include <stdio.h>
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif

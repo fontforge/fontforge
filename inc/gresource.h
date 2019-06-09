@@ -24,8 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _GRESOURCE_H
-#define _GRESOURCE_H
+
+#ifndef FONTFORGE_GRESOURCE_H
+#define FONTFORGE_GRESOURCE_H
 
 #include "gdraw.h"
 
@@ -58,4 +59,5 @@ int GResourceFindBool(char *name, int def);
 long GResourceFindInt(char *name, long def);
 Color GResourceFindColor(char *name, Color def);
 GImage *GResourceFindImage(char *name, GImage *def);
-#endif
+
+#endif /* FONTFORGE_GRESOURCE_H */

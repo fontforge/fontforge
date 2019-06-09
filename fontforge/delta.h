@@ -25,8 +25,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _DELTA_H
-#define _DELTA_H
+#ifndef FONTFORGE_DELTA_H
+#define FONTFORGE_DELTA_H
+
+#include "baseviews.h"
+#include "splinefont.h"
 
 typedef struct {
     SplineChar *sc;
@@ -92,4 +95,4 @@ typedef struct qg_data {
 
 extern void TopFindQuestionablePoints(struct qg_data *data);
 
-#endif /* _DELTA_H */
+#endif /* FONTFORGE_DELTA_H */

@@ -1,3 +1,6 @@
+#ifndef FONTFORGE_CARBON_H
+#define FONTFORGE_CARBON_H
+
 #ifdef __Mac
 
 #ifdef __GNUC_STDC_INLINE__
@@ -15,6 +18,6 @@
 #undef AnchorPoint
 
 
-
 #endif /* __Mac */
 
+#endif /* FONTFORGE_CARBON_H */

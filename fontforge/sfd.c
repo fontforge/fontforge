@@ -25,45 +25,48 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "sfd.h"
 
 #include "autohint.h"
+#include "baseviews.h"
 #include "bvedit.h"
 #include "cvimages.h"
 #include "cvundoes.h"
 #include "encoding.h"
+#include "ffglib.h"
 #include "fontforge.h"
 #include "fvfonts.h"
+#include "gdraw.h"
+#include "gfile.h"
+#include "gutils.h"
+#include "gwidget.h"
 #include "lookups.h"
 #include "mem.h"
 #include "namelist.h"
 #include "parsettf.h"
 #include "psread.h"
-#include "splinefont.h"
+#include "sfd1.h"
 #include "splinefill.h"
+#include "splinefont.h"
 #include "splineorder2.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "tottfgpos.h"
 #include "ttfinstrs.h"
-#include "baseviews.h"
+#include "ustring.h"
+#include "utype.h"
 #include "views.h"
-#include <gdraw.h>
-#include <gutils.h>
-#include <ustring.h>
-#include <math.h>
-#include <utype.h>
-#include <unistd.h>
-#include <locale.h>
-#include <gfile.h>
-#include <gwidget.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+
 #include <dirent.h>
 #include <limits.h>		/* For NAME_MAX or _POSIX_NAME_MAX */
-
-#include <ffglib.h>
+#include <locale.h>
+#include <math.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -3275,7 +3278,6 @@ int SFDWriteBak(char *filename,SplineFont *sf,EncMap *map,EncMap *normal) {
 }
 
 /* ********************************* INPUT ********************************** */
-#include "sfd1.h"
 
 char *getquotedeol(FILE *sfd) {
     char *pt, *str, *end;

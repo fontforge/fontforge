@@ -24,23 +24,27 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "dumppfa.h"
 #include "encoding.h"
 #include "fontforge.h"
+#include "gfile.h"
+#include "gutils.h"
 #include "parsettf.h"
+#include "psfont.h"
 #include "psread.h"
-#include <gfile.h>
-#include <gutils.h>
+#include "ustring.h"
+#include "utype.h"
+
+#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ustring.h>
-#include <utype.h>
-#include <unistd.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-#include "psfont.h"
-#include <locale.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 struct fontparse {
     FontDict *fd, *mainfd;

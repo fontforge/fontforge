@@ -25,15 +25,17 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "gdraw.h"
 #include "gfile.h"
 #include "hotkeys.h"
-#include <locale.h>
-#include <string.h>
-#include <ustring.h>
-#include <errno.h>
-#include <unistd.h>
 #include "intl.h"
+#include "ustring.h"
+
+#include <errno.h>
+#include <locale.h>
+#include <unistd.h>
 
 #ifdef __MINGW32__
 #define fsync _commit

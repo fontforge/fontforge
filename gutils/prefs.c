@@ -25,12 +25,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "prefs.h"
-#include <ffglib.h>
-#include <stdio.h>
-#include "ustring.h"
-#include "fileutil.h"
-#include "gfile.h"
+
+// FIXME: Remove this file...
 
 int cv_auto_goto = 0;
 

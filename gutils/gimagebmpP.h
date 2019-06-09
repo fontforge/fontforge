@@ -24,8 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _GIMAGEBMPP_H
-#define _GIMAGEBMPP_H
+
+#ifndef FONTFORGE_GIMAGEBMPP_H
+#define FONTFORGE_GIMAGEBMPP_H
 
 struct bmpheader {
     char b;		/* should contain 'B' */
@@ -52,4 +53,5 @@ struct bmpheader {
     unsigned char *byte_pixels;
     uint32 *int32_pixels;
 };
-#endif
+
+#endif /* FONTFORGE_GIMAGEBMPP_H */

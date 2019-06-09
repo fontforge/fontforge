@@ -26,6 +26,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 /**
  *  \file ggdkcdraw.c
  *  \brief Cairo drawing functionality
@@ -35,9 +37,10 @@
 #include "ggdkdrawP.h"
 
 #ifdef FONTFORGE_CAN_USE_GDK
+
 #include "ustring.h"
+
 #include <assert.h>
-#include <string.h>
 #include <math.h>
 
 // Private member functions

@@ -24,10 +24,12 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _GDRAW_H
-#define _GDRAW_H
-#include "gimage.h"
+
+#ifndef FONTFORGE_GDRAW_H
+#define FONTFORGE_GDRAW_H
+
 #include "charset.h"
+#include "gimage.h"
 
 enum font_style { fs_none, fs_italic=1, fs_smallcaps=2, fs_condensed=4, fs_extended=8, fs_vertical=16 };
 enum font_type { ft_unknown, ft_serif, ft_sans, ft_mono, ft_cursive, ft_max };
@@ -599,4 +601,4 @@ extern void GDrawRemoveReadFD( GDisplay *disp,
  */
 extern void MacServiceReadFDs(void);
 
-#endif
+#endif /* FONTFORGE_GDRAW_H */

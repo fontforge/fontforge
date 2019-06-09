@@ -25,23 +25,26 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "parsettfatt.h"
 
+#include "chardata.h"
 #include "fontforge.h"
+#include "ggadget.h"		/* For GTextInfo */
 #include "lookups.h"
 #include "mem.h"
 #include "parsettf.h"
 #include "splineutil.h"
 #include "tottfaat.h"
 #include "tottfgpos.h"
-#include <chardata.h>
-#include <utype.h>
-#include <ustring.h>
-#include <math.h>
-#include <locale.h>
-#include <stdlib.h>
-#include <ggadget.h>		/* For GTextInfo */
 #include "ttf.h"
+#include "ustring.h"
+#include "utype.h"
+
+#include <locale.h>
+#include <math.h>
+#include <stdlib.h>
 
 static uint16 *getAppleClassTable(FILE *ttf, int classdef_offset, int cnt, int sub, int div, struct ttfinfo *info) {
     uint16 *class = calloc(cnt,sizeof(uint16));

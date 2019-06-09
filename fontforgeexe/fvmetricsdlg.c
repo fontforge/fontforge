@@ -24,12 +24,16 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "bvedit.h"
-#include "splineutil.h"
 #include "fontforgeui.h"
-#include <math.h>
-#include <ustring.h>
 #include "fvmetrics.h"
+#include "splineutil.h"
+#include "ustring.h"
+
+#include <math.h>
 
 typedef struct createwidthdlg {
     CreateWidthData wd;

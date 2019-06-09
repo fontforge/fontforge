@@ -25,25 +25,28 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "autohint.h"
 
+#include "chardata.h"
 #include "cvundoes.h"
 #include "dumppfa.h"
+#include "edgelist.h"
 #include "fontforge.h"
 #include "psread.h"
-#include <stdio.h>
-#include <math.h>
-#include "splinefont.h"
 #include "splinefill.h"
+#include "splinefont.h"
 #include "splinesave.h"
 #include "splineutil.h"
 #include "splineutil2.h"
-#include "tottfgpos.h"
-#include "views.h"
 #include "stemdb.h"
-#include <utype.h>
-#include <chardata.h>
-#include "edgelist.h"
+#include "tottfgpos.h"
+#include "utype.h"
+#include "views.h"
+
+#include <math.h>
+#include <stdio.h>
 
 float OpenTypeLoadHintEqualityTolerance = 0.0;
 

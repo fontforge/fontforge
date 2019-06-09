@@ -22,6 +22,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 /**
 *  \file  ggdkdraw.c
 *  \brief GDK drawing backend.
@@ -30,11 +32,12 @@
 #include "ggdkdrawP.h"
 
 #ifdef FONTFORGE_CAN_USE_GDK
-#include "gresource.h"
+
 #include "gkeysym.h"
+#include "gresource.h"
 #include "ustring.h"
+
 #include <assert.h>
-#include <string.h>
 #include <math.h>
 
 // Forward declarations

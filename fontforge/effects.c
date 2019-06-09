@@ -25,19 +25,22 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "effects.h"
 
 #include "autohint.h"
 #include "cvundoes.h"
+#include "edgelist.h"
 #include "fontforgevw.h"
 #include "splineoverlap.h"
 #include "splinestroke.h"
 #include "splineutil.h"
 #include "splineutil2.h"
-#include <ustring.h>
-#include <utype.h>
+#include "ustring.h"
+#include "utype.h"
+
 #include <math.h>
-#include "edgelist.h"
 
 void FVOutline(FontViewBase *fv, real width) {
     StrokeInfo si;

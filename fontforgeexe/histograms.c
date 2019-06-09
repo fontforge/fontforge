@@ -24,18 +24,20 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "autohint.h"
 #include "dumppfa.h"
+#include "ffglib.h"
 #include "fontforgeui.h"
+#include "gkeysym.h"
 #include "psfont.h"
 #include "splineutil.h"
-#include <ustring.h>
-#include <gkeysym.h>
-#include <utype.h>
+#include "ustring.h"
+#include "utype.h"
+
 #include <math.h>
-#include "psfont.h"
-#include <ffglib.h>
-#include <glib/gprintf.h>
 
 /* This operations are designed to work on a single font. NOT a CID collection*/
 /*  A CID collection must be treated one sub-font at a time */

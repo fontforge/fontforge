@@ -25,23 +25,26 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "parsettfbmf.h"
 
 #include "bitmapchar.h"
 #include "bvedit.h"
-#include "fontforge.h"
 #include "chardata.h"
-#include <gfile.h>
+#include "fontforge.h"
+#include "gfile.h"
+#include "gwidget.h"
 #include "mem.h"
 #include "splinefill.h"
 #include "tottf.h"
-#include "ttfspecial.h"
-#include "utype.h"
-#include "ustring.h"
-#include <math.h>
-#include <locale.h>
-#include <gwidget.h>
 #include "ttf.h"
+#include "ttfspecial.h"
+#include "ustring.h"
+#include "utype.h"
+
+#include <locale.h>
+#include <math.h>
 
 struct ttfsizehead {
     int ppem;

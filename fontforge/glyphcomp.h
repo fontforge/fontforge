@@ -1,8 +1,8 @@
 #ifndef FONTFORGE_GLYPHCOMP_H
 #define FONTFORGE_GLYPHCOMP_H
 
-#include "splinefont.h"
 #include "scripting.h"
+#include "splinefont.h"
 
 #include <stdio.h>
 

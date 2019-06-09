@@ -24,8 +24,10 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _EDGELIST_H
-#define _EDGELIST_H
+
+#ifndef FONTFORGE_EDGELIST_H
+#define FONTFORGE_EDGELIST_H
+
 #include "splinefont.h"
 
 typedef struct hints {
@@ -130,4 +132,4 @@ typedef struct eilist {
     enum overlap_type ot;
 } EIList;
 
-#endif
+#endif /* FONTFORGE_EDGELIST_H */

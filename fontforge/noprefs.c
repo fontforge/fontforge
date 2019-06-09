@@ -24,27 +24,30 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "autotrace.h"
+#include "charset.h"
 #include "encoding.h"
+#include "ffglib.h"
 #include "fontforge.h"
+#include "gfile.h"
 #include "groups.h"
 #include "macenc.h"
 #include "namelist.h"
 #include "othersubrs.h"
 #include "sfd.h"
 #include "splineutil.h"
-#include <charset.h>
-#include <gfile.h>
-#include <ustring.h>
+#include "ttf.h"
+#include "ustring.h"
 
-#include <sys/types.h>
 #include <dirent.h>
 #include <locale.h>
-#include <time.h>
-#include <sys/time.h>
 #include <stdlib.h>
-
-#include "ttf.h"
+#include <sys/time.h>
+#include <sys/types.h>
+#include <time.h>
 
 #if HAVE_LANGINFO_H
 # include <langinfo.h>
@@ -53,8 +56,6 @@
 #if defined(__MINGW32__)
 #include <windows.h>
 #endif
-
-#include <ffglib.h>
 
 static char *othersubrsfile = NULL;
 
@@ -480,7 +481,6 @@ return( NULL );
 #endif
 }
 
-#  include <charset.h>		/* we still need the charsets & encoding to set local_encoding */
 static int encmatch(const char *enc,int subok) {
     static struct { char *name; int enc; } encs[] = {
 	{ "US-ASCII", e_usascii },

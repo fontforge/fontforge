@@ -26,19 +26,18 @@
 *******************************************************************************
 *******************************************************************************
 ******************************************************************************/
+
 #include <fontforge-config.h>
 
 #include "fvfonts.h"
-
-#include <string.h>
-#include <ctype.h>
-
-#include "inc/ustring.h"
-#include "inc/ggadget.h"
-#include "inc/gwidget.h"
+#include "ggadget.h"
+#include "gwidget.h"
 #include "uiinterface.h"
+#include "ustring.h"
 #include "wordlistparser.h"
 
+#include <ctype.h>
+#include <string.h>
 
 static void dump_ustr( char* msg, unichar_t* u )
 {

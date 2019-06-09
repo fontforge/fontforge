@@ -25,25 +25,29 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "autowidth2.h"
+#include "chardata.h"
 #include "fontforgeui.h"
 #include "fvfonts.h"
+#include "gfile.h"
+#include "gkeysym.h"
 #include "lookups.h"
 #include "sfd.h"
+#include "sfundo.h"
 #include "splinefill.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "tottfgpos.h"
-#include <chardata.h>
-#include <utype.h>
-#include <ustring.h>
-#include <math.h>
-#include <locale.h>
-#include <stdlib.h>
 #include "ttf.h"
-#include <gkeysym.h>
-#include "gfile.h"
-#include "sfundo.h"
+#include "ustring.h"
+#include "utype.h"
+
+#include <locale.h>
+#include <math.h>
+#include <stdlib.h>
 
 int add_char_to_name_list = true;
 int default_autokern_dlg = true;

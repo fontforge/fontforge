@@ -26,10 +26,14 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "cvundoes.h"
 #include "dumppfa.h"
+#include "ffglib.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
+#include "gresource.h"
 #include "lookups.h"
 #include "mem.h"
 #include "parsettf.h"
@@ -39,16 +43,16 @@
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "tottf.h"
-#include <math.h>
+#include "ttf.h"
+#include "ustring.h"
+#include "utype.h"
+
 #include <locale.h>
-#include <ffglib.h>
-# include <ustring.h>
-# include <utype.h>
-# include <gresource.h>
+#include <math.h>
+
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
-#include "ttf.h"
 
 int adjustwidth = true;
 int adjustlbearing = true;

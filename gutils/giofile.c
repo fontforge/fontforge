@@ -24,16 +24,20 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <basics.h>
+
+#include <fontforge-config.h>
+
+#include "basics.h"
+#include "gfile.h"
 #include "giofuncP.h"
-#include <gfile.h>
-#include "string.h"
-#include <ustring.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
+#include "ustring.h"
+
 #include <dirent.h>
 #include <errno.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 /* the initial space is so that these guys will come first in ordered error */
 /*  lists in the file chooser */

@@ -24,8 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _GWWICONV_H
-#define _GWWICONV_H
+
+#ifndef FONTFORGE_GWWICONV_H
+#define FONTFORGE_GWWICONV_H
 
 # ifndef HAVE_ICONV_H
 #  define __need_size_t
@@ -68,4 +69,4 @@ extern size_t gww_iconv( gww_iconv_t cd,
 #  define iconv_arg2_t ICONV_CONST char **
 # endif		/* HAVE_ICONV_H */
 
-#endif		/* _GWWICONV_H */
+#endif /* FONTFORGE_GWWICONV_H */

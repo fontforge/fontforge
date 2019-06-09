@@ -25,37 +25,39 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "svg.h"
 
 #include "autohint.h"
+#include "chardata.h"
 #include "cvimages.h"
 #include "dumppfa.h"
 #include "encoding.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
-#include <gfile.h>
+#include "gfile.h"
+#include "gutils.h"
 #include "lookups.h"
 #include "namelist.h"
 #include "parsettf.h"
 #include "psread.h"
+#include "sd.h"
 #include "splineorder2.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "tottf.h"
 #include "tottfgpos.h"
-#include <gutils.h>
-#include <unistd.h>
-#include <math.h>
+#include "ustring.h"
+#include "utype.h"
+
 #include <locale.h>
-#include <utype.h>
-#include <chardata.h>
-#include <time.h>
-#include <ustring.h>
-#include <unistd.h>
-#include <sys/types.h>
+#include <math.h>
 #include <sys/stat.h>
-#include "sd.h"
+#include <sys/types.h>
+#include <time.h>
+#include <unistd.h>
 
 /* ************************************************************************** */
 /* ****************************    SVG Output    **************************** */

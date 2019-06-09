@@ -25,23 +25,27 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "winfonts.h"
 
 #include "bvedit.h"
 #include "encoding.h"
 #include "fontforge.h"
-#include <gfile.h>
+#include "fontforgevw.h"
+#include "gfile.h"
 #include "mem.h"
 #include "splinefill.h"
+#include "splinefont.h"
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "tottf.h"
-#include <stdio.h>
+#include "ustring.h"
+#include "utype.h"
+
 #include <math.h>
-#include "splinefont.h"
-#include <ustring.h>
+#include <stdio.h>
 #include <string.h>
-#include <utype.h>
 
 /* Look for
 Source: Microsoft Windows 2.0 SDK Programmer's Refrence, pages 639 through 645
@@ -656,8 +660,6 @@ return( 0 );
 	ret = 0;
 return( ret );
 }
-
-#include "fontforgevw.h"
 
 /* From wine tools fnt2fon.c by Huw Davies, modified with permission */
 typedef unsigned short	WORD;

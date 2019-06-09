@@ -26,11 +26,16 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "splineutil2.h"
 
 #include "autohint.h"
+#include "chardata.h"
 #include "cvundoes.h"
+#include "edgelist.h"
 #include "fontforge.h"
+#include "gutils.h"
 #include "namelist.h"
 #include "psread.h"
 #include "spiro.h"
@@ -38,14 +43,13 @@
 #include "splineorder2.h"
 #include "splineoverlap.h"
 #include "splineutil.h"
-#include <math.h>
 #include "ustring.h"
-#include "chardata.h"
-#include <gutils.h>
-#include <unistd.h>
-#include <time.h>
-#include <stdlib.h>
 #include "views.h"		/* For SCCharChangedUpdate */
+
+#include <math.h>
+#include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
 
 int new_em_size = 1000;
 int new_fonts_are_order2 = false;
@@ -4731,8 +4735,6 @@ return( true );
     }
 return( false );
 }
-
-#include "edgelist.h"
 
 static void EdgeListReverse(EdgeList *es, SplineSet *spl) {
     int i;

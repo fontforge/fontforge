@@ -1,7 +1,7 @@
 /* This file is generated for Fontforge use */
 /* Please refer to Unicode/README.txt for detail */
 
-#include <chardata.h>
+#include "chardata.h"
 
 static const unsigned short allzeros[256] = { 0 };
 

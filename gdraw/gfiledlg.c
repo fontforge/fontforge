@@ -24,13 +24,14 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <stdlib.h>
-#include <string.h>
-#include "ustring.h"
+
+#include <fontforge-config.h>
+
 #include "gdraw.h"
-#include "gwidget.h"
 #include "ggadget.h"
 #include "ggadgetP.h"
+#include "gwidget.h"
+#include "ustring.h"
 
 struct gfc_data {
     int done;

@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "bitmapchar.h"
 
 #include "bvedit.h"
@@ -35,10 +37,11 @@
 #include "splinefill.h"
 #include "splinesaveafm.h"
 #include "tottf.h"
-#include <string.h>
-#include <ustring.h>
-#include <utype.h>
+#include "ustring.h"
+#include "utype.h"
+
 #include <math.h>
+#include <string.h>
 
 int use_freetype_to_rasterize_fv = 1;
 char *BDFFoundry=NULL;

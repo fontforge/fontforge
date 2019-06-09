@@ -25,11 +25,16 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "fvfonts.h"
 
+#include "chardata.h"
 #include "encoding.h"
 #include "fontforgevw.h"
+#include "gfile.h"
 #include "lookups.h"
+#include "namehash.h"
 #include "namelist.h"
 #include "splinefill.h"
 #include "splineorder2.h"
@@ -39,9 +44,6 @@
 #include "tottfgpos.h"
 #include "ustring.h"
 #include "utype.h"
-#include "gfile.h"
-#include "chardata.h"
-#include "namehash.h"
 
 RefChar *RefCharsCopy(RefChar *ref) {
     RefChar *rhead=NULL, *last=NULL, *cur;

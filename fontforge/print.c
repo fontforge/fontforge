@@ -26,13 +26,17 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "print.h"
 
 #include "cvexport.h"
 #include "dumppfa.h"
+#include "ffglib.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
-#include <gfile.h>
+#include "gfile.h"
+#include "gutils.h"
 #include "langfreq.h"
 #include "mm.h"
 #include "psread.h"
@@ -40,15 +44,14 @@
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "tottf.h"
-#include <gutils.h>
-#include <stdlib.h>
+#include "ustring.h"
+#include "utype.h"
+
 #include <math.h>
+#include <stdlib.h>
+#include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
-#include <ustring.h>
-#include <ffglib.h>
-#include "utype.h"
-#include <sys/types.h>
 #if !defined(__MINGW32__)
 #include <sys/wait.h>
 #endif

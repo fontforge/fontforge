@@ -24,14 +24,17 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "cvundoes.h"
 #include "fontforgeui.h"
+#include "gkeysym.h"
 #include "splineutil.h"
-#include <gkeysym.h>
-#include <ustring.h>
-#include <utype.h>
 #include "ttf.h"
 #include "ttfinstrs.h"
+#include "ustring.h"
+#include "utype.h"
 
 extern GBox _ggadget_Default_Box;
 #define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)

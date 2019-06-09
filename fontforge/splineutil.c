@@ -25,21 +25,25 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "splineutil.h"
 
 #include "cvundoes.h"
 #include "dumppfa.h"
 #include "encoding.h"
+#include "ffglib.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "fvimportbdf.h"
+#include "glif_name_hash.h"
 #include "mm.h"
 #include "namelist.h"
 #include "parsepfa.h"
 #include "parsettf.h"
-#include "psread.h"
-#include <math.h>
 #include "psfont.h"
+#include "psread.h"
+#include "sfd1.h" // This has the extended SplineFont type SplineFont1 for old file versions.
 #include "spiro.h"
 #include "splinefill.h"
 #include "splineorder2.h"
@@ -49,13 +53,13 @@
 #include "ustring.h"
 #include "utype.h"
 #include "views.h"		/* for FindSel structure */
+
+#include <locale.h>
+
+#include <math.h>
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
-#include <locale.h>
-#include "sfd1.h" // This has the extended SplineFont type SplineFont1 for old file versions.
-#include <ffglib.h>
-#include "glif_name_hash.h"
 
 /*#define DEBUG 1*/
 

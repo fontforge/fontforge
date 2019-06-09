@@ -25,11 +25,16 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "fontforge-config.h"
+#include <fontforge-config.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "charset.h"
+#include "fontP.h"
+#include "gfile.h"
+#include "gpsdrawP.h"
+#include "gresource.h"
+#include "ustring.h"
+#include "utype.h"
+
 #include <dirent.h>
 
 #if !defined(FONTFORGE_CAN_USE_GDK) && !defined(X_DISPLAY_MISSING)
@@ -38,14 +43,6 @@
 # define XA_X_HEIGHT	1
 # define XA_CAP_HEIGHT	2
 #endif
-
-#include "fontP.h"
-#include "gpsdrawP.h"
-#include "ustring.h"
-#include "charset.h"
-#include "utype.h"
-#include "gresource.h"
-#include "fileutil.h"
 
 /* standard 35 lazy printer afm files may be found at ftp://ftp.adobe.com/pub/adobe/type/win/all/afmfiles/base35 */
 

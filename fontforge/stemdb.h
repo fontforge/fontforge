@@ -24,8 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _STEMDB_H_
-# define _STEMDB_H_
+
+#ifndef FONTFORGE_STEMDB_H
+#define FONTFORGE_STEMDB_H
 
 # include "fontforge.h"
 
@@ -218,4 +219,4 @@ extern void GlyphDataFree(struct glyphdata *gd);
 
 extern int UnitsParallel(BasePoint *u1, BasePoint *u2, int strict);
 
-#endif		/* _STEMDB_H_ */
+#endif /* FONTFORGE_STEMDB_H */

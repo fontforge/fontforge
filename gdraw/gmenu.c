@@ -24,16 +24,18 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <stdlib.h>
-#include <gdraw.h>
+
+#include <fontforge-config.h>
+
+#include "gdraw.h"
 #include "ggadgetP.h"
-#include <gwidget.h>
-#include <ustring.h>
-#include <gkeysym.h>
-#include <utype.h>
-#include <gresource.h>
-#include "hotkeys.h"
+#include "gkeysym.h"
+#include "gresource.h"
 #include "gutils/prefs.h"
+#include "gwidget.h"
+#include "hotkeys.h"
+#include "ustring.h"
+#include "utype.h"
 
 static GBox menubar_box = GBOX_EMPTY; /* Don't initialize here */
 static GBox menu_box = GBOX_EMPTY; /* Don't initialize here */

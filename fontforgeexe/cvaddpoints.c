@@ -24,15 +24,19 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "cvundoes.h"
 #include "fontforgeui.h"
-#include <math.h>
 #include "spiro.h"
 #include "splinefont.h"
 #include "splineorder2.h"
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "ustring.h"
+
+#include <math.h>
 
 int CVOneThingSel(CharView *cv, SplinePoint **sp, SplinePointList **_spl,
 	RefChar **ref, ImageList **img, AnchorPoint **ap, spiro_cp **scp) {

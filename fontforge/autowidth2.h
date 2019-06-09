@@ -24,8 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _AUTOWIDTH2_H
-# define _AUTOWIDTH2_H
+
+#ifndef FONTFORGE_AUTOWIDTH2_H
+#define FONTFORGE_AUTOWIDTH2_H
 
 #include "baseviews.h"
 #include "splinefont.h"
@@ -91,4 +92,4 @@ extern void AutoKern2BuildClasses(SplineFont *sf, int layer, SplineChar **leftgl
 extern void AutoKern2NewClass(SplineFont *sf, int layer, char **leftnames, char **rightnames, int lcnt, int rcnt, void (*kcAddOffset)(void *data,int left_index, int right_index,int offset), void *data, int separation, int min_kern, int from_closest_approach, int only_closer, int chunk_height);
 extern void GuessOpticalOffset(SplineChar *sc, int layer, real *_loff, real *_roff, int chunk_height);
 
-#endif		/* _AUTOWIDTH2_H */
+#endif /* FONTFORGE_AUTOWIDTH2_H */

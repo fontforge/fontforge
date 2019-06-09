@@ -24,13 +24,17 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "dumppfa.h"
 #include "encoding.h"
 #include "fontforgeui.h"
 #include "fvfonts.h"
+#include "gkeysym.h"
 #include "macenc.h"
-#include "mm.h"
 #include "mem.h"
+#include "mm.h"
 #include "parsettf.h"
 #include "psread.h"
 #include "sfd.h"
@@ -38,13 +42,12 @@
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "tottfvar.h"
-#include <ustring.h>
-#include <math.h>
-#include <gkeysym.h>
-#include <locale.h>
-#include <utype.h>
 #include "ttf.h"
-#include "mm.h"
+#include "ustring.h"
+#include "utype.h"
+
+#include <locale.h>
+#include <math.h>
 
 /* As far as I can tell, the CDV in AdobeSansMM is half gibberish */
 /* This is disturbing */

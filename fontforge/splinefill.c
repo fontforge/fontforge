@@ -24,20 +24,24 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "splinefill.h"
 
+#include "edgelist.h"
 #include "fontforge.h"
 #include "fvfonts.h"
+#include "gdraw.h"
 #include "psread.h"
+#include "splinefont.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
+#include "ustring.h"
+
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
-#include <ustring.h>
-#include <math.h>
-#include "gdraw.h"
-#include "splinefont.h"
-#include "edgelist.h"
 
 Color default_background = 0xffffff;		/* white */
 

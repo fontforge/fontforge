@@ -24,15 +24,19 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "fontforgeui.h"
 #include "fvfonts.h"
+#include "gkeysym.h"
 #include "splinefill.h"
 #include "splineutil.h"
-#include <gkeysym.h>
-#include <string.h>
-#include <ustring.h>
-#include <utype.h>
+#include "ustring.h"
+#include "utype.h"
+
 #include <math.h>
+#include <string.h>
 
 int aa_pixelsize = 150;
 

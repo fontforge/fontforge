@@ -25,8 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "fontforge-config.h"
-#include "macobjective.h"
+#include <fontforge-config.h>
+
+#import <Cocoa/Cocoa.h>
 
 void setup_cocoa_app()
 {

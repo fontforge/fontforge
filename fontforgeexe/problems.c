@@ -25,12 +25,16 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "autohint.h"
 #include "cvundoes.h"
 #include "fontforgeui.h"
 #include "fvfonts.h"
+#include "gkeysym.h"
+#include "gwidget.h"
 #include "namelist.h"
-#include "ttf.h"
 #include "splineorder2.h"
 #include "splineoverlap.h"
 #include "splinesaveafm.h"
@@ -38,10 +42,10 @@
 #include "splineutil2.h"
 #include "tottf.h"
 #include "tottfgpos.h"
-#include <gwidget.h>
-#include <ustring.h>
+#include "ttf.h"
+#include "ustring.h"
+
 #include <math.h>
-#include <gkeysym.h>
 
 /* ************************************************************************** */
 /* ***************************** Problems Dialog **************************** */

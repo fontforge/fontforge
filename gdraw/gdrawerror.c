@@ -25,12 +25,12 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
-#include <string.h>
-#include <stdarg.h>
+#include <fontforge-config.h>
 
 #include "gdrawP.h"
 #include "ustring.h"
+
+#include <stdarg.h>
 
 /* Preallocate an error dialog so that we can pop it up if things go really bad*/
 /*  ie. if memory gets munched somehow */

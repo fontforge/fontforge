@@ -24,7 +24,10 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "inc/basics.h"
+
+#include <fontforge-config.h>
+
+#include "basics.h"
 #include "gimage.h"
 
 GImage *GImageCreate(enum image_type type, int32 width, int32 height) {

@@ -24,6 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "cvundoes.h"
 #include "fontforgeui.h"
 #include "spiro.h"
@@ -41,14 +44,15 @@ int ps_pointcnt=6;
 float star_percent=1.7320508;	/* Regular 6 pointed star */
 extern int interpCPsOnMotion;
 
-#include <gkeysym.h>
-#include <math.h>
-#include "splinefont.h"
-#include <ustring.h>
-#include <utype.h>
-#include <gresource.h>
 #include "charview_private.h"
 #include "gdraw/hotkeys.h"
+#include "gkeysym.h"
+#include "gresource.h"
+#include "splinefont.h"
+#include "ustring.h"
+#include "utype.h"
+
+#include <math.h>
 
 static void CVLCheckLayerCount(CharView *cv, int resize);
 

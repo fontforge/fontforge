@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "mm.h"
 
 #include "dumppfa.h"
@@ -36,10 +38,11 @@
 #include "splineutil2.h"
 #include "tottfgpos.h"
 #include "tottfvar.h"
-#include <ustring.h>
-#include <math.h>
-#include <utype.h>
 #include "ttf.h"
+#include "ustring.h"
+#include "utype.h"
+
+#include <math.h>
 
 const char *MMAxisAbrev(char *axis_name) {
     if ( strcmp(axis_name,"Weight")==0 )

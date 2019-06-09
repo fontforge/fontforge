@@ -1,5 +1,6 @@
 #ifndef FONTFORGE_UNICODE_UTYPE_H
 #define FONTFORGE_UNICODE_UTYPE_H
+
 /* Copyright: 2001 George Williams */
 /* License: BSD-3-clause */
 /* Contributions: Joe Da Silva */

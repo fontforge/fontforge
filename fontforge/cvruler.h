@@ -24,8 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _CVRULER_H
-#define _CVRULER_H
+
+#ifndef FONTFORGE_CVRULER_H
+#define FONTFORGE_CVRULER_H
 
 #include "gdraw.h"
 #include "views.h"
@@ -42,4 +43,4 @@ extern Color measuretoolwindowforegroundcol;
 
 extern void CVRulerExpose(GWindow pixmap,CharView *cv);
 
-#endif
+#endif /* FONTFORGE_CVRULER_H */

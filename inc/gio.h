@@ -24,10 +24,12 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _GIO_H
-#define _GIO_H
 
-#include <basics.h>
+#ifndef FONTFORGE_GIO_H
+#define FONTFORGE_GIO_H
+
+#include "basics.h"
+
 #include <time.h>
 
 enum giofuncs { gf_dir, gf_statfile, gf_getfile, gf_putfile,
@@ -96,4 +98,4 @@ extern GIOControl *GIOCreate(unichar_t *path,void *userdata,
 extern char *GIOguessMimeType(const char *path);
 extern char *GIOGetMimeType(const char *path);
 
-#endif
+#endif /* FONTFORGE_GIO_H */

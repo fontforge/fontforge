@@ -24,18 +24,15 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <ustring.h>
-#include <utype.h>
 
-#include <gdraw.h>
-#include <gresource.h>
-#include <fileutil.h>
+#include <fontforge-config.h>
 
+#include "gdraw.h"
+#include "gfile.h"
+#include "gresource.h"
 #include "gresourceP.h"
-
+#include "ustring.h"
+#include "utype.h"
 
 GImage *GResourceFindImage(char *name, GImage *def) {
     int pos;

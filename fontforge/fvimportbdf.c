@@ -25,14 +25,18 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "fvimportbdf.h"
 
 #include "bitmapchar.h"
 #include "bvedit.h"
+#include "chardata.h"
 #include "cvimages.h"
 #include "encoding.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
+#include "gfile.h"
 #include "macbinary.h"
 #include "mem.h"
 #include "namelist.h"
@@ -41,12 +45,11 @@
 #include "splinefill.h"
 #include "splineutil.h"
 #include "splineutil2.h"
-#include "winfonts.h"
-#include <gfile.h>
-#include <math.h>
-#include "utype.h"
 #include "ustring.h"
-#include <chardata.h>
+#include "utype.h"
+#include "winfonts.h"
+
+#include <math.h>
 #include <unistd.h>
 
 static char *cleancopy(const char *name) {

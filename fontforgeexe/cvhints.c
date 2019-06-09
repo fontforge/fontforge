@@ -24,10 +24,14 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "autohint.h"
 #include "cvundoes.h"
 #include "fontforgeui.h"
 #include "ustring.h"
+
 #include <math.h>
 
 #define CID_Base	1001

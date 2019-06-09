@@ -25,40 +25,33 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "fontforge-config.h"
+#include <fontforge-config.h>
 
 #ifndef FONTFORGE_CAN_USE_GDK
-
-#if defined(__MINGW32__)
-#include <winsock2.h>
-#include <windows.h>
-#endif
  
-#include "gxdrawP.h"
+#include "fontP.h"
+#include "gresource.h"
 #include "gxcdrawP.h"
-
-#include <stdlib.h>
-#include <math.h>
+#include "gxdrawP.h"
+#include "ustring.h"
+#include "utype.h"
 
 #if !defined(__MINGW32__)
-#include <unistd.h>		/* for timers & select */
-#endif
-#include <sys/types.h>		/* for timers & select */
-#include <sys/time.h>		/* for timers & select */
-#include <signal.h>		/* error handler */
-#include <locale.h>		/* for setting the X locale properly */
-
-#ifdef HAVE_PTHREAD_H
-# ifndef __MINGW32__
+# include <unistd.h>		/* for timers & select */
+# ifdef HAVE_PTHREAD_H
 #  include <sys/socket.h>
 #  include <sys/un.h>
 # endif
+#else
+# include <windows.h>
+# include <winsock2.h>
 #endif
 
-#include <ustring.h>
-#include <utype.h>
-#include "fontP.h"
-#include <gresource.h>
+#include <locale.h>		/* for setting the X locale properly */
+#include <math.h>
+#include <signal.h>		/* error handler */
+#include <sys/time.h>		/* for timers & select */
+#include <sys/types.h>		/* for timers & select */
 
 enum cm_type { cmt_default=-1, cmt_current, cmt_copy, cmt_private };
 
@@ -68,9 +61,9 @@ void GDrawIError(const char *fmt,...);
 
 #ifndef X_DISPLAY_MISSING
 # include <X11/Xatom.h>
-# include <X11/keysym.h>
-# include <X11/cursorfont.h>
 # include <X11/Xresource.h>
+# include <X11/cursorfont.h>
+# include <X11/keysym.h>
 
 #define XKeysym_Mask	0x01000000
 

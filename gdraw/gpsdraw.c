@@ -24,25 +24,25 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "fontforge-config.h"
 
-#include <gfile.h>
-#include <gutils.h>
-#include <stdio.h>
+#include <fontforge-config.h>
+
+#include "colorP.h"
+#include "fontP.h"
+#include "gfile.h"
+#include "gpsdrawP.h"
+#include "gresource.h"
+#include "gutils.h"
+#include "ustring.h"
+
 #include <math.h>
-#include <time.h>
 #include <sys/types.h>
+#include <time.h>
+#include <unistd.h>
+
 #if !defined(__MINGW32__)
 #include <sys/wait.h>
 #endif
-#include <unistd.h>
-
-#include "gpsdrawP.h"
-#include "gresource.h"
-#include "colorP.h"
-#include "fontP.h"
-#include "ustring.h"
-#include "fileutil.h"
 
 /* ************************************************************************** */
 /* ********************** Noops & Meaningless functions ********************* */

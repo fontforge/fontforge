@@ -1,8 +1,6 @@
 #ifndef FONTFORGE_PARSETTFBMF_H
 #define FONTFORGE_PARSETTFBMF_H
 
-#include <stdio.h>
-
 #include "splinefont.h"
 #include "ttf.h"
 

@@ -25,21 +25,24 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "splineoverlap.h"
 
+#include "edgelist2.h"
 #include "fontforge.h"
+#include "gwidget.h"		/* For PostNotice */
 #include "splinefont.h"
 #include "splineorder2.h"
 #include "splineutil.h"
 #include "splineutil2.h"
-#include "edgelist2.h"
+
 #include <math.h>
+#include <stdarg.h>
+
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
-#include <stdarg.h>
-
-#include <gwidget.h>		/* For PostNotice */
 
 /* First thing we do is divide each spline into a set of sub-splines each of */
 /*  which is monotonic in both x and y (always increasing or decreasing)     */

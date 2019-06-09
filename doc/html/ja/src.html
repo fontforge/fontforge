@@ -431,12 +431,6 @@
     the splash screen. Top dispatcher for autosave. -->
     メインルーチンです。データを初期化し、コマンドライン引数を読み込みます。スプラッシュスクリーンを扱います。自動セーブ用の再上位のディスパッチャです。
   <DT>
-    threaddummy.c
-  <DD>
-<!--contains a dummy pthread_create so I don't need to drag in pthreads when
-    I'm not interested in that section of gio. -->
-    ダミーの pthread_create を含んでいますので、GIO のその部分に興味が無いときに pthreads を引っ張り出す必要が無くなります。
-  <DT>
     tottf.c
   <DD>
 <!--Saves a true type or open type font. see also splinesave.c for reference

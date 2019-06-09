@@ -25,20 +25,23 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "parsettfvar.h"
 
+#include "chardata.h"
 #include "fontforge.h"
 #include "fvfonts.h"
+#include "gwidget.h"
 #include "mem.h"
 #include "parsettf.h"
 #include "splineutil.h"
-#include <chardata.h>
-#include <utype.h>
-#include <ustring.h>
-#include <math.h>
-#include <locale.h>
-#include <gwidget.h>
 #include "ttf.h"
+#include "ustring.h"
+#include "utype.h"
+
+#include <locale.h>
+#include <math.h>
 
 /***************************************************************************/
 /*                                                                         */

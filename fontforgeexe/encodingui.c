@@ -26,16 +26,19 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "bitmapchar.h"
-#include "fontforgeui.h"
-#include <ustring.h>
-#include <utype.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <dirent.h>
-#include <gfile.h>
-#include <gresource.h>
 #include "encoding.h"
+#include "fontforgeui.h"
+#include "gfile.h"
+#include "gresource.h"
+#include "ustring.h"
+#include "utype.h"
+
+#include <dirent.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 static GTextInfo *EncodingList(void) {
     GTextInfo *ti;

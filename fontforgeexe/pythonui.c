@@ -26,29 +26,27 @@
  */
 /*			   Python Interface to FontForge		      */
 
-#include <ffglib.h>
-
 #include <fontforge-config.h>
 
 #ifndef _NO_PYTHON
-#include "Python.h"
-#include "structmember.h"
 
 #include "cvundoes.h"
+#include "ffglib.h"
+#include "ffpython.h"
 #include "fontforgeui.h"
+#include "scriptfuncs.h"
+#include "scripting.h"
 #include "ttf.h"
 #include "ustring.h"
-#include "scripting.h"
-#include "scriptfuncs.h"
-#include <math.h>
-#include <unistd.h>
-#include <sys/types.h>
+
 #include <dirent.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <fcntl.h>
-#include "ffpython.h"
+#include <sys/types.h>
+#include <unistd.h>
 
 static struct python_menu_info {
     PyObject *func;

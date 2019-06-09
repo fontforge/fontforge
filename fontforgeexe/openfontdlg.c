@@ -25,16 +25,20 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "fontforgeui.h"
 #include "namelist.h"
 #include "scripting.h"
 
+#include "gdraw.h"
+#include "ggadget.h"
+#include "gwidget.h"
+#include "ustring.h"
+
 #include <stdlib.h>
 #include <string.h>
-#include <ustring.h>
-#include <gdraw.h>
-#include <gwidget.h>
-#include <ggadget.h>
 
 extern NameList *force_names_when_opening;
 int default_font_filter_index=0;

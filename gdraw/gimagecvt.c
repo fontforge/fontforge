@@ -24,8 +24,10 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "gdrawP.h"
-#include <string.h>
 
 void _GDraw_getimageclut(struct _GImage *base, struct gcol *clut) {
     int i, cnt;

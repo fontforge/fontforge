@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "cvundoes.h"
 #include "fontforgeui.h"
 #include "usermenu.h"

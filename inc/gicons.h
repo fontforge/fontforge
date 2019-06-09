@@ -24,6 +24,10 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#ifndef FONTFORGE_GICONS_H
+#define FONTFORGE_GICONS_H
+
 extern GImage _GIcon_unknown;
 extern GImage _GIcon_object;
 extern GImage _GIcon_updir;
@@ -58,3 +62,5 @@ extern GImage _GIcon_backarrow;
 extern GImage _GIcon_forwardarrow;
 
 extern void InitChooserIcons(void);
+
+#endif /* FONTFORGE_GICONS_H */

@@ -26,6 +26,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "glyphcomp.h"
 
 #include "bvedit.h"
@@ -38,8 +40,10 @@
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "tottf.h"
+#include "ttf.h"
+#include "ustring.h"
+
 #include <math.h>
-#include <ustring.h>
 
 /* ************************************************************************** */
 /* *********************       Error dispatchers        ********************* */
@@ -2269,8 +2273,6 @@ static void comparegsub(struct font_diff *fd) {
     fd->is_gpos = false;
     compareg___(fd);
 }
-
-#include "ttf.h"
 
 int CompareFonts(SplineFont *sf1, EncMap *map1, SplineFont *sf2, FILE *diffs,
 	int flags) {

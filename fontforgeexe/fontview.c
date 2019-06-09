@@ -24,6 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #include <fontforge-config.h>
 
 #include "autosave.h"
@@ -32,40 +33,40 @@
 #include "autowidth2.h"
 #include "bitmapchar.h"
 #include "bvedit.h"
+#include "chardata.h"
 #include "cvundoes.h"
 #include "dumppfa.h"
 #include "encoding.h"
+#include "ffglib.h"
 #include "fontforgeui.h"
 #include "fvcomposite.h"
 #include "fvfonts.h"
+#include "gfile.h"
+#include "gio.h"
+#include "gkeysym.h"
+#include "gresedit.h"
+#include "gresource.h"
 #include "groups.h"
+#include "gutils/unicodelibinfo.h"
 #include "mm.h"
 #include "namelist.h"
 #include "nonlineartrans.h"
 #include "psfont.h"
 #include "pua.h"
 #include "scripting.h"
-#include "splinefill.h"
 #include "search.h"
 #include "sfd.h"
+#include "sfundo.h"
+#include "splinefill.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "tottfgpos.h"
-#include <gfile.h>
-#include <gio.h>
-#include <gresedit.h>
-#include <ustring.h>
-#include <ffglib.h>
-#include <gkeysym.h>
-#include <utype.h>
-#include <chardata.h>
-#include <gresource.h>
+#include "ustring.h"
+#include "utype.h"
+
 #include <math.h>
 #include <unistd.h>
-
-#include "gutils/unicodelibinfo.h"
-#include "sfundo.h"
 
 #if defined (__MINGW32__)
 #include <windows.h>
@@ -7803,56 +7804,6 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
     GDrawDestroyWindow(gs.gw);
 return( ret );
 }
-
-
-/****************************************/
-/****************************************/
-/****************************************/
-
-int FontViewFind_bySplineFont( FontViewBase* fv, void* udata )
-{
-    if( !fv || !fv->sf )
-	return 0;
-    return fv->sf == udata;
-}
-
-static int FontViewFind_ActiveWindow( FontViewBase* fvb, void* udata )
-{
-    FontView* fv = (FontView*)fvb;
-    return( fv->gw == udata || fv->v == udata );
-}
-
-FontViewBase* FontViewFindActive()
-{
-    return (FontViewBase*) ActiveFontView;
-    /* GWindow w = GWindowGetCurrentFocusTopWindow(); */
-    /* FontViewBase* ret = FontViewFind( FontViewFind_ActiveWindow, w ); */
-    /* return ret; */
-}
-
-
-
-FontViewBase* FontViewFind( int (*testFunc)( FontViewBase*, void* udata ), void* udata )
-{
-    FontViewBase *fv;
-//    printf("FontViewFind(top) fv_list:%p\n", fv_list );
-    for ( fv = (FontViewBase*)fv_list; fv!=NULL; fv=fv->next )
-    {
-	if( testFunc( fv, udata ))
-	    return fv;
-    }
-    return 0;
-}
-
-FontView* FontViewFindUI( int (*testFunc)( FontViewBase*, void* udata ), void* udata )
-{
-    return (FontView*)FontViewFind( testFunc, udata );
-}
-
-
-/****************************************/
-/****************************************/
-/****************************************/
 
 /* local variables: */
 /* tab-width: 8     */

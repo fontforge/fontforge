@@ -24,14 +24,18 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
+#include "cvundoes.h"
 #include "fontforgeui.h"
+#include "fvfonts.h"
+#include "gkeysym.h"
 #include "splinefont.h"
 #include "splineutil.h"
 #include "splineutil2.h"
-#include "cvundoes.h"
-#include "fvfonts.h"
+
 #include <math.h>
-#include <gkeysym.h>
 
 #ifdef FONTFORGE_CONFIG_TILEPATH
 /* Given a path and a splineset */

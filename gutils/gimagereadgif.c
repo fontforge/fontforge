@@ -34,9 +34,9 @@ static int a_file_must_define_something=0;	/* ANSI says so */
 
 #else /* We can build with gif_lib - therefore import gif files */
 
-#include <basics.h>
-#include <string.h>
+#include "basics.h"
 #include "gimage.h"
+
 #include <gif_lib.h>
 
 #if defined(GIFLIB_MAJOR) && defined(GIFLIB_MINOR) && ((GIFLIB_MAJOR == 5 && GIFLIB_MINOR >= 1) || GIFLIB_MAJOR > 5)

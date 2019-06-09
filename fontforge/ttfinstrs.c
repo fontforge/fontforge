@@ -25,12 +25,14 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "ttfinstrs.h"
 
 #include "fontforgevw.h"
-#include <ustring.h>
-#include <utype.h>
 #include "ttf.h"
+#include "ustring.h"
+#include "utype.h"
 
 const char *ff_ttf_instrnames[] = {
     "SVTCA[y-axis]",

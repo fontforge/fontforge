@@ -24,13 +24,17 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "gdraw.h"
+#include "ggadgetP.h"
 #include "gkeysym.h"
 #include "gresource.h"
 #include "gwidget.h"
-#include "ggadgetP.h"
 #include "ustring.h"
 #include "utype.h"
+
 #include <math.h>
 
 extern void (*_GDraw_InsCharHook)(GDisplay *,unichar_t);

@@ -1,4 +1,4 @@
-#include <chardata.h>
+#include "chardata.h"
 
 unichar_t *unicode_from_alphabets[]={
     (unichar_t *) unicode_from_win, 0,0,

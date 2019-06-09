@@ -24,7 +24,11 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <gimage.h>
+
+#include <fontforge-config.h>
+
+#include "gimage.h"
+
 #include <math.h>
 #include <string.h>
 

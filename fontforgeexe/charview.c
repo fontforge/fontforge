@@ -24,19 +24,29 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #include <fontforge-config.h>
 
 #include "autohint.h"
 #include "autosave.h"
 #include "autotrace.h"
 #include "autowidth.h"
+#include "charview_private.h"
 #include "cvruler.h"
 #include "cvundoes.h"
+#include "dlist.h"
 #include "dumppfa.h"
 #include "encoding.h"
+#include "ffglib.h"
 #include "fontforgeui.h"
 #include "fvcomposite.h"
 #include "fvfonts.h"
+#include "gdraw/hotkeys.h"
+#include "gkeysym.h"
+#include "gresedit.h"
+#include "gresource.h"
+#include "gutils/prefs.h"
+#include "gutils/unicodelibinfo.h"
 #include "lookups.h"
 #include "mm.h"
 #include "namelist.h"
@@ -48,28 +58,17 @@
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "splineutil2.h"
-#include <math.h>
+#include "ustring.h"
+#include "utype.h"
+#include "wordlistparser.h"
+
 #include <locale.h>
-#include <ustring.h>
-#include <utype.h>
-#include <ffglib.h>
-#include <gresource.h>
-#include <gresedit.h>
-#include <dlist.h>
+#include <math.h>
 extern int _GScrollBar_Width;
-#include <gkeysym.h>
+
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
-#include "dlist.h"
-
-#include "gutils/prefs.h"
-#include "gutils/unicodelibinfo.h"
-
-#include "gdraw/hotkeys.h"
-#include "wordlistparser.h"
-
-#include "charview_private.h"
 
 /* Barry wants to be able to redefine menu bindings only in the charview (I think) */
 /*  the menu parser will first check for something like "CV*Open|Ctl+O", and */
@@ -6239,8 +6238,6 @@ static void CVAddGuide(CharView *cv,int is_v,int guide_pos) {
     }
 }
 
-static CharView* ActiveCharView = 0;
-
 static int cv_e_h(GWindow gw, GEvent *event) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
@@ -6402,7 +6399,6 @@ return( GGadgetDispatchEvent(cv->vsb,event));
       break;
       case et_focus:
 	if ( event->u.focus.gained_focus ) {
-	    ActiveCharView = cv;
 	    if ( cv->gic!=NULL )
 		GDrawSetGIC(gw,cv->gic,0,20);
 
@@ -6416,12 +6412,6 @@ return( GGadgetDispatchEvent(cv->vsb,event));
     }
 return( true );
 }
-
-CharView* CharViewFindActive()
-{
-    return ActiveCharView;
-}
-
 
 #define MID_Fit		2001
 #define MID_ZoomIn	2002

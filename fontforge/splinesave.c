@@ -25,25 +25,28 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "splinesave.h"
 
 #include "autohint.h"
 #include "dumppfa.h"
 #include "fontforge.h"
 #include "fvfonts.h"
+#include "gwidget.h"
 #include "parsepfa.h"
-#include <stdio.h>
-#include <math.h>
+#include "psfont.h"
 #include "splinefont.h"
 #include "splineorder2.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "splineutil2.h"
-#include "psfont.h"
-#include <ustring.h>
+#include "ustring.h"
+#include "utype.h"
+
+#include <math.h>
+#include <stdio.h>
 #include <string.h>
-#include <utype.h>
-#include <gwidget.h>
 
 float GenerateHintWidthEqualityTolerance = 0.0;
 int autohint_before_generate = 1;

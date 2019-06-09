@@ -9,11 +9,12 @@ License: BSD-3-clause
 Contributions:
 */
 
+#include <fontforge-config.h>
+
 #include "basics.h"	/* for non-standard uint{16,32} typedefs */
+#include "chardata.h"
 #include "is_Ligature_data.h"
 #include "utype.h"
-#include "chardata.h"
-#include <stdlib.h>
 
 static int compare_codepoints16(const void *uCode1, const void *uCode2) {
     const uint16 *cp1 = (const uint16 *)(uCode1);

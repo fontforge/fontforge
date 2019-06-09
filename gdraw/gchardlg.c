@@ -24,20 +24,20 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <stdlib.h>
-#include <string.h>
-#include <ustring.h>
-#include <utype.h>
-#include <gdraw.h>
-#include <gwidget.h>
-#include <ggadget.h>
-#include <charset.h>
-#include <chardata.h>
-#include <gresource.h>
+
+#include <fontforge-config.h>
+
+#include "chardata.h"
+#include "charset.h"
+#include "gdraw.h"
+#include "ggadget.h"
 #include "ggadgetP.h"		/* For the font family names */
+#include "gresource.h"
+#include "gwidget.h"
+#include "ustring.h"
+#include "utype.h"
 
 #include "gutils/unicodelibinfo.h"
-//#include "../fontforge/unicodelibinfo.c"
 
 #define INSCHR_CharSet	1
 #define INSCHR_Char	2

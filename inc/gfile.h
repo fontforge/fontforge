@@ -24,8 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _GFILE_H
-#define _GFILE_H
+
+#ifndef FONTFORGE_GFILE_H
+#define FONTFORGE_GFILE_H
 
 #include "basics.h"
 
@@ -144,4 +145,4 @@ extern char* getLibexecDir_NonWindows(void);
 
 
 
-#endif
+#endif /* FONTFORGE_GFILE_H */

@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "autohint.h"
 #include "autotrace.h"
 #include "dumppfa.h"
@@ -33,7 +35,8 @@
 #include "fvcomposite.h"
 #include "fvfonts.h"
 #include "fvimportbdf.h"
-#include <gfile.h>
+#include "gfile.h"
+#include "gutils.h"
 #include "ikarus.h"
 #include "macbinary.h"
 #include "namelist.h"
@@ -41,25 +44,24 @@
 #include "parsepdf.h"
 #include "parsepfa.h"
 #include "parsettf.h"
+#include "psfont.h"
 #include "pua.h"
 #include "sfd.h"
 #include "splinefill.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "svg.h"
+#include "unicoderange.h"
+#include "ustring.h"
+#include "utype.h"
 #include "winfonts.h"
 #include "woff.h"
-#include <utype.h>
-#include <ustring.h>
-#include <math.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <gfile.h>
-#include <gutils.h>
-#include "unicoderange.h"
-#include "psfont.h"
+
 #include <locale.h>
+#include <math.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 void SFUntickAll(SplineFont *sf) {
     int i;

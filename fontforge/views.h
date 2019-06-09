@@ -24,18 +24,19 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _VIEWS_H
-#define _VIEWS_H
+
+#ifndef FONTFORGE_VIEWS_H
+#define FONTFORGE_VIEWS_H
 
 #include <fontforge-config.h>
 
 #include "ttfinstrs.h"
 
-#include <ffglib.h>
 #include "baseviews.h"
+#include "ffglib.h"
 
-#include <ggadget.h>
 #include "dlist.h"
+#include "ggadget.h"
 #include "search.h"
 
 
@@ -1330,16 +1331,6 @@ extern void _CVMenuNameContour(CharView *cv);
 extern void Prefs_LoadDefaultPreferences( void );
 
 
-extern CharView* CharViewFindActive();
-extern FontViewBase* FontViewFindActive();
-extern FontViewBase* FontViewFind( int (*testFunc)( FontViewBase*, void* ), void* udata );
-
-extern int FontViewFind_byXUID(      FontViewBase* fv, void* udata );
-extern int FontViewFind_byXUIDConnected( FontViewBase* fv, void* udata );
-extern int FontViewFind_byCollabPtr(  FontViewBase* fv, void* udata );
-extern int FontViewFind_bySplineFont( FontViewBase* fv, void* udata );
-extern int FontViewFind_byCollabBasePort( FontViewBase* fv, void* udata );
-
 extern void SPSelectNextPoint( SplinePoint *sp, int state );
 extern void SPSelectPrevPoint( SplinePoint *sp, int state );
 
@@ -1493,4 +1484,4 @@ extern void CVMenuConstrain(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e))
 
 
 
-#endif	/* _VIEWS_H */
+#endif /* FONTFORGE_VIEWS_H */

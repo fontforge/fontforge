@@ -1,8 +1,8 @@
 #ifndef FONTFORGE_CVUNDOES_H
 #define FONTFORGE_CVUNDOES_H
 
-#include "splinefont.h"
 #include "baseviews.h"
+#include "splinefont.h"
 
 extern int no_windowing_ui, maxundoes;
 

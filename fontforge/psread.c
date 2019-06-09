@@ -24,22 +24,26 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <fontforge-config.h>
+
 #include "autohint.h"
 #include "cvimages.h"
 #include "cvundoes.h"
 #include "fontforge.h"
 #include "namelist.h"
+#include "psfont.h"
+#include "sd.h"
 #include "splineoverlap.h"
 #include "splinestroke.h"
 #include "splineutil.h"
 #include "splineutil2.h"
-#include <math.h>
-#include <locale.h>
-#include <ustring.h>
-#include <utype.h>
-#include "psfont.h"
-#include "sd.h"
+#include "ustring.h"
+#include "utype.h"
 #include "views.h"		/* For CharViewBase */
+
+#include <locale.h>
+#include <math.h>
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif

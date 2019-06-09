@@ -25,32 +25,34 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fontforge-config.h>
+
 #include "encoding.h"
 
 #include "bitmapchar.h"
 #include "bvedit.h"
 #include "dumppfa.h"
+#include "encoding.h"
+#include "ffglib.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
+#include "gfile.h"
 #include "namelist.h"
+#include "psfont.h"
 #include "psread.h"
 #include "pua.h"
-#include "splinefont.h"
 #include "splinefill.h"
+#include "splinefont.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "splineutil2.h"
-#include <ustring.h>
-#include <utype.h>
-#include <math.h>
-#include <unistd.h>
-#include <sys/types.h>
+#include "ustring.h"
+#include "utype.h"
+
 #include <dirent.h>
-#include <gfile.h>
-#include "encoding.h"
-#include "psfont.h"
-#include <ffglib.h>
-#include <glib/gprintf.h>
+#include <math.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 Encoding *default_encoding = NULL;
 
