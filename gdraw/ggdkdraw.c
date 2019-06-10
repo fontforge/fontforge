@@ -708,7 +708,7 @@ static int16 _GGDKDraw_GdkModifierToKsm(GdkModifierType mask) {
     if (mask & GDK_SUPER_MASK) {
         state |= ksm_super;
     }
-    if (mask * GDK_HYPER_MASK) {
+    if (mask & GDK_HYPER_MASK) {
         state |= ksm_hyper;
     }
     //ksm_option?
@@ -883,6 +883,25 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             GdkEventKey *key = (GdkEventKey *)event;
             gevent.type = event->type == GDK_KEY_PRESS ? et_char : et_charup;
             gevent.u.chr.state = _GGDKDraw_GdkModifierToKsm(((GdkEventKey *)event)->state);
+
+#ifdef GDK_WINDOWING_QUARTZ
+            // On Mac, the Alt/Option key is used for alternate input.
+            // We want accelerators, so translate ourselves, forcing the group to 0.
+            if ((gevent.u.chr.state & ksm_meta) && key->group != 0) {
+                GdkKeymap *km = gdk_keymap_get_for_display(gdisp->display);
+                guint keyval;
+
+                gdk_keymap_translate_keyboard_state(km, key->hardware_keycode,
+                    key->state, 0, &keyval, NULL, NULL, NULL);
+
+                //Log(LOGDEBUG, "Fixed keyval from 0x%x(%s) -> 0x%x(%s)",
+                //	key->keyval, gdk_keyval_name(key->keyval),
+                //	keyval, gdk_keyval_name(keyval));
+
+                key->keyval = keyval;
+            }
+#endif
+
             gevent.u.chr.autorepeat =
                 event->type    == GDK_KEY_PRESS &&
                 gdisp->ks.type == GDK_KEY_PRESS &&
