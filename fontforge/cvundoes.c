@@ -1120,6 +1120,9 @@ void _CVUndoCleanup(CharViewBase *cv,PressedOn *p) {
 void CVRemoveTopUndo(CharViewBase *cv) {
     Undoes * undo = cv->layerheads[cv->drawmode]->undoes;
 
+    if (undo == NULL)
+	return; // Shouldn't happen
+
     cv->layerheads[cv->drawmode]->undoes = undo->next;
     undo->next = NULL;
     UndoesFree(undo);
