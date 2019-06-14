@@ -1201,12 +1201,20 @@ static void adjustLBearing( CharView *cv, SplineChar *sc, real val )
     SplineCharFindBounds(sc,&bb);
     if ( val != 0 )
     {
+	enum fvtrans_flags flags = fvt_alllayers | fvt_nopreserve;
 	real transform[6];
 	transform[0] = transform[3] = 1.0;
 	transform[1] = transform[2] = transform[5] = 0;
 	transform[4] = val;
+	// With no recent change, assume CVPreserveState was called.
+	// Remove it, as it doesn't preserve hints or other layers
+	// Instead, delegate to FVTrans to do this.
+	if (!cv->recentchange) {
+	    CVRemoveTopUndo(&cv->b);
+	    flags &= ~fvt_nopreserve;
+	}
 //	printf("adjustLBearing val:%f min:%f v-min:%f\n",val,bb.minx,(bb.minx+val));
-	FVTrans( (FontViewBase *) cv->b.fv, sc, transform, NULL, 0 | fvt_alllayers );
+	FVTrans( (FontViewBase *) cv->b.fv, sc, transform, NULL, flags );
 	// We copy and adapt some code from FVTrans in order to adjust the CharView carets.
 	// We omit the fvt_scalepstpos for FVTrans since other CharView code seems to skip updating the SplineChar.
 	PST *pst;

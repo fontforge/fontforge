@@ -682,13 +682,15 @@ void FVTrans(FontViewBase *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	    FVTrans(fv,mm->instances[j]->glyphs[sc->orig_pos],transform,sel,flags);
     }
 
-    if ( flags&fvt_alllayers ) {
-	for ( i=0; i<sc->layer_cnt; ++i )
-	    SCPreserveLayer(sc,i,fv->active_layer==i);
-    } else if ( fv->sf->multilayer )
-	SCPreserveState(sc,true);
-    else
-	SCPreserveLayer(sc,fv->active_layer,true);
+    if (!(flags & fvt_nopreserve)) {
+	if ( flags&fvt_alllayers ) {
+	    for ( i=0; i<sc->layer_cnt; ++i )
+		SCPreserveLayer(sc,i,fv->active_layer==i);
+	} else if ( fv->sf->multilayer )
+	    SCPreserveState(sc,true);
+	else
+	    SCPreserveLayer(sc,fv->active_layer,true);
+    }
     if ( !(flags&fvt_dontmovewidth) )
 	if ( transform[0]>0 && transform[3]>0 && transform[1]==0 && transform[2]==0 ) {
 	    int widthset = sc->widthset;

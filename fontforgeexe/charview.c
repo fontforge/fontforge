@@ -64,7 +64,6 @@
 
 #include <locale.h>
 #include <math.h>
-extern int _GScrollBar_Width;
 
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
@@ -79,6 +78,8 @@ extern int _GScrollBar_Width;
 extern void UndoesFreeButRetainFirstN( Undoes** undopp, int retainAmount );
 static void CVMoveInWordListByOffset( CharView* cv, int offset );
 extern void CVDebugFree( DebugView *dv );
+
+extern int _GScrollBar_Width;
 
 int additionalCharsToShowLimit = 50;
 
@@ -8460,16 +8461,12 @@ static void tablistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 static void CVUndo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
-    Undoes *undo = cv->b.layerheads[cv->b.drawmode]->undoes;
-
     CVDoUndo(&cv->b);
     cv->lastselpt = NULL;
 }
 
 static void CVRedo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-
-    Undoes *undo = cv->b.layerheads[cv->b.drawmode]->redoes;
 
     CVDoRedo(&cv->b);
     cv->lastselpt = NULL;
