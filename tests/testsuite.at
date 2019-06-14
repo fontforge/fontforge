@@ -51,7 +51,7 @@ m4_defun([run_python_ff],[(${abs_top_builddir}/fontforgeexe/fontforge -lang py -
 # $2 is test to run (skipped if FontForge built without python scripting)
 # $3 test for this file
 m4_defun([check_python_ff],[
-AT_SETUP([$1 "(with FontForge)"])
+AT_SETUP([$1 [(with FontForge)]])
 AT_SKIP_IF([test ! -r "${abs_srcdir}/$2"])
 AT_SKIP_IF([test ! -z "$FONTFORGE_NO_PYTHON"])
 check_file([test_input], [$3])
@@ -62,7 +62,7 @@ AT_CLEANUP
 m4_defun([run_python_py],[(PATH="${abs_top_builddir}/fontforge/.libs:${abs_top_builddir}/gutils/.libs:${abs_top_builddir}/Unicode/.libs:$PATH" PYTHONPATH="${abs_top_builddir}/pyhook/.libs" ${python_exec} -Ss "${abs_srcdir}/$1" "$2" || /bin/false)])
 
 m4_defun([check_python_py],[
-AT_SETUP([$1 "(with Python)"])
+AT_SETUP([$1 [(with Python)]])
 AT_SKIP_IF([test ! -r "${abs_srcdir}/$2"])
 AT_SKIP_IF([test ! -z "$FONTFORGE_NO_PYTHON_EXTENSION"])
 check_file([test_input], [$3])
@@ -145,6 +145,7 @@ check_python([Check for splinestroke 0 len fail],[test1007.py],[ayn+meem.init.sv
 check_python([PythonAPI: font glyph iteration],[test1008.py],[OverlapBugs.sfd])
 check_python([Ligatures and Fractions Table Lookups],[test1009.py])
 check_python([libnameslist checks],[test1010.py])
+check_python([kerning with r2l lookup flag],[test1011.py],[test1011.fea])
 #check_python([find overlap bug],[findoverlapbugs.py])
 check_python([Validate WOFF output],[test926.py],[DejaVuSerif.sfd])
 check_python([WOFF2 round tripping],[test927.py],[Ambrosia.woff2])

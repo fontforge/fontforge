@@ -509,8 +509,6 @@ return( NULL );
 		/* !!! Bug. Lose device tables here */
 		if ( isv )
 		    space->u.pair.vr[0].v_adv_off = kp->off;
-		else if ( otl->lookup_flags&pst_r2l )
-		    space->u.pair.vr[1].h_adv_off = kp->off;
 		else
 		    space->u.pair.vr[0].h_adv_off = kp->off;
 return( space );
@@ -1466,13 +1464,6 @@ return;					/* No support for apple "lookups" */
 			            fprintf( out, " > " );
 			            dump_glyphname(out,kp->sc);
 			            fprintf( out, " < 0 0 0 0 >;\n" );
-				} else if ( otl->lookup_flags&pst_r2l ) {
-				    fprintf( out, " < 0 0 0 0 > " );
-			            dump_glyphname(out,kp->sc);
-				    fprintf( out," < 0 0 %d 0 <device NULL> <device NULL> ",
-					    kp->off );
-				    dumpdevice(out,kp->adjust);
-			            fprintf( out, " <device NULL>>;\n" );
 				} else {
 				    fprintf( out," < 0 0 %d 0 <device NULL> <device NULL> ",
 					    kp->off );
@@ -1482,15 +1473,9 @@ return;					/* No support for apple "lookups" */
 			            fprintf( out, " < 0 0 0 0 >;\n" );
 				}
 			    } else
-			    if ( otl->lookup_flags&pst_r2l ) {
-				fprintf( out, " < 0 0 0 0 > " );
-				dump_glyphname(out,kp->sc);
-				fprintf( out," < 0 0 %d 0 >;\n", kp->off );
-			    } else {
-				dump_glyphname(out,kp->sc);
-				putc(' ',out);
-			        fprintf( out, "%d;\n", kp->off );
-			    }
+			    dump_glyphname(out,kp->sc);
+			    putc(' ',out);
+			    fprintf( out, "%d;\n", kp->off );
 			}
 		    }		/* End isv/kp loops */
 		}
@@ -6602,14 +6587,7 @@ static void fea_ApplyLookupListPair(struct parseState *tok,
 			pst->u.pair.vr[1].xoff==0 && pst->u.pair.vr[1].yoff==0 &&
 			pst->u.pair.vr[1].v_adv_off==0 &&
 			other!=NULL ) {
-		    if ( (otl->lookup_flags&pst_r2l) &&
-			    (pst->u.pair.vr[0].h_adv_off==0 && pst->u.pair.vr[0].v_adv_off==0 )) {
-			kp = chunkalloc(sizeof(KernPair));
-			kp->off = pst->u.pair.vr[1].h_adv_off;
-			if ( pst->u.pair.vr[1].adjust!=NULL )
-			    KPFillDevTab(kp,&pst->u.pair.vr[1].adjust->xadv);
-		    } else if ( !(otl->lookup_flags&pst_r2l) &&
-			    (pst->u.pair.vr[1].h_adv_off==0 && pst->u.pair.vr[0].v_adv_off==0 )) {
+		    if ( pst->u.pair.vr[1].h_adv_off==0 && pst->u.pair.vr[0].v_adv_off==0 ) {
 			kp = chunkalloc(sizeof(KernPair));
 			kp->off = pst->u.pair.vr[0].h_adv_off;
 			if ( pst->u.pair.vr[0].adjust!=NULL )

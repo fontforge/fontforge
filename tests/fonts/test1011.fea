@@ -1,0 +1,31 @@
+languagesystem latn dflt;
+
+
+# GPOS 
+
+
+lookup ltr {
+  lookupflag 0;
+    pos \A \B 100;
+} ltr;
+
+lookup rtl {
+  lookupflag RightToLeft;
+    pos \A \B 100;
+} rtl;
+
+feature kern {
+
+ script latn;
+     language dflt ;
+      lookup ltr;
+      lookup rtl;
+} kern;
+
+@GDEF_Simple = [\A \B ];
+
+table GDEF {
+  GlyphClassDef @GDEF_Simple, , , ;
+
+} GDEF;
+
