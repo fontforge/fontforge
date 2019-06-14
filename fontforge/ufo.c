@@ -2112,7 +2112,8 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff, in
       free(glyphdir); glyphdir = NULL;
     }
     char *fname = buildname(basedir, "layercontents.plist"); // Build the file name for the contents.
-    xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
+    if (version >= 3)
+      xmlSaveFormatFileEnc(fname, plistdoc, "UTF-8", 1); // Store the document.
     free(fname); fname = NULL;
     xmlFreeDoc(plistdoc); // Free the memory.
     xmlCleanupParser();
