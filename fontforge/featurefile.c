@@ -509,6 +509,7 @@ return( NULL );
 		/* !!! Bug. Lose device tables here */
 		if ( isv )
 		    space->u.pair.vr[0].v_adv_off = kp->off;
+		else
 		    space->u.pair.vr[0].h_adv_off = kp->off;
 return( space );
 	    }
