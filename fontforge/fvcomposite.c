@@ -2250,16 +2250,6 @@ return;
 	_BCCenterAccent( bdf,sc->orig_pos,rsc->orig_pos,ch,basech,italicoff,pos,sf->ascent+sf->descent );
 }
 
-static void SCCenterAccent(SplineChar *sc,SplineChar *basersc, SplineFont *sf,
-	int layer, int ch, BDFFont *bdf,int disp_only,
-	real ia, int basech, char *dot ) {
-    int invert = false;			/* invert accent, false==0, true!=0 */
-    SplineChar *rsc = GetGoodAccentGlyph(sf,ch,basech,&invert,ia,dot,sc);
-
-    /* find a location to put an accent on this character */
-    _SCCenterAccent(sc,basersc,sf,layer,ch,bdf,disp_only,rsc,ia,basech,invert,FF_UNICODE_NOPOSDATAGIVEN);
-}
-
 static void _BCPutRefAfter( BDFFont *bdf,int gid,int rgid,int normal,int under ) {
     BDFChar *bc, *rbc;
     int ispacing;
@@ -2803,6 +2793,8 @@ void SCBuildComposit(SplineFont *sf, SplineChar *sc, int layer, BDFFont *bdf, in
     const unichar_t *pt, *apt; unichar_t ch;
     real ia;
     char *dot;
+    SplineChar *rsc;
+    int invert;
     /* This does not handle arabic ligatures at all. It would need to reverse */
     /*  the string and deal with <final>, <medial>, etc. info we don't have */
 
@@ -2874,8 +2866,15 @@ return;
 	else if ( sc->width == base->sc->width )
 	    base->use_my_metrics = true;
 	while ( iscombining(*pt) || SCUserDecompAccent(sc, *pt, accent_hint) || (ch=='L' && *pt==0xb7) ||	/* b7, centered dot is used as a combining accent for Ldot but as a lig for ldot */
-		*pt==0x384 || *pt==0x385 || (*pt>=0x1fbd && *pt<=0x1fff) )	/* Special greek accents */
-	    SCCenterAccent(sc,base!=NULL?base->sc:NULL,sf,layer,*pt++,bdf,disp_only,ia,ch,dot);
+		*pt==0x384 || *pt==0x385 || (*pt>=0x1fbd && *pt<=0x1fff) ) {	/* Special greek accents */
+	    invert = false;
+	    if ( sc->user_decomp!=NULL )
+		rsc = SFGetChar(sf,*pt,NULL);
+	    else
+		rsc = GetGoodAccentGlyph(sf,*pt,ch,&invert,ia,dot,sc);
+	    _SCCenterAccent(sc,base!=NULL?base->sc:NULL,sf,layer,CanonicalCombiner(*pt++),bdf,disp_only,rsc,ia,
+	                    ch,invert,FF_UNICODE_NOPOSDATAGIVEN);
+	}
 	while ( *pt ) {
 	    if ( base!=NULL ) base->use_my_metrics = false;
 	    SCPutRefAfter(sc,sf,layer,*pt++,bdf,disp_only,dot);
