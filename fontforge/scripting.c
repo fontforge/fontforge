@@ -8072,8 +8072,6 @@ static void bGetPosSub(Context *c) {
 			    }
 			    if ( j )
 				temp->vals[6].u.ival = kp->off;
-			    else if ( SCRightToLeft(sc))
-				temp->vals[9].u.ival = kp->off;
 			    else
 				temp->vals[5].u.ival = kp->off;
 			}

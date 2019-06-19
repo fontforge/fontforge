@@ -8764,8 +8764,6 @@ return( NULL );
 			    xadv1 = yadv1 = xadv2 = 0;
 			    if ( j )
 				yadv1 = kp->off;
-			    else if ( SCRightToLeft(sc))
-				xadv2 = kp->off;
 			    else
 				xadv1 = kp->off;
 			    PyTuple_SetItem(ret,cnt,Py_BuildValue("(sssiiiiiiii)",
