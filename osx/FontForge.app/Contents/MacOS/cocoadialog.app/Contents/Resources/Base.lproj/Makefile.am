@@ -30,7 +30,7 @@ FFAPP_FILES = About.mustache Locale.plist
 EXTRA_DIST = $(FFAPP_FILES)
 
 if PLATFORM_OSX
-ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/Base.lproj
+ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/MacOS/cocoadialog.app/Contents/Resources/Base.lproj
 ffapp_DATA = $(FFAPP_FILES)
 endif
 

@@ -31,10 +31,10 @@ SUBDIRS = Base.lproj
 FFAPP_FILES = cocoadialog.icns Acknowledgements.md Assets.car CDDialog.nib	\
 	CDProgressbarView.nib CDSliderView.nib CDTextView.nib LICENSE
 
-EXTRA_DIST = $(FFAPP_FILES) Changelog $(srcdir)/*.icns $(srcdir)/*.plist $(srcdir)/*.strings
+EXTRA_DIST = $(FFAPP_FILES) $(srcdir)/*.icns $(srcdir)/*.plist $(srcdir)/*.strings
 
 if PLATFORM_OSX
-   ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources
+   ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/MacOS/cocoadialog.app/Contents/Resources
    ffapp_DATA = $(FFAPP_FILES)
 endif
 

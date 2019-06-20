@@ -30,7 +30,7 @@ FFAPP_FILES = CocoaDialog
 EXTRA_DIST = $(FFAPP_FILES)
 
 if PLATFORM_OSX
-   ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/MacOS
+   ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/MacOS/cocoadialog.app/Contents/MacOS
    ffapp_SCRIPTS = $(FFAPP_FILES)
 endif
 

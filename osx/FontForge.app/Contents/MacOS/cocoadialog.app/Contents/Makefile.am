@@ -31,7 +31,7 @@ FFAPP_FILES = Info.plist PkgInfo
 EXTRA_DIST = $(FFAPP_FILES)
 
 if PLATFORM_OSX
-   ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents
+   ffappdir = $(pkgdatadir)/osx/FontForge.app/Contents/MacOS/cocoadialog.app/Contents
    ffapp_DATA = $(FFAPP_FILES)
 endif
 
