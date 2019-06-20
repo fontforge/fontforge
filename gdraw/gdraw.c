@@ -32,7 +32,7 @@
 #include "gkeysym.h"
 #include "ustring.h"
 
-#if __Mac
+#if __Mac || __FreeBSD__ || __NetBSD__ || __OpenBSD__ || __DragonFly__
 #  include <sys/select.h>
 #endif
 
