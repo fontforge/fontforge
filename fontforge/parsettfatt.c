@@ -539,7 +539,7 @@ static void gposKernSubTable(FILE *ttf, int stoffset, struct ttfinfo *info, stru
     struct valuerecord vr1, vr2;
     long foffset;
     KernClass *kc;
-    int isv, r2l;
+    int isv;
 
     format=getushort(ttf);
     if ( format!=1 && format!=2 )	/* Unknown subtable format */
@@ -547,15 +547,11 @@ return;
     coverage = getushort(ttf);
     vf1 = getushort(ttf);
     vf2 = getushort(ttf);
-    r2l = 0;
 
     /* Accept forms both with and without device tables */
     if ( (vf1==0x0008 || vf1==0x0088) && vf2==0x0000 )
 	isv = 1;		/* Top to bottom */
-    else if ( vf1==0x0000 && (vf2==0x0004 || vf2==0x0044) && (l->flags&pst_r2l)) {
-	isv = 0;		/* Right to left */
-	r2l = 1;
-    } else if ( (vf1==0x0004 || vf1==0x0044) && vf2==0x0000 && !(l->flags&pst_r2l) )
+    else if ( (vf1==0x0004 || vf1==0x0044) && vf2==0x0000 )
 	isv = 0;		/* Left to right */
     else
 	isv = 2;		/* Can't optimize, store all 8 settings */
@@ -589,11 +585,6 @@ return;
 			/* If we've already got kern data for this pair of */
 			/*  glyphs, then we can't make it be a true KernPair */
 			/*  but we can save the info as a pst_pair */
-		} else if ( r2l ) {	/* R2L */
-		    if ( addKernPair(info, glyphs[i], glyph2, vr2.xadvance,
-			    vr2.offXadvanceDev==0?0:stoffset+vr2.offXadvanceDev,
-			    subtable,isv,ttf))
-			addPairPos(info, glyphs[i], glyph2,subtable,&vr1,&vr2,stoffset,ttf);
 		} else {
 		    if ( addKernPair(info, glyphs[i], glyph2, vr1.xadvance,
 			    vr1.offXadvanceDev==0?0:stoffset+vr1.offXadvanceDev,
@@ -652,16 +643,11 @@ return;
 		    readvaluerecord(&vr2,vf2,ttf);
 		    if ( isv )
 			kc->offsets[i*c2_cnt+j] = vr1.yadvance;
-		    else if ( r2l )
-			kc->offsets[i*c2_cnt+j] = vr2.xadvance;
 		    else
 			kc->offsets[i*c2_cnt+j] = vr1.xadvance;
 		    if ( isv ) {
 			if ( vr1.offYadvanceDev!=0 )
 			    ReadDeviceTable(ttf,&kc->adjusts[i*c2_cnt+j],stoffset+vr1.offYadvanceDev,info);
-		    } else if ( r2l ) {
-			if ( vr2.offXadvanceDev!=0 )
-			    ReadDeviceTable(ttf,&kc->adjusts[i*c2_cnt+j],stoffset+vr2.offXadvanceDev,info);
 		    } else {
 			if ( vr1.offXadvanceDev!=0 )
 			    ReadDeviceTable(ttf,&kc->adjusts[i*c2_cnt+j],stoffset+vr1.offXadvanceDev,info);
