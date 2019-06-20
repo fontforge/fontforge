@@ -165,7 +165,8 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
 /* TODO: Note, maybe this routine can be combined with print.c dump_pdfprologue() */
     DBounds b;
     time_t now;
-    struct tm *tm;
+    GDateTime *gdt;
+    GTimeSpan zoffset;
     int ret;
     char oldloc[24];
     int _objlocs[8], xrefloc, streamstart, streamlength, resid = 0, nextobj;
@@ -228,27 +229,26 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
     fprintf( pdf, "    /Creator (FontForge)\n" );
     now = GetTime();
     if (!getenv("SOURCE_DATE_EPOCH")) {
-	tm = localtime(&now);
+	gdt = g_date_time_new_from_unix_local((gint64)now);
     } else {
-	tm = gmtime(&now);
+	gdt = g_date_time_new_from_unix_utc((gint64)now);
     }
     fprintf( pdf, "    /CreationDate (D:%04d%02d%02d%02d%02d%02d",
-	    1900+tm->tm_year, tm->tm_mon+1, tm->tm_mday,
-	    tm->tm_hour, tm->tm_min, tm->tm_sec );
-#ifdef _NO_TZSET
-    fprintf( pdf, "Z)\n" );
-#else
-    tzset();
-    if ( timezone==0  || getenv("SOURCE_DATE_EPOCH") )
+	    g_date_time_get_year(gdt), g_date_time_get_month(gdt), g_date_time_get_day_of_month(gdt),
+	    g_date_time_get_hour(gdt), g_date_time_get_minute(gdt), g_date_time_get_second(gdt) );
+    zoffset = g_date_time_get_utc_offset(gdt)/1000000;
+    if ( zoffset==0 || getenv("SOURCE_DATE_EPOCH") )
 	fprintf( pdf, "Z)\n" );
     else {
-	if ( timezone<0 ) /* fprintf bug - this is a kludge to print +/- in front of a %02d-padded value */
+	if ( zoffset<0 ) { /* fprintf bug - this is a kludge to print +/- in front of a %02d-padded value */
 	    fprintf( pdf, "-" );
-	else
+	    zoffset *= -1;
+	} else
 	    fprintf( pdf, "+" );
-	fprintf( pdf, "%02d'%02d')\n", (int)(timezone/3600),(int)(timezone/60-(timezone/3600)*60) );
+	fprintf( pdf, "%02d'%02d')\n", (int)(zoffset/3600),(int)(zoffset/60-(zoffset/3600)*60) );
     }
-#endif
+    g_date_time_unref(gdt);
+    gdt = NULL;
     fprintf( pdf, "    /Title (%s from %s)\n", sc->name, sc->parent->fontname );
     if ( author!=NULL )
 	fprintf( pdf, "    /Author (%s)\n", author );

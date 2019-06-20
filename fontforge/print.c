@@ -1141,7 +1141,8 @@ static void pdf_build_type0(PI *pi, int sfid) {
 static void dump_pdfprologue(PI *pi) {
 /* TODO: Note, maybe this routine can be combined somehow with cvexports.c _ExportPDF() */
     time_t now;
-    struct tm *tm;
+    GDateTime *gdt;
+    GTimeSpan zoffset;
     const char *author = GetAuthor();
     int sfid;
 
@@ -1162,25 +1163,26 @@ static void dump_pdfprologue(PI *pi) {
     fprintf( pi->out, "  /Producer (FontForge)\n" );
     now = GetTime();
     if (!getenv("SOURCE_DATE_EPOCH")) {
-	tm = localtime(&now);
+	gdt = g_date_time_new_from_unix_local((gint64)now);
     } else {
-	tm = gmtime(&now);
+	gdt = g_date_time_new_from_unix_utc((gint64)now);
     }
     fprintf( pi->out, "    /CreationDate (D:%04d%02d%02d%02d%02d%02d",
-	    tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec );
-#ifdef _NO_TZSET
-    fprintf( pi->out, "Z)\n" );
-#else
-    if ( timezone==0 || getenv("SOURCE_DATE_EPOCH") )
+	    g_date_time_get_year(gdt), g_date_time_get_month(gdt), g_date_time_get_day_of_month(gdt),
+	    g_date_time_get_hour(gdt), g_date_time_get_minute(gdt), g_date_time_get_second(gdt) );
+    zoffset = g_date_time_get_utc_offset(gdt)/1000000;
+    if ( zoffset==0 || getenv("SOURCE_DATE_EPOCH") )
 	fprintf( pi->out, "Z)\n" );
     else {
-	if ( timezone<0 ) /* fprintf bug - this is a kludge to print +/- in front of a %02d-padded value */
+	if ( zoffset<0 ) { /* fprintf bug - this is a kludge to print +/- in front of a %02d-padded value */
 	    fprintf( pi->out, "-" );
-	else
+	    zoffset *= -1;
+	} else
 	    fprintf( pi->out, "+" );
-	fprintf( pi->out, "%02d'%02d')\n", (int)(timezone/3600),(int)(timezone/60-(timezone/3600)*60) );
+	fprintf( pi->out, "%02d'%02d')\n", (int)(zoffset/3600),(int)(zoffset/60-(zoffset/3600)*60) );
     }
-#endif
+    g_date_time_unref(gdt);
+    gdt = NULL;
     if ( author!=NULL )
 	fprintf( pi->out, "  /Author (%s)\n", author );
     fprintf( pi->out, ">>\n" );
@@ -2772,7 +2774,7 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 	rcnt = 0;
 	for ( s=0; s<therecnt; ++s ) if ( !ScriptInList(scriptsthere[s],scriptsdone,scnt)) {
 	    if ( ret ) {
-		if ( randoms[rcnt]!='\0' ) {
+		if ( randoms[rcnt]!=NULL ) {
 		    utf82u_strcpy(ret+len,randoms[rcnt]);
 		    len += u_strlen(ret+len);
 		    ret[len++] = '\n';
@@ -2781,6 +2783,7 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 			(langsyscallback)(tf,len,scriptsthere[s],langs[rcnt]);
 		}
 		free(randoms[rcnt]);
+		randoms[rcnt] = NULL;
 	    } else {
 		randoms[rcnt] = RandomParaFromScript(scriptsthere[s],&langs[rcnt],sf);
 		for ( pt=randoms[rcnt]; *pt==' '; ++pt );

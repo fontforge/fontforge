@@ -510,8 +510,7 @@ AC_CHECK_FUNCS([getcwd gethostbyname gettimeofday])
 AC_CHECK_FUNCS([mkdir munmap])
 AC_CHECK_FUNCS([nl_langinfo putenv rmdir])
 AC_CHECK_FUNCS([select setenv socket])
-AC_CHECK_FUNCS([tzset uname])
-AC_CHECK_FUNC([tzset],[:],[AC_DEFINE([_NO_TZSET],1,[Define if not using tzset.])])
+AC_CHECK_FUNCS([uname])
 
 #--------------------------------------------------------------------------
 # Put ifndef wrapper on fontforge-config.h so we don't call it repeatedly.
