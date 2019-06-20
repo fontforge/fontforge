@@ -82,16 +82,13 @@ static void ExecNative(GGadget *g, GEvent *e) {
     struct sd_data *sd = GDrawGetUserData(GGadgetGetWindow(g));
     Context c;
     Val args[1];
-    Array *dontfree[1];
     jmp_buf env;
 
     memset( &c,0,sizeof(c));
     memset( args,0,sizeof(args));
-    memset( dontfree,0,sizeof(dontfree));
     running_script = true;
     c.a.argc = 1;
     c.a.vals = args;
-    c.dontfree = dontfree;
     c.filename = args[0].u.sval = "ScriptDlg";
     args[0].type = v_str;
     c.return_val.type = v_void;

@@ -1162,9 +1162,7 @@ static Array *SFDefaultScriptsLines(Array *arr,SplineFont *sf) {
 	  }
       }
 
-      ret = calloc(1,sizeof(Array));
-      ret->argc = 2*lcnt;
-      ret->vals = calloc(2*lcnt,sizeof(Val));
+      ret = arraynew(2 * lcnt);
       for ( i=0; i<lcnt; ++i ) {
 	  ret->vals[2*i+0].type = v_int;
 	  ret->vals[2*i+0].u.ival = pixelsize;

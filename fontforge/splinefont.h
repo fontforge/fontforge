@@ -127,19 +127,22 @@ typedef struct ibounds {
 
 
 enum val_type { v_int, v_real, v_str, v_unicode, v_lval, v_arr, v_arrfree,
-		v_int32pt, v_int16pt, v_int8pt, v_void };
+		v_void };
+
+enum val_flags {
+    vf_none = 0,
+    vf_dontfree = (1 << 1)
+};
 
 typedef struct val {
     enum val_type type;
+    enum val_flags flags;
     union {
 	int ival;
 	real fval;
 	char *sval;
 	struct val *lval;
 	struct array *aval;
-	uint32 *u32ptval;
-	uint16 *u16ptval;
-	uint8  *u8ptval;
     } u;
 } Val;		/* Used by scripting */
 

@@ -88,7 +88,6 @@ enum ce_type { /* (found->func)(&sub) context err codes */
 typedef struct context {
     struct context *caller;		/* The context of the script that called us */
     Array a;				/* The argument array */
-    Array **dontfree;			/* Irrelevant for user defined funcs */
     struct dictionary locals;		/* Irrelevant for user defined funcs */
     FILE *script;			/* Irrelevant for user defined funcs */
     unsigned int backedup: 1;		/* Irrelevant for user defined funcs */
@@ -112,6 +111,7 @@ typedef struct context {
     jmp_buf *err_env;			/* place to longjump to on an error */
 } Context;
 
+Array* arraynew(int sz);
 void arrayfree(Array *);
 
 void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height);
