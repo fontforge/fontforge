@@ -19,7 +19,7 @@ fi
 
 
 if [ y"$PKGBASEPATH" != "y$APPLICATIONS_FONTFORGE" ]; then
-  COCOA_DIALOG="${SCRIPT_PATH}/CocoaDialog.app/Contents/MacOS/CocoaDialog";
+  COCOA_DIALOG="${SCRIPT_PATH}/cocoadialog.app/Contents/MacOS/cocoadialog";
   $COCOA_DIALOG msgbox --no-newline \
     --title "FontForge: Error starting" \
     --text "FontForge is in the wrong folder on your computer." \
