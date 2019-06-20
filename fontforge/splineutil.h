@@ -57,6 +57,8 @@ extern int SplineExistsInSS(Spline *s, SplineSet *ss);
 extern int SplinePointIsACorner(SplinePoint *sp);
 extern int SplineSetIntersect(SplineSet *spl, Spline **_spline, Spline **_spline2);
 extern int SplineSetsRemoveAnnoyingExtrema(SplineSet *ss, bigreal err);
+extern int SplineRemoveWildControlPoints(Spline *s, bigreal distratio);
+extern int SplineSetsRemoveWildControlPoints(SplineSet *ss, bigreal distratio);
 
 /* Two lines intersect in at most 1 point */
 /* Two quadratics intersect in at most 4 points */

@@ -7353,6 +7353,48 @@ int SplineSetsRemoveAnnoyingExtrema(SplineSet *ss,bigreal err) {
 return( changed );
 }
 
+int SplineRemoveWildControlPoints(Spline *s, bigreal distratio) {
+	// If the distance between the control point and its base
+	// exceeds the the distance between the base points 
+	// by a great factor,
+	// it is likely erroneous and is likely to cause problems.
+	// So we remove it.
+	if (s->from == NULL || s->to == NULL)
+		return 0;
+	int changed;
+	bigreal pdisplacement = DistanceBetweenPoints(&s->from->me, &s->to->me);
+	bigreal bcdisplacement0 = 0.0;
+	bigreal bcdisplacement1 = 0.0;
+	if (!s->from->nonextcp)
+		bcdisplacement0 = DistanceBetweenPoints(&s->from->me, &s->from->nextcp);
+	if (!s->to->noprevcp)
+		bcdisplacement1 = DistanceBetweenPoints(&s->to->me, &s->to->prevcp);
+	if (pdisplacement == 0 || MAX(bcdisplacement0, bcdisplacement1) / pdisplacement > distratio) {
+		changed = s->islinear = s->from->nonextcp = s->to->noprevcp = true;
+		s->from->nextcp = s->from->me;
+		s->to->prevcp = s->to->me;
+		SplineRefigure(s);
+	}
+	return changed;
+}
+
+int SplineSetsRemoveWildControlPoints(SplineSet *ss, bigreal distratio) {
+    int changed = false;
+    Spline *s, *first;
+
+
+    while ( ss!=NULL ) {
+	first = NULL;
+	for ( s = ss->first->next; s!=NULL && s!=first; s = s->to->next ) {
+	    if ( first == NULL ) first = s;
+	    if ( SplineRemoveWildControlPoints(s,distratio))
+		changed = true;
+	}
+	ss = ss->next;
+    }
+return( changed );
+}
+
 SplinePoint *SplineBisect(Spline *spline, extended t) {
     Spline1 xstart, xend;
     Spline1 ystart, yend;
