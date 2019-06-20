@@ -46,6 +46,11 @@
 #include <math.h>
 #include <stdlib.h>
 
+// Disable maximum for these
+#define FF_TTF_SCRIPT_MAX -1
+#define FF_TTF_FEATURE_MAX -1
+#define FF_TTF_LOOKUP_MAX -1
+
 static uint16 *getAppleClassTable(FILE *ttf, int classdef_offset, int cnt, int sub, int div, struct ttfinfo *info) {
     uint16 *class = calloc(cnt,sizeof(uint16));
     int first, i, n;
@@ -2451,7 +2456,7 @@ return( NULL );
     cnt = getushort(ttf);
     if ( cnt<=0 )
 return( NULL );
-    else if ( cnt>1000 ) {
+    else if ( FF_TTF_SCRIPT_MAX>=0 && cnt>FF_TTF_SCRIPT_MAX ) {
 	LogError( _("Too many scripts %d\n"), cnt );
 	info->bad_ot = true;
 return( NULL );
@@ -2526,7 +2531,7 @@ return( NULL );
     info->feature_cnt = cnt = getushort(ttf);
     if ( cnt<=0 )
 return( NULL );
-    else if ( cnt>1000 ) {
+    else if ( FF_TTF_FEATURE_MAX>=0 && cnt>FF_TTF_FEATURE_MAX ) {
 	LogError( _("Too many features %d\n"), cnt );
 	info->bad_ot = true;
 return( NULL );
@@ -2588,7 +2593,7 @@ return( NULL );
     info->cur_lookups = NULL;
     if ( cnt<=0 )
 return( NULL );
-    else if ( cnt>1000 ) {
+    else if ( FF_TTF_LOOKUP_MAX>=0 && cnt>FF_TTF_LOOKUP_MAX ) {
 	LogError( _("Too many lookups %d\n"), cnt );
 	info->bad_ot = true;
 return( NULL );
