@@ -26,7 +26,7 @@
 
 include $(top_srcdir)/mk/layout.am
 
-FFAPP_FILES = CocoaDialog
+FFAPP_FILES = cocoadialog
 EXTRA_DIST = $(FFAPP_FILES)
 
 if PLATFORM_OSX
