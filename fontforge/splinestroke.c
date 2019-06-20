@@ -3298,6 +3298,9 @@ static SplineSet *SSRemoveBackForthLine(SplineSet *contours) {
 	cur_tmp->next = NULL;
 	cur_tmp->first = cur->first;
 	cur_tmp->last = cur->last;
+	// The existing code may produce wild control points that break overlap removal.
+	// We remove those.
+	SplineSetsRemoveWildControlPoints(cur_tmp, 1000);
 	ret = SplineSetRemoveOverlap(NULL, cur_tmp, over_remove);
 	if ( ret==NULL ) {
 	    if ( prev==NULL )
