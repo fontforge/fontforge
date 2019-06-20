@@ -247,6 +247,8 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
 	    fprintf( pdf, "+" );
 	fprintf( pdf, "%02d'%02d')\n", (int)(zoffset/3600),(int)(zoffset/60-(zoffset/3600)*60) );
     }
+    g_date_time_unref(gdt);
+    gdt = NULL;
     fprintf( pdf, "    /Title (%s from %s)\n", sc->name, sc->parent->fontname );
     if ( author!=NULL )
 	fprintf( pdf, "    /Author (%s)\n", author );

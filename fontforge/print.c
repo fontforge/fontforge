@@ -1181,6 +1181,8 @@ static void dump_pdfprologue(PI *pi) {
 	    fprintf( pi->out, "+" );
 	fprintf( pi->out, "%02d'%02d')\n", (int)(zoffset/3600),(int)(zoffset/60-(zoffset/3600)*60) );
     }
+    g_date_time_unref(gdt);
+    gdt = NULL;
     if ( author!=NULL )
 	fprintf( pi->out, "  /Author (%s)\n", author );
     fprintf( pi->out, ">>\n" );
