@@ -1,0 +1,699 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CANCEL</key>
+	<dict>
+		<key>comment</key>
+		<string>Common word used throughout the application</string>
+		<key>value</key>
+		<string>Cancel</string>
+	</dict>
+	<key>FALSE</key>
+	<dict>
+		<key>comment</key>
+		<string>Common word used throughout the application</string>
+		<key>value</key>
+		<string>False</string>
+	</dict>
+	<key>NO</key>
+	<dict>
+		<key>comment</key>
+		<string>Common word used throughout the application</string>
+		<key>value</key>
+		<string>No</string>
+	</dict>
+	<key>OKAY</key>
+	<dict>
+		<key>comment</key>
+		<string>Common word used throughout the application</string>
+		<key>value</key>
+		<string>Okay</string>
+	</dict>
+	<key>OFF</key>
+	<dict>
+		<key>comment</key>
+		<string>Common word used throughout the application</string>
+		<key>value</key>
+		<string>Off</string>
+	</dict>
+	<key>ON</key>
+	<dict>
+		<key>comment</key>
+		<string>Common word used throughout the application</string>
+		<key>value</key>
+		<string>On</string>
+	</dict>
+	<key>TRUE</key>
+	<dict>
+		<key>comment</key>
+		<string>Common word used throughout the application</string>
+		<key>value</key>
+		<string>True</string>
+	</dict>
+	<key>VERSION</key>
+	<dict>
+		<key>comment</key>
+		<string>Common word used throughout the application</string>
+		<key>value</key>
+		<string>Version</string>
+	</dict>
+	<key>WEBSITE</key>
+	<dict>
+		<key>comment</key>
+		<string>Common word used throughout the application</string>
+		<key>value</key>
+		<string>Website</string>
+	</dict>
+	<key>YES</key>
+	<dict>
+		<key>comment</key>
+		<string>Common word used throughout the application</string>
+		<key>value</key>
+		<string>Yes</string>
+	</dict>
+	<key>LOG_DEBUG</key>
+	<dict>
+		<key>comment</key>
+		<string>Prefix used in displaying logging output in the terminal</string>
+		<key>value</key>
+		<string>[DEBUG] </string>
+	</dict>
+	<key>LOG_DEV</key>
+	<dict>
+		<key>comment</key>
+		<string>Prefix used in displaying logging output in the terminal</string>
+		<key>value</key>
+		<string>[DEV] </string>
+	</dict>
+	<key>LOG_ERROR</key>
+	<dict>
+		<key>comment</key>
+		<string>Prefix used in displaying logging output in the terminal</string>
+		<key>value</key>
+		<string>[ERROR] </string>
+	</dict>
+	<key>LOG_WARNING</key>
+	<dict>
+		<key>comment</key>
+		<string>Prefix used in displaying logging output in the terminal</string>
+		<key>value</key>
+		<string>[WARNING] </string>
+	</dict>
+	<key>LOG_VERBOSE</key>
+	<dict>
+		<key>comment</key>
+		<string>Prefix used in displaying logging output in the terminal</string>
+		<key>value</key>
+		<string>[VERBOSE] </string>
+	</dict>
+	<key>WARNING_MISSING_ARGUMENT_BREAK</key>
+	<dict>
+		<key>comment</key>
+		<string>Warning message</string>
+		<key>value</key>
+		<string>The %@ option is missing an ending double dash (--) argument break.</string>
+	</dict>
+	<key>WARNING_UNKNOWN_OPTION</key>
+	<dict>
+		<key>comment</key>
+		<string>Warning message</string>
+		<key>value</key>
+		<string>Unknown option: %@</string>
+	</dict>
+	<key>OPTION_SLIDER_SLIDER_LABEL</key>
+	<dict>
+		<key>comment</key>
+		<string>The default label for the slider control.</string>
+		<key>value</key>
+		<string>Choose a value:</string>
+	</dict>
+	<key>USAGE_EXAMPLE</key>
+	<dict>
+		<key>comment</key>
+		<string>Usage verbiage</string>
+		<key>value</key>
+		<string>Usage: cocoadialog %@ [options]</string>
+	</dict>
+	<key>USAGE_HEADER_CONTROLS</key>
+	<dict>
+		<key>comment</key>
+		<string>Usage verbiage</string>
+		<key>value</key>
+		<string>Controls</string>
+	</dict>
+	<key>USAGE_HEADER_CONTROL_ALIASES</key>
+	<dict>
+		<key>comment</key>
+		<string>Usage verbiage</string>
+		<key>value</key>
+		<string>Aliases</string>
+	</dict>
+	<key>USAGE_HEADER_SCOPE_CONTROL</key>
+	<dict>
+		<key>comment</key>
+		<string>Usage verbiage</string>
+		<key>value</key>
+		<string>%@ options</string>
+	</dict>
+	<key>USAGE_HEADER_SCOPE_GLOBAL</key>
+	<dict>
+		<key>comment</key>
+		<string>Usage verbiage</string>
+		<key>value</key>
+		<string>Global options</string>
+	</dict>
+	<key>USAGE_HEADER_SCOPE_DIALOG</key>
+	<dict>
+		<key>comment</key>
+		<string>Usage verbiage</string>
+		<key>value</key>
+		<string>Dialog options</string>
+	</dict>
+	<key>USAGE_VERBOSE_HELP</key>
+	<dict>
+		<key>comment</key>
+		<string>Usage verbiage</string>
+		<key>value</key>
+		<string>Use %@ to display additional information.</string>
+	</dict>
+	<key>USAGE_OPTION_ALLOWED_VALUE</key>
+	<dict>
+		<key>comment</key>
+		<string>Usage verbiage</string>
+		<key>value</key>
+		<string>Allowed value: %@</string>
+	</dict>
+	<key>USAGE_OPTION_ALLOWED_VALUES</key>
+	<dict>
+		<key>comment</key>
+		<string>Usage verbiage</string>
+		<key>value</key>
+		<string>Allowed values: %@</string>
+	</dict>
+	<key>USAGE_OPTION_AUTOMATIC_DEFAULT_VALUE</key>
+	<dict>
+		<key>comment</key>
+		<string>Usage verbiage</string>
+		<key>value</key>
+		<string>Automatic</string>
+	</dict>
+	<key>USAGE_OPTION_DEFAULT_VALUE</key>
+	<dict>
+		<key>comment</key>
+		<string>Usage verbiage</string>
+		<key>value</key>
+		<string>Default value: %@</string>
+	</dict>
+	<key>USAGE_OPTION_MULTIPLE_DOUBLE_DASH</key>
+	<dict>
+		<key>comment</key>
+		<string>Usage verbiage</string>
+		<key>value</key>
+		<string>Append a double dash (--) after all values have been provided to indicate that values should stop being parsed.</string>
+	</dict>
+	<key>USAGE_OPTION_NOTE</key>
+	<dict>
+		<key>comment</key>
+		<string>Usage verbiage</string>
+		<key>value</key>
+		<string>Note</string>
+	</dict>
+	<key>USAGE_OPTION_REQUIRED_VALUE</key>
+	<dict>
+		<key>comment</key>
+		<string>Usage verbiage</string>
+		<key>value</key>
+		<string>Required</string>
+	</dict>
+	<key>USAGE_OPTION_WARNING</key>
+	<dict>
+		<key>comment</key>
+		<string>Usage verbiage</string>
+		<key>value</key>
+		<string>Warning</string>
+	</dict>
+	<key>USAGE_OPTION_WARNING_AFFECTS_OUTPUT</key>
+	<dict>
+		<key>comment</key>
+		<string>Usage verbiage</string>
+		<key>value</key>
+		<string>Using this option will affect the control output and should not be used in stable code.</string>
+	</dict>
+	<key>USAGE_OPTION_TYPE_BOOLEAN</key>
+	<dict>
+		<key>comment</key>
+		<string>Usage verbiage</string>
+		<key>value</key>
+		<string>boolean</string>
+	</dict>
+	<key>USAGE_OPTION_TYPE_NUMBER</key>
+	<dict>
+		<key>comment</key>
+		<string>Usage verbiage</string>
+		<key>value</key>
+		<string>number</string>
+	</dict>
+	<key>USAGE_OPTION_TYPE_STRING</key>
+	<dict>
+		<key>comment</key>
+		<string>Usage verbiage</string>
+		<key>value</key>
+		<string>string</string>
+	</dict>
+	<key>USAGE_OPTION_GLOBAL_COLOR</key>
+	<dict>
+		<key>comment</key>
+		<string>Global option</string>
+		<key>value</key>
+		<string>Colorize ouput. By default, this is automatically determined by whether the terminal supports color or not.</string>
+	</dict>
+	<key>USAGE_OPTION_GLOBAL_DEBUG</key>
+	<dict>
+		<key>comment</key>
+		<string>Global option</string>
+		<key>value</key>
+		<string>Enables debug oriented output to help troubleshoot possible issues with a control.</string>
+	</dict>
+	<key>USAGE_OPTION_GLOBAL_HELP</key>
+	<dict>
+		<key>comment</key>
+		<string>Global option</string>
+		<key>value</key>
+		<string>Displays this help.</string>
+	</dict>
+	<key>USAGE_OPTION_GLOBAL_WARNINGS</key>
+	<dict>
+		<key>comment</key>
+		<string>Global option</string>
+		<key>value</key>
+		<string>Prevents any warning messages that may affect the control result value.</string>
+	</dict>
+	<key>USAGE_OPTION_GLOBAL_OUTPUT</key>
+	<dict>
+		<key>comment</key>
+		<string>Global option</string>
+		<key>value</key>
+		<string>Specifies the output format to use after a control has finished and wishes to relay the return values back to the terminal. Depending on your use case, you may need to choose a different format.</string>
+	</dict>
+	<key>USAGE_OPTION_GLOBAL_QUIET</key>
+	<dict>
+		<key>comment</key>
+		<string>Global option</string>
+		<key>value</key>
+		<string>Silences all output.</string>
+	</dict>
+	<key>USAGE_OPTION_GLOBAL_SCREEN</key>
+	<dict>
+		<key>comment</key>
+		<string>Global option</string>
+		<key>value</key>
+		<string>Indicates on which screen the control will appear. By default, the screen that currently has keyboard focus is used.</string>
+	</dict>
+	<key>USAGE_OPTION_GLOBAL_VERBOSE</key>
+	<dict>
+		<key>comment</key>
+		<string>Global option</string>
+		<key>value</key>
+		<string>Enables verbose oriented output to help troubleshoot possible issues with a control.</string>
+	</dict>
+	<key>USAGE_OPTION_GLOBAL_VERSION</key>
+	<dict>
+		<key>comment</key>
+		<string>Global option</string>
+		<key>value</key>
+		<string>Outputs the current version and then immediately exits.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_BUTTONS</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>The label to be displayed for 1-3 buttons.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_CANCEL_BUTTON</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Specifies which button should be used as the &quot;Cancel&quot; button. The value provided can either be the text label of one of the provided buttons or the numerical button index, where the first button starts at 0.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_DEFAULT_BUTTON</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Specifies which button should be used as the &quot;Default&quot; button. The value provided can either be the text label of one of the provided buttons or the numerical button index, where the first button starts at 0.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_EMPTY_TEXT</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>The text to display to the user when the --value-required option has been provided and the user has not provided any input.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_FLOAT</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Determines whether dialog will always float above all other windows.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_FLOAT_WARNING</key>
+	<dict>
+		<key>comment</key>
+		<string>Usage verbiage</string>
+		<key>value</key>
+		<string>Disabling this option may prevent the dialog from becoming focusable again. Use with caution.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_HEADER</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Bolded text to be displayed above --label.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_HEIGHT</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Height of the dialog.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_ICON</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Name of the icon to use. See website for full list.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_ICON_BUNDLE</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Name of the bundle to load icon from.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_ICON_FILE</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Filename of an icon or image to use.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_ICON_HEIGHT</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Height of the icon.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_ICON_SIZE</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Unified height and width of the icon.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_ICON_TYPE</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>File extension type to use.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_ICON_WIDTH</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Width of the icon.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_MARKDOWN</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Determines whether markdown parsing should occur on certain elements through out the dialog. If you&apos;re having issues with weird text showing up or being formatted differently, just disable this option.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_MAX_HEIGHT</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Maximum height for the dialog.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_MAX_WIDTH</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Maximum width for the dialog.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_MESSAGE</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>The message text to be displayed at the top of the dialog.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_MIN_HEIGHT</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Minimum height for the dialog.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_MIN_WIDTH</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Minimum width for the dialog.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_NEWLINE</key>
+	<dict>
+		<key>comment</key>
+		<string>Global option</string>
+		<key>value</key>
+		<string>Indicates whether or not a newline character is appended to the result value.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_POSX</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>The horizontal position of the dialog. Possible values are: &quot;left&quot;, &quot;center&quot;, &quot;right&quot; or a &lt;number&gt; in pixels.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_POSY</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>The vertical position of the dialog. Possible values are: &quot;top&quot;, &quot;center&quot;, &quot;bottom&quot; or a &lt;number&gt; in pixels.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_RESIZE</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Allows the dialog to be resizeable.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_RETURN_LABELS</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Returns label text values of buttons, checkboxes, dropdowns, and radios rather than its numerical index value.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_SELECTABLE_LABELS</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Determines whether labels will be selectable/highlightable using the mouse.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_SELECTABLE_LABELS_NOTE_MARKDOWN</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>If a label is parsed using markdown and it contains any links, the entire label will automatically become selectable; regardless if this option is disabled. This is a limitation of macOS and it must be overridden for the link to work properly.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_TIMEOUT</key>
+	<dict>
+		<key>comment</key>
+		<string>Global option</string>
+		<key>value</key>
+		<string>Number of seconds the control should wait for user input before timing out.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_TIMEOUT_FORMAT</key>
+	<dict>
+		<key>comment</key>
+		<string>Global option</string>
+		<key>value</key>
+		<string>Sets the timeout format used to display the remaining time. Provided replacement tokens include: %r (relative), %d (day), %h (hour), %m (minute) and %s (second).</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_TITLE</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Label to use in the titlebar of the dialog.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_TITLEBAR_CLOSE</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Enables the close titlebar button.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_TITLEBAR_MINIMIZE</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Enables the minimize titlebar button.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_TITLEBAR_ZOOM</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Enables the zoom (resize) titlebar button.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_VALUE_REQUIRED</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Flag indicating that a value is required from the user before the dialog is able to close.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_VIBRANCY</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Determines whether or not to use vibrancy effects on the dialog.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_VIBRANCY_NOTE_OS</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Requires macOS 10.10+ for this to work. Older versions of macOS will simply ignore this option.</string>
+	</dict>
+	<key>USAGE_OPTION_DIALOG_WIDTH</key>
+	<dict>
+		<key>comment</key>
+		<string>Dialog option</string>
+		<key>value</key>
+		<string>Width of the dialog.</string>
+	</dict>
+	<key>USAGE_OPTION_CHECKBOX_CHECKED</key>
+	<dict>
+		<key>comment</key>
+		<string>Checkbox option</string>
+		<key>value</key>
+		<string>List of item indices where the &quot;checked&quot; state should be enabled.</string>
+	</dict>
+	<key>USAGE_OPTION_CHECKBOX_COLUMNS</key>
+	<dict>
+		<key>comment</key>
+		<string>Checkbox option</string>
+		<key>value</key>
+		<string>Number of columns the checkboxes should fit into.</string>
+	</dict>
+	<key>USAGE_OPTION_CHECKBOX_DISABLED</key>
+	<dict>
+		<key>comment</key>
+		<string>Checkbox option</string>
+		<key>value</key>
+		<string>List of item indices where the &quot;disabled&quot; state should be enabled.</string>
+	</dict>
+	<key>USAGE_OPTION_CHECKBOX_ITEMS</key>
+	<dict>
+		<key>comment</key>
+		<string>Checkbox option</string>
+		<key>value</key>
+		<string>List of checkbox items. The first item&apos;s index is 0, the second is 1 and so forth.</string>
+	</dict>
+	<key>USAGE_OPTION_CHECKBOX_MIXED</key>
+	<dict>
+		<key>comment</key>
+		<string>Checkbox option</string>
+		<key>value</key>
+		<string>List of item indices where the &quot;mixed&quot; state should be enabled.</string>
+	</dict>
+	<key>USAGE_OPTION_CHECKBOX_ROWS</key>
+	<dict>
+		<key>comment</key>
+		<string>Checkbox option</string>
+		<key>value</key>
+		<string>Number of rows the checkboxes should fit into.</string>
+	</dict>
+	<key>USAGE_OPTION_FILE_CREATE_DIRECTORIES</key>
+	<dict>
+		<key>comment</key>
+		<string>File based control option</string>
+		<key>value</key>
+		<string>Allows the creation of directories.</string>
+	</dict>
+	<key>USAGE_OPTION_FILE_PACKAGES_AS_DIRECTORIES</key>
+	<dict>
+		<key>comment</key>
+		<string>File based control option</string>
+		<key>value</key>
+		<string>Allows the traversal of package files (.app, .bundle, .pkg, etc.) like directories.</string>
+	</dict>
+	<key>USAGE_OPTION_FILE_WITH_EXTENSIONS</key>
+	<dict>
+		<key>comment</key>
+		<string>File based control option</string>
+		<key>value</key>
+		<string>A space separated list of extensions.</string>
+	</dict>
+	<key>USAGE_OPTION_FILE_WITH_DIRECTORY</key>
+	<dict>
+		<key>comment</key>
+		<string>File based control option</string>
+		<key>value</key>
+		<string>The directory in which to start the control in.</string>
+	</dict>
+	<key>USAGE_OPTION_FILE_WITH_FILE</key>
+	<dict>
+		<key>comment</key>
+		<string>File based control option</string>
+		<key>value</key>
+		<string>The initial file to select control opens.</string>
+	</dict>
+	<key>USAGE_OPTION_PROGRESSBAR_CANCELED</key>
+	<dict>
+		<key>comment</key>
+		<string>Progressbar control option</string>
+		<key>value</key>
+		<string>User canceled progress.</string>
+	</dict>
+	<key>USAGE_OPTION_PROGRESSBAR_STOP</key>
+	<dict>
+		<key>comment</key>
+		<string>Progressbar control option</string>
+		<key>value</key>
+		<string>Stop</string>
+	</dict>
+	<key>USAGE_OPTION_PROGRESSBAR_STOP_QUESTION</key>
+	<dict>
+		<key>comment</key>
+		<string>Progressbar control option</string>
+		<key>value</key>
+		<string>Are you sure you want to stop?</string>
+	</dict>
+	<key>USAGE_OPTION_SLIDER_SLIDER_LABEL</key>
+	<dict>
+		<key>comment</key>
+		<string>Slider control option</string>
+		<key>value</key>
+		<string>Choose a value:</string>
+	</dict>
+</dict>
+</plist>
