@@ -848,10 +848,10 @@ return;
 	else if (m->s->from->nonextcp && m->s->to->noprevcp &&
 		Within4RoundingErrors(m->s->from->me.x,m->s->to->me.x) &&
 		Within4RoundingErrors(m->s->from->me.y,m->s->to->me.y))
-	    SOError( "The curve is too short.\n");
+	    SOError( "The spline is straight and is too short to be meaningful.\n");
 	else if (Within4RoundingErrors(evalCubicSpline(m->s->splines[0], m->tstart), evalCubicSpline(m->s->splines[0], m->tend)) &&
 		Within4RoundingErrors(evalCubicSpline(m->s->splines[1], m->tstart), evalCubicSpline(m->s->splines[1], m->tend)))
-	    SOError( "The subcurve is too short.\n");
+	    SOError( "The monotonic curve is too short.\n");
         else {
 	    /* It is monotonic, so a subset of it must also be */
 	    Monotonic *m2 = chunkalloc(sizeof(Monotonic));
