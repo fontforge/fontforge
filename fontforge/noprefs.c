@@ -648,7 +648,7 @@ static int DefaultEncoding(void) {
     const char *loc;
     int enc;
 
-#if HAVE_LANGINFO_H
+#if HAVE_NL_LANGINFO
     loc = nl_langinfo(CODESET);
     enc = encmatch(loc,false);
     if ( enc!=e_unknown )
