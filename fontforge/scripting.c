@@ -2397,7 +2397,7 @@ static void bWritePfm(Context *c) {
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
     locfilename = utf82def_copy(t);
-    if ( !WritePfmFile(c->a.vals[1].u.sval,sf,0,c->curfv->map) )
+    if ( !WritePfmFile(c->a.vals[1].u.sval,sf,c->curfv->map,0) )
 	ScriptError(c,"Save failed");
     free(locfilename); free(t);
 }
