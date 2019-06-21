@@ -7356,7 +7356,7 @@ return( changed );
 int SplineRemoveWildControlPoints(Spline *s, bigreal distratio) {
 	// If the distance between the control point and its base
 	// exceeds the the distance between the base points 
-	// or the control points by a great factor,
+	// by a great factor,
 	// it is likely erroneous and is likely to cause problems.
 	// So we remove it.
 	if (s->from == NULL || s->to == NULL)
