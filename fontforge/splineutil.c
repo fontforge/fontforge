@@ -7365,15 +7365,11 @@ int SplineRemoveWildControlPoints(Spline *s, bigreal distratio) {
 	bigreal pdisplacement = DistanceBetweenPoints(&s->from->me, &s->to->me);
 	bigreal bcdisplacement0 = 0.0;
 	bigreal bcdisplacement1 = 0.0;
-	bigreal ccdisplacement = 0.0;
 	if (!s->from->nonextcp)
 		bcdisplacement0 = DistanceBetweenPoints(&s->from->me, &s->from->nextcp);
 	if (!s->to->noprevcp)
 		bcdisplacement1 = DistanceBetweenPoints(&s->to->me, &s->to->prevcp);
-	if (!s->from->nonextcp && !s->to->noprevcp)
-		ccdisplacement = DistanceBetweenPoints(&s->from->nextcp, &s->to->prevcp);
-	bigreal basis = MAX(pdisplacement, ccdisplacement);
-	if (basis == 0 || MAX(bcdisplacement0, bcdisplacement1) / basis > distratio) {
+	if (pdisplacement == 0 || MAX(bcdisplacement0, bcdisplacement1) / pdisplacement > distratio) {
 		changed = s->islinear = s->from->nonextcp = s->to->noprevcp = true;
 		s->from->nextcp = s->from->me;
 		s->to->prevcp = s->to->me;
