@@ -755,6 +755,8 @@ ValidateMListTs_IF_VERBOSE(input1->monos)
   return;
 }
 
+#define evalCubicSpline(spline, t) ((((spline).a * (t) + (spline).b) * (t) + (spline).c) * (t) + (spline).d)
+
 static void AddSpline(Intersection *il,Monotonic *m,extended t) {
     MList *ml;
 
@@ -843,8 +845,13 @@ return;
         else if (Within16RoundingErrors(m->tstart, m->tend))
 	    SOError( "Attempt to subset monotonic rejoin inappropriately: m->tstart and m->tend are very close (%f = %f, t = %f)\n",
 		    m->tstart, m->tend, t );
-	else if (Within4RoundingErrors(m->s->from->me.x,m->s->to->me.x) && Within4RoundingErrors(m->s->from->me.y,m->s->to->me.y))
-	    SOError( "The curve is too short.\n");
+	else if (m->s->from->nonextcp && m->s->to->noprevcp &&
+		Within4RoundingErrors(m->s->from->me.x,m->s->to->me.x) &&
+		Within4RoundingErrors(m->s->from->me.y,m->s->to->me.y))
+	    SOError( "The spline is straight and is too short to be meaningful.\n");
+	else if (Within4RoundingErrors(evalCubicSpline(m->s->splines[0], m->tstart), evalCubicSpline(m->s->splines[0], m->tend)) &&
+		Within4RoundingErrors(evalCubicSpline(m->s->splines[1], m->tstart), evalCubicSpline(m->s->splines[1], m->tend)))
+	    SOError( "The monotonic curve is too short.\n");
         else {
 	    /* It is monotonic, so a subset of it must also be */
 	    Monotonic *m2 = chunkalloc(sizeof(Monotonic));
