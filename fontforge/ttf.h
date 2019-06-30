@@ -202,6 +202,7 @@ struct ttfinfo {
     uint32 copyright_start;	/* copyright and fontname */
 		/* post */
     uint32 postscript_start;	/* names for the glyphs, italic angle, etc. */
+    uint32 postscript_length;
 		/* OS/2 */
     uint32 os2_start;
 		/* TYP1 */

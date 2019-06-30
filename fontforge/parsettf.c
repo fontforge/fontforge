@@ -1132,6 +1132,7 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  break;
 	  case CHR('p','o','s','t'):
 	    info->postscript_start = offset;
+	    info->postscript_length = length;
 	  break;
 	  case CHR('O','S','/','2'):
 	    info->os2_start = offset;
@@ -5170,6 +5171,7 @@ static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
 static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
     int i,j;
     int format, len, gc, gcbig, val;
+    uint32 bounds;
     const char *name;
     char buffer[30];
     uint16 *indexes;
@@ -5187,6 +5189,8 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
     }
 
     if ( info->postscript_start!=0 ) {
+	bounds = info->postscript_start + info->postscript_length;
+
 	fseek(ttf,info->postscript_start,SEEK_SET);
 	format = getlong(ttf);
 	info->italicAngle = getfixed(ttf);
@@ -5225,7 +5229,10 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	    for ( i=0; i<258; ++i ) if ( indexes[i]!=0 || i==0 ) if ( indexes[i]<info->glyph_cnt && info->chars[indexes[i]]!=NULL )
 		info->chars[indexes[i]]->name = copy(ttfstandardnames[i]); /* Too many fonts have badly named glyphs to deduce encoding from name */
 	    gcbig += 258;
-	    for ( i=258; i<gcbig; ++i ) {
+	    i = 258;
+	    /* Read the pascal strings. There can be more strings than the
+	     * glyph count, so we read tell the end of the table */
+	    while ( ftell(ttf)+1<bounds ) {
 		char *nm;
 		len = getc(ttf);
 		if ( len<0 )		/* Don't crash on EOF */
@@ -5236,6 +5243,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 		nm[j] = '\0';
 		if ( indexes[i]<info->glyph_cnt && info->chars[indexes[i]]!=NULL )
 		    info->chars[indexes[i]]->name = nm; /* Too many fonts have badly named glyphs to deduce encoding from name */
+		i++;
 	    }
 	    free(indexes);
 	    anynames = true;
