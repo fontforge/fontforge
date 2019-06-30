@@ -5233,16 +5233,19 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	    /* Read the pascal strings. There can be more strings than the
 	     * glyph count, so we read tell the end of the table */
 	    while ( ftell(ttf)+1<bounds ) {
-		char *nm;
 		len = getc(ttf);
 		if ( len<0 )		/* Don't crash on EOF */
 	    break;
-		nm = malloc(len+1);
-		for ( j=0; j<len; ++j )
-		    nm[j] = getc(ttf);
-		nm[j] = '\0';
-		if ( indexes[i]<info->glyph_cnt && info->chars[indexes[i]]!=NULL )
+		if ( indexes[i]!=0 && indexes[i]<info->glyph_cnt && info->chars[indexes[i]]!=NULL ) {
+		    char *nm = malloc(len+1);
+		    for ( j=0; j<len; ++j )
+			nm[j] = getc(ttf);
+		    nm[j] = '\0';
 		    info->chars[indexes[i]]->name = nm; /* Too many fonts have badly named glyphs to deduce encoding from name */
+		} else {
+		    for ( j=0; j<len; ++j )
+			getc(ttf);
+		}
 		i++;
 	    }
 	    free(indexes);
