@@ -103,12 +103,12 @@ const char CantSaveFile[] = "Can't open or write to output file %s\n";	/* exit(1
 const char NoMoreMemory[] = "Can't access more memory.\n";		/* exit(3) */
 const char LineLengthBg[] = "Error with %s. Found line too long: %s\n";	/* exit(4) */
 
-static add_data_comment_at_EOL(FILE *output, int counter) {
+static int add_data_comment_at_EOL(FILE *output, int counter) {
 /* append an EOL index locator marker to make it easier to search for table values */
     if ( (counter & 63)==0 )
-	fprintf( output, "\t/* 0x%04x */\n",counter);
+	return( fprintf( output, "\t/* 0x%04x */\n",counter) );
     else
-	fprintf( output, "\n");
+	return( fprintf( output, "\n") );
 }
 
 static int dumpalphas(FILE *output, FILE *header) {
