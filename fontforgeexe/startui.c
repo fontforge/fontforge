@@ -206,10 +206,10 @@ static void InsCharHook(GDisplay *gd,unichar_t ch) {
 extern GImage splashimage;
 static GWindow splashw;
 static GTimer *autosave_timer, *splasht;
-static GFont *splash_font, *splash_italic;
+static GFont *splash_font, *splash_italic, *splash_mono;
 static int as,fh, linecnt;
-static unichar_t msg[470];
-static unichar_t *lines[30], *is, *ie;
+static unichar_t msg[546];
+static unichar_t *lines[32], *is, *ie;
 
 void ShowAboutScreen(void) {
     static int first=1;
@@ -229,7 +229,7 @@ static void SplashLayout() {
     extern const char *source_modtime_str;
     extern const char *source_version_str;
 
-    uc_strcpy(msg, "When my father finished his book on Renaissance printing (The Craft of Printing and the Publication of Shakespeare's Works) he told me that I would have to write the chapter on computer typography. This is my attempt to do so.");
+    u_strcpy(msg, utf82u_copy("When George Williams’ father finished his book on Renaissance printing (The Craft of Printing and the Publication of Shakespeare's Works) he told him that he would have to write the chapter on computer typography. PfaEdit, later renamed FontForge, was his attempt to do so."));
 
     GDrawSetFont(splashw,splash_font);
     linecnt = 0;
@@ -251,19 +251,29 @@ static void SplashLayout() {
 	lines[linecnt++] = pt;
 	if ( *pt ) ++pt;
     }
-    uc_strcpy(pt, " FontForge used to be named PfaEdit.");
 
+    uc_strcpy(pt, " As of 2012 FontForge development continues");
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
-    uc_strcpy(pt,"  git hash: ");
+
+    uc_strcpy(pt, " on GitHub.");
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
-    uc_strcat(pt, " ");
+
+    uc_strcpy(pt," ");
+    pt += u_strlen(pt);
+    lines[linecnt++] = pt;
+
+    uc_strcpy(pt," Git hash: ");
+    pt += u_strlen(pt);
+    lines[linecnt++] = pt;
+
+    uc_strcpy(pt," ");
     uc_strcat(pt, FONTFORGE_GIT_VERSION);
 
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
-    uc_strcpy(pt,"  Version: ");
+    uc_strcpy(pt," Version: ");
     uc_strcat(pt,FONTFORGE_MODTIME_STR);
 
     pt += u_strlen(pt);
@@ -288,7 +298,7 @@ static void SplashLayout() {
     uc_strcat(pt,")");
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
-    uc_strcpy(pt,"  Lib Version: ");
+    uc_strcpy(pt," Lib Version: ");
     uc_strcat(pt,FONTFORGE_MODTIME_STR);
     lines[linecnt++] = pt+u_strlen(pt);
     lines[linecnt] = NULL;
@@ -614,7 +624,11 @@ static int splash_e_h(GWindow gw, GEvent *event) {
 	GDrawSetFont(gw,splash_font);
 	y = splashimage.u.image->height + as + fh/2;
 	for ( i=1; i<linecnt; ++i ) {
-	    if ( is>=lines[i-1]+1 && is<lines[i] ) {
+        if (i == 11) {
+		x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,0,0x000000);
+		GDrawSetFont(gw,splash_mono);
+        GDrawDrawText(gw,8,y,lines[i-1]+1,lines[i]-lines[i-1]-1,0x000000);
+        } else if ( is>=lines[i-1]+1 && is<lines[i] ) {
 		x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,is-lines[i-1]-1,0x000000);
 		GDrawSetFont(gw,splash_italic);
 		GDrawDrawText(gw,x,y,is,lines[i]-is,0x000000);
@@ -928,7 +942,7 @@ int fontforge_main( int argc, char **argv ) {
     }
 
     if (!quiet) {
-        fprintf( stderr, "Copyright (c) 2000-2018 by George Williams. See AUTHORS for Contributors.\n" );
+        fprintf( stderr, "Copyright (c) 2000-%s. See AUTHORS for Contributors.\n", FONTFORGE_VERSIONYEAR );
         fprintf( stderr, " License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n" );
         fprintf( stderr, " with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.\n" );
         fprintf( stderr, " Based on sources from %s"
@@ -1280,6 +1294,8 @@ exit( 0 );
     splash_font = GDrawInstanciateFont(NULL,&rq);
     splash_font = GResourceFindFont("Splash.Font",splash_font);
     GDrawDecomposeFont(splash_font, &rq);
+    splash_mono = GDrawInstanciateFont(NULL,&rq);
+    splash_mono = GResourceFindFont("GTextField.Font",splash_mono);
     rq.style = fs_italic;
     splash_italic = GDrawInstanciateFont(NULL,&rq);
     splash_italic = GResourceFindFont("Splash.ItalicFont",splash_italic);
