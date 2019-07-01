@@ -58,7 +58,6 @@
 
 /* Build a ctype array out of the UnicodeData.txt and PropList.txt files */
 #include "basics.h"
-#include "combiners.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -120,6 +119,7 @@
 #define FF_UNICODE_RightEdge		0x40000
 #define FF_UNICODE_LeftEdge		0x80000
 #define FF_UNICODE_Touching		0x100000
+#include "combiners.h"
 
 int vLVOs=0;	/* debugging!=0*/
 int verbLVOa=0;	/* debugging!=0 verbose {lig/vul/oth}alts */
