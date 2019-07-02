@@ -98,6 +98,7 @@ EXTRA_DIST += fonts/AddExtremaTest2.sfd fonts/AddExtremumTest.sfd	\
 	fonts/NotoSans-Regular.ttc fonts/n019003l.pfb fonts/cmbsy10.pfb	\
 	fonts/test133.fea fonts/test134.fea fonts/test135.fea		\
 	fonts/test136.fea fonts/test1011.fea fonts/test1012.otf		\
+	fonts/NotoSerifTibetan-Regular.ttf				\
 	README
 
 # generated test inputs
@@ -177,7 +178,8 @@ EXTRA_DIST += findoverlapbugs.py test0001.py test0101.py	\
 	test1001.py test1001a.py test1001b.py test1001c.py	\
 	test1002.py test1003.py test1004.py test1005.py		\
 	test1006.py test1007.py test1008.py test1009.py         \
-	test1010.py test1011.py test1012.py test926.py test927.py test928.py test929.py \
+	test1010.py test1011.py test1012.py test1013.py 	\
+	test926.py test927.py test928.py test929.py		\
 	test0002.py test930.py test931.py test932.py 
 
 EXTRA_DIST += link_test.c randomtest.c build-aux/missing
