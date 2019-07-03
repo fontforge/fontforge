@@ -205,7 +205,7 @@ static void InsCharHook(GDisplay *gd,unichar_t ch) {
 
 extern GImage splashimage;
 static GWindow splashw;
-static GTimer *autosave_timer, *splasht;
+static GTimer *autosave_timer;
 static GFont *splash_font, *splash_italic, *splash_mono;
 static int as,fh, linecnt;
 static unichar_t msg[546];
@@ -218,9 +218,6 @@ void ShowAboutScreen(void) {
 	GDrawResize(splashw,splashimage.u.image->width,splashimage.u.image->height+linecnt*fh);
 	first = false;
     }
-    if ( splasht!=NULL )
-	GDrawCancelTimer(splasht);
-    splasht=NULL;
     GDrawSetVisible(splashw,true);
 }
 
@@ -229,7 +226,7 @@ static void SplashLayout() {
     extern const char *source_modtime_str;
     extern const char *source_version_str;
 
-    u_strcpy(msg, utf82u_copy("When George Williams’ father finished his book on Renaissance printing (The Craft of Printing and the Publication of Shakespeare's Works) he told him that he would have to write the chapter on computer typography. PfaEdit, later renamed FontForge, was his attempt to do so."));
+    u_strcpy(msg, utf82u_copy("As he drew closer to completing his book on Renaissance printing (The Craft of Printing and the Publication of Shakespeare’s Works), George Williams IV suggested that his son, George Williams V, write a chapter on computer typography. FontForge, previously called PfaEdit, was his attempt to do so."));
 
     GDrawSetFont(splashw,splash_font);
     linecnt = 0;
@@ -251,6 +248,10 @@ static void SplashLayout() {
 	lines[linecnt++] = pt;
 	if ( *pt ) ++pt;
     }
+
+    uc_strcpy(pt," ");
+    pt += u_strlen(pt);
+    lines[linecnt++] = pt;
 
     uc_strcpy(pt, " As of 2012 FontForge development continues");
     pt += u_strlen(pt);
@@ -312,17 +313,6 @@ void DelayEvent(void (*func)(void *), void *data) {
     info->data = data;
     info->func = func;
     GDrawRequestTimer(splashw,100,0,info);
-}
-
-static void DoDelayedEvents(GEvent *event) {
-    GTimer *t = event->u.timer.timer;
-    struct delayed_event *info = (struct delayed_event *) (event->u.timer.userdata);
-
-    if ( info!=NULL ) {
-	(info->func)(info->data);
-	free(info);
-    }
-    GDrawCancelTimer(t);
 }
 
 struct argsstruct {
@@ -401,7 +391,6 @@ static void start_splash_screen(void){
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
     GDrawProcessPendingEvents(NULL);
-    splasht = GDrawRequestTimer(splashw,1000,1000,NULL);
 
     localsplash = false;
 }
@@ -624,6 +613,9 @@ static int splash_e_h(GWindow gw, GEvent *event) {
 	GDrawSetFont(gw,splash_font);
 	y = splashimage.u.image->height + as + fh/2;
 	for ( i=1; i<linecnt; ++i ) {
+        // The number 11 comes from lines[linecnt] created in the function SplashLayout. It refers
+        // to the line at which we want to make the font monospace. If you add or remove a line, 
+        // you will need to change this.
         if (i == 11) {
 		x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,0,0x000000);
 		GDrawSetFont(gw,splash_mono);
@@ -646,22 +638,8 @@ static int splash_e_h(GWindow gw, GEvent *event) {
 	splash_cnt = 0;
       break;
       case et_timer:
-	if ( event->u.timer.timer==autosave_timer ) {
-	    DoAutoSaves();
-	} else if ( event->u.timer.timer==splasht ) {
-	    if ( ++splash_cnt==1 )
-		GDrawResize(gw,splashimage.u.image->width,splashimage.u.image->height-30);
-	    else if ( splash_cnt==2 )
-		GDrawResize(gw,splashimage.u.image->width,splashimage.u.image->height);
-	    else if ( splash_cnt>=7 ) {
-		GGadgetEndPopup();
-		GDrawSetVisible(gw,false);
-		GDrawCancelTimer(splasht);
-		splasht = NULL;
-	    }
-	} else {
-	    DoDelayedEvents(event);
-	}
+      if ( event->u.timer.timer==autosave_timer )
+          DoAutoSaves();
       break;
       case et_char:
       case et_mousedown:
@@ -1274,7 +1252,7 @@ int fontforge_main( int argc, char **argv ) {
 #endif
     pos.x = pos.y = 200;
     pos.width = splashimage.u.image->width;
-    pos.height = splashimage.u.image->height-56;		/* 54 */
+    pos.height = splashimage.u.image->height;
     GDrawBindSelection(NULL,sn_user1,"FontForge");
     if ( unique && GDrawSelectionOwned(NULL,sn_user1)) {
 	/* Different event handler, not a dialog */
