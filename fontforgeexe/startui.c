@@ -205,7 +205,7 @@ static void InsCharHook(GDisplay *gd,unichar_t ch) {
 
 extern GImage splashimage;
 static GWindow splashw;
-static GTimer *autosave_timer;
+static GTimer *autosave_timer, *splasht;
 static GFont *splash_font, *splash_italic, *splash_mono;
 static int as,fh, linecnt;
 static unichar_t msg[546];
@@ -218,6 +218,11 @@ void ShowAboutScreen(void) {
 	GDrawResize(splashw,splashimage.u.image->width,splashimage.u.image->height+linecnt*fh);
 	first = false;
     }
+    
+    if ( splasht!=NULL )
+    GDrawCancelTimer(splasht);
+    splasht=NULL;
+
     GDrawSetVisible(splashw,true);
 }
 
@@ -391,6 +396,8 @@ static void start_splash_screen(void){
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
     GDrawProcessPendingEvents(NULL);
+
+    splasht = GDrawRequestTimer(splashw,7000,1000,NULL);
 
     localsplash = false;
 }
@@ -638,8 +645,14 @@ static int splash_e_h(GWindow gw, GEvent *event) {
 	splash_cnt = 0;
       break;
       case et_timer:
-      if ( event->u.timer.timer==autosave_timer )
+      if ( event->u.timer.timer==autosave_timer ) {
           DoAutoSaves();
+      } else if ( event->u.timer.timer==splasht ) {
+          GGadgetEndPopup();
+          GDrawSetVisible(gw,false);
+          GDrawCancelTimer(splasht);
+          splasht = NULL;
+      }
       break;
       case et_char:
       case et_mousedown:
