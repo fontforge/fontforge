@@ -231,7 +231,7 @@ static void SplashLayout() {
     extern const char *source_modtime_str;
     extern const char *source_version_str;
 
-    u_strcpy(msg, utf82u_copy("As he drew closer to completing his book on Renaissance printing (The Craft of Printing and the Publication of Shakespeare’s Works), George Williams IV suggested that his son, George Williams V, write a chapter on computer typography. FontForge, previously called PfaEdit, was his attempt to do so."));
+    u_strcpy(msg, utf82u_copy("As he drew closer to completing his book on Renaissance printing (The Craft of Printing and the Publication of Shakespeare’s Works), George Williams IV suggested that his son, George Williams V, write a chapter on computer typography. FontForge—previously called PfaEdit—was his response."));
 
     GDrawSetFont(splashw,splash_font);
     linecnt = 0;
@@ -308,7 +308,7 @@ static void SplashLayout() {
     uc_strcat(pt,FONTFORGE_MODTIME_STR);
     lines[linecnt++] = pt+u_strlen(pt);
     lines[linecnt] = NULL;
-    is = u_strchr(msg,'(');
+    is = u_strchr(msg,'(')+1;
     ie = u_strchr(msg,')');
 }
 
@@ -318,6 +318,17 @@ void DelayEvent(void (*func)(void *), void *data) {
     info->data = data;
     info->func = func;
     GDrawRequestTimer(splashw,100,0,info);
+}
+
+static void DoDelayedEvents(GEvent *event) {
+    GTimer *t = event->u.timer.timer;
+    struct delayed_event *info = (struct delayed_event *) (event->u.timer.userdata);
+
+    if ( info!=NULL ) {
+       (info->func)(info->data);
+       free(info);
+    }
+    GDrawCancelTimer(t);
 }
 
 struct argsstruct {
@@ -652,6 +663,8 @@ static int splash_e_h(GWindow gw, GEvent *event) {
           GDrawSetVisible(gw,false);
           GDrawCancelTimer(splasht);
           splasht = NULL;
+      } else {
+          DoDelayedEvents(event);
       }
       break;
       case et_char:
