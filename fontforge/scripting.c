@@ -3747,6 +3747,15 @@ static void bSetOS2Value(Context *c) {
 	setint16(&sf->pfminfo.weight,c);
     } else if ( strmatch(c->a.vals[1].u.sval,"Width")==0 ) {
 	setint16(&sf->pfminfo.width,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"StyleMap")==0 ) {
+	if ( c->a.vals[2].type!=v_int )
+	    c->error = ce_badargtype;
+	else if ( c->a.vals[2].u.ival<0 || c->a.vals[2].u.ival>=0x400 )
+	    ScriptError(c,"StyleMap value should be a positive value less than 0x400");
+	    // In OpenType font spec ( https://docs.microsoft.com/ja-jp/typography/opentype/spec/os2#fss ),
+	    // Bits 0 to 9 of fsSelection have meanings and Bits 10 to 15 are reserved.
+	else
+	    sf->pfminfo.stylemap = c->a.vals[2].u.ival;
     } else if ( strmatch(c->a.vals[1].u.sval,"FSType")==0 ) {
 	setint16(&sf->pfminfo.fstype,c);
     } else if ( strmatch(c->a.vals[1].u.sval,"IBMFamily")==0 ) {
@@ -3864,6 +3873,8 @@ static void bGetOS2Value(Context *c) {
 	os2getint(sf->pfminfo.weight,c);
     } else if ( strmatch(c->a.vals[1].u.sval,"Width")==0 ) {
 	os2getint(sf->pfminfo.width,c);
+    } else if ( strmatch(c->a.vals[1].u.sval,"StyleMap")==0 ) {
+	os2getint(sf->pfminfo.stylemap,c);
     } else if ( strmatch(c->a.vals[1].u.sval,"FSType")==0 ) {
 	os2getint(sf->pfminfo.fstype,c);
     } else if ( strmatch(c->a.vals[1].u.sval,"IBMFamily")==0 ) {

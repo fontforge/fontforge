@@ -2927,6 +2927,13 @@ SetGasp([8,2,16,1,65535,3])
 	    <P>
 	    <CODE>StrikeOutSize, StrikeOutPos</CODE>
 	    <P>
+	    <CODE>StyleMap</CODE>
+	    <P>
+	    This is equivalent to the "Style Map" pull-down list in
+	    <A HREF="fontinfo.html#TTF-Values">Font Info-&gt;OS/2-&gt;Misc. </A>
+	    Typical values are 0x01 (Italic), 0x20 (Bold), 0x21 (Bold Italic) and 0x40 (Regular).
+	    If the second argument is not a positive value less than 0x400, error flag is set.
+	    <P>
 	    <P>
 	    Usually the second argument is an integer but <CODE>VendorID</CODE> takes
 	    a 4 character ASCII string, and <CODE>Panose</CODE> takes a 10 element integer
