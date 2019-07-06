@@ -1349,7 +1349,7 @@ static void FindStrokePointsSquare(SplineSet *ss, StrokeContext *c) {
 	diff = 1.0/len;
 	for ( i=0, t=0; i<=len; ++i, t+= diff ) {
 	    StrokePoint *p;
-	    if ( c->cur >= c->max ) {
+	    if ( c->cur+cnt+3 >= c->max ) {
 		int extras = len+8*cnt+200;
 		c->all = realloc(c->all,(c->max+extras)*sizeof(StrokePoint));
 		memset(c->all+c->max,0,extras*sizeof(StrokePoint));
