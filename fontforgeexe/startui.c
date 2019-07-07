@@ -1053,7 +1053,7 @@ int fontforge_main( int argc, char **argv ) {
 	int useCommandKey = get_mac_x11_prop("enable_key_equivalents") <= 0;
 
 	if ( local_x && useCommandKey )
-#endif
+#endif // FONTFORGE_CAN_USE_GDK
 	{
 	    hotkeySystemSetCanUseMacCommand( 1 );
 
@@ -1063,7 +1063,8 @@ int fontforge_main( int argc, char **argv ) {
 	    }
 	}
     }
-#endif
+#endif // defined(__Mac)
+
     GMenuSetShortcutDomain("FontForge-MenuShortCuts");
     bind_textdomain_codeset("FontForge-MenuShortCuts","UTF-8");
     bindtextdomain("FontForge-MenuShortCuts", getLocaleDir());
