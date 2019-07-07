@@ -10,29 +10,22 @@ PKGBASEPATH="$( cd "${SCRIPT_PATH}/../.." && pwd )"
 
 echo "PKGBASE: $PKGBASEPATH"
 
-APPLICATIONS_FONTFORGE="/Applications/FontForge.app"
-if [ -L $APPLICATIONS_FONTFORGE ]; then
-    echo "your fontforge install is using a link...";
-    APPLICATIONS_FONTFORGE=$(readlink $APPLICATIONS_FONTFORGE);
-    echo "you actually installed the real file into $APPLICATIONS_FONTFORGE"
-fi
-
 name=`basename "$0"`
 tmp="$0"
 tmp=`dirname "$tmp"`
 tmp=`dirname "$tmp"`
 bundle=`dirname "$tmp"`
-bundle=/Applications/FontForge.app
-scriptdir=/Applications/FontForge.app/Contents/MacOS/
+bundle=$PKGBASEPATH
+scriptdir=$PKGBASEPATH/Contents/MacOS/
 bundle_contents="$bundle"/Contents
 bundle_res="$bundle_contents"/Resources
+bundle_fw="$bundle_contents"/Frameworks
 bundle_lib="$bundle_res"/opt/local/lib
 bundle_bin="$bundle_res"/opt/local/bin
 bundle_data="$bundle_res"/opt/local/share
 bundle_etc="$bundle_res"/opt/local/etc
 bundle_share="$bundle_res"/opt/local/share
 
-# export DYLD_LIBRARY_PATH="$bundle_lib"
 export XDG_CONFIG_DIRS="$bundle_etc"/xdg
 export XDG_DATA_DIRS="$bundle_data"
 export GTK_DATA_PREFIX="$bundle_res"
@@ -42,12 +35,8 @@ export GTK_PATH="$bundle_res"
 export GTK2_RC_FILES="$bundle_etc/gtk-2.0/gtkrc"
 export GTK_IM_MODULE_FILE="$bundle_etc/gtk-2.0/gtk.immodules"
 export GDK_PIXBUF_MODULE_FILE="$bundle_etc/gtk-2.0/gdk-pixbuf.loaders"
-export PANGO_RC_FILE="$bundle_etc/pango/pangorc"
-export FONTCONFIG_FILE="$bundle_etc/fonts/fonts.conf"
 
 export LANG=en_US.UTF-8
-export XLOCALEDIR="$bundle_share/X11/locale"
-
 
 WRAPPER=
 
@@ -67,16 +56,15 @@ if [ x"$1" == "x--debug" -o x"$1" == "x--debug-clearenv" ]; then
 
     if command -v lldb 2>/dev/null; then
 
-        export PYTHONPATH="/Applications/FontForge.app/Contents/MacOS/Even.app/Contents/Resources/lib/"
+        export PYTHONPATH="$PKGBASEPATH/Contents/MacOS/Even.app/Contents/Resources/lib/"
         export PATH="$PATH:$bundle_bin"
-        export PYTHON="$bundle_bin/Python.framework.*/bin/python"
-        export PYTHONHOME="$bundle_bin/Python.framework.2.7"
+        export PYTHON="$PKGBASEPATH/Contents/Frameworks/Python.framework/Versions/Current/bin/python"
 
         echo "have set up python stuff... PYTHONHOME: $PYTHONHOME "
         echo "have set up python stuff... PYTHON:     $PYTHON "
 
         WRAPPER="gdb --args"
-        WRAPPER="script $HOME/FontForge-Debug-Output.txt lldb --debug --source /Applications/FontForge.app/Contents/MacOS/debug-script -- "
+        WRAPPER="script $HOME/FontForge-Debug-Output.txt lldb --debug --source $PKGBASEPATH/Contents/MacOS/debug-script -- "
         $WRAPPER
         # $WRAPPER $bundle_bin/fontforge "$2" "$3" "$4" "$5" "$6"
         exit
@@ -89,20 +77,16 @@ if [ x"$1" == "x--debug" -o x"$1" == "x--debug-clearenv" ]; then
     fi
 fi
 
-# We lost Even.
-if [1 = 0];
-then
 #
 # only change these here to the local bundle ones so the scripts
 # can run.
-export PYTHONHOME="$bundle_bin/Python.framework.2.7"
-export PYTHONPATH="/Applications/FontForge.app/Contents/MacOS/Even.app/Contents/Resources/lib/"
+export PYTHONPATH="$bundle_lib/python2.7:$PKGBASEPATH/Contents/MacOS/Even.app/Contents/Resources/lib/"
 # This line allows python to find the compiled libraries so for example the gdraw
 # module can use _libraries['libgdraw.so.5'] = CDLL('libgdraw.so.5')
 export LD_LIBRARY_PATH="$bundle_lib"
-fi;
 
-/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f FontForge.app
+
+#/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f FontForge.app
 
 # This ensures that File Open and File Save (etc) dialogs open in Home
 # when FontForge is launched via normal OS X methods (double-clicking
@@ -113,13 +97,11 @@ if [ "$( ps -o comm= $PPID)" = "/sbin/launchd" ] ; then
     cd ~/ || true
 fi
 
-# starting more than one does nothing, and it will close itself.
-
 export PATH="$PATH:$bundle_bin"
-# echo $WRAPPER $bundle_bin/fontforge > /tmp/oo
+echo $WRAPPER $bundle_bin/fontforge > /tmp/oo
 
 if [ $# -eq 0 ] ; then
-    ( exec $WRAPPER $bundle_bin/fontforge -new & )
+    ( exec $WRAPPER $bundle_bin/fontforge -new  )
 else
-    ( exec $WRAPPER $bundle_bin/fontforge "$@" & )
+    ( exec $WRAPPER $bundle_bin/fontforge "$@"  )
 fi

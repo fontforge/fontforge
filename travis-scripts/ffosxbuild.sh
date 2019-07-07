@@ -32,16 +32,11 @@ cp -r $workdir/share/fontforge/osx/FontForge.app $outdir
 cp -r $workdir/bin $outdir/Contents/Resources/opt/local/
 cp -r $workdir/share $outdir/Contents/Resources/opt/local/
 rm -r $outdir/Contents/Resources/opt/local/share/fontforge/osx
-# This may not work if collab isn't built
-cp -r $workdir/libexec $outdir/Contents/Resources/opt/local/ || true
 mkdir -p $outdir/Contents/Resources/opt/local/lib
 cp -r $workdir/lib/python2.7 $outdir/Contents/Resources/opt/local/lib/python2.7
 
 pushd $outdir/Contents/MacOS
-rm FontForge && cp $BASE/_FontForge FontForge
-rm FFPython && ln -s ../Frameworks/Python.framework/Versions/Current/bin/python FFPython
-rm *.sh
-rm ldd
+ln -s ../Frameworks/Python.framework/Versions/Current/bin/python FFPython
 popd
 
 # Now we bundle the Python libraries

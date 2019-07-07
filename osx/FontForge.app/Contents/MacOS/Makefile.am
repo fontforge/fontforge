@@ -26,9 +26,7 @@
 
 include $(top_srcdir)/mk/layout.am
 
-FFAPP_FILES = FontForge FFPython debug-script \
-    library-paths-opt-local-to-absolute.sh library-paths-to-absolute.sh ldd \
-    Attach-Debugger-to-running-FontForge
+FFAPP_FILES = FontForge debug-script Attach-Debugger-to-running-FontForge
 EXTRA_DIST = $(FFAPP_FILES)
 
 if PLATFORM_OSX
