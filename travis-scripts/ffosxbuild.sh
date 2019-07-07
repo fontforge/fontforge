@@ -29,10 +29,10 @@ outdir=$(realpath $outdir)
 echo "Taking a dump into $outdir..."
 
 cp -r $workdir/share/fontforge/osx/FontForge.app $outdir
+mkdir -p $outdir/Contents/Resources/opt/local/lib
 cp -r $workdir/bin $outdir/Contents/Resources/opt/local/
 cp -r $workdir/share $outdir/Contents/Resources/opt/local/
 rm -r $outdir/Contents/Resources/opt/local/share/fontforge/osx
-mkdir -p $outdir/Contents/Resources/opt/local/lib
 cp -r $workdir/lib/python2.7 $outdir/Contents/Resources/opt/local/lib/python2.7
 
 pushd $outdir/Contents/MacOS

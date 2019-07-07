@@ -653,15 +653,6 @@ contrib/cidmap/Makefile
 contrib/cidmap/src/Makefile
 contrib/fonttools/Makefile
 osx/Makefile
-osx/FontForge.app/Makefile
-osx/FontForge.app/Contents/Makefile
-osx/FontForge.app/Contents/Resources/Makefile
-osx/FontForge.app/Contents/Resources/English.lproj/Makefile
-osx/FontForge.app/Contents/Resources/opt/Makefile
-osx/FontForge.app/Contents/Resources/opt/local/Makefile
-osx/FontForge.app/Contents/Resources/opt/local/etc/Makefile
-osx/FontForge.app/Contents/Resources/opt/local/etc/fonts/Makefile
-osx/FontForge.app/Contents/MacOS/Makefile
 
 fontforge.pc
 osx/FontForge.app/Contents/Info.plist
