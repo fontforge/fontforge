@@ -17,19 +17,6 @@ echo "PKGBASE: $PKGBASEPATH"
 #    echo "you actually installed the real file into $APPLICATIONS_FONTFORGE"
 #fi
 
-
-#if [ y"$PKGBASEPATH" != "y$APPLICATIONS_FONTFORGE" ]; then
-#  COCOA_DIALOG="${SCRIPT_PATH}/CocoaDialog.app/Contents/MacOS/CocoaDialog";
-#  $COCOA_DIALOG msgbox --no-newline \
-#    --title "FontForge: Error starting" \
-#    --text "FontForge is in the wrong folder on your computer." \
-#    --informative-text "Please move the FontForge.app to your system /Applications folder." \
-#    --button1 "OK" --float
-#    BASEPATH="$( cd "${PKGBASEPATH}/.." && pwd )"
-#    open "$BASEPATH"
-#    exit;
-#fi
-
 name=`basename "$0"`
 tmp="$0"
 tmp=`dirname "$tmp"`
@@ -114,7 +101,6 @@ export LD_LIBRARY_PATH="$bundle_lib"
 
 
 #/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f FontForge.app
-#$scriptdir/fcprogress.pl >|/tmp/zz 2>&1
 
 # This ensures that File Open and File Save (etc) dialogs open in Home
 # when FontForge is launched via normal OS X methods (double-clicking

@@ -40,8 +40,6 @@ cp -r $workdir/lib/python2.7 $outdir/Contents/Resources/opt/local/lib/python2.7
 pushd $outdir/Contents/MacOS
 rm FontForge && cp $BASE/_FontForge FontForge
 rm FFPython && ln -s ../Frameworks/Python.framework/Versions/Current/bin/python FFPython
-rm -r CocoaDialog.app
-rm fcprogress.pl
 rm *.sh
 rm ldd
 popd
