@@ -639,7 +639,6 @@ fontforgeexe/pixmaps/Makefile
 fontforgeexe/pixmaps/2012/Makefile
 fontforgeexe/pixmaps/tango/Makefile
 po/Makefile
-mackeys/Makefile
 doc/Makefile
 doc/html/Makefile
 pycontrib/Makefile

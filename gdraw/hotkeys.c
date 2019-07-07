@@ -424,9 +424,11 @@ Hotkey* hotkeyFindByMenuPath( GWindow w, char* path ) {
 char* hotkeyTextToMacModifiers( char* keydesc )
 {
     keydesc = copy( keydesc );
+    keydesc = str_replace_all( keydesc, "Ctrl", "⌘", 1 );
     keydesc = str_replace_all( keydesc, "Ctl", "⌘", 1 );
     keydesc = str_replace_all( keydesc, "Command", "⌘", 1 );
     keydesc = str_replace_all( keydesc, "Cmd", "⌘", 1 );
+    keydesc = str_replace_all( keydesc, "Shift", "⇧", 1 );
     keydesc = str_replace_all( keydesc, "Shft", "⇧", 1 );
     keydesc = str_replace_all( keydesc, "Alt", "⎇", 1 );
     keydesc = str_replace_all( keydesc, "+", "", 1 );
