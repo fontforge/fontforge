@@ -78,7 +78,7 @@ SUBDIRS += pyhook
 endif PYTHON_EXTENSION
 
 if MACINTOSH
-SUBDIRS += mackeys osx
+SUBDIRS += osx
 endif MACINTOSH
 
 if THE_PROGRAMS

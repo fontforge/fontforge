@@ -639,7 +639,6 @@ fontforgeexe/pixmaps/Makefile
 fontforgeexe/pixmaps/2012/Makefile
 fontforgeexe/pixmaps/tango/Makefile
 po/Makefile
-mackeys/Makefile
 doc/Makefile
 doc/html/Makefile
 pycontrib/Makefile
@@ -653,26 +652,6 @@ contrib/cidmap/Makefile
 contrib/cidmap/src/Makefile
 contrib/fonttools/Makefile
 osx/Makefile
-osx/FontForge.app/Makefile
-osx/FontForge.app/Contents/Makefile
-osx/FontForge.app/Contents/Resources/Makefile
-osx/FontForge.app/Contents/Resources/English.lproj/Makefile
-osx/FontForge.app/Contents/Resources/opt/Makefile
-osx/FontForge.app/Contents/Resources/opt/local/Makefile
-osx/FontForge.app/Contents/Resources/opt/local/etc/Makefile
-osx/FontForge.app/Contents/Resources/opt/local/etc/fonts/Makefile
-osx/FontForge.app/Contents/MacOS/Makefile
-osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Makefile
-osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Makefile
-osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/MacOS/Makefile
-osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/Makefile
-osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/Inputbox.nib/Makefile
-osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/MainMenu.nib/Makefile
-osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/Msgbox.nib/Makefile
-osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/PopUpButton.nib/Makefile
-osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/Progressbar.nib/Makefile
-osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/SecureInputbox.nib/Makefile
-osx/FontForge.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/Textbox.nib/Makefile
 
 fontforge.pc
 osx/FontForge.app/Contents/Info.plist
