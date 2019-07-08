@@ -974,6 +974,16 @@ char *chomp( char *line ) {
     return( line );
 }
 
+unichar_t *u_copytolower(const unichar_t *input)
+{
+    unichar_t* ret = u_copy(input);
+    unichar_t* p = ret;
+    for( ; *p; ++p ) {
+	*p = tolower(*p);
+    }
+    return ret;
+}
+
 char *copytolower(const char *input)
 {
     char* ret = copy(input);
@@ -1027,6 +1037,18 @@ int u_endswith(const unichar_t *haystack,const unichar_t *needle) {
     int nedlen = u_strlen( needle );
     if( haylen < nedlen )
 	return 0;
+    unichar_t* p = u_strstr( haystack + haylen - nedlen, needle );
+    return p == ( haystack + haylen - nedlen );
+}
+
+int u_endswithi(const unichar_t *haystackZ,const unichar_t *needleZ) {
+    unichar_t* haystack = u_copytolower(haystackZ);
+    unichar_t* needle   = u_copytolower(needleZ);
+    int haylen = u_strlen( haystack );
+    int nedlen = u_strlen( needle );
+
+    if( haylen < nedlen ) return 0;
+
     unichar_t* p = u_strstr( haystack + haylen - nedlen, needle );
     return p == ( haystack + haylen - nedlen );
 }

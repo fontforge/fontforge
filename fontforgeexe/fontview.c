@@ -593,7 +593,7 @@ static enum fchooserret _FVSaveAsFilterFunc(GGadget *g,struct gdirentry *ent, co
 
 int _FVMenuSaveAs(FontView *fv) {
     char *temp;
-    char *ret;
+    unichar_t *ret, *utemp;
     char *filename;
     int ok;
     int s2d = fv->b.cidmaster!=NULL ? fv->b.cidmaster->save_to_dir :
@@ -656,16 +656,19 @@ int _FVMenuSaveAs(FontView *fv) {
     }
 #endif
 
-    ret = GWidgetSaveAsFileWithGadget8(_("Save as..."),temp,0,NULL,
+    utemp = utf82u_copy(temp);
+    ret = GWidgetSaveAsFileWithGadget((unichar_t*)_("Save as..."),utemp,0,NULL,
 				       _FVSaveAsFilterFunc, FilenameFunc,
 				       &gcd );
-    free(temp);
+    free(temp); free(utemp);
     if ( ret==NULL )
 return( 0 );
-    filename = utf82def_copy(ret);
-    free(ret);
+    filename = u2utf8_copy(ret);
 
-    if(!(endswithi( filename, ".sfdir") || endswithi( filename, ".sfd")))
+    const unichar_t *u_sfdir = utf82u_copy(".sfdir");
+    const unichar_t *u_sfd = utf82u_copy(".sfd");
+
+    if(!(u_endswith( ret, u_sfdir ) || u_endswith( ret, u_sfd )))
     {
 	// they forgot the extension, so we force the default of .sfd
 	// and alert them to the fact that we have done this and we
@@ -685,6 +688,7 @@ return( 0 );
 	free(filename);
 	filename = newpath;
     }
+    free(ret);
     
     FVFlattenAllBitmapSelections(fv);
     fv->b.sf->compression = 0;

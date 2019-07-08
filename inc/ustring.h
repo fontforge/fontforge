@@ -201,6 +201,7 @@ int endswith(const char *haystack,const char *needle);
  * No new strings are allocated, freed, or returned.
  */
 extern int u_endswith(const unichar_t *haystack,const unichar_t *needle);
+extern int u_endswithi(const unichar_t *haystack,const unichar_t *needle);
 
 extern int u_startswith(const unichar_t *haystack,const unichar_t *needle);
 extern int uc_startswith(const unichar_t *haystack,const char* needle);
