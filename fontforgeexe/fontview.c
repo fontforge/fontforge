@@ -668,7 +668,7 @@ return( 0 );
     const unichar_t *u_sfdir = utf82u_copy(".sfdir");
     const unichar_t *u_sfd = utf82u_copy(".sfd");
 
-    if(!(u_endswith( ret, u_sfdir ) || u_endswith( ret, u_sfd )))
+    if(!(u_endswithi( ret, u_sfdir ) || u_endswithi( ret, u_sfd )))
     {
 	// they forgot the extension, so we force the default of .sfd
 	// and alert them to the fact that we have done this and we
