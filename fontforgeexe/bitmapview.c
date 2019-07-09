@@ -779,6 +779,7 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
 	for ( refs = cvtemp->b.sc->layers[ly_fore].refs; refs!=NULL; refs = refs->next )
 	    CVDrawSplineSet(cvtemp,pixmap,refs->layers[0].splines,col,false,&clip);
     }
+    CharViewFree(cvtemp);
     if ( bv->active_tool==bvt_pointer ) {
 	if ( bv->bc->selection==NULL ) {
 	    int xmin, xmax, ymin, ymax;
