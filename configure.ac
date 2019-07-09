@@ -662,10 +662,6 @@ osx/FontForge.app/Contents/Info.plist
 FONTFORGE_CREATE_PKGCONFIG_FILES
 
 #--------------------------------------------------------------------------
-# Create FontForge Operating System Specific files
-AC_CONFIG_FILES([fontforgeexe/darwinsetup],[chmod +x fontforgeexe/darwinsetup])
-
-#--------------------------------------------------------------------------
 # Create FontForge and Python test driver
 AC_CONFIG_FILES([tests/atlocal])
 
