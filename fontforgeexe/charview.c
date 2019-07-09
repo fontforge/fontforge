@@ -3413,7 +3413,7 @@ static void CVFit(CharView *cv) {
     _CVFit(cv,&b,true);
 }
 
-static void CVUnlinkView(CharView *cv ) {
+void CVUnlinkView(CharView *cv ) {
     CharView *test;
 
     if ( cv->b.sc->views == (CharViewBase *) cv ) {
