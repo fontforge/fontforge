@@ -151,6 +151,8 @@ typedef struct charviewtab
 {
     char charselected[ charviewtab_charselectedsz + 1 ];
     char tablabeltxt[ charviewtab_charselectedsz + 1 ];
+    float xoff, yoff;
+    real scale;
 } CharViewTab;
 
 enum { charview_cvtabssz = 100 };
