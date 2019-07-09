@@ -220,7 +220,6 @@ typedef struct charview {
     
     int hvoffset;		/* for showalmosthvlines */
     int layers_off_top;
-    real scale;
     GWindow gw, v;
     GWindow hruler, vruler; /* Ruler pixmaps */
     GGadget *vsb, *hsb, *mb, *tabs;
@@ -241,7 +240,6 @@ typedef struct charview {
     GIC *gic;
     GIC *gwgic;
     int width, height;
-    float xoff, yoff; /* must be floating point, for precise zoom by scroll */
     int mbh;    //< menu bar height
     int charselectorh;  //< char selection input box height
     int infoh;  //< info bar height
