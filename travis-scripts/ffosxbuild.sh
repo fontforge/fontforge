@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 
-set -e
-BASE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-workdir=$1
-hash=$2
+set -e -o pipefail
+SCRIPT_BASE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+INVOKE_BASE="$(pwd)"
 
-if [ -z $workdir ]; then
-    echo "Usage: `basename $0` workdir hash"
-    echo "  workdir is the location to the prefix that FontForge was installed to."
+APPDIR=$(realpath $1)
+HASH=${2:0:7}
+
+if [ -z "$APPDIR" ]; then
+    echo "Usage: `basename $0` appdir hash"
+    echo "  appdir is the location to the FontForge.app that cmake generated"
     echo "  hash is the version hash of this build"
     echo
     echo "  This script does not support overwriting an existing bundle."
@@ -15,105 +17,62 @@ if [ -z $workdir ]; then
 fi
 
 builddate=`date +%Y-%m-%d`
-#outdir=FontForge-$builddate-${hash:0:7}.app
-outdir=FontForge.app
 
-if [ ! -f $BASE/lddx ]; then
-    echo "Fetching lddx..."
-    wget https://github.com/jtanx/lddx/releases/download/v0.0.1/lddx-0.0.1.tar.bz2 -O - | tar -jxf - -C $BASE
+if [ -z "$LDDX" ]; then
+    LDDX="$SCRIPT_BASE/lddx"
+    if [ ! -f "$LDDX" ]; then
+        LDDX="$INVOKE_BASE/lddx"
+        if [ ! -f "$LDDX" ]; then
+            echo "Fetching lddx..."
+            curl -L https://github.com/jtanx/lddx/releases/download/v0.1.0/lddx-0.1.0.tar.xz | tar -Jxf - -C "$INVOKE_BASE"
+        fi
+    fi
 fi
-
-workdir=$(realpath $workdir)
-outdir=$(realpath $outdir)
-
-PYVER=$(${PYTHON:-python3} --version 2>&1 | cut -d' ' -f2 | cut -d. -f1-2)
-PYTHON=python$PYVER
-
-echo "Taking a dump into $outdir..."
-
-cp -r $workdir/share/fontforge/osx/FontForge.app $outdir
-mkdir -p $outdir/Contents/Resources/opt/local/lib
-cp -r $workdir/bin $outdir/Contents/Resources/opt/local/
-cp -r $workdir/share $outdir/Contents/Resources/opt/local/
-rm -r $outdir/Contents/Resources/opt/local/share/fontforge/osx
-cp -r $workdir/lib/$PYTHON $outdir/Contents/Resources/opt/local/lib/$PYTHON
-
-pushd $outdir/Contents/MacOS
-ln -s ../Frameworks/Python.framework/Versions/Current/bin/python FFPython
-popd
 
 # Now we bundle the Python libraries
 echo "Bundling Python libraries..."
-otool -L $workdir/bin/fontforge
 
-pylib=$(otool -L $workdir/bin/fontforge | grep -i python | sed -e 's/ \(.*\)//')
-pycruft=$(realpath $(dirname $pylib)/../../..)
+PYLIB=$(otool -L $APPDIR/Contents/Resources/opt/local/bin/fontforge | grep -i python | sed -e 's/ \(.*\)//')
+PYVER=$(echo $PYLIB | rev | cut -d/ -f2 | rev)
+PYTHON=python$PYVER
+pycruft=$(realpath $(dirname $PYLIB)/../../..)
+
 echo "pycruft: $pycruft"
-mkdir -p $outdir/Contents/Frameworks
-cp -av $pycruft/Python.framework $outdir/Contents/Frameworks
-pushd $outdir/Contents/Frameworks/Python.framework/Versions/$PYVER/lib/$PYTHON/
+mkdir -p $APPDIR/Contents/Frameworks
+cp -a $pycruft/Python.framework $APPDIR/Contents/Frameworks
+pushd $APPDIR/Contents/Frameworks/Python.framework/Versions/$PYVER/lib/$PYTHON/
 rm site-packages || rm -rf site-packages
 ln -s ../../../../../../Resources/opt/local/lib/$PYTHON/site-packages
 popd
-pushd $outdir/Contents/Frameworks/Python.framework && \
-    find . -type f -name '*.pyc' | xargs rm -rfv && popd
-#pycruft=/usr/local/opt/python/Frameworks/Python.framework/Versions/$PYVER/lib/$PYTHON
 
-pushd $outdir/Contents/Resources/opt/local
+find "$APPDIR/Contents/Frameworks/Python.framework" -type f -name '*.pyc' | xargs rm -rf
+ln -s ../Frameworks/Python.framework/Versions/$PYVER/bin/$PYTHON "$APPDIR/Contents/MacOS/FFPython"
+
+pushd $APPDIR/Contents/Resources/opt/local
 echo "Collecting and patching dependent libraries..."
-$BASE/lddx --modify-special-paths --recursive --ignore-prefix /opt/X11 --collect lib \
-    bin/ $outdir/Contents/Frameworks/Python.framework/
+$LDDX --overwrite --modify-special-paths --recursive --ignore-prefix /opt/X11 --collect lib \
+    bin/ $APPDIR/Contents/Frameworks/Python.framework/ lib/
 popd
 
-echo "Writing package metadata..."
-sed -i -e "s|Gdraw.ScreenWidthCentimeters:.*|Gdraw.ScreenWidthCentimeters: 34|g" \
-       "$outdir/Contents/Resources/opt/local/share/fontforge/pixmaps/resources"
-sed -i -e "s|Gdraw.GMenu.MacIcons:.*|Gdraw.GMenu.MacIcons: True|g" \
-       "$outdir/Contents/Resources/opt/local/share/fontforge/pixmaps/resources"
-
-#
-# This block updates the metadata that finder will show for the app.
-#
-osxmetadata_file=$outdir/Contents/Resources/English.lproj/InfoPlist.string
-
-FONTFORGE_VERSION=$(grep 'FONTFORGE_VERSION ' $workdir/include/fontforge/fontforge-config.h | head -1 | sed -E 's/^.* "?([^"]+)"?/\1/g')
-FONTFORGE_MODTIME_STR=$(grep 'FONTFORGE_MODTIME_STR ' $workdir/include/fontforge/fontforge-version-extras.h | head -1 | sed -E 's/^.* "?([^"]+)"?/\1/g')
-FONTFORGE_GIT_VERSION=$(grep 'FONTFORGE_GIT_VERSION ' $workdir/include/fontforge/fontforge-version-extras.h | head -1 | sed -E 's/^.* "?([^"]+)"?/\1/g')
-echo "got: modtime     = $FONTFORGE_MODTIME_STR"
-echo "got: versiondata = $FONTFORGE_VERSION"
-echo "got: git ver     = $FONTFORGE_GIT_VERSION"
-
-CFBundleShortVersionString="Version $FONTFORGE_VERSION"
-CFBundleGetInfoString="FontForge version $FONTFORGE_VERSION based on sources from $FONTFORGE_MODTIME_STR git:$FONTFORGE_GIT_VERSION";
-
-# Replace version strings in InfoPlist.string
-sed -i -e "s/CFBundleShortVersionString.*/CFBundleShortVersionString = \"$CFBundleShortVersionString\"/g" $osxmetadata_file
-sed -i -e "s/CFBundleGetInfoString.*/CFBundleGetInfoString = \"$CFBundleGetInfoString\"/g" $osxmetadata_file
-
-# Replace version strings in Info.plist
-sed -i -e "s/CFBundleShortVersionStringChangeMe/$CFBundleShortVersionString/g" $outdir/Contents/Info.plist
-sed -i -e "s/CFBundleGetInfoStringChangeMe/$CFBundleGetInfoString/g" $outdir/Contents/Info.plist
-sed -i -e "s/CFBundleVersionChangeMe/$FONTFORGE_VERSION/g" $outdir/Contents/Info.plist
-
 # Package it up
-if [[ "$PYVER" < "3" ]]; then
-    dmgname=FontForge-$builddate-${hash:0:7}-$PYTHON.app.dmg
-else
-    dmgname=FontForge-$builddate-${hash:0:7}.app.dmg
+if [ ! -z "$CI" ]; then
+    echo "Creating the dmg..."
+    if [[ "$PYVER" < "3" ]]; then
+        dmgname=FontForge-$builddate-${HASH:0:7}-$PYTHON.app.dmg
+    else
+        dmgname=FontForge-$builddate-${HASH:0:7}.app.dmg
+    fi
+
+    hdiutil create -size 800m   \
+        -volname   FontForge     \
+        -srcfolder $APPDIR       \
+        -ov        -format UDBZ  \
+        $dmgname
+
+    # Update the bintray descriptor... sigh. If this fails, then oh well, no bintray
+    echo "Updating the bintray descriptor..."
+    sed -i '' s/ciXXXX/$(date +mac-ci-%Y-%m-%d)/g $SCRIPT_BASE/bintray_descriptor.json || true
+    sed -i '' s/releaseXXXX/$(date +%Y-%m-%d)/g $SCRIPT_BASE/bintray_descriptor.json || true
+    echo "Bintray descriptor:"
+    cat $SCRIPT_BASE/bintray_descriptor.json
 fi
-
-hdiutil create -size 800m   \
-   -volname   FontForge     \
-   -srcfolder $outdir       \
-   -ov        -format UDBZ  \
-   $dmgname
-
-# Update the bintray descriptor... sigh. If this fails, then oh well, no bintray
-echo "Updating the bintray descriptor..."
-sed -i '' s/ciXXXX/$(date +mac-ci-%Y-%m-%d)/g $BASE/bintray_descriptor.json || true
-sed -i '' s/releaseXXXX/$(date +%Y-%m-%d)/g $BASE/bintray_descriptor.json || true
-echo "Bintray descriptor:"
-cat $BASE/bintray_descriptor.json
-
-echo "Done."
-

@@ -1,0 +1,18 @@
+# Distributed under the original FontForge BSD 3-clause license
+
+#[=======================================================================[.rst:
+ExtraDist
+---------
+
+Helper script for CPack to add additional files to the dist bundle;
+currently used to add the downloaded/generated fonts.
+
+#]=======================================================================]
+
+if(CPACK_GENERATOR STREQUAL "@CPACK_SOURCE_GENERATOR@")
+  message(STATUS "Adding retrieved/generated fonts from @CMAKE_BINARY_DIR@/tests/fonts to ${CMAKE_CURRENT_BINARY_DIR}/tests/fonts...")
+  execute_process(COMMAND
+    "${CMAKE_COMMAND}" "-E" "copy_directory" "@CMAKE_BINARY_DIR@/tests/fonts" "tests/fonts"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+  )
+endif()

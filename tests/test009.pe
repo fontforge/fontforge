@@ -1,11 +1,19 @@
-#Needs: fonts/Ambrosia.pt3
+#Needs: fonts/Ambrosia.sfd
 # check that we can read and generate type3 fonts
 
 Open($1);
-Print( "...Read Ambrosia.pt3")
-Generate("Ambrosia.pt3");
-Print( "...Generated type3")
-Close();
-Open("Ambrosia.pt3");
-Print( "...Loaded generated font")
+Print("...Read Ambrosia.sfd")
+Generate("Ambrosia.pt3")
+Print("...Generated type3")
+Close()
+
+Open("Ambrosia.pt3")
+Print("...Loaded generated font")
+Generate("Ambrosia2.pt3");
+Print("...Generated type3")
+Close()
+
+Open("Ambrosia2.pt3")
+Print("...Loaded generated font again")
+
 Quit()

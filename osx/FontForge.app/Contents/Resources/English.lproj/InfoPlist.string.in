@@ -1,0 +1,6 @@
+/* Localized versions of Info.plist keys */
+
+CFBundleName = "FontForge";
+CFBundleShortVersionString = "Version @PROJECT_VERSION@";
+CFBundleGetInfoString = "FontForge version @PROJECT_VERSION@ based on sources from @FONTFORGE_MODTIME_STR@ git:@FONTFORGE_GIT_VERSION@";
+NSHumanReadableCopyright = "Copyright (C) 2013 George Williams";

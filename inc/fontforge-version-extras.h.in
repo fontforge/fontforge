@@ -37,13 +37,13 @@
   on each configuration invocation
 */
 
-/* git hash that source are built from */
+/* git hash that FontForge was built from */
 #define FONTFORGE_GIT_VERSION "@FONTFORGE_GIT_VERSION@"
 
-/* Epoch time that configure was run at (no quotes) */
-#define FONTFORGE_MODTIME_RAW @FONTFORGE_MODTIME_RAW@
+/* Epoch time of when the FontForge build was configured */
+#define FONTFORGE_MODTIME_RAW @FONTFORGE_MODTIME@L
 
-/* A user friendly date that that configure was run at: For example 01:48 GMT 6-Sep-2012 */
+/* User-friendly string of when the FontForge build was configured */
 #define FONTFORGE_MODTIME_STR "@FONTFORGE_MODTIME_STR@"
 
 #endif /* FONTFORGE_VERSION_EXTRAS_H */
