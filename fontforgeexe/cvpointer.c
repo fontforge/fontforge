@@ -503,11 +503,11 @@ int CVNearLBearingLine( CharView* cv, real x, real fudge )
 
 
 void CVCheckResizeCursors(CharView *cv) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     RefChar *ref;
     ImageList *img;
     int old_ee = cv->expandedge;
-    real fudge = 3.5/cv->cvtabs[tabnumber].scale;
+    real fudge = 3.5/tab->scale;
 
     cv->expandedge = ee_none;
     if ( cv->b.drawmode!=dm_grid ) {
@@ -1136,9 +1136,9 @@ return( a>-fudge && a<fudge );
 /*  are the same in both representations). The only complication is checking */
 /*  that they are selected */
 static int CVCheckMerges(CharView *cv ) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     SplineSet *activess, *mergess;
-    real fudge = 2/cv->cvtabs[tabnumber].scale;
+    real fudge = 2/tab->scale;
     int cnt= -1;
     int firstsel, lastsel;
     int mfirstsel, mlastsel;
@@ -1232,7 +1232,7 @@ static void adjustLBearing( CharView *cv, SplineChar *sc, real val )
 
 /* Move the selection and return whether we did a merge */
 int CVMoveSelection(CharView *cv, real dx, real dy, uint32 input_state) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     real transform[6];
     RefChar *refs;
     ImageList *img;
@@ -1320,7 +1320,7 @@ return(false);
 	SCOutOfDateBackground(cv->b.sc);
 	changed = true;
     }
-    fudge = snapdistance/cv->cvtabs[tabnumber].scale/2;
+    fudge = snapdistance/tab->scale/2;
     if ( cv->widthsel ) {
 	if ( cv->b.sc->width+dx>0 && ((int16) (cv->b.sc->width+dx))<0 )
 	    cv->b.sc->width = 32767;

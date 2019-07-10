@@ -38,12 +38,12 @@ void CVMouseDownHand(CharView *cv) {
 }
 
 void CVMouseMoveHand(CharView *cv, GEvent *event) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
-    cv->cvtabs[tabnumber].xoff += event->u.mouse.x-cv->handscroll_base.x; cv->handscroll_base.x = event->u.mouse.x;
-    cv->cvtabs[tabnumber].yoff -= event->u.mouse.y-cv->handscroll_base.y; cv->handscroll_base.y = event->u.mouse.y;
+    CharViewTab* tab = CVGetActiveTab(cv);
+    tab->xoff += event->u.mouse.x-cv->handscroll_base.x; cv->handscroll_base.x = event->u.mouse.x;
+    tab->yoff -= event->u.mouse.y-cv->handscroll_base.y; cv->handscroll_base.y = event->u.mouse.y;
     cv->back_img_out_of_date = true;
-    GScrollBarSetPos(cv->hsb,-cv->cvtabs[tabnumber].xoff);
-    GScrollBarSetPos(cv->vsb,cv->cvtabs[tabnumber].yoff-cv->height);
+    GScrollBarSetPos(cv->hsb,-tab->xoff);
+    GScrollBarSetPos(cv->vsb,tab->yoff-cv->height);
     GDrawRequestExpose(cv->v,NULL,false);
     if ( cv->showrulers )
 	GDrawRequestExpose(cv->gw,NULL,false);

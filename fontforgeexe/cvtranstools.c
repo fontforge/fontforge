@@ -38,7 +38,7 @@ void CVMouseDownTransform(CharView *cv) {
 }
 
 void CVMouseMoveTransform(CharView *cv) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     real transform[6];
 
     CVRestoreTOriginalState(cv);
@@ -68,8 +68,8 @@ void CVMouseMoveTransform(CharView *cv) {
 	    }
 	  } break;
 	  case cvt_scale: {
-	      transform[0] = 1.0+(cv->info.x-cv->p.cx)/(400*cv->cvtabs[tabnumber].scale);
-	      transform[3] = 1.0+(cv->info.y-cv->p.cy)/(400*cv->cvtabs[tabnumber].scale);
+	      transform[0] = 1.0+(cv->info.x-cv->p.cx)/(400*tab->scale);
+	      transform[3] = 1.0+(cv->info.y-cv->p.cy)/(400*tab->scale);
 	  } break;
 	  case cvt_skew: {
 	    real angle = atan2(cv->info.y-cv->p.cy,cv->info.x-cv->p.cx);
@@ -79,7 +79,7 @@ void CVMouseMoveTransform(CharView *cv) {
 	    real angle = atan2(cv->info.y-cv->p.cy,cv->info.x-cv->p.cx);
 /* Allow one pixel per degree */
 	    real zangle = sqrt( (cv->info.x-cv->p.cx)*(cv->info.x-cv->p.cx) +
-		    (cv->info.y-cv->p.cy)*(cv->info.y-cv->p.cy) ) * cv->cvtabs[tabnumber].scale *
+		    (cv->info.y-cv->p.cy)*(cv->info.y-cv->p.cy) ) * tab->scale *
 		    3.1415926535897932/180;
 	    real s = sin(angle), c = cos(angle);
 	    real cz = cos(zangle);

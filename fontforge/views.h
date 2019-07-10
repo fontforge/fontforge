@@ -954,8 +954,8 @@ extern void CharViewFinishNonStatic();
  * not displayed.
  */
 extern CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show );
+extern CharViewTab *CVGetActiveTab(CharView *cv);
 extern void CharViewFree(CharView *cv);
-extern void CVUnlinkView(CharView *cv );
 extern int CVValid(SplineFont *sf, SplineChar *sc, CharView *cv);
 extern void CVSetCharChanged(CharView *cv,int changed);
 extern int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya);
