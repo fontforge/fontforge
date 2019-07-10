@@ -713,7 +713,6 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
     extern Color widthcol;
 
     CharView cvtemp;
-    CharViewTab cvtabtemp;
 
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
     GDrawSetLineWidth(pixmap,0);
@@ -764,23 +763,21 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
 		? (bv->bc->byte_data ? 0x008800 : 0x004400 )
 		: 0x00ff00;
 	memset(&cvtemp,'\0',sizeof(cvtemp));
-	memset(&cvtabtemp,'\0',sizeof(cvtabtemp));
 	cvtemp.v = bv->v;
 	cvtemp.width = bv->width;
 	cvtemp.height = bv->height;
 
-	cvtabtemp.scale = bv->scscale*bv->scale;
-	cvtabtemp.xoff = bv->xoff/* *bv->scscale*/;
-	cvtabtemp.yoff = bv->yoff/* *bv->scscale*/;
-	cvtemp.cvtabs[0] = cvtabtemp;
+	cvtemp.cvtabs[0].scale = bv->scscale*bv->scale;
+	cvtemp.cvtabs[0].xoff = bv->xoff/* *bv->scscale*/;
+	cvtemp.cvtabs[0].yoff = bv->yoff/* *bv->scscale*/;
 
 	cvtemp.b.sc = bv->bc->sc;
 	cvtemp.b.drawmode = dm_fore;
 
-	clip.width = event->u.expose.rect.width/cvtabtemp.scale;
-	clip.height = event->u.expose.rect.height/cvtabtemp.scale;
-	clip.x = (event->u.expose.rect.x-cvtabtemp.xoff)/cvtabtemp.scale;
-	clip.y = (cvtemp.height-event->u.expose.rect.y-event->u.expose.rect.height-cvtabtemp.yoff)/cvtabtemp.scale;
+	clip.width = event->u.expose.rect.width/cvtemp.cvtabs[0].scale;
+	clip.height = event->u.expose.rect.height/cvtemp.cvtabs[0].scale;
+	clip.x = (event->u.expose.rect.x-cvtemp.cvtabs[0].xoff)/cvtemp.cvtabs[0].scale;
+	clip.y = (cvtemp.height-event->u.expose.rect.y-event->u.expose.rect.height-cvtemp.cvtabs[0].yoff)/cvtemp.cvtabs[0].scale;
 	CVDrawSplineSet(&cvtemp,pixmap,cvtemp.b.sc->layers[ly_fore].splines,col,false,&clip);
 	for ( refs = cvtemp.b.sc->layers[ly_fore].refs; refs!=NULL; refs = refs->next )
 	    CVDrawSplineSet(&cvtemp,pixmap,refs->layers[0].splines,col,false,&clip);
