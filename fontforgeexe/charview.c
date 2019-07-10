@@ -497,13 +497,13 @@ CharViewTab* CVGetActiveTab(CharView *cv) {
 
 void CVDrawRubberRect(GWindow pixmap, CharView *cv) {
     GRect r;
-    CharViewTab tab = *CVGetActiveTab(cv);
+    CharViewTab *tab = CVGetActiveTab(cv);
     if ( !cv->p.rubberbanding )
 return;
-    r.x =  tab.xoff + rint(cv->p.cx*tab.scale);
-    r.y = -tab.yoff + cv->height - rint(cv->p.cy*tab.scale);
-    r.width = rint( (cv->p.ex-cv->p.cx)*tab.scale);
-    r.height = -rint( (cv->p.ey-cv->p.cy)*tab.scale);
+    r.x =  tab->xoff + rint(cv->p.cx*tab->scale);
+    r.y = -tab->yoff + cv->height - rint(cv->p.cy*tab->scale);
+    r.width = rint( (cv->p.ex-cv->p.cx)*tab->scale);
+    r.height = -rint( (cv->p.ey-cv->p.cy)*tab->scale);
     if ( r.width<0 ) {
 	r.x += r.width;
 	r.width = -r.width;
