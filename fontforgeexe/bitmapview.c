@@ -714,13 +714,6 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
 
     CharView cvtemp;
     CharViewTab cvtabtemp;
-    GGadgetData ggdatatemp;
-    GTabInfo gtitemp[2];
-    memset(gtitemp,0,sizeof(gtitemp));
-    gtitemp[0].text = (unichar_t *) '\0';
-    gtitemp[0].text_is_1byte = true;
-    ggdatatemp.u.tabs = gtitemp;
-    GGadget *ggtemp = GTabSetCreate(pixmap, &ggdatatemp, NULL);
 
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
     GDrawSetLineWidth(pixmap,0);
@@ -780,7 +773,6 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
 	cvtabtemp.xoff = bv->xoff/* *bv->scscale*/;
 	cvtabtemp.yoff = bv->yoff/* *bv->scscale*/;
 	cvtemp.cvtabs[0] = cvtabtemp;
-	cvtemp.tabs = ggtemp;
 
 	cvtemp.b.sc = bv->bc->sc;
 	cvtemp.b.drawmode = dm_fore;

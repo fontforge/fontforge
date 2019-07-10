@@ -486,15 +486,24 @@ const int input_em_cnt = sizeof(input_em)/sizeof(input_em[0])-1;
 #define CODERANGE_DATA	574		/* Text to show the current code range (if the debugger be active) */
 #define FLAGS_DATA	724		/* Text to show the current drawmode flags */
 
+CharViewTab* CVGetActiveTab(CharView *cv) {
+    if (cv->tabs == NULL) {
+        // This happens when used by the bitmap view, which doesn't support tabs
+        return &cv->cvtabs[0];
+    }
+    int tab = GTabSetGetSel(cv->tabs);
+    return &cv->cvtabs[tab];
+}
+
 void CVDrawRubberRect(GWindow pixmap, CharView *cv) {
     GRect r;
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab tab = *CVGetActiveTab(cv);
     if ( !cv->p.rubberbanding )
 return;
-    r.x =  cv->cvtabs[tabnumber].xoff + rint(cv->p.cx*cv->cvtabs[tabnumber].scale);
-    r.y = -cv->cvtabs[tabnumber].yoff + cv->height - rint(cv->p.cy*cv->cvtabs[tabnumber].scale);
-    r.width = rint( (cv->p.ex-cv->p.cx)*cv->cvtabs[tabnumber].scale);
-    r.height = -rint( (cv->p.ey-cv->p.cy)*cv->cvtabs[tabnumber].scale);
+    r.x =  tab.xoff + rint(cv->p.cx*tab.scale);
+    r.y = -tab.yoff + cv->height - rint(cv->p.cy*tab.scale);
+    r.width = rint( (cv->p.ex-cv->p.cx)*tab.scale);
+    r.height = -rint( (cv->p.ey-cv->p.cy)*tab.scale);
     if ( r.width<0 ) {
 	r.x += r.width;
 	r.width = -r.width;
@@ -511,27 +520,27 @@ return;
 
 static void CVDrawRubberLine(GWindow pixmap, CharView *cv) {
     int x,y, xend,yend;
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     Color col = cv->active_tool==cvt_ruler ? measuretoollinecol : oldoutlinecol;
     if ( !cv->p.rubberlining )
 return;
-    x =  cv->cvtabs[tabnumber].xoff + rint(cv->p.cx*cv->cvtabs[tabnumber].scale);
-    y = -cv->cvtabs[tabnumber].yoff + cv->height - rint(cv->p.cy*cv->cvtabs[tabnumber].scale);
-    xend =  cv->cvtabs[tabnumber].xoff + rint(cv->info.x*cv->cvtabs[tabnumber].scale);
-    yend = -cv->cvtabs[tabnumber].yoff + cv->height - rint(cv->info.y*cv->cvtabs[tabnumber].scale);
+    x =  tab->xoff + rint(cv->p.cx*tab->scale);
+    y = -tab->yoff + cv->height - rint(cv->p.cy*tab->scale);
+    xend =  tab->xoff + rint(cv->info.x*tab->scale);
+    yend = -tab->yoff + cv->height - rint(cv->info.y*tab->scale);
 	GDrawSetLineWidth(pixmap,0);
     GDrawDrawLine(pixmap,x,y,xend,yend,col);
 }
 
 static void CVDrawBB(CharView *cv, GWindow pixmap, DBounds *bb) {
     GRect r;
-    int tabnumber = GTabSetGetSel(cv->tabs);
-    int off = cv->cvtabs[tabnumber].xoff+cv->height-cv->cvtabs[tabnumber].yoff;
+    CharViewTab* tab = CVGetActiveTab(cv);
+    int off = tab->xoff+cv->height-tab->yoff;
 
-    r.x =  cv->cvtabs[tabnumber].xoff + rint(bb->minx*cv->cvtabs[tabnumber].scale);
-    r.y = -cv->cvtabs[tabnumber].yoff + cv->height - rint(bb->maxy*cv->cvtabs[tabnumber].scale);
-    r.width = rint((bb->maxx-bb->minx)*cv->cvtabs[tabnumber].scale);
-    r.height = rint((bb->maxy-bb->miny)*cv->cvtabs[tabnumber].scale);
+    r.x =  tab->xoff + rint(bb->minx*tab->scale);
+    r.y = -tab->yoff + cv->height - rint(bb->maxy*tab->scale);
+    r.width = rint((bb->maxx-bb->minx)*tab->scale);
+    r.height = rint((bb->maxy-bb->miny)*tab->scale);
     GDrawSetDashedLine(pixmap,1,1,off);
     GDrawDrawRect(pixmap,&r,GDrawGetDefaultForeground(NULL));
     GDrawSetDashedLine(pixmap,0,0,0);
@@ -540,24 +549,24 @@ static void CVDrawBB(CharView *cv, GWindow pixmap, DBounds *bb) {
 /* Sigh. I have to do my own clipping because at large magnifications */
 /*  things can easily exceed 16 bits */
 static int CVSplineOutside(CharView *cv, Spline *spline) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     int x[4], y[4];
 
-    x[0] =  cv->cvtabs[tabnumber].xoff + rint(spline->from->me.x*cv->cvtabs[tabnumber].scale);
-    y[0] = -cv->cvtabs[tabnumber].yoff + cv->height - rint(spline->from->me.y*cv->cvtabs[tabnumber].scale);
+    x[0] =  tab->xoff + rint(spline->from->me.x*tab->scale);
+    y[0] = -tab->yoff + cv->height - rint(spline->from->me.y*tab->scale);
 
-    x[1] =  cv->cvtabs[tabnumber].xoff + rint(spline->to->me.x*cv->cvtabs[tabnumber].scale);
-    y[1] = -cv->cvtabs[tabnumber].yoff + cv->height - rint(spline->to->me.y*cv->cvtabs[tabnumber].scale);
+    x[1] =  tab->xoff + rint(spline->to->me.x*tab->scale);
+    y[1] = -tab->yoff + cv->height - rint(spline->to->me.y*tab->scale);
 
     if ( spline->from->nonextcp && spline->to->noprevcp ) {
 	if ( (x[0]<0 && x[1]<0) || (x[0]>=cv->width && x[1]>=cv->width) ||
 		(y[0]<0 && y[1]<0) || (y[0]>=cv->height && y[1]>=cv->height) )
 return( true );
     } else {
-	x[2] =  cv->cvtabs[tabnumber].xoff + rint(spline->from->nextcp.x*cv->cvtabs[tabnumber].scale);
-	y[2] = -cv->cvtabs[tabnumber].yoff + cv->height - rint(spline->from->nextcp.y*cv->cvtabs[tabnumber].scale);
-	x[3] =  cv->cvtabs[tabnumber].xoff + rint(spline->to->prevcp.x*cv->cvtabs[tabnumber].scale);
-	y[3] = -cv->cvtabs[tabnumber].yoff + cv->height - rint(spline->to->prevcp.y*cv->cvtabs[tabnumber].scale);
+	x[2] =  tab->xoff + rint(spline->from->nextcp.x*tab->scale);
+	y[2] = -tab->yoff + cv->height - rint(spline->from->nextcp.y*tab->scale);
+	x[3] =  tab->xoff + rint(spline->to->prevcp.x*tab->scale);
+	y[3] = -tab->yoff + cv->height - rint(spline->to->prevcp.y*tab->scale);
 	if ( (x[0]<0 && x[1]<0 && x[2]<0 && x[3]<0) ||
 		(x[0]>=cv->width && x[1]>=cv->width && x[2]>=cv->width && x[3]>=cv->width ) ||
 		(y[0]<0 && y[1]<0 && y[2]<0 && y[3]<0 ) ||
@@ -569,15 +578,15 @@ return( false );
 }
 
 static int CVLinesIntersectScreen(CharView *cv, LinearApprox *lap) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     LineList *l;
     int any = false;
     int x,y;
     int bothout;
 
     for ( l=lap->lines; l!=NULL; l=l->next ) {
-	l->asend.x = l->asstart.x = cv->cvtabs[tabnumber].xoff + l->here.x;
-	l->asend.y = l->asstart.y = -cv->cvtabs[tabnumber].yoff + cv->height-l->here.y;
+	l->asend.x = l->asstart.x = tab->xoff + l->here.x;
+	l->asend.y = l->asstart.y = -tab->yoff + cv->height-l->here.y;
 	l->flags = 0;
 	if ( l->asend.x<0 || l->asend.x>=cv->width || l->asend.y<0 || l->asend.y>=cv->height ) {
 	    l->flags = cvli_clipped;
@@ -692,8 +701,8 @@ static GPointList *MakePoly(CharView *cv, SplinePointList *spl) {
 	cur = NULL;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
 	    if ( !CVSplineOutside(cv,spline) && !isnan(spline->splines[0].a) && !isnan(spline->splines[1].a)) {
-        int tabnumber = GTabSetGetSel(cv->tabs);
-		lap = SplineApproximate(spline,cv->cvtabs[tabnumber].scale);
+        CharViewTab* tab = CVGetActiveTab(cv);
+		lap = SplineApproximate(spline,tab->scale);
 		if ( i==0 )
 		    CVLinesIntersectScreen(cv,lap);
 		if ( lap->any ) {
@@ -886,7 +895,7 @@ static void DrawPoint( CharView *cv, GWindow pixmap, SplinePoint *sp,
 {
     GRect r;
     int x, y, cx, cy;
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     Color col = sp==spl->first ? firstpointcol : pointcol;
     int pnum;
     char buf[16];
@@ -929,8 +938,8 @@ static void DrawPoint( CharView *cv, GWindow pixmap, SplinePoint *sp,
     Color selectedpointcolmasked = MaybeMaskColorToAlphaChannelOverride( selectedpointcol, AlphaChannelOverride );
     Color selectedcpcolmasked = MaybeMaskColorToAlphaChannelOverride( selectedcpcol, AlphaChannelOverride );
 
-    x =  cv->cvtabs[tabnumber].xoff + rint(sp->me.x*cv->cvtabs[tabnumber].scale);
-    y = -cv->cvtabs[tabnumber].yoff + cv->height - rint(sp->me.y*cv->cvtabs[tabnumber].scale);
+    x =  tab->xoff + rint(sp->me.x*tab->scale);
+    y = -tab->yoff + cv->height - rint(sp->me.y*tab->scale);
     if ( x<-4000 || y<-4000 || x>cv->width+4000 || y>=cv->height+4000 )
 return;
 
@@ -942,8 +951,8 @@ return;
 	 || cv->dv )
     {
 	if ( !sp->nonextcp ) {
-	    cx =  cv->cvtabs[tabnumber].xoff + rint(sp->nextcp.x*cv->cvtabs[tabnumber].scale);
-	    cy = -cv->cvtabs[tabnumber].yoff + cv->height - rint(sp->nextcp.y*cv->cvtabs[tabnumber].scale);
+	    cx =  tab->xoff + rint(sp->nextcp.x*tab->scale);
+	    cy = -tab->yoff + cv->height - rint(sp->nextcp.y*tab->scale);
 	    if ( cx<-100 ) {		/* Clip */
 		cy = cx==x ? x : (cy-y) * (double)(-100-x)/(cx-x) + y;
 		cx = -100;
@@ -1011,8 +1020,8 @@ return;
 	    }
 	}
 	if ( !sp->noprevcp ) {
-	    cx =  cv->cvtabs[tabnumber].xoff + rint(sp->prevcp.x*cv->cvtabs[tabnumber].scale);
-	    cy = -cv->cvtabs[tabnumber].yoff + cv->height - rint(sp->prevcp.y*cv->cvtabs[tabnumber].scale);
+	    cx =  tab->xoff + rint(sp->prevcp.x*tab->scale);
+	    cy = -tab->yoff + cv->height - rint(sp->prevcp.y*tab->scale);
 	    if ( cx<-100 ) {		/* Clip */
 		cy = cx==x ? x : (cy-y) * (double)(-100-x)/(cx-x) + y;
 		cx = -100;
@@ -1097,7 +1106,7 @@ return;
 	GPoint gp[5];
 
 	float sizedelta = 3;
-	float offsetdelta = 0; // 4 * cv->cvtabs[tabnumber].scale;
+	float offsetdelta = 0; // 4 * tab->scale;
 	if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
 	{
 	    sizedelta   *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
@@ -1150,7 +1159,7 @@ return;
 	GDrawDrawElipse(pixmap,&r,selectedpointcolmasked);
     } else if ( !onlynumber && !truetype_markup ) {
 	if ((( sp->roundx || sp->roundy ) &&
-		 (((cv->showrounds&1) && cv->cvtabs[tabnumber].scale>=.3) || (cv->showrounds&2))) ||
+		 (((cv->showrounds&1) && tab->scale>=.3) || (cv->showrounds&2))) ||
 		(sp->watched && cv->dv!=NULL) ||
 		sp->hintmask!=NULL ) {
 	    r.x = x-5; r.y = y-5;
@@ -1170,7 +1179,7 @@ return;
 static void DrawSpiroPoint( CharView *cv, GWindow pixmap, spiro_cp *cp,
 			    SplineSet *spl, int cp_i, Color AlphaChannelOverride )
 {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     GRect r;
     int x, y;
     Color col = cp==&spl->spiros[0] ? firstpointcol : pointcol;
@@ -1190,8 +1199,8 @@ static void DrawSpiroPoint( CharView *cv, GWindow pixmap, spiro_cp *cp,
     col = MaybeMaskColorToAlphaChannelOverride( col, AlphaChannelOverride );
 
 
-    x =  cv->cvtabs[tabnumber].xoff + rint(cp->x*cv->cvtabs[tabnumber].scale);
-    y = -cv->cvtabs[tabnumber].yoff + cv->height - rint(cp->y*cv->cvtabs[tabnumber].scale);
+    x =  tab->xoff + rint(cp->x*tab->scale);
+    y = -tab->yoff + cv->height - rint(cp->y*tab->scale);
     if ( x<-4 || y<-4 || x>cv->width+4 || y>=cv->height+4 )
 return;
 
@@ -1259,11 +1268,11 @@ return;
 
 static void DrawLine(CharView *cv, GWindow pixmap,
 	real x1, real y1, real x2, real y2, Color fg) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
-    int ix1 = cv->cvtabs[tabnumber].xoff + rint(x1*cv->cvtabs[tabnumber].scale);
-    int iy1 = -cv->cvtabs[tabnumber].yoff + cv->height - rint(y1*cv->cvtabs[tabnumber].scale);
-    int ix2 = cv->cvtabs[tabnumber].xoff + rint(x2*cv->cvtabs[tabnumber].scale);
-    int iy2 = -cv->cvtabs[tabnumber].yoff + cv->height - rint(y2*cv->cvtabs[tabnumber].scale);
+    CharViewTab* tab = CVGetActiveTab(cv);
+    int ix1 = tab->xoff + rint(x1*tab->scale);
+    int iy1 = -tab->yoff + cv->height - rint(y1*tab->scale);
+    int ix2 = tab->xoff + rint(x2*tab->scale);
+    int iy2 = -tab->yoff + cv->height - rint(y2*tab->scale);
     if ( iy1==iy2 ) {
 	if ( iy1<0 || iy1>cv->height )
 return;
@@ -1283,15 +1292,15 @@ return;
 static void DrawDirection(CharView *cv,GWindow pixmap, SplinePoint *sp) {
     BasePoint dir, *other;
     double len;
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     int x,y,xe,ye;
     SplinePoint *test;
 
     if ( sp->next==NULL )
 return;
 
-    x = cv->cvtabs[tabnumber].xoff + rint(sp->me.x*cv->cvtabs[tabnumber].scale);
-    y = -cv->cvtabs[tabnumber].yoff + cv->height - rint(sp->me.y*cv->cvtabs[tabnumber].scale);
+    x = tab->xoff + rint(sp->me.x*tab->scale);
+    y = -tab->yoff + cv->height - rint(sp->me.y*tab->scale);
     if ( x<0 || y<0 || x>cv->width || y>cv->width )
 return;
 
@@ -1331,7 +1340,7 @@ static void CVMarkInterestingLocations(CharView *cv, GWindow pixmap,
 	SplinePointList *spl) {
     Spline *s, *first;
     extended interesting[6];
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     int i, ecnt, cnt;
     GRect r;
 
@@ -1349,8 +1358,8 @@ static void CVMarkInterestingLocations(CharView *cv, GWindow pixmap,
 	    Color col = i<ecnt ? extremepointcol : pointofinflectioncol;
 	    double x = ((s->splines[0].a*interesting[i]+s->splines[0].b)*interesting[i]+s->splines[0].c)*interesting[i]+s->splines[0].d;
 	    double y = ((s->splines[1].a*interesting[i]+s->splines[1].b)*interesting[i]+s->splines[1].c)*interesting[i]+s->splines[1].d;
-	    double sx =  cv->cvtabs[tabnumber].xoff + rint(x*cv->cvtabs[tabnumber].scale);
-	    double sy = -cv->cvtabs[tabnumber].yoff + cv->height - rint(y*cv->cvtabs[tabnumber].scale);
+	    double sx =  tab->xoff + rint(x*tab->scale);
+	    double sy = -tab->yoff + cv->height - rint(y*tab->scale);
 	    if ( sx<-5 || sy<-5 || sx>10000 || sy>10000 )
 	continue;
 	    GDrawDrawLine(pixmap,sx-4,sy,sx+4,sy, col);
@@ -1366,7 +1375,7 @@ static void CVMarkAlmostHV(CharView *cv, GWindow pixmap,
     Spline *s, *first;
     double dx, dy;
     int x1,x2,y1,y2;
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
 
     for ( s=spl->first->next, first=NULL; s!=NULL && s!=first; s=s->to->next ) {
 	if ( first==NULL ) first = s;
@@ -1381,10 +1390,10 @@ static void CVMarkAlmostHV(CharView *cv, GWindow pixmap,
 	    if ( dx==0 || dy==0 )
     continue;
 	    if ( dx<cv->hvoffset || dy<cv->hvoffset ) {
-		x1 =  cv->cvtabs[tabnumber].xoff + rint(s->from->me.x*cv->cvtabs[tabnumber].scale);
-		y1 = -cv->cvtabs[tabnumber].yoff + cv->height - rint(s->from->me.y*cv->cvtabs[tabnumber].scale);
-		x2 =  cv->cvtabs[tabnumber].xoff + rint(s->to->me.x*cv->cvtabs[tabnumber].scale);
-		y2 = -cv->cvtabs[tabnumber].yoff + cv->height - rint(s->to->me.y*cv->cvtabs[tabnumber].scale);
+		x1 =  tab->xoff + rint(s->from->me.x*tab->scale);
+		y1 = -tab->yoff + cv->height - rint(s->from->me.y*tab->scale);
+		x2 =  tab->xoff + rint(s->to->me.x*tab->scale);
+		y2 = -tab->yoff + cv->height - rint(s->to->me.y*tab->scale);
 		GDrawDrawLine(pixmap,x1,y1,x2,y2,almosthvcol);
 	    }
 	} else {
@@ -1397,8 +1406,8 @@ static void CVMarkAlmostHV(CharView *cv, GWindow pixmap,
 	    else if ( dx==0 || dy==0 )
 		/* It's right */;
 	    else if ( dx<cv->hvoffset || dy<cv->hvoffset ) {
-		x2 = x1 =  cv->cvtabs[tabnumber].xoff + rint(s->from->me.x*cv->cvtabs[tabnumber].scale);
-		y2 = y1 = -cv->cvtabs[tabnumber].yoff + cv->height - rint(s->from->me.y*cv->cvtabs[tabnumber].scale);
+		x2 = x1 =  tab->xoff + rint(s->from->me.x*tab->scale);
+		y2 = y1 = -tab->yoff + cv->height - rint(s->from->me.y*tab->scale);
 		if ( dx<cv->hvoffset ) {
 		    if ( s->from->me.y<s->from->nextcp.y )
 			y2 += 15;
@@ -1420,8 +1429,8 @@ static void CVMarkAlmostHV(CharView *cv, GWindow pixmap,
 	    else if ( dx==0 || dy==0 )
 		/* It's right */;
 	    else if ( dx<cv->hvoffset || dy<cv->hvoffset ) {
-		x2 = x1 =  cv->cvtabs[tabnumber].xoff + rint(s->to->me.x*cv->cvtabs[tabnumber].scale);
-		y2 = y1 = -cv->cvtabs[tabnumber].yoff + cv->height - rint(s->to->me.y*cv->cvtabs[tabnumber].scale);
+		x2 = x1 =  tab->xoff + rint(s->to->me.x*tab->scale);
+		y2 = y1 = -tab->yoff + cv->height - rint(s->to->me.y*tab->scale);
 		if ( dx<cv->hvoffset ) {
 		    if ( s->to->me.y<s->to->prevcp.y )
 			y2 += 15;
@@ -1441,15 +1450,15 @@ static void CVMarkAlmostHV(CharView *cv, GWindow pixmap,
 
 static void CVDrawPointName(CharView *cv, GWindow pixmap, SplinePoint *sp, Color fg)
 {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     if (sp->name && *sp->name) {
 	int32 theight;
 
 	GDrawSetFont(pixmap, cv->normal);
 	theight = GDrawGetText8Height(pixmap, sp->name, -1);
 	GDrawDrawText8(pixmap,
-		       cv->cvtabs[tabnumber].xoff + rint(sp->me.x*cv->cvtabs[tabnumber].scale),
-		       cv->height-cv->cvtabs[tabnumber].yoff - rint(sp->me.y*cv->cvtabs[tabnumber].scale) + theight + 3,
+		       tab->xoff + rint(sp->me.x*tab->scale),
+		       cv->height-tab->yoff - rint(sp->me.y*tab->scale) + theight + 3,
 		       sp->name,-1,fg);
 	GDrawSetFont(pixmap,cv->small);	/* For point numbers */
     }
@@ -1459,7 +1468,7 @@ static void CVDrawContourName(CharView *cv, GWindow pixmap, SplinePointList *ss,
 	Color fg ) {
     SplinePoint *sp, *topright;
     GPoint tr;
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
 
     /* Find the top right point of the contour. This is where we will put the */
     /*  label */
@@ -1472,8 +1481,8 @@ static void CVDrawContourName(CharView *cv, GWindow pixmap, SplinePointList *ss,
 	if ( sp==ss->first )
     break;
     }
-    tr.x = cv->cvtabs[tabnumber].xoff + rint(topright->me.x*cv->cvtabs[tabnumber].scale);
-    tr.y = cv->height-cv->cvtabs[tabnumber].yoff - rint(topright->me.y*cv->cvtabs[tabnumber].scale);
+    tr.x = tab->xoff + rint(topright->me.x*tab->scale);
+    tr.y = cv->height-tab->yoff - rint(topright->me.y*tab->scale);
 
     /* If the top edge of the contour is off the bottom of the screen */
     /*  then the contour won't show */
@@ -1506,7 +1515,7 @@ return;
 	    slope = (sp1->me.y-sp2->me.y)/(sp1->me.x-sp2->me.x);
 	    off = sp1->me.y - slope*sp1->me.x;
 	    /* Now translate to screen coords */
-	    off = (cv->height-cv->cvtabs[tabnumber].yoff)+slope*cv->cvtabs[tabnumber].xoff - cv->cvtabs[tabnumber].scale*off;
+	    off = (cv->height-tab->yoff)+slope*tab->xoff - tab->scale*off;
 	    slope = -slope;
 	    xinter = (0-off)/slope;
 	    yinter = slope*cv->width + off;
@@ -1539,7 +1548,7 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
     SplinePointList *spl;
     int currentSplineCounter = 0;
     int activelayer = CVLayer(&cv->b);
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
 
     if( strokeFillMode == sfm_fill ) {
     	GDrawFillRuleSetWinding(pixmap);
@@ -1570,38 +1579,38 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 	    Spline *first, *spline;
 	    double x,y, cx1, cy1, cx2, cy2, dx,dy;
 	    GDrawPathStartSubNew(pixmap);
-	    x = rpt(cv,  cv->cvtabs[tabnumber].xoff + spl->first->me.x*cv->cvtabs[tabnumber].scale);
-	    y = rpt(cv, -cv->cvtabs[tabnumber].yoff + cv->height - spl->first->me.y*cv->cvtabs[tabnumber].scale);
+	    x = rpt(cv,  tab->xoff + spl->first->me.x*tab->scale);
+	    y = rpt(cv, -tab->yoff + cv->height - spl->first->me.y*tab->scale);
 	    GDrawPathMoveTo(pixmap,x+.5,y+.5);
 	    currentSplineCounter++;
 	    for ( spline=spl->first->next, first=NULL; spline!=first && spline!=NULL; spline=spline->to->next ) {
-		x = rpt(cv,  cv->cvtabs[tabnumber].xoff + spline->to->me.x*cv->cvtabs[tabnumber].scale);
-		y = rpt(cv, -cv->cvtabs[tabnumber].yoff + cv->height - spline->to->me.y*cv->cvtabs[tabnumber].scale);
+		x = rpt(cv,  tab->xoff + spline->to->me.x*tab->scale);
+		y = rpt(cv, -tab->yoff + cv->height - spline->to->me.y*tab->scale);
 		if ( spline->knownlinear )
 		    GDrawPathLineTo(pixmap,x+.5,y+.5);
 		else if ( spline->order2 ) {
-		    dx = rint(spline->from->me.x*cv->cvtabs[tabnumber].scale) - spline->from->me.x*cv->cvtabs[tabnumber].scale;
-		    dy = rint(spline->from->me.y*cv->cvtabs[tabnumber].scale) - spline->from->me.y*cv->cvtabs[tabnumber].scale;
+		    dx = rint(spline->from->me.x*tab->scale) - spline->from->me.x*tab->scale;
+		    dy = rint(spline->from->me.y*tab->scale) - spline->from->me.y*tab->scale;
 		    cx1 = spline->from->me.x + spline->splines[0].c/3;
 		    cy1 = spline->from->me.y + spline->splines[1].c/3;
 		    cx2 = cx1 + (spline->splines[0].b+spline->splines[0].c)/3;
 		    cy2 = cy1 + (spline->splines[1].b+spline->splines[1].c)/3;
-		    cx1 = cv->cvtabs[tabnumber].xoff + cx1*cv->cvtabs[tabnumber].scale + dx;
-		    cy1 = -cv->cvtabs[tabnumber].yoff + cv->height - cy1*cv->cvtabs[tabnumber].scale - dy;
-		    dx = rint(spline->to->me.x*cv->cvtabs[tabnumber].scale) - spline->to->me.x*cv->cvtabs[tabnumber].scale;
-		    dy = rint(spline->to->me.y*cv->cvtabs[tabnumber].scale) - spline->to->me.y*cv->cvtabs[tabnumber].scale;
-		    cx2 = cv->cvtabs[tabnumber].xoff + cx2*cv->cvtabs[tabnumber].scale + dx;
-		    cy2 = -cv->cvtabs[tabnumber].yoff + cv->height - cy2*cv->cvtabs[tabnumber].scale - dy;
+		    cx1 = tab->xoff + cx1*tab->scale + dx;
+		    cy1 = -tab->yoff + cv->height - cy1*tab->scale - dy;
+		    dx = rint(spline->to->me.x*tab->scale) - spline->to->me.x*tab->scale;
+		    dy = rint(spline->to->me.y*tab->scale) - spline->to->me.y*tab->scale;
+		    cx2 = tab->xoff + cx2*tab->scale + dx;
+		    cy2 = -tab->yoff + cv->height - cy2*tab->scale - dy;
 		    GDrawPathCurveTo(pixmap,cx1+.5,cy1+.5,cx2+.5,cy2+.5,x+.5,y+.5);
 		} else {
-		    dx = rint(spline->from->me.x*cv->cvtabs[tabnumber].scale) - spline->from->me.x*cv->cvtabs[tabnumber].scale;
-		    dy = rint(spline->from->me.y*cv->cvtabs[tabnumber].scale) - spline->from->me.y*cv->cvtabs[tabnumber].scale;
-		    cx1 = cv->cvtabs[tabnumber].xoff + spline->from->nextcp.x*cv->cvtabs[tabnumber].scale + dx;
-		    cy1 = -cv->cvtabs[tabnumber].yoff + cv->height - spline->from->nextcp.y*cv->cvtabs[tabnumber].scale - dy;
-		    dx = rint(spline->to->me.x*cv->cvtabs[tabnumber].scale) - spline->to->me.x*cv->cvtabs[tabnumber].scale;
-		    dy = rint(spline->to->me.y*cv->cvtabs[tabnumber].scale) - spline->to->me.y*cv->cvtabs[tabnumber].scale;
-		    cx2 = cv->cvtabs[tabnumber].xoff + spline->to->prevcp.x*cv->cvtabs[tabnumber].scale + dx;
-		    cy2 = -cv->cvtabs[tabnumber].yoff + cv->height - spline->to->prevcp.y*cv->cvtabs[tabnumber].scale - dy;
+		    dx = rint(spline->from->me.x*tab->scale) - spline->from->me.x*tab->scale;
+		    dy = rint(spline->from->me.y*tab->scale) - spline->from->me.y*tab->scale;
+		    cx1 = tab->xoff + spline->from->nextcp.x*tab->scale + dx;
+		    cy1 = -tab->yoff + cv->height - spline->from->nextcp.y*tab->scale - dy;
+		    dx = rint(spline->to->me.x*tab->scale) - spline->to->me.x*tab->scale;
+		    dy = rint(spline->to->me.y*tab->scale) - spline->to->me.y*tab->scale;
+		    cx2 = tab->xoff + spline->to->prevcp.x*tab->scale + dx;
+		    cy2 = -tab->yoff + cv->height - spline->to->prevcp.y*tab->scale - dy;
 		    GDrawPathCurveTo(pixmap,cx1+.5,cy1+.5,cx2+.5,cy2+.5,x+.5,y+.5);
 		}
 		if ( first==NULL )
@@ -1651,7 +1660,7 @@ void CVDrawSplineSetSpecialized( CharView *cv, GWindow pixmap, SplinePointList *
     Spline *spline, *first;
     SplinePointList *spl;
     int truetype_markup = set==cv->b.gridfit && cv->dv!=NULL;
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
 
     if ( cv->inactive )
 	dopoints = false;
@@ -1715,7 +1724,7 @@ void CVDrawSplineSetSpecialized( CharView *cv, GWindow pixmap, SplinePointList *
         {
             // we only draw the inner half, so we double the user's expected
             // thickness here.
-            int strokeWidth = prefs_cv_outline_thickness * 2 * cv->cvtabs[tabnumber].scale;
+            int strokeWidth = prefs_cv_outline_thickness * 2 * tab->scale;
             Color strokefg = foreoutthicklinecol;
 
             if( shouldShowFilledUsingCairo(cv) && cv->inPreviewMode ) {
@@ -1748,7 +1757,7 @@ void CVDrawSplineSetSpecialized( CharView *cv, GWindow pixmap, SplinePointList *
 
 static void CVDrawLayerSplineSet(CharView *cv, GWindow pixmap, Layer *layer,
 	Color fg, int dopoints, DRect *clip, enum outlinesfm_flags strokeFillMode ) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     int active = cv->b.layerheads[cv->b.drawmode]==layer;
     int ml = cv->b.sc->parent->multilayer;
 
@@ -1764,7 +1773,7 @@ static void CVDrawLayerSplineSet(CharView *cv, GWindow pixmap, Layer *layer,
     }
 
     if ( ml && !active && layer!=&cv->b.sc->layers[ly_back] )
-	GDrawSetDashedLine(pixmap,5,5,cv->cvtabs[tabnumber].xoff+cv->height-cv->cvtabs[tabnumber].yoff);
+	GDrawSetDashedLine(pixmap,5,5,tab->xoff+cv->height-tab->yoff);
     
     CVDrawSplineSetSpecialized( cv, pixmap, layer->splines,
 				fg, dopoints && active, clip,
@@ -1786,16 +1795,16 @@ static void CVShowDHintInstance(CharView *cv, GWindow pixmap, BasePoint *bp) {
     IPoint ip[40], ip2[40];
     GPoint clipped[13];
     int i,j, tot,last;
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
 
-    ip[0].x = cv->cvtabs[tabnumber].xoff + rint( bp[0].x*cv->cvtabs[tabnumber].scale );
-    ip[0].y = -cv->cvtabs[tabnumber].yoff + cv->height - rint( bp[0].y*cv->cvtabs[tabnumber].scale );
-    ip[1].x = cv->cvtabs[tabnumber].xoff + rint(bp[1].x*cv->cvtabs[tabnumber].scale);
-    ip[1].y = -cv->cvtabs[tabnumber].yoff + cv->height - rint( bp[1].y*cv->cvtabs[tabnumber].scale );
-    ip[2].x = cv->cvtabs[tabnumber].xoff + rint( bp[2].x*cv->cvtabs[tabnumber].scale );
-    ip[2].y = -cv->cvtabs[tabnumber].yoff + cv->height - rint( bp[2].y*cv->cvtabs[tabnumber].scale );
-    ip[3].x = cv->cvtabs[tabnumber].xoff + rint( bp[3].x*cv->cvtabs[tabnumber].scale );
-    ip[3].y = -cv->cvtabs[tabnumber].yoff + cv->height - rint( bp[3].y*cv->cvtabs[tabnumber].scale );
+    ip[0].x = tab->xoff + rint( bp[0].x*tab->scale );
+    ip[0].y = -tab->yoff + cv->height - rint( bp[0].y*tab->scale );
+    ip[1].x = tab->xoff + rint(bp[1].x*tab->scale);
+    ip[1].y = -tab->yoff + cv->height - rint( bp[1].y*tab->scale );
+    ip[2].x = tab->xoff + rint( bp[2].x*tab->scale );
+    ip[2].y = -tab->yoff + cv->height - rint( bp[2].y*tab->scale );
+    ip[3].x = tab->xoff + rint( bp[3].x*tab->scale );
+    ip[3].y = -tab->yoff + cv->height - rint( bp[3].y*tab->scale );
 
     if (( ip[0].x<0 && ip[1].x<0 && ip[2].x<0 && ip[3].x<0 ) ||
 	    ( ip[0].x>=cv->width && ip[1].x>=cv->width && ip[2].x>=cv->width && ip[3].x>=cv->width ) ||
@@ -1921,27 +1930,27 @@ static void CVShowDHint ( CharView *cv, GWindow pixmap, DStemInfo *dstem ) {
 }
 
 static void CVShowMinimumDistance(CharView *cv, GWindow pixmap,MinimumDistance *md) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     int x1,y1, x2,y2;
     int xa, ya;
-    int off = cv->cvtabs[tabnumber].xoff+cv->height-cv->cvtabs[tabnumber].yoff;
+    int off = tab->xoff+cv->height-tab->yoff;
 
     if (( md->x && !cv->showmdx ) || (!md->x && !cv->showmdy))
 return;
     if ( md->sp1==NULL && md->sp2==NULL )
 return;
     if ( md->sp1!=NULL ) {
-	x1 = cv->cvtabs[tabnumber].xoff + rint( md->sp1->me.x*cv->cvtabs[tabnumber].scale );
-	y1 = -cv->cvtabs[tabnumber].yoff + cv->height - rint(md->sp1->me.y*cv->cvtabs[tabnumber].scale);
+	x1 = tab->xoff + rint( md->sp1->me.x*tab->scale );
+	y1 = -tab->yoff + cv->height - rint(md->sp1->me.y*tab->scale);
     } else {
-	x1 = cv->cvtabs[tabnumber].xoff + rint( cv->b.sc->width*cv->cvtabs[tabnumber].scale );
+	x1 = tab->xoff + rint( cv->b.sc->width*tab->scale );
 	y1 = 0x80000000;
     }
     if ( md->sp2!=NULL ) {
-	x2 = cv->cvtabs[tabnumber].xoff + rint( md->sp2->me.x*cv->cvtabs[tabnumber].scale );
-	y2 = -cv->cvtabs[tabnumber].yoff + cv->height - rint(md->sp2->me.y*cv->cvtabs[tabnumber].scale);
+	x2 = tab->xoff + rint( md->sp2->me.x*tab->scale );
+	y2 = -tab->yoff + cv->height - rint(md->sp2->me.y*tab->scale);
     } else {
-	x2 = cv->cvtabs[tabnumber].xoff + rint( cv->b.sc->width*cv->cvtabs[tabnumber].scale );
+	x2 = tab->xoff + rint( cv->b.sc->width*tab->scale );
 	y2 = y1-8;
     }
     if ( y1==0x80000000 )
@@ -1978,7 +1987,7 @@ static void CVDrawBlues(CharView *cv,GWindow pixmap,char *bluevals,char *others,
     GRect r;
     char buf[20];
     int len,len2;
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
 
     if ( bluevals!=NULL ) {
 	for ( pt = bluevals; isspace( *pt ) || *pt=='['; ++pt);
@@ -2011,8 +2020,8 @@ return;
     r.x = 0; r.width = cv->width;
     for ( i=0; i<bcnt; i += 2 ) {
 	int first, other;
-	first = -cv->cvtabs[tabnumber].yoff + cv->height - rint(blues[i]*cv->cvtabs[tabnumber].scale);
-	other = -cv->cvtabs[tabnumber].yoff + cv->height - rint(blues[i+1]*cv->cvtabs[tabnumber].scale);
+	first = -tab->yoff + cv->height - rint(blues[i]*tab->scale);
+	other = -tab->yoff + cv->height - rint(blues[i+1]*tab->scale);
 	r.y = first;
 	if ( ( r.y<0 && other<0 ) || (r.y>cv->height && other>cv->height))
     continue;
@@ -2058,7 +2067,7 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
     int len, len2;
     SplinePoint *sp;
     SplineSet *spl;
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
 
     GDrawSetFont(pixmap,cv->small);
     blues = PSDictHasEntry(private,"BlueValues"); others = PSDictHasEntry(private,"OtherBlues");
@@ -2073,14 +2082,14 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
     }
 
     if ( cv->showhhints && cv->b.sc->hstem!=NULL ) {
-	GDrawSetDashedLine(pixmap,5,5,cv->cvtabs[tabnumber].xoff);
+	GDrawSetDashedLine(pixmap,5,5,tab->xoff);
 	for ( hint = cv->b.sc->hstem; hint!=NULL; hint = hint->next ) {
 	    if ( hint->width<0 ) {
-		r.y = -cv->cvtabs[tabnumber].yoff + cv->height - rint(hint->start*cv->cvtabs[tabnumber].scale);
-		r.height = rint(-hint->width*cv->cvtabs[tabnumber].scale)+1;
+		r.y = -tab->yoff + cv->height - rint(hint->start*tab->scale);
+		r.height = rint(-hint->width*tab->scale)+1;
 	    } else {
-		r.y = -cv->cvtabs[tabnumber].yoff + cv->height - rint((hint->start+hint->width)*cv->cvtabs[tabnumber].scale);
-		r.height = rint(hint->width*cv->cvtabs[tabnumber].scale)+1;
+		r.y = -tab->yoff + cv->height - rint((hint->start+hint->width)*tab->scale);
+		r.height = rint(hint->width*tab->scale)+1;
 	    }
 	    col = hint->active ? hhintactivecol : hhintcol;
 	    /* XRectangles are shorts! */
@@ -2092,8 +2101,8 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 		if ( r.y+r.height>32767 )
 		    r.height = 32767-r.y;
 		for ( hi=hint->where; hi!=NULL; hi=hi->next ) {
-		    r.x = cv->cvtabs[tabnumber].xoff + rint(hi->begin*cv->cvtabs[tabnumber].scale);
-		    end = cv->cvtabs[tabnumber].xoff + rint(hi->end*cv->cvtabs[tabnumber].scale);
+		    r.x = tab->xoff + rint(hi->begin*tab->scale);
+		    end = tab->xoff + rint(hi->end*tab->scale);
 		    if ( end>=0 && r.x<=cv->width ) {
 			r.width = end-r.x+1;
 			GDrawFillRect(pixmap,&r,col);
@@ -2106,7 +2115,7 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 	    if ( r.y+r.height>=0 && r.y+r.height<=cv->width )
 		GDrawDrawLine(pixmap,0,r.y+r.height-1,cv->width,r.y+r.height-1,col);
 
-	    r.y = -cv->cvtabs[tabnumber].yoff + cv->height - rint(hint->start*cv->cvtabs[tabnumber].scale);
+	    r.y = -tab->yoff + cv->height - rint(hint->start*tab->scale);
 	    r.y += ( hint->width>0 ) ? -3 : cv->sas+3;
 	    if ( r.y>-20 && r.y<cv->height+20 ) {
 		dtos( buf, hint->start);
@@ -2114,7 +2123,7 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 		GDrawDrawText8(pixmap,cv->width-len-5,r.y,buf,-1,hintlabelcol);
 	    } else
 		len = 0;
-	    r.y = -cv->cvtabs[tabnumber].yoff + cv->height - rint((hint->start+hint->width)*cv->cvtabs[tabnumber].scale);
+	    r.y = -tab->yoff + cv->height - rint((hint->start+hint->width)*tab->scale);
 	    r.y += ( hint->width>0 ) ? cv->sas+3 : -3;
 	    if ( r.y>-20 && r.y<cv->height+20 ) {
 		if ( hint->ghost ) {
@@ -2129,14 +2138,14 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 	}
     }
     if ( cv->showvhints && cv->b.sc->vstem!=NULL ) {
-	GDrawSetDashedLine(pixmap,5,5,cv->height-cv->cvtabs[tabnumber].yoff);
+	GDrawSetDashedLine(pixmap,5,5,cv->height-tab->yoff);
 	for ( hint = cv->b.sc->vstem; hint!=NULL; hint = hint->next ) {
 	    if ( hint->width<0 ) {
-		r.x = cv->cvtabs[tabnumber].xoff + rint( (hint->start+hint->width)*cv->cvtabs[tabnumber].scale );
-		r.width = rint(-hint->width*cv->cvtabs[tabnumber].scale)+1;
+		r.x = tab->xoff + rint( (hint->start+hint->width)*tab->scale );
+		r.width = rint(-hint->width*tab->scale)+1;
 	    } else {
-		r.x = cv->cvtabs[tabnumber].xoff + rint(hint->start*cv->cvtabs[tabnumber].scale);
-		r.width = rint(hint->width*cv->cvtabs[tabnumber].scale)+1;
+		r.x = tab->xoff + rint(hint->start*tab->scale);
+		r.width = rint(hint->width*tab->scale)+1;
 	    }
 	    col = hint->active ? vhintactivecol : vhintcol;
 	    if ( r.x<32767 && r.x+r.width>-32768 ) {
@@ -2147,8 +2156,8 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 		if ( r.x+r.width>32767 )
 		    r.width = 32767-r.x;
 		for ( hi=hint->where; hi!=NULL; hi=hi->next ) {
-		    r.y = -cv->cvtabs[tabnumber].yoff + cv->height - rint(hi->end*cv->cvtabs[tabnumber].scale);
-		    end = -cv->cvtabs[tabnumber].yoff + cv->height - rint(hi->begin*cv->cvtabs[tabnumber].scale);
+		    r.y = -tab->yoff + cv->height - rint(hi->end*tab->scale);
+		    end = -tab->yoff + cv->height - rint(hi->begin*tab->scale);
 		    if ( end>=0 && r.y<=cv->height ) {
 			r.height = end-r.y+1;
 			GDrawFillRect(pixmap,&r,col);
@@ -2161,14 +2170,14 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 	    if ( r.x+r.width>=0 && r.x+r.width<=cv->width )
 		GDrawDrawLine(pixmap,r.x+r.width-1,0,r.x+r.width-1,cv->height,col);
 
-	    r.x = cv->cvtabs[tabnumber].xoff + rint(hint->start*cv->cvtabs[tabnumber].scale);
+	    r.x = tab->xoff + rint(hint->start*tab->scale);
 	    if ( r.x>-60 && r.x<cv->width+20 ) {
 		dtos( buf, hint->start);
 		len = GDrawGetText8Width(pixmap,buf,-1);
 		r.x += ( hint->width>0 ) ? 3 : -len-3;
 		GDrawDrawText8(pixmap,r.x,cv->sas+3,buf,-1,hintlabelcol);
 	    }
-	    r.x = cv->cvtabs[tabnumber].xoff + rint((hint->start+hint->width)*cv->cvtabs[tabnumber].scale);
+	    r.x = tab->xoff + rint((hint->start+hint->width)*tab->scale);
 	    if ( r.x>-60 && r.x<cv->width+20 ) {
 		if ( hint->ghost ) {
 		    buf[0] = 'G';
@@ -2192,18 +2201,18 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 	    if ( spl->first->prev!=NULL ) for ( sp=spl->first ; ; ) {
 		if ( cv->showhhints && sp->flexx ) {
 		    double x,y,end;
-		    x = cv->cvtabs[tabnumber].xoff + rint(sp->me.x*cv->cvtabs[tabnumber].scale);
-		    y = -cv->cvtabs[tabnumber].yoff + cv->height - rint(sp->me.y*cv->cvtabs[tabnumber].scale);
-		    end = cv->cvtabs[tabnumber].xoff + rint(sp->next->to->me.x*cv->cvtabs[tabnumber].scale);
+		    x = tab->xoff + rint(sp->me.x*tab->scale);
+		    y = -tab->yoff + cv->height - rint(sp->me.y*tab->scale);
+		    end = tab->xoff + rint(sp->next->to->me.x*tab->scale);
 		    if ( x>-4096 && x<32767 && y>-4096 && y<32767 ) {
 			GDrawDrawLine(pixmap,x,y,end,y,hflexhintcol);
 		    }
 		}
 		if ( cv->showvhints && sp->flexy ) {
 		    double x,y,end;
-		    x = cv->cvtabs[tabnumber].xoff + rint(sp->me.x*cv->cvtabs[tabnumber].scale);
-		    y = -cv->cvtabs[tabnumber].yoff + cv->height - rint(sp->me.y*cv->cvtabs[tabnumber].scale);
-		    end = -cv->cvtabs[tabnumber].yoff + cv->height - rint(sp->next->to->me.y*cv->cvtabs[tabnumber].scale);
+		    x = tab->xoff + rint(sp->me.x*tab->scale);
+		    y = -tab->yoff + cv->height - rint(sp->me.y*tab->scale);
+		    end = -tab->yoff + cv->height - rint(sp->next->to->me.y*tab->scale);
 		    if ( x>-4096 && x<32767 && y>-4096 && y<32767 ) {
 			GDrawDrawLine(pixmap,x,y,x,end,vflexhintcol);
 		    }
@@ -2219,12 +2228,12 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 }
 
 static void CVDrawRefName(CharView *cv,GWindow pixmap,RefChar *ref,int fg) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     int x,y, len;
     GRect size;
 
-    x = cv->cvtabs[tabnumber].xoff + rint(ref->top.x*cv->cvtabs[tabnumber].scale);
-    y = -cv->cvtabs[tabnumber].yoff + cv->height - rint(ref->top.y*cv->cvtabs[tabnumber].scale);
+    x = tab->xoff + rint(ref->top.x*tab->scale);
+    y = -tab->yoff + cv->height - rint(ref->top.y*tab->scale);
     y -= 5;
     if ( x<-400 || y<-40 || x>cv->width+400 || y>cv->height )
 return;
@@ -2257,7 +2266,7 @@ void DrawAnchorPoint(GWindow pixmap,int x, int y,int selected) {
 }
 
 static void CVDrawAnchorPoints(CharView *cv,GWindow pixmap) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     int x,y, len, sel;
     Color col = anchorcol;
     AnchorPoint *ap;
@@ -2270,8 +2279,8 @@ return;
 
     for ( sel=0; sel<2; ++sel ) {
 	for ( ap = cv->b.sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->selected==sel ) {
-	    x = cv->cvtabs[tabnumber].xoff + rint(ap->me.x*cv->cvtabs[tabnumber].scale);
-	    y = -cv->cvtabs[tabnumber].yoff + cv->height - rint(ap->me.y*cv->cvtabs[tabnumber].scale);
+	    x = tab->xoff + rint(ap->me.x*tab->scale);
+	    y = -tab->yoff + cv->height - rint(ap->me.y*tab->scale);
 	    if ( x<-400 || y<-40 || x>cv->width+400 || y>cv->height )
 	continue;
 
@@ -2309,7 +2318,7 @@ return;
 }
 
 static void DrawImageList(CharView *cv,GWindow pixmap,ImageList *backimages) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     GRect size, temp;
     int x,y;
 
@@ -2320,15 +2329,15 @@ static void DrawImageList(CharView *cv,GWindow pixmap,ImageList *backimages) {
 		backimages->image->u.image:backimages->image->u.images[0];
 
 	temp = size;
-	x = (int) (cv->cvtabs[tabnumber].xoff + rint(backimages->xoff * cv->cvtabs[tabnumber].scale));
-	y = (int) (-cv->cvtabs[tabnumber].yoff + cv->height - rint(backimages->yoff*cv->cvtabs[tabnumber].scale));
+	x = (int) (tab->xoff + rint(backimages->xoff * tab->scale));
+	y = (int) (-tab->yoff + cv->height - rint(backimages->yoff*tab->scale));
 	temp.x -= x; temp.y -= y;
 	temp.width += x; temp.height += y;
 
 	GDrawDrawImageMagnified(pixmap, backimages->image, &temp,
 		x,y,
-		(int) rint((base->width*backimages->xscale*cv->cvtabs[tabnumber].scale)),
-		(int) rint((base->height*backimages->yscale*cv->cvtabs[tabnumber].scale)));
+		(int) rint((base->width*backimages->xscale*tab->scale)),
+		(int) rint((base->height*backimages->yscale*tab->scale)));
 	backimages = backimages->next;
     }
 }
@@ -2355,8 +2364,8 @@ return;
 }
 
 static void DrawTransOrigin(CharView *cv, GWindow pixmap) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
-    int x = rint(cv->p.cx*cv->cvtabs[tabnumber].scale) + cv->cvtabs[tabnumber].xoff, y = cv->height-cv->cvtabs[tabnumber].yoff-rint(cv->p.cy*cv->cvtabs[tabnumber].scale);
+    CharViewTab* tab = CVGetActiveTab(cv);
+    int x = rint(cv->p.cx*tab->scale) + tab->xoff, y = cv->height-tab->yoff-rint(cv->p.cy*tab->scale);
 
     GDrawDrawLine(pixmap,x-4,y,x+4,y,transformorigincol);
     GDrawDrawLine(pixmap,x,y-4,x,y+4,transformorigincol);
@@ -2364,9 +2373,9 @@ static void DrawTransOrigin(CharView *cv, GWindow pixmap) {
 
 static void DrawVLine(CharView *cv,GWindow pixmap,real pos,Color fg, int flags,
 	GImage *lock, char *name) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     char buf[20];
-    int x = cv->cvtabs[tabnumber].xoff + rint(pos*cv->cvtabs[tabnumber].scale);
+    int x = tab->xoff + rint(pos*tab->scale);
     DrawLine(cv,pixmap,pos,-32768,pos,32767,fg);
     if ( x>-400 && x<cv->width+400 ) {
 	if ( flags&1 ) {
@@ -2414,7 +2423,7 @@ return;
 }
 
 static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     if ( cv->showgrids ) {
 	/* Draw ppem grid, and the raster for truetype debugging, grid fit */
 	GRect pixel;
@@ -2424,8 +2433,8 @@ static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
 	int minx, maxx, miny, maxy, r,or=0;
 	Color clut[256];
 
-	pixel.width = xgrid_spacing*cv->cvtabs[tabnumber].scale+1;
-	pixel.height = ygrid_spacing*cv->cvtabs[tabnumber].scale+1;
+	pixel.width = xgrid_spacing*tab->scale+1;
+	pixel.height = ygrid_spacing*tab->scale+1;
 	if ( cv->raster!=NULL ) {
 	    if ( cv->raster->num_greys>2 ) {
 		int rb, gb, bb, rd, gd, bd;
@@ -2469,8 +2478,8 @@ static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
 			    or = cv->oldraster->bitmap[i*cv->oldraster->bytes_per_row+j];
 		    }
 		    if ( r || ( or && cv->showdebugchanges)) {
-			pixel.x = jj*xgrid_spacing*cv->cvtabs[tabnumber].scale + cv->cvtabs[tabnumber].xoff+1;
-			pixel.y = cv->height-cv->cvtabs[tabnumber].yoff - rint(ii*ygrid_spacing*cv->cvtabs[tabnumber].scale);
+			pixel.x = jj*xgrid_spacing*tab->scale + tab->xoff+1;
+			pixel.y = cv->height-tab->yoff - rint(ii*ygrid_spacing*tab->scale);
 			if ( cv->showdebugchanges ) {
 			    if ( cv->raster->num_greys<=2 )
 				GDrawFillRect(pixmap,&pixel,(r && or) ? rastercol : r ? rasternewcol : rasteroldcol );
@@ -2493,20 +2502,20 @@ static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
 	for ( i = floor( clip->y/ygrid_spacing ), max = ceil((clip->y+clip->height)/ygrid_spacing);
 		i<=max; ++i )
 	    DrawLine(cv,pixmap,-32768,i*ygrid_spacing,32767,i*ygrid_spacing,i==0?coordcol:rastergridcol);
-	if ( xgrid_spacing*cv->cvtabs[tabnumber].scale>=7 && ygrid_spacing*cv->cvtabs[tabnumber].scale>=7) {
+	if ( xgrid_spacing*tab->scale>=7 && ygrid_spacing*tab->scale>=7) {
 	    for ( i = floor( clip->x/xgrid_spacing ), max = ceil((clip->x+clip->width)/xgrid_spacing);
 		    i<=max; ++i )
 		for ( j = floor( clip->y/ygrid_spacing ), jmax = ceil((clip->y+clip->height)/ygrid_spacing);
 			j<=jmax; ++j ) {
-		    int x = (i+.5)*xgrid_spacing*cv->cvtabs[tabnumber].scale + cv->cvtabs[tabnumber].xoff;
-		    int y = cv->height-cv->cvtabs[tabnumber].yoff - rint((j+.5)*ygrid_spacing*cv->cvtabs[tabnumber].scale);
+		    int x = (i+.5)*xgrid_spacing*tab->scale + tab->xoff;
+		    int y = cv->height-tab->yoff - rint((j+.5)*ygrid_spacing*tab->scale);
 		    GDrawDrawLine(pixmap,x-2,y,x+2,y,rastergridcol);
 		    GDrawDrawLine(pixmap,x,y-2,x,y+2,rastergridcol);
 		}
 	}
 	if ( cv->qg!=NULL ) {
-	    pixel.x = cv->note_x*xgrid_spacing*cv->cvtabs[tabnumber].scale + cv->cvtabs[tabnumber].xoff;
-	    pixel.y = cv->height-cv->cvtabs[tabnumber].yoff - rint(cv->note_y*ygrid_spacing*cv->cvtabs[tabnumber].scale)
+	    pixel.x = cv->note_x*xgrid_spacing*tab->scale + tab->xoff;
+	    pixel.y = cv->height-tab->yoff - rint(cv->note_y*ygrid_spacing*tab->scale)
 		- pixel.height;
 	    if ( pixel.height>=20 )
 		GDrawSetLineWidth(pixmap,3);
@@ -2515,8 +2524,8 @@ static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
 	    GDrawDrawRect(pixmap,&pixel,deltagridcol);
 	    GDrawSetLineWidth(pixmap,0);
 	    {
-		int x = (cv->note_x+.5)*xgrid_spacing*cv->cvtabs[tabnumber].scale + cv->cvtabs[tabnumber].xoff;
-		int y = cv->height-cv->cvtabs[tabnumber].yoff - rint((cv->note_y+.5)*ygrid_spacing*cv->cvtabs[tabnumber].scale);
+		int x = (cv->note_x+.5)*xgrid_spacing*tab->scale + tab->xoff;
+		int y = cv->height-tab->yoff - rint((cv->note_y+.5)*ygrid_spacing*tab->scale);
 		GDrawDrawLine(pixmap,x-2,y,x+2,y,deltagridcol);
 		GDrawDrawLine(pixmap,x,y-2,x,y+2,deltagridcol);
 	    }
@@ -2656,7 +2665,7 @@ return;
 }
 
 static void CVSideBearings(GWindow pixmap, CharView *cv) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     SplineChar *sc = cv->b.sc;
     RefChar *ref;
     BasePoint *bounds[4];
@@ -2686,23 +2695,23 @@ return;				/* no points. no side bearings */
     GDrawSetFont(pixmap,cv->small);
     if ( cv->showhmetrics ) {
 	if ( bounds[0]->x!=0 ) {
-	    x = rint(bounds[0]->x*cv->cvtabs[tabnumber].scale) + cv->cvtabs[tabnumber].xoff;
-	    y = cv->height-cv->cvtabs[tabnumber].yoff-rint(bounds[0]->y*cv->cvtabs[tabnumber].scale);
-	    DrawPLine(cv,pixmap,cv->cvtabs[tabnumber].xoff,y,x,y,metricslabelcol);
+	    x = rint(bounds[0]->x*tab->scale) + tab->xoff;
+	    y = cv->height-tab->yoff-rint(bounds[0]->y*tab->scale);
+	    DrawPLine(cv,pixmap,tab->xoff,y,x,y,metricslabelcol);
 	     /* arrow heads */
-	     DrawPLine(cv,pixmap,cv->cvtabs[tabnumber].xoff,y,cv->cvtabs[tabnumber].xoff+4,y+4,metricslabelcol);
-	     DrawPLine(cv,pixmap,cv->cvtabs[tabnumber].xoff,y,cv->cvtabs[tabnumber].xoff+4,y-4,metricslabelcol);
+	     DrawPLine(cv,pixmap,tab->xoff,y,tab->xoff+4,y+4,metricslabelcol);
+	     DrawPLine(cv,pixmap,tab->xoff,y,tab->xoff+4,y-4,metricslabelcol);
 	     DrawPLine(cv,pixmap,x,y,x-4,y-4,metricslabelcol);
 	     DrawPLine(cv,pixmap,x,y,x-4,y+4,metricslabelcol);
 	    dtos( buf, bounds[0]->x);
-	    x = cv->cvtabs[tabnumber].xoff + (x-cv->cvtabs[tabnumber].xoff-GDrawGetText8Width(pixmap,buf,-1))/2;
+	    x = tab->xoff + (x-tab->xoff-GDrawGetText8Width(pixmap,buf,-1))/2;
 	    GDrawDrawText8(pixmap,x,y-4,buf,-1,metricslabelcol);
 	}
 
 	if ( sc->width != bounds[1]->x ) {
-	    x = rint(bounds[1]->x*cv->cvtabs[tabnumber].scale) + cv->cvtabs[tabnumber].xoff;
-	    y = cv->height-cv->cvtabs[tabnumber].yoff-rint(bounds[1]->y*cv->cvtabs[tabnumber].scale);
-	    x2 = rint(sc->width*cv->cvtabs[tabnumber].scale) + cv->cvtabs[tabnumber].xoff;
+	    x = rint(bounds[1]->x*tab->scale) + tab->xoff;
+	    y = cv->height-tab->yoff-rint(bounds[1]->y*tab->scale);
+	    x2 = rint(sc->width*tab->scale) + tab->xoff;
 	    DrawPLine(cv,pixmap,x,y,x2,y,metricslabelcol);
 	     /* arrow heads */
 	     DrawPLine(cv,pixmap,x,y,x+4,y+4,metricslabelcol);
@@ -2724,9 +2733,9 @@ return;				/* no points. no side bearings */
 			    SSFindItalicBounds(ref->layers[l].splines,t,&leftmost,&rightmost);
 		}
 		if ( leftmost!=NULL ) {
-		    x = rint(leftmost->me.y*t*cv->cvtabs[tabnumber].scale) + cv->cvtabs[tabnumber].xoff;
-		    x2 = rint(leftmost->me.x*cv->cvtabs[tabnumber].scale) + cv->cvtabs[tabnumber].xoff;
-		    y = cv->height-cv->cvtabs[tabnumber].yoff-rint(leftmost->me.y*cv->cvtabs[tabnumber].scale);
+		    x = rint(leftmost->me.y*t*tab->scale) + tab->xoff;
+		    x2 = rint(leftmost->me.x*tab->scale) + tab->xoff;
+		    y = cv->height-tab->yoff-rint(leftmost->me.y*tab->scale);
 		    DrawPLine(cv,pixmap,x,y,x2,y,italiccoordcol);
 		     /* arrow heads */
 		     DrawPLine(cv,pixmap,x,y,x+4,y+4,italiccoordcol);
@@ -2738,9 +2747,9 @@ return;				/* no points. no side bearings */
 		    GDrawDrawText8(pixmap,x,y+12,buf,-1,italiccoordcol);
 		}
 		if ( rightmost!=NULL ) {
-		    x = rint(rightmost->me.x*cv->cvtabs[tabnumber].scale) + cv->cvtabs[tabnumber].xoff;
-		    y = cv->height-cv->cvtabs[tabnumber].yoff-rint(rightmost->me.y*cv->cvtabs[tabnumber].scale);
-		    x2 = rint((sc->width + rightmost->me.y*t)*cv->cvtabs[tabnumber].scale) + cv->cvtabs[tabnumber].xoff;
+		    x = rint(rightmost->me.x*tab->scale) + tab->xoff;
+		    y = cv->height-tab->yoff-rint(rightmost->me.y*tab->scale);
+		    x2 = rint((sc->width + rightmost->me.y*t)*tab->scale) + tab->xoff;
 		    DrawPLine(cv,pixmap,x,y,x2,y,italiccoordcol);
 		     /* arrow heads */
 		     DrawPLine(cv,pixmap,x,y,x+4,y+4,italiccoordcol);
@@ -2756,9 +2765,9 @@ return;				/* no points. no side bearings */
     }
 
     if ( cv->showvmetrics ) {
-	x = rint(bounds[2]->x*cv->cvtabs[tabnumber].scale) + cv->cvtabs[tabnumber].xoff;
-	y = cv->height-cv->cvtabs[tabnumber].yoff-rint(bounds[2]->y*cv->cvtabs[tabnumber].scale);
-	y2 = cv->height-cv->cvtabs[tabnumber].yoff-rint(-sc->parent->descent*cv->cvtabs[tabnumber].scale);
+	x = rint(bounds[2]->x*tab->scale) + tab->xoff;
+	y = cv->height-tab->yoff-rint(bounds[2]->y*tab->scale);
+	y2 = cv->height-tab->yoff-rint(-sc->parent->descent*tab->scale);
 	DrawPLine(cv,pixmap,x,y,x,y2,metricslabelcol);
 	 /* arrow heads */
 	 DrawPLine(cv,pixmap,x,y,x-4,y-4,metricslabelcol);
@@ -2769,9 +2778,9 @@ return;				/* no points. no side bearings */
 	y = y + (y-y2-cv->sfh)/2;
 	GDrawDrawText8(pixmap,x+4,y,buf,-1,metricslabelcol);
 
-	x = rint(bounds[3]->x*cv->cvtabs[tabnumber].scale) + cv->cvtabs[tabnumber].xoff;
-	y = cv->height-cv->cvtabs[tabnumber].yoff-rint(bounds[3]->y*cv->cvtabs[tabnumber].scale);
-	y2 = cv->height-cv->cvtabs[tabnumber].yoff-rint(sc->parent->ascent*cv->cvtabs[tabnumber].scale);
+	x = rint(bounds[3]->x*tab->scale) + tab->xoff;
+	y = cv->height-tab->yoff-rint(bounds[3]->y*tab->scale);
+	y2 = cv->height-tab->yoff-rint(sc->parent->ascent*tab->scale);
 	DrawPLine(cv,pixmap,x,y,x,y2,metricslabelcol);
 	 /* arrow heads */
 	 DrawPLine(cv,pixmap,x,y,x-4,y-4,metricslabelcol);
@@ -2785,7 +2794,7 @@ return;				/* no points. no side bearings */
 }
 
 static int CVExposeGlyphFill(CharView *cv, GWindow pixmap, GEvent *event, DRect* clip ) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     int layer, cvlayer = CVLayer((CharViewBase *) cv);
     int filled = 0;
 
@@ -2800,8 +2809,8 @@ static int CVExposeGlyphFill(CharView *cv, GWindow pixmap, GEvent *event, DRect*
 	if (( cv->showfore || cv->b.drawmode==dm_fore ) && cv->showfilled && 
 	    cv->filled!=NULL ) {
 	    GDrawDrawImage(pixmap, &cv->gi, NULL,
-			   cv->cvtabs[tabnumber].xoff + cv->filled->xmin,
-			   -cv->cvtabs[tabnumber].yoff + cv->height-cv->filled->ymax);
+			   tab->xoff + cv->filled->xmin,
+			   -tab->yoff + cv->height-cv->filled->ymax);
 	    filled = 1;
 	}
     }
@@ -2849,7 +2858,7 @@ static void CVExposeReferences( CharView *cv, GWindow pixmap, SplineChar* sc, in
 
 
 static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     SplineFont *sf = cv->b.sc->parent;
     RefChar *rf;
     GRect old;
@@ -2866,10 +2875,10 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     	strokeFillMode = sfm_fill;
     }
 
-    clip.width = event->u.expose.rect.width/cv->cvtabs[tabnumber].scale;
-    clip.height = event->u.expose.rect.height/cv->cvtabs[tabnumber].scale;
-    clip.x = (event->u.expose.rect.x-cv->cvtabs[tabnumber].xoff)/cv->cvtabs[tabnumber].scale;
-    clip.y = (cv->height-event->u.expose.rect.y-event->u.expose.rect.height-cv->cvtabs[tabnumber].yoff)/cv->cvtabs[tabnumber].scale;
+    clip.width = event->u.expose.rect.width/tab->scale;
+    clip.height = event->u.expose.rect.height/tab->scale;
+    clip.x = (event->u.expose.rect.x-tab->xoff)/tab->scale;
+    clip.y = (cv->height-event->u.expose.rect.y-event->u.expose.rect.height-tab->yoff)/tab->scale;
 
     GDrawSetFont(pixmap,cv->small);
     GDrawSetLineWidth(pixmap,0);
@@ -3059,8 +3068,8 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    if( cv->additionalCharsToShow[ ridx ] )
 	    {
 		int i = 1;
-		int originalxoff = cv->cvtabs[tabnumber].xoff;
-		int offset = cv->cvtabs[tabnumber].scale * cv->b.sc->width;
+		int originalxoff = tab->xoff;
+		int offset = tab->scale * cv->b.sc->width;
 		for( i=ridx; i < additionalCharsToShowLimit; i++ )
 		{
 //		    TRACE("expose(right) loop:%d\n", i );
@@ -3068,13 +3077,13 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		    if( !xc )
 			break;
 
-		    cv->cvtabs[tabnumber].xoff += offset;
+		    tab->xoff += offset;
 		    CVExposeReferences(   cv, pixmap, xc, layer, &clip );
 		    CVDrawLayerSplineSet( cv, pixmap, &xc->layers[layer], foreoutlinecol,
 					  showpoints ,&clip, sm );
-		    offset = cv->cvtabs[tabnumber].scale * xc->width;
+		    offset = tab->scale * xc->width;
 		}
-		cv->cvtabs[tabnumber].xoff = originalxoff;
+		tab->xoff = originalxoff;
 	    }
 
 
@@ -3082,7 +3091,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    if( cv->additionalCharsToShowActiveIndex > 0 )
 	    {
 		int i = 1;
-		int originalxoff = cv->cvtabs[tabnumber].xoff;
+		int originalxoff = tab->xoff;
 		int offset = 0;
 		    
 		for( i=cv->additionalCharsToShowActiveIndex-1; i >= 0; i-- )
@@ -3092,13 +3101,13 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		    if( !xc )
 			break;
 
-		    offset = cv->cvtabs[tabnumber].scale * xc->width;
-		    cv->cvtabs[tabnumber].xoff -= offset;
+		    offset = tab->scale * xc->width;
+		    tab->xoff -= offset;
 		    CVExposeReferences(   cv, pixmap, xc, layer, &clip );
 		    CVDrawLayerSplineSet( cv, pixmap, &xc->layers[layer], foreoutlinecol,
 					  showpoints ,&clip, sm );
 		}
-		cv->cvtabs[tabnumber].xoff = originalxoff;
+		tab->xoff = originalxoff;
 	    }
 		
 //	    TRACE("expose(e) ridx:%d\n", ridx );
@@ -3137,7 +3146,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		    NULL,_("TopAccent"));
     }
     if ( cv->showvmetrics ) {
-	int len, y = -cv->cvtabs[tabnumber].yoff + cv->height - rint((/*sf->vertical_origin*/-cv->b.sc->vwidth)*cv->cvtabs[tabnumber].scale);
+	int len, y = -tab->yoff + cv->height - rint((/*sf->vertical_origin*/-cv->b.sc->vwidth)*tab->scale);
 	DrawLine(cv,pixmap,-32768,/*sf->vertical_origin*/-cv->b.sc->vwidth,
 			    32767,/*sf->vertical_origin*/-cv->b.sc->vwidth,
 		(!cv->inactive && cv->vwidthsel)?widthselcol:widthcol);
@@ -3200,13 +3209,13 @@ static void SC_OutOfDateBackground(SplineChar *sc) {
 /* CVRegenFill() regenerates data used to show or not show paths as filled */
 /* This is not static so that it can be called from the layers palette */
 void CVRegenFill(CharView *cv) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     BDFCharFree(cv->filled);
     cv->filled = NULL;
     if ( cv->showfilled && !shouldShowFilledUsingCairo(cv) ) {
 	extern int use_freetype_to_rasterize_fv;
 	int layer = CVLayer((CharViewBase *) cv);
-	int size = cv->cvtabs[tabnumber].scale*(cv->b.fv->sf->ascent+cv->b.fv->sf->descent);
+	int size = tab->scale*(cv->b.fv->sf->ascent+cv->b.fv->sf->descent);
 	int clut_len= 2;
 
         if ( layer==ly_grid ) layer=ly_fore; /* otherwise crashes when using guides layer! */
@@ -3307,26 +3316,26 @@ static void SCRegenDependents(SplineChar *sc, int layer) {
 }
 
 static void CVUpdateInfo(CharView *cv, GEvent *event) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
 
     cv->info_within = true;
     cv->e.x = event->u.mouse.x; cv->e.y = event->u.mouse.y;
-    cv->info.x = (event->u.mouse.x-cv->cvtabs[tabnumber].xoff)/cv->cvtabs[tabnumber].scale;
-    cv->info.y = (cv->height-event->u.mouse.y-cv->cvtabs[tabnumber].yoff)/cv->cvtabs[tabnumber].scale;
+    cv->info.x = (event->u.mouse.x-tab->xoff)/tab->scale;
+    cv->info.y = (cv->height-event->u.mouse.y-tab->yoff)/tab->scale;
     CVInfoDraw(cv,cv->gw);
 }
 
 static void CVNewScale(CharView *cv) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     GEvent e;
 
     CVRegenFill(cv);
     cv->back_img_out_of_date = true;
 
-    GScrollBarSetBounds(cv->vsb,-20000*cv->cvtabs[tabnumber].scale,8000*cv->cvtabs[tabnumber].scale,cv->height);
-    GScrollBarSetBounds(cv->hsb,-8000*cv->cvtabs[tabnumber].scale,32000*cv->cvtabs[tabnumber].scale,cv->width);
-    GScrollBarSetPos(cv->vsb,cv->cvtabs[tabnumber].yoff-cv->height);
-    GScrollBarSetPos(cv->hsb,-cv->cvtabs[tabnumber].xoff);
+    GScrollBarSetBounds(cv->vsb,-20000*tab->scale,8000*tab->scale,cv->height);
+    GScrollBarSetBounds(cv->hsb,-8000*tab->scale,32000*tab->scale,cv->width);
+    GScrollBarSetPos(cv->vsb,tab->yoff-cv->height);
+    GScrollBarSetPos(cv->hsb,-tab->xoff);
 
     GDrawRequestExpose(cv->v,NULL,false);
     if ( cv->showrulers )
@@ -3336,7 +3345,7 @@ static void CVNewScale(CharView *cv) {
 }
 
 static void _CVFit(CharView *cv,DBounds *b, int integral) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     real left, right, top, bottom, hsc, wsc;
     extern int palettes_docked;
     int offset = palettes_docked ? 90 : 0;
@@ -3360,27 +3369,27 @@ static void _CVFit(CharView *cv,DBounds *b, int integral) {
     hsc = cv->height / top;
     if ( wsc<hsc ) { hsc = wsc; hsmall = false ; }
 
-    cv->cvtabs[tabnumber].scale = hsc;
+    tab->scale = hsc;
     if ( integral ) {
-	if ( cv->cvtabs[tabnumber].scale > 1.0 ) {
-	    cv->cvtabs[tabnumber].scale = floor(cv->cvtabs[tabnumber].scale);
+	if ( tab->scale > 1.0 ) {
+	    tab->scale = floor(tab->scale);
 	} else {
-	    cv->cvtabs[tabnumber].scale = 1/ceil(1/cv->cvtabs[tabnumber].scale);
+	    tab->scale = 1/ceil(1/tab->scale);
 	}
     } else {
-	if ( cv->cvtabs[tabnumber].scale > 1.0 ) {
-	    cv->cvtabs[tabnumber].scale = floor(2*cv->cvtabs[tabnumber].scale)/2;
+	if ( tab->scale > 1.0 ) {
+	    tab->scale = floor(2*tab->scale)/2;
 	} else {
-	    cv->cvtabs[tabnumber].scale = 2/ceil(2/cv->cvtabs[tabnumber].scale);
+	    tab->scale = 2/ceil(2/tab->scale);
 	}
     }
 
     /* Center glyph horizontally */
-    cv->cvtabs[tabnumber].xoff = ( (cv->width-offset) - (right*cv->cvtabs[tabnumber].scale) )/2 + offset  - b->minx*cv->cvtabs[tabnumber].scale;
+    tab->xoff = ( (cv->width-offset) - (right*tab->scale) )/2 + offset  - b->minx*tab->scale;
     if ( hsmall )
-	cv->cvtabs[tabnumber].yoff = -bottom*cv->cvtabs[tabnumber].scale;
+	tab->yoff = -bottom*tab->scale;
     else
-	cv->cvtabs[tabnumber].yoff = -(bottom+top/2)*cv->cvtabs[tabnumber].scale + cv->height/2;
+	tab->yoff = -(bottom+top/2)*tab->scale + cv->height/2;
 
     CVNewScale(cv);
 }
@@ -4018,7 +4027,7 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 }
 
 void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     GRect r;
     Color bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap));
     Color fg = GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap));
@@ -4058,10 +4067,10 @@ void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
 	buffer[11] = '\0';
 	GDrawDrawText8(pixmap,RPT_DATA,ybase,buffer,-1,fg);
     }
-    if ( cv->cvtabs[tabnumber].scale>=.25 )
-	sprintf( buffer, "%d%%", (int) (100*cv->cvtabs[tabnumber].scale));
+    if ( tab->scale>=.25 )
+	sprintf( buffer, "%d%%", (int) (100*tab->scale));
     else
-	sprintf( buffer, "%.3g%%", (double) (100*cv->cvtabs[tabnumber].scale));
+	sprintf( buffer, "%.3g%%", (double) (100*tab->scale));
     GDrawDrawText8(pixmap,MAG_DATA,ybase,buffer,-1,fg);
 
     const int layernamesz = 100;
@@ -4150,8 +4159,8 @@ return;
 return;
 
     if ( cv->active_tool==cvt_scale ) {
-	xdiff = 100.0 + (cv->info.x-cv->p.cx)/(4*cv->cvtabs[tabnumber].scale);
-	ydiff = 100.0 + (cv->info.y-cv->p.cy)/(4*cv->cvtabs[tabnumber].scale);
+	xdiff = 100.0 + (cv->info.x-cv->p.cx)/(4*tab->scale);
+	ydiff = 100.0 + (cv->info.y-cv->p.cy)/(4*tab->scale);
 	if ( xdiff>=100 || xdiff<=-100 || ydiff>=100 || ydiff<=-100 )
 	    sprintf(buffer,"%d%%%s%d%%", (int) xdiff, coord_sep, (int) ydiff );
 	else
@@ -4206,11 +4215,11 @@ void CVInfoDraw(CharView *cv, GWindow pixmap ) {
 }
 
 static void CVCrossing(CharView *cv, GEvent *event ) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     CVToolsSetCursor(cv,event->u.mouse.state,event->u.mouse.device);
     cv->info_within = event->u.crossing.entered;
-    cv->info.x = (event->u.crossing.x-cv->cvtabs[tabnumber].xoff)/cv->cvtabs[tabnumber].scale;
-    cv->info.y = (cv->height-event->u.crossing.y-cv->cvtabs[tabnumber].yoff)/cv->cvtabs[tabnumber].scale;
+    cv->info.x = (event->u.crossing.x-tab->xoff)/tab->scale;
+    cv->info.y = (cv->height-event->u.crossing.y-tab->yoff)/tab->scale;
     CVInfoDraw(cv,cv->gw);
     CPEndInfo(cv);
 }
@@ -4382,13 +4391,13 @@ return( fs->p->anysel );
 
 static int16 MouseToCX( CharView *cv, int16 mx )
 {
-    int tabnumber = GTabSetGetSel(cv->tabs);
-    return( mx - cv->cvtabs[tabnumber].xoff ) / cv->cvtabs[tabnumber].scale;
+    CharViewTab* tab = CVGetActiveTab(cv);
+    return( mx - tab->xoff ) / tab->scale;
 }
 
     
 static void SetFS( FindSel *fs, PressedOn *p, CharView *cv, GEvent *event) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     extern int snaptoint;
 
     memset(p,'\0',sizeof(PressedOn));
@@ -4399,10 +4408,10 @@ static void SetFS( FindSel *fs, PressedOn *p, CharView *cv, GEvent *event) {
     fs->e = event;
     p->x = event->u.mouse.x;
     p->y = event->u.mouse.y;
-    p->cx = (event->u.mouse.x-cv->cvtabs[tabnumber].xoff)/cv->cvtabs[tabnumber].scale;
-    p->cy = (cv->height-event->u.mouse.y-cv->cvtabs[tabnumber].yoff)/cv->cvtabs[tabnumber].scale;
+    p->cx = (event->u.mouse.x-tab->xoff)/tab->scale;
+    p->cy = (cv->height-event->u.mouse.y-tab->yoff)/tab->scale;
 
-    fs->fudge = (cv->active_tool==cvt_ruler ? snapdistancemeasuretool : snapdistance)/cv->cvtabs[tabnumber].scale;
+    fs->fudge = (cv->active_tool==cvt_ruler ? snapdistancemeasuretool : snapdistance)/tab->scale;
 
     /* If they have really large control points then expand
      * the selection range to allow them to still click on the
@@ -4410,7 +4419,7 @@ static void SetFS( FindSel *fs, PressedOn *p, CharView *cv, GEvent *event) {
      */
     if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
     {
-	float delta = (prefs_cvEditHandleSize - prefs_cvEditHandleSize_default) / cv->cvtabs[tabnumber].scale;
+	float delta = (prefs_cvEditHandleSize - prefs_cvEditHandleSize_default) / tab->scale;
 	delta *= 1.5;
 	fs->fudge += delta;
     }
@@ -4443,7 +4452,7 @@ return( InSplineSet(&fs,cv->b.layerheads[cv->b.drawmode]->splines,cv->b.sc->insp
 }
 
 static GEvent *CVConstrainedMouseDown(CharView *cv,GEvent *event, GEvent *fake) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     SplinePoint *base;
     spiro_cp *basecp;
     int basex, basey, dx, dy;
@@ -4460,8 +4469,8 @@ return( event );
 	basetruex = basecp->x;
 	basetruey = basecp->y;
     }
-    basex =  cv->cvtabs[tabnumber].xoff + rint(basetruex*cv->cvtabs[tabnumber].scale);
-    basey = -cv->cvtabs[tabnumber].yoff + cv->height - rint(basetruey*cv->cvtabs[tabnumber].scale);
+    basex =  tab->xoff + rint(basetruex*tab->scale);
+    basey = -tab->yoff + cv->height - rint(basetruey*tab->scale);
 
     dx= event->u.mouse.x-basex, dy = event->u.mouse.y-basey;
     sign = dx*dy<0?-1:1;
@@ -4476,9 +4485,9 @@ return( event );
 	    double off = tan(cv->b.sc->parent->italicangle*3.1415926535897932/180)*
 		    (cv->p.cy-basetruey);
 	    double aoff = off<0 ? -off : off;
-	    if ( dx>=aoff*cv->cvtabs[tabnumber].scale/2 && (event->u.mouse.x-basex<0)!=(off<0) ) {
+	    if ( dx>=aoff*tab->scale/2 && (event->u.mouse.x-basex<0)!=(off<0) ) {
 		cv->p.cx -= off;
-		cv->p.x = fake->u.mouse.x = cv->cvtabs[tabnumber].xoff + rint(cv->p.cx*cv->cvtabs[tabnumber].scale);
+		cv->p.x = fake->u.mouse.x = tab->xoff + rint(cv->p.cx*tab->scale);
 	    }
 	}
     } else if ( dx >= 2*dy ) {
@@ -4651,7 +4660,7 @@ static void CVMaybeCreateDraggingComparisonOutline( CharView* cv )
 
 static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
 {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     int i=0;
     FontViewBase *fv = cv->b.fv;
     char buf[300];
@@ -4766,7 +4775,7 @@ static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
     // Move the scrollbar so that it appears the selection
     // box has moved rather than all the characters.
     if( scroll_offset )
-	CVHScrollSetPos( cv, cv->cvtabs[tabnumber].xoff + scroll_offset * cv->cvtabs[tabnumber].scale );
+	CVHScrollSetPos( cv, tab->xoff + scroll_offset * tab->scale );
     
 //    if ( CVClearSel(cv))
 //	SCUpdateAll(cv->b.sc);
@@ -4851,7 +4860,7 @@ return;		/* I treat this more like a modifier key change than a button press */
 	_CVTestSelectFromEvent(cv,&fs);
 	fs.p = &cv->p;
 
-//	TRACE("cvmousedown cv->cvtabs[tabnumber].xoff:%d\n", cv->cvtabs[tabnumber].xoff );
+//	TRACE("cvmousedown tab->xoff:%d\n", tab->xoff );
 //	TRACE("cvmousedown x:%d y:%d\n",   event->u.mouse.x, event->u.mouse.y );
 	    
 	if( !cv->p.anysel && cv->b.drawmode != dm_grid )
@@ -5276,7 +5285,7 @@ static void CV_CharChangedUpdate(CharView *cv) {
 }
 
 static void CVMouseMove(CharView *cv, GEvent *event ) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     real cx, cy;
     PressedOn p;
     FindSel fs;
@@ -5324,13 +5333,13 @@ return;
 		if ( dot<0 ) dot = 0;
 		p.cx = cv->p.constrain.x + dot*(cv->p.cp.x-cv->p.constrain.x);
 		p.cy = cv->p.constrain.y + dot*(cv->p.cp.y-cv->p.constrain.y);
-		p.x = fake.u.mouse.x = cv->cvtabs[tabnumber].xoff + rint(p.cx*cv->cvtabs[tabnumber].scale);
-		p.y = fake.u.mouse.y = -cv->cvtabs[tabnumber].yoff + cv->height - rint(p.cy*cv->cvtabs[tabnumber].scale);
+		p.x = fake.u.mouse.x = tab->xoff + rint(p.cx*tab->scale);
+		p.y = fake.u.mouse.y = -tab->yoff + cv->height - rint(p.cy*tab->scale);
 	    }
 	} else {
 	    /* Constrain mouse to hor/vert/45 from base point */
-	    int basex = cv->active_tool!=cvt_hand ? cv->cvtabs[tabnumber].xoff + rint(cv->p.constrain.x*cv->cvtabs[tabnumber].scale) : cv->p.x;
-	    int basey = cv->active_tool!=cvt_hand ?-cv->cvtabs[tabnumber].yoff + cv->height - rint(cv->p.constrain.y*cv->cvtabs[tabnumber].scale) : cv->p.y;
+	    int basex = cv->active_tool!=cvt_hand ? tab->xoff + rint(cv->p.constrain.x*tab->scale) : cv->p.x;
+	    int basey = cv->active_tool!=cvt_hand ?-tab->yoff + cv->height - rint(cv->p.constrain.y*tab->scale) : cv->p.y;
 	    int dx= event->u.mouse.x-basex, dy = event->u.mouse.y-basey;
 	    int sign = dx*dy<0?-1:1;
 	    double aspect = 1.0;
@@ -5347,9 +5356,9 @@ return;
 		    double off = tan(cv->b.sc->parent->italicangle*3.1415926535897932/180)*
 			    (p.cy-cv->p.constrain.y);
 		    double aoff = off<0 ? -off : off;
-		    if ( dx>=aoff*cv->cvtabs[tabnumber].scale/2 && (event->u.mouse.x-basex<0)!=(off<0) ) {
+		    if ( dx>=aoff*tab->scale/2 && (event->u.mouse.x-basex<0)!=(off<0) ) {
 			p.cx -= off;
-			p.x = fake.u.mouse.x = cv->cvtabs[tabnumber].xoff + rint(p.cx*cv->cvtabs[tabnumber].scale);
+			p.x = fake.u.mouse.x = tab->xoff + rint(p.cx*tab->scale);
 		    }
 		}
 	    } else if ( dx >= 2*dy ) {
@@ -5412,8 +5421,8 @@ return;
     } else {
 	CVDoSnaps(cv,&fs);
     }
-    cx = (p.cx -cv->p.cx) / cv->cvtabs[tabnumber].scale;
-    cy = (p.cy - cv->p.cy) / cv->cvtabs[tabnumber].scale;
+    cx = (p.cx -cv->p.cx) / tab->scale;
+    cy = (p.cy - cv->p.cy) / tab->scale;
     if ( cx<0 ) cx = -cx;
     if ( cy<0 ) cy = -cy;
 
@@ -5476,21 +5485,21 @@ return;
 }
 
 static void CVMagnify(CharView *cv, real midx, real midy, int bigger, int LockPosition) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     static float scales[] = { 1, 2, 3, 4, 6, 8, 11, 16, 23, 32, 45, 64, 90, 128, 181, 256, 512, 1024, 0 };
     float oldscale;
     int i, j;
 
-    oldscale = cv->cvtabs[tabnumber].scale;
+    oldscale = tab->scale;
 
     if ( bigger!=0 ) {
-	if ( cv->cvtabs[tabnumber].scale>=1 ) {
-	    for ( i=0; scales[i]!=0 && cv->cvtabs[tabnumber].scale>scales[i]; ++i );
+	if ( tab->scale>=1 ) {
+	    for ( i=0; scales[i]!=0 && tab->scale>scales[i]; ++i );
 	    if ( scales[i]==0 ) i=j= i-1;
-	    else if ( RealNear(scales[i],cv->cvtabs[tabnumber].scale) ) j=i;
-	    else if ( i!=0 && RealNear(scales[i-1],cv->cvtabs[tabnumber].scale) ) j= --i; /* Round errors! */
+	    else if ( RealNear(scales[i],tab->scale) ) j=i;
+	    else if ( i!=0 && RealNear(scales[i-1],tab->scale) ) j= --i; /* Round errors! */
 	    else j = i-1;
-	} else { real sinv = 1/cv->cvtabs[tabnumber].scale; int t;
+	} else { real sinv = 1/tab->scale; int t;
 	    for ( i=0; scales[i]!=0 && sinv>scales[i]; ++i );
 	    if ( scales[i]==0 ) i=j= i-1;
 	    else if ( RealNear(scales[i],sinv) ) j=i;
@@ -5503,35 +5512,35 @@ static void CVMagnify(CharView *cv, real midx, real midy, int bigger, int LockPo
 	    if ( i==j ) ++i;
 	    if ( i>0 && scales[i]==0 ) --i;
 	    if ( i>=0 )
-		cv->cvtabs[tabnumber].scale = scales[i];
+		tab->scale = scales[i];
 	    else
-		cv->cvtabs[tabnumber].scale = 1/scales[-i];
+		tab->scale = 1/scales[-i];
 	} else {
 	    if ( i==j ) --j;
 	    if ( j<0 && scales[-j]==0 ) ++j;
 	    if ( j>=0 )
-		cv->cvtabs[tabnumber].scale = scales[j];
+		tab->scale = scales[j];
 	    else
-		cv->cvtabs[tabnumber].scale = 1/scales[-j];
+		tab->scale = 1/scales[-j];
 	}
     }
 
     if (LockPosition) {
-	float mousex = rint(midx * oldscale + cv->cvtabs[tabnumber].xoff);
-	float mousey = rint(midy * oldscale + cv->cvtabs[tabnumber].yoff - cv->height);
-	cv->cvtabs[tabnumber].xoff = mousex - midx*cv->cvtabs[tabnumber].scale;
-	cv->cvtabs[tabnumber].yoff = mousey - midy*cv->cvtabs[tabnumber].scale + cv->height;
+	float mousex = rint(midx * oldscale + tab->xoff);
+	float mousey = rint(midy * oldscale + tab->yoff - cv->height);
+	tab->xoff = mousex - midx*tab->scale;
+	tab->yoff = mousey - midy*tab->scale + cv->height;
     }
     else {
-        cv->cvtabs[tabnumber].xoff = -(rint(midx*cv->cvtabs[tabnumber].scale) - cv->width/2);
-        cv->cvtabs[tabnumber].yoff = -(rint(midy*cv->cvtabs[tabnumber].scale) - cv->height/2);
+        tab->xoff = -(rint(midx*tab->scale) - cv->width/2);
+        tab->yoff = -(rint(midy*tab->scale) - cv->height/2);
     }
 
     CVNewScale(cv);
 }
 
 static void CVMouseUp(CharView *cv, GEvent *event ) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
 
     CVMouseMove(cv,event);
     if ( cv->pressed!=NULL ) {
@@ -5590,12 +5599,12 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 	if ( cv->p.x>=event->u.mouse.x-6 && cv->p.x<=event->u.mouse.x+6 &&
 		 cv->p.y>=event->u.mouse.y-6 && cv->p.y<=event->u.mouse.y+6 ) {
 	    real cx, cy;
-	    cx = (event->u.mouse.x-cv->cvtabs[tabnumber].xoff)/cv->cvtabs[tabnumber].scale;
-	    cy = (cv->height-event->u.mouse.y-cv->cvtabs[tabnumber].yoff)/cv->cvtabs[tabnumber].scale ;
+	    cx = (event->u.mouse.x-tab->xoff)/tab->scale;
+	    cy = (cv->height-event->u.mouse.y-tab->yoff)/tab->scale ;
 	    CVMagnify(cv,cx,cy,cv->active_tool==cvt_minify?-1:1,event->u.mouse.button>3);
         } else {
 	    DBounds b;
-	    double oldscale = cv->cvtabs[tabnumber].scale;
+	    double oldscale = tab->scale;
 	    if ( cv->p.cx>cv->info.x ) {
 		b.minx = cv->info.x;
 		b.maxx = cv->p.cx;
@@ -5611,8 +5620,8 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 		b.maxy = cv->info.y;
 	    }
 	    _CVFit(cv,&b,false);
-	    if ( oldscale==cv->cvtabs[tabnumber].scale ) {
-		cv->cvtabs[tabnumber].scale += .5;
+	    if ( oldscale==tab->scale ) {
+		tab->scale += .5;
 		CVNewScale(cv);
 	    }
 	}
@@ -5642,7 +5651,7 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 }
 
 static void CVTimer(CharView *cv,GEvent *event) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
 
     if ( event->u.timer.timer==cv->pressed ) {
 	GEvent e;
@@ -5658,12 +5667,12 @@ static void CVTimer(CharView *cv,GEvent *event) {
 		dy = -cv->height/8;
 	    else if ( e.u.mouse.y>=cv->height )
 		dy = cv->height/8;
-	    cv->cvtabs[tabnumber].xoff += dx; cv->cvtabs[tabnumber].yoff += dy;
+	    tab->xoff += dx; tab->yoff += dy;
 	    cv->back_img_out_of_date = true;
 	    if ( dy!=0 )
-		GScrollBarSetPos(cv->vsb,cv->cvtabs[tabnumber].yoff-cv->height);
+		GScrollBarSetPos(cv->vsb,tab->yoff-cv->height);
 	    if ( dx!=0 )
-		GScrollBarSetPos(cv->hsb,-cv->cvtabs[tabnumber].xoff);
+		GScrollBarSetPos(cv->hsb,-tab->xoff);
 	    GDrawRequestExpose(cv->v,NULL,false);
 	}
 #if _ModKeysAutoRepeat
@@ -5836,7 +5845,7 @@ static void CVDrawVNum(CharView *cv,GWindow pixmap,int x, int y, char *format,re
 
 
 static void CVExposeRulers(CharView *cv, GWindow pixmap ) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     real xmin, xmax, ymin, ymax;
     real onehundred, pos;
     real units, littleunits;
@@ -5845,11 +5854,11 @@ static void CVExposeRulers(CharView *cv, GWindow pixmap ) {
     GRect rect;
     Color def_fg = GDrawGetDefaultForeground(NULL);
 
-    xmin = -cv->cvtabs[tabnumber].xoff/cv->cvtabs[tabnumber].scale;
-    xmax = (cv->width-cv->cvtabs[tabnumber].xoff)/cv->cvtabs[tabnumber].scale;
-    ymin = -cv->cvtabs[tabnumber].yoff/cv->cvtabs[tabnumber].scale;
-    ymax = (cv->height-cv->cvtabs[tabnumber].yoff)/cv->cvtabs[tabnumber].scale;
-    onehundred = 100/cv->cvtabs[tabnumber].scale;
+    xmin = -tab->xoff/tab->scale;
+    xmax = (cv->width-tab->xoff)/tab->scale;
+    ymin = -tab->yoff/tab->scale;
+    ymax = (cv->height-tab->yoff)/tab->scale;
+    onehundred = 100/tab->scale;
 
     if ( onehundred<5 ) {
 	units = 1; littleunits=0;
@@ -5924,21 +5933,21 @@ static void CVExposeRulers(CharView *cv, GWindow pixmap ) {
     if ( fabs(xmin/units) < 1e5 && fabs(ymin/units)<1e5 && fabs(xmax/units)<1e5 && fabs(ymax/units)<1e5 ) {
 	if ( littleunits!=0 ) {
 	    for ( pos=littleunits*ceil(xmin/littleunits); pos<xmax; pos += littleunits ) {
-		x = cv->cvtabs[tabnumber].xoff + rint(pos*cv->cvtabs[tabnumber].scale);
+		x = tab->xoff + rint(pos*tab->scale);
 		GDrawDrawLine(cv->hruler,x,cv->rulerh-4,x,cv->rulerh, def_fg);
 	    }
 	    for ( pos=littleunits*ceil(ymin/littleunits); pos<ymax; pos += littleunits ) {
-		y = -cv->cvtabs[tabnumber].yoff + cv->height - rint(pos*cv->cvtabs[tabnumber].scale);
+		y = -tab->yoff + cv->height - rint(pos*tab->scale);
 		GDrawDrawLine(cv->vruler,cv->rulerh-4,y,cv->rulerh,y, def_fg);
 	    }
 	}
 	for ( pos=units*ceil(xmin/units); pos<xmax; pos += units ) {
-	    x = cv->cvtabs[tabnumber].xoff + rint(pos*cv->cvtabs[tabnumber].scale);
+	    x = tab->xoff + rint(pos*tab->scale);
 	    GDrawDrawLine(cv->hruler,x,0,x,cv->rulerh, rulerbigtickcol);
 	    CVDrawNum(cv,cv->hruler,x+15,cv->sas,"%g",pos,1);
 	}
 	for ( pos=units*ceil(ymin/units); pos<ymax; pos += units ) {
-	    y = -cv->cvtabs[tabnumber].yoff + cv->height - rint(pos*cv->cvtabs[tabnumber].scale);
+	    y = -tab->yoff + cv->height - rint(pos*tab->scale);
 	    GDrawDrawLine(cv->vruler,0,y,cv->rulerh,y, rulerbigtickcol);
 	    CVDrawVNum(cv,cv->vruler,1,y+cv->sas+20,"%g",pos,1);
 	}
@@ -6063,15 +6072,15 @@ return;
 
 static void CVHScrollSetPos( CharView *cv, int newpos )
 {
-    int tabnumber = GTabSetGetSel(cv->tabs);
-    TRACE("CVHScrollSetPos(1) cvxoff:%f newpos:%d\n", cv->cvtabs[tabnumber].xoff, newpos );
-    if ( newpos<-(32000*cv->cvtabs[tabnumber].scale-cv->width) )
-        newpos = -(32000*cv->cvtabs[tabnumber].scale-cv->width);
-    if ( newpos>8000*cv->cvtabs[tabnumber].scale ) newpos = 8000*cv->cvtabs[tabnumber].scale;
-    TRACE("CVHScrollSetPos(2) cvxoff:%f newpos:%d\n", cv->cvtabs[tabnumber].xoff, newpos );
-    if ( newpos!=cv->cvtabs[tabnumber].xoff ) {
-	int diff = newpos-cv->cvtabs[tabnumber].xoff;
-	cv->cvtabs[tabnumber].xoff = newpos;
+    CharViewTab* tab = CVGetActiveTab(cv);
+    TRACE("CVHScrollSetPos(1) cvxoff:%f newpos:%d\n", tab->xoff, newpos );
+    if ( newpos<-(32000*tab->scale-cv->width) )
+        newpos = -(32000*tab->scale-cv->width);
+    if ( newpos>8000*tab->scale ) newpos = 8000*tab->scale;
+    TRACE("CVHScrollSetPos(2) cvxoff:%f newpos:%d\n", tab->xoff, newpos );
+    if ( newpos!=tab->xoff ) {
+	int diff = newpos-tab->xoff;
+	tab->xoff = newpos;
 	cv->back_img_out_of_date = true;
 	GScrollBarSetPos(cv->hsb,-newpos);
 	GDrawScroll(cv->v,NULL,diff,0);
@@ -6094,8 +6103,8 @@ static void CVHScrollSetPos( CharView *cv, int newpos )
 }
 
 static void CVHScroll(CharView *cv, struct sbevent *sb) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
-    int newpos = cv->cvtabs[tabnumber].xoff;
+    CharViewTab* tab = CVGetActiveTab(cv);
+    int newpos = tab->xoff;
 
     switch( sb->type ) {
       case et_sb_top:
@@ -6132,8 +6141,8 @@ static void CVHScroll(CharView *cv, struct sbevent *sb) {
 }
 
 static void CVVScroll(CharView *cv, struct sbevent *sb) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
-    int newpos = cv->cvtabs[tabnumber].yoff;
+    CharViewTab* tab = CVGetActiveTab(cv);
+    int newpos = tab->yoff;
 
     switch( sb->type ) {
       case et_sb_top:
@@ -6165,12 +6174,12 @@ static void CVVScroll(CharView *cv, struct sbevent *sb) {
         newpos += cv->height/30;
       break;
     }
-    if ( newpos<-(20000*cv->cvtabs[tabnumber].scale-cv->height) )
-        newpos = -(20000*cv->cvtabs[tabnumber].scale-cv->height);
-    if ( newpos>8000*cv->cvtabs[tabnumber].scale ) newpos = 8000*cv->cvtabs[tabnumber].scale;
-    if ( newpos!=cv->cvtabs[tabnumber].yoff ) {
-	int diff = newpos-cv->cvtabs[tabnumber].yoff;
-	cv->cvtabs[tabnumber].yoff = newpos;
+    if ( newpos<-(20000*tab->scale-cv->height) )
+        newpos = -(20000*tab->scale-cv->height);
+    if ( newpos>8000*tab->scale ) newpos = 8000*tab->scale;
+    if ( newpos!=tab->yoff ) {
+	int diff = newpos-tab->yoff;
+	tab->yoff = newpos;
 	cv->back_img_out_of_date = true;
 	GScrollBarSetPos(cv->vsb,newpos-cv->height);
 	GDrawScroll(cv->v,NULL,0,diff);
@@ -6253,7 +6262,7 @@ return;
 }
 
 static void CVAddGuide(CharView *cv,int is_v,int guide_pos) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     SplinePoint *sp1, *sp2;
     SplineSet *ss;
     SplineFont *sf = cv->b.sc->parent;
@@ -6261,11 +6270,11 @@ static void CVAddGuide(CharView *cv,int is_v,int guide_pos) {
 
     if ( is_v ) {
 	/* Create a vertical guide line */
-	double x = (guide_pos-cv->cvtabs[tabnumber].xoff)/cv->cvtabs[tabnumber].scale;
+	double x = (guide_pos-tab->xoff)/tab->scale;
 	sp1 = SplinePointCreate(x,sf->ascent+emsize/2);
 	sp2 = SplinePointCreate(x,-sf->descent-emsize/2);
     } else {
-	double y = (cv->height-guide_pos-cv->cvtabs[tabnumber].yoff)/cv->cvtabs[tabnumber].scale;
+	double y = (cv->height-guide_pos-tab->yoff)/tab->scale;
 	sp1 = SplinePointCreate(-emsize,y);
 	sp2 = SplinePointCreate(2*emsize,y);
     }
@@ -6408,11 +6417,11 @@ return( GGadgetDispatchEvent(cv->vsb,event));
       case et_mousemove:
 	if ( cv->ruler_pressed ) {
         int old_pos = cv->guide_pos;
-        int tabnumber = GTabSetGetSel(cv->tabs);
+        CharViewTab* tab = CVGetActiveTab(cv);
 	    cv->e.x = event->u.mouse.x - cv->rulerh;
 	    cv->e.y = event->u.mouse.y-(cv->mbh+cv->charselectorh+cv->infoh+cv->rulerh);
-	    cv->info.x = (cv->e.x-cv->cvtabs[tabnumber].xoff)/cv->cvtabs[tabnumber].scale;
-	    cv->info.y = (cv->height-cv->e.y-cv->cvtabs[tabnumber].yoff)/cv->cvtabs[tabnumber].scale;
+	    cv->info.x = (cv->e.x-tab->xoff)/tab->scale;
+	    cv->info.y = (cv->height-cv->e.y-tab->yoff)/tab->scale;
 	    if ( cv->ruler_pressedv )
 		cv->guide_pos = cv->e.x;
 	    else
@@ -6758,7 +6767,7 @@ static void CVMenuExport(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSE
 }
 
 static void CVInkscapeAdjust(CharView *cv) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     /* Inkscape considers different coordinates useful. That is to say, */
     /*  Inkscape views the world as a blank sheet of paper and often */
     /*  put things outside the [0,1000] range (especially in Y) that */
@@ -6775,11 +6784,11 @@ static void CVInkscapeAdjust(CharView *cv) {
 	SplineSetQuickBounds(cv->b.sc->parent->grid.splines,&b);
     }
 
-    b.minx *= cv->cvtabs[tabnumber].scale; b.maxx *= cv->cvtabs[tabnumber].scale;
-    b.miny *= cv->cvtabs[tabnumber].scale; b.maxy *= cv->cvtabs[tabnumber].scale;
+    b.minx *= tab->scale; b.maxx *= tab->scale;
+    b.miny *= tab->scale; b.maxy *= tab->scale;
 
-    if ( b.minx + cv->cvtabs[tabnumber].xoff < 0 || b.miny + cv->cvtabs[tabnumber].yoff < 0 ||
-	    b.maxx + cv->cvtabs[tabnumber].xoff > cv->width || b.maxy + cv->cvtabs[tabnumber].yoff > cv->height )
+    if ( b.minx + tab->xoff < 0 || b.miny + tab->yoff < 0 ||
+	    b.maxx + tab->xoff > cv->width || b.maxy + tab->yoff > cv->height )
 	CVFit(cv);
 }
 
@@ -6977,13 +6986,13 @@ static void CVMenuWireframe(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UN
 }
 
 static void _CVMenuScale(CharView *cv, int mid) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     if ( mid == MID_Fit ) {
 	CVFit(cv);
     } else {
 	BasePoint c;
-	c.x = (cv->width/2-cv->cvtabs[tabnumber].xoff)/cv->cvtabs[tabnumber].scale;
-	c.y = (cv->height/2-cv->cvtabs[tabnumber].yoff)/cv->cvtabs[tabnumber].scale;
+	c.x = (cv->width/2-tab->xoff)/tab->scale;
+	c.y = (cv->height/2-tab->yoff)/tab->scale;
 	if ( CVAnySel(cv,NULL,NULL,NULL,NULL))
 	    CVFindCenter(cv,&c,false);
 	CVMagnify(cv,c.x,c.y, mid==MID_ZoomOut?-1:1,0);
@@ -8213,7 +8222,7 @@ return;
 }
 
 void CVShowPoint(CharView *cv, BasePoint *me) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     int x, y;
     int fudge = 30;
 
@@ -8223,8 +8232,8 @@ void CVShowPoint(CharView *cv, BasePoint *me) {
 	fudge = cv->height/3;
 
     /* Make sure the point is visible and has some context around it */
-    x =  cv->cvtabs[tabnumber].xoff + rint(me->x*cv->cvtabs[tabnumber].scale);
-    y = -cv->cvtabs[tabnumber].yoff + cv->height - rint(me->y*cv->cvtabs[tabnumber].scale);
+    x =  tab->xoff + rint(me->x*tab->scale);
+    y = -tab->yoff + cv->height - rint(me->y*tab->scale);
     if ( x<fudge || y<fudge || x>cv->width-fudge || y>cv->height-fudge )
 	CVMagnify(cv,me->x,me->y,0,0);
 }
@@ -8286,7 +8295,7 @@ static void CVMenuSelectPointAt(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent
 }
 
 static void CVNextPrevSpiroPt(CharView *cv, struct gmenuitem *mi) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     RefChar *r; ImageList *il;
     SplineSet *spl, *ss;
     SplinePoint *junk;
@@ -8345,8 +8354,8 @@ return;
 
     /* Make sure the point is visible and has some context around it */
     if ( other!=NULL ) {
-	x =  cv->cvtabs[tabnumber].xoff + rint(other->x*cv->cvtabs[tabnumber].scale);
-	y = -cv->cvtabs[tabnumber].yoff + cv->height - rint(other->y*cv->cvtabs[tabnumber].scale);
+	x =  tab->xoff + rint(other->x*tab->scale);
+	y = -tab->yoff + cv->height - rint(other->y*tab->scale);
 	if ( x<40 || y<40 || x>cv->width-40 || y>cv->height-40 )
 	    CVMagnify(cv,other->x,other->y,0,0);
     }
@@ -8356,7 +8365,7 @@ return;
 }
 
 static void CVNextPrevPt(CharView *cv, struct gmenuitem *mi) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     SplinePoint *selpt=NULL, *other;
     RefChar *r; ImageList *il;
     SplineSet *spl, *ss;
@@ -8420,8 +8429,8 @@ return;
 
     /* Make sure the point is visible and has some context around it */
     if ( other!=NULL ) {
-	x =  cv->cvtabs[tabnumber].xoff + rint(other->me.x*cv->cvtabs[tabnumber].scale);
-	y = -cv->cvtabs[tabnumber].yoff + cv->height - rint(other->me.y*cv->cvtabs[tabnumber].scale);
+	x =  tab->xoff + rint(other->me.x*tab->scale);
+	y = -tab->yoff + cv->height - rint(other->me.y*tab->scale);
 	if ( x<40 || y<40 || x>cv->width-40 || y>cv->height-40 )
 	    CVMagnify(cv,other->me.x,other->me.y,0,0);
     }
@@ -8703,13 +8712,13 @@ void CVMergeToLine(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) 
 }
 
 static void _CVJoin(CharView *cv) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     int anyp = 0, changed;
     extern float joinsnap;
 
     CVAnySel(cv,&anyp,NULL,NULL,NULL);
     CVPreserveState(&cv->b);
-    cv->b.layerheads[cv->b.drawmode]->splines = SplineSetJoin(cv->b.layerheads[cv->b.drawmode]->splines,!anyp,joinsnap/cv->cvtabs[tabnumber].scale,&changed);
+    cv->b.layerheads[cv->b.drawmode]->splines = SplineSetJoin(cv->b.layerheads[cv->b.drawmode]->splines,!anyp,joinsnap/tab->scale,&changed);
     if ( changed )
 	CVCharChangedUpdate(&cv->b);
 }
@@ -12515,7 +12524,7 @@ static GMenuItem2 mblist_nomm[] = {
 };
 
 static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,int show) {
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     GRect pos;
     GWindowAttrs wattrs;
     GGadgetData gd;
@@ -12539,8 +12548,8 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
     }
 
     cv->b.sc = sc;
-    cv->cvtabs[tabnumber].scale = .5;
-    cv->cvtabs[tabnumber].xoff = cv->cvtabs[tabnumber].yoff = 20;
+    tab->scale = .5;
+    tab->xoff = tab->yoff = 20;
     cv->b.next = sc->views;
     sc->views = &cv->b;
     cv->b.fv = &fv->b;
@@ -12753,7 +12762,7 @@ static void CharViewInit(void);
 static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 {
     CharView* cv = GGadgetGetUserData(g);
-    int tabnumber = GTabSetGetSel(cv->tabs);
+    CharViewTab* tab = CVGetActiveTab(cv);
     SplineChar *sc = cv->b.sc;
     SplineFont* sf = sc->parent;
 
@@ -12842,7 +12851,7 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 			if( xc )
 			{
 			    TRACE("selected v:%d xc:%s\n", wll->currentGlyphIndex, xc->name );
-			    int xoff = cv->cvtabs[tabnumber].xoff;
+			    int xoff = tab->xoff;
 			    CVSwitchActiveSC( cv, xc, wll->currentGlyphIndex );
 			    CVHScrollSetPos( cv, xoff );
 			    hadSelection = 1;
