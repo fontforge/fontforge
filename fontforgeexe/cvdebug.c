@@ -2244,6 +2244,7 @@ return;
 }
 
 void CVDebugPointPopup(CharView *cv) {
+    CharViewTab* tab = CVGetActiveTab(cv);
     DebugView *dv = cv->dv;
     TT_ExecContext exc = DebuggerGetEContext(dv->dc);
     TT_GlyphZoneRec *r;
@@ -2262,7 +2263,7 @@ void CVDebugPointPopup(CharView *cv) {
     x = rint(cv->info.x/dv->scalex);
     y = rint(cv->info.y/dv->scaley);
 
-    fudge = rint(snapdistance/cv->scale/dv->scaley);
+    fudge = rint(snapdistance/tab->scale/dv->scaley);
     for ( i=n-1; i>=0; --i ) {
 	if ( x>=pts[i].x-fudge && x<=pts[i].x+fudge &&
 		y>=pts[i].y-fudge && y<=pts[i].y+fudge )

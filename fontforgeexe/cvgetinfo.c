@@ -2663,6 +2663,7 @@ return( ti );
 }
 
 static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
+    CharViewTab* tab = CVGetActiveTab(cv);
     GIData* gi = 0;
     GRect pos;
     GWindowAttrs wattrs;
@@ -2708,8 +2709,8 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	wattrs.is_dlg = true;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,PI_Width));
 	pos.height = GDrawPointsToPixels(NULL,PI_Height);
-	pt.x = cv->xoff + rint(sp->me.x*cv->scale);
-	pt.y = -cv->yoff + cv->height - rint(sp->me.y*cv->scale);
+	pt.x = tab->xoff + rint(sp->me.x*tab->scale);
+	pt.y = -tab->yoff + cv->height - rint(sp->me.y*tab->scale);
 	GDrawTranslateCoordinates(cv->v,root,&pt);
 	if ( pt.x+20+pos.width<=screensize.width )
 	    pos.x = pt.x+20;
@@ -3491,6 +3492,7 @@ return( true );
 }
 
 static void SpiroPointGetInfo(CharView *cv, spiro_cp *scp, SplinePointList *spl) {
+    CharViewTab* tab = CVGetActiveTab(cv);
     GIData *gip = calloc(1, sizeof(GIData));
     GRect pos;
     GWindowAttrs wattrs;
@@ -3525,8 +3527,8 @@ static void SpiroPointGetInfo(CharView *cv, spiro_cp *scp, SplinePointList *spl)
 	wattrs.is_dlg = true;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,PI_Width));
 	pos.height = GDrawPointsToPixels(NULL,PI_Height);
-	pt.x = cv->xoff + rint(scp->x*cv->scale);
-	pt.y = -cv->yoff + cv->height - rint(scp->y*cv->scale);
+	pt.x = tab->xoff + rint(scp->x*tab->scale);
+	pt.y = -tab->yoff + cv->height - rint(scp->y*tab->scale);
 	GDrawTranslateCoordinates(cv->v,root,&pt);
 	if ( pt.x+20+pos.width<=screensize.width )
 	    pos.x = pt.x+20;

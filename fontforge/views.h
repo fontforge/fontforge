@@ -151,6 +151,8 @@ typedef struct charviewtab
 {
     char charselected[ charviewtab_charselectedsz + 1 ];
     char tablabeltxt[ charviewtab_charselectedsz + 1 ];
+    float xoff, yoff;
+    real scale;
 } CharViewTab;
 
 enum { charview_cvtabssz = 100 };
@@ -218,7 +220,6 @@ typedef struct charview {
     
     int hvoffset;		/* for showalmosthvlines */
     int layers_off_top;
-    real scale;
     GWindow gw, v;
     GWindow hruler, vruler; /* Ruler pixmaps */
     GGadget *vsb, *hsb, *mb, *tabs;
@@ -239,7 +240,6 @@ typedef struct charview {
     GIC *gic;
     GIC *gwgic;
     int width, height;
-    float xoff, yoff; /* must be floating point, for precise zoom by scroll */
     int mbh;    //< menu bar height
     int charselectorh;  //< char selection input box height
     int infoh;  //< info bar height
@@ -954,6 +954,7 @@ extern void CharViewFinishNonStatic();
  * not displayed.
  */
 extern CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show );
+extern CharViewTab *CVGetActiveTab(CharView *cv);
 extern void CharViewFree(CharView *cv);
 extern int CVValid(SplineFont *sf, SplineChar *sc, CharView *cv);
 extern void CVSetCharChanged(CharView *cv,int changed);

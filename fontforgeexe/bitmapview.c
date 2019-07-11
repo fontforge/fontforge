@@ -703,7 +703,6 @@ static void BVDrawGlyph(BitmapView *bv, BDFChar *bc, GWindow pixmap, GRect *pixe
 }
 
 static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
-    CharView cvtemp;
     GRect old;
     DRect clip;
     int i;
@@ -712,6 +711,8 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
     BDFRefChar *bref;
     RefChar *refs;
     extern Color widthcol;
+
+    CharView cvtemp;
 
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
     GDrawSetLineWidth(pixmap,0);
@@ -765,16 +766,18 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
 	cvtemp.v = bv->v;
 	cvtemp.width = bv->width;
 	cvtemp.height = bv->height;
-	cvtemp.scale = bv->scscale*bv->scale;
-	cvtemp.xoff = bv->xoff/* *bv->scscale*/;
-	cvtemp.yoff = bv->yoff/* *bv->scscale*/;
+
+	cvtemp.cvtabs[0].scale = bv->scscale*bv->scale;
+	cvtemp.cvtabs[0].xoff = bv->xoff/* *bv->scscale*/;
+	cvtemp.cvtabs[0].yoff = bv->yoff/* *bv->scscale*/;
+
 	cvtemp.b.sc = bv->bc->sc;
 	cvtemp.b.drawmode = dm_fore;
 
-	clip.width = event->u.expose.rect.width/cvtemp.scale;
-	clip.height = event->u.expose.rect.height/cvtemp.scale;
-	clip.x = (event->u.expose.rect.x-cvtemp.xoff)/cvtemp.scale;
-	clip.y = (cvtemp.height-event->u.expose.rect.y-event->u.expose.rect.height-cvtemp.yoff)/cvtemp.scale;
+	clip.width = event->u.expose.rect.width/cvtemp.cvtabs[0].scale;
+	clip.height = event->u.expose.rect.height/cvtemp.cvtabs[0].scale;
+	clip.x = (event->u.expose.rect.x-cvtemp.cvtabs[0].xoff)/cvtemp.cvtabs[0].scale;
+	clip.y = (cvtemp.height-event->u.expose.rect.y-event->u.expose.rect.height-cvtemp.cvtabs[0].yoff)/cvtemp.cvtabs[0].scale;
 	CVDrawSplineSet(&cvtemp,pixmap,cvtemp.b.sc->layers[ly_fore].splines,col,false,&clip);
 	for ( refs = cvtemp.b.sc->layers[ly_fore].refs; refs!=NULL; refs = refs->next )
 	    CVDrawSplineSet(&cvtemp,pixmap,refs->layers[0].splines,col,false,&clip);

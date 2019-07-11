@@ -77,12 +77,13 @@ static void TraceDataFree(TraceData *td) {
 }
 
 static void TraceDataFromEvent(CharView *cv, GEvent *event) {
+    CharViewTab* tab = CVGetActiveTab(cv);
     TraceData *new;
     int skiplast;
 
     if ( cv->freehand.head!=NULL &&
-	    cv->freehand.last->here.x==(event->u.mouse.x-cv->xoff)/cv->scale &&
-	    cv->freehand.last->here.y==(cv->height-event->u.mouse.y-cv->yoff)/cv->scale ) {
+	    cv->freehand.last->here.x==(event->u.mouse.x-tab->xoff)/tab->scale &&
+	    cv->freehand.last->here.y==(cv->height-event->u.mouse.y-tab->yoff)/tab->scale ) {
 	/* Has not moved */
 	int constrained = (event->u.mouse.state&ksm_shift)?1:0;
 	if ( constrained != cv->freehand.last->wasconstrained )
@@ -93,8 +94,8 @@ return;
     /* I sometimes seem to get events out of order on the wacom */
     skiplast = false;
     if ( cv->freehand.last!=NULL && cv->freehand.last->prev!=NULL ) {
-	int x = (event->u.mouse.x-cv->xoff)/cv->scale;
-	int y = (cv->height-event->u.mouse.y-cv->yoff)/cv->scale;
+	int x = (event->u.mouse.x-tab->xoff)/tab->scale;
+	int y = (cv->height-event->u.mouse.y-tab->yoff)/tab->scale;
 	TraceData *bad = cv->freehand.last, *base = bad->prev;
 
 	if ( ((bad->here.x < x-15 && bad->here.x < base->here.x-15) ||
@@ -118,8 +119,8 @@ return;
 	}
     }
 
-    new->here.x = (event->u.mouse.x-cv->xoff)/cv->scale;
-    new->here.y = (cv->height-event->u.mouse.y-cv->yoff)/cv->scale;
+    new->here.x = (event->u.mouse.x-tab->xoff)/tab->scale;
+    new->here.y = (cv->height-event->u.mouse.y-tab->yoff)/tab->scale;
     new->time = event->u.mouse.time;
     new->pressure = event->u.mouse.pressure;
     new->xtilt = event->u.mouse.xtilt;
@@ -474,6 +475,7 @@ static void TraceFigureCPs(SplinePoint *last,SplinePoint *cur,TraceData *tlast,T
 }
 
 static SplineSet *TraceCurve(CharView *cv) {
+    CharViewTab* tab = CVGetActiveTab(cv);
     TraceData *head = cv->freehand.head, *pt, *base, *e;
     SplineSet *spl;
     SplinePoint *last, *cur;
@@ -494,8 +496,8 @@ static SplineSet *TraceCurve(CharView *cv) {
 	pt->online = pt->wasconstrained;
 	pt->use_as_pt = pt->constrained_corner;
 	/* We recalculate x,y because we might have autoscrolled the window */
-	pt->x =  cv->xoff + rint(pt->here.x*cv->scale);
-	pt->y = -cv->yoff + cv->height - rint(pt->here.y*cv->scale);
+	pt->x =  tab->xoff + rint(pt->here.x*tab->scale);
+	pt->y = -tab->yoff + cv->height - rint(pt->here.y*tab->scale);
 	pt->num = cnt++;
     }
     head->use_as_pt = cv->freehand.last->use_as_pt = true;
@@ -726,6 +728,7 @@ void CVMouseDownFreeHand(CharView *cv, GEvent *event) {
 }
 
 void CVMouseMoveFreeHand(CharView *cv, GEvent *event) {
+    CharViewTab* tab = CVGetActiveTab(cv);
     double dx, dy;
     SplinePoint *last;
     BasePoint *here;
@@ -738,7 +741,7 @@ void CVMouseMoveFreeHand(CharView *cv, GEvent *event) {
     here = &cv->freehand.last->here;
     if ( (dx=here->x-last->me.x)<0 ) dx = -dx;
     if ( (dy=here->y-last->me.y)<0 ) dy = -dy;
-    if ( (dx+dy)*cv->scale > 4 ) {
+    if ( (dx+dy)*tab->scale > 4 ) {
 	SplineMake3(last,SplinePointCreate(rint(here->x),rint(here->y)));
 	cv->freehand.current_trace->last = last->next->to;
 	GDrawRequestExpose(cv->v,NULL,false);
@@ -776,6 +779,7 @@ return;
 #endif
 
 void CVMouseUpFreeHand(CharView *cv, GEvent *event) {
+    CharViewTab* tab = CVGetActiveTab(cv);
     TraceData *head = cv->freehand.head;
     TraceData *last;
     double dx, dy;
@@ -798,7 +802,7 @@ return;
 	if ( (dx=head->x-last->x)<0 ) dx = -dx;
 	if ( (dy=head->y-last->y)<0 ) dy = -dy;
 
-	if (( event->u.chr.state&ksm_meta ) || (dx+dy)*cv->scale > 4 )
+	if (( event->u.chr.state&ksm_meta ) || (dx+dy)*tab->scale > 4 )
 	    TraceDataClose(cv,event);
 	else {
 	    SplinePointListsFree(cv->freehand.current_trace);

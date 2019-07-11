@@ -593,6 +593,7 @@ static void RulerLingerPlace(CharView *cv, GEvent *event) {
 }
 
 static void RulerLingerMove(CharView *cv) {
+    CharViewTab* tab = CVGetActiveTab(cv);
     if ( cv->ruler_linger_w ) {
 	int x, y;
 	GRect size;
@@ -604,8 +605,8 @@ static void RulerLingerMove(CharView *cv) {
 	GDrawGetSize(cv->ruler_linger_w,&rsize);
 	GDrawGetSize(cv->gw,&csize);
 
-	pt.x = cv->xoff + rint(cv->ruler_intersections[cv->num_ruler_intersections-1].x*cv->scale);
-	pt.y = -cv->yoff + cv->height - rint(cv->ruler_intersections[cv->num_ruler_intersections-1].y*cv->scale);
+	pt.x = tab->xoff + rint(cv->ruler_intersections[cv->num_ruler_intersections-1].x*tab->scale);
+	pt.y = -tab->yoff + cv->height - rint(cv->ruler_intersections[cv->num_ruler_intersections-1].y*tab->scale);
 	GDrawTranslateCoordinates(cv->v,GDrawGetRoot(NULL),&pt);
 	x = pt.x + infowindowdistance;
 	if ( x+rsize.width>size.width )
@@ -810,6 +811,7 @@ return( true );
 }
 	
 static void CpInfoPlace(CharView *cv, GEvent *event) {
+    CharViewTab* tab = CVGetActiveTab(cv);
     char buf[100];
     int line, which;
     int width, x, y;
@@ -871,8 +873,8 @@ static void CpInfoPlace(CharView *cv, GEvent *event) {
     if ( !cv->p.prevcp && !cv->p.nextcp )
 	sp = cv->active_sp;
     if ( sp!=NULL ) {
-	x =  cv->xoff + rint(sp->me.x*cv->scale);
-	y = -cv->yoff + cv->height - rint(sp->me.y*cv->scale);
+	x =  tab->xoff + rint(sp->me.x*tab->scale);
+	y = -tab->yoff + cv->height - rint(sp->me.y*tab->scale);
 	if ( x>=0 && y>=0 && x<cv->width && y<cv->height ) {
 	    pt2.x = x; pt2.y = y;
 	    GDrawTranslateCoordinates(cv->v,GDrawGetRoot(NULL),&pt2);
@@ -954,16 +956,18 @@ void CPEndInfo(CharView *cv) {
 }
 
 void CVRulerExpose(GWindow pixmap,CharView *cv) {
+    CharViewTab* tab = CVGetActiveTab(cv);
+
     if ( cv->b1_tool!=cvt_ruler && cv->b1_tool_old!=cvt_ruler ) {
 	cv->num_ruler_intersections = 0;
 return;
     }
 
     if ( cv->num_ruler_intersections >= 2 ) {
-	int x =  cv->xoff + rint(cv->ruler_intersections[0].x*cv->scale);
-	int y = -cv->yoff + cv->height - rint(cv->ruler_intersections[0].y*cv->scale);
-	int xend =  cv->xoff + rint(cv->ruler_intersections[cv->num_ruler_intersections-1].x*cv->scale);
-	int yend = -cv->yoff + cv->height - rint(cv->ruler_intersections[cv->num_ruler_intersections-1].y*cv->scale);
+	int x =  tab->xoff + rint(cv->ruler_intersections[0].x*tab->scale);
+	int y = -tab->yoff + cv->height - rint(cv->ruler_intersections[0].y*tab->scale);
+	int xend =  tab->xoff + rint(cv->ruler_intersections[cv->num_ruler_intersections-1].x*tab->scale);
+	int yend = -tab->yoff + cv->height - rint(cv->ruler_intersections[cv->num_ruler_intersections-1].y*tab->scale);
 	real xdist = fabs(cv->ruler_intersections[0].x - cv->ruler_intersections[cv->num_ruler_intersections-1].x);
 	real ydist = fabs(cv->ruler_intersections[0].y - cv->ruler_intersections[cv->num_ruler_intersections-1].y);
 	int i;
@@ -976,7 +980,7 @@ return;
 	    char buf[40];
 	    unichar_t ubuf[40];
 
-	    if ( xdist*cv->scale>10.0 && ydist*cv->scale>10.0 ) {
+	    if ( xdist*tab->scale>10.0 && ydist*tab->scale>10.0 ) {
 
 		GDrawSetFont(pixmap,cv->rfont);
 		len = snprintf(buf,sizeof buf,"%g",xdist);
@@ -999,8 +1003,8 @@ return;
 	for ( i=0 ; i<cv->num_ruler_intersections; ++i ) {
 	    GRect rect;
 
-	    rect.x = cv->xoff + rint(cv->ruler_intersections[i].x*cv->scale) - 1;
-	    rect.y = -cv->yoff + cv->height - rint(cv->ruler_intersections[i].y*cv->scale) - 1;
+	    rect.x = tab->xoff + rint(cv->ruler_intersections[i].x*tab->scale) - 1;
+	    rect.y = -tab->yoff + cv->height - rint(cv->ruler_intersections[i].y*tab->scale) - 1;
 	    rect.width = 3;
 	    rect.height = 3;
 
