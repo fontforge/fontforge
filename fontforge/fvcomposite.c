@@ -1799,6 +1799,9 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
 	    else
 		ach = 0x302;
 	}
+	// Convert back to combining accents from spacing accents if requested.
+	if (!PreferSpacingAccents)
+		ach = CanonicalCombiner(ach);
     } else
 	ach = uni;
 
@@ -1841,6 +1844,9 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
 		apt = accents[uni-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
 		while ( test==NULL && apt<end ) {
 		    int acc = *apt ? *apt : uni;
+		    // Convert back to combining accents from spacing accents if requested.
+		    if (!PreferSpacingAccents)
+			acc = CanonicalCombiner(acc);
 		    sprintf( buffer,"%.70s.%s", StdGlyphName(buffer,acc,ui_none,(NameList *) -1), suffixes[i]);
 		    if ( (test = SFGetChar(sf,-1,buffer))!=NULL )
 			rsc = test;
@@ -1859,6 +1865,9 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
 	    apt = accents[uni-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
 	    while ( test==NULL && apt<end ) {
 		int acc = *apt ? *apt : uni;
+		// Convert back to combining accents from spacing accents if requested.
+		if (!PreferSpacingAccents)
+		    acc = CanonicalCombiner(acc);
 		sprintf( buffer,"%.70s.%s", StdGlyphName(buffer,acc,ui_none,(NameList *) -1), suffixes[i]);
 		if ( islower(buffer[0])) {
 		    buffer[0] = toupper(buffer[0]);
