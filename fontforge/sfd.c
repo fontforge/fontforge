@@ -674,9 +674,10 @@ static void SFDDumpHintMask(FILE *sfd,HintMask *hintmask) {
 
 static void SFDDumpSplineSet(FILE *sfd, SplineSet *spl, int want_order2) {
     SplinePoint *first, *sp;
-    int order2 = spl->first->next==NULL || spl->first->next->order2;
+    int order2 = spl->first->next!=NULL ? spl->first->next->order2 : want_order2;
     int reduce = (want_order2 && !order2);
-    if (order2 && !want_order2) IError("Asked for cubic when had quadratic");
+    if (order2 && !want_order2)
+	IError("Asked for cubic when had quadratic");
     SplineSet *nspl;
 
     for ( ; spl!=NULL; spl=spl->next ) {
