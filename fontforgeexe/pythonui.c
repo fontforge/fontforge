@@ -36,6 +36,8 @@
 #include "fontforgeui.h"
 #include "scriptfuncs.h"
 #include "scripting.h"
+#include "splinestroke.h"
+#include "splineutil.h"
 #include "ttf.h"
 #include "ustring.h"
 

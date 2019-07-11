@@ -29,6 +29,7 @@
 
 #include "cvundoes.h"
 #include "fontforgeui.h"
+#include "splinefit.h"
 #include "splineorder2.h"
 #include "splinestroke.h"
 #include "splineutil.h"
@@ -480,7 +481,7 @@ static SplineSet *TraceCurve(CharView *cv) {
     SplineSet *spl;
     SplinePoint *last, *cur;
     int cnt, i, tot;
-    TPoint *mids;
+    FitPoint *mids;
     double len,sofar;
     StrokeInfo *si;
 
@@ -529,10 +530,10 @@ static SplineSet *TraceCurve(CharView *cv) {
     TraceMassage(head,cv->freehand.last);
 
     /* Calculate the mids array */
-    mids = malloc(cnt*sizeof(TPoint));
+    mids = malloc(cnt*sizeof(FitPoint));
     for ( base=head; base!=NULL && base->next!=NULL; base = pt ) {
-	mids[base->num].x = base->here.x;
-	mids[base->num].y = base->here.y;
+	mids[base->num].p.x = base->here.x;
+	mids[base->num].p.y = base->here.y;
 	mids[base->num].t = 0;
 	len = 0;
 	if ( base->next->online ) {
@@ -551,8 +552,8 @@ static SplineSet *TraceCurve(CharView *cv) {
 	    sofar += sqrt((double) (
 		    (pt->x-pt->prev->x)*(pt->x-pt->prev->x) +
 		    (pt->y-pt->prev->y)*(pt->y-pt->prev->y) ));
-	    mids[pt->num].x = pt->here.x;
-	    mids[pt->num].y = pt->here.y;
+	    mids[pt->num].p.x = pt->here.x;
+	    mids[pt->num].p.y = pt->here.y;
 	    mids[pt->num].t = sofar/len;
 	    if ( pt->use_as_pt )
 	break;

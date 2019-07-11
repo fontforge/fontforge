@@ -36,6 +36,7 @@
 #include "psread.h"
 #include "sd.h"
 #include "spiro.h"
+#include "splinefit.h"
 #include "splineorder2.h"
 #include "splineutil.h"
 #include "splineutil2.h"
@@ -693,18 +694,18 @@ static void xsplineeval(BasePoint *ret,real t, struct xspline *xs) {
     ret->y /= (A0+A1+A2+A3);
 }
 
-static void AdjustTs(TPoint *mids,SplinePoint *from, SplinePoint *to) {
+static void AdjustTs(FitPoint *mids,SplinePoint *from, SplinePoint *to) {
     real len=0, sofar;
     real lens[8];
     int i;
 
-    lens[0] = sqrt((mids[0].x-from->me.x)*(mids[0].x-from->me.x) +
-		    (mids[0].y-from->me.y)*(mids[0].y-from->me.y));
-    lens[7] = sqrt((mids[6].x-to->me.x)*(mids[6].x-to->me.x) +
-		    (mids[6].y-to->me.y)*(mids[6].y-to->me.y));
+    lens[0] = sqrt((mids[0].p.x-from->me.x)*(mids[0].p.x-from->me.x) +
+		    (mids[0].p.y-from->me.y)*(mids[0].p.y-from->me.y));
+    lens[7] = sqrt((mids[6].p.x-to->me.x)*(mids[6].p.x-to->me.x) +
+		    (mids[6].p.y-to->me.y)*(mids[6].p.y-to->me.y));
     for ( i=1; i<7; ++i )
-	lens[i] = sqrt((mids[i].x-mids[i-1].x)*(mids[i].x-mids[i-1].x) +
-			(mids[i].y-mids[i-1].y)*(mids[i].y-mids[i-1].y));
+	lens[i] = sqrt((mids[i].p.x-mids[i-1].p.x)*(mids[i].p.x-mids[i-1].p.x) +
+			(mids[i].p.y-mids[i-1].p.y)*(mids[i].p.y-mids[i-1].p.y));
     for ( len=0, i=0; i<8; ++i )
 	len += lens[i];
     for ( sofar=0, i=0; i<7; ++i ) {
@@ -716,7 +717,7 @@ static void AdjustTs(TPoint *mids,SplinePoint *from, SplinePoint *to) {
 static SplineSet *ApproximateXSpline(struct xspline *xs,int order2) {
     size_t i, j;
     real t;
-    TPoint mids[7];
+    FitPoint mids[7];
     SplineSet *spl = chunkalloc(sizeof(SplineSet));
     SplinePoint *sp;
 
@@ -732,7 +733,7 @@ static SplineSet *ApproximateXSpline(struct xspline *xs,int order2) {
 	    xsplineeval(&sp->me,i+1,xs);
 	}
 	for ( j=0, t=1./8; j<sizeof(mids)/sizeof(mids[0]); ++j, t+=1./8 ) {
-	    xsplineeval((BasePoint *) &mids[j],i+t,xs);
+	    xsplineeval((BasePoint *) &mids[j].p,i+t,xs);
 	    mids[j].t = t;
 	}
 	AdjustTs(mids,spl->last,sp);

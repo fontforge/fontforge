@@ -33,7 +33,7 @@
     <LI>
       <A HREF="pfaeditmath.html#Approximating">Approximating a spline</A>
     <LI>
-      <A HREF="pfaeditmath.html#Stroke">Stroking a spline</A>
+      <A HREF="pfaeditmath.html#Stroke">Stroking a spline (historical)</A>
     <LI>
       <A HREF="bezier.html#ps2ttf">Approximating a cubic spline by a series of
       quadratic splines</A>
@@ -124,7 +124,7 @@
   <BLOCKQUOTE>
     <PRE>    dx/dt = 0
     3*a<SUB>x</SUB>*t<SUP>2</SUP> + 2*b<SUB>x</SUB>*t + c<SUB>x</SUB> = 0
- 
+
 </PRE>
   </BLOCKQUOTE>
   <P>
@@ -508,7 +508,7 @@
   reasonable lengths for those vectors and see which yields the best approximation
   to the original curve (this gives us our new control points).
   <P>
-  This is very, very slow. 
+  This is very, very slow.
     <HR>
   <H4>
     <SUP><A NAME="guess-t">1</A></SUP>Guessing values for t
@@ -528,6 +528,8 @@
   <H2>
     Calculating the outline of a <A NAME="Stroke">stroked</A> path
   </H2>
+  Note: While some of this section is still accurate, most of it describes
+  an earlier version of the Expand Stroke facility.
   <H3>
     A circular pen
   </H3>
@@ -559,15 +561,15 @@
   PostScript pens can end in
   <UL>
     <LI>
-      A flat edge -- this is easy, we just draw a line from the end of one spline
-      to the end of the other
+      A butt edge -- this is easy, we just draw a line from the end of one
+      spline to the end of the other
     <LI>
       A rounded edge -- here we just draw a semi-circle (making sure it goes in
       the right direction).
     <LI>
-      A butt edge -- just draw lines continuing the two splines, moving with the
-      same slope and width/2 units long, and then join those end-points with a
-      straight line.
+      A square edge -- just draw lines continuing the two splines, moving with
+      the same slope and width/2 units long, and then join those end-points
+      with a straight line.
   </UL>
   <P>
   Things are a bit more complex at a joint

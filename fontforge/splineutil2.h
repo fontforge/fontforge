@@ -20,12 +20,12 @@ extern int Spline1DCantExtremeX(const Spline *s);
 extern int Spline1DCantExtremeY(const Spline *s);
 extern int SplineInSplineSet(Spline *spline, SplineSet *spl);
 extern int SplineIsLinearMake(Spline *spline);
+extern int SplineIsLinearish(Spline *spline);
 extern int SplinePointListIsClockwise(const SplineSet *spl);
 extern int SPLNearlyLines(SplineChar *sc, SplineSet *ss, bigreal err);
 extern int Within16RoundingErrors(bigreal v1, bigreal v2);
 extern int Within4RoundingErrors(bigreal v1, bigreal v2);
 extern int Within64RoundingErrors(bigreal v1, bigreal v2);
-extern Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to, TPoint *mid, int cnt, int order2);
 extern SplineFont *SplineFontBlank(int charcnt);
 extern SplineFont *SplineFontEmpty(void);
 extern SplineFont *SplineFontNew(void);
@@ -67,6 +67,8 @@ extern void SPLNearlyHvLines(SplineChar *sc, SplineSet *ss, bigreal err);
 extern void SPLsStartToLeftmost(SplineChar *sc, int layer);
 extern void SPLStartToLeftmost(SplineChar *sc, SplinePointList *spl, int *changed);
 extern void SPSmoothJoint(SplinePoint *sp);
+extern int SplineTurningCCWAt(Spline *s, bigreal t);
+extern int GoodCurve(SplinePoint *sp, int check_prev );
 
 /**
  * This is like SPAdjustControl but you have not wanting to move the
