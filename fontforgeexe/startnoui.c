@@ -102,7 +102,10 @@ int fontforge_main( int argc, char **argv ) {
 #endif
 	    ".\n",
 	    FONTFORGE_MODTIME_STR );
-    fprintf( stderr, " Based on source from git with hash: %s\n", FONTFORGE_GIT_VERSION );
+    // Can be empty if e.g. building from a tarball
+    if (FONTFORGE_GIT_VERSION[0] != '\0') {
+	fprintf( stderr, " Based on source from git with hash: %s\n", FONTFORGE_GIT_VERSION );
+    }
 
     FindProgDir(argv[0]);
     InitSimpleStuff();
