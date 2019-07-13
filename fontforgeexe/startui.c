@@ -256,11 +256,7 @@ static void SplashLayout() {
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
 
-    uc_strcpy(pt, " As of 2012 FontForge development continues");
-    pt += u_strlen(pt);
-    lines[linecnt++] = pt;
-
-    uc_strcpy(pt, " on GitHub.");
+    uc_strcpy(pt, " As of 2012 FontForge development continues on GitHub.");
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
 
@@ -268,21 +264,17 @@ static void SplashLayout() {
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
 
-    uc_strcpy(pt," Git hash: ");
-    pt += u_strlen(pt);
-    lines[linecnt++] = pt;
-
-    uc_strcpy(pt," ");
-    uc_strcat(pt, FONTFORGE_GIT_VERSION);
-
-    pt += u_strlen(pt);
-    lines[linecnt++] = pt;
-    uc_strcpy(pt," Version: ");
+    uc_strcpy(pt," Version:");
     uc_strcat(pt,FONTFORGE_VERSION);
-
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
-    uc_strcat(pt,"           (");
+
+    uc_strcpy(pt,"  ");
+    uc_strcat(pt, FONTFORGE_GIT_VERSION);
+    pt += u_strlen(pt);
+    lines[linecnt++] = pt;
+
+    uc_strcat(pt," Built: ");
     uc_strcat(pt,FONTFORGE_MODTIME_STR);
     uc_strcat(pt,"-ML");
 #ifdef FREETYPE_HAS_DEBUGGER
@@ -626,10 +618,10 @@ static int splash_e_h(GWindow gw, GEvent *event) {
 	GDrawSetFont(gw,splash_font);
 	y = splashimage.u.image->height + as + fh/2;
 	for ( i=1; i<linecnt; ++i ) {
-        // The number 11 comes from lines[linecnt] created in the function SplashLayout. It refers
+        // The number 10 comes from lines[linecnt] created in the function SplashLayout. It refers
         // to the line at which we want to make the font monospace. If you add or remove a line, 
         // you will need to change this.
-        if (i == 11) {
+        if (i == 10) {
 		x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,0,0x000000);
 		GDrawSetFont(gw,splash_mono);
         GDrawDrawText(gw,8,y,lines[i-1]+1,lines[i]-lines[i-1]-1,0x000000);
@@ -1279,7 +1271,7 @@ exit( 0 );
 
     memset(&rq,0,sizeof(rq));
     rq.utf8_family_name = SERIF_UI_FAMILIES;
-    rq.point_size = 12;
+    rq.point_size = 10;
     rq.weight = 400;
     splash_font = GDrawInstanciateFont(NULL,&rq);
     splash_font = GResourceFindFont("Splash.Font",splash_font);
