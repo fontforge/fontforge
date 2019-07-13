@@ -590,7 +590,6 @@ static void install_mac_timer(void) {
 #endif
 
 static int splash_e_h(GWindow gw, GEvent *event) {
-    static int splash_cnt;
     GRect old;
     int i, y, x;
     static char *foolishness[] = {
@@ -615,32 +614,31 @@ static int splash_e_h(GWindow gw, GEvent *event) {
       case et_expose:
 	GDrawPushClip(gw,&event->u.expose.rect,&old);
 	GDrawDrawImage(gw,&splashimage,NULL,0,0);
-	GDrawSetFont(gw,splash_font);
-	y = splashimage.u.image->height + as + fh/2;
-	for ( i=1; i<linecnt; ++i ) {
-        // The number 10 comes from lines[linecnt] created in the function SplashLayout. It refers
-        // to the line at which we want to make the font monospace. If you add or remove a line, 
-        // you will need to change this.
-        if (i == 10) {
-		x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,0,0x000000);
-		GDrawSetFont(gw,splash_mono);
-        GDrawDrawText(gw,8,y,lines[i-1]+1,lines[i]-lines[i-1]-1,0x000000);
-        } else if ( is>=lines[i-1]+1 && is<lines[i] ) {
-		x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,is-lines[i-1]-1,0x000000);
-		GDrawSetFont(gw,splash_italic);
-		GDrawDrawText(gw,x,y,is,lines[i]-is,0x000000);
-	    } else if ( ie>=lines[i-1]+1 && ie<lines[i] ) {
-		x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,ie-lines[i-1]-1,0x000000);
-		GDrawSetFont(gw,splash_font);
-		GDrawDrawText(gw,x,y,ie,lines[i]-ie,0x000000);
-	    } else
-		GDrawDrawText(gw,8,y,lines[i-1]+1,lines[i]-lines[i-1]-1,0x000000);
-	    y += fh;
+	if ((event->u.expose.rect.y+event->u.expose.rect.height) > splashimage.u.image->height) {
+	    GDrawSetFont(gw,splash_font);
+	    y = splashimage.u.image->height + as + fh/2;
+	    for ( i=1; i<linecnt; ++i ) {
+	    // The number 10 comes from lines[linecnt] created in the function SplashLayout. It refers
+	    // to the line at which we want to make the font monospace. If you add or remove a line, 
+	    // you will need to change this.
+	    if (i == 10) {
+		    x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,0,0x000000);
+		    GDrawSetFont(gw,splash_mono);
+	    GDrawDrawText(gw,8,y,lines[i-1]+1,lines[i]-lines[i-1]-1,0x000000);
+	    } else if ( is>=lines[i-1]+1 && is<lines[i] ) {
+		    x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,is-lines[i-1]-1,0x000000);
+		    GDrawSetFont(gw,splash_italic);
+		    GDrawDrawText(gw,x,y,is,lines[i]-is,0x000000);
+		} else if ( ie>=lines[i-1]+1 && ie<lines[i] ) {
+		    x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,ie-lines[i-1]-1,0x000000);
+		    GDrawSetFont(gw,splash_font);
+		    GDrawDrawText(gw,x,y,ie,lines[i]-ie,0x000000);
+		} else
+		    GDrawDrawText(gw,8,y,lines[i-1]+1,lines[i]-lines[i-1]-1,0x000000);
+		y += fh;
+	    }
 	}
 	GDrawPopClip(gw,&old);
-      break;
-      case et_map:
-	splash_cnt = 0;
       break;
       case et_timer:
       if ( event->u.timer.timer==autosave_timer ) {
