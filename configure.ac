@@ -163,6 +163,7 @@ FONTFORGE_PLATFORM_SPECIFICS
 
 #--------------------------------------------------------------------------
 # Pass version variables to fontforge-config.h
+AC_DEFINE([FONTFORGE_VERSION],["fontforge_package_stamp"],[FontForge Version])
 AC_DEFINE([FONTFORGE_VERSION_MAJOR],[fontforge_major_version],[FontForge Major Version])
 AC_DEFINE([FONTFORGE_VERSION_MINOR],[fontforge_minor_version],[FontForge Minor Version])
 AC_DEFINE([FONTFORGE_LIBFFE_VERSION_MAJOR],[libfontforgeexe_major_version],[ExeLibFontForge Major Version])
@@ -680,21 +681,11 @@ if ! date --version 2>/dev/null ; then
 fi
 FONTFORGE_MODTIME="$(date -u $FONTFORGE_DATE_OPTS +'%s')L"
 FONTFORGE_MODTIME_STR="$(date -u $FONTFORGE_DATE_OPTS +'%H:%M %Z %e-%b-%Y')"
-FONTFORGE_VERSIONDATE="$(date -u $FONTFORGE_DATE_OPTS +'%Y%m%d')"
-FONTFORGE_VERSIONYEAR="$(date -u $FONTFORGE_DATE_OPTS +'%Y')"
 AC_DEFINE_UNQUOTED(FONTFORGE_GIT_VERSION,"$FONTFORGE_GIT_VERSION","git hash that source are built from")
-AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME,"$FONTFORGE_MODTIME","Epoch time that configure was run at")
 AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME_STR,"$FONTFORGE_MODTIME_STR",
 	"A user friendly date that that configure was run at: For example 01:48 GMT 6-Sep-2012")
-AC_DEFINE_UNQUOTED(FONTFORGE_VERSIONDATE,"$FONTFORGE_VERSIONDATE","YYYYMMDD as number when configure was run")
-AC_DEFINE_UNQUOTED(FONTFORGE_VERSIONYEAR,"$FONTFORGE_VERSIONYEAR","YYYY as number when configure was run")
 AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME_RAW,$FONTFORGE_MODTIME,"Epoch time that configure was run at (no quotes)")
-AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME_STR_RAW,$FONTFORGE_MODTIME_STR,
-	"A user friendly date that that configure was run at: For example 01:48 GMT 6-Sep-2012 (no quotes)")
-AC_DEFINE_UNQUOTED(FONTFORGE_VERSIONDATE_RAW,$FONTFORGE_VERSIONDATE,"YYYYMMDD as number when configure was run (no quotes)")
 AC_SUBST(FONTFORGE_GIT_VERSION)
-AC_SUBST(FONTFORGE_VERSIONDATE)
-AC_SUBST(FONTFORGE_VERSIONYEAR)
 AC_SUBST(FONTFORGE_MODTIME_STR)
 
 #--------------------------------------------------------------------------

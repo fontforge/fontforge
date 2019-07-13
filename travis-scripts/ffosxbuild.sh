@@ -70,24 +70,18 @@ sed -i -e "s|Gdraw.GMenu.MacIcons:.*|Gdraw.GMenu.MacIcons: True|g" \
 
 #
 # This block updates the metadata that finder will show for the app.
-# by sorting fontforge-config.h prefix names will come first, eg
-# FONTFORGE_MODTIME before FONTFORGE_MODTIME_RAW so that the head -1
-# will pick the prefix name from the sorted include file.
 #
 osxmetadata_file=$outdir/Contents/Resources/English.lproj/InfoPlist.string
-sort $workdir/include/fontforge/fontforge-config.h >|/tmp/fontforge-config-sorted
 
-FONTFORGE_MODTIME_STR=$(grep FONTFORGE_MODTIME_STR /tmp/fontforge-config-sorted | head -1 | sed 's/^[^ ]*[ ][^ ]*[ ]//g')
-FONTFORGE_VERSIONDATE_RAW=$(grep FONTFORGE_VERSIONDATE_RAW /tmp/fontforge-config-sorted | head -1 | sed 's/^[^ ]*[ ][^ ]*[ ]//g')
-FONTFORGE_MODTIME_STR_RAW=$(grep FONTFORGE_MODTIME_STR_RAW /tmp/fontforge-config-sorted | head -1 | sed 's/^[^ ]*[ ][^ ]*[ ]//g')
-FONTFORGE_GIT_VERSION=$(grep FONTFORGE_GIT_VERSION /tmp/fontforge-config-sorted | head -1 | sed 's/^[^ ]*[ ][^ ]*[ ]//g')
-FONTFORGE_GIT_VERSION=$(echo $FONTFORGE_GIT_VERSION | sed 's/"//g')
+FONTFORGE_MODTIME_STR=$(grep 'FONTFORGE_MODTIME_STR ' $workdir/include/fontforge/fontforge-config.h | head -1 | sed -E 's/^.* "?([^"]+)"?/\1/g')
+FONTFORGE_VERSION=$(grep 'FONTFORGE_VERSION ' $workdir/include/fontforge/fontforge-config.h | head -1 | sed -E 's/^.* "?([^"]+)"?/\1/g')
+FONTFORGE_GIT_VERSION=$(grep 'FONTFORGE_GIT_VERSION ' $workdir/include/fontforge/fontforge-config.h | head -1 | sed -E 's/^.* "?([^"]+)"?/\1/g')
 echo "got: modtime     = $FONTFORGE_MODTIME_STR"
-echo "got: versiondata = $FONTFORGE_VERSIONDATE_RAW"
+echo "got: versiondata = $FONTFORGE_VERSION"
 echo "got: git ver     = $FONTFORGE_GIT_VERSION"
 
-CFBundleShortVersionString="Version $FONTFORGE_VERSIONDATE_RAW"
-CFBundleGetInfoString="FontForge version $FONTFORGE_VERSIONDATE_RAW based on sources from $FONTFORGE_MODTIME_STR_RAW git:$FONTFORGE_GIT_VERSION";
+CFBundleShortVersionString="Version $FONTFORGE_VERSION"
+CFBundleGetInfoString="FontForge version $FONTFORGE_VERSION based on sources from $FONTFORGE_MODTIME_STR git:$FONTFORGE_GIT_VERSION";
 
 # Replace version strings in InfoPlist.string
 sed -i -e "s/CFBundleShortVersionString.*/CFBundleShortVersionString = \"$CFBundleShortVersionString\"/g" $osxmetadata_file
@@ -96,10 +90,7 @@ sed -i -e "s/CFBundleGetInfoString.*/CFBundleGetInfoString = \"$CFBundleGetInfoS
 # Replace version strings in Info.plist
 sed -i -e "s/CFBundleShortVersionStringChangeMe/$CFBundleShortVersionString/g" $outdir/Contents/Info.plist
 sed -i -e "s/CFBundleGetInfoStringChangeMe/$CFBundleGetInfoString/g" $outdir/Contents/Info.plist
-sed -i -e "s/CFBundleVersionChangeMe/$FONTFORGE_VERSIONDATE_RAW/g" $outdir/Contents/Info.plist
-
-# Remove the temp file
-rm /tmp/fontforge-config-sorted
+sed -i -e "s/CFBundleVersionChangeMe/$FONTFORGE_VERSION/g" $outdir/Contents/Info.plist
 
 # Package it up
 dmgname=FontForge-$builddate-${hash:0:7}.app.dmg

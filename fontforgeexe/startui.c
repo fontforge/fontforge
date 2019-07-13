@@ -228,8 +228,6 @@ void ShowAboutScreen(void) {
 
 static void SplashLayout() {
     unichar_t *start, *pt, *lastspace;
-    extern const char *source_modtime_str;
-    extern const char *source_version_str;
 
     u_strcpy(msg, utf82u_copy("As he drew closer to completing his book on Renaissance printing (The Craft of Printing and the Publication of Shakespeare’s Works), George Williams IV suggested that his son, George Williams V, write a chapter on computer typography. FontForge—previously called PfaEdit—was his response."));
 
@@ -280,7 +278,7 @@ static void SplashLayout() {
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
     uc_strcpy(pt," Version: ");
-    uc_strcat(pt,FONTFORGE_MODTIME_STR);
+    uc_strcat(pt,FONTFORGE_VERSION);
 
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
@@ -304,9 +302,6 @@ static void SplashLayout() {
     uc_strcat(pt,")");
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
-    uc_strcpy(pt," Lib Version: ");
-    uc_strcat(pt,FONTFORGE_MODTIME_STR);
-    lines[linecnt++] = pt+u_strlen(pt);
     lines[linecnt] = NULL;
     is = u_strchr(msg,'(')+1;
     ie = u_strchr(msg,')');
@@ -909,8 +904,6 @@ static void WinLoadUserFonts(const char *prefix) {
 
 
 int fontforge_main( int argc, char **argv ) {
-    extern const char *source_modtime_str;
-    extern const char *source_version_str;
     const char *load_prefs = getenv("FONTFORGE_LOADPREFS");
     int i;
     int recover=2;
@@ -946,9 +939,12 @@ int fontforge_main( int argc, char **argv ) {
     }
 
     if (!quiet) {
-        fprintf( stderr, "Copyright (c) 2000-%s. See AUTHORS for Contributors.\n", FONTFORGE_VERSIONYEAR );
+        time_t tm = FONTFORGE_MODTIME_RAW;
+        struct tm* modtime = gmtime(&tm);
+        fprintf( stderr, "Copyright (c) 2000-%d. See AUTHORS for Contributors.\n", modtime->tm_year+1900 );
         fprintf( stderr, " License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n" );
         fprintf( stderr, " with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.\n" );
+        fprintf( stderr, " Version: %s\n", FONTFORGE_VERSION );
         fprintf( stderr, " Based on sources from %s"
 	        "-ML"
 #ifdef FREETYPE_HAS_DEBUGGER

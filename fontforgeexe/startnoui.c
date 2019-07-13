@@ -83,12 +83,13 @@ exit(0);
 }
 
 int fontforge_main( int argc, char **argv ) {
-    extern const char *source_version_str;
-    extern const char *source_modtime_str;
+    time_t tm = FONTFORGE_MODTIME_RAW;
+    struct tm* modtime = gmtime(&tm);
 
-    fprintf( stderr, "Copyright (c) 2000-%s. See AUTHORS for Contributors.\n", FONTFORGE_VERSIONYEAR );
+    fprintf( stderr, "Copyright (c) 2000-%d. See AUTHORS for Contributors.\n", modtime->tm_year+1900 );
     fprintf( stderr, " License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n" );
     fprintf( stderr, " with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.\n" );
+    fprintf( stderr, " Version: %s\n", FONTFORGE_VERSION );
     fprintf( stderr, " Based on sources from %s"
 #ifdef FREETYPE_HAS_DEBUGGER
 	    "-TtfDb"
@@ -123,7 +124,7 @@ int fontforge_main( int argc, char **argv ) {
 	else if ( strcmp(pt,"-help")==0 )
 	    doscripthelp();
 	else if ( strcmp(pt,"-version")==0 || strcmp(pt,"-v")==0 || strcmp(pt,"-V")==0 )
-	    doversion(FONTFORGE_MODTIME_STR);
+	    doversion(FONTFORGE_VERSION);
     }
 #  if defined(_NO_PYTHON)
     ProcessNativeScript(argc, argv,stdin);

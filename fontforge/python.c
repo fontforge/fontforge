@@ -1115,10 +1115,7 @@ static PyObject *PyFF_OFracChartUGetAltVal(PyObject *UNUSED(self), PyObject *arg
 }
 
 static PyObject *PyFF_Version(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
-    char buffer[20];
-
-    sprintf( buffer, "%d", FONTFORGE_VERSIONDATE_RAW);
-return( Py_BuildValue("s", buffer ));
+return( Py_BuildValue("s", FONTFORGE_VERSION ));
 }
 
 
@@ -19221,12 +19218,12 @@ static void SetPythonModuleMetadata( PyObject *module ) {
     char isodate[32];
     PyObject* pyver;
     PyObject* pydate;
-    int dt = FONTFORGE_VERSIONDATE_RAW;
+    time_t dt = FONTFORGE_MODTIME_RAW;
+    struct tm* modtime = gmtime(&dt);
 
     /* Make __version__ string */
-    snprintf(ver, sizeof(ver), "%u.%u git:%s",
-	     FONTFORGE_LIBFF_VERSION_MAJOR,
-	     FONTFORGE_LIBFF_VERSION_MINOR,
+    snprintf(ver, sizeof(ver), "%s git:%s",
+	     FONTFORGE_VERSION,
 	     FONTFORGE_GIT_VERSION );
     pyver = STRING_TO_PY(ver);
     Py_INCREF(pyver);
@@ -19234,7 +19231,7 @@ static void SetPythonModuleMetadata( PyObject *module ) {
 
     /* Make __date__ string */
     snprintf(isodate, sizeof(isodate), "%04d-%02d-%02d",
-	     (dt / 10000), (dt / 100) % 100, dt % 100 );
+	     modtime->tm_year+1900, modtime->tm_mon+1, modtime->tm_mday );
     pydate = STRING_TO_PY(isodate);
     Py_INCREF(pydate);
     PyModule_AddObject(module, "__date__", pydate);
