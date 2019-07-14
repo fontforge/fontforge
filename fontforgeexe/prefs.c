@@ -773,45 +773,7 @@ static char *getPfaEditPrefs(void) {
 }
 
 static char *PrefsUI_getFontForgeShareDir(void) {
-    static char *sharedir=NULL;
-    static int set=false;
-    char *pt;
-    int len;
-
-    if ( set )
-return( sharedir );
-
-    set = true;
-
-#if defined(__MINGW32__)
-
-    len = strlen(GResourceProgramDir) + strlen("/share/fontforge") +1;
-    sharedir = malloc(len);
-    strcpy(sharedir, GResourceProgramDir);
-    strcat(sharedir, "/share/fontforge");
-    return sharedir;
-
-#else
-
-    pt = strstr(GResourceProgramDir,"/bin");
-    if ( pt==NULL ) {
-#if defined(SHAREDIR)
-	sharedir = copy(SHAREDIR "/fontforge" );
-return( sharedir );
-#elif defined(PREFIX)
-	sharedir = copy( PREFIX "/share/fontforge" );
-return( sharedir );
-#else
-return( NULL );
-#endif
-    }
-    len = (pt-GResourceProgramDir)+strlen("/share/fontforge")+1;
-    sharedir = malloc(len);
-    strncpy(sharedir,GResourceProgramDir,pt-GResourceProgramDir);
-    strcpy(sharedir+(pt-GResourceProgramDir),"/share/fontforge");
-return( sharedir );
-
-#endif
+    return getShareDir();
 }
 
 static int encmatch(const char *enc,int subok) {

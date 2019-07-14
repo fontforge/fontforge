@@ -1065,19 +1065,11 @@ int fontforge_main( int argc, char **argv ) {
     textdomain("FontForge");
     GResourceUseGetText();
     {
-	char shareDir[PATH_MAX];
-	char* sd = getShareDir();
-	strncpy( shareDir, sd, PATH_MAX );
-    shareDir[PATH_MAX-1] = '\0';
-	if(!sd) {
-	    strcpy( shareDir, SHAREDIR );
-	}
-
 	char path[PATH_MAX];
-	snprintf(path, PATH_MAX, "%s%s", shareDir, "/pixmaps" );
+	snprintf(path, PATH_MAX, "%s%s", getShareDir(), "/pixmaps" );
 	GGadgetSetImageDir( path );
 
-	snprintf(path, PATH_MAX, "%s%s", shareDir, "/resources/fontforge.resource" );
+	snprintf(path, PATH_MAX, "%s%s", getShareDir(), "/resources/fontforge.resource" );
 	GResourceAddResourceFile(path, GResourceProgramName,false);
     }
     hotkeysLoad();

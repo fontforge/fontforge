@@ -169,24 +169,7 @@ void help(char *file) {
 	strcpy(p_uri, p_file);
 
 	if(! GFileIsAbsolute(p_uri)){
-	    char* p_helpdir = (char*) malloc(1024);
-
-	    #if __CygWin
-	    {   /* cygwin */
-		#if defined(DOCDIR)
-		strncpy( p_helpdir, DOCDIR "/", 1024 );
-		#elif defined(SHAREDIR)
-		strncpy( p_helpdir, SHAREDIR "/doc/fontforge/", 1024 );
-		#else
-		strncpy( p_helpdir, "/usr/local/share/doc/fontforge/", 1024 );
-		#endif
-	    }
-	    #else
-	    {   /* mingw */
-		strcpy( p_helpdir, GResourceProgramDir );
-		strcat( p_helpdir, "/doc/fontforge/");
-	    }
-	    #endif
+	    char* p_helpdir = getHelpDir();
 
 	    /* /usr/share/fontforge/doc/ja/file */
 	    strcpy(p_uri, p_helpdir);
@@ -203,7 +186,6 @@ void help(char *file) {
 		    strcat(p_uri, p_file);
 		}
 	    }
-	    free(p_helpdir);
 	}
 
 	#if __CygWin
