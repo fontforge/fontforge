@@ -9926,7 +9926,7 @@ static void handlename(Context *c,Val *val) {
 		val->u.lval = &c->trace;
 	    } else if ( strcmp(name,"$version")==0 ) {
 		val->type = v_str;
-		sprintf(name,"%d", FONTFORGE_VERSIONDATE_RAW);
+		sprintf(name,"%s", FONTFORGE_VERSION);
 		val->u.sval = copy(name);
 	    } else if ( strcmp(name,"$haspython")==0 ) {
 		val->type = v_int;

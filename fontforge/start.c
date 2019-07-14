@@ -108,7 +108,7 @@ return;
 void doversion(const char *source_version_str) {
     if ( source_version_str!=NULL )
 	printf( "fontforge %s\n", source_version_str );
-    printf( "libfontforge %d\n",
-	    FONTFORGE_VERSIONDATE_RAW );
+    printf( "build date: %s\n",
+	    FONTFORGE_MODTIME_STR );
 exit(0);
 }

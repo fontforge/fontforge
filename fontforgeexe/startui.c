@@ -228,8 +228,6 @@ void ShowAboutScreen(void) {
 
 static void SplashLayout() {
     unichar_t *start, *pt, *lastspace;
-    extern const char *source_modtime_str;
-    extern const char *source_version_str;
 
     u_strcpy(msg, utf82u_copy("As he drew closer to completing his book on Renaissance printing (The Craft of Printing and the Publication of Shakespeare’s Works), George Williams IV suggested that his son, George Williams V, write a chapter on computer typography. FontForge—previously called PfaEdit—was his response."));
 
@@ -258,11 +256,7 @@ static void SplashLayout() {
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
 
-    uc_strcpy(pt, " As of 2012 FontForge development continues");
-    pt += u_strlen(pt);
-    lines[linecnt++] = pt;
-
-    uc_strcpy(pt, " on GitHub.");
+    uc_strcpy(pt, " As of 2012 FontForge development continues on GitHub.");
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
 
@@ -270,21 +264,20 @@ static void SplashLayout() {
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
 
-    uc_strcpy(pt," Git hash: ");
+    uc_strcpy(pt," Version:");
+    uc_strcat(pt,FONTFORGE_VERSION);
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
 
-    uc_strcpy(pt," ");
-    uc_strcat(pt, FONTFORGE_GIT_VERSION);
+    // Can be empty if e.g. building from a tarball
+    if (FONTFORGE_GIT_VERSION[0] != '\0') {
+	uc_strcpy(pt,"  ");
+	uc_strcat(pt, FONTFORGE_GIT_VERSION);
+	pt += u_strlen(pt);
+	lines[linecnt++] = pt;
+    }
 
-    pt += u_strlen(pt);
-    lines[linecnt++] = pt;
-    uc_strcpy(pt," Version: ");
-    uc_strcat(pt,FONTFORGE_MODTIME_STR);
-
-    pt += u_strlen(pt);
-    lines[linecnt++] = pt;
-    uc_strcat(pt,"           (");
+    uc_strcat(pt," Built: ");
     uc_strcat(pt,FONTFORGE_MODTIME_STR);
     uc_strcat(pt,"-ML");
 #ifdef FREETYPE_HAS_DEBUGGER
@@ -301,12 +294,8 @@ static void SplashLayout() {
 #else
     uc_strcat(pt,"-X11");
 #endif
-    uc_strcat(pt,")");
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
-    uc_strcpy(pt," Lib Version: ");
-    uc_strcat(pt,FONTFORGE_MODTIME_STR);
-    lines[linecnt++] = pt+u_strlen(pt);
     lines[linecnt] = NULL;
     is = u_strchr(msg,'(')+1;
     ie = u_strchr(msg,')');
@@ -603,7 +592,6 @@ static void install_mac_timer(void) {
 #endif
 
 static int splash_e_h(GWindow gw, GEvent *event) {
-    static int splash_cnt;
     GRect old;
     int i, y, x;
     static char *foolishness[] = {
@@ -628,32 +616,31 @@ static int splash_e_h(GWindow gw, GEvent *event) {
       case et_expose:
 	GDrawPushClip(gw,&event->u.expose.rect,&old);
 	GDrawDrawImage(gw,&splashimage,NULL,0,0);
-	GDrawSetFont(gw,splash_font);
-	y = splashimage.u.image->height + as + fh/2;
-	for ( i=1; i<linecnt; ++i ) {
-        // The number 11 comes from lines[linecnt] created in the function SplashLayout. It refers
-        // to the line at which we want to make the font monospace. If you add or remove a line, 
-        // you will need to change this.
-        if (i == 11) {
-		x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,0,0x000000);
-		GDrawSetFont(gw,splash_mono);
-        GDrawDrawText(gw,8,y,lines[i-1]+1,lines[i]-lines[i-1]-1,0x000000);
-        } else if ( is>=lines[i-1]+1 && is<lines[i] ) {
-		x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,is-lines[i-1]-1,0x000000);
-		GDrawSetFont(gw,splash_italic);
-		GDrawDrawText(gw,x,y,is,lines[i]-is,0x000000);
-	    } else if ( ie>=lines[i-1]+1 && ie<lines[i] ) {
-		x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,ie-lines[i-1]-1,0x000000);
-		GDrawSetFont(gw,splash_font);
-		GDrawDrawText(gw,x,y,ie,lines[i]-ie,0x000000);
-	    } else
-		GDrawDrawText(gw,8,y,lines[i-1]+1,lines[i]-lines[i-1]-1,0x000000);
-	    y += fh;
+	if ((event->u.expose.rect.y+event->u.expose.rect.height) > splashimage.u.image->height) {
+	    GDrawSetFont(gw,splash_font);
+	    y = splashimage.u.image->height + as + fh/2;
+	    for ( i=1; i<linecnt; ++i ) {
+	    // The number 10 comes from lines[linecnt] created in the function SplashLayout. It refers
+	    // to the line at which we want to make the font monospace. If you add or remove a line, 
+	    // you will need to change this.
+	    if (i == 10) {
+		    x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,0,0x000000);
+		    GDrawSetFont(gw,splash_mono);
+	    GDrawDrawText(gw,8,y,lines[i-1]+1,lines[i]-lines[i-1]-1,0x000000);
+	    } else if ( is>=lines[i-1]+1 && is<lines[i] ) {
+		    x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,is-lines[i-1]-1,0x000000);
+		    GDrawSetFont(gw,splash_italic);
+		    GDrawDrawText(gw,x,y,is,lines[i]-is,0x000000);
+		} else if ( ie>=lines[i-1]+1 && ie<lines[i] ) {
+		    x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,ie-lines[i-1]-1,0x000000);
+		    GDrawSetFont(gw,splash_font);
+		    GDrawDrawText(gw,x,y,ie,lines[i]-ie,0x000000);
+		} else
+		    GDrawDrawText(gw,8,y,lines[i-1]+1,lines[i]-lines[i-1]-1,0x000000);
+		y += fh;
+	    }
 	}
 	GDrawPopClip(gw,&old);
-      break;
-      case et_map:
-	splash_cnt = 0;
       break;
       case et_timer:
       if ( event->u.timer.timer==autosave_timer ) {
@@ -909,8 +896,6 @@ static void WinLoadUserFonts(const char *prefix) {
 
 
 int fontforge_main( int argc, char **argv ) {
-    extern const char *source_modtime_str;
-    extern const char *source_version_str;
     const char *load_prefs = getenv("FONTFORGE_LOADPREFS");
     int i;
     int recover=2;
@@ -946,9 +931,12 @@ int fontforge_main( int argc, char **argv ) {
     }
 
     if (!quiet) {
-        fprintf( stderr, "Copyright (c) 2000-%s. See AUTHORS for Contributors.\n", FONTFORGE_VERSIONYEAR );
+        time_t tm = FONTFORGE_MODTIME_RAW;
+        struct tm* modtime = gmtime(&tm);
+        fprintf( stderr, "Copyright (c) 2000-%d. See AUTHORS for Contributors.\n", modtime->tm_year+1900 );
         fprintf( stderr, " License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n" );
         fprintf( stderr, " with many parts BSD <http://fontforge.org/license.html>. Please read LICENSE.\n" );
+        fprintf( stderr, " Version: %s\n", FONTFORGE_VERSION );
         fprintf( stderr, " Based on sources from %s"
 	        "-ML"
 #ifdef FREETYPE_HAS_DEBUGGER
@@ -968,7 +956,10 @@ int fontforge_main( int argc, char **argv ) {
 #endif
 	        ".\n",
 	        FONTFORGE_MODTIME_STR );
-        fprintf( stderr, " Based on source from git with hash: %s\n", FONTFORGE_GIT_VERSION );
+        // Can be empty if e.g. building from a tarball
+        if (FONTFORGE_GIT_VERSION[0] != '\0') {
+            fprintf( stderr, " Based on source from git with hash: %s\n", FONTFORGE_GIT_VERSION );
+        }
     }
 
 #if defined(__Mac) && !defined(FONTFORGE_CAN_USE_GDK)
@@ -1175,7 +1166,7 @@ int fontforge_main( int argc, char **argv ) {
 	else if ( strcmp(pt,"-help")==0 )
 	    dousage();
 	else if ( strcmp(pt,"-version")==0 || strcmp(pt,"-v")==0 || strcmp(pt,"-V")==0 )
-	    doversion(FONTFORGE_MODTIME_STR);
+	    doversion(FONTFORGE_VERSION);
 	else if ( strcmp(pt,"-quit")==0 )
 	    quit_request = true;
 	else if ( strcmp(pt,"-home")==0 )
@@ -1283,7 +1274,7 @@ exit( 0 );
 
     memset(&rq,0,sizeof(rq));
     rq.utf8_family_name = SERIF_UI_FAMILIES;
-    rq.point_size = 12;
+    rq.point_size = 10;
     rq.weight = 400;
     splash_font = GDrawInstanciateFont(NULL,&rq);
     splash_font = GResourceFindFont("Splash.Font",splash_font);
