@@ -94,10 +94,10 @@ noinst_HEADERS = \
 	winfonts.h \
 	woff.h \
 	zapfnomen.h \
-	fontforgeui.h configure-fontforge.h \
+	fontforgeui.h \
 	cvundoes.h
 
-pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
+pkginclude_HEADERS = autowidth2.h fontforge.h		\
 	psfont.h stemdb.h autowidth.h delta.h fontforgevw.h	\
 	lookups.h savefont.h ttf.h baseviews.h fvmetrics.h mm.h			\
 	scriptfuncs.h ttfinstrs.h edgelist2.h namehash.h scripting.h		\

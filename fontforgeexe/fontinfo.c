@@ -4117,7 +4117,6 @@ return( true );
 	}
 	if ( layer_cnt>=BACK_LAYER_MAX-2 ) {
 	    ff_post_error(_("Too many layers"),_("FontForge supports at most %d layers"),BACK_LAYER_MAX-2);
-	    /* This can be increased in configure-fontforge.h */
 return( true );
 	}
 	if ( !CheckNames(d))

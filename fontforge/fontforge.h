@@ -31,7 +31,6 @@
 #include <fontforge-config.h>
 
 #include "basics.h"
-#include "configure-fontforge.h"
 #include "intl.h"
 #include "splinefont.h"
 #include "uiinterface.h"
