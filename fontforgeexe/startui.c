@@ -27,7 +27,6 @@
 
 #include <fontforge-config.h>
 
-#include "../gdraw/hotkeys.h"
 #include "autosave.h"
 #include "bitmapchar.h"
 #include "clipnoui.h"
@@ -37,8 +36,9 @@
 #include "fontforgeui.h"
 #include "gfile.h"
 #include "gresource.h"
-#include "gutils/prefs.h"
+#include "hotkeys.h"
 #include "lookups.h"
+#include "prefs.h"
 #include "start.h"
 #include "ustring.h"
 

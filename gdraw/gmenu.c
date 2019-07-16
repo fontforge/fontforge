@@ -31,9 +31,9 @@
 #include "ggadgetP.h"
 #include "gkeysym.h"
 #include "gresource.h"
-#include "gutils/prefs.h"
 #include "gwidget.h"
 #include "hotkeys.h"
+#include "prefs.h"
 #include "ustring.h"
 #include "utype.h"
 

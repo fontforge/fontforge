@@ -48,7 +48,6 @@
 #include "fvfonts.h"
 #include "fvimportbdf.h"
 #include "glyphcomp.h"
-#include "gutils/unicodelibinfo.h"
 #include "langfreq.h"
 #include "lookups.h"
 #include "mathconstants.h"
@@ -78,6 +77,7 @@
 #include "tottfgpos.h"
 #include "ttf.h"
 #include "ttfinstrs.h"
+#include "unicodelibinfo.h"
 #include "ustring.h"
 #include "utype.h"
 

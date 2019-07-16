@@ -35,13 +35,13 @@
 #include "fvcomposite.h"
 #include "fvfonts.h"
 #include "gkeysym.h"
-#include "gutils/unicodelibinfo.h"
 #include "lookups.h"
 #include "namelist.h"
 #include "splinefill.h"
 #include "splineutil.h"
 #include "tottfgpos.h"
 #include "ttf.h"		/* For MAC_DELETED_GLYPH_NAME */
+#include "unicodelibinfo.h"
 #include "ustring.h"
 #include "utype.h"
 

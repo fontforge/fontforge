@@ -37,9 +37,9 @@
 #include "gkeysym.h"
 #include "gresedit.h"
 #include "gresource.h"
-#include "gutils/unicodelibinfo.h"
 #include "splinefill.h"
 #include "splinesaveafm.h"
+#include "unicodelibinfo.h"
 #include "ustring.h"
 #include "utype.h"
 

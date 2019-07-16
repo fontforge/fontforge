@@ -47,7 +47,6 @@
 #include "gresedit.h"
 #include "gresource.h"
 #include "groups.h"
-#include "gutils/unicodelibinfo.h"
 #include "mm.h"
 #include "namelist.h"
 #include "nonlineartrans.h"
@@ -62,6 +61,7 @@
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "tottfgpos.h"
+#include "unicodelibinfo.h"
 #include "ustring.h"
 #include "utype.h"
 
