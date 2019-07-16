@@ -27,6 +27,7 @@
 /*			   Python Interface to FontForge		      */
 
 #include <fontforge-config.h>
+#include <fontforge-version-extras.h>
 
 #ifndef _NO_PYTHON
 

@@ -704,6 +704,7 @@ osx/Makefile
 
 fontforge.pc
 osx/FontForge.app/Contents/Info.plist
+inc/fontforge-version-extras.h
 ])
 
 #--------------------------------------------------------------------------
@@ -729,12 +730,9 @@ if ! date --version 2>/dev/null ; then
 fi
 FONTFORGE_MODTIME="$(date -u $FONTFORGE_DATE_OPTS +'%s')L"
 FONTFORGE_MODTIME_STR="$(date -u $FONTFORGE_DATE_OPTS +'%H:%M %Z %e-%b-%Y')"
-AC_DEFINE_UNQUOTED(FONTFORGE_GIT_VERSION,"$FONTFORGE_GIT_VERSION","git hash that source are built from")
-AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME_STR,"$FONTFORGE_MODTIME_STR",
-	"A user friendly date that that configure was run at: For example 01:48 GMT 6-Sep-2012")
-AC_DEFINE_UNQUOTED(FONTFORGE_MODTIME_RAW,$FONTFORGE_MODTIME,"Epoch time that configure was run at (no quotes)")
-AC_SUBST(FONTFORGE_GIT_VERSION)
-AC_SUBST(FONTFORGE_MODTIME_STR)
+AC_SUBST(FONTFORGE_GIT_VERSION, ["$FONTFORGE_GIT_VERSION"])
+AC_SUBST(FONTFORGE_MODTIME_STR, ["$FONTFORGE_MODTIME_STR"])
+AC_SUBST(FONTFORGE_MODTIME_RAW, [$FONTFORGE_MODTIME])
 
 #--------------------------------------------------------------------------
 
