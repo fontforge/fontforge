@@ -101,6 +101,10 @@ libfontforgeexe_la_LIBADD =
 
 if GRAPHICAL_USER_INTERFACE
 
+noinst_HEADERS = \
+	charview_private.h cvruler.h sftextfieldP.h sfundo.h usermenu.h \
+	wordlistparser.h
+
 libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
 	autowidth2dlg.c basedlg.c bdfinfo.c bitmapdlg.c bitmapview.c	\
 	charinfo.c charview.c clipui.c combinations.c contextchain.c	\
@@ -116,7 +120,7 @@ libfontforgeexe_la_SOURCES = alignment.c anchorsaway.c   \
 	scstylesui.c searchview.c sftextfield.c showatt.c simplifydlg.c	        \
 	splashimage.c startui.c statemachine.c tilepath.c transform.c	        \
 	ttfinstrsui.c uiutil.c windowmenu.c justifydlg.c deltaui.c sfundo.c	\
-	usermenu.c charview_private.h wordlistparser.c wordlistparser.h
+	usermenu.c wordlistparser.c
 
 libfontforgeexe_la_CPPFLAGS += $(GTK2_CFLAGS)
 

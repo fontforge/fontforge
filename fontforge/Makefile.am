@@ -94,7 +94,7 @@ noinst_HEADERS = \
 	winfonts.h \
 	woff.h \
 	zapfnomen.h \
-	fontforgeui.h sftextfieldP.h configure-fontforge.h \
+	fontforgeui.h configure-fontforge.h \
 	cvundoes.h
 
 pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
@@ -103,8 +103,8 @@ pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 	scriptfuncs.h ttfinstrs.h edgelist2.h namehash.h scripting.h		\
 	uiinterface.h bezctx_ff.h edgelist.h groups.h nonlineartrans.h		\
 	sd.h unicoderange.h bitmapcontrol.h encoding.h ofl.h search.h		\
-	usermenu.h fffreetype.h PfEd.h sfd1.h ffpython.h			\
-	sflayoutP.h print.h splinefont.h cvruler.h           \
+	fffreetype.h PfEd.h sfd1.h ffpython.h								\
+	sflayoutP.h print.h splinefont.h           \
 	flaglist.h \
 	glif_name_hash.h \
 	glyphcomp.h \
@@ -138,7 +138,7 @@ libfontforge_la_SOURCES = activeinui.c asmfpst.c autohint.c autosave.c	\
 	parsettfatt.c parsettfbmf.c parsettf.c parsettfvar.c    	\
 	print.c psread.c pua.c python.c savefont.c	                \
 	scripting.c scstyles.c search.c sfd1.c sfd.c sflayout.c		\
-	sfundo.h spiro.c splinechar.c splinefill.c splinefont.c		\
+	spiro.c splinechar.c splinefill.c splinefont.c				\
 	splineorder2.c splineoverlap.c splinesaveafm.c splinesave.c	\
 	splinestroke.c splineutil2.c splineutil.c start.c		\
 	stemdb.c svg.c tottfaat.c tottfgpos.c tottf.c tottfvar.c	\
