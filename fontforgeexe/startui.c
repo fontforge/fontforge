@@ -642,6 +642,16 @@ static int splash_e_h(GWindow gw, GEvent *event) {
 	}
 	GDrawPopClip(gw,&old);
       break;
+      case et_map:
+	// The splash screen used to gradually resize the longer it was displayed.
+	// This was removed. But there is a gxdraw bug which prevents
+	// the splash from being displayed properly unless a resize occurs.
+	// So this forces a resize to make it display properly...
+	GDrawGetSize(gw, &old);
+	if (old.height < splashimage.u.image->height) {
+	    GDrawResize(gw,splashimage.u.image->width,splashimage.u.image->height);
+	}
+	break;
       case et_timer:
       if ( event->u.timer.timer==autosave_timer ) {
           DoAutoSaves();
@@ -1251,7 +1261,7 @@ int fontforge_main( int argc, char **argv ) {
 #endif
     pos.x = pos.y = 200;
     pos.width = splashimage.u.image->width;
-    pos.height = splashimage.u.image->height;
+    pos.height = splashimage.u.image->height-1; // See splash_e_h:et_map
     GDrawBindSelection(NULL,sn_user1,"FontForge");
     if ( unique && GDrawSelectionOwned(NULL,sn_user1)) {
 	/* Different event handler, not a dialog */
