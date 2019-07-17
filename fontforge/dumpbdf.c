@@ -33,7 +33,6 @@
 #include "bvedit.h"
 #include "encoding.h"
 #include "fontforge.h"
-#include "gdraw.h"			/* for the defn of GClut for greymaps */
 #include "splinefill.h"
 #include "splinefont.h"
 #include "splinesaveafm.h"

@@ -29,7 +29,6 @@
 #define FONTFORGE_SPLINEFONT_H
 
 #include "basics.h"
-#include "configure-fontforge.h"
 #include "dlist.h"
 #include "gwwiconv.h"
 #include "ustring.h"

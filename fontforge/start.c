@@ -26,6 +26,7 @@
  */
 
 #include <fontforge-config.h>
+#include <fontforge-version-extras.h>
 
 #include "start.h"
 
@@ -33,9 +34,9 @@
 #include "ffglib.h"
 #include "fontforgevw.h"
 #include "gfile.h"
-#include "gutils/unicodelibinfo.h"
 #include "namelist.h"
 #include "psfont.h"
+#include "unicodelibinfo.h"
 
 #include <locale.h>
 #include <sys/time.h>

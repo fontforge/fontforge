@@ -38,7 +38,6 @@
 #include "ffglib.h"
 #include "fontforge.h"
 #include "fvfonts.h"
-#include "gdraw.h"
 #include "gfile.h"
 #include "gutils.h"
 #include "gwidget.h"

@@ -36,6 +36,16 @@
 #include "splineutil2.h"
 #include "ustring.h"
 
+#include "charview_private.h"
+#include "gkeysym.h"
+#include "gresource.h"
+#include "hotkeys.h"
+#include "splinefont.h"
+#include "ustring.h"
+#include "utype.h"
+
+#include <math.h>
+
 int palettes_docked=1;
 int rectelipse=0, polystar=0, regular_star=1;
 int center_out[2] = { false, true };
@@ -43,16 +53,6 @@ float rr_radius=0;
 int ps_pointcnt=6;
 float star_percent=1.7320508;	/* Regular 6 pointed star */
 extern int interpCPsOnMotion;
-
-#include "charview_private.h"
-#include "gdraw/hotkeys.h"
-#include "gkeysym.h"
-#include "gresource.h"
-#include "splinefont.h"
-#include "ustring.h"
-#include "utype.h"
-
-#include <math.h>
 
 static void CVLCheckLayerCount(CharView *cv, int resize);
 

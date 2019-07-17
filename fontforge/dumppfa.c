@@ -33,7 +33,6 @@
 #include "bvedit.h"
 #include "fontforge.h"
 #include "fvfonts.h"
-#include "gdraw.h"		/* For image defn */
 #include "gfile.h"
 #include "gutils.h"
 #include "parsepfa.h"

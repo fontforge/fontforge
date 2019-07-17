@@ -34,10 +34,9 @@
 #include "ggadgetP.h"		/* For the font family names */
 #include "gresource.h"
 #include "gwidget.h"
+#include "unicodelibinfo.h"
 #include "ustring.h"
 #include "utype.h"
-
-#include "gutils/unicodelibinfo.h"
 
 #define INSCHR_CharSet	1
 #define INSCHR_Char	2

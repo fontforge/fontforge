@@ -1,4 +1,4 @@
-#include "../inc/gkeysym.h"
+#include "gkeysym.h"
 
 #include <stdio.h>
 
