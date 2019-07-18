@@ -1255,7 +1255,6 @@ int fontforge_main( int argc, char **argv ) {
     wattrs.positioned = 1;
     wattrs.nodecoration = 1;
     wattrs.cursor = ct_pointer;
-    //wattrs.utf8_window_title = "FontForge";
     wattrs.border_width = 0;
     wattrs.background_color = 0xffffff;
 #ifdef FONTFORGE_CAN_USE_GDK
