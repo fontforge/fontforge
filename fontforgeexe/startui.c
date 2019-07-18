@@ -400,7 +400,7 @@ static void start_splash_screen(void){
     GDrawProcessPendingEvents(NULL);
     GDrawProcessPendingEvents(NULL);
 
-    splasht = GDrawRequestTimer(splashw,3200,1000,NULL);
+    splasht = GDrawRequestTimer(splashw,7000,1000,NULL);
 
     localsplash = false;
 }
