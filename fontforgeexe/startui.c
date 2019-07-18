@@ -1250,9 +1250,7 @@ int fontforge_main( int argc, char **argv ) {
     /*  the window around, which I can determine if I have a positioned */
     /*  decorated window created at the begining */
     /* Actually I don't care any more */
-    /* happyrobotstudio Jul_8_2019: updated to re-include wam_nodecor and wattrs.nodecoration = 1 */
-
-    wattrs.mask = wam_events|wam_cursor|wam_bordwidth|wam_backcol|wam_positioned|wam_nodecor; //|wam_utf8_wtitle|wam_isdlg;
+    wattrs.mask = wam_events|wam_cursor|wam_bordwidth|wam_backcol|wam_positioned|wam_nodecor;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.positioned = 1;
     wattrs.nodecoration = 1;
