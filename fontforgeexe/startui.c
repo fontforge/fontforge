@@ -393,12 +393,14 @@ exit( 0 );		/* But the event loop should never return */
 }
 
 static void start_splash_screen(void){
+
     GDrawSetVisible(splashw,true);
+
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
     GDrawProcessPendingEvents(NULL);
 
-    splasht = GDrawRequestTimer(splashw,7000,1000,NULL);
+    splasht = GDrawRequestTimer(splashw,3200,1000,NULL);
 
     localsplash = false;
 }
@@ -1248,12 +1250,15 @@ int fontforge_main( int argc, char **argv ) {
     /*  the window around, which I can determine if I have a positioned */
     /*  decorated window created at the begining */
     /* Actually I don't care any more */
-    wattrs.mask = wam_events|wam_cursor|wam_bordwidth|wam_backcol|wam_positioned|wam_utf8_wtitle|wam_isdlg;
+    /* happyrobotstudio Jul_8_2019: updated to re-include wam_nodecor and wattrs.nodecoration = 1 */
+
+    wattrs.mask = wam_events|wam_cursor|wam_bordwidth|wam_backcol|wam_positioned|wam_nodecor; //|wam_utf8_wtitle|wam_isdlg;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.positioned = 1;
+    wattrs.nodecoration = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = "FontForge";
-    wattrs.border_width = 2;
+    //wattrs.utf8_window_title = "FontForge";
+    wattrs.border_width = 0;
     wattrs.background_color = 0xffffff;
 #ifdef FONTFORGE_CAN_USE_GDK
     wattrs.is_dlg = true;
@@ -1267,6 +1272,7 @@ int fontforge_main( int argc, char **argv ) {
     if ( unique && GDrawSelectionOwned(NULL,sn_user1)) {
 	/* Different event handler, not a dialog */
 	wattrs.is_dlg = false;
+   // GDrawCreateTopWindow(GDisplay *gdisp, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs)
 	splashw = GDrawCreateTopWindow(NULL,&pos,request_e_h,NULL,&wattrs);
 	PingOtherFontForge(argc,argv);
     } else {
