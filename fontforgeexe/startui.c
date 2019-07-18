@@ -1248,12 +1248,12 @@ int fontforge_main( int argc, char **argv ) {
     /*  the window around, which I can determine if I have a positioned */
     /*  decorated window created at the begining */
     /* Actually I don't care any more */
-    wattrs.mask = wam_events|wam_cursor|wam_bordwidth|wam_backcol|wam_positioned|wam_utf8_wtitle|wam_isdlg;
+    wattrs.mask = wam_events|wam_cursor|wam_bordwidth|wam_backcol|wam_positioned|wam_nodecor;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.positioned = 1;
+    wattrs.nodecoration = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = "FontForge";
-    wattrs.border_width = 2;
+    wattrs.border_width = 0;
     wattrs.background_color = 0xffffff;
 #ifdef FONTFORGE_CAN_USE_GDK
     wattrs.is_dlg = true;
