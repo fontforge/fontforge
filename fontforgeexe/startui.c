@@ -1272,7 +1272,6 @@ int fontforge_main( int argc, char **argv ) {
     if ( unique && GDrawSelectionOwned(NULL,sn_user1)) {
 	/* Different event handler, not a dialog */
 	wattrs.is_dlg = false;
-   // GDrawCreateTopWindow(GDisplay *gdisp, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs)
 	splashw = GDrawCreateTopWindow(NULL,&pos,request_e_h,NULL,&wattrs);
 	PingOtherFontForge(argc,argv);
     } else {
