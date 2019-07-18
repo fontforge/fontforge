@@ -103,6 +103,7 @@ extern void setup_cocoa_app();
 
 extern int AutoSaveFrequency;
 int splash = 1;
+int splashSeconds = 7;
 static int localsplash;
 static int unique = 0;
 
@@ -398,7 +399,10 @@ static void start_splash_screen(void){
     GDrawProcessPendingEvents(NULL);
     GDrawProcessPendingEvents(NULL);
 
-    splasht = GDrawRequestTimer(splashw,7000,1000,NULL);
+    int slpashDelayTime = 7000;
+    if( splashSeconds > 0 && splashSeconds < 60 )
+      slpashDelayTime = splashSeconds * 1000;
+    splasht = GDrawRequestTimer(splashw,slpashDelayTime,1000,NULL);
 
     localsplash = false;
 }
