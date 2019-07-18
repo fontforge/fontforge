@@ -73,9 +73,9 @@ sed -i -e "s|Gdraw.GMenu.MacIcons:.*|Gdraw.GMenu.MacIcons: True|g" \
 #
 osxmetadata_file=$outdir/Contents/Resources/English.lproj/InfoPlist.string
 
-FONTFORGE_MODTIME_STR=$(grep 'FONTFORGE_MODTIME_STR ' $workdir/include/fontforge/fontforge-config.h | head -1 | sed -E 's/^.* "?([^"]+)"?/\1/g')
 FONTFORGE_VERSION=$(grep 'FONTFORGE_VERSION ' $workdir/include/fontforge/fontforge-config.h | head -1 | sed -E 's/^.* "?([^"]+)"?/\1/g')
-FONTFORGE_GIT_VERSION=$(grep 'FONTFORGE_GIT_VERSION ' $workdir/include/fontforge/fontforge-config.h | head -1 | sed -E 's/^.* "?([^"]+)"?/\1/g')
+FONTFORGE_MODTIME_STR=$(grep 'FONTFORGE_MODTIME_STR ' $workdir/include/fontforge/fontforge-version-extras.h | head -1 | sed -E 's/^.* "?([^"]+)"?/\1/g')
+FONTFORGE_GIT_VERSION=$(grep 'FONTFORGE_GIT_VERSION ' $workdir/include/fontforge/fontforge-version-extras.h | head -1 | sed -E 's/^.* "?([^"]+)"?/\1/g')
 echo "got: modtime     = $FONTFORGE_MODTIME_STR"
 echo "got: versiondata = $FONTFORGE_VERSION"
 echo "got: git ver     = $FONTFORGE_GIT_VERSION"
