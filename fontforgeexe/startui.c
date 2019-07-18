@@ -393,9 +393,7 @@ exit( 0 );		/* But the event loop should never return */
 }
 
 static void start_splash_screen(void){
-
     GDrawSetVisible(splashw,true);
-
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
     GDrawProcessPendingEvents(NULL);
