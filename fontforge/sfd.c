@@ -950,14 +950,12 @@ void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, const char* keyPrefix, int 
                 SFDDumpRefs( sfd, u->u.state.refs, 0 );
             }
 	    if( u->u.state.images ) {
-                #ifdef _NO_LIBPNG
-                SFDDumpImage( sfd, u->u.state.images );
-                #else
+#ifndef _NO_LIBPNG
                 if (WritePNGInSFD)
                     SFDDumpImagePNG( sfd, u->u.state.images );
                 else
+#endif
                     SFDDumpImage( sfd, u->u.state.images );
-                #endif
             }
             fprintf(sfd, "InstructionsLength: %d\n", u->u.state.instrs_len );
             if( u->u.state.anchor ) {
@@ -1081,32 +1079,26 @@ static void SFDDumpImage(FILE *sfd,ImageList *img) {
 
 #ifndef _NO_LIBPNG
 static void SFDDumpImagePNG(FILE *sfd,ImageList *img) {
-    GImage *image = img->image;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    struct enc85 enc;
-    int i;
-    int imsize = (int) (base->image_type==it_true?3*base->width:base->bytes_per_line);
+    struct enc85 enc = {0};
     char* pngbuf;
-    size_t pnglen;
+    size_t pnglen, i;
 
-    FILE *pngfp = open_memstream(&pngbuf, &pnglen);
-    GImageWrite_Png(image, pngfp, false);
-    fflush(pngfp);
+    if (!GImageWritePngBuf(img->image, &pngbuf, &pnglen, 1, false)) {
+        IError("Failed to serialise PNG image");
+        return;
+    }
 
-    fprintf(sfd, "ImageX: image/png %d %d %d %x %g %g %g %g\n",
-	    (int) base->width, (int) base->height, pnglen, (int) base->trans,
-	    (double) img->xoff, (double) img->yoff, (double) img->xscale, (double) img->yscale );
+    fprintf(sfd, "ImageX: image/png %d %g %g %g %g\n",
+        (int)pnglen, (double) img->xoff, (double) img->yoff, (double) img->xscale, (double) img->yscale );
 
-
-    memset(&enc,'\0',sizeof(enc));
     enc.sfd = sfd;
-
     for (i = 0; i<pnglen; ++i) {
         SFDEnc85(&enc, pngbuf[i]);
     }
+    free(pngbuf);
 
     SFDEnc85EndEnc(&enc);
-    fprintf(sfd,"\nEndImage\n" );
+    fprintf(sfd,"\nEndImageX\n" );
 }
 #endif
 
@@ -1693,14 +1685,12 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 		fprintf(sfd, "Layer: %d\n", i );
 	}
 	for ( img=sc->layers[i].images; img!=NULL; img=img->next )
-        #ifndef _NO_LIBPNG
+#ifndef _NO_LIBPNG
         if (WritePNGInSFD)
 	    SFDDumpImagePNG(sfd,img);
         else
+#endif
 	    SFDDumpImage(sfd,img);
-        #else
-	    SFDDumpImage(sfd,img);
-        #endif
 	if ( sc->layers[i].splines!=NULL ) {
 	    fprintf(sfd, "SplineSet\n" );
 	    SFDDumpSplineSet(sfd,sc->layers[i].splines,sc->layers[i].order2);
@@ -3636,53 +3626,58 @@ static void rle2image(struct enc85 *dec,int rlelen,struct _GImage *base) {
 #ifndef _NO_LIBPNG
 static ImageList *SFDGetImagePNG(FILE *sfd) {
     /* We've read the ImageX: image/png token */
-    int width, height, image_type, bpl, pnglen;
-    uint32 trans;
-    struct _GImage *base;
-    GImage *image;
+    int pnglen;
     ImageList *img;
-    struct enc85 dec;
+    struct enc85 dec = {0};
     int i, ch;
     char mime[128];
 
     if ( !getname(sfd, mime) ) {
         IError("Failed to get a MIME type, file corrupt");
+        return NULL;
     }
 
     if ( !(strmatch(mime, "image/png")==0) ) {
         IError("MIME type received—%s—is not recognized", mime);
+        return NULL;
     }
 
     img = calloc(1,sizeof(ImageList));
-    memset(&dec,'\0', sizeof(dec)); dec.pos = -1;
+    dec.pos = -1;
     dec.sfd = sfd;
 
-    getint(sfd,&width);
-    getint(sfd,&height);
     getint(sfd,&pnglen);
-    gethex(sfd,&trans);
     getreal(sfd,&img->xoff);
     getreal(sfd,&img->yoff);
     getreal(sfd,&img->xscale);
     getreal(sfd,&img->yscale);
 
-    while ( (ch=nlgetc(sfd))==' ' || ch=='\t' );
-    char* pngbuf = calloc(pnglen+1,sizeof(char));
+    while ( (ch=nlgetc(sfd))==' ' || ch=='\t' )
+        /* skip */;
+
+    char* pngbuf = malloc(pnglen * sizeof(char));
+    if (pngbuf == NULL) {
+        IError("Failed to allocate buffer to read PNG in SFD file");
+        return NULL;
+    }
+
     for (i = 0; i<pnglen; ++i) {
         pngbuf[i] = Dec85(&dec);
     }
 
-    FILE* pngfp = fmemopen(pngbuf, pnglen, "r");
-    image = GImageRead_Png(pngfp);
-    if (image != NULL) {
-        base = image->list_len==0?image->u.image:image->u.images[0];
-        img->image = image;
-        base->trans = trans;
-        return( img );
-    } else {
+    img->image = GImageReadPngBuf(pngbuf, pnglen);
+    free(pngbuf);
+
+    if (img->image == NULL) {
         IError("Failed to read PNG in SFD file, skipping it.");
+        free(img);
         return NULL;
     }
+
+    img->bb.minx = img->xoff; img->bb.maxy = img->yoff;
+    img->bb.maxx = img->xoff + GImageGetWidth(img->image)*img->xscale;
+    img->bb.miny = img->yoff - GImageGetHeight(img->image)*img->yscale;
+    return img;
 }
 #endif
 
