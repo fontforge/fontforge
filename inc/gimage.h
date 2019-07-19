@@ -183,8 +183,10 @@ extern int GImageWrite_Jpeg(GImage *gi, FILE *outfile, int quality, int progress
 extern int GImageWriteJpeg(GImage *gi, char *filename, int quality, int progressive);
 extern GImage *GImageRead_Png(FILE *fp);
 extern GImage *GImageReadPng(char *filename);
+extern GImage *GImageReadPngBuf(char* buf, size_t sz);
 extern int GImageWrite_Png(GImage *gi, FILE *fp, int progressive);
 extern int GImageWritePng(GImage *gi, char *filename, int progressive);
+extern int GImageWritePngBuf(GImage *gi, char** buf, size_t* sz, int compression_level, int progressive);
 extern GImage *GImageReadGif(char *filename);
 extern int GImageWriteGif(GImage *gi,char *filename,int progressive);
 extern GImage *GImageReadRas(char *filename);		/* Sun Raster */
