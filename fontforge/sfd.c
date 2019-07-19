@@ -67,6 +67,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <stdio.h>
 
 #ifdef _WIN32
 #include <windows.h>
