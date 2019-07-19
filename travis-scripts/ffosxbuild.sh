@@ -25,6 +25,8 @@ fi
 
 workdir=$(realpath $workdir)
 outdir=$(realpath $outdir)
+PYVER=$(python3 --version | cut -d' ' -f2 | cut -d. -f1-2)
+PYTHON=python$PYVER
 
 echo "Taking a dump into $outdir..."
 
@@ -33,7 +35,7 @@ mkdir -p $outdir/Contents/Resources/opt/local/lib
 cp -r $workdir/bin $outdir/Contents/Resources/opt/local/
 cp -r $workdir/share $outdir/Contents/Resources/opt/local/
 rm -r $outdir/Contents/Resources/opt/local/share/fontforge/osx
-cp -r $workdir/lib/python2.7 $outdir/Contents/Resources/opt/local/lib/python2.7
+cp -r $workdir/lib/$PYTHON $outdir/Contents/Resources/opt/local/lib/$PYTHON
 
 pushd $outdir/Contents/MacOS
 ln -s ../Frameworks/Python.framework/Versions/Current/bin/python FFPython
@@ -48,13 +50,13 @@ pycruft=$(realpath $(dirname $pylib)/../../..)
 echo "pycruft: $pycruft"
 mkdir -p $outdir/Contents/Frameworks
 cp -av $pycruft/Python.framework $outdir/Contents/Frameworks
-pushd $outdir/Contents/Frameworks/Python.framework/Versions/2.7/lib/python2.7/
+pushd $outdir/Contents/Frameworks/Python.framework/Versions/$PYVER/lib/$PYTHON/
 rm site-packages || rm -rf site-packages
-ln -s ../../../../../../Resources/opt/local/lib/python2.7/site-packages
+ln -s ../../../../../../Resources/opt/local/lib/$PYTHON/site-packages
 popd
 pushd $outdir/Contents/Frameworks/Python.framework && \
     find . -type f -name '*.pyc' | xargs rm -rfv && popd
-#pycruft=/usr/local/opt/python/Frameworks/Python.framework/Versions/2.7/lib/python2.7
+#pycruft=/usr/local/opt/python/Frameworks/Python.framework/Versions/$PYVER/lib/$PYTHON
 
 pushd $outdir/Contents/Resources/opt/local
 echo "Collecting and patching dependent libraries..."
