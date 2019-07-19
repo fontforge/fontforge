@@ -87,6 +87,7 @@ static const char *caps[] = { "butt", "round", "square", "inher", NULL };
 static const char *spreads[] = { "pad", "reflect", "repeat", NULL };
 
 int prefRevisionsToRetain = 32;
+int WritePNGInSFD = true;
 
 
 #define SFD_PTFLAG_TYPE_MASK          0x3
@@ -158,6 +159,9 @@ static void SFDDumpRefs(FILE *sfd,RefChar *refs, int *newgids);
 static void SFDDumpGuidelines(FILE *sfd,GuidelineSet *gl);
 static RefChar *SFDGetRef(FILE *sfd, int was_enc);
 static void SFDDumpImage(FILE *sfd,ImageList *img);
+#ifndef _NO_LIBPNG
+static void SFDDumpImagePNG(FILE *sfd,ImageList *img);
+#endif
 static AnchorPoint *SFDReadAnchorPoints(FILE *sfd,SplineChar *sc,AnchorPoint** alist, AnchorPoint *lastap);
 static GuidelineSet *SFDReadGuideline(FILE *sfd, GuidelineSet **gll, GuidelineSet *lastgl);
 static void SFDDumpTtfInstrs(FILE *sfd,SplineChar *sc);
@@ -946,7 +950,14 @@ void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, const char* keyPrefix, int 
                 SFDDumpRefs( sfd, u->u.state.refs, 0 );
             }
 	    if( u->u.state.images ) {
+                #ifdef _NO_LIBPNG
                 SFDDumpImage( sfd, u->u.state.images );
+                #else
+                if (WritePNGInSFD)
+                    SFDDumpImagePNG( sfd, u->u.state.images );
+                else
+                    SFDDumpImage( sfd, u->u.state.images );
+                #endif
             }
             fprintf(sfd, "InstructionsLength: %d\n", u->u.state.instrs_len );
             if( u->u.state.anchor ) {
@@ -1067,6 +1078,37 @@ static void SFDDumpImage(FILE *sfd,ImageList *img) {
     SFDEnc85EndEnc(&enc);
     fprintf(sfd,"\nEndImage\n" );
 }
+
+#ifndef _NO_LIBPNG
+static void SFDDumpImagePNG(FILE *sfd,ImageList *img) {
+    GImage *image = img->image;
+    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct enc85 enc;
+    int i;
+    int imsize = (int) (base->image_type==it_true?3*base->width:base->bytes_per_line);
+    char* pngbuf;
+    size_t pnglen;
+
+    FILE *pngfp = open_memstream(&pngbuf, &pnglen);
+    GImageWrite_Png(image, pngfp, false);
+    fflush(pngfp);
+
+    fprintf(sfd, "ImageX: image/png %d %d %d %x %g %g %g %g\n",
+	    (int) base->width, (int) base->height, pnglen, (int) base->trans,
+	    (double) img->xoff, (double) img->yoff, (double) img->xscale, (double) img->yscale );
+
+
+    memset(&enc,'\0',sizeof(enc));
+    enc.sfd = sfd;
+
+    for (i = 0; i<pnglen; ++i) {
+        SFDEnc85(&enc, pngbuf[i]);
+    }
+
+    SFDEnc85EndEnc(&enc);
+    fprintf(sfd,"\nEndImage\n" );
+}
+#endif
 
 static void SFDDumpHintList(FILE *sfd,const char *key, StemInfo *h) {
     HintInstance *hi;
@@ -1651,7 +1693,14 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 		fprintf(sfd, "Layer: %d\n", i );
 	}
 	for ( img=sc->layers[i].images; img!=NULL; img=img->next )
+        #ifndef _NO_LIBPNG
+        if (WritePNGInSFD)
+	    SFDDumpImagePNG(sfd,img);
+        else
 	    SFDDumpImage(sfd,img);
+        #else
+	    SFDDumpImage(sfd,img);
+        #endif
 	if ( sc->layers[i].splines!=NULL ) {
 	    fprintf(sfd, "SplineSet\n" );
 	    SFDDumpSplineSet(sfd,sc->layers[i].splines,sc->layers[i].order2);
@@ -3030,9 +3079,9 @@ static int SFDDump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
     ff_progress_start_indicator(10,_("Saving..."),_("Saving Spline Font Database"),_("Saving Outlines"),
 	    realcnt,i+1);
     ff_progress_enable_stop(false);
-    double version = 3.1;
-    if( !UndoRedoLimitToSave )
-        version = 3.0;
+    double version = 3.2;
+    if (!WritePNGInSFD) version = 3.1;
+    if (!UndoRedoLimitToSave) version = 3.0;
     fprintf(sfd, "SplineFontDB: %.1f\n", version );
     if ( sf->mm != NULL )
 	err = SFD_MMDump(sfd,sf->mm->normal,map,normal,todir,dirname);
@@ -3583,6 +3632,59 @@ static void rle2image(struct enc85 *dec,int rlelen,struct _GImage *base) {
 	}
     }
 }
+
+#ifndef _NO_LIBPNG
+static ImageList *SFDGetImagePNG(FILE *sfd) {
+    /* We've read the ImageX: image/png token */
+    int width, height, image_type, bpl, pnglen;
+    uint32 trans;
+    struct _GImage *base;
+    GImage *image;
+    ImageList *img;
+    struct enc85 dec;
+    int i, ch;
+    char mime[128];
+
+    if ( !getname(sfd, mime) ) {
+        IError("Failed to get a MIME type, file corrupt");
+    }
+
+    if ( !(strmatch(mime, "image/png")==0) ) {
+        IError("MIME type received—%s—is not recognized", mime);
+    }
+
+    img = calloc(1,sizeof(ImageList));
+    memset(&dec,'\0', sizeof(dec)); dec.pos = -1;
+    dec.sfd = sfd;
+
+    getint(sfd,&width);
+    getint(sfd,&height);
+    getint(sfd,&pnglen);
+    gethex(sfd,&trans);
+    getreal(sfd,&img->xoff);
+    getreal(sfd,&img->yoff);
+    getreal(sfd,&img->xscale);
+    getreal(sfd,&img->yscale);
+
+    while ( (ch=nlgetc(sfd))==' ' || ch=='\t' );
+    char* pngbuf = calloc(pnglen+1,sizeof(char));
+    for (i = 0; i<pnglen; ++i) {
+        pngbuf[i] = Dec85(&dec);
+    }
+
+    FILE* pngfp = fmemopen(pngbuf, pnglen, "r");
+    image = GImageRead_Png(pngfp);
+    if (image != NULL) {
+        base = image->list_len==0?image->u.image:image->u.images[0];
+        img->image = image;
+        base->trans = trans;
+        return( img );
+    } else {
+        IError("Failed to read PNG in SFD file, skipping it.");
+        return NULL;
+    }
+}
+#endif
 
 static ImageList *SFDGetImage(FILE *sfd) {
     /* We've read the image token */
@@ -4257,6 +4359,21 @@ Undoes *SFDGetUndo( FILE *sfd, SplineChar *sc,
 		else
 		    lasti->next = img;
 		lasti = img;
+	    }
+
+	    if( !strmatch(tok,"ImageX:"))
+	    {
+#ifndef _NO_LIBPNG
+		ImageList *img = SFDGetImagePNG(sfd);
+		if ( !u->u.state.images )
+		    u->u.state.images = img;
+		else
+		    lasti->next = img;
+		lasti = img;
+#else
+        IError("PNG in SFD although we don't have libpng, cannot read SFD.");
+        exit(1);
+#endif
 	    }
 
 	    if( !strmatch(tok,"Comment:")) {
@@ -5620,6 +5737,20 @@ return( NULL );
 	    else
 		lasti->next = img;
 	    lasti = img;
+	} else if ( strmatch(tok,"ImageX:")==0 ) {
+#ifndef _NO_LIBPNG
+	    int ly = current_layer;
+	    if ( !multilayer && !sc->layers[ly].background ) ly = ly_back;
+	    img = SFDGetImagePNG(sfd);
+	    if ( sc->layers[ly].images==NULL )
+		sc->layers[ly].images = img;
+	    else
+		lasti->next = img;
+	    lasti = img;
+#else
+        IError("PNG in SFD although we don't have libpng, cannot read SFD.");
+        exit(1);
+#endif
 	} else if ( strmatch(tok,"PickledData:")==0 ) {
 	    if (current_layer < sc->layer_cnt) {
 	      sc->layers[current_layer].python_persistent = SFDUnPickle(sfd, 0);
@@ -8919,7 +9050,7 @@ return( -1 );
     /*  will be fewer complaints when it happens */
     // MIQ: getreal() can give some funky rounding errors it seems
     if ( dval!=0 && dval!=1 && dval!=2.0 && dval!=3.0
-         && !(dval > 3.09 && dval <= 3.11)
+         && !(dval > 3.09 && dval <= 3.21)
          && dval!=4.0 )
     {
         LogError("Bad SFD Version number %.1f", dval );

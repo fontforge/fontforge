@@ -77,6 +77,10 @@ int GImageWrite_Png(GImage *gi, FILE *fp, int progressive) {
 return(false);
    }
 
+   // This is done so that saving doesn't take longer than it did when we were
+   // just writing plain bitmaps.
+   png_set_compression_level(png_ptr, 1);
+
    info_ptr = png_create_info_struct(png_ptr);
    if (!info_ptr) {
       png_destroy_write_struct(&png_ptr,  (png_infopp)NULL);
@@ -149,7 +153,10 @@ return(false);
    png_write_info(png_ptr, info_ptr);
 
     if (color_type == PNG_COLOR_TYPE_RGB)
-	png_set_filler(png_ptr, '\0', PNG_FILLER_BEFORE);
+        png_set_filler(png_ptr, '\0', PNG_FILLER_AFTER);
+
+    if (color_type == PNG_COLOR_TYPE_RGB || color_type == PNG_COLOR_TYPE_RGB_ALPHA)
+        png_set_bgr(png_ptr);
 
     rows = (png_byte **) malloc(base->height*sizeof(png_byte *));
     for ( i=0; i<base->height; ++i )
