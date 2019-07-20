@@ -1099,7 +1099,7 @@ static void SFDDumpImagePNG(FILE *sfd,ImageList *img) {
     free(pngbuf);
 
     SFDEnc85EndEnc(&enc);
-    fprintf(sfd,"\nEndImageX\n" );
+    fprintf(sfd,"\nEndImage2\n" );
 }
 #endif
 
@@ -3630,6 +3630,8 @@ static void rle2image(struct enc85 *dec,int rlelen,struct _GImage *base) {
     }
 }
 
+#ifndef _NO_LIBPNG
+
 enum MIME { UNKNOWN, PNG }; // We only understand PNG for now.
 
 enum MIME SFDGetImage2MIME(FILE *sfd) {
@@ -3648,7 +3650,6 @@ enum MIME SFDGetImage2MIME(FILE *sfd) {
     return PNG;
 }
 
-#ifndef _NO_LIBPNG
 static ImageList *SFDGetImagePNG(FILE *sfd) {
     int pnglen;
     ImageList *img;
@@ -4371,19 +4372,20 @@ Undoes *SFDGetUndo( FILE *sfd, SplineChar *sc,
 
 	    if( !strmatch(tok,"Image2:"))
 	    {
-	    enum MIME mime = SFDGetImage2MIME(sfd);
-	    if (mime == UNKNOWN) exit(1);
 #ifndef _NO_LIBPNG
-		ImageList *img = SFDGetImagePNG(sfd);
-		if ( !u->u.state.images )
-		    u->u.state.images = img;
-		else
-		    lasti->next = img;
-		lasti = img;
-#else
-        IError("PNG in SFD although we don't have libpng, cannot read SFD.");
-        exit(1);
+		enum MIME mime = SFDGetImage2MIME(sfd);
+		if (mime == PNG) {
+		    ImageList *img = SFDGetImagePNG(sfd);
+		    if (img != NULL) {
+			if ( !u->u.state.images )
+			    u->u.state.images = img;
+			else
+			    lasti->next = img;
+			lasti = img;
+		    }
+		} else
 #endif
+		LogError(_("Image2 skipped as it uses an unsupported image type"));
 	    }
 
 	    if( !strmatch(tok,"Comment:")) {
@@ -5748,21 +5750,22 @@ return( NULL );
 		lasti->next = img;
 	    lasti = img;
 	} else if ( strmatch(tok,"Image2:")==0 ) {
-	    enum MIME mime = SFDGetImage2MIME(sfd);
-	    if (mime == UNKNOWN) exit(1);
 #ifndef _NO_LIBPNG
-	    int ly = current_layer;
-	    if ( !multilayer && !sc->layers[ly].background ) ly = ly_back;
-	    img = SFDGetImagePNG(sfd);
-	    if ( sc->layers[ly].images==NULL )
-		sc->layers[ly].images = img;
-	    else
-		lasti->next = img;
-	    lasti = img;
-#else
-        IError("PNG in SFD although we don't have libpng, cannot read SFD.");
-        exit(1);
+	    enum MIME mime = SFDGetImage2MIME(sfd);
+	    if (mime == PNG) {
+		int ly = current_layer;
+		if ( !multilayer && !sc->layers[ly].background ) ly = ly_back;
+		img = SFDGetImagePNG(sfd);
+		if (img != NULL) {
+		    if ( sc->layers[ly].images==NULL )
+			sc->layers[ly].images = img;
+		    else
+			lasti->next = img;
+		    lasti = img;
+		}
+	    } else
 #endif
+	    LogError(_("Image2 skipped as it uses an unsupported image type"));
 	} else if ( strmatch(tok,"PickledData:")==0 ) {
 	    if (current_layer < sc->layer_cnt) {
 	      sc->layers[current_layer].python_persistent = SFDUnPickle(sfd, 0);
