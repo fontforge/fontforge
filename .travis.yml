@@ -55,7 +55,7 @@ cache:
 
 before_install:
   - if [ ! -z "$LINUX_FULL" ]; then pip --quiet install --user cpp-coveralls==0.3.12 ; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)" -- --force; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)" -- --force; sudo rm -rf ~/.rvm; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"; fi
 
 install:
@@ -108,6 +108,7 @@ install:
 
       # These are FF-specific mods (set here so it runs also in Coverity)
       export CFLAGS="$CFLAGS -fdiagnostics-color=always -Wall -Wno-switch -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wrestrict -Wnull-dereference -Wjump-misses-init -Wdouble-promotion -Wshadow"
+      export PYTHON=python3.7
     else
       export FFCONFIG="$FFCONFIG --enable-gdk=gdk3 --enable-woff2"
       export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig:/usr/local/opt/libffi/lib/pkgconfig
@@ -121,10 +122,9 @@ install:
       # Pin pango to this version, because of issues, see #3343
       brew unlink pango || true
       brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/ad91e4df4a843764901811a965a17f650f34e2c1/Formula/pango.rb
+      export PYTHON=python$(python3 --version | cut -d' ' -f2 | cut -d. -f1-2)
     fi
 
-    # Set up the python version
-    export PYTHON=python$(python3 --version | cut -d' ' -f2 | cut -d. -f1-2)
     export PYTHONPATH=$PYTHONPATH:$PREFIX/lib/$PYTHON/site-packages
 
     # This is so terrible...
