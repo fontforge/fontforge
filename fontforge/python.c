@@ -1966,7 +1966,7 @@ static PyTypeObject PyFF_PointType = {
     sizeof(PyFF_Point),        /* tp_basicsize */
     0,                         /* tp_itemsize */
     NULL,                      /* tp_dealloc */
-    NULL,                      /* tp_print */
+    0,                         /* tp_vectorcall_offset */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
     PYCMPF((cmpfunc) PyFFPoint_compare), /* tp_reserved / tp_compare */
@@ -2060,7 +2060,7 @@ static PyTypeObject PyFF_ContourIterType = {
     0,                         /* tp_itemsize */
     /* methods */
     (destructor)contouriter_dealloc, /* tp_dealloc */
-    NULL,                      /* tp_print */
+    0,                         /* tp_vectorcall_offset */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
     NULL,                      /* tp_compare */
@@ -3624,7 +3624,7 @@ static PyTypeObject PyFF_ContourType = {
     sizeof(PyFF_Contour),      /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyFFContour_dealloc, /*tp_dealloc*/
-    NULL,                      /*tp_print*/
+    0,                         /*tp_vectorcall_offset*/
     NULL,                      /*tp_getattr*/
     NULL,                      /*tp_setattr*/
     PYCMPF((cmpfunc)PyFFContour_compare), /*tp_reserved/tp_compare*/
@@ -3719,7 +3719,7 @@ static PyTypeObject PyFF_LayerIterType = {
     0,                         /* tp_itemsize */
     /* methods */
     (destructor)layeriter_dealloc, /* tp_dealloc */
-    NULL,                      /* tp_print */
+    0,                         /* tp_vectorcall_offset */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
     NULL,                      /* tp_compare */
@@ -4843,7 +4843,7 @@ static PyTypeObject PyFF_LayerType = {
     sizeof(PyFF_Layer),        /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor)PyFFLayer_dealloc, /* tp_dealloc */
-    NULL,                      /* tp_print */
+    0,                         /* tp_vectorcall_offset */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
     PYCMPF((cmpfunc)PyFFLayer_compare),/* tp_reserved/tp_compare */
@@ -5620,7 +5620,7 @@ static PyTypeObject PyFF_GlyphPenType = {
     sizeof(PyFF_GlyphPen),     /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor) PyFF_GlyphPen_dealloc, /* tp_dealloc */
-    NULL,                      /* tp_print */
+    0,                         /* tp_vectorcall_offset */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
     NULL,                      /* tp_compare */
@@ -5849,7 +5849,7 @@ static PyTypeObject PyFF_LayerArrayIterType = {
     0,                         /* tp_itemsize */
     /* methods */
     (destructor)layersiter_dealloc, /* tp_dealloc */
-    NULL,                      /* tp_print */
+    0,                         /* tp_vectorcall_offset */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
     NULL,                      /* tp_compare */
@@ -6000,7 +6000,7 @@ static PyTypeObject PyFF_LayerArrayType = {
     sizeof(PyFF_LayerArray),   /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor) PyFF_LayerArray_dealloc, /* tp_dealloc */
-    NULL,                      /* tp_print */
+    0,                         /* tp_vectorcall_offset */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
     NULL,                      /* tp_compare */
@@ -6125,7 +6125,7 @@ static PyTypeObject PyFF_RefArrayType = {
     sizeof(PyFF_RefArray),     /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor) PyFF_RefArray_dealloc, /* tp_dealloc */
-    NULL,                      /* tp_print */
+    0,                         /* tp_vectorcall_offset */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
     NULL,                      /* tp_compare */
@@ -6266,7 +6266,7 @@ static PyTypeObject PyFF_MathKernType = {
     sizeof(PyFF_MathKern),     /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor)PyFFMathKern_dealloc, /* tp_dealloc */
-    NULL,                      /* tp_print */
+    0,                         /* tp_vectorcall_offset */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
     NULL,                      /* tp_compare */
@@ -9340,7 +9340,7 @@ static PyTypeObject PyFF_GlyphType = {
     sizeof(PyFF_Glyph),	       /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor) PyFF_Glyph_dealloc, /* tp_dealloc */
-    NULL,                      /* tp_print */
+    0,                         /* tp_vectorcall_offset */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
     PYCMPF((cmpfunc)PyFFGlyph_compare),/* tp_reserved/tp_compare */
@@ -9433,7 +9433,7 @@ static PyTypeObject PyFF_CvtIterType = {
     0,                         /* tp_itemsize */
     /* methods */
     (destructor)cvtiter_dealloc, /* tp_dealloc */
-    NULL,                      /* tp_print */
+    0,                         /* tp_vectorcall_offset */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
     NULL,                      /* tp_compare */
@@ -9763,7 +9763,7 @@ static PyTypeObject PyFF_CvtType = {
     sizeof(PyFF_Cvt),          /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyFFCvt_dealloc, /*tp_dealloc*/
-    NULL,                      /*tp_print*/
+    0,                         /*tp_vectorcall_offset*/
     NULL,                      /*tp_getattr*/
     NULL,                      /*tp_setattr*/
     NULL,                      /*tp_compare*/
@@ -10092,7 +10092,7 @@ static PyTypeObject PyFF_SelectionType = {
     sizeof(PyFF_Selection),    /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyFFSelection_dealloc, /*tp_dealloc*/
-    NULL,                      /*tp_print*/
+    0,                         /*tp_vectorcall_offset*/
     NULL,                      /*tp_getattr*/
     NULL,                      /*tp_setattr*/
     NULL,                      /*tp_compare*/
@@ -10185,7 +10185,7 @@ static PyTypeObject PyFF_LayerInfoArrayIterType = {
     0,                         /* tp_itemsize */
     /* methods */
     (destructor)layerinfoiter_dealloc, /* tp_dealloc */
-    NULL,                      /* tp_print */
+    0,                         /* tp_vectorcall_offset */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
     NULL,                      /* tp_compare */
@@ -10326,7 +10326,7 @@ static PyTypeObject PyFF_LayerInfoType = {
     sizeof(PyFF_LayerInfo),    /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor) PyFF_LayerInfo_dealloc, /* tp_dealloc */
-    NULL,                      /* tp_print */
+    0,                         /* tp_vectorcall_offset */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
     NULL,                      /* tp_compare */
@@ -10513,7 +10513,7 @@ static PyTypeObject PyFF_LayerInfoArrayType = {
     sizeof(PyFF_LayerInfoArray), /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor) PyFF_LayerInfoArray_dealloc, /*tp_dealloc*/
-    NULL,                      /*tp_print*/
+    0,                         /*tp_vectorcall_offset*/
     NULL,                      /*tp_getattr*/
     NULL,                      /*tp_setattr*/
     NULL,                      /*tp_compare*/
@@ -10638,7 +10638,7 @@ static PyTypeObject PyFF_MathType = {
     sizeof(PyFF_Math),         /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor)PyFFMath_dealloc, /*tp_dealloc */
-    NULL,                      /* tp_print */
+    0,                         /* tp_vectorcall_offset */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
     NULL,                      /* tp_compare */
@@ -10747,7 +10747,7 @@ static PyTypeObject PyFF_PrivateIterType = {
     0,                         /* tp_itemsize */
     /* methods */
     (destructor)privateiter_dealloc, /* tp_dealloc */
-    NULL,                      /* tp_print */
+    0,                         /* tp_vectorcall_offset */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
     NULL,                      /* tp_compare */
@@ -10957,7 +10957,7 @@ static PyTypeObject PyFF_PrivateType = {
     sizeof(PyFF_Private),      /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor) PyFF_Private_dealloc, /* tp_dealloc */
-    NULL,                      /* tp_print */
+    0,                         /* tp_vectorcall_offset */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
     NULL,                      /* tp_compare */
@@ -11139,7 +11139,7 @@ static PyTypeObject PyFF_FontIterType = {
     0,                         /* tp_itemsize */
     /* methods */
     (destructor)fontiter_dealloc, /* tp_dealloc */
-    NULL,                      /* tp_print */
+    0,                         /* tp_vectorcall_offset */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
     NULL,                      /* tp_compare */
@@ -17914,7 +17914,7 @@ static PyTypeObject PyFF_FontType = {
     sizeof(PyFF_Font),         /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor) PyFF_Font_dealloc, /* tp_dealloc */
-    NULL,                      /* tp_print */
+    0,                         /* tp_vectorcall_offset */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
     NULL,                      /* tp_compare */
@@ -18030,7 +18030,7 @@ static PyTypeObject PyFF_AWGlyphIndexType = {
     sizeof(PyFF_AWGlyphI),     /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor) PyFF_AWGlyphIndex_dealloc, /* tp_dealloc */
-    NULL,                      /* tp_print */
+    0,                         /* tp_vectorcall_offset */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
     NULL,                      /* tp_compare */
@@ -18168,7 +18168,7 @@ static PyTypeObject PyFF_AWGlyphType = {
     sizeof(PyFF_AWGlyph),      /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor) PyFF_AWGlyph_dealloc, /* tp_dealloc */
-    NULL,                      /* tp_print */
+    0,                         /* tp_vectorcall_offset */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
     NULL,                      /* tp_compare */
@@ -18291,7 +18291,7 @@ static PyTypeObject PyFF_AWContextType = {
     sizeof(PyFF_AWContext),    /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor) PyFF_AWContext_dealloc, /* tp_dealloc */
-    NULL,                      /* tp_print */
+    0,                         /* tp_vectorcall_offset */
     NULL,                      /* tp_getattr */
     NULL,                      /* tp_setattr */
     NULL,                      /* tp_compare */
