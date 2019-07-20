@@ -3633,24 +3633,30 @@ static void rle2image(struct enc85 *dec,int rlelen,struct _GImage *base) {
     }
 }
 
-#ifndef _NO_LIBPNG
-static ImageList *SFDGetImagePNG(FILE *sfd) {
-    /* We've read the ImageX: image/png token */
-    int pnglen;
-    ImageList *img;
-    struct enc85 dec = {0};
-    int i, ch;
+enum MIME { PNG }; // We only understand PNG for now.
+
+enum MIME SFDGetImageMIME(FILE *sfd) {
     char mime[128];
 
     if ( !getname(sfd, mime) ) {
         IError("Failed to get a MIME type, file corrupt");
-        return NULL;
+        return false;
     }
 
     if ( !(strmatch(mime, "image/png")==0) ) {
         IError("MIME type received—%s—is not recognized", mime);
-        return NULL;
+        return false;
     }
+
+    return PNG;
+}
+
+#ifndef _NO_LIBPNG
+static ImageList *SFDGetImagePNG(FILE *sfd) {
+    int pnglen;
+    ImageList *img;
+    struct enc85 dec = {0};
+    int i, ch;
 
     img = calloc(1,sizeof(ImageList));
     dec.pos = -1;
@@ -4368,6 +4374,8 @@ Undoes *SFDGetUndo( FILE *sfd, SplineChar *sc,
 
 	    if( !strmatch(tok,"ImageX:"))
 	    {
+	    enum MIME mime = SFDGetImageMIME(sfd);
+	    if (mime == false) exit(1);
 #ifndef _NO_LIBPNG
 		ImageList *img = SFDGetImagePNG(sfd);
 		if ( !u->u.state.images )
@@ -5743,6 +5751,8 @@ return( NULL );
 		lasti->next = img;
 	    lasti = img;
 	} else if ( strmatch(tok,"ImageX:")==0 ) {
+	    enum MIME mime = SFDGetImageMIME(sfd);
+	    if (mime == false) exit(1);
 #ifndef _NO_LIBPNG
 	    int ly = current_layer;
 	    if ( !multilayer && !sc->layers[ly].background ) ly = ly_back;
