@@ -87,8 +87,9 @@ static const char *caps[] = { "butt", "round", "square", "inher", NULL };
 static const char *spreads[] = { "pad", "reflect", "repeat", NULL };
 
 int prefRevisionsToRetain = 32;
+#ifndef _NO_LIBPNG
 int WritePNGInSFD = true;
-
+#endif
 
 #define SFD_PTFLAG_TYPE_MASK          0x3
 #define SFD_PTFLAG_IS_SELECTED        0x4
@@ -3069,9 +3070,18 @@ static int SFDDump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
     ff_progress_start_indicator(10,_("Saving..."),_("Saving Spline Font Database"),_("Saving Outlines"),
 	    realcnt,i+1);
     ff_progress_enable_stop(false);
+#ifndef _NO_LIBPNG
     double version = 3.2;
     if (!WritePNGInSFD) version = 3.1;
-    if (!UndoRedoLimitToSave) version = 3.0;
+#else
+    double version = 3.1;
+#endif
+    if (!UndoRedoLimitToSave) {
+#ifndef _NO_LIBPNG
+        WritePNGInSFD = false;
+#endif
+        version = 3.0;
+    } 
     fprintf(sfd, "SplineFontDB: %.1f\n", version );
     if ( sf->mm != NULL )
 	err = SFD_MMDump(sfd,sf->mm->normal,map,normal,todir,dirname);
