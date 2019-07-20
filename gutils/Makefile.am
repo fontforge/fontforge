@@ -37,7 +37,7 @@ libgutils_la_SOURCES = dlist.c fsys.c g_giomime.c gcol.c	\
 	gimagewritegimage.c gimagewritejpeg.c gimagewritepng.c		\
 	gimagewritexbm.c gimagewritexpm.c gio.c giofile.c		\
 	giotrans.c giofuncP.h gutils.c gwwintl.c prefs.c		\
-	prefs.h unicodelibinfo.c unicodelibinfo.h
+	unicodelibinfo.c
 
 libgutils_la_CFLAGS = $(WARN_CFLAGS)
 

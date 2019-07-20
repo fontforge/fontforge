@@ -26,6 +26,7 @@
  */
 
 #include <fontforge-config.h>
+#include <fontforge-version-extras.h>
 
 #include "ttfspecial.h"
 

@@ -1694,7 +1694,7 @@ static int SCMakeBaseReference(SplineChar *sc,SplineFont *sf,int layer,int ch, B
     char *dot;
     char buffer[200], namebuf[200];
 
-    if ( (dot = strchr(sc->name,'.'))!=NULL ) {
+    if ( (dot = strchr(sc->name,'.'))!=NULL && sc->user_decomp==NULL ) {
 	snprintf(buffer,sizeof(buffer),"%s%s",
 		(char *) StdGlyphName(namebuf,ch,sf->uni_interp,sf->for_new_glyphs),
 		dot);

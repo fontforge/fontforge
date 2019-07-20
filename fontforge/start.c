@@ -26,6 +26,7 @@
  */
 
 #include <fontforge-config.h>
+#include <fontforge-version-extras.h>
 
 #include "start.h"
 
@@ -33,9 +34,9 @@
 #include "ffglib.h"
 #include "fontforgevw.h"
 #include "gfile.h"
-#include "gutils/unicodelibinfo.h"
 #include "namelist.h"
 #include "psfont.h"
+#include "unicodelibinfo.h"
 
 #include <locale.h>
 #include <sys/time.h>
@@ -108,7 +109,7 @@ return;
 void doversion(const char *source_version_str) {
     if ( source_version_str!=NULL )
 	printf( "fontforge %s\n", source_version_str );
-    printf( "libfontforge %d\n",
-	    FONTFORGE_VERSIONDATE_RAW );
+    printf( "build date: %s\n",
+	    FONTFORGE_MODTIME_STR );
 exit(0);
 }

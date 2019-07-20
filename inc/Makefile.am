@@ -36,8 +36,11 @@ DISTCLEANFILES=fontforge-config.h stamp-h1 stamp-h2
 pkginclude_HEADERS = basics.h chardata.h charset.h	\
 	gdraw.h gfile.h ggadget.h gicons.h gimage.h gio.h		\
 	gkeysym.h gprogress.h gresedit.h gresource.h gwidget.h gwwiconv.h	\
-	intl.h ustring.h utype.h dlist.h carbon.h gutils.h ffglib.h ffgdk.h
+	intl.h ustring.h utype.h dlist.h carbon.h gutils.h ffglib.h ffgdk.h	\
+	hotkeys.h prefs.h unicodelibinfo.h
 
-nodist_pkginclude_HEADERS = fontforge-config.h
+nodist_pkginclude_HEADERS = fontforge-config.h fontforge-version-extras.h
+
+EXTRA_DIST = fontforge-version-extras.h.in
 
 -include $(top_srcdir)/git.mk

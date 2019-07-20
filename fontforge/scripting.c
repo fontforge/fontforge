@@ -54,8 +54,6 @@
 #include "fvmetrics.h"
 #include "gfile.h"
 #include "gutils.h"
-#include "gutils/prefs.h"
-#include "gutils/unicodelibinfo.h"
 #include "lookups.h"
 #include "macbinary.h"
 #include "mem.h"
@@ -65,6 +63,7 @@
 #include "parsepdf.h"
 #include "parsepfa.h"
 #include "parsettf.h"
+#include "prefs.h"
 #include "print.h"
 #include "savefont.h"
 #include "scriptfuncs.h"
@@ -83,6 +82,7 @@
 #include "tottfgpos.h"
 #include "ttf.h"
 #include "ttfinstrs.h"
+#include "unicodelibinfo.h"
 #include "ustring.h"
 #include "utype.h"
 
@@ -9926,7 +9926,7 @@ static void handlename(Context *c,Val *val) {
 		val->u.lval = &c->trace;
 	    } else if ( strcmp(name,"$version")==0 ) {
 		val->type = v_str;
-		sprintf(name,"%d", FONTFORGE_VERSIONDATE_RAW);
+		sprintf(name,"%s", FONTFORGE_VERSION);
 		val->u.sval = copy(name);
 	    } else if ( strcmp(name,"$haspython")==0 ) {
 		val->type = v_int;

@@ -32,7 +32,6 @@
 #include "edgelist.h"
 #include "fontforge.h"
 #include "fvfonts.h"
-#include "gdraw.h"
 #include "psread.h"
 #include "splinefont.h"
 #include "splinesaveafm.h"
