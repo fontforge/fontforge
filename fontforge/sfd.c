@@ -3632,7 +3632,7 @@ static void rle2image(struct enc85 *dec,int rlelen,struct _GImage *base) {
 
 enum MIME { UNKNOWN, PNG }; // We only understand PNG for now.
 
-enum MIME SFDGetImageMIME(FILE *sfd) {
+enum MIME SFDGetImage2MIME(FILE *sfd) {
     char mime[128];
 
     if ( !getname(sfd, mime) ) {
@@ -4371,7 +4371,7 @@ Undoes *SFDGetUndo( FILE *sfd, SplineChar *sc,
 
 	    if( !strmatch(tok,"Image2:"))
 	    {
-	    enum MIME mime = SFDGetImageMIME(sfd);
+	    enum MIME mime = SFDGetImage2MIME(sfd);
 	    if (mime == UNKNOWN) exit(1);
 #ifndef _NO_LIBPNG
 		ImageList *img = SFDGetImagePNG(sfd);
@@ -5748,7 +5748,7 @@ return( NULL );
 		lasti->next = img;
 	    lasti = img;
 	} else if ( strmatch(tok,"Image2:")==0 ) {
-	    enum MIME mime = SFDGetImageMIME(sfd);
+	    enum MIME mime = SFDGetImage2MIME(sfd);
 	    if (mime == UNKNOWN) exit(1);
 #ifndef _NO_LIBPNG
 	    int ly = current_layer;
