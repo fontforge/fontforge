@@ -156,6 +156,7 @@ static char base64[64] = {
  'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'};
 
 static const char *end_tt_instrs = "EndTTInstrs";
+static void SFDConsumeUntil( FILE *sfd, const char** terminators );
 static void SFDDumpRefs(FILE *sfd,RefChar *refs, int *newgids);
 static void SFDDumpGuidelines(FILE *sfd,GuidelineSet *gl);
 static RefChar *SFDGetRef(FILE *sfd, int was_enc);
@@ -4363,11 +4364,13 @@ Undoes *SFDGetUndo( FILE *sfd, SplineChar *sc,
 	    if( !strmatch(tok,"Image:"))
 	    {
 		ImageList *img = SFDGetImage(sfd);
+		if (img != NULL) {
 		if ( !u->u.state.images )
 		    u->u.state.images = img;
 		else
 		    lasti->next = img;
 		lasti = img;
+		}
 	    }
 
 	    if( !strmatch(tok,"Image2:"))
@@ -4383,9 +4386,14 @@ Undoes *SFDGetUndo( FILE *sfd, SplineChar *sc,
 			    lasti->next = img;
 			lasti = img;
 		    }
-		} else
+		} else {
 #endif
 		LogError(_("Image2 skipped as it uses an unsupported image type"));
+		const char* im2_terminator[] = { "EndImage2", 0 };
+		SFDConsumeUntil(sfd, im2_terminator);
+#ifndef _NO_LIBPNG
+	    }
+#endif
 	    }
 
 	    if( !strmatch(tok,"Comment:")) {
@@ -5744,11 +5752,13 @@ return( NULL );
 	    int ly = current_layer;
 	    if ( !multilayer && !sc->layers[ly].background ) ly = ly_back;
 	    img = SFDGetImage(sfd);
+	    if (img != NULL) {
 	    if ( sc->layers[ly].images==NULL )
 		sc->layers[ly].images = img;
 	    else
 		lasti->next = img;
 	    lasti = img;
+	    }
 	} else if ( strmatch(tok,"Image2:")==0 ) {
 #ifndef _NO_LIBPNG
 	    enum MIME mime = SFDGetImage2MIME(sfd);
@@ -5763,9 +5773,14 @@ return( NULL );
 			lasti->next = img;
 		    lasti = img;
 		}
-	    } else
+	    } else {
 #endif
 	    LogError(_("Image2 skipped as it uses an unsupported image type"));
+	    const char* im2_terminator[] = { "EndImage2", 0 };
+	    SFDConsumeUntil(sfd, im2_terminator);
+#ifndef _NO_LIBPNG
+        }
+#endif
 	} else if ( strmatch(tok,"PickledData:")==0 ) {
 	    if (current_layer < sc->layer_cnt) {
 	      sc->layers[current_layer].python_persistent = SFDUnPickle(sfd, 0);
