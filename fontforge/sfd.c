@@ -1089,7 +1089,7 @@ static void SFDDumpImagePNG(FILE *sfd,ImageList *img) {
         return;
     }
 
-    fprintf(sfd, "ImageX: image/png %d %g %g %g %g\n",
+    fprintf(sfd, "Image2: image/png %d %g %g %g %g\n",
         (int)pnglen, (double) img->xoff, (double) img->yoff, (double) img->xscale, (double) img->yscale );
 
     enc.sfd = sfd;
@@ -3076,10 +3076,7 @@ static int SFDDump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 #else
     double version = 3.1;
 #endif
-    if (!UndoRedoLimitToSave) {
-#ifndef _NO_LIBPNG
-        WritePNGInSFD = false;
-#endif
+    if (!UndoRedoLimitToSave && version == 3.1) {
         version = 3.0;
     } 
     fprintf(sfd, "SplineFontDB: %.1f\n", version );
@@ -3633,19 +3630,19 @@ static void rle2image(struct enc85 *dec,int rlelen,struct _GImage *base) {
     }
 }
 
-enum MIME { PNG }; // We only understand PNG for now.
+enum MIME { UNKNOWN, PNG }; // We only understand PNG for now.
 
 enum MIME SFDGetImageMIME(FILE *sfd) {
     char mime[128];
 
     if ( !getname(sfd, mime) ) {
         IError("Failed to get a MIME type, file corrupt");
-        return false;
+        return UNKNOWN;
     }
 
     if ( !(strmatch(mime, "image/png")==0) ) {
         IError("MIME type received—%s—is not recognized", mime);
-        return false;
+        return UNKNOWN;
     }
 
     return PNG;
@@ -4372,10 +4369,10 @@ Undoes *SFDGetUndo( FILE *sfd, SplineChar *sc,
 		lasti = img;
 	    }
 
-	    if( !strmatch(tok,"ImageX:"))
+	    if( !strmatch(tok,"Image2:"))
 	    {
 	    enum MIME mime = SFDGetImageMIME(sfd);
-	    if (mime == false) exit(1);
+	    if (mime == UNKNOWN) exit(1);
 #ifndef _NO_LIBPNG
 		ImageList *img = SFDGetImagePNG(sfd);
 		if ( !u->u.state.images )
@@ -5750,9 +5747,9 @@ return( NULL );
 	    else
 		lasti->next = img;
 	    lasti = img;
-	} else if ( strmatch(tok,"ImageX:")==0 ) {
+	} else if ( strmatch(tok,"Image2:")==0 ) {
 	    enum MIME mime = SFDGetImageMIME(sfd);
-	    if (mime == false) exit(1);
+	    if (mime == UNKNOWN) exit(1);
 #ifndef _NO_LIBPNG
 	    int ly = current_layer;
 	    if ( !multilayer && !sc->layers[ly].background ) ly = ly_back;
