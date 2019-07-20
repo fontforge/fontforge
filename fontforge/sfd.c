@@ -4386,14 +4386,13 @@ Undoes *SFDGetUndo( FILE *sfd, SplineChar *sc,
 			    lasti->next = img;
 			lasti = img;
 		    }
-		} else {
+		} else 
 #endif
+	    {
 		LogError(_("Image2 skipped as it uses an unsupported image type"));
 		const char* im2_terminator[] = { "EndImage2", 0 };
 		SFDConsumeUntil(sfd, im2_terminator);
-#ifndef _NO_LIBPNG
 	    }
-#endif
 	    }
 
 	    if( !strmatch(tok,"Comment:")) {
@@ -5773,14 +5772,13 @@ return( NULL );
 			lasti->next = img;
 		    lasti = img;
 		}
-	    } else {
+	    } else
 #endif
+	    {
 	    LogError(_("Image2 skipped as it uses an unsupported image type"));
 	    const char* im2_terminator[] = { "EndImage2", 0 };
 	    SFDConsumeUntil(sfd, im2_terminator);
-#ifndef _NO_LIBPNG
-        }
-#endif
+	    }
 	} else if ( strmatch(tok,"PickledData:")==0 ) {
 	    if (current_layer < sc->layer_cnt) {
 	      sc->layers[current_layer].python_persistent = SFDUnPickle(sfd, 0);
