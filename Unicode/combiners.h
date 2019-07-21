@@ -1163,7 +1163,7 @@ static const int posesFE20[] = {
     FF_UNICODE_Above
 };
 
-const static struct {
+static const struct {
     long low, high;
     const int *pos;
 } combiners[] = {
