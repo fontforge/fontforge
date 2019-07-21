@@ -2,6 +2,7 @@
 Name=FontForge
 Name[zh_TW]=字型鍛造廠
 GenericName=Font Editor
+GenericName[hr]=Uređivač za fontove
 Comment=An outline font editor
 Comment[ru]=Редактор шрифтов
 Comment[fr]=Un constructeur des polices
@@ -11,6 +12,7 @@ Comment[uk]=Редактор шрифтів
 Comment[de]=Ein Font-Editor
 Comment[eo]=Tipar dosiero-redaktilo
 Comment[es]=Un editor de fuentes
+Comment[hr]=Uređivač za fontove
 Comment[it]=Un profilo editor di font
 Comment[pt]=Um editor de fontes
 Exec=fontforge %U
