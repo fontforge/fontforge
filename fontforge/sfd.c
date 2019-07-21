@@ -66,6 +66,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <stdio.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -86,7 +87,9 @@ static const char *caps[] = { "butt", "round", "square", "inher", NULL };
 static const char *spreads[] = { "pad", "reflect", "repeat", NULL };
 
 int prefRevisionsToRetain = 32;
-
+#ifndef _NO_LIBPNG
+int WritePNGInSFD = true;
+#endif
 
 #define SFD_PTFLAG_TYPE_MASK          0x3
 #define SFD_PTFLAG_IS_SELECTED        0x4
@@ -153,10 +156,14 @@ static char base64[64] = {
  'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'};
 
 static const char *end_tt_instrs = "EndTTInstrs";
+static void SFDConsumeUntil( FILE *sfd, const char** terminators );
 static void SFDDumpRefs(FILE *sfd,RefChar *refs, int *newgids);
 static void SFDDumpGuidelines(FILE *sfd,GuidelineSet *gl);
 static RefChar *SFDGetRef(FILE *sfd, int was_enc);
 static void SFDDumpImage(FILE *sfd,ImageList *img);
+#ifndef _NO_LIBPNG
+static void SFDDumpImagePNG(FILE *sfd,ImageList *img);
+#endif
 static AnchorPoint *SFDReadAnchorPoints(FILE *sfd,SplineChar *sc,AnchorPoint** alist, AnchorPoint *lastap);
 static GuidelineSet *SFDReadGuideline(FILE *sfd, GuidelineSet **gll, GuidelineSet *lastgl);
 static void SFDDumpTtfInstrs(FILE *sfd,SplineChar *sc);
@@ -945,7 +952,12 @@ void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, const char* keyPrefix, int 
                 SFDDumpRefs( sfd, u->u.state.refs, 0 );
             }
 	    if( u->u.state.images ) {
-                SFDDumpImage( sfd, u->u.state.images );
+#ifndef _NO_LIBPNG
+                if (WritePNGInSFD)
+                    SFDDumpImagePNG( sfd, u->u.state.images );
+                else
+#endif
+                    SFDDumpImage( sfd, u->u.state.images );
             }
             fprintf(sfd, "InstructionsLength: %d\n", u->u.state.instrs_len );
             if( u->u.state.anchor ) {
@@ -1066,6 +1078,31 @@ static void SFDDumpImage(FILE *sfd,ImageList *img) {
     SFDEnc85EndEnc(&enc);
     fprintf(sfd,"\nEndImage\n" );
 }
+
+#ifndef _NO_LIBPNG
+static void SFDDumpImagePNG(FILE *sfd,ImageList *img) {
+    struct enc85 enc = {0};
+    char* pngbuf;
+    size_t pnglen, i;
+
+    if (!GImageWritePngBuf(img->image, &pngbuf, &pnglen, 1, false)) {
+        IError("Failed to serialise PNG image");
+        return;
+    }
+
+    fprintf(sfd, "Image2: image/png %d %g %g %g %g\n",
+        (int)pnglen, (double) img->xoff, (double) img->yoff, (double) img->xscale, (double) img->yscale );
+
+    enc.sfd = sfd;
+    for (i = 0; i<pnglen; ++i) {
+        SFDEnc85(&enc, pngbuf[i]);
+    }
+    free(pngbuf);
+
+    SFDEnc85EndEnc(&enc);
+    fprintf(sfd,"\nEndImage2\n" );
+}
+#endif
 
 static void SFDDumpHintList(FILE *sfd,const char *key, StemInfo *h) {
     HintInstance *hi;
@@ -1650,6 +1687,11 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 		fprintf(sfd, "Layer: %d\n", i );
 	}
 	for ( img=sc->layers[i].images; img!=NULL; img=img->next )
+#ifndef _NO_LIBPNG
+        if (WritePNGInSFD)
+	    SFDDumpImagePNG(sfd,img);
+        else
+#endif
 	    SFDDumpImage(sfd,img);
 	if ( sc->layers[i].splines!=NULL ) {
 	    fprintf(sfd, "SplineSet\n" );
@@ -3029,9 +3071,15 @@ static int SFDDump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
     ff_progress_start_indicator(10,_("Saving..."),_("Saving Spline Font Database"),_("Saving Outlines"),
 	    realcnt,i+1);
     ff_progress_enable_stop(false);
+#ifndef _NO_LIBPNG
+    double version = 3.2;
+    if (!WritePNGInSFD) version = 3.1;
+#else
     double version = 3.1;
-    if( !UndoRedoLimitToSave )
+#endif
+    if (!UndoRedoLimitToSave && version == 3.1) {
         version = 3.0;
+    } 
     fprintf(sfd, "SplineFontDB: %.1f\n", version );
     if ( sf->mm != NULL )
 	err = SFD_MMDump(sfd,sf->mm->normal,map,normal,todir,dirname);
@@ -3582,6 +3630,71 @@ static void rle2image(struct enc85 *dec,int rlelen,struct _GImage *base) {
 	}
     }
 }
+
+#ifndef _NO_LIBPNG
+
+enum MIME { UNKNOWN, PNG }; // We only understand PNG for now.
+
+enum MIME SFDGetImage2MIME(FILE *sfd) {
+    char mime[128];
+
+    if ( !getname(sfd, mime) ) {
+        IError("Failed to get a MIME type, file corrupt");
+        return UNKNOWN;
+    }
+
+    if ( !(strmatch(mime, "image/png")==0) ) {
+        IError("MIME type received—%s—is not recognized", mime);
+        return UNKNOWN;
+    }
+
+    return PNG;
+}
+
+static ImageList *SFDGetImagePNG(FILE *sfd) {
+    int pnglen;
+    ImageList *img;
+    struct enc85 dec = {0};
+    int i, ch;
+
+    img = calloc(1,sizeof(ImageList));
+    dec.pos = -1;
+    dec.sfd = sfd;
+
+    getint(sfd,&pnglen);
+    getreal(sfd,&img->xoff);
+    getreal(sfd,&img->yoff);
+    getreal(sfd,&img->xscale);
+    getreal(sfd,&img->yscale);
+
+    while ( (ch=nlgetc(sfd))==' ' || ch=='\t' )
+        /* skip */;
+
+    char* pngbuf = malloc(pnglen * sizeof(char));
+    if (pngbuf == NULL) {
+        IError("Failed to allocate buffer to read PNG in SFD file");
+        return NULL;
+    }
+
+    for (i = 0; i<pnglen; ++i) {
+        pngbuf[i] = Dec85(&dec);
+    }
+
+    img->image = GImageReadPngBuf(pngbuf, pnglen);
+    free(pngbuf);
+
+    if (img->image == NULL) {
+        IError("Failed to read PNG in SFD file, skipping it.");
+        free(img);
+        return NULL;
+    }
+
+    img->bb.minx = img->xoff; img->bb.maxy = img->yoff;
+    img->bb.maxx = img->xoff + GImageGetWidth(img->image)*img->xscale;
+    img->bb.miny = img->yoff - GImageGetHeight(img->image)*img->yscale;
+    return img;
+}
+#endif
 
 static ImageList *SFDGetImage(FILE *sfd) {
     /* We've read the image token */
@@ -4251,11 +4364,35 @@ Undoes *SFDGetUndo( FILE *sfd, SplineChar *sc,
 	    if( !strmatch(tok,"Image:"))
 	    {
 		ImageList *img = SFDGetImage(sfd);
+		if (img != NULL) {
 		if ( !u->u.state.images )
 		    u->u.state.images = img;
 		else
 		    lasti->next = img;
 		lasti = img;
+		}
+	    }
+
+	    if( !strmatch(tok,"Image2:"))
+	    {
+#ifndef _NO_LIBPNG
+		enum MIME mime = SFDGetImage2MIME(sfd);
+		if (mime == PNG) {
+		    ImageList *img = SFDGetImagePNG(sfd);
+		    if (img != NULL) {
+			if ( !u->u.state.images )
+			    u->u.state.images = img;
+			else
+			    lasti->next = img;
+			lasti = img;
+		    }
+		} else 
+#endif
+	    {
+		LogError(_("Image2 skipped as it uses an unsupported image type"));
+		const char* im2_terminator[] = { "EndImage2", 0 };
+		SFDConsumeUntil(sfd, im2_terminator);
+	    }
 	    }
 
 	    if( !strmatch(tok,"Comment:")) {
@@ -5614,11 +5751,34 @@ return( NULL );
 	    int ly = current_layer;
 	    if ( !multilayer && !sc->layers[ly].background ) ly = ly_back;
 	    img = SFDGetImage(sfd);
+	    if (img != NULL) {
 	    if ( sc->layers[ly].images==NULL )
 		sc->layers[ly].images = img;
 	    else
 		lasti->next = img;
 	    lasti = img;
+	    }
+	} else if ( strmatch(tok,"Image2:")==0 ) {
+#ifndef _NO_LIBPNG
+	    enum MIME mime = SFDGetImage2MIME(sfd);
+	    if (mime == PNG) {
+		int ly = current_layer;
+		if ( !multilayer && !sc->layers[ly].background ) ly = ly_back;
+		img = SFDGetImagePNG(sfd);
+		if (img != NULL) {
+		    if ( sc->layers[ly].images==NULL )
+			sc->layers[ly].images = img;
+		    else
+			lasti->next = img;
+		    lasti = img;
+		}
+	    } else
+#endif
+	    {
+	    LogError(_("Image2 skipped as it uses an unsupported image type"));
+	    const char* im2_terminator[] = { "EndImage2", 0 };
+	    SFDConsumeUntil(sfd, im2_terminator);
+	    }
 	} else if ( strmatch(tok,"PickledData:")==0 ) {
 	    if (current_layer < sc->layer_cnt) {
 	      sc->layers[current_layer].python_persistent = SFDUnPickle(sfd, 0);
@@ -8918,7 +9078,7 @@ return( -1 );
     /*  will be fewer complaints when it happens */
     // MIQ: getreal() can give some funky rounding errors it seems
     if ( dval!=0 && dval!=1 && dval!=2.0 && dval!=3.0
-         && !(dval > 3.09 && dval <= 3.11)
+         && !(dval > 3.09 && dval <= 3.21)
          && dval!=4.0 )
     {
         LogError("Bad SFD Version number %.1f", dval );

@@ -43,6 +43,7 @@ static int a_file_must_define_something=0;	/* ANSI says so */
 #define uint8 _uint8
 
 #include "gimage.h"
+#include "ffglib.h"
 
 static void user_error_fn(png_structp png_ptr, png_const_charp error_msg) {
     fprintf(stderr, "%s\n", error_msg );
@@ -57,7 +58,15 @@ static void user_warning_fn(png_structp UNUSED(png_ptr), png_const_charp warning
     fprintf(stderr,"%s\n", warning_msg);
 }
 
-int GImageWrite_Png(GImage *gi, FILE *fp, int progressive) {
+static void mem_write_fn(png_structp png_ptr, png_bytep data, png_size_t sz) {
+    GByteArray *arr = (GByteArray*)(png_get_io_ptr(png_ptr));
+    g_byte_array_append(arr, data, sz);
+}
+
+static void mem_flush_fn(png_structp UNUSED(png_ptr)) {
+}
+
+static int GImageWritePngFull(GImage *gi, void *io, bool in_memory, int compression_level, bool progressive) {
     struct _GImage *base = gi->list_len==0?gi->u.image:gi->u.images[0];
     png_structp png_ptr;
     png_infop info_ptr;
@@ -93,7 +102,15 @@ return(false);
 return(false);
    }
 
-   png_init_io(png_ptr, fp);
+   if (in_memory) {
+        png_set_write_fn(png_ptr, io, mem_write_fn, mem_flush_fn);
+   } else {
+        png_init_io(png_ptr, (FILE*)io);
+   }
+
+   if (compression_level >= 0 && compression_level <= 9) {
+        png_set_compression_level(png_ptr, compression_level);
+   }
 
    bit_depth = 8;
    num_palette = base->clut==NULL?2:base->clut->clut_len;
@@ -149,7 +166,10 @@ return(false);
    png_write_info(png_ptr, info_ptr);
 
     if (color_type == PNG_COLOR_TYPE_RGB)
-	png_set_filler(png_ptr, '\0', PNG_FILLER_BEFORE);
+        png_set_filler(png_ptr, '\0', PNG_FILLER_AFTER);
+
+    if (color_type == PNG_COLOR_TYPE_RGB || color_type == PNG_COLOR_TYPE_RGB_ALPHA)
+        png_set_bgr(png_ptr);
 
     rows = (png_byte **) malloc(base->height*sizeof(png_byte *));
     for ( i=0; i<base->height; ++i )
@@ -165,6 +185,38 @@ return(false);
     png_destroy_write_struct(&png_ptr, &info_ptr);
     free(rows);
 return( 1 );
+}
+
+int GImageWritePngBuf(GImage *gi, char** buf, size_t* sz, int compression_level, int progressive) {
+    GByteArray *arr;
+    *buf = NULL;
+    *sz = 0;
+
+    arr = g_byte_array_new();
+    if (arr == NULL) {
+        return false;
+    }
+
+    if (!GImageWritePngFull(gi, arr, true, compression_level, progressive)) {
+        g_byte_array_free(arr, true);
+        return false;
+    }
+
+    // The only reason we do this step is because we don't want
+    // to pollute g_free across function calls...
+    *buf = malloc(arr->len);
+    if (*buf == NULL) {
+        return false;
+    }
+    *sz = arr->len;
+
+    memcpy(*buf, arr->data, arr->len);
+    g_byte_array_free(arr, true);
+    return true;
+}
+
+int GImageWrite_Png(GImage *gi, FILE *fp, int progressive) {
+    return GImageWritePngFull(gi, fp, false, -1, progressive);
 }
 
 int GImageWritePng(GImage *gi, char *filename, int progressive) {

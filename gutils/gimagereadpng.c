@@ -46,9 +46,11 @@ static void *a_file_must_define_something=(void *) &a_file_must_define_something
 # include "basics.h"
 # include "gimage.h"
 
-static void *libpng=(void *) 1;
-
-static int loadpng(void) { return true; }
+struct mem_buffer {
+    char *buffer;
+    size_t size;
+    size_t read;
+};
  
 static void user_error_fn(png_structp png_ptr, png_const_charp error_msg) {
     fprintf(stderr,"%s\n", error_msg);
@@ -63,7 +65,19 @@ static void user_warning_fn(png_structp UNUSED(png_ptr), png_const_charp warning
     fprintf(stderr,"%s\n", warning_msg);
 }
 
-GImage *GImageRead_Png(FILE *fp) {
+static void mem_read_fn(png_structp png_ptr, png_bytep data, png_size_t sz) {
+    struct mem_buffer* buf = (struct mem_buffer*)png_get_io_ptr(png_ptr);
+
+    if (buf->read + sz > buf->size) {
+        png_error(png_ptr, "memory buffer is too small");
+        return;
+    }
+
+    memcpy(data, buf->buffer+buf->read, sz);
+    buf->read += sz;
+}
+
+static GImage *GImageReadPngFull(void *io, int in_memory) {
     GImage *ret=NULL;
     struct _GImage *base;
     png_structp png_ptr;
@@ -74,10 +88,6 @@ GImage *GImageRead_Png(FILE *fp) {
     png_color_16p trans_color;
     unsigned i;
     int test;
-
-    if ( libpng==NULL )
-	if ( !loadpng())
-return( NULL );
 
    png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING,
       (void *)NULL, user_error_fn, user_warning_fn);
@@ -107,7 +117,11 @@ return( NULL );
 return( NULL );
     }
 
-    png_init_io(png_ptr, fp);
+    if (in_memory) {
+        png_set_read_fn(png_ptr, io, mem_read_fn);
+    } else {
+        png_init_io(png_ptr, (FILE*)io);
+    }
     png_read_info(png_ptr, info_ptr);
     png_set_strip_16(png_ptr);
     if ( (png_get_color_type(png_ptr, info_ptr)==PNG_COLOR_TYPE_GRAY || png_get_color_type(png_ptr, info_ptr)==PNG_COLOR_TYPE_PALETTE ) &&
@@ -191,6 +205,15 @@ return( NULL );
     free(row_pointers);
     /* Note png b&w images come out as indexed */
 return( ret );
+}
+
+GImage *GImageReadPngBuf(char* buf, size_t sz) {
+    struct mem_buffer membuf = {buf, sz, 0};
+    return GImageReadPngFull(&membuf, true);
+}
+
+GImage *GImageRead_Png(FILE *fp) {
+    return GImageReadPngFull(fp, false);
 }
 
 GImage *GImageReadPng(char *filename) {
