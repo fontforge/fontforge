@@ -59,6 +59,7 @@
 /* Build a ctype array out of the UnicodeData.txt and PropList.txt files */
 #include "basics.h"
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -792,6 +793,7 @@ static void readin(void) {
 
     /* TODO: 2016nov21 -> Get combiners directly from UnicodeData.txt */
     for ( i=0; combiners[i].low>=0; ++i ) {
+    assert((combiners[i].high-combiners[i].low+1) == combiners[i].sz);
 	for ( j=combiners[i].low; j<=combiners[i].high; ++j )
 	    flags2[j] |= combiners[i].pos[j-combiners[i].low];
     }
