@@ -76,6 +76,9 @@ extern int GraveAcuteCenterBottom;
 extern int PreferSpacingAccents;
 extern int CharCenterHighest;
 extern int ask_user_for_resolution;
+#ifndef _NO_LIBPNG
+extern int WritePNGInSFD;
+#endif
 extern int stop_at_join;
 extern int recognizePUA;
 extern float arrowAmount;
@@ -399,6 +402,9 @@ static struct prefs_list {
  generate_list[] = {
 	{ N_("AskBDFResolution"), pr_bool, &ask_user_for_resolution, NULL, NULL, 'B', NULL, 0, N_("When generating a set of BDF fonts ask the user\nto specify the screen resolution of the fonts\notherwise FontForge will guess depending on the pixel size.") },
 	{ N_("AutoHint"), pr_bool, &autohint_before_generate, NULL, NULL, 'H', NULL, 0, N_("AutoHint changed glyphs before generating a font") },
+#ifndef _NO_LIBPNG
+    { N_("WritePNGInSFD"), pr_bool, &WritePNGInSFD, NULL, NULL, 'B', NULL, 0, N_("If your SFD contains images, write them as PNG; this results in smaller SFDs; but was not supported in FontForge versions compiled before July 2019, so older FontForge versions cannot read them.") },
+#endif
 
 	{ N_("GenerateHintWidthEqualityTolerance"), pr_real, &GenerateHintWidthEqualityTolerance, NULL, NULL, '\0', NULL, 0, N_( "When generating a font, ignore slight rounding errors for hints that should be at the top or bottom of the glyph. For example, you might like to set this to 0.02 so that 19.999 will be considered 20. But only for the hint width value.") },
 	
