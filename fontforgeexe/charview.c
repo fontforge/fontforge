@@ -8666,7 +8666,14 @@ static void _CVPaste(CharView *cv) {
 static void CVPaste(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     _CVPaste(cv);
-    CVInkscapeAdjust(cv);
+    // Before July 2019, all pastes would reset the view such that all splines
+    // were visible. This is wrong in most cases, e.g. tracing many letters
+    // from one manuscript page, or copying and pasting parts of a glyph.
+    //
+    // A more complete fix would be to make it so only selected points were put
+    // into view, but it was deemed not worth it at the time, and this comment
+    // was left instead. See Github issue №3783 and PR №3813 for more details.
+    // CVInkscapeAdjust(cv);
 }
 
 static void _CVMerge(CharView *cv, int elide) {
