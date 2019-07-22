@@ -43,14 +43,14 @@
 /* MAX characters, originally 600, then increased to hold 65536 chars */
 #define FF_UTYPE_MAXC		0x10000
 
-extern const unsigned short ffUnicodeToLower(int32 ucode);
-extern const unsigned short ffUnicodeToUpper(int32 ucode);
-extern const unsigned short ffUnicodeToTitle(int32 ucode);
-extern const unsigned short ffUnicodeToMirror(int32 ucode);
-extern const unsigned char ffUnicodeDigitVal(int32 ucode);
-extern const uint32 ffUnicodeUtype(int32 ucode);
-extern const uint32 ffUnicodeUtype2(int32 ucode);
-extern const uint32 isunicodepointassigned(int32 ucode);
+extern unsigned short ffUnicodeToLower(int32 ucode);
+extern unsigned short ffUnicodeToUpper(int32 ucode);
+extern unsigned short ffUnicodeToTitle(int32 ucode);
+extern unsigned short ffUnicodeToMirror(int32 ucode);
+extern unsigned char ffUnicodeDigitVal(int32 ucode);
+extern uint32 ffUnicodeUtype(int32 ucode);
+extern uint32 ffUnicodeUtype2(int32 ucode);
+extern uint32 isunicodepointassigned(int32 ucode);
 
 /* utype[] holds binary flags used for features of each unicode.org character */
 #define FF_UNICODE_L		0x1

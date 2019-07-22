@@ -59,11 +59,12 @@
 /* Build a ctype array out of the UnicodeData.txt and PropList.txt files */
 #include "basics.h"
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-/*#define MAXC		0x600		/* Last upper/lower case dicodomy is Armenian 0x580, er, nope. 1fff (greek and latin extended) then full-width 0xff00 */
+/*#define MAXC		0x600*/		/* Last upper/lower case dicodomy is Armenian 0x580, er, nope. 1fff (greek and latin extended) then full-width 0xff00 */
 #define MAXC	65536
 #define MAXA	18
 
@@ -244,7 +245,7 @@ static void FigureAlternates(long index, char *apt, int normative) {
 	alts[index][++i] = 0;
     }
     if ( i>MAXA )
-	fprintf( stderr, "%d is too many alternates for U+%04X\n", i, index );
+	fprintf( stderr, "%d is too many alternates for U+%04X\n", i, (unsigned)index );
     if ( i>0 && normative)
 	flags[index] |= FF_UNICODE_DecompositionNormative;
 
@@ -277,7 +278,7 @@ static int overrides_find_count(long uCode, int lvf) {
 	    i += (++v);
 	}
     }
-    if ( verbLVOa || i>=0 ) fprintf( stderr, "<0x%lx %d override> ", uCode, i );
+    if ( verbLVOa || i>=0 ) fprintf( stderr, "<0x%x %d override> ", (unsigned)uCode, i );
     return( i );
 }
 
@@ -340,13 +341,13 @@ static int FigureAlternates_lfv(int index, char *apt, int lvf, long val) {
     if ( t!=3 ) {
 	if ( start ) while ( *start && *start!=' ' ) ++start;
 	if ( start==NULL || *start==0 ) {
-	    fprintf( stderr, "Error. unable to find alternate data for U+%08X\n", val );
+	    fprintf( stderr, "Error. unable to find alternate data for U+%08X\n", (unsigned)val );
 	    return( -1 );
 	}
     }
 
     if ( verbLVOa )
-	fprintf( stderr,"po=%d lvf=%d index=%d t=%d val=U+%X alt{",po,lvf,index,t,val );
+	fprintf( stderr,"po=%d lvf=%d index=%d t=%d val=U+%X alt{",po,lvf,index,t, (unsigned)val );
     if ( t==3 ) { /* Skip search and include table overrides */
 	for ( i=0,pc=overrides_find_value((++po),lvf); pc; ++i,--pc ) {
 	    alt = overrides_find_value((++po),lvf);
@@ -362,7 +363,7 @@ static int FigureAlternates_lfv(int index, char *apt, int lvf, long val) {
 		    altsf[index][i+3] = alt;
 		}
 	    }
-	    if ( verbLVOa ) fprintf(stderr," T=%xh",alt);
+	    if ( verbLVOa ) fprintf(stderr," T=%xh", (unsigned)alt);
 	}
     } else if ( t ) { /* Values are single char. Stop at ';' */
 	for ( i=0; ; ++i ) {
@@ -385,7 +386,7 @@ static int FigureAlternates_lfv(int index, char *apt, int lvf, long val) {
 		    altsf[index][i+3] = alt;
 		}
 	    }
-	    if ( verbLVOa ) fprintf(stderr," C='%c'",alt);
+	    if ( verbLVOa ) fprintf(stderr," C='%c'",(char)alt);
 	}
     } else { /* t=0. Values listed are hex digits. */
 	for ( i=0; ; ++i ) {
@@ -404,14 +405,14 @@ static int FigureAlternates_lfv(int index, char *apt, int lvf, long val) {
 		    altsf[index][i+3] = alt;
 		}
 	    }
-	    if ( verbLVOa ) fprintf(stderr," %xh",alt);
+	    if ( verbLVOa ) fprintf(stderr," %xh", (unsigned)alt);
 	}
     }
     if ( verbLVOa ) fprintf( stderr," }\n");
 
     if ( i>MAXA )
 	/* need to expand MAXA for more characters or try do something else */
-	fprintf( stderr, "Error. %d is too many values for lvf=%d index=%d t=% val=%X\n", i, lvf, index, t, val );
+	fprintf( stderr, "Error. %d is too many values for lvf=%d index=%d t=%d val=%X\n", i, lvf, index, t, (unsigned)val );
     else if ( i>0 || (i==0 && t==3) )
 	return( 0 );
     return( -1 );
@@ -433,11 +434,11 @@ static int processAssignment(long index,char *pt,long *flg) {
 	    /* This codepoint index is a ligature */
 	    /* fprintf( stderr, "ligature[%d]=U+%X, = %s\n", lgm, index, pt ); */
 	    if ( lgm >= LG_MAX ) {
-		fprintf( stderr, LgFrcTooMany, "ligatures", "ligature", lgm, index );
+		fprintf( stderr, LgFrcTooMany, "ligatures", "ligature", lgm, (unsigned)index );
 		return( 5 );
 	    }
 	    if ( FigureAlternates_lfv(lgm,pt,0,index) ) {
-		fprintf( stderr, LgFrcConfuse, "ligature", lgm, index );
+		fprintf( stderr, LgFrcConfuse, "ligature", lgm, (unsigned)index );
 		return( 6 );
 	    }
 	    ligature[lgm] = index;
@@ -449,11 +450,11 @@ static int processAssignment(long index,char *pt,long *flg) {
 	    /* This codepoint index is a vulgar fraction */
 	    /* fprintf( stderr, "vulgfrac[%d]=U+%X, = %s\n", vfm, index, pt ); */
 	    if ( vfm >= VF_MAX ) {
-		fprintf( stderr, LgFrcTooMany, "fractions", "vulgfrac", vfm, index );
+		fprintf( stderr, LgFrcTooMany, "fractions", "vulgfrac", vfm, (unsigned)index );
 		return( 5 );
 	    }
 	    if ( FigureAlternates_lfv(vfm,pt,1,index) ) {
-		fprintf( stderr, LgFrcConfuse, "vulgfrac", vfm, index );
+		fprintf( stderr, LgFrcConfuse, "vulgfrac", vfm, (unsigned)index );
 		return( 6 );
 	    }
 	    vulgfrac[vfm] = index;
@@ -466,11 +467,11 @@ static int processAssignment(long index,char *pt,long *flg) {
 	    /* This codepoint index is a fraction */
 	    /* fprintf( stderr, "fraction[%d]=U+%X, = %s\n", frm, index, pt ); */
 	    if ( frm >= FR_MAX ) {
-		fprintf( stderr, LgFrcTooMany, "fractions", "fraction", frm, index );
+		fprintf( stderr, LgFrcTooMany, "fractions", "fraction", frm, (unsigned)index );
 		return( 5 );
 	    }
 	    if ( FigureAlternates_lfv(frm,pt,2,index) ) {
-		fprintf( stderr, LgFrcConfuse, "fraction", frm, index );
+		fprintf( stderr, LgFrcConfuse, "fraction", frm, (unsigned)index );
 		return( 6 );
 	    }
 	    fraction[frm] = index;
@@ -483,7 +484,7 @@ static int processAssignment(long index,char *pt,long *flg) {
 	first = index;
     } else if ( strstr(pt,", Last")!=NULL ) {			/* end of an extended charset */
 	if ( first==-1 || first > index )
-	    fprintf( stderr,"Something went wrong, first isn't defined at last. %x\n", index );
+	    fprintf( stderr,"Something went wrong, first isn't defined at last. %x\n", (unsigned)index );
 	else if ( first>=0xd800 && first<=0xdfff )
 	    /* surrogate pairs. Not assigned really */;
 	else {
@@ -792,6 +793,7 @@ static void readin(void) {
 
     /* TODO: 2016nov21 -> Get combiners directly from UnicodeData.txt */
     for ( i=0; combiners[i].low>=0; ++i ) {
+    assert((combiners[i].high-combiners[i].low+1) == combiners[i].sz);
 	for ( j=combiners[i].low; j<=combiners[i].high; ++j )
 	    flags2[j] |= combiners[i].pos[j-combiners[i].low];
     }
@@ -803,6 +805,7 @@ static void readin(void) {
     if ( mytoupper[0xdf]==0xdf ) mytoupper[0xdf]=0x1e9e;
 }
 
+#if 0
 static void readcorpfile(char *prefix, char *corp) {
     char buffer[300+1], buf2[300+1], *pt, *end, *pt1;
     long index;
@@ -848,6 +851,7 @@ return;
     }
     fclose(fp);
 }
+#endif
 
 static int find(char *base, char *suffix) {
     char name[300+1];
@@ -945,18 +949,18 @@ static void buildtables(FILE *data,long unsigned int *dt,int s,int m,char *t) {
 
     fprintf( data, "static const uint16 %s16[] = {", t );
     for ( i=j=0; i<s; i=i+j ) {
-	fprintf( data, "\n  0x%04x", dt[i] );
+	fprintf( data, "\n  0x%04x", (unsigned)dt[i] );
 	for ( j=1; j<8 && i+j<s; ++j ) {
-	    fprintf(data, ", 0x%04x", dt[i+j] );
+	    fprintf(data, ", 0x%04x", (unsigned)dt[i+j] );
 	}
 	if ( i+j<s )
 	    fprintf(data, "," );
     }
     fprintf(data, "\n};\n\nstatic const uint32 %s32[] = {", t );
     for ( i=s; i<m; i=i+j ) {
-	fprintf( data, "\n  0x%08x", dt[i] );
+	fprintf( data, "\n  0x%08x", (unsigned) dt[i] );
 	for ( j=1; j<4 && i+j<m; ++j ) {
-	    fprintf(data, ", 0x%08x", dt[i+j] );
+	    fprintf(data, ", 0x%08x", (unsigned) dt[i+j] );
 	}
 	if ( i+j<m )
 	    fprintf(data, "," );
@@ -967,16 +971,16 @@ static void buildtables(FILE *data,long unsigned int *dt,int s,int m,char *t) {
     fprintf( data, "#define FF_%sTOTAL16\t%d\n", t, s );
     fprintf( data, "#define FF_%sTOTAL32\t%d\n", t, m-s );
     fprintf( data, "#define FF_%sTOTAL\t%d\n", t, m );
-    fprintf( data, "#define FF_%s16FIRST\t0x%04x\n", t, dt[0] );
-    fprintf( data, "#define FF_%s16LAST\t0x%04x\n", t, dt[s-1] );
-    fprintf( data, "#define FF_%s32FIRST\t0x%08x\n", t, ((m-s)?dt[s]:dt[m-1]+1) );
-    fprintf( data, "#define FF_%s32LAST\t0x%08x\n", t, dt[m-1] );
+    fprintf( data, "#define FF_%s16FIRST\t0x%04x\n", t, (unsigned)dt[0] );
+    fprintf( data, "#define FF_%s16LAST\t0x%04x\n", t, (unsigned)dt[s-1] );
+    fprintf( data, "#define FF_%s32FIRST\t0x%08x\n", t, (unsigned)((m-s)?dt[s]:dt[m-1]+1) );
+    fprintf( data, "#define FF_%s32LAST\t0x%08x\n", t, (unsigned)dt[m-1] );
     fprintf( data, "\n" );
 }
 
 static void build_lvf_alt_tables(FILE *data, int lvf, unsigned long int *di, \
 	long da[][MAXA+3], int s, int m, char *t, char *n) {
-    int a,f,i,j,k,c,ci,cs,cl,ds,dl,tds,tdl,tis,til,is,il;
+    int f,i,j,k,c,ci,cs,cl,tds,tdl,tis,til;
     long u;
 
     /* First, count how many values can be done by lookup of alts[] or must */
@@ -994,7 +998,7 @@ static void build_lvf_alt_tables(FILE *data, int lvf, unsigned long int *di, \
 	    da[i][0]=1;
 	    if ( verbLVOa ) fprintf( stderr, "do >=MAXC " );
 	}
-	if ( verbLVOa ) fprintf( stderr, "u=%08x select{", u );
+	if ( verbLVOa ) fprintf( stderr, "u=%08x select{", (unsigned)u );
 
 	/* Find alternate expansion for u. da[i][0]={Indexed=0,16b=1,32b=2} */
 	for ( j=c=ci=cs=cl=f=k=0; j<da[i][2]; ++j ) {
@@ -1004,7 +1008,7 @@ static void build_lvf_alt_tables(FILE *data, int lvf, unsigned long int *di, \
 		    if ( k<=7 && da[i][j+3]==alts[u][k] ) {
 			++ci; f |= 1<<k; ++k; /* yes, index still in range. */
 			if ( verbLVOa )
-			    fprintf( stderr, " i_%xh_f=%x", da[i][j+3], f );
+			    fprintf( stderr, " i_%xh_f=%x", (unsigned)da[i][j+3], f );
 			break;
 		    } else if ( ++k<=7 && alts[u][k] ) {
 			;
@@ -1022,13 +1026,13 @@ static void build_lvf_alt_tables(FILE *data, int lvf, unsigned long int *di, \
 		}
 		if ( da[i][j+3]<65535 ) { /* lets not confuse 65535 with -1 */
 		    ++cs;
-		    if ( verbLVOa ) fprintf( stderr, " s_%xh", da[i][j+3] );
+		    if ( verbLVOa ) fprintf( stderr, " s_%xh", (unsigned)da[i][j+3] );
 		} else {
 		    if ( cs ) {
 			cl += cs; cs = 0;
 		    }
 		    ++cl; da[i][0]=2;
-		    if ( verbLVOa ) fprintf( stderr, " l_%xh", da[i][j+3] );
+		    if ( verbLVOa ) fprintf( stderr, " l_%xh", (unsigned)da[i][j+3] );
 		}
 	    }
 	}
@@ -1086,9 +1090,9 @@ static void build_lvf_alt_tables(FILE *data, int lvf, unsigned long int *di, \
 	for ( i=cs=0; i<m; ++i ) {
 	    if ( da[i][0]==1 && da[i][2] ) {
 		da[i][1] = cs; ++cs;
-		fprintf( data, "\n  /* U%04x */\t0x%04x", di[i], da[i][3] );
+		fprintf( data, "\n  /* U%04x */\t0x%04x", (unsigned)di[i], (unsigned)da[i][3] );
 		for ( j=1; j<da[i][2]; ++j ) {
-		    fprintf( data, ", 0x%04x", da[i][j+3] );
+		    fprintf( data, ", 0x%04x", (unsigned)da[i][j+3] );
 		    ++cs;
 		}
 		if ( cs<tds )
@@ -1119,9 +1123,9 @@ static void build_lvf_alt_tables(FILE *data, int lvf, unsigned long int *di, \
 	for ( i=cl=0; i<til; ++i ) {
 	    if ( da[i][0]==2 && da[i][2] ) {
 		da[i][1] = cl; ++cl;
-		fprintf( data, "\n  /* U%08x */ 0x%08x", di[i], da[i][3] );
+		fprintf( data, "\n  /* U%08x */ 0x%08x", (unsigned)di[i], (unsigned)da[i][3] );
 		for ( j=1; j<da[i][2]; ++j ) {
-		    fprintf( data, ", 0x%08x", da[i][j+3] );
+		    fprintf( data, ", 0x%08x", (unsigned)da[i][j+3] );
 		    ++cl;
 		}
 		if ( cl<tdl )
@@ -1204,7 +1208,7 @@ static void dumpligaturesfractions(FILE *header) {
     fprintf( data, "License: BSD-3-clause\n" );
     fprintf( data, "Contributions:\n*/\n\n" );
     fprintf( data, "#ifndef FONTFORGE_IS_LIGATURE_DATA_H\n");
-    fprintf( data, "#define FONTFORGE_IS_LIGATURE_DATA_H\n\n");
+    fprintf( data, "#define FONTFORGE_IS_LIGATURE_DATA_H\n");
     fprintf( data, GeneratedFileMessage, UnicodeMajor, UnicodeMinor );
 
     /* simple compression using uint16 instead of everything as uint32 */
@@ -1241,7 +1245,7 @@ static void dump() {
     }
 
     fprintf( header, "#ifndef FONTFORGE_UNICODE_UTYPE_H\n" );
-    fprintf( header, "#define FONTFORGE_UNICODE_UTYPE_H\n" );
+    fprintf( header, "#define FONTFORGE_UNICODE_UTYPE_H\n\n" );
 
     fprintf( header, "/* Copyright: 2001 George Williams */\n" );
     fprintf( header, "/* License: BSD-3-clause */\n" );
@@ -1284,14 +1288,14 @@ static void dump() {
     fprintf( header, "/* MAX characters, originally 600, then increased to hold 65536 chars */\n" );
     fprintf( header, "#define FF_UTYPE_MAXC\t\t0x%0x\n\n", MAXC );
 
-    fprintf( header, "extern const unsigned short ffUnicodeToLower(int32 ucode);\n" );
-    fprintf( header, "extern const unsigned short ffUnicodeToUpper(int32 ucode);\n" );
-    fprintf( header, "extern const unsigned short ffUnicodeToTitle(int32 ucode);\n" );
-    fprintf( header, "extern const unsigned short ffUnicodeToMirror(int32 ucode);\n" );
-    fprintf( header, "extern const unsigned char ffUnicodeDigitVal(int32 ucode);\n" );
-    fprintf( header, "extern const uint32 ffUnicodeUtype(int32 ucode);\n" );
-    fprintf( header, "extern const uint32 ffUnicodeUtype2(int32 ucode);\n" );
-    fprintf( header, "extern const uint32 isunicodepointassigned(int32 ucode);\n" );
+    fprintf( header, "extern unsigned short ffUnicodeToLower(int32 ucode);\n" );
+    fprintf( header, "extern unsigned short ffUnicodeToUpper(int32 ucode);\n" );
+    fprintf( header, "extern unsigned short ffUnicodeToTitle(int32 ucode);\n" );
+    fprintf( header, "extern unsigned short ffUnicodeToMirror(int32 ucode);\n" );
+    fprintf( header, "extern unsigned char ffUnicodeDigitVal(int32 ucode);\n" );
+    fprintf( header, "extern uint32 ffUnicodeUtype(int32 ucode);\n" );
+    fprintf( header, "extern uint32 ffUnicodeUtype2(int32 ucode);\n" );
+    fprintf( header, "extern uint32 isunicodepointassigned(int32 ucode);\n" );
     fprintf( header, "\n" );
 
     fprintf( header, "/* utype[] holds binary flags used for features of each unicode.org character */\n" );
@@ -1468,9 +1472,9 @@ static void dump() {
     for ( i=0; i<MAXC; i+=j ) {
 	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
-	    fprintf(data, " 0x%08x,", flags[i+j]);
+	    fprintf(data, " 0x%08x,", (unsigned)flags[i+j]);
 	if ( i+j==MAXC-1 ) {
-	    fprintf(data, " 0x%08x\n};\n\n", flags[i+j]);
+	    fprintf(data, " 0x%08x\n};\n\n", (unsigned)flags[i+j]);
     break;
 	} else
 	    if ( (i & 63)==0 )
@@ -1483,9 +1487,9 @@ static void dump() {
     for ( i=0; i<MAXC; i+=j ) {
 	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
-	    fprintf(data, " 0x%08x,", flags2[i+j]);
+	    fprintf(data, " 0x%08x,", (unsigned)flags2[i+j]);
 	if ( i+j==MAXC-1 ) {
-	    fprintf(data, " 0x%08x\n};\n\n", flags2[i+j]);
+	    fprintf(data, " 0x%08x\n};\n\n", (unsigned)flags2[i+j]);
     break;
 	} else
 	    if ( (i & 63)==0 )
@@ -1500,9 +1504,9 @@ static void dump() {
     for ( i=0; i<0x120000/32; i+=j ) {
 	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<0x120000/32-1; ++j )
-	    fprintf(data, " 0x%08x,", assignedcodepoints[i+j]);
+	    fprintf(data, " 0x%08x,", (unsigned)assignedcodepoints[i+j]);
 	if ( i+j==0x120000/32-1 ) {
-	    fprintf(data, " 0x%08x\n};\n\n", assignedcodepoints[i+j]);
+	    fprintf(data, " 0x%08x\n};\n\n", (unsigned)assignedcodepoints[i+j]);
     break;
 	} else
 	    if ( (i & 63)==0 )
@@ -1512,37 +1516,37 @@ static void dump() {
     }
 
     /* Common 'internal-use' functions */
-    fprintf( data, "const unsigned short ffUnicodeToLower(int32 ucode) {\n" );
+    fprintf( data, "unsigned short ffUnicodeToLower(int32 ucode) {\n" );
     fprintf( data, "    if ( ucode>=-1 && ucode<FF_UTYPE_MAXC )\n" );
     fprintf( data, "\treturn( ff_unicode_tolower[++ucode] );\n" );
     fprintf( data, "    return( ff_unicode_tolower[0] );\n}\n\n" );
-    fprintf( data, "const unsigned short ffUnicodeToUpper(int32 ucode) {\n" );
+    fprintf( data, "unsigned short ffUnicodeToUpper(int32 ucode) {\n" );
     fprintf( data, "    if ( ucode>=-1 && ucode<FF_UTYPE_MAXC )\n" );
     fprintf( data, "\treturn( ff_unicode_toupper[++ucode] );\n" );
     fprintf( data, "    return( ff_unicode_toupper[0] );\n}\n\n" );
-    fprintf( data, "const unsigned short ffUnicodeToTitle(int32 ucode) {\n" );
+    fprintf( data, "unsigned short ffUnicodeToTitle(int32 ucode) {\n" );
     fprintf( data, "    if ( ucode>=-1 && ucode<FF_UTYPE_MAXC )\n" );
     fprintf( data, "\treturn( ff_unicode_totitle[++ucode] );\n" );
     fprintf( data, "    return( ff_unicode_totitle[0] );\n}\n\n" );
-    fprintf( data, "const unsigned short ffUnicodeToMirror(int32 ucode) {\n" );
+    fprintf( data, "unsigned short ffUnicodeToMirror(int32 ucode) {\n" );
     fprintf( data, "    if ( ucode>=-1 && ucode<FF_UTYPE_MAXC )\n" );
     fprintf( data, "\treturn( ff_unicode_tomirror[++ucode] );\n" );
     fprintf( data, "    return( ff_unicode_tomirror[0] );\n}\n\n" );
-    fprintf( data, "const unsigned char ffUnicodeDigitVal(int32 ucode) {\n" );
+    fprintf( data, "unsigned char ffUnicodeDigitVal(int32 ucode) {\n" );
     fprintf( data, "    if ( ucode>=-1 && ucode<FF_UTYPE_MAXC )\n" );
     fprintf( data, "\treturn( ff_unicode_digitval[++ucode] );\n" );
     fprintf( data, "    return( ff_unicode_digitval[0] );\n}\n\n" );
-    fprintf( data, "const uint32 ffUnicodeUtype(int32 ucode) {\n" );
+    fprintf( data, "uint32 ffUnicodeUtype(int32 ucode) {\n" );
     fprintf( data, "    if ( ucode>=-1 && ucode<FF_UTYPE_MAXC )\n" );
     fprintf( data, "\treturn( ff_unicode_utype[++ucode] );\n" );
     fprintf( data, "    return( ff_unicode_utype[0] );\n}\n\n" );
-    fprintf( data, "const uint32 ffUnicodeUtype2(int32 ucode) {\n" );
+    fprintf( data, "uint32 ffUnicodeUtype2(int32 ucode) {\n" );
     fprintf( data, "    if ( ucode>=-1 && ucode<FF_UTYPE_MAXC )\n" );
     fprintf( data, "\treturn( ff_unicode_utype2[++ucode] );\n" );
     fprintf( data, "    return( ff_unicode_utype2[0] );\n}\n\n" );
-    fprintf( data, "const uint32 isunicodepointassigned(int32 ucode) {\n" );
+    fprintf( data, "uint32 isunicodepointassigned(int32 ucode) {\n" );
     fprintf( data, "    if ( ucode>=0 && ucode<0x120000 )\n" );
-    fprintf( data, "\treturn( (ff_unicode_codepointassigned[(ucode)/32]&(1<<((ucode)%32))) );\n" );
+    fprintf( data, "\treturn( (ff_unicode_codepointassigned[(ucode)/32]&(1<<((ucode)%%32))) );\n" );
     fprintf( data, "    return( 0 );\n}\n\n" );
 
     fclose( data );

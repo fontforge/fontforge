@@ -198,8 +198,8 @@ struct { char ch; unsigned int oldstate, newstate; unsigned short result; }
 	{ 't', 0, 0, 0x2122 },		/* TM */
 	{ '2', BREVE, 0, 0x00bd },	/* 1/2 */
 
-/*	{ 'A', 0, 0, 0x00c5 },		/* A ring */
-/*	{ 'a', 0, 0, 0x00e5 },		/* a ring */
+/*	{ 'A', 0, 0, 0x00c5 },*/	/* A ring */
+/*	{ 'a', 0, 0, 0x00e5 },*/	/* a ring */
 	{ 'C', 0, 0, 0x00c7 },		/* C cedilla */
 	{ 'c', 0, 0, 0x00e7 },		/* c cedilla */
 	{ 'A', 0, 0, 0x00c6 },		/* AE */
@@ -353,7 +353,7 @@ return( len );
 }
 
 static char *Mask(char *buffer,int mask) {
-    int i,m;
+    int i;
     char *bpt = buffer;
 
     if ( mask==0 )
@@ -419,7 +419,7 @@ void dumpinfo() {
 	if ( info[i]==NULL )
 	    fprintf(out, "    /* %c */ { 0 },\n", i+' ' );
 	else
-	    fprintf(out, "    /* %c */ { %d, trans_%s },\n", i+' ', queuelen(info[i]), charnames[i], i+' ' );
+	    fprintf(out, "    /* %c */ { %d, trans_%s },\n", i+' ', queuelen(info[i]), charnames[i] );
     }
     fprintf(out,"};\n\n" );
 
