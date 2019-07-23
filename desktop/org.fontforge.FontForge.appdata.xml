@@ -35,6 +35,17 @@
     <p xml:lang="fr">
   Apprendre à utiliser FontForge est facile, et il y a plusieurs tutoriels disponibles en commençant
   par les bases jusqu'à des fonctionnalités plus avancées telles que la fabrication et l'utilisation de scripts.</p>
+    <p xml: lang = "hr">
+  FontForge je program za uređivanje konturnih i bitmap fontova. Omogućuje stvaranje,
+  uređivanje ili konvertiranje raznih vrsta fontova, uključujući PostScript, TrueType,
+  OpenType, CID, multiple-master, CFF, SVG i BitMap (bdf, FON, NFNT) fontove.</p>
+     <p xml: lang = "hr">
+  FontForge je slobodan softver otvorenog kȏda te je izrađen za razne operacijske
+  sustave. FontForge se može koristiti u grafičkom načinu rada ili putem naredbenog
+  retka.</p>
+     <p xml: lang = "hr">
+  FontForge je lako naučiti. Na raspolaganju stoje različiti priručnici – od osnovnih
+  vježbi, sve do naprednijih funkcija, kao što su izrada i upotreba skriptova.</p>
     <p xml:lang="uk">
   FontForge — редактор контурних та растрових шрифтів, за допомогою якого ви можете
   створювати, редагувати та перетворювати шрифти у форматах PostScript, TrueType, OpenType,
