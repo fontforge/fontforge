@@ -48,7 +48,7 @@
 
 int accent_offset = 6;
 int GraveAcuteCenterBottom = 1;
-int PreferSpacingAccents = true;
+int PreferSpacingAccents = false;
 int CharCenterHighest = 1;
 
 #define BottomAccent	0x300
