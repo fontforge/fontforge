@@ -249,8 +249,7 @@ static struct prefs_list {
 },
 extras[] = {
     { N_("ResourceFile"), pr_file, &xdefs_filename, NULL, NULL, 'R', NULL, 0, N_("When FontForge starts up, it loads the user interface theme from\nthis file. Any changes will only take effect the next time you start FontForge.") },
-    { N_("SplashScreen"), pr_bool, &splash, NULL, NULL, 'S', NULL, 0, N_("Show splash screen on start-up") },
-	 { N_("SplashScreenSeconds"), pr_bool, &splashSeconds, NULL, NULL, 'S', NULL, 0, N_("How many seconds to show splash screen") },         
+    { N_("SplashScreen"), pr_int, &splash, NULL, NULL, 'S', NULL, 0, N_("Show splash screen on start-up for this many seconds (set to 0 to hide splash screen completely)") },      
     { N_("GlyphAutoGoto"), pr_bool, &cv_auto_goto, NULL, NULL, '\0', NULL, 0, N_("Typing a normal character in the glyph view window changes the window to look at that character") },
     { N_("OpenCharsInNewWindow"), pr_bool, &OpenCharsInNewWindow, NULL, NULL, '\0', NULL, 0, N_("When double clicking on a character in the font view\nopen that character in a new window, otherwise\nreuse an existing one.") },
     { N_("ArrowMoveSize"), pr_real, &arrowAmount, NULL, NULL, '\0', NULL, 0, N_("The number of em-units by which an arrow key will move a selected point") },
