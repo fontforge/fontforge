@@ -125,6 +125,8 @@ install:
       # This *must* be linked or else gettext/intl will be disabled
       brew link --force gettext
       export PYTHON=python$(python3 --version | cut -d' ' -f2 | cut -d. -f1-2)
+      # Until Homebrew fixes their gtk
+      export CFLAGS="$CFLAGS -DGDK_WINDOWING_QUARTZ=1"
     fi
 
     export PYTHONPATH=$PYTHONPATH:$PREFIX/lib/$PYTHON/site-packages
