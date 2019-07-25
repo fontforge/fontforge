@@ -289,25 +289,35 @@ u_WordlistEscapedInputStringToRealString_readGlyphName(
 	    {
 		unichar_t* endptr = 0;
 		long unicodepoint = u_strtoul( glyphname+3, &endptr, 16 );
-                SplineChar* tmp = 0;
+	            SplineChar* tmp = 0;
 		TRACE("uni prefix, codepoint: %ld\n", unicodepoint );
 		sc = SFGetChar( sf, unicodepoint, 0 );
-                if ((tmp = SFGetChar( sf, -1, u_to_c(glyphname) ))) {
-		    TRACE("have subst. char: %s\n", tmp->name );
-                    sc = tmp;
-                } else {
+
+		for (int i = u_strlen(glyphname); i>=0; i--) {
+		    unichar_t* substr = calloc(i+1, sizeof(unichar_t));
+		    u_strncpy(substr, glyphname, i);
+		    tmp = SFGetChar( sf, -1, u_to_c(substr) );
+		    TRACE("looking for subst. char: %s\n", u_to_c(substr));
+		    free(substr);
+		    if (tmp != NULL) {
+			TRACE("have subst. char: %s\n", tmp->name ); break;
+		    }
+		}
+
+		if (tmp != NULL){
+		    sc = tmp;
+		} else {
 		    if( sc && endptr )
 		    {
 		        unichar_t* endofglyphname = glyphname + u_strlen(glyphname);
-//		        printf("endptr:%p endofglyphname:%p\n", endptr, endofglyphname );
-		        for( ; endptr < endofglyphname; endptr++ )
-                            --endpos;
+		        //printf("endptr:%p endofglyphname:%p\n", endptr, endofglyphname );
+		        for( ; endptr < endofglyphname; endptr++ ) --endpos;
 		    }
-                }
-	    }
-	    
-	    if( firstLookup && glyphname[0] == '#' )
-	    {
+		}
+		}
+
+		if( firstLookup && glyphname[0] == '#' )
+		{
 		unichar_t* endptr = 0;
 		long unicodepoint = u_strtoul( glyphname+1, &endptr, 16 );
 //		printf("WordlistEscapedInputStringToRealString_readGlyphName() unicodepoint:%ld\n", unicodepoint );
