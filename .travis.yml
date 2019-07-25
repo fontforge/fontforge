@@ -113,7 +113,6 @@ install:
       export FFCONFIG="$FFCONFIG --enable-gdk=gdk3 --enable-woff2"
       export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig:/usr/local/opt/libffi/lib/pkgconfig
       export PATH="/usr/local/opt/ruby/bin:$PATH"
-      export MSGFMT=/usr/local/opt/gettext/bin/msgfmt
       export HOMEBREW_NO_AUTO_UPDATE=1
       # Disable fc-cache on fontconfig install. Because it's slow.
       sed -i.bak '/fc-cache/d' "$(brew --prefix)/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/fontconfig.rb"
@@ -123,7 +122,11 @@ install:
       # Pin pango to this version, because of issues, see #3343
       brew unlink pango || true
       brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/ad91e4df4a843764901811a965a17f650f34e2c1/Formula/pango.rb
+      # This *must* be linked or else gettext/intl will be disabled
+      brew link --force gettext
       export PYTHON=python$(python3 --version | cut -d' ' -f2 | cut -d. -f1-2)
+      # Until Homebrew fixes their gtk
+      export CFLAGS="$CFLAGS -DGDK_WINDOWING_QUARTZ=1"
     fi
 
     export PYTHONPATH=$PYTHONPATH:$PREFIX/lib/$PYTHON/site-packages
