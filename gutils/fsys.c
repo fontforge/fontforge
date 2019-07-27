@@ -227,6 +227,9 @@ char *GFileGetAbsoluteName(const char *name, char *result, size_t rsiz) {
 		savestrcpy(spt,spt+1); /*  skipped past the :// of the machine name) */
 	    else if ( pt==spt+1 && spt[0]=='.' && *pt=='/' ) {	/* Noop */
 		savestrcpy(spt,spt+2);
+	    } else if (pt==spt+1 && spt[0]=='.' && *pt=='\0') { /* Remove trailing /. */
+		pt = --spt;
+		*spt = '\0';
 	    } else if ( pt==spt+2 && spt[0]=='.' && spt[1]=='.' ) {
 		for ( bpt=spt-2 ; bpt>rpt && *bpt!='/'; --bpt );
 		if ( bpt>=rpt && *bpt=='/' ) {
