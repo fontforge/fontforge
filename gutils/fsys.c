@@ -843,82 +843,58 @@ char *getShareDir(void) {
     static char *sharedir=NULL;
     static int set=false;
     char *pt;
-    int len;
 
     if ( set )
 	return( sharedir );
 
     set = true;
 
-    //Assume share folder is one directory up
-    pt = strrchr(GResourceProgramDir, '/');
-    if ( pt==NULL ) {
-#ifdef SHAREDIR
-	return( sharedir = SHAREDIR );
-#elif defined( PREFIX )
-	return( sharedir = PREFIX "/share" );
-#else
-	pt = GResourceProgramDir + strlen(GResourceProgramDir);
-#endif
-    }
-    len = (pt-GResourceProgramDir)+strlen("/share/fontforge")+1;
-    sharedir = malloc(len);
-    strncpy(sharedir,GResourceProgramDir,pt-GResourceProgramDir);
-    strcpy(sharedir+(pt-GResourceProgramDir),"/share/fontforge");
-    return( sharedir );
+    pt = smprintf("%s/../share/fontforge", GResourceProgramDir);
+    sharedir = GFileMakeAbsoluteName(pt);
+    free(pt);
+    return sharedir;
 }
 
 
 char *getLocaleDir(void) {
-    static char *sharedir=NULL;
+    static char *localedir=NULL;
     static int set=false;
+    char *pt;
 
     if ( set )
-	return( sharedir );
+	return( localedir );
 
-    char* prefix = getShareDir();
-    int len = strlen(prefix) + strlen("/../locale") + 2;
-    sharedir = malloc(len);
-    strcpy(sharedir,prefix);
-    strcat(sharedir,"/../locale");
-    set = true;
-    return sharedir;
+    pt = smprintf("%s/../locale", getShareDir());
+    localedir = GFileMakeAbsoluteName(pt);
+    free(pt);
+    return localedir;
 }
 
 char *getPixmapDir(void) {
-    static char *sharedir=NULL;
+    static char *pixmapdir=NULL;
     static int set=false;
 
     if ( set )
-	return( sharedir );
+	return( pixmapdir );
 
-    char* prefix = getShareDir();
-    int len = strlen(prefix) + strlen("/pixmaps") + 2;
-    sharedir = malloc(len);
-    strcpy(sharedir,prefix);
-    strcat(sharedir,"/pixmaps");
+    pixmapdir = smprintf("%s/pixmaps", getShareDir());
     set = true;
-    return sharedir;
+    return pixmapdir;
 }
 
 char *getHelpDir(void) {
-    static char *sharedir=NULL;
+    static char *helpdir=NULL;
     static int set=false;
+    char *pt;
 
     if ( set )
-	return( sharedir );
+	return( helpdir );
 
-    char* prefix = getShareDir();
-#if defined(DOCDIR)
-    prefix = DOCDIR;
-#endif
-    const char* postfix = "/../doc/fontforge/";
-    int len = strlen(prefix) + strlen(postfix) + 2;
-    sharedir = malloc(len);
-    strcpy(sharedir,prefix);
-    strcat(sharedir,postfix);
+    pt = smprintf("%s/../doc/fontforge/", getShareDir());
+    helpdir = GFileMakeAbsoluteName(pt);
+    free(pt);
     set = true;
-    return sharedir;
+    return helpdir;
 }
 
 /* reimplementation of GFileGetHomeDir, avoiding copy().  Returns NULL if home
