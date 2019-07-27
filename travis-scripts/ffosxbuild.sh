@@ -25,7 +25,8 @@ fi
 
 workdir=$(realpath $workdir)
 outdir=$(realpath $outdir)
-PYVER=$(python3 --version | cut -d' ' -f2 | cut -d. -f1-2)
+
+PYVER=$(${PYTHON:-python3} --version 2>&1 | cut -d' ' -f2 | cut -d. -f1-2)
 PYTHON=python$PYVER
 
 echo "Taking a dump into $outdir..."
@@ -95,7 +96,11 @@ sed -i -e "s/CFBundleGetInfoStringChangeMe/$CFBundleGetInfoString/g" $outdir/Con
 sed -i -e "s/CFBundleVersionChangeMe/$FONTFORGE_VERSION/g" $outdir/Contents/Info.plist
 
 # Package it up
-dmgname=FontForge-$builddate-${hash:0:7}.app.dmg
+if [[ "$PYVER" < "3" ]]; then
+    dmgname=FontForge-$builddate-${hash:0:7}-$PYTHON.app.dmg
+else
+    dmgname=FontForge-$builddate-${hash:0:7}.app.dmg
+fi
 
 hdiutil create -size 800m   \
    -volname   FontForge     \
