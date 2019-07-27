@@ -61,7 +61,7 @@ cache:
     - $TRAVIS_BUILD_DIR/travisdeps
 
 before_install:
-  - if [ ! -z "$LINUX_FULL" ]; then pip --quiet install --user cpp-coveralls==0.3.12 ; fi
+  - if [ ! -z "$LINUX_FULL" ]; then pip --quiet install --user cpp-coveralls -U ; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)" -- --force; sudo rm -rf ~/.rvm; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"; fi
 
@@ -158,7 +158,7 @@ script:
   - if [ ! -z "$LINUX_RELEASE" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then travis-scripts/ffappimagebuild.sh; fi
 
 after_success:
-  - if [ ! -z "$LINUX_FULL" ]; then coveralls --gcov-options '\-bulp' --gcov $(which $GCOV) || true; fi
+  - if [ ! -z "$LINUX_FULL" ]; then coveralls --gcov-options '\-bulp' --gcov $(which $GCOV); fi
 
 after_failure:
   - which python3
