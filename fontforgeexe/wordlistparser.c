@@ -294,6 +294,11 @@ u_WordlistEscapedInputStringToRealString_readGlyphName(
 		TRACE("uni prefix, codepoint: %ld\n", unicodepoint );
 		sc = SFGetChar( sf, unicodepoint, 0 );
 
+		/* When text is added after a glyphname with a period (such as "uni1234.alt"
+		 * the other search heuristics will tend to interpret the period as a glyph
+		 * and split the string. Here we search for the glyphname trimming off 
+		 * characters at the end in order to find the glyph
+		 */
 		for (int i = u_strlen(glyphname); i>0; i--) {
 		    c = glyphname[i+1];
 		    glyphname[i+1] = 0;
