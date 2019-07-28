@@ -102,7 +102,7 @@ extern void setup_cocoa_app();
 #include "scripting.h"
 
 extern int AutoSaveFrequency;
-int splash = 1;
+int splash = 7;
 static int localsplash;
 static int unique = 0;
 
