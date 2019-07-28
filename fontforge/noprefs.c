@@ -112,8 +112,7 @@ extern int use_freetype_to_rasterize_fv;	/* in bitmapchar.c */
 /* UI preferences which we don't use, but will preserve to so we can read/write */
 /*  UI preference files without loss of data */
 static char *xdefs_filename;
-static int splash=1;
-static int splashSeconds=7000;
+static int splash=7;
 static int cv_auto_goto=1;
 static int OpenCharsInNewWindow=1;
 static float arrowAmount=1;
