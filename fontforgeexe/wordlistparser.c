@@ -289,16 +289,17 @@ u_WordlistEscapedInputStringToRealString_readGlyphName(
 	    {
 		unichar_t* endptr = 0;
 		long unicodepoint = u_strtoul( glyphname+3, &endptr, 16 );
-	            SplineChar* tmp = 0;
+		char c;
+		SplineChar* tmp = 0;
 		TRACE("uni prefix, codepoint: %ld\n", unicodepoint );
 		sc = SFGetChar( sf, unicodepoint, 0 );
 
-		for (int i = u_strlen(glyphname); i>=0; i--) {
-		    unichar_t* substr = calloc(i+1, sizeof(unichar_t));
-		    u_strncpy(substr, glyphname, i);
-		    tmp = SFGetChar( sf, -1, u_to_c(substr) );
-		    TRACE("looking for subst. char: %s\n", u_to_c(substr));
-		    free(substr);
+		for (int i = u_strlen(glyphname); i>0; i--) {
+		    c = glyphname[i+1];
+		    glyphname[i+1] = 0;
+		    tmp = SFGetChar( sf, -1, u_to_c(glyphname) );
+		    TRACE("looking for subst. char: %s\n", u_to_c(glyphname));
+		    glyphname[i+1] = c;
 		    if (tmp != NULL) {
 			TRACE("have subst. char: %s\n", tmp->name ); break;
 		    }
