@@ -287,27 +287,48 @@ u_WordlistEscapedInputStringToRealString_readGlyphName(
 	{
 	    if( uc_startswith( glyphname, "uni"))
 	    {
-		unichar_t* endptr = 0;
+		unichar_t* endptr = 0, *tmp_gn;
+		int gn_len;
 		long unicodepoint = u_strtoul( glyphname+3, &endptr, 16 );
-                SplineChar* tmp = 0;
+		char c;
+		SplineChar* tmp = 0;
 		TRACE("uni prefix, codepoint: %ld\n", unicodepoint );
 		sc = SFGetChar( sf, unicodepoint, 0 );
-                if ((tmp = SFGetChar( sf, -1, u_to_c(glyphname) ))) {
-		    TRACE("have subst. char: %s\n", tmp->name );
-                    sc = tmp;
-                } else {
+
+		/* When text is added after a glyphname with a period (such as "uni1234.alt"
+		 * the other search heuristics will tend to interpret the period as a glyph
+		 * and split the string. Here we search for the glyphname trimming off 
+		 * characters at the end in order to find the glyph
+		 */
+		gn_len = u_strlen(glyphname);
+		tmp_gn = malloc((gn_len+1)*sizeof(unichar_t));
+		u_strncpy(tmp_gn, glyphname, gn_len);
+		for (int i = gn_len; i>0; i--) {
+		    c = tmp_gn[i+1];
+		    tmp_gn[i+1] = 0;
+		    tmp = SFGetChar( sf, -1, u_to_c(tmp_gn) );
+		    TRACE("looking for subst. char: %s\n", u_to_c(tmp_gn));
+		    tmp_gn[i+1] = c;
+		    if (tmp != NULL) {
+			TRACE("have subst. char: %s\n", tmp->name ); break;
+		    }
+		}
+		free(tmp_gn);
+
+		if (tmp != NULL){
+		    sc = tmp;
+		} else {
 		    if( sc && endptr )
 		    {
 		        unichar_t* endofglyphname = glyphname + u_strlen(glyphname);
-//		        printf("endptr:%p endofglyphname:%p\n", endptr, endofglyphname );
-		        for( ; endptr < endofglyphname; endptr++ )
-                            --endpos;
+		        //printf("endptr:%p endofglyphname:%p\n", endptr, endofglyphname );
+		        for( ; endptr < endofglyphname; endptr++ ) --endpos;
 		    }
-                }
-	    }
-	    
-	    if( firstLookup && glyphname[0] == '#' )
-	    {
+		}
+		}
+
+		if( firstLookup && glyphname[0] == '#' )
+		{
 		unichar_t* endptr = 0;
 		long unicodepoint = u_strtoul( glyphname+1, &endptr, 16 );
 //		printf("WordlistEscapedInputStringToRealString_readGlyphName() unicodepoint:%ld\n", unicodepoint );
