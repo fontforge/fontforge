@@ -2297,11 +2297,11 @@ static void SFAddToBackground(SplineFont *sf,BDFFont *bdf);
 
 int FVImportBDF(FontViewBase *fv, char *filename, int ispk, int toback) {
     BDFFont *b, *anyb=NULL;
-    char buf[300];
-    char *eod, *fpt, *file, *full;
+    char *buf, *eod, *fpt, *file, *full, *freeme;
     int fcnt, any = 0;
     int oldenccnt = fv->map->enccount;
 
+    freeme = filename = copy(filename);
     eod = strrchr(filename,'/');
     if (eod != NULL) {
         *eod = '\0';
@@ -2315,16 +2315,18 @@ int FVImportBDF(FontViewBase *fv, char *filename, int ispk, int toback) {
     while (( fpt=strstr(fpt,"; "))!=NULL )
 	{ ++fcnt; fpt += 2; }
 
-    sprintf(buf, _("Loading font from %.100s"), filename);
+    buf = smprintf(_("Loading font from %.100s"), filename);
     ff_progress_start_indicator(10,_("Loading..."),buf,_("Reading Glyphs"),0,fcnt);
     ff_progress_enable_stop(false);
+    free(buf);
 
     do {
 	fpt = strstr(file,"; ");
 	if ( fpt!=NULL ) *fpt = '\0';
 	full = smprintf("%s/%s", filename, file);
-	sprintf(buf, _("Loading font from %.100s"), filename);
+	buf = smprintf(_("Loading font from %.100s"), full);
 	ff_progress_change_line1(buf);
+	free(buf);
 	b = _SFImportBDF(fv->sf,full,ispk,toback, fv->map);
 	free(full);
 	if ( fpt!=NULL ) ff_progress_next_stage();
@@ -2348,6 +2350,7 @@ int FVImportBDF(FontViewBase *fv, char *filename, int ispk, int toback) {
 	ff_post_error( _("No Bitmap Font"), _("Could not find a bitmap font in %s"), filename );
     } else if ( toback )
 	SFAddToBackground(fv->sf,anyb);
+    free(freeme);
 return( any );
 }
 
