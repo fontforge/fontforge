@@ -287,7 +287,8 @@ u_WordlistEscapedInputStringToRealString_readGlyphName(
 	{
 	    if( uc_startswith( glyphname, "uni"))
 	    {
-		unichar_t* endptr = 0;
+		unichar_t* endptr = 0, *tmp_gn;
+		int gn_len;
 		long unicodepoint = u_strtoul( glyphname+3, &endptr, 16 );
 		char c;
 		SplineChar* tmp = 0;
@@ -299,16 +300,20 @@ u_WordlistEscapedInputStringToRealString_readGlyphName(
 		 * and split the string. Here we search for the glyphname trimming off 
 		 * characters at the end in order to find the glyph
 		 */
-		for (int i = u_strlen(glyphname); i>0; i--) {
-		    c = glyphname[i+1];
-		    glyphname[i+1] = 0;
-		    tmp = SFGetChar( sf, -1, u_to_c(glyphname) );
-		    TRACE("looking for subst. char: %s\n", u_to_c(glyphname));
-		    glyphname[i+1] = c;
+		gn_len = u_strlen(glyphname);
+		tmp_gn = malloc((gn_len+1)*sizeof(unichar_t));
+		u_strncpy(tmp_gn, glyphname, gn_len);
+		for (int i = gn_len; i>0; i--) {
+		    c = tmp_gn[i+1];
+		    tmp_gn[i+1] = 0;
+		    tmp = SFGetChar( sf, -1, u_to_c(tmp_gn) );
+		    TRACE("looking for subst. char: %s\n", u_to_c(tmp_gn));
+		    tmp_gn[i+1] = c;
 		    if (tmp != NULL) {
 			TRACE("have subst. char: %s\n", tmp->name ); break;
 		    }
 		}
+		free(tmp_gn);
 
 		if (tmp != NULL){
 		    sc = tmp;
