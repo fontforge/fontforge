@@ -147,6 +147,7 @@ extern int control_counters;		/* in nowakowskittfinstr.c */
 extern unichar_t *script_menu_names[SCRIPT_MENU_MAX];
 extern char *script_filenames[SCRIPT_MENU_MAX];
 static char *xdefs_filename;
+extern char *default_directory;
 extern int new_em_size;				/* in splineutil2.c */
 extern int new_fonts_are_order2;		/* in splineutil2.c */
 extern int loaded_fonts_same_as_new;		/* in splineutil2.c */
@@ -304,6 +305,7 @@ static struct prefs_list {
 	{ N_("FreeTypeInFontView"), pr_bool, &use_freetype_to_rasterize_fv, NULL, NULL, 'O', NULL, 0, N_("Use the FreeType rasterizer (when available)\nto rasterize glyphs in the font view.\nThis generally results in better quality.") },
 	{ N_("FreeTypeAAFillInOutlineView"), pr_bool, &use_freetype_with_aa_fill_cv, NULL, NULL, 'O', NULL, 0, N_("When filling using freetype in the outline view,\nhave freetype render the glyph antialiased.") },
 	{ N_("SplashScreen"), pr_int, &splash, NULL, NULL, 'S', NULL, 0, N_("Show splash screen on start-up for this many seconds (set to 0 to hide splash screen completely)") },
+	{ N_("DefaultDirectory"), pr_file, &default_directory, NULL, NULL, 'R', NULL, 0, N_("Default directory to start in when opening a font. \nLeave empty to use your operating system home directory") },
 #ifndef _NO_LIBCAIRO
 	{ N_("UseCairoDrawing"), pr_bool, &prefs_usecairo, NULL, NULL, '\0', NULL, 0, N_("Use the cairo library for drawing (if available)\nThis makes for prettier (anti-aliased) but slower drawing\nThis applies to any windows created AFTER this is set.\nAlready existing windows will continue as they are.") },
 #endif

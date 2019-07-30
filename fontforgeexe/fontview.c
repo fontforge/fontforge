@@ -75,6 +75,7 @@
 int OpenCharsInNewWindow = 0;
 char *RecentFiles[RECENT_MAX] = { NULL };
 int save_to_dir = 0;			/* use sfdir rather than sfd */
+char* default_directory;
 unichar_t *script_menu_names[SCRIPT_MENU_MAX];
 char *script_filenames[SCRIPT_MENU_MAX];
 extern int onlycopydisplayed, copymetadata, copyttfinstr, add_char_to_name_list;
@@ -1040,7 +1041,7 @@ void _FVMenuOpen(FontView *fv) {
     char *eod, *fpt, *file, *full;
     FontView *test; int fvcnt, fvtest;
 
-    char* OpenDir = NULL, *DefaultDir = NULL, *NewDir = NULL;
+    char* OpenDir = NULL, *DefaultDir = NULL, *NewDir = copy(default_directory);
 #if defined(__MINGW32__)
     DefaultDir = copy(GFileGetHomeDocumentsDir()); //Default value
     if (fv && fv->b.sf && fv->b.sf->filename) {
