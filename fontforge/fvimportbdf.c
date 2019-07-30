@@ -2303,9 +2303,15 @@ int FVImportBDF(FontViewBase *fv, char *filename, int ispk, int toback) {
     int oldenccnt = fv->map->enccount;
 
     eod = strrchr(filename,'/');
-    *eod = '\0';
+    if (eod != NULL) {
+        *eod = '\0';
+        file = eod+1;
+    } else {
+        file = filename;
+        filename = ".";
+    }
     fcnt = 1;
-    fpt = eod+1;
+    fpt = file;
     while (( fpt=strstr(fpt,"; "))!=NULL )
 	{ ++fcnt; fpt += 2; }
 
@@ -2313,12 +2319,10 @@ int FVImportBDF(FontViewBase *fv, char *filename, int ispk, int toback) {
     ff_progress_start_indicator(10,_("Loading..."),buf,_("Reading Glyphs"),0,fcnt);
     ff_progress_enable_stop(false);
 
-    file = eod+1;
     do {
 	fpt = strstr(file,"; ");
 	if ( fpt!=NULL ) *fpt = '\0';
-	full = malloc(strlen(filename)+1+strlen(file)+1);
-	strcpy(full,filename); strcat(full,"/"); strcat(full,file);
+	full = smprintf("%s/%s", filename, file);
 	sprintf(buf, _("Loading font from %.100s"), filename);
 	ff_progress_change_line1(buf);
 	b = _SFImportBDF(fv->sf,full,ispk,toback, fv->map);
