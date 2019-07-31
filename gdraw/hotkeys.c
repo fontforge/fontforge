@@ -224,7 +224,7 @@ Hotkey* hotkeySet( char* action, char* keydefinition, int append )
 static void loadHotkeysFromFile( const char* filename, int isUserDefined, int warnIfNotFound ) 
 {
     char line[1100];
-    FILE* f = fopen(filename,"r");
+    FILE* f = GFileFopen(filename,"r");
     if( !f ) {
 	if( warnIfNotFound ) {
 	    fprintf(stderr,_("Failed to open hotkey definition file: %s\n"), filename );
@@ -309,7 +309,7 @@ void hotkeysSave() {
     if( !fn ) {
 	return;
     }
-    FILE* f = fopen(fn,"w");
+    FILE* f = GFileFopen(fn,"w");
     if( !f ) {
 	free(fn);
 	fprintf(stderr,_("Failed to open your hotkey definition file for updates.\n"));

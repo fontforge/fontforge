@@ -228,7 +228,7 @@ static GTextInfo *PrinterList() {
     int cnt;
     char *bpt, *cpt;
 
-    printcap = fopen("/etc/printcap","r");
+    printcap = GFileFopen("/etc/printcap","r");
     if ( printcap==NULL ) {
 	tis = calloc(2,sizeof(GTextInfo));
 	tis[0].text = uc_copy("<default>");
@@ -693,7 +693,7 @@ return(true);
 return(true);
 		file = utf82def_copy(ret);
 		free(ret);
-		pi->pi.out = fopen(file,"wb");
+		pi->pi.out = GFileFopen(file,"wb");
 		if ( pi->pi.out==NULL ) {
 		    ff_post_error(_("Print Failed"),_("Failed to open file %s for output"), file);
 		    free(file);

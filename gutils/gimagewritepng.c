@@ -42,6 +42,7 @@ static int a_file_must_define_something=0;	/* ANSI says so */
 #define int8 _int8
 #define uint8 _uint8
 
+#include "gfile.h"
 #include "gimage.h"
 #include "ffglib.h"
 
@@ -224,7 +225,7 @@ int GImageWritePng(GImage *gi, char *filename, int progressive) {
     int ret;
 
    /* open the file */
-   fp = fopen(filename, "wb");
+   fp = GFileFopen(filename, "wb");
    if (!fp)
 return(false);
     ret = GImageWrite_Png(gi,fp,progressive);

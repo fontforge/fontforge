@@ -28,6 +28,7 @@
 #include <fontforge-config.h>
 
 #include "fontforge.h"		/* For LogError */
+#include "gfile.h"
 #include "othersubrs.h"
 #include "splinefont.h"
 #include "ustring.h"
@@ -515,7 +516,7 @@ void DefaultOtherSubrs(void) {
 }
 
 int ReadOtherSubrsFile(char *filename) {
-    FILE *os = fopen(filename,"r");
+    FILE *os = GFileFopen(filename,"r");
     char buffer[500];
     char **lines=NULL;
     int l=0, lmax=0;

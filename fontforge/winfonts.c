@@ -369,7 +369,7 @@ SplineFont *SFReadWinFON(char *filename,int toback) {
     int font_count;
     BDFFont *bdf, *next;
 
-    fon = fopen(filename,"rb");
+    fon = GFileFopen(filename,"rb");
     if ( fon==NULL )
 return( NULL );
     magic = lgetushort(fon);
@@ -648,7 +648,7 @@ int FNTFontDump(char *filename,BDFFont *font, EncMap *map, int res) {
     FILE *file;
     int ret;
 
-    file = fopen(filename,"wb");
+    file = GFileFopen(filename,"wb");
     if ( file==NULL ) {
 	LogError( _("Can't open %s\n"), filename );
 return( 0 );
@@ -875,7 +875,7 @@ return( false );
     fontdir_off = (non_resident_name_off + non_resident_name_len + 15) & ~0xf;
     font_off = (fontdir_off + fontdir_len + 15) & ~0x0f;
 
-    fon = fopen(filename, "wb");
+    fon = GFileFopen(filename, "wb");
     if ( fon==NULL ) {
 	ff_post_error(_("Couldn't open file"),_("Could not open output file: %s"),
 		filename );

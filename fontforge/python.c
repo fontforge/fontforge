@@ -48,6 +48,7 @@
 #include "fvcomposite.h"
 #include "fvfonts.h"
 #include "fvimportbdf.h"
+#include "gfile.h"
 #include "glyphcomp.h"
 #include "langfreq.h"
 #include "lookups.h"
@@ -4624,7 +4625,7 @@ static PyObject *PyFFLayer_export(PyFF_Layer *self, PyObject *args,
     pt = strrchr(locfilename,'.');
     if ( pt==NULL ) pt=locfilename;
 
-    file = fopen( locfilename,"wb");
+    file = GFileFopen( locfilename,"wb");
     if ( file==NULL ) {
 	PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
 	free(locfilename);
@@ -8480,7 +8481,7 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
 	SCImportGlif(sc,((PyFF_Glyph *) self)->layer,locfilename,NULL,0,false,ipp);
     }
     else if ( strcasecmp(pt,".plate")==0 ) {
-	FILE *plate = fopen(locfilename,"r");
+	FILE *plate = GFileFopen(locfilename,"r");
 	if ( plate==NULL ) {
 	    PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
 	    free(locfilename);
@@ -8575,7 +8576,7 @@ static PyObject *PyFFGlyph_export(PyObject *self, PyObject *args,
 return( NULL );
 	}
     } else {
-	file = fopen( locfilename,"wb");
+	file = GFileFopen( locfilename,"wb");
 	if ( file==NULL ) {
 	    PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
 	    free(locfilename);
@@ -14483,7 +14484,7 @@ return( NULL );
     if ( strcmp(locfilename,"-")==0 )
 	diffs = stdout;
     else {
-	diffs = fopen(locfilename,"w");
+	diffs = GFileFopen(locfilename,"w");
 	if ( diffs==NULL ) {
 	    PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
 	    free(locfilename);
@@ -16209,7 +16210,7 @@ return (NULL);
     if ( !PyArg_ParseTuple(args,"s", &filename ))
 return( NULL );
 
-    file = fopen(filename,"w");
+    file = GFileFopen(filename,"w");
     if ( file==NULL ) {
 	PyErr_SetFromErrnoWithFilename(PyExc_IOError,filename);
 return(NULL);
@@ -16745,7 +16746,7 @@ return( NULL );
 return( NULL );
 	}
     }
-    out = fopen(locfilename,"w");
+    out = GFileFopen(locfilename,"w");
     if ( out==NULL ) {
 	PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
 	free(locfilename);
@@ -19516,7 +19517,7 @@ void PyFF_ScriptFile(FontViewBase *fv,SplineChar *sc, char *filename) {
     FILE *fp;
     int rc;
 
-    fp = fopen(filename, "rb");
+    fp = GFileFopen(filename, "rb");
     if ( fp==NULL ) {
 	fprintf(stderr, "Failed to open script \"%s\": %s\n", filename, strerror(errno));
 	LogError(_("Can't open %s"), filename );
@@ -19608,7 +19609,7 @@ return;
     for (guint i = 0; i < filelist->len; ++i) {
 	FILE *fp;
 	char *pathname = (char*)filelist->pdata[i];
-	fp = fopen( pathname, "rb" );
+	fp = GFileFopen( pathname, "rb" );
 	if ( fp==NULL ) {
 	    fprintf(stderr,"Failed to open script \"%s\": %s\n",pathname,strerror(errno));
 	    continue;

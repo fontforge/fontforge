@@ -33,6 +33,7 @@
 #include "bvedit.h"
 #include "encoding.h"
 #include "fontforge.h"
+#include "gfile.h"
 #include "splinefill.h"
 #include "splinefont.h"
 #include "splinesaveafm.h"
@@ -436,7 +437,7 @@ int BDFFontDump(char *filename,BDFFont *font, EncMap *map, int res) {
 	sprintf(buffer,"%s-%s.%d.bdf", font->sf->fontname, encodingname, font->pixelsize );
 	filename = buffer;
     }
-    file = fopen(filename,"w" );
+    file = GFileFopen(filename,"w" );
     if ( file==NULL )
 	LogError( _("Can't open %s\n"), filename );
     else {

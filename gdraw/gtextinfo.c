@@ -36,6 +36,8 @@
 #include "ustring.h"
 #include "utype.h"
 
+#include <gfile.h>
+
 /////////////////////////////////////////////////////////////////
 // The below keys are from this file, when/if we move to GTK+
 // then perhaps we should include this file instead of the inline
