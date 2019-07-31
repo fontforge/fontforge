@@ -102,7 +102,7 @@ extern void setup_cocoa_app();
 #include "scripting.h"
 
 extern int AutoSaveFrequency;
-int splash = 1;
+int splash = 7;
 static int localsplash;
 static int unique = 0;
 
@@ -398,9 +398,12 @@ static void start_splash_screen(void){
     GDrawProcessPendingEvents(NULL);
     GDrawProcessPendingEvents(NULL);
 
-    splasht = GDrawRequestTimer(splashw,7000,1000,NULL);
+    int slpashDelayTime = 7000;
+    if( localsplash > 0 && localsplash < 60 )
+      slpashDelayTime = localsplash * 1000;
+    splasht = GDrawRequestTimer(splashw,slpashDelayTime,1000,NULL);
 
-    localsplash = false;
+    localsplash = 0;
 }
 
 #if defined(__Mac)
@@ -410,7 +413,7 @@ static FILE *logfile;
 static pascal OSErr OpenApplicationAE( const AppleEvent * theAppleEvent,
 	AppleEvent * reply, SRefCon handlerRefcon) {
  fprintf( logfile, "OPENAPP event received.\n" ); fflush( logfile );
-    if ( localsplash )
+    if ( localsplash > 0 )
 	start_splash_screen();
 #ifndef FONTFORGE_CAN_USE_GDK
     system( "DYLD_LIBRARY_PATH=\"\"; osascript -e 'tell application \"X11\" to activate'" );
@@ -424,7 +427,7 @@ return( noErr );
 static pascal OSErr ReopenApplicationAE( const AppleEvent * theAppleEvent,
 	AppleEvent * reply, SRefCon handlerRefcon) {
  fprintf( logfile, "ReOPEN event received.\n" ); fflush( logfile );
-    if ( localsplash )
+    if ( localsplash > 0 )
 	start_splash_screen();
 #ifndef FONTFORGE_CAN_USE_GDK
     system( "DYLD_LIBRARY_PATH=\"\"; osascript -e 'tell application \"X11\" to activate'" );
@@ -438,7 +441,7 @@ return( noErr );
 static pascal OSErr ShowPreferencesAE( const AppleEvent * theAppleEvent,
 	AppleEvent * reply, SRefCon handlerRefcon) {
  fprintf( logfile, "PREFS event received.\n" ); fflush( logfile );
-    if ( localsplash )
+    if ( localsplash > 0 )
 	start_splash_screen();
 #ifndef FONTFORGE_CAN_USE_GDK
     system( "DYLD_LIBRARY_PATH=\"\"; osascript -e 'tell application \"X11\" to activate'" );
@@ -457,7 +460,7 @@ static pascal OSErr OpenDocumentsAE( const AppleEvent * theAppleEvent,
     char	buffer[2048];
 
  fprintf( logfile, "OPEN event received.\n" ); fflush( logfile );
-    if ( localsplash )
+    if ( localsplash > 0 )
 	start_splash_screen();
 
     err = AEGetParamDesc(theAppleEvent, keyDirectObject,
@@ -1292,7 +1295,7 @@ exit( 0 );
     SplashLayout();
     localsplash = splash;
 
-   if ( localsplash && !listen_to_apple_events )
+   if ( localsplash > 0 && !listen_to_apple_events )
 	start_splash_screen();
 
     //
