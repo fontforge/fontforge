@@ -45,6 +45,7 @@ static void *a_file_must_define_something=(void *) &a_file_must_define_something
 
 # include "basics.h"
 # include "gimage.h"
+#include <gfile.h>
 
 struct mem_buffer {
     char *buffer;
@@ -220,7 +221,7 @@ GImage *GImageReadPng(char *filename) {
     GImage *ret=NULL;
     FILE *fp;
 
-    fp = fopen(filename, "rb");
+    fp = GFileFopen(filename, "rb");
     if (!fp)
 return( NULL );
 

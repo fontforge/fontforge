@@ -2343,7 +2343,7 @@ static void AttSave(struct att_dlg *att) {
     if ( ret==NULL )
 return;
     cret = utf82def_copy(ret);
-    file = fopen(cret,"w");
+    file = GFileFopen(cret,"w");
     free(cret);
     if ( file==NULL ) {
 	ff_post_error(_("Save Failed"),_("Save Failed"),ret);

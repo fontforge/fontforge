@@ -307,7 +307,7 @@ void _SCAutoTrace(SplineChar *sc, int layer, char **args) {
 	system(command);
 	free(command);
 
-	ps = fopen(tempname_out, "r");
+	ps = GFileFopen(tempname_out, "r");
 	if(ps){
 	    new = localSplinesFromEntities(EntityInterpretPS(ps,NULL),bgcol,ispotrace);
 	    transform[0] = images->xscale; transform[3] = images->yscale;

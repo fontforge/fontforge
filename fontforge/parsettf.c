@@ -6344,7 +6344,7 @@ SplineFont *SFReadTTF(char *filename, int flags, enum openflags openflags) {
         chosenname = copy(lparen+1);
         chosenname[strlen(chosenname)-1] = '\0';
     }
-    ttf = fopen(strippedname,"rb");
+    ttf = GFileFopen(strippedname,"rb");
     if ( ttf!=NULL ) {
         sf = _SFReadTTF(ttf,flags,openflags,strippedname,chosenname,NULL);
         fclose(ttf);
@@ -6367,7 +6367,7 @@ return( SFFillFromTTF(&info));
 }
 
 SplineFont *CFFParse(char *filename) {
-    FILE *cff = fopen(filename,"r");
+    FILE *cff = GFileFopen(filename,"r");
     SplineFont *sf;
     long len;
 
@@ -6382,7 +6382,7 @@ return( sf );
 }
 
 char **NamesReadCFF(char *filename) {
-    FILE *cff = fopen(filename,"rb");
+    FILE *cff = GFileFopen(filename,"rb");
     int32 hdrsize, offsize;
     char **fontnames;
 
@@ -6404,7 +6404,7 @@ return( fontnames );
 }
 
 char **NamesReadTTF(char *filename) {
-    FILE *ttf = fopen(filename,"rb");
+    FILE *ttf = GFileFopen(filename,"rb");
     int32 version, cnt, *offsets;
     int i,j;
     char **ret = NULL;

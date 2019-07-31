@@ -1168,7 +1168,7 @@ static char *SearchDirForWernerFile(char *dir,char *filename) {
     strcpy(buffer,dir);
     strcat(buffer,"/");
     strcat(buffer,filename);
-    if ( (file=fopen(buffer,"r"))==NULL )
+    if ( (file=GFileFopen(buffer,"r"))==NULL )
 	return( NULL );
     if ( fgets(buf2,sizeof(buf2),file)!=NULL && \
 	  strncmp(buf2,pfaeditflag,strlen(pfaeditflag))==0 )
@@ -1205,7 +1205,7 @@ static enum fchooserret GFileChooserFilterWernerSFDs(GGadget *g,GDirEntry *ent,
 	cu_strcpy(filename,dir);
 	strcat(filename,"/");
 	cu_strcat(filename,ent->name);
-	file = fopen(filename,"r");
+	file = GFileFopen(filename,"r");
 	if ( file==NULL )
 	    ret = fc_hide;
 	else {

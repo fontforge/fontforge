@@ -719,7 +719,7 @@ char *ParseEncodingFile(char *filename, char *encodingname) {
     int i,ch;
 
     if ( filename==NULL ) filename = getPfaEditEncodings();
-    file = fopen(filename,"r");
+    file = GFileFopen(filename,"r");
     if ( file==NULL ) {
 	if ( orig!=NULL )
 	    ff_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), orig);
@@ -808,7 +808,7 @@ void DumpPfaEditEncodings(void) {
 return;
     }
 
-    file = fopen( getPfaEditEncodings(), "w");
+    file = GFileFopen( getPfaEditEncodings(), "w");
     if ( file==NULL ) {
 	LogError( _("couldn't write encodings file\n") );
 return;
@@ -1048,7 +1048,7 @@ struct cidmap *LoadMapFromFile(char *file,char *registry,char *ordering,
     ret->next = cidmaps;
     cidmaps = ret;
 
-    f = fopen( file,"r" );
+    f = GFileFopen( file,"r" );
     if ( f==NULL ) {
 	ff_post_error(_("Missing cidmap file"),_("Couldn't open cidmap file: %s"), file );
     } else if ( fscanf( f, "%d %d", &ret->cidmax, &ret->namemax )!=2 ) {
@@ -1328,7 +1328,7 @@ static struct cmap *ParseCMap(char *filename) {
     static const char *bcsr = "begincodespacerange", *bndr = "beginnotdefrange", *bcr = "begincidrange", *bcc = "begincidchar";
     static const char *reg = "/Registry", *ord = "/Ordering", *sup="/Supplement";
 
-    file = fopen(filename,"r");
+    file = GFileFopen(filename,"r");
     if ( file==NULL )
 return( NULL );
 

@@ -28,6 +28,7 @@
 
 #include <fontforge-config.h>
 
+#include "gfile.h"
 #include "gimage.h"
 /*#include "gxdrawP.h"*/
 #include "utype.h"
@@ -290,7 +291,7 @@ GImage *GImageReadXpm(char * filename) {
    unsigned char *pt, *end; unsigned long *ipt;
    int (*getdata)(unsigned char *,int,FILE *) = NULL;
 
-    if ( (fp=fopen(filename,"r"))==NULL ) {
+    if ( (fp=GFileFopen(filename,"r"))==NULL ) {
 	fprintf(stderr,"Can't open \"%s\"\n", filename);
 	return( NULL );
     }

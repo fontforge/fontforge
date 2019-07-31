@@ -1952,7 +1952,7 @@ return( true );
 
 static int UFOOutputFeatures(const char *basedir, SplineFont *sf, int version) {
     char *fname = buildname(basedir,"features.fea");
-    FILE *feats = fopen( fname, "w" );
+    FILE *feats = GFileFopen( fname, "w" );
     int err;
 
     free(fname);
@@ -2176,7 +2176,7 @@ return( buffer );
 
 char **NamesReadUFO(char *filename) {
     char *fn = buildname(filename,"fontinfo.plist");
-    FILE *info = fopen(fn,"r");
+    FILE *info = GFileFopen(fn,"r");
     char buffer[1024];
     char **ret;
 

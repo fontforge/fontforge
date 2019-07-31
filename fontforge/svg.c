@@ -1038,7 +1038,7 @@ int WriteSVGFont(const char *fontname,SplineFont *sf,enum fontformat format,int 
     FILE *file;
     int ret;
 
-    if (( file=fopen(fontname,"w+"))==NULL )
+    if (( file=GFileFopen(fontname,"w+"))==NULL )
 return( 0 );
     svg_sfdump(file,sf,layer);
     ret = true;

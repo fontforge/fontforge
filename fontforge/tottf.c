@@ -5975,7 +5975,7 @@ static void DumpGlyphToNameMap(char *fontname,SplineFont *sf) {
     if ( e==NULL ) e = newname+strlen(newname);
     strcpy(e,".g2n");
 
-    file = fopen(newname,"wb");
+    file = GFileFopen(newname,"wb");
     if ( file==NULL ) {
 	LogError( _("Failed to open glyph to name map file for writing: %s\n"), newname );
 	free(newname);
@@ -6166,7 +6166,7 @@ int WriteTTFFont(char *fontname,SplineFont *sf,enum fontformat format,
     FILE *ttf;
     int ret;
 
-    if (( ttf=fopen(fontname,"wb+"))==NULL )
+    if (( ttf=GFileFopen(fontname,"wb+"))==NULL )
 return( 0 );
     ret = _WriteTTFFont(ttf,sf,format,bsizes,bf,flags,map,layer);
     if ( ret && (flags&ttf_flag_glyphmap) )
@@ -6963,7 +6963,7 @@ int WriteTTC(const char *filename,struct sflist *sfs,enum fontformat format,
     struct alltabs *ret;
     SplineFont dummysf;
 
-    if (( ttc=fopen(filename,"wb+"))==NULL )
+    if (( ttc=GFileFopen(filename,"wb+"))==NULL )
 return( 0 );
 
     format = (ttcflags & ttc_flag_cff) ? ff_otf : ff_ttf;

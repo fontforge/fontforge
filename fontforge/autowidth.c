@@ -34,6 +34,7 @@
 #include "cvundoes.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
+#include "gfile.h"
 #include "lookups.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
@@ -1097,7 +1098,7 @@ int AW_ReadKernPairFile(char *fn,WidthInfo *wi) {
     struct kernsets ks;
 
     filename = utf82def_copy(fn);
-    file = fopen(filename,"r");
+    file = GFileFopen(filename,"r");
     free( filename );
     if ( file==NULL ) {
 	ff_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), fn );

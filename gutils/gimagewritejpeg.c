@@ -33,6 +33,7 @@ static int a_file_must_define_something=0;	/* ANSI says so */
 
 #else
 
+#include "gfile.h"
 #include "gimage.h"
 
 #include <jerror.h>
@@ -175,7 +176,7 @@ int GImageWriteJpeg(GImage *gi, char *filename, int quality, int progressive) {
     FILE * outfile;		/* target file */
     int ret;
 
-  if ((outfile = fopen(filename, "wb")) == NULL) {
+  if ((outfile = GFileFopen(filename, "wb")) == NULL) {
     fprintf(stderr, "can't open %s\n", filename);
 return(0);
   }

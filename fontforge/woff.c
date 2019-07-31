@@ -552,7 +552,7 @@ int WriteWOFFFont(char *fontname,SplineFont *sf, enum fontformat format,
     FILE *woff;
     int ret;
 
-    if (( woff=fopen(fontname,"wb+"))==NULL )
+    if (( woff=GFileFopen(fontname,"wb+"))==NULL )
 return( 0 );
     ret = _WriteWOFFFont(woff,sf,format,bsizes,bf,flags,enc,layer);
     if ( fclose(woff)==-1 )
@@ -621,7 +621,7 @@ static FILE *WriteBufferToTempFile(const uint8_t *buf, size_t buflen)
 
 int WriteWOFF2Font(char *fontname, SplineFont *sf, enum fontformat format, int32_t *bsizes, enum bitmapformat bf, int flags, EncMap *enc, int layer)
 {
-    FILE *woff = fopen(fontname, "wb");
+    FILE *woff = GFileFopen(fontname, "wb");
     int ret = 0;
     if (woff) {
         ret = _WriteWOFF2Font(woff, sf, format, bsizes, bf, flags, enc, layer);

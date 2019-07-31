@@ -3870,7 +3870,7 @@ char* UndoToString( SplineChar* sc, Undoes *undo )
     int idx = 0;
     char filename[PATH_MAX];
     snprintf(filename, PATH_MAX, "/tmp/fontforge-undo-to-string.sfd");
-    FILE* f = fopen( filename, "w" );
+    FILE* f = GFileFopen( filename, "w" );
     SFDDumpUndo( f, sc, undo, "Undo", idx );
     fclose(f);
     char* sfd = GFileReadAll( filename );

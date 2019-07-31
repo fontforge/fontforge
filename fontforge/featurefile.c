@@ -2442,7 +2442,7 @@ return;
 	filename = GFileAppendFile(tok->filename[tok->inc_depth],namebuf,false);
 	*pt = '/';
     }
-    in = fopen(filename,"r");
+    in = GFileFopen(filename,"r");
     if ( in==NULL ) {
 	LogError(_("Could not open include file (%s) on line %d of %s"),
 		filename, tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
@@ -7338,7 +7338,7 @@ void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
 }
 
 void SFApplyFeatureFilename(SplineFont *sf,char *filename) {
-    FILE *in = fopen(filename,"r");
+    FILE *in = GFileFopen(filename,"r");
 
     if ( in==NULL ) {
 	ff_post_error(_("Cannot open file"),_("Cannot open feature file %.120s"), filename );

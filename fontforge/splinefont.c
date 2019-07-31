@@ -669,7 +669,7 @@ static char *ArchiveParseTOC(char *listfile, enum archive_list_style ars, int *d
     char **files, *linebuffer, *pt, *name;
 
     *doall = false;
-    file = fopen(listfile,"r");
+    file = GFileFopen(listfile,"r");
     if ( file==NULL )
 return( NULL );
 
@@ -922,7 +922,7 @@ static char *ForceFileToHaveName(FILE *file, char *exten) {
 	if ( exten!=NULL )
 	    strcat(tmpfilename,exten);
 	if ( access( tmpfilename, F_OK )==-1 &&
-		(newfile = fopen(tmpfilename,"w"))!=NULL ) {
+		(newfile = GFileFopen(tmpfilename,"w"))!=NULL ) {
 	    char buffer[1024];
 	    int len;
 	    while ( (len = fread(buffer,1,sizeof(buffer),file))>0 )
@@ -1085,7 +1085,7 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
 	    ff_progress_allow_events();
 
     if ( file==NULL ) {
-	    file = fopen(strippedname,"rb");
+	    file = GFileFopen(strippedname,"rb");
 	    nowlocal = true;
     }
 
@@ -1347,7 +1347,7 @@ return( NULL );
 	/* For some reason Adobe distributes CID keyed fonts (both OTF and */
 	/*  postscript) as extensionless files */
 	int ok = false;
-	FILE *test = fopen(filename,"rb");
+	FILE *test = GFileFopen(filename,"rb");
 	if ( test!=NULL ) {
 	    ok = true;		/* Mac resource files are too hard to check for */
 		    /* If file exists, assume good */

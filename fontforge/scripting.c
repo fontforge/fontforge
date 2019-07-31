@@ -1715,7 +1715,7 @@ static void bLoadFileToString(Context *c) {
     c->return_val.type = v_str;
     _name = script2utf8_copy(c->a.vals[1].u.sval);
     name = utf82def_copy(_name); free(_name);
-    f = fopen(name,"rb");
+    f = GFileFopen(name,"rb");
     free(name);
 
     if ( f==NULL )
@@ -1751,7 +1751,7 @@ static void bWriteStringToFile(Context *c) {
     }
     _name = script2utf8_copy(c->a.vals[2].u.sval);
     name = utf82def_copy(_name); free(_name);
-    f = fopen(name,append?"ab":"wb");
+    f = GFileFopen(name,append?"ab":"wb");
     free(name);
     c->return_val.type = v_int;
     if ( f==NULL )
@@ -1830,7 +1830,7 @@ char **GetFontNames(char *filename, int do_slow) {
 	}
 	free(temp);
     } else {
-	foo = fopen(filename,"rb");
+	foo = GFileFopen(filename,"rb");
 	if ( foo!=NULL ) {
 	    /* Try to guess the file type from the first few characters... */
 	    int ch1 = getc(foo);
@@ -2229,7 +2229,7 @@ static void bGenerateFeatureFile(Context *c) {
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
     locfilename = utf82def_copy(t);
-    out = fopen(locfilename,"wb");
+    out = GFileFopen(locfilename,"wb");
     if ( out==NULL )
 	ScriptError(c,"Failed to open output file");
     if ( otl!=NULL )
@@ -3332,7 +3332,7 @@ static void bLoadTableFromFile(Context *c) {
 
     t = script2utf8_copy(c->a.vals[2].u.sval);
     locfilename = utf82def_copy(t);
-    file = fopen(locfilename,"rb");
+    file = GFileFopen(locfilename,"rb");
     free(locfilename); free(t);
     if ( file==NULL )
 	ScriptErrorString(c,"Could not open file: ", c->a.vals[2].u.sval );
@@ -3371,7 +3371,7 @@ static void bSaveTableToFile(Context *c) {
 
     t = script2utf8_copy(c->a.vals[2].u.sval);
     locfilename = utf82def_copy(t);
-    file = fopen(locfilename,"wb");
+    file = GFileFopen(locfilename,"wb");
     free(locfilename); free(t);
     if ( file==NULL )
 	ScriptErrorString(c,"Could not open file: ", c->a.vals[2].u.sval );
@@ -8224,7 +8224,7 @@ static void bCompareFonts(Context *c) {
     if ( strcmp(c->a.vals[2].u.sval,"-")==0 )
 	diffs = stdout;
     else
-	diffs = fopen(c->a.vals[2].u.sval,"wb");
+	diffs = GFileFopen(c->a.vals[2].u.sval,"wb");
     if ( diffs==NULL )
 	ScriptErrorString( c, "Failed to open output file", c->a.vals[2].u.sval);
 
@@ -9656,21 +9656,21 @@ docall_expectint:   ScriptError(&sub,"Expected integer argument");
 		pt = strrchr(sub.filename,'/');
 		strcpy(pt+1,name);
 	    }
-	    sub.script = fopen(sub.filename,"rb");
+	    sub.script = GFileFopen(sub.filename,"rb");
 	    if ( sub.script==NULL ) {
 		char *pt;
 		if ( sub.filename==name )
 		    sub.filename = strcpy(malloc(strlen(name)+4),name);
 		pt = sub.filename + strlen(sub.filename);
 		strcpy((char *)pt, ".ff");
-		sub.script = fopen(sub.filename,"rb");
+		sub.script = GFileFopen(sub.filename,"rb");
 		if ( sub.script==NULL ) {
 		    strcpy((char *)pt, ".pe");
-		    sub.script = fopen(sub.filename,"rb");
+		    sub.script = GFileFopen(sub.filename,"rb");
 		}
 		if ( sub.script==NULL )
 		    *pt = '\0';
-		sub.script = fopen(sub.filename,"rb");
+		sub.script = GFileFopen(sub.filename,"rb");
 	    }
 	    if ( sub.script==NULL ) {
 		ScriptErrorString(c, "No built-in function or script file", name);
@@ -10760,7 +10760,7 @@ _Noreturn void ProcessNativeScript(int argc, char *argv[], FILE *script) {
     } else if ( i<argc && strcmp(argv[i],"-")!=0 ) {
 		// Take the first non-matched argument as a filename if it isn't a hyphen. (So the filename is not necessarily right after the -script argument.)
 		c.filename = argv[i];
-		c.script = fopen(c.filename,"rb");
+		c.script = GFileFopen(c.filename,"rb");
     } else {
 		// If there is no other source of commands, use stdin.
 		c.filename = "<stdin>";
@@ -10894,7 +10894,7 @@ return;
 	    ProcessNativeScript(argc, argv,NULL);
 #endif
 	} else /*if ( access(argv[i],X_OK|R_OK)==0 )*/ {
-	    FILE *temp = fopen(argv[i],"rb");
+	    FILE *temp = GFileFopen(argv[i],"rb");
 	    char buffer[200];
 	    if ( temp==NULL )
 return;
@@ -10949,7 +10949,7 @@ static void ExecuteNativeScriptFile(FontViewBase *fv, char *filename) {
     if ( setjmp(env)!=0 )
 return;				/* Error return */
 
-    c.script = fopen(c.filename,"rb");
+    c.script = GFileFopen(c.filename,"rb");
     if ( c.script==NULL )
 	ScriptError(&c, "No such file");
     else {

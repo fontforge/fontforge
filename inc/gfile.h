@@ -72,6 +72,8 @@ extern int GFileExists(const char *file);
 extern int GFileModifyable(const char *file);
 extern int GFileModifyableDir(const char *file);
 extern int GFileReadable(const char *file);
+extern FILE* GFileFopen(const char* filename, const char* mode);
+extern int GFileOpen(const char* filename, int flags, mode_t mode);
 extern FILE* GFileTmpfile();
 extern int GFileRemove(const char *path, int recursive);
 extern int GFileMkDir(const char *name, int mode);

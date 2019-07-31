@@ -2027,7 +2027,7 @@ char **NamesReadPDF(char *filename) {
     locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
     switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     memset(&pc,0,sizeof(pc));
-    if ( (pc.pdf=fopen(filename,"r"))==NULL )
+    if ( (pc.pdf=GFileFopen(filename,"r"))==NULL )
 	return( NULL );
     if ( (pc.objs=FindObjects(&pc))==NULL ) {
 	LogError( _("Doesn't look like a valid pdf file, couldn't find xref section") );
@@ -2136,7 +2136,7 @@ SplineFont *SFReadPdfFont(char *filename,enum openflags openflags) {
     SplineFont *sf;
     FILE *pdf;
 
-    pdf = fopen(filename,"r");
+    pdf = GFileFopen(filename,"r");
     if ( pdf==NULL )
 	sf = NULL;
     else {

@@ -27,6 +27,7 @@
 
 #include <fontforge-config.h>
 
+#include "gfile.h"
 #include "gimage.h"
 
 struct sgiheader {
@@ -193,7 +194,7 @@ GImage *GImageReadRgb(char *filename) {
     GImage *ret = NULL;
     struct _GImage *base;
 
-    if ( (fp=fopen(filename,"rb"))==NULL ) {
+    if ( (fp=GFileFopen(filename,"rb"))==NULL ) {
 	fprintf(stderr,"Can't open \"%s\"\n", filename);
 	return( NULL );
     }

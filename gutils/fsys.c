@@ -48,6 +48,11 @@ static char dirname_[MAXPATHLEN+1];
  #include <windows.h>
 #endif
 
+#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+# include <limits.h>
+# include <Stringapiset.h>
+#endif
+
 /**
  * \brief Removes the extension from a file path, if it exists.
  * This method assumes that the path is already normalized.
@@ -396,6 +401,45 @@ int GFileModifyableDir(const char *file) {
 
 int GFileReadable(const char *file) {
 return( access(file,04)==0 );
+}
+
+FILE* GFileFopen(const char* filename, const char* mode)
+{
+#if (defined _WIN32 || defined __WIN32__) && !defined __CYGWIN__
+#define MAX_MODE 20
+    wchar_t rpl_filename[MAX_PATH], rpl_mode[MAX_MODE];
+    size_t i;
+
+    if (MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, filename, -1, rpl_filename, MAX_PATH) == 0)
+    {
+        errno = EINVAL;
+        return NULL;
+    }
+    if (MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, mode, -1, rpl_mode, MAX_MODE) == 0)
+    {
+        errno = EINVAL;
+        return NULL;
+    }
+    for (i = 0; rpl_mode[i] && rpl_mode[i] != L'b'; i++)
+        ;
+
+    if (rpl_mode[i] == L'\0')
+    {
+        if (i + 1 < MAX_MODE)
+        {
+            rpl_mode[i++] = L'b';
+            rpl_mode[i] = L'\0';
+        }
+        else
+        {
+            errno = EINVAL;
+            return NULL;
+        }
+    }
+    return _wfopen(rpl_filename, rpl_mode);
+#else
+    return fopen(filename, mode);
+#endif
 }
 
 /**
@@ -1047,7 +1091,7 @@ char *GFileReadAll(char *name) {
     if ( (sz=GFileGetSize(name))>=0 && \
 	 (ret=calloc(1,sz+1))!=NULL ) {
 	FILE *fp;
-	if ( (fp=fopen(name,"rb"))!=NULL ) {
+	if ( (fp=GFileFopen(name,"rb"))!=NULL ) {
 	    size_t bread=fread(ret,1,sz,fp);
 	    fclose(fp);
 
@@ -1070,7 +1114,7 @@ int GFileWriteAll(char *filepath, char *data) {
     size_t bwrite = strlen(data);
     FILE* fp;
 
-    if ( (fp = fopen( filepath, "wb" )) != NULL ) {
+    if ( (fp = GFileFopen( filepath, "wb" )) != NULL ) {
 	if ( (fwrite( data, 1, bwrite, fp ) == bwrite) && \
 	     (fflush(fp) == 0) )
 	    return( (fclose(fp) == 0 ? 0: -1) );

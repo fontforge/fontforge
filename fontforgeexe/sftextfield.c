@@ -29,6 +29,7 @@
 
 #include "chardata.h"
 #include "fontforgeui.h"
+#include "gfile.h"
 #include "gkeysym.h"
 #include "langfreq.h"
 #include "sftextfieldP.h"
@@ -738,7 +739,7 @@ static void SFTextAreaSave(SFTextArea *st) {
 
     if ( cret==NULL )
 return;
-    file = fopen(cret,"w");
+    file = GFileFopen(cret,"w");
     if ( file==NULL ) {
 	ff_post_error(_("Could not open"),_("Could not open %.100s"),cret);
 	free(cret);

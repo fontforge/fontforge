@@ -3642,7 +3642,7 @@ static enum fchooserret CMapFilter(GGadget *g,GDirEntry *ent,
 	strcat(filename,"/");
 	u2def_strncpy(buf2,ent->name,sizeof(buf2));
 	strcat(filename,buf2);
-	file = fopen(filename,"r");
+	file = GFileFopen(filename,"r");
 	if ( file==NULL )
 	    ret = fc_hide;
 	else {
@@ -4857,7 +4857,7 @@ static void FVMenuMakeNamelist(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent 
     if ( filename==NULL )
 return;
     temp = utf82def_copy(filename);
-    file = fopen(temp,"w");
+    file = GFileFopen(temp,"w");
     free(temp);
     if ( file==NULL ) {
 	ff_post_error(_("Namelist creation failed"),_("Could not write %s"), filename);
@@ -4902,7 +4902,7 @@ return;
 	}
     }
 
-    old = fopen( temp,"r");
+    old = GFileFopen( temp,"r");
     if ( old==NULL ) {
 	ff_post_error(_("No such file"),_("Could not read %s"), ret );
 	free(ret); free(temp);
@@ -4922,7 +4922,7 @@ return;
 	    ff_post_notice(_("Non-ASCII glyphnames"),_("This namelist is based on a namelist which contains non-ASCII glyph names"));
     }
 
-    new = fopen( buffer,"w");
+    new = GFileFopen( buffer,"w");
     if ( new==NULL ) {
 	ff_post_error(_("Create failed"),_("Could not write %s"), buffer );
         fclose(old);
@@ -4975,7 +4975,7 @@ static void FVMenuNameGlyphs(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *U
 return;				/* Cancelled */
     temp = utf82def_copy(ret);
 
-    file = fopen( temp,"r");
+    file = GFileFopen( temp,"r");
     if ( file==NULL ) {
 	ff_post_error(_("No such file"),_("Could not read %s"), ret );
 	free(ret); free(temp);

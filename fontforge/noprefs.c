@@ -710,7 +710,7 @@ static void NOUI_LoadPrefs(void) {
     LoadPfaEditEncodings();
     LoadGroupList();
 
-    if ( prefs!=NULL && (p=fopen(prefs,"r"))!=NULL ) {
+    if ( prefs!=NULL && (p=GFileFopen(prefs,"r"))!=NULL ) {
 	while ( fgets(line,sizeof(line),p)!=NULL ) {
 	    if ( *line=='#' )
 	continue;
@@ -818,7 +818,7 @@ return;
     if ( not_if_script && running_script )
 return;
 
-    if ( (p=fopen(prefs,"w"))==NULL )
+    if ( (p=GFileFopen(prefs,"w"))==NULL )
 return;
 
     for ( j=0; prefs_list[j]!=NULL; ++j ) for ( i=0; prefs_list[j][i].name!=NULL; ++i ) {

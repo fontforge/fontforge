@@ -28,6 +28,7 @@
 #include <fontforge-config.h>
 
 #include "gdraw.h"
+#include "gfile.h"
 #include "ggadgetP.h"
 #include "gkeysym.h"
 #include "gresource.h"
@@ -812,7 +813,7 @@ unichar_t *_GGadgetFileToUString(char *filename,int max) {
     int format=0;
     unichar_t *space, *upt, *end;
 
-    file = fopen( filename,"r" );
+    file = GFileFopen( filename,"r" );
     if ( file==NULL )
 return( NULL );
     ch = getc(file); ch2 = getc(file); ch3 = getc(file);
@@ -928,7 +929,7 @@ static void GTextFieldSave(GTextField *gt,int utf8) {
 return;
     cret = u2def_copy(ret);
     free(ret);
-    file = fopen(cret,"w");
+    file = GFileFopen(cret,"w");
     if ( file==NULL ) {
 	if ( _ggadget_use_gettext )
 	    GWidgetError8(_("Could not open file"), _("Could not open %.100s"),cret);

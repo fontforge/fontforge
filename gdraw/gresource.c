@@ -29,6 +29,7 @@
 
 #include "charset.h"
 #include "fontP.h"
+#include "gfile.h"
 #include "gdraw.h"
 #include "gfile.h"
 #include "gresource.h"
@@ -279,7 +280,7 @@ void GResourceAddResourceFile(char *filename,char *prog,int warn) {
     FILE *file;
     char buffer[1000];
 
-    file = fopen(filename,"r");
+    file = GFileFopen(filename,"r");
     if ( file==NULL ) {
 	if ( warn )
 	    fprintf( stderr, "Failed to open resource file: %s\n", filename );

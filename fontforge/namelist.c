@@ -33,6 +33,7 @@
 #include "fontforgevw.h"
 #include "fvcomposite.h"
 #include "fvfonts.h"
+#include "gfile.h"
 #include "namehash.h"
 #include "pua.h"
 #include "ustring.h"
@@ -528,7 +529,7 @@ static void NameListFree(NameList *nl) {
 #include <sys/types.h>
 
 NameList *LoadNamelist(char *filename) {
-    FILE *file = fopen(filename,"r");
+    FILE *file = GFileFopen(filename,"r");
     NameList *nl, *nl2;
     char buffer[400];
     char *pt, *end, *test;

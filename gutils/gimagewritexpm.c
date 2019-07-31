@@ -28,6 +28,7 @@
 
 #include <fontforge-config.h>
 
+#include "gfile.h"
 #include "gimage.h"
 
 static char *pixname(int i, int ncol) {
@@ -78,7 +79,7 @@ int GImageWriteXpm(GImage *gi, char *filename) {
     if ( (pt=strrchr(stem,'.'))!=NULL && pt!=stem )
 	*pt = '\0';
 
-    if ( (file=fopen(filename,"w"))==NULL ) {
+    if ( (file=GFileFopen(filename,"w"))==NULL ) {
 	fprintf(stderr,"Can't open \"%s\"\n", filename);
 	return( -1 );
     }

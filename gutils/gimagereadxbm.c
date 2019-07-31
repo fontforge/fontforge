@@ -29,6 +29,7 @@
 #include <fontforge-config.h>
 
 #include "gimage.h"
+#include <gfile.h>
 
 static int ConvertXbmByte(int pixels) {
     int i,val=0;
@@ -49,7 +50,7 @@ GImage *GImageReadXbm(char * filename) {
     long pixels;
     uint8 *scanline;
 
-    if ( (file=fopen(filename,"r"))==NULL ) {
+    if ( (file=GFileFopen(filename,"r"))==NULL ) {
 	fprintf(stderr,"Can't open \"%s\"\n", filename);
 	return( NULL );
     }

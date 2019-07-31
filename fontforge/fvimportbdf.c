@@ -2047,7 +2047,7 @@ static BDFFont *SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback,
 
     if ( ispk==1 && strcmp(filename+strlen(filename)-2,"gf")==0 )
 	ispk = 3;
-    bdf = fopen(filename,"rb");
+    bdf = GFileFopen(filename,"rb");
     if ( bdf==NULL ) {
 	ff_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), filename );
 return( NULL );
