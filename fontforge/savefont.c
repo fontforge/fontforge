@@ -118,7 +118,7 @@ static int WriteAfmFile(char *filename,SplineFont *sf, int formattype,
 	strcpy(pt,".afm");
     ff_progress_change_line1(_("Saving AFM File"));
     ff_progress_change_line2(buf);
-    afm = fopen(buf,"w");
+    afm = GFileFopen(buf,"w");
     if ( afm==NULL ) {
 	free(buf);
 return( false );
@@ -143,7 +143,7 @@ return( false );
 	    strcpy(pt,sf->fontname);
 	    strcat(pt,".afm");
 	    ff_progress_change_line2(buf);
-	    afm = fopen(buf,"w");
+	    afm = GFileFopen(buf,"w");
 	    free(buf);
 	    if ( afm==NULL )
 return( false );
@@ -164,7 +164,7 @@ return( false );
 	else
 	    strcpy(pt,".amfm");
 	ff_progress_change_line2(buf);
-	afm = fopen(buf,"w");
+	afm = GFileFopen(buf,"w");
 	free(buf);
 	if ( afm==NULL )
 return( false );
@@ -193,7 +193,7 @@ static int WriteTfmFile(char *filename,SplineFont *sf, EncMap *map,int layer) {
     ff_progress_change_line1(_("Saving TFM File"));
     ff_progress_change_line2(buf);
     ff_progress_next();	/* Forces a refresh */
-    tfm = fopen(buf,"wb");
+    tfm = GFileFopen(buf,"wb");
     if ( tfm==NULL )
 return( false );
     ret = TfmSplineFont(tfm,sf,map,layer);
@@ -202,7 +202,7 @@ return( false );
 
     pt = strrchr(buf,'.');
     strcpy(pt,".enc");
-    enc = fopen(buf,"wb");
+    enc = GFileFopen(buf,"wb");
     free(buf);
     if ( enc==NULL )
 return( false );
@@ -256,7 +256,7 @@ static int WriteOfmFile(char *filename,SplineFont *sf, EncMap *map,int layer) {
     ff_progress_change_line1(_("Saving OFM File"));
     ff_progress_change_line2(buf);
     ff_progress_next();	/* Forces a refresh */
-    tfm = fopen(buf,"wb");
+    tfm = GFileFopen(buf,"wb");
     if ( tfm==NULL )
 return( false );
     ret = OfmSplineFont(tfm,sf,map,layer);
@@ -265,7 +265,7 @@ return( false );
 
     pt = strrchr(buf,'.');
     strcpy(pt,".cfg");
-    enc = fopen(buf,"wb");
+    enc = GFileFopen(buf,"wb");
     free(buf);
     if ( enc==NULL )
 return( false );
@@ -309,7 +309,7 @@ int WritePfmFile(char *filename,SplineFont *sf, EncMap *map,int layer) {
     else
 	strcpy(pt,".pfm");
     ff_progress_change_line2(buf);
-    pfm = fopen(buf,"wb");
+    pfm = GFileFopen(buf,"wb");
     free(buf);
     if ( pfm==NULL )
 return( false );
@@ -334,7 +334,7 @@ return( true );
 	strcat(buf,"FONTLOG.txt");
     else
 	strcpy(pt+1,"FONTLOG.txt");
-    flog = fopen(buf,"a"); // We changed this to append if the file exists.
+    flog = GFileFopen(buf,"a"); // We changed this to append if the file exists.
     free(buf);
     if ( flog==NULL )
 return( false );
@@ -421,7 +421,7 @@ static int32 *ParseWernerSFDFile(char *wernerfilename,SplineFont *sf,int *max,
     int loop;
     static const char *pfaeditflag = "SplineFontDB:";
 
-    file = fopen(wernerfilename,"r");
+    file = GFileFopen(wernerfilename,"r");
     if ( file==NULL ) {
 	ff_post_error(_("No Sub Font Definition file"),_("No Sub Font Definition file"));
 return( NULL );

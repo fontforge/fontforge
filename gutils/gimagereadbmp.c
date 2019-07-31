@@ -27,8 +27,10 @@
 
 #include <fontforge-config.h>
 
+#include "gfile.h"
 #include "gimage.h"
 #include "gimagebmpP.h"
+
 GImage *_GImage_Create(enum image_type type, int32 width, int32 height);
 
 static int getshort(FILE *fp) {
@@ -438,7 +440,7 @@ GImage *GImageReadBmp(char *filename) {
     FILE *file;			/* source file */
     GImage *ret;
 
-    if ( (file=fopen(filename,"rb"))==NULL ) {
+    if ( (file=GFileFopen(filename,"rb"))==NULL ) {
 	fprintf(stderr,"Can't open \"%s\"\n", filename);
 	return( NULL );
     }

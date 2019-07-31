@@ -36,6 +36,7 @@
 #include "utype.h"
 
 #include <dirent.h>
+#include <gfile.h>
 
 #if !defined(FONTFORGE_CAN_USE_GDK) && !defined(X_DISPLAY_MISSING)
 # include <X11/Xatom.h>
@@ -313,7 +314,7 @@ static void parse_afm(FState *fonts, char *filename, struct font_data *fd) {
     struct font_name *fn;
     unichar_t ubuf[300];
     
-    if (( file=fopen(filename,"r"))==NULL ) {
+    if (( file=GFileFopen(filename,"r"))==NULL ) {
 	GDrawIError( "Can't open afm file %s\n", filename);
 return;
     }
@@ -664,7 +665,7 @@ void _GPSDraw_ProcessFont(GPSWindow ps, struct font_data *fd) {
 	_GPSDraw_ProcessFont(ps,base);
     else if ( base->base==NULL ) {
 	if ( base->fontfile!=NULL && !base->copiedtoprinter ) {
-	    FILE *ff = fopen( base->fontfile,"rb");
+	    FILE *ff = GFileFopen( base->fontfile,"rb");
 	    if ( ff==NULL ) GDrawIError("Can't download font: %s", base->localname );
 	    else {
 		fprintf( output_file, "%%%%BeginResource: font %s\n", base->localname );

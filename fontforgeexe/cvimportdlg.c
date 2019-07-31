@@ -32,6 +32,7 @@
 #include "cvundoes.h"
 #include "fontforgeui.h"
 #include "fvimportbdf.h"
+#include "gfile.h"
 #include "gkeysym.h"
 #include "sd.h"
 #include "spiro.h"
@@ -47,7 +48,7 @@
 #define CID_JoinLimitVal 1001
 
 static void ImportPS(CharView *cv,char *path,ImportParams *ip) {
-    FILE *ps = fopen(path,"r");
+    FILE *ps = GFileFopen(path,"r");
 
     if ( ps==NULL )
 return;
@@ -56,7 +57,7 @@ return;
 }
 
 static void ImportPDF(CharView *cv,char *path,ImportParams *ip) {
-    FILE *pdf = fopen(path,"r");
+    FILE *pdf = GFileFopen(path,"r");
 
     if ( pdf==NULL )
 return;
@@ -65,7 +66,7 @@ return;
 }
 
 static void ImportPlate(CharView *cv,char *path,ImportParams *ip) {
-    FILE *plate = fopen(path,"r");
+    FILE *plate = GFileFopen(path,"r");
 
     if ( plate==NULL )
 return;

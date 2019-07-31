@@ -3018,7 +3018,7 @@ static unichar_t *FileToUString(char *filename,int max) {
     int format=0;
     unichar_t *space, *upt, *end;
 
-    file = fopen( filename,"rb" );
+    file = GFileFopen( filename,"rb" );
     if ( file==NULL )
 return( NULL );
     ch = getc(file); ch2 = getc(file);
@@ -3092,7 +3092,7 @@ void ScriptPrint(FontViewBase *fv,int type,int32 *pointsizes,char *samplefile,
 		    pi.printtype==pt_file?"ps":"pdf" );
 	    outputfile = buf;
 	}
-	pi.out = fopen(outputfile,"wb");
+	pi.out = GFileFopen(outputfile,"wb");
 	if ( pi.out==NULL ) {
 	    ff_post_error(_("Print Failed"),_("Failed to open file %s for output"), outputfile);
 return;

@@ -29,6 +29,7 @@
 #include <fontforge-config.h>
 
 #include "gimage.h"
+#include <gfile.h>
 
 typedef struct _SunRaster {
   long MagicNumber;	/* Magic (identification) number */
@@ -256,7 +257,7 @@ GImage *GImageReadRas(char *filename) {
     GImage *ret = NULL;
     struct _GImage *base;
 
-    if ( (fp=fopen(filename,"rb"))==NULL ) {
+    if ( (fp=GFileFopen(filename,"rb"))==NULL ) {
 	fprintf(stderr,"Can't open \"%s\"\n", filename);
 	return( NULL );
     }

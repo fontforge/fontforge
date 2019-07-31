@@ -32,6 +32,7 @@
 #include "bvedit.h"
 #include "encoding.h"
 #include "fontforgevw.h"
+#include "gfile.h"
 #include "macbinary.h"
 #include "mem.h"
 #include "splinefill.h"
@@ -350,7 +351,7 @@ SplineFont *SFReadPalmPdb(char *filename) {
     int offset, next_offset;
     SplineFont *sf;
 
-    file = fopen(filename,"rb");
+    file = GFileFopen(filename,"rb");
     if ( file==NULL )
 return( NULL );
 
@@ -406,7 +407,7 @@ static FILE *MakeFewRecordPdb(const char *filename,int cnt) {
     if ( pt2==NULL || pt2<pt1 )
 	pt2 = fn+strlen(fn);
     strcpy(pt2,".pdb");
-    file = fopen(fn,"wb");
+    file = GFileFopen(fn,"wb");
     if ( file==NULL ) {
 	ff_post_error(_("Couldn't open file"),_("Couldn't open file %.200s"),fn);
 	free(fn);

@@ -1891,7 +1891,7 @@ static int SFDDumpBitmapFont(FILE *sfd,BDFFont *bdf,EncMap *encm,int *newgids,
 		char *glyphfile = malloc(strlen(dirname)+2*strlen(bdf->glyphs[i]->sc->name)+20);
 		FILE *gsfd;
 		appendnames(glyphfile,dirname,"/",bdf->glyphs[i]->sc->name,BITMAP_EXT );
-		gsfd = fopen(glyphfile,"w");
+		gsfd = GFileFopen(glyphfile,"w");
 		if ( gsfd!=NULL ) {
 		    SFDDumpBitmapChar(gsfd,bdf->glyphs[i],encm->backmap[i],newgids);
 		    if ( ferror(gsfd)) err = true;
@@ -2874,7 +2874,7 @@ static int SFD_Dump( FILE *sfd, SplineFont *sf, EncMap *map, EncMap *normal,
 		GFileMkDir(subfont, 0755);
 		fontprops = malloc(strlen(subfont)+strlen("/" FONT_PROPS)+1);
 		strcpy(fontprops,subfont); strcat(fontprops,"/" FONT_PROPS);
-		ssfd = fopen( fontprops,"w");
+		ssfd = GFileFopen( fontprops,"w");
 		if ( ssfd!=NULL ) {
 		    err |= SFD_Dump(ssfd,sf->subfonts[i],map,NULL,todir,subfont);
 		    if ( ferror(ssfd) ) err = true;
@@ -2925,7 +2925,7 @@ static int SFD_Dump( FILE *sfd, SplineFont *sf, EncMap *map, EncMap *normal,
 		    char *glyphfile = malloc(strlen(dirname)+2*strlen(sf->glyphs[i]->name)+20);
 		    FILE *gsfd;
 		    appendnames(glyphfile,dirname,"/",sf->glyphs[i]->name,GLYPH_EXT );
-		    gsfd = fopen(glyphfile,"w");
+		    gsfd = GFileFopen(glyphfile,"w");
 		    if ( gsfd!=NULL ) {
 			SFDDumpChar(gsfd,sf->glyphs[i],map,newgids,todir,1);
 			if ( ferror(gsfd)) err = true;
@@ -2952,7 +2952,7 @@ static int SFD_Dump( FILE *sfd, SplineFont *sf, EncMap *map, EncMap *normal,
 	    GFileMkDir(strike, 0755);
 	    strikeprops = malloc(strlen(strike)+strlen("/" STRIKE_PROPS)+1);
 	    strcpy(strikeprops,strike); strcat(strikeprops,"/" STRIKE_PROPS);
-	    ssfd = fopen( strikeprops,"w");
+	    ssfd = GFileFopen( strikeprops,"w");
 	    if ( ssfd!=NULL ) {
 		err |= SFDDumpBitmapFont(ssfd,bdf,map,newgids,todir,strike);
 		if ( ferror(ssfd) ) err = true;
@@ -2981,7 +2981,7 @@ static int SFD_MIDump(SplineFont *sf,EncMap *map,char *dirname,	int mm_pos) {
     GFileMkDir(instance, 0755);
     fontprops = malloc(strlen(instance)+strlen("/" FONT_PROPS)+1);
     strcpy(fontprops,instance); strcat(fontprops,"/" FONT_PROPS);
-    ssfd = fopen( fontprops,"w");
+    ssfd = GFileFopen( fontprops,"w");
     if ( ssfd!=NULL ) {
 	err |= SFD_Dump(ssfd,sf,map,NULL,true,instance);
 	if ( ferror(ssfd) ) err = true;
@@ -3172,7 +3172,7 @@ int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal,int todir)
 	strcpy(tempfilename,filename); strcat(tempfilename,"/" FONT_PROPS);
     }
 
-    sfd = fopen(tempfilename,"w");
+    sfd = GFileFopen(tempfilename,"w");
     if ( tempfilename!=filename ) free(tempfilename);
     if ( sfd==NULL )
 return( 0 );
@@ -6267,7 +6267,7 @@ return( 0 );
 	    else if ( strcmp(pt,BITMAP_EXT)==0 ) {
 		FILE *gsfd;
 		sprintf(name,"%s/%s", dirname, ent->d_name);
-		gsfd = fopen(name,"r");
+		gsfd = GFileFopen(name,"r");
 		if ( gsfd!=NULL ) {
 		    if ( getname(gsfd,tok) && strcmp(tok,"BDFChar:")==0)
 			SFDGetBitmapChar(gsfd,bdf);
@@ -7149,7 +7149,7 @@ return( sf );
 	    else if ( strcmp(pt,GLYPH_EXT)==0 ) {
 		FILE *gsfd;
 		sprintf(name,"%s/%s", dirname, ent->d_name);
-		gsfd = fopen(name,"r");
+		gsfd = GFileFopen(name,"r");
 		if ( gsfd!=NULL ) {
 		    SFDGetChar(gsfd,sf,had_layer_cnt);
 		    ff_progress_next();
@@ -7173,7 +7173,7 @@ return( sf );
 		FILE *ssfd;
 		sprintf(name,"%s/%s", dirname, ent->d_name);
 		sprintf(props,"%s/" FONT_PROPS, name);
-		ssfd = fopen(props,"r");
+		ssfd = GFileFopen(props,"r");
 		if ( ssfd!=NULL ) {
 		    if ( i!=0 )
 			ff_progress_next_stage();
@@ -7198,7 +7198,7 @@ return( sf );
 		    ff_progress_next_stage();
 		sprintf(name,"%s/%s", dirname, ent->d_name);
 		sprintf(props,"%s/" FONT_PROPS, name);
-		ssfd = fopen(props,"r");
+		ssfd = GFileFopen(props,"r");
 		if ( ssfd!=NULL ) {
 		    SplineFont *mmsf;
 		    mmsf = SFD_GetFont(ssfd,NULL,tok,true,name,sf->sfd_version);
@@ -7238,7 +7238,7 @@ return( sf );
 		FILE *ssfd;
 		sprintf(name,"%s/%s", dirname, ent->d_name);
 		sprintf(props,"%s/" STRIKE_PROPS, name);
-		ssfd = fopen(props,"r");
+		ssfd = GFileFopen(props,"r");
 		if ( ssfd!=NULL ) {
 		    if ( getname(ssfd,tok)==1 && strcmp(tok,"BitmapFont:")==0 )
 			SFDGetBitmapFont(ssfd,sf,true,name);
@@ -9073,9 +9073,9 @@ static SplineFont *SFD_Read(char *filename,FILE *sfd, int fromdir) {
     if ( sfd==NULL ) {
 	if ( fromdir ) {
 	    snprintf(tok,sizeof(tok),"%s/" FONT_PROPS, filename );
-	    sfd = fopen(tok,"r");
+	    sfd = GFileFopen(tok,"r");
 	} else
-	    sfd = fopen(filename,"r");
+	    sfd = GFileFopen(filename,"r");
     }
     if ( sfd==NULL )
 return( NULL );
@@ -9136,9 +9136,9 @@ SplineChar *SFDReadOneChar(SplineFont *cur_sf,const char *name) {
 
     if ( cur_sf->save_to_dir ) {
 	snprintf(tok,sizeof(tok),"%s/" FONT_PROPS,cur_sf->filename);
-	sfd = fopen(tok,"r");
+	sfd = GFileFopen(tok,"r");
     } else
-	sfd = fopen(cur_sf->filename,"r");
+	sfd = GFileFopen(cur_sf->filename,"r");
     if ( sfd==NULL )
 return( NULL );
     locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
@@ -9210,7 +9210,7 @@ return( NULL );
 	if ( sc!=NULL ) IError("Read a glyph from font.props");
 	/* Doesn't work for CID keyed, nor for mm */
 	snprintf(tok,sizeof(tok),"%s/%s" GLYPH_EXT,cur_sf->filename,name);
-	sfd = fopen(tok,"r");
+	sfd = GFileFopen(tok,"r");
 	if ( sfd!=NULL ) {
 	    sc = SFDGetChar(sfd,&sf,had_layer_cnt);
 	    fclose(sfd);
@@ -9377,7 +9377,7 @@ static int ask_about_file(char *filename, int *state, FILE **asfd) {
     char *buts[6];
     char buffer[800], *pt;
 
-    if ((*asfd = fopen(filename, "r")) == NULL) {
+    if ((*asfd = GFileFopen(filename, "r")) == NULL) {
         return false;
     } else if (*state&1) { //Recover all
         return true;
@@ -9463,7 +9463,7 @@ void SFAutoSave(SplineFont *sf,EncMap *map) {
 return;
 
     if ( sf->cidmaster!=NULL ) sf=sf->cidmaster;
-    asfd = fopen(sf->autosavename,"w");
+    asfd = GFileFopen(sf->autosavename,"w");
     if ( asfd==NULL )
 return;
 
@@ -9529,7 +9529,7 @@ return;
 }
 
 char **NamesReadSFD(char *filename) {
-    FILE *sfd = fopen(filename,"r");
+    FILE *sfd = GFileFopen(filename,"r");
     char tok[2000];
     char **ret = NULL;
     int eof;

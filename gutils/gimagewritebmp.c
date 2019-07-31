@@ -29,6 +29,7 @@
 
 #include "gimage.h"
 #include "gimagebmpP.h"
+#include <gfile.h>
 
 static void myputs(short s, FILE *file) {
     putc(s&0xff,file);
@@ -145,7 +146,7 @@ int GImageWriteBmp(GImage *gi, char *filename) {
     FILE *file;
     int ret;
 
-    if ((file=fopen(filename,"wb"))==NULL )
+    if ((file=GFileFopen(filename,"wb"))==NULL )
 return(false);
     ret = GImageWrite_Bmp(gi,file);
     fclose(file);

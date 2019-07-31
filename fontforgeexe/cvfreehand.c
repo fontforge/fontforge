@@ -29,6 +29,7 @@
 
 #include "cvundoes.h"
 #include "fontforgeui.h"
+#include "gfile.h"
 #include "splinefit.h"
 #include "splineorder2.h"
 #include "splinestroke.h"
@@ -751,7 +752,7 @@ void CVMouseMoveFreeHand(CharView *cv, GEvent *event) {
 
 #ifdef DEBUG_FREEHAND
 static void RepeatFromFile(CharView *cv) {
-    FILE *foo = fopen("mousemove","r");
+    FILE *foo = GFileFopen("mousemove","r");
     /*char buffer[100];*/
     GEvent e;
     int x,y,p,t;

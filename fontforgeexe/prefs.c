@@ -1039,7 +1039,7 @@ static void PrefsUI_LoadPrefs_FromFile( char* filename )
     char *pt;
     struct prefs_list *pl;
 
-    if ( filename!=NULL && (p=fopen(filename,"r"))!=NULL ) {
+    if ( filename!=NULL && (p=GFileFopen(filename,"r"))!=NULL ) {
 	while ( fgets(line,sizeof(line),p)!=NULL ) {
 	    if ( *line=='#' )
 	continue;
@@ -1161,7 +1161,7 @@ static void PrefsUI_LoadPrefs(void)
     LoadPfaEditEncodings();
     LoadGroupList();
 
-    if ( prefs!=NULL && (p=fopen(prefs,"r"))!=NULL ) {
+    if ( prefs!=NULL && (p=GFileFopen(prefs,"r"))!=NULL ) {
 	while ( fgets(line,sizeof(line),p)!=NULL ) {
 	    if ( *line=='#' )
 	continue;
@@ -1300,7 +1300,7 @@ return;
     if ( not_if_script && running_script )
 return;
 
-    if ( (p=fopen(prefs,"w"))==NULL )
+    if ( (p=GFileFopen(prefs,"w"))==NULL )
 return;
 
     GetFileChooserPrefs();
@@ -2602,7 +2602,7 @@ void LastFonts_Save(void) {
 
     if ( ffdir ) {
         sprintf(buffer, "%s/FontsOpenAtLastQuit", ffdir);
-        preserve = fopen(buffer,"w");
+        preserve = GFileFopen(buffer,"w");
         free(ffdir);
     }
 

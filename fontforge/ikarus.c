@@ -30,6 +30,7 @@
 #include "ikarus.h"
 
 #include "fontforge.h"
+#include "gfile.h"
 #include "mem.h"
 #include "namelist.h"
 #include "splineorder2.h"
@@ -598,7 +599,7 @@ static void IkarusFontname(SplineFont *sf,char *fullname,char *fnam) {
 
 SplineFont *SFReadIkarus(char *fontname) {
     SplineFont *sf;
-    FILE *file = fopen(fontname,"rb");
+    FILE *file = GFileFopen(fontname,"rb");
     int ch1, ch2, rpos, wpos, i;
     int hlen, ilen, jlen, llen, mlen;
     int numchars, maxnum, opt_pt_size;

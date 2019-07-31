@@ -28,6 +28,7 @@
 
 #include <fontforge-config.h>
 
+#include "gfile.h"
 #include "gimage.h"
 
 static void WriteBase(FILE *file, struct _GImage *base, char *stem, int instance) {
@@ -111,7 +112,7 @@ int GImageWriteGImage(GImage *gi, char *filename) {
 	*pt = '\0';
 
     /* Begin writing C code to the file */
-    if ( (file=fopen(filename,"w"))==NULL ) {
+    if ( (file=GFileFopen(filename,"w"))==NULL ) {
 	fprintf(stderr,"Can't open \"%s\"\n", filename);
 	return( -1 );
     }

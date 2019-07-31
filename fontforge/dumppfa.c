@@ -2672,7 +2672,7 @@ int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,
     FILE *out;
     int ret;
 
-    if (( out=fopen(fontname,"wb"))==NULL )
+    if (( out=GFileFopen(fontname,"wb"))==NULL )
 return( 0 );
     ret = _WritePSFont(out,sf,format,flags,map,fullsf,layer);
     if ( fclose(out)==-1 )
@@ -2718,7 +2718,7 @@ int PSBitmapDump(char *filename,BDFFont *font, EncMap *map) {
 	sprintf(buffer,"%s-%d.pt3", sf->fontname, font->pixelsize );
 	filename = buffer;
     }
-    file = fopen(filename,"w" );
+    file = GFileFopen(filename,"w" );
     if ( file==NULL )
 	LogError( _("Can't open %s\n"), filename );
     else {

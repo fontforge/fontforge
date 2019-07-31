@@ -34,6 +34,7 @@ static int a_file_must_define_something=0;	/* ANSI says so */
 #else /* We can build with jpeglib - therefore import jpg files */
 
 #include "basics.h"
+#include "gfile.h"
 #include "gimage.h"
 
 #include <jerror.h>
@@ -140,7 +141,7 @@ GImage *GImageReadJpeg(char *filename) {
     GImage *ret;
     FILE * infile;		/* source file */
 
-    if ((infile = fopen(filename, "rb")) == NULL) {
+    if ((infile = GFileFopen(filename, "rb")) == NULL) {
 	fprintf(stderr,"Can't open \"%s\"\n", filename);
 	return( NULL );
     }

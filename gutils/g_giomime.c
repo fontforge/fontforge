@@ -132,7 +132,7 @@ char* GIOGetMimeType(const char *path) {
 #ifndef __MINGW32__
     FILE *fp;
 
-    if ( (fp=fopen(path,"rb"))!=NULL ) {
+    if ( (fp=GFileFopen(path,"rb"))!=NULL ) {
 	guchar sniff_buffer[sniff_length];
 	gboolean uncertain;
 	size_t res=fread(sniff_buffer,1,sniff_length,fp);
