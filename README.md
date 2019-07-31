@@ -7,6 +7,12 @@ Use it to create, edit and convert fonts in OpenType, TrueType, UFO, CID-keyed, 
 
 [fontforge.org](http://fontforge.org) &mdash; homepage
 
+Happyrobot Mod is a maintained fork of FontForge with some extra goodies as follows:
+
+- Set a Default Directory when starting (previously defaults to ~/)
+- Set a time in seconds that the Splash Screen should wait before hiding
+
+
 [designwithfontforge.com](http://designwithfontforge.com) &mdash; font creation manual
 
 [`INSTALL-git.md`](INSTALL-git.md) &mdash; developer instructions to build from source

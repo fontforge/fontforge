@@ -7,7 +7,7 @@ Clone a copy of the Github source repository:
 ```sh
 mkdir -p ~/src/github.com/fontforge;
 cd ~/src/github.com/fontforge;
-git clone https://github.com/fontforge/fontforge.git;
+git clone https://github.com/happyrobotstudio/happyfontforge.git;
 ```
 
 Install all your typical build tools, build dependencies and runtime dependencies - all the packages that allow you to build of software from source code.
@@ -72,7 +72,7 @@ cd ..
 Now run the build and installation scripts, and ensure you can open shared object files:
 
 ```sh
-cd fontforge;
+cd happyfontforge;
 ./bootstrap;
 ./configure;
 make;
