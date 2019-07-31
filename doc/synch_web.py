@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 from __future__ import print_function
+from io import open
 from shutil import copy2
 import argparse
 import os
@@ -51,12 +52,12 @@ def rewrite_html(path, destination, root):
 
     mkdir(destination + root)
     dest_path = os.path.join(destination + root, os.path.basename(path))
-    with open(path, 'rb') as fpi:
+    with open(path, 'r', encoding='utf-8') as fpi:
         data = fpi.read()
         data = URL_RE.sub(href_updater, data)
         data = BODY_RE.sub(body_updater, data, 1)
 
-        with open(dest_path, 'wb') as fpo:
+        with open(dest_path, 'w', encoding='utf-8') as fpo:
             fpo.write(data)
 
 
@@ -68,11 +69,11 @@ def rewrite_css(path, destination, root):
 
     mkdir(destination + root)
     dest_path = os.path.join(destination + root, os.path.basename(path))
-    with open(path, 'rb') as fpi:
+    with open(path, 'r', encoding='utf-8') as fpi:
         data = fpi.read()
         data = CSS_URL_RE.sub(url_updater, data)
 
-        with open(dest_path, 'wb') as fpo:
+        with open(dest_path, 'w', encoding='utf-8') as fpo:
             fpo.write(data)
 
 
@@ -84,7 +85,7 @@ def copy_to(src, dst):
 def main(source, destination):
     for root, _, files in os.walk(source):
         for file in files:
-            if file[0] == '.' or file.startswith('Makefile'):
+            if file[0] == '.' or file.startswith('Makefile') or file.startswith('CMake'):
                 continue
             file = os.path.join(root, file)
             stripped_root = root[len(source):]
