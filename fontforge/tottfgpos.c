@@ -1929,7 +1929,7 @@ static void dumpGSUBligdata(FILE *gsub,SplineFont *sf,
 	putshort(gsub,pcnt);
 	if ( pcnt>=max ) {
 	    max = pcnt+100;
-	    ligoffsets = realloc(ligoffsets,max*sizeof(int));
+	    ligoffsets = realloc(ligoffsets,max*sizeof(uint16));
 	}
 	lig_list_start = ftell(gsub);
 	for ( j=0; j<pcnt; ++j )

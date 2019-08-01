@@ -6113,7 +6113,7 @@ return( 0 );
 	bfc->byte_data = true;
 	bfc->depth = bdf->clut->clut_len==4 ? 2 : bdf->clut->clut_len==16 ? 4 : 8;
     }
-    bfc->bitmap = calloc((bfc->ymax-bfc->ymin+1)*bfc->bytes_per_line,sizeof(char));
+    bfc->bitmap = calloc((bfc->ymax-bfc->ymin+1)*bfc->bytes_per_line,sizeof(uint8));
 
     memset(&dec,'\0', sizeof(dec)); dec.pos = -1;
     dec.sfd = sfd;

@@ -2482,8 +2482,8 @@ static void LoadNFNT(FILE *f,long offset, SplineFont *sf) {
     font.rowWords = getushort(f);
     if ( font.rowWords!=0 ) {
 	font.fontImage = calloc(font.rowWords*font.fRectHeight,sizeof(short));
-	font.locs = calloc(font.lastChar-font.firstChar+3,sizeof(short));
-	font.offsetWidths = calloc(font.lastChar-font.firstChar+3,sizeof(short));
+	font.locs = calloc(font.lastChar-font.firstChar+3,sizeof(unsigned short));
+	font.offsetWidths = calloc(font.lastChar-font.firstChar+3,sizeof(unsigned short));
 	for ( i=0; i<font.rowWords*font.fRectHeight; ++i )
 	    font.fontImage[i] = getushort(f);
 	for ( i=0; i<font.lastChar-font.firstChar+3; ++i )

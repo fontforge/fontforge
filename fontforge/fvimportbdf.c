@@ -2342,7 +2342,7 @@ int FVImportBDF(FontViewBase *fv, char *filename, int ispk, int toback) {
 	FontViewBase *fvs;
 	for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	    free(fvs->selected);
-	    fvs->selected = calloc(fvs->map->enccount,sizeof(char));
+	    fvs->selected = calloc(fvs->map->enccount,sizeof(uint8));
 	}
 	FontViewReformatAll(fv->sf);
     }

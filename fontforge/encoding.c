@@ -2200,7 +2200,7 @@ return -1;
 	SFReplaceEncodingBDFProps(sf,fv->map);
     }
     free(fv->selected);
-    fv->selected = calloc(fv->map->enccount,sizeof(char));
+    fv->selected = calloc(fv->map->enccount,sizeof(uint8));
     if ( !no_windowing_ui )
 	FontViewReformatAll(sf);
 

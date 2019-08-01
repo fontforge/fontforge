@@ -1382,7 +1382,7 @@ static void bUtf8(Context *c) {
 	c->return_val.u.sval = u2utf8_copy(buf);
     } else if ( c->a.vals[1].type==v_arr || c->a.vals[1].type==v_arrfree ) {
 	Array *arr = c->a.vals[1].u.aval;
-	temp = malloc((arr->argc+1)*sizeof(int32));
+	temp = malloc((arr->argc+1)*sizeof(uint32));
 	for ( i=0; i<arr->argc; ++i ) {
 	    if ( arr->vals[i].type!=v_int ) {
 		c->error = ce_badargtype;
