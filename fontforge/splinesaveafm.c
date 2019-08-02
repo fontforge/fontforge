@@ -787,8 +787,8 @@ return( 0 );
 return( 0 );
     }
 
-    tfmd.kerntab = calloc(tfmd.kern_size,sizeof(uint8));
-    tfmd.ligkerntab = calloc(tfmd.ligkern_size,2*sizeof(uint8));
+    tfmd.kerntab = calloc(tfmd.kern_size,4*sizeof(uint8));
+    tfmd.ligkerntab = calloc(tfmd.ligkern_size,4*2*sizeof(uint8));
     tfmd.ext = calloc(tfmd.esize,4*2*sizeof(uint8));
     tfmd.ictab = calloc(tfmd.italic_size,4*sizeof(uint8));
     tfmd.dptab = calloc(tfmd.depth_size,4*sizeof(uint8));

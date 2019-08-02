@@ -1800,7 +1800,7 @@ static void dumpcffnames(SplineFont *sf,FILE *cfff) {
 static void dumpcffcharset(SplineFont *sf,struct alltabs *at) {
     int i;
 
-    at->gn_sid = calloc(at->gi.gcnt,sizeof(short));
+    at->gn_sid = calloc(at->gi.gcnt,2*sizeof(short));
     putc(0,at->charset);
     /* I always use a format 0 charset. ie. an array of SIDs in random order */
 
