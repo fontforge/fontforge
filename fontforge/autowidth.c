@@ -1354,7 +1354,7 @@ return;
     }
 
     for ( kc = sf->kerns; kc!=NULL; kc=kc->next ) {
-	firsts = malloc(kc->first_cnt*sizeof(SplineChar *));
+	firsts = malloc(kc->first_cnt*sizeof(SplineChar **));
 	map1 = calloc(kc->first_cnt,sizeof(int));
 	seconds = malloc(kc->second_cnt*sizeof(SplineChar **));
 	map2 = calloc(kc->second_cnt,sizeof(int));
