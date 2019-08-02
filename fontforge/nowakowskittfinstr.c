@@ -692,7 +692,7 @@ static void init_cvt(GlobalInstrCt *gic) {
     cvtsize += gic->stemsnapvcnt;
     cvtsize += gic->bluecnt * 2; /* possible family blues */
 
-    cvt = calloc(cvtsize, cvtsize * sizeof(int16));
+    cvt = calloc(cvtsize, cvtsize * 2 * sizeof(uint8));
     cvtindex = 0;
 
     /* Assign cvt indices */
@@ -727,7 +727,7 @@ static void init_cvt(GlobalInstrCt *gic) {
     }
 
     cvtsize = cvtindex;
-    cvt = realloc(cvt, cvtsize * sizeof(uint8));
+    cvt = realloc(cvt, cvtsize * 2 * sizeof(uint8));
 
     /* Try to implant the new cvt table */
     gic->cvt_done = 0;
