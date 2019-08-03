@@ -190,7 +190,7 @@ return( true );
     if ( event->type==et_close ) {
 	SD_DoCancel( sd );
     } else if ( event->type==et_charup ) {
-    sd->fv->script_unsaved = true;
+    sd->fv->script_unsaved = (bool)strlen(GGadgetGetTitle8(GWidgetGetControl(sd->gw,CID_Script)));
     } else if ( event->type==et_save ) {
     sd->fv->script_unsaved = false;
     } else if ( event->type==et_char ) {
