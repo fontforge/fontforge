@@ -80,6 +80,7 @@ char *script_filenames[SCRIPT_MENU_MAX];
 extern int onlycopydisplayed, copymetadata, copyttfinstr, add_char_to_name_list;
 int home_char='A';
 int compact_font_on_open=0;
+bool warn_script_unsaved = true;
 int navigation_mask = 0;		/* Initialized in startui.c */
 
 static char *fv_fontnames = MONO_UI_FAMILIES;
@@ -536,12 +537,14 @@ return( ret );
 
 static int AskScriptChanged() {
     int ret;
-    char *buts[3];
+    char *buts[4];
 
     buts[0] = _("_Yes");
-    buts[1] = _("_No");
-    buts[2] = NULL;
-    ret = gwwv_ask( _("Unsaved script"),(const char **) buts,0,1,_("You have an unsaved script in the «Execute Script» dialog. Do you intend to discard it?"));
+    buts[1] = _("Yes, and don't _remind me again");
+    buts[2] = _("_No");
+    buts[3] = NULL;
+    ret = gwwv_ask( _("Unsaved script"),(const char **) buts,0,2,_("You have an unsaved script in the «Execute Script» dialog. Do you intend to discard it?"));
+    if (ret == 1) warn_script_unsaved = false; SavePrefs(true);
 return( ret );
 }
 
@@ -867,14 +870,14 @@ static int _FVMenuClose(FontView *fv) {
     if ( !SFCloseAllInstrs(fv->b.sf) )
 return( false );
 
-    if ( fv->script_unsaved ) scriptsaved = AskScriptChanged();
+    if ( warn_script_unsaved && fv->script_unsaved ) scriptsaved = AskScriptChanged();
 
     if ( fv->b.nextsame!=NULL || fv->b.sf->fv!=&fv->b ) {
 	/* There's another view, can close this one with no problems */
     } else if ( SFAnyChanged(sf) ) {
 	filesaved = AskChanged(fv->b.sf);
     }
-    if ( scriptsaved==1 ) /* No */
+    if ( scriptsaved==2 ) /* No */
 return( false );
 	if ( filesaved==2 )	/* Cancel */
 return( false );
