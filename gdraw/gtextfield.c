@@ -916,6 +916,11 @@ static void GTextFieldSave(GTextField *gt,int utf8) {
     FILE *file;
     unichar_t *pt;
 
+    GEvent e;
+    e.type = et_save;
+    e.w = gt->g.base;
+    GDrawPostEvent(&e);
+
     if ( _ggadget_use_gettext ) {
 	char *temp = GWidgetOpenFile8(_("Save"),NULL,"*.txt",NULL,NULL);
 	ret = utf82u_copy(temp);

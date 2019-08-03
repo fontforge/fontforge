@@ -534,6 +534,17 @@ static int AskChanged(SplineFont *sf) {
 return( ret );
 }
 
+static int AskScriptChanged() {
+    int ret;
+    char *buts[3];
+
+    buts[0] = _("_Yes");
+    buts[1] = _("_No");
+    buts[2] = NULL;
+    ret = gwwv_ask( _("Unsaved script"),(const char **) buts,0,1,_("You have an unsaved script in the «Execute Script» dialog. Do you intend to discard it?"));
+return( ret );
+}
+
 int _FVMenuGenerate(FontView *fv,int family) {
     FVFlattenAllBitmapSelections(fv);
 return( SFGenerateFont(fv->b.sf,fv->b.active_layer,family,fv->b.normal==NULL?fv->b.map:fv->b.normal) );
@@ -850,23 +861,26 @@ return( sf->changed );
 }
 
 static int _FVMenuClose(FontView *fv) {
-    int i;
+    int filesaved, scriptsaved;
     SplineFont *sf = fv->b.cidmaster?fv->b.cidmaster:fv->b.sf;
 
     if ( !SFCloseAllInstrs(fv->b.sf) )
 return( false );
 
+    if ( fv->script_unsaved ) scriptsaved = AskScriptChanged();
+
     if ( fv->b.nextsame!=NULL || fv->b.sf->fv!=&fv->b ) {
 	/* There's another view, can close this one with no problems */
     } else if ( SFAnyChanged(sf) ) {
-	i = AskChanged(fv->b.sf);
-	if ( i==2 )	/* Cancel */
-return( false );
-	if ( i==0 && !_FVMenuSave(fv))		/* Save */
-return(false);
-	else
-	    SFClearAutoSave(sf);		/* if they didn't save it, remove change record */
+	filesaved = AskChanged(fv->b.sf);
     }
+    if ( scriptsaved==1 ) /* No */
+return( false );
+	if ( filesaved==2 )	/* Cancel */
+return( false );
+	if ( filesaved==0 && !_FVMenuSave(fv))		/* Save */
+return(false);
+    SFClearAutoSave(sf);		/* if they didn't save it, remove change record */
     _FVCloseWindows(fv);
     if ( sf->filename!=NULL )
 	RecentFilesRemember(sf->filename);

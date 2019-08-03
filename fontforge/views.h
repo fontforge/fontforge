@@ -476,6 +476,7 @@ typedef struct fontview {
     struct lookup_subtable *cur_subtable;
     struct qg_data *qg;
     GPid pid_webfontserver;
+    bool script_unsaved; // Whether or not there's an unsaved script in script dialog
 } FontView;
 
 typedef struct findsel {

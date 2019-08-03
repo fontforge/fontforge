@@ -112,7 +112,7 @@ enum event_type { et_noevent = -1, et_char, et_charup, // is 1
 		  et_selclear,
 		  et_drag, et_dragout, et_drop,
 		  et_lastnativeevent=et_drop,
-		  et_controlevent, et_user };
+		  et_controlevent, et_save, et_user };
 
 enum visibility_state { vs_unobscured, vs_partially, vs_obscured };
 
