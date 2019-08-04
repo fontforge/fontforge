@@ -57,7 +57,7 @@ def rewrite_html(path, destination, root):
         data = URL_RE.sub(href_updater, data)
         data = BODY_RE.sub(body_updater, data, 1)
 
-        with open(dest_path, 'w', encoding='utf-8') as fpo:
+        with open(dest_path, 'w', encoding='utf-8', newline='\n') as fpo:
             fpo.write(data)
 
 
@@ -73,7 +73,7 @@ def rewrite_css(path, destination, root):
         data = fpi.read()
         data = CSS_URL_RE.sub(url_updater, data)
 
-        with open(dest_path, 'w', encoding='utf-8') as fpo:
+        with open(dest_path, 'w', encoding='utf-8', newline='\n') as fpo:
             fpo.write(data)
 
 
