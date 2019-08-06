@@ -11,7 +11,7 @@ Url:         http://fontforge.sourceforge.net/
 Vendor:      George Williams <gww@silcom.com>, Scott Pakin <pakin@uiuc.edu>
 Prefix:      /usr/local
 BuildRoot:   /var/tmp/%{name}-%{version}
-BuildPreReq: libpng-devel, libungif-devel, libuninameslist, libxml2
+BuildPreReq: libpng-devel, libungif-devel, libxml2
 
 %description
 FontForge allows you to edit outline and bitmap fonts.  You can create

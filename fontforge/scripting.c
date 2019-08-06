@@ -1248,15 +1248,11 @@ static void bUnicodeAnnotationFromLib(Context *c) {
     c->return_val.u.sval = temp;
 }
 
+/* Deprecated */
 static void bUnicodeNamesListVersion(Context *c) {
-/* If the library is available, then return the Nameslist Version */
-    char *temp;
-
-    if ( (temp=unicode_library_version())==NULL ) {
-	temp=malloc(1*sizeof(char)); *temp='\0';
-    }
+    LogError(_("UnicodeNamesListVersion is deprecated and will be removed in a future release\n"));
     c->return_val.type = v_str;
-    c->return_val.u.sval = temp;
+    c->return_val.u.sval = strdup("20190701");
 }
 
 /* ----start of libuninameslist Names2 functions--------------- */

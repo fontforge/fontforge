@@ -193,7 +193,6 @@ giflib_url="http://giflib.sourceforge.net/"
 libpng_url="http://www.libpng.org/"
 libxml_url="http://www.xmlsoft.org/"
 libspiro_url="https://github.com/fontforge/libspiro"
-libuninameslist_url="https://github.com/fontforge/libuninameslist"
 libreadline_url="http://www.gnu.org/software/readline"
 libxorg_url="http://www.x.org/"
 python_url="https://www.python.org/"
@@ -410,8 +409,6 @@ FONTFORGE_ARG_WITH_LIBPNG
 FONTFORGE_ARG_WITH_LIBTIFF
 FONTFORGE_ARG_WITH_CAIRO # do this test only 'after' zlib and png checks
 FONTFORGE_ARG_WITH_LIBSPIRO
-FONTFORGE_ARG_WITH_LIBUNINAMESLIST
-#FONTFORGE_ARG_WITH_LIBUNICODENAMES
 FONTFORGE_ARG_WITH_LIBREADLINE
 FONTFORGE_ARG_WITH_ICONV
 
@@ -617,8 +614,6 @@ my_cflags="${my_cflags} ${LIBJPEG_CFLAGS}"
 my_cflags="${my_cflags} ${LIBPNG_CFLAGS}"
 my_cflags="${my_cflags} ${LIBTIFF_CFLAGS}"
 my_cflags="${my_cflags} ${LIBSPIRO_CFLAGS}"
-my_cflags="${my_cflags} ${LIBUNINAMESLIST_CFLAGS}"
-my_cflags="${my_cflags} ${LIBUNICODENAMES_CFLAGS}"
 my_cflags="${my_cflags} ${LIBXML_CFLAGS}"
 my_cflags="${my_cflags} ${PYTHON_CFLAGS}"
 my_cflags="${my_cflags} ${PTHREAD_CFLAGS}"
@@ -635,8 +630,6 @@ test x"${i_do_have_giflib}" = xyes && my_libs="${my_libs} ${GIFLIB_LIBS}"
 test x"${i_do_have_libjpeg}" = xyes && my_libs="${my_libs} ${LIBJPEG_LIBS}"
 test x"${i_do_have_libpng}" = xyes && my_libs="${my_libs} ${LIBPNG_LIBS}"
 test x"${i_do_have_libtiff}" = xyes && my_libs="${my_libs} ${LIBTIFF_LIBS}"
-test x"${i_do_have_libuninameslist}" = xyes && my_libs="${my_libs} ${LIBUNINAMESLIST_LIBS}"
-test x"${i_do_have_libunicodenames}" = xyes && my_libs="${my_libs} ${LIBUNICODENAMES_LIBS}"
 test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${CAIRO_LIBS}"
 test x"${i_do_have_cairo}" = xyes && my_libs="${my_libs} ${PANGOCAIRO_LIBS}"
 test x"${i_do_have_iconv}" = xyes && my_libs="${my_libs} ${ICONV_LIBS}"
@@ -770,7 +763,6 @@ Optional Library	UseIt?	HaveIt?	WebsiteURL
   libreadline		${with_libreadline}	${i_do_have_libreadline}	${libreadline_url}
   libspiro		${with_libspiro}	${i_do_have_libspiro}	${libspiro_url}
   libtiff		${with_libtiff}	${i_do_have_libtiff}	${libtiff_url}
-  libuninameslist	${with_libuninameslist}	${i_do_have_libuninameslist}	${libuninameslist_url}
   python-dev		${enable_python_scripting}	${i_do_have_python_scripting}	${python_url}
   woff2			${fontforge_can_use_woff2}	${fontforge_has_woff2}	${woff2_url}
 

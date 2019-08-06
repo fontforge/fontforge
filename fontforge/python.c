@@ -838,15 +838,10 @@ static PyObject *PyFF_UnicodeBlockNameFromLib(PyObject *UNUSED(self), PyObject *
     return( ret );
 }
 
+/* Deprecated */
 static PyObject *PyFF_UnicodeNamesListVersion(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
-/* If the library is available, then return the Nameslist Version number */
-    char *temp;
-
-    if ( (temp=unicode_library_version())==NULL ) {
-	temp=malloc(1*sizeof(char)); *temp='\0';
-    }
-    PyObject *ret=Py_BuildValue("s",temp); free(temp);
-    return( ret );
+    PyErr_Warn(PyExc_DeprecationWarning, "UnicodeNamesListVersion is deprecated and will be removed in a future release");
+    return Py_BuildValue("s","20190701");
 }
 
 /* Names2 lookup commands to get info from attached libuninameslist >= v0.5. */

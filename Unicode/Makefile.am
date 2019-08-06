@@ -66,6 +66,8 @@ libgunicode_la_SOURCES =	\
 	ustring.c		\
 	utype.c			\
 	gwwiconv.c		\
+	uninameslist.c		\
+	uninameslist.h		\
 	$(NULL)
 
 libgunicode_la_CFLAGS = $(WARN_CFLAGS)

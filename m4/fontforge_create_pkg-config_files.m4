@@ -26,8 +26,6 @@ test x"${i_do_have_libjpeg}" = xyes && test x"${with_libjpeg}" != xno && __priva
 test x"${i_do_have_libpng}" = xyes && test x"${with_libpng}" != xno && __private_deps="${__private_deps} ${LIBPNG_LIBS}"
 test x"${i_do_have_libtiff}" = xyes && test x"${with_libtiff}" != xno && __private_deps="${__private_deps} ${LIBTIFF_LIBS}"
 test x"${i_do_have_libspiro}" = xyes && test x"${with_libspiro}" != xno && __private_deps="${__private_deps} ${LIBSPIRO_LIBS}"
-test x"${i_do_have_libuninameslist}" = xyes && test x"${with_libuninameslist}" != xno && __private_deps="${__private_deps} ${LIBUNINAMESLIST_LIBS}"
-test x"${i_do_have_libunicodenames}" = xyes && __private_deps="${__private_deps} ${LIBUNICODENAMES_LIBS}"
 test x"${i_do_have_libreadline}" = xyes && test x"${with_libreadline}" != xno && __private_deps="${__private_deps} ${LIBREADLINE_LIBS}"
 test x"${i_do_have_x}" = xyes && __private_deps="${__private_deps} ${X_PRE_LIBS} ${X_LIBS} ${X_EXTRA_LIBS}"
 __private_deps="${__private_deps} ${PTHREAD_LIBS}"

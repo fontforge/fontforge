@@ -95,7 +95,6 @@ depends_lib \
     port:libiconv \
     port:glib2 \
     port:libpng \
-    port:libuninameslist \
     port:libxml2 \
     port:tiff \
     port:libtool \

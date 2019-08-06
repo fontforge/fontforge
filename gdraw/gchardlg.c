@@ -1065,12 +1065,7 @@ void GWidgetCreateInsChar(void) {
     int i;
     FontRequest rq;
     int as, ds, ld;
-    static int inited= false;
 
-    if ( !inited ) {
-	inituninameannot();
-	inited = true;
-    }
     if ( inschr.icw!=NULL ) {
 	inschr.hidden = false;
 	GDrawSetVisible(inschr.icw,true);

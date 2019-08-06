@@ -26,7 +26,6 @@ Build-Depends: autoconf,
                libspiro-dev,
                libtiff-dev,
                libtool (>= 1.9),
-               libuninameslist-dev,
                libxml2-dev,
                libxt-dev,
                python-dev (>= 2.7)

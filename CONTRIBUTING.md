@@ -159,7 +159,6 @@ If your machine doesn't have them and you want them they are available from:
     -   [libjpeg](http://www.ijg.org/)
 -   [libxml2](http://xmlsoft.org/) To parse SVG files and fonts
 -   [libspiro](https://github.com/fontforge/libspiro) Raph Levien's clothoid to bezier spline conversion routines. If this is available FontForge will allow you to edit with clothoid splines (spiro).
--   [libuninameslist](https://github.com/fontforge/libuninameslist) To display unicode names and annotations.
 -   [libiconv](http://www.gnu.org/software/libiconv/) Only important for systems with no built-in iconv().
     If not present FontForge contains a minimal version of the library which allows it to work.
     But if you want to use libiconv you must configure it with `--enable-extra-encodings`, as FontForge requires Shift-JIS.
@@ -251,7 +250,7 @@ Upon success, this will leave binary packages in `~/rpmbuild/RPMS` and source pa
 
 You may need to install dependencies, typically packaged for Fedora-derived systems as:
 
-    rpm-devel rpm-build git perl autoconf automake tar libtool glibc-devel m4 gcc cpp python-devel libjpeg-turbo-devel libtiff-devel libpng-devel giflib-devel freetype-devel uuid-devel bzip2-devel libxml2-devel libuninameslist-devel libspiro-devel pango-devel cairo-devel chrpath;
+    rpm-devel rpm-build git perl autoconf automake tar libtool glibc-devel m4 gcc cpp python-devel libjpeg-turbo-devel libtiff-devel libpng-devel giflib-devel freetype-devel uuid-devel bzip2-devel libxml2-devel libspiro-devel pango-devel cairo-devel chrpath;
 
 ### Building a Mac OS X app bundle
 

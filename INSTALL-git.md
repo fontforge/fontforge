@@ -17,7 +17,7 @@ You can see a list of the dependencies for Debian in the [debian/control](https:
 To download all dependencies on Debian Jessie, run:
 
 ```sh
-sudo apt-get install autotools-dev libjpeg-dev libtiff5-dev libpng-dev libgif-dev libxt-dev libfreetype6-dev autoconf automake libtool libxml2-dev libuninameslist-dev libspiro-dev python-dev libpango1.0-dev libcairo2-dev chrpath
+sudo apt-get install autotools-dev libjpeg-dev libtiff5-dev libpng-dev libgif-dev libxt-dev libfreetype6-dev autoconf automake libtool libxml2-dev libspiro-dev python-dev libpango1.0-dev libcairo2-dev chrpath
 ```
 
 To download all dependencies on Ubuntu, run:
@@ -41,28 +41,6 @@ git clone https://github.com/fontforge/libspiro.git
 cd libspiro
 autoreconf -i
 automake --foreign -Wall
-./configure
-make
-sudo make install
-cd ..
-```
-
-Build *libuninameslist*
-
-FontForge uses [libuninameslist](http://github.com/fontforge/libuninameslist) to access attribute data about each Unicode code point.
-
-Download the code:
-
-```
-git clone https://github.com/fontforge/libuninameslist.git
-```
-
-Run the following commands in sequence (that is, wait for each one to complete before running the next):
-
-```
-cd libuninameslist
-autoreconf -i
-automake --foreign
 ./configure
 make
 sudo make install
@@ -102,8 +80,6 @@ PYTHON_LIBS="-L/System/Library/Frameworks/Python.framework/Versions/2.7/lib/pyth
 --without-libtiff \
 --without-libpng \
 --without-libspiro \
---without-libuninameslist \
---without-libunicodenames \
 --without-iconv \
 --without-libzmq \
 --without-libreadline \
