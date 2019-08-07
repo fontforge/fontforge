@@ -152,7 +152,6 @@ endif PYTHON_SCRIPTING
 EXTRA_DIST = fontimage.pe fontlint.pe sfddiff.pe	\
 	fontimage.1 fontlint.1 sfddiff.1
 
-# MacFontForgeApp.zip
 MOSTLYCLEANFILES = fontimage fontlint sfddiff
 DISTCLEANFILES = $(MOSTLYCLEANFILES)
 

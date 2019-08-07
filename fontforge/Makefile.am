@@ -194,11 +194,6 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 
 EXTRA_DIST = generate_codepoint_selector.py
 
-if MACINTOSH
-EXTRA_DIST += MacFontForgeApp.zip
-MOSTLYCLEANFILES = MacFontForgeApp.zip
-endif MACINTOSH
-
 #--------------------------------------------------------------------------
 
 -include $(top_srcdir)/git.mk
