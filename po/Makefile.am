@@ -81,7 +81,7 @@ update-project-id:
 # in code, marked with the H_() macro. However, these are no longer used;
 # hotkeys are now set via the hotkeys file.
 
-XGETTEXT_SEARCH_DIRS = $(top_srcdir)/fontforge/*.c $(top_srcdir)/fontforgeexe/*.c $(top_srcdir)/gdraw/*.c $(top_srcdir)/gutils/*.c $(top_srcdir)/inc/*.h
+XGETTEXT_SEARCH_DIRS = $(top_srcdir)/fontforge/*.c $(top_srcdir)/fontforgeexe/*.c $(top_srcdir)/gdraw/*.c $(top_srcdir)/gutils/*.c $(top_srcdir)/inc/*.h $(top_srcdir)/desktop/org.fontforge.FontForge.appdata.xml
 
 FontForge.pot:
 	$(XGETTEXT) --from-code=utf-8 -k_ -kN_ -kS_ -kU_ -kNU_ -kP_:1,2 --add-comments=GT: -oFontForge.pot $(XGETTEXT_SEARCH_DIRS)
