@@ -33,6 +33,8 @@ msgid ""
 "OpenType, cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) "
 "fonts."
 msgstr ""
+"폰트포지는 외곽선 및 비트맵 글꼴 편집기입니다. 포스트스크립트, 트루타입, 오픈타입, CID 폰트, "
+"멀티마스터, CFF, SVG 그리고 비트맵(bdf, FON, NFNT) 글꼴을 제작, 편집, 변환할 수 있습니다."
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:16
 msgid ""
@@ -40,6 +42,8 @@ msgid ""
 "operating systems. You can use FontForge Graphically or as a command-line "
 "tool."
 msgstr ""
+"폰트포지는 여러 컴퓨터 운영체제에서 작동하도록 쓰여진 오픈소스 소프트웨어입니다. "
+"명령어 인터페이스 또는 GUI로 사용할 수 있습니다."
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:20
 msgid ""
@@ -47,6 +51,8 @@ msgid ""
 "beginning with the basics up to more advanced features such as making and "
 "using scripts."
 msgstr ""
+"폰트포지는 배우기 쉽습니다. 기본적인 것부터 시작해서, 스크립트를 짜서 쓰는 고급 기능까지 "
+"다양한 튜토리얼들이 준비되어 있습니다."
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:28
 msgid "Fontforge showing a glyph being edited"

@@ -33,7 +33,7 @@ msgstr ""
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:6
 msgid "An outline font editor"
-msgstr ""
+msgstr "Un constructeur des polices"
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:11
 msgid ""
@@ -42,6 +42,9 @@ msgid ""
 "OpenType, cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) "
 "fonts."
 msgstr ""
+"FontForge est un éditeur de polices de caractères numériques qui vous permet de créer, éditer, "
+"ou convertir une large gamme de polices incluant PostScript, TrueType, OpenType, cid-keyed, "
+"multi-master, cff, SVG et BitMap (bdf, FON, NFNT)."
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:16
 msgid ""
@@ -49,6 +52,8 @@ msgid ""
 "operating systems. You can use FontForge Graphically or as a command-line "
 "tool."
 msgstr ""
+"FontForge est un logiciel libre, gratuit et disponible pour divers systèmes d’exploitation. "
+"Vous pouvez utiliser l'interface graphique de FontForge ou comme un outil à la ligne de commande."
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:20
 msgid ""
@@ -56,6 +61,8 @@ msgid ""
 "beginning with the basics up to more advanced features such as making and "
 "using scripts."
 msgstr ""
+"Apprendre à utiliser FontForge est facile, et il y a plusieurs tutoriels disponibles en commençant "
+"par les bases jusqu'à des fonctionnalités plus avancées telles que la fabrication et l'utilisation de scripts."
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:28
 msgid "Fontforge showing a glyph being edited"

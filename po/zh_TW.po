@@ -23,10 +23,10 @@ msgstr ""
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:5
 msgid "FontForge"
-msgstr ""
+msgstr "字型鍛造廠"
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:6
-msgid "An outline font editor"
+msgid "FontForge 描邊字型編輯器"
 msgstr ""
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:11

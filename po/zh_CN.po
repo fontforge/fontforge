@@ -42,6 +42,7 @@ msgid ""
 "OpenType, cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) "
 "fonts."
 msgstr ""
+"FontForge是一个矢量字体和位图字体的编辑器。你可以用它来创造，编辑或者转换一些字体。支持的字体格式包括PostScript，TrueType，OpenType，CID-keyed，multi-master，CFF，SVG和位图（bdf，PON，NFNT）。"
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:16
 msgid ""
@@ -49,6 +50,7 @@ msgid ""
 "operating systems. You can use FontForge Graphically or as a command-line "
 "tool."
 msgstr ""
+"FontForge是一个自由开源软件，可以运行在多种计算机操作系统上。你可以使用FontForge的图形界面，也可以将其作为一个命令行工具来使用。"
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:20
 msgid ""
@@ -56,6 +58,7 @@ msgid ""
 "beginning with the basics up to more advanced features such as making and "
 "using scripts."
 msgstr ""
+"学习使用FontForge并不难，有各种各样的教程涵盖了基础知识到更高级的特性，比如制作和使用脚本。"
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:28
 msgid "Fontforge showing a glyph being edited"

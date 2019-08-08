@@ -24,7 +24,7 @@ msgstr ""
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:6
 msgid "An outline font editor"
-msgstr ""
+msgstr "Редактор шрифтів"
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:11
 msgid ""
@@ -33,6 +33,9 @@ msgid ""
 "OpenType, cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) "
 "fonts."
 msgstr ""
+"FontForge — редактор контурних та растрових шрифтів, за допомогою якого ви можете "
+"створювати, редагувати та перетворювати шрифти у форматах PostScript, TrueType, OpenType, "
+"cid-keyed, multi-master, cff, SVG та растрових (bdf, FON, NFNT)."
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:16
 msgid ""

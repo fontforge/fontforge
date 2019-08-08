@@ -28,7 +28,7 @@ msgstr ""
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:6
 msgid "An outline font editor"
-msgstr ""
+msgstr "Um editor de fontes"
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:11
 msgid ""
@@ -37,6 +37,9 @@ msgid ""
 "OpenType, cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) "
 "fonts."
 msgstr ""
+"FontForge — um editor de fontes para fontes outline e de bitmap que lhe permite criar, "
+"editar ou converter, uma série de fontes, incluindo PostScript, TrueType, OpenType, "
+"cid-keyed, multi-master, cff, SVG e de bitmap (bdf, FON, NFNT) fontes."
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:16
 msgid ""
@@ -51,6 +54,8 @@ msgid ""
 "beginning with the basics up to more advanced features such as making and "
 "using scripts."
 msgstr ""
+"Aprender a usar FontForge é fácil, e existem vários tutoriais disponíveis que começam "
+"com o básico até mais recursos avançados, como fazer e usar scripts."
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:28
 msgid "Fontforge showing a glyph being edited"

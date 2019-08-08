@@ -39,6 +39,9 @@ msgid ""
 "OpenType, cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) "
 "fonts."
 msgstr ""
+"El FontForge és un editor de tipus de lletra, tant vectorials com de mapa de bits, "
+"que permet crear, editar o convertir tipus de diferents formats, com ara PostScript, "
+"TrueType, OpenType, CID, MM, CFF, SVG i BitMap (BDF, FON, NFNT)."
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:16
 msgid ""
@@ -46,6 +49,8 @@ msgid ""
 "operating systems. You can use FontForge Graphically or as a command-line "
 "tool."
 msgstr ""
+"El FontForge és programari lliure dissenyat per poder ser utilitzat en diversos "
+"sistemes operatius, tant des de la interfície gràfica com des de la línia d'ordres."
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:20
 msgid ""
@@ -53,6 +58,9 @@ msgid ""
 "beginning with the basics up to more advanced features such as making and "
 "using scripts."
 msgstr ""
+"Aprendre a utilitzar el FontForge és senzill; podeu consultar els tutorials "
+"existents que van de les funcions més bàsiques del programa fins a les més complicades, "
+"com ara escriure i usar scripts."
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:28
 msgid "Fontforge showing a glyph being edited"

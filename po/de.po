@@ -33,7 +33,7 @@ msgstr ""
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:6
 msgid "An outline font editor"
-msgstr ""
+msgstr "Ein Font-Editor"
 
 #: ../desktop/org.fontforge.FontForge.appdata.xml:11
 msgid ""
