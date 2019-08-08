@@ -2,6 +2,20 @@
 <!-- Copyright 2014 Joe Da Silva <digital@joescat.com> -->
 <component type="desktop">
   <id>org.fontforge.FontForge</id>
+  <name>FontForge</name>
+  <name xml:lang="zh-TW">=字型鍛造廠</name>
+  <summary>An outline font editor</summary>
+  <summary xml:lang="de">Ein Font-Editor</summary>
+  <summary xml:lang="eo">Tipar dosiero-redaktilo</summary>
+  <summary xml:lang="es">Un editor de fuentes</summary>
+  <summary xml:lang="fr">Un constructeur des polices</summary>
+  <summary xml:lang="hr">Uređivač za fontove</summary>
+  <summary xml:lang="it">Un profilo editor di font</summary>
+  <summary xml:lang="pt">Um editor de fontes</summary>
+  <summary xml:lang="pl_PL">Edytor fontów</summary>
+  <summary xml:lang="ru">Редактор шрифтов</summary>
+  <summary xml:lang="uk">Редактор шрифтів</summary>
+  <summary xml:lang="zh-TW">FontForge 描邊字型編輯器</summary>
   <launchable type="desktop-id">org.fontforge.FontForge.desktop</launchable>
   <metadata_license>CC0-1.0</metadata_license>
   <description>
