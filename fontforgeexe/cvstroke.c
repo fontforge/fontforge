@@ -663,6 +663,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *,int),Str
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,SD_Width));
 	pos.height = GDrawPointsToPixels(NULL,strokeit!=NULL ? SD_Height : FH_Height);
 	sd->gw = gw = GDrawCreateTopWindow(NULL,&pos,stroke_e_h,&sd->cv_stroke,&wattrs);
+	GDrawSetWindowTypeName(gw, "CharView"); // For hotkeys
 	if ( si!=NULL )
 	    GDrawRequestDeviceEvents(gw,input_em_cnt,input_em);
 
