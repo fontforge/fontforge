@@ -125,24 +125,16 @@ char *unicode_name(int32 unienc) {
     //fprintf(stderr,"libunicodes library ->%s<-\n",name_data);
 #endif
 
-    /* George Williams' improvisation on Hangul Syllable range
-     * As of Unicode 6.3.0 0xAC00 - 0xD7A3 is defined as a block
-     * without individual code point names.
+    /* Unicode name derivation rule NR1
      * Code moved here from fontforgeexe/fontview.c
      * FIXME: maybe this belongs to lower library stack instead,
      * revisit later.
      */
     if( ( unienc >= 0xAC00 && unienc <= 0xD7A3 ) && ( name_data == NULL ) ) {
-	if( ( ( unienc - 0xAC00 ) % 28 ) == 0 ) {
-	    name_data = smprintf( "Hangul Syllable %s-%s",
-		    chosung [ (unienc - 0xAC00) / (21*28) ],
-		    jungsung[ ((unienc - 0xAC00) / 28 ) % 21 ] );
-	} else {
-	    name_data = smprintf( "Hangul Syllable %s-%s-%s",
-		    chosung [ (unienc - 0xAC00) / (21*28) ],
-		    jungsung[ ((unienc - 0xAC00) / 28 ) % 21 ],
-		    jongsung[ (unienc - 0xAC00) % 28 ] );
-	}
+	name_data = smprintf( "HANGUL SYLLABLE %s%s%s",
+		chosung [ (unienc - 0xAC00) / (21*28) ],
+		jungsung[ ((unienc - 0xAC00) / 28 ) % 21 ],
+		jongsung[ (unienc - 0xAC00) % 28 ] );
     }
 
     return( name_data );
