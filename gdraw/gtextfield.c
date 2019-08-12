@@ -917,7 +917,7 @@ static void GTextFieldSave(GTextField *gt,int utf8) {
     unichar_t *pt;
 
     if ( _ggadget_use_gettext ) {
-	char *temp = GWidgetOpenFile8(_("Save"),NULL,"*.txt",NULL,NULL);
+	char *temp = GWidgetOpenFile8(_("Save"),NULL,"*.{txt,py}",NULL,NULL);
 	ret = utf82u_copy(temp);
 	free(temp);
     } else
