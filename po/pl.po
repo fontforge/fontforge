@@ -10951,7 +10951,7 @@ msgstr "gruziński"
 
 #: ../fontforge/unicoderange.c:92
 msgid "Hangul Jamo, Choseong"
-msgstr "dz hangyl, Choseong"
+msgstr "dzamo hangyl, Choseong"
 
 #: ../fontforge/unicoderange.c:93
 msgid "Hangul Jamo, Jungseong"
