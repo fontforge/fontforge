@@ -295,7 +295,7 @@ int TTF__getcvtval(SplineFont *sf,int val) {
         cvt_tab = chunkalloc(sizeof(struct ttf_table));
         cvt_tab->tag = CHR('c','v','t',' ');
         cvt_tab->maxlen = 200;
-        cvt_tab->data = malloc(100*sizeof(uint8));
+        cvt_tab->data = malloc(100*sizeof(short));
         cvt_tab->next = sf->ttf_tables;
         sf->ttf_tables = cvt_tab;
     }
@@ -692,7 +692,7 @@ static void init_cvt(GlobalInstrCt *gic) {
     cvtsize += gic->stemsnapvcnt;
     cvtsize += gic->bluecnt * 2; /* possible family blues */
 
-    cvt = calloc(cvtsize, cvtsize * 2 * sizeof(uint8));
+    cvt = calloc(cvtsize, cvtsize * sizeof(int16));
     cvtindex = 0;
 
     /* Assign cvt indices */
@@ -727,7 +727,7 @@ static void init_cvt(GlobalInstrCt *gic) {
     }
 
     cvtsize = cvtindex;
-    cvt = realloc(cvt, cvtsize * 2 * sizeof(uint8));
+    cvt = realloc(cvt, cvtsize * sizeof(int16));
 
     /* Try to implant the new cvt table */
     gic->cvt_done = 0;
