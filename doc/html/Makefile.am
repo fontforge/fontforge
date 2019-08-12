@@ -233,7 +233,7 @@ ROOT_DOC_LIST = AA-Comparison.html aacutebase.png aacutemid.png			\
 	windowmenu.html wItalic.png x-height.png xim.html xItalic.png		\
 	xres.html Big5.txt colorpicker.jpeg corpchar.txt fftype300.svg		\
 	fontforge-banner-420.jpeg FontForge.css Metal-fontforge-600.jpeg	\
-	MetalType.jpeg hotkeys.jpeg ff-screenshot.png Encodings.ps.gz
+	MetalType.jpeg hotkeys.jpeg Encodings.ps.gz
 
 DE_DOC_LIST = de/editexample.html de/editexample2.html de/editexample3.html	\
 	de/editexample4.html de/editexample5.html de/editexample6-5.html 	\

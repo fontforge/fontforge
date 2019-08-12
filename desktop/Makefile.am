@@ -31,12 +31,9 @@ PACKAGEROOTDIR = ${datarootdir}
 desktopdir = $(PACKAGEROOTDIR)/applications
 desktop_DATA = org.fontforge.FontForge.desktop
 
-appdatadir = $(PACKAGEROOTDIR)/appdata
-appdata_DATA = org.fontforge.FontForge.appdata.xml
-
 # Where metainfo xml files go
 metainfodir = $(PACKAGEROOTDIR)/metainfo
-metainfo_DATA = org.fontforge.FontForge.metainfo.xml org.fontforge.FontForge.appdata.xml
+metainfo_DATA = org.fontforge.FontForge.appdata.xml
 
 # Where MIME data goes. (Support for .sfd files, for instance.)
 mimedir = $(PACKAGEROOTDIR)/mime
@@ -121,6 +118,6 @@ EXTRA_DIST = \
 	org.fontforge.FontForge.appdata.xml		\
 	org.fontforge.FontForge.desktop			\
 	fontforge.xml					\
-	org.fontforge.FontForge.metainfo.xml
+	ff-screenshot.png
 
 -include $(top_srcdir)/git.mk

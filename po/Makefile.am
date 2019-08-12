@@ -25,7 +25,7 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-noinst_FILES = FontForge.pot FontForge-MenuShortCuts.pot FontForge-MenuShortCuts.pot.orig FontForge-old.pot
+noinst_FILES = FontForge.pot FontForge-old.pot
 nodist_FILES = $(noinst_FILES)
 
 if MAINTAINER_TOOLS
@@ -76,46 +76,29 @@ update-project-id:
 # If creating or updating a language po file, also go take a look at file
 # desktop/fontforge.appdata.xml to see if it also needs an extra language
 # definition added or updated.
+#
+# Once upon a time, hotkeys were set via gettext. These are still present
+# in code, marked with the H_() macro. However, these are no longer used;
+# hotkeys are now set via the hotkeys file.
 
-XGETTEXT_SEARCH_DIRS = $(top_srcdir)/fontforge/*.c $(top_srcdir)/fontforgeexe/*.c $(top_srcdir)/gdraw/*.c $(top_srcdir)/gutils/*.c $(top_srcdir)/inc/*.h
+XGETTEXT_SEARCH_DIRS = $(top_srcdir)/fontforge/*.c $(top_srcdir)/fontforgeexe/*.c $(top_srcdir)/gdraw/*.c $(top_srcdir)/gutils/*.c $(top_srcdir)/inc/*.h $(top_srcdir)/desktop/org.fontforge.FontForge.appdata.xml
 
 FontForge.pot:
-	echo "If this doesn't work try make FontForge-old.pot instead"
 	$(XGETTEXT) --from-code=utf-8 -k_ -kN_ -kS_ -kU_ -kNU_ -kP_:1,2 --add-comments=GT: -oFontForge.pot $(XGETTEXT_SEARCH_DIRS)
 	-patch < pottitle.patch
-
-FontForge-MenuShortCuts.pot:
-	$(XGETTEXT) -kH_ -oFontForge-MenuShortCuts.pot $(XGETTEXT_SEARCH_DIRS)
-	-patch < potmstitle.patch
 
 # To update a language po file, go to directory po and type:
 # make FontForge-Update-po 1=fr
 # In this example (above), 'fr' is chosen to update po file 'fr.po'.
-FontForge-Update-po:
-	$(MAKE) FontForge.pot; $(MAKE) FontForge-MenuShortCuts.pot;	\
+FontForge-Update-po: FontForge.pot
 	mv $1.po $1-old.po; msgmerge -N $1-old.po FontForge.pot > $1.po; \
 	rm FontForge.pot
 
-# This command (below) is for systems with older less capable xgettext.
-# xgettext has caniptions and strips non-ASCII characters from my strings
-# but I occasionally want to use unicode characters (TeX, arrows, Increment)
-# so I have put these messages in utf8.pot which I manage by hand. non-ASCII
-# strings work just fine as keys. It does mean that my pot files should be
-# viewed in utf8 though.
-
-# I am told that new versions of xgettext support option --from-code=utf-8
-# unfortunately this works on none of the systems I use and I have not
-# found it documented. If it worked I would not need utf8.pot.
-FontForge-old.pot: utf8.pot
-	$(XGETTEXT) -k_ -kN_ -kS_ -kP_:1,2 --add-comments=GT: -oFontForge.pot $(XGETTEXT_SEARCH_DIRS)
-	cat utf8.pot >> FontForge.pot
-	-patch < pottitle.patch
-
 #--------------------------------------------------------------------------
 
-EXTRA_DIST = $(PO_FILES) potmstitle.patch pottitle.patch utf8.pot
+EXTRA_DIST = $(PO_FILES) pottitle.patch
 
 MOSTLYCLEANFILES = $(MO_FILES) $(noinst_FILES)	\
-	FontForge.pot FontForge-MenuShortCuts.pot *-old.po
+	FontForge.pot *-old.po
 
 -include $(top_srcdir)/git.mk
