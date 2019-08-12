@@ -112,7 +112,7 @@ enum event_type { et_noevent = -1, et_char, et_charup, // is 1
 		  et_selclear,
 		  et_drag, et_dragout, et_drop,
 		  et_lastnativeevent=et_drop,
-		  et_controlevent, et_save, et_user };
+		  et_controlevent, et_user };
 
 enum visibility_state { vs_unobscured, vs_partially, vs_obscured };
 
@@ -120,7 +120,7 @@ enum et_subtype { et_buttonpress, et_buttonactivate, et_radiochanged,
 		  et_listselected, et_listdoubleclick,
 		  et_scrollbarchange,
 		  et_textchanged, et_textfocuschanged,
-		  et_lastsubtype };
+		  et_lastsubtype, et_save };
 
 enum sb { et_sb_top, et_sb_uppage, et_sb_up, et_sb_left=et_sb_up,
 	  et_sb_down, et_sb_right=et_sb_down, et_sb_downpage,

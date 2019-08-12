@@ -544,7 +544,10 @@ static int AskScriptChanged() {
     buts[2] = _("_No");
     buts[3] = NULL;
     ret = gwwv_ask( _("Unsaved script"),(const char **) buts,0,2,_("You have an unsaved script in the «Execute Script» dialog. Do you intend to discard it?"));
-    if (ret == 1) warn_script_unsaved = false; SavePrefs(true);
+    if (ret == 1) {
+        warn_script_unsaved = false;
+        SavePrefs(true);
+    }
 return( ret );
 }
 

@@ -406,6 +406,7 @@ GGadgetHandler GGadgetGetHandler(GGadget *g);
 void GTextFieldSelect(GGadget *g,int sel_start, int sel_end);
 void GTextFieldShow(GGadget *g,int pos);
 void GTextFieldReplace(GGadget *g,const unichar_t *txt);
+bool GTextFieldIsEmpty(GGadget *g);
 void GCompletionFieldSetCompletion(GGadget *g,GTextCompletionHandler completion);
 void GCompletionFieldSetCompletionMode(GGadget *g,int enabled);
 void GGadgetClearList(GGadget *g);
