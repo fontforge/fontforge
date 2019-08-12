@@ -686,7 +686,7 @@ msgstr "Grava..."
 #: ../fontforge/dumppfa.c:1545 ../fontforge/dumppfa.c:2436
 #, fuzzy
 msgid "Converting PostScript"
-msgstr "sistema de escrita|Script"
+msgstr "Script"
 
 #: ../fontforge/dumppfa.c:1552 ../fontforge/dumppfa.c:2440
 #: ../fontforge/savefont.c:826
@@ -11837,7 +11837,7 @@ msgstr "Definir Extensões de Função"
 #: ../fontforgeexe/lookupui.c:708 ../fontforgeexe/showatt.c:1883
 #: ../fontforgeexe/showatt.c:1921
 msgid "writing system|Script"
-msgstr "sistema de escrita|Script"
+msgstr "Script"
 
 #: ../fontforgeexe/basedlg.c:419
 msgid "Default Baseline"
@@ -11974,7 +11974,7 @@ msgstr "Deve ser um número"
 #. GT:      <pfaedit@users.sourceforge.net>
 #: ../fontforgeexe/bdfinfo.c:542
 msgid "Property|New..."
-msgstr "Propriedade|Novo..."
+msgstr "Novo..."
 
 #: ../fontforgeexe/bdfinfo.c:593 ../fontforgeexe/statemachine.c:218
 msgid "No Change"
@@ -13080,7 +13080,7 @@ msgstr ""
 #: ../fontforgeexe/charinfo.c:4565
 #, fuzzy
 msgid "CounterHint|_New..."
-msgstr "Propriedade|Novo..."
+msgstr "Novo..."
 
 #: ../fontforgeexe/charinfo.c:4589 ../fontforgeexe/kernclass.c:3398
 #: ../fontforgeexe/macencui.c:681 ../fontforgeexe/macencui.c:1199
@@ -28589,7 +28589,7 @@ msgstr ""
 #: ../fontforgeexe/problems.c:2626
 #, fuzzy
 msgid "Missing Script"
-msgstr "sistema de escrita|Script"
+msgstr "Script"
 
 #: ../fontforgeexe/problems.c:2824
 msgid "This blank outline glyph has an unexpected bitmap version"

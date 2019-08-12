@@ -3785,7 +3785,7 @@ msgstr "우가리트 설형 자"
 
 #: ../fontforge/lookups.c:1442 ../fontforgeexe/lookupui.c:296
 msgid "Script|Yi"
-msgstr "Script|Yi"
+msgstr "Yi"
 
 #: ../fontforge/lookups.c:1487
 msgid "Required Feature"

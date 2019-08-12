@@ -20556,7 +20556,7 @@ msgstr ""
 
 #: ../fontforgeexe/fontinfo.c:705
 msgid "PanoseLining|Any"
-msgstr "PanoseLining|Будь-яке"
+msgstr "Будь-яке"
 
 #: ../fontforgeexe/fontinfo.c:706
 msgid "PanoseLining|No Fit"
@@ -29785,7 +29785,7 @@ msgstr "FontForge визначає BROWSER, MF і AUTOTRACE."
 
 #: ../fontforgeexe/prefs.c:2392
 msgid "Prefs_App| "
-msgstr "Prefs_App| "
+msgstr " "
 
 #: ../fontforgeexe/prefs.c:2423
 msgid "Features"

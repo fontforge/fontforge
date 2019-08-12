@@ -3191,7 +3191,7 @@ msgstr ""
 #: ../fontforge/lookups.c:1328 ../fontforgeexe/lookupui.c:190
 #, fuzzy
 msgid "Script|Bengali2"
-msgstr "Lang|Bengali"
+msgstr "Bengali"
 
 #: ../fontforge/lookups.c:1329 ../fontforgeexe/lookupui.c:191
 msgid "Bliss Symbolics"
@@ -3235,7 +3235,7 @@ msgstr "Βουλγαρική"
 #: ../fontforgeexe/fontinfo.c:1172
 #, fuzzy
 msgid "Cherokee"
-msgstr "Lang|Cherokee"
+msgstr "Cherokee"
 
 #: ../fontforge/lookups.c:1339 ../fontforgeexe/lookupui.c:199
 msgid "Script|Cham"
@@ -3256,7 +3256,7 @@ msgstr "Ασιατικά Ιδεογράμματα"
 #: ../fontforge/lookups.c:1343 ../fontforgeexe/lookupui.c:203
 #, fuzzy
 msgid "Script|Coptic"
-msgstr "Lang|Coptic"
+msgstr "Coptic"
 
 #: ../fontforge/lookups.c:1344 ../fontforgeexe/lookupui.c:204
 msgid "Cypro-Minoan"
@@ -3385,7 +3385,7 @@ msgstr ""
 #: ../fontforge/lookups.c:1378 ../fontforgeexe/lookupui.c:238
 #, fuzzy
 msgid "Script|Kannada2"
-msgstr "Lang|Kannada"
+msgstr "Kannada"
 
 #: ../fontforge/lookups.c:1379 ../fontforgeexe/lookupui.c:239
 msgid "Script|Khmer"
@@ -3436,12 +3436,12 @@ msgstr ""
 #: ../fontforge/lookups.c:1391 ../fontforgeexe/lookupui.c:249
 #, fuzzy
 msgid "Script|Malayālam"
-msgstr "Lang|Kannada"
+msgstr "Kannada"
 
 #: ../fontforge/lookups.c:1392 ../fontforgeexe/lookupui.c:250
 #, fuzzy
 msgid "Script|Malayālam2"
-msgstr "Lang|Kannada"
+msgstr "Kannada"
 
 #: ../fontforge/lookups.c:1393 ../fontforge/unicoderange.c:404
 #: ../fontforgeexe/fontinfo.c:1185 ../fontforgeexe/lookupui.c:251
@@ -10108,22 +10108,22 @@ msgstr "Συμπληρωματικά κυριλλικά"
 #: ../fontforge/unicoderange.c:61 ../fontforgeexe/fontinfo.c:1105
 #, fuzzy
 msgid "Armenian"
-msgstr "Lang|Armenian"
+msgstr "Armenian"
 
 #: ../fontforge/unicoderange.c:62 ../fontforgeexe/fontinfo.c:1106
 #, fuzzy
 msgid "Hebrew"
-msgstr "Lang|Hebrew"
+msgstr "Hebrew"
 
 #: ../fontforge/unicoderange.c:63 ../fontforgeexe/fontinfo.c:1108
 #, fuzzy
 msgid "Arabic"
-msgstr "Lang|Arabic"
+msgstr "Arabic"
 
 #: ../fontforge/unicoderange.c:64 ../fontforgeexe/fontinfo.c:1167
 #, fuzzy
 msgid "Syriac"
-msgstr "Lang|Syriac"
+msgstr "Syriac"
 
 #: ../fontforge/unicoderange.c:65
 #, fuzzy
@@ -10161,7 +10161,7 @@ msgstr "Πολυτονικά Ελληνικά"
 #: ../fontforge/unicoderange.c:75 ../fontforgeexe/fontinfo.c:1111
 #, fuzzy
 msgid "Bengali"
-msgstr "Lang|Bengali"
+msgstr "Bengali"
 
 #: ../fontforge/unicoderange.c:77 ../fontforgeexe/fontinfo.c:1113
 #, fuzzy
@@ -10171,7 +10171,7 @@ msgstr "Guarani"
 #: ../fontforge/unicoderange.c:78 ../fontforgeexe/fontinfo.c:1114
 #, fuzzy
 msgid "Oriya"
-msgstr "Lang|Oriya"
+msgstr "Oriya"
 
 #: ../fontforge/unicoderange.c:79 ../fontforgeexe/fontinfo.c:1115
 #, fuzzy
@@ -10181,12 +10181,12 @@ msgstr "Family"
 #: ../fontforge/unicoderange.c:80 ../fontforgeexe/fontinfo.c:1116
 #, fuzzy
 msgid "Telugu"
-msgstr "Lang|Telugu"
+msgstr "Telugu"
 
 #: ../fontforge/unicoderange.c:81 ../fontforgeexe/fontinfo.c:1117
 #, fuzzy
 msgid "Kannada"
-msgstr "Lang|Kannada"
+msgstr "Kannada"
 
 #: ../fontforge/unicoderange.c:82 ../fontforgeexe/fontinfo.c:1118
 #, fuzzy
@@ -10212,17 +10212,17 @@ msgstr "Lak"
 #: ../fontforge/unicoderange.c:86 ../fontforgeexe/fontinfo.c:1166
 #, fuzzy
 msgid "Tibetan"
-msgstr "Lang|Tibetan"
+msgstr "Tibetan"
 
 #: ../fontforge/unicoderange.c:87 ../fontforgeexe/fontinfo.c:1170
 #, fuzzy
 msgid "Myanmar"
-msgstr "Script|Myanmar"
+msgstr "Myanmar"
 
 #: ../fontforge/unicoderange.c:88 ../fontforgeexe/fontinfo.c:1121
 #, fuzzy
 msgid "Georgian"
-msgstr "Lang|Georgian"
+msgstr "Georgian"
 
 #: ../fontforge/unicoderange.c:89
 #, fuzzy
@@ -10242,7 +10242,7 @@ msgstr "Hangul Jamo"
 #: ../fontforge/unicoderange.c:92 ../fontforgeexe/fontinfo.c:1171
 #, fuzzy
 msgid "Ethiopic"
-msgstr "Script|Ethiopic"
+msgstr "Ethiopic"
 
 #: ../fontforge/unicoderange.c:93
 #, fuzzy
@@ -10257,7 +10257,7 @@ msgstr "Canadian Syllabics"
 #: ../fontforge/unicoderange.c:98
 #, fuzzy
 msgid "Tagalog"
-msgstr "Lang|Tagalog"
+msgstr "Tagalog"
 
 #: ../fontforge/unicoderange.c:99
 msgid "Hanunóo"
@@ -10276,7 +10276,7 @@ msgstr "Thaana"
 #: ../fontforge/unicoderange.c:102 ../fontforgeexe/fontinfo.c:1176
 #, fuzzy
 msgid "Khmer"
-msgstr "Lang|Khmer"
+msgstr "Khmer"
 
 #: ../fontforge/unicoderange.c:103 ../fontforgeexe/fontinfo.c:1177
 #, fuzzy
@@ -10291,7 +10291,7 @@ msgstr "Canadian Syllabics"
 #: ../fontforge/unicoderange.c:105 ../fontforgeexe/fontinfo.c:1189
 #, fuzzy
 msgid "Limbu"
-msgstr "Lang|Limbu"
+msgstr "Limbu"
 
 #: ../fontforge/unicoderange.c:108
 #, fuzzy
@@ -10301,7 +10301,7 @@ msgstr "Σύμβολα Χμερ"
 #: ../fontforge/unicoderange.c:109 ../fontforgeexe/fontinfo.c:1192
 #, fuzzy
 msgid "Buginese"
-msgstr "Script|Buginese"
+msgstr "Buginese"
 
 #: ../fontforge/unicoderange.c:110
 msgid "Tai Tham"
@@ -10574,7 +10574,7 @@ msgstr ""
 #: ../fontforge/unicoderange.c:170 ../fontforgeexe/fontinfo.c:1103
 #, fuzzy
 msgid "Coptic"
-msgstr "Lang|Coptic"
+msgstr "Coptic"
 
 #: ../fontforge/unicoderange.c:171
 #, fuzzy
@@ -11016,7 +11016,7 @@ msgstr ""
 #: ../fontforge/unicoderange.c:303 ../fontforgeexe/fontinfo.c:1199
 #, fuzzy
 msgid "Ugaritic"
-msgstr "Script|Ugaritic"
+msgstr "Ugaritic"
 
 #: ../fontforge/unicoderange.c:304 ../fontforgeexe/fontinfo.c:1200
 #, fuzzy
@@ -11069,7 +11069,7 @@ msgstr ""
 #: ../fontforge/unicoderange.c:318 ../fontforgeexe/fontinfo.c:1153
 #, fuzzy
 msgid "Phoenician"
-msgstr "Γραφή|Φοινικική"
+msgstr "Φοινικική"
 
 #: ../fontforge/unicoderange.c:320
 msgid "Meroitic Hieroglyphs"
@@ -12164,7 +12164,7 @@ msgstr "Θα πρέπει να είναι αριθμός"
 #. GT:      <pfaedit@users.sourceforge.net>
 #: ../fontforgeexe/bdfinfo.c:539
 msgid "Property|New..."
-msgstr "Ιδιότητα|Νέο..."
+msgstr "Νέο..."
 
 #: ../fontforgeexe/bdfinfo.c:590 ../fontforgeexe/statemachine.c:215
 msgid "No Change"
@@ -12377,7 +12377,7 @@ msgstr "Στρέβλωση..."
 #: ../fontforgeexe/openfontdlg.c:736
 #, fuzzy
 msgid "Font|_New"
-msgstr "Γραμματοσειρά|_Νέα"
+msgstr "_Νέα"
 
 #: ../fontforgeexe/bitmapview.c:2124 ../fontforgeexe/charview.c:11703
 #: ../fontforgeexe/fontview.c:4408 ../fontforgeexe/metricsview.c:3499
@@ -12736,7 +12736,7 @@ msgstr ""
 #: ../fontforgeexe/charinfo.c:161 ../fontforgeexe/fontview.c:4459
 #: ../fontforgeexe/fontview.c:4598 ../fontforgeexe/groupsdlg.c:48
 msgid "Color|Default"
-msgstr "Χρώμα|«Εξ ορισμού»"
+msgstr "«Εξ ορισμού»"
 
 #: ../fontforgeexe/charinfo.c:173
 msgid "New Pair Position"
@@ -13283,7 +13283,7 @@ msgstr ""
 #: ../fontforgeexe/charinfo.c:4562
 #, fuzzy
 msgid "CounterHint|_New..."
-msgstr "Ιδιότητα|Νέο..."
+msgstr "Νέο..."
 
 #: ../fontforgeexe/charinfo.c:4586 ../fontforgeexe/kernclass.c:3394
 #: ../fontforgeexe/macencui.c:678 ../fontforgeexe/macencui.c:1196
@@ -20971,12 +20971,12 @@ msgstr "Τουρκική"
 #: ../fontforgeexe/fontinfo.c:1232
 #, fuzzy
 msgid "1255, Hebrew"
-msgstr "Lang|Hebrew"
+msgstr "Hebrew"
 
 #: ../fontforgeexe/fontinfo.c:1233
 #, fuzzy
 msgid "1256, Arabic"
-msgstr "Lang|Arabic"
+msgstr "Arabic"
 
 #: ../fontforgeexe/fontinfo.c:1234
 msgid "1257, Windows Baltic"
@@ -21162,7 +21162,7 @@ msgstr ""
 #: ../fontforgeexe/fontinfo.c:1278
 #, fuzzy
 msgid "864, Arabic"
-msgstr "Lang|Arabic"
+msgstr "Arabic"
 
 #: ../fontforgeexe/fontinfo.c:1279
 msgid "863, MS-DOS Canadian French"
@@ -21171,7 +21171,7 @@ msgstr ""
 #: ../fontforgeexe/fontinfo.c:1280
 #, fuzzy
 msgid "862, Hebrew"
-msgstr "Lang|Hebrew"
+msgstr "Hebrew"
 
 #: ../fontforgeexe/fontinfo.c:1281
 #, fuzzy
@@ -24240,7 +24240,7 @@ msgstr ""
 #: ../fontforgeexe/fontview.c:7382
 #, fuzzy
 msgid "FontView"
-msgstr "Γραμματοσειρά|_Νέα"
+msgstr "_Νέα"
 
 #: ../fontforgeexe/fontview.c:7383
 msgid "This is the main fontforge window displaying a font"
@@ -28543,12 +28543,12 @@ msgstr ""
 #: ../fontforgeexe/prefs.c:2424
 #, fuzzy
 msgid "Prefs_App|FontForge recognizes BROWSER, MF and AUTOTRACE."
-msgstr "Επιλογ.|Εφάρμ.|Το FontForge αναγνωρίζει την BROWSER, MF και AUTOTRACE."
+msgstr "Το FontForge αναγνωρίζει την BROWSER, MF και AUTOTRACE."
 
 #: ../fontforgeexe/prefs.c:2425
 #, fuzzy
 msgid "Prefs_App| "
-msgstr "Επιλογ.|Εφαρμ. "
+msgstr " "
 
 #: ../fontforgeexe/prefs.c:2456
 msgid "Features"
@@ -34382,7 +34382,7 @@ msgstr ""
 
 #: ../gdraw/gmatrixedit.c:1629
 msgid "Row|New"
-msgstr "Γραμμή|Νέα"
+msgstr "Νέα"
 
 #: ../gdraw/gmenu.c:71 ../gdraw/gmenu.c:72
 msgid "Menu Bar"

@@ -3240,7 +3240,7 @@ msgstr "Skriptenliste"
 
 #: ../fontforge/lookups.c:1328 ../fontforgeexe/lookupui.c:191
 msgid "Script|Balinese"
-msgstr "Skript|Balinesisch"
+msgstr "Balinesisch"
 
 #: ../fontforge/lookups.c:1329 ../fontforgeexe/lookupui.c:192
 #, fuzzy
@@ -3459,7 +3459,7 @@ msgstr "Skriptenliste"
 
 #: ../fontforge/lookups.c:1385 ../fontforgeexe/lookupui.c:246
 msgid "Script|Latin"
-msgstr "Skript|Lateinisch"
+msgstr "Lateinisch"
 
 #: ../fontforge/lookups.c:1386 ../fontforgeexe/lookupui.c:247
 msgid "Lepcha (Róng)"
@@ -7292,11 +7292,11 @@ msgstr ""
 
 #: ../fontforge/parsettf.c:4485
 msgid "Script|Japanese"
-msgstr "Skript|Japanisch"
+msgstr "Japanisch"
 
 #: ../fontforge/parsettf.c:4485
 msgid "Script|Korean"
-msgstr "Skript|Koreanisch"
+msgstr "Koreanisch"
 
 #: ../fontforge/parsettf.c:4485
 msgid "Script|Roman"
@@ -12278,7 +12278,7 @@ msgstr "_Scheren..."
 #: ../fontforgeexe/metricsview.c:3497 ../fontforgeexe/metricsview.c:3501
 #: ../fontforgeexe/openfontdlg.c:740
 msgid "Font|_New"
-msgstr "Schriftart|_Neu"
+msgstr "_Neu"
 
 #: ../fontforgeexe/bitmapview.c:2130 ../fontforgeexe/charview.c:11762
 #: ../fontforgeexe/fontview.c:4409 ../fontforgeexe/metricsview.c:3502
@@ -12638,7 +12638,7 @@ msgstr ""
 #: ../fontforgeexe/charinfo.c:164 ../fontforgeexe/fontview.c:4460
 #: ../fontforgeexe/fontview.c:4599 ../fontforgeexe/groupsdlg.c:52
 msgid "Color|Default"
-msgstr "Farbe|Standard"
+msgstr "Standard"
 
 #: ../fontforgeexe/charinfo.c:176
 msgid "New Pair Position"
@@ -12917,7 +12917,7 @@ msgstr ""
 
 #: ../fontforgeexe/charinfo.c:2357
 msgid "PixelSize|New"
-msgstr "Pixelgröße|Neu"
+msgstr "Neu"
 
 #: ../fontforgeexe/charinfo.c:2382 ../fontforgeexe/charinfo.c:2387
 #: ../fontforgeexe/charinfo.c:2392 ../fontforgeexe/charinfo.c:2397
@@ -15360,7 +15360,7 @@ msgstr ""
 
 #: ../fontforgeexe/contextchain.c:1937 ../fontforgeexe/contextchain.c:1942
 msgid "Class|Name"
-msgstr "Klasse|Name"
+msgstr "Name"
 
 #: ../fontforgeexe/contextchain.c:1938 ../fontforgeexe/contextchain.c:1943
 #: ../fontforgeexe/fontinfo.c:1364
@@ -15842,7 +15842,7 @@ msgstr "_Filter"
 #: ../fontforgeexe/cvexportdlg.c:581 ../fontforgeexe/savefontdlg.c:2227
 #: ../gdraw/gsavefiledlg.c:273
 msgid "Directory|_New"
-msgstr "Verzeichnis|_Neu"
+msgstr "_Neu"
 
 #: ../fontforgeexe/cvexportdlg.c:592 ../fontforgeexe/cvimportdlg.c:701
 msgid "Format:"
@@ -18301,7 +18301,7 @@ msgstr ""
 #. GT:  of "Interpretation"
 #: ../fontforgeexe/fontinfo.c:83
 msgid "Interpretation|None"
-msgstr "Interpretation|Keine"
+msgstr "Keine"
 
 #: ../fontforgeexe/fontinfo.c:94
 msgid "MacStyles|Bold"
@@ -18735,7 +18735,7 @@ msgstr "Fett Kursiv"
 
 #: ../fontforgeexe/fontinfo.c:228
 msgid "OS2Version|Automatic"
-msgstr "OS2Version|Automatisch"
+msgstr "Automatisch"
 
 #: ../fontforgeexe/fontinfo.c:229 ../fontforgeexe/fontinfo.c:237
 msgid "1"
@@ -21164,11 +21164,11 @@ msgstr "_Quadratische Ziehpunkte"
 #: ../fontforgeexe/fontinfo.c:1346 ../fontforgeexe/fontview.c:5094
 #: ../fontforgeexe/metricsview.c:3681
 msgid "Layer|Foreground"
-msgstr "Ebene|Vordergrund"
+msgstr "Vordergrund"
 
 #: ../fontforgeexe/fontinfo.c:1347
 msgid "Layer|Background"
-msgstr "Ebene|Hintergrund"
+msgstr "Hintergrund"
 
 #: ../fontforgeexe/fontinfo.c:1352
 msgid "Layer Name"
@@ -21562,7 +21562,7 @@ msgstr "Unterstreichungs_position:"
 
 #: ../fontforgeexe/fontinfo.c:4148 ../fontforgeexe/fontinfo.c:7990
 msgid "Underline|_Height:"
-msgstr "Unterstreichung|_Höhe:"
+msgstr "_Höhe:"
 
 #: ../fontforgeexe/fontinfo.c:4149
 msgid "_Em Size:"
@@ -24640,7 +24640,7 @@ msgstr ""
 
 #: ../fontforgeexe/justifydlg.c:820
 msgid "Language|New"
-msgstr "Sprache|Neu"
+msgstr "Neu"
 
 #: ../fontforgeexe/justifydlg.c:953
 msgid "Justified Scripts"
@@ -24652,7 +24652,7 @@ msgstr ""
 
 #: ../fontforgeexe/justifydlg.c:1016
 msgid "Script|New"
-msgstr "Skript|Neu"
+msgstr "Neu"
 
 #: ../fontforgeexe/kernclass.c:252 ../fontforgeexe/kernclass.c:302
 #: ../fontforgeexe/kernclass.c:1211 ../fontforgeexe/lookupui.c:3474
@@ -25227,7 +25227,7 @@ msgstr ""
 
 #: ../fontforgeexe/lookupui.c:374
 msgid "Lang|Default"
-msgstr "Sprache|Standard"
+msgstr "Standard"
 
 #: ../fontforgeexe/lookupui.c:375
 msgid "Woods Cree"
@@ -27452,7 +27452,7 @@ msgstr ""
 
 #: ../fontforgeexe/mmdlg.c:1699
 msgid "Font|New"
-msgstr "Schriftart|Neu"
+msgstr "Neu"
 
 #: ../fontforgeexe/mmdlg.c:1780 ../fontforgeexe/mmdlg.c:3081
 msgid "Force Bold Threshold:"
@@ -27770,7 +27770,7 @@ msgstr "Schriftartfilter bearbeiten"
 
 #: ../fontforgeexe/openfontdlg.c:425
 msgid "Filter|New"
-msgstr "Filter|Neu"
+msgstr "Neu"
 
 #: ../fontforgeexe/openfontdlg.c:663
 msgid "Filter:"
@@ -33911,7 +33911,7 @@ msgstr "Ausgewählte Lesezeichen entfernen"
 
 #: ../gdraw/gfilechooser.c:1030
 msgid "Directory|Back"
-msgstr "Verzeichnis|Zurück"
+msgstr "Zurück"
 
 #: ../gdraw/gfilechooser.c:1031
 #, fuzzy
@@ -34130,7 +34130,7 @@ msgstr ""
 
 #: ../gdraw/gmatrixedit.c:1630
 msgid "Row|New"
-msgstr "Reihe|Neu"
+msgstr "Neu"
 
 #: ../gdraw/gmenu.c:73 ../gdraw/gmenu.c:74
 msgid "Menu Bar"
