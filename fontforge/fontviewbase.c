@@ -1221,7 +1221,7 @@ void CIDSetEncMap(FontViewBase *fv, SplineFont *new ) {
 	    memset(fv->selected+gcnt,0,fv->map->enccount-gcnt);
 	else {
 	    free(fv->selected);
-	    fv->selected = calloc(gcnt,sizeof(char));
+	    fv->selected = calloc(gcnt,sizeof(uint8));
 	}
 	fv->map->enccount = gcnt;
     }
@@ -1939,7 +1939,7 @@ static FontViewBase *_FontViewBaseCreate(SplineFont *sf) {
 	fv->map = EncMap1to1(sf->glyphcnt);
 	if ( fv->nextsame==NULL ) { sf->map = fv->map; }
     }
-    fv->selected = calloc(fv->map->enccount,sizeof(char));
+    fv->selected = calloc(fv->map->enccount,sizeof(uint8));
 
 #ifndef _NO_PYTHON
     PyFF_InitFontHook(fv);

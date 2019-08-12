@@ -652,7 +652,7 @@ return( true );
 		int tag = md[cols*r+1].u.md_ival;
 		for ( j=0; stdtags[j]!=0 && stdtags[j]!=tag; ++j );
 		bs->def_baseline = mapping[j];
-		bs->baseline_pos = malloc(cnt*sizeof(uint16));
+		bs->baseline_pos = malloc(cnt*sizeof(int16));
 		for ( i=0; stdtags[i]!=0 ; ++i ) if ( mapping[i]!=-1 )
 		    bs->baseline_pos[mapping[i]] = md[r*cols+i+2].u.md_ival;
 	    }
