@@ -3811,7 +3811,7 @@ msgstr "希伯来语"
 #
 #: ../fontforge/lookups.c:1376 ../fontforgeexe/lookupui.c:237
 msgid "Script|Javanese"
-msgstr "Script|Javanese"
+msgstr "Javanese"
 
 #
 #: ../fontforge/lookups.c:1377 ../fontforge/unicoderange.c:223
@@ -3832,22 +3832,22 @@ msgstr "Kharoṣṭhī"
 #
 #: ../fontforge/lookups.c:1380 ../fontforgeexe/lookupui.c:241
 msgid "Script|Kannada"
-msgstr "Script|Kannada"
+msgstr "Kannada"
 
 #
 #: ../fontforge/lookups.c:1381 ../fontforgeexe/lookupui.c:242
 msgid "Script|Kannada2"
-msgstr "Script|Kannada2"
+msgstr "Kannada2"
 
 #
 #: ../fontforge/lookups.c:1382 ../fontforgeexe/lookupui.c:243
 msgid "Script|Khmer"
-msgstr "Script|Khmer"
+msgstr "Khmer"
 
 #
 #: ../fontforge/lookups.c:1383 ../fontforgeexe/lookupui.c:244
 msgid "Script|Kharosthi"
-msgstr "Script|Kharosthi"
+msgstr "Kharosthi"
 
 #
 #: ../fontforge/lookups.c:1384 ../fontforgeexe/lookupui.c:245
@@ -3867,7 +3867,7 @@ msgstr "Lepcha (Róng)"
 #
 #: ../fontforge/lookups.c:1387 ../fontforgeexe/lookupui.c:248
 msgid "Script|Limbu"
-msgstr "Script|Limbu"
+msgstr "Limbu"
 
 #
 #: ../fontforge/lookups.c:1388 ../fontforge/unicoderange.c:314
@@ -3893,17 +3893,17 @@ msgstr "利西亚语"
 #
 #: ../fontforge/lookups.c:1392 ../fontforgeexe/lookupui.c:251
 msgid "Script|Mandaean"
-msgstr "Script|Mandaean"
+msgstr "Mandaean"
 
 #
 #: ../fontforge/lookups.c:1394 ../fontforgeexe/lookupui.c:253
 msgid "Script|Malayālam"
-msgstr "Script|Malayālam"
+msgstr "Malayālam"
 
 #
 #: ../fontforge/lookups.c:1395 ../fontforgeexe/lookupui.c:254
 msgid "Script|Malayālam2"
-msgstr "Script|Malayālam2"
+msgstr "Malayālam2"
 
 #
 #: ../fontforge/lookups.c:1396 ../fontforge/unicoderange.c:407
@@ -3924,7 +3924,7 @@ msgstr "乐符"
 #
 #: ../fontforge/lookups.c:1399 ../fontforgeexe/lookupui.c:258
 msgid "Script|Myanmar"
-msgstr "Script|Myanmar"
+msgstr "Myanmar"
 
 #
 #: ../fontforge/lookups.c:1400 ../fontforge/unicoderange.c:110
@@ -3958,7 +3958,7 @@ msgstr "老意大利文 (Etruscan, Oscan 等)"
 #
 #: ../fontforge/lookups.c:1405 ../fontforgeexe/lookupui.c:262
 msgid "Script|Old Permic"
-msgstr "Script|Old Permic"
+msgstr "Old Permic"
 
 #
 #: ../fontforge/lookups.c:1406 ../fontforgeexe/lookupui.c:263
@@ -3968,12 +3968,12 @@ msgstr "Old Persian cuneiform"
 #
 #: ../fontforge/lookups.c:1407 ../fontforgeexe/lookupui.c:264
 msgid "Script|Oriya"
-msgstr "Script|Oriya"
+msgstr "Oriya"
 
 #
 #: ../fontforge/lookups.c:1408 ../fontforgeexe/lookupui.c:265
 msgid "Script|Oriya2"
-msgstr "Script|Oriya2"
+msgstr "Oriya2"
 
 #
 #: ../fontforge/lookups.c:1409 ../fontforge/unicoderange.c:310
@@ -3984,17 +3984,17 @@ msgstr "Osmanya"
 #
 #: ../fontforge/lookups.c:1410 ../fontforgeexe/lookupui.c:267
 msgid "Script|Pahlavi"
-msgstr "Script|Pahlavi"
+msgstr "Pahlavi"
 
 #
 #: ../fontforge/lookups.c:1411 ../fontforgeexe/lookupui.c:268
 msgid "Script|Phags-pa"
-msgstr "Script|Phags-pa"
+msgstr "Phags-pa"
 
 #
 #: ../fontforge/lookups.c:1412 ../fontforgeexe/lookupui.c:269
 msgid "Script|Phoenician"
-msgstr "Script|Phoenician"
+msgstr "Phoenician"
 
 #
 #: ../fontforge/lookups.c:1413 ../fontforgeexe/lookupui.c:270
@@ -4037,12 +4037,12 @@ msgstr "Shavian"
 #
 #: ../fontforge/lookups.c:1420 ../fontforgeexe/lookupui.c:275
 msgid "Script|Sinhala"
-msgstr "Script|Sinhala"
+msgstr "Sinhala"
 
 #
 #: ../fontforge/lookups.c:1421 ../fontforgeexe/lookupui.c:276
 msgid "Script|Sumero-Akkadian Cuneiform"
-msgstr "Script|Sumero-Akkadian Cuneiform"
+msgstr "Sumero-Akkadian Cuneiform"
 
 #
 #: ../fontforge/lookups.c:1422
@@ -4052,22 +4052,22 @@ msgstr "巽他语"
 #
 #: ../fontforge/lookups.c:1423 ../fontforgeexe/lookupui.c:277
 msgid "Script|Syloti Nagri"
-msgstr "Script|Syloti Nagri"
+msgstr "Syloti Nagri"
 
 #
 #: ../fontforge/lookups.c:1424 ../fontforgeexe/lookupui.c:278
 msgid "Script|Syriac"
-msgstr "Script|Syriac"
+msgstr "Syriac"
 
 #
 #: ../fontforge/lookups.c:1425 ../fontforgeexe/lookupui.c:279
 msgid "Script|Tagalog"
-msgstr "Script|Tagalog"
+msgstr "Tagalog"
 
 #
 #: ../fontforge/lookups.c:1426 ../fontforgeexe/lookupui.c:280
 msgid "Script|Tagbanwa"
-msgstr "Script|Tagbanwa"
+msgstr "Tagbanwa"
 
 #
 #: ../fontforge/lookups.c:1427 ../fontforge/unicoderange.c:109
@@ -4083,22 +4083,22 @@ msgstr "Tai Lu"
 #
 #: ../fontforge/lookups.c:1429 ../fontforgeexe/lookupui.c:283
 msgid "Script|Tamil"
-msgstr "Script|Tamil"
+msgstr "Tamil"
 
 #
 #: ../fontforge/lookups.c:1430 ../fontforgeexe/lookupui.c:284
 msgid "Script|Tamil2"
-msgstr "Script|Tamil2"
+msgstr "Tamil2"
 
 #
 #: ../fontforge/lookups.c:1431 ../fontforgeexe/lookupui.c:285
 msgid "Script|Telugu"
-msgstr "Script|Telugu"
+msgstr "Telugu"
 
 #
 #: ../fontforge/lookups.c:1432 ../fontforgeexe/lookupui.c:286
 msgid "Script|Telugu2"
-msgstr "Script|Telugu2"
+msgstr "Telugu2"
 
 #
 #: ../fontforge/lookups.c:1433 ../fontforgeexe/lookupui.c:287
@@ -4115,7 +4115,7 @@ msgstr "塔安那文"
 #: ../fontforge/lookups.c:1435 ../fontforge/parsettf.c:4492
 #: ../fontforgeexe/lookupui.c:289
 msgid "Script|Thai"
-msgstr "Script|Thai"
+msgstr "Thai"
 
 #
 #: ../fontforge/lookups.c:1436 ../fontforgeexe/lookupui.c:290
@@ -4130,12 +4130,12 @@ msgstr "Tifinagh (Berber)"
 #
 #: ../fontforge/lookups.c:1438 ../fontforgeexe/lookupui.c:292
 msgid "Script|Ugaritic"
-msgstr "Script|Ugaritic"
+msgstr "Ugaritic"
 
 #
 #: ../fontforge/lookups.c:1439 ../fontforgeexe/lookupui.c:293
 msgid "Script|Vai"
-msgstr "Script|Vai"
+msgstr "Vai"
 
 #
 #: ../fontforge/lookups.c:1441 ../fontforgeexe/lookupui.c:295
@@ -4145,7 +4145,7 @@ msgstr "Cuneiform, Ugaritic"
 #
 #: ../fontforge/lookups.c:1442 ../fontforgeexe/lookupui.c:296
 msgid "Script|Yi"
-msgstr "Script|彝文字符"
+msgstr "彝文字符"
 
 #
 #: ../fontforge/lookups.c:1487
@@ -4586,7 +4586,7 @@ msgstr "乌尔都语"
 #: ../fontforge/macenc.c:2252 ../fontforgeexe/fontinfo.c:1018
 #: ../fontforgeexe/lookupui.c:659 ../fontforgeexe/macencui.c:105
 msgid "Lang|Thai"
-msgstr "Lang|Thai"
+msgstr "Thai"
 
 #
 #: ../fontforge/macenc.c:2253 ../fontforgeexe/fontinfo.c:89
@@ -4730,13 +4730,13 @@ msgstr "阿塞拜疆语(阿拉伯字母)"
 #: ../fontforge/macenc.c:2283 ../fontforgeexe/fontinfo.c:837
 #: ../fontforgeexe/lookupui.c:440 ../fontforgeexe/macencui.c:136
 msgid "Lang|Armenian"
-msgstr "Lang|Armenian"
+msgstr "Armenian"
 
 #
 #: ../fontforge/macenc.c:2284 ../fontforgeexe/fontinfo.c:906
 #: ../fontforgeexe/lookupui.c:464 ../fontforgeexe/macencui.c:137
 msgid "Lang|Georgian"
-msgstr "Lang|Georgian"
+msgstr "Georgian"
 
 #
 #: ../fontforge/macenc.c:2285 ../fontforgeexe/lookupui.c:557
@@ -4819,7 +4819,7 @@ msgstr "马拉地语"
 #: ../fontforge/macenc.c:2299 ../fontforgeexe/fontinfo.c:843
 #: ../fontforgeexe/lookupui.c:335 ../fontforgeexe/macencui.c:152
 msgid "Lang|Bengali"
-msgstr "Lang|Bengali"
+msgstr "Bengali"
 
 #
 #: ../fontforge/macenc.c:2300 ../fontforgeexe/fontinfo.c:838
@@ -4831,7 +4831,7 @@ msgstr "阿萨姆语"
 #: ../fontforge/macenc.c:2301 ../fontforgeexe/fontinfo.c:914
 #: ../fontforgeexe/lookupui.c:425 ../fontforgeexe/macencui.c:154
 msgid "Lang|Gujarati"
-msgstr "Lang|Gujarati"
+msgstr "Gujarati"
 
 #
 #: ../fontforge/macenc.c:2302 ../fontforgeexe/lookupui.c:593
@@ -4843,7 +4843,7 @@ msgstr "旁遮普语"
 #: ../fontforge/macenc.c:2303 ../fontforgeexe/fontinfo.c:956
 #: ../fontforgeexe/lookupui.c:588 ../fontforgeexe/macencui.c:156
 msgid "Lang|Oriya"
-msgstr "Lang|Oriya"
+msgstr "Oriya"
 
 #
 #: ../fontforge/macenc.c:2304 ../fontforgeexe/fontinfo.c:945
@@ -4855,25 +4855,25 @@ msgstr "马来语"
 #: ../fontforge/macenc.c:2305 ../fontforgeexe/fontinfo.c:928
 #: ../fontforgeexe/lookupui.c:462 ../fontforgeexe/macencui.c:158
 msgid "Lang|Kannada"
-msgstr "Lang|Kannada"
+msgstr "Kannada"
 
 #
 #: ../fontforge/macenc.c:2306 ../fontforgeexe/fontinfo.c:1015
 #: ../fontforgeexe/lookupui.c:652 ../fontforgeexe/macencui.c:159
 msgid "Lang|Tamil"
-msgstr "Lang|Tamil"
+msgstr "Tamil"
 
 #
 #: ../fontforge/macenc.c:2307 ../fontforgeexe/fontinfo.c:1017
 #: ../fontforgeexe/lookupui.c:655 ../fontforgeexe/macencui.c:160
 msgid "Lang|Telugu"
-msgstr "Lang|Telugu"
+msgstr "Telugu"
 
 #
 #: ../fontforge/macenc.c:2308 ../fontforgeexe/fontinfo.c:980
 #: ../fontforgeexe/lookupui.c:632 ../fontforgeexe/macencui.c:161
 msgid "Lang|Sinhalese"
-msgstr "Lang|Sinhalese"
+msgstr "Sinhalese"
 
 #
 #: ../fontforge/macenc.c:2309 ../fontforgeexe/fontinfo.c:846
@@ -4885,7 +4885,7 @@ msgstr "缅甸语"
 #: ../fontforge/macenc.c:2310 ../fontforgeexe/fontinfo.c:932
 #: ../fontforgeexe/lookupui.c:470 ../fontforgeexe/macencui.c:163
 msgid "Lang|Khmer"
-msgstr "Lang|Khmer"
+msgstr "Khmer"
 
 #
 #: ../fontforge/macenc.c:2311 ../fontforgeexe/lookupui.c:512
@@ -4929,7 +4929,7 @@ msgstr "Malay (阿拉伯字母)"
 #: ../fontforge/macenc.c:2317 ../fontforgeexe/fontinfo.c:820
 #: ../fontforgeexe/lookupui.c:316 ../fontforgeexe/macencui.c:170
 msgid "Lang|Amharic"
-msgstr "Lang|Amharic"
+msgstr "Amharic"
 
 #
 #: ../fontforge/macenc.c:2318 ../fontforgeexe/lookupui.c:658
@@ -4997,7 +4997,7 @@ msgstr "加泰罗尼亚语"
 #: ../fontforge/macenc.c:2330 ../fontforgeexe/fontinfo.c:939
 #: ../fontforgeexe/lookupui.c:513 ../fontforgeexe/macencui.c:183
 msgid "Lang|Latin"
-msgstr "Lang|拉丁语"
+msgstr "拉丁语"
 
 #
 #: ../fontforge/macenc.c:2331 ../fontforgeexe/macencui.c:184
@@ -8189,7 +8189,7 @@ msgstr "朝鲜文"
 #
 #: ../fontforge/parsettf.c:4485
 msgid "Script|Roman"
-msgstr "Script|Roman"
+msgstr "Roman"
 
 #
 #: ../fontforge/parsettf.c:4485
@@ -8201,22 +8201,22 @@ msgstr "繁体中文"
 #. GT:  docs though
 #: ../fontforge/parsettf.c:4489
 msgid "Script|Cyrillic"
-msgstr "Script|Cyrillic"
+msgstr "Cyrillic"
 
 #
 #: ../fontforge/parsettf.c:4489
 msgid "Script|Devanagari"
-msgstr "Script|Devanagari"
+msgstr "Devanagari"
 
 #
 #: ../fontforge/parsettf.c:4489
 msgid "Script|RSymbol"
-msgstr "Script|RSymbol"
+msgstr "RSymbol"
 
 #
 #: ../fontforge/parsettf.c:4490
 msgid "Script|Gurmukhi"
-msgstr "Script|Gurmukhi"
+msgstr "Gurmukhi"
 
 #
 #: ../fontforge/parsettf.c:4492
@@ -14342,7 +14342,7 @@ msgstr "组成"
 #: ../fontforgeexe/charinfo.c:163 ../fontforgeexe/fontview.c:4459
 #: ../fontforgeexe/fontview.c:4598 ../fontforgeexe/groupsdlg.c:51
 msgid "Color|Choose..."
-msgstr "Color|选择颜色..."
+msgstr "选择颜色..."
 
 #
 #: ../fontforgeexe/charinfo.c:164 ../fontforgeexe/fontview.c:4460
@@ -17445,16 +17445,16 @@ msgstr "名字 \"%s\" 已被使用，请使用不同名字。"
 #
 #: ../fontforgeexe/contextchain.c:1932
 msgid "Section|Continue"
-msgstr "Section|继续"
+msgstr "继续"
 
 #: ../fontforgeexe/contextchain.c:1933
 msgid "Section|Start"
-msgstr "Section|开始"
+msgstr "开始"
 
 #
 #: ../fontforgeexe/contextchain.c:1937 ../fontforgeexe/contextchain.c:1942
 msgid "Class|Name"
-msgstr "Class|名称"
+msgstr "名称"
 
 #
 #: ../fontforgeexe/contextchain.c:1938 ../fontforgeexe/contextchain.c:1943
@@ -17673,7 +17673,7 @@ msgstr "同匹配类属"
 #. GT: contain spaces. Use an underscore or something similar instead
 #: ../fontforgeexe/contextchain.c:2825 ../fontforgeexe/contextchain.c:3002
 msgid "Glyphs|All_Others"
-msgstr "Glyphs|其他"
+msgstr "其他"
 
 #
 #: ../fontforgeexe/contextchain.c:2865 ../fontforgeexe/contextchain.c:3040
@@ -20254,7 +20254,7 @@ msgstr "尺寸, 字形, 点数"
 #
 #: ../fontforgeexe/deltaui.c:410
 msgid "Sort|Alphabetic"
-msgstr "Sort|字母"
+msgstr "字母"
 
 #
 #: ../fontforgeexe/deltaui.c:411
@@ -22985,7 +22985,7 @@ msgstr "柬埔寨语"
 #
 #: ../fontforgeexe/fontinfo.c:849 ../fontforgeexe/lookupui.c:362
 msgid "Lang|Cherokee"
-msgstr "Lang|Cherokee"
+msgstr "Cherokee"
 
 #
 #: ../fontforgeexe/fontinfo.c:850
@@ -23570,7 +23570,7 @@ msgstr "瑞典语(芬兰)"
 #
 #: ../fontforgeexe/fontinfo.c:1010 ../fontforgeexe/lookupui.c:649
 msgid "Lang|Syriac"
-msgstr "Lang|Syriac"
+msgstr "Syriac"
 
 #
 #: ../fontforgeexe/fontinfo.c:1012
@@ -28710,7 +28710,7 @@ msgstr "Athapaskan"
 #
 #: ../fontforgeexe/lookupui.c:322
 msgid "Lang|Avar"
-msgstr "Lang|Avar"
+msgstr "Avar"
 
 #
 #: ../fontforgeexe/lookupui.c:323
@@ -28745,7 +28745,7 @@ msgstr "Baule"
 #
 #: ../fontforgeexe/lookupui.c:330
 msgid "Lang|Berber"
-msgstr "Lang|Berber"
+msgstr "Berber"
 
 #
 #: ../fontforgeexe/lookupui.c:331
@@ -28890,7 +28890,7 @@ msgstr "Comorian"
 #
 #: ../fontforgeexe/lookupui.c:365
 msgid "Lang|Coptic"
-msgstr "Lang|Coptic"
+msgstr "Coptic"
 
 #
 #: ../fontforgeexe/lookupui.c:366
@@ -29084,7 +29084,7 @@ msgstr "Garhwali"
 #
 #: ../fontforgeexe/lookupui.c:418
 msgid "Lang|Ge'ez"
-msgstr "Lang|Ge'ez"
+msgstr "Ge'ez"
 
 #
 #: ../fontforgeexe/lookupui.c:419
@@ -29193,7 +29193,7 @@ msgstr "Inari Sami"
 #
 #: ../fontforgeexe/lookupui.c:454
 msgid "Lang|Javanese"
-msgstr "Lang|Javanese"
+msgstr "Javanese"
 
 #
 #: ../fontforgeexe/lookupui.c:457
@@ -29453,7 +29453,7 @@ msgstr "Low Mari"
 #
 #: ../fontforgeexe/lookupui.c:520
 msgid "Lang|Limbu"
-msgstr "Lang|Limbu"
+msgstr "Limbu"
 
 #
 #: ../fontforgeexe/lookupui.c:521
@@ -29532,7 +29532,7 @@ msgstr "Mbundu"
 #
 #: ../fontforgeexe/lookupui.c:539
 msgid "Lang|Manchu"
-msgstr "Lang|Manchu"
+msgstr "Manchu"
 
 #
 #: ../fontforgeexe/lookupui.c:540
@@ -32623,7 +32623,7 @@ msgstr " BROWSER, MF 及 AUTOTRACE。"
 #
 #: ../fontforgeexe/prefs.c:2392
 msgid "Prefs_App| "
-msgstr "Prefs_App| "
+msgstr " "
 
 #
 #: ../fontforgeexe/prefs.c:2423
@@ -39545,7 +39545,7 @@ msgstr "存为_UCS2"
 #. GT: (in their translated forms of course).
 #: ../gdraw/gtextinfo.c:1207
 msgid "GGadget|ButtonSize|55"
-msgstr "GGadget|ButtonSize|55"
+msgstr "55"
 
 #
 #. GT: This is an unusual string. It is used to get around a limitation in
@@ -39558,7 +39558,7 @@ msgstr "GGadget|ButtonSize|55"
 #. GT: might be 116*100/67 = 173
 #: ../gdraw/gtextinfo.c:1219
 msgid "GGadget|ScaleFactor|100"
-msgstr "GGadget|ScaleFactor|100"
+msgstr "100"
 
 #: ../gdraw/hotkeys.c:164
 #, c-format

@@ -25586,11 +25586,10 @@ msgstr "Chiều rộng sớm không thay đổi."
 msgid "Left Side Bearing does not change."
 msgstr "Vị trí phương hướng bên trái không thay đổi."
 
-# Có nên dịch không? Và ký tự ống dẫn như thế nào? Tôi đã hỏi nhà phát triển.
 #: ../fontforgeexe/fvmetricsdlg.c:49
 #, fuzzy
 msgid "ThisSpaceIntentionallyLeftBlank-PleaseDoNotTranslate-LeaveThisOut|"
-msgstr "KhoảngNàyDựĐịnhBỏTrống|"
+msgstr ""
 
 #: ../fontforgeexe/fvmetricsdlg.c:49
 msgid "Top Bearing does not change."

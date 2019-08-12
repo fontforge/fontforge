@@ -20255,19 +20255,19 @@ msgstr "外描邊"
 
 #: ../fontforgeexe/fontinfo.c:710
 msgid "PanoseLining|Engraved (Multiple Lines)"
-msgstr "PanoseLining|雕刻 (多重線條)"
+msgstr "雕刻 (多重線條)"
 
 #: ../fontforgeexe/fontinfo.c:711
 msgid "PanoseLining|Shadow"
-msgstr "PanoseLining|陰影"
+msgstr "陰影"
 
 #: ../fontforgeexe/fontinfo.c:712
 msgid "PanoseLining|Relief"
-msgstr "PanoseLining|浮出"
+msgstr "浮出"
 
 #: ../fontforgeexe/fontinfo.c:713
 msgid "PanoseLining|Backdrop"
-msgstr "PanoseLining|背景"
+msgstr "背景"
 
 #: ../fontforgeexe/fontinfo.c:726
 msgid "Standard"

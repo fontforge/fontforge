@@ -7774,7 +7774,7 @@ msgstr "Dewanagari"
 
 #: ../fontforge/parsettf.c:4489
 msgid "Script|RSymbol"
-msgstr "Script|RSymbol"
+msgstr "RSymbol"
 
 #: ../fontforge/parsettf.c:4490
 msgid "Script|Gurmukhi"
