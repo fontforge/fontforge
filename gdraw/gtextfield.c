@@ -874,7 +874,7 @@ return( NULL );
 return( space );
 }
 
-static unichar_t txt[] = { '*','.','t','x','t',  '\0' };
+static unichar_t txt[] = { '*','.','{','t','x','t',',','p','y','}',  '\0' };
 static unichar_t errort[] = { 'C','o','u','l','d',' ','n','o','t',' ','o','p','e','n',  '\0' };
 static unichar_t error[] = { 'C','o','u','l','d',' ','n','o','t',' ','o','p','e','n',' ','%','.','1','0','0','h','s',  '\0' };
 
@@ -884,7 +884,7 @@ static void GTextFieldImport(GTextField *gt) {
     unichar_t *str;
 
     if ( _ggadget_use_gettext ) {
-	char *temp = GWidgetOpenFile8(_("Open"),NULL,"*.txt",NULL,NULL);
+	char *temp = GWidgetOpenFile8(_("Open"),NULL,"*.{txt,py}",NULL,NULL);
 	ret = utf82u_copy(temp);
 	free(temp);
     } else {
@@ -917,7 +917,7 @@ static void GTextFieldSave(GTextField *gt,int utf8) {
     unichar_t *pt;
 
     if ( _ggadget_use_gettext ) {
-	char *temp = GWidgetOpenFile8(_("Save"),NULL,"*.txt",NULL,NULL);
+	char *temp = GWidgetOpenFile8(_("Save"),NULL,"*.{txt,py}",NULL,NULL);
 	ret = utf82u_copy(temp);
 	free(temp);
     } else
