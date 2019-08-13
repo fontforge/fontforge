@@ -867,26 +867,26 @@ return( sf->changed );
 }
 
 static int _FVMenuClose(FontView *fv) {
-    int filesaved, scriptsaved;
+    int i;
     SplineFont *sf = fv->b.cidmaster?fv->b.cidmaster:fv->b.sf;
 
     if ( !SFCloseAllInstrs(fv->b.sf) )
 return( false );
 
-    if ( warn_script_unsaved && fv->script_unsaved ) scriptsaved = AskScriptChanged();
-
     if ( fv->b.nextsame!=NULL || fv->b.sf->fv!=&fv->b ) {
 	/* There's another view, can close this one with no problems */
+    } else if ( warn_script_unsaved && fv->script_unsaved && 
+                AskScriptChanged()==2 ) {
+        return false;
     } else if ( SFAnyChanged(sf) ) {
-	filesaved = AskChanged(fv->b.sf);
-    }
-    if ( scriptsaved==2 ) /* No */
+	i = AskChanged(fv->b.sf);
+	if ( i==2 )	/* Cancel */
 return( false );
-	if ( filesaved==2 )	/* Cancel */
-return( false );
-	if ( filesaved==0 && !_FVMenuSave(fv))		/* Save */
+	if ( i==0 && !_FVMenuSave(fv))		/* Save */
 return(false);
-    SFClearAutoSave(sf);		/* if they didn't save it, remove change record */
+	else
+	    SFClearAutoSave(sf);		/* if they didn't save it, remove change record */
+    }
     _FVCloseWindows(fv);
     if ( sf->filename!=NULL )
 	RecentFilesRemember(sf->filename);
