@@ -80,6 +80,7 @@ char *script_filenames[SCRIPT_MENU_MAX];
 extern int onlycopydisplayed, copymetadata, copyttfinstr, add_char_to_name_list;
 int home_char='A';
 int compact_font_on_open=0;
+bool warn_script_unsaved = true;
 int navigation_mask = 0;		/* Initialized in startui.c */
 
 static char *fv_fontnames = MONO_UI_FAMILIES;
@@ -534,6 +535,22 @@ static int AskChanged(SplineFont *sf) {
 return( ret );
 }
 
+static int AskScriptChanged() {
+    int ret;
+    char *buts[4];
+
+    buts[0] = _("_Yes");
+    buts[1] = _("Yes, and don't _remind me again");
+    buts[2] = _("_No");
+    buts[3] = NULL;
+    ret = gwwv_ask( _("Unsaved script"),(const char **) buts,0,2,_("You have an unsaved script in the «Execute Script» dialog. Do you intend to discard it?"));
+    if (ret == 1) {
+        warn_script_unsaved = false;
+        SavePrefs(true);
+    }
+return( ret );
+}
+
 int _FVMenuGenerate(FontView *fv,int family) {
     FVFlattenAllBitmapSelections(fv);
 return( SFGenerateFont(fv->b.sf,fv->b.active_layer,family,fv->b.normal==NULL?fv->b.map:fv->b.normal) );
@@ -858,6 +875,9 @@ return( false );
 
     if ( fv->b.nextsame!=NULL || fv->b.sf->fv!=&fv->b ) {
 	/* There's another view, can close this one with no problems */
+    } else if ( warn_script_unsaved && fv->script_unsaved && 
+                AskScriptChanged()==2 ) {
+        return false;
     } else if ( SFAnyChanged(sf) ) {
 	i = AskChanged(fv->b.sf);
 	if ( i==2 )	/* Cancel */

@@ -189,6 +189,10 @@ return( true );
     
     if ( event->type==et_close ) {
 	SD_DoCancel( sd );
+    } else if ( event->type==et_controlevent && event->u.control.subtype==et_textchanged ) {
+    sd->fv->script_unsaved = !GTextFieldIsEmpty(GWidgetGetControl(sd->gw,CID_Script));
+    } else if ( event->type==et_controlevent && event->u.control.subtype==et_save ) {
+    sd->fv->script_unsaved = false;
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("scripting.html");

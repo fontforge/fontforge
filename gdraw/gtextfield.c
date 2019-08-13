@@ -215,6 +215,19 @@ static void GTextFieldChanged(GTextField *gt,int src) {
 	GDrawPostEvent(&e);
 }
 
+static void GTextFieldSaved(GTextField *gt) {
+    GEvent e;
+
+    e.type = et_controlevent;
+    e.w = gt->g.base;
+    e.u.control.subtype = et_save;
+    e.u.control.g = &gt->g;
+    if ( gt->g.handle_controlevent != NULL )
+	(gt->g.handle_controlevent)(&gt->g,&e);
+    else
+	GDrawPostEvent(&e);
+}
+
 static void GTextFieldFocusChanged(GTextField *gt,int gained) {
     GEvent e;
 
@@ -878,6 +891,11 @@ static unichar_t txt[] = { '*','.','{','t','x','t',',','p','y','}',  '\0' };
 static unichar_t errort[] = { 'C','o','u','l','d',' ','n','o','t',' ','o','p','e','n',  '\0' };
 static unichar_t error[] = { 'C','o','u','l','d',' ','n','o','t',' ','o','p','e','n',' ','%','.','1','0','0','h','s',  '\0' };
 
+bool GTextFieldIsEmpty(GGadget *g) {
+    GTextField *gt = (GTextField *) g;
+    return gt->text == NULL || *gt->text == '\0';
+}
+
 static void GTextFieldImport(GTextField *gt) {
     unichar_t *ret;
     char *cret;
@@ -970,6 +988,7 @@ return;
 	}
     }
     fclose(file);
+    GTextFieldSaved(gt);
 }
 
 #define MID_Cut		1

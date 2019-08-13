@@ -120,7 +120,7 @@ enum et_subtype { et_buttonpress, et_buttonactivate, et_radiochanged,
 		  et_listselected, et_listdoubleclick,
 		  et_scrollbarchange,
 		  et_textchanged, et_textfocuschanged,
-		  et_lastsubtype };
+		  et_save, et_lastsubtype };
 
 enum sb { et_sb_top, et_sb_uppage, et_sb_up, et_sb_left=et_sb_up,
 	  et_sb_down, et_sb_right=et_sb_down, et_sb_downpage,
