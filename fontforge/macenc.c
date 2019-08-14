@@ -2076,7 +2076,7 @@ static struct macname fs_names[] = {
 	{ NULL, 0, 18, "Slikovni znakovi" },
 	{ NULL, 0, 18, "Biljni ukrasi" },
 	{ NULL, 0, 18, "Ukrasni obrubi" },
-	{ NULL, 0, 18, "Me\421unarodni simboli" },
+	{ NULL, 0, 18, "Me\360unarodni simboli" },
 	{ NULL, 0, 18, "Matemati\350ki simboli" },
 	{ NULL, 0, 18, "Alternative znakova" },
 	{ NULL, 0, 18, "Bez alternativa" },
