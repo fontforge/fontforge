@@ -612,7 +612,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *,int),Str
 	    *caparray[7], *joinarray[7], *swarray[7][5], *pens[10];
     GTextInfo label[39];
     int yoff=0;
-    int gcdoff, mi, swpos;
+    int gcdoff, mi, swpos, tfpos[3];
     static StrokeInfo defaults = {
         25,
         lj_round,
@@ -663,6 +663,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *,int),Str
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,SD_Width));
 	pos.height = GDrawPointsToPixels(NULL,strokeit!=NULL ? SD_Height : FH_Height);
 	sd->gw = gw = GDrawCreateTopWindow(NULL,&pos,stroke_e_h,&sd->cv_stroke,&wattrs);
+	GDrawSetWindowTypeName(gw, "CharView"); // For hotkeys
 	if ( si!=NULL )
 	    GDrawRequestDeviceEvents(gw,input_em_cnt,input_em);
 
@@ -761,6 +762,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *,int),Str
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
 	gcd[gcdoff].gd.cid = CID_Width;
 	gcd[gcdoff].gd.handle_controlevent = Stroke_TextChanged;
+	tfpos[0] = gcdoff;
 	gcd[gcdoff++].creator = GTextFieldCreate;
 	swarray[swpos][1] = &gcd[gcdoff-1]; swarray[swpos][2] = swarray[swpos][3] = GCD_Glue; swarray[swpos++][4] = NULL;
 
@@ -785,6 +787,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *,int),Str
 	    "A calligraphic pen or an eliptical pen has two widths\n"
 	    "(which may be the same, giving a circular or square pen,\n"
 	    "or different giving an eliptical or rectangular pen).");
+	tfpos[1] = gcdoff;
 	gcd[gcdoff++].creator = GTextFieldCreate;
 	swarray[swpos][1] = &gcd[gcdoff-1]; swarray[swpos][2] = swarray[swpos][3] = GCD_Glue; swarray[swpos++][4] = NULL;
 
@@ -805,6 +808,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *,int),Str
 	gcd[gcdoff].gd.flags = gg_visible | gg_enabled;
 	gcd[gcdoff].gd.cid = CID_PenAngle;
 	gcd[gcdoff].gd.handle_controlevent = Stroke_TextChanged;
+	tfpos[2] = gcdoff;
 	gcd[gcdoff++].creator = GTextFieldCreate;
 	swarray[swpos][1] = &gcd[gcdoff-1]; swarray[swpos][2] = swarray[swpos][3] = GCD_Glue; swarray[swpos++][4] = NULL;
 	swarray[swpos][0] = NULL;
@@ -980,6 +984,9 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *,int),Str
 	GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
 	GHVBoxSetExpandableCol(boxes[5].ret,gb_expandglue);
 	GHVBoxSetExpandableCol(boxes[6].ret,gb_expandgluesame);
+	GGadgetSetSkipUnQualifiedHotkeyProcessing(gcd[tfpos[0]].ret, 1);
+	GGadgetSetSkipUnQualifiedHotkeyProcessing(gcd[tfpos[1]].ret, 1);
+	GGadgetSetSkipUnQualifiedHotkeyProcessing(gcd[tfpos[2]].ret, 1);
 
 	StrokeCharViewInits(sd,CID_Nib);
 	sd->cv_stroke.showfore = true;
