@@ -312,9 +312,9 @@
 	<key>CFBundleExecutable</key>
 	<string>FontForge</string>
         <key>CFBundleShortVersionString</key>
-        <string>CFBundleShortVersionStringChangeMe</string>
+        <string>Version @PROJECT_VERSION@</string>
         <key>CFBundleGetInfoString</key>
-        <string>CFBundleGetInfoStringChangeMe</string>
+        <string>FontForge version @PROJECT_VERSION@ based on sources from @FONTFORGE_MODTIME_STR@ git:@FONTFORGE_GIT_VERSION@</string>
 	<key>CFBundleIconFile</key>
 	<string>FontForge.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -326,7 +326,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>CFBundleVersionChangeMe</string>
+	<string>@PROJECT_VERSION@</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>

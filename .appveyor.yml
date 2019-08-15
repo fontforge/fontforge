@@ -55,3 +55,8 @@ artifacts:
     name: FontForge $(MBITS)-bit debugging symbols
   - path: fontforgebuilds\fontforge-setup\*.exe
     name: FontForge $(MBITS)-bit setup
+on_failure:
+  - cat build/CMakeCache.txt || true
+  - cat build/CMakeFiles/CMakeOutput.log || true
+  - cat build/Testing/Temporary/LastTest.log || true
+  - cat build/build.ninja || true

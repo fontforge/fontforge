@@ -24,7 +24,7 @@
 
     "files":
         [
-        {"includePattern": "./(.*.app.dmg$)", "uploadPattern": "$1", "matrixParams": { "override": 1 }},
+        {"includePattern": "./build/osx/(.*.app.dmg$)", "uploadPattern": "$1", "matrixParams": { "override": 1 }},
         {"includePattern": "./(FontForge.*.AppImage$)", "uploadPattern": "$1", "matrixParams": { "override": 1 }}
         ],
     "publish": true
