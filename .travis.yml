@@ -133,7 +133,7 @@ script:
   - if [ -z "$LINUX_NOX" ]; then $PYTHON travis-scripts/pyhook_smoketest.py; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ninja -C build macbundle; fi
   - |
-    if [ ! -z "$LINUX_RELEASE" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+    if [ ! -z "$LINUX_RELEASE" ]; then
       DESTDIR=build/appdir $CMAKE -DCMAKE_INSTALL_PREFIX=/usr -P build/cmake_install.cmake
       travis-scripts/ffappimagebuild.sh build/appdir $TRAVIS_COMMIT
     fi
