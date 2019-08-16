@@ -31,7 +31,7 @@ add_custom_target(potfiles
     ../gutils/*.c
     ../inc/*.h
     ../desktop/org.fontforge.FontForge.appdata.xml.in
-    ../desktop/org.fontforge.FontForge.desktop.in
+    ../desktop/org.fontforge.FontForge.desktop
   COMMAND patch "${CMAKE_CURRENT_BINARY_DIR}/FontForge.pot" "pottitle.patch"
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
