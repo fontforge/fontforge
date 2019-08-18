@@ -4,15 +4,57 @@
 ExtraDist
 ---------
 
-Helper script for CPack to add additional files to the dist bundle;
-currently used to add the downloaded/generated fonts.
+Helper script for CPack to add additional files to the dist bundle.
+Currently used to:
+* Add the downloaded/generated fonts
+* Add Debian metadata to generate Debian packages (aimed at the PPA)
 
 #]=======================================================================]
 
-if(CPACK_GENERATOR STREQUAL "@CPACK_SOURCE_GENERATOR@")
+function(copy_additional_fonts)
   message(STATUS "Adding retrieved/generated fonts from @CMAKE_BINARY_DIR@/tests/fonts to ${CMAKE_CURRENT_BINARY_DIR}/tests/fonts...")
-  execute_process(COMMAND
-    "${CMAKE_COMMAND}" "-E" "copy_directory" "@CMAKE_BINARY_DIR@/tests/fonts" "tests/fonts"
-    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-  )
+  file(INSTALL "@CMAKE_BINARY_DIR@/tests/fonts" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/tests")
+endfunction()
+
+function(copy_debian_metadata)
+  if(NOT DEB_PACKAGER_NAME)
+    set(DEB_PACKAGER_NAME "$ENV{DEB_PACKAGER_NAME}")
+    if(NOT DEB_PACKAGER_NAME)
+      set(DEB_PACKAGER_NAME "Package Maintainer")
+    endif()
+  endif()
+  if(NOT DEB_PACKAGER_EMAIL)
+    set(DEB_PACKAGER_EMAIL "$ENV{DEB_PACKAGER_EMAIL}")
+    if(NOT DEB_PACKAGER_EMAIL)
+      set(DEB_PACKAGER_EMAIL "releases@fontforge.org")
+    endif()
+  endif()
+  if(NOT DEB_PRODUCT_VERSION)
+    set(DEB_PRODUCT_VERSION "$ENV{DEB_PRODUCT_VERSION}")
+    if(NOT DEB_PRODUCT_VERSION)
+      message(FATAL_ERROR "Could not infer DEB_PRODUCT_VERSION, set it")
+    endif()
+  endif()
+  if(NOT DEB_OS_RELEASE)
+    set(DEB_OS_RELEASE "$ENV{DEB_OS_RELEASE}")
+    if(NOT DEB_OS_RELEASE)
+      message(FATAL_ERROR "Set DEB_OS_RELEASE (or DEB_UBUNTU_RELEASE)")
+    endif()
+  endif()
+  if(NOT DEB_PACKAGE_DATE)
+    set(DEB_PACKAGE_DATE "$ENV{DEB_PACKAGE_DATE}")
+    if(NOT DEB_PACKAGE_DATE)
+      message(FATAL_ERROR "Could not infer DEB_PACKAGE_DATE, set it")
+    endif()
+  endif()
+
+  file(INSTALL "@DEB_CP_SRC@" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}" RENAME debian USE_SOURCE_PERMISSIONS)
+  configure_file("@DEB_CHANGELOG_IN@" "${CMAKE_CURRENT_BINARY_DIR}/debian/changelog" @ONLY)
+endfunction()
+
+if(CPACK_SOURCE_INSTALLED_DIRECTORIES)
+  if("$ENV{FONTFORGE_SOURCE_PACK_MODE}" STREQUAL "DEB")
+    copy_debian_metadata()
+  endif()
+  copy_additional_fonts()
 endif()

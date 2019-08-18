@@ -1,2 +1,3 @@
-desktop/org.fontforge.FontForge.desktop     usr/share/applications/
 usr/bin/*
+usr/share/applications/*
+usr/share/metainfo/*

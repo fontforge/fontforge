@@ -50,11 +50,31 @@ function(setup_cpack)
   # CPACK_SOURCE_INSTALLED_DIRECTORIES won't work because the files we want to include
   # can be in an ignored directory (build/). So use a script instead
   set(CPACK_INSTALL_SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/CPackExtraDist.cmake")
+  set(CPACK_PROPERTIES_FILE "${CMAKE_SOURCE_DIR}/cmake/scripts/CPackProperties.cmake")
+  set(DEB_CHANGELOG_IN "${CMAKE_SOURCE_DIR}/Packaging/debian/changelog.in")
+  set(DEB_CP_SRC "${CMAKE_SOURCE_DIR}/Packaging/debian/cp-src")
   configure_file("${CMAKE_SOURCE_DIR}/cmake/scripts/ExtraDist.cmake.in" "CPackExtraDist.cmake" @ONLY)
   include(CPack)
+
   add_custom_target(dist
     COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_BINARY_DIR}" --target package_source
     DEPENDS test_dependencies
+    VERBATIM
+    USES_TERMINAL
+  )
+
+  if(NOT CMAKE_CPACK_COMMAND)
+    set(CMAKE_CPACK_COMMAND cpack)
+  endif()
+
+  add_custom_target(deb-src
+    COMMAND "${CMAKE_COMMAND}"
+      -E env "FONTFORGE_SOURCE_PACK_MODE=DEB"
+        "${CMAKE_CPACK_COMMAND}"
+        -G TGZ
+        --config CPackSourceConfig.cmake
+    DEPENDS test_dependencies
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
     VERBATIM
     USES_TERMINAL
   )
