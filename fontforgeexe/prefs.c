@@ -194,7 +194,7 @@ extern int prefs_cv_outline_thickness; /* from charview.c */
 
 extern float OpenTypeLoadHintEqualityTolerance;  /* autohint.c */
 extern float GenerateHintWidthEqualityTolerance; /* splinesave.c */
-extern bool warn_script_unsaved; /* fontview.c */
+extern int warn_script_unsaved; /* fontview.c */
 extern NameList *force_names_when_opening;
 extern NameList *force_names_when_saving;
 extern NameList *namelist_for_new_fonts;
