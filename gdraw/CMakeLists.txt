@@ -3,7 +3,7 @@
 # not included
 #  gdrawwacomdriver.c genkeysym.c growcol.c
 
-add_library(gdraw OBJECT
+add_library(gdraw STATIC
   choosericons.c
   colorP.h
   ctlvalues.c
@@ -67,8 +67,10 @@ add_library(gdraw OBJECT
   xkeysyms_unicode.c
 )
 
+target_link_libraries(gdraw PRIVATE fontforge)
+
 if(ENABLE_X11)
-  set(gdraw_LIBRARIES
+  target_link_libraries(gdraw PUBLIC
     X11::X11
     X11::Xi
     X11::Xkb
@@ -79,20 +81,5 @@ else()
   if(APPLE)
     target_sources(gdraw PRIVATE ggdkcocoa.m)
   endif()
-  set(gdraw_LIBRARIES GDK3::GDK3)
-endif()
-
-if(${CMAKE_VERSION} VERSION_LESS "3.12.0")
-  make_object_interface(gdraw
-    fontforge_common_headers
-    fontforge
-    ${gdraw_LIBRARIES}
-  )
-else()
-  target_link_libraries(gdraw
-    PUBLIC
-      fontforge_common_headers
-      fontforge
-      ${gdraw_LIBRARIES}
-  )
+  target_link_libraries(gdraw PUBLIC GDK3::GDK3)
 endif()
