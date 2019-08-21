@@ -66,6 +66,11 @@ from:
 
     https://dl.bintray.com/fontforge/fontforge/
 
+## Translating FontForge
+We are trialling the use of Crowdin for handling translations. If you'd like to contribute translations for FontForge, please do so here: https://crowdin.com/project/fontforge
+
+These will be pulled in for the next release of FontForge.
+
 ## Building Packages
 
 For information about building FontForge from source, please refer to [INSTALL.md](INSTALL.md)
