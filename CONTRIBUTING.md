@@ -141,24 +141,29 @@ Simply extract the `tar.gz` file generated from `make deb-src` into a new direct
 
 One can build a Red Hat source package by entering a clean FontForge source tree and running
 
-    ./bootstrap; 
-    ./configure; 
-    make F_METADATA_REGENERATE=1 rpm-src;
+```
+mkdir build && cd build
+cmake ..
+make dist
+make rpm-spec
+```
 
-This will leave a `tar.gz` file and a `.spec` file in the parent directory
+This will leave the dist `tar.xz` file and a `FontForge.spec` file in the build folder.
 
-In order to build the binary package locally, copy the source file to `~/rpmbuild/SOURCES` and the spec file to `~/rpmbuild/SPECS`, and run `rpmbuild -ba ~/rpmbuild/SPECS/(name of spec file)`. 
+In order to build the binary package locally, copy the source file to `~/rpmbuild/SOURCES` and the spec file to `~/rpmbuild/SPECS`, and run `rpmbuild -ba ~/rpmbuild/SPECS/(name of spec file)`.
 For Example:
 
-    mkdir -p ~/rpmbuild/SOURCES/;
-    cp TARBALL ~/rpmbuild/SOURCES/;
-    rpmbuild -ba --nodeps SPECFILE
+```
+mkdir -p ~/rpmbuild/SOURCES/
+cp TARBALL ~/rpmbuild/SOURCES/
+rpmbuild -ba --nodeps SPECFILE
+```
 
 Upon success, this will leave binary packages in `~/rpmbuild/RPMS` and source packages in `~/rpmbuild/SRPMS`.
 
 You may need to install dependencies, typically packaged for Fedora-derived systems as:
 
-    rpm-devel rpm-build git perl autoconf automake tar libtool glibc-devel m4 gcc cpp python-devel libjpeg-turbo-devel libtiff-devel libpng-devel giflib-devel freetype-devel uuid-devel bzip2-devel libxml2-devel libuninameslist-devel libspiro-devel pango-devel cairo-devel chrpath;
+    rpm-devel rpm-build git ninja-build cmake gcc g++ python3-devel libjpeg-devel libtiff-devel libpng-devel giflib-devel freetype-devel libxml2-devel libuninameslist-devel libspiro-devel pango-devel cairo-devel gtk3-devel
 
 ### Building a Mac OS X app bundle
 

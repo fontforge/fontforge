@@ -78,4 +78,16 @@ function(setup_cpack)
     VERBATIM
     USES_TERMINAL
   )
+
+  # Kind of an odd place to put this I guess...
+  add_custom_target(rpm-spec
+    COMMAND "${CMAKE_COMMAND}"
+    "-DINPUT:PATH=${CMAKE_SOURCE_DIR}/Packaging/redhat/FontForge.spec.in"
+    "-DOUTPUT:PATH=${CMAKE_BINARY_DIR}/FontForge.spec"
+    "-DPROJECT_VERSION:STRING=${PROJECT_VERSION}"
+    -P "${CMAKE_SOURCE_DIR}/cmake/scripts/ConfigureFile.cmake"
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+    VERBATIM
+    USES_TERMINAL
+  )
 endfunction()
