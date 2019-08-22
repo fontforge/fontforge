@@ -93,41 +93,40 @@ A Debian source package consists of a source tarball (with specific metadata) an
 A source package is specific to the distribution (but not the architecture) that it targets. 
 The most common build target is currently Ubuntu Xenial, a long-term support release with Launchpad build support. A binary package built on and for Xenial (usually) also installs and runs on later versions of Ubuntu. 
 
-After downloading the FontForge source, change into the source directory and run
+The first step is to obtain a dist tarball. To generate this from git sources, change into the source directory and run
 
 ```bash
 mkdir build && cd build
 cmake ..
-DEB_PACKAGER_NAME="Name" \
-DEB_PACKAGER_EMAIL="you@domain.tld" \
-DEB_UBUNTU_RELEASE="xenial" \
-make deb-src
+make dist
 ```
 
-One can omit the `DEB_UBUNTU_RELEASE` argument and use an arbitrary `DEB_OS_RELEASE` argument instead in order to target a Debian distribution.
-
-Upon successful completion, a source tarball will be created, with a naming scheme similar to ` fontforge-20190801-32-g4e1e448.tar.gz`. This tarball is equivalent to a `dist` tarball, with extra Debian metadata placed in the toplevel `debian` folder.
-
-To make the Debian source package:
+This will generate an archive with a name similar to `fontforge-20190801.tar.xz`. Move/extract this to a working folder of your choice and run `Packaging/debian/setup-metadata.sh`:
 
 ```bash
-tar -axf fontforge-20190801-32-g4e1e448.tar.gz
-cd fontforge-20190801-32-g4e1e448
+tar axf fontforge-20190801.tar.xz
+cd fontforge-20190801
+Packaging/debian/setup-metadata.sh
+```
+
+This will copy required metadata into the toplevel `debian` folder. It will also prompt to generate `debian/changelog`, if desired. In this state, the Debian source packages may be created by running:
+
+```bash
 debuild -S -sa
 ```
 
 Upon successful completion, building of the source package will leave several files in the parent directory, with names like this:
 
-    fontforge-20190801-32-g4e1e448-0ubuntu1~xenial.dsc
-    fontforge-20190801-32-g4e1e448-0ubuntu1~xenial_source.build
-    fontforge-20190801-32-g4e1e448-0ubuntu1~xenial_source.changes
-    fontforge-20190801-32-g4e1e448-0ubuntu1~xenial.tar.gz
+    fontforge-20190801-0ubuntu1~xenial.dsc
+    fontforge-20190801-0ubuntu1~xenial_source.build
+    fontforge-20190801-0ubuntu1~xenial_source.changes
+    fontforge-20190801-0ubuntu1~xenial.tar.gz
 
 In order to upload to a Launchpad repository for building, one can then run dput on the `.changes` file with the target repository as the first argument, like this:
 
-    dput ppa:fontforge/fontforge fontforge-20190801-32-g4e1e448-0ubuntu1~xenial_source.changes
+    dput ppa:fontforge/fontforge fontforge-20190801-0ubuntu1~xenial_source.changes
 
-This will, upon success, leave a file named something like `fontforge-20190801-32-g4e1e448-0ubuntu1~xenial_source.ppa.upload` which blocks duplicate uploads.
+This will, upon success, leave a file named something like `fontforge-20190801-0ubuntu1~xenial_source.ppa.upload` which blocks duplicate uploads.
 
 Upon validation of the uploaded package, Launchpad will build the package for all supported architectures.
 One can then copy the binary packages from Xenial to other Ubuntu versions via the Launchpad web interface.
@@ -139,18 +138,15 @@ Simply extract the `tar.gz` file generated from `make deb-src` into a new direct
 
 ### Building a Red Hat source package (.rpm)
 
-One can build a Red Hat source package by entering a clean FontForge source tree and running
+Run the following to get a spec file:
 
 ```
-mkdir build && cd build
-cmake ..
-make dist
-make rpm-spec
+Packaging/redhat/generate-spec.sh
 ```
 
-This will leave the dist `tar.xz` file and a `FontForge.spec` file in the build folder.
+This will create a `FontForge.spec` file.
 
-In order to build the binary package locally, copy the source file to `~/rpmbuild/SOURCES` and the spec file to `~/rpmbuild/SPECS`, and run `rpmbuild -ba ~/rpmbuild/SPECS/(name of spec file)`.
+In order to build the binary package locally, copy the dist archive (as per Debian instructions) to `~/rpmbuild/SOURCES` and the spec file to `~/rpmbuild/SPECS`. Then run `rpmbuild -ba ~/rpmbuild/SPECS/FontForge.spec`.
 For Example:
 
 ```

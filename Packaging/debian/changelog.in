@@ -1,5 +1,5 @@
-fontforge (@DEB_PRODUCT_VERSION@) @DEB_OS_RELEASE@; urgency=low
+fontforge (@DEB_PRODUCT_VERSION@) @DEB_DIST_NAME@; urgency=low
 
-  * Release.
+  * @DEB_CHANGELOG@
 
  -- @DEB_PACKAGER_NAME@ <@DEB_PACKAGER_EMAIL@>  @DEB_PACKAGE_DATE@
