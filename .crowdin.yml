@@ -7,6 +7,7 @@ files:
   -
     source: /build/po/FontForge.pot
     translation: /po/%locale_with_underscore%.po
+    update_option: "update_as_unapproved"
     languages_mapping:
       locale_with_underscore:
         ca: ca

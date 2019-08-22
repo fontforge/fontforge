@@ -146,7 +146,7 @@ script:
 
 after_success:
   - if [ ! -z "$LINUX_FULL" ]; then coveralls -b build --gcov-options '\-bulp' --gcov $(which $GCOV); fi
-  - if [ ! -z "$LINUX_RELEASE" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]; then java -jar $DEPSPREFIX/crowdin-cli.jar -c .crowdin.yml upload --dryrun; fi
+  - if [ ! -z "$LINUX_RELEASE" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]; then java -jar $DEPSPREFIX/crowdin-cli.jar -c .crowdin.yml upload; fi
 
 after_failure:
   - which $PYTHON
