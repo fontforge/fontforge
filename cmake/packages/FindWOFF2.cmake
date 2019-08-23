@@ -42,7 +42,6 @@ find_package_handle_standard_args(
   WOFF2
   REQUIRED_VARS
     WOFF2_LIBRARIES
-    WOFF2_INCLUDE_DIRS
   VERSION_VAR
    WOFF2_VERSION
 )

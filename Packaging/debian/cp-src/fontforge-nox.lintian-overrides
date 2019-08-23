@@ -1,0 +1,5 @@
+# those manpages are in fontforge-common package
+fontforge-nox: binary-without-manpage usr/bin/fontforge
+fontforge-nox: binary-without-manpage usr/bin/fontimage
+fontforge-nox: binary-without-manpage usr/bin/fontlint
+fontforge-nox: binary-without-manpage usr/bin/sfddiff

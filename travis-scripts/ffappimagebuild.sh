@@ -28,6 +28,13 @@ if [ ! -f linuxdeployqt.AppImage ]; then
     chmod +x linuxdeployqt.AppImage
 fi
 
+if [ ! -f appstream-util.AppImage ]; then
+    curl -Lo appstream-util.AppImage "https://github.com/fontforge/debugfonts/releases/download/r1/appstream-util-ef4c8e9-x86_64.AppImage"
+    chmod +x appstream-util.AppImage
+fi
+
+./appstream-util.AppImage validate-strict $APPDIR/usr/share/metainfo/org.fontforge.FontForge.appdata.xml
+
 ./linuxdeployqt.AppImage $APPDIR/usr/share/applications/*.desktop -bundle-non-qt-libs #-unsupported-allow-new-glibc
 # Manually invoke appimagetool so that the custom AppRun stays intact
 ./linuxdeployqt.AppImage --appimage-extract

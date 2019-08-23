@@ -1,0 +1,135 @@
+Name: fontforge
+Version: @PROJECT_VERSION@
+Release: 1
+License: GPLv3
+Vendor: FontForge
+URL: http://fontforge.github.io/
+Packager: Package Maintainer <releases@fontforge.org>
+Summary: Computer typeface editor
+Source: fontforge-%{version}.tar.xz
+Requires: libfontforge4 = %{version}, fontforge-common = %{version}
+BuildRequires: cmake ninja-build gcc g++ gtk3-devel libspiro-devel libuninameslist-devel readline-devel woff2-devel libtiff-devel libjpeg-devel giflib-devel libpng-devel python3-devel libxml2-devel
+
+%define _unpackaged_files_terminate_build 0
+
+%prep
+%setup
+
+%description
+FontForge provides a complete suite of tools for producing high-quality typefaces and supports a wide range of file formats including TrueType, OpenType, PostScript, and U. F. O..
+
+%build
+mkdir build
+cd build
+cmake -GNinja .. -DCMAKE_INSTALL_PREFIX="%{_prefix}"
+ninja
+
+%install
+cd build
+DESTDIR="$RPM_BUILD_ROOT" ninja install
+
+%pre
+
+%post
+
+%preun
+
+%postun
+
+%clean
+
+%files
+%defattr(-,root,root)
+%attr(0755,root,root) %{_bindir}/fontforge
+%attr(0755,root,root) %{_bindir}/fontimage
+%attr(0755,root,root) %{_bindir}/fontlint
+%attr(0755,root,root) %{_bindir}/sfddiff
+%attr(0644,root,root) %{_datadir}/applications/*
+%attr(0644,root,root) %{_datadir}/metainfo/*
+%attr(0644,root,root) %{_datadir}/man/man1/*
+%attr(0644,root,root) %{_datadir}/mime/packages/fontforge.xml
+
+%package -n libfontforge4
+Requires: libgcc
+Summary: FontForge libraries
+
+%description -n libfontforge4
+FontForge provides a complete suite of tools for producing high-quality typefaces and supports a wide range of file formats including TrueType, OpenType, PostScript, and U. F. O..
+
+%pre -n libfontforge4
+
+%post -n libfontforge4
+
+%preun -n libfontforge4
+
+%postun -n libfontforge4
+
+%files -n libfontforge4
+%defattr(-,root,root)
+%{_libdir}/libfontforge.so*
+
+%package -n python-fontforge
+Requires: libfontforge4 = %{version}
+Summary: Python bindings
+
+%description -n python-fontforge
+FontForge provides a complete suite of tools for producing high-quality typefaces and supports a wide range of file formats including TrueType, OpenType, PostScript, and U. F. O..
+
+%pre -n python-fontforge
+
+%post -n python-fontforge
+
+%preun -n python-fontforge
+
+%postun -n python-fontforge
+
+%files -n python-fontforge
+%defattr(-,root,root)
+%attr(0644,root,root) %{_libdir}*/python*/[a-z]*-packages/psMat.so
+%attr(0644,root,root) %{_libdir}*/python*/[a-z]*-packages/fontforge.so
+%attr(0644,root,root) %{_datadir}/fontforge/python/excepthook.py
+
+%package common
+Summary: Platform-independent support files
+
+%description common
+FontForge provides a complete suite of tools for producing high-quality typefaces and supports a wide range of file formats including TrueType, OpenType, PostScript, and U. F. O..
+
+%pre common
+
+%post common
+
+%preun common
+
+%postun common
+
+%files common
+%defattr(-,root,root)
+%attr(0644,root,root) %{_datadir}/locale/*/LC_MESSAGES/FontForge.mo
+%attr(0644,root,root) %{_datadir}/icons/*/*/*/*
+%attr(0644,root,root) %{_datadir}/pixmaps/*
+%attr(0644,root,root) %{_datadir}/fontforge/hotkeys/*
+%attr(0644,root,root) %{_datadir}/fontforge/pixmaps/*
+%attr(0644,root,root) %{_datadir}/fontforge/prefs
+
+%package doc
+Summary: Documentation
+
+%description doc
+FontForge provides a complete suite of tools for producing high-quality typefaces and supports a wide range of file formats including TrueType, OpenType, PostScript, and U. F. O..
+
+%pre doc
+
+%post doc
+
+%preun doc
+
+%postun doc
+
+%files doc
+%defattr(-,root,root)
+%attr(0644,root,root) %{_datadir}/doc/fontforge/*.*
+%attr(0644,root,root) %{_datadir}/doc/fontforge/flags/*.*
+%attr(0644,root,root) %{_datadir}/doc/fontforge/nonBMP/*.*
+
+

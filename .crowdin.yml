@@ -1,0 +1,30 @@
+project_identifier: fontforge
+api_key_env: CROWDIN_API_KEY
+base_path: .
+preserve_hierarchy: false
+
+files:
+  -
+    source: /build/po/FontForge.pot
+    translation: /po/%locale_with_underscore%.po
+    update_option: "update_as_unapproved"
+    languages_mapping:
+      locale_with_underscore:
+        ca: ca
+        de: de
+        el: el
+        en-GB: en_GB
+        es-ES: es
+        fr: fr
+        hr: hr
+        it: it
+        ja: ja
+        ko: ko
+        ml-IN: ml
+        pl: pl
+        pt-PT: pt
+        ru: ru
+        uk: uk
+        vi: vi
+        zh-CN: zh_CN
+        zh-TW: zh_TW

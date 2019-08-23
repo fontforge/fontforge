@@ -1,6 +1,8 @@
 # Distributed under the original FontForge BSD 3-clause license
 
-foreach(_lang ca de el en_GB es fr hr it ja ko ml pl pt ru uk vi zh_CN zh_TW)
+file(STRINGS LINGUAS _langs)
+
+foreach(_lang ${_langs})
   set(_input "${CMAKE_CURRENT_SOURCE_DIR}/${_lang}.po")
   set(_output "${CMAKE_CURRENT_BINARY_DIR}/${_lang}.mo")
   add_custom_command(OUTPUT "${_output}"
@@ -28,10 +30,9 @@ add_custom_target(potfiles
     ../gdraw/*.c
     ../gutils/*.c
     ../inc/*.h
-    ../desktop/org.fontforge.FontForge.appdata.xml
-    --copyright-holder "FontForge developers"
-    --package-name=fontforge
-    --package-version=${PROJECT_VERSION}
+    ../desktop/org.fontforge.FontForge.appdata.xml.in
+    ../desktop/org.fontforge.FontForge.desktop
+  COMMAND patch "${CMAKE_CURRENT_BINARY_DIR}/FontForge.pot" "pottitle.patch"
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
