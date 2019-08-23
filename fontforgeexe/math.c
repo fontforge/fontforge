@@ -1546,8 +1546,8 @@ static int MKD_Parse(MathKernDlg *mkd) {
 	    }
 	    qsort(bases,cnt,sizeof(BasePoint *),bp_order_height);
 	    if ( cnt>mkv->cnt ) {
-		mkv->mkd = realloc(mkv->mkd,cnt*sizeof(struct mathkernvertex));
-		memset(mkv->mkd+mkv->cnt,0,(cnt-mkv->cnt)*sizeof(struct mathkernvertex));
+		mkv->mkd = realloc(mkv->mkd,cnt*sizeof(struct mathkerndata));
+		memset(mkv->mkd+mkv->cnt,0,(cnt-mkv->cnt)*sizeof(struct mathkerndata));
 	    }
 	    for ( j=0; j<cnt; ++j ) {
 		bases[j]->x = rint(bases[j]->x);
