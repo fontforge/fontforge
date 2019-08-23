@@ -3002,6 +3002,7 @@ return( NULL );
 return( img );
 }
 
+// This defines the width of the arrow that gets drawn
 #define ICON_WIDTH 15
 
 GImage *GV_GetConstructedImage(SplineChar *sc,int def_layer,struct glyphvariants *gv, int is_horiz) {
@@ -3161,7 +3162,13 @@ return( NULL );
 		    y = (me->ymax+me->ymin)/2;
 		else
 		    y = 1+me->ymax/2;
-		y = ymax-y + j*2;
+		// Figure out the centerpoint of the arrow
+		y = ymax - y;
+		if (y > (ymax - ymin - ICON_WIDTH/2)) {
+			// Too far down; shift up to make it fit
+			y = ymax - ymin - ICON_WIDTH/2;
+		}
+		y += j*2;
 		for ( x=1; x<ICON_WIDTH-5; ++x )
 		    base->data[y*base->bytes_per_line + (x+xoff)] = pixel;
 		for ( x=ICON_WIDTH-8; x<ICON_WIDTH-1; ++x )
@@ -3307,17 +3314,27 @@ return( NULL );
 		    y = (me->ymax+me->ymin)/2;
 		else
 		    y = 1+me->ymax/2;
-		y = ymax-y + j*2;
+		// Figure out the centerpoint of the arrow
+		y = ymax - y;
+		if (y > (ymax - ymin - ICON_WIDTH/2)) {
+			// Too far down; shift up to make it fit
+			y = ymax - ymin - ICON_WIDTH/2;
+		}
+		// Draw the == part of the arrow
+		y += j*2;
 		for ( x=1; x<ICON_WIDTH-5; ++x )
 		    base->data[y*base->bytes_per_line + (x+width)] = pixel;
+		// Draw the > part of the arrow
 		for ( x=ICON_WIDTH-8; x<ICON_WIDTH-1; ++x )
 		    base->data[(y+j*(ICON_WIDTH-4-x))*base->bytes_per_line + (x+width)] = pixel;
 	    }
 	} else if ( isliga>0 ) {
 	    for ( j = -1; j<2; j+=2 ) {
 		y = 1+ymax/2 + j*2;
+		// Draw the == part of the arrow
 		for ( x=5; x<ICON_WIDTH-1; ++x )
 		    base->data[y*base->bytes_per_line + (x+width)] = pixel;
+		// Draw the < part of the arrow
 		for ( x=8; x>1 ; --x )
 		    base->data[(y+j*(x-3))*base->bytes_per_line + (x+width)] = pixel;
 	    }
