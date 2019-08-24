@@ -138,7 +138,7 @@ static struct col_init mathkern[] = {
     COL_INIT_EMPTY
 };
 static struct matrixinit mi_mathkern =
-    { sizeof(mathkern)/sizeof(struct col_init)-1, mathkern, 0, NULL, NULL, NULL, extpart_finishedit, NULL, NULL, NULL };
+    { sizeof(mathkern)/sizeof(struct col_init)-1, mathkern, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
 
 #define CID_Exten	1000
