@@ -524,9 +524,11 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     }
     nw->ggc->bg = wattrs->background_color;
     GGDKDrawSetWindowBackground((GWindow)nw, wattrs->background_color);
-    _GGDKDraw_SetOpaqueRegion(nw);
 
     if (nw->is_toplevel) {
+        // Set opaque region
+        _GGDKDraw_SetOpaqueRegion(nw);
+
         // Set icon
         GGDKWindow icon = gdisp->default_icon;
         if (((wattrs->mask & wam_icon) && wattrs->icon != NULL) && ((GGDKWindow)wattrs->icon)->is_pixmap) {

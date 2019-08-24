@@ -138,7 +138,7 @@ static struct col_init mathkern[] = {
     COL_INIT_EMPTY
 };
 static struct matrixinit mi_mathkern =
-    { sizeof(mathkern)/sizeof(struct col_init)-1, mathkern, 0, NULL, NULL, NULL, extpart_finishedit, NULL, NULL, NULL };
+    { sizeof(mathkern)/sizeof(struct col_init)-1, mathkern, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
 
 #define CID_Exten	1000
@@ -1546,8 +1546,8 @@ static int MKD_Parse(MathKernDlg *mkd) {
 	    }
 	    qsort(bases,cnt,sizeof(BasePoint *),bp_order_height);
 	    if ( cnt>mkv->cnt ) {
-		mkv->mkd = realloc(mkv->mkd,cnt*sizeof(struct mathkernvertex));
-		memset(mkv->mkd+mkv->cnt,0,(cnt-mkv->cnt)*sizeof(struct mathkernvertex));
+		mkv->mkd = realloc(mkv->mkd,cnt*sizeof(struct mathkerndata));
+		memset(mkv->mkd+mkv->cnt,0,(cnt-mkv->cnt)*sizeof(struct mathkerndata));
 	    }
 	    for ( j=0; j<cnt; ++j ) {
 		bases[j]->x = rint(bases[j]->x);
