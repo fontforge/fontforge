@@ -81,6 +81,7 @@ extern SplineChar *SFSplineCharCreate(SplineFont *sf);
 extern SplineFont *SplineFontFromPSFont(FontDict *fd);
 extern SplinePointList *SPLCopyTransformedHintMasks(RefChar *r, SplineChar *basesc, BasePoint *trans,int layer);
 extern SplinePointList *SPLCopyTranslatedHintMasks(SplinePointList *base, SplineChar *basesc, SplineChar *subsc, BasePoint *trans);
+extern bool SplinePointListCheckSelected1(const SplinePointList *base, bool spiro, bool *allsel);
 extern SplinePointList *SplinePointListCopy1(const SplinePointList *spl);
 extern SplinePointList *SplinePointListCopySelected(SplinePointList *base);
 extern SplinePointList *SplinePointListCopySpiroSelected(SplinePointList *base);
