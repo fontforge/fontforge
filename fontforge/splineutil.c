@@ -1446,6 +1446,42 @@ static SplinePointList *SplinePointListCopySpiroSelected1(SplinePointList *spl) 
 return( head );
 }
 
+bool SplinePointListCheckSelected1(const SplinePointList *base, bool spiro, bool *allsel) {
+    bool anysel = false;
+    if (allsel) {
+        *allsel = true;
+    }
+    if (spiro) {
+        for (int i = 0; i < base->spiro_cnt; ++i) {
+            if (SPIRO_SELECTED(&base->spiros[i])) {
+                anysel = true;
+                if (!allsel) {
+                    return anysel;
+                }
+            } else if (allsel) {
+                *allsel = false;
+            }
+        }
+    } else {
+        SplinePoint *first = NULL, *pt;
+        for (pt = base->first; pt != NULL && pt != first; pt = pt->next->to) {
+            if (pt->selected) {
+                anysel = true;
+                if (!allsel) {
+                    return anysel;
+                }
+            } else if (allsel) {
+                *allsel = false;
+            }
+            if (first == NULL)
+                first = pt;
+            if (pt->next == NULL)
+                break;
+        }
+    }
+    return anysel;
+}
+
 SplinePointList *SplinePointListCopy(const SplinePointList *base) {
     SplinePointList *head=NULL, *last=NULL, *cur;
 
@@ -1463,18 +1499,10 @@ return( head );
 SplinePointList *SplinePointListCopySelected(SplinePointList *base) {
     SplinePointList *head=NULL, *last=NULL, *cur=NULL;
     SplinePoint *pt, *first;
-    int anysel, allsel;
+    bool anysel, allsel;
 
     for ( ; base!=NULL; base = base->next ) {
-	anysel = false; allsel = true;
-	first = NULL;
-	for ( pt=base->first; pt!=NULL && pt!=first; pt = pt->next->to ) {
-	    if ( pt->selected ) anysel = true;
-	    else allsel = false;
-	    if ( first==NULL ) first = pt;
-	    if ( pt->next==NULL )
-	break;
-	}
+	anysel = SplinePointListCheckSelected1(base, false, &allsel);
 	if ( allsel )
 	    cur = SplinePointListCopy1(base);
 	else if ( anysel )
@@ -1492,17 +1520,11 @@ return( head );
 
 SplinePointList *SplinePointListCopySpiroSelected(SplinePointList *base) {
     SplinePointList *head=NULL, *last=NULL, *cur=NULL;
-    int anysel, allsel;
+    bool anysel, allsel;
     int i;
 
     for ( ; base!=NULL; base = base->next ) {
-	anysel = false; allsel = true;
-	for ( i=0; i<base->spiro_cnt-1; ++i ) {
-	    if ( SPIRO_SELECTED(&base->spiros[i]) )
-		anysel = true;
-	    else
-		allsel = false;
-	}
+	anysel = SplinePointListCheckSelected1(base, true, &allsel);
 	if ( allsel )
 	    cur = SplinePointListCopy1(base);
 	else if ( anysel )
@@ -1630,29 +1652,11 @@ return( last );
 SplinePointList *SplinePointListRemoveSelected(SplineChar *sc,SplinePointList *base) {
     SplinePointList *head=NULL, *last=NULL, *next;
     SplinePoint *pt, *first;
-    int anysel, allsel;
+    bool anysel, allsel;
 
     for ( ; base!=NULL; base = next ) {
 	next = base->next;
-	anysel = false; allsel = true;
-	if ( !sc->inspiro || !hasspiro()) {
-	    first = NULL;
-	    for ( pt=base->first; pt!=NULL && pt!=first; pt = pt->next->to ) {
-		if ( pt->selected ) anysel = true;
-		else allsel = false;
-		if ( first==NULL ) first = pt;
-		if ( pt->next==NULL )
-	    break;
-	    }
-	} else {
-	    int i;
-	    for ( i=0; i<base->spiro_cnt; ++i ) {
-		if ( SPIRO_SELECTED(&base->spiros[i]) )
-		    anysel = true;
-		else
-		    allsel = false;
-	    }
-	}
+	anysel = SplinePointListCheckSelected1(base, sc->inspiro && hasspiro(), &allsel);
 	if ( allsel ) {
 	    SplinePointListMDFree(sc,base);
     continue;
@@ -1976,7 +1980,7 @@ SplinePointList *SplinePointListTransform( SplinePointList *base, real transform
 
 SplinePointList *SplinePointListSpiroTransform(SplinePointList *base, real transform[6], int allpoints ) {
     SplinePointList *spl;
-    int allsel, anysel;
+    bool allsel, anysel;
     int i;
 
 
@@ -1984,12 +1988,7 @@ SplinePointList *SplinePointListSpiroTransform(SplinePointList *base, real trans
 return( SplinePointListTransform(base,transform,tpt_AllPoints));
 
     for ( spl = base; spl!=NULL; spl = spl->next ) {
-	allsel = true; anysel=false;
-	for ( i=0; i<spl->spiro_cnt-1; ++i )
-	    if ( spl->spiros[i].ty & 0x80 )
-		anysel = true;
-	    else
-		allsel = false;
+	anysel = SplinePointListCheckSelected1(spl, true, &allsel);
 	if ( !anysel )
     continue;
 	if ( allsel ) {

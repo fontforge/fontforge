@@ -1475,8 +1475,6 @@ extern void visitAllControlPoints( GHashTable *col, visitSelectedControlPointsVi
 extern void CVVisitAdjacentToSelectedControlPoints( CharView *cv, bool preserveState,
 						    visitSelectedControlPointsVisitor f, void* udata );
 
-extern void CVFreePreTransformSPL( CharView* cv );
-
 extern bool CVShouldInterpolateCPsOnMotion( CharView* cv );
 
 extern int CVNearRBearingLine( CharView* cv, real x, real fudge );

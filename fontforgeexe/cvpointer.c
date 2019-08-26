@@ -50,20 +50,7 @@ int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya) {
     int i;
 
     for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL && !anypoints; spl = spl->next ) {
-	if ( cv->b.sc->inspiro && hasspiro()) {
-	    for ( i=0; i<spl->spiro_cnt-1; ++i )
-		if ( SPIRO_SELECTED(&spl->spiros[i])) {
-		    anypoints = true;
-	    break;
-		}
-	} else {
-	    first = NULL;
-	    if ( spl->first->selected ) anypoints = true;
-	    for ( spline=spl->first->next; spline!=NULL && spline!=first && !anypoints; spline = spline->to->next ) {
-		if ( spline->to->selected ) anypoints = true;
-		if ( first == NULL ) first = spline;
-	    }
-	}
+        anypoints = SplinePointListCheckSelected1(spl, cv->b.sc->inspiro && hasspiro(), NULL);
     }
     for ( rf=cv->b.layerheads[cv->b.drawmode]->refs; rf!=NULL && !anyrefs; rf=rf->next )
 	if ( rf->selected ) anyrefs = true;
@@ -150,7 +137,8 @@ int CVClearSel(CharView *cv) {
     int needsupdate = 0;
     AnchorPoint *ap;
 
-    CVFreePreTransformSPL( cv );
+    SplinePointListFree(cv->p.pretransform_spl);
+    cv->p.pretransform_spl = NULL;
     
     cv->lastselpt = NULL; cv->lastselcp = NULL;
     for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next )

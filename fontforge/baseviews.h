@@ -76,7 +76,7 @@ typedef struct pressedOn {
     int spiro_index;		/* index of a clicked spiro_cp, or */
 			/* if they clicked on the spline between spiros, */
 			/* this is the spiro indexof the preceding spiro */
-    GList_Glib*      pretransform_spl; /* If we want to draw an image of the original spl while doing something
+    SplinePointList *pretransform_spl; /* If we want to draw an image of the original spl while doing something
 					* this is a copy of that original spl */
 } PressedOn;
 
