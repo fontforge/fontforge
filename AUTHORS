@@ -9,16 +9,20 @@ Adrien Tétar
 Aidan Kane <aidankane@gmail.com> <aidos>
 Aktado <aktado@users.sourceforge.jp>
 Alan Coopersmith
+Alex Henrie <alexhenrie>
 Alex Miller <aalex-millerr>
 Alex Raftis
 Alexandre Julliard
 Alexandre Prokoudine
+Alexander Pruss
 Alexey Kuznetsov <catharanthus>
-Alexey Kryukov - nowakowskittfinstr.c
+Alexey Kryukov (Alexej) - nowakowskittfinstr.c
 Anand
+Anders Lund
 Andreas Larsen
 Andrew Janke
 Andrey Panov
+Anshuman Pandey
 Anthony G. Basile
 Arthaey Angosii
 Barry Schwartz <chemoelectric>
@@ -33,17 +37,24 @@ Brian Murray <brian@ubuntu.com>
 Bill Wang
 Charles M. Hannum
 Charles Reilly <mungre>
+Chia-I Wu (Chia)
 Christopher Meng
 Claudio Beccari
 Craig Lennox
+C.W. Betts <MaddTheSane>
+Daniel Eggert
+Daniel Gillmor
 Dave Crossland (dave@lab6.com)
-Deron Meranda
 Dave Levine
+David Binderman
+David Corbett <dscorbett>
 David Hedley <davidhedley>
 David Hull <dhull>
+David Lee
 David Lemon
 David Opstad
 David Shaal
+Deron Meranda
 Divay Prakash
 Dominyk Tiller
 Dong Yang
@@ -58,18 +69,24 @@ Eva Denman
 Fabian Greffrath <fabiangreffrath>
 Felipe Corrêa da Silva Sanches <felipesanches>
 Frank Trampe <frank-trampe>
+Fredrick Brennan <copypaste@kittens.ph> <ctrlcctrlv>
 Frédéric Wang <fred-wang>
+Gabriel Holodak <keidax>
 Georg A. Duffner
 Gioele Barabucci <gioele>
 Giuseppe Bilotta
 Giuseppe Ghibò
+ggl329
 Greg Ford
 Grzegorz
 Guillermo Robles <guillerobles1995@gmail.com> <wynro>
+Hanachan Pao <Ishotihadus>
 Harald Harders
 Henry Wong <movietravelcode@outlook.com>
+Herbert Duerr
 Hideki Yamane <henrich@debian.org> <henrich>
 Horváth Balázs
+Ivo Straka <ivo-s>
 J. Jansen - gv - ANALYZE_MAP.COM
 Jacob Jansen
 James Cloos
@@ -87,6 +104,7 @@ Johan Winge
 Jon Banquer
 Jonathan Hanna <jhps>
 Jonathan Hue
+Jonathyn Bet'nct
 Jose Da Silva <JoesCat>
 Joshua Richardson
 Jouk Jansen
@@ -94,7 +112,7 @@ Juergen Buntrock
 Julien Nabet <serval2412>
 Just Fill Bugs <mozbugbox>
 Kartik Mistry
-KANOU Hiroki <KANOU>
+KANOU Hiroki <KANOU> <kanou-h>
 Kazuki Ohta (Kauzuyuki, Kazuyuki)
 Kelvinsong
 Kemie Guaida - Tango PixMaps
@@ -105,6 +123,7 @@ Khaled Hosny <khaledhosny>
 Koki Takahashi
 Kyrylo Yatsenko <hedrok>
 Lasse Fister
+L.S. Tikhomrov
 László Károly
 Lu Wang <coolwanglu@gmail.com>
 Ludwig Schwardt
@@ -130,20 +149,25 @@ Michal Mazurek
 Michal Nowakowski <michal-n> - nowakowskittfinstr.c
 Michinari Nukazawa <MichinariNukazawa>
 midzer <midzer@gmail.com>
+Mike Gilbert <floppym>
 MURAOKA Taro
 Nayana Hettiarachchi <nayana@corp-gems.com> <devzer01>
 Neil Parker
+Nelson Beebe
 Nicolas Kaiser
 Nicolas Spalinger
 Nigel Tao <nigeltao@golang.org> <nigeltao>
 Ondřej Hošek
 Pander Musubi <Pander>
 Parag A Nemade <pnemade@fedoraproject.org> <pnemade>
+Peter Denisevich
+Peter Facey
 Petr Gajdos
 Phil Krylov
 Phil Lindsay
 Pierre Hanser
 Primoz PETERLIN
+probonopd <probonopd>
 Qmpel
 R.L. Horn
 R.P.C. Rodgers - standard man macros
@@ -153,21 +177,28 @@ Ralf Stubner
 Raph Levien <raphlinus>
 Reuben Thomas <rrthomas>
 Richard Hughes
+Richard Kinch
+Rikard Falkeborn <rikardfalkeborn>
 Rob Madole <robmadole>
 Rogério Brito <rbrito@ime.usp.br>
 Rogier van Dalen
 Ryusei Yamaguchi
 Saeed Rasooli
 Sergey S Betke <sergey-s-betke>
+Schrijvers Luc <begasus>
 Scott Pakin - Packaging
 Scott Romack
 Silvan Toledo
+Skef Iterum <skef>
+Stefan Wanger
+Stephane Despret
 Steve White - ASMO 708 codepage, & more
-TANIGAWA Takashi
+TANIGAWA Takashi <MihailJP>
 Thayne McCombs
 Thomas Shinnick
 Tim Heilig
 Timothy O. Theisen - gv = ANALYZE_MAP.COM
+Tobias Mueller <muelli>
 Tom Harvey - fontforge.1
 Tom Lechner
 Uli Schlachter
@@ -175,11 +206,14 @@ Ulrich Klauer
 Vadim Belman
 Valek Filippov
 Vasudev Kamath <copyninja>
+Vadim Penzin <vvp2014>
 Vernon Adams
+Vilius Sutkus <ViliusSutkus>
 Ville Skytta
 Werner Lemberg <lemzwerg>
 Woensug Eric Choi
 Wojciech Muła <wm@mahajana.net>
+Won-kyu Park
 贤哲 <xiaozhe.hxz@alibaba-inc.com>
 Yannis Haralambous
 Yao Wei (魏銘廷)
@@ -191,6 +225,7 @@ Yi Yang (ahyangyi)
 
 Language Translations provided by:
 Rafael Ferran i Peralta - ca - Catalan
+Milo Ivir <milotype> - cr - Croatian
 Chris-je - de - Deutsch
 Ettore Atalan - de - Deutsch
 Georg A. Duffner - de - Deeutsch
@@ -198,11 +233,13 @@ Philipp Poll - de - Deutsch
 Apostolos Syropoulos - el - Greek
 George Williams - en_GB
 Walter Echarri - es - Spanish
+Adam Coquery - fr - French
 Jean-René Bastien - fr - French
 Pierre Hanser - fr - French
 Thaega <Thaega> - fr - French
 Yannis Haralambous - fr - French
 Claudio Beccari - it - Italian
+Martino Deotto - it - Italian
 KANOU Hiroki - ja - Japanese
 TANIGAWA Takashi - ja - Japanese
 OKANO Takayoshi - ja - Japanese
