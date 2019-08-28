@@ -177,10 +177,10 @@ extern FontView *fv_list;
 extern struct openfilefilters { char *name, *filter; } def_font_filters[], *user_font_filters;
 extern int default_font_filter_index;
 
-#define SERIF_UI_FAMILIES	"dejavu serif,times,caslon,serif,clearlyu,unifont"
-#define SANS_UI_FAMILIES	"dejavu sans,helvetica,caliban,sans,clearlyu,unifont"
-#define MONO_UI_FAMILIES	"courier,monospace,clearlyu,unifont"
-#define FIXED_UI_FAMILIES	"monospace,fixed,clearlyu,unifont"
+#define SERIF_UI_FAMILIES	"dejavu serif,times,caslon,serif,clearlyu,unifont,unifont upper"
+#define SANS_UI_FAMILIES	"dejavu sans,helvetica,caliban,sans,clearlyu,unifont,unifont upper"
+#define MONO_UI_FAMILIES	"courier,monospace,clearlyu,unifont,unifont upper"
+#define FIXED_UI_FAMILIES	"monospace,fixed,clearlyu,unifont,unifont upper"
 
 #define isprivateuse(enc) ((enc)>=0xe000 && (enc)<=0xf8ff)
 #define issurrogate(enc) ((enc)>=0xd800 && (enc)<=0xd8ff)
