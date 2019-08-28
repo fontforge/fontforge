@@ -279,21 +279,21 @@ Gdraw.GTextField.Box.BorderType: lowered
 Gdraw.GTextField.Box.NormalBackground: #ffffff
 Gdraw.GTextField.Box.Padding: 2
 Gdraw.GTextField.Box.Radius: 3
-Gdraw.GTextField.Font: 400 10pt Inconsolata,monospace,clearlyu,unifont
+Gdraw.GTextField.Font: 400 10pt Inconsolata,monospace,clearlyu,unifont,unifont upper
 fontforge.FontView.ChangedColor: #204a87
 fontforge.FontView.DoubleStruckFamily: doublestruck,serif
 fontforge.FontView.EmptySlotFgColor: #cccbca
-fontforge.FontView.FontFamily: dejavu sans,fontview,courier,monospace,clearlyu,unifont
+fontforge.FontView.FontFamily: dejavu sans,fontview,courier,monospace,clearlyu,unifont,unifont upper
 fontforge.FontView.FontSize: 12
 fontforge.FontView.FrakturFamily: fraktur,serif
 fontforge.FontView.GlyphInfoColor: #598ec6
 fontforge.FontView.HintingNeededColor: #598ec6
-fontforge.FontView.MonoFamily: dejavu sans mono,courier,monospace,clearlyu,unifont
-fontforge.FontView.SansFamily: dejavu sans,helvetica,caliban,sans,clearlyu,unifont
+fontforge.FontView.MonoFamily: dejavu sans mono,courier,monospace,clearlyu,unifont,unifont upper
+fontforge.FontView.SansFamily: dejavu sans,helvetica,caliban,sans,clearlyu,unifont,unifont upper
 fontforge.FontView.ScriptFamily: script,formalscript,serif
 fontforge.FontView.SelectedColor: #88b2de
 fontforge.FontView.SelectedFgColor: #ffffff
-fontforge.FontView.SerifFamily: dejavu serif,times,caslon,serif,clearlyu,unifont
+fontforge.FontView.SerifFamily: dejavu serif,times,caslon,serif,clearlyu,unifont,unifont upper
 fontforge.MetricsView.AdvanceWidthColor: #80827c
 fontforge.MetricsView.ItalicAdvanceColor: #80827c
 fontforge.MetricsView.KernLineColor: #3d7905

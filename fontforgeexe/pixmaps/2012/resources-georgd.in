@@ -43,11 +43,11 @@ Gdraw.GButton.Box.GradientStartCol: #e5e4e3
 Gdraw.GButton.Box.NormalBackground: #ffffff
 Gdraw.GButton.Box.Padding: 1
 Gdraw.GButton.Box.Radius: 3
-Gdraw.GButton.Font: 400 10pt Cantarell,sans,clearlyu,unifont
+Gdraw.GButton.Font: 400 10pt Cantarell,sans,clearlyu,unifont,unifont upper
 Gdraw.GButton.ShiftOnPress: False
 Gdraw.GCheckBox.Box.BorderType: none
 Gdraw.GCheckBox.Box.Padding: 0
-Gdraw.GCheckBox.Font: 400 10pt Cantarell,sans,clearlyu,unifont
+Gdraw.GCheckBox.Font: 400 10pt Cantarell,sans,clearlyu,unifont,unifont upper
 Gdraw.GCheckBoxOff.Box.BorderBrighter: #f9f8f7
 Gdraw.GCheckBoxOff.Box.BorderDarkest: #dddcdb
 Gdraw.GCheckBoxOff.Box.BorderShape: rect
@@ -116,11 +116,11 @@ Gdraw.GGadget.Box.Padding: 2
 Gdraw.GGadget.Box.PressedBackground: #edeceb
 Gdraw.GGadget.Box.Radius: 0
 Gdraw.GGadget.Box.ShadowOuter: False
-Gdraw.GGadget.Font: 400 10pt Cantarell,sans,clearlyu,unifont
+Gdraw.GGadget.Font: 400 10pt Cantarell,sans,clearlyu,unifont,unifont upper
 Gdraw.GGadget.ImagePath: ~/.FontForge/tango-ct.theme:~/.FontForge/tango-ct.theme/tango:/Applications/FontForge.app/Contents/Resources/opt/local/share/fontforge/pixmaps/:=
 Gdraw.GGadget.Popup.Background: #bcd2ea
 Gdraw.GGadget.Popup.Delay: 1000
-Gdraw.GGadget.Popup.Font: 400 8pt Cantarell,sans,clearlyu,unifont
+Gdraw.GGadget.Popup.Font: 400 8pt Cantarell,sans,clearlyu,unifont,unifont upper
 Gdraw.GGadget.Popup.Foreground: #222222
 Gdraw.GGadget.Popup.LifeTime: 20000
 Gdraw.GGadget.TextImageSkip: 4
@@ -132,7 +132,7 @@ Gdraw.GGroup.Box.Padding: 0
 Gdraw.GLabel.Box.BorderType: none
 Gdraw.GLabel.Box.BorderWidth: 0
 Gdraw.GLabel.Box.Padding: 0
-Gdraw.GLabel.Font: 400 10pt Cantarell,sans,clearlyu,unifont
+Gdraw.GLabel.Font: 400 10pt Cantarell,sans,clearlyu,unifont,unifont upper
 Gdraw.GLine.Box.BorderBrighter: #f9f8f7
 Gdraw.GLine.Box.BorderBrightest: #f9f8f7
 Gdraw.GLine.Box.BorderShape: rect
@@ -142,7 +142,7 @@ Gdraw.GLine.Box.Padding: 0
 Gdraw.GList.Box.BorderOuter: False
 Gdraw.GList.Box.BorderType: box
 Gdraw.GList.Box.NormalBackground: #ffffff
-Gdraw.GList.Font: 400 10pt Cantarell,sans,clearlyu,unifont
+Gdraw.GList.Font: 400 10pt Cantarell,sans,clearlyu,unifont,unifont upper
 Gdraw.GListMark.Box.BorderBrighter: #fcfbfa
 Gdraw.GListMark.Box.BorderBrightest: #fcfbfa
 Gdraw.GListMark.Box.BorderDarker: #dddcdb
@@ -175,7 +175,7 @@ Gdraw.GMenu.Box.BorderOuter: False
 Gdraw.GMenu.Box.BorderShape: rect
 Gdraw.GMenu.Box.NormalBackground: #ffffff
 Gdraw.GMenu.Box.Padding: 3
-Gdraw.GMenu.Font: 400 10pt Cantarell,sans,clearlyu,unifont
+Gdraw.GMenu.Font: 400 10pt Cantarell,sans,clearlyu,unifont,unifont upper
 Gdraw.GMenu.MacIcons: @GDRAW_GMENU_MACICONS@
 Gdraw.GMenuBar.Box.ActiveBorder: #ffffff
 Gdraw.GMenuBar.Box.BorderInner: False
@@ -187,7 +187,7 @@ Gdraw.GMenuBar.Box.BorderWidth: 1
 Gdraw.GMenuBar.Box.GradientBG: False
 Gdraw.GMenuBar.Box.GradientStartCol: #e5e4e3
 Gdraw.GMenuBar.Box.Radius: 2
-Gdraw.GMenuBar.Font: 400 10pt Cantarell,sans,clearlyu,unifont
+Gdraw.GMenuBar.Font: 400 10pt Cantarell,sans,clearlyu,unifont,unifont upper
 Gdraw.GNumericFieldSpinner.Box.BorderBrighter: #908f8e
 Gdraw.GNumericFieldSpinner.Box.BorderBrightest: #908f8e
 Gdraw.GNumericFieldSpinner.Box.BorderDarker: #908f8e
@@ -205,7 +205,7 @@ Gdraw.GProgress.FillColor: #88b2de
 Gdraw.GProgress.Foreground: #222222
 Gdraw.GRadio.Box.BorderType: none
 Gdraw.GRadio.Box.Padding: 0
-Gdraw.GRadio.Font: 400 10pt Cantarell,sans,clearlyu,unifont
+Gdraw.GRadio.Font: 400 10pt Cantarell,sans,clearlyu,unifont,unifont upper
 Gdraw.GRadioOff.Box.BorderBrighter: #f1f0ef
 Gdraw.GRadioOff.Box.BorderDarkest: #dddcdb
 Gdraw.GRadioOff.Box.BorderShape: rect
@@ -277,21 +277,21 @@ Gdraw.GTextField.Box.BorderType: lowered
 Gdraw.GTextField.Box.NormalBackground: #ffffff
 Gdraw.GTextField.Box.Padding: 2
 Gdraw.GTextField.Box.Radius: 3
-Gdraw.GTextField.Font: 400 10pt Inconsolata,monospace,clearlyu,unifont
+Gdraw.GTextField.Font: 400 10pt Inconsolata,monospace,clearlyu,unifont,unifont upper
 fontforge.FontView.ChangedColor: #204a87
 fontforge.FontView.DoubleStruckFamily: doublestruck,serif
 fontforge.FontView.EmptySlotFgColor: #cccbca
-fontforge.FontView.FontFamily: dejavu sans,fontview,courier,monospace,clearlyu,unifont
+fontforge.FontView.FontFamily: dejavu sans,fontview,courier,monospace,clearlyu,unifont,unifont upper
 fontforge.FontView.FontSize: 10
 fontforge.FontView.FrakturFamily: fraktur,serif
 fontforge.FontView.GlyphInfoColor: #598ec6
 fontforge.FontView.HintingNeededColor: #598ec6
-fontforge.FontView.MonoFamily: dejavu sans mono,courier,monospace,clearlyu,unifont
-fontforge.FontView.SansFamily: dejavu sans,helvetica,caliban,sans,clearlyu,unifont
+fontforge.FontView.MonoFamily: dejavu sans mono,courier,monospace,clearlyu,unifont,unifont upper
+fontforge.FontView.SansFamily: dejavu sans,helvetica,caliban,sans,clearlyu,unifont,unifont upper
 fontforge.FontView.ScriptFamily: script,formalscript,serif
 fontforge.FontView.SelectedColor: #88b2de
 fontforge.FontView.SelectedFgColor: #ffffff
-fontforge.FontView.SerifFamily: dejavu serif,times,caslon,serif,clearlyu,unifont
+fontforge.FontView.SerifFamily: dejavu serif,times,caslon,serif,clearlyu,unifont,unifont upper
 fontforge.MetricsView.AdvanceWidthColor: #80827c
 fontforge.MetricsView.ItalicAdvanceColor: #80827c
 fontforge.MetricsView.KernLineColor: #3d7905
