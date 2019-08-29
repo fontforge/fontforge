@@ -1942,7 +1942,7 @@ static void *GGDKDrawRequestSelection(GWindow w, enum selnames sn, char *typenam
 
     if (gw->is_notified_of_selection) {
 #endif
-        guchar *data;
+        guchar *data = NULL;
         GdkAtom received_type;
         gint received_format;
         gint rlen = gdk_selection_property_get(gw->w, &data, &received_type, &received_format);
