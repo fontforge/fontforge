@@ -158,7 +158,7 @@ static char *unicode_nicer(const char *from) {
     c=l=0;
     for ( pf=from; (ch=*pf++)!='\0'; ++l ) if ( ch=='\t' ) {
 	/* require extra space for these larger utf8 type chars */
-	if ( *pf=='*' || *pf=='x' || *pf==':' || *pf=='#' ) ++c;
+	if ( *pf=='*' || *pf=='%' || *pf=='x' || *pf=='~' || *pf==':' || *pf=='#' ) ++c;
     }
 
     if ( (pt=to=malloc(l+c+c+1))!=NULL ) {
@@ -166,12 +166,16 @@ static char *unicode_nicer(const char *from) {
 	    while ( (ch=*pt++=*from++)!='\0' ) if (ch=='\t' ) {
 		if ( *from=='*' ) {
 		    c=0x2022; goto unicode_expand_c; /* 0x2022, bullet */
+		} else if ( *from=='%' ) {
+		    c=0x203b; goto unicode_expand_c; /* 0x203b, reference mark */
 		} else if ( *from=='x' ) {
-		    c=0x2192; goto unicode_expand_c; /* 0x2192, right-arrow */
+		    c=0x2192; goto unicode_expand_c; /* 0x2192, rightwards arrow */
+		} else if ( *from=='~' ) {
+		    c=0x2053; goto unicode_expand_c; /* 0x2053, swung dash */
 		} else if ( *from==':' ) {
-		    c=0x224d; goto unicode_expand_c; /* 0x224d, nearly equal */
+		    c=0x2261; goto unicode_expand_c; /* 0x2261, identical to */
 		} else if ( *from=='#' ) {
-		    c=0x2245; goto unicode_expand_c; /* 0x2245, approx equal */
+		    c=0x2248; goto unicode_expand_c; /* 0x2248, almost equal to */
 unicode_expand_c:
 		    ++from;
 		    *pt++ =0xe0+((c>>12)&0x0f);
