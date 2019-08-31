@@ -741,9 +741,9 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 	label[7].text = (unichar_t *) _("Reference only");
 	label[7].text_is_1byte = true;
 	gcd[7].gd.label = &label[7];
-    gcd[7].gd.handle_controlevent = GFD_Reference;
-	gcd[7].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[7].gd.popup_msg = (unichar_t *) _("If checked, when you save your SFD, the image's data will not be saved in the file, only a path to the image will be saved.");
+	gcd[7].gd.handle_controlevent = GFD_Reference;
+	gcd[7].gd.flags = gg_visible | gg_enabled;
+	gcd[7].gd.popup_msg = _("If checked, when you save your SFD, the image's data will not be saved in the file, only a path to the image will be saved.");
 	gcd[7].creator = GCheckBoxCreate;
 
     if ( fv!=NULL ) {
