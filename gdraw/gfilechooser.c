@@ -1534,8 +1534,8 @@ static void GFileChooserCreateChildren(GFileChooser *gfc, int flags) {
     memset(&boxes,'\0',sizeof(boxes));
     memset(&label,'\0',sizeof(label));
 
-    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Home Folder");
+    gcd[k].gd.flags = gg_visible|gg_enabled;
+    gcd[k].gd.popup_msg = _("Home Folder");
     label[k].image = &_GIcon_homefolder;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.handle_controlevent = GFileChooserHome;
@@ -1543,8 +1543,8 @@ static void GFileChooserCreateChildren(GFileChooser *gfc, int flags) {
     gcd[k++].creator = GButtonCreate;
     harray[l++] = &gcd[k-1]; harray[l++] = GCD_Glue;
 
-    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Bookmarks");
+    gcd[k].gd.flags = gg_visible|gg_enabled;
+    gcd[k].gd.popup_msg = _("Bookmarks");
     label[k].image = &_GIcon_bookmark;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.handle_controlevent = GFileChooserBookmarks;
@@ -1558,8 +1558,8 @@ static void GFileChooserCreateChildren(GFileChooser *gfc, int flags) {
     gcd[k++].creator = GListButtonCreate;
     harray[l++] = &gcd[k-1]; harray[l++] = GCD_Glue;
 
-    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Parent Folder");
+    gcd[k].gd.flags = gg_visible|gg_enabled;
+    gcd[k].gd.popup_msg = _("Parent Folder");
     label[k].image = &_GIcon_updir;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.handle_controlevent = GFileChooserUpDirButton;
@@ -1567,8 +1567,8 @@ static void GFileChooserCreateChildren(GFileChooser *gfc, int flags) {
     gcd[k++].creator = GButtonCreate;
     harray[l++] = &gcd[k-1]; harray[l++] = GCD_Glue;
 
-    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Configure");
+    gcd[k].gd.flags = gg_visible|gg_enabled;
+    gcd[k].gd.popup_msg = _("Configure");
     label[k].image = &_GIcon_configtool;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.handle_controlevent = GFileChooserConfigure;

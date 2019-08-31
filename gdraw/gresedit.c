@@ -1089,8 +1089,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("Inherit");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritFlagChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -1117,8 +1117,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("Inherit");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritFlagChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -1148,8 +1148,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("Inherit");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritFlagChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -1176,8 +1176,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("Inherit");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritFlagChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -1207,8 +1207,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("Inherit");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritFlagChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -1235,8 +1235,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("Inherit");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritFlagChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -1266,8 +1266,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("Inherit");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritFlagChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -1307,8 +1307,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritColChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -1342,8 +1342,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritColChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -1379,8 +1379,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritColChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -1414,8 +1414,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritColChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -1451,8 +1451,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritColChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -1486,8 +1486,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritColChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -1523,8 +1523,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritColChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -1558,8 +1558,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritColChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -1596,8 +1596,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritColChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -1631,8 +1631,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritColChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -1669,8 +1669,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritColChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -1704,8 +1704,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritColChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -1742,8 +1742,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritColChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -1783,8 +1783,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritListChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -1819,8 +1819,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritListChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -1857,8 +1857,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritByteChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -1896,8 +1896,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritByteChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -1937,8 +1937,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritByteChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -1991,8 +1991,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
-	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
-	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
+	    gcd[k].gd.flags = gg_visible|gg_enabled;
+	    gcd[k].gd.popup_msg = _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_InheritFontChange;
 	    gcd[k++].creator = GCheckBoxCreate;
@@ -2086,11 +2086,11 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    lab[k].text = (unichar_t *) S_(extras->name);
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
-		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+		    gcd[k].gd.flags = gg_visible|gg_enabled;
 		    if ( extras->orig.ival )
 			gcd[k].gd.flags |= gg_cb_on;
 		    if ( extras->popup!=NULL )
-			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
+			gcd[k].gd.popup_msg = _(extras->popup);
 		    gcd[k].gd.cid = extras->cid = ++cid;
 		    gcd[k].data = extras->val;
 		    gcd[k].gd.handle_controlevent = GRE_BoolChanged;
@@ -2104,9 +2104,9 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    lab[k].text = (unichar_t *) S_(extras->name);
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
-		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+		    gcd[k].gd.flags = gg_visible|gg_enabled;
 		    if ( extras->popup!=NULL )
-			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
+			gcd[k].gd.popup_msg = _(extras->popup);
 		    gcd[k++].creator = GLabelCreate;
 		    tofree[i].earray[hl][base] = &gcd[k-1];
 
@@ -2116,9 +2116,9 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.pos.width = 60;
 		    gcd[k].gd.label = &lab[k];
-		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+		    gcd[k].gd.flags = gg_visible|gg_enabled;
 		    if ( extras->popup!=NULL )
-			gcd[k].gd.popup_msg = (unichar_t *) S_(extras->popup);
+			gcd[k].gd.popup_msg = S_(extras->popup);
 		    gcd[k].gd.cid = extras->cid = ++cid;
 		    gcd[k].data = extras->val;
 		    gcd[k].gd.handle_controlevent = GRE_IntChanged;
@@ -2131,9 +2131,9 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    lab[k].text = (unichar_t *) S_(extras->name);
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
-		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+		    gcd[k].gd.flags = gg_visible|gg_enabled;
 		    if ( extras->popup!=NULL )
-			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
+			gcd[k].gd.popup_msg = _(extras->popup);
 		    gcd[k++].creator = GLabelCreate;
 		    tofree[i].earray[hl][base] = &gcd[k-1];
 
@@ -2142,9 +2142,9 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    lab[k].text = (unichar_t *) tofree[i].extradefs[l];
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
-		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+		    gcd[k].gd.flags = gg_visible|gg_enabled;
 		    if ( extras->popup!=NULL )
-			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
+			gcd[k].gd.popup_msg = _(extras->popup);
 		    gcd[k].data = extras->val;
 		    gcd[k].gd.cid = extras->cid = ++cid;
 		    gcd[k].gd.handle_controlevent = GRE_DoubleChanged;
@@ -2158,18 +2158,18 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    lab[k].text = (unichar_t *) S_(extras->name);
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
-		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+		    gcd[k].gd.flags = gg_visible|gg_enabled;
 		    if ( extras->popup!=NULL )
-			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
+			gcd[k].gd.popup_msg = _(extras->popup);
 		    gcd[k++].creator = GLabelCreate;
 		    tofree[i].earray[hl][base] = &gcd[k-1];
 
 		    gcd[k].gd.u.col = extras->orig.ival;
 		    if ( (extras->orig.ival&0xff000000)==0 && extras->type==rt_coloralpha )
 			gcd[k].gd.u.col |= 0xfe000000;
-		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+		    gcd[k].gd.flags = gg_visible|gg_enabled;
 		    if ( extras->popup!=NULL )
-			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
+			gcd[k].gd.popup_msg = _(extras->popup);
 		    gcd[k].gd.cid = extras->cid = ++cid;
 		    gcd[k].data = extras->val;
 		    gcd[k].gd.handle_controlevent = GRE_ExtraColorChanged;
@@ -2192,9 +2192,9 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    lab[k].text = (unichar_t *) S_(extras->name);
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
-		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+		    gcd[k].gd.flags = gg_visible|gg_enabled;
 		    if ( extras->popup!=NULL )
-			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
+			gcd[k].gd.popup_msg = _(extras->popup);
 		    gcd[k++].creator = GLabelCreate;
 		    tofree[i].earray[hl][base] = &gcd[k-1];
 
@@ -2203,9 +2203,9 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 			lab[k].text_is_1byte = true;
 			gcd[k].gd.label = &lab[k];
 		    }
-		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+		    gcd[k].gd.flags = gg_visible|gg_enabled;
 		    if ( extras->popup!=NULL )
-			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
+			gcd[k].gd.popup_msg = _(extras->popup);
 		    gcd[k].data = extras->val;
 		    gcd[k].gd.cid = extras->cid = ++cid;
 		    gcd[k].gd.handle_controlevent = GRE_StringChanged;
@@ -2233,9 +2233,9 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    lab[k].text = (unichar_t *) S_(extras->name);
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
-		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+		    gcd[k].gd.flags = gg_visible|gg_enabled;
 		    if ( extras->popup!=NULL )
-			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
+			gcd[k].gd.popup_msg = _(extras->popup);
 		    gcd[k++].creator = GLabelCreate;
 		    tofree[i].earray[hl][base] = &gcd[k-1];
 
@@ -2245,9 +2245,9 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 			lab[k].text_is_1byte = true;
 			gcd[k].gd.label = &lab[k];
 		    }
-		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+		    gcd[k].gd.flags = gg_visible|gg_enabled;
 		    if ( extras->popup!=NULL )
-			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
+			gcd[k].gd.popup_msg = _(extras->popup);
 		    gcd[k].data = extras->val;
 		    gcd[k].gd.cid = extras->cid = ++cid;
 		    gcd[k].gd.handle_controlevent = GRE_ExtraFontChanged;
@@ -2268,9 +2268,9 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    lab[k].text = (unichar_t *) S_(extras->name);
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
-		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+		    gcd[k].gd.flags = gg_visible|gg_enabled;
 		    if ( extras->popup!=NULL )
-			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
+			gcd[k].gd.popup_msg = _(extras->popup);
 		    gcd[k++].creator = GLabelCreate;
 		    tofree[i].earray[hl][base] = &gcd[k-1];
 
@@ -2281,9 +2281,9 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 			lab[k].text = (unichar_t *) "? ...";
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
-		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+		    gcd[k].gd.flags = gg_visible|gg_enabled;
 		    if ( extras->popup!=NULL )
-			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
+			gcd[k].gd.popup_msg = _(extras->popup);
 		    gcd[k].data = extras->val;
 		    gcd[k].gd.cid = extras->cid = ++cid;
 		    gcd[k].gd.handle_controlevent = GRE_ImageChanged;

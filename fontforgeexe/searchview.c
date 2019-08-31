@@ -703,9 +703,9 @@ return( NULL );
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = GDrawPixelsToPoints(NULL,sv->cv_y+sv->cv_height+8);
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
     gcd[k].gd.cid = CID_Allow;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
+    gcd[k].gd.popup_msg = _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
     gcd[k].creator = GLabelCreate;
     allowarray[k] = &gcd[k]; ++k;
 
@@ -713,9 +713,9 @@ return( NULL );
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 35; gcd[k].gd.pos.y = gcd[0].gd.pos.y-3;
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_cb_on|gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_cb_on;
     gcd[k].gd.cid = CID_Flipping;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
+    gcd[k].gd.popup_msg = _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
     gcd[k].creator = GCheckBoxCreate;
     allowarray[k] = &gcd[k]; ++k;
 
@@ -723,9 +723,9 @@ return( NULL );
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 100; gcd[k].gd.pos.y = gcd[1].gd.pos.y; 
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
     gcd[k].gd.cid = CID_Scaling;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
+    gcd[k].gd.popup_msg = _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
     gcd[k].creator = GCheckBoxCreate;
     allowarray[k] = &gcd[k]; ++k;
 
@@ -733,9 +733,9 @@ return( NULL );
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 170; gcd[k].gd.pos.y = gcd[1].gd.pos.y;
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
     gcd[k].gd.cid = CID_Rotating;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
+    gcd[k].gd.popup_msg = _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
     gcd[k].creator = GCheckBoxCreate;
     allowarray[k] = &gcd[k]; allowarray[++k] = GCD_Glue; allowarray[5] = NULL;
 
@@ -762,9 +762,9 @@ return( NULL );
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[1].gd.pos.y+18;
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
     gcd[k].gd.cid = CID_Endpoints;
-    gcd[k].gd.popup_msg = (unichar_t *) _(
+    gcd[k].gd.popup_msg = _(
 	"If the search pattern is a single open contour\n"
 	"then do not match the end points. They merely\n"
 	"specify the direction from which the curve should\n"
@@ -783,9 +783,9 @@ return( NULL );
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[1].gd.pos.y+18;
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
     gcd[k].gd.cid = CID_Selected;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Only search characters selected in the fontview.\nNormally we search all characters in the font.");
+    gcd[k].gd.popup_msg = _("Only search characters selected in the fontview.\nNormally we search all characters in the font.");
     gcd[k++].creator = GCheckBoxCreate;
 
     label[k].text = (unichar_t *) _("Find Next");	/* Start with this to allow sufficient space */

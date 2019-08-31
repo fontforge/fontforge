@@ -244,10 +244,10 @@ char *GlyphListDlg(SplineFont *sf, char *glyphstr) {
     memset(&label,0,sizeof(label));
     k=j=0;
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[1].gd.pos.y+14;
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k].gd.cid = CID_Glyphs;
     gcd[k].gd.u.matrix = &mi;
-    gcd[k].gd.popup_msg = (unichar_t *) _( "A list of glyph names");
+    gcd[k].gd.popup_msg = _( "A list of glyph names");
     gcd[k].creator = GMatrixEditCreate;
     varray[j++] = &gcd[k++]; varray[j++] = NULL;
 
@@ -451,10 +451,10 @@ static char *JSTF_LookupListDlg(GGadget *g, int r, int c) {
     memset(&label,0,sizeof(label));
     k=j=0;
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[1].gd.pos.y+14;
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k].gd.cid = CID_Lookups;
     gcd[k].gd.u.matrix = &mi;
-    gcd[k].gd.popup_msg = (unichar_t *) _( "A list of lookup names");
+    gcd[k].gd.popup_msg = _( "A list of lookup names");
     gcd[k].creator = GMatrixEditCreate;
     varray[j++] = &gcd[k++]; varray[j++] = NULL;
 
@@ -763,10 +763,10 @@ static char *JSTF_Langs(GGadget *g, int r, int c) {
     JLanguageMatrixInit(&mi,*jd->here);
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[1].gd.pos.y+14;
     gcd[k].gd.pos.width = 900;
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k].gd.cid = CID_Languages;
     gcd[k].gd.u.matrix = &mi;
-    gcd[k].gd.popup_msg = (unichar_t *) _(
+    gcd[k].gd.popup_msg = _(
 	"A list of languages and the lookups turned on and off\n"
 	"for each to accomplish justification.  A language may\n"
 	"appear more than once, in which case second (or third,\n"
@@ -963,10 +963,10 @@ void JustifyDlg(SplineFont *sf) {
     memset(&label,0,sizeof(label));
     k=j=0;
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[1].gd.pos.y+14;
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k].gd.cid = CID_Scripts;
     gcd[k].gd.u.matrix = &mi;
-    gcd[k].gd.popup_msg = (unichar_t *) _( "A list of scripts with special justification needs");
+    gcd[k].gd.popup_msg = _( "A list of scripts with special justification needs");
     gcd[k].creator = GMatrixEditCreate;
     varray[j++] = &gcd[k++]; varray[j++] = NULL;
 

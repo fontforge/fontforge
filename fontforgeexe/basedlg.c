@@ -338,7 +338,7 @@ static struct baselangextent *SFBaselang(SplineFont *sf,struct baselangextent *o
 
     BaseLangMatrixInit(&mi,old,islang,is_vertical);
     gcd[i].gd.pos.width = 300; gcd[i].gd.pos.height = 200;
-    gcd[i].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[i].gd.flags = gg_enabled | gg_visible;
     gcd[i].gd.cid = CID_Languages;
     gcd[i].gd.u.matrix = &mi;
     gcd[i++].creator = GMatrixEditCreate;
@@ -760,8 +760,8 @@ struct Base *SFBaselines(SplineFont *sf,struct Base *old,int is_vertical) {
     label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
-    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-    gcd[i].gd.popup_msg = (unichar_t *) _("Indic (& Tibetan) hanging baseline");
+    gcd[i].gd.flags = gg_enabled|gg_visible;
+    gcd[i].gd.popup_msg = _("Indic (& Tibetan) hanging baseline");
     gcd[i].gd.cid = CID_BaseHang;
     gcd[i].gd.handle_controlevent = Base_ChangeBase;
     gcd[i].creator = GCheckBoxCreate;
@@ -771,8 +771,8 @@ struct Base *SFBaselines(SplineFont *sf,struct Base *old,int is_vertical) {
     label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
-    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-    gcd[i].gd.popup_msg = (unichar_t *) _("Ideographic character face bottom edge baseline");
+    gcd[i].gd.flags = gg_enabled|gg_visible;
+    gcd[i].gd.popup_msg = _("Ideographic character face bottom edge baseline");
     gcd[i].gd.cid = CID_BaseIcfb;
     gcd[i].gd.handle_controlevent = Base_ChangeBase;
     gcd[i].creator = GCheckBoxCreate;
@@ -782,8 +782,8 @@ struct Base *SFBaselines(SplineFont *sf,struct Base *old,int is_vertical) {
     label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
-    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-    gcd[i].gd.popup_msg = (unichar_t *) _("Ideographic character face top edge baseline");
+    gcd[i].gd.flags = gg_enabled|gg_visible;
+    gcd[i].gd.popup_msg = _("Ideographic character face top edge baseline");
     gcd[i].gd.cid = CID_BaseIcft;
     gcd[i].gd.handle_controlevent = Base_ChangeBase;
     gcd[i].creator = GCheckBoxCreate;
@@ -793,8 +793,8 @@ struct Base *SFBaselines(SplineFont *sf,struct Base *old,int is_vertical) {
     label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
-    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-    gcd[i].gd.popup_msg = (unichar_t *) _("Ideographic em-box bottom edge baseline");
+    gcd[i].gd.flags = gg_enabled|gg_visible;
+    gcd[i].gd.popup_msg = _("Ideographic em-box bottom edge baseline");
     gcd[i].gd.cid = CID_BaseIdeo;
     gcd[i].gd.handle_controlevent = Base_ChangeBase;
     gcd[i].creator = GCheckBoxCreate;
@@ -804,8 +804,8 @@ struct Base *SFBaselines(SplineFont *sf,struct Base *old,int is_vertical) {
     label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
-    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-    gcd[i].gd.popup_msg = (unichar_t *) _("Ideographic em-box top edge baseline");
+    gcd[i].gd.flags = gg_enabled|gg_visible;
+    gcd[i].gd.popup_msg = _("Ideographic em-box top edge baseline");
     gcd[i].gd.cid = CID_BaseIdtp;
     gcd[i].gd.handle_controlevent = Base_ChangeBase;
     gcd[i].creator = GCheckBoxCreate;
@@ -815,8 +815,8 @@ struct Base *SFBaselines(SplineFont *sf,struct Base *old,int is_vertical) {
     label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
-    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-    gcd[i].gd.popup_msg = (unichar_t *) _("Mathematical centerline");
+    gcd[i].gd.flags = gg_enabled|gg_visible;
+    gcd[i].gd.popup_msg = _("Mathematical centerline");
     gcd[i].gd.cid = CID_BaseMath;
     gcd[i].gd.handle_controlevent = Base_ChangeBase;
     gcd[i].creator = GCheckBoxCreate;
@@ -826,8 +826,8 @@ struct Base *SFBaselines(SplineFont *sf,struct Base *old,int is_vertical) {
     label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
-    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-    gcd[i].gd.popup_msg = (unichar_t *) _("Baseline used for Latin, Greek, Cyrillic text.");
+    gcd[i].gd.flags = gg_enabled|gg_visible;
+    gcd[i].gd.popup_msg = _("Baseline used for Latin, Greek, Cyrillic text.");
     gcd[i].gd.cid = CID_BaseRomn;
     gcd[i].gd.handle_controlevent = Base_ChangeBase;
     gcd[i].creator = GCheckBoxCreate;
@@ -853,7 +853,7 @@ struct Base *SFBaselines(SplineFont *sf,struct Base *old,int is_vertical) {
 
     BaselineMatrixInit(&mi,old);
     gcd[i].gd.pos.width = 300; gcd[i].gd.pos.height = 200;
-    gcd[i].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[i].gd.flags = gg_enabled | gg_visible;
     gcd[i].gd.cid = CID_Baselines;
     gcd[i].gd.u.matrix = &mi;
     gcd[i++].creator = GMatrixEditCreate;

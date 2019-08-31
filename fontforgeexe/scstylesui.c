@@ -270,9 +270,9 @@ void CondenseExtendDlg(FontView *fv, CharView *cv) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup | (last_ci.correct_italic?gg_cb_on:0);
+    gcd[k].gd.flags = gg_enabled | gg_visible| (last_ci.correct_italic?gg_cb_on:0);
     gcd[k].gd.cid = CID_CorrectItalic;
-    gcd[k].gd.popup_msg = (unichar_t *) _("When FontForge detects that an expanded stroke will self-intersect,\nthen setting this option will cause it to try to make things nice\nby removing the intersections");
+    gcd[k].gd.popup_msg = _("When FontForge detects that an expanded stroke will self-intersect,\nthen setting this option will cause it to try to make things nice\nby removing the intersections");
     gcd[k++].creator = GCheckBoxCreate;
     hvarray[15] = &gcd[k-1];
     hvarray[16] = hvarray[17] = hvarray[18] = GCD_ColSpan; hvarray[19] = NULL;
@@ -1658,8 +1658,8 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
-	gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup | gg_cb_on | gg_rad_continueold;
-	gcd[k].gd.popup_msg = (unichar_t *) _("These mappings may be used to fix certain standard heights.");
+	gcd[k].gd.flags = gg_enabled | gg_visible| gg_cb_on | gg_rad_continueold;
+	gcd[k].gd.popup_msg = _("These mappings may be used to fix certain standard heights.");
 	gcd[k].gd.cid = CID_UseVerticalMappings;
 	gcd[k].gd.handle_controlevent = CG_UseVCounters;
 	gcd[k++].creator = GRadioCreate;
@@ -1737,8 +1737,8 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	gcd[k++].creator = GButtonCreate;
 	barray[0] = GCD_Glue; barray[1] = &gcd[k-1]; barray[2] = GCD_Glue;
 
-	gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-	gcd[k].gd.popup_msg = (unichar_t *) _("Everything to its default value");
+	gcd[k].gd.flags = gg_visible | gg_enabled;
+	gcd[k].gd.popup_msg = _("Everything to its default value");
 	label[k].text = (unichar_t *) _("Reset");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
@@ -1970,44 +1970,44 @@ void EmboldenDlg(FontView *fv, CharView *cv) {
     hvarray[0][3] = GCD_Glue; hvarray[0][4] = NULL;
 
     label[k].text = (unichar_t *) _("_LCG");
-    gcd[k].gd.popup_msg = (unichar_t *) _("Embolden as appropriate for Latin, Cyrillic and Greek scripts");
+    gcd[k].gd.popup_msg = _("Embolden as appropriate for Latin, Cyrillic and Greek scripts");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k].gd.cid = CID_LCG;
     gcd[k].gd.handle_controlevent = Embolden_Radio;
     gcd[k++].creator = GRadioCreate;
     rarray[0] = &gcd[k-1];
 
     label[k].text = (unichar_t *) _("_CJK");
-    gcd[k].gd.popup_msg = (unichar_t *) _("Embolden as appropriate for Chinese, Japanese, Korean scripts");
+    gcd[k].gd.popup_msg = _("Embolden as appropriate for Chinese, Japanese, Korean scripts");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k].gd.cid = CID_CJK;
     gcd[k].gd.handle_controlevent = Embolden_Radio;
     gcd[k++].creator = GRadioCreate;
     rarray[1] = &gcd[k-1];
 
     label[k].text = (unichar_t *) _("_Auto");
-    gcd[k].gd.popup_msg = (unichar_t *) _("Choose the appropriate method depending on the glyph's script");
+    gcd[k].gd.popup_msg = _("Choose the appropriate method depending on the glyph's script");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k].gd.cid = CID_Auto;
     gcd[k].gd.handle_controlevent = Embolden_Radio;
     gcd[k++].creator = GRadioCreate;
     rarray[2] = &gcd[k-1];
 
     label[k].text = (unichar_t *) _("C_ustom");
-    gcd[k].gd.popup_msg = (unichar_t *) _("User controls the emboldening with the next two fields");
+    gcd[k].gd.popup_msg = _("User controls the emboldening with the next two fields");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k].gd.cid = CID_Custom;
     gcd[k].gd.handle_controlevent = Embolden_Radio;
     gcd[k++].creator = GRadioCreate;
@@ -2116,8 +2116,8 @@ void EmboldenDlg(FontView *fv, CharView *cv) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup ;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Any points this high will be assumed to be on serifs,\nand will remain at that height after processing.\n(So serifs should remain the same size).\n(If you do wish the serifs to grow, set this to 0)");
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k].gd.popup_msg = _("Any points this high will be assumed to be on serifs,\nand will remain at that height after processing.\n(So serifs should remain the same size).\n(If you do wish the serifs to grow, set this to 0)");
     gcd[k++].creator = GLabelCreate;
     hvarray[4][0] = &gcd[k-1];
 
@@ -2127,7 +2127,7 @@ void EmboldenDlg(FontView *fv, CharView *cv) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 80; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-3;
     gcd[k].gd.pos.width = 60;
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k].gd.cid = CID_SerifHeight;
     gcd[k].gd.popup_msg = gcd[k-1].gd.popup_msg;
     gcd[k++].creator = GNumericFieldCreate;
@@ -2137,8 +2137,8 @@ void EmboldenDlg(FontView *fv, CharView *cv) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup ;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Allow the height match to differ by this much");
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k].gd.popup_msg = _("Allow the height match to differ by this much");
     gcd[k++].creator = GLabelCreate;
     hvarray[4][2] = &gcd[k-1];
 
@@ -2147,7 +2147,7 @@ void EmboldenDlg(FontView *fv, CharView *cv) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 80; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-3;
     gcd[k].gd.pos.width = 60;
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k].gd.cid = CID_SerifHFuzz;
     gcd[k].gd.popup_msg = gcd[k-1].gd.popup_msg;
     gcd[k++].creator = GNumericFieldCreate;
@@ -2155,42 +2155,42 @@ void EmboldenDlg(FontView *fv, CharView *cv) {
     hvarray[4][4] = NULL;
 
     label[k].text = (unichar_t *) _("Counters:");
-    gcd[k].gd.popup_msg = (unichar_t *) _("The simple application of this algorithm will squeeze counters\nThat is not normally seen in bold latin fonts");
+    gcd[k].gd.popup_msg = _("The simple application of this algorithm will squeeze counters\nThat is not normally seen in bold latin fonts");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
     carray[0] = &gcd[k-1];
 
     label[k].text = (unichar_t *) _("Squish");
-    gcd[k].gd.popup_msg = (unichar_t *) _("Make the counters narrower");
+    gcd[k].gd.popup_msg = _("Make the counters narrower");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k].gd.cid = CID_Squish;
     /*gcd[k].gd.handle_controlevent = Embolden_Counter;*/
     gcd[k++].creator = GRadioCreate;
     carray[1] = &gcd[k-1];
 
     label[k].text = (unichar_t *) _("Retain");
-    gcd[k].gd.popup_msg = (unichar_t *) _("Try to insure that the counters are as wide\nafterward as they were before");
+    gcd[k].gd.popup_msg = _("Try to insure that the counters are as wide\nafterward as they were before");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k].gd.cid = CID_Retain;
     /*gcd[k].gd.handle_controlevent = Embolden_Counter;*/
     gcd[k++].creator = GRadioCreate;
     carray[2] = &gcd[k-1];
 
     label[k].text = (unichar_t *) _("Auto");
-    gcd[k].gd.popup_msg = (unichar_t *) _("Retain counter size for glyphs using latin algorithm\nSquish them for those using CJK." );
+    gcd[k].gd.popup_msg = _("Retain counter size for glyphs using latin algorithm\nSquish them for those using CJK." );
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup | gg_cb_on;
+    gcd[k].gd.flags = gg_enabled | gg_visible| gg_cb_on;
     gcd[k].gd.cid = CID_CounterAuto;
     /* gcd[k].gd.handle_controlevent = Embolden_Counter;*/
     gcd[k++].creator = GRadioCreate;
@@ -2206,9 +2206,9 @@ void EmboldenDlg(FontView *fv, CharView *cv) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup | (last_overlap?gg_cb_on:0);
+    gcd[k].gd.flags = gg_enabled | gg_visible| (last_overlap?gg_cb_on:0);
     gcd[k].gd.cid = CID_CleanupSelfIntersect;
-    gcd[k].gd.popup_msg = (unichar_t *) _("When FontForge detects that an expanded stroke will self-intersect,\nthen setting this option will cause it to try to make things nice\nby removing the intersections");
+    gcd[k].gd.popup_msg = _("When FontForge detects that an expanded stroke will self-intersect,\nthen setting this option will cause it to try to make things nice\nby removing the intersections");
     gcd[k++].creator = GCheckBoxCreate;
     hvarray[6][0] = &gcd[k-1]; hvarray[6][1] = hvarray[6][2] = hvarray[6][3] = GCD_ColSpan; hvarray[6][4] = NULL;
 
@@ -2677,30 +2677,30 @@ void ItalicDlg(FontView *fv, CharView *cv) {
     label[k].text = (unichar_t *) _("LSB");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Left Side Bearing");
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k].gd.popup_msg = _("Left Side Bearing");
     gcd[k++].creator = GLabelCreate;
     compress[0][1] = &gcd[k-1];
 
     label[k].text = (unichar_t *) _("Stems");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
     compress[0][2] = &gcd[k-1];
 
     label[k].text = (unichar_t *) _("Counters");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
     compress[0][3] = &gcd[k-1];
 
     label[k].text = (unichar_t *) _("RSB");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Right Side Bearing");
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k].gd.popup_msg = _("Right Side Bearing");
     gcd[k++].creator = GLabelCreate;
     compress[0][4] = &gcd[k-1]; compress[0][5] = NULL;
 
@@ -2710,7 +2710,7 @@ void ItalicDlg(FontView *fv, CharView *cv) {
 	label[k].text = (unichar_t *) (i==0 ? _("Lower Case") : i==1 ? _("Upper Case") : _("Others"));
 	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
-	gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+	gcd[k].gd.flags = gg_enabled | gg_visible;
 	gcd[k++].creator = GLabelCreate;
 	compress[i+1][0] = &gcd[k-1];
 
@@ -2719,7 +2719,7 @@ void ItalicDlg(FontView *fv, CharView *cv) {
 	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.width = 50;
-	gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_CompressLSB+10*i;
 	gcd[k++].creator = GTextFieldCreate;
 	compress[i+1][1] = &gcd[k-1];
@@ -2729,7 +2729,7 @@ void ItalicDlg(FontView *fv, CharView *cv) {
 	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.width = 50;
-	gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_CompressStem+10*i;
 	gcd[k++].creator = GTextFieldCreate;
 	compress[i+1][2] = &gcd[k-1];
@@ -2739,7 +2739,7 @@ void ItalicDlg(FontView *fv, CharView *cv) {
 	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.width = 50;
-	gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_CompressCounter+10*i;
 	gcd[k++].creator = GTextFieldCreate;
 	compress[i+1][3] = &gcd[k-1];
@@ -2749,7 +2749,7 @@ void ItalicDlg(FontView *fv, CharView *cv) {
 	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.width = 50;
-	gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_CompressRSB+10*i;
 	gcd[k++].creator = GTextFieldCreate;
 	compress[i+1][4] = &gcd[k-1]; compress[i+1][5] = NULL;
@@ -2769,7 +2769,7 @@ void ItalicDlg(FontView *fv, CharView *cv) {
     label[k].text = (unichar_t *) _("XHeight Percent:");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
     iaarray[0][0] = &gcd[k-1];
 
@@ -2778,16 +2778,16 @@ void ItalicDlg(FontView *fv, CharView *cv) {
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.width = 50;
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
     gcd[k].gd.cid = CID_XHeightPercent;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Traditionally the x-height of an italic face is slightly less\nthan the x-height of the companion roman");
+    gcd[k].gd.popup_msg = _("Traditionally the x-height of an italic face is slightly less\nthan the x-height of the companion roman");
     gcd[k++].creator = GTextFieldCreate;
     iaarray[0][1] = &gcd[k-1]; iaarray[0][2] = NULL;
 
     label[k].text = (unichar_t *) _("Italic Angle:");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
     iaarray[1][0] = &gcd[k-1];
 
@@ -2796,7 +2796,7 @@ void ItalicDlg(FontView *fv, CharView *cv) {
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.width = 50;
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
     gcd[k].gd.cid = CID_ItalicAngle;
     gcd[k++].creator = GTextFieldCreate;
     iaarray[1][1] = &gcd[k-1]; iaarray[1][2] = NULL; iaarray[2][0] = NULL;
@@ -2819,7 +2819,7 @@ void ItalicDlg(FontView *fv, CharView *cv) {
 	"And on all Greek lower case letters. And maybe everything else.");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
     varray[r++] = &gcd[k-1]; varray[r++] = NULL;
 

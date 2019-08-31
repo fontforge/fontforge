@@ -3114,9 +3114,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     plabel[0].text_in_resource = true;
     pgcd[0].gd.label = &plabel[0];
     pgcd[0].gd.pos.x = 3; pgcd[0].gd.pos.y = 5; 
-    pgcd[0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    pgcd[0].gd.flags = gg_visible | gg_enabled;
     if ( nonintegral ) pgcd[0].gd.flags |= gg_cb_on;
-    pgcd[0].gd.popup_msg = (unichar_t *) _(
+    pgcd[0].gd.popup_msg = _(
 	    "The coordinates of all points and control points in truetype\n"
 	    "must be integers (if they are not integers then FontForge will\n"
 	    "round them when it outputs them, potentially causing havoc).\n"
@@ -3132,9 +3132,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[1].gd.label = &plabel[1];
     pgcd[1].gd.mnemonic = 'X';
     pgcd[1].gd.pos.x = 3; pgcd[1].gd.pos.y = pgcd[0].gd.pos.y+17; 
-    pgcd[1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    pgcd[1].gd.flags = gg_visible | gg_enabled;
     if ( doxnear ) pgcd[1].gd.flags |= gg_cb_on;
-    pgcd[1].gd.popup_msg = (unichar_t *) _("Allows you to check that vertical stems in several\ncharacters start at the same location.");
+    pgcd[1].gd.popup_msg = _("Allows you to check that vertical stems in several\ncharacters start at the same location.");
     pgcd[1].gd.cid = CID_XNear;
     pgcd[1].creator = GCheckBoxCreate;
     pharray1[0] = &pgcd[1];
@@ -3162,9 +3162,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[3].gd.label = &plabel[3];
     pgcd[3].gd.mnemonic = 'Y';
     pgcd[3].gd.pos.x = 3; pgcd[3].gd.pos.y = pgcd[1].gd.pos.y+24; 
-    pgcd[3].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    pgcd[3].gd.flags = gg_visible | gg_enabled;
     if ( doynear ) pgcd[3].gd.flags |= gg_cb_on;
-    pgcd[3].gd.popup_msg = (unichar_t *) _("Allows you to check that horizontal stems in several\ncharacters start at the same location.");
+    pgcd[3].gd.popup_msg = _("Allows you to check that horizontal stems in several\ncharacters start at the same location.");
     pgcd[3].gd.cid = CID_YNear;
     pgcd[3].creator = GCheckBoxCreate;
     pharray2[0] = &pgcd[3];
@@ -3192,9 +3192,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[5].gd.label = &plabel[5];
     pgcd[5].gd.mnemonic = 'S';
     pgcd[5].gd.pos.x = 3; pgcd[5].gd.pos.y = pgcd[3].gd.pos.y+18; 
-    pgcd[5].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    pgcd[5].gd.flags = gg_visible | gg_enabled;
     if ( doynearstd ) pgcd[5].gd.flags |= gg_cb_on;
-    pgcd[5].gd.popup_msg = (unichar_t *) _("Allows you to find points which are slightly\noff from the baseline, xheight, cap height,\nascender, descender heights.");
+    pgcd[5].gd.popup_msg = _("Allows you to find points which are slightly\noff from the baseline, xheight, cap height,\nascender, descender heights.");
     pgcd[5].gd.cid = CID_YNearStd;
     pgcd[5].creator = GCheckBoxCreate;
     parray[3] = &pgcd[5];
@@ -3205,9 +3205,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[6].gd.label = &plabel[6];
     pgcd[6].gd.mnemonic = 'C';
     pgcd[6].gd.pos.x = 3; pgcd[6].gd.pos.y = pgcd[5].gd.pos.y+14; 
-    pgcd[6].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    pgcd[6].gd.flags = gg_visible | gg_enabled;
     if ( cpstd ) pgcd[6].gd.flags |= gg_cb_on;
-    pgcd[6].gd.popup_msg = (unichar_t *) _("Allows you to find control points which are almost,\nbut not quite horizontal or vertical\nfrom their base point\n(or at the italic angle).");
+    pgcd[6].gd.popup_msg = _("Allows you to find control points which are almost,\nbut not quite horizontal or vertical\nfrom their base point\n(or at the italic angle).");
     pgcd[6].gd.cid = CID_CpStd;
     pgcd[6].creator = GCheckBoxCreate;
     parray[4] = &pgcd[6];
@@ -3218,9 +3218,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[7].gd.label = &plabel[7];
     pgcd[7].gd.mnemonic = 'b';
     pgcd[7].gd.pos.x = 3; pgcd[7].gd.pos.y = pgcd[6].gd.pos.y+14; 
-    pgcd[7].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    pgcd[7].gd.flags = gg_visible | gg_enabled;
     if ( cpodd ) pgcd[7].gd.flags |= gg_cb_on;
-    pgcd[7].gd.popup_msg = (unichar_t *) _("Allows you to find control points which when projected\nonto the line segment between the two end points lie\noutside of those end points");
+    pgcd[7].gd.popup_msg = _("Allows you to find control points which when projected\nonto the line segment between the two end points lie\noutside of those end points");
     pgcd[7].gd.cid = CID_CpOdd;
     pgcd[7].creator = GCheckBoxCreate;
     parray[5] = &pgcd[7];
@@ -3230,9 +3230,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     plabel[8].text_in_resource = true;
     pgcd[8].gd.label = &plabel[8];
     pgcd[8].gd.pos.x = 3; pgcd[8].gd.pos.y = pgcd[7].gd.pos.y+14; 
-    pgcd[8].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    pgcd[8].gd.flags = gg_visible | gg_enabled;
     if ( irrelevantcp ) pgcd[8].gd.flags |= gg_cb_on;
-    pgcd[8].gd.popup_msg = (unichar_t *) _("Control points are irrelevant if they are too close to the main\npoint to make a significant difference in the shape of the curve.");
+    pgcd[8].gd.popup_msg = _("Control points are irrelevant if they are too close to the main\npoint to make a significant difference in the shape of the curve.");
     pgcd[8].gd.cid = CID_IrrelevantCP;
     pgcd[8].creator = GCheckBoxCreate;
     parray[6] = &pgcd[8];
@@ -3242,8 +3242,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     plabel[9].text_in_resource = true;
     pgcd[9].gd.label = &plabel[9];
     pgcd[9].gd.pos.x = 20; pgcd[9].gd.pos.y = pgcd[8].gd.pos.y+17; 
-    pgcd[9].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    pgcd[9].gd.popup_msg = (unichar_t *) _("A control point is deemed irrelevant if the distance between it and the main\n(end) point is less than this times the distance between the two end points");
+    pgcd[9].gd.flags = gg_visible | gg_enabled;
+    pgcd[9].gd.popup_msg = _("A control point is deemed irrelevant if the distance between it and the main\n(end) point is less than this times the distance between the two end points");
     pgcd[9].creator = GLabelCreate;
     pharray3[0] = GCD_HPad10; pharray3[1] = &pgcd[9];
 
@@ -3253,8 +3253,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[10].gd.label = &plabel[10];
     pgcd[10].gd.pos.x = 105; pgcd[10].gd.pos.y = pgcd[9].gd.pos.y-3;
     pgcd[10].gd.pos.width = 50; 
-    pgcd[10].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    pgcd[10].gd.popup_msg = (unichar_t *) _("A control point is deemed irrelevant if the distance between it and the main\n(end) point is less than this times the distance between the two end points");
+    pgcd[10].gd.flags = gg_visible | gg_enabled;
+    pgcd[10].gd.popup_msg = _("A control point is deemed irrelevant if the distance between it and the main\n(end) point is less than this times the distance between the two end points");
     pgcd[10].gd.cid = CID_IrrelevantFactor;
     pgcd[10].creator = GTextFieldCreate;
     pharray3[2] = &pgcd[10];
@@ -3263,8 +3263,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     plabel[11].text_is_1byte = true;
     pgcd[11].gd.label = &plabel[11];
     pgcd[11].gd.pos.x = 163; pgcd[11].gd.pos.y = pgcd[9].gd.pos.y; 
-    pgcd[11].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    pgcd[11].gd.popup_msg = (unichar_t *) _("A control point is deemed irrelevant if the distance between it and the main\n(end) point is less than this times the distance between the two end points");
+    pgcd[11].gd.flags = gg_visible | gg_enabled;
+    pgcd[11].gd.popup_msg = _("A control point is deemed irrelevant if the distance between it and the main\n(end) point is less than this times the distance between the two end points");
     pgcd[11].creator = GLabelCreate;
     pharray3[3] = &pgcd[11]; pharray3[4] = GCD_Glue; pharray3[5] = NULL;
 
@@ -3278,9 +3278,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     plabel[12].text_in_resource = true;
     pgcd[12].gd.label = &plabel[12];
     pgcd[12].gd.pos.x = 3; pgcd[12].gd.pos.y = pgcd[11].gd.pos.y+14; 
-    pgcd[12].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    pgcd[12].gd.flags = gg_visible | gg_enabled;
     if ( pointstooclose ) pgcd[12].gd.flags |= gg_cb_on;
-    pgcd[12].gd.popup_msg = (unichar_t *) _("If two adjacent points on the same path are less than a few\nemunits apart they will cause problems for some of FontForge's\ncommands. PostScript shouldn't care though.");
+    pgcd[12].gd.popup_msg = _("If two adjacent points on the same path are less than a few\nemunits apart they will cause problems for some of FontForge's\ncommands. PostScript shouldn't care though.");
     pgcd[12].gd.cid = CID_PointsTooClose;
     pgcd[12].creator = GCheckBoxCreate;
     parray[8] = &pgcd[12];
@@ -3290,9 +3290,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     plabel[13].text_in_resource = true;
     pgcd[13].gd.label = &plabel[13];
     pgcd[13].gd.pos.x = 3; pgcd[13].gd.pos.y = pgcd[12].gd.pos.y+14; 
-    pgcd[13].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    pgcd[13].gd.flags = gg_visible | gg_enabled;
     if ( pointstoofar ) pgcd[13].gd.flags |= gg_cb_on;
-    pgcd[13].gd.popup_msg = (unichar_t *) _("Most font formats cannot specify adjacent points (or control points)\nwhich are more than 32767 em-units apart in either the x or y direction");
+    pgcd[13].gd.popup_msg = _("Most font formats cannot specify adjacent points (or control points)\nwhich are more than 32767 em-units apart in either the x or y direction");
     pgcd[13].gd.cid = CID_PointsTooFar;
     pgcd[13].creator = GCheckBoxCreate;
     parray[9] = &pgcd[13]; parray[10] = GCD_Glue; parray[11] = NULL;
@@ -3313,9 +3313,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[0].gd.label = &palabel[0];
     pagcd[0].gd.mnemonic = 'P';
     pagcd[0].gd.pos.x = 3; pagcd[0].gd.pos.y = 6; 
-    pagcd[0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    pagcd[0].gd.flags = gg_visible | gg_enabled;
     if ( openpaths ) pagcd[0].gd.flags |= gg_cb_on;
-    pagcd[0].gd.popup_msg = (unichar_t *) _("All paths should be closed loops, there should be no exposed endpoints");
+    pagcd[0].gd.popup_msg = _("All paths should be closed loops, there should be no exposed endpoints");
     pagcd[0].gd.cid = CID_OpenPaths;
     pagcd[0].creator = GCheckBoxCreate;
     paarray[0] = &pagcd[0];
@@ -3325,9 +3325,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[1].gd.label = &palabel[1];
     pagcd[1].gd.mnemonic = 'E';
     pagcd[1].gd.pos.x = 3; pagcd[1].gd.pos.y = pagcd[0].gd.pos.y+17; 
-    pagcd[1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    pagcd[1].gd.flags = gg_visible | gg_enabled;
     if ( intersectingpaths ) pagcd[1].gd.flags |= gg_cb_on;
-    pagcd[1].gd.popup_msg = (unichar_t *) _("No paths with within a glyph should intersect");
+    pagcd[1].gd.popup_msg = _("No paths with within a glyph should intersect");
     pagcd[1].gd.cid = CID_IntersectingPaths;
     pagcd[1].creator = GCheckBoxCreate;
     paarray[1] = &pagcd[1];
@@ -3338,9 +3338,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[2].gd.label = &palabel[2];
     pagcd[2].gd.mnemonic = 'E';
     pagcd[2].gd.pos.x = 3; pagcd[2].gd.pos.y = pagcd[1].gd.pos.y+17; 
-    pagcd[2].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    pagcd[2].gd.flags = gg_visible | gg_enabled;
     if ( linestd ) pagcd[2].gd.flags |= gg_cb_on;
-    pagcd[2].gd.popup_msg = (unichar_t *) _("Allows you to find lines which are almost,\nbut not quite horizontal or vertical\n(or at the italic angle).");
+    pagcd[2].gd.popup_msg = _("Allows you to find lines which are almost,\nbut not quite horizontal or vertical\n(or at the italic angle).");
     pagcd[2].gd.cid = CID_LineStd;
     pagcd[2].creator = GCheckBoxCreate;
     paarray[2] = &pagcd[2];
@@ -3351,9 +3351,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[3].gd.label = &palabel[3];
     pagcd[3].gd.mnemonic = 'S';
     pagcd[3].gd.pos.x = 3; pagcd[3].gd.pos.y = pagcd[2].gd.pos.y+17; 
-    pagcd[3].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    pagcd[3].gd.flags = gg_visible | gg_enabled;
     if ( direction ) pagcd[3].gd.flags |= gg_cb_on;
-    pagcd[3].gd.popup_msg = (unichar_t *) _("FontForge internally uses paths drawn in a\nclockwise direction. This lets you check that they are.\nBefore doing this test insure that\nno paths self-intersect.");
+    pagcd[3].gd.popup_msg = _("FontForge internally uses paths drawn in a\nclockwise direction. This lets you check that they are.\nBefore doing this test insure that\nno paths self-intersect.");
     pagcd[3].gd.cid = CID_Direction;
     pagcd[3].creator = GCheckBoxCreate;
     paarray[3] = &pagcd[3];
@@ -3363,9 +3363,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     palabel[4].text_in_resource = true;
     pagcd[4].gd.label = &palabel[4];
     pagcd[4].gd.pos.x = 3; pagcd[4].gd.pos.y = pagcd[3].gd.pos.y+17; 
-    pagcd[4].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    pagcd[4].gd.flags = gg_visible | gg_enabled;
     if ( missingextrema ) pagcd[4].gd.flags |= gg_cb_on;
-    pagcd[4].gd.popup_msg = (unichar_t *) _("PostScript and TrueType require that when a path\nreaches its maximum or minimum position\nthere must be a point at that location.");
+    pagcd[4].gd.popup_msg = _("PostScript and TrueType require that when a path\nreaches its maximum or minimum position\nthere must be a point at that location.");
     pagcd[4].gd.cid = CID_MissingExtrema;
     pagcd[4].creator = GCheckBoxCreate;
     paarray[4] = &pagcd[4];
@@ -3376,9 +3376,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[5].gd.label = &palabel[5];
     pagcd[5].gd.mnemonic = 'r';
     pagcd[5].gd.pos.x = 3; pagcd[5].gd.pos.y = pagcd[4].gd.pos.y+21; 
-    pagcd[5].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    pagcd[5].gd.flags = gg_visible | gg_enabled;
     if ( toomanypoints ) pagcd[5].gd.flags |= gg_cb_on;
-    pagcd[5].gd.popup_msg = (unichar_t *) _("The PostScript Language Reference Manual (Appendix B) says that\nan interpreter need not support paths with more than 1500 points.\nI think this count includes control points. From PostScript's point\nof view, all the contours in a character make up one path. Modern\ninterpreters tend to support paths with more points than this limit.\n(Note a truetype font after conversion to PS will contain\ntwice as many control points)");
+    pagcd[5].gd.popup_msg = _("The PostScript Language Reference Manual (Appendix B) says that\nan interpreter need not support paths with more than 1500 points.\nI think this count includes control points. From PostScript's point\nof view, all the contours in a character make up one path. Modern\ninterpreters tend to support paths with more points than this limit.\n(Note a truetype font after conversion to PS will contain\ntwice as many control points)");
     pagcd[5].gd.cid = CID_TooManyPoints;
     pagcd[5].creator = GCheckBoxCreate;
     paharray[0] = &pagcd[5];
@@ -3389,8 +3389,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[6].gd.label = &palabel[6];
     pagcd[6].gd.pos.x = 105; pagcd[6].gd.pos.y = pagcd[5].gd.pos.y-3;
     pagcd[6].gd.pos.width = 50; 
-    pagcd[6].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    pagcd[6].gd.popup_msg = (unichar_t *) _("The PostScript Language Reference Manual (Appendix B) says that\nan interpreter need not support paths with more than 1500 points.\nI think this count includes control points. From PostScript's point\nof view, all the contours in a character make up one path. Modern\ninterpreters tend to support paths with more points than this limit.\n(Note a truetype font after conversion to PS will contain\ntwice as many control points)");
+    pagcd[6].gd.flags = gg_visible | gg_enabled;
+    pagcd[6].gd.popup_msg = _("The PostScript Language Reference Manual (Appendix B) says that\nan interpreter need not support paths with more than 1500 points.\nI think this count includes control points. From PostScript's point\nof view, all the contours in a character make up one path. Modern\ninterpreters tend to support paths with more points than this limit.\n(Note a truetype font after conversion to PS will contain\ntwice as many control points)");
     pagcd[6].gd.cid = CID_PointsMax;
     pagcd[6].creator = GTextFieldCreate;
     paharray[1] = &pagcd[6]; paharray[2] = GCD_Glue; paharray[3] = NULL;
@@ -3416,9 +3416,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rfgcd[0].gd.label = &rflabel[0];
     rfgcd[0].gd.mnemonic = 'r';
     rfgcd[0].gd.pos.x = 3; rfgcd[0].gd.pos.y = 6; 
-    rfgcd[0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    rfgcd[0].gd.flags = gg_visible | gg_enabled;
     if ( flippedrefs ) rfgcd[0].gd.flags |= gg_cb_on;
-    rfgcd[0].gd.popup_msg = (unichar_t *) _("PostScript and TrueType require that paths be drawn\nin a clockwise direction. If you have a reference\nthat has been flipped then the paths in that reference will\nprobably be counter-clockwise. You should unlink it and do\nElement->Correct direction on it.");
+    rfgcd[0].gd.popup_msg = _("PostScript and TrueType require that paths be drawn\nin a clockwise direction. If you have a reference\nthat has been flipped then the paths in that reference will\nprobably be counter-clockwise. You should unlink it and do\nElement->Correct direction on it.");
     rfgcd[0].gd.cid = CID_FlippedRefs;
     rfgcd[0].creator = GCheckBoxCreate;
     rfarray[0] = &rfgcd[0];
@@ -3430,9 +3430,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rfgcd[1].gd.label = &rflabel[1];
     rfgcd[1].gd.mnemonic = 'r';
     rfgcd[1].gd.pos.x = 3; rfgcd[1].gd.pos.y = rfgcd[0].gd.pos.y+17; 
-    rfgcd[1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    rfgcd[1].gd.flags = gg_visible | gg_enabled;
     if ( refsbadtransformttf ) rfgcd[1].gd.flags |= gg_cb_on;
-    rfgcd[1].gd.popup_msg = (unichar_t *) _("TrueType requires that all scaling and rotational\nentries in a transformation matrix be between -2 and 2");
+    rfgcd[1].gd.popup_msg = _("TrueType requires that all scaling and rotational\nentries in a transformation matrix be between -2 and 2");
     rfgcd[1].gd.cid = CID_RefBadTransformTTF;
     rfgcd[1].creator = GCheckBoxCreate;
     rfarray[1] = &rfgcd[1];
@@ -3443,9 +3443,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rfgcd[2].gd.label = &rflabel[2];
     rfgcd[2].gd.mnemonic = 'r';
     rfgcd[2].gd.pos.x = 3; rfgcd[2].gd.pos.y = rfgcd[1].gd.pos.y+17; 
-    rfgcd[2].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    rfgcd[2].gd.flags = gg_visible | gg_enabled;
     if ( mixedcontoursrefs ) rfgcd[2].gd.flags |= gg_cb_on;
-    rfgcd[2].gd.popup_msg = (unichar_t *) _("TrueType glyphs can either contain references or contours.\nNot both.");
+    rfgcd[2].gd.popup_msg = _("TrueType glyphs can either contain references or contours.\nNot both.");
     rfgcd[2].gd.cid = CID_MixedContoursRefs;
     rfgcd[2].creator = GCheckBoxCreate;
     rfarray[2] = &rfgcd[2];
@@ -3457,9 +3457,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rfgcd[3].gd.label = &rflabel[3];
     rfgcd[3].gd.mnemonic = 'r';
     rfgcd[3].gd.pos.x = 3; rfgcd[3].gd.pos.y = rfgcd[2].gd.pos.y+17; 
-    rfgcd[3].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    rfgcd[3].gd.flags = gg_visible | gg_enabled;
     if ( refsbadtransformps ) rfgcd[3].gd.flags |= gg_cb_on;
-    rfgcd[3].gd.popup_msg = (unichar_t *) _("Type1 and 2 fonts only support translation of references.\nThe first four entries of the transformation matrix should be\n[1 0 0 1].");
+    rfgcd[3].gd.popup_msg = _("Type1 and 2 fonts only support translation of references.\nThe first four entries of the transformation matrix should be\n[1 0 0 1].");
     rfgcd[3].gd.cid = CID_RefBadTransformPS;
     rfgcd[3].creator = GCheckBoxCreate;
     rfarray[3] = &rfgcd[3];
@@ -3471,9 +3471,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rfgcd[4].gd.label = &rflabel[4];
     rfgcd[4].gd.mnemonic = 'r';
     rfgcd[4].gd.pos.x = 3; rfgcd[4].gd.pos.y = rfgcd[3].gd.pos.y+21; 
-    rfgcd[4].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    rfgcd[4].gd.flags = gg_visible | gg_enabled;
     if ( toodeeprefs ) rfgcd[4].gd.flags |= gg_cb_on;
-    rfgcd[4].gd.popup_msg = (unichar_t *) _("The Type 2 Charstring Reference (Appendix B) says that\nsubroutines may not be nested more than 10 deep. Each\nnesting level for references requires one subroutine\nlevel, and hints may require another level.");
+    rfgcd[4].gd.popup_msg = _("The Type 2 Charstring Reference (Appendix B) says that\nsubroutines may not be nested more than 10 deep. Each\nnesting level for references requires one subroutine\nlevel, and hints may require another level.");
     rfgcd[4].gd.cid = CID_TooDeepRefs;
     rfgcd[4].creator = GCheckBoxCreate;
     rfharray[0] = &rfgcd[4];
@@ -3484,8 +3484,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rfgcd[5].gd.label = &rflabel[5];
     rfgcd[5].gd.pos.x = 140; rfgcd[5].gd.pos.y = rfgcd[4].gd.pos.y-3;
     rfgcd[5].gd.pos.width = 40; 
-    rfgcd[5].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    rfgcd[5].gd.popup_msg = (unichar_t *) _("The Type 2 Charstring Reference (Appendix B) says that\nsubroutines may not be nested more than 10 deep. Each\nnesting level for references requires one subroutine\nlevel, and hints may require another level.");
+    rfgcd[5].gd.flags = gg_visible | gg_enabled;
+    rfgcd[5].gd.popup_msg = _("The Type 2 Charstring Reference (Appendix B) says that\nsubroutines may not be nested more than 10 deep. Each\nnesting level for references requires one subroutine\nlevel, and hints may require another level.");
     rfgcd[5].gd.cid = CID_RefDepthMax;
     rfgcd[5].creator = GTextFieldCreate;
     rfharray[1] = &rfgcd[5]; rfharray[2] = GCD_Glue; rfharray[3] = NULL;
@@ -3501,9 +3501,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rfgcd[6].gd.label = &rflabel[6];
     rfgcd[6].gd.mnemonic = 'r';
     rfgcd[6].gd.pos.x = 3; rfgcd[6].gd.pos.y = rfgcd[5].gd.pos.y+24; 
-    rfgcd[6].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    rfgcd[6].gd.flags = gg_visible | gg_enabled;
     if ( ptmatchrefsoutofdate ) rfgcd[6].gd.flags |= gg_cb_on;
-    rfgcd[6].gd.popup_msg = (unichar_t *) _("If a glyph has been edited so that it has a different\nnumber of points now, then any references\nwhich use point matching and depended on that glyph's\npoint count will be incorrect.");
+    rfgcd[6].gd.popup_msg = _("If a glyph has been edited so that it has a different\nnumber of points now, then any references\nwhich use point matching and depended on that glyph's\npoint count will be incorrect.");
     rfgcd[6].gd.cid = CID_PtMatchRefsOutOfDate;
     rfgcd[6].creator = GCheckBoxCreate;
     rfarray[5] = &rfgcd[6];
@@ -3513,9 +3513,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rflabel[7].text_in_resource = true;
     rfgcd[7].gd.label = &rflabel[7];
     rfgcd[7].gd.mnemonic = 'r';
-    rfgcd[7].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    rfgcd[7].gd.flags = gg_visible | gg_enabled;
     if ( multusemymetrics ) rfgcd[7].gd.flags |= gg_cb_on;
-    rfgcd[7].gd.popup_msg = (unichar_t *) _("There may be at most one reference with the use-my-metrics bit set");
+    rfgcd[7].gd.popup_msg = _("There may be at most one reference with the use-my-metrics bit set");
     rfgcd[7].gd.cid = CID_MultUseMyMetrics;
     rfgcd[7].creator = GCheckBoxCreate;
     rfarray[6] = &rfgcd[7]; rfarray[7] = GCD_Glue; rfarray[8] = NULL;
@@ -3536,9 +3536,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hgcd[0].gd.label = &hlabel[0];
     hgcd[0].gd.mnemonic = 'H';
     hgcd[0].gd.pos.x = 3; hgcd[0].gd.pos.y = 5; 
-    hgcd[0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    hgcd[0].gd.flags = gg_visible | gg_enabled;
     if ( hintnopt ) hgcd[0].gd.flags |= gg_cb_on;
-    hgcd[0].gd.popup_msg = (unichar_t *) _("Ghostview (perhaps other interpreters) has a problem when a\nhint exists without any points that lie on it.");
+    hgcd[0].gd.popup_msg = _("Ghostview (perhaps other interpreters) has a problem when a\nhint exists without any points that lie on it.");
     hgcd[0].gd.cid = CID_HintNoPt;
     hgcd[0].creator = GCheckBoxCreate;
     harray[0] = &hgcd[0];
@@ -3549,9 +3549,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hgcd[1].gd.label = &hlabel[1];
     hgcd[1].gd.mnemonic = 'H';
     hgcd[1].gd.pos.x = 3; hgcd[1].gd.pos.y = hgcd[0].gd.pos.y+17; 
-    hgcd[1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    hgcd[1].gd.flags = gg_visible | gg_enabled;
     if ( ptnearhint ) hgcd[1].gd.flags |= gg_cb_on;
-    hgcd[1].gd.popup_msg = (unichar_t *) _("Often if a point is slightly off from a hint\nit is because a stem is made up\nof several segments, and one of them\nhas the wrong width.");
+    hgcd[1].gd.popup_msg = _("Often if a point is slightly off from a hint\nit is because a stem is made up\nof several segments, and one of them\nhas the wrong width.");
     hgcd[1].gd.cid = CID_PtNearHint;
     hgcd[1].creator = GCheckBoxCreate;
     harray[1] = &hgcd[1];
@@ -3562,9 +3562,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hgcd[2].gd.label = &hlabel[2];
     hgcd[2].gd.mnemonic = 'W';
     hgcd[2].gd.pos.x = 3; hgcd[2].gd.pos.y = hgcd[1].gd.pos.y+21;
-    hgcd[2].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    hgcd[2].gd.flags = gg_visible | gg_enabled;
     if ( hintwidth ) hgcd[2].gd.flags |= gg_cb_on;
-    hgcd[2].gd.popup_msg = (unichar_t *) _("Allows you to check that stems have consistent widths..");
+    hgcd[2].gd.popup_msg = _("Allows you to check that stems have consistent widths..");
     hgcd[2].gd.cid = CID_HintWidthNear;
     hgcd[2].creator = GCheckBoxCreate;
     hharray1[0] = &hgcd[2];
@@ -3593,9 +3593,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hgcd[4].gd.label = &hlabel[4];
     hgcd[4].gd.mnemonic = '3';
     hgcd[4].gd.pos.x = 3; hgcd[4].gd.pos.y = hgcd[3].gd.pos.y+19;
-    hgcd[4].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    hgcd[4].gd.flags = gg_visible | gg_enabled;
     if ( stem3 ) hgcd[4].gd.flags |= gg_cb_on;
-    hgcd[4].gd.popup_msg = (unichar_t *) _("This checks if the character almost, but not exactly,\nconforms to the requirements for a stem3 hint.\nThat is, either vertically or horizontally, there must\nbe exactly three hints, and they must have the same\nwidth and they must be evenly spaced.");
+    hgcd[4].gd.popup_msg = _("This checks if the character almost, but not exactly,\nconforms to the requirements for a stem3 hint.\nThat is, either vertically or horizontally, there must\nbe exactly three hints, and they must have the same\nwidth and they must be evenly spaced.");
     hgcd[4].gd.cid = CID_Stem3;
     hgcd[4].gd.handle_controlevent = Prob_EnableExact;
     hgcd[4].creator = GCheckBoxCreate;
@@ -3607,10 +3607,10 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hgcd[5].gd.label = &hlabel[5];
     hgcd[5].gd.mnemonic = 'S';
     hgcd[5].gd.pos.x = hgcd[4].gd.pos.x+5; hgcd[5].gd.pos.y = hgcd[4].gd.pos.y+17;
-    hgcd[5].gd.flags = gg_visible | gg_utf8_popup;
+    hgcd[5].gd.flags = gg_visible;
     if ( showexactstem3 ) hgcd[5].gd.flags |= gg_cb_on;
     if ( stem3 ) hgcd[5].gd.flags |= gg_enabled;
-    hgcd[5].gd.popup_msg = (unichar_t *) _("Shows when this character is exactly a stem3 hint");
+    hgcd[5].gd.popup_msg = _("Shows when this character is exactly a stem3 hint");
     hgcd[5].gd.cid = CID_ShowExactStem3;
     hgcd[5].creator = GCheckBoxCreate;
     hharray2[0] = GCD_HPad10; hharray2[1] = &hgcd[5]; hharray2[2] = GCD_Glue; hharray2[3] = NULL;
@@ -3625,9 +3625,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hlabel[6].text_in_resource = true;
     hgcd[6].gd.label = &hlabel[6];
     hgcd[6].gd.pos.x = 3; hgcd[6].gd.pos.y = hgcd[5].gd.pos.y+21; 
-    hgcd[6].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    hgcd[6].gd.flags = gg_visible | gg_enabled;
     if ( toomanyhints ) hgcd[6].gd.flags |= gg_cb_on;
-    hgcd[6].gd.popup_msg = (unichar_t *) _("The Type 2 Charstring Reference (Appendix B) says that\nthere may be at most 96 horizontal and vertical stem hints\nin a character.");
+    hgcd[6].gd.popup_msg = _("The Type 2 Charstring Reference (Appendix B) says that\nthere may be at most 96 horizontal and vertical stem hints\nin a character.");
     hgcd[6].gd.cid = CID_TooManyHints;
     hgcd[6].creator = GCheckBoxCreate;
     hharray3[0] = &hgcd[6];
@@ -3638,8 +3638,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hgcd[7].gd.label = &hlabel[7];
     hgcd[7].gd.pos.x = 105; hgcd[7].gd.pos.y = hgcd[6].gd.pos.y-3;
     hgcd[7].gd.pos.width = 50; 
-    hgcd[7].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    hgcd[7].gd.popup_msg = (unichar_t *) _("The Type 2 Charstring Reference (Appendix B) says that\nthere may be at most 96 horizontal and vertical stem hints\nin a character.");
+    hgcd[7].gd.flags = gg_visible | gg_enabled;
+    hgcd[7].gd.popup_msg = _("The Type 2 Charstring Reference (Appendix B) says that\nthere may be at most 96 horizontal and vertical stem hints\nin a character.");
     hgcd[7].gd.cid = CID_HintsMax;
     hgcd[7].creator = GTextFieldCreate;
     hharray3[1] = &hgcd[7]; hharray3[2] = GCD_Glue; hharray3[3] = NULL;
@@ -3653,9 +3653,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hlabel[8].text_is_1byte = true;
     hlabel[8].text_in_resource = true;
     hgcd[8].gd.label = &hlabel[8];
-    hgcd[8].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    hgcd[8].gd.flags = gg_visible | gg_enabled;
     if ( overlappedhints ) hgcd[8].gd.flags |= gg_cb_on;
-    hgcd[8].gd.popup_msg = (unichar_t *) _("Either a glyph should have no overlapping hints,\nor a glyph with hint masks should have no overlapping\nhints within a hint mask.");
+    hgcd[8].gd.popup_msg = _("Either a glyph should have no overlapping hints,\nor a glyph with hint masks should have no overlapping\nhints within a hint mask.");
     hgcd[8].gd.cid = CID_OverlappedHints;
     hgcd[8].creator = GCheckBoxCreate;
     harray[6] = &hgcd[8];
@@ -3678,9 +3678,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rgcd[0].gd.label = &rlabel[0];
     rgcd[0].gd.mnemonic = 'r';
     rgcd[0].gd.pos.x = 3; rgcd[0].gd.pos.y = 6; 
-    rgcd[0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    rgcd[0].gd.flags = gg_visible | gg_enabled;
     if ( bitmaps ) rgcd[0].gd.flags |= gg_cb_on;
-    rgcd[0].gd.popup_msg = (unichar_t *) _("Are there any outline characters which don't have a bitmap version in one of the bitmap fonts?\nConversely are there any bitmap characters without a corresponding outline character?");
+    rgcd[0].gd.popup_msg = _("Are there any outline characters which don't have a bitmap version in one of the bitmap fonts?\nConversely are there any bitmap characters without a corresponding outline character?");
     rgcd[0].gd.cid = CID_Bitmaps;
     rgcd[0].creator = GCheckBoxCreate;
 
@@ -3690,9 +3690,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rgcd[1].gd.label = &rlabel[1];
     rgcd[1].gd.mnemonic = 'r';
     rgcd[1].gd.pos.x = 3; rgcd[1].gd.pos.y = 6; 
-    rgcd[1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    rgcd[1].gd.flags = gg_visible | gg_enabled;
     if ( bitmapwidths ) rgcd[1].gd.flags |= gg_cb_on;
-    rgcd[1].gd.popup_msg = (unichar_t *) _("Are there any bitmap glyphs whose advance width\nis not is expected from scaling and rounding\nthe outline's advance width?");
+    rgcd[1].gd.popup_msg = _("Are there any bitmap glyphs whose advance width\nis not is expected from scaling and rounding\nthe outline's advance width?");
     rgcd[1].gd.cid = CID_BitmapWidths;
     rgcd[1].creator = GCheckBoxCreate;
 
@@ -3700,9 +3700,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rlabel[2].text_is_1byte = true;
     rgcd[2].gd.label = &rlabel[2];
     rgcd[2].gd.pos.x = 3; rgcd[2].gd.pos.y = rgcd[1].gd.pos.y+15; 
-    rgcd[2].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    rgcd[2].gd.flags = gg_visible | gg_enabled;
     if ( multuni ) rgcd[2].gd.flags |= gg_cb_on;
-    rgcd[2].gd.popup_msg = (unichar_t *) _("Check multiple Unicode");
+    rgcd[2].gd.popup_msg = _("Check multiple Unicode");
     rgcd[2].gd.cid = CID_MultUni;
     rgcd[2].creator = GCheckBoxCreate;
 
@@ -3710,9 +3710,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rlabel[3].text_is_1byte = true;
     rgcd[3].gd.label = &rlabel[3];
     rgcd[3].gd.pos.x = 3; rgcd[3].gd.pos.y = rgcd[2].gd.pos.y+15; 
-    rgcd[3].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    rgcd[3].gd.flags = gg_visible | gg_enabled;
     if ( multname ) rgcd[3].gd.flags |= gg_cb_on;
-    rgcd[3].gd.popup_msg = (unichar_t *) _("Check for multiple characters with the same name");
+    rgcd[3].gd.popup_msg = _("Check for multiple characters with the same name");
     rgcd[3].gd.cid = CID_MultName;
     rgcd[3].creator = GCheckBoxCreate;
 
@@ -3720,9 +3720,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rlabel[4].text_is_1byte = true;
     rgcd[4].gd.label = &rlabel[4];
     rgcd[4].gd.pos.x = 3; rgcd[4].gd.pos.y = rgcd[3].gd.pos.y+15; 
-    rgcd[4].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    rgcd[4].gd.flags = gg_visible | gg_enabled;
     if ( uninamemismatch ) rgcd[4].gd.flags |= gg_cb_on;
-    rgcd[4].gd.popup_msg = (unichar_t *) _("Check for characters whose name maps to a unicode code point\nwhich does not map the character's assigned code point.");
+    rgcd[4].gd.popup_msg = _("Check for characters whose name maps to a unicode code point\nwhich does not map the character's assigned code point.");
     rgcd[4].gd.cid = CID_UniNameMisMatch;
     rgcd[4].creator = GCheckBoxCreate;
 
@@ -3746,9 +3746,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     bbgcd[0].gd.label = &bblabel[0];
     bbgcd[0].gd.mnemonic = 'r';
     bbgcd[0].gd.pos.x = 3; bbgcd[0].gd.pos.y = 6; 
-    bbgcd[0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    bbgcd[0].gd.flags = gg_visible | gg_enabled;
     if ( bbymax ) bbgcd[0].gd.flags |= gg_cb_on;
-    bbgcd[0].gd.popup_msg = (unichar_t *) _("Are there any glyph's whose bounding boxes extend above this number?");
+    bbgcd[0].gd.popup_msg = _("Are there any glyph's whose bounding boxes extend above this number?");
     bbgcd[0].gd.cid = CID_BBYMax;
     bbgcd[0].creator = GCheckBoxCreate;
 
@@ -3775,9 +3775,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     bbgcd[2].gd.label = &bblabel[2];
     bbgcd[2].gd.mnemonic = 'r';
     bbgcd[2].gd.pos.x = 3; bbgcd[2].gd.pos.y = bbgcd[0].gd.pos.y+21; 
-    bbgcd[2].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    bbgcd[2].gd.flags = gg_visible | gg_enabled;
     if ( bbymin ) bbgcd[2].gd.flags |= gg_cb_on;
-    bbgcd[2].gd.popup_msg = (unichar_t *) _("Are there any glyph's whose bounding boxes extend below this number?");
+    bbgcd[2].gd.popup_msg = _("Are there any glyph's whose bounding boxes extend below this number?");
     bbgcd[2].gd.cid = CID_BBYMin;
     bbgcd[2].creator = GCheckBoxCreate;
 
@@ -3798,9 +3798,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     bblabel[4].text_in_resource = true;
     bbgcd[4].gd.label = &bblabel[4];
     bbgcd[4].gd.pos.x = 3; bbgcd[4].gd.pos.y = bbgcd[2].gd.pos.y+21; 
-    bbgcd[4].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    bbgcd[4].gd.flags = gg_visible | gg_enabled;
     if ( bbxmax ) bbgcd[4].gd.flags |= gg_cb_on;
-    bbgcd[4].gd.popup_msg = (unichar_t *) _("Are there any glyphs whose bounding boxes extend to the right of this number?");
+    bbgcd[4].gd.popup_msg = _("Are there any glyphs whose bounding boxes extend to the right of this number?");
     bbgcd[4].gd.cid = CID_BBXMax;
     bbgcd[4].creator = GCheckBoxCreate;
 
@@ -3821,9 +3821,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     bblabel[6].text_in_resource = true;
     bbgcd[6].gd.label = &bblabel[6];
     bbgcd[6].gd.pos.x = 3; bbgcd[6].gd.pos.y = bbgcd[4].gd.pos.y+21; 
-    bbgcd[6].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    bbgcd[6].gd.flags = gg_visible | gg_enabled;
     if ( bbxmin ) bbgcd[6].gd.flags |= gg_cb_on;
-    bbgcd[6].gd.popup_msg = (unichar_t *) _("Are there any glyph's whose bounding boxes extend to the left of this number?");
+    bbgcd[6].gd.popup_msg = _("Are there any glyph's whose bounding boxes extend to the left of this number?");
     bbgcd[6].gd.cid = CID_BBXMin;
     bbgcd[6].creator = GCheckBoxCreate;
 
@@ -3845,9 +3845,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     bbgcd[8].gd.label = &bblabel[8];
     bbgcd[8].gd.mnemonic = 'W';
     bbgcd[8].gd.pos.x = 3; bbgcd[8].gd.pos.y = bbgcd[6].gd.pos.y+21;
-    bbgcd[8].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    bbgcd[8].gd.flags = gg_visible | gg_enabled;
     if ( advancewidth ) bbgcd[8].gd.flags |= gg_cb_on;
-    bbgcd[8].gd.popup_msg = (unichar_t *) _("Check for characters whose advance width is not the displayed value.");
+    bbgcd[8].gd.popup_msg = _("Check for characters whose advance width is not the displayed value.");
     bbgcd[8].gd.cid = CID_AdvanceWidth;
     bbgcd[8].creator = GCheckBoxCreate;
 
@@ -3870,10 +3870,10 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     bbgcd[10].gd.label = &bblabel[10];
     bbgcd[10].gd.mnemonic = 'W';
     bbgcd[10].gd.pos.x = 3; bbgcd[10].gd.pos.y = bbgcd[9].gd.pos.y+24;
-    bbgcd[10].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    bbgcd[10].gd.flags = gg_visible | gg_enabled;
     if ( !sf->hasvmetrics ) bbgcd[10].gd.flags = gg_visible;
     else if ( vadvancewidth ) bbgcd[10].gd.flags |= gg_cb_on;
-    bbgcd[10].gd.popup_msg = (unichar_t *) _("Check for characters whose vertical advance width is not the displayed value.");
+    bbgcd[10].gd.popup_msg = _("Check for characters whose vertical advance width is not the displayed value.");
     bbgcd[10].gd.cid = CID_VAdvanceWidth;
     bbgcd[10].creator = GCheckBoxCreate;
 
@@ -3909,9 +3909,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     cgcd[0].gd.label = &clabel[0];
     cgcd[0].gd.mnemonic = 'S';
     cgcd[0].gd.pos.x = 3; cgcd[0].gd.pos.y = 6;
-    cgcd[0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    cgcd[0].gd.flags = gg_visible | gg_enabled;
     if ( cidmultiple ) cgcd[0].gd.flags |= gg_cb_on;
-    cgcd[0].gd.popup_msg = (unichar_t *) _("Check whether a CID is defined in more than one sub-font");
+    cgcd[0].gd.popup_msg = _("Check whether a CID is defined in more than one sub-font");
     cgcd[0].gd.cid = CID_CIDMultiple;
     cgcd[0].creator = GCheckBoxCreate;
     carray[0] = &cgcd[0];
@@ -3922,9 +3922,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     cgcd[1].gd.label = &clabel[1];
     cgcd[1].gd.mnemonic = 'S';
     cgcd[1].gd.pos.x = 3; cgcd[1].gd.pos.y = cgcd[0].gd.pos.y+17; 
-    cgcd[1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    cgcd[1].gd.flags = gg_visible | gg_enabled;
     if ( cidblank ) cgcd[1].gd.flags |= gg_cb_on;
-    cgcd[1].gd.popup_msg = (unichar_t *) _("Check whether a CID is undefined in all sub-fonts");
+    cgcd[1].gd.popup_msg = _("Check whether a CID is undefined in all sub-fonts");
     cgcd[1].gd.cid = CID_CIDBlank;
     cgcd[1].creator = GCheckBoxCreate;
     carray[1] = &cgcd[1]; carray[2] = GCD_Glue; carray[3] = NULL;
@@ -3944,9 +3944,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     alabel[0].text_in_resource = true;
     agcd[0].gd.label = &alabel[0];
     agcd[0].gd.pos.x = 3; agcd[0].gd.pos.y = 6;
-    agcd[0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    agcd[0].gd.flags = gg_visible | gg_enabled;
     if ( missingglyph ) agcd[0].gd.flags |= gg_cb_on;
-    agcd[0].gd.popup_msg = (unichar_t *) _("Check whether a substitution, kerning class, etc. uses a glyph name which does not match any glyph in the font");
+    agcd[0].gd.popup_msg = _("Check whether a substitution, kerning class, etc. uses a glyph name which does not match any glyph in the font");
     agcd[0].gd.cid = CID_MissingGlyph;
     agcd[0].creator = GCheckBoxCreate;
     aarray[0] = &agcd[0];
@@ -3956,9 +3956,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     alabel[1].text_in_resource = true;
     agcd[1].gd.label = &alabel[1];
     agcd[1].gd.pos.x = 3; agcd[1].gd.pos.y = agcd[0].gd.pos.y+14;
-    agcd[1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    agcd[1].gd.flags = gg_visible | gg_enabled;
     if ( missingscriptinfeature ) agcd[1].gd.flags |= gg_cb_on;
-    agcd[1].gd.popup_msg = (unichar_t *) _(
+    agcd[1].gd.popup_msg = _(
 	    "In every lookup that uses a glyph, check that at\n"
 	    "least one feature is active for the glyph's script.");
     agcd[1].gd.cid = CID_MissingScriptInFeature;
@@ -3969,9 +3969,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     alabel[2].text_is_1byte = true;
     agcd[2].gd.label = &alabel[2];
     agcd[2].gd.pos.x = 3; agcd[2].gd.pos.y = agcd[1].gd.pos.y+15; 
-    agcd[2].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    agcd[2].gd.flags = gg_visible | gg_enabled;
     if ( badsubs ) agcd[2].gd.flags |= gg_cb_on;
-    agcd[2].gd.popup_msg = (unichar_t *) _("Check for characters which contain 'GSUB' entries which refer to empty characters");
+    agcd[2].gd.popup_msg = _("Check for characters which contain 'GSUB' entries which refer to empty characters");
     agcd[2].gd.cid = CID_BadSubs;
     agcd[2].creator = GCheckBoxCreate;
     aarray[2] = &agcd[2];
@@ -3980,9 +3980,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     alabel[3].text_is_1byte = true;
     agcd[3].gd.label = &alabel[3];
     agcd[3].gd.pos.x = 3; agcd[3].gd.pos.y = agcd[1].gd.pos.y+15; 
-    agcd[3].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    agcd[3].gd.flags = gg_visible | gg_enabled;
     if ( missinganchor ) agcd[3].gd.flags |= gg_cb_on;
-    agcd[3].gd.popup_msg = (unichar_t *) _(
+    agcd[3].gd.popup_msg = _(
 	"The OpenType documentation suggests in a rather confusing way\n"
 	"that if a base glyph (or base mark) contains an anchor point\n"
 	"for one class in a lookup subtable, then it should contain\n"

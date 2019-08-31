@@ -388,8 +388,8 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	label[j].text_is_1byte = true;
 	gcd[j].gd.label = &label[j];
 	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+14;
-	gcd[j].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-	gcd[j].gd.popup_msg = (unichar_t *) _("The transformation matrix specifies how the points in\nthe source glyph should be transformed before\nthey are drawn in the current glyph.\n x(new) = tm[1,1]*x + tm[2,1]*y + tm[3,1]\n y(new) = tm[1,2]*x + tm[2,2]*y + tm[3,2]");
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.popup_msg = _("The transformation matrix specifies how the points in\nthe source glyph should be transformed before\nthey are drawn in the current glyph.\n x(new) = tm[1,1]*x + tm[2,1]*y + tm[3,1]\n y(new) = tm[1,2]*x + tm[2,2]*y + tm[3,2]");
 	gcd[j].creator = GLabelCreate;
 	varray[l++] = &gcd[j];
 	++j;
@@ -423,9 +423,9 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	label[6+j].text_is_1byte = true;
 	gcd[6+j].gd.label = &label[6+j];
 	gcd[6+j].gd.pos.x = 5; gcd[6+j].gd.pos.y = gcd[6+j-1].gd.pos.y+21;
-	gcd[6+j].gd.flags = gg_enabled|gg_visible|gg_utf8_popup | (ref->use_my_metrics?gg_cb_on:0);
+	gcd[6+j].gd.flags = gg_enabled|gg_visible| (ref->use_my_metrics?gg_cb_on:0);
 	gcd[i+j].gd.cid = 6+1000;
-	gcd[6+j].gd.popup_msg = (unichar_t *) _("Only relevant in a truetype font, this flag indicates that the width\nof the composite glyph should be the same as the width of this reference.");
+	gcd[6+j].gd.popup_msg = _("Only relevant in a truetype font, this flag indicates that the width\nof the composite glyph should be the same as the width of this reference.");
 	varray[l++] = &gcd[6+j];
 	gcd[6+j++].creator = GCheckBoxCreate;
 
@@ -434,9 +434,9 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	label[6+j].text_is_1byte = true;
 	gcd[6+j].gd.label = &label[6+j];
 	gcd[6+j].gd.pos.x = 5; gcd[6+j].gd.pos.y = gcd[6+j-1].gd.pos.y+14;
-	gcd[6+j].gd.flags = gg_enabled|gg_visible|gg_utf8_popup | (ref->round_translation_to_grid?gg_cb_on:0);
+	gcd[6+j].gd.flags = gg_enabled|gg_visible| (ref->round_translation_to_grid?gg_cb_on:0);
 	gcd[i+j].gd.cid = 7+1000;
-	gcd[6+j].gd.popup_msg = (unichar_t *) _("Only relevant in a truetype font, this flag indicates that if the reference\nis translated, then the translation should be rounded during grid fitting.");
+	gcd[6+j].gd.popup_msg = _("Only relevant in a truetype font, this flag indicates that if the reference\nis translated, then the translation should be rounded during grid fitting.");
 	varray[l++] = &gcd[6+j];
 	gcd[6+j++].creator = GCheckBoxCreate;
 
@@ -445,8 +445,8 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	label[6+j].text_is_1byte = true;
 	gcd[6+j].gd.label = &label[6+j];
 	gcd[6+j].gd.pos.x = 5; gcd[6+j].gd.pos.y = gcd[6+j-1].gd.pos.y+17;
-	gcd[6+j].gd.flags = cv->b.sc->layers[ly_fore].order2 ? (gg_enabled|gg_visible|gg_utf8_popup) : (gg_visible|gg_utf8_popup);
-	gcd[6+j].gd.popup_msg = (unichar_t *) _("Only relevant in a truetype font, this flag indicates that this\nreference should not be translated normally, but rather its position\nshould be determined by moving the reference so that the indicated\npoint in the reference falls on top of the indicated point in the base\ncharacter.");
+	gcd[6+j].gd.flags = cv->b.sc->layers[ly_fore].order2 ? (gg_enabled|gg_visible) : (gg_visible);
+	gcd[6+j].gd.popup_msg = _("Only relevant in a truetype font, this flag indicates that this\nreference should not be translated normally, but rather its position\nshould be determined by moving the reference so that the indicated\npoint in the reference falls on top of the indicated point in the base\ncharacter.");
 	varray[l++] = &gcd[6+j];
 	gcd[6+j++].creator = GLabelCreate;
 
@@ -455,8 +455,8 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	label[6+j].text_in_resource = true;
 	gcd[6+j].gd.label = &label[6+j];
 	gcd[6+j].gd.pos.x = 8; gcd[6+j].gd.pos.y = gcd[6+j-1].gd.pos.y+19;
-	gcd[6+j].gd.flags = cv->b.sc->layers[ly_fore].order2 ? (gg_enabled|gg_visible|gg_utf8_popup) : (gg_visible|gg_utf8_popup);
-	gcd[6+j].gd.popup_msg = (unichar_t *) _("Only relevant in a truetype font, this flag indicates that this\nreference should not be translated normally, but rather its position\nshould be determined by moving the reference so that the indicated\npoint in the reference falls on top of the indicated point in the base\ncharacter.");
+	gcd[6+j].gd.flags = cv->b.sc->layers[ly_fore].order2 ? (gg_enabled|gg_visible) : (gg_visible);
+	gcd[6+j].gd.popup_msg = _("Only relevant in a truetype font, this flag indicates that this\nreference should not be translated normally, but rather its position\nshould be determined by moving the reference so that the indicated\npoint in the reference falls on top of the indicated point in the base\ncharacter.");
 	harray1[0] = &gcd[6+j];
 	gcd[6+j++].creator = GLabelCreate;
 
@@ -479,7 +479,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	gcd[6+j].gd.label = &label[6+j];
 	gcd[6+j].gd.pos.x = 95; gcd[6+j].gd.pos.y = gcd[6+j-2].gd.pos.y;
 	gcd[6+j].gd.flags = gcd[6+j-1].gd.flags;
-	gcd[6+j].gd.popup_msg = (unichar_t *) _("Only relevant in a truetype font, this flag indicates that this\nreference should not be translated normally, but rather its position\nshould be determined by moving the reference so that the indicated\npoint in the reference falls on top of the indicated point in the base\ncharacter.");
+	gcd[6+j].gd.popup_msg = _("Only relevant in a truetype font, this flag indicates that this\nreference should not be translated normally, but rather its position\nshould be determined by moving the reference so that the indicated\npoint in the reference falls on top of the indicated point in the base\ncharacter.");
 	harray1[2] = &gcd[6+j];
 	gcd[6+j++].creator = GLabelCreate;
 
@@ -514,7 +514,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	label[6+j].text = (unichar_t *) _("Bounding Box:");
 	label[6+j].text_is_1byte = true;
 	gcd[6+j].gd.label = &label[6+j];
-	gcd[6+j].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[6+j].gd.flags = gg_enabled|gg_visible;
 	gcd[6+j].creator = GLabelCreate;
 	varray[l++] = &gcd[6+j];
 	++j;
@@ -524,14 +524,14 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	label[6+j].text = (unichar_t *) _("Min");
 	label[6+j].text_is_1byte = true;
 	gcd[6+j].gd.label = &label[6+j];
-	gcd[6+j].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[6+j].gd.flags = gg_enabled|gg_visible;
 	gcd[6+j].creator = GLabelCreate;
 	hvarray2[0][2] = &gcd[6+j++];
 
 	label[6+j].text = (unichar_t *) _("Max");
 	label[6+j].text_is_1byte = true;
 	gcd[6+j].gd.label = &label[6+j];
-	gcd[6+j].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[6+j].gd.flags = gg_enabled|gg_visible;
 	gcd[6+j].creator = GLabelCreate;
 	hvarray2[0][3] = &gcd[6+j++]; hvarray2[0][4] = GCD_Glue; hvarray2[0][5] = NULL;
 
@@ -541,14 +541,14 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	label[6+j].text = (unichar_t *) _("X:");
 	label[6+j].text_is_1byte = true;
 	gcd[6+j].gd.label = &label[6+j];
-	gcd[6+j].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[6+j].gd.flags = gg_enabled|gg_visible;
 	gcd[6+j].creator = GLabelCreate;
 	hvarray2[1][1] = &gcd[6+j++];
 
 	label[6+j].text = (unichar_t *) _("Y:");
 	label[6+j].text_is_1byte = true;
 	gcd[6+j].gd.label = &label[6+j];
-	gcd[6+j].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[6+j].gd.flags = gg_enabled|gg_visible;
 	gcd[6+j].creator = GLabelCreate;
 	hvarray2[2][1] = &gcd[6+j++];
 
@@ -3019,8 +3019,8 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	label[j].text_is_1byte = true;
 	gcd[j].gd.label = &label[j];
 	gcd[j].gd.pos.x = 130; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y;
-	gcd[j].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-	gcd[j].gd.popup_msg = (unichar_t *) _("This is the difference of the curvature between\nthe next and previous splines. Contours often\nlook nicer as this number approaches 0." );
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.popup_msg = _("This is the difference of the curvature between\nthe next and previous splines. Contours often\nlook nicer as this number approaches 0." );
 	gcd[j].gd.cid = CID_DeltaCurvature;
 	gcd[j].creator = GLabelCreate;
 	hvarray2[l++] = &gcd[j]; hvarray2[l++] = GCD_ColSpan; hvarray2[l++] = NULL;

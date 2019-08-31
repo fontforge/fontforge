@@ -2117,66 +2117,66 @@ return;
 	gcd[0].creator = GScrollBarCreate;
 
 	gcd[1].gd.pos.y = 2; gcd[1].gd.pos.x = 2;
-	gcd[1].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_utf8_popup;
+	gcd[1].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
 	gcd[1].gd.cid = dgt_step;
 	gcd[1].gd.label = &label[1];
 	label[1].image = &GIcon_stepinto;
 	gcd[1].gd.handle_controlevent = DV_Run;
-	gcd[1].gd.popup_msg = (unichar_t *) _("Step into");
+	gcd[1].gd.popup_msg = _("Step into");
 	gcd[1].creator = GButtonCreate;
 
 	gcd[2].gd.pos.y = 2; gcd[2].gd.pos.x = 38;
-	gcd[2].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_utf8_popup;
+	gcd[2].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
 	gcd[2].gd.cid = dgt_next;
 	gcd[2].gd.label = &label[2];
 	label[2].image = &GIcon_stepover;
 	gcd[2].gd.handle_controlevent = DV_Run;
-	gcd[2].gd.popup_msg = (unichar_t *) _("Step over (Next)");
+	gcd[2].gd.popup_msg = _("Step over (Next)");
 	gcd[2].creator = GButtonCreate;
 
 	gcd[3].gd.pos.y = 2; gcd[3].gd.pos.x = 74;
-	gcd[3].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_utf8_popup;
+	gcd[3].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
 	gcd[3].gd.cid = dgt_stepout;
 	gcd[3].gd.label = &label[3];
 	label[3].image = &GIcon_stepout;
 	gcd[3].gd.handle_controlevent = DV_Run;
-	gcd[3].gd.popup_msg = (unichar_t *) _("Step out of current function");
+	gcd[3].gd.popup_msg = _("Step out of current function");
 	gcd[3].creator = GButtonCreate;
 
 	gcd[4].gd.pos.y = 2; gcd[4].gd.pos.x = 110;
-	gcd[4].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_utf8_popup;
+	gcd[4].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
 	gcd[4].gd.cid = dgt_continue;
 	gcd[4].gd.label = &label[4];
 	label[4].image = &GIcon_continue;
 	gcd[4].gd.handle_controlevent = DV_Run;
-	gcd[4].gd.popup_msg = (unichar_t *) _("Continue");
+	gcd[4].gd.popup_msg = _("Continue");
 	gcd[4].creator = GButtonCreate;
 
 	gcd[5].gd.pos.y = 2; gcd[5].gd.pos.x = 146;
-	gcd[5].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_utf8_popup;
+	gcd[5].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
 	/*gcd[5].gd.cid = dgt_continue;*/
 	gcd[5].gd.label = &label[5];
 	label[5].image = &GIcon_watchpnt;
 	gcd[5].gd.handle_controlevent = DV_WatchPnt;
-	gcd[5].gd.popup_msg = (unichar_t *) _("Watch all selected points\n(stop when a point moves)");
+	gcd[5].gd.popup_msg = _("Watch all selected points\n(stop when a point moves)");
 	gcd[5].creator = GButtonCreate;
 
 	gcd[6].gd.pos.y = 2; gcd[6].gd.pos.x = 182;
-	gcd[6].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_utf8_popup;
+	gcd[6].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
 	/*gcd[6].gd.cid = dgt_continue;*/
 	gcd[6].gd.label = &label[6];
 	label[6].image = &GIcon_menudelta;
 	gcd[6].gd.handle_controlevent = DV_WindowMenu;
-	gcd[6].gd.popup_msg = (unichar_t *) _("Window");
+	gcd[6].gd.popup_msg = _("Window");
 	gcd[6].creator = GButtonCreate;
 
 	gcd[7].gd.pos.y = 2; gcd[7].gd.pos.x = 218;
-	gcd[7].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_utf8_popup;
+	gcd[7].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
 	/*gcd[7].gd.cid = dgt_continue;*/
 	gcd[7].gd.label = &label[7];
 	label[7].image = &GIcon_exit;
 	gcd[7].gd.handle_controlevent = DV_Exit;
-	gcd[7].gd.popup_msg = (unichar_t *) _("Exit Debugger");
+	gcd[7].gd.popup_msg = _("Exit Debugger");
 	gcd[7].creator = GButtonCreate;
 
 	GGadgetsCreate(dv->dv,gcd);

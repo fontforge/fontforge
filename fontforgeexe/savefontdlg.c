@@ -563,20 +563,20 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k++].creator = GGroupCreate;
 
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 16;
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible;
     label[k].text = (unichar_t *) _("Round");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Do you want to round coordinates to integers (this saves space)?");
+    gcd[k].gd.popup_msg = _("Do you want to round coordinates to integers (this saves space)?");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_Round;
     gcd[k++].creator = GCheckBoxCreate;
     hvarray1[0] = &gcd[k-1]; hvarray1[1] = GCD_ColSpan;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible;
     label[k].text = (unichar_t *) _("Hints");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Do you want the font file to contain PostScript hints?");
+    gcd[k].gd.popup_msg = _("Do you want the font file to contain PostScript hints?");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.handle_controlevent = OPT_PSHints;
     gcd[k].gd.cid = CID_PS_Hints;
@@ -584,10 +584,10 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     hvarray1[5] = &gcd[k-1]; hvarray1[6] = GCD_ColSpan;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+4; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible;
     label[k].text = (unichar_t *) _("Flex Hints");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Do you want the font file to contain PostScript flex hints?");
+    gcd[k].gd.popup_msg = _("Do you want the font file to contain PostScript flex hints?");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_Flex;
     gcd[k++].creator = GCheckBoxCreate;
@@ -595,58 +595,58 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     hvarray1[15] = GCD_Glue; hvarray1[16] = GCD_Glue;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-    gcd[k].gd.flags = gg_utf8_popup ;
+    gcd[k].gd.flags = 0;
     label[k].text = (unichar_t *) _("Hint Substitution");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Do you want the font file to do hint substitution?");
+    gcd[k].gd.popup_msg = _("Do you want the font file to do hint substitution?");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_HintSubs;
     gcd[k++].creator = GCheckBoxCreate;
 
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-    gcd[k].gd.flags = gg_utf8_popup ;
+    gcd[k].gd.flags = 0;
     label[k].text = (unichar_t *) _("First 256");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Limit the font so that only the glyphs referenced in the first 256 encodings\nwill be included in the file");
+    gcd[k].gd.popup_msg = _("Limit the font so that only the glyphs referenced in the first 256 encodings\nwill be included in the file");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_Restrict256;
     gcd[k++].creator = GCheckBoxCreate;
 
     gcd[k].gd.pos.x = 110; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y;
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible;
     label[k].text = (unichar_t *) _("Output AFM");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) U_("The AFM file contains metrics information that many word-processors will read when using a PostScript® font.");
+    gcd[k].gd.popup_msg = U_("The AFM file contains metrics information that many word-processors will read when using a PostScript® font.");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_AFM;
     gcd[k++].creator = GCheckBoxCreate;
     hvarray1[2] = &gcd[k-1]; hvarray1[3] = GCD_ColSpan; hvarray1[4] = NULL;
 
     gcd[k].gd.pos.x = 112; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y;
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible;
     label[k].text = (unichar_t *) _("Composites in AFM");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) U_("The AFM format allows some information about composites\n(roughly the same as mark to base anchor classes) to be\nincluded. However it tends to make AFM files huge as it\nis not stored in an efficient manner.");
+    gcd[k].gd.popup_msg = U_("The AFM format allows some information about composites\n(roughly the same as mark to base anchor classes) to be\nincluded. However it tends to make AFM files huge as it\nis not stored in an efficient manner.");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_AFMmarks;
     gcd[k++].creator = GCheckBoxCreate;
     hvarray1[7] = GCD_HPad10; hvarray1[8] = &gcd[k-1]; hvarray1[9] = NULL;
 
     gcd[k].gd.pos.x = gcd[k-2].gd.pos.x; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y;
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible;
     label[k].text = (unichar_t *) _("Output PFM");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) U_("The PFM file contains information Windows needs to install a PostScript® font.");
+    gcd[k].gd.popup_msg = U_("The PFM file contains information Windows needs to install a PostScript® font.");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_PFM;
     gcd[k++].creator = GCheckBoxCreate;
     hvarray1[12] = &gcd[k-1]; hvarray1[13] = GCD_ColSpan; hvarray1[14] = NULL;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-    gcd[k].gd.flags = gg_visible |gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible;
     label[k].text = (unichar_t *) _("Output TFM & ENC");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) U_("The tfm and enc files contain information TeX needs to install a PostScript® font.");
+    gcd[k].gd.popup_msg = U_("The tfm and enc files contain information TeX needs to install a PostScript® font.");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_PS_TFM;
     gcd[k++].creator = GCheckBoxCreate;
@@ -673,30 +673,30 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k++].creator = GGroupCreate;
 
     gcd[k].gd.pos.x = gcd[group+1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+8;
-    gcd[k].gd.flags = gg_visible |gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible;
     label[k].text = (unichar_t *) _("TrueType Hints");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Do you want the font file to contain truetype hints? This will not\ngenerate new instructions, it will just make use of whatever is associated\nwith each character.");
+    gcd[k].gd.popup_msg = _("Do you want the font file to contain truetype hints? This will not\ngenerate new instructions, it will just make use of whatever is associated\nwith each character.");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_Hints;
     gcd[k++].creator = GCheckBoxCreate;
     hvarray2[0] = &gcd[k-1]; hvarray2[1] = GCD_ColSpan;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible;
     label[k].text = (unichar_t *) _("PS Glyph Names");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Do you want the font file to contain the names of each glyph in the font?");
+    gcd[k].gd.popup_msg = _("Do you want the font file to contain the names of each glyph in the font?");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_FullPS;
     gcd[k++].creator = GCheckBoxCreate;
     hvarray2[5] = &gcd[k-1]; hvarray2[6] = GCD_ColSpan;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible;
     label[k].text = (unichar_t *) _("Apple");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Apple and MS/Adobe differ about the format of truetype and opentype files\nThis allows you to select which standard to follow for your font.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite characters are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop");
+    gcd[k].gd.popup_msg = _("Apple and MS/Adobe differ about the format of truetype and opentype files\nThis allows you to select which standard to follow for your font.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite characters are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_AppleMode;
     gcd[k].gd.handle_controlevent = OPT_Applemode;
@@ -704,20 +704,20 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     hvarray2[10] = &gcd[k-1]; hvarray2[11] = GCD_ColSpan;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible;
     label[k].text = (unichar_t *) _("OpenType");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Apple and MS/Adobe differ about the format of truetype and opentype files\nThis allows you to select which standard to follow for your font.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop");
+    gcd[k].gd.popup_msg = _("Apple and MS/Adobe differ about the format of truetype and opentype files\nThis allows you to select which standard to follow for your font.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_OpenTypeMode;
     gcd[k++].creator = GCheckBoxCreate;
     hvarray2[15] = &gcd[k-1]; hvarray2[16] = GCD_ColSpan;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+4; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible;
     label[k].text = (unichar_t *) _("Old style 'kern'");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Many applications still don't support 'GPOS' kerning.\nIf you want to include both 'GPOS' and old-style 'kern'\ntables set this check box.\nIt may not be set in conjunction with the Apple checkbox.\nThis may confuse other applications though.");
+    gcd[k].gd.popup_msg = _("Many applications still don't support 'GPOS' kerning.\nIf you want to include both 'GPOS' and old-style 'kern'\ntables set this check box.\nIt may not be set in conjunction with the Apple checkbox.\nThis may confuse other applications though.");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_OldKern;
     gcd[k].gd.handle_controlevent = OPT_OldKern;
@@ -725,10 +725,10 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     hvarray2[20] = GCD_HPad10; hvarray2[21] = &gcd[k-1];
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+4; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible;
     label[k].text = (unichar_t *) _("Dummy 'DSIG'");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _(
+    gcd[k].gd.popup_msg = _(
 	"MS uses the presence of a 'DSIG' table to determine whether to use an OpenType\n"
 	"icon for the tt font. FontForge can't generate a useful 'DSIG' table, but it can\n"
 	"generate an empty one with no signature info. A pointless table.");
@@ -738,80 +738,80 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     hvarray2[25] = GCD_HPad10; hvarray2[26] = &gcd[k-1];
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible;
     label[k].text = (unichar_t *) _("Output Glyph Map");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _("When generating a truetype or opentype font it is occasionally\nuseful to know the mapping between truetype glyph ids and\nglyph names. Setting this option will cause FontForge to\nproduce a file (with extension .g2n) containing those data.");
+    gcd[k].gd.popup_msg = _("When generating a truetype or opentype font it is occasionally\nuseful to know the mapping between truetype glyph ids and\nglyph names. Setting this option will cause FontForge to\nproduce a file (with extension .g2n) containing those data.");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_GlyphMap;
     gcd[k++].creator = GCheckBoxCreate;
     hvarray2[30] = &gcd[k-1]; hvarray2[31] = GCD_ColSpan;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible;
     label[k].text = (unichar_t *) _("Output OFM & CFG");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _("The ofm and cfg files contain information Omega needs to process a font.");
+    gcd[k].gd.popup_msg = _("The ofm and cfg files contain information Omega needs to process a font.");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_OFM;
     gcd[k++].creator = GCheckBoxCreate;
     hvarray2[35] = &gcd[k-1]; hvarray2[36] = GCD_ColSpan;
 
     gcd[k].gd.pos.x = gcd[group+6].gd.pos.x; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y;
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible;
     label[k].text = (unichar_t *) _("PfaEdit Table");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _("The PfaEdit table is an extension to the TrueType format\nand contains various data used by FontForge\n(It should be called the FontForge table,\nbut isn't for historical reasons)");
+    gcd[k].gd.popup_msg = _("The PfaEdit table is an extension to the TrueType format\nand contains various data used by FontForge\n(It should be called the FontForge table,\nbut isn't for historical reasons)");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_PfEd;
     gcd[k++].creator = GLabelCreate;
     hvarray2[2] = &gcd[k-1]; hvarray2[3] = GCD_ColSpan; hvarray2[4] = NULL;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+2; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y-4;
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible;
     label[k].text = (unichar_t *) _("Save Comments");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Save glyph comments in the PfEd table");
+    gcd[k].gd.popup_msg = _("Save glyph comments in the PfEd table");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_PfEdComments;
     gcd[k++].creator = GCheckBoxCreate;
     hvarray2[7] = GCD_HPad10; hvarray2[8] = &gcd[k-1]; hvarray2[9] = NULL;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y-4;
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible;
     label[k].text = (unichar_t *) _("Save Colors");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Save glyph colors in the PfEd table");
+    gcd[k].gd.popup_msg = _("Save glyph colors in the PfEd table");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_PfEdColors;
     gcd[k++].creator = GCheckBoxCreate;
     hvarray2[12] = GCD_HPad10; hvarray2[13] = &gcd[k-1]; hvarray2[14] = NULL;
 
     gcd[k].gd.pos.x = gcd[k-3].gd.pos.x; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y;
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible;
     label[k].text = (unichar_t *) _("Lookup Names");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Preserve the names of the GPOS/GSUB lookups and subtables");
+    gcd[k].gd.popup_msg = _("Preserve the names of the GPOS/GSUB lookups and subtables");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_PfEdLookups;
     gcd[k++].creator = GCheckBoxCreate;
     hvarray2[17] = GCD_HPad10; hvarray2[18] = &gcd[k-1]; hvarray2[19] = NULL;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible;
     label[k].text = (unichar_t *) _("Save Guides");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Save the guidelines in the Guide layer.");
+    gcd[k].gd.popup_msg = _("Save the guidelines in the Guide layer.");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_PfEdGuides;
     gcd[k++].creator = GCheckBoxCreate;
     hvarray2[22] = GCD_HPad10; hvarray2[23] = &gcd[k-1]; hvarray2[24] = NULL;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible;
     label[k].text = (unichar_t *) _("Save Layers");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _(
+    gcd[k].gd.popup_msg = _(
 	    "Preserve any background and spiro layers.\n"
 	    "Also if we output a truetype font from a\n"
 	    "cubic database, save the cubic splines.");
@@ -821,10 +821,10 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     hvarray2[27] = GCD_HPad10; hvarray2[28] = &gcd[k-1]; hvarray2[29] = NULL;
 
     gcd[k].gd.pos.x = gcd[k-3].gd.pos.x; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y;
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible;
     label[k].text = (unichar_t *) _("TeX Table");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _("The TeX table is an extension to the TrueType format\nand the various data you would expect to find in\na tfm file (that isn't already stored elsewhere\nin the ttf file)\n");
+    gcd[k].gd.popup_msg = _("The TeX table is an extension to the TrueType format\nand the various data you would expect to find in\na tfm file (that isn't already stored elsewhere\nin the ttf file)\n");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_TeXTable;
     gcd[k++].creator = GCheckBoxCreate;
@@ -838,10 +838,10 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     boxes[3].creator = GHVGroupCreate;
 
     fontlog_k = k;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     label[k].text = (unichar_t *) _("Output FONTLOG.txt");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _(
+    gcd[k].gd.popup_msg = _(
 	"The FONTLOG is a text file containing relevant information\n"
 	"about the font including such things as its changelog.\n"
 	"(A general template is available in the OFL FAQ on http://scripts.sil.org/OFL-FAQ_web)\n"
@@ -856,10 +856,10 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     hvarray3[0] = &gcd[k-1];
 
     gcd[k].gd.pos.y = gcd[k-1].gd.pos.y; gcd[k].gd.pos.x = gcd[k-2].gd.pos.x;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     label[k].text = (unichar_t *) _("Prefer native kerning");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _(
+    gcd[k].gd.popup_msg = _(
 	"Use native kerning structures (instead of a feature file) even when this might lose information.\n");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_NativeKern;
@@ -867,20 +867,20 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     hvarray3[1] = &gcd[k-1]; hvarray3[2]=NULL;
     
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     label[k].text = (unichar_t *) _("Windows-compatible \'kern\'");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _("If the old-style \'kern\' table contains unencoded glyphs\n(or glyphs encoded outside of the BMP), many Windows applications\nwon't have any kerning at all. This option excludes such\nproblematic glyphs from the old-style \'kern\' table.");
+    gcd[k].gd.popup_msg = _("If the old-style \'kern\' table contains unencoded glyphs\n(or glyphs encoded outside of the BMP), many Windows applications\nwon't have any kerning at all. This option excludes such\nproblematic glyphs from the old-style \'kern\' table.");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_OldKernMappedOnly;
     gcd[k++].creator = GCheckBoxCreate;
     hvarray3[3] = &gcd[k-1]; hvarray3[4] = NULL;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     label[k].text = (unichar_t *) _("No Mac Names");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Do not add duplicated name entries for legacy Mac platform. These name entries are only needed for some legacy Mac applications.");
+    gcd[k].gd.popup_msg = _("Do not add duplicated name entries for legacy Mac platform. These name entries are only needed for some legacy Mac applications.");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_NoMacNames;
     gcd[k++].creator = GCheckBoxCreate;
@@ -1048,11 +1048,11 @@ return( -1 );
 	label[3].text_in_resource = true;
 	gcd[3].gd.label = &label[3];
 	gcd[3].gd.pos.x = 20; gcd[3].gd.pos.y = gcd[2].gd.pos.y+17;
-	gcd[3].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[3].gd.flags = gg_enabled|gg_visible;
 	if ( !((gcd[1].gd.flags|gcd[2].gd.flags)&gg_cb_on) )
 	    gcd[3].gd.flags |= gg_cb_on;
 	gcd[3].gd.cid = -1;
-	gcd[3].gd.popup_msg = (unichar_t *) _("Guess each font's resolution based on its pixel size");
+	gcd[3].gd.popup_msg = _("Guess each font's resolution based on its pixel size");
 	gcd[3].creator = GRadioCreate;
 	varray[9] = &gcd[3]; varray[10] = GCD_Glue; varray[11] = NULL;
 
@@ -1960,26 +1960,22 @@ static unichar_t *BitmapList(SplineFont *sf) {
 return( uret );
 }
 
-static unichar_t *uStyleName(SplineFont *sf) {
+static const char *styleName(SplineFont *sf) {
     int stylecode = MacStyleCode(sf,NULL);
-    char buffer[200];
 
-    buffer[0]='\0';
     if ( stylecode&sf_bold )
-	strcpy(buffer," Bold");
+        return " Bold";
     if ( stylecode&sf_italic )
-	strcat(buffer," Italic");
+        return " Italic";
     if ( stylecode&sf_outline )
-	strcat(buffer," Outline");
+        return " Outline";
     if ( stylecode&sf_shadow )
-	strcat(buffer," Shadow");
+        return " Shadow";
     if ( stylecode&sf_condense )
-	strcat(buffer," Condensed");
+        return " Condensed";
     if ( stylecode&sf_extend )
-	strcat(buffer," Extended");
-    if ( buffer[0]=='\0' )
-	strcpy(buffer," Plain");
-return( uc_copy(buffer+1));
+        return " Extended";
+    return " Plain";
 }
 
 static GTextInfo *SFUsableLayerNames(SplineFont *sf,int def_layer) {
@@ -2240,10 +2236,10 @@ return( 0 );
     boxes[2].creator = GHBoxCreate;
 
     gcd[5].gd.pos.x = 12; gcd[5].gd.pos.y = 218; gcd[5].gd.pos.width = 0; gcd[5].gd.pos.height = 0;
-    gcd[5].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[5].gd.flags = gg_visible | gg_enabled;
     label[5].text = (unichar_t *) _("Options");
     label[5].text_is_1byte = true;
-    gcd[5].gd.popup_msg = (unichar_t *) _("Allows you to select optional behavior when generating the font");
+    gcd[5].gd.popup_msg = _("Allows you to select optional behavior when generating the font");
     gcd[5].gd.label = &label[5];
     gcd[5].gd.handle_controlevent = GFD_Options;
     gcd[5].creator = GButtonCreate;
@@ -2448,16 +2444,16 @@ return( 0 );
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+24+6;
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
-    gcd[k].gd.popup_msg = (unichar_t *) _("In the saved font, force all glyph names to match those in the specified namelist");
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k].gd.popup_msg = _("In the saved font, force all glyph names to match those in the specified namelist");
     gcd[k++].creator = GLabelCreate;
     hvarray[8] = &gcd[k-1]; hvarray[9] = GCD_ColSpan;
 
     rk = k;
     gcd[k].gd.pos.x = gcd[k-2].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-6;
     gcd[k].gd.pos.width = gcd[k-2].gd.pos.width;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[k].gd.popup_msg = (unichar_t *) _("In the saved font, force all glyph names to match those in the specified namelist");
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.popup_msg = _("In the saved font, force all glyph names to match those in the specified namelist");
     gcd[k].creator = GListButtonCreate;
     nlnames = AllNamelistNames();
     for ( cnt=0; nlnames[cnt]!=NULL; ++cnt);
@@ -2489,14 +2485,14 @@ return( 0 );
 	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+24+6;
-	gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
-	gcd[k].gd.popup_msg = (unichar_t *) _("In the saved font, force all glyph names to match those in the specified namelist");
+	gcd[k].gd.flags = gg_enabled | gg_visible;
+	gcd[k].gd.popup_msg = _("In the saved font, force all glyph names to match those in the specified namelist");
 	gcd[k++].creator = GLabelCreate;
 
 	gcd[k].gd.pos.x = gcd[k-2].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-6;
 	gcd[k].gd.pos.width = gcd[k-2].gd.pos.width;
-	gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-	gcd[k].gd.popup_msg = (unichar_t *) _("Save a font based on the specified layer");
+	gcd[k].gd.flags = gg_visible | gg_enabled;
+	gcd[k].gd.popup_msg = _("Save a font based on the specified layer");
 	gcd[k].creator = GListButtonCreate;
 	gcd[k].gd.cid = CID_Layers;
 	gcd[k++].gd.u.list = lynames = SFUsableLayerNames(sf,layer);
@@ -2516,12 +2512,12 @@ return( 0 );
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+24+6;
 	if ( sf->multilayer || sf->strokedfont || sf->onlybitmaps )
-	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+	    gcd[k].gd.flags = gg_visible;
 	else if ( old_validate )
-	    gcd[k].gd.flags = (gg_enabled | gg_visible | gg_cb_on | gg_utf8_popup);
+	    gcd[k].gd.flags = (gg_enabled | gg_visible | gg_cb_on);
 	else
-	    gcd[k].gd.flags = (gg_enabled | gg_visible | gg_utf8_popup);
-	gcd[k].gd.popup_msg = (unichar_t *) _("Check the glyph outlines for standard errors before saving\nThis can be slow.");
+	    gcd[k].gd.flags = (gg_enabled | gg_visible);
+	gcd[k].gd.popup_msg = _("Check the glyph outlines for standard errors before saving\nThis can be slow.");
 	gcd[k++].creator = GCheckBoxCreate;
 	hvarray[hvi++] = &gcd[k-1]; hvarray[hvi++] = GCD_ColSpan; hvarray[hvi++] = GCD_ColSpan;
 	hvarray[hvi++] = NULL;
@@ -2530,10 +2526,10 @@ return( 0 );
 	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+24+6;
-	gcd[k].gd.flags = (gg_enabled | gg_visible | gg_utf8_popup);
+	gcd[k].gd.flags = (gg_enabled | gg_visible);
 	if ( old_fontlog )
 	    gcd[k].gd.flags |= gg_cb_on;
-	gcd[k].gd.popup_msg = (unichar_t *) _("The FONTLOG allows you to keep a log of changes made to your font.");
+	gcd[k].gd.popup_msg = _("The FONTLOG allows you to keep a log of changes made to your font.");
 	gcd[k].gd.cid = CID_AppendFontLog;
 	gcd[k].gd.handle_controlevent = GFD_ToggleFontLog;
 	gcd[k++].creator = GCheckBoxCreate;
@@ -2550,8 +2546,8 @@ return( 0 );
 	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+24+6;
-	gcd[k].gd.flags = (gg_enabled | gg_visible | gg_utf8_popup);
-	gcd[k].gd.popup_msg = (unichar_t *) _("This option prepends a timestamp in the format YYMMDDHHMM to the filename and font-family name metadata.");
+	gcd[k].gd.flags = (gg_enabled | gg_visible);
+	gcd[k].gd.popup_msg = _("This option prepends a timestamp in the format YYMMDDHHMM to the filename and font-family name metadata.");
 	gcd[k].gd.cid = CID_PrependTimestamp;
 	gcd[k].gd.handle_controlevent = GFD_TogglePrependTimestamp;
 	gcd[k++].creator = GCheckBoxCreate; //???
@@ -2600,7 +2596,7 @@ return( 0 );
 	    gcd[k].gd.label = &label[k];
 	    gcd[k].gd.cid = CID_Family+i*10;
 	    gcd[k].data = familysfs[fc][j];
-	    gcd[k].gd.popup_msg = uStyleName(familysfs[fc][j]);
+	    gcd[k].gd.popup_msg = styleName(familysfs[fc][j]);
 	    gcd[k++].creator = GCheckBoxCreate;
 	    famarray[f++] = &gcd[k-1];
 
@@ -2625,12 +2621,12 @@ return( 0 );
 	gcd[k++].creator = GLineCreate;
 	famarray[f++] = &gcd[k-1]; famarray[f++] = GCD_ColSpan; famarray[f++] = NULL;
 	if ( family == gf_ttc ) {
-	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_cb_on | gg_utf8_popup ;
+	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_cb_on;
 	    label[k].text = (unichar_t *) _("Merge tables across fonts");
 	    label[k].text_is_1byte = true;
 	    gcd[k].gd.label = &label[k];
 	    gcd[k].gd.cid = CID_MergeTables;
-	    gcd[k].gd.popup_msg = (unichar_t *) copy(_(
+	    gcd[k].gd.popup_msg = _(
 		"FontForge can generate two styles of ttc file.\n"
 		"In the first each font is a separate entity\n"
 		"with no connection to other fonts. In the second\n"
@@ -2645,17 +2641,17 @@ return( 0 );
 		"  * The fonts have different em-sizes\n"
 		"  * Bitmaps are involved\n"
 		"  * The merged glyf table has more than 65534 glyphs\n\n"
-		"(Merging will take longer)" ));
+		"(Merging will take longer)" );
 	    gcd[k++].creator = GCheckBoxCreate;
 	    famarray[f++] = &gcd[k-1]; famarray[f++] = GCD_ColSpan; famarray[f++] = NULL;
 
-	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup ;
+	    gcd[k].gd.flags = gg_visible | gg_enabled;
 	    label[k].text = (unichar_t *) _("As CFF fonts");
 	    label[k].text_is_1byte = true;
 	    gcd[k].gd.label = &label[k];
 	    gcd[k].gd.cid = CID_TTC_CFF;
-	    gcd[k].gd.popup_msg = (unichar_t *) copy(_(
-		"Put CFF fonts into the ttc rather than TTF.\n These seem to work on the mac and linux\n but are documented not to work on Windows." ));
+	    gcd[k].gd.popup_msg = _(
+		"Put CFF fonts into the ttc rather than TTF.\n These seem to work on the mac and linux\n but are documented not to work on Windows." );
 	    gcd[k++].creator = GCheckBoxCreate;
 	    famarray[f++] = &gcd[k-1]; famarray[f++] = GCD_ColSpan; famarray[f++] = NULL;
 	}
@@ -2683,11 +2679,6 @@ return( 0 );
     free(namelistnames);
     free(lynames);
     free(label[9].text);
-    if ( family ) {
-	for ( i=13; i<k; ++i )
-	    free((unichar_t *) gcd[i].gd.popup_msg);
-    }
-
     GFileChooserConnectButtons(gcd[0].ret,gcd[1].ret,gcd[2].ret);
     {
 	SplineFont *master = sf->cidmaster ? sf->cidmaster : sf;

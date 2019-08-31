@@ -664,14 +664,14 @@ unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult) {
     label[i].text_is_1byte = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.x = 8; gcd[i].gd.pos.y = 188+6;
-    gcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[i].gd.popup_msg = (unichar_t *) _("Display files of this type" );
+    gcd[i].gd.flags = gg_visible | gg_enabled;
+    gcd[i].gd.popup_msg = _("Display files of this type" );
     harray1[0] = GCD_Glue; harray1[1] = &gcd[i];
     gcd[i++].creator = GLabelCreate;
 
     gcd[i].gd.pos.x = 0; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y-6;
-    gcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[i].gd.popup_msg = (unichar_t *) _("Display files of this type");
+    gcd[i].gd.flags = gg_visible | gg_enabled;
+    gcd[i].gd.popup_msg = _("Display files of this type");
     gcd[i].gd.handle_controlevent = GFD_FilterSelected;
     harray1[2] = &gcd[i]; harray1[3] = GCD_Glue; harray1[4] = GCD_Glue; harray1[5] = GCD_Glue; harray1[6] = NULL;
     gcd[i++].creator = GListButtonCreate;
@@ -685,15 +685,15 @@ unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult) {
     label[i].text_is_1byte = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.x = 8; gcd[i].gd.pos.y = 188+6;
-    gcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[i].gd.popup_msg = (unichar_t *) _("In the saved font, force all glyph names to match those in the specified namelist");
+    gcd[i].gd.flags = gg_visible | gg_enabled;
+    gcd[i].gd.popup_msg = _("In the saved font, force all glyph names to match those in the specified namelist");
     harray2[0] = &gcd[i];
     gcd[i++].creator = GLabelCreate;
 
     renamei = i;
     gcd[i].gd.pos.x = 0; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y-6;
-    gcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[i].gd.popup_msg = (unichar_t *) _("In the saved font, force all glyph names to match those in the specified namelist");
+    gcd[i].gd.flags = gg_visible | gg_enabled;
+    gcd[i].gd.popup_msg = _("In the saved font, force all glyph names to match those in the specified namelist");
     gcd[i].creator = GListButtonCreate;
     nlnames = AllNamelistNames();
     for ( cnt=0; nlnames[cnt]!=NULL; ++cnt);
