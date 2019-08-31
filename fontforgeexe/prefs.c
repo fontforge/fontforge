@@ -2131,20 +2131,20 @@ void DoPrefs(void) {
     slabel[sgc].text = (unichar_t *) _("Menu Name");
     slabel[sgc].text_is_1byte = true;
     sgcd[sgc].gd.label = &slabel[sgc];
-    sgcd[sgc].gd.popup_msg = (unichar_t *) _("You may create a script menu containing up to 10 frequently used scripts.\nEach entry in the menu needs both a name to display in the menu and\na script file to execute. The menu name may contain any unicode characters.\nThe button labeled \"...\" will allow you to browse for a script file.");
+    sgcd[sgc].gd.popup_msg = _("You may create a script menu containing up to 10 frequently used scripts.\nEach entry in the menu needs both a name to display in the menu and\na script file to execute. The menu name may contain any unicode characters.\nThe button labeled \"...\" will allow you to browse for a script file.");
     sgcd[sgc].gd.pos.x = 8;
     sgcd[sgc].gd.pos.y = y2;
-    sgcd[sgc].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    sgcd[sgc].gd.flags = gg_visible | gg_enabled;
     sgcd[sgc++].creator = GLabelCreate;
     sarray[si++] = &sgcd[sgc-1];
 
     slabel[sgc].text = (unichar_t *) _("Script File");
     slabel[sgc].text_is_1byte = true;
     sgcd[sgc].gd.label = &slabel[sgc];
-    sgcd[sgc].gd.popup_msg = (unichar_t *) _("You may create a script menu containing up to 10 frequently used scripts\nEach entry in the menu needs both a name to display in the menu and\na script file to execute. The menu name may contain any unicode characters.\nThe button labeled \"...\" will allow you to browse for a script file.");
+    sgcd[sgc].gd.popup_msg = _("You may create a script menu containing up to 10 frequently used scripts\nEach entry in the menu needs both a name to display in the menu and\na script file to execute. The menu name may contain any unicode characters.\nThe button labeled \"...\" will allow you to browse for a script file.");
     sgcd[sgc].gd.pos.x = 110;
     sgcd[sgc].gd.pos.y = y2;
-    sgcd[sgc].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    sgcd[sgc].gd.flags = gg_visible | gg_enabled;
     sgcd[sgc++].creator = GLabelCreate;
     sarray[si++] = &sgcd[sgc-1];
     sarray[si++] = GCD_Glue;
@@ -2219,20 +2219,20 @@ void DoPrefs(void) {
 	    plabel[gc].text_is_1byte = true;
 	    pgcd[gc].gd.label = &plabel[gc];
 	    pgcd[gc].gd.mnemonic = '\0';
-	    pgcd[gc].gd.popup_msg = (unichar_t *) _(pl->popup);
+	    pgcd[gc].gd.popup_msg = _(pl->popup);
 	    pgcd[gc].gd.pos.x = 8;
 	    pgcd[gc].gd.pos.y = y + 6;
-	    pgcd[gc].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	    pgcd[gc].gd.flags = gg_visible | gg_enabled;
 	    pgcd[gc++].creator = GLabelCreate;
 	    hvarray[si++] = &pgcd[gc-1];
 
 	    plabel[gc].text_is_1byte = true;
 	    pgcd[gc].gd.label = &plabel[gc];
 	    pgcd[gc].gd.mnemonic = '\0';
-	    pgcd[gc].gd.popup_msg = (unichar_t *) _(pl->popup);
+	    pgcd[gc].gd.popup_msg = _(pl->popup);
 	    pgcd[gc].gd.pos.x = 110;
 	    pgcd[gc].gd.pos.y = y;
-	    pgcd[gc].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	    pgcd[gc].gd.flags = gg_visible | gg_enabled;
 	    pgcd[gc].data = pl;
 	    pgcd[gc].gd.cid = k*CID_PrefsOffset+CID_PrefsBase+i;
 	    switch ( pl->type ) {
@@ -2794,20 +2794,20 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
 	    plabel[gc].text_is_1byte = true;
 	    pgcd[gc].gd.label = &plabel[gc];
 	    pgcd[gc].gd.mnemonic = '\0';
-	    pgcd[gc].gd.popup_msg = (unichar_t *) 0;//_(pl->popup);
+	    pgcd[gc].gd.popup_msg = 0;//_(pl->popup);
 	    pgcd[gc].gd.pos.x = 8;
 	    pgcd[gc].gd.pos.y = y + 6;
-	    pgcd[gc].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	    pgcd[gc].gd.flags = gg_visible | gg_enabled;
 	    pgcd[gc++].creator = GLabelCreate;
 	    hvarray[si++] = &pgcd[gc-1];
 
 	    plabel[gc].text_is_1byte = true;
 	    pgcd[gc].gd.label = &plabel[gc];
 	    pgcd[gc].gd.mnemonic = '\0';
-	    pgcd[gc].gd.popup_msg = (unichar_t *) 0;//_(pl->popup);
+	    pgcd[gc].gd.popup_msg = 0;//_(pl->popup);
 	    pgcd[gc].gd.pos.x = 110;
 	    pgcd[gc].gd.pos.y = y;
-	    pgcd[gc].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	    pgcd[gc].gd.flags = gg_visible | gg_enabled;
 	    pgcd[gc].data = pl;
 	    pgcd[gc].gd.cid = k*CID_PrefsOffset+CID_PrefsBase+i;
 	    switch ( pl->type ) {

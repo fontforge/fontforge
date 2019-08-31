@@ -1061,22 +1061,22 @@ return;
 	label[page][row].text_is_1byte = true;
 	label[page][row].text_in_resource = true;
 	gcd[page][row][0].gd.label = &label[page][row];
-	gcd[page][row][0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-	gcd[page][row][0].gd.popup_msg = (unichar_t *) math_constants_descriptor[i].message;
+	gcd[page][row][0].gd.flags = gg_visible | gg_enabled;
+	gcd[page][row][0].gd.popup_msg = math_constants_descriptor[i].message;
 	gcd[page][row][0].creator = GLabelCreate;
 	hvarray[page][row][0] = &gcd[page][row][0];
 
-	gcd[page][row][1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	gcd[page][row][1].gd.flags = gg_visible | gg_enabled;
 	gcd[page][row][1].gd.pos.width = 50;
 	gcd[page][row][1].gd.cid = 2*i+1;
-	gcd[page][row][1].gd.popup_msg = (unichar_t *) math_constants_descriptor[i].message;
+	gcd[page][row][1].gd.popup_msg = math_constants_descriptor[i].message;
 	gcd[page][row][1].creator = GTextFieldCreate;
 	hvarray[page][row][1] = &gcd[page][row][1];
 
 	if ( math_constants_descriptor[i].devtab_offset>=0 ) {
-	    gcd[page][row][2].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	    gcd[page][row][2].gd.flags = gg_visible | gg_enabled;
 	    gcd[page][row][2].gd.cid = 2*i+2;
-	    gcd[page][row][2].gd.popup_msg = (unichar_t *) math_constants_descriptor[i].message;
+	    gcd[page][row][2].gd.popup_msg = math_constants_descriptor[i].message;
 	    gcd[page][row][2].creator = GTextFieldCreate;
 	    hvarray[page][row][2] = &gcd[page][row][2];
 	} else

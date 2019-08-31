@@ -3162,93 +3162,93 @@ void FontCompareDlg(FontView *fv) {
 
 	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
 	if ( fv->b.sf->onlybitmaps )
-	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+	    gcd[k].gd.flags = gg_visible;
 	else
-	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_exact)?gg_cb_on:0);
+	    gcd[k].gd.flags = gg_visible | gg_enabled| ((last_flags&fcf_exact)?gg_cb_on:0);
 	label[k].text = (unichar_t *) _("_Exact");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.cid = CID_Exact;
-	gcd[k].gd.popup_msg = (unichar_t *) _("Accept outlines which exactly match the original");
+	gcd[k].gd.popup_msg = _("Accept outlines which exactly match the original");
 	gcd[k++].creator = GRadioCreate;
 
 	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
 	if ( fv->b.sf->onlybitmaps )
-	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+	    gcd[k].gd.flags = gg_visible;
 	else
-	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_exact)?0:gg_cb_on);
+	    gcd[k].gd.flags = gg_visible | gg_enabled| ((last_flags&fcf_exact)?0:gg_cb_on);
 	label[k].text = (unichar_t *) _("_Accept inexact");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.cid = CID_Fuzzy;
-	gcd[k].gd.popup_msg = (unichar_t *) _("Accept an outline which is a close approximation to the original.\nIt may be off by an em-unit, or have a reference which matches a contour.");
+	gcd[k].gd.popup_msg = _("Accept an outline which is a close approximation to the original.\nIt may be off by an em-unit, or have a reference which matches a contour.");
 	gcd[k++].creator = GRadioCreate;
 
 	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
 	if ( fv->b.sf->onlybitmaps )
-	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+	    gcd[k].gd.flags = gg_visible;
 	else
-	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_warn_not_exact)?gg_cb_on:0);
+	    gcd[k].gd.flags = gg_visible | gg_enabled| ((last_flags&fcf_warn_not_exact)?gg_cb_on:0);
 	label[k].text = (unichar_t *) _("_Warn if inexact");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.cid = CID_Warn;
-	gcd[k].gd.popup_msg = (unichar_t *) _("Warn if the outlines are close but not exactly the same");
+	gcd[k].gd.popup_msg = _("Warn if the outlines are close but not exactly the same");
 	gcd[k++].creator = GCheckBoxCreate;
 
 	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
 	if ( fv->b.sf->onlybitmaps )
-	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+	    gcd[k].gd.flags = gg_visible;
 	else
-	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_warn_not_ref_exact)?gg_cb_on:0);
+	    gcd[k].gd.flags = gg_visible | gg_enabled| ((last_flags&fcf_warn_not_ref_exact)?gg_cb_on:0);
 	label[k].text = (unichar_t *) _("Warn if _unlinked references");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.cid = CID_RefContourWarn;
-	gcd[k].gd.popup_msg = (unichar_t *) _("Warn if one glyph contains an outline while the other contains a reference (but the reference describes the same outline)");
+	gcd[k].gd.popup_msg = _("Warn if one glyph contains an outline while the other contains a reference (but the reference describes the same outline)");
 	gcd[k++].creator = GCheckBoxCreate;
 
 	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
 	if ( fv->b.sf->onlybitmaps )
-	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+	    gcd[k].gd.flags = gg_visible;
 	else
-	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_hinting)?gg_cb_on:0);
+	    gcd[k].gd.flags = gg_visible | gg_enabled| ((last_flags&fcf_hinting)?gg_cb_on:0);
 	label[k].text = (unichar_t *) _("Compare _Hints");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.cid = CID_Hinting;
-	gcd[k].gd.popup_msg = (unichar_t *) _("Compare postscript hints and hintmasks and truetype instructions");
+	gcd[k].gd.popup_msg = _("Compare postscript hints and hintmasks and truetype instructions");
 	gcd[k++].creator = GCheckBoxCreate;
 
 	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
 	if ( fv->b.sf->onlybitmaps )
-	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+	    gcd[k].gd.flags = gg_visible;
 	else
-	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | (((last_flags&fcf_hintmasks) && !(last_flags&fcf_hmonlywithconflicts))?gg_cb_on:0);
+	    gcd[k].gd.flags = gg_visible | gg_enabled| (((last_flags&fcf_hintmasks) && !(last_flags&fcf_hmonlywithconflicts))?gg_cb_on:0);
 	label[k].text = (unichar_t *) _("Compare Hint_Masks");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.cid = CID_HintMasks;
-	gcd[k].gd.popup_msg = (unichar_t *) _("Compare hintmasks");
+	gcd[k].gd.popup_msg = _("Compare hintmasks");
 	gcd[k++].creator = GRadioCreate;
 
 	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
 	if ( fv->b.sf->onlybitmaps )
-	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+	    gcd[k].gd.flags = gg_visible;
 	else
-	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_hmonlywithconflicts)?gg_cb_on:0);
+	    gcd[k].gd.flags = gg_visible | gg_enabled| ((last_flags&fcf_hmonlywithconflicts)?gg_cb_on:0);
 	label[k].text = (unichar_t *) _("HintMasks only if conflicts");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.cid = CID_HintMasksWConflicts;
-	gcd[k].gd.popup_msg = (unichar_t *) _("Don't compare hintmasks if the glyph has no hint conflicts");
+	gcd[k].gd.popup_msg = _("Don't compare hintmasks if the glyph has no hint conflicts");
 	gcd[k++].creator = GRadioCreate;
 
 	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
@@ -3265,28 +3265,28 @@ void FontCompareDlg(FontView *fv) {
 
 	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
 	if ( fv->b.sf->onlybitmaps )
-	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+	    gcd[k].gd.flags = gg_visible;
 	else
-	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_adddiff2sf1)?gg_cb_on:0);
+	    gcd[k].gd.flags = gg_visible | gg_enabled| ((last_flags&fcf_adddiff2sf1)?gg_cb_on:0);
 	label[k].text = (unichar_t *) _("_Add Diff Outlines to Background");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.cid = CID_AddDiffs;
-	gcd[k].gd.popup_msg = (unichar_t *) _("If two glyphs differ, then add the outlines of the second glyph\nto the background layer of the first (So when opening the first\nthe differences will be visible).");
+	gcd[k].gd.popup_msg = _("If two glyphs differ, then add the outlines of the second glyph\nto the background layer of the first (So when opening the first\nthe differences will be visible).");
 	gcd[k++].creator = GCheckBoxCreate;
 
 	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
 	if ( fv->b.sf->onlybitmaps )
-	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+	    gcd[k].gd.flags = gg_visible;
 	else
-	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_addmissing)?gg_cb_on:0);
+	    gcd[k].gd.flags = gg_visible | gg_enabled| ((last_flags&fcf_addmissing)?gg_cb_on:0);
 	label[k].text = (unichar_t *) _("Add _Missing Glyphs");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.cid = CID_AddMissing;
-	gcd[k].gd.popup_msg = (unichar_t *) _("If a glyph in the second font is missing from the first, then\nadd it to the first with the outlines of the second font in\nthe background");
+	gcd[k].gd.popup_msg = _("If a glyph in the second font is missing from the first, then\nadd it to the first with the outlines of the second font in\nthe background");
 	gcd[k++].creator = GCheckBoxCreate;
 
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16;
@@ -3311,23 +3311,23 @@ void FontCompareDlg(FontView *fv) {
 	gcd[k++].creator = GCheckBoxCreate;
 
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-	gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_gpos)?gg_cb_on:0);
+	gcd[k].gd.flags = gg_visible | gg_enabled| ((last_flags&fcf_gpos)?gg_cb_on:0);
 	label[k].text = (unichar_t *) _("Compare Glyph _Positioning");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.cid = CID_GPos;
-	gcd[k].gd.popup_msg = (unichar_t *) _("Kerning & such");
+	gcd[k].gd.popup_msg = _("Kerning & such");
 	gcd[k++].creator = GCheckBoxCreate;
 
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-	gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_gsub)?gg_cb_on:0);
+	gcd[k].gd.flags = gg_visible | gg_enabled| ((last_flags&fcf_gsub)?gg_cb_on:0);
 	label[k].text = (unichar_t *) _("Compare Glyph _Substitution");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.cid = CID_GSub;
-	gcd[k].gd.popup_msg = (unichar_t *) _("Ligatures & such");
+	gcd[k].gd.popup_msg = _("Ligatures & such");
 	gcd[k++].creator = GCheckBoxCreate;
 
 	gcd[k].gd.pos.x = 15-3; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+23-3;

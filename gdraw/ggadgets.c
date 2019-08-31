@@ -887,9 +887,7 @@ GGadget *_GGadget_Create(GGadget *g, struct gwindow *base, GGadgetData *gd,void 
     g->short_mask = gd->short_mask;
     g->cid = gd->cid;
     g->data = data;
-    g->popup_msg = (gd->flags&gg_utf8_popup)
-	    ? utf82u_copy((char *) gd->popup_msg)
-	    : u_copy(gd->popup_msg);
+    g->popup_msg = utf82u_copy(gd->popup_msg);
     g->handle_controlevent = gd->handle_controlevent;
     if ( gd->box == NULL )
 	g->box = def;

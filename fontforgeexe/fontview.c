@@ -1926,8 +1926,8 @@ static void FVSelectByScript(FontView *fv,int merge) {
     label[k].text = (unichar_t *) _("All glyphs");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_cb_on;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Set the selection of the font view to all glyphs in the script.");
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_cb_on;
+    gcd[k].gd.popup_msg = _("Set the selection of the font view to all glyphs in the script.");
     gcd[k++].creator = GRadioCreate;
     hvarray[i][0] = &gcd[k-1]; hvarray[i++][1] = NULL;
     hvarray[i][0] = GCD_HPad10; hvarray[i++][1] = NULL;
@@ -1936,8 +1936,8 @@ static void FVSelectByScript(FontView *fv,int merge) {
     label[k].text = (unichar_t *) _("Only upper case");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Set the selection of the font view to any upper case glyphs in the script.");
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].gd.popup_msg = _("Set the selection of the font view to any upper case glyphs in the script.");
     gcd[k++].creator = GRadioCreate;
     hvarray[i][0] = &gcd[k-1]; hvarray[i++][1] = NULL;
 
@@ -1945,8 +1945,8 @@ static void FVSelectByScript(FontView *fv,int merge) {
     label[k].text = (unichar_t *) _("Only lower case");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Set the selection of the font view to any lower case glyphs in the script.");
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].gd.popup_msg = _("Set the selection of the font view to any lower case glyphs in the script.");
     gcd[k++].creator = GRadioCreate;
     hvarray[i][0] = &gcd[k-1]; hvarray[i++][1] = NULL;
     hvarray[i][0] = GCD_HPad10; hvarray[i++][1] = NULL;
@@ -1955,32 +1955,32 @@ static void FVSelectByScript(FontView *fv,int merge) {
     label[k].text = (unichar_t *) _("Select Results");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_rad_startnew;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Set the selection of the font view to the glyphs\nwhich match");
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_rad_startnew;
+    gcd[k].gd.popup_msg = _("Set the selection of the font view to the glyphs\nwhich match");
     gcd[k++].creator = GRadioCreate;
     hvarray[i][0] = &gcd[k-1]; hvarray[i++][1] = NULL;
 
     label[k].text = (unichar_t *) _("Merge Results");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Expand the selection of the font view to include\nall the glyphs which match");
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].gd.popup_msg = _("Expand the selection of the font view to include\nall the glyphs which match");
     gcd[k++].creator = GRadioCreate;
     hvarray[i][0] = &gcd[k-1]; hvarray[i++][1] = NULL;
 
     label[k].text = (unichar_t *) _("Restrict Selection");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Remove matching glyphs from the selection." );
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].gd.popup_msg = _("Remove matching glyphs from the selection." );
     gcd[k++].creator = GRadioCreate;
     hvarray[i][0] = &gcd[k-1]; hvarray[i++][1] = NULL;
 
     label[k].text = (unichar_t *) _("Logical And with Selection");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Remove glyphs which do not match from the selection." );
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].gd.popup_msg = _("Remove glyphs which do not match from the selection." );
     gcd[k++].creator = GRadioCreate;
     hvarray[i][0] = &gcd[k-1]; hvarray[i++][1] = NULL;
     gcd[k-4 + merge/4].gd.flags |= gg_cb_on;
@@ -2195,8 +2195,8 @@ static void FVMenuSelectByName(GWindow _gw, struct gmenuitem *UNUSED(mi), GEvent
     label[k].text = (unichar_t *) _("Enter either a wildcard pattern (to match glyph names)\n or a unicode encoding like \"U+0065\".");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[k].gd.popup_msg = (unichar_t *) _(
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.popup_msg = _(
 	"Unix style wildcarding is accepted:\n"
 	"Most characters match themselves\n"
 	"A \"?\" will match any single character\n"
@@ -2209,7 +2209,7 @@ static void FVMenuSelectByName(GWindow _gw, struct gmenuitem *UNUSED(mi), GEvent
     gcd[k++].creator = GLabelCreate;
     hvarray[i][0] = &gcd[k-1]; hvarray[i++][1] = NULL;
 
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.popup_msg = gcd[k-1].gd.popup_msg;
     gcd[k++].creator = GTextFieldCreate;
     hvarray[i][0] = &gcd[k-1]; hvarray[i++][1] = NULL;
@@ -2217,32 +2217,32 @@ static void FVMenuSelectByName(GWindow _gw, struct gmenuitem *UNUSED(mi), GEvent
     label[k].text = (unichar_t *) _("Select Results");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Set the selection of the font view to the glyphs\nwhich match");
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].gd.popup_msg = _("Set the selection of the font view to the glyphs\nwhich match");
     gcd[k++].creator = GRadioCreate;
     hvarray[i][0] = &gcd[k-1]; hvarray[i++][1] = NULL;
 
     label[k].text = (unichar_t *) _("Merge Results");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Expand the selection of the font view to include\nall the glyphs which match");
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].gd.popup_msg = _("Expand the selection of the font view to include\nall the glyphs which match");
     gcd[k++].creator = GRadioCreate;
     hvarray[i][0] = &gcd[k-1]; hvarray[i++][1] = NULL;
 
     label[k].text = (unichar_t *) _("Restrict Selection");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Remove matching glyphs from the selection." );
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].gd.popup_msg = _("Remove matching glyphs from the selection." );
     gcd[k++].creator = GRadioCreate;
     hvarray[i][0] = &gcd[k-1]; hvarray[i++][1] = NULL;
 
     label[k].text = (unichar_t *) _("Logical And with Selection");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Remove glyphs which do not match from the selection." );
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].gd.popup_msg = _("Remove glyphs which do not match from the selection." );
     gcd[k++].creator = GRadioCreate;
     hvarray[i][0] = &gcd[k-1]; hvarray[i++][1] = NULL;
     gcd[k-4 + merge/4].gd.flags |= gg_cb_on;
@@ -3194,18 +3194,18 @@ static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi, GEvent *UNUSED(
     label[2].text_is_1byte = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = 8; gcd[2].gd.pos.y = gcd[1].gd.pos.y+16;
-    gcd[2].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|(metrics&fvm_advanceat?gg_cb_on:0);
+    gcd[2].gd.flags = gg_enabled|gg_visible|(metrics&fvm_advanceat?gg_cb_on:0);
     gcd[2].gd.cid = fvm_advanceat;
-    gcd[2].gd.popup_msg = (unichar_t *) _("Display the advance width as a line\nperpendicular to the advance direction");
+    gcd[2].gd.popup_msg = _("Display the advance width as a line\nperpendicular to the advance direction");
     gcd[2].creator = GCheckBoxCreate;
 
     label[3].text = (unichar_t *) _("Advance Width as a Bar");
     label[3].text_is_1byte = true;
     gcd[3].gd.label = &label[3];
     gcd[3].gd.pos.x = 8; gcd[3].gd.pos.y = gcd[2].gd.pos.y+16;
-    gcd[3].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|(metrics&fvm_advanceto?gg_cb_on:0);
+    gcd[3].gd.flags = gg_enabled|gg_visible|(metrics&fvm_advanceto?gg_cb_on:0);
     gcd[3].gd.cid = fvm_advanceto;
-    gcd[3].gd.popup_msg = (unichar_t *) _("Display the advance width as a bar under the glyph\nshowing the extent of the advance");
+    gcd[3].gd.popup_msg = _("Display the advance width as a bar under the glyph\nshowing the extent of the advance");
     gcd[3].creator = GCheckBoxCreate;
 
     label[4].text = (unichar_t *) _("_OK");

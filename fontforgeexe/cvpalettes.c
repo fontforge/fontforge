@@ -2060,37 +2060,37 @@ return;
     label[1].text_is_1byte = true;
     gcd[1].gd.label = &label[1];
     gcd[1].gd.pos.x = 7; gcd[1].gd.pos.y = 5; 
-    gcd[1].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels|gg_utf8_popup;
-    gcd[1].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
+    gcd[1].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
+    gcd[1].gd.popup_msg = _("Is Layer Visible?");
     gcd[1].creator = GLabelCreate;
 
     label[2].text = (unichar_t *) _("Layer");
     label[2].text_is_1byte = true;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = 30; gcd[2].gd.pos.y = 5; 
-    gcd[2].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels|gg_utf8_popup;
+    gcd[2].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
     gcd[2].gd.cid = CID_LayerLabel;
-    gcd[2].gd.popup_msg = (unichar_t *) _("Is Layer Editable?");
+    gcd[2].gd.popup_msg = _("Is Layer Editable?");
     gcd[2].creator = GLabelCreate;
 
     gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = CV_LAYERS2_HEADER_HEIGHT+(CV_LAYERS2_LINE_HEIGHT-12)/2; 
-    gcd[3].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
+    gcd[3].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[3].gd.cid = CID_VGrid;
-    gcd[3].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
+    gcd[3].gd.popup_msg = _("Is Layer Visible?");
     gcd[3].gd.box = &radio_box;
     gcd[3].creator = GCheckBoxCreate;
 
     gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = gcd[3].gd.pos.y+CV_LAYERS2_LINE_HEIGHT; 
-    gcd[4].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
+    gcd[4].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[4].gd.cid = CID_VBack;
-    gcd[4].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
+    gcd[4].gd.popup_msg = _("Is Layer Visible?");
     gcd[4].gd.box = &radio_box;
     gcd[4].creator = GCheckBoxCreate;
 
     gcd[5].gd.pos.x = 5; gcd[5].gd.pos.y = gcd[4].gd.pos.y+CV_LAYERS2_LINE_HEIGHT; 
-    gcd[5].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
+    gcd[5].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[5].gd.cid = CID_VFore;
-    gcd[5].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
+    gcd[5].gd.popup_msg = _("Is Layer Visible?");
     gcd[5].gd.box = &radio_box;
     gcd[5].creator = GCheckBoxCreate;
 
@@ -2102,9 +2102,9 @@ return;
     if (ly <= ly_grid) ly = ly_grid + 1;
     while (ly < cv->b.sc->parent->layer_cnt && wi < 24) {
       gcd[wi].gd.pos.x = 5; gcd[wi].gd.pos.y = gcd[wi-1].gd.pos.y+CV_LAYERS2_LINE_HEIGHT; 
-      gcd[wi].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
+      gcd[wi].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
       gcd[wi].gd.cid = CID_VBase + ly; // There are plenty of CID values available for these above CID_VBase.
-      gcd[wi].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
+      gcd[wi].gd.popup_msg = _("Is Layer Visible?");
       gcd[wi].gd.box = &radio_box;
       gcd[wi].creator = GCheckBoxCreate;
       ly++;
@@ -2449,9 +2449,9 @@ static void CVLCheckLayerCount(CharView *cv, int resize) {
 	     /* for each new layer, create new widgets */
 
 	     /* Visibility toggle */
-	    gcd[0].gd.flags = gg_enabled|gg_utf8_popup;
+	    gcd[0].gd.flags = gg_enabled;
 	    gcd[0].gd.cid = CID_VBase+i;
-	    gcd[0].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
+	    gcd[0].gd.popup_msg = _("Is Layer Visible?");
 	    gcd[0].creator = GVisibilityBoxCreate;
 
 	    GGadgetsCreate(cvlayers,gcd);
@@ -3312,9 +3312,9 @@ return( cvlayers );
     gcd[i].gd.label = &label[0];
     gcd[i].gd.pos.x = 7; gcd[i].gd.pos.y = 5; 
     gcd[i].gd.pos.width  = plusw; gcd[i].gd.pos.height = plush;
-    gcd[i].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels|gg_utf8_popup;
+    gcd[i].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
     gcd[i].gd.cid = CID_RemoveLayer;
-    gcd[i].gd.popup_msg = (unichar_t *) _("Delete the current layer");
+    gcd[i].gd.popup_msg = _("Delete the current layer");
     gcd[i].creator = GButtonCreate;
     ++i;
 
@@ -3324,9 +3324,9 @@ return( cvlayers );
     gcd[i].gd.label = &label[1];
     gcd[i].gd.pos.x = 30; gcd[i].gd.pos.y = 5; 
     gcd[i].gd.pos.width  = plusw; gcd[i].gd.pos.height = plush;
-    gcd[i].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels|gg_utf8_popup;
+    gcd[i].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
     gcd[i].gd.cid = CID_AddLayer;
-    gcd[i].gd.popup_msg = (unichar_t *) _("Add a new layer");
+    gcd[i].gd.popup_msg = _("Add a new layer");
     gcd[i].creator = GButtonCreate;
     ++i;
 
@@ -3335,34 +3335,34 @@ return( cvlayers );
     label[2].text_is_1byte = true;
     gcd[i].gd.label = &label[2];
     gcd[i].gd.pos.x = 47; gcd[i].gd.pos.y = 5; 
-    gcd[i].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels|gg_utf8_popup;
+    gcd[i].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
     gcd[i].gd.cid = CID_LayersMenu;
-    /* gcd[i].gd.popup_msg = (unichar_t *) _("Rename the current layer"); */
+    /* gcd[i].gd.popup_msg = _("Rename the current layer"); */
     gcd[i].creator = GLabelCreate;
     ++i;
 
      /* Default visibility toggles for Fore, Back, and Guides */
     gcd[i].gd.pos.x = viscol; gcd[i].gd.pos.y = 38; 
-    gcd[i].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
+    gcd[i].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     if ( cv->showgrids ) gcd[i].gd.flags |= gg_cb_on;
     gcd[i].gd.cid = CID_VGrid;
-    gcd[i].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
+    gcd[i].gd.popup_msg = _("Is Layer Visible?");
     gcd[i].creator = GVisibilityBoxCreate;
     ++i;
 
     gcd[i].gd.pos.x = viscol; gcd[i].gd.pos.y = 38; 
-    gcd[i].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
+    gcd[i].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     if ( cv->showback[0]&1 ) gcd[i].gd.flags |= gg_cb_on;
     gcd[i].gd.cid = CID_VBack;
-    gcd[i].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
+    gcd[i].gd.popup_msg = _("Is Layer Visible?");
     gcd[i].creator = GVisibilityBoxCreate;
     ++i;
 
     gcd[i].gd.pos.x = viscol; gcd[i].gd.pos.y = 21; 
-    gcd[i].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
+    gcd[i].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     if ( cv->showfore ) gcd[i].gd.flags |= gg_cb_on;
     gcd[i].gd.cid = CID_VFore;
-    gcd[i].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
+    gcd[i].gd.popup_msg = _("Is Layer Visible?");
     gcd[i].creator = GVisibilityBoxCreate;
     ++i;
 
@@ -3380,9 +3380,9 @@ return( cvlayers );
 
      /* Edit box for in place layer rename */
     gcd[i].gd.pos.width=gcd[i].gd.pos.height=1;
-    gcd[i].gd.flags = gg_enabled|gg_pos_in_pixels|gg_utf8_popup;
+    gcd[i].gd.flags = gg_enabled|gg_pos_in_pixels;
     gcd[i].gd.cid = CID_Edit;
-    gcd[i].gd.popup_msg = (unichar_t *) _("Type in new layer name");
+    gcd[i].gd.popup_msg = _("Type in new layer name");
     gcd[i].creator = GTextFieldCreate;
     ++i;
 
@@ -4039,23 +4039,23 @@ return(bvlayers);
     label[0].text_is_1byte = true;
     gcd[0].gd.label = &label[0];
     gcd[0].gd.pos.x = 7; gcd[0].gd.pos.y = 5; 
-    gcd[0].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels|gg_utf8_popup;
-    gcd[0].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
+    gcd[0].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
+    gcd[0].gd.popup_msg = _("Is Layer Visible?");
     gcd[0].creator = GLabelCreate;
 
     label[1].text = (unichar_t *) "Layer";
     label[1].text_is_1byte = true;
     gcd[1].gd.label = &label[1];
     gcd[1].gd.pos.x = 23; gcd[1].gd.pos.y = 5; 
-    gcd[1].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels|gg_utf8_popup;
-    gcd[1].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
+    gcd[1].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
+    gcd[1].gd.popup_msg = _("Is Layer Visible?");
     gcd[1].creator = GLabelCreate;
     hvarray[0][0] = &gcd[0]; hvarray[0][1] = &gcd[1]; hvarray[0][2] = NULL;
 
     gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = 21; 
-    gcd[2].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
+    gcd[2].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[2].gd.cid = CID_VFore;
-    gcd[2].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
+    gcd[2].gd.popup_msg = _("Is Layer Visible?");
     gcd[2].gd.box = &radio_box;
     gcd[2].creator = GCheckBoxCreate;
     label[2].text = (unichar_t *) _("Bitmap");
@@ -4064,9 +4064,9 @@ return(bvlayers);
     hvarray[1][0] = &gcd[2]; hvarray[1][1] = GCD_ColSpan; hvarray[1][2] = NULL;
 
     gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = 37; 
-    gcd[3].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
+    gcd[3].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[3].gd.cid = CID_VBack;
-    gcd[3].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
+    gcd[3].gd.popup_msg = _("Is Layer Visible?");
     gcd[3].gd.box = &radio_box;
     gcd[3].creator = GCheckBoxCreate;
     label[3].text = (unichar_t *) _("Outline");
@@ -4075,9 +4075,9 @@ return(bvlayers);
     hvarray[2][0] = &gcd[3]; hvarray[2][1] = GCD_ColSpan; hvarray[2][2] = NULL;
 
     gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = 53; 
-    gcd[4].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
+    gcd[4].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels;
     gcd[4].gd.cid = CID_VGrid;
-    gcd[4].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
+    gcd[4].gd.popup_msg = _("Is Layer Visible?");
     gcd[4].gd.box = &radio_box;
     gcd[4].creator = GCheckBoxCreate;
     label[4].text = (unichar_t *) _("_Guide");

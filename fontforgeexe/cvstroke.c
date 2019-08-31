@@ -780,10 +780,10 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *,int),Str
 	label[gcdoff].text_is_1byte = true;
 	gcd[gcdoff].gd.pos.width = 50;
 	gcd[gcdoff].gd.label = &label[gcdoff];
-	gcd[gcdoff].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	gcd[gcdoff].gd.flags = gg_visible | gg_enabled;
 	gcd[gcdoff].gd.cid = CID_MinorAxis;
 	gcd[gcdoff].gd.handle_controlevent = Stroke_TextChanged;
-	gcd[gcdoff].gd.popup_msg = (unichar_t *) _(
+	gcd[gcdoff].gd.popup_msg = _(
 	    "A calligraphic pen or an eliptical pen has two widths\n"
 	    "(which may be the same, giving a circular or square pen,\n"
 	    "or different giving an eliptical or rectangular pen).");
@@ -1539,12 +1539,12 @@ static struct gradient *GradientEdit(struct layer_dlg *ld,struct gradient *activ
     gcd[k++].creator = GLabelCreate;
     varray[j++] = &gcd[k-1];
 
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     label[k].text = (unichar_t *) _("Linear");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.popup_msg = (unichar_t *) _(
+    gcd[k].gd.popup_msg = _(
 	    "The gradient will be a linear gradient,\n"
 	    "With the color change happening along\n"
 	    "the line drawn in the view" );
@@ -1552,12 +1552,12 @@ static struct gradient *GradientEdit(struct layer_dlg *ld,struct gradient *activ
     gcd[k++].creator = GRadioCreate;
     gtarray[0] = &gcd[k-1];
 
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     label[k].text = (unichar_t *) _("Radial");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.popup_msg = (unichar_t *) _(
+    gcd[k].gd.popup_msg = _(
 	    "The gradient will be a radial gradient,\n"
 	    "With the color change happening in circles\n"
 	    "starting at the focus (if specified) and\n"
@@ -1579,34 +1579,34 @@ static struct gradient *GradientEdit(struct layer_dlg *ld,struct gradient *activ
     gcd[k++].creator = GDrawableCreate;
     varray[j++] = &gcd[k-1];
 
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     label[k].text = (unichar_t *) _("_Pad");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.popup_msg = (unichar_t *) _("Beyond the endpoints, the gradient takes on the color at the end-points\n"
+    gcd[k].gd.popup_msg = _("Beyond the endpoints, the gradient takes on the color at the end-points\n"
 		"This does not work for PostScript linear gradients");
     gcd[k].gd.cid = CID_Pad;
     gcd[k++].creator = GRadioCreate;
     rharray[0] = &gcd[k-1];
 
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     label[k].text = (unichar_t *) _("Repeat");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.popup_msg = (unichar_t *) _("Beyond the endpoints the gradient repeats itself\n"
+    gcd[k].gd.popup_msg = _("Beyond the endpoints the gradient repeats itself\n"
 	    "This does not work for PostScript gradients." );
     gcd[k].gd.cid = CID_Repeat;
     gcd[k++].creator = GRadioCreate;
     rharray[1] = &gcd[k-1];
 
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     label[k].text = (unichar_t *) _("Reflect");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.popup_msg = (unichar_t *) _("Beyond the endpoint the gradient repeats itself, but reflected.\n"
+    gcd[k].gd.popup_msg = _("Beyond the endpoint the gradient repeats itself, but reflected.\n"
 	    "This does not work for PostScript gradients");
     gcd[k].gd.cid = CID_Reflect;
     gcd[k++].creator = GRadioCreate;
@@ -1633,7 +1633,7 @@ static struct gradient *GradientEdit(struct layer_dlg *ld,struct gradient *activ
     StopMatrixInit(&stopmi,active);
 
     gcd[k].gd.pos.width = 300; gcd[k].gd.pos.height = 200;
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k].gd.cid = CID_GradStops;
     gcd[k].gd.u.matrix = &stopmi;
     gcd[k++].creator = GMatrixEditCreate;
@@ -2046,13 +2046,13 @@ static struct pattern *PatternEdit(struct layer_dlg *ld,struct pattern *active) 
     label[k].text = (unichar_t *) name;
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
     gcd[k].gd.handle_controlevent = Pat_WidthChanged;		/* That will make sure the aspect ratio stays correct */
     gcd[k].gd.cid = CID_PatternName;
     gcd[k++].creator = GTextCompletionCreate;
     varray[j++] = &gcd[k-1];
 
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     if ( aspect_fixed )
 	gcd[k].gd.flags |= gg_cb_on;
     label[k].text = (unichar_t *) _("Aspect Ratio same as Tile Glyph");
@@ -2074,7 +2074,7 @@ static struct pattern *PatternEdit(struct layer_dlg *ld,struct pattern *active) 
     label[k].text = (unichar_t *) width;
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
     gcd[k].gd.handle_controlevent = Pat_WidthChanged;
     gcd[k].gd.cid = CID_TWidth;
     gcd[k++].creator = GTextFieldCreate;
@@ -2090,7 +2090,7 @@ static struct pattern *PatternEdit(struct layer_dlg *ld,struct pattern *active) 
     label[k].text = (unichar_t *) height;
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
     gcd[k].gd.handle_controlevent = Pat_HeightChanged;
     gcd[k].gd.cid = CID_THeight;
     gcd[k++].creator = GTextFieldCreate;
@@ -2108,7 +2108,7 @@ static struct pattern *PatternEdit(struct layer_dlg *ld,struct pattern *active) 
     gcd[k++].creator = GLabelCreate;
     hvarray[12] = &gcd[k-1];
 
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
     gcd[k].gd.handle_controlevent = Pat_AnglesChanged;
     gcd[k].gd.cid = CID_Rotate;
     gcd[k++].creator = GTextFieldCreate;
@@ -2121,7 +2121,7 @@ static struct pattern *PatternEdit(struct layer_dlg *ld,struct pattern *active) 
     gcd[k++].creator = GLabelCreate;
     hvarray[16] = &gcd[k-1];
 
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
     gcd[k].gd.handle_controlevent = Pat_AnglesChanged;
     gcd[k].gd.cid = CID_Skew;
     gcd[k++].creator = GTextFieldCreate;
@@ -2142,7 +2142,7 @@ static struct pattern *PatternEdit(struct layer_dlg *ld,struct pattern *active) 
     gcd[k++].creator = GLabelCreate;
     hvarray[24] = &gcd[k-1];
 
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
     gcd[k].gd.handle_controlevent = Pat_AnglesChanged;
     gcd[k].gd.cid = CID_TransX;
     gcd[k++].creator = GTextFieldCreate;
@@ -2155,7 +2155,7 @@ static struct pattern *PatternEdit(struct layer_dlg *ld,struct pattern *active) 
     gcd[k++].creator = GLabelCreate;
     hvarray[28] = &gcd[k-1];
 
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
     gcd[k].gd.handle_controlevent = Pat_AnglesChanged;
     gcd[k].gd.cid = CID_TransY;
     gcd[k++].creator = GTextFieldCreate;
@@ -2176,7 +2176,7 @@ static struct pattern *PatternEdit(struct layer_dlg *ld,struct pattern *active) 
     label[k].text = (unichar_t *) transform;
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
     gcd[k].gd.handle_controlevent = Pat_TransformChanged;
     gcd[k].gd.cid = CID_Transform;
     gcd[k++].creator = GTextFieldCreate;
@@ -2938,9 +2938,9 @@ int LayerDialog(Layer *layer,SplineFont *sf) {
     label[gcdoff].text_is_1byte = true;
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+26;
-    gcd[gcdoff].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
     gcd[gcdoff].gd.cid = CID_DashesTxt;
-    gcd[gcdoff].gd.popup_msg = (unichar_t *) _("This specifies the dash pattern for a line.\nLeave this field blank for a solid line.\nOtherwise specify a list of up to 8 integers\n(between 0 and 255) which give the dash pattern\nin em-units. So \"10 10\" will draw the first\n10 units of a line, leave the next 10 blank,\ndraw the next 10, and so on.");
+    gcd[gcdoff].gd.popup_msg = _("This specifies the dash pattern for a line.\nLeave this field blank for a solid line.\nOtherwise specify a list of up to 8 integers\n(between 0 and 255) which give the dash pattern\nin em-units. So \"10 10\" will draw the first\n10 units of a line, leave the next 10 blank,\ndraw the next 10, and so on.");
     gcd[gcdoff++].creator = GLabelCreate;
     shvarray[k++] = &gcd[gcdoff-1];
 
@@ -2969,13 +2969,13 @@ int LayerDialog(Layer *layer,SplineFont *sf) {
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.pos.x = 165; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+2;
     if ( layer->stroke_pen.dashes[0]==0 && layer->stroke_pen.dashes[1]==DASH_INHERITED ) 
-	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | gg_cb_on | gg_utf8_popup;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | gg_cb_on;
     else
-	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
     gcd[gcdoff].data = (void *) CID_Dashes;
     gcd[gcdoff].gd.cid = CID_DashesInherit;
     gcd[gcdoff].gd.handle_controlevent = Layer_Inherit;
-    gcd[gcdoff].gd.popup_msg = (unichar_t *) _("This specifies the dash pattern for a line.\nLeave this field blank for a solid line.\nOtherwise specify a list of up to 8 integers\n(between 0 and 255) which give the dash pattern\nin em-units. So \"10 10\" will draw the first\n10 units of a line, leave the next 10 blank,\ndraw the next 10, and so on.");
+    gcd[gcdoff].gd.popup_msg = _("This specifies the dash pattern for a line.\nLeave this field blank for a solid line.\nOtherwise specify a list of up to 8 integers\n(between 0 and 255) which give the dash pattern\nin em-units. So \"10 10\" will draw the first\n10 units of a line, leave the next 10 blank,\ndraw the next 10, and so on.");
     gcd[gcdoff++].creator = GCheckBoxCreate;
     shvarray[k++] = &gcd[gcdoff-1];
     shvarray[k++] = GCD_Glue;

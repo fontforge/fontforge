@@ -1248,35 +1248,35 @@ void DefineGroups(FontView *fv) {
 
     gcd[k].gd.pos.x = 5;
     gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+gcd[k-1].gd.pos.height+5;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     label[k].text = (unichar_t *) _("Identify by");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.popup_msg = (unichar_t *) _("Glyphs may be either identified by name or by unicode code point.\nGenerally you control this by what you type in.\nTyping \"A\" would identify a glyph by name.\nTyping \"U+0041\" identifies a glyph by code point.\nWhen loading glyphs from the selection you must specify which format is desired.");
+    gcd[k].gd.popup_msg = _("Glyphs may be either identified by name or by unicode code point.\nGenerally you control this by what you type in.\nTyping \"A\" would identify a glyph by name.\nTyping \"U+0041\" identifies a glyph by code point.\nWhen loading glyphs from the selection you must specify which format is desired.");
     gcd[k++].creator = GLabelCreate;
 
     gcd[k].gd.pos.x = 90; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-2;
     label[k].text = (unichar_t *) _("Name");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_visible | gg_enabled | gg_cb_on | gg_utf8_popup);
-    gcd[k].gd.popup_msg = (unichar_t *) _("Glyphs may be either identified by name or by unicode code point.\nGenerally you control this by what you type in.\nTyping \"A\" would identify a glyph by name.\nTyping \"U+0041\" identifies a glyph by code point.\nWhen loading glyphs from the selection you must specify which format is desired.");
+    gcd[k].gd.flags = (gg_visible | gg_enabled | gg_cb_on);
+    gcd[k].gd.popup_msg = _("Glyphs may be either identified by name or by unicode code point.\nGenerally you control this by what you type in.\nTyping \"A\" would identify a glyph by name.\nTyping \"U+0041\" identifies a glyph by code point.\nWhen loading glyphs from the selection you must specify which format is desired.");
     gcd[k++].creator = GRadioCreate;
 
     gcd[k].gd.pos.x = 140; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
     label[k].text = (unichar_t *) _("Unicode");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Glyphs may be either identified by name or by unicode code point.\nGenerally you control this by what you type in.\nTyping \"A\" would identify a glyph by name.\nTyping \"U+0041\" identifies a glyph by code point.\nWhen loading glyphs from the selection you must specify which format is desired.");
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.popup_msg = _("Glyphs may be either identified by name or by unicode code point.\nGenerally you control this by what you type in.\nTyping \"A\" would identify a glyph by name.\nTyping \"U+0041\" identifies a glyph by code point.\nWhen loading glyphs from the selection you must specify which format is desired.");
     gcd[k++].creator = GRadioCreate;
 
     label[k].text = (unichar_t *) _("Set From Font");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+18;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Set this glyph list to be the glyphs selected in the fontview");
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    gcd[k].gd.popup_msg = _("Set this glyph list to be the glyphs selected in the fontview");
+    gcd[k].gd.flags = gg_visible;
     gcd[k].gd.handle_controlevent = Group_FromSelection;
     gcd[k++].creator = GButtonCreate;
 
@@ -1284,8 +1284,8 @@ void DefineGroups(FontView *fv) {
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 110; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Set the fontview's selection to be the glyphs named here");
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    gcd[k].gd.popup_msg = _("Set the fontview's selection to be the glyphs named here");
+    gcd[k].gd.flags = gg_visible;
     gcd[k].gd.handle_controlevent = Group_ToSelection;
     gcd[k++].creator = GButtonCreate;
 
@@ -1293,8 +1293,8 @@ void DefineGroups(FontView *fv) {
     label[k].text = (unichar_t *) _("No Glyph Duplicates");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Glyph names (or unicode code points) may occur at most once in this group and any of its sub-groups");
+    gcd[k].gd.flags = gg_visible;
+    gcd[k].gd.popup_msg = _("Glyph names (or unicode code points) may occur at most once in this group and any of its sub-groups");
     gcd[k++].creator = GCheckBoxCreate;
 
     for ( kk=0; kk<3; ++kk )
@@ -1305,7 +1305,7 @@ void DefineGroups(FontView *fv) {
     gcd[k].gd.label = &std_colors[0];
     gcd[k].gd.u.list = std_colors;
     gcd[k].gd.handle_controlevent = Group_AddColor;
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible;
     gcd[k++].creator = GListButtonCreate;
 
     gcd[k].gd.pos.width = GDrawPixelsToPoints(NULL,pos.width)-20;

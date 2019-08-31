@@ -902,10 +902,10 @@ static char *LK_LangsDlg(GGadget *g, int r, int c) {
 	i = 0;
 	gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = 5;
 	gcd[i].gd.pos.height = 12*12+6;
-	gcd[i].gd.flags = gg_enabled|gg_visible|gg_list_alphabetic|gg_list_multiplesel|gg_utf8_popup;
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_list_alphabetic|gg_list_multiplesel;
 	gcd[i].gd.u.list = languages;
 	gcd[i].gd.cid = 0;
-	gcd[i].gd.popup_msg = (unichar_t *) _(
+	gcd[i].gd.popup_msg = _(
 	    "Select as many languages as needed\n"
 	    "Hold down the control key when clicking\n"
 	    "to make disjoint selections.");
@@ -1187,10 +1187,10 @@ static char *LK_ScriptsDlg(GGadget *g, int r, int c) {
     k=j=0;
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[1].gd.pos.y+14;
     gcd[k].gd.pos.width = 300; gcd[k].gd.pos.height = 90;
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k].gd.cid = CID_FeatureScripts;
     gcd[k].gd.u.matrix = &mi;
-    gcd[k].gd.popup_msg = (unichar_t *) _(
+    gcd[k].gd.popup_msg = _(
 	"Each feature is active for a specific set of\n"
 	"scripts and languages.\n"
 	"Usually only one script is specified, but\n"
@@ -1797,11 +1797,11 @@ int EditLookup(OTLookup *otl,int isgpos,SplineFont *sf) {
 
     gcd[1].gd.pos.x = 100; gcd[1].gd.pos.y = 6; gcd[1].gd.pos.width = 200;
     gcd[1].gd.flags = otl->lookup_type!=ot_undef && otl->subtables!=NULL?
-		(gg_visible| gg_utf8_popup) : (gg_visible | gg_enabled| gg_utf8_popup);
+		(gg_visible) : (gg_visible | gg_enabled);
     gcd[1].gd.cid = CID_LookupType;
     gcd[1].gd.u.list = lookuptypes[isgpos];
     gcd[1].gd.handle_controlevent = LK_TypeChanged;
-    gcd[1].gd.popup_msg = (unichar_t *) _(
+    gcd[1].gd.popup_msg = _(
 	"Each lookup may contain many transformations,\n"
 	"but each transformation must be of the same type.");
     gcd[1].creator = GListButtonCreate;
@@ -1825,10 +1825,10 @@ int EditLookup(OTLookup *otl,int isgpos,SplineFont *sf) {
 
     gcd[2].gd.pos.x = 10; gcd[2].gd.pos.y = gcd[1].gd.pos.y+14;
     gcd[2].gd.pos.width = 300; gcd[2].gd.pos.height = 90;
-    gcd[2].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[2].gd.flags = gg_enabled | gg_visible;
     gcd[2].gd.cid = CID_LookupFeatures;
     gcd[2].gd.u.matrix = &mi;
-    gcd[2].gd.popup_msg = (unichar_t *) _(
+    gcd[2].gd.popup_msg = _(
 	"Most lookups will be attached to a feature\n"
 	"active in a specific script for certain languages.\n"
 	"In some cases lookups will not be attached to any\n"
@@ -2354,7 +2354,7 @@ static void AnchorClassD(SplineFont *sf, struct lookup_subtable *sub, int def_la
 
     ACDMatrixInit(&mi,sf,sub);
     gcd[i].gd.pos.width = 300; gcd[i].gd.pos.height = 200;
-    gcd[i].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[i].gd.flags = gg_enabled | gg_visible;
     gcd[i].gd.cid = CID_Anchors;
     gcd[i].gd.u.matrix = &mi;
     gcd[i].data = &acd;
@@ -4609,8 +4609,8 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
-    gcd[i].gd.flags = isalphabetic ? (gg_enabled|gg_visible|gg_cb_on|gg_utf8_popup) : (gg_enabled|gg_visible|gg_utf8_popup);
-    gcd[i].gd.popup_msg = (unichar_t *) _("Sort this display based on the alphabetic name of the glyph");
+    gcd[i].gd.flags = isalphabetic ? (gg_enabled|gg_visible|gg_cb_on) : (gg_enabled|gg_visible);
+    gcd[i].gd.popup_msg = _("Sort this display based on the alphabetic name of the glyph");
     gcd[i].gd.handle_controlevent = PSTKD_Sort;
     gcd[i].gd.cid = CID_Alpha;
     gcd[i].creator = GRadioCreate;
@@ -4621,8 +4621,8 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
-    gcd[i].gd.flags = !isalphabetic ? (gg_enabled|gg_visible|gg_cb_on|gg_utf8_popup) : (gg_enabled|gg_visible|gg_utf8_popup);
-    gcd[i].gd.popup_msg = (unichar_t *) _("Sort this display based on the unicode code of the glyph");
+    gcd[i].gd.flags = !isalphabetic ? (gg_enabled|gg_visible|gg_cb_on) : (gg_enabled|gg_visible);
+    gcd[i].gd.popup_msg = _("Sort this display based on the unicode code of the glyph");
     gcd[i].gd.handle_controlevent = PSTKD_Sort;
     gcd[i].gd.cid = CID_Unicode;
     gcd[i].creator = GRadioCreate;
@@ -4633,8 +4633,8 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
-    gcd[i].gd.flags = stemming ? (gg_enabled|gg_visible|gg_cb_on|gg_utf8_popup) : (gg_enabled|gg_visible|gg_utf8_popup);
-    gcd[i].gd.popup_msg = (unichar_t *) _("Sort first using the base glyph (if any).\nThus Agrave would sort with A");
+    gcd[i].gd.flags = stemming ? (gg_enabled|gg_visible|gg_cb_on) : (gg_enabled|gg_visible);
+    gcd[i].gd.popup_msg = _("Sort first using the base glyph (if any).\nThus Agrave would sort with A");
     gcd[i].gd.handle_controlevent = PSTKD_Sort;
     gcd[i].gd.cid = CID_BaseChar;
     gcd[i].creator = GCheckBoxCreate;
@@ -4645,8 +4645,8 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
-    gcd[i].gd.flags = byscripts ? (gg_enabled|gg_visible|gg_cb_on|gg_utf8_popup) : (gg_enabled|gg_visible|gg_utf8_popup);
-    gcd[i].gd.popup_msg = (unichar_t *) _("Sort first using the glyph's script.\nThus A and Z would sort together\nwhile Alpha would sort with Omega and not A");
+    gcd[i].gd.flags = byscripts ? (gg_enabled|gg_visible|gg_cb_on) : (gg_enabled|gg_visible);
+    gcd[i].gd.popup_msg = _("Sort first using the glyph's script.\nThus A and Z would sort together\nwhile Alpha would sort with Omega and not A");
     if ( sub->lookup->features==NULL ||
 	    (sub->lookup->features->next==NULL &&
 	     (sub->lookup->features->scripts==NULL ||
@@ -4668,8 +4668,8 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
-	gcd[i].gd.flags = lookup_hideunused ? (gg_enabled|gg_visible|gg_cb_on|gg_utf8_popup) : (gg_enabled|gg_visible|gg_utf8_popup);
-	gcd[i].gd.popup_msg = (unichar_t *) _("Don't display columns of 0s.\nThe OpenType lookup allows for up to 8 kinds\nof data, but almost all lookups will use just one or two.\nOmitting the others makes the behavior clearer.");
+	gcd[i].gd.flags = lookup_hideunused ? (gg_enabled|gg_visible|gg_cb_on) : (gg_enabled|gg_visible);
+	gcd[i].gd.popup_msg = _("Don't display columns of 0s.\nThe OpenType lookup allows for up to 8 kinds\nof data, but almost all lookups will use just one or two.\nOmitting the others makes the behavior clearer.");
 	gcd[i].gd.handle_controlevent = PSTKD_HideUnused;
 	gcd[i].creator = GCheckBoxCreate;
 	varray[k++] = &gcd[i++]; varray[k++] = NULL;
@@ -4678,7 +4678,7 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
     PSTMatrixInit(&mi,sf,sub,&pstkd);
     mi_pos = i;
     gcd[i].gd.pos.height = 200;
-    gcd[i].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[i].gd.flags = gg_enabled | gg_visible;
     gcd[i].gd.cid = CID_PSTList;
     gcd[i].gd.u.matrix = &mi;
     gcd[i].data = &pstkd;
@@ -4695,15 +4695,15 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
     buttongcd[0].gd.pos.x = 5; buttongcd[0].gd.pos.y = 5+4;
     buttongcd[0].gd.flags =
 	    sub->lookup->features==NULL || sub->vertical_kerning ?
-	     gg_visible|gg_utf8_popup :
-	     gg_enabled|gg_visible|gg_utf8_popup;
+	     gg_visible:
+	     gg_enabled|gg_visible;
     if ( lookup_type==gpos_pair ) {
-	buttongcd[0].gd.popup_msg = (unichar_t *) _("For each script to which this lookup applies, look at all pairs of\n"
+	buttongcd[0].gd.popup_msg = _("For each script to which this lookup applies, look at all pairs of\n"
 						    "glyphs in that script and try to guess a reasonable kerning value\n"
 			                            "for that pair.");
 	buttongcd[0].gd.handle_controlevent = PSTKD_AutoKern;
     } else {
-	buttongcd[0].gd.popup_msg = (unichar_t *) _("Add entries for all glyphs in the scripts to which this lookup applies.\nWhen FontForge can find a default value it will add that too.");
+	buttongcd[0].gd.popup_msg = _("Add entries for all glyphs in the scripts to which this lookup applies.\nWhen FontForge can find a default value it will add that too.");
 	buttongcd[0].gd.handle_controlevent = PSTKD_Populate;
     }
     buttongcd[0].creator = GButtonCreate;
@@ -4715,14 +4715,14 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
     buttonlabel[1].text_in_resource = true;
     buttongcd[1].gd.label = &buttonlabel[1];
     buttongcd[1].gd.pos.x = 5; buttongcd[1].gd.pos.y = 5+4;
-    buttongcd[1].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    buttongcd[1].gd.flags = gg_enabled|gg_visible;
     if ( lookup_type==gpos_pair ) {
 	if ( sub->vertical_kerning )
-	    buttongcd[1].gd.flags = gg_visible|gg_utf8_popup;
-	buttongcd[1].gd.popup_msg = (unichar_t *) _("Add kerning info between all pairs of selected glyphs" );
+	    buttongcd[1].gd.flags = gg_visible;
+	buttongcd[1].gd.popup_msg = _("Add kerning info between all pairs of selected glyphs" );
 	buttongcd[1].gd.handle_controlevent = PSTKD_AutoKernSelected;
     } else {
-	buttongcd[1].gd.popup_msg = (unichar_t *) _("Add entries for all selected glyphs.");
+	buttongcd[1].gd.popup_msg = _("Add entries for all selected glyphs.");
 	buttongcd[1].gd.handle_controlevent = PSTKD_PopulateSelected;
     }
     buttongcd[1].creator = GButtonCreate;
@@ -4732,8 +4732,8 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
     buttonlabel[2].text_in_resource = true;
     buttongcd[2].gd.label = &buttonlabel[2];
     buttongcd[2].gd.pos.x = 5; buttongcd[2].gd.pos.y = 5+4;
-    buttongcd[2].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-    buttongcd[2].gd.popup_msg = (unichar_t *)
+    buttongcd[2].gd.flags = gg_enabled|gg_visible;
+    buttongcd[2].gd.popup_msg = 
 	    (sub->lookup->lookup_type == gpos_single ? _("Remove all \"empty\" entries -- those where all fields are 0") :
 	     sub->lookup->lookup_type == gpos_pair ? _("Remove all \"empty\" entries -- entries with no second glyph") :
 	     sub->lookup->lookup_type == gsub_ligature ? _("Remove all \"empty\" entries -- those with no source glyphs") :
@@ -4746,8 +4746,8 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
     buttonlabel[3].text_in_resource = true;
     buttongcd[3].gd.label = &buttonlabel[3];
     buttongcd[3].gd.pos.x = 5; buttongcd[3].gd.pos.y = 5+4;
-    buttongcd[3].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-    buttongcd[3].gd.popup_msg = (unichar_t *) _("Remove all entries.");
+    buttongcd[3].gd.flags = gg_enabled|gg_visible;
+    buttongcd[3].gd.popup_msg = _("Remove all entries.");
     buttongcd[3].gd.handle_controlevent = PSTKD_RemoveAll;
     buttongcd[3].creator = GButtonCreate;
 
@@ -4757,8 +4757,8 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
-	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-	gcd[i].gd.popup_msg = (unichar_t *) _(
+	gcd[i].gd.flags = gg_enabled|gg_visible;
+	gcd[i].gd.popup_msg = _(
 	    "Add entries to the lookup based on the following suffix.\n"
 	    "So if the suffix is set to \"superior\" and the font\n"
 	    "contains glyphs named \"A\" and \"A.superior\" (and the\n"
@@ -4772,7 +4772,7 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
 	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = sub->suffix==NULL ? NULL : &label[i];
-	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[i].gd.flags = gg_enabled|gg_visible;
 	gcd[i].gd.popup_msg = gcd[i-1].gd.popup_msg;
 	gcd[i].gd.cid = CID_Suffix;
 	gcd[i].creator = GTextFieldCreate;
@@ -4788,10 +4788,10 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
-	gcd[i].gd.flags = gg_enabled|gg_visible|gg_cb_on|gg_utf8_popup;
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_cb_on;
 	if ( is_boundsFeat(sub)!=0 )
-	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-	gcd[i].gd.popup_msg = (unichar_t *) _("When adding new entries, give them the same\ndelta values as those on the first line.");
+	    gcd[i].gd.flags = gg_enabled|gg_visible;
+	gcd[i].gd.popup_msg = _("When adding new entries, give them the same\ndelta values as those on the first line.");
 	gcd[i].gd.cid = CID_AllSame;
 	gcd[i].creator = GCheckBoxCreate;
 	varray[k++] = &gcd[i++]; varray[k++] = NULL;
@@ -4802,8 +4802,8 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
-	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-	gcd[i].gd.popup_msg = (unichar_t *) _(
+	gcd[i].gd.flags = gg_enabled|gg_visible;
+	gcd[i].gd.popup_msg = _(
 	    "Add entries to the lookup trying to make the optical\n"
 	    "separation between all pairs of glyphs equal to this\n"
 	    "value." );
@@ -4816,7 +4816,7 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.width = 50;
-	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[i].gd.flags = gg_enabled|gg_visible;
 	gcd[i].gd.popup_msg = gcd[i-1].gd.popup_msg;
 	gcd[i].gd.cid = CID_Separation;
 	gcd[i].creator = GTextFieldCreate;
@@ -4827,8 +4827,8 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
-	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-	gcd[i].gd.popup_msg = (unichar_t *) _(
+	gcd[i].gd.flags = gg_enabled|gg_visible;
+	gcd[i].gd.popup_msg = _(
 	    "Any computed kerning change whose absolute value is less\n"
 	    "that this will be ignored.\n" );
 	gcd[i].creator = GLabelCreate;
@@ -4840,7 +4840,7 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.width = 50;
-	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[i].gd.flags = gg_enabled|gg_visible;
 	gcd[i].gd.popup_msg = gcd[i-1].gd.popup_msg;
 	gcd[i].gd.cid = CID_MinKern;
 	gcd[i].creator = GTextFieldCreate;
@@ -4851,10 +4851,10 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
-	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[i].gd.flags = gg_enabled|gg_visible;
 	if ( sub->kerning_by_touch )
-	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_cb_on;
-	gcd[i].gd.popup_msg = (unichar_t *) _(
+	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_cb_on;
+	gcd[i].gd.popup_msg = _(
 	    "Normally kerning is based on achieving a constant (optical)\n"
 	    "separation between glyphs, but occasionally it is desirable\n"
 	    "to have a kerning table where the kerning is based on the\n"
@@ -4875,10 +4875,10 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
 	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[i].gd.flags = gg_enabled|gg_visible;
 	if ( sub->onlyCloser )
-	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_cb_on;
-	gcd[i].gd.popup_msg = (unichar_t *) _(
+	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_cb_on;
+	gcd[i].gd.popup_msg = _(
 	    "When doing autokerning, only move glyphs closer together,\n"
 	    "so the kerning offset will be negative.");
 	gcd[i].gd.cid = CID_OnlyCloser;
@@ -4889,10 +4889,10 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
 	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[i].gd.flags = gg_enabled|gg_visible;
 	if ( !sub->dontautokern )
-	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_cb_on;
-	gcd[i].gd.popup_msg = (unichar_t *) _(
+	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_cb_on;
+	gcd[i].gd.popup_msg = _(
 	    "When adding new entries provide default kerning values.");
 	gcd[i].gd.cid = CID_Autokern;
 	gcd[i].creator = GCheckBoxCreate;
@@ -5650,8 +5650,8 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
     label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
-    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_cb_on;
-    gcd[i].gd.popup_msg = (unichar_t *) _(
+    gcd[i].gd.flags = gg_enabled|gg_visible|gg_cb_on;
+    gcd[i].gd.popup_msg = _(
 	"In this format you specify every kerning pair in which\n"
 	"you are interested in." );
     gcd[i].gd.cid = CID_KPairs;
@@ -5663,8 +5663,8 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
     label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
-    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_rad_continueold;
-    gcd[i].gd.popup_msg = (unichar_t *) _(
+    gcd[i].gd.flags = gg_enabled|gg_visible|gg_rad_continueold;
+    gcd[i].gd.popup_msg = _(
 	"In this format you define a series of glyph classes and\n"
 	"specify a matrix showing how each class interacts with all\n"
 	"the others.");
@@ -5677,8 +5677,8 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
     label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
-    gcd[i].gd.flags = gg_visible|gg_utf8_popup|gg_cb_on;
-    gcd[i].gd.popup_msg = (unichar_t *) _(
+    gcd[i].gd.flags = gg_visible|gg_cb_on;
+    gcd[i].gd.popup_msg = _(
 	"FontForge will look at the glyphs selected in the font view\n"
 	"and will try to find groups of glyphs which are most alike\n"
 	"and generate kerning classes based on that information." );
@@ -5695,8 +5695,8 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
-    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-    gcd[i].gd.popup_msg = (unichar_t *) _(
+    gcd[i].gd.flags = gg_enabled|gg_visible;
+    gcd[i].gd.popup_msg = _(
 	"This is roughly (very roughly) the number off em-units\n"
 	"of error that two glyphs may have to belong in the same\n"
 	"class. This error is taken by comparing the two glyphs\n"
@@ -5713,7 +5713,7 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.width = 50;
-    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[i].gd.flags = gg_enabled|gg_visible;
     gcd[i].gd.popup_msg = gcd[i-1].gd.popup_msg;
     gcd[i].gd.cid = CID_ClassDistance;
     gcd[i].creator = GTextFieldCreate;
@@ -5730,8 +5730,8 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
-	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-	gcd[i].gd.popup_msg = (unichar_t *) _(
+	gcd[i].gd.flags = gg_enabled|gg_visible;
+	gcd[i].gd.popup_msg = _(
 	    "Add entries to the lookup trying to make the optical\n"
 	    "separation between all pairs of glyphs equal to this\n"
 	    "value." );
@@ -5744,7 +5744,7 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.width = 50;
-	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[i].gd.flags = gg_enabled|gg_visible;
 	gcd[i].gd.popup_msg = gcd[i-1].gd.popup_msg;
 	gcd[i].gd.cid = CID_Separation;
 	gcd[i].creator = GTextFieldCreate;
@@ -5755,8 +5755,8 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
-	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-	gcd[i].gd.popup_msg = (unichar_t *) _(
+	gcd[i].gd.flags = gg_enabled|gg_visible;
+	gcd[i].gd.popup_msg = _(
 	    "Any computed kerning change whose absolute value is less\n"
 	    "that this will be ignored.\n" );
 	gcd[i].creator = GLabelCreate;
@@ -5768,7 +5768,7 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.width = 50;
-	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[i].gd.flags = gg_enabled|gg_visible;
 	gcd[i].gd.popup_msg = gcd[i-1].gd.popup_msg;
 	gcd[i].gd.cid = CID_MinKern;
 	gcd[i].creator = GTextFieldCreate;
@@ -5779,10 +5779,10 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
-	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[i].gd.flags = gg_enabled|gg_visible;
 	if ( sub->kerning_by_touch )
-	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_cb_on;
-	gcd[i].gd.popup_msg = (unichar_t *) _(
+	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_cb_on;
+	gcd[i].gd.popup_msg = _(
 	    "Normally kerning is based on achieving a constant (optical)\n"
 	    "separation between glyphs, but occasionally it is desirable\n"
 	    "to have a kerning table where the kerning is based on the\n"
@@ -5803,10 +5803,10 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
 	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_cb_on;
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_cb_on;
 	if ( sub->onlyCloser )
-	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_cb_on;
-	gcd[i].gd.popup_msg = (unichar_t *) _(
+	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_cb_on;
+	gcd[i].gd.popup_msg = _(
 	    "When doing autokerning, only move glyphs closer together,\n"
 	    "so the kerning offset will be negative.");
 	gcd[i].gd.cid = CID_OnlyCloser;
@@ -5817,10 +5817,10 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
 	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[i].gd.flags = gg_enabled|gg_visible;
 	if ( !sub->dontautokern )
-	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_cb_on;
-	gcd[i].gd.popup_msg = (unichar_t *) _(
+	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_cb_on;
+	gcd[i].gd.popup_msg = _(
 	    "When adding new entries provide default kerning values.");
 	gcd[i].gd.cid = CID_Autokern;
 	gcd[i].creator = GCheckBoxCreate;
@@ -6598,15 +6598,15 @@ void FVMassGlyphRename(FontView *fv) {
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 10;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[k].gd.popup_msg = (unichar_t *) _("So if you type \"A\" here the first selected glyph would be named \"A.suffix\".\nThe second \"B.suffix\", and so on.");
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.popup_msg = _("So if you type \"A\" here the first selected glyph would be named \"A.suffix\".\nThe second \"B.suffix\", and so on.");
     gcd[k++].creator = GRadioCreate;
     hvarray[i][0] = &gcd[k-1];
 
     startnamek = k;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.cid = CID_StartName;
-    gcd[k].gd.popup_msg = (unichar_t *) _("So if you type \"A\" here the first selected glyph would be named \"A.suffix\".\nThe second \"B.suffix\", and so on.");
+    gcd[k].gd.popup_msg = _("So if you type \"A\" here the first selected glyph would be named \"A.suffix\".\nThe second \"B.suffix\", and so on.");
     gcd[k++].creator = GTextCompletionCreate;
     hvarray[i][1] = &gcd[k-1]; hvarray[i++][2] = NULL;
 

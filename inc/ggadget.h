@@ -205,12 +205,10 @@ enum gg_flags { gg_visible=1, gg_enabled=2, gg_pos_in_pixels=4,
 		gg_dontcopybox=0x10000000,
 		gg_pos_use0=0x20000000, gg_pos_under=0x40000000,
 		gg_pos_newline = (int) 0x80000000,
-		gg_skip_hotkey_processing = (int) 0x100000000,
 		/* Reuse some flag values for different widgets */
 		gg_file_pulldown=gg_sb_vert, gg_file_multiple = gg_list_multiplesel,
 		gg_text_xim = gg_tabset_scroll,
-		gg_tabset_vert = gg_sb_vert,
-		gg_utf8_popup = gg_rowcol_displayonly
+		gg_tabset_vert = gg_sb_vert
 };
 
 typedef struct ggadgetdata {
@@ -236,7 +234,7 @@ typedef struct ggadgetdata {
 	int radiogroup;
     } u;
     enum gg_flags flags;
-    const unichar_t *popup_msg;		/* Brief help message */
+    const char *popup_msg;		/* Brief help message, utf-8 encoded */
     GGadgetHandler handle_controlevent;
 } GGadgetData;
 

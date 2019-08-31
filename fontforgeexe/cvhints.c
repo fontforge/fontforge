@@ -464,9 +464,9 @@ void CVReviewHints(CharView *cv) {
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
-	gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_MovePoints;
-	gcd[k].gd.popup_msg = (unichar_t *) _("When the hint's position is changed\nadjust the postion of any points\nwhich lie on that hint");
+	gcd[k].gd.popup_msg = _("When the hint's position is changed\nadjust the postion of any points\nwhich lie on that hint");
 	gcd[k].creator = GCheckBoxCreate;
 	harray3[0] = &gcd[k++]; harray3[1] = GCD_Glue; harray3[2] = NULL;
 
@@ -536,24 +536,24 @@ void CVReviewHints(CharView *cv) {
 	gcd[k].creator = GLineCreate;
 	barray[1][0] = GCD_Glue; barray[1][1] = &gcd[k++]; barray[1][2] = barray[1][3] = GCD_ColSpan; barray[1][4] = GCD_Glue; barray[1][5] = NULL;
 
-	gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	gcd[k].gd.flags = gg_visible | gg_enabled;
 	label[k].text = (unichar_t *) _("< _Prev");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.cid = CID_Prev;
-	gcd[k].gd.popup_msg = (unichar_t *) _("Previous Hint.");
+	gcd[k].gd.popup_msg = _("Previous Hint.");
 	gcd[k].gd.handle_controlevent = RH_NextPrev;
 	gcd[k].creator = GButtonCreate;
 	barray[2][0] = GCD_Glue; barray[2][1] = &gcd[k++]; barray[2][2] = GCD_Glue;
 
-	gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	gcd[k].gd.flags = gg_visible | gg_enabled;
 	label[k].text = (unichar_t *) _("_Next >");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.cid = CID_Next;
-	gcd[k].gd.popup_msg = (unichar_t *) _("Next Hint.");
+	gcd[k].gd.popup_msg = _("Next Hint.");
 	gcd[k].gd.handle_controlevent = RH_NextPrev;
 	gcd[k].creator = GButtonCreate;
 	barray[2][3] = &gcd[k++]; barray[2][4] = GCD_Glue; barray[2][5] = NULL;
@@ -562,9 +562,9 @@ void CVReviewHints(CharView *cv) {
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
-	gcd[k].gd.flags = gg_enabled|gg_visible|gg_cb_on|gg_utf8_popup;
+	gcd[k].gd.flags = gg_enabled|gg_visible|gg_cb_on;
 	gcd[k].gd.cid = CID_RegenHM;
-	gcd[k].gd.popup_msg = (unichar_t *) _("If you have made any changes to the hints,\nthen in addition to changing the glyph's hints\nrefigure it's hint masks and substitution points.");
+	gcd[k].gd.popup_msg = _("If you have made any changes to the hints,\nthen in addition to changing the glyph's hints\nrefigure it's hint masks and substitution points.");
 	gcd[k].creator = GCheckBoxCreate;
 	barray[3][0] = &gcd[k++]; barray[3][1] = barray[3][2] = barray[3][3] = barray[3][4] = GCD_ColSpan; barray[3][5] = NULL;
 

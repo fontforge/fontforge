@@ -1118,13 +1118,13 @@ static int TileAsk(struct tiledata *td,SplineFont *sf) {
 	chvarray[1][i] = &gcd[k-1];
 
 	gcd[k].gd.pos.x = gcd[0].gd.pos.x; gcd[k].gd.pos.y = gcd[6].gd.pos.y+24;
-	gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	gcd[k].gd.flags = gg_visible | gg_enabled;
 	if ( include_whitespace[i] ) gcd[k].gd.flags |= gg_cb_on;
 	label[k].text = (unichar_t *) _("Include Whitespace below Tile");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
-	gcd[k].gd.popup_msg = (unichar_t *) _("Normally the Tile will consist of everything\nwithin the minimum bounding box of the tile --\nso adjacent tiles will abut directly on one\nanother. If you wish whitespace between tiles\nset this flag");
+	gcd[k].gd.popup_msg = _("Normally the Tile will consist of everything\nwithin the minimum bounding box of the tile --\nso adjacent tiles will abut directly on one\nanother. If you wish whitespace between tiles\nset this flag");
 	gcd[k].gd.cid = CID_IncludeWhiteSpaceBelowTile+i;
 	gcd[k++].creator = GCheckBoxCreate;
 	chvarray[2][i] = &gcd[k-1];
@@ -1132,37 +1132,37 @@ static int TileAsk(struct tiledata *td,SplineFont *sf) {
     chvarray[0][4] = chvarray[1][4] = chvarray[2][4] = chvarray[3][0] = NULL;
 
     gcd[k].gd.pos.x = 6; gcd[k].gd.pos.y = 6;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.mnemonic = 'L';
     label[k].text = (unichar_t *) _("_Left");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.popup_msg = (unichar_t *) _("The tiles should be placed to the left of the path\nas the path is traced from its start point to its end");
+    gcd[k].gd.popup_msg = _("The tiles should be placed to the left of the path\nas the path is traced from its start point to its end");
     gcd[k].gd.cid = CID_Left;
     gcd[k++].creator = GRadioCreate;
     rhvarray[0][0] = &gcd[k-1];
 
     gcd[k].gd.pos.x = 60; gcd[k].gd.pos.y = gcd[0].gd.pos.y;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.mnemonic = 'C';
     label[k].text = (unichar_t *) _("C_enter");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.popup_msg = (unichar_t *) _("The tiles should be centered on the path");
+    gcd[k].gd.popup_msg = _("The tiles should be centered on the path");
     gcd[k].gd.cid = CID_Center;
     gcd[k++].creator = GRadioCreate;
     rhvarray[0][1] = &gcd[k-1];
 
     gcd[k].gd.pos.x = 140; gcd[k].gd.pos.y = gcd[1].gd.pos.y;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.mnemonic = 'R';
     label[k].text = (unichar_t *) _("_Right");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.popup_msg = (unichar_t *) _("The tiles should be placed to the right of the path\nas the path is traced from its start point to its end");
+    gcd[k].gd.popup_msg = _("The tiles should be placed to the right of the path\nas the path is traced from its start point to its end");
     gcd[k].gd.cid = CID_Right;
     gcd[k++].creator = GRadioCreate;
     rhvarray[0][2] = &gcd[k-1];
@@ -1177,37 +1177,37 @@ static int TileAsk(struct tiledata *td,SplineFont *sf) {
     rhvarray[1][3] = GCD_Glue; rhvarray[1][4] = NULL;
 
     gcd[k].gd.pos.x = gcd[0].gd.pos.x; gcd[k].gd.pos.y = gcd[2].gd.pos.y+24;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.mnemonic = 'T';
     label[k].text = (unichar_t *) _("_Tile");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.popup_msg = (unichar_t *) _("Multiple copies of the selection should be tiled onto the path");
+    gcd[k].gd.popup_msg = _("Multiple copies of the selection should be tiled onto the path");
     gcd[k].gd.cid = CID_Tile;
     gcd[k++].creator = GRadioCreate;
     rhvarray[2][0] = &gcd[k-1];
 
     gcd[k].gd.pos.x = gcd[1].gd.pos.x; gcd[k].gd.pos.y = gcd[4].gd.pos.y;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.mnemonic = 'a';
     label[k].text = (unichar_t *) _("Sc_ale & Tile");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.popup_msg = (unichar_t *) _("An integral number of the selection will be used to cover the path.\nIf the path length is not evenly divisible by the selection's\nheight, then the selection should be scaled slightly.");
+    gcd[k].gd.popup_msg = _("An integral number of the selection will be used to cover the path.\nIf the path length is not evenly divisible by the selection's\nheight, then the selection should be scaled slightly.");
     gcd[k].gd.cid = CID_TileScale;
     gcd[k++].creator = GRadioCreate;
     rhvarray[2][1] = &gcd[k-1];
 
     gcd[k].gd.pos.x = gcd[2].gd.pos.x; gcd[k].gd.pos.y = gcd[5].gd.pos.y;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.mnemonic = 'S';
     label[k].text = (unichar_t *) _("_Scale");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.popup_msg = (unichar_t *) _("The selection should be scaled so that it will cover the path's length");
+    gcd[k].gd.popup_msg = _("The selection should be scaled so that it will cover the path's length");
     gcd[k].gd.cid = CID_Scale;
     gcd[k++].creator = GRadioCreate;
     rhvarray[2][2] = &gcd[k-1];

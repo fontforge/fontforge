@@ -202,10 +202,10 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y+24;
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
     if ( oldextrema )
 	gcd[k].gd.flags |= gg_cb_on;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Normally simplify will not remove points at the extrema of curves\n(both PostScript and TrueType suggest you retain these points)");
+    gcd[k].gd.popup_msg = _("Normally simplify will not remove points at the extrema of curves\n(both PostScript and TrueType suggest you retain these points)");
     gcd[k].gd.cid = CID_Extrema;
     gcd[k++].creator = GCheckBoxCreate;
     varray[l][0] = &gcd[k-1]; varray[l++][1] = NULL;
@@ -215,11 +215,11 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
     if ( oldslopes )
 	gcd[k].gd.flags |= gg_cb_on;
     gcd[k].gd.cid = CID_Slopes;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Normally simplify will not change the slope of the contour at the points.");
+    gcd[k].gd.popup_msg = _("Normally simplify will not change the slope of the contour at the points.");
     gcd[k++].creator = GCheckBoxCreate;
     varray[l][0] = &gcd[k-1]; varray[l++][1] = NULL;
 
@@ -228,11 +228,11 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
     if ( oldstart )
 	gcd[k].gd.flags |= gg_cb_on;
     gcd[k].gd.cid = CID_Start;
-    gcd[k].gd.popup_msg = (unichar_t *) _("If the start point of a contour is not an extremum, find a new start point (on the contour) which is.");
+    gcd[k].gd.popup_msg = _("If the start point of a contour is not an extremum, find a new start point (on the contour) which is.");
     gcd[k++].creator = GCheckBoxCreate;
     varray[l][0] = &gcd[k-1]; varray[l++][1] = NULL;
 
@@ -248,13 +248,13 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+4;
     if ( sf->layers[ly_fore].order2 )
-	gcd[k].gd.flags = gg_visible|gg_utf8_popup;
+	gcd[k].gd.flags = gg_visible;
     else {
-	gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
 	if ( oldsmooth )
 	    gcd[k].gd.flags |= gg_cb_on;
     }
-    gcd[k].gd.popup_msg = (unichar_t *) _("Simplify will examine corner points whose control points are almost\ncolinear and smooth them into curve points");
+    gcd[k].gd.popup_msg = _("Simplify will examine corner points whose control points are almost\ncolinear and smooth them into curve points");
     gcd[k].gd.cid = CID_Smooth;
     gcd[k++].creator = GCheckBoxCreate;
     varray[l][0] = &gcd[k-1]; varray[l++][1] = NULL;
@@ -294,11 +294,11 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     if ( sf->layers[ly_fore].order2 )
 	gcd[k].gd.flags = gg_visible;
     else {
-	gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
 	if ( oldsmoothhv )
-	    gcd[k].gd.flags |= gg_cb_on|gg_utf8_popup;
+	    gcd[k].gd.flags |= gg_cb_on;
     }
-    gcd[k].gd.popup_msg = (unichar_t *) _("If the slope of an adjusted point is near horizontal or vertical\nsnap to that");
+    gcd[k].gd.popup_msg = _("If the slope of an adjusted point is near horizontal or vertical\nsnap to that");
     gcd[k].gd.cid = CID_SmoothHV;
     gcd[k++].creator = GCheckBoxCreate;
     harray3[0] = GCD_HPad10; harray3[1] = &gcd[k-1]; harray3[2] = GCD_Glue; harray3[3] = NULL;
@@ -314,13 +314,13 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14; 
     if ( sf->layers[ly_fore].order2 )
-	gcd[k].gd.flags = gg_visible|gg_utf8_popup;
+	gcd[k].gd.flags = gg_visible;
     else {
-	gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
 	if ( oldlinefix )
 	    gcd[k].gd.flags |= gg_cb_on;
     }
-    gcd[k].gd.popup_msg = (unichar_t *) _("If a line has a bump on it then flatten out that bump");
+    gcd[k].gd.popup_msg = _("If a line has a bump on it then flatten out that bump");
     gcd[k].gd.cid = CID_FlattenBumps;
     gcd[k++].creator = GCheckBoxCreate;
     varray[l][0] = &gcd[k-1]; varray[l++][1] = NULL;
