@@ -71,7 +71,7 @@ time_t GetST_MTime(struct stat s) {
 	return st_time;
 }
 
-char* HashData(unsigned char* input, int len) {
+char* FF_HashData(unsigned char* input, int len) {
     GChecksum* gcs = g_checksum_new(G_CHECKSUM_SHA256);
     g_checksum_update(gcs, input, len);
     const char* gcs_cs = g_checksum_get_string(gcs);
@@ -81,12 +81,12 @@ char* HashData(unsigned char* input, int len) {
     return cs;
 }
 
-extern char* HashFile(char* filename) {
+extern char* FF_HashFile(char* filename) {
     char *contents;
     gsize length;
     g_file_get_contents(filename, &contents, &length, NULL);
     TRACE("Hashing %s of length %d...\n", filename, length);
-    const char* cs = HashData(contents, length);
+    const char* cs = FF_HashData(contents, length);
     g_free(contents);
     return (char*)cs;
 }

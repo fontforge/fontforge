@@ -3748,7 +3748,7 @@ static ImageList *SFDGetImageReference(FILE *sfd) {
         return NULL;
     }
 
-    char* hn = HashFile(fn);
+    char* hn = FF_HashFile(fn);
 
     if (strcmp(hex,hn)!=0) LogError(_("Content of file %s no longer matches what it was when SFD file saved"), fn);
 

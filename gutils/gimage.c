@@ -79,7 +79,7 @@ errorGImageCreate:
 extern bool GImageMakeReference(struct _GImage *base, char *to_file, char *relative_to) {
     TRACE("Making reference to %s relative to %s\n", to_file, relative_to);
     base->refdata.reference = true;
-    base->refdata.hash = HashFile(to_file);
+    base->refdata.hash = FF_HashFile(to_file);
 
     char* relativized = NULL;
 
@@ -464,7 +464,7 @@ return( _GImageGetPixelColor(base,x,y));
 const char* GImageHash(GImage *img) {
     struct _GImage *base = img->list_len==0?img->u.image:img->u.images[0];
 
-    return HashData((char*)(base->data), (base->bytes_per_line * base->width));
+    return FF_HashData((char*)(base->data), (base->bytes_per_line * base->width));
 }
 
 // This function was moved from gimageclut.c, because libfontforge doesn't link with gdraw,
