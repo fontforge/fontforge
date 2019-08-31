@@ -28,6 +28,7 @@
 #include <fontforge-config.h>
 
 #include "fontforge.h"
+#include "gutils.h"
 
 int main( int argc, char **argv ) {
     return fontforge_main( argc, argv );

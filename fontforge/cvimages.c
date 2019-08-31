@@ -953,9 +953,8 @@ void SCAddScaleImage(SplineChar *sc,GImage *image,int doclear, int layer) {
     SCInsertImage(sc,image,scale,sc->parent->ascent,0,layer);
 }
 
-int FVImportImages(FontViewBase *fv,char *path,int format,int toback, int flags) {
+int FVImportImages(FontViewBase *fv,char *path,int format,int toback, bool reference, int flags) {
     GImage *image;
-    /*struct _GImage *base;*/
     int tot;
     char *start = path, *endpath=path;
     int i;
@@ -971,7 +970,7 @@ int FVImportImages(FontViewBase *fv,char *path,int format,int toback, int flags)
 	    if ( image==NULL ) {
 		ff_post_error(_("Bad image file"),_("Bad image file: %.100s"),start);
 return(false);
-	    }
+        } 
 	    ++tot;
 	    SCAddScaleImage(sc,image,true,toback?ly_back:ly_fore);
 	} else if ( format==fv_svg ) {

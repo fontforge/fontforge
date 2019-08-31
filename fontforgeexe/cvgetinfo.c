@@ -67,6 +67,7 @@ typedef struct gidata {
     GGadget *group1ret, *group2ret;
 } GIData;
 
+// PointGetInfo
 #define CID_BaseX	2001
 #define CID_BaseY	2002
 #define CID_NextXOff	2003
@@ -105,6 +106,7 @@ typedef struct gidata {
 #define CID_SpiroRight	2055
 #define CID_TabSet	2100
 
+// ApGetInfo
 #define CID_X		3001
 #define CID_Y		3002
 #define CID_NameList	3003
@@ -120,6 +122,11 @@ typedef struct gidata {
 #define CID_Delete	3013
 #define CID_New		3014
 #define CID_MatchPt	3015
+
+// ImgGetInfo
+#define CID_DataSourceLabel	4001
+#define CID_LinkUnlinkButton	4002
+#define CID_II_HVBox	4003
 
 #define RI_Width	225
 #define RI_Height	246
@@ -141,6 +148,39 @@ static int GI_Cancel(GGadget *g, GEvent *e) {
 	ci->done = true;
     }
 return( true );
+}
+
+static void II_Display(GIData* gi);
+static int GI_LinkUnlinkReference(GGadget *g, GEvent *e) {
+    if ( e->type!=et_controlevent || e->u.control.subtype != et_buttonactivate ) {
+        return false;
+    }
+	GIData *gi = GDrawGetUserData(GGadgetGetWindow(g));
+
+    ImageList* img = gi->img;
+    struct _GImage *base = img->image->list_len==0?
+	    img->image->u.image:img->image->u.images[0];
+
+    if (base->refdata.reference) { // Unlink reference
+        GImageUnmakeReference(base);
+    } else { // Link reference
+        char* filename = gwwv_open_filename(_("Where does this image exist on disk?"),NULL,"*",NULL);
+        if (filename != NULL) {
+            GImage* image = GImageRead(filename);
+
+            if (image == NULL) {
+                gwwv_post_error(_("Cannot link reference"),_("FontForge failed to interpret the file you chose as an image."));
+            } else
+            if (GImageSame(image, img->image)) {
+                GImageMakeReference(base, filename, gi->cv->b.fv->sf->filename);
+            } else {
+                gwwv_post_error(_("Cannot link reference"),_("The image you chose does not contain the same data as the one in the SFD; cannot link reference."));
+            }
+        }
+    }
+
+    II_Display(gi);
+    return true;
 }
 
 static int GI_TransChange(GGadget *g, GEvent *e) {
@@ -648,11 +688,53 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
     GDrawDestroyWindow(gi.gw);
 }
 
+static void II_Display(GIData* gi) {
+    GGadget* lub = GWidgetGetControl(gi->gw, CID_LinkUnlinkButton);
+    GGadget* dsl = GWidgetGetControl(gi->gw, CID_DataSourceLabel);
+    GGadget* hvbox = GWidgetGetControl(gi->gw, CID_II_HVBox);
+
+    ImageList* img = gi->img;
+    struct _GImage *base = img->image->list_len==0?
+	    img->image->u.image:img->image->u.images[0];
+
+    const char* ur = _("_Unlink Reference");
+    const char* lr = _("_Link Reference");
+    const char* refstr = _("Data in file: ");
+
+    char* refbuf;
+    if (base->refdata.reference) {
+        // 4 is for (, ), ' ', and \0
+        refbuf = calloc(strlen(refstr)+strlen(base->refdata.filename)
+                       +SHA256_DIGEST_LEN*2+4, sizeof(char));
+
+        sprintf(refbuf, refstr);
+        strcat(refbuf, base->refdata.filename);
+        strcat(refbuf, " (");
+        strcat(refbuf, base->refdata.hash);
+        strcat(refbuf, ")");
+    } else {
+        refbuf = _("Data is in SFD file");
+    }
+
+    GGadgetSetTitle8(dsl, refbuf);
+
+    if (base->refdata.reference) {
+        GGadgetSetTitle8WithMn(lub, ur);
+    } else {
+        GGadgetSetTitle8WithMn(lub, lr);
+    }
+
+    // These need to be here, and not in ImgGetInfo, because when a reference is unlinked
+    // the window won't resize smaller on its own without them.
+    GHVBoxSetExpandableRow(hvbox,gb_expandglue);
+    GHVBoxFitWindow(hvbox);
+}
+
 static void ImgGetInfo(CharView *cv, ImageList *img) {
     static GIData gi;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[12], boxes[3], *varray[11], *harray[6];
+    GGadgetCreateData gcd[12], boxes[5], *varray[16], *harray[6], *harray2[6];
     GTextInfo label[12];
     char posbuf[100], scalebuf[100], sizebuf[100];
     struct _GImage *base = img->image->list_len==0?
@@ -678,6 +760,9 @@ static void ImgGetInfo(CharView *cv, ImageList *img) {
 
 	memset(&gcd,0,sizeof(gcd));
 	memset(&label,0,sizeof(label));
+	memset(&varray,0,sizeof(varray));
+	memset(&harray,0,sizeof(harray));
+	memset(&harray2,0,sizeof(harray2));
 
 	sprintf( posbuf, _("Image at:      (%.0f,%.0f)"), (double) img->xoff,
 		(double) (img->yoff-GImageGetHeight(img->image)*img->yscale));
@@ -698,6 +783,23 @@ static void ImgGetInfo(CharView *cv, ImageList *img) {
 	gcd[1].creator = GLabelCreate;
 	varray[2] = &gcd[1]; varray[3] = NULL;
 
+	label[4].text = (unichar_t *) "";
+	label[4].text_is_1byte = true;
+	gcd[4].gd.label = &label[4];
+	gcd[4].gd.flags = gg_enabled|gg_visible;
+	gcd[4].gd.cid = CID_DataSourceLabel;
+	gcd[4].creator = GLabelCreate;
+    harray2[0] = &gcd[4]; harray2[1] = &gcd[5]; harray[3] = NULL;
+
+	label[5].text = (unichar_t *) "";
+	label[5].text_is_1byte = true;
+	label[5].text_in_resource = true;
+	gcd[5].gd.label = &label[5];
+	gcd[5].gd.cid = CID_LinkUnlinkButton;
+	gcd[5].gd.handle_controlevent = GI_LinkUnlinkReference;
+	gcd[5].gd.flags = gg_enabled|gg_visible;
+	gcd[5].creator = GButtonCreate;
+
 	sprintf( sizebuf, _("Image Size:  %d x %d  pixels"), (int) base->width, (int) base->height );
 	label[2].text = (unichar_t *) sizebuf;
 	label[2].text_is_1byte = true;
@@ -706,10 +808,7 @@ static void ImgGetInfo(CharView *cv, ImageList *img) {
 	gcd[2].gd.flags = gg_enabled|gg_visible;
 	gcd[2].creator = GLabelCreate;
 	varray[4] = &gcd[2]; varray[5] = NULL;
-	varray[6] = GCD_Glue; varray[7] = NULL;
 
-	gcd[3].gd.pos.x = (II_Width-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor)-6)/2; gcd[3].gd.pos.y = II_Height-32-3;
-	gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
 	gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_default | gg_but_cancel;
 	label[3].text = (unichar_t *) _("_OK");
 	label[3].text_is_1byte = true;
@@ -718,24 +817,27 @@ static void ImgGetInfo(CharView *cv, ImageList *img) {
 	gcd[3].gd.label = &label[3];
 	gcd[3].gd.handle_controlevent = GI_Cancel;
 	gcd[3].creator = GButtonCreate;
-	harray[0] = GCD_Glue; harray[1] = &gcd[3]; harray[2] = GCD_Glue; harray[3] = NULL;
-	varray[8] = &boxes[2]; varray[9] = NULL;
-	varray[10] = NULL;
+
+	harray[0] = GCD_Glue; harray[1] = &gcd[3]; harray[2] = GCD_Glue; harray[3] = GCD_Glue; harray[4] = NULL;
+	varray[6] = &boxes[2]; varray[7] = NULL; varray[8] = &boxes[4]; varray[9] = NULL;
 
 	memset(boxes,0,sizeof(boxes));
-	boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+	boxes[0].gd.pos.width = -1; boxes[0].gd.pos.height = 0;
 	boxes[0].gd.flags = gg_enabled|gg_visible;
 	boxes[0].gd.u.boxelements = varray;
+	boxes[0].gd.cid = CID_II_HVBox;
 	boxes[0].creator = GHVGroupCreate;
 
 	boxes[2].gd.flags = gg_enabled|gg_visible;
-	boxes[2].gd.u.boxelements = harray;
+	boxes[2].gd.u.boxelements = harray2;
 	boxes[2].creator = GHBoxCreate;
 
+	boxes[4].gd.flags = gg_enabled|gg_visible;
+	boxes[4].gd.u.boxelements = harray;
+	boxes[4].creator = GHBoxCreate;
+
 	GGadgetsCreate(gi.gw,boxes);
-	GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
-	GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
-	GHVBoxFitWindow(boxes[0].ret);
+    II_Display(&gi);
 
     GWidgetHidePalettes();
     GDrawSetVisible(gi.gw,true);

@@ -2411,7 +2411,7 @@ extern int BpWithin(BasePoint *first, BasePoint *mid, BasePoint *last);
     /* Colinear & between */
 
 enum psstrokeflags { /* sf_removeoverlap=2,*/ sf_handle_eraser=4,
-	sf_correctdir=8, sf_clearbeforeinput=16 };
+	sf_correctdir=8, sf_clearbeforeinput=16, sf_imagereferenceonly=32 };
 
 
 extern char *ToAbsolute(char *filename);

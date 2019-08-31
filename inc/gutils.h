@@ -36,5 +36,9 @@
 extern const char *GetAuthor(void);
 extern time_t GetTime(void);
 extern time_t GetST_MTime(struct stat s);
+// g_checksum_type_get_length(G_CHECKSUM_SHA256)
+#define SHA256_DIGEST_LEN 32
+extern char* HashData(unsigned char* input, int len);
+extern char* HashFile(char* filename);
 
 #endif /* FONTFORGE_GUTILS_H */

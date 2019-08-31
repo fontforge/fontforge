@@ -70,3 +70,23 @@ time_t GetST_MTime(struct stat s) {
 
 	return st_time;
 }
+
+char* HashData(unsigned char* input, int len) {
+    GChecksum* gcs = g_checksum_new(G_CHECKSUM_SHA256);
+    g_checksum_update(gcs, input, len);
+    const char* gcs_cs = g_checksum_get_string(gcs);
+    char* cs = malloc(strlen(gcs_cs)+1);
+    strcpy(cs, gcs_cs);
+    g_checksum_free(gcs);
+    return cs;
+}
+
+extern char* HashFile(char* filename) {
+    char *contents;
+    gsize length;
+    g_file_get_contents(filename, &contents, &length, NULL);
+    TRACE("Hashing %s of length %d...\n", filename, length);
+    const char* cs = HashData(contents, length);
+    g_free(contents);
+    return (char*)cs;
+}

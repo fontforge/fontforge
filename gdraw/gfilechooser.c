@@ -1114,7 +1114,6 @@ void GFileChooserPopupCheck(GGadget *g,GEvent *e) {
     int inside=false;
 
     if ( e->type == et_mousemove && (e->u.mouse.state&ksm_buttons)==0 ) {
-	GGadgetEndPopup();
 	for ( g=((GContainerD *) (gfc->g.base->widget_data))->gadgets; g!=NULL; g=g->prev ) {
 	    if ( g!=(GGadget *) gfc && g!=(GGadget *) (gfc->filterb) &&
 		     g!=(GGadget *) (gfc->files) &&

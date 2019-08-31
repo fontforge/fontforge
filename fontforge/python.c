@@ -8269,6 +8269,7 @@ static struct flaglist import_ps_flags[] = {
     { "removeoverlap", 0 },			/* Obsolete */
     { "handle_eraser", sf_handle_eraser },
     { "correctdir",  sf_correctdir },
+    { "imagereferenceonly",  sf_imagereferenceonly },
     FLAGLIST_EMPTY /* Sentinel */
 };
 
@@ -8293,8 +8294,8 @@ return( NULL );
     pt = strrchr(locfilename,'.');
     if ( pt==NULL ) pt=locfilename;
 
-    if ( strcasecmp(pt,".eps")==0 || strcasecmp(pt,".ps")==0 || strcasecmp(pt,".art")==0 ) {
 	int psflags = FlagsFromTuple(flags,import_ps_flags,"PostScript import flag");
+    if ( strcasecmp(pt,".eps")==0 || strcasecmp(pt,".ps")==0 || strcasecmp(pt,".art")==0 ) {
 	if ( psflags==FLAG_UNKNOWN ) {
 	    free(locfilename);
 return( NULL );
@@ -8329,6 +8330,7 @@ return(NULL);
 	}
 	if ( !sc->layers[ly].background )
 	    ly = ly_back;
+    if (psflags & sf_imagereferenceonly) GImageMakeReference(image->u.image, locfilename, sc->parent->filename);
 	SCAddScaleImage(sc,image,false,ly);
     }
     free( locfilename );
