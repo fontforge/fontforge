@@ -703,15 +703,7 @@ static void II_Display(GIData* gi) {
 
     char* refbuf;
     if (base->refdata.reference) {
-        // 4 is for (, ), ' ', and \0
-        refbuf = calloc(strlen(refstr)+strlen(base->refdata.filename)
-                       +SHA256_DIGEST_LEN*2+4, sizeof(char));
-
-        sprintf(refbuf, refstr);
-        strcat(refbuf, base->refdata.filename);
-        strcat(refbuf, " (");
-        strcat(refbuf, base->refdata.hash);
-        strcat(refbuf, ")");
+        refbuf = smprintf("%s%s (%s)", refstr, base->refdata.filename, base->refdata.hash);
     } else {
         refbuf = _("Data is in SFD file");
     }
