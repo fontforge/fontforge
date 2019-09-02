@@ -3735,20 +3735,30 @@ static ImageList *SFDGetImageReference(FILE *sfd) {
     getreal(sfd,&img->xscale);
     getreal(sfd,&img->yscale);
 
-    if (ch = nlgetc(sfd) != '\n') { ungetc(ch, sfd); return NULL; }
+    if (ch = nlgetc(sfd) != '\n') { ungetc(ch, sfd); free(img); return NULL; }
 
     char* hex = SFDReadUTF7Str(sfd);
 
-    if (ch = nlgetc(sfd) != '\n') { ungetc(ch, sfd); return NULL; }
+    if (ch = nlgetc(sfd) != '\n') { ungetc(ch, sfd); free(img); free(hex); return NULL; }
 
-    char* fn = SFDReadUTF7Str(sfd);
+    char* fn_tmp = SFDReadUTF7Str(sfd);
+    char* fn = utf82def_copy(fn_tmp);
+    free(fn_tmp);
 
     if (fn == NULL) {
         IError(_("Expected filename which wasn't there, file corrupt"));
+        free(img); free(hex);
         return NULL;
     }
 
     char* hn = FF_HashFile(fn);
+
+    if (hn == NULL) {
+        // Unfortunately GFileGetSize returns -1 for all errors, so we don't know which it is
+        IError(_("Failed to stat() file %s; missing? Bad permissions? Locale mismatch?"), fn);
+        free(img); free(fn); free(hex);
+        return NULL;
+    }
 
     if (strcmp(hex,hn)!=0) LogError(_("Content of file %s no longer matches what it was when SFD file saved"), fn);
 
@@ -3758,6 +3768,7 @@ static ImageList *SFDGetImageReference(FILE *sfd) {
 
     if (image == NULL) {
         IError(_("Failed to read image from file %s"), fn);
+        free(fn); free(hex); free(img);
         return NULL;
     }
 
@@ -9165,6 +9176,13 @@ static SplineFont *SFD_Read(char *filename,FILE *sfd, int fromdir) {
     }
     if ( sfd==NULL )
 return( NULL );
+
+    // We do this in case the current directory is not the SFD directory, so
+    // that references to images will be resolved correctly
+    char* cachedir = g_get_current_dir();
+    char* sfddir = GFileDirName(filename); 
+    chdir(sfddir);
+
     locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
     switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     ff_progress_change_stages(2);
@@ -9194,6 +9212,7 @@ return( NULL );
 	}
     }
     fclose(sfd);
+    chdir(cachedir);
 return( sf );
 }
 

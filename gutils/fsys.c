@@ -1159,18 +1159,6 @@ char *GFileDirName(const char *path) {
     return GFileDirNameEx(path, 0);
 }
 
-char* GFileParent(char* path) {
-    GFile *gf_path = g_file_new_for_path(path);
-    GFile *gf_path_parent = g_file_get_parent(gf_path);
-
-    char* ret = g_file_get_path(gf_path_parent);
-
-    g_object_unref(gf_path);
-    g_object_unref(gf_path_parent);
-
-    return ret;
-}
-
 // If we have two files:
 // * /tmp/ex/test.sfd (file1)
 // * /tmp/ex/images/1.jpg (to_relative)

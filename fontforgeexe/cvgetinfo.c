@@ -163,6 +163,7 @@ static int GI_LinkUnlinkReference(GGadget *g, GEvent *e) {
 
     if (base->refdata.reference) { // Unlink reference
         GImageUnmakeReference(base);
+        SCCharChangedUpdate(gi->sc, ly_back);
     } else { // Link reference
         char* filename = gwwv_open_filename(_("Where does this image exist on disk?"),NULL,"*",NULL);
         if (filename != NULL) {
@@ -173,6 +174,7 @@ static int GI_LinkUnlinkReference(GGadget *g, GEvent *e) {
             } else
             if (GImageSame(image, img->image)) {
                 GImageMakeReference(base, filename, gi->cv->b.fv->sf->filename);
+                SCCharChangedUpdate(gi->sc, ly_back);
             } else {
                 gwwv_post_error(_("Cannot link reference"),_("The image you chose does not contain the same data as the one in the SFD; cannot link reference."));
             }

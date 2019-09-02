@@ -84,8 +84,7 @@ static void ImportFig(CharView *cv,char *path) {
 
 static void ImportImage(CharView *cv,char *path,bool reference) {
     GImage *image;
-    char* fn = (char*)malloc(strlen(path)+1);
-    strcpy(fn, path);
+    char* fn = copy(path);
     int layer;
 
     image = GImageRead(path);

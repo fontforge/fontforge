@@ -30,6 +30,7 @@
 #include "basics.h"
 #include "gfile.h"
 #include "gimage.h"
+#include "ustring.h"
 
 GImage *GImageCreate(enum image_type type, int32 width, int32 height) {
 /* Prepare to get a bitmap image. Cleanup and return NULL if not enough memory */
@@ -47,7 +48,7 @@ GImage *GImageCreate(enum image_type type, int32 width, int32 height) {
     gi->u.image = base;
     base->refdata.reference = false;
     base->refdata.filename = NULL;
-    base->refdata.hash = "0";
+    base->refdata.hash = NULL;
     base->image_type = type;
     base->width = width;
     base->height = height;
@@ -79,19 +80,19 @@ errorGImageCreate:
 extern bool GImageMakeReference(struct _GImage *base, char *to_file, char *relative_to) {
     TRACE("Making reference to %s relative to %s\n", to_file, relative_to);
     base->refdata.reference = true;
-    base->refdata.hash = FF_HashFile(to_file);
+    char* fn = def2utf8_copy(to_file);
+    char* relfn = def2utf8_copy(relative_to);
+    base->refdata.hash = FF_HashFile(fn);
 
     char* relativized = NULL;
 
     if (relative_to != NULL) {
-        relativized = GFileRelativize(relative_to, to_file);
+        relativized = GFileRelativize(relative_to, fn);
     }
 
     if (relativized != NULL) {
         base->refdata.filename = relativized;
     } else {
-        char* fn = malloc(strlen(to_file));
-        strcpy(fn, to_file);
         base->refdata.filename = fn;
     }
 
@@ -100,10 +101,10 @@ extern bool GImageMakeReference(struct _GImage *base, char *to_file, char *relat
 
 extern bool GImageUnmakeReference(struct _GImage *base) {
     base->refdata.reference = false;
-    base->refdata.filename = NULL;
     free(base->refdata.filename);
-    base->refdata.hash = NULL;
+    base->refdata.filename = NULL;
     free(base->refdata.hash);
+    base->refdata.hash = NULL;
 }
 
 GImage *_GImage_Create(enum image_type type, int32 width, int32 height) {
@@ -461,12 +462,6 @@ Color GImageGetPixelColor(GImage *image,int x, int y) {
 return( _GImageGetPixelColor(base,x,y));
 }
 
-const char* GImageHash(GImage *img) {
-    struct _GImage *base = img->list_len==0?img->u.image:img->u.images[0];
-
-    return FF_HashData((char*)(base->data), (base->bytes_per_line * base->width));
-}
-
 // This function was moved from gimageclut.c, because libfontforge doesn't link with gdraw,
 // but GImageSame, in libfontforge, needs this function, and linking with gdraw is not 
 // acceptable for other contributors.
@@ -511,9 +506,7 @@ bool GImageSame(GImage *img1, GImage *img2) {
     // If the colors they use are the same and the number of pixels are too,
     // check actual data.
 
-    for (int i = 0; i <= datalen1; i++) {
-        if (base1->data[i] != base2->data[i]) return false;
-    }
+    if (memcmp(base1->data, base2->data, datalen1) != 0) return false;
 
     return true;
 }
