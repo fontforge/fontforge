@@ -2382,7 +2382,7 @@ static void bImport(Context *c) {
     else if ( format==fv_pk )
 	ok = FVImportBDF(c->curfv,filename,true, back);
     else if ( format==fv_image || format==fv_eps || format==fv_svg || format==fv_pdf )
-	ok = FVImportImages(c->curfv,filename,format,back,false,flags);
+	ok = FVImportImages(c->curfv,filename,format,back,flags);
     else
 	ok = FVImportImageTemplate(c->curfv,filename,format,back,flags);
     free(filename);

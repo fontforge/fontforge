@@ -7,7 +7,7 @@
 #include "splinefont.h"
 
 extern GImage *ImageAlterClut(GImage *image);
-extern int FVImportImages(FontViewBase *fv,char *path,int format,int toback, bool reference, int flags);
+extern int FVImportImages(FontViewBase *fv, char *path, int format, int toback, int flags);
 extern int FVImportImageTemplate(FontViewBase *fv, char *path, int format, int toback, int flags);
 extern void SCAddScaleImage(SplineChar *sc, GImage *image, int doclear, int layer);
 extern void SCAppendEntityLayers(SplineChar *sc, Entity *ent);

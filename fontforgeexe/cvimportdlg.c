@@ -464,27 +464,27 @@ return( true );
 	    else if ( format==fv_palm )
 		d->done = FVImportMult((FontViewBase *) d->fv,temp,toback,bf_palm);
 	    else if ( format==fv_image )
-		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,ref,-1);
+		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,-1);
 	    else if ( format==fv_imgtemplate )
 		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,-1);
 	    else if ( format==fv_eps )
-		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,false,-1);
+		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,-1);
 	    else if ( format==fv_epstemplate )
 		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,-1);
 	    else if ( format==fv_pdf )
-		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,false,-1);
+		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,-1);
 	    else if ( format==fv_pdftemplate )
 		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,-1);
 	    else if ( format==fv_svg )
-		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,false,-1);
+		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,-1);
 	    else if ( format==fv_svgtemplate )
 		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,-1);
 	    else if ( format==fv_glif )
-		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,false,-1);
+		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,-1);
 	    else if ( format==fv_gliftemplate )
 		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,-1);
 	    else if ( format>=fv_pythonbase )
-		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,ref,-1);
+		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,-1);
 	} else if ( d->bv!=NULL )
 	    d->done = BVImportImage(d->bv,temp);
 	else {
