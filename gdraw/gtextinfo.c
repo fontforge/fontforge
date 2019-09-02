@@ -1156,7 +1156,7 @@ Resource 7 should be the translation of "Replace"
 static unichar_t lang[] = { 'E', 'n', 'g', 'l', 'i', 's', 'h', '\0' };
 static unichar_t ok[] = { 'O', 'k', '\0' };
 static unichar_t cancel[] = { 'C', 'a', 'n', 'c', 'e', 'l', '\0' };
-static unichar_t _open[] = { 'O', 'p', 'e', 'n', '\0' };
+static unichar_t __open[] = { 'O', 'p', 'e', 'n', '\0' };
 static unichar_t save[] = { 'S', 'a', 'v', 'e', '\0' };
 static unichar_t filter[] = { 'F', 'i', 'l', 't', 'e', 'r', '\0' };
 static unichar_t new[] = { 'N', 'e', 'w', '.', '.', '.', '\0' };
@@ -1170,7 +1170,7 @@ static unichar_t dirname_[] = { 'D','i','r','e','c','t','o','r','y',' ','n','a',
 static unichar_t couldntcreatedir[] = { 'C','o','u','l','d','n','\'','t',' ','c','r','e','a','t','e',' ','d','i','r','e','c','t','o','r','y',  '\0' };
 static unichar_t selectall[] = { 'S','e','l','e','c','t',' ','A','l','l',  '\0' };
 static unichar_t none[] = { 'N','o','n','e',  '\0' };
-static const unichar_t *deffall[] = { lang, ok, cancel, _open, save, filter, new,
+static const unichar_t *deffall[] = { lang, ok, cancel, __open, save, filter, new,
 	replace, fileexists, fileexistspre, fileexistspost, createdir,
 	dirname_, couldntcreatedir, selectall, none, NULL };
 static const unichar_t deffallmn[] = { 0, 'O', 'C', 'O', 'S', 'F', 'N', 'R', 0, 0, 0, 'A', 'N' };
