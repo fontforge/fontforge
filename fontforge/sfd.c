@@ -3659,25 +3659,25 @@ static void rle2image(struct enc85 *dec,int rlelen,struct _GImage *base) {
 }
 
 
-enum MIME { UNKNOWN, PNG, REFERENCE }; // We only understand PNG for now.
+enum Image2MIME { IM2_UNKNOWN, IM2_PNG, IM2_REFERENCE };
 
-enum MIME SFDGetImage2MIME(FILE *sfd) {
+enum Image2MIME SFDGetImage2MIME(FILE *sfd) {
     char mime[128];
 
     if ( !getname(sfd, mime) ) {
         IError("Failed to get a MIME type, file corrupt");
-        return UNKNOWN;
+        return IM2_UNKNOWN;
     }
 
     if ( strmatch(mime, "image/png")==0 ) {
-        return PNG;
+        return IM2_PNG;
     }
 
     if ( strmatch(mime, "reference")==0 ) {
-        return REFERENCE;
+        return IM2_REFERENCE;
     }
 
-    return UNKNOWN;
+    return IM2_UNKNOWN;
 }
 
 #ifndef _NO_LIBPNG
@@ -4416,8 +4416,8 @@ Undoes *SFDGetUndo( FILE *sfd, SplineChar *sc,
 	    if( !strmatch(tok,"Image2:"))
 	    {
 #ifndef _NO_LIBPNG
-		enum MIME mime = SFDGetImage2MIME(sfd);
-		if (mime == PNG) {
+		enum Image2MIME mime = SFDGetImage2MIME(sfd);
+		if (mime == IM2_PNG) {
 		    ImageList *img = SFDGetImagePNG(sfd);
 		    if (img != NULL) {
 			if ( !u->u.state.images )
@@ -4428,7 +4428,7 @@ Undoes *SFDGetUndo( FILE *sfd, SplineChar *sc,
 		    }
 		} else 
 #endif
-        if (mime == REFERENCE) {
+        if (mime == IM2_REFERENCE) {
 		    ImageList *img = SFDGetImageReference(sfd);
 		    if (img != NULL) {
 			if ( !u->u.state.images )
@@ -5808,9 +5808,9 @@ return( NULL );
 	    lasti = img;
 	    }
 	} else if ( strmatch(tok,"Image2:")==0 ) {
-	    enum MIME mime = SFDGetImage2MIME(sfd);
+	    enum Image2MIME mime = SFDGetImage2MIME(sfd);
 #ifndef _NO_LIBPNG
-	    if (mime == PNG) {
+	    if (mime == IM2_PNG) {
 		int ly = current_layer;
 		if ( !multilayer && !sc->layers[ly].background ) ly = ly_back;
 		img = SFDGetImagePNG(sfd);
@@ -5823,7 +5823,7 @@ return( NULL );
 		}
 	    } else
 #endif
-        if (mime == REFERENCE) {
+        if (mime == IM2_REFERENCE) {
 		int ly = current_layer;
 		if ( !multilayer && !sc->layers[ly].background ) ly = ly_back;
 		img = SFDGetImageReference(sfd);
