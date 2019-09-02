@@ -1177,7 +1177,7 @@ char* GFileRelativize(char* file1, char* to_relative) {
 
    if (ex==NULL) {
        // Impossible to relativize; use absolute path.
-       return to_relative;
+       return copy(to_relative);
    }
    return ex;
 }

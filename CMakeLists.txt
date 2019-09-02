@@ -74,11 +74,11 @@ if(CMAKE_COMPILER_IS_GNUCC)
 endif()
 
 # Required and default dependencies
-# Note: When adding a dependency, ensure it has an imported target (wherever appropriate) 
+# Note: When adding a dependency, ensure it has an imported target (wherever appropriate)
 find_package(Freetype 2.3.7 REQUIRED)
 find_package(Gettext REQUIRED)
 find_package_with_target(Intl REQUIRED)
-find_package(GLIB 2.6 REQUIRED COMPONENTS gio)
+find_package(GLIB 2.6 REQUIRED COMPONENTS gio gobject)
 find_package(Iconv REQUIRED)
 find_package(LibXml2 REQUIRED)
 find_package(MathLib REQUIRED)
