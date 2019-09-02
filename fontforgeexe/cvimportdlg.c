@@ -524,14 +524,6 @@ static int GFD_Cancel(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static int GFD_Reference(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
-	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-    int ref = GGadgetIsChecked(d->reference);
-    }
-    return true;
-}
-
 static int GFD_Format(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
@@ -741,7 +733,6 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 	label[7].text = (unichar_t *) _("Reference only");
 	label[7].text_is_1byte = true;
 	gcd[7].gd.label = &label[7];
-	gcd[7].gd.handle_controlevent = GFD_Reference;
 	gcd[7].gd.flags = gg_visible | gg_enabled;
 	gcd[7].gd.popup_msg = _("If checked, when you save your SFD, the image's data will not be saved in the file, only a path to the image will be saved.");
 	gcd[7].creator = GCheckBoxCreate;
