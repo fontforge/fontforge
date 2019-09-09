@@ -840,7 +840,10 @@ return;
 
     while ( gw->parent!=NULL && !gw->is_toplevel ) gw = gw->parent;
     td = (GTopLevelD *) (gw->widget_data);
-    if ( td == NULL ) return; /* dying, prevents tiling WM crash */
+    if ( td == NULL ) { /* dying, prevents tiling WM crash */
+        assert(gw->is_dying);
+        return;
+    }
     if ( td->gdef == g ) td->gdef = NULL;
     if ( td->gcancel == g ) td->gcancel = NULL;
     if ( td->gfocus == g ) td->gfocus = NULL;

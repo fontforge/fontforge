@@ -28,6 +28,7 @@
 #ifndef FONTFORGE_GDRAW_H
 #define FONTFORGE_GDRAW_H
 
+#include "assert.h"
 #include "charset.h"
 #include "gimage.h"
 
