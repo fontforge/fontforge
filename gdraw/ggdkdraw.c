@@ -50,6 +50,7 @@ static void GGDKDrawSetTransientFor(GWindow transient, GWindow owner);
 static void GGDKDrawSetWindowBackground(GWindow w, Color gcol);
 
 // Private member functions (file-level)
+static void _GGDKDraw_InitiateWindowDestroy(GGDKWindow gw);
 
 static GGC *_GGDKDraw_NewGGC(void) {
     GGC *ggc = calloc(1, sizeof(GGC));
@@ -254,6 +255,11 @@ static gboolean _GGDKDraw_OnWindowDestroyed(gpointer data) {
     }
 
     g_hash_table_remove(gw->display->windows, gw);
+
+    // Remove our reference on the parent
+    if (gw->parent != NULL && gw->parent != gw->display->groot) {
+        GGDKDRAW_DECREF(gw->parent, _GGDKDraw_InitiateWindowDestroy);
+    }
 
     free(gw->ggc);
     free(gw);
@@ -604,6 +610,11 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
 
     // Add a reference to our own structure.
     GGDKDRAW_ADDREF(nw);
+
+    // Add a reference on the parent window
+    if (nw->parent != gdisp->groot) {
+        GGDKDRAW_ADDREF(nw->parent);
+    }
 
     if (nw->mru_link) {
         // Add it into the mru list
@@ -1433,15 +1444,7 @@ static int GGDKDrawSetDither(GDisplay *UNUSED(gdisp), int UNUSED(set)) {
 }
 
 static void GGDKDrawReparentWindow(GWindow child, GWindow newparent, int x, int y) {
-    Log(LOGWARN, "GGDKDrawReparentWindow called: Reparenting should NOT be used!");
-    GGDKWindow gchild = (GGDKWindow)child, gparent = (GGDKWindow)newparent;
-    _GGDKDraw_CleanupAutoPaint(gchild->display);
-    gchild->parent = gparent;
-    gchild->is_toplevel = gchild->display->groot == gparent;
-    gdk_window_reparent(gchild->w, gparent->w, x, y);
-    // Hack to position it correctly on Windows
-    // https://bugzilla.gnome.org/show_bug.cgi?id=765100
-    gdk_window_move(gchild->w, x, y);
+    Log(LOGERR, "GGDKDrawReparentWindow called: Reparenting should NOT be used!");
 }
 
 static void GGDKDrawSetVisible(GWindow w, int show) {
