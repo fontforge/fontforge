@@ -2539,7 +2539,7 @@ static int dumpcffhmtx(struct alltabs *at,SplineFont *sf,int bitmaps) {
 	    if ( dovmetrics ) {
 		if ( i<=at->gi.lastvwidth )
 		    putshort(at->gi.vmtx,sc->vwidth);
-		putshort(at->gi.vmtx,/*sf->vertical_origin-*/b.maxy);
+		putshort(at->gi.vmtx,sc->parent->ascent - b->maxy);
 	    }
 	    ++cnt;
 	    if ( i==at->gi.lasthwidth )
@@ -2590,7 +2590,7 @@ static void dumpcffcidhmtx(struct alltabs *at,SplineFont *_sf) {
 	    if ( dovmetrics ) {
 		if ( sc->ttf_glyph<=at->gi.lastvwidth )
 		    putshort(at->gi.vmtx,sc->vwidth);
-		putshort(at->gi.vmtx,/*sf->vertical_origin-*/b.maxy);
+		putshort(at->gi.vmtx,sc->parent->ascent - b->maxy);
 	    }
 	    ++cnt;
 	    if ( sc->ttf_glyph==at->gi.lasthwidth )
