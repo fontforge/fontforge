@@ -1313,7 +1313,7 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 	}
 	if ( start_cnt!=0 || end_cnt!=cnt ) {
 	    if ( chunk_cnt>=chunk_max )
-		sub->extra_subtables = realloc(sub->extra_subtables,((chunk_max+=10)+1)*sizeof(uint32));
+		sub->extra_subtables = realloc(sub->extra_subtables,((chunk_max+=10)+1)*sizeof(int32));
 	    sub->extra_subtables[chunk_cnt++] = ftell(gpos);
 	    sub->extra_subtables[chunk_cnt] = -1;
 	}
@@ -2032,7 +2032,7 @@ static void dumpGSUBligdata(FILE *gsub,SplineFont *sf,
     putshort(gsub,cnt);
     next_val_pos = ftell(gsub);
     if ( glyphs!=NULL )
-	offsets = malloc(cnt*sizeof(int16));
+	offsets = malloc(cnt*sizeof(uint16));
     for ( i=0; i<cnt; ++i )
 	putshort(gsub,0);
     for ( i=0; i<cnt; ++i ) {

@@ -409,8 +409,8 @@ static void pdf_dump_type1(PI *pi,int sfid) {
 
     fd_obj = figure_fontdesc(pi, sfid, &fd,1,font_stream);
 
-    sfbit->our_font_objs = malloc((sfbit->map->enccount/256+1)*sizeof(int *));
-    sfbit->fonts = malloc((sfbit->map->enccount/256+1)*sizeof(int *));
+    sfbit->our_font_objs = malloc((sfbit->map->enccount/256+1)*sizeof(int));
+    sfbit->fonts = malloc((sfbit->map->enccount/256+1)*sizeof(int));
     for ( i=0; i<sfbit->map->enccount; i += 256 ) {
 	sfbit->fonts[i/256] = -1;
 	dump_pfb_encoding(pi,sfid,i,fd_obj);

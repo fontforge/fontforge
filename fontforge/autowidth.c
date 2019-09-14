@@ -181,7 +181,7 @@ static void CheckOutOfBounds(WidthInfo *wi) {
 
 static void ApplyChanges(WidthInfo *wi) {
     EncMap *map = wi->fv->map;
-    uint8 *rsel = calloc(map->enccount,sizeof(char));
+    uint8 *rsel = calloc(map->enccount,sizeof(uint8));
     int i, width;
     real transform[6];
     struct charone *ch;
@@ -1354,9 +1354,9 @@ return;
     }
 
     for ( kc = sf->kerns; kc!=NULL; kc=kc->next ) {
-	firsts = malloc(kc->first_cnt*sizeof(SplineChar *));
+	firsts = malloc(kc->first_cnt*sizeof(SplineChar **));
 	map1 = calloc(kc->first_cnt,sizeof(int));
-	seconds = malloc(kc->second_cnt*sizeof(SplineChar *));
+	seconds = malloc(kc->second_cnt*sizeof(SplineChar **));
 	map2 = calloc(kc->second_cnt,sizeof(int));
 	any1=0;
 	for ( i=1; i<kc->first_cnt; ++i ) {

@@ -1020,7 +1020,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	cnt = 0;
 	if ( res->extras!=NULL )
 	    for ( extras=res->extras, cnt = 0; extras->name!=NULL; ++cnt, ++extras );
-	tofree[i].earray = calloc(cnt+1,sizeof(GGadgetCreateData[8]));
+	tofree[i].earray = calloc(cnt+1,sizeof(GGadgetCreateData*[8]));
 	tofree[i].extradefs = calloc(cnt+1,sizeof(char *));
 	cnt *= 2;
 	if ( res->initialcomment!=NULL )

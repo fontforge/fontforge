@@ -1517,7 +1517,7 @@ return(NULL);
 	fvs->cidmaster = NULL;
 	if ( fvs->sf->glyphcnt!=new->glyphcnt ) {
 	    free(fvs->selected);
-	    fvs->selected = calloc(new->glyphcnt,sizeof(char));
+	    fvs->selected = calloc(new->glyphcnt,sizeof(uint8));
 	    if ( fvs->map->encmax < new->glyphcnt )
 		fvs->map->map = realloc(fvs->map->map,(fvs->map->encmax = new->glyphcnt)*sizeof(int32));
 	    fvs->map->enccount = new->glyphcnt;
@@ -1665,7 +1665,7 @@ return( false );
 		map->map = realloc(map->map,(map->encmax = map->enccount = max+extras)*sizeof(int32));
 		memset(map->map,-1,map->enccount*sizeof(int32));
 		memset(map->backmap,-1,sf->glyphcnt*sizeof(int32));
-		fvs->selected = realloc(fvs->selected, map->enccount*sizeof(char));
+		fvs->selected = realloc(fvs->selected, map->enccount*sizeof(uint8));
 		if (map->enccount > sf->glyphcnt) {
 		    memset(fvs->selected+sf->glyphcnt, 0, map->enccount-sf->glyphcnt);
 		}
@@ -1843,7 +1843,7 @@ return(NULL);
 	PSDictChangeEntry(sf->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
     for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	free(fvs->selected);
-	fvs->selected = calloc(fvs->sf->glyphcnt,sizeof(char));
+	fvs->selected = calloc(fvs->sf->glyphcnt,sizeof(uint8));
 	EncMapFree(fvs->map);
 	fvs->map = EncMap1to1(fvs->sf->glyphcnt);
 	FVSetTitle(fvs);
@@ -2200,7 +2200,7 @@ return -1;
 	SFReplaceEncodingBDFProps(sf,fv->map);
     }
     free(fv->selected);
-    fv->selected = calloc(fv->map->enccount,sizeof(char));
+    fv->selected = calloc(fv->map->enccount,sizeof(uint8));
     if ( !no_windowing_ui )
 	FontViewReformatAll(sf);
 

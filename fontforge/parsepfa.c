@@ -1059,7 +1059,7 @@ static void InitChars(struct pschars *chars,char *line) {
     chars->cnt = strtol(line,NULL,10);
     if ( chars->cnt>0 ) {
 	chars->keys = calloc(chars->cnt,sizeof(char *));
-	chars->values = calloc(chars->cnt,sizeof(char *));
+	chars->values = calloc(chars->cnt,sizeof(uint8 *));
 	chars->lens = calloc(chars->cnt,sizeof(int));
 	ff_progress_change_total(chars->cnt);
     }
@@ -2459,7 +2459,7 @@ static void figurecids(struct fontparse *fp,FILE *temp) {
 		(sdbytes=strtol(ssdbytes,NULL,10))>0 &&
 		(subrcnt=strtol(ssubrcnt,NULL,10))>0 ) {
 	    private->subrs->cnt = subrcnt;
-	    private->subrs->values = calloc(subrcnt,sizeof(char *));
+	    private->subrs->values = calloc(subrcnt,sizeof(uint8 *));
 	    private->subrs->lens = calloc(subrcnt,sizeof(int));
 	    leniv = private->leniv;
 	    offsets = malloc((subrcnt+1)*sizeof(int));

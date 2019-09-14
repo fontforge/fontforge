@@ -3436,7 +3436,7 @@ return;
     sc->possub = pst;
     sc->lig_caret_cnt_fixed = true;
     pst->u.lcaret.cnt = cnt;
-    pst->u.lcaret.carets = malloc(cnt*sizeof(uint16));
+    pst->u.lcaret.carets = malloc(cnt*sizeof(int16));
     for ( i=0; i<cnt; ++i )
 	pst->u.lcaret.carets[i] = getushort(ttf);
     fseek(ttf,here,SEEK_SET);

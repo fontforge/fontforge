@@ -534,13 +534,13 @@ return( 0 );
 	fclose(file);
 return( 0 );
     }
-    tfmd.kerntab = calloc(tfmd.kern_size,sizeof(int32));
-    tfmd.ligkerntab = calloc(tfmd.ligkern_size,sizeof(int32));
-    tfmd.ext = calloc(tfmd.esize,sizeof(int32));
-    tfmd.ictab = calloc(tfmd.italic_size,sizeof(int32));
-    tfmd.dptab = calloc(tfmd.depth_size,sizeof(int32));
-    tfmd.httab = calloc(tfmd.height_size,sizeof(int32));
-    tfmd.widtab = calloc(tfmd.width_size,sizeof(int32));
+    tfmd.kerntab = calloc(tfmd.kern_size,4*sizeof(uint8));
+    tfmd.ligkerntab = calloc(tfmd.ligkern_size,4*sizeof(uint8));
+    tfmd.ext = calloc(tfmd.esize,4*sizeof(uint8));
+    tfmd.ictab = calloc(tfmd.italic_size,4*sizeof(uint8));
+    tfmd.dptab = calloc(tfmd.depth_size,4*sizeof(uint8));
+    tfmd.httab = calloc(tfmd.height_size,4*sizeof(uint8));
+    tfmd.widtab = calloc(tfmd.width_size,4*sizeof(uint8));
     tfmd.charlist = charlist;
 
     fseek( file,(6+1)*sizeof(int32),SEEK_SET);
@@ -787,13 +787,13 @@ return( 0 );
 return( 0 );
     }
 
-    tfmd.kerntab = calloc(tfmd.kern_size,sizeof(int32));
-    tfmd.ligkerntab = calloc(tfmd.ligkern_size,2*sizeof(int32));
-    tfmd.ext = calloc(tfmd.esize,2*sizeof(int32));
-    tfmd.ictab = calloc(tfmd.italic_size,sizeof(int32));
-    tfmd.dptab = calloc(tfmd.depth_size,sizeof(int32));
-    tfmd.httab = calloc(tfmd.height_size,sizeof(int32));
-    tfmd.widtab = calloc(tfmd.width_size,sizeof(int32));
+    tfmd.kerntab = calloc(tfmd.kern_size,4*sizeof(uint8));
+    tfmd.ligkerntab = calloc(tfmd.ligkern_size,4*2*sizeof(uint8));
+    tfmd.ext = calloc(tfmd.esize,4*2*sizeof(uint8));
+    tfmd.ictab = calloc(tfmd.italic_size,4*sizeof(uint8));
+    tfmd.dptab = calloc(tfmd.depth_size,4*sizeof(uint8));
+    tfmd.httab = calloc(tfmd.height_size,4*sizeof(uint8));
+    tfmd.widtab = calloc(tfmd.width_size,4*sizeof(uint8));
     fseek( file,(14+1)*sizeof(int32),SEEK_SET);
     sf->design_size = (5*getlong(file)+(1<<18))>>19;	/* TeX stores as <<20, adobe in decipoints */
     fseek( file,

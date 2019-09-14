@@ -1967,7 +1967,7 @@ static SplineFont *SearchPostScriptResources(FILE *f,long rlistpos,int subcnt,lo
     SplineFont *sf;
 
     fseek(f,rlistpos,SEEK_SET);
-    rsrcids = calloc(subcnt,sizeof(short));
+    rsrcids = calloc(subcnt,sizeof(unsigned short));
     offsets = calloc(subcnt,sizeof(long));
     for ( i=0; i<subcnt; ++i ) {
 	rsrcids[i] = getushort(f);
@@ -2481,9 +2481,9 @@ static void LoadNFNT(FILE *f,long offset, SplineFont *sf) {
     font.leading = getushort(f);
     font.rowWords = getushort(f);
     if ( font.rowWords!=0 ) {
-	font.fontImage = calloc(font.rowWords*font.fRectHeight,sizeof(short));
-	font.locs = calloc(font.lastChar-font.firstChar+3,sizeof(short));
-	font.offsetWidths = calloc(font.lastChar-font.firstChar+3,sizeof(short));
+	font.fontImage = calloc(font.rowWords*font.fRectHeight,sizeof(unsigned short));
+	font.locs = calloc(font.lastChar-font.firstChar+3,sizeof(unsigned short));
+	font.offsetWidths = calloc(font.lastChar-font.firstChar+3,sizeof(unsigned short));
 	for ( i=0; i<font.rowWords*font.fRectHeight; ++i )
 	    font.fontImage[i] = getushort(f);
 	for ( i=0; i<font.lastChar-font.firstChar+3; ++i )

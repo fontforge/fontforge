@@ -814,7 +814,7 @@ return( NULL );
     else
 	new->vwidth = rint(old->vwidth*dto/from+.5);
     new->bytes_per_line = (new->xmax-new->xmin)/8+1;
-    new->bitmap = calloc((new->ymax-new->ymin+1)*new->bytes_per_line,sizeof(char));
+    new->bitmap = calloc((new->ymax-new->ymin+1)*new->bytes_per_line,sizeof(uint8));
     new->orig_pos = old->orig_pos;
     new->refs = old->refs;
     new->dependents = old->dependents;
@@ -882,10 +882,10 @@ return( NULL );
 	new->vwidth = rint(old->vwidth*dto/from+.5);
     if ( to_depth==1 ) {
 	new->bytes_per_line = (new->xmax-new->xmin)/8+1;
-	new->bitmap = calloc((new->ymax-new->ymin+1)*new->bytes_per_line,sizeof(char));
+	new->bitmap = calloc((new->ymax-new->ymin+1)*new->bytes_per_line,sizeof(uint8));
     } else {
 	new->bytes_per_line = (new->xmax-new->xmin)+1;
-	new->bitmap = calloc((new->ymax-new->ymin+1)*new->bytes_per_line,sizeof(char));
+	new->bitmap = calloc((new->ymax-new->ymin+1)*new->bytes_per_line,sizeof(uint8));
 	new->byte_data = true;
     }
     new->orig_pos = old->orig_pos;

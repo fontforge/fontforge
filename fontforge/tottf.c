@@ -4615,7 +4615,7 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
 	    j = -1;
     }
     cmapseg = calloc(segcnt+1,sizeof(struct cmapseg));
-    ranges = malloc(cnt*sizeof(int16));
+    ranges = malloc(cnt*sizeof(uint16));
     j = -1;
     for ( i=segcnt=0; i<65536; ++i ) {
 	if ( avail[i]!=0xffffffff && j==-1 ) {
@@ -4705,10 +4705,10 @@ static FILE *NeedsVariationSequenceTable(SplineFont *sf,int *vslen) {
 		if ( i>=vs_cnt ) {
 		    if ( i>=vs_max ) {
 			if ( vses==vsbuf ) {
-			    vses = malloc((vs_max*=2)*sizeof(uint32));
+			    vses = malloc((vs_max*=2)*sizeof(int32));
 			    memcpy(vses,vsbuf,sizeof(vsbuf));
 			} else
-			    vses = realloc(vses,(vs_max+=512)*sizeof(uint32));
+			    vses = realloc(vses,(vs_max+=512)*sizeof(int32));
 		    }
 		    vses[vs_cnt++] = altuni->vs;
 		}

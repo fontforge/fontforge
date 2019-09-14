@@ -2356,7 +2356,7 @@ static void BCMakeSpace(BDFFont *bdf, int gid, int width, int em) {
 	bc->ymax = 1;
 	bc->bytes_per_line = 1;
 	bc->width = rint(width*bdf->pixelsize/(real) em);
-	bc->bitmap = calloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1),sizeof(char));
+	bc->bitmap = calloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1),sizeof(uint8));
     }
 }
 

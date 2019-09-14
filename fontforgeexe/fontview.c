@@ -7018,7 +7018,7 @@ static FontView *__FontViewCreate(SplineFont *sf) {
 	    if ( fv->b.nextsame==NULL ) { sf->map = fv->b.map; }
 	}
     }
-    fv->b.selected = calloc((fv->b.map ? fv->b.map->enccount : 0), sizeof(char));
+    fv->b.selected = calloc((fv->b.map ? fv->b.map->enccount : 0), sizeof(uint8));
     fv->user_requested_magnify = -1;
     fv->magnify = (ps<=9)? 3 : (ps<20) ? 2 : 1;
     fv->cbw = (ps*fv->magnify)+1;

@@ -1105,7 +1105,7 @@ static int morx_dumpASM(FILE *temp,ASM *sm, struct alltabs *at, SplineFont *sf )
     stcnt = 0;
     subslookups = NULL; subsins = NULL;
     if ( sm->type==asm_context ) {
-	subslookups = malloc(2*sm->state_cnt*sm->class_cnt*sizeof(OTLookup));
+	subslookups = malloc(2*sm->state_cnt*sm->class_cnt*sizeof(OTLookup*));
 	for ( j=0; j<sm->state_cnt*sm->class_cnt; ++j ) {
 	    struct asm_state *this = &sm->state[j];
 	    transdata[j].mark_index = transdata[j].cur_index = 0xffff;

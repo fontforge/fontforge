@@ -4933,7 +4933,7 @@ return;
 	    cnt = (len-(ftell(ttf)-(info->encoding_start+encoff)))/sizeof(short);
 	    /* The count is the number of glyph indexes to read. it is the */
 	    /*  length of the entire subtable minus that bit we've read so far */
-	    glyphs = malloc(cnt*sizeof(short));
+	    glyphs = malloc(cnt*sizeof(uint16));
 	    for ( i=0; i<cnt; ++i )
 		glyphs[i] = getushort(ttf);
 	    last = -1;

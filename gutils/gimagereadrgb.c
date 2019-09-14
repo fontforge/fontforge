@@ -214,7 +214,7 @@ GImage *GImageReadRgb(char *filename) {
 
 	/* First, get offset table info */
 	tablen = header.height*header.chans;
-	if ( (starttab=(unsigned long *)calloc(1,tablen*sizeof(long)))==NULL || \
+	if ( (starttab=(unsigned long *)calloc(1,tablen*sizeof(unsigned long)))==NULL || \
 	   /*(lengthtab=(unsigned long *)calloc(1,tablen*sizeof(long)))==NULL || \ */
 	     (ptrtab=(unsigned char **)calloc(1,tablen*sizeof(unsigned char *)))==NULL ) {
 	    NoMoreMemMessage();
