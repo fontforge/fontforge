@@ -351,7 +351,6 @@ return( false );
     } else if ( (!gr->ison) && gr->onbox == &visibility_on_box ) {
          /* draw closed eye */
         GPoint pts[7];
-        int c,i;
         double angle;
 	int bp = gr->onbox->border_type==bt_none ? 0 : GDrawPointsToPixels(pixmap,gr->onbox->border_width);
         int x=gr->onoffrect.x+bp;
@@ -361,15 +360,15 @@ return( false );
         Color fg = g->state==gs_disabled?g->box->disabled_foreground:
 			g->box->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)):
 			g->box->main_foreground;
-        for (c=0, i=0; c<=6; c++, i++) {
-            angle=(30+c/6.*120)*M_PI/180;
+        for (int i = 0; i <= 6; i++) {
+            angle=(30+i/6.*120)*M_PI/180;
             pts[i].x=.5*w*cos(angle)+x+w/2;
             pts[i].y=.5*h*sin(angle)+y+h/4;
 
              /* draw lashes */
             if (i>0 && i<6) GDrawDrawLine(pixmap, pts[i].x,pts[i].y, .75*w*cos(angle)+x+w/2, .75*h*sin(angle)+y+h/4, fg);
         }
-        GDrawDrawPoly(pixmap, pts, i, fg);
+        GDrawDrawPoly(pixmap, pts, sizeof(pts)/sizeof(pts[0]), fg);
     }
 
     GDrawPopClip(pixmap,&old2);
