@@ -361,14 +361,13 @@ return( false );
         Color fg = g->state==gs_disabled?g->box->disabled_foreground:
 			g->box->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)):
 			g->box->main_foreground;
-        for (c=0, i=0; c<=6; c++) {
+        for (c=0, i=0; c<=6; c++, i++) {
             angle=(30+c/6.*120)*M_PI/180;
             pts[i].x=.5*w*cos(angle)+x+w/2;
             pts[i].y=.5*h*sin(angle)+y+h/4;
 
              /* draw lashes */
             if (i>0 && i<6) GDrawDrawLine(pixmap, pts[i].x,pts[i].y, .75*w*cos(angle)+x+w/2, .75*h*sin(angle)+y+h/4, fg);
-            ++i;
         }
         GDrawDrawPoly(pixmap, pts, i, fg);
     }
