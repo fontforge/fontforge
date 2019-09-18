@@ -64,7 +64,7 @@ typedef uint32 unichar_t;
 
 /* A macro to print a string for debug purposes
  */
-#ifdef FONTFORGE_DEBUG
+#ifndef NDEBUG
 #define TRACE(...) printf(__VA_ARGS__)
 #else
 #define TRACE(...)

@@ -79,8 +79,6 @@
 
 #cmakedefine FONTFORGE_CONFIG_WRITE_PFM 1
 
-#cmakedefine FONTFORGE_DEBUG 1
-
 #cmakedefine FONTFORGE_CONFIG_USE_DOUBLE 1
 
 #cmakedefine FREETYPE_HAS_DEBUGGER 1
