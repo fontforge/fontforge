@@ -350,7 +350,7 @@ return( false );
 
     } else if ( (!gr->ison) && gr->onbox == &visibility_on_box ) {
          /* draw closed eye */
-        GPoint pts[6];
+        GPoint pts[7];
         int c,i;
         double angle;
 	int bp = gr->onbox->border_type==bt_none ? 0 : GDrawPointsToPixels(pixmap,gr->onbox->border_width);
@@ -367,7 +367,7 @@ return( false );
             pts[i].y=.5*h*sin(angle)+y+h/4;
 
              /* draw lashes */
-            if (i>0 && i<5) GDrawDrawLine(pixmap, pts[i].x,pts[i].y, .75*w*cos(angle)+x+w/2, .75*h*sin(angle)+y+h/4, fg);
+            if (i>0 && i<6) GDrawDrawLine(pixmap, pts[i].x,pts[i].y, .75*w*cos(angle)+x+w/2, .75*h*sin(angle)+y+h/4, fg);
             ++i;
         }
         GDrawDrawPoly(pixmap, pts, i, fg);
