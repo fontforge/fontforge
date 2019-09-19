@@ -39,6 +39,7 @@
 #include "glif_name_hash.h"
 #include "lookups.h"
 #include "namelist.h"
+#include "splinesaveafm.h" // for SCWorthOutputting
 #include "splineutil.h"
 #include "tottf.h"
 #include "tottfgpos.h"
@@ -1619,6 +1620,7 @@ return;					/* No anchor positioning, no ligature carets */
 		do {
 		    _sf = sf->subfontcnt==0 ? sf : sf->subfonts[k];
 		    for ( gid=0; gid<_sf->glyphcnt; ++gid ) if ( (sc=_sf->glyphs[gid])!=NULL ) {
+			if (!SCWorthOutputting(sc)) continue;
 			if ( sc->glyph_class==i+2 || (sc->glyph_class==0 && gdefclass(sc)==i+1 )) {
 			    if ( len+strlen(sc->name)+1 >80 ) {
 				putc('\n',out); putc('\t',out);
