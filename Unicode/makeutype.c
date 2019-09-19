@@ -602,7 +602,8 @@ static void readin(void) {
 	    /* Only care about old name (unicode 1.0) for control characters */
 	    for ( pt1=pt; *pt1!=';' && *pt1!='\0'; ++pt1 );
 	    strncpy(oldname,pt,pt1-pt); oldname[pt1-pt] = '\0';
-	    if ( pt1-pt>100 ) oldname[100] = '\0'; pt = pt1;
+	    if ( pt1-pt>100 ) oldname[100] = '\0';
+	    pt = pt1;
 	    if ( *pt==';' ) ++pt;
 	    /* Don't care about 10646 comment field */
 	    while ( *pt!=';' && *pt!='\0' ) ++pt;
