@@ -516,8 +516,8 @@ void CVCheckResizeCursors(CharView *cv) {
 	    else if( CVNearLBearingLine( cv, cv->info.x, fudge ))
 		cv->expandedge = ee_left;
 	    if ( cv->showvmetrics && cv->b.sc->parent->hasvmetrics && cv->b.container==NULL &&
-		    cv->info.y > /*cv->b.sc->parent->vertical_origin*/-cv->b.sc->vwidth-fudge &&
-		    cv->info.y < /*cv->b.sc->parent->vertical_origin*/-cv->b.sc->vwidth+fudge )
+		    cv->info.y > -cv->b.sc->vwidth - fudge + cv->b.sc->parent->ascent &&
+		    cv->info.y < -cv->b.sc->vwidth + fudge + cv->b.sc->parent->ascent)
 		cv->expandedge = ee_down;
 	}
     }
@@ -639,8 +639,8 @@ return;
 		cv->p.cx<cv->b.sc->top_accent_horiz+fs->fudge &&
 		cv->b.container==NULL );
     dovwidth = ( cv->showvmetrics && cv->b.sc->parent->hasvmetrics && cv->b.container == NULL &&
-		cv->p.cy>/*cv->b.sc->parent->vertical_origin*/-cv->b.sc->vwidth-fs->fudge &&
-		cv->p.cy</*cv->b.sc->parent->vertical_origin*/-cv->b.sc->vwidth+fs->fudge &&
+		cv->p.cy > -cv->b.sc->vwidth + cv->b.sc->parent->ascent - fs->fudge &&
+		cv->p.cy < -cv->b.sc->vwidth + cv->b.sc->parent->ascent + fs->fudge &&
 		usemymetrics==NULL );
     cv->nearcaret = nearcaret = -1;
     if ( cv->showhmetrics ) nearcaret = NearCaret(cv->b.sc,cv->p.cx,fs->fudge);

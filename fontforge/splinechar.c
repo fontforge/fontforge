@@ -468,7 +468,7 @@ return;
 		(!sc->parent->layers[layer].background && SCWasEmpty(sc,layer)))) {
 	sc->widthset = false;
 	if ( sc->parent!=NULL && sc->width!=0 )
-	    sc->width = sc->parent->ascent+sc->parent->descent;
+	    sc->vwidth = sc->width = sc->parent->ascent+sc->parent->descent;
 	AnchorPointsFree(sc->anchor);
 	sc->anchor = NULL;
 	StemInfosFree(sc->hstem); sc->hstem = NULL;
