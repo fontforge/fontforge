@@ -1211,8 +1211,8 @@ void CIDSetEncMap(FontViewBase *fv, SplineFont *new ) {
     if ( fv->cidmaster!=NULL && gcnt!=fv->sf->glyphcnt ) {
 	int i;
 	if ( fv->map->encmax<gcnt ) {
-	    fv->map->map = realloc(fv->map->map,gcnt*sizeof(int));
-	    fv->map->backmap = realloc(fv->map->backmap,gcnt*sizeof(int));
+	    fv->map->map = realloc(fv->map->map,gcnt*sizeof(int32));
+	    fv->map->backmap = realloc(fv->map->backmap,gcnt*sizeof(int32));
 	    fv->map->backmax = fv->map->encmax = gcnt;
 	}
 	for ( i=0; i<gcnt; ++i )

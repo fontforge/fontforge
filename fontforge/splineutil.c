@@ -6320,7 +6320,7 @@ EncMap *EncMapCopy(EncMap *map) {
     /* Ensure all memory available, otherwise cleanup and exit as NULL */
     if ( (new=chunkalloc(sizeof(EncMap)))!=NULL ) {
 	*new = *map;
-	if ( (new->map=malloc(map->enccount*sizeof(int32)))!=NULL ) {
+	if ( (new->map=malloc(map->encmax*sizeof(int32)))!=NULL ) {
 	    if ( (new->backmap=malloc(map->backmax*sizeof(int32)))!=NULL ) {
 		memcpy(new->map,map->map,map->enccount*sizeof(int32));
 		memcpy(new->backmap,map->backmap,map->backmax*sizeof(int32));
