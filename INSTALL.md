@@ -6,7 +6,7 @@ The exact method to do this depends on your OS distribution.
 To download all dependencies on Ubuntu, run:
 
 ```sh
-sudo apt-get install libjpeg-dev libtiff5-dev libpng12-dev libfreetype6-dev libgif-dev libgtk-3-dev libxml2-dev libpango1.0-dev libcairo2-dev python3-dev ninja-build cmake build-essential;
+sudo apt-get install libjpeg-dev libtiff5-dev libpng12-dev libfreetype6-dev libgif-dev libgtk-3-dev libxml2-dev libpango1.0-dev libcairo2-dev libspiro-dev libuninameslist-dev python3-dev ninja-build cmake build-essential;
 ```
 
 Now run the build and installation scripts:
