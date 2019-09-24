@@ -2501,7 +2501,7 @@ static int dumpcffhmtx(struct alltabs *at,SplineFont *sf,int bitmaps) {
 	putshort(at->gi.hmtx,b.minx);
 	if ( dovmetrics ) {
 	    putshort(at->gi.vmtx,sf->glyphs[at->gi.bygid[0]]->vwidth);
-	    putshort(at->gi.vmtx,sc->parent->ascent - b.miny);
+	    putshort(at->gi.vmtx,sf->ascent - b.miny);
 	}
     } else {
 	putshort(at->gi.hmtx,width<=0?(sf->ascent+sf->descent)/2:width);
