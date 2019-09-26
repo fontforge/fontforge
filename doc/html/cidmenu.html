@@ -224,6 +224,17 @@
     <LI>
       &lt;sub font names&gt;
   </UL>
+  <P>
+  <FONT COLOR="Red"><STRONG><BIG>Warning:</BIG></STRONG></FONT> FontForge's
+  support for CID-keyed fonts is rudimentary; especially attempting to use
+  Compact encodings and the Metrics View in CID-keyed fonts is known to cause
+  issues and crashes. At one time, the memory usage of CID-keyed fonts was seen
+  as very worrisome (&approx;250MB), however as even most modern smartphones
+  can support such usage it is no longer a concern for the majority of users.
+  Therefore, we recommend that if you will make serious edits to a CID-keyed
+  font, you <a href="cidmenu.html#CID">flatten</a> it first to prevent crashes
+  and memory corruption. Bug fixes are always welcome&mdash;to start, see 
+  <a href="https://github.com/fontforge/fontforge/issues/3946#issuecomment-534005675">issue &numero;3946</a>.
   <H2>
     Er... What is a <A NAME="CID">CID</A> keyed Font?
   </H2>
