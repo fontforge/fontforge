@@ -1065,7 +1065,7 @@ static void dumpmissingglyph(SplineFont *sf,struct glyphinfo *gi,int fixedwidth)
     putshort(gi->hmtx,stem);
     if ( sf->hasvmetrics ) {
 	putshort(gi->vmtx,sf->ascent+sf->descent);
-	putshort(gi->vmtx,/*sf->vertical_origin-*/gh.ymax);
+	putshort(gi->vmtx,sf->ascent - gh.ymax);
     }
 }
 
@@ -2501,7 +2501,7 @@ static int dumpcffhmtx(struct alltabs *at,SplineFont *sf,int bitmaps) {
 	putshort(at->gi.hmtx,b.minx);
 	if ( dovmetrics ) {
 	    putshort(at->gi.vmtx,sf->glyphs[at->gi.bygid[0]]->vwidth);
-	    putshort(at->gi.vmtx,/*sf->vertical_origin-*/b.miny);
+	    putshort(at->gi.vmtx,sf->ascent - b.miny);
 	}
     } else {
 	putshort(at->gi.hmtx,width<=0?(sf->ascent+sf->descent)/2:width);
@@ -2539,7 +2539,7 @@ static int dumpcffhmtx(struct alltabs *at,SplineFont *sf,int bitmaps) {
 	    if ( dovmetrics ) {
 		if ( i<=at->gi.lastvwidth )
 		    putshort(at->gi.vmtx,sc->vwidth);
-		putshort(at->gi.vmtx,/*sf->vertical_origin-*/b.maxy);
+		putshort(at->gi.vmtx,sc->parent->ascent - b.maxy);
 	    }
 	    ++cnt;
 	    if ( i==at->gi.lasthwidth )
@@ -2590,7 +2590,7 @@ static void dumpcffcidhmtx(struct alltabs *at,SplineFont *_sf) {
 	    if ( dovmetrics ) {
 		if ( sc->ttf_glyph<=at->gi.lastvwidth )
 		    putshort(at->gi.vmtx,sc->vwidth);
-		putshort(at->gi.vmtx,/*sf->vertical_origin-*/b.maxy);
+		putshort(at->gi.vmtx,sc->parent->ascent - b.maxy);
 	    }
 	    ++cnt;
 	    if ( sc->ttf_glyph==at->gi.lasthwidth )

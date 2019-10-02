@@ -123,7 +123,7 @@ struct cvshows CVShows = {
 	1,		/* show x minimum distances */
 	1,		/* show y minimum distances */
 	1,		/* show horizontal metrics */
-	0,		/* show vertical metrics */
+	1,		/* show vertical metrics */
 	0,		/* mark extrema */
 	0,		/* show points of inflection */
 	1,		/* show blue values */
@@ -2769,12 +2769,12 @@ return;				/* no points. no side bearings */
 	y2 = cv->height-tab->yoff-rint(-sc->parent->descent*tab->scale);
 	DrawPLine(cv,pixmap,x,y,x,y2,metricslabelcol);
 	 /* arrow heads */
-	 DrawPLine(cv,pixmap,x,y,x-4,y-4,metricslabelcol);
-	 DrawPLine(cv,pixmap,x,y,x+4,y-4,metricslabelcol);
-	 DrawPLine(cv,pixmap,x,y2,x+4,y2+4,metricslabelcol);
-	 DrawPLine(cv,pixmap,x,y2,x-4,y2+4,metricslabelcol);
-	dtos( buf, bounds[2]->y-sc->parent->descent);
-	y = y + (y-y2-cv->sfh)/2;
+	 DrawPLine(cv,pixmap,x,y,x-4,y+4,metricslabelcol);
+	 DrawPLine(cv,pixmap,x,y,x+4,y+4,metricslabelcol);
+	 DrawPLine(cv,pixmap,x,y2,x+4,y2-4,metricslabelcol);
+	 DrawPLine(cv,pixmap,x,y2,x-4,y2-4,metricslabelcol);
+	dtos( buf, bounds[2]->y+sc->parent->descent);
+	y = y - (y-y2-cv->sfh)/2;
 	GDrawDrawText8(pixmap,x+4,y,buf,-1,metricslabelcol);
 
 	x = rint(bounds[3]->x*tab->scale) + tab->xoff;
@@ -2786,7 +2786,7 @@ return;				/* no points. no side bearings */
 	 DrawPLine(cv,pixmap,x,y,x+4,y-4,metricslabelcol);
 	 DrawPLine(cv,pixmap,x,y2,x+4,y2+4,metricslabelcol);
 	 DrawPLine(cv,pixmap,x,y2,x-4,y2+4,metricslabelcol);
-	dtos( buf, sc->vwidth-bounds[3]->y);
+	dtos( buf, sc->parent->ascent-bounds[3]->y);
 	x = x + (x2-x-GDrawGetText8Width(pixmap,buf,-1))/2;
 	GDrawDrawText8(pixmap,x,y-4,buf,-1,metricslabelcol);
     }
@@ -2921,8 +2921,8 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    DrawLine(cv,pixmap,-8096,-sf->descent,8096,-sf->descent,coordcol);
 	}
 	if ( cv->showvmetrics ) {
-	    DrawLine(cv,pixmap,(sf->ascent+sf->descent)/2,-8096,(sf->ascent+sf->descent)/2,8096,coordcol);
-	    /*DrawLine(cv,pixmap,-8096,sf->vertical_origin,8096,sf->vertical_origin,coordcol);*/
+	    /*DrawLine(cv,pixmap,(sf->ascent+sf->descent)/2,-8096,(sf->ascent+sf->descent)/2,8096,coordcol);
+	    DrawLine(cv,pixmap,-8096,sf->vertical_origin,8096,sf->vertical_origin,coordcol);*/
 	}
 
 	DrawSelImageList(cv,pixmap,cv->b.layerheads[cv->b.drawmode]->images);
@@ -3121,9 +3121,9 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		    NULL,_("TopAccent"));
     }
     if ( cv->showvmetrics ) {
-	int len, y = -tab->yoff + cv->height - rint((/*sf->vertical_origin*/-cv->b.sc->vwidth)*tab->scale);
-	DrawLine(cv,pixmap,-32768,/*sf->vertical_origin*/-cv->b.sc->vwidth,
-			    32767,/*sf->vertical_origin*/-cv->b.sc->vwidth,
+	int vertical_height = -cv->b.sc->vwidth + cv->b.sc->parent->ascent;
+	int len, y = -tab->yoff + cv->height - rint(vertical_height*tab->scale);
+	DrawLine(cv,pixmap,-32768,vertical_height,32767,vertical_height,
 		(!cv->inactive && cv->vwidthsel)?widthselcol:widthcol);
 	if ( y>-40 && y<cv->height+40 ) {
 	    dtos( buf, cv->b.sc->vwidth);
@@ -12542,7 +12542,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
     cv->showmdx = CVShows.showmdx;
     cv->showmdy = CVShows.showmdy;
     cv->showhmetrics = CVShows.showhmetrics;
-    cv->showvmetrics = CVShows.showvmetrics;
+    cv->showvmetrics = sc->parent->hasvmetrics ? CVShows.showvmetrics : 0;
     cv->markextrema = CVShows.markextrema;
     cv->showsidebearings = CVShows.showsidebearings;
     cv->showrefnames = CVShows.showrefnames;

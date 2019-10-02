@@ -216,6 +216,7 @@ return( sc );
 	sc->unicodeenc = dummy.unicodeenc;
 	sc->name = copy(dummy.name);
 	sc->width = dummy.width;
+	sc->vwidth = dummy.vwidth;
 	sc->orig_pos = 0xffff;
 	if ( sf->cidmaster!=NULL )
 	    sc->altuni = CIDSetAltUnis(FindCidMap(sf->cidmaster->cidregistry,sf->cidmaster->ordering,sf->cidmaster->supplement,sf->cidmaster),enc);
