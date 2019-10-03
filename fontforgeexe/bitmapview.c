@@ -57,6 +57,12 @@ struct bvshows BVShows = { 1, 1, 1, 0 };
 #define RPT_DATA	24		/* x,y text after above */
 #define RPT_COLOR	40		/* Blob showing the foreground color */
 
+static Color guide_color = 0x404040;
+static Color width_guide_color = 0x404040;
+static Color grid_color = 0xa0a0a0;
+static Color bitmap_color = 0x808080;
+static Color overview_fg_color = 0x000000;
+
 static void BVNewScale(BitmapView *bv) {
     int fh = bv->bdf->ascent+bv->bdf->descent;
 
@@ -660,7 +666,6 @@ return;
 static void BVDrawGlyph(BitmapView *bv, BDFChar *bc, GWindow pixmap, GRect *pixel,
 	uint8 is_ref, uint8 selected, int8 xoff, int8 yoff) {
     int i, j;
-    int color = 0x808080;
     BDFFont *bdf = bv->bdf;
     BDFRefChar *cur;
 
@@ -672,7 +677,7 @@ static void BVDrawGlyph(BitmapView *bv, BDFChar *bc, GWindow pixmap, GRect *pixe
 	    pixel->y = bv->height-bv->yoff - (bc->ymax + yoff - i + 1)*bv->scale;
 	    if ( bdf->clut==NULL ) {
 		if ( bc->bitmap[i*bc->bytes_per_line+(j>>3)] & (1<<(7-(j&7))) ) {
-		    GDrawFillRect(pixmap,pixel,color);
+		    GDrawFillRect(pixmap,pixel,bitmap_color);
 		    if ( selected ) {
 			GDrawSetStippled(pixmap,2, 0,0);
 			GDrawFillRect(pixmap,pixel,0x909000);
@@ -710,7 +715,6 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
     BDFChar *bc = bv->bc;
     BDFRefChar *bref;
     RefChar *refs;
-    extern Color widthcol;
 
     CharView cvtemp;
 
@@ -734,24 +738,24 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
     if ( bv->showgrid ) {
 	if ( bv->scale>2 ) {
 	    for ( i=bv->xoff+bv->scale; i<bv->width; i += bv->scale )
-		GDrawDrawLine(pixmap,i,0, i,bv->height,0xa0a0a0);
+		GDrawDrawLine(pixmap,i,0, i,bv->height,grid_color);
 	    for ( i=bv->xoff-bv->scale; i>0; i -= bv->scale )
-		GDrawDrawLine(pixmap,i,0, i,bv->height,0xa0a0a0);
+		GDrawDrawLine(pixmap,i,0, i,bv->height,grid_color);
 	    for ( i=-bv->yoff+bv->height-bv->scale; i>0; i -= bv->scale )
-		GDrawDrawLine(pixmap,0,i,bv->width,i,0xa0a0a0);
+		GDrawDrawLine(pixmap,0,i,bv->width,i,grid_color);
 	    for ( i=-bv->yoff+bv->height+bv->scale; i<bv->height; i += bv->scale )
-		GDrawDrawLine(pixmap,0,i,bv->width,i,0xa0a0a0);
+		GDrawDrawLine(pixmap,0,i,bv->width,i,grid_color);
 	}
-	GDrawDrawLine(pixmap,0,-bv->yoff+bv->height-0*bv->scale,bv->width,-bv->yoff+bv->height-0*bv->scale,0x404040);
+	GDrawDrawLine(pixmap,0,-bv->yoff+bv->height-0*bv->scale,bv->width,-bv->yoff+bv->height-0*bv->scale,guide_color);
 	GDrawDrawLine(pixmap,0,-bv->yoff+bv->height-bv->bdf->ascent*bv->scale,
-		bv->width,-bv->yoff+bv->height-bv->bdf->ascent*bv->scale,0x404040);
+		bv->width,-bv->yoff+bv->height-bv->bdf->ascent*bv->scale,guide_color);
 	GDrawDrawLine(pixmap,0,-bv->yoff+bv->height+bv->bdf->descent*bv->scale,
-		bv->width,-bv->yoff+bv->height+bv->bdf->descent*bv->scale,0x404040);
-	GDrawDrawLine(pixmap,bv->xoff+0*bv->scale,0, bv->xoff+0*bv->scale,bv->height,0x404040);
-	GDrawDrawLine(pixmap,bv->xoff+bv->bc->width*bv->scale,0, bv->xoff+bv->bc->width*bv->scale,bv->height,widthcol);
+		bv->width,-bv->yoff+bv->height+bv->bdf->descent*bv->scale,guide_color);
+	GDrawDrawLine(pixmap,bv->xoff+0*bv->scale,0, bv->xoff+0*bv->scale,bv->height,guide_color);
+	GDrawDrawLine(pixmap,bv->xoff+bv->bc->width*bv->scale,0, bv->xoff+bv->bc->width*bv->scale,bv->height,width_guide_color);
 	if ( bv->bdf->sf->hasvmetrics )
 	    GDrawDrawLine(pixmap,0,-bv->yoff+bv->height-(bv->bdf->ascent-bc->vwidth)*bv->scale,
-		    bv->width,-bv->yoff+bv->height-(bv->bdf->ascent-bc->vwidth)*bv->scale,widthcol);
+		    bv->width,-bv->yoff+bv->height-(bv->bdf->ascent-bc->vwidth)*bv->scale,width_guide_color);
     }
     if ( bv->showfore ) {
 	/* Reference names are drawn after grid (otherwise some characters may get unreadable */
@@ -856,6 +860,7 @@ return;
 	    base.clut = &clut;
 	    clut.clut_len = 2;
 	    clut.clut[0] = GDrawGetDefaultBackground(NULL);
+	    clut.clut[1] = overview_fg_color;
 	} else {
 	    base.image_type = it_index;
 	    base.clut = bv->bdf->clut;
@@ -2086,6 +2091,35 @@ static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	}
     }
 }
+
+static struct resed bitmapview_re[] = {
+    { N_("Guide Color"), "GuideColor", rt_color, &guide_color, N_("The color of the guide lines for glyph metrics"), NULL, { 0 }, 0, 0 },
+    { N_("Grid Color"), "GridColor", rt_color, &grid_color, N_("The color of the guide lines for the bitmap grid"), NULL, { 0 }, 0, 0 },
+    { N_("Width Guide Color"), "GuideColor", rt_color, &width_guide_color, N_("The color of the guide line for the advance width"), NULL, { 0 }, 0, 0 },
+    { N_("Bitmap Color"), "BitmapColor", rt_color, &bitmap_color, N_("The color of the large bitmap"), NULL, { 0 }, 0, 0 },
+    { N_("Overview FG Color"), "OverviewColor", rt_color, &overview_fg_color, N_("The color of the small bitmap view"), NULL, { 0 }, 0, 0 },
+    RESED_EMPTY
+};
+
+extern GResInfo metricsview_ri;
+GResInfo bitmapview_ri = {
+    &metricsview_ri, NULL,NULL, NULL,
+    NULL,
+    NULL,
+    NULL,
+    bitmapview_re,
+    N_("Bitmap View"),
+    N_("This window displays a single bitmap glyph"),
+    "BitmapView",
+    "fontforge",
+    false,
+    0,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
+};
 
 static GMenuItem2 wnmenu[] = {
     { { (unichar_t *) N_("New O_utline Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'u' }, H_("New Outline Window|Ctl+H"), NULL, NULL, BVMenuOpenOutline, 0 },

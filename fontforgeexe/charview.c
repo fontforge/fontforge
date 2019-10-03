@@ -13433,9 +13433,9 @@ struct cv_interface gdraw_cv_interface = {
     CV_LayerPaletteCheck
 };
 
-extern GResInfo metricsview_ri;
+extern GResInfo bitmapview_ri;
 GResInfo charview2_ri = {
-    &metricsview_ri, NULL,NULL, NULL,
+    &bitmapview_ri, NULL,NULL, NULL,
     NULL,
     NULL,
     NULL,
