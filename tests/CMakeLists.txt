@@ -35,7 +35,7 @@ add_custom_target(check
   USES_TERMINAL
 )
 
-if(ENABLE_PYTHON_SCRIPTING_RESULT AND ENABLE_PYTHON_EXTENSION)
+if(ENABLE_PYTHON_SCRIPTING_RESULT AND ENABLE_PYTHON_EXTENSION_RESULT)
   add_dependencies(check fontforge_pyhook psMat_pyhook)
 endif()
 
