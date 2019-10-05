@@ -2637,6 +2637,7 @@ void DoXRes(void) {
 
     MVColInit();
     CVColInit();
+    BVColInit();
     GResEdit(&fontview_ri,xdefs_filename,change_res_filename);
 }
 

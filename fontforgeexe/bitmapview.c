@@ -2121,6 +2121,16 @@ GResInfo bitmapview_ri = {
     NULL
 };
 
+void BVColInit(void) {
+    static bool cinit = false;
+
+    if (cinit)
+	return;
+
+    cinit = true;
+    GResEditFind(bitmapview_re, "BitmapView.");
+}
+
 static GMenuItem2 wnmenu[] = {
     { { (unichar_t *) N_("New O_utline Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'u' }, H_("New Outline Window|Ctl+H"), NULL, NULL, BVMenuOpenOutline, 0 },
     { { (unichar_t *) N_("New _Bitmap Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("New Bitmap Window|Ctl+J"), NULL, NULL, /* No function, never avail */NULL, 0 },
@@ -2298,6 +2308,7 @@ return;
     mb2DoGetText(mblist);
     for ( i=0; BVFlipNames[i]!=NULL ; ++i )
 	BVFlipNames[i] = S_(BVFlipNames[i]);
+    BVColInit();
     atexit(&BitmapViewFinishNonStatic);
 }
 

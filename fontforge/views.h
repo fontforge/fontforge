@@ -1308,6 +1308,7 @@ extern struct hslrgb *SFFontCols(SplineFont *sf,struct hslrgb fontcols[6]);
 extern Color view_bgcol;	/* Background color for views */
 extern void MVColInit(void);
 extern void CVColInit( void );
+extern void BVColInit( void );
 
 extern void FontViewRemove(FontView *fv);
 extern void FontViewFinishNonStatic();
