@@ -62,6 +62,13 @@ static Color width_guide_color = 0x404040;
 static Color grid_color = 0xa0a0a0;
 static Color bitmap_color = 0x808080;
 static Color overview_fg_color = 0x000000;
+static Color outline_color = 0x00ff00;
+static Color active_tool_color = 0x909000;
+static Color ref_color = 0x808080;
+static Color selection_color = 0x909000;
+static Color selected_ref_color = 0x909000;
+static Color ref_border_color = 0x606060;
+static Color selected_ref_border_color = 0x606000;
 
 static void BVNewScale(BitmapView *bv) {
     int fh = bv->bdf->ascent+bv->bdf->descent;
@@ -388,6 +395,7 @@ static void BVCharUp(BitmapView *bv, GEvent *event ) {
 #endif
 }
 
+/* Used for preview of shapes (line, rectangle, or ellipse) */
 static void BVDrawTempPoint(BitmapView *bv,int x, int y,void *pixmap) {
     GRect pixel;
 
@@ -395,7 +403,7 @@ static void BVDrawTempPoint(BitmapView *bv,int x, int y,void *pixmap) {
     pixel.x = bv->xoff + x*bv->scale;
     pixel.y = bv->height-bv->yoff-(y+1)*bv->scale;
     GDrawSetStippled(pixmap,1, 0,0);
-    GDrawFillRect(pixmap,&pixel,0x909000);
+    GDrawFillRect(pixmap,&pixel,active_tool_color);
     GDrawSetStippled(pixmap,0, 0,0);
 }
 
@@ -404,7 +412,7 @@ static void BVDrawRefBorder(BitmapView *bv, BDFChar *bc, GWindow pixmap,
     int i, j;
     int isblack, lw, rw, tw, bw;
     int tx, ty;
-    Color outcolor = selected ? 0x606000 : 0x606060;
+    Color outcolor = selected ? selected_ref_border_color : ref_border_color;
 
     for ( i=bc->ymax-bc->ymin; i>=0; --i ) {
 	for ( j=0; j<=bc->xmax-bc->xmin; ++j ) {
@@ -448,6 +456,7 @@ static void BVDrawSelection(BitmapView *bv,void *pixmap) {
     Color bg = view_bgcol;
     int i,j;
 
+    /* Draw pixels in selected region */
     pixel.width = pixel.height = bv->scale+1;
     for ( i=sel->ymax-sel->ymin; i>=0; --i ) {
 	for ( j=0; j<=sel->xmax-sel->xmin; ++j ) {
@@ -455,7 +464,7 @@ static void BVDrawSelection(BitmapView *bv,void *pixmap) {
 	    pixel.y = bv->height-bv->yoff-(sel->ymax-i+1)*bv->scale;
 	    if ( clut==NULL ) {
 		if ( sel->bitmap[i*sel->bytes_per_line+(j>>3)] & (1<<(7-(j&7))) ) {
-		    GDrawFillRect(pixmap,&pixel,0x808080);
+		    GDrawFillRect(pixmap,&pixel,bitmap_color);
 		} else {
 		    GDrawFillRect(pixmap,&pixel,bg);
 		}
@@ -464,12 +473,14 @@ static void BVDrawSelection(BitmapView *bv,void *pixmap) {
 			clut->clut[sel->bitmap[i*sel->bytes_per_line+j]]);
 	}
     }
+
+    /* Draw overlay of selected region */
     GDrawSetStippled(pixmap,1, 0,0);
     rect.width = (sel->xmax-sel->xmin+1)*bv->scale;
     rect.height = (sel->ymax-sel->ymin+1)*bv->scale;
     rect.x = bv->xoff + sel->xmin*bv->scale;
     rect.y = bv->height-bv->yoff-(sel->ymax+1)*bv->scale;
-    GDrawFillRect(pixmap,&rect,0x909000);
+    GDrawFillRect(pixmap,&rect,selection_color);
     GDrawSetStippled(pixmap,0, 0,0);
 }
 
@@ -677,10 +688,10 @@ static void BVDrawGlyph(BitmapView *bv, BDFChar *bc, GWindow pixmap, GRect *pixe
 	    pixel->y = bv->height-bv->yoff - (bc->ymax + yoff - i + 1)*bv->scale;
 	    if ( bdf->clut==NULL ) {
 		if ( bc->bitmap[i*bc->bytes_per_line+(j>>3)] & (1<<(7-(j&7))) ) {
-		    GDrawFillRect(pixmap,pixel,bitmap_color);
+		    GDrawFillRect(pixmap,pixel,is_ref ? ref_color : bitmap_color);
 		    if ( selected ) {
 			GDrawSetStippled(pixmap,2, 0,0);
-			GDrawFillRect(pixmap,pixel,0x909000);
+			GDrawFillRect(pixmap,pixel,selected_ref_color);
 			GDrawSetStippled(pixmap,0, 0,0);
 		    }
 		}
@@ -690,7 +701,7 @@ static void BVDrawGlyph(BitmapView *bv, BDFChar *bc, GWindow pixmap, GRect *pixe
 		    GDrawFillRect(pixmap,pixel,bdf->clut->clut[index]);
 		    if ( selected ) {
 			GDrawSetStippled(pixmap,2, 0,0);
-			GDrawFillRect(pixmap,pixel,0x909000);
+			GDrawFillRect(pixmap,pixel,selected_ref_color);
 			GDrawSetStippled(pixmap,0, 0,0);
 		    }
 		}
@@ -763,9 +774,6 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
 	    BVDrawRefName( bv,pixmap,bref,0 );
     }
     if ( bv->showoutline ) {
-	Color col = (view_bgcol<0x808080)
-		? (bv->bc->byte_data ? 0x008800 : 0x004400 )
-		: 0x00ff00;
 	memset(&cvtemp,'\0',sizeof(cvtemp));
 	cvtemp.v = bv->v;
 	cvtemp.width = bv->width;
@@ -782,12 +790,13 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
 	clip.height = event->u.expose.rect.height/cvtemp.cvtabs[0].scale;
 	clip.x = (event->u.expose.rect.x-cvtemp.cvtabs[0].xoff)/cvtemp.cvtabs[0].scale;
 	clip.y = (cvtemp.height-event->u.expose.rect.y-event->u.expose.rect.height-cvtemp.cvtabs[0].yoff)/cvtemp.cvtabs[0].scale;
-	CVDrawSplineSet(&cvtemp,pixmap,cvtemp.b.sc->layers[ly_fore].splines,col,false,&clip);
+	CVDrawSplineSet(&cvtemp,pixmap,cvtemp.b.sc->layers[ly_fore].splines,outline_color,false,&clip);
 	for ( refs = cvtemp.b.sc->layers[ly_fore].refs; refs!=NULL; refs = refs->next )
-	    CVDrawSplineSet(&cvtemp,pixmap,refs->layers[0].splines,col,false,&clip);
+	    CVDrawSplineSet(&cvtemp,pixmap,refs->layers[0].splines,outline_color,false,&clip);
     }
     if ( bv->active_tool==bvt_pointer ) {
 	if ( bv->bc->selection==NULL ) {
+	    /* Draw dashed outline of pending selection region */
 	    int xmin, xmax, ymin, ymax;
 	    xmin = bv->pressed_x; xmax = bv->info_x;
 	    ymin = bv->info_y; ymax = bv->pressed_y;
@@ -2093,11 +2102,18 @@ static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static struct resed bitmapview_re[] = {
-    { N_("Guide Color"), "GuideColor", rt_color, &guide_color, N_("The color of the guide lines for glyph metrics"), NULL, { 0 }, 0, 0 },
-    { N_("Grid Color"), "GridColor", rt_color, &grid_color, N_("The color of the guide lines for the bitmap grid"), NULL, { 0 }, 0, 0 },
-    { N_("Width Guide Color"), "GuideColor", rt_color, &width_guide_color, N_("The color of the guide line for the advance width"), NULL, { 0 }, 0, 0 },
-    { N_("Bitmap Color"), "BitmapColor", rt_color, &bitmap_color, N_("The color of the large bitmap"), NULL, { 0 }, 0, 0 },
+    { N_("FG Color"), "BitmapColor", rt_color, &bitmap_color, N_("The color of the large bitmap"), NULL, { 0 }, 0, 0 },
     { N_("Overview FG Color"), "OverviewColor", rt_color, &overview_fg_color, N_("The color of the small bitmap view"), NULL, { 0 }, 0, 0 },
+    { N_("Guide Color"), "GuideColor", rt_color, &guide_color, N_("The color of the guide lines for glyph metrics"), NULL, { 0 }, 0, 0 },
+    { N_("Width Guide Color"), "GuideColor", rt_color, &width_guide_color, N_("The color of the guide line for the advance width"), NULL, { 0 }, 0, 0 },
+    { N_("Grid Color"), "GridColor", rt_color, &grid_color, N_("The color of the guide lines for the bitmap grid"), NULL, { 0 }, 0, 0 },
+    { N_("Outline Color"), "OutlineColor", rt_color, &outline_color, N_("The color of the outline"), NULL, { 0 }, 0, 0 },
+    { N_("Active Tool Color"), "ActiveToolColor", rt_color, &active_tool_color, N_("The color of the preview for drawing lines, rectangles, and ellipses"), NULL, { 0 }, 0, 0 },
+    { N_("Selected Region Color"), "SelectedRegionColor", rt_color, &selection_color, N_("The color of the selected region"), NULL, { 0 }, 0, 0 },
+    { N_("Reference FG Color"), "ReferenceColor", rt_color, &ref_color, N_("The color of a reference"), NULL, { 0 }, 0, 0 },
+    { N_("Selected Reference Color"), "SelectedReferenceColor", rt_color, &selected_ref_color, N_("The color of the selected reference"), NULL, { 0 }, 0, 0 },
+    { N_("Reference Border Color"), "ReferenceBorderColor", rt_color, &ref_border_color, N_("The color used to outline a reference"), NULL, { 0 }, 0, 0 },
+    { N_("Selected Reference Border Color"), "SelectedReferenceBorderColor", rt_color, &selected_ref_border_color, N_("The color used to outline the selected reference"), NULL, { 0 }, 0, 0 },
     RESED_EMPTY
 };
 
