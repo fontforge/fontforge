@@ -76,7 +76,7 @@ static void BVNewScale(BitmapView *bv) {
     GScrollBarSetBounds(bv->vsb,-2*fh*bv->scale,4*fh*bv->scale,bv->height);
     GScrollBarSetBounds(bv->hsb,-3*fh*bv->scale,6*fh*bv->scale,bv->width);
     GScrollBarSetPos(bv->vsb,bv->yoff);
-    GScrollBarSetPos(bv->hsb,bv->xoff);
+    GScrollBarSetPos(bv->hsb,-bv->xoff);
 
     GDrawRequestExpose(bv->v,NULL,false);
 }
