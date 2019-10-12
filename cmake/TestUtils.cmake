@@ -74,7 +74,7 @@ function(add_py_test test_script)
   endif()
 
   _add_systest(py "$<TARGET_FILE:fontforgeexe>" "${test_script}" ${ARGN})
-  if(ENABLE_PYTHON_EXTENSION AND NOT _disable_pyhook)
+  if(ENABLE_PYTHON_EXTENSION_RESULT AND NOT _disable_pyhook)
     _add_systest(pyhook "${Python3_EXECUTABLE}" "${test_script}" ${ARGN})
   endif()
 endfunction()
