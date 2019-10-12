@@ -1370,10 +1370,12 @@ static void GGDKDrawDestroyWindow(GWindow w) {
                 Log(LOGDEBUG, "Removing %p(%s) from mru window list", gw, gw->window_title);
                 g_queue_delete_link(gw->display->mru_windows, gw->mru_link);
                 gw->mru_link = NULL;
-            } else {
-                // This is so that e.g. popup menus get hidden immediately
-                GDrawSetVisible((GWindow)gw, false);
             }
+            // This is so that e.g. popup menus get hidden immediately
+            // On Quartz, this is also necessary for toplevel windows,
+            // as focus change events are not received when a window
+            // is destroyed, but they *are* when it's first hidden...
+            GDrawSetVisible((GWindow)gw, false);
 
             // HACK! Reparent all windows transient to this
             // If they were truly transient in the normal sense, they would just be
