@@ -328,7 +328,7 @@ static int trans_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	TransData *td = GDrawGetUserData(gw);
 	td->done = true;
-    } else if ( event->type == et_map ) {
+    } else if ( event->type == et_map && event->u.map.is_visible ) {
 	/* Above palettes */
 	GDrawRaise(gw);
     } else if ( event->type==et_char ) {

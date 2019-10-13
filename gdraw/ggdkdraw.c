@@ -1507,11 +1507,18 @@ static void GGDKDrawMoveResize(GWindow gw, int32 x, int32 y, int32 w, int32 h) {
 }
 
 static void GGDKDrawRaise(GWindow w) {
-    Log(LOGDEBUG, " ");
-    _GGDKDraw_CleanupAutoPaint(((GGDKWindow)w)->display);
-    gdk_window_raise(((GGDKWindow)w)->w);
+    GGDKWindow gw = (GGDKWindow) w;
+    Log(LOGDEBUG, "%p[%p][%s]", gw, gw->w, gw->window_title);
+    if (!gw->is_visible) {
+        Log(LOGWARN, "Discarding raise on hidden window: %p[%p][%s]",
+            gw, gw->w, gw->window_title);
+        return;
+    }
+
+    _GGDKDraw_CleanupAutoPaint(gw->display);
+    gdk_window_raise(gw->w);
     if (!w->is_toplevel) {
-        _GGDKDraw_FakeConfigureEvent((GGDKWindow)w);
+        _GGDKDraw_FakeConfigureEvent(gw);
     }
 }
 
