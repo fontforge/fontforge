@@ -130,8 +130,6 @@ static Hotkey* hotkeyFindByStateAndKeysym( char* windowType, uint16 state, uint1
 
 
 struct dlistnodeExternal* hotkeyFindAllByEvent( GWindow w, GEvent *event ) {
-    if( event->u.chr.autorepeat )
-	return 0;
     char* windowType = GDrawGetWindowTypeName( w );
     return hotkeyFindAllByStateAndKeysym( windowType,
 					  event->u.chr.state,
@@ -140,10 +138,6 @@ struct dlistnodeExternal* hotkeyFindAllByEvent( GWindow w, GEvent *event ) {
 
 
 Hotkey* hotkeyFindByEvent( GWindow w, GEvent *event ) {
-
-    if( event->u.chr.autorepeat )
-	return 0;
-
     char* windowType = GDrawGetWindowTypeName( w );
     return hotkeyFindByStateAndKeysym( windowType, event->u.chr.state, event->u.chr.keysym );
 }
