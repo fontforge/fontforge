@@ -1510,7 +1510,7 @@ static void GGDKDrawRaise(GWindow w) {
     GGDKWindow gw = (GGDKWindow) w;
     Log(LOGDEBUG, "%p[%p][%s]", gw, gw->w, gw->window_title);
     if (!gw->is_visible) {
-        Log(LOGWARN, "Discarding raise on hidden window: %p[%p][%s]",
+        Log(LOGINFO, "Discarding raise on hidden window: %p[%p][%s]",
             gw, gw->w, gw->window_title);
         return;
     }
