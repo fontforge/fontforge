@@ -3840,6 +3840,9 @@ char* SFDCreateUndoForLookup( SplineFont *sf, int lookup_type )
 }
 
 static SplineChar* SCFindByGlyphName( SplineFont *sf, char* n ) {
+    if (n == NULL) {
+        return 0;
+    }
     int i=0;
     for ( i=0; i<sf->glyphcnt; ++i ) {
 	if ( sf->glyphs[i]!=NULL ) {
@@ -3932,7 +3935,7 @@ static char* SFDTrimUndoOldToNew( SplineFont *sf, char* oldstr, char* newstr ) {
 	         * we have to output oglyph and read another glyph from
 	         * the old list.
 	         */
-	        while( newsc->orig_pos > oldsc->orig_pos ) {
+	        while( oglyph && newsc->orig_pos > oldsc->orig_pos ) {
 	    	    glyphsWithUndoInfoCount++;
 	    	    SFDTrimUndoOldToNew_Output( retf, oglyph, oline );
 	    	    free(oline);
@@ -3946,7 +3949,7 @@ static char* SFDTrimUndoOldToNew( SplineFont *sf, char* oldstr, char* newstr ) {
 	    	    fprintf(stderr,"failed to read new or old files during SFD diff. Returning entire new data as diff!\n");
 	    	    goto error3SFDTrimUndoOldToNew;
 	        }
-	        if( strcmp( oglyph, nglyph )) {
+	        if( !oglyph || strcmp( oglyph, nglyph )) {
 //	    	    fprintf(stderr,"mismatch between old and new SFD fragments. Skipping new glyph that is not in old...\n");
 	    	    glyphsWithUndoInfoCount++;
 	    	    SFDTrimUndoOldToNew_Output( retf, nglyph, "Kerns2: " );
