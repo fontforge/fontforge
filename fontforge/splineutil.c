@@ -1123,8 +1123,13 @@ static int SplinePointCategory(SplinePoint *sp) {
 	    pt = pt_curve;
 	/* Cross product of control point with unit vector normal to line in */
 	/*  opposite direction should be less than an em-unit for a tangent */
-	else if (( nclen==0 && pclen!=0 && (cross = pcdir.x*ndir.y-pcdir.y*ndir.x)<bounds && cross>-bounds ) ||
-		( pclen==0 && nclen!=0 && (cross = ncdir.x*pdir.y-ncdir.y*pdir.x)<bounds && cross>-bounds ))
+	else if (    (   nclen==0 && pclen!=0 
+	              && (cross = pcdir.x*ndir.y-pcdir.y*ndir.x)<bounds
+	              && cross>-bounds && (pcdir.x*ndir.x+pcdir.y*ndir.y)<0 )
+	          ||
+	             (   pclen==0 && nclen!=0
+	              && (cross = ncdir.x*pdir.y-ncdir.y*pdir.x)<bounds
+	              && cross>-bounds && (ncdir.x*pdir.x+ncdir.y*pdir.y)<0 ) )
 	    pt = pt_tangent;
 
 	if (pt == pt_curve &&
