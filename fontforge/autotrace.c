@@ -98,7 +98,7 @@ static SplinePointList *localSplinesFromEntities(Entity *ent, Color bgcol, int i
 	enext = ent->next;
 	if ( ent->type == et_splines ) {
 	    if ( /* ent->u.splines.fill.col==0xffffffff && */ ent->u.splines.stroke.col!=0xffffffff ) {
-		memset(&si,'\0',sizeof(si));
+		InitializeStrokeInfo(&si);
 		si.join = ent->u.splines.join;
 		si.cap = ent->u.splines.cap;
 		si.radius = ent->u.splines.stroke_width/2;

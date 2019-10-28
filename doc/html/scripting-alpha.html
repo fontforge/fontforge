@@ -916,55 +916,87 @@ a[4][0] = "Nested array";
 	  <DD>
 	    Returns e<SUP>val</SUP>. It can execute with no current font.
 	  <DT>
-	    <A NAME="ExpandStroke" HREF="elementmenu.html#Expand">ExpandStroke</A>(width)<BR>
-	    ExpandStroke(width,line cap, line join)<BR>
-	    ExpandStroke(width,line cap, line join,0,removeinternal /external flag)<BR>
-	    ExpandStroke(width,calligraphic-angle,height-numerator,height-denom)<BR>
-	    ExpandStroke(width,calligraphic-angle,height-numerator,height-denom, 0, remove
-	    internal/external flag)
+	    <A NAME="ExpandStroke" HREF="stroke.html">ExpandStroke</A>(width)<BR>
+	    ExpandStroke(width, line cap, line join)<BR>
+	    ExpandStroke(width, line cap, line join, 0, flags)<BR>
+	    ExpandStroke(width, calligraphic-angle, height-numerator, height-denom)<BR>
+	    ExpandStroke(width, calligraphic-angle, height-numerator, height-denom, 0, flags)<BR>
+	    ExpandStroke(type, width, height, angle, line cap, line join, join limit, extend cap, accuracy, flags)
 	  <DD>
-	    In the first format a line cap of "butt" and line join of "round" are
-	    implied.<BR>
-	    A value of 1 for remove internal/external will remove the internal contour,
-	    a value of 2 will remove the external contour.<BR>
-	    The first three calls simulate the PostScript "stroke" command, the two final
-	    simulate a caligraphic pen.
+	    In the first format a line cap of "butt" and line join of "round" are implied.
+	    In the fourth and fifth formats both line cap and the line join are set to "nib".<BR>
 	    <DL>
+	      <DT>
+		Type
+	      <DD>
+		When using the last form the type must be one of: 0=&gt;circular/elliptical,
+		1=&gt;calligraphic/rectangular, 2=&gt;convex/polygonal.
 	      <DT>
 		Width
 	      <DD>
 		In the PostScript "stroke" command the width is the distance between the
 		two generated curves. To be more precise, at ever point on the original curve,
 		a point will be added to each of the new curves at width/2 units as measured
-		on a vector normal to the direction of the original curve at that point.<BR>
-		In a caligraphic pen, the width is the width of the pen used to draw the
-		curve.
+		on a vector normal to the direction of the original curve at that point.
+		This is equivalent to the value being the diameter of a circular nib.<BR>
+		With a calligraphic pen the width is the width of the pen used to draw the
+		curve.<BR>
+		With a convex pen (and therefore the last, longest parameter set) this
+		second argument is not interpreted as a width, but as the identifier of a
+		convex nib context: 0=&gt; the default context, -10=&gt; the "FreeHand"
+		nib, -11=&gt; the Expand Stroke nib. (The negative contexts are only
+		available when the UI is enabled.) <!-- These can be set with
+		<A HREF="#PasteConvexNib">PasteConvexNib()</A>.--> The nibs cannot currently
+		be altered with native scripting functions, but when executing scripts in
+		interactive FontForge the Expand Stroke and FreeHand nibs can be changed
+		using their respective dialogs.
 	      <DT>
-		Line-cap
+		Line cap
 	      <DD>
-		Can have one of three values: 0=&gt; butt, 1=&gt;round, 2=&gt;square
+		One of: 0=&gt; butt, 1=&gt;round, 2=&gt;square, 3=&gt;nib
 	      <DT>
-		Line-join
+		Line join
 	      <DD>
-		Can have one of three values: 0=&gt;miter, 1=&gt;round, 2=&gt;bevel
+		One of: 0=&gt;miter, 1=&gt;round, 2=&gt;bevel, 3=&gt;nib, 4=&gt;miterclip, 5=&gt;arcs
 	      <DT>
-		caligraphic-angle
+		Caligraphic/nib angle
 	      <DD>
-		the (fixed) angle at which the pen is held.
+		The (fixed) angle at which the pen is held in units of degrees.
 	      <DT>
-		height-numerator/denominator
+		Height-numerator/denominator
 	      <DD>
-		These two values specify a ratio between the height and the width<BR>
+		In the legacy parameter sets these two values specify a ratio between the height
+		and the width of a calligraphic pen:<BR>
 		height = numerator * width / denominator<BR>
-		(the scripting language only deals in integers, so when fractions are needed
-		this kludge is used)
+		This syntax stems from a point in FontForge development before floating point
+		numbers could be passed to a script function.
 	      <DT>
-		remove internal/external contour flags
+		Height
 	      <DD>
+		In the longer call style, this is the height of a calligraphic nib or the minoraxis
+		length of an elliptical nib. Setting this to 0 is equivalent to supplying the same
+		value as Width.
+	      <DT>
+		Join limit, extend cap, accuracy target
+	      <DD>
+		These values are explained in the stroke facility documentation linked above.
+	      <DT>
+		Flags
+	      <DD>
+		This is an integer bit field used to set these boolean flags, which are further
+		explained in the stroke facility documentation linked above.<BR>
 		1 =&gt; remove internal contour<BR>
-		2=&gt; remove external contour<BR>
+		2 =&gt; remove external contour<BR>
 		(you may not remove both contours)<BR>
-		4 =&gt; run remove overlap on result (buggy)
+		4 =&gt; run remove-overlap on individual contours<BR>
+		8 =&gt; do not run remove-overlap<BR>
+		(by default remove-overlap is run on the whole layer)<BR>
+		16 =&gt; skip simplify step<BR>
+		32 =&gt; do not add extrema<BR>
+		64 =&gt; (if relevant) join limit is in em-units<BR>
+		(by default the join limit is in units of nib width/2<BR>
+		128 =&gt; (if relevant) extend cap is in em-units<BR>
+		(by default extend cap is in units of nib width/2
 	    </DL>
 	  <DT>
 	    <A NAME="Export" HREF="filemenu.html#Export">Export</A>(format[,bitmap-size])
@@ -2179,8 +2211,18 @@ SetLBearing(lbearing)
     <TR VALIGN=TOP>
       <TD BGCOLOR=yellow><A NAME="P">P</A></TD>
       <TD><DL>
+	  <!-- <DT>
+	   <A NAME="PasteConvexNib">P</A>asteConvexNib(context_id)
+	  <DD>
+	    Assuming what was most recently copied was a single glyph, this sets
+	    the specified convex nib to be a copy of the foreground layer of that glyph.
+	    the identifiers are: 0=&gt; the default context, -10=&gt; the "FreeHand"
+	    nib, -11=&gt; the Expand Stroke nib. The negative contexts are only available
+	    when the UI is enabled. If the foreground layer is empty, the identifier is
+	    unrecognized, or the foreground layer of the glyph is not a valid nib the
+	    function returns an error.
 	  <DT>
-	    <A NAME="Paste" HREF="editmenu.html#PasteInto">Paste Into</A>
+	  <A NAME="PasteInto" HREF="editmenu.html#PasteInto">Paste Into</A> -->
 	  <DD>
 	    Copies the clipboard into the current font (merging with what was there before)
 	  <DT>

@@ -351,14 +351,6 @@ static char *editablelayers[] = {
     N_("_Guide")
 };
 static real raddiam_x = 20, raddiam_y = 20, rotate_by=0;
-static StrokeInfo expand = {
-    25, lj_round, lc_butt, si_centerline,
-    false, /* removeexternal */
-    false, /* removeinternal */
-    false, /* leave users */
-    3.1415926535897932/4, 25, NULL, 50,
-    0.0, 0, 0, NULL, NULL
-};
 
 real CVRoundRectRadius(void) {
 return( rr_radius );
@@ -379,10 +371,6 @@ return( sin(3.1415926535897932/ps_pointcnt)*tan(2*3.1415926535897932/ps_pointcnt
 return( star_percent );
 }
 
-StrokeInfo *CVFreeHandInfo(void) {
-return( &expand );
-}
-    
 struct ask_info {
     GWindow gw;
     int done;
@@ -1384,7 +1372,7 @@ static void ToolsMouse(CharView *cv, GEvent *event) {
 	    cv->pressed_display = cv->pressed_tool;
     } else if ( event->type == et_mouseup ) {
 	if ( pos==cvt_freehand && event->u.mouse.clicks==2 ) {
-	    FreeHandStrokeDlg(&expand);
+	    FreeHandStrokeDlg(CVFreeHandInfo());
 	} else if ( pos==cvt_pointer && event->u.mouse.clicks==2 ) {
 	    PointerDlg(cv);
 	} else if ( pos==cvt_ruler && event->u.mouse.clicks==2 ) {

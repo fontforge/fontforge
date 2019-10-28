@@ -775,39 +775,13 @@
     <DT>
       <A NAME="Expand">Expand</A> Stroke...
     <DD>
-      Not in the bitmap view. In the font view it applies to all foreground splines
-      in all selected glyphs. In the outline view it applies to all paths that
-      have at least one point selected (or if no points are selected then it applies
-      to all paths).<BR>
-      <IMG SRC="twolines.png" WIDTH="247" HEIGHT="247">
-      <IMG SRC="expandedlines.png" WIDTH="247" HEIGHT="247"><BR>
-      Above is a simple example of what expand stroke can do. It takes the two
-      open paths above left and turns them into the two closed paths right.<BR>
-      <IMG SRC="expandstroke.png" WIDTH="358" HEIGHT="663" ALIGN="Left"><BR>
-      The Expand Stroke dialog gives you control over various aspects of the expansion
-      process. First you can specify three types of pen nibs:
-      <UL>
-	<LI>
-	  A round pen, which is circular by default but may be transformed into an
-	  ellipse
-	<LI>
-	  A rectangular pen, which is square by default but may be transformed into
-	  more traditional caligraphic nib shapes
-	<LI>
-	  A polygonal pen -- you can draw almost any convex polygon.
-      </UL>
-      <P>
-      For circular and caligraphic pens you can chose a stroke width, how the ends
-      of an open path should be drawn, and how the path should look when two splines
-      (or lines) join which do not have the same slope (ie. at a corner point).
-      <P>
-      For closed contours you may also choose to remove either the generated contour
-      which is inside the original, or that which is outside (Note: Make sure your
-      glyph is oriented correctly with
-      <A HREF="elementmenu.html#Correct">Edit-&gt;Correct Direction </A>before
-      removing a contour (if misoriented the wrong contour may be removed)).
-      <P>
-      <A HREF="pfaeditmath.html#Stroke">How is this done?</A><BR CLEAR=ALL>
+    Not in the bitmap view.
+    In the font view it applies to all foreground splines in all selected
+    glyphs. In the outline view it applies to all paths that have at least
+    one point selected (or if no points are selected then it applies
+    to all paths).<P>
+    The remaining documentation on this facility is on its
+    <A HREF="stroke.html">own page</A>.
     <DT>
       <A NAME="TilePath">Tile Path</A>
     <DD>
