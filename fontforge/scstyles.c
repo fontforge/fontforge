@@ -1600,11 +1600,10 @@ static void ChangeGlyph( SplineChar *sc_sc, SplineChar *orig_sc, int layer, stru
 	    scale[3] = 1.;
 	}
 	SplinePointListTransform( sc_sc->layers[layer].splines,scale,tpt_AllPoints );
-
-	memset( &si,0,sizeof( si ));
-	si.stroke_type = si_std;
-	si.join = lj_miter;
-	si.cap = lc_square;
+	InitializeStrokeInfo(&si);
+	si.stroke_type = si_round;
+	SITranslatePSArgs(&si, lj_miter, lc_square);
+	si.rmov = srmov_contour;
 	if ( add >=0 ) {
 	    si.radius = add/2.;
 	    si.removeinternal = true;
@@ -1612,7 +1611,6 @@ static void ChangeGlyph( SplineChar *sc_sc, SplineChar *orig_sc, int layer, stru
 	    si.radius = -add/2.;
 	    si.removeexternal = true;
 	}
-	/*si.removeoverlapifneeded = false;*/
 
 	temp = BoldSSStroke( sc_sc->layers[layer].splines,&si,sc_sc->layers[layer].order2,removeoverlap );
 	SplinePointListsFree( sc_sc->layers[layer].splines );
@@ -4037,10 +4035,10 @@ static void SCEmbolden(SplineChar *sc, struct lcg_zones *zones, int layer) {
     DBounds old, new;
     int adjust_counters;
 
-    memset(&si,0,sizeof(si));
-    si.stroke_type = si_std;
-    si.join = lj_miter;
-    si.cap = lc_square;
+    InitializeStrokeInfo(&si);
+    si.stroke_type = si_round;
+    SITranslatePSArgs(&si, lj_miter, lc_square);
+    si.rmov = srmov_contour;
     if ( zones->stroke_width>=0 ) {
 	si.radius = zones->stroke_width/2.;
 	si.removeinternal = true;
@@ -4048,7 +4046,6 @@ static void SCEmbolden(SplineChar *sc, struct lcg_zones *zones, int layer) {
 	si.radius = -zones->stroke_width/2.;
 	si.removeexternal = true;
     }
-    /*si.removeoverlapifneeded = false;*/
 
     if ( layer!=ly_back && zones->wants_hints &&
 	    sc->hstem == NULL && sc->vstem==NULL && sc->dstem==NULL ) {

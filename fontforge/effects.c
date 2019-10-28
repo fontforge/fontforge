@@ -55,10 +55,9 @@ void FVOutline(FontViewBase *fv, real width) {
 	    ++cnt;
     ff_progress_start_indicator(10,_("Outlining glyphs"),_("Outlining glyphs"),0,cnt,1);
 
-    memset(&si,0,sizeof(si));
+    InitializeStrokeInfo(&si);
     si.removeexternal = true;
     si.radius = width;
-    /*si.removeoverlapifneeded = true;*/
 
     SFUntickAll(fv->sf);
     for ( i=0; i<fv->map->enccount; ++i )
@@ -90,9 +89,8 @@ void FVInline(FontViewBase *fv, real width, real inset) {
 	    ++cnt;
     ff_progress_start_indicator(10,_("Inlining glyphs"),_("Inlining glyphs"),0,cnt,1);
 
-    memset(&si,0,sizeof(si));
+    InitializeStrokeInfo(&si);
     si.removeexternal = true;
-    /*si.removeoverlapifneeded = true;*/
 
     SFUntickAll(fv->sf);
     for ( i=0; i<fv->map->enccount; ++i )
@@ -735,10 +733,10 @@ return( NULL );
 
     internal = NULL;
     if ( outline_width!=0 && !wireframe ) {
-	memset(&si,0,sizeof(si));
+	InitializeStrokeInfo(&si);
 	si.removeexternal = true;
-	/*si.removeoverlapifneeded = true;*/
 	si.radius = outline_width;
+	si.rmov = srmov_none;
 	temp = SplinePointListCopy(spl);	/* SplineSetStroke confuses the direction I think */
 	internal = SplineSetStroke(temp,&si,order2);
 	SplinePointListsFree(temp);
@@ -754,9 +752,8 @@ return( NULL );
 	for ( temp=spl; temp->next!=NULL; temp=temp->next);
 	temp->next = lines;
 	if ( outline_width!=0 ) {
-	    memset(&si,0,sizeof(si));
+	    InitializeStrokeInfo(&si);
 	    si.radius = outline_width/2;
-	    /*si.removeoverlapifneeded = true;*/
 	    fatframe = SplineSetStroke(spl,&si,order2);
 	    SplinePointListsFree(spl);
 	    spl = fatframe; /* Don't try SplineSetRemoveOverlap: too likely to cause remove overlap problems. */

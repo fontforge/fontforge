@@ -623,7 +623,7 @@ typedef struct strokedlg {
     int cv_width, cv_height;
     GGadget *mb;
     int mbh;
-    SplineSet *old_poly;
+    SplineSet *old_convex;
 /* ****** */
     int done;
     GWindow gw;

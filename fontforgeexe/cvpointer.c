@@ -30,6 +30,7 @@
 #include "cvundoes.h"
 #include "fontforgeui.h"
 #include "spiro.h"
+#include "splinefit.h"
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "utype.h"
@@ -1027,7 +1028,7 @@ bool isSplinePointPartOfGuide( SplineFont *sf, SplinePoint *sp )
 
 static void CVAdjustSpline(CharView *cv) {
     Spline *old = cv->p.spline;
-    TPoint tp[5];
+    FitPoint fp[5];
     real t;
     Spline1D *oldx = &old->splines[0], *oldy = &old->splines[1];
     int oldfrompointtype, oldtopointtype;
@@ -1069,18 +1070,18 @@ return;
     }
 
 
-    tp[0].x = cv->info.x; tp[0].y = cv->info.y; tp[0].t = cv->p.t;
+    fp[0].p.x = cv->info.x; fp[0].p.y = cv->info.y; fp[0].t = cv->p.t;
     t = cv->p.t/10;
-    tp[1].x = ((oldx->a*t+oldx->b)*t+oldx->c)*t + oldx->d;
-    tp[1].y = ((oldy->a*t+oldy->b)*t+oldy->c)*t + oldy->d;
-    tp[1].t = t;
+    fp[1].p.x = ((oldx->a*t+oldx->b)*t+oldx->c)*t + oldx->d;
+    fp[1].p.y = ((oldy->a*t+oldy->b)*t+oldy->c)*t + oldy->d;
+    fp[1].t = t;
     t = 1-(1-cv->p.t)/10;
-    tp[2].x = ((oldx->a*t+oldx->b)*t+oldx->c)*t + oldx->d;
-    tp[2].y = ((oldy->a*t+oldy->b)*t+oldy->c)*t + oldy->d;
-    tp[2].t = t;
-    tp[3] = tp[0];		/* Give more weight to this point than to the others */
-    tp[4] = tp[0];		/*  ditto */
-    cv->p.spline = ApproximateSplineFromPoints(old->from,old->to,tp,5,old->order2);
+    fp[2].p.x = ((oldx->a*t+oldx->b)*t+oldx->c)*t + oldx->d;
+    fp[2].p.y = ((oldy->a*t+oldy->b)*t+oldy->c)*t + oldy->d;
+    fp[2].t = t;
+    fp[3] = fp[0];		/* Give more weight to this point than to the others */
+    fp[4] = fp[0];		/*  ditto */
+    cv->p.spline = ApproximateSplineFromPoints(old->from,old->to,fp,5,old->order2);
 
     /* don't change hvcurves to corners */
     oldfrompointtype = old->from->pointtype;

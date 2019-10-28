@@ -45,6 +45,7 @@ set(FONTFORGE_NOINST_HEADERS
   sfd.h
   spiro.h
   splinefill.h
+  splinefit.h
   splineorder2.h
   splineoverlap.h
   splinerefigure.h
@@ -60,6 +61,7 @@ set(FONTFORGE_NOINST_HEADERS
   tottfgpos.h
   tottfvar.h
   ttfspecial.h
+  utanvec.h
   winfonts.h
   woff.h
   zapfnomen.h
@@ -180,6 +182,7 @@ add_library(fontforge
   spiro.c
   splinechar.c
   splinefill.c
+  splinefit.c
   splinefont.c
   splineorder2.c
   splineoverlap.c
@@ -200,6 +203,7 @@ add_library(fontforge
   ttfspecial.c
   ufo.c
   unicoderange.c
+  utanvec.c
   winfonts.c
   woff.c
   zapfnomen.c
