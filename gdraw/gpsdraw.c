@@ -439,7 +439,7 @@ static void PSDoArc(GPSWindow ps, double cx, double cy, double radx, double rady
 
     lenx = ((ea-sa)/90.0) * radx * .552;
     leny = ((ea-sa)/90.0) * rady * .552;
-    sa *= 3.1415926535897932/180; ea *= 3.1415926535897932/180;
+    sa *= FF_PI/180; ea *= FF_PI/180;
     ss = -sin(sa); sc = cos(sa); es = -sin(ea); ec = cos(ea);
     sx = cx+sc*radx; sy = cy+ss*rady;
     PSMoveTo(ps,sx,sy);
@@ -670,9 +670,9 @@ return;
     if ( line_width!=0 ) {
 	points[0].x += line_width*1.3*cos(a); points[0].y += line_width*1.3*sin(a);
     }
-    off1 = len*sin(a+3.1415926535897932/8)+.5; off2 = len*cos(a+3.1415926535897932/8)+.5;
+    off1 = len*sin(a+FF_PI/8)+.5; off2 = len*cos(a+FF_PI/8)+.5;
     points[1].x = x-off2; points[1].y = y-off1;
-    off1 = len*sin(a-3.1415926535897932/8)+.5; off2 = len*cos(a-3.1415926535897932/8)+.5;
+    off1 = len*sin(a-FF_PI/8)+.5; off2 = len*cos(a-FF_PI/8)+.5;
     points[2].x = x-off2; points[2].y = y-off1;
     PSDrawDoPoly(ps,points,3,"fill");
 }

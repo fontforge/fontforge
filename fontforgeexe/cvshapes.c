@@ -273,19 +273,19 @@ return;
 	base = atan2(cv->p.cy-cv->info.y,cv->p.cx-cv->info.x);
 	radius = sqrt((cv->p.cy-cv->info.y)*(cv->p.cy-cv->info.y) +
 		(cv->p.cx-cv->info.x)*(cv->p.cx-cv->info.x));
-	off = -2*3.1415926535897932/points;
+	off = -2*FF_PI/points;
 	sp = cv->active_shape->last->prev->from;
 	for ( i=0; i<points; ++i )
 	    SetCorner(sp=sp->next->to, cv->p.cx+radius*cos(base+i*off),
 		    cv->p.cy+radius*sin(base+i*off));
       break;
       case cvt_star:
-	base = atan2(cv->p.cy-cv->info.y,cv->p.cx-cv->info.x)-3.1415926535897932;
-	if ( base<-3.1416 )
-	    base += 2*3.1415926535897932;
+	base = atan2(cv->p.cy-cv->info.y,cv->p.cx-cv->info.x)-FF_PI;
+	if ( base<(-FF_PI-0.00001) )
+	    base += 2*FF_PI;
 	radius = sqrt((cv->p.cy-cv->info.y)*(cv->p.cy-cv->info.y) +
 		(cv->p.cx-cv->info.x)*(cv->p.cx-cv->info.x));
-	off = -2*3.1415926535897932/(2*points);
+	off = -2*FF_PI/(2*points);
 	sp = cv->active_shape->last->prev->from;
 	r2 = radius/CVStarRatio();
 	for ( i=0; i<2*points; ++i ) {

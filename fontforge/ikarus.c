@@ -658,7 +658,7 @@ return( NULL );
     /* descender? = */ getushort(file);
     /* line thickness = */ getushort(file);
     /* stroke thickness = */ getushort(file);
-    italic_angle = getushort(file)/10.0 * 3.1415926535897932/180.0;
+    italic_angle = getushort(file)/10.0 * FF_PI/180.0;
     opt_pt_size = getushort(file);
     /* average char width = */ getushort(file);
 

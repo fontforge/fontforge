@@ -1236,8 +1236,6 @@ return( fonts[choice] );
 return( NULL );
 }
 
-#define PI	3.1415926535897932
-
 /* I don't see where the spec says that the seperator between numbers is */
 /*  comma or whitespace (both is ok too) */
 /* But the style sheet spec says it, so I probably just missed it */
@@ -1298,7 +1296,7 @@ static void SVGTraceArc(SplineSet *cur,BasePoint *current,
 		  sqrt((tmpx*tmpx+tmpy*tmpy)*(t2x*t2x+t2y*t2y));
 	/* We occasionally got rounding errors near -1 */
 	if ( delta<=-1 )
-	    delta = 3.1415926535897932;
+	    delta = FF_PI;
 	else if ( delta>=1 )
 	    delta = 0;
 	else
@@ -1306,14 +1304,14 @@ static void SVGTraceArc(SplineSet *cur,BasePoint *current,
 	if ( tmpx*t2y-tmpy*t2x<0 )
 	    delta = -delta;
 	if ( sweep==0 && delta>0 )
-	    delta -= 2*PI;
+	    delta -= 2*FF_PI;
 	if ( sweep && delta<0 )
-	    delta += 2*PI;
+	    delta += 2*FF_PI;
 
 	if ( delta>0 ) {
 	    i = 0;
-	    ia = firstia = floor(startangle/(PI/2))+1;
-	    for ( a=ia*(PI/2), ia+=4; a<startangle+delta && !RealNear(a,startangle+delta); a += PI/2, ++i, ++ia ) {
+	    ia = firstia = floor(startangle/(FF_PI/2))+1;
+	    for ( a=ia*(FF_PI/2), ia+=4; a<startangle+delta && !RealNear(a,startangle+delta); a += FF_PI/2, ++i, ++ia ) {
 		t2x = rx*cosines[ia]; t2y = ry*sines[ia];
 		arcp[i].x = cosr*t2x - sinr*t2y + cx;
 		arcp[i].y = sinr*t2x + cosr*t2y + cy;
@@ -1329,8 +1327,8 @@ static void SVGTraceArc(SplineSet *cur,BasePoint *current,
 	    }
 	} else {
 	    i = 0;
-	    ia = firstia = ceil(startangle/(PI/2))-1;
-	    for ( a=ia*(PI/2), ia += 8; a>startangle+delta && !RealNear(a,startangle+delta); a -= PI/2, ++i, --ia ) {
+	    ia = firstia = ceil(startangle/(FF_PI/2))-1;
+	    for ( a=ia*(FF_PI/2), ia += 8; a>startangle+delta && !RealNear(a,startangle+delta); a -= FF_PI/2, ++i, --ia ) {
 		t2x = rx*cosines[ia]; t2y = ry*sines[ia];
 		arcp[i].x = cosr*t2x - sinr*t2y + cx;
 		arcp[i].y = sinr*t2x + cosr*t2y + cy;
@@ -1346,7 +1344,7 @@ static void SVGTraceArc(SplineSet *cur,BasePoint *current,
 	    }
 	}
 	if ( i!=0 ) {
-	    double firsta=firstia*PI/2;
+	    double firsta=firstia*FF_PI/2;
 	    double d = (firsta-startangle)/2;
 	    double th = startangle+d;
 	    double hypot = 1/cos(d);
@@ -1379,7 +1377,7 @@ static void SVGTraceArc(SplineSet *cur,BasePoint *current,
 	    hypot = 1.0/cos(delta/2);
 	    c = cos(th); s=sin(th);
 	} else {
-	    double lasta = delta<0 ? a+PI/2 : a-PI/2;
+	    double lasta = delta<0 ? a+FF_PI/2 : a-FF_PI/2;
 	    double d = (startangle+delta-lasta);
 	    double th = lasta+d/2;
 	    hypot = 1.0/cos(d/2);
@@ -1598,7 +1596,7 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 		end = skipcomma(end);
 		ry = strtod(end,&end);
 		end = skipcomma(end);
-		axisrot = strtod(end,&end)*3.1415926535897932/180;
+		axisrot = strtod(end,&end)*FF_PI/180;
 		end = skipcomma(end);
 		large_arc = strtol(end,&end,10);
 		end = skipcomma(end);
@@ -1951,7 +1949,7 @@ static void SVGFigureTransform(struct svg_state *st,char *name) {
 	    trans[5] = strtod(skipcomma(end),&end);
 	} else if ( strncmp(pt,"rotate",paren-pt)==0 ) {
 	    trans[4] = trans[5] = 0;
-	    a = strtod(paren+1,&end)*3.1415926535897932/180;
+	    a = strtod(paren+1,&end)*FF_PI/180;
 	    trans[0] = trans[3] = cos(a);
 	    trans[1] = sin(a);
 	    trans[2] = -trans[1];
@@ -1985,11 +1983,11 @@ static void SVGFigureTransform(struct svg_state *st,char *name) {
 	} else if ( strncmp(pt,"skewX",paren-pt)==0 ) {
 	    trans[0] = trans[3] = 1;
 	    trans[1] = trans[2] = trans[4] = trans[5] = 0;
-	    trans[2] = tan(strtod(paren+1,&end)*3.1415926535897932/180);
+	    trans[2] = tan(strtod(paren+1,&end)*FF_PI/180);
 	} else if ( strncmp(pt,"skewY",paren-pt)==0 ) {
 	    trans[0] = trans[3] = 1;
 	    trans[1] = trans[2] = trans[4] = trans[5] = 0;
-	    trans[1] = tan(strtod(paren+1,&end)*3.1415926535897932/180);
+	    trans[1] = tan(strtod(paren+1,&end)*FF_PI/180);
 	} else
     break;
 	while ( isspace(*end)) ++end;

@@ -2219,8 +2219,8 @@ void SplinePointListClearCPSel(SplinePointList *spl) {
 	spl->first->nextcpselected = false;
 	spl->first->prevcpselected = false;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-	     spl->first->nextcpselected = false;
-	     spl->first->prevcpselected = false;
+	     spline->to->nextcpselected = false;
+	     spline->to->prevcpselected = false;
 	    if ( first==NULL ) first = spline;
 	}
     }

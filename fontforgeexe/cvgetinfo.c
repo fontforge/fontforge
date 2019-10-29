@@ -43,7 +43,7 @@
 
 #include <math.h>
 
-#define RAD2DEG	(180/3.1415926535897932)
+#define RAD2DEG	(180/FF_PI)
 #define TCnt	3
 
 typedef struct gidata {

@@ -199,11 +199,10 @@ void FVAutoWidth2(FontView *fv) {
     gcd[i++].creator = GLabelCreate;
     harray2[0] = &gcd[i-1];
 
-#define PI	3.1415926535897932
     if ( sf->italicangle<0 )
-	sprintf( minbuf, "%d", (int) rint( sf->descent*tan(sf->italicangle*PI/180 )) );
+	sprintf( minbuf, "%d", (int) rint( sf->descent*tan(sf->italicangle*FF_PI/180 )) );
     else if ( sf->italicangle>0 )
-	sprintf( minbuf, "%d", (int) -rint( sf->ascent*tan(sf->italicangle*PI/180 )) );
+	sprintf( minbuf, "%d", (int) -rint( sf->ascent*tan(sf->italicangle*FF_PI/180 )) );
     else
 	sprintf( minbuf, "%d", (int) rint( width_min_side_bearing * emsize / width_last_em_size ));
     label[i].text = (unichar_t *) minbuf;

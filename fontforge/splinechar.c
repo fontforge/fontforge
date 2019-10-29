@@ -1924,8 +1924,6 @@ static SplineSet *UnitCircle(int clockwise) {
 return( spl );
 }
 
-#define PI	3.1415926535897932
-
 static int CutCircle(SplineSet *spl,BasePoint *me,int first) {
     Spline *s, *firsts;
     SplinePoint *end;
@@ -2223,7 +2221,7 @@ static int EllipseSomewhere(CharViewBase *cv,SplinePoint *sp1,SplinePoint *sp2,
 	BasePoint slope1, slope2;
     } centered, rot;
     bigreal bestrot=9999, bestrtest = 1e50, e1sq, e2sq, r1, r2, rtest;
-    bigreal low, high, offset=PI/128., rotation;
+    bigreal low, high, offset=FF_PI/128., rotation;
     int i;
     int clockwise;
     /* First figure out a center. There will be one: */
@@ -2272,7 +2270,7 @@ return( false );
     r1 = r2 = 1;
     for ( i=0; i<ITER; ++i ) {
 	if ( i==0 ) {
-	    low = 0; high = PI; offset = PI/1024;
+	    low = 0; high = FF_PI; offset = FF_PI/1024;
 	} else {
 	    low = bestrot-offset; high = bestrot+offset; offset /= 64.;
 	}

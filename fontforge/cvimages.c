@@ -418,7 +418,7 @@ static SplinePoint *ArcSpline(SplinePoint *sp,float sa,SplinePoint *ep,float ea,
     ss = sin(sa); sc = cos(sa); es = sin(ea); ec = cos(ea);
     if ( ep==NULL )
 	ep = SplinePointCreate((double)(cx+r)*ec, (double)(cy+r)*es);
-    len = ((double)(ea-sa)/(3.1415926535897932/2)) * (double)r * .552;
+    len = ((double)(ea-sa)/(FF_PI/2)) * (double)r * .552;
 
     sp->nextcp.x = sp->me.x - len*ss; sp->nextcp.y = sp->me.y + len*sc;
     ep->prevcp.x = ep->me.x + len*es; ep->prevcp.y = ep->me.y - len*ec;
@@ -457,23 +457,23 @@ static SplineSet * slurparc(FILE *fig,SplineChar *sc, SplineSet *sofar) {
     spl->last = ep = SplinePointCreate(ex,ey);
 
     if ( dir==0 ) {	/* clockwise */
-	if ( ea>sa ) ea = (double)ea - 2*3.1415926535897932;
-	ma=ceil((double)sa/(3.1415926535897932/2)-1)*(3.1415926535897932/2);
-	if ( RealNearish( sa,ma )) ma = (double)ma - (3.1415926535897932/2);
+	if ( ea>sa ) ea = (double)ea - 2*FF_PI;
+	ma=ceil((double)sa/(FF_PI/2)-1)*(FF_PI/2);
+	if ( RealNearish( sa,ma )) ma = (double)ma - (FF_PI/2);
 	while ( ma > ea ) {
 	    sp = ArcSpline(sp,sa,NULL,ma,cx,cy,r);
 	    sa = ma;
-	    ma = (double)ma - (3.1415926535897932/2);
+	    ma = (double)ma - (FF_PI/2);
 	}
 	sp = ArcSpline(sp,sa,ep,ea,cx,cy,r);
     } else {		/* counterclockwise */
-	if ( ea<sa ) ea = (double)ea + 2*3.1415926535897932;
-	ma=floor((double)sa/(3.1415926535897932/2)+1)*(3.1415926535897932/2);
-	if ( RealNearish( sa,ma )) ma = (double)ma + (3.1415926535897932/2);
+	if ( ea<sa ) ea = (double)ea + 2*FF_PI;
+	ma=floor((double)sa/(FF_PI/2)+1)*(FF_PI/2);
+	if ( RealNearish( sa,ma )) ma = (double)ma + (FF_PI/2);
 	while ( ma < ea ) {
 	    sp = ArcSpline(sp,sa,NULL,ma,cx,cy,r);
 	    sa = ma;
-	    ma = (double)ma + (3.1415926535897932/2);
+	    ma = (double)ma + (FF_PI/2);
 	}
 	sp = ArcSpline(sp,sa,ep,ea,cx,cy,r);
     }

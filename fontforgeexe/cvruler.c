@@ -51,9 +51,9 @@ static void SlopeToBuf(char *buf,char *label,double dx, double dy) {
     if ( dx==0 && dy==0 )
 	sprintf( buf, _("%s No Slope"), label );
     else if ( dx==0 )
-	sprintf( buf, "%s dy/dx= ∞, %4g°", label, atan2(dy,dx)*180/3.1415926535897932);
+	sprintf( buf, "%s dy/dx= ∞, %4g°", label, atan2(dy,dx)*180/FF_PI);
     else
-	sprintf( buf, "%s dy/dx= %4g, %4g°", label, dy/dx, atan2(dy,dx)*180/3.1415926535897932);
+	sprintf( buf, "%s dy/dx= %4g, %4g°", label, dy/dx, atan2(dy,dx)*180/FF_PI);
 }
 
 static void CurveToBuf(char *buf,CharView *cv,Spline *s, double t) {
@@ -95,7 +95,7 @@ static int RulerText(CharView *cv, unichar_t *ubuf, int line) {
 	    sprintf( buf, "%f,%f", (double) cv->info.x, (double) cv->info.y);
 	else
 	    sprintf( buf, "%f %.0f° (%f,%f)", (double) len,
-		    atan2(yoff,xoff)*180/3.1415926535897932,
+		    atan2(yoff,xoff)*180/FF_PI,
 		    (double) xoff,(double) yoff);
       break; }
       case 1:
@@ -767,7 +767,7 @@ return( buffer );
       break;
       case 4:
 	dx = cp->x - sp->me.x; dy = cp->y - sp->me.y;
-	snprintf( buffer, blen, "∠ %g°", atan2(dy,dx)*180/3.1415926535897932 );
+	snprintf( buffer, blen, "∠ %g°", atan2(dy,dx)*180/FF_PI );
       break;
       case 5:
 	if ( s==NULL )

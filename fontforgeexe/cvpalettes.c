@@ -366,7 +366,7 @@ return( ps_pointcnt );
 
 real CVStarRatio(void) {
     if ( regular_star )
-return( sin(3.1415926535897932/ps_pointcnt)*tan(2*3.1415926535897932/ps_pointcnt)+cos(3.1415926535897932/ps_pointcnt) );
+return( sin(FF_PI/ps_pointcnt)*tan(2*FF_PI/ps_pointcnt)+cos(FF_PI/ps_pointcnt) );
 	
 return( star_percent );
 }
@@ -417,8 +417,8 @@ static void FakeShapeEvents(CharView *cv) {
     CVMouseMoveShape(cv);
     CVMouseUpShape(cv);
     if ( raddiam_x!=0 && raddiam_y!=0 && rotate_by!=0 ) {
-	trans[0] = trans[3] = cos ( rotate_by*3.1415926535897932/180. );
-	trans[1] = sin( rotate_by*3.1415926535897932/180. );
+	trans[0] = trans[3] = cos ( rotate_by*FF_PI/180. );
+	trans[1] = sin( rotate_by*FF_PI/180. );
 	trans[2] = -trans[1];
 	trans[4] = -cv->p.x*trans[0] - cv->p.y*trans[2] + cv->p.x;
 	trans[5] = -cv->p.x*trans[1] - cv->p.y*trans[3] + cv->p.y;

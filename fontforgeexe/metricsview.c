@@ -347,7 +347,7 @@ static void MVSubExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
     GClut clut;
     int si;
     double iscale = mv->pixelsize_set_by_window ? 1.0 : mv_scales[mv->scale_index];
-    double s = sin(-mv->sf->italicangle*3.1415926535897932/180.);
+    double s = sin(-mv->sf->italicangle*FF_PI/180.);
     int x_iaoffh = 0, x_iaoffl = 0;
 
     clip = &event->u.expose.rect;

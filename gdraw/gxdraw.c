@@ -1873,9 +1873,9 @@ return;
 return;
 
     points[0].x = x; points[0].y = y;
-    off1 = len*sin(a+3.1415926535897932/8)+.5; off2 = len*cos(a+3.1415926535897932/8)+.5;
+    off1 = len*sin(a+FF_PI/8)+.5; off2 = len*cos(a+FF_PI/8)+.5;
     points[1].x = x-off2; points[1].y = y-off1;
-    off1 = len*sin(a-3.1415926535897932/8)+.5; off2 = len*cos(a-3.1415926535897932/8)+.5;
+    off1 = len*sin(a-FF_PI/8)+.5; off2 = len*cos(a-FF_PI/8)+.5;
     points[2].x = x-off2; points[2].y = y-off1;
     XFillPolygon(display->display,gxw->w,display->gcstate[gxw->ggc->bitmap_col].gc,points,3,Complex,CoordModeOrigin);
     XDrawLines(display->display,gxw->w,display->gcstate[gxw->ggc->bitmap_col].gc,points,3,CoordModeOrigin);

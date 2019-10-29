@@ -44,7 +44,6 @@
 #include <math.h>
 
 #define CIRCOFF 0.551915
-#define PI      3.1415926535897932
 
 // Rounding makes even slope-continuous splines only approximately so.
 #define INTERSPLINE_MARGIN (1e-1)
@@ -55,7 +54,7 @@
 #define COS_MARGIN (1e-5)
 #define MIN_ACCURACY (1e-5)
 
-#define NORMANGLE(a) ((a)>PI?(a)-2*PI:(a)<-PI?(a)+2*PI:(a))
+#define NORMANGLE(a) ((a)>FF_PI?(a)-2*FF_PI:(a)<-FF_PI?(a)+2*FF_PI:(a))
 #define SIGNOF(a) ((0 < (a)) - ((a) < 0))
 #define BPNEAR(bp1, bp2) BPWITHIN(bp1, bp2, INTRASPLINE_MARGIN)
 #define BP_DIST(bp1, bp2) sqrt(pow((bp1).x-(bp2).x,2)+pow((bp1).y-(bp2).y,2))
@@ -248,7 +247,7 @@ StrokeInfo *CVStrokeInfo() {
     if ( cv_si==NULL ) {
 	cv_si = InitializeStrokeInfo(NULL);
 	cv_si->minorradius = cv_si->radius;
-	cv_si->penangle = PI/4;
+	cv_si->penangle = FF_PI/4;
     }
     return cv_si;
 }
@@ -261,7 +260,7 @@ StrokeInfo *CVFreeHandInfo() {
 	fv_si->cap = lc_butt;
 	fv_si->stroke_type = si_centerline;
 	fv_si->minorradius = fv_si->radius;
-	fv_si->penangle = PI/4;
+	fv_si->penangle = FF_PI/4;
     }
     return fv_si;
 }
@@ -389,7 +388,7 @@ enum ShapeType NibIsValid(SplineSet *ss) {
     }
     if ( n<3 )
 	return Shape_TooFewPoints;
-    if ( !RealWithin(anglesum, 2*PI, 1e-1) )
+    if ( !RealWithin(anglesum, 2*FF_PI, 1e-1) )
 	return Shape_SelfIntersects;
 
     assert( s==ss->first->next );
@@ -1348,7 +1347,7 @@ static void RoundJoin(JoinParams *jpp) {
     ut1 = BP_ROT(BP_REV(jpp->ut_fm), UT_NEG(cut));
     ut2 = BP_ROT(jpp->no_to->utanvec, UT_NEG(cut));
     BasePoint pp1 = BP_ROT(jpp->cur->last->me, UT_NEG(cut)), pp2 = BP_ROT(jpp->oxy, UT_NEG(cut));
-    // printf("p1: %lf,%lf p2: %lf,%lf pp1: %lf,%lf: pp2: %lf,%lf, c: %lf,%lf cut: %lf, alpha: %lf\n", jpp->cur->last->me.x, jpp->cur->last->me.y, jpp->oxy.x, jpp->oxy.y, pp1.x, pp1.y, pp2.x, pp2.y, c.x, c.y, atan2(cut.y, cut.x) * 180 / PI, alpha);
+    // printf("p1: %lf,%lf p2: %lf,%lf pp1: %lf,%lf: pp2: %lf,%lf, c: %lf,%lf cut: %lf, alpha: %lf\n", jpp->cur->last->me.x, jpp->cur->last->me.y, jpp->oxy.x, jpp->oxy.y, pp1.x, pp1.y, pp2.x, pp2.y, c.x, c.y, atan2(cut.y, cut.x) * 180 / FF_PI, alpha);
     mu = -ut1.x/ut1.y;
     nu = -ut2.x/ut2.y;
     B = 1 + pow(mu + nu, 2)/2;
@@ -1360,7 +1359,7 @@ static void RoundJoin(JoinParams *jpp) {
     // printf("mu: %lf, nu:%lf, B: %lf, C: %lf, E: %lf, B2AC: %lf, tmp: %lf, tmp2: %lf\n", mu, nu, B, C, E, B2AC, tmp, tmp2);
     maj = sqrt(tmp * (1 + C + tmp2))/B2AC;
     min = sqrt(tmp * (1 + C - tmp2))/B2AC;
-    // printf("maj: %lf, min: %lf, angle: %lf\n", maj, min, atan2(cut.y, cut.x) * 180 / PI);
+    // printf("maj: %lf, min: %lf, angle: %lf\n", maj, min, atan2(cut.y, cut.x) * 180 / FF_PI);
     BevelJoin(jpp);
 }
 
@@ -1724,18 +1723,18 @@ SplineSet *UnitShape(int n) {
     if ( n>=3 || n<=-3 ) {
 	/* Regular n-gon with n sides */
 	/* Inscribed in a unit circle, if n<0 then circumscribed around */
-	bigreal angle = 2*PI/(2*n);
+	bigreal angle = 2*FF_PI/(2*n);
 	bigreal factor=1;
 	if ( n<0 ) {
 	    angle = -angle;
 	    n = -n;
 	    factor = 1/cos(angle);
 	}
-	angle -= PI/2;
+	angle -= FF_PI/2;
 	ret->first = sp1 = SplinePointCreate(factor*cos(angle), factor*sin(angle));
 	sp1->pointtype = pt_corner;
 	for ( i=1; i<n; ++i ) {
-	    angle = 2*PI/(2*n) + i*2*PI/n - PI/2;
+	    angle = 2*FF_PI/(2*n) + i*2*FF_PI/n - FF_PI/2;
 	    sp2 = SplinePointCreate(factor*cos(angle),factor*sin(angle));
 	    sp2->pointtype = pt_corner;
 	    SplineMake3(sp1,sp2);
