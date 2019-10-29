@@ -778,7 +778,7 @@ void GGDKDrawDrawArrow(GWindow w, int32 x, int32 y, int32 xend, int32 yend, int1
     }
 
     const double head_angle = 0.5;
-    double angle = atan2(yend - y, xend - x) + M_PI;
+    double angle = atan2(yend - y, xend - x) + FF_PI;
     double length = sqrt((x - xend) * (x - xend) + (y - yend) * (y - yend));
 
     cairo_new_path(gw->cc);
@@ -845,7 +845,7 @@ void GGDKDrawFillRoundRect(GWindow w, GRect *rect, int radius, Color col) {
 
     GGDKDrawSetcolfunc(gw, gw->ggc);
 
-    double degrees = M_PI / 180.0;
+    double degrees = FF_PI / 180.0;
     int rr = (radius <= (rect->height + 1) / 2) ? (radius > 0 ? radius : 0) : (rect->height + 1) / 2;
     cairo_new_path(gw->cc);
     cairo_arc(gw->cc, rect->x + rect->width - rr, rect->y + rr, rr, -90 * degrees, 0 * degrees);
@@ -924,7 +924,7 @@ void GGDKDrawDrawArc(GWindow w, GRect *rect, int32 sangle, int32 eangle, Color c
     gw->ggc->fg = col;
 
     // Leftover from XDrawArc: sangle/eangle in degrees*64.
-    double start = -(sangle + eangle) * M_PI / 11520., end = -sangle * M_PI / 11520.;
+    double start = -(sangle + eangle) * FF_PI / 11520., end = -sangle * FF_PI / 11520.;
     int width = GGDKDrawSetline(gw, gw->ggc);
 
     cairo_new_path(gw->cc);

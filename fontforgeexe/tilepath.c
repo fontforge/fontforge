@@ -155,7 +155,7 @@ return( false );
 		sx = spline->to->me.x - spline->from->me.x;
 		sy = spline->to->me.y - spline->from->me.y;
 	    }
-	    angle = atan2(sy,sx) - 3.1415926535897932/2;
+	    angle = atan2(sy,sx) - FF_PI/2;
 	    td->samples[i].c = cos(angle);
 	    td->samples[i].s = sin(angle);
 	    if ( td->samples[i].s>-.00001 && td->samples[i].s<.00001 ) { td->samples[i].s=0; td->samples[i].c = ( td->samples[i].c>0 )? 1 : -1; }
@@ -176,7 +176,7 @@ return( false );
 	    /* there are two normals at a join, one for each spline */
 	    /*  it should bisect the normal vectors of the two splines */
 	    sx = next->splines[0].c; sy = next->splines[1].c;
-	    angle = atan2(sy,sx) - 3.1415926535897932/2;
+	    angle = atan2(sy,sx) - FF_PI/2;
 	    td->joins[pcnt].c1 = cos(angle);
 	    td->joins[pcnt].s1 = sin(angle);
 	    if ( td->joins[pcnt].s1>-.00001 && td->joins[pcnt].s1<.00001 ) { td->joins[pcnt].s1=0; td->joins[pcnt].c1 = ( td->joins[pcnt].c1>0 )? 1 : -1; }
@@ -184,7 +184,7 @@ return( false );
 
 	    sx = (3*spline->splines[0].a+2*spline->splines[0].b)+spline->splines[0].c;
 	    sy = (3*spline->splines[1].a+2*spline->splines[1].b)+spline->splines[1].c;
-	    angle = atan2(sy,sx) - 3.1415926535897932/2;
+	    angle = atan2(sy,sx) - FF_PI/2;
 	    td->joins[pcnt].c2 = cos(angle);
 	    td->joins[pcnt].s2 = sin(angle);
 	    if ( td->joins[pcnt].s2>-.00001 && td->joins[pcnt].s2<.00001 ) { td->joins[pcnt].s2=0; td->joins[pcnt].c2 = ( td->joins[pcnt].c2>0 )? 1 : -1; }

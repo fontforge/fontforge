@@ -372,10 +372,10 @@ static void TraceMassage(TraceData *head, TraceData *end) {
 		/* We've got tangent corner tangent */
 		pangle = atan2(npt->y-pt->y,npt->x-pt->x);
 		nangle = atan2(nnpt->y-npt->y,nnpt->x-npt->x);
-		if ( pangle<0 && nangle>0 && nangle-pangle>=3.1415926 )
-		    pangle += 2*3.1415926535897932;
-		else if ( pangle>0 && nangle<0 && pangle-nangle>=3.1415926 )
-		    nangle += 2*3.1415926535897932;
+		if ( pangle<0 && nangle>0 && nangle-pangle>=FF_PI )
+		    pangle += 2*FF_PI;
+		else if ( pangle>0 && nangle<0 && pangle-nangle>=FF_PI )
+		    nangle += 2*FF_PI;
 		if ( nangle-pangle<1 && nangle-pangle>-1 ) {
 		    for (;;) {
 			pt->online = pt->use_as_pt = false;
@@ -689,10 +689,10 @@ return;
 		sin(langle)*hlen;
 	trace->first->prevcp = oldp;
     } else {
-	if ( hangle>3.1415926535897932/2 && langle<-3.1415926535897932/2 )
-	    langle += 2*3.1415926535897932;
-	if ( hangle<-3.1415926535897932/2 && langle>3.1415926535897932/2 )
-	    hangle += 2*3.1415926535897932;
+	if ( hangle>FF_PI/2 && langle<-FF_PI/2 )
+	    langle += 2*FF_PI;
+	if ( hangle<-FF_PI/2 && langle>FF_PI/2 )
+	    hangle += 2*FF_PI;
 	hangle = (hangle+langle)/2;
 	dx = cos(hangle);
 	dy = sin(hangle);

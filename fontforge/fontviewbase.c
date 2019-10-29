@@ -1605,7 +1605,7 @@ void FVMetricsCenter(FontViewBase *fv,int docenter) {
     memset(itransform,0,sizeof(itransform));
     transform[0] = transform[3] = 1.0;
     itransform[0] = itransform[3] = 1.0;
-    itransform[2] = tan( fv->sf->italicangle * 3.1415926535897932/180.0 );
+    itransform[2] = tan( fv->sf->italicangle * FF_PI/180.0 );
     bvts[1].func = bvt_none;
     bvts[0].func = bvt_transmove; bvts[0].y = 0;
     if ( !fv->sf->onlybitmaps ) {

@@ -376,8 +376,8 @@ return(true);
 	def_outline_width = width;
 	def_shadow_len = len;
 	def_sun_angle = angle;
-	angle *= -3.1415926535897932/180;
-	angle -= 3.1415926535897932/2;
+	angle *= -FF_PI/180;
+	angle -= FF_PI/2;
 	if ( od->fv!=NULL )
 	    FVShadow((FontViewBase *) od->fv,angle,width,len,od->wireframe);
 	else if ( od->cv!=NULL )
