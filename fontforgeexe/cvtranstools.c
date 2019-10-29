@@ -80,7 +80,7 @@ void CVMouseMoveTransform(CharView *cv) {
 /* Allow one pixel per degree */
 	    real zangle = sqrt( (cv->info.x-cv->p.cx)*(cv->info.x-cv->p.cx) +
 		    (cv->info.y-cv->p.cy)*(cv->info.y-cv->p.cy) ) * tab->scale *
-		    3.1415926535897932/180;
+		    FF_PI/180;
 	    real s = sin(angle), c = cos(angle);
 	    real cz = cos(zangle);
 	    transform[0] = c*c + s*s*cz;

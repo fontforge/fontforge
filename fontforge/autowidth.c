@@ -750,7 +750,7 @@ return( 0 );
     if ( topx==bottomx )
 return( 0 );
 
-    angle = atan2(as/3,topx-bottomx)*180/3.1415926535897932-90;
+    angle = atan2(as/3,topx-bottomx)*180/FF_PI-90;
     if ( angle<1 && angle>-1 ) angle = 0;
 return( angle );
 }

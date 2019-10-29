@@ -2313,7 +2313,7 @@ return;
     last_ii.italic_angle = temp;
     memset(transform,0,sizeof(transform));
     transform[0] = transform[3] = 1;
-    transform[2] = -tan( last_ii.italic_angle * 3.1415926535897932/180.0 );
+    transform[2] = -tan( last_ii.italic_angle * FF_PI/180.0 );
     if ( cv!=NULL ) {
 	CVPreserveState((CharViewBase *) cv);
 	CVTransFunc(cv,transform,fvt_dontmovewidth);

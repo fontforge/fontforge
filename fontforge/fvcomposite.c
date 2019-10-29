@@ -2848,7 +2848,7 @@ return;
 
     if (( ia = sf->italicangle )==0 )
 	ia = SFGuessItalicAngle(sf);
-    ia *= 3.1415926535897932/180;	/* convert degrees to radians */
+    ia *= FF_PI/180;	/* convert degrees to radians */
 
     dot = strchr(sc->name,'.');
 
@@ -2927,7 +2927,7 @@ return( 1 );				/* No base character reference found */
 
     if (( ia = sf->italicangle )==0 )
 	ia = SFGuessItalicAngle(sf);
-    ia *= 3.1415926535897932/180;	/* convert degrees to radians */
+    ia *= FF_PI/180;	/* convert degrees to radians */
 
     SCPreserveLayer(sc,layer,true);
 

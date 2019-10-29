@@ -1873,9 +1873,9 @@ return;
 return;
 
     points[0].x = x; points[0].y = y;
-    off1 = len*sin(a+3.1415926535897932/8)+.5; off2 = len*cos(a+3.1415926535897932/8)+.5;
+    off1 = len*sin(a+FF_PI/8)+.5; off2 = len*cos(a+FF_PI/8)+.5;
     points[1].x = x-off2; points[1].y = y-off1;
-    off1 = len*sin(a-3.1415926535897932/8)+.5; off2 = len*cos(a-3.1415926535897932/8)+.5;
+    off1 = len*sin(a-FF_PI/8)+.5; off2 = len*cos(a-FF_PI/8)+.5;
     points[2].x = x-off2; points[2].y = y-off1;
     XFillPolygon(display->display,gxw->w,display->gcstate[gxw->ggc->bitmap_col].gc,points,3,Complex,CoordModeOrigin);
     XDrawLines(display->display,gxw->w,display->gcstate[gxw->ggc->bitmap_col].gc,points,3,CoordModeOrigin);
@@ -1985,7 +1985,7 @@ static void GXDrawDrawArc(GWindow gw, GRect *rect, int32 sangle, int32 tangle, C
 #ifndef _NO_LIBCAIRO
     if (gxw->usecairo) {
         // Leftover from XDrawArc: sangle/tangle in degrees*64.
-        _GXCDraw_DrawArc(gxw, rect, -(sangle+tangle)*M_PI/11520., -sangle*M_PI/11520.);
+        _GXCDraw_DrawArc(gxw, rect, -(sangle+tangle)*FF_PI/11520., -sangle*FF_PI/11520.);
     } else
 #endif
     {

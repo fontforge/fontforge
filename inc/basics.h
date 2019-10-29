@@ -50,6 +50,8 @@ typedef intptr_t	intpt;
 
 typedef uint32 unichar_t;
 
+#define FF_PI 3.1415926535897932
+
 /* A macro to mark unused function parameters with. We often
  * have such parameters, because of extensive use of callbacks.
  */

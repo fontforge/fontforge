@@ -319,13 +319,13 @@ return( false );
         int h=gr->onoffrect.height-1-2*bp;
         GRect rect;
         for (c=0, i=0; c<7; c++) {
-            angle=(30+c/6.*120)*M_PI/180;
+            angle=(30+c/6.*120)*FF_PI/180;
             pts[i].x=.5*w*cos(angle)+x+w/2;
             pts[i].y=.5*h*sin(angle)+y+h/4;
             ++i;
         }
         for (c=1; c<6; c++) {
-            angle=(180+30+c/6.*120)*M_PI/180;
+            angle=(180+30+c/6.*120)*FF_PI/180;
             pts[i].x=.5*w*cos(angle)+x+w/2;
             pts[i].y=.5*h*sin(angle)+y+h*3/4;
             ++i;
@@ -361,7 +361,7 @@ return( false );
 			g->box->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)):
 			g->box->main_foreground;
         for (int i = 0; i <= 6; i++) {
-            angle=(30+i/6.*120)*M_PI/180;
+            angle=(30+i/6.*120)*FF_PI/180;
             pts[i].x=.5*w*cos(angle)+x+w/2;
             pts[i].y=.5*h*sin(angle)+y+h/4;
 
