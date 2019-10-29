@@ -58,7 +58,7 @@
 # include <langinfo.h>
 #endif
 
-#define RAD2DEG	(180/3.1415926535897932)
+#define RAD2DEG	(180/FF_PI)
 
 static void change_res_filename(const char *newname);
 

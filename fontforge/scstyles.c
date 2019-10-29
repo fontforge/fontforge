@@ -1894,7 +1894,7 @@ void SmallCapsFindConstants(struct smallcaps *small, SplineFont *sf,
     memset(small,0,sizeof(*small));
 
     small->sf = sf; small->layer = layer;
-    small->italic_angle = sf->italicangle * 3.1415926535897932/180.0;
+    small->italic_angle = sf->italicangle * FF_PI/180.0;
     small->tan_ia = tan( small->italic_angle );
 
     small->lc_stem_width = CaseMajorVerticalStemWidth(sf, layer,lc_stem_str, small->tan_ia );
@@ -3410,7 +3410,7 @@ void SCCondenseExtend(struct counterinfo *ci,SplineChar *sc, int layer,
     if ( ci->correct_italic && sc->parent->italicangle!=0 ) {
 	memset(transform,0,sizeof(transform));
 	transform[0] = transform[3] = 1;
-	transform[2] = tan( sc->parent->italicangle * 3.1415926535897932/180.0 );
+	transform[2] = tan( sc->parent->italicangle * FF_PI/180.0 );
 	SplinePointListTransform(sc->layers[layer].splines,transform,tpt_AllPoints);
 	StemInfosFree(sc->vstem); sc->vstem=NULL;
     }
@@ -3460,7 +3460,7 @@ void SCCondenseExtend(struct counterinfo *ci,SplineChar *sc, int layer,
 	/* If we unskewed it, we want to skew it now */
 	memset(transform,0,sizeof(transform));
 	transform[0] = transform[3] = 1;
-	transform[2] = -tan( sc->parent->italicangle * 3.1415926535897932/180.0 );
+	transform[2] = -tan( sc->parent->italicangle * FF_PI/180.0 );
 	SplinePointListTransform(sc->layers[layer].splines,transform,tpt_AllPoints);
     }
 
@@ -6781,7 +6781,7 @@ static void InitItalicConstants(SplineFont *sf, int layer, ItalicInfo *ii) {
     int i,cnt;
     double val;
 
-    ii->tan_ia = tan(ii->italic_angle * 3.1415926535897932/180.0 );
+    ii->tan_ia = tan(ii->italic_angle * FF_PI/180.0 );
 
     ii->x_height	  = SFXHeight  (sf,layer,false);
     ii->ascender_height   = SFAscender (sf,layer,false);

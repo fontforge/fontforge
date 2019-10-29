@@ -2969,7 +2969,7 @@ static void sethhead(struct hhead *hhead,struct hhead *vhead,struct alltabs *at,
 	hhead->caretSlopeRise = 1;
     else {
 	hhead->caretSlopeRise = 100;
-	hhead->caretSlopeRun = (int) rint(100*tan(-sf->italicangle*3.1415926535897/180.));
+	hhead->caretSlopeRun = (int) rint(100*tan(-sf->italicangle*FF_PI/180.));
     }
 
     vhead->maxwidth = height;
@@ -3041,7 +3041,7 @@ void SFDefaultOS2Simple(struct pfminfo *pfminfo,SplineFont *sf) {
 }
 
 void SFDefaultOS2SubSuper(struct pfminfo *pfminfo,int emsize,double italic_angle) {
-    double s = sin(italic_angle*3.1415926535897932/180.0);
+    double s = sin(italic_angle*FF_PI/180.0);
     pfminfo->os2_supysize = pfminfo->os2_subysize = .7*emsize;
     pfminfo->os2_supxsize = pfminfo->os2_subxsize = .65*emsize;
     pfminfo->os2_subyoff = .14*emsize;

@@ -34,8 +34,6 @@
 #include <math.h>
 #include <assert.h>
 
-#define PI      3.1415926535897932 // For tests
-
 #define UTMARGIN (1e-8)
 #define BPNEAR(bp1, bp2) BPWITHIN(bp1, bp2, UTMARGIN)
 #define UTRETRY (UTMARGIN/10.0)
@@ -187,7 +185,7 @@ void UTanVecTests() {
     BasePoint ut[361], utmax = { -1, 0 }, utmin = UTMIN;
 
     for (i = 0; i<=360; i++) {
-	r = ((180-i) * PI / 180);
+	r = ((180-i) * FF_PI / 180);
 	ut[i] = MakeUTanVec(cos(r), sin(r));
 	// printf("i:%d, i.x:%lf, i.y:%lf\n", i, ut[i].x, ut[i].y);
     }
@@ -207,7 +205,7 @@ void UTanVecTests() {
 	    y = atan2(ut[j].x, ut[j].y);
 	    z = x-y;
 	    z = atan2(sin(z), cos(z));
-	    if ( RealNear(z, PI) || RealNear(z, -PI) )
+	    if ( RealNear(z, FF_PI) || RealNear(z, -FF_PI) )
 		continue;
 	    assert( (z>0) == JointBendsCW(ut[i], ut[j]) );
 	}
@@ -228,8 +226,8 @@ void UTanVecTests() {
 		    x = atan2(ut[i].x, ut[i].y);
 		    y = atan2(ut[j].x, ut[j].y);
 		    z = atan2(ut[k].x, ut[k].y);
-		    y = fmod(4*PI+y-x,2*PI);
-		    z = fmod(4*PI+z-x,2*PI);
+		    y = fmod(4*FF_PI+y-x,2*FF_PI);
+		    z = fmod(4*FF_PI+z-x,2*FF_PI);
 		    if ( y<z )
 			assert( a && !b );
 		    else

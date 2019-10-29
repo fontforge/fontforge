@@ -4492,7 +4492,7 @@ static void bRotate(Context *c) {
 	a = c->a.vals[1].u.fval;
     a = fmod(a,360.0);
     if ( a<0 ) a += 360;
-    a *= 3.1415926535897932/180.;
+    a *= FF_PI/180.;
     trans[0] = trans[3] = cos(a);
     trans[2] = -(trans[1] = sin(a));
     trans[4] = trans[5] = 0;
@@ -4602,7 +4602,7 @@ static void bSkew(Context *c) {
 	a = args[1];
     a = fmod(a,360.0);
     if ( a<0 ) a+=360;
-    a = a *3.1415926535897932/180.;
+    a = a *FF_PI/180.;
     trans[0] = trans[3] = 1;
     trans[1] = 0; trans[2] = tan(a);
     trans[4] = trans[5] = 0;
@@ -5145,11 +5145,11 @@ static void bExpandStroke(Context *c) {
 	    bESFlags(c, 5, &si);
     } else if ( c->a.argc==5 ) {
 	si.stroke_type = si_calligraphic;
-	si.penangle = 3.1415926535897932*args[2]/180;
+	si.penangle = FF_PI*args[2]/180;
 	si.minorradius = si.radius * args[3] / (double) args[4];
     } else if ( c->a.argc==7 ) {
         si.stroke_type = si_calligraphic;
-	si.penangle = 3.1415926535897932*args[2]/180;
+	si.penangle = FF_PI*args[2]/180;
 	si.minorradius = si.radius * args[3] / (double) args[4];
 	if ( c->a.vals[5].type!=v_int || c->a.vals[5].u.ival!=0 )
             ScriptError(c,"If 6 arguments are given, the fifth must be zero");
@@ -5173,7 +5173,7 @@ static void bExpandStroke(Context *c) {
 		ScriptError(c,"Convex nib unknown or not defined");
 	} else
 	    si.minorradius = args[3]/2.0;
-	si.penangle = 3.1415926535897932*args[4]/180;
+	si.penangle = FF_PI*args[4]/180;
 	bESJoinCap(c, 5, 6, &si);
 	if ( args[7]>0 )
 	    si.joinlimit = args[7];
@@ -5203,7 +5203,7 @@ static void bShadow(Context *c) {
 	ScriptError(c,"Bad argument type");
     if ( c->a.vals[1].type == v_int ) a = c->a.vals[1].u.ival;
     else a = c->a.vals[1].u.fval;
-    FVShadow(c->curfv,a*3.1415926535897932/180.,
+    FVShadow(c->curfv,a*FF_PI/180.,
 	    c->a.vals[2].u.ival, c->a.vals[3].u.ival,false);
 }
 
@@ -5216,7 +5216,7 @@ static void bWireframe(Context *c) {
 	ScriptError(c,"Bad argument type");
     if ( c->a.vals[1].type == v_int ) a = c->a.vals[1].u.ival;
     else a = c->a.vals[1].u.fval;
-    FVShadow(c->curfv,a*3.1415926535897932/360.,
+    FVShadow(c->curfv,a*FF_PI/360.,
 	    c->a.vals[2].u.ival, c->a.vals[3].u.ival,true);
 }
 

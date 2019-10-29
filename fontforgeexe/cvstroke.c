@@ -40,7 +40,6 @@
 
 #include <assert.h>
 #include <math.h>
-#define PI      3.1415926535897932
 
 extern GDevEventMask input_em[];
 extern const int input_em_cnt;
@@ -229,7 +228,7 @@ static int _Stroke_OK(StrokeDlg *sd,int isapply) {
     else if ( si->penangle<-180 )
 	si->penangle += 360;
     }
-    si->penangle *= 3.1415926535897932/180;
+    si->penangle *= FF_PI/180;
     si->cap = GGadgetIsChecked( GWidgetGetControl(sw,CID_ButtCap))?lc_butt:
               GGadgetIsChecked( GWidgetGetControl(sw,CID_BevelCap))?lc_bevel:
               GGadgetIsChecked( GWidgetGetControl(sw,CID_RoundCap))?lc_round:
@@ -317,7 +316,7 @@ static void Stroke_ShowNib(StrokeDlg *sd) {
 	memset(transform,0,sizeof(transform));
 	width = GetCalmReal8(sd->gw,CID_Width,"",&err)/2;
 	height = GetCalmReal8(sd->gw,CID_MinorAxis,"",&err)/2;
-	angle = GetCalmReal8(sd->gw,CID_PenAngle,"",&err)*PI/180;
+	angle = GetCalmReal8(sd->gw,CID_PenAngle,"",&err)*FF_PI/180;
 	c = cos(angle); s=sin(angle);
 	transform[0] = transform[3] = c;
 	transform[1] = s; transform[2] = -s;
@@ -756,7 +755,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff++].creator = GLabelCreate;
 	swarray[swpos][0] = &gcd[gcdoff-1];
 
-	sprintf( anglebuf, "%g", (double) (si->penangle*180/3.1415926535897932) );
+	sprintf( anglebuf, "%g", (double) (si->penangle*180/FF_PI) );
 	label[gcdoff].text = (unichar_t *) anglebuf;
 	label[gcdoff].text_is_1byte = true;
 	gcd[gcdoff].gd.pos.width = 50;
@@ -2044,8 +2043,8 @@ return( true );
 	else
 	    t = 9999;
 	if ( RealWithin(c*c+s*s,1,.005) && RealWithin(t*c-s,trans[2],.01) && RealWithin(t*s+c,trans[3],.01)) {
-	    double skew = atan(t)*180/3.1415926535897932;
-	    double rot  = atan2(s,c)*180/3.1415926535897932;
+	    double skew = atan(t)*180/FF_PI;
+	    double rot  = atan2(s,c)*180/FF_PI;
 	    sprintf( buffer, "%g", skew );
 	    GGadgetSetTitle8(GWidgetGetControl(gw,CID_Skew), buffer);
 	    sprintf( buffer, "%g", rot );
@@ -2074,8 +2073,8 @@ static int Pat_AnglesChanged(GGadget *g, GEvent *e) {
 	char buffer[340];
 	int err=false;
 
-	skew   = GetCalmReal8(gw,CID_Skew,_("Skew"),&err)*3.1415926535897932/180;
-	rotate = GetCalmReal8(gw,CID_Rotate,_("Rotate"),&err)*3.1415926535897932/180;
+	skew   = GetCalmReal8(gw,CID_Skew,_("Skew"),&err)*FF_PI/180;
+	rotate = GetCalmReal8(gw,CID_Rotate,_("Rotate"),&err)*FF_PI/180;
 	x      = GetCalmReal8(gw,CID_TransX,_("Translation in X"),&err);
 	y      = GetCalmReal8(gw,CID_TransY,_("Translation in Y"),&err);
 	if ( err )

@@ -3049,10 +3049,10 @@ void SPWeightedAverageCps(SplinePoint *sp) {
 	    sp->prev && sp->next ) {
 	pangle = atan2(sp->me.y-sp->prevcp.y,sp->me.x-sp->prevcp.x);
 	nangle = atan2(sp->nextcp.y-sp->me.y,sp->nextcp.x-sp->me.x);
-	if ( pangle<0 && nangle>0 && nangle-pangle>=3.1415926 )
-	    pangle += 2*3.1415926535897932;
-	else if ( pangle>0 && nangle<0 && pangle-nangle>=3.1415926 )
-	    nangle += 2*3.1415926535897932;
+	if ( pangle<0 && nangle>0 && nangle-pangle>=(FF_PI-6e-8) )
+	    pangle += 2*FF_PI;
+	else if ( pangle>0 && nangle<0 && pangle-nangle>=(FF_PI-6e-8) )
+	    nangle += 2*FF_PI;
 	plen = sqrt((sp->me.y-sp->prevcp.y)*(sp->me.y-sp->prevcp.y) +
 		(sp->me.x-sp->prevcp.x)*(sp->me.x-sp->prevcp.x));
 	nlen = sqrt((sp->nextcp.y-sp->me.y)*(sp->nextcp.y-sp->me.y) +
@@ -3085,10 +3085,10 @@ void SPAverageCps(SplinePoint *sp) {
 	    nangle = atan2(sp->next->to->me.y-sp->me.y,sp->next->to->me.x-sp->me.x);
 	else
 	    nangle = atan2(sp->nextcp.y-sp->me.y,sp->nextcp.x-sp->me.x);
-	if ( pangle<0 && nangle>0 && nangle-pangle>=3.1415926 )
-	    pangle += 2*3.1415926535897932;
-	else if ( pangle>0 && nangle<0 && pangle-nangle>=3.1415926 )
-	    nangle += 2*3.1415926535897932;
+	if ( pangle<0 && nangle>0 && nangle-pangle>=(FF_PI-6e-8) )
+	    pangle += 2*FF_PI;
+	else if ( pangle>0 && nangle<0 && pangle-nangle>=(FF_PI-6e-8) )
+	    nangle += 2*FF_PI;
 	angle = (nangle+pangle)/2;
 	plen = -sqrt((sp->me.y-sp->prevcp.y)*(sp->me.y-sp->prevcp.y) +
 		(sp->me.x-sp->prevcp.x)*(sp->me.x-sp->prevcp.x));
