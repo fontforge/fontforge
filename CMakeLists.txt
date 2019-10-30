@@ -75,6 +75,8 @@ build_option(THEME     ENUM "tango"  "Sets the GUI theme." "tango" "2012")
 
 if(CMAKE_COMPILER_IS_GNUCC)
   set_supported_c_compiler_flags(FONTFORGE_DEFAULT_CFLAGS -Werror=implicit-function-declaration -Werror=int-conversion)
+  list(APPEND FONTFORGE_EXTRA_CFLAGS -Wall -Wextra -pedantic)
+  add_compile_options(${FONTFORGE_DEFAULT_CFLAGS})
 endif()
 
 # Required and default dependencies

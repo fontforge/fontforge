@@ -209,6 +209,9 @@ if(ENABLE_WOFF2_RESULT)
   target_sources(fontforge PRIVATE woff2.cc)
 endif()
 
+# Turn up warnings on a few source files
+set_property(SOURCE splineoverlap.c APPEND PROPERTY COMPILE_OPTIONS ${FONTFORGE_EXTRA_CFLAGS})
+
 set_property(TARGET fontforge PROPERTY VERSION 4)
 if(WIN32 AND BUILD_SHARED_LIBS)
     target_link_options(fontforge PRIVATE -Wl,--export-all-symbols) # FIXME
