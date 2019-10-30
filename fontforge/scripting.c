@@ -5068,7 +5068,7 @@ static const int joinmap[] = { lj_miter, lj_round, lj_bevel, lj_nib,
 static const int capmap[] = { lc_butt, lc_round, lc_square, lc_nib,
                               lc_inherited };
 
-static void bESJoinCap(Context *c, int ci, int ji, StrokeInfo *sip) {
+static void bESJoinCap(Context *c, int ci, int ji, StrokeInfo *sip, int rok) {
     if ( c->a.vals[ci].type!=v_int || c->a.vals[ji].type!=v_int )
 	ScriptError(c,"Bad argument type");
     ci = c->a.vals[ci].u.ival;
@@ -5077,8 +5077,20 @@ static void bESJoinCap(Context *c, int ci, int ji, StrokeInfo *sip) {
     // Use default for out of range values
     if ( ci >= 0 && ci<=4 )
 	sip->cap = capmap[ci];
+    if ( sip->cap==lc_square ) {
+	sip->cap = lc_butt;
+	sip->extendcap = 1;
+    }
+
     if ( ji >= 0 && ji<=6 )
 	sip->join = joinmap[ji];
+    if ( sip->join==lj_round ) {
+	if ( rok )
+	    sip->join = lj_nib;
+	else
+	    ScriptError(c, "Round join requires circular nib");
+    } else if ( sip->join==lj_arcs )
+	ScriptError(c, "Arcs join not yet supported");
 }
 
 static void bESFlags(Context *c, int fi, StrokeInfo *sip) {
@@ -5104,7 +5116,7 @@ static void bESFlags(Context *c, int fi, StrokeInfo *sip) {
 static void bExpandStroke(Context *c) {
     StrokeInfo si;
     double args[12];
-    int i;
+    int i, rok;
     /* Arguments:
 	2 => stroke width (implied butt, round)
 	4 => stroke width, line cap, line join
@@ -5134,9 +5146,9 @@ static void bExpandStroke(Context *c) {
 	si.join = lj_round;
 	si.cap = lc_butt;
     } else if ( c->a.argc==4 ) {
-	bESJoinCap(c, 2, 3, &si);
+	bESJoinCap(c, 2, 3, &si, true);
     } else if ( c->a.argc==6 ) {
-	bESJoinCap(c, 2, 3, &si);
+	bESJoinCap(c, 2, 3, &si, true);
 	if ( c->a.vals[4].type!=v_int || c->a.vals[4].u.ival!=0 )
 	    ScriptError(c,"If 5 arguments are given, the fourth must be zero");
 	else if ( c->a.vals[5].type!=v_int )
@@ -5174,7 +5186,9 @@ static void bExpandStroke(Context *c) {
 	} else
 	    si.minorradius = args[3]/2.0;
 	si.penangle = FF_PI*args[4]/180;
-	bESJoinCap(c, 5, 6, &si);
+	rok = (   si.stroke_type==si_round
+	       && ( si.radius==si.minorradius || si.minorradius==0 ) );
+	bESJoinCap(c, 5, 6, &si, rok);
 	if ( args[7]>0 )
 	    si.joinlimit = args[7];
 	if ( args[8]>=0 )

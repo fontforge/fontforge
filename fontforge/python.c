@@ -4601,10 +4601,27 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
     c = FlagsFromString(cap,linecap,"linecap type");
     if ( c==FLAG_UNKNOWN )
 	return( -1 );
+    if ( c==lc_square ) {
+	c = lc_butt;
+	if ( si->extendcap!=0 )
+	    si->extendcap=1.0;
+    }
     si->cap = c;
     j = FlagsFromString(join,linejoin,"linejoin type");
     if ( j==FLAG_UNKNOWN )
 	return( -1 );
+    if ( j==lj_round ) {
+	if (    si->stroke_type==si_round
+	     && ( si->radius==si->minorradius || si->minorradius==0 ) )
+	    j=lj_nib;
+	else {
+            PyErr_Format(PyExc_ValueError, "Round join requires circular nib" );
+	    return -1;
+	}
+    } else if ( j==lj_arcs ) {
+	PyErr_Format(PyExc_ValueError, "Arcs join not yet supported" );
+	return -1;
+    }
     si->join = j;
     r = FlagsFromString(rostring,rmov,"removeoverlap type");
     if ( r==FLAG_UNKNOWN )

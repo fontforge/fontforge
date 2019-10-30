@@ -72,6 +72,15 @@ typedef uint32 unichar_t;
 #define TRACE(...)
 #endif
 
+/* assert() with an otherwise unused variable
+ * to get around "unused" compiler warnings
+ */
+#ifndef NDEBUG
+#define VASSERT(v) assert(v)
+#else
+#define VASSERT(v) ((void)(v))
+#endif
+
 extern void NoMoreMemMessage(void);
 
 static inline int imin(int a, int b)
