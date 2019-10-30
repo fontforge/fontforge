@@ -1641,7 +1641,7 @@ return;
 }
 
 static double CalculateMinimumDiff(double from, double diff) {
-    double next = from - nextafter(from, diff);
+    double next = nextafter(from, DBL_MAX) - from;
     assert(diff >= 0 && next > 0);
     return next > diff ? next : diff;
 }
