@@ -281,6 +281,12 @@ static int LineSameSide(BasePoint l1, BasePoint l2, BasePoint p, BasePoint r,
     return SIGNOF(tr)==SIGNOF(tp);
 }
 
+static void SplineSetLineTo(SplineSet *cur, BasePoint xy) {
+    SplinePoint *sp = SplinePointCreate(xy.x, xy.y);
+    SplineMake3(cur->last, sp);
+    cur->last = sp;
+}
+
 /* A hack for cleaning up cusps and intersections on isolated
  * counter-clockwise contours -- builds an enclosing clockwise
  * rectangle, runs remove-overlap, and removes the rectangle.
@@ -291,22 +297,22 @@ static SplineSet *SplineContourOuterCCWRemoveOverlap(SplineSet *ss) {
     SplineSet *ss_tmp, *ss_last = NULL;
 
     SplineSetQuickBounds(ss,&b);
+    b.minx -= 100;
+    b.miny -= 100;
+    b.maxx += 100;
+    b.maxy += 100;
+
     ss_tmp = chunkalloc(sizeof(SplineSet));
-    ss_tmp->first = SplinePointCreate(b.minx-100,b.miny-100);
-    ss_tmp->last = SplinePointCreate(b.minx-100,b.maxy+100);
-    SplineMake3(ss_tmp->first, ss_tmp->last);
-    sp = SplinePointCreate(b.maxx+100,b.maxy+100);
-    SplineMake3(ss_tmp->last, sp);
-    ss_tmp->last = sp;
-    sp = SplinePointCreate(b.maxx+100,b.miny-100);
-    SplineMake3(ss_tmp->last, sp);
-    SplineMake3(sp, ss_tmp->first);
+    ss_tmp->first = ss_tmp->last = SplinePointCreate(b.minx,b.miny);
+    SplineSetLineTo(ss_tmp, (BasePoint) { b.minx, b.maxy } );
+    SplineSetLineTo(ss_tmp, (BasePoint) { b.maxx, b.maxy } );
+    SplineSetLineTo(ss_tmp, (BasePoint) { b.maxx, b.miny } );
+    SplineMake3(ss_tmp->last, ss_tmp->first);
     ss_tmp->last = ss_tmp->first;
     ss->next = ss_tmp;
     ss=SplineSetRemoveOverlap(NULL,ss,over_remove);
-    for ( ss_tmp=ss; ss_tmp!=NULL; ss_last=ss_tmp, ss_tmp=ss_tmp->next )
-	if (   ss_tmp->first->me.x==(b.minx-100)
-	    || ss_tmp->first->me.x==(b.maxx+100) ) {
+    for ( ss_tmp=ss; ss_tmp!=NULL; ss_last=ss_tmp, ss_tmp=ss_tmp->next ) {
+	if ( ss_tmp->first->me.x==b.minx || ss_tmp->first->me.x==b.maxx ) {
 	    if ( ss_last==NULL )
 		ss = ss->next;
     	    else
@@ -315,6 +321,7 @@ static SplineSet *SplineContourOuterCCWRemoveOverlap(SplineSet *ss) {
 	    SplinePointListFree(ss_tmp);
 	    return ss;
 	}
+    }
     assert(0);
     return ss;
 }
@@ -1152,12 +1159,6 @@ static bigreal SplineStrokeNextT(StrokeContext *c, Spline *s, bigreal cur_t,
 
     *curved = next_curved;
     return next_t;
-}
-
-static void SplineSetLineTo(SplineSet *cur, BasePoint xy) {
-    SplinePoint *sp = SplinePointCreate(xy.x, xy.y);
-    SplineMake3(cur->last, sp);
-    cur->last = sp;
 }
 
 static void HandleFlat(SplineSet *cur, BasePoint sxy, NibOffset *noi,
