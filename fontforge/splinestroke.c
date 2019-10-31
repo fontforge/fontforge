@@ -293,7 +293,6 @@ static void SplineSetLineTo(SplineSet *cur, BasePoint xy) {
  */
 static SplineSet *SplineContourOuterCCWRemoveOverlap(SplineSet *ss) {
     DBounds b;
-    SplinePoint *sp;
     SplineSet *ss_tmp, *ss_last = NULL;
 
     SplineSetQuickBounds(ss,&b);
@@ -1224,7 +1223,7 @@ static bigreal CalcCapExtend(StrokeContext *c, bigreal fsw) {
 
 static bigreal LineDist(BasePoint l1, BasePoint l2, BasePoint p) {
     assert (l1.x!=l2.x || l1.y!=l2.y);
-    return   abs((l2.y-l1.y)*p.x - (l2.x-l1.x)*p.y + l2.x*l1.y -l2.y*l1.x)
+    return   fabs((l2.y-l1.y)*p.x - (l2.x-l1.x)*p.y + l2.x*l1.y -l2.y*l1.x)
            / BP_DIST(l1, l2);
 }
 
@@ -1375,8 +1374,8 @@ static void MiterJoin(JoinParams *jpp) {
     coi = BP_ADD(jpp->oxy, jpp->no_to->utanvec);
     intersects = IntersectLines(&ixy, &cur->last->me, &cow, &coi, &jpp->oxy);
     assert(intersects); // Shouldn't be called with parallel tangents
-    fsw = FalseStrokeWidth(jpp->c, NormVec(BP_ADD(jpp->ut_fm,
-                                                  jpp->no_to->utanvec)));
+    fsw = (  FalseStrokeWidth(jpp->c, jpp->ut_fm) 
+           + FalseStrokeWidth(jpp->c, jpp->no_to->utanvec))/2;
     jlim = CalcJoinLimit(jpp->c, fsw);
     jlen = CalcJoinLength(fsw, jpp->ut_fm, jpp->no_to->utanvec);
 
@@ -1964,7 +1963,8 @@ SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
     return( first );
 }
 
-void FVStrokeItScript(void *_fv, StrokeInfo *si,int pointless_argument) {
+void FVStrokeItScript(void *_fv, StrokeInfo *si,
+                      int UNUSED(pointless_argument)) {
     FontViewBase *fv = _fv;
     int layer = fv->active_layer;
     SplineSet *temp;
