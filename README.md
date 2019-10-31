@@ -5,7 +5,7 @@
 FontForge is a free (libre) font editor for Windows, Mac OS X and GNU+Linux. 
 Use it to create, edit and convert fonts in OpenType, TrueType, UFO, CID-keyed, Multiple Master, and many other formats.
 
-[fontforge.org](http://fontforge.org) &mdash; homepage
+[fontforge.org](https://fontforge.github.io/) &mdash; homepage
 
 [designwithfontforge.com](http://designwithfontforge.com) &mdash; font creation manual
 
