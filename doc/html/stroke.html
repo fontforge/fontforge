@@ -15,8 +15,8 @@ enclose the area the nib "passed over". When the source contour is open the
 result is usually a single closed contour, and when the source contour is
 closed the result is usually two closed contours:
 
-<P> However, there are exceptions when the geometry of the nib and the source
-contour interact:
+<P> There are exceptions when the geometry of the nib and the source contour
+interact:
 
 <P> The "Expand Stroke..." dialog in the "Element" menu of a font view or
 outline view window is the primary interactive interface for the facility.  In
@@ -27,10 +27,11 @@ contour if no points are selected on any contour.  The dialog looks like this:
 <P> The <A HREF="charview.html#freehand">Freehand Tool</A> also uses the
 facility and has a similar dialog, and there are interfaces for both
 <A HREF="python.html#glyph-stroke">Python</A> and
-<A HREF="scripting-alpha.html#ExpandStroke">the native scripting language</A>.
+<A HREF="scripting-alpha.html#ExpandStroke">FontForge's native scripting 
+language</A>.
 
-<P> This guide is arranged into these sections. The
-<A HREF="#offsetting">first section</A> discusses the common case of tracing
+<P> This guide is arranged into three sections. The
+<A HREF="#offsetting">first</A> discusses the common case of tracing
 a circular nib, which is also called "offsetting". It includes a description
 of the "<A HREF="#cap">cap</A>" and "<A HREF="#join">join</A>" options for
 offset curves.
@@ -54,8 +55,8 @@ a total line thickness of <em>2r</em>:
 <P> In FontForge you specify a circular nib in the UI dialog by choosing the
 "Circular/Elliptical" nib type and making the Major and Minor Axis lengths
 equal. In the native and Python API a Minor Axis value of zero will be
-replaced by the Major Axis value. Although it does not make a geometric
-difference, the recommended Nib Angle for Circular nibs is zero:
+replaced by the Major Axis value. And although it does not make a geometric
+difference, the recommended Nib Angle for a Circular nib is zero:
 
 <P> Offsetting is a longstanding way of specifying a line of fixed thickness in
 terms of a contour—that is, a sequence of connecting splines—combined with an
@@ -78,7 +79,7 @@ The line that closes the gap between the offset lines traced to the end of of
 an open source contour is called a "cap". PostScript and SVG specify three cap
 styles that are really two styles: "Round" and "Butt"/"Square".  A Round cap
 connects the ends with a semi-circle, while a Butt cap connects them with a
-straight line. When tracing with a circular nib, the FontForge cap options
+straight line. When tracing with a circular nib the FontForge cap options
 "Nib" and "Round" are both equivalent to PS/SVG "Round", and the options "Butt"
 and "Bevel" are both equivalent to PS/SVG "Butt". (These options differ when
 used with other nib shapes.)
