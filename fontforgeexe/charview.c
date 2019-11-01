@@ -194,7 +194,7 @@ static Color gridfitoutlinecol = 0x009800;
 static Color backoutlinecol = 0x009800;
 static Color foreoutlinecol = 0x000000;
 static Color clippathcol = 0x0000ff;
-static Color openpathcol = 0x660000;
+static Color openpathcol = 0x40660000;
 static Color backimagecol = 0x707070;
 static Color fillcol = 0x80707070;		/* Translucent */
 static Color tracecol = 0x008000;
@@ -278,7 +278,7 @@ static struct resed charview2_re[] = {
     { N_("Inactive Thick Layer Color"), "BackgroundThickOutlineColor", rt_coloralpha, &backoutthicklinecol, N_("The color of thick outlines in inactive layers"), NULL, { 0 }, 0, 0 },
     { N_("Active Thick Layer Color"), "ForegroundThickOutlineColor", rt_coloralpha, &foreoutthicklinecol, N_("The color of thick outlines in the active layer"), NULL, { 0 }, 0, 0 },
     { N_("Clip Path Color"), "ClipPathColor", rt_color, &clippathcol, N_("The color of the clip path"), NULL, { 0 }, 0, 0 },
-    { N_("Open Path Color"), "OpenPathColor", rt_color, &openpathcol, N_("The color of the open path"), NULL, { 0 }, 0, 0 },
+    { N_("Open Path Color"), "OpenPathColor", rt_coloralpha, &openpathcol, N_("The color of the open path"), NULL, { 0 }, 0, 0 },
     { N_("Background Image Color"), "BackgroundImageColor", rt_coloralpha, &backimagecol, N_("The color used to draw bitmap (single bit) images which do not specify a clut"), NULL, { 0 }, 0, 0 },
     { N_("Fill Color"), "FillColor", rt_coloralpha, &fillcol, N_("The color used to fill the outline if that mode is active"), NULL, { 0 }, 0, 0 },
     { N_("Preview Fill Color"), "PreviewFillColor", rt_coloralpha, &previewfillcol, N_("The color used to fill the outline when in preview mode"), NULL, { 0 }, 0, 0 },
@@ -433,7 +433,7 @@ return;
   backoutlinecol = GResourceFindColor("CharView.BackgroundOutlineColor",0x009800);
   foreoutlinecol = GResourceFindColor("CharView.ForegroundOutlineColor",0x000000);
   clippathcol = GResourceFindColor("CharView.ClipPathColor",0x0000ff);
-  openpathcol = GResourceFindColor("CharView.OpenPathColor",0x660000);
+  openpathcol = GResourceFindColor("CharView.OpenPathColor",0x40660000);
   backimagecol = GResourceFindColor("CharView.BackgroundImageColor",0x707070);
   fillcol = GResourceFindColor("CharView.FillColor",0x80707070);		/* Translucent */
   tracecol = GResourceFindColor("CharView.TraceColor",0x008000);
@@ -900,34 +900,13 @@ static void DrawPoint( CharView *cv, GWindow pixmap, SplinePoint *sp,
     char buf[16];
     int isfake;
 
-    if ( DrawOpenPathsWithHighlight
-	 && cv->b.drawmode==dm_fore
-	 && spl->first
-	 && spl->first->prev==NULL )
-    {
-	if( sp!=spl->first )
-	    col = openpathcol;
-    }
-
-
-    if ( cv->markextrema && SpIsExtremum(sp) )
-	 col = extremepointcol;
+    if ( cv->markextrema && SpIsExtremum(sp) && sp!=spl->first )
+	col = extremepointcol;
     if ( sp->selected )
-	 col = selectedpointcol;
-
-    if ( DrawOpenPathsWithHighlight
-	 && cv->b.drawmode==dm_fore
-	 && spl->first
-	 && spl->first->prev==NULL )
-    {
-    }
-    else
-    {
-	if( !sp->selected )
-	{
-	    col = col&0x00ffffff;
-	    col |= prefs_cvInactiveHandleAlpha << 24;
-	}
+	col = selectedpointcol;
+    else {
+	col = col&0x00ffffff;
+	col |= prefs_cvInactiveHandleAlpha << 24;
     }
 
     col = MaybeMaskColorToAlphaChannelOverride( col, AlphaChannelOverride );
@@ -1571,7 +1550,10 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 	     && spl->first
 	     && spl->first->prev==NULL )
 	{
-	    fc = openpathcol;
+            if ( GDrawGetLineWidth( pixmap ) <= 1 )
+		fc = openpathcol | 0xff000000;
+	    else
+		fc = openpathcol;
 	}
 
 	if ( GDrawHasCairo(pixmap)&gc_buildpath ) {
@@ -1644,8 +1626,10 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
         GDrawClipPreserve( pixmap );
         GDrawPathStartNew( pixmap );
     } else if (strokeFillMode == sfm_fill) {
-        Color c = cv->inPreviewMode ? previewfillcol : fillcol;
-        GDrawPathFill(pixmap, c|0xff000000);
+	if ( cv->inPreviewMode )
+	    GDrawPathFill(pixmap, previewfillcol|0xff000000);
+	else
+	    GDrawPathFill(pixmap, fillcol);
     }
 }
 
