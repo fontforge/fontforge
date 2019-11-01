@@ -1146,6 +1146,7 @@ static PyObject *PyFF_GetUserConfigPath(PyObject *UNUSED(self), PyObject *UNUSED
 
     userdir = getFontForgeUserDir(Config);
     ret=Py_BuildValue("s",userdir);
+    free(userdir);
 
     return ret;
 }
