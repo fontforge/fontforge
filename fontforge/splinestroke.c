@@ -550,7 +550,6 @@ static NibOffset *_CalcNibOffset(NibCorner *nc, int n, BasePoint ut,
                                  int reverse, NibOffset *no, int nci_hint) {
     int nci, ncni, ncpi;
     Spline *ns;
-    BasePoint tmp;
 
     if ( no==NULL )
 	no = malloc(sizeof(NibOffset));
@@ -864,7 +863,6 @@ static void SSAppendSemiCircle(SplineSet *cur, bigreal radius, BasePoint ut,
                                int bk) {
     SplineSet *circ;
     real trans[6];
-    BasePoint cxy = cur->last->me;
     SplinePoint *sp;
     NibOffset no_fm, no_to;
     NibCorner *nc = NULL;
@@ -1005,9 +1003,9 @@ int GenStrokeTracePoints(void *vinfo, bigreal t_fm, bigreal t_to,
     StrokeTraceInfo *stip = (StrokeTraceInfo *)vinfo;
     int i, nib_ccw, on_cusp;
     NibOffset no;
-    FitPoint *fp, tmp_fp;
-    bigreal nidiff, t, csd;
-    BasePoint xy, rel_ut;
+    FitPoint *fp;
+    bigreal nidiff, t;
+    BasePoint xy;
 
     fp = calloc(stip->num_points, sizeof(FitPoint));
     nidiff = (t_to - t_fm) / (stip->num_points-1);
@@ -1112,9 +1110,9 @@ SplinePoint *TraceAndFitSpline(StrokeContext *c, Spline *s, bigreal t_fm,
 static bigreal SplineStrokeNextT(StrokeContext *c, Spline *s, bigreal cur_t,
 		                 int is_ccw, BasePoint *cur_ut,
 				 int *curved, int reverse, int nci_hint) {
-    int next_curved, nci, inout, at_line, icnt, i;
+    int next_curved, icnt, i;
     bigreal next_t;
-    extended poi[2], tp;
+    extended poi[2];
     BasePoint next_ut;
 
     assert( cur_ut!=NULL && curved!=NULL );
@@ -1137,7 +1135,7 @@ static bigreal SplineStrokeNextT(StrokeContext *c, Spline *s, bigreal cur_t,
     // to but not at the inflection point. The disadvantage is that we would
     // need to track how many times the direction changes to feed the right
     // value to SplineStrokeAppendFixup, leading to more code complexity.
-    if ( icnt = Spline2DFindPointsOfInflection(s, poi) ) {
+    if ( (icnt = Spline2DFindPointsOfInflection(s, poi)) ) {
 	assert ( icnt < 2 || poi[0] <= poi[1] );
 	for ( i=0; i<2; ++i )
 	    if (    poi[i] > cur_t
@@ -1164,7 +1162,6 @@ static bigreal SplineStrokeNextT(StrokeContext *c, Spline *s, bigreal cur_t,
 static void HandleFlat(SplineSet *cur, BasePoint sxy, NibOffset *noi,
                        int is_ccw) {
     BasePoint oxy;
-    SplinePoint *sp;
 
     oxy = BP_ADD(sxy, noi->off[is_ccw]);
     if ( !BPNEAR(cur->last->me, oxy) ) {
@@ -1290,9 +1287,9 @@ static void CalcExtend(BasePoint refp, BasePoint ut, BasePoint op1,
 	clip2 = BP_ADD(clip1, UT_90CW(ut));
     }
     intersects = IntersectLines(np1, &op1, &cop1, &clip1, &clip2);
-    assert(intersects);
+    VASSERT(intersects);
     intersects = IntersectLines(np2, &op2, &cop2, &clip1, &clip2);
-    assert(intersects);
+    VASSERT(intersects);
 }
 
 typedef struct joinparams {
@@ -1322,7 +1319,7 @@ static void NibJoin(JoinParams *jpp) {
 
 static void DoubleBackJoin(JoinParams *jpp) {
     BasePoint refp, p1, p2;
-    bigreal fsw, jlim, d1 = 0, d2 = 0;
+    bigreal fsw, jlim;
 
     assert( jpp->c->join==lj_miterclip || jpp->c->join==lj_arcs );
     assert( RealWithin( BP_DOT(jpp->ut_fm, jpp->no_to->utanvec),
@@ -1337,6 +1334,7 @@ static void DoubleBackJoin(JoinParams *jpp) {
     SplineSetLineTo(jpp->cur, jpp->oxy);
 }
 
+/*
 static void RoundJoin(JoinParams *jpp) {
     BasePoint c, cut, ut1, ut2;
     bigreal alpha, B, C, E, mu, nu, B2AC, maj, min, tmp, tmp2;
@@ -1362,12 +1360,11 @@ static void RoundJoin(JoinParams *jpp) {
     min = sqrt(tmp * (1 + C - tmp2))/B2AC;
     // printf("maj: %lf, min: %lf, angle: %lf\n", maj, min, atan2(cut.y, cut.x) * 180 / FF_PI);
     BevelJoin(jpp);
-}
+} */
 
 static void MiterJoin(JoinParams *jpp) {
     BasePoint ixy, refp, cow, coi, clip1, clip2, ut;
     int intersects;
-    SplinePoint *sp;
     SplineSet *cur = jpp->cur;
     bigreal fsw, jlen, jlim;
 
@@ -1407,10 +1404,10 @@ static void MiterJoin(JoinParams *jpp) {
 	}
 	// Clipped miter join
 	intersects = IntersectLines(&ixy, &cur->last->me, &cow, &clip1, &clip2);
-	assert(intersects);
+	VASSERT(intersects);
 	SplineSetLineTo(cur, ixy);
 	intersects = IntersectLines(&ixy, &jpp->oxy, &coi, &clip1, &clip2);
-	assert(intersects);
+	VASSERT(intersects);
 	SplineSetLineTo(cur, ixy);
 	SplineSetLineTo(cur, jpp->oxy);
     }
@@ -1439,11 +1436,11 @@ static int _HandleJoin(JoinParams *jpp) {
 	BevelJoin(jpp);
     } else if ( c->join==lj_bevel ) {
 	BevelJoin(jpp);
-    } else if ( c->join==lj_round ) {
+/*    } else if ( c->join==lj_round ) {
 	if ( RealWithin(costheta, -1, COS_MARGIN) )
 	    BevelJoin(jpp);
 	else
-	    RoundJoin(jpp);
+	    RoundJoin(jpp); */
     } else if ( c->join==lj_miter || c->join==lj_miterclip ) {
 	if ( RealWithin(costheta, -1, COS_MARGIN) ) {
 	    if ( c->join==lj_miter )
@@ -1521,7 +1518,7 @@ static void HandleCap(StrokeContext *c, SplineSet *cur, BasePoint sxy,
 /******************************************************************************/
 
 static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
-    NibOffset no, no_last;
+    NibOffset no;
     Spline *s, *first=NULL;
     SplineSet *left=NULL, *right=NULL, *cur;
     SplinePoint *sp;
@@ -1529,7 +1526,7 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
     BasePoint sxy;
     bigreal last_t, t;
     int is_right, linear, curved, on_cusp;
-    int is_ccw_ini, is_ccw_start, is_ccw_mid, was_ccw;
+    int is_ccw_ini = false, is_ccw_start, is_ccw_mid, was_ccw = false;
     int closed = ss->first->prev!=NULL;
 
     if ( (c->contour_was_ccw ? !c->remove_inner : !c->remove_outer) || !closed )
@@ -1850,7 +1847,7 @@ return( first );
 SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
     int max_pc;
     StrokeContext c;
-    SplineSet *nibs, *nib, *bnext, *first, *last, *cur;
+    SplineSet *nibs, *nib, *first, *last, *cur;
     bigreal sn = 0.0, co = 1.0, mr;
     DBounds b;
     real trans[6];
