@@ -2489,7 +2489,7 @@ must be created through the font.
       <TD><CODE>changeWeight</CODE></TD>
       <TD><CODE>(stroke_width[,type,<BR>
 	serif_height,serif_fuzz,<BR>
-	counter_type,custom_zones])</CODE></TD>
+	counter_type,removeoverlap,custom_zones])</CODE></TD>
       <TD>See the <A HREF="Styles.html#Embolden">Element-&gt;Style-&gt;Change
 	Width</A> command for a more complete description of these arguments.
 	<P>
@@ -2502,6 +2502,11 @@ must be created through the font.
 	If you don't want special serif behavior set this to 0.
 	<P>
 	Counter_type is one of "squish", "retain", "auto".
+	<P>
+	Removeoverlap (Cleanup Self Intersect) is a boolean int (0=false, 1=true).
+	If it's activate, when FontForge detects that an expanded stroke will
+	self-intersect, then setting this option will cause it to try to make things
+	nice by removing the intersections.
 	<P>
 	Custom_zones is only meaningful if the type argument were "custom". It may
 	be either a number, which specifies the "top hint" value (bottom hint is
