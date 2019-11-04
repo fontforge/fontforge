@@ -51,7 +51,7 @@ If you want to do autotracing around character images you should also download e
 #### Libraries
 
 If your system comes with a package manager, use it. 
-It makes installing thee libraries easier.
+It makes installing these libraries easier.
 
 Most of these are not required for the proper compilation/execution of FontForge, if the libraries are not present they will not be used.
 (If the machine on which your executable was build didn't have them, then you must not only install the libraries, but also **rebuild FontForge from source**. 
