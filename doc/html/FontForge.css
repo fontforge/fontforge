@@ -19,6 +19,12 @@
  TABLE.module { background: #ddf }
  TABLE.type { background: #ffd }
 
+.svgfig { 
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
 /* menubar, stolen and modified from the sourceforge stylesheet */
 .menucontainer li
 {
