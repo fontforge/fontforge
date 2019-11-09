@@ -15,8 +15,12 @@ enclose the area the nib "passed over". When the source contour is open the
 result is usually a single closed contour, and when the source contour is
 closed the result is usually two closed contours:
 
-<P> However, there are exceptions when the geometry of the nib and the source
-contour interact:
+<figure><object data="stroke/typical.svg" type="image/svg+xml" width="80%" class="svgfig">Typical Examples</object></figure>
+
+<P> There are exceptions when the geometry of the nib and the source contour
+interact:
+
+<figure><object data="stroke/exceptional.svg" type="image/svg+xml" width="70%" class="svgfig">Unusual Examples</object></figure>
 
 <P> The "Expand Stroke..." dialog in the "Element" menu of a font view or
 outline view window is the primary interactive interface for the facility.  In
@@ -27,10 +31,11 @@ contour if no points are selected on any contour.  The dialog looks like this:
 <P> The <A HREF="charview.html#freehand">Freehand Tool</A> also uses the
 facility and has a similar dialog, and there are interfaces for both
 <A HREF="python.html#glyph-stroke">Python</A> and
-<A HREF="scripting-alpha.html#ExpandStroke">the native scripting language</A>.
+<A HREF="scripting-alpha.html#ExpandStroke">FontForge's native scripting 
+language</A>.
 
-<P> This guide is arranged into these sections. The
-<A HREF="#offsetting">first section</A> discusses the common case of tracing
+<P> This guide is arranged into three sections. The
+<A HREF="#offsetting">first</A> discusses the common case of tracing
 a circular nib, which is also called "offsetting". It includes a description
 of the "<A HREF="#cap">cap</A>" and "<A HREF="#join">join</A>" options for
 offset curves.
@@ -49,13 +54,15 @@ contours, or that can aid in debugging potential problems.
 
 Tracing a contour with a circular nib of radius <em>r</em> is equivalent to
 "offsetting"—creating parallel contours on each side at distance <em>r</em> for
-a total line thickness of <em>2r</em>:
+a total line thickness of <em>2r</em> (source contour shown in green):
+
+<figure><object data="stroke/offsets.svg" type="image/svg+xml" width="70%" class="svgfig">Offset Curves</object></figure>
 
 <P> In FontForge you specify a circular nib in the UI dialog by choosing the
 "Circular/Elliptical" nib type and making the Major and Minor Axis lengths
 equal. In the native and Python API a Minor Axis value of zero will be
-replaced by the Major Axis value. Although it does not make a geometric
-difference, the recommended Nib Angle for Circular nibs is zero:
+replaced by the Major Axis value. And although it does not make a geometric
+difference, the recommended Nib Angle for a Circular nib is zero:
 
 <P> Offsetting is a longstanding way of specifying a line of fixed thickness in
 terms of a contour—that is, a sequence of connecting splines—combined with an
@@ -69,8 +76,12 @@ facility.
 not necessarily connect. They will all connect in the case of a source contour
 that is closed and has only "smooth" points:
 
+<figure><object data="stroke/offset_smooth.svg" type="image/svg+xml" width="80%" class="svgfig">Offsets of a smooth contour</object></figure>
+
 <P> They will not connect where the source contour is open or has "corner"
 points where the angle changes:
+
+<figure><object data="stroke/offset_other.svg" type="image/svg+xml" width="70%" class="svgfig">Offsets of angled and open contour</object></figure>
 
 <H3 id="cap">Caps</H3>
 
@@ -78,10 +89,12 @@ The line that closes the gap between the offset lines traced to the end of of
 an open source contour is called a "cap". PostScript and SVG specify three cap
 styles that are really two styles: "Round" and "Butt"/"Square".  A Round cap
 connects the ends with a semi-circle, while a Butt cap connects them with a
-straight line. When tracing with a circular nib, the FontForge cap options
+straight line. When tracing with a circular nib the FontForge cap options
 "Nib" and "Round" are both equivalent to PS/SVG "Round", and the options "Butt"
 and "Bevel" are both equivalent to PS/SVG "Butt". (These options differ when
 used with other nib shapes.)
+
+<figure><object data="stroke/caps.svg" type="image/svg+xml" width="70%" class="svgfig">Butt and Round Caps</object></figure>
 
 <P> A PS/SVG "Square" cap is a Butt cap extended by the length of the offset
 radius, and therefore half the width of the traced line. The FontForge "Extend
@@ -92,12 +105,16 @@ absolute length or in units of half-stroke-width. The parameter works with the
 Square cap is therefore equivalent to a Butt cap with "Extend Cap" set to 1 in
 half-stroke-width units.
 
+<figure><object data="stroke/extend_cap.svg" type="image/svg+xml" width="70%" class="svgfig">Extend Cap Examples</object></figure>
+
 <H3 id="join">Joins</H3>
 
 When the source contour has a "corner" point with an angle change there will be
 one angle of less than 180 degrees and one greater than 180 degrees. The offset
 lines on the side with the smaller angle will intersect, and the easy solution
 is to trim off the parts of the line past the intersection:
+
+<figure><object data="stroke/join_trimmed.svg" type="image/svg+xml" width="70%" class="svgfig">Offset Trimmed At Join</object></figure>
 
 <P> The offset lines at the larger "reflex" angle do not meet. The line closing
 the gap between those is called a "join".  PostScript specified three join
@@ -115,6 +132,8 @@ join connects the offset curves with an edge corresponding to the shape of the
 nib; when using a round nib this is equivalent to the PS/SVG "Round" join
 option, which connects the offset lines with an arc of the offset radius:
 
+<figure><object data="stroke/joins.svg" type="image/svg+xml" width="90%" class="svgfig">Join Examples</object></figure>
+
 <P> The difference between Miter and Miter Clip is in how "long" joins are
 handled. The "Join Limit" parameter specifies the maximum "length" of a miter
 join.  This limit can be specified either in em-units or (when the nib is
@@ -126,6 +145,8 @@ straight lines.  There is a more complete explanation in the
 section of the SVG specification</A>.  With the Miter style a join that
 exceeds the join limit "falls back" to a Bevel join, while with the Miter Clip
 such a join is clipped at the join limit by a line parallel to the Bevel line:
+
+<figure><object data="stroke/miters.svg" type="image/svg+xml" width="60%" class="svgfig">Miter and Miter Clip</object></figure>
 
 <P> Note, however, that the term "limit" is also somewhat misleading, in that
 a Miter join is <em>never</em> shortened past the Bevel line, which therefore
@@ -142,6 +163,8 @@ parameterized support for "Calligraphic" (rectangular) and Elliptical nibs.
 These nibs are described by Width and Height (called the Major and Minor
 Axes in the case of an ellipse) and a rotation Angle:
 
+<figure><object data="stroke/paramnibs.svg" type="image/svg+xml" width="70%" class="svgfig">Calligraphic and Elliptical Nibs</object></figure>
+
 <H3>General convex nibs</H3>
 
 <P> In contrast with the parameterized nibs, the shape of a Convex nib is
@@ -155,23 +178,25 @@ linear edge, only passes through points also on that edge). Less formally,
 a shape is convex when no edges are concave or "indented".
 
 <P> While these definitions may help, it is probably more useful to focus on
-the specific criteria used by the facility to verify that a contour is convex.
-These criteria are slightly conservative, in that some geometrically convex
+the specific rules used by the facility to verify that a contour is convex.
+These rules are slightly conservative, in that some geometrically convex
 contours fail to meet them. (Such cases are rare in practice, and can anyway
 often be "repaired" by adding some points without (visibly) changing the
-shape.) Note that these criteria apply to a cubic contour.  Although you can
-design a nib as a quadratic or spiro contour, it will be converted to a cubic
-contour prior to use and any problems will be specified in terms of its cubic
-variant.
+shape.) Note that the rules are defined in relation to a cubic contour.
+Although you can design a nib as a quadratic or Spiro contour, it will be
+converted to a cubic contour prior to use and any problems will be reported in
+terms of its cubic variant.
 
-<P> There are two groups of criteria.  The first group restrict the relative
-positions of <em>on-curve</em> points. The points must be arranged as a
-<em>convex polygon</em>, which is a non-self-intersecting (i.e.  "simple")
+<P> There are actually two groups of rules.  The first group restrict the
+relative positions of <em>on-curve</em> points. The points must be arranged as
+a <em>convex polygon</em>, which is a non-self-intersecting (i.e.  "simple")
 polygon of at least 3 points/edges, where all interior angles at the points are
 less than 180 degrees.  These points must be in the form of a closed,
 <em>clockwise</em> contour:
 
-<P> The second group of criteria restrict the relative positions of the control
+<figure><object data="stroke/convexpoly.svg" type="image/svg+xml" width="90%" class="svgfig">Convex Polygons and Exceptions</object></figure>
+
+<P> The second group of rules restrict the relative positions of the control
 points:
 
 <OL>
@@ -186,65 +211,90 @@ points:
       other control point <em>line</em>.
 </OL>
 
-<P> These criteria typically define a triangle (with one excluded edge) where
-one control point can be positioned given the positions of the other points.
-In some cases they define an unbounded region:
+<P> These three rules typically define a triangle (with one excluded edge) where
+one control point can be positioned given the positions of the other points:
+
+<figure><object data="stroke/convexcontrol.svg" type="image/svg+xml" width="90%" class="svgfig">Control Point Rules for Convex Shapes</object></figure>
+
+<P> Aside from the shape, the position of a convex nib relative to the 
+origin has an effect on the output. Parameterized nibs are always centered
+on the origin, which leaves the output in the "same place" as the source
+contour. A nib offset from the origin will cause the output to be offset
+by that amount:
+
+<figure><object data="stroke/uncentered.svg" type="image/svg+xml" width="90%" class="svgfig">Centered and Uncentered Convex Nib Output</object></figure>
 
 <H3>Caps and Joins With Other Nibs</H3>
 
 <P> Earlier versions of FontForge only provided cap and join options for
-circular and elliptical nibs (some of the latter were misleadingly named).  For
-other nibs it automatically closed the cap and join edges with the nib
+circular and elliptical nibs (and some of the latter were misleadingly named).
+For other nibs it automatically closed the cap and join edges with the nib
 shape—equivalent to the current "Nib" cap and join styles.  Given that the Nib
 options produce the shape that would be created by inking and tracing the nib
-on paper, "Nib" is a good default choice.
+on paper, "Nib" is a good default choice:
 
-<P> All cap and join options now work with all nibs, although some work
-differently with different nib types. In general you can choose a style
-based on how it looks when offsetting. To understand why a given cap or
-join has the appearance it does, the rest of this section outlines the
-differences.
+<figure><object data="stroke/nibnib.svg" type="image/svg+xml" width="50%" class="svgfig">Calligraphic nib with Nib Cap and Join</object></figure>
 
-<P> When tracing with a circular nib, the ends of the offset curves at a join
-are always the same distance from the source contour point. This is not true
-for other nibs. The difference lead to unexpected results with Bevel and
-clipped Miter Clip joins, although both are constructed according to the same
-rules.
+<P> The other cap and join options now also work with all nibs. Although some
+"behave" differently with different nib geometries, in general you can choose a
+style based on how it looks when used with a circular nib.  The rest of this
+section describes some differences from the "circular case". 
 
-<P> With any nib the tangent angle at the end of the left and right trace lines
-will be the same as the tangent angle at the end of an open source contour.
-When tracing with a circular nib the ends of the offset curves at a cap are
-also colinear with the end of the source contour. As a result a
-(non-extended) Butt cap will intersect all three points, and the semicircle
-of a round cap can just be drawn directly from one trace line to the other.
-With other nibs many different combinations of ending position are possible.
+<P> When tracing with a circular nib, the angles ends of the offset curves at a
+join are always perpendicular to the line from source contour point. This is
+not true for other nibs. The difference lead to unexpected results with Bevel
+and clipped Miter Clip joins, although both are constructed according to the
+same rules.
 
-<P> In order to make a Butt or Round cap in these cases FontForge never trims
-a trace line; instead it extends one of the lines to match the other. This
-means that Butt and Round caps often extend past the end of the source contour,
-with a distance that depends on the nib shape and the cap angle. If this is
-a problem the Extend Cap option provides one easy solution. The extension
-length is always measured from the end of the source contour, so higher
-values will tend to even out the lengths. At some value (that depends on the
-nib geometry) all cap distances will be the same.
+<figure><object data="stroke/customjoinbevel.svg" type="image/svg+xml" width="60%" class="svgfig">Join Bevel Angle of Custom Nib</object></figure>
 
-<P> The Bevel cap option just draws a line between the ends of the two
-trace lines. With non-circular nibs the line will not generally be
-perpendicular to the tangent line. This option would be an unusual choice
-of final cap style, but is useful in cases where a custom cap will be
-added at a later stage or to see where the trace lines end in a given case.
+<P> No matter what nib you use, at the end of any open contour the tangent
+angle of the left and right lines will be the same as the tangent angle of
+the end of the source contour. However, the <em>length</em> of these lines
+will vary. With a circular nib a Bevel Cap is the same as a Butt Cap; with
+other nibs the Bevel angle differs and the Bevel will often not touch the
+end of the traced contour. (The Bevel cap option just draws a line between the
+ends of the two trace lines.  This option is an unusual choice for a final cap
+style, but may be useful to see where the trace lines end in a given case or 
+as the simplest option for later editing stages.)
 
-<P> A circular nib traces a line of constant width. This means that the
-em-unit and half-span ways of specifying a Join Limit or Extend Cap length
-are basically equivalent: for every value expressed one way there is a
-value expressed the other way that has the same effect. With other nibs the
-width of the curve varies by angle, so the two ways are not equivalent.
-In the case of Extend Cap, the cap width is defined as the span of the
-nib at the end angle—that is, the width of the nib when it is rotated by that
-angle. For Join Limit the "Nib Span" is defined—somewhat artificially—as the
-average of the nib spans at the starting and ending angles of the join.  The
-result is that when using Width/Span-relative values the result will tend
+<figure><object data="stroke/customcapbevel.svg" type="image/svg+xml" width="90%" class="svgfig">Cap Angle of Custom Nib</object></figure>
+
+<P> FontForge will not trim a trace line to make a Butt or Round cap; instead
+it extends one of the lines to match the other. This means that Butt and Round
+caps often extend past the end of the source contour, with a distance that
+depends on the nib shape and the cap angle. If this is a problem the Extend Cap
+option provides one easy solution: The extension length is always measured from
+the end of the source contour, so higher values will tend to even out the
+lengths. At some value—the particular amount depends on the nib and the source
+contours—all cap distances will be the same.
+
+<figure><object data="stroke/extendcapfix.svg" type="image/svg+xml" width="90%" class="svgfig">Standardizing Cap Length with Extend Cap</object></figure>
+
+<P> With a circular nib the em-unit and half-span ways of specifying a Join
+Limit or Extend Cap length are basically equivalent: for every value expressed
+one way there is a value expressed the other way that has the same effect.
+With other nibs the width of the curve varies by angle, breaking this
+equivalence.  In the case of Extend Cap, the cap width is defined as the span
+of the nib at the end angle—that is, the width of the nib when it is rotated by
+that angle.  For Join Limit the "Nib Span" is defined—somewhat artificially—as
+the average of the nib spans at the starting and ending angles of the join.
+The result is that when using Width/Span-relative values the result will tend
 to scale with the stroke width at the join or cap.
+
+<figure><object data="stroke/extendcapdiff.svg" type="image/svg+xml" width="90%" class="svgfig">Relative and Length-based Extend Cap with Custom Nibs</object></figure>
+
+<H3>Multi-Nibs and "Pseudo-Concavity"</H3>
+
+<P> Although a nib will typically consist of a single convex contour,
+the nib <CODE>foreground</CODE> layer can contain multiple contours
+as long as each conforms to the shape rules. Each source contour will
+be traced with each nib contour and then combined. 
+
+<P> Because the nib contours can overlap, you can simulate a concave
+nib by splitting the shape into convex sub-shapes and putting each in
+its own contour. When doing this it is best if the contours actually
+overlap where they meet rather than just "touch". 
 
 <H2 id="parameters">Other Parameters</H2>
 
@@ -262,6 +312,8 @@ reasonable choice even you plan to round-to-integer later, although a value of
 Stroke algorithms are generally fast, the benefit of lower accuracy is not
 speed but fewer points/splines in the output.
 
+<figure><object data="stroke/accuracytarget.svg" type="image/svg+xml" width="70%" class="svgfig">Outputs with Different Accuracy Targets</object></figure>
+
 <H3>Remove Overlap</H3>
 
 <P> The core algorithm of Expand Stroke calculates the "generalized offset
@@ -278,6 +330,8 @@ it can therefore be helpful to "undo" and run Expand Stroke again without
 Remove Overlap to see what the problem might be. (And you may be able to fix
 the problem area by hand and then run Remove Overlap on the rest, and get your
 output without having to wait for a software fix.)
+
+<figure><object data="stroke/removeoverlap.svg" type="image/svg+xml" width="80%" class="svgfig">Outputs with Different Remove Overlap Settings</object></figure>
 
 <H3>Remove Internal and Remove External</H3>
 
@@ -299,6 +353,8 @@ by <em>2r</em>—the diameter of the nib. Choosing Remove External analogously
 decreases the weight by <em>2r</em>, assuming it is thicker than that at all
 points. (FontForge's Change Weight facility uses Expand Stroke with these
 options.)
+
+<figure><object data="stroke/intext.svg" type="image/svg+xml" width="80%" class="svgfig">Example of Remove Internal and Remove External</object></figure>
 
 <H3>Add Extrema and Simplify</H3>
 

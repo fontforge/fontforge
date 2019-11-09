@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<?xml-stylesheet href="../ff_svg_fig.css" type="text/css" title="FontForge SVG stylesheet" alternate="no" media="screen"?>
+<svg baseProfile="full" height="100%" version="1.1" viewBox="-84,529,891,452" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs/>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="687.189453125" x2="565.1845703125" y1="595.9423828125" y2="703.5947265625"/>
+    <g class="ff_offp_post" transform="translate(565.1845703125,703.5947265625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="437.828125" x2="480.767578125" y1="939.9755859375" y2="818.818359375"/>
+    <g class="ff_offp_pre" transform="translate(480.767578125,818.818359375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="558.568359375" x2="581.7548828125" y1="960.0" y2="902.611328125"/>
+    <g class="ff_offp_post" transform="translate(581.7548828125,902.611328125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="667.0146484375" x2="617.6015625" y1="786.447265625" y2="844.5068359375"/>
+    <g class="ff_offp_pre" transform="translate(617.6015625,844.5068359375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="192.7900390625" x2="70.7841796875" y1="595.9423828125" y2="703.5947265625"/>
+    <g class="ff_offp_post" transform="translate(70.7841796875,703.5947265625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="-56.572265625" x2="-13.6328125" y1="939.9755859375" y2="818.818359375"/>
+    <g class="ff_offp_pre" transform="translate(-13.6328125,818.818359375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="64.16796875" x2="87.37109375" y1="960.0" y2="902.6181640625"/>
+    <g class="ff_offp_post" transform="translate(87.37109375,902.6181640625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="172.6142578125" x2="123.2021484375" y1="786.447265625" y2="844.5068359375"/>
+    <g class="ff_offp_pre" transform="translate(123.2021484375,844.5068359375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g>
+    <rect class="ff_onp ff_corner ff_first ff_extremum" height="12" transform="translate(787.2001953125,959.9345703125)" width="12" x="-6" y="-6"/>
+    <g transform="translate(787.2001953125,959.9345703125) rotate(-90.06120404832458)">
+      <line class="ff_arrow" x1="0" x2="10" y1="-10" y2="-10"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-7"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-13"/>
+    </g>
+  </g>
+  <rect class="ff_onp ff_corner" height="12" transform="translate(786.859375,640.8779296875)" width="12" x="-6" y="-6"/>
+  <rect class="ff_onp ff_corner" height="12" transform="translate(786.7822265625,569.244140625)" width="12" x="-6" y="-6"/>
+  <rect class="ff_onp ff_corner ff_extremum" height="12" transform="translate(740.89453125,548.5556640625)" width="12" x="-6" y="-6"/>
+  <polygon class="ff_onp ff_tangent" points="0,-9 9,0 0,9" transform="translate(687.189453125,595.9423828125) rotate(138.57607651827215)"/>
+  <polygon class="ff_onp ff_tangent" points="0,-9 9,0 0,9" transform="translate(437.828125,939.9755859375) rotate(289.51488625223925)"/>
+  <rect class="ff_onp ff_corner ff_extremum" height="12" transform="translate(430.7314453125,960.0)" width="12" x="-6" y="-6"/>
+  <g>
+    <rect class="ff_onp ff_corner ff_first ff_extremum" height="12" transform="translate(558.568359375,960.0)" width="12" x="-6" y="-6"/>
+    <g transform="translate(558.568359375,960.0) rotate(-68.0000043479084)">
+      <line class="ff_arrow" x1="0" x2="10" y1="-10" y2="-10"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-7"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-13"/>
+    </g>
+  </g>
+  <rect class="ff_onp ff_corner ff_extremum" height="12" transform="translate(667.0146484375,786.447265625)" width="12" x="-6" y="-6"/>
+  <rect class="ff_onp ff_corner ff_extremum" height="12" transform="translate(667.2001953125,960.0654296875)" width="12" x="-6" y="-6"/>
+  <g>
+    <rect class="ff_onp ff_corner ff_first ff_extremum" height="12" transform="translate(292.7998046875,959.9345703125)" width="12" x="-6" y="-6"/>
+    <g transform="translate(292.7998046875,959.9345703125) rotate(-90.06120404832458)">
+      <line class="ff_arrow" x1="0" x2="10" y1="-10" y2="-10"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-7"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-13"/>
+    </g>
+  </g>
+  <rect class="ff_onp ff_corner" height="12" transform="translate(292.458984375,640.8779296875)" width="12" x="-6" y="-6"/>
+  <rect class="ff_onp ff_corner ff_extremum" height="12" transform="translate(192.7900390625,595.9423828125)" width="12" x="-6" y="-6"/>
+  <polygon class="ff_onp ff_tangent" points="0,-9 9,0 0,9" transform="translate(-56.572265625,939.9755859375) rotate(289.51488625223925)"/>
+  <rect class="ff_onp ff_corner ff_extremum" height="12" transform="translate(-63.6689453125,960.0)" width="12" x="-6" y="-6"/>
+  <g>
+    <rect class="ff_onp ff_corner ff_first ff_extremum" height="12" transform="translate(64.16796875,960.0)" width="12" x="-6" y="-6"/>
+    <g transform="translate(64.16796875,960.0) rotate(-67.98338507611116)">
+      <line class="ff_arrow" x1="0" x2="10" y1="-10" y2="-10"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-7"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-13"/>
+    </g>
+  </g>
+  <rect class="ff_onp ff_corner ff_extremum" height="12" transform="translate(172.6142578125,786.447265625)" width="12" x="-6" y="-6"/>
+  <rect class="ff_onp ff_corner ff_extremum" height="12" transform="translate(172.7998046875,960.0654296875)" width="12" x="-6" y="-6"/>
+  <rect class="ff_onp ff_corner ff_first ff_extremum" height="12" transform="translate(64.16796875,960.0)" width="12" x="-6" y="-6"/>
+  <rect class="ff_onp ff_corner ff_first ff_extremum" height="12" transform="translate(-63.6689453125,960.0)" width="12" x="-6" y="-6"/>
+  <rect class="ff_onp ff_corner ff_first ff_extremum" height="12" transform="translate(558.568359375,960.0)" width="12" x="-6" y="-6"/>
+  <rect class="ff_onp ff_corner ff_first ff_extremum" height="12" transform="translate(430.7314453125,960.0)" width="12" x="-6" y="-6"/>
+  <path class="ff_main_background" d="M0.0 960.0C38.6474609375 850.9521484375 116.009765625 743.693359375 232.458984375 640.943359375L232.7998046875 960.0M494.400390625 960.0C533.046875 850.9521484375 610.41015625 743.693359375 726.859375 640.943359375L727.2001953125 960.0"/>
+  <path class="ff_main_closed" d="M787.2001953125 959.9345703125L786.859375 640.8779296875L786.7822265625 569.244140625L740.89453125 548.5556640625L687.189453125 595.9423828125C565.1845703125 703.5947265625 480.767578125 818.818359375 437.828125 939.9755859375L430.7314453125 960.0M558.568359375 960.0C581.7548828125 902.611328125 617.6015625 844.5068359375 667.0146484375 786.447265625L667.2001953125 960.0654296875M292.7998046875 959.9345703125L292.458984375 640.8779296875L192.7900390625 595.9423828125C70.7841796875 703.5947265625 -13.6328125 818.818359375 -56.572265625 939.9755859375L-63.6689453125 960.0M64.16796875 960.0C87.37109375 902.6181640625 123.2021484375 844.5068359375 172.6142578125 786.447265625L172.7998046875 960.0654296875M64.16796875 960.0M-63.6689453125 960.0M558.568359375 960.0M430.7314453125 960.0"/>
+  <text class="ff_label" y="605" x="330">Miter, Join Limit: 3</text>
+  <text class="ff_label" y="560" x="600">Miter Clip, Join Limit: 3</text>
+</svg>
