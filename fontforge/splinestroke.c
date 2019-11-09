@@ -347,6 +347,8 @@ enum ShapeType NibIsValid(SplineSet *ss) {
 	return Shape_NotClosed;
     if ( !SplinePointListIsClockwise(ss) )
 	return Shape_CCW;
+    if ( ss->first->next->order2 )
+	return Shape_Quadratic;
 
     s = ss->first->prev;
     last_angle = atan2(s->to->me.y - s->from->me.y,
@@ -441,6 +443,8 @@ const char *NibShapeTypeMsg(enum ShapeType st) {
 	         "all on-curve points must bend or curve clockwise.");
       case Shape_TooFewPoints:
 	return _("A nib must have at least three on-curve points.");
+      case Shape_Quadratic:
+	return _("The contour is quadratic; a nib must be a cubic contour.");
       case Shape_NotClosed:
 	return _("The contour is open; a nib must be closed.");
       case Shape_TinySpline:
@@ -1922,21 +1926,10 @@ SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
     trans[0] = trans[3] = 1;
     first = last = NULL;
     for ( nib=nibs; nib!=NULL; nib=nib->next ) {
-	int reversed = false;
-	if ( !SplinePointListIsClockwise(nib) ) {
-	    assert( 0 );
-	    reversed = true;
-	    SplineSetReverse(nib);
-	}
+	assert( NibIsValid(nib)==Shape_Convex );
 	c.nib = nib;
 	BuildNibCorners(&c.nibcorners, nib, &max_pc, &c.n);
 	cur = SplineSets_Stroke(ss,&c,order2);
-	if ( reversed ) {
-	    SplineSet *ss;
-	    for ( ss=cur; ss!=NULL; ss=ss->next )
-		SplineSetReverse(ss);
-	    SplineSetReverse(nib);
-	}
         if ( first==NULL )
 	    first = last = cur;
 	else
