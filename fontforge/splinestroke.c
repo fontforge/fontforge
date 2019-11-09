@@ -55,7 +55,6 @@
 #define MIN_ACCURACY (1e-5)
 
 #define NORMANGLE(a) ((a)>FF_PI?(a)-2*FF_PI:(a)<-FF_PI?(a)+2*FF_PI:(a))
-#define SIGNOF(a) ((0 < (a)) - ((a) < 0))
 #define BPNEAR(bp1, bp2) BPWITHIN(bp1, bp2, INTRASPLINE_MARGIN)
 #define BP_DIST(bp1, bp2) sqrt(pow((bp1).x-(bp2).x,2)+pow((bp1).y-(bp2).y,2))
 
@@ -122,31 +121,19 @@ StrokeInfo *InitializeStrokeInfo(StrokeInfo *sip) {
     if ( sip==NULL )
 	sip = malloc(sizeof(StrokeInfo));
 
-    *sip = (StrokeInfo) {
-        25.0,         // radius
-        lj_nib,       // line_join
-        lc_nib,       // line_cap
-        si_round,     // pen type
-        srmov_layer,  // remove overlap style
-        false,        // removeinternal
-        false,        // removeexternal
-	true,         // simplify
-	true,         // extrema
-        false,        // leave users center
-        true,         // jlrelative
-        true,         // ecrelative
-        0.0,          // pen angle
-        0.0,          // minor radius (0: major)
-	0.0,          // extend cap
-	20.0,         // join limit
-	0.25,         // accuracy target
-        NULL,         // nib (SplineSet for si_nib)
-        0.0,          // freehand: radius 2
-        0.0,          // freehand: pressure 1
-        0.0,          // freehand: pressure 2
-        NULL,         // data
-        NULL          // factor
-    };
+    memset(sip, 0, sizeof(StrokeInfo));
+
+    sip->radius = 25.0;
+    sip->join = lj_nib;
+    sip->cap = lc_nib;
+    sip->stroke_type = si_round;
+    sip->rmov = srmov_layer;
+    sip->simplify = true;
+    sip->extrema = true;
+    sip->jlrelative = true;
+    sip->ecrelative = true;
+    sip->joinlimit = 20.0;
+    sip->accuracy_target = 0.25;
 
     return sip;
 }
@@ -278,7 +265,7 @@ static int LineSameSide(BasePoint l1, BasePoint l2, BasePoint p, BasePoint r,
 
     if ( RealWithin(tp, 0, 1e-5) )
 	return on_line_ok;
-    return SIGNOF(tr)==SIGNOF(tp);
+    return signbit(tr)==signbit(tp);
 }
 
 static void SplineSetLineTo(SplineSet *cur, BasePoint xy) {
@@ -409,26 +396,26 @@ enum ShapeType NibIsValid(SplineSet *ss) {
 	    s->from->nextcpselected = true;
 	    if ( LineSameSide(s->from->me, s->to->me, s->from->nextcp,
 	                      s->from->prev->from->me, true) )
-		return Shape_BadCP;
+		return Shape_BadCP_R1;
 	    if ( !LineSameSide(lref_cp, s->from->me,
 	                       s->from->nextcp, s->to->me, true) )
-		return Shape_BadCP;
+		return Shape_BadCP_R2;
 	    if ( !LineSameSide(s->to->me, s->to->prevcp,
 	                       s->from->nextcp, s->from->me, true) )
-		return Shape_BadCP;
+		return Shape_BadCP_R3;
 	    s->from->nextcpselected = false;
 	    s->from->selected = false;
 	    s->to->selected = true;
 	    s->to->prevcpselected = true;
 	    if ( LineSameSide(s->from->me, s->to->me, s->to->prevcp,
 	                      s->to->next->to->me, false) )
-		return Shape_BadCP;
+		return Shape_BadCP_R1;
 	    if ( !LineSameSide(s->to->me, s->to->next->to->me,
 	                       s->to->prevcp, s->from->me, true) )
-		return Shape_BadCP;
+		return Shape_BadCP_R2;
 	    if ( !LineSameSide(s->from->me, s->from->nextcp,
 	                       s->to->prevcp, s->to->me, true) )
-		return Shape_BadCP;
+		return Shape_BadCP_R3;
 	    s->to->prevcpselected = false;
 	    s->to->selected = false;
 	    lref_cp = s->to->prevcp;
@@ -441,32 +428,41 @@ enum ShapeType NibIsValid(SplineSet *ss) {
 }
 
 const char *NibShapeTypeMsg(enum ShapeType st) {
-    if ( st==Shape_CCW )
+    switch (st) {
+      case Shape_CCW:
 	return _("The contour winds counter-clockwise; "
 	         "a nib must wind clockwise.");
-    else if ( st==Shape_CCWTurn )
+      case Shape_CCWTurn:
 	return _("The contour bends or curves counter-clockwise "
 	         "at the selected point; "
 	         "all on-curve points must bend or curve clockwise.");
-    else if ( st==Shape_PointOnEdge )
+      case Shape_PointOnEdge:
 	return _("The selected point is on a line; "
 	         "all on-curve points must bend or curve clockwise.");
-    else if ( st==Shape_TooFewPoints )
+      case Shape_TooFewPoints:
 	return _("A nib must have at least three on-curve points.");
-    else if ( st==Shape_NotClosed )
+      case Shape_NotClosed:
 	return _("The contour is open; a nib must be closed.");
-    else if ( st==Shape_TinySpline )
+      case Shape_TinySpline:
 	return _("The selected point is the start of a 'tiny' spline; "
 	         "splines that small may cause inaccurate calculations.");
-    else if ( st==Shape_HalfLinear )
+      case Shape_HalfLinear:
 	return _("The selected point starts a spline with one control point; "
 	         "nib splines need a defined slope at both points.");
-    else if ( st==Shape_BadCP )
-	return _("The selected control point is out of bounds.");
-    else if ( st==Shape_SelfIntersects )
+      case Shape_BadCP_R1:
+	return _("The selected control point's position violates Rule 1 "
+	         "(see documentation).");
+      case Shape_BadCP_R2:
+	return _("The selected control point's position violates Rule 2 "
+	         "(see documentation).");
+      case Shape_BadCP_R3:
+	return _("The selected control point's position violates Rule 3 "
+	         "(see documentation).");
+      case Shape_SelfIntersects:
 	return _("The contour intersects itself; a nib must non-intersecting.");
-    else if ( st!=Shape_Convex )
+      case Shape_Convex:
 	return _("Unrecognized nib shape error.");
+    }
 
     return NULL;
 }
@@ -484,10 +480,8 @@ static void BuildNibCorners(NibCorner **ncp, SplineSet *nib, int *maxp,
     for ( sp=nib->first, i=0; ; ) {
 	if ( i==*maxp ) { // We guessed wrong
 	    *maxp *= 2;
-	    tpc = calloc(*maxp, sizeof(NibCorner));
-	    memcpy(tpc, nc, (i-1)*sizeof(NibCorner));
-	    free(nc);
-	    nc = tpc;
+	    nc = realloc(nc, *maxp * sizeof(NibCorner));
+	    memset(nc+i, 0, (*maxp-i) * sizeof(NibCorner));
 	}
 	nc[i].on_nib = sp;
 	nc[i].linear = SplineIsLinear(sp->next);
@@ -506,12 +500,14 @@ static void BuildNibCorners(NibCorner **ncp, SplineSet *nib, int *maxp,
     *n = i;
 
     // Put in order of decreasing utanvec[NC_IN_IDX]
+    assert( max_utan_index != -1 );
     if (max_utan_index != 0) {
 	tpc = malloc(i*sizeof(NibCorner));
 	memcpy(tpc, nc+max_utan_index, (i-max_utan_index)*sizeof(NibCorner));
 	memcpy(tpc+(i-max_utan_index), nc, max_utan_index*sizeof(NibCorner));
 	free(nc);
 	nc = tpc;
+	*maxp = i;
     }
 
     *ncp = nc;
@@ -1035,11 +1031,11 @@ int GenStrokeTracePoints(void *vinfo, bigreal t_fm, bigreal t_to,
 		return 0;
 	    }
 	} else {
-#ifndef NODEBUG
+#ifndef NDEBUG
 	; // Could add consistency asserts for shorter passes here
 #else
 	;
-#endif // NODEBUG
+#endif // NDEBUG
 	}
 	if ( stip->starts_on_cusp ) // Cusp tangent point the other way
 	    fp[i].ut = BP_REV(fp[i].ut);
@@ -1634,8 +1630,13 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
 	    SplineSetJoin(left, true, FIXUP_MARGIN, &closed);
 	    if ( !closed )
 		LogError( _("Warning: Contour start did not close\n") );
-	    else if ( c->rmov==srmov_contour )
-		left = SplineSetRemoveOverlap(NULL,left,over_remove);
+	    else {
+		if ( c->rmov==srmov_contour )
+		    left = SplineSetRemoveOverlap(NULL,left,over_remove);
+		// Open paths don't always result in clockwise output
+		if ( !SplinePointListIsClockwise(left) )
+		    SplineSetReverse(left);
+	    }
 	}
 	cur = left;
 	left = NULL;
