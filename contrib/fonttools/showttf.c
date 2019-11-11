@@ -3128,7 +3128,7 @@ static char *getfeaturename(struct ttfinfo *info, int type) {
     }
     if ( name!=NULL )
 return( name );
-/* This list is taken from http://developer.apple.com/fonts/Registry/index.html*/
+/* This list is taken from https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html */
 return( (char *)((
 	type==0 ? "All typographic features" :
 	type==1 ? "Ligature" :
@@ -3156,13 +3156,25 @@ return( (char *)((
 	type==24 ? "Annotation" :
 	type==25 ? "Kana Spacing" :
 	type==26 ? "Ideographic Spacing" :
-	type==27 ? "?Accented leters (undocumented)?" :
+	type==27 ? "Unicode Decomposition" :
+	type==28 ? "Ruby Kana" :
+	type==29 ? "CJK Symbol Alternatives" :
+	type==30 ? "Ideographic Alternatives" :
+	type==31 ? "CJK Vertical Roman Placement" :
+	type==32 ? "Italic CJK Roman" :
+	type==33 ? "Case Sensitive Layout" :
+	type==34 ? "Alternate Kana" :
+	type==35 ? "Stylistic Alternatives" :
+	type==36 ? "Contextual Alternates" :
+	type==37 ? "Lower Case" :
+	type==38 ? "Upper Case" :
+	type==39 ? "Language Tag" :
 	type==103 ? "CJK Roman spacing" :
 /* Compatability (deprecated) ... */
-	type==100 ? "(adobe) Character Spacing" :
-	type==101 ? "(adobe) Kana Spacing" :
-	type==102 ? "(adobe) Kanji Spacing" :
-	type==104 ? "(adobe) Square Ligatures" :
+	type==100 ? "(Adobe) Character Spacing" :
+	type==101 ? "(Adobe) Kana Spacing" :
+	type==102 ? "(Adobe) Kanji Spacing" :
+	type==104 ? "(Adobe) Square Ligatures" :
 /* End */
 	type==16000 ? "?Decompose Unicode (undocumented)?" :
 	type==16001 ? "?Combining character (undocumented)?" :
@@ -3185,10 +3197,10 @@ static char *getsettingname(struct ttfinfo *info, int type, int setting) {
     }
     if ( name )
 return( name );
-/* These lists are taken from http://developer.apple.com/fonts/Registry/index.html */
+/* These lists are taken from https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html */
 /*  the numeric values are at the bottom of the page */
     else switch ( type ) {
-      case 0:
+      case 0:	/* All Typographic Features */
 return( (char *)((
 	setting==0 ? "On" :
 	setting==1 ? "Off" :
@@ -3206,12 +3218,18 @@ return( (char *)((
 	setting==7 ? "Logos Off" :
 	setting==8 ? "Rebus pictures On" :
 	setting==9 ? "Rebus pictures Off" :
-	setting==10 ? "Dipthong ligatures On" :
-	setting==11 ? "Dipthong ligatures Off" :
+	setting==10 ? "Diphthong ligatures On" :
+	setting==11 ? "Diphthong ligatures Off" :
 	setting==12 ? "Squared ligatures On" :
 	setting==13 ? "Squared ligatures Off" :
 	setting==14 ? "Squared ligatures, abbreviated On" :
 	setting==15 ? "Squared ligatures, abbreviated Off" :
+	setting==16 ? "Symbol ligatures On" :
+	setting==17 ? "Symbol ligatures Off" :
+	setting==18 ? "Contextual ligatures On" :
+	setting==19 ? "Contextual ligatures Off" :
+	setting==20 ? "Historical ligatures On" :
+	setting==21 ? "Historical ligatures Off" :
 	    "Unknown")) );
       break;
       case 2:	/* cursive */
@@ -3245,8 +3263,10 @@ return( (char *)((
       break;
       case 6:	/* Number spacing */
 return( (char *)((
-	setting==0 ? "On" :
-	setting==1 ? "Off" :
+	setting==0 ? "Monospaced Numbers" :
+	setting==1 ? "Proportional Numbers" :
+	setting==2 ? "Third-width Numerals" :
+	setting==3 ? "Quarter-width Numerals" :
 	    "Unknown")) );
       break;
       case 8:	/* Smart swash */
@@ -3276,6 +3296,7 @@ return( (char *)((
 	setting==1 ? "superiors" :
 	setting==2 ? "inferiors" :
 	setting==3 ? "ordinals" :
+	setting==4 ? "scientific inferiors" :
 	    "Unknown")) );
       break;
       case 11:	/* fractions */
@@ -3319,6 +3340,8 @@ return( (char *)((
 	setting==7 ? "inequality ligatures Off" :
 	setting==8 ? "exponents On" :
 	setting==9 ? "exponents Off" :
+	setting==10 ? "mathematical Greek Off" :
+	setting==11 ? "mathematical Greek Off" :
 	    "Unknown")) );
       break;
       case 16:	/* ornament sets */
@@ -3360,15 +3383,19 @@ return( (char *)((
 return( (char *)((
 	setting==0 ? "traditional characters" :
 	setting==1 ? "simplified characters" :
-	setting==2 ? "jis1978 characters" :
-	setting==3 ? "jis1983 characters" :
-	setting==4 ? "jis1990 characters" :
+	setting==2 ? "JIS1978 characters" :
+	setting==3 ? "JIS1983 characters" :
+	setting==4 ? "JIS1990 characters" :
 	setting==5 ? "traditional alt 1" :
 	setting==6 ? "traditional alt 2" :
 	setting==7 ? "traditional alt 3" :
 	setting==8 ? "traditional alt 4" :
 	setting==9 ? "traditional alt 5" :
 	setting==10 ? "expert characters" :
+	setting==11 ? "JIS2004 characters" :
+	setting==12 ? "hojo characters" :
+	setting==13 ? "NLC characters" :
+	setting==14 ? "traditional name characters" :
 	    "Unknown")) );
       break;
       case 21:	/* number case */
@@ -3382,7 +3409,10 @@ return( (char *)((
 	setting==0 ? "proportional" :
 	setting==1 ? "monospace" :
 	setting==2 ? "halfwidth" :
-	setting==3 ? "normally spaced" :
+	setting==3 ? "third-width" :
+	setting==4 ? "quarter-width" :
+	setting==5 ? "alternate proportional" :
+	setting==6 ? "alternate halfwidth" :
 	    "Unknown")) );
       break;
       case 23:	/* transliteration */
@@ -3397,7 +3427,6 @@ return( (char *)((
 	setting==7 ? "hanja to hangul alt 1" :
 	setting==8 ? "hanja to hangul alt 2" :
 	setting==9 ? "hanja to hangul alt 3" :
-	setting==10 ? "expert characters" :
 	    "Unknown")) );
       break;
       case 24:	/* anotation */
@@ -3411,6 +3440,8 @@ return( (char *)((
 	setting==6 ? "period annotation" :
 	setting==7 ? "roman numeral annotation" :
 	setting==8 ? "diamond annotation" :
+	setting==9 ? "inverted box annotation" :
+	setting==10 ? "inverted rounded box annotation" :
 	"Unknown")) );
       break;
       case 25:	/* kana spacing */
@@ -3423,12 +3454,124 @@ return( (char *)((
 return( (char *)((
 	setting==0 ? "full width ideograph" :
 	setting==1 ? "proportional ideograph" :
+	setting==2 ? "half width ideograph" :
 	"Unknown")) );
       break;
-      case 27:	/* Accented letters (determined empirically) */
+      case 27:	/* Unicode Decomposition */
 return( (char *)((
-	setting==0 ? "On" :
-	setting==1 ? "Off" :
+	setting==0 ? "Canonical Composition On" :
+	setting==1 ? "Canonical Composition Off" :
+	setting==2 ? "Compatibility Composition On" :
+	setting==3 ? "Compatibility Composition Off" :
+	setting==4 ? "Transcoding Composition On" :
+	setting==5 ? "Transcoding Composition Off" :
+	"Unknown")) );
+      break;
+      case 28:	/* Ruby Kana */
+return( (char *)((
+	setting==0 ? "No Ruby Kana" :
+	setting==1 ? "Ruby Kana" :
+	setting==2 ? "Ruby Kana On" :
+	setting==3 ? "Ruby Kana Off" :
+	"Unknown")) );
+      break;
+      case 29:	/* CJK Symbol Alternatives */
+return( (char *)((
+	setting==0 ? "No CJK Symbol Alternatives" :
+	setting==1 ? "CJK Symbol Alt One" :
+	setting==2 ? "CJK Symbol Alt Two" :
+	setting==3 ? "CJK Symbol Alt Three" :
+	setting==4 ? "CJK Symbol Alt Four" :
+	setting==5 ? "CJK Symbol Alt Five" :
+	"Unknown")) );
+      break;
+      case 30:	/* Ideographic Alternatives */
+return( (char *)((
+	setting==0 ? "No Ideographic Alternatives" :
+	setting==1 ? "Ideographic Alt One" :
+	setting==2 ? "Ideographic Alt Two" :
+	setting==3 ? "Ideographic Alt Three" :
+	setting==4 ? "Ideographic Alt Four" :
+	setting==5 ? "Ideographic Alt Five" :
+	"Unknown")) );
+      break;
+      case 31:	/* CJK Vertical Roman Placement */
+return( (char *)((
+	setting==0 ? "CJK Vertical Roman Centered" :
+	setting==1 ? "CJK Vertical Roman H Baseline" :
+	"Unknown")) );
+      break;
+      case 32:	/* Italic CJK Roman */
+return( (char *)((
+	setting==0 ? "No Italic CJK Roman" :
+	setting==1 ? "Italic CJK Roman" :
+	setting==2 ? "Italic CJK Roman On" :
+	setting==3 ? "Italic CJK Roman Off" :
+	"Unknown")) );
+      break;
+      case 33:	/* Case Sensitive Layout */
+return( (char *)((
+	setting==0 ? "Case Sensitive Layout On" :
+	setting==1 ? "Case Sensitive Layout Off" :
+	setting==2 ? "Case Sensitive Spacing On" :
+	setting==3 ? "Case Sensitive Spacing Off" :
+	"Unknown")) );
+      break;
+      case 34:	/* Alternate Kana */
+return( (char *)((
+	setting==0 ? "Alternate Horiz Kana On" :
+	setting==1 ? "Alternate Horiz Kana Off" :
+	setting==2 ? "Alternate Vert Kana On" :
+	setting==3 ? "Alternate Vert Kana Off" :
+	"Unknown")) );
+      break;
+      case 35:	/* Stylistic Alternatives */
+return( (char *)((
+	setting==0 ? "No Stylistic Alternates" :
+	setting==1 ? "Stylistic Alt One" :
+	setting==2 ? "Stylistic Alt Two" :
+	setting==3 ? "Stylistic Alt Three" :
+	setting==4 ? "Stylistic Alt Four" :
+	setting==5 ? "Stylistic Alt Five" :
+	setting==6 ? "Stylistic Alt Six" :
+	setting==7 ? "Stylistic Alt Seven" :
+	setting==8 ? "Stylistic Alt Eight" :
+	setting==9 ? "Stylistic Alt Nine" :
+	setting==10 ? "Stylistic Alt Ten" :
+	setting==11 ? "Stylistic Alt Eleven" :
+	setting==12 ? "Stylistic Alt Twelve" :
+	setting==13 ? "Stylistic Alt Thirteen" :
+	setting==14 ? "Stylistic Alt Fourteen" :
+	setting==15 ? "Stylistic Alt Fifteen" :
+	setting==16 ? "Stylistic Alt Sixteen" :
+	setting==17 ? "Stylistic Alt Seventeen" :
+	setting==18 ? "Stylistic Alt Eighteen" :
+	setting==19 ? "Stylistic Alt Nineteen" :
+	setting==20 ? "Stylistic Alt Twenty" :
+	"Unknown")) );
+      break;
+      case 36:	/* Contextual Alternates */
+return( (char *)((
+	setting==0 ? "Contextual Alternates On" :
+	setting==1 ? "Contextual Alternates Off" :
+	setting==2 ? "Swash Alternates On" :
+	setting==3 ? "Swash Alternates Off" :
+	setting==2 ? "Contextual Swash Alternates On" :
+	setting==3 ? "Contextual Swash Alternates Off" :
+	"Unknown")) );
+      break;
+      case 37:	/* Lower Case */
+return( (char *)((
+	setting==0 ? "Default Lower Case" :
+	setting==1 ? "Lower Case Small Caps" :
+	setting==2 ? "Lower Case Petite Caps" :
+	"Unknown")) );
+      break;
+      case 38:	/* Upper Case */
+return( (char *)((
+	setting==0 ? "Default Upper Case" :
+	setting==1 ? "Upper Case Small Caps" :
+	setting==2 ? "Upper Case Petite Caps" :
 	"Unknown")) );
       break;
       case 103:	/* CJK Spacing */
