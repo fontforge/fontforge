@@ -91,6 +91,7 @@ if(ENABLE_NATIVE_SCRIPTING)
   add_ff_test(test136.pe "test136.fea"                                             "Re-using mark filtering set")
   add_ff_test(test137.pe "Ambrosia.sfd"                                            "file:// protocol")
   add_ff_test(test138.pe                                                           "Array sanity checking")
+  add_ff_test(test139.pe "StrokeTests.sfd"                                            "ExpandStroke parameters")
 endif()
 
 if(ENABLE_PYTHON_SCRIPTING_RESULT)

@@ -1142,7 +1142,7 @@ static PyObject *PyFF_GetScriptPath(PyObject *UNUSED(self), PyObject *UNUSED(arg
 
 static PyObject *PyFF_GetUserConfigPath(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
     PyObject *ret;
-    const char *userdir;
+    char *userdir;
 
     userdir = getFontForgeUserDir(Config);
     ret=Py_BuildValue("s",userdir);
@@ -4508,8 +4508,9 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
 	    }
 	}
     } else if (    strcmp(str, "calligraphic")==0
+                || strcmp(str, "rectangular")==0
                 || strcmp(str, "caligraphic")==0
-                || strcmp(str, "rectangular")==0 ) {
+                || strcmp(str, "square")==0 ) {
 	si->stroke_type = si_calligraphic;
 	if ( !PyArg_ParseTupleAndKeywords(args, keywds,
                 "sdd|dss" STROKE_OPTFORMAT, strokekey_rect, &type,
@@ -4527,6 +4528,7 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
 	    }
 	}
     } else if (    strcmp(str, "convex")==0
+                || strcmp(str, "poly")==0
                 || strcmp(str, "polygonal")==0 ) {
 	si->stroke_type = si_nib;
 	if ( !PyArg_ParseTupleAndKeywords(args, keywds,

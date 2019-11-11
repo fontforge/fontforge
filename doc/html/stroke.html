@@ -182,10 +182,15 @@ the specific rules used by the facility to verify that a contour is convex.
 These rules are slightly conservative, in that some geometrically convex
 contours fail to meet them. (Such cases are rare in practice, and can anyway
 often be "repaired" by adding some points without (visibly) changing the
-shape.) Note that the rules are defined in relation to a cubic contour.
-Although you can design a nib as a quadratic or Spiro contour, it will be
-converted to a cubic contour prior to use and any problems will be reported in
-terms of its cubic variant.
+shape.)
+
+<P> Note: These rules are defined in relation to a cubic contour.  Although you
+can design a nib as a quadratic contour, you must switch the layer to "Cubic"
+before applying Expand Stroke. (Or, in the API, you must convert the contour or
+layer prior to calling the <CODE>stroke</CODE> method or
+<CODE>ExpandStroke</CODE> function.) In contrast, when using a Spiro nib on a
+Cubic layer it is not nececessary to switch into Bezier mode. However, it can
+still be a good idea to do so to better understand any reported errors. 
 
 <P> There are actually two groups of rules.  The first group restrict the
 relative positions of <em>on-curve</em> points. The points must be arranged as
