@@ -585,8 +585,8 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
     GWindow gw;
     GWindowAttrs wattrs;
     SplineSet *nib_bk = NULL;
-    GGadgetCreateData gcd[51], boxes[7], *buttons[13], *mainarray[10][2],
-	    *overlaparray[10], *split[13][6], *checkarray[3][4],
+    GGadgetCreateData gcd[51], boxes[7], *buttons[13], *mainarray[11][2],
+	    *overlaparray[10], *split[13][6], *checkarray[3][4], *lit[13][6],
 	    *jlexarray[3][8];
     GTextInfo label[51];
     int i, gcdoff, mi, sp, tfpos[6];
@@ -640,7 +640,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.cid = CID_Nib;
 	gcd[gcdoff].gd.u.drawable_e_h = stroke_sub_e_h;
 	gcd[gcdoff++].creator = GDrawableCreate;
-	split[sp][0] = &gcd[gcdoff-1]; split[sp][1] = GCD_ColSpan;
+	split[sp][0] = &gcd[gcdoff-1];
 
 	label[gcdoff].text = (unichar_t *) _("Nib Type:");
 	label[gcdoff].text_is_1byte = true;
@@ -648,7 +648,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
 	gcd[gcdoff++].creator = GLabelCreate;
-	split[sp][2] = &gcd[gcdoff-1];
+	split[sp][1] = GCD_HPad10; split[sp][2] = &gcd[gcdoff-1];
 
 	label[gcdoff].text = (unichar_t *) _("_Circular (Elliptical)");
 	label[gcdoff].text_is_1byte = true;
@@ -671,8 +671,8 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.cid = CID_Calligraphic;
 	gcd[gcdoff].gd.handle_controlevent = Stroke_Calligraphic;
 	gcd[gcdoff++].creator = GRadioCreate;
-	split[sp][0] = GCD_RowSpan; split[sp][1] = GCD_ColSpan;
-	split[sp][2] = GCD_Glue; 
+	split[sp][0] = GCD_RowSpan;
+	split[sp][1] = GCD_HPad10; split[sp][2] = GCD_Glue; 
 	split[sp][3] = &gcd[gcdoff-1]; split[sp][4] = GCD_ColSpan;
 	split[sp++][5] = NULL;
 
@@ -685,8 +685,8 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.cid = CID_Convex;
 	gcd[gcdoff].gd.handle_controlevent = Stroke_Convex;
 	gcd[gcdoff++].creator = GRadioCreate;
-	split[sp][0] = GCD_RowSpan; split[sp][1] = GCD_ColSpan;
-	split[sp][2] = GCD_Glue; 
+	split[sp][0] = GCD_RowSpan;
+	split[sp][1] = GCD_HPad10; split[sp][2] = GCD_Glue; 
 	split[sp][3] = &gcd[gcdoff-1]; split[sp][4] = GCD_ColSpan;
 	split[sp++][5] = NULL;
 
@@ -700,8 +700,8 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	    gcd[gcdoff].gd.cid = CID_CenterLine;
 	    gcd[gcdoff].gd.handle_controlevent = Stroke_CenterLine;
 	    gcd[gcdoff++].creator = GRadioCreate;
-	    split[sp][0] = GCD_RowSpan; split[sp][1] = GCD_ColSpan;
-	    split[sp][2] = GCD_Glue; 
+	    split[sp][0] = GCD_RowSpan;
+	    split[sp][1] = GCD_HPad10; split[sp][2] = GCD_Glue; 
 	    split[sp][3] = &gcd[gcdoff-1]; split[sp][4] = GCD_ColSpan;
 	    split[sp++][5] = NULL;
 	}
@@ -713,8 +713,9 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
 	gcd[gcdoff].gd.cid = CID_WidthTxt;
 	gcd[gcdoff++].creator = GLabelCreate;
-	split[sp][0] = GCD_RowSpan; split[sp][1] = GCD_ColSpan;
-	split[sp][2] = &gcd[gcdoff-1]; split[sp][3] = GCD_ColSpan;
+	split[sp][0] = GCD_RowSpan;
+	split[sp][1] = GCD_HPad10; split[sp][2] = &gcd[gcdoff-1];
+	split[sp][3] = GCD_ColSpan;
 
 	sprintf( widthbuf, "%g", (double) (2*si->radius) );
 	label[gcdoff].text = (unichar_t *) widthbuf;
@@ -736,8 +737,9 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.flags = gg_visible | gg_enabled;
 	gcd[gcdoff].gd.cid = CID_MinorAxisTxt;
 	gcd[gcdoff++].creator = GLabelCreate;
-	split[sp][0] = GCD_RowSpan; split[sp][1] = GCD_ColSpan;
-	split[sp][2] = &gcd[gcdoff-1]; split[sp][3] = GCD_ColSpan;
+	split[sp][0] = GCD_RowSpan;
+	split[sp][1] = GCD_HPad10; split[sp][2] = &gcd[gcdoff-1];
+	split[sp][3] = GCD_ColSpan;
 
 	sprintf( axisbuf, "%g", (double) (2*si->minorradius) );
 	label[gcdoff].text = (unichar_t *) axisbuf;
@@ -762,8 +764,9 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.flags = gg_visible | gg_enabled;
 	gcd[gcdoff++].creator = GLabelCreate;
-	split[sp][0] = GCD_RowSpan; split[sp][1] = GCD_ColSpan;
-	split[sp][2] = &gcd[gcdoff-1]; split[sp][3] = GCD_ColSpan;
+	split[sp][0] = GCD_RowSpan;
+	split[sp][1] = GCD_HPad10; split[sp][2] = &gcd[gcdoff-1];
+	split[sp][3] = GCD_ColSpan;
 
 	sprintf( anglebuf, "%g", (double) (si->penangle*180/FF_PI) );
 	label[gcdoff].text = (unichar_t *) anglebuf;
@@ -786,8 +789,8 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
 	gcd[gcdoff++].creator = GLabelCreate;
-	split[sp][0] = GCD_RowSpan; split[sp][1] = GCD_ColSpan;
-	split[sp][2] = &gcd[gcdoff-1]; 
+	split[sp][0] = GCD_RowSpan;
+	split[sp][1] = GCD_HPad10; split[sp][2] = &gcd[gcdoff-1]; 
 
 	label[gcdoff].text = (unichar_t *) _("_Nib");
 	label[gcdoff].text_is_1byte = true;
@@ -820,8 +823,8 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (si->cap==lc_round?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_RoundCap;
 	gcd[gcdoff++].creator = GRadioCreate;
-	split[sp][0] = GCD_RowSpan; split[sp][1] = GCD_ColSpan;
-	split[sp][2] = GCD_Glue;
+	split[sp][0] = GCD_RowSpan;
+	split[sp][1] = GCD_HPad10; split[sp][2] = GCD_Glue;
 	split[sp][3] = &gcd[gcdoff-1]; 
 
 	label[gcdoff].text = (unichar_t *) _("Be_vel");
@@ -841,8 +844,8 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
 	gcd[gcdoff++].creator = GLabelCreate;
-	split[sp][0] = GCD_RowSpan; split[sp][1] = GCD_ColSpan;
-	split[sp][2] = &gcd[gcdoff-1]; 
+	split[sp][0] = GCD_RowSpan;
+	split[sp][1] = GCD_HPad10; split[sp][2] = &gcd[gcdoff-1]; 
 
 	label[gcdoff].text = (unichar_t *) _("Ni_b");
 	label[gcdoff].text_is_1byte = true;
@@ -871,8 +874,8 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.flags = gg_visible; // | gg_enabled | (si->join==lj_round?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_RoundJoin;
 	gcd[gcdoff++].creator = GRadioCreate;
-	split[sp][0] = GCD_RowSpan; split[sp][1] = GCD_ColSpan;
-	split[sp][2] = GCD_Glue;
+	split[sp][0] = GCD_RowSpan;
+	split[sp][1] = GCD_HPad10; split[sp][2] = GCD_Glue;
 	split[sp][3] = &gcd[gcdoff-1]; 
 
 	label[gcdoff].text = (unichar_t *) _("Arcs");
@@ -893,8 +896,8 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (si->join==lj_miter?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_MiterJoin;
 	gcd[gcdoff++].creator = GRadioCreate;
-	split[sp][0] = GCD_RowSpan; split[sp][1] = GCD_ColSpan;
-	split[sp][2] = GCD_Glue;
+	split[sp][0] = GCD_RowSpan;
+	split[sp][1] = GCD_HPad10; split[sp][2] = GCD_Glue;
 	split[sp][3] = &gcd[gcdoff-1]; 
 
 	label[gcdoff].text = (unichar_t *) _("Miter Cli_p");
@@ -908,10 +911,10 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	split[sp++][5] = NULL;
 	split[sp][0] = NULL;
 
-	boxes[1].gd.flags = gg_enabled|gg_visible;
-	boxes[1].gd.u.boxelements = split[0];
-	boxes[1].creator = GHVGroupCreate;
-	mainarray[mi][0] = &boxes[1]; mainarray[mi++][1] = NULL;
+	boxes[2].gd.flags = gg_enabled|gg_visible;
+	boxes[2].gd.u.boxelements = split[0];
+	boxes[2].creator = GHVGroupCreate;
+	mainarray[mi][0] = &boxes[2]; mainarray[mi++][1] = NULL;
 
 	gcd[gcdoff].gd.flags = gg_enabled|gg_visible;
 	gcd[gcdoff++].creator = GLineCreate;
@@ -1022,10 +1025,10 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	jlexarray[1][6] = GCD_Glue; jlexarray[1][7] = NULL;
 	jlexarray[2][0] = NULL;
 
-	boxes[2].gd.flags = gg_enabled|gg_visible;
-	boxes[2].gd.u.boxelements = jlexarray[0];
-	boxes[2].creator = GHVBoxCreate;
-	mainarray[mi][0] = &boxes[2]; mainarray[mi++][1] = NULL;
+	boxes[3].gd.flags = gg_enabled|gg_visible;
+	boxes[3].gd.u.boxelements = jlexarray[0];
+	boxes[3].creator = GHVBoxCreate;
+	mainarray[mi][0] = &boxes[3]; mainarray[mi++][1] = NULL;
 
 	gcd[gcdoff].gd.flags = gg_enabled|gg_visible;
 	gcd[gcdoff++].creator = GLineCreate;
@@ -1067,10 +1070,10 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	overlaparray[6] = &gcd[gcdoff-1]; overlaparray[7] = GCD_Glue;
 	overlaparray[8] = overlaparray[9] = NULL;
 
-	boxes[3].gd.flags = gg_enabled|gg_visible;
-	boxes[3].gd.u.boxelements = overlaparray;
-	boxes[3].creator = GHBoxCreate;
-	mainarray[mi][0] = &boxes[3]; mainarray[mi++][1] = NULL;
+	boxes[4].gd.flags = gg_enabled|gg_visible;
+	boxes[4].gd.u.boxelements = overlaparray;
+	boxes[4].creator = GHBoxCreate;
+	mainarray[mi][0] = &boxes[4]; mainarray[mi++][1] = NULL;
 
 	label[gcdoff].text = (unichar_t *) _("Remove _Internal Contour");
 	label[gcdoff].text_is_1byte = true;
@@ -1110,10 +1113,10 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	checkarray[1][1] = &gcd[gcdoff-1]; checkarray[1][2] = GCD_Glue;
 	checkarray[1][3] = checkarray[2][0] = NULL;
 
-	boxes[4].gd.flags = gg_enabled|gg_visible;
-	boxes[4].gd.u.boxelements = checkarray[0];
-	boxes[4].creator = GHVBoxCreate;
-	mainarray[mi][0] = &boxes[4]; mainarray[mi++][1] = NULL;
+	boxes[5].gd.flags = gg_enabled|gg_visible;
+	boxes[5].gd.u.boxelements = checkarray[0];
+	boxes[5].creator = GHVBoxCreate;
+	mainarray[mi][0] = &boxes[5]; mainarray[mi++][1] = NULL;
 
 	gcd[gcdoff].gd.flags = gg_visible | gg_enabled | gg_but_default;
 	label[gcdoff].text = (unichar_t *) _("_OK");
@@ -1144,10 +1147,10 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	buttons[8] = GCD_Glue; buttons[9] = &gcd[gcdoff]; buttons[10] = GCD_Glue;
 	buttons[11] = NULL;
 
-	boxes[5].gd.flags = gg_enabled|gg_visible;
-	boxes[5].gd.u.boxelements = buttons;
-	boxes[5].creator = GHBoxCreate;
-	mainarray[mi][0] = &boxes[5]; mainarray[mi++][1] = NULL;
+	boxes[6].gd.flags = gg_enabled|gg_visible;
+	boxes[6].gd.u.boxelements = buttons;
+	boxes[6].creator = GHBoxCreate;
+	mainarray[mi][0] = &boxes[6]; mainarray[mi++][1] = NULL;
 	mainarray[mi][0] = GCD_Glue; mainarray[mi++][1] = NULL;
 	mainarray[mi][0] = NULL;
 
@@ -1159,9 +1162,11 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 
 	GGadgetsCreate(gw,boxes);
 	GHVBoxSetExpandableRow(boxes[0].ret,1);
-	for (i=1; i<=4; ++i)
+	GHVBoxSetExpandableCol(boxes[2].ret,0);
+	for (i=3; i<=5; ++i) {
 	    GHVBoxSetExpandableCol(boxes[i].ret,gb_expandglue);
-	GHVBoxSetExpandableCol(boxes[5].ret,gb_expandgluesame);
+	}
+	GHVBoxSetExpandableCol(boxes[6].ret,gb_expandgluesame);
 	for (i=0; i<6; ++i)
 	    GGadgetSetSkipUnQualifiedHotkeyProcessing(gcd[tfpos[i]].ret, 1);
 
