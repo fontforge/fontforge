@@ -7,12 +7,15 @@ enum ShapeType {
 	Shape_Convex,
 	Shape_CCWTurn,
 	Shape_CCW,
+	Shape_Quadratic,
 	Shape_PointOnEdge,
 	Shape_TooFewPoints,
 	Shape_NotClosed,
 	Shape_TinySpline,
 	Shape_HalfLinear,
-	Shape_BadCP,
+	Shape_BadCP_R1,
+	Shape_BadCP_R2,
+	Shape_BadCP_R3,
 	Shape_SelfIntersects
 };
 
