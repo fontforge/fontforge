@@ -586,7 +586,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
     GWindowAttrs wattrs;
     SplineSet *nib_bk = NULL;
     GGadgetCreateData gcd[51], boxes[7], *buttons[13], *mainarray[11][2],
-	    *overlaparray[10], *split[13][6], *checkarray[3][4], *lit[13][6],
+	    *overlaparray[10], *split[13][6], *checkarray[3][4],
 	    *jlexarray[3][8];
     GTextInfo label[51];
     int i, gcdoff, mi, sp, tfpos[6];
