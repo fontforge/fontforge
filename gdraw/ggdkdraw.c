@@ -272,7 +272,12 @@ static void _GGDKDraw_InitiateWindowDestroy(GGDKWindow gw) {
     if (gw->is_pixmap) {
         _GGDKDraw_OnWindowDestroyed(gw);
     } else if (!gw->is_cleaning_up) { // Check for nested call - if we're already being destroyed.
-        g_timeout_add(10, _GGDKDraw_OnWindowDestroyed, gw);
+        // Note: This *MUST* be a 0-length timer so it always gets picked up on the next
+        //       call to GDrawProcessPendingEvents. There are assumptions made that the destroy
+        //       event will be invoked when that function is called after calling GDrawDestroyWindow.
+        //       Ideally fix wherever the GDrawSync/GDrawProcessPendingEvents pattern is used
+        //       to have a more concrete check that it's actually gone.
+        g_timeout_add(0, _GGDKDraw_OnWindowDestroyed, gw);
     }
 }
 

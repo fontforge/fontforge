@@ -554,24 +554,33 @@ static void StrokeInit(StrokeDlg *sd) {
 }
 
 static int stroke_e_h(GWindow gw, GEvent *event) {
-    if ( event->type==et_expose ) {
-	StrokeDlg *sd = (StrokeDlg *) ((CharViewBase *) GDrawGetUserData(gw))->container;
-	Stroke_Draw(sd,gw,event);
-    } else if ( event->type==et_close ) {
-	StrokeDlg *sd = (StrokeDlg *) ((CharViewBase *) GDrawGetUserData(gw))->container;
-	sd->done = -1;
-    } else if ( event->type == et_char ) {
-	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("elementmenu.html#Expand");
-return( true );
-	}
-return( false );
-    } else if ( event->type == et_mousemove ) {
-    } else if ( event->type == et_map ) {
-	/* Above palettes */
-	GDrawRaise(gw);
+    StrokeDlg *sd = (StrokeDlg *) ((CharViewBase *) GDrawGetUserData(gw))->container;
+    switch (event->type) {
+        case et_expose:
+            Stroke_Draw(sd, gw, event);
+            break;
+        case et_close:
+            sd->done = -1;
+            break;
+        case et_destroy:
+            sd->gw = NULL; // some flag to indicate that we're finally gone
+            break;
+        case et_char:
+            if (event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help) {
+                help("elementmenu.html#Expand");
+                return true;
+            }
+            return false;
+        case et_map:
+            if (event->u.map.is_visible) {
+                /* Above palettes */
+                GDrawRaise(gw);
+            }
+            break;
+        default:
+            break;
     }
-return( true );
+    return true;
 }
 
 #define SD_Width	400
@@ -1194,6 +1203,11 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 
     CVPalettesHideIfMine(&sd.cv_stroke);
     GDrawDestroyWindow(sd.gw);
+
+    do {
+        GDrawSync(NULL);
+        GDrawProcessPendingEvents(NULL);
+    } while (sd.gw != NULL);
 
     if ( sd.done==1 && si->stroke_type!=si_nib ) {
 	assert( si->nib==NULL );
