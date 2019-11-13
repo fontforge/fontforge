@@ -179,6 +179,7 @@ bigreal SplineSolveForUTanVec(Spline *spl, BasePoint ut, bigreal min_t) {
     return -1;
 }
 
+#if 0
 void UTanVecTests() {
     int i, j, k, a, b;
     bigreal r, x, y, z;
@@ -235,3 +236,4 @@ void UTanVecTests() {
 		}
 	    }
 }
+#endif

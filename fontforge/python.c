@@ -283,7 +283,10 @@ static void PyFF_PickleTypesInit(void);
 static int SSSelectOnCurve(SplineSet *ss,int pos);
 static SplineSet *_SSFromContour(PyFF_Contour *, int *start, int flags);
 static PyFF_Contour *ContourFromSS(SplineSet *,PyFF_Contour *);
+static SplineSet *SSFromContour(PyFF_Contour *contour, int *tt_start);
 static SplineSet *_SSFromLayer(PyFF_Layer *, int flags);
+static SplineSet *SSFromLayer(PyFF_Layer *layer);
+static PyFF_Layer *LayerFromSS(SplineSet *ss,PyFF_Layer *layer);
 static PyFF_Layer *LayerFromLayer(Layer *,PyFF_Layer *);
 
 
@@ -5421,11 +5424,11 @@ static SplineSet *_SSFromLayer(PyFF_Layer *layer, int flags) {
     return( head );
 }
 
-SplineSet *SSFromLayer(PyFF_Layer *layer) {
+static SplineSet *SSFromLayer(PyFF_Layer *layer) {
 	return _SSFromLayer(layer, pconvert_flag_none);
 }
 
-PyFF_Layer *LayerFromSS(SplineSet *ss,PyFF_Layer *layer) {
+static PyFF_Layer *LayerFromSS(SplineSet *ss,PyFF_Layer *layer) {
     SplineSet *cur;
     int cnt, i;
 

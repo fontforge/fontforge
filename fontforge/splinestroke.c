@@ -1419,11 +1419,9 @@ static int _HandleJoin(JoinParams *jpp) {
     int is_flat = false;
     bigreal costheta = BP_DOT(jpp->ut_fm, jpp->no_to->utanvec);
 
-    if ( cur->first==NULL ) {
-	// Create initial spline point
-	cur->first = SplinePointCreate(oxy.x, oxy.y);
-	cur->last = cur->first;
-    } else if ( BPWITHIN(cur->last->me, oxy, INTERSPLINE_MARGIN) ) {
+    assert( cur->first!=NULL );
+
+    if ( BPWITHIN(cur->last->me, oxy, INTERSPLINE_MARGIN) ) {
 	// Close enough to just move the point
 	SplineStrokeAppendFixup(cur->last, jpp->sxy, jpp->no_to, jpp->ccw_to);
 	is_flat = true;
@@ -1462,6 +1460,12 @@ static int HandleJoin(StrokeContext *c, SplineSet *cur,
     JoinParams jp = { c, cur, sxy, BP_UNINIT, ut_fm, no_to,
                       ccw_fm, ccw_to, is_right, false };
     jp.oxy = BP_ADD(sxy, no_to->off[ccw_to]);
+    if ( cur->first==NULL ) {
+	// Create initial spline point
+	cur->first = SplinePointCreate(jp.oxy.x, jp.oxy.y);
+	cur->last = cur->first;
+	return false;
+    }
     jp.bend_is_ccw = !JointBendsCW(ut_fm, no_to->utanvec);
     return _HandleJoin(&jp);
 }
@@ -1490,7 +1494,7 @@ static void HandleCap(StrokeContext *c, SplineSet *cur, BasePoint sxy,
 	    SplineSetLineTo(cur, p1);
 	if ( c->cap==lc_round ) {
 	    SSAppendSemiCircle(cur, BP_DIST(p1, p2)/2, ut, !is_right);
-	    assert( BPWITHIN(cur->last->me, p2, INTERSPLINE_MARGIN) );
+	    assert( BPWITHIN(cur->last->me, p2, INTERSPLINE_MARGIN*5) );
 	    cur->last->me = p2;
 	} else {
 	    SplineSetLineTo(cur, p2);
@@ -1918,8 +1922,8 @@ SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
 	    trans[4] = -(b.minx+b.maxx)/2;
 	    trans[5] = -(b.miny+b.maxy)/2;
 	} else {
-	    c.pseudo_origin.x = b.minx+b.maxx/2;
-	    c.pseudo_origin.y = b.miny+b.maxy/2;
+	    c.pseudo_origin.x = (b.minx+b.maxx)/2;
+	    c.pseudo_origin.y = (b.miny+b.maxy)/2;
 	}
     }
     SplinePointListTransformExtended(nibs,trans,tpt_AllPoints,
