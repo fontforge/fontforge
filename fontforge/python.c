@@ -18811,7 +18811,7 @@ return( NULL );
     self->is_quadratic = PyInt_AsLong(PyTuple_GetItem(args,0));
     if ( PyErr_Occurred()!=NULL )
 return( NULL );
-    self->cntr_cnt = self->cntr_max = len-2;
+    self->cntr_cnt = self->cntr_max = len-1;
     self->contours = PyMem_New(PyFF_Contour *,self->cntr_max);
     if ( self->contours==NULL )
 return( NULL );
