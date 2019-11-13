@@ -1855,8 +1855,8 @@ SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
     bigreal sn = 0.0, co = 1.0, mr;
     DBounds b;
     real trans[6];
-    struct simplifyinfo smpl = { sf_forcelines & sf_mergelines &
-                                 sf_smoothcurves & sf_ignoreslopes,
+    struct simplifyinfo smpl = { sf_forcelines | sf_mergelines |
+                                 sf_smoothcurves | sf_ignoreslopes,
                                  0.25, 0.1, .005, 0, 0, 0 };
 
     if ( si->stroke_type==si_centerline )
@@ -1880,6 +1880,9 @@ SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
 	mr = si->height/2;
     else
 	mr = si->width/2;
+
+    if ( !c.extrema )
+	smpl.flags |= sf_ignoreextremum;
 
     if ( c.acctarget<MIN_ACCURACY ) {
          LogError( _("Warning: Accuracy target %lf less than minimum %lf, "
