@@ -208,17 +208,17 @@ static int _Stroke_OK(StrokeDlg *sd,int isapply) {
 	}
 	GDrawRequestExpose(sd->cv_stroke.v,NULL,false);
     } else { 
-	si->radius = GetReal8(sw,CID_Width,_("Stroke _Width:"),&err)/2;
-	if ( si->radius==0 && (   si->stroke_type==si_round 
-	                       || si->stroke_type==si_calligraphic )) {
+	si->width = GetReal8(sw,CID_Width,_("Stroke _Width:"),&err);
+	if ( si->width==0 && (   si->stroke_type==si_round 
+	                      || si->stroke_type==si_calligraphic )) {
 	    ff_post_error(_("Bad Value"), _("Stroke width cannot be zero"));
 	    err = true;
 	}
-	if ( si->radius<0 )
-	    si->radius = -si->radius;
-	si->minorradius = GetReal8(sw,CID_MinorAxis,_("Minor A_xis:"),&err)/2;
-	if ( si->minorradius<0 )
-	    si->minorradius = -si->minorradius;
+	if ( si->width<0 )
+	    si->width = -si->width;
+	si->height = GetReal8(sw,CID_MinorAxis,_("Minor A_xis:"),&err);
+	if ( si->height<0 )
+	    si->height = -si->height;
     }
     si->penangle = GetReal8(sw,CID_PenAngle,_("Pen _Angle:"),&err);
     if ( si->penangle>180 || si->penangle < -180 ) {
@@ -726,7 +726,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	split[sp][1] = GCD_HPad10; split[sp][2] = &gcd[gcdoff-1];
 	split[sp][3] = GCD_ColSpan;
 
-	sprintf( widthbuf, "%g", (double) (2*si->radius) );
+	sprintf( widthbuf, "%g", (double) (si->width) );
 	label[gcdoff].text = (unichar_t *) widthbuf;
 	label[gcdoff].text_is_1byte = true;
 	gcd[gcdoff].gd.pos.width = 50;
@@ -750,7 +750,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	split[sp][1] = GCD_HPad10; split[sp][2] = &gcd[gcdoff-1];
 	split[sp][3] = GCD_ColSpan;
 
-	sprintf( axisbuf, "%g", (double) (2*si->minorradius) );
+	sprintf( axisbuf, "%g", (double) (si->width) );
 	label[gcdoff].text = (unichar_t *) axisbuf;
 	label[gcdoff].text_is_1byte = true;
 	gcd[gcdoff].gd.pos.width = 50;

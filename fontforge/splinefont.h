@@ -228,7 +228,7 @@ enum si_type { si_round, si_calligraphic, si_nib, si_centerline };
 /* If you change this structure you may need to update MakeStrokeDlg */
 /*  and cvpalettes.c -- both contain statically initialized StrokeInfos */
 typedef struct strokeinfo {
-    bigreal radius;			/* or major axis of pen */
+    bigreal width;			/* or major axis of pen */
     enum linejoin join;
     enum linecap cap;
     enum si_type stroke_type;
@@ -236,7 +236,7 @@ typedef struct strokeinfo {
     // Could be bits but the python interface would be annoying
     int removeinternal, removeexternal, simplify, extrema;
     int leave_users_center, jlrelative, ecrelative;
-    bigreal penangle, minorradius, extendcap, joinlimit, accuracy_target;
+    bigreal penangle, height, extendcap, joinlimit, accuracy_target;
     struct splinepointlist *nib;
 /* For freehand tool, not currently used in practice */
     real radius2;

@@ -5139,8 +5139,8 @@ static void bExpandStroke(Context *c) {
 	    ScriptError(c,"Bad argument type");
     }
     InitializeStrokeInfo(&si);
-    si.radius = args[c->a.argc==11 ? 2 : 1]/2.;
-    si.minorradius = si.radius;
+    si.width = args[c->a.argc==11 ? 2 : 1];
+    si.height = si.width;
     si.stroke_type = si_round;
     if ( c->a.argc==2 ) {
 	si.join = lj_round;
@@ -5158,11 +5158,11 @@ static void bExpandStroke(Context *c) {
     } else if ( c->a.argc==5 ) {
 	si.stroke_type = si_calligraphic;
 	si.penangle = FF_PI*args[2]/180;
-	si.minorradius = si.radius * args[3] / (double) args[4];
+	si.height = si.width * args[3] / (double) args[4];
     } else if ( c->a.argc==7 ) {
         si.stroke_type = si_calligraphic;
 	si.penangle = FF_PI*args[2]/180;
-	si.minorradius = si.radius * args[3] / (double) args[4];
+	si.height = si.width * args[3] / (double) args[4];
 	if ( c->a.vals[5].type!=v_int || c->a.vals[5].u.ival!=0 )
             ScriptError(c,"If 6 arguments are given, the fifth must be zero");
 	else if ( c->a.vals[6].type!=v_int )
@@ -5184,10 +5184,10 @@ static void bExpandStroke(Context *c) {
 	    if ( si.nib==NULL ) 
 		ScriptError(c,"Convex nib unknown or not defined");
 	} else
-	    si.minorradius = args[3]/2.0;
+	    si.height = args[3];
 	si.penangle = FF_PI*args[4]/180;
 	rok = (   si.stroke_type==si_round
-	       && ( si.radius==si.minorradius || si.minorradius==0 ) );
+	       && ( si.width==si.height || si.height==0 ) );
 	bESJoinCap(c, 5, 6, &si, rok);
 	if ( args[7]>0 )
 	    si.joinlimit = args[7];

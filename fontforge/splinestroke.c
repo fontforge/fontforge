@@ -123,7 +123,7 @@ StrokeInfo *InitializeStrokeInfo(StrokeInfo *sip) {
 
     memset(sip, 0, sizeof(StrokeInfo));
 
-    sip->radius = 25.0;
+    sip->width = 50.0;
     sip->join = lj_nib;
     sip->cap = lc_nib;
     sip->stroke_type = si_round;
@@ -233,7 +233,7 @@ StrokeInfo *CVStrokeInfo() {
     static StrokeInfo *cv_si;
     if ( cv_si==NULL ) {
 	cv_si = InitializeStrokeInfo(NULL);
-	cv_si->minorradius = cv_si->radius;
+	cv_si->height = cv_si->width;
 	cv_si->penangle = FF_PI/4;
     }
     return cv_si;
@@ -246,7 +246,7 @@ StrokeInfo *CVFreeHandInfo() {
 	fv_si = InitializeStrokeInfo(NULL);
 	fv_si->cap = lc_butt;
 	fv_si->stroke_type = si_centerline;
-	fv_si->minorradius = fv_si->radius;
+	fv_si->height = fv_si->width;
 	fv_si->penangle = FF_PI/4;
     }
     return fv_si;
@@ -1419,11 +1419,9 @@ static int _HandleJoin(JoinParams *jpp) {
     int is_flat = false;
     bigreal costheta = BP_DOT(jpp->ut_fm, jpp->no_to->utanvec);
 
-    if ( cur->first==NULL ) {
-	// Create initial spline point
-	cur->first = SplinePointCreate(oxy.x, oxy.y);
-	cur->last = cur->first;
-    } else if ( BPWITHIN(cur->last->me, oxy, INTERSPLINE_MARGIN) ) {
+    assert( cur->first!=NULL );
+
+    if ( BPWITHIN(cur->last->me, oxy, INTERSPLINE_MARGIN) ) {
 	// Close enough to just move the point
 	SplineStrokeAppendFixup(cur->last, jpp->sxy, jpp->no_to, jpp->ccw_to);
 	is_flat = true;
@@ -1462,6 +1460,12 @@ static int HandleJoin(StrokeContext *c, SplineSet *cur,
     JoinParams jp = { c, cur, sxy, BP_UNINIT, ut_fm, no_to,
                       ccw_fm, ccw_to, is_right, false };
     jp.oxy = BP_ADD(sxy, no_to->off[ccw_to]);
+    if ( cur->first==NULL ) {
+	// Create initial spline point
+	cur->first = SplinePointCreate(jp.oxy.x, jp.oxy.y);
+	cur->last = cur->first;
+	return false;
+    }
     jp.bend_is_ccw = !JointBendsCW(ut_fm, no_to->utanvec);
     return _HandleJoin(&jp);
 }
@@ -1490,7 +1494,7 @@ static void HandleCap(StrokeContext *c, SplineSet *cur, BasePoint sxy,
 	    SplineSetLineTo(cur, p1);
 	if ( c->cap==lc_round ) {
 	    SSAppendSemiCircle(cur, BP_DIST(p1, p2)/2, ut, !is_right);
-	    assert( BPWITHIN(cur->last->me, p2, INTERSPLINE_MARGIN) );
+	    assert( BPWITHIN(cur->last->me, p2, INTERSPLINE_MARGIN*5) );
 	    cur->last->me = p2;
 	} else {
 	    SplineSetLineTo(cur, p2);
@@ -1855,8 +1859,8 @@ SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
     bigreal sn = 0.0, co = 1.0, mr;
     DBounds b;
     real trans[6];
-    struct simplifyinfo smpl = { sf_forcelines & sf_mergelines &
-                                 sf_smoothcurves & sf_ignoreslopes,
+    struct simplifyinfo smpl = { sf_forcelines | sf_mergelines |
+                                 sf_smoothcurves | sf_ignoreslopes,
                                  0.25, 0.1, .005, 0, 0, 0 };
 
     if ( si->stroke_type==si_centerline )
@@ -1876,10 +1880,13 @@ SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
     c.ecrelative = si->ecrelative;
     c.jlrelative = si->jlrelative;
     c.rmov = si->rmov;
-    if ( si->minorradius!=0 )
-	mr = si->minorradius;
+    if ( si->height!=0 )
+	mr = si->height/2;
     else
-	mr = si->radius;
+	mr = si->width/2;
+
+    if ( !c.extrema )
+	smpl.flags |= sf_ignoreextremum;
 
     if ( c.acctarget<MIN_ACCURACY ) {
          LogError( _("Warning: Accuracy target %lf less than minimum %lf, "
@@ -1902,8 +1909,8 @@ SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
 	c.nibtype = si->stroke_type==si_round ? nib_ellip : nib_rect;
 	max_pc = 4;
 	nibs = UnitShape(si->stroke_type==si_round ? 0 : -4);
-	trans[0] *= si->radius;
-	trans[1] *= si->radius;
+	trans[0] *= si->width/2;
+	trans[1] *= si->width/2;
 	trans[2] *= mr;
 	trans[3] *= mr;
     } else {
@@ -1915,8 +1922,8 @@ SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
 	    trans[4] = -(b.minx+b.maxx)/2;
 	    trans[5] = -(b.miny+b.maxy)/2;
 	} else {
-	    c.pseudo_origin.x = b.minx+b.maxx/2;
-	    c.pseudo_origin.y = b.miny+b.maxy/2;
+	    c.pseudo_origin.x = (b.minx+b.maxx)/2;
+	    c.pseudo_origin.y = (b.miny+b.maxy)/2;
 	}
     }
     SplinePointListTransformExtended(nibs,trans,tpt_AllPoints,

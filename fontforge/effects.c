@@ -57,7 +57,7 @@ void FVOutline(FontViewBase *fv, real width) {
 
     InitializeStrokeInfo(&si);
     si.removeexternal = true;
-    si.radius = width;
+    si.width = width*2;
 
     SFUntickAll(fv->sf);
     for ( i=0; i<fv->map->enccount; ++i )
@@ -98,9 +98,9 @@ void FVInline(FontViewBase *fv, real width, real inset) {
 		sc->layers[layer].splines && !sc->ticked ) {
 	    sc->ticked = true;
 	    SCPreserveLayer(sc,layer,false);
-	    si.radius = width;
+	    si.width = width*2;
 	    temp = SplineSetStroke(sc->layers[layer].splines,&si,sc->layers[layer].order2);
-	    si.radius = width+inset;
+	    si.width = (width+inset)*2;
 	    temp2 = SplineSetStroke(sc->layers[layer].splines,&si,sc->layers[layer].order2);
 	    for ( spl=sc->layers[layer].splines; spl->next!=NULL; spl=spl->next );
 	    spl->next = temp;
@@ -735,7 +735,7 @@ return( NULL );
     if ( outline_width!=0 && !wireframe ) {
 	InitializeStrokeInfo(&si);
 	si.removeexternal = true;
-	si.radius = outline_width;
+	si.width = outline_width*2;
 	si.rmov = srmov_none;
 	temp = SplinePointListCopy(spl);	/* SplineSetStroke confuses the direction I think */
 	internal = SplineSetStroke(temp,&si,order2);
@@ -753,7 +753,7 @@ return( NULL );
 	temp->next = lines;
 	if ( outline_width!=0 ) {
 	    InitializeStrokeInfo(&si);
-	    si.radius = outline_width/2;
+	    si.width = outline_width;
 	    fatframe = SplineSetStroke(spl,&si,order2);
 	    SplinePointListsFree(spl);
 	    spl = fatframe; /* Don't try SplineSetRemoveOverlap: too likely to cause remove overlap problems. */

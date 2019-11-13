@@ -46,7 +46,7 @@ static void CVOutline(CharView *cv, real width) {
 
     InitializeStrokeInfo(&si);
     si.removeexternal = true;
-    si.radius = width;
+    si.width = width*2;
 
     CVPreserveState((CharViewBase *) cv);
     temp = SplineSetStroke(cv->b.layerheads[cv->b.drawmode]->splines,&si,cv->b.layerheads[cv->b.drawmode]->order2);
@@ -63,7 +63,7 @@ static void MVOutline(MetricsView *mv, real width) {
 
     InitializeStrokeInfo(&si);
     si.removeexternal = true;
-    si.radius = width;
+    si.width = width*2;
 
     for ( i=mv->glyphcnt-1; i>=0; --i )
 	if ( mv->perchar[i].selected )
@@ -88,9 +88,9 @@ static void CVInline(CharView *cv, real width, real inset) {
     si.removeexternal = true;
 
     CVPreserveState((CharViewBase *) cv);
-    si.radius = width;
+    si.width = width*2;
     temp = SplineSetStroke(cv->b.layerheads[cv->b.drawmode]->splines,&si,cv->b.layerheads[cv->b.drawmode]->order2);
-    si.radius = width+inset;
+    si.width = (width+inset)*2;
     temp2 = SplineSetStroke(cv->b.layerheads[cv->b.drawmode]->splines,&si,cv->b.layerheads[cv->b.drawmode]->order2);
     for ( spl=cv->b.layerheads[cv->b.drawmode]->splines; spl->next!=NULL; spl=spl->next );
     spl->next = temp;
@@ -114,9 +114,9 @@ static void MVInline(MetricsView *mv, real width, real inset) {
     if ( i!=-1 ) {
 	SplineChar *sc = mv->glyphs[i].sc;
 	SCPreserveLayer(sc,mv->layer,false);
-	si.radius = width;
+	si.width = width*2;
 	temp = SplineSetStroke(sc->layers[mv->layer].splines,&si,sc->layers[mv->layer].order2);
-	si.radius = width+inset;
+	si.width = (width+inset)*2;
 	temp2 = SplineSetStroke(sc->layers[mv->layer].splines,&si,sc->layers[mv->layer].order2);
 	for ( spl=sc->layers[mv->layer].splines; spl->next!=NULL; spl=spl->next );
 	spl->next = temp;

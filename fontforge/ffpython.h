@@ -150,8 +150,6 @@ typedef struct ff_layer {
 } PyFF_Layer;
 extern PyTypeObject PyFF_LayerType;
 
-extern PyFF_Layer *LayerFromSS(SplineSet *ss, PyFF_Layer *l);
-
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
@@ -255,7 +253,5 @@ extern PyMethodDef PyFF_Font_methods[];
 extern PyMethodDef module_fontforge_methods[];
 
 PyObject *PyFV_From_FV_I(FontViewBase *fv);
-extern SplineSet *SSFromLayer(PyFF_Layer *layer);
-extern SplineSet *SSFromContour(PyFF_Contour *contour, int *tt_start);
 
 #endif /* FONTFORGE_FFPYTHON_H */

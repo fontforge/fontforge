@@ -1605,10 +1605,10 @@ static void ChangeGlyph( SplineChar *sc_sc, SplineChar *orig_sc, int layer, stru
 	SITranslatePSArgs(&si, lj_miter, lc_square);
 	si.rmov = srmov_contour;
 	if ( add >=0 ) {
-	    si.radius = add/2.;
+	    si.width = add;
 	    si.removeinternal = true;
 	} else {
-	    si.radius = -add/2.;
+	    si.width = -add;
 	    si.removeexternal = true;
 	}
 
@@ -4040,10 +4040,10 @@ static void SCEmbolden(SplineChar *sc, struct lcg_zones *zones, int layer) {
     SITranslatePSArgs(&si, lj_miter, lc_square);
     si.rmov = srmov_contour;
     if ( zones->stroke_width>=0 ) {
-	si.radius = zones->stroke_width/2.;
+	si.width = zones->stroke_width;
 	si.removeinternal = true;
     } else {
-	si.radius = -zones->stroke_width/2.;
+	si.width = -zones->stroke_width;
 	si.removeexternal = true;
     }
 

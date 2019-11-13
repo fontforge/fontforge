@@ -1048,10 +1048,9 @@ SplinePoint *_ApproximateSplineSetFromGen(SplinePoint *from, SplinePoint *to,
 	    return NULL;
 	}
     } else if ( (toler_is_sumsq ? errsum : maxerr) > toler ) {
-	// XXX turn into warning
-	printf("%s %lf exceeds %lf at maximum depth %d\n",
-	       toler_is_sumsq ? "Sum of squared errors" : "Maximum error length",
-	       toler_is_sumsq ? errsum : maxerr, toler, depth);
+	TRACE("%s %lf exceeds %lf at maximum depth %d\n",
+	      toler_is_sumsq ? "Sum of squared errors" : "Maximum error length",
+	      toler_is_sumsq ? errsum : maxerr, toler, depth);
     }
     free(fp);
     return to;
