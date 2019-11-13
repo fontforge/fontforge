@@ -123,7 +123,7 @@ StrokeInfo *InitializeStrokeInfo(StrokeInfo *sip) {
 
     memset(sip, 0, sizeof(StrokeInfo));
 
-    sip->radius = 25.0;
+    sip->width = 50.0;
     sip->join = lj_nib;
     sip->cap = lc_nib;
     sip->stroke_type = si_round;
@@ -233,7 +233,7 @@ StrokeInfo *CVStrokeInfo() {
     static StrokeInfo *cv_si;
     if ( cv_si==NULL ) {
 	cv_si = InitializeStrokeInfo(NULL);
-	cv_si->minorradius = cv_si->radius;
+	cv_si->height = cv_si->width;
 	cv_si->penangle = FF_PI/4;
     }
     return cv_si;
@@ -246,7 +246,7 @@ StrokeInfo *CVFreeHandInfo() {
 	fv_si = InitializeStrokeInfo(NULL);
 	fv_si->cap = lc_butt;
 	fv_si->stroke_type = si_centerline;
-	fv_si->minorradius = fv_si->radius;
+	fv_si->height = fv_si->width;
 	fv_si->penangle = FF_PI/4;
     }
     return fv_si;
@@ -1876,10 +1876,10 @@ SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
     c.ecrelative = si->ecrelative;
     c.jlrelative = si->jlrelative;
     c.rmov = si->rmov;
-    if ( si->minorradius!=0 )
-	mr = si->minorradius;
+    if ( si->height!=0 )
+	mr = si->height/2;
     else
-	mr = si->radius;
+	mr = si->width/2;
 
     if ( c.acctarget<MIN_ACCURACY ) {
          LogError( _("Warning: Accuracy target %lf less than minimum %lf, "
@@ -1902,8 +1902,8 @@ SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
 	c.nibtype = si->stroke_type==si_round ? nib_ellip : nib_rect;
 	max_pc = 4;
 	nibs = UnitShape(si->stroke_type==si_round ? 0 : -4);
-	trans[0] *= si->radius;
-	trans[1] *= si->radius;
+	trans[0] *= si->width/2;
+	trans[1] *= si->width/2;
 	trans[2] *= mr;
 	trans[3] *= mr;
     } else {

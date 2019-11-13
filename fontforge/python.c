@@ -4465,8 +4465,6 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
     }
 
     InitializeStrokeInfo(si);
-    si->radius *= 2;
-    si->minorradius *= 2;
     // Verify expected defaults
     assert( si->rmov==srmov_layer && si->cap==lc_nib && si->join==lj_nib );
 
@@ -4478,11 +4476,11 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
     if ( strcmp(str, "circular")==0 ) {
 	si->stroke_type = si_round;
 	if ( !PyArg_ParseTupleAndKeywords(args, keywds,
-                "sd|ssd" STROKE_OPTFORMAT, strokekey_circ, &type, &si->radius,
+                "sd|ssd" STROKE_OPTFORMAT, strokekey_circ, &type, &si->width,
 		&cap, &join, &si->penangle, STROKE_OPTARGS) ) {
 	    PyErr_Clear();
 	    if ( !PyArg_ParseTupleAndKeywords(args, keywds, "sd|ssO",
-                strokebkey_circ, &type, &si->radius,
+                strokebkey_circ, &type, &si->width,
 		&cap, &join, &flagtuple) ) {
 		ENDPYGETSTR();
 		PyErr_Format(PyExc_TypeError, "Wrong parameter set for "
@@ -4495,11 +4493,11 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
 	si->stroke_type = si_round;
 	if ( !PyArg_ParseTupleAndKeywords(args, keywds,
                 "sdd|dss" STROKE_OPTFORMAT, strokekey_ellip, &type,
-	        &si->radius, &si->minorradius, &si->penangle, &cap, &join,
+	        &si->width, &si->height, &si->penangle, &cap, &join,
 	        STROKE_OPTARGS) ) {
 	    PyErr_Clear();
 	    if ( !PyArg_ParseTupleAndKeywords(args, keywds, "sddd|ssO",
-                strokebkey_ellip, &type, &si->radius, &si->minorradius,
+                strokebkey_ellip, &type, &si->width, &si->height,
 		&si->penangle, &cap, &join, &flagtuple) ) {
 		ENDPYGETSTR();
 		PyErr_Format(PyExc_TypeError, "Wrong parameter set for "
@@ -4514,12 +4512,12 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
 	si->stroke_type = si_calligraphic;
 	if ( !PyArg_ParseTupleAndKeywords(args, keywds,
                 "sdd|dss" STROKE_OPTFORMAT, strokekey_rect, &type,
-	        &si->radius, &si->minorradius, &si->penangle, &cap, &join,
+	        &si->width, &si->height, &si->penangle, &cap, &join,
 	        STROKE_OPTARGS) ) {
 	    return( -1 );
 	    PyErr_Clear();
 	    if ( !PyArg_ParseTupleAndKeywords(args, keywds, "sddd|O",
-                strokebkey_rect, &type, &si->radius, &si->minorradius,
+                strokebkey_rect, &type, &si->width, &si->height,
 		&si->penangle, &flagtuple) ) {
 		ENDPYGETSTR();
 		PyErr_Format(PyExc_TypeError, "Wrong parameter set for "
@@ -4593,13 +4591,10 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
 	if ( !NibCheck(ss) )
 	    return( -1 );
 	si->nib = ss;
-    } else if ( si->radius<=0 || si->minorradius<0 ) {
+    } else if ( si->width<=0 || si->height<0 ) {
         PyErr_Format(PyExc_ValueError, "Stroke dimensions must be positive" );
 	return( -1 );
     }
-
-    si->radius = si->radius/2;
-    si->minorradius = si->minorradius/2;
 
     c = FlagsFromString(cap,linecap,"linecap type");
     if ( c==FLAG_UNKNOWN )
@@ -4615,7 +4610,7 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
 	return( -1 );
     if ( j==lj_round ) {
 	if (    si->stroke_type==si_round
-	     && ( si->radius==si->minorradius || si->minorradius==0 ) )
+	     && ( si->width==si->height || si->height==0 ) )
 	    j=lj_nib;
 	else {
             PyErr_Format(PyExc_ValueError, "Round join requires circular nib" );

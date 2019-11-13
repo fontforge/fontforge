@@ -2925,9 +2925,9 @@ return( head );
 	    InitializeStrokeInfo(&si);
 	    SITranslatePSArgs(&si, sc->layers[layer].stroke_pen.linejoin,
 	                      sc->layers[layer].stroke_pen.linecap);
-	    si.radius = sc->layers[layer].stroke_pen.width/2.0f;
+	    si.width = sc->layers[layer].stroke_pen.width;
 	    if ( sc->layers[layer].stroke_pen.width==WIDTH_INHERITED )
-		si.radius = .5;
+		si.width = 1.0;
 	    // These are OK as lc_butt and lj_miter are unchanged by SITra()
 	    if ( si.cap == lc_inherited ) si.cap = lc_butt;
 	    if ( si.join == lj_inherited ) si.join = lj_miter;
@@ -3136,9 +3136,9 @@ SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_stroked)
 		/*  no stroke */
 		InitializeStrokeInfo(&si);
 		SITranslatePSArgs(&si, ent->u.splines.join, ent->u.splines.cap);
-		si.radius = ent->u.splines.stroke_width/2;
+		si.width = ent->u.splines.stroke_width;
 		if ( ent->u.splines.stroke_width==WIDTH_INHERITED )
-		    si.radius = .5;
+		    si.width = 1.0;
 		// These are OK as lc_butt and lj_miter unchanged by SITra()
 		if ( si.cap == lc_inherited ) si.cap = lc_butt;
 		if ( si.join == lj_inherited ) si.join = lj_miter;

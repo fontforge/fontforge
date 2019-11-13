@@ -871,7 +871,7 @@ static SplineSet *StrokeOutline(Layer *layer,SplineChar *sc) {
 
     InitializeStrokeInfo(&si);
     if ( sc->parent->strokedfont ) {
-	si.radius = sc->parent->strokewidth/2;
+	si.width = sc->parent->strokewidth;
 	si.join = lj_bevel;
 	si.cap = lc_butt;
 	si.stroke_type = si_round;
@@ -895,7 +895,7 @@ return( head );
     {
 	SITranslatePSArgs(&si, layer->stroke_pen.linejoin,
 	                  layer->stroke_pen.linecap);
-	si.radius = layer->stroke_pen.width/2;
+	si.width = layer->stroke_pen.width;
 	si.stroke_type = si_round;
 return( SplineSetStroke(layer->splines,&si,layer->order2));
     }
@@ -907,7 +907,7 @@ static SplineSet *RStrokeOutline(struct reflayer *layer) {
     InitializeStrokeInfo(&si);
     SITranslatePSArgs(&si, layer->stroke_pen.linejoin,
                       layer->stroke_pen.linecap);
-    si.radius = layer->stroke_pen.width/2;
+    si.width = layer->stroke_pen.width;
     si.stroke_type = si_round;
 return( SplineSetStroke(layer->splines,&si,layer->order2));
 }

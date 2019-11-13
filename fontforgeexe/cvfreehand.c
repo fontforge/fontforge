@@ -401,7 +401,7 @@ static bigreal Trace_Factor(void *_cv,Spline *spline, real t) {
     StrokeInfo *si = CVFreeHandInfo();
     int p;
 
-    if ( si->radius<=0 || si->pressure1==si->pressure2 )
+    if ( si->width<=0 || si->pressure1==si->pressure2 )
 return( 1.0 );
 
     for ( pt = head; pt!=NULL; pt=pt->next ) {
@@ -426,15 +426,15 @@ return( 1.0 );
 	if ( si->pressure1<si->pressure2 )
 return( 1.0 );
 	else
-return( si->radius2/si->radius );
+return( si->radius2/(si->width/2) );
     } else if ( p>=si->pressure1 && p>=si->pressure2 ) {
 	if ( si->pressure1<si->pressure2 )
-return( si->radius2/si->radius );
+return( si->radius2/(si->width/2) );
 	else
 return( 1.0 );
     } else
-return( ((p-si->pressure1)*si->radius2 + (si->pressure2-p)*si->radius)/
-		(si->radius*(si->pressure2-si->pressure1)) );
+return( ((p-si->pressure1)*si->radius2 + (si->pressure2-p)*(si->width/2))/
+		((si->width/2)*(si->pressure2-si->pressure1)) );
 }
 
 static void TraceFigureCPs(SplinePoint *last,SplinePoint *cur,TraceData *tlast,TraceData *tcur) {
