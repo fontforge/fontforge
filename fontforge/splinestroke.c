@@ -1860,7 +1860,7 @@ SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
     DBounds b;
     real trans[6];
     struct simplifyinfo smpl = { sf_forcelines | sf_mergelines |
-                                 sf_smoothcurves | sf_ignoreslopes,
+                                 sf_smoothcurves | sf_setstart2extremum,
                                  0.25, 0.1, .005, 0, 0, 0 };
 
     if ( si->stroke_type==si_centerline )
