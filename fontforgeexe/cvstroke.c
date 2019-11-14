@@ -114,23 +114,23 @@ static void CVStrokeIt(void *_cv, StrokeInfo *si, int justapply) {
 		cur = SplineSetStroke(spl,si,cv->b.layerheads[cv->b.drawmode]->order2);
 		SplinePointListSelect(cur, true);
 		if ( cur!=NULL ) {
-		    if ( prev==NULL )
+		    if ( prev==NULL ) {
 			cv->b.layerheads[cv->b.drawmode]->splines=cur;
-		    else
+			prev = cur;
+		    } else
 			prev->next = cur;
-		    while ( cur->next ) cur=cur->next;
-		    cur->next = snext;
-		    prev = cur;
-		} else {
-		    if ( prev==NULL )
-			cv->b.layerheads[cv->b.drawmode]->splines=snext;
-		    else
-			prev->next = snext;
+		    while ( prev->next )
+			prev=prev->next;
 		}
-		spl->next = NULL;
 		SplinePointListMDFree(cv->b.sc,spl);
-	    } else
-		prev = spl;
+	    } else {
+		if ( prev==NULL )
+		    prev = spl;
+		else {
+		    prev->next = spl;
+		    prev = spl;
+		}
+	    }
 	}
 	if ( si->rmov==srmov_layer )
 	    cv->b.layerheads[cv->b.drawmode]->splines = SplineSetRemoveOverlap(cv->b.sc, 
