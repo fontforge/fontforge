@@ -521,23 +521,24 @@ static void MonotonicElide(struct mlist ** base, struct monotonic * input1) {
 }
 
 static void CleanMonotonics(struct monotonic ** base_pointer) {
-  // It is necessary to use double pointers so that we can set the previous reference.
-  struct monotonic ** current_pointer = base_pointer;
+  struct monotonic * current_pointer = *base_pointer;
   struct monotonic * tmp_pointer, * last_pointer = NULL;
-  while (*current_pointer) {
-    if (((*current_pointer)->next == NULL) || ((*current_pointer)->prev == NULL)) {
-      if (((*current_pointer)->next != NULL) || ((*current_pointer)->prev != NULL)) {
+  while (current_pointer) {
+    if ( current_pointer->next == NULL || current_pointer->prev == NULL ) {
+      if ( current_pointer->next != NULL || current_pointer->prev != NULL ) {
         SOError("Partially stranded monotonic.\n");
       } else {
-        tmp_pointer = (*current_pointer)->linked;
-        chunkfree(*current_pointer, sizeof(struct monotonic));
-        (*current_pointer) = tmp_pointer;
-	if (last_pointer!=NULL)
-          last_pointer->linked = tmp_pointer;
+        tmp_pointer = current_pointer->linked;
+        chunkfree(current_pointer, sizeof(struct monotonic));
+        current_pointer = tmp_pointer;
+	if ( last_pointer!=NULL )
+          last_pointer->linked = current_pointer;
+	else
+          *base_pointer = current_pointer;
       }
     } else {
-      last_pointer = *current_pointer;
-      current_pointer = &((*current_pointer)->linked);
+      last_pointer = current_pointer;
+      current_pointer = current_pointer->linked;
     }
   }
   return;
@@ -2276,14 +2277,14 @@ static void FigureProperMonotonicsAtIntersections(Intersection *ilist) {
     }
 }
 
-static Intersection *FindIntersections(Monotonic *ms, enum overlap_type ot) {
+static Intersection *FindIntersections(Monotonic **ms, enum overlap_type ot) {
     Monotonic *m1, *m2;
     BasePoint pts[9];
     extended t1s[10], t2s[10];
     Intersection *ilist=NULL;
     int i;
     // For each monotonic, check against each other monotonic for an intersection.
-    for ( m1=ms; m1!=NULL; m1=m1->linked ) {
+    for ( m1=*ms; m1!=NULL; m1=m1->linked ) {
 	for ( m2=m1->linked; m2!=NULL; m2=m2->linked ) {
 	    if ( m2->b.minx > m1->b.maxx ||
 		    m2->b.maxx < m1->b.minx ||
@@ -2315,16 +2316,16 @@ static Intersection *FindIntersections(Monotonic *ms, enum overlap_type ot) {
 	}
     }
 
-    ilist = TurnPreInter2Inter(ms);
+    ilist = TurnPreInter2Inter(*ms);
     FigureProperMonotonicsAtIntersections(ilist);
     // Remove invalid segments.
-    CleanMonotonics(&ms);
+    CleanMonotonics(ms);
 
     /* Now suppose we have a contour which intersects nothing? */
     /* with no intersections we lose track of it and it will vanish */
     /* That's not a good idea. Make sure each contour has at least one inter */
     if ( ot!=over_findinter && ot!=over_fisel ) {
-	for ( m1=ms; m1!=NULL; m1=m2->linked ) {
+	for ( m1=*ms; m1!=NULL; m1=m2->linked ) {
 	    if ( m1->start==NULL && m1->end==NULL ) {
 		Intersection *il;
 		il = chunkalloc(sizeof(Intersection));
@@ -3974,7 +3975,7 @@ SplineSet *SplineSetRemoveOverlap(SplineChar *sc, SplineSet *base,enum overlap_t
         if (tmpm == ms) break;
       }
     }
-    ilist = FindIntersections(ms,ot);
+    ilist = FindIntersections(&ms,ot);
     Validate(ms,ilist);
     if ( ot==over_findinter || ot==over_fisel ) {
 	FixupIntersectedSplines(ms);
