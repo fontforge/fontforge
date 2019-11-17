@@ -1441,7 +1441,6 @@ static void RoundJoin(JoinParams *jpp, int rv) {
     angle = MakeUTanVec(creal(c), cimag(c));
 
     SSAppendArc(jpp->cur, major, minor, angle, h0, h2, jpp->is_right);
-    BevelJoin(jpp);
 }
 
 static void MiterJoin(JoinParams *jpp) {
