@@ -42,6 +42,7 @@
 #define BP_UNINIT ((BasePoint) { -INFINITY, INFINITY })
 #define BP_IS_UNINIT(v) ((v).x==-INFINITY && (v).y==INFINITY)
 #define BP_ROT(v, ut) (BasePoint) { (ut).x * (v).x - (ut).y * (v).y, (ut).y * (v).x + (ut).x * (v).y }
+#define UTZERO ((BasePoint) { 0.0, 1.0 })
 #define UTMIN ((BasePoint) { -1, -DBL_MIN })
 #define UT_90CCW(v) (BasePoint) { -(v).y, (v).x }
 #define UT_90CW(v) (BasePoint) { (v).y, -(v).x }

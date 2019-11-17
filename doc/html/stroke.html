@@ -130,7 +130,8 @@ tangent to the curve at the endpoint to where each intersects, as do
 FontForge's equivalent "Miter" and "Miter Clip" options. A FontForge "Nib"
 join connects the offset curves with an edge corresponding to the shape of the
 nib; when using a round nib this is equivalent to the PS/SVG "Round" join
-option, which connects the offset lines with an arc of the offset radius:
+option, which connects the offset lines with an arc of the offset radius. The
+FontForge "Round" join option is also equivalent when using a circular nib:
 
 <figure><object data="stroke/joins.svg" type="image/svg+xml" width="90%" class="svgfig">Join Examples</object></figure>
 
@@ -152,9 +153,7 @@ such a join is clipped at the join limit by a line parallel to the Bevel line:
 a Miter join is <em>never</em> shortened past the Bevel line, which therefore
 restricts the minimum length of a given join.
 
-<P> (The FontForge "Round" join option is not yet enabled because round joins
-have not yet been generalized to other nib shapes.  The "Arcs" join style will
-be documented when it is implemented.)
+<P> (The "Arcs" join style will be documented when it is implemented.)
 
 <H2 id="nibs">Calligraphic and Other Convex Nibs</H2>
 
@@ -252,6 +251,13 @@ and clipped Miter Clip joins, although both are constructed according to the
 same rules.
 
 <figure><object data="stroke/customjoinbevel.svg" type="image/svg+xml" width="60%" class="svgfig">Join Bevel Angle of Custom Nib</object></figure>
+
+<P> For similar reasons it is often impossible to close an arbitrary join 
+with a smooth circular arc. When the Round join is specified in such cases 
+FontForge will instead choose the smooth arc of the least eccentric 
+compatible ellipse (which might still be noticeably eccentric).
+
+<figure><object data="stroke/customround.svg" type="image/svg+xml" width="60%" class="svgfig">Round Join of Custom Nib</object></figure>
 
 <P> No matter what nib you use, at the end of any open contour the tangent
 angle of the left and right lines will be the same as the tangent angle of

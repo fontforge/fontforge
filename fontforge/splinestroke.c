@@ -41,6 +41,7 @@
 #include "utanvec.h"
 
 #include <assert.h>
+#include <complex.h>
 #include <math.h>
 
 #define CIRCOFF 0.551915
@@ -266,6 +267,16 @@ static int LineSameSide(BasePoint l1, BasePoint l2, BasePoint p, BasePoint r,
     if ( RealWithin(tp, 0, 1e-5) )
 	return on_line_ok;
     return signbit(tr)==signbit(tp);
+}
+
+static BasePoint ProjectPointOnLine(BasePoint l1, BasePoint l2, BasePoint p) {
+    bigreal m, b;
+   
+    m = (l2.y - l1.y) / (l2.x - l1.x);
+    b = l1.y - m*l1.x;
+    return (BasePoint) { (m*p.y + p.x - m*b) / (m*m + 1),
+                         (m * m * p.y + m * p.x + b) / (m*m + 1) };
+
 }
 
 static void SplineSetLineTo(SplineSet *cur, BasePoint xy) {
@@ -858,28 +869,37 @@ static SplinePoint *AddNibPortion(NibCorner *nc, SplinePoint *tailp,
     return sp;
 }
 
-static void SSAppendSemiCircle(SplineSet *cur, bigreal radius, BasePoint ut,
-                               int bk) {
-    SplineSet *circ;
+static void SSAppendArc(SplineSet *cur, bigreal major, bigreal minor, 
+                        BasePoint ang, BasePoint ut_fm, BasePoint ut_to,
+                        int bk) {
+    SplineSet *ellip;
     real trans[6];
     SplinePoint *sp;
     NibOffset no_fm, no_to;
     NibCorner *nc = NULL;
     int n, mn=4;
 
-    circ = UnitShape(0);
-    memset(&trans, 0, sizeof(trans));
-    trans[0] = trans[3] = radius;
-    SplinePointListTransformExtended(circ, trans, tpt_AllPoints,
+    if ( ang.y==0 )
+	ang.x = 1;
+    if ( minor==0 )
+	minor = major;
+
+    ellip = UnitShape(0);
+    trans[0] = ang.x * major;
+    trans[1] = ang.y * major;
+    trans[2] = -ang.y * minor;
+    trans[3] = ang.x * minor;
+    trans[4] = trans[5] = 0;
+    SplinePointListTransformExtended(ellip, trans, tpt_AllPoints,
 	                             tpmask_dontTrimValues);
-    BuildNibCorners(&nc, circ, &mn, &n);
+    BuildNibCorners(&nc, ellip, &mn, &n);
     assert( n==4 && nc!=NULL );
 
-    _CalcNibOffset(nc, n, ut, false, &no_fm, -1);
-    _CalcNibOffset(nc, n, ut, true, &no_to, -1);
+    _CalcNibOffset(nc, n, ut_fm, false, &no_fm, -1);
+    _CalcNibOffset(nc, n, ut_to, false, &no_to, -1);
     sp = AddNibPortion(nc, cur->last, &no_fm, false, &no_to, false, bk);
     cur->last = sp;
-    SplinePointListFree(circ);
+    SplinePointListFree(ellip);
     free(nc);
 }
 
@@ -1291,6 +1311,36 @@ static void CalcExtend(BasePoint refp, BasePoint ut, BasePoint op1,
     VASSERT(intersects);
 }
 
+static void DoubleBackJC(StrokeContext *c, SplineSet *cur, BasePoint sxy, 
+                         BasePoint oxy, BasePoint ut, int bk, int is_cap) {
+    bigreal fsw, ex;
+    BasePoint p0, p1, p2, arcut;
+
+    fsw = FalseStrokeWidth(c, UT_NEG(ut));
+    if ( is_cap )
+        ex = CalcCapExtend(c, fsw);
+    else if ( c->join==lj_miterclip )
+	ex = CalcJoinLimit(c, fsw);
+    else
+	ex = 0;
+
+    p0 = BP_ADD(sxy, c->pseudo_origin);
+    CalcExtend(p0, ut, cur->last->me, oxy, ex, &p1, &p2);
+    if ( BPNEAR(cur->last->me, p1) )
+	cur->last->me = p1;
+    else
+	SplineSetLineTo(cur, p1);
+    if ( (is_cap && c->cap==lc_round) || (!is_cap && c->join==lj_round) ) {
+	arcut = BP_REV_IF(bk, ut);
+	SSAppendArc(cur, fsw/2, 0, UTZERO, arcut, BP_REV(arcut), bk);
+	assert( BPWITHIN(cur->last->me, p2, INTERSPLINE_MARGIN*5) );
+	cur->last->me = p2;
+    } else
+	SplineSetLineTo(cur, p2);
+    if ( !BPNEAR(oxy, p2) )
+	SplineSetLineTo(cur, oxy);
+}
+
 typedef struct joinparams {
     StrokeContext *c;
     SplineSet *cur;
@@ -1316,50 +1366,83 @@ static void NibJoin(JoinParams *jpp) {
     jpp->cur->last = sp;
 }
 
-static void DoubleBackJoin(JoinParams *jpp) {
-    BasePoint refp, p1, p2;
-    bigreal fsw, jlim;
-
-    assert( jpp->c->join==lj_miterclip || jpp->c->join==lj_arcs );
-    assert( RealWithin( BP_DOT(jpp->ut_fm, jpp->no_to->utanvec),
-                        -1, COS_MARGIN) );
-    refp = BP_ADD(jpp->sxy, jpp->c->pseudo_origin);
-    fsw = FalseStrokeWidth(jpp->c, jpp->ut_fm);
-    jlim = CalcJoinLimit(jpp->c, fsw);
-    CalcExtend(refp, jpp->ut_fm, jpp->cur->last->me, jpp->oxy, jlim/2,
-               &p1, &p2);
-    SplineSetLineTo(jpp->cur, p1);
-    SplineSetLineTo(jpp->cur, p2);
-    SplineSetLineTo(jpp->cur, jpp->oxy);
-}
-
-/*
-static void RoundJoin(JoinParams *jpp) {
-    BasePoint c, cut, ut1, ut2;
-    bigreal alpha, B, C, E, mu, nu, B2AC, maj, min, tmp, tmp2;
+/* With non-circular nibs it would be more accurate to call this
+ * "RoundishJoin". A join geometry is determined by the last 
+ * point of the previous offset spline, the first point of the next
+ * offset spline, and the starting and ending tangent angles. This
+ * function closes the join with the arc of the least eccentric ellipse 
+ * compatible with those points and angles, which is the most commonly
+ * suggested solution.
+ *
+ * There are a number of stack-exchange-type proposed solutions to this
+ * problem, some with pseudocode, but I had a hard time getting any of
+ * them working. The problem became much simpler in light of two papers.
+ *
+ * One is "Least eccentric ellipses for geometric Hermite interpolation" by
+ * Femiani, Chuang, and Razdan (Computer Aided Geometric Design 29, 2012,
+ * pp. 141-9). The paper models the ellipse as a quadratic *rational* bezier
+ * curve and calculates the "weight" corresponding to the least eccentric
+ * ellipse.  The first part of the code below calculates x1 and y1 from 
+ * section 3.1 of the paper (by different means, and possibly with different
+ * signs) and uses those to calculate w. Any potential problems should be
+ * checked against the paper's method. 
+ *
+ * Once the correct ellipse is identified it is easiest (in terms of code
+ * reuse) to produce a contour of that shape and append the arc with 
+ * AddNibPortion, and this is what SSAppendArc does. In order to use it that
+ * way one must convert the rational bezier curve parameters into major and
+ * minor axis lengths and an angle. Happily the second paper "Characteristics
+ * of conic segments in Bezier form" by Javier-Sanchez-Reyes (Proceedings 
+ * of the IMProVe 2011, pp. 231-4) makes this quite easy. That paper and
+ * the implementation below use complex arithmetic to calculate the center,
+ * foci, and axes. 
+ */
+static void RoundJoin(JoinParams *jpp, int rv) {
+    BasePoint p0, p1, p2, p1p, p12a, angle, h0, h2;
+    bigreal p12d, x1, y1, w, major, minor;
+    complex double b0, b1, b2, alpha, m, C, d, c, F1, F2;
+    real trans[6];
     int intersects;
 
-    c = BP_AVG(jpp->cur->last->me, jpp->oxy);
-    cut = NormVec(BP_ADD(BP_REV(jpp->cur->last->me), jpp->oxy));
-    alpha = BP_DIST(jpp->cur->last->me, jpp->oxy)/2;
-    ut1 = BP_ROT(BP_REV(jpp->ut_fm), UT_NEG(cut));
-    ut2 = BP_ROT(jpp->no_to->utanvec, UT_NEG(cut));
-    BasePoint pp1 = BP_ROT(jpp->cur->last->me, UT_NEG(cut)), pp2 = BP_ROT(jpp->oxy, UT_NEG(cut));
-    // printf("p1: %lf,%lf p2: %lf,%lf pp1: %lf,%lf: pp2: %lf,%lf, c: %lf,%lf cut: %lf, alpha: %lf\n", jpp->cur->last->me.x, jpp->cur->last->me.y, jpp->oxy.x, jpp->oxy.y, pp1.x, pp1.y, pp2.x, pp2.y, c.x, c.y, atan2(cut.y, cut.x) * 180 / FF_PI, alpha);
-    mu = -ut1.x/ut1.y;
-    nu = -ut2.x/ut2.y;
-    B = 1 + pow(mu + nu, 2)/2;
-    C = mu + nu;
-    E = alpha * (mu - nu);
-    B2AC = B*B-4*C;
-    tmp = 2 * (E*E - B2AC*alpha*alpha);
-    tmp2 = sqrt(pow(1-C,2) + B*B);
-    // printf("mu: %lf, nu:%lf, B: %lf, C: %lf, E: %lf, B2AC: %lf, tmp: %lf, tmp2: %lf\n", mu, nu, B, C, E, B2AC, tmp, tmp2);
-    maj = sqrt(tmp * (1 + C + tmp2))/B2AC;
-    min = sqrt(tmp * (1 + C - tmp2))/B2AC;
-    // printf("maj: %lf, min: %lf, angle: %lf\n", maj, min, atan2(cut.y, cut.x) * 180 / FF_PI);
+    p0 = jpp->cur->last->me;
+    p2 = jpp->oxy;
+    h0 = BP_REV_IF(jpp->is_right, jpp->ut_fm);
+    h2 = BP_REV_IF(jpp->is_right, jpp->no_to->utanvec);
+
+    if ( rv ) {
+	DoubleBackJC(jpp->c, jpp->cur, jpp->sxy, jpp->oxy, jpp->ut_fm,
+	             jpp->is_right, 0);
+	return;
+    }
+
+    // First paper
+    intersects = IntersectLinesSlopes(&p1, &p0, &h0, &p2, &h2);
+    VASSERT(intersects);
+    p1p = ProjectPointOnLine(p0, p2, p1);
+    p12a = BP_AVG(p0, p2);
+    p12d = BP_DIST(p0, p2);
+    x1 = 2 * BP_DIST(p1p, p12a) / p12d;
+    y1 = 2 * BP_DIST(p1p, p1) / p12d;
+    w = 1 / sqrt( x1*x1 + y1*y1 + 1);
+
+    // Second paper
+    b0 = p0.x + p0.y * I;
+    b1 = p1.x + p1.y * I;
+    b2 = p2.x + p2.y * I;
+    alpha = 1/(1 - w*w);
+    m = (b0 + b2)/2;
+    C = (1 - alpha)*b1 + alpha*m;
+    d = ((1-alpha)*(b1*b1)) + alpha*(b0*b2);
+    c = csqrt(C*C - d);
+    F1 = C + c;
+    F2 = C - c;
+    major = (cabs(F1-b0) + cabs(F2-b0))/2;
+    minor = sqrt(major * major - pow(cabs(c), 2)); // note change of order
+    angle = MakeUTanVec(creal(c), cimag(c));
+
+    SSAppendArc(jpp->cur, major, minor, angle, h0, h2, jpp->is_right);
     BevelJoin(jpp);
-} */
+}
 
 static void MiterJoin(JoinParams *jpp) {
     BasePoint ixy, refp, cow, coi, clip1, clip2, ut;
@@ -1371,8 +1454,8 @@ static void MiterJoin(JoinParams *jpp) {
     coi = BP_ADD(jpp->oxy, jpp->no_to->utanvec);
     intersects = IntersectLines(&ixy, &cur->last->me, &cow, &coi, &jpp->oxy);
     assert(intersects); // Shouldn't be called with parallel tangents
-    fsw = (  FalseStrokeWidth(jpp->c, jpp->ut_fm) 
-           + FalseStrokeWidth(jpp->c, jpp->no_to->utanvec))/2;
+    fsw = (  FalseStrokeWidth(jpp->c, UT_NEG(jpp->ut_fm)) 
+           + FalseStrokeWidth(jpp->c, UT_NEG(jpp->no_to->utanvec)))/2;
     jlim = CalcJoinLimit(jpp->c, fsw);
     jlen = CalcJoinLength(fsw, jpp->ut_fm, jpp->no_to->utanvec);
 
@@ -1433,17 +1516,15 @@ static int _HandleJoin(JoinParams *jpp) {
 	BevelJoin(jpp);
     } else if ( c->join==lj_bevel ) {
 	BevelJoin(jpp);
-/*    } else if ( c->join==lj_round ) {
-	if ( RealWithin(costheta, -1, COS_MARGIN) )
-	    BevelJoin(jpp);
-	else
-	    RoundJoin(jpp); */
+    } else if ( c->join==lj_round ) {
+	RoundJoin(jpp, RealWithin(costheta, -1, COS_MARGIN));
     } else if ( c->join==lj_miter || c->join==lj_miterclip ) {
 	if ( RealWithin(costheta, -1, COS_MARGIN) ) {
 	    if ( c->join==lj_miter )
 		BevelJoin(jpp);
 	    else
-		DoubleBackJoin(jpp);
+		DoubleBackJC(jpp->c, jpp->cur, jpp->sxy, jpp->oxy, jpp->ut_fm,
+		             jpp->is_right, 0);
 	} else
 	    MiterJoin(jpp);
     } else {
@@ -1483,24 +1564,9 @@ static void HandleCap(StrokeContext *c, SplineSet *cur, BasePoint sxy,
 	SplineSetLineTo(cur, oxy);
 	return;
     }
-    fsw = FalseStrokeWidth(c, UT_NEG(ut));
     if ( c->cap==lc_butt || c->cap==lc_round ) {
 	cel = CalcCapExtend(c, fsw);
-	CalcExtend(refp, BP_REV_IF(!is_right, ut),
-	           cur->last->me, oxy, cel, &p1, &p2);
-	if ( BPNEAR(cur->last->me, p1) )
-	    cur->last->me = p1;
-	else
-	    SplineSetLineTo(cur, p1);
-	if ( c->cap==lc_round ) {
-	    SSAppendSemiCircle(cur, BP_DIST(p1, p2)/2, ut, !is_right);
-	    assert( BPWITHIN(cur->last->me, p2, INTERSPLINE_MARGIN*5) );
-	    cur->last->me = p2;
-	} else {
-	    SplineSetLineTo(cur, p2);
-	}
-	if ( !BPNEAR(oxy, p2) )
-	    SplineSetLineTo(cur, oxy);
+	DoubleBackJC(c, cur, sxy, oxy, BP_REV_IF(!is_right, ut), !is_right, 1);
     } else {
 	if ( c->cap!=lc_nib && c->cap!=lc_inherited )
 	    LogError( _("Warning: Unrecognized or unsupported cap type, defaulting to 'nib'.\n") );

@@ -5084,12 +5084,7 @@ static void bESJoinCap(Context *c, int ci, int ji, StrokeInfo *sip, int rok) {
 
     if ( ji >= 0 && ji<=6 )
 	sip->join = joinmap[ji];
-    if ( sip->join==lj_round ) {
-	if ( rok )
-	    sip->join = lj_nib;
-	else
-	    ScriptError(c, "Round join requires circular nib");
-    } else if ( sip->join==lj_arcs )
+    if ( sip->join==lj_arcs )
 	ScriptError(c, "Arcs join not yet supported");
 }
 
