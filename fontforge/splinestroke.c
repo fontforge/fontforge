@@ -271,7 +271,10 @@ static int LineSameSide(BasePoint l1, BasePoint l2, BasePoint p, BasePoint r,
 
 static BasePoint ProjectPointOnLine(BasePoint l1, BasePoint l2, BasePoint p) {
     bigreal m, b;
-   
+
+    if ( RealWithin(l2.x, l1.x, 1e-10) )
+	return (BasePoint) { l2.x, p.y };
+
     m = (l2.y - l1.y) / (l2.x - l1.x);
     b = l1.y - m*l1.x;
     return (BasePoint) { (m*p.y + p.x - m*b) / (m*m + 1),
