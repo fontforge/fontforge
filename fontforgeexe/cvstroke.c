@@ -880,7 +880,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.label = &label[gcdoff];
-	gcd[gcdoff].gd.flags = gg_visible; // | gg_enabled | (si->join==lj_round?gg_cb_on:0);
+	gcd[gcdoff].gd.flags = gg_visible | gg_enabled | (si->join==lj_round?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_RoundJoin;
 	gcd[gcdoff++].creator = GRadioCreate;
 	split[sp][0] = GCD_RowSpan;

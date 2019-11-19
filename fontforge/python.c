@@ -4611,15 +4611,7 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
     j = FlagsFromString(join,linejoin,"linejoin type");
     if ( j==FLAG_UNKNOWN )
 	return( -1 );
-    if ( j==lj_round ) {
-	if (    si->stroke_type==si_round
-	     && ( si->width==si->height || si->height==0 ) )
-	    j=lj_nib;
-	else {
-            PyErr_Format(PyExc_ValueError, "Round join requires circular nib" );
-	    return -1;
-	}
-    } else if ( j==lj_arcs ) {
+    if ( j==lj_arcs ) {
 	PyErr_Format(PyExc_ValueError, "Arcs join not yet supported" );
 	return -1;
     }
