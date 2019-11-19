@@ -109,27 +109,20 @@ static void CVStrokeIt(void *_cv, StrokeInfo *si, int justapply) {
 	prev = NULL;
 	for ( spl= cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = snext ) {
 	    snext = spl->next;
+	    spl->next = NULL;
 	    if ( PointListIsSelected(spl)) {
-		spl->next = NULL;
 		cur = SplineSetStroke(spl,si,cv->b.layerheads[cv->b.drawmode]->order2);
 		SplinePointListSelect(cur, true);
-		if ( cur!=NULL ) {
-		    if ( prev==NULL ) {
-			cv->b.layerheads[cv->b.drawmode]->splines=cur;
-			prev = cur;
-		    } else
-			prev->next = cur;
-		    while ( prev->next )
-			prev=prev->next;
-		}
 		SplinePointListMDFree(cv->b.sc,spl);
-	    } else {
+	    } else
+		cur = spl;
+	    if ( cur!=NULL ) {
 		if ( prev==NULL )
-		    prev = spl;
-		else {
-		    prev->next = spl;
-		    prev = spl;
-		}
+		    prev = cv->b.layerheads[cv->b.drawmode]->splines = cur;
+		else
+		    prev->next = cur;
+		while ( prev->next )
+		    prev=prev->next;
 	    }
 	}
 	if ( si->rmov==srmov_layer )
