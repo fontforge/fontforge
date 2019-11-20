@@ -133,6 +133,7 @@ StrokeInfo *InitializeStrokeInfo(StrokeInfo *sip) {
     sip->extrema = true;
     sip->jlrelative = true;
     sip->ecrelative = true;
+    sip->leave_users_center = true;
     sip->joinlimit = 20.0;
     sip->accuracy_target = 0.25;
 
@@ -154,7 +155,7 @@ void SITranslatePSArgs(StrokeInfo *sip, enum linejoin lj, enum linecap lc) {
 	    sip->cap = lc;
     }
     switch (lj) {
-	case lc_round:
+	case lj_round:
 	    sip->join = lj_nib;
 	    break;
 	default:
@@ -266,6 +267,11 @@ static int LineSameSide(BasePoint l1, BasePoint l2, BasePoint p, BasePoint r,
 
     if ( RealWithin(tp, 0, 1e-5) )
 	return on_line_ok;
+    // Rounding means we should be tolerant when on_line_ok is true.
+    // Being that tolerant when on_line_ok is false would 
+    // yield too many false negatives. 
+    if ( on_line_ok && RealWithin(tp, 0, 1) )
+	return true;
     return signbit(tr)==signbit(tp);
 }
 
@@ -411,7 +417,7 @@ enum ShapeType NibIsValid(SplineSet *ss) {
 		return Shape_HalfLinear;
 	    s->from->nextcpselected = true;
 	    if ( LineSameSide(s->from->me, s->to->me, s->from->nextcp,
-	                      s->from->prev->from->me, true) )
+	                      s->from->prev->from->me, false) )
 		return Shape_BadCP_R1;
 	    if ( !LineSameSide(lref_cp, s->from->me,
 	                       s->from->nextcp, s->to->me, true) )
@@ -505,6 +511,9 @@ static void BuildNibCorners(NibCorner **ncp, SplineSet *nib, int *maxp,
 	nc[i].linear = SplineIsLinear(sp->next);
 	nc[i].utv[NC_IN_IDX] = SplineUTanVecAt(sp->prev, 1.0);
 	nc[i].utv[NC_OUT_IDX] = SplineUTanVecAt(sp->next, 0.0);
+	if ( JointBendsCW(nc[i].utv[NC_IN_IDX], nc[i].utv[NC_OUT_IDX]) )
+	    // Flatten potential LineSameSide permissiveness
+	    nc[i].utv[NC_OUT_IDX] = nc[i].utv[NC_IN_IDX];
 	if (    UTanVecGreater(nc[i].utv[NC_IN_IDX], max_utanangle)
 	     || BPNEAR(nc[i].utv[NC_IN_IDX], max_utanangle) ) {
 	    max_utan_index = i;
@@ -614,6 +623,16 @@ static NibOffset *_CalcNibOffset(NibCorner *nc, int n, BasePoint ut,
 	// Nib splines are locally convex and therefore have t value per slope
 	ns = nc[nci].on_nib->next;
 	no->nt = SplineSolveForUTanVec(ns, ut, 0.0);
+	if ( no->nt<0 ) {
+	    // At more extreme nib control point angles the solver may fail.
+	    // In such cases the tangent angle should be near one of the 
+	    // endpoints, so pick the closer one
+	    if (   BP_LENGTHSQ(BP_ADD(nc[nci].utv[NC_OUT_IDX], BP_REV(ut)))
+	         < BP_LENGTHSQ(BP_ADD(nc[ncni].utv[NC_IN_IDX], BP_REV(ut))) )
+		no->nt = 0;
+	    else
+		no->nt = 1;
+	}
 	no->off[0] = no->off[1] = SPLINEPVAL(ns, no->nt);
 	no->curve = true;
     }

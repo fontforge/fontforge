@@ -152,10 +152,9 @@ static int _Stroke_OK(StrokeDlg *sd,int isapply) {
     const char *msg;
 
     assert( sd->si!=NULL );
-    if ( isapply ) {
-	memset(&apply_si, 0, sizeof(apply_si));
-	si = &apply_si;
-    } else
+    if ( isapply )
+	si = InitializeStrokeInfo(&apply_si);
+    else
 	si = sd->si;
     err = false;
 
@@ -314,16 +313,16 @@ static void Stroke_ShowNib(StrokeDlg *sd) {
 	// UnitShape(1) presumably returns a square for this line's benefit.
 	ss = UnitShape( GGadgetIsChecked(GWidgetGetControl(sd->gw,CID_Calligraphic)) );
 	memset(transform,0,sizeof(transform));
-	width = GetCalmReal8(sd->gw,CID_Width,"",&err)/2;
-	height = GetCalmReal8(sd->gw,CID_MinorAxis,"",&err)/2;
+	width = GetCalmReal8(sd->gw,CID_Width,"",&err);
+	height = GetCalmReal8(sd->gw,CID_MinorAxis,"",&err);
 	angle = GetCalmReal8(sd->gw,CID_PenAngle,"",&err)*FF_PI/180;
 	c = cos(angle); s=sin(angle);
 	transform[0] = transform[3] = c;
 	transform[1] = s; transform[2] = -s;
-	transform[0] *= width;
-	transform[1] *= width;
-	transform[2] *= height;
-	transform[3] *= height;
+	transform[0] *= width/2;
+	transform[1] *= width/2;
+	transform[2] *= height/2;
+	transform[3] *= height/2;
 	SplinePointListTransform(ss,transform,tpt_AllPoints);
 	sd->dummy_sf.grid.splines = ss;
     }
@@ -750,7 +749,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	split[sp][1] = GCD_HPad10; split[sp][2] = &gcd[gcdoff-1];
 	split[sp][3] = GCD_ColSpan;
 
-	sprintf( axisbuf, "%g", (double) (si->width) );
+	sprintf( axisbuf, "%g", (double) (si->height) );
 	label[gcdoff].text = (unichar_t *) axisbuf;
 	label[gcdoff].text_is_1byte = true;
 	gcd[gcdoff].gd.pos.width = 50;
