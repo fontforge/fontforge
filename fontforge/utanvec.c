@@ -115,6 +115,15 @@ BasePoint SplineUTanVecAt(Spline *s, bigreal t) {
 	raw.x = s->to->me.x - s->from->me.x;
 	raw.y = s->to->me.y - s->from->me.y;
     } else {
+	// If one control point is colocated with its on-curve point the 
+	// slope will be undefined at that end, so walk back a bit for
+	// consistency
+	if (   RealWithin(t, 0, UTRETRY)
+	    && BPWITHIN(s->from->me, s->from->nextcp, 1e-13) )
+	    t = UTRETRY;
+	else if (   RealWithin(t, 1, UTRETRY)
+	    && BPWITHIN(s->to->me, s->to->prevcp, 1e-13) )
+	    t = 1-UTRETRY;
 	raw = SPLINEPTANVAL(s, t);
 	// For missing slopes take a very small step away and try again.
 	if ( raw.x==0 && raw.y==0 )
