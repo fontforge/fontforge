@@ -2595,17 +2595,17 @@ static void SVGFigureStyle(struct svg_state *st,char *name,
 	    else if ( strcmp(namebuf,"stroke-width")==0 )
 		st->linewidth = strtod((char *)propbuf,NULL);
 	    else if ( strcmp(namebuf,"stroke-linecap")==0 )
-		st->lc = strcmp(propbuf,"butt") ? lc_butt :
-			     strcmp(propbuf,"round") ? lc_round :
+		st->lc = strcmp(propbuf,"butt")==0 ? lc_butt :
+			     strcmp(propbuf,"round")==0 ? lc_round :
 			     lc_square;
 	    else if ( strcmp(namebuf,"stroke-linejoin")==0 )
-		st->lj = strcmp(propbuf,"miter") ? lj_miter :
-			     strcmp(propbuf,"round") ? lj_round :
+		st->lj = strcmp(propbuf,"miter")==0 ? lj_miter :
+			     strcmp(propbuf,"round")==0 ? lj_round :
 			     lj_bevel;
 	    else if ( strcmp(namebuf,"stroke-dasharray")==0 ) {
-		if ( strcmp(propbuf,"inherit") ) {
+		if ( strcmp(propbuf,"inherit")==0 ) {
 		    st->dashes[0] = 0; st->dashes[1] = DASH_INHERITED;
-		} else if ( strcmp(propbuf,"none") ) {
+		} else if ( strcmp(propbuf,"none")==0 ) {
 		    st->dashes[0] = 0; st->dashes[1] = 0;
 		} else {
 		    int i;
