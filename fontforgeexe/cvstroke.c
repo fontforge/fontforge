@@ -134,6 +134,7 @@ static void CVStrokeIt(void *_cv, StrokeInfo *si, int justapply) {
 	SplinePointListsFree( cv->b.layerheads[cv->b.drawmode]->splines );
 	cv->b.layerheads[cv->b.drawmode]->splines = head;
     }
+    SCClearSelPt(cv->b.sc);
     CVCharChangedUpdate(&cv->b);
 }
 
