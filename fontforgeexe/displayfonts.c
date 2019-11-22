@@ -1342,7 +1342,7 @@ static int DSP_RadioSet(GGadget *g, GEvent *e) {
 	    GTextInfo *sel = GGadgetGetListItemSelected(GWidgetGetControl(di->gw,CID_Font));
 	    SplineFont *sf;
 	    int flags;
-	    char size[12]; unichar_t usize[12];
+	    char size[14]; unichar_t usize[14];
 
 	    if ( sel!=NULL ) {
 		sf = sel->userdata;

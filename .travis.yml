@@ -63,7 +63,7 @@ cache:
 before_install:
   - if [ ! -z "$LINUX_FULL" ]; then pip --quiet install --user cpp-coveralls -U ; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)" -- --force; sudo rm -rf ~/.rvm; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then git config --global protocol.version 1 && /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"; fi
 
 install:
   - |

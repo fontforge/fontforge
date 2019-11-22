@@ -864,7 +864,7 @@ static void InsChrMouseMove(GWindow gw, GEvent *event) {
     if ( !inschr.mouse_down && event->u.mouse.y>inschr.ybase ) {
 	int uch = InsChrMapChar(16*y + x);
 	static unichar_t space[650];
-	char cspace[40];
+	char cspace[100];
 	char *uniname;
 	char *uniannot;
 
