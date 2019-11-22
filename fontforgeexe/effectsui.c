@@ -44,10 +44,9 @@ static void CVOutline(CharView *cv, real width) {
     SplineSet *temp, *spl;
     int changed;
 
-    memset(&si,0,sizeof(si));
+    InitializeStrokeInfo(&si);
     si.removeexternal = true;
-    si.radius = width;
-    /* si.removeoverlapifneeded = true;*/
+    si.width = width*2;
 
     CVPreserveState((CharViewBase *) cv);
     temp = SplineSetStroke(cv->b.layerheads[cv->b.drawmode]->splines,&si,cv->b.layerheads[cv->b.drawmode]->order2);
@@ -62,10 +61,9 @@ static void MVOutline(MetricsView *mv, real width) {
     SplineSet *temp, *spl;
     int i, changed;
 
-    memset(&si,0,sizeof(si));
+    InitializeStrokeInfo(&si);
     si.removeexternal = true;
-    si.radius = width;
-    /* si.removeoverlapifneeded = true; */
+    si.width = width*2;
 
     for ( i=mv->glyphcnt-1; i>=0; --i )
 	if ( mv->perchar[i].selected )
@@ -86,14 +84,13 @@ static void CVInline(CharView *cv, real width, real inset) {
     SplineSet *temp, *spl, *temp2;
     int changed;
 
-    memset(&si,0,sizeof(si));
+    InitializeStrokeInfo(&si);
     si.removeexternal = true;
-    /* si.removeoverlapifneeded = true;*/
 
     CVPreserveState((CharViewBase *) cv);
-    si.radius = width;
+    si.width = width*2;
     temp = SplineSetStroke(cv->b.layerheads[cv->b.drawmode]->splines,&si,cv->b.layerheads[cv->b.drawmode]->order2);
-    si.radius = width+inset;
+    si.width = (width+inset)*2;
     temp2 = SplineSetStroke(cv->b.layerheads[cv->b.drawmode]->splines,&si,cv->b.layerheads[cv->b.drawmode]->order2);
     for ( spl=cv->b.layerheads[cv->b.drawmode]->splines; spl->next!=NULL; spl=spl->next );
     spl->next = temp;
@@ -108,9 +105,8 @@ static void MVInline(MetricsView *mv, real width, real inset) {
     SplineSet *temp, *spl, *temp2;
     int i, changed;
 
-    memset(&si,0,sizeof(si));
+    InitializeStrokeInfo(&si);
     si.removeexternal = true;
-    /* si.removeoverlapifneeded = true;*/
 
     for ( i=mv->glyphcnt-1; i>=0; --i )
 	if ( mv->perchar[i].selected )
@@ -118,9 +114,9 @@ static void MVInline(MetricsView *mv, real width, real inset) {
     if ( i!=-1 ) {
 	SplineChar *sc = mv->glyphs[i].sc;
 	SCPreserveLayer(sc,mv->layer,false);
-	si.radius = width;
+	si.width = width*2;
 	temp = SplineSetStroke(sc->layers[mv->layer].splines,&si,sc->layers[mv->layer].order2);
-	si.radius = width+inset;
+	si.width = (width+inset)*2;
 	temp2 = SplineSetStroke(sc->layers[mv->layer].splines,&si,sc->layers[mv->layer].order2);
 	for ( spl=sc->layers[mv->layer].splines; spl->next!=NULL; spl=spl->next );
 	spl->next = temp;
@@ -380,8 +376,8 @@ return(true);
 	def_outline_width = width;
 	def_shadow_len = len;
 	def_sun_angle = angle;
-	angle *= -3.1415926535897932/180;
-	angle -= 3.1415926535897932/2;
+	angle *= -FF_PI/180;
+	angle -= FF_PI/2;
 	if ( od->fv!=NULL )
 	    FVShadow((FontViewBase *) od->fv,angle,width,len,od->wireframe);
 	else if ( od->cv!=NULL )

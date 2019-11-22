@@ -2372,7 +2372,7 @@ static void DrawVLine(CharView *cv,GWindow pixmap,real pos,Color fg, int flags,
 	    GDrawDrawText8(pixmap,x+5,cv->sas+cv->sfh*(1+lock!=NULL)+3,name,-1,metricslabelcol);
     }
     if ( ItalicConstrained && cv->b.sc->parent->italicangle!=0 ) {
-	double t = tan(-cv->b.sc->parent->italicangle*3.1415926535897932/180.);
+	double t = tan(-cv->b.sc->parent->italicangle*FF_PI/180.);
 	int xoff = rint(8096*t);
 	DrawLine(cv,pixmap,pos-xoff,-8096,pos+xoff,8096,italiccoordcol);
     }
@@ -2706,7 +2706,7 @@ return;				/* no points. no side bearings */
 	    GDrawDrawText8(pixmap,x,y-4,buf,-1,metricslabelcol);
 	}
 	if ( ItalicConstrained && cv->b.sc->parent->italicangle!=0 ) {
-	    double t = tan(-cv->b.sc->parent->italicangle*3.1415926535897932/180.);
+	    double t = tan(-cv->b.sc->parent->italicangle*FF_PI/180.);
 	    if ( t!=0 ) {
 		SplinePoint *leftmost=NULL, *rightmost=NULL;
 		for ( layer=first; layer<=last; ++layer ) {
@@ -4135,7 +4135,7 @@ return;
     GDrawDrawText8(pixmap,SDS_DATA,ybase,buffer,-1,fg);
 
 	/* Utf-8 for degree sign */
-    sprintf( buffer, "%d\302\260", (int) rint(180*atan2(ydiff,xdiff)/3.1415926535897932));
+    sprintf( buffer, "%d\302\260", (int) rint(180*atan2(ydiff,xdiff)/FF_PI));
     GDrawDrawText8(pixmap,SAN_DATA,ybase,buffer,-1,fg);
 }
 
@@ -4441,7 +4441,7 @@ return( event );
 	cv->p.cx = basetruex ;
 	if ( !(event->u.mouse.state&ksm_meta) &&
 		ItalicConstrained && cv->b.sc->parent->italicangle!=0 ) {
-	    double off = tan(cv->b.sc->parent->italicangle*3.1415926535897932/180)*
+	    double off = tan(cv->b.sc->parent->italicangle*FF_PI/180)*
 		    (cv->p.cy-basetruey);
 	    double aoff = off<0 ? -off : off;
 	    if ( dx>=aoff*tab->scale/2 && (event->u.mouse.x-basex<0)!=(off<0) ) {
@@ -5303,7 +5303,7 @@ return;
 		p.x = fake.u.mouse.x = basex;
 		p.cx = cv->p.constrain.x;
 		if ( ItalicConstrained && cv->b.sc->parent->italicangle!=0 ) {
-		    double off = tan(cv->b.sc->parent->italicangle*3.1415926535897932/180)*
+		    double off = tan(cv->b.sc->parent->italicangle*FF_PI/180)*
 			    (p.cy-cv->p.constrain.y);
 		    double aoff = off<0 ? -off : off;
 		    if ( dx>=aoff*tab->scale/2 && (event->u.mouse.x-basex<0)!=(off<0) ) {
@@ -8101,7 +8101,7 @@ return;
 		d.keyboarddx = 1;
 	    }
 	    /* if ( event->u.chr.state & (ksm_shift) ) */
-	    /* 	dx -= dy*tan((cv->b.sc->parent->italicangle)*(3.1415926535897932/180) ); */
+	    /* 	dx -= dy*tan((cv->b.sc->parent->italicangle)*(FF_PI/180) ); */
 	    if ( event->u.chr.state & (ksm_shift) )
 	    {
 		dx *= arrowAccelFactor; dy *= arrowAccelFactor;
@@ -11597,7 +11597,7 @@ static void CVMenuCenter(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     else {
 	SplineSet *base, *temp;
 	base = LayerAllSplines(cv->b.layerheads[cv->b.drawmode]);
-	transform[2] = tan( cv->b.sc->parent->italicangle * 3.1415926535897932/180.0 );
+	transform[2] = tan( cv->b.sc->parent->italicangle * FF_PI/180.0 );
 	temp = SplinePointListTransform(SplinePointListCopy(base),transform,tpt_AllPoints);
 	transform[2] = 0;
 	LayerUnAllSplines(cv->b.layerheads[cv->b.drawmode]);

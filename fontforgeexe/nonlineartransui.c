@@ -258,8 +258,8 @@ extern char *coord_sep;
     y = GetQuietReal(d->gw,CID_YValue,&err);
     /*z = GetQuietReal(d->gw,CID_ZValue,&err);*/
     dv = GetQuietReal(d->gw,CID_DValue,&err);
-    tilt = GetQuietReal(d->gw,CID_Tilt,&err)*3.1415926535897932/180;
-    dir = GetQuietReal(d->gw,CID_GazeDirection,&err)*3.1415926535897932/180;
+    tilt = GetQuietReal(d->gw,CID_Tilt,&err)*FF_PI/180;
+    dir = GetQuietReal(d->gw,CID_GazeDirection,&err)*FF_PI/180;
     if ( err )
 return;
     if ( GGadgetGetFirstListSelectedItem( GWidgetGetControl(d->gw,CID_XType))!=3 )
@@ -289,7 +289,7 @@ return( true );
 
 int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     static struct pov_data def = { or_center, or_value, 0, 0, .1,
-	    0, 3.1415926535897932/16, .2, 0 };
+	    0, FF_PI/16, .2, 0 };
     double emsize = (sf->ascent + sf->descent);
     struct nldlg d;
     GRect pos;
@@ -464,7 +464,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k++].creator = GLabelCreate;
     varray[l][0] = &gcd[k-1];
 
-    sprintf( tval, "%g", rint(pov->tilt*180/3.1415926535897932));
+    sprintf( tval, "%g", rint(pov->tilt*180/FF_PI));
     label[k].text = (unichar_t *) tval;
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
@@ -496,7 +496,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k++].creator = GLabelCreate;
     varray[l][0] = &gcd[k-1];
 
-    sprintf( dirval, "%g", rint(pov->direction*180/3.1415926535897932));
+    sprintf( dirval, "%g", rint(pov->direction*180/FF_PI));
     label[k].text = (unichar_t *) dirval;
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
@@ -595,8 +595,8 @@ return( -1 );
     continue;
 	    }
 	    pov->x = x; pov->y = y; pov->z = z; pov->d = dv;
-	    pov->tilt = tilt*3.1415926535897932/180;
-	    pov->direction = dir*3.1415926535897932/180;
+	    pov->tilt = tilt*FF_PI/180;
+	    pov->direction = dir*FF_PI/180;
 	    pov->xorigin = GGadgetGetFirstListSelectedItem( GWidgetGetControl(d.gw,CID_XType));
 	    pov->yorigin = GGadgetGetFirstListSelectedItem( GWidgetGetControl(d.gw,CID_YType));
 	}

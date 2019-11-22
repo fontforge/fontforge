@@ -102,6 +102,7 @@ extern FontViewBase *fv_active_in_ui;
 extern int layer_active_in_ui;
 
 extern void FfPy_Replace_MenuItemStub(PyObject *(*func)(PyObject *,PyObject *));
+extern int PyFF_ConvexNibID(char *);
 extern PyObject *PySC_From_SC(SplineChar *sc);
 extern PyObject *PyFV_From_FV(FontViewBase *fv);
 extern int FlagsFromTuple(PyObject *tuple,struct flaglist *flags,const char *flagkind);
@@ -138,7 +139,7 @@ typedef struct ff_contour {
     int spiro_cnt;
     char *name;
 } PyFF_Contour;
-static PyTypeObject PyFF_ContourType;
+extern PyTypeObject PyFF_ContourType;
 
 typedef struct ff_layer {
     PyObject_HEAD
@@ -147,7 +148,7 @@ typedef struct ff_layer {
     struct ff_contour **contours;
     int is_quadratic;		/* bit flags, but access to int is faster */
 } PyFF_Layer;
-static PyTypeObject PyFF_LayerType;
+extern PyTypeObject PyFF_LayerType;
 
 typedef struct {
     PyObject_HEAD

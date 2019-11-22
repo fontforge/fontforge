@@ -734,7 +734,7 @@ static void circlearcto(real a1, real a2, real cx, real cy, real r,
 return;
 
     cplen = (a2-a1)/90 * r * .552;
-    a1 *= 3.1415926535897932/180; a2 *= 3.1415926535897932/180;
+    a1 *= FF_PI/180; a2 *= FF_PI/180;
     s1 = sin(a1); s2 = sin(a2); c1 = cos(a1); c2 = cos(a2);
     temp.x = cx+r*c2; temp.y = cy+r*s2;
     base.x = cx+r*c1; base.y = cy+r*s1;
@@ -1745,18 +1745,18 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 	  case pt_atan:
 	    if ( sp>=2 && stack[sp-1].type==ps_num && stack[sp-2].type==ps_num ) {
 		stack[sp-2].u.val = atan2(stack[sp-2].u.val,stack[sp-1].u.val)*
-			180/3.1415926535897932;
+			180/FF_PI;
 		--sp;
 	    }
 	  break;
 	  case pt_sin:
 	    if ( sp>=1 && stack[sp-1].type==ps_num ) {
-		stack[sp-1].u.val = sin(stack[sp-1].u.val*3.1415926535897932/180);
+		stack[sp-1].u.val = sin(stack[sp-1].u.val*FF_PI/180);
 	    }
 	  break;
 	  case pt_cos:
 	    if ( sp>=1 && stack[sp-1].type==ps_num ) {
-		stack[sp-1].u.val = cos(stack[sp-1].u.val*3.1415926535897932/180);
+		stack[sp-1].u.val = cos(stack[sp-1].u.val*FF_PI/180);
 	    }
 	  break;
 	  case pt_if:
@@ -2092,8 +2092,8 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 		a1 = stack[sp-2].u.val;
 		a2 = stack[sp-1].u.val;
 		sp -= 5;
-		temp.x = cx+r*cos(a1/180 * 3.1415926535897932);
-		temp.y = cy+r*sin(a1/180 * 3.1415926535897932);
+		temp.x = cx+r*cos(a1/180 * FF_PI);
+		temp.y = cy+r*sin(a1/180 * FF_PI);
 		if ( temp.x!=current.x || temp.y!=current.y ||
 			!( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) )) {
 		    pt = chunkalloc(sizeof(SplinePoint));
@@ -2114,8 +2114,8 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 		    }
 		}
 		circlearcsto(a1,a2,cx,cy,r,cur,transform,tok==pt_arcn);
-		current.x = cx+r*cos(a2/180 * 3.1415926535897932);
-		current.y = cy+r*sin(a2/180 * 3.1415926535897932);
+		current.x = cx+r*cos(a2/180 * FF_PI);
+		current.y = cy+r*sin(a2/180 * FF_PI);
 	    } else
 		sp = 0;
 	  break;
@@ -2179,13 +2179,13 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 			SplineMake3(cur->last,pt);
 			cur->last = pt;
 		    }
-		    a1 = 3*3.1415926535897932/2+a1;
-		    a2 = 3.1415926535897932/2+a2;
+		    a1 = 3*FF_PI/2+a1;
+		    a2 = FF_PI/2+a2;
 		    if ( !clockwise ) {
-			a1 += 3.1415926535897932;
-			a2 += 3.1415926535897932;
+			a1 += FF_PI;
+			a2 += FF_PI;
 		    }
-		    circlearcsto(a1*180/3.1415926535897932,a2*180/3.1415926535897932,
+		    circlearcsto(a1*180/FF_PI,a2*180/FF_PI,
 			    cx,cy,r,cur,transform,clockwise);
 		}
 		if ( tok==pt_arcto ) {
@@ -2922,12 +2922,13 @@ return( head );
 
     for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
 	if ( sc->layers[layer].dostroke ) {
-	    memset(&si,'\0',sizeof(si));
-	    si.join = sc->layers[layer].stroke_pen.linejoin;
-	    si.cap = sc->layers[layer].stroke_pen.linecap;
-	    si.radius = sc->layers[layer].stroke_pen.width/2.0f;
+	    InitializeStrokeInfo(&si);
+	    SITranslatePSArgs(&si, sc->layers[layer].stroke_pen.linejoin,
+	                      sc->layers[layer].stroke_pen.linecap);
+	    si.width = sc->layers[layer].stroke_pen.width;
 	    if ( sc->layers[layer].stroke_pen.width==WIDTH_INHERITED )
-		si.radius = .5;
+		si.width = 1.0;
+	    // These are OK as lc_butt and lj_miter are unchanged by SITra()
 	    if ( si.cap == lc_inherited ) si.cap = lc_butt;
 	    if ( si.join == lj_inherited ) si.join = lj_miter;
 	    new = NULL;
@@ -3133,12 +3134,12 @@ SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_stroked)
 		/* How do we implement that? Special case: If filled and stroked 0, then */
 		/*  ignore the stroke. This idiom is used by MetaPost sometimes and means */
 		/*  no stroke */
-		memset(&si,'\0',sizeof(si));
-		si.join = ent->u.splines.join;
-		si.cap = ent->u.splines.cap;
-		si.radius = ent->u.splines.stroke_width/2;
+		InitializeStrokeInfo(&si);
+		SITranslatePSArgs(&si, ent->u.splines.join, ent->u.splines.cap);
+		si.width = ent->u.splines.stroke_width;
 		if ( ent->u.splines.stroke_width==WIDTH_INHERITED )
-		    si.radius = .5;
+		    si.width = 1.0;
+		// These are OK as lc_butt and lj_miter unchanged by SITra()
 		if ( si.cap == lc_inherited ) si.cap = lc_butt;
 		if ( si.join == lj_inherited ) si.join = lj_miter;
 		new = NULL;

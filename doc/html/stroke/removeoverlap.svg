@@ -1,0 +1,1331 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<?xml-stylesheet href="../ff_svg_fig.css" type="text/css" title="FontForge SVG stylesheet" alternate="no" media="screen"?>
+<svg baseProfile="full" height="100%" version="1.1" viewBox="-290,-145,1071,449" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs/>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="446.0" x2="446.0" y1="80.0" y2="11.845703125"/>
+    <g class="ff_offp_post" transform="translate(446.0,11.845703125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="503.2568359375" x2="465.2119140625" y1="-89.947265625" y2="-50.6337890625"/>
+    <g class="ff_offp_pre" transform="translate(465.2119140625,-50.6337890625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="503.2568359375" x2="522.4794921875" y1="-89.947265625" y2="-109.8115234375"/>
+    <g class="ff_offp_post" transform="translate(522.4794921875,-109.8115234375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="579.1484375" x2="548.6025390625" y1="-124.564453125" y2="-124.564453125"/>
+    <g class="ff_offp_pre" transform="translate(548.6025390625,-124.564453125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="579.1484375" x2="609.6943359375" y1="-124.564453125" y2="-124.564453125"/>
+    <g class="ff_offp_post" transform="translate(609.6943359375,-124.564453125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="655.0400390625" x2="635.81640625" y1="-89.947265625" y2="-109.8115234375"/>
+    <g class="ff_offp_pre" transform="translate(635.81640625,-109.8115234375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="655.0400390625" x2="693.0859375" y1="-89.947265625" y2="-50.6337890625"/>
+    <g class="ff_offp_post" transform="translate(693.0859375,-50.6337890625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="712.298828125" x2="712.298828125" y1="80.0" y2="11.8447265625"/>
+    <g class="ff_offp_pre" transform="translate(712.298828125,11.8447265625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="712.298828125" x2="712.298828125" y1="80.0" y2="148.1552734375"/>
+    <g class="ff_offp_post" transform="translate(712.298828125,148.1552734375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="655.041015625" x2="693.0859375" y1="249.94921875" y2="210.634765625"/>
+    <g class="ff_offp_pre" transform="translate(693.0859375,210.634765625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="655.041015625" x2="635.8173828125" y1="249.94921875" y2="269.8134765625"/>
+    <g class="ff_offp_post" transform="translate(635.8173828125,269.8134765625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="579.1484375" x2="609.6943359375" y1="284.56640625" y2="284.56640625"/>
+    <g class="ff_offp_pre" transform="translate(609.6943359375,284.56640625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="579.1484375" x2="548.6025390625" y1="284.56640625" y2="284.56640625"/>
+    <g class="ff_offp_post" transform="translate(548.6025390625,284.56640625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="503.2568359375" x2="522.4794921875" y1="249.9482421875" y2="269.8125"/>
+    <g class="ff_offp_pre" transform="translate(522.4794921875,269.8125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="503.2568359375" x2="465.2119140625" y1="249.9482421875" y2="210.6337890625"/>
+    <g class="ff_offp_post" transform="translate(465.2119140625,210.6337890625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="446.0" x2="446.0" y1="80.0" y2="148.154296875"/>
+    <g class="ff_offp_pre" transform="translate(446.0,148.154296875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="526.0" x2="526.0" y1="80.0" y2="133.28515625"/>
+    <g class="ff_offp_post" transform="translate(526.0,133.28515625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="560.7412109375" x2="543.5869140625" y1="194.333984375" y2="176.607421875"/>
+    <g class="ff_offp_pre" transform="translate(543.5869140625,176.607421875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="560.7412109375" x2="569.1171875" y1="194.333984375" y2="202.9892578125"/>
+    <g class="ff_offp_post" transform="translate(569.1171875,202.9892578125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="579.1484375" x2="575.1943359375" y1="204.56640625" y2="204.56640625"/>
+    <g class="ff_offp_pre" transform="translate(575.1943359375,204.56640625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="579.1484375" x2="583.1025390625" y1="204.56640625" y2="204.56640625"/>
+    <g class="ff_offp_post" transform="translate(583.1025390625,204.56640625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="597.556640625" x2="589.1796875" y1="194.3330078125" y2="202.9892578125"/>
+    <g class="ff_offp_pre" transform="translate(589.1796875,202.9892578125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="597.556640625" x2="614.7109375" y1="194.3330078125" y2="176.6064453125"/>
+    <g class="ff_offp_post" transform="translate(614.7109375,176.6064453125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="632.298828125" x2="632.298828125" y1="80.0" y2="133.28515625"/>
+    <g class="ff_offp_pre" transform="translate(632.298828125,133.28515625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="632.298828125" x2="632.298828125" y1="80.0" y2="26.71484375"/>
+    <g class="ff_offp_post" transform="translate(632.298828125,26.71484375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="597.556640625" x2="614.7109375" y1="-34.33203125" y2="-16.60546875"/>
+    <g class="ff_offp_pre" transform="translate(614.7109375,-16.60546875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="597.556640625" x2="589.1796875" y1="-34.33203125" y2="-42.9873046875"/>
+    <g class="ff_offp_post" transform="translate(589.1796875,-42.9873046875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="579.1484375" x2="583.1025390625" y1="-44.564453125" y2="-44.564453125"/>
+    <g class="ff_offp_pre" transform="translate(583.1025390625,-44.564453125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="579.1484375" x2="575.1943359375" y1="-44.564453125" y2="-44.564453125"/>
+    <g class="ff_offp_post" transform="translate(575.1943359375,-44.564453125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="560.7412109375" x2="569.1171875" y1="-34.33203125" y2="-42.9873046875"/>
+    <g class="ff_offp_pre" transform="translate(569.1171875,-42.9873046875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="560.7412109375" x2="543.5869140625" y1="-34.33203125" y2="-16.6064453125"/>
+    <g class="ff_offp_post" transform="translate(543.5869140625,-16.6064453125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="526.0" x2="526.0" y1="80.0" y2="26.71484375"/>
+    <g class="ff_offp_pre" transform="translate(526.0,26.71484375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="655.79296875" x2="655.79296875" y1="238.2939453125" y2="210.396484375"/>
+    <g class="ff_offp_post" transform="translate(655.79296875,210.396484375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="708.84765625" x2="676.6474609375" y1="182.41796875" y2="182.41796875"/>
+    <g class="ff_offp_pre" transform="translate(676.6474609375,182.41796875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="708.84765625" x2="729.7158203125" y1="182.41796875" y2="182.41796875"/>
+    <g class="ff_offp_post" transform="translate(729.7158203125,182.41796875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="752.037109375" x2="743.95703125" y1="205.7890625" y2="194.115234375"/>
+    <g class="ff_offp_pre" transform="translate(743.95703125,194.115234375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="752.037109375" x2="757.1640625" y1="205.7890625" y2="213.1953125"/>
+    <g class="ff_offp_post" transform="translate(757.1640625,213.1953125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="761.4736328125" x2="761.4736328125" y1="235.3291015625" y2="222.650390625"/>
+    <g class="ff_offp_pre" transform="translate(761.4736328125,222.650390625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="761.4736328125" x2="761.4736328125" y1="235.3291015625" y2="251.134765625"/>
+    <g class="ff_offp_post" transform="translate(761.4736328125,251.134765625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="737.3037109375" x2="752.05078125" y1="276.9306640625" y2="268.3662109375"/>
+    <g class="ff_offp_pre" transform="translate(752.05078125,268.3662109375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="737.3037109375" x2="726.4423828125" y1="276.9306640625" y2="283.23828125"/>
+    <g class="ff_offp_post" transform="translate(726.4423828125,283.23828125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="706.455078125" x2="715.9375" y1="284.56640625" y2="284.56640625"/>
+    <g class="ff_offp_pre" transform="translate(715.9375,284.56640625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="706.455078125" x2="659.296875" y1="284.56640625" y2="284.56640625"/>
+    <g class="ff_offp_post" transform="translate(659.296875,284.56640625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="622.15234375" x2="634.51171875" y1="233.4794921875" y2="249.2734375"/>
+    <g class="ff_offp_pre" transform="translate(634.51171875,249.2734375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="622.15234375" x2="606.5673828125" y1="233.4794921875" y2="213.5654296875"/>
+    <g class="ff_offp_post" transform="translate(606.5673828125,213.5654296875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="600.884765625" x2="603.4072265625" y1="213.150390625" y2="213.150390625"/>
+    <g class="ff_offp_pre" transform="translate(603.4072265625,213.150390625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="600.884765625" x2="578.80859375" y1="213.150390625" y2="213.150390625"/>
+    <g class="ff_offp_post" transform="translate(578.80859375,213.150390625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="560.884765625" x2="560.884765625" y1="173.150390625" y2="195.2265625"/>
+    <g class="ff_offp_pre" transform="translate(560.884765625,195.2265625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="560.884765625" x2="560.884765625" y1="173.150390625" y2="151.07421875"/>
+    <g class="ff_offp_post" transform="translate(560.884765625,151.07421875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="600.884765625" x2="578.80859375" y1="133.150390625" y2="133.150390625"/>
+    <g class="ff_offp_pre" transform="translate(578.80859375,133.150390625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="600.884765625" x2="648.0419921875" y1="133.150390625" y2="133.150390625"/>
+    <g class="ff_offp_post" transform="translate(648.0419921875,133.150390625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="685.185546875" x2="672.826171875" y1="184.236328125" y2="168.443359375"/>
+    <g class="ff_offp_pre" transform="translate(672.826171875,168.443359375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="685.185546875" x2="700.7705078125" y1="184.236328125" y2="204.150390625"/>
+    <g class="ff_offp_post" transform="translate(700.7705078125,204.150390625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="706.455078125" x2="703.9306640625" y1="204.56640625" y2="204.56640625"/>
+    <g class="ff_offp_pre" transform="translate(703.9306640625,204.56640625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="735.79296875" x2="735.875" y1="238.2939453125" y2="239.3388671875"/>
+    <g class="ff_offp_post" transform="translate(735.875,239.3388671875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="736.103515625" x2="736.103515625" y1="241.4609375" y2="240.3955078125"/>
+    <g class="ff_offp_pre" transform="translate(736.103515625,240.3955078125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="736.103515625" x2="736.103515625" y1="241.4609375" y2="263.537109375"/>
+    <g class="ff_offp_post" transform="translate(736.103515625,263.537109375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="696.103515625" x2="718.1796875" y1="281.4609375" y2="281.4609375"/>
+    <g class="ff_offp_pre" transform="translate(718.1796875,281.4609375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="696.103515625" x2="673.0439453125" y1="281.4609375" y2="281.4609375"/>
+    <g class="ff_offp_post" transform="translate(673.0439453125,281.4609375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="655.79296875" x2="655.79296875" y1="238.2939453125" y2="263.529296875"/>
+    <g class="ff_offp_pre" transform="translate(655.79296875,263.529296875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="86.0" x2="86.0" y1="80.0" y2="11.845703125"/>
+    <g class="ff_offp_post" transform="translate(86.0,11.845703125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="143.255859375" x2="105.2109375" y1="-89.947265625" y2="-50.6328125"/>
+    <g class="ff_offp_pre" transform="translate(105.2109375,-50.6328125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="143.255859375" x2="162.48046875" y1="-89.947265625" y2="-109.810546875"/>
+    <g class="ff_offp_post" transform="translate(162.48046875,-109.810546875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="219.1484375" x2="188.6015625" y1="-124.564453125" y2="-124.564453125"/>
+    <g class="ff_offp_pre" transform="translate(188.6015625,-124.564453125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="219.1484375" x2="249.6953125" y1="-124.564453125" y2="-124.564453125"/>
+    <g class="ff_offp_post" transform="translate(249.6953125,-124.564453125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="295.041015625" x2="275.81640625" y1="-89.947265625" y2="-109.8125"/>
+    <g class="ff_offp_pre" transform="translate(275.81640625,-109.8125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="295.041015625" x2="333.0859375" y1="-89.947265625" y2="-50.634765625"/>
+    <g class="ff_offp_post" transform="translate(333.0859375,-50.634765625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="352.298828125" x2="352.298828125" y1="80.0" y2="11.845703125"/>
+    <g class="ff_offp_pre" transform="translate(352.298828125,11.845703125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="352.298828125" x2="352.298828125" y1="80.0" y2="148.154296875"/>
+    <g class="ff_offp_post" transform="translate(352.298828125,148.154296875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="295.041015625" x2="333.0859375" y1="249.94921875" y2="210.634765625"/>
+    <g class="ff_offp_pre" transform="translate(333.0859375,210.634765625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="295.041015625" x2="275.81640625" y1="249.94921875" y2="269.8125"/>
+    <g class="ff_offp_post" transform="translate(275.81640625,269.8125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="219.1484375" x2="249.6953125" y1="284.56640625" y2="284.56640625"/>
+    <g class="ff_offp_pre" transform="translate(249.6953125,284.56640625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="219.1484375" x2="188.6015625" y1="284.56640625" y2="284.56640625"/>
+    <g class="ff_offp_post" transform="translate(188.6015625,284.56640625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="143.255859375" x2="162.48046875" y1="249.94921875" y2="269.8125"/>
+    <g class="ff_offp_pre" transform="translate(162.48046875,269.8125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="143.255859375" x2="105.2109375" y1="249.94921875" y2="210.634765625"/>
+    <g class="ff_offp_post" transform="translate(105.2109375,210.634765625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="86.0" x2="86.0" y1="80.0" y2="148.154296875"/>
+    <g class="ff_offp_pre" transform="translate(86.0,148.154296875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="166.0" x2="166.0" y1="80.0" y2="133.28515625"/>
+    <g class="ff_offp_post" transform="translate(166.0,133.28515625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="200.7421875" x2="183.587890625" y1="194.333984375" y2="176.607421875"/>
+    <g class="ff_offp_pre" transform="translate(183.587890625,176.607421875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="200.7421875" x2="209.1171875" y1="194.333984375" y2="202.990234375"/>
+    <g class="ff_offp_post" transform="translate(209.1171875,202.990234375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="219.1484375" x2="215.1953125" y1="204.56640625" y2="204.56640625"/>
+    <g class="ff_offp_pre" transform="translate(215.1953125,204.56640625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="219.1484375" x2="223.1015625" y1="204.56640625" y2="204.56640625"/>
+    <g class="ff_offp_post" transform="translate(223.1015625,204.56640625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="237.556640625" x2="229.1796875" y1="194.333984375" y2="202.990234375"/>
+    <g class="ff_offp_pre" transform="translate(229.1796875,202.990234375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="237.556640625" x2="254.7109375" y1="194.333984375" y2="176.607421875"/>
+    <g class="ff_offp_post" transform="translate(254.7109375,176.607421875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="272.298828125" x2="272.298828125" y1="80.0" y2="133.28515625"/>
+    <g class="ff_offp_pre" transform="translate(272.298828125,133.28515625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="272.298828125" x2="272.298828125" y1="80.0" y2="26.71484375"/>
+    <g class="ff_offp_post" transform="translate(272.298828125,26.71484375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="237.556640625" x2="254.7109375" y1="-34.33203125" y2="-16.60546875"/>
+    <g class="ff_offp_pre" transform="translate(254.7109375,-16.60546875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="237.556640625" x2="229.1796875" y1="-34.33203125" y2="-42.98828125"/>
+    <g class="ff_offp_post" transform="translate(229.1796875,-42.98828125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="219.1484375" x2="223.1015625" y1="-44.564453125" y2="-44.564453125"/>
+    <g class="ff_offp_pre" transform="translate(223.1015625,-44.564453125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="219.1484375" x2="215.1953125" y1="-44.564453125" y2="-44.564453125"/>
+    <g class="ff_offp_post" transform="translate(215.1953125,-44.564453125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="200.740234375" x2="209.1171875" y1="-34.33203125" y2="-42.98828125"/>
+    <g class="ff_offp_pre" transform="translate(209.1171875,-42.98828125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="200.740234375" x2="183.587890625" y1="-34.33203125" y2="-16.60546875"/>
+    <g class="ff_offp_post" transform="translate(183.587890625,-16.60546875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="166.0" x2="166.0" y1="80.0" y2="26.71484375"/>
+    <g class="ff_offp_pre" transform="translate(166.0,26.71484375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="327.52734375" x2="333.65625" y1="187.19921875" y2="184.31640625"/>
+    <g class="ff_offp_post" transform="translate(333.65625,184.31640625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="348.84765625" x2="340.828125" y1="182.41796875" y2="182.41796875"/>
+    <g class="ff_offp_pre" transform="translate(340.828125,182.41796875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="348.84765625" x2="369.71484375" y1="182.41796875" y2="182.41796875"/>
+    <g class="ff_offp_post" transform="translate(369.71484375,182.41796875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="392.037109375" x2="383.95703125" y1="205.7890625" y2="194.115234375"/>
+    <g class="ff_offp_pre" transform="translate(383.95703125,194.115234375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="392.037109375" x2="397.1640625" y1="205.7890625" y2="213.1953125"/>
+    <g class="ff_offp_post" transform="translate(397.1640625,213.1953125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="401.474609375" x2="401.474609375" y1="235.330078125" y2="222.650390625"/>
+    <g class="ff_offp_pre" transform="translate(401.474609375,222.650390625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="401.474609375" x2="401.474609375" y1="235.330078125" y2="251.134765625"/>
+    <g class="ff_offp_post" transform="translate(401.474609375,251.134765625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="377.3046875" x2="392.05078125" y1="276.9296875" y2="268.3671875"/>
+    <g class="ff_offp_pre" transform="translate(392.05078125,268.3671875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="377.3046875" x2="366.443359375" y1="276.9296875" y2="283.23828125"/>
+    <g class="ff_offp_post" transform="translate(366.443359375,283.23828125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="346.455078125" x2="355.9375" y1="284.56640625" y2="284.56640625"/>
+    <g class="ff_offp_pre" transform="translate(355.9375,284.56640625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="346.455078125" x2="299.296875" y1="284.56640625" y2="284.56640625"/>
+    <g class="ff_offp_post" transform="translate(299.296875,284.56640625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="262.15234375" x2="274.51171875" y1="233.48046875" y2="249.2734375"/>
+    <g class="ff_offp_pre" transform="translate(274.51171875,249.2734375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="262.15234375" x2="246.56640625" y1="233.48046875" y2="213.564453125"/>
+    <g class="ff_offp_post" transform="translate(246.56640625,213.564453125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="240.884765625" x2="243.40625" y1="213.150390625" y2="213.150390625"/>
+    <g class="ff_offp_pre" transform="translate(243.40625,213.150390625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="240.884765625" x2="218.80859375" y1="213.150390625" y2="213.150390625"/>
+    <g class="ff_offp_post" transform="translate(218.80859375,213.150390625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="200.884765625" x2="200.884765625" y1="173.150390625" y2="195.2265625"/>
+    <g class="ff_offp_pre" transform="translate(200.884765625,195.2265625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="200.884765625" x2="200.884765625" y1="173.150390625" y2="151.07421875"/>
+    <g class="ff_offp_post" transform="translate(200.884765625,151.07421875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="240.884765625" x2="218.80859375" y1="133.150390625" y2="133.150390625"/>
+    <g class="ff_offp_pre" transform="translate(218.80859375,133.150390625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="240.884765625" x2="290.224609375" y1="133.150390625" y2="133.150390625"/>
+    <g class="ff_offp_post" transform="translate(290.224609375,133.150390625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="327.52734375" x2="313.869140625" y1="187.19921875" y2="170.09765625"/>
+    <g class="ff_offp_pre" transform="translate(313.869140625,170.09765625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="-190.0" x2="-190.0" y1="80.0" y2="133.28515625"/>
+    <g class="ff_offp_post" transform="translate(-190.0,133.28515625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="-155.2587890625" x2="-172.4130859375" y1="194.333984375" y2="176.607421875"/>
+    <g class="ff_offp_pre" transform="translate(-172.4130859375,176.607421875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="-155.2587890625" x2="-149.072265625" y1="194.333984375" y2="200.7265625"/>
+    <g class="ff_offp_post" transform="translate(-149.072265625,200.7265625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="-140.390625" x2="-144.1396484375" y1="204.14453125" y2="203.2587890625"/>
+    <g class="ff_offp_pre" transform="translate(-144.1396484375,203.2587890625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="-140.390625" x2="-149.375" y1="204.14453125" y2="196.8076171875"/>
+    <g class="ff_offp_post" transform="translate(-149.375,196.8076171875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="-155.115234375" x2="-155.115234375" y1="173.150390625" y2="185.6435546875"/>
+    <g class="ff_offp_pre" transform="translate(-155.115234375,185.6435546875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="-155.115234375" x2="-155.115234375" y1="173.150390625" y2="151.07421875"/>
+    <g class="ff_offp_post" transform="translate(-155.115234375,151.07421875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="-115.115234375" x2="-137.19140625" y1="133.150390625" y2="133.150390625"/>
+    <g class="ff_offp_pre" transform="translate(-137.19140625,133.150390625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="-115.115234375" x2="-106.1064453125" y1="133.150390625" y2="133.150390625"/>
+    <g class="ff_offp_post" transform="translate(-106.1064453125,133.150390625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="-90.5634765625" x2="-97.955078125" y1="136.5" y2="134.3818359375"/>
+    <g class="ff_offp_pre" transform="translate(-97.955078125,134.3818359375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="-90.5634765625" x2="-86.3369140625" y1="136.5" y2="119.7646484375"/>
+    <g class="ff_offp_post" transform="translate(-86.3369140625,119.7646484375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="-83.701171875" x2="-83.701171875" y1="80.0" y2="100.62890625"/>
+    <g class="ff_offp_pre" transform="translate(-83.701171875,100.62890625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="-83.701171875" x2="-83.701171875" y1="80.0" y2="26.71484375"/>
+    <g class="ff_offp_post" transform="translate(-83.701171875,26.71484375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="-118.443359375" x2="-101.2890625" y1="-34.33203125" y2="-16.60546875"/>
+    <g class="ff_offp_pre" transform="translate(-101.2890625,-16.60546875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="-118.443359375" x2="-126.8203125" y1="-34.33203125" y2="-42.9873046875"/>
+    <g class="ff_offp_post" transform="translate(-126.8203125,-42.9873046875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="-136.8515625" x2="-132.8974609375" y1="-44.564453125" y2="-44.564453125"/>
+    <g class="ff_offp_pre" transform="translate(-132.8974609375,-44.564453125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="-136.8515625" x2="-140.8056640625" y1="-44.564453125" y2="-44.564453125"/>
+    <g class="ff_offp_post" transform="translate(-140.8056640625,-44.564453125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="-155.2587890625" x2="-146.8828125" y1="-34.33203125" y2="-42.9873046875"/>
+    <g class="ff_offp_pre" transform="translate(-146.8828125,-42.9873046875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="-155.2587890625" x2="-172.4130859375" y1="-34.33203125" y2="-16.6064453125"/>
+    <g class="ff_offp_post" transform="translate(-172.4130859375,-16.6064453125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="-190.0" x2="-190.0" y1="80.0" y2="26.71484375"/>
+    <g class="ff_offp_pre" transform="translate(-190.0,26.71484375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="-270.0" x2="-270.0" y1="80.0" y2="11.845703125"/>
+    <g class="ff_offp_post" transform="translate(-270.0,11.845703125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="-212.7431640625" x2="-250.7880859375" y1="-89.947265625" y2="-50.6337890625"/>
+    <g class="ff_offp_pre" transform="translate(-250.7880859375,-50.6337890625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="-212.7431640625" x2="-193.5205078125" y1="-89.947265625" y2="-109.8115234375"/>
+    <g class="ff_offp_post" transform="translate(-193.5205078125,-109.8115234375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="-136.8515625" x2="-167.3974609375" y1="-124.564453125" y2="-124.564453125"/>
+    <g class="ff_offp_pre" transform="translate(-167.3974609375,-124.564453125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="-136.8515625" x2="-106.3056640625" y1="-124.564453125" y2="-124.564453125"/>
+    <g class="ff_offp_post" transform="translate(-106.3056640625,-124.564453125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="-60.9599609375" x2="-80.18359375" y1="-89.947265625" y2="-109.8115234375"/>
+    <g class="ff_offp_pre" transform="translate(-80.18359375,-109.8115234375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="-60.9599609375" x2="-22.9140625" y1="-89.947265625" y2="-50.6337890625"/>
+    <g class="ff_offp_post" transform="translate(-22.9140625,-50.6337890625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="-3.701171875" x2="-3.701171875" y1="80.0" y2="11.8447265625"/>
+    <g class="ff_offp_pre" transform="translate(-3.701171875,11.8447265625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="-3.701171875" x2="-3.701171875" y1="80.0" y2="117.486328125"/>
+    <g class="ff_offp_post" transform="translate(-3.701171875,117.486328125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="-21.07421875" x2="-9.513671875" y1="184.3974609375" y2="153.2548828125"/>
+    <g class="ff_offp_pre" transform="translate(-9.513671875,153.2548828125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="-21.07421875" x2="-16.7919921875" y1="184.3974609375" y2="183.150390625"/>
+    <g class="ff_offp_post" transform="translate(-16.7919921875,183.150390625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="-7.15234375" x2="-12.1357421875" y1="182.41796875" y2="182.41796875"/>
+    <g class="ff_offp_pre" transform="translate(-12.1357421875,182.41796875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="-7.15234375" x2="13.7158203125" y1="182.41796875" y2="182.41796875"/>
+    <g class="ff_offp_post" transform="translate(13.7158203125,182.41796875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="36.037109375" x2="27.95703125" y1="205.7890625" y2="194.115234375"/>
+    <g class="ff_offp_pre" transform="translate(27.95703125,194.115234375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="36.037109375" x2="41.1640625" y1="205.7890625" y2="213.1953125"/>
+    <g class="ff_offp_post" transform="translate(41.1640625,213.1953125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="45.4736328125" x2="45.4736328125" y1="235.3291015625" y2="222.650390625"/>
+    <g class="ff_offp_pre" transform="translate(45.4736328125,222.650390625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="45.4736328125" x2="45.4736328125" y1="235.3291015625" y2="251.134765625"/>
+    <g class="ff_offp_post" transform="translate(45.4736328125,251.134765625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="21.3037109375" x2="36.05078125" y1="276.9306640625" y2="268.3662109375"/>
+    <g class="ff_offp_pre" transform="translate(36.05078125,268.3662109375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="21.3037109375" x2="10.4423828125" y1="276.9306640625" y2="283.23828125"/>
+    <g class="ff_offp_post" transform="translate(10.4423828125,283.23828125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="-9.544921875" x2="-0.0625" y1="284.56640625" y2="284.56640625"/>
+    <g class="ff_offp_pre" transform="translate(-0.0625,284.56640625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="-9.544921875" x2="-37.033203125" y1="284.56640625" y2="284.56640625"/>
+    <g class="ff_offp_post" transform="translate(-37.033203125,284.56640625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="-71.1748046875" x2="-56.919921875" y1="259.4443359375" y2="272.5751953125"/>
+    <g class="ff_offp_pre" transform="translate(-56.919921875,272.5751953125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="-71.1748046875" x2="-89.046875" y1="259.4443359375" y2="274.3359375"/>
+    <g class="ff_offp_post" transform="translate(-89.046875,274.3359375)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="-136.8515625" x2="-111.4150390625" y1="284.56640625" y2="284.56640625"/>
+    <g class="ff_offp_pre" transform="translate(-111.4150390625,284.56640625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="-136.8515625" x2="-167.3974609375" y1="284.56640625" y2="284.56640625"/>
+    <g class="ff_offp_post" transform="translate(-167.3974609375,284.56640625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="-212.7431640625" x2="-193.5205078125" y1="249.9482421875" y2="269.8125"/>
+    <g class="ff_offp_pre" transform="translate(-193.5205078125,269.8125)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_post" x1="-212.7431640625" x2="-250.7880859375" y1="249.9482421875" y2="210.6337890625"/>
+    <g class="ff_offp_post" transform="translate(-250.7880859375,210.6337890625)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g class="ff_offp">
+    <line class="ff_offp_pre" x1="-270.0" x2="-270.0" y1="80.0" y2="148.154296875"/>
+    <g class="ff_offp_pre" transform="translate(-270.0,148.154296875)">
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="-8" y2="8"/>
+      <line class="ff_off_curve_x" x1="-8" x2="8" y1="8" y2="-8"/>
+    </g>
+  </g>
+  <g>
+    <circle class="ff_onp ff_curve ff_first ff_extremum" cx="0" cy="0" r="7" transform="translate(446.0,80.0)"/>
+    <g transform="translate(446.0,80.0) rotate(-90.0)">
+      <line class="ff_arrow" x1="0" x2="10" y1="-10" y2="-10"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-7"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-13"/>
+    </g>
+  </g>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(503.2568359375,-89.947265625)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(579.1484375,-124.564453125)"/>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(655.0400390625,-89.947265625)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(712.298828125,80.0)"/>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(655.041015625,249.94921875)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(579.1484375,284.56640625)"/>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(503.2568359375,249.9482421875)"/>
+  <g>
+    <circle class="ff_onp ff_curve ff_first ff_extremum" cx="0" cy="0" r="7" transform="translate(446.0,80.0)"/>
+    <g transform="translate(446.0,80.0) rotate(-90.0)">
+      <line class="ff_arrow" x1="0" x2="10" y1="-10" y2="-10"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-7"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-13"/>
+    </g>
+  </g>
+  <g>
+    <circle class="ff_onp ff_curve ff_first ff_extremum" cx="0" cy="0" r="7" transform="translate(526.0,80.0)"/>
+    <g transform="translate(526.0,80.0) rotate(90.0)">
+      <line class="ff_arrow" x1="0" x2="10" y1="-10" y2="-10"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-7"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-13"/>
+    </g>
+  </g>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(560.7412109375,194.333984375)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(579.1484375,204.56640625)"/>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(597.556640625,194.3330078125)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(632.298828125,80.0)"/>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(597.556640625,-34.33203125)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(579.1484375,-44.564453125)"/>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(560.7412109375,-34.33203125)"/>
+  <g>
+    <circle class="ff_onp ff_curve ff_first ff_extremum" cx="0" cy="0" r="7" transform="translate(526.0,80.0)"/>
+    <g transform="translate(526.0,80.0) rotate(90.0)">
+      <line class="ff_arrow" x1="0" x2="10" y1="-10" y2="-10"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-7"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-13"/>
+    </g>
+  </g>
+  <g>
+    <circle class="ff_onp ff_curve ff_first ff_extremum" cx="0" cy="0" r="7" transform="translate(655.79296875,238.2939453125)"/>
+    <g transform="translate(655.79296875,238.2939453125) rotate(-90.0)">
+      <line class="ff_arrow" x1="0" x2="10" y1="-10" y2="-10"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-7"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-13"/>
+    </g>
+  </g>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(708.84765625,182.41796875)"/>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(752.037109375,205.7890625)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(761.4736328125,235.3291015625)"/>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(737.3037109375,276.9306640625)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(706.455078125,284.56640625)"/>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(622.15234375,233.4794921875)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(600.884765625,213.150390625)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(560.884765625,173.150390625)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(600.884765625,133.150390625)"/>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(685.185546875,184.236328125)"/>
+  <rect class="ff_onp ff_corner ff_extremum" height="12" transform="translate(706.455078125,204.56640625)" width="12" x="-6" y="-6"/>
+  <rect class="ff_onp ff_corner ff_extremum" height="12" transform="translate(681.4736328125,235.3291015625)" width="12" x="-6" y="-6"/>
+  <rect class="ff_onp ff_corner" height="12" transform="translate(700.1298828125,261.1494140625)" width="12" x="-6" y="-6"/>
+  <rect class="ff_onp ff_corner ff_extremum" height="12" transform="translate(708.84765625,262.41796875)" width="12" x="-6" y="-6"/>
+  <rect class="ff_onp ff_corner ff_extremum" height="12" transform="translate(735.79296875,238.2939453125)" width="12" x="-6" y="-6"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(736.103515625,241.4609375)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(696.103515625,281.4609375)"/>
+  <g>
+    <circle class="ff_onp ff_curve ff_first ff_extremum" cx="0" cy="0" r="7" transform="translate(655.79296875,238.2939453125)"/>
+    <g transform="translate(655.79296875,238.2939453125) rotate(-90.0)">
+      <line class="ff_arrow" x1="0" x2="10" y1="-10" y2="-10"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-7"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-13"/>
+    </g>
+  </g>
+  <g>
+    <circle class="ff_onp ff_curve ff_first ff_extremum" cx="0" cy="0" r="7" transform="translate(86.0,80.0)"/>
+    <g transform="translate(86.0,80.0) rotate(-90.0)">
+      <line class="ff_arrow" x1="0" x2="10" y1="-10" y2="-10"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-7"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-13"/>
+    </g>
+  </g>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(143.255859375,-89.947265625)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(219.1484375,-124.564453125)"/>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(295.041015625,-89.947265625)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(352.298828125,80.0)"/>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(295.041015625,249.94921875)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(219.1484375,284.56640625)"/>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(143.255859375,249.94921875)"/>
+  <g>
+    <circle class="ff_onp ff_curve ff_first ff_extremum" cx="0" cy="0" r="7" transform="translate(86.0,80.0)"/>
+    <g transform="translate(86.0,80.0) rotate(-90.0)">
+      <line class="ff_arrow" x1="0" x2="10" y1="-10" y2="-10"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-7"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-13"/>
+    </g>
+  </g>
+  <g>
+    <circle class="ff_onp ff_curve ff_first ff_extremum" cx="0" cy="0" r="7" transform="translate(166.0,80.0)"/>
+    <g transform="translate(166.0,80.0) rotate(90.0)">
+      <line class="ff_arrow" x1="0" x2="10" y1="-10" y2="-10"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-7"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-13"/>
+    </g>
+  </g>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(200.7421875,194.333984375)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(219.1484375,204.56640625)"/>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(237.556640625,194.333984375)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(272.298828125,80.0)"/>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(237.556640625,-34.33203125)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(219.1484375,-44.564453125)"/>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(200.740234375,-34.33203125)"/>
+  <g>
+    <circle class="ff_onp ff_curve ff_first ff_extremum" cx="0" cy="0" r="7" transform="translate(166.0,80.0)"/>
+    <g transform="translate(166.0,80.0) rotate(90.0)">
+      <line class="ff_arrow" x1="0" x2="10" y1="-10" y2="-10"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-7"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-13"/>
+    </g>
+  </g>
+  <g>
+    <circle class="ff_onp ff_curve ff_first ff_extremum" cx="0" cy="0" r="7" transform="translate(327.52734375,187.19921875)"/>
+    <g transform="translate(327.52734375,187.19921875) rotate(-25.190570964958408)">
+      <line class="ff_arrow" x1="0" x2="10" y1="-10" y2="-10"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-7"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-13"/>
+    </g>
+  </g>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(348.84765625,182.41796875)"/>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(392.037109375,205.7890625)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(401.474609375,235.330078125)"/>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(377.3046875,276.9296875)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(346.455078125,284.56640625)"/>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(262.15234375,233.48046875)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(240.884765625,213.150390625)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(200.884765625,173.150390625)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(240.884765625,133.150390625)"/>
+  <g>
+    <circle class="ff_onp ff_curve ff_first ff_extremum" cx="0" cy="0" r="7" transform="translate(327.52734375,187.19921875)"/>
+    <g transform="translate(327.52734375,187.19921875) rotate(-25.190570964958408)">
+      <line class="ff_arrow" x1="0" x2="10" y1="-10" y2="-10"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-7"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-13"/>
+    </g>
+  </g>
+  <g>
+    <circle class="ff_onp ff_curve ff_first ff_extremum" cx="0" cy="0" r="7" transform="translate(-190.0,80.0)"/>
+    <g transform="translate(-190.0,80.0) rotate(90.0)">
+      <line class="ff_arrow" x1="0" x2="10" y1="-10" y2="-10"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-7"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-13"/>
+    </g>
+  </g>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(-155.2587890625,194.333984375)"/>
+  <rect class="ff_onp ff_corner ff_extremum" height="12" transform="translate(-140.390625,204.14453125)" width="12" x="-6" y="-6"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(-155.115234375,173.150390625)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(-115.115234375,133.150390625)"/>
+  <rect class="ff_onp ff_corner ff_extremum" height="12" transform="translate(-90.5634765625,136.5)" width="12" x="-6" y="-6"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(-83.701171875,80.0)"/>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(-118.443359375,-34.33203125)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(-136.8515625,-44.564453125)"/>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(-155.2587890625,-34.33203125)"/>
+  <g>
+    <circle class="ff_onp ff_curve ff_first ff_extremum" cx="0" cy="0" r="7" transform="translate(-190.0,80.0)"/>
+    <g transform="translate(-190.0,80.0) rotate(90.0)">
+      <line class="ff_arrow" x1="0" x2="10" y1="-10" y2="-10"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-7"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-13"/>
+    </g>
+  </g>
+  <g>
+    <circle class="ff_onp ff_curve ff_first ff_extremum" cx="0" cy="0" r="7" transform="translate(-270.0,80.0)"/>
+    <g transform="translate(-270.0,80.0) rotate(-90.0)">
+      <line class="ff_arrow" x1="0" x2="10" y1="-10" y2="-10"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-7"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-13"/>
+    </g>
+  </g>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(-212.7431640625,-89.947265625)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(-136.8515625,-124.564453125)"/>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(-60.9599609375,-89.947265625)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(-3.701171875,80.0)"/>
+  <rect class="ff_onp ff_corner ff_extremum" height="12" transform="translate(-21.07421875,184.3974609375)" width="12" x="-6" y="-6"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(-7.15234375,182.41796875)"/>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(36.037109375,205.7890625)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(45.4736328125,235.3291015625)"/>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(21.3037109375,276.9306640625)"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(-9.544921875,284.56640625)"/>
+  <rect class="ff_onp ff_corner ff_extremum" height="12" transform="translate(-71.1748046875,259.4443359375)" width="12" x="-6" y="-6"/>
+  <circle class="ff_onp ff_curve ff_extremum" cx="0" cy="0" r="7" transform="translate(-136.8515625,284.56640625)"/>
+  <circle class="ff_onp ff_curve" cx="0" cy="0" r="7" transform="translate(-212.7431640625,249.9482421875)"/>
+  <g>
+    <circle class="ff_onp ff_curve ff_first ff_extremum" cx="0" cy="0" r="7" transform="translate(-270.0,80.0)"/>
+    <g transform="translate(-270.0,80.0) rotate(-90.0)">
+      <line class="ff_arrow" x1="0" x2="10" y1="-10" y2="-10"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-7"/>
+      <line class="ff_arrow" x1="10" x2="7" y1="-10" y2="-13"/>
+    </g>
+  </g>
+  <path class="ff_main_background" d="M336.103515625 241.4609375C334.033203125 231.111328125 342.65234375 220.138671875 351.62890625 222.830078125C361.978515625 225.935546875 369.224609375 244.56640625 346.455078125 244.56640625C296.7734375 244.56640625 290.564453125 173.150390625 240.884765625 173.150390625M126.0 80.0C126.0 -11.080078125 167.3984375 -84.564453125 219.1484375 -84.564453125C270.8984375 -84.564453125 312.298828125 -11.080078125 312.298828125 80.0C312.298828125 171.080078125 270.8984375 244.56640625 219.1484375 244.56640625C167.3984375 244.56640625 126.0 171.080078125 126.0 80.0 zM-19.896484375 241.4609375C-21.966796875 231.111328125 -13.34765625 220.138671875 -4.37109375 222.830078125C5.978515625 225.935546875 13.224609375 244.56640625 -9.544921875 244.56640625C-59.2265625 244.56640625 -65.435546875 173.150390625 -115.115234375 173.150390625M-230.0 80.0C-230.0 -11.080078125 -188.6015625 -84.564453125 -136.8515625 -84.564453125C-85.1015625 -84.564453125 -43.701171875 -11.080078125 -43.701171875 80.0C-43.701171875 171.080078125 -85.1015625 244.56640625 -136.8515625 244.56640625C-188.6015625 244.56640625 -230.0 171.080078125 -230.0 80.0 zM696.103515625 241.4609375C694.033203125 231.111328125 702.65234375 220.138671875 711.62890625 222.830078125C721.978515625 225.935546875 729.224609375 244.56640625 706.455078125 244.56640625C656.7734375 244.56640625 650.564453125 173.150390625 600.884765625 173.150390625M486.0 80.0C486.0 -11.080078125 527.3984375 -84.564453125 579.1484375 -84.564453125C630.8984375 -84.564453125 672.298828125 -11.080078125 672.298828125 80.0C672.298828125 171.080078125 630.8984375 244.56640625 579.1484375 244.56640625C527.3984375 244.56640625 486.0 171.080078125 486.0 80.0 z"/>
+  <path class="ff_main_closed" d="M446.0 80.0C446.0 11.845703125 465.2119140625 -50.6337890625 503.2568359375 -89.947265625C522.4794921875 -109.8115234375 548.6025390625 -124.564453125 579.1484375 -124.564453125C609.6943359375 -124.564453125 635.81640625 -109.8115234375 655.0400390625 -89.947265625C693.0859375 -50.6337890625 712.298828125 11.8447265625 712.298828125 80.0C712.298828125 148.1552734375 693.0859375 210.634765625 655.041015625 249.94921875C635.8173828125 269.8134765625 609.6943359375 284.56640625 579.1484375 284.56640625C548.6025390625 284.56640625 522.4794921875 269.8125 503.2568359375 249.9482421875C465.2119140625 210.6337890625 446.0 148.154296875 446.0 80.0 zM526.0 80.0C526.0 133.28515625 543.5869140625 176.607421875 560.7412109375 194.333984375C569.1171875 202.9892578125 575.1943359375 204.56640625 579.1484375 204.56640625C583.1025390625 204.56640625 589.1796875 202.9892578125 597.556640625 194.3330078125C614.7109375 176.6064453125 632.298828125 133.28515625 632.298828125 80.0C632.298828125 26.71484375 614.7109375 -16.60546875 597.556640625 -34.33203125C589.1796875 -42.9873046875 583.1025390625 -44.564453125 579.1484375 -44.564453125C575.1943359375 -44.564453125 569.1171875 -42.9873046875 560.7412109375 -34.33203125C543.5869140625 -16.6064453125 526.0 26.71484375 526.0 80.0 zM655.79296875 238.2939453125C655.79296875 210.396484375 676.6474609375 182.41796875 708.84765625 182.41796875C729.7158203125 182.41796875 743.95703125 194.115234375 752.037109375 205.7890625C757.1640625 213.1953125 761.4736328125 222.650390625 761.4736328125 235.3291015625C761.4736328125 251.134765625 752.05078125 268.3662109375 737.3037109375 276.9306640625C726.4423828125 283.23828125 715.9375 284.56640625 706.455078125 284.56640625C659.296875 284.56640625 634.51171875 249.2734375 622.15234375 233.4794921875C606.5673828125 213.5654296875 603.4072265625 213.150390625 600.884765625 213.150390625C578.80859375 213.150390625 560.884765625 195.2265625 560.884765625 173.150390625C560.884765625 151.07421875 578.80859375 133.150390625 600.884765625 133.150390625C648.0419921875 133.150390625 672.826171875 168.443359375 685.185546875 184.236328125C700.7705078125 204.150390625 703.9306640625 204.56640625 706.455078125 204.56640625L681.4736328125 235.3291015625L700.1298828125 261.1494140625L708.84765625 262.41796875L735.79296875 238.2939453125C735.875 239.3388671875 736.103515625 240.3955078125 736.103515625 241.4609375C736.103515625 263.537109375 718.1796875 281.4609375 696.103515625 281.4609375C673.0439453125 281.4609375 655.79296875 263.529296875 655.79296875 238.2939453125 zM86.0 80.0C86.0 11.845703125 105.2109375 -50.6328125 143.255859375 -89.947265625C162.48046875 -109.810546875 188.6015625 -124.564453125 219.1484375 -124.564453125C249.6953125 -124.564453125 275.81640625 -109.8125 295.041015625 -89.947265625C333.0859375 -50.634765625 352.298828125 11.845703125 352.298828125 80.0C352.298828125 148.154296875 333.0859375 210.634765625 295.041015625 249.94921875C275.81640625 269.8125 249.6953125 284.56640625 219.1484375 284.56640625C188.6015625 284.56640625 162.48046875 269.8125 143.255859375 249.94921875C105.2109375 210.634765625 86.0 148.154296875 86.0 80.0 zM166.0 80.0C166.0 133.28515625 183.587890625 176.607421875 200.7421875 194.333984375C209.1171875 202.990234375 215.1953125 204.56640625 219.1484375 204.56640625C223.1015625 204.56640625 229.1796875 202.990234375 237.556640625 194.333984375C254.7109375 176.607421875 272.298828125 133.28515625 272.298828125 80.0C272.298828125 26.71484375 254.7109375 -16.60546875 237.556640625 -34.33203125C229.1796875 -42.98828125 223.1015625 -44.564453125 219.1484375 -44.564453125C215.1953125 -44.564453125 209.1171875 -42.98828125 200.740234375 -34.33203125C183.587890625 -16.60546875 166.0 26.71484375 166.0 80.0 zM327.52734375 187.19921875C333.65625 184.31640625 340.828125 182.41796875 348.84765625 182.41796875C369.71484375 182.41796875 383.95703125 194.115234375 392.037109375 205.7890625C397.1640625 213.1953125 401.474609375 222.650390625 401.474609375 235.330078125C401.474609375 251.134765625 392.05078125 268.3671875 377.3046875 276.9296875C366.443359375 283.23828125 355.9375 284.56640625 346.455078125 284.56640625C299.296875 284.56640625 274.51171875 249.2734375 262.15234375 233.48046875C246.56640625 213.564453125 243.40625 213.150390625 240.884765625 213.150390625C218.80859375 213.150390625 200.884765625 195.2265625 200.884765625 173.150390625C200.884765625 151.07421875 218.80859375 133.150390625 240.884765625 133.150390625C290.224609375 133.150390625 313.869140625 170.09765625 327.52734375 187.19921875 zM-190.0 80.0C-190.0 133.28515625 -172.4130859375 176.607421875 -155.2587890625 194.333984375C-149.072265625 200.7265625 -144.1396484375 203.2587890625 -140.390625 204.14453125C-149.375 196.8076171875 -155.115234375 185.6435546875 -155.115234375 173.150390625C-155.115234375 151.07421875 -137.19140625 133.150390625 -115.115234375 133.150390625C-106.1064453125 133.150390625 -97.955078125 134.3818359375 -90.5634765625 136.5C-86.3369140625 119.7646484375 -83.701171875 100.62890625 -83.701171875 80.0C-83.701171875 26.71484375 -101.2890625 -16.60546875 -118.443359375 -34.33203125C-126.8203125 -42.9873046875 -132.8974609375 -44.564453125 -136.8515625 -44.564453125C-140.8056640625 -44.564453125 -146.8828125 -42.9873046875 -155.2587890625 -34.33203125C-172.4130859375 -16.6064453125 -190.0 26.71484375 -190.0 80.0 zM-270.0 80.0C-270.0 11.845703125 -250.7880859375 -50.6337890625 -212.7431640625 -89.947265625C-193.5205078125 -109.8115234375 -167.3974609375 -124.564453125 -136.8515625 -124.564453125C-106.3056640625 -124.564453125 -80.18359375 -109.8115234375 -60.9599609375 -89.947265625C-22.9140625 -50.6337890625 -3.701171875 11.8447265625 -3.701171875 80.0C-3.701171875 117.486328125 -9.513671875 153.2548828125 -21.07421875 184.3974609375C-16.7919921875 183.150390625 -12.1357421875 182.41796875 -7.15234375 182.41796875C13.7158203125 182.41796875 27.95703125 194.115234375 36.037109375 205.7890625C41.1640625 213.1953125 45.4736328125 222.650390625 45.4736328125 235.3291015625C45.4736328125 251.134765625 36.05078125 268.3662109375 21.3037109375 276.9306640625C10.4423828125 283.23828125 -0.0625 284.56640625 -9.544921875 284.56640625C-37.033203125 284.56640625 -56.919921875 272.5751953125 -71.1748046875 259.4443359375C-89.046875 274.3359375 -111.4150390625 284.56640625 -136.8515625 284.56640625C-167.3974609375 284.56640625 -193.5205078125 269.8125 -212.7431640625 249.9482421875C-250.7880859375 210.6337890625 -270.0 148.154296875 -270.0 80.0 z"/>
+</svg>

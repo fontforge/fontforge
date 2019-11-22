@@ -55,10 +55,9 @@ void FVOutline(FontViewBase *fv, real width) {
 	    ++cnt;
     ff_progress_start_indicator(10,_("Outlining glyphs"),_("Outlining glyphs"),0,cnt,1);
 
-    memset(&si,0,sizeof(si));
+    InitializeStrokeInfo(&si);
     si.removeexternal = true;
-    si.radius = width;
-    /*si.removeoverlapifneeded = true;*/
+    si.width = width*2;
 
     SFUntickAll(fv->sf);
     for ( i=0; i<fv->map->enccount; ++i )
@@ -90,9 +89,8 @@ void FVInline(FontViewBase *fv, real width, real inset) {
 	    ++cnt;
     ff_progress_start_indicator(10,_("Inlining glyphs"),_("Inlining glyphs"),0,cnt,1);
 
-    memset(&si,0,sizeof(si));
+    InitializeStrokeInfo(&si);
     si.removeexternal = true;
-    /*si.removeoverlapifneeded = true;*/
 
     SFUntickAll(fv->sf);
     for ( i=0; i<fv->map->enccount; ++i )
@@ -100,9 +98,9 @@ void FVInline(FontViewBase *fv, real width, real inset) {
 		sc->layers[layer].splines && !sc->ticked ) {
 	    sc->ticked = true;
 	    SCPreserveLayer(sc,layer,false);
-	    si.radius = width;
+	    si.width = width*2;
 	    temp = SplineSetStroke(sc->layers[layer].splines,&si,sc->layers[layer].order2);
-	    si.radius = width+inset;
+	    si.width = (width+inset)*2;
 	    temp2 = SplineSetStroke(sc->layers[layer].splines,&si,sc->layers[layer].order2);
 	    for ( spl=sc->layers[layer].splines; spl->next!=NULL; spl=spl->next );
 	    spl->next = temp;
@@ -735,10 +733,10 @@ return( NULL );
 
     internal = NULL;
     if ( outline_width!=0 && !wireframe ) {
-	memset(&si,0,sizeof(si));
+	InitializeStrokeInfo(&si);
 	si.removeexternal = true;
-	/*si.removeoverlapifneeded = true;*/
-	si.radius = outline_width;
+	si.width = outline_width*2;
+	si.rmov = srmov_none;
 	temp = SplinePointListCopy(spl);	/* SplineSetStroke confuses the direction I think */
 	internal = SplineSetStroke(temp,&si,order2);
 	SplinePointListsFree(temp);
@@ -754,9 +752,8 @@ return( NULL );
 	for ( temp=spl; temp->next!=NULL; temp=temp->next);
 	temp->next = lines;
 	if ( outline_width!=0 ) {
-	    memset(&si,0,sizeof(si));
-	    si.radius = outline_width/2;
-	    /*si.removeoverlapifneeded = true;*/
+	    InitializeStrokeInfo(&si);
+	    si.width = outline_width;
 	    fatframe = SplineSetStroke(spl,&si,order2);
 	    SplinePointListsFree(spl);
 	    spl = fatframe; /* Don't try SplineSetRemoveOverlap: too likely to cause remove overlap problems. */

@@ -869,12 +869,12 @@ static SplineSet *StrokeOutline(Layer *layer,SplineChar *sc) {
     RefChar *r;
     SplineSet *head=NULL, *tail=NULL, *c;
 
-    memset(&si,0,sizeof(si));
+    InitializeStrokeInfo(&si);
     if ( sc->parent->strokedfont ) {
-	si.radius = sc->parent->strokewidth/2;
+	si.width = sc->parent->strokewidth;
 	si.join = lj_bevel;
 	si.cap = lc_butt;
-	si.stroke_type = si_std;
+	si.stroke_type = si_round;
 	head = SplineSetStroke(layer->splines,&si,layer->order2);
 	if ( head!=NULL )
 	    for ( tail=head; tail->next!=NULL; tail=tail->next );
@@ -893,10 +893,10 @@ static SplineSet *StrokeOutline(Layer *layer,SplineChar *sc) {
 return( head );
     } else
     {
-	si.radius = layer->stroke_pen.width/2;
-	si.join = layer->stroke_pen.linejoin;
-	si.cap = layer->stroke_pen.linecap;
-	si.stroke_type = si_std;
+	SITranslatePSArgs(&si, layer->stroke_pen.linejoin,
+	                  layer->stroke_pen.linecap);
+	si.width = layer->stroke_pen.width;
+	si.stroke_type = si_round;
 return( SplineSetStroke(layer->splines,&si,layer->order2));
     }
 }
@@ -904,11 +904,11 @@ return( SplineSetStroke(layer->splines,&si,layer->order2));
 static SplineSet *RStrokeOutline(struct reflayer *layer) {
     StrokeInfo si;
 
-    memset(&si,0,sizeof(si));
-    si.radius = layer->stroke_pen.width/2;
-    si.join = layer->stroke_pen.linejoin;
-    si.cap = layer->stroke_pen.linecap;
-    si.stroke_type = si_std;
+    InitializeStrokeInfo(&si);
+    SITranslatePSArgs(&si, layer->stroke_pen.linejoin,
+                      layer->stroke_pen.linecap);
+    si.width = layer->stroke_pen.width;
+    si.stroke_type = si_round;
 return( SplineSetStroke(layer->splines,&si,layer->order2));
 }
 

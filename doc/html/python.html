@@ -1626,44 +1626,27 @@ Layers may be compared to see if their contours are similar.
     </TR>
     <TR>
       <TD><CODE>stroke</CODE></TD>
-      <TD><CODE>("circular",width[,linecap,linejoin,flags])<BR>
-	("eliptical",width,minor-width,angle<BR>
-	&nbsp;[,linecap,linejoin,flags])<BR>
-	("caligraphic",width,height,angle[,flags])<BR>
-	("polygon",contour[,flags])</CODE></TD>
-      <TD>Strokes the current line using one of the indicated pens. Line cap may
-	be one of
-	<UL>
-	  <LI>
-	    butt
-	  <LI>
-	    round
-	  <LI>
-	    square
-	</UL>
-	<P>
-	line join may be
-	<UL>
-	  <LI>
-	    miter
-	  <LI>
-	    round
-	  <LI>
-	    bevel
-	</UL>
-	<P>
-	flags is a tuple containing some of the following strings
-	<UL>
-	  <LI>
-	    removeinternal
-	  <LI>
-	    removeexternal
-	  <LI>
-	    cleanup
-	</UL>
-	<P>
-	If a polygonal pen is specified the contour must be a closed, convex polygon
-	(no curved edges) with fewer than 100 vertices.</TD>
+      <TD>Current interface:<P>
+	<CODE>("circular",width<BR>
+	&nbsp;[,CAP,JOIN,ANGLE,KEYWORD])<BR>
+	("elliptical",width,minor-width<BR>
+	&nbsp;[,ANGLE,CAP,JOIN,KEYWORD])<BR>
+	("calligraphic",width,height<BR>
+	&nbsp;[,ANGLE,CAP,JOIN,KEYWORD])<BR>
+	("convex",contour[,ANGLE,CAP,JOIN,KEYWORD])</CODE><P>
+	or legacy interface:<P>
+	<CODE>("circular",width[,CAP,JOIN,FLAGS])<BR>
+	("elliptical",width,minor-width,ANGLE<BR>
+	&nbsp;[,CAP,JOIN,FLAGS])<BR>
+	("calligraphic",width,height,angle[,FLAGS])<BR>
+	("polygon",contour[,FLAGS])</CODE>
+      </TD>
+      <TD>Strokes the lines of each contour in the layer according to
+	the supplied parameters. See the corresponding
+	<A HREF="#glyph-stroke">glyph</A> function for a description of the
+	syntax and the <A HREF="stroke.html">stroke</A> documentation for
+	more general information.<P>
+      </TD>
     </TR>
     <TR>
       <TD><CODE>transform</CODE></TD>
@@ -2697,10 +2680,10 @@ must be created through the font.
 	  chosen mode.
 	  <DT>select_smooth
 	  <DD>Each point with the type <CODE>splineCorner</CODE> will retain
-	  that type, others will be assigned a type according to the chosen 
+	  that type, others will be assigned a type according to the chosen
 	  mode. This makes the <CODE>point.type</CODE> field function like
 	  the <CODE>smooth</CODE> tag in the UFO glif format and some other
-	  spline storage formats. 
+	  spline storage formats.
 	  <DT>select_incompat
 	  <DD>Each point with a type compatible with its current geometry will
 	  retain that type, others will be assigned a type according to the chosen
@@ -2709,30 +2692,30 @@ must be created through the font.
 	  <DD>(default) In this mode, each <EM>selected</EM> point will be assigned
 	  a type based on only its geometry. (However, see "hvcurve" below.)
 	  <DT>downgrade
-	  <DD>In this mode, each <EM>selected</EM> point will be assigned the 
+	  <DD>In this mode, each <EM>selected</EM> point will be assigned the
 	  most specific type compatible with its geometry and its <CODE>point.type</CODE>.
-	  A point marked <CODE>splineHVCurve</CODE> can keep that type or be 
+	  A point marked <CODE>splineHVCurve</CODE> can keep that type or be
 	  downgraded to <CODE>splineCurve</CODE> or <CODE>splineCorner</CODE>, while
-	  a <CODE>splineCurve</CODE> or <CODE>splineTangent</CODE> can keep that 
-	  (respective) type or be downgraded to <CODE>splineCorner</CODE>. 
+	  a <CODE>splineCurve</CODE> or <CODE>splineTangent</CODE> can keep that
+	  (respective) type or be downgraded to <CODE>splineCorner</CODE>.
 	  (<CODE>splineCorner</CODE> is compatible with any geometry.)
 	  <DT>check
-	  <DD>In this mode, the type of each <EM>selected</EM> point is verified to be 
+	  <DD>In this mode, the type of each <EM>selected</EM> point is verified to be
 	  compatible with its geometry. If it is not compatible the function
 	  raises an exception. (At present this exception is
 	  not very informative. However, to identify the specific problem
-	  one can duplicate the layer, use <CODE>setLayer</CODE> with 'downgrade', 
+	  one can duplicate the layer, use <CODE>setLayer</CODE> with 'downgrade',
 	  and then retrieve the layer and compare it with the original.)
 	  <DT>force
-	  <DD>In this mode, the geometry of each <EM>selected</EM> point is 
-	  altered to match its <CODE>point.type</CODE>, similar to changing a 
+	  <DD>In this mode, the geometry of each <EM>selected</EM> point is
+	  altered to match its <CODE>point.type</CODE>, similar to changing a
 	  point's type using the UI. Note that FontForge's point conversion
 	  algorithm is not sophisticated and may not have the desired result.
 	  <DT>hvcurve
 	  <DD>This extra flag can be used to include <CODE>splineHVCurve</CODE>
 	  among the types that can be assigned "by geometry". Normally FontForge
-	  assigns <CODE>splineCurve</CODE> to on-curve points with strictly 
-	  horizontal or vertical off-curve points. 
+	  assigns <CODE>splineCurve</CODE> to on-curve points with strictly
+	  horizontal or vertical off-curve points.
 	</DL></TD>
     </TR>
     <TR>
@@ -2783,45 +2766,106 @@ must be created through the font.
       </TD>
     </TR>
     <TR>
-      <TD><CODE>stroke</CODE></TD>
-      <TD><CODE>("circular",width[,linecap,linejoin,flags])<BR>
-	("eliptical",width,minor-width,angle<BR>
-	&nbsp;[,linecap,linejoin,flags])<BR>
-	("caligraphic",width,height,angle[,flags])<BR>
-	("polygonal",contour[,flags])</CODE></TD>
-      <TD>Strokes the contours of the glyph using one of the indicated pens. Line
-	cap may be one of
-	<UL>
-	  <LI>
-	    butt
-	  <LI>
-	    round
-	  <LI>
-	    square
-	</UL>
-	<P>
-	line join may be
-	<UL>
-	  <LI>
-	    miter
-	  <LI>
-	    round
-	  <LI>
-	    bevel
-	</UL>
-	<P>
-	flags is a tuple containing some of the following strings
-	<UL>
-	  <LI>
-	    removeinternal
-	  <LI>
-	    removeexternal
-	  <LI>
-	    cleanup
-	</UL>
-	<P>
-	If a polygonal pen is specified, the contour must be a closed convex polygon
-	(no curved edges) with fewer than 100 vertices.</TD>
+      <TD><CODE><A name="glyph-stroke">stroke</A></CODE></TD>
+      <TD>Current interface:<P>
+	<CODE>("circular",width<BR>
+	&nbsp;[,CAP,JOIN,ANGLE,KEYWORD])<BR>
+	("elliptical",width,minor-width<BR>
+	&nbsp;[,ANGLE,CAP,JOIN,KEYWORD])<BR>
+	("calligraphic",width,height<BR>
+	&nbsp;[,ANGLE,CAP,JOIN,KEYWORD])<BR>
+	("convex",contour[,ANGLE,CAP,JOIN,KEYWORD])</CODE><P>
+	or legacy interface:<P>
+	<CODE>("circular",width[,CAP,JOIN,FLAGS])<BR>
+	("elliptical",width,minor-width,ANGLE<BR>
+	&nbsp;[,CAP,JOIN,FLAGS])<BR>
+	("calligraphic",width,height,angle[,FLAGS])<BR>
+	("polygon",contour[,FLAGS])</CODE>
+      </TD>
+      <TD>Strokes the contours of the glyph according to the supplied
+	parameters. See the <A HREF="stroke.html">stroke</A> documentation
+	for a more complete description of the facility and its
+	parameters.</P>
+
+	A "circular" nib just has a <CODE>width</CODE> (the
+	diameter), while an "elliptical" nib has a <CODE>width</CODE>
+	(major axis) and a <CODE>minor-width</CODE> (minor axis). A
+	"calligraphic" or "rectangular" nib is similar in that it has
+	a <CODE>width</CODE> and a <CODE>height</CODE> Finally a
+	"convex" nib is one supplied by the user as a
+	<CODE>fontforge</CODE> contour or layer. It must be <EM>convex</EM>
+	as defined in the main stroke facility documentation.<P>
+	<CODE>ANGLE</CODE> is optional. It can be specified either
+	positionally or with <CODE>angle=<EM>float</EM></CODE>.
+	It must be a floating point number in units of radians and
+	defaults to zero. The nib is rotated by this angle before
+	stroking the path.<P>
+	<CODE>CAP</CODE> is optional. It can be specified either
+	positionally or with <CODE>cap=<EM>string</EM></CODE>.
+	It must be one of the strings "nib" (the default), "butt",
+	"round", and "bevel".<P>
+	<CODE>JOIN</CODE> is optional. It can be specified either
+	positionally or with <CODE>join=<EM>string</EM></CODE>.
+	It must be one of the strings "nib" (the default), "bevel",
+	"miter", and "miterclip"<!--, "round", and "arcs"-->.<P>
+	<CODE>KEYWORD</CODE> Parameters:
+	<DL>
+	 <DT> <CODE>removeinternal</CODE> (boolean, default=False)
+	 <DD> When a contour is closed and clockwise, only the smaller "inside"
+	contour is retained. When a contour is closed and counter-clockwise only
+	the larger "outside" contour is retained.
+	 <DT> <CODE>removeexternal</CODE> (boolean, default=False)
+	 <DD> When a contour is closed and clockwise, only the larger "outside"
+	contour is retained. When a contour is closed and counter-clockwise only
+	the smaller "inside" contour is retained.
+	 <DT> <CODE>extrema</CODE> (boolean, default=True)
+	 <DD> When true, any missing extrema on the stroked paths are added.
+	 <DT> <CODE>simplify</CODE> (boolean, default=True)
+	 <DD> When true, simplify is called on the path before it is returned.
+	The <CODE>error-bound</CODE> is set to the <CODE>accuracy</CODE> value.
+	 <DT> <CODE>removeoverlap</CODE> (string, default="layer")
+	 <DD> Specifies whether, and on what basis, remove-overlap should be run.
+	"layer" corresponds to running remove-overlap on the layer as a whole.
+	"contour" corresponds to running remove-overlap on individual contours.
+	"none" corresponds to not running remove-overlap. Note that because
+	the stroke facility relies on remove-overlap to eliminate cusps and
+	other artifacts, "none" is an unusual choice and available primarily
+	for debugging purposes.
+	 <DT> <CODE>accuracy</CODE> (float, default=0.25)
+	 <DD> This is a target (but not a guarantee) for the allowed error, in
+	em-units, of the output relative to the input path and nib geometries.
+	Higher values allow more error will typically yield contours with fewer
+	points.
+	 <DT> <CODE>jlrelative</CODE> (boolean, default=True)
+	 <DD> See below.
+	 <DT> <CODE>joinlimit</CODE> (float, default=20)
+	 <DD> Specifies the maximum length of a "miter" or "miterclip"<!--, or "arcs"-->
+	join. For "miter" joins that would be longer will fall back to "bevel".
+	With "miterclip"<!-- and "arcs"--> a longer join will be trimmed to the specified
+	length. Note, however, that no join is trimmed past the "bevel line" and
+	therefore lower values do not guarantee a given length.<BR><BR>
+	When <CODE>jlrelative</CODE> is false the value is interpreted as a length
+	in em-units. Otherwise the value is interpreted as a multiple of
+	"half-stroke-widths": half the span of the nib at the angle half way between
+	the incoming and outgoing join angles.
+	 <DT> <CODE>ecrelative</CODE> (boolean, default=True)
+	 <DD> See below.
+	 <DT> <CODE>extendcap</CODE> (float, default=0)
+	 <DD> When the contour being stroked is open and the <CODE>cap</CODE> style
+	is "butt" or "round", this parameter adds area between the end of that contour
+	and the cap. The length of that area will never be less than the specified
+	value but may be more, depending on the geometry of the nib and the join.
+	(However, it will always be exact for circular nibs.)<BR><BR>
+	When <CODE>ecrelative</CODE> is false the value is interpreted as a length
+	in em-units. Otherwise the value is interpreted as a multiple of
+	"half-stroke-widths": half the span of the stroked path given the angle at
+	the cap point.
+	</DL>
+	In the legacy interface <CODE>FLAGS</CODE> is an optional
+	tuple containing zero or more of the strings "removeinternal",
+	"removeexternal", and "cleanup". The last is interpreted as
+	<CODE>simplify=True</CODE>, with a default of <CODE>False</CODE>
+	when a FLAGS tuple is present.
     </TR>
     <TR>
       <TD><CODE>transform</CODE></TD>
@@ -5323,47 +5367,37 @@ This type may not be pickled.
     </TR>
     <TR>
       <TD><CODE>stroke</CODE></TD>
-      <TD><CODE>("circular",width[,<BR>
-	&nbsp;linecap,linejoin,flags])<BR>
-	("eliptical",width,<BR>
-	&nbsp;minor-width,angle<BR>
-	&nbsp;[,linecap,linejoin,flags])<BR>
-	("caligraphic",width,<BR>
-	&nbsp;height,angle[,flags])<BR>
-	("polygonal",contour[,flags])</CODE></TD>
-      <TD>Strokes the contours of all selected glyphs using one of the indicated
-	pens. Line cap may be one of
-	<UL>
-	  <LI>
-	    butt
-	  <LI>
-	    round
-	  <LI>
-	    square
-	</UL>
-	<P>
-	line join may be
-	<UL>
-	  <LI>
-	    miter
-	  <LI>
-	    round
-	  <LI>
-	    bevel
-	</UL>
-	<P>
-	flags is a tuple containing some of the following strings
-	<UL>
-	  <LI>
-	    removeinternal
-	  <LI>
-	    removeexternal
-	  <LI>
-	    cleanup
-	</UL>
-	<P>
-	If a polygonal pen is specified the contour must be a closed convex polygon
-	(no curved edges) with fewer than 100 vertices.</TD>
+      <TD>Current interface:<P>
+	<CODE>("circular",width<BR>
+	&nbsp;[,CAP,JOIN,<BR>
+	&nbsp;ANGLE,KEYWORD])<BR>
+	("elliptical",width,<BR>
+	&nbsp;minor-width<BR>
+	&nbsp;[,ANGLE,CAP,<BR>
+	&nbsp;JOIN,KEYWORD])<BR>
+	("calligraphic",width,height<BR>
+	&nbsp;[,ANGLE,CAP,<BR>
+	&nbsp;JOIN,KEYWORD])<BR>
+	("convex",contour<BR>
+	&nbsp;[,ANGLE,CAP,<BR>
+	&nbsp;JOIN,KEYWORD])</CODE><P>
+	or legacy interface:<P>
+	<CODE>("circular",width<BR>
+	&nbsp;[,CAP,JOIN,FLAGS])<BR>
+	("elliptical",width,<BR>
+	&nbsp;minor-width,ANGLE<BR>
+	&nbsp;[,CAP,JOIN,FLAGS])<BR>
+	("calligraphic",width,<BR>
+	&nbsp;height,angle[,FLAGS])<BR>
+	("polygon",contour[,FLAGS])</CODE>
+      </TD>
+      <TD>Strokes the lines of the contours in all selected
+	glyphs according to the supplied parameters. See the
+	corresponding <A HREF="#glyph-stroke">glyph</A> function
+	for a description of the syntax and the
+	<A HREF="stroke.html">stroke</A> documentation for more
+	general information.<P>
+      </TD>
     </TR>
     <TR>
       <TD><CODE>transform</CODE></TD>

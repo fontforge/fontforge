@@ -31,6 +31,7 @@
 
 #include "cvundoes.h"
 #include "fontforgevw.h"
+#include "splinefit.h"
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "ustring.h"
@@ -562,7 +563,7 @@ static void SplineSetNLTrans(SplineSet *ss, struct expr_context *c,
 	int everything) {
     SplinePoint *first, *last, *next;
     SplinePoint *sp;
-    TPoint mids[20];
+    FitPoint mids[20];
     bigreal t;
     int i;
     Spline1D *xsp, *ysp;
@@ -597,14 +598,14 @@ static void SplineSetNLTrans(SplineSet *ss, struct expr_context *c,
 		    c->y = ((ysp->a*t+ysp->b)*t+ysp->c)*t + ysp->d;
 		    mids[i].t = t;
 		    if ( c->pov_func==NULL ) {
-			mids[i].x = NL_expr(c,c->x_expr);
-			mids[i].y = NL_expr(c,c->y_expr);
+			mids[i].p.x = NL_expr(c,c->x_expr);
+			mids[i].p.y = NL_expr(c,c->y_expr);
 		    } else {
 			BasePoint temp;
 			temp.x = c->x;
 			temp.y = c->y;
 			(c->pov_func)(&temp,c->pov);
-			mids[i].x = temp.x; mids[i].y = temp.y;
+			mids[i].p.x = temp.x; mids[i].p.y = temp.y;
 		    }
 		}
 		if ( sp->prev->order2 )	/* Can't be order2 */

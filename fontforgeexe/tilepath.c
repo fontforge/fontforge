@@ -31,6 +31,7 @@
 #include "fontforgeui.h"
 #include "fvfonts.h"
 #include "gkeysym.h"
+#include "splinefit.h"
 #include "splinefont.h"
 #include "splineutil.h"
 #include "splineutil2.h"
@@ -154,7 +155,7 @@ return( false );
 		sx = spline->to->me.x - spline->from->me.x;
 		sy = spline->to->me.y - spline->from->me.y;
 	    }
-	    angle = atan2(sy,sx) - 3.1415926535897932/2;
+	    angle = atan2(sy,sx) - FF_PI/2;
 	    td->samples[i].c = cos(angle);
 	    td->samples[i].s = sin(angle);
 	    if ( td->samples[i].s>-.00001 && td->samples[i].s<.00001 ) { td->samples[i].s=0; td->samples[i].c = ( td->samples[i].c>0 )? 1 : -1; }
@@ -175,7 +176,7 @@ return( false );
 	    /* there are two normals at a join, one for each spline */
 	    /*  it should bisect the normal vectors of the two splines */
 	    sx = next->splines[0].c; sy = next->splines[1].c;
-	    angle = atan2(sy,sx) - 3.1415926535897932/2;
+	    angle = atan2(sy,sx) - FF_PI/2;
 	    td->joins[pcnt].c1 = cos(angle);
 	    td->joins[pcnt].s1 = sin(angle);
 	    if ( td->joins[pcnt].s1>-.00001 && td->joins[pcnt].s1<.00001 ) { td->joins[pcnt].s1=0; td->joins[pcnt].c1 = ( td->joins[pcnt].c1>0 )? 1 : -1; }
@@ -183,7 +184,7 @@ return( false );
 
 	    sx = (3*spline->splines[0].a+2*spline->splines[0].b)+spline->splines[0].c;
 	    sy = (3*spline->splines[1].a+2*spline->splines[1].b)+spline->splines[1].c;
-	    angle = atan2(sy,sx) - 3.1415926535897932/2;
+	    angle = atan2(sy,sx) - FF_PI/2;
 	    td->joins[pcnt].c2 = cos(angle);
 	    td->joins[pcnt].s2 = sin(angle);
 	    if ( td->joins[pcnt].s2>-.00001 && td->joins[pcnt].s2<.00001 ) { td->joins[pcnt].s2=0; td->joins[pcnt].c2 = ( td->joins[pcnt].c2>0 )? 1 : -1; }
@@ -534,7 +535,7 @@ static void TileLine(TD *td) {
     }
 }
 
-static void AdjustPoint(TD *td,Spline *spline,bigreal t,TPoint *to) {
+static void AdjustPoint(TD *td,Spline *spline,bigreal t, FitPoint *to) {
     bigreal x, y;
     bigreal pos;
     int low;
@@ -562,19 +563,19 @@ static void AdjustPoint(TD *td,Spline *spline,bigreal t,TPoint *to) {
 	dy2 = td->joins[i].c2;
 	/* there are two lines at a join and I need to find the intersection */
 	if ( dy2>-.00001 && dy2<.00001 ) {
-	    to->y = y2;
+	    to->p.y = y2;
 	    if ( dy1>-.00001 && dy1<.00001 )	/* essentially parallel */
-		to->x = x2;
+		to->p.x = x2;
 	    else
-		to->x = x1 + dx1*(y2-y1)/dy1;
+		to->p.x = x1 + dx1*(y2-y1)/dy1;
 	} else {
 	    bigreal s=(dy1*dx2/dy2-dx1);
 	    if ( s>-.00001 && s<.00001 ) {	/* essentially parallel */
-		to->x = x1; to->y = y1;
+		to->p.x = x1; to->y = y1;
 	    } else {
 		bigreal t1 = (x1-x2- dx2/dy2*(y1-y2))/s;
-		to->x = x1 + dx1*t1;
-		to->y = y1 + dy1*t1;
+		to->p.x = x1 + dx1*t1;
+		to->p.y = y1 + dy1*t1;
 	    }
 	}
     } else {
@@ -598,18 +599,18 @@ static void AdjustPoint(TD *td,Spline *spline,bigreal t,TPoint *to) {
 	    s = (td->samples[low].s*(1-pos) + td->samples[low+1].s*pos);
 	}
 
-	to->x = dx + c*x;
-	to->y = dy + s*x;
+	to->p.x = dx + c*x;
+	to->p.y = dy + s*x;
     }
 }
 
 static SplinePoint *TDMakePoint(TD *td,Spline *old,real t) {
-    TPoint tp;
+    FitPoint fp;
     SplinePoint *new;
 
-    AdjustPoint(td,old,t,&tp);
+    AdjustPoint(td,old,t,&fp);
     new = chunkalloc(sizeof(SplinePoint));
-    new->me.x = tp.x; new->me.y = tp.y;
+    new->me.x = tp.p.x; new->me.y = tp.p.y;
     new->nextcp = new->me;
     new->prevcp = new->me;
     new->nonextcp = new->noprevcp = true;
@@ -619,7 +620,7 @@ return( new );
 
 static Spline *AdjustSpline(TD *td,Spline *old,SplinePoint *newfrom,SplinePoint *newto,
 	int order2) {
-    TPoint tps[15];
+    FitPoint fps[15];
     int i;
     bigreal t;
 
@@ -628,8 +629,8 @@ static Spline *AdjustSpline(TD *td,Spline *old,SplinePoint *newfrom,SplinePoint 
     if ( newto==NULL )
 	newto = TDMakePoint(td,old,1);
     for ( i=1, t=1/16.0; i<16; ++i, t+= 1/16.0 )
-	AdjustPoint(td,old,t,&tps[i-1]);
-return( ApproximateSplineFromPoints(newfrom,newto,tps,15, order2) );
+	AdjustPoint(td,old,t,&fps[i-1]);
+return( ApproximateSplineFromPoints(newfrom,newto,fps,15, order2) );
 }
 
 static void AdjustSplineSet(TD *td,int order2) {

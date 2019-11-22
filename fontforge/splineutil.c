@@ -1123,7 +1123,7 @@ static int SplinePointCategory(SplinePoint *sp) {
 	    pt = pt_curve;
 	/* Cross product of control point with unit vector normal to line in */
 	/*  opposite direction should be less than an em-unit for a tangent */
-	else if (    (   nclen==0 && pclen!=0 
+	else if (    (   nclen==0 && pclen!=0
 	              && (cross = pcdir.x*ndir.y-pcdir.y*ndir.x)<bounds
 	              && cross>-bounds && (pcdir.x*ndir.x+pcdir.y*ndir.y)<0 )
 	          ||
@@ -1150,7 +1150,7 @@ static enum pointtype SplinePointDowngrade(int current, int geom) {
 	if ( current==pt_curve && geom!=pt_curve ) {
 		if ( geom==pt_hvcurve )
 			np = pt_curve;
-		else 
+		else
 			np = pt_corner;
 	} else if ( current==pt_hvcurve && geom!=pt_hvcurve ) {
 		if ( geom==pt_curve )
@@ -1736,12 +1736,21 @@ ImageList *ImageListTransform(ImageList *img, real transform[6],int everything) 
 return( head );
 }
 
-void BpTransform(BasePoint *to, BasePoint *from, real transform[6]) {
+static void _BpTransform(BasePoint *to, BasePoint *from, real transform[6], enum transformPointMask tpmask) {
     BasePoint p;
     p.x = transform[0]*from->x + transform[2]*from->y + transform[4];
     p.y = transform[1]*from->x + transform[3]*from->y + transform[5];
-    to->x = rint(1024*p.x)/1024;
-    to->y = rint(1024*p.y)/1024;
+    if ( ! (tpmask & tpmask_dontTrimValues ) ) {
+	to->x = rint(1024*p.x)/1024;
+	to->y = rint(1024*p.y)/1024;
+    } else {
+	to->x = p.x;
+	to->y = p.y;
+    }
+}
+
+void BpTransform(BasePoint *to, BasePoint *from, real transform[6]) {
+    _BpTransform(to, from, transform, 0);
 }
 
 void ApTransform(AnchorPoint *ap, real transform[6]) {
@@ -1760,13 +1769,13 @@ static void TransformPointExtended(SplinePoint *sp, real transform[6], enum tran
 	if( sp->nextcpselected )
 	{
 	    int order2 = sp->next ? sp->next->order2 : 0;
-	    BpTransform(&sp->nextcp,&sp->nextcp,transform);
+	    _BpTransform(&sp->nextcp,&sp->nextcp,transform,tpmask);
 	    SPTouchControl( sp, &sp->nextcp, order2 );
 	}
 	else if( sp->prevcpselected )
 	{
 	    int order2 = sp->next ? sp->next->order2 : 0;
-	    BpTransform(&sp->prevcp,&sp->prevcp,transform);
+	    _BpTransform(&sp->prevcp,&sp->prevcp,transform,tpmask);
 	    SPTouchControl( sp, &sp->prevcp, order2 );
 	}
     }
@@ -1775,11 +1784,11 @@ static void TransformPointExtended(SplinePoint *sp, real transform[6], enum tran
 	/**
 	 * Transform the base splinepoints.
 	 */
-	BpTransform(&sp->me,&sp->me,transform);
+	_BpTransform(&sp->me,&sp->me,transform,tpmask);
 
 	if ( !sp->nonextcp )
 	{
-	    BpTransform(&sp->nextcp,&sp->nextcp,transform);
+	    _BpTransform(&sp->nextcp,&sp->nextcp,transform,tpmask);
 	}
 	else
 	{
@@ -1788,7 +1797,7 @@ static void TransformPointExtended(SplinePoint *sp, real transform[6], enum tran
 
 	if ( !sp->noprevcp )
 	{
-	    BpTransform(&sp->prevcp,&sp->prevcp,transform);
+	    _BpTransform(&sp->prevcp,&sp->prevcp,transform,tpmask);
 	}
 	else
 	{
@@ -1827,7 +1836,7 @@ static void TransformSpiro(spiro_cp *cp, real transform[6]) {
 }
 
 static void TransformPTsInterpolateCPs(BasePoint *fromorig,Spline *spline,
-	BasePoint *toorig,real transform[6] ) {
+	BasePoint *toorig,real transform[6], enum transformPointMask tpmask ) {
     BasePoint totrans, temp;
     bigreal fraction;
 
@@ -1836,7 +1845,7 @@ static void TransformPTsInterpolateCPs(BasePoint *fromorig,Spline *spline,
     /*  last spline both from and to will have been transform. We can detect */
     /*  this because toorig will be different from &spline->to->me */
     if ( spline->to->selected && toorig==&spline->to->me )
-	BpTransform(&totrans,&spline->to->me,transform);
+	_BpTransform(&totrans,&spline->to->me,transform,tpmask);
     else
 	totrans = spline->to->me;
 
@@ -1847,9 +1856,9 @@ static void TransformPTsInterpolateCPs(BasePoint *fromorig,Spline *spline,
 	fraction = (spline->to->prevcp.x-fromorig->x)/( toorig->x-fromorig->x );
 	spline->to->prevcp.x = spline->from->me.x + fraction*( totrans.x-spline->from->me.x );
     } else {
-	BpTransform(&temp,&spline->from->nextcp,transform);
+	_BpTransform(&temp,&spline->from->nextcp,transform,tpmask);
 	spline->from->nextcp.x = temp.x;
-	BpTransform(&temp,&spline->to->prevcp,transform);
+	_BpTransform(&temp,&spline->to->prevcp,transform,tpmask);
 	spline->to->prevcp.x = temp.x;
     }
     if ( fromorig->y!=toorig->y ) {
@@ -1858,9 +1867,9 @@ static void TransformPTsInterpolateCPs(BasePoint *fromorig,Spline *spline,
 	fraction = (spline->to->prevcp.y-fromorig->y)/( toorig->y-fromorig->y );
 	spline->to->prevcp.y = spline->from->me.y + fraction*( totrans.y-spline->from->me.y );
     } else {
-	BpTransform(&temp,&spline->from->nextcp,transform);
+	_BpTransform(&temp,&spline->from->nextcp,transform,tpmask);
 	spline->from->nextcp.y = temp.y;
-	BpTransform(&temp,&spline->to->prevcp,transform);
+	_BpTransform(&temp,&spline->to->prevcp,transform,tpmask);
 	spline->to->prevcp.y = temp.y;
     }
 
@@ -1885,7 +1894,7 @@ SplinePointList *SplinePointListTransformExtended(SplinePointList *base, real tr
 	    printf("SplinePointListTransformExtended() spl->first->selected %d\n", spl->first->selected );
 	    if ( spl->first->selected ) {
 		anysel = true;
-		BpTransform(&spl->first->me,&spl->first->me,transform);
+		_BpTransform(&spl->first->me,&spl->first->me,transform,tpmask);
 	    } else
 		allsel = false;
 	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
@@ -1895,7 +1904,7 @@ SplinePointList *SplinePointListTransformExtended(SplinePointList *base, real tr
 		{
 		    TransformPTsInterpolateCPs( &lastpointorig, spline,
 						spl->first==spline->to? &firstpointorig : &spline->to->me,
-						transform );
+						transform, tpmask );
 		}
 		lastpointorig = orig;
 		if ( spline->to->selected ) anysel = true; else allsel = false;
@@ -2200,6 +2209,21 @@ SplinePointList *SPLCopyTransformedHintMasks(RefChar *r,
     memcpy(transform,r->transform,sizeof(transform));
     transform[4] += trans->x; transform[5] += trans->y;
 return( _SPLCopyTransformedHintMasks(r->sc,layer,transform,basesc));
+}
+
+void SplinePointListClearCPSel(SplinePointList *spl) {
+    Spline *spline, *first;
+
+    for ( ; spl!=NULL; spl = spl->next ) {
+	first = NULL;
+	spl->first->nextcpselected = false;
+	spl->first->prevcpselected = false;
+	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+	     spline->to->nextcpselected = false;
+	     spline->to->prevcpselected = false;
+	    if ( first==NULL ) first = spline;
+	}
+    }
 }
 
 void SplinePointListSelect(SplinePointList *spl,int sel) {
@@ -7359,7 +7383,7 @@ return( changed );
 
 int SplineRemoveWildControlPoints(Spline *s, bigreal distratio) {
 	// If the distance between the control point and its base
-	// exceeds the the distance between the base points 
+	// exceeds the the distance between the base points
 	// by a great factor,
 	// it is likely erroneous and is likely to cause problems.
 	// So we remove it.
@@ -7929,4 +7953,3 @@ bigreal DistanceBetweenPoints( BasePoint *p1, BasePoint *p2 )
     t = sqrt( t );
     return t;
 }
-

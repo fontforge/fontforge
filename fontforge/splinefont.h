@@ -100,15 +100,6 @@ typedef struct dbasepoint {
 #define DBASEPOINT_EMPTY { (bigreal)0.0, (bigreal)0.0 }
 
 
-typedef struct tpoint {
-    real x;
-    real y;
-    real t;
-} TPoint;
-
-#define TPOINT_EMPTY { (real)0.0, (real)0.0, (real)0.0 }
-
-
 typedef struct dbounds {
     real minx, maxx;
     real miny, maxy;
@@ -162,15 +153,25 @@ struct pschars {
 
 enum linejoin {
     lj_miter,		/* Extend lines until they meet */
-    lj_round,		/* circle centered at the join of expand radius */
+    lj_miterclip,	/* Extend lines until they meet */
+    lj_round,		/* connect with arc (not w/ stroking - see "nib") */
     lj_bevel,		/* Straight line between the ends of next and prev */
+    lj_nib,		/* Join with the nib shape */
+    lj_arcs,
     lj_inherited
 };
 enum linecap {
-    lc_butt,		/* equiv to lj_bevel, straight line extends from one side to other */
-    lc_round,		/* semi-circle */
-    lc_square,		/* Extend lines by radius, then join them */
+    lc_butt,		/* Finish with line perpendicular to end tangent */
+    lc_round,		/* semi-circle (not w/ stroking - see "nib") */
+    lc_nib,		/* cap with the nib shape */
+    lc_square,		/* Not used w/ stroking - use lc_butt w/ extend */
+    lc_bevel,		/* Just join endpoints with a line */
     lc_inherited
+};
+enum stroke_rmov {
+    srmov_layer = 0,
+    srmov_contour = 1,
+    srmov_none = 2
 };
 enum spreadMethod {
     sm_pad, sm_reflect, sm_repeat
@@ -223,28 +224,31 @@ struct pen {
 };
 
 struct spline;
-enum si_type { si_std, si_caligraphic, si_poly, si_centerline };
+enum si_type { si_round, si_calligraphic, si_nib, si_centerline };
 /* If you change this structure you may need to update MakeStrokeDlg */
-/*  and cvpalettes.c both contain statically initialized StrokeInfos */
+/*  and cvpalettes.c -- both contain statically initialized StrokeInfos */
 typedef struct strokeinfo {
-    real radius;			/* or major axis of pen */
+    bigreal width;			/* or major axis of pen */
     enum linejoin join;
     enum linecap cap;
     enum si_type stroke_type;
-    unsigned int removeinternal: 1;
-    unsigned int removeexternal: 1;
-    unsigned int leave_users_center: 1;			/* Don't move the pen so its center is at the origin */
-    real penangle;
-    real minorradius;
-    struct splinepointlist *poly;
-    real resolution;
-/* For freehand tool */
+    enum stroke_rmov rmov;
+    // Could be bits but the python interface would be annoying
+    int removeinternal, removeexternal, simplify, extrema;
+    int leave_users_center, jlrelative, ecrelative;
+    bigreal penangle, height, extendcap, joinlimit, accuracy_target;
+    struct splinepointlist *nib;
+/* For freehand tool, not currently used in practice */
     real radius2;
     int pressure1, pressure2;
-/* End freehand tool */
     void *data;
     bigreal (*factor)(void *data,struct spline *spline,real t);
+/* End freehand */
 } StrokeInfo;
+
+extern StrokeInfo *InitializeStrokeInfo(StrokeInfo *sip);
+extern void SITranslatePSArgs(StrokeInfo *sip, enum linejoin lj,
+                              enum linecap lc);
 
 enum overlap_type { over_remove, over_rmselected, over_intersect, over_intersel,
 	over_exclude, over_findinter, over_fisel };
@@ -2200,7 +2204,8 @@ enum transformPointType { tpt_OnlySelected, tpt_AllPoints, tpt_OnlySelectedInter
  */
 enum transformPointMask {
     tpmask_dontFixControlPoints = 1 << 1,
-    tpmask_operateOnSelectedBCP = 1 << 2
+    tpmask_operateOnSelectedBCP = 1 << 2,
+    tpmask_dontTrimValues = 1 << 3
 };
 extern SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[6], enum transformPointType allpoints );
 extern void SCReinstanciateRef(SplineChar *sc,SplineChar *rsc,int layer);
@@ -2241,8 +2246,6 @@ extern extended SplineSolveFixup(const Spline1D *sp, real tmin, real tmax, exten
 
 #define CURVATURE_ERROR	-1e9
 
-extern Spline *ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
-	TPoint *mid, int cnt,int order2);
 extern bigreal SplineLength(Spline *spline);
 extern int SplineIsLinear(Spline *spline);
 extern void SFOrderBitmapList(SplineFont *sf);

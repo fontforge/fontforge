@@ -298,7 +298,7 @@ void _GXCDraw_FillRect(GXWindow gw, GRect *rect) {
 }
 
 void _GXCDraw_FillRoundRect(GXWindow gw, GRect *rect, int radius) {
-    double degrees = M_PI / 180.0;
+    double degrees = FF_PI / 180.0;
 
     GXCDrawSetcolfunc(gw,gw->ggc);
 

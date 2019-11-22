@@ -1,0 +1,32 @@
+#Needs: fonts/StrokeTests.sfd
+#
+Open($1);
+Select('at'); ExpandStroke(0, 70, 0, 0, -1, -1, -1, -1, -1, 0);
+Select('A'); ExpandStroke(0, 30, 0, 0, 0, 2, -1, -1, -1, 0);
+Select('B'); ExpandStroke(0, 30, 40, 45, 0, 2, -1, -1, -1, 0);
+Select('C'); ExpandStroke(0, 50, 20, 25, 0, 0, -1, -1, -1, 0);
+Select('D'); ExpandStroke(0, 10, 100, 0, 0, 4, -1, -1, -1, 0);
+Select('E'); ExpandStroke(0, 40, 42, 20, 0, 3, -1, -1, -1, 0);
+Select('F'); ExpandStroke(1, 30, 40, 45, 0, 2, -1, -1, -1, 0);
+Select('G'); ExpandStroke(1, 50, 20, 25, 3, 0, -1, -1, -1, 0);
+Select('H'); ExpandStroke(1, 10, 100, 0, 1, 4, -1, -1, -1, 0);
+Select('I'); ExpandStroke(1, 40, 42, 20, 0, 3, -1, -1, -1, 0);
+
+Select('J'); ExpandStroke(1, 20, 100, 0, -1, -1, -1, -1, -1, 0);
+Select('K'); ExpandStroke(1, 20, 100, 30, -1, -1, -1, -1, -1, 0);
+Select('L'); ExpandStroke(1, 20, 100, 0, -1, 4, -1, -1, -1, 0);
+Select('M'); ExpandStroke(1, 20, 100, 0, 1, 2, -1, -1, -1, 0);
+Select('N'); ExpandStroke(1, 20, 100, 0, 1, 2, -1, -1, -1, 1);
+Select('O'); ExpandStroke(1, 20, 100, 0, 1, 2, -1, -1, -1, 2);
+Select('P'); ExpandStroke(0, 60, 0, 45, 3, 3, -1, -1, -1, 32);
+Select('Q'); ExpandStroke(1, 20, 100, 0, 1, 2, -1, -1, -1, 16);
+Select('R'); ExpandStroke(1, 20, 100, 0, 1, 2, -1, -1, 3, 0);
+Select('S'); ExpandStroke(1, 20, 100, 0, 1, 2, -1, -1, -1, 4);
+Select('T'); ExpandStroke(1, 20, 100, 0, 1, 2, -1, -1, -1, 8);
+Select('U'); ExpandStroke(1, 20, 100, 0, 1, 0, 4, -1, -1, 0);
+Select('V'); ExpandStroke(1, 20, 100, 0, 1, 4, 4, -1, -1, 0);
+Select('W'); ExpandStroke(1, 20, 100, 0, 1, 4, 180, -1, -1, 64);
+Select('X'); ExpandStroke(1, 20, 100, 0, 1, 4, -1, 3, -1, 0);
+Select('Y'); ExpandStroke(1, 20, 100, 0, 1, 4, -1, 100, -1, 128);
+Select('Z'); ExpandStroke(0, 60, 100, 0, 1, 1, -1, 100, -1, 0);
+Close();

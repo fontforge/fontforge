@@ -781,8 +781,8 @@ static int HVITest(struct problems *p,BasePoint *to, BasePoint *from,
     xoff = to->x-from->x;
     angle = atan2(yoff,xoff);
     if ( angle<0 )
-	angle += 3.1415926535897932;
-    if ( angle<.1 || angle>3.1415926535897932-.1 ) {
+	angle += FF_PI;
+    if ( angle<.1 || angle>FF_PI-.1 ) {
 	if ( yoff!=0 )
 	    ishor = true;
     } else if ( angle>1.5707963-.1 && angle<1.5707963+.1 ) {
@@ -1297,7 +1297,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     }
 
     if ( p->linenearstd && !p->finish ) {
-	real ia = (90-p->fv->b.sf->italicangle)*(3.1415926535897932/180);
+	real ia = (90-p->fv->b.sf->italicangle)*(FF_PI/180);
 	int hasia = p->fv->b.sf->italicangle!=0;
 	for ( test=spl; test!=NULL && !p->finish && p->linenearstd; test = test->next ) {
 	    first = NULL;
@@ -1322,7 +1322,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     }
 
     if ( p->cpnearstd && !p->finish ) {
-	real ia = (90-p->fv->b.sf->italicangle)*(3.1415926535897932/180);
+	real ia = (90-p->fv->b.sf->italicangle)*(FF_PI/180);
 	int hasia = p->fv->b.sf->italicangle!=0;
 	for ( test=spl; test!=NULL && !p->finish && p->linenearstd; test = test->next ) {
 	    first = NULL;

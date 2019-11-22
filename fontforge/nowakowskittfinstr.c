@@ -2162,13 +2162,13 @@ static int __same_angle(int *contourends, BasePoint *bp, int p, double angle) {
     /* true. 'Close' means about 5 deg, i.e. about 0.087 rad. */
     PrevTangent = fabs(PrevTangent-angle);
     NextTangent = fabs(NextTangent-angle);
-    while (PrevTangent > M_PI) PrevTangent -= 2*M_PI;
-    while (NextTangent > M_PI) NextTangent -= 2*M_PI;
+    while (PrevTangent > FF_PI) PrevTangent -= 2*FF_PI;
+    while (NextTangent > FF_PI) NextTangent -= 2*FF_PI;
 return (fabs(PrevTangent) <= 0.087) || (fabs(NextTangent) <= 0.087);
 }
 
 static int same_angle(int *contourends, BasePoint *bp, int p, double angle) {
-return __same_angle(contourends, bp, p, angle) || __same_angle(contourends, bp, p, angle+M_PI);
+return __same_angle(contourends, bp, p, angle) || __same_angle(contourends, bp, p, angle+FF_PI);
 }
 
 /* I found it needed to write some simple functions to classify points snapped
@@ -2364,7 +2364,7 @@ static int value_point(InstrCt *ct, int p, SplinePoint *sp, real fudge) {
         IsExtremum(ct->xdir, p, sp))
             score+=4;
 
-    if (same_angle(ct->contourends, ct->bp, p, ct->xdir?0.5*M_PI:0.0))
+    if (same_angle(ct->contourends, ct->bp, p, ct->xdir?0.5*FF_PI:0.0))
         score++;
 
     if (p == sp->ttfindex && IsAnglePoint(ct->contourends, ct->bp, sp))

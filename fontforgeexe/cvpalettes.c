@@ -351,14 +351,6 @@ static char *editablelayers[] = {
     N_("_Guide")
 };
 static real raddiam_x = 20, raddiam_y = 20, rotate_by=0;
-static StrokeInfo expand = {
-    25, lj_round, lc_butt, si_centerline,
-    false, /* removeexternal */
-    false, /* removeinternal */
-    false, /* leave users */
-    3.1415926535897932/4, 25, NULL, 50,
-    0.0, 0, 0, NULL, NULL
-};
 
 real CVRoundRectRadius(void) {
 return( rr_radius );
@@ -374,15 +366,11 @@ return( ps_pointcnt );
 
 real CVStarRatio(void) {
     if ( regular_star )
-return( sin(3.1415926535897932/ps_pointcnt)*tan(2*3.1415926535897932/ps_pointcnt)+cos(3.1415926535897932/ps_pointcnt) );
+return( sin(FF_PI/ps_pointcnt)*tan(2*FF_PI/ps_pointcnt)+cos(FF_PI/ps_pointcnt) );
 	
 return( star_percent );
 }
 
-StrokeInfo *CVFreeHandInfo(void) {
-return( &expand );
-}
-    
 struct ask_info {
     GWindow gw;
     int done;
@@ -429,8 +417,8 @@ static void FakeShapeEvents(CharView *cv) {
     CVMouseMoveShape(cv);
     CVMouseUpShape(cv);
     if ( raddiam_x!=0 && raddiam_y!=0 && rotate_by!=0 ) {
-	trans[0] = trans[3] = cos ( rotate_by*3.1415926535897932/180. );
-	trans[1] = sin( rotate_by*3.1415926535897932/180. );
+	trans[0] = trans[3] = cos ( rotate_by*FF_PI/180. );
+	trans[1] = sin( rotate_by*FF_PI/180. );
 	trans[2] = -trans[1];
 	trans[4] = -cv->p.x*trans[0] - cv->p.y*trans[2] + cv->p.x;
 	trans[5] = -cv->p.x*trans[1] - cv->p.y*trans[3] + cv->p.y;
@@ -1384,7 +1372,7 @@ static void ToolsMouse(CharView *cv, GEvent *event) {
 	    cv->pressed_display = cv->pressed_tool;
     } else if ( event->type == et_mouseup ) {
 	if ( pos==cvt_freehand && event->u.mouse.clicks==2 ) {
-	    FreeHandStrokeDlg(&expand);
+	    FreeHandStrokeDlg(CVFreeHandInfo());
 	} else if ( pos==cvt_pointer && event->u.mouse.clicks==2 ) {
 	    PointerDlg(cv);
 	} else if ( pos==cvt_ruler && event->u.mouse.clicks==2 ) {

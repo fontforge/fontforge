@@ -50,6 +50,8 @@ typedef intptr_t	intpt;
 
 typedef uint32 unichar_t;
 
+#define FF_PI 3.1415926535897932
+
 /* A macro to mark unused function parameters with. We often
  * have such parameters, because of extensive use of callbacks.
  */
@@ -68,6 +70,15 @@ typedef uint32 unichar_t;
 #define TRACE(...) printf(__VA_ARGS__)
 #else
 #define TRACE(...)
+#endif
+
+/* assert() with an otherwise unused variable
+ * to get around "unused" compiler warnings
+ */
+#ifndef NDEBUG
+#define VASSERT(v) assert(v)
+#else
+#define VASSERT(v) ((void)(v))
 #endif
 
 extern void NoMoreMemMessage(void);

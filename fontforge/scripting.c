@@ -4492,7 +4492,7 @@ static void bRotate(Context *c) {
 	a = c->a.vals[1].u.fval;
     a = fmod(a,360.0);
     if ( a<0 ) a += 360;
-    a *= 3.1415926535897932/180.;
+    a *= FF_PI/180.;
     trans[0] = trans[3] = cos(a);
     trans[2] = -(trans[1] = sin(a));
     trans[4] = trans[5] = 0;
@@ -4602,7 +4602,7 @@ static void bSkew(Context *c) {
 	a = args[1];
     a = fmod(a,360.0);
     if ( a<0 ) a+=360;
-    a = a *3.1415926535897932/180.;
+    a = a *FF_PI/180.;
     trans[0] = trans[3] = 1;
     trans[1] = 0; trans[2] = tan(a);
     trans[4] = trans[5] = 0;
@@ -5062,19 +5062,66 @@ static void bNonLinearTransform(Context *c) {
 	ScriptError(c,"Bad expression");
 }
 
+static const int nibmap[] = { si_round, si_calligraphic, si_nib };
+static const int joinmap[] = { lj_miter, lj_round, lj_bevel, lj_nib, 
+                               lj_miterclip, lj_arcs, lj_inherited };
+static const int capmap[] = { lc_butt, lc_round, lc_square, lc_nib,
+                              lc_inherited };
+
+static void bESJoinCap(Context *c, int ci, int ji, StrokeInfo *sip, int rok) {
+    if ( c->a.vals[ci].type!=v_int || c->a.vals[ji].type!=v_int )
+	ScriptError(c,"Bad argument type");
+    ci = c->a.vals[ci].u.ival;
+    ji = c->a.vals[ji].u.ival;
+
+    // Use default for out of range values
+    if ( ci >= 0 && ci<=4 )
+	sip->cap = capmap[ci];
+    if ( sip->cap==lc_square ) {
+	sip->cap = lc_butt;
+	sip->extendcap = 1;
+    }
+
+    if ( ji >= 0 && ji<=6 )
+	sip->join = joinmap[ji];
+    if ( sip->join==lj_arcs )
+	ScriptError(c, "Arcs join not yet supported");
+}
+
+static void bESFlags(Context *c, int fi, StrokeInfo *sip) {
+    if ( c->a.vals[fi].type!=v_int )
+	ScriptError(c,"Bad argument type");
+
+    sip->removeinternal = ((c->a.vals[fi].u.ival&1)!=0);
+    sip->removeexternal = ((c->a.vals[fi].u.ival&2)!=0);
+
+    if ( c->a.vals[fi].u.ival&4 )
+	sip->rmov = srmov_contour;
+    else if ( c->a.vals[fi].u.ival&8 )
+	sip->rmov = srmov_none;
+    else
+	sip->rmov = srmov_layer;
+
+    sip->simplify = !(c->a.vals[fi].u.ival&16);
+    sip->extrema = !(c->a.vals[fi].u.ival&32);
+    sip->jlrelative = !(c->a.vals[fi].u.ival&64);
+    sip->ecrelative = !(c->a.vals[fi].u.ival&128);
+}
+
 static void bExpandStroke(Context *c) {
     StrokeInfo si;
-    double args[8];
-    int i;
+    double args[12];
+    int i, rok;
     /* Arguments:
 	2 => stroke width (implied butt, round)
 	4 => stroke width, line cap, line join
-	5 => stroke width, caligraphic angle, thickness-numerator, thickness-denom
-	6 => stroke width, line cap, line join, 0, kanou's flags
-	7 => stroke width, caligraphic angle, thickness-numerator, thickness-denom, 0, knaou's flags
-    */
+	5 => stroke width, nib angle, thickness-numerator, thickness-denom
+	6 => stroke width, line cap, line join, 0, flags
+	7 => stroke width, calligraphic angle, thickness-numerator, thickness-denom, 0, flags
+	11 => nib type, width, height, calligraphic angle, line cap, line join, join limit, extend cap, accuracy target, flags
+    */ 
 
-    if ( c->a.argc<2 || c->a.argc>7 ) {
+    if ( c->a.argc<2 || (c->a.argc>7 && c->a.argc!=11) ) {
 	c->error = ce_wrongnumarg;
 	return;
     }
@@ -5086,47 +5133,64 @@ static void bExpandStroke(Context *c) {
 	else
 	    ScriptError(c,"Bad argument type");
     }
-    memset(&si,0,sizeof(si));
-    si.radius = args[1]/2.;
-    si.minorradius = si.radius;
-    si.stroke_type = si_std;
+    InitializeStrokeInfo(&si);
+    si.width = args[c->a.argc==11 ? 2 : 1];
+    si.height = si.width;
+    si.stroke_type = si_round;
     if ( c->a.argc==2 ) {
 	si.join = lj_round;
 	si.cap = lc_butt;
     } else if ( c->a.argc==4 ) {
-	si.cap = args[2];
-	si.join = args[3];
+	bESJoinCap(c, 2, 3, &si, true);
     } else if ( c->a.argc==6 ) {
-	si.cap = args[2];
-	si.join = args[3];
+	bESJoinCap(c, 2, 3, &si, true);
 	if ( c->a.vals[4].type!=v_int || c->a.vals[4].u.ival!=0 )
 	    ScriptError(c,"If 5 arguments are given, the fourth must be zero");
 	else if ( c->a.vals[5].type!=v_int )
 	    ScriptError(c,"Bad argument type");
-	if ( c->a.vals[5].u.ival&1 )
-	    si.removeinternal = true;
-	else if ( c->a.vals[5].u.ival&2 )
-	    si.removeexternal = true;
-	/*if ( c->a.vals[5].u.ival&4 )
-	    si.removeoverlapifneeded = true;*/	/* Obsolete */
+	else
+	    bESFlags(c, 5, &si);
     } else if ( c->a.argc==5 ) {
-	si.stroke_type = si_caligraphic;
-	si.penangle = 3.1415926535897932*args[2]/180;
-	si.minorradius = si.radius * args[3] / (double) args[4];
-    } else {
-        si.stroke_type = si_caligraphic;
-	si.penangle = 3.1415926535897932*args[2]/180;
-	si.minorradius = si.radius * args[3] / (double) args[4];
+	si.stroke_type = si_calligraphic;
+	si.penangle = FF_PI*args[2]/180;
+	si.height = si.width * args[3] / (double) args[4];
+    } else if ( c->a.argc==7 ) {
+        si.stroke_type = si_calligraphic;
+	si.penangle = FF_PI*args[2]/180;
+	si.height = si.width * args[3] / (double) args[4];
 	if ( c->a.vals[5].type!=v_int || c->a.vals[5].u.ival!=0 )
             ScriptError(c,"If 6 arguments are given, the fifth must be zero");
 	else if ( c->a.vals[6].type!=v_int )
 	    ScriptError(c,"Bad argument type");
-        if ( c->a.vals[6].u.ival&1 )
-            si.removeinternal = true;
-        else if ( c->a.vals[6].u.ival&2 )
-            si.removeexternal = true;
-        /* if ( c->a.vals[6].u.ival&4 )
-            si.removeoverlapifneeded = true; */ /* Obsolete */
+	else
+	    bESFlags(c, 6, &si);
+    } else {
+	if ( c->a.vals[1].type!=v_int )
+	    ScriptError(c,"Bad argument type");
+	i = c->a.vals[1].u.ival;
+	if ( i >= 0 && i<=2 )
+	    si.stroke_type = nibmap[i];
+	else 
+	    ScriptError(c,"Unrecognized stroke type");
+	if ( si.stroke_type == si_nib ) {
+	    if ( c->a.vals[2].type!=v_int )
+		ScriptError(c,"Bad argument type");
+	    si.nib = StrokeGetConvex(c->a.vals[2].u.ival, false);
+	    if ( si.nib==NULL ) 
+		ScriptError(c,"Convex nib unknown or not defined");
+	} else
+	    si.height = args[3];
+	si.penangle = FF_PI*args[4]/180;
+	rok = (   si.stroke_type==si_round
+	       && ( si.width==si.height || si.height==0 ) );
+	bESJoinCap(c, 5, 6, &si, rok);
+	if ( args[7]>0 )
+	    si.joinlimit = args[7];
+	if ( args[8]>=0 )
+	    si.extendcap = args[8];
+	if ( args[9]>0 )
+	    si.accuracy_target = args[9];
+	bESFlags(c, 10, &si);
     }
     FVStrokeItScript(c->curfv, &si, false);
 }
@@ -5148,7 +5212,7 @@ static void bShadow(Context *c) {
 	ScriptError(c,"Bad argument type");
     if ( c->a.vals[1].type == v_int ) a = c->a.vals[1].u.ival;
     else a = c->a.vals[1].u.fval;
-    FVShadow(c->curfv,a*3.1415926535897932/180.,
+    FVShadow(c->curfv,a*FF_PI/180.,
 	    c->a.vals[2].u.ival, c->a.vals[3].u.ival,false);
 }
 
@@ -5161,7 +5225,7 @@ static void bWireframe(Context *c) {
 	ScriptError(c,"Bad argument type");
     if ( c->a.vals[1].type == v_int ) a = c->a.vals[1].u.ival;
     else a = c->a.vals[1].u.fval;
-    FVShadow(c->curfv,a*3.1415926535897932/360.,
+    FVShadow(c->curfv,a*FF_PI/360.,
 	    c->a.vals[2].u.ival, c->a.vals[3].u.ival,true);
 }
 

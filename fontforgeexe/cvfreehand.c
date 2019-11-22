@@ -29,6 +29,7 @@
 
 #include "cvundoes.h"
 #include "fontforgeui.h"
+#include "splinefit.h"
 #include "splineorder2.h"
 #include "splinestroke.h"
 #include "splineutil.h"
@@ -371,10 +372,10 @@ static void TraceMassage(TraceData *head, TraceData *end) {
 		/* We've got tangent corner tangent */
 		pangle = atan2(npt->y-pt->y,npt->x-pt->x);
 		nangle = atan2(nnpt->y-npt->y,nnpt->x-npt->x);
-		if ( pangle<0 && nangle>0 && nangle-pangle>=3.1415926 )
-		    pangle += 2*3.1415926535897932;
-		else if ( pangle>0 && nangle<0 && pangle-nangle>=3.1415926 )
-		    nangle += 2*3.1415926535897932;
+		if ( pangle<0 && nangle>0 && nangle-pangle>=FF_PI )
+		    pangle += 2*FF_PI;
+		else if ( pangle>0 && nangle<0 && pangle-nangle>=FF_PI )
+		    nangle += 2*FF_PI;
 		if ( nangle-pangle<1 && nangle-pangle>-1 ) {
 		    for (;;) {
 			pt->online = pt->use_as_pt = false;
@@ -400,7 +401,7 @@ static bigreal Trace_Factor(void *_cv,Spline *spline, real t) {
     StrokeInfo *si = CVFreeHandInfo();
     int p;
 
-    if ( si->radius<=0 || si->pressure1==si->pressure2 )
+    if ( si->width<=0 || si->pressure1==si->pressure2 )
 return( 1.0 );
 
     for ( pt = head; pt!=NULL; pt=pt->next ) {
@@ -425,15 +426,15 @@ return( 1.0 );
 	if ( si->pressure1<si->pressure2 )
 return( 1.0 );
 	else
-return( si->radius2/si->radius );
+return( si->radius2/(si->width/2) );
     } else if ( p>=si->pressure1 && p>=si->pressure2 ) {
 	if ( si->pressure1<si->pressure2 )
-return( si->radius2/si->radius );
+return( si->radius2/(si->width/2) );
 	else
 return( 1.0 );
     } else
-return( ((p-si->pressure1)*si->radius2 + (si->pressure2-p)*si->radius)/
-		(si->radius*(si->pressure2-si->pressure1)) );
+return( ((p-si->pressure1)*si->radius2 + (si->pressure2-p)*(si->width/2))/
+		((si->width/2)*(si->pressure2-si->pressure1)) );
 }
 
 static void TraceFigureCPs(SplinePoint *last,SplinePoint *cur,TraceData *tlast,TraceData *tcur) {
@@ -480,7 +481,7 @@ static SplineSet *TraceCurve(CharView *cv) {
     SplineSet *spl;
     SplinePoint *last, *cur;
     int cnt, i, tot;
-    TPoint *mids;
+    FitPoint *mids;
     double len,sofar;
     StrokeInfo *si;
 
@@ -529,10 +530,10 @@ static SplineSet *TraceCurve(CharView *cv) {
     TraceMassage(head,cv->freehand.last);
 
     /* Calculate the mids array */
-    mids = malloc(cnt*sizeof(TPoint));
+    mids = malloc(cnt*sizeof(FitPoint));
     for ( base=head; base!=NULL && base->next!=NULL; base = pt ) {
-	mids[base->num].x = base->here.x;
-	mids[base->num].y = base->here.y;
+	mids[base->num].p.x = base->here.x;
+	mids[base->num].p.y = base->here.y;
 	mids[base->num].t = 0;
 	len = 0;
 	if ( base->next->online ) {
@@ -551,8 +552,8 @@ static SplineSet *TraceCurve(CharView *cv) {
 	    sofar += sqrt((double) (
 		    (pt->x-pt->prev->x)*(pt->x-pt->prev->x) +
 		    (pt->y-pt->prev->y)*(pt->y-pt->prev->y) ));
-	    mids[pt->num].x = pt->here.x;
-	    mids[pt->num].y = pt->here.y;
+	    mids[pt->num].p.x = pt->here.x;
+	    mids[pt->num].p.y = pt->here.y;
 	    mids[pt->num].t = sofar/len;
 	    if ( pt->use_as_pt )
 	break;
@@ -688,10 +689,10 @@ return;
 		sin(langle)*hlen;
 	trace->first->prevcp = oldp;
     } else {
-	if ( hangle>3.1415926535897932/2 && langle<-3.1415926535897932/2 )
-	    langle += 2*3.1415926535897932;
-	if ( hangle<-3.1415926535897932/2 && langle>3.1415926535897932/2 )
-	    hangle += 2*3.1415926535897932;
+	if ( hangle>FF_PI/2 && langle<-FF_PI/2 )
+	    langle += 2*FF_PI;
+	if ( hangle<-FF_PI/2 && langle>FF_PI/2 )
+	    hangle += 2*FF_PI;
 	hangle = (hangle+langle)/2;
 	dx = cos(hangle);
 	dy = sin(hangle);

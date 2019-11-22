@@ -3,15 +3,35 @@
 
 #include "splinefont.h"
 
-enum PolyType {
-	Poly_Convex,
-	Poly_Concave,
-	Poly_PointOnEdge,
-	Poly_TooFewPoints,
-	Poly_Line
+enum ShapeType {
+	Shape_Convex,
+	Shape_CCWTurn,
+	Shape_CCW,
+	Shape_Quadratic,
+	Shape_PointOnEdge,
+	Shape_TooFewPoints,
+	Shape_NotClosed,
+	Shape_TinySpline,
+	Shape_HalfLinear,
+	Shape_BadCP_R1,
+	Shape_BadCP_R2,
+	Shape_BadCP_R3,
+	Shape_SelfIntersects
 };
 
-extern enum PolyType PolygonIsConvex(BasePoint *poly, int n, int *badpointindex);
+extern StrokeInfo *CVFreeHandInfo();
+extern StrokeInfo *CVStrokeInfo();
+extern int ConvexNibID(char *tok);
+extern int StrokeSetConvex(SplineSet *ss, int toknum);
+extern SplineSet *StrokeGetConvex(int toknum, int cpy);
+extern enum ShapeType NibIsValid(SplineSet *);
+extern const char *NibShapeTypeMsg(enum ShapeType st);
+extern SplinePoint *AppendCubicSplinePortion(Spline *s, bigreal t_start,
+                                             bigreal t_end, SplinePoint *start);
+extern SplinePoint *AppendCubicSplineSetPortion(Spline *s, bigreal t_start,
+                                                Spline *s_end, bigreal t_end,
+                                                SplinePoint *dst_start,
+                                                int backward);
 extern SplineSet *SplineSetStroke(SplineSet *ss, StrokeInfo *si, int order2);
 extern SplineSet *UnitShape(int n);
 extern void FVStrokeItScript(void *_fv, StrokeInfo *si, int pointless_argument);

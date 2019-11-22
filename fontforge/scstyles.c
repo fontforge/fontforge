@@ -1600,19 +1600,17 @@ static void ChangeGlyph( SplineChar *sc_sc, SplineChar *orig_sc, int layer, stru
 	    scale[3] = 1.;
 	}
 	SplinePointListTransform( sc_sc->layers[layer].splines,scale,tpt_AllPoints );
-
-	memset( &si,0,sizeof( si ));
-	si.stroke_type = si_std;
-	si.join = lj_miter;
-	si.cap = lc_square;
+	InitializeStrokeInfo(&si);
+	si.stroke_type = si_round;
+	SITranslatePSArgs(&si, lj_miter, lc_square);
+	si.rmov = srmov_contour;
 	if ( add >=0 ) {
-	    si.radius = add/2.;
+	    si.width = add;
 	    si.removeinternal = true;
 	} else {
-	    si.radius = -add/2.;
+	    si.width = -add;
 	    si.removeexternal = true;
 	}
-	/*si.removeoverlapifneeded = false;*/
 
 	temp = BoldSSStroke( sc_sc->layers[layer].splines,&si,sc_sc->layers[layer].order2,removeoverlap );
 	SplinePointListsFree( sc_sc->layers[layer].splines );
@@ -1896,7 +1894,7 @@ void SmallCapsFindConstants(struct smallcaps *small, SplineFont *sf,
     memset(small,0,sizeof(*small));
 
     small->sf = sf; small->layer = layer;
-    small->italic_angle = sf->italicangle * 3.1415926535897932/180.0;
+    small->italic_angle = sf->italicangle * FF_PI/180.0;
     small->tan_ia = tan( small->italic_angle );
 
     small->lc_stem_width = CaseMajorVerticalStemWidth(sf, layer,lc_stem_str, small->tan_ia );
@@ -3412,7 +3410,7 @@ void SCCondenseExtend(struct counterinfo *ci,SplineChar *sc, int layer,
     if ( ci->correct_italic && sc->parent->italicangle!=0 ) {
 	memset(transform,0,sizeof(transform));
 	transform[0] = transform[3] = 1;
-	transform[2] = tan( sc->parent->italicangle * 3.1415926535897932/180.0 );
+	transform[2] = tan( sc->parent->italicangle * FF_PI/180.0 );
 	SplinePointListTransform(sc->layers[layer].splines,transform,tpt_AllPoints);
 	StemInfosFree(sc->vstem); sc->vstem=NULL;
     }
@@ -3462,7 +3460,7 @@ void SCCondenseExtend(struct counterinfo *ci,SplineChar *sc, int layer,
 	/* If we unskewed it, we want to skew it now */
 	memset(transform,0,sizeof(transform));
 	transform[0] = transform[3] = 1;
-	transform[2] = -tan( sc->parent->italicangle * 3.1415926535897932/180.0 );
+	transform[2] = -tan( sc->parent->italicangle * FF_PI/180.0 );
 	SplinePointListTransform(sc->layers[layer].splines,transform,tpt_AllPoints);
     }
 
@@ -4037,18 +4035,17 @@ static void SCEmbolden(SplineChar *sc, struct lcg_zones *zones, int layer) {
     DBounds old, new;
     int adjust_counters;
 
-    memset(&si,0,sizeof(si));
-    si.stroke_type = si_std;
-    si.join = lj_miter;
-    si.cap = lc_square;
+    InitializeStrokeInfo(&si);
+    si.stroke_type = si_round;
+    SITranslatePSArgs(&si, lj_miter, lc_square);
+    si.rmov = srmov_contour;
     if ( zones->stroke_width>=0 ) {
-	si.radius = zones->stroke_width/2.;
+	si.width = zones->stroke_width;
 	si.removeinternal = true;
     } else {
-	si.radius = -zones->stroke_width/2.;
+	si.width = -zones->stroke_width;
 	si.removeexternal = true;
     }
-    /*si.removeoverlapifneeded = false;*/
 
     if ( layer!=ly_back && zones->wants_hints &&
 	    sc->hstem == NULL && sc->vstem==NULL && sc->dstem==NULL ) {
@@ -6784,7 +6781,7 @@ static void InitItalicConstants(SplineFont *sf, int layer, ItalicInfo *ii) {
     int i,cnt;
     double val;
 
-    ii->tan_ia = tan(ii->italic_angle * 3.1415926535897932/180.0 );
+    ii->tan_ia = tan(ii->italic_angle * FF_PI/180.0 );
 
     ii->x_height	  = SFXHeight  (sf,layer,false);
     ii->ascender_height   = SFAscender (sf,layer,false);
