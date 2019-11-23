@@ -285,7 +285,7 @@ static cairo_surface_t *_GGDKDraw_GImage2Surface(GImage *image, GRect *src) {
     /*  premultiply each channel by alpha. We can reuse it for non-transparent*/
     /*  rgb images */
     if (base->image_type == it_true && type == CAIRO_FORMAT_RGB24) {
-        idata = ((uint32 *)(base->data)) + src->y * base->bytes_per_line + src->x;
+        idata = ((uint32 *)(base->data + src->y * base->bytes_per_line)) + src->x;
         return cairo_image_surface_create_for_data((uint8 *) idata, type,
                 src->width, src->height,
                 base->bytes_per_line);

@@ -36,7 +36,6 @@
 #  include <sys/select.h>
 #endif
 
-
 /* Functions for font metrics:
     rectangle of text (left side bearing of first char, right of last char)
 */
@@ -477,14 +476,40 @@ void GDrawScroll(GWindow w, GRect *rect, int32 hor, int32 vert) {
 
 /* draws the subset of the image specified by src starting at loc (x,y) */
 void GDrawDrawImage(GWindow w, GImage *img, GRect *src, int32 x, int32 y) {
-    GRect r;
-    if ( src==NULL ) {
-	struct _GImage *base = img->list_len==0?img->u.image:img->u.images[0];
-	r.x = r.y = 0;
-	r.width = base->width; r.height = base->height;
-	src = &r;
+    int width = GImageGetWidth(img);
+    int height = GImageGetHeight(img);
+    GRect r = src ? *src : (GRect){0, 0, width, height};
+
+    if (x < w->ggc->clip.x) {
+        r.x += w->ggc->clip.x - x;
+        r.width -= w->ggc->clip.x - x;
+        x = w->ggc->clip.x;
     }
-    (w->display->funcs->drawImage)(w,img,src,x,y);
+    if (y < w->ggc->clip.y) {
+        r.y += w->ggc->clip.y - y;
+        r.height -= w->ggc->clip.y - y;
+        y = w->ggc->clip.y;
+    }
+    if (r.x < 0) {
+        r.width += r.x;
+        r.x = 0;
+    }
+    if (r.y < 0) {
+        r.height += r.y;
+        r.y = 0;
+    }
+    if (r.width > width)
+        r.width = width;
+    if (r.height > height)
+        r.height = height;
+    if (x + r.width > w->ggc->clip.x + w->ggc->clip.width)
+        r.width = w->ggc->clip.x + w->ggc->clip.width - x;
+    if (y + r.height > w->ggc->clip.y + w->ggc->clip.height)
+        r.height = w->ggc->clip.y + w->ggc->clip.height - y;
+    if (r.width <= 0 || r.height <= 0)
+        return;
+
+    (w->display->funcs->drawImage)(w,img,&r,x,y);
 }
 
 /* Draw the entire image so that it is approximately the same size on other */
@@ -540,40 +565,10 @@ void GDrawDrawImageMagnified(GWindow w, GImage *img, GRect *dest, int32 x, int32
     GRect temp;
     struct _GImage *base = img->list_len==0?img->u.image:img->u.images[0];
 
+    /* Not magnified after all */
     if ( base->width==width && base->height==height ) {
-	/* Not magnified after all */
-	if ( dest==NULL )
-	    GDrawDrawImage(w,img,NULL,x,y);
-	else {
-	    int old;
-	    temp = *dest; temp.x += x; temp.y += y;
-	    if ( temp.x<x ) {
-		temp.x = 0;
-		temp.width-=x;
-	    } else {
-		old = x;
-		x = temp.x;
-		temp.x -= old;
-		temp.width -= old;
-	    }
-	    if ( temp.y<y ) {
-		temp.y = 0;
-		temp.height-=y;
-	    } else {
-		old = y;
-		y = temp.y;
-		temp.y -= old;
-		temp.height -= old;
-	    }
-	    if ( temp.x>=base->width || temp.y>=base->height || temp.width<=0 || temp.height<=0 )
-return;
-	    if ( temp.x+temp.width>=base->width )
-		temp.width = base->width-temp.x;
-	    if ( temp.y+temp.height>=base->height )
-		temp.height = base->height-temp.y;
-	    GDrawDrawImage(w,img,&temp,x,y);
-	}
-return;
+        GDrawDrawImage(w, img, dest, x, y);
+        return;
     }
     if ( dest==NULL ) {
 	temp.x = temp.y = 0;
