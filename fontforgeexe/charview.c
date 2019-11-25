@@ -2302,23 +2302,14 @@ return;
 
 static void DrawImageList(CharView *cv,GWindow pixmap,ImageList *backimages) {
     CharViewTab* tab = CVGetActiveTab(cv);
-    GRect size, temp;
-    int x,y;
-
-    GDrawGetSize(pixmap,&size);
 
     while ( backimages!=NULL ) {
 	struct _GImage *base = backimages->image->list_len==0?
 		backimages->image->u.image:backimages->image->u.images[0];
 
-	temp = size;
-	x = (int) (tab->xoff + rint(backimages->xoff * tab->scale));
-	y = (int) (-tab->yoff + cv->height - rint(backimages->yoff*tab->scale));
-	temp.x -= x; temp.y -= y;
-	temp.width += x; temp.height += y;
-
-	GDrawDrawImageMagnified(pixmap, backimages->image, &temp,
-		x,y,
+	GDrawDrawImageMagnified(pixmap, backimages->image, NULL,
+		(int) (tab->xoff + rint(backimages->xoff * tab->scale)),
+		(int) (-tab->yoff + cv->height - rint(backimages->yoff*tab->scale)),
 		(int) rint((base->width*backimages->xscale*tab->scale)),
 		(int) rint((base->height*backimages->yscale*tab->scale)));
 	backimages = backimages->next;
