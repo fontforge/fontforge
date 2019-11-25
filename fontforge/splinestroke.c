@@ -1048,6 +1048,7 @@ int GenStrokeTracePoints(void *vinfo, bigreal t_fm, bigreal t_to,
     bigreal nidiff, t;
     BasePoint xy;
 
+    *fpp = NULL;
     fp = calloc(stip->num_points, sizeof(FitPoint));
     nidiff = (t_to - t_fm) / (stip->num_points-1);
 
@@ -1074,7 +1075,6 @@ int GenStrokeTracePoints(void *vinfo, bigreal t_fm, bigreal t_to,
 		                                      nib_ccw, CUSPD_MARGIN,
 						      stip->starts_on_cusp);
 		free(fp);
-		*fpp = NULL;
 		return 0;
 	    }
 	} else {
