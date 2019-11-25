@@ -1436,8 +1436,6 @@ return;					/* No support for apple "lookups" */
 			    fprintf( out, "    pos " );
 			    dump_glyphname(out,sc);
 			    putc(' ',out);
-			    dump_valuerecord(out,&pst->u.pair.vr[0]);
-			    putc(' ',out);
 			    dump_glyphnamelist(out,sf,pst->u.pair.paired );
 			    putc(' ',out);
 			    dump_valuerecord(out,&pst->u.pair.vr[0]);
