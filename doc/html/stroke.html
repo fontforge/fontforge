@@ -28,6 +28,8 @@ the font view it traces all foreground contours in all selected glyphs.  In the
 outline view it traces all contours with at least one point selected, or every
 contour if no points are selected on any contour.  The dialog looks like this:
 
+<figure><img src="stroke/dialog_1x.png" srcset="stroke/dialog_3x.png 3x, stroke/dialog_2x.png 2x, stroke/dialog_1x.png 1x" alt="Expand Stroke Dialog" class="imgfig"></figure>
+
 <P> The <A HREF="charview.html#freehand">Freehand Tool</A> also uses the
 facility and has a similar dialog, and there are interfaces for both
 <A HREF="python.html#glyph-stroke">Python</A> and
@@ -62,7 +64,7 @@ a total line thickness of <em>2r</em> (source contour shown in green):
 "Circular/Elliptical" nib type and making the Major and Minor Axis lengths
 equal. In the native and Python API a Minor Axis value of zero will be
 replaced by the Major Axis value. And although it does not make a geometric
-difference, the recommended Nib Angle for a Circular nib is zero:
+difference, the recommended Nib Angle for a Circular nib is zero.
 
 <P> Offsetting is a longstanding way of specifying a line of fixed thickness in
 terms of a contour—that is, a sequence of connecting splines—combined with an
