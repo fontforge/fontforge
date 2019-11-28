@@ -1048,6 +1048,7 @@ int GenStrokeTracePoints(void *vinfo, bigreal t_fm, bigreal t_to,
     bigreal nidiff, t;
     BasePoint xy;
 
+    *fpp = NULL;
     fp = calloc(stip->num_points, sizeof(FitPoint));
     nidiff = (t_to - t_fm) / (stip->num_points-1);
 
@@ -1109,9 +1110,10 @@ SplinePoint *TraceAndFitSpline(StrokeContext *c, Spline *s, bigreal t_fm,
     sti.starts_on_cusp = on_cusp;
     sti.found_trans = false;
 
-    if ( on_cusp && !TRACE_CUSPS )
+    if ( on_cusp && !TRACE_CUSPS ) {
 	GenStrokeTracePoints((void *)&sti, t_fm, t_to, &fpp);
-    else
+	free(fpp);
+    } else
 	sp = ApproximateSplineSetFromGen(tailp, NULL, t_fm, t_to, c->acctarget,
 	                                 false, &GenStrokeTracePoints,
 	                                 (void *) &sti, false);
@@ -1578,7 +1580,6 @@ static void HandleCap(StrokeContext *c, SplineSet *cur, BasePoint sxy,
     NibOffset no_fm, no_to;
     BasePoint refp = BP_ADD(sxy, c->pseudo_origin), p1, p2;
     SplinePoint *sp;
-    bigreal fsw, cel;
     int corner_fm, corner_to;
 
     if ( c->cap==lc_bevel ) {
@@ -1586,7 +1587,6 @@ static void HandleCap(StrokeContext *c, SplineSet *cur, BasePoint sxy,
 	return;
     }
     if ( c->cap==lc_butt || c->cap==lc_round ) {
-	cel = CalcCapExtend(c, fsw);
 	DoubleBackJC(c, cur, sxy, oxy, BP_REV_IF(!is_right, ut), !is_right, 1);
     } else {
 	if ( c->cap!=lc_nib && c->cap!=lc_inherited )

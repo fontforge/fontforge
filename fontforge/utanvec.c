@@ -158,7 +158,7 @@ bigreal SplineSolveForUTanVec(Spline *spl, BasePoint ut, bigreal min_t) {
     yto = ROTY(spl->to->me, ut);
     if ( spl->order2 ) {
         ys1d.c = ZCHECK(2*(ROTY(spl->from->nextcp, ut)-ys1d.d));
-        ys1d.b = ZCHECK(yto-ys1d.d-ys1d.b);
+        ys1d.b = ZCHECK(yto-ys1d.d-ys1d.c);
         ys1d.a = 0;
     } else {
 	tmp = ROTY(spl->from->nextcp, ut);

@@ -170,36 +170,18 @@ static int _Stroke_OK(StrokeDlg *sd,int isapply) {
 	    err = true;
 	} else {
 	    SplineSet *ss;
-	    SplinePoint *sp;
 	    SplinePointListSelect(si->nib, false);
-	    int cnt, selectall = false;
-	    msg = NULL;
 	    for ( ss=si->nib ; ss!=NULL && !err; ss=ss->next ) {
-		if ( !err ) {
-		    enum ShapeType pt = NibIsValid(ss);
-		    if ( pt!=Shape_Convex ) {
-			msg = NibShapeTypeMsg(pt);
-			err = true;
-		    }
-		}
-		if ( selectall ) {
-		    for ( sp=ss->first;;) {
-			sp->selected = true;
-			if ( sp->next==NULL )
-		    break;
-			sp = sp->next->to;
-			if ( sp==ss->first )
-		    break;
-		    }
-		}
-		if ( err ) {
+		enum ShapeType pt = NibIsValid(ss);
+		if ( pt!=Shape_Convex ) {
 		    GDrawRequestExpose(sd->cv_stroke.v,NULL,false);
-		    ff_post_error(_("Nib contour not convex"),msg);
-	    break;
+		    ff_post_error(_("Nib shape not valid"), NibShapeTypeMsg(pt));
+		    err = true;
 		}
 	    }
-	}
-	GDrawRequestExpose(sd->cv_stroke.v,NULL,false);
+	} 
+	if (!err)
+	    GDrawRequestExpose(sd->cv_stroke.v,NULL,false);
     } else { 
 	si->width = GetReal8(sw,CID_Width,_("Stroke _Width:"),&err);
 	if ( si->width==0 && (   si->stroke_type==si_round 
@@ -622,8 +604,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	pos.height = GDrawPointsToPixels(NULL,strokeit!=NULL ? SD_Height : FH_Height);
 	sd.gw = gw = GDrawCreateTopWindow(NULL,&pos,stroke_e_h,&sd.cv_stroke,&wattrs);
 	GDrawSetWindowTypeName(gw, "CharView"); // For hotkeys
-	if ( si!=NULL )
-	    GDrawRequestDeviceEvents(gw,input_em_cnt,input_em);
+	GDrawRequestDeviceEvents(gw,input_em_cnt,input_em);
 
 	memset(&label,0,sizeof(label));
 	memset(&gcd,0,sizeof(gcd));

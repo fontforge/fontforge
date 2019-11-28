@@ -4467,6 +4467,7 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
 	return( -1 );
     }
 
+    assert( si!=NULL );
     InitializeStrokeInfo(si);
     // Verify expected defaults
     assert( si->rmov==srmov_layer && si->cap==lc_nib && si->join==lj_nib );
@@ -4517,7 +4518,6 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
                 "sdd|dss" STROKE_OPTFORMAT, strokekey_rect, &type,
 	        &si->width, &si->height, &si->penangle, &cap, &join,
 	        STROKE_OPTARGS) ) {
-	    return( -1 );
 	    PyErr_Clear();
 	    if ( !PyArg_ParseTupleAndKeywords(args, keywds, "sddd|O",
                 strokebkey_rect, &type, &si->width, &si->height,

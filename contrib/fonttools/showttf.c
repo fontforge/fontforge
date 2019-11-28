@@ -3556,8 +3556,8 @@ return( (char *)((
 	setting==1 ? "Contextual Alternates Off" :
 	setting==2 ? "Swash Alternates On" :
 	setting==3 ? "Swash Alternates Off" :
-	setting==2 ? "Contextual Swash Alternates On" :
-	setting==3 ? "Contextual Swash Alternates Off" :
+	setting==4 ? "Contextual Swash Alternates On" :
+	setting==5 ? "Contextual Swash Alternates Off" :
 	"Unknown")) );
       break;
       case 37:	/* Lower Case */
