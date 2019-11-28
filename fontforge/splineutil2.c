@@ -2553,6 +2553,8 @@ static int ForceEndPointExtrema(Spline *s,int isto) {
 return( -1 );
     len = sqrt(len);
     if ( mylen<30*len && mylen<cplen && mylen<1 ) {
+	if ( mylen==0 )
+	    return -1;
 	if ( isto ) {
 	    s->to->noprevcp = true;
 	    s->to->prevcp = s->to->me;
