@@ -121,9 +121,8 @@ is to trim off the parts of the line past the intersection:
 <P> The offset lines at the larger "reflex" angle do not meet. The line closing
 the gap between those is called a "join".  PostScript specified three join
 styles: "Round", "Bevel" and "Miter". SVG 2.0 adds styles "Miter Clip" and
-"Arcs".  FontForge currently supports the four styles "Nib", "Bevel", "Miter",
-and "Miter Clip". (There are future plans to support the two additional styles
-"Round" and "Arcs".)
+"Arcs".  FontForge currently supports the five styles "Nib", "Bevel", "Round",
+"Miter", and "Miter Clip". (There are future plans to support the "Arcs" style.)
 
 <P> A PS/SVG "Bevel" join connects the two offset curves with a straight line,
 and this is also what FontForge's "Bevel" option does.  A PS/SVG "Miter" or SVG
@@ -132,8 +131,8 @@ tangent to the curve at the endpoint to where each intersects, as do
 FontForge's equivalent "Miter" and "Miter Clip" options. A FontForge "Nib"
 join connects the offset curves with an edge corresponding to the shape of the
 nib; when using a round nib this is equivalent to the PS/SVG "Round" join
-option, which connects the offset lines with an arc of the offset radius. The
-FontForge "Round" join option is also equivalent when using a circular nib:
+option, which connects the offset lines with an arc of the offset radius. 
+FontForge's "Round" join option is also equivalent when using a circular nib:
 
 <figure><object data="stroke/joins.svg" type="image/svg+xml" width="90%" class="svgfig">Join Examples</object></figure>
 
