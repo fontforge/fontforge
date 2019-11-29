@@ -3654,12 +3654,12 @@ void SplinePointListSet(SplinePointList *tobase, SplinePointList *frombase) {
 	    tsp->noprevcp = fsp->noprevcp;
 	    tsp->nonextcp = fsp->nonextcp;
 	    if ( first==NULL ) first = tsp;
-	    if ( tsp->next==NULL )
+	    if ( tsp->next==NULL || fsp->next==NULL )
 	break;
 	}
 	firstsp = NULL;
 	for ( tspline = tobase->first->next, fspline=frombase->first->next;
-		tspline!=NULL && tspline!=firstsp;
+		tspline!=NULL && frombase->spiro_cnt==0 && tspline!=firstsp;
 		tspline=tspline->to->next, fspline=fspline->to->next ) {
 	    tspline->splines[0] = fspline->splines[0];
 	    tspline->splines[1] = fspline->splines[1];
