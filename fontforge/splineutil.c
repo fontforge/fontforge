@@ -1945,6 +1945,7 @@ SplinePointList *SplinePointListTransformExtended(SplinePointList *base, real tr
 	    int i;
 	    for ( i=0; i<spl->spiro_cnt-1; ++i )
 		TransformSpiro(&spl->spiros[i], transform);
+		SSRegenerateFromSpiros(spl);
 	} else
 	    SplineSetSpirosClear(spl);
 
