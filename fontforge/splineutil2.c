@@ -3640,40 +3640,6 @@ void SPAdjustControl(SplinePoint *sp,BasePoint *cp, BasePoint *to,int order2) {
     }
 }
 
-void SplinePointListSet(SplinePointList *tobase, SplinePointList *frombase) {
-    SplinePoint *tsp, *first, *fsp;
-    Spline *tspline, *firstsp, *fspline;
-    int i;
-
-    for ( ; tobase!=NULL && frombase!=NULL; tobase = tobase->next , frombase=frombase->next ) {
-	first = NULL;
-	for ( tsp = tobase->first, fsp=frombase->first; tsp!=first; tsp=tsp->next->to, fsp=fsp->next->to ) {
-	    tsp->me = fsp->me;
-	    tsp->nextcp = fsp->nextcp;
-	    tsp->prevcp = fsp->prevcp;
-	    tsp->noprevcp = fsp->noprevcp;
-	    tsp->nonextcp = fsp->nonextcp;
-	    if ( first==NULL ) first = tsp;
-	    if ( tsp->next==NULL )
-	break;
-	}
-	firstsp = NULL;
-	for ( tspline = tobase->first->next, fspline=frombase->first->next;
-		tspline!=NULL && tspline!=firstsp;
-		tspline=tspline->to->next, fspline=fspline->to->next ) {
-	    tspline->splines[0] = fspline->splines[0];
-	    tspline->splines[1] = fspline->splines[1];
-	    LinearApproxFree(tspline->approx);
-	    tspline->approx = NULL;
-	    if ( firstsp==NULL ) firstsp = tspline;
-	}
-	if ( tobase->spiro_cnt==frombase->spiro_cnt ) {
-	    for ( i=0; i<tobase->spiro_cnt; ++i )
-		tobase->spiros[i] = frombase->spiros[i];
-	}
-    }
-}
-
 int PointListIsSelected(SplinePointList *spl) {
     int anypoints = 0;
     Spline *spline, *first;

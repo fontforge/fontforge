@@ -1077,12 +1077,14 @@ void _CVRestoreTOriginalState(CharViewBase *cv,PressedOn *p) {
     ImageList *img, *uimg;
     int j;
 
-    SplinePointListSet(cv->layerheads[cv->drawmode]->splines,undo->u.state.splines);
+    SplinePointListFree(cv->layerheads[cv->drawmode]->splines);
+    cv->layerheads[cv->drawmode]->splines = SplinePointListCopy(undo->u.state.splines);
     if ( !p->anysel || p->transanyrefs ) {
 	for ( ref=cv->layerheads[cv->drawmode]->refs, uref=undo->u.state.refs; uref!=NULL; ref=ref->next, uref=uref->next )
 	    for ( j=0; j<uref->layer_cnt; ++j )
 		if ( uref->layers[j].splines!=NULL ) {
-		    SplinePointListSet(ref->layers[j].splines,uref->layers[j].splines);
+		    SplinePointListFree(cv->layerheads[cv->drawmode]->splines);
+		    cv->layerheads[cv->drawmode]->splines = SplinePointListCopy(undo->u.state.splines);
 		    memcpy(&ref->transform,&uref->transform,sizeof(ref->transform));
 		}
     }
