@@ -1189,14 +1189,14 @@ int fontforge_main( int argc, char **argv ) {
 #if defined(__MINGW32__) && !defined(_NO_LIBCAIRO)
     //Load any custom fonts for the user interface
     if (use_cairo) {
-        char *system_load = getGResourceProgramDir();
+        char *system_load = getShareDir();
         char *user_load = getFontForgeUserDir(Data);
         char lbuf[MAX_PATH];
         int lret;
 
         if (system_load != NULL) {
             //Follow the FontConfig APPSHAREFONTDIR location
-            lret = snprintf(lbuf, MAX_PATH, "%s/../share/fonts", system_load);
+            lret = snprintf(lbuf, MAX_PATH, "%s/../fonts", system_load);
             if (lret > 0 && lret < MAX_PATH) {
                 WinLoadUserFonts(lbuf);
             }

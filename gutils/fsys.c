@@ -48,6 +48,8 @@ static char dirname_[MAXPATHLEN+1];
  #include <windows.h>
 #endif
 
+char *GResourceProgramDir = NULL;
+
 /**
  * \brief Removes the extension from a file path, if it exists.
  * This method assumes that the path is already normalized.
@@ -504,6 +506,10 @@ char *_GFile_find_program_dir(char *prog) {
     char *pt, *path, *program_dir=NULL;
     char filename[2000];
 
+    if (prog == NULL) {
+        return NULL;
+    }
+
 #if defined(__MINGW32__)
     char* pt1 = strrchr(prog, '/');
     char* pt2 = strrchr(prog, '\\');
@@ -798,26 +804,11 @@ int u_GFileUnlink(unichar_t *name) {
 return(unlink(buffer));
 }
 
-static char *GResourceProgramDir = 0;
-
-char* getGResourceProgramDir(void) {
-    return GResourceProgramDir;
-}
-
-char* getLibexecDir_NonWindows(void) 
-{
-    // FIXME this was indirectly introduced by
-    // https://github.com/fontforge/fontforge/pull/1838 and is not
-    // tested on Windows yet.
-    //
-    static char path[PATH_MAX+4];
-    snprintf( path, PATH_MAX, "%s/../libexec/", getGResourceProgramDir());
-    return path;
-}
-
-
-
 void FindProgDir(char *prog) {
+    if (GResourceProgramDir != NULL) {
+        return;
+    }
+
 #if defined(__MINGW32__)
     char  path[MAX_PATH+4];
     char* c = path;
@@ -835,9 +826,7 @@ void FindProgDir(char *prog) {
 #else
     GResourceProgramDir = _GFile_find_program_dir(prog);
     if ( GResourceProgramDir==NULL ) {
-	char filename[1025];
-	GFileGetAbsoluteName(".",filename,sizeof(filename));
-	GResourceProgramDir = copy(filename);
+        GResourceProgramDir = smprintf("%s/%s", FONTFORGE_INSTALL_PREFIX, "bin");
     }
 #endif
 }
@@ -856,13 +845,7 @@ char *getShareDir(void) {
     //Assume share folder is one directory up
     pt = strrchr(GResourceProgramDir, '/');
     if ( pt==NULL ) {
-#ifdef SHAREDIR
-	return( sharedir = SHAREDIR );
-#elif defined( PREFIX )
-	return( sharedir = PREFIX "/share" );
-#else
 	pt = GResourceProgramDir + strlen(GResourceProgramDir);
-#endif
     }
     len = (pt-GResourceProgramDir)+strlen("/share/fontforge")+1;
     sharedir = malloc(len);
@@ -912,9 +895,6 @@ char *getHelpDir(void) {
 	return( sharedir );
 
     char* prefix = getShareDir();
-#if defined(DOCDIR)
-    prefix = DOCDIR;
-#endif
     const char* postfix = "/../doc/fontforge/";
     int len = strlen(prefix) + strlen(postfix) + 2;
     sharedir = malloc(len);

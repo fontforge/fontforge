@@ -168,12 +168,7 @@ return;
     else
 return;
 
-    free(GResourceProgramDir);
-    GResourceProgramDir = _GFile_find_program_dir(prog);
-    if ( GResourceProgramDir==NULL ) {
-	GFileGetAbsoluteName(".",filename,sizeof(filename));
-	GResourceProgramDir = copy(filename);
-    }
+    FindProgDir(prog);
     free(GResourceFullProgram);
     GResourceFullProgram = copy(
 	    GFileBuildName(GResourceProgramDir,GResourceProgramName,filename,sizeof(filename)));

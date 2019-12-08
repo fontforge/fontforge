@@ -95,9 +95,7 @@ void doinitFontForgeMain(void) {
 
     if ( inited )
 return;
-#ifdef __MINGW32__
     FindProgDir(NULL);
-#endif
     InitSimpleStuff();
     if ( default_encoding==NULL )
 	default_encoding=FindOrMakeEncoding("ISO8859-1");
