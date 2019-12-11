@@ -4587,7 +4587,7 @@ static void CVMaybeCreateDraggingComparisonOutline( CharView* cv )
     if (cv->p.anysel) {
         SplinePointList *cur = NULL;
         for (SplinePointList *spl = l->splines; spl; spl = spl->next) {
-            if (SplinePointListCheckSelected1(spl, cv->b.sc->inspiro && hasspiro(), NULL)) {
+            if (SplinePointListCheckSelected1(spl, cv->b.sc->inspiro && hasspiro(), NULL, false)) {
                 if (cur == NULL) {
                     cv->p.pretransform_spl = cur = SplinePointListCopy1(spl);
                 } else {

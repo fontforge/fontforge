@@ -1451,13 +1451,13 @@ static SplinePointList *SplinePointListCopySpiroSelected1(SplinePointList *spl) 
 return( head );
 }
 
-bool SplinePointListCheckSelected1(const SplinePointList *base, bool spiro, bool *allsel) {
+bool SplinePointListCheckSelected1(const SplinePointList *base, bool spiro, bool *allsel, bool skip_spiro_end) {
     bool anysel = false;
     if (allsel) {
         *allsel = true;
     }
     if (spiro) {
-        for (int i = 0; i < base->spiro_cnt; ++i) {
+        for (int i = 0; i < base->spiro_cnt-(skip_spiro_end?1:0); ++i) {
             if (SPIRO_SELECTED(&base->spiros[i])) {
                 anysel = true;
                 if (!allsel) {
@@ -1507,7 +1507,7 @@ SplinePointList *SplinePointListCopySelected(SplinePointList *base) {
     bool anysel, allsel;
 
     for ( ; base!=NULL; base = base->next ) {
-	anysel = SplinePointListCheckSelected1(base, false, &allsel);
+	anysel = SplinePointListCheckSelected1(base, false, &allsel, false);
 	if ( allsel )
 	    cur = SplinePointListCopy1(base);
 	else if ( anysel )
@@ -1529,7 +1529,7 @@ SplinePointList *SplinePointListCopySpiroSelected(SplinePointList *base) {
     int i;
 
     for ( ; base!=NULL; base = base->next ) {
-	anysel = SplinePointListCheckSelected1(base, true, &allsel);
+	anysel = SplinePointListCheckSelected1(base, true, &allsel, true);
 	if ( allsel )
 	    cur = SplinePointListCopy1(base);
 	else if ( anysel )
@@ -1661,7 +1661,7 @@ SplinePointList *SplinePointListRemoveSelected(SplineChar *sc,SplinePointList *b
 
     for ( ; base!=NULL; base = next ) {
 	next = base->next;
-	anysel = SplinePointListCheckSelected1(base, sc->inspiro && hasspiro(), &allsel);
+	anysel = SplinePointListCheckSelected1(base, sc->inspiro && hasspiro(), &allsel, false);
 	if ( allsel ) {
 	    SplinePointListMDFree(sc,base);
     continue;
@@ -2002,7 +2002,7 @@ SplinePointList *SplinePointListSpiroTransform(SplinePointList *base, real trans
 return( SplinePointListTransform(base,transform,tpt_AllPoints));
 
     for ( spl = base; spl!=NULL; spl = spl->next ) {
-	anysel = SplinePointListCheckSelected1(spl, true, &allsel);
+	anysel = SplinePointListCheckSelected1(spl, true, &allsel, true);
 	if ( !anysel )
     continue;
 	if ( allsel ) {

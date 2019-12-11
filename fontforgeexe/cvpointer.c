@@ -51,7 +51,7 @@ int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya) {
     int i;
 
     for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL && !anypoints; spl = spl->next ) {
-        anypoints = SplinePointListCheckSelected1(spl, cv->b.sc->inspiro && hasspiro(), NULL);
+        anypoints = SplinePointListCheckSelected1(spl, cv->b.sc->inspiro && hasspiro(), NULL, true);
     }
     for ( rf=cv->b.layerheads[cv->b.drawmode]->refs; rf!=NULL && !anyrefs; rf=rf->next )
 	if ( rf->selected ) anyrefs = true;
