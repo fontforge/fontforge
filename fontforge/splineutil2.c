@@ -1586,7 +1586,7 @@ void SPLNearlyHvLines(SplineChar *sc,SplineSet *ss,bigreal err) {
 
 /* The older check below is based on an absolute distance
  * and is therefore magnification-relative. This one is
- * (more or less) hull-based with a ratio of 500 visually
+ * (more or less) hull-based with a ratio of 1000 visually
  * verified at multiple magnifications.
  */
 int SplineIsLinearish(Spline *spline) {
@@ -1612,7 +1612,7 @@ int SplineIsLinearish(Spline *spline) {
 	if (dtmp > dmax)
 	    dmax = dtmp;
     }
-    return ( ln/dmax >= 500 );
+    return ( ln/dmax >= 1000 );
 }
 
 /* Does this spline deviate from a straight line between its endpoints by more*/

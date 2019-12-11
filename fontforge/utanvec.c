@@ -111,7 +111,7 @@ int JointBendsCW(BasePoint ut_ref, BasePoint ut_vec) {
 BasePoint SplineUTanVecAt(Spline *s, bigreal t) {
     BasePoint raw;
 
-    if ( SplineIsLinear(s) ) {
+    if ( SplineIsLinearish(s) ) {
 	raw.x = s->to->me.x - s->from->me.x;
 	raw.y = s->to->me.y - s->from->me.y;
     } else {
