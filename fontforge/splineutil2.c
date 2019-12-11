@@ -2525,7 +2525,7 @@ return( false );
 /*    o  make the slope at the end point horizontal/vertical */
 static int ForceEndPointExtrema(Spline *s,int isto) {
     SplinePoint *end;
-    BasePoint *cp, to, unitslope, othercpunit, myslope;
+    BasePoint *cp, oldcp, to, unitslope, othercpunit, myslope;
     bigreal xdiff, ydiff, mylen, cplen, mydot, cpdot, len;
     /* To get here we know that the extremum is extremely close to the end */
     /*  point, and adjusting the slope at the end-point may be all we need */
@@ -2589,17 +2589,17 @@ return( true );	/* We changed the slope */
     if ( (xdiff = cp->x - end->me.x)<0 ) xdiff = -xdiff;
     if ( (ydiff = cp->y - end->me.y)<0 ) ydiff = -ydiff;
 
-    to = *cp;
+    oldcp = to = *cp;
     if ( xdiff<ydiff/10.0 && xdiff>0 ) {
 	to.x = end->me.x;
 	end->pointtype = pt_corner;
 	SPAdjustControl(end,cp,&to,s->order2);
-return( true );	/* We changed the slope */
+	return( (cp->x!=oldcp.x || cp->y!=oldcp.y) ? 1 : -1 );
     } else if ( ydiff<xdiff/10 && ydiff>0 ) {
 	to.y = end->me.y;
 	end->pointtype = pt_corner;
 	SPAdjustControl(end,cp,&to,s->order2);
-return( true );	/* We changed the slope */
+	return( (cp->x!=oldcp.x || cp->y!=oldcp.y) ? 1 : -1 );
     }
 
 return( -1 );		/* Didn't do anything */
