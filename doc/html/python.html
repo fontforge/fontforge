@@ -1215,9 +1215,11 @@ Two contours may be compared to see if they describe similar paths.
     <TR>
       <TD><CODE><A name="#cnt-isClockwise">isClockwise</A></CODE></TD>
       <TD><CODE>()</CODE></TD>
-      <TD>Returns whether the contour is drawn in a clockwise direction. A return
-	value of -1 indicates that no consistant direction could be found (the contour
-	self-intersects).</TD>
+      <TD>Returns 1 when a non-self-intersecting contour is drawn in 
+	  a clockwise direction and 0 when such a contour is drawn in a
+	  counter-clockwise direction. When a contour intersects itself the
+	  return value may be any of 1, 0, or -1 and has no particular
+	  interpretation. 
     </TR>
     <TR>
       <TD><CODE>reverseDirection</CODE></TD>

@@ -55,7 +55,6 @@
 #define COS_MARGIN (1e-5)
 #define MIN_ACCURACY (1e-5)
 
-#define NORMANGLE(a) ((a)>FF_PI?(a)-2*FF_PI:(a)<-FF_PI?(a)+2*FF_PI:(a))
 #define BPNEAR(bp1, bp2) BPWITHIN(bp1, bp2, INTRASPLINE_MARGIN)
 #define BP_DIST(bp1, bp2) sqrt(pow((bp1).x-(bp2).x,2)+pow((bp1).y-(bp2).y,2))
 
@@ -365,8 +364,6 @@ enum ShapeType NibIsValid(SplineSet *ss) {
 	return Shape_TooFewPoints;
     if ( ss->first->prev==NULL )
 	return Shape_NotClosed;
-    if ( !SplinePointListIsClockwise(ss) )
-	return Shape_CCW;
     if ( ss->first->next->order2 )
 	return Shape_Quadratic;
 
@@ -401,8 +398,11 @@ enum ShapeType NibIsValid(SplineSet *ss) {
 	    break;
 	++n;
     }
+
     if ( n<3 )
 	return Shape_TooFewPoints;
+    if ( anglesum<0 )
+	return Shape_CCW;
     if ( !RealWithin(anglesum, 2*FF_PI, 1e-1) )
 	return Shape_SelfIntersects;
 
@@ -1729,7 +1729,7 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
 		if ( c->rmov==srmov_contour )
 		    left = SplineSetRemoveOverlap(NULL,left,over_remove);
 		// Open paths don't always result in clockwise output
-		if ( !SplinePointListIsClockwise(left) )
+		if ( SplinePointListIsClockwise(left)==0 )
 		    SplineSetReverse(left);
 	    }
 	}
@@ -1898,7 +1898,7 @@ static SplineSet *SplineSet_Stroke(SplineSet *ss,struct strokecontext *c,
     int copied = 0;
 
     c->contour_was_ccw = (   base->first->prev!=NULL
-                          && !SplinePointListIsClockwise(base) );
+                          && SplinePointListIsClockwise(base)==0 );
 
     if ( base->first->next==NULL )
 	ret = SinglePointStroke(base->first, c);

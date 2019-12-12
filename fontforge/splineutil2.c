@@ -4041,95 +4041,35 @@ return( NULL );
 return( ret );
 }
 
+bigreal SplinePointListPolyAngleSum(const SplineSet *ss) {
+    Spline *s;
+    bigreal anglesum = 0, angle, last_angle;
+
+    if ( ss->first==NULL || ss->first->prev==NULL )
+	return 0;
+
+    s = ss->first->prev;
+    last_angle = atan2(s->to->me.y - s->from->me.y,
+                       s->to->me.x - s->from->me.x);
+
+    s = ss->first->next;
+    while ( true ) {
+	angle = atan2(s->to->me.y - s->from->me.y, s->to->me.x - s->from->me.x);
+	anglesum += NORMANGLE(last_angle-angle);
+	last_angle = angle;
+	s=s->to->next;
+	if ( s==ss->first->next )
+	    break;
+    }
+
+    return anglesum;
+}
+
 int SplinePointListIsClockwise(const SplineSet *spl) {
-    EIList el;
-    EI *active=NULL, *apt, *pr, *e;
-    int i, winding,change,waschange, cnt;
-    SplineChar dummy;
-    SplineSet *next;
-    Layer layers[2];
-    int cw_cnt=0, ccw_cnt=0;
-
-    memset(&el,'\0',sizeof(el));
-    memset(&dummy,'\0',sizeof(dummy));
-    memset(layers,0,sizeof(layers));
-    el.layer = ly_fore;
-    dummy.layers = layers;
-    dummy.layer_cnt = 2;
-    dummy.layers[ly_fore].splines = (SplineSet *) spl;
-    dummy.name = "Clockwise Test";
-    next = spl->next; ((SplineSet *) spl)->next = NULL;
-    ELFindEdges(&dummy,&el);
-    if ( el.coordmax[1]-el.coordmin[1] > 1.e6 ) {
-	LogError( _("Warning: Unreasonably big splines. They will be ignored.\n") );
-	((SplineSet *) spl)->next = next;
-return( -1 );
-    }
-    el.major = 1;
-    ELOrder(&el,el.major);
-
-    waschange = false;
-    for ( i=0; i<el.cnt ; ++i ) {
-	active = EIActiveEdgesRefigure(&el,active,i,1,&change);
-	for ( apt=active, cnt=0; apt!=NULL; apt = apt->aenext , ++cnt );
-	if ( el.ordered[i]!=NULL || el.ends[i] || cnt&1 ||
-		waschange || change ||
-		(i!=el.cnt-1 && (el.ends[i+1] || el.ordered[i+1])) ) {
-	    waschange = change;
-    continue;			/* Just too hard to get the edges sorted when we are at a start vertex */
-	}
-	waschange = change;
-	for ( apt=active; apt!=NULL; apt = e) {
-	    if ( EISkipExtremum(apt,i+el.low,1)) {
-		e = apt->aenext->aenext;
-	continue;
-	    }
-	    if ( apt->up )
-		++cw_cnt;
-	    else
-		++ccw_cnt;
-	    if ( cw_cnt!=0 && ccw_cnt!=0 ) {
-		((SplineSet *) spl)->next = next;
-return( -1 );
-	    }
-	    winding = apt->up?1:-1;
-	    for ( pr=apt, e=apt->aenext; e!=NULL && winding!=0; pr=e, e=e->aenext ) {
-		if ( EISkipExtremum(e,i+el.low,1)) {
-		    e = e->aenext;
-	    continue;
-		}
-		if ( pr->up!=e->up ) {
-		    if ( (winding<=0 && !e->up) || (winding>0 && e->up )) {
-/* return( -1 );*/	/* This is an erroneous condition... but I don't think*/
-			/*  it can actually happen with a single contour. I */
-			/*  think it is more likely this means a rounding error*/
-			/*  and a problem in my algorithm */
-			fprintf( stderr, "SplinePointListIsClockwise: Found error\n" );
-		    }
-		    winding += (e->up?1:-1);
-		} else if ( EISameLine(pr,e,i+el.low,1) )
-		    /* This just continues the line and doesn't change count */;
-		else {
-		    if ( (winding<=0 && !e->up) || (winding>0 && e->up )) {
-			fprintf( stderr, "SplinePointListIsClockwise: Found error\n" );
-/*return( -1 );*/
-		    }
-		    winding += (e->up?1:-1);
-		}
-	    }
-	}
-    }
-    free(el.ordered);
-    free(el.ends);
-    ElFreeEI(&el);
-    ((SplineSet *) spl)->next = next;
-
-    if ( cw_cnt!=0 )
-return( true );
-    else if ( ccw_cnt!=0 )
-return( false );
-
-return( -1 );
+    bigreal as = SplinePointListPolyAngleSum(spl);
+    if ( RealWithin(as, 0, 0.1) )
+	return -1;
+    return as>0;
 }
 
 /* Since this function now deals with 4 arbitrarily selected points, */
