@@ -40,7 +40,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-static char dirname_[MAXPATHLEN+1];
 #if !defined(__MINGW32__)
  #include <pwd.h>
 #else
@@ -48,7 +47,8 @@ static char dirname_[MAXPATHLEN+1];
  #include <windows.h>
 #endif
 
-char *GResourceProgramDir = NULL;
+static char *program_dir = NULL;
+static char dirname_[MAXPATHLEN+1];
 
 /**
  * \brief Removes the extension from a file path, if it exists.
@@ -805,7 +805,7 @@ return(unlink(buffer));
 }
 
 void FindProgDir(char *prog) {
-    if (GResourceProgramDir != NULL) {
+    if (program_dir != NULL) {
         return;
     }
 
@@ -822,11 +822,11 @@ void FindProgDir(char *prog) {
     	}
     }
     if(tail) *tail='\0';
-    GResourceProgramDir = copy(path);
+    program_dir = copy(path);
 #else
-    GResourceProgramDir = _GFile_find_program_dir(prog);
-    if ( GResourceProgramDir==NULL ) {
-        GResourceProgramDir = smprintf("%s/%s", FONTFORGE_INSTALL_PREFIX, "bin");
+    program_dir = _GFile_find_program_dir(prog);
+    if ( program_dir==NULL ) {
+        program_dir = smprintf("%s/%s", FONTFORGE_INSTALL_PREFIX, "bin");
     }
 #endif
 }
@@ -843,14 +843,14 @@ char *getShareDir(void) {
     set = true;
 
     //Assume share folder is one directory up
-    pt = strrchr(GResourceProgramDir, '/');
+    pt = strrchr(program_dir, '/');
     if ( pt==NULL ) {
-	pt = GResourceProgramDir + strlen(GResourceProgramDir);
+	pt = program_dir + strlen(program_dir);
     }
-    len = (pt-GResourceProgramDir)+strlen("/share/fontforge")+1;
+    len = (pt-program_dir)+strlen("/share/fontforge")+1;
     sharedir = malloc(len);
-    strncpy(sharedir,GResourceProgramDir,pt-GResourceProgramDir);
-    strcpy(sharedir+(pt-GResourceProgramDir),"/share/fontforge");
+    strncpy(sharedir,program_dir,pt-program_dir);
+    strcpy(sharedir+(pt-program_dir),"/share/fontforge");
     return( sharedir );
 }
 

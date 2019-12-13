@@ -43,7 +43,7 @@ typedef struct gresstruct {
 #define GRESSTRUCT_EMPTY { NULL, 0, NULL, NULL, 0 }
 
 
-extern char *GResourceProgramName, *GResourceFullProgram, *GResourceProgramDir;
+extern char *GResourceProgramName;
 extern int local_encoding;
 #if HAVE_ICONV_H
 # include <iconv.h>

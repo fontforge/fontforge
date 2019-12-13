@@ -36,7 +36,7 @@
 #include "ustring.h"
 #include "utype.h"
 
-char *GResourceProgramName, *GResourceFullProgram, *GResourceProgramDir;
+char *GResourceProgramName;
 char *usercharset_names;
 /* int local_encoding = e_iso8859_1;*/
 
@@ -167,11 +167,6 @@ return;
 	GResourceProgramName = copy("gdraw");
     else
 return;
-
-    FindProgDir(prog);
-    free(GResourceFullProgram);
-    GResourceFullProgram = copy(
-	    GFileBuildName(GResourceProgramDir,GResourceProgramName,filename,sizeof(filename)));
 }
 
 void GResourceAddResourceString(char *string,char *prog) {

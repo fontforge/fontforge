@@ -1267,7 +1267,6 @@ static void PrefsUI_LoadPrefs(void)
 //	if (!quiet) {
 //	    fprintf(stderr,"TESTING: getPixmapDir:%s\n", getPixmapDir() );
 //	    fprintf(stderr,"TESTING: getShareDir:%s\n", getShareDir() );
-//	    fprintf(stderr,"TESTING: GResourceProgramDir:%s\n", GResourceProgramDir );
 //	}
 	snprintf(path, PATH_MAX, "%s/%s", getPixmapDir(), "resources" );
 //	if (!quiet)
