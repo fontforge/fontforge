@@ -247,8 +247,10 @@ static SplinePoint *LinearSpline(Spline *ps,SplinePoint *start, real tmax) {
     }
     end->ttfindex = 0xfffe;
     end->nextcpindex = 0xfffe;
-    end->me.x = end->nextcp.x = end->prevcp.x = x;
-    end->me.y = end->nextcp.y = end->prevcp.y = y;
+    start->nextcp.x = start->me.x;
+    start->nextcp.y = start->me.y;
+    end->me.x = end->prevcp.x = x;
+    end->me.y = end->prevcp.y = y;
     end->nonextcp = end->noprevcp = start->nonextcp = true;
     new->from = start;		start->next = new;
     new->to = end;		end->prev = new;
