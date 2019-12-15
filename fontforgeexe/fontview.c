@@ -4218,9 +4218,7 @@ static void ellistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    mi->ti.disabled = in_modal;
 	  break;
 	  case MID_CharInfo:
-	    mi->ti.disabled = anychars<0 || (gid = fv->b.map->map[anychars])==-1 ||
-		    (fv->b.cidmaster!=NULL && fv->b.sf->glyphs[gid]==NULL) ||
-		    in_modal;
+	    mi->ti.disabled = anychars<0 || in_modal;
 	  break;
 	  case MID_Transform:
 	    mi->ti.disabled = anychars==-1;
