@@ -5282,7 +5282,6 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
             *pt = '/'; pt++;
             strcpy(pt, mv->chars[cnt]->name);
             pt += strlen(mv->chars[cnt]->name);
-            *pt = ' '; pt++;
         }
     }
     *pt = '\0';
