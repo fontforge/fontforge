@@ -2513,9 +2513,15 @@ must be created through the font.
     </TR>
     <TR>
       <TD><CODE>clear</CODE></TD>
-      <TD><CODE>()</CODE></TD>
-      <TD>Clears the contents of the glyph (and marks it as not
-	<A href="#g-isWorthOutputting">worth outputting</A>).</TD>
+      <TD><CODE>([layer])</CODE></TD>
+      <TD>
+          With no arguments, clears the contents of the glyph (and marks it as
+          not <A href="#g-isWorthOutputting">worth outputting</A>).
+
+          If a layer is provided it must be an integer index, e.g. 0 for Back
+          and 1 for Fore; it is not possible to clear the guide layer with this
+          function.
+      </TD>
     </TR>
     <TR>
       <TD><CODE><A name="g-cluster">cluster</A></CODE></TD>
