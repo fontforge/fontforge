@@ -9373,12 +9373,35 @@ static PyObject *PyFFGlyph_BoundingBox(PyFF_Glyph *self, PyObject *UNUSED(args))
 return( Py_BuildValue("(dddd)", bb.minx,bb.miny, bb.maxx,bb.maxy ));
 }
 
-static PyObject *PyFFGlyph_clear(PyFF_Glyph *self, PyObject *UNUSED(args)) {
+static PyObject *PyFFGlyph_clear(PyFF_Glyph *self, PyObject *args) {
+	int arglen = PySequence_Size(args);
+    int layeri = self->layer;
 
-    SCClearContents(self->sc,self->layer);
-    SCCharChangedUpdate(self->sc,self->layer);
+    if (arglen <= 0) {
+        SCClearContents(self->sc,layeri);
+    } else if (arglen > 1) {
+        PyErr_Format(PyExc_TypeError, "Too many arguments, only a layer index is allowed");
+        return NULL;
+    } else { /* arglen == 1 */
+        PyObject *layerp = PySequence_GetItem(args,0);
+        if (!PyInt_Check(layerp)) {
+            PyErr_Format(PyExc_ValueError, "First argument must be layer index (int)");
+            return NULL;
+        }
+        layeri = PyInt_AsLong(layerp);
+        // ly_grid not clearable with this function. In any event, it makes no
+        // sense to put it here; clearing ly_grid should quite rightly go at
+        // the font level since ly_grid is per-font not per-glyph so this is
+        // not a bug
+        if ( layeri<ly_back || layeri>=self->sc->layer_cnt ) {
+            PyErr_Format(PyExc_ValueError, "Layer is out of range");
+            return NULL;
+        }
+        SCClearLayer(self->sc, layeri);
+    }
 
-Py_RETURN(self);
+    SCCharChangedUpdate(self->sc,layeri);
+    Py_RETURN(self);
 }
 
 static PyObject *PyFFGlyph_isWorthOutputting(PyFF_Glyph *self, PyObject *UNUSED(args)) {
@@ -9453,7 +9476,7 @@ static PyMethodDef PyFF_Glyph_methods[] = {
     { "canonicalStart", (PyCFunction) PyFFGlyph_canonicalStart, METH_NOARGS, "Sets the start point of all the contours of the current glyph to be the leftmost point on the contour."},
     { "changeWeight", (PyCFunction) PyFFGlyph_changeWeight, METH_VARARGS, "Change the weight (thickness) of the stems of the glyph"},
     { "condenseExtend", (PyCFunction) PyFFGlyph_condenseExtend, METH_VARARGS, "Change the widths of the counters and side bearings of the glyph"},
-    { "clear", (PyCFunction) PyFFGlyph_clear, METH_NOARGS, "Clears the contents of a glyph and makes it not worth outputting" },
+    { "clear", (PyCFunction) PyFFGlyph_clear, METH_VARARGS, "Clears the contents of either a single layer of a glyph or of all the glyph's layers; makes it not worth outputting depending on its invocation" },
     { "cluster", (PyCFunction) PyFFGlyph_Cluster, METH_VARARGS, "Cluster the points of a glyph towards common values" },
     { "correctDirection", (PyCFunction) PyFFGlyph_Correct, METH_NOARGS, "Orient a layer so that external contours are clockwise and internal counter clockwise." },
     { "exclude", (PyCFunction) PyFFGlyph_Exclude, METH_VARARGS, "Exclude the area of the argument (a layer) from the current glyph"},
