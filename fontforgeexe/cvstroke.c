@@ -2553,7 +2553,7 @@ return( true );
 	}
 	temp.stroke_pen.linecap =
 		GGadgetIsChecked(GWidgetGetControl(gw,CID_ButtCap))?lc_butt:
-		GGadgetIsChecked(GWidgetGetControl(gw,CID_BevelCap))?lc_round:
+		GGadgetIsChecked(GWidgetGetControl(gw,CID_RoundCap))?lc_round:
 		GGadgetIsChecked(GWidgetGetControl(gw,CID_SquareCap))?lc_square:
 			lc_inherited;
 	temp.stroke_pen.linejoin =
