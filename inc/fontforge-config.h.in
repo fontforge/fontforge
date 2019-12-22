@@ -33,6 +33,9 @@
 /* The tagged version of FontForge. Additional versioning information in fontforge-version-extras.h */
 #define FONTFORGE_VERSION "@PROJECT_VERSION@"
 
+/* The install prefix configured at configure/compile time, used as a last resort */
+#define FONTFORGE_INSTALL_PREFIX "@CMAKE_INSTALL_PREFIX@"
+
 /* Platform checks */
 
 #cmakedefine WORDS_BIGENDIAN 1

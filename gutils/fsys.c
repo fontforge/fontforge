@@ -40,13 +40,15 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-static char dirname_[MAXPATHLEN+1];
 #if !defined(__MINGW32__)
  #include <pwd.h>
 #else
  #include <shlobj.h>
  #include <windows.h>
 #endif
+
+static char *program_dir = NULL;
+static char dirname_[MAXPATHLEN+1];
 
 /**
  * \brief Removes the extension from a file path, if it exists.
@@ -504,6 +506,10 @@ char *_GFile_find_program_dir(char *prog) {
     char *pt, *path, *program_dir=NULL;
     char filename[2000];
 
+    if (prog == NULL) {
+        return NULL;
+    }
+
 #if defined(__MINGW32__)
     char* pt1 = strrchr(prog, '/');
     char* pt2 = strrchr(prog, '\\');
@@ -798,26 +804,11 @@ int u_GFileUnlink(unichar_t *name) {
 return(unlink(buffer));
 }
 
-static char *GResourceProgramDir = 0;
-
-char* getGResourceProgramDir(void) {
-    return GResourceProgramDir;
-}
-
-char* getLibexecDir_NonWindows(void) 
-{
-    // FIXME this was indirectly introduced by
-    // https://github.com/fontforge/fontforge/pull/1838 and is not
-    // tested on Windows yet.
-    //
-    static char path[PATH_MAX+4];
-    snprintf( path, PATH_MAX, "%s/../libexec/", getGResourceProgramDir());
-    return path;
-}
-
-
-
 void FindProgDir(char *prog) {
+    if (program_dir != NULL) {
+        return;
+    }
+
 #if defined(__MINGW32__)
     char  path[MAX_PATH+4];
     char* c = path;
@@ -831,13 +822,11 @@ void FindProgDir(char *prog) {
     	}
     }
     if(tail) *tail='\0';
-    GResourceProgramDir = copy(path);
+    program_dir = copy(path);
 #else
-    GResourceProgramDir = _GFile_find_program_dir(prog);
-    if ( GResourceProgramDir==NULL ) {
-	char filename[1025];
-	GFileGetAbsoluteName(".",filename,sizeof(filename));
-	GResourceProgramDir = copy(filename);
+    program_dir = _GFile_find_program_dir(prog);
+    if ( program_dir==NULL ) {
+        program_dir = smprintf("%s/%s", FONTFORGE_INSTALL_PREFIX, "bin");
     }
 #endif
 }
@@ -854,20 +843,14 @@ char *getShareDir(void) {
     set = true;
 
     //Assume share folder is one directory up
-    pt = strrchr(GResourceProgramDir, '/');
+    pt = strrchr(program_dir, '/');
     if ( pt==NULL ) {
-#ifdef SHAREDIR
-	return( sharedir = SHAREDIR );
-#elif defined( PREFIX )
-	return( sharedir = PREFIX "/share" );
-#else
-	pt = GResourceProgramDir + strlen(GResourceProgramDir);
-#endif
+	pt = program_dir + strlen(program_dir);
     }
-    len = (pt-GResourceProgramDir)+strlen("/share/fontforge")+1;
+    len = (pt-program_dir)+strlen("/share/fontforge")+1;
     sharedir = malloc(len);
-    strncpy(sharedir,GResourceProgramDir,pt-GResourceProgramDir);
-    strcpy(sharedir+(pt-GResourceProgramDir),"/share/fontforge");
+    strncpy(sharedir,program_dir,pt-program_dir);
+    strcpy(sharedir+(pt-program_dir),"/share/fontforge");
     return( sharedir );
 }
 
@@ -912,9 +895,6 @@ char *getHelpDir(void) {
 	return( sharedir );
 
     char* prefix = getShareDir();
-#if defined(DOCDIR)
-    prefix = DOCDIR;
-#endif
     const char* postfix = "/../doc/fontforge/";
     int len = strlen(prefix) + strlen(postfix) + 2;
     sharedir = malloc(len);

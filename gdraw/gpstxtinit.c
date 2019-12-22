@@ -469,8 +469,8 @@ return( true );
     if ( path==NULL )
 	path = copy(getenv("PSFONTPATH"));
     if ( path==NULL ) {
-	path = copy(GFileBuildName(GResourceProgramDir,"print",filename,sizeof(filename)));
-	/* append /print to program directory */
+	path = copy(GFileBuildName(getShareDir(),"print",filename,sizeof(filename)));
+	/* append /print to share directory */
     }
 
     for ( pp = path; *pp; pp = epp ) {

@@ -96,7 +96,6 @@ extern int u_GFileUnlink(unichar_t *name);
 extern off_t GFileGetSize(char *name);
 extern char *GFileReadAll(char *name);
 extern int   GFileWriteAll(char *filepath, char *data);
-extern char* getGResourceProgramDir(void);
 extern void  FindProgDir(char *prog);
 extern char *getShareDir(void);
 extern char *getLocaleDir(void);

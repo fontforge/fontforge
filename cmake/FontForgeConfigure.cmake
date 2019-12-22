@@ -105,7 +105,7 @@ function(fontforge_generate_config template destination)
     set(_LIBUNINAMESLIST_FUN ${Libuninameslist_FEATURE_LEVEL})
   endif()
 
-  configure_file(${template} ${destination})
+  configure_file(${template} ${destination} ESCAPE_QUOTES @ONLY)
 endfunction()
 
 function(_get_git_version)
@@ -179,5 +179,5 @@ function(fontforge_generate_version_extras template destination)
     _get_modtime()
     _get_modtime_str(${FONTFORGE_MODTIME})
 
-    configure_file(${template} ${destination})
+    configure_file(${template} ${destination} ESCAPE_QUOTES @ONLY)
 endfunction()
