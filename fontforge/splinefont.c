@@ -2007,15 +2007,13 @@ void SFAddLayer(SplineFont *sf,char *name,int order2,int background) {
     CharViewBase *cvs;
 
     if ( sf->layer_cnt>=BACK_LAYER_MAX-1 ) {
-	ff_post_error(_("Too many layers"),_("Attempt to have a font with more than %d layers"),
-		BACK_LAYER_MAX );
-return;
+        ff_post_error(_("Too many layers"),_("Attempt to have a font with more than %d layers"), BACK_LAYER_MAX );
+        return;
     }
     if ( name==NULL || *name=='\0' )
-	name = _("Back");
+    name = _("Back");
 
     l = sf->layer_cnt;
-    ++sf->layer_cnt;
     sf->layers = realloc(sf->layers,(l+1)*sizeof(LayerInfo));
     memset(&sf->layers[l],0,sizeof(LayerInfo));
     sf->layers[l].name = copy(name);
@@ -2023,18 +2021,27 @@ return;
     sf->layers[l].background = background;
 
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc = sf->glyphs[gid])!=NULL ) {
-	Layer *old = sc->layers;
-	sc->layers = realloc(sc->layers,(l+1)*sizeof(Layer));
-	memset(&sc->layers[l],0,sizeof(Layer));
-	LayerDefault(&sc->layers[l]);
-	sc->layers[l].order2 = order2;
-	sc->layers[l].background = background;
-	++ sc->layer_cnt;
-	for ( cvs = sc->views; cvs!=NULL; cvs=cvs->next ) {
-	    cvs->layerheads[dm_back] = sc->layers + (cvs->layerheads[dm_back]-old);
-	    cvs->layerheads[dm_fore] = sc->layers + (cvs->layerheads[dm_fore]-old);
-	}
+        l = sc->layer_cnt;
+        Layer *old = sc->layers;
+        sc->layers = realloc(sc->layers,(l+1)*sizeof(Layer));
+        l = sf->layer_cnt;
+        TRACE("SFAddLayer: Font has %d and glyph %d\n", sf->layer_cnt, sc->layer_cnt);
+        if (sf->layer_cnt != sc->layer_cnt) {
+            memmove(&sc->layers[l+1], &sc->layers[l], (sc->layer_cnt - sf->layer_cnt)*sizeof(Layer));
+        } 
+        memset(&sc->layers[l],0,sizeof(Layer));
+        LayerDefault(&sc->layers[l]);
+        sc->layers[l].order2 = order2;
+        sc->layers[l].background = background;
+        ++ sc->layer_cnt;
+        for ( cvs = sc->views; cvs!=NULL; cvs=cvs->next ) {
+            cvs->layerheads[dm_back] = sc->layers + (cvs->layerheads[dm_back]-old);
+            cvs->layerheads[dm_fore] = sc->layers + (cvs->layerheads[dm_fore]-old);
+        }
     }
+
+    ++sf->layer_cnt;
+    sf->layers = realloc(sf->layers,(l+1)*sizeof(LayerInfo));
 }
 
 void SFLayerSetBackground(SplineFont *sf,int layer,int is_back) {

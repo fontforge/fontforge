@@ -3571,46 +3571,10 @@ static void LayersMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
 }
 
 static int GFI_Type3Change(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
-	GWindow gw = GGadgetGetWindow(g);
-	int type3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsMultiLayer));
-	int mixed = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsMixed));
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_IsMixed), !type3);
-	if ( type3 )
-	    GGadgetSetChecked(GWidgetGetControl(gw,CID_IsMixed), false );
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_IsOrder2), !type3);
-	if ( type3 )
-	    GGadgetSetChecked(GWidgetGetControl(gw,CID_IsOrder2), false );
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_IsOrder3), !type3);
-	if ( type3 )
-	    GGadgetSetChecked(GWidgetGetControl(gw,CID_IsOrder3), true );
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_GuideOrder2), !type3 && mixed);
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_Backgrounds), !type3);
-    }
 return( true );
 }
 
 static int GFI_OrderChange(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
-	GWindow gw = GGadgetGetWindow(g);
-	GGadget *backs = GWidgetGetControl(gw,CID_Backgrounds);
-	int mixed = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsMixed));
-	int cubic = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsOrder3));
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_IsMultiLayer), cubic);
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_GuideOrder2), mixed);
-	if ( !mixed ) {
-	    GGadgetSetChecked(GWidgetGetControl(gw,CID_GuideOrder2), !cubic );
-	}
-	GGadgetSetEnabled(backs, true);
-	GMatrixEditEnableColumn(backs, 1, mixed);
-	if ( !mixed ) {
-	    int col = GMatrixEditGetColCnt(backs), rows, i;
-	    struct matrix_data *md = GMatrixEditGet(backs, &rows);
-	    for ( i=0; i<rows; ++i )
-		md[i*col+1].u.md_ival = !cubic;
-	}
-	GGadgetRedraw(backs);
-    }
 return( true );
 }
 
@@ -8117,14 +8081,6 @@ return;
     memset(&lgcd,0,sizeof(lgcd));
     memset(&lbox,0,sizeof(lbox));
 
-    ltype = -1;
-    for ( j=0; j<sf->layer_cnt; ++j ) {
-	if ( ltype==-1 )
-	    ltype = sf->layers[j].order2;
-	else if ( ltype!=sf->layers[j].order2 )
-	    ltype = -2;
-    }
-
     k = j = 0;
 
     lgcd[k].gd.pos.x = 12; lgcd[k].gd.pos.y = 0;
@@ -8152,9 +8108,8 @@ return;
     llabel[k].text_is_1byte = true;
     llabel[k].text_in_resource = true;
     lgcd[k].gd.label = &llabel[k];
-    lgcd[k].gd.flags = ltype!=0 ? (gg_visible| gg_rad_continueold) :
-	sf->multilayer ? (gg_visible | gg_enabled| gg_cb_on | gg_rad_continueold) :
-	(gg_visible | gg_enabled| gg_rad_continueold);
+    lgcd[k].gd.flags = gg_visible | gg_enabled;
+    if (sf->multilayer) lgcd[k].gd.flags |= gg_cb_on;
     lgcd[k].gd.cid = CID_IsMultiLayer;
     lgcd[k].gd.handle_controlevent = GFI_Type3Change;
     lgcd[k].creator = GRadioCreate;
@@ -8216,9 +8171,7 @@ return;
     llabel[k].text_is_1byte = true;
     llabel[k].text_in_resource = true;
     lgcd[k].gd.label = &llabel[k];
-    lgcd[k].gd.flags = sf->multilayer ? (gg_visible) :
-	    ltype==1 ? (gg_visible | gg_enabled | gg_cb_on) :
-		(gg_visible | gg_enabled);
+    lgcd[k].gd.flags = gg_visible | gg_enabled;
     lgcd[k].gd.cid = CID_IsOrder2;
     lgcd[k].gd.handle_controlevent = GFI_OrderChange;
     lgcd[k].creator = GRadioCreate;
@@ -8230,9 +8183,7 @@ return;
     llabel[k].text_is_1byte = true;
     llabel[k].text_in_resource = true;
     lgcd[k].gd.label = &llabel[k];
-    lgcd[k].gd.flags = sf->multilayer ? (gg_visible) :
-	    ltype<0 ? (gg_visible | gg_enabled | gg_cb_on) :
-		(gg_visible | gg_enabled);
+    lgcd[k].gd.flags = gg_visible | gg_enabled;
     lgcd[k].gd.handle_controlevent = GFI_OrderChange;
     lgcd[k].gd.cid = CID_IsMixed;
     lgcd[k].creator = GRadioCreate;
@@ -8261,10 +8212,7 @@ return;
     llabel[k].text_is_1byte = true;
     llabel[k].text_in_resource = true;
     lgcd[k].gd.label = &llabel[k];
-    lgcd[k].gd.flags = sf->multilayer || ltype>=0 ? (gg_visible) :
-	    (gg_visible | gg_enabled);
-    if ( sf->grid.order2 )
-	lgcd[k].gd.flags |= gg_cb_on;
+    lgcd[k].gd.flags = gg_visible | gg_enabled;
     lgcd[k].gd.cid = CID_GuideOrder2;
     lgcd[k].creator = GCheckBoxCreate;
     lgcd[k++].gd.popup_msg = _(
@@ -8288,7 +8236,7 @@ return;
     LayersMatrixInit(&layersmi,d);
 
     lgcd[k].gd.pos.width = 300; lgcd[k].gd.pos.height = 180;
-    lgcd[k].gd.flags = sf->multilayer ? gg_visible : (gg_enabled | gg_visible);
+    lgcd[k].gd.flags = gg_enabled | gg_visible;
     lgcd[k].gd.cid = CID_Backgrounds;
     lgcd[k].gd.u.matrix = &layersmi;
     lgcd[k].data = d;
