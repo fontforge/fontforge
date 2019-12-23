@@ -9384,11 +9384,22 @@ static PyObject *PyFFGlyph_clear(PyFF_Glyph *self, PyObject *args) {
         return NULL;
     } else { /* arglen == 1 */
         PyObject *layerp = PySequence_GetItem(args,0);
-        if (!PyInt_Check(layerp)) {
-            PyErr_Format(PyExc_ValueError, "First argument must be layer index (int)");
+        if ( STRING_CHECK(layerp)) {
+            char *name;
+            PYGETSTR(layerp, name, NULL);
+            layeri = SFFindLayerIndexByName(self->sc->parent,name);
+            if ( layeri<0 ) {
+                PyErr_Format(PyExc_ValueError, "Requested layer '%s' not found", name);
+                ENDPYGETSTR();
+                return NULL;
+            }
+            ENDPYGETSTR();
+        } else if (!PyInt_Check(layerp)) {
+            PyErr_Format(PyExc_ValueError, "First argument must be string or layer index");
             return NULL;
+        } else {
+            layeri = PyInt_AsLong(layerp);
         }
-        layeri = PyInt_AsLong(layerp);
         // ly_grid not clearable with this function. In any event, it makes no
         // sense to put it here; clearing ly_grid should quite rightly go at
         // the font level since ly_grid is per-font not per-glyph so this is
