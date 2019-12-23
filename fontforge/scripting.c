@@ -5084,8 +5084,6 @@ static void bESJoinCap(Context *c, int ci, int ji, StrokeInfo *sip, int rok) {
 
     if ( ji >= 0 && ji<=6 )
 	sip->join = joinmap[ji];
-    if ( sip->join==lj_arcs )
-	ScriptError(c, "Arcs join not yet supported");
 }
 
 static void bESFlags(Context *c, int fi, StrokeInfo *sip) {
@@ -5106,6 +5104,12 @@ static void bESFlags(Context *c, int fi, StrokeInfo *sip) {
     sip->extrema = !(c->a.vals[fi].u.ival&32);
     sip->jlrelative = !(c->a.vals[fi].u.ival&64);
     sip->ecrelative = !(c->a.vals[fi].u.ival&128);
+    if ( c->a.vals[fi].u.ival&256 )
+	sip->al = sal_svg2;
+    else if ( c->a.vals[fi].u.ival&512 )
+	sip->al = sal_ratio;
+    else
+	sip->al = sal_auto;
 }
 
 static void bExpandStroke(Context *c) {

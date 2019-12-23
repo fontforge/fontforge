@@ -36,12 +36,15 @@
 #define BP_REV(v) (BasePoint) { -(v).x, -(v).y }
 #define BP_REV_IF(t, v) ((t) ? (BasePoint) { -(v).x, -(v).y } : (v))
 #define BP_ADD(v1, v2) (BasePoint) { (v1).x + (v2).x, (v1).y + (v2).y } 
+#define BP_SUB(v1, v2) BP_ADD((v1), BP_REV((v2)))
 #define BP_SCALE(v, f) (BasePoint) { (f)*(v).x, (f)*(v).y } 
 #define BP_AVG(v1, v2) (BasePoint) { ((v1).x + (v2).x)/2, ((v1).y + (v2).y)/2 }
 #define BP_DOT(v1, v2) ( ((v1).x * (v2).x) + ((v1).y * (v2).y) )
+#define BP_CROSS(v1, v2) ( ((v1).x * (v2).y) - ((v1).y * (v2).x) )
 #define BP_UNINIT ((BasePoint) { -INFINITY, INFINITY })
 #define BP_IS_UNINIT(v) ((v).x==-INFINITY && (v).y==INFINITY)
 #define BP_ROT(v, ut) (BasePoint) { (ut).x * (v).x - (ut).y * (v).y, (ut).y * (v).x + (ut).x * (v).y }
+#define BP_EQ(v1, v2) ( ((v1).x == (v2).x) && ((v1).y == (v2).y) )
 #define UTZERO ((BasePoint) { 0.0, 1.0 })
 #define UTMIN ((BasePoint) { -1, -DBL_MIN })
 #define UT_90CCW(v) (BasePoint) { -(v).y, (v).x }

@@ -64,3 +64,5 @@ do_stroke_test(True, 'calligraphic', 20, 100, join="miterclip", cap="round", joi
 do_stroke_test(True, 'calligraphic', 20, 100, join="miterclip", cap="round", joinlimit=180, jlrelative=False)
 do_stroke_test(True, 'calligraphic', 20, 100, join="miterclip", cap="round", extendcap=3)
 do_stroke_test(True, 'calligraphic', 20, 100, join="miterclip", cap="round", extendcap=100, ecrelative=False)
+do_stroke_test(True, 'elliptical', 20, 20, join="arcs", cap="butt", joinlimit=4)
+do_stroke_test(True, 'elliptical', 20, 100, join="arcs", cap="round", joinlimit=2, arcsclip="ratio")

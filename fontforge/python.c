@@ -4424,6 +4424,13 @@ struct flaglist rmov[] = {
     FLAGLIST_EMPTY /* Sentinel */
 };
 
+struct flaglist sal[] = {
+    { "svg2", sal_svg2 },
+    { "ratio", sal_ratio },
+    { "auto", sal_auto },
+    FLAGLIST_EMPTY /* Sentinel */
+};
+
 struct flaglist strokeflags[] = {
     { "removeinternal", 1 },
     { "removeexternal", 2 },
@@ -4431,9 +4438,9 @@ struct flaglist strokeflags[] = {
     FLAGLIST_EMPTY /* Sentinel */
 };
 
-#define STROKE_OPTKEYS "removeinternal", "removeexternal", "extrema", "simplify", "accuracy", "joinlimit", "extendcap", "jlrelative", "ecrelative", "removeoverlap"
-#define STROKE_OPTFORMAT "$ppppdddpps"
-#define STROKE_OPTARGS &si->removeinternal, &si->removeexternal, &si->extrema, &si->simplify, &si->accuracy_target, &si->joinlimit, &si->extendcap, &si->jlrelative, &si->ecrelative, &rostring
+#define STROKE_OPTKEYS "removeinternal", "removeexternal", "extrema", "simplify", "accuracy", "joinlimit", "extendcap", "jlrelative", "ecrelative", "removeoverlap", "arcsclip"
+#define STROKE_OPTFORMAT "$ppppdddppss"
+#define STROKE_OPTARGS &si->removeinternal, &si->removeexternal, &si->extrema, &si->simplify, &si->accuracy_target, &si->joinlimit, &si->extendcap, &si->jlrelative, &si->ecrelative, &rostring, &acstring
 
 static char *strokekey_circ[]
     = { "type", "width", "cap", "join", "angle", STROKE_OPTKEYS, NULL };
@@ -4454,7 +4461,8 @@ static char *strokebkey_conv[]
 
 static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
     char *str, *type, *cap="nib", *join="nib", *rostring="layer";
-    int c, j, f, r, toknum;
+    char *acstring="auto";
+    int c, j, f, r, a, toknum;
     PyObject *flagtuple=NULL;
     PyObject *nib=NULL;
 
@@ -4611,15 +4619,15 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
     j = FlagsFromString(join,linejoin,"linejoin type");
     if ( j==FLAG_UNKNOWN )
 	return( -1 );
-    if ( j==lj_arcs ) {
-	PyErr_Format(PyExc_ValueError, "Arcs join not yet supported" );
-	return -1;
-    }
     si->join = j;
     r = FlagsFromString(rostring,rmov,"removeoverlap type");
     if ( r==FLAG_UNKNOWN )
 	return( -1 );
     si->rmov = r;
+    a = FlagsFromString(acstring,sal,"arcsclip type");
+    if ( a==FLAG_UNKNOWN )
+	return( -1 );
+    si->al = a;
 
     if ( flagtuple!=NULL ) {
 	f = FlagsFromTuple(flagtuple,strokeflags,"stroke flag");
