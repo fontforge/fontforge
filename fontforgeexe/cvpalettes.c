@@ -1689,9 +1689,10 @@ return;
 		0x808080);
 	if ( i==0 || i==1 ) {
 	    str = i==0?_("Guide") : _("Back");
-            GDrawDrawText8(pixmap, r.x + 12, layer2.header_height + i * CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT - 12) / 2 + 12,
-		    (char *) str,-1,ll==layer2.active?0xffffff:GDrawGetDefaultForeground(NULL));
-            GDrawDrawText8(pixmap, r.x + 2, layer2.header_height + i * CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT - 12) / 2 + 12, cv->b.sc->layers[ll].order2?"Q":"C", -1, 0x000000);
+            Color lc = ll==layer2.active?0xffffff:GDrawGetDefaultForeground(NULL);
+            int32 py = layer2.header_height + i * CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT - 12) / 2 + 12;
+            GDrawDrawText8(pixmap, r.x + 12, py, (char *) str, -1, lc);
+            GDrawDrawText8(pixmap, r.x + 2,  py, cv->b.sc->layers[i].order2 ? "Q" : "C", -1, lc);
 	} else if ( layer2.offtop+i>=layer2.current_layers ) {
     break;
 	} else if ( layer2.layers[layer2.offtop+i]!=NULL ) {
@@ -1716,9 +1717,10 @@ return;
           sprintf(layername, "%s%d", _("GLayer"), idx);
 	    }
 	    // And this comes from above.
-            GDrawDrawText8(pixmap, r.x + 12, layer2.header_height + i * CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT - 12) / 2 + 12,
-		    (char *) layername,-1,ll==layer2.active?0xffffff:GDrawGetDefaultForeground(NULL));
-            GDrawDrawText8(pixmap, r.x + 2, layer2.header_height + i * CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT - 12) / 2 + 12, cv->b.sc->layers[ll].order2?"Q":"C", -1, 0x000000);
+            Color lc = ll==layer2.active?0xffffff:GDrawGetDefaultForeground(NULL);
+            int32 py = layer2.header_height + i * CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT - 12) / 2 + 12;
+            GDrawDrawText8(pixmap, r.x + 12, py, (char *) layername,-1,lc);
+            GDrawDrawText8(pixmap, r.x + 2,  py, cv->b.sc->layers[idx].order2 ? "Q" : "C", -1, lc);
 #endif // 0
 	}
     }
