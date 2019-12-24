@@ -1957,7 +1957,9 @@ void SFRemoveLayer(SplineFont *sf,int l) {
     FontViewBase *fvs;
     int layers, any_quads;
 
-    if ( sf->subfontcnt!=0 || l<=ly_fore || sf->multilayer )
+    TRACE("Removing layer idx %d\n", l);
+
+    if ( sf->subfontcnt!=0 || l<=ly_fore )
 return;
 
     for ( layers = ly_fore, any_quads = false; layers<sf->layer_cnt; ++layers ) {
