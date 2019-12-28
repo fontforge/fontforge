@@ -358,6 +358,7 @@ typedef struct gtabset {
     int16 *rowstarts;		/* for each row, index into tab array of its first tab, one extra entry at end with tabcnt */
     int16 tabcnt;		/* number of tabs */
     int16 sel;			/* active tab */
+    int16 oldsel;       /* used when swapping tabs */
     int16 rcnt;			/* number of rows */
     int16 active_row;		/* row which is closest to the display area */
     int16 offset_per_row;	/* stagger tabs by this much */
@@ -375,7 +376,10 @@ typedef struct gtabset {
     unsigned int fill1line: 1;
     unsigned int vertical: 1;
     unsigned int nowindow: 1;
+    bool closable, movable;
     FontInstance *font;
+    void (*remove_sync)(GWindow gw, int pos);
+    void (*swap_sync)(GWindow gw, int pos_a, int pos_b);
     void (*nested_expose)(GWindow pixmap, GGadget *g, GEvent *event);
     int (*nested_mouse)(GGadget *g, GEvent *event);
     int16 vert_list_width;
