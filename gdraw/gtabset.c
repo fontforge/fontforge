@@ -448,7 +448,6 @@ static void GTabSet_Remetric(GTabSet *gts) {
     }
 }
 
-void GTabSetRemoveTabByPos(GGadget *g, int pos);
 static void GTabSetChangeSel(GTabSet *gts, int sel,int sendevent) {
     int i, width;
     int oldsel = gts->sel;
