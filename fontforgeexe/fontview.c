@@ -6133,6 +6133,30 @@ return;
     GDrawRequestExpose(fv->gw,&r,false);
 }
 
+/* Decide how to open a new CharView for the given SplineChar, based primarily
+ * on the user's preferences (OpenCharsInNewWindow) but also an "extra
+ * consideration" (ec) */
+static int FVDecideOpenSC(FontView *fv, SplineChar *sc, bool ec) {
+    int pos = fv->b.map->enccount-1;
+    SplineFont *sf = fv->b.sf;
+
+    int gid = -1;
+    if ( !OpenCharsInNewWindow && ec )
+        for ( gid=sf->glyphcnt-1; gid>=0; --gid )
+            if ( sf->glyphs[gid]!=NULL && sf->glyphs[gid]->views!=NULL )
+                break;
+    if ( gid!=-1 ) {
+        CharView *cv = (CharView *) (sf->glyphs[gid]->views);
+        while ( cv->b.next != NULL ) cv = (CharView *) (cv->b.next);
+        CVChangeSC(cv,sc);
+        GDrawSetVisible(cv->gw,true);
+        GDrawRaise(cv->gw);
+    } else {
+    CharViewCreate(sc,fv,pos);
+    }
+    return gid;
+}
+
 void FVChar(FontView *fv, GEvent *event) {
     int i,pos, cnt, gid;
     extern int navigation_mask;
@@ -6285,13 +6309,14 @@ void FVChar(FontView *fv, GEvent *event) {
 	MenuHelp(NULL,NULL,NULL);	/* Menu does F1 */
     } else if ( event->u.chr.keysym == GK_Escape ) {
 	FVDeselectAll(fv);
-    } else if ( event->u.chr.chars[0]=='\r' || event->u.chr.chars[0]=='\n' ) {
+    } else if ( event->u.chr.chars[0]=='\r' || event->u.chr.chars[0]=='\n' ) { // GK_Return
 	if ( fv->b.container!=NULL && fv->b.container->funcs->is_modal )
 return;
 	for ( i=cnt=0; i<fv->b.map->enccount && cnt<10; ++i ) if ( fv->b.selected[i] ) {
 	    SplineChar *sc = SFMakeChar(fv->b.sf,fv->b.map,i);
 	    if ( fv->show==fv->filled ) {
-		CharViewCreate(sc,fv,i);
+	        bool ec = event->u.chr.state&ksm_shift;
+	        FVDecideOpenSC(fv,sc,ec);
 	    } else {
 		BDFFont *bdf = fv->show;
 		BitmapViewCreate(BDFMakeGID(bdf,sc->orig_pos),bdf,fv,i);
@@ -6464,20 +6489,7 @@ return;
 	    gid = fv->b.map->map[pos];
 	}
 	if ( fv->show==fv->filled ) {
-	    SplineFont *sf = fv->b.sf;
-	    gid = -1;
-	    if ( !OpenCharsInNewWindow )
-		for ( gid=sf->glyphcnt-1; gid>=0; --gid )
-		    if ( sf->glyphs[gid]!=NULL && sf->glyphs[gid]->views!=NULL )
-		break;
-	    if ( gid!=-1 ) {
-		CharView *cv = (CharView *) (sf->glyphs[gid]->views);
-//		printf("calling CVChangeSC() sc:%p %s\n", sc, sc->name );
-		CVChangeSC(cv,sc);
-		GDrawSetVisible(cv->gw,true);
-		GDrawRaise(cv->gw);
-	    } else
-		CharViewCreate(sc,fv,pos);
+	    gid = FVDecideOpenSC(fv, sc, true);
 	} else {
 	    BDFFont *bdf = fv->show;
 	    BDFChar *bc =BDFMakeGID(bdf,gid);
