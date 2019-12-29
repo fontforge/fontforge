@@ -6673,9 +6673,9 @@ static void CVMenuCloseTab(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNU
 return;
     pos = cv->ctpos == -1 ? GTabSetGetSel(cv->tabs) : cv->ctpos;
     free(cv->former_names[pos]);
-    for ( i=pos; i<cv->former_cnt; ++i ) {
-	cv->former_names[i] = cv->former_names[i+1];
-    cv->cvtabs[i] = cv->cvtabs[i+1];
+    for ( i=pos+1; i<cv->former_cnt; ++i ) {
+	cv->former_names[i-1] = cv->former_names[i];
+    cv->cvtabs[i-1] = cv->cvtabs[i];
     }
     --cv->former_cnt;
     if (cv->ctpos==-1){
