@@ -3604,6 +3604,33 @@ static void CVSetCharSelectorValueFromSC( CharView *cv, SplineChar *sc )
     GGadgetSetTitle8(cv->charselector, title);
 }
 	    
+// See comment in gtabset.c (fn GTabSetRemoveTabByPos)
+static void CVMenuCloseTab(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e));
+static void CVTabSetRemoveSync(GWindow gw, int pos) {
+    CharView* cv = (CharView*) GDrawGetUserData(gw);
+    // There's no other good way to pass an "argument" to this function as its definition
+    // is required to be a certain way. The user_data of the GWindow is already our CharView
+    // so we can't use that.
+    cv->ctpos = pos;
+    CVMenuCloseTab(gw, NULL, NULL);
+}
+
+static void CVTabSetSwapSync(GWindow gw, int pos_a, int pos_b) {
+    CharView* cv = (CharView*) GDrawGetUserData(gw);
+    CharViewTab tempt = cv->cvtabs[pos_a];
+    char* fnt = cv->former_names[pos_a];
+
+    cv->cvtabs[pos_a] = cv->cvtabs[pos_b];
+    cv->former_names[pos_a] = cv->former_names[pos_b];
+    cv->cvtabs[pos_b] = tempt;
+    cv->former_names[pos_b] = fnt;
+
+    int sel = GTabSetGetSel(cv->tabs);
+    if (pos_a == sel)
+    cv->oldtabnum = pos_b;
+    if (pos_b == sel)
+    cv->oldtabnum = pos_a;
+}
 
 void CVChangeSC( CharView *cv, SplineChar *sc )
 {
@@ -3698,15 +3725,13 @@ void CVChangeSC( CharView *cv, SplineChar *sc )
 		}
 	    }
 	    CVSetCharSelectorValueFromSC( cv, sc );
-	    
 
-
-	    if ( cv->former_cnt==FORMER_MAX )
-		free(cv->former_names[FORMER_MAX-1]);
-	    for ( i=cv->former_cnt<FORMER_MAX?cv->former_cnt-1:FORMER_MAX-2; i>=0; --i )
+	    if ( cv->former_cnt==CV_TABMAX )
+		free(cv->former_names[CV_TABMAX-1]);
+	    for ( i=cv->former_cnt<CV_TABMAX?cv->former_cnt-1:CV_TABMAX-2; i>=0; --i )
 		cv->former_names[i+1] = cv->former_names[i];
 	    cv->former_names[0] = copy(sc->name);
-	    if ( cv->former_cnt<FORMER_MAX )
+	    if ( cv->former_cnt<CV_TABMAX )
 		++cv->former_cnt;
 	    for ( i=0; i<cv->former_cnt; ++i )
             {
@@ -3826,6 +3851,7 @@ static int CVChangeToFormer( GGadget *g, GEvent *e) {
 	if ( gid<0 )
 return( true );
 	CVChangeSC(cv,sf->glyphs[gid]);
+	TRACE("CVChangeToFormer: Changed SC to %s (GID %d)\n", sf->glyphs[gid]->name, gid);
 	cv->enc = ((FontView *) (cv->b.fv))->b.map->backmap[cv->b.sc->orig_pos];
     }
 return( true );
@@ -6638,22 +6664,32 @@ static void CVMenuClose(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED
 	GDrawDestroyWindow(gw);
 }
 
+// This can be triggered two ways: by the "X" buttons on tabs, and regularly in the menu.
 static void CVMenuCloseTab(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     int pos, i;
 
     if ( cv->b.container || cv->tabs==NULL || cv->former_cnt<=1 )
 return;
-    pos = GTabSetGetSel(cv->tabs);
+    pos = cv->ctpos == -1 ? GTabSetGetSel(cv->tabs) : cv->ctpos;
     free(cv->former_names[pos]);
     for ( i=pos+1; i<cv->former_cnt; ++i ) {
 	cv->former_names[i-1] = cv->former_names[i];
     cv->cvtabs[i-1] = cv->cvtabs[i];
     }
     --cv->former_cnt;
-    CVChangeSC_fetchTab(cv, pos);
-    GTabSetRemoveTabByPos(cv->tabs,pos);	/* This should send an event that the selection has changed */
+    if (cv->ctpos==-1){
+        GTabSetRemoveTabByPos(cv->tabs,pos);	/* This should send an event that the selection has changed */
+    }
     GTabSetRemetric(cv->tabs);
+    if (GTabSetGetSel(cv->tabs) >= pos) {
+    CVChangeSC_fetchTab(cv, pos);
+    // Otherwise subsequent calls to CVChangeSC_storeTab which use this value will be off by one
+    cv->oldtabnum = pos;
+    }
+    if (GTabSetGetTabCount(cv->tabs)<=1) CVChangeTabsVisibility(cv,false);
+    // Reset this argument so in case it's called by the menu the right tab will be removed.
+    cv->ctpos = -1;
 }
 
 static void CVMenuOpen(GWindow gw, struct gmenuitem *mi, GEvent *g) {
@@ -12728,16 +12764,14 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	    }
 	}
 	
-	
 	cv->charselectoridx = pos;
 	char* txt = GGadgetGetTitle8( cv->charselector );
-	TRACE("char selector changed to:%s\n", txt );
+	TRACE("char selector @%d changed to:%s\n", pos, txt );
 	{
 	    int tabnum = GTabSetGetSel(cv->tabs);
-	    TRACE("tab num:%d\n", tabnum );
-
 	    CharViewTab* t = &cv->cvtabs[tabnum];
 	    strncpy( t->tablabeltxt, txt, charviewtab_charselectedsz );
+	    TRACE("tab num: %d set to %s\n", tabnum, t->tablabeltxt);
 	    GTabSetChangeTabName(cv->tabs,t->tablabeltxt,tabnum);
 	    GTabSetRemetric(cv->tabs);
 	    GTabSetSetSel(cv->tabs,tabnum);	/* This does a redraw */
@@ -12854,6 +12888,8 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
 #endif
     cv->rulerh = 16;
 
+    cv->ctpos = -1;
+
 
     SCLigCaretCheck(sc,false);
 
@@ -12964,6 +13000,10 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
     cv->tabs = GTabSetCreate( gw, &gd, NULL );
     cv->former_cnt = 1;
     cv->former_names[0] = copy(sc->name);
+    GTabSetSetClosable(cv->tabs, true);
+    GTabSetSetMovable(cv->tabs, true);
+    GTabSetSetRemoveSync(cv->tabs, CVTabSetRemoveSync);
+    GTabSetSetSwapSync(cv->tabs, CVTabSetSwapSync);
     GGadgetTakesKeyboard(cv->tabs,false);
 
     _CharViewCreate( cv, sc, fv, enc, show );

@@ -430,15 +430,21 @@ int GListIndexFromY(GGadget *g,int y);
 void GListSetSBAlwaysVisible(GGadget *g,int always);
 void GListSetPopupCallback(GGadget *g,void (*callback)(GGadget *,int));
 
+int GTabSetGetTabCount(GGadget *g);
 int GTabSetGetSel(GGadget *g);
 void GTabSetSetSel(GGadget *g,int sel);
 void GTabSetSetEnabled(GGadget *g,int pos, int enabled);
 GWindow GTabSetGetSubwindow(GGadget *g,int pos);
 int GTabSetGetTabLines(GGadget *g);
+void GTabSetSetClosable(GGadget *g, bool flag);
+void GTabSetSetMovable(GGadget *g, bool flag);
 void GTabSetSetNestedExpose(GGadget *g, void (*)(GWindow,GGadget *,GEvent *));
 void GTabSetSetNestedMouse(GGadget *g, int (*)(GGadget *,GEvent *));
+void GTabSetSetRemoveSync(GGadget *g, void (*rs)(GWindow gw, int pos));
+void GTabSetSetSwapSync(GGadget *g, void (*ss)(GWindow gw, int pos_a, int pos_b));
 void GTabSetChangeTabName(GGadget *g, const char *name, int pos);
 void GTabSetRemetric(GGadget *g);
+void GTabSetSwapTabs(GGadget *g, int pos_a, int pos_b);
 void GTabSetRemoveTabByPos(GGadget *g, int pos);
 void GTabSetRemoveTabByName(GGadget *g, char *name);
 

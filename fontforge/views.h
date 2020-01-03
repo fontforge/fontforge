@@ -131,8 +131,7 @@ typedef struct debugview {
 } DebugView;
 
 
-/* The number of tabs allowed in the outline glyph view of former glyphs */
-#define FORMER_MAX	10
+#define CV_TABMAX	100
 
 enum dv_coderange { cr_none=0, cr_fpgm, cr_prep, cr_glyph };	/* cleverly chosen to match ttobjs.h */
 
@@ -300,7 +299,7 @@ typedef struct charview {
     struct freetype_raster *raster, *oldraster;
     DebugView *dv;
     uint32 mmvisible;
-    char *former_names[FORMER_MAX];
+    char *former_names[CV_TABMAX];
     int former_cnt;
     AnchorPoint *apmine, *apmatch;
     SplineChar *apsc;
@@ -316,7 +315,7 @@ typedef struct charview {
     int additionalCharsToShowActiveIndex;
 
     CharViewTab cvtabs[ charview_cvtabssz+1 ];
-    int oldtabnum;
+    int oldtabnum, ctpos;
     
 } CharView;
 

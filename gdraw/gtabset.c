@@ -39,6 +39,8 @@ static GBox gvtabset_box = GBOX_EMPTY; /* Don't initialize here */
 static FontInstance *gtabset_font = NULL;
 static int gtabset_inited = false;
 
+static int GTS_TABPADDING = 25;
+
 static GResInfo gtabset_ri, gvtabset_ri;
 
 static GResInfo gtabset_ri = {
@@ -175,8 +177,15 @@ static int DrawTab(GWindow pixmap, GTabSet *gts, int i, int x, int y ) {
         GDrawFillRect(pixmap,&r,gts->g.box->active_border);
     }
 
-    GDrawDrawText(pixmap,x+(gts->tabs[i].width-gts->tabs[i].tw)/2,y+gts->rowh-gts->ds,
-	    gts->tabs[i].name,-1,fg);
+    int nx = x+(gts->tabs[i].width-gts->tabs[i].tw)/2;
+    int ny = y+gts->rowh-gts->ds;
+    int nx1 = GDrawDrawText(pixmap,nx,ny,gts->tabs[i].name,-1,fg);
+    if (gts->closable) {
+        nx1 += (GTS_TABPADDING/2-5);
+        Color xcol = GResourceFindColor("GTabSet.CloseColor",0xff0000);
+        GDrawDrawLine(pixmap,nx+nx1,ny,nx+nx1+10,ny-10,xcol);
+        GDrawDrawLine(pixmap,nx+nx1,ny-10,nx+nx1+10,ny,xcol);
+    }
     gts->tabs[i].x = x;
     x += gts->tabs[i].width;
 return( x );
@@ -260,7 +269,7 @@ return( false );
 		}
 	    }
 	    if ( i!=gts->tabcnt ) {
-		int p = gts->g.inner.x+gts->g.inner.width - gts->arrow_width;
+		int p = gts->g.inner.x+gts->g.inner.width - gts->arrow_width - GTS_TABPADDING;
 		if ( p>x ) x=p;
 		x = DrawRightArrowTab(pixmap,gts,x,y);
 		gts->tabs[i].x = 0x7fff;
@@ -390,7 +399,8 @@ static void GTabSet_Remetric(GTabSet *gts) {
 
     for ( i=0; i<gts->tabcnt; ++i ) {
 	gts->tabs[i].tw = GDrawGetTextWidth(gts->g.base,gts->tabs[i].name,-1);
-	gts->tabs[i].width = gts->tabs[i].tw + 2*bp;
+	gts->tabs[i].width = gts->closable ? GTS_TABPADDING : 0;
+	gts->tabs[i].width+= gts->tabs[i].tw + 2*bp;
 	in = gts->tabs[i].nesting*ni;
 	if ( gts->tabs[i].tw+in > gts->vert_list_width )
 	    gts->vert_list_width = gts->tabs[i].tw+in;
@@ -523,6 +533,25 @@ return(false);
 		else
 		    sel = i;
 	    }
+        if ( i <= gts->tabcnt && i >= 0 )
+		if ( gts->closable && event->type==et_mouseup && event->u.mouse.x>=gts->tabs[i].x+gts->tabs[i].width+(-GTS_TABPADDING/2-10) ) {
+			TRACE("Closing tab %d\n", sel);
+			GTabSetRemoveTabByPos(&gts->g, i);
+			GTabSetRemetric(&gts->g);
+			GGadgetRedraw(&gts->g);
+			// If we removed a tab before us, the selected tab is now one behind.
+			if (i < gts->sel) --gts->sel;
+			GTabSetChangeSel(gts,gts->sel,true); /* this redraws the tab set */
+			return true;
+		} else if (event->type == et_mousedown && sel >= 0) {
+			gts->oldsel = sel;
+		} else if (event->type == et_mouseup && sel >= 0) {
+			if ( sel != gts->oldsel && gts->movable ) {
+				TRACE("Swapping tabs: A=%d & B=%d\n", gts->oldsel, sel);
+				GTabSetSwapTabs(&gts->g, gts->oldsel, sel);
+			}
+			gts->oldsel = sel;
+		}
 	} else {
 	    l = (event->u.mouse.y-gts->g.r.y)/gts->rowh;	/* screen row */
 	    if ( l>=gts->rcnt ) l = gts->rcnt-1;		/* can happen on single line tabsets (there's extra space then) */
@@ -927,6 +956,11 @@ GGadget *GTabSetCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 return( &gts->g );
 }
 
+int GTabSetGetTabCount(GGadget *g) {
+    GTabSet *gts = (GTabSet *) g;
+return( gts->tabcnt );
+}
+
 int GTabSetGetSel(GGadget *g) {
     GTabSet *gts = (GTabSet *) g;
 return( gts->sel );
@@ -960,6 +994,18 @@ int GTabSetGetTabLines(GGadget *g) {
 return( gts->rcnt );
 }
 
+void GTabSetSetClosable(GGadget *g, bool flag) {
+    GTabSet *gts = (GTabSet *) g;
+
+    gts->closable = flag;
+} 
+
+void GTabSetSetMovable(GGadget *g, bool flag) {
+    GTabSet *gts = (GTabSet *) g;
+
+    gts->movable = flag;
+} 
+
 void GTabSetSetNestedExpose(GGadget *g, void (*ne)(GWindow,GGadget *,GEvent *)) {
     GTabSet *gts = (GTabSet *) g;
     gts->nested_expose = ne;
@@ -970,6 +1016,17 @@ void GTabSetSetNestedMouse(GGadget *g, int (*nm)(GGadget *,GEvent *)) {
     gts->nested_mouse = nm;
 }
 
+void GTabSetSetRemoveSync(GGadget *g, void (*rs)(GWindow gw, int pos)) {
+    GTabSet *gts = (GTabSet *) g;
+    gts->remove_sync = rs;
+}
+
+void GTabSetSetSwapSync(GGadget *g, void (*ss)(GWindow gw, int pos_a, int pos_b)) {
+    GTabSet *gts = (GTabSet *) g;
+    gts->swap_sync = ss;
+}
+
+// This function also adds tabs, a GTabSetAddTab of sorts.
 void GTabSetChangeTabName(GGadget *g, const char *name, int pos) {
     GTabSet *gts = (GTabSet *) g;
 
@@ -998,6 +1055,9 @@ void GTabSetRemoveTabByPos(GGadget *g, int pos) {
 	for ( i=pos+1; i<gts->tabcnt; ++i )
 	    gts->tabs[i-1] = gts->tabs[i];
 	--gts->tabcnt;
+	/* CharView keeps its own tabs array with its own private data.
+	 * This gives us a way to realign that array upon changes to ours. */
+	if (gts->remove_sync != NULL) (gts->remove_sync)(gts->g.base, pos);
 	if ( gts->sel==pos ) {
 	    if ( gts->sel==gts->tabcnt )
 		--gts->sel;
@@ -1005,7 +1065,22 @@ void GTabSetRemoveTabByPos(GGadget *g, int pos) {
 	}
     }
 }
-	
+
+void GTabSetSwapTabs(GGadget *g, int pos_a, int pos_b) {
+    GTabSet *gts = (GTabSet *) g;
+    struct tabs temp;
+    temp = gts->tabs[pos_a];
+    gts->tabs[pos_a] = gts->tabs[pos_b];
+    gts->tabs[pos_b] = temp;
+	if (gts->swap_sync != NULL) (gts->swap_sync)(gts->g.base, pos_a, pos_b);
+    if (gts->sel == pos_b)
+    GTabSetSetSel(g, pos_a);	/* This does a redraw */
+    else if (gts->sel == pos_a)
+    GTabSetSetSel(g, pos_b);	/* This does a redraw */
+    else
+    GTabSetChanged(gts,gts->sel);
+}
+
 void GTabSetRemoveTabByName(GGadget *g, char *name) {
     GTabSet *gts = (GTabSet *) g;
     int pos;
