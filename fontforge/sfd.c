@@ -4032,13 +4032,16 @@ static void SFDGetSpiros(FILE *sfd,SplineSet *cur) {
     while ( fscanf(sfd,"%lg %lg %c", &cp.x, &cp.y, &cp.ty )==3 ) {
 	if ( cur!=NULL ) {
 	    if ( cur->spiro_cnt>=cur->spiro_max )
-		cur->spiros = realloc(cur->spiros,(cur->spiro_max+=10)*sizeof(spiro_cp));
+		cur->spiros = realloc(cur->spiros,
+		                      (cur->spiro_max+=10)*sizeof(spiro_cp));
 	    cur->spiros[cur->spiro_cnt++] = cp;
 	}
     }
-    if ( cur!=NULL && (cur->spiros[cur->spiro_cnt-1].ty&0x7f)!=SPIRO_END ) {
+    if (    cur!=NULL && cur->spiro_cnt>0
+         && (cur->spiros[cur->spiro_cnt-1].ty&0x7f)!=SPIRO_END ) {
 	if ( cur->spiro_cnt>=cur->spiro_max )
-	    cur->spiros = realloc(cur->spiros,(cur->spiro_max+=1)*sizeof(spiro_cp));
+	    cur->spiros = realloc(cur->spiros,
+	                          (cur->spiro_max+=1)*sizeof(spiro_cp));
 	memset(&cur->spiros[cur->spiro_cnt],0,sizeof(spiro_cp));
 	cur->spiros[cur->spiro_cnt++].ty = SPIRO_END;
     }
@@ -7992,10 +7995,12 @@ bool SFD_GetFontMetaData( FILE *sfd,
     else if ( strmatch(tok,"LayerCount:")==0 )
     {
 	d->had_layer_cnt = true;
-	getint(sfd,&sf->layer_cnt);
-	if ( sf->layer_cnt>2 ) {
+	int layer_cnt_tmp;
+	getint(sfd,&layer_cnt_tmp);
+	if ( layer_cnt_tmp>2 ) {
 	    sf->layers = realloc(sf->layers,sf->layer_cnt*sizeof(LayerInfo));
 	    memset(sf->layers+2,0,(sf->layer_cnt-2)*sizeof(LayerInfo));
+	    sf->layer_cnt = layer_cnt_tmp;
 	}
     }
     else if ( strmatch(tok,"Layer:")==0 )
@@ -8947,6 +8952,10 @@ exit( 1 );
 	    geteol(sfd,tok);
 	}
     }
+
+    // Many downstream functions assume this isn't NULL (use strlen, etc.)
+    if ( sf->fontname==NULL)
+	sf->fontname = copy("");
 
     if ( fromdir )
 	sf = SFD_FigureDirType(sf,tok,dirname,enc,remap,had_layer_cnt);
