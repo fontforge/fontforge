@@ -5276,8 +5276,9 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     mv->chars[mv->clen] = NULL;
 
     for ( cnt=0; cnt<mv->clen; ++cnt ) {
-        if ( mv->chars[cnt]->unicodeenc != -1 )
-	    pt = utf8_idpb(pt,mv->chars[cnt]->unicodeenc,0);
+        int cp = mv->chars[cnt]->unicodeenc;
+        if ( cp != -1 && strchr("#[]/\\", cp) == NULL)
+	    pt = utf8_idpb(pt,cp,0);
         else {
             *pt = '/'; pt++;
             strcpy(pt, mv->chars[cnt]->name);
