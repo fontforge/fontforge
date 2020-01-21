@@ -7998,9 +7998,9 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	int layer_cnt_tmp;
 	getint(sfd,&layer_cnt_tmp);
 	if ( layer_cnt_tmp>2 ) {
+	    sf->layer_cnt = layer_cnt_tmp;
 	    sf->layers = realloc(sf->layers,sf->layer_cnt*sizeof(LayerInfo));
 	    memset(sf->layers+2,0,(sf->layer_cnt-2)*sizeof(LayerInfo));
-	    sf->layer_cnt = layer_cnt_tmp;
 	}
     }
     else if ( strmatch(tok,"Layer:")==0 )
