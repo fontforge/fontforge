@@ -17509,7 +17509,7 @@ msgid "Perform a perspective transformation on the selection"
 msgstr "선택범위에 투시변환를 적용"
 
 #: ../fontforgeexe/cvpalettes.c:281
-msgid "Rotate the selection in 3D and project back to plain"
+msgid "Rotate the selection in 3D and project back to plane"
 msgstr "선택범위를 3차원으로 회전하여 평면에 다시 사용"
 
 #: ../fontforgeexe/cvpalettes.c:282 ../fontforgeexe/cvpalettes.c:283

@@ -17029,7 +17029,7 @@ msgid "Perform a perspective transformation on the selection"
 msgstr "Izradi perspektivnu transformaciju na odabir"
 
 #: ../fontforgeexe/cvpalettes.c:281
-msgid "Rotate the selection in 3D and project back to plain"
+msgid "Rotate the selection in 3D and project back to plane"
 msgstr "Rotiraj odabir u 3D i projiciraj natrag dvodimenzionalno"
 
 #: ../fontforgeexe/cvpalettes.c:282 ../fontforgeexe/cvpalettes.c:283

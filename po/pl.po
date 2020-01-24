@@ -17351,7 +17351,7 @@ msgid "Perform a perspective transformation on the selection"
 msgstr "Przekształca zaznaczenie perspektywicznie"
 
 #: ../fontforgeexe/cvpalettes.c:281
-msgid "Rotate the selection in 3D and project back to plain"
+msgid "Rotate the selection in 3D and project back to plane"
 msgstr "Obraca zaznaczenie w 3D i rzutuje z powrotem na płaszczyznę"
 
 #: ../fontforgeexe/cvpalettes.c:282 ../fontforgeexe/cvpalettes.c:283

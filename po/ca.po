@@ -16568,7 +16568,7 @@ msgid "Perform a perspective transformation on the selection"
 msgstr "Transforma la selecció amb perspectiva"
 
 #: ../fontforgeexe/cvpalettes.c:281
-msgid "Rotate the selection in 3D and project back to plain"
+msgid "Rotate the selection in 3D and project back to plane"
 msgstr "Gira en 3D la selecció i projecta-la de nou al pla"
 
 #: ../fontforgeexe/cvpalettes.c:282 ../fontforgeexe/cvpalettes.c:283

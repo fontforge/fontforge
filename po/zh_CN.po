@@ -18872,7 +18872,7 @@ msgstr "对选中对象作透视变换"
 
 #
 #: ../fontforgeexe/cvpalettes.c:281
-msgid "Rotate the selection in 3D and project back to plain"
+msgid "Rotate the selection in 3D and project back to plane"
 msgstr "旋转选中对象于三维空间并投影到二维"
 
 #
