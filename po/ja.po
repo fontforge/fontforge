@@ -17156,7 +17156,7 @@ msgid "Perform a perspective transformation on the selection"
 msgstr "選択範囲に透視変換をほどこす"
 
 #: ../fontforgeexe/cvpalettes.c:277
-msgid "Rotate the selection in 3D and project back to plain"
+msgid "Rotate the selection in 3D and project back to plane"
 msgstr "選択範囲を3次元で回転して平面に再射影する"
 
 #: ../fontforgeexe/cvpalettes.c:278 ../fontforgeexe/cvpalettes.c:279

@@ -278,7 +278,7 @@ static char *popupsres[] = {
     N_("Add a corner point"),    N_("Add a tangent point"),
     N_("Scale the selection"),   N_("Rotate the selection"),
     N_("Flip the selection"),  N_("Skew the selection"),
-    N_("Rotate the selection in 3D and project back to plain"), N_("Perform a perspective transformation on the selection"),
+    N_("Rotate the selection in 3D and project back to plane"), N_("Perform a perspective transformation on the selection"),
     N_("Rectangle or Ellipse"),  N_("Polygon or Star"),
     N_("Rectangle or Ellipse"),  N_("Polygon or Star")};
 GMenuItem2 cvtoollist[] = {

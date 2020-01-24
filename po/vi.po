@@ -17464,7 +17464,7 @@ msgid "Perform a perspective transformation on the selection"
 msgstr "Chuyển dạng phối cảnh của vùng chọn"
 
 #: ../fontforgeexe/cvpalettes.c:277
-msgid "Rotate the selection in 3D and project back to plain"
+msgid "Rotate the selection in 3D and project back to plane"
 msgstr "Xoay vùng chọn theo ba chiều và hiện hình về thô"
 
 #: ../fontforgeexe/cvpalettes.c:278 ../fontforgeexe/cvpalettes.c:279
