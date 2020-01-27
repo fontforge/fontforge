@@ -23,9 +23,9 @@ library. This function is for use on CMake versions less than 3.12,
 which do not support calling target_link_libraries directly on
 object libraries.
 
-``set_supported_c_compiler_flags`` checks to see if the provided list
-of flags are supported by the C compiler. Supported flags are stored
-into ``dst`` as a cache variable.
+``set_supported_compiler_flags`` checks to see if the provided list
+of flags are supported by the C/C++ compiler. Supported flags are stored
+into ``dst`` / ``cxxdst`` as a cache variable.
 
 ``add_uninstall_target`` add an uninstall target
 
@@ -75,26 +75,41 @@ function(make_object_interface objlib)
   )
 endfunction()
 
-function(set_supported_c_compiler_flags dst)
-  if(NOT DEFINED "${dst}")
+function(set_supported_compiler_flags dst cxxdst)
+  if(NOT DEFINED "${dst}" AND NOT DEFINED "${cxxdst}")
     include(CheckCCompilerFlag)
+    include(CheckCXXCompilerFlag)
     include(CMakePushCheckState)
     cmake_push_check_state(RESET)
     set(CMAKE_REQUIRED_QUIET TRUE)
 
-    foreach(_arg ${ARGN})
-      message(STATUS "Checking if ${_arg} is supported...")
-      check_c_compiler_flag(${_arg} _supported_flag)
-      if(_supported_flag)
-        message(STATUS "  Flag is supported: ${_arg}")
-        list(APPEND _supported_flags ${_arg})
-      else()
-        message(STATUS "  Flag is unsupported: ${_arg}")
-      endif()
-      unset(_supported_flag CACHE)
-    endforeach()
+    cmake_parse_arguments(_COMPILER_FLAGS "" "" "CFLAGS;CXXFLAGS;BOTH" ${ARGN})
+    list(APPEND _COMPILER_FLAGS_CFLAGS ${_COMPILER_FLAGS_BOTH})
+    list(APPEND _COMPILER_FLAGS_CXXFLAGS ${_COMPILER_FLAGS_BOTH})
 
-    set("${dst}" "${_supported_flags}" CACHE STRING "Supported compiler flags")
+    macro(_do_check _lang _flaglist)
+      foreach(_arg ${ARGN})
+        message(STATUS "Checking if ${_arg} is supported by the ${_lang} compiler...")
+        if("${_lang}" STREQUAL C)
+          check_c_compiler_flag("-Werror ${_arg}" _supported_flag)
+        else()
+          check_cxx_compiler_flag("-Werror ${_arg}" _supported_flag)
+        endif()
+        if(_supported_flag)
+          message(STATUS "  Flag is supported: ${_arg}")
+          list(APPEND ${_flaglist} ${_arg})
+        else()
+          message(STATUS "  Flag is unsupported: ${_arg}")
+        endif()
+        unset(_supported_flag CACHE)
+      endforeach()
+    endmacro()
+
+    _do_check(C _supported_cflags ${_COMPILER_FLAGS_CFLAGS})
+    _do_check(C++ _supported_cxxflags ${_COMPILER_FLAGS_CXXFLAGS})
+
+    set("${dst}" "${_supported_cflags}" CACHE STRING "Supported C compiler flags")
+    set("${cxxdst}" "${_supported_cxxflags}" CACHE STRING "Supported C++ compiler flags")
     cmake_pop_check_state()
   endif()
 endfunction()

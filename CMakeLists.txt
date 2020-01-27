@@ -65,6 +65,8 @@ build_option(ENABLE_FONTFORGE_EXTRAS BOOL OFF "Builds programs from the contrib 
 build_option(ENABLE_MAINTAINER_TOOLS BOOL OFF "Build programs normally only used by FontForge maintainers and developers")
 build_option(ENABLE_TILE_PATH        BOOL OFF "Enable a 'tile path' command (a variant of 'expand stroke')")
 build_option(ENABLE_WRITE_PFM        BOOL OFF "Add the ability to save a PFM file without creating the associated font file")
+build_option(ENABLE_SANITIZER        ENUM "none" "Enables a sanitizer. Requires support from the compiler."
+                                          "none" "address" "leak" "thread" "undefined" "memory")
 
 build_option(ENABLE_FREETYPE_DEBUGGER PATH "" "Use FreeType's internal debugger within FontForge.\
  If enabling this option, this must be set to the path of the FreeType source.\
@@ -74,14 +76,19 @@ build_option(REAL_TYPE ENUM "double" "Sets the floating point type used." "doubl
 build_option(THEME     ENUM "tango"  "Sets the GUI theme." "tango" "2012")
 
 if(CMAKE_COMPILER_IS_GNUCC)
-  list(APPEND _test_flags -Werror=implicit-function-declaration -Werror=int-conversion)
+  list(APPEND _test_flags CFLAGS -Werror=implicit-function-declaration -Werror=int-conversion)
   if(CMAKE_GENERATOR STREQUAL "Ninja") # https://github.com/ninja-build/ninja/wiki/FAQ
-    list(APPEND _test_flags -fdiagnostics-color=always)
+    list(APPEND _test_flags BOTH -fdiagnostics-color=always)
   endif()
-  set_supported_c_compiler_flags(FONTFORGE_DEFAULT_CFLAGS ${_test_flags})
+  set_supported_compiler_flags(FONTFORGE_DEFAULT_CFLAGS FONTFORGE_DEFAULT_CXXFLAGS ${_test_flags})
   list(APPEND FONTFORGE_EXTRA_CFLAGS -Wall -Wextra -pedantic)
-  add_compile_options(${FONTFORGE_DEFAULT_CFLAGS})
+  add_compile_options(
+    "$<$<COMPILE_LANGUAGE:C>:${FONTFORGE_DEFAULT_CFLAGS}>"
+    "$<$<COMPILE_LANGUAGE:CXX>:${FONTFORGE_DEFAULT_CXXFLAGS}>"
+  )
 endif()
+
+enable_sanitizer("${ENABLE_SANITIZER}")
 
 # Required and default dependencies
 # Note: When adding a dependency, ensure it has an imported target (wherever appropriate) 
