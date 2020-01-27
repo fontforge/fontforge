@@ -34,6 +34,7 @@
 #include "ustring.h"
 #include "utype.h"
 
+#include <assert.h>
 #include <stdarg.h>
 #include <sys/time.h>
 #include <unistd.h>
@@ -435,6 +436,10 @@ static void *genutf8data(void *_ed,int32 *len) {
     if ( s_l>e_l ) {
 	s_l = e_l; s_c = e_c; e_l = errdata.start_l; e_c = errdata.start_c;
     }
+    if (s_l == e_l && s_c > e_c) {
+        s_c = e_c;
+        e_c = errdata.start_c;
+    }
 
     if ( s_l==-1 ) {
 	*len = 0;
@@ -462,7 +467,9 @@ return( copyn( errdata.errlines[l]+s_c, e_c-s_c ));
 	*pt++ = '\n';
     }
     strncpy(pt,errdata.errlines[l],e_c);
-    *len = cnt;
+    pt[e_c] = '\0';
+    *len = strlen(ret);
+    assert(*len == cnt);
 return( ret );
 }
 
@@ -479,8 +486,8 @@ static void MouseToPos(GEvent *event,int *_l, int *_c) {
 	GDrawLayoutInit(errdata.v,errdata.errlines[l],-1,NULL);
 	c = GDrawLayoutXYToIndex(errdata.v,event->u.mouse.x-3,4);
     }
-    *_l = l;
-    *_c = c;
+    *_l = l < 0 ? 0 : l;
+    *_c = c < 0 ? 0 : c;
 }
 
 static void WarnMenuCopy(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -516,7 +523,7 @@ GMenuItem warnpopupmenu[] = {
 };
 
 static int warningsv_e_h(GWindow gw, GEvent *event) {
-    int i;
+    int i, j, s_l, s_c, e_l, e_c;
     extern GBox _ggadget_Default_Box;
 
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
@@ -528,27 +535,31 @@ return( GGadgetDispatchEvent(errdata.vsb,event));
       case et_expose:
 	  /*GDrawFillRect(gw,&event->u.expose.rect,GDrawGetDefaultBackground(NULL));*/
 	  GDrawSetFont(gw,errdata.font);
-	  for ( i=0; i<errdata.linecnt && i+errdata.offtop<errdata.cnt; ++i ) {
-	      int xs, xe;
-	      int s_l = errdata.start_l, s_c = errdata.start_c, e_l = errdata.end_l, e_c = errdata.end_c;
-	      GRect r;
-	      if ( s_l>e_l ) {
+	  s_l = errdata.start_l, s_c = errdata.start_c, e_l = errdata.end_l, e_c = errdata.end_c;
+	  if ( s_l>e_l ) {
 		  s_l = e_l; s_c = e_c; e_l = errdata.start_l; e_c = errdata.start_c;
-	      }
-	      GDrawLayoutInit(gw,errdata.errlines[i+errdata.offtop],-1,NULL);
-	      if ( i+errdata.offtop >= s_l && i+errdata.offtop <= e_l ) {
-		  if ( i+errdata.offtop > s_l )
+	  }
+	  if (s_l == e_l && s_c > e_c) {
+		  s_c = e_c;
+		  e_c = errdata.start_c;
+	  }
+	  for ( i=0, j = errdata.offtop; i<errdata.linecnt && j<errdata.cnt; ++i, ++j ) {
+	      int xs, xe;
+	      GRect r;
+	      GDrawLayoutInit(gw,errdata.errlines[j],-1,NULL);
+	      if ( j >= s_l && j <= e_l && (j < e_l || e_c > 0) ) {
+		  if ( j > s_l )
 		      xs = 0;
 		  else {
 		      GRect pos;
 		      GDrawLayoutIndexToPos(gw,s_c,&pos);
 		      xs = pos.x+3;
 		  }
-		  if ( i+errdata.offtop < e_l )
+		  if ( j < e_l )
 		      xe = 3000;
 		  else {
 		      GRect pos;
-		      GDrawLayoutIndexToPos(gw,s_c,&pos);
+		      GDrawLayoutIndexToPos(gw,e_c-1,&pos);
 		      xe = pos.x+pos.width+3;
 		  }
 		  r.x = xs+3; r.width = xe-xs;
@@ -593,13 +604,7 @@ return( true );
 	    }
 	}
       break;
-      case et_selclear:
-	errdata.start_l = errdata.end_l = -1;
-	GDrawRequestExpose(gw,NULL,false);
-      break;
-      case et_timer:
-      break;
-      case et_focus:
+      default:
       break;
     }
 return( true );
