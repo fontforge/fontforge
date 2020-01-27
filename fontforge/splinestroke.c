@@ -1030,15 +1030,15 @@ static void SSAppendArc(SplineSet *cur, bigreal major, bigreal minor,
     _CalcNibOffset(nc, n, ut_fm, false, &no_fm, -1);
     _CalcNibOffset(nc, n, ut_to, false, &no_to, -1);
     if ( limit ) {
-	if (    !bk && no_fm.nci[false] == no_to.nci[false]
+	if (    !bk && no_fm.nci[0] == no_to.nci[0]
 	     && no_fm.nt > no_to.nt )
 	    bk = true;
-	else if ( !bk && no_fm.nci[false] == (no_to.nci[false]+1)%4 )
+	else if ( !bk && no_fm.nci[0] == (no_to.nci[0]+1)%4 )
 	    bk = true;
-	else if (    bk && no_fm.nci[false] == no_to.nci[false]
+	else if (    bk && no_fm.nci[0] == no_to.nci[0]
 	     && no_fm.nt < no_to.nt )
 	    bk = false;
-	else if ( bk && (no_fm.nci[false]+1)%4 == no_to.nci[false] )
+	else if ( bk && (no_fm.nci[0]+1)%4 == no_to.nci[0] )
 	    bk = false;
     }
     sp = AddNibPortion(nc, cur->last, &no_fm, false, &no_to, false, bk);

@@ -632,7 +632,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
     GWindowAttrs wattrs;
     SplineSet *nib_bk = NULL;
     GGadgetCreateData gcd[54], boxes[7], *buttons[13], *mainarray[11][2],
-	    *radoptarray[4][9], *split[13][6], *checkarray[4],
+	    *radoptarray[4][9], *split[13][6], *checkarray[5],
 	    *jlexarray[3][8];
     GTextInfo label[54];
     int i, gcdoff, mi, sp, tfpos[6];
@@ -1210,7 +1210,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (si->simplify?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_Simplify;
 	gcd[gcdoff++].creator = GCheckBoxCreate;
-	checkarray[0] = &gcd[gcdoff-1];
+	checkarray[0] = &gcd[gcdoff-1]; checkarray[1] = GCD_Glue;
 
 	label[gcdoff].text = (unichar_t *) _("A_dd Extrema");
 	label[gcdoff].text_is_1byte = true;
@@ -1219,12 +1219,12 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (si->extrema?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_Extrema;
 	gcd[gcdoff++].creator = GCheckBoxCreate;
-	checkarray[1] = &gcd[gcdoff-1]; checkarray[2] = GCD_Glue;
-	checkarray[2] = NULL;
+	checkarray[2] = &gcd[gcdoff-1]; checkarray[3] = GCD_Glue;
+	checkarray[4] = NULL;
 
 	boxes[5].gd.flags = gg_enabled|gg_visible;
 	boxes[5].gd.u.boxelements = checkarray;
-	boxes[5].creator = GHVBoxCreate;
+	boxes[5].creator = GHBoxCreate;
 	mainarray[mi][0] = &boxes[5]; mainarray[mi++][1] = NULL;
 
 	gcd[gcdoff].gd.flags = gg_visible | gg_enabled | gg_but_default;
@@ -1297,7 +1297,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 
     StrokeSetup(&sd,si->stroke_type);
     JoinSetup(&sd,si->join==lj_arcs?2:((si->join==lj_miterclip||si->join==lj_miter)?1:0));
-    ExtendSetup(&sd,si->join==lc_butt||si->join==lc_round);
+    ExtendSetup(&sd,si->cap==lc_butt||si->cap==lc_round);
 
     GGadgetSetVisible(GWidgetGetControl(sd.gw,CID_Apply), apply);
     GWidgetToDesiredSize(sd.gw);
