@@ -1499,7 +1499,7 @@ BasePoint ArcClip(BasePoint center, bigreal r, int neg,
                   BasePoint p, BasePoint i, bigreal clip_ratio) {
     int s = neg ? -1 : 1;
     bigreal start_angle, end_angle, angle_diff;
-    BasePoint v, ci;
+    BasePoint v;
 
     start_angle = atan2(p.y-center.y, p.x-center.x);
     end_angle = atan2(i.y-center.y, i.x-center.x);
@@ -1681,7 +1681,6 @@ static void RoundJoin(JoinParams *jpp, int rv) {
     BasePoint p0, p1, p2, p1p, p12a, angle, h0, h2;
     bigreal p12d, x1, y1, w, major, minor;
     complex double b0, b1, b2, alpha, m, C, d, c, F1, F2;
-    real trans[6];
     int intersects;
 
     p0 = jpp->cur->last->me;
@@ -1781,7 +1780,7 @@ static void MiterJoin(JoinParams *jpp) {
 
 static void ArcsJoin(JoinParams *jpp) {
     bigreal t, K_fm, K_to, fsw_fm, fsw_to, fsw_avg, r_fm, r_to, i_dist;
-    bigreal jlen, jlim, r_clip, clip_ratio, start_angle, end_angle;
+    bigreal jlim, r_clip, clip_ratio, start_angle, end_angle;
     bigreal angle_diff, max_angle_diff, bevel_angle_diff;
     BasePoint ut_to, p_fm, p_to, cv_fm, cv_to, center_fm, center_to;
     BasePoint i, i2, cut_fm, cut_to;
@@ -1862,12 +1861,12 @@ static void ArcsJoin(JoinParams *jpp) {
     neg_to = (K_to < 0);
 
     if ( K_fm!=0.0 ) {
-	r_fm = abs(1.0/K_fm);
+	r_fm = fabs(1.0/K_fm);
 	cv_fm = BPRevIf(neg_fm, BP90CCW(jpp->ut_fm));
 	center_fm = BPAdd(p_fm, BPScale(cv_fm, r_fm));
     }
     if ( K_to!=0.0 ) {
-	r_to = abs(1.0/K_to);
+	r_to = fabs(1.0/K_to);
 	cv_to = BPRevIf(neg_to, BP90CCW(ut_to));
 	center_to = BPAdd(p_to, BPScale(cv_to, r_to));
     }
@@ -1945,7 +1944,6 @@ static void ArcsJoin(JoinParams *jpp) {
     i_dist = sqrt(BPLenSq(iut));
     iut = BPScale(iut, 1.0/i_dist);
     jlim = CalcJoinLimit(jpp->c, fsw_avg);
-    jlen = CalcJoinLength(fsw_avg, jpp->ut_fm, ut_to);
 
     // There are two clipping styles. SVG 2 specifies a clip line normal
     // to a circle at an arc distance away from the source join point.
@@ -2131,7 +2129,6 @@ static int HandleJoin(StrokeContext *c, Spline *s, SplineSet *cur,
 static void HandleCap(StrokeContext *c, SplineSet *cur, BasePoint sxy,
                       BasePoint ut, BasePoint oxy, int is_right) {
     NibOffset no_fm, no_to;
-    BasePoint refp = BPAdd(sxy, c->pseudo_origin), p1, p2;
     SplinePoint *sp;
     int corner_fm, corner_to;
 
