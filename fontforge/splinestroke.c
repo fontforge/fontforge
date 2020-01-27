@@ -55,9 +55,18 @@
 #define COS_MARGIN (1e-5)
 #define MIN_ACCURACY (1e-5)
 
-#define NORMANGLE(a) ((a)>FF_PI?(a)-2*FF_PI:(a)<-FF_PI?(a)+2*FF_PI:(a))
-#define BPNEAR(bp1, bp2) BPWITHIN(bp1, bp2, INTRASPLINE_MARGIN)
-#define BP_DIST(bp1, bp2) sqrt(pow((bp1).x-(bp2).x,2)+pow((bp1).y-(bp2).y,2))
+static inline bigreal NormAngle(bigreal a) {
+    if ( a > FF_PI )
+	return a-2*FF_PI;
+    else if (a <= -FF_PI)
+	return a+2*FF_PI;
+    else
+	return a;
+}
+
+static inline int BPNear(BasePoint bp1, BasePoint bp2) {
+    return BPWithin(bp1, bp2, INTRASPLINE_MARGIN);
+}
 
 enum nibtype { nib_ellip, nib_rect, nib_convex };
 
@@ -278,8 +287,8 @@ static int LineSameSide(BasePoint l1, BasePoint l2, BasePoint p, BasePoint r,
 
 static BasePoint ProjectPointOnLine(BasePoint p, BasePoint lp, BasePoint lut) {
 
-    BasePoint t = BP_SUB(p, lp);
-    return BP_ADD(lp, BP_SCALE(lut, BP_DOT(t, lut)));
+    BasePoint t = BPSub(p, lp);
+    return BPAdd(lp, BPScale(lut, BPDot(t, lut)));
 }
 
 /* Return values:
@@ -289,7 +298,7 @@ static BasePoint ProjectPointOnLine(BasePoint p, BasePoint lp, BasePoint lut) {
  *  -2 -> Circle 1 is strictly inside circle 2
  */
 static int CirclesTest(BasePoint c1, bigreal r1, BasePoint c2, bigreal r2) {
-    bigreal c_dist = BP_DIST(c1, c2);
+    bigreal c_dist = BPDist(c1, c2);
 
     assert( r1 >= 0 && r2 >= 0 );
     if (fabs(c_dist - r1 - r2) < 1e-3)
@@ -308,7 +317,7 @@ static int CirclesTest(BasePoint c1, bigreal r1, BasePoint c2, bigreal r2) {
 static int LineCircleTest(BasePoint lp, BasePoint lut, BasePoint c1,
                           bigreal r1) {
     BasePoint t = ProjectPointOnLine(c1, lp, lut);
-    bigreal cl_dist = BP_DIST(c1, t);
+    bigreal cl_dist = BPDist(c1, t);
 
     assert( r1 >= 0 );
 
@@ -326,20 +335,20 @@ static int PVPCircle(BasePoint p1, BasePoint ut1, BasePoint p2, BasePoint *c,
 
     assert( c!=NULL && r!=NULL );
 
-    cv1 = UT_90CCW(ut1);
-    p3 = BP_AVG(p1, p2);
-    cv3 = UT_90CCW(BP_SUB(p2, p1));
+    cv1 = BP90CCW(ut1);
+    p3 = BPAvg(p1, p2);
+    cv3 = BP90CCW(BPSub(p2, p1));
     if ( !IntersectLinesSlopes(c, &p1, &cv1, &p3, &cv3) )
 	return 0;
-    cv3 = BP_SUB(p1,*c);
-    *r = sqrt(BP_LENGTHSQ(cv3));
-    return BP_DOT(cv3, cv1) < 0 ? -1 : 1;
+    cv3 = BPSub(p1,*c);
+    *r = sqrt(BPLenSq(cv3));
+    return BPDot(cv3, cv1) < 0 ? -1 : 1;
 }
 
 static BasePoint CloserPoint(BasePoint r, BasePoint p1, BasePoint p2) {
-    BasePoint d1 = BP_SUB(p1, r), d2 = BP_SUB(p2, r);
+    BasePoint d1 = BPSub(p1, r), d2 = BPSub(p2, r);
 
-    return BP_LENGTHSQ(d1) > BP_LENGTHSQ(d2) ? p2 : p1;
+    return BPLenSq(d1) > BPLenSq(d2) ? p2 : p1;
 }
 
 static BasePoint CloserIntersection(BasePoint p1, BasePoint p2, BasePoint i1,
@@ -359,39 +368,39 @@ static void IntersectLineCircle(BasePoint lp, BasePoint lut, BasePoint c1,
     BasePoint pp, t, perp;
 
     assert( i1!=NULL && i2!=NULL );
-    *i1 = *i2 = BP_UNINIT;
+    *i1 = *i2 = BPUNINIT;
 
     pp = ProjectPointOnLine(c1, lp, lut);
-    t = BP_SUB(c1, pp);
-    sqdiff = r1*r1 - BP_LENGTHSQ(t);
+    t = BPSub(c1, pp);
+    sqdiff = r1*r1 - BPLenSq(t);
     if ( fabs(sqdiff) < 1e-4 ) {
 	*i1 = *i2 = pp;
         return;
     }
-    perp = BP_SCALE(lut, sqrt(sqdiff));
-    *i1 = BP_ADD(pp, perp);
-    *i2 = BP_SUB(pp, perp);
+    perp = BPScale(lut, sqrt(sqdiff));
+    *i1 = BPAdd(pp, perp);
+    *i2 = BPSub(pp, perp);
 }
 
 static void IntersectCircles(BasePoint c1, bigreal r1, BasePoint c2, bigreal r2,
                              BasePoint *i1, BasePoint *i2) {
     BasePoint t1, t2;
-    bigreal tmp, c_dist = BP_DIST(c1, c2), r2s = r2*r2, r1s = r1*r1;
+    bigreal tmp, c_dist = BPDist(c1, c2), r2s = r2*r2, r1s = r1*r1;
     bigreal cds = c_dist*c_dist;
 
     assert( i1!=NULL && i2!=NULL );
-    *i1 = *i2 = BP_UNINIT;
+    *i1 = *i2 = BPUNINIT;
 
-    t1 = BP_SCALE(BP_SUB(c1, c2), (r2s - r1s)/(2.0*cds));
-    t1 = BP_ADD(t1, BP_AVG(c2, c1));
+    t1 = BPScale(BPSub(c1, c2), (r2s - r1s)/(2.0*cds));
+    t1 = BPAdd(t1, BPAvg(c2, c1));
     tmp = 2.0 * (r2s + r1s)/cds - pow(r2s - r1s, 2.0)/(cds*cds) - 1;
     if ( RealWithin(tmp, 0.0, 1e-8) ) {
 	*i1 = t1;
 	return;
     }
-    t2 = BP_SCALE(((BasePoint) { c1.y-c2.y, c2.x-c1.x }), sqrt(tmp)/2.0);
-    *i1 = BP_ADD(t1,t2);
-    *i2 = BP_SUB(t1,t2);
+    t2 = BPScale(((BasePoint) { c1.y-c2.y, c2.x-c1.x }), sqrt(tmp)/2.0);
+    *i1 = BPAdd(t1,t2);
+    *i2 = BPSub(t1,t2);
 }
 
 static void SplineSetLineTo(SplineSet *cur, BasePoint xy) {
@@ -490,13 +499,13 @@ enum ShapeType NibIsValid(SplineSet *ss) {
     // Polygonal checks
     while ( true ) {
 	s->from->selected = true;
-	if ( BPWITHIN(s->from->me, s->to->me,1e-2) )
+	if ( BPWithin(s->from->me, s->to->me,1e-2) )
 	    return Shape_TinySpline;
 	angle = atan2(s->to->me.y - s->from->me.y, s->to->me.x - s->from->me.x);
 	if ( RealWithin(angle, last_angle, 1e-4) )
 	    return Shape_PointOnEdge;
 	d = last_angle-angle;
-	d = NORMANGLE(d);
+	d = NormAngle(d);
 	if ( d<0 )
 	    return Shape_CCWTurn;
 	anglesum += d;
@@ -518,8 +527,8 @@ enum ShapeType NibIsValid(SplineSet *ss) {
 	if ( SplineIsLinear(s) )
 	    lref_cp = s->from->me;
 	else {
-	    if ( s->from->nonextcp || BPNEAR(s->from->nextcp, s->from->me) ||
-	         s->to->noprevcp || BPNEAR(s->to->prevcp, s->to->me) )
+	    if ( s->from->nonextcp || BPNear(s->from->nextcp, s->from->me) ||
+	         s->to->noprevcp || BPNear(s->to->prevcp, s->to->me) )
 		return Shape_HalfLinear;
 	    s->from->nextcpselected = true;
 	    if ( LineSameSide(s->from->me, s->to->me, s->from->nextcp,
@@ -621,7 +630,7 @@ static void BuildNibCorners(NibCorner **ncp, SplineSet *nib, int *maxp,
 	    // Flatten potential LineSameSide permissiveness
 	    nc[i].utv[NC_OUT_IDX] = nc[i].utv[NC_IN_IDX];
 	if (    UTanVecGreater(nc[i].utv[NC_IN_IDX], max_utanangle)
-	     || BPNEAR(nc[i].utv[NC_IN_IDX], max_utanangle) ) {
+	     || BPNear(nc[i].utv[NC_IN_IDX], max_utanangle) ) {
 	    max_utan_index = i;
 	    max_utanangle = nc[i].utv[NC_IN_IDX];
 	}
@@ -686,7 +695,7 @@ static NibOffset *_CalcNibOffset(NibCorner *nc, int n, BasePoint ut,
     no->utanvec = ut; // Store the unreversed value for reference
 
     if ( reverse ) {
-	ut = BP_REV(ut);
+	ut = BPRev(ut);
 	no->reversed = 1;
     }
 
@@ -698,15 +707,15 @@ static NibOffset *_CalcNibOffset(NibCorner *nc, int n, BasePoint ut,
     // and therefore the only cases where the array values differ
     if (   nc[nci].linear
 	// "Capsule" case
-        && BPNEAR(ut, nc[ncni].utv[NC_IN_IDX])
-        && BPNEAR(ut, nc[nci].utv[NC_IN_IDX]) ) {
+        && BPNear(ut, nc[ncni].utv[NC_IN_IDX])
+        && BPNear(ut, nc[nci].utv[NC_IN_IDX]) ) {
 	no->nt = 0.0;
 	no->off[NIBOFF_CCW_IDX] = nc[nci].on_nib->me;
 	no->off[NIBOFF_CW_IDX] = nc[ncni].on_nib->me;
 	no->nci[NIBOFF_CW_IDX] = ncni;
 	no->at_line = true;
 	no->curve = false;
-    } else if ( nc[ncpi].linear && BPNEAR(ut, nc[ncpi].utv[NC_OUT_IDX]) ) {
+    } else if ( nc[ncpi].linear && BPNear(ut, nc[ncpi].utv[NC_OUT_IDX]) ) {
 	// Other lines
 	no->nt = 0.0;
 	no->off[NIBOFF_CCW_IDX] = nc[ncpi].on_nib->me;
@@ -718,7 +727,7 @@ static NibOffset *_CalcNibOffset(NibCorner *nc, int n, BasePoint ut,
     // draws the offset curve
     } else if (   UTanVecsSequent(nc[nci].utv[NC_IN_IDX], ut,
                                   nc[nci].utv[NC_OUT_IDX], false)
-               || BPNEAR(ut, nc[nci].utv[NC_OUT_IDX] ) ) {
+               || BPNear(ut, nc[nci].utv[NC_OUT_IDX] ) ) {
 	no->nt = 0.0;
 	no->off[0] = no->off[1] = nc[nci].on_nib->me;
 	no->curve = false;
@@ -733,8 +742,8 @@ static NibOffset *_CalcNibOffset(NibCorner *nc, int n, BasePoint ut,
 	    // At more extreme nib control point angles the solver may fail.
 	    // In such cases the tangent angle should be near one of the 
 	    // endpoints, so pick the closer one
-	    if (   BP_LENGTHSQ(BP_SUB(nc[nci].utv[NC_OUT_IDX], ut))
-	         < BP_LENGTHSQ(BP_SUB(nc[ncni].utv[NC_IN_IDX], ut)) )
+	    if (   BPLenSq(BPSub(nc[nci].utv[NC_OUT_IDX], ut))
+	         < BPLenSq(BPSub(nc[ncni].utv[NC_IN_IDX], ut)) )
 		no->nt = 0;
 	    else
 		no->nt = 1;
@@ -755,16 +764,16 @@ static BasePoint SplineStrokeNextAngle(StrokeContext *c, BasePoint ut,
 				       int nci_hint) {
     int nci, ncni, ncpi, inout;
 
-    ut = BP_REV_IF(reverse, ut);
+    ut = BPRevIf(reverse, ut);
     nci = IndexForUTanVec(c, ut, nci_hint);
     ncni = NC_NEXTI(c, nci);
     ncpi = NC_PREVI(c, nci);
 
-    if ( BPNEAR(ut, c->nibcorners[nci].utv[NC_IN_IDX]) ) {
+    if ( BPNear(ut, c->nibcorners[nci].utv[NC_IN_IDX]) ) {
 	if ( is_ccw ) {
-	    if ( BPNEAR(c->nibcorners[nci].utv[NC_IN_IDX],
+	    if ( BPNear(c->nibcorners[nci].utv[NC_IN_IDX],
 	                c->nibcorners[ncpi].utv[NC_OUT_IDX]) ) {
-		if ( BPNEAR(c->nibcorners[nci].utv[NC_IN_IDX],
+		if ( BPNear(c->nibcorners[nci].utv[NC_IN_IDX],
 		            c->nibcorners[ncpi].utv[NC_IN_IDX]) ) {
 		    assert(c->nibcorners[ncpi].linear);
 		    *curved = true;
@@ -782,9 +791,9 @@ static BasePoint SplineStrokeNextAngle(StrokeContext *c, BasePoint ut,
 		nci = ncpi;
 	    }
 	} else { // CW
-	    if ( BPNEAR(c->nibcorners[nci].utv[NC_IN_IDX],
+	    if ( BPNear(c->nibcorners[nci].utv[NC_IN_IDX],
 	                c->nibcorners[nci].utv[NC_OUT_IDX]) ) {
-		if ( BPNEAR(c->nibcorners[nci].utv[NC_IN_IDX],
+		if ( BPNear(c->nibcorners[nci].utv[NC_IN_IDX],
 		            c->nibcorners[ncni].utv[NC_IN_IDX]) ) {
 		    assert(c->nibcorners[nci].linear);
 		    inout = NC_OUT_IDX;
@@ -799,14 +808,14 @@ static BasePoint SplineStrokeNextAngle(StrokeContext *c, BasePoint ut,
 		*curved = false;
 	    }
 	}
-    } else if ( BPNEAR(ut, c->nibcorners[nci].utv[NC_OUT_IDX]) ) {
-	assert( ! BPNEAR(c->nibcorners[nci].utv[NC_IN_IDX],
+    } else if ( BPNear(ut, c->nibcorners[nci].utv[NC_OUT_IDX]) ) {
+	assert( ! BPNear(c->nibcorners[nci].utv[NC_IN_IDX],
 	                 c->nibcorners[nci].utv[NC_OUT_IDX]) );
 	if ( is_ccw ) {
 	    inout = NC_IN_IDX;
 	    *curved = false;
 	} else { // CW
-	    if ( BPNEAR(c->nibcorners[nci].utv[NC_OUT_IDX],
+	    if ( BPNear(c->nibcorners[nci].utv[NC_OUT_IDX],
 	                c->nibcorners[ncni].utv[NC_IN_IDX]) ) {
 		assert(c->nibcorners[nci].linear);
 		inout = NC_OUT_IDX;
@@ -835,7 +844,7 @@ static BasePoint SplineStrokeNextAngle(StrokeContext *c, BasePoint ut,
 	}
 	*curved = true;
     }
-    return BP_REV_IF(reverse, c->nibcorners[nci].utv[inout]);
+    return BPRevIf(reverse, c->nibcorners[nci].utv[inout]);
 }
 
 /******************************************************************************/
@@ -865,7 +874,7 @@ BasePoint SplineOffsetAt(StrokeContext *c, Spline *s, bigreal t, int is_right) {
     // nib line, use the turning direction to pick the corner that will be
     // continuous with the next points to be drawn based on the turning
     // direction (and therefore the next angle).
-    return BP_ADD(xy, no.off[is_ccw]);
+    return BPAdd(xy, no.off[is_ccw]);
 }
 
 /* Copies the portion of s from t_fm to t_to and then translates
@@ -1048,8 +1057,8 @@ static void SSAppendArc(SplineSet *cur, bigreal major, bigreal minor,
 }
 
 static void SplineStrokeSimpleFixup(SplinePoint *tailp, BasePoint p) {
-    BasePoint dxy = BP_SUB(p, tailp->me);
-    tailp->prevcp = BP_ADD(tailp->prevcp, dxy);
+    BasePoint dxy = BPSub(p, tailp->me);
+    tailp->prevcp = BPAdd(tailp->prevcp, dxy);
     tailp->me = p;
     SplineRefigure(tailp->prev);
 }
@@ -1059,8 +1068,8 @@ static BasePoint SplineStrokeVerifyCorner(BasePoint sxy, BasePoint txy,
 				          BasePoint *dxyp, bigreal *mgp) {
     BasePoint oxy;
 
-    oxy = BP_ADD(sxy, no->off[is_ccw]);
-    *dxyp = BP_SUB(oxy, txy);
+    oxy = BPAdd(sxy, no->off[is_ccw]);
+    *dxyp = BPSub(oxy, txy);
     *mgp = fmax(fabs(dxyp->x), fabs(dxyp->y));
     return oxy;
 }
@@ -1101,7 +1110,7 @@ static int SplineStrokeAppendFixup(SplinePoint *tailp, BasePoint sxy,
 	         mg, FIXUP_MARGIN);
     }
 
-    tailp->prevcp = BP_ADD(tailp->prevcp, dxy);
+    tailp->prevcp = BPAdd(tailp->prevcp, dxy);
     tailp->me = oxy;
     SplineRefigure(tailp->prev);
     return is_ccw;
@@ -1192,7 +1201,7 @@ int GenStrokeTracePoints(void *vinfo, bigreal t_fm, bigreal t_to,
 	xy = SPLINEPVAL(stip->s, t);
 	fp[i].ut = SplineUTanVecAt(stip->s, t);
 	CalcNibOffset(stip->c, fp[i].ut, stip->is_right, &no, no.nci[nib_ccw]);
-	fp[i].p = BP_ADD(xy, no.off[nib_ccw]);
+	fp[i].p = BPAdd(xy, no.off[nib_ccw]);
 	fp[i].t = t;
 	if ( stip->first_pass ) {
 	    on_cusp = OffsetOnCuspAt(stip->c, stip->s, t, &no,
@@ -1215,7 +1224,7 @@ int GenStrokeTracePoints(void *vinfo, bigreal t_fm, bigreal t_to,
 #endif // NDEBUG
 	}
 	if ( stip->starts_on_cusp ) // Cusp tangent point the other way
-	    fp[i].ut = BP_REV(fp[i].ut);
+	    fp[i].ut = BPRev(fp[i].ut);
     }
     *fpp = fp;
     stip->first_pass = false;
@@ -1336,9 +1345,9 @@ static void HandleFlat(SplineSet *cur, BasePoint sxy, NibOffset *noi,
                        int is_ccw) {
     BasePoint oxy;
 
-    oxy = BP_ADD(sxy, noi->off[is_ccw]);
-    if ( !BPNEAR(cur->last->me, oxy) ) {
-	assert( BPNEAR(cur->last->me, (BP_ADD(sxy, noi->off[!is_ccw]))) );
+    oxy = BPAdd(sxy, noi->off[is_ccw]);
+    if ( !BPNear(cur->last->me, oxy) ) {
+	assert( BPNear(cur->last->me, (BPAdd(sxy, noi->off[!is_ccw]))) );
 	SplineSetLineTo(cur, oxy);
     }
 }
@@ -1348,7 +1357,7 @@ static bigreal FalseStrokeWidth(StrokeContext *c, BasePoint ut) {
     DBounds b;
     real trans[6];
 
-    assert( RealNear(BP_LENGTHSQ(ut),1) );
+    assert( RealNear(BPLenSq(ut),1) );
     // Rotate nib and grab height as span
     trans[0] = trans[3] = ut.x;
     trans[1] = ut.y;
@@ -1363,7 +1372,7 @@ static bigreal FalseStrokeWidth(StrokeContext *c, BasePoint ut) {
 }
 
 static bigreal CalcJoinLength(bigreal fsw, BasePoint ut1, BasePoint ut2) {
-    bigreal costheta = BP_DOT(ut1, ut2);
+    bigreal costheta = BPDot(ut1, ut2);
 
     // Angle of interest is pi - theta, so formula is fsw/sin((pi - theta)/2)
     //   = sin(pi/2 - theta/2) = sin(pi/2)cos(theta/2) - cos(pi/2)sin(theta/2)
@@ -1395,7 +1404,7 @@ static bigreal CalcCapExtend(StrokeContext *c, bigreal fsw) {
 static bigreal LineDist(BasePoint l1, BasePoint l2, BasePoint p) {
     assert (l1.x!=l2.x || l1.y!=l2.y);
     return fabs((l2.y-l1.y)*p.x - (l2.x-l1.x)*p.y + l2.x*l1.y -l2.y*l1.x)
-           / BP_DIST(l1, l2);
+           / BPDist(l1, l2);
 }
 
 static bigreal SplineEndCurvature(Spline *s, int at_end) {
@@ -1406,15 +1415,15 @@ static bigreal SplineEndCurvature(Spline *s, int at_end) {
 	return 0;
 
     if (at_end) {
-	v1 = BP_SUB(s->to->me, s->to->prevcp);
-	v2 = BP_SUB(s->from->nextcp, s->to->prevcp);
+	v1 = BPSub(s->to->me, s->to->prevcp);
+	v2 = BPSub(s->from->nextcp, s->to->prevcp);
     } else {
-	v1 = BP_SUB(s->from->nextcp, s->from->me);
-	v2 = BP_SUB(s->to->prevcp, s->from->nextcp);
+	v1 = BPSub(s->from->nextcp, s->from->me);
+	v2 = BPSub(s->to->prevcp, s->from->nextcp);
     }
 
-    l1_3 = pow(BP_LENGTHSQ(v1), 1.5);
-    crs = BP_CROSS(v1, v2);
+    l1_3 = pow(BPLenSq(v1), 1.5);
+    crs = BPCross(v1, v2);
 
     if ( RealWithin(l1_3, 0, 1e-15) )
 	return CURVATURE_ERROR;
@@ -1430,8 +1439,8 @@ static bigreal AdjustLineCircle(BasePoint lp, BasePoint lut, BasePoint cp1,
                                 BasePoint cv1) {
     bigreal D, E, a, b, c, d, r;
 
-    D = BP_CROSS(lut, BP_SUB(lp, cp1));
-    E = BP_CROSS(cv1, lut);
+    D = BPCross(lut, BPSub(lp, cp1));
+    E = BPCross(cv1, lut);
     a = 1 - E*E;
     b = -2*D*E;
     c = -D*D;
@@ -1451,14 +1460,14 @@ static void AdjustCircles(BasePoint cp1, BasePoint cv1, bigreal *r1,
     bigreal fac = (ins ? -1.0 : 1.0), C, D, a, b, c, d, e;
     BasePoint A, B;
 
-    A = BP_ADD(BP_SUB(cp1, cp2),
-               BP_SUB(BP_SCALE(cv1, *r1), BP_SCALE(cv2, *r2)));
-    B = BP_SUB(BP_SCALE(cv1, fac), cv2);
+    A = BPAdd(BPSub(cp1, cp2),
+               BPSub(BPScale(cv1, *r1), BPScale(cv2, *r2)));
+    B = BPSub(BPScale(cv1, fac), cv2);
     C = *r1 + *r2*fac;
     D = 2*fac;
-    a = BP_LENGTHSQ(B) - D*D;
-    b = 2*(BP_DOT(A, B) - C*D);
-    c = BP_LENGTHSQ(A) - C*C;
+    a = BPLenSq(B) - D*D;
+    b = 2*(BPDot(A, B) - C*D);
+    c = BPLenSq(A) - C*C;
     d = b*b - 4*a*c;
     if (fabs(d*a*a) < 1e-4)
 	d = 0;
@@ -1494,19 +1503,19 @@ BasePoint ArcClip(BasePoint center, bigreal r, int neg,
 
     start_angle = atan2(p.y-center.y, p.x-center.x);
     end_angle = atan2(i.y-center.y, i.x-center.x);
-    angle_diff = NORMANGLE(s*(end_angle - start_angle));
+    angle_diff = NormAngle(s*(end_angle - start_angle));
     if ( angle_diff < 0 ) // Renormalize angle difference to 0->2*pi
 	angle_diff += 2*FF_PI;
-    end_angle = NORMANGLE(start_angle + s * angle_diff * clip_ratio);
+    end_angle = NormAngle(start_angle + s * angle_diff * clip_ratio);
 
     v = (BasePoint) { cos(end_angle), sin(end_angle) };
-    return BP_ADD(center, BP_SCALE(v, r));
+    return BPAdd(center, BPScale(v, r));
 }
 
 /*static int IntersectLinesSlopes2(BasePoint *i, BasePoint lp1, BasePoint lut1,
                                  BasePoint lp2, BasePoint lut2) {
-    bigreal cl1 = BP_CROSS(lut1, lp1), cl2 = BP_CROSS(lut2, lp2);
-    bigreal cd = BP_CROSS(lut1, lut2);
+    bigreal cl1 = BPCross(lut1, lp1), cl2 = BPCross(lut2, lp2);
+    bigreal cd = BPCross(lut1, lut2);
     if (fabs(cd) < 1e-12)
 	return 0;
     i->x = (cl1*lut2.x - cl2*lut1.x)/cd;
@@ -1545,8 +1554,8 @@ static void CalcDualBasis(BasePoint v1, BasePoint v2, BasePoint *q1,
 	q1->x = -v2.y * q1->y / v2.x;
 	q2->x = -v1.y * q2->y / v1.x;
     }
-    assert(    RealNear(BP_DOT(v1,*q1), 1) && RealNear(BP_DOT(v2,*q2), 1)
-            && RealNear(BP_DOT(v1,*q2), 0) && RealNear(BP_DOT(v2,*q1), 0) );
+    assert(    RealNear(BPDot(v1,*q1), 1) && RealNear(BPDot(v2,*q2), 1)
+            && RealNear(BPDot(v1,*q2), 0) && RealNear(BPDot(v2,*q1), 0) );
 }
 */
 
@@ -1559,9 +1568,9 @@ static void CalcExtend(BasePoint refp, BasePoint ut, BasePoint op1,
                        BasePoint *np1, BasePoint *np2) {
     bigreal extra=0, tmp;
     int intersects;
-    BasePoint cop1 = BP_ADD(op1, ut), cop2 = BP_ADD(op2, ut);
-    BasePoint clip1 = BP_ADD(refp, BP_SCALE(ut, min)), cliput = UT_90CW(ut);
-    BasePoint clip2 = BP_ADD(clip1, cliput);
+    BasePoint cop1 = BPAdd(op1, ut), cop2 = BPAdd(op2, ut);
+    BasePoint clip1 = BPAdd(refp, BPScale(ut, min)), cliput = BP90CW(ut);
+    BasePoint clip2 = BPAdd(clip1, cliput);
 
     if ( !LineSameSide(clip1, clip2, op1, refp, false) )
 	extra = LineDist(clip1, clip2, op1);
@@ -1571,8 +1580,8 @@ static void CalcExtend(BasePoint refp, BasePoint ut, BasePoint op1,
 	    extra = tmp;
     }
     if (extra > 0) {
-	clip1 = BP_ADD(refp, BP_SCALE(ut, min+extra));
-	clip2 = BP_ADD(clip1, cliput);
+	clip1 = BPAdd(refp, BPScale(ut, min+extra));
+	clip2 = BPAdd(clip1, cliput);
     }
     intersects = IntersectLines(np1, &op1, &cop1, &clip1, &clip2);
     VASSERT(intersects);
@@ -1585,7 +1594,7 @@ static void DoubleBackJC(StrokeContext *c, SplineSet *cur, BasePoint sxy,
     bigreal fsw, ex;
     BasePoint p0, p1, p2, arcut;
 
-    fsw = FalseStrokeWidth(c, UT_NEG(ut));
+    fsw = FalseStrokeWidth(c, BPNeg(ut));
     if ( is_cap )
         ex = CalcCapExtend(c, fsw);
     else if ( c->join==lj_miterclip )
@@ -1593,20 +1602,20 @@ static void DoubleBackJC(StrokeContext *c, SplineSet *cur, BasePoint sxy,
     else
 	ex = 0;
 
-    p0 = BP_ADD(sxy, c->pseudo_origin);
+    p0 = BPAdd(sxy, c->pseudo_origin);
     CalcExtend(p0, ut, cur->last->me, oxy, ex, &p1, &p2);
-    if ( BPNEAR(cur->last->me, p1) )
+    if ( BPNear(cur->last->me, p1) )
 	cur->last->me = p1;
     else
 	SplineSetLineTo(cur, p1);
     if ( (is_cap && c->cap==lc_round) || (!is_cap && c->join==lj_round) ) {
-	arcut = BP_REV_IF(bk, ut);
-	SSAppendArc(cur, fsw/2, 0, UTZERO, arcut, BP_REV(arcut), bk, false);
-	assert( BPWITHIN(cur->last->me, p2, INTERSPLINE_MARGIN*5) );
+	arcut = BPRevIf(bk, ut);
+	SSAppendArc(cur, fsw/2, 0, UTZERO, arcut, BPRev(arcut), bk, false);
+	assert( BPWithin(cur->last->me, p2, INTERSPLINE_MARGIN*5) );
 	cur->last->me = p2;
     } else
 	SplineSetLineTo(cur, p2);
-    if ( !BPNEAR(oxy, p2) )
+    if ( !BPNear(oxy, p2) )
 	SplineSetLineTo(cur, oxy);
 }
 
@@ -1677,8 +1686,8 @@ static void RoundJoin(JoinParams *jpp, int rv) {
 
     p0 = jpp->cur->last->me;
     p2 = jpp->oxy;
-    h0 = BP_REV_IF(jpp->is_right, jpp->ut_fm);
-    h2 = BP_REV_IF(jpp->is_right, jpp->no_to->utanvec);
+    h0 = BPRevIf(jpp->is_right, jpp->ut_fm);
+    h2 = BPRevIf(jpp->is_right, jpp->no_to->utanvec);
 
     if ( rv ) {
 	DoubleBackJC(jpp->c, jpp->cur, jpp->sxy, jpp->oxy, jpp->ut_fm,
@@ -1689,11 +1698,11 @@ static void RoundJoin(JoinParams *jpp, int rv) {
     // First paper
     intersects = IntersectLinesSlopes(&p1, &p0, &h0, &p2, &h2);
     VASSERT(intersects);
-    p1p = ProjectPointOnLine(p1, p0, NormVec(BP_SUB(p2,p0)));
-    p12a = BP_AVG(p0, p2);
-    p12d = BP_DIST(p0, p2);
-    x1 = 2 * BP_DIST(p1p, p12a) / p12d;
-    y1 = 2 * BP_DIST(p1p, p1) / p12d;
+    p1p = ProjectPointOnLine(p1, p0, NormVec(BPSub(p2,p0)));
+    p12a = BPAvg(p0, p2);
+    p12d = BPDist(p0, p2);
+    x1 = 2 * BPDist(p1p, p12a) / p12d;
+    y1 = 2 * BPDist(p1p, p1) / p12d;
     w = 1 / sqrt( x1*x1 + y1*y1 + 1);
 
     // Second paper
@@ -1725,12 +1734,12 @@ static void MiterJoin(JoinParams *jpp) {
     SplineSet *cur = jpp->cur;
     bigreal fsw, jlen, jlim;
 
-    cow = BP_ADD(cur->last->me, jpp->ut_fm);
-    coi = BP_ADD(jpp->oxy, jpp->no_to->utanvec);
+    cow = BPAdd(cur->last->me, jpp->ut_fm);
+    coi = BPAdd(jpp->oxy, jpp->no_to->utanvec);
     intersects = IntersectLines(&ixy, &cur->last->me, &cow, &coi, &jpp->oxy);
     assert(intersects); // Shouldn't be called with parallel tangents
-    fsw = (  FalseStrokeWidth(jpp->c, UT_NEG(jpp->ut_fm)) 
-           + FalseStrokeWidth(jpp->c, UT_NEG(jpp->no_to->utanvec)))/2;
+    fsw = (  FalseStrokeWidth(jpp->c, BPNeg(jpp->ut_fm)) 
+           + FalseStrokeWidth(jpp->c, BPNeg(jpp->no_to->utanvec)))/2;
     jlim = CalcJoinLimit(jpp->c, fsw);
     jlen = CalcJoinLength(fsw, jpp->ut_fm, jpp->no_to->utanvec);
 
@@ -1743,11 +1752,11 @@ static void MiterJoin(JoinParams *jpp) {
 	    BevelJoin(jpp);
 	    return;
 	}
-	refp = BP_ADD(jpp->sxy, jpp->c->pseudo_origin);
-	ut = NormVec(BP_SUB(cur->last->me, jpp->oxy));
-	ut = jpp->bend_is_ccw ? UT_90CW(ut) : UT_90CCW(ut);
-	clip1 = BP_ADD(refp, BP_SCALE(ut, jlim/2));
-	clip2 = BP_ADD(clip1, UT_90CW(ut));
+	refp = BPAdd(jpp->sxy, jpp->c->pseudo_origin);
+	ut = NormVec(BPSub(cur->last->me, jpp->oxy));
+	ut = jpp->bend_is_ccw ? BP90CW(ut) : BP90CCW(ut);
+	clip1 = BPAdd(refp, BPScale(ut, jlim/2));
+	clip2 = BPAdd(clip1, BP90CW(ut));
 	if ( !LineSameSide(clip1, clip2, jpp->oxy, refp, false) ) {
 	    // Don't trim past bevel
 	    BevelJoin(jpp);
@@ -1838,8 +1847,8 @@ static void ArcsJoin(JoinParams *jpp) {
     } else
 	K_fm = SplineEndCurvature(jpp->cur->last->prev, true);
 
-    fsw_fm = FalseStrokeWidth(jpp->c, UT_NEG(jpp->ut_fm));
-    fsw_to = FalseStrokeWidth(jpp->c, UT_NEG(jpp->no_to->utanvec));
+    fsw_fm = FalseStrokeWidth(jpp->c, BPNeg(jpp->ut_fm));
+    fsw_to = FalseStrokeWidth(jpp->c, BPNeg(jpp->no_to->utanvec));
     fsw_avg = (fsw_fm + fsw_to) / 2.0;
 
     // printf(" K_fm: %.15lf, K_to: %.15lf\n", K_fm, K_to);
@@ -1854,13 +1863,13 @@ static void ArcsJoin(JoinParams *jpp) {
 
     if ( K_fm!=0.0 ) {
 	r_fm = abs(1.0/K_fm);
-	cv_fm = BP_REV_IF(neg_fm, UT_90CCW(jpp->ut_fm));
-	center_fm = BP_ADD(p_fm, BP_SCALE(cv_fm, r_fm));
+	cv_fm = BPRevIf(neg_fm, BP90CCW(jpp->ut_fm));
+	center_fm = BPAdd(p_fm, BPScale(cv_fm, r_fm));
     }
     if ( K_to!=0.0 ) {
 	r_to = abs(1.0/K_to);
-	cv_to = BP_REV_IF(neg_to, UT_90CCW(ut_to));
-	center_to = BP_ADD(p_to, BP_SCALE(cv_to, r_to));
+	cv_to = BPRevIf(neg_to, BP90CCW(ut_to));
+	center_to = BPAdd(p_to, BPScale(cv_to, r_to));
     }
 
     // Find unclipped intersection
@@ -1870,7 +1879,7 @@ static void ArcsJoin(JoinParams *jpp) {
 	    IntersectLineCircle(p_fm, jpp->ut_fm, center_to, r_to, &i, &i2);
 	else {
 	    r_to = AdjustLineCircle(p_fm, jpp->ut_fm, p_to, cv_to);
-	    center_to = BP_ADD(p_to, BP_SCALE(cv_to, r_to));
+	    center_to = BPAdd(p_to, BPScale(cv_to, r_to));
 	    cnt = 1;
 	    i = ProjectPointOnLine(center_to, p_fm, jpp->ut_fm);
 	}
@@ -1880,7 +1889,7 @@ static void ArcsJoin(JoinParams *jpp) {
 	    IntersectLineCircle(p_to, ut_to, center_fm, r_fm, &i, &i2);
 	else {
 	    r_fm = AdjustLineCircle(p_to, ut_to, p_fm, cv_fm);
-	    center_fm = BP_ADD(p_fm, BP_SCALE(cv_fm, r_fm));
+	    center_fm = BPAdd(p_fm, BPScale(cv_fm, r_fm));
 	    cnt = 1;
 	    i = ProjectPointOnLine(center_fm, p_to, ut_to);
 	}
@@ -1893,24 +1902,24 @@ static void ArcsJoin(JoinParams *jpp) {
 		AdjustCircles(p_to, cv_to, &r_to, p_fm, cv_fm, &r_fm, 1);
 	    else
 		AdjustCircles(p_fm, cv_fm, &r_fm, p_to, cv_to, &r_to, note<0);
-	    center_fm = BP_ADD(p_fm, BP_SCALE(cv_fm, r_fm));
-	    center_to = BP_ADD(p_to, BP_SCALE(cv_to, r_to));
+	    center_fm = BPAdd(p_fm, BPScale(cv_fm, r_fm));
+	    center_to = BPAdd(p_to, BPScale(cv_to, r_to));
 	    cnt = 1;
 	    if ( note==-2 )
-		i = BP_ADD(center_to,
-		           BP_SCALE(NormVec(BP_SUB(center_fm, center_to)),
+		i = BPAdd(center_to,
+		           BPScale(NormVec(BPSub(center_fm, center_to)),
 		                    r_to));
 	    else
-		i = BP_ADD(center_fm,
-		           BP_SCALE(NormVec(BP_SUB(center_to, center_fm)),
+		i = BPAdd(center_fm,
+		           BPScale(NormVec(BPSub(center_to, center_fm)),
 		                    r_fm));
 	}
     }
 
     // A point definitely on the far side of the bevel line relative to
     // the source spline
-    p_ref = BP_ADD(p_fm, BP_REV_IF(jpp->bend_is_ccw,
-                                   UT_90CW(BP_SUB(p_to, p_fm))));
+    p_ref = BPAdd(p_fm, BPRevIf(jpp->bend_is_ccw,
+                                   BP90CW(BPSub(p_to, p_fm))));
 
     if ( cnt > 1 )
 	i = CloserIntersection(p_fm, p_to, i, i2, p_ref);
@@ -1930,11 +1939,11 @@ static void ArcsJoin(JoinParams *jpp) {
     }
 
     // Clipping pre-calculations
-    orig_p = BP_ADD(jpp->sxy, jpp->c->pseudo_origin);
-    ut_avg = NormVec(BP_SCALE(BP_SUB(jpp->ut_fm, ut_to), 0.5)),
-    iut = BP_SUB(i, orig_p);
-    i_dist = sqrt(BP_LENGTHSQ(iut));
-    iut = BP_SCALE(iut, 1.0/i_dist);
+    orig_p = BPAdd(jpp->sxy, jpp->c->pseudo_origin);
+    ut_avg = NormVec(BPScale(BPSub(jpp->ut_fm, ut_to), 0.5)),
+    iut = BPSub(i, orig_p);
+    i_dist = sqrt(BPLenSq(iut));
+    iut = BPScale(iut, 1.0/i_dist);
     jlim = CalcJoinLimit(jpp->c, fsw_avg);
     jlen = CalcJoinLength(fsw_avg, jpp->ut_fm, ut_to);
 
@@ -1953,12 +1962,12 @@ static void ArcsJoin(JoinParams *jpp) {
 	if ( jlim/2.0 < i_dist ) { // Linear test
 	    clipped = true;
 	    if ( !jpp->c->ratio_al ) {
-		p_cref = BP_ADD(orig_p, BP_SCALE(iut, jlim/2.0));
-		ut_cref = UT_90CCW(iut);
+		p_cref = BPAdd(orig_p, BPScale(iut, jlim/2.0));
+		ut_cref = BP90CCW(iut);
 	    } else {
 		p_cref = ProjectPointOnLine(orig_p, p_fm,
-		                            NormVec(BP_SUB(p_to, p_fm)));
-		t = BP_DIST(orig_p, p_cref);
+		                            NormVec(BPSub(p_to, p_fm)));
+		t = BPDist(orig_p, p_cref);
 		if ( t >= jlim/2.0 )
 		    clip_ratio = 0;
 		else
@@ -1971,7 +1980,7 @@ static void ArcsJoin(JoinParams *jpp) {
 	max_angle_diff = jlim/(r_clip*2);
 	start_angle = atan2(orig_p.y-center_clip.y, orig_p.x-center_clip.x);
 	end_angle = atan2(i.y-center_clip.y, i.x-center_clip.x);
-	angle_diff = NORMANGLE(s_clip*(start_angle - end_angle));
+	angle_diff = NormAngle(s_clip*(start_angle - end_angle));
 	if ( angle_diff < 0 ) // Renormalize angle difference to 0->2*pi
 	    angle_diff += 2*FF_PI;
 
@@ -1979,15 +1988,15 @@ static void ArcsJoin(JoinParams *jpp) {
 	if ( angle_diff > max_angle_diff ) {
 	    clipped = true;
 	    if ( !jpp->c->ratio_al ) {
-		end_angle = NORMANGLE(start_angle - s_clip * max_angle_diff);
+		end_angle = NormAngle(start_angle - s_clip * max_angle_diff);
 		ut_cref = (BasePoint) { cos(end_angle), sin(end_angle) };
-		p_cref = BP_ADD(center_clip, BP_SCALE(ut_cref, r_clip));
+		p_cref = BPAdd(center_clip, BPScale(ut_cref, r_clip));
 	    } else {
-		IntersectLineCircle(p_fm, NormVec(BP_SUB(p_to, p_fm)),
+		IntersectLineCircle(p_fm, NormVec(BPSub(p_to, p_fm)),
 		                    center_clip, r_clip, &ci_fm, &ci2);
 		ci_fm = CloserPoint(p_fm, ci_fm, ci2);
 		end_angle = atan2(ci_fm.y-center_clip.y, ci_fm.x-center_clip.x);
-		bevel_angle_diff = NORMANGLE(s_clip*(start_angle - end_angle));
+		bevel_angle_diff = NormAngle(s_clip*(start_angle - end_angle));
 		if (bevel_angle_diff >= max_angle_diff)
 		    clip_ratio = 0;
 		else
@@ -2003,11 +2012,11 @@ static void ArcsJoin(JoinParams *jpp) {
 	    if ( !LineSameSide(p_fm, p_to, ci_fm, p_ref, false) )
 		ci_fm = p_fm;
 	} else if ( clipped ) {
-	    i_dist = BP_DIST(i, p_fm);
-	    ci_fm = BP_ADD(p_fm, BP_SCALE(jpp->ut_fm, i_dist * clip_ratio));
+	    i_dist = BPDist(i, p_fm);
+	    ci_fm = BPAdd(p_fm, BPScale(jpp->ut_fm, i_dist * clip_ratio));
 	} else
 	    ci_fm = i;
-	if ( !BP_EQ(ci_fm, p_fm) )
+	if ( !BPEq(ci_fm, p_fm) )
 	    SplineSetLineTo(jpp->cur, ci_fm);
     } else {
 	if ( clipped && !jpp->c->ratio_al )
@@ -2017,10 +2026,10 @@ static void ArcsJoin(JoinParams *jpp) {
 	    ci_fm = ArcClip(center_fm, r_fm, neg_fm, p_fm, i, clip_ratio);
 	else
 	    ci_fm = i;
-	if ( !BP_EQ(ci_fm, p_fm) ) {
-	    cut_fm = UT_90CW(NormVec(BP_SUB(ci_fm, center_fm)));
+	if ( !BPEq(ci_fm, p_fm) ) {
+	    cut_fm = BP90CW(NormVec(BPSub(ci_fm, center_fm)));
 	    SSAppendArc(jpp->cur, r_fm, r_fm, UTZERO,
-	                BP_REV_IF(!neg_fm, jpp->ut_fm), cut_fm, !neg_fm, true);
+	                BPRevIf(!neg_fm, jpp->ut_fm), cut_fm, !neg_fm, true);
 	    SplineStrokeSimpleFixup(jpp->cur->last, ci_fm);
 	}
     }
@@ -2031,14 +2040,14 @@ static void ArcsJoin(JoinParams *jpp) {
 		if ( !LineSameSide(p_fm, p_to, ci_to, p_ref, false) )
 		    ci_to = p_to;
 	    } else {
-		i_dist = BP_DIST(i, p_to);
-		ci_to = BP_ADD(p_to, BP_SCALE(BP_REV(ut_to),
-		                              i_dist * clip_ratio));
+		i_dist = BPDist(i, p_to);
+		ci_to = BPAdd(p_to, BPScale(BPRev(ut_to),
+		                            i_dist * clip_ratio));
 	    }
 	    SplineSetLineTo(jpp->cur, ci_to);
 	} else
 	    ci_to = i;
-	if ( !BP_EQ(ci_to, p_to) )
+	if ( !BPEq(ci_to, p_to) )
 	    SplineSetLineTo(jpp->cur, p_to);
     } else {
 	if ( clipped ) {
@@ -2050,10 +2059,10 @@ static void ArcsJoin(JoinParams *jpp) {
 	    SplineSetLineTo(jpp->cur, ci_to);
 	} else
 	    ci_to = i;
-	if ( !BP_EQ(ci_to, p_to) ) {
-	    cut_to = UT_90CW(NormVec(BP_SUB(ci_to, center_to)));
+	if ( !BPEq(ci_to, p_to) ) {
+	    cut_to = BP90CW(NormVec(BPSub(ci_to, center_to)));
 	    SSAppendArc(jpp->cur, r_to, r_to, UTZERO, cut_to,
-	                BP_REV_IF(!neg_to, ut_to), !neg_to, true);
+	                BPRevIf(!neg_to, ut_to), !neg_to, true);
 	    SplineStrokeSimpleFixup(jpp->cur->last, p_to);
 	}
     }
@@ -2064,11 +2073,11 @@ static int _HandleJoin(JoinParams *jpp) {
     BasePoint oxy = jpp->oxy;
     StrokeContext *c = jpp->c;
     int is_flat = false;
-    bigreal costheta = BP_DOT(jpp->ut_fm, jpp->no_to->utanvec);
+    bigreal costheta = BPDot(jpp->ut_fm, jpp->no_to->utanvec);
 
     assert( cur->first!=NULL );
 
-    if ( BPWITHIN(cur->last->me, oxy, INTERSPLINE_MARGIN) ) {
+    if ( BPWithin(cur->last->me, oxy, INTERSPLINE_MARGIN) ) {
 	// Close enough to just move the point
 	SplineStrokeAppendFixup(cur->last, jpp->sxy, jpp->no_to, jpp->ccw_to);
 	is_flat = true;
@@ -2105,9 +2114,9 @@ static int _HandleJoin(JoinParams *jpp) {
 static int HandleJoin(StrokeContext *c, Spline *s, SplineSet *cur,
                       BasePoint sxy, NibOffset *no_to, int ccw_to,
                       BasePoint ut_fm, int ccw_fm, int is_right) {
-    JoinParams jp = { c, s, cur, sxy, BP_UNINIT, ut_fm, no_to,
+    JoinParams jp = { c, s, cur, sxy, BPUNINIT, ut_fm, no_to,
                       ccw_fm, ccw_to, is_right, false };
-    jp.oxy = BP_ADD(sxy, no_to->off[ccw_to]);
+    jp.oxy = BPAdd(sxy, no_to->off[ccw_to]);
     if ( cur->first==NULL ) {
 	// Create initial spline point
 	cur->first = SplinePointCreate(jp.oxy.x, jp.oxy.y);
@@ -2122,7 +2131,7 @@ static int HandleJoin(StrokeContext *c, Spline *s, SplineSet *cur,
 static void HandleCap(StrokeContext *c, SplineSet *cur, BasePoint sxy,
                       BasePoint ut, BasePoint oxy, int is_right) {
     NibOffset no_fm, no_to;
-    BasePoint refp = BP_ADD(sxy, c->pseudo_origin), p1, p2;
+    BasePoint refp = BPAdd(sxy, c->pseudo_origin), p1, p2;
     SplinePoint *sp;
     int corner_fm, corner_to;
 
@@ -2131,7 +2140,7 @@ static void HandleCap(StrokeContext *c, SplineSet *cur, BasePoint sxy,
 	return;
     }
     if ( c->cap==lc_butt || c->cap==lc_round ) {
-	DoubleBackJC(c, cur, sxy, oxy, BP_REV_IF(!is_right, ut), !is_right, 1);
+	DoubleBackJC(c, cur, sxy, oxy, BPRevIf(!is_right, ut), !is_right, 1);
     } else {
 	if ( c->cap!=lc_nib && c->cap!=lc_inherited )
 	    LogError( _("Warning: Unrecognized or unsupported cap type, defaulting to 'nib'.\n") );
@@ -2156,7 +2165,7 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
     Spline *s, *first=NULL;
     SplineSet *left=NULL, *right=NULL, *cur;
     SplinePoint *sp;
-    BasePoint ut_ini = BP_UNINIT, ut_start, ut_mid, ut_endlast;
+    BasePoint ut_ini = BPUNINIT, ut_start, ut_mid, ut_endlast;
     BasePoint sxy;
     bigreal last_t, t;
     int is_right, linear, curved, on_cusp;
@@ -2182,7 +2191,7 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
 	} else {
 	    is_ccw_start = SplineTurningCCWAt(s, 0.0);
 	}
-	if ( BP_IS_UNINIT(ut_ini) ) {
+	if ( BPIsUninit(ut_ini) ) {
 	    ut_ini = ut_start;
 	    is_ccw_ini = is_ccw_start;
 	}
@@ -2211,7 +2220,7 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
 	    // The path for this spline
 	    if ( linear ) {
 		sxy = SPLINEPVAL(s, 1.0);
-		SplineSetLineTo(cur, BP_ADD(sxy, no.off[is_ccw_start]));
+		SplineSetLineTo(cur, BPAdd(sxy, no.off[is_ccw_start]));
 	    } else {
 		t = 0.0;
 		ut_mid = ut_start;
