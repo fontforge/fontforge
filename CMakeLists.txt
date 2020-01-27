@@ -76,13 +76,16 @@ build_option(REAL_TYPE ENUM "double" "Sets the floating point type used." "doubl
 build_option(THEME     ENUM "tango"  "Sets the GUI theme." "tango" "2012")
 
 if(CMAKE_COMPILER_IS_GNUCC)
-  list(APPEND _test_flags -Werror=implicit-function-declaration -Werror=int-conversion)
+  list(APPEND _test_flags CFLAGS -Werror=implicit-function-declaration -Werror=int-conversion)
   if(CMAKE_GENERATOR STREQUAL "Ninja") # https://github.com/ninja-build/ninja/wiki/FAQ
-    list(APPEND _test_flags -fdiagnostics-color=always)
+    list(APPEND _test_flags BOTH -fdiagnostics-color=always)
   endif()
-  set_supported_c_compiler_flags(FONTFORGE_DEFAULT_CFLAGS ${_test_flags})
+  set_supported_compiler_flags(FONTFORGE_DEFAULT_CFLAGS FONTFORGE_DEFAULT_CXXFLAGS ${_test_flags})
   list(APPEND FONTFORGE_EXTRA_CFLAGS -Wall -Wextra -pedantic)
-  add_compile_options(${FONTFORGE_DEFAULT_CFLAGS})
+  add_compile_options(
+    "$<$<COMPILE_LANGUAGE:C>:${FONTFORGE_DEFAULT_CFLAGS}>"
+    "$<$<COMPILE_LANGUAGE:CXX>:${FONTFORGE_DEFAULT_CXXFLAGS}>"
+  )
 endif()
 
 enable_sanitizer("${ENABLE_SANITIZER}")
