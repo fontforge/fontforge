@@ -30,6 +30,10 @@ explicitly specified.
 ``set_default_rpath`` sets the default RPATH to be used on platforms
 that support it.
 
+``enable_sanitizer`` checks if the specified sanitizer is supported,
+and adds the required compiler flags to enable it if so. If unsupported,
+it will error out.
+
 #]=======================================================================]
 
 function(build_option variable type value description)
@@ -104,4 +108,28 @@ function(set_default_rpath)
     list(APPEND CMAKE_INSTALL_RPATH "@loader_path/../lib")
   endif()
   set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH} PARENT_SCOPE)
+endfunction()
+
+function(enable_sanitizer type)
+  if("${type}" STREQUAL "none")
+    return()
+  elseif(NOT CMAKE_COMPILER_IS_GNUCC)
+    message(FATAL_ERROR "Require a GCC-like compiler to enable sanitizers.")
+  endif()
+
+  include(CheckCCompilerFlag)
+  include(CMakePushCheckState)
+
+  cmake_push_check_state(RESET)
+  set(CMAKE_REQUIRED_LIBRARIES "-fsanitize=${type}")
+  check_c_compiler_flag("-fsanitize=${type} -fno-omit-frame-pointer" "_sanitizer_${type}")
+  cmake_pop_check_state()
+
+  if(NOT _sanitizer_${type})
+    message(FATAL_ERROR "Sanitizer flags not supported: -fsanitize=${type} -fno-omit-frame-pointer")
+  endif()
+
+  # kind of dirty but what can you do
+  add_compile_options("-fsanitize=${type}" "-fno-omit-frame-pointer")
+  link_libraries("-fsanitize=${type}")
 endfunction()

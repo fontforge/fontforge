@@ -65,6 +65,8 @@ build_option(ENABLE_FONTFORGE_EXTRAS BOOL OFF "Builds programs from the contrib 
 build_option(ENABLE_MAINTAINER_TOOLS BOOL OFF "Build programs normally only used by FontForge maintainers and developers")
 build_option(ENABLE_TILE_PATH        BOOL OFF "Enable a 'tile path' command (a variant of 'expand stroke')")
 build_option(ENABLE_WRITE_PFM        BOOL OFF "Add the ability to save a PFM file without creating the associated font file")
+build_option(ENABLE_SANITIZER        ENUM "none" "Enables a sanitizer. Requires support from the compiler."
+                                          "none" "address" "leak" "thread" "undefined" "memory")
 
 build_option(ENABLE_FREETYPE_DEBUGGER PATH "" "Use FreeType's internal debugger within FontForge.\
  If enabling this option, this must be set to the path of the FreeType source.\
@@ -82,6 +84,8 @@ if(CMAKE_COMPILER_IS_GNUCC)
   list(APPEND FONTFORGE_EXTRA_CFLAGS -Wall -Wextra -pedantic)
   add_compile_options(${FONTFORGE_DEFAULT_CFLAGS})
 endif()
+
+enable_sanitizer("${ENABLE_SANITIZER}")
 
 # Required and default dependencies
 # Note: When adding a dependency, ensure it has an imported target (wherever appropriate) 
