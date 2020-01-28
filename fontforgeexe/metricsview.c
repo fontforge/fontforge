@@ -57,6 +57,8 @@ extern char* SFDCreateUndoForLookup( SplineFont *sf, int lookup_type ) ;
 
 
 int mv_width = 800, mv_height = 300;
+// Maximum number of characters to transfer from CharView to MetricsView
+int fvmv_selectmax = 15;
 int mvshowgrid = mv_hidegrid;
 int mv_type = mv_widthonly;
 static int mv_antialias = true;
@@ -5181,8 +5183,11 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     FontRequest rq;
     static GWindow icon = NULL;
     extern int _GScrollBar_Width;
-    // Max. glyphname length: 31, max. chars picked up: 15. 31*15 = 465
-    char buf[465], *pt;
+    // The maximum length of a glyph's name is 31 chars.
+#define MAXGLYPHNAME_LEN 31
+    unsigned int selectmax = fvmv_selectmax < 0 ? fv->b.sf->glyphcnt : fvmv_selectmax;
+    char buf[selectmax * MAXGLYPHNAME_LEN], *pt;
+    char titlebuf[50+strlen(fv->b.sf->fontname)+1];
     GTextInfo label;
     int i,j,cnt;
     int as,ds,ld;
@@ -5211,8 +5216,8 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_icon;
     wattrs.event_masks = ~(0);
     wattrs.cursor = ct_mypointer;
-    MVWindowTitle(buf,sizeof(buf),mv);
-    wattrs.utf8_window_title = buf;
+    MVWindowTitle(titlebuf,sizeof(titlebuf),mv);
+    wattrs.utf8_window_title = titlebuf;
     wattrs.icon = icon;
     pos.x = pos.y = 0;
     pos.width = mv_width;
@@ -5259,13 +5264,13 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     mv->fh = as+ds; mv->as = as;
 
     pt = buf;
-    mv->chars = calloc(mv->cmax=20,sizeof(SplineChar *));
+    mv->chars = calloc(mv->cmax=selectmax+1,sizeof(SplineChar *));
     if ( sc!=NULL ) {
 	mv->chars[mv->clen++] = sc;
     } else {
 	EncMap *map = fv->b.map;
-	for ( j=1; (j<=fv->sel_index || j<1) && mv->clen<15; ++j ) {
-	    for ( i=0; i<map->enccount && mv->clen<15; ++i ) {
+	for ( j=1; (j<=fv->sel_index || j<1) && mv->clen<selectmax; ++j ) {
+	    for ( i=0; i<map->enccount && mv->clen<selectmax; ++i ) {
 		int gid = map->map[i];
 		if ( gid!=-1 && fv->b.selected[i]==j && fv->b.sf->glyphs[gid]!=NULL ) {
 		    mv->chars[mv->clen++] = fv->b.sf->glyphs[gid];

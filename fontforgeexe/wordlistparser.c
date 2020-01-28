@@ -401,8 +401,6 @@ void WordlistTrimTrailingSingleSlash( unichar_t* txt )
 /************************************************************/
 /************************************************************/
 
-static int WordListLineSz = 1024;
-
 int WordListLine_countSelected( WordListLine wll )
 {
     int ret = 0;
@@ -436,10 +434,11 @@ WordListLine WordlistEscapedInputStringToParsedDataComplex(
     void* udata )
 {
     unichar_t* input = u_copy( input_const );
-    WordListChar* ret = calloc( WordListLineSz, sizeof(WordListChar));
+    int input_len = u_strlen(input);
+    WordListChar* ret = calloc( input_len+1, sizeof(WordListChar));
     WordListChar* out = ret;
     unichar_t* in     = input;
-    unichar_t* in_end = input + u_strlen(input);
+    unichar_t* in_end = input + input_len;
     // trim comment and beyond from input
     {
 	unichar_t* p = input;
