@@ -5186,7 +5186,8 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     // The maximum length of a glyph's name is 31 chars.
 #define MAXGLYPHNAME_LEN 31
     unsigned int selectmax = fvmv_selectmax < 0 ? fv->b.sf->glyphcnt : fvmv_selectmax;
-    char buf[selectmax * MAXGLYPHNAME_LEN], *pt;
+    char *buf = malloc(selectmax * MAXGLYPHNAME_LEN);
+    char *pt;
     char titlebuf[50+strlen(fv->b.sf->fontname)+1];
     GTextInfo label;
     int i,j,cnt;
@@ -5376,6 +5377,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     GDrawSetVisible(mv->v,true);
     GDrawSetVisible(gw,true);
     /*GWidgetHidePalettes();*/
+    free(buf);
 return( mv );
 }
 
