@@ -1788,6 +1788,7 @@ static void ArcsJoin(JoinParams *jpp) {
     BasePoint ci_fm, ci_to, ci2, p_ref;
     SplinePoint *tmp_st, *tmp_end;
     int curved = false, cnt, note, neg_fm, neg_to, clipped = false, s_clip;
+    int flat_fm, flat_to;
 
     p_fm = jpp->cur->last->me;
     p_to = jpp->oxy;
@@ -1850,8 +1851,11 @@ static void ArcsJoin(JoinParams *jpp) {
     fsw_to = FalseStrokeWidth(jpp->c, BPNeg(jpp->no_to->utanvec));
     fsw_avg = (fsw_fm + fsw_to) / 2.0;
 
+    flat_fm = K_fm==0;
+    flat_to = K_to==0;
+
     // printf(" K_fm: %.15lf, K_to: %.15lf\n", K_fm, K_to);
-    if ( K_fm==0 && K_to==0 ) {
+    if ( flat_fm && flat_to ) {
 	MiterJoin(jpp);
 	return;
     }
@@ -1860,19 +1864,19 @@ static void ArcsJoin(JoinParams *jpp) {
     neg_fm = (K_fm < 0);
     neg_to = (K_to < 0);
 
-    if ( K_fm!=0.0 ) {
+    if ( !flat_fm ) {
 	r_fm = fabs(1.0/K_fm);
 	cv_fm = BPRevIf(neg_fm, BP90CCW(jpp->ut_fm));
 	center_fm = BPAdd(p_fm, BPScale(cv_fm, r_fm));
     }
-    if ( K_to!=0.0 ) {
+    if ( !flat_to ) {
 	r_to = fabs(1.0/K_to);
 	cv_to = BPRevIf(neg_to, BP90CCW(ut_to));
 	center_to = BPAdd(p_to, BPScale(cv_to, r_to));
     }
 
     // Find unclipped intersection
-    if ( K_fm==0.0 ) {
+    if ( flat_fm ) {
 	cnt = LineCircleTest(p_fm, jpp->ut_fm, center_to, r_to);
 	if ( cnt > 0 )
 	    IntersectLineCircle(p_fm, jpp->ut_fm, center_to, r_to, &i, &i2);
@@ -1882,7 +1886,7 @@ static void ArcsJoin(JoinParams *jpp) {
 	    cnt = 1;
 	    i = ProjectPointOnLine(center_to, p_fm, jpp->ut_fm);
 	}
-    } else if ( K_to==0.0 ) {
+    } else if ( flat_to ) {
 	cnt = LineCircleTest(p_to, ut_to, center_fm, r_fm);
 	if ( cnt > 0 )
 	    IntersectLineCircle(p_to, ut_to, center_fm, r_fm, &i, &i2);
@@ -1930,7 +1934,7 @@ static void ArcsJoin(JoinParams *jpp) {
     // intersection points are behind the bevel line (which can happen
     // in certain unusual situations). Only the first difference applies
     // in the case of a circular nib.
-    if (   ( K_fm!=0 && r_fm<fsw_fm/2 ) || ( K_to!=0 && r_to<fsw_to/2 )
+    if (   ( !flat_fm && r_fm<fsw_fm/2 ) || ( !flat_to && r_to<fsw_to/2 )
         || !LineSameSide(p_fm, p_to, i, p_ref, false) ) {
 	// printf("Falling back to Round\n", r_fm, r_to);
 	RoundJoin(jpp, false);
@@ -2004,7 +2008,7 @@ static void ArcsJoin(JoinParams *jpp) {
 	}
     }
 
-    if ( K_fm==0 ) {
+    if ( flat_fm ) {
 	if ( clipped && !jpp->c->ratio_al ) {
 	    IntersectLinesSlopes(&ci_fm, &p_fm, &jpp->ut_fm, &p_cref, &ut_cref);
 	    if ( !LineSameSide(p_fm, p_to, ci_fm, p_ref, false) )
@@ -2031,7 +2035,7 @@ static void ArcsJoin(JoinParams *jpp) {
 	    SplineStrokeSimpleFixup(jpp->cur->last, ci_fm);
 	}
     }
-    if ( K_to==0 ) {
+    if ( flat_to ) {
 	if ( clipped ) {
 	    if ( !jpp->c->ratio_al ) {
 		IntersectLinesSlopes(&ci_to, &p_to, &ut_to, &p_cref, &ut_cref);
