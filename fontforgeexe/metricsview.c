@@ -3099,24 +3099,21 @@ static void MVMenuRenderUsingHinting(GWindow gw, struct gmenuitem *UNUSED(mi), G
     GDrawRequestExpose(mv->v,NULL,false);
 }
 
-static void MVWindowTitle(char *buffer, int bufsize, MetricsView *mv) {
-
-    snprintf(buffer,bufsize,
-	    mv->type == mv_kernonly ?  _("Kerning Metrics For %.50s") :
-	    mv->type == mv_widthonly ? _("Advance Width Metrics For %.50s") :
-	                               _("Metrics For %.50s"),
-		  mv->sf->fontname);
+static char* MVWindowTitle(MetricsView *mv) {
+    return smprintf(mv->type == mv_kernonly ?  _("Kerning Metrics For %.50s") :
+	                mv->type == mv_widthonly ? _("Advance Width Metrics For %.50s") :
+	                                           _("Metrics For %.50s"), mv->sf->fontname);
 }
 
 static void MVMenuWindowType(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    char buf[120];
 
     mv_type = mv->type = mi->mid==MID_KernOnly  ? mv_kernonly :
 			 mi->mid==MID_WidthOnly ? mv_widthonly :
 			 mv_kernwidth;
-    MVWindowTitle(buf, sizeof(buf), mv);
+    char* buf = MVWindowTitle(mv);
     GDrawSetWindowTitles8(mv->gw, buf, buf);
+    free(buf); // GGDKDrawSetWindowTitles8 does a copy
     GDrawRequestExpose(mv->v, NULL, false);
     GDrawRequestExpose(mv->gw, NULL, false);
 }
@@ -5188,7 +5185,6 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     unsigned int selectmax = fvmv_selectmax < 0 ? fv->b.sf->glyphcnt : fvmv_selectmax;
     char *buf = malloc(selectmax * MAXGLYPHNAME_LEN);
     char *pt;
-    char titlebuf[50+strlen(fv->b.sf->fontname)+1];
     GTextInfo label;
     int i,j,cnt;
     int as,ds,ld;
@@ -5217,13 +5213,14 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_icon;
     wattrs.event_masks = ~(0);
     wattrs.cursor = ct_mypointer;
-    MVWindowTitle(titlebuf,sizeof(titlebuf),mv);
+    char* titlebuf = MVWindowTitle(mv);
     wattrs.utf8_window_title = titlebuf;
     wattrs.icon = icon;
     pos.x = pos.y = 0;
     pos.width = mv_width;
     pos.height = mv_height;
     mv->gw = gw = GDrawCreateTopWindow(NULL,&pos,mv_e_h,mv,&wattrs);
+    free(titlebuf);
     mv->width = pos.width; mv->height = pos.height;
     mv->gwgic = GDrawCreateInputContext(mv->gw,gic_root|gic_orlesser);
     GDrawSetGIC(gw,mv->gwgic,0,20);
