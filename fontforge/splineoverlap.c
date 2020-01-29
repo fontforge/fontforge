@@ -3505,7 +3505,7 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 			else
 			    prev->next = ssnext;
 			base = NULL;
-	break;
+	goto bailout;
 		    }
 		    // We want to remove the spline following sp.
 		    // This requires that we rewrite the following spline so that it starts at sp,
@@ -3631,6 +3631,7 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 	    if ( refigure )
 		SplineRefigure(sp->next);
 	}
+      bailout:
 	if ( base!=NULL )
 	    prev = base;
 	base = ssnext;
