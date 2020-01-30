@@ -4085,7 +4085,6 @@ return( -1 );
 	    continue;
 	}
 	waschange = change;
-	++lines_processed;
 	for ( apt=active; apt!=NULL; apt = e) {
 	    if ( EISkipExtremum(apt,i+el.low,1)) {
 		e = apt->aenext->aenext;
@@ -4097,7 +4096,7 @@ return( -1 );
 		++l_ccw_cnt;
 	    if ( (cw_cnt + l_cw_cnt)!=0 && (ccw_cnt + l_ccw_cnt)!=0 ) {
 		((SplineSet *) spl)->next = next;
-return( -1 );
+		return( -1 );
 	    }
 	    winding = apt->up?1:-1;
 	    for ( pr=apt, e=apt->aenext; e!=NULL && winding!=0; pr=e, e=e->aenext ) {
@@ -4112,7 +4111,6 @@ return( -1 );
 			// think it is more likely this means a rounding error
 			// and a problem in my algorithm
 			l_cw_cnt = l_ccw_cnt = 0;
-			--lines_processed;
 			break;
 		    }
 		    winding += (e->up?1:-1);
@@ -4122,7 +4120,6 @@ return( -1 );
 		else {
 		    if ( (winding<=0 && !e->up) || (winding>0 && e->up )) {
 			l_cw_cnt = l_ccw_cnt = 0;
-			--lines_processed;
 			break;
 		    }
 		    winding += (e->up?1:-1);
@@ -4131,6 +4128,8 @@ return( -1 );
 	}
 	cw_cnt += l_cw_cnt;
 	ccw_cnt += l_ccw_cnt;
+	if ( l_cw_cnt!=0 || l_ccw_cnt!=0 )
+	    ++lines_processed;
     }
     free(el.ordered);
     free(el.ends);
@@ -4138,7 +4137,7 @@ return( -1 );
 
     ((SplineSet *) spl)->next = next;
 
-    if (    ((float) lines_processed / el.cnt) > .33 
+    if (    ( lines_processed > 4 && ((float) lines_processed / el.cnt) > .33 )
          || ( max_depth && lines_processed > 0 ) ) {
 	if ( cw_cnt!=0 && ccw_cnt==0 )
 	    return true;
