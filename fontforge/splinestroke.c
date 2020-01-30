@@ -1735,7 +1735,7 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
 		    left = SplineSetRemoveOverlap(NULL,left,over_remove);
 		    is_ccw_mid = SplinePointListIsClockwise(left);
 		    assert( is_ccw_mid!=-1 );
-		} else {
+		} else if ( is_ccw_mid==-1 ) {
 		    LogError( _("Warning: Can't identify contour direction, "
 		                "assuming clockwise\n") );
 		}
