@@ -173,6 +173,11 @@ enum stroke_rmov {
     srmov_contour = 1,
     srmov_none = 2
 };
+enum stroke_arclimit {
+    sal_auto = 0,
+    sal_svg2 = 1,
+    sal_ratio = 2
+};
 enum spreadMethod {
     sm_pad, sm_reflect, sm_repeat
 };
@@ -233,6 +238,7 @@ typedef struct strokeinfo {
     enum linecap cap;
     enum si_type stroke_type;
     enum stroke_rmov rmov;
+    enum stroke_arclimit al;
     // Could be bits but the python interface would be annoying
     int removeinternal, removeexternal, simplify, extrema;
     int leave_users_center, jlrelative, ecrelative;
@@ -2244,7 +2250,7 @@ extern extended SplineSolveFixup(const Spline1D *sp, real tmin, real tmax, exten
 /* Uses an iterative approximation and then tries to fix things up */
 
 
-#define CURVATURE_ERROR	-1e9
+#define CURVATURE_ERROR	INFINITY
 
 extern bigreal SplineLength(Spline *spline);
 extern int SplineIsLinear(Spline *spline);

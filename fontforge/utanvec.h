@@ -32,21 +32,80 @@
 
 #include "splinefont.h"
 
-#define BP_LENGTHSQ(v) (pow((v).x,2)+pow((v).y,2))
-#define BP_REV(v) (BasePoint) { -(v).x, -(v).y }
-#define BP_REV_IF(t, v) ((t) ? (BasePoint) { -(v).x, -(v).y } : (v))
-#define BP_ADD(v1, v2) (BasePoint) { (v1).x + (v2).x, (v1).y + (v2).y } 
-#define BP_SCALE(v, f) (BasePoint) { (f)*(v).x, (f)*(v).y } 
-#define BP_AVG(v1, v2) (BasePoint) { ((v1).x + (v2).x)/2, ((v1).y + (v2).y)/2 }
-#define BP_DOT(v1, v2) ( ((v1).x * (v2).x) + ((v1).y * (v2).y) )
-#define BP_UNINIT ((BasePoint) { -INFINITY, INFINITY })
-#define BP_IS_UNINIT(v) ((v).x==-INFINITY && (v).y==INFINITY)
-#define BP_ROT(v, ut) (BasePoint) { (ut).x * (v).x - (ut).y * (v).y, (ut).y * (v).x + (ut).x * (v).y }
+#include <math.h>
+
+#define BPUNINIT ((BasePoint) { -INFINITY, INFINITY })
 #define UTZERO ((BasePoint) { 0.0, 1.0 })
 #define UTMIN ((BasePoint) { -1, -DBL_MIN })
-#define UT_90CCW(v) (BasePoint) { -(v).y, (v).x }
-#define UT_90CW(v) (BasePoint) { (v).y, -(v).x }
-#define UT_NEG(v) (BasePoint) { (v).x, -(v).y }
+
+static inline bigreal BPLenSq(BasePoint v) {
+    return v.x * v.x + v.y * v.y;
+}
+
+static inline bigreal BPNorm(BasePoint v) {
+    return sqrt(v.x * v.x + v.y * v.y);
+}
+
+static inline bigreal BPDist(BasePoint p1, BasePoint p2) {
+    bigreal dx = p2.x - p1.x, dy = p2.y - p1.y;
+    return sqrt(dx * dx + dy * dy);
+}
+
+static inline BasePoint BPRev(BasePoint v) {
+    return (BasePoint) { -v.x, -v.y };
+}
+
+static inline BasePoint BPRevIf(int t, BasePoint v) {
+    return t ? (BasePoint) { -v.x, -v.y } : v;
+}
+
+static inline BasePoint BPAdd(BasePoint v1, BasePoint v2) {
+    return (BasePoint) { v1.x + v2.x, v1.y + v2.y };
+}
+
+static inline BasePoint BPSub(BasePoint v1, BasePoint v2) {
+    return (BasePoint) { v1.x - v2.x, v1.y - v2.y };
+}
+
+static inline BasePoint BPScale(BasePoint v, bigreal f) {
+    return (BasePoint) { f * v.x, f * v.y };
+}
+
+static inline BasePoint BPAvg(BasePoint v1, BasePoint v2) {
+    return (BasePoint) { (v1.x + v2.x) / 2, (v1.y + v2.y)/2 };
+}
+
+static inline bigreal BPDot(BasePoint v1, BasePoint v2) {
+    return v1.x * v2.x + v1.y * v2.y;
+}
+
+static inline bigreal BPCross(BasePoint v1, BasePoint v2) {
+    return v1.x * v2.y - v1.y * v2.x;
+}
+
+static inline int BPIsUninit(BasePoint bp) {
+    return bp.x == -INFINITY && bp.y == INFINITY;
+}
+
+static inline BasePoint BPRot(BasePoint v, BasePoint ut) {
+    return (BasePoint) { ut.x * v.x - ut.y * v.y, ut.y * v.x + ut.x * v.y };
+}
+
+static inline int BPEq(BasePoint bp1, BasePoint bp2) {
+    return bp1.x == bp2.x && bp1.y == bp2.y;
+}
+
+static inline BasePoint BP90CCW(BasePoint v) {
+    return (BasePoint) { -v.y, v.x };
+}
+
+static inline BasePoint BP90CW(BasePoint v) {
+    return (BasePoint) { v.y, -v.x };
+}
+
+static inline BasePoint BPNeg(BasePoint v) {
+    return (BasePoint) { v.x, -v.y };
+}
 
 extern BasePoint MakeUTanVec(bigreal x, bigreal y);
 extern BasePoint NormVec(BasePoint v);

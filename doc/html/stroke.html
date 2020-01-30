@@ -121,8 +121,8 @@ is to trim off the parts of the line past the intersection:
 <P> The offset lines at the larger "reflex" angle do not meet. The line closing
 the gap between those is called a "join".  PostScript specified three join
 styles: "Round", "Bevel" and "Miter". SVG 2.0 adds styles "Miter Clip" and
-"Arcs".  FontForge currently supports the five styles "Nib", "Bevel", "Round",
-"Miter", and "Miter Clip". (There are future plans to support the "Arcs" style.)
+"Arcs".  FontForge currently supports the six styles "Nib", "Bevel", "Round",
+"Miter", "Miter Clip", and "Arcs".
 
 <P> A PS/SVG "Bevel" join connects the two offset curves with a straight line,
 and this is also what FontForge's "Bevel" option does.  A PS/SVG "Miter" or SVG
@@ -134,7 +134,7 @@ nib; when using a round nib this is equivalent to the PS/SVG "Round" join
 option, which connects the offset lines with an arc of the offset radius. 
 FontForge's "Round" join option is also equivalent when using a circular nib:
 
-<figure><object data="stroke/joins.svg" type="image/svg+xml" width="90%" class="svgfig">Join Examples</object></figure>
+<figure><object data="stroke/joins.svg" type="image/svg+xml" width="100%" class="svgfig">Join Examples</object></figure>
 
 <P> The difference between Miter and Miter Clip is in how "long" joins are
 handled. The "Join Limit" parameter specifies the maximum "length" of a miter
@@ -154,7 +154,18 @@ such a join is clipped at the join limit by a line parallel to the Bevel line:
 a Miter join is <em>never</em> shortened past the Bevel line, which therefore
 restricts the minimum length of a given join.
 
-<P> (The "Arcs" join style will be documented when it is implemented.)
+<P> Like Miter Clip, the "Arcs" join style matches the position and tangent
+angles at each offset curve endpoint, but the curve is extended with a circular
+arc of matching curvature rather than a line. (In some cases the curvature
+of the extensions must be adjusted to ensure they intersect, in which case
+the curvatures at the endpoints will not be continuous.) This style
+is based on the SVG 2 join of the same name and should have close to the
+same geometry when used with a circular nib. (Arcs joins are not yet
+widely supported in browsers or other SVG tools and there are some 
+ambiguities in the specification.) 
+
+<P> Note that Arcs joins exceeding the Join Limit are clipped in a way 
+similar to those of the Miter Clip style.
 
 <H2 id="nibs">Calligraphic and Other Convex Nibs</H2>
 
@@ -189,7 +200,7 @@ can design a nib as a quadratic contour, you must switch the layer to "Cubic"
 before applying Expand Stroke. (Or, in the API, you must convert the contour or
 layer prior to calling the <CODE>stroke</CODE> method or
 <CODE>ExpandStroke</CODE> function.) In contrast, when using a Spiro nib on a
-Cubic layer it is not nececessary to switch into Bezier mode. However, it can
+Cubic layer it is not necessary to switch into Bezier mode. However, it can
 still be a good idea to do so to better understand any reported errors. 
 
 <P> There are actually two groups of rules.  The first group restrict the
@@ -296,6 +307,12 @@ to scale with the stroke width at the join or cap.
 
 <figure><object data="stroke/extendcapdiff.svg" type="image/svg+xml" width="90%" class="svgfig">Relative and Length-based Extend Cap with Custom Nibs</object></figure>
 
+<P> Unclipped, the Arcs join style should work the same way for other nibs
+as it does with circular nibs. However, with shorter Join Limits (less than
+4 in relative units) and more oblong nibs the SVG 2 clipping algorithm may
+fail. The <A HREF="#arcsclip">Arcs Clip Parameter</A> section has more 
+information.
+
 <H3>Multi-Nibs and "Pseudo-Concavity"</H3>
 
 <P> Although a nib will typically consist of a single convex contour,
@@ -345,28 +362,28 @@ output without having to wait for a software fix.)
 
 <figure><object data="stroke/removeoverlap.svg" type="image/svg+xml" width="80%" class="svgfig">Outputs with Different Remove Overlap Settings</object></figure>
 
-<H3>Remove Internal and Remove External</H3>
+<H3>External Only and Internal Only</H3>
 
 <P> As noted above a closed source contour will typically yield a larger
-contour enclosing a smaller one. The Remove Internal and Remove External
+contour enclosing a smaller one. The External Only and Internal Only
 options allow the user to choose one of the two contours produced in this way.
 However, the options names are somewhat misleading. They are accurate in the
-case of a <em>clockwise source</em> contour: when Remove Internal is checked
-only the larger, outer, clockwise contour is returned while when Remove Internal
-is checked only the smaller, inner, counterclockwise contour is returned. When
-tracing a <em>counterclockwise source</em> contour, the two options have the
-opposite effect.
+case of a <em>clockwise source</em> contour: when External Only is chosen
+only the larger, outer, clockwise contour is returned while when Internal Only
+is chosen only the smaller, inner, counterclockwise contour is returned. When
+tracing a <em>counterclockwise source</em> contour, however, the two options 
+have the opposite effect.
 
-<P> As a result, when offsetting a typical "o" (for example), choosing Remove
-Internal will keep the larger clockwise counterpart of the glyph's larger
+<P> As a result, when offsetting a typical "o" (for example), choosing External
+Only will keep the larger clockwise counterpart of the glyph's larger
 clockwise contour and the smaller counterclockwise counterpart of the glyph's
 smaller counterclockwise contour. This increases the "weight" of the character
-by <em>2r</em>—the diameter of the nib. Choosing Remove External analogously
+by <em>2r</em>—the diameter of the nib. Choosing Internal Only analogously
 decreases the weight by <em>2r</em>, assuming it is thicker than that at all
 points. (FontForge's Change Weight facility uses Expand Stroke with these
 options.)
 
-<figure><object data="stroke/intext.svg" type="image/svg+xml" width="80%" class="svgfig">Example of Remove Internal and Remove External</object></figure>
+<figure><object data="stroke/intext.svg" type="image/svg+xml" width="80%" class="svgfig">Example of External Only and External Only</object></figure>
 
 <H3>Add Extrema and Simplify</H3>
 
@@ -378,6 +395,23 @@ changing these options. One reason to do this is if you prefer a different
 choice of Simplify parameters. Expand Stroke uses the Accuracy Target as the
 Simplify error parameter, but the other parameters are hard-coded and may
 change over time.
+
+<H3 id="arcsclip">Arcs Clip Algorithm</H3>
+
+<P> The SVG 2 specification clips an Arcs join perpendicular to a circle
+through the source contour knot (where the angle changes, requiring the join)
+and the intersection of the arcs. This approach works well for roughly-round
+nibs at any Join Limit and for any nibs at longer Join Limits. Unfortunately
+it can produce poor or nonsensical results for oblong nibs at shorter Join
+Limits. To handle such cases FontForge includes an alternate "Ratio" Arcs
+join clipping algorithm. 
+
+<P> The default "Auto" setting uses the SVG 2 algorithm unless the ratio of
+maximum to minimum axis for a circular or calligraphic nib is greater than 
+2 and the Join Limit is relative to Nib Span and less than 4, in which case
+it uses the Ratio algorithm. (With a custom convex nib it uses Ratio when
+the Join Limit is relative and less than 4 regardless of nib dimension.) 
+This heuristic works in many cases but is not foolproof. 
 
 </DIV>
 </BODY>

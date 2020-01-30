@@ -35,7 +35,7 @@
 #include <assert.h>
 
 #define UTMARGIN (1e-8)
-#define BPNEAR(bp1, bp2) BPWITHIN(bp1, bp2, UTMARGIN)
+#define BPNEAR(bp1, bp2) BPWithin(bp1, bp2, UTMARGIN)
 #define UTRETRY (UTMARGIN/10.0)
 
 BasePoint MakeUTanVec(bigreal x, bigreal y) {
@@ -57,8 +57,8 @@ BasePoint NormVec(BasePoint v) {
  * equivalent basis
  */
 int UTanVecGreater(BasePoint uta, BasePoint utb) {
-    assert(    RealNear(BP_LENGTHSQ(uta),1)
-            && RealNear(BP_LENGTHSQ(utb),1) );
+    assert(    RealNear(BPLenSq(uta),1)
+            && RealNear(BPLenSq(utb),1) );
 
     if (uta.y >= 0) {
 	if (utb.y < 0)
@@ -119,10 +119,10 @@ BasePoint SplineUTanVecAt(Spline *s, bigreal t) {
 	// slope will be undefined at that end, so walk back a bit for
 	// consistency
 	if (   RealWithin(t, 0, UTRETRY)
-	    && BPWITHIN(s->from->me, s->from->nextcp, 1e-13) )
+	    && BPWithin(s->from->me, s->from->nextcp, 1e-13) )
 	    t = UTRETRY;
 	else if (   RealWithin(t, 1, UTRETRY)
-	    && BPWITHIN(s->to->me, s->to->prevcp, 1e-13) )
+	    && BPWithin(s->to->me, s->to->prevcp, 1e-13) )
 	    t = 1-UTRETRY;
 	raw = SPLINEPTANVAL(s, t);
 	// For missing slopes take a very small step away and try again.

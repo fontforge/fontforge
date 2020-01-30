@@ -2844,9 +2844,9 @@ must be created through the font.
 	 <DT> <CODE>jlrelative</CODE> (boolean, default=True)
 	 <DD> See below.
 	 <DT> <CODE>joinlimit</CODE> (float, default=20)
-	 <DD> Specifies the maximum length of a "miter" or "miterclip"<!--, or "arcs"-->
+	 <DD> Specifies the maximum length of a "miter", "miterclip", or "arcs"
 	join. For "miter" joins that would be longer will fall back to "bevel".
-	With "miterclip"<!-- and "arcs"--> a longer join will be trimmed to the specified
+	With "miterclip" and "arcs" a longer join will be trimmed to the specified
 	length. Note, however, that no join is trimmed past the "bevel line" and
 	therefore lower values do not guarantee a given length.<BR><BR>
 	When <CODE>jlrelative</CODE> is false the value is interpreted as a length
@@ -2865,6 +2865,15 @@ must be created through the font.
 	in em-units. Otherwise the value is interpreted as a multiple of
 	"half-stroke-widths": half the span of the stroked path given the angle at
 	the cap point.
+	 <DT> <CODE>arcsclip</CODE> (string, default="auto")
+	 <DD> When using the "arcs" join style this parameter influences the
+	 algorithm used to clip joins that exceed the <CODE>joinlimit</CODE>.
+	 The value "svg2" specifies the standard SVG algorithm while the 
+	 value "ratio" specifies an alternative algorithm that works better
+	 for longer and thinner nibs at shorter limits. The default value
+	 "auto" chooses the "ratio" algorithm for oblong elliptical and 
+	 calligraphic nibs and <CODE>jlrelative joinlimit</CODE> < 4 and 
+	 the "svg2" algorithm otherwise.
 	</DL>
 	In the legacy interface <CODE>FLAGS</CODE> is an optional
 	tuple containing zero or more of the strings "removeinternal",

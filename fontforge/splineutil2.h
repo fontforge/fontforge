@@ -84,4 +84,8 @@ extern void SPWeightedAverageCps(SplinePoint *sp);
 extern void SSOverlapClusterCpAngles(SplineSet *base, bigreal within);
 extern void SSRemoveStupidControlPoints(SplineSet *base);
 
+static inline int BPWithin(BasePoint bp1, BasePoint bp2, bigreal f) {
+	    return RealWithin(bp1.x, bp2.x, f) && RealWithin(bp1.y, bp2.y, f);
+}
+
 #endif /* FONTFORGE_SPLINEUTIL2_H */

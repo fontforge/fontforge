@@ -69,7 +69,6 @@ extern const int input_em_cnt;
 #define CID_Nib		1023
 #define CID_WidthTxt	1024
 #define CID_TopBox	1025
-#define CID_CapExtend	1026
 #define CID_RmOvContour	1027
 #define CID_RmOvNone	1028
 #define CID_Simplify	1029
@@ -80,17 +79,21 @@ extern const int input_em_cnt;
 #define CID_ExtendCapVal 1034
 #define CID_ExtendCapLen 1035
 #define CID_ExtendCapRel 1036
-#define CID_ExtendCapTxt 1036
+#define CID_ExtendCapTxt 1037
 #define CID_AccTar       1038
 #define CID_RoundJoin	1039
+#define CID_AlText	1040
+#define CID_AlAuto	1041
+#define CID_AlSVG2	1042
+#define CID_AlRatio	1043
 
 	/* For freehand */
-#define CID_CenterLine	1040
+#define CID_CenterLine	1050
 
 /* Used in other structures and tools */
-#define CID_SquareCap	1041
-#define CID_LineJoinTxt 1043
-#define CID_LineCapTxt  1044
+#define CID_SquareCap	1051
+#define CID_LineJoinTxt 1053
+#define CID_LineCapTxt  1054
 
 static void CVStrokeIt(void *_cv, StrokeInfo *si, int justapply) {
     CharView *cv = _cv;
@@ -217,6 +220,9 @@ static int _Stroke_OK(StrokeDlg *sd,int isapply) {
     si->rmov = GGadgetIsChecked( GWidgetGetControl(sw,CID_RmOvNone))?srmov_none:
                GGadgetIsChecked( GWidgetGetControl(sw,CID_RmOvContour))?srmov_contour:
                srmov_layer;
+    si->al = GGadgetIsChecked( GWidgetGetControl(sw,CID_AlSVG2))?sal_svg2:
+               GGadgetIsChecked( GWidgetGetControl(sw,CID_AlRatio))?sal_ratio:
+               sal_auto;
     si->removeinternal = GGadgetIsChecked( GWidgetGetControl(sw,CID_RmInternal));
     si->removeexternal = GGadgetIsChecked( GWidgetGetControl(sw,CID_RmExternal));
     si->simplify = GGadgetIsChecked( GWidgetGetControl(sw,CID_Simplify));
@@ -313,8 +319,6 @@ static void StrokeSetup(StrokeDlg *sd, enum si_type stroke_type) {
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_Width       ), stroke_type==si_round || stroke_type==si_calligraphic);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_MinorAxisTxt), stroke_type==si_round || stroke_type==si_calligraphic);
     GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_MinorAxis   ), stroke_type==si_round || stroke_type==si_calligraphic);
-
-//    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_JoinLimitTxt), stroke_type==si_round || stroke_type==si_calligraphic);
 }
 
 static int Stroke_TextChanged(GGadget *g, GEvent *e) {
@@ -357,6 +361,64 @@ static int Stroke_Convex(GGadget *g, GEvent *e) {
 	StrokeDlg *sd = (StrokeDlg *) ((CharViewBase *) GDrawGetUserData(GGadgetGetWindow(g)))->container;
 	StrokeSetup(sd,si_nib);
 	Stroke_ShowNib(sd);
+    }
+return( true );
+}
+
+static void JoinSetup(StrokeDlg *sd, int type) {
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_JoinLimitTxt ), type>0);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_JoinLimitVal ), type>0);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_JoinLimitLen ), type>0);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_JoinLimitRel ), type>0);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_AlText       ), type==2);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_AlAuto       ), type==2);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_AlSVG2       ), type==2);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_AlRatio      ), type==2);
+}
+
+static int Join_Arcs(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	StrokeDlg *sd = (StrokeDlg *) ((CharViewBase *) GDrawGetUserData(GGadgetGetWindow(g)))->container;
+	JoinSetup(sd,2);
+    }
+return( true );
+}
+
+static int Join_Miter(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	StrokeDlg *sd = (StrokeDlg *) ((CharViewBase *) GDrawGetUserData(GGadgetGetWindow(g)))->container;
+	JoinSetup(sd,1);
+    }
+return( true );
+}
+
+static int Join_Other(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	StrokeDlg *sd = (StrokeDlg *) ((CharViewBase *) GDrawGetUserData(GGadgetGetWindow(g)))->container;
+	JoinSetup(sd,0);
+    }
+return( true );
+}
+
+static void ExtendSetup(StrokeDlg *sd, int enabled) {
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_ExtendCapTxt ), enabled);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_ExtendCapVal ), enabled);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_ExtendCapLen ), enabled);
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_ExtendCapRel ), enabled);
+}
+
+static int Cap_Extendable(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	StrokeDlg *sd = (StrokeDlg *) ((CharViewBase *) GDrawGetUserData(GGadgetGetWindow(g)))->container;
+	ExtendSetup(sd,1);
+    }
+return( true );
+}
+
+static int Cap_Other(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	StrokeDlg *sd = (StrokeDlg *) ((CharViewBase *) GDrawGetUserData(GGadgetGetWindow(g)))->container;
+	ExtendSetup(sd,0);
     }
 return( true );
 }
@@ -569,10 +631,10 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
     GWindow gw;
     GWindowAttrs wattrs;
     SplineSet *nib_bk = NULL;
-    GGadgetCreateData gcd[51], boxes[7], *buttons[13], *mainarray[11][2],
-	    *overlaparray[10], *split[13][6], *checkarray[3][4],
+    GGadgetCreateData gcd[54], boxes[7], *buttons[13], *mainarray[11][2],
+	    *radoptarray[4][9], *split[13][6], *checkarray[5],
 	    *jlexarray[3][8];
-    GTextInfo label[51];
+    GTextInfo label[54];
     int i, gcdoff, mi, sp, tfpos[6];
     char anglebuf[20], ecbuf[20], jlbuf[20], accbuf[20];
     char widthbuf[20], axisbuf[20];
@@ -611,6 +673,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	memset(&boxes,0,sizeof(boxes));
 	memset(&split,0,sizeof(split));
 	memset(&jlexarray,0,sizeof(jlexarray));
+	memset(&radoptarray,0,sizeof(radoptarray));
 	gcdoff = mi = sp = 0;
 
 	gcd[gcdoff].gd.flags = gg_visible|gg_enabled ;		/* This space is for the menubar */
@@ -781,6 +844,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (si->cap==lc_nib?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_NibCap;
+	gcd[gcdoff].gd.handle_controlevent = Cap_Other;
 	gcd[gcdoff++].creator = GRadioCreate;
 	split[sp][3] = &gcd[gcdoff-1]; 
 
@@ -793,6 +857,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (si->cap==lc_butt?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_ButtCap;
+	gcd[gcdoff].gd.handle_controlevent = Cap_Extendable;
 	gcd[gcdoff++].creator = GRadioCreate;
 	split[sp][4] = &gcd[gcdoff-1]; 
 	split[sp++][5] = NULL;
@@ -805,6 +870,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (si->cap==lc_round?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_RoundCap;
+	gcd[gcdoff].gd.handle_controlevent = Cap_Extendable;
 	gcd[gcdoff++].creator = GRadioCreate;
 	split[sp][0] = GCD_RowSpan;
 	split[sp][1] = GCD_HPad10; split[sp][2] = GCD_Glue;
@@ -817,6 +883,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (si->cap==lc_bevel?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_BevelCap;
+	gcd[gcdoff].gd.handle_controlevent = Cap_Other;
 	gcd[gcdoff++].creator = GRadioCreate;
 	split[sp][4] = &gcd[gcdoff-1]; 
 	split[sp++][5] = NULL;
@@ -836,6 +903,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (si->join==lj_nib?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_NibJoin;
+	gcd[gcdoff].gd.handle_controlevent = Join_Other;
 	gcd[gcdoff++].creator = GRadioCreate;
 	split[sp][3] = &gcd[gcdoff-1]; 
 
@@ -846,6 +914,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (si->join==lj_bevel?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_BevelJoin;
+	gcd[gcdoff].gd.handle_controlevent = Join_Other;
 	gcd[gcdoff++].creator = GRadioCreate;
 	split[sp][4] = &gcd[gcdoff-1]; 
 	split[sp++][5] = NULL;
@@ -856,6 +925,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.flags = gg_visible | gg_enabled | (si->join==lj_round?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_RoundJoin;
+	gcd[gcdoff].gd.handle_controlevent = Join_Other;
 	gcd[gcdoff++].creator = GRadioCreate;
 	split[sp][0] = GCD_RowSpan;
 	split[sp][1] = GCD_HPad10; split[sp][2] = GCD_Glue;
@@ -865,8 +935,9 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.label = &label[gcdoff];
-	gcd[gcdoff].gd.flags = gg_visible; // | gg_enabled | (si->join==lj_arcs?gg_cb_on:0);
+	gcd[gcdoff].gd.flags = gg_visible | gg_enabled | (si->join==lj_arcs?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_ArcsJoin;
+	gcd[gcdoff].gd.handle_controlevent = Join_Arcs;
 	gcd[gcdoff++].creator = GRadioCreate;
 	split[sp][4] = &gcd[gcdoff-1]; 
 	split[sp++][5] = NULL;
@@ -878,6 +949,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (si->join==lj_miter?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_MiterJoin;
+	gcd[gcdoff].gd.handle_controlevent = Join_Miter;
 	gcd[gcdoff++].creator = GRadioCreate;
 	split[sp][0] = GCD_RowSpan;
 	split[sp][1] = GCD_HPad10; split[sp][2] = GCD_Glue;
@@ -889,6 +961,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (si->join==lj_miterclip?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_MiterClipJoin;
+	gcd[gcdoff].gd.handle_controlevent = Join_Miter;
 	gcd[gcdoff++].creator = GRadioCreate;
 	split[sp][4] = &gcd[gcdoff-1]; 
 	split[sp++][5] = NULL;
@@ -1023,7 +1096,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
 	gcd[gcdoff++].creator = GLabelCreate;
-	overlaparray[0] = &gcd[gcdoff-1]; overlaparray[1] = GCD_Glue;
+	radoptarray[0][0] = &gcd[gcdoff-1]; radoptarray[0][1] = GCD_Glue;
 
 	label[gcdoff].text = (unichar_t *) _("By La_yer");
 	label[gcdoff].text_is_1byte = true;
@@ -1032,7 +1105,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (si->rmov==srmov_layer?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_RmOvLayer;
 	gcd[gcdoff++].creator = GRadioCreate;
-	overlaparray[2] = &gcd[gcdoff-1]; overlaparray[3] = GCD_Glue;
+	radoptarray[0][2] = &gcd[gcdoff-1]; radoptarray[0][3] = GCD_Glue;
 
 	label[gcdoff].text = (unichar_t *) _("By Con_tour");
 	label[gcdoff].text_is_1byte = true;
@@ -1041,7 +1114,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (si->rmov==srmov_contour?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_RmOvContour;
 	gcd[gcdoff++].creator = GRadioCreate;
-	overlaparray[4] = &gcd[gcdoff-1]; overlaparray[5] = GCD_Glue;
+	radoptarray[0][4] = &gcd[gcdoff-1]; radoptarray[0][5] = GCD_Glue;
 
 	label[gcdoff].text = (unichar_t *) _("N_one (Debug)");
 	label[gcdoff].text_is_1byte = true;
@@ -1050,32 +1123,85 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (si->rmov==srmov_none?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_RmOvNone;
 	gcd[gcdoff++].creator = GRadioCreate;
-	overlaparray[6] = &gcd[gcdoff-1]; overlaparray[7] = GCD_Glue;
-	overlaparray[8] = overlaparray[9] = NULL;
+	radoptarray[0][6] = &gcd[gcdoff-1]; radoptarray[0][7] = GCD_Glue;
+	radoptarray[0][8] = NULL;
 
-	boxes[4].gd.flags = gg_enabled|gg_visible;
-	boxes[4].gd.u.boxelements = overlaparray;
-	boxes[4].creator = GHBoxCreate;
-	mainarray[mi][0] = &boxes[4]; mainarray[mi++][1] = NULL;
+	label[gcdoff].text = (unichar_t *) _("Contours (from closed):");
+	label[gcdoff].text_is_1byte = true;
+	label[gcdoff].text_in_resource = true;
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+	gcd[gcdoff++].creator = GLabelCreate;
+	radoptarray[1][0] = &gcd[gcdoff-1]; radoptarray[1][1] = GCD_Glue;
 
-	label[gcdoff].text = (unichar_t *) _("Remove _Internal Contour");
+	label[gcdoff].text = (unichar_t *) _("Both");
+	label[gcdoff].text_is_1byte = true;
+	label[gcdoff].text_in_resource = true;
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | ((!si->removeinternal && !si->removeexternal)?gg_cb_on:0);
+	gcd[gcdoff++].creator = GRadioCreate;
+	radoptarray[1][2] = &gcd[gcdoff-1]; radoptarray[1][3] = GCD_Glue;
+
+	label[gcdoff].text = (unichar_t *) _("External Only");
 	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (si->removeinternal?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_RmInternal;
-	gcd[gcdoff++].creator = GCheckBoxCreate;
-	checkarray[0][0] = &gcd[gcdoff-1]; 
+	gcd[gcdoff++].creator = GRadioCreate;
+	radoptarray[1][4] = &gcd[gcdoff-1]; radoptarray[1][5] = GCD_Glue;
 
-	label[gcdoff].text = (unichar_t *) _("Remove Exte_rnal Contour");
+	label[gcdoff].text = (unichar_t *) _("Internal Only");
 	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (si->removeexternal?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_RmExternal;
-	gcd[gcdoff++].creator = GCheckBoxCreate;
-	checkarray[0][1] = &gcd[gcdoff-1]; checkarray[0][2] = GCD_Glue;
-	checkarray[0][3] = NULL;
+	gcd[gcdoff++].creator = GRadioCreate;
+	radoptarray[1][6] = &gcd[gcdoff-1]; radoptarray[1][7] = GCD_Glue;
+	radoptarray[1][8] = NULL;
+
+	label[gcdoff].text = (unichar_t *) _("Arcs Clip:");
+	label[gcdoff].text_is_1byte = true;
+	label[gcdoff].text_in_resource = true;
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+	gcd[gcdoff].gd.cid = CID_AlText;
+	gcd[gcdoff++].creator = GLabelCreate;
+	radoptarray[2][0] = &gcd[gcdoff-1]; radoptarray[2][1] = GCD_Glue;
+
+	label[gcdoff].text = (unichar_t *) _("Auto");
+	label[gcdoff].text_is_1byte = true;
+	label[gcdoff].text_in_resource = true;
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (si->al==sal_auto?gg_cb_on:0);
+	gcd[gcdoff].gd.cid = CID_AlAuto;
+	gcd[gcdoff++].creator = GRadioCreate;
+	radoptarray[2][2] = &gcd[gcdoff-1]; radoptarray[2][3] = GCD_Glue;
+
+	label[gcdoff].text = (unichar_t *) _("SVG 2");
+	label[gcdoff].text_is_1byte = true;
+	label[gcdoff].text_in_resource = true;
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (si->al==sal_svg2?gg_cb_on:0);
+	gcd[gcdoff].gd.cid = CID_AlSVG2;
+	gcd[gcdoff++].creator = GRadioCreate;
+	radoptarray[2][4] = &gcd[gcdoff-1]; radoptarray[2][5] = GCD_Glue;
+
+	label[gcdoff].text = (unichar_t *) _("Ratio");
+	label[gcdoff].text_is_1byte = true;
+	label[gcdoff].text_in_resource = true;
+	gcd[gcdoff].gd.label = &label[gcdoff];
+	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (si->al==sal_ratio?gg_cb_on:0);
+	gcd[gcdoff].gd.cid = CID_AlRatio;
+	gcd[gcdoff++].creator = GRadioCreate;
+	radoptarray[2][6] = &gcd[gcdoff-1]; radoptarray[2][7] = GCD_Glue;
+	radoptarray[2][8] = NULL; radoptarray[3][0] = NULL;
+
+	boxes[4].gd.flags = gg_enabled|gg_visible;
+	boxes[4].gd.u.boxelements = radoptarray[0];
+	boxes[4].creator = GHVBoxCreate;
+	mainarray[mi][0] = &boxes[4]; mainarray[mi++][1] = NULL;
 
 	label[gcdoff].text = (unichar_t *) _("S_implify");
 	label[gcdoff].text_is_1byte = true;
@@ -1084,7 +1210,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (si->simplify?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_Simplify;
 	gcd[gcdoff++].creator = GCheckBoxCreate;
-	checkarray[1][0] = &gcd[gcdoff-1];
+	checkarray[0] = &gcd[gcdoff-1]; checkarray[1] = GCD_Glue;
 
 	label[gcdoff].text = (unichar_t *) _("A_dd Extrema");
 	label[gcdoff].text_is_1byte = true;
@@ -1093,12 +1219,12 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (si->extrema?gg_cb_on:0);
 	gcd[gcdoff].gd.cid = CID_Extrema;
 	gcd[gcdoff++].creator = GCheckBoxCreate;
-	checkarray[1][1] = &gcd[gcdoff-1]; checkarray[1][2] = GCD_Glue;
-	checkarray[1][3] = checkarray[2][0] = NULL;
+	checkarray[2] = &gcd[gcdoff-1]; checkarray[3] = GCD_Glue;
+	checkarray[4] = NULL;
 
 	boxes[5].gd.flags = gg_enabled|gg_visible;
-	boxes[5].gd.u.boxelements = checkarray[0];
-	boxes[5].creator = GHVBoxCreate;
+	boxes[5].gd.u.boxelements = checkarray;
+	boxes[5].creator = GHBoxCreate;
 	mainarray[mi][0] = &boxes[5]; mainarray[mi++][1] = NULL;
 
 	gcd[gcdoff].gd.flags = gg_visible | gg_enabled | gg_but_default;
@@ -1170,6 +1296,8 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
     GWidgetIndicateFocusGadget(GWidgetGetControl(sd.gw,CID_Width));
 
     StrokeSetup(&sd,si->stroke_type);
+    JoinSetup(&sd,si->join==lj_arcs?2:((si->join==lj_miterclip||si->join==lj_miter)?1:0));
+    ExtendSetup(&sd,si->cap==lc_butt||si->cap==lc_round);
 
     GGadgetSetVisible(GWidgetGetControl(sd.gw,CID_Apply), apply);
     GWidgetToDesiredSize(sd.gw);
