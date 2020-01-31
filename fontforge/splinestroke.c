@@ -45,6 +45,7 @@
 #include <math.h>
 
 #define CIRCOFF 0.551915
+#define LOG_MAXDIM_ADJ (1.302585)
 
 // Rounding makes even slope-continuous splines only approximately so.
 #define INTERSPLINE_MARGIN (1e-1)
@@ -54,7 +55,6 @@
 // About .25 degrees
 #define COS_MARGIN (1e-5)
 #define MIN_ACCURACY (1e-5)
-#define LN_10 (2.302585)
 
 static inline bigreal NormAngle(bigreal a) {
     if ( a > FF_PI )
@@ -2590,7 +2590,7 @@ SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
     }
     // Increases at the rate of the natural log, but with the "1 point" set
     // to radius 10
-    c.log_maxdim = fmax(1.0, log(fmax(maxdim, mr))-LN_10);
+    c.log_maxdim = fmax(1.0, log(fmax(maxdim, mr))-LOG_MAXDIM_ADJ);
 
     SplinePointListTransformExtended(nibs,trans,tpt_AllPoints,
 	                             tpmask_dontTrimValues);
