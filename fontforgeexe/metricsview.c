@@ -5263,6 +5263,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     mv->fh = as+ds; mv->as = as;
 
     pt = buf;
+    // +1 because mv->chars is 0 terminated
     mv->chars = calloc(mv->cmax=selectmax+1,sizeof(SplineChar *));
     if ( sc!=NULL ) {
 	mv->chars[mv->clen++] = sc;
