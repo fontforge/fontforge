@@ -5180,10 +5180,11 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     FontRequest rq;
     static GWindow icon = NULL;
     extern int _GScrollBar_Width;
-    // The maximum length of a glyph's name is 31 chars.
+    // The maximum length of a glyph's name is 31 chars:
+    // https://docs.microsoft.com/en-us/typography/opentype/spec/recom#post-table
 #define MAXGLYPHNAME_LEN 31
     unsigned int selectmax = fvmv_selectmax < 0 ? fv->b.sf->glyphcnt : fvmv_selectmax;
-    char *buf = malloc(selectmax * MAXGLYPHNAME_LEN);
+    char *buf = malloc(selectmax * (MAXGLYPHNAME_LEN + 1) + 1);
     char *pt;
     GTextInfo label;
     int i,j,cnt;
