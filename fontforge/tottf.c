@@ -2466,7 +2466,7 @@ static int dumpcffhmtx(struct alltabs *at,SplineFont *sf,int bitmaps) {
 	sc = sf->glyphs[at->gi.bygid[i]];
 	if ( SCWorthOutputting(sc) ) {
 	    if ( i<=at->gi.lasthwidth )
-		putshort(at->gi.hmtx,sc->width);
+		putshort(at->gi.hmtx, sc->width<0 ? 0 : sc->width);
 	    SplineCharLayerFindBounds(sc,at->gi.layer,&b);
 	    putshort(at->gi.hmtx,b.minx);
 	    if ( dovmetrics ) {
