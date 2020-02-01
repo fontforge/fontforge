@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="763" height="530" version="1.1" viewBox="0 0 763 530" xml:space="preserve"
+  xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#"
+  xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+    <g transform="matrix(1.3333333,0,0,1.3333333,0,1.325e-5)">
+    <path d="m115.719 15.105h113.121" fill="none" stroke="#00708f" stroke-width=".75" />
+    <path d="m222.84 9.105 12 12" stroke="#00708f" stroke-width=".75" />
+    <path d="m222.84 21.105 12-12" stroke="#00708f" stroke-width=".75" />
+    <path d="m420.355 47.797-90.187-23.231" stroke="#c0c" stroke-width=".75" />
+    <path d="m324.168 18.566 12 12" stroke="#c0c" stroke-width=".75" />
+    <path d="m324.168 30.566 12-12" stroke="#c0c" stroke-width=".75" />
+    <path d="m420.355 47.797 70.071 18.047" stroke="#00708f" stroke-width=".75" />
+    <path d="m484.426 59.844 12 12" stroke="#00708f" stroke-width=".75" />
+    <path d="m484.426 71.844 12-12" stroke="#00708f" stroke-width=".75" />
+    <path d="m557.609 213.91v-87.582" fill="none" stroke="#c0c" stroke-width=".75" />
+    <path d="m551.609 120.328 12 12" stroke="#c0c" stroke-width=".75" />
+    <path d="m551.609 132.328 12-12" stroke="#c0c" stroke-width=".75" />
+    <path d="m557.609 213.91v47.168" fill="none" stroke="#00708f" stroke-width=".75" />
+    <path d="m551.609 255.078 12 12" stroke="#00708f" stroke-width=".75" />
+    <path d="m551.609 267.078 12-12" stroke="#00708f" stroke-width=".75" />
+    <path d="m502.055 335.707 33.578-30.269" stroke="#c0c" stroke-width=".75" />
+    <path d="m529.633 299.438 12 12" stroke="#c0c" stroke-width=".75" />
+    <path d="m529.633 311.438 12-12" stroke="#c0c" stroke-width=".75" />
+    <path d="m502.055 335.707-26.535 23.93" stroke="#00708f" stroke-width=".75" />
+    <path d="m469.52 353.637 12 12" stroke="#00708f" stroke-width=".75" />
+    <path d="m469.52 365.637 12-12" stroke="#00708f" stroke-width=".75" />
+    <path d="m411.461 382.676 32.687-8.453" stroke="#c0c" stroke-width=".75" />
+    <path d="m438.148 368.223 12 12" stroke="#c0c" stroke-width=".75" />
+    <path d="m438.148 380.223 12-12" stroke="#c0c" stroke-width=".75" />
+    <path d="m364.145 265.707-64.793-16.691" stroke="#00708f" stroke-width=".75" />
+    <path d="m293.352 243.016 12 12" stroke="#00708f" stroke-width=".75" />
+    <path d="m293.352 255.016 12-12" stroke="#00708f" stroke-width=".75" />
+    <path d="m115.719 240.105h100.035" fill="none" stroke="#c0c" stroke-width=".75" />
+    <path d="m209.754 234.105 12 12" stroke="#c0c" stroke-width=".75" />
+    <path d="m209.754 246.105 12-12" stroke="#c0c" stroke-width=".75" />
+    <path d="m115.719 240.105h-28.766" fill="none" stroke="#00708f" stroke-width=".75" />
+    <path d="m80.953 234.105 12 12" stroke="#00708f" stroke-width=".75" />
+    <path d="m80.953 246.105 12-12" stroke="#00708f" stroke-width=".75" />
+    <path d="m25.375 242.234 31.441-1.414" stroke="#c0c" stroke-width=".75" />
+    <path d="m50.816 234.82 12 12" stroke="#c0c" stroke-width=".75" />
+    <path d="m50.816 246.82 12-12" stroke="#c0c" stroke-width=".75" />
+    <path d="m15.125 17.465 34.512-1.551" stroke="#00708f" stroke-width=".75" />
+    <path d="m43.637 9.914 12 12" stroke="#00708f" stroke-width=".75" />
+    <path d="m43.637 21.914 12-12" stroke="#00708f" stroke-width=".75" />
+    <path d="m115.719 15.105h-32.559" fill="none" stroke="#c0c" stroke-width=".75" />
+    <path d="m77.16 9.105 12 12" stroke="#c0c" stroke-width=".75" />
+    <path d="m77.16 21.105 12-12" stroke="#c0c" stroke-width=".75" />
+    <path
+      d="m120.969 15.105c0 2.899-2.352 5.25-5.25 5.25-2.899 0-5.25-2.351-5.25-5.25 0-2.898 2.351-5.25 5.25-5.25 2.898 0 5.25 2.352 5.25 5.25z"
+      fill="#707070" />
+    <path d="m115.719 7.605h7.5" fill="none" stroke="#707070" stroke-width=".75" />
+    <path d="m123.219 7.605-2.25 2.25" fill="none" stroke="#707070" stroke-width=".75" />
+    <path d="m123.219 7.605-2.25-2.25" fill="none" stroke="#707070" stroke-width=".75" />
+    <path
+      d="m425.605 47.797c0 2.898-2.351 5.25-5.25 5.25-2.902 0-5.25-2.352-5.25-5.25 0-2.902 2.348-5.25 5.25-5.25 2.899 0 5.25 2.348 5.25 5.25z"
+      fill="#f00" />
+    <path
+      d="m562.859 213.91c0 2.899-2.347 5.25-5.25 5.25-2.898 0-5.25-2.351-5.25-5.25 0-2.898 2.352-5.25 5.25-5.25 2.903 0 5.25 2.352 5.25 5.25z"
+      fill="#bf0080" />
+    <path
+      d="m507.305 335.707c0 2.902-2.352 5.25-5.25 5.25-2.899 0-5.25-2.348-5.25-5.25 0-2.898 2.351-5.25 5.25-5.25 2.898 0 5.25 2.352 5.25 5.25z"
+      fill="#f00" />
+    <path d="m406.961 378.176h9v9h-9z" fill="#bf0080" />
+    <path d="m351.312 163.312h9v9h-9z" fill="#bf0080" />
+    <path d="m328.109 209.41h9v9h-9z" fill="#bf0080" />
+    <path d="m359.645 261.207h9v9h-9z" fill="#bf0080" />
+    <path
+      d="m120.969 240.105c0 2.899-2.352 5.25-5.25 5.25-2.899 0-5.25-2.351-5.25-5.25 0-2.898 2.351-5.25 5.25-5.25 2.898 0 5.25 2.352 5.25 5.25z"
+      fill="#bf0080" />
+    <path d="m20.875 237.734h9v9h-9z" fill="#bf0080" />
+    <path d="m10.621 12.965h9.004v9h-9.004z" fill="#bf0080" />
+    <path
+      d="m120.969 15.105c0 2.899-2.352 5.25-5.25 5.25-2.899 0-5.25-2.351-5.25-5.25 0-2.898 2.351-5.25 5.25-5.25 2.898 0 5.25 2.352 5.25 5.25z"
+      fill="#707070" />
+    <path d="m115.719 7.605h7.5" fill="none" stroke="#707070" stroke-width=".75" />
+    <path d="m123.219 7.605-2.25 2.25" fill="none" stroke="#707070" stroke-width=".75" />
+    <path d="m123.219 7.605-2.25-2.25" fill="none" stroke="#707070" stroke-width=".75" />
+    <path d="m20.25 129.848c147.609-6.633 272.215 1.199 372 26.902 65.945 16.984 78 94.5-9 117" fill="none"
+      stroke="#008000" stroke-width="1.5" />
+    <path
+      d="m115.719 15.105c113.121 0 214.449 9.461 304.636 32.692 70.071 18.047 137.254 78.531 137.254 166.113 0 47.168-21.976 91.528-55.554 121.797-26.535 23.93-57.907 38.516-90.594 46.969l-55.649-214.864-23.203 46.098 31.536 51.797c-64.793-16.691-148.391-25.602-248.426-25.602-28.766 0-58.903 0.715-90.344 2.129l-10.25-224.769c34.512-1.551 68.035-2.36 100.594-2.36z"
+      fill="#32cd32" fill-opacity=".07000002" />
+    <path
+      d="m115.719 15.105c113.121 0 214.449 9.461 304.636 32.692 70.071 18.047 137.254 78.531 137.254 166.113 0 47.168-21.976 91.528-55.554 121.797-26.535 23.93-57.907 38.516-90.594 46.969l-55.649-214.864-23.203 46.098 31.536 51.797c-64.793-16.691-148.391-25.602-248.426-25.602-28.766 0-58.903 0.715-90.344 2.129l-10.25-224.769c34.512-1.551 68.035-2.36 100.594-2.36z"
+      fill="none" stroke="#000" stroke-width="1.5" />
+  </g>
+</svg>

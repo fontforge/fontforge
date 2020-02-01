@@ -1,0 +1,163 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 19-Jul-2002 -->
+  <!-- AP: Last modified: 13-Oct-2004 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>Auto Width and Auto Kern</TITLE>-->
+    <TITLE>幅の自動設定と自動カーニング</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+<H2 ALIGN=Center>
+  <!--<A NAME="AutoWidth">Auto
+  Width</A><IMG src="../../_images/autowidth.png" WIDTH="276" HEIGHT="268" ALIGN="Right">-->
+  <A NAME="AutoWidth">幅の自動設定
+  </A><IMG src="../../_images/autowidth.png" WIDTH="276" HEIGHT="268" ALIGN="Right">
+</H2>
+<P>
+<!--
+The Auto Width command will attempt to guess reasonable widths (more accurately
+reasonable left and right side bearings) for your font. The command looks
+at all possible combinations of indicated glyphs (if you request more than
+300 glyphs it will only look at the first 300 to avoid running out of memory
+(300*300 takes up a fair amount of room). -->
+<CODE>幅の自動設定(<U>A</U>)...</CODE> コマンドは、フォントの適切な幅を (より厳密に言えば、左と右のサイドベアリングの適切な値を) 設定します。このコマンドは、指定されたグリフのすべての可能な組合せを調べます (300 個よりも多くのグリフを指定した場合、メモリを使い尽くすことを避けるために、最初の 300 個のみを調べます (300×300 はかなりの容量を食います))。
+<P>
+<!--
+Do <FONT COLOR="Red"><EM>NOT </EM></FONT>attempt to mix scripts that are
+not artistically similar. FontForge will be very confused if you try to run
+autowidth on a Latin "I" and a Hebrew "Alef". Latin, Greek and Cyrillic can
+usually be intermixed since they evolved together and the letterforms are
+similar. -->
+審美的に見て一様でない用字系を混ぜようと<FONT COLOR="Red"><EM>しないで</EM></FONT>ください。ラテン文字の“I”とヘブライ文字のアレフの間の幅を自動設定すると、FontForge はまったく混乱してしまうでしょう。ラテン文字、ギリシャ文字、キリル文字は共に進化してきた文字群で、同様の形をもっていますので、通常は混在可能です。
+<P>
+<!--
+You must specify two different sets, one for the glyph on the left (which
+will have its right side bearing adjusted) and one for the glyph on the right
+(which will have its left side bearing adjusted. I know that sounds backwards
+but think about it a little), of course these two sets may be the same. You
+may apply the command to all glyphs in the font (if there are few than 300
+of course), to all the selected glyphs, the glyphs A-Z, a-z and 0-9,
+to similar combinations for greek and cyrillic, or to a list of glyphs you
+specify yourself (glyphs may be specified either by themselves or by a range,
+so "ace-g" means the glyphs a, c, e, f and g (if you put commas and spaces
+in the list they will be treated as glyphs. If you want to specify a hyphen,
+put it first or last, so "-a-z" means hyphen and all letters a-z)).
+<A HREF="metricsview.html#Entering">For information on entering non-ASCII
+characters see that section in the metrics view</A>, ranges are based on
+Unicode code points. -->
+幅の設定のためには、2 種類のグリフリストを指定する必要があります。片方は左側にくるグリフ (右サイドベアリングが調節されます) のリストで、片方は右側に来るグリフ (左サイドベアリングが調節されます。私はそれが逆に聞こえることは分かっていますが、それに関してはあまり気にしないでください) のリストです。もちろん、これら 2 つのリストの内容を同じにすることもできます。コマンドを適用する対象は、フォント内のすべてのグリフか (もちろん 300 字以内に限られます)、選択中の全文字か、A〜Z, a〜z と 0〜9 のグリフか、ギリシャ文字やキリル文字でそれと同様な文字グループか、自分で指定したグリフリスト (グリフそのものによる指定と範囲指定の両方が可能で、“ace-g”という指定は a, c, e, f, g の各文字のグリフを意味します (カンマとスペースをリスト中に置いた場合、それらはグリフとして扱われます。ハイフンを指定したい場合は、最初か最後に置いてください。“-a-z”とするとハイフンと a〜z の全文字の意味になります)) のどれかを選ぶことができます。<A HREF="metricsview.html#Entering">非 ASCII 文字の入力に関する情報についてはメトリックビューのセクションを参照してください</A>。範囲指定は Unicode のコードポイントに基づいて解釈されます。
+<P>
+<IMG src="../../_images/autowidthmenu.png" WIDTH="276" HEIGHT="268" ALIGN="Right"><!--Last
+of all the Spacing text box allows you to say how close you want the glyphs
+to be. If you look at a sanserif capital I, and you autowidth it with itself
+(and nothing else) the sum of the left and right side bearings should be
+equal to the spacing. By default the spacing will be set to the size of the
+lower case n. If you have serifs and curved letters things are more complex,
+but that is roughly what's going on. You may need to adjust it to suit your
+own preferences. -->
+最後に、“スペーシング”テキストボックスにより、グリフをどれだけ詰めたいかを指定することができます。サンセリフの大文字 I を、それ自身 (それ以外には何もない) との間での自動幅設定を行ったときに、左右のサイドベアリングの和がスペーシングの設定値と等しくなります。デフォルトでは、スペーシングの値は小文字の n のサイズに設定されています。セリフや曲線を持つ文字がある場合、事情は四里複雑になりますが、それが実際に行われることの粗い近似になります。おそらく、自分自身の好みに合うように、この値を調整する必要があるでしょう。
+<P>
+<!--
+Adjusting the left and right bearings of a letter will also adjust the left
+and right bearings of all accented letters based (by reference) on it. You
+should not try to use AutoWidth on accented letters directly (unless those
+glyphs do not use references).<BR Clear=Right> -->
+左右のサイドベアリングを調整すると、(参照によって) その文字に 基づいているすべてのアクセントつき文字の左右のサイドベアリングも同時に調整することになります。アクセントつき文字の調節を直接行おうとするべきではありません (それらの文字が参照を用いていない場合は別です)。<BR Clear=Right>
+<H2 ALIGN=Center>
+<!--<A NAME="AutoKern">Auto
+    Kern</A><IMG SRC="autokern.png" WIDTH="276" HEIGHT="391" ALIGN="Right">-->
+    <A NAME="AutoKern">自動カーニング</A><IMG src="../../_images/autokern.png" WIDTH="276" HEIGHT="391" ALIGN="Right">
+</H2>
+<P>
+<!--
+The Auto Kern dialog looks almost exactly like the Auto Width dialog above. -->
+自動カーニングダイアログの見た目は、上に表示した幅の自動設定ダイアログとほとんど同じに見えます。
+<P>
+<!--
+The Spacing entry defaults slightly differently, it will be the sum of the
+left and right bearings for the capital I (it is assumed that the font has
+already been spaced, so this will give a more accurate value than using the
+size of an "n"). -->
+項目“スペーシング”のデフォルト値はわずかに異なり、大文字 I の左右のサイドベアリング値を使用します (このコマンドは、フォントの空きが既に設定されていることを仮定しているので、この値を用いることによって“n”のサイズを用いるよりは正確な値が得られるはずです)。
+<P>
+<!--
+The threshold says that any kern pair whose absolute value is less than the
+threshold value will be ignored. Set this to 0 if you want all kerns. -->
+“しきい値:”に設定した値よりも、カーニング量の絶対値が小さいすべてのカーニングペアは無視されます。すべての文字間でカーニングを有効にしたい場合は、この値を 0 に設定してください。
+<P>
+<!--
+Some systems have a maximum number of kerning pairs that they can deal with.
+If this is true for you then set "Total Kerns" to this value. -->
+いくつかのシステムは、取り扱うことができるカーニングペアの最大個数に制限があります。その場合、“カーニングの総数”にその値を設定してください。
+<P>
+<!--
+The glyphs are specified as they are for AutoWidth above, except that here
+it is also possible to load a set of kerning pairs out of a file. For instance
+in the dlg at right many unnecessary letter combinations will be checked,
+and kerning information generated for them, (the combination "xq" might well
+generate a kern, that letter pair will almost never occur in written English
+(or any other language)). Instead you can specify (with the [Browse...] button)
+that a file should be read, and only those pairs found in the file used. -->
+グリフは、上の幅の自動設定ダイアログと同様に指定されますが、カーニングペアをファイルから読み込むこともできる点が異なります。例えば、右のダイアログでは多くの不要な文字の組合せがチェックされ、それらに対してカーニング情報が生成されます (“xq”の組合せにはカーニングがうまく働くでしょうが、英語 (および他の任意の言語) の文章にはほとんど現れません)。その代わりに、(<CODE>[ファイルを見る(<U>B</U>)...]</CODE> ボタンを押して) 読み込むファイルを指定することができ、そのファイルに含まれているペアのみを調べます。
+<P>
+<!--
+I have provided a <A HREF="../englishkernpairs.txt">sample file </A>containing
+some kerning pairs common in English (it is actually copied from
+<A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5091.Design_MM_Fonts.pdf">Adobe
+Technical Note 5091</A>). The format of this file is just a set of lines
+containing two glyphs per line. A kerning pair will be checked for each pair
+of glyphs (any lines with more or fewer glyphs than 2 will be treated as
+comment lines and ignored). The file may be either in latin1 encoding or
+in UCS2 (if in UCS2 it should begin with the byte order marker U+FEFF). You
+may also specify a glyph by writing out U+xxxx where xxxx gives the unicode
+encoding. So "Av" could be represented as "U+0041v". -->
+英語によく出てくるカーニングペアのいくつかを含む<A HREF="http://fontforge.sourceforge.net/englishkernpairs.txt">サンプルファイル</A> (これは実際には <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5091.Design_MM_Fonts.pdf">Adobe
+Technical Note 5091</A> からコピーした物です) を提供しています。このファイルのフォーマットは、1 行に 2 つの文字を含む行の単純な並びです。それに対応するグリフの各ペアに対して、カーニングペアのチェックが行われます (行内の文字数が 2 文字よりも多かったり少なかったりする行はコメント行と扱われて無視されます) ファイルは Latin1 エンコーディングまたは UCS2 を使用することができます (UCS2 である場合、それはバイトオーダマーカ U+FEFF で始まらなければなりません)。グリフを U+xxxx (ここで xxxx は Unicode の符号位置) の形式で書くこともできます。ですから、“Av”は“U+0041v”と書くこともできます。
+<P>
+<!--
+For each glyph pair, it will set the sum of <BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;right bearing of
+left glyph&gt; + &lt;left bearing of right glyph&gt; + &lt;kern&gt; =
+&lt;spacing&gt; + &lt;glyph shape fudge factor&gt;. -->
+各グリフペアに対し、カーニング値は<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;左のグリフの右サイドベアリング&gt; + &lt;右のグリフの左サイドベアリング&gt; + &lt;カーニング&gt; =
+&lt;スペーシング&gt; + &lt;グリフ形状の許容範囲&gt;<BR>
+に設定されます。
+<P>
+<!--
+The "fudge factor" is determined by looking at the shape of the left and
+right edges of the glyphs (ignoring the areas that are in serifs). It looks
+for the closest approach of the two glyphs and performs a complicated average
+to figure out the fudge. If that fudge would lead to a &lt;kern&gt; which
+causes any glyphs to be too close together then it is adjusted up. The exact
+method is subject to change as bugs are found. -->
+“許容範囲”は、左右の端におけるグリフの形状を調べることによって決定されます (セリフに含まれる領域は無視されます)。2 つのグリフの最も近い接近距離を探し、誤差を算出するために複雑な平均化処理を行います。その誤差の値が、どのグリフもそこまで近づけた場合近すぎることになる &lt;カーニング&gt; を導き出す場合、その値はサイ調整されます。正確な方法は、バグが見つかるたびに変更の対象となります。
+<P>
+<!--
+If the absolute value of a &lt;kern&gt; is less than the threshold then no
+kerning information will be produced for that pair of glyphs. If the algorithm
+(and any previously existing kern pairs) lead to more pairs than specified
+by "Total Kerns" then a new threshold value will be determined and any pairs
+whose &lt;kern&gt; is less (in absolute value) than this new threshold will
+be removed. -->
+もし、&lt;カーニング&gt; の絶対値がしきい値よりも小さい場合、そのグリフのペアに対してカーニング情報は生成されなくなります。アルゴリズム (と、それまでに存在した任意のカーニングペア) によって、"カーニングの総数" で指定したよりも多くのカーニングが生じる場合、新しいしきい値が決定され、&lt;カーニング&gt; (の絶対値) がこの新しいしきい値よりも小さいすべてのペアは削除されます。
+<P>
+<!--
+Kerning information will not be propagated from base glyphs to accented glyphs
+which refer to them. This is because "Ve" will probably have a rather different
+kerning value than "V&egrave;". Note that this is different from the way
+AutoWidth behaves. -->
+カーニング情報は、基底グリフからそれを参照するアクセントつきグリフへ波及しません。これは、“Ve”のカーニング値は“V&egrave;”のそれとはかなり異なるだろうからです。これは自動幅設定のふるまいとは異なることに注意してください。
+<P>
+<!--
+Remember kerning is not part of a PostScript&reg; font, whatever word processor
+you use needs to read the kerning information from the afm file and, while
+kerning is part of truetype (and opentype) fonts, the Windows does not support
+kerning either. -->
+カーニングは PostScript&reg; フォントの一部ではなく、あなたがどのワードプロセッサを使っていても、カーニング情報は AFM ファイルから読み込む必要があることと、TrueType (および OpenType) フォントにはカーニングが内蔵されているが、Windows はどちらに対してもカーニングをサポートしていないことにご注意ください。
+</DIV>
+</BODY></HTML>

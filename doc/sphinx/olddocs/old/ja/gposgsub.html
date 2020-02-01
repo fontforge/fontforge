@@ -1,0 +1,1545 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 29-Dec-2002 -->
+  <!-- AP: Last modified: 11-Dec-2005 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>Advanced Typography tables</TITLE> -->
+    <TITLE>高度組版機能テーブル (ATT)</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+<!--  Advanced Typography Tables-->
+      高度組版機能テーブル (ATT)
+  </H1>
+  <P>
+<!--
+  These differ between OpenType (originally called TrueType Open) and Apple
+  (GX or Apple Advanced Typography). My support for both OpenType and Apple
+  is incomplete. -->
+  これらは OpenType (当初 TrueType Open と呼ばれていました) と Apple (GX または Apple 高度タイポグラフィ (ATT)) とで違いがあります。このソフトの OpenType と Apple に対するサポートはどちらも不完全です。
+  <UL>
+    <LI>
+<!--  <A HREF="#opentype">The <B><CODE>GPOS</CODE></B>,
+      <B><CODE>GSUB</CODE></B> and <B><CODE>GDEF</CODE></B> opentype tables</A>
+      <A HREF="#opentype"><B><CODE>GPOS</CODE></B>, <B><CODE>GSUB</CODE></B> および <B><CODE>GDEF</CODE></B> OpenType テーブル</A>
+    <LI>
+<!--  <A HREF="#AAT">Apple Advanced Typography</A>-->
+      <A HREF="#AAT">Apple の高度タイポグラフィ</A>
+    <LI>
+<!--  <A HREF="#Conversion">What features can be converted between OpenType and
+      AAT?</A>-->
+      <A HREF="#Conversion">どの機能が OpenType と AAT の間で変換可能か?</A>
+    <LI>
+      <A HREF="TrueOpenTables.html">other true type and open type tables</A>
+    <LI>
+      <A HREF="#Unsupported">What is unsupported</A>
+    <LI>
+      <A HREF="non-standard.html">FontForge's non-standard extensions</A>
+  </UL>
+  <H2>
+<!--  The <B><CODE>GPOS,</CODE></B> <B><CODE>GSUB</CODE></B> and
+      <B><CODE>GDEF</CODE></B> <A NAME="opentype">opentype</A> tables -->
+      <B><CODE>GPOS</CODE></B>, <B><CODE>GSUB</CODE></B> および <B><CODE>GDEF</CODE></B> <A NAME="opentype">OpenType</A> テーブル
+  </H2>
+  <P>
+<!--
+  These two tables are used for positioning and substituting glyphs. The GPOS
+  table can control things like: kerning, accent positioning, cursive joining,
+  etc. The GSUB table can control things like: ligatures, arabic forms, vertical
+  rotation, conversion to small caps, indic glyph rearrangement, etc. -->
+  これらの2つのテーブルは、グリフの位置変更と置き換えに用いられます。
+  GPOS テーブルは、以下のような物を制御することができます: カーニング、アクセントの位置指定、筆記体の結合など。
+  GSUB テーブルは以下のようなものを制御することができます: 合字、アラビア文字の複数の形、縦書き用の文字回転、小型大文字への変換、インド系文字のグリフ再配置など。
+  <P>
+<!--
+  This page assumes basic familiarity with the abilities of the tables, for
+  more information on them read, study and inwardly digest the opentype docs
+  on:-->
+  このページは、各テーブルで何をすることができるかの基本的な知識があることを仮定しています。それらに関してのより詳しい情報を得るには、以下の OpenType の文書を読み、学習して自家薬籠中のものとしてください。
+  <UL>
+    <LI>
+<!--  <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats.html">The
+      header for both GPOS and GSUB</A>-->
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats.html">GPOS と GSUB に共通するヘッダ</A>
+    <LI>
+<!--  <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats2.html">The
+      GPOS table</A>, for positioning glyphs -->
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats2.html">GPOS テーブル (グリフの位置決めに用いる)</A>
+    <LI>
+<!--  <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats1.html">The
+      GSUB table</A>, for substituting glyphs-->
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats1.html">GSUB テーブル</A> (グリフの置換に用いる)
+    <LI>
+<!--  <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats5.html">The
+      GDEF table</A>, for classifying glyphs and for providing a ligature caret
+      table -->
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats5.html">GDEF テーブル (グリフのクラス分けと合字キャレットテーブルの指定に用いる)</A>
+    <LI>
+<!--  <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag3.html">The
+      list of feature tags supported by opentype</A>-->
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag3.html">OpenType がサポートする機能タグのリスト</A>
+    <LI>
+<!--  <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag1.html">The
+      list of script tags supported by opentype</A>-->
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag1.html">OpenType がサポートする用字系タグのリスト</A>
+    <LI>
+<!--  -<A HREF="http://partners.adobe.com/public/developer/opentype/index_tag2.html">The
+      list of language tags supported by opentype</A>-->
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag2.html">OpenType がサポートする言語タグのリスト</A>
+  </UL>
+  <P>
+<!--
+  The basic idea of the GPOS and GSUB tables is that each script (or language
+  within a script) has a set of "features" that are available to it. A feature
+  in turn is associated with a lookup which contains data for the feature.
+  An example of a script is 'latn' for latin, 'arab' for arabic, 'hani' for
+  chinese ideographs. Two examples of features are 'kern' which provides kerning
+  information between pairs of glyphs and 'init' which will transform one set
+  of glyphs to another when those glyphs are at the beginning of a word.-->
+  GPOS テーブルと GSUB テーブルの基本的アイディアは、各スクリプト (またはあるスクリプトを使用する言語) が、それらの文字に適用可能な“機能”の組をもっているという考えです。個々の機能はそれぞれが、その機能のためのデータを含む 1 個の索引に付随しています。用字系の例としては、ラテン文字の&lsquo;latn&rsquo;, アラビア文字の&lsquo;arab&rsquo;, 漢字の&lsquo;hani&rsquo;が挙げられます。機能の例を 2 つ挙げれば、グリフの対の間のカーニング情報を提供する&lsquo;kern&rsquo;や、ある一連のグリフを、単語の先頭に来たときに用いる別のグリフに置き換える&lsquo;init&rsquo;があります。
+  <P>
+<!--
+  FontForge <A HREF="gposgsub.html#Unsupported">does not support </A>the full
+  range of possibilities inherent in these tables. -->
+  FontForge は、これらの 2 つのテーブルによって可能なことの全ての範囲を<A HREF="gposgsub.html#Unsupported">サポートするわけではありません</A>。
+  <H3>
+<!--  The <B><CODE><A NAME="GPOS">GPOS</A></CODE></B> table-->
+      <B><CODE><A NAME="GPOS">GPOS</A></CODE></B> テーブル
+  </H3>
+  <P>
+<!--
+  FontForge will read the following sub tables of the GPOS table: -->
+  FontForge は GPOS テーブルの以下のサブテーブルを読み込みます:
+  <TABLE Border=1>
+    <TR>
+      <TH></TH>
+      <TH>name</TH>
+<!--  <TH>Reading support</TH>-->
+      <TH>読み込みサポート</TH>
+<!--  <TH>Writing support</TH>-->
+      <TH>書き出しサポート</TH>
+    </TR>
+    <TR>
+      <TD>1</TD>
+<!--  <TD>single adjustment</TD>-->
+      <TD>1 文字の調整</TD>
+<!--  <TD>This sub-table allows the font designer to change the metrics of a specific
+        glyph. The feature tag will provide a context in which the change should
+        occur. For instance the 'tnum' (tabular numbers) feature could change a
+        proportionally spaced digit by adjusting its advance width to be some set
+        value and then centering the digit (by adjusting the left side bearing) within
+        the new width.</TD>-->
+      <TD>このタイプのサブテーブルでは、特定のグリフのメトリックを変更することができます。どのようなコンテキストで変更が起こるかは、機能タグで指定します。例えば、&lsquo;tnum&rsquo; (表用数字) 機能により、プロポーショナル幅の数字の送り幅をある固定値に合わせてから (左サイドベアリングを調整して) 幅の中心に揃えることにより、プロポーショナル幅の数字を変更することができます。</TD>
+<!--  <TD>These can be created with the <A HREF="charinfo.html">Element-&gt;Char
+        Info</A>-&gt;Position command.</TD>-->
+      <TD>これらは <A HREF="charinfo.html"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>グリフ情報(<U>I</U>)...</CODE></A>→<CODE>[位置]</CODE> コマンドで作成することができます。</TD>
+    </TR>
+    <TR>
+      <TD>2</TD>
+<!--  <TD>pair adjustment</TD>-->
+      <TD>文字の対への調整</TD>
+<!--  <TD>This sub-table allows the font designer to change the metrics of a specific
+        pair of glyph. The most common use of this is for kerning where the advance
+        width of the first glyph is altered depending on which glyph follows it.
+        But the table is more general than that and could support mark (accent, vowel)
+        positioning over a base glyph (though that is more efficiently done with
+        the mark to base subtable).</TD> -->
+      <TD>このタイプのサブテーブルでは、フォントデザイナーがグリフのメトリックの特定の要素を変更することができます。最も一般的な使い方としては、カーニングで、最初のグリフの送り幅が、次に来るグリフが何であるかによって変わる場合に使用するものです。しかし、このテーブルはそれよりも一般的な用途に用いることができ、基底グリフの上に置かれるマーク (アクセント、母音) の位置指定をサポートすることができます (ただし、これはマークからの基底グリフ指定サブテーブルを使うともっと効率的に行うことができるのですが)。
+  </TD>
+<!--  <TD>'kern' feature s may be created from the <A HREF="metricsview.html">Metrics
+        View</A>. 'vkrn' with
+        <A HREF="metricsmenu.html#VKernFromHKern">Metrics-&gt;VKern From HKern</A>.</TD>-->
+      <TD>&lsquo;kern&rsquo;機能はメトリックビューから作成することができ、&lsquo;vkrn&rsquo;は <A HREF="metricsmenu.html#VKernFromHKern"><CODE>メトリック(<U>M</U>)</CODE>→<CODE>横書きカーニングを縦書きに</CODE></A>で指定することができます。</TD>
+    </TR>
+    <TR>
+      <TD>3</TD>
+<!--  <TD>cursive attachment</TD>-->
+      <TD>筆記体の接続</TD>
+<!--  <TD>This sub-table allows the font designer to force adjacent characters
+        to join at specific points. It can be used to generate the slanted script
+        style needed for Urdu.</TD> -->
+<!--  <TD>This sub-table allows the font designer to force adjacent glyphs to join
+        at specific points. It can be used to generate the slanted script style needed
+        for Urdu.</TD> -->
+      <TD>このサブテーブルでは、フォントデザイナーが隣接するグリフ同士を特定の位置で接続するように強制することができます。これは、ウルドゥー語で必要となる傾いた筆記体を出力するのに使用することができます。</TD>
+<!--  <TD>Only the 'curs' feature is supported for this sub-table. These may be
+        created with the <A HREF="pointmenu.html#AddAnchor">Points-&gt;Add Anchor</A>
+        command</TD>-->
+      <TD>このサブテーブルでサポートされているのは&lsquo;curs&rsquo;機能だけです。これは、<A HREF="pointmenu.html#AddAnchor"><CODE>点(<U>P</U>)</CODE>→<CODE>アンカーを追加(<U>A</U>)...</CODE></A> コマンドによって作成できます。
+    </TR>
+    <TR>
+      <TD>4</TD>
+<!--  <TD>mark to base</TD>-->
+      <TD>マークから基底グリフへ</TD>
+<!--  <TD>This sub-table allows the font designer to specify how mark glyphs (accents,
+        vowel signs, etc.) are positioned over base glyphs. Every glyph can have
+        an attachment point and the mark's attachment point will be placed on the
+        base's attachment point so the two join properly. See my
+        on the base's attachment point so the two join properly. See my
+        <A HREF="overview.html#Anchors">example</A> in the overview.</TD>-->
+      <TD>フォントデザイナーは、このサブテーブルを使ってマーク (アクセント、母音記号など) グリフを基底グリフの上にどう配置するかを指定することができます。各グリフには接続点とを設定することができ、マークの接続点は基底グリフの接続点に重ね合わせられ、それによって それら正しく接続することになります。「概要」で示した私の<A HREF="overview.html#Anchors">例</A>をご覧ください。</TD>
+<!--  <TD>These may be created with the
+        <A HREF="pointmenu.html#AddAnchor">Points-&gt;Add Anchor</A> command</TD> -->
+      <TD>これらは <A HREF="pointmenu.html#AddAnchor"><CODE>点(<U>P</U>)</CODE>→<CODE>アンカーを追加(<U>A</U>)...</CODE></A> コマンドで作成することができます。</TD>
+    </TR>
+    <TR>
+      <TD>5</TD>
+<!--  <TD>mark to ligature</TD>-->
+      <TD>マークから合字へ</TD>
+<!--  <TD>This sub-table is very similar to the previous one except that the base
+        glyph is a ligature and may have several different points at which the same
+        type of accent may be placed.</TD> -->
+      <TD>このサブテーブルは前のものと非常によく似ていますが、基底グリフが合字であって、同じタイプのアクセントを置くことができるいくつかの異なる点が存在してよいいことです。</TD>
+<!--  <TD>These may be created with the
+        <A HREF="pointmenu.html#AddAnchor">Points-&gt;Add Anchor</A> command</TD> -->
+      <TD>これらは <A HREF="pointmenu.html#AddAnchor"><CODE>点(<U>P</U>)</CODE>→<CODE>アンカーを追加(<U>A</U>)...</CODE></A> コマンドで作成することができます。</TD>
+    </TR>
+    <TR>
+      <TD>6</TD>
+<!--  <TD>mark to mark</TD>-->
+      <TD>マークからマークへ</TD>
+<!--  <TD>This sub-table is very similar to the previous two except that the base
+        glyph is itself a mark. This may be used when a glyph has two accents each
+        of which would normally be placed at the same attachment point on a base
+        glyph. The second accent will be place relative to the first accent rather
+        than to the base glyph.</TD> -->
+      <TD>このサブテーブルは上の 2 つに非常によく似ていますが、基底グリフそのものがマークであってもよい点が異なります。これは基底グリフに 2 個のアクセントが接続し、それらが基底グリフに対して同じ接続点をもっている場合に使用することができます。2 番目のアクセントは基底グリフからではなく、最初のアクセントからの相対位置によって配置されることになります。</TD>
+<!--  <TD>These may be created with the
+        <A HREF="pointmenu.html#AddAnchor">Points-&gt;Add Anchor</A> command</TD> -->
+      <TD>これらは <A HREF="pointmenu.html#AddAnchor"><CODE>点(<U>P</U>)</CODE>→<CODE>アンカーを追加(<U>A</U>)...</CODE></A> コマンドで作成することができます。</TD>
+    </TR>
+    <TR>
+      <TD>7</TD>
+<!--  <TD>contextual positioning</TD>-->
+      <TD>文脈依存の位置指定</TD>
+<!--  <TD>This sub-table allows the font designer to control the positioning of
+        glyphs when they occur within a specific string (or class of strings). For
+        instance this table could say "when you see a digit followed by the string
+        "th" then raise the "th" into a superscript position"</TD> -->
+      <TD>フォントデザイナーは、このサブテーブルを使って、複数のグリフが特定の文字列 (または文字列のクラス) の中に現れたときの位置指定を制御することができます。</TD>
+<!--  <TD>These may be created with the
+        <A HREF="fontinfo.html#Contextual">Element-&gt;Font Info-&gt;Contextual
+        </A>command</TD> -->
+      <TD>これらは <A HREF="fontinfo.html#Contextual"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[文脈依存]</CODE></A> コマンドで作成することができます。</TD>
+    </TR>
+    <TR>
+      <TD>8</TD>
+<!--  <TD>chaining contextual positioning</TD>-->
+      <TD>文脈依存の連鎖型位置指定</A>
+<!--  <TD>This is a slightly more complex version of the above, it doesn't really
+        add new capabilities, but it does provide a more logical approach to the
+        issue.</TD> -->
+      <TD>これは上記の機能のより複雑なバージョンで、実際には本当に新しい機能を追加するものではありませんが、同じ事柄に対するより論理的なアプローチを提供しています。</TD>
+<!--  <TD>These may be created with the
+        <A HREF="fontinfo.html#Contextual">Element-&gt;Font Info-&gt;Contextual
+        </A>command</TD> -->
+      <TD>これらは <A HREF="fontinfo.html#Contextual"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[文脈依存]</CODE></A> コマンドで作成することができます。</TD>
+    </TR>
+    <TR>
+      <TD>9</TD>
+<!--  <TD>extension positioning</TD>-->
+      <TD>拡張位置指定</TD>
+<!--  <TD>This is used to allow for a GPOS table which is bigger than 64k. Its
+        use should be quite invisible to the font designer</TD> -->
+      <TD>これは、GPOS テーブルが 64K より大きいときに使用します。これを使っていることは、フォントデザイナーからはまったく見えないようになっているべきです。</TD>
+<!--  <TD>FontForge uses this sub-table when needed.</TD>-->
+      <TD>FontForge は、必要になったときにこのサブテーブルを使います。</TD>
+    </TR>
+    <TR>
+      <TD>10+</TD>
+<!--  <TD>reserved for future use</TD>-->
+      <TD>将来の使用のために予約</TD>
+      <TD></TD>
+<!--  <TD>FontForge does not support these sub-tables yet.<BR>
+        (nor does anyone)</TD>-->
+      <TD>FontForge は (ほかの誰もと同様に) これらのサブテーブルにまだ対応していません。</TD>
+    </TR>
+  </TABLE>
+  <P>
+<!--
+  FontForge also has built into it knowledge on how to provide default values
+  for some features that use these tables. See
+  <A HREF="elementmenu.html#DefaultATT">Element-&gt;Typo. Features-&gt;Default
+  ATT</A> command for that. -->
+  FontForge には、これらのテーブルを使用するいくつかの機能に対して、どのようにデフォルト値を与えるべきかの知識が組み込まれています。これに関しては、<A HREF="elementmenu.html#DefaultATT"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>組版機能(<U>Y</U>)</CODE>→<CODE>デフォルトのATT(<U>D</U>)</CODE></A> コマンドを参照してください。
+  <P>
+<!--
+  FontForge will retain the order of features in the GPOS table and when a
+  font is generated the order should be the same as it was before. -->
+  FontForge は GPOS テーブル内の機能の順番を保持し、フォントが出力されるときには前と同じ順番で出力されるはずです。
+  <H3>
+<!--  The <B><CODE><A NAME="GSUB">GSUB</A></CODE></B> table-->
+      <B><CODE><A NAME="GSUB">GSUB</A></CODE></B> テーブル
+  </H3>
+  <P>
+<!--
+  FontForge will read the following sub tables of the GSUB table: -->
+  FontForge は以下のサブテーブルを GSUB テーブルから読み込みます:
+  <TABLE Border=1>
+    <TR>
+      <TH></TH>
+      <TH>name</TH>
+<!--  <TH>Reading support</TH>-->
+      <TH>読み込みサポート</TH>
+<!--  <TH>Writing support</TH>-->
+      <TH>書き出しサポート</TH>
+    </TR>
+    <TR>
+      <TD>1</TD>
+<!--  <TD>single substitution</TD>-->
+      <TD>単純置換 (単独置換)</TD>
+<!--  <TD>This sub-table allows the font designer to change from one glyph to another,
+        with a context provided by the feature tag. For example many scripts have
+        letters which have a different form at the end of a word than they do within
+        (this is true of every letter in arabic, several in hebrew, lower case sigma
+        in greek, and the long-s/short-s pair in renaissance latin). So the 'fina'
+        feature would map the normal form into the final form, and the word processing
+        program would do a lookup at the end of each word to see if a transformation
+        was needed.</TD> -->
+      <TD>フォントデザイナーはこのサブテーブルを使って、あるグリフを別のグリフに、機能タグごとに定められた文脈の下で変更することができ。例えば、多くの用字系では、単語の終りに来たときには単語内に来たときと異なる形をもつ文字があります (これは、アラビア文字のほとんどの文字、ヘブライ文字のいくつか、ギリシャ文字の小文字シグマおよびルネッサンスのラテン文字の長い s/短い s のペアにおいては事実です)。そのために、&lsquo;fina&rsquo;機能は通常の形から語尾専用の形への対応づけを行い、ワードプロセッサは各単語の末尾で、置換が必要かどうかを調べるためにその機能を使います。</TD>
+<!--  <TD>These can be created with the <A HREF="charinfo.html">Element-&gt;Char
+        Info</A>-&gt;Substitution command.</TD> -->
+      <TD>これらは <A HREF="charinfo.html"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>グリフ情報(<U>I</U>)...</CODE>→<CODE>[置換]</CODE></A> コマンドで作成することができます。</TD>
+    </TR>
+    <TR>
+      <TD>2</TD>
+<!--  <TD>multiple substitution</TD>-->
+      <TD>複数置換</TD>
+<!--  <TD>This sub-table allows the font designer to replace one glyph by a series
+        of others. This is generally used for rather technical layout issues.</TD>-->
+      <TD>フォントデザイナーはこのサブテーブルを使って、1 個のグリフを別のグリフの列に置換することができます。これは一般的に、かなり技術的なレイアウトの作業に使用されます。</TD>
+<!--  <TD>These can be created with the <A HREF="charinfo.html">Element-&gt;Char
+        Info</A>-&gt;Multiple Substitution command.</TD> -->
+      <TD>これらは <A HREF="charinfo.html"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>グリフ情報(<U>I</U>)...</CODE>→<CODE>[複数置換]</CODE></A> コマンドで作成することができます。</TD>
+    </TR>
+    <TR>
+      <TD>3</TD>
+<!--  <TD>alternate substitution</TD>-->
+      <TD>選択肢つき置換</TD>
+<!--  <TD>This sub-table allows the font designer to have a series of "alternates"
+        for each glyph. One common example would be an italic font which had several
+        swash variants for each capital letter. The word processing program would
+        allow the user to choose which variant was appropriate</TD> -->
+      <TD>フォントデザイナーはこのサブテーブルを使って、一連の“選択肢”を各グリフに持たせることができます。よくある一例としては、イタリックフォントの各大文字に、数種類のスワッシュ変種がある例でしょう。ワードプロセッサは、これらのどの変種が適切かを選ばせることができるでしょう。</TD>
+<!--  <TD>These can be created with the <A HREF="charinfo.html">Element-&gt;Char
+        Info</A>-&gt;Alternate Substitution command.</TD> -->
+      <TD>これらは <A HREF="charinfo.html"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>グリフ情報(<U>I</U>)...</CODE>→<CODE>[選択型の置換]</CODE></A> コマンドで作成することができます。</TD>
+    </TR>
+    <TR>
+      <TD>4</TD>
+<!--  <TD>ligature substitution</TD>-->
+      <TD>合字置換</TD>
+<!--  <TD>This sub-table allows the font designer to replace a string of glyphs
+        with another glyph. A common example is a ligature where the string
+        <IMG src="../../_images/f+i.png" WIDTH="24" HEIGHT="25" ALIGN="Middle"> is replaced by
+        the <IMG src="../../_images/fi.png" WIDTH="20" HEIGHT="25" ALIGN="Middle"> ligature.</TD> -->
+      <TD>フォントデザイナーはこのサブテーブルを使って、複数のグリフの並びを別の 1 個のグリフに置き換えることができます。よくある例としては、<IMG src="../../_images/f+i.png" WIDTH="24" HEIGHT="25" ALIGN="Middle"> というグリフの並びが合字 <IMG src="../../_images/fi.png" WIDTH="20" HEIGHT="25" ALIGN="Middle"> に置き換えられるなどの合字処理があります。</TD>
+<!--  <TD>These can be created with the <A HREF="charinfo.html">Element-&gt;Char
+        Info</A>-&gt;Ligature command.</TD> -->
+      <TD>これらは <A HREF="charinfo.html"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>グリフ情報(<U>I</U>)...</CODE>→<CODE>[合字]</CODE></A> コマンドで作成することができます。</TD>
+    </TR>
+    <TR>
+      <TD>5</TD>
+<!--  <TD>contextual substitution</TD>-->
+      <TD>文脈依存の置換</TD>
+<!--  <TD>This subtable allows for a string of glyphs to replace another string
+        of glyphs (or class of strings of glyphs)</TD> -->
+      <TD>個のサブテーブルでは、複数のグリフの並びを別のグリフの並び (またはグリフの並びのクラス) に置き換えることができます
+<!--  <TD>These may be created with the
+        <A HREF="fontinfo.html#Contextual">Element-&gt;Font Info-&gt;Contextual
+        </A>command</TD>-->
+      <TD>これらは <A HREF="fontinfo.html#Contextual"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[文脈依存]</CODE></A> コマンドで作成することができます。</TD>
+    </TR>
+    <TR>
+      <TD>6</TD>
+<!--  <TD>chaining contextual substitution</TD>-->
+      <TD>文脈連鎖依存の置換</TD>
+<!--  <TD>This is a slightly more complex version of the above, it doesn't really
+        add new capabilities, but it does provide a more logical approach to the
+        issue.</TD> -->
+      <TD>これは上記の機能のより複雑なバージョンで、実際には本当に新しい機能を追加するものではありませんが、同じ事柄に対するより論理的なアプローチを提供しています。</TD>
+<!--  <TD>These may be created with the
+        <A HREF="fontinfo.html#Contextual">Element-&gt;Font Info-&gt;Contextual
+        </A>command</TD> -->
+      <TD>これらは <A HREF="fontinfo.html#Contextual"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[文脈依存]</CODE></A> コマンドで作成することができます。</TD>
+    </TR>
+    <TR>
+      <TD>7</TD>
+<!--  <TD>extension positioning</TD>-->
+      <TD>拡張置換</TD>
+<!--  <TD>This is used to allow for a GSUB table which is bigger than 64k. Its
+        use should be quite invisible to the font designer</TD> -->
+      <TD>これは、GSUB テーブルが 64K より大きいときに使用します。これを使っていることは、フォントデザイナーからはまったく見えないようになっているべきです。</TD>
+<!--  <TD>FontForge uses this sub-table when needed.</TD>-->
+      <TD>FontForge は、必要になったときにこのサブテーブルを使います。</TD>
+    </TR>
+    <TR>
+      <TD>8</TD>
+<!--  <TD>reverse chaining contextual single substitution</TD>-->
+      <TD>逆順・連鎖型文脈依存の単独置換</TD>
+<!--  <TD>This allows glyph substitutions to happen in reverse order, and it a
+        variant of the chaining contextual subtable.</TD> -->
+      <TD>これを使うと、グリフ置換を逆順に行うことができます。これは連鎖型文脈置換サブテーブルの変種です。</TD>
+<!--  <TD>These may be created with the
+        <A HREF="fontinfo.html#Contextual">Element-&gt;Font Info-&gt;Contextual
+        </A>command</TD> -->
+      <TD>これらは <A HREF="fontinfo.html#Contextual"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[文脈依存]</CODE></A> コマンドで作成することができます。</TD>
+    </TR>
+    <TR>
+      <TD>9+</TD>
+<!--  <TD>reserved for future use</TD>-->
+      <TD>将来の使用のために予約</TD>
+      <TD></TD>
+<!--  <TD>FontForge does not support these sub-tables yet.<BR>
+        (nor does anyone)</TD>-->
+      <TD>FontForge は (ほかの誰もと同様に) これらのサブテーブルにまだ対応していません。</TD>
+    </TR>
+  </TABLE>
+  <P>
+<!--
+  FontForge also has built into it knowledge on how to provide default values
+  for some features that use these tables. See
+  <A HREF="elementmenu.html#DefaultATT">Element-&gt;Default ATT</A> command
+  for that. -->
+  FontForge には、これらのテーブルを使用する機能のいくつかに対しては、どのようにデフォルト値を与えるかの知識も組み込まれています。
+  <P>
+<!--
+  FontForge can produce some of these tables, but the text layout/word processing
+  program used has to look up the tables and do the actual work of rearranging
+  the glyphs. -->
+  FontForge はこれらのテーブルのうちのいくつかを出力できますが、テキストレイアウト/ワードプロセッシング処理を行うプログラムは、このテーブルを参照して、実際にグリフを再配置する作業を行う必要があります。
+  <P>
+<!--
+  FontForge will retain the order of features in the GSUB table, and the user
+  may adjust it with the <A HREF="fontinfo.html#Order">Element-&gt;Font Info</A>
+  command. -->
+  FontForge は GSUB テーブル内の機能の順番を保持しており、ユーザはそれを <A HREF="fontinfo.html#Order"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE></A> コマンドで並べ替えることができます。
+  <H3>
+<!--  The <B><CODE><A NAME="GDEF">GDEF</A> </CODE></B>table-->
+      <B><CODE><A NAME="GDEF">GDEF</A></CODE></B> テーブル
+  </H3>
+  <P>
+<!--
+  FontForge will read ligature carets out of a GDEF table. -->
+  FontForge は合字キャレットを GDEF テーブルから読み込みます。
+  <P>
+<!--
+  It will generate a GDEF table containing a glyph class definition sub-table
+  (if needed) or a ligature caret sub-table (if needed). -->
+  FontForge は、グリフクラス定義サブテーブル (必要な場合) または合字キャレット (必要な場合) を含む GDEF テーブルを生成します。
+  <H2>
+<!--  <A NAME="AAT">Apple</A> Advanced Typography-->
+      <A NAME="AAT">Apple</A> 高度組版機能 (ATT)
+  </H2>
+  <P>
+<!--
+  As above I do not go deeply into the abilities of these tables, for more
+  information see Apple's docs: -->
+  上に書いたように、私はこれらのテーブルの機能の詳細には立ち入りません。より詳しい情報に関しては Apple の文書を参照してください。
+  <UL>
+    <LI>
+<!--  <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6kern.html">The
+      'kern' table</A> -->
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6kern.html">&lsquo;kern&rsquo;テーブル</A>
+    <LI>
+<!--  <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6lcar.html">The
+      'lcar' (ligature caret) table</A> -->
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6lcar.html">&lsquo;lcar&rsquo; (合字キャレット) テーブル</A>
+    <LI>
+<!--  <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6morx.html">The
+      'morx' (extended glyph metamorphosis) table</A>-->
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6morx.html">&lsquo;morx&rsquo; (拡張グリフ変形) テーブル</A>
+      <UL>
+        <LI>
+<!--	  <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6mort.html">The
+	  'mort' (older version of 'morx') table</A>-->
+	  <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6mort.html">&lsquo;mort&rsquo; (&lsquo;morx&rsquo; の旧版) テーブル</A>
+        <LI>
+<!--	  <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6feat.html">The
+	  'feat' (feature) table</A> -->
+	  <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6feat.html">&lsquo;feat&rsquo; (機能) テーブル</A>
+        <LI>
+<!--	  <A HREF="http://developer.apple.com/fonts/Registry/index.html">Apple's Font
+	  Feature registry</A> -->
+	  <A HREF="http://developer.apple.com/fonts/Registry/index.html">Apple のフォント機能登録簿</A>
+        <LI>
+<!--	  <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6Tables.html">Description
+	  of the subtables of the 'mort'/'morx' tables</A> -->
+	  <A HREF="http://developer.apple.com/fonts/Registry/index.html">&lsquo;mort&rsquo;/&lsquo;morx&rsquo;テーブルのサブテーブルの説明</A>
+      </UL>
+    <LI>
+<!--  <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6opbd.html">The
+      &lsquo;opbd&rsquo;(optical bounds) table</A> -->
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6opbd.html">&lsquo;opbd&rsquo; (視覚的境界線) テーブル</A>
+    <LI>
+<!--  <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6prop.html">The
+      'prop' (glyph properties) table</A> -->
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6prop.html">&lsquo;prop&rsquo; (グリフ属性) テーブル</A>
+  </UL>
+  <P>
+<!--
+  FontForge will current read and produce (if Apple mode is set in font generation)
+  the following tables: -->
+  現在、FontForge は以下のテーブルの読み書きを (Apple モードがフォント出力時に設定されていれば) 行います:
+  <TABLE BORDER CELLPADDING="2">
+    <CAPTION>
+<!--  Apple tables corresponding vaguely to <A HREF="#GDEF">GDEF</A>-->
+      <A HREF="#GDEF">GDEF</A> にほぼ相当する OpenType のテーブル
+    </CAPTION>
+    <TR>
+      <TH>tag</TH>
+      <TH>name</TH>
+<!--  <TH>Reading support</TH>-->
+      <TH>読み込みサポート</TH>
+<!--  <TH>Writing support</TH>-->
+      <TH>書き出しサポート</TH>
+    </TR>
+    <TR>
+      <TD><CODE>'lcar'</CODE></TD>
+<!--  <TD>ligature caret table</TD>-->
+      <TD>合字キャレットテーブル</TD>
+<!--  <TD>FontForge will read ligature carets</TD>-->
+      <TD>FontForge は合字キャレットを読み込みます</TD>
+<!--  <TD>FontForge will produce this table if the user has specified ligature
+        carets</TD> -->
+      <TD>FontForge は、ユーザが合字キャレットを出力していればこのテーブルを出力します。</TD>
+    </TR>
+    <TR>
+      <TD><CODE>'prop'</CODE></TD>
+<!--  <TD>glyph properties table</TD>-->
+      <TD>グリフ属性テーブル</TD>
+<!--  <TD>FontForge will read this table to figure out which glyphs are hebrew
+        and arabic, and which have 'r2la' substitutions.</TD> -->
+      <TD>FontForge は、ヘブライ文字とアラビア文字にあたり、&lsquo;r2la&rsquo;置換を行うののがどの文字であるかを特定するためにこのテーブルを読み込みます。</TD>
+<!--  <TD>FontForge will generate this table if the font contains some right to
+        left glyphs.</TD> -->
+      <TD>FontForge は、フォントに何らかの右から左へ書くグリフが含まれているときにこのテーブルを出力します。</TD>
+    </TR>
+  </TABLE>
+  <P>
+  <TABLE BORDER CELLPADDING="2">
+    <CAPTION>
+<!--  Apple tables corresponding vaguely to <A HREF="#GPOS">GPOS</A>-->
+      <A HREF="#GPOS">GPOS</A> にほぼ相当する OpenType のテーブル
+    </CAPTION>
+    <TR>
+      <TH>tag</TH>
+      <TH>name</TH>
+<!--  <TH>Reading support</TH>-->
+      <TH>読み込みサポート</TH>
+<!--  <TH>Writing support</TH>-->
+      <TH>書き出しサポート</TH>
+    </TR>
+    <TR>
+      <TD><CODE>'kern'</CODE></TD>
+<!--  <TD>kerning table</TD>-->
+      <TD>カーニングテーブル</TD>
+<!--  <TD>FontForge will read horizontal/vertical kerning pairs and classes. FontForge
+        can read contextual kerning information too into a state machine.</TD> -->
+      <TD>FontForge は横書き/縦書きカーニングペアとカーニングクラスを読み込みます。FontForge は文脈依存のカーニング情報を状態機械に読み込むこともできます。</TD>
+<!--  <TD>FontForge will produce this if the font contains kerning data - - kerning
+        pairs, kerning by classes, and kerning by state machine.</TD> -->
+      <TD>FontForge は、フォントにカーニングデータが含まれていればそれ——カーニングペア・クラスごとのカーニングおよび状態機械によるカーニング——を出力します。</TD>
+    </TR>
+    <TR>
+      <TD><CODE>'opbd'</CODE></TD>
+<!--  <TD>Optical bounds table</TD>-->
+      <TD>視覚的字端テーブル</TD>
+<!--  <TD>FontForge will read optical bounds</TD>-->
+      <TD>FontForge は視覚的字端を読み込みます</TD>
+<!--  <TD>FontForge will produce this table if the user has specified right and
+        left bounds as simple positions ('lfbd' and 'rtbd').</TD> -->
+      <TD>FontForge は、ユーザが単純な位置による左端および右端の指定 (&lsquo;lfbd&rsquo;と&lsquo;rtbd&rsquo;) を行った場合、これらのテーブルを出力します。</TD>
+    </TR>
+  </TABLE>
+  <P>
+  <P>
+<!--
+  FontForge has support for the <CODE>'mort'</CODE> and
+  <CODE>'<A NAME="morx">morx</A>'</CODE> tables (Glyph metamorphosis and extended
+  glyph metamorphosis tables). These correspond vaguely to the
+  <A HREF="#GSUB">GSUB</A> table. Note: Any feature type/setting combinations
+  which correspond directly to an open type feature will be converted to the
+  opentype tag when read in. It will be converted back to a feature/setting
+  when an apple font is generated (use
+  <A HREF="prefs.html#Mac">File-&gt;Preferences</A> to extend FontForge's mapping
+  from feature type/setting to opentype tags). -->
+  FontFonge には <CODE>&lsquo;mort&rsquo;</CODE>  (グリフ変形) テーブルと <CODE>&lsquo;<A NAME="morx">morx</A>&rsquo;</CODE> (拡張グリフ変形) テーブルのサポートが含まれています。これらは大まかに <A HREF="#GSUB">GSUB</A> テーブルと対応しています。注意: OpenType の昨日に直接対応するすべての任意の機能タイプ/設定の組合せは、読み込み時に OpenType タグに変換されます。それが機能/設定の対に書き戻されるのは、Apple 対応のフォントを生成したとき (FontForge の機能/設定から OpenType タグへの対応表を拡張するには、<A HREF="prefs.html#Mac"><CODE>ファイル(<U>F</U>)</CODE>→<CODE>環境設定(<U>E</U>)...</CODE></A> を使用してください)。
+  <TABLE BORDER CELLPADDING="2">
+    <CAPTION>
+<!--  Sub tables of <CODE>'mort'</CODE> or <CODE>'morx'</CODE>-->
+      <CODE>&lsquo;mort&rsquo;</CODE> または <CODE>&lsquo;morx&rsquo;</CODE> テーブルのサブテーブル
+    </CAPTION>
+    <TR>
+      <TH></TH>
+<!--  <TH>name</TH>-->
+      <TH>名前</TH>
+<!--  <TH>Reading support</TH>-->
+      <TH>読み込みサポート</TH>
+<!--  <TH>Writing support</TH>-->
+      <TH>書き出しサポート</TH>
+    </TR>
+    <TR>
+      <TD>0</TD>
+<!--  <TD>Indic style rearrangement</TD>-->
+      <TD>インド系文字用の再配置</TD>
+<!--  <TD>FontForge can read these and stores them as state machines (which can
+        be edited with <A HREF="fontinfo.html#Mac-SM">Font Info</A>)</TD> -->
+      <TD>FontForge はこれらを読み込み、状態機械として格納することができます (それらは <A HREF="fontinfo.html#Mac-SM">フォント情報</A> で編集することができます)。</TD>
+<!--  <TD>Any indic state machines will be output in the generated font.</TD>-->
+      <TD>すべてのインド系文字状態機械は、出力されるフォントに書き出されます。</TD>
+    </TR>
+    <TR>
+      <TD>1</TD>
+<!--  <TD>contextual glyph substitution</TD>-->
+      <TD>文脈依存のグリフ置換</TD>
+<!--  <TD>FontForge can read these and stores them as state machines (which can
+        be edited with <A HREF="fontinfo.html#Mac-SM">Font Info</A>)</TD> -->
+      <TD>FontForge はこれらを読み込み、状態機械として格納することができます (それらは <A HREF="fontinfo.html#Mac-SM">フォント情報</A> で編集することができます)。</TD>
+<!--  <TD>If the font contains any state machines they will be output here. If
+        there are no state machines then the following conversions of opentype features
+        will be done: -->
+      <TD>フォントに何らかの状態機械が含まれていれば、それらはここに書き出されます。もし、状態機械が存在しないならば、以下のようにして OpenType 機能から変換します:
+        <UL>
+	  <LI>
+<!--	    FontForge will generate a <A NAME="cursive-connection">cursive connection
+	    </A>feature using this subtable type if the font contains 'init', 'medi',
+	    'fina' or 'isol' simple substitutions. -->
+	    FontForge は、フォントに&lsquo;init&rsquo;,&lsquo;medi&rsquo;,&lsquo;fina&rsquo;または&lsquo;isol&rsquo;による単純置換が含まれていれば、このサブテーブルを使って<A NAME="cursive-connection">筆記体の接続</A>機能を書き出します。
+	  <LI>
+<!--	    In <A HREF="gposgsub.html#sometimes">some cases</A> FontForge is able to
+	    convert an OpenType Contextual/Chaining substitution table into an Apple
+	    contextual glyph substitution table. -->
+	    <A HREF="gposgsub.html#sometimes">一定の条件を満たしている場合</A>には、FontForge は OpenType の文脈依存テーブル/連鎖型文脈依存テーブルを Apple の文脈依存グリフ置換テーブルに変換することができます。
+        </UL>
+      </TD>
+    </TR>
+    <TR>
+      <TD>2</TD>
+<!--  <TD>ligature substitution</TD>-->
+      <TD>合字置換</TD>
+<!--  <TD>FontForge can read the unconditional information from these and stores
+        them as opentype ligatures (which can be edited with
+        <A HREF="charinfo.html#features">Char Info</A>).</TD> -->
+      <TD>FontForge は無条件の合字情報を読み込み、OpenType の合字として格納することができます (それらは <A HREF="charinfo.html#features">グリフ情報</A> で編集することができます)。</TD>
+<!--  <TD>If there are any ligatures with an apple feature/setting (or which have
+        an opentype tag which can be converted to an apple feature/setting) then
+        this table will be output.</TD>-->
+      <TD>フォントに何らかの合字が含まれていれば (または Apple の機能/設定に変換可能な OpenType タグが存在すれば) このテーブルが出力されます。</TD>
+    </TR>
+    <TR>
+      <TD>4</TD>
+<!--  <TD>non-contextual glyph substitution</TD>-->
+      <TD>文脈非依存のグリフ置換</TD>
+<!--  <TD>FontForge can read these and stores them as opentype simple substitutions
+        (which can be edited with <A HREF="charinfo.html#features">Char Info</A>)</TD> -->
+      <TD>FontForge はこれらを読み込み、OpenType の単純置換として格納することができます (それらは <A HREF="charinfo.html#features">グリフ情報</A> で編集することができます)。</TD>
+<!--  <TD>If there are any substitutions with an apple feature/setting (or which
+        have an opentype tag which can be converted to an apple feature/setting)
+        then this table will be output.</TD> -->
+      <TD>フォントに何らかの置換が含まれていれば (または Apple の機能/設定に変換可能な OpenType タグが存在すれば) このテーブルが出力されます。</TD>  </TR>
+    <TR>
+      <TD>5</TD>
+<!--  <TD>contextual glyph insertion</TD>-->
+      <TD>文脈依存のグリフ挿入</TD>
+<!--  <TD>FontForge can read these and stores them as state machines (which can
+        be edited with <A HREF="fontinfo.html#Mac-SM">Font Info</A>)</TD> -->
+      <TD>FontForge はこれらを読み込み、状態機械として格納することができます (それらは <A HREF="fontinfo.html#Mac-SM">フォント情報</A> で編集することができます)。</TD>
+<!--  <TD>Any glyph insertion state machines will be output in the generated font.</TD>-->
+      <TD>すべてのグリフ挿入状態機械は出力されるフォントに書き出されます。</TD>
+    </TR>
+  </TABLE>
+  <H3>
+<!--  What features can be <A NAME="Conversion">interconverted</A> between OpenType
+      and AAT? -->
+      OpenType と AAT との間ではどの機能が<A NAME="Conversion">相互変換</A>可能か?
+  </H3>
+  <P>
+<!--
+  Some features have almost the same meaning in OpenType and AAT (although
+  they are expressed quite differently), others are similar enough that they
+  can sometimes be converted, and others have essentially no common ground. -->
+  いくつかの機能は OpenType と AAT でほとんど同じ意味をもっており (それらの表現方法はまったく異なりますが)、他のいくつかは場合によっては変換可能なほど十分似ていますが、その他は本質的に共通の基盤をもっていません。
+  <P>
+  <TABLE BORDER CELLPADDING="2">
+    <TR>
+<!--  <TH>OT Table</TH>-->
+      <TH>OpenType テーブル</TH>
+<!--  <TH>AAT Table</TH>-->
+      <TH>AAT テーブル</TH>
+      <TH><P ALIGN=Left>
+<!--    Description</TH>-->
+        説明</TH>
+    </TR>
+    <TR>
+      <TD VALIGN="Top"><P ALIGN=Center>
+        GDEF</TD>
+      <TD VALIGN="Top"><P ALIGN=Center>
+        lcar</TD>
+<!--  <TD>The ligature caret information in both 'GDEF' and 'lcar' is essentially
+        identical and FontForge has no trouble reading both and converting from one
+        to the other.</TD> -->
+      <TD>合字キャレット情報は&lsquo;GDEF&rsquo;と&lsquo;lcar&rsquo;で本質的に等しく、FontForge は両形式の読み込みと、相互変換を問題なく行えます。
+    </TR>
+    <TR>
+      <TD><P ALIGN=Center>
+        GPOS</TD>
+      <TD><P ALIGN=Center>
+        kern</TD>
+<!--  <TD>In most cases kerning information can be converted from one format to
+        another. Both provide support for vertical kerning and right to left kerning.
+        Both provide support for kerning by glyph pair and kerning by classes.-->
+      <TD>ほとんどの場合、カーニング情報は片方のフォーマットからもう一方へと変換可能です。両方とも縦書きカーニングと右横書きのカーニングをサポートしています。
+        <P>
+<!--    OpenType allows kerning commands to be supplied via a contextual chaining
+        feature, Apple allows them to be controled by a state machine. FontForge
+        supports both, but does not interconvert.</TD> -->
+        OpenType はカーニングコマンドを条件連鎖型の機能を通じて提供可能で、Apple では状態機械によって制御することが可能です。FontForge は両方をサポートしていますが、相互変換はしません。</TD>
+    </TR>
+    <TR>
+      <TD><P ALIGN=Center>
+        GPOS</TD>
+      <TD><P ALIGN=Center>
+        opbd</TD>
+<!--  <TD>The GPOS features 'lfbd' and 'rtbd' provide the information needed to
+        generate an Apple opbd table. If FontForge reads a font with an opbd table
+        it will generate appropriate 'lfbd' and 'rtbd' features. If FontForge generates
+        a font in apple mode that has these features it will create an opbd table.
+        Similarly when FontForge reads an opbd table it will create 'lfbd' and 'rtbd'
+        features.</TD> -->
+      <TD>GPOS 機能&lsquo;lfbd&rsquo;および&lsquo;rfbd&rsquo;は Apple の opbd テーブルを生成するのに十分なだけの情報を備えています。FontForge が opbd テーブルを服務フォントを読み込んだときには、適切な&lsquo;lfbd&rsquo;および&lsquo;rtbd&rsquo;機能を作成します。FotnForge が Apple モードのフォントを出力するときにそれらの機能が存在する場合、&lsquo;opbd&rsquo;テーブルを作成します。同様に、FontForge が opbd テーブルを読み込むとき、&lsquo;lfbd&rsquo;と&lsquo;rtbd&rsquo;機能を作成します。</TD>
+    </TR>
+    <TR>
+      <TD><P ALIGN=Center>
+        GPOS</TD>
+      <TD>
+	  <HR>
+      </TD>
+<!--  <TD>I am not aware of any way to convert other GPOS features to AAT.</TD> -->
+      <TD>私はその他の GPOS 機能を AAT に変換する方法については知りません。</TD>
+    </TR>
+    <TR>
+      <TD><P ALIGN=Center>
+        GSUB</TD>
+      <TD><P ALIGN=Center>
+        morx</TD>
+<!--  <TD ROWSPAN=2>The 'mort' and 'morx' tables have the same capabilities ('mort'
+        tables are an old format and Apple currently encourages that 'morx' tables
+        be used instead). FontForge can read either one, but only generates 'morx'
+        tables. Interconversion depends on specific feature types and the sub-table
+        formats, see below</TD>-->
+      <TD ROWSPAN=2>&lsquo;mort&rsquo;および&lsquo;morx&rsquo;テーブルは同じ機能をもっています (&lsquo;mort&rsquo;テーブルは古いフォーマットで、Apple は現在それの代わりに&lsquo;morx&rsquo;を用いることを推奨しています)。FontForge はどちらも読み込むことはできますが、&lsquo;morx&rsquo;テーブルのみを出力します。相互変換ができるかどうかは個別の機能タイプおよびサブテーブルに依存します。以下を参照してください:
+    </TR>
+    <TR>
+      <TD><P ALIGN=Center>
+        GSUB</TD>
+      <TD><P ALIGN=Center>
+        mort</TD>
+    </TR>
+  </TABLE>
+  <H4>
+<!--  An analysis of GSUB and morx sub-tables and feature tags-->
+      GSUB および morx サブテーブルの解析と機能タグ
+  </H4>
+  <P>
+<!--
+  OpenType uses a four character feature tag (like 'liga') while Apple uses
+  two numbers to represent a feature setting (&lt;1,2&gt;). For FontForge to
+  be able to inter-convert an OpenType feature into an Apple feature there
+  must first be a correspondence between the two naming conventions. Sometimes
+  there is an easy direct conversion (above 'liga' and &lt;1,2&gt; both represent
+  "Common Ligatures") but far more often there is none. See
+  <A HREF="gposgsub.html#OT-Mac-features">below</A> for a list of the tags
+  and feature settings that FontForge considers similar enough to interconvert. -->
+  OpenType が 4 文字の機能タグ (&lsquo;liga&rsquo;など) を使用しているのに対し、Apple は機能設定を表す 2 個の数値 (&lt;1,2&gt; など) を使用します。FontForge にとっては、OpenType の機能と Apple の機能を相互変換できるようにするためには、まず 2 つの名前付規約の間の対応づけが存在しなければなりません。時には、単純な直接変換が存在する場合もあります (例えば、&lsquo;liga&rsquo;と &lt;1,2&gt; はどちらも“一般的な合字”を表します)。FontForge が、相互変換が十分可能なほど似ているとみなしているタグと機能の設定の一覧は、<A HREF="gposgsub.html#OT-Mac-features">以下</A>を参照してください。
+  <P>
+<!--
+  GSUB tables have 7 sub-table formats, while morx tables have 5. -->
+  GSUB テーブルには 7 種類のサブテーブルフォーマットがあるのに対し、morx テーブルには 5 種類があります。
+  <TABLE BORDER CELLPADDING="2">
+    <TR>
+<!--  <TH>GSUB<BR>
+        sub-<BR>
+        table</TH>-->
+      <TH>GSUB<BR>サブ<BR>テーブル</TH>
+<!--  <TH>morx<BR>
+        sub-<BR>
+        table</TH>-->
+      <TH>morx<BR>サブ<BR>テーブル</TH>
+      <TH><P ALIGN=Left>
+<!--    Description</TH>-->
+        説明</TH>
+    </TR>
+    <TR>
+      <TD VALIGN="Top"><P ALIGN=Center>
+<!--    Single</TD> -->
+        単独</TD>
+      <TD VALIGN="Top"><P ALIGN=Center>
+<!--    Non-<BR>
+        Contextual<BR>
+        Glyph</TD> -->
+        文脈<BR>独立な<BR>グリフ</TD>
+<!--  <TD>These two sub-tables have almost exactly the same capabilities. Each
+        allows one glyph to be substituted for another. The morx sub-table also allows
+        a glyph to be deleted, while the GSUB sub-table does not.</TD> -->
+      <TD>これらの 2 種類のサブテーブルはほとんど正確に同じ機能をもっています。それぞれ 1 個のグリフをもう 1 つのグリフにすることができます。morx サブテーブルではグリフを削除することもできますが、GSUB サブテーブルではこれを許していません。</TD>
+    </TR>
+    <TR>
+      <TD VALIGN="Top"><P ALIGN=Center>
+<!--    Multiple</TD>-->
+        複数</TD>
+      <TD></TD>
+<!--  <TD>This GSUB subtable allows a single glyph to be replaced by multiple glyphs.
+        It has some similarities to Apple's Glyph Insertion sub-table except:-->
+      <TD>この GSUB サブテーブルは、1 個のグリフを複数のグリフによって置き換える個とが可能です。以下の相違点を除いて、Apple のグリフ挿入サブテーブルとある程度の類似点があります:
+        <UL>
+	  <LI>
+<!--	    the 'morx' sub-table always leaves the current glyph in the glyph stream,
+	    while this sub-table need not -->
+	   &lsquo;morx&rsquo;サブテーブルは、常に現在のグリフをグリフストリームに残すのに対して、このサブテーブルは残す必要はありません。
+	  <LI>
+<!--	    the 'morx' sub-table is contextual while this sub-table is never. (But if
+	    this sub-table is wrapped inside a Context or Chaining Context subtable the
+	    result can be contextual). -->
+	   &lsquo;morx&rsquo;サブテーブルは文脈依存であるのに対し、このサブテーブルは完全に文脈独立です (ただし、このサブテーブルが文脈依存または連鎖型文脈依存サブテーブルに包まれているときは、結果が文脈依存になることもあり得ます)。
+        </UL>
+      </TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD VALIGN="Top"><P ALIGN=Center>
+<!--    Glyph<BR>
+        Insertion</TD> -->
+        グリフ<BR>挿入</TD>
+<!--  <TD>This morx subtable allows a string of glyphs to be inserted before or
+        after the current glyph (the current glyph always remains). This sub-table
+        is contextual (ie. the insertion can be restricted to certain contexts).
+        It bears some similarities to the GSUB Multiple subtable above.</TD> -->
+      <TD>この morx サブテーブルを使うと、グリフの列を現在のグリフの前後に挿入することができます (現在のグリフは常にそのまま残ります)。このサブテーブルは文脈依存です (すなわち、挿入が起こるのを特定の文脈に制限することができます)。上に挙げた GPOS の複数置換テーブルとある種の類似性があります。</TD>
+    </TR>
+    <TR>
+<!--  <TD VALIGN="Top">Alternate</TD> -->
+      <TD VALIGN="Top">選択肢</TD>
+      <TD></TD>
+<!--  <TD>This GSUB subtable allows a single glyph to be replaced by any one of
+        several alternatives (presumably with help from a word processor's UI). An
+        example of this would be a character which had several swash variants. There
+        is nothing like this in the 'morx' table.</TD>-->
+      <TD>この GSUB サブテーブルを使うと、1 個のグリフをいくつかの選択肢から (おそらくは、ワードプロセッサーの UI の助けを借りて) 任意の 1 個と交換することができます。この一例はいくつかの変種のスワッシュをがある文字です。&lsquo;morx&rsquo;テーブルにはこれと似たような機能はありません。</TD>
+    </TR>
+    <TR>
+      <TD VALIGN="Top"><P ALIGN=Center>
+<!--    Ligature</TD> -->
+        合字</TD>
+      <TD VALIGN="Top"><P ALIGN=Center>
+<!--    Ligature</TD> -->
+        合字</TD>
+<!--  <TD>Both formats have ligature sub-tables. The 'GSUB' version is unconditional
+        (the ligature is always applied -- though a ligature substitution could be
+        embedded in an OpenType contextual substitution to make it condtional). The
+        'morx' version can be contextual (though in fonts I have examined it is usually
+        uncontextual). FontForge only supports unconditional ligatures. -->
+      <TD>どちらのフォーマットにも合字サブテーブルは存在します。&lsquo;GSUB&rsquo;のバージョンは文脈非依存です (合字は常に適用されます——合字置換を OpenType の文脈依存の置換に埋め込んで、実行条件をつけることはできますが)。&lsquo;morx&rsquo;バージョンは文脈依存にすることも可能です (私が調べた限りでは、文脈非依存であるのが通例でしたが)。FontForge は文脈非依存の合字のみをサポートしています。
+        <P>
+<!--    FontForge can read all the unconditional ligatures from a 'morx' sub-table.
+        FontForge loses all contextual ligatures. -->
+        FontForge はすべての文脈非依存の合字を&lsquo;morx&rsquo;サブテーブルから読み込むことができます。FontForge は文脈依存の合字をすべて捨ててしまいます。
+        <P>
+<!--    In OpenType, contextual ligatures can be built by wrapping a ligature sub-table
+        inside a Context or Chaining Context subtable.</TD> -->
+        OpenType では、文脈依存の合字は、合字サブテーブルを文脈依存または連鎖型文脈依存サブテーブルに埋め込むことによって作成可能です。</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD VALIGN="Top"><P ALIGN=Center>
+<!--    Contextual<BR>
+        Glyph</TD> -->
+        文脈依存の<BR>グリフ</TD>
+<!--  <TD>This morx subtable allows single glyph substitutions to be applied within
+        certain contexts. At first glance it seems that this could be converted into
+        an opentype Context subtable, <A HREF="gposgsub.html#sometimes">but this
+        is rarely the case</A>.</TD>-->
+      <TD>この morx サブテーブルを使うと、単純グリフ置換をいくつかの文脈に適用することができます。一見して、これは OpenType の文脈依存サブテーブルに変換することができるように思えますが、<A HREF="gposgsub.html#sometimes">それが可能なのはごく稀な場合でしかありません。</TD>
+    </TR>
+    <TR>
+      <TD><P ALIGN=Center>
+<!--    Context</TD> -->
+        文脈依存</TD>
+      <TD></TD>
+<!--  <TD ROWSPAN="2" VALIGN="Top">These GSUB subtables allow any collection of
+        other substitutions to be applied contextually. At first glance one might
+        think that these (with appropriate nested substitutions) might be converted
+        to 'morx' contextual glyph substitutions, contextual ligatures, or even glyph
+        insertion. <A HREF="gposgsub.html#sometimes">Unfortunately this is rarely
+        the case</A>.</TD> -->
+      <TD ROWSPAN="2" VALIGN="Top">これらの GSUB サブテーブルはその他の置換の任意の集合を文脈依存の形で適用することが可能です。一見して (適切な入れ子構造の置換を含む) この種類のテーブルは&lsquo;morx&rsquo;の文脈依存グリフ置換、文脈依存の合字、またはグリフ挿入にさえ変換することが可能なように思えるでしょう。<A HREF="gposgsub.html#sometimes">それが可能なのはごく稀な場合でしかありません。</A>
+    </TR>
+    <TR>
+      <TD><P ALIGN=Center>
+<!--    Chaining<BR>
+        Context</TD> -->
+        連鎖型<BR>文脈依存</TD>
+      <TD></TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD><P ALIGN=Center>
+<!--    Reverse<BR>
+        Chaining<BR>
+        Context</TD> -->
+        逆順の<BR>連鎖型<BR>文脈依存</TD>
+      <TD></TD>
+<!--  <TD>This GSUB subtable is applied backwards to the stream of glyphs, it allows
+        a single glyph substitution per contextual match. There is nothing like it
+        in 'morx'.</TD> -->
+      <TD>この GSUB サブテーブルはグリフのストリームに対して逆順に適用されるもので、所定の文脈に一致するごとに単独グリフ置換を 1 回行うことができます。&lsquo;morx&rsquo;にはこれに似た機能は存在しません。</TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD></TD>
+      <TD><P ALIGN=Center>
+<!--    Indic<BR>
+        Rearrange-<BR>
+        ment</TD> -->
+        インド系<BR>文字の<BR>再配置</TD>
+<!--  <TD>This&lsquo;morx&rsquo;subtable allows for several glyphs to interchange their positions
+        in the glyph stream. There is nothing like it in GSUB (or GPOS for that matter).</TD>-->
+      <TD>この&lsquo;morx&rsquo;サブテーブルを使うと、グリフのストリームに含まれるいくつかの文字の順番を交換する事ができます。 GSUB には (同じく GPOS にも) 似たような機能は存在しません。</TD>
+    </TR>
+  </TABLE>
+  <H4>
+<!--  Why do contextual glyph substitutions only <A NAME="sometimes">sometimes</A>
+      get generated in AAT? -->
+      なぜ文脈依存のグリフ置換は<A NAME="sometimes">たまに</A>しか AAT で出力できないのか?
+  </H4>
+  <P>
+<!--
+  Sadly OpenType and AAT provide disjoint capabilities when it comes to contextual
+  matching. AAT is more capable in some areas, OpenType more capable in others.
+  FontForge is able to convert an OpenType contextual substitution into an
+  AAT one if FontForge can detect that the OpenType substitution does not use
+  capabilities beyond those of AAT. Currently this means: -->
+  嘆かわしいことに、OpenType と AAT とが提供している機能は、文脈を照合する処理に関しては共通点がないのです。ある部分では AAT のほうが機能豊富で、別の部分では OpenType のほうが機能豊富です。FontForge が OpenType の文脈依存置換を AAT の置換に変換することができるのは、その OpenType 置換が AAT の能力を超えた機能を使用していないことを FontForge が検出できたときに限られます。現在のところ、具体的には以下の条件を満たしている必要があります:
+  <UL>
+    <LI>
+<!--  There is an apple feature which matches the otf tag-->
+      その OTF タグに適合する Apple の機能が存在する
+    <LI>
+<!--  And one of the following is true:-->
+      それに加え、以下のどれか 1 つが正しい:
+      <OL>
+        <LI>
+<!--	  Either -->
+	  以下のどちらかの条件が満たされている:
+	  <UL>
+	    <LI>
+<!--	      The sub-table is in coverage format -->
+	      そのサブテーブルが適用範囲フォーマットであるか、もしくは
+	    <LI>
+<!--	      The sub-table contains either exactly one nested single glyph replacement
+	      substitution, or<BR> -->
+	      そのサブテーブルがちょうど 1 個の入れ子構造の単純グリフ置換を含んでいるか、または<BR>
+<!--	      it contains exactly two single glyph replacements and one of them refers
+	      to the last glyph matched (and the other does not) -->
+	      ちょうど 2 個の単純グリフ置換を含んでいて、それらのうちの 1 つが、最後に一致したグリフを参照している (そして、もう 1 つのほうは参照していない)
+	  </UL>
+        <LI>
+<!--	  or -->
+	  または以下の場合。
+	  <UL>
+	    <LI>
+<!--	      The sub-table is in either glyph or class format -->
+	      そのサブテーブルがグリフフォーマットかクラスフォーマットのどちらかである
+	    <LI>
+<!--	      If in class format then either the backtrack and lookahead classes must be
+	      the same as the main class, or they must not be used. -->
+	      クラスフォーマットの場合、バックトラックと前方参照クラスは全てメインクラスと同じであるか、それらを使っていないかのどちらかでなければなりません。
+	    <LI>
+<!--	      If a rule has a substitution at a given glyph position, then all rules which
+	      match the current rule up to that glyph position must also have a substitution
+	      at that position. -->
+	      あるルールが所定のグリフ位置での置換を含んでいる場合、現在のルールに一致するそのグリフ位置までのすべてのルールもまた、その位置における置換を含んでいなければなりません。
+	    <LI>
+<!--	      A rule with exactly one substitution is acceptable<BR>
+	      A rule with one substitution in the middle and one substitution on the last
+	      glyph is acceptable.<BR>
+	      A rule may contain more substitutions only if there is another rule which
+	      matches it exactly up to the internal substitution.<BR>
+	      So the following rule set is valid: -->
+	      ちょうど 1 個の置換を含むルールは認められます。<BR>
+	      途中に 1 個の置換を含み最後のグリフで起こる置換を 1 個含むルールも認められます。<BR>
+	      ルールには、さらに追加の置換を含むことができる場合があります。それは、途中までの置換とその部分まで正確に同じ置換を行う別のルールがある場合に限ります。<BR>
+	      これによると、以下の置換セットは正しいことになります:
+	      <TABLE BORDER CELLPADDING="2">
+	        <TR>
+<!--		  <TH>Rule</TH>-->
+		  <TH>ルール</TH>
+		  <TD>a</TD>
+		  <TD>b</TD>
+		  <TD>c</TD>
+		  <TD>d</TD>
+		  <TD>e</TD>
+		  <TD>f</TD>
+	        </TR>
+	        <TR>
+<!--		  <TH>Rule</TH>-->
+		  <TH>ルール</TH>
+		  <TD>a</TD>
+		  <TD>b</TD>
+		  <TD>c</TD>
+		  <TD>d</TD>
+		  <TD></TD>
+		  <TD></TD>
+	        </TR>
+	        <TR>
+<!--		  <TH>Rule</TH>-->
+		  <TH>ルール</TH>
+		  <TD>a</TD>
+		  <TD>b</TD>
+		  <TD></TD>
+		  <TD></TD>
+		  <TD></TD>
+		  <TD></TD>
+	        </TR>
+	        <TR>
+<!--		  <TH>Substitutions</TH> -->
+		  <TH>置換</TH>
+		  <TD>A</TD>
+		  <TD>B</TD>
+		  <TD>C</TD>
+		  <TD>D</TD>
+		  <TD>E</TD>
+		  <TD>F</TD>
+	        </TR>
+	      </TABLE>
+	      <P>
+<!--	      So the third rule will match an "ab" and convert them to "AB" (and this is
+	      valid because we have one internal and one final substitution and that's
+	      ok), then if that "ab" is followed by "cd" then rule 2 kicks in and will
+	      replace the "cd" with "CD" (again this has one internal and one final
+	      substitution, which is ok), and if that is followed by "ef" then they will
+	      be converted to "EF". -->
+	      ここでは 3 番目のルールは“ab”に一致し、それを“AB”に変換します (これは途中までの置換 1 個と最後までの置換 1 個を含んでいるので、正しいルールです) その後、“ab”の後に“cd”が来た場合にはルール 2 が呼び出され、“cd”を“CD”に置き換え (この場合も、1 個の中間置換と 1 個の末尾までの置換を含んでおり、これも問題ありません)、さらに“ef”が後ろに来たならば、それらは“EF”に変換されます。
+	      <P>
+<!--	      The following is not valid:-->
+	      以下は正しくありません:
+	      <TABLE BORDER CELLPADDING="2">
+	        <TR>
+<!--		  <TH>Substitutions</TH> -->
+		  <TH>置換</TH>
+		  <TD></TD>
+		  <TD>B</TD>
+		  <TD></TD>
+	        </TR>
+	        <TR>
+<!--		  <TH>Rule</TH>-->
+		  <TH>ルール</TH>
+		  <TD>a</TD>
+		  <TD>b</TD>
+		  <TD>c</TD>
+	        </TR>
+	        <TR>
+		  <TD COLSPAN=4>
+		      <HR>
+		  </TD>
+	        </TR>
+	        <TR>
+<!--		  <TH>Rule</TH>-->
+		  <TH>ルール</TH>
+		  <TD>a</TD>
+		  <TD>b</TD>
+		  <TD></TD>
+	        </TR>
+	        <TR>
+<!--		  <TH>Substitutions</TH> -->
+		  <TH>置換</TH>
+		  <TD>A</TD>
+		  <TD></TD>
+		  <TD></TD>
+	        </TR>
+	      </TABLE>
+	      <P>
+<!--	      The two rules have substitutions at different places and that can't be expressed
+	      in an Apple state machine given that they have the same glyphs. -->
+	      2 つのルールは異なる場所での置換を含んでいるので、それらが同じグリフを含んでいるならば Apple 状態機械では表現できません。
+	  </UL>
+      </OL>
+  </UL>
+  <P>
+<!--
+  FontForge does not even try to convert an AAT contextual glyph substitution
+  sub-table, too few of these can be expressed in OpenType to make it worth
+  while. -->
+  FontForge は、AAT の文脈依存グリフ置換サブテーブルを変換しようと試みることすらありません。OpenType に変換可能な場合があまりにも少なくて、試みる価値がないからです。
+  <P>
+<!--
+  NOTE: It would be possible to convert more lookups to state machines if FontForge
+  were willing to: -->
+  注意: もし FontForge が以下の処理を行えば、より多くの照合を状態機械に変換することができるでしょう:
+  <OL>
+    <LI>
+<!--  Use several state machines to represent complicated lookups -->
+      複雑な照合を表現するためにいくつかの状態機械を使う
+    <LI>
+<!--  Add additional glyphs to the font to be used as temporary state flags. -->
+      一時的な状態フラグとして、追加のグリフをフォントに付け加える
+  </OL>
+  <P>
+<!--
+  FontForge will do neither of these. -->
+  これらの両方とも、FontForge が実現する予定はありません。
+  <H4>
+<!--  <FONT COLOR="Red">BUG</FONT>-->
+      <FONT COLOR="Red">バグ</FONT>
+  </H4>
+  <P>
+<!--
+  There is a subtle bug involved in converting a chaining contextual substitution
+  into an Apple contextual glyph substitution. AAT does not have the concept
+  of a backtrack list, this means that substitutions may occur in a different
+  order. -->
+  連鎖型文脈依存置換から Apple の文脈依存グリフ置換への変換処理に関する微妙なバグが存在します。AAT にはバックトラックリストの概念が存在しないので、それにより置換が起こる順番が変わってしまう可能性があります。
+  <H4>
+<!--  Why can't all contextual/chaining tables be
+      <A NAME="not-converted">converted</A>? -->
+      なぜすべての文脈依存/連鎖型文脈依存テーブルを<A NAME="not-converted">変換でき</A>ないのか?
+  </H4>
+  <P>
+<!--
+  Well, obviously there are some thing that just aren't present. The concept
+  of contextual positioning is missing from AAT, while Indic rearrangement
+  is missing from OpenType. So let's concentrate on contextual substitutions,
+  which both appear to support. The argument that follows is based on the
+  capabilities of contextual matching, it applies equally to contextual ligatures,
+  glyph insertion, glyph substitution and kerning, the examples given are only
+  of glyph substitution because it is easier to represent (and because FontForge
+  is only willing to convert contextual glyph substitutions) But even here,
+  there is a very basic mismatch in concepts between the way OpenType and Apple
+  specify contextual substitutions. Consider the following contextual substitution
+  in a glyph list format: -->
+  ええと、いくつかの機能は明らかに片方にしか存在しません。文脈依存の位置指定は AAT にはありませんし、インド系文字の再配置は OpenType にはありません。
+  だからここでは両方でサポートされているらしい、文脈依存の置換に話をしぼることにしましょう。以下の議論は、文脈の照合処理の能力に基づいており、文脈依存の合字・グリフ挿入・グリフ置換およびカーニングのどれについても同じことが言えるので、ここで示す例は表現が簡単なグリフ置換のみを挙げます (それにまた、FontForge が変換を行おうとするのは文脈依存のグリフ置換のみに限られるからです)。しかしそれに限っても、OpenType と Apple が仕様で示している文脈依存の置換を行う方法は、根本的にかけ離れた概念に基づいています。
+  以下のような、グリフリストフォーマットによる文脈依存の置換があるとします:
+  <TABLE BORDER CELLPADDING="2">
+    <TR>
+<!--  <TH>Initial Sequence</TH>-->
+      <TH>初期シーケンス</TH>
+      <TD>a</TD>
+      <TD>b</TD>
+      <TD>c</TD>
+      <TD>d</TD>
+    </TR>
+    <TR>
+      <TH><P ALIGN=Left>
+<!--    Replace With</TH>-->
+        置き換え対象</TH>
+      <TD>&nbsp;</TD>
+      <TD>B</TD>
+      <TD>C</TD>
+      <TD>&nbsp;</TD>
+    </TR>
+  </TABLE>
+  <P>
+<!--
+  Now in OpenType this means if you find the sequence "abcd" then replace the
+  "b" with "B" and the" c" with "C". But this can't be expressed in an Apple
+  state machine. In OpenType the match is done first, and then the substitutions
+  occur. In a state machine the substitutions have to be done (almost) concurrently
+  with the match and so must happen whether the final "d" is present or not.
+  (Note I'm using a glyph sequence because it is easier to display in an example.
+  The same problem applies if the substitution is expressed by classes or by
+  coverage tables) -->
+  ここで、OpenType ではこれは“abcd”というシーケンスを探し出し、それから“b”を“B”に、“c”を“C”に置き換えます。しかしこれは Apple 状態機械では表現できません。OpenType では照合が最初に行われ、後から置換が行われます。状態機械では置換は (ほとんど) 照合と同期的に行われるので、最後の“d”があろうが無かろうが行わなければなりません。(ここで私がグリフ列を使用したのは、簡単に表示できるからであることに注意してください。同じ問題は、置換がクラスまたは適用範囲テーブルで表現されている場合にも起こります)
+  <P>
+<!--
+  Consider the following table with two glyph strings -->
+  以下のような、2 個のグリフ列を含むテーブルがあるとします:
+  <TABLE BORDER CELLPADDING="2">
+    <TR>
+<!--  <TH>Initial Sequence</TH>-->
+      <TH>初期シーケンス</TH>
+      <TD>a</TD>
+      <TD><P ALIGN=Center>
+        b</TD>
+      <TD><P ALIGN=Center>
+        c</TD>
+      <TD>d</TD>
+    </TR>
+    <TR>
+      <TH><P ALIGN=Left>
+<!--    Replace With</TH>-->
+        置き換え対象</TH>
+      <TD>&nbsp;</TD>
+      <TD><P ALIGN=Center>
+        B</TD>
+      <TD></TD>
+      <TD>&nbsp;</TD>
+    </TR>
+    <TR>
+<!--  <TH>Initial Sequence</TH>-->
+      <TH>初期シーケンス</TH>
+      <TD>a</TD>
+      <TD><P ALIGN=Center>
+        b</TD>
+      <TD><P ALIGN=Center>
+        c</TD>
+      <TD>e&nbsp;</TD>
+    </TR>
+    <TR>
+      <TH><P ALIGN=Left>
+<!--    Replace With</TH>-->
+        置き換え対象</TH>
+      <TD>&nbsp;</TD>
+      <TD></TD>
+      <TD><P ALIGN=Center>
+        &nbsp;C</TD>
+      <TD>&nbsp;</TD>
+    </TR>
+  </TABLE>
+  <P>
+<!--
+  So replace the "b" if the final "d" is present, otherwise replace the "c".
+  Again this cannot be expressed in Apple's state machines. -->
+  これは、最後に“d”が存在すれば“b”を置き換え、その他の場合には“c”を置き換えます。これも、Apple の状態機械では表現できません。
+  <P>
+<!--
+  Finally consider -->
+  最後に、以下の場合があったとします:
+  <TABLE BORDER CELLPADDING="2">
+    <TR>
+<!--  <TH>Initial Sequence</TH>-->
+      <TH>初期シーケンス</TH>
+      <TD><P ALIGN=Center>
+        a</TD>
+      <TD><P ALIGN=Center>
+        b</TD>
+      <TD><P ALIGN=Center>
+        c</TD>
+      <TD>d</TD>
+    </TR>
+    <TR>
+      <TH><P ALIGN=Left>
+<!--    Replace With</TH>-->
+        置き換え対象</TH>
+      <TD>&nbsp;</TD>
+      <TD><P ALIGN=Center>
+      </TD>
+      <TD>C</TD>
+      <TD>&nbsp;</TD>
+    </TR>
+    <TR>
+<!--  <TH>Initial Sequence</TH>-->
+      <TH>初期シーケンス</TH>
+      <TD><P ALIGN=Center>
+        b</TD>
+      <TD><P ALIGN=Center>
+        c</TD>
+      <TD><P ALIGN=Center>
+        e</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TH><P ALIGN=Left>
+<!--    Replace With</TH>-->
+        置き換え対象</TH>
+      <TD><P ALIGN=Center>
+        B&nbsp;</TD>
+      <TD></TD>
+      <TD><P ALIGN=Center>
+        &nbsp;</TD>
+      <TD>&nbsp;</TD>
+    </TR>
+  </TABLE>
+  <P>
+<!--
+  If this substitution is given the sequence "abce" it cannot work in AAT.
+  When it reads the "a" it will start down the "abcd" branch, the match will
+  not fail until it looks for the "d" and finds "e" instead. At that point
+  it is too late to switch to the "bce" substitution (which does match) because
+  the "b" glyph will not have been marked as a substitution location. -->
+  この置換が与えられた場合、シーケンス“abce”は AAT では動作しません。
+  "a" を読み込んだ時には“abcd”の分岐に入り、"d" を探そうとして“e”にぶつかるまで照合は失敗しません。ここでは、“bce”の分岐に入るのは遅すぎです(ので、一致しないことになります)。なぜなら、“b”のグリフは置換位置として印づけられなかったからです。
+  <P>
+    <HR>
+<!--
+  On the other hand, Apple's state machines can express things that OpenType
+  tables cannot (again I'm restricting myself to contextual glyph substitutions).
+  Consider the case of a swash glyph at the beginning (or end) of a word. Let
+  us say that a word begins when a letter appears at the start of input or
+  following a whitespace character. But OpenType has no way of expressing "start
+  of input" (or end of input) in a contextual/chaining context, whereas Apple's
+  state machines do.-->
+  一方、Apple の状態機械は OpenType ではできないような事を表現できます (ここでも文脈依存のグリフ置換に話を絞ります)。単語の最初 (または最後) のスワッシュグリフの場合を考えます。単語は、入力の最初または空白文字の次に始まるものと考えられるでしょう。しかし OpenType の文脈依存/連鎖型文脈依存においては、Apple の状態機械に存在する“入力の始まり”(または入力の終り) を表現する方法がありません。
+  <P>
+<!--
+  Since Apple's glyph substitutions can delete glyphs a contextual glyph
+  substitution table can create two character ligatures (one glyph is converted
+  to the ligature and the other is deleted), while OpenType tables must use
+  a ligature substitution to do this. -->
+  Apple のグリフ置換はグリフを削除する糊塗ができるので、文脈依存グリフ置換テーブルは 2 文字の合字を作成することができます (片方のグリフを合字に変換し、もう片方を削除します) が、OpenType でこれを行うためには、合字置換を使用しなければなりません。
+  <P>
+<!--
+  Finally an AAT state machine can match a general regular expression, while
+  OpenType tables can only match fixed length strings. Suppose you were typesetting
+  mathematics and wanted a substitution which would convert an arbitrary digit
+  string following a variable into a subscript (so x23 should become
+  x<SMALL><SUB>23</SUB></SMALL>). It is easy to write a state machine which
+  will keep substituting as long as it gets more digits, but you'd need an
+  infinite number of OpenType rules to have the same expressive power. -->
+  最後に、AAT 状態機械は一般的な正規表現を用いた照合処理が可能ですが、OpenType テーブルは固定長の文字列との照合しかできません。数式を組版していて、変数の後ろに続く任意の桁数の数字を下つき文字にしたいとしましょう (その場合、x23 は x<SMALL><SUB>23</SUB></SMALL> になります)。数字が連続する限り同じ置換処理を続ける状態機械を書くのはまったく簡単ですが、同じ表現力を OpenType で得るには、無限個のルールが必要となります。
+  <P>
+<!--
+  These examples probably seem fairly contrived, and (except for the swash
+  one) they are. But they illustrate the point that the two formats have very
+  different expressive capabilities and it is NOT possible to write a converter
+  which will take any input in one format and produce an equivalent output
+  in the other. -->
+  これらの例はおそらく非常に不自然に見えるでしょうが、(スワッシュ文字の例を除いては) 確かにその通りです。しかし、これらは、2 つのフォーマットが非常に異なる表現能力をもっており、片方のフォーマットで書かれた任意の入力を受け取ってもう片方のフォーマットでの等価な出力に変換するコンバータを書くのが<em>不可能</em>であることを示す実例です。
+  <H3>
+<!--  Apple and OpenType features-->
+      Apple と OpenType の機能
+  </H3>
+  <TABLE BORDER CELLPADDING="2">
+    <CAPTION>
+<!--  Correspondences between Apple and OpenType
+      <A NAME="OT-Mac-features">features</A><BR>
+      (that I support) -->
+      Apple と OpenType の <A NAME="OT-Mac-features">機能</A> の対応表<BR>
+      (私がサポートしている物のみ)
+    </CAPTION>
+    <TR>
+<!--  <TH>Apple Feature Setting</TH>-->
+      <TH>Apple の機能設定</TH>
+<!--  <TH>OpenType Feature Name</TH> -->
+      <TH>OpenType の機能名</TH>
+<!--  <TH>OpenType Tag</TH> -->
+      <TH>OpenType タグ</TH>
+    </TR>
+    <TR>
+<!--  <TD>Required Ligatures</TD> -->
+      <TD>必須の合字</TD>
+<!--  <TD>Required Ligatures</TD> -->
+      <TD>必須の合字</TD>
+      <TD>rlig</TD>
+    </TR>
+    <TR>
+<!--  <TD>Common Ligatures</TD> -->
+      <TD>一般的な合字</TD>
+<!--  <TD>Standard Ligatures</TD> -->
+      <TD>標準の合字</TD>
+      <TD>liga</TD>
+    </TR>
+    <TR>
+<!--  <TD>Rare Ligatures</TD> -->
+      <TD>稀な合字</TD>
+<!--  <TD>Discretionary</TD> -->
+      <TD>任意の合字</TD>
+      <TD>dlig</TD>
+    </TR>
+    <TR>
+<!--  <TD>Fractions</TD>-->
+      <TD>分数</TD>
+<!--  <TD>Fractions</TD>-->
+      <TD>分数</TD>
+      <TD>frac</TD>
+    </TR>
+    <TR>
+      <TD COLSPAN=3>
+	  <HR>
+      </TD>
+    </TR>
+    <TR>
+<!--  <TD>Contextual Alternatives</TD>-->
+      <TD>文脈依存の選択肢</TD>
+<!--  <TD>Cursive connection</TD>-->
+      <TD>筆記体の接続</TD>
+      <TD>calt</TD>
+    </TR>
+    <TR>
+      <TD COLSPAN=3>
+	  <HR>
+      </TD>
+    </TR>
+    <TR>
+<!--  <TD>Vertical Forms</TD>-->
+      <TD>縦書き字形</TD>
+<!--  <TD>Vertical Rotation 2</TD>-->
+      <TD>縦書きおよび回転</TD>
+      <TD>vrt2</TD>
+    </TR>
+    <TR>
+<!--  <TD>Monospace numbers</TD>-->
+      <TD>等幅数字</TD>
+<!--  <TD>Tabular numbers</TD>-->
+      <TD>表用数字</TD>
+      <TD>tnum</TD>
+    </TR>
+    <TR>
+<!--  <TD>Superscript</TD>-->
+      <TD>上つき文字</TD>
+<!--  <TD>Superscript</TD>-->
+      <TD>上つき文字</TD>
+      <TD>sups</TD>
+    </TR>
+    <TR>
+<!--  <TD>Subscript</TD>-->
+      <TD>下つき文字</TD>
+<!--  <TD>Subscript</TD>-->
+      <TD>下つき文字</TD>
+      <TD>subs</TD>
+    </TR>
+    <TR>
+<!--  <TD>Proportional Text</TD>-->
+      <TD>プロポーショナルテキスト</TD>
+<!--  <TD>Proportional Widths</TD>-->
+      <TD>プロポーショナル幅</TD>
+      <TD>pwid</TD>
+    </TR>
+    <TR>
+<!--  <TD>Half-width Text</TD>-->
+      <TD>半角テキスト</TD>
+<!--  <TD>Half Width</TD>-->
+      <TD>半角</TD>
+      <TD>hwid</TD>
+    </TR>
+    <TR>
+<!--  <TD>Full-width Text</TD>-->
+      <TD>全角テキスト</TD>
+<!--  <TD>Full Width</TD>-->
+      <TD>全角</TD>
+      <TD>fwid</TD>
+    </TR>
+    <TR>
+<!--  <TD>Traditional Characters</TD>-->
+      <TD>繁体字中国語</TD>
+<!--  <TD>Traditional</TD>-->
+      <TD>繁体字</TD>
+      <TD>trad</TD>
+    </TR>
+    <TR>
+<!--  <TD>Simplified Characters</TD>-->
+      <TD>簡体字中国語</TD>
+<!--  <TD>Simplified</TD>-->
+      <TD>簡体字</TD>
+      <TD>smpl</TD>
+    </TR>
+    <TR>
+<!--  <TD>JIS 1978 Characters</TD>-->
+      <TD>1978 年版 JIS 字形</TD>
+<!--  <TD>JIS 1978 Characters</TD>-->
+      <TD>1978 年版 JIS 字形</TD>
+      <TD>jp78</TD>
+    </TR>
+    <TR>
+<!--  <TD>JIS 1983 Characters</TD>-->
+      <TD>1983 年版 JIS 字形</TD>
+<!--  <TD>JIS 1983 Characters</TD>-->
+      <TD>1983 年版 JIS 字形</TD>
+      <TD>jp83</TD>
+    </TR>
+    <TR>
+<!--  <TD>JIS 1990 Characters</TD>-->
+      <TD>1990 年版 JIS 字形</TD>
+<!--  <TD>JIS 1990 Characters</TD>-->
+      <TD>1990 年版 JIS 字形</TD>
+      <TD>jp90</TD>
+    </TR>
+  </TABLE>
+  <P>
+<!--
+  FontForge will retain the order of features in the morx table, and the user
+  may adjust it with the <A HREF="fontinfo.html#Order">Element-&gt;Font Info</A>
+  command. (this is the same list as that used for GSUB table. GSUB features
+  that don't correspond to mac features will be ignored). -->
+  FontForge は morx テーブル内の機能の順番を保持し、ユーザはそれを <A HREF="fontinfo.html#Order"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE></A> コマンドで並べ替えることができます。(これは GSUB テーブルのために使用されるのと同じリストです。Mac に対応する機能が無い GSUB 機能は無視されます)。
+  <H2>
+<!--  What is <A NAME="Unsupported">Unsupported</A>?-->
+      どの機能が<A NAME="Unsupported">サポートされていない</A>のか?
+  </H2>
+  <P>
+<!--
+  FontForge does not (yet) support all the advanced typographic features available
+  in either opentype or apple advanced typography. -->
+  FontForge は OpenType と AAT のどちらでも、(まだ) すべての高度組版機能が使用可能なわけではありません。
+  <H3>
+    OpenType
+  </H3>
+  <UL>
+    <LI>
+<!--  FontForge does not support using truetype points to control positioning -->
+      FontForge は TrueType の点を使った位置指定の制御をサポートしていません。
+    <LI>
+      FontForge does not support some of the more esoteric uses of the lookup flags.
+      FontForge は照合フラグのとくに秘教的な使用法のいくつかをサポートしていません。
+    <LI>
+<!--  FontForge does not provide an attachment list subtable nor a MarkAttachClassDef
+      subtable of the GDEF table. -->
+      FontForge は GDEF テーブルの接続リストサブテーブルと MarkAttachClassDef サブテーブルに対応していません。
+    <LI>
+<!--  FontForge does not support the BASE and JUST tables-->
+      FontForge は BASE テーブルと JUST テーブルに対応していません。
+    <LI>
+<!--  FontForge has minimal support for VORG-->
+      FontForge は VORG テーブルに対して最小限の対応しか行っていません。
+  </UL>
+  <P>
+<!--  <A HREF="TrueOpenTables.html">See here for a complete list of supported
+  tables</A>. -->
+  <A HREF="TrueOpenTables.html">対応しているテーブルの完全なリストはこちらを参照してください</A>。
+  <H3>
+<!--  Apple Advanced Typography-->
+      Apple 高度組版機能
+  </H3>
+  <UL>
+    <LI>
+<!--  FontForge will never generate a 'mort' table. It can read 'mort' tables,
+      but it will only produce 'morx' tables. -->
+      FontForge は決して&lsquo;mort&rsquo;テーブルを生成しません。&lsquo;mort&rsquo;テーブルを読み込むことはできますが、出力するのは&lsquo;morx&rsquo;テーブルだけです。
+    <LI>
+<!--  FontForge is unable to parse contextual ligatures. It can find ligatures
+      which start from state 0, but it will not find ligatures which start from
+      other states (that is, which are contextual) -->
+      FontForge は文脈依存の合字を解析することができません。状態 0 から始まる合字は発見できますが、他の状態から始まる (すなわち、文脈依存の) 合字は発見できません。
+    <LI>
+<!--  FontForge does not support the following Apple specific tables -->
+      FontForge は以下の Apple 固有のテーブルに対応していません。
+      <UL>
+        <LI>
+<!--	  acnt (accent attachment) -->
+	  acnt (アクセントの接続)
+        <LI>
+<!--	  bsln (baseline) -->
+	  bsln (ベースライン)
+        <LI>
+<!--	  fdsc (font descriptor) -->
+	  fdsc (フォント記述子)
+        <LI>
+<!--	  fmtx (font metrics) -->
+	  fmtx (フォントメトリック)
+        <LI>
+<!--	  hsty (horizontal style) -->
+	  hsty (スタイル指定時の幅情報)
+        <LI>
+<!--	  just (justification) -->
+	  just (行揃え)
+        <LI>
+<!--	  trak (tracking) -->
+	  trak (トラッキング)
+        <LI>
+<!--	  Zapf (glyph reference)-->
+	  Zapf (グリフ参照)
+      </UL>
+  </UL>
+  <P>
+<!--
+  <A HREF="TrueOpenTables.html">See here for a complete list of supported
+  tables</A>. -->
+  <A HREF="TrueOpenTables.html">対応している機能の完全なリストについては、ここを参照して下さい</A>。
+  <P>
+  <P ALIGN=Center>
+  — <A HREF="generate.html">前</A> — <A HREF="overview.html">目次</A> —
+  <A HREF="filemenu.html">次</A> —
+</DIV>
+</BODY></HTML>

@@ -1,0 +1,118 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 9-Mar-2005 -->
+  <!-- AP: Last modified: 18-Apr-2005 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>Palm fonts</TITLE>-->
+    <TITLE>Palm のフォント</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+<H1>
+<!--Palm fonts-->
+    Palm のフォント
+</H1>
+<P>
+<!--
+Fonts on the palm pilot are rather limited. Each strike is stored in its
+own record of a database with no name or indication of whether it is connected
+to any other font (ie. there is no concept of a family of fonts. Each strike
+is alone). -->
+Palm Pilot 上のフォントはかなり制限されています。各実体はデータベース内の独自のレコードとして、名前や他のフォントとの結び付きの有無を示す情報なしに格納されています (すなわち、フォントのファミリーという概念はありません。各フォントは孤立した存在です)。
+<P>
+<!--
+On old palm pilots the font data structure stored a strike for a single screen
+resolution. On newer pilots there is a different data structure which can
+store multiple strikes for several screen resolutions (called "density" on
+the palm). -->
+古い Palm Pilot では、フォントデータ構造には 1 個の画面解像度用の実体のみが格納されていました。最近の Pilot には、複数の画面解像度 (Palm では“密度”と呼びます) 用の複数の実体を格納することができる新しいデータ構造があります。
+<P>
+<!--
+The new style font is unusable (causes crashes) on old palms. I am told that
+the old style font causes crashes on new systems. -->
+新スタイルのフォントでは古い Palm では使えません (クラッシュします)。新しいシステムでは旧スタイルのフォントはクラッシュすると聞いています。
+<P>
+<!--
+I'm told that at the moment new systems are all the same (high) density (so
+there is currently no need for a multi-density font - - what is needed is
+a single (high) density font in a multi-density wrapper). -->
+仄聞するところでは、現在のところ、新しいシステムはすべて同じ (高) 密度です  (そのため、複数の密度をもつフォントは今のところは不要であり、必要なのは複数密度のラッパをもつ単独 (高) 密度のフォントです)。
+<P>
+<!--
+I am told that to be portable an application currently needs to supply an
+old style low-res font for old style palms, and a new-style font containing
+just a high-res strike. -->
+アプリケーションをポータブルにするために現在提供する必要があるのは、旧式の Palm 用の旧方式の低解像度フォント 1 個と、高解像度の実体のみを含む新方式のフォント 1 個であると聞いています。
+<P>
+<!--
+The palm OS reference documents the following densities: -->
+Palm OS のリファレンスには以下の密度が文書化されています:
+<UL>
+  <LI>
+<!--single-->
+    1 倍
+  <LI>
+<!--one and a half-->
+    1.5 倍
+  <LI>
+<!--double-->
+    2 倍
+  <LI>
+<!--triple-->
+    3 倍
+  <LI>
+<!--quadruple-->
+    4 倍
+</UL>
+<P>
+<!--
+I'm told that only single and double are actually used. FontForge does not
+support the 1.5 density font. -->
+実際に使用されているのは 1 倍と 2 倍のみであると聞いています。FontForge は密度 1.5 倍のフォントをサポートしていません。
+<P>
+<!--
+If you want to generate an old-style (low-res) palm font you should specify
+a single strike size in the Generate Font bitmap sizes field. -->
+旧式の (低解像度) Palm フォントを出力したい場合、フォントを出力 ダイアログの ビットマップサイズ フィールドで、フォント実体のサイズを 1 個だけ指定してください。
+<P>
+<!--
+If you specify two or more strike sizes in the bitmap sizes field then all
+sizes must be a small integer multiple (1,2,3,4) of the smallest strike.
+A dlg will come up asking whether you want these strikes: -->
+ビットマップサイズ フィールドで 2 個以上の実体サイズを指定した場合、全てのサイズは最小の実体の小さな整数倍 (1,2,3,4) でなければなりません。それらの実体を以下のどの形で出力したいかを尋ねるダイアログが起動します。
+<UL>
+  <LI>
+<!--All within a multi-density font-->
+    すべてを 1 個の複数密度フォントに格納する
+  <LI>
+<!--All (except the smallest) within a multi-density font - - FontForge calls
+    this a high density font -->
+    (最小の物を除く) すべてを複数密度フォントに格納する—FontForge はこれを高密度フォントと呼びます。
+  <LI>
+<!--An old style low-res font containing the smallest strike in the first record
+    of the database file and a new style multi density font containing all strikes
+    within the second record of the generated file. -->
+    データベースファイルの最初のレコードとして、最小の実体を含む旧方式の低解像度フォントと、出力されるファイルの 2 番目のレコードとして、すべての実体を含む新方式の複数密度フォント。
+  <LI>
+<!--An old style low-res font containing the smallest strike in the first record
+    of the database file and a new style multi density font containing all strikes
+    <EM>except the smallest</EM> within the second record of the generated file. -->
+    データベースの最初のレコード内の旧方式の低解像度フォントと、出力されるファイルの 2 番目のレコード内の<EM>最小の物を除く</EM>すべての実体を含む新方式の複数密度フォント
+</UL>
+<P>
+<!--
+I believe the last format to be the most useful. This is the default, and
+is the format used for the script Generate command. -->
+最後のフォーマットがいちばん役立つと思います。これがデフォルトで、スクリプトの Generate コマンドで使用されるフォーマットです。
+<P>
+<!--
+Note: You must include the low-density strike. This strike defines the metrics
+for all the others. However you may generate a font which does not include
+this strike (the second choice in the list above). -->
+注意: 低密度の実体は必ず含めなければなりません。この実体は他のすべてのメトリックを含んでいます。それにもかかわらず、この実体を含んでいないフォントを出力することができます (上のリストの 2 番目の選択肢です)
+<P>
+</DIV>
+</BODY></HTML>

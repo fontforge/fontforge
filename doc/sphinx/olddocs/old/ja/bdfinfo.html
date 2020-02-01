@@ -1,0 +1,89 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 14-Jan-2006 -->
+  <!-- AP: Last modified: 14-Jan-2006 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>BDF Info (Properties) Dialog</TITLE> -->
+    <TITLE>BDF 情報 (属性) ダイアログ</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+<!--BDF Info Dialog-->
+    BDF 情報ダイアログ
+  </H1>
+  <P>
+  <IMG src="../../_images/bdfinfo.png" WIDTH="446" HEIGHT="476" ALT="BDF Info dialog" ALIGN="Right"><!-- If
+  your font contains bitmaps you may want control over the BDF Properties
+  associated with those bitmaps. Each pixel size (bitmap strike) has its own
+  set of properties. -->
+  フォントにビットマップが含まれている場合、それらのビットマップに付随する BDF の属性をいじりたくなる場合があります。個別のピクセルサイズ (ビットマップストライク) ごとに、各々に固有の属性の組が存在します。
+  <P>
+<!--
+  The X11 consortium has defined certain conventional properties and defines
+  their meaning in the
+  <A HREF="http://ftp.xfree86.org/pub/XFree86/4.5.0/doc/xlfd.txt">X Long Font
+  Descriptor</A> specification. -->
+  X コンソーシアムはお決まりの属性をいくつか定義し、それらの意味を<A HREF="http://ftp.xfree86.org/pub/XFree86/4.5.0/doc/xlfd.txt">X 論理フォント記述子</A>の仕様で定義しています。
+  <P>
+<!--
+  When you first create a bitmap strike (with
+  <A HREF="elementmenu.html#Bitmaps">Element-&gt;Bitmaps Available</A>) it
+  will have no properties associated with it. If you then generate a bdf file
+  based on that FontForge will give you some default properties. -->
+  最初にビットマップストライクを <A HREF="elementmenu.html#Bitmaps"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>使用するビットマップ(<U>B</U>)</CODE></A> で) 作成した時点では、それに伴う属性は全く定義されていません。その後、BDFファイルを生成した時に、FontForge はいくつかのデフォルト属性を呈示します。
+では
+  <P>
+<!--
+  You may view these default properties in this dialog by pressing the
+  <CODE>[Default All] </CODE>button - - this will remove any current properties
+  (except for <CODE><A HREF="#res-y">RESOLUTION_Y</A></CODE>) and replace them
+  with the defaults that FontForge calculates). -->
+  このダイアログに含まれる
+  それらのデフォルト属性値は、このダイアログで <CODE>[すべてデフォルトに]</CODE> ボタンを押すことによって見ることができます——これは現在の属性値を (<CODE><A HREF="#res-y">RESOLUTION_Y</A></CODE> を除いて) すべて削除し、FontForge が算出したデフォルト値に置き換えます。
+  <P>
+<!--
+  You may select any property and press the <CODE>[Default This] </CODE>button
+  to find its default value (There are some properties that FontForge cannot
+  default, you'll have to figure these out yourself). -->
+  任意の属性を選択して、<CODE>[この項目をデフォルトに] </CODE> を押すことによって、その項目のデフォルト値を知ることができます (FontForge がデフォルトを設定することができない属性がいくつかあるので、それらの値については自分で見つけ出す必要があります。
+  <P>
+<!--
+  You may use the <CODE>[Delete] </CODE>button to remove a property. -->
+  属性を削除するのには <CODE>[削除]</CODE> ボタンが使えます。
+  <P>
+<!--
+  You may use the up and down arrows buttons to move the selected property
+  up or down in the list (as far as I know, there is no functional reason for
+  doing this, but if your esthetics prefer a different ordering you may enforce
+  it). -->
+  [↑] と [↓] を使って選択した属性をリスト内で上下に動かすことができます (私の知るかぎりでは、これを行う機能上の理由は存在しませんが、あなたの美的感覚で異なる順序づけを好む場合、それを強制することができます)。
+  <P>
+<!--
+  To change a property name depress the mouse on it. You should get a list
+  of all standard properties. At the bottom of the property list is a special
+  line labeled "New...", clicking on it brings up the same popup menu and allows
+  you to create a new property. -->
+  属性名を変更する場合、名前の上でマウスを押してください。標準属性の全リストが表示されるはずです。属性リストの一番下には "新規..." という特殊なラベルを含む行があります。それをクリックすると同じポップアップメニューが起動し、新しい属性名を作成することができます。
+  <P>
+<!--
+  To change the value of a property, click in the value field and type in the
+  new version. -->
+  属性値を変更する場合、値フィールドをクリックして、新しい値を入力してください。
+  <P>
+<!--
+  To select a property without bringing up the popup menu or the editing field,
+  click on the extreme left of the property. -->
+  ポップアップメニューや編集フィールドを起動しないで属性を選択したい場合、属性の一番左の部分をクリックしてください。
+  <P>
+<!--
+  The one essential <A NAME="res-y">property</A> that FontForge can't always
+  guess correctly is the resolution (in particular <CODE>RESOLUTION_Y</CODE>).
+  When you press <CODE>[Default All] </CODE>FontForge will retain the current
+  value of this property and base the others on it. -->
+  FontForge が常に推測できない本質的な<A NAME="res-y">属性</A>の一つに解像度 (特に <CODE>RESOLUTION_Y</CODE>) があります。<CODE>[すべてデフォルトに]</CODE> を押した時、FontForge はこの属性の現在の値を保持し、それに基づいてその他の値を計算します。
+</DIV>
+</BODY></HTML>

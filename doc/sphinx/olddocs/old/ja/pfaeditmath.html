@@ -1,0 +1,635 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 18-Jul-2003 -->
+  <!-- AP: Last modified: 4-Apr-2006 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>FontForge's math</TITLE>-->
+    <TITLE>FontForge の数学</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+<!--  FontForge's math-->
+      FontForge の数学
+  </H1>
+  <P>
+<!--
+  <EM>Being a brief description of the mathematics underlying various of
+  FontForge's commands<BR>
+  It is presumed that you understand about parameterized splines, if not look
+  at the description of <A HREF="bezier.html">B&eacute;zier curves</A>.</EM> -->
+  <EM>FontForge の各種コマンドの基礎をなす数学の簡単な説明を意図しています<BR>
+  パラメータ表示されたスプラインについて理解していることを仮定しています。理解が不十分ならば、<A HREF="bezier.html">B&eacute;zier 曲線</A>の解説をお読みください。</EM>
+  <UL>
+    <LI>
+<!--  <A HREF="pfaeditmath.html#Linear">Linear Transformations</A>-->
+      <A HREF="pfaeditmath.html#Linear">線形変換</A>
+    <LI>
+<!--  <A HREF="pfaeditmath.html#maxima">Finding maxima and minima of a spline</A> -->
+      <A HREF="pfaeditmath.html#maxima">スプラインの極大・極小値の検出</A>
+    <LI>
+<!--  <A HREF="#Rasterizing">Rasterizing a Glyph</A> -->
+      <A HREF="#Rasterizing">グリフのラスタライズ</A>
+      <UL>
+	<LI>
+<!--	  finding intersections -->
+	  交点の検出
+	<LI>
+<!--	  removing overlap -->
+	  重複除去
+      </UL>
+    <LI>
+<!--  <A HREF="pfaeditmath.html#Approximating">Approximating a spline</A> -->
+      <A HREF="pfaeditmath.html#Approximating">スプラインの近似方法</A>
+    <LI>
+<!--  <A HREF="pfaeditmath.html#Stroke">Stroking a spline</A> -->
+      <A HREF="pfaeditmath.html#Stroke">スプラインのストローク処理</A>
+    <LI>
+<!--  <A HREF="bezier.html#ps2ttf">Approximating a cubic spline by a series of
+      quadratic splines</A> -->
+      <A HREF="bezier.html#ps2ttf">3 次スプラインを 2 次スプラインの列で近似する方法</A>
+  </UL>
+  <P>
+    <HR>
+  <H2>
+<!--<A NAME="Linear">Linear</A> Transformations -->
+    <A NAME="Linear">線形</A>変換
+  </H2>
+  <P>
+<!--
+  A linear transformation is one where the spline described by transforming
+  the end and control points will match the transformed spline. This includes
+  most of the common transformations you might wish: -->
+  線形変換は、元のスプラインの 2 つの端点と制御点を変換することにより、変換対象のスプラインと一致する変換関数です。この中には、一般的で需要の高い変換のほとんどが含まれます。
+  <UL>
+    <LI>
+<!--  translation -->
+      平行移動
+      <TABLE CELLPADDING="2">
+	<TR>
+	  <TD><I>x'</I></TD>
+	  <TD>=</TD>
+	  <TD><I>x + dx</I></TD>
+	</TR>
+	<TR>
+	  <TD><I>y'</I></TD>
+	  <TD>=</TD>
+	  <TD><I>y + dy</I></TD>
+	</TR>
+      </TABLE>
+    <LI>
+<!--  scaling -->
+      拡大・縮小
+      <TABLE CELLPADDING="2">
+	<TR>
+	  <TD><I>x'</I></TD>
+	  <TD>=</TD>
+	  <TD><I>s<SUB>x</SUB> * x</I></TD>
+	</TR>
+	<TR>
+	  <TD><I>y'</I></TD>
+	  <TD>=</TD>
+	  <TD><I>s<SUB>y</SUB> * y</I></TD>
+	</TR>
+      </TABLE>
+    <LI>
+<!--  rotation -->
+      回転
+      <TABLE CELLPADDING="2">
+	<TR>
+	  <TD><I>x'</I></TD>
+	  <TD>=</TD>
+	  <TD><I>cos(A)*x + sin(A)*y</I></TD>
+	</TR>
+	<TR>
+	  <TD><I>y'</I></TD>
+	  <TD>=</TD>
+	  <TD><I>-sin(X)*x + cos(A)*y</I></TD>
+	</TR>
+      </TABLE>
+    <LI>
+<!--  skewing -->
+      傾き
+      <TABLE CELLPADDING="2">
+	<TR>
+	  <TD><I>x'</I></TD>
+	  <TD>=</TD>
+	  <TD><I>x + sin(A)*y</I></TD>
+	</TR>
+	<TR>
+	  <TD><I>y'</I></TD>
+	  <TD>=</TD>
+	  <TD><I>y</I></TD>
+	</TR>
+      </TABLE>
+  </UL>
+  <P>
+    <HR>
+  <H2>
+<!--Finding <A NAME="maxima">maxima</A> and minima of a spline -->
+    スプラインの<A NAME="maxima">極大値</A>と極小値を検出する方法
+  </H2>
+  <P>
+<!--
+  The maximum or minimum of a spline (along either the x or y axes) may be
+  found by taking the first derivative of that spline with respect to t. So
+  if we have a spline -->
+  スプラインの (x 軸または y 軸に沿った) 極大値または極小値は t に対するスプラインの 1 階導関数を取ることにより得られます。もし、以下のようなスプラインが存在して、x 軸に沿った極大値を見つけたいとします。
+  <BLOCKQUOTE>
+    <PRE>    x = a<SUB>x</SUB>*t<SUP>3</SUP> + b<SUB>x</SUB>*t<SUP>2</SUP> + c<SUB>x</SUB>*t +d<SUB>x</SUB>
+    y = a<SUB>y</SUB>*t<SUP>3</SUP> + b<SUB>y</SUB>*t<SUP>2</SUP> + c<SUB>y</SUB>*t +d<SUB>y</SUB>
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  and we wish to find the maximum point with respect to the x axis we set: -->
+  まず、以下のように方程式を置きます。
+  <BLOCKQUOTE>
+    <PRE>    dx/dt = 0
+    3*a<SUB>x</SUB>*t<SUP>2</SUP> + 2*b<SUB>x</SUB>*t + c<SUB>x</SUB> = 0
+ 
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  and then using the quadratic formula we can solve for t: -->
+  次に、2 次方程式の根の公式より我々は t についてこれを解くことができます:
+  <TABLE CELLPADDING="2">
+    <TR>
+      <TD ROWSPAN=3>t=</TD>
+      <TD><P ALIGN=Center>
+	-2*b<SUB>x </SUB>&#177; sqrt(4*b<SUB>x</SUB><SUP>2</SUP> -
+	4*3*a<SUB>x</SUB>*c<SUB>x</SUB>)</TD>
+    </TR>
+    <TR>
+      <TD><P ALIGN=Center>
+	-----------------------------------</TD>
+    </TR>
+    <TR>
+      <TD><P ALIGN=Center>
+	2*3*a<SUB>x</SUB></TD>
+    </TR>
+  </TABLE>
+  <P>
+    <HR>
+  <H2>
+<!--<A NAME="POI">Finding points of inflection</A> of a spline -->
+    スプラインの<A NAME="POI">変曲点を求める方法</A>
+  </H2>
+  <P>
+<!--
+  A point of inflection occurs when d<SUP>2</SUP>y/dx<SUP>2</SUP>==0 (or infinity). -->
+  変曲点は d<SUP>2</SUP>y/dx<SUP>2</SUP>==0 (または無限大) になる場所に位置します。
+  <P>
+<!--
+  Unfortunately this does not mean that d<SUP>2</SUP>y/dt<SUP>2</SUP>==0 or
+  d<SUP>2</SUP>x/dt<SUP>2</SUP>==0. -->
+  残念ながら、この条件が成り立つ時に d<SUP>2</SUP>y/dt<SUP>2</SUP>==0 や d<SUP>2</SUP>x/dt<SUP>2</SUP>==0 が成り立つとは限りません。
+  <TABLE CELLPADDING="2">
+    <TR>
+      <TD>d<SUP>2</SUP>y/dx<SUP>2 </SUP>=</TD>
+      <TD>d/dt ((dy/dt)/(dx/dt)) / dx/dt</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>( ((dx/dt) * d<SUP>2</SUP>y/dt<SUP>2</SUP>) - ((dy/dt) *
+	d<SUP>2</SUP>x/dt<SUP>2</SUP>)) / (dx/dt)<SUP>3</SUP></TD>
+    </TR>
+  </TABLE>
+  <P>
+<!--
+  After a lot of algebra this boils down to the quadratic in t: -->
+  長々とした代数の果てに、これは t に関する 2 次式に還元されます:
+  <TABLE CELLPADDING="2">
+    <TR>
+      <TD ROWSPAN=3>&nbsp;</TD>
+      <TD>3*(a<SUB>x</SUB>*b<SUB>y</SUB>-a<SUB>y</SUB>*b<SUB>x</SUB>)*t<SUP>2</SUP>
+	+</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>3*(c<SUB>x</SUB>*a<SUB>y</SUB>-c<SUB>y</SUB>*a<SUB>x</SUB>)*t +</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>c<SUB>x</SUB>*b<SUB>y</SUB>-c<SUB>y</SUB>*b<SUB>x</SUB></TD>
+      <TD>= 0</TD>
+    </TR>
+  </TABLE>
+  <P>
+<!--
+  If you examine this closely you will note that a quadratic spline
+  (a<SUB>y</SUB>==a<SUB>x</SUB>==0) can never have a point of inflection. -->
+  この式を詳細に検討すると、2 次スプライン (a<SUB>y</SUB>==a<SUB>x</SUB>==0) に変曲点が生じることが決して無いことが分かります。
+  <P>
+    <HR>
+  <H2>
+<!--<A NAME="Rasterizing">Rasterizing</A> a glyph -->
+    グリフを<A NAME="Rasterizing">ラスタライズ</A>する方法
+  </H2>
+  <P>
+    <HR>
+  <H2>
+<!--  <A NAME="Approximating">Approximating</A> a spline-->
+      スプラインを<A NAME="Approximating">近似する</A>方法
+  </H2>
+  <P>
+<!--
+  Many of FontForge's commands need to fit a spline to a series of points.
+  The most obvious of these are the Edit-&gt;Merge, and Element-&gt;Simplify
+  commands, but many others rely on the same technique. Let us consider the
+  case of the Merge command, suppose we have the following splines and we wish
+  to remove the middle point and generate a new spline that approximates the
+  original two: -->
+  FontForge の多くのコマンドで、点の列をスプラインに当てはめる必要が生じます。それらのうち最も自明なのは <CODE>編集(<U>E</U>)</CODE>→<CODE>合併(<U>M</U>)</CODE> と <CODE>エレメント(<U>L</U>)</CODE>→<CODE>単純化(<U>S</U>)</CODE> コマンドですが、しかし同種の技法に依存しているコマンドは他にも多数あります。<CODE>合併(<U>M</U>)</CODE> コマンドの場合を検討することにします。以下のスプラインがあったとして、中央の点を削除して、オリジナルの 2 本のスプラインを近似する新しい 1 本のスプラインを生成したいのだとしましょう。
+  <P>
+  &nbsp; &nbsp; &nbsp;
+  <IMG src="../../_images/mergepre.png" WIDTH="192" HEIGHT="120" ALIGN="Middle"> =&gt;
+  <IMG src="../../_images/mergepost.png" WIDTH="192" HEIGHT="120" ALIGN="Middle">
+  <P>
+<!--
+  FontForge uses a least squares approximation to determine the new spline.
+  It calculates the locations of several points along the old splines, and
+  then it guesses<SUP><A HREF="#guess-t">1</A></SUP> at t values for those
+  points. We want: -->
+  FontForge は新しいスプラインを決定するのに最小自乗近似を使用します。まず古いスプライン上にあるいくつかの点の位置を算出し、それから、それらの点の位置における時刻 t の値を推測します<SUP><A HREF="#guess-t">1</A></SUP>。我々が求めたいのは
+  <BLOCKQUOTE>
+    x = a<SUB>x</SUB>*t<SUP>3</SUP> + b<SUB>x</SUB>*t<SUP>2</SUP> +
+    c<SUB>x</SUB>*t +d<SUB>x</SUB><BR>
+    y = a<SUB>y</SUB>*t<SUP>3</SUP> + b<SUB>y</SUB>*t<SUP>2</SUP> +
+    c<SUB>y</SUB>*t +d<SUB>y</SUB>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  That best fit these points. Well, from the definition of a parameterized
+  spline (and the fact that we know the end-points): -->
+  という形で、これらの点に最もよく当てはまる数式です。さて、パラメータ化されたスプラインの定義 (および、我々が端点を知っているという事実) から、以下が成り立ちます:
+  <TABLE CELLPADDING="2">
+    <TR>
+      <TD>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+      <TD>d<SUB>x </SUB>= P0<SUB>x</SUB>&nbsp;&nbsp;</TD>
+      <TD>d<SUB>y</SUB> = P0<SUB>y</SUB></TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>a<SUB>x</SUB>+b<SUB>x</SUB>+c<SUB>x</SUB>+d<SUB>x </SUB>= P1<SUB>x</SUB></TD>
+      <TD>a<SUB>y</SUB>+b<SUB>y</SUB>+c<SUB>y</SUB>+d<SUB>y </SUB>= P1<SUB>y</SUB></TD>
+    </TR>
+  </TABLE>
+  <P>
+<!--
+  From least squares we know: -->
+  最小自乗近似から、我々は以下の事を知ることができます:
+  <TABLE CELLPADDING="2">
+    <TR>
+      <TD ROWSPAN=4><IMG src="../../_images/lparen-174.png" WIDTH="22" HEIGHT="174" ALIGN="Middle"></TD>
+      <TD><IMG src="../../_images/Sxiti3.png" WIDTH="50" HEIGHT="35"></TD>
+      <TD ROWSPAN=4><IMG src="../../_images/rparen-174.png" WIDTH="22" HEIGHT="174" ALIGN="Middle">=<IMG
+	    src="../../_images/lparen-174.png" WIDTH="22" HEIGHT="174" ALIGN="Middle"></TD>
+      <TD><IMG src="../../_images/Sti6.png" WIDTH="32" HEIGHT="35"></TD>
+      <TD><IMG src="../../_images/Sti5.png" WIDTH="32" HEIGHT="35"></TD>
+      <TD><IMG src="../../_images/Sti4.png" WIDTH="32" HEIGHT="35"></TD>
+      <TD><IMG src="../../_images/Sti3.png" WIDTH="32" HEIGHT="35"></TD>
+      <TD ROWSPAN=4><IMG src="../../_images/rparen-174.png" WIDTH="22" HEIGHT="174" ALIGN="Middle">*<IMG
+	    src="../../_images/lparen-174.png" WIDTH="22" HEIGHT="174" ALIGN="Middle"></TD>
+      <TD>a<SUB>x</SUB></TD>
+      <TD ROWSPAN=4><IMG src="../../_images/rparen-174.png" WIDTH="22" HEIGHT="174" ALIGN="Middle"></TD>
+    </TR>
+    <TR>
+      <TD><IMG src="../../_images/Sxiti2.png" WIDTH="50" HEIGHT="35"></TD>
+      <TD><IMG src="../../_images/Sti5.png" WIDTH="32" HEIGHT="35"></TD>
+      <TD><IMG src="../../_images/Sti4.png" WIDTH="32" HEIGHT="35"></TD>
+      <TD><IMG src="../../_images/Sti3.png" WIDTH="32" HEIGHT="35"></TD>
+      <TD><IMG src="../../_images/Sti2.png" WIDTH="32" HEIGHT="35"></TD>
+      <TD>b<SUB>x</SUB></TD>
+    </TR>
+    <TR>
+      <TD><IMG src="../../_images/Sxiti.png" WIDTH="50" HEIGHT="35"></TD>
+      <TD><IMG src="../../_images/Sti4.png" WIDTH="32" HEIGHT="35"></TD>
+      <TD><IMG src="../../_images/Sti3.png" WIDTH="32" HEIGHT="35"></TD>
+      <TD><IMG src="../../_images/Sti2.png" WIDTH="32" HEIGHT="35"></TD>
+      <TD><IMG src="../../_images/Sti.png" WIDTH="32" HEIGHT="35"></TD>
+      <TD>c<SUB>x</SUB></TD>
+    </TR>
+    <TR>
+      <TD><IMG src="../../_images/Sxi.png" WIDTH="50" HEIGHT="35"></TD>
+      <TD><IMG src="../../_images/Sti3.png" WIDTH="32" HEIGHT="35"></TD>
+      <TD><IMG src="../../_images/Sti2.png" WIDTH="32" HEIGHT="35"></TD>
+      <TD><IMG src="../../_images/Sti.png" WIDTH="32" HEIGHT="35"></TD>
+      <TD><P ALIGN=Center>
+	n</TD>
+      <TD>d<SUB>x</SUB></TD>
+    </TR>
+  </TABLE>
+  <P>
+<!--
+  And similarly for y. So this gives us 12 equations and 8 unknowns, so we're
+  a bit over-specified. Well it must be a spline, so we need the first four
+  equations, and then I use the bottom two equations for x, and the corresponding
+  two for y. -->
+  そして y についても同様の関係が成り立ちます。それによって、この数式から我々は 12 個の等式と 8 個の未知数を得ることができるわけですが、少し指定が多すぎたことになります。さて、これはスプラインでなければならないので、最初の 4 個の等式は必須です。その他に私が使用するのは x に関する下の 2 個の等式と、それに対応する y に関する 2 個の等式です。
+  <H3>
+<!--  Why that didn't work -->
+      これがうまくいかない理由
+  </H3>
+  <P>
+<!--
+  The above matrix yields a curve which is a good approximation to the original
+  two. But it has one flaw: There is no constraint placed on the slopes, and
+  (surprisingly) the slopes at the end-points of the above method are not close
+  enough to those of the original, and the human eye can now detect the join
+  between this generated spline and the two that connect to it. -->
+  上記の行列は、オリジナルの 2 本のよい近似となる曲線を導き出します。しかしこの方法には 1 つの欠陥があります: 傾きに関する制約が存在せず、そして (驚くべきことに) 上記の手法によって得られる端点における傾きは、オリジナルの傾きと十分に近くはならないので、人間の目には、生成されたスプラインと、それに接続するスプラインとの間の接合部分が見えてしまいます。
+  <P>
+<!--
+  I tried constraining the slopes by adding new yet more equations to our over
+  specified system, We know that -->
+  私は、制約事項の多すぎる我々の等式群に、さらに 2 個の等式を加えることを試みました。
+  <TABLE CELLPADDING="2">
+    <TR>
+      <TD>d<I>y</I><SUP>t=0</SUP></TD>
+      <TD>=</TD>
+      <TD>(d<I>y</I>/d<I>x</I>)<SUP>t=0</SUP> * d<I>x</I><SUP>t=0</SUP></TD>
+    </TR>
+    <TR>
+      <TD>d<I>y</I><SUP>t=1</SUP></TD>
+      <TD>=</TD>
+      <TD>(d<I>y</I>/d<I>x</I>)<SUP>t=1</SUP> * d<I>x</I><SUP>t=1</SUP></TD>
+    </TR>
+    <TR>
+      <TD COLSPAN=3><P ALIGN=Center>
+<!--    - or -</TD>-->
+	- または - 
+    </TR>
+    <TR>
+      <TD>c<SUB>y</SUB></TD>
+      <TD>=</TD>
+      <TD>old-c<SUB>y</SUB>/old-c<SUB>x</SUB> * c<SUB>x</SUB></TD>
+    </TR>
+    <TR>
+      <TD>3*a<SUB>y</SUB>+2*b<SUB>y</SUB>+c<SUB>y</SUB></TD>
+      <TD>=</TD>
+      <TD>(3*old-a<SUB>y</SUB>+2*old-b<SUB>y</SUB>+old-c<SUB>y</SUB>)/(3*old-a<SUB>x</SUB>+2*old-b<SUB>x</SUB>+old-c<SUB>x</SUB>)
+	* (3*a<SUB>x</SUB>+2*b<SUB>x</SUB>+c<SUB>x</SUB>)</TD>
+    </TR>
+    <TR>
+      <TD COLSPAN=3><P ALIGN=Center>
+<!--   - or -</TD> -->
+       - または -
+    </TR>
+    <TR>
+      <TD>c<SUB>y</SUB> * old-c<SUB>x</SUB></TD>
+      <TD>=</TD>
+      <TD>old-c<SUB>y</SUB> * c<SUB>x</SUB></TD>
+    </TR>
+    <TR>
+      <TD>(3*a<SUB>y</SUB>+2*b<SUB>y</SUB>+c<SUB>y</SUB>) *
+	(3*old-a<SUB>x</SUB>+2*old-b<SUB>x</SUB>+old-c<SUB>x</SUB>)</TD>
+      <TD>=</TD>
+      <TD>(3*old-a<SUB>y</SUB>+2*old-b<SUB>y</SUB>+old-c<SUB>y</SUB>) *
+	(3*a<SUB>x</SUB>+2*b<SUB>x</SUB>+c<SUB>x</SUB>)</TD>
+    </TR>
+  </TABLE>
+  <P>
+  が成り立つことが判明しています
+<!--
+  (where old-a<SUB>y</SUB>, old-b<SUB>y</SUB>, etc. are the values of the original
+  spline at that end-point) -->
+  (ここで old-a<SUB>y</SUB>, old-b<SUB>y</SUB> などは端点におけるオリジナルのスプラインの値です)。
+  <H3>
+<!--   That didn't work either -->
+       これもうまくいきませんでした。
+  </H3>
+  <P>
+<!--
+  Sadly this did not work very well. I ended up with singular matrices far
+  too often (if one of the control points was in the same place as the end-point,
+  for example). -->
+  残念ながら、これもあまりうまくいきませんでした。特異行列が頻繁に出てくる結果となったのです (例えば、制御点の片方が端点と同じ位置にある場合)。
+  <P>
+<!--
+  So instead I calculate a unit vector tangent to the curve at each end-point
+  (that is: the slope). Usually this can be done by making the vector from
+  the end point to its control point be a unit vector, but if the control point
+  lies on top of the end point other methods must be used (setting t=.001 or
+  t=.999 and calculating a difference vector is one method). -->
+  それで、それを求める代わりに、それぞれの端点における単位ベクトルの接線 (これは曲線の傾きそのものです) を計算することにします。これは通常、端点からその点の制御点へのベクトルを単位ベクトルに設定することによって行うことができますが、制御点が端点の上に載っているときには、別の方法を用いる必要があります (一つの方法として、t=0.001 または t=0.999 に設定してから差分ベクトルを求める手があります)。
+  <P>
+<!--
+  Then apply the original algorithm. -->
+  それからオリジナルのアルゴリズムを適用します。
+  <P>
+<!--
+  Now I look at the end points, and calculate vectors from them to their new
+  control points. Then find the dot-products of these vectors with the original
+  slope unit vectors. (this gives us our first approximation to a new location
+  for the control points (CP = EP + len*Unit-Slope) -->
+  ここで端点に着目し、それらからその点の新しい制御点へ向けたベクトルを算出します。それから、これらのベクトルのオリジナルの傾き単位ベクトルとの内積をそれぞれ求めます (これにより、制御点の新しい位置の第一近似が得られます (CP = EP + len*Unit-Slope)。
+  <P>
+<!--
+  Now for each of these vectors I subtract off the contribution from the original
+  slope (leaving me with component normal to the original slope), and take
+  the dot product of this normal component with the slope from the <I>other</I>
+  end-point, and multiply this by the unit slope of the <I>other</I> end point
+  and adjust its control point by this amount (CP<SUB>o</SUB> +=
+  len2*Unit-Slope<SUB>o</SUB>). -->
+  ここでそれらのベクトルのそれぞれに対して、オリジナルの傾きからの寄与分を引き去り (オリジナルの傾きに垂直な成分のみが残ります)、それからこの垂直成分と<I>反対側の</I>端点の傾きとの内積を取り、これを<I>反対側の</I>端点における単位傾きベクトルと掛け合わせ、その分だけこの制御点の位置を調整します (CP<SUB>o</SUB> +=len2*Unit-Slope<SUB>o</SUB>). 
+  <H3>
+<!--  Nor did that-->
+      やっていない事
+  </H3>
+  <P>
+<!--
+  What I do now is calculate the slope vectors at the endpoints and then try
+  many reasonable lengths for those vectors and see which yields the best
+  approximation to the original curve (this gives us our new control points).
+  No need for least squares at all. -->
+  私が現在行っているのは、端点における傾きベクトルを計算し、それに続き、それらのベクトルに対する多数の妥当な長さを計算し、どれがオリジナルの曲線を最もよく近似するか調べる (それにより新しい制御点が決まります) ことです。最小自乗法は全く必要ありません。
+    <HR>
+  <H4>
+<!--  <SUP><A NAME="guess-t">1</A></SUP>Guessing values for t-->
+      <SUP><A NAME="guess-t">1</A></SUP>t の値の推測方法
+  </H4>
+  <P>
+<!--
+  FontForge approximates the lengths of the two splines being merged. If
+  Point<SUB>i </SUB>= Spline1(old-t<SUB>i</SUB>), then we approximate ti by<BR> -->
+  FontForge は、併合する 2 本のスプラインの長さを近似します。もしも Point<SUB>i</SUB>= Spline1(old-t<SUB>i</SUB>) であるならば、ti は以下の式で近似されます<BR>
+  &nbsp; &nbsp; t<SUB>i</SUB> = old-t<SUB>i</SUB>
+  *len(spline1)/(len(spline1)+len(spline2)<BR>
+  and if Point<SUB>i </SUB>= Spline2(old-t<SUB>i</SUB>)<BR>
+  &nbsp; &nbsp; t<SUB>i</SUB> = len(spline1)/(len(spline1)+len(spline2) +
+  old-t<SUB>i</SUB> *len(spline2)/(len(spline1)+len(spline2)<BR>
+<!--
+  That is we do a linear interpolation of t based on the relative lengths of
+  the two splines. -->
+  これは、2 本のスプラインの相対的な長さに基づいた線形補間を行っているということを意味します。
+  <P>
+    <HR>
+  <H2>
+<!--  Calculating the outline of a <A NAME="Stroke">stroked</A> path-->
+      パスの<A NAME="Stroke">ストローク</A>のアウトラインの計算方法
+  </H2>
+  <H3>
+<!--  A circular pen-->
+      円形のペン
+  </H3>
+  <P>
+<!--
+  PostScript supports several variants on the theme of a circular pen, and
+  FontForge tries to emulate them all. Basically PostScript "stroke"s a path
+  at a certain width by: -->
+  PostScript は、円形のペンという主題に関するいくつかの変数をサポートしており、FontForge はこれらのすべてをエミュレートしようと試みています。基本的に、PostScript はある一定の線幅 width を持つパスを以下のようにして“ストローク”処理を行います:
+  <P>
+<!--
+  at every location on the curve<BR>
+  &nbsp; &nbsp; find the normal vector at that location<BR>
+  &nbsp; &nbsp; find the two points which are width/2 away from the curve<BR>
+  &nbsp; &nbsp; filling in between those two points<BR>
+  end -->
+  曲線上のすべての点において<BR>
+  &nbsp; &nbsp; その位置における垂線ベクトルを求める<BR>
+  &nbsp; &nbsp; 曲線から width/2 だけ離れた点を見つける<BR>
+  &nbsp; &nbsp; それらの 2 個の点の内側を塗り潰す<BR>
+  終了
+  <P>
+<!--
+  This is essentially what a circular pen does. The only aberrations appear
+  at the end-points of a contour, or at points where two splines join but their
+  slopes are not continuous. PostScript allows the user to specify the behavior
+  at joints and at end-points. -->
+  これが、円形のペンが行うことの本質的な記述です。唯一の逸脱は、輪郭の端点または 2 本のスプラインが接合するものの、その傾きが連続的でない場合においてのみ起こります。PostScript では、ユーザが接合部と端点におけるふるまいを指定することができます。
+  <P>
+  &nbsp; &nbsp; <IMG src="../../_images/expand-pre.png" WIDTH="126" HEIGHT="86" ALIGN="Middle">
+  =&gt; <IMG src="../../_images/expand-post.png" WIDTH="131" HEIGHT="91" ALIGN="Middle">
+  <P>
+<!--
+  For the main body of the spline we can use the above method to generate two
+  sets of points (one to the left and one to the right of the original curve)
+  and then use the approximation method above to generate a spline from that
+  (note the slopes of the new splines at their end points should be parallel
+  to those of the original, so we can use the slope of the original in the
+  above algorithm). -->
+  スプラインの主要部に対して、2 組の点集合 (片方はオリジナルの曲線の左側で、もう片方は右側になります) を生成するために、上記の方法を用いることが可能であり、その後、それを元にして近似法を用いてスプラインを生成することが可能です (新しいスプラインの傾きは、それらの両端点においてオリジナルと同じでなければなりません。それにより、上記のアルゴリズムでオリジナルの傾きを用いることができます)。
+  <P>
+<!--
+  Unfortunately that doesn't always work. If the spline makes a very sharp
+  bend, the our approximation method above is unable to produce a good
+  approximation. When that happens FontForge attempts to break the spline in
+  two, adding a point near the sharp bend. The approximation of the two sub-splines
+  is generally much better. (How does FontForge figure out where to break a
+  line? It uses two methods, one just adds points to the extrema of the original
+  curve, and the other looks for places where the innermost path intersects
+  itself). -->
+  残念ながら、これは常にうまく動作するわけではありません。スプラインが非常に鋭い折れ曲がりを見せた場合、上に示した我々の近似法はよい近似を出力することができません。そのようなことが起こった場合、FontForge はスプラインの鋭い折れ曲がりのそばに点を追加して 2 本に分割しようと試みます。2 本の部分スプラインの近似は一般にずっと良くなります (どのように FontForge は線を分割する場所を算出するのでしょうか? 2 つの方法を使用しています。1 つは単にオリジナルの曲線の極値に点を追加する方法で、もう 1 つは内側のパスがそれ自身と交差する箇所を探す方法です)。
+  <P>
+<!--
+  PostScript pens can end in -->
+  PostScript のペンは以下のいずれかで終わることができます:
+  <UL>
+    <LI>
+<!--  A flat edge - - this is easy, we just draw a line from the end of one spline
+      to the end of the other -->
+      平らな端 — これは簡単です。単に片方のスプラインの端からもう 1 つの端に線分を引くだけです。
+    <LI>
+<!--  A rounded edge - - here we just draw a semi-circle (making sure it goes in
+      the right direction). -->
+      丸い端 — この場合単に半円を描画します (正しい方向に線を引いているかを確かめます)。
+    <LI>
+<!--  A butt edge - - just draw lines continuing the two splines, moving with the
+      same slope and width/2 units long, and then join those end-points with a
+      straight line. -->
+      飛び出した端 — 単に 2 本のスプラインを延長して、傾きがスプラインと同じで長さが線幅の半分の線を引き、それからそれらの端点を直線で結びます。
+  </UL>
+  <P>
+<!--
+  Things are a bit more complex at a joint -->
+  接合箇所においては事情はより複雑になります。
+  <IMG src="../../_images/expand-joint-pre.png" WIDTH="61" HEIGHT="78" ALIGN="Middle"> =&gt;
+  <IMG src="../../_images/expand-joint-post.png" WIDTH="69" HEIGHT="80" ALIGN="Middle">,
+<!--
+  the green lines in the right image show where the path would have gone had
+  it not been constrained by a joint, so on the inside of the joint FontForge
+  must figure out where this intersection occurs. While on the outside FontForge
+  must figure out either a round, miter or bevelled edge. -->
+  左の図の緑の線は、パスが接合部で遮られなければ伸ばされていたはずの曲線を示しており、接合部の内側では FontForge はどこで交差が起こるかを判別しなければなりません。一方、外側では FontForge は丸形、留め継ぎまたは切り落とした角のいずれかを作図しなければなりません。
+  <H3>
+<!--  An elliptical pen-->
+      楕円形のペン
+  </H3>
+  <P>
+<!--
+  This is really just the same as a circular pen. Let us say we want an ellipse
+  which is twice as wide as it is high. Then before stroking the path, let's
+  scale it to 50% in the horizontal direction, then stroke it with a circular
+  pen, and then scale it back by 200% horizontally. The result will be as if
+  we had used an elliptical pen. -->
+  これは実際には円形のペンと全く同じです。例えば、高さの 2 倍の幅をもつ楕円形を考えてみましょう。パスのストローク処理を行う前に、水平方向を 50% に縮小し、その後に円形のペンでストローク処理を行い、最後に再び水平方向に 200% に拡大します。結果は、楕円形のペンを用いたのと変わりありません。
+  <P>
+<!--
+  Obviously if the ellipse is at an angle to the glyph's axes, we must apply
+  a more complicated transformation which involves both rotation and scaling. -->
+  判りきった事ですが、楕円形がグリフの座標軸に比べ傾いた角度がつけられている場合、回転と拡大・縮小を伴う、より複雑な座標変換を適用しなければなりません。
+  <H3> 
+<!--  A rectangular pen (a calligraphic pen)-->
+      矩形のペン (カリグラフィー用のペン)
+  </H3>
+  <P>
+<!--
+  Things are subtly different between a rectangular pen and a circular pen.
+  We can no longer just find the points which are a given distance away and
+  normal to the curve. Except where the spline is parallel to one edge of the
+  pen, a the outer contour of a rectangular pen will be stroked by one of its
+  end-points. So all we need do is figure out where a spline is parallel to
+  the pen's sides, and look at the problem in little chunks between those difficult
+  points. -->
+  矩形のペンと円形のペンとでは、微妙に勝手が異なります。もはや、曲線から垂直に一定の距離だけ離れた点を探すだけでは済みません。スプラインがペンの 1 辺と平行となる箇所を除いては、矩形のペンによる外側の輪郭は、その頂点のどれか 1 つによって塗り潰されたストロークとなります。ですから、行わなければならない作業をひっくるめて言うと、ペンの各辺と平行になる位置を発見し、それらの異なる点の間の小さな切れっ端ごとに問題を処理する必要があります。
+  <P>
+<!--
+  If we are between difficult points then life is very simple indeed. The edge
+  will always be stroked by the same end-point, which is a fixed distance from
+  the center of the pen, so all we need to do is translate the original spline
+  by this distance (and then fix it up so that t goes from [0,1], but that's
+  another easy transformation). -->
+  困難な点の中間を処理するときは、人生は全く簡単になります。線の縁は常に同じ頂点によって描画され、ペンの中央から固定された距離に位置するので、オリジナルのスプラインをその距離だけ平行移動すればすべて完了です (それから、t が [0,1] の範囲に入るように補正を行う必要がありますが、これは別の単純な変換で処理可能です)
+  <P>
+<!--
+  When we reach a point where the spline's slope is parallel to one edge of
+  the pen, then on the outside path we draw a copy of that edge of of the pen,
+  and on the inside edge we calculate a join as above. -->
+  スプラインの傾きがペンの 1 つの辺に平行になる点に達したとき、パスの外側ではペンの輪郭のコピーを描くことになり、内側では上記と同じ方法で結びの点を計算することになります。
+  <H3>
+<!--  An arbitrary convex polygonal pen -->
+      任意の凸多角形のペン
+  </H3>
+  <P>
+<!--
+  FontForge does not currently do this (the UI for specifying an arbitrary
+  polygon is a little difficult), but the same method which works for a rectangle
+  can be extended without too much difficulty to any convex polygon. (MetaFont
+  fonts can be drawn with such a pen. I don't know if any are) -->
+  FontForge は現在の所これを行いません (任意の多角形を指定する UI はやや困難です) が、矩形のペンに対して働く方法のいくつかはあまり大きな困難なしに、任意の凸なポリゴンに拡張することができます。(MetaFont のフォントはこのようなペンで描くことができます。そのようなフォントが存在するかは寡聞にして知りません。
+  <H3>
+<!--  A pen of variable width-->
+      太さ可変のペン
+  </H3>
+  <P>
+<!--
+  If you have a wacom tablet then FontForge also supports variable width pens.
+  Extending the above algorithms is fairly simple. -->
+  ワコムのタブレットをお持ちの場合、FontForge は可変幅のペンもサポートします。上記のアルゴリズムの拡張は非常に簡単です。
+  <H3>
+<!--  A pen at a varying angle-->
+      角度の変化するペン
+  </H3>
+  <P>
+<!--
+  FontForge does not support this. I don't see a good UI for it. (MetaFont
+  fonts can be drawn with such a pen). -->
+  FontForge はこれをサポートしていません。よい UI が思いつきません。(MetaFont のフォントはこのようなペンで描くことができます)。
+  <P>
+</DIV>
+</BODY></HTML>

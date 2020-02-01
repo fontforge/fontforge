@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="862" height="361" version="1.1" viewBox="0 0 862 361" xml:space="preserve"
+  xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#"
+  xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+    <g transform="matrix(1.3333333,0,0,1.3333333,0,9.025e-6)">
+    <path d="m98.586 255.695 80.863-90.531" stroke="#00708f" stroke-width=".75" />
+    <path d="m173.449 159.164 12 12" stroke="#00708f" stroke-width=".75" />
+    <path d="m173.449 171.164 12-12" stroke="#00708f" stroke-width=".75" />
+    <path d="m327.59 127.527h-70.172" fill="none" stroke="#c0c" stroke-width=".75" />
+    <path d="m251.418 121.527 12 12" stroke="#c0c" stroke-width=".75" />
+    <path d="m251.418 133.527 12-12" stroke="#c0c" stroke-width=".75" />
+    <path d="m327.59 127.527h68.371" fill="none" stroke="#00708f" stroke-width=".75" />
+    <path d="m389.961 121.527 12 12" stroke="#00708f" stroke-width=".75" />
+    <path d="m389.961 133.527 12-12" stroke="#00708f" stroke-width=".75" />
+    <path d="m546.938 249.816-76.641-86.859" stroke="#c0c" stroke-width=".75" />
+    <path d="m464.297 156.957 12 12" stroke="#c0c" stroke-width=".75" />
+    <path d="m464.297 168.957 12-12" stroke="#c0c" stroke-width=".75" />
+    <path d="m631.312 175.438-90.05-102.063" stroke="#00708f" stroke-width=".75" />
+    <path d="m535.262 67.375 12 12" stroke="#00708f" stroke-width=".75" />
+    <path d="m535.262 79.375 12-12" stroke="#00708f" stroke-width=".75" />
+    <path d="m327.59 15.027h110.34" fill="none" stroke="#c0c" stroke-width=".75" />
+    <path d="m431.93 9.027 12 12" stroke="#c0c" stroke-width=".75" />
+    <path d="m431.93 21.027 12-12" stroke="#c0c" stroke-width=".75" />
+    <path d="m327.59 15.027h-112.945" fill="none" stroke="#00708f" stroke-width=".75" />
+    <path d="m208.645 9.027 12 12" stroke="#00708f" stroke-width=".75" />
+    <path d="m208.645 21.027 12-12" stroke="#00708f" stroke-width=".75" />
+    <path d="m14.664 180.805 93.742-104.95" stroke="#c0c" stroke-width=".75" />
+    <path d="m102.406 69.855 12 12" stroke="#c0c" stroke-width=".75" />
+    <path d="m102.406 81.855 12-12" stroke="#c0c" stroke-width=".75" />
+    <path d="m94.086 251.195h9v9h-9z" fill="#707070" />
+    <g transform="matrix(.89321 -1 1 .89321 0 0)">
+      <path d="m-93.245 176.279h5.594" fill="none" stroke="#707070" stroke-width=".55935502" />
+    </g>
+    <g transform="matrix(.89321 -1 1 .89321 0 0)">
+      <path d="m-87.651 176.279-1.68 1.68" fill="none" stroke="#707070" stroke-width=".55935502" />
+    </g>
+    <g transform="matrix(.89321 -1 1 .89321 0 0)">
+      <path d="m-87.651 176.279-1.68-1.679" fill="none" stroke="#707070" stroke-width=".55935502" />
+    </g>
+    <path
+      d="m332.84 127.527c0 2.899-2.352 5.25-5.25 5.25-2.899 0-5.25-2.351-5.25-5.25 0-2.902 2.351-5.25 5.25-5.25 2.898 0 5.25 2.348 5.25 5.25z"
+      fill="#bf0080" />
+    <path d="m542.438 245.316h9v9h-9z" fill="#bf0080" />
+    <path d="m626.812 170.938h9v9h-9z" fill="#707070" />
+    <g transform="matrix(-.88235 -1 1 -.88235 0 0)">
+      <path d="m-411.84 262.301 5.624 1e-3" fill="none" stroke="#707070" stroke-width=".562379" />
+    </g>
+    <g transform="matrix(-.88235 -1 1 -.88235 0 0)">
+      <path d="m-406.216 262.302-1.687 1.687" fill="none" stroke="#707070" stroke-width=".562379" />
+    </g>
+    <g transform="matrix(-.88235 -1 1 -.88235 0 0)">
+      <path d="m-406.216 262.302-1.686-1.688" fill="none" stroke="#707070" stroke-width=".562379" />
+    </g>
+    <path
+      d="m332.84 15.027c0 2.899-2.352 5.25-5.25 5.25-2.899 0-5.25-2.351-5.25-5.25 0-2.902 2.351-5.25 5.25-5.25 2.898 0 5.25 2.348 5.25 5.25z"
+      fill="#bf0080" />
+    <path d="m10.164 176.305h9v9h-9z" fill="#bf0080" />
+    <path d="m56.625 218.25c172.5-193.125 363.75-196.875 532.5-5.625" fill="none" stroke="#008000" stroke-width="1.5" />
+    <path
+      d="m98.586 255.695c80.863-90.531 158.832-128.168 229.004-128.168 68.371 0 142.707 35.43 219.348 122.289m84.374-74.378c-90.05-102.063-193.382-160.411-303.722-160.411-112.945 0-219.184 60.828-312.926 165.778"
+      fill="none" stroke="#600" stroke-width="1.5" />
+  </g>
+</svg>

@@ -1,0 +1,305 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 26-Oct-2005 -->
+  <!-- AP: Last modified: 14-Jan-2006 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>Starting fontforge</TITLE>-->
+    <TITLE>FontForge の起動方法</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+<!--Starting fontforge-->
+    FontForge の起動方法
+  </H1>
+  <UL>
+    <LI>
+<!--  <A HREF="nix-install.html#Installing">Installing from a pre-built unix
+      package</A> -->
+      <A HREF="nix-install.html#Installing">Unix 用構築済みパッケージからのインストール方法</A>
+    <LI>
+<!--  <A HREF="mac-install.html#Installing">Installing on a Mac</A>-->
+      <A HREF="mac-install.html#Installing">Mac へのインストール方法</A>
+    <LI>
+<!--  <A HREF="ms-install.html#Installing">Installing on MS/Windows</A>-->
+      <A HREF="ms-install.html#Installing">MS-Windows へのインストール方法</A>
+    <LI>
+<!--  <A HREF="source-build.html#mac">Before you build (on a mac)</A>-->
+      <A HREF="source-build.html#src-mac">(Mac 上で) ソースを構築する前の準備</A>
+    <LI>
+<!--  <A HREF="source-build.html#MS">Before you build (on MS/Windows)</A>-->
+      <A HREF="source-build.html#src-MS">(Windows 上で) ソースを構築する前の準備</A>
+    <LI>
+<!--  <A HREF="source-build.html#source">Building and installing from source</A>-->
+      <A HREF="source-build.html#source">ソースからの構築とインストール</A>
+    <LI>
+<!--  <A HREF="source-build.html#Dependencies">Dependencies (external libraries/helper programs)</A> -->
+      <A HREF="source-build.html#Dependencies">依存性 (外部ライブラリ/補助プログラム)</A>
+    <LI>
+<!--  <A HREF="#Documentation">Installing documentation</A>-->
+      <A HREF="source-build.html#Documentation">文書のインストール方法</A>
+    <LI>
+<!--  <A HREF="running.html">Running FontForge</A>-->
+      <A HREF="running.html">FontForge の起動方法</A>
+      <UL>
+	<LI>
+<!--	  <A HREF="running.html#cygwin">Before starting fontforge on cygwin</A>-->
+	  <A HREF="running.html#cygwin">cygwin で FontForge を起動する前に</A>
+	<LI>
+<!--	  <A HREF="running.html#PATH">Notes on the PATH variable</A> -->
+	  <A HREF="running.html#PATH">環境変数 PATH に関する注意</A>
+	<LI>
+<!--	  <A HREF="running.html#Starting">Starting fontforge from the command line</A> -->
+	  <A HREF="running.html#Starting">コマンドラインから FontForge を起動する方法</A>
+	<LI>
+<!--	  <A HREF="#mac">On the mac</A> -->
+	  <A HREF="#mac">Mac では</A>
+      </UL>
+  </UL>
+  <H2>
+<!--Starting <A NAME="FontForge">FontForge</A>-->
+    <A NAME="FontForge">FontForge</A> の起動方法
+  </H2>
+  <H3>
+<!--Before starting fontforge on <A NAME="cygwin">cygwin</A>-->
+    <A NAME="cygwin">cygwin</A> で FontForge を起動する前に
+  </H3>
+  <P>
+<!--
+  Before you can start fontforge on cygwin you must start the X11 server. -->
+  cygwin 上で FontForge を実行できるようにするには、X11 サーバを起動しておく必要があります。
+  <P>
+<!--
+  Open a cygwin window and type -->
+  cygwin のウィンドウを開いて以下を実行します:
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>xinit
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  This should create a task window that covers your entire screen, inside of
+  which there should be an xterm (sort of like the cygwin window earlier).
+  Be prepared to type commands in this window. -->
+  これにより画面全体を蔽うタスクウィンドウが作成され、その内部に xterm (cygwin ウィンドウと似たようなもので、さらに昔からあるプログラムです) が表示されるはずです。これで、このウィンドウからコマンドが入力できるようになりました。
+  <P>
+<!--
+  You should then type -->
+  それから以下を実行するべきでしょう:
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>twm &amp;
+</PRE>
+  </BLOCKQUOTE>
+  <H3>
+<!--Notes on the <A NAME="PATH">PATH</A> variable-->
+    環境変数 <A NAME="PATH">PATH</A> に関する注意
+  </H3>
+  <P>
+<!--
+  On most systems fontforge will install itself into <KBD>/usr/local/bin</KBD>
+  (that's the standard place for optional software), and this is not always
+  in the default search path for commands (grrrr). Which means you might have
+  everything properly installed, but nothing actually works. If you see messages
+  like <KBD>"fontforge: command not found."</KBD> this has (probably) happened
+  to you.-->
+  ほとんどのシステムでは、FontForge は <KBD>/usr/local/bin</KBD> にインストールされるのですが (これは追加のソフトウェアの標準的な置き場所です)、ここはデフォルトのコマンドサーチパスに登録されているとは限らないのです (ガルルル)。その場合、インストールは全て正しく行われたにも関わらず、実際には何も起動しないということになります。もし、“<KBD>fontforge: command not found.</KBD>”とか“<KBD>fontforge: コマンドが見つかりません.</KBD>”のようなメッセージが表示されたならば、(おそらく) そのような事が起こっているのです。
+  <P>
+<!--
+  So what do you do? -->
+  ならどうすればいいのでしょう?
+  <P>
+<!--
+  You need to set the PATH environment variable so that it includes /usr/local/bin.
+  The value of the PATH variable is a set of directories separated by colons. -->
+  環境変数 PATH を /usr/local/bin を含むように設定する必要があります。PATH 変数の値は、ディレクトリをコロン (:) で区切って並べたものです。
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>echo $PATH
+/home/gww/bin:/usr/bin:/bin:/usr/X11R6/bin:/sbin
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  Unfortunately there are two ways of doing this because there are two different
+  conventions used by unix shells. Type: -->
+  不幸なことに、Unix シェルには 2 つの異なる流儀に分かれているため、これを設定する方法は 2 つあるのです。以下のようにして確かめてください:
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>echo $SHELL
+/bin/bash
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  If the name of your shell is <KBD>bash</KBD> (as above), <KBD>ksh</KBD> or
+  <KBD>sh</KBD> then you want to type -->
+  現在使っているシェルの名前が (上の例のように) <KBD>bash</KBD>, <KBD>ksh</KBD> または <KBD>sh</KBD> と表示されたならば、次のように設定するのがいいでしょう:
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>PATH=/usr/local/bin:$PATH ; export PATH
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  If the name of your shell is <KBD>tcsh</KBD> or <KBD>csh</KBD> then you say -->
+  あなたの使っているシェルが <KBD>tcsh</KBD> または <KBD>csh</KBD> ならば、以下のようにします:
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>setenv PATH /usr/local/bin:$PATH
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  But you'd have to do that every time you logged in. Instead you want this
+  included in the shell's initialization. Again there are two cases, for the
+  <KBD>bash</KBD> family of shells you want to edit the file
+  <KBD>~/.profile</KBD> while for the <KBD>csh</KBD> family you want to edit
+  the file <KBD>~/.login</KBD>. On a bash system the following command is generally
+  sufficient: -->
+  しかしこの方法ではログインするたびに上の手順を実行しなければなりません。そうしないで済むように、この処理をシェルの初期化手順に追加することができます。この場合もやり方は 2 つに分かれていて、<KBD>bash</KBD> とその仲間ではファイル <KBD>~/.profile</KBD> を編集するのに対し、<KBD>csh</KBD> と <KBD>tcsh</KBD> ではファイル <KBD>~/.login</KBD> を編集します。bash を使っている場合、一般に以下のコマンドを実行すればいいでしょう:
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>cat &gt;&gt;~/.profile
+PATH=/usr/local/bin:$PATH ; export PATH
+^D
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  (where <KBD>^D</KBD> represents control-D, obtained by holding down the control
+  key while depressing <KBD>d</KBD>. <BR>
+  And for the csh family you would type: -->
+  (ここで <KBD>^D</KBD> は Control-D のことで、Control (Ctrl) キーを押したまま離さずに <KBD>d</KBD> キーを押すことを表します。<BR>
+  csh の仲間の場合、以下のようにタイプします:
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>cat &gt;&gt;~/.login
+setenv PATH /usr/local/bin:$PATH
+^D
+</PRE>
+   </BLOCKQUOTE>
+  <H3>
+<!--<A NAME="Starting">Starting</A> fontforge from the command line-->
+    コマンドラインから FontForge を<A NAME="Starting">起動する方法</A>
+  </H3>
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>fontforge font.pfa font2.sfd font3.ttf font4.otf </PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  will start fontforge looking at the fonts you specify on the command line.
+  It can read either pfb or pfa fonts, and some ps fonts (type 0 fonts based
+  on a type 1 dictionary) as well as truetype fonts, open type fonts and many
+  other formats. -->
+  これを実行すると、FontForge はコマンドラインで指定したフォントを探します。TrueType フォント、OpenType フォントだけでなく、PFB や PFA フォント、およびある種の PS フォント (Type1 辞書に基づく Type0 フォント) などの各種の異なるフォーマットのフォントを読み込むことができます。
+  <P>
+<!--
+  <SMALL>(If you get a message from your computer saying: "<KBD>fontforge:
+  Command not found</KBD>" you should read the
+  <A HREF="running.html#PATH">previous section</A>)</SMALL> -->
+  <SMALL>(もし、これを実行した時に:“<KBD>fontforge:Command not found</KBD>”や“<KBD>fontforge:コマンドが見つかりません</KBD>”というメッセージが端末に表示される場合、<A HREF="running.html#PATH">前のセクション</A>をお読みください)</SMALL>
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>fontforge -new
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  will cause fontforge to create a new font (in iso-8859-1 encoding) -->
+  このようにすると、FontForge は (ISO8859-1 エンコーディングの) 新しいフォントを作成します。
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>fontforge
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  will open up a file picker dialog and allow you to browse till you've found
+  a font file (or have created a new one). -->
+  とのみするとファイル選択ダイアログが開き、フォントファイルが見つかるまで (か、新規に作成するまで) ブラウズすることができます
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>fontforge -script script.pe fonts...
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  This will invoke fontforge in a non-interactive mode, and have it run the
+  named script. Any further arguments on the command line will be passed as
+  arguments to the script and processed (or not) by it. -->
+  これは FontForge を非対話的なモードで起動し、script という名前のスクリプトファイルを実行します。コマンドライン上でその後に続くすべての引数は、スクリプトへの引数とし手渡され、スクリプトによって処理が行われ (るか無視され) ます。
+  <P>
+<!--
+  For a complete description of possible arguments see <A HREF="cliargs.html">the
+  section on the command line</A>. -->
+  指定可能な引数の完全なリストは、<A HREF="cliargs.html">コマンドラインのセクション</A>を参照してください。
+  <H3>
+<!--On the <A NAME="mac">mac</A>-->
+    <A NAME="mac">Mac</A> では
+  </H3>
+  <P>
+<!--
+  Before you start fontforge on the mac you must start the X11 server. You
+  can do this by opening the Applications folder, and then opening the Utilities
+  folder, and then double-clicking on "X11". (If you don't have X11 there then
+  refer back to the <A HREF="mac-install.html#Before">instructions for installing
+  it</A>) -->
+  FontForge を Mac で起動する前に、X11 サーバを起動する必要があります。これを行うには、Applications フォルダを開き、その中の Utilities フォルダを開いてから“X11”をダブルクリックしてください。(X11 が入っていない場合は、<A HREF="mac-install.html#Before">インストールの手順の説明</A> まで戻って、設定を行ってください。
+  <P>
+<!--
+  Having done that there should be a menubar with a menu labeled "Applications".
+  Click on this. There should be a "FontForge" entry in it. Selecting FontForge
+  will start fontforge and bring up a dialog allowing you to open a font or
+  create a new one. -->
+  これが行うと、“Applications”というラベルのメニューがメニューバーに表示されるはずです。それをクリックしてください。そこに“FontForge”という項目があるはずです。FontForge を選択すると、FontForge プログラムが起動し、フォントを開いたり新規作成することができるダイアログが立ち上がります。
+  <P>
+<!--
+  <FONT COLOR="Red"><STRONG>Caveat: </STRONG></FONT>FontForge does not normally
+  show mac resource fonts in this dialog - - however it can still open one even
+  it it isn't displayed. Simply type in the name of the file containing it.
+  (or, if you prefer, type a "*" in the textfield and then press the [Filter]
+  button. This should show you all files). -->
+  <FONT COLOR="Red"><STRONG>警告: </STRONG></FONT>FontForge は通常は Mac リソースフォントをこの一覧に表示しません——たとえファイルが表示されていない場合でも、その中の 1 個を開くことは可能です。たんに、そのディレクトリにあるファイルの名前をタイプするだけです (または、そうしたくない場合、テキストフィールドに“*”と入力してから <CODE>[フィルタ]</CODE> ボタンを押してください。すべてのファイルが一覧表示されます)。
+  <P>
+<!--
+  If the Applications menu does not contain a "FontForge" entry, you can add
+  one yourself: -->
+  “FontForge”という項目が Applications メニューに含まれていないならば、以下の手順でその項目を追加することができます:
+  <UL>
+    <LI>
+<!--  Select Applications-&gt;Customize Menu-->
+      <CODE>Applications</CODE>→<CODE>Customize</CODE> メニューを選択
+    <LI>
+<!--  Then press the (Add) button in the dialog that appears-->
+      表示されたダイアログの <CODE>(Add)</CODE> ボタンをクリック
+    <LI>
+<!--  Double click in the left-most section of the blank line which just appeared
+      and then type "FontForge" -->
+      現れたばかりの空白行の一番左の欄をダブルクリックして、“<CODE>FontForge</CODE>”とキー入力。
+    <LI>
+<!--  Press the [Tab] key and type "/usr/local/bin/fontforge"-->
+      [Tab] キーを押して“<CODE>/usr/local/bin/fontforge</CODE>”とキー入力。
+    <LI>
+<!--  Press the [Tab] key again and type "f"-->
+      もう一度 [Tab] キーを押して“f”キーを押す
+    <LI>
+<!--  Then press (Done)-->
+      それから <CODE>(Done)</CODE> ボタンをクリック
+  </UL>
+  <P>
+<!--
+  (You may also start fontforge from the command line here. Go to the Applications
+  menu and select xterm, and then type <A HREF="running.html#Starting">one
+  of the commands listed above</A>) -->
+  (ここで FontForge をコマンドラインから起動することもできます。Applications メニューに移動して xterm を選択してから、xterm 上で<A HREF="running.html#Starting">ここに例示したコマンドラインのどれか</A>を入力してください。
+  <P>
+<!--
+  <FONT COLOR="Red"><STRONG>Caveat: </STRONG></FONT>FontForge does not use
+  the Command key to invoke menu items. (Any use of the Command key is intercepted
+  by X11, so Command-Q will quit out of X11 (and abort fontforge), it will
+  not quit fontforge cleanly) -->
+  <FONT COLOR="Red"><STRONG>警告:</STRONG></FONT> FontForge はメニュー項目を呼び出すのに Command キーを使用しません。(Command キーを使用すると、それはすべて X11 によって横取りされるので、Command-Q は X11 を終了させる (同時に FontForge を異常終了させる) ことになり、FontForge を正しく終了させることにはなりません。
+  <P>
+<!--
+  <FONT COLOR="Red"><STRONG>Caveat: </STRONG></FONT>FontForge was written assuming
+  the availability of a three button mouse. X11 simulates this by creating
+  a virtual three button mouse where the middle button is invoked by Option-Mouse
+  click and the right button by Command-Mouse click. -->
+  <FONT COLOR="Red"><STRONG>警告:</STRONG></FONT> FontForge は 3 ボタンマウスが利用可能であることを前提として作成されています。X11 はこれを、Option-マウスクリックを中ボタン、Command-マウスクリックを右ボタンと見なす仮想 3 ボタンマウスを作成することによってシミュレートしています。
+  <P>
+</DIV>
+</BODY></HTML>

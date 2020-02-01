@@ -1,0 +1,676 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 6-Dec-2000 -->
+  <!-- AP: Last modified: 13-Jun-2006 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>The Metrics View</TITLE>-->
+    <TITLE>メトリックビュー</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+  <DIV id="in">
+  <H1 ALIGN=Center>
+<!--The Metrics View -->
+    メトリックビュー
+  </H1>
+  <P>
+  <IMG SRC="MetricsView.png" WIDTH="600" HEIGHT="331">
+  <P>
+<!--
+  The metrics view allows you to examine how glyphs look together and to alter
+  the spacing between them. -->
+  メトリックビューは、グリフを並べた時にどのように見えるかを表示し、グリフ間のスペーシングを変更することができます。
+  <P>
+<!--
+  If the metrics view is created from the font view then any selected glyphs
+  (well, the first 15 or so) will be displayed in the view in the order they
+  were selected. If it is created from an outline or bitmap glyph view then
+  only that glyph is displayed. If it is created from a bitmap glyph view (or
+  from the font view when that view is displaying a bitmap font) then the metrics
+  view will display bitmaps, but will not allow you to edit the bitmaps metrics
+  (you must do your metrics editing in a view displaying outlines). -->
+  メトリックビューがフォントビューのメニューから呼び出された場合、選択されている任意のグリフ (おそらく、最初の 15 個程度) が選択された順番にビューに表示されます。
+  アウトライン・ビットマップのどちらかのグリフビューから呼び出された場合、編集中のグリフだけが表示されます。
+  ビットマップグリフビューから (またはビットマップフォントを表示中のフォントビューから) 呼び出されたときはメトリックビューはビットマップ表示となりますが、そこではビットマップのメトリックを編集できません (メトリック編集は、アウトラインを表示しているビューから行わなければなりません)。
+  <P>
+<!--
+  Underneath the menu bar is a text field which allows you to enter additional
+  unicode characters to be displayed. -->
+  メニューバーの下にあるのはテキストフィールドで、ここで追加の Unicode 文字を入力して表示させることができます。
+  <P>
+<!--
+  Beside the text field is a pulldown list showing the script language combination
+  that will be used for building kern pairs. (See the description on
+  <A HREF="charinfo.html#Feature-Tag">script language lists in the glyph
+  information dialog</A>) -->
+  テキストフィールドの下にあるのは用字系・言語の組合せを表示するプルダウンリストで、カーニングペアの構築のときに使用されます (<A HREF="charinfo.html#Feature-Tag">グリフ情報ダイアログの用字系・言語リスト</A>に関する記述を参照してください)。
+  <P>
+<!--
+  If you wish to enter non-unicode characters you may drag them from the font
+  view and drop them into the metrics view where you want them to go. -->
+  Unicode に含まれない文字を入力したい場合でも、フォントビューからドラッグしてメトリックビューの入力したい位置にドロップすることができます。
+  <P>
+<!--
+  The mid portion of the view is taken up with the displayed glyphs. For outline
+  glyphs these are sized so that the em-height of the font just fits in this
+  region. There are grey lines between the glyphs marking the origin of the
+  glyph on the right and the width of the glyph on the left. The baseline is
+  also drawn in grey. -->
+  ビューの中央部分は表示中のグリフが占めています。アウトライングリフの場合は、これらの大きさはフォントの em ハイトがこの領域にちょうど一致するように設定されます。グリフとグリフの間には灰色の線があり、右側にある次のグリフの原点と左側にある前のグリフの送り幅の位置を区切っています。ベースラインも灰色の線で表示されています。
+  <P>
+<!--
+  One of the glyphs is active. That glyph has a green line on its left (at
+  its origin) and a blue line on its right (its width). You may change the
+  width by dragging this line. You may change the left side bearing (lbearing)
+  of the glyph by clicking on the glyph and dragging it left or right. You
+  may change the kerning between this glyph and the one to its left by dragging
+  the green line around. (If you wish to create a <A HREF="#DeviceTable">Device
+  Table</A> for small pixel sizes you must use the
+  <A HREF="metricsview.html#kernpair">Kern Pair Closeup dialog</A>) -->
+  グリフのうちどれか 1 つがアクティブになっています。そのグリフは緑の線が左 (グリフの原点) 側にあり、青い線が右 (グリフの横幅) 側にあります。この線をドラッグすることにより幅を変更することができます。グリフの左サイドベアリング (lbearing) は、グリフをクリックして左から右に引っ張ることにより変更することができます。緑の線をドラッグして動かせば、このグリフと左にあるグリフの間のカーニングを設定することができます。 (小さなピクセルサイズに対して<A HREF="#DeviceTable">デバイステーブル</A>を作成したい場合、<A HREF="metricsview.html#kernpair">カーニングペアの詳細ダイアログ</A>を使用する必要があります)
+  <TABLE BORDER CELLPADDING="2">
+    <CAPTION>
+<!--  Kerning-->
+      カーニング
+    </CAPTION>
+    <TR>
+      <TD><IMG src="../../_images/To-unkerned.png" WIDTH="204" HEIGHT="323"></TD>
+      <TD><IMG src="../../_images/To-kerned.png" WIDTH="204" HEIGHT="323"></TD>
+    </TR>
+  </TABLE>
+  <P>
+<!--
+  The active glyph may be changed by clicking on any of the glyph. -->
+  アクティブなグリフは、グリフのどこかをクリックすれば変更することができます。
+  <P>
+<!--
+  Underneath the display area are a set of text fields. You may type in new
+  numbers for any of these fields to change the corresponding metrics of the
+  glyph. -->
+  表示エリアの下にあるのはテキストフィールドのグリフ一覧です。
+  表示されているどの文字でも、このフィールドに新しい値を入力すれば、そのグリフの対応するメトリックの値を変更することができます。
+  <P>
+<!--
+  If the first glyph to be displayed is in Hebrew or Arabic (or any other right
+  to left language) then the entire display area will be shown right to left -->
+  最初のグリフがヘブライ文字またはアラビア文字 (その他任意の右から左に書く言語) として表示される場合、表示エリア全体が右から左に表示されます。
+  <P>
+<!--
+  <STRONG>Note</STRONG> there is a very complicated algorithm given in the
+  Unicode spec for displaying mixed right to left and left to right passages.
+  This is not followed here. The direction determination is done by the first
+  glyph alone. -->
+  <STRONG>注意</STRONG> 右から左へ書く文字と左から右へ書く文字が混在したテキストを表示する非常に複雑なアルゴリズムが Unicode の規格で定められていますが、このソフトウェアはそれに従っていません。書字方向は最初のグリフだけを見て決めています。
+  <P>
+<!--
+  <STRONG>Note also </STRONG>that neither Arabic ligature nor form (initial,
+  terminal, medial, isolated) determination will be done in the display area
+  (though they will be done in the text field above). If you want to see correct
+  form you must enter the unicode code for that form (as opposed to the character
+  for the letter), or use the
+  <A HREF="viewmenu.html#Substitutions">View-&gt;Substitutions</A> command. -->
+  <STRONG>もう一つ注意</STRONG>: 表示エリアでは、アラビア文字の合字や形 (語頭・語尾・語中または独立) の選択は行いません (上のテキストフィールドでは行われるはずですが)。正しい形を見たい場合は、(文字そのものではなく) 具体形に相当する Unicode の符号位置を入力するか、<A HREF="viewmenu.html#Substitutions"><CODE>表示(<U>V</U>)</CODE>→<CODE>置換一覧(<U>S</U>)</CODE></A> コマンドを使うかする必要があります。
+  <P>
+  <IMG SRC="VerticalMetrics.png" WIDTH="360" HEIGHT="700" ALIGN="Right"><IMG
+      src="../../_images/HebrewMetrics.png" WIDTH="511" HEIGHT="323">
+  <P>
+<!--
+  You can make the window display vertical metrics and kerning by
+  View-&gt;Vertical. (This is only available if your font has vertical metrics
+  enabled, Element-&gt;Font Info-&gt;General-&gt;Has Vertical Metrics). In
+  this mode you can change vertical width, vertical kerning, etc. -->
+  <CODE>表示(<U>V</U>)</CODE>→<CODE>縦書き(<U>V</U>)</CODE> を選ぶと、ウィンドウに縦書きメトリックとカーニングを表示することができます (フォントに縦書きメトリックが存在する場合に限ります。<CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[一般情報]</CODE>→<CODE>[]縦書きメトリックが存在</CODE> をチェックする必要があります)。
+  このモードでは縦書きの字送り、カーニングなどを変更できます。
+  <P>
+<!--
+  If you double click on one of the displayed glyphs then FontForge will bring
+  up a outline glyph view to allow you to edit that glyph. -->
+  表示されたグリフのどちらかをダブルクリックすると、FontForge はアウトライングリフビューを起動し、そのグリフが編集できる状態になります。
+  <P>
+<!--
+  +If the selected glyph contains active anchor points (that is something is
+  attached to those anchor points) then you may move those anchor points around
+  to see how they look. <STRONG>Note:</STRONG> When moving an anchor point
+  in a mark, the result is counter-intuitive at first glance. -->
+  選択中のグリフにアクティブなアンカーポイントが含まれている場合 (これは、そのアンカーポイントに何かが接続していることを意味します)、それらのアンカーポイントを移動して、その結果がどう見えるかを確認することができます。
+  <STRONG>注意:</STRONG> あるマークに含まれるアンカーポイントを移動した時、その結果は一見直観に反しているように見えます。
+  <P>
+<!--
+  If you click in a glyph with the right button then a popup menu appears
+  displaying all the simple positioning (GPOS type 1) features you have defined.
+  You may select one of these and see the effect of applying it.
+  <STRONG>Limitation</STRONG> FontForge currently only supports modifying the
+  position, it will not display any modified advance widths. -->
+  グリフを右ボタンでクリックすると、そのグリフに対して定義されている全ての単純位置指定 (GPOS タイプ 1) 機能を表示するポップアップメニューが現れます。
+  そこからどれか 1 個を選択すると、その機能を適用した結果を見ることができます。
+  <BR>
+  <STRONG>制限事項</STRONG>: FontForge は現在のところ位置の変更のみをサポートしており、送り幅の変更は表示にまったく反映されません。
+  <H2>
+<!--<A NAME="Entering">Entering non-ASCII characters</A>-->
+    <A NAME="Entering">非 ASCII 文字の入力法</A>
+  </H2>
+  <P>
+<!--
+  Most of us are stuck with keyboards that only have ASCII characters on them.
+  Or at best some sub-set of ISO 8859-1 characters. How can the full range
+  of unicode characters be entered? -->
+  ほとんどの人は、ASCII 文字しかキートップに書かれていないキーボードに制約されています。
+  良くても ISO 8859-1 文字のわずかなサブセットだけです。
+  Unicode の全領域の文字を入力するにはどうすればいいでしょうか?
+  <P>
+<!--
+  X supplies a sophisticated mechanism for entering CJK characters via stand-alone
+  <A HREF="xim.html">input method servers</A>. FontForge supports this to some
+  extent now. -->
+  X は、CJK 文字をスタンドアローンの<A HREF="xim.html">インプットメソッドサーバ</A>経由で入力する洗練されたメカニズムを提供しています。
+  FontForge は現在、これにある程度対応しています。
+  <P>
+<!--
+  Aside from that, many versions of X supply a "Compose Character" key, or
+  something equivalent. The X software will map a sequence of keystrokes to
+  one character in whatever the native encoding may be. -->
+  この方法の他に、X の多くのバージョンは「合成文字」キーか、何らかの等価な手段を提供しています。
+  X ソフトウェアは、ネイティブなエンコーディングが何であっても、複数打鍵の列を 1 文字に変換するでしょう。
+  <P>
+<!--
+  My keyboard doesn't have such a key, and my X doesn't do this. But I have
+  implemented something along those lines for those of us with less expensive
+  keyboards. If you are in a mode where text entry is possible then press the
+  F12 key and follow it by a series of keystrokes. Accented characters may
+  be built using the following: -->
+  私のキーボードにはその種のキーはありませんし、X にもその機能はありません。
+  しかし安価なキーボードを使う我々のために、私はその考えに沿ってある方法を実装しました。
+  テキスト入力が可能なモードにいるときに F12 キーを押してから決まったやりかたで打鍵を行ってください。
+  以下の入力方法で、アクセントつき文字が表示できます。
+  <TABLE CELLPADDING="2">
+    <TR>
+      <TD>&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+      <TD>`</TD>
+<!--  <TD>grave accent</TD>-->		<TD>グレーブアクセント</TD>
+      <TD>&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+      <TD>0</TD>
+<!--  <TD>ring</TD>-->			<TD>リング</TD>
+      <TD>&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+      <TD>"</TD>
+<!--  <TD>double grave (or tonos)</TD>-->	<TD>ダブルグレーブ(またはトノス)</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>'</TD>
+<!--  <TD>acute accent</TD>-->		<TD>アキュートアクセント</TD>
+      <TD></TD>
+      <TD>/</TD>
+<!--  <TD>slash</TD>-->			<TD>スラッシュ</TD>
+      <TD></TD>
+      <TD>.</TD>
+<!--  <TD>dot above</TD>-->		<TD>ドットアバブ</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>:</TD>
+<!--  <TD>diaeresis (umlaut)</TD>-->	<TD>ダイエレシス(ウムラウト)</TD>
+      <TD></TD>
+      <TD>7</TD>
+<!--  <TD>breve</TD>-->			<TD>ブリーブ</TD>
+      <TD></TD>
+      <TD>,</TD>
+<!--  <TD>dot below</TD>-->		<TD>ドットビロー</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>^</TD>
+<!--  <TD>circumflex</TD>-->		<TD>サーカムフレクス</TD>
+      <TD></TD>
+      <TD>6</TD>
+<!--  <TD>caron</TD>-->			<TD>キャロン</TD>
+      <TD></TD>
+      <TD>5</TD>
+<!--  <TD>cedilla</TD>-->			<TD>セディラ</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>~</TD>
+<!--  <TD>tilde</TD>-->			<TD>チルダ</TD>
+      <TD></TD>
+      <TD>_</TD>
+<!--  <TD>macron</TD>-->			<TD>マクロン</TD>
+      <TD></TD>
+      <TD>4</TD>
+<!--  <TD>ogonec</TD>-->			<TD>オゴネク</TD>
+    </TR>
+  </TABLE>
+  <P>
+<!--
+  So &Acirc; may be built by <KBD>[F12] ^ A</KBD>, and A with diaeresis and
+  macron may be built with <KBD>[F12] : _ A</KBD>. -->
+  これにより、&Acirc; は <KBD>[F12] ^ A</KBD> で組み立てられ、ダイエレシスとマクロンのついた A は <KBD>[F12] : _ A</KBD> で組み立てることができます。
+  <P>
+<!--
+  Greek letters may also be created. If you start with <KBD>[F12] @</KBD> and
+  follow with: -->
+  ギリシャ文字を作成することもできます。
+  <KBD>[F12] @</KBD> に続けて以下のとおり入力すると表の文字が入力できます。
+  <TABLE CELLPADDING="2">
+    <TR>
+      <TD>&nbsp;&nbsp;&nbsp;</TD>
+      <TD>A</TD>
+<!--  <TD>Alpha</TD>-->			<TD>アルファ</TD>
+      <TD>&nbsp;&nbsp;&nbsp;</TD>
+      <TD>B</TD>
+<!--  <TD>Beta</TD>-->			<TD>ベータ</TD>
+      <TD>&nbsp;&nbsp;&nbsp;</TD>
+      <TD>C</TD>
+<!--  <TD>Chi</TD>-->			<TD>カイ</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>D</TD>
+<!--  <TD>Delta</TD>-->			<TD>デルタ</TD>
+      <TD></TD>
+      <TD>E</TD>
+<!--  <TD>Epsilon</TD>-->			<TD>イプシロン</TD>
+      <TD></TD>
+      <TD>F</TD>
+<!--  <TD>Phi</TD>-->			<TD>ファイ</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>G</TD>
+<!--  <TD>Gamma</TD>-->			<TD>ガンマ</TD>
+      <TD></TD>
+      <TD>H</TD>
+<!--  <TD>Eta</TD>-->			<TD>イータ</TD>
+      <TD></TD>
+      <TD>I</TD>
+<!--  <TD>Iota</TD>-->			<TD>イオタ</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>J</TD>
+<!--  <TD>(technical) Theta</TD>-->	<TD>(テクニカル) シータ</TD>
+      <TD></TD>
+      <TD>K</TD>
+<!--  <TD>Kappa</TD>-->			<TD>カッパ</TD>
+      <TD></TD>
+      <TD>L</TD>
+<!--  <TD>Lamda</TD>-->			<TD>ラムダ</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>M</TD>
+<!--  <TD>Mu</TD>-->			<TD>ミュー</TD>
+      <TD></TD>
+      <TD>N</TD>
+<!--  <TD>Nu</TD>-->			<TD>ニュー</TD>
+      <TD></TD>
+      <TD>O</TD>
+<!--  <TD>Omicron</TD>-->			<TD>オミクロン</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>P</TD>
+<!--  <TD>Pi</TD>-->			<TD>パイ</TD>
+      <TD></TD>
+      <TD>Q</TD>
+<!--  <TD>Theta</TD>-->			<TD>シータ</TD>
+      <TD></TD>
+      <TD>R</TD>
+<!--  <TD>Rho</TD>-->			<TD>ロー</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>S</TD>
+<!--  <TD>Sigma</TD>-->			<TD>シグマ</TD>
+      <TD></TD>
+      <TD>T</TD>
+<!--  <TD>Tau</TD>-->			<TD>タウ</TD>
+      <TD></TD>
+      <TD>U</TD>
+<!--  <TD>Upsilon</TD>-->			<TD>ウプシロン</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>V</TD>
+<!--  <TD>final sigma</TD>-->		<TD>ファイナルシグマ</TD>
+      <TD></TD>
+      <TD>W</TD>
+<!--  <TD>Omega</TD>-->			<TD>オメガ</TD>
+      <TD></TD>
+      <TD>X</TD>
+<!--  <TD>Xi</TD>-->			<TD>クサイ</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>Y</TD>
+<!--  <TD>Psi</TD>-->			<TD>プサイ</TD>
+      <TD></TD>
+      <TD>Z</TD>
+<!--  <TD>Zeta</TD>-->			<TD>ゼータ</TD>
+      <TD></TD>
+      <TD></TD>
+      <TD></TD>
+    </TR>
+  </TABLE>
+  <P>
+<!--
+  This is the mapping used by the Symbol font. (Lower case letters are created
+  similarly so <KBD>[F12] @ a</KBD> yields a lower case alpha). Accented greek
+  letters may also be built up, <KBD>[F12] @ " A</KBD> yields Alpha tonos. -->
+  これは Symbol フォントで使用されている対応です。(小文字も対応は同じなので、<KBD>[F12] @ a</KBD> と入力すると小文字のアルファが入力できます)。
+  アクセントつきギリシャ文字を組み立てることもできます。
+  <KBD>[F12] @ " A</KBD> はトノスつき大文字アルファとなります。
+  <P>
+<!--
+  Finally the following special characters may be built: -->
+  それに加え、以下の特殊文字を組み立てることができます。
+  <TABLE CELLPADDING="2">
+    <TR>
+      <TD>&nbsp;&nbsp;&nbsp;</TD>
+      <TD>[F12] &lt;space&gt;</TD>
+<!--  <TD>&lt;no break space&gt;</TD>-->		<TD>&lt;非分離スペース&gt;</TD>
+      <TD>&nbsp;&nbsp;&nbsp;</TD>
+      <TD>[F12] *</TD>
+<!--  <TD>&#176;</TD>-->				<TD>°</TD>
+      <TD>&nbsp;&nbsp;&nbsp;</TD>
+      <TD>[F12] @ *</TD>
+<!--  <TD>&lt;bullet&gt;</TD> -->			<TD>&lt;ビュレット&gt;</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>[F12] @ &lt;space&gt;</TD>
+<!--  <TD>&lt;em space&gt;</TD>-->		<TD>&lt;em スペース&gt;</TD>
+      <TD></TD>
+      <TD>[F12] #</TD>
+<!--  <TD>&#163;</TD>-->				<TD>£</TD>
+      <TD></TD>
+      <TD>[F12] @ #</TD>
+<!--  <TD>&#165;</TD>-->				<TD>￥</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>[F12] $</TD>
+<!--  <TD>&lt;euro&gt;</TD>-->			<TD>&lt;ユーロ&gt;</TD>
+      <TD></TD>
+      <TD>[F12] @ $</TD>
+<!--  <TD>&#162;</TD>-->				<TD>¢</TD>
+      <TD></TD>
+      <TD>[F12] !</TD>
+<!--  <TD>&#161;</TD>-->				<TD>&iexcl;</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>[F12] +</TD>
+<!--  <TD>&#177;</TD>-->				<TD>±</TD>
+      <TD></TD>
+      <TD>[F12] -</TD>
+<!--  <TD>&lt;soft-hyphen&gt;</TD>-->		<TD>&lt;ソフトハイフン&gt;</TD>
+      <TD></TD>
+      <TD>[F12] @ -</TD>
+<!--  <TD>&lt;en dash&gt;</TD>-->			<TD>&lt;en ダッシュ&gt;</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>[F12] @ .</TD>
+<!--  <TD>&#183;</TD>-->				<TD>・</TD>
+      <TD></TD>
+      <TD>[F12] 7 2</TD>
+<!--  <TD>&#189;</TD>-->				<TD>&frac12;</TD>
+      <TD></TD>
+      <TD>[F12] ;</TD>
+      <TD>. . .</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>[F12] &lt;</TD>
+<!--  <TD>&lt;less or equal&gt;</TD>-->		<TD>&lt;小さいか等しい&gt;</TD>
+      <TD></TD>
+      <TD>[F12] &gt;</TD>
+<!--  <TD>&lt;greater or equal&gt;</TD>-->	<TD>&lt;大きいか等しい&gt;</TD>
+      <TD></TD>
+      <TD>[F12] @ &gt;</TD>
+<!--  <TD>&lt;triangle bullet&gt;</TD>-->		<TD>∴</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>[F12] =</TD>
+<!--  <TD>&lt;quote dash&gt;</TD>-->		<TD>&lt;クオートダッシュ&gt;</TD>
+      <TD></TD>
+      <TD>[F12] ?</TD>
+<!--  <TD>&#191;</TD>-->				<TD>&iquest;</TD>
+      <TD></TD>
+      <TD>[F12] A</TD>
+      <TD>&Aring;</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>[F12] C</TD>
+      <TD>&Ccedil;</TD>
+      <TD></TD>
+      <TD>[F12] H</TD>
+<!--  <TD>&lt;right index&gt;</TD>-->		<TD>&lt;右向き人指し指&gt;</TD>
+      <TD></TD>
+      <TD>[F12] O</TD>
+<!--  <TD>&lt;OE lig&gt;</TD>-->			<TD>&lt;OE 合字&gt;</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>[F12] P</TD>
+<!--  <TD>&#167;</TD>-->				<TD>¶</TD>
+      <TD></TD>
+      <TD>[F12] [</TD>
+<!--  <TD>&lt;single right quote&gt;</TD>-->	<TD>&lt;左一重引用符&gt;</TD>
+      <TD></TD>
+      <TD>[F12] ]</TD>
+<!--  <TD>&lt;single right quote&gt;</TD>-->	<TD>&lt;右一重引用符&gt;</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>[F12] \</TD>
+<!--  <TD>&#171;</TD>-->				<TD>&lt;左ギュメ&gt;</TD>
+      <TD></TD>
+      <TD>[F12] @ \</TD>
+<!--  <TD>&lt;single guillemot&gt;</TD>-->	<TD>&lt;左一重ギュメ&gt;</TD>
+      <TD></TD>
+      <TD>[F12] a</TD>
+      <TD>&aring;</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>[F12] c</TD>
+      <TD>&ccedil;</TD>
+      <TD></TD>
+      <TD>[F12] f</TD>
+<!--  <TD>&lt;female sign&gt;</TD>-->		<TD>&lt;女性序数記号&gt;</TD>
+      <TD></TD>
+      <TD>[F12] g</TD>
+      <TD>&copy;</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>[F12] h</TD>
+<!--  <TD>&lt;left index&gt;</TD>-->		<TD>&lt;左向き人指し指&gt;</TD>
+      <TD></TD>
+      <TD>[F12] m</TD>
+<!--  <TD>&lt;male sign&gt;</TD>-->		<TD>&lt;男性序数記号&gt;</TD>
+      <TD></TD>
+      <TD>[F12] o</TD>
+<!--  <TD>&lt;oe lig&gt;</TD>-->			<TD>&lt;oe 合字&gt;</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>[F12] p</TD>
+<!--  <TD>&#182;</TD>-->				<TD>&micro;</TD>
+      <TD></TD>
+      <TD>[F12] r</TD>
+      <TD>&reg;</TD>
+      <TD></TD>
+      <TD>[F12] s</TD>
+      <TD>&szlig;</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>[F12] t</TD>
+<!--  <TD>TM</TD>-->				<TD>&lt;商標記号&gt;</TD>
+      <TD></TD>
+      <TD>[F12] z</TD>
+<!--  <TD>&lt;long s&gt;</TD>-->			<TD>&lt;ロング s&gt;</TD>
+      <TD></TD>
+      <TD>[F12] {</TD>
+<!--  <TD>&lt;left dbl quote&gt;</TD>-->		<TD>&lt;左二重引用符&gt;</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD>[F12] }</TD>
+<!--  <TD>&lt;right dbl quote&gt;</TD>-->		<TD>&lt;右二重引用符&gt;</TD>
+      <TD></TD>
+      <TD>[F12] |</TD>
+<!--  <TD>&#187;</TD>-->				<TD>&lt;右ギュメ&gt;</TD>
+      <TD></TD>
+      <TD>[F12] @ |</TD>
+<!--  <TD>&lt;right single guillemot&gt;</TD>-->	<TD>&lt;右一重ギュメ&gt;</TD>
+    </TR>
+  </TABLE>
+  <P>
+<!--
+  This still misses most unicode characters. But pressing [F12] twice will
+  bring up a dialog which will allow you to select any character in unicode. -->
+  これでもまだ、Unicode のほとんどの文字は入力できません。
+  それでも、[F12] を 2 回押すと起動するダイアログで、Unicode の任意の文字を選択して入力することができます。
+  <P>
+<!--  If you type [F12] by mistake then an Escape will get you out of accent mode. -->
+  間違って [F12] キーを押してしまった場合、Escape キーを押すとアクセントモードを抜けることができます。
+  <H2>
+<!--<A NAME="kernclass">Kerning By Class</A>-->
+    <A NAME="kernclass">文字クラスによるカーニング</A>
+  </H2>
+  <P>
+<!--
+  Often it is a good idea to create classes of glyphs which kern alike. For
+  example A, &Agrave;, &Aacute;, &Acirc;, &Acirc;, &Atilde; and &Auml; probably
+  all kern alike (but note that o and &ocirc; probably kern quite differently
+  after a T), and rather than create separate kerning pairs for each of the
+  "A"s above, they could all be placed in a class of glyphs which kern alike. -->
+  同じカーニングが適用されるグリフのクラスを定義することが良策であることがしばしばあります。例えば、A と &Agrave;, &Aacute;, &Acirc;, &Acirc;, &Atilde;, &Auml; の各文字のグリフはおそらく同じカーニングが適用でき (ただし、o と &ocirc; は、T の後ろに来たときのカーニングが全く異なるだろうことに注意してください)、上に挙げた“A”の類にそれぞれ別々のカーニングペアを定義せずに、同じようにカーニングを行う文字のクラスに対して定義を行うことができるでしょう。
+  <P>
+  <IMG src="../../_images/kernbyclasses.png" ALIGN="Right" WIDTH="282" HEIGHT="263"><!--The
+  Metrics-&gt;Kern By Class command provides an interface to this. It brings
+  up a dialog showing the kerning classes currently defined for the font (it
+  labels them according to the script in which they are active). You can create
+  new classes, delete existing classes, or change existing classes.-->
+  <CODE>メトリック(<U>M</U>)</CODE>→<CODE>クラス毎のカーニング(<U>N</U>)...</CODE> コマンドが、それを行うインターフェイスです。このコマンドはフォントに現在定義されているカーニングクラスを表示したダイアログを起動します (その際、それがアクティブになるスクリプトに従ってラベルづけを行います)。新しいクラスの作成、既存のクラスの削除や既存のクラスの変更ができます。
+  <P>
+  <IMG src="../../_images/kerningclass.png" WIDTH="560" HEIGHT="620" ALIGN="Left"><!--Each kerning
+  class needs a <A HREF="charinfo.html#Feature-Tag">script/language</A> combination
+  for which it is active, and a set of standard otf flags for a feature.-->
+  各カーニングクラスには、それがアクティブになる<A HREF="charinfo.html#Feature-Tag">用字系・言語</A>の組合せと、その機能に対して OTF で標準定義されている 1 組のフラグの設定が必要です。
+  <P>
+<!--
+  But the more interesting stuff follows this. A kerning class actually consists
+  of two sets of classes - - one set for the first glyph of the pair and one
+  for the second glyph of the pair. Under each list of classes are buttons
+  for adding new classes, and editing or deleting old ones. A glyph class consists
+  of a space separated list of glyph names. -->
+  その下にあるのはより興味深い情報です。1 個のカーニングクラスは、実際には 2 個のクラスの組からなります—— 1 つはペアの先頭のグリフの組、もう 1 つはペアの 2 番目のグリフの組です。それぞれのクラスのリストの下には新クラスの追加・既存クラスの編集・削除を行うためのボタンがあります。個々のグリフクラスはグリフ名を空白で区切ったリストです。
+  <P>
+<!--
+  Pressing [New] or [Edit] displays another dlg containing a text field with
+  a list of glyph names. You may type in glyph names, or you may [Set] the
+  glyph list to the names of the glyphs selected in the font view. Similarly
+  the [Select] button will set the font view's selection to match the list
+  of glyph names. -->
+  <CODE>[新規(<U>N</U>)...]</CODE> または <CODE>[編集(<U>E</U>)...]</CODE> を押すと、グリフ名のリストがあるテキストフィールドを含む別のダイアログが表示されます。グリフ名をキー入力するか、<CODE>[設定(<U>S</U>)]</CODE> ボタンを押してフォントビューで選択されたグリフの名前リストを使用することができます。同様に、<CODE>[選択]</CODE> ボタンを押すとフォントビューの選択内容を、そのグリフ名の一覧と同じものに設定します。
+  <P>
+<!--
+  The kerning classes can be fairly complex. You can search for a glyph by
+  typing its name in the "Select Glyph" field. This will highlight the class
+  containing that glyph. -->
+  カーニングクラスは非常に複雑になることもあります。“グリフを選択”フィールドでグリフ名をタイプすることにより、グリフを検索することができます。その結果、そのグリフが含まれているクラスがハイライト表示されます。
+  <P>
+<!--
+  Class 0 is usually magic. You almost never set it, it contains any glyphs
+  not mentioned elsewhere. In OpenType, class 0 of the first character can
+  be set and behaves normally. -->
+  通例、クラス 0 は特別な意味を持ちます。これをユーザが設定することはほとんど無いでしょうが、他のどのクラスにも含まれていない全ての文字の集まりのことです。OpenType では、最初の文字のクラス 0 を設定することができ、通常どおりにふるまいます。
+  <P>
+<!--
+  Underneath the classes is a display of kerning values. The possible first
+  glyph classes are listed vertically, the possible second glyph classes are
+  listed horizontally. When you select a class (in one of the class lists above)
+  the display of kerning values will scroll to display that class. If you move
+  the mouse into the display and let it rest, a popup window will appear showing
+  the glyphs that make up the classes which intersect at that point. If you
+  click on a kerning value in the display, the dlg changes to a kerning dialog.-->
+  各クラスの下にはカーニング値の一覧表があります。最初のグリフクラスとして利用可能な物は縦に並び、2 番目のグリフクラスは横に並んでいます。クラスを (上のクラスリストで) どれか 1 個選択すると、カーニング値の表示はそのクラスの欄までスクロールします。マウスを表示欄の上に移動してしばらく待つと、その欄の文字クラスの組合せを構成するグリフを表示するポップアップウィンドウが表示されます。表示欄のカーニング値の上でクリックすると、ダイアログはカーニングダイアログに変更されます。
+  <BR Clear=ALL>
+  <P>
+  <IMG src="../../_images/kerningclass-kern.png" WIDTH="515" HEIGHT="337" ALIGN="Right"><!--The
+  kerning dialog displays a representative glyph from each class and allows
+  you to adjust the kerning between them (and all other class members of each
+  class). You can select which glyphs to display in the pulldown menus. You
+  can enter a new kerning offset by typing in a value, or you can click on
+  the second glyph of the kern pair and drag it around.-->
+  カーニングダイアログは各クラスの代表グリフを表示し、そこでそれらグリフ字 (各クラスに含まれる他のグリフ全ての組合せを含む) の間のカーニングを調整することができます 。どのグリフを表示するかはプルダウンメニューで選ぶことができます。新しいカーニングオフセットはキーボードで数値入力することもできますし、2 番目のグリフをクリックしてからドラッグすることによっても設定可能です。
+  <P>
+<!--
+  You can also create something called a "<A NAME="DeviceTable">Device
+  Table</A>", a name which is not very informative. When a font is rasterized
+  at small pixel sizes rounding errors become important, and this is particularly
+  true of kerning, there are three things that get rounded: The locations of
+  the outlines (to fit them to a pixel grid), the advance widths of the glyphs,
+  and the kerning value itself. The result is that something which looks perfectly
+  kerned at 150pixels may be either too close or too far apart at 12pixels -->
+  また、“<A NAME="DeviceTable">デバイステーブル</A>”というものを作成することができます。この名前からはそれが何だかよく分かりません。フォントを小さなピクセルサイズでラスタライズする時、丸め誤差が非常に重要になります。とくにカーニングでは、丸めの対象になるのがアウトラインの位置 (それらをピクセルグリッドに合わせるため)と、グリフの送り幅およびカーニング値そのものの 3 つあるため、事態はとくに深刻です。その結果、150 ピクセルで完璧にカーニングが行われていたものが 12 ピクセルで近すぎたり遠すぎたりすることになります。
+  <TABLE ALIGN=CENTER CELLPADDING="2">
+    <TR>
+      <TD><IMG src="../../_images/kern-We-150.png" WIDTH="170" HEIGHT="131"></TD>
+      <TD><P ALIGN=Center>
+	<IMG src="../../_images/kern-We-12.png" WIDTH="32" HEIGHT="26"></TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD><P ALIGN=Center>
+<!--    Kerning at 150 pixels</TD> -->
+	150 ピクセルでのカーニング</TD>
+      <TD><P ALIGN=Center>
+<!--    Kerning at 12 pixels<BR>
+	(magnified by 2)</TD> -->
+	12 ピクセルでのカーニング<BR>
+	(2 倍に拡大)
+    </TR>
+  </TABLE>
+  <P>
+<!--
+  You could adjust the kerning value slightly until it looked right at 12pixels,
+  of course, but that might break it at 14 pixels. So OpenType has the concept
+  of a Device Table which allows you to add small corrections at particular
+  point sizes. Simply set the Display Size to a small, but common, value (say
+  10-24) and examine the kerning. If the results are ugly type a value into
+  the "Device Table Correction" field, and this will change the spacing by
+  that many pixels at the given display size (and no other). In the case above
+  a correction of 1 would be appropriate for the 12px display.  -->
+  もちろん、カーニング値を微妙に調節して、12 ピクセルで正しく見えるようにできたはずですが、今度は 14 ポイントで問題が起こるでしょう。そういうわけで、OpenType ではデバイステーブルという概念を導入し、このテーブルを用いて特定のポイントサイズで小さな修正ができるようにしています。単純にディスプレイサイズをよく使われる小さい値 (例えば 10-24) に設定して、カーニングを目で確かめてください。醜い結果が得られた場合、“<CODE>デバイステーブル補正</CODE>”フィールドに値を入力すると、指定された表示サイズのスペーシング (だけ) が指定したピクセル数だけ変更されます。上の例では、12 ピクセル表示では 1 ピクセルの補正が適切でしょう。
+  <P>
+<!--
+  Because small pixel sizes can be hard to examine you can change the magnification
+  (rasterized at the same size, but each pixel made twice as big). -->
+  小さなピクセルサイズは目で確かめるのが困難なため、拡大率を変更することができます (同じサイズでラスタライズされますが、各ピクセルが 2 倍に拡大されます)。
+  <P>
+<!--
+  <A HREF="metricsview.html#DeviceTable">Device Tables</A> may also be created
+  in a number of other cases. The example above was for a kerning class.
+  <A NAME="kernpair">Kerning pairs</A> may also have tables attached to them
+  with the Element-&gt;Kern Pair Closeup dialog, which looks very similar to
+  the Kerning Class dialog above. -->
+  <A HREF="metricsview.html#DeviceTable">デバイステーブル</A>は他の多数の場合にも作成することができます。上の例はカーニングクラスに対するものでした。<A NAME="kernpair">カーニングペア</A>にも、上のカーニングクラスダイアログとよく似た <CODE>エレメント(<U>L</U>)</CODE>→<CODE>カーニングペアの詳細</CODE> ダイアログが用意されています。
+  <P ALIGN=Center>
+  <IMG src="../../_images/kernpairclose.png" WIDTH="519" HEIGHT="289">
+  <P>
+  <BR>
+  <P>
+  <P>
+  <P ALIGN=Center>
+  — <A HREF="bitmapview.html">前</A> — <A HREF="overview.html">目次</A>
+  — <A HREF="filemenu.html">次</A> —
+</DIV>
+</BODY></HTML>

@@ -1,0 +1,999 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 11-Feb-2001 -->
+  <!-- AP: Last modified: 16-Apr-2004 -->
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>The basic spline data structures of FontForge</TITLE>-->
+    <TITLE>FontForge の基本的なスプラインデータ構造</TITLE>
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+<H2>
+<!--Data Types-->
+    データ型
+</H2>
+<P>
+<!--
+This describes two different types of fonts, a SplineFont (which is essentially
+a postscript font) and a BDFFont (bitmap font, essentially a bdf file). There
+are some similarities between the two data structures, each is basically
+an array (possibly with holes in it) of characters. Each font also contains
+information like the fontname, the character set (encoding). -->
+ここでは、2 つの異なるタイプのフォントの説明を行います。1 つは SplineFont (これは本質的には PostScript フォントです) で、もう 1 つは BDFFont (ビットマップフォントで、本質的には BDF ファイルです) です。2 つのデータ構造には多少の類似性があります。それぞれは基本的に文字の配列 (中に空隙を含むことができます) です。各フォントは、フォント名、文字セット (符号化方式) などの情報も含んでいます。
+<P>
+<!--
+The <A HREF="#SplineFont">SplineFont</A> consists of a bunch of
+<A HREF="#SplineChar">SplineChars</A>, each containing four layers, -->
+<A HREF="#SplineFont">SplineFont</A> は、多数の <A HREF="#SplineChar">SplineChars</A> からなり、個々の SplineChar は 4 つのレイヤを含みます。
+<UL>
+  <LI>
+<!--A foreground layer which contains all the interesting stuff that gets put
+    into the final font -->
+    前面レイヤ。最終結果のフォントに含まれる興味ある事柄をすべて含んでいます。
+    <UL>
+      <LI>
+<!--	a series of paths (called <A HREF="#SplinePointList">SplineSet</A>s or
+	<A HREF="#SplinePointList">SplinePointList</A> sorry, I gave the data structure
+	two different names) -->
+	一連のパス (<A HREF="#SplinePointList">SplineSet</A> または <A HREF="#SplinePointList">SplinePointList</A> と呼ばれます——同じデータ構造に 2 つの異なる名前をつけてしまって申し訳ありません)
+      <LI>
+<!--	a series of references to other characters (called
+	<A HREF="#RefChar">RefChar</A>s) -->
+	一連の、他の文字への参照 (<A HREF="#RefChar">RefChar</A> と呼ばれます)。
+      <LI>
+<!--	a width -->
+	幅
+      <LI>
+<!--	<A HREF="#Undoes">undoes</A> -->
+	<A HREF="#Undoes">アンドゥ情報</A>
+    </UL>
+  <LI>
+<!--A background layer (which is used to allow people to trace images of characters)
+    and can contain -->
+    背面レイヤ (文字の画像をトレースすることができるような形で使われます) には、以下の情報を含むことができます:
+    <UL>
+      <LI>
+<!--	a series of <A HREF="#SplinePointList">SplineSet</A>s -->
+	一連の <A HREF="#SplinePointList">SplineSet</A>
+      <LI>
+<!--	A series of <A HREF="#ImageList">images</A> -->
+	一連の <A HREF="#ImageList">イメージ</A>
+      <LI>
+<!--	<A HREF="#Undoes">undoes</A> -->
+	<A HREF="#Undoes">アンドゥ情報</A>
+    </UL>
+  <LI>
+<!--A grid layer, which is shared by all the characters in a font and in which
+    you can put lines to indicate the Cap Height, X Height, etc. Actually you
+    can put anything there but those are the obviously useful things. It will
+    be seen in all characters. It contains -->
+    グリッドレイヤ。これはフォント内のすべての文字間で共有され、ここにはキャップハイト、x ハイト などを示す線を配置することができます。実際にはここに何を置いても構いませんが、明らかに有用な物が存在します。これはすべての文字から見ることができます。ここには以下の物が含まれます:
+    <UL>
+      <LI>
+<!--	A series of <A HREF="#SplinePointList">SplineSet</A>s -->
+	一連の <A HREF="#SplinePointList">SplineSet</A>
+      <LI>
+<!--	<A HREF="#Undoes">undoes</A> -->
+	<A HREF="#Undoes">アンドゥ情報</A>
+    </UL>
+  <LI>
+<!--A hint layer, whose format is completely different from anything else and
+    consists of horizontal and vertical hints, which in turn are just a starting
+    location and a width (indicating the stem. The width can be negative.) -->
+    ヒントレイヤ。このフォーマットは他のどれとも全然違うもので、水平ヒントと垂直ヒントからなります。これらは単に開始位置と幅の組合せ (ステムを表します。幅は負の値をとることもできます) にすぎません。
+    <UL>
+      <LI>
+<!--	A set of <A HREF="#Hints">hints</A>. Hints need the special tools from the
+	hint menu for editing them. -->
+	一連の<A HREF="#Hints">ヒント</A>。ヒントを編集するには、ヒントメニューにある特別なツールが必要です。
+      <LI>
+<!--	<STRONG>!!!! I do not have a way of undoing hint operations !!!!</STRONG> -->
+	<STRONG>!!!! ヒント操作を取り消す方法はありません !!!!</STRONG>
+    </UL>
+</UL>
+<P>
+<!--
+Every SplineChar has a name associated with it, a unicode encoding and a
+local encoding (So 'A' will probably have both a unicode encoding and a local
+encoding of 0x0041). -->
+各 SplineChar には名前ならびに、Unicode の符号位置とローカルエンコーディングがつけられています (例えば&lsquo;A&rsquo;は通常 Unicode 符号位置とローカルエンコーディングの両方で 0x0041 という値をもつでしょう)。
+<P>
+<!--
+A SplineSet consists of a start point and an end point, and whatever splines
+connect them. The start point and the end point may be the same, this either
+indicates a closed path, or a degenerate path with only one point on it. -->
+各 SplineSet は、開始点・終了点および、それに接続しているスプラインすべてからなります。開始点と終了点は同じ値を取ることができ、これは閉じたパスか、点が 1 個しか存在しない縮退したパスのどちらかであることを示します。
+<P>
+<!--
+A SplinePoint contains an x,y location of the point, and the locations of
+the two control points associated with that point. A control point may be
+coincident with the main point. SplinePoints may have two splines, a previous
+Spline and a next Spline. A Spline contains pointers to two SplinePoints
+(a start and an end point) it also contains the parameters of the B&eacute;zier
+curve that those two points describe (x = a*t^3+b*t^2+c*t+d, y=ditto). Splines
+are straight lines of the two control points that are meaningful to that
+spline are coincident with their respective SplinePoints. -->
+各 SplinePoint は、その点の x, y 座標と、それに付随する 2 個の制御点の位置を含みます。制御点は母点と重なり合うこともできます。SplinePoints は、前側 (previous) の Spline と後ろ側 (next) の Splineの 2 本を含むことができます。各 Spline は 2 個の SplinePoint (始点と終点) へのポインタを含みます。それに加えて、その 2 個の点によって表される B&eacute;zier 曲線のパラメータ (x = a*t^3+b*t^2+c*t+d, y=同) もそこに含まれます。ある Spline が直線となるのは、そのスプラインに対して有効な 2 個の制御点が、両端の SplinePoints と重なるときです。
+<P>
+<!--
+A <A HREF="#BDFFont">BDFFont</A> consists of a bunch of
+<A HREF="#BDFChar">BDFChars</A>, each containing -->
+1 個の <A HREF="#BDFFont">BDFFont</A> は多数の <A HREF="#BDFChar">BDFChar</A> からなります。各 BDFChar は以下の物を含みます:
+<UL>
+  <LI>
+<!--a bitmap-->
+    ビットマップ
+  <LI>
+<!--possibly a floating selection-->
+    あるいは可動選択範囲
+  <LI>
+<!--a name and encoding-->
+    名前と符号位置
+  <LI>
+<!--<A HREF="#Undoes">undoes</A>-->
+    <A HREF="#Undoes">アンドゥ情報</A>
+  <LI>
+<!--A pointer to the <A HREF="#SplineChar">SplineChar</A> with which it is associated -->
+    その文字に伴う <A HREF="#SplineChar">SplineChar</A> へのポインタ
+</UL>
+<BLOCKQUOTE>
+  <PRE>/* Copyright (C) 2000-2003 by George Williams */
+/*
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+
+ * Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+
+ * The name of the author may not be used to endorse or promote products
+ * derived from this software without specific prior written permission.
+
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ * EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+#ifndef _SPLINEFONT_H
+#define _SPLINEFONT_H
+
+#include "basics.h"
+#include "charset.h"
+
+enum <A NAME="linejoin">linejoin</A> {
+    lj_miter,		<!--/* Extend lines until they meet */-->/* 交差するまで線を延長 */
+    lj_round,		<!--/* circle centered at the join of expand radius */-->/* 交点を中心に線幅と同じ半径の円を描く */
+    lj_bevel		<!--/* Straight line between the ends of next and prev */-->/* 前後のパスの端点間に直線を引く */
+};
+enum <A NAME="linecap">linecap</A> {
+    lc_butt,		<!--/* equiv to lj_bevel, straight line extends from one side to other */-->/* lj_bevel に同じ。両端点間を直線でつなぐ */
+    lc_round,		<!--/* semi-circle */-->/* 半円 */
+    lc_square		<!--/* Extend lines by radius, then join them */-->/* 線を半径と同じ長さだけ延長してから端をつなぐ */
+};
+
+typedef struct strokeinfo {
+    double radius;
+    enum linejoin join;
+    enum linecap cap;
+    unsigned int calligraphic: 1;
+    double penangle;
+    double thickness;			<!--/* doesn't work */-->/* 動作しない */
+} <A NAME="StrokeInfo">StrokeInfo</A>;
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+The above data structure is used by the ExpandStroke routines which will
+turn a path into a filled shape. The information above provides the various
+controls for those routines. They mean essentially what you expect them to
+me in postscript. -->
+上のデータ構造は、パスを塗りつぶされた図形に変換する ExpandStroke ルーチンで使用します。上記の情報はそれらのルーチンに各種の制御情報を与えます。それらは本質的に、PostScript で利用可能だと考えられているものです。
+<BLOCKQUOTE>
+  <PRE>typedef struct ipoint {
+    int x;
+    int y;
+} <A NAME="IPoint">IPoint</A>;
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+An integer point. -->
+整数値をもつ点です。
+<BLOCKQUOTE>
+  <PRE>typedef struct basepoint {
+    double x;
+    double y;
+} <A NAME="BasePoint">BasePoint</A>;
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+A double point. This provides the location of
+<A HREF="#SplinePoint">SplinePoints</A> and their control points. -->
+倍精度浮動小数の座標値をもつ点です。<A HREF="#SplinePoint">SplinePoint</A> およびその制御点の位置情報を与えます。
+<BLOCKQUOTE>
+  <PRE>typedef struct tpoint {
+    double x;
+    double y;
+    double t;
+} <A NAME="TPoint">TPoint</A>;
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+A double point with a "t" value. Indicates where that location occurs on
+a spline. (the start point itself is a t=0, the end point at t=1, intermediate
+points have intermediate values). Used when trying to approximate new splines. -->
+浮動小数座標の点に“t”値を加えたものです。スプライン上の位置を表します。(開始点自身は t=0 で、終点は t=1 となり、中間点はその中間の値をとります)。新しいスプラインを近似しようとするときに使用します。
+<BLOCKQUOTE>
+  <PRE>typedef struct dbounds {
+    double minx, maxx;
+    double miny, maxy;
+} DBounds;
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+The bounding box of a <A HREF="#Spline">Spline</A>,
+<A HREF="#SplineChar">SplineChar</A>, <A HREF="#RefChar">RefChar</A>,
+<A HREF="#ImageList">Image</A>, or whatever else needs a bounding box. -->
+<A HREF="#Spline">Spline</A>, <A HREF="#SplineChar">SplineChar</A>, <A HREF="#RefChar">RefChar</A>, <A HREF="#ImageList">Image</A>, またはその他すべてのバウンディングボックスを必要とするデータ構造のバウンディングボックスです。
+<BLOCKQUOTE>
+  <PRE>typedef struct bdffloat {
+    int16 xmin,xmax,ymin,ymax;
+    int16 bytes_per_line;
+    uint8 *bitmap;
+} <A NAME="BDFFloat">BDFFloat</A>;
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+The floating selection in a <A HREF="#BDFChar">BDFChar</A>. -->
+<A HREF="#BDFChar">BDFChar</A> 内の可動選択範囲です。
+<BLOCKQUOTE>
+  <PRE>typedef struct undoes {
+    struct undoes *next;
+    enum undotype { ut_none=0, ut_state, ut_tstate, ut_width,
+	    ut_bitmap, ut_bitmapsel, ut_composite, ut_multiple } undotype;
+    union {
+	struct {
+	    int16 width;
+	    int16 lbearingchange;
+	    <A HREF="#SplinePointList">struct splinepointlist</A> *splines;
+	    <A HREF="#RefChar">struct refchar</A> *refs;
+	    <A HREF="#ImageList">struct imagelist</A> *images;
+	} state;
+	int width;
+	struct {
+	    /*int16 width;*/	<!--/* width should be controlled by postscript */-->/* 線幅はPostScriptが制御すべきもの */
+	    int16 xmin,xmax,ymin,ymax;
+	    int16 bytes_per_line;
+	    uint8 *bitmap;
+	    <A HREF="#BDFFloat">BDFFloat</A> *selection;
+	    int pixelsize;
+	} bmpstate;
+	struct {		<!--/* copy contains an outline state and a set of bitmap states */-->/* コピーはアウトライン状態と1組のビットマップ状態を含む */
+	    struct undoes *state;
+	    struct undoes *bitmaps;
+	} composite;
+	struct {
+	    struct undoes *mult; <!--/* copy contains several sub copies (composites, or states or widths or...) */-->/* コピーはいくつかのサブコピー(組合せ、または状態や幅など…)を含む */
+	} multiple;
+    uint8 *bitmap;
+    } u;
+} <A NAME="Undoes">Undoes</A>;
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+The undo data structure. Used by both <A HREF="#SplineChar">SplineChar</A>
+and <A HREF="#BDFChar">BDFChar</A>. Also used to contain the clipboard (sorry,
+I don't use the real X CLIPBOARD). Every character layer has several Undoes
+(up to about 10 or so, it's configurable) that allow it to go back several
+operations, these are linked together on the next field (redos are handled
+similarly, of course). -->
+アンドゥ処理用のデータ構造です。<A HREF="#SplineChar">SplineChar</A> と <A HREF="#BDFChar">BDFChar</A> のどちらでも使用します。クリップボードを保持するためにも使用します (申し訳ありません。私は本物の X クリップボードを使用しているわけではないのです)。各文字レイヤにはいくつかのアンドゥ (およそ 10 個まで。設定変更可能です) を設定できるので、数段階の操作を戻すことができ、next フィールドによって連絡しています (もちろん、リドゥ操作も同様に扱われます)。
+<P>
+<!--
+Undoes come in several types, ut_none is only used by the clipboard when
+it is empty. -->
+アンドゥはいくつかの型に分けられ、ut_none が使用されるのはクリップボードにおいて、そこがもともと空だったときにのみ使用されます。
+<P>
+<!--
+ut_state is used by SplineChars and it contains a dump of the current state
+of one layer of the character. Obviously things could be optimized a great
+deal here, but this is easy. ut_tstate has the same data structure as ut_state,
+it is used during transformations and is just a flag that tells the display
+to draw the original as well as the currently transformed thing (so you can
+see what you've done). -->
+ut_state は SplineChars によって使用され、その文字の 1 レイヤの現在の状態のダンプを含みます。現在の方式には大幅な最適化の余地があることは明らかですが、簡単に扱えるのが利点です。ut_tstate は ut_state と同じデータ構造をもち、これは座標変換のときに使用されますが、それは、現在変換された物と同時にオリジナルを表示するかどうかを表す単なるフラグにすぎません。
+<P>
+<!--
+ut_state is also used by the clipboard when copying a SplineChar or a piece
+of a SplineChar. -->
+ut_state は SplineChar またはその一部をコピーするときにクリップボードによって使用されます。
+<P>
+<!--
+ut_width is used by SplineChars when the width (and nothing else) changes. -->
+ut_width は、幅 (だけ) を変更するときに使用されます。
+<P>
+<!--
+ut_bitmap is used by BDFChars and is a dump of the current state of the bitmap.
+Again there is room for optimization here, but this is easy. -->
+ut_bitmap は BDFChars によって使用されるデータ構造で、ビットマップの現在の状態のダンプです。これもまた、最適化の余地がありますが現在は簡単な構造です。
+<P>
+<!--
+ut_bitmapsel is used when doing a copy of a BDFChar. If there is a selection
+it (and it alone) gets copied into the selection field of the bmpstate structure.
+If there is no selection the entire bitmap is converted into a
+<A HREF="#BDFFloat">floating selection</A> and copied into the selection
+field. -->
+ut_bitmapsel は BDFChar のコピーを行うときに用いられます。範囲選択を行っているとき、それ (のみ) は <A HREF="#BDFFloat">可動選択範囲</A> に変換されて、bmpstate 構造体の selection フィールドにコピーされます。
+範囲選択を行っていない場合、ビットマップ全体が<A HREF="#BDFFloat">可動選択範囲</A>に変換され、selection フィールドにコピーされます。
+<P>
+<!--
+ut_composite is used when doing a copy from the
+<A HREF="views.html#FontView">FontView</A> where you are copying both the
+splines and the bitmaps of a character. -->
+ut_composite は<A HREF="views.html#FontView">フォントビュー</A>からコピーを行うとき、1 文字にスプラインとビットマップとが両方含まれているときに用いられます。
+<P>
+<!--
+ut_mult is used when doing a copy from the FontView where you are copying
+more than one character. -->
+ut_mult は、フォントビューにおいて複数文字のコピーを行うときに使用されます。
+<BLOCKQUOTE>
+  <PRE>typedef struct bdfchar {
+    <A HREF="#SplineChar">struct splinechar</A> *sc;
+    int16 xmin,xmax,ymin,ymax;
+    int16 width;
+    int16 bytes_per_line;
+    uint8 *bitmap;
+    int enc;
+    <A HREF="views.html#BitmapView">struct bitmapview</A> *views;
+    <A HREF="#Undoes">Undoes</A> *undoes;
+    <A HREF="#Undoes">Undoes</A> *redoes;
+    unsigned int changed: 1;
+    unsigned int byte_data: 1;		<!--/* for anti-aliased chars entries are grey-scale bytes not bw bits */-->/* アンチエイリアス文字の場合,各項目は黒白のビット値ではなくグレイスケールのバイト値 */
+    <A HREF="#BDFFloat">BDFFloat</A> *selection;
+} <A NAME="BDFChar">BDFChar</A>;
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+The basic bitmap character structure. There's a link to the SplineChar used
+to create the bitmap. Then the bounding box of the bitmap, the character's
+width (in pixels of course), the number of bytes per row of the bitmap array,
+a pointer to an array containing the bitmap. The bitmap is stored with 8bits
+packed into a byte, the high order bit is left most. Every row begins on
+a new byte boundary. There are (xmax-xmin+1) bits in each row and (xmax-xmin+8)/8
+bytes in each row. There are (ymax-ymin+1) rows. A bit-value of 1 means there
+bit should be drawn, 0 means it is transparent. Then the encoding in the
+current font. A linked list of BitmapView structures all of which look at
+this bitmap (so any changes to this bitmap need to cause a redraw in all
+views). A set of undoes and redoes. A flag indicating whether the thing has
+been changed since it was last saved to disk. -->
+基本的なビットマップ文字の構造体です。ビットマップの作成時に用いられる SplineChar へのリンクが存在します。次に来るのはビットマップのバウンディングボックス、文字の幅 (もちろんピクセル単位です)、ビットマップ配列の行ごとのバイト数、ビットマップを含む配列へのポインタです。ビットマップは 8 ビットごとに、左端のビットが最上位ビットになる 1 バイトにパックした形式で格納されます。すべての行は新しいバイト境界から始まります。各行には (xmax-xmin+1) ビットが含まれ、その大きさは (xmax-xmin+8) / 8 バイトになります。ビット値 1 はそのビットを塗りつぶすことを表し、0 はそのビットが透明であることを表します。その次に来るのが、現在のフォントにおける符号位置の値ですす。このビットマップを参照するすべての BitmapView 構造体のリンクトリストです (ですから、このビットマップへの任意の変更はすべてのビューで再描画を引き起こします)。一連のアンドゥとリドゥです。最後にディスクに保存を行ってから何か変更を行ったかを示すフラグです。
+<P>
+<!--
+Up to this point I've been talking about bitmaps. It is also possible to
+have a bytemap. The data structure is exactly the same, except that each
+pixel is represented by a byte rather than a bit. Currently this is only
+used for anti-alias displays in the
+<A HREF="views.html#FontView">FontView</A>, but I may do more with it later.
+There is a clut for this in the BDFFont (it's the same for every character),
+but basically 0=&gt;transparent, (2^n-1) =&gt;fully drawn, other values are
+shades of grey between. Currently my anti-alias fonts contain values 0-15
+but the code can handle up to 0-255 if desired. (0-15 seems fine to my eye). -->
+上記の説明は、ビットマップについてのものでました。ここにはバイトマップも格納可能です。データ構造はまったく同じですが、各ピクセルがビットではなくバイトで表される点が異なります。現在のところこれは <A HREF="views.html#FontView">FontView</A> におけるアンチエイリアス表示にのみ用いられていますが、将来はこれを用いてさらに他の事を行えるようにするつもりです (訳註:現在グレイマップ編集はサポートされています)。
+そのために、BDFFont には clut フィールド (これはすべての文字において同じ値です) が存在しますが、基本的には 0=&gt;透明、(2^n-1) =&gt;完全に塗りつぶし を意味し、その他の値は中間の灰色の濃淡を表します。現在のところ私のアンチエイリアスフォントは 0〜15 の値を使用していますが、プログラム上は必要なら 0〜255 を扱う事ができます (私の目には 0〜15 で十分美しく見えます)。
+<P>
+<!--
+The last thing in the BDFChar is a (/an optional) floating selection. Only
+present if the user has made a selection or done a paste or something like
+that. -->
+BDFChar の最後にあるのは、(省略可能な) 可動選択範囲です。ユーザが範囲選択を行っている場合か、ペーストまたはそれに類似した行為を行った場合にのみ存在します。
+<BLOCKQUOTE>
+  <PRE>typedef struct bdffont {
+    <A HREF="#SplineFont">struct splinefont</A> *sf;
+    int charcnt;
+    <A HREF="#BDFChar">BDFChar</A> **chars;		<!--/* an array of charcnt entries */-->/* charcnt 個の要素からなる配列 */
+    <A HREF="#BDFChar">BDFChar</A> **temp;		<!--/* Used by ReencodeFont routine */-->/* ReencodeFont ルーチンで使用する */
+    int pixelsize;
+    int ascent, descent;
+    enum charset encoding_name;
+    struct bdffont *next;
+    struct clut *clut;		<!--/* Only for anti-aliased fonts */-->/* アンチエイリアスフォントのみ */
+} <A NAME="BDFFont">BDFFont</A>;
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+The basic bitmap font. Contains a reference to the
+<A HREF="#SplineFont">SplineFont</A> to which it is attached. Then a size
+and an array of BDFChars (note there may be NULL entries in the array if
+no character is defined for that encoding). Then a temporary array which
+is used in one set of routines while reencoding the font. The pixelsize of
+the em-square. The ascent and descent (in pixels), these should sum to the
+em-square. A character set which will match that in the SplineFont. A pointer
+to the next bitmap font associated with this SplineFont. -->
+基本的なビットマップフォントです。それと結びつけられている <A HREF="#SplineFont">SplineFont</A> への参照があります。その後にはサイズと、BDFChars の配列があります (そのエンコーディングでは文字を定義するデータが存在しない場合、配列内に値が NULL の項目が置かれているという可能性があることに注意してください)。その後にあるのは、フォントの符号化方式を変換する一連のルーチンが使用する一時的な配列があります。em 正方形のピクセルサイズです。(ピクセル単位の) 高さと深さです。この合計は em 正方形と等しくなくてはなりません。SplineFont 内の値と一致する文字セットです。この SplineFont と対応づけられた次のビットマップフォントへのポインタです。
+<P>
+<!--
+If we are dealing with a byte font, then there will also be a clut. This
+contains a count of the number of entries in the array, and then the array
+itself. Currently the number of entries here is always 16, but that could
+change. -->
+バイトマップフォントを扱っている場合、その後に clut が来るでしょう。これには配列内の各要素のビット数と、配列そのものが含まれます。現在のところビット数は常に 16 ですが、これは変更されるでしょう。
+<BLOCKQUOTE>
+  <PRE>enum pointtype { pt_curve, pt_corner, pt_tangent };
+typedef struct splinepoint {
+    <A HREF="#BasePoint">BasePoint</A> me;
+    <A HREF="#BasePoint">BasePoint</A> nextcp;		<!--/* control point */-->/* 制御点 */
+    <A HREF="#BasePoint">BasePoint</A> prevcp;		<!--/* control point */-->/* 制御点 */
+    unsigned int nonextcp:1;
+    unsigned int noprevcp:1;
+    unsigned int nextcpdef:1;
+    unsigned int prevcpdef:1;
+    unsigned int selected:1;	<!--/* for UI */-->/* UI 用 */
+    unsigned int pointtype:2;
+    unsigned int isintersection: 1;
+    uint16 flex;		<!--/* This is a flex serif have to go through icky flex output */-->/* これは,べとべとしたflexの出力を通り抜けるために必要なflexセリフである */
+    <A HREF="#Spline">struct spline</A> *next;
+    <A HREF="#Spline">struct spline</A> *prev;
+} <A NAME="SplinePoint">SplinePoint</A>;
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+A SplinePoint is located at the position specified by "me". The control point
+associated with the next <A HREF="#Spline">Spline</A> is positioned at nextcp,
+while that associated with the previous Spline is at prevcp. Then there are
+a couple of flags that simplify tests. If the nextcp is degenerate (ie. at
+the same place as me) then nonextcp is set, similarly for prevcp. If the
+user has not touched the control points then they will have their default
+values, and when the user moves the point around fontforge will update the
+control points appropriately, if they do not have default values then fontforge
+will only offset them. -->
+SplinePoint は、“me”で指定された位置に置かれています。次の <A HREF="#Spline">Spline</A> に付随する制御点は nextfp に置かれ、前の Spline に付随する制御点は prevcp に置かれています。それに続き、simplify 処理がテストする 2 個のフラグがあります。nextcp が縮退している (すなわち、me と同じ場所にある) 場合 nonextcp がセットされます。prevcp もそれと同様です。ユーザが制御点の位置を操作していない場合、それらはデフォルト値をもっており、ユーザが点を移動したときには FontForge は制御点の位置を適切に設定しますが、それがデフォルト値と異なるときには FontForge はそれらを単純にオフセットするだけです。
+<P>
+<!--
+If the point is selected then that bit will be set. -->
+点が選択されているとき、selected ビットがセットされます。
+<P>
+<!--
+Every point is classified as a curve point, a corner point and a tangent
+point. -->
+各点は曲線上の点 (pt_curve)、角の点 (pt_corner) および曲線の開始点 (pt_tangent) のいずれかに分類されます。
+<P>
+<!--
+The isintersection bit is used internally to the SplineOverlap routines.
+The flex value is for flex hints. It is read in from a type1 font and then
+ignored. Someday I may use it. -->
+isintersection ビットは SplineOverlap ルーチンが内部的に使用します。flex 値は flex ヒントのために使用します。Type 1 フォントから読み込まれ、その後は無視されます。いずれはこの情報を使うようにするつもりです。
+<P>
+<!--
+Finally we have pointers to the two Splines than connect to this point. -->
+最後に、この点に接続する 2 本の Spline に対するポインタがあります。
+<BLOCKQUOTE>
+  <PRE>typedef struct linelist {
+    IPoint here;
+    struct linelist *next;
+} <A NAME="LineList">LineList</A>;
+
+typedef struct linearapprox {
+    double scale;
+    unsigned int oneline: 1;
+    unsigned int onepoint: 1;
+    struct linelist *lines;
+    struct linearapprox *next;
+} <A NAME="LinearApprox">LinearApprox</A>;
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+These are the lines used to approximate a <A HREF="#Spline">Spline</A> when
+drawing it. They are cached so they don't need to be regenerated each time.
+There's a different set of lines for every scale (as there is a different
+amount of visible detail). They get freed and regenerated if the Spline changes. -->
+これらは <A HREF="#Spline">Spline</A> を描画するのに用いられる線です。これらはキャッシュされるので、毎回再生成する必要はありません。これらは異なる拡大率の線ごとに (細部の表示量が異なるため) 別々のセットが用意されます。
+<BLOCKQUOTE>
+  <PRE>typedef struct spline1d {
+    double a, b, c, d;
+} <A NAME="Spline1D">Spline1D</A>;
+
+typedef struct spline {
+    unsigned int islinear: 1;
+    unsigned int isticked: 1;
+    unsigned int isneeded: 1;
+    unsigned int isunneeded: 1;
+    unsigned int ishorvert: 1;
+    <A HREF="#SplinePoint">SplinePoint</A> *from, *to;
+    <A HREF="#Spline1D">Spline1D</A> splines[2];		<!--/* splines[0] is the x spline, splines[1] is y */-->/* splines[0]は x 軸のスプライン関数, spline[1]は y 軸 */
+    <A HREF="#LinearApprox">struct linearapprox</A> *approx;
+    /* <!--Possible optimizations:-->可能な最適化:
+	<!--Precalculate bounding box-->バウンディングボックスを予め計算しておく
+	<!--Precalculate points of inflection-->変曲点を予め計算しておく
+    */
+} <A NAME="Spline">Spline</A>;
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+A spline runs from the from <A HREF="#SplinePoint">SplinePoint</A> to the
+to SplinePoint. If both control points of a Spline are degenerate, then the
+Spline is linear (actually there are some other case that will lead to linear
+splines, sometimes these will be detected and turned into the canonical case,
+other times they will not be). The remaining bits are used when processing
+Splines in various functions. Most are used in the SplineOverlap routines,
+but some are used in other places too. -->
+Spline は、<A HREF="#SplinePoint">SplinePoint</A> と SplinePoint の間をつなぎます。Spline の両制御点が縮退している時は、その Spline は直線です (実際には、Spline が直線となるのは別のいくつかの場合があります。場合によってはそれらは検出されて正準形に変換されますが、場合によっては正規化されません)。残りのビットは、Spline を各種の関数で処理する時に用いられます。ほとんどは SplineOverlap ルーチンで用いられるものですが、いくつかは他の場所でも用いられます。
+<P>
+<!--
+The Spline1D structures give the equations for the x and y coordinates
+respectively (splines[0] is for x, splines[1] is for y). -->
+Spline1D 構造体は、x および y 座標のそれぞれに対する等式を与えます (splines[0] は x 軸、spline[1] は y 軸にあたります)。
+<BLOCKQUOTE>
+  <PRE>typedef struct splinepointlist {
+    <A HREF="#SplinePoint">SplinePoint</A> *first, *last;
+    struct splinepointlist *next;
+} <A NAME="SplinePointList">SplinePointList</A>, <A NAME="SplineSet">SplineSet</A>;
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+A SplinePointList (or a SplineSet) is a collection of
+<A HREF="#Spline">Spline</A>s and <A HREF="#SplinePoint">SplinePoint</A>s.
+Every SplinePoint can connect to two Splines (next and prev). Every Spline
+connects to two SplinePoints (from and to). A SplinePointList is a connected
+path. There are three cases: -->
+SplinePointList (別名 SplineSet) は <A HREF="#Spline">Spline</A> および <A HREF="#SplinePoint">SplinePoint</A> の集まりです。各 SplinePoint は 2 本のスプライン (next と prev) に接続します。1 個の SplinePointList は、一つながりのパスを表します。以下の 3 つの場合が存在します。
+<UL>
+  <LI>
+<!--<CODE>first != last</CODE> which means that we have an open path. Here
+    first-&gt;prev==NULL and last-&gt;next==NULL. -->
+    <CODE>first != last</CODE> の場合、開いたパスを表します。この場合 first-&gt;prev==NULL かつ last-&gt;next==NULL となります。
+  <LI>
+<!--<CODE>first == last</CODE> and <CODE>first-&gt;prev==NULL</CODE> which means
+    we have a degenerate path consisting of a single point, and
+    last-&gt;next==NULL as well -->
+    <CODE>first == last</CODE> かつ <CODE>first-&gt;prev==NULL</CODE> の場合、1 個の点からなる縮退したパスを表します。この場合も <CODE>last-&gt;next==NULL</CODE> となります。
+  <LI>
+<!--<CODE>first == last</CODE> and <CODE>first-&gt;prev!=NULL</CODE> which means
+    we have a closed path. This should be the most common case. -->
+    <CODE>first == last</CODE> かつ <CODE>first-&gt;prev==NULL</CODE> の場合、閉じたパスを表します。これが最も一般的な場合と言えるでしょう。
+</UL>
+<P>
+<!--
+Generally a series of paths will make up a character, and they are linked
+together on the next field. -->
+一般に一連のパスは 1 個の文字を構成し、それらは next フィールドによって連絡しています。
+<BLOCKQUOTE>
+  <PRE>typedef struct refchar {
+    int16 adobe_enc, local_enc;
+    int unicode_enc;		<!--/* used by paste */-->/* ペーストのとき用いる */
+    double transform[6];	<!--/* transformation matrix (first 2 rows of a 3x3 matrix, missing row is 0,0,1) */-->/* 変換行列 (3×3 行列の上 2 行。省略した行は 0,0,1) */
+    <A HREF="#SplinePointList">SplinePointList</A> *splines;
+    struct refchar *next;
+    unsigned int checked: 1;
+    unsigned int selected: 1;
+    <A HREF="#DBounds">DBounds</A> bb;
+    <A HREF="#SplineChar">struct splinechar</A> *sc;
+} <A NAME="RefChar">RefChar</A>;
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+A <A HREF="#SplineChar">SplineChar</A> may contain a reference to another
+character. For instance "Agrave" might contain a reference to an "A" and
+a "grave". There are three different encoding values, of which local_enc
+is not always up to date. Adobe_enc gives the location in the Adobe Standard
+Encoding which is used by the seac command in type1 fonts. If this is -1
+then the character isn't in the adobe encoding and it won't be possible to
+put a reference to it into a Type1 font (truetype doesn't have this restriction,
+it has other ones). The transformation matrix is a standard postscript
+transformation matrix (3 rows of 2 columns. First 2 rows provide standard
+rotation/scaling/flipping/skewing/... transformations, last row provides
+for translations. (Both postscript and truetype have restrictions on what
+kinds of transformations are acceptable). The splines field provides a quick
+way of drawing the referred character, it is the result of applying the
+transformation matrix on all splines in the refered character. There may
+be several referred characters and they are linked together on the next field.
+The checked field is used to insure that we don't have any loops (ie. on
+characters which refer to themselves). The selected field indicates that
+the reference is selected. The bb field provides a transformed bounding box.
+And the sc field points to the SplineChar we are referring to. -->
+<A HREF="#SplineChar">SplineChar</A> は他の文字への参照を含むことができます。例えば、“Agrave”は“A”と“grave”への参照を含みます。符号位置を表す値には 3 つの異なる種類があり、local_enc は常に最新の状態を保っています。adobe_enc は、Adobe 標準エンコーディングにおける符号位置を表し、Type 1 フォントの seac コマンドで使用されます。この値が -1 であるときにはこの文字が Adobe エンコーディングに含まれていないことを表し、その場合は、Type1 フォントの中でこの文字への参照を行うことはできなくなります (TrueType にはこの制限はありませんが、他の制限があります)。transform[] は、PostScript の標準変換行列です (3 行 2 列)。最初の 2 行が標準的な回転/拡大縮小/反転/傾き…変換を行い、最後の行は平行移動を指定します。(PostScript と TrueType のどちらにも、可能な座標変換の種類に対する制限があります)。splines フィールドは参照された文字を描画するための簡便な方法を提供します。これは、参照された文字のすべてのスプラインに変換行列を適用したものです。参照された文字は複数存在する可能性があり、それらは next フィールドによりリンクしています。checked フィールドは、ループが存在しないか (例えば、自分自身を参照している文字がないか) どうかを確めるために使用します。selected フィールドは、参照が選択されていることを示します。bb フィールドは座標変換を施したバウンディグボックスを提供します。そして、sc フィールドは、参照している SplineChar を指し示します。
+<BLOCKQUOTE>
+  <PRE>typedef struct kernpair {
+    struct splinechar *sc;
+    int off;
+    struct kernpair *next;
+} <A NAME="KernPair">KernPair</A>;
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+If a character should be kerned with another, then this structure provides
+that info. Every SplineChar has a linked list of KernPairs attached to it.
+In that list the sc field indicates the other character in the pair, and
+off defines the offset between them (or rather the difference from what their
+respective left and right bearings would lead you to believe it should be).
+Next points to the next kernpair. -->
+文字同士がカーニングする場合は、この構造体がその情報を提供します。各 SplineChar は、その文字に接続する KernPairs のリンクトリストをもっています。そのリストでは、sc フィールドがペアに含まれるもう 1 つの文字を示し、off がそれらの間のオフセットを定義します (またはむしろ、それらの各文字の左右のサイドベアリングから得た差の値の方を信ずべきときは、そのようにするべきです)。next は、次の KernPair を指し示します。
+<BLOCKQUOTE>
+  <PRE>typedef struct hints {
+    double base, width;
+    double b1, b2, e1, e2;
+    double ab, ae;
+    unsigned int adjustb: 1;
+    unsigned int adjuste: 1;
+    struct hints *next;
+} <A NAME="Hints">Hints</A>;
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+The only important fields here are base, width and next. The others are used
+temporarily by the SplineFill routines. Base gives the location (in either
+x or y space) of where the stem starts, and width is how long it is. Width
+may be negative (in which case base is where the stem ends). Next points
+to the next hint for the character. -->
+重要なフィールドと呼べるのは base, width と next だけです。その他は SplineFill ルーチンで一時的に使用するだけです。Base はステム開始位置 (x 座標または y 座標のどちらか) を指定し、width はステムの幅を表します。width は負の値になることもあります (その場合、ステムの終了位置です)。next はその文字の次のヒントを指し示します。
+<BLOCKQUOTE>
+  <PRE>typedef struct imagelist {
+    struct gimage *image;
+    double xoff, yoff;		<!--/* position in character space of upper left corner of image */-->/* 画像の左上端の,文字空間における位置 */
+    double xscale, yscale;	<!--/* scale to convert one pixel of image to one unit of character space */-->/* 画像の1ピクセルを文字空間の1単位に変換するための拡大率 */
+    <A HREF="#DBounds">DBounds</A> bb;
+    struct imagelist *next;
+    unsigned int selected: 1;
+} <A NAME="ImageList">ImageList</A>;
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+SplineChars may have images in their backgrounds. This structure contains
+a pointer to the image to be displayed, an indication of where it should
+be positioned, and how it should be scaled (I do not support any other
+transformations on images). The bounding box is after the transformations
+have been applied. The next field points to the next image, and selected
+indicates whether this one is selected or not. -->
+SplineChars は、背景に画像を配置することができます。この構造体は表示される画像へのポインタと、それをどこへ置くべきか・どのように拡大/縮小 (画像に対する変換はこれ以外にサポートしていません) を表す印を含みます。バウンディングボックスは、座標変換が適用された後の値です。next フィールドは次の画像を指し示し、selected は、この画像が選択されているか否かを表します。
+<BLOCKQUOTE>
+  <PRE>typedef struct splinechar {
+    char *name;
+    int enc, unicodeenc;
+    int width;
+    int16 lsidebearing;		<!--/* only used when reading in a type1 font */-->/* Type1フォントの読み込み時にのみ使用 */
+    int16 ttf_glyph;		<!--/* only used when writing out a ttf font */-->/* TTFフォントの書き出し時にのみ使用 */
+    <A HREF="#SplinePointList">SplinePointList</A> *splines;
+    <A HREF="#Hints">Hints</A> *hstem;		<!--/* hstem hints have a vertical offset but run horizontally */-->/* hstemヒントは垂直オフセットを含み,水平に延びる */
+    <A HREF="#Hints">Hints</A> *vstem;		<!--/* vstem hints have a horizontal offset but run vertically */-->/* vstemヒントは水平オフセットを含み,垂直に延びる */
+    <A HREF="#RefChar">RefChar</A> *refs;
+    <A HREF="views.html#CharView">struct charview</A> *views;	<!--/* All CharViews that look at us */-->/* この文字を参照するすべての CharView */
+    <A HREF="#SplineFont">struct splinefont</A> *parent;
+    unsigned int changed: 1;
+    unsigned int changedsincelasthhinted: 1;
+    unsigned int changedsincelastvhinted: 1;
+    unsigned int manualhints: 1;
+    unsigned int ticked: 1;	<!--/* For reference character processing */-->/* 参照文字の処理用 */
+    unsigned int changed_since_autosave: 1;
+    unsigned int widthset: 1;	<!--/* needed so an emspace char doesn't disappear */-->/* 文字"emspace"が消えないために必要 */
+    struct splinecharlist { struct splinechar *sc; struct splinecharlist *next;} *dependents;
+	    <!--/* The dependents list is a list of all characters which reference*/-->/* dependentsリストは現在の文字を直接参照するすべての文字の */
+	    <!--/*  the current character directly */-->/*  リストのリスト */
+    <A HREF="#SplinePointList">SplinePointList</A> *backgroundsplines;
+    <A HREF="#ImageList">ImageList</A> *backimages;
+    <A HREF="#Undoes">Undoes</A> *undoes[2];
+    <A HREF="#Undoes">Undoes</A> *redoes[2];
+    <A HREF="#KernPair">KernPair</A> *kerns;
+    uint8 *origtype1;		<!--/* The original type1 (unencoded) character string */-->/* オリジナルの (符号位置をもたない) Type1 charstring */
+    int origlen;		<!--/*  it's length. These get freed once the user has changed */-->/* その長さ. これらはユーザが一度変更を加えると解放される */
+				<!--/*  the character. Until then the preserve things like */-->/* 文字そのもの. その時まで他の方法で理解不能な */
+				<!--/*  hint substitution which we wouldn't otherwise understand */-->/* ヒント置換を保存しておく */
+} <A NAME="SplineChar">SplineChar</A>;
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+Every character has a name (sometimes it is ".notdef" but it's there). A
+location (encoding) in the current font, a unicode code point (which may
+be -1 if not in unicode). Every character has a width. The next two fields
+are only meaningful when loading or saving a font in the appropriate format.
+lbearing is needed to handle seac commands, and the ttf_glyph is needed for
+just about everything when writing a ttf font. The splines field gives all
+the foreground paths (<A HREF="#SplinePointList">SplinePointLists</A>). Hints
+for horizontal and vertical stems. A set of other characters referenced in
+this one, again only in the foreground. Then a linked list of all
+<A HREF="views.html#CharView">CharViews</A> displaying this SplineChar (if
+this guy changes, all must be updated to reflect the change). A pointer to
+the <A HREF="#SplineFont">SplineFont</A> that contains us. A set of bits:
+changed means the character has changed since the last save to disk,
+changedsincelasthhinted means that we need to run autohint on the horizontal
+stems, changedsincelastvhinted for vertical stems. Manual hints means the
+user has taken control of providing hints, and we should only run autohint
+if explicitly asked to. Ticked is a temporary field usually to avoid infinite
+loops of refered characters. changed_since_autosave indicates that the next
+time we update our autosave database we should write this character to it.
+Widthset means the user has changed the width. If we didn't have this bit
+we might think that an em space had nothing in it (instead of having an em-space
+in it). -->
+すべての文字には名前があります (時には“.notdef”の場合もありますが、その値はここに格納されています)。現在のフォント内における位置 (エンコーディング)、Unicode のコードポイント (Unicode に存在しないことを表す値 -1 になることがあります) があります。各文字の幅は width に格納されます。その後ろの 2 個のフィールドはフォントを適切なフォーマットで読み込みまたは保存する時にのみ意味があります。lbearing は seac コマンドを扱うために必要で、ttf_glyph は TTF フォントを書き出す時にいろいろな用途で使用します。splines フィールドは、すべての前面パス (<A HREF="#SplinePointList">SplinePointLists</A>) を与えます。hints は水平ステムと垂直ステムです。この文字が参照している一連の文字、これも前面にあるもののみです。その次に来るのはこの SplineChar を表示しているすべての <A HREF="views.html#CharView">CharViews</A> のリンクトリストです (この文字が変更されたら、それらすべてが変更を反映して更新する必要があります)。この文字を含む <A HREF="#SplineFont">SplineFont</A>へのポインタがあります。以下の一連のビットがあります: changed は、最後にディスクへ保存を行って以降その文字が更新されたことを意味します。changedsincelasthhinted は、水平ヒントの自動ヒントづけを行わなければならないことを意味し、changedsincevhinted は垂直ヒントに対するものです。manualhints は、ユーザがヒントづけを自分で制御する選択をしたことを意味し、ユーザの明示的な指示がなければ自動ヒントを行ってはなりません。ticked は、参照された文字の無限ループを避けるための印づけです。changed_since_autosave は、次回自動セーブデータベースを更新する時、この文字をそこに含める必要があることを示します。widthset は、ユーザが幅を変更したことを意味します。このビットをセットしていない時、幅 em の空白には (文字 em スペースを示すのではなく) 何も含まれていないと考える必要があります。
+<P>
+<!--
+If a SplineChar is refered to in another character, then when we change the
+original we must also update anything that refers to it (if we change A,
+we must also redisplay Agrave). -->
+ある SplineChar が他の文字から参照されている場合、オリジナルを変更した時にはそれを参照しているすべての文字も更新しなければなりません (A を変更したら、Agrave も再表示する必要があります)。
+<P>
+<!--
+Then backgroundsplines represent the SplinePointLists in the background layer,
+and backimages represent the images in the background layers. -->
+その次の backgroundsplines は、背面レイヤにある SplinePointLists を表し、backimages は背面レイヤにある画像を表します。
+<P>
+<!--
+Undoes[0] contains undoes for the foreground and undoes[1] contains undoes
+for the background. Same for redoes. -->
+undoes[0] には前面のアンドゥを格納し、undoes[1] には背面のアンドゥを格納します。redoes も同様です。
+<P>
+<!--
+Finally kerns provides a list of kerning data for any special characters
+that follow this one. For instance the combination "VA" might need kerning,
+then the SplineChar representing "V" would have a pointer to a
+<A HREF="#KernPair">KernPair</A> with data on "A". -->
+最後の kerns は、この文字に続くすべての特別扱いされる文字のカーニングデータのリストを提供します。例えば“VA”の組合せはカーニングを必要とするでしょう。その場合、“V”を表す SplineChar には、“A”に関するデータをもつ <A HREF="#KernPair">KernPair</A> へのポインタが含まれるはずです。
+<BLOCKQUOTE>
+  <PRE>typedef struct splinefont {
+    char *fontname, *fullname, *familyname, *weight;
+    char *copyright;
+    char *filename;
+    char *version;
+    double italicangle, upos, uwidth;
+    int ascent, descent;
+    int charcnt;
+    <A HREF="#SplineChar">SplineChar</A> **chars;
+    unsigned int changed: 1;
+    unsigned int changed_since_autosave: 1;
+    unsigned int display_antialias: 1;
+    unsigned int dotlesswarn: 1;		<!--/* User warned that font doesn't have a dotless i character */-->/* フォントに文字 dotless i が含まれていることをユーザに警告済 */
+    /*unsigned int wasbinary: 1;*/
+    <A HREF="views.html#FontView">struct fontview</A> *fv;
+    enum charset encoding_name;
+    <A HREF="#SplinePointList">SplinePointList</A> *gridsplines;
+    <A HREF="#Undoes">Undoes</A> *gundoes, *gredoes;
+    <A HREF="#BDFFont">BDFFont</A> *bitmaps;
+    char *origname;		<!--/* filename of font file (ie. if not an sfd) */-->/* フォントファイルのファイル名 (つまり,SFDでない場合) */
+    char *autosavename;
+    int display_size;
+} <A NAME="SplineFont">SplineFont</A>;
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+The first four names are taken straight out of PostScript, as are copyright,
+version, italicangle, underlinepos, underlineweight. Ascent and descent together
+sum to make the em-square. Normally this will be 1000, but you can change
+that if you want. -->
+最初の 4 個の名前は PostScript のものをそのまま使用しており、copyright, version, italicangle, underlinepos, underlineweight も同様です。ascent と descent は、合計が em 正方形の大きさとなります。通常これは 1000 になりますが、必要なら変更可能です。
+<P>
+<!--
+Charcnt says how big the chars array will be. There may be holes (ie. NULL
+values) in the array. -->
+charcnt は、chars 配列の大きさを表します。配列の途中に穴 (つまり、NULL 値) があっても構いません。
+<P>
+<!--
+Changed indicates that some character, bitmap, metric, something has changed
+since we last saved the file. changed_since_autosave means that something
+has changed since autosave last happened (so we should actually process this
+font the next time autosave rolls around). -->
+changed は、ファイルを最後に保存して以降どれかの文字・ビットマップ・メトリック・何らかのデータが変更されたことを示します。changed_since_autosaves は、自動セーブが最後に行われてから何らかの変更があった  (そのため、次回自動セーブが行われるとき、このフォントの処理を実際に行う必要がある) ことを意味します
+<P>
+<!--
+Display_antialias means we are displaying an antialias bytemap font in the
+<A HREF="views.html#FontView">FontView</A>, rather than a bitmap font. These
+look better but are slower. -->
+display_antialias は、<A HREF="views.html#FontView">FontView</A> でビットマップフォントではなく、アンチエイリアス表示のバイトマップフォントを表示していることを意味します。より美しい表示が可能ですが速度は低下します。
+<P>
+<!--
+Dotlesswarn means that we've warned the user when s/he attempted to create
+an accented character based on i or j and a dotless version of those characters
+was not present in the font (there's no point in warning him again. The operation
+proceeded with a dotted version). -->
+dotlesswarn は、ユーザが i または j に基づくアクセントつき文字を作成し、それらの文字の点の無いバージョンがフォント内に含まれていないときに警告を行ったことを意味します (警告を再度行うことはありません。操作は点ありのバージョンに基づいて進められます)。
+<P>
+<!--
+There is only one <A HREF="views.html#FontView">FontView</A> associated with
+a font (other data structures allowed for multiple views, but the font does
+not). -->
+1 個のフォントに付随する <A HREF="views.html#FontView">FontView</A> は 1 個しか存在しません (他のデータ構造は複数のビューをもつことができますが、フォントは違います)。
+<P>
+<!--
+The font has a characterset and an encoding. -->
+フォントには文字集合とエンコーディングベクタが存在します。
+<P>
+<!--
+Gridsplines contains the <A HREF="#SplinePointList">SplinePointLists</A>
+for all the splines displayed as background grids for characters. And gundoes
+and gredoes are the un/redoes associated with them. -->
+gridsplines は、文字の背景グリッドとして表示されるすべてのスプラインの <A HREF="#SplinePointList">SplinePointLists</A> を表示します。また、gundoes および gredoes はそれらに関連づけられたアンドゥ/リドゥです。
+<P>
+<!--
+Bitmaps contains all the bitmaps that have been generated for this SplineFont. -->
+bitmaps は、この SplineFont のために生成されたすべてのビットマップを含みます。
+<P>
+<!--
+Origname contains the name of the file we read in to get this one. Filename
+above contains the name of an .sfd file associated with this font, but origname
+can also contain random postscript or truetype fonts. -->
+origname は、このフォントを得るために読み込んだファイルの名前を含んでいます。上の filename はこのフォントに関連づけられた .sfd ファイルの名前を含みますが、origname は任意の PostScript または TrueType のフォント名を含むことが可能です。
+<P>
+<!--
+Autosavename indicates the name currently being used to save crash recovery
+stuff to disk. -->
+autosavename は、ディスクにクラッシュ回復情報を保存するのに用いる名前を表します。
+<P>
+<!--
+Display_size indicates how big we'd like the FontView to display our font.-->
+display_size は、フォントを FontView でどのくらいの大きさで表示するかを示します。
+<H2>
+<!--Function declarations-->
+    関数宣言
+</H2>
+<P>
+<BLOCKQUOTE>
+  <PRE>struct fontdict;		<!--/* the next four data structures are in psfont.h */-->/* 次の4個のデータ構造はpsfont.hにある */
+struct chars;
+struct findsel;
+struct charprocs;
+enum charset;			<!--/* in charset.h */-->/* charset.hにある */
+
+extern SplineFont *SplineFontFromPSFont(struct fontdict *fd);
+extern int SFOneWidth(SplineFont *sf);
+extern struct chars *SplineFont2Chrs(SplineFont *sf, int round);
+enum fontformat { ff_pfa, ff_pfb, ff_ptype3, ff_ptype0, ff_ttf, ff_none };
+extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format);
+extern int WriteTTFFont(char *fontname,SplineFont *sf);
+int SFReencodeFont(SplineFont *sf,enum charset new_map);
+
+extern int DoubleNear(double a,double b);
+extern int DoubleNearish(double a,double b);
+
+extern void LineListFree(LineList *ll);
+extern void LinearApproxFree(LinearApprox *la);
+extern void SplineFree(Spline *spline);
+extern void SplinePointFree(SplinePoint *sp);
+extern void SplinePointListFree(SplinePointList *spl);
+extern void SplinePointListsFree(SplinePointList *head);
+extern void RefCharFree(RefChar *ref);
+extern void RefCharsFree(RefChar *ref);
+extern void UndoesFree(Undoes *undo);
+extern void HintsFree(Hints *h);
+extern Hints *HintsCopy(Hints *h);
+extern SplineChar *SplineCharCopy(SplineChar *sc);
+extern BDFChar *BDFCharCopy(BDFChar *bc);
+extern void ImageListsFree(ImageList *imgs);
+extern void SplineCharFree(SplineChar *sc);
+extern void SplineFontFree(SplineFont *sf);
+extern void SplineRefigure(Spline *spline);
+extern Spline *SplineMake(SplinePoint *from, SplinePoint *to);
+extern LinearApprox *SplineApproximate(Spline *spline, double scale);
+extern int SplinePointListIsClockwise(SplineSet *spl);
+extern void SplineSetFindBounds(SplinePointList *spl, DBounds *bounds);
+extern void SplineCharFindBounds(SplineChar *sc,DBounds *bounds);
+extern void SplineFontFindBounds(SplineFont *sf,DBounds *bounds);
+extern void SplinePointCategorize(SplinePoint *sp);
+extern void SCCategorizePoints(SplineChar *sc);
+extern SplinePointList *SplinePointListCopy(SplinePointList *base);
+extern SplinePointList *SplinePointListCopySelected(SplinePointList *base);
+extern SplinePointList *SplinePointListTransform(SplinePointList *base, double transform[6], int allpoints );
+extern SplinePointList *SplinePointListShift(SplinePointList *base, double xoff, int allpoints );
+extern SplinePointList *SplinePointListRemoveSelected(SplinePointList *base);
+extern void SplinePointListSet(SplinePointList *tobase, SplinePointList *frombase);
+extern void SplinePointListSelect(SplinePointList *spl,int sel);
+extern void SCRefToSplines(SplineChar *sc,RefChar *rf);
+extern void SCReinstanciateRefChar(SplineChar *sc,RefChar *rf);
+extern void SCReinstanciateRef(SplineChar *sc,SplineChar *rsc);
+extern void SCRemoveDependent(SplineChar *dependent,RefChar *rf);
+extern void SCRemoveDependents(SplineChar *dependent);
+extern RefChar *SCCanonicalRefs(SplineChar *sc, int isps);
+extern void BCCompressBitmap(BDFChar *bdfc);
+extern void BCRegularizeBitmap(BDFChar *bdfc);
+extern void BCPasteInto(BDFChar *bc,BDFChar *rbc,int ixoff,int iyoff, int invert);
+extern BDFChar *SplineCharRasterize(SplineChar *sc, int pixelsize);
+extern BDFFont *SplineFontRasterize(SplineFont *sf, int pixelsize);
+extern BDFChar *SplineCharAntiAlias(SplineChar *sc, int pixelsize,int linear_scale);
+extern BDFFont *SplineFontAntiAlias(SplineFont *sf, int pixelsize,int linear_scale);
+extern void BDFCharFree(BDFChar *bdfc);
+extern void BDFFontFree(BDFFont *bdf);
+extern void BDFFontDump(char *filename,BDFFont *font, char *encodingname);
+extern double SplineSolve(Spline1D *sp, double tmin, double tmax, double sought_y, double err);
+extern void SplineFindInflections(Spline1D *sp, double *_t1, double *_t2 );
+extern int NearSpline(struct findsel *fs, Spline *spline);
+extern double SplineNearPoint(Spline *spline, BasePoint *bp, double fudge);
+extern void SCMakeDependent(SplineChar *dependent,SplineChar *base);
+extern SplinePoint *SplineBisect(Spline *spline, double t);
+extern Spline *ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
+	TPoint *mid, int cnt);
+extern int SplineIsLinear(Spline *spline);
+extern int SplineInSplineSet(Spline *spline, SplineSet *spl);
+extern void SplineCharMerge(SplineSet **head);
+extern void SplineCharSimplify(SplineSet *head);
+extern void SplineCharRemoveTiny(SplineSet *head);
+extern SplineFont *SplineFontNew(void);
+extern SplineFont *SplineFontBlank(int enc,int charcnt);
+extern SplineSet *SplineSetReverse(SplineSet *spl);
+extern SplineSet *SplineSetsExtractOpen(SplineSet **tbase);
+extern SplineSet *SplineSetsCorrect(SplineSet *base);
+extern void SPAverageCps(SplinePoint *sp);
+extern void SplineCharDefaultPrevCP(SplinePoint *base, SplinePoint *prev);
+extern void SplineCharDefaultNextCP(SplinePoint *base, SplinePoint *next);
+extern void SplineCharTangentNextCP(SplinePoint *sp);
+extern void SplineCharTangentPrevCP(SplinePoint *sp);
+extern int PointListIsSelected(SplinePointList *spl);
+extern void SplineSetsUntick(SplineSet *spl);
+extern void SFOrderBitmapList(SplineFont *sf);
+
+extern SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si);
+extern SplineSet *SplineSetRemoveOverlap(SplineSet *base);
+
+extern void FindBlues( SplineFont *sf, double blues[14], double otherblues[10]);
+extern void FindHStems( SplineFont *sf, double snaps[12], double cnt[12]);
+extern void FindVStems( SplineFont *sf, double snaps[12], double cnt[12]);
+extern void SplineCharAutoHint( SplineChar *sc);
+extern void SplineFontAutoHint( SplineFont *sf);
+extern int AfmSplineFont(FILE *afm, SplineFont *sf,int type0);
+extern char *EncodingName(int map);
+
+extern int SFDWrite(char *filename,SplineFont *sf);
+extern int SFDWriteBak(SplineFont *sf);
+extern SplineFont *SFDRead(char *filename);
+extern SplineFont *SFReadTTF(char *filename);
+extern SplineFont *LoadSplineFont(char *filename);
+extern SplineFont *ReadSplineFont(char *filename);	<!--/* Don't use this, use LoadSF instead */-->/* 使用不可. 代わりにLoadSFを使うこと */
+
+extern SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,int i);
+extern SplineChar *SFMakeChar(SplineFont *sf,int i);
+extern BDFChar *BDFMakeChar(BDFFont *bdf,int i);
+
+extern void SCUndoSetLBearingChange(SplineChar *sc,int lb);
+extern Undoes *SCPreserveState(SplineChar *sc);
+extern Undoes *SCPreserveWidth(SplineChar *sc);
+extern Undoes *BCPreserveState(BDFChar *bc);
+extern void BCDoRedo(BDFChar *bc,struct fontview *fv);
+extern void BCDoUndo(BDFChar *bc,struct fontview *fv);
+
+extern int SFIsCompositBuildable(SplineFont *sf,int unicodeenc);
+extern void SCBuildComposit(SplineFont *sf, SplineChar *sc, int copybmp,
+	struct fontview *fv);
+
+extern void BDFFontDump(char *filename,BDFFont *font, char *encodingname);
+extern int getAdobeEnc(char *name);
+
+extern SplinePointList *SplinePointListInterpretPS(FILE *ps);
+extern void PSFontInterpretPS(FILE *ps,struct charprocs *cp);
+
+extern int SFFindChar(SplineFont *sf, int unienc, char *name );
+
+extern char *getFontForgeDir(char *buffer);
+extern void DoAutoSaves(void);
+extern int DoAutoRecovery(void);
+extern SplineFont *SFRecoverFile(char *autosavename);
+extern void SFAutoSave(SplineFont *sf);
+extern void SFClearAutoSave(SplineFont *sf);
+#endif
+</PRE>
+</BLOCKQUOTE>
+</DIV>
+</BODY></HTML>

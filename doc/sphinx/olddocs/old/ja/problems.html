@@ -1,0 +1,543 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 28-Jun-2001 -->
+  <!-- AP: Last modified: 12-Jun-2006 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>Finding common font problems automagically</TITLE>-->
+    <TITLE>よくあるフォントの問題点を自動的に検出する方法</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+<!--Finding common font problems automagically-->
+    よくあるフォントの問題点を自動的に検出する方法
+  </H1>
+  <P>
+<!--
+  Nobody is perfect. -->
+  誰しも完璧ではありません。
+  <P>
+<!--
+  Well, I'm not. -->
+  もちろん、私もです。
+  <P>
+<!--
+  When you draw your glyphs you are likely to make some minor errors, like
+  having stems with slightly different widths in different glyphs, or having
+  lines which aren't quite vertical or... -->
+  あなたがグリフを作成した時、きっと小さな間違いをいくつか犯しているはずです。例えば文字毎にステムの幅が微妙に異なるとか、完全に垂直でない線が含まれているとか……。
+  <P>
+<!--
+  FontForge's Find Problems command can help track down some common errors.
+  In some cases it will be able to fix things for you, but it won't do so without
+  your permission (who knows, some of the so-called "problems" might actually
+  be what you wanted), but it will point things out to you that you should
+  look at. -->
+  FontForge の <CODE>問題点を発見(<U>O</U>)...</CODE> コマンドは、いくつかのよくある間違いの発見助けることができます。いくつかの場合では、間違いを修正することができますが、あなたの許可を得ないでそれを行うことはありません (いわゆる「問題点」のいくつかが、実際にあなたの意図通りでないと誰が判るでしょうか) が、それはあなたが確認するべき事柄の指摘を行うためのものです。
+  <P>
+<!--
+  This command works either in the font view, the outline view or the metrics
+  view. In the font view it will examine all selected glyphs for errors, and
+  if it finds anything open a window looking at the glyph and post a (non-modal)
+  dialog saying what the error is. You may then correct the problem and press
+  the [Next] button in the dialog when you are done, or you may stop the command
+  with the [Stop] button. Some errors FontForge will be able to fix automagically,
+  and if so there will be a [Fix] button in this dlg
+  (<FONT COLOR="Red"><SMALL><STRONG>NOTE</STRONG></SMALL></FONT>: You should
+  not assume that all problems are in fact errors. Some "problems" may be intended
+  peculiarities of the font design. Don't just blindly press the [Fix] button).
+  Behavior in the outline and metrics views is similar, except that only one
+  glyph is searched for problems. -->
+  このコマンドはフォントビュー、アウトラインビューまたはメトリックビューのどこからも呼び出すことができます。フォントビューでは、選択されたすべての文字のエラーを検査し、何らかの問題点を発見した場合、グリフを表示するためのウィンドウを開き、エラーが存在することを指摘する (非モーダルな) ダイアログを出します。そのウィンドウで問題点を修正することができますので、完了したら <CODE>[次(<U>N</U>)]</CODE> ボタンを押してください。コマンドの実行を中止するには <CODE>[中止(<U>S</U>)]</CODE> ボタンを押します。いくつかのエラーは FontForge が自動で修正が可能ですので、その場合は、<CODE>[修正]</CODE> ボタンがダイアログに表示されます。(<FONT COLOR="Red"><SMALL><STRONG>注意</STRONG></SMALL></FONT>: 指摘される問題点のすべてをエラーであると考えるべきではありません。いくつかの「問題点」は、フォントデザインの特徴として意図されたものである可能性があります。目で確認せずに <CODE>[修正]</CODE> ボタンを押さないでください)。アウトラインビューとメトリックビューでのふるまいも同様ですが、問題点を探す文字が 1 個に限られる点が異なります。
+  <P>
+<!--
+  FontForge will be able to check for more problems if you: -->
+  FontForge は、以下の操作を行ったときに、より多くの問題点をチェックすることができます:
+  <UL>
+    <LI>
+<!--  AutoHint the font first-->
+      最初に、フォントに自動ヒントづけを行う
+    <LI>
+<!--  Bring up the <A HREF="fontinfo.html#Private">Element-&gt;Font Info-&gt;Private
+      </A>sub-dialog, add entries for BlueValues, StdHW and StdVW and press the
+      [Guess] button for each of them -->
+      <A HREF="fontinfo.html#Private"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE> から <CODE>[PS Private辞書]<CODE></a> サブダイアログを選択し、BlueValues, StdHW および StdVW の各項目を追加するとともに、それぞれに対して <CODE>[推測]</CODE> ボタンを押す
+  </UL>
+  <P>
+<!--
+  Note: Some of these problems are geared specifically to the problems of
+  Latin/Greek/Cyrillic fonts. I would be happy to hear of ways to extend these
+  to other script systems, or of problems that are specific to other script
+  systems
+  (<A HREF="mailto:fontforge-users@lists.sourceforge.net">fontforge-users@lists.sourceforge.net</A>). -->
+  注意: これらの問題点のいくつかは、ラテン・ギリシャ・キリル文字のフォントの問題点に特化したものです。これらを他の用字系に拡張する方法や、他の用字系に特化した問題点についてお聞かせ頂ければ幸いです (<A HREF="mailto:fontforge-users@lists.sourceforge.net">fontforge-users@lists.sourceforge.net</A> まで)。
+  <P>
+  <IMG src="../../_images/findprobs.png" WIDTH="307" HEIGHT="431" ALIGN="Right"><!--FontForge
+  can detect the following potential problems: -->
+  FontForge は以下の潜在的な問題点を検出することができます:
+  <P>
+<!--
+  <STRONG><BIG>Points Too Close</BIG></STRONG> -->
+  <STRONG><BIG>近すぎる点(<U>C</U>)</BIG></STRONG>
+  <P>
+<!--
+  Some of FontForge's own commands get confused by tiny splines, on the order
+  of one unit or less, and anyway if you have several points very close together
+  it is unlikely that they will make a detectable difference when the font
+  is printed. Probably you should remove one of them... If FontForge detects
+  two points on the same path which it deems to be too close it will select
+  both, stop and let you fix things. -->
+  FontForge に内蔵されたコマンドのいくつかは、長さ 1 ユニット以下の微小なスプラインが存在すると混乱することがありますし、非常に近いいくつかの点を配置しても、フォントが印字された時に、それが目で見て判る違いをもたらすことはありません。おそらく、どちらか片方を削除すべきではないかと……。FontForge が同一のパス上に、あまりに近すぎると判定された 2 個の点を検出したとき、それら両者を選択し、問題点を修正可能な状態で実行を中止します。
+  <P>
+<!--
+  <STRONG><BIG>X near [val]</BIG></STRONG> -->
+  <STRONG><BIG>近接するX [val]</BIG></STRONG> <!-- もっとましな訳はないか -->
+  <P>
+<!--
+  Often there will be a set of features which should be consistent across the
+  entire file. For example the left side-bearing of the glyphs "BDEFHIKLMNPR"
+  should perhaps all be the same. This will let you enter in the desired
+  side-bearing value, and then FontForge will find all glyphs with points that
+  are near, but not exactly on the desired value. Where "near" is defined at
+  the bottom of the dialog (in this case, everything within 3 em-units - - in
+  either direction - - will be near). If it finds an errant point, FontForge
+  will select it, stop and let you fix it. -->
+  ファイル全体を通じて整合性を保つべき一連の特徴がしばしば存在します。例えば、“BDEFHIKLMNPR”の各グリフの左サイドベアリングはおそらくすべて同じでしょう。ここでは望ましいサイドベアリングの値を入力する欄があり、FontForge は入力された値に近いが、正確には一致しない座標をもつ点をすべて探します。この「近い」という基準は、ダイアログのいちばん下にあるテキストボックスの値で定まります (この図の例では、3 em ユニット以内—どちらの方向でも—にあるすべての物を探します)。ずれた位置にある点を発見したら、FontForge はそれを選択し、処理を停止して修正操作を待ちます。
+  <P>
+<!--
+  <STRONG><BIG>Y near [val]</BIG></STRONG> -->
+  <STRONG><BIG>近接するY [val]</BIG></STRONG> <!-- もっとましな訳はないか -->
+  <P>
+<!--
+  This is the exact counter-part of the above command except for being in the
+  Y direction. Often times this check is more efficiently done by the following
+  check... -->
+  これは上のコマンドと完全に対になるもので、Y 座標を対象にしている点のみが異なります。多くの場合、次のチェックによってこのチェックをより簡単に行うことができます…。
+  <P>
+<!--
+  <STRONG><BIG>Y near standard heights</BIG></STRONG> -->
+  <STRONG><BIG>標準の高さの近くの Y 座標</BIG></STRONG>
+  <P>
+<!--
+  In Latin, Greek and Cyrillic alphabets there are certain standard heights
+  that FontForge expects to find: the baseline, the height of lower case letters,
+  the height of capital letters, the height of lower case letters with ascenders
+  (often the same as, or very close to, the capital height), and the depth
+  of lower case letters with descenders. For this command FontForge defines
+  these heights to be 0, the height of "x", the height of "I", the height of
+  "l" and the depth of "p" (If you are working on a Greek or Cyrillic font
+  and don't include the Latin alphabet, FontForge will pick similar letters
+  from your alphabet). Then FontForge will search for any points which are
+  "near", but not on, these heights. Again where "near" is defined at the bottom
+  of the dialog. If it finds such a point, FontForge will select it, stop and
+  let you fix things. -->
+  ラテン・ギリシャ・キリルの各アルファベットには、いくつかの標準の高さがあり、FontForge はその検査を備えつけています: ベースライン、小文字の高さ、大文字の高さ、アセンダをもつ小文字の高さ (多くの場合、大文字の高さと同じか、非常に近い値です) およびディセンダをもつ小文字の深さです。
+  このコマンドでは、FontForge はこれらの高さを 0,“x”の高さ、“I”の高さ、“l”の高さおよび“p”の深さとして定義しています (ギリシャ文字またはキリル文字のフォントで作業していて、そのフォントにラテン文字が含まれていないときは、FontForge はそのアルファベットにある同種の文字を使います)。続いて、FontForge はその高さの「近く」にあって、正確にはその高さと一致しない点を探します。ここでも「近く」と見なされる誤差の限界はダイアログの下で定義します。そのような点が見つかった場合、FontForge はそれを選択し、中断してそれを修正できるようにします。
+  <P>
+<!--
+  <STRONG><BIG>Control points near horizontal/vertical/italic</BIG></STRONG> -->
+  <STRONG><BIG>水平/垂直/イタリック角に近い制御点</BIG></STRONG>
+  <P>
+<!--
+  This is similar to the <A HREF="problems.html">Edges near Horizontal option</A>
+  below, but where that only looks for straight lines, this one looks for curved
+  lines that begin or end near horizontal (vertical, italic angle). -->
+  これは、下記の<A HREF="problems.html">水平/垂直に近い辺</A>オプションに似ていますが、それが直線のみを検査するのに対し、このオプションは始点または終点がほとんど水平 (垂直、イタリック角) に近い曲線を検査します。
+  <P>
+<!--
+  <STRONG><BIG>Control points beyond
+  spline</BIG></STRONG><IMG src="../../_images/cpodd.png" WIDTH="210" HEIGHT="215" ALIGN="Right"> -->
+  <STRONG><BIG>端点の外にはみ出す制御点(<U>B</U>)</BIG></STRONG><IMG src="../../_images/cpodd.png" WIDTH="210" HEIGHT="215" ALIGN="Right">
+  <P>
+<!--
+  Consider the glyph at right, the selected point has a control point that
+  is far outside of what is reasonable and is probably not where it should
+  be. This will check for such points. -->
+  例えば右図のようなグリフにおいては、選択中の点には適切と思われるよりはるかに外側の制御点が存在し、おそらく本来あるべき位置に置かれていないと考えられます。このオプションはそのような点の存在をチェックします。
+  <P>
+<!--
+  Technically it will search for all control points, which when projected onto
+  the line between the two end points of the spline lie outside of the segment
+  between the two. -->
+  技術的に言えば、このオプションは、スプラインの 2 個の端点を結ぶ直線上に垂線を引いたときに、2 点に挟まれた線分の外側に投影されるようなすべての点を検索します。
+  <P>
+<!--
+  <STRONG><BIG>Irrelevant control points</BIG></STRONG> -->
+  <STRONG><BIG>無意味な制御点</BIG>をチェック(<U>I</U>)</STRONG>
+  <P>
+<!--
+  This will look for control points which are so close to the point they modify
+  that they are unlikely to affect the shape of the curve. A control point
+  is deemed too close if the distance between it and its modified point is
+  less than the "Irrelevant Factor" times the distance between the two end
+  points of the spline controlled by this control point.<BR Clear=Right> -->
+  これは、制御点が変形の対象となる端点に近すぎてほとんど曲線の形に影響を与えていないことがないか探します。制御点が近すぎると見なされるのは、影響を与える点との距離が、その制御点が調節するスプラインの両端点の距離に「無意味と見なす比率」を掛けた距離よりも短い場合です。<BR Clear=Right>
+  <P>
+<!--
+  <IMG src="../../_images/findprobs-paths.png" WIDTH="307" HEIGHT="431" ALIGN="Right"><STRONG><BIG>Open
+  Paths</BIG></STRONG>-->
+  <IMG src="../../_images/findprobs-paths.png" WIDTH="307" HEIGHT="431" ALIGN="Right"><STRONG><BIG>開いたパス(P)</BIG></STRONG>
+  <P>
+<!--
+  All of your paths should be closed, that is they shouldn't have any end points
+  the way a line segment does, but should connect back to their beginning.
+  This is often caused by being a little careless with the last point on a
+  path, and instead of joining it to the first, you just put it near the first.
+  If FontForge detects any open paths it will select the entire path, and stop
+  to let you fix things up. -->
+  パスはすべて閉じていなければなりません。つまり、1 本の曲線素片がもっているような端点が存在するのではなく、それがパスの最初の点に繋がっていなければなりません。これは、パスの最後の点を置くときに最初の点と繋げるのではなくて、最初の点の近くの場所に置いただけというちょっとした不注意でしばしば発生します。FontForge が開いたパスを発見したときはそのパス全体を選択し、パスの修正ができるようにそこで停止します。
+  <P>
+<!--
+  <STRONG><BIG>Intersecting Paths</BIG></STRONG> -->
+  <STRONG><BIG>交差するパス</BIG></STRONG>
+  <P>
+<!--
+  Both PostScript and TrueType discourage you from having intersecting paths
+  in a font. -->
+  PostScript と TrueType のどちらでも、フォント内にパス同士が交差する箇所があることは望ましくありません。
+  <P>
+<!--
+  <STRONG><BIG>Edges near horizontal/vertical/italic</BIG></STRONG> -->
+  <STRONG><BIG>水平/垂直/イタリック角に近い辺</BIG></STRONG>
+  <P>
+<!--
+  It is very easy to create a line which is almost, but not quite, vertical.
+  This will check for that situation. And for horizontal, and (if your font
+  has an italic angle) for lines which are almost but not quite parallel to
+  the italic angle. If it finds one of these, FontForge will select the two
+  end points, stop and let you fix things. -->
+  ほとんど垂直に近いが完全に垂直ではない線を作成してしまうことは非常によくあります。このコマンドはそのような状況をチェックします。また、水平線および (フォントにイタリックか句が指定されている場合) イタリック角にほとんど平行であるが完全に平行ではない線もチェックします。それらのどれかにあてはまる線が見つかったとき、FontForge はその線の両端の点を選択し、それを修正できるように停止します。
+  <P>
+<!--
+  For horizontal lines it will tell you the y coordinates of the two end-points,
+  for vertical lines it will show you the x coordinates. -->
+  水平線のときは 2 個の端点の y 座標を通知し、垂直線のときは x 座標を通知します。
+  <P>
+<!--
+  <BIG><STRONG>Path Direction</STRONG></BIG> -->
+  <BIG><STRONG>一番外のパスが時計回りかをチェック(<U>O</U>)</STRONG></BIG>
+  <P>
+<!--
+  Both PostScript and TrueType require that paths be traced in a clockwise
+  fashion. This sometimes doesn't matter, but many rasterizers do a better
+  job if this rule is obeyed. This command will detect whether this constraint
+  is violated. -->
+  PostScript と TrueType のどちらでも、パスは時計回りに辿ることを要求しています。これが問題とならない場合もありますが、多くのラスタライザはこのルールに従っているときのほうが良好に動作します。このコマンドは、この制約が破られているかどうかを検査します。
+  <P>
+<!--
+  Currently the command will report the same error several times if you do
+  not fix the problem. That's sort of a bug, but I don't see an easy way around
+  it yet. -->
+  現在のところ、このコマンドは問題点が修正されるまで同じエラーを何度も報告します。これはある種のバグですが、これを避ける簡単な方法がまだ見つかりません。
+  <H3>
+<!--<STRONG>More Points Than</STRONG>-->
+    <STRONG>点の個数の上限(<U>M</U>)</STRONG>
+  </H3>
+  <P>
+<!--
+  Appendix B of the PostScript Language Reference manual says that an interpreter
+  is only required to support paths with 1500 points on them. Most interpreters
+  actually have a much higher limit, so you may change the limit to suit your
+  desires. I believe that control points are included in the count. Note that
+  when checking a quadratic font (ie. a truetype font) there will be at most
+  one control point between any two end points, but when that font gets converted
+  to PostScript there will be two. FontForge currently counts this as one point).
+  TrueType has no such limit.<BR Clear=all> -->
+  PostScript 言語リファレンスマニュアルの付録 B には、インタプリタは 1500 個までの点を含むパスが処理できればよいと書かれています。ほとんどのインタプリタでは実際の制限値はそれよりはるかに大きな値なので、あなたの要求に合うような上限値に変更できるべきでしょう。私は、制御点も個数に含まれると考えています。2 次曲線をもつフォント (つまり TrueType フォント) を検査するときには、2 個の端点の間には最大 1 個の制御点しか存在しなくても、PostScript に変換したときには 2 個になるだろうことにご注意ください。FontForge は現在のところこれを 1 個の点として勘定します。TrueType にはそのような制限はありません。<BR Clear=all>
+  <H3>
+<!--
+  <STRONG><IMG src="../../_images/findprobs-refs.png" WIDTH="307" HEIGHT="431" ALIGN="Right">Flipped
+    References</STRONG> -->
+  <STRONG><IMG src="../../_images/findprobs-refs.png" WIDTH="307" HEIGHT="431" ALIGN="Right">反転した参照をチェック(<U>R</U>)</STRONG>
+  </H3>
+  <P>
+<!--
+  As mentioned above both PostScript and TrueType like clockwise paths. If
+  you have a flipped reference then either the reference or the original glyph
+  will be drawn with a counter-clockwise path. To fix it you should
+  Edit-&gt;Unlink the reference and Element-&gt;Correct Direction -->
+  上で述べたように、PostScript と TrueType のどちらでも、時計回りのパスが好まれます。反転した参照が存在する場合、参照またはオリジナルのパスが反時計回りに描かれることになります。これを修復するには、<CODE>編集(<U>E</U>)</CODE>→<CODE>参照を解除(<U>N</U>)</CODE> を行ってから <CODE>エレメント(<U>L</U>)</CODE>→<CODE>アウトラインの向きを修正(<U>C</U>)</CODE> を行う必要があります。
+  <H3>
+<!--<STRONG>Refs with bad ttf transformation matrices</STRONG>-->
+    <STRONG>不正な TTF 変換行列をもつ参照</STRONG>
+  </H3>
+  <P>
+<!--
+  The TrueType glyph format allows almost arbetrary transformations to be applied
+  to a reference. The one restriction is that all terms of the transformation
+  matrix (except for the translation terms) must have a value between -2 and
+  2. -->
+  TrueType のグリフフォーマットでは、ほとんど任意の変換行列を参照に適用することができます。唯一の制限は、変換行列の全ての項 (平行移動の項を除いて) は -2 と 2 の間の値でなければならないということです。
+  <P>
+<!--
+  If you have a reference with an unexpressable transformation matrix, fontforge
+  will expand the reference inline, so all the contours will be present they
+  just won't be in a reference. -->
+  表現不能な変換行列を指定した参照がある場合、FontForge は参照をインライン展開しますので、グリフに存在するすべての輪郭が、参照として表現できないために配置されることになります。
+  <H3>
+<!--<STRONG>Mixed contours and references</STRONG> -->
+    <STRONG>輪郭と参照の混在</STRONG>
+  </H3>
+  <P>
+<!--
+  In TrueType glyphs may be composed either of all references or all contours
+  (a reference with an unexpressable transformation matrix counts as a contour). -->
+  TrueType では、グリフは全て参照からなるか、すべて輪郭からなるかのどちらかでなければなりません (表現不能な変換行列をもつ参照は輪郭であると見なされます)。
+  <P>
+<!--
+  If you have a mixed glyph, fontforge will expand all references inline. -->
+  両者が混在したグリフがある場合、FontForge はすべての参照をインライン展開します。
+  <H3>
+<!--<STRONG>Refs with bad ps transformation matrices</STRONG>-->
+    <STRONG>不正な PS 変換行列をもつ参照</STRONG>
+  </H3>
+  <P>
+<!--
+  The Type1 font format only allows references to be translated (so no rotation
+  or scaling is permitted). Technically the Type2 format does not allow any
+  references at all, but they can be simulated by using subroutines, which
+  also cannot be rotated or scaled. -->
+  Type1 フォントフォーマットでは、許される参照は平行移動のみです (回転や拡大・縮小は許されません)。技術的には Type2 フォーマットは一切の参照を許容しないところ、サブルーチンを使うことによって参照をシミュレートすることができますが、これも回転や拡大・縮小はできません。
+  <P>
+<!--
+  If you have a reference with an unexpressable transformation matrix, fontforge
+  will expand the reference inline, so all the contours will be present they
+  just won't be in a reference. -->
+  表現不能な変換行列を指定した参照がある場合、FontForge は参照をインライン展開しますので、グリフに存在するすべての輪郭が、参照として表現できないために配置されることになります。
+  <H3>
+<!--<STRONG>Refs Deeper Than</STRONG>-->
+    <STRONG>参照の入れ子の上限(<U>D</U>)</STRONG>
+  </H3>
+  <P>
+<!--
+  Appendix B of the the
+  <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5177.Type2.pdf">Type2</A>
+  spec says that an interpreter is only required to support subroutine nesting
+  up to 10 levels. FontForge uses subroutine calls to handle referenced glyphs
+  and sometimes also to handle hinting. Hinting will take up a maximum of 1
+  level of subroutine calls leaving 9 available for references. TrueType has
+  no such limit.<BR Clear=all> -->
+  <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5177.Type2.pdf">Type2</A> 仕様書の付録 B には、インタプリタは参照の入れ子を 10 重までしかサポートしなくても良いと書かれています。FontForge は参照されたグリフの処理と、ヒントの処理の一部のケースでサブルーチン呼び出しを使用します。ヒントづけは最大 1 重のサブルーチン呼び出しを消費するので、参照に使用できるのは残り 9 重となります。TrueType にはそのような制限はありません。<BR Clear=All>
+  <P>
+<!--
+  <BIG><STRONG><IMG src="../../_images/findprobs-hint.png" WIDTH="307" HEIGHT="431" ALIGN="Right">Hints
+  controlling no points</STRONG></BIG>-->
+  <BIG><STRONG><IMG src="../../_images/findprobs-hint.png" WIDTH="307" HEIGHT="431" ALIGN="Right">点を制御しないヒント(<U>H</U>)</STRONG></BIG>
+  <P>
+<!--
+  This is a bit esoteric, and is present to provide a work-around for (what
+  I think is) a bug in ghostview. Consider the following glyph -->
+  このオプションはちょっと秘教的で、ghostview のあるバグ (と私が考えている動作) に対する彌縫策を提供するために用意されています。以下のようなグリフがあったとします。
+  <P>
+  <IMG src="../../_images/phi-nohints-outline.png" WIDTH="89" HEIGHT="151">
+  <IMG src="../../_images/phi-nohints-filled.png" WIDTH="93" HEIGHT="121">
+  <IMG src="../../_images/phi-hints-outline.png" WIDTH="72" HEIGHT="133">
+  <IMG src="../../_images/phi-hints-filled.png" WIDTH="93" HEIGHT="125"><BR>
+<!--
+  The first two images show the glyph with no hints, first as seen in FontForge,
+  then as displayed by ghostview. The result looks good. If we add hints to
+  the two curved stems then ghostview gets very confused. I don't know enough
+  about hints to know whether there should be hints there. I am assuming so,
+  which is why FontForge will generate them. But this command will detect this
+  problem if in fact it is a problem. If FontForge finds this it will select
+  the offending hint and allow you to fix things (probably the best fix is
+  to add curved points at the extrema of all the curved splines, this is actually
+  recommended by adobe anyway
+  (<A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/T1_Spec.pdf">T1_Spec.pdf
+  </A>section 4.1)). -->
+  最初の 2 個の画像は、ヒント無しのグリフを示しています。最初が FontForge 上での表示、次が ghostview による表示です。結果は問題ありません。もしここで、2 本の曲がったステムにヒントを追加したとすると、ghostview は非常に混乱する個とになります。私には、ここにそれらのヒントが存在するべきかどうか判定できるほど、ヒントについて詳しくありません。私はそうであると仮定しているので、FontForge はこれを生成します。しかしこのコマンドが「問題を発見している」と呼べるのは、これが本当に問題である場合のみでしょう。FontForge がこれを発見すると、表示品質を損なっているヒントを選択し、問題点が解決できるように停止します (おそらく、最前の解決法はすべての曲がったスプラインの極値に曲線上の点を追加することでしょう。なんといっても、この方法は実際に Adobe によって推奨されているのです (<A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/T1_Spec.pdf">T1_Spec.pdf</A> のセクション 4.1 を参照))
+  <P>
+<!--
+  <STRONG><BIG>Points near hint edges</BIG></STRONG> -->
+  <STRONG><BIG>ヒント端に近い点(<U>P</U>)</BIG></STRONG>
+  <P>
+<!--
+  If you have a glyph like "H" where the main vertical stems are broken by
+  the cross bar, it is all too easy to make the top part of the stem a slightly
+  different width than the bottom. (The hinting process figures out all the
+  stems.) So this command, in essence, is looking for points which are slightly
+  off from a stem. (again, near is defined at the bottom of the dlg). If FontForge
+  finds such a point it selects it, stops, and allows you to fix it up. -->
+  "H" のような、主要な垂直ステムがクロスバーで分割されたグリフがあるとき、ステムの上半分の幅が下半分とわずかに異なるというのは非常によくあることです (ヒントづけの操作はすべてのステムを検出してしまいます)。このコマンドはそれを避けるために、かいつまんで言えば、ステムから僅かに離れた点を探します。(ここでも、「近い」というのはダイアログの一番下で定義された距離によって判断ます)。FontForge がそのようなステムを発見したときには、そのステムを選択し、それを修正できるように停止します。
+  <P>
+<!--
+  <BIG><STRONG>Hint width near [val]</STRONG></BIG> -->
+  <BIG><STRONG>ヒント幅のぶれ量(<U>W</U>) [val]</STRONG></BIG>
+  <P>
+<!--
+  Usually one wants many of the glyphs to have a constant stem width, and this
+  command will check that all stems near the indicated value are that value
+  (again near is defined at the bottom of the page). If FontForge finds a bad
+  stem it will select it, stop and allow you to fix things.-->
+  一般に、人は多くのグリフが一定のステム幅をもっていることを望むものであり、このコマンドは指定された幅に近い幅をもつステムが正確に同じ幅であるかをチェックします (ここでも「近く」の基準はページの一番下で定義した値です)。FontForge が不正なステムを発見したときには、そのステムを選択し、問題点を修正できるように停止します。
+  <P>
+<!--
+  <BIG><STRONG>Almost stem3 hint</STRONG></BIG> -->
+  <BIG><STRONG>歪んだstem3ヒント</STRONG></BIG>
+  <P>
+<!--
+  Postscript has a special hint operator (hstem3 and vstem3) which is designed
+  to hint the stems of things like "m" where there are three stems of equal
+  width and equally far apart. It is easy for a glyph not to fit the criteria
+  for this operator (which means FontForge won't use it). This will detect
+  cases that are close to right. I found that I needed to adjust the "Near"
+  value to be bigger than the default. -->
+  PostScript には、"m" のような、3 つのステムの幅が等しく、それらの間隔がどちらも同じ文字のステムにヒントづけを行う用途に設計されているいくつかのヒント演算子 (hstem3 と vstem3) があります。あるグリフがこの演算子を用いるための判定基準に適合しないことはよくあります (その場合、FontForge はこの演算子を使いません)。このコマンドは、この条件がほとんど成り立ちかけている場合を検出します。筆者の場合、「近く」の値を、デフォルトより大きくする必要がありました。
+  <P>
+<!--
+  <STRONG><BIG>Show exact stem3</BIG></STRONG> -->
+  <STRONG><BIG>精確な*stem3かを表示</BIG></STRONG>
+  <P>
+<!--
+  (this is not a problem, but I found it helpful to be able to distinguish
+  between cases where the "almost stem3" above didn't say anything. It might
+  be because it was a stem3 or it might be really far off from a stem3) -->
+  (これは問題ではありませんが、上の「歪んだstem3」が何も表示しない場合を区別できると便利だと気づいたので入れてあります。精確な stem3 な場合と、stem3 からあまりに外れた場合が存在するからです)
+  <H3>
+<!--  <STRONG>More Hints Than</STRONG>-->
+      <STRONG>ヒントの個数の上限(<U>M</U>)</STRONG>
+  </H3>
+  <P>
+<!--
+  Appendix B of the the
+  <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5177.Type2.pdf">Type2</A>
+  spec says that an interpreter is only required to support a total of 96
+  horizontal and vertical hints. -->
+  <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5177.Type2.pdf">Type2</A> 仕様書の付録 B には、インタプリタは 96 個までの水平・垂直ヒントをサポートすればよいと書かれています。
+  <H3>
+<!--  <IMG src="../../_images/findprobs-random.png" WIDTH="307" HEIGHT="431" ALIGN="Right"><STRONG>Missing
+    Bitmaps</STRONG>-->
+  <IMG src="../../_images/findprobs-random.png" WIDTH="307" HEIGHT="431" ALIGN="Right"><STRONG>ビットマップの欠落をチェック(<U>B</U>)</STRONG>
+  </H3>
+  <P>
+<!--
+  Look through the associated bitmap fonts, and find if there is a bitmap font
+  which is missing versions of glyphs present in the outline font. Conversely
+  look for bitmap fonts with glyphs which are not present in the outline font. -->
+  付属のビットマップフォントを通覧して、アウトライン版のフォントにあるグリフが存在しないものを発見します。その逆に、アウトラインフォントに存在しないグリフをビットマップフォントから検索します。
+  <P>
+<!--
+  <STRONG><BIG>Multiple Unicode</BIG></STRONG> -->
+  <STRONG><BIG>Unicode値の重複をチェック</BIG></STRONG>
+  <P>
+<!--
+  Check that you do not have two glyphs assigned to the same unicode code point.
+  (The unicode encoding is used to determine which glyph will appear in the
+  truetype/opentype 'cmap' table. If you have two glyphs with the same code
+  point, there is no guarantee which will be used.) -->
+  2 つのグリフに同じ Unicode の符号位置を割り当てていないかチェックします。(Unicode の文字符号は、どのグリフが TrueType/OpenType の 'cmap' テーブルに出現するかを決定します。2 つのグリフが同じ符号位置をもっている場合、どちらが使用されるかの保証はありません)。
+  <P>
+<!--
+  <STRONG><BIG>Multiple Name</BIG></STRONG> -->
+  <STRONG><BIG>グリフ名の重複をチェック</BIG></STRONG>
+  <P>
+<!--
+  Check that you do not have two glyphs with the same name. -->
+  2 つのグリフに同じ名前をつけていないかチェックします。
+  <P>
+<!--
+  <STRONG><BIG><A NAME="Advance">Check Advance</A></BIG></STRONG> -->
+  <STRONG><BIG><A NAME="Advance">送り幅をチェック</A></BIG></STRONG>
+  <P>
+<!--
+  Check for any glyphs whose advance width is not the specified value (useful
+  for a mono-space font where you want to check that all glyphs have the same
+  width). -->
+  送り幅が指定されたグリフがないかどうかチェックします (固定幅フォントで、すべてのグリフが同じ幅かどうかをチェックするのに役立ちます)。
+  <P>
+<!--
+  <STRONG><BIG>Check Vertical Advance</BIG></STRONG>-->
+  <STRONG><BIG>縦書きの送り幅をチェック</BIG></STRONG>
+  <P>
+<!--
+  Check for any glyphs whose vertical advance (for fonts with vertical metrics)
+  differs from the specified value. -->
+  (縦書き用メトリックを含むフォントにおいて) 縦書きの送り幅 が指定した幅と異なるものがないかチェックします。
+  <P>
+<!--
+  <STRONG><BIG>Check substitutions for empty chars</BIG></STRONG> -->
+  <STRONG><BIG>空のグリフへの置換をチェック</BIG></STRONG>
+  <P>
+<!--
+  Looks through all the 'GSUB' substitution, alternate substitution, multiple
+  substitution and ligature entries that are attached to the current glyph
+  and checks to make sure that all the named components are present in the
+  font (and contain something). <BR Clear=ALL> -->
+  すべての 'GSUB' 置換、選択型置換、複数置換および現在のグリフに接続するすべての合字項目を通覧し、名前のついた構成要素がフォント内に存在するか (そして何らかの内容が存在するか) どうかをチェックします。<BR Clear=ALL>
+  <P>
+<!--
+  <IMG src="../../_images/findprobs-att.png" WIDTH="307" HEIGHT="431" ALIGN="Right"><BIG><STRONG>Missing
+  Glyph Names</STRONG></BIG> -->
+  <IMG src="../../_images/findprobs-att.png" WIDTH="307" HEIGHT="431" ALIGN="Right"><BIG><STRONG>存在しないグリフ名をチェック(<U>M</U>)</STRONG></BIG>
+  <P>
+<!--
+  It is possible to create a substitution, ligature, etc. which refers to a
+  glyph name that is not in the font. This option will check for the above
+  error. -->
+  フォント内に存在しないグリフ名を参照する置換や合字などを作成することが可能です。このオプションは上記の誤りをチェックします。
+  <P>
+<!--
+  <STRONG><BIG>Missing Lookup Tags</BIG></STRONG> -->
+  <STRONG><BIG>存在しない表引きタグをチェック(L)</BIG></STRONG>
+  <P>
+<!--
+  It is possible to create a contextual feature which refers to a lookup tag
+  which does not exist in the font. This option will check for that error. -->
+  フォント内に存在しない表引きタグを参照する条件つき機能を作成することが可能です。このオプションは上記の誤りをチェックします。
+  <P>
+<!--
+  <STRONG><BIG>Using 'DFLT' Script</BIG></STRONG> -->
+  <STRONG><BIG>'DFLT'用字系が使われていないかをチェック</BIG></STRONG>
+  <P>
+<!--
+  OpenType has depreciated the use of 'DFLT', but FontForge will sometimes
+  use it when it can't make a better guess at the appropriate script for a
+  glyph without an innate script. -->
+  OpenType では&lsquo;DFLT&rsquo;の使用を廃止していますが、FontForge は適切な用字系が存在しないグリフに対して適切な用字系が推測できないときに使用する場合があります。
+  <P>
+    <HR Clear=all>
+  <P>
+<!--
+  <IMG src="../../_images/findprobs-cid.png" WIDTH="301" HEIGHT="418" ALIGN="Right">If your
+  font is a CID keyed font you will also get: -->
+  <IMG src="../../_images/findprobs-cid.png" WIDTH="301" HEIGHT="418" ALIGN="Right">CID フォントを編集している場合、以下の項目も表示されます:
+  <P>
+<!--
+  <STRONG><BIG>Check for CIDs defined twice</BIG></STRONG> -->
+  <STRONG><BIG>重複定義されたCIDをチェック(<U>T</U>)</BIG></STRONG>
+  <P>
+<!--
+  Looks through the font set to see if there are any CIDs which have valid
+  glyphs in two or more fonts. -->
+  2 個以上のフォントで使用されている CID が存在しないかどうかを調べるために、フォントセット全体を通覧します。
+  <P>
+<!--
+  <STRONG><BIG>Check for undefined CIDs</BIG></STRONG> -->
+  <STRONG><BIG>未定義のCIDをチェック(<U>B</U>)</BIG></STRONG>
+  <P>
+<!--
+  Looks for CIDs which have no glyphs defined for them in any font. This is
+  a fairly common occurrence in CID fonts, so use this with
+  caution.<BR Clear=all> -->
+  どのフォントでも定義されていない CID を探します。これは CID フォントでは非常によく起こることなので、使用時にはご注意ください。<BR Clear=all>
+  <P>
+<!--
+  At the bottom of the dialog are two buttons (<CODE>[Clear All]</CODE> and
+  <CODE>[Set All]</CODE> which will, respectively, clear and set the check
+  boxes for all tests - - Well, CID tests will not be set by <CODE>[Set
+  All]</CODE> in non cid-keyed fonts). -->
+  ダイアログの最下行には 2 個のボタンが存在します (<CODE>[すべてクリア]</CODE> と  <CODE>[すべてセット]</CODE> のボタンが置かれていて、それぞれ全部のテストのチェックボックスをクリアまたはセットします——ただし、CID フォント以外では、CID に関するテストは <CODE>[すべてセット]</CODE> を押してもセットされません)。
+  <P>
+<!--
+  There is also a text field which allows you to define the meaning of "Near"
+  as used in various of these tests. The default value is that things are "near"
+  if they are within 3 em-units of the desired value and not equal to that -->
+  また、これらのテストの多くで使用される“近く”の意味を定義することができるテキストフィールドが置かれています。何かが“近く”にあると見なされるデフォルト値は、求める値の 3 em ユニット以内に含まれていて、その値と等しくない場合です)。
+  <P ALIGN=Center>
+  — <A HREF="elementmenu.html">前</A> — <A HREF="overview.html">目次</A>
+  — <A HREF="elementmenu.html">次</A> —
+</DIV>
+</BODY></HTML>

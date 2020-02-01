@@ -1,0 +1,425 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 11-Feb-2001 -->
+  <!-- AP: Last modified: 2-Mar-2004 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+  <LINK REL="icon" href="../../_static/fftype16.png">
+<!--<TITLE>UI data structures for FontForge</TITLE> -->
+    <TITLE>FontForge 用の UI データ構造</TITLE>
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+<P>
+<BLOCKQUOTE>
+  <PRE>/* Copyright (C) 2000-2003 by George Williams */
+/*
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+
+ * Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+
+ * The name of the author may not be used to endorse or promote products
+ * derived from this software without specific prior written permission.
+
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ * EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+#ifndef _VIEWS_H
+#define _VIEWS_H
+
+#include "splinefont.h"
+#include "ggadget.h"
+
+extern struct cvshows {
+    int showfore, showback, showgrids, showhints;
+    int showpoints, showfilled;
+} CVShows;
+
+extern struct bvshows {
+    int showfore, showoutline, showgrid;
+    int lastpixelsize;
+} BVShows;
+
+typedef struct drect {
+    double x, y;
+    double width, height;
+} DRect;
+
+typedef struct pressedOn {
+<!--int x,y;			/* screen location of the press */ -->    int x,y;			/* ボタン押下時のスクリーン上の位置 */
+<!--double cx, cy;		/* Translated into character space */ -->    double cx, cy;		/* 文字空間に座標変換された値 */
+    SplinePoint *sp;
+<!--unsigned int nextcp: 1;	/* Is the cursor on the "next" control point of */ -->    unsigned int nextcp: 1;	/* "次" の制御点、または "前" の制御点 */
+<!--unsigned int prevcp: 1;	/*  the spline point, or the "prev" control point */ -->    unsigned int prevcp: 1;	/* の上にカーソルが置かれているか */
+<!--unsigned int anysel: 1;	/* did we hit anything? */ -->    unsigned int anysel: 1;	/* 何か打鍵したか? */
+<!--unsigned int width: 1;	/* we're moving the width rather than a spline */ -->    unsigned int width: 1;	/* スプラインではなく文字幅を移動しているところである */
+    unsigned int pressed: 1;
+    unsigned int rubberbanding: 1;
+    unsigned int transany: 1;
+    unsigned int transanyrefs: 1;
+    Spline *spline;
+<!--double t;			/* location on the spline where we pressed */ -->    double t;			/* 押下した点のスプライン上の位置 */
+    RefChar *ref;
+<!--SplinePointList *spl;	/* containing spline or point */ -->    SplinePointList *spl;	/* スプラインまたは点を含む */
+    ImageList *img;
+<!--float ex, ey;		/* end of last rubber band rectangle */ -->    float ex, ey;		/* 最後のラバーバンド長方形の終了位置 */
+<!--BasePoint constrain;	/* Point to which we constrain movement */ -->    BasePoint constrain;	/* 動きが制約される起点となる位置 */
+<!--BasePoint cp;		/* Original control point position */ -->    BasePoint cp;		/* オリジナルの制御点の位置 */
+} PressedOn;
+
+<!--/* Note: These are ordered as they are displayed in the tools palette */ -->/* 注意: これらはツールパレット内での表示順に並んでいる */
+enum cvtools { cvt_pointer, cvt_magnify,
+	cvt_curve, cvt_corner, cvt_tangent, cvt_pen,
+	cvt_knife, cvt_ruler,
+	cvt_scale, cvt_flip,
+	cvt_rotate, cvt_skew,
+	cvt_rect, cvt_poly,
+	cvt_ellipse, cvt_star,
+	cvt_minify, cvt_max=cvt_minify,
+	cvt_none = -1};
+enum bvtools { bvt_pointer, bvt_magnify,
+	bvt_pencil, bvt_line,
+	bvt_shift, bvt_hand,
+	bvt_minify, bvt_max=bvt_minify,
+	bvt_rect, bvt_filledrect,
+	bvt_ellipse, bvt_filledellipse,
+	bvt_max2 = bvt_filledellipse,
+	bvt_none = -1,
+	bvt_fliph=0, bvt_flipv, bvt_rotate90cw, bvt_rotate90ccw, bvt_rotate180, bvt_skew };
+enum drawmode { dm_fore, dm_back, dm_grid, dm_max };
+
+typedef struct charview {
+    SplineChar *sc;
+    unsigned int showback:1;
+    unsigned int showfore:1;
+    unsigned int showgrids:1;
+    unsigned int showhints:1;
+    unsigned int showpoints:1;
+    unsigned int showfilled:1;
+<!--unsigned int needsrasterize:1;		/* Rasterization (of fill or fontview) needed on mouse up */ -->    unsigned int needsrasterize:1;		/* マウス離上時に(塗り潰しまたはフォントビューでの) ラスタ変換が必要 */
+<!--unsigned int recentchange:1;		/* a change happened in the grids or background. don't need to rasterize */ -->    unsigned int recentchange:1;		/* グリッドまたは背景で変更が行われた。ラスタ変換不要 */
+    unsigned int drawmode:2;
+<!--unsigned int info_within: 1;		/* cursor is within main window */ -->    unsigned int info_within: 1;		/* カーソルがメインウィンドウ内にあるか */
+<!--unsigned int back_img_out_of_date: 1;	/* Force redraw of back image pixmap */ -->    unsigned int back_img_out_of_date: 1;	/* 背景画像の pixmap を強制的に再描画 */
+    unsigned int cntrldown:1;
+    SplinePointList **heads[dm_max];
+    Undoes **uheads[dm_max];
+    Undoes **rheads[dm_max];
+    double scale;
+    GWindow gw, v;
+    int width, height;
+    int xoff, yoff;
+    int mbh, infoh;
+    GGadget *vsb, *hsb, *mb;
+    GFont *small;
+    int16 sas, sfh;
+    BasePoint info;
+    BasePoint last_c;
+    BDFChar *filled;
+    GImage gi;
+    struct charview *next;
+    struct fontview *fv;
+    GWindow icon;
+    PressedOn p;
+    GWindow tools, layers;
+<!--int8 b1_tool, cb1_tool, b2_tool, cb2_tool;		/* Button 3 does a popup */ -->    int8 b1_tool, cb1_tool, b2_tool, cb2_tool;		/* ボタン 3 はポップアップを起動 */
+    int8 showing_tool, pressed_tool, pressed_display, had_control, active_tool;
+    SplinePointList *active_spl;
+    SplinePoint *active_sp;
+    GWindow ruler_w;
+    uint16 rfh, ras;
+    GFont *rfont;
+    BasePoint lastknife;
+    GTimer *pressed;
+    GWindow backimgs;
+    enum expandedge { ee_none, ee_nw, ee_up, ee_ne, ee_right, ee_se, ee_down,
+	    ee_sw, ee_left, ee_max } expandedge;
+    BasePoint expandorigin;
+    double expandwidth, expandheight;
+    SplinePointList *active_shape;
+} <A NAME="CharView">CharView</A>;
+
+typedef struct bitmapview {
+    BDFChar *bc;
+    BDFFont *bdf;
+    struct fontview *fv;
+    GWindow gw, v;
+    int xoff, yoff;
+    GGadget *vsb, *hsb, *mb;
+    int width, height;
+    int infoh, mbh;
+    int scale;
+    double scscale;
+    struct bitmapview *next;
+    unsigned int showfore:1;
+    unsigned int showoutline:1;
+    unsigned int showgrid:1;
+    unsigned int cntrldown:1;
+    unsigned int recentchange:1;
+    unsigned int clearing:1;
+    GWindow tools, layers;
+    GGadget *recalc;
+<!--int8 b1_tool, cb1_tool, b2_tool, cb2_tool;		/* Button 3 does a popup */ -->    int8 b1_tool, cb1_tool, b2_tool, cb2_tool;		/* ボタン 3 はポップアップを起動 */
+    int8 showing_tool, pressed_tool, pressed_display, had_control, active_tool;
+    int pressed_x, pressed_y;
+    int info_x, info_y;
+    int event_x, event_y;
+    GFont *small;
+    int16 sas, sfh;
+} <A NAME="BitmapView">BitmapView</A>;
+
+typedef struct metricsview {
+    struct fontview *fv;
+    int pixelsize;
+<!--BDFFont *bdf;		/* We can also see metric info on a bitmap font */ -->    BDFFont *bdf;		/* ビットマップもメトリックをもつ */
+    GWindow gw;
+    int16 width, height;
+    int16 mbh,sbh;
+<!--int16 topend;		/* y value of the end of the region containing the text field */ -->    int16 topend;		/* テキストフィールドを含む領域の終端の y 座標 */
+<!--int16 displayend;		/* y value of the end of the region showing filled characters */ -->    int16 displayend;		/* 塗り潰された文字を表示する領域の終端の y 座標 */
+    GFont *font;
+    int16 fh, as;
+    GGadget *hsb, *mb, *text;
+    GGadget *namelab, *widthlab, *lbearinglab, *rbearinglab, *kernlab;
+    struct metricchar {
+	SplineChar *sc;
+	BDFChar *show;
+<!--	int16 dx, dwidth;	/* position and width of the displayed char */ -->	int16 dx, dwidth;	/* 表示された文字の位置と幅 */
+<!--	int16 mx, mwidth;	/* position and width of the text underneath */ -->	int16 mx, mwidth;	/* 下にあるテキストの位置と幅  */
+	int16 kernafter;
+	unsigned int selected: 1;
+	GGadget *width, *lbearing, *rbearing, *kern, *name;
+    } *perchar;
+    int16 mwidth, mbase;
+    int16 charcnt, max;
+    int16 pressed_x;
+    int16 activeoff;
+    int xoff;
+    struct metricsview *next;
+    unsigned int right_to_left: 1;
+    unsigned int pressed: 1;
+    unsigned int pressedwidth: 1;
+    unsigned int pressedkern: 1;
+    unsigned int showgrid: 1;
+} <A NAME="MetricsView">MetricsView</A>;
+
+
+typedef struct fontview {
+    SplineFont *sf;
+    BDFFont *show, *filled;
+    GWindow gw, v;
+<!--int width, height;		/* of v */ -->    int width, height;		/* v の */
+    int mbh;
+    int colcnt, rowcnt;
+    int rowoff, rowltot;
+<!--int cbw,cbh;		/* width/height of a character box */ -->
+    int cbw,cbh;		/* 文字ボックスの幅/高さ */
+    GFont *header;
+    GGadget *vsb, *mb;
+    struct fontview *next;
+    int pressed_pos, end_pos;
+    GTimer *pressed;
+    char *selected;
+    MetricsView *metrics;
+    unsigned int onlycopydisplayed: 1;
+    unsigned int antialias:1;
+} <A NAME="FontView">FontView</A>;
+
+typedef struct findsel {
+    GEvent *e;
+<!--double fudge;		/* One pixel fudge factor */ -->    double fudge;		/* 1 ピクセルの許容誤差 (fudge factor) */
+<!--double xl,xh, yl, yh;	/* One pixel fudge factor */ -->    double xl,xh, yl, yh;	/* 1 ピクセルの許容誤差 */
+<!--unsigned int select_controls: 1;	/* notice control points */ -->    unsigned int select_controls: 1;	/* 制御点を検知する */
+<!--unsigned int seek_controls: 1;	/* notice control points before base points */ -->    unsigned int seek_controls: 1;	/* 基点より制御点を先に検知する */
+    double scale;
+    PressedOn *p;
+} FindSel;
+
+enum widthtype { wt_width, wt_lbearing, wt_rbearing };
+
+extern FontView *FontViewCreate(SplineFont *sf);
+extern void SplineFontSetUnChanged(SplineFont *sf);
+extern FontView *ViewPostscriptFont(char *filename);
+extern FontView *FontNew(void);
+extern void FontViewFree(FontView *fv);
+extern void FVToggleCharChanged(FontView *fv,SplineChar *sc);
+extern void FVRefreshChar(FontView *fv,BDFFont *bdf,int enc);
+extern void FVRegenChar(FontView *fv,SplineChar *sc);
+extern int _FVMenuSave(FontView *fv);
+extern int _FVMenuSaveAs(FontView *fv);
+extern int _FVMenuGenerate(FontView *fv);
+extern char *GetPostscriptFontName(void);
+extern void MenuPrefs(GWindow base,struct gmenuitem *mi);
+extern void MenuExit(GWindow base,struct gmenuitem *mi);
+extern void MenuOpen(GWindow base,struct gmenuitem *mi);
+extern void MenuNew(GWindow gw,struct gmenuitem *mi);
+extern int FontMenuGeneratePostscript(SplineFont *sf);
+extern void FontMenuFontInfo(SplineFont *sf,FontView *fv);
+extern void FontViewReformat(FontView *fv);
+extern void FVShowFilled(FontView *fv);
+extern void SCPreparePopup(GWindow gw,SplineChar *sc);
+extern void FVTrans(FontView *fv,SplineChar *sc,double transform[6],char *sel);
+extern void FVMergeFonts(FontView *fv);
+extern void FVInterpolateFonts(FontView *fv);
+extern void FVRevert(FontView *fv);
+extern void FVDelay(FontView *fv,void (*func)(FontView *));
+
+extern void FVAutoKern(FontView *fv);
+extern void FVAutoWidth(FontView *fv);
+
+extern void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
+	Color fg, int dopoints, DRect *clip );
+
+extern GWindow CVMakeTools(CharView *cv);
+extern GWindow CVMakeLayers(CharView *cv);
+extern GWindow BVMakeTools(BitmapView *bv);
+extern GWindow BVMakeLayers(BitmapView *bv);
+extern double CVRoundRectRadius(void);
+extern double CVStarRatio(void);
+extern int CVPolyStarPoints(void);
+extern int TrueCharState(GEvent *event);
+extern void BVToolsSetCursor(BitmapView *bv, int state);
+extern void CVToolsSetCursor(CharView *cv, int state);
+extern void CVToolsPopup(CharView *cv, GEvent *event);
+extern void BVToolsPopup(BitmapView *bv, GEvent *event);
+extern void CVTransFunc(CharView *cv,double transform[6]);
+extern void TransformDlgCreate(void *data,void (*transfunc)(void *,double *,int),
+	int (*getorigin)(void *,BasePoint *,int));
+extern void BitmapDlg(FontView *fv,SplineChar *sc, int isavail);
+extern void CVReviewHints(CharView *cv);
+extern void CVCreateHint(CharView *cv,int ishstem);
+extern int CVExport(CharView *cv);
+extern int BVExport(BitmapView *bv);
+
+extern CharView *CharViewCreate(SplineChar *sc,FontView *fv);
+extern void CharViewFree(CharView *cv);
+extern void CVDrawRubberRect(GWindow pixmap, CharView *cv);
+extern void CVSetCharChanged(CharView *cv,int changed);
+extern void CVCharChangedUpdate(CharView *cv);
+extern void SCCharChangedUpdate(SplineChar *sc,FontView *fv);
+extern void SCSynchronizeWidth(SplineChar *sc,double newwidth, double oldwidth,FontView *fv);
+extern void SCSynchronizeLBearing(SplineChar *sc,char *selected,double off);
+extern int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi);
+extern int CVTwoForePointsSelected(CharView *cv, SplinePoint **sp1, SplinePoint **sp2);
+extern int CVClearSel(CharView *cv);
+extern int CVSetSel(CharView *cv);
+extern int CVAllSelected(CharView *cv);
+extern void SCUpdateAll(SplineChar *sc);
+extern void SCOutOfDateBackground(SplineChar *sc);
+extern SplinePointList *CVAnySelPointList(CharView *cv);
+extern SplinePoint *CVAnySelPoint(CharView *cv);
+extern int CVOneThingSel(CharView *cv, SplinePoint **sp, SplinePointList **spl,
+	RefChar **ref, ImageList **img);
+extern void CVInfoDrawText(CharView *cv, GWindow pixmap );
+extern void CVImport(CharView *cv);
+extern void BVImport(BitmapView *bv);
+extern void FVImport(FontView *bv);
+extern int FVImportBDF(FontView *fv, char *filename);
+extern void CVFindCenter(CharView *cv, BasePoint *bp, int nosel);
+extern void CVStroke(CharView *cv);
+extern void FVStroke(FontView *fv);
+extern void SCGetInfo(SplineChar *sc,int nextprev);
+extern void CVGetInfo(CharView *cv);
+extern void FVSetWidth(FontView *fv,enum widthtype wtype);
+extern void CVSetWidth(CharView *cv,enum widthtype wtype);
+extern void CVChangeSC(CharView *cv, SplineChar *sc );
+
+extern void CVAdjustPoint(CharView *cv, SplinePoint *sp);
+extern void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *activess,
+	SplinePoint *merge, SplineSet *mergess);
+extern void CVChar(CharView *cv, GEvent *event );
+extern void CVMoveSelection(CharView *cv, double dx, double dy);
+extern void CVMouseDownPoint(CharView *cv);
+extern void CVMouseMovePoint(CharView *cv,PressedOn *);
+extern void CVMouseMovePen(CharView *cv, PressedOn *p);
+extern void CVMouseUpPoint(CharView *cv);
+extern void CVMouseUpPointer(CharView *cv );
+extern void CVMouseMovePointer(CharView *cv );
+extern void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event);
+extern void CVCheckResizeCursors(CharView *cv);
+extern void CVMouseDownRuler(CharView *cv, GEvent *event);
+extern void CVMouseMoveRuler(CharView *cv, GEvent *event);
+extern void CVMouseUpRuler(CharView *cv, GEvent *event);
+extern void CVMouseDownTransform(CharView *cv);
+extern void CVMouseMoveTransform(CharView *cv);
+extern void CVMouseUpTransform(CharView *cv);
+extern void CVMouseDownKnife(CharView *cv);
+extern void CVMouseMoveKnife(CharView *cv,PressedOn *);
+extern void CVMouseUpKnife(CharView *cv);
+extern void CVMouseDownShape(CharView *cv);
+extern void CVMouseMoveShape(CharView *cv);
+extern void CVMouseUpShape(CharView *cv);
+
+extern int GotoChar(SplineFont *sf);
+
+extern Undoes *CVPreserveState(CharView *cv);
+extern Undoes *CVPreserveTState(CharView *cv);
+extern Undoes *CVPreserveWidth(CharView *cv,int width);
+extern void CVDoRedo(CharView *cv);
+extern void CVDoUndo(CharView *cv);
+extern void CVRestoreTOriginalState(CharView *cv);
+extern void CVUndoCleanup(CharView *cv);
+extern void CVRemoveTopUndo(CharView *cv);
+extern int CopyContainsSomething(void);
+extern int CopyContainsBitmap(void);
+extern void CopyReference(SplineChar *sc);
+extern void CopySelected(CharView *cv);
+extern void CopyWidth(CharView *cv);
+extern void PasteToCV(CharView *cv);
+extern void BCCopySelected(BDFChar *bc,int pixelsize);
+extern void PasteToBC(BDFChar *bc,int pixelsize,FontView *fv);
+extern void FVCopyWidth(FontView *fv);
+extern void FVCopy(FontView *fv, int fullcopy);
+extern void PasteIntoFV(FontView *fv);
+
+extern void WindowMenuBuild(GWindow base,struct gmenuitem *mi);
+
+extern GImage GIcon_sel2ptr, GIcon_rightpointer, GIcon_angle, GIcon_distance,
+	GIcon_selectedpoint;
+
+extern BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv);
+extern BitmapView *BitmapViewCreatePick(int enc, FontView *fv);
+extern void BitmapViewFree(BitmapView *bv);
+extern void BCCharChangedUpdate(BDFChar *bc,FontView *fv);
+extern void BCFlattenFloat(BDFChar *bc);
+extern BDFFloat *BDFFloatCreate(BDFChar *bc,int xmin,int xmax,int ymin,int ymax, int clear);
+extern BDFFloat *BDFFloatCopy(BDFFloat *sel);
+extern void BDFFloatFree(BDFFloat *sel);
+extern void BVMenuRotateInvoked(GWindow gw,struct gmenuitem *mi);
+extern void BVRotateBitmap(BitmapView *bv,enum bvtools type );
+extern void BCSetPoint(BDFChar *bc, int x, int y, int clear);
+extern void BCGeneralFunction(BitmapView *bv,
+	void (*SetPoint)(BitmapView *,int x, int y, void *data),void *data);
+extern unichar_t *BVFlipNames[];
+extern void BVChangeBC(BitmapView *bv, BDFChar *bc, int fitit );
+extern void BVChar(BitmapView *cv, GEvent *event );
+
+extern void MVRefreshChar(MetricsView *mv, SplineChar *sc);
+extern void MVRegenChar(MetricsView *mv, SplineChar *sc);
+extern void MVReKern(MetricsView *mv);
+extern MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf);
+extern void MetricsViewFree(MetricsView *mv);
+
+extern void LoadPrefs(void);
+extern void SavePrefs(void);
+extern void DoPrefs(void);
+#endif
+</PRE>
+</BLOCKQUOTE>
+</DIV>
+</BODY></HTML>

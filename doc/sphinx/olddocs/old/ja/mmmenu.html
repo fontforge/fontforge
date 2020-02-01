@@ -1,0 +1,242 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 5-Feb-2004 -->
+  <!-- AP: Last modified: 13-Oct-2004 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>Multiple Master menu</TITLE>-->
+    <TITLE>マルチプルマスターメニュー</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+<H1 ALIGN=Center>
+<!--The Multiple Master Menu-->
+    マルチプルマスターメニュー
+</H1>
+<P>
+<!--
+The MM Menu provides a few commands for manipulating
+<A HREF="multiplemaster.html#MM">Multiple Master or Apple distortable
+fonts</A>. If the current font is a MM itself font the menu also includes
+a list of all font instances that make up this one. This menu is available
+in the <A HREF="mmmenu.html#fontview">font view</A> and the
+<A HREF="mmmenu.html#outline-char">outline glyph view</A>. -->
+MM (マルチプルマスター) メニューには、<A HREF="multiplemaster.html#MM">マルチプルマスターフォントまたは Apple 変形可能フォント</a>をいじるための 2, 3 のコマンドがあります。もし現在のフォントが MM そのものならば、メニューにはそれを構成するすべてのフォントインスタンスのリストが含まれています。このメニューは<A HREF="mmmenu.html#fontview">フォントビュー</A>および<A HREF="mmmenu.html#outline-char">アウトライングリフビュー</A>で使用可能です。
+<H3>
+<!--The menu as it appears in the <A NAME="fontview">font view</A>-->
+    <A NAME="fontview">フォントビューで</A>表示されるメニューの内訳
+</H3>
+<UL>
+  <LI>
+<!--<A HREF="mmmenu.html#Create">Create MM</A>...-->
+    <A HREF="mmmenu.html#Create">MMを作成(<U>C</U>)</A>...
+  <LI>
+<!--<A HREF="mmmenu.html#Valid">MM Valid</A> -->
+    <A HREF="mmmenu.html#Valid">MMが正しいか検査(<U>V</U>)</A>
+  <LI>
+<!--<A HREF="mmmenu.html#Info">MM Info</A>...-->
+    <A HREF="mmmenu.html#Info">マルチプルマスター情報(<U>I</U>)</A>...
+  <LI>
+<!--<A HREF="#NewFont">Blend to New Font</A>...-->
+    <A HREF="#NewFont">補間結果を新フォントに(<U>B</U>)</A>...
+  <LI>
+<!--<A HREF="mmmenu.html#DefWeights">MM Change Default Weights</A>... -->
+    <A HREF="mmmenu.html#DefWeights">MMの標準ウェイトを変更(<U>W</U>)</A>... 
+      <HR>
+  <LI>
+<!--&lt;sub font names&gt;-->
+    &lt;サブフォント名の一覧&gt;
+</UL>
+<P>
+<DL>
+  <DT>
+<!--<A NAME="Create">Create MM</A>-->
+    <A NAME="Create">MMを作成(<U>C</U>)</A>...
+  <DD>
+<!--Brings up the <A HREF="multiplemaster.html">multiple master dialog</A> and
+    allows you to create your own multiple master font from scratch.-->
+    <A HREF="multiplemaster.html">マルチプルマスターダイアログ</A>を起動し、あなた自身のマルチプルマスターフォントをスクラッチから作成できるようにします。
+  <DT>
+<!--<A NAME="Valid">MM Valid</A>-->
+    <A NAME="Valid">MMが正しいか検査(<U>V</U>)</A>
+  <DD>
+<!--Checks that the current multiple master font can be saved. So each master
+    design must match in:-->
+    現在のマルチプルマスターフォントを保存することが可能かどうか検査します。そのためには、各マスターフォントは以下の点で一致しなければなりません:
+    <UL>
+      <LI>
+<!--	Contours-->
+	輪郭
+	<UL>
+	  <LI>
+<!--	    There must be the same number of contours and -->
+	    ちょうど同じ個数の輪郭が存在し、
+	  <LI>
+<!--	    each contour must have the same number of points and -->
+	    各輪郭は同じ個数の点を含み、
+	  <LI>
+<!--	    each spline on the contour must be the same type (ie it can't correspond
+	    to a straight line in one font and a curve in another) -->
+	    輪郭上の各スプラインは同じ型でなければならない (例えば、あるフォントにおける直線に、別のフォントの曲線が対応づけられていてはいけないということです)。
+	</UL>
+      <LI>
+<!--	References -->
+	参照
+	<UL>
+	  <LI>
+<!--	    There must be the same number of references and -->
+	    ちょうど同じ個数の参照が存在しなければならず、
+	  <LI>
+<!--	    Each corresponding reference must refer to the same encoding -->
+	    対応する各参照は同じ文字コードを参照していなければならない
+	</UL>
+      <LI>
+<!--	Hints -->
+	ヒント
+	<UL>
+	  <LI>
+<!--	    Same number of hints -->
+	    同じ個数のヒント
+	</UL>
+      <LI>
+<!--	HintMasks (Counter masks are not supported here) -->
+	ヒントマスク (この場合、カウンタマスクはサポートされていません)
+	<UL>
+	  <LI>
+<!--	    HintMasks at corresponding points must specify a corresponding set of hints -->
+	    対応する点に位置するヒントマスクは対応するヒントセットを指定していなければならない
+	</UL>
+      <LI>
+<!--	Kerning -->
+	カーニング
+	<UL>
+	  <LI>
+<!--	    If a glyph kerns with another glyph in one font, then a corresponding kerning
+	    pair must exist in all designs -->
+	    ある文字と別の文字が 1 個のフォントでカーニングの対象になるとしたら、対応するカーニングペアがすべてのデザインに存在しなければならない
+	</UL>
+    </UL>
+  <DT>
+<!--<A NAME="Info">MM Info</A>-->
+    <A NAME="Info">マルチプルマスター情報(<U>I</U>)</A>...
+  <DD>
+<!--Brings up the <A HREF="multiplemaster.html">multiple master dialog</A> and
+    allows you to modify the current multiple master font.-->
+    <A HREF="multiplemaster.html">マルチプルマスターダイアログ</A>を起動し、現在のマルチプルマスターフォントを変更できるようにします。
+  <DT>
+<!--<A NAME="NewFont">Blend to New Font</A>...-->
+    <A NAME="NewFont">補間結果を新フォントに(<U>B</U>)</A>...
+  <DD>
+<!--Allows you to create a blended version of the current multiple master font
+    set as a stand alone font.-->
+    現在のマルチプルマスターフォントセットを混ぜ合わせたバージョンを、独立したフォントとして新しく作成します。
+  <DT>
+<!--<A NAME="DefWeights">MM Change Default Weights</A>-->
+    <A NAME="DefWeights">MMの標準ウェイトを変更(<U>W</U>)</A>...
+  <DD>
+<!--Allows you to change the default weights assigned to each master design used
+    in blending the default instance of the font -->
+    混ぜ合わせによってフォントのデフォルトインスタンスを作成する際に、各マスターデザインに割り当てられている標準の重みづけを変更することができます。
+      <HR>
+  <DT>
+<!--&lt;sub font name&gt;-->
+    &lt;サブフォント名&gt;
+  <DD>
+<!--Clicking on a different sub font name in the menu will cause that sub-font
+    to be displayed instead of the current one. The subfonts are the master designs
+    and the default blended font. -->
+    メニュー上の異なるサブフォント名をクリックすると、そのサブフォントが現在のサブフォントの代りに表示されます。サブフォントはサブフォントはマスターデザインであり、混ぜ合わせ結果のフォントのデフォルトです。
+</DL>
+<H3>
+<!--The menu as it appears in the <A NAME="outline-char">outline glyph </A>view-->
+    <A NAME="outline-char">アウトライングリフ</A>ビューで表示されるメニューの内訳
+</H3>
+<UL>
+  <LI>
+<!--<A HREF="mmmenu.html#Reblend">MM Reblend </A> -->
+    <A HREF="mmmenu.html#Reblend">MMの補間を再作成(<U>R</U>)</A>
+      <HR>
+  <LI>
+<!--<A HREF="mmmenu.html#View">View </A> -->
+    <A HREF="mmmenu.html#View">表示(<U>V</U>)</A>
+      <HR>
+  <LI>
+<!--&lt;sub font names&gt;-->
+    &lt;サブフォント名の一覧&gt;
+</UL>
+<P>
+<DL>
+  <DT>
+<!--MM <A NAME="Reblend">Reblend</A>-->
+    MM の<A NAME="Reblend">補間を再作成</A>(<U>R</U>)
+  <DD>
+<!--Reblends the default version of the current glyph-->
+    現在のグリフのデフォルトの版をもう一度混ぜ合わせます。
+  <DT>
+<!--<A NAME="View">View</A>-->
+    <A NAME="View">表示(<U>V</U>)</A>
+  <DD>
+<!--A submenu which allows you to choose which of the designs of this glyph you
+    want displayed in the background of the view -->
+    このグリフのどのデザインをビューの背景に表示するかを選択可能なサブメニューです。
+      <HR>
+  <DT>
+<!--&lt;sub font name&gt;-->
+    &lt;サブフォント名&gt;
+  <DD>
+<!--Clicking on a different sub font name in the menu will cause the glyph from
+    that sub-font to be displayed instead of the current one. The subfonts are
+    the master designs and the default blended font. -->
+    メニュー上の異なるサブフォント名をクリックすると、そのサブフォントが現在のサブフォントの代りに表示されます。サブフォントはサブフォントはマスターデザインであり、混ぜ合わせた結果のフォントのデフォルトです。
+</DL>
+<P>
+<H2>
+<!-- Other menus -->
+     その他のメニュー
+</H2>
+<UL>
+  <LI>
+<!--<A HREF="filemenu.html">File</A>-->
+    <A HREF="filemenu.html">ファイル(<U>F</U>)</A>
+  <LI>
+<!--<A HREF="editmenu.html">Edit</A>-->
+    <A HREF="editmenu.html">編集(<U>E</U>)</A>
+  <LI>
+<!--<A HREF="pointmenu.html">Point</A>-->
+    <A HREF="pointmenu.html">点(<U>P</U>)</A>
+  <LI>
+<!--<A HREF="elementmenu.html">Element</A>-->
+    <A HREF="elementmenu.html">エレメント(<U>L</U>)</A>
+  <LI>
+<!--<A HREF="hintsmenu.html">Hints</A>-->
+    <A HREF="hintsmenu.html">ヒント(<U>I</U>)</A>
+    <LI> <A HREF="encodingmenu.html">エンコーディング(<U>N</U>)</A>
+  <LI>
+<!--<A HREF="viewmenu.html">View</A>-->
+    <A HREF="viewmenu.html">表示(<U>V</U>)</A>
+  <LI>
+<!--<A HREF="metricsmenu.html">Metrics</A>-->
+    <A HREF="metricsmenu.html">メトリック(<U>M</U>)</A>
+  <LI>
+    <A HREF="cidmenu.html"><U>C</U>ID</A>
+  <LI>
+    <A HREF="mmmenu.html">MM</A>
+  <LI>
+<!--<A HREF="windowmenu.html">Window</A>-->
+    <A HREF="windowmenu.html">ウィンドウ(<U>W</U>)</A>
+  <LI>
+<!--<A HREF="helpmenu.html">Help</A>-->
+    <A HREF="helpmenu.html">ヘルプ(<U>H</U>)</A>
+  <LI>
+<!--<A HREF="HotKeys.html">Hot Keys</A>-->
+    <A HREF="HotKeys.html">ホットキー一覧</A>
+</UL>
+<P ALIGN=Center>
+— <A HREF="cidmenu.html">前</A> — <A HREF="overview.html">目次</A> —
+<A HREF="windowmenu.html">次</A> —
+<P>
+<P>
+</DIV>
+</BODY></HTML>

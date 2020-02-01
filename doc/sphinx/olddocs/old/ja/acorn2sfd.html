@@ -1,0 +1,95 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 23-Jul-2002 -->
+  <!-- AP: Last modified: 14-Dec-2005 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>acorn2sfd - - Converter from Acorn RISC/OS fonts</TITLE>-->
+    <TITLE>acorn2sfd — Acorn RISC/OS からの変換プログラム</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+      acorn2sfd<BR>
+<!--  <SMALL>Converter from Acorn RISC/OS fonts</SMALL>-->
+      <SMALL>Acorn RISC/OS からの変換プログラム</SMALL>
+  </H1>
+  <P>
+  <CODE>acorn2sfd [-version] [-help] {acorndir ...}</CODE>
+  <P>
+<!--
+  <EM>acorn2sfd</EM> will take several Acorn RISC/OS font directories and convert
+  them into <A HREF="overview.html">FontForge</A>'s sfd files. -->
+  <EM>acorn2sfd</EM> はいくつかの Acorn RISC/OS フォントディレクトリを引数に取り、それらを <A HREF="overview.html">FontForge</A> の SFD ファイルに変換します。
+  <P>
+<!--
+  An Acorn RISC/OS font directory should contain two or three files, one named
+  <CODE>Outlines*</CODE> and one named <CODE>Intmetric?</CODE> (the
+  <CODE>Intmetrics</CODE> file may be omitted, in which case the advance widths
+  will not be known). <I>acorn2sfd</I> will read both files and generate an
+  sfd file from them (which <A HREF="overview.html">FontForge</A> can turn
+  into TrueType or Postscript). -->
+  1 個の Acorn RISC/OS フォントディレクトリには、2 個または 3 個のファイルが含まれます。1 個は <CODE>Outlines</CODE>* という名前で、もう 1 個は <CODE>Intmetric</CODE>? という名前です (<CODE>Intmetric</CODE> ファイルは省略可能で、その場合送り幅は不明となります)。<I>acorn2sfd</I> は両方のファイルを読み込み、それらを元に (<A HREF="overview.html">FontForge</A> によって TrueType または PostScript フォントに変換可能な) SFD ファイルを生成します。
+  <P>
+<!--
+  If the <CODE>Outlines</CODE> file ends in a digit (<CODE>Outlines0</CODE>)
+  then a third file named <CODE>Base&lt;digit&gt;*</CODE> will be searched
+  for in the directory (if not found there then in
+  <CODE>&lt;acorndir&gt;/../Encodings</CODE>), and if found encoding information
+  will be read from it. If not found then the font will be assumed to be an
+  initial subset of Unicode. -->
+  <CODE>Outlines</CODE> のファイル名が (<CODE>Outlines0</CODE> のように) 数字で終わる場合、<CODE>Base&lt;数字&gt;*</CODE> という名前のついた 3 番目のファイルをそのディレクトリから検索し (見つからない場合は <CODE>&lt;acorndir&gt;/../Encodings</CODE> から検索します)、見つかった場合はそのファイルからエンコーディング情報を読み込みます。見つからなかった場合は、そのフォントは Unicode の先頭部分のサブセットであるものと仮定されます。
+  <P>
+<!--
+  <CODE>-includestrokes</CODE> <I>acorn2sfd</I> normally throws out the secondary
+  stroked version of the character, specifying this option will include it
+  in the sfd file (you may then want to invoke FontForge's Expand Stroke command
+  on it). -->
+  <CODE>-includestrokes</CODE> <I>acorn2sfd</I> は通常、文字の二次的ストローク化処理を行なったバージョンを捨てますが、このオプションを指定するとそれを SFD ファイルに含めます (その後で FontForge の <CODE>輪郭を太らせる(<U>E</U>)...</CODE> コマンドを呼び出す必要があるでしょう)。
+  <P>
+<!--
+  <CODE>-help</CODE> will provide a mini description and will list the available
+  options. -->
+  <CODE>-help</CODE> は、簡単な説明と使用可能なオプション一覧を表示します。
+  <P>
+<!--
+  <CODE>-usage</CODE> will list the available options. -->
+  <CODE>-usage</CODE> は、使用可能なオプション一覧を表示します。
+  <P>
+<!--
+  <CODE>-version</CODE> will display the current version of <EM>acorn2sfd</EM>
+  (a six digit string containing the date stamp of the source files). -->
+  <CODE>-version</CODE> は、現在の <EM>acorn2sfd</EM> のバージョン (ソースファイルの日付スタンプを表す数字 6 桁の文字列) を表示します。
+  <H3>
+<!--  Bugs-->
+      バグ
+  </H3>
+  <UL>
+    <LI>
+<!--  Acorn fonts use a different fill rule than either PostScript or TrueType.
+      You should run Element-&gt;Correct Direction on the sfd file after converting
+      it. -->
+      Acorn フォントは PostScript や TrueType と異なる塗りつぶしルールを使用しています。変換を行なった後で <CODE>エレメント(<U>L</U>)</CODE>→<CODE>アウトラインの向きを修正(<U>C</U>)</CODE> を実行する必要があるでしょう。
+    <LI>
+<!--  Most Acorn fonts I've seen on the web are zipped up with a non-standard zip.
+      Don't expect <I>acorn2sfd</I> to be able to unzip them. -->
+      私が Web 上で見つけたほとんどの Acorn フォントは非標準の zip 形式で圧縮されています。<I>acorn2sfd</I> がそれを展開できると期待しないでください。
+    <LI>
+<!--  Acorn hinting data are lost.-->
+      Acorn のヒント情報は失われます。
+  </UL>
+  <H3>
+<!--  See Also-->
+      参照
+  </H3>
+  <P>
+  <A HREF="overview.html">FontForge</A>
+  <P>
+<!--
+  <A HREF="http://www.pinknoise.demon.co.uk/Docs/Arc/Fonts/Formats.html">Acorn
+  Font Documentation</A> -->
+  <A HREF="http://www.pinknoise.demon.co.uk/Docs/Arc/Fonts/Formats.html">Acorn フォントの仕様書</A>
+</DIV>
+</BODY></HTML>

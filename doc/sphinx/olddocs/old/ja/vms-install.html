@@ -1,0 +1,101 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 27-Oct-2005 -->
+  <!-- AP: Last modified: 8-May-2006 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>FontForge install procedures for VMS</TITLE>-->
+    <TITLE>FontForge の VMS へのインストール手順</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+<!--FontForge install procedures<BR>
+    <SMALL>for VMS</SMALL> -->
+    FontForge の <SMALL>VMS への</SMALL><BR>インストール手順
+  </H1>
+  <UL>
+    <LI>
+<!--  <A HREF="#Installing">Installing from a pre-built vms package</A>-->
+      <A HREF="#Installing">VMS パッケージからのインストール方法</A>
+    <LI>
+<!--  <A HREF="nix-install.html">Installing on a unix/linux system</A>-->
+      <A HREF="nix-install.html">Unix/Linux システムへのインストール方法</A>
+    <LI>
+<!--  <A HREF="mac-install.html">Installing on a mac</A>-->
+      <A HREF="mac-install.html">Mac へのインストール方法</A>
+    <LI>
+<!--  <A HREF="ms-install.html">Installing on MS/Windows</A>-->
+      <A HREF="ms-install.html">MS-Windows へのインストール方法</A>
+    <LI>
+<!--  <A HREF="source-build.html">Building and installing from source</A>-->
+      <A HREF="source-build.html">ソースからの構築・インストール手順</A>
+    <LI>
+<!--  <A HREF="source-build.html#Dependencies">Dependencies (external libraries/helper
+      programs)</A> -->
+      <A HREF="source-build.html#Dependencies">依存性 (外部ライブラリ/補助プログラム)</A>
+    <LI>
+<!--  <A HREF="source-build.html#Documentation">Installing documentation</A>-->
+      <A HREF="source-build.html#Documentation">文書のインストール方法</A>
+    <LI>
+<!--  <A HREF="running.html">Running FontForge</A>-->
+      <A HREF="running.html">FontForge の起動方法</A>
+    <LI>
+<!--  <A HREF="uninstall.html">Uninstalling</A> -->
+      <A HREF="uninstall.html">削除方法</A>
+  </UL>
+  <H2>
+<!--  <A NAME="Installing">Installing</A> from a VMS package -->
+      VMS 用パッケージからの<A NAME="Installing">インストール</A>方法
+  </H2>
+  <P>
+<!--
+  I'm afraid I have absolutely no idea what you need to do. All I can say is
+that Jacob Jansen has provided a vms package at: -->
+残念ながら、どのようにしてインストールを行うのか私は全く知りません。私に言えるのは、かつて Jacob Jansen が VMS 用のパッケージを以下の場所で公開したということだけです:
+  <UL>
+    <LI>
+<!--  <A HREF="ftp://nchrem.tnw.tudelft.nl/pfaedit/">An OpenVMS executable</A> -->
+      <A HREF="ftp://nchrem.tnw.tudelft.nl/pfaedit/">OpenVMS の実行ファイル</A> -->
+ <LI>
+<!--  <A HREF="ftp://nchrem.tnw.tudelft.nl/openvms/software2.html#FONTFORGE">With
+       some information on dependencies</A> -->
+      <A HREF="ftp://nchrem.tnw.tudelft.nl/openvms/software2.html#FONTFORGE">いくつかの依存性情報について</A>
+  </UL>
+  <P>
+<!--
+  He has provided the following notes:-->
+  彼は以下のノートを提供しています:
+  <P>
+<!--
+  Notes for VMS created on 17 November 2005 -->
+  2005年11月17日に作成された、VMS に関するノート
+  <P>
+<!--
+  Compilation : -->
+  コンパイル :
+  <UL>
+    <LI>
+<!--  -use MMS or MMK in the main directory (the one containing this file) -->
+      - メインディレクトリ (このファイルが置かれている場所) の下の MMS または MMK を使用すること。
+    <LI>
+<!--  -Ignore all messages about undefined symbols during linking of the shareable
+      images. I have no idea how to supress them. -->
+      - 共有可能イメージをリンクしている最中に表示される未定義のシンボルに関する警告はすべて無視すること。この表示を止める方法は私には判りません。
+  </UL>
+  <P>
+<!--
+  To use : -->
+  使用方法:
+  <UL>
+    <LI>
+      the file [.libs]libfontforge.exe should be in a directory defined by the
+      logical SYS$SHARE. So either copy it to it or redefine it i.e.: assign
+      dev:[fontforge.fontforge.fontforge.libs],sys$sysroot:[syslib] sys$share
+      ファイル [.libs]libfontforge.exe は論理名 SYS$SHARE で定義されたディレクトリに置く必要がある。だから、コピーするか、以下のようにして再定義を行う必要がある: assign dev:[fontforge.fontforge.fontforge.libs],sys$sysroot:[syslib] sys$share
+  </UL>
+  <P>
+</DIV>
+</BODY></HTML>

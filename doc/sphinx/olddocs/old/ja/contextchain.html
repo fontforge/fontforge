@@ -1,0 +1,341 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 16-Aug-2003 -->
+  <!-- AP: Last modified: 30-May-2005 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>The dialog for editing Contextual or Chaining Contextual features</TITLE>-->
+    <TITLE>文脈依存または文脈連鎖依存機能の編集用ダイアログ</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+<H1>
+<!--Editing Contextual or Chaining Contextual features-->
+    文脈依存または文脈連鎖依存機能の編集のしかた
+</H1>
+<H2>
+<!--What is a Contextual Positioning feature?-->
+    文脈依存位置指定機能とは何か?
+</H2>
+<P>
+<!--
+There are two types of contextual positioning modes: Contextual Positioning
+and Chained Contextual Positioning. In the simplest form of the first you
+may specify a list glyphs and specify repositioning to occur if that sequence
+is matched. For example you might specify (in English)<BR>
+<CODE>&nbsp; &nbsp; &nbsp; 5 t h</CODE><BR>
+and if that sequence were found raise the "t" and "h" to 5<SUP>th</SUP>.
+You can also specify classes of glyphs so you could say something like:<BR>
+<CODE>&nbsp; &nbsp; &nbsp; [0-9] t h</CODE><BR>
+to raise "t" and "h" after any digit. -->
+文脈に依存する位置指定モードには 2 つのタイプがあります: 文脈依存の位置指定と文脈連鎖依存の位置指定です。前者の最も単純な形では、グリフのリストを指定して、その並びにマッチしたときに再配置が行われます。例えば、(英語で) 以下の文字列 
+<CODE>&nbsp; &nbsp; &nbsp; 5 t h</CODE><BR>
+を指定して、この並びが見つかったら“t”と“h”を持ち上げて 5<SUP>th</SUP> と表示するような指定を行うことができます。
+また、グリフのクラスを指定することができるので、以下のような指定ができます:<BR>
+<CODE>&nbsp; &nbsp; &nbsp; [0-9] t h</CODE><BR>
+これにより、任意の数字の後にある“t”と“h”の並びを持ち上げることができます。
+<P>
+<!--
+After applying this lookup, a word processor will skip over the three glyphs
+matched by the pattern, at least it will in a simple "Contextual Positioning"
+lookup. The "Chained Contextual Positioning" lookup is a bit more general
+and allows you to divide the pattern into three parts: A part before the
+current glyph (called backtracking), a part including the current glyph,
+and a part after the current glyph (called lookahead). Positioning changes
+may only be made to the part including the current glyph, and the word processor
+will advance by the number of glyphs in that subset of the pattern. -->
+この照合を適用した後、ワードプロセッサはパターンに一致した 3 個のグリフを飛ばして処理を行います。少なくとも単純な「文脈依存の位置指定」の照合ではそうです。「文脈連鎖依存の位置指定」における照合では、それより少し一般性が高く、パターンを 3 つの部分に分割することが可能です: 現在のグリフ以前に出てくる部分 (バックトラックと呼びます)、現在のグリフを含む部分および現在のグリフより後側の部分 (前方参照と呼びます )です。位置の変更は現在のグリフを含む部分のみに適用することができ、それを行ってから、ワードプロセッサはそのパターンのサブセットに含まれるグリフの個数だけ前方に進みます。
+<H2>
+<!--What is a Contextual Substitution feature? -->
+    文脈依存の置換機能とは何か?
+</H2>
+<P>
+<!--
+Substitutions come in three types. The first two are similar to the two types
+for positioning, the third is designed to handle a very specific case of
+arabic typography and is applied backwards. -->
+置換には 3 つのタイプがあります。最初の 2 つは、2 つのタイプの 位置指定と類似していますが、3 番目はアラビア語のタイポグラフィにおける非常に特殊なケースを扱うために設計されたもので、逆向きに適用されます。
+<P>
+<!--
+Suppose you had a script font where most letters join at the base line, but
+after some letters (b,o,v,w) the join is near the x-height, so a special
+version of each lower case letter needs to be created designed for a left
+side join near the x-height. You would want to be able to say:<BR> -->
+ほとんどの文字はベースラインで接続しているが、一部の文字 (b,o,v,w) の後では x ハイトのあたりで接続している筆記体フォントを考えてみましょう。一部の文字のために、各小文字には x ハイトの高さに脈絡をもつ特殊なバージョンを作成する必要があります。以下のような指定ができたら便利に違いありません:<BR>
+<CODE>&nbsp; &nbsp; &nbsp; [bovw] [a-z]</CODE><BR>
+<!--
+Note that this just specifies the cases in which the substitution may be
+applied. It does not specify the substitution itself, that is done in a separate
+lookup. -->
+これは置換が適用可能な場合のみに適用されることに注意してください。これは置換そのものを指定するのではなく、独立した照合によって処理されます。
+<P>
+<!--
+You may pull down an example script font with this substitution from
+<A HREF="http://fontforge.sf.net/sfds/FormalScript.tgz">FormalScript.tgz</A>,
+this example is worked out in detail in the
+<A HREF="editexample6-5.html#Conditional">tutorial</A>. -->
+この置換をもつ筆記体フォントの例を、<A HREF="http://fontforge.sf.net/sfds/FormalScript.tgz">FormalScript.tgz</A> からダウンロードでき、この例は<A HREF="editexample6-5.html#Conditional">チュートリアル</A>で詳しく実演しています。
+<H2>
+<!--More complete descriptions -->
+    より完全な説明
+</H2>
+<P>
+<!--
+For more information on contextual features see Adobe's Docs: -->
+文脈依存の機能に関するより詳しい情報については、Adobe の文書を参照してください:
+<UL>
+  <LI>
+<!--<A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats2.html">The
+    GPOS table</A>, for positioning glyphs -->
+    グリフを再配置するための <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats2.html">GPOS テーブル</A>
+  <LI>
+<!--<A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats1.html">The GSUB
+    table</A>, for substituting glyphs -->
+<!--<A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats1.html">The
+    GSUB table</A>, for substituting glyphs -->
+    グリフを置換するための <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats1.html">GSUB テーブル</A>
+  <LI>
+<!--<A HREF="http://partners.adobe.com/public/developer/opentype/index_tag3.html">The
+    feature tag registry</A>. -->
+    <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag3.html">機能タグの登録簿</A>。
+</UL>
+<H2>
+<!--How do these relate to Apple Advanced Typography features?-->
+    これらは Apple 高度組版機能とどう関係しているのか?
+</H2>
+<P>
+<!--
+In some cases a contextual or chaining contextual substitution can be converted
+into one of Apple's contextual glyph substitution subtables. See the page
+on <A HREF="gposgsub.html#sometimes">Apple Advanced Typography </A>for more
+information as to when and caveats about how. -->
+いくつかの場合、文脈依存または文脈依存連鎖の置換を Apple の文脈依存グリフ置換サブテーブルに変換することが可能です。いつそれが可能で、どう行うべきかの注意点についてのより詳しい情報は、<A HREF="gposgsub.html#sometimes">Apple 高度組版機能</A>のページを参照してください。
+<H2>
+<!--Creating a contextual feature-->
+    文脈依存機能の作成
+</H2>
+<P>
+<!--
+Before you can edit one of these features you must create it from the
+<A HREF="fontinfo.html#Contextual">Element-&gt;Font Info-&gt;Contextual
+dialog</A>. -->
+これらの機能を編集可能にするには、まず<A HREF="fontinfo.html#Contextual"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[文脈依存]</CODE> ダイアログ</A>で、機能を作成しなければなりません。
+<H2>
+<!--Editing a feature -->
+    機能の編集
+</H2>
+<H3>
+  <IMG src="../../_images/contextchain-format.png" WIDTH="476" HEIGHT="503" ALIGN="Right"><!--Format-->
+  フォーマット
+</H3>
+<P>
+<!--
+Except for the reverse chaining features, any of these may come in one of
+three formats. -->
+前方文脈連鎖依存の機能を除き、これらはすべて次の 3 つのフォーマットのどれかで表されます。
+<P>
+<!--
+The simplest format is a list of <A HREF="#Glyphs">glyphs</A>. You may specify
+several glyph sequences in a single feature. So the script example above
+could be specified (quite inefficiently) by 4*26 lines like:<BR> -->
+最も単純な形は<A HREF="#Glyphs">グリフ</A>のリストです。1 個の機能で何種類かのグリフの列を指定することが可能です。上に示した筆記体の例は、(非常に非効率ですが) 以下のような 4×26 行のテキストで表現可能です:<BR>
+<CODE>&nbsp; &nbsp; &nbsp; b a</CODE><BR>
+<CODE>&nbsp; &nbsp; &nbsp; b b</CODE><BR>
+<CODE>&nbsp; &nbsp; &nbsp; ...<BR>
+&nbsp; &nbsp; &nbsp; o a</CODE><BR>
+<CODE>&nbsp; &nbsp; &nbsp; ...</CODE>
+<P>
+<!--
+The next format allows you to specify a list of
+<A HREF="#Classes">classes</A>. In the script example we would define 2
+classes:<BR> -->
+2 番目のフォーマットでは、<A HREF="#Classes">クラス</A> のリストを指定可能です。筆記体の例の場合、2 個のクラス定義<BR>
+<CODE>&nbsp; &nbsp; &nbsp; [bovw]</CODE><BR>
+<CODE>&nbsp; &nbsp; &nbsp; [ac-np-ux-z]</CODE><BR>
+<!--
+and define two patterns as:<BR> -->
+ならびに、2 個のパターン定義を作成することになります:<BR>
+<CODE>&nbsp; &nbsp; &nbsp; class1 [class2]<BR>
+&nbsp; &nbsp; &nbsp; class1 [class1]</CODE>
+<P>
+<!--
+The third format is the most general and allows you to specify your pattern
+by a <A HREF="#Coverage">separate list of glyphs</A> for each glyph
+position:<BR> -->
+3 番目のフォーマットは最も汎用的で、パターンを各グリフの位置ごとに<A HREF="#Coverage">異なるグリフのリスト</A>によって指定することができます:<BR>
+<CODE>&nbsp; &nbsp; &nbsp; [bovw] [a-z]</CODE><BR>
+<BR CLEAR=ALL>
+<H3>
+  <IMG src="../../_images/contextchain-coverage.png" WIDTH="476" HEIGHT="503" ALIGN="Right"><!--<A
+      NAME="Coverage">Coverage</A>-->
+   <A NAME="Coverage">範囲</A>
+</H3>
+<P>
+<!--
+This display shows a list whose entries are coverage tables - - that is lists
+of glyphs. A match occurs if the current glyph matches one of the glyphs
+named in the current coverage table. -->
+この表示画面は、範囲テーブル (これはグリフのリストです) を項目として含むリストを表示します。照合が成功するのは、現在のグリフが、現在の範囲テーブル内で命名されたグリフのどれかと一致するときです。
+<P>
+<!--
+In the example at right there is only a single coverage table here (but there
+could be more). -->
+右の例では範囲テーブルは 1 個しか含まれていません (が、増やすことは可能です)。
+<P>
+<!--
+In a Chaining Contextual feature it is also possible to specify a list of
+coverage tables to match glyphs before the current glyph, and another list
+to match glyphs after. -->
+文脈連鎖依存の機能では、現在のグリフの前に一致する範囲テーブルのリストを指定することができ、さらに、後ろに一致する範囲テーブルのリストを別に指定することもできます。
+<P>
+<!--
+The buttons under the coverage list allow you to create new coverage tables
+to go to the end of the list (ie. to be added to the end of the match string),
+to edit current coverage tables, to remove a coverage table, or to reorder
+the coverage tables. -->
+範囲リストの下にあるボタンを使って、新たな範囲テーブルをリストの最後に追加 (これにより、一致文字列の最後に追加されます) したり、現在の範囲テーブルの編集、範囲テーブルの削除または範囲テーブルの並べ替えが可能です。
+<P>
+<!--
+This feature does not directly describe how transformations are to happen
+to the glyphs, instead it provides a list of nested features (actually lookups,
+but I'm trying to hide that distinction) that are to be applied to specific
+positions in the match string (positions in the backtrack and lookahead lists
+my not be transformed). -->
+この機能は、変換がどのようにグリフに対して行われるかを直接記述するものではなく、一致文字列内の特定の位置だけに適用されるような入れ子の機能 (実際には照合ですが、これらの区別をつけずに済むようにしているつもりです) のリストを提供します (バックトラックリストおよび前方参照リストには変換不可能です)。
+<P>
+<!--
+In the example at right, the feature 'L041' will be applied to any glyph
+that matches the coverage table at the top of the list. Again the buttons
+under the sequence lookup list allow you to add, change, remove or reorder
+these transformations. (And yes, the order the transformations are applied
+can matter in complex situations).<BR CLEAR=ALL> -->
+右の例では、機能&lsquo;L041&rsquo;はリストのいちばん上にある範囲指定テーブルに一致する任意のグリフに適用されます。ここでもグリフ列照合リストの下にあるボタンを使ってそれらの変換指定を追加・編集・変更または並べ替えることができます (そして、複雑な状況下では、変換が適用される順番が大きな問題となることに注意が必要です)。<BR CLEAR=ALL>
+<H4>
+  <IMG src="../../_images/contextchain-seqlookup.png" WIDTH="254" HEIGHT="212" ALIGN="Right"><!--Creating
+  or editing a sequence lookup pair -->
+  列照合ペアの作成または編集
+</H4>
+<P>
+<!--
+This dialog allows you to specify which position in the match string is to
+have which nested feature applied to it. -->
+このダイアログによって、一致文字列内のどの文字列をどの入れ子になった機能で処理するかを指定することができます。
+<P>
+<!--
+A nested feature is very similar to a normal feature (position, pair,
+substitution, ligature, anchor, etc.) except that instead of having a
+script/language list it has a special value of "Nested".<BR CLEAR=ALL> -->
+入れ子になった機能は通常の機能と非常によく似ています (位置指定・ペア・置換・合字・アンカーなど) が、スクリプト/言語のリストではなく“Nested”という特殊な値が与えられている点が異なります。<BR CLEAR=ALL>
+<H3>
+  <IMG src="../../_images/contextchain-cselect.png" WIDTH="476" HEIGHT="503" ALIGN="Right"><!--Setting
+  a coverage table -->
+  範囲テーブルの設定方法
+</H3>
+<P>
+<!--
+If you press the [New] or [Edit] buttons from the coverage dialog above you
+get the page to the right. The text field provides the names of all glyphs
+in the coverage table. You may edit this list directly by typing in it, or
+you may press the [Set] button which sets the text field to contain the names
+of all glyphs selected in the font view. And the [Select] button changes
+the selection of the font view to match the contents of the text field. -->
+上記の範囲テーブルダイアログで <CODE>[新規(<U>N</U>)]</CODE> または <CODE>[編集(<U>E</U>)]</CODE> を押すと、右に示すページに進みます。テキストフィールドには、範囲指定テーブル内の全てのグリフの名前が表示されています。そこに直接文字を打ち込んでリストを編集することもできますし、または <CODE>[設定]</CODE> ボタンを押すと、フォントビュー内でそのとき選択されている全てのグリフの名前がテキストフィールドに設定されます。また、<CODE>[選択]</CODE> ボタンを押すとフォントビュー内の選択文字が現在のテキストフィールドの内容に合わせて変更されます。
+<P>
+<!--
+If you wish to cancel this operation press the [&lt;Prev] button and you
+will be returned to the coverage list page (and any changes made here will
+be lost), while pressing [Next&gt;] will accept those changes.<BR CLEAR=ALL> -->
+これらの操作を取り消したい場合、<CODE>[&lt; 前(<U>P</U>)]</CODE> ボタンを押すと範囲リストページに戻ります (ここで行った変更は全て破棄されます)。一方 <CODE>[次(<U>N</U>) &gt;]</CODE> ボタンを押すと、これらの変更が確定します。<BR CLEAR=ALL>
+<H3>
+  <IMG src="../../_images/contextchain-glyphlists.png" WIDTH="476" HEIGHT="503" ALIGN="Right"><!--<A
+      NAME="Glyphs">Glyphs</A>-->
+  <A NAME="Glyphs">グリフ</A>
+</H3>
+<P>
+<!--
+This format allows you to specify several glyph lists to match. In the example
+at right the string "A,B,C" will be matched in the glyphs before the current
+glyph, then "D E" starting at the current location, and finally "F G H" after
+them. If everything matched then the feature 'beef' will be applied to location
+0 (in this case "D") and then 'dead' will be applied to location 1 ("E"). -->
+このフォーマットを使うと、一致の対象となるいくつかのグリフリストを指定することが可能です。右の例では現在のグリフの前にあるグリフを文字列“A,B,C”と照合し、続いて現在位置から始まる文字列と“D E”との照合を行い、最後にその後ろの部分と“F G H”との照合を行います。もしこれら全部と一致した場合、機能&lsquo;beef&rsquo;が位置 0 (この場合“D”) に適用され、機能&lsquo;dead&rsquo;が位置 1 (この場合“E”) に適用されます。
+<P>
+<!--
+The buttons underneath allow you to add, change, remove and reorder these
+entries. The order is significant, word processors will stop at the first
+match they find so in the following:<BR> -->
+下に並んだボタンを使ってこれらの項目の追加・編集・削除および並べ替えが可能です。順序は重要です。ワードプロセッサは、最初に一致した項目で停止するので、以下の例<BR>
+<CODE>&nbsp; &nbsp; &nbsp; b a</CODE><BR>
+<CODE>&nbsp; &nbsp; &nbsp; b a f</CODE><BR>
+<!--
+the second entry would never be matched because "b a" would be applied first.
+While:<BR> -->
+では、“b a”が最初に適用されてしまうため、2 番目の項目に一致することは決してありません。
+<CODE>&nbsp; &nbsp; &nbsp; b a f</CODE><BR>
+<CODE>&nbsp; &nbsp; &nbsp; b a</CODE><BR>
+<!--
+would apply match "b a f" when an "f" was present, and "b a"
+otherwise.<BR CLEAR=ALL> -->
+とすれば、“f”が存在するときには“b a f”に一致し、存在しない場合には“b a”に一致するでしょう。<BR CLEAR=ALL>
+<H3>
+  <IMG src="../../_images/contextchain-pickglyph.png" WIDTH="476" HEIGHT="503" ALIGN="Right"><!--Selecting
+  glyphs -->
+    グリフの選択法
+</H3>
+<P>
+<!--
+The text field may be manipulated as above. However here we are specifying
+a string of glyphs each of which must be matched, rather than a class of
+glyphs any of which could match. So in the example at right, "DE" would match,
+but "E" would not. -->
+テキストフィールドは上に記した方法で操作することができます。しかしながら、そこでやってきたのは、各要素が一致しなければならないグリフの列を指定する方法であり、どれか 1 つが一致すればよいグリフのクラスを指定する方法ではありませんでした。ですから右の例では“DE”は一致しますが、“E”は一致しません。
+<P>
+<!--
+As above a set of lookups can be applied after the match occurs.<BR CLEAR=ALL> -->
+上に示したように、一致が起こった後でいくつか組になった照合を適用することは可能です。<BR CLEAR=ALL>
+<H3>
+  <IMG src="../../_images/contextchain-class.png" WIDTH="476" HEIGHT="503" ALIGN="Right"><!--<A
+      NAME="Classes">Classes</A>-->
+  <A NAME="Classes">クラス</A>
+</H3>
+<P>
+<!--
+When specifying a class match, you must specify at least one set of glyph
+classes. (you may also specify separate sets of classes for the backtrack
+and lookahead lists, or you use the same set for everything). You must also
+specify a list of patterns where each pattern is a list of numbers and each
+number is the index of the class into the class list. -->
+クラスの一致を指定するとき、最低でも 1 個のグリフクラスのセットを指定する必要があります。(バックトラックと前方参照のリストで独立したクラスのセットを指定する個ともできますし、あらゆる場面で同じセットを使用することも可能です)。もう一つ指定しなければならないリストがあります。そのリスト内の各パターンは数値のリストであり、それらの各数値はクラスリスト内でのクラスのインデックスを意味します。
+<P>
+<!--
+Every set of classes has a magic class at index 0 which matches whatever
+glyphs are not explicitly mentioned in another class. FontForge displays
+this by calling it "{Everything Else}". You may not delete, edit nor reorder
+this class. Other classes are just unordered lists of glyph names (rather
+like coverage tables above), however any specific glyph may belong to at
+most one class at a time (whereas a glyph may occur in as many coverage tables
+as desired).<BR CLEAR=ALL> -->
+各クラスセットのインデックス 0 には、その他のどのクラスでも明示的に指定されていないすべてのグリフに一致するマジッククラスが置かれています。FontForge は、これを“{その他すべて}”と呼んで表示します。このクラスは削除も編集や並べ替えもできません。その他のクラスはグリフ名からなる順不同のリストです (上の範囲テーブルとは異なります) が、どのグリフもたかだか 1 個のクラスにしか同時に所属することができません (範囲テーブルには何度でも出現することができるのと異なります)。<BR CLEAR=ALL>
+<H3>
+  <IMG src="../../_images/contextchain-classlist.png" WIDTH="476" HEIGHT="503" ALIGN="Right"><!--A
+  list of Class numbers -->
+  クラス番号のリスト
+</H3>
+<P>
+<!--
+Once you have set up your classes, you may then edit the patterns you want
+to match. To remind you of what your classes are, FontForge displays the
+class list underneath the pattern. Clicking on a class will insert that class's
+index into the pattern. -->
+クラスの設定が済んだら、一致させたいパターンを編集することができます。どのようなクラスを作成したか忘れないように、FontForge はパターンの下にクラスリストを表示します。クラスをクリックすると、そのクラスのインデックスがパターン内に挿入されます。
+<P>
+<!--
+Finally you must set the nested lookups. This is exactly the same as previous
+sequence / lookup settings.<BR CLEAR=ALL> -->
+最後に、入れ子になった参照を設定する必要があります。この手順は前に行った列/照合の設定とまったく同じです。<BR CLEAR=ALL>
+<P ALIGN=Center>
+— <A HREF="fontinfo.html">上</A> — <A HREF="overview.html">目次</A> —
+</DIV>
+</BODY></HTML>

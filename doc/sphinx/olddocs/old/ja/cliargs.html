@@ -1,0 +1,291 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 14-Jan-2002 -->
+  <!-- AP: Last modified: 16-Jun-2006 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>Command Line Arguments</TITLE>-->
+    <TITLE>コマンドライン引数</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+<!--Command Line Arguments-->
+    コマンドライン引数
+  </H1>
+  <BLOCKQUOTE>
+  <PRE>$ fontforge [-options] [filenames]
+$ fontforge [-script] scriptfile [arguments]
+$ fontforge -c script-string [arguments]
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  The filenames may specify any number of files in one of the font formats
+  that FontForge recognizes (various postscript formats, truetype, opentype,
+  mac resource, bitmap, svg, etc.). -->
+  filenames には、FontForge が認識する任意のフォントフォーマット (各種の PostScript フォーマット、TrueType, OpenType, Mac リソース、ビットマップ, SVG 等) のファイルを任意の個数指定することができます。
+  <P>
+<!--
+  Some files (.ttc or mac resource) may contain more than one outline font.
+  You may pick which font you want by following the filename with the fontname
+  in parentheses, thus:<BR> -->
+  いくつかのファイル (.ttc または Mac のリソース) は 1 個より多くのアウトラインフォントを含むことができます。どのフォントを読み込みたいかを、ファイル名の後に続けて、括弧でくくってフォント名を書くことによって指定することができます。例えば:
+  <BLOCKQUOTE>
+  <PRE>$ fontforge "gulim.ttc(GulimChe)"
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  will select the font GulimChe out of the font file gulim.ttc.-->
+  とするとフォントファイル <CODE>gulim.ttc</CODE> から GulimChe を読み出します。
+  <P>
+<!--
+  FontForge recognizes the following options: -->
+  FontForge は以下のオプションを認識します:
+  <DL>
+    <DT>
+      -c script-string
+    <DD>
+<!--  If FontForge's first argument is "-c" then the argument that follows will
+      be treated as a string containing scripting commands, and those commands
+      will be executed. All remaining arguments will be passed to the script. -->
+      FontForge への最初の引数が“-c”である場合は、その次の引数はスクリプトのコマンドとして解釈され、続いてそのコマンドが実行されます。その後ろの引数はすべてそのスクリプトに渡されます。
+      <BLOCKQUOTE>
+	<PRE>$ fontforge -c 'Open($1); Generate($2)' foo.sfd foo.ttf
+</PRE>
+      </BLOCKQUOTE>
+      <P>
+<!--  Will read a font from "foo.sfd" and then generate a truetype font from it
+      called "foo.ttf"-->
+      を実行すると、“foo.sfd”からフォントを読み込み、“foo.ttf”という名前の TrueType フォントを出力します。
+    <DT>
+      -cmap type
+    <DD>
+<!--  Where type may be<BR> -->
+      ここで type には<BR>
+      &nbsp; &nbsp; Current | Copy | Private<BR>
+      のいずれかを指定することができます。<BR>
+<!--  Gives the user some control over <A HREF="xres.html#Colormap">colormap handling
+      </A>on 8bit screens.-->
+      ユーザが、8 ビットスクリーン上での<A HREF="xres.html#Colormap">カラーマップの扱い</A>を制御することができます。
+    <DT>
+      -depth val
+    <DD>
+<!--  Specifies that FontForge should search for a visual with the given depth-->
+      FontForge に、指定された色深度をもつビジュアルを検索するように指定します。
+    <DT>
+      -display name
+    <DD>
+<!--  Specifies the name of the display on which FontForge will open its windows-->
+      FontForge がウィンドウを開くディスプレイの名前を指定します。
+    <DT>
+      -dontopenxdevices
+    <DD>
+<!--  Various people have complained that when FontForge attempts to open the devices
+      of the wacom graphics tablet, the X server gives a BadDevice error. I can't
+      duplicate this, the open works fine on my system, but this argument allows
+      them to tell fontforge not to try to use the tablet. -->
+      多くの人々が、FontForge がワコムのグラフィクスタブレットのデバイスを開こうとする時に X サーバが BadDevice エラーを出すことについて不満を表明していました。私の環境ではデバイスは問題なく開くことができるので、この現象を再現することができていないのですが、この引数をつけることにより、FontForge がタブレットを使おうと試みないように指定することができます。
+    <DT>
+      -help
+    <DD>
+<!--  Bring up a <A HREF="helpmenu.html">browser</A> looking at this documentation.-->
+      この文書を探す<A HREF="helpmenu.html">ブラウザ</A>を起動します。
+    <DT>
+      -version
+    <DD>
+<!--  Prints out the source version and exits.-->
+      ソースのバージョンを印字して終了します。
+    <DT>
+      -keyboard type
+    <DD>
+<!--  Where type may be<BR>
+      ここで type には<BR>
+      &nbsp; &nbsp; ibm | mac | sun | ppc | 0 | 1 | 2 | 3<BR>
+      のいずれかを指定することができます。<BR>
+<!--  Allows you to specify the type of keyboard. Currently this is only relevent
+      when generating menus. The modifier keys are in different locations on different
+      keyboards (under different operating systems) and if FontForge knows what
+      keyboard you are using it can make the hot-keys have better labels. -->
+      キーボードのタイプを指定することができます。現在のところ、これはメニューを生成する時にしか意味を持ちません。修飾キーは異なるキーボード (異なる OS の制御下) では異なる位置にあり、FontForge がどのキーボードが使用されているかを知っていれば、ホットキーにより適切なラベルをつけることができます。
+      <UL>
+	<LI>
+	  ibm | 0<BR>
+<!--	  Uses the Control and Alt keys -->
+	  Control キーと Alt キーを使用します。
+	<LI>
+	  mac | 1<BR>
+<!--	  Uses the Control and Option keys (Mac OS/X, Mac keyboard) -->
+	  Control キーと Option キーを使用します (Mac OS X, Mac キーボード)。
+	<LI>
+	  ppc | 3<BR>
+<!--	  Uses the Control and Command keys (Suse ppc linux, Mac keyboard) -->
+	  Control キーと Command キーを使用します (Suse PPC Linux, Mac キーボード)。
+	<LI>
+	  sun | 2<BR>
+<!--	  Uses the Control and Meta keys -->
+	  Control キーと Meta キーを使用します。
+      </UL>
+    <DT>
+      -last
+    <DD>
+<!--  Opens the last sfd file closed. If used more than once will open the last
+      several sfd files. -->
+      最後に閉じた SFD ファイルを開きます。これを 2 回以上指定すると、何回か前に閉じた SFD ファイルを開きます。
+    <DT>
+      -new
+    <DD>
+<!--  Creates a new font.-->
+      新規にフォントを作成します。
+    <DT>
+      -nosplash
+    <DD>
+<!--  FontForge will not display its splash screen on startup (for slow connections)-->
+      FontForge は起動時にスプラッシュスクリーンを表示しません (低速な接続向き)
+    <DT>
+      -recover type
+    <DD>
+<!--  Where type may be:-->
+      ここで type には<BR>
+      <DL>
+	<DT>
+	  none
+	<DD>
+<!--	  Do not attempt any automatic file recovery -->
+	  自動ファイル復元を一切試みません。
+	<DT>
+	  clean
+	<DD>
+<!--	  Clean out the directory containing files to be recovered -->
+	  復元すべきファイルを保存しているディレクトリ内のすべてを消去します。
+	<DT>
+	  auto
+	<DD>
+<!--	  recover any files which have been changed but which fontforge crashed on
+	  before saving. -->
+	  変更を加えたが、保存する前に FontForgeo がクラッシュしたすべてのファイルを復元します。
+      </DL>
+      のいずれかを指定することができます。
+    <DT>
+      -<A NAME="script">script</A> script-file
+    <DD>
+<!--  If FontForge's first argument is "-script" then the argument that follows
+      will be treated as a <A HREF="scripting.html">script file</A> and all the
+      remaining arguments will be passed as arguments to that file. (The "-script"
+      argument may be omitted, and if the first argument is an executable file
+      which whose first line starts with "#!" and contains "fontforge". This means
+      that fontforge may be used as an interpreter. Ie. you can create a fontforge
+      script file and type its name to your shell and fontforge will be invoked
+      to process that file as a script file (passing any arguments to it)). -->
+      FontForge に与えた最初の引数が“-script”である場合、その次の引数は<A HREF="scripting.html">スクリプトファイル</A>として扱われ、残りの引数すべてはそのスクリプトに引数として渡されます。(“-script”引数は省略可能です。その場合、最初の引数が実行可能ファイルであり、そのファイルの最初の行が“#!”で始まり、“fontforge”を含んでいなければなりません。これは、FontForge はインタプリタとして使用することができることを意味します。すなわち、FontForge スクリプトファイルを作成し、その名前をシェルに渡すと FonForge がそのファイルをスクリプトファイルとして処理するように起動されます (すべての引数がそれに渡されます)。
+    <DT>
+      -sync
+    <DD>
+<!--  Do synchronous screen drawing. Slows things down, makes some things easier
+      to debug. -->
+      同期的なスクリーンの描画を行います。遅くなりますが、いくつかの事柄がデバッグしやすくなります。
+    <DT>
+      -usage
+    <DD>
+<!--  Display a brief description of the options-->
+     オプションの簡単な記述を表示します。
+    <DT>
+      -vc type
+    <DD>
+<!--  Where type may be:<BR> -->
+      ここで type には<BR>
+      StaticGray GrayScale StaticColor PsuedoColor TrueColor DirectColor<BR>
+      のいずれかを指定することができます。(これらの意味については X のマニュアルを参照してください)。<BR>
+<!--  (See the X manuals for a description of what these mean). FontForge will
+      search through the visuals in an attempt to find one with the desired VisualClass
+      (given here) and depth (given with the -depth option). -->
+      FontForge は望ましいビジュアルクラス (これで指定します) と色深度 (-depth オプションで指定します) をもつものを探そうと試みて、ビジュアルを検索します。
+  </DL>
+  <H2>
+<!--<A NAME="Environment">Environment Variables</A>-->
+    <A NAME="Environment">環境変数</A>
+  </H2>
+  <P>
+<!--
+  FontForge examines the following environment variables: -->
+  FontForge は以下の環境変数を調べます:
+  <DL>
+    <DT>
+      <CODE><A NAME="BROWSER">BROWSER</A></CODE>
+    <DD>
+<!--  Specifies the name of a browser program for examining documentation (must
+      be able to read a local or remote html file and display it reasonably). On
+      CygWin systems browsers that work in the windows world (as opposed to the
+      cygwin sub-system) must be specified by a full path spec. -->
+      文書を調べるためのブラウザプログラムの名前を指定します (ローカルまたはリモートにある HTML ファイルを読むことができ、それを適切に表示できる必要があります)。Cygwin システムでは、ブラウザは (cygwin サブシステムではなく) Windows の世界で動作するブラウザの名前をフルパス指定で指定しなければなりません。
+    <DT>
+      <CODE><A NAME="AUTOTRACE">AUTOTRACE</A></CODE>
+    <DD>
+<!--  Specifies the name and location of the autotrace program. (if not specified
+      FontForge will try to find it in the user's path) -->
+      自動トレースに用いる autotrace プログラムの名前と位置を指定します (これが指定されていない場合、FonForge はユーザのパスからそれを探そうとします)。
+    <DT>
+      <CODE><A NAME="MF">MF</A></CODE>
+    <DD>
+<!--  Specifies the name and location of the metafont program. (if not specified
+      FontForge will try to find it in the user's path) -->
+      METAFONT の mf プログラムの名前と位置を指定します (これが指定されていない場合、FonForge はユーザのパスからそれを探そうとします)。
+    <DT>
+      <CODE>FONTFORGE_VERBOSE</CODE>
+    <DD>
+<!--  Turns on verbose mode in script execution (the script will be printed to
+      stdout as it is executed). -->
+      スクリプトの実行での冗長モードをオンに切り替えます (スクリプトが実行されるごとに、その行が標準出力に印字されます)。
+    <DT>
+      <CODE>FONTFORGE_LOADPREFS</CODE>
+    <DD>
+<!--  Controls loading of preference items. If set to "Always" then preferences
+      will be loaded even for scripts. If set to "Never" then preferences will
+      not be loaded unless explicitly requested. If unset (or if set to any other
+      value) then preferences will be loaded when ff starts up with a user interface,
+      and will not be loaded if ff starts up executing a script. -->
+      環境設定項目の読み込みを制御します。“Always”の場合、環境設定項目はスクリプトの実行時にも読み込まれます。“Never”の場合、環境設定項目は明示的に要求しない限り読み込まれません。設定されていない場合 (または任意の他の値の場合)、環境設定は ff がユーザインターフェースを持って起動した時には読み込まれ、ff がスクリプトを実行する時には読み込まれないようになります。
+  </DL>
+  <P>
+    <HR>
+  <DL>
+    <DT>
+<!--  <CODE>LANG, LC_ALL, </CODE>etc.-->
+      <CODE>LANG, LC_ALL, </CODE>等
+    <DD>
+<!--  To determine the current locale, etc.-->
+      現在のロケール等を決定するために用いられます。
+    <DT>
+      <CODE>PATH</CODE>
+    <DD>
+<!--  Used when looking for Autotrace or mf programs-->
+      autotrace または mf プログラムを探すのに使用します。
+    <DT>
+      <CODE>TMPDIR</CODE>
+    <DD>
+<!--  Temporary directory. Used for temporary files for which I need a filename
+      (ie. to pass to autotrace, etc.) -->
+      一時ディレクトリです。ファイル名が必要な (つまり、autotrace 等に渡すための) 一時ファイルを作成するのに使います。
+    <DT>
+      <CODE>HOME</CODE>
+    <DD>
+<!--  Used to figure out where to put the .FontForge directory which includes user
+      preferences and the recovery files. -->
+      ユーザの設定項目と復元ファイルを含む .PfaEdit ディレクトリの置かれている場所を指定します。
+    <DT>
+      <CODE>USER</CODE>
+    <DD>
+<!--  Used to create comments in new fonts about who created the font, or who saved
+      it. -->
+      誰がフォントを作成したか、または誰が保存したかを示すコメントを新規に作成したフォント内に書き込むのに必要です。
+  </DL>
+  <P>
+  <P>
+  <P ALIGN=Center>
+  — <A HREF="xres.html">前</A> — <A HREF="overview.html">目次</A> —
+  <A HREF="files.html">次</A> —
+</DIV>
+</BODY></HTML>

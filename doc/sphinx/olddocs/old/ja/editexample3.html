@@ -1,0 +1,258 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 27-Jan-2003 -->
+  <!-- AP: Last modified: 21-Apr-2006 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>Consistent serifs and stem widths</TITLE>-->
+    <TITLE>セリフとステムの矛盾のない太さ</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+<!--Tutorial #3 -->
+    チュートリアル (その 3)
+  </H1>
+  <UL>
+    <LI>
+<!--  <A HREF="editexample.html#FontCreate">Font Creation</A>-->
+      <A HREF="editexample.html#FontCreate">フォントの作成</A>
+    <LI>
+<!--  <A HREF="editexample.html#CharCreate">Creating a glyph (tracing outlines)</A>-->
+      
+<!--  <A HREF="editexample.html#CharCreate">グリフの作成 (アウトラインのトレース) 法</A>
+    <LI>
+<!--  <A HREF="editexample2.html#Navigating">Navigating to other glyphs</A>-->
+      <A HREF="editexample2.html#Navigating">他のグリフの呼び出し方</A>
+    <LI>
+<!--  <A HREF="editexample2.html#Creating-o">On to the next glyph (consistent
+      directions)</A>-->
+      <A HREF="editexample2.html#Creating-o">次のグリフに関して (矛盾のないパスの向き)</A>
+    <LI>
+<!--  <A HREF="editexample3.html#consistent-stems">Consistent serifs and stem
+      widths</A>-->
+      <A HREF="editexample3.html#consistent-stems">統一のとれたセリフとステムの太さ</A>
+    <LI>
+<!--  <A HREF="editexample4.html#accents">Building accented glyphs</A>-->
+      <A HREF="editexample4.html#accents">アクセントつきグリフの組み立て方</A>
+    <LI>
+<!--  <A HREF="editexample4.html#ligature">Building a ligature</A>-->
+      <A HREF="editexample4.html#ligature">合字の組み立て方</A>
+    <LI>
+<!--  <A HREF="editexample5.html#metrics">Examining metrics</A>-->
+      <A HREF="editexample5.html#metrics">メトリックの確認法</A>
+    <LI>
+<!--  <A HREF="editexample5.html#Kerning">Kerning</A>-->
+      <A HREF="editexample5.html#Kerning">カーニング</A>
+    <LI>
+<!--  <A HREF="editexample6.html#Variants">Glyph variants</A>-->
+      <A HREF="editexample6.html#Variants">異体関係にあるグリフ</A>
+    <LI>
+<!--  <A HREF="editexample6.html#Marks">Anchoring marks</A>-->
+      <A HREF="editexample6.html#Marks">アンカーマーク</A>
+    <LI>
+<!--  <A HREF="editexample6-5.html#Conditional">Conditional features</A>-->
+      <A HREF="editexample6-5.html#Conditional">条件つき機能</A>
+    <LI>
+<!--  <A HREF="editexample7.html#checking">Checking your font</A>-->
+      <A HREF="editexample7.html#checking">フォントのチェック法</A>
+    <LI>
+<!--  <A HREF="editexample7.html#generating">Generating it</A>-->
+      <A HREF="editexample7.html#generating">フォントの出力方法</A>
+    <LI>
+<!--  <A HREF="editexample7.html#Families">Font Families</A>-->
+      <A HREF="editexample7.html#Families">フォントファミリー</A>
+    <LI>
+<!--  <A HREF="editexample7.html#summary">Final Summary</A>-->
+      <A HREF="editexample7.html#summary">最後のまとめ</A>
+    <LI>
+<!--  <A HREF="scripting-tutorial.html">Scripting Tutorial</A> -->
+      <A HREF="scripting-tutorial.html">スクリプト処理のチュートリアル</A>
+    <LI>
+<!--  <A HREF="scriptnotes.html#Special">Notes on various scripts</A>-->
+      <A HREF="scriptnotes.html#Special">各種の用字系における注意点</A>
+  </UL>
+  <H2>
+<!--<A NAME="consistent-stems">Creating </A>letters with consistent stem widths,
+    serifs and heights. -->
+    統一のとれたステム幅、セリフと高さをもつ文字の<A NAME="consistent-stems">作成法</A>
+  </H2>
+  <P>
+<!--
+  Many Latin (Greek, Cyrillic) fonts have serifs, special terminators at the
+  end of stems. And in almost all LGC fonts there should only be a small number
+  of stem widths used (ie. the vertical stem of "l" and "i" should probably
+  be the same). -->
+  多くのラテン文字 (ギリシャ文字、キリル文字) のフォントにはステムの終わりに特徴のある終端の形を持っています。
+  ほとんど全ての LGC フォントにおいては少数の異なるステム幅のみを用いるようになっています (例えば、“l”と“i”の垂直ステムはおそらく同じ幅になっているでしょう)。
+  <P>
+<!--
+  FontForge does not have a good way to enforce consistency, but it does have
+  various commands to help you check for it, and to find discrepancies. -->
+  FontForge には、一貫性を強制するためのよい方法は備わっていませんが、一貫性チェックしたり矛盾を発見したりするためのコマンドは多数含まれています。
+  <P>
+<!--
+  Let us start with the letter "l" and go through the familiar process of importing
+  a bitmap and defining it's outline. -->
+  まず文字“l”から始めましょう。
+  ビットマップを取り込み、そのアウトラインを定義する、お馴染みの作業を進めていきます。
+  <TABLE BORDER CELLPADDING="2" WIDTH=600>
+    <TR VALIGN="Bottom">
+      <TD WIDTH=140><P ALIGN=Center>
+	<IMG src="../../_images/l1.png" WIDTH="35" HEIGHT="153"></TD>
+      <TD WIDTH=140><IMG src="../../_images/l2.png" WIDTH="134" HEIGHT="101"></TD>
+      <TD WIDTH=140><IMG src="../../_images/l3.png" WIDTH="134" HEIGHT="101"></TD>
+      <TD WIDTH=140><IMG src="../../_images/l4.png" WIDTH="134" HEIGHT="101"></TD>
+    </TR>
+    <TR VALIGN="Top">
+<!--  <TD>The imported image</TD>-->
+      <TD>取り込んだ画像</TD>
+<!--  <TD>Use the magnify tool to examine the bottom serif, and note that it is
+	symmetric left to right.</TD>-->
+      <TD>拡大ツールを使って下部のセリフを確かめます。ここが左右対称な形になっていることに注意してください。</TD>
+<!--  <TD>Outline the right half of the serif</TD>-->
+      <TD>セリフの右半分のアウトラインを作ります。</TD>
+<!--  <TD>select the outline, invoke <CODE>Edit -&gt; Copy</CODE> then <CODE>Edit
+	-&gt; Paste</CODE>, and finally <CODE>Element -&gt; Transform</CODE>
+	<CODE>-&gt; Transform</CODE> and select <CODE>Flip</CODE> (from the pull
+	down list) and <CODE>check Horizontal</CODE></TD> -->
+      <TD>アウトラインを選択し、<CODE>編集(<U>E</U>)</CODE>→<CODE>コピー(<U>C</U>)</CODE>、<CODE>編集(<U>E</U>)</CODE>→<CODE>貼り付け(<U>P</U>)</CODE> を行ってから、最後に <CODE>エレメント(<U>L</U>)</CODE>→<CODE>変形(<U>T</U>)</CODE>→<CODE>変形(<U>T</U>)...</CODE> で <CODE>反転...</CODE> を(プルダウンリストから)選択して <CODE>水平</CODE> をチェックします。</TD>
+    </TR>
+    <TR VALIGN="Bottom">
+      <TD><IMG src="../../_images/l5.png" WIDTH="134" HEIGHT="101"></TD>
+      <TD><IMG src="../../_images/l6.png" WIDTH="134" HEIGHT="101"></TD>
+      <TD><IMG src="../../_images/l7.png" WIDTH="134" HEIGHT="101"></TD>
+      <TD><P ALIGN=Center>
+	<IMG src="../../_images/l8.png" WIDTH="35" HEIGHT="153"></TD>
+    </TR>
+    <TR VALIGN="Top">
+<!--  <TD>Drag the flipped serif over to the left until it snuggles up against
+	the left edge of the glyph</TD>-->
+      <TD>反転したセリフを左側にドラッグし、グリフの左端が合うまで動かします。</TD>
+<!--  <TD COLSPAN=2>Deselect the path, and select one end point and drag it until
+	it is on top of the end point of the other half</TD>-->
+      <TD COLSPAN=2>パスを選択解除し、端点を選択して反対側の片割れの端点に重なるまでドラッグします。</TD>
+<!--  <TD>Finish off the glyph</TD>-->
+      <TD>グリフを完成させます。</TD>
+    </TR>
+    <TR VALIGN="Bottom">
+      <TD></TD>
+      <TD><IMG src="../../_images/l9.png" WIDTH="134" HEIGHT="101"></TD>
+      <TD><IMG src="../../_images/l10.png" WIDTH="134" HEIGHT="101"></TD>
+      <TD></TD>
+    </TR>
+    <TR VALIGN="Top">
+<!--  <TD>But let's do two more things. First let's measure the stem width, and
+	second let's mark the height of the "l"</TD>-->
+      <TD>まだやるべき事が 2 つ残っています。まずステム幅を測り、それから“l”の高さに印をつけましょう。</TD>
+<!--  <TD>Select the ruler tool from the tool palette, and drag it from one edge
+	of the stem to the other. A little window pops up showing the width is 58
+	units, the drag direction is 180 degrees, and the drag was -58 units
+	horizontally, and 0 units vertically.</TD>-->
+      <TD>物差しツールをツールパレットから選択し、それをステムの片方の端からもう片方にドラッグしましょう。小さなウィンドウが表示されました。そこには幅が 58 ユニット、ドラッグ方向が 180°で、ドラッグしたのは水平に -58 ユニット、垂直に 0 ユニットであると表示されています。</TD>
+<!--  <TD>Go to the layers palette and select the Guide radio box (this makes the
+	guide layer editable). Then draw a line at the top of the "l", this line
+	will be visible in all glyphs and marks the ascent height of this font.</TD>-->
+      <TD>レイヤパレットに移動し、<CODE>ガイド(<U>G</U>)</CODE> ラジオボックスを選択し (これでガイドレイヤが編集可能になります)“l”の高さに合わせて直線を引きます。この線は全てのグリフから見ることができ、このフォントのアセントの高さを表示しています。</TD>
+      <TD></TD>
+    </TR>
+  </TABLE>
+  <P>
+<!--
+  Now let's do "i". This glyph looks very much like a short "l" with a dot
+  on top. So let's copy the "l" into the "i"; this will automatically give
+  us the right stem width and the correct advance width. The copy may be done
+  either from the font view (by selecting the square with the "l" in it and
+  pressing <CODE>Edit-&gt;Copy</CODE>) or from the outline view (by
+  <CODE>Edit-&gt;Select-&gt;Select All </CODE>and
+  <CODE>Edit-&gt;Copy</CODE>). Similarly the Paste may be done either in the
+  font view (by selecting the "i" square and pressing
+  <CODE>Edit-&gt;Paste</CODE>) or the outline view (by opening the "i" glyph
+  and pressing <CODE>Edit-&gt;Paste</CODE>). -->
+  今度は“i”を作りましょう。このグリフは短い“l”の上に点を打ったものに非常に似ています。なので“l”を“i”にコピーしましょう; これにより自動的に正しいステム幅と正しいアドバンス幅が設定されます。コピーはフォントビューから (“l”を含むマスを選び、<CODE>編集(<U>E</U>)</CODE>→<CODE>コピー(<U>C</U>)</CODE> を押す) でも、アウトラインビューから (<CODE>編集(<U>E</U>)</CODE>→<CODE>選択(<U>S</U>)</CODE>→<CODE>すべて選択(<U>A</U>)</CODE> の後 <CODE>編集(<U>E</U>)</CODE>→<CODE>コピー(<U>C</U>)</CODE>) でも行うことができます。同様に、ペーストもフォントビューから (“i”を含むマスを選んで <CODE>編集(<U>E</U>)</CODE>→<CODE>貼り付け(<U>P</U>)</CODE> を押す) でもできますし、アウトラインビューから (“i”のグリフを開いて <CODE>編集(<U>E</U>)</CODE>→<CODE>貼り付け(<U>P</U>)</CODE>) でも可能です。
+  <TABLE BORDER CELLPADDING="2" WIDTH=600>
+    <TR>
+      <TD><P ALIGN=Center>
+	<IMG src="../../_images/i1.png" WIDTH="50" HEIGHT="170"></TD>
+      <TD><P ALIGN=Center>
+	<IMG src="../../_images/i2.png" WIDTH="111" HEIGHT="170"></TD>
+      <TD><P ALIGN=Center>
+	<IMG src="../../_images/i3.png" WIDTH="111" HEIGHT="170"></TD>
+      <TD><P ALIGN=Center>
+	<IMG src="../../_images/i4.png" WIDTH="111" HEIGHT="170"></TD>
+    </TR>
+    <TR VALIGN="Top">
+<!--  <TD>Import the "i" image, and copy the "l" glyph.</TD>-->
+      <TD>“i”の画像を取り込み、次に文字“l”をコピーします。</TD>
+<!--  <TD>Select the top serif of the l</TD>-->
+      <TD>“l”の上端のセリフを選択します。</TD>
+<!--  <TD>drag it down to the right height</TD>-->
+      <TD>ドラッグして、正しい高さまで下ろします。</TD>
+<!--  <TD>go to the guide layer and add a line at the x-height</TD>-->
+      <TD>ガイドレイヤに移動し、x ハイトに合わせて線を追加します。
+    </TR>
+  </TABLE>
+  <P>
+  <IMG src="../../_images/o5.png" WIDTH="85" HEIGHT="101" ALIGN="Right"> <!-- Let's look briefly
+  back at the "o" we built before. You may notice that the "o" reaches a little
+  above the guide line we put in to mark the x-height (and a little below the
+  baseline). This is called overshoot and is an attempt to remedy an optical
+  illusion. A curve actually needs to rise about 3% (of its diameter) above
+  the x-height for it to appear on the x-height.<BR CLEAR=ALL> -->
+  先ほど作成した“o”に戻りましょう。“o”が、x ハイトの印として置いたガイドラインから上に (ベースラインの下にも) 少しはみ出しているのが分かるでしょう。これはオーバーシュートと呼ばれるもので、目の錯覚を補正するためのものです。曲線が x ハイトと一致しているように見えるためには、およそ (直径の) 3% ふくらんでいる必要があります。<BR CLEAR=ALL>
+  <P>
+<!--
+  Let's look at "k". Again we will copy an "l" into it and import an appropriate
+  image.
+  “k”に目を向けましょう。また“l”を“k”にコピーして、続いて適切な画像を取り込みます。
+  <TABLE BORDER CELLPADDING="2" WIDTH=600>
+    <TR>
+      <TD><P ALIGN=Center>
+	<IMG src="../../_images/k1.png" WIDTH="87" HEIGHT="151"></TD>
+      <TD><P ALIGN=Center>
+	<IMG src="../../_images/k2.png" WIDTH="87" HEIGHT="151"></TD>
+      <TD><P ALIGN=Center>
+	<IMG src="../../_images/k3.png" WIDTH="87" HEIGHT="151"></TD>
+    </TR>
+    <TR VALIGN="Top">
+<!--  <TD>Import the "k" image and copy the "l" glyph. Note that the x-height line
+	matches the "k" (as we would hope). Also note that the width of the "l" is
+	inappropriate for "k" so we'll have to select it and drag it over.</TD> -->
+      <TD>“k”の画像を取り込み、“l”のグリフをコピーします。x ハイトの線が (期待どおりに)“k”と一致していることに注意してください。また、“l”の幅が "k" には不適切であるため、それをセレクトしてから重なり合うまでドラッグしなくてはならないことにも気をつけてください。</TD>
+<!--  <TD>Select the knife tool from the palette, and cut the stem of the "l" shape
+	at appropriate points for "k".</TD> -->
+      <TD>ナイフツールをパレットから選び、“l”字形のステムを“k”の適切な位置で分割します。</TD>
+<!--  <TD>Remove the splines between the cut points. An easy way to do this is
+	to grab the spline itself, (which selects its end points) and then do
+	<CODE>Edit -&gt; Clear</CODE>.</TD> -->
+      <TD>分割した点と点の間のスプラインを削除してください。これを行う一つの簡単な方法として、スプライン自体を掴み (これにより端点がセレクトされます) <CODE>編集(<U>E</U>)</CODE>→<CODE>クリア(<U>L</U>)</CODE> を行うやり方があります。</TD>
+    </TR>
+    <TABLE BORDER CELLPADDING="2" WIDTH=600>
+    <TR>
+      <TD><P ALIGN=Center>
+	<IMG src="../../_images/k4.png" WIDTH="87" HEIGHT="151"></TD>
+      <TD><P ALIGN=Center>
+	<IMG src="../../_images/k5.png" WIDTH="87" HEIGHT="151"></TD>
+      <TD><P ALIGN=Center>
+	<IMG src="../../_images/k6.png" WIDTH="87" HEIGHT="151"></TD>
+    </TR>
+    <TR VALIGN="Top">
+<!--  <TD>Select the end points and convert them into corner points with <CODE>Point
+	-&gt; Corner</CODE>.</TD>-->
+      <TD>端点をセレクトし、<CODE>点(<U>P</U>)</CODE>→<CODE>角の点(<U>C</U>)</CODE> で角の点に変換します。</TD>
+<!--  <TD>Then draw in the outer contour.</TD>-->
+      <TD>それから外側の輪郭を描きます。</TD>
+<!--  <TD>And the inner contour. Finally do an <CODE>Edit -&gt; Select -&gt; Select
+	All </CODE>and an <CODE>Element -&gt; Correct Direction</CODE>.</TD> -->
+      <TD>内側の輪郭も作ります。最後に <CODE>編集(<U>E</U>)</CODE>→<CODE>選択(<U>S</U>)</CODE>→<CODE>すべて選択(<U>A</U>)</CODE> と <CODE>エレメント(<U>L</U>)</CODE>→<CODE>パスの方向を修正(<U>C</U>)</CODE> を行います。</TD>
+    </TR>
+  </TABLE>
+  <P>
+  <P ALIGN=Center>
+  — <A HREF="editexample2.html">前</A> — <A HREF="overview.html">目次</A>
+  — <A HREF="editexample4.html">次</A> —
+</DIV>
+</BODY></HTML>
+  
