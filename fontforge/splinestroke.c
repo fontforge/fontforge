@@ -480,7 +480,7 @@ enum ShapeType NibIsValid(SplineSet *ss) {
 	return Shape_TooFewPoints;
     if ( ss->first->prev==NULL )
 	return Shape_NotClosed;
-    if ( !SplinePointListIsClockwise(ss) )
+    if ( SplinePointListIsClockwise(ss)!=1 )
 	return Shape_CCW;
     if ( ss->first->next->order2 )
 	return Shape_Quadratic;
@@ -2282,8 +2282,18 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
 	    else {
 		if ( c->rmov==srmov_contour )
 		    left = SplineSetRemoveOverlap(NULL,left,over_remove);
-		// Open paths don't always result in clockwise output
-		if ( !SplinePointListIsClockwise(left) )
+		// Open paths don't always produce clockwise output
+		is_ccw_mid = SplinePointListIsClockwise(left);
+		if ( is_ccw_mid==-1 && c->rmov!=srmov_none ) {
+		    assert( c->rmov!=srmov_contour );
+		    left = SplineSetRemoveOverlap(NULL,left,over_remove);
+		    is_ccw_mid = SplinePointListIsClockwise(left);
+		    assert( is_ccw_mid!=-1 );
+		} else if ( is_ccw_mid==-1 ) {
+		    LogError( _("Warning: Can't identify contour direction, "
+		                "assuming clockwise\n") );
+		}
+		if ( is_ccw_mid==0 )
 		    SplineSetReverse(left);
 	    }
 	}
