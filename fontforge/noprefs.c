@@ -154,6 +154,7 @@ static int cv_width;			/* in charview.c */
 static int cv_height;			/* in charview.c */
 static int mv_width;				/* in metricsview.c */
 static int mv_height;				/* in metricsview.c */
+static int fvmv_selectmax;			/* in metricsview.c */
 static int bv_width;				/* in bitmapview.c */
 static int bv_height;				/* in bitmapview.c */
 static int mvshowgrid;				/* in metricsview.c */
@@ -251,6 +252,7 @@ extras[] = {
     { N_("SplashScreen"), pr_bool, &splash, NULL, NULL, 'S', NULL, 0, N_("Show splash screen on start-up") },
     { N_("GlyphAutoGoto"), pr_bool, &cv_auto_goto, NULL, NULL, '\0', NULL, 0, N_("Typing a normal character in the glyph view window changes the window to look at that character") },
     { N_("OpenCharsInNewWindow"), pr_bool, &OpenCharsInNewWindow, NULL, NULL, '\0', NULL, 0, N_("When double clicking on a character in the font view\nopen that character in a new window, otherwise\nreuse an existing one.") },
+    { N_("FontViewMetricsViewSelectMax"), pr_int, &fvmv_selectmax, NULL, NULL, '\0', NULL, 0, N_("When characters are selected in the FontView, how many should be put into the MetricsView if you open one? Negative values mean there's no limit, which should be used sparingly.") },
     { N_("ArrowMoveSize"), pr_real, &arrowAmount, NULL, NULL, '\0', NULL, 0, N_("The number of em-units by which an arrow key will move a selected point") },
     { N_("ArrowAccelFactor"), pr_real, &arrowAccelFactor, NULL, NULL, '\0', NULL, 0, N_("Holding down the Shift key will speed up arrow key motion by this factor") },
     { N_("SnapDistance"), pr_real, &snapdistance, NULL, NULL, '\0', NULL, 0, N_("When the mouse pointer is within this many pixels\nof one of the various interesting features (baseline,\nwidth, grid splines, etc.) the pointer will snap\nto that feature.") },

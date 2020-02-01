@@ -169,6 +169,7 @@ extern float prefs_cvEditHandleSize;            /* in charview.c */
 extern int prefs_cvInactiveHandleAlpha;         /* in charview.c */
 extern int mv_width;				/* in metricsview.c */
 extern int mv_height;				/* in metricsview.c */
+extern int fvmv_selectmax;			/* in metricsview.c */
 extern int bv_width;				/* in bitmapview.c */
 extern int bv_height;				/* in bitmapview.c */
 extern int ask_user_for_cmap;			/* in parsettf.c */
@@ -335,6 +336,7 @@ static struct prefs_list {
   navigation_list[] = {
 	{ N_("GlyphAutoGoto"), pr_bool, &cv_auto_goto, NULL, NULL, '\0', NULL, 0, N_("Typing a normal character in the glyph view window changes the window to look at that character.\nEnabling GlyphAutoGoto will disable the shortcut where holding just the ` key will enable Preview mode as long as the key is held.") },
 	{ N_("OpenCharsInNewWindow"), pr_bool, &OpenCharsInNewWindow, NULL, NULL, '\0', NULL, 0, N_("When double clicking on a character in the font view\nopen that character in a new window, otherwise\nreuse an existing one.") },
+	{ N_("FontViewMetricsViewSelectMax"), pr_int, &fvmv_selectmax, NULL, NULL, '\0', NULL, 0, N_("When characters are selected in the FontView, how many should be put into the MetricsView if you open one? Negative values mean there's no limit, which should be used sparingly.") },
 	PREFS_LIST_EMPTY
 },
   editing_list[] = {

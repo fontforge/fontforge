@@ -57,6 +57,8 @@ extern char* SFDCreateUndoForLookup( SplineFont *sf, int lookup_type ) ;
 
 
 int mv_width = 800, mv_height = 300;
+// Maximum number of characters to transfer from CharView to MetricsView
+int fvmv_selectmax = 15;
 int mvshowgrid = mv_hidegrid;
 int mv_type = mv_widthonly;
 static int mv_antialias = true;
@@ -3097,24 +3099,21 @@ static void MVMenuRenderUsingHinting(GWindow gw, struct gmenuitem *UNUSED(mi), G
     GDrawRequestExpose(mv->v,NULL,false);
 }
 
-static void MVWindowTitle(char *buffer, int bufsize, MetricsView *mv) {
-
-    snprintf(buffer,bufsize,
-	    mv->type == mv_kernonly ?  _("Kerning Metrics For %.50s") :
-	    mv->type == mv_widthonly ? _("Advance Width Metrics For %.50s") :
-	                               _("Metrics For %.50s"),
-		  mv->sf->fontname);
+static char* MVWindowTitle(MetricsView *mv) {
+    return smprintf(mv->type == mv_kernonly ?  _("Kerning Metrics For %.50s") :
+	                mv->type == mv_widthonly ? _("Advance Width Metrics For %.50s") :
+	                                           _("Metrics For %.50s"), mv->sf->fontname);
 }
 
 static void MVMenuWindowType(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    char buf[120];
 
     mv_type = mv->type = mi->mid==MID_KernOnly  ? mv_kernonly :
 			 mi->mid==MID_WidthOnly ? mv_widthonly :
 			 mv_kernwidth;
-    MVWindowTitle(buf, sizeof(buf), mv);
+    char* buf = MVWindowTitle(mv);
     GDrawSetWindowTitles8(mv->gw, buf, buf);
+    free(buf); // GGDKDrawSetWindowTitles8 does a copy
     GDrawRequestExpose(mv->v, NULL, false);
     GDrawRequestExpose(mv->gw, NULL, false);
 }
@@ -5181,8 +5180,12 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     FontRequest rq;
     static GWindow icon = NULL;
     extern int _GScrollBar_Width;
-    // Max. glyphname length: 31, max. chars picked up: 15. 31*15 = 465
-    char buf[465], *pt;
+    // The maximum length of a glyph's name is 31 chars:
+    // https://docs.microsoft.com/en-us/typography/opentype/spec/recom#post-table
+#define MAXGLYPHNAME_LEN 31
+    unsigned int selectmax = fvmv_selectmax < 0 ? fv->b.sf->glyphcnt : fvmv_selectmax;
+    char *buf = malloc(selectmax * (MAXGLYPHNAME_LEN + 1) + 1);
+    char *pt;
     GTextInfo label;
     int i,j,cnt;
     int as,ds,ld;
@@ -5211,13 +5214,14 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_icon;
     wattrs.event_masks = ~(0);
     wattrs.cursor = ct_mypointer;
-    MVWindowTitle(buf,sizeof(buf),mv);
-    wattrs.utf8_window_title = buf;
+    char* titlebuf = MVWindowTitle(mv);
+    wattrs.utf8_window_title = titlebuf;
     wattrs.icon = icon;
     pos.x = pos.y = 0;
     pos.width = mv_width;
     pos.height = mv_height;
     mv->gw = gw = GDrawCreateTopWindow(NULL,&pos,mv_e_h,mv,&wattrs);
+    free(titlebuf);
     mv->width = pos.width; mv->height = pos.height;
     mv->gwgic = GDrawCreateInputContext(mv->gw,gic_root|gic_orlesser);
     GDrawSetGIC(gw,mv->gwgic,0,20);
@@ -5259,13 +5263,14 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     mv->fh = as+ds; mv->as = as;
 
     pt = buf;
-    mv->chars = calloc(mv->cmax=20,sizeof(SplineChar *));
+    // +1 because mv->chars is 0 terminated
+    mv->chars = calloc(mv->cmax=selectmax+1,sizeof(SplineChar *));
     if ( sc!=NULL ) {
 	mv->chars[mv->clen++] = sc;
     } else {
 	EncMap *map = fv->b.map;
-	for ( j=1; (j<=fv->sel_index || j<1) && mv->clen<15; ++j ) {
-	    for ( i=0; i<map->enccount && mv->clen<15; ++i ) {
+	for ( j=1; (j<=fv->sel_index || j<1) && mv->clen<selectmax; ++j ) {
+	    for ( i=0; i<map->enccount && mv->clen<selectmax; ++i ) {
 		int gid = map->map[i];
 		if ( gid!=-1 && fv->b.selected[i]==j && fv->b.sf->glyphs[gid]!=NULL ) {
 		    mv->chars[mv->clen++] = fv->b.sf->glyphs[gid];
@@ -5371,6 +5376,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     GDrawSetVisible(mv->v,true);
     GDrawSetVisible(gw,true);
     /*GWidgetHidePalettes();*/
+    free(buf);
 return( mv );
 }
 
