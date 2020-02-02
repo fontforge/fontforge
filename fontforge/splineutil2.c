@@ -162,7 +162,7 @@ return( v2-v1 > re );
     }
 }
 
-int RealNear(real a,real b) {
+bool RealNear(real a,real b) {
     real d = a-b;
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
     // These tighter equals-zero tests are retained for code tuned when
