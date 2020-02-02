@@ -65,7 +65,7 @@ if (ENABLE_MAINTAINER_TOOLS)
   add_executable(makebuildtables makebuildtables.c)
   target_link_libraries(makebuildtables PRIVATE fontforge_common_headers)
 
-  if(CMAKE_COMPILER_IS_GNUCC)
+  if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(makeutype PRIVATE -Wall)
     target_compile_options(makebuildtables PRIVATE -Wall)
   endif()

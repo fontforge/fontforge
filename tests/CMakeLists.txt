@@ -11,7 +11,7 @@ endif()
 
 add_executable(systestdriver systestdriver.c)
 target_link_libraries(systestdriver PRIVATE GLIB::GLIB)
-if(CMAKE_COMPILER_IS_GNUCC)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(systestdriver PRIVATE -Wall -pedantic)
 endif()
 

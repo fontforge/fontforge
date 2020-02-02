@@ -113,7 +113,7 @@ endfunction()
 function(enable_sanitizer type)
   if("${type}" STREQUAL "none")
     return()
-  elseif(NOT CMAKE_COMPILER_IS_GNUCC)
+  elseif(NOT CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     message(FATAL_ERROR "Require a GCC-like compiler to enable sanitizers.")
   endif()
 
