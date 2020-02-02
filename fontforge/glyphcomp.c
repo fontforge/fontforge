@@ -176,7 +176,8 @@ return( true );
 	if ( (adx = (3*s->splines[0].a* t + 2*s->splines[0].b)* t + s->splines[0].c)<0 ) adx = -adx;
 	if ( (ady = (3*s->splines[1].a* t + 2*s->splines[1].b)* t + s->splines[1].c)<0 ) ady = -ady;
 	for ( j=0; j<3; ++j ) {
-	    while ( s!=NULL ) {
+	    first = NULL;
+	    while ( s!=NULL && s!=first ) {
 		if ( adx>ady )
 		    CubicSolve(&s->splines[0], here->x+err*offset[j], ts);
 		else
@@ -199,6 +200,8 @@ return( true );
 		if ( t>.9 ||
 			(((dx=s->to->me.x-here->x)<=3 || dx<=3*err) && (dx>=-3 || dx>=-3*err) &&
 			 ((dy=s->to->me.y-here->y)<=3 || dy<=3*err ) && (dy>=-3 || dy>=-3*err)) ) {
+		    if ( first==NULL )
+			first = s;
 		    s = s->to->next;
 		    t = 0;
 		    if ( s!=NULL && (adx = (3*s->splines[0].a* t + 2*s->splines[0].b)* t + s->splines[0].c)<0 ) adx = -adx;
