@@ -1895,7 +1895,7 @@ return;
 	/*  assuming this lookup is tagged with a feature... */
 	if ( fl!=NULL )
 	for ( i=0; glyphs[i]!=0xffff; ++i ) if ( glyphs[i]<info->glyph_cnt ) {
-	    if ( info->chars[glyphs[i]]->name!=NULL ) {
+	    if ( info->chars[glyphs[i]]!=NULL && info->chars[glyphs[i]]->name!=NULL ) {
 		which = format==1 ? (uint16) (glyphs[i]+delta) : glyph2s[i];
 		if ( which<info->glyph_cnt && which>=0 && info->chars[which]!=NULL &&
 			info->chars[which]->name==NULL ) {
