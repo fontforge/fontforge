@@ -45,6 +45,7 @@
 #include <math.h>
 
 #define CIRCOFF 0.551915
+#define LOG_MAXDIM_ADJ (1.302585)
 
 // Rounding makes even slope-continuous splines only approximately so.
 #define INTERSPLINE_MARGIN (1e-1)
@@ -99,6 +100,7 @@ typedef struct strokecontext {
     int n;
     NibCorner *nibcorners;
     BasePoint pseudo_origin;
+    bigreal log_maxdim;
     unsigned int jlrelative: 1;
     unsigned int ecrelative: 1;
     unsigned int remove_inner: 1;
@@ -1087,7 +1089,7 @@ static int SplineStrokeFindCorner(BasePoint sxy, BasePoint txy, NibOffset *no) {
  * should be to avoid cumulative append errors.
  */
 static int SplineStrokeAppendFixup(SplinePoint *tailp, BasePoint sxy,
-                                   NibOffset *no, int is_ccw) {
+                                   NibOffset *no, int is_ccw, bigreal fudge) {
     bigreal mg, mg2;
     BasePoint oxy, oxy2, dxy, dxy2;
 
@@ -1105,9 +1107,9 @@ static int SplineStrokeAppendFixup(SplinePoint *tailp, BasePoint sxy,
 	oxy = SplineStrokeVerifyCorner(sxy, tailp->me, no, is_ccw, &dxy, &mg);
 
     // assert( mg < 1 );
-    if ( mg > FIXUP_MARGIN ) {
+    if ( mg > FIXUP_MARGIN*fudge ) {
 	LogError(_("Warning: Coordinate diff %lf greater than margin %lf\n"),
-	         mg, FIXUP_MARGIN);
+	         mg, FIXUP_MARGIN*fudge);
     }
 
     tailp->prevcp = BPAdd(tailp->prevcp, dxy);
@@ -1611,7 +1613,8 @@ static void DoubleBackJC(StrokeContext *c, SplineSet *cur, BasePoint sxy,
     if ( (is_cap && c->cap==lc_round) || (!is_cap && c->join==lj_round) ) {
 	arcut = BPRevIf(bk, ut);
 	SSAppendArc(cur, fsw/2, 0, UTZERO, arcut, BPRev(arcut), bk, false);
-	assert( BPWithin(cur->last->me, p2, INTERSPLINE_MARGIN*5) );
+	assert( BPWithin(cur->last->me, p2,
+	                 c->log_maxdim*INTERSPLINE_MARGIN*5) );
 	cur->last->me = p2;
     } else
 	SplineSetLineTo(cur, p2);
@@ -1636,12 +1639,13 @@ static void NibJoin(JoinParams *jpp) {
     NibOffset no_fm;
     SplinePoint *sp;
     int ccw_fm;
+    bigreal lmd = jpp->c->log_maxdim;
 
     CalcNibOffset(jpp->c, jpp->ut_fm, jpp->is_right, &no_fm, -1);
-    ccw_fm = SplineStrokeAppendFixup(jpp->cur->last, jpp->sxy, &no_fm, -1);
+    ccw_fm = SplineStrokeAppendFixup(jpp->cur->last, jpp->sxy, &no_fm, -1, lmd);
     sp = AddNibPortion(jpp->c->nibcorners, jpp->cur->last, &no_fm, ccw_fm,
                        jpp->no_to, jpp->ccw_to, !jpp->bend_is_ccw);
-    SplineStrokeAppendFixup(sp, jpp->sxy, jpp->no_to, jpp->ccw_to);
+    SplineStrokeAppendFixup(sp, jpp->sxy, jpp->no_to, jpp->ccw_to, lmd);
     jpp->cur->last = sp;
 }
 
@@ -2079,9 +2083,10 @@ static int _HandleJoin(JoinParams *jpp) {
 
     assert( cur->first!=NULL );
 
-    if ( BPWithin(cur->last->me, oxy, INTERSPLINE_MARGIN) ) {
+    if ( BPWithin(cur->last->me, oxy, jpp->c->log_maxdim*INTERSPLINE_MARGIN) ) {
 	// Close enough to just move the point
-	SplineStrokeAppendFixup(cur->last, jpp->sxy, jpp->no_to, jpp->ccw_to);
+	SplineStrokeAppendFixup(cur->last, jpp->sxy, jpp->no_to, jpp->ccw_to,
+	                        c->log_maxdim);
 	is_flat = true;
     } else if ( RealWithin(costheta, 1, COS_MARGIN) ) {
 	SplineSetLineTo(cur, oxy);
@@ -2152,7 +2157,7 @@ static void HandleCap(StrokeContext *c, SplineSet *cur, BasePoint sxy,
 	corner_to = SplineStrokeFindCorner(sxy, oxy, &no_to);
 	sp = AddNibPortion(c->nibcorners, cur->last, &no_fm, corner_fm, &no_to,
 	                   corner_to, !is_right);
-	SplineStrokeAppendFixup(sp, sxy, &no_to, corner_to);
+	SplineStrokeAppendFixup(sp, sxy, &no_to, corner_to, c->log_maxdim);
 	cur->last = sp;
     }
 }
@@ -2244,7 +2249,8 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
 		    sxy = SPLINEPVAL(s, t);
 		    CalcNibOffset(c, ut_mid, is_right, &no, no.nci[is_ccw_mid]);
 		    is_ccw_mid = SplineTurningCCWAt(s, t);
-		    SplineStrokeAppendFixup(cur->last, sxy, &no, -1);
+		    SplineStrokeAppendFixup(cur->last, sxy, &no, -1,
+		                            c->log_maxdim);
 
 		    if ( t < 1.0 )
 			HandleFlat(cur, sxy, &no, is_ccw_mid);
@@ -2271,12 +2277,12 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
 	SplineSetReverse(right);
 	left->next = right;
 	right = NULL;
-	SplineSetJoin(left, true, FIXUP_MARGIN, &closed);
+	SplineSetJoin(left, true, FIXUP_MARGIN*c->log_maxdim, &closed);
 	if ( !closed )
 	     LogError( _("Warning: Contour end did not close\n") );
 	else {
 	    HandleCap(c, left, ss->first->me, ut_ini, left->first->me, false);
-	    SplineSetJoin(left, true, FIXUP_MARGIN, &closed);
+	    SplineSetJoin(left, true, FIXUP_MARGIN*c->log_maxdim, &closed);
 	    if ( !closed )
 		LogError( _("Warning: Contour start did not close\n") );
 	    else {
@@ -2305,7 +2311,8 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
 	    CalcNibOffset(c, ut_ini, false, &no, -1);
 	    HandleJoin(c, ss->first->next, left, ss->first->me, &no,
 	               is_ccw_ini, ut_endlast, was_ccw, false);
-            left = SplineSetJoin(left, true, FIXUP_MARGIN, &closed);
+            left = SplineSetJoin(left, true, FIXUP_MARGIN*c->log_maxdim,
+	                         &closed);
 	    if ( !closed )
 		LogError( _("Warning: Left contour did not close\n") );
 	    else if ( c->rmov==srmov_contour )
@@ -2317,7 +2324,8 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
 	    CalcNibOffset(c, ut_ini, true, &no, -1);
 	    HandleJoin(c, ss->first->next, right, ss->first->me, &no,
 	               is_ccw_ini, ut_endlast, was_ccw, true);
-            right = SplineSetJoin(right, true, FIXUP_MARGIN, &closed);
+            right = SplineSetJoin(right, true, FIXUP_MARGIN*c->log_maxdim,
+	                          &closed);
 	    if ( !closed )
 		LogError( _("Warning: Right contour did not close\n") );
 	    else {
@@ -2507,7 +2515,7 @@ SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
     int max_pc;
     StrokeContext c;
     SplineSet *nibs, *nib, *first, *last, *cur;
-    bigreal sn = 0.0, co = 1.0, mr, wh_ratio;
+    bigreal sn = 0.0, co = 1.0, mr, wh_ratio, maxdim;
     DBounds b;
     real trans[6];
     struct simplifyinfo smpl = { sf_forcelines | sf_mergelines |
@@ -2574,6 +2582,7 @@ SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
 	trans[1] *= si->width/2;
 	trans[2] *= mr;
 	trans[3] *= mr;
+	maxdim = fmax(si->width/2, mr);
     } else {
 	c.nibtype = nib_convex;
 	max_pc = 20; // a guess, will be reallocated if needed
@@ -2586,7 +2595,13 @@ SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
 	    c.pseudo_origin.x = (b.minx+b.maxx)/2;
 	    c.pseudo_origin.y = (b.miny+b.maxy)/2;
 	}
+	// Close enough
+	maxdim = sqrt(pow(b.maxx-b.minx, 2) + pow(b.maxy-b.miny, 2))/2.0;
     }
+    // Increases at the rate of the natural log, but with the "1 point" set
+    // to radius 10
+    c.log_maxdim = fmax(1.0, log(fmax(maxdim, mr))-LOG_MAXDIM_ADJ);
+
     SplinePointListTransformExtended(nibs,trans,tpt_AllPoints,
 	                             tpmask_dontTrimValues);
 
