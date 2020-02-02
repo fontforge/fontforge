@@ -4904,10 +4904,14 @@ return;
 	    else {
 		for ( i=0; i<count; ++i ) {
 		    int gid = getushort(ttf);
-		    if ( dounicode )
-			info->chars[gid]->unicodeenc = trans!=NULL ? trans[first+i] : first+i;
-		    if ( map!=NULL && first+i < map->enccount )
-			map->map[first+i] = gid;
+		    if ( dounicode ) {
+			if ( gid<info->glyph_cnt ) {
+			    info->chars[gid]->unicodeenc = trans!=NULL ? trans[first+i] : first+i;
+			    if ( map!=NULL && first+i < map->enccount )
+				map->map[first+i] = gid;
+			} else
+			    LogError( _("Warning: gid %d larger than glyph_cnt %d, skipping\n"), gid, info->glyph_cnt);
+		    }
 		}
 	    }
 	} else if ( format==2 ) {
