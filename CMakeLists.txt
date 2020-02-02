@@ -75,7 +75,7 @@ build_option(ENABLE_FREETYPE_DEBUGGER PATH "" "Use FreeType's internal debugger 
 build_option(REAL_TYPE ENUM "double" "Sets the floating point type used." "double" "float")
 build_option(THEME     ENUM "tango"  "Sets the GUI theme." "tango" "2012")
 
-if(CMAKE_COMPILER_IS_GNUCC)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   list(APPEND _test_flags CFLAGS -Werror=implicit-function-declaration -Werror=int-conversion)
   if(CMAKE_GENERATOR STREQUAL "Ninja") # https://github.com/ninja-build/ninja/wiki/FAQ
     list(APPEND _test_flags BOTH -fdiagnostics-color=always)
