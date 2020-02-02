@@ -300,7 +300,7 @@ static int SSRmNullSplines(SplineSet *spl) {
     Spline *s, *first, *next;
 
     first = NULL;
-    for ( s=spl->first->next ; s!=first; s=next ) {
+    for ( s=spl->first->next ; s!=first && s!=NULL; s=next ) {
 	next = s->to->next;
 	if ( ((s->splines[0].a>-.01 && s->splines[0].a<.01 &&
 		s->splines[0].b>-.01 && s->splines[0].b<.01 &&
@@ -361,7 +361,7 @@ return( start );
 return( start );
 
     first = NULL;
-    for ( s=spl->first->next; s!=first; s=s->to->next ) {
+    for ( s=spl->first->next; s!=first && s!=NULL; s=s->to->next ) {
 	if ( first==NULL ) first = s;
 	cnt = Spline2DFindExtrema(s,ts);
 	lastt = 0;
