@@ -2111,16 +2111,14 @@ return( NULL );
 	    memcpy(map->map,encoded,base*sizeof(int32));
 	if ( extras>0 )
 	    memcpy(map->map+base,unencoded,extras*sizeof(int32));
-    } else
-	map->map = NULL;
+    }
     map->backmax = sf->glyphcnt;
     if ( sf->glyphcnt>0 ) {
 	map->backmap = malloc(sf->glyphcnt*sizeof(int32));
 	memset(map->backmap,-1,sf->glyphcnt*sizeof(int32));	/* Just in case there are some unencoded glyphs (duplicates perhaps) */
 	for ( i = map->enccount-1; i>=0; --i ) if ( map->map[i]!=-1 )
 	    map->backmap[map->map[i]] = i;
-    } else
-	map->backmap = NULL;
+    }
     map->enc = enc;
 
     free(encoded);
