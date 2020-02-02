@@ -2016,7 +2016,7 @@ return( true );
 
 EncMap *EncMapFromEncoding(SplineFont *sf,Encoding *enc) {
     int i,j, extras, found, base, unmax;
-    int32 *encoded, *unencoded;
+    int32 *encoded=NULL, *unencoded=NULL;
     EncMap *map;
     struct altuni *altuni;
     SplineChar *sc;
@@ -2031,10 +2031,14 @@ return( NULL );
 	base = 256;
     else if ( enc->char_cnt<=0x10000 )
 	base = 0x10000;
-    encoded = malloc(base*sizeof(int32));
-    memset(encoded,-1,base*sizeof(int32));
-    unencoded = malloc(sf->glyphcnt*sizeof(int32));
-    unmax = sf->glyphcnt;
+    if ( base>0 ) {
+	encoded = malloc(base*sizeof(int32));
+	memset(encoded,-1,base*sizeof(int32));
+    }
+    if ( sf->glyphcnt>0 ) {
+	unencoded = malloc(sf->glyphcnt*sizeof(int32));
+	unmax = sf->glyphcnt;
+    }
 
     for ( i=extras=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
 	found = false;
@@ -2101,14 +2105,20 @@ return( NULL );
 
     map = chunkalloc(sizeof(EncMap));
     map->enccount = map->encmax = base + extras;
-    map->map = malloc(map->enccount*sizeof(int32));
-    memcpy(map->map,encoded,base*sizeof(int32));
-    memcpy(map->map+base,unencoded,extras*sizeof(int32));
+    if ( map->enccount>0 ) {
+	map->map = malloc(map->enccount*sizeof(int32));
+	if ( base>0 )
+	    memcpy(map->map,encoded,base*sizeof(int32));
+	if ( extras>0 )
+	    memcpy(map->map+base,unencoded,extras*sizeof(int32));
+    }
     map->backmax = sf->glyphcnt;
-    map->backmap = malloc(sf->glyphcnt*sizeof(int32));
-    memset(map->backmap,-1,sf->glyphcnt*sizeof(int32));	/* Just in case there are some unencoded glyphs (duplicates perhaps) */
-    for ( i = map->enccount-1; i>=0; --i ) if ( map->map[i]!=-1 )
-	map->backmap[map->map[i]] = i;
+    if ( sf->glyphcnt>0 ) {
+	map->backmap = malloc(sf->glyphcnt*sizeof(int32));
+	memset(map->backmap,-1,sf->glyphcnt*sizeof(int32));	/* Just in case there are some unencoded glyphs (duplicates perhaps) */
+	for ( i = map->enccount-1; i>=0; --i ) if ( map->map[i]!=-1 )
+	    map->backmap[map->map[i]] = i;
+    }
     map->enc = enc;
 
     free(encoded);
