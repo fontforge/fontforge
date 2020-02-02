@@ -2016,7 +2016,7 @@ return( true );
 
 EncMap *EncMapFromEncoding(SplineFont *sf,Encoding *enc) {
     int i,j, extras, found, base, unmax;
-    int32 *encoded, *unencoded;
+    int32 *encoded=NULL, *unencoded=NULL;
     EncMap *map;
     struct altuni *altuni;
     SplineChar *sc;
