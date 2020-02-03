@@ -162,29 +162,20 @@ return( v2-v1 > re );
     }
 }
 
-int RealNear(real a,real b) {
-    real d;
-
+bool RealNear(real a,real b) {
+    real d = a-b;
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
+    // These tighter equals-zero tests are retained for code tuned when
+    // passing zero as a constant
     if ( a==0 )
-return( b>-1e-8 && b<1e-8 );
+	return b>-1e-8 && b<1e-8;
     if ( b==0 )
-return( a>-1e-8 && a<1e-8 );
+	return a>-1e-8 && a<1e-8;
 
-    d = a/(1024*1024.);
+    return d>-1e-6 && d<1e-6;
 #else		/* For floats */
-    if ( a==0 )
-return( b>-1e-5 && b<1e-5 );
-    if ( b==0 )
-return( a>-1e-5 && a<1e-5 );
-
-    d = a/(1024*64.);
+    return d>-1e-5 && d<1e-5
 #endif
-    a-=b;
-    if ( d<0 )
-return( a>d && a<-d );
-    else
-return( a>-d && a<d );
 }
 
 int RealNearish(real a,real b) {

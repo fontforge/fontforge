@@ -2134,7 +2134,7 @@ extern const unichar_t *_uGetModifiers(const unichar_t *fontname, const unichar_
 extern void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes);
 extern void SplineFontSetUnChanged(SplineFont *sf);
 
-extern int RealNear(real a,real b);
+extern bool RealNear(real a,real b);
 
 
 extern void UndoesFree(Undoes *undo);
