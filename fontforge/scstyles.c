@@ -1565,7 +1565,7 @@ return;
 	AlignPointPair( stem,stem->keypts[1],stem->keypts[3],hscale,vscale );
 }
 
-static void ChangeGlyph( SplineChar *sc_sc, SplineChar *orig_sc, int layer, struct genericchange *genchange ) {
+void ChangeGlyph( SplineChar *sc_sc, SplineChar *orig_sc, int layer, struct genericchange *genchange ) {
     real scale[6];
     DBounds orig_b, new_b;
     int i, dcnt = 0, removeoverlap = true;
