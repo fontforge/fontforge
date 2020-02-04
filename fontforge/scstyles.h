@@ -17,6 +17,8 @@ extern SplineSet *SSControlStems(SplineSet *ss, double stemwidthscale, double st
 extern void ChangeXHeight(FontViewBase *fv, CharViewBase *cv, struct xheightinfo *xi);
 extern void CI_Init(struct counterinfo *ci, SplineFont *sf);
 extern void CVEmbolden(CharViewBase *cv, enum embolden_type type, struct lcg_zones *zones);
+extern void ChangeGlyph(SplineChar *sc_sc, SplineChar *orig_sc, int layer,
+                        struct genericchange *genchange);
 extern void CVGenericChange(CharViewBase *cv, struct genericchange *genchange);
 extern void FVAddSmallCaps(FontViewBase *fv, struct genericchange *genchange);
 extern void FVCondenseExtend(FontViewBase *fv, struct counterinfo *ci);

@@ -8353,6 +8353,38 @@ return( NULL );
 return( result );
 }
 
+static bool PyFFParse_genericGlyphChange(PyObject *args, PyObject *keywds,
+                                         struct genericchange *genchange);
+
+static PyObject *PyFFGlyph_genericGlyphChange(PyFF_Glyph *self, PyObject *args,
+                                              PyObject *keywds) {
+    SplineChar *sc = self->sc;
+    struct genericchange genchange;
+    struct smallcaps small;
+
+    if ( self->layer < 0 )
+	Py_RETURN( self );
+
+    if ( !PyFFParse_genericGlyphChange(args, keywds, &genchange) )
+	return NULL;
+
+    SmallCapsFindConstants(&small,sc->parent,self->layer);
+    genchange.small = &small;
+    genchange.italic_angle = small.italic_angle;
+    genchange.tan_ia = small.tan_ia;
+
+    genchange.g.cnt = genchange.m.cnt+2;
+    genchange.g.maps = malloc(genchange.g.cnt*sizeof(struct position_maps));
+
+    if ( sc->layers[self->layer].splines!=NULL )
+	ChangeGlyph(sc,sc,self->layer,&genchange);
+
+    free(genchange.g.maps);
+    free(genchange.m.maps);
+
+    Py_RETURN( self );
+}
+
 static PyObject *PyFFGlyph_addHint(PyObject *self, PyObject *args) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int layer = ((PyFF_Glyph *) self)->layer;
@@ -9500,6 +9532,7 @@ static PyMethodDef PyFF_Glyph_methods[] = {
     { "correctDirection", (PyCFunction) PyFFGlyph_Correct, METH_NOARGS, "Orient a layer so that external contours are clockwise and internal counter clockwise." },
     { "exclude", (PyCFunction) PyFFGlyph_Exclude, METH_VARARGS, "Exclude the area of the argument (a layer) from the current glyph"},
     { "export", PyFFGlyph_export, METH_VARARGS, "Export the glyph, the format is determined by the extension. (provide the filename of the image file)" },
+    { "genericGlyphChange", (PyCFunction) PyFFGlyph_genericGlyphChange, METH_VARARGS | METH_KEYWORDS, "Rather like changeWeight or condenseExtend, called 'Change Glyph' in UI"},
     { "getPosSub", PyFFGlyph_getPosSub, METH_VARARGS, "Gets position/substitution data from the glyph"},
     { "importOutlines", PyFFGlyph_import, METH_VARARGS, "Import a background image or a foreground eps/svg/etc. (provide the filename of the image file)" },
     { "intersect", (PyCFunction) PyFFGlyph_Intersect, METH_NOARGS, "Leaves the areas where the contours of a glyph overlap."},
@@ -17403,11 +17436,10 @@ static const char *genchange_keywords[] = {
 	"vMap",
 	NULL};
 
-static PyObject *PyFFFont_genericGlyphChange(PyFF_Font *self, PyObject *args, PyObject *keywds) {
-    FontViewBase *fv;
-    struct smallcaps small;
-    struct genericchange genchange;
-    const char *stemtype = "uniform", *hcountertype="uniform", *vCounterType="mapped";
+static bool PyFFParse_genericGlyphChange(PyObject *args, PyObject *keywds,
+                                         struct genericchange *genchange) {
+    const char *stemtype = "uniform", *hcountertype="uniform";
+    const char *vCounterType="mapped";
     double thickthreshold=0,
 	stemscale=0, stemadd=0,
 	stemheightscale=0, thinstemscale=0,
@@ -17422,13 +17454,10 @@ static PyObject *PyFFFont_genericGlyphChange(PyFF_Font *self, PyObject *args, Py
 	vScale=1.0;
     PyObject *vMap=NULL;
 
-    if ( CheckIfFontClosed(self) )
-return (NULL);
-    fv = self->fv;
-    memset(&genchange,0,sizeof(genchange));
-    SmallCapsFindConstants(&small,fv->sf,fv->active_layer);
-    genchange.small = &small;
-    genchange.gc = gc_generic;
+    memset(genchange,0,sizeof(struct genericchange));
+
+    genchange->gc = gc_generic;
+
     if ( !PyArg_ParseTupleAndKeywords(args,keywds,"|sdddddddddddisddddddsdddO",(char **)genchange_keywords,
 /* Stem info */
 	    &stemtype,
@@ -17449,152 +17478,171 @@ return (NULL);
 	    &vCounterScale, vCounterAdd,
 	    &vScale,
 	    &vMap
-	    ))
-return( NULL );
+	    ) )
+	return false;
 
 /* Stem info */
     if ( strcasecmp(stemtype,"uniform")==0 ) {
 	if ( stemscale<=0 ) {
 	    PyErr_Format(PyExc_TypeError, "Unexpected (or unspecified) value for stemScale: %g.", stemscale );
-return( NULL );
+	    return false;
 	}
-	genchange.stem_width_scale = genchange.stem_height_scale = stemscale;
-	genchange.stem_width_add   = genchange.stem_height_add = stemadd;
+	genchange->stem_width_scale = genchange->stem_height_scale = stemscale;
+	genchange->stem_width_add   = genchange->stem_height_add = stemadd;
     } else if ( strcasecmp( stemtype, "thickThin" )==0 ) {
 	if ( thinstemscale<=0 ) {
 	    PyErr_Format(PyExc_TypeError, "Unexpected (or unspecified) value for thinStemScale: %g.", thinstemscale );
-return( NULL );
+	    return false;
 	}
 	if ( thickstemscale<=0 ) {
 	    PyErr_Format(PyExc_TypeError, "Unexpected (or unspecified) value for thickStemScale: %g.", thickstemscale );
-return( NULL );
+	    return false;
 	}
 	if ( thickthreshold<=0 ) {
 	    PyErr_Format(PyExc_TypeError, "Unexpected (or unspecified) value for thickThreshold: %g.", thickthreshold );
-return( NULL );
+	    return false;
 	}
-	genchange.stem_width_scale  = thickstemscale;
-	genchange.stem_width_add    = thickstemadd;
-	genchange.stem_height_scale = thinstemscale;
-	genchange.stem_height_add   = thinstemadd;
-	genchange.stem_threshold    = thickthreshold;
+	genchange->stem_width_scale  = thickstemscale;
+	genchange->stem_width_add    = thickstemadd;
+	genchange->stem_height_scale = thinstemscale;
+	genchange->stem_height_add   = thinstemadd;
+	genchange->stem_threshold    = thickthreshold;
     } else if ( strcasecmp( stemtype, "horizontalVertical" )==0 ) {
 	if ( stemheightscale<=0 ) {
 	    PyErr_Format(PyExc_TypeError, "Unexpected (or unspecified) value for stemHeightScale: %g.", stemheightscale );
-return( NULL );
+	    return false;
 	}
 	if ( stemwidthscale<=0 ) {
 	    PyErr_Format(PyExc_TypeError, "Unexpected (or unspecified) value for stemWidthScale: %g.", stemwidthscale );
-return( NULL );
+	    return false;
 	}
-	genchange.stem_width_scale  = stemwidthscale;
-	genchange.stem_width_add    = stemwidthadd;
-	genchange.stem_height_scale = stemheightscale;
-	genchange.stem_height_add   = stemheightadd;
+	genchange->stem_width_scale  = stemwidthscale;
+	genchange->stem_width_add    = stemwidthadd;
+	genchange->stem_height_scale = stemheightscale;
+	genchange->stem_height_add   = stemheightadd;
     } else {
 	PyErr_Format(PyExc_TypeError, "Unexpected value for stemType: %s\n (Try: 'uniform', 'thickThin', or 'horizontalVertical')", stemtype );
-return( NULL );
+	return false;
     }
-    genchange.dstem_control         = processdiagonalstems;
-    if ( genchange.stem_height_add!=genchange.stem_width_add ) {
-	if (( genchange.stem_height_add==0 && genchange.stem_width_add!=0 ) ||
-		( genchange.stem_height_add!=0 && genchange.stem_width_add==0 )) {
+    genchange->dstem_control         = processdiagonalstems;
+    if ( genchange->stem_height_add!=genchange->stem_width_add ) {
+	if (( genchange->stem_height_add==0 && genchange->stem_width_add!=0 ) ||
+		( genchange->stem_height_add!=0 && genchange->stem_width_add==0 )) {
 	    PyErr_SetString(PyExc_TypeError, _("The horizontal and vertical stem add amounts must either both be zero, or neither may be 0"));
-return( NULL );
+	    return false;
 	}
 	/* if width_add has a different sign than height_add that's also */
 	/*  a problem, but this test will catch that too */
-	if (( genchange.stem_height_add/genchange.stem_width_add>4 ) ||
-		( genchange.stem_height_add/genchange.stem_width_add<.25 )) {
+	if (( genchange->stem_height_add/genchange->stem_width_add>4 ) ||
+		( genchange->stem_height_add/genchange->stem_width_add<.25 )) {
 	     PyErr_SetString(PyExc_TypeError, _("The horizontal and vertical stem add amounts may not differ by more than a factor of 4"));
-return( NULL );
+	     return false;
 	}
     }
 
-/* Horizontal counter info */
+    /* Horizontal counter info */
     if ( strcasecmp(hcountertype,"uniform")==0 ) {
 	if ( counterScale<=0 ) {
 	    PyErr_Format(PyExc_TypeError, "Unexpected (or unspecified) value for hCounterScale: %g.", counterScale );
-return( NULL );
+	    return false;
 	}
-	genchange.hcounter_scale = genchange.lsb_scale = genchange.rsb_scale = counterScale;
-	genchange.hcounter_add   = genchange.lsb_add   = genchange.rsb_add   = counterAdd;
+	genchange->hcounter_scale = genchange->lsb_scale = genchange->rsb_scale = counterScale;
+	genchange->hcounter_add   = genchange->lsb_add   = genchange->rsb_add   = counterAdd;
     } else if ( strcasecmp(hcountertype,"nonUniform")==0 ) {
 	if ( counterScale<=0 ) {
 	    PyErr_Format(PyExc_TypeError, "Unexpected (or unspecified) value for hCounterScale: %g.", counterScale );
-return( NULL );
+	    return false;
 	}
 	if ( lsbScale<=0 ) {
 	    PyErr_Format(PyExc_TypeError, "Unexpected (or unspecified) value for lsbScale: %g.", lsbScale );
-return( NULL );
+	    return false;
 	}
 	if ( rsbScale<=0 ) {
 	    PyErr_Format(PyExc_TypeError, "Unexpected (or unspecified) value for rsbScale: %g.", rsbScale );
-return( NULL );
+	    return false;
 	}
-	genchange.hcounter_scale = counterScale;
-	genchange.lsb_scale      = lsbScale;
-	genchange.rsb_scale      = rsbScale;
-	genchange.hcounter_add   = counterAdd;
-	genchange.lsb_add        = lsbAdd;
-	genchange.rsb_add        = rsbAdd;
+	genchange->hcounter_scale = counterScale;
+	genchange->lsb_scale      = lsbScale;
+	genchange->rsb_scale      = rsbScale;
+	genchange->hcounter_add   = counterAdd;
+	genchange->lsb_add        = lsbAdd;
+	genchange->rsb_add        = rsbAdd;
     } else if ( strcasecmp(hcountertype,"center")==0 ) {
-	genchange.center_in_hor_advance = 1;
+	genchange->center_in_hor_advance = 1;
     } else if ( strcasecmp(hcountertype,"retainScale")==0 ) {
-	genchange.center_in_hor_advance = 2;
+	genchange->center_in_hor_advance = 2;
     } else {
 	PyErr_Format(PyExc_TypeError, "Unexpected value for hCounterType: %s\n (Try: 'uniform', 'nonUniform', 'retain', or 'scale')", hcountertype );
-return( NULL );
+	return false;
     }
 
-/* Vertical counter info */
+    /* Vertical counter info */
     if ( strcasecmp(vCounterType,"scaled")==0 ) {
 	if ( vCounterScale<=0 ) {
 	    PyErr_Format(PyExc_TypeError, "Unexpected (or unspecified) value for vCounterScale: %g.", vCounterScale );
-return( NULL );
+	    return false;
 	}
-	genchange.vcounter_scale = vCounterScale;
-	genchange.vcounter_add   = vCounterAdd;
-	genchange.use_vert_mapping = false;
+	genchange->vcounter_scale = vCounterScale;
+	genchange->vcounter_add   = vCounterAdd;
+	genchange->use_vert_mapping = false;
     } else if ( strcasecmp(vCounterType,"mapped")==0 ) {
 	int cnt,i;
-	genchange.use_vert_mapping = true;
+	genchange->use_vert_mapping = true;
 	if ( vScale<=0 ) {
 	    PyErr_Format(PyExc_TypeError, "Unexpected (or unspecified) value for vScale: %g.", vScale );
-return( NULL );
+	    return false;
 	}
-	genchange.v_scale = vScale;
+	genchange->v_scale = vScale;
 	if ( vMap==NULL || !PySequence_Check(vMap) || STRING_CHECK(vMap)) {
 	    PyErr_Format(PyExc_TypeError, "vMap should be a tuple (or some other sequence type)." );
-return( NULL );
+	    return false;
 	}
 	cnt = PySequence_Size(vMap);
-	genchange.m.cnt = cnt;
-	genchange.m.maps = malloc(cnt*sizeof(struct position_maps));
+	genchange->m.cnt = cnt;
+	genchange->m.maps = malloc(cnt*sizeof(struct position_maps));
 	for ( i=0; i<cnt; ++i ) {
 	    PyObject *subTuple = PySequence_GetItem(vMap,i);
 	    if ( subTuple==NULL || !PySequence_Check(subTuple) || STRING_CHECK(subTuple) || PySequence_Size(subTuple)!=3 ) {
 		PyErr_Format(PyExc_TypeError, "vMap should be a tuple of 3-tuples." );
-		free(genchange.m.maps);
-return( NULL );
+		free(genchange->m.maps);
+		return false;
 	    }
 	    if ( !PyArg_ParseTuple(subTuple,"ddd",
-		    &genchange.m.maps[i].current,
-		    &genchange.m.maps[i].desired,
-		    &genchange.m.maps[i].cur_width) ) {
-		free(genchange.m.maps);
-return( NULL );
+		    &genchange->m.maps[i].current,
+		    &genchange->m.maps[i].desired,
+		    &genchange->m.maps[i].cur_width) ) {
+		free(genchange->m.maps);
+		return false;
 	    }
 	}
     } else {
 	PyErr_Format(PyExc_TypeError, "Unexpected value for vCounterType: %s\n (Try: 'scaled', or 'mapped')", vCounterType );
-return( NULL );
+	return false;
     }
+    return true;
+}
+
+static PyObject *PyFFFont_genericGlyphChange(PyFF_Font *self, PyObject *args,
+                                             PyObject *keywds) {
+    FontViewBase *fv;
+    struct genericchange genchange;
+    struct smallcaps small;
+
+    if ( CheckIfFontClosed(self) )
+	return NULL;
+
+    fv = self->fv;
+
+    if ( !PyFFParse_genericGlyphChange(args, keywds, &genchange) )
+	return NULL;
+
+    SmallCapsFindConstants(&small,fv->sf,fv->active_layer);
+    genchange.small = &small;
 
     FVGenericChange( fv, &genchange );
     free(genchange.m.maps);
 
-Py_RETURN( self );
+    Py_RETURN( self );
 }
 
 static PyObject *PyFFFont_autoHint(PyFF_Font *self, PyObject *UNUSED(args)) {
@@ -17968,7 +18016,7 @@ PyMethodDef PyFF_Font_methods[] = {
     /*{ "compareGlyphs", (PyCFunction) PyFFFont_compareGlyphs, METH_VARARGS, "Compares two sets of glyphs"},*/
     /* compareGlyphs assumes an old scripting context */
     { "correctDirection", (PyCFunction) PyFFFont_correctDirection, METH_NOARGS, "Orient a layer so that external contours are clockwise and internal counter clockwise." },
-    { "genericGlyphChange", (PyCFunction) PyFFFont_genericGlyphChange, METH_VARARGS | METH_KEYWORDS, "Rather like changeWeight or condenseExtend but with more options."},
+    { "genericGlyphChange", (PyCFunction) PyFFFont_genericGlyphChange, METH_VARARGS | METH_KEYWORDS, "Rather like changeWeight or condenseExtend, called 'Change Glyph' in UI"},
     { "italicize", (PyCFunction) PyFFFont_italicize, METH_VARARGS | METH_KEYWORDS, "Italicize the selected glyphs"},
     { "intersect", (PyCFunction) PyFFFont_Intersect, METH_NOARGS, "Leaves the areas where the contours of a glyph overlap."},
     { "removeOverlap", (PyCFunction) PyFFFont_RemoveOverlap, METH_NOARGS, "Remove overlapping areas from a glyph"},
