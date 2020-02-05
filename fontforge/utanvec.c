@@ -35,6 +35,7 @@
 #include <assert.h>
 
 #define UTMARGIN (1e-8)
+#define UTSOFTMARGIN (1e-5)
 #define BPNEAR(bp1, bp2) BPWithin(bp1, bp2, UTMARGIN)
 #define UTRETRY (UTMARGIN/10.0)
 
@@ -139,7 +140,8 @@ BasePoint SplineUTanVecAt(Spline *s, bigreal t) {
 #define ROTY(p, ut) (-(ut).y*(p).x + (ut).x*(p).y)
 #define ZCHECK(v) (RealWithin((v),0,1e-10) ? 0 : (v))
 
-bigreal SplineSolveForUTanVec(Spline *spl, BasePoint ut, bigreal min_t) {
+bigreal SplineSolveForUTanVec(Spline *spl, BasePoint ut, bigreal min_t,
+                              bool picky) {
     bigreal tmp, yto;
     extended te1, te2;
     Spline1D ys1d;
@@ -174,18 +176,33 @@ bigreal SplineSolveForUTanVec(Spline *spl, BasePoint ut, bigreal min_t) {
     SplineFindExtrema(&ys1d, &te1, &te2);
 
     if (   te1 != -1 && te1 > (min_t+1e-9)
-        && BPNEAR(ut, SplineUTanVecAt(spl, te1)))
+        && BPNEAR(ut, SplineUTanVecAt(spl, te1)) )
 	return te1;
     if (   te2 != -1 && te2 > (min_t+1e-9)
-        && BPNEAR(ut, SplineUTanVecAt(spl, te2)))
+        && BPNEAR(ut, SplineUTanVecAt(spl, te2)) )
 	return te2;
 
     // Check t==1
     if ( (min_t+UTRETRY) < 1 && BPNEAR(ut, SplineUTanVecAt(spl, 1.0)) )
         return 1.0;
 
+    if ( picky )
+	return -1.0;
+
+    if (   te1 != -1 && te1 > (min_t+1e-9)
+        && BPWithin(ut, SplineUTanVecAt(spl, te1), UTSOFTMARGIN) )
+	return te1;
+    if (   te2 != -1 && te2 > (min_t+1e-9)
+        && BPWithin(ut, SplineUTanVecAt(spl, te2), UTSOFTMARGIN) )
+	return te2;
+
+    // Check t==1
+    if (    (min_t+UTRETRY) < 1
+        && BPWithin(ut, SplineUTanVecAt(spl, 1.0), UTSOFTMARGIN) )
+        return 1.0;
+
     // Nothing found
-    return -1;
+    return -1.0;
 }
 
 #if 0

@@ -739,7 +739,7 @@ static NibOffset *_CalcNibOffset(NibCorner *nc, int n, BasePoint ut,
 	                        nc[ncni].utv[NC_IN_IDX], false) );
 	// Nib splines are locally convex and therefore have t value per slope
 	ns = nc[nci].on_nib->next;
-	no->nt = SplineSolveForUTanVec(ns, ut, 0.0);
+	no->nt = SplineSolveForUTanVec(ns, ut, 0.0, false);
 	if ( no->nt<0 ) {
 	    // At more extreme nib control point angles the solver may fail.
 	    // In such cases the tangent angle should be near one of the 
@@ -1303,7 +1303,7 @@ static bigreal SplineStrokeNextT(StrokeContext *c, Spline *s, bigreal cur_t,
 
     next_ut = SplineStrokeNextAngle(c, *cur_ut, is_ccw, &next_curved,
                                     reverse, nci_hint);
-    next_t = SplineSolveForUTanVec(s, next_ut, cur_t);
+    next_t = SplineSolveForUTanVec(s, next_ut, cur_t, false);
 
     // If there is an inflection point before next_t the spline will start
     // curving in the opposite direction, so stop and trace the next section

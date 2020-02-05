@@ -114,7 +114,8 @@ extern int UTanVecsSequent(BasePoint ut1, BasePoint ut2, BasePoint ut3,
                            int ccw);
 extern int JointBendsCW(BasePoint ut_ref, BasePoint ut_vec);
 extern BasePoint SplineUTanVecAt(Spline *s, bigreal t);
-extern bigreal SplineSolveForUTanVec(Spline *spl, BasePoint ut, bigreal min_t);
+extern bigreal SplineSolveForUTanVec(Spline *spl, BasePoint ut, bigreal min_t,
+                                     bool picky);
 extern void UTanVecTests();
 
 #endif // FONTFORGE_UTANVEC_H
