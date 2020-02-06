@@ -5372,6 +5372,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     MVSetFeatures(mv);
     MVMakeLabels(mv);
     MVResize(mv);
+    GWidgetIndicateFocusGadget(mv->text);
 
     GDrawSetVisible(mv->v,true);
     GDrawSetVisible(gw,true);
