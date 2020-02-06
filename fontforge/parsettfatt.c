@@ -337,14 +337,15 @@ static uint16 *getClassDefTable(FILE *ttf, int classdef_offset, struct ttfinfo *
     if ( format==1 ) {
 	start = getushort(ttf);
 	glyphcnt = getushort(ttf);
+	if ( ftell(ttf)+2*glyphcnt > g_bounds ) {
+	    LogError( _("Class definition sub-table extends beyond end of table\n") );
+	    info->bad_ot = true;
+	    glyphcnt = (g_bounds-ftell(ttf))/2;
+	}
 	if ( start+(int) glyphcnt>cnt ) {
 	    LogError( _("Bad class def table. start=%d cnt=%d, max glyph=%d\n"), start, glyphcnt, cnt );
 	    info->bad_ot = true;
 	    glyphcnt = cnt-start;
-	} else if ( ftell(ttf)+2*glyphcnt > g_bounds ) {
-	    LogError( _("Class definition sub-table extends beyond end of table\n") );
-	    info->bad_ot = true;
-	    glyphcnt = (g_bounds-ftell(ttf))/2;
 	}
 	for ( i=0; i<glyphcnt; ++i )
 	    glist[start+i] = getushort(ttf);
