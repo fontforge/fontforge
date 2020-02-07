@@ -1544,16 +1544,25 @@ static int MV_KernChanged(GGadget *g, GEvent *e) {
 return( true );
     if ( which>mv->glyphcnt-1 || which==0 )
 return( true );
-    if ( e->u.control.subtype == et_textchanged ) {
-	unichar_t *end;
-	int val = u_strtol(_GGadgetGetTitle(g),&end,10);
 
-	if ( *end && !(*end=='-' && end[1]=='\0'))
-	    GDrawBeep(NULL);
-	else {
-	    MV_ChangeKerning(mv,which,val, false);
-	    MVRemetric(mv);
-	}
+    if ( e->u.control.subtype == et_textchanged ) {
+        char* title = GGadgetGetTitle8(g);
+
+        int negatives = 0;
+        for (char* p = title; *p != '\0'; p++) {
+            if (*p == '-') negatives++;
+        }
+
+        char* new = str_replace_all(title, "-", "", true); // frees title
+        int val = strtol(new,NULL,10);
+        free(new);
+
+        if (negatives%2==1) {
+            val *= -1;
+        }
+
+        MV_ChangeKerning(mv,which,val, false);
+        MVRemetric(mv);
     } else if ( e->u.control.subtype == et_textfocuschanged &&
 	    e->u.control.u.tf_focus.gained_focus ) {
 	for ( i=0 ; i<mv->glyphcnt; ++i )
