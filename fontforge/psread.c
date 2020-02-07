@@ -2924,6 +2924,7 @@ return( head );
     for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
 	if ( sc->layers[layer].dostroke ) {
 	    InitializeStrokeInfo(&si);
+	    si.extrema = false;
 	    SITranslatePSArgs(&si, sc->layers[layer].stroke_pen.linejoin,
 	                      sc->layers[layer].stroke_pen.linecap);
 	    si.width = sc->layers[layer].stroke_pen.width;
@@ -3127,6 +3128,7 @@ SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_stroked)
 		/*  ignore the stroke. This idiom is used by MetaPost sometimes and means */
 		/*  no stroke */
 		InitializeStrokeInfo(&si);
+		si.extrema = false;
 		SITranslatePSArgs(&si, ent->u.splines.join, ent->u.splines.cap);
 		si.width = ent->u.splines.stroke_width;
 		si.joinlimit = ent->u.splines.miterlimit;

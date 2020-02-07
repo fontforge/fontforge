@@ -1012,9 +1012,9 @@ static SplinePoint *AddNibPortion(NibCorner *nc, SplinePoint *tailp,
     return sp;
 }
 
-static void SSAppendArc(SplineSet *cur, bigreal major, bigreal minor, 
-                        BasePoint ang, BasePoint ut_fm, BasePoint ut_to,
-                        int bk, int limit) {
+void SSAppendArc(SplineSet *cur, bigreal major, bigreal minor, 
+                 BasePoint ang, BasePoint ut_fm, BasePoint ut_to,
+                 int bk, int limit) {
     SplineSet *ellip;
     real trans[6];
     SplinePoint *sp;
@@ -1058,7 +1058,7 @@ static void SSAppendArc(SplineSet *cur, bigreal major, bigreal minor,
     free(nc);
 }
 
-static void SplineStrokeSimpleFixup(SplinePoint *tailp, BasePoint p) {
+void SplineStrokeSimpleFixup(SplinePoint *tailp, BasePoint p) {
     BasePoint dxy = BPSub(p, tailp->me);
     tailp->prevcp = BPAdd(tailp->prevcp, dxy);
     tailp->me = p;
