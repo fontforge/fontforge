@@ -3505,37 +3505,39 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 			else
 			    prev->next = ssnext;
 			base = NULL;
-	break;
-		    }
-		    // We want to remove the spline following sp.
-		    // This requires that we rewrite the following spline so that it starts at sp,
-		    // that we point the control point reference in sp to the next control point,
-		    // and that we refigure the spline.
-		    // So, first we free the next spline.
-		    SplineFree(sp->next);
-		    // If the next point has a next control point, we copy it to the next control point for this point.
-		    if ( nsp->nonextcp ) {
-			sp->nextcp = sp->me;
-			sp->nonextcp = true;
+			nsp = NULL;
+			break;
 		    } else {
-			sp->nextcp = nsp->nextcp;
-			sp->nonextcp = false;
+			// We want to remove the spline following sp.
+			// This requires that we rewrite the following spline so that it starts at sp,
+			// that we point the control point reference in sp to the next control point,
+			// and that we refigure the spline.
+			// So, first we free the next spline.
+			SplineFree(sp->next);
+			// If the next point has a next control point, we copy it to the next control point for this point.
+			if ( nsp->nonextcp ) {
+			    sp->nextcp = sp->me;
+			    sp->nonextcp = true;
+			} else {
+			    sp->nextcp = nsp->nextcp;
+			    sp->nonextcp = false;
+			}
+			sp->nextcpdef = nsp->nextcpdef;
+			sp->next = nsp->next; // Change the spline reference.
+			if ( nsp->next!=NULL ) {
+			    // Make the next spline refer to sp and refigure it.
+			    nsp->next->from = sp;
+			    SplineRefigure(sp->next);
+			}
+			if ( nsp==base->last )
+			    base->last = sp;
+			if ( nsp==base->first )
+			    base->first = sp;
+			SplinePointFree(nsp);
+			if ( sp->next==NULL )
+			    break;
+			nsp = sp->next->to;
 		    }
-		    sp->nextcpdef = nsp->nextcpdef;
-		    sp->next = nsp->next; // Change the spline reference.
-		    if ( nsp->next!=NULL ) {
-			// Make the next spline refer to sp and refigure it.
-			nsp->next->from = sp;
-			SplineRefigure(sp->next);
-		    }
-		    if ( nsp==base->last )
-			base->last = sp;
-		    if ( nsp==base->first )
-			base->first = sp;
-		    SplinePointFree(nsp);
-		    if ( sp->next==NULL )
-	break;
-		    nsp = sp->next->to;
 		} else {
 		    /* Leave the spline, since it goes places, but move the two points together */
 		    BasePoint new;
@@ -3579,11 +3581,13 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 		    }
 		}
 	    }
-	    sp = nsp;
-	    if ( sp==base->first )
-	break;
+	    // Remember that we may have deleted base and nulled nsp previously.
+	    sp = nsp; // Increment sp, possibly to NULL.
+	    // If we are at the end of the contour or have deleted at, the job is done.
+	    if ( base == NULL || sp==base->first )
+		break;
 	}
-	if ( sp->prev!=NULL && !sp->noprevcp ) {
+	if ( sp && sp->prev!=NULL && !sp->noprevcp ) {
 	    int refigure = false;
 	    if ( sp->me.x-sp->prevcp.x>-error && sp->me.x-sp->prevcp.x<error ) {
 		// We round the x-value of the previous control point to the on-curve point value if it is close.
@@ -3607,7 +3611,7 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 	    if ( refigure )
 		SplineRefigure(sp->prev);
 	}
-	if ( sp->next!=NULL && !sp->nonextcp ) {
+	if ( sp && sp->next!=NULL && !sp->nonextcp ) {
 	    int refigure = false;
 	    if ( sp->me.x-sp->nextcp.x>-error && sp->me.x-sp->nextcp.x<error ) {
 		// We round the x-value of the next control point to the on-curve point value if it is close.
@@ -3631,6 +3635,7 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 	    if ( refigure )
 		SplineRefigure(sp->next);
 	}
+	// We may have deleted base, so only increment prev if base is non-null.
 	if ( base!=NULL )
 	    prev = base;
 	base = ssnext;
