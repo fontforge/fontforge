@@ -6309,7 +6309,7 @@ return( false );
 }
 
 static SplineChar *hashglyphfound(SplineChar *sc,UHash *uhash,NHash *nhash,int layer) {
-    int hash;
+    unsigned int hash;
     struct splinecharlist *test;
     struct altuni *alt;
 
@@ -6336,7 +6336,7 @@ return( NULL );
 }
 
 static void hashglyphadd(SplineChar *sc,UHash *uhash,NHash *nhash) {
-    int hash;
+    unsigned int hash;
     struct splinecharlist *test;
     struct altuni *alt;
 
