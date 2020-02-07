@@ -45,11 +45,13 @@
 #include "sd.h"
 #include "splineorder2.h"
 #include "splinesaveafm.h"
+#include "splinestroke.h"
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "tottf.h"
 #include "tottfgpos.h"
 #include "ustring.h"
+#include "utanvec.h"
 #include "utype.h"
 
 #include <locale.h>
@@ -1248,27 +1250,20 @@ return( pt );
 static void SVGTraceArc(SplineSet *cur,BasePoint *current,
 	double x,double y,double rx,double ry,double axisrot,
 	int large_arc,int sweep) {
-    double cosr, sinr;
-    double x1p, y1p;
+    BasePoint ang, ut_fm, ut_to, c, foc1, foc2, tmp;
+    double x1p, y1p, fd;
     double lambda, factor;
     double cxp, cyp, cx, cy;
-    double tmpx, tmpy, t2x, t2y;
-    double startangle, delta, a;
-    SplinePoint *final, *sp;
-    BasePoint arcp[4], prevcp[4], nextcp[4], firstcp[2];
-    int i, j, ia, firstia;
-    static double sines[] = { 0, 1, 0, -1, 0, 1, 0, -1, 0, 1, 0, -1 };
-    static double cosines[]={ 1, 0, -1, 0, 1, 0, -1, 0, 1, 0, -1, 0 };
+    SplinePoint *sp;
 
-    final = SplinePointCreate(x,y);
     if ( rx < 0 ) rx = -rx;
     if ( ry < 0 ) ry = -ry;
     if ( rx!=0 && ry!=0 ) {
 	/* Page 647 in the SVG 1.1 spec describes how to do this */
 	/* This is Appendix F (Implementation notes) section 6.5 */
-	cosr = cos(axisrot); sinr = sin(axisrot);
-	x1p = cosr*(current->x-x)/2 + sinr*(current->y-y)/2;
-	y1p =-sinr*(current->x-x)/2 + cosr*(current->y-y)/2;
+	ang = (BasePoint) { cos(axisrot), sin(axisrot) };
+	x1p = ang.x*(current->x-x)/2 + ang.y*(current->y-y)/2;
+	y1p =-ang.y*(current->x-x)/2 + ang.x*(current->y-y)/2;
 	/* Correct for bad radii */
 	lambda = x1p*x1p/(rx*rx) + y1p*y1p/(ry*ry);
 	if ( lambda>1 ) {
@@ -1279,123 +1274,41 @@ static void SVGTraceArc(SplineSet *cur,BasePoint *current,
 	} else {
 	    factor = rx*rx*ry*ry - rx*rx*y1p*y1p - ry*ry*x1p*x1p;
 	    factor = sqrt(factor/(rx*rx*y1p*y1p+ry*ry*x1p*x1p));
+	    // This part of the center calculation deals with large_arc
+	    // leaving sweep as a parameter to SSAppendArc
 	    if ( large_arc==sweep )
 		factor = -factor;
 	    cxp = factor*(rx*y1p)/ry;
 	    cyp =-factor*(ry*x1p)/rx;
 	}
-	cx = cosr*cxp - sinr*cyp + (current->x+x)/2;
-	cy = sinr*cxp + cosr*cyp + (current->y+y)/2;
-
-	tmpx = (x1p-cxp)/rx; tmpy = (y1p-cyp)/ry;
-	startangle = acos(tmpx/sqrt(tmpx*tmpx+tmpy*tmpy));
-	if ( tmpy<0 )
-	    startangle = -startangle;
-	t2x = (-x1p-cxp)/rx; t2y = (-y1p-cyp)/ry;
-	delta = (tmpx*t2x+tmpy*t2y)/
-		  sqrt((tmpx*tmpx+tmpy*tmpy)*(t2x*t2x+t2y*t2y));
-	/* We occasionally got rounding errors near -1 */
-	if ( delta<=-1 )
-	    delta = FF_PI;
-	else if ( delta>=1 )
-	    delta = 0;
+	c = (BasePoint) { ang.x*cxp - ang.y*cyp + (current->x+x)/2,
+	                  ang.y*cxp + ang.x*cyp + (current->y+y)/2 };
+	// SSAppendArc is parameterized by start and end tangent angle
+	// To convert start and end points to tangent angles it is easiest
+	// to average the angles from the foci to the point. That average
+	// is normal to the curve and therefore the tangent is 90 degrees
+	// CW for a CW contour. 
+	if ( rx > ry )
+	    tmp = BPScale(ang, sqrt(rx*rx - ry*ry));
 	else
-	    delta = acos(delta);
-	if ( tmpx*t2y-tmpy*t2x<0 )
-	    delta = -delta;
-	if ( sweep==0 && delta>0 )
-	    delta -= 2*FF_PI;
-	if ( sweep && delta<0 )
-	    delta += 2*FF_PI;
+	    tmp = BPScale(BP90CW(ang), sqrt(ry*ry - rx*rx));
+	foc1 = BPAdd(c, tmp);
+	foc2 = BPSub(c, tmp);
 
-	if ( delta>0 ) {
-	    i = 0;
-	    ia = firstia = floor(startangle/(FF_PI/2))+1;
-	    for ( a=ia*(FF_PI/2), ia+=4; a<startangle+delta && !RealNear(a,startangle+delta); a += FF_PI/2, ++i, ++ia ) {
-		t2x = rx*cosines[ia]; t2y = ry*sines[ia];
-		arcp[i].x = cosr*t2x - sinr*t2y + cx;
-		arcp[i].y = sinr*t2x + cosr*t2y + cy;
-		if ( t2x==0 ) {
-		    t2x = rx*cosines[ia+1]; t2y = 0;
-		} else {
-		    t2x = 0; t2y = ry*sines[ia+1];
-		}
-		prevcp[i].x = arcp[i].x - .552*(cosr*t2x - sinr*t2y);
-		prevcp[i].y = arcp[i].y - .552*(sinr*t2x + cosr*t2y);
-		nextcp[i].x = arcp[i].x + .552*(cosr*t2x - sinr*t2y);
-		nextcp[i].y = arcp[i].y + .552*(sinr*t2x + cosr*t2y);
-	    }
-	} else {
-	    i = 0;
-	    ia = firstia = ceil(startangle/(FF_PI/2))-1;
-	    for ( a=ia*(FF_PI/2), ia += 8; a>startangle+delta && !RealNear(a,startangle+delta); a -= FF_PI/2, ++i, --ia ) {
-		t2x = rx*cosines[ia]; t2y = ry*sines[ia];
-		arcp[i].x = cosr*t2x - sinr*t2y + cx;
-		arcp[i].y = sinr*t2x + cosr*t2y + cy;
-		if ( t2x==0 ) {
-		    t2x = rx*cosines[ia+1]; t2y = 0;
-		} else {
-		    t2x = 0; t2y = ry*sines[ia+1];
-		}
-		prevcp[i].x = arcp[i].x + .552*(cosr*t2x - sinr*t2y);
-		prevcp[i].y = arcp[i].y + .552*(sinr*t2x + cosr*t2y);
-		nextcp[i].x = arcp[i].x - .552*(cosr*t2x - sinr*t2y);
-		nextcp[i].y = arcp[i].y - .552*(sinr*t2x + cosr*t2y);
-	    }
-	}
-	if ( i!=0 ) {
-	    double firsta=firstia*FF_PI/2;
-	    double d = (firsta-startangle)/2;
-	    double th = startangle+d;
-	    double hypot = 1/cos(d);
-	    BasePoint temp;
-	    t2x = rx*cos(th)*hypot; t2y = ry*sin(th)*hypot;
-	    temp.x = cosr*t2x - sinr*t2y + cx;
-	    temp.y = sinr*t2x + cosr*t2y + cy;
-	    firstcp[0].x = cur->last->me.x + .552*(temp.x-cur->last->me.x);
-	    firstcp[0].y = cur->last->me.y + .552*(temp.y-cur->last->me.y);
-	    firstcp[1].x = arcp[0].x + .552*(temp.x-arcp[0].x);
-	    firstcp[1].y = arcp[0].y + .552*(temp.y-arcp[0].y);
-	}
-	for ( j=0; j<i; ++j ) {
-	    sp = SplinePointCreate(arcp[j].x,arcp[j].y);
-	    if ( j!=0 ) {
-		sp->prevcp = prevcp[j];
-		cur->last->nextcp = nextcp[j-1];
-	    } else {
-		sp->prevcp = firstcp[1];
-		cur->last->nextcp = firstcp[0];
-	    }
-	    sp->noprevcp = cur->last->nonextcp = false;
-	    SplineMake(cur->last,sp,false);
-	    cur->last = sp;
-	}
-	{ double hypot, c, s;
-	BasePoint temp;
-	if ( i==0 ) {
-	    double th = startangle+delta/2;
-	    hypot = 1.0/cos(delta/2);
-	    c = cos(th); s=sin(th);
-	} else {
-	    double lasta = delta<0 ? a+FF_PI/2 : a-FF_PI/2;
-	    double d = (startangle+delta-lasta);
-	    double th = lasta+d/2;
-	    hypot = 1.0/cos(d/2);
-	    c = cos(th); s=sin(th);
-	}
-	t2x = rx*c*hypot; t2y = ry*s*hypot;
-	temp.x = cosr*t2x - sinr*t2y + cx;
-	temp.y = sinr*t2x + cosr*t2y + cy;
-	cur->last->nextcp.x = cur->last->me.x + .552*(temp.x-cur->last->me.x);
-	cur->last->nextcp.y = cur->last->me.y + .552*(temp.y-cur->last->me.y);
-	final->prevcp.x = final->me.x + .552*(temp.x-final->me.x);
-	final->prevcp.y = final->me.y + .552*(temp.y-final->me.y);
-	cur->last->nonextcp = final->noprevcp = false;
-	}
+	tmp = *current;
+	ut_fm = BP90CW(NormVec(BPAdd(NormVec(BPSub(tmp, foc1)),
+	                             NormVec(BPSub(tmp, foc2)))));
+	tmp = (BasePoint) { x, y };
+	ut_to = BP90CW(NormVec(BPAdd(NormVec(BPSub(tmp, foc1)),
+	                             NormVec(BPSub(tmp, foc2)))));
+	SSAppendArc(cur, rx, ry, ang, ut_fm, ut_to, sweep, false);
+	SplineStrokeSimpleFixup(cur->last, tmp);
+    } else {
+	SplinePoint *sp = SplinePointCreate(x, y);
+	SplineMake3(cur->last, sp);
+	cur->last = sp;
     }
-    *current = final->me;
-    SplineMake(cur->last,final,false);
-    cur->last = final;
+    *current = cur->last->me;
 }
 
 static SplineSet *SVGParsePath(xmlChar *path) {
