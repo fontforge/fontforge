@@ -1204,9 +1204,20 @@ void GFileChooserSetFilterText(GGadget *g,const unichar_t *wildcard) {
     gfc->wildcard = u_copy(wildcard);
 }
 
+void GFileChooserSetFilterText8(GGadget *g,const char *wildcard) {
+    GFileChooser *gfc = (GFileChooser *) g;
+    free(gfc->wildcard);
+    gfc->wildcard = utf82u_copy(wildcard);
+}
+
 unichar_t *GFileChooserGetFilterText(GGadget *g) {
     GFileChooser *gfc = (GFileChooser *) g;
 return( gfc->wildcard );
+}
+
+char *GFileChooserGetFilterText8(GGadget *g) {
+    GFileChooser *gfc = (GFileChooser *) g;
+return( u2utf8_copy(gfc->wildcard) );
 }
 
 void GFileChooserSetFilterFunc(GGadget *g,GFileChooserFilterType filter) {

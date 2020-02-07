@@ -16710,17 +16710,18 @@ Py_RETURN( self );
 static PyObject *PyFFFont_MergeKern(PyFF_Font *self, PyObject *args) {
     char *filename;
     char *locfilename = NULL;
+    int ignore_invalid = 0;
     FontViewBase *fv;
 
     if ( CheckIfFontClosed(self) )
 return (NULL);
     fv = self->fv;
-    if ( !PyArg_ParseTuple(args,"es","UTF-8",&filename) )
+    if ( !PyArg_ParseTuple(args,"es|i","UTF-8",&filename,&ignore_invalid) )
 return( NULL );
     locfilename = utf82def_copy(filename);
     PyMem_Free(filename);
 
-    if ( !LoadKerningDataFromMetricsFile(fv->sf,locfilename,fv->map)) {
+    if ( !LoadKerningDataFromMetricsFile(fv->sf,locfilename,fv->map,(bool)ignore_invalid)) {
 	PyErr_Format(PyExc_EnvironmentError, "No metrics data found");
 return( NULL );
     }

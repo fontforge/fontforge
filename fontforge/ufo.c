@@ -4515,7 +4515,7 @@ return( NULL );
     /* Might as well check for feature files even if version 1 */
     temp = buildname(basedir,"features.fea");
     if ( GFileExists(temp))
-	SFApplyFeatureFilename(sf,temp);
+	SFApplyFeatureFilename(sf,temp,FALSE);
     free(temp);
 
 #ifndef _NO_PYTHON

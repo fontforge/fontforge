@@ -2270,6 +2270,7 @@ struct parseState {
     unsigned int in_vkrn: 1;
     unsigned int backedup: 1;
     unsigned int skipping: 1;
+    unsigned int ignore_invalid: 1;      // Don't error out if a feature is not applicable. Used for merging feature files
     SplineFont *sf;
     struct scriptlanglist *def_langsyses;
     struct glyphclasses *classes; // TODO: This eventually needs to merge with the SplineFont group storage. For now, it needs to copy from it at first invocation.
@@ -4736,8 +4737,10 @@ static void fea_ParseSubstitute(struct parseState *tok) {
 	} else if ( cnt>=1 && tok->type==tk_by ) {
 	    rpl = fea_ParseMarkedGlyphs(tok,false,false,false);
 	    if ( rpl==NULL ) {
-		LogError(_("No substitution specified on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
-		++tok->err_count;
+	        LogError(_("No substitution specified on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	        if (! tok->ignore_invalid) { // If glyphs in some substitutions rules are not present in this font, warn but skip error
+	            ++tok->err_count;
+	        }
 	    } else if ( rpl->has_marks ) {
 		LogError(_("No marked glyphs allowed in replacement on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 		++tok->err_count;
@@ -7288,7 +7291,7 @@ static void CopySplineFontGroupsForFeatureFile(SplineFont *sf, struct parseState
   }
 }
 
-void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
+void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename,bool ignore_invalid) {
     struct parseState tok;
     struct glyphclasses *gc, *gcnext;
     struct namedanchor *nap, *napnext;
@@ -7301,6 +7304,7 @@ void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
     tok.base = 10;
     if ( sf->cidmaster ) sf = sf->cidmaster;
     tok.sf = sf;
+    tok.ignore_invalid = ignore_invalid;
     CopySplineFontGroupsForFeatureFile(sf, &tok);
 
     locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
@@ -7339,13 +7343,13 @@ void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
     }
 }
 
-void SFApplyFeatureFilename(SplineFont *sf,char *filename) {
+void SFApplyFeatureFilename(SplineFont *sf,char *filename,bool ignore_invalid) {
     FILE *in = fopen(filename,"r");
 
     if ( in==NULL ) {
 	ff_post_error(_("Cannot open file"),_("Cannot open feature file %.120s"), filename );
 return;
     }
-    SFApplyFeatureFile(sf,in,filename);
+    SFApplyFeatureFile(sf,in,filename,ignore_invalid);
     fclose(in);
 }

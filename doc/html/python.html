@@ -4958,9 +4958,10 @@ This type may not be pickled.
     </TR>
     <TR>
       <TD><CODE>mergeFeature</CODE></TD>
-      <TD><CODE>(filename)</CODE></TD>
+      <TD><CODE>(filename[,ignore_invalid])</CODE></TD>
       <TD>Merge feature and lookup information from an adobe feature file, or metrics
-	information from the (afm,tfm,etc) file into the current font.</TD>
+    information from the (afm,tfm,etc) file into the current font. If optional boolean "ignore_invalid"
+    is True, reference to non-existent glyphs in the feaure file doesn't result in error.</TD>
     </TR>
     <TR>
       <TD><CODE>mergeKern</CODE></TD>
