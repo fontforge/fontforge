@@ -65,7 +65,7 @@ static int psnamesinited=false;
 struct psbucket { const char *name; int uni; struct psbucket *prev; } *psbuckets[HASH_SIZE];
 
 static void psaddbucket(const char *name, int uni) {
-    int hash = hashname(name);
+    unsigned int hash = hashname(name);
     struct psbucket *buck = calloc(1,sizeof(struct psbucket));
 
     buck->name = name;
@@ -809,7 +809,8 @@ return( buffer );
 }
 
 static void BuildHash(struct glyphnamehash *hash,SplineFont *sf, char **oldnames) {
-    int gid, hv;
+    int gid;
+    unsigned int hv;
     SplineChar *sc;
     struct glyphnamebucket *new;
 

@@ -647,7 +647,8 @@ void GlyphHashFree(SplineFont *sf) {
 }
 
 static void GlyphHashCreate(SplineFont *sf) {
-    int i, k, hash;
+    int i, k;
+    unsigned int hash;
     SplineFont *_sf;
     struct glyphnamehash *gnh;
     struct glyphnamebucket *new;
@@ -676,7 +677,7 @@ return;
 
 void SFHashGlyph(SplineFont *sf,SplineChar *sc) {
     /* sc just got added to the font. Put it in the lookup */
-    int hash;
+    unsigned int hash;
     struct glyphnamebucket *new;
 
     if ( sf->glyphnames==NULL )
