@@ -1555,9 +1555,8 @@ return( true );
         int val = strtol(new,NULL,10);
         free(new);
 
-        while (negatives) {
+        if (negatives%2==1) {
             val *= -1;
-            negatives--;
         }
 
         MV_ChangeKerning(mv,which,val, false);
