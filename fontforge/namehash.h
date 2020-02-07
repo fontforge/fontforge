@@ -44,8 +44,8 @@ struct glyphnamehash {
 # define __inline__
 #endif
 
-static __inline__ int hashname(const char *pt) {
-    int val = 0;
+static __inline__ unsigned int hashname(const char *pt) {
+    unsigned int val = 0;
 
     while ( *pt ) {
 	val = (val<<3)|((val>>29)&0x7);
