@@ -3583,7 +3583,7 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 	    }
 	    // Remember that we may have deleted base and nulled nsp previously.
 	    sp = nsp; // Increment sp, possibly to NULL.
-	    // If we are at the end of the contour or have deleted at, the job is done.
+	    // If we are at the end of the contour or have deleted it, the job is done.
 	    if ( base == NULL || sp==base->first )
 		break;
 	}
@@ -3635,7 +3635,7 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 	    if ( refigure )
 		SplineRefigure(sp->next);
 	}
-	// We may have deleted base, so only increment prev if base is non-null.
+	// We may have deleted base, so increment prev only if base is non-null.
 	if ( base!=NULL )
 	    prev = base;
 	base = ssnext;
