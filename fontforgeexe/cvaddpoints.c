@@ -275,7 +275,6 @@ return( found!=NULL );
 
 // Return type: index into spiro_cp array, or -1 if not found.
 static int CVSpiroSelected(CharView *cv, SplineSet *ss) {
-    spiro_cp* selpt;
     int i, j = 0;
     bool found = false;
     for (i = 0; i < ss->spiro_cnt; i++) {
