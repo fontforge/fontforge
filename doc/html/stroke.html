@@ -102,10 +102,10 @@ used with other nib shapes.)
 radius, and therefore half the width of the traced line. The FontForge "Extend
 Cap" parameter generalizes this feature by allowing the user to specify the
 distance between the end of the source contour and the cap line either as an
-absolute length or in units of half-stroke-width. The parameter works with the
+absolute length or in units of stroke-width. The parameter works with the
 "Round" and "Butt" cap styles but not the "Nib" and "Bevel" styles. A PS/SVG
-Square cap is therefore equivalent to a Butt cap with "Extend Cap" set to 1 in
-half-stroke-width units.
+Square cap is therefore equivalent to a Butt cap with "Extend Cap" set to 0.5
+in stroke-width units.
 
 <figure><object data="stroke/extend_cap.svg" type="image/svg+xml" width="70%" class="svgfig">Extend Cap Examples</object></figure>
 
@@ -139,10 +139,11 @@ FontForge's "Round" join option is also equivalent when using a circular nib:
 <P> The difference between Miter and Miter Clip is in how "long" joins are
 handled. The "Join Limit" parameter specifies the maximum "length" of a miter
 join.  This limit can be specified either in em-units or (when the nib is
-circular) in offset radii. The term "join length" is a bit misleading because
-the limit is actually calculated based on the angle of the join, and the
-"length" is how long the join <em>would</em> be if the offset curves were
-straight lines.  There is a more complete explanation in the
+circular) nib-widths (e.g. the diameter of the circle). The term "join 
+length" is a bit misleading because the limit is actually calculated 
+based on the angle of the join, and the "length" is how long the join 
+<em>would</em> be if the offset curves were straight lines.  There is a 
+more complete explanation in the 
 <A HREF="https://www.w3.org/TR/SVG2/painting.html#LineJoin"><CODE>stroke-miterlimit"</CODE>
 section of the SVG specification</A>.  With the Miter style a join that
 exceeds the join limit "falls back" to a Bevel join, while with the Miter Clip
@@ -294,7 +295,7 @@ contours—all cap distances will be the same.
 
 <figure><object data="stroke/extendcapfix.svg" type="image/svg+xml" width="90%" class="svgfig">Standardizing Cap Length with Extend Cap</object></figure>
 
-<P> With a circular nib the em-unit and half-span ways of specifying a Join
+<P> With a circular nib the em-unit and nib-span ways of specifying a Join
 Limit or Extend Cap length are basically equivalent: for every value expressed
 one way there is a value expressed the other way that has the same effect.
 With other nibs the width of the curve varies by angle, breaking this

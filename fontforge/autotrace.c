@@ -102,6 +102,7 @@ static SplinePointList *localSplinesFromEntities(Entity *ent, Color bgcol, int i
 		si.join = ent->u.splines.join;
 		si.cap = ent->u.splines.cap;
 		si.width = ent->u.splines.stroke_width;
+		si.joinlimit = ent->u.splines.miterlimit;
 		new = NULL;
 		for ( test = ent->u.splines.splines; test!=NULL; test=test->next ) {
 		    temp = SplineSetStroke(test,&si,false);
