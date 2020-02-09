@@ -850,9 +850,10 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
 	presses the [Return] key). If omitted the default answer will be the first.
 	<P>
 	The fifth argument means that multiple options can be selected. If true,
-	the fourth argument should be a tuple of boolean values. So, if there are
-	three options, it should look like <CODE>(True, False, True)</CODE>, which
-	would select the first and last option.
+	the fourth argument should be a tuple of boolean values or a single integer
+	index into the answer tuple. So, if there are three options, it should look
+	like <CODE>(True, False, True)</CODE>, which would select the first and
+	last option.
 	<P>
 	The function returns the index in the answer array of the answer choosen
 	by the user. If the user cancels the dialog, a -1 is returned.
