@@ -1790,7 +1790,7 @@ static PyObject *PyFF_askChoices(PyObject *UNUSED(self), PyObject *args, PyObjec
             }
             for (int i = 0; i < cnt; i++) {
                 PyObject* temp = PyTuple_GetItem(defo, i);
-                sel[i] = temp == Py_True ? (char)1 : (char)0;
+                sel[i] = PyObject_IsTrue(temp);
             }
         } else {
             PyErr_Format(PyExc_TypeError, "4th argument must be a tuple or integer" );
