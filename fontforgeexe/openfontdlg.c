@@ -612,7 +612,7 @@ return( GGadgetDispatchEvent((GGadget *) (d->gfc),event));
 return( event->type!=et_char );
 }
 
-unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult) {
+unichar_t *FVOpenFont(char *title, const char *defaultfile, bool mult, bool modal) {
     GRect pos;
     int i, filter, renamei;
     GWindow gw;
@@ -630,13 +630,18 @@ unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult) {
     memset(&d,'\0',sizeof(d));
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    if (modal) {
+        wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+        wattrs.restrict_input_to_me = 1;
+        wattrs.is_dlg = true;
+        wattrs.undercursor = 1;
+    } else {
+        wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle;
+    }
     wattrs.event_masks = ~(1<<et_charup);
-    wattrs.restrict_input_to_me = 1;
-    wattrs.is_dlg = true;
-    wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
     wattrs.utf8_window_title = title;
+
     pos.x = pos.y = 0;
 
     totwid = GGadgetScale(295);

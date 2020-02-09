@@ -721,7 +721,7 @@ extern int _FVMenuSave(FontView *fv);
 extern int _FVMenuSaveAs(FontView *fv);
 extern int _FVMenuGenerate(FontView *fv,int family);
 extern void _FVCloseWindows(FontView *fv);
-extern char *GetPostScriptFontName(char *defdir,int mult);
+extern char *GetPostScriptFontName(char *dir, bool mult, bool modal);
 extern void MergeKernInfo(SplineFont *sf,EncMap *map);
 extern int SFGenerateFont(SplineFont *sf,int layer, int family,EncMap *map);
 
@@ -1108,7 +1108,7 @@ extern void GCDFillMacFeat(GGadgetCreateData *mfgcd,GTextInfo *mflabels, int wid
 	GGadgetCreateData **array);
 extern void Prefs_ReplaceMacFeatures(GGadget *list);
 
-extern unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult);
+extern unichar_t *FVOpenFont(char *title, const char *defaultfile, bool mult, bool modal);
 
 
 

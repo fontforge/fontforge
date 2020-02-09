@@ -2995,7 +2995,7 @@ static void FontCmpDlg(FontView *fv1, FontView *fv2,int flags) {
 }
 
 static void FCAskFilename(FontView *fv,int flags) {
-    char *filename = GetPostScriptFontName(NULL,false);
+    char *filename = GetPostScriptFontName(NULL,false,true);
     FontView *otherfv;
 
     if ( filename==NULL )
