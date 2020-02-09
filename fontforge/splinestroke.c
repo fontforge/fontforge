@@ -146,7 +146,7 @@ StrokeInfo *InitializeStrokeInfo(StrokeInfo *sip) {
     sip->jlrelative = true;
     sip->ecrelative = true;
     sip->leave_users_center = true;
-    sip->joinlimit = 20.0;
+    sip->joinlimit = 10.0;
     sip->accuracy_target = 0.25;
 
     return sip;
@@ -1374,13 +1374,10 @@ static bigreal FalseStrokeWidth(StrokeContext *c, BasePoint ut) {
 }
 
 static bigreal CalcJoinLength(bigreal fsw, BasePoint ut1, BasePoint ut2) {
-    bigreal costheta = BPDot(ut1, ut2);
+    bigreal costheta = BPDot(ut1, BPRev(ut2));
 
-    // Angle of interest is pi - theta, so formula is fsw/sin((pi - theta)/2)
-    //   = sin(pi/2 - theta/2) = sin(pi/2)cos(theta/2) - cos(pi/2)sin(theta/2)
-    //   = 1 * cos(theta/2) - 0 * sin(theta/2) = cos(theta/2)
-    //   = sqrt((1 + costheta)/2)
-    return fsw / sqrt((1 + costheta)/2);
+    // Formula is fsw/sin(theta/2) but sin(theta/2) = sqrt((1-costheta)/2)
+    return fsw / sqrt((1 - costheta)/2);
 }
 
 static bigreal CalcJoinLimit(StrokeContext *c, bigreal fsw) {
@@ -1390,7 +1387,7 @@ static bigreal CalcJoinLimit(StrokeContext *c, bigreal fsw) {
     if (!c->jlrelative)
 	return c->joinlimit;
 
-    return c->joinlimit * fsw / 2;
+    return c->joinlimit * fsw;
 }
 
 static bigreal CalcCapExtend(StrokeContext *c, bigreal fsw) {
@@ -1400,7 +1397,7 @@ static bigreal CalcCapExtend(StrokeContext *c, bigreal fsw) {
     if (!c->ecrelative)
 	return c->extendcap;
 
-    return c->extendcap * fsw / 2;
+    return c->extendcap * fsw;
 }
 
 static bigreal LineDist(BasePoint l1, BasePoint l2, BasePoint p) {

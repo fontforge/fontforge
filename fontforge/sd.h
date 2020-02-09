@@ -64,6 +64,7 @@ struct filledsplines {
     unsigned int isfillable: 1;		/* All splinesets are closed */
     Pen fill, stroke;			/* A value of 0xffffffff means do not fill or stroke */
     float stroke_width;
+    float miterlimit;
     enum linejoin join;
     enum linecap cap;
     real transform[6];			/* The stroke may be quite different depending on the transformation (ie. ellipse not circle, rotated, etc) */

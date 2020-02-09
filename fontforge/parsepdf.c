@@ -1230,6 +1230,7 @@ static Entity *EntityCreate(SplinePointList *head,int linecap,int linejoin,
     ent->u.splines.cap = linecap;
     ent->u.splines.join = linejoin;
     ent->u.splines.stroke_width = linewidth;
+    ent->u.splines.miterlimit = 10.0; // PostScript Spec Default
     ent->u.splines.fill.col = 0xffffffff;
     ent->u.splines.stroke.col = 0xffffffff;
     ent->u.splines.fill.opacity = 1.0;

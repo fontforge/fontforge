@@ -1006,7 +1006,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff++].creator = GRadioCreate;
 	jlexarray[0][2] = &gcd[gcdoff-1];
 
-	label[gcdoff].text = (unichar_t *) _("* Nib _Span/2");
+	label[gcdoff].text = (unichar_t *) _("* Nib _Span");
 	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.label = &label[gcdoff];
@@ -1069,7 +1069,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff++].creator = GRadioCreate;
 	jlexarray[1][2] = &gcd[gcdoff-1];
 
-	label[gcdoff].text = (unichar_t *) _("* Cap Widt_h/2");
+	label[gcdoff].text = (unichar_t *) _("* Cap Widt_h");
 	label[gcdoff].text_is_1byte = true;
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.label = &label[gcdoff];

@@ -1908,6 +1908,7 @@ return( cur );
 
 struct svg_state {
     double linewidth;
+    double miterlimit;
     int dofill, dostroke;
     uint32 fillcol, strokecol;
     float fillopacity, strokeopacity;
@@ -2526,6 +2527,7 @@ static Entity *EntityCreate(SplinePointList *head,struct svg_state *state) {
     ent->u.splines.cap = state->lc;
     ent->u.splines.join = state->lj;
     ent->u.splines.stroke_width = state->linewidth;
+    ent->u.splines.miterlimit = state->miterlimit;
     ent->u.splines.fill.col = state->dofill ? state->fillcol : state->dostroke ? 0xffffffff : COLOR_INHERITED;
     ent->u.splines.stroke.col = state->dostroke ? state->strokecol : 0xffffffff;
     ent->u.splines.fill.opacity = state->fillopacity;
@@ -2597,9 +2599,13 @@ static void SVGFigureStyle(struct svg_state *st,char *name,
 			     strcmp(propbuf,"round")==0 ? lc_round :
 			     lc_square;
 	    else if ( strcmp(namebuf,"stroke-linejoin")==0 )
-		st->lj = strcmp(propbuf,"miter")==0 ? lj_miter :
+		st->lj = strcmp(propbuf,"miter-clip")==0 ? lj_miterclip :
+			     strcmp(propbuf,"miter")==0 ? lj_miter :
 			     strcmp(propbuf,"round")==0 ? lj_round :
+			     strcmp(propbuf,"arcs")==0 ? lj_arcs :
 			     lj_bevel;
+	    else if ( strcmp(namebuf,"stroke-miterlimit")==0 )
+		st->miterlimit = strtod((char *)propbuf,NULL);
 	    else if ( strcmp(namebuf,"stroke-dasharray")==0 ) {
 		if ( strcmp(propbuf,"inherit")==0 ) {
 		    st->dashes[0] = 0; st->dashes[1] = DASH_INHERITED;
@@ -2686,23 +2692,30 @@ return( NULL );
     }
     name = xmlGetProp(svg,(xmlChar *) "stroke-linecap");
     if ( name!=NULL ) {
-	st.lc = xmlStrcmp(name,(xmlChar *) "butt") ? lc_butt :
-		     xmlStrcmp(name,(xmlChar *) "round") ? lc_round :
+	st.lc = xmlStrcmp(name,(xmlChar *) "butt")==0 ? lc_butt :
+		     xmlStrcmp(name,(xmlChar *) "round")==0 ? lc_round :
 		     lc_square;
 	xmlFree(name);
     }
     name = xmlGetProp(svg,(xmlChar *) "stroke-linejoin");
     if ( name!=NULL ) {
-	st.lj = xmlStrcmp(name,(xmlChar *) "miter") ? lj_miter :
-		     xmlStrcmp(name,(xmlChar *) "round") ? lj_round :
+	st.lj = xmlStrcmp(name,(xmlChar *) "miter-clip")==0 ? lj_miterclip :
+		     xmlStrcmp(name,(xmlChar *) "miter")==0 ? lj_miter :
+		     xmlStrcmp(name,(xmlChar *) "round")==0 ? lj_round :
+		     xmlStrcmp(name,(xmlChar *) "arcs")==0 ? lj_arcs :
 		     lj_bevel;
+	xmlFree(name);
+    }
+    name = xmlGetProp(svg,(xmlChar *) "stroke-miterlimit");
+    if ( name!=NULL ) {
+	st.miterlimit = strtod((char *)name,NULL);
 	xmlFree(name);
     }
     name = xmlGetProp(svg,(xmlChar *) "stroke-dasharray");
     if ( name!=NULL ) {
-	if ( xmlStrcmp(name,(xmlChar *) "inherit") ) {
+	if ( xmlStrcmp(name,(xmlChar *) "inherit")==0 ) {
 	    st.dashes[0] = 0; st.dashes[1] = DASH_INHERITED;
-	} else if ( xmlStrcmp(name,(xmlChar *) "none") ) {
+	} else if ( xmlStrcmp(name,(xmlChar *) "none")==0 ) {
 	    st.dashes[0] = 0; st.dashes[1] = 0;
 	} else {
 	    int i;
@@ -2835,6 +2848,7 @@ static Entity *SVGParseSVG(xmlNodePtr svg,int em_size,int ascent) {
     st.lc = lc_inherited;
     st.lj = lj_inherited;
     st.linewidth = WIDTH_INHERITED;
+    st.miterlimit = 4.0; // SVG spec default
     st.fillcol = COLOR_INHERITED;
     st.strokecol = COLOR_INHERITED;
     st.currentColor = COLOR_INHERITED;

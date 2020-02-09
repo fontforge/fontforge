@@ -984,6 +984,7 @@ static Entity *EntityCreate(SplinePointList *head,int linecap,int linejoin,
     ent->u.splines.cap = linecap;
     ent->u.splines.join = linejoin;
     ent->u.splines.stroke_width = linewidth;
+    ent->u.splines.miterlimit = 10; // PostScript Spec Default
     ent->u.splines.fill.col = 0xffffffff;
     ent->u.splines.stroke.col = 0xffffffff;
     ent->u.splines.fill.opacity = 1.0;
@@ -3137,6 +3138,7 @@ SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_stroked)
 		InitializeStrokeInfo(&si);
 		SITranslatePSArgs(&si, ent->u.splines.join, ent->u.splines.cap);
 		si.width = ent->u.splines.stroke_width;
+		si.joinlimit = ent->u.splines.miterlimit;
 		if ( ent->u.splines.stroke_width==WIDTH_INHERITED )
 		    si.width = 1.0;
 		// These are OK as lc_butt and lj_miter unchanged by SITra()
