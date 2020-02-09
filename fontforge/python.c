@@ -1788,9 +1788,19 @@ static PyObject *PyFF_askChoices(PyObject *UNUSED(self), PyObject *args, PyObjec
                 PyMem_Free(title); PyMem_Free(quest); PyMem_Free(sel);
                 return( NULL );
             }
+            bool def_set = false;
             for (int i = 0; i < cnt; i++) {
                 PyObject* temp = PyTuple_GetItem(defo, i);
                 sel[i] = PyObject_IsTrue(temp);
+                if (!multiple && PyObject_IsTrue(temp)) {
+                    if (def_set) {
+                        PyErr_Format(PyExc_ValueError, "`multiple` False, only expected 1 True in `default`" );
+                        PyMem_Free(title); PyMem_Free(quest); PyMem_Free(sel);
+                        return( NULL );
+                    }
+                    def = i;
+                    def_set = true;
+                }
             }
         } else {
             PyErr_Format(PyExc_TypeError, "4th argument must be a tuple or integer" );
