@@ -36,7 +36,7 @@ facility and has a similar dialog, and there are interfaces for both
 <A HREF="scripting-alpha.html#ExpandStroke">FontForge's native scripting 
 language</A>.
 
-<P> This guide is arranged into three sections. The
+<P> This guide is arranged into four sections. The
 <A HREF="#offsetting">first</A> discusses the common case of tracing
 a circular nib, which is also called "offsetting". It includes a description
 of the "<A HREF="#cap">cap</A>" and "<A HREF="#join">join</A>" options for
@@ -48,9 +48,13 @@ elliptical nibs, and general convex nibs designed by the user.  All nibs
 support the same cap and join options listed in the first section, but some
 have slightly different behaviors and effects.
 
-<P> The <A HREF="#parameters">last section</A> discusses additional parameters
+<P> The <A HREF="#parameters">third section</A> discusses additional parameters
 that address special cases, influence the geometric accuracy of the generated
 contours, or that can aid in debugging potential problems.
+
+<P> The <A HREF="#troubleshooting">last section</A> is an overview of problems
+a user may encounter using the system and some potential work-arounds.  Please
+read this section prior to filing a GitHub issue.
 
 <H2 id="offsetting">Offsetting</H2>
 
@@ -278,9 +282,9 @@ the end of the source contour. However, the <em>length</em> of these lines
 will vary. With a circular nib a Bevel Cap is the same as a Butt Cap; with
 other nibs the Bevel angle differs and the Bevel will often not touch the
 end of the traced contour. (The Bevel cap option just draws a line between the
-ends of the two trace lines.  This option is an unusual choice for a final cap
-style, but may be useful to see where the trace lines end in a given case or 
-as the simplest option for later editing stages.)
+ends of the two trace lines.  This option is an <A HREF="bevelcaps">unusual
+choice</A> for a final cap style but may be useful to see where the trace 
+lines end in a given case or as the simplest option for later editing stages.)
 
 <figure><object data="stroke/customcapbevel.svg" type="image/svg+xml" width="90%" class="svgfig">Cap Angle of Custom Nib</object></figure>
 
@@ -348,10 +352,10 @@ speed but fewer points/splines in the output.
 
 <P> The core algorithm of Expand Stroke calculates the "generalized offset
 curves" of the source contour and the nib. Its output can therefore include
-"cusps" and other artifacts of offsetting. These are typically removed by
-passing the initial output through the Remove Overlap algorithm. By default
-Remove Overlap is run on the whole layer, but you can also choose to run it
-independently on the output of each source contour.
+<A HREF="#cusps">"cusps"</A> and other artifacts of offsetting. These are
+typically removed by passing the initial output through the Remove Overlap
+algorithm. By default Remove Overlap is run on the whole layer, but you can
+also choose to run it independently on the output of each source contour.
 
 <P> The third option is to skip the Remove Overlap pass entirely. This option
 is provided mostly for debugging purposes. In rare cases the Remove Overlap
@@ -413,6 +417,91 @@ maximum to minimum axis for a circular or calligraphic nib is greater than
 it uses the Ratio algorithm. (With a custom convex nib it uses Ratio when
 the Join Limit is relative and less than 4 regardless of nib dimension.) 
 This heuristic works in many cases but is not foolproof. 
+
+<H2 id="troubleshooting">Troubleshooting</H2>
+
+<P> There are some known problems with and limitations of the Expand Stroke
+system.  Many of these have simple workarounds, others may be easiest to
+address by editing the output contours. One advantage of the new system over
+the old is that it will almost always provide accurate contour edges if 
+the additional processing steps (Remove Overlap, Simplify, etc.) are disabled. 
+
+<H3 id="gentrouble">General Guidance</H3>
+
+<P> If the system produces unexpected or bad looking contours that are still
+roughly right a good first step is to try disabling Simplify and Add Extrema.
+These algorithms occasionally produce inaccurate output and both can be
+run selectively "by hand" on parts of a contour as needed. 
+
+<P> If instead the output has more contours than expected or is badly misshapen
+the problem may be with Remove Overlap. Complex input contours with tight
+curves often lead to complex output contours with many self-intersections that
+can occasionally confuse the overlap removal algorithm. In such cases it may be
+easiest to first edit the contour by hand to reduce the number of
+intersections and then run Remove Overlap on the simpler contour.
+
+<P> Some special use cases, such as stroking with an unusually large nib
+to create an "outline background", can result in undesirable artifacts that
+Remove Overlap (correctly) reduces to counterclockwise contours or "holes".
+While these are difficult to identify algorithmically they are easy to delete
+by hand.
+
+<H3 id="cusps">Cusps and Inverted Curvature</H3>
+
+<P> Where the curvature of the "tracing" point on the nib is less than the
+curvature of the source contour, the curvature of the output contour inverts.
+The transition point where the two curvatures are equal is called a "cusp" and
+that term is sometimes used to refer to the whole inverted portion. The Expand
+Stroke algorithm does not accurately trace these areas because they are almost
+always eliminated by Remove Overlap, but when set to "None" a traced cusp will
+look something like the contour portion on the right:
+
+<figure><object data="stroke/cusps.svg" type="image/svg+xml" width="90%" class="svgfig">Cusp and Inverted Curvature</object></figure>
+
+<P> A cusp can appear in the final, non-overlapping output of the algorithm 
+in certain unusual cases, such as a sharp turn in an open contour just 
+before a Butt cap:
+
+<figure><object data="stroke/buttcusp.svg" type="image/svg+xml" width="60%" class="svgfig">Visible Cusp Near a Butt Cap</object></figure>
+
+<P> The usual remedy for this problem is a different choice of source contour
+shape or cap, but post-processing is another option. Here is a more obscure 
+case that came up in practice when the source contour was stroked with a very 
+eccentric ellipse (shown on the left) and a round cap. The distortion, which
+is just barely visible on the lower-left of the output contour on the right,
+is shown magnified in the center:
+
+<figure><object data="stroke/roundcusp.svg" type="image/svg+xml" width="70%" class="svgfig">Visible Cusp Portion Near a Round Cap</object></figure>
+
+<P> This output contour was produced without Simplify, which removes
+most but not all of the distortion. If this contour had instead been stroked 
+using the Nib cap style there would be no visible cusp; all cusps are, in a 
+sense, traced out "under the nib". However, in this case the round cap 
+turns out to be not quite long enough to obscure the cusp resulting from 
+the very eccentric nib.
+
+<P> Cusps are fundamental to the offsetting algorithm of the Expand Stroke
+system, and therefore any user combining tight curves, large nibs, and "short"
+caps should keep an eye out for them. The best remedies may vary. Slightly
+altering the source contour geometry is one approach. The user who encountered
+the round cap problem pictured above just reused Simplify on that part of the
+contour with a larger error parameter to smooth out the distortion.
+
+<H3 "bevelcaps">Bevel Caps and Flat Nibs</H3>
+
+<P> As noted above, Bevel caps were included as the simplest cap choice in some
+situations. A Bevel cap just joins the ends of each offset contour — wherever
+the two sides of the nib leave them — with a straight line. This can yield
+counter-intuitive results in some cases, particularly with nibs that have 
+flat edges such as Calligraphic nibs:
+
+<figure><object data="stroke/bevelcap.svg" type="image/svg+xml" width="60%" class="svgfig">A Bevel Cap Produced by a Nib Line</object></figure>
+
+<P> Both the jutting portion at the bottom left and the strange triangle 
+structure on the right are due to a flat line on the nib aligning with the cap
+angle. Although these results are unusual and probably undesirable they are not
+<EM>wrong</EM>, and the straightforward "solution" is to choose a different cap
+style.
 
 </DIV>
 </BODY>
