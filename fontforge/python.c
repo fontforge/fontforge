@@ -1734,51 +1734,115 @@ return( NULL );
 return( Py_BuildValue("i",ret));
 }
 
-static PyObject *PyFF_askChoices(PyObject *UNUSED(self), PyObject *args) {
-    char *title=NULL,*quest=NULL, **answers;
-    int def=0, cnt;
-    PyObject *answero;
-    int i, ret;
+static const char *askChoices_keywords[] = { "title", "question", "answers", "default", "multiple", NULL };
+
+static PyObject *PyFF_askChoices(PyObject *UNUSED(self), PyObject *args, PyObject *kwargs) {
+    char *title=NULL, *quest=NULL;
+    char **answers; // receives answers written into `answero`
+    PyObject* defo = NULL; // default answer index, or tuple of len cnt
+    int def = 0; // default index, only used if not multianswer
+    int cnt; // number of answers
+    PyObject *multipleo = NULL; // expected to be boolean
+    bool multiple = false;
+    PyObject *answero = NULL; // expected to be tuple
+    int ret;
 
     if ( no_windowing_ui ) {
-	PyErr_Format(PyExc_EnvironmentError, "No user interface");
-return( NULL );
+        PyErr_Format(PyExc_EnvironmentError, "No user interface");
+        return( NULL );
     }
 
-    if ( !PyArg_ParseTuple(args,"esesO|i","UTF-8", &title, "UTF-8", &quest, &answero, &def) )
-return( NULL );
+    if ( !PyArg_ParseTupleAndKeywords(args, kwargs, "esesO|OO", (char**) askChoices_keywords, 
+                                      "UTF-8", &title, "UTF-8", &quest, &answero, &defo, &multipleo) ) {
+        PyErr_Format(PyExc_EnvironmentError, "Failed to parse arguments");
+        return( NULL );
+    }
+
+    multiple = multipleo != NULL && PyObject_IsTrue(multipleo);
+
     if ( !PySequence_Check(answero) || STRING_CHECK(answero)) {
-	PyErr_Format(PyExc_TypeError, "Expected a tuple of strings for the third argument");
-	PyMem_Free(title);
-	PyMem_Free(quest);
-return( NULL );
+        PyErr_Format(PyExc_TypeError, "Expected a tuple of strings for the third argument");
+        PyMem_Free(title);
+        PyMem_Free(quest);
+        return( NULL );
     }
+
     cnt = PySequence_Size(answero);
-    answers = calloc(cnt+1, sizeof(char *));
-    if ( def<0 || def>=cnt ) {
-	PyErr_Format(PyExc_ValueError, "Value out of bounds for 4th argument");
-	PyMem_Free(title);
-	PyMem_Free(quest);
-return( NULL );
+    char* sel = calloc(cnt, sizeof(char));
+
+    if (defo != NULL && defo != Py_None) {
+        if ( PyInt_Check(defo) || PyLong_Check(defo) ) {
+            def = (int)PyLong_AsLong(defo);
+            if ( def<0 || def>=cnt ) {
+                PyErr_Format(PyExc_ValueError, "Value out of bounds for 4th argument");
+                PyMem_Free(title); PyMem_Free(quest); PyMem_Free(sel);
+                return( NULL );
+            }
+            if (multiple) {
+                sel[def] = (char)1;
+            }
+        } else if ( PyTuple_Check(defo) ) {
+            int dcnt = PySequence_Size(defo);
+            if (dcnt != cnt) {
+                PyErr_Format(PyExc_ValueError, "Expected tuple/list of %d items, got %d items", cnt, dcnt );
+                PyMem_Free(title); PyMem_Free(quest); PyMem_Free(sel);
+                return( NULL );
+            }
+            bool def_set = false;
+            for (int i = 0; i < cnt; i++) {
+                PyObject* temp = PyTuple_GetItem(defo, i);
+                sel[i] = PyObject_IsTrue(temp);
+                if (!multiple && PyObject_IsTrue(temp)) {
+                    if (def_set) {
+                        PyErr_Format(PyExc_ValueError, "`multiple` False, only expected 1 True in `default`" );
+                        PyMem_Free(title); PyMem_Free(quest); PyMem_Free(sel);
+                        return( NULL );
+                    }
+                    def = i;
+                    def_set = true;
+                }
+            }
+        } else {
+            PyErr_Format(PyExc_TypeError, "4th argument must be a tuple or integer" );
+            PyMem_Free(title); PyMem_Free(quest); PyMem_Free(sel);
+            return( NULL );
+        }
     }
-    for ( i=0; i<cnt; ++i ) {
+
+    answers = calloc(cnt+1, sizeof(char *));
+    for ( int i=0; i<cnt; ++i ) {
         PyObject *utf8_name = PYBYTES_UTF8(PySequence_GetItem(answero,i));
         if ( utf8_name==NULL ) {
-	    PyMem_Free(title);
-	    PyMem_Free(quest);
-	    FreeStringArray( i, answers );
-return( NULL );
-	}
+            PyMem_Free(title); PyMem_Free(quest); PyMem_Free(sel);
+            FreeStringArray( i, answers );
+            return( NULL );
+        }
         answers[i] = copy(PyBytes_AsString(utf8_name));
         Py_DECREF(utf8_name);
     }
     answers[cnt] = NULL;
 
-    ret = ff_choose(title,(const char **) answers,cnt,def,quest);
-    PyMem_Free(title);
-    PyMem_Free(quest);
-    FreeStringArray( cnt, answers );
-return( Py_BuildValue("i",ret));
+    PyObject* reto;
+    if (multiple) {
+        char* buts[2] = {_("OK"), _("Cancel")};
+        reto = PyTuple_New(cnt);
+        ret = ff_choose_multiple(title, (const char **) answers, sel, cnt, buts, quest);
+        for (int i = 0; i < cnt; i++) {
+            PyObject* o = (sel[i] == 1) ? Py_True : Py_False;
+            PyTuple_SetItem(reto, i, o);
+            Py_INCREF(o); // prevents crash on finalize
+        }
+    } else {
+        ret = ff_choose(title, (const char **) answers, cnt, def, quest);
+    }
+
+    PyMem_Free(title); PyMem_Free(quest); PyMem_Free(sel);
+    FreeStringArray(cnt, answers);
+
+    if (multiple) {
+        return ( reto );
+    }
+    return( Py_BuildValue("i", ret) );
 }
 
 static PyObject *PyFF_askString(PyObject *UNUSED(self), PyObject *args) {
@@ -18738,7 +18802,7 @@ PyMethodDef module_fontforge_methods[] = {
     { "openFilename", PyFF_openFilename, METH_VARARGS, "Pops up a file picker dialog asking the user for a filename to open" },
     { "saveFilename", PyFF_saveFilename, METH_VARARGS, "Pops up a file picker dialog asking the user for a filename to use for saving" },
     { "ask", PyFF_ask, METH_VARARGS, "Pops up a dialog asking the user a question and providing a set of buttons for the user to reply with" },
-    { "askChoices", PyFF_askChoices, METH_VARARGS, "Pops up a dialog asking the user a question and providing a scrolling list for the user to reply with" },
+    { "askChoices", (PyCFunction)PyFF_askChoices, METH_VARARGS | METH_KEYWORDS, "Pops up a dialog asking the user a question and providing a scrolling list for the user to reply with" },
     { "askString", PyFF_askString, METH_VARARGS, "Pops up a dialog asking the user a question and providing a textfield for the user to reply with" },
     // Leave some sentinel slots here so that the UI
     // code can add it's methods to the end of the object declaration.
