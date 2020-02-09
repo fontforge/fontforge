@@ -838,7 +838,7 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
     <TR>
       <TD><CODE>askChoices</CODE></TD>
       <TD><CODE>(title,question,answers,<BR>
-	[default,multiple])</CODE></TD>
+	[default=,multiple=])</CODE></TD>
       <TD>Similar to the above allows you to ask the user a multiple choice question.
 	It popups up a dialog posing the question with a scrollable list of choices
 	-- one for each answer.
@@ -857,6 +857,9 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
 	<P>
 	The function returns the index in the answer array of the answer choosen
 	by the user. If the user cancels the dialog, a -1 is returned.
+	<P>
+	<CODE>default</CODE> and <CODE>multiple</CODE> may be passed by position if
+	desired.
 	<P>
 	Throws an exception if there is no user interface.</TD>
     </TR>
