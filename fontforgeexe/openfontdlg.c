@@ -612,7 +612,7 @@ return( GGadgetDispatchEvent((GGadget *) (d->gfc),event));
 return( event->type!=et_char );
 }
 
-unichar_t *FVOpenFont(char *title, const char *defaultfile, bool mult, bool modal) {
+static unichar_t *FVOpenFont(char *title, const char *defaultfile, bool mult, bool modal) {
     GRect pos;
     int i, filter, renamei;
     GWindow gw;
@@ -833,3 +833,17 @@ unichar_t *FVOpenFont(char *title, const char *defaultfile, bool mult, bool moda
     free(nlnames);
 return(d.ret);
 }
+
+char *GetPostScriptFontName(char *dir, bool mult, bool modal) {
+    unichar_t *ret;
+    char *u_dir;
+    char *temp;
+
+    u_dir = def2utf8_copy(dir);
+    ret = FVOpenFont(_("Open Font"), u_dir, mult, modal);
+    temp = u2def_copy(ret);
+
+    free(ret);
+return( temp );
+}
+

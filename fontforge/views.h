@@ -1108,11 +1108,6 @@ extern void GCDFillMacFeat(GGadgetCreateData *mfgcd,GTextInfo *mflabels, int wid
 	GGadgetCreateData **array);
 extern void Prefs_ReplaceMacFeatures(GGadget *list);
 
-extern unichar_t *FVOpenFont(char *title, const char *defaultfile, bool mult, bool modal);
-
-
-
-
 extern void ShowAboutScreen(void);
 extern void DelayEvent(void (*func)(void *), void *data);
 

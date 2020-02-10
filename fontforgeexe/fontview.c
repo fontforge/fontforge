@@ -1016,19 +1016,6 @@ void MenuExit(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *e) {
 	DelayEvent(_MenuExit,NULL);
 }
 
-char *GetPostScriptFontName(char *dir, bool mult, bool modal) {
-    unichar_t *ret;
-    char *u_dir;
-    char *temp;
-
-    u_dir = def2utf8_copy(dir);
-    ret = FVOpenFont(_("Open Font"), u_dir, mult, modal);
-    temp = u2def_copy(ret);
-
-    free(ret);
-return( temp );
-}
-
 void MergeKernInfo(SplineFont *sf,EncMap *map) {
 #ifndef __Mac
     static char wild[] = "*.{afm,tfm,ofm,pfm,bin,hqx,dfont,feature,feat,fea}";
