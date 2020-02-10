@@ -158,7 +158,7 @@ return;
 
 void fvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontViewBase *fv = (FontViewBase *) GDrawGetUserData(gw);
-    PyObject *pyfv = PyFV_From_FV(fv);
+    PyObject *pyfv = PyFF_FontForFV(fv);
 
     if ( fvpy_menu_data==NULL )
 return;
@@ -171,7 +171,7 @@ return;
 
 static void fvpy_menuactivate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontViewBase *fv = (FontViewBase *) GDrawGetUserData(gw);
-    PyObject *pyfv = PyFV_From_FV(fv);
+    PyObject *pyfv = PyFF_FontForFV(fv);
 
     if ( fvpy_menu_data==NULL )
 return;
