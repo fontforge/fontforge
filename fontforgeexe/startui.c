@@ -1381,7 +1381,7 @@ exit( 0 );
 			    buffer[strlen(buffer)+1]='\0';
 			    buffer[strlen(buffer)] = '/';
 			}
-			fname = GetPostScriptFontName(buffer,false);
+			fname = GetPostScriptFontName(buffer,false,false);
 			if ( fname!=NULL )
 			    ViewPostScriptFont(fname,openflags);
 			any = 1;	/* Even if we didn't get a font, don't bring up dlg again */

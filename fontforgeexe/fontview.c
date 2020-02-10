@@ -1016,19 +1016,6 @@ void MenuExit(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *e) {
 	DelayEvent(_MenuExit,NULL);
 }
 
-char *GetPostScriptFontName(char *dir, int mult) {
-    unichar_t *ret;
-    char *u_dir;
-    char *temp;
-
-    u_dir = def2utf8_copy(dir);
-    ret = FVOpenFont(_("Open Font"), u_dir,mult);
-    temp = u2def_copy(ret);
-
-    free(ret);
-return( temp );
-}
-
 void MergeKernInfo(SplineFont *sf,EncMap *map) {
 #ifndef __Mac
     static char wild[] = "*.{afm,tfm,ofm,pfm,bin,hqx,dfont,feature,feat,fea}";
@@ -1083,7 +1070,7 @@ void _FVMenuOpen(FontView *fv) {
             OpenDir = DefaultDir;
         }
         
-        temp = GetPostScriptFontName(OpenDir,true);
+        temp = GetPostScriptFontName(OpenDir,true,fv != NULL);
         if ( temp==NULL )
             return;
 
@@ -3726,7 +3713,7 @@ static void FVMenuInsertFont(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *U
     if ( cidmaster==NULL || cidmaster->subfontcnt>=255 )	/* Open type allows 1 byte to specify the fdselect */
 return;
 
-    filename = GetPostScriptFontName(NULL,false);
+    filename = GetPostScriptFontName(NULL,false,true);
     if ( filename==NULL )
 return;
     new = LoadSplineFont(filename,0);
