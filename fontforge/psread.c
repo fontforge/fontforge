@@ -2890,7 +2890,7 @@ return( last );
 
 static SplinePointList *SplinesFromLayers(SplineChar *sc,int *flags, int tostroke) {
     int layer;
-    SplinePointList *head=NULL, *last, *new, *nlast, *temp, *each, *transed;
+    SplinePointList *head=NULL, *last, *nlast, *temp, *each, *transed;
     StrokeInfo si;
     /*SplineSet *spl;*/
     int handle_eraser;
@@ -2932,35 +2932,26 @@ return( head );
 	    // These are OK as lc_butt and lj_miter are unchanged by SITra()
 	    if ( si.cap == lc_inherited ) si.cap = lc_butt;
 	    if ( si.join == lj_inherited ) si.join = lj_miter;
-	    new = NULL;
 	    memcpy(transform,sc->layers[layer].stroke_pen.trans,4*sizeof(real));
 	    transform[4] = transform[5] = 0;
 	    MatInverse(inversetrans,transform);
 	    transed = SplinePointListTransform(SplinePointListCopy(
 		    sc->layers[layer].splines),inversetrans,tpt_AllPoints);
-	    for ( each = transed; each!=NULL; each=each->next ) {
-		temp = SplineSetStroke(each,&si,sc->layers[layer].order2);
-		if ( new==NULL )
-		    new=temp;
-		else
-		    nlast->next = temp;
-		if ( temp!=NULL )
-		    for ( nlast=temp; nlast->next!=NULL; nlast=nlast->next );
-	    }
-	    new = SplinePointListTransform(new,transform,tpt_AllPoints);
+	    temp = SplineSetStroke(transed,&si,sc->layers[layer].order2);
+	    temp = SplinePointListTransform(temp,transform,tpt_AllPoints);
 	    SplinePointListsFree(transed);
 	    if ( handle_eraser && sc->layers[layer].stroke_pen.brush.col==0xffffff ) {
-		head = EraseStroke(sc,head,new);
+		head = EraseStroke(sc,head,temp);
 		last = head;
 		if ( last!=NULL )
 		    for ( ; last->next!=NULL; last=last->next );
 	    } else {
 		if ( head==NULL )
-		    head = new;
+		    head = temp;
 		else
-		    last->next = new;
-		if ( new!=NULL )
-		    for ( last = new; last->next!=NULL; last=last->next );
+		    last->next = temp;
+		if ( temp!=NULL )
+		    for ( last = temp; last->next!=NULL; last=last->next );
 	    }
 	}
 	if ( sc->layers[layer].dofill ) {
@@ -2970,13 +2961,13 @@ return( head );
 		if ( last!=NULL )
 		    for ( ; last->next!=NULL; last=last->next );
 	    } else {
-		new = SplinePointListCopy(sc->layers[layer].splines);
+		temp = SplinePointListCopy(sc->layers[layer].splines);
 		if ( head==NULL )
-		    head = new;
+		    head = temp;
 		else
-		    last->next = new;
-		if ( new!=NULL )
-		    for ( last = new; last->next!=NULL; last=last->next );
+		    last->next = temp;
+		if ( temp!=NULL )
+		    for ( last = temp; last->next!=NULL; last=last->next );
 	    }
 	}
     }
@@ -3085,7 +3076,7 @@ void EntityDefaultStrokeFill(Entity *ent) {
 
 SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_stroked) {
     Entity *ent, *next;
-    SplinePointList *head=NULL, *last, *new, *nlast, *temp, *each, *transed;
+    SplinePointList *head=NULL, *last, *nlast, *temp, *each, *transed;
     StrokeInfo si;
     real inversetrans[6];
     /*SplineSet *spl;*/
@@ -3144,33 +3135,24 @@ SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_stroked)
 		// These are OK as lc_butt and lj_miter unchanged by SITra()
 		if ( si.cap == lc_inherited ) si.cap = lc_butt;
 		if ( si.join == lj_inherited ) si.join = lj_miter;
-		new = NULL;
 		MatInverse(inversetrans,ent->u.splines.transform);
 		transed = SplinePointListTransform(SplinePointListCopy(
 			ent->u.splines.splines),inversetrans,tpt_AllPoints);
-		for ( each = transed; each!=NULL; each=each->next ) {
-		    temp = SplineSetStroke(each,&si,false);
-		    if ( new==NULL )
-			new=temp;
-		    else
-			nlast->next = temp;
-		    if ( temp!=NULL )
-			for ( nlast=temp; nlast->next!=NULL; nlast=nlast->next );
-		}
-		new = SplinePointListTransform(new,ent->u.splines.transform,tpt_AllPoints);
+		temp = SplineSetStroke(transed, &si, false);
+		temp = SplinePointListTransform(temp,ent->u.splines.transform,tpt_AllPoints);
 		SplinePointListsFree(transed);
 		if ( handle_eraser && ent->u.splines.stroke.col==0xffffff ) {
-		    head = EraseStroke(ec->sc,head,new);
+		    head = EraseStroke(ec->sc,head,temp);
 		    last = head;
 		    if ( last!=NULL )
 			for ( ; last->next!=NULL; last=last->next );
 		} else {
 		    if ( head==NULL )
-			head = new;
+			head = temp;
 		    else
-			last->next = new;
-		    if ( new!=NULL )
-			for ( last = new; last->next!=NULL; last=last->next );
+			last->next = temp;
+		    if ( temp!=NULL )
+			for ( last = temp; last->next!=NULL; last=last->next );
 		}
 	    }
 	    /* If they have neither a stroke nor a fill, pretend they said fill */
@@ -3182,13 +3164,13 @@ SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_stroked)
 		if ( last!=NULL )
 		    for ( ; last->next!=NULL; last=last->next );
 	    } else {
-		new = ent->u.splines.splines;
+		temp = ent->u.splines.splines;
 		if ( head==NULL )
-		    head = new;
+		    head = temp;
 		else
-		    last->next = new;
-		if ( new!=NULL )
-		    for ( last = new; last->next!=NULL; last=last->next );
+		    last->next = temp;
+		if ( temp!=NULL )
+		    for ( last = temp; last->next!=NULL; last=last->next );
 	    }
 	}
 	SplinePointListsFree(ent->clippath);
