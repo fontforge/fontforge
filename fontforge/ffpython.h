@@ -252,6 +252,7 @@ static PyTypeObject PyFF_FontType;
 extern PyMethodDef PyFF_Font_methods[];
 extern PyMethodDef module_fontforge_methods[];
 
-PyObject *PyFV_From_FV_I(FontViewBase *fv);
+PyObject* PyFF_FontForFV(FontViewBase *fv);
+PyObject* PyFF_FontForFV_I(FontViewBase *fv);
 
 #endif /* FONTFORGE_FFPYTHON_H */

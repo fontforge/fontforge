@@ -293,15 +293,25 @@ static PyFF_Layer *LayerFromLayer(Layer *,PyFF_Layer *);
 /* ************************************************************************** */
 /* Find python objects corresponding to non-python structures */
 /* ************************************************************************** */
-static PyFF_Font* PyFF_FontForFV( FontViewBase *fv ) {
+PyObject* PyFF_FontForFV( FontViewBase *fv ) {
     if ( fv==NULL )
 	return NULL;
+    if ( fv->python_fv_object==NULL ) {
+        fv->python_fv_object = PyFF_FontType.tp_alloc(&PyFF_FontType,0);
+        ((PyFF_Font *) (fv->python_fv_object))->fv = fv;
+        Py_INCREF( (PyObject *) (fv->python_fv_object) );
+    }
     return fv->python_fv_object;
+}
+PyObject* PyFF_FontForFV_I( FontViewBase *fv ) {
+    PyObject* pyfv = PyFF_FontForFV(fv);
+    Py_XINCREF(pyfv);
+    return pyfv;
 }
 static PyFF_Font* PyFF_FontForSF( SplineFont *sf ) {
     if ( sf==NULL )
 	return NULL;
-    return PyFF_FontForFV( sf->fv );
+    return (PyFF_Font*)PyFF_FontForFV( sf->fv );
 }
 static PyFF_Font* PyFF_FontForSC( SplineChar *sc ) {
     if ( sc==NULL )
@@ -473,23 +483,6 @@ return( Py_BuildValue("d", val->u.fval ));
     else if ( val->type==v_arr || val->type==v_arrfree )
 	PyErr_SetString(PyExc_NotImplementedError, "Array -> tuple conversion not yet implemented. I didn't think I needed to.");
 return( NULL );
-}
-
-PyObject *PyFV_From_FV(FontViewBase *fv) {
-    if ( fv==NULL )
-Py_RETURN_NONE;
-    if ( fv->python_fv_object==NULL ) {
-	fv->python_fv_object = PyFF_FontType.tp_alloc(&PyFF_FontType,0);
-	((PyFF_Font *) (fv->python_fv_object))->fv = fv;
-	Py_INCREF( (PyObject *) (fv->python_fv_object) );	/* for the pointer in my fv */
-    }
-return( fv->python_fv_object );
-}
-
-PyObject *PyFV_From_FV_I(FontViewBase *fv) {
-    PyObject *f = PyFV_From_FV(fv);
-    Py_INCREF(f);
-return( f );
 }
 
 PyObject *PySC_From_SC(SplineChar *sc) {
@@ -1162,7 +1155,7 @@ static PyObject *PyFF_FontTuple(PyObject *UNUSED(self), PyObject *UNUSED(args)) 
     for ( fv=FontViewFirst(), cnt=0; fv!=NULL; fv=fv->next, ++cnt );
     tuple = PyTuple_New(cnt);
     for ( fv=FontViewFirst(), cnt=0; fv!=NULL; fv=fv->next, ++cnt )
-	PyTuple_SET_ITEM(tuple,cnt,PyFV_From_FV_I(fv));
+	PyTuple_SET_ITEM(tuple,cnt,PyFF_FontForFV_I(fv));
 
 return( tuple );
 }
@@ -1172,7 +1165,7 @@ static PyObject *PyFF_ActiveFont(PyObject *UNUSED(self), PyObject *UNUSED(args))
     if ( fv_active_in_ui==NULL )
 Py_RETURN_NONE;
 
-return( PyFV_From_FV_I( fv_active_in_ui ));
+return( PyFF_FontForFV_I( fv_active_in_ui ));
 }
 
 static PyObject *PyFF_ActiveGlyph(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
@@ -1220,7 +1213,7 @@ return( NULL );
 return( NULL );
     }
     free(locfilename);
-return( PyFV_From_FV_I( SFAdd( sf, openflags&of_hidewindow )));
+return( PyFF_FontForFV_I( SFAdd( sf, openflags&of_hidewindow )));
 }
 
 static PyObject *PyFF_FontsInFile(PyObject *UNUSED(self), PyObject *args) {
@@ -10123,11 +10116,10 @@ return( STRING_FROM_FORMAT( "<Selection for %s>", self->fv->sf->fontname ));
 }
 
 static PyObject *PyFFSelection_get_font(PyFF_Selection *self, void *UNUSED(closure)) {
-    PyFF_Font *font = PyFF_FontForFV( self->fv );
+    PyObject* font = PyFF_FontForFV_I( self->fv );
     if ( font==NULL )
 Py_RETURN_NONE;
-    Py_INCREF(font);
-    return (PyObject*)font;
+    return font;
 }
 
 static PyObject *PyFFSelection_ByGlyphs(PyFF_Selection *real_selection, void *UNUSED(closure)) {
@@ -10285,8 +10277,8 @@ Py_RETURN(self);
 static PyObject *fontiter_New(PyFF_Font *font, int bysel, struct searchdata *sv);
 
 static PyObject *PySelection_iter(PyObject *object) {
-    PyFF_Selection * self = (PyFF_Selection*)object;
-    PyFF_Font *font = PyFF_FontForFV(self->fv);
+    PyFF_Selection* self = (PyFF_Selection*)object;
+    PyFF_Font* font = (PyFF_Font*)PyFF_FontForFV(self->fv);
 
     if ( CheckIfFontClosed(font) )
 return (NULL);
@@ -16853,7 +16845,7 @@ return( NULL );
     if ( sf->fv==NULL )
 	EncMapFree(sf->map);
     newfv = SFAdd(InterpolateFont(fv->sf,sf,fraction, fv->map->enc ),false);
-return( PyFV_From_FV_I(newfv));
+return( PyFF_FontForFV_I(newfv));
 }
 
 static PyObject *PyFFFont_CreateMappedChar(PyFF_Font *self, PyObject *args) {
@@ -18537,7 +18529,7 @@ return( (PyObject *) (all->python_data) );
 }
 
 static PyObject *PyFF_AWContext_getFont(PyFF_AWContext *self, void *UNUSED(closure)) {
-return( PyFV_From_FV( self->base->fv ));
+    return PyFF_FontForFV( self->base->fv );
 }
 
 static PyObject *PyFF_AWContext_getEmSize(PyFF_AWContext *self, void *UNUSED(closure)) {
@@ -19774,7 +19766,7 @@ return;
     for ( pt=argtypes, i=0; *pt; ++pt, ++i ) {
 	PyObject *arg;
 	if ( *pt=='f' )
-	    arg = PyFV_From_FV_I( va_arg(ap,FontViewBase *));
+	    arg = PyFF_FontForFV_I( va_arg(ap,FontViewBase *));
 	else if ( *pt=='g' )
 	    arg = PySC_From_SC_I( va_arg(ap,SplineChar *));
 	else if ( *pt=='s' )
