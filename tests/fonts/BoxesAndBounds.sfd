@@ -1,0 +1,94 @@
+SplineFontDB: 3.2
+FontName: BoxesAndBounds
+FullName: BoxesAndBounds
+FamilyName: BoxesAndBounds
+Weight: Regular
+Copyright: Adam Sandler is one of the greatest actors of all time
+UComments: "2020-2-12: Created with FontForge (http://fontforge.org)"
+Version: 001.000
+ItalicAngle: 0
+UnderlinePosition: -100
+UnderlineWidth: 50
+Ascent: 800
+Descent: 200
+InvalidEm: 0
+LayerCount: 3
+Layer: 0 0 "Back" 1
+Layer: 1 0 "Fore" 0
+Layer: 2 0 "Back 2" 1
+XUID: [1021 655 56001077 4734436]
+OS2Version: 0
+OS2_WeightWidthSlopeOnly: 0
+OS2_UseTypoMetrics: 1
+CreationTime: 1581490339
+ModificationTime: 1581490644
+OS2TypoAscent: 0
+OS2TypoAOffset: 1
+OS2TypoDescent: 0
+OS2TypoDOffset: 1
+OS2TypoLinegap: 0
+OS2WinAscent: 0
+OS2WinAOffset: 1
+OS2WinDescent: 0
+OS2WinDOffset: 1
+HheadAscent: 0
+HheadAOffset: 1
+HheadDescent: 0
+HheadDOffset: 1
+OS2Vendor: 'PfEd'
+MarkAttachClasses: 1
+DEI: 91125
+LangName: 1033
+Encoding: Custom
+UnicodeInterp: none
+NameList: AGL For New Fonts
+DisplaySize: -72
+AntiAlias: 1
+FitToEm: 0
+WinInfo: 0 8 2
+BeginPrivate: 0
+EndPrivate
+BeginChars: 3 3
+
+StartChar: NameMe.0
+Encoding: 0 -1 0
+Width: 378
+Flags: HW
+LayerCount: 3
+Fore
+SplineSet
+63 183 m 4
+ 63 253 119 309 189 309 c 4
+ 259 309 315 253 315 183 c 4
+ 315 113 259 57 189 57 c 4
+ 119 57 63 113 63 183 c 4
+EndSplineSet
+EndChar
+
+StartChar: NameMe.1
+Encoding: 1 -1 1
+Width: 378
+Flags: HW
+LayerCount: 3
+Fore
+Refer: 0 -1 N 1 0 0 1 0 0 2
+EndChar
+
+StartChar: NameMe.2
+Encoding: 2 -1 2
+Width: 378
+Flags: HW
+LayerCount: 3
+Fore
+Refer: 0 -1 S 1 0 0 1 0 0 2
+Layer: 2
+SplineSet
+63 585 m 4
+ 63 655 119 711 189 711 c 0
+ 259 711 315 655 315 585 c 0
+ 315 515 259 459 189 459 c 0
+ 119 459 63 515 63 585 c 4
+EndSplineSet
+EndChar
+EndChars
+EndSplineFont
