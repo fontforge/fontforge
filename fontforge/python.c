@@ -9466,24 +9466,24 @@ static PyObject *PyFFGlyph_preserveLayer(PyFF_Glyph *self, PyObject *args) {
 Py_RETURN( self );
 }
 
-static int *LayerArgToLayer(SplineFont *sf, PyObject* layerp) {
-    int *layeri = calloc(1, sizeof(int));
+static int LayerArgToLayer(SplineFont *sf, PyObject* layerp) {
+    int layeri;
 
     if ( STRING_CHECK(layerp)) {
         char *name;
-        PYGETSTR(layerp, name, NULL);
-        *layeri = SFFindLayerIndexByName(sf, name);
-        if ( *layeri<0 ) {
+        PYGETSTR(layerp, name, ly_none);
+        layeri = SFFindLayerIndexByName(sf, name);
+        if ( layeri<0 ) {
             PyErr_Format(PyExc_ValueError, "Requested layer '%s' not found", name);
             ENDPYGETSTR();
-            return NULL;
+            return ly_none;
         }
         ENDPYGETSTR();
     } else if (!PyInt_Check(layerp)) {
         PyErr_Format(PyExc_ValueError, "First argument must be string or layer index");
-        return NULL;
+        return ly_none;
     } else {
-        *layeri = PyInt_AsLong(layerp);
+        layeri = PyInt_AsLong(layerp);
     }
     return layeri;
 }
@@ -9497,9 +9497,8 @@ static PyObject *PyFFGlyph_boundingBox(PyFF_Glyph *self, PyObject *UNUSED(args),
     int* layerp2;
 
     if (layerp != NULL) {
-        layerp2 = LayerArgToLayer(self->sc->parent, layerp);
-        if (layerp2 == NULL) return NULL;
-        layeri = *layerp2;
+        layeri = LayerArgToLayer(self->sc->parent, layerp);
+        if (layeri == ly_none) return NULL;
         SplineCharLayerFindBounds(self->sc, layeri, &bb);
     } else {
         SplineCharFindBounds(self->sc, &bb);
@@ -9519,20 +9518,16 @@ static PyObject* PyFF_Glyph_BoundsAt(PyCFunction bounds_func, PyFF_Glyph *self, 
 
     PyObject* layerp = NULL;
     if (keywds != NULL) layerp = PyDict_GetItemString(keywds, "layer");
-    int* layerp2;
 
     if (layerp != NULL) {
-        layerp2 = LayerArgToLayer(self->sc->parent, layerp);
-        if (layerp2 == NULL) return NULL;
-        layeri = *layerp2;
+        layeri = LayerArgToLayer(self->sc->parent, layerp);
+        if (layeri == ly_none) return NULL;
     }
 
     int arglen = PySequence_Size(args);
     int layer_cnt = self->sc->layer_cnt;
     for (int i = 0; i < layer_cnt; i++) {
-        if (layerp2 != NULL) {
-            if (layeri != i) continue;
-        }
+        if (layerp != NULL && layeri != i) continue;
         SplineSet* ss = LayerAllSplines(&self->sc->layers[i]);
         while (ss != NULL) {
             tempc = ContourFromSS(ss, NULL);
@@ -9569,9 +9564,8 @@ static PyObject *PyFFGlyph_clear(PyFF_Glyph *self, PyObject *args) {
         return NULL;
     } else { /* arglen == 1 */
         PyObject *layerp = PySequence_GetItem(args,0);
-        int* layerp2 = LayerArgToLayer(self->sc->parent, layerp);
-        if (layerp2 == NULL) return NULL;
-        layeri = *layerp2;
+        int layeri = LayerArgToLayer(self->sc->parent, layerp);
+        if (layeri == ly_none) return NULL;
 
         // ly_grid not clearable with this function. In any event, it makes no
         // sense to put it here; clearing ly_grid should quite rightly go at
