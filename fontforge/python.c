@@ -9532,18 +9532,24 @@ static PyObject* PyFF_Glyph_BoundsAt(PyCFunction bounds_func, PyFF_Glyph *self, 
         while (ss != NULL) {
             tempc = ContourFromSS(ss, NULL);
             temp = bounds_func((PyObject*)tempc, args);
+            ss = ss->next;
+            if (!PyTuple_Check(temp)) {
+                continue;
+            }
             PyArg_ParseTuple(temp, "dd", &tnmin, &tnmax);
             if (tnmin < nmin || !set) nmin = tnmin;
             if (tnmax > nmax || !set) nmax = tnmax;
             set = true;
-            ss = ss->next;
         }
         LayerUnAllSplines(&self->sc->layers[i]);
     }
 
-    PyObject *bounds = Py_BuildValue("(dd)", nmin, nmax);
-
-    return bounds;
+    if (set) {
+        PyObject *bounds = Py_BuildValue("(dd)", nmin, nmax);
+        return bounds;
+    } else {
+        Py_RETURN_NONE;
+    }
 }
 
 static PyObject *PyFFGlyph_xBoundsAtY(PyFF_Glyph *self, PyObject *args, PyObject *keywds) {
