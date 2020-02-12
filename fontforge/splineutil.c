@@ -756,7 +756,7 @@ void SplineCharFindBounds(SplineChar *sc,DBounds *bounds) {
     bounds->miny = bounds->maxy = 0;
 
     first = last = ly_fore;
-    if ( sc->parent!=NULL && sc->parent->multilayer )
+    if ( sc->parent!=NULL )
 	last = sc->layer_cnt-1;
     for ( i=first; i<=last; ++i )
 	_SplineCharLayerFindBounds(sc,i,bounds);

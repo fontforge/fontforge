@@ -1247,18 +1247,20 @@ Two contours may be compared to see if they describe similar paths.
     <TR>
       <TD><CODE>xBoundsAtY</CODE></TD>
       <TD><CODE>(ybottom[,ytop])</CODE></TD>
-      <TD>Finds the minimum and maximum x positions attained by the contour when
-	y is between ybottom and ytop (if ytop is not specified it is assumed the
-	same as ybottom). If the contour does not have any y values in the specified
-	range then ff will return None.</TD>
+      <TD>Returns the minimum and maximum x positions attained by the contour
+          when y is between ybottom and ytop (if ytop is not specified it is
+          assumed the same as ybottom) as a tuple like (minx, maxx). If the
+          contour does not have any y values in the specified range then ff
+          will return None.</TD>
     </TR>
     <TR>
       <TD><CODE>yBoundsAtX</CODE></TD>
       <TD><CODE>(xleft[,xright])</CODE></TD>
-      <TD>Finds the minimum and maximum y positions attained by the contour when
-	x is between xleft and xright (if xright is not specified it is assumed the
-	same as xleft). If the contour does not have any x values in the specified
-	range then ff will return None.</TD>
+      <TD>Returns the minimum and maximum y positions attained by the contour
+          when x is between xleft and xright (if xright is not specified it is
+          assumed the same as xleft) as a tuple like (miny, maxy). If the
+          contour does not have any x values in the specified range then ff
+          will return None.</TD>
     </TR>
     <TR>
       <TD>&nbsp;</TD>
@@ -1372,9 +1374,8 @@ Two contours may be compared to see if they describe similar paths.
     <TR>
       <TD><CODE>boundingBox</CODE></TD>
       <TD><CODE>()</CODE></TD>
-      <TD>Returns a tuple representing a rectangle (xmin,ymin, xmax,ymax) into
-	which the contour fits. It is not guaranteed to be the smallest such rectangle,
-	but it will often be.</TD>
+      <TD>Returns a tuple representing the smallest rectangle (xmin,ymin,
+          xmax,ymax) into which the contour fits.</TD>
     </TR>
     <TR>
       <TD><CODE>getSplineAfterPoint</CODE></TD>
@@ -1674,25 +1675,26 @@ Layers may be compared to see if their contours are similar.
     <TR>
       <TD><CODE>boundingBox</CODE></TD>
       <TD><CODE>()</CODE></TD>
-      <TD>Returns a tuple representing a rectangle (xmin,ymin, xmax,ymax) into
-	which the layer fits. It is not guaranteed to be the smallest such rectangle,
-	but it will often be.</TD>
+      <TD>Returns a tuple representing the smallest rectangle (xmin,ymin,
+          xmax,ymax) into which the layer fits.</TD>
     </TR>
     <TR>
       <TD><CODE>xBoundsAtY</CODE></TD>
       <TD><CODE>(ybottom[,ytop])</CODE></TD>
-      <TD>Finds the minimum and maximum x positions attained by the contour when
-	y is between ybottom and ytop (if ytop is not specified it is assumed the
-	same as ybottom). If the layer does not have any y values in the specified
-	range then ff will return None.</TD>
+      <TD>Returns the minimum and maximum x positions attained by the contour
+          when y is between ybottom and ytop (if ytop is not specified it is
+          assumed the same as ybottom) as a tuple like (minx, maxx). If the
+          layer does not have any y values in the specified range then ff will
+          return None.</TD>
     </TR>
     <TR>
       <TD><CODE>yBoundsAtX</CODE></TD>
       <TD><CODE>(xleft[,xright])</CODE></TD>
-      <TD>Finds the minimum and maximum y positions attained by the contour when
-	x is between xleft and xright (if xright is not specified it is assumed the
-	same as xleft). If the layer does not have any x values in the specified
-	range then ff will return None.</TD>
+      <TD>Returns the minimum and maximum y positions attained by the contour
+          when x is between xleft and xright (if xright is not specified it is
+          assumed the same as xleft) as a tuple like (miny, maxy). If the layer
+          does not have any x values in the specified range then ff will return
+          None.</TD>
     </TR>
     <TR>
       <TD><CODE>draw</CODE></TD>
@@ -2451,9 +2453,31 @@ must be created through the font.
     </TR>
     <TR>
       <TD><CODE>boundingBox</CODE></TD>
-      <TD><CODE>()</CODE></TD>
-      <TD>Returns a tuple representing a rectangle (xmin,ymin, xmax,ymax) which
-	is the minimum bounding box of the glyph.</TD>
+      <TD><CODE>([layer=])</CODE></TD>
+      <TD>Returns a tuple representing the smallest rectangle (xmin,ymin,
+          xmax,ymax) into which the glyph fits. A layer can be provided, and
+          unlike <CODE>layer.boundingBox</CODE>, this function takes references
+          into account.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>xBoundsAtY</CODE></TD>
+      <TD><CODE>(ybottom[,ytop,layer=])</CODE></TD> <TD>Returns the minimum and
+          maximum x positions attained by the glyph when y is between ybottom
+          and ytop (if ytop is not specified it is assumed the same as ybottom)
+          as a tuple like (minx, maxx). If the layer does not have any y values
+          in the specified range then ff will return None. A layer can be
+          provided, and unlike <CODE>layer.xBoundsAtY</CODE>, this function
+          takes references into account.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>yBoundsAtX</CODE></TD>
+      <TD><CODE>(xleft[,xright,layer=])</CODE></TD> <TD>Returns the minimum and
+          maximum y positions attained by the glyph when x is between xleft and
+          xright (if xright is not specified it is assumed the same as xleft)
+          as a tuple like (miny, maxy). If the layer does not have any x values
+          in the specified range then ff will return None. A layer can be
+          provided, and unlike <CODE>layer.yBoundsAtX</CODE>, this function
+          takes references into account.</TD>
     </TR>
     <TR>
       <TD><CODE>build</CODE></TD>

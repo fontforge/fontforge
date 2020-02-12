@@ -6147,8 +6147,7 @@ return( 0 );
 return( sc->layer_cnt );
 }
 
-static PyObject *PyFF_LayerArrayIndex( PyObject *self, PyObject *index ) {
-    SplineChar *sc = ((PyFF_LayerArray *) self)->sc;
+static PyObject *LayerFromLayerIndex( SplineChar *sc, PyObject *index ) {
     int layer;
 
     if ( STRING_CHECK(index)) {
@@ -6165,6 +6164,11 @@ return( NULL );
 return( NULL );
     }
 return( PyFF_Glyph_get_a_layer((PyFF_Glyph *) PySC_From_SC(sc),(void *)(size_t)layer));
+}
+
+static PyObject *PyFF_LayerArrayIndex( PyObject *self, PyObject *index ) {
+    SplineChar *sc = ((PyFF_LayerArray *) self)->sc;
+    return LayerFromLayerIndex(sc, index);
 }
 
 static int PyFF_LayerArrayIndexAssign( PyObject *self, PyObject *index, PyObject *value ) {
@@ -9462,12 +9466,98 @@ static PyObject *PyFFGlyph_preserveLayer(PyFF_Glyph *self, PyObject *args) {
 Py_RETURN( self );
 }
 
-static PyObject *PyFFGlyph_BoundingBox(PyFF_Glyph *self, PyObject *UNUSED(args)) {
+static int LayerArgToLayer(SplineFont *sf, PyObject* layerp) {
+    int layeri;
+
+    if ( STRING_CHECK(layerp)) {
+        char *name;
+        PYGETSTR(layerp, name, ly_none);
+        layeri = SFFindLayerIndexByName(sf, name);
+        if ( layeri<0 ) {
+            PyErr_Format(PyExc_ValueError, "Requested layer '%s' not found", name);
+            ENDPYGETSTR();
+            return ly_none;
+        }
+        ENDPYGETSTR();
+    } else if (!PyInt_Check(layerp)) {
+        PyErr_Format(PyExc_ValueError, "First argument must be string or layer index");
+        return ly_none;
+    } else {
+        layeri = PyInt_AsLong(layerp);
+    }
+    return layeri;
+}
+
+static PyObject *PyFFGlyph_boundingBox(PyFF_Glyph *self, PyObject *UNUSED(args), PyObject *keywds) {
     DBounds bb;
+    int layeri;
 
-    SplineCharFindBounds(self->sc,&bb);
+    PyObject* layerp = NULL;
+    if (keywds != NULL) layerp = PyDict_GetItemString(keywds, "layer");
+    int* layerp2;
 
-return( Py_BuildValue("(dddd)", bb.minx,bb.miny, bb.maxx,bb.maxy ));
+    if (layerp != NULL) {
+        layeri = LayerArgToLayer(self->sc->parent, layerp);
+        if (layeri == ly_none) return NULL;
+        SplineCharLayerFindBounds(self->sc, layeri, &bb);
+    } else {
+        SplineCharFindBounds(self->sc, &bb);
+    }
+
+    return( Py_BuildValue("(dddd)", bb.minx,bb.miny, bb.maxx,bb.maxy ));
+}
+
+static PyObject* PyFF_Glyph_BoundsAt(PyCFunction bounds_func, PyFF_Glyph *self, PyObject *args, PyObject *keywds) {
+    PyObject *temp = NULL;
+    double nmin = 0, nmax = 0;
+    double tnmin = 0, tnmax = 0;
+    bool set = false;
+    int layeri;
+
+    PyFF_Contour* tempc = NULL;
+
+    PyObject* layerp = NULL;
+    if (keywds != NULL) layerp = PyDict_GetItemString(keywds, "layer");
+
+    if (layerp != NULL) {
+        layeri = LayerArgToLayer(self->sc->parent, layerp);
+        if (layeri == ly_none) return NULL;
+    }
+
+    int arglen = PySequence_Size(args);
+    int layer_cnt = self->sc->layer_cnt;
+    for (int i = 0; i < layer_cnt; i++) {
+        if (layerp != NULL && layeri != i) continue;
+        SplineSet* ss = LayerAllSplines(&self->sc->layers[i]);
+        while (ss != NULL) {
+            tempc = ContourFromSS(ss, NULL);
+            temp = bounds_func((PyObject*)tempc, args);
+            ss = ss->next;
+            if (!PyTuple_Check(temp)) {
+                continue;
+            }
+            PyArg_ParseTuple(temp, "dd", &tnmin, &tnmax);
+            if (tnmin < nmin || !set) nmin = tnmin;
+            if (tnmax > nmax || !set) nmax = tnmax;
+            set = true;
+        }
+        LayerUnAllSplines(&self->sc->layers[i]);
+    }
+
+    if (set) {
+        PyObject *bounds = Py_BuildValue("(dd)", nmin, nmax);
+        return bounds;
+    } else {
+        Py_RETURN_NONE;
+    }
+}
+
+static PyObject *PyFFGlyph_xBoundsAtY(PyFF_Glyph *self, PyObject *args, PyObject *keywds) {
+    return PyFF_Glyph_BoundsAt((PyCFunction)PyFFContour_xBoundsAtY, self, args, keywds);
+}
+
+static PyObject *PyFFGlyph_yBoundsAtX(PyFF_Glyph *self, PyObject *args, PyObject *keywds) {
+    return PyFF_Glyph_BoundsAt((PyCFunction)PyFFContour_yBoundsAtX, self, args, keywds);
 }
 
 static PyObject *PyFFGlyph_clear(PyFF_Glyph *self, PyObject *args) {
@@ -9481,22 +9571,9 @@ static PyObject *PyFFGlyph_clear(PyFF_Glyph *self, PyObject *args) {
         return NULL;
     } else { /* arglen == 1 */
         PyObject *layerp = PySequence_GetItem(args,0);
-        if ( STRING_CHECK(layerp)) {
-            char *name;
-            PYGETSTR(layerp, name, NULL);
-            layeri = SFFindLayerIndexByName(self->sc->parent,name);
-            if ( layeri<0 ) {
-                PyErr_Format(PyExc_ValueError, "Requested layer '%s' not found", name);
-                ENDPYGETSTR();
-                return NULL;
-            }
-            ENDPYGETSTR();
-        } else if (!PyInt_Check(layerp)) {
-            PyErr_Format(PyExc_ValueError, "First argument must be string or layer index");
-            return NULL;
-        } else {
-            layeri = PyInt_AsLong(layerp);
-        }
+        int layeri = LayerArgToLayer(self->sc->parent, layerp);
+        if (layeri == ly_none) return NULL;
+
         // ly_grid not clearable with this function. In any event, it makes no
         // sense to put it here; clearing ly_grid should quite rightly go at
         // the font level since ly_grid is per-font not per-glyph so this is
@@ -9578,7 +9655,7 @@ static PyMethodDef PyFF_Glyph_methods[] = {
     { "autoHint", PyFFGlyph_autoHint, METH_NOARGS, "Guess at postscript hints"},
     { "autoInstr", PyFFGlyph_autoInstr, METH_NOARGS, "Guess at truetype instructions"},
     { "autoTrace", PyFFGlyph_autoTrace, METH_NOARGS, "Autotrace any background images"},
-    { "boundingBox", (PyCFunction) PyFFGlyph_BoundingBox, METH_NOARGS, "Finds the minimum bounding box for the glyph (xmin,ymin,xmax,ymax)" },
+    { "boundingBox", (PyCFunction) PyFFGlyph_boundingBox, METH_VARARGS | METH_KEYWORDS, "Finds the minimum bounding box for the glyph (xmin,ymin,xmax,ymax)" },
     { "build", PyFFGlyph_Build, METH_VARARGS, "If the current glyph is an accented character\nand all components are in the font\nthen build it out of references" },
     { "canonicalContours", (PyCFunction) PyFFGlyph_canonicalContours, METH_NOARGS, "Orders the contours in the current glyph by the x coordinate of their leftmost point. (This can reduce the size of the postscript charstring needed to describe the glyph(s)."},
     { "canonicalStart", (PyCFunction) PyFFGlyph_canonicalStart, METH_NOARGS, "Sets the start point of all the contours of the current glyph to be the leftmost point on the contour."},
@@ -9607,6 +9684,8 @@ static PyMethodDef PyFF_Glyph_methods[] = {
     { "unlinkRef", PyFFGlyph_unlinkRef, METH_VARARGS, "Unlink a reference and turn it into outlines"},
     { "unlinkThisGlyph", PyFFGlyph_unlinkThisGlyph, METH_NOARGS, "Unlink all references to the current glyph in any other glyph in the font."},
     { "useRefsMetrics", PyFFGlyph_useRefsMetrics, METH_VARARGS, "Search the references of the current layer of the glyph and set the named reference's \"useMyMetrics\" flag."},
+    { "xBoundsAtY", (PyCFunction)PyFFGlyph_xBoundsAtY, METH_VARARGS | METH_KEYWORDS, "The minimum and maximum values of x attained for a given y (range), or returns None"},
+    { "yBoundsAtX", (PyCFunction)PyFFGlyph_yBoundsAtX, METH_VARARGS | METH_KEYWORDS, "The minimum and maximum values of y attained for a given x (range), or returns None"},
     { "preserveLayerAsUndo", (PyCFunction)PyFFGlyph_preserveLayer, METH_VARARGS, "Preserves the current layer -- as it now is -- in an undo"},
     PYMETHODDEF_EMPTY /* Sentinel */
 };
