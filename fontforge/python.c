@@ -1854,7 +1854,7 @@ return( NULL );
     ret = ff_ask_string(title,def,quest);
     PyMem_Free(title);
     PyMem_Free(quest);
-    free(def);
+    PyMem_Free(def);
     if ( ret==NULL )
 Py_RETURN_NONE;
     reto = Py_BuildValue("s",ret);
