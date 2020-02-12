@@ -9538,6 +9538,7 @@ static PyObject* PyFF_Glyph_BoundsAt(PyCFunction bounds_func, PyFF_Glyph *self, 
             set = true;
             ss = ss->next;
         }
+        LayerUnAllSplines(&self->sc->layers[i]);
     }
 
     PyObject *bounds = Py_BuildValue("(dd)", nmin, nmax);
