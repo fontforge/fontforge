@@ -151,42 +151,9 @@ return( encoding2u_strncpy(uto,_from,n,e_iso8859_1));
 	    ++ufrom;
 	    --n;
 	}
-    } else if ( cs==e_utf8 ) {
-	while ( *from && n>0 ) {
-	    if ( *from<=127 )
-		*upt = *from++;
-	    else if ( *from<=0xdf ) {
-		if ( from[1]>=0x80 ) {
-		    *upt = ((*from&0x1f)<<6) | (from[1]&0x3f);
-		    from += 2;
-		} else {
-		    ++from;	/* Badly formed utf */
-		    *upt = 0xfffd;
-		}
-	    } else if ( *from<=0xef ) {
-		if ( from[1]>=0x80 && from[2]>=0x80 ) {
-		    *upt = ((*from&0xf)<<12) | ((from[1]&0x3f)<<6) | (from[2]&0x3f);
-		    from += 3;
-		} else {
-		    ++from;	/* Badly formed utf */
-		    *upt = 0xfffd;
-		}
-	    } else if ( n>2 ) {
-		if ( from[1]>=0x80 && from[2]>=0x80 && from[3]>=0x80 ) {
-		    int w = ( ((*from&0x7)<<2) | ((from[1]&0x30)>>4) )-1;
-		    *upt++ = 0xd800 | (w<<6) | ((from[1]&0xf)<<2) | ((from[2]&0x30)>>4);
-		    *upt   = 0xdc00 | ((from[2]&0xf)<<6) | (from[3]&0x3f);
-		    from += 4;
-		} else {
-		    ++from;	/* Badly formed utf */
-		    *upt = 0xfffd;
-		}
-	    } else {
-		/* no space for surrogate */
-		from += 4;
-	    }
-	    ++upt;
-	}
+    } else if ( cs==e_utf8 && n > 0 ) {
+        utf82u_strncpy(uto, _from, n+1);
+        return uto;
     } else {
 	if ( !bad_enc_warn ) {
 	    bad_enc_warn = true;
@@ -343,38 +310,7 @@ return( u2encoding_strncpy(to,ufrom,n,e_iso8859_1));
 	if ( n>1 )
 	    *uto = '\0';
     } else if ( cs==e_utf8 ) {
-	while ( *ufrom ) {
-	    if ( *ufrom<0x80 ) {
-		if ( n<=1 )
-	break;
-		*pt++ = *ufrom;
-		--n;
-	    } else if ( *ufrom<0x800 ) {
-		if ( n<=2 )
-	break;
-		*pt++ = 0xc0 | (*ufrom>>6);
-		*pt++ = 0x80 | (*ufrom&0x3f);
-		n -= 2;
-	    } else if ( *ufrom>=0xd800 && *ufrom<0xdc00 && ufrom[1]>=0xdc00 && ufrom[1]<0xe000 ) {
-		int u = ((*ufrom>>6)&0xf)+1, y = ((*ufrom&3)<<4) | ((ufrom[1]>>6)&0xf);
-		if ( n<=4 )
-	    break;
-		*pt++ = 0xf0 | (u>>2);
-		*pt++ = 0x80 | ((u&3)<<4) | ((*ufrom>>2)&0xf);
-		*pt++ = 0x80 | y;
-		*pt++ = 0x80 | (ufrom[1]&0x3f);
-		n -= 4;
-	    } else {
-		if ( n<=3 )
-	    break;
-		*pt++ = 0xe0 | (*ufrom>>12);
-		*pt++ = 0x80 | ((*ufrom>>6)&0x3f);
-		*pt++ = 0x80 | (*ufrom&0x3f);
-	    }
-	    ++ufrom;
-	}
-	if ( n>1 )
-	    *pt = '\0';
+	u2utf8_strcpy(to, ufrom);
     } else {
 	if ( !bad_enc_warn ) {
 	    bad_enc_warn = true;
