@@ -32,6 +32,7 @@
 #include "ustring.h"
 #include "utype.h"
 
+#include <assert.h>
 #include <stddef.h>
 
 long uc_strcmp(const unichar_t *str1,const char *str2) {
@@ -562,18 +563,25 @@ void utf82u_strcat(unichar_t *to,const char *from) {
     utf82u_strcpy(to+u_strlen(to),from);
 }
 
-char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf) {
+char *u2utf8_strncpy(char *utf8buf,const unichar_t *ubuf,int len) {
 /* Copy unichar string 'ubuf' into utf8 buffer string 'utf8buf' */
     char *pt = utf8buf;
 
+    assert(utf8buf != NULL);
+
     if ( ubuf!=NULL ) {
-	while ( *ubuf && (pt=utf8_idpb(pt,*ubuf++,0)) );
-	if ( pt ) {
-	    *pt = '\0';
-	    return( utf8buf );
-	}
+        while ( *ubuf && (--len != 0) ) {
+            pt=utf8_idpb(pt,*ubuf++,0);
+        }
+        *pt = '\0';
+        return( utf8buf );
     }
+
     return( NULL );
+}
+
+char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf) {
+    return u2utf8_strncpy(utf8buf, ubuf, -1);
 }
 
 char *utf8_strchr(const char *str, int search) {

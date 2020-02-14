@@ -310,7 +310,7 @@ return( u2encoding_strncpy(to,ufrom,n,e_iso8859_1));
 	if ( n>1 )
 	    *uto = '\0';
     } else if ( cs==e_utf8 ) {
-	u2utf8_strcpy(to, ufrom);
+	u2utf8_strncpy(to, ufrom, n);
     } else {
 	if ( !bad_enc_warn ) {
 	    bad_enc_warn = true;
