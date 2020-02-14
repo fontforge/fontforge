@@ -1521,6 +1521,15 @@ static PyObject *PyFF_hasUserInterface(PyObject *UNUSED(self), PyObject *UNUSED(
 return( ret );
 }
 
+static PyObject *PyFF_scriptFromUnicode(PyObject *UNUSED(self), PyObject *args) {
+    long u;
+    if ( !PyArg_ParseTuple(args,"i",&u) )
+	return( NULL );
+
+    uint32 script = ScriptFromUnicode(u, NULL);
+    return TagToPythonString(script, false);
+}
+
 static PyObject *PyFF_logError(PyObject *UNUSED(self), PyObject *args) {
     char *msg;
     if ( !PyArg_ParseTuple(args,"es","UTF-8", &msg) )
@@ -18820,6 +18829,7 @@ PyMethodDef module_fontforge_methods[] = {
     { "UnicodeNames2GetNxtFromLib", PyFF_UnicodeNames2GetNxtFromLib, METH_VARARGS, "Return the table location of the next www.unicode.org Names2 for this library" },
     { "UnicodeNames2FrmTabFromLib", PyFF_UnicodeNames2FrmTabFromLib, METH_VARARGS, "Return the www.unicode.org NamesList Names2 from internal table[0<=N<UnicodeNames2GetCnt()] for this library" },
     { "UnicodeNames2FromLib", PyFF_UnicodeNames2FromLib, METH_VARARGS, "Return the www.unicode.org NamesList Names2 for this Unicode value if it exists for this library" },
+    { "scriptFromUnicode", PyFF_scriptFromUnicode, METH_VARARGS, "Return the script tag for the given Unicode codepoint. So, 'Q' would return \"latn\"." },
     /* --end of libuninameslist functions-------------------------- */
     { "IsFraction", PyFF_isfraction, METH_VARARGS, "Compare value with internal Vulgar_Fraction and Other_Fraction table. Return true/false" },
     { "IsLigature", PyFF_isligature, METH_VARARGS, "Compare value with internal Ligature table. Return true/false" },

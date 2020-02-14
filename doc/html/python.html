@@ -365,14 +365,31 @@
 	listed in libuninameslist internal table that was corrected to a new name.
 	The internal table of Unicode values is of size UnicodeNames2GetCntFromLib().
 	If there is no libuninameslist ver 0.5 or later, then return NULL.</TD>
-    <TR>
     </TR>
+    <TR>
       <TD><CODE>UnicodeNames2FromLib</CODE></TD>
       <TD><CODE>(val)</CODE></TD>
       <TD>Errors and corrections happen, therefore names can be corrected in the
 	next Unicode Nameslist version. This function returns the Names2 or NULL
 	based on the unicode value given.
 	If there is no libuninameslist ver 0.5 or later, then return NULL.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>scriptFromUnicode</CODE></TD>
+      <TD><CODE>(n)</CODE></TD>
+      <TD>Return the script tag for the given Unicode codepoint. So, for
+      <CODE>ord('Q')</CODE>, it would return <CODE>latn</CODE>. This is
+      most useful with addLookup, like:
+<BLOCKQUOTE>
+<PRE>
+# Add a `mark` lookup for an arbitrary glyph...
+script = fontforge.scriptFromUnicode(glyph.unicode)
+font.addLookup("l1", "gpos_mark2base", None, (("mark",((script,("dflt")),)),))
+font.addLookupSubtable("l1", "l1-1")
+font.addAnchorClass("l1-1", "top")
+</PRE>
+</BLOCKQUOTE>
+      </TD>
     </TR>
     <TR>
       <TD><CODE>IsFraction</CODE></TD>
