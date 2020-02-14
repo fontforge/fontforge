@@ -15710,7 +15710,7 @@ static PyObject *PyFFFont_addLookup(PyFF_Font *self, PyObject *args) {
     OTLookup *otl, *after = NULL;
     int itype;
     char *lookup_str, *type, *after_str=NULL;
-    PyObject *flagtuple, *featlist;
+    PyObject *flagtuple=NULL, *featlist;
     int flags;
     FeatureScriptLangList *fl;
 
@@ -15737,6 +15737,9 @@ return( NULL );
     if ( itype==FLAG_UNKNOWN )
 return( NULL );
 
+    if (flagtuple == Py_None || flagtuple == NULL)
+    flags = 0;
+    else
     flags = ParseLookupFlags(sf,flagtuple);
     if ( flags==-1 )
 return( NULL );
