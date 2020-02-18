@@ -79,16 +79,21 @@ int get3byte(FILE *ttf) {
 }
 
 int32 getlong(FILE *ttf) {
-	int ch1 = getc(ttf);
-	int ch2 = getc(ttf);
-	int ch3 = getc(ttf);
-	int ch4 = getc(ttf);
+	unsigned int ch1 = getc(ttf);
+	unsigned int ch2 = getc(ttf);
+	unsigned int ch3 = getc(ttf);
+	unsigned int ch4 = getc(ttf);
 
 	if (ch4==EOF)
 		return EOF;
 
 	return (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4;
 }
+
+uint32 getuint32(FILE *ttf) {
+    return (uint32)getlong(ttf);
+}
+
 
 real getfixed(FILE *ttf) {
 	int32 val = getlong(ttf);

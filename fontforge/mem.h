@@ -48,6 +48,7 @@ extern void memputshort(uint8 *data, int offset, uint16 val);
 extern int getushort(FILE *ttf);
 extern int get3byte(FILE *ttf);
 extern int32 getlong(FILE *ttf);
+extern uint32 getuint32(FILE *ttf);
 extern real getfixed(FILE *ttf);
 extern real get2dot14(FILE *ttf);
 

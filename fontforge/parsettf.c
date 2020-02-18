@@ -499,7 +499,7 @@ char *TTFGetFontName(FILE *ttf,int32 offset,int32 off2) {
         return( NULL );
     for ( i=0; i<num; ++i ) {
         tag = getlong(ttf);
-        /* checksum = */ getlong(ttf);
+        /* checksum = */ getuint32(ttf);
         nameoffset = off2+getlong(ttf);
         namelength = getlong(ttf);
         if ( feof(ttf) )
@@ -782,7 +782,7 @@ return;
 
     for ( i=0; i<info->numtables; ++i ) {
 	tabs[i].tag = getlong(ttf);
-	tabs[i].checksum = getlong(ttf);
+	tabs[i].checksum = getuint32(ttf);
 	tabs[i].offset = getlong(ttf);
 	tabs[i].length = getlong(ttf);
 	if ( i!=0 && tabs[i].tag<tabs[i-1].tag && !info->bad_sfnt_header ) {
@@ -1045,7 +1045,7 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 
     for ( i=0; i<info->numtables; ++i ) {
 	tag = getlong(ttf);
-	/* checksum */ getlong(ttf);
+	/* checksum */ getuint32(ttf);
 	offset = getlong(ttf);
 	length = getlong(ttf);
         if ( offset+length > info->ttfFileSize ) {

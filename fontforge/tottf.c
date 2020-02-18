@@ -546,16 +546,6 @@ static int uniranges[][3] = {
     { 0x100000, 0x10fffd, 90 },	/* Supplementary Private Use Area-B */
 };
 
-static int32 getuint32(FILE *ttf) {
-    int ch1 = getc(ttf);
-    int ch2 = getc(ttf);
-    int ch3 = getc(ttf);
-    int ch4 = getc(ttf);
-    if ( ch4==EOF )
-return( EOF );
-return( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
-}
-
 static int short_too_long_warned = 0;
 
 void putshort(FILE *file,int sval) {
