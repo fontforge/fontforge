@@ -470,6 +470,7 @@ extern void GDrawSkipMouseMoveEvents(GWindow w,GEvent *last);
 extern void GDrawEventLoop(GDisplay *disp);
 extern void GDrawPostEvent(GEvent *e);
 extern void GDrawPostDragEvent(GWindow gw,GEvent *e,enum event_type);
+extern GWindow GWindowGetFocusWindowOfWindow(GWindow gw);
 
 extern GTimer *GDrawRequestTimer(GWindow w,int32 time_from_now,int32 frequency,
 	void *userdata);

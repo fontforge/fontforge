@@ -95,6 +95,13 @@ return( NULL );
 return( td->gfocus );
 }
 
+GWindow GWindowGetFocusWindowOfWindow(GWindow gw) {
+    GGadget *gg = GWindowGetFocusGadgetOfWindow(gw);
+    if ( gg!=NULL && gg->base!=NULL )
+	return gg->base;
+    return gw;
+}
+
 int GGadgetActiveGadgetEditCmd(GWindow gw,enum editor_commands cmd) {
     GGadget *g = GWindowGetFocusGadgetOfWindow(gw);
 
