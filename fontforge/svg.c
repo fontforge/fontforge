@@ -1332,6 +1332,8 @@ static SplineSet *SVGParsePath(xmlChar *path) {
     break;
 	if ( type=='m' || type=='M' ) {
 	    if ( cur!=NULL && cur->last!=cur->first ) {
+		// XXX Ugh -- who knows what scale we're at here
+		// possibly buried in transforms
 		if ( RealNear(cur->last->me.x,cur->first->me.x) &&
 			RealNear(cur->last->me.y,cur->first->me.y) ) {
 		    cur->first->prevcp = cur->last->prevcp;
@@ -1339,8 +1341,8 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 		    cur->first->prev = cur->last->prev;
 		    cur->first->prev->to = cur->first;
 		    SplinePointFree(cur->last);
+		    cur->last = cur->first;
 		}
-		cur->last = cur->first;
 	    }
 	    x = strtod((char *) path,&end);
 	    end = skipcomma(end);
