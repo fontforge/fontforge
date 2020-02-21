@@ -923,7 +923,8 @@ xmlNodePtr _GlifToXML(const SplineChar *sc, int layer, int version) {
 			    // "<anchor x=\"%g\" y=\"%g\" name=\"%s%s\"/>" ap->me.x ap->me.y ap->anchor->name
 			}
 	}
-    if (sc->comment) PListAddString(topglyphxml, "note", sc->comment);
+    if (sc->comment)
+	xmlNewChild(topglyphxml, NULL, BAD_CAST "note", BAD_CAST sc->comment);
     if ( sc->layers[layer].refs!=NULL || sc->layers[layer].splines!=NULL ) {
       xmlNodePtr outlinexml = xmlNewChild(topglyphxml, NULL, BAD_CAST "outline", NULL);
 	// "<outline>"
