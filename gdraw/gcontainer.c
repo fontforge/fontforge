@@ -89,10 +89,12 @@ return;
 GGadget *GWindowGetFocusGadgetOfWindow(GWindow gw) {
     GTopLevelD *td;
     if ( gw==NULL )
-return( NULL );
+	return NULL;
     while ( gw->parent!=NULL && !gw->is_toplevel ) gw=gw->parent;
     td = (GTopLevelD *) (gw->widget_data);
-return( td->gfocus );
+    if ( td==NULL )
+	return NULL;
+    return( td->gfocus );
 }
 
 // Return the innermost GWindow of whatever gadget has focus

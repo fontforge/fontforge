@@ -901,7 +901,7 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             GdkEventKey *key = (GdkEventKey *)event;
             gevent.type = event->type == GDK_KEY_PRESS ? et_char : et_charup;
             gevent.u.chr.state = _GGDKDraw_GdkModifierToKsm(((GdkEventKey *)event)->state);
-	    gevent.w = GWindowGetFocusWindowOfWindow(gevent.w);
+	    gevent.w = GWindowGetFocusWindowOfWindow((GWindow)gw);
 	    gw = (GGDKWindow)gevent.w;
 
 #ifdef GDK_WINDOWING_QUARTZ
