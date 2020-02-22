@@ -95,6 +95,8 @@ return( NULL );
 return( td->gfocus );
 }
 
+// Return the innermost GWindow of whatever gadget has focus
+// in gw, with gw itself as the fallback
 GWindow GWindowGetFocusWindowOfWindow(GWindow gw) {
     GGadget *gg = GWindowGetFocusGadgetOfWindow(gw);
     if ( gg!=NULL && gg->base!=NULL )
