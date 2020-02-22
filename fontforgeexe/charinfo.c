@@ -3539,7 +3539,7 @@ return( false );
 static int TeX_Default(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
-	int cid = GGadgetGetCid(g);
+	int cid = GGadgetGetCid(g), mcid = 0;
 	DBounds b;
 	int value;
 	SplineChar *basesc = NULL;
@@ -3573,12 +3573,14 @@ static int TeX_Default(GGadget *g, GEvent *e) {
 	style = MacStyleCode(sf,NULL);
 
 	if ( cid == CID_TeX_HeightD ) {
+	    mcid = CID_TeX_Height;
 	    if ( basesc!=ci->sc && basesc->tex_height!=TEX_UNDEF )
 		value = basesc->tex_height;
 	    else
 		value = rint(b.maxy);
 	    if ( value<0 ) value = 0;
 	} else if ( cid == CID_TeX_DepthD ) {
+	    mcid = CID_TeX_Depth;
 	    if ( basesc!=ci->sc && basesc->tex_depth!=TEX_UNDEF )
 		value = basesc->tex_depth;
 	    else {
@@ -3586,18 +3588,24 @@ static int TeX_Default(GGadget *g, GEvent *e) {
 		if ( value<5 ) value = 0;
 	    }
 	} else if ( cid == CID_HorAccentD ) {
+	    mcid = CID_HorAccent;
 	    double italic_off = (b.maxy-b.miny)*tan(-sf->italicangle);
 	    if ( b.maxx-b.minx-italic_off < 0 )
 		value = rint(b.minx + (b.maxx-b.minx)/2);
 	    else
 		value = rint(b.minx + italic_off + (b.maxx - b.minx - italic_off)/2);
-	} else if ( (style&sf_italic) || sf->italicangle!=0 ) {
-	    value = rint((b.maxx-ci->sc->width) +
-			    (sf->ascent+sf->descent)/16.0);
-	} else
-	    value = 0;
-	sprintf( buf, "%d", value );
-	GGadgetSetTitle8(GWidgetGetControl(ci->gw,cid-5),buf);
+	} else if ( cid == CID_TeX_ItalicD ) {
+	    mcid = CID_TeX_Italic;
+	    if ( (style&sf_italic) || sf->italicangle!=0 )
+		value = rint((b.maxx-ci->sc->width) +
+		             (sf->ascent+sf->descent)/16.0);
+	    else
+		value = 0;
+	}
+	if (mcid!=0) {
+	    sprintf( buf, "%d", value );
+	    GGadgetSetTitle8(GWidgetGetControl(ci->gw,mcid),buf);
+	}
     }
 return( true );
 }
