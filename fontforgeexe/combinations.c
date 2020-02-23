@@ -932,7 +932,7 @@ static int kpdv_e_h(GWindow gw, GEvent *event) {
       break;
       case et_char:
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("kernpairs.html");
+	    help("ui/dialogs/kernpairs.html", NULL);
 return( true );
 	}
 	KP_Commands(kpd,event);
@@ -1063,7 +1063,7 @@ static int kpd_e_h(GWindow gw, GEvent *event) {
 	GDrawDrawLine(gw,size.x-1,size.y-1,size.x-1,size.y+size.height,0x000000);
     } else if ( event->type == et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("kernpairs.html");
+	    help("ui/dialogs/kernpairs.html", NULL);
 return( true );
 	}
 	if ( event->u.chr.chars[0]!='\0' && event->u.chr.chars[1]=='\0' ) {

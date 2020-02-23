@@ -1446,7 +1446,7 @@ return( true );
 static int subccd_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("contextchain.html");
+	    help("ui/dialogs/contextchain.html", NULL);
 return( true );
 	} else if ( GMenuIsCommand(event,H_("Quit|Ctl+Q") )) {
 	    MenuExit(NULL,NULL,NULL);
@@ -1472,7 +1472,7 @@ static int ccd_e_h(GWindow gw, GEvent *event) {
 	chunkfree(ccd,sizeof(struct contextchaindlg));
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("contextchain.html");
+	    help("ui/dialogs/contextchain.html", NULL);
 return( true );
 	} else if ( GMenuIsCommand(event,H_("Quit|Ctl+Q") )) {
 	    MenuExit(NULL,NULL,NULL);

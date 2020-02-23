@@ -12459,7 +12459,7 @@ static void mmlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 }
 
 static void CVMenuContextualHelp(GWindow UNUSED(gw), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    help("charview.html");
+    help("ui/mainviews/charview.html", NULL);
 }
 
 static GMenuItem2 mblist[] = {

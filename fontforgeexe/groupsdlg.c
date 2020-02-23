@@ -445,7 +445,7 @@ static int GroupChar(struct groupdlg *grp,GEvent *event) {
 
     switch (event->u.chr.keysym) {
       case GK_F1: case GK_Help:
-	help("groups.html");
+	help("ui/dialogs/groups.html", NULL);
 return( true );
       case GK_Return: case GK_KP_Enter:
 	if ( current!=NULL ) {

@@ -1115,19 +1115,19 @@ static void FVMenuOpen(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(
 }
 
 static void FVMenuContextualHelp(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    help("fontview.html");
+    help("ui/mainviews/fontview.html", NULL);
 }
 
 void MenuHelp(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    help("overview.html");
+    help("index.html", NULL);
 }
 
 void MenuIndex(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    help("IndexFS.html");
+    help("index.html", NULL);
 }
 
 void MenuLicense(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    help("license.html");
+    help("https://github.com/fontforge/fontforge/blob/master/LICENSE", NULL);
 }
 
 void MenuAbout(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {

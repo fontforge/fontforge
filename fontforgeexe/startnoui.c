@@ -79,7 +79,6 @@ exit(0);
 
 static void doscripthelp(void) {
     _doscriptusage();
-    /*help("overview.html");*/
 exit(0);
 }
 

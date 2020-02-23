@@ -266,7 +266,7 @@ static int baselang_e_h(GWindow gw, GEvent *event) {
       break;
       case et_char:
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("baseline.html");
+	    help("ui/dialogs/baseline.html", NULL);
 return( true );
 	}
 return( false );
@@ -678,7 +678,7 @@ static int base_e_h(GWindow gw, GEvent *event) {
       break;
       case et_char:
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("baseline.html");
+	    help("ui/dialogs/baseline.html", NULL);
 return( true );
 	}
 return( false );

@@ -9,7 +9,7 @@ General
    dialogs/display
    dialogs/groups
    dialogs/search
-   
+
    dialogs/selectbyatt
    dialogs/prefs
 

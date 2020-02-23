@@ -2635,7 +2635,7 @@ static int AttChar(struct att_dlg *att,GEvent *event) {
 
     switch (event->u.chr.keysym) {
       case GK_F1: case GK_Help:
-	help("showatt.html");
+	help("ui/dialogs/showatt.html", NULL);
 return( true );
       case GK_Return: case GK_KP_Enter:
 	att->current->open = !att->current->open;

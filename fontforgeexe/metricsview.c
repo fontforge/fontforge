@@ -3780,7 +3780,7 @@ static GMenuItem2 vwlist[] = {
 };
 
 static void MVMenuContextualHelp(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    help("metricsview.html");
+    help("ui/mainviews/metricsview.html", NULL);
 }
 
 static GMenuItem2 tylist[] = {

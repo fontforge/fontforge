@@ -247,7 +247,7 @@ static int bd_e_h(GWindow gw, GEvent *event) {
 	bd->done = true;
     } else if ( event->type == et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("elementmenu.html#Bitmaps");
+	    help("ui/menus/elementmenu.html", "#elementmenu-bitmaps");
 return( true );
 	}
 return( false );

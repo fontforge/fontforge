@@ -1495,7 +1495,7 @@ static int set_e_h(GWindow gw, GEvent *event) {
 	sd->done = true;
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("prefs.html#Features");
+	    help("ui/dialogs/prefs.html", "#prefs-features");
 return( true );
 	}
 return( false );
@@ -1965,7 +1965,7 @@ static int e_h(GWindow gw, GEvent *event) {
 	}
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("prefs.html");
+	    help("ui/dialogs/prefs.html", NULL);
 return( true );
 	}
 return( false );

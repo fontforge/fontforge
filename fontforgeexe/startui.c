@@ -187,7 +187,7 @@ exit(0);
 
 static void dohelp(void) {
     _dousage();
-    help("overview.html");
+    help("index.html", NULL);
 exit(0);
 }
 

@@ -464,7 +464,7 @@ static int explain_e_h(GWindow gw, GEvent *event) {
 	p->ignorethis = GGadgetIsChecked(event->u.control.g);
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("problems.html");
+	    help("ui/dialogs/problems.html", NULL);
 return( true );
 	}
 return( false );
@@ -2244,7 +2244,7 @@ static int mgask_e_h(GWindow gw, GEvent *event) {
 	d->done = d->skipped = true;
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("problems.html");
+	    help("ui/dialogs/problems.html", NULL);
 return( true );
 	}
 return( false );

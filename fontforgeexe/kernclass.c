@@ -1849,8 +1849,8 @@ static int kcd_e_h(GWindow gw, GEvent *event) {
       break;
       case et_char:
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help(kcd->iskernpair ?  "metricsview.html#kernpair":
-				    "metricsview.html#kernclass");
+	    help("ui/mainviews/metricsview.html", kcd->iskernpair ?  "#metricsview-kernpair":
+				    "#metricsview-kernclass");
 return( true );
 	}
 return( false );
@@ -3299,7 +3299,7 @@ static int kcl_e_h(GWindow gw, GEvent *event) {
 	GDrawDestroyWindow(kcld->gw);
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("metricsview.html#kernclass");
+	    help("ui/mainviews/metricsview.html", "#metricsview-kernclass");
 return( true );
 	}
 return( false );

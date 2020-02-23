@@ -2866,7 +2866,7 @@ return;
 
 static int GFI_Char(struct gfi_data *d,GEvent *event) {
     if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	help("fontinfo.html");
+	help("ui/dialogs/fontinfo.html", NULL);
 return( true );
     } else if ( GMenuIsCommand(event,H_("Save All|Alt+Ctl+S") )) {
 	MenuSaveAll(NULL,NULL,NULL);
@@ -3251,7 +3251,7 @@ return( true );
 static int GFI_HelpOFL(GGadget *g, GEvent *e) {
 /* F1 Help to open a browser to sil.org Open Source License and FAQ */
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	help("http://scripts.sil.org/OFL");
+	help("http://scripts.sil.org/OFL", NULL);
     }
 return( true );
 }
@@ -4715,7 +4715,7 @@ return( true );
 
 static int GFI_ShowPanoseDocs(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	help("http://panose.com/");
+	help("http://panose.com/", NULL);
     }
 return( true );
 }
@@ -6353,7 +6353,7 @@ static int import_e_h(GWindow gw, GEvent *event) {
 	*done = true;
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("fontinfo.html#Lookups");
+	    help("ui/dialogs/fontinfo.html", "#fontinfo-lookups");
 return( true );
 	}
 return( false );

@@ -525,7 +525,7 @@ static int mmcb_e_h(GWindow gw, GEvent *event) {
 	mmcb->done = true;
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("mmmenu.html");
+	    help("ui/menus/mmmenu.html", NULL);
 return( true );
 	}
 return( false );
@@ -982,7 +982,7 @@ static int esd_eh(GWindow gw, GEvent *event) {
 	ESD_Close(esd);
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("multiplemaster.html#NamedStyles");
+	    help("ui/dialogs/multiplemaster.html", "#multiplemaster-namedstyles");
 return( true );
 	} else if ( GMenuIsCommand(event,H_("Quit|Ctl+Q") )) {
 	    MenuExit(NULL,NULL,NULL);
@@ -2416,7 +2416,7 @@ return( true );
 static int mmwsub_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("multiplemaster.html");
+	    help("ui/dialogs/multiplemaster.html", NULL);
 return( true );
 	} else if ( event->u.chr.keysym=='q' && (event->u.chr.state&ksm_control)) {
 	    if ( event->u.chr.state&ksm_shift )
@@ -2437,7 +2437,7 @@ static int mmw_e_h(GWindow gw, GEvent *event) {
 	MMW_Close(mmw);
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("multiplemaster.html");
+	    help("ui/dialogs/multiplemaster.html", NULL);
 return( true );
 	} else if ( event->u.chr.keysym=='q' && (event->u.chr.state&ksm_control)) {
 	    if ( event->u.chr.state&ksm_shift )

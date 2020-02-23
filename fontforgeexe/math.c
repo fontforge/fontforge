@@ -708,7 +708,7 @@ static int gc_e_h(GWindow gw, GEvent *event) {
 	math->done = true;
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("math.html#GlyphConstruction");
+	    help("ui/dialogs/math.html", "#math-glyphconstruction");
 return( true );
 	} else if ( GMenuIsCommand(event,H_("Quit|Ctl+Q") )) {
 	    MenuExit(NULL,NULL,NULL);
@@ -986,7 +986,7 @@ static int math_e_h(GWindow gw, GEvent *event) {
 	math->done = true;
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("math.html");
+	    help("ui/dialogs/math.html", NULL);
 return( true );
 	} else if ( GMenuIsCommand(event,H_("Quit|Ctl+Q") )) {
 	    MenuExit(NULL,NULL,NULL);

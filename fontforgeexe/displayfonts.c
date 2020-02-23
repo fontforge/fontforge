@@ -213,7 +213,7 @@ static int pg_e_h(GWindow gw, GEvent *event) {
 	pi->pi.done = true;
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("print.html");
+	    help("ui/dialogs/display.html", NULL);
 return( true );
 	}
 return( false );
@@ -1524,7 +1524,7 @@ static int dsp_e_h(GWindow gw, GEvent *event) {
 	    printwindow = NULL;
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("display.html");
+	    help("ui/dialogs/display.html", NULL);
 return( true );
 	} else if ( GMenuIsCommand(event,H_("Quit|Ctl+Q") )) {
 	    MenuExit(NULL,NULL,NULL);

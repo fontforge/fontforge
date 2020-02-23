@@ -1125,7 +1125,7 @@ static int anchord_e_h(GWindow gw, GEvent *event) {
       break;
       case et_char:
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("anchorcontrol.html");
+	    help("ui/dialogs/anchorcontrol.html", NULL);
 return( true );
 	} else if ( event->u.chr.keysym == GK_Page_Down || event->u.chr.keysym == GK_KP_Page_Down ) {
 	    AnchorD_NextPrev(a,1);

@@ -818,7 +818,7 @@ static int langs_e_h(GWindow gw, GEvent *event) {
 	*done = true;
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("lookups.html#scripts-dlg");
+	    help("ui/dialogs/lookups.html", "#lookups-scripts-dlg");
 return( true );
 	}
 return( false );
@@ -1141,7 +1141,7 @@ static int script_e_h(GWindow gw, GEvent *event) {
 	ld->scriptret = NULL;
     } else if ( event->type == et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("lookups.html#scripts-dlg");
+	    help("ui/dialogs/lookups.html", "#lookups-scripts-dlg");
 return( true );
 	}
 return( false );
@@ -1736,7 +1736,7 @@ static int lookup_e_h(GWindow gw, GEvent *event) {
 	ld->ok = false;
     } else if ( event->type == et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("lookups.html#Add-Lookup");
+	    help("ui/dialogs/lookups.html", "#lookups-add-lookup");
 return( true );
 	}
 return( false );
@@ -2256,7 +2256,7 @@ static int acd_e_h(GWindow gw, GEvent *event) {
       break;
       case et_char:
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("lookups.html#Anchor");
+	    help("ui/dialogs/lookups.html", "#lookups-anchor");
 return( true );
 	}
 return( false );
@@ -3288,7 +3288,7 @@ static int pstkern_e_h(GWindow gw, GEvent *event) {
     switch ( event->type ) {
       case et_char:
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("lookups.html#Pair");
+	    help("ui/dialogs/lookups.html", "#lookups-pair");
 return( true );
 	}
 return( false );
@@ -4537,11 +4537,11 @@ static int pstkd_e_h(GWindow gw, GEvent *event) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    int lookup_type = pstkd->sub->lookup->lookup_type;
 	    if ( lookup_type==gpos_single )
-		help("lookups.html#Single-pos");
+		help("ui/dialogs/lookups.html", "#lookups-single-pos");
 	    else if ( lookup_type==gpos_pair )
-		help("lookups.html#Pair");
+		help("ui/dialogs/lookups.html", "#lookups-pair");
 	    else
-		help("lookups.html#basic-subs");
+		help("ui/dialogs/lookups.html", "#lookups-basic-subs");
 return( true );
 	}
 return( false );

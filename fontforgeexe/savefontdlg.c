@@ -291,7 +291,7 @@ static int sod_e_h(GWindow gw, GEvent *event) {
 	d->sod_done = true;
     } else if ( event->type == et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("generate.html#Options");
+	    help("ui/dialogs/generate.html", "#generate-options");
 return( true );
 	}
 return( false );
@@ -1897,7 +1897,7 @@ static int e_h(GWindow gw, GEvent *event) {
 	d->ret = false;
     } else if ( event->type == et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("generate.html");
+	    help("ui/dialogs/generate.html", NULL);
 return( true );
 	} else if ( (event->u.chr.keysym=='s' || event->u.chr.keysym=='g' ||
 		event->u.chr.keysym=='G' ) &&

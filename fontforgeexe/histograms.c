@@ -592,7 +592,7 @@ static int leftside_e_h(GWindow gw, GEvent *event) {
     switch ( event->type ) {
       case et_char:
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("histogram.html");
+	    help("ui/dialogs/histogram.html", NULL);
 return( true );
 	}
 return( false );
@@ -614,7 +614,7 @@ static int rightside_e_h(GWindow gw, GEvent *event) {
     switch ( event->type ) {
       case et_char:
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("histogram.html");
+	    help("ui/dialogs/histogram.html", NULL);
 return( true );
 	}
 return( false );
@@ -636,7 +636,7 @@ static int histogram_e_h(GWindow gw, GEvent *event) {
     switch ( event->type ) {
       case et_char:
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("histogram.html");
+	    help("ui/dialogs/histogram.html", NULL);
 return( true );
 	}
 return( false );
@@ -666,7 +666,7 @@ static int hist_e_h(GWindow gw, GEvent *event) {
 	hist->done = true;
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("histogram.html");
+	    help("ui/dialogs/histogram.html", NULL);
 return( true );
 	}
 return( false );

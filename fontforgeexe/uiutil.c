@@ -28,73 +28,20 @@
 #include <fontforge-config.h>
 
 #include "fontforgeui.h"
-#include "gfile.h"
 #include "gkeysym.h"
 #include "gresource.h"
 #include "ustring.h"
 #include "utype.h"
 
 #include <assert.h>
-#include <stdarg.h>
-#include <sys/time.h>
-#include <unistd.h>
-
-#ifdef _WIN32
-#include <windows.h>
-#endif
+#include <gio/gio.h>
 
 extern GBox _ggadget_Default_Box;
 #define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
 #define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
 
-#if __CygWin
-extern void cygwin_conv_to_full_posix_path(const char *win,char *unx);
-extern void cygwin_conv_to_full_win32_path(const char *unx,char *win);
-#endif
 
-static char browser[1025];
-
-static void findbrowser(void) {
-/* Find a browser to use so that help messages can be displayed */
-
-/* Both xdg-open and htmlview are not browsers per se, but browser dispatchers*/
-/*  which try to figure out what browser the user intents. It seems no one */
-/*  uses (understands?) environment variables any more, so BROWSER is a bit */
-/*  old-fashioned */
-    static char *stdbrowsers[] = { "xdg-open", "x-www-browser", "htmlview",
-#if __Mac
-	"safari",
-#endif
-	"firefox", "mozilla", "seamonkey", "iceweasel", "opera", "konqueror", "google-chrome",
-	"galeon", "kfmclient", "netscape", "mosaic", /*"grail",*/ "lynx",
-	NULL };
-    int i;
-    char *path;
-
-    if ( getenv("BROWSER")!=NULL ) {
-	strncpy(browser,getenv("BROWSER"),sizeof(browser));
-    browser[sizeof(browser)-1] = '\0';
-	if ( strcmp(browser,"kde")==0 || strcmp(browser,"kfm")==0 ||
-		strcmp(browser,"konqueror")==0 || strcmp(browser,"kfmclient")==0 )
-	    strcpy(browser,"kfmclient openURL");
-return;
-    }
-    for ( i=0; stdbrowsers[i]!=NULL; ++i ) {
-	if ( (path=_GFile_find_program_dir(stdbrowsers[i]))!=NULL ) {
-	    if ( strcmp(stdbrowsers[i],"kfmclient")==0 )
-		strcpy(browser,"kfmclient openURL");
-	    else
-		strcpy(browser,stdbrowsers[i]);
-	    free(path);
-return;
-	}
-    }
-#if __Mac
-    strcpy(browser,"open");	/* thanks to riggle */
-#endif
-}
-
-static int SupportedLocale(char *fullspec,char *locale) {
+static char* SupportedLocale(const char *locale, const char *fullspec, const char *filename) {
 /* If there's additional help files written for other languages, then check */
 /* to see if this local matches the additional help message language. If so */
 /* then report back that there's another language available to use for help */
@@ -104,16 +51,15 @@ static int SupportedLocale(char *fullspec,char *locale) {
     static char *supported[] = { "de","ja", NULL }; /* other html lang list */
 
     for ( i=0; supported[i]!=NULL; ++i ) {
-	if ( strcmp(locale,supported[i])==0 ) {
-	    strcat(fullspec,supported[i]);
-	    strcat(fullspec,"/");
-	    return( true );
-	}
+        if ( strcmp(locale,supported[i])==0 ) {
+            char *pt = strrchr(filename, '/');
+            return smprintf("%s/old/%s/%s", fullspec, supported[i], pt ? pt : filename);
+        }
     }
-    return( false );
+    return NULL;
 }
 
-static void AppendSupportedLocale(char *fullspec) {
+static char* CheckSupportedLocale(const char *fullspec, const char *filename) {
 /* Add Browser HELP for this local if there's more html docs for this local */
 
     /* KANOU has provided a japanese translation of the docs */
@@ -125,158 +71,74 @@ static void AppendSupportedLocale(char *fullspec) {
     if ( loc==NULL ) loc = getenv("LANG");
     if ( loc==NULL ) loc = getenv("LC_MESSAGES");
     if ( loc==NULL )
-	return;
+        return NULL;
 
     /* first, try checking entire string */
     strncpy(buffer,loc,sizeof(buffer));
     buffer[sizeof(buffer)-1] = '\0';
-    if ( SupportedLocale(fullspec,buffer) )
-	return;
+    pt = SupportedLocale(buffer, fullspec, filename);
+    if (pt) {
+        return pt;
+    }
 
     /* parse possible suffixes, such as .UTF-8, then try again */
     if ( (pt=strchr(buffer,'.'))!=NULL ) {
-	*pt = '\0';
-	if ( SupportedLocale(fullspec,buffer) )
-	    return;
+        *pt = '\0';
+        pt = SupportedLocale(buffer, fullspec, filename);
+        if (pt) {
+            return pt;
+        }
     }
 
     /* parse possible suffixes such as _CA, _GB, and try again */
     if ( (pt=strchr(buffer,'_'))!=NULL ) {
-	*pt = '\0';
-	if ( SupportedLocale(fullspec,buffer) )
-	    return;
+        *pt = '\0';
+        return SupportedLocale(buffer, fullspec, filename);
     }
+
+    return NULL;
 }
 
-#ifdef _WIN32
-void help(char *file) {
-    if(file){
-	int   len     = strlen(file);
-	char* p_file  = (char*) malloc(len+1);
-	char* p_uri   = (char*) malloc(len+1024);
-	char* p_param = NULL;
+void help(const char *file, const char *section) {
+    if (!file) {
+        return;
+    } else if (strstr(file, "://")) {
+        g_app_info_launch_default_for_uri(file, NULL, NULL);
+        return;
+    } else if (!section) {
+        section = "";
+    }
 
-	strcpy(p_file,  file);
+    bool launched = false;
+    const char *help = getHelpDir();
+    if (help) {
+        char *path = CheckSupportedLocale(help, file);
+        if (!path) {
+            path = smprintf("%s/%s", help, file);
+            if (!path) {
+                return;
+            }
+        }
 
-	{
-	    char* delim = strrchr(p_file, '#');
-	    if(delim){
-		p_param = (char*) malloc(len+1);
-		strcpy(p_param, delim);
-		*delim = '\0';
-	    }
-	}
+        GFile *gfile = g_file_new_for_path(path);
+        free(path);
 
-	strcpy(p_uri, p_file);
+        if (g_file_query_exists(gfile, NULL)) {
+            gchar* uri = g_file_get_uri(gfile);
+            path = smprintf("%s%s", uri, section);
+            launched = g_app_info_launch_default_for_uri(path, NULL, NULL);
+            g_free(uri);
+            free(path);
+        }
+        g_object_unref(gfile);
+    }
 
-	if(! GFileIsAbsolute(p_uri)){
-	    char* p_helpdir = getHelpDir();
-
-	    /* /usr/share/fontforge/doc/ja/file */
-	    strcpy(p_uri, p_helpdir);
-	    AppendSupportedLocale(p_uri);
-	    strcat(p_uri, p_file);
-
-	    if(!GFileReadable(p_uri)){
-		strcpy(p_uri, p_helpdir);
-		strcat(p_uri, p_file);
-
-		if(!GFileReadable(p_uri)){
-		    strcpy(p_uri, "http://fontforge.org/");
-		    /* AppendSupportedLocale(p_uri); */
-		    strcat(p_uri, p_file);
-		}
-	    }
-	}
-
-	#if __CygWin
-	if( strncmp(p_uri, "http:", 5) != 0 ){
-	    char*  temp = (char*) malloc(1024);
-	    cygwin_conv_to_full_win32_path(p_uri, temp);
-	    free(p_uri);
-	    p_uri = temp;
-	}
-	#endif
-
-	if(p_param){
-	    strcat(p_uri, p_param);
-	    free(p_param);
-	}
-
-	/* using default browser */
-	ShellExecute(NULL, "open", p_uri, NULL, NULL, SW_SHOWDEFAULT);
-
-	free(p_uri);
-	free(p_file);
+    if (!launched) {
+        char *path = smprintf("https://fontforge.org/docs/%s%s", file, section);
+        g_app_info_launch_default_for_uri(path, NULL, NULL);
+        free(path);
     }
 }
-#else
-
-void help(char *file) {
-    char fullspec[PATH_MAX], *temp, *pt;
-
-    if ( browser[0]=='\0' )
-	findbrowser();
-    if ( browser[0]=='\0' ) {
-	gwwv_post_error(_("No Browser"),_("Could not find a browser. Set the BROWSER environment variable to point to one"));
-return;
-    }
-
-    if ( strstr(file,"http://")==NULL ) {
-	memset(fullspec,0,sizeof(fullspec));
-	if ( ! GFileIsAbsolute(file) )
-	    snprintf(fullspec, PATH_MAX, "%s", getHelpDir());
-	strcat(fullspec,file);
-	if (( pt = strrchr(fullspec,'#') )!=NULL ) *pt ='\0';
-	if ( !GFileReadable( fullspec )) {
-	    if ( *file!='/' ) {
-		strcpy(fullspec,"/usr/share/doc/fontforge/");
-		strcat(fullspec,file);
-		if (( pt = strrchr(fullspec,'#') )!=NULL ) *pt ='\0';
-	    }
-	}
-	if ( !GFileReadable( fullspec )) {
-	    strcpy(fullspec,"http://fontforge.sf.net/");
-	    AppendSupportedLocale(fullspec);
-	    strcat(fullspec,file);
-	} else if ( pt!=NULL )
-	    *pt = '#';
-    } else
-	strncpy(fullspec,file,sizeof(fullspec));
-#if __Mac
-    if ( strcmp(browser,"open")==0 )
-	/* open doesn't want "file:" prepended */;
-    else
-#endif
-    if ( strstr(fullspec,":/")==NULL ) {
-	if ( (temp=malloc(strlen(fullspec)+strlen("file:")+20))==NULL )
-	    return;
-	sprintf(temp,"file:%s",fullspec);
-	strncpy(fullspec,temp,sizeof(fullspec));
-    fullspec[sizeof(fullspec)-1] = '\0';
-	free(temp);
-    }
-#if __Mac
-    /* This seems a bit easier... Thanks to riggle */
-    if ( strcmp(browser,"open")==0 ) {
-	char *str = "DYLD_LIBRARY_PATH=\"\"; open ";
-	if ( (temp=malloc(strlen(str) + strlen(fullspec) + 20))==NULL )
-	    return;
-	sprintf( temp, "%s \"%s\" &", str, fullspec );
-	system(temp);
-	free(temp);
-    } else {
-#else
-    {
-#endif
-	if ( (temp=malloc(strlen(browser) + strlen(fullspec) + 20))==NULL )
-	    return;
-	sprintf( temp, strcmp(browser,"kfmclient openURL")==0 ? "%s \"%s\" &" : "\"%s\" \"%s\" &", browser, fullspec );
-	system(temp);
-	free(temp);
-    }
-}
-#endif
 
 static void UI_IError(const char *format,...) {
     va_list ap;

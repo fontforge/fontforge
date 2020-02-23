@@ -106,7 +106,7 @@ static int AW2_e_h(GWindow gw, GEvent *event) {
     } else if ( event->type == et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    /*struct widthinfo *wi = GDrawGetUserData(gw);*/
-	    help("autowidth.html#AutoWidth");
+	    help("ui/dialogs/autowidth.html", NULL);
 return( true );
 	}
 return( false );

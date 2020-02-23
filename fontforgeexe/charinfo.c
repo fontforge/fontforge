@@ -277,7 +277,7 @@ static int hi_e_h(GWindow gw, GEvent *event) {
 	HI_DoCancel( GDrawGetUserData(gw));
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("charinfo.html#Counters");
+	    help("ui/dialogs/charinfo.html", "#charinfo-counters");
 return( true );
 	}
 return( false );
@@ -4263,7 +4263,7 @@ static int ci_e_h(GWindow gw, GEvent *event) {
     } else if ( event->type==et_char ) {
 	CharInfo *ci = GDrawGetUserData(gw);
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("charinfo.html");
+	    help("ui/dialogs/charinfo.html", NULL);
 return( true );
 	} else if ( GMenuIsCommand(event,H_("Quit|Ctl+Q") )) {
 	    MenuExit(NULL,NULL,NULL);
@@ -5308,7 +5308,7 @@ static int selpst_e_h(GWindow gw, GEvent *event) {
 	sld->ok = false;
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("selectbyatt.html");
+	    help("ui/dialogs/selectbyatt.html", NULL);
 return( true );
 	}
 return( false );

@@ -2170,7 +2170,7 @@ static void BVWindowMenuBuild(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static void BVMenuContextualHelp(GWindow base,struct gmenuitem *mi,GEvent *e) {
-    help("bitmapview.html");
+    help("ui/mainviews/bitmapview.html", NULL);
 }
 
 char *BVFlipNames[] = { N_("Flip Horizontally"), N_("Flip Vertically"),
