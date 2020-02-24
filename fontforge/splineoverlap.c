@@ -313,7 +313,7 @@ static int SSRmNullSplines(SplineSet *spl) {
 		/*  and itself where the spline covers no area (the two cps */
 		/*  point in the same direction) */
 		BpSame(&s->from->me,&s->to->me)) {
-	    if ( next==s )
+	    if ( next==s || next==NULL )
 return( true );
 	    if ( next->from->selected ) s->from->selected = true;
 	    s->from->next = next;
@@ -375,14 +375,18 @@ return( start );
 	    if ( head==NULL ) head = last;
 	}
     }
-    head->prev = last;
-    last->next = head;
-    if ( start==NULL )
-	start = head;
-    else
-	(*end)->linked = head;
-    *end = last;
-    Validate(start, NULL);
+    if ( head!=NULL ) {
+	if ( last!=NULL ) {
+	    head->prev = last;
+	    last->next = head;
+	}
+	if ( start==NULL )
+	    start = head;
+	else
+	    (*end)->linked = head;
+	*end = last;
+	Validate(start, NULL);
+    }
 return( start );
 }
 
