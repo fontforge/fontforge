@@ -103,7 +103,6 @@ typedef struct gtopleveldata /* : GContainerD */{
 		/*  current popup. It needs all events until popup vanishes */
     struct ggadget *gdef, *gcancel, *gmenubar;
     struct ggadget *gfocus;
-    GWindow wfocus;
     int (*handle_key)(GWindow top, GWindow ew, GEvent *);	/* All key events are handled by top level window */
     struct gtopleveldata *palettes, *nextp, *owner;
     int16 owner_off_x, owner_off_y;		/* Offset of palette from owner*/
