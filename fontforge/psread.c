@@ -2847,33 +2847,22 @@ static SplinePointList *EraseStroke(SplineChar *sc,SplinePointList *head,SplineP
     if ( head==NULL ) {
 	/* Pointless, but legal */
 	SplinePointListsFree(erase);
-return( NULL );
+	return NULL;
     }
+
+    head = SplineSetRemoveOverlap(sc, head, over_remove);
+    erase = SplineSetRemoveOverlap(sc, erase, over_remove);
 
     last = NULL;
     for ( spl=head; spl!=NULL; spl=spl->next ) {
-	for ( sp=spl->first; sp!=NULL; ) {
-	    sp->selected = false;
-	    if ( sp->next==NULL )
-	break;
-	    sp = sp->next->to;
-	    if ( sp==spl->first )
-	break;
-	}
+	SplinePointListSelect(spl, true);
 	last = spl;
     }
-    for ( spl=erase; spl!=NULL; spl=spl->next ) {
-	for ( sp=spl->first; sp!=NULL; ) {
-	    sp->selected = true;
-	    if ( sp->next==NULL )
-	break;
-	    sp = sp->next->to;
-	    if ( sp==spl->first )
-	break;
-	}
-    }
+    for ( spl=erase; spl!=NULL; spl=spl->next )
+	SplinePointListSelect(spl, false);
+
     last->next = erase;
-return( SplineSetRemoveOverlap(sc,head,over_exclude) );
+    return SplineSetRemoveOverlap(sc, head, over_exclude);
 }
 
 static Entity *EntityReverse(Entity *ent) {
@@ -3043,8 +3032,10 @@ static void EntityCharCorrectDir(EntityChar *ec) {
 	    if ( ent->u.splines.fill.col==0xffffff ) {
 		/* If they are filling with white, then assume they mean */
 		/*  an internal area that should be drawn backwards */
-		for ( ss=ent->u.splines.splines; ss!=NULL; ss=ss->next )
-		    SplineSetReverse(ss);
+		for ( ss=ent->u.splines.splines; ss!=NULL; ss=ss->next ) {
+		    if ( !SplinePointListIsClockwise(ss) )
+			SplineSetReverse(ss);
+		}
 	    }
 	    SplineSetsCorrect(ent->clippath,&changed);
 	}
