@@ -153,9 +153,9 @@ struct pschars {
 
 enum linejoin {
     lj_miter,		/* Extend lines until they meet */
-    lj_miterclip,	/* Extend lines until they meet */
     lj_round,		/* connect with arc (not w/ stroking - see "nib") */
     lj_bevel,		/* Straight line between the ends of next and prev */
+    lj_miterclip,	/* Extend lines until they meet */
     lj_nib,		/* Join with the nib shape */
     lj_arcs,
     lj_inherited
@@ -163,8 +163,8 @@ enum linejoin {
 enum linecap {
     lc_butt,		/* Finish with line perpendicular to end tangent */
     lc_round,		/* semi-circle (not w/ stroking - see "nib") */
-    lc_nib,		/* cap with the nib shape */
     lc_square,		/* Not used w/ stroking - use lc_butt w/ extend */
+    lc_nib,		/* cap with the nib shape */
     lc_bevel,		/* Just join endpoints with a line */
     lc_inherited
 };
