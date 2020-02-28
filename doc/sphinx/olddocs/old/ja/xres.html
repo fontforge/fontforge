@@ -1,0 +1,910 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 21-Jan-2001 -->
+  <!-- AP: Last modified: 5-Mar-2006 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>X Resources</TITLE>-->
+    <TITLE>X リソース</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+<!--  X Resources-->
+      X リソース
+  </H1>
+  <P>
+<!--
+  Every X application has an inordinate number of resources that you can tweak.
+  This one is no exception. However I don't follow standard conventions, so
+  it's all different. Sorry (a little anyway). -->
+  あらゆる X アプリケーションには、調節可能なリソースがたくさんあります。このプログラムも例外ではありません。しかしながら、私は標準的習慣に従っていないので、普通のプログラムとはまるきり異なります。申しわけなく思います (少しだけですが)。
+  <P>
+<!--
+  To use an X resource add a series of lines to your .Xdefaults file and then
+  run "$ xrdb ~/.Xdefaults". For example: -->
+  X リソースを使用するには、.Xdefaults ファイルにリソースを記述する行を書き並べてから、“$ <CODE>xrdb ~/.Xdefaults</CODE>”を実行します。例えば:
+  <BLOCKQUOTE>
+    <PRE>Gdraw.ScreenWidthInches: 14.7
+  Gdraw.GGadget.Popup.Font: 10pt helvetica
+  Gdraw.Background: white
+  fontforge.FontView.FontFamily: Helvetica, GillSans
+  </PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  If a resource begins with "<CODE>Gdraw.</CODE>" or "<CODE>fontforge.</CODE>"
+  then the program will look at it. -->
+  リソースが“<CODE>Gdraw.</CODE>”または“<CODE>fontforge.</CODE>”で始まるときは、このプログラムはその内容を調べます。
+  <DL>
+    <DT>
+      <CODE>fontforge.FontView.FontFamily</CODE>
+    <DD>
+<!--  A list of font family names to be used in the font view to display an example
+      character over each user character. -->
+      フォントビューで、ユーザが編集する各文字の上に表示されるサンプル字形に使用されるフォントファミリー名のリスト。
+    <DT>
+      <CODE>fontforge.FontView.SerifFamily</CODE>
+    <DD>
+<!--  A list of font family names to be used in the font view to display an example
+      character over each user character when the character is one of the stylized
+      variants in U+1D400-U+1D7FF. Used for characters that should be drawn with
+      a serif font.-->
+      フォントビューで、ユーザが編集する各文字の上に表示されるサンプル字形のうち、範囲 U+1D400-U+1D7FF に含まれるスタイル指定つきの異体字のために用いられるフォントファミリー名のリスト。セリフ体のフォントで表示する必要がある文字のための指定です。
+    <DT>
+      <CODE>fontforge.FontView.ScriptFamily</CODE>
+    <DD>
+      <IMG src="../../_images/script-A.png" WIDTH="29" HEIGHT="25" ALIGN="Right"><!--A list of font
+      family names to be used in the font view to display an example character
+      over each user character when the character is one of the stylized variants
+      in U+1D400-U+1D7FF. Used for characters that should be drawn with a script
+      font.-->
+      フォントビューで、ユーザが編集する各文字の上に表示されるサンプル字形のうち、範囲 U+1D400-U+1D7FF に含まれるスタイル指定つきの異体字のために用いられるフォントファミリー名のリスト。スクリプト体のフォントで表示する必要がある文字のための指定です。
+    <DT>
+      <CODE>fontforge.FontView.FrakturFamily</CODE>
+    <DD>
+      <IMG src="../../_images/fraktur-A.png" WIDTH="25" HEIGHT="21" ALIGN="Right"><!--A list of font
+      family names to be used in the font view to display an example character
+      over each user character when the character is one of the stylized variants
+      in U+1D400-U+1D7FF. Used for characters that should be drawn with a fraktur
+      font.-->
+      フォントビューで、ユーザが編集する各文字の上に表示されるサンプル字形のうち、範囲 U+1D400-U+1D7FF に含まれるスタイル指定つきの異体字のために用いられるフォントファミリー名のリスト。フラクトゥールのフォントで表示する必要がある文字のための指定です。
+    <DT>
+      <CODE>fontforge.FontView.DoubleStruckFamily</CODE>
+    <DD>
+      <IMG src="../../_images/doublestruck-B.png" WIDTH="20" HEIGHT="21" ALIGN="Right"><!--A list
+      of font family names to be used in the font view to display an example character
+      over each user character when the character is one of the stylized variants
+      in U+1D400-U+1D7FF. Used for characters that should be drawn with a double-struck
+      font.-->
+      フォントビューで、ユーザが編集する各文字の上に表示されるサンプル字形のうち、範囲 U+1D400-U+1D7FF に含まれるスタイル指定つきの異体字のために用いられるフォントファミリー名のリスト。二重線による白抜き文字のフォントで表示する必要がある文字のための指定です。
+    <DT>
+      <CODE>fontforge.FontView.SansFamily</CODE>
+    <DD>
+<!--  A list of font family names to be used in the font view to display an example
+      character over each user character when the character is one of the stylized
+      variants in U+1D400-U+1D7FF. Used for characters that should be drawn with
+      a sans-serif font. -->
+      フォントビューで、ユーザが編集する各文字の上に表示されるサンプル字形のうち、範囲 U+1D400-U+1D7FF に含まれるスタイル指定つきの異体字のために用いられるフォントファミリー名のリスト。サンセリフ体のフォントで表示する必要がある文字のための指定です。
+    <DT>
+      <CODE>fontforge.FontView.MonoFamily</CODE>
+    <DD>
+<!--  A list of font family names to be used in the font view to display an example
+      character over each user character when the character is one of the stylized
+      variants in U+1D400-U+1D7FF. Used for characters that should be drawn with
+      a monospaced font.-->
+      フォントビューで、ユーザが編集する各文字の上に表示されるサンプル字形のうち、範囲 U+1D400-U+1D7FF に含まれるスタイル指定つきの異体字のために用いられるフォントファミリー名のリスト。等幅フォントで表示する必要がある文字のための指定です。
+    <DT>
+      <CODE>fontforge.CharView.InfoFamily</CODE>
+    <DD>
+<!--  A list of font family names to be used in the outline and bitmap character
+      views for information messages.-->
+      アウトラインおよびビットマップの文字ビューで、通知メッセージのために用いられるフォントファミリー名のリスト。
+    <DT>
+      <CODE>fontforge.CharView.PointColor</CODE>
+    <DD>
+<!--  Sets the color used to draw curved, corner or tangent points in the outline
+      character view. -->
+      アウトライン文字ビューで、曲線上の点・角の点および曲線の開始点を表示するのに用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.FirstPointColor</CODE>
+    <DD>
+<!--  Sets the color of the first point on a contour.-->
+      輪郭上の最初の点の色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.SelectedPointColor</CODE>
+    <DD>
+<!--  Sets the color used to draw selected curved, corner or tangent points in
+      the outline character view.-->
+      アウトライン文字ビューで、現在選択中の点を表示するのに用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.SelectedPointWidth</CODE>
+    <DD>
+<!--  Sets the width of the line used to outline selected curved, corner or tangent
+      points in the outline character view.-->
+      アウトライン文字ビューで、現在選択中の点を表示するときの線の太さを設定します。
+    <DT>
+      <CODE>fontforge.CharView.ExtremePointColor</CODE>
+    <DD>
+<!--  Sets the color of a point which is an extremum.-->
+      座標値が最大・最小となる位置を表す点の色を設定します。
+    <DT>
+<!--  <CODE>fontforge.CharView.PointOfInflectionColor</CODE> -->
+    <DD>
+<!--  Sets the color of a location which is a point of inflection. -->
+      変曲点にあたる場所を示す色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.NextCPColor</CODE>
+    <DD>
+<!--  Sets the color used to draw the "Next" control point.-->
+      「次の」制御点を表示するのに用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.PrevCPColor</CODE>
+    <DD>
+<!--  Sets the color used to draw the "Previous" control point.-->
+      「前の」制御点を表示するのに用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.SelectedCPColor</CODE>
+    <DD>
+<!--  Sets the color used to draw a control point that has been selected.-->
+      現在選択中の制御点を表示するのに用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.CoordinateLineColor</CODE>
+    <DD>
+<!--  Sets the color used to draw the coordinate axes.-->
+      座標軸を表示するのに用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.WidthColor</CODE>
+    <DD>
+<!--  Sets the color used to draw the advance width line.-->
+      送り幅を表す線を表示するのに用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.WidthSelColor</CODE>
+    <DD>
+<!--  Sets the color used to draw the advance width if it is selected.-->
+      送り幅が表す線が選択中のとき、それを表示するのに用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.GridFitWidthColor</CODE>
+    <DD>
+<!--  Sets the color used to draw the advance width once it has been grid fit (if
+      <CODE>View-&gt;Show Grid Fit</CODE> is on) -->
+      送り幅に対していちどグリッド合わせを行った後の線を表示するのに用いる色を設定します (<CODE>表示(<U>V</U>)</CODE>→<CODE>グリッド合わせを表示(<U>W</U>)...</CODE> が有効な場合)
+    <DT>
+      <CODE>fontforge.CharView.LigatureCaretColor</CODE>
+    <DD>
+<!--  Sets the color used to draw ligature caret lines.-->
+      合字のキャレット位置を表す線を表示するのに用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.RasterColor</CODE>
+    <DD>
+<!--  Sets the color used to draw the pixels of a rasterized bitmap (if
+      <CODE>View-&gt;Show Grid Fit</CODE> or <CODE>Hints-&gt;Debug</CODE> is on) -->
+      ラスタライズしたビットマップの各ピクセルを表示するのに用いる色を設定します (<CODE>表示(<U>V</U>)</CODE>→<CODE>グリッド合わせを表示(<U>W</U>)...</CODE> または <CODE>ヒント(<U>I</U>)</CODE>→<CODE>デバッグ(<U>D</U>)...</CODE> が有効な場合)
+    <DT>
+      <CODE>fontforge.CharView.RasterNewColor</CODE>
+    <DD>
+<!--  Sets the color used to draw the pixels of a rasterized bitmap if they have
+      recently been turned on (if <CODE>Hints-&gt;Debug</CODE> is on) -->
+      ラスタライズしたビットマップのうち、新しく塗りつぶされた各ピクセルを表示するのに用いる色を設定します (<CODE>ヒント(<U>I</U>)</CODE>→<CODE>デバッグ(<U>D</U>)...</CODE> が有効な場合)
+    <DT>
+      <CODE>fontforge.CharView.RasterOldColor</CODE>
+    <DD>
+<!--  Sets the color used to draw the pixels of a rasterized bitmap f they have
+      recently been turned off (if <CODE>Hints-&gt;Debug</CODE> is on) -->
+      ラスタライズしたビットマップのうち、塗りつぶさないように変更された各ピクセルを表示するのに用いる色を設定します (<CODE>ヒント(<U>I</U>)</CODE>→<CODE>デバッグ(<U>D</U>)...</CODE> が有効な場合)
+    <DT>
+      <CODE>fontforge.CharView.RasterGridColor</CODE>
+    <DD>
+<!--  Sets the color used to draw the pixel grid used by the rasterizer (if
+      <CODE>View-&gt;Show Grid Fit</CODE> is on)-->
+      ピクセルのグリッドを表示するのに用いる色を設定します (<CODE>表示(<U>V</U>)</CODE>→<CODE>グリッド合わせを表示(<U>W</U>)...</CODE> または <CODE>ヒント(<U>I</U>)</CODE>→<CODE>デバッグ(<U>D</U>)...</CODE> が有効な場合)
+    <DT>
+      <CODE>fontforge.CharView.RasterDarkColor</CODE>
+    <DD>
+<!--  When doing anti-aliased debugging, sets the color used for the darkest pixel.
+      Other pixels will be interpolated between this and the background. -->
+      アンチエイリアス表示のデバッグを行うとき、最も暗いピクセルに使用する色を設定します。その他のピクセルの色はこの色と背景色の間で補間されます。
+    <DT>
+      <CODE>fontforge.CharView.ItalicCoordColor</CODE>
+    <DD>
+<!--  Sets the color used to draw various horizontal metrics lines when they have
+      been skewed appropriately for an italic font.-->
+      イタリック体のフォントに合わせて横書き用メトリックを表す各種の線が傾いているとき、それらを表示するのに用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.MetricsLabelColor</CODE>
+    <DD>
+<!--  Sets the color used to label metrics lines-->
+      メトリックを表す線につけるラベルに用いる文字色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.HintLabelColor</CODE>
+    <DD>
+<!--  Sets the color used to label hint lines (and blue value lines)-->
+      ヒントを表す線 (および BlueValue の線) につけるラベルに用いる文字色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.BlueValuesStippledCol</CODE>
+    <DD>
+<!--  Sets the color used to draw the BlueValues and OtherBlues zones.-->
+      BlueValues と OtherBlues の領域を塗りつぶす色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.FamilyBlueStippledColor</CODE>
+    <DD>
+<!--  Sets the color used to draw the FamilyBlueValues and FamilyOtherBlues zones.-->
+      FamilyBlueValues と FamilyOtherBlues の領域を塗りつぶす色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.MDHintColor</CODE>
+    <DD>
+<!--  Sets the color used to draw minimum distance hints-->
+      最小距離ヒントを表示するのに用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.DHintColor</CODE>
+    <DD>
+<!--  Sets the color used to draw diagonal hints-->
+      斜行ヒントを表示するのに用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.HHintColor</CODE>
+    <DD>
+<!--  Sets the color used to draw horizontal stem hints-->
+      水平ステムヒントを表示するのに用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.VHintColor</CODE>
+    <DD>
+<!--  Sets the color used to draw vertical stem hints -->
+      垂直ステムヒントを表示するのに用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.ConflictHintColor</CODE>
+    <DD>
+<!--  Sets the color used to draw hints when they conflict -->
+      ヒント同士が相互に矛盾しているときに、それらのヒントを表示するのに用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.HHintActiveColor</CODE>
+    <DD>
+<!--  Sets the color used to draw a horizontal stem hint when it is active in the
+      review hints dlg. -->
+      水平ステムヒントが <CODE>ヒントを確認(<U>R</U>)</CODE> ダイアログで有効になっているときに、そのヒントを表示するのに用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.VHintActiveColor</CODE>
+    <DD>
+<!--  Sets the color used to draw a vertical stem hint when it is active in the
+      review hints dlg.-->
+      垂直ステムヒントが <CODE>ヒントを確認(<U>R</U>)</CODE> ダイアログで有効になっているときに、そのヒントを表示するのに用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.HFlexHintColor</CODE>
+    <DD>
+<!--  Sets the color used to draw the halo around horizontal flex hints-->
+      水平 flex ヒントの周りの暈を表示するのに用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.VFlexHintColor</CODE>
+    <DD>
+<!--  Sets the color used to draw the halo around vertical flex hints.-->
+      垂直 flex ヒントの周りの暈を表示するのに用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.AnchorColor</CODE>
+    <DD>
+<!--  Sets the color used to draw an anchor point-->
+      アンカーポイントを表示するのに用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.TemplateOutlineColor</CODE>
+    <DD>
+<!--  Sets the color used to draw a template outline. (not currently used)-->
+      テンプレートのアウトラインを表示するのに用いる色を設定します (現在使われていません)
+    <DT>
+      <CODE>fontforge.CharView.OldOutlineColor</CODE>
+    <DD>
+<!--  Sets the color used to draw the original outline of a set of splines being
+      transformed with one of the transform tools (flip, rotate, scale, etc.) -->
+      (反転・回転・拡大/縮小などの) 変形ツールを用いてスプラインの集まりを変形している途中で、オリジナルのスプラインを表示する色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.TransformOriginColor</CODE>
+    <DD>
+<!--  Sets the color used to draw the origin of the current transformation.-->
+      現在の変換の原点を表示するのに用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.GuideOutlineColor</CODE>
+    <DD>
+<!--  Sets the color used to draw outlines in the Guide layer.-->
+      ガイドレイヤに含まれるアウトラインを表示するのに用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.GridFitOutlineColor</CODE>
+    <DD>
+<!--  Sets the color used to draw outlines which have been gridfit (this should
+      probably be the same as BackgroundOutlineColor as both are in the background
+      layer). --> 
+      グリッド合わせを適用済みのアウトラインを表示するのに用いる色を設定します (これは背面レイヤに置かれるので、おそらく BackgroundOutlineColor と同じにするべきでしょう)
+    <DT>
+      <CODE>fontforge.CharView.BackgroundOutlineColor</CODE>
+    <DD>
+<!--  Sets the color used to draw background outlines.-->
+      背面レイヤのアウトラインを表示するのに用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.ForegroundOutlineColor</CODE>
+    <DD>
+<!--  Sets the color used to draw foreground outlines.-->
+      前面レイヤのアウトラインを表示するのに用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.BackgroundImageColor</CODE>
+    <DD>
+<!--  Sets the color used to draw background images.-->
+      背面レイヤに置いた画像を表示するのに用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.FillColor</CODE>
+    <DD>
+<!--  Sets the color used to draw a character's fill -->
+      文字の塗りつぶし表示に用いる色を設定します。
+    <DT>
+      <CODE>fontforge.CharView.TraceColor</CODE>
+    <DD>
+<!--  Sets the color used to draw the trace of the freehand tool.-->
+      フリーハンドツールの描線の表示に用いる色を設定します。
+    <DT>
+      <CODE>fontforge.DVRaster.Background</CODE>
+    <DD>
+<!--  Sets the background color of the raster window in the debugger. -->
+      デバッガのラスタウィンドウ内の背景色を設定します。
+    <DT>
+      <CODE>Gdraw.ScreenWidthCentimeters</CODE>
+    <DD>
+<!--  A double. (centimeters)<BR>
+      X usually does not know the physical width of a screen (it knows the logical,
+      pixel width). Gdraw's internals are based on points rather than pixels, and
+      it will sometimes pick a font that is too small or too large if it relies
+      on X's idea of how wide the screen is. -->
+      1 個の実数値 (センチメートル単位) です。<BR>
+      X は一般的には画面の物理幅を知りません (知っているのは論理幅、つまり幅のピクセル数です)。Gdraw の内部はピクセルではなくポイントに基づいているので、X のスクリーン幅の知識に基づいたときには小さすぎたり大きすぎたりするフォントを選んでしまう事があります。
+    <DT>
+      <CODE>Gdraw.ScreenWidthInches</CODE>
+    <DD>
+<!--  A double. (inches)<BR>
+      Same as the above, except measured in inches.-->
+      1 個の実数値 (インチ単位) です。<BR>
+      上と同じですが、インチ単位で計る点が異なります。
+    <DT>
+      <CODE>Gdraw.ScreenWidthPixels</CODE>
+    <DD>
+<!--  An integer (pixels)<BR>
+      When X creates a virtual screen it may not be possible for Gdraw to find
+      the actual number of pixels on the screen. This again will throw off point
+      calculations. -->
+      1 個の整数値 (ピクセル単位) です。<BR>
+      X が仮想スクリーンを作成したときには、Gdraw はスクリーン上に存在する実際のピクセル数を知ることができません。この場合も、ポイント数の計算結果が狂った値となるでしょう。
+    <DT>
+      <CODE>Gdraw.ScreenHeightPixels</CODE>
+    <DD>
+<!--  An integer (pixels)<BR>
+      When X creates a virtual screen it may not be possible for Gdraw to find
+      the actual number of pixels on the screen. This is not used in point
+      calculations.-->
+      1 個の整数値 (ピクセル単位) です。<BR>
+      X が仮想スクリーンを作成したときには、Gdraw はスクリーン上に存在する実際のピクセル数を知ることができません。この値はポイント数の計算には使用されません。
+    <DT>
+      <CODE>Gdraw.Depth</CODE>
+    <DD>
+<!--  An integer (1, 8, 16, 32)<BR>
+      You can use this to request a different depth than the default one. Not all
+      servers will support all depths. If FontForge can't find a visual with the
+      desired depth it will use the default depth.-->
+      1 個の整数値 (1, 8, 16, 32 のどれか) です。<BR>
+      これを使うことにより、デフォルトとは異なる色深度を使用することができます。すべてのサーバがすべての色深度をサポートしているわけではありません。指定された深度と一致するビジュアルが見つからないときには、FontForge はデフォルトの色深度を使用します。
+    <DT>
+      <CODE>Gdraw.VisualClass</CODE>
+    <DD>
+<!--  A string ("StaticGray", "GrayScale", "StaticColor", "PsuedoColor", "TrueColor",
+      "DirectColor")<BR>
+      FontForge will search for a visual with the given class (and possibly depth
+      if the depth argument is specified too).-->
+      文字列 (“StaticGray”,“GrayScale”,“StaticColor”,“PsuedoColor”,“TrueColor”,“DirectColor”のどれか) です。<BR>
+      FontForge は指定されたクラスに属するビジュアルを検索します (Depth 引数も指定されている場合は、色深度も一致するものを検索します)。
+    <DT>
+      <CODE>Gdraw.<A NAME="Colormap">Colormap</A></CODE>
+    <DD>
+<!--  An string ("Current", "Copy", "Private")<BR>
+      You can use this to control what FontForge does about the colormap on an
+      8bit screen-->
+      文字列 (“Current”,“Copy”,“Private" のどれか) です。<BR>
+      8 ビットスクリーン上で FontForge がカラーマップをどう扱うかをこの値で設定することができます。
+      <UL>
+        <LI>
+<!--	  Current - - FontForge will attempt to allocate its colors in the current colormap. -->
+	  Current — FontForge は現在のカラーマップに存在する色を割り当てようと試みます。
+        <LI>
+<!--	  Copy - - FontForge will allocate what colors it can and then copy the current
+	  color map into a private copy. This means FontForge has access to a much
+	  wider range of colors, and (as long as the shared colormap doesn't change)
+	  FontForge's colormap will match that of the rest of the screen. -->
+	  Copy — FontForge は、割り当て可能な色を割り当ててから、現在のカラーマップをプライベートなコピーに複製します。これにより、FontForge がより多くの範囲の色にアクセスすることができ、(共有カラーマップが変更されないかぎり) FontForge のカラーマップは画面上の他の色と一致することになります。
+        <LI>
+<!--	  Private - - FontForge will allocate a private colormap and set the colors
+	  just as it wants them. It will almost certainly not match the shared colormap. -->
+	  Private — FontForge はプライベートなカラーマップを割り当て、必要な色を単純に割り当てていきます。これはほぼ確実に共有カラーマップと一致しないでしょう。
+      </UL>
+    <DT>
+      <CODE>Gdraw.DoDithering</CODE>
+    <DD>
+<!--  An integer (0 or 1)<BR>
+      You can use this to turn off dithering of images on an 8bit screen. -->
+      1 個の整数値 (0 か 1) です。<BR>
+      この値を設定すれば、8 ビットスクリーン上での画像のディザリングを行わないようにすることができます。
+    <DT>
+      <CODE>Gdraw.MultiClickTime</CODE>
+    <DD>
+<!--  An integer (milliseconds)<BR>
+      The maximum amount of time allowed between two clicks for them to be considered
+      a double (triple, etc.) click.-->
+      1 個の整数値 (ミリ秒単位) です。<BR>
+      ダブルクリック (トリプルクリックなども) と見なされるために許される 2 個のクリックの時間差の最大値です。
+    <DT>
+      <CODE>Gdraw.MultiClickWiggle</CODE>
+    <DD>
+<!--  An integer (pixels)<BR>
+      The maximum number of pixels the mouse is allowed to move between two clicks
+      and have them still be considered a double click.-->
+      1 個の整数値 (ピクセル単位) です。<BR>
+      2 個のクリックの間にマウスカーソルが動いてもまだダブルクリックと見なされる距離の最大値です。
+    <DT>
+      <CODE>Gdraw.TwoButtonFixup</CODE>
+    <DD>
+<!--  A boolean<BR>
+      On a windows keyboard use the modifier key with the flag on it to simulate
+      mouse button 2 (middle button). If this key is depressed when a mouse button
+      is pressed or released then pretend it was button 2 that was pressed or release.-->
+      1 個の真偽値です。<BR>
+      Windows のキーボードでは、マウスボタン 2 (中ボタン) をシミュレートするのときに、そのフラグとなる修飾キーを使用します。そのキーが押しながらマウスボタンを押したり放したりしたときは、あたかもボタン 2 を押したり放したりしたかのようにふるまいます。
+    <DT>
+      <CODE>Gdraw.DontOpenXDevices</CODE>
+    <DD>
+<!--  a boolean -->
+      1 個の真偽値です。
+    <DD>
+<!--  Various people have complained that when FontForge attempts to open the devices
+      of the wacom graphics tablet, the X server gives a BadDevice error. I can't
+      duplicate this, the open works fine on my system, but this resource allows
+      them to tell fontforge not to try to use the tablet. -->
+      FontForge がワコムのグラフィクスタブレットのデバイスを開こうとした時に X が BadDevice エラーを返すという苦情をいろいろな人から受けました。私はこれを再現できておらず、私のシステム上ではうまく開けるのですが、問題が生じる環境でも、このリソースを使用すれば FontForge がタブレットを使おうと試みないように指定することができます。
+    <DT>
+      <CODE>Gdraw.MacOSXCmd</CODE>
+    <DD>
+<!--  A boolean<BR>
+      On Mac OS X the user will probably expect to use the Command (apple, cloverleaf)
+      key to control the menu (rather than the Control key). If this is set then
+      the command key will be mapped to the control key internally. -->
+      1 個の真偽値です。<BR>
+      Mac OS X のユーザはおそらく、メニューの制御に (Control キーではなく) Command (Apple, クローバーの葉) キーを使用しようと考えるでしょう。これが設定されていると、Command キーを内部的に Control キーに変換して扱います。
+<!--  <DT>
+      <CODE>Gdraw.MultiClickWiggle</CODE>
+    <DD>
+      An integer (pixels)<BR>
+      The maximum number of pixels the mouse is allowed to move between two clicks
+      and have them still be considered a double click.-->
+<!--   重複なので翻訳しない -->
+    <DT>
+      <CODE>Gdraw.<A NAME="Keyboard">Keyboard</A></CODE>
+    <DD>
+      ibm | mac | sun | ppc | 0 | 1 | 2 | 3<BR>
+<!--  Allows you to specify the type of keyboard. Currently this is only relevent
+      when generating menus. The modifier keys are in different locations on different
+      keyboards (under different operating systems) and if FontForge knows what
+      keyboard you are using it can make the hot-keys have better labels.-->
+      キーボードのタイプを指定することができます。現在のところこれが関係するのはメニューを生成するときだけです。(異なる OS の制御下の) 異なるキーボードでは、修飾キーのある位置が異なりますので、どのキーボードを使っているかを FontForge が知っていれば、より適切なラベルをもつホットキー表示を行うことができます。
+      <UL>
+        <LI>
+	  ibm | 0<BR>
+<!--	  Uses the Control and Alt keys -->
+	  Control と Alt キーを使用します。
+        <LI>
+	  mac | 1<BR>
+<!--	  Uses the Command and Option keys (Mac OS/X, Mac keyboard) -->
+	  Command と Option キーを使用します (Mac OS/X, Mac キーボード)
+        <LI>
+	  ppc | 3<BR>
+<!--	  Uses the Control and Command keys (Suse ppc linux, Mac keyboard) -->
+	  Control と Command キーを使用します (Suse PPC Linxu, Mac キーボード)
+        <LI>
+	  sun | 2<BR>
+<!--	  Uses the Control and Meta keys -->
+	  Control と Meta キーを使用します。
+      </UL>
+    <DT>
+      <CODE>Gdraw.SelectionNotifyTimeout</CODE>
+    <DD>
+<!--  An integer (seconds)<BR>
+      Gdraw will wait this many seconds after making a request for a selection
+      (ie. when doing a Paste). If it gets no responce after that period it reports
+      a failure. -->
+      1 個の整数 (秒単位) です。<BR>
+      Gdraw は、1 回の選択に対してリクエストを作成した後、この値で指定した秒数だけ待ちます (例えば、貼りつけを行うとき)。この時間だけ待っても反応がないときには、失敗を通知します。
+    <DT>
+      <CODE>Gdraw.Background</CODE>
+    <DD>
+<!--  A <A HREF="#color">color</A><BR>
+      Gdraw will use this as the default background color for the windows.-->
+      1 個の<A HREF="#color">色</A>です。<BR>
+      Gdraw はウィンドウのデフォルトの背景色としてこれを使用します。
+    <DT>
+      <CODE>Gdraw.Foreground</CODE>
+    <DD>
+<!--   A <A HREF="#color">color</A><BR>
+      Gdraw will use this as the default foreground color for dialogs. -->
+      1 個の<A HREF="#color">色</A>です。<BR>
+      Gdraw はウィンドウのデフォルトの前景色としてこれを使用します。
+    <DT>
+      <CODE>Gdraw.GGadget.Popup.Foreground</CODE>
+    <DD>
+<!--  A <A HREF="#color">color</A><BR>
+      Specifies the foreground color of popup (tooltip) messages.-->
+      1 個の<A HREF="#color">色</A>です。<BR>
+      Gdraw はポップアップ (ツールチップ) ウィンドウの前景色を指定します。
+    <DT>
+      <CODE>Gdraw.GGadget.Popup.Background</CODE>
+    <DD>
+<!--  A <A HREF="#color">color</A><BR>
+      Specifies the background color of popup messages. -->
+      Gdraw はポップアップウィンドウのデフォルトの背景色を指定します。
+    <DT>
+      <CODE>Gdraw.GGadget.Popup.Delay</CODE>
+    <DD>
+<!--  An integer (milliseconds).<BR>
+      Specifies the amount of time the cursor must remain motionless before a popup
+      message pops up.-->
+      1 個の整数 (ミリ秒単位) です。<BR>
+      ポップアップウィンドウが起動するまでにカーソルを動かさずに置いておく必要なる時間の長さを指定します。
+    <DT>
+      <CODE>Gdraw.GGadget.Popup.LifeTime</CODE>
+    <DD>
+<!--  An integer (milliseconds).<BR>
+      Specifies the length of time the message will display. -->
+      1 個の整数 (ミリ秒単位) です。<BR>
+      メッセージが表示されている時間の長さを指定します。
+    <DT>
+      <CODE>Gdraw.GGadget.Popup.Font</CODE>
+    <DD>
+<!--  A <A HREF="#font">font</A><BR>
+      Specifies the font to use in a popup message.-->
+      1 個の<A HREF="#font">フォント</A>です。<BR>
+      ポップアップメッセージで使うフォントを指定します。
+    <DT>
+      <CODE>Gdraw.GGadget...</CODE>
+    <DD>
+<!--  Every ggadget in enclosed in a box. The following information may be supplied
+      for any box:-->
+      ボックスに囲まれたすべての ggadget です。以下の情報はすべてのボックスに指定することができます。
+      <DL>
+        <DT>
+	  <CODE>...Box.BorderType</CODE>
+        <DD>
+<!--	  one of "none", "box", "raised", "lowered", "engraved", "embossed", "double"<BR>
+	  For a description of these see the css manual.-->
+	  “none”,“box”,“raised”,“lowered”,“engraved”,“embossed”,“double”のどれかです。<BR>
+	  これらの説明については、CSS のマニュアルを参照してください。
+        <DT>
+	  <CODE>...Box.BorderShape</CODE>
+        <DD>
+<!--	  one of "rect", "roundrect", "ellipse", "diamond"<BR>
+	  Describes the basic shape of the box. (some ggadgets must be in rectangles). -->
+	  “rect”,“roundrect”,“ellipse”,“diamond”のどれかです。<BR>
+	  ボックスの基本的な形を記述します (ある種の ggadete は長方形でなければなりません)。
+        <DT>
+	  <CODE>...Box.BorderWidth</CODE>
+        <DD>
+<!--	  An integer (points)<BR>
+	  Specifies the width of the box's border in points (NOT pixels) -->
+	  1 個の整数 (ポイント単位)。<BR>
+	  ボックスの境界線の太さをポイント単位 (ピクセル単位では<EM>ありません</EM>) で指定します。
+        <DT>
+	  <CODE>...Box.Padding</CODE>
+        <DD>
+<!--	  An integer (points)<BR>
+	  Specifies the padding between the interior of the box and the border -->
+	  1 個の整数 (ポイント単位)。<BR>
+	  ボックスの内側と境界線との間のパディングを指定します。
+        <DT>
+	  <CODE>...Box.Radius</CODE>
+        <DD>
+<!--	  An integer (points)<BR>
+	  Specifies the radius of a roundrect. Ignored for everything else. -->
+	  1 個の整数 (ポイント単位)。<BR>
+	  “roundrect”指定時の角の半径を指定します。その他の場合は無視されます。
+        <DT>
+	  <CODE>...Box.BorderInner</CODE>
+        <DD>
+<!--	  A boolean (true, on or 1, false, off or 0)<BR>
+	  Specifies whether a black line should be drawn inside the border. -->
+	  1 個の真偽値 (true, on または 1, false, off または 0) です。<BR>
+	  境界線の内側に黒い線を引くかどうかを指定します。
+        <DT>
+        <DT>
+	  <CODE>...Box.BorderOuter</CODE>
+        <DD>
+<!--	  A boolean (true, on or 1, false, off or 0)<BR>
+	  Specifies whether a black line should be drawn outside the border. -->
+	  1 個の真偽値 (true, on または 1, false, off または 0) です。<BR>
+	  境界線の外側に黒い線を引くかどうかを指定します。
+        <DT>
+	  <CODE>...Box.ActiveInner</CODE>
+        <DD>
+<!--	  A boolean (true, on or 1, false, off or 0)<BR>
+	  Specifies whether a yellow line should be drawn inside the border when the
+	  gadget is active (not all gadgets support this). -->
+	  1 個の真偽値 (true, on または 1, false, off または 0) です。<BR>
+	  ガジェットが有効なときに境界線の内側に黄色い線を引くかどうかを指定します (まだ、すべてのガジェットがこれをサポートしているわけではありません)。
+        <DT>
+	  <CODE>...Box.DoDepressedBackground</CODE>
+        <DD>
+<!--	  A boolean (true, on or 1, false, off or 0)<BR>
+	  Changes the color of the background while a button is depressed. -->
+	  1 個の真偽値 (true, on または 1, false, off または 0) です。<BR>
+	  ボタンが押されているときの背景色を変更します。
+        <DT>
+	  <CODE>...Box.BorderBrightest</CODE>
+        <DD>
+<!--	  A <A HREF="#color">color</A><BR>
+	  The color of the brightest edge of the border (usually the left edge) -->
+	  1 個の<A HREF="#color">色</A> です。<BR>
+	  境界線の最も明るい縁 (通常は左の縁) の色を指定します
+        <DT>
+	  <CODE>...Box.BorderBrighter</CODE>
+        <DD>
+<!--	  A <A HREF="#color">color</A><BR>
+	  The color of the next to brightest edge of the border (usually the top edge)-->
+	  1 個の<A HREF="#color">色</A> です。<BR>
+	  境界線の 2 番目に明るい縁 (通常は上の縁) の色を指定します
+        <DT>
+	  <CODE>...Box.BorderDarkest</CODE>
+        <DD>
+<!--	  A <A HREF="#color">color</A><BR>
+	  The color of the darkest edge of the border (usually the right edge) -->
+	  1 個の<A HREF="#color">色</A> です。<BR>
+	  境界線の最も暗い縁 (通常は右の縁) の色を指定します
+        <DT>
+	  <CODE>...Box.BorderDarker</CODE>
+        <DD>
+<!--	  A <A HREF="#color">color</A><BR>
+	  The color of the next to next to darkest edge of the border. (usually the
+	  bottom edge) -->
+	  1 個の<A HREF="#color">色</A> です。<BR>
+	  境界線の 2 番目に暗い縁 (通常は下の縁) の色を指定します
+        <DT>
+	  <CODE>...Box.NormalBackground</CODE>
+        <DD>
+<!--	  A <A HREF="#color">color</A><BR>
+	  The color of a normal background (not disabled, not depressed) -->
+	  1 個の<A HREF="#color">色</A> です。<BR>
+	  (使用不可能になっておらず、押下されていない) 通常の背景に用いる色です。
+        <DT>
+	  <CODE>...Box.NormalForeground</CODE>
+        <DD>
+<!--	  A <A HREF="#color">color</A><BR>
+	  The color of a normal foreground (not disabled)-->
+	  1 個の<A HREF="#color">色</A> です。<BR>
+	  (使用不可能になっていない) 通常の前景に用いる色です。
+        <DT>
+	  <CODE>...Box.DisabledBackground</CODE>
+        <DD>
+<!--	  A <A HREF="#color">color</A><BR>
+	  The color of a disabled background . -->
+	  1 個の<A HREF="#color">色</A> です。<BR>
+	  使用不可能になっている背景に用いる色です。
+        <DT>
+	  <CODE>...Box.DisabledForeground</CODE>
+        <DD>
+<!--	  A <A HREF="#color">color</A><BR>
+	  The color of a normal foreground.-->
+<!--   原文誤り -->
+	  1 個の<A HREF="#color">色</A> です。<BR>
+	  使用不可能になっている前景に用いる色です。
+        <DT>
+	  <CODE>...Box.ActiveBorder</CODE>
+        <DD>
+<!--	  A <A HREF="#color">color</A><BR>
+	  The color of an ActiveInner border. -->
+	  1 個の<A HREF="#color">色</A> です。<BR>
+	  ActiveInner の境界に用いる色です。
+        <DT>
+	  <CODE>...Box.PressedBackground</CODE>
+        <DD>
+<!--	  A <A HREF="#color">color</A><BR>
+	  The color of a depressed background. -->
+	  1 個の<A HREF="#color">色</A> です。<BR>
+	  押下された背景に用いる色です。
+        <DT>
+	  <CODE>...Font</CODE>
+        <DD>
+<!--	  A <A HREF="#font">font</A><BR>
+	  Specifies the default font for a ggadget. -->
+	  1 個の<A HREF="#font">フォント</A>です。<BR>
+	  Gdraw ガジェットのデフォルトフォントを指定します。
+      </DL>
+    <DT>
+      <CODE>Gdraw.GButton...<BR>
+      Gdraw.GLabel...<BR>
+      Gdraw.GRadio...<BR>
+      Gdraw.GCheckBox...<BR>
+      Gdraw.GTextField...<BR>
+      Gdraw.GList...<BR>
+      Gdraw.GScrollBar...<BR>
+      Gdraw.GScrollBarThumb...<BR>
+      Gdraw.GGroup...<BR>
+      Gdraw.GLine...<BR>
+      Gdraw.GMenu...<BR>
+      Gdraw.GMenuBar...<BR>
+      Gdraw.GTabSet...</CODE>
+    <DD>
+<!--  As above.<BR>
+      Specifies the box, font, color, etc. for this particular type of ggadget. -->
+      上と同様です。<BR>
+      ボックス、フォント、色などを、この特定のタイプの Gdraw ガジェットに対して指定します。
+    <DT>
+      <CODE>Gdraw.GScrollBar.Width</CODE>
+    <DD>
+<!--  An integer (points)<BR>
+      Specifies the scrollbar width in points (for horizontal scrollbars it specifies
+      the height) -->
+      1 個の整数 (ポイント単位) です。<BR>
+      スクロールバーの幅をポイント単位で指定します (水平スクロールバーでは、高さの指定になります)。
+    <DT>
+      <CODE>Gdraw.GMenu.Grab</CODE>
+    <DD>
+<!--  A boolean<BR>
+      Controls whether menus do pointer grabs. Debugging is easier if they don't.
+      Default is for them to do grabs. -->
+      1 個の真偽値です。<BR>
+      メニューがポインタを占有するかどうかを制御します。これを停止するとデバッグがやりやすくなります。デフォルトでは、占有を行います。
+    <DT>
+      <CODE>Gdraw.GWidget.BrokenPalettes</CODE>
+    <DD>
+<!--  A boolean<BR>
+      On many window managers the palette code doesn't work (they steal focus from
+      menus, they don't track the main window properly, ...). Use this resource
+      to turn off the broken bits. The results are non-optimal, but they should
+      be functional. (this is now irrelevant to fontforge) -->
+      1 個の真偽値です。<BR>
+      多くのウィンドウマネージャでは、パレットコードは動作しません (それらはメニューからフォーカスを横取りしたり、メインウィンドウを正しく記憶していなかったりします…)。動作しないコードを停止させるには、このリソースを使用してください。結果は最適ではありませんが、機能するでしょう (これは現在、FontForge には無関係です)。
+    <DT>
+      ...
+  </DL>
+  <P>
+  <DL>
+    <DT>
+<!--  <A NAME="color">Colors</A>-->
+      <A NAME="color">色</A>
+    <DD>
+<!--  Colors may be specified as:-->
+      色は以下のいずれかによって指定することができます:
+      <UL>
+        <LI>
+	  rgb(r%,g%,b%)<BR>
+<!--	  where r, g, and b are doubles between 0% and 100%-->
+	  ここで r, g, b は 0% から 100% の間の実数値です。
+        <LI>
+	  r g b<BR>
+<!--	  where r, g, and b are integers between 0 and 255 -->
+	  ここで r, g, b は 0 から 255 までの整数値です。
+        <LI>
+	  #rgb<BR>
+<!--	  where r, g, and b are hex digits between 0 and 15 (0xf) -->
+	  ここで r, g, b は 0 から 15 (0xf) までの 1 桁の 16 進数です。
+        <LI>
+	  #rrggbb<BR>
+<!--	  where rr, gg, bb are hex numbers between 0x00 and 0xff-->
+	  ここで rr, gg, bb は 0x00 から 0xff までの 16 進数です。
+        <LI>
+	  #rrrrggggbbbb<BR>
+<!--	  where rrrr, gggg, bbbb are hex numbers between 0x0000 and 0xffff -->
+	  ここで rrrr, gggg, bbbb は 0x0000 から 0xffff までの 16 進数です。
+        <LI>
+<!--	  or one of the color names accepted on the net (red, green, blue, cyan, magenta,
+	  yellow, white, black, maroon, olive, navy, purple, lime, aqua, teal, fuchsia,
+	  silver) -->
+	  またはネット上で使用可能な色名 (red, green, blue, cyan, magenta,
+	  yellow, white, black, maroon, olive, navy, purple, lime, aqua, teal, fuchsia,
+	  silver) のうちの 1 つ。
+      </UL>
+    <DT>
+<!--  <A NAME="font">Fonts</A>-->
+      <A NAME="font">フォント</A>
+    <DD>
+<!--  A font may be specified as:<BR>
+      &lt;boldness&gt; &lt;italicness&gt; &lt;pointsize&gt;
+      &lt;familyname&gt;<BR>
+      (I know the order looks a bit weird but that's what is used by css). -->
+      フォントは以下のようにして指定可能です:
+      &lt;太さ&gt; &lt;傾き&gt; &lt;ポイントサイズ&gt; &lt;ファミリー名&gt;<BR>
+      (順序がちょっと変なことは承知の上ですが、これは CSS で使われているのと同じです)。
+      <UL>
+        <LI>
+<!--	  &lt;boldness&gt; can be: -->
+	  &lt;太さ&gt; は以下のいずれかです:
+	  <UL>
+	    <LI>
+<!--	      nothing - - the font is not bold-->
+	      指定なし — フォントはボールド体ではない
+	    <LI>
+<!--	      bold - - the font is bold -->
+	      bold — フォントはボールド体である
+	    <LI>
+<!--	      a number - - (between 0 and 999), a numeric value that gives some idea of
+	      how bold the font should be. 200 would be a light font, 400 an normal font,
+	      700 a bold font and 999 and ultra-black font. -->
+	      1 個の数値 — (0 〜999), そのフォントがどの程度太くあるべきかの何らかの考えを示す整数値。200 なら細字フォント、400 は通常フォント、700 がボールド体のフォントで、999 なら超極太フォントとなるでしょう。
+	  </UL>
+        <LI>
+<!--	  &lt;italicness&gt; can be:-->
+	  &lt;傾き&gt; は以下のいずれかです:
+	  <UL>
+	    <LI>
+<!--	      nothing - - the font is not italic -->
+	      指定なし — フォントはイタリック体ではない
+	    <LI>
+<!--	      italic - - the font is italic -->
+	      italic — フォントはイタリック体である
+	    <LI>
+<!--	      oblique -- the font is oblique (italic) -->
+	      oblique — フォントはオブリーク体 (italic)である
+	  </UL>
+        <LI>
+<!--	  &lt;pointsize&gt; can be: -->
+	  &lt;ポイントサイズ&gt; は以下のいずれかです:
+	  <UL>
+	    <LI>
+<!--	      nothing - - a default point size is chosen -->
+	      指定なし — デフォルトのポイントサイズが選ばれます。
+	    <LI>
+<!--	      a number followed by "pt" - - specifies the point size. -->
+	      数値と、その後の“pt”— ポイントサイズを指定します。
+	  </UL>
+      </UL>
+      <P>
+<!--  Examples-->
+      例
+      <UL>
+        <LI>
+	  bold 14pt helvetica<BR>
+<!--	  Helvetica Bold at 14 points-->
+	  14 ポイントの Helvetica Bold
+        <LI>
+	  italic 10pt times<BR>
+<!--	  Times italic at 10 points -->
+	  10 ポイントの Times Italic
+      </UL>
+  </DL>
+  <P>
+  <H2>
+<!--  <A NAME="Keyboards">Keyboards and Mice.</A>-->
+      <A NAME="Keyboards">キーボードとマウス</A>
+  </H2>
+  <P>
+<!--
+  FontForge assumes that your keyboard has a control key and some equivalent
+  of a meta key. FontForge works best with a three button mouse. -->
+  FontForge は、キーボードには Control キーと、Meta キーの何らかの等価物があることを仮定しています。FontForge は 3 ボタンマウスで最もよく操作することができます。
+  <P>
+<!--
+  Almost all keyboards now-a-days will have the needed modifier keys, but which
+  key is used for what will depend on the keyboard and the OS (for instance
+  XDarwin and suse linux use quite different mappings for the modifier keys
+  on the mac keyboard). Usually this is only relevant for menus (and mnemonics).
+  FontForge tries to guess the keyboard from the environment in which it was
+  compiled. But with X this may not always be appropriate. So the
+  "<A HREF="xres.html#Keyboard">Gdraw.Keyboard</A>" resource above may be used
+  to change this. (Currently this setting only control the labels that appear
+  in menus for the hotkeys). -->
+  今日のほとんどすべてのキーボードには、必要な修飾キーがありますが、どのキーが使用されるかはキーボードと OS に依存します (例えば、XDarwin と Suse Linux は、Mac キーボードで極めて異なる修飾キーを使っています)。通常は、これはメニュー (とニモニック) でしか意味をもちません。FontForge はコンパイルされた環境からキーボードを推測します。しかし、X ではこれは常に適切なわけではありません。そのために上で説明した“<A HREF="xres.html#Keyboard"><CODE>Gdraw.Keyboard</CODE></A>”リソースを使ってそれを変更できるようになっています (現在のところ、この設定はメニュー内のホットキー表示のラベルを制御するに留まっています)。
+  <P>
+<!--
+  Mice are more problematic. On PCs we usually have two button mice and on
+  mac single button mice. Many linuxes that run on a PC will give you an option
+  of simulating the middle button of the mouse by depressing the left and right
+  buttons simultaneously. FontForge will also allow you to simulate it by holding
+  down the super key (usually this is the one with the picture of a windows
+  flag on it) while depressing either mouse button. -->
+  マウスについてはより問題は深刻です。PC では我々は通常 2 ボタンマウスを使い、Mac では 1 ボタンマウスを使います。PC 上で実行される多くの Linux では、マウスボタンを左右のボタンを同時に押すことによりシミュレートできるオプションがあります。FontForge では、どちらかのマウスボタンを押すときに、同時に Super キー (通常は、Windows の旗印が表示されているキーがそれにあたります) を押すことによってもシミュレートすることができます。
+  <P>
+<!--
+  On the mac I don't see any good way of simulating a three button mouse... -->
+  Mac では 3 ボタンマウスをシミュレートするよい方法が見つかりません……。
+  <P ALIGN=Center>
+  — <A HREF="errrecovery.html">前</A> — <A HREF="overview.html">目次</A>
+  — <A HREF="cliargs.html">次</A> —
+</DIV>
+</BODY></HTML>
+  

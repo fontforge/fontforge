@@ -1,0 +1,398 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 29-Dec-2002 -->
+  <!-- AP: Last modified: 3-Jul-2006 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>Char Info</TITLE>-->
+    <TITLE>グリフ情報</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+<!--  Glyph Info-->
+      グリフ情報
+  </H1>
+  <H2>
+    <IMG src="../../_images/charinfo.png" WIDTH="307" HEIGHT="409" ALIGN="Right">
+<!--  <A NAME="Character">Glyph</A> Info-->
+      <A NAME="Character">グリフ</A>情報
+  </H2>
+  <UL>
+    <LI>
+<!--  <A HREF="charinfo.html#Unicode">Encoding and Unicode data</A>-->
+      <A HREF="charinfo.html#Unicode">エンコーディングと Unicode 情報</A>
+    <LI>
+<!--  <A HREF="charinfo.html#comment">Glyph Comment</A>-->
+      <A HREF="charinfo.html#comment">グリフコメント</A>
+    <LI>
+<!--  <A HREF="charinfo.html#position">Simple Glyph Positioning </A> (GPOS)-->
+      <A HREF="charinfo.html#position">単純グリフ位置指定</A>(GPOS)
+    <LI>
+<!--  <A HREF="charinfo.html#pairwise">Pair-wise Glyph Positioning other than kerning
+      </A>(GPOS)-->
+      <A HREF="charinfo.html#pairwise">カーニング以外のペア単位位置指定</A> (GPOS)
+    <LI>
+<!--  <A HREF="charinfo.html#substitution">Glyph Simple Substitution</A> (GSUB,
+      morx) -->
+      <A HREF="charinfo.html#substitution">単純グリフ置換</A> (GSUB, morx)
+    <LI>
+<!--  <A HREF="charinfo.html#multiple">Glyph Alternate Substitution</A> (GSUB)-->
+      <A HREF="charinfo.html#multiple">選択型グリフ置換</A> (GSUB)
+    <LI>
+<!--  <A HREF="charinfo.html#multiple">Glyph Multiple Substitution</A> (GSUB)-->
+      <A HREF="charinfo.html#multiple">複数グリフへの置換</A> (GSUB)
+    <LI>
+<!--  <A HREF="charinfo.html#ligature">Glyph Ligature Substitution </A>(GSUB, morx) -->
+      <A HREF="charinfo.html#ligature">合字グリフ置換</A> (GSUB, morx)
+    <LI>
+<!--  <A HREF="charinfo.html#components">Components</A>-->
+      <A HREF="charinfo.html#components">構成要素</A>
+    <LI>
+<!--  <A HREF="#CounterMasks">Counter Masks</A>-->
+      <A HREF="#CounterMasks">カウンタマスク</A>
+  </UL>
+  <P>
+<!--
+  <A NAME="Unicode">This dialog </A>allows you to set the name and unicode
+  encoding of a given glyph. If you know the name of the glyph then FontForge
+  can tell you the encoding (if you press Set From Name), similarly if you
+  know the encoding then FontForge can tell you the name. -->
+  <A NAME="Unicode">このダイアログ</A>では、既存のグリフの名前とUnicodeの符号位置を設定できます。グリフ名が決まっている場合、(<CODE>[名前で指定(<U>A</U>)]</CODE> ボタンを押せば) FontForge に符号位置を決めさせることができます。同様に、エンコーディングが分かっていれば、FontForge に名前を決めさせることができます。
+  <P>
+<!--
+  The name field contains a pull down list with (possibly) several synonyms
+  for the name of this unicode code point. -->
+  <CODE>Unicode名(<U>N</U>)</CODE> フィールドは、この Unicode コードポイントの名前に対する (おそらく) いくつかの同義な名前を列挙したプルダウンリストからなります。
+  <P>
+<!--
+  The Glyph class field is for the opentype 'GDEF' table. You can usually leave
+  it set to automatic. FontForge will then figure out the class, and whether
+  it should be output into GDEF. You can see what FontForge does in
+  <A HREF="showatt.html">View-&gt;Show ATT</A>.<BR CLEAR=ALL> -->
+  <CODE>OTFグリフクラス(<U>G</U>)</CODE> フィールドは OpenType の&lsquo;GDEF&rsquo;テーブルのためのものです。通常は、自動設定のままにしておいてかまいません。その場合、FontForge はクラスを推測し、GDEF にそれを出力する必要があるかどうかを判断します。FontForge が何を行うかについては、<A HREF="showatt.html"><CODE>表示(<U>V</U>)</CODE>→<CODE>ATTを表示(<U>S</U>)</CODE></A>で調べることができます。<BR CLEAR=ALL>
+  <P>
+  <IMG src="../../_images/charinfo-comment.png" WIDTH="307" HEIGHT="359" ALIGN="Right"><!--You
+  can assign an arbitrary (unicode) <A NAME="comment">comment</A> to the glyph.
+  Simply type any text into this field. The comment is for your use, it will
+  not go into any generated fonts. You may also assign a color to a glyph to
+  make it stand out in the font view.<BR CLEAR=ALL> -->
+  グリフに対して、任意の (Unicode の) <A NAME="comment">コメント</A>をつけることができます。単純にこのフィールドで任意のテキストをタイプしてください。コメントはあなたのためのもので、出力されるフォントには含まれません。また、フォントビューの中で目立って見えるようにグリフに色を割り当てることもできます。<BR CLEAR=ALL>
+  <P>
+  <IMG src="../../_images/charinfo-pos.png" WIDTH="305" HEIGHT="400" ALIGN="Right"><!-- There
+  are 6 separate sub-dialogs to help you edit the
+  <A NAME="features">features</A> of the <A HREF="gposgsub.html">GPOS and
+  GSUB</A> tables (some of these data can be converted into various of Apple's
+  AAT tables, particularly 'morx'). The first of these is the alternate
+  <A NAME="position">position</A> dialog which allows you to associate certain
+  modifications to a glyph's metrics with a feature in the GPOS table. -->
+  <A HREF="gposgsub.html">GPOS および GSUB</A>テーブルの<A NAME="features">機能</A>の編集を補助するための、6 個に分かれたサブダイアログがあります (これらのテーブルのデータの一部は、各種の Apple の AAT テーブル——とくに&lsquo;morx&rsquo;——に変換することができます)。これらのダイアログのうち第一のものは、GPOS テーブル内の機能と、グリフのメトリックへの何らかの変更を対応づけることができる<A NAME="position">位置</A>変更ダイアログです。
+  <P>
+<!--
+  In the example at right the 'fwid' feature (full width) adds 400 units to
+  the glyph's advance width and moves it horizontally by 200 units. -->
+  右の例では&lsquo;fwid&rsquo;(全角) 機能でグリフの送り幅を 400 ユニット増やすとともに、200 ユニット水平に移動しています。
+  <P>
+<!--
+  A new entry in the list may be created by pressing the [New] button and a
+  <A HREF="#Feature-Tag">dlg</A> will pop up with fields for the metrics you
+  can change. It will also have a field for a feature tag, and a set of check
+  boxes for flags (these flags are not relevant here, but are included as an
+  exercise in asinine completeness. -->
+  リストへの新しい項目は、<CODE>[新規(<U>N</U>)...]</CODE> ボタンを押して作成することができ、編集可能なメトリックの値が各フィールドに含まれた<A HREF="#Feature-Tag">ダイアログ</A>がポップアップします。その他には機能タグのためのフィールドと、フラグを示す一揃いのチェックボックスが含まれています (これらのフラグはここでは意味がありませんが、愚直な完全さを実践するために含まれています)。
+  <P>
+<!--
+  The [Delete] and [Edit] buttons should be fairly self-explanatory. [Copy]
+  and [Paste] work as expected too. You can also paste something copied here
+  into the font view (if you wish to have the same position information available
+  in a large block of glyphs). -->
+  <CODE>[削除(<U>D</U>)]</CODE> および <CODE>[編集(<U>E</U>)...]</CODE> ボタンはその名の通りの操作を行います。<CODE>[コピー(<U>C</U>)]</CODE> および <CODE>[貼り付け(<U>P</U>)]</CODE> も予想通りにふるまいます。ここで何かをコピーしてから、それをフォントビューへ貼りつけることもできます (同じ位置情報を、大きなグリフのブロックに適用したい場合に使えます)。
+  <P>
+<!--
+  The <A NAME="pairwise">pairwise</A> positioning sub-dialog allows you to
+  change the positions of two glyphs when they occur next to one another. The
+  most common example of that is kerning (which is better done elsewhere, the
+  metricsview for example, but it can be done here if you really want to do
+  that).<BR Clear=Right> -->
+  <A NAME="pairwise">ペア単位</A>の位置指定サブダイアログでは、2 個のグリフが決まった順番で表れたときの位置を変更することができます。最も一般的な例はカーニングです (もっと変更しやすい方法が、例えばメトリックビューなどでありますが、それを本当にやりたい場合はここで行うこともできます。<BR Clear=Right>
+  <P>
+  <IMG src="../../_images/charinfo-subs.png" WIDTH="305" HEIGHT="400" ALIGN="Right"><!-- A simple
+  <A NAME="substitution">substitution</A> replaces one glyph with another.
+  Here the glyph "one" has a substitution to "onesuperior" when the 'sups'
+  (Superscript) feature is invoked. -->
+  単純<A NAME="substitution">置換</A> (<CODE>[置換]</CODE>) は 1 個のグリフを他のグリフと置き換えます。ここではグリフ“one”に、&lsquo;sups&rsquo;(上つき文字) 機能が起動されたときに“onesuperior”になる置換が設定されています。
+  <P>
+<!--
+  FontForge recognizes a special feature tag ' RQD' to indicate that this feature
+  is required for the given script/language. Such a feature will always be
+  applied. -->
+  FontForge は、その機能があるスクリプト/言語で必須であることを示すための特別な機能タグ&lsquo; RQD&rsquo;を認識します。このような機能は常に適用されます。
+  <P>
+<!--
+  You can generate a substitution most easily by dragging a glyph from the
+  font view and dropping it here (you will then be
+  <A HREF="#Feature-Tag">prompted for a feature tag</A> for the substitution
+  table. -->
+  置換を作成する最も簡単な方法は、フォントビューからグリフをドラッグしてここでドロップすることです (その時、その置換テーブルの<A HREF="#Feature-Tag">機能タグを入力するように促されます</A>。
+  <P>
+<!--
+  The <A NAME="multiple">multiple</A> and alternate substitution sub-dialogs
+  are very similar to this one except that they can take multiple glyph names.
+  In a multiple substitution sub table each glyph is replaced by several other
+  glyphs (sort of the reverse of a ligature), while in the alternate substitution
+  sub-dialog each glyph is to be replaced by exactly one glyph from a list
+  and the user is to be given a choice as to which glyph is to be chosen. -->
+  [<CODE><A NAME="multiple">複数</A>の置換先</CODE>] および <CODE>[選択型置換]</CODE> サブダイアログもそれと似ていますが、これらは複数のグリフ名をとることができる点が異なります。<CODE>[複数の置換先]</CODE> サブテーブルでは各グリフはいくつかの他のグリフによって置き換えられ (ある意味、合字の反対です)、<CODE>[選択型の置換]</CODE> サブダイアログでは、各グリフはリスト内に含まれるちょうど 1 個の文字によって置き換えられ、どのグリフを使うかについてはユーザが選ぶことができます。
+  <BR Clear=Right>
+  <P>
+  <IMG src="../../_images/charinfo-lig.png" WIDTH="305" HEIGHT="400" ALIGN="Right"><!-- The
+  <A NAME="ligature">ligature</A> field allows you to tell FontForge that the
+  current glyph is a ligature composed of several other glyphs. FontForge will
+  often be able to fill this in with the right default value, but occasionally
+  you may want to change it. The value should be a list of postscript glyph
+  names separated by spaces. If a glyph may be viewed as two different ligatures
+  then they may both be specified in different lines. For example "ffi" may
+  be viewed as a ligature of "f" "f" and "i" or of "ff" and "i". -->
+  <CODE>[<A NAME="ligature">合字</A>]</CODE> フィールドでは、FontForge が現在のグリフがいくつかの他のグリフから合成されたグリフであることを FontForge に知らせることができます。FontForge はこのとき右側のデフォルトグリフを補完することがしばしばうまくできますが、時には変更してやる必要が生じます。この値は、空白で区切られた PostScript グリフ名のリストでなければなりません。あるグリフが 2 つの異なる合字であると見なされるときには、それらを両方とも、別々の行に指定しなければなりません。例えば“ffi”は“f”“f”および“i”の合字と見ることもできますし、“ff”と“i”の合字とも見なせます。
+  <P>
+<!--
+  In the example at right the "m" glyph is one of a set of flags stored in
+  the GSUB table. It indicates that combining marks should be ignored when
+  looking for the ligature. -->
+  右の例では文字“m” は GSUB テーブルに格納されたフラグのセットの 1 つです。これは、合字を検索するときには結合マークを無視する必要があることを表します。
+  <P>
+<!--
+  The <A HREF="gposgsub.html">GPOS and GSUB</A> tables allow further refinements
+  of ligatures. You may classify a ligature as: Standard, Required, Discretionary,
+  Historic or Fraction. Required ligatures must be replaced, Standard ligatures
+  should be, Discretionary ones may be, and Historic ones should only be used
+  int appropriate circumstances. The pull down list on the Tag field allows
+  you to pick what type of ligature this should be. <BR Clear=Right> -->
+  <A HREF="gposgsub.html">GPOS および GSUB</A> テーブルでは、合字の更なる改良が可能です。合字は、標準・必須・任意・歴史的または分数のいずれかに分類することができます。必須の合字は常に置き換えられなければならず、標準合字は置き換えるべき物で、任意使用の合字は置き換えてもよいもので、歴史的合字は適切な状況でのみ用いるべきものです。タグフィールドのプルダウンリストでは、この合字がどのタイプであるかを選択することができます。<BR Clear=Right>
+  <P>
+  <IMG src="../../_images/charinfo-counters.png" WIDTH="307" HEIGHT="409" ALIGN="Right">
+<!--
+  In complicated Asian glyphs, postscript has a mechanism for controlling the
+  width of <A NAME="CounterMasks">counters</A> between stems. These are called
+  counter mask
+  hints<IMG src="../../_images/newcountermask.png" WIDTH="282" HEIGHT="392" ALIGN="Left">.
+  In Latin, Cyrillic, Greek fonts only glyphs like "m" are allowed to have
+  counter masks, and only in very controlled conditions. See the description
+  of <A HREF="hinting.html#Counter">counter masks</A>.<BR CLEAR=ALL> -->
+  アジアの複雑なグリフでは、PostScript はステムの間の<A NAME="CounterMasks">カウンタ</A>を制御するメカニズムを提供しています。それらはカウンタマスクヒントと呼ばれます。<IMG src="../../_images/newcountermask.png" WIDTH="282" HEIGHT="392" ALIGN="Left">
+  ラテン文字・キリル文字・ギリシャ文字のフォントではカウンタマスクを使用することができる文字は“m”など、非常に限られており、使用できる状況も非常に限られています。<A HREF="hinting.html#Counter">カウンタマスク</A>に関する説明を参照してください。<BR CLEAR=ALL>
+  <P>
+  <IMG src="../../_images/charinfo-counters.png" WIDTH="305" HEIGHT="400" ALIGN="Right">
+<!--
+  Some <A NAME="components">glyphs</A> (ligatures, accented glyphs, Hangul
+  syllables, etc.) are built up out of other glyphs (at least according to
+  unicode). This pane of the dlg shows the components that Unicode says make
+  up the current glyph, if those components are in the font then you can use
+  FontForge's <KBD>Element-&gt;Build-&gt;Build Accented </KBD>or
+  <KBD>Element-&gt;Build-&gt;Build Composite</KBD> commands to create the current
+  glyph. The information displayed here is informative only, you may not change
+  this field directly (it changes when you change the unicode value or glyph
+  name associated with this glyph).<BR CLEAR=ALL>
+  -->
+  いくつかの<A NAME="components">グリフ</A> (合字、アクセントつきグリフ、ハングル音節文字など) は他のグリフから構築されています (少なくとも Unicode に関して言えば)。ダイアログのこのタブでは、Unicode で現在のグリフを構成することとなる要素を表示します。それらの構成要素がフォントに含まれていれば、FontForge の <CODE>エレメント(<U>L</U>)</CODE>→<CODE>組み立て(<U>U</U>)</CODE>→<CODE>アクセントつきグリフを構築(<U>B</U>)</CODE> コマンドか <CODE>エレメント(<U>L</U>)</CODE>→<CODE>組み立て(<U>U</U>)</CODE>→<CODE>複合グリフを構築(<U>C</U>)</CODE> コマンド を使用して現在のグリフを作成することができます。ここで表示される情報は通知目的のためだけであり、このフィールドを直接変更することは許されていません (これは、そのグリフに割り当てられている Unicode 値またはグリフ名を変更したときに自動的に変更されます)。<BR CLEAR=ALL>
+  <P>
+<!--
+  The Next and Prev buttons allow you to move from one glyph to the next (if,
+  for example, you need to enter encodings for a range of glyphs). -->
+  <CODE>[次(<U>N</U>) &gt;]</CODE> および <CODE>[&lt; 前(<U>P</U>)]</CODE> ボタンでは、現在のグリフの前後のグリフに移動することができます (例えば、あるグリフの範囲にエンコーディングを指定したい場合)。
+  <P>
+<!--
+  The Done (or Cancel) button only Cancels work in the current glyph. If you
+  have already used Next or Prev then those earlier changes will not be
+  cancelled.<BR Clear=Right> -->
+  <CODE>[完了(<U>D</U>)]</CODE> (または <CODE>[キャンセル(<U>C</U>)])</CODE> ボタンは、現在のグリフでの作業のみを取り消します。もし <CODE>[次(<U>N</U>) &gt;]</CODE> または <CODE>[&lt; 前(<U>P</U>)]</CODE> ボタンを既に押していたならば、以前に行った変更はキャンセルされません。<BR Clear=Right>
+    <HR>
+  <H3>
+<!--  <A NAME="Feature-Tag">Feature Tag Dialog</A>-->
+      <A NAME="Feature-Tag">機能タグダイアログ</A>
+  </H3>
+  <TABLE ALIGN=Right>
+    <TR>
+      <TD><IMG src="../../_images/feature-tag-sub.png" WIDTH="226" HEIGHT="399" ALIGN="Top">
+	<IMG src="../../_images/feature-tag-pos.png" WIDTH="226" HEIGHT="489" ALIGN="Top"></TD>
+    </TR>
+  </TABLE>
+  <P>
+<!--
+  These two dialogs allow you to specify an otf feature tag and all the other
+  impedimenta that go along with it. They are used by
+  <A HREF="charinfo.html#Character">Glyph Info</A> (above) to specify
+  substitutions, positions, and ligatures, as well as by
+  <A HREF="fontinfo.html#Anchors">Font Info</A> to specify anchor classes and
+  contextual features. -->
+  これらの 2 つのダイアログでは、OTF の機能タグと、それに伴うその他のすべての付属情報を指定することができます。それらは (上記) <A HREF="charinfo.html#Character">グリフ情報</A>で置換・位置および合字を指定するのに用いられるだけでなく、<A HREF="fontinfo.html#Anchors">フォント情報</A>でアンカークラスや文脈依存の機能を指定するのにも用いられます。
+  <P>
+<!--
+  You must either specify an opentype feature tag (a four glyph tag like 'liga'
+  - - these are defined by
+  <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag3.html">Microsoft
+  &amp; Adobe</A>, see the section on <A HREF="gposgsub.html">GPOS and GSUB</A>
+  for more information), or an apple feature/setting value (Something like
+  &lt;2,2&gt; where the first number is the feature and the second the setting
+  for that feature). These features tell the opentype (or ATSUI) engine what
+  this substitution is supposed to do. -->
+  ここでは、OpenType の機能タグ (&lsquo;liga&rsquo;のような 4 文字のタグ——これらは。<A HREF="http://partners.adobe.com/public/developer/opentype/index_tag3.html">Microsoft と Adobe</A>によって定義されています。より詳しい情報については<A HREF="gposgsub.html">GPOS と GSUB</A> に関するセクションを参照してください) か、Apple の機能/設定値 (例えば &lt;2,2&gt; のような形で、ここで最初の数値が機能を表し、2 番目がその機能の設定を表します) のどちらかを指定する必要があります。これらの機能は OpenType (または ATSUI) エンジンに、どの置換を行うことを想定しているかを教えます。
+  <P>
+<!--
+  <FONT COLOR="Red"><STRONG><BIG>CAVEAT: </BIG></STRONG></FONT>OpenType engines
+  will only apply features which they believe are appropriate for the current
+  script (in Latin scripts, Uniscribe will apply 'ccmp' and 'liga' (character
+  composition/decomposition and ligature) features but will not apply 'medi'
+  (substitution with a medial glyph variant) features because Latin doesn't
+  need such a feature -- at least so they claim). Even worse, some applications
+  may choose not to apply any features ever (Word does not do ligatures in
+  latin).
+  <A HREF="http://www.microsoft.com/typography/specs/default.htm">Microsoft
+  tries to document </A>what features they apply for which scripts in Uniscribe,
+  but that isn't very helpful since Word and Office have quite different behavior
+  than the default. -->
+  <FONT COLOR="Red"><STRONG><BIG>警告: </BIG></STRONG></FONT>OpenType エンジンは、現在の用字系において適正であると判断した時にかぎり、機能を適用します (ラテン文字では、Uniscribe は&lsquo;ccmp&rsquo;および&lsquo;liga&rsquo;(文字合成/分解および合字) 機能を適用しますが、&lsquo;medi&rsquo;(語中形の異体字への置換) は適用しません。なぜなら、ラテン文字にはそのような機能は不要である——少なくとも彼らはそう考えている——からです)。さらに悪いことに、いくつかのアプリケーションはおそらく一切の機能を適用しないことを選んでいます (Word はラテン文字の合字処理を行いません)。
+  Microsoft は、Uniscribe においてどのスクリプトにどの機能を適用するかを<A HREF="http://www.microsoft.com/typography/specs/default.htm">文書化しようとしています</A>が、Word および Office はデフォルトと全く異なる振舞いをするため、これはほとんど参考になりません。
+  <P>
+<!--
+  In <A NAME="lookup-flags">addition</A> you must specify a set of
+  <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats.html">flags</A>
+  which control the behavior of the feature. If your feature is to be used
+  in right to left text then select that flag. If your feature is to be used
+  to combine glyphs even if there are intervening mark glyphs (accents and
+  such) then select Ignore Combining Marks. If you are creating an Indic font
+  then you will probably need to create mark classes (with
+  <A HREF="fontinfo.html#MarkClass">Element-&gt;Font Info-&gt;Mark Classes</A>)
+  which will be used with the Process Marks option to specify indic rearrangement. -->
+  それに<A NAME="lookup-flags">加えて</A>、機能のふるまいを制御するための一組の<A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats.html">フラグ</A>を指定する必要があります。その機能が右から左に書くテキストで使用される場合、「右から左へ」フラグを指定してください。もし、(アクセントの類の) マークグリフが中間に入るならば「結合型マークを無視する」を選択してください。インド系文字のフォントを作成している場合、おそらく (<A HREF="fontinfo.html#MarkClass"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[マーククラス]</CODE></A> で) マーククラスを作成し、インド系の再配置を指定するために「<CODE>マークを処理</CODE>」オプションを有効にしてそれを使用する必要があるでしょう。
+  <P>
+<!--
+  And a collection of scripts and languages for which the substitution will
+  be active. In the example above the substitution is active for the greek
+  script and the default language (which here means all languages as none have
+  been singled out for special treatment), the cyrillic script and the default
+  language, and the latin script and several languages. -->
+  それと、置換が有効になる用字系・言語の集まりがあります。上に示す例では、置換はギリシャ文字とデフォルト言語 (これは、特別な扱いをするように選ばれていないすべての言語を意味します)、キリル文字とデフォルト言語、そしてラテン文字といくつかの言語の組合せで有効になっています。
+  <P>
+  <IMG src="../../_images/scriptlist-pulldown.png" WIDTH="243" HEIGHT="118">
+  <P>
+<!--
+  Clicking on the pulldown list produces a list of choices that are currently
+  used in the font. The last choice allows you to change or add to this list. -->
+  プルダウンリストをクリックすると、現在フォントで使用されている選択肢のリストが表れます。最後の選択肢を選ぶと、このリストの変更や追加が行えます。
+  <P>
+<!--
+  Most of the time you will want to specify that your item should be active
+  in just one script but in all languages of that script. For instance the
+  "fl" ligature should probably always be applied in the latin script, no matter
+  what the language is (except Turkish where ligatures should be explicitly
+  disabled), however there is no point in having it active for cyrillic users
+  as they will never see that combination of glyphs. On the other hand the
+  es-zet ligature (German double-s, &szlig;) has fallen by the wayside in all
+  (I think) languages but German so that ligature should only be active for
+  the latin script, german language. -->
+  ほとんどの場合、あなたが作成した項目が有効になるのは 1 個の用字系だけで、ただしその用字系を使用するすべての言語に指定したいと思うはずです。例えば“fl”合字は、言語が何であれラテン文字ではおそらく常に有効にするべきでしょう (ただし、トルコ語だけは別で、合字を明示的に禁止する必要があるでしょう)。しかしながらキリル文字の利用者はこの文字の組合せに出会うことがまったくないので、有効にしても意味がありません。その一方、エスツェット合字 (ドイツ語の二重 s, &szlig;) はドイツ語以外のすべての言語に含まれていない (と思います) ので、合字はラテンスクリプトのドイツ語のみで有効とするべきでしょう。
+  <P>
+<!--
+  And there are some glyphs that don't fall into one single script. The same
+  digits are used for latin, cyrillic, greek, hebrew, (sometimes arabic) and
+  many other script systems, so any ligatures of the digits (such as fractions)
+  should be available in all script systems. -->
+  また、単独のスクリプトに限定されれないグリフがいくつか存在します。同じ数字がラテン・キリル・ギリシャ・ヘブライ (ときにはアラビアも) およびその他多数の書字システムで使用されるため、すべての数字合字 (分数など) はすべての書字システムで利用可能にしておくべきです。
+  <P>
+<!--
+  The script names used by FontForge are those specified by
+  <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag1.html">Microsoft
+  and Adobe for opentype</A>. These are almost compatible with
+  <A HREF="http://www.evertype.com/standards/iso15924/document/dis15924.pdf">ISO
+  15924</A> except that all opentype scripts are in lower case (while those
+  in ISO 15924 all start with capital letters) and short script names (such
+  as "Lao") are converted to 'lao ' rather than 'Laoo'. I have extended the
+  set of opentype scripts with many of those in ISO 15924 by making them all
+  lower case (I have not used everything from ISO 15924 because it contains
+  script variants for things which I consider to be one script (eg. fraktur
+  has a separate script tag, but I consider it to be latin). -->
+  FontForgeが使用する用字系の名称は、<A HREF="http://partners.adobe.com/public/developer/opentype/index_tag1.html">Microsoft と Adobe が OpenType のために</a>規定したものです。これらは <A HREF="http://www.evertype.com/standards/iso15924/document/dis15924.pdf">ISO 15924</A> とほとんど互換ですが、OpenType では用字系の名前はすべて小文字になっている (それに対し、ISO 15924 では先頭文字はすべて大文字です) ことと、短い用字系の名前 (例えば“Lao”) が&lsquo;Laoo&rsquo;ではなく&lsquo;lao &rsquo;になっていることです。私は、ISO 15924 で規定された名前を小文字に変換することにより、OpenType の用字系セットを大幅に拡張しました。(ISO 15924 には私から見て 1 個のスクリプトの変種としか思われないものを含んでいるため、すべてを取り込んだわけではありません (例えば、フラクトゥールは独立した用字系タグをもっていますが、私はラテン文字にすぎないと思います))。
+  <H3>
+<!--  <A NAME="ScriptLang">The Script Language Dialog</A>-->
+      <A NAME="ScriptLang">用字系・言語ダイアログ</A>
+  </H3>
+  <P>
+  <IMG src="../../_images/scriptlist.png" WIDTH="296" HEIGHT="205" ALIGN="Left"><!--This dialog
+  shows all the script and language combinations which are in use in the current
+  font. You may add a new combination or change an old one by pressing the
+  obvious buttons. -->
+  このダイアログは、現在のフォントで使用されているすべての用字系と言語の組合せを表示します。ボタンを押して、新しい組合せを追加したり既存の組合せを変更したりすることができます。
+  <P>
+<!--
+  If you want to specify a script or language that FontForge doesn't know about,
+  then hold the control key down when pressing the [New...] or [Edit] buttons
+  and you will get an unparsed dlg which will allow you to enter whatever you
+  like (OpenType does not give a tag for the default language (it is has a
+  special representation which does not involve tags), but for the sake of
+  consistency I have assigned it the tag of 'dflt'. No 'dflt' tags will appear
+  in the output font, instead they will be converted to the appropriate
+  representation for the default language). -->
+  FontForge が知らない用字系または言語を指定したい場合は、<CODE>[新規(<U>N</U>)...]</CODE> または <CODE>[編集(<U>E</U>)]</CODE> ボタンを押す前に Control キーを押下してください。何でも自由に入力できる解析されないダイアログが表れます。(OpenType にはデフォルト言語を表すタグはありません (それはタグには関係ない特別なデータ表現をもっています) が、一貫性を保つために、タグ&lsquo;dflt&rsquo;が割り当てられています。&lsquo;dflt&rsquo;タグは出力フォントには表れず、その代りにそれらはデフォルト言語の適切な表現に変換されます)。
+  <P>
+<!--
+  The language names used by FontForge are those specified by
+  <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag2.html">Microsoft
+  and Adobe for opentype</A>.-->
+  FontForge で使用される言語名は、<A HREF="http://partners.adobe.com/public/developer/opentype/index_tag2.html">Microsoft と Adobe により OpenType のために</A>規定されたものです。
+  <P>
+<!--
+  Note: In most cases the order of scripts in the list is irrelevant, but kerning
+  uses the initial script to determine the direction of the kern pair. So if
+  you have kerning on the digits, and want those to be active in both latin
+  and hebrew, you must use the unparsed dlg which allows you to order the scripts
+  yourself (or add a greek, or cyrillic script to the list (something that
+  comes before hebrew in alphabetic order and is left to right)).<BR CLEAR=ALL> -->
+  注意: ほとんどの場合、リスト内の用字系の順番には意味がありませんが、カーニングの場合は、カーニングペアの方向を決定するのに最初の文字の用字系を使用します。そのため、数字にカーニングを設定して、それをラテン文字とヘブライ文字の両方で有効にしたい場合は、用字系の出現順を自分で決めることができる、解析されないダイアログを使用する (かまたは、ギリシャ文字かキリル文字 (アルファベット順で&lsquo;hebrew&rsquo;より先に来る、左から右に表記する何らかの用字系) をリストに追加する) 必要があります。
+  <H3>
+<!--  <A NAME="Script"><IMG SRC="scriptsdlg.png" WIDTH="152" HEIGHT="215" ALIGN="Right">The
+    Script Dialog</A> -->
+    <A NAME="Script"><IMG src="../../_images/scriptsdlg.png" WIDTH="152" HEIGHT="215" ALIGN="Right">用字系ダイアログ</A>
+  </H3>
+  <P>
+<!--
+  This dialog shows all the scripts currently activated in this script-language
+  collection. If you want to add a new script to the collection hold the control
+  key down while clicking on the script. New scripts are added with the "default"
+  language selected. If you want finer control over languages (ie. want to
+  specify a language other than default) then double click on a script and
+  you will get a dialog of languages. -->
+  このダイアログは、この用字系-言語集合において現在有効になっているすべての用字系を一覧表示します。集合に新しい用字系を追加したい場合、Control キーを押しながら用字系の名前をクリックしてください。新しい用字系は“デフォルト”言語との組合せで選択されます。言語に対するより詳細な制御を行いたい場合 (例えば、デフォルト以外の言語を指定したい場合)、用字系の名前の上でダブルクリックすれば言語ダイアログが表示されます。
+  <H3>
+    <IMG src="../../_images/langdlg.png" WIDTH="152" HEIGHT="215" ALIGN="Left"><!--The
+    <A NAME="Language">Language</A> Dialog -->
+    <A NAME="Language">言語</A>ダイアログ
+  </H3>
+  <P>
+<!--
+  This shows all languages active in the current script in the current
+  script-language collection. Some languages are not meaningful in a given
+  script (but I don't know enough to know which to remove so I include all
+  possible languages and apologize for extraneous information). Use the control
+  key to select multiple languages. At least one language must be
+  specified.<BR CLEAR=ALL> -->
+  これは、現在の用字系/言語集合に含まれる編集中の用字系で有効なすべての言語を表示します。いくつかの言語は指定されたスクリプトでは意味がないでしょう (しかし、どれを削除すればよいか私には分からないので、すべての言語を含めることにしています。余分な情報があることにお詫びします)。複数の言語を選択するには Control キーを使用してください。少なくとも 1 個の言語を指定しなければなりません。<BR CLEAR=ALL>
+  <P>
+<!--
+  See Also:-->
+  参照:
+  <UL>
+    <LI>
+<!--  <A HREF="fontinfo.html">The font info dialog</A>-->
+      <A HREF="fontinfo.html">フォント情報ダイアログ</A>
+    <LI>
+<!--  <A HREF="getinfo.html">The get info dialogs</A>-->
+      <A HREF="getinfo.html">情報を得るダイアログ</A>
+  </UL>
+  <P ALIGN=Center>
+  — <A HREF="elementmenu.html">前</A> — <A HREF="overview.html">目次</A>
+  — <A HREF="elementmenu.html">次</A> —
+</DIV>
+</BODY></HTML>

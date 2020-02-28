@@ -46,7 +46,7 @@ addons:
     packages: [autoconf, automake, autotools-dev, bzip2, gcc-8, g++-8, libtool,
       libjpeg-dev, libtiff5-dev, libpng12-dev, libfreetype6-dev, libgif-dev,
       libx11-dev, libgtk-3-dev, libxml2-dev, libpango1.0-dev, libcairo2-dev, python3.7-dev,
-      libbrotli-dev, ninja-build, cmake, lcov]
+      libbrotli-dev, ninja-build, cmake, lcov, python3.7-venv]
   coverity_scan:
     project:
       name: "fontforge/fontforge"
@@ -76,7 +76,7 @@ install:
     export FFCONFIG="-DCMAKE_INSTALL_PREFIX=$PREFIX -DENABLE_FONTFORGE_EXTRAS=ON"
 
     if [ ! -z "$LINUX_FULL" ] ; then
-      export FFCONFIG="$FFCONFIG -DENABLE_X11=ON -DENABLE_CODE_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug"
+      export FFCONFIG="$FFCONFIG -DENABLE_X11=ON -DENABLE_CODE_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug -DENABLE_DOCS=ON -DSPHINX_USE_VENV=ON"
     elif [ ! -z "$LINUX_NOX" ]; then
       export FFCONFIG="$FFCONFIG -DENABLE_GUI=OFF -DENABLE_PYTHON_SCRIPTING=OFF"
     fi

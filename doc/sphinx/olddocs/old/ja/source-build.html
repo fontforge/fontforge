@@ -1,0 +1,758 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 26-Oct-2005 -->
+  <!-- AP: Last modified: 12-May-2006 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>Building FontForge from source</TITLE>-->
+    <TITLE>ソースから FontForge を構築する方法</TITLE>
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+<!--FontForge build procedures-->
+    FontForge の構築手順
+  </H1>
+  <UL>
+    <LI>
+<!--  <A HREF="nix-install.html#Installing">Installing from a pre-built unix
+      package</A> -->
+      <A HREF="nix-install.html#Installing">Unix 用構築済みパッケージからのインストール方法</A>
+    <LI>
+<!--  <A HREF="mac-install.html#Installing">Installing on a Mac</A>-->
+      <A HREF="mac-install.html#Installing">Mac へのインストール方法</A>
+    <LI>
+<!--  <A HREF="ms-install.html#Installing">Installing on MS/Windows</A>-->
+      <A HREF="ms-install.html#Installing">MS-Windows へのインストール方法</A>
+    <LI>
+<!--  <A HREF="#src-mac">Before you build (on a mac)</A>-->
+      <A HREF="#src-mac">(Mac 上で) ソースを構築する前の準備</A>
+    <LI>
+<!--  <A HREF="#src-MS">Before you build (on MS/Windows)</A>-->
+      <A HREF="#src-MS">(Windows 上で) ソースを構築する前の準備</A>
+    <LI>
+<!--  <A HREF="#src-source">Building and installing from source</A>-->
+      <A HREF="#src-source">ソースからの構築とインストール</A>
+      <UL>
+	<LI>
+<!--	  <A HREF="#src-distribution">Obtaining a source distribution</A> -->
+	  <A HREF="#src-distribution">ソース配布物の入手方法</A>
+	  <UL>
+	    <LI>
+	      <A HREF="#src-tarball">tarball</A>
+	    <LI>
+<!--	      <A HREF="#src-cvs">from the cvs tree</A> -->
+	      <A HREF="#src-cvs">cvs ツリーから</A>
+	  </UL>
+	<LI>
+<!--	  <A HREF="#src-Building">Building &amp; installing it</A> -->
+	  <A HREF="#src-Building">ソースからの構築・インストール手順</A>
+	<LI>
+<!--	  <A HREF="#src-installs">More complicated installs</A> -->
+	  <A HREF="#src-installs">より複雑なインストール</A>
+      </UL>
+    <LI>
+<!--  <A HREF="#Dependencies">Dependencies (external libraries/helper programs)</A> -->
+      <A HREF="#Dependencies">依存性 (外部ライブラリ/補助プログラム)</A>
+    <LI>
+<!--  <A HREF="#suggested-fonts">Suggested fonts</A>-->
+      <A HREF="#suggested-fonts">おすすめのフォント</A>
+    <LI>
+<!--  <A HREF="#Documentation">Installing documentation</A>-->
+      <A HREF="#Documentation">文書のインストール方法</A>
+      <UL>
+	<LI>
+<!--	  <A HREF="#doc-tar">Installing a documentation tarball</A> -->
+	  <A HREF="#doc-tar">文書を含む tarball のインストール手順</A>
+      </UL>
+    <LI>
+<!--  <A HREF="running.html">Running FontForge</A>-->
+      <A HREF="running.html">FontForge の起動方法</A>
+    <LI>
+<!--  <A HREF="uninstall.html">削除方法</A> -->
+      <A HREF="uninstall.html">Uninstalling</A>
+  </UL>
+  <H2>
+<!--Before you build (on a <A NAME="src-mac">mac</A>)-->
+    (<A NAME="src-mac">Mac</A> 上で) ソースを構築する前の準備
+  </H2>
+  <P>
+<!--
+  You must insure that you have the both the X11 server and the Xcode toolchain
+  installed on your system. This process is slightly different on OS/X 10.3
+  &amp; 10.4 -->
+  まず最初に、X11 サーバと Xcode ツールチェーンを両方とも間違いなくインストールしておく必要があります。この手順は OS X 10.3 と 10.4 とでわずかに異なります。
+  <DL>
+    <DT>
+      10.4
+    <DD>
+      <UL>
+	<LI>
+<!--	  Open the Install DVD that came with your system. -->
+	  システムに付属するインストール DVD を開きます。
+	<LI>
+<!--	  Scroll down to "Optional Installs" and open it. -->
+	  画面を下にスクロールして「追加インストール」を探し、それを開きます。
+	<LI>
+<!--	  Keep clicking <CODE>Continue</CODE> until you get to the pane "Custom Install
+	  on "Macintosh HD"" -->
+	  "Macintosh HD"の「カスタムインストール」画面が現れるまでクリックし続けます。
+	<LI>
+<!--	  Press the arrow beside "Applications" so you get a list of them. -->
+	  「アプリケーション」の横の矢印を押すと、内容一覧が表示されます。
+	<LI>
+<!--	  Select X11 -->
+	  X11 を選びます
+	<LI>
+<!--	  Keep pressing <CODE>Continue</CODE> -->
+	  <CODE>(続ける)</CODE> を押し続けます
+	    <HR>
+	<LI>
+<!--	  The Xcode toolchain is optional software on the install DVD. Simply insert
+	  the disk and click on the XCode install icon. -->
+	  Xcode ツールチェーンはインストール DVD のオプションインストール可能なソフトウェアに含まれています。ディスクを挿入して、XCode のインストールアイコンをクリックしてください。
+      </UL>
+    <DT>
+      10.3
+    <DD>
+      <UL>
+	<LI>
+<!--	  The X server lives in a package called X11User on the third install CD. -->
+	  X サーバは 3 枚目のインストール CD の X11User というパッケージに含まれています。
+	<LI>
+<!--	  You must also install the X11SDK package on the XCode CD -->
+	  XCode CD 上の X11SDK パッケージをインストールすることもできます。
+	<LI>
+<!--	  And you must install the XCode tools themselves. -->
+	  この場合、XCode は自分でインストールする必要があります。
+      </UL>
+  </DL>
+  <P>
+<!--
+  You may also want to install the
+  <A HREF="http://fink.sourceforge.net/">fink</A> package which includes many
+  useful libraries (see the <A HREF="#Dependencies">dependencies</A> section
+  below for more info on this) -->
+  よろしければ、多数の有用なライブラリを含む <A HREF="http://fink.sourceforge.net/">fink</A> パッケージをインストールしてください (これに関するより詳しい情報は 後述の<A HREF="#Dependencies">依存性</A> セクションを参照してください)。
+  <P>
+<!--
+  You must then start up a Terminal window (the Terminal Application also lives
+  in the Utilities sub-folder of the Applications folder) and be prepared to
+  type commands in that window (I know, it's very un-mac-like). -->
+  次に、コマンドを入力するために Terminal のウィンドウを起動する必要があります (Terminal アプリケーションも、Applications フォルダの Utilities サブフォルダにあります)。(とても Mac らしくない行為ですが)。
+  <H2>
+<!--Before you build (on <A NAME="src-MS">MS/Windows)</A>-->
+    <A NAME="src-MS">MS-Windows 上で) 構築する前の準備
+  </H2>
+  <P>
+<!--
+  You must download the <A HREF="http://www.cygwin.com/">cygwin</A> environment.
+  You will need -->
+  <A HREF="http://www.cygwin.com/">cygwin</A> 環境をダウンロードする必要があります。おそらく必要なのは:
+  <UL>
+    <LI>
+<!--  the basic cygwin packages -->
+      基本的な cygwin パッケージ群
+    <LI>
+<!--  the X11 package -->
+      X11 パッケージ
+    <LI>
+<!--  the xterm package-->
+      xterm パッケージ
+    <LI>
+<!--  the package containing gcc, make (probably called c compiler development
+      or something) -->
+      gcc, make を含むパッケージ (おそらく“c compiler development”というような名前であるはずです)
+    <LI>
+<!--  You may want to download some additional optional packages to provide support
+      for various image formats (See the <A HREF="#Dependencies">Dependencies</A>
+      section below). -->
+      各種の画像フォーマットのサポートを提供するためのオプションで追加可能なパッケージをいくつかダウンロードしたいと思うことでしょう (下記の<A HREF="#Dependencies">依存性</A>セクションを参照してください)。
+  </UL>
+  <P>
+<!--
+  <FONT COLOR="Red"><STRONG>Caveat: </STRONG></FONT>cygwin has a different
+  approach to the file system than Windows. A filename like
+  <CODE>C:\windows\fonts\arial.ttf </CODE>will be called
+  <CODE>/cygdrive/c/windows/fonts/arial.ttf </CODE>under cygwin (backslashes
+  are replaced by slashes, and the initial drive "<CODE>C:</CODE>" becomes
+  "<CODE>/cygdrive/c</CODE>"-->
+  <FONT COLOR="Red"><STRONG>警告: </STRONG></FONT>cygwin は Windows と異なるファイルシステムへのアプローチをとっています。<CODE>C:\windows\fonts\arial.ttf</CODE> のようなファイル名は cygwin では <CODE>/cygdrive/c/windows/fonts/arial.ttf </CODE> という名前が付けられます (バックスラッシュはスラッシュに置き換えられ、先頭のドライブ名“<CODE>C:</CODE>”は“<CODE>/cygdrive/c</CODE>”に置き換えられます。
+  <P>
+<!--
+  Having done that you should now be ready to build. Open a cygwin terminal
+  window and be prepared to type commands in it. -->
+  それが終ったら構築のための用意はすべて整いました。cygwin の端末ウィンドウを開けば、コマンドを入力する準備ができています。
+  <H2>
+<!--Building and installing from <A NAME="src-source">source</A>-->
+    <A NAME="src-source">ソース</A>からの構築・インストール方法
+  </H2>
+  <H3>
+<!--Obtaining a source <A NAME="src-distribution">distribution</A>-->
+    ソース<A NAME="src-distribution">配布物</A>の入手方法
+  </H3>
+  <P>
+<!--
+  There are two basic ways to obtain a source distribution. One is by downloading
+  an entire source tree from the web, and the other is by using the cvs utility
+  to maintain a source tree on your machine which will be as up to date as
+  possible. The former solution provides more stability, the latter provides
+  access to cutting edge bugs. -->
+  ソース配布物を入手するには基本的に 2 つの方法があります。1 つは、Web から完全なソースツリーをダウンロードする方法で、もう 1 つは、あなたのマシンにあるソースツリーできるだけ最新のものに保守するための CVS ユーティリティを使う方法です。後者の方法を使えば、手の切れるような真新しいバグを体験できます。
+  <H4>
+    <A NAME="src-tarball">tarball</A>
+  </H4>
+  <P>
+<!--
+  <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=114328">Sourceforge's
+  file release system </A>will contain a tarball (a file with the extension
+  for .tar.bz2).<BR> -->
+  <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=114328">Sourceforge のファイルリリースシステム</A>に tarball (.tar.bz2 という拡張子をもつファイル) があります。<BR>
+<!--
+  Here is a direct link to a
+  <A HREF="fontforge_full-20060507.tar.bz2">tarball</A>, often more recent
+  (Version 7-May-2006)<BR> -->
+  より新しい版であることが多い <A HREF="http://fontforge.sourceforge.net/fontforge_full-20060822.tar.bz2">tarball</A> (2006年5月7日版) への直接リンクがここにあります。</BR>
+  <P>
+<!--
+  After you have downloaded one of these packages, either copy the tarball
+  to where you are, or move to the directory containing the tarball (I can't
+  provide explicit instructions here, because I don't know where your browser
+  put the file) and type (do not type "$"): -->
+  これらのパッケージのどれかをダウンロードしたら、tarball をカレントディレクトリに移動するか、tarball があるディレクトリに移動 (私はあなたのブラウザがどこにファイルをダウンロードするか知らないので、ここで明白な手順を説明することはできません) して、以下のようにタイプしてください (“$”はタイプしません)
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>bunzip2 fontforge*.tar.bz2
+<FONT COLOR="Gray">$ </FONT>tar xf fontforge*.tar
+<FONT COLOR="Gray">$ </FONT>cd fontforge-*
+</PRE>
+  </BLOCKQUOTE>
+  <H4>
+<!--from the <A NAME="src-cvs">cvs</A> tree-->
+    <A NAME="src-cvs">cvs</A> ツリーから
+  </H4>
+  <P>
+<!--
+  cvs is a nifty set of utilities which allows concurrent access to a source
+  tree by many users. To set up your own (local) copy of the cvs tree (including
+  documentation), create a new directory, cd into it and type the following
+  (do not type "$", when it asks for a password, just hit return): -->
+  cvs は、多くのユーザがソースツリーを同時並行的に編集することができる便利な一連のユーティリティです。(ローカルな) あなた自身の (文書を含む) CVS ツリーのコピーを得るには、以下のようにタイプします (“$”をタイプしてはいけません。パスワードを聞かれたら、Returen キーだけを押してください):
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@fontforge.cvs.sourceforge.net:/cvsroot/fontforge login
+CVS password:
+<FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@fontforge.cvs.sourceforge.net:/cvsroot/fontforge checkout fontforge
+<FONT COLOR="Gray">$ </FONT>cd fontforge
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  Once you have established a directory you may update it to obtain the most
+  recent version of the source by typing: -->
+  ディレクトリを一度作成したら、以下のようにタイプすれば最新のバージョンを得るための更新を行うことができます:
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>cd fontforge
+<FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@fontforge.cvs.sourceforge.net:/cvsroot/fontforge login
+CVS password:
+<FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@fontforge.cvs.sourceforge.net:/cvsroot/fontforge update
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  You can also
+  <A HREF="http://fontforge.cvs.sourceforge.net/fontforge/fontforge/">browse
+  the CVS tree</A> online. Or see
+  <A HREF="http://sourceforge.net/cvs/?group_id=103338">sourceforge's description
+  </A>for more information, or read the
+  <A HREF="http://www.cvshome.org/docs/manual/">CVS manual</A>. -->
+  それに加えて、<A HREF="http://fontforge.cvs.sourceforge.net/fontforge/fontforge/">CVS ツリーをオンラインで閲覧</A> することもできます。また、より詳しい情報については、<A HREF="http://sourceforge.net/cvs/?group_id=103338">sourceforge の解説</A>を参照するか、<A HREF="http://www.cvshome.org/docs/manual/">CVS のマニュアル</A>を参照してください。
+  <H3>
+<!--<A NAME="src-Building">Building</A> &amp; installing it-->
+    <A NAME="src-Building">構築</A>・インストールの手順
+  </H3>
+  <P>
+<!--
+  Now you have the source installed on your system and you should be positioned
+  at the top directory of that tree. You need to configure your package (this
+  is a little program that figures out how to use your system), and then build
+  it (do not type the "$"): -->
+  ここまでの手順で、ソースのシステムへのインストールは済んでおり、現在そのトップディレクトリにいるはずです。あなたは、configure (こ、システムをどのように使うかを指定するごく小さなプログラムです) を実行してパッケージの設定をしてから、プログラムを構築する必要があります (“$”はタイプしません):
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>./configure
+<FONT COLOR="Gray">$ </FONT>make
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  <A NAME="su">Having</A> done this you will probably want to install what
+  you have built. This should be done as root: -->
+  これが<A NAME="su">終ったら</A>おそらく、構築したものをインストールすることになるでしょう。これは root として行う必要があります:
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>su
+<FONT COLOR="Gray">password:</FONT> ******
+<FONT COLOR="Gray"># </FONT>make install
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  On the mac the process is slightly different: -->
+  Mac ではこの手順とは僅かに異なります:
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>sudo make install
+<FONT COLOR="Gray">password:</FONT> ******
+</PRE>
+  </BLOCKQUOTE>
+  <H3>
+<!--More complicated <A NAME="src-installs">installs</A>-->
+    より複雑な<A NAME="src-installs">インストール方法</A>
+  </H3>
+  <P>
+<!--
+  The configure script allows you to turn off and on various features of fontforge
+  that might not be appropriate for your system. Type -->
+  configure スクリプトを使って、あなたのシステムでは不要な各種の FontForge の機能をオフにすることができます。下記の説明より詳しいオプション一覧は
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>configure --help
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  for a complete list of options. Some of the most useful are described below. -->
+  で得ることができます。最も利用価値の高いものを以下にいくつか挙げます。
+  <H4>
+<!--Building fontforge without X-->
+    FontForge を X 抜きで構築するには
+  </H4>
+  <P>
+<!--
+  If you don't want to install X11 on your system, you can use fontforge as
+  a command line tool which can execute scripts to manipulate fonts. FontForge's
+  scripting language is described in detail <A HREF="scripting.html">in the
+  section on scripting.</A> -->
+  X11 をシステム上にインストールしたくない場合は、フォント操作用のスクリプトを実行できるコマンドラインツールとして FontForge を使用することができます。FontForge のスクリプト言語は<A HREF="scripting.html">スクリプト処理のセクション</A>に書かれています。
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>configure --without-x
+</PRE>
+  </BLOCKQUOTE>
+  <H4>
+<!--Building fontforge to edit type3 fonts-->
+    Type3 フォントが編集可能な FontForge を構築するには
+  </H4>
+  <P>
+<!--
+  If you do want to edit PostScript type3 fonts, you can configure fontforge
+  to give you access to more drawing modes than are generally available in
+  fonts. -->
+  PostScript Type3 フォントを編集したいならば、通常のフォントで使用可能な描画モードを超えるアクセスができるように FontForge を設定することによってそれができます。
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>configure --with-multilayer
+</PRE>
+  </BLOCKQUOTE>
+  <H4>
+<!--Building fontforge to edit device tables-->
+    デバイステーブルが編集可能な FontForge を構築するには
+  </H4>
+  <P>
+<!--
+  If you do want to create device tables (which allow you to fix up kerning
+  data at a specific pixel size) in OpenType fonts -->
+  OpenType フォントにデバイステーブル (これを使うと特定のピクセルサイズにおけるカーニングデータを補正できます) を作成したいならば、以下のようにします。
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>configure --with-devicetables
+</PRE>
+  </BLOCKQUOTE>
+  <H4>
+<!--Installing FontForge somewhere other than <CODE>/usr/local</CODE>-->
+    FontForge をどこか <CODE>/usr/local</CODE> 以外の所へインストールするには
+  </H4>
+  <P>
+<!--
+  If you want to install fontforge in a different directory (say in /usr/bin) -->
+  FontForge を通常と異なるディレクトリ (以下の例では /usr/bin) にインストールしたいときには:
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>configure --prefix=/usr
+</PRE>
+  </BLOCKQUOTE>
+  <H4>
+<!--Installing <A NAME="installing-documentation-cvs">documentation</A> from
+    the cvs tree -->
+    CVS ツリーからの<A NAME="installing-documentation-cvs">文書</A>のインストール方法
+  </H4>
+  <P>
+<!--
+  If you have a copy of the cvs tree on your system then you should be able
+  to type -->
+  システム上に CVS ツリーのコピーがあるときには、以下のようにタイプします。
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray"># </FONT>make install_docs
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  Again you will probably need to be root to do this install too. Use either
+  "su" or "sudo" as appropriate for your system (<A HREF="#su">see above</A>). -->
+  この場合にも、インストールを行うためには root になる必要があります。あなたのシステムに応じて“su”か“sudo”のどちらか適切なコマンドを使用してください (<A HREF="#su">上記</A>を参照のこと)
+  <H2>
+<!--<A NAME="Dependencies">Dependencies</A> (external libraries/helper programs)-->
+    <A NAME="Dependencies">依存性</A> (外部ライブラリ/補助プログラム)
+  </H2>
+  <P>
+<!--
+  FontForge tries to avoid hard dependencies. If a library is missing then
+  fontforge will (in most cases) be able to continue to run, it will just lack
+  whatever functionality the library provides. So if you don't need to import
+  tiff images, you don't need libtiff. If you don't need to handle SVG fonts
+  you don't need libxml2, etc. -->
+  FontForge は厳格な依存性を避けるように試みています。もしあるライブラリが欠けている場合でも、FontForge は (ほとんどの場合) そのライブラリの提供する機能のみを欠いた状態で実行を続けることができます。ですから TIFF 画像を取り込む必要がない場合、libtiff は不要です。SVG フォントを取り扱う必要が無いなら libxml は不要ですし、他のライブラリについても同様です。
+  <P>
+<!--
+  If you want to do autotracing around character images you should also download
+  either -->
+  文字画像の自動トレースを行いたい場合、以下のどちらかをダウンロードする必要があります。
+  <UL>
+    <LI>
+<!--  Peter Selinger's <A HREF="http://potrace.sf.net/">potrace</A>-->
+      Peter Selinger の <A HREF="http://potrace.sf.net/">potrace</A>
+    <LI>
+<!--  Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
+      program.</A> -->
+      Martin Weber の <A HREF="http://sourceforge.net/projects/autotrace/">autotrace</A> プログラム
+  </UL>
+  <P>
+<!--
+  If you want to edit <A NAME="cidmaps">CID keyed </A>fonts you need these
+  <A HREF="cidmaps.tgz">character set descriptions</A>. (These were last updated
+  22-Dec-2004) -->
+  <A NAME="cidmaps">CID キー指定</A>フォントを編集したい場合、これらの<A HREF="http://fontforge.sourceforge.net/cidmaps.tgz">文字セット記述ファイル</A> が必要となります。（これらは 2004年12月22日に最終更新されました)。
+  <P>
+<!--
+  You might want this addition to FontForge's built in
+  <A HREF="../Encodings.ps.gz">character set encodings.</A> Use FontForge's
+  Encoding-&gt;Load Encoding command to add these encodings to the Encoding
+  Menu. -->
+  FontForge 組み込みの<A HREF="http://fontforge.sourceforge.net/Encodings.ps.gz">文字セットエンコーディング</A>にこれを追加したいかもしれません。FontForge の <CODE>エンコーディング(<U>N</U>)</CODE>→<CODE>エンコーディングを読み込み(<U>L</U>)</CODE> コマンドを使用してこれらのエンコーディングを追加することができます。
+  <P>
+<!--
+  With the appropriate image libraries, FontForge can import png, tiff, and
+  gif images to act as character backgrounds for tracing purposes (FontForge
+  can import bmp and xbm formats without external libraries). With libxml2
+  FontForge can read SVG fonts. With the freetype library FontForge will do
+  a better job making bitmap characters for you (and can debug truetype).
+  libuninameslist provides standard unicode names and annotations for unicode
+  characters (it has been localized into English and French). With libintl
+  (GNU gettext) fontforge can translate its user interface. -->
+  適切なライブラリがあれば、FontForge はトレース作業のために PNG, TIFF および GIF 画像を取り込んで文字の背景とすることができます (FontForge は外部ライブラリなしで BMP および xbm フォーマットを取り込むことができます)。libxml2 があれば FontForge は SVG フォントを読み込むことができます。FreeType ライブラリがあれば FontForge はビットマップ文字を作成するときにより良好に動作します。libuninameslist は、Unicode の文字に対する標準 Unicode 名と注釈を提供します (これは英語版とフランス語版の 2 つのローカライズ版があります)。libintl (GNU gettext) があれば、fontforge はユーザインターフェイスを翻訳できます。
+  <P>
+<!--
+  None is required for the proper compilation/execution of FontForge, if the
+  libraries are not present they will not be used. (If the machine on which
+  your executable was build didn't have them, then you must not only install
+  the libraries, but <A HREF="#source">rebuild fontforge from source</A>) If
+  your machine doesn't have them and you want them they are available from: -->
+  FontForge のコンパイル/実行には上記のどのライブラリも必要ではなく、もしライブラリが存在しなければそれらは使われません (実行ファイルの構築に使ったマシンにそれらのライブラリが無い場合、ライブラリを再構築するだけではなく、<A HREF="#source">ソースから再構築</A>する必要があります)。あなたのマシンにそれらがなくてインストールしたい場合はこちらから入手可能です:
+  <UL>
+    <LI>
+<!--  Image Libraries (to allow FontForge to import images in those formats)-->
+      各種の画像ライブラリ (FontForge にそれらのフォーマットの画像を取り込むのに必要)
+      <UL>
+	<LI>
+<!--	  <A HREF="http://www.libpng.org/pub/png/libpng.html">libpng</A> (and required
+	  helper <A HREF="http://www.gzip.org/zlib/">zlib</A>) -->
+	  <A HREF="http://www.libpng.org/pub/png/libpng.html">libpng</A> (および必須の補助ライブラリ <A HREF="http://www.gzip.org/zlib/">zlib</A>)
+	<LI>
+	  <A HREF="http://www.libtiff.org/">libtiff</A>
+	<LI>
+	  <A HREF="http://gnuwin32.sourceforge.net/packages/libungif.htm">libungif</A>
+	<LI>
+	  <A HREF="http://www.ijg.org/">libjpeg</A>
+      </UL>
+    <LI>
+<!--  Under Mac OS/X these libraries are available from the
+      <A HREF="http://fink.sourceforge.net/">fink project</A>. -->
+      Mac OS X ではこれらのライブラリは <A HREF="http://fink.sourceforge.net/">fink プロジェクト</A>から入手可能です。
+    <LI>
+      <A HREF="http://xmlsoft.org/">libxml2</A><BR>
+<!--  To parse SVG files and fonts-->
+      SVG ファイルとフォントを読み込むために必要。
+    <LI>
+      <A HREF="http://libuninameslist.sf.net">libuninameslist</A><BR>
+<!--  To display unicode names and annotations.-->
+      Unicode 文字名と注釈を表示するために必要。
+    <LI>
+<!--  <A HREF="http://www.gnu.org/software/libiconv/">libiconv</A><BR>
+      Only important for systems with no built-in iconv(). If not present FontForge
+      contains a minimal version of the library which allows it to work. But if
+      you want to use libiconv you must configure it with
+      <CODE>- -enable-extra-encodings</CODE>, as FontForge requires Shift-JIS. -->
+  これが必要なのは組み込みの iconv() をもたないシステムだけです。これが存在しない場合のために、FontForge は動作するのに必要な最小限のバージョンのライブラリを含んでいます。FontForge はシフト JIS を必要とするので、libiconv を使用する場合は、その作成時に configure を <CODE>--enable-extra-encodings</CODE> つきで実行する必要があります。
+    <LI>
+      <A HREF="http://freetype.sf.net/">freetype</A><BR>
+<!--  To do a better job rasterizing bitmaps, and to enable the truetype debugger-->
+      ビットマップのラスタライズをより美しく行うため、および TrueType デバッガを利用可能にするために必要。
+      <TABLE BORDER CELLPADDING="6" WIDTH="50%" ALIGN=CENTER>
+	<TR>
+<!--	  <TD BGCOLOR="#ffff00">Some of FontForge's commands depend on your compiling
+	    freetype with the byte code interpreter enabled. This is disabled by default
+	    because it infringes on certain
+	    <A HREF="http://freetype.sourceforge.net/patents.html">patents granted to
+	    Apple</A>. If you have a license from Apple (or live in a country where these
+	    patents do not apply) then you may enable the interpreter by setting the
+	    appropriate macro in .../include/freetype/config/ftoption.h before you build
+	    the library (see the README.UNX file on the top level of the freetype
+	    distribution). -->
+	    <TD BGCOLOR="#ffff00">いくつかの FontForge のコマンドは、あなたのインストールしている FreeType が、バイトコードインタプリタを使用可能にしてコンパイルされたかどうかに依存します。この機能は、<A HREF="http://freetype.sourceforge.net/patents.html">Apple に与えられた特許</A>に抵触するため、デフォルトではオフにされています。あなたが Apple から使用許諾を受けている (またはそれらの特許が適用されない国に住んでいる) ならば、ライブラリをビルドする前に、…/include/freetype/config/ftoption.h の適切なマクロを設定して、その機能を使用可能にすることができます (FreeType の配布物に入っている README.UNX ファイルを参照してください)。
+	    <P>
+<!--	    To enable the truetype debugger, FontForge needs to have the freetype source
+	    directories available when it is built (there are some include files there
+	    which it depends on)</TD> -->
+	    TrueType デバッガを有効にするためには、FontForge のコンパイル時に FreeType のソースディレクトリにアクセス可能になっている必要があります (依存するインクルードファイルがいくつかあります)。</TD>
+	</TR>
+      </TABLE>
+    <LI>
+      <A HREF="http://www.cygwin.com/">cygwin</A><BR>
+<!--  To build or run on a MS Windows system you need the cygwin environment and
+      libraries. -->
+      MS-Windows システム上での構築または実行には cygwin の環境とライブラリを必要とします。
+      <LI>
+	libintl<BR>
+<!--    Is standard on most unixes. It is part of the fink package on the mac. -->
+	多くの Unix では標準です。Mac では fink パッケージの一部です。
+  </UL>
+  <P>
+  <TABLE BORDER CELLPADDING="2">
+    <CAPTION>
+<!--  Versions of shared libraries in my builds-->
+      私のビルドでのシェアドライブラリのバージョン
+    </CAPTION>
+    <TR>
+      <TD></TD>
+      <TD>libpng</TD>
+      <TD>libtiff</TD>
+      <TD>libungif</TD>
+      <TD>libjpeg</TD>
+      <TD>libxml2</TD>
+      <TD>libuninameslist</TD>
+      <TD>freetype</TD>
+    </TR>
+    <TR>
+      <TD>i386 linux builds</TD>
+      <TD>3.1.2.2<BR>
+	=1.2.2</TD>
+      <TD>3.5<BR>
+	=20011128</TD>
+      <TD>4.1.0<BR>
+	=4</TD>
+      <TD>62.0.0<BR>
+	=62 (6b)</TD>
+      <TD>2.5.4<BR>
+	=2.5.4</TD>
+      <TD>0.0.1</TD>
+      <TD>6.3.3<BR>
+	=2.1.9</TD>
+    </TR>
+    <TR>
+      <TD>solaris builds</TD>
+      <TD>2<BR>
+	=1.0.8</TD>
+      <TD>3<BR>
+	=19970127</TD>
+      <TD>
+	  <HR>
+      </TD>
+      <TD>6<BR>
+	=62 (6b)</TD>
+      <TD>
+	  <HR>
+      </TD>
+      <TD>
+	  <HR>
+      </TD>
+      <TD>
+	  <HR>
+      </TD>
+    </TR>
+    <TR>
+      <TD>Mac OS/X builds</TD>
+      <TD>(static)</TD>
+      <TD>
+	  <HR>
+      </TD>
+      <TD>(static)</TD>
+      <TD>(static)</TD>
+      <TD>2.5.0<BR>
+	=2.5.0</TD>
+      <TD>
+	  <HR>
+      </TD>
+      <TD>6.3.3<BR>
+	=2.1.4</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD></TD>
+      <TD></TD>
+      <TD></TD>
+      <TD></TD>
+      <TD></TD>
+      <TD></TD>
+      <TD></TD>
+    </TR>
+  </TABLE>
+  <P>
+<!--
+  Normally FontForge depends on the X11 windowing system, but if you are just
+  interested in the scripting engine (with no user interface), it may be built
+  on systems without X (the configure script should figure this out). -->
+  通常は FontForge は X11 ウィンドウシステムに依存しますが、スクリプト実行エンジンにのみ興味がある (ユーザインターフェイスには興味がない) 場合、システムを X なしで実行することができます (configure スクリプトはこれを検出できるようにするべきでしょう)。
+  <P>
+<!--
+  <A NAME="suggested-fonts">You</A> might also want to pull down some unicode
+  bitmap fonts that fontforge uses -->
+  <A NAME="suggested-fonts">FontForge で使う Unicode のビットマップフォント</A>をどれかダウンロードしたほうがいいでしょう。
+  <UL>
+    <LI>
+<!--  <A HREF="http://khdd.net/kanou/fonts/ff/fontviewfont-en.html">Kanou's fontview
+      fonts</A> -->
+      <A HREF="http://khdd.net/kanou/fonts/ff/fontviewfont-en.html">狩野のフォントビュー用フォント</a>
+      <A HREF="http://khdd.net/kanou/fonts/ff/fontviewfont.html"><IMG src="../../_images/Nisshoki-Japan.png"
+	  WIDTH="39" HEIGHT="26" ALIGN="Middle"></A>
+    <LI>
+      <A HREF="http://bibliofile.duhs.duke.edu/gww/fonts/Monospace/index.html">my
+      monospace fonts</A>
+    <LI>
+      <A HREF="http://bibliofile.duhs.duke.edu/gww/fonts/Caliban/index.html">my
+      sans-serif font</A>
+    <LI>
+      <A HREF="http://czyborra.com/unifont/">The unifont</A>
+    <LI>
+      <A HREF="http://math.nmsu.edu/~mleisher/Software/cu/">ClearlyU's font</A>
+    <LI>
+      <A HREF="http://www.nongnu.org/freefont/">The FreeFont project</A>
+    <LI>
+      <A HREF="http://www.cl.cam.ac.uk/~mgk25/ucs-fonts.html">X fixed</A>
+    <LI>
+      <A HREF="http://canopus.iacp.dvo.ru/~panov/cm-unicode/">Computer Modern Unicode
+      fonts</A>
+    <LI>
+<!--  <A HREF="http://eyegene.ophthy.med.umich.edu/unicode/fontguide/">Unicode
+      Font Guide for Free/Libre Open Source Operating Systems</A> -->
+      <A HREF="http://eyegene.ophthy.med.umich.edu/unicode/fontguide/">自由な OSのための Unicode フォントガイド</A>
+	<HR>
+    <LI>
+<!--  <A HREF="nonBMP/index.html">FontForge's conventions for non-BMP unicode bitmap
+      fonts</A>-->
+      <A HREF="nonBMP/index.html">FontForge の、 BMP 外の Unicode ビットマップフォントの扱い方</a>
+  </UL>
+  <P>
+<!--
+  To install these, put them in a directory, and in that directory type: -->
+  これらをインストールするには、それをらどこかのディレクトリに置き、そのディレクトリで以下のようにタイプします:
+  <BLOCKQUOTE>
+    <PRE>    <FONT COLOR="Gray">$ </FONT>mkfontdir
+    <FONT COLOR="Gray">$ </FONT>xset fp+ `pwd`
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  You should make sure that the xset line happens whenever X is started on
+  your machine (put it in your .xsession file). -->
+  あなたのマシン上で X を起動したときに常に xset を確実に実行するように設定するべきでしょう (あなたの .xsession ファイルに追加してください)
+  <H2>
+<!--<A NAME="Documentation">Documentation</A>-->
+    <A NAME="Documentation">文書</A>
+  </H2>
+  <P>
+<!--
+  <A HREF="overview.html">The complete fontforge manual is available online.</A> -->
+  <A HREF="../../index.html">FontForge マニュアルの完全版はオンラインで利用可能です。</A>
+  <UL>
+    <LI>
+<!--  <A HREF="ja/overview.html"><IMG src="../../_images/manual-ja.png" WIDTH="264" HEIGHT="20"
+	  BORDER="0"></A>
+      <A HREF="overview.html">日本語版マニュアル</A>
+    <LI>
+<!--  It is also available in a
+      <A HREF="fontforge_htdocs-20060406.tar.bz2">tarball</A> (Version 6-Apr-2006) -->
+      これを <A HREF="http://fontforge.sourceforge.net/fontforge_htdocs-20060406.tar.bz2">tarball</A> (2006年4月6日版) に固めたものも入手可能です。
+    <LI>
+<!--  A
+      Japanese<IMG src="../../_images/Nisshoki-Japan.png" WIDTH="39" HEIGHT="26" ALIGN="Middle">
+      <A HREF="fontforge_ja_htdocs-20060822.tar.bz2">tarball</A> (Version 6-Apr-2006) -->
+      日本語訳<IMG src="../../_images/Nisshoki-Japan.png" WIDTH="39" HEIGHT="26" ALIGN="Middle"> の <A HREF="http://fontforge.sourceforge.net/fontforge_ja_htdocs-20060822.tar.bz2">tarball</A> (2006年4月6日版)
+    <LI>
+<!--  There is a shorter tutorial which -->
+      より短いチュートリアルが
+      <UL>
+	<LI>
+<!--	  <A HREF="editexample.html">Is available online</A> -->
+	  <A HREF="../../tutorial/editexample.html">オンラインで利用可能です</A>。
+	<LI>
+<!--	  <A HREF="ja/editexample.html"><IMG src="../../_images/tutorial-ja.png" WIDTH="117" HEIGHT="19"
+	      BORDER="0"></A>-->
+	  <A HREF="editexample.html">日本語版チュートリアル</A>
+	<LI>
+<!--	  <A HREF="http://edt1023.sayya.org/fontforge/editexample.html"><IMG src="../../_images/tutorial-zh_TW.png"
+	      WIDTH="40" HEIGHT="20" BORDER="0"></A> -->
+	  <A HREF="http://edt1023.sayya.org/fontforge/editexample.html">教學</A> (繁体字中国語版)
+	<LI>
+<!--	  <A HREF="../fontforge-tutorial.pdf">Can be downloaded as pdf</A> -->
+	  <A HREF="http://fontforge.sourceforge.net/fontforge-tutorial.pdf">PDF としても入手可能です</A>
+	<LI>
+<!--	  <A HREF="tutorial.tgz">example files </A>(to work through the tutorial yourself) -->
+	  <A HREF="http://fontforge.sourceforge.net/tutorial.tgz">サンプルファイル</A> (自分でチュートリアルを動かすための)
+      </UL>
+    <LI>
+<!--  A documentation tarball can be retrieved from the
+      <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=114329">file
+      release system</A> -->
+      文書の tarball は<A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=114329">ファイルリリースシステム</A>から取って来ることができます。
+    <LI>
+<!--  The cvs tree contains a sub-directory called htdocs containing the manual-->
+      CVS ツリーには、マニュアルを含む htdocs/ という名前のサブディレクトリがあります。
+      <UL>
+	<LI>
+<!--	  The cvs tree contains a sub-sub-directory called htdocs/ja containing the
+	  Japanese translation of the manual -->
+	  CVS ツリーには、マニュアルの日本語訳を含む htdocs/ja/ という名前のサブサブディレクトリがあります。
+      </UL>
+      <P>
+<!--  See the general comments on the <A HREF="#src-cvs">cvs tree </A>to see how
+      to access this.<BR> -->
+      <A HREF="#src-cvs">CVS ツリー</A>へのアクセス方法については、CVS ツリーの一般的コメントを参照してください。<BR>
+<!--  See the section on <A HREF="#installing-documentation-cvs">installing cvs
+      documentation </A>to see how to install the docs from the cvs tree -->
+      CVS ツリーから文書をインストールする方法については、<A HREF="#installing-documentation-cvs">CVS からの文書のインストール</A>のセクションを参照してください。
+  </UL>
+  <H3>
+<!--<A NAME="doc-tar">Installing a documentation tarball</A>-->
+    <A NAME="doc-tar">文書の tarball をインストールする方法</A>
+  </H3>
+  <P>
+<!--
+  Once you have downloaded the documentation tarball as described above, you
+  should move to the directory containing it, and type: -->
+  上記の方法で文書の tarball をダウンロードしたら、それを含むディレクトリに移動し、以下のようにタイプします。
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>su
+password: ******
+<FONT COLOR="Gray"># </FONT>mkdir -p /usr/local/share/doc/fontforge
+<FONT COLOR="Gray"># </FONT>mv fontforge_htdocs*.tgz /usr/local/share/doc/fontforge
+<FONT COLOR="Gray"># </FONT>tar xfz fontforge_htdocs*.tgz
+<FONT COLOR="Gray"># </FONT>rm fontforge_htdocs*.tgz
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  After doing this fontforge will be able to find the docs on your system when
+  you press the [F1] (or [Help]) key. If you don't do this fontforge will attempt
+  to find documentation online. -->
+  これを行った後は、FontForge はシステムにインストールされた文書を [F1] キー (または [Help] キー) を押したときに見つけることができるようになります。もしそれを行わないならば FontForge はオンラインの文書を探します。
+  <P>
+    <HR>
+  <UL>
+    <LI>
+<!--  <A HREF="running.html">Running FontForge</A>-->
+      <A HREF="running.html">FontForge の起動方法</A>
+  </UL>
+</DIV>
+</BODY></HTML>

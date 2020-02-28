@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1772.2795" height="817.22186" version="1.1" viewBox="0 0 1772.2795 817.22186" xml:space="preserve"
+  xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#"
+  xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+    <defs>
+    <clipPath id="ad">
+      <path d="m28.348 28.348h252.043v244.41h-252.043z" />
+    </clipPath>
+    <clipPath id="z">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="ag">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="af">
+      <path d="m28.348 340.156h252.043v244.414h-252.043z" />
+    </clipPath>
+    <clipPath id="ae">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="ac">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="ab">
+      <path d="m367.059 28.348h252.043v244.41h-252.043z" />
+    </clipPath>
+    <clipPath id="aa">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="y">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="x">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="w">
+      <path d="m368.504 340.156h252.043v244.414h-252.043z" />
+    </clipPath>
+    <clipPath id="v">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="u">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="t">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="s">
+      <path d="m708.66 28.348h252.047v244.41h-252.047z" />
+    </clipPath>
+    <clipPath id="r">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="q">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="p">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="o">
+      <path d="m708.66 339.922h252.047v244.41h-252.047z" />
+    </clipPath>
+    <clipPath id="n">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="m">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="l">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="k">
+      <path d="m1048.82 28.348h252.043v244.41h-252.043z" />
+    </clipPath>
+    <clipPath id="j">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="i">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="h">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="g">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="f">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="e">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="d">
+      <path d="m1048.82 340.156h252.043v244.414h-252.043z" />
+    </clipPath>
+    <clipPath id="c">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="b">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="a">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="aj">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="ai">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+    <clipPath id="ah">
+      <path d="m0 0h1330v613h-1330z" />
+    </clipPath>
+  </defs>
+  <g transform="matrix(1.3333333,0,0,1.3333333,0,1.7763879e-5)">
+    <g clip-path="url(#ad)">
+      <g clip-path="url(#z)">
+        <path d="m85.016 272.758-7.032-42.188" stroke="#00708f" stroke-width=".75" />
+        <path d="m71.984 224.57 12 12" stroke="#00708f" stroke-width=".75" />
+        <path d="m71.984 236.57 12-12" stroke="#00708f" stroke-width=".75" />
+        <path d="m85.016 174.32-8.438 30.938" stroke="#c0c" stroke-width=".75" />
+        <path d="m70.578 199.258 12 12" stroke="#c0c" stroke-width=".75" />
+        <path d="m70.578 211.258 12-12" stroke="#c0c" stroke-width=".75" />
+        <path d="m85.016 174.32 19.687-40.781" stroke="#00708f" stroke-width=".75" />
+        <path d="m98.703 127.539h12v12h-12z" fill="#00708f" />
+        <path d="m98.703 127.539 12 12" stroke="#fff" stroke-width=".75" />
+        <path d="m98.703 139.539 12-12" stroke="#fff" stroke-width=".75" />
+        <path d="m183.453 75.883-37.969 15.469" stroke="#c0c" stroke-width=".75" />
+        <path d="m139.484 85.352 12 12" stroke="#c0c" stroke-width=".75" />
+        <path d="m139.484 97.352 12-12" stroke="#c0c" stroke-width=".75" />
+        <path d="m183.453 75.883 26.719-7.031" stroke="#00708f" stroke-width=".75" />
+        <path d="m204.172 62.852 12 12" stroke="#00708f" stroke-width=".75" />
+        <path d="m204.172 74.852 12-12" stroke="#00708f" stroke-width=".75" />
+        <path d="m281.891 75.883-28.125-8.438" stroke="#c0c" stroke-width=".75" />
+        <path d="m247.766 61.445 12 12" stroke="#c0c" stroke-width=".75" />
+        <path d="m247.766 73.445 12-12" stroke="#c0c" stroke-width=".75" />
+        <path d="m80.516 268.258h9v9h-9z" fill="#707070" />
+        <g transform="matrix(-.166667 -1 1 -.166667 0 0)">
+          <path d="m-279.174 31.088 7.398 3e-3" fill="none" stroke="#707070" stroke-width=".73979503" />
+        </g>
+        <g transform="matrix(-.166667 -1 1 -.166667 0 0)">
+          <path d="m-271.776 31.091-2.22 2.216" fill="none" stroke="#707070" stroke-width=".73979503" />
+        </g>
+        <g transform="matrix(-.166667 -1 1 -.166667 0 0)">
+          <path d="m-271.776 31.091-2.219-2.222" fill="none" stroke="#707070" stroke-width=".73979503" />
+        </g>
+        <path d="m80.516 169.82h9v9h-9z" fill="#f00" />
+        <path d="m178.953 71.383h9v9h-9z" fill="#f00" />
+        <path
+          d="m287.141 75.883c0 2.902-2.352 5.25-5.25 5.25-2.899 0-5.25-2.348-5.25-5.25 0-2.899 2.351-5.25 5.25-5.25 2.898 0 5.25 2.351 5.25 5.25z"
+          fill="#f00" />
+        <path
+          d="m85.016 272.758c-7.032-42.188-8.438-67.5 0-98.438 19.687-40.781 60.468-82.968 98.437-98.437 26.719-7.031 70.313-8.438 98.438 0l7.5 204.375z"
+          fill="none" stroke="#600" stroke-width="1.5" />
+      </g>
+      <g clip-path="url(#ag)">
+        <path d="m-3.188 264.551 279.387-281.903-410.84-4.472z" fill="#f00" fill-opacity=".15" />
+      </g>
+    </g>
+    <g clip-path="url(#af)">
+      <g clip-path="url(#ae)">
+        <path d="m88.148 541.07-0.839-81.468" stroke="#00708f" stroke-width=".75" />
+        <path d="m81.309 453.602h12v12h-12z" fill="#00708f" />
+        <path d="m81.309 453.602 12 12" stroke="#fff" stroke-width=".75" />
+        <path d="m81.309 465.602 12-12" stroke="#fff" stroke-width=".75" />
+        <path d="m226.035 403.184-73.101 0.168" stroke="#c0c" stroke-width=".75" />
+        <path d="m146.934 397.352 12 12" stroke="#c0c" stroke-width=".75" />
+        <path d="m146.934 409.352 12-12" stroke="#c0c" stroke-width=".75" />
+        <path d="m83.648 536.57h9v9h-9z" fill="#f00" />
+        <path d="m221.535 398.684h9v9h-9z" fill="#bf0080" />
+        <path d="m381.684 560.852-144.375 131.25-149.161-151.032c-0.839-81.468 64.786-137.718 137.887-137.886z"
+          fill="none" stroke="#600" stroke-width="1.5" />
+      </g>
+      <g clip-path="url(#ac)">
+        <path d="m30.32 602.484 279.387-281.898-410.836-4.473z" fill="#f00" fill-opacity=".15" />
+      </g>
+    </g>
+    <g clip-path="url(#ab)">
+      <g clip-path="url(#aa)">
+        <path d="m423.727 272.758-7.032-42.188" stroke="#00708f" stroke-width=".75" />
+        <path d="m410.695 224.57 12 12" stroke="#00708f" stroke-width=".75" />
+        <path d="m410.695 236.57 12-12" stroke="#00708f" stroke-width=".75" />
+        <path d="m423.727 174.32-8.438 30.938" stroke="#c0c" stroke-width=".75" />
+        <path d="m409.289 199.258 12 12" stroke="#c0c" stroke-width=".75" />
+        <path d="m409.289 211.258 12-12" stroke="#c0c" stroke-width=".75" />
+        <path d="m423.727 174.32 19.687-40.781" stroke="#00708f" stroke-width=".75" />
+        <path d="m437.414 127.539h12v12h-12z" fill="#00708f" />
+        <path d="m437.414 127.539 12 12" stroke="#fff" stroke-width=".75" />
+        <path d="m437.414 139.539 12-12" stroke="#fff" stroke-width=".75" />
+        <path d="m522.164 75.883-37.969 15.469" stroke="#c0c" stroke-width=".75" />
+        <path d="m478.195 85.352 12 12" stroke="#c0c" stroke-width=".75" />
+        <path d="m478.195 97.352 12-12" stroke="#c0c" stroke-width=".75" />
+        <path d="m522.164 75.883 26.719-7.031" stroke="#00708f" stroke-width=".75" />
+        <path d="m542.883 62.852 12 12" stroke="#00708f" stroke-width=".75" />
+        <path d="m542.883 74.852 12-12" stroke="#00708f" stroke-width=".75" />
+        <path d="m620.602 75.883-28.125-8.438" stroke="#c0c" stroke-width=".75" />
+        <path d="m586.477 61.445 12 12" stroke="#c0c" stroke-width=".75" />
+        <path d="m586.477 73.445 12-12" stroke="#c0c" stroke-width=".75" />
+        <path d="m419.227 268.258h9v9h-9z" fill="#707070" />
+        <g transform="matrix(-.166667 -1 1 -.166667 0 0)">
+          <path d="m-334.1 360.645 7.399-1e-3" fill="none" stroke="#707070" stroke-width=".73979503" />
+        </g>
+        <g transform="matrix(-.166667 -1 1 -.166667 0 0)">
+          <path d="m-326.701 360.644-2.222 2.219" fill="none" stroke="#707070" stroke-width=".73979503" />
+        </g>
+        <g transform="matrix(-.166667 -1 1 -.166667 0 0)">
+          <path d="m-326.701 360.644-2.22-2.218" fill="none" stroke="#707070" stroke-width=".73979503" />
+        </g>
+        <path d="m419.227 169.82h9v9h-9z" fill="#f00" />
+        <path d="m517.664 71.383h9v9h-9z" fill="#f00" />
+        <path
+          d="m625.852 75.883c0 2.902-2.352 5.25-5.25 5.25-2.899 0-5.25-2.348-5.25-5.25 0-2.899 2.351-5.25 5.25-5.25 2.898 0 5.25 2.351 5.25 5.25z"
+          fill="#f00" />
+        <path
+          d="m423.727 272.758c-7.032-42.188-8.438-67.5 0-98.438 19.687-40.781 60.468-82.968 98.437-98.437 26.719-7.031 70.313-8.438 98.438 0l7.5 204.375z"
+          fill="none" stroke="#600" stroke-width="1.5" />
+      </g>
+      <g clip-path="url(#y)">
+        <path d="m388.684 287.945 93.543-306.14h473.382v306.14z" fill="#0c8" fill-opacity=".15" />
+      </g>
+      <g clip-path="url(#x)">
+        <path d="m388.684 287.945 93.543-306.14" fill="none" stroke="#0c8" stroke-opacity=".8"
+          stroke-width="1.417323" />
+      </g>
+    </g>
+    <g clip-path="url(#w)">
+      <g clip-path="url(#v)">
+        <path d="m428.305 541.07-0.84-81.468" stroke="#00708f" stroke-width=".75" />
+        <path d="m421.465 453.602h12v12h-12z" stroke="#00708f" stroke-width=".75" />
+        <path d="m421.465 453.602 12 12" stroke="#00708f" stroke-width=".75" />
+        <path d="m421.465 465.602 12-12" stroke="#00708f" stroke-width=".75" />
+        <path d="m566.191 403.184-73.101 0.168" stroke="#c0c" stroke-width=".75" />
+        <path d="m487.09 397.352 12 12" stroke="#c0c" stroke-width=".75" />
+        <path d="m487.09 409.352 12-12" stroke="#c0c" stroke-width=".75" />
+        <path d="m423.805 536.57h9v9h-9z" fill="#f00" />
+        <path d="m561.691 398.684h9v9h-9z" fill="#bf0080" />
+        <path d="m721.84 560.852-144.375 131.25-149.16-151.032c-0.84-81.468 64.785-137.718 137.886-137.886z" fill="none"
+          stroke="#600" stroke-width="1.5" />
+      </g>
+      <g clip-path="url(#u)">
+        <path d="m490.238 602.645-311.812-306.141h871.652v306.141z" fill="#0c8" fill-opacity=".15" />
+      </g>
+      <g clip-path="url(#t)">
+        <path d="m490.238 602.645-311.812-306.141" fill="none" stroke="#0c8" stroke-opacity=".8"
+          stroke-width="1.417323" />
+      </g>
+    </g>
+    <g fill="#000000" font-family="'DejaVu Sans'"><text transform="matrix(.999998 0 0 1 125.2036 315.87217)"
+        font-size="24.000004px">
+        <tspan x="0 15.600002 30.792006 37.440006 52.200008 59.80801" y="0">Rule 1</tspan>
+      </text>
+      <text transform="translate(465.36107,315.87219)" font-size="24.00001px">
+        <tspan
+          x="0 15.600006 30.792013 37.440014 52.200024 59.808025 340.1575 355.75751 370.94949 377.5975 392.35751 399.96552 652.73364 669.48566 684.14966 707.52563 722.74164 729.38965 744.58167 759.34167"
+          y="0">Rule 2Rule 3Combined</tspan>
+      </text>
+    </g>
+    <g clip-path="url(#s)">
+      <g clip-path="url(#r)">
+        <path d="m765.332 272.758-7.031-42.188" stroke="#00708f" stroke-width=".75" />
+        <path d="m752.301 224.57 12 12" stroke="#00708f" stroke-width=".75" />
+        <path d="m752.301 236.57 12-12" stroke="#00708f" stroke-width=".75" />
+        <path d="m765.332 174.32-8.437 30.938" stroke="#c0c" stroke-width=".75" />
+        <path d="m750.895 199.258 12 12" stroke="#c0c" stroke-width=".75" />
+        <path d="m750.895 211.258 12-12" stroke="#c0c" stroke-width=".75" />
+        <path d="m765.332 174.32 19.688-40.781" stroke="#00708f" stroke-width=".75" />
+        <path d="m779.02 127.539h12v12h-12z" stroke="#00708f" stroke-width=".75" />
+        <path d="m779.02 127.539 12 12" stroke="#00708f" stroke-width=".75" />
+        <path d="m779.02 139.539 12-12" stroke="#00708f" stroke-width=".75" />
+        <path d="m863.77 75.883-37.969 15.469" stroke="#c0c" stroke-width=".75" />
+        <path d="m819.801 85.352 12 12" stroke="#c0c" stroke-width=".75" />
+        <path d="m819.801 97.352 12-12" stroke="#c0c" stroke-width=".75" />
+        <path d="m863.77 75.883 26.718-7.031" stroke="#00708f" stroke-width=".75" />
+        <path d="m884.488 62.852 12 12" stroke="#00708f" stroke-width=".75" />
+        <path d="m884.488 74.852 12-12" stroke="#00708f" stroke-width=".75" />
+        <path d="m962.207 75.883-28.125-8.438" stroke="#c0c" stroke-width=".75" />
+        <path d="m928.082 61.445 12 12" stroke="#c0c" stroke-width=".75" />
+        <path d="m928.082 73.445 12-12" stroke="#c0c" stroke-width=".75" />
+        <path d="m760.832 268.258h9v9h-9z" fill="#707070" />
+        <g transform="matrix(-.166667 -1 1 -.166667 0 0)">
+          <path d="m-389.495 693.018 7.399-2e-3" fill="none" stroke="#707070" stroke-width=".73979503" />
+        </g>
+        <g transform="matrix(-.166667 -1 1 -.166667 0 0)">
+          <path d="m-382.096 693.016-2.222 2.22" fill="none" stroke="#707070" stroke-width=".73979503" />
+        </g>
+        <g transform="matrix(-.166667 -1 1 -.166667 0 0)">
+          <path d="m-382.096 693.016-2.221-2.217" fill="none" stroke="#707070" stroke-width=".73979503" />
+        </g>
+        <path d="m760.832 169.82h9v9h-9z" fill="#f00" />
+        <path d="m859.27 71.383h9v9h-9z" fill="#f00" />
+        <path
+          d="m967.457 75.883c0 2.902-2.352 5.25-5.25 5.25-2.902 0-5.25-2.348-5.25-5.25 0-2.899 2.348-5.25 5.25-5.25 2.898 0 5.25 2.351 5.25 5.25z"
+          fill="#f00" />
+        <path
+          d="m765.332 272.758c-7.031-42.188-8.437-67.5 0-98.438 19.688-40.781 60.469-82.968 98.438-98.437 26.718-7.031 70.312-8.438 98.437 0l7.5 204.375z"
+          fill="none" stroke="#600" stroke-width="1.5" />
+      </g>
+      <g clip-path="url(#q)">
+        <path d="m1084.617-18.195-411.023 172.914v133.226h623.621z" fill="#00f" fill-opacity=".15" />
+      </g>
+      <g clip-path="url(#p)">
+        <path d="m1084.617-18.195-411.023 172.914" fill="none" stroke="#00f" stroke-opacity=".8"
+          stroke-width="1.417323" />
+      </g>
+    </g>
+    <g clip-path="url(#o)">
+      <g clip-path="url(#n)">
+        <path d="m768.465 540.832-0.844-81.465" stroke="#00708f" stroke-width=".75" />
+        <path d="m761.621 453.367h12v12h-12z" fill="#00708f" />
+        <path d="m761.621 453.367 12 12" stroke="#fff" stroke-width=".75" />
+        <path d="m761.621 465.367 12-12" stroke="#fff" stroke-width=".75" />
+        <path d="m906.352 402.945-73.106 0.172" stroke="#c0c" stroke-width=".75" />
+        <path d="m827.246 397.117 12 12" stroke="#c0c" stroke-width=".75" />
+        <path d="m827.246 409.117 12-12" stroke="#c0c" stroke-width=".75" />
+        <path d="m763.965 536.332h9v9h-9z" fill="#f00" />
+        <path d="m901.852 398.445h9v9h-9z" fill="#bf0080" />
+        <path d="m1061.996 560.617-144.375 131.25-149.156-151.035c-0.844-81.465 64.781-137.715 137.887-137.887z"
+          fill="none" stroke="#600" stroke-width="1.5" />
+      </g>
+      <g clip-path="url(#m)">
+        <path d="m1106.773 403.984h-878.742l56.696 300.473h822.046z" fill="#00f" fill-opacity=".15" />
+      </g>
+      <g clip-path="url(#l)">
+        <path d="m1106.773 403.984h-878.742" fill="none" stroke="#00f" stroke-opacity=".8" stroke-width="1.417323" />
+      </g>
+    </g>
+    <g clip-path="url(#k)">
+      <g clip-path="url(#j)">
+        <path d="m1105.488 272.758-7.031-42.188" stroke="#00708f" stroke-width=".75" />
+        <path d="m1092.457 224.57 12 12" stroke="#00708f" stroke-width=".75" />
+        <path d="m1092.457 236.57 12-12" stroke="#00708f" stroke-width=".75" />
+        <path d="m1105.488 174.32-8.437 30.938" stroke="#c0c" stroke-width=".75" />
+        <path d="m1091.051 199.258 12 12" stroke="#c0c" stroke-width=".75" />
+        <path d="m1091.051 211.258 12-12" stroke="#c0c" stroke-width=".75" />
+        <path d="m1105.488 174.32 19.688-40.781" stroke="#00708f" stroke-width=".75" />
+        <path d="m1119.176 127.539h12v12h-12z" stroke="#00708f" stroke-width=".75" />
+        <path d="m1119.176 127.539 12 12" stroke="#00708f" stroke-width=".75" />
+        <path d="m1119.176 139.539 12-12" stroke="#00708f" stroke-width=".75" />
+        <path d="m1203.926 75.883-37.969 15.469" stroke="#c0c" stroke-width=".75" />
+        <path d="m1159.957 85.352 12 12" stroke="#c0c" stroke-width=".75" />
+        <path d="m1159.957 97.352 12-12" stroke="#c0c" stroke-width=".75" />
+        <path d="m1203.926 75.883 26.719-7.031" stroke="#00708f" stroke-width=".75" />
+        <path d="m1224.645 62.852 12 12" stroke="#00708f" stroke-width=".75" />
+        <path d="m1224.645 74.852 12-12" stroke="#00708f" stroke-width=".75" />
+        <path d="m1302.363 75.883-28.125-8.438" stroke="#c0c" stroke-width=".75" />
+        <path d="m1268.238 61.445 12 12" stroke="#c0c" stroke-width=".75" />
+        <path d="m1268.238 73.445 12-12" stroke="#c0c" stroke-width=".75" />
+        <path d="m1100.988 268.258h9v9h-9z" fill="#707070" />
+        <g transform="matrix(-.166667 -1 1 -.166667 0 0)">
+          <path d="m-444.656 1023.981h7.399" fill="none" stroke="#707070" stroke-width=".73979503" />
+        </g>
+        <g transform="matrix(-.166667 -1 1 -.166667 0 0)">
+          <path d="m-437.257 1023.979-2.221 2.22" fill="none" stroke="#707070" stroke-width=".73979503" />
+        </g>
+        <g transform="matrix(-.166667 -1 1 -.166667 0 0)">
+          <path d="m-437.257 1023.979-2.22-2.217" fill="none" stroke="#707070" stroke-width=".73979503" />
+        </g>
+        <path d="m1100.988 169.82h9v9h-9z" fill="#f00" />
+        <path d="m1199.426 71.383h9v9h-9z" fill="#f00" />
+        <path
+          d="m1307.613 75.883c0 2.902-2.351 5.25-5.25 5.25-2.898 0-5.25-2.348-5.25-5.25 0-2.899 2.352-5.25 5.25-5.25 2.899 0 5.25 2.351 5.25 5.25z"
+          fill="#f00" />
+        <path
+          d="m1105.488 272.758c-7.031-42.188-8.437-67.5 0-98.438 19.688-40.781 60.469-82.968 98.438-98.437 26.719-7.031 70.312-8.438 98.437 0l7.5 204.375z"
+          fill="none" stroke="#600" stroke-width="1.5" />
+      </g>
+      <g clip-path="url(#i)">
+        <path d="m1424.773-18.195-411.023 172.914v133.226h623.621z" fill="#00f" fill-opacity=".15" />
+      </g>
+      <g clip-path="url(#h)">
+        <path d="m1070.445 287.945 93.543-306.14h473.383v306.14z" fill="#0c8" fill-opacity=".15" />
+      </g>
+      <g clip-path="url(#g)">
+        <path d="m1017.285 264.551 279.387-281.903-410.84-4.472z" fill="#f00" fill-opacity=".15" />
+      </g>
+      <g clip-path="url(#f)">
+        <path d="m1424.773-18.195-411.023 172.914" fill="none" stroke="#00f" stroke-opacity=".8"
+          stroke-width="1.417323" />
+      </g>
+      <g clip-path="url(#e)">
+        <path d="m1070.445 287.945 93.543-306.14" fill="none" stroke="#0c8" stroke-opacity=".8"
+          stroke-width="1.417323" />
+      </g>
+    </g>
+    <g clip-path="url(#d)">
+      <g clip-path="url(#c)">
+        <path d="m1108.621 541.07-0.84-81.468" stroke="#00708f" stroke-width=".75" />
+        <path d="m1101.781 453.602h12v12h-12z" stroke="#00708f" stroke-width=".75" />
+        <path d="m1101.781 453.602 12 12" stroke="#00708f" stroke-width=".75" />
+        <path d="m1101.781 465.602 12-12" stroke="#00708f" stroke-width=".75" />
+        <path d="m1246.508 403.184-73.102 0.168" stroke="#c0c" stroke-width=".75" />
+        <path d="m1167.406 397.352 12 12" stroke="#c0c" stroke-width=".75" />
+        <path d="m1167.406 409.352 12-12" stroke="#c0c" stroke-width=".75" />
+        <path d="m1104.121 536.57h9v9h-9z" fill="#f00" />
+        <path d="m1242.008 398.684h9v9h-9z" fill="#bf0080" />
+        <path d="m1402.156 560.852-144.375 131.25-149.16-151.032c-0.84-81.468 64.785-137.718 137.887-137.886z"
+          fill="none" stroke="#600" stroke-width="1.5" />
+      </g>
+      <g clip-path="url(#b)">
+        <path d="m1446.93 404.219h-878.739l56.692 300.472h822.047z" fill="#00f" fill-opacity=".15" />
+      </g>
+      <g clip-path="url(#a)">
+        <path d="m1170.551 602.645-311.809-306.141h871.653v306.141z" fill="#0c8" fill-opacity=".15" />
+      </g>
+      <g clip-path="url(#aj)">
+        <path d="m1050.793 602.484 279.387-281.898-410.836-4.473z" fill="#f00" fill-opacity=".15" />
+      </g>
+      <g clip-path="url(#ai)">
+        <path d="m1446.93 404.219h-878.739" fill="none" stroke="#00f" stroke-opacity=".8" stroke-width="1.417323" />
+      </g>
+      <g clip-path="url(#ah)">
+        <path d="m1170.551 602.645-311.809-306.141" fill="none" stroke="#0c8" stroke-opacity=".8"
+          stroke-width="1.417323" />
+      </g>
+    </g>
+  </g>
+</svg>

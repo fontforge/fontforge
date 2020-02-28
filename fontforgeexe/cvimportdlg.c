@@ -255,7 +255,7 @@ static int psstrokeflags_e_h(GWindow gw, GEvent *event) {
 	*(int *) GDrawGetUserData(gw) = true;
     } else if ( event->type == et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("filemenu.html#type3-import");
+	    help("ui/menus/filemenu.html", "#filemenu-type3-import");
 return( true );
 	}
 return( false );

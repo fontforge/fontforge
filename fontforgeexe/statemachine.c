@@ -484,7 +484,7 @@ static int smdedit_e_h(GWindow gw, GEvent *event) {
       break;
       case et_char:
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("statemachine.html#EditTransition");
+	    help("ui/dialogs/statemachine.html", "#statemachine-edittransition");
 return( true );
 	} else if ( event->u.chr.keysym == GK_Escape ) {
 	    smd->edit_done = true;
@@ -1191,7 +1191,7 @@ static int smd_e_h(GWindow gw, GEvent *event) {
       break;
       case et_char:
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("statemachine.html");
+	    help("ui/dialogs/statemachine.html", NULL);
 return( true );
 	} else if ( event->u.chr.keysym=='q' && (event->u.chr.state&ksm_control)) {
 	    if ( event->u.chr.state&ksm_shift )

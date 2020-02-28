@@ -1,0 +1,540 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 13-Feb-2003 -->
+  <!-- AP: Last modified: 22-Mar-2005 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>TrueType and OpenType tables supported by FontForge</TITLE>-->
+    <TITLE>FontForge がサポートする TrueType および OpenType のテーブル</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+<H1 ALIGN=Center>
+<!--TrueType and OpenType tables supported by FontForge-->
+    FontForge がサポートする TrueType および OpenType のテーブル
+</H1>
+<P>
+<!--
+<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6.html">Apple</A>,
+<A HREF="http://www.microsoft.com/typography/tt/tt.htm">MS</A> and
+<A HREF="http://partners.adobe.com/public/developer/opentype/index_spec.html">Adobe</A>
+all have their descriptions of TrueType and OpenType. MS and Adobe's versions
+are essentially the same, while Apple's differ significantly from either. -->
+<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6.html">Apple</A>,
+<A HREF="http://www.microsoft.com/typography/tt/tt.htm">MS</A> および
+<A HREF="http://partners.adobe.com/public/developer/opentype/index_spec.html">Adobe</A> はすべて TrueType や OpenType の解説文書を公開しています。MS と Adobe の版は本質的に同じですが、Apple の版はそれらとは明白な差異があります。
+<TABLE BORDER CELLPADDING="2">
+  <TR>
+<!--<TH>name</TH>-->
+    <TH>名前</TH>
+<!--<TH>long name</TH>-->
+    <TH>長い名前</TH>
+<!--<TH>FontForge's use</TH>-->
+    <TH>FontForge の用法</TH>
+<!--<TH>Apple<BR>
+      docs</TH>-->
+    <TH>Apple の<BR>文書</TH>
+<!--<TH>Adobe<BR>
+      docs</TH>-->
+    <TH>Adobe の<BR>文書</TH>
+  </TR>
+  <TR>
+    <TD>avar</TD>
+<!--<TD>axis variation</TD>-->
+    <TD>軸のバリエーション</TD>
+<!--<TD>Used to specify piecewise linear sections of axes for distortable fonts</TD>-->
+    <TD>変形可能フォントの軸の、部分毎に線形な区分けを指定するのに用います。</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6avar.html">avar</A></TD>
+    <TD><P ALIGN=Center>
+      *</TD>
+  </TR>
+  <TR>
+    <TD>bdat</TD>
+<!--<TD>bitmap data</TD>-->
+    <TD>ビットマップデータ</TD>
+<!--<TD>Provides the actual bitmap data for all bitmap glyphs in Apple fonts.
+        'EBDT' is used by MS/Adobe instead (and has the same format)</TD> -->
+    <TD>Apple のフォントにおいては、すべてのビットマップグリフの実際のビットマップデータを提供します。MS/Adobe では、この代わりに&lsquo;EBDT&rsquo;を使用します (フォーマットはこれと同じです)</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6bdat.html">bdat</A></TD>
+    <TD><P ALIGN=Center>
+      *</TD>
+  </TR>
+  <TR>
+    <TD>bhed</TD>
+<!--<TD>bitmap font header</TD> -->
+    <TD>ビットマップフォントのヘッダ</TD>
+<!--<TD>Replaces the 'head' table in Apple's bitmap only fonts. (similar to 'head')</TD> -->
+    <TD>Apple のビットマップのみのフォントでは、&lsquo;head&rsquo;の代わりに使用します (&lsquo;head&rsquo;と同形式です)</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6bhed.html">bhed</A></TD>
+    <TD><P ALIGN=Center>
+      *</TD>
+  </TR>
+  <TR>
+    <TD>bloc</TD>
+<!--<TD>bitmap location data</TD>-->
+    <TD>ビットマップの位置データ</TD>
+<!--<TD>Provides pointers to the appropriate bitmap data for each bitmap glyph
+      in Apple fonts. 'EBLC' is used by MS/Adobe instead (and has the same format)</TD> -->
+    <TD>Apple のフォントにおいては、各ビットマップグリフに該当するビットマップデータへのポインタを提供します。MS/Adobe では、この代わりに&lsquo;EBLC&rsquo;を使用します (フォーマットはこれと同じです)</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6bloc.html">bloc</A></TD>
+    <TD><P ALIGN=Center>
+      *</TD>
+  </TR>
+  <TR>
+    <TD>CFF</TD>
+<!--<TD><A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5176.CFF.pdf">Compact
+      Font Format</A></TD>-->
+    <TD><A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5176.CFF.pdf">コンパクトフォントフォーマット</A></TD>
+<!--<TD>Provides all the outline data (and sometimes glyph names as well) for
+      the PostScript
+      <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5177.Type2.pdf">Type2</A>
+      font that is the heart of an OpenType font. Vaguely equivalent to 'glyf'
+      , 'loca' and 'post' combined.</TD> -->
+    <TD>OpenType フォントの中核となる PostScript <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5177.Type2.pdf">Type2</A> フォントのすべてのアウトラインデータ (それに加えてグリフ名も) を提供します。大雑把に言えば、&lsquo;glyf&rsquo;,&lsquo;loca&rsquo;および&lsquo;post&rsquo;を組み合わせた物と同等と言えます。</TD>
+    <TD><P ALIGN=Center>
+      *</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_cff.html">CFF</A></TD>
+  </TR>
+  <TR>
+    <TD>cmap</TD>
+<!--<TD>character code mapping</TD>-->
+    <TD>文字コードとの対応</TD>
+<!--<TD>Provides at least one encoding from a stream of bytes to glyphs in the
+      font. FontForge provides at least three encodings in every font (one for
+      Mac Roman, one for Mac Unicode, one for MS Unicode). For some fonts it will
+      additionally provide a CJK encoding (Big5, SJIS, etc) or an extended unicode
+      encoding which will cover code points outside of the BMP. -->
+    <TD>バイトのストリームからフォント内のグリフへの対応づけを行うエンコーディングを少なくとも 1 個は提供します。FontForge は、各フォントに対して最低 3 個のエンコーディング (1 個は Mac Roman, 1 個は Mac Unicode, もう 1 個は MS Unicode です) を提供します。いくつかのフォントでは、CJK エンコーディング (Big5, SJIS など) または BMP に収まらないコードポイントをカバーする拡張 Unicode エンコーディングも提供します。
+      <P>
+<!--  For fonts with special 1-byte encodings (such as symbol) it will provide
+      a "symbol" encoding which maps a known page in the corporate use area to
+      the glyphs.</TD> -->
+      特殊な1バイトエンコーディング (Symbol など) をもつフォントに対しては、社用領域の基地の領域を各グリフに割り当てる“Symbol”エンコーディングを提供します。</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6cmap.html">cmap</A></TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_cmap.html">cmap</A></TD>
+  </TR>
+  <TR>
+    <TD>cvar</TD>
+<!--<TD>variations on cvt table</TD> -->
+    <TD>cvt テーブルに対するバリエーション</TD>
+<!--<TD>Used to specify hinting differences in distortable fonts</TD>-->
+    <TD>変形可能フォントにおけるヒントの差分情報を提供します。</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6cvar.html">cvar</A></TD>
+    <TD><P ALIGN=Center>
+      *</TD>
+  </TR>
+  <TR>
+    <TD>cvt</TD>
+<!--<TD>control value table</TD>-->
+    <TD>制御値テーブル (control value table)</t>
+<!--<TD>FontForge uses this when it attempts to hint truetype fonts (FontForge
+      will read it from a font and save it into another).</TD> -->
+    <TD>FontForge は、TrueType フォントにヒントづけを行おうとするときにこれを使用します (フォントからこれを読み込み、保存時に再び書き出します)。
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6cvt.html">cvt</A></TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_cvt.html">cvt</A></TD>
+  </TR>
+  <TR>
+    <TD>EBDT</TD>
+<!--<TD>embedded bitmap data</TD>-->
+    <TD>埋め込みビットマップデータ</TD>
+<!--<TD>Provides the actual bitmap data for all bitmap glyphs in MS/Adobe fonts.
+      'bdat' is used by Apple instead (and has the same format)</TD> -->
+    <TD>MS/Adobe のフォントですべてのビットマップグリフの実際のビットマップデータを提供します。Apple では代わりに&lsquo;bdat&rsquo;が用いられます (フォーマットは同じです)</TD> 
+    <TD><P ALIGN=Center>
+      *</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_ebdt.html">EBDT</A></TD>
+  </TR>
+  <TR>
+    <TD>EBLC</TD>
+<!--<TD>embedded bitmap location</TD>-->
+    <TD>埋め込みビットマップ位置</TD>
+<!--<TD>Provides pointers to the appropriate bitmap data for each bitmap glyph
+      in MS/Adobe fonts. 'bloc' is used by Apple instead (and has the same format)</TD> -->
+    <TD>MS/Adobe のフォントで、各ビットマップグリフに該当するビットマップへのポインタを提供します。Apple では代わりに&lsquo;bloc&rsquo;が用いられます (フォーマットは同じです)</TD>
+    <TD><P ALIGN=Center>
+      *</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_eblc.html">EBLC</A></TD>
+  </TR>
+  <TR>
+    <TD>EBSC</TD>
+<!--<TD>embedded bitmap scaling</TD>-->
+    <TD>埋め込みビットマップのスケーリング</TD>
+<!--<TD>Provides information on how to scale bitmaps (on those rare occasions
+      where this is desirable). FontForge uses it when making bitmap only fonts
+      for windows.</TD>-->
+    <TD>ビットマップのスケーリングをどのように行うかに関する情報 (それを行うのが望ましい稀な場合) を提供します。FontForge は、Windows 用のビットマップのみのフォントを作成する時にこれを使用します。</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6EBSC.html">EBSC</A></TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_ebsc.html">EBSC</A></TD>
+  </TR>
+  <TR>
+    <TD>feat</TD>
+<!--<TD>layout feature table</TD>-->
+    <TD>レイアウト機能テーブル</TD>
+<!--<TD>Maps features specified in Apple's 'morx' (or 'mort') tables into names
+      provided in the 'name' table. FontForge generates this when it generates
+      a 'morx' table.</TD> -->
+    <TD>Apple の&lsquo;morx&rsquo;(または&lsquo;mort&rsquo;) テーブルから、&lsquo;name&rsquo;テーブルが提供している名前への対応づけを行います。FontForge は&lsquo;morx&rsquo;テーブルを生成するときにはこれも生成します。
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6feat.html">feat</A></TD>
+    <TD><P ALIGN=Center>
+      *</TD>
+  </TR>
+  <TR>
+    <TD>fpgm</TD>
+<!--<TD>font program</TD>-->
+    <TD>フォントプログラム</TD>
+<!--<TD>FontForge never generates this, but it will preserve it and allows users
+      to edit it.</TD> -->
+    <TD>FontForge はこれを決して生成しませんが、これを保持してユーザが編集できるようにします。
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6fpgm.html">fpgm</A></TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_fpgm.html">fpgm</A></TD>
+  </TR>
+  <TR>
+    <TD>fvar</TD>
+<!--<TD>font variations</TD>-->
+    <TD>フォントバリエーション</TD>
+<!--<TD>Provides top level information about distortable fonts. Specifies the
+      types of distortions possible.</TD> -->
+    <TD>変形可能フォントに関するトップレベルの情報を提供します。可能な変形のタイプを指定します。</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6fvar.html">fvar</A></TD>
+    <TD><P ALIGN=Center>
+      *</TD>
+  </TR>
+  <TR>
+    <TD>gasp</TD>
+<!--<TD>grid-fitting and scan conversion</TD>-->
+    <TD>グリッド合わせおよびスキャン変換</TD>
+<!--<TD>When FontForge does not attempt to hint a truetype font it will generate
+      this table which tells the rasterizer not to to do grid-fitting (hinting)
+      but to do anti-aliasing instead.</TD> -->
+    <TD>FontForge が TrueType フォントのヒントづけを試みない場合、ラスタライザにグリッド合わせ (ヒント処理) を行わずに、アンチエイリアスを行うように指定します。</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6gasp.html">gasp</A></TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_gasp.html">gasp</A></TD>
+  </TR>
+  <TR>
+    <TD>GDEF</TD>
+<!--<TD>glyph definition</TD>-->
+    <TD>グリフ定義</TD>
+<!--<TD>Divides glyphs into various classes that make using the GPOS/GSUB tables
+      easier. Also provides internal caret positions for ligatures. It is approximately
+      equivalent to Apple's 'prop' and 'lcar' tables combined.</TD> -->
+    <TD>GPOS/GSUB テーブルを使いやすくするために、グリフを多数のクラスに分類します。また、合字内部のキャレット位置も提供します。これは Apple の&lsquo;prop&rsquo;と&lsquo;lcar&rsquo;の両テーブルを合わせたものとほぼ同等です。
+    <TD><P ALIGN=Center>
+      *</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats5.html">GDEF</A></TD>
+  </TR>
+  <TR>
+    <TD>glyf</TD>
+<!--<TD>glyph outline</TD>-->
+    <TD>グリフアウトライン</TD>
+<!--<TD>Provides outline information for truetype glyphs. Vaguely equivalent
+      to 'CFF '.</TD> -->
+    <TD>TrueType グリフのアウトライン情報を提供します。大雑把に言えば&lsquo;CFF &rsquo;と同等と言えます。</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6glyf.html">glyf</A></TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_glyf.html">glyf</A></TD>
+  </TR>
+  <TR>
+    <TD>GPOS</TD>
+<!--<TD>glyph positioning</TD>-->
+    <TD>グリフ位置指定</TD>
+<!--<TD>Provides kerning information, mark-to-base, etc. for opentype fonts.
+      See the <A HREF="gposgsub.html#GPOS">chapter on GPOS</A> in FontForge for
+      more information. Vaguely equivalent to 'kern' and 'opbd' tables.</TD> -->
+    <TD>カーニング情報、マークと基底文字の位置関係などを OpenType フォントに提供します。より詳しい情報については、<A HREF="gposgsub.html#GPOS">GPOS に関する章</A>を参照してください。大雑把に言えば&lsquo;kern&rsquo;および&lsquo;opbd&rsquo;と同等と言えます。</TD>
+    <TD><P ALIGN=Center>
+      *</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats1.html">GPOS</A></TD>
+  </TR>
+  <TR>
+    <TD>GSUB</TD>
+<!--<TD>glyph substitution</TD>-->
+    <TD>グリフ置換</TD>
+<!--<TD>Provides ligature information, swash, etc. for opentype fonts. See the
+      <A HREF="gposgsub.html#GSUB">chapter on GSUB</A> in FontForge for more
+      information. Vaguely equivalent to 'morx'.</TD> -->
+    <TD>合字やスワッシュ文字などに関する情報を OpenType フォントに提供します。より詳しい情報については、<A HREF="gposgsub.html#GSUB">GSUB に関する章</A>を参照してください。大雑把に言えば、&lsquo;morx&rsquo;と同等と言えます。</TD>
+    <TD><P ALIGN=Center>
+      *</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats1.html">GSUB</A></TD>
+  </TR>
+  <TR>
+    <TD>gvar</TD>
+<!--<TD>glyph variations</TD>-->
+    <TD>グリフバリエーション</TD>
+<!--<TD>This table contains the meat of a distortable font. It specifies how
+      each glyph can be distorted.</TD> -->
+    <TD>このテーブルは変形可能フォントの中身を含んでいます。各グリフをどのように変形することができるかを指定します。</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6gvar.html">gvar</A></TD>
+    <TD><P ALIGN=Center>
+      *</TD>
+  </TR>
+  <TR>
+    <TD>head</TD>
+<!--<TD>font header</TD>-->
+    <TD>フォントヘッダ</TD>
+<!--<TD>Contains general font information, such as the size of the em-square,
+      a time stamp, check sum infomation, etc.</TD> -->
+    <TD>em 正方形のサイズ、タイムスタンプ、チェックサム情報などの一般的なフォント情報を含みます</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6head.html">head</A></TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_head.html">head</A></TD>
+  </TR>
+  <TR>
+    <TD>hhea</TD>
+<!--<TD>horizontal header</TD>-->
+    <TD>横書きヘッダ</TD>
+<!--<TD>This table contains font-wide horizontal metric information.</TD>-->
+    <TD>このテーブルはフォントの全般的な水平メトリック情報を含みます。</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6hhea.html">hhea</A></TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_hhea.html">hhea</A></TD>
+  </TR>
+  <TR>
+    <TD>hmtx</TD>
+<!--<TD>horizontal metrics</TD>-->
+    <TD>横書きメトリック</TD>
+<!--<TD>This contains the per-glyph horizontal metrics.</TD>-->
+    <TD>これには各グリフの水平方向のメトリックが含まれます。</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6hmtx.html">hmtx</A></TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_hmtx.html">hmtx</A></TD>
+  </TR>
+  <TR>
+    <TD>kern</TD>
+<!--<TD>kerning</TD>-->
+    <TD>カーニング</TD>
+<!--<TD>Provides kerning information for Apple's truetype fonts (and for older
+      MS truetype fonts). In OpenType fonts this information is contained in the
+      GPOS table.</TD> -->
+    <TD>Apple の TrueType フォント (および、MS の旧式の TrueType フォント) にカーニング情報を提供します。OpenType フォントでは、この情報は GPOS テーブルに入っています。</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6kern.html">kern</A></TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_kern.html">kern</A></TD>
+  </TR>
+  <TR>
+    <TD>lcar</TD>
+<!--<TD>ligature caret</TD>-->
+    <TD>合字キャレット</TD>
+<!--<TD>This table provides the location of carets within ligatures in an Apple
+      font. This information is contained in the GDEF table in opentype fonts.</TD> -->
+    <TD>このテーブルは、Apple の TrueType フォントに合字内部のキャレット位置を提供します。OpenType フォントでは、この情報は GDEF テーブルに入っています。</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6lcar.html">lcar</A></TD>
+    <TD><P ALIGN=Center>
+      *</TD>
+  </TR>
+  <TR>
+    <TD>loca</TD>
+<!--<TD>glyph location</TD>-->
+    <TD>グリフ位置</TD>
+<!--<TD>This provides a pointer into the 'glyf' table for each glyph in the font.
+      It is required for truetype and meaningless for opentype (where vaguely
+      equivalent information is provided in the CFF table).</TD> -->
+    <TD>このテーブルは、フォントファイルが含む各グリフの&lsquo;glyf&rsquo;テーブル内へのポインタを提供します。TrueType では必須であり、OpenType では無意味です (その情報と同じような情報は CFF テーブル内部で提供されています)。</TD>
+</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6loca.html">loca</A></TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_loca.html">loca</A></TD>
+  </TR>
+  <TR>
+    <TD>maxp</TD>
+<!--<TD>maximum profile</TD>-->
+    <TD>最大プロファイル</TD>
+<!--<TD>Provides general "maximum" information about the font. This contains:
+      the maximum number of glyphs in a font, the maximum number of points in a
+      glyph, the maximum number of references in a glyph, etc.</TD> -->
+    <TD>フォントに関する一般的な“最大値”情報を提供します。こねには、フォント内のグリフの最大個数・グリフ内の点の最大個数・グリフ内の参照の最大個数などが含まれます。
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6maxp.html">maxp</A></TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_maxp.html">maxp</A></TD>
+  </TR>
+  <TR>
+    <TD>mort</TD>
+<!--<TD>metamorphosis</TD> -->
+    <TD>メタモルフォーゼ</TD>
+<!--<TD>FontForge will read this table but not generate it. This table has been
+      replaced by the 'morx' table which will be generated instead. It is vaguely
+      equivalent to the GSUB table.</TD> -->
+    <TD>FontForge はこのテーブルを読み込みますが、けっして出力することはありません。このテーブルの代わりに&lsquo;morx&rsquo;テーブルを用いることになったので、そちらの方をこの代わりに出力します。大雑把に言えば、これは GSUB テーブルと等価です。
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6mort.html">mort</A></TD>
+    <TD><P ALIGN=Center>
+      *</TD>
+  </TR>
+  <TR>
+    <TD>morx</TD>
+<!--<TD>extended metamorphosis</TD>-->
+    <TD>拡張メタモルフォーゼ</TD>
+<!--<TD>Provides ligature information, swash, etc. for apple's truetype fonts.
+      FontForge can read and write this table. See the
+      <A HREF="gposgsub.html#AAT">chapter on morx</A> in FontForge for more
+      information. Vaguely equivalent to 'GSUB'.</TD> -->
+    <TD>Apple 形式の TrueType フォントで合字、スワッシュ文字などに関する情報を提供します。FontForge はこのテーブルの読み書きができます。より詳しい情報は、FontForge の <A HREF="gposgsub.html#AAT">morx に関する章</A>を参照してください。大雑把に言えば、&lsquo;GSUB&rsquo;と等価です。
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6morx.html">morx</A></TD>
+    <TD><P ALIGN=Center>
+      *</TD>
+  </TR>
+  <TR>
+    <TD>name</TD>
+<!--<TD>name</TD>-->
+    <TD>名前</TD>
+<!--<TD>Provides certain standard strings relevant to the font (font name, family
+      name, license, etc.) in various languages. In Apple fonts also provides the
+      names of various features of the 'morx'/'mort' table.</TD> -->
+    <TD>フォントに関連するいくつかの標準的な文字列 (フォント名、ファミリー名、ライセンスなど) を各種の言語で提供します。Apple 形式のフォントでは&lsquo;morx/mort&rsquo;テーブルの各種の機能の名前も提供します。
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6name.html">name</A></TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_name.html">name</A></TD>
+  </TR>
+  <TR>
+    <TD>opbd</TD>
+<!--<TD>optical bounds</TD>-->
+    <TD>視覚的境界</TD>
+<!--<TD>This table provides optical bound information for each glyph in the table
+      in an Apple font. This information may also be provided in the GPOS table
+      of an opentype font.</TD> -->
+    <TD>このテーブルは、Apple 形式のフォント内のテーブルに含まれる各グリフの視覚的境界情報を提供します。この情報は、OpenType の GPOS テーブルで提供することもできます。</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6opbd.html">opbd</A></TD>
+    <TD><P ALIGN=Center>
+      *</TD>
+  </TR>
+  <TR>
+    <TD>PfEd</TD>
+<!--<TD>FontForge's personal table</TD>-->
+    <TD>FontForge の私用テーブル</TD>
+<!--<TD>This table is unique to FontForge. It can contain things like FontForge's
+      comments, and colors.I describe its format
+      <A HREF="non-standard.html">here</A>.</TD> -->
+    <TD>このテーブルは FontForge のみが使用します。ここには FontForge のコメントや色などを含めることができます。このフォーマットの説明は、<A HREF="non-standard.html">ここ</A>にあります。</TD>
+    <TD><P ALIGN=Center>
+      *</TD>
+    <TD><P ALIGN=Center>
+      *</TD>
+  </TR>
+  <TR>
+    <TD>post</TD>
+<!--<TD>glyph name and postscript compatibility</TD> -->
+    <TD>グリフ名および PostScript 互換情報</TD>
+<!--<TD>This table provides some additional postscript information (italic angle),
+      but mostly it provides names for all glyphs.</TD> -->
+    <TD>このテーブルは、いくつかの追加の PostScript 情報 (イタリックの傾斜角) を提供しますが、全てのグリフの名前を提供するのが主目的です。</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6post.html">post</A></TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_post.html">post</A></TD>
+  </TR>
+  <TR>
+    <TD>prep</TD>
+<!--<TD>cvt program</TD>-->
+    <TD>cvt プログラム</TD>
+<!--<TD>FontForge never generatest this table itself, but it will retain it when
+      reading other fonts, and it allows users to edit it.</TD> -->
+    <TD>FontForge がこのテーブルを自分自身で出力することは決してありませんが、他のフォントを読み込んだ時にはそれを保持しており、それをユーザが編集することもできます。</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6prep.html">prep</A></TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_prep.html">prep</A></TD>
+  </TR>
+  <TR>
+    <TD>prop</TD>
+<!--<TD>glyph properties</TD>-->
+    <TD>グリフの属性</TD>
+<!--<TD>Provides the unicode properties of each glyph for an Apple font. This
+      table bears some similarities to the GDEF table.</TD>-->
+    <TD>Apple フォントで、各グリフの Unicode の属性を提供します。このテーブルは GDEF テーブルとの類似性をいくらか呈しています。</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6prop.html">prop</A></TD>
+    <TD><P ALIGN=Center>
+      *</TD>
+  </TR>
+  <TR>
+    <TD>TeX</TD>
+<!--<TD>TeX information</TD> -->
+    <TD>TeX 情報</TD>
+<!--<TD>This table is unique to FontForge and is for use by TeX. I describe its
+      format <A HREF="non-standard.html">here</A>.</TD> -->
+    <TD>これは FontForge 独自のテーブルで、TeX で使用するための情報を格納します。このフォーマットの解説は<A HREF="non-standard.html">ここ</A>にあります。</TD>
+    <TD><P ALIGN=Center>
+      *</TD>
+    <TD><P ALIGN=Center>
+      *</TD>
+  </TR>
+  <TR>
+    <TD>vhea</TD>
+<!--<TD>vertical header</TD>-->
+    <TD>縦書きヘッダ</TD>
+<!--<TD>FontForge generates this table for fonts with vertical metrics. This
+      table contains font-wide vertical metric information.</TD> -->
+    <TD>FontForge は縦書き用のメトリックを持つフォントに対して、このテーブルを生成します。このテーブルはフォントの全般的な垂直メトリック情報を含みます。</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6vhea.html">vhea</A></TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_vhea.html">vhea</A></TD>
+  </TR>
+  <TR>
+    <TD>vmtx</TD>
+<!--<TD>vertical metrics</TD>-->
+    <TD>縦書きメトリック</TD>
+<!--<TD>FontForge generates this table for fonts with vertical metrics. This
+      contains the per-glyph vertical metrics.</TD> -->
+    <TD>FontForge は縦書き用のメトリックを持つフォントに対して、このテーブルを生成します。このテーブルはグリフごとの垂直メトリックを含みます。</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6vmtx.html">vmtx</A></TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_vmtx.html">vmtx</A></TD>
+  </TR>
+  <TR>
+    <TD>VORG</TD>
+<!--<TD>Vertical origin</TD>-->
+    <TD>縦書きの原点</TD>
+<!--<TD>Specifies the vertical origin of the baseline of sub-fonts of a CID keyed
+      opentype font.</TD> -->
+    <TD>CID キー指定 OpenType フォントに含まれるサブフォントのベースラインの垂直方向の原点を指定します。</TD>
+    <TD><P ALIGN=Center>
+      *</TD>
+    <TD><P ALIGN=Center>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_vorg.html">VORG</A></TD>
+  </TR>
+</TABLE>
+<P>
+<!--
+<A HREF="gposgsub.html">Advanced Typography tables in FontForge</A> -->
+<A HREF="gposgsub.html">FontForge の高度組版テーブル</A>
+</DIV>
+</BODY></HTML>

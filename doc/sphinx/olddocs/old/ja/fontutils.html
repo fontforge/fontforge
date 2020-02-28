@@ -1,0 +1,73 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 19-Feb-2003 -->
+  <!-- AP: Last modified: 22-Sep-2005 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>Random utilities for examining fonts</TITLE>-->
+    <TITLE>フォントを吟味するための雑多なユーティリティ</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+<H1 ALIGN=Center>
+<!--Utilities for examining fonts-->
+    フォントを吟味するためのユーティリティ
+</H1>
+<H2>
+  <A HREF="http://cvs.sourceforge.net/viewcvs.cgi/fontforge/fontforge/fonttools/showttf.c">ShowTTF</A>
+</H2>
+<P>
+<!--
+showttf is a program which will decompose a truetype (or opentype) font file
+into its various tables and display the contents of those tables as best
+it can. It will also point out the errors it finds in the file. This is similar
+to MicroSoft's
+<A HREF="http://www.microsoft.com/typography/tools/tools.htm">ttfdump</A>
+(except mine shows some of Apple's tables which ttfdump does not), and to
+Apple's
+<A HREF="http://developer.apple.com/fonts/OSXTools.html">ftxdumperfuser</A>
+(except mine shows some OpenType tables which Apple's ignores). And, of course,
+mine is open source and runs on most any system. -->
+showttf は TrueType (または OpenType) フォントファイルを、それが含む多数のテーブルに分解し、可能な限りそれらのテーブルの内容を表示するプログラムです。ファイルに含まれる誤りの指摘も行います。これは Microsoft の <A HREF="http://www.microsoft.com/typography/tools/tools.htm">ttfdump</A> (私のプログラムは、ttfdump が表示しない何種類かの Apple 独自のテーブルを表示する点が異なります) および Apple の <A HREF="http://developer.apple.com/fonts/OSXTools.html">ftxdumperfuser</A>
+ (私のは Apple が無視する何種類かの OpenType のテーブルを表示する点が異なります) とほぼ同じです。
+<BLOCKQUOTE>
+  <PRE>showttf fontfile
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+<A HREF="http://cvs.sourceforge.net/viewcvs.cgi/fontforge/fontforge/fonttools/showttf.c">The
+source code is in the cvs tree</A>. -->
+<A HREF="http://cvs.sourceforge.net/viewcvs.cgi/fontforge/fontforge/fonttools/showttf.c">ソースコードは CVS ツリーに含まれています</A>。
+<H2>
+  <A HREF="http://cvs.sourceforge.net/viewcvs.cgi/fontforge/fontforge/fonttools/ttf2eps.c">Ttf2Eps</A>
+</H2>
+<P>
+<!--
+ttf2eps will allow you to extract one (or all) glyphs from a font and convert
+them into eps files. -->
+ttf2eps を使うと、1 個 (またはすべて) のグリフをフォントから取り出し、EPS ファイルに変換することができます
+<H2>
+  <A HREF="http://cvs.sourceforge.net/viewcvs.cgi/fontforge/fontforge/fonttools/pfadecrypt.c">PfaDecrypt</A>
+</H2>
+<P>
+<!--
+pfadecrypt will undo Adobe's encryption on pfa/pfb files and converts the
+byte codes into readable postscript like instructions. -->
+pfadecrypt は pfa/pfb ファイルに含まれる Adobe の暗号化処理を除去し、バイトコードを PostScript に似た命令に変換します。
+<H2>
+  <A HREF="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/fontforge/fontforge/fonttools/pcl2ttf.c">Pcl2Ttf</A>
+</H2>
+<P>
+<!--
+Will extract ttf or bitmap fonts embedded in an hp pcl file. Bitmap fonts
+become bdf fonts (I don't have any examples of run length encoded bitmap
+fonts, and do not currently support them. If you have an rle bitmap pcl font
+please send it to me). I have neither documentation on nor examples of the
+"Intellifont" format, so these fonts are not supported. -->
+これは HP の PCL ファイルに埋め込まれた TTF フォントを取り出します。
+ビットマップフォントは BDF フォントになります (私はランレングス符号化されたビットマップフォントの実例を知らないので、現在はそれらをサポートしていません。連長圧縮ビットマップ PCF フォントをお持ちであれば私にお知らせください)。私は“Intellifont”フォーマットの文書も例も知りませんので、それらはサポートされていません。
+</DIV>
+</BODY></HTML>

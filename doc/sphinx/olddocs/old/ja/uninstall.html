@@ -1,0 +1,57 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 8-May-2006 -->
+  <!-- AP: Last modified: 12-May-2006 -->
+<!--<TITLE>Uninstalling</TITLE> -->
+    <TITLE>インストール後の削除法</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+<!--Uninstalling FontForge -->
+    インストールした FontForge の削除方法
+  </H1>
+  <P>
+<!--
+  I've never bothered to make this easy. -->
+  まだ簡単に削除できるようにしていません。
+  <P>
+<!--
+  If you installed in /usr/local (the default) then you type either: -->
+  (デフォルトの) /usr/local にインストールしたならば以下のようにタイプするか、
+  <BLOCKQUOTE>
+    <PRE>$ su
+password:
+$ rm -rf /usr/local/bin/{fontforge,sfddiff} \
+/usr/local/lib/{libgdraw,libgunicode,libuninameslist}* \
+/usr/local/lib/pkgconfig/fontforge.pc \
+/usr/local/man/man1/{fontforge,sfddiff}.1 \
+/usr/local/share/doc/fontforge \
+/usr/local/share/locale/*/LC_MESSAGES/FontForge.mo
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  or if you are on a mac: -->
+  Mac の場合は以下のようにタイプする必要があるでしょう。
+  <BLOCKQUOTE>
+    <PRE>$ sudo rm -rf /usr/local/bin/{fontforge,sfddiff} \
+/usr/local/lib/{libgdraw,libgunicode,libuninameslist}* \
+/usr/local/lib/pkgconfig/fontforge.pc \
+/usr/local/man/man1/{fontforge,sfddiff}.1 \
+/usr/local/share/doc/fontforge \
+/usr/local/share/locale/*/LC_MESSAGES/FontForge.mo
+password:
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  If you've installed to a different prefix (/usr perhaps) then simply substitute
+  /usr for /usr/local above. -->
+  違うプレフィクス (おそらく /usr) を指定してインストールしている場合、違いは上の /usr/local とあるところを /usr とするだけのことです。
+</DIV>
+</BODY></HTML>

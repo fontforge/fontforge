@@ -1,0 +1,299 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 26-Oct-2005 -->
+  <!-- AP: Last modified: 8-May-2006 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>FontForge install procedures for cygwin (MS/Windows)</TITLE>-->
+    <TITLE>FontForge の cygwin (MS-Windows) へのインストール手順</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+<!--FontForge install procedures<BR>
+    <SMALL>for cygwin under MS Windows</SMALL> -->
+    <SMALL>MS-Windows 上の cygwin</SMALL> への<BR>
+    FontForge のインストール手順
+  </H1>
+  <UL>
+    <LI>
+<!--  <A HREF="#Installing">Installing from a pre-built cygwin package</A>-->
+      <A HREF="#Installing">構築済みの cygwin パッケージからのインストール方法</A>
+      <UL>
+	<LI>
+<!--	  <A HREF="#Before">Before you install</A> -->
+	  <A HREF="#Before">インストールする前に</A>
+	<LI>
+<!--	  <A HREF="#Obtaining">Obtaining one of my pre-built packages</A> -->
+	  <A HREF="#Obtaining">必要な構築済みのパッケージを入手する方法</A>
+	<LI>
+<!--	  <A HREF="#install">Installing</A> -->
+	  <A HREF="#install">インストール方法</A>
+	<LI>
+<!--	  <A HREF="#Notes">Notes</A> -->
+	  <A HREF="#Notes">注意点</A>
+      </UL>
+    <LI>
+<!--  <A HREF="nix-install.html">Installing on a unix/linux system</A> -->
+      <A HREF="nix-install.html">Unix/Linux システムへのインストール方法</A>
+    <LI>
+<!--  <A HREF="mac-install.html">Installing on a mac</A>-->
+      <A HREF="mac-install.html">Mac へのインストール方法</A>
+    <LI>
+<!--  <A HREF="vms-install.html">Installing on VMS</A>-->
+      <A HREF="vms-install.html">VMS へのインストール方法</A>
+    <LI>
+<!--  <A HREF="source-build.html#MS">Building and installing from source</A>-->
+      <A HREF="source-build.html#MS">ソースからの構築・インストール方法</A>
+    <LI>
+<!--  <A HREF="source-build.html#Dependencies">Dependencies (external libraries/helper
+      programs)</A> -->
+      <A HREF="source-build.html#Dependencies">依存性 (外部ライブラリ/補助プログラム)</A>
+    <LI>
+<!--  <A HREF="source-build.html#Documentation">Installing documentation</A>-->
+      <A HREF="source-build.html#Documentation">文書のインストール方法</A>
+    <LI>
+<!--  <A HREF="running.html#cygwin">Running FontForge</A>-->
+      <A HREF="running.html#cygwin">FontForge の起動方法</A>
+    <LI>
+<!--  <A HREF="uninstall.html">Uninstalling</A> -->
+      <A HREF="uninstall.html">削除方法</A>
+  </UL>
+  <H2>
+<!--<A NAME="Installing">Installing</A> from a pre-built package-->
+    構築済みパッケージからの<A NAME="Installing">インストール方法</A>
+  </H2>
+  <H3>
+<!--<A NAME="Before">Before</A> you install-->
+    インストールする<A NAME="Before">前に</A>
+  </H3>
+  <P>
+<!--
+  You must insure that you have <A HREF="http://www.cygwin.com/">cygwin</A>
+  installed on your system. Cygwin is free. (cygwin makes MS Windows look enough
+  like unix to allow fontforge to run there). Getting all the bits of cygwin
+  seems to be the hardest part of installing fontforge - - probably because
+  it is the least expected part. -->
+  システム上に間違いなく <A HREF="http://www.cygwin.com/">cygwin</A> がインストールされていることを確認する必要があります。cygwin は無料です。(cygwin は、MS-Windows を、FontForge の実行には十分な程度に Unix のように見せかける環境です。Cygwin の必要なすべてのビットを入手するのが FontForge のインストールで一番難しい作業のように思えます——おそらく、これが一番予想外の作業だからでしょう。
+  <UL>
+    <LI>
+<!--  First download the setup.exe program from
+      <A TARGET="_top" HREF="http://www.cygwin.com/">http://www.cygwin.com/</A> -->
+      まず <A TARGET="_top" HREF="http://www.cygwin.com/">http://www.cygwin.com/</A> から setup.exe プログラムをダウンロードします。
+    <LI>
+<!--  Run it. It will ask you what components of cygwin you wish to install -->
+      それを実行します。cygwin のどのコンポーネントをインストールしたいかを尋ねてきます。
+    <LI>
+<!--  You will need the default stuff, plus the X window system -->
+      デフォルトの部分に加え、X ウィンドウシステムはつねに必要でしょう。
+      <P>
+<!--  Most of what you need you get by default. But you must explicitly request
+      X11. Scroll down the list of catagories: -->
+      必要な部品の多くはデフォルトの設定で得られるはずです。しかし、X11 は自分で要求する必要があります。カテゴリのリストを下にスクロールしてください。
+      <UL>
+	<LI>
+<!--	  Near (or at) the bottom, click on the [+] beside X11. Then make sure the
+	  following are selected: -->
+	  一番最後 (か、その近く) で、X11 の横にある [+] をクリックしてください。それから以下のすべてが選択されていることを確認してください。
+	  <UL>
+	    <LI>
+	      X-startup-scripts
+	    <LI>
+	      XFree86-lib-compat
+	    <LI>
+	      xorg-x11-base
++	    <LI>
+	      xorg-x11-bin
+	    <LI>
+	      xorg-x11-dlls
+	    <LI>
+	      xorg-x11-lndir
+	    <LI>
+	      xorg-x11-etc
+	    <LI>
+	      xorg-x11-f100
+	    <LI>
+	      xorg-x11-libs-data
+	    <LI>
+	      xorg-x11-xwin
+	    <LI>
+	      xterm
+	  </UL>
+      </UL>
+      <P>
+<!--  By accepting the default settings you actually download tens or hundreds
+      of megabytes more than you need. L. Tikhomrov has actually gone through and
+      figured out which packages are neccesary for a minimal install and has kindly
+      written this up in a <A HREF="ff_cygwin_set.pdf">pdf document</A>. It takes
+      a bit more work, but if you are short on space (or time) it may be worth
+      it. -->
+      デフォルトの設定のままだとダウンロードするファイルの容量が、必要なぶんよりも数十〜数百 MB も多くなります。L. Tikhomrov は実際の調査の結果、最小インストールに必要なのはどのパッケージかを突き止め、親切にもこの <A HREF="http://fontforge.sourceforge.net/ff_cygwin_set.pdf">PDF 文書</A>を書いてくれました。これには手間が少しかかりますが、ディスク容量 (またはダウンロード時間) が不足しているなら、手間をかける価値はあるでしょう。
+    <LI>
+<!--  Once you have cygwin installed, start it. This should give you a terminal
+      window running bash (a unix shell)-->
+      インストールが終わったら cygwin を実行してください。bash (Unix シェルの一種) を実行する端末ウィンドウが開くでしょう。
+  </UL>
+  <H3>
+<!--<A NAME="Obtaining">Obtaining</A> one of my pre-built packages-->
+    構築済みのパッケージの<A NAME="Obtaining">入手方法</A>
+  </H3>
+  <P>
+<!--
+  I post a cygwin install package on
+  <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040">sourceforge's
+  file release system</A>. There's a certain amount of pother involved in using
+  the file release system, but you get the file eventually. -->
+  cygwin 用のインストールパッケージは <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040">Sourceforge のファイルリリースシステム</A>に登録されています。これらのシステムの利用に関してはいくらか面倒な点がありますが、操作を続ければファイルを入手できるはずです。
+  <UL>
+    <LI>
+<!--  If you follow the
+      <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040">link
+      above </A>you will end up on a page showing many releases of FontForge for
+      many systems<BR>
+      in most cases you will want the most recent release. -->
+      <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040">このリンク</A>をたどっていけば、各種システム用の FontForge のさまざまなリリースを表示するページに行き着くでしょう。<BR>
+      ほとんどの場合、最新のリリースを入手するのがいいでしょう。
+    <LI>
+<!--  Then click on the executable package you want to download:-->
+      それからダウンロードしたい実行ファイルのパッケージをクリックします:
+      <UL>
+	<LI>
+<!--	  The cygwin release will be called something like
+	  "fontforge_cygwin-200xxxxx.tar.bz2 -->
+	  cygwin 版のリリースは“fontforge-cygwin-200xxxxx.tar.bz2”といった感じの名前がついています。
+      </UL>
+    <LI>
+<!--  Then you have the joy of choosing a mirror site (pick one that's on the same
+      continent you are) and click on the little icon in the download column -->
+      次に、ミラーサイトを選ぶ喜びを味わうことができます (自分と同じ大陸のサイトのどれかを選びます)。Download 欄にある小さなアイコンをクリックします。
+    <LI>
+<!--  Then you wait. After a bit you get another copy of this same page. After
+      an even longer time your browser notices that you've started a download. -->
+      待ちます。しばらくすると、これと同じページが再び表示されます。ブラウザが、ダウンロードを開始したというメッセージを表示するのはそのずっと後です。
+  </UL>
+  <H3>
+<!--<A NAME="install">Installing</A>-->
+    <A NAME="install">インストール方法</A>
+  </H3>
+  <P>
+<!--
+  I have no idea where your browser put the package you have just downloaded.
+  This is unfortunate as I can't tell you exactly what to do next. But find
+  the package (often it's on the desktop) and then move it into
+  C:\cygwin\home\&lt;username&gt;. (where &lt;username&gt; is whatever name
+  cygwin gave you) -->
+  あなたのブラウザがパッケージをどこにダウンロードするのかは私には分かりません。残念ですがそういうわけで、次に行う手順を正確に記述することはできません。ですがパッケージを探して (たいがいはデスクトップに置かれていると思いますが)、それを C:\cygwin\home\&lt;username&gt; に移動してください (ここで &lt;username&gt; は、cygwin があなたに割り当てた何らかの名前です。
+  <UL>
+    <LI>
+<!--  Then open a cygwin window (by clicking on the cygwin icon) -->
+      それから (cygwin アイコンをクリックして) cygwin ウィンドウを開きます。
+    <LI>
+<!--  With luck you will now be in the directory containing the package you downloaded. -->
+      運が良ければ、ダウンロードしたパッケージを含むディレクトリに着くでしょう。
+    <LI>
+<!--  Now type (do not type the "$"): -->
+      そうしたら以下のようにタイプします (“<CODE>$</CODE>”はタイプしません):
+      <BLOCKQUOTE>
+	<PRE><FONT COLOR="Gray">$ </FONT>bunzip2 fontforge_cygwin-*.tar.bz2
+<FONT COLOR="Gray">$ </FONT>tar xf fontforge_cygwin-*.tar
+<FONT COLOR="Gray">$ </FONT>cd fontforge
+<FONT COLOR="Gray">$ </FONT>./doinstall
+</PRE>
+      </BLOCKQUOTE>
+    <LI>
+<!--  Then edit the file ~/.bashrc by (again do not type "$", use control-D (^D)
+      to end): -->
+      それから以下のようにして、ファイル ~/.bashrc を編集します (ここでも“<CODE>$</CODE>”は入力しません。入力の終了には Control-D (^D) を使用します):
+    <LI>
+      <BLOCKQUOTE>
+	<PRE><FONT COLOR="Gray">$ </FONT>cat &gt;&gt; ~/.bashrc
+PATH=${PATH}:/usr/local/bin ; export PATH
+MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
+^D
+</PRE>
+      </BLOCKQUOTE>
+    <LI>
+<!--  Then each time you want to run fontforge, type:-->
+      その後、FontForge を使用するたびごとに、以下のように入力します:
+      <BLOCKQUOTE>
+	<PRE><FONT COLOR="Gray">$ </FONT>xinit
+</PRE>
+      </BLOCKQUOTE>
+    <LI>
+<!--
+      This should bring up X in a large window that covers the screen and within
+      that should be a subwindow, an xterm, running bash. -->
+      これにより、画面全体を蔽う大きなウィンドウをもつ X が起動し、そこには bash を実行する xterm のサブウィンドウがあるはずです。
+    <LI>
+<!--  From the xterm you first start a window manager -->
+      xterm 上からまずウィンドウマネージャを起動します:
+      <BLOCKQUOTE>
+	<PRE><FONT COLOR="Gray">$ </FONT>twm &amp;
+</PRE>
+      </BLOCKQUOTE>
+<!--  And then you should be able start FontForge.-->
+      これで FontForge が起動可能になっているはずです。
+    <LI>
+      <BLOCKQUOTE>
+	<PRE><FONT COLOR="Gray">$ </FONT>fontforge -new
+</PRE>
+      </BLOCKQUOTE>
+  </UL>
+  <H3>
+<!--<A NAME="Notes">Notes</A>-->
+    <A NAME="Notes">注意点</A>
+  </H3>
+  <P>
+<!--
+  <FONT COLOR="Red"><STRONG>Caveat: </STRONG></FONT>cygwin has a different
+  approach to the file system than Windows. A filename like
+  <CODE>C:\windows\fonts\arial.ttf </CODE>will be called
+  <CODE>/cygdrive/c/windows/fonts/arial.ttf </CODE>under cygwin (backslashes
+  are replaced by slashes, and the initial drive "<CODE>C:</CODE>" becomes
+  "<CODE>/cygdrive/c</CODE>"-->
+  <FONT COLOR="Red"><STRONG>警告: </STRONG></FONT>cygwin は Windows と異なるファイルシステムへのアプローチをとっています。<CODE>C:\windows\fonts\arial.ttf</CODE> のようなファイル名は cygwin では <CODE>/cygdrive/c/windows/fonts/arial.ttf </CODE> という名前が付けられます (バックスラッシュはスラッシュに置き換えられ、先頭のドライブ名“<CODE>C:</CODE>”は“<CODE>/cygdrive/c</CODE>”に置き換えられます。
+  <P>
+<!--
+  Similarly a cygwin filename
+  "<CODE>/home/&lt;username&gt;/myfont.ttf</CODE>" becomes
+  "<CODE>C:\cygwin\home\&lt;username&gt;\myfont.ttf</CODE>" -->
+  同様に、cygwin でのファイル名“<CODE>/home/&lt;username&gt;/myfont.ttf</CODE>”は“<CODE>C:\cygwin\home\&lt;username&gt;\myfont.ttf</CODE>”のことです。
+  <P>
+<!--
+  <STRONG><FONT COLOR="Red">Caveat</FONT>:</STRONG> Do <STRONG>NOT</STRONG>
+  try to install a font by using fontforge to write the font directly to the
+  Windows\Fonts directory. This doesn't work. Windows needs to do some magic
+  when installing a font that it can't do if fontforge writes directly there.
+  Instead have fontforge create the font somewhere else and then use Windows'
+  own drag &amp; drop technique to move the font from there into Windows\Fonts.-->
+  <STRONG><FONT COLOR="Red">警告</FONT>:</STRONG> FontForge を使って Windows\Fonts ディレクトリに直接フォントをインストールしようと<STRONG>しないで</STRONG>ください。その方法では動作しません。Windows はフォントのインストール時に、FontForge で直接書き込んだ時には起動されない、ある種の秘密の動作を必要とします。そうするのではなく、FontForge でどこか他の場所にフォントを作成し、 Windows 内蔵のドラッグ&amp;ドロップ操作を行ってフォントを Windows\Fonts に移動してください。
+  <P>
+<!--
+  <STRONG><FONT COLOR="Red">Caveat</FONT>:</STRONG> I've been told that on
+  Win 98 you need to have "Microsoft Network Login" installed to run X. I never
+  found this to be true myself, but if you have problems it might be something
+  to try. -->
+  <STRONG><FONT COLOR="Red">警告</FONT>:</STRONG> Win98 では、X を実行するために“Microsoft Network Login”をインストールする必要があると聞きました。自分ではそれが必要だったことは一度もありませんが、もしあなたが問題を抱えているならば、これも試してみるべき事の一つでしょう。
+  <P>
+    <HR>
+  <UL>
+    <LI>
+<!--  <A HREF="source-build.html#MS">Building and installing from source</A>-->
+      <A HREF="source-build.html#MS">ソースからの構築・インストール方法</A>
+    <LI>
+<!--  <A HREF="source-build.html#Dependencies">Dependencies (external libraries/helper
+      programs)</A>-->
+      <A HREF="source-build.html#Dependencies">依存性 (外部ライブラリ/補助プログラム)</A>
+    <LI>
+<!--  <A HREF="source-build.html#Documentation">Installing documentation</A>-->
+      <A HREF="source-build.html#Documentation">文書のインストール方法</A>
+    <LI>
+<!--  <A HREF="running.html#cygwin">Running FontForge</A>-->
+      <A HREF="running.html#cygwin">FontForge の起動方法</A>
+  </UL>
+  <P>
+</DIV>
+</BODY></HTML>
+  

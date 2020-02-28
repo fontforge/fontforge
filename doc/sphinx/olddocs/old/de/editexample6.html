@@ -1,0 +1,185 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 27-Jan-2003 -->
+  <!-- AP: Last modified: 11-Dec-2005 -->
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <TITLE>Mehr fortgeschrittene Funktionen, Ligaturen, Markierungspositionierung, Zeichenvarianten</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+    Tutorial #6
+  </H1>
+    <ul>
+    <li>
+    <a href="editexample.html#FontCreate">Kreieren eines neuen Schriftsatzes</a>
+    </li><li>
+    <a href="editexample.html#CharCreate">Erzeugung eines Bildzeichens (Umrissverfolgung)</a>
+    </li><li>
+    <a href="editexample2.html#Navigating">Navigation zu weiteren Bildzeichen</a>
+    </li><li>
+    <a href="editexample2.html#Creating-o">Auf zum nächsten Bildzeichen (konsistente Richtungen)</a>
+    </li><li>
+    <a href="editexample3.html#consistent-stems">Konsistente Serifen und Stammbreiten</a>
+    </li><li>
+    <a href="editexample4.html#accents">Erzeugung akzentuierter Bildzeichen</a>
+    </li><li>
+      <a href="editexample4.html#ligature">Erzeugung einer Ligatur</a>
+    </li><li>
+    <a href="editexample5.html#metrics">Untersuchung von Metriken</a>
+      <ul>
+	<li>
+  <a href="editexample5.html#baseline">Setzen der Gundlinie zur Grundlinienteilung eines Schriftsatzes</a>
+      </li></ul>
+    </li><li>
+    <a href="editexample5.html#Kerning">Unterschneidung</a>
+    </li><li>
+    <a href="editexample6.html#Variants">Bildzeichenvarianten</a>
+    </li><li>
+    <a href="editexample6.html#Marks">Ankermarkierungen</a>
+    </li><li>
+      <a href="editexample6-5.html#Conditional">Bedingte Eigenschaften</a>
+    </li><li>
+      <a href="editexample7.html#checking">Überprüfen des Schriftsatzes</a>
+    </li><li>
+      <a href="editexample7.html#Bitmaps">Bitmaps</a>
+    </li><li>
+    <a href="editexample7.html#generating">Erzeugung</a>
+    </li><li>
+      <a href="editexample7.html#Families">Schriftsatzfamilien</a>
+    </li><li>
+      <a href="editexample7.html#summary">Fazit</a>
+    </li><li>
+    <a href="scriptnotes.html#Special">Bemerkungen zu verschiedenen Skripten</a>
+  </li></ul>
+  <H2>
+  <A NAME="Variants">Bildzeichenvarianten</A>
+  </H2>
+  <P>
+  In vielen Zeichensätzen existieren mehrere Varianten eines Zeichens. Das offensichtlichste
+  Beispiel ist bei lateinischen Schriften, daß jeder Buchstabe eine
+  kleingeschriebene und eine großgeschriebene Variante besitzt.
+  Ein etwas esoterisches Beispiel ist die in der Renaissance verwendete
+  lange s-Variante am Anfang und in der Mitte eines Wortes, während das
+  kurze s nur am Ende eines Wortes verwendet wurde.
+  <P>
+    Die meisten arabischen Zeichen haben vier Varianten (Anfang, im Wort,
+    am Ende und alleinestehend).
+  <P>
+    Ziffern haben oft mehrere Varianten: Tabellarische Ziffern (in denen
+    alle Ziffern die selbe Schrittweite besitzen, so daß Zahlentabellen
+    nicht unregelmäßig aussehen), proportionale Ziffern (jede Ziffer
+    besitzt eine ihrer Form entsprechende Breite) und altmodische oder
+    kleingeschriebene Ziffern
+  (<IMG src="../../_images/lcdigits.png" WIDTH="76" HEIGHT="18" ALIGN="Middle">).
+  <P>
+    Einige der genannten Varianten sind in den Codierungen enthalten
+    (wie die Unterscheidung zwischen Klein- und Großschreibung),
+    in anderen Fällen sollte dem Schriftsatz Zusatzinformation hinzugefügt
+    werden, so daß die Textverarbeitung diese Varianten erkennt (Arabisch
+    liegt zwischen diesen beiden Fällen, die verschiedenen Formen sind
+    in der Codierung enthalten, aber es muss auch Zusatzinformation
+    bereitgestellt werden).
+  <P>
+    Angenommen der Fall der oben beschriebenen Ziffern. Das Zeichen "eins"
+    enthalte die tabellarische Variante der eins, das Zeichen "eins.prop"
+    enthalte die proportionale Variante und "eins.altmodisch" die
+    kleingeschriebene Variante. "Eins" wird aus der Schriftsatzansicht
+    ausgewählt, dann, <CODE>Bearbeiten-&gt;Zeicheninformation</CODE>,
+    und im <CODE>Subs</CODE>-Tab der <CODE>[Neu]</CODE> Knopf gedrückt,
+    woraufhin ein neuer Dialog erscheint.
+    Im Komponenten-Feld wird "eins.prop" eingegeben,
+    "Proportionale Zahlen" aus der Auswahlliste eingestellt (verändert sich nach "pnum"),
+    und der gewünschte Schriftsatz gewählt (die Schrift 'latn' und Sprache
+    'dflt' decken viele Fälle ab). Anschliessend wird mit <CODE>[Ok]</CODE>
+    bestätigt.
+  <P>
+    Einige Variantenformen sind in FontForge eingebaut und wenn
+    <CODE>Element-&gt;Typo. Eigenschaften-&gt;Default ATT-&gt;(Variantenname)</CODE>
+    verwendet wird, kann FontForge diesen Prozess u.U. automatisieren.
+  <P>
+  (Anmerkung: Type0, Type1 und Type3 PostScript-Schriften haben keine Notation,
+  um dies zu behandeln. Um diese Varianten zu erzeugen, muß entweder eine OpenType or
+  TrueType-Schrift verwendet werden).
+  <H3>
+    <A NAME="Conditional">Bedingte</A> Varianten
+  </H3>
+  <P>
+  FontForge unterstützt die kontextbezogenen Ersetzungstabellen und die verketteten
+  kontextbezogenen Ersetzungstabellen von OpenType und in geringerem Umfang
+  die kontextbezogenen Zeichenersetzungstabellen von Apple. Das bedeutet, daß
+    bedingte Varianten im Schriftsatz eingesetzt werden können.
+    <A HREF="editexample6-5.html#Conditional">Auf der nächsten Seite</A>
+    wird hierauf im Detail eingegangen.
+  <H2>
+  <A NAME="Marks">Ankermarkierungen</A>
+  </H2>
+  <P>
+    Einige Schreibschriften (Arabisch, Hebräisch) erfordern Vokalmarkierungen um
+    die Haupttextzeichen herum. Für andere (einige Varianten von Latein und
+    Griechisch) gibt es so viele mögliche Akzentkombinationen, daß
+    vorgefertigte Zeichen für alle Kombinationen nicht handbar sind.
+  <P>
+  In OpenType (einschliesslich Microsofts TrueType) ist es möglich,
+  an allen Basiszeichen einzustellen, an welchen Stellen Markierungen angebracht werden
+  sollten und an allen Markierungen, wo Basiszeichen angebracht werden sollten.
+  Folglich könnte ein Anker zentriert über ein großes A gesetzt werden, der
+  angibt, daß alle Akzente (aigu, grave, Umlaut, circonflex, tilde,
+  macron, ring, caron, ....) dort ansetzen sollten. Unterhalb aller
+  Akzente könnte ein weiterer Anker gesetzt werden, so daß wenn diese zwei
+  Zeichen im Text adjazent sind, die Textverarbeitung den Akzent
+  automatisch über das "A" setzt.
+  <TABLE>
+    <TR>
+      <TD><IMG src="../../_images/a_with_anchor.png" WIDTH=104 HEIGHT=208></TD>
+      <TD>+</TD>
+      <TD><IMG src="../../_images/grave_with_anchor.png" WIDTH=66 HEIGHT=208></TD>
+      <TD>=&gt;</TD>
+      <TD><IMG src="../../_images/agrave_anchored.png" WIDTH=104 HEIGHT=208></TD>
+    </TR>
+  </TABLE>
+  <P>
+  Nicht alle Akzente sitzen zentriert über dem Buchstaben
+  (Punkt und ogonek liegen unterhalb) des Zeichens, so daß u.U. mehrere
+  Anker für verschiedene Markierungsstile benötigt werden.
+  <P>
+    Schließlich können einige Buchstaben auch mehrere Akzente besitzen,
+    z.B. ist U+1EA4 ein A mit einem Circonflex und einem Aigu. Normalerweise
+    setzen Circonflex und Aigu an der selben Stelle an, was in diesem
+    Fall sowohl wenig attraktiv als auch verwirrend wäre. Stattdessen kann eine
+    andere Art Anker an dem Circonflex erzeugt werden
+    (ein Markierung-zu-Markierung-Anker), dem Accent Aigu wird dann
+    mitgeteilt, daß er an diesem Anker ansetzen soll.
+  <P>
+    Bevor in einem Zeichen Anker erzeugt werden können, muß FontForge
+    mitgeteilt werden, daß die Schriftart Anker verwendet.
+    Hierzu wird für jede Art von Zeichenanhang jeweils eine
+    <A HREF="../../index.html#Anchors">Ankerklasse</A> definiert,
+    im oben beschriebenen Beispiel oben also zwei. Der Dialog
+    für den Befehl
+    <CODE><A HREF="../../ui/dialogs/fontinfo.html#Anchors">Element-&gt;Schriftinformation-&gt;Ankerklassen</A></CODE>
+    erlaubt die Eingabe dieser Information.
+  <P>
+  Dann wird in jedem Zeichen, daß Anhänge besitzen soll, zunächst die
+  Stelle angeklickt, an der der Anker erstellt werden soll und dann der
+  Befehl <CODE><A HREF="../../ui/menus/pointmenu.html#AddAnchor">Punkt-&gt;Anker hinzufügen</A></CODE>
+  aufgerufen.
+  <P>
+    Das Aussehen eines Zeichens im Zusammenspiel mit anderen kann mit
+    Hilfe von <CODE><A HREF="../../ui/menus/metricsmenu.html#AnchorControl">Metriken-&gt;Ankerkontrolle...</A></CODE>
+    betrachtet und korrigiert werden.
+  <P>
+  <FONT COLOR="Red"><STRONG>Eine Warnung zu Anhangsmarkierungen:</STRONG></FONT>
+    Sie werden nicht von jeder Software unterstützt, schlimmer noch, einige
+    Programme könnten diese für gewisse Schriften unterstützen, 
+    für andere dagegen nicht.
+  <P>
+  <P>
+  <P ALIGN=Center>
+  -- <A HREF="editexample5.html">Vorherige Seite</A> -- <A HREF="../../index.html">Inhalt</A>
+  -- <A HREF="editexample6-5.html">Nächste Seite</A> --
+</DIV>
+</BODY></HTML>

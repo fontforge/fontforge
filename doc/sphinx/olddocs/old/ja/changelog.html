@@ -1,0 +1,1969 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 27-Aug-2002 -->
+  <!-- AP: Last modified: 9-Apr-2006 -->
+  <!-- AP: Last modified: 15-Jul-2006 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>Change log for FontForge</TITLE> -->
+    <TITLE>FontForge の変更履歴</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+<!--  <A NAME="change-log">Changes</A> <SMALL>(Enhancements &amp; Bug Fixes)</SMALL> -->
+      <A NAME="change-log">変更点</A> <SMALL>(拡張とバグ修正)</SMALL>
+  </H1>
+  <P>
+<!--
+  Changes since the last release may be found by performing a "cvs log" command
+  on the file stamp.c. -->
+  最新のリリース以降の変更点は、ファイル stamp.c を“cvs log”コマンドで調べれば分かります。
+  <BLOCKQUOTE>
+    <TABLE BGCOLOR="#FFFFC0">
+      <TR>
+	<TD>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</TD>
+<!--	<TD><SMALL><B><SMALL>TEGEUS:</SMALL></B><BR>
+	  &nbsp; &nbsp; &nbsp; Tell me,<BR>
+	  What is your opinion of Progress? Does it, for example,<BR>
+	  Exist? Is there ever progression without retrogression?<BR>
+	  Therefore is it not true that mankind<BR>
+	  Can more justly be said increasingly to Gress?<BR>
+	  &nbsp;</SMALL></TD> -->
+	<TD><SMALL><B><SMALL>テゲウス:</SMALL></B><BR>
+	  &nbsp; &nbsp; &nbsp; 教えてくれ、<BR>
+	  きみは進歩を何だと考えているのかを。例えば、進歩の存在を<BR>
+	  信じているかね? 退歩なしに進歩だけしたためしがあったろうか?<BR>
+	  だから、人類はますます歩(ぽ)していると言った方が<BR>
+	  簡にして要を得ているんじゃないだろうか?</BR>
+	  &nbsp;</SMALL></TD>
+	<TD>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+	  &nbsp;</TD>
+	<TD VALIGN="Bottom"><P ALIGN=Right>
+	  — <SMALL>A Pheonix too Frequent<BR>
+	  Christopher Fry, 1950</SMALL></TD>
+      </TR>
+    </TABLE>
+  </BLOCKQUOTE>
+  <UL>
+    <LI>
+<!--  15-Jul-2006 -->
+      2006年7月15日
+      <UL>
+	<LI>
+<!--	  Apple's bitmap only fonts should not have an 'hhea' nor an 'hmtx'
+	  table<BR>
+	  Dummy up outline glyph widths when we don't have a 'hmtx' table by looking
+	  at bitmap widths for that glyph.<BR>
+	  ftxvalidate complains if the vertical line metrics are 0. Even in a strike
+	  with no vertical metrics information. So dummy something up. -->
+	  Apple のビットマップのみのフォントは 'hhea' と 'hmtx' の量テーブルを含んでいてはいけません<BR>
+	  'hmtx' テーブルが無い場合には、そのグリフのビットマップの幅を見てダミーのアウトライングリフを作成。<BR>
+	  ftxvalidate は、縦書きの行メトリクスが 0 だと文句を言います。縦書きメトリック情報を含まないストライクにおいてもそうなのです。そういうわけで何らかのダミーを作成するようにしました。
+	<LI>
+<!--	  Was getting the flags wrong for turning off features in an apple morx chain. -->
+	<LI>
+	  When outputing mark-to-base sub-tables with multiple marks I neglected to
+	  output an NUL offsets for the anchors that weren't there. So if a glyph had
+	  only one anchor (instead of two, or however many) then the offsets would
+	  be all wrong.
+	<LI>
+	  The SetPref() scripting function was misdocumented to be called SetPrefs()
+	  so accept both names.
+	<LI>
+	  When building an accented letter out of glyphs with an anchor class ff would
+	  increase the advance width of the accented glyph by the size (xmax-xmin)
+	  of the accent.
+	<LI>
+	  Expand the functionality of the ruler tool so that it also shows curvature.
+	<LI>
+	  When importing a bitmap font from a mac binary or an sfnt and the encodings
+	  of the destination and the bitmap did not match, then things got rather screwed
+	  up and might crash.
+	<LI>
+	  patch from KANOU. the ref check routine in glyphcomp compared one reference
+	  to itself.
+      </UL>
+    <LI>
+<!--  03-Jul-2006 -->
+      2006年7月3日
+      <UL>
+	<LI>
+	  Type2 charstrings have no closepath operator. I used to think that meant
+	  I could not omit the final vector. In fact it means I can omit the final
+	  vector AND the closepath operator.
+	<LI>
+	  If we had a font with no complete code pages we used to generate a version
+	  0 OS/2 table without codepage info. But now windows refuses to install such
+	  a font. Instead generate a bogus codepage field which claims to have latin1
+	  (even though it doesn't).
+	  <P>
+	  Windows won't use a font where the codepages field is 0.
+	<LI>
+	  When generating a FOND for a bitmap only sfnt, we created dummy 'NFNT' resources
+	  with the wrong resource ids. Which meant we got garbage when the font was
+	  used.
+	<LI>
+	  Make the TabSets in the font &amp; glyph info dialogs run vertically rather
+	  than hor izontally. (Add an option to get the old display back).
+	<LI>
+	  Approximate Spline from Point Slopes sometimes set the control point while
+	  leavi ng the nonextcp flag on.
+	<LI>
+	  Add Extrema only looked at how close a point was to the extrema in one dimension.
+	  While that dimension is more important, make a less stringent check on the
+	  other.
+	<LI>
+	  Expand Stroke removes "U-turns" from splines because they confuse it. But
+	  the routine that did that got a bit rambunctious and did the wrong thing
+	  on a circular arc.
+	<LI>
+	  If a font did not contain an OS/2 table then we didn't retain the 'hhea'
+	  ascent/ descent.
+	<LI>
+	  Various fixes from Matthias Kilian of OpenBSD.
+	<LI>
+	  When asking for default 'subs' features, every glyph gets assigned U+2080.
+	<LI>
+	  Display the curvature information at each point. In Point Info dlg, and in
+	  a pop up window when editing cps.
+	<LI>
+	  Add two new menu commands/scripting commands:
+	  <UL>
+	    <LI>
+	      Canonical Start Points (CanonicalStart())
+	    <LI>
+	      Canonical Contours (CanonicalContours())
+	  </UL>
+	  <P>
+	  The first sets the start point of each contour to the leftmost point, while
+	  the second orders the contours by their leftmost points. This will slightly
+	  reduce the size of output charstrings. It will also make more things available
+	  to be put in subroutines.
+	<LI>
+	  Print Multi-Size &amp; Full Page printed the wrong glyphs from the font view.
+	  Broken since the encoding change.
+	<LI>
+	  When stroking a contour that makes a 180degree turn, ff did not give it a
+	  semi-circle if linejoin was set to round.
+	<LI>
+	  SPLCopyTranslatedHintMasks didn't work if there were more than one contour
+	  being copied.
+	<LI>
+	  Nathan Summers points out that if the XUID is garbage the ff can go into
+	  an infinite loop when generating an otf/cff font.
+	<LI>
+	  Somehow the XUID and UniqueID fields crept off the bottom of the fontinfo
+	  Names p ane and weren't visible or modifyable. Give them their own pane now.
+	<LI>
+	  Apply some patches (with some changes) from Nathan Summers to the truetype
+	  debug ger.
+	<LI>
+	  The property count in BDF fonts is wrong.
+	<LI>
+	  Ralf Stubner points out that the notdef glyph in an otf font should look
+	  like that in a ttf font, and not like that in a type1 font. (that is there
+	  should be something in the glyph).
+	<LI>
+	  Add support for group "encodings" which have empty spaces for unused glyphs.
+	<LI>
+	  make another attempt to find a good default sli for glyphs with no default
+	  script.
+	<LI>
+	  Typo in scripting function DefaultATT.
+	<LI>
+	  The View-&gt;Display Substitutions has been broken since the encoding change
+	  last summer.
+	<LI>
+	  Mark glyphs with out of date instructions differently from those with no
+	  instructions.
+	<LI>
+	  The last change to the cvt table generally did not get made.
+	<LI>
+	  Make glyph compare check for point matching in anchor points and in references.
+	<LI>
+	  Add a warning message about out of date instructions when generating a font.
+	<LI>
+	  When generating a font with anchor points matched to ttf points, ff failed
+	  to allocate enough space for them and offsets got all confused.
+	<LI>
+	  Oops. Some variables which should have been static were dynamic. Which meant
+	  we kept dlopening libfreetype.
+	<LI>
+	  If we had an anchor point which positioned itself with point matching, and
+	  we ge nerated an otf font then we'd output a lookup which tried to do point
+	  matching i n postscript. Only do point matching if we are sure we're in a
+	  tt font.
+	<LI>
+	  Add a preference item to control clearing of tt instructions.
+	<LI>
+	  Printing a multi-size page of a truetype font crashed.
+	<LI>
+	  Anchor Point dlg didn't work well with matching tt points.
+	<LI>
+	  Add a field to allow users to search for a glyph name within a kerning class.
+	<LI>
+	  Interesting. In kerning by classes, if the coverage table does not match
+	  the glyphs specified in all the classes (for the first (left) glyph), then
+	  any glyphs in the coverage table but not in any class should be treated as
+	  being in class 0.
+	<LI>
+	  Add something to the font view's copy from menu to control whether truetype
+	  instructions are copied or not.
+	<LI>
+	  Add some more problems to find problems
+	  <UL>
+	    <LI>
+	      Check for glyphs with both contours and references.
+	    <LI>
+	      Find out of date point matched references.
+	    <LI>
+	      Find references with transformation matrices which can't be expressed (as
+	      refs) in truetype
+	    <LI>
+	      Find references with transformation matrices which aren't translations (and
+	      so can't be expressed (as refs) in type1/2 fonts.
+	  </UL>
+	<LI>
+	  Allow the user to turn off composite info in afm files.
+	<LI>
+	  otf kerning classes were dumped in the wrong order.
+	<LI>
+	  In GaramondPremrPro.otf (version 001.000) Adobe has coverage tables (for
+	  some context chaining subs) which have the glyphs mentioned multiple times.
+	  I suppose this is legal, but it is annoying. I want my strings to have each
+	  glyph appear at most once. So add a little thingy to remove duplicate glyphs
+	  when we generate a list of glyph names.
+	<LI>
+	  Adobe has depreciated the use of PUA to represent small caps, old style numerals,
+	  etc. Add a preference item so that ff will no longer recognize "a.sc" as
+	  having a PUA encoding.
+	<LI>
+	  The tool tip for the preference item "NameListForNewFonts" was wrong.
+	<LI>
+	  Horizontal scrolling in the show att dlg was too slow. It was by pixel. Make
+	  it be by something which approximates the width of a character.
+	<LI>
+	  Add a new scripting command to give a font's bounding box.
+	<LI>
+	  Sigh. Within a GPOS lookup, sub-tables are not additive. Only one will be
+	  applied at a time. So order the 'kern' lookup so that pair-wise kerning comes
+	  out first (to override class kerning).
+	<LI>
+	  Was sometimes outputting mkmk base-mark attachement points as the mark attachment
+	  point.
+	<LI>
+	  Clytie Siddall has many suggestions about how to make the translation process
+	  easier for translators. He also tells me how to insert contextual comments
+	  into the program source, and provides many fixes for typoes.
+	<LI>
+	  The OS/2 version 1,2 has a different defn of avgCharWidth than OS/2 version
+	  3(,4) does. Display of CJK fonts is supposed to break under windows if using
+	  the v3 defn.
+	  <P>
+	  Use the appropriate defn for the version we happen to be outputting.
+	<LI>
+	  Autohinting crashed on glyphs in an order2 font if the glyph contained both
+	  an outline and a reference.
+	<LI>
+	  Pressing the help key in the main windows went to the overview page, not
+	  to the contextual help for the window.
+	<LI>
+	  Add a warning when 'CFF ' widths and 'hmtx' widths differ.
+	<LI>
+	  Set the default and normative widths too late after the cff subroutine change.
+	<LI>
+	  Make double clicking in the list of kern pair/anchor combinations bring up
+	  either Kern Pair Closeup dlg or Anchors Away.
+	<LI>
+	  The Anchor control dlg didn't work after the encoding change.
+	<LI>
+	  Add a popup message to explain what "Cor:" means.
+	<LI>
+	  Doing a Close() from a script didn't work if the windowing system were open.
+	<LI>
+	  Yet another bug in type1 hinting output.
+	<LI>
+	  Some versions of realloc don't like allocating 0 bytes.
+	<LI>
+	  Users expect ff to recognize a glyph name "Diaeresis", even though Adobe
+	  (following standard American, but not European spelling) spells it "Dieresis".
+	<LI>
+	  GhostScript has canniptions when it gets a version 3 OS/2 table in a ttf
+	  file.
+	<LI>
+	  Can't add a flex hint when there's a hintmask at the mid point.
+	<LI>
+	  The hintmask part of PointInfo would not let you clear a hintmask.
+	<LI>
+	  Add a new command to the fontview: Edit-&gt;Select-&gt;Select by Name<BR>
+	  and a new scripting command: SelectAllInstancesOf
+	  <P>
+	  Both will select all encoding slots containing the named glyph (or unicode
+	  value)
+	<LI>
+	  Add scripting command: RemoveDetachedGlyphs
+	<LI>
+	  Was setting typo linegap to hhead linegap.
+	<LI>
+	  Using the X clipboard to paste into the character view has been broken at
+	  least since I added multi-layered editing.
+	<LI>
+	  Add a pref to control whether we prefer to use spacing or combining accents
+	  when building accented glyphs.
+	<LI>
+	  Spacing in the group dlg was sometimes off.
+	<LI>
+	  More hinting fixes. If the edges of a stem aren't quite parallel we had problems
+	<LI>
+	  Add some new built in variables: $order, $em, $ascent, $descent
+	<LI>
+	  The 'TeX ' table was output incorrectly if glyph's order wasn't the same
+	  in the sf as in the ttf.
+	<LI>
+	  Allow the [*] Back visibility checkbox to control whether the grid fit lines
+	  are visible or not.
+	<LI>
+	  If scripting is in verbose mode, flush the output buffer before calling a
+	  built in procedure (so any errors it generates will at least show the right
+	  line).
+	<LI>
+	  Ambrose LI points out that the master font in a cid keyed font should match
+	  the ascent/descent of at least one of its subfonts (so that the
+	  typoAscent/Descent f ields will default correctly).
+	<LI>
+<!--	  Spend some quality time with valgrind looking (oh, and fixing) memory leaks. -->
+	  valgrind でメモリリークを探し (ああ、そして修正し)、品質向上にいくらかの次間を費しました。
+	<LI>
+<!--	  Make ControlAfmLigatureOutput (scripting command) apply to ofm/tfm files
+	  too. -->
+	  (スクリプト関数) ControlAFMLigatureOutput を OFM/TFM ファイルにも適用するようにしました。
+	<LI>
+<!--	  Oops. When parsing mac state machines I was using sizeof(long) when I should
+	  have said sizeof(int32). It gave rather bad results on 64bit machines. -->
+	  ありゃ。Mac 状態機械の解析処理中に、sizeof(int32) を使用すべき所で sizeof(long) を使用していました。これは 64 ビットマシンでかなり酷い結果を引き起こしていました。
+	<LI>
+<!--	  Add a scripting function to load a user defined cidmap file. -->
+	  ユーザ定義の cidmap ファイルを読み込むスクリプト関数を追加。
+	<LI>
+<!--	  Hmm. sizeof(point)==8 on AMD64, but structures are aligned to 4. This means
+	  our chunk alloc routines complain. So if we're given something that isn't
+	  in units o f sizeof(pointer) then just round it up. -->
+	  うーむ。AMD64 では sizeof(point)==8 ですが、構造体のアラインメントは 4 バイト単位です。これにより、我々の chunkalloc ルーチン類が文句を言います。そう言うわけで、sizeof(pointer) の倍数でない物が与えられた場合、単純に切り上げるように丸めることにしました。
+	<LI>
+<!--	  lookup ordering within GSUB has been totally broken at least since I added
+	  the c ode to coalesce lookups for kerning. -->
+	  GSUB に含まれる照合の順序づけが、カーニング用の照合を合体するためのコードを追加して以来完全に壊れていました。
+	<LI>
+<!--	  Kanou suggests changing function name that includes Char to be Glyph. Well
+	  a few do really mean Char, but the rest should be Glyph. Leave the old names
+	  there bu t document them as deprecated. -->
+	  狩野が関数名に含まれる Char を Glyph に変更する事を提案しました。たしかに、本当に Char を意味している物はほとんど無いようで、残りは Glyph に置き換える事ができます。古い名前は残しておきますが、廃止済であることを文書化しておきます。
+	<LI>
+<!--	  Make CID keyed fonts use the new subroutine mechanism too. We can use global
+	  sub rs now too! -->
+	  CID キー指定フォントが新しいサブルーチンメカニズムも使用するようにしました。グローバルサブルーチンも使えるようになりました!
+	<LI>
+<!--	  Oops. Familyname can be NULL, and we were indescriminately checking to make
+	  sure its length was less than 31. -->
+	  ありゃ。Familyname が NULL になることがありました。それと、その長さが 31 文字いないになるように無差別のチェックを行っていました。
+	<LI>
+<!--	  Make a better use of subroutines when generating otf fonts. Doesn't work
+	  for CID fonts yet. -->
+	  OTF フォントの出力にサブルーチンをより良く使用するようにしました。CID フォントではまだ動作しません。
+	<LI>
+<!--	  We crashed if we changed from one cid sub-font to another when compacted. -->
+	  コンパクト表示にしたままで CID フォントのサブフォントを切り替えるとクラッシュしていました。
+	<LI>
+<!--	  Oops. I made ff work with ft22 if the debugger was being built... but it
+	  failed to compile if people didn't build the debugger. -->
+	  ありゃまあ。デバッガを組み込む設定では ff が ft22 で使えるようにしたのですが……デバッガが不要な時にはコンパイルが失敗していました。
+	<LI>
+<!--	  Oops a scripting function was marked as not needing a font when it did
+	  (HasPreservedTable &amp; friends). -->
+	  ありゃ、フォントが必要なスクリプト関数 (HasPreservedTable とその属) が「フォント不要」扱いになっていました。
+	<LI>
+<!--	  More for font compare. If there is a difference in a glyph in the two fonts
+	  add the option for including the outlines of the second glyph into the first.
+	  If the first font is missing a glyph, add an option to insert it with the
+	  outlines in the background. -->
+	  フォント比較について追加。2 つのフォント内のあるグリフに相違がある場合、後者のグリフのアウトラインを前者のグリフに取り込むかどうかを指定するオプションを追加しました。最初のフォントにグリフが内場合、背景のアウトラインとして取り込むオプションを追加しました。
+	<LI>
+<!--	  Good heavens, someone wants to play with acorn2sfd. Make it compile again. -->
+	  大変だ、acorn2sfd で遊びたいと誰かが考えました。またコンパイルできるようにしました。
+      </UL>
+    <LI>
+<!--  08-Apr-2006 -->
+      2006年4月8日
+      <UL>
+	<LI>
+<!--	  Patch by Mike Frysinger from gentoo. Use the HOME environment variable in
+	  preference to /etc/passwd. -->
+	  gentoo の Mike Frysinger からのパッチ。HOME 環境変数を /etc/passwd より優先して使用するように変更。
+	<LI>
+<!--	  Werner wants to see raw data in the points window of the debugger. My guess
+	  is that most people won't be interested in this mode (and it makes the window
+	  a bit uglier) so I've made it configurable. - -with-debug-raw-points -->
+	  Werner はデバッガの点ウィンドウ中で生データを見ることができるように要望しました。私の推測では、ほとんどの人はこのモードに興味を持たないでしょう (そしてウィンドウの見栄えが少し汚くなるでしょう) から、コンパイル時に --with-debug-raw-points をつけるか否かで調整できるようにしました。
+	<LI>
+<!--	  Write sfddiff as a fontforge script and put it back into the install process. -->
+          sfddiff を FontForge スクリプトとして書き、それをインストール処理に再び追加しました。
+	<LI>
+<!--	  Someone wanted acorn2sfd! Make it compile again. -->
+	  acorn2sfd を必要な人がいました! それをまたコンパイルするようにしました。
+	<LI>
+<!--	  Make configure look for libgif -->
+	  configure が libgif を探すように変更。
+      </UL>
+    <LI>
+<!--  06-Apr-2006 -->
+      2006年4月6日
+      <UL>
+	<LI>
+<!--	  Patch by Ian Jackson of Ubuntu. When in an empty glyph (one not WorthOutputting)
+	  then doing a View-&gt;Show Grid Fit would cause a crash. -->
+	  Ubuntu の Ian Jackson からのパッチ。現在のグリフが (出力するに値しない) 空のグリフであるとき、表示(V)→グリッド合わせを表示 を行うとクラッシュしていました。
+ 	<LI>
+<!--	  The PLRM says that formfeed is whitespace. The T1_Spec says that it is not.
+	  After an eexec the T1_Spec is right (and ff was following the PLRM
+	  definition).<BR>
+	  Also add a check to insure that the first character we generate in pfb encryption
+	  isn't a white space character. -->
+	  PLRM は、フォームフィードは空白文字であるとしています。T1_Spec には、そうではないと書いてあります。eexec の後では T1_Spec の指摘通りでした (ff は今まで PLRM の定義に従っていました。<BR>
+	  また、PFB 暗号化において、出力される最初の文字が空白文字ではないことを確かにするためのチェックを追加しました。
+	<LI>
+<!--	  On some windows systems (mine at least), windows will refuse to install a
+	  postscript font if the fontname or familyname of that font is longer than
+	  31 characters. These are the names in the Font Dictionary of the postscript
+	  font itself, not the names in the 'name' table (for otf fonts). -->
+	  いくつかの Windows システム (少なくとも私の) では、フォントの /FontName または /FamilyName が 31 文字を超えるような PostScript フォントをインストールすることを拒絶します。これは PostScript フォント本体のフォント辞書に関する話であり、(OTF フォントに関しては) 'name' テーブル内の名前には適用されません。
+	<LI>
+<!--	  Make ff compile with freetype 2.2.0 -->
+	  ff を FreeType 2.2.0 と一緒にコンパイル可能にする修正。
+	<LI>
+<!--	  The popup menu of text fields was garbage. -->
+	  テキストフィールドのポップアップメニュー表示が壊れていました。
+	<LI>
+<!--	  Make a change to pfm output which might allow non windows ANSI encoded fonts
+	  to work. -->
+	  Windows ANSI エンコーディングでないフォントが動作できるように PFM 出力を変更。
+	<LI>
+<!--	  Allow the freehand tool to work in quadratic fonts. -->
+	  フリーハンドツールが 2 次曲線フォントで動くようにしました。
+	<LI>
+<!--	  Didn't always refigure splines properly when using Get Info in quadratic
+	  mode. Patch by Michal Nowakowski. -->
+	  2 次モードで 情報を得る(I) を用いたとき、スプラインを再構成していない場合がありました。Micael Nowakowski からのパッチ。
+	<LI>
+<!--	  Trying to invoke the KDE browser (for help) didn't work. Patch by Dimitar
+	  Zhekov -->
+	  KDE のブラウザを (ヘルプ表示のために) 呼ぼうとしている所が動いていませんでした。Dimitar Zhekov によるパッチ。
+	<LI>
+<!--	  Still losing instructions if contours begin with off-curve points. -->
+	  輪郭がオフカーブ点から始まっていた場合、情報の喪失がまだ起こっていました。
+	<LI>
+<!--	  if a font had a defined notdef glyph, then FF would usually enter it incorrectly
+	  in the 'hmtx' table. -->
+	  フォントが .notdef グリフを定義しているとき、FF は通常 'hmtx' テーブル内に誤ってそれを含めていました。
+	<LI>
+<!--	  In the Select menu, Width had an extra underscore. -->
+	  選択メニューの中で「Width」に不要なアンダースコアが加わっていました。
+	<LI>
+<!--	  Wasn't looking in the right place to get the right weight name in an otf
+	  font. -->
+	  OTF フォントから正しいウェイト名を得るための正しい場所を参照していませんでした。
+	<LI>
+<!--	  People have been complaining about the UI for drawing quadratic (truetype)
+	  curves. It was consistent with the UI for drawing cubic (postscript) curves,
+	  but it seems hard to draw quadratics that way. Rather than concentrating
+	  on the on-curve points (as in cubics), now concentrate on the off-curve points.
+	  So the pen-tool behaves quite differently now in quadratic mode. As does
+	  Element-&gt;Get info. -->
+	  2 次 (TrueType) 曲線を描くための UI については、皆が以前から文句を言っていました。それは 3 次曲線 (PostScript) と共通の方法でしたが、その方法では 2 次曲線を描くのは困難なようです。(3 次曲線のように) オンカーブ点のみに注目するよりも、オフカーブ点に集中するべきでしょう。これにより、ペンツールは 2 次モードではかなり異なったふるまいをするようになりました。エレメント(L)→情報を得る(I) も同様です。
+	<LI>
+<!--	  A patch added back in 2004 to make vertical substitutions work for Japanese
+	  (to work around a bug in Windows to be precise) had a bug itself if more
+	  than one language was involved. -->
+	  縦書き用置換を日本語環境で動くようにする (正確には、Windows のバグを回避する) ための、2004 年に遡るパッチそれ自体にバグがあり、1 個より多い言語が関わっている時に問題を起こしていました。
+	<LI>
+<!--	  When outputting an inline copy of a reference in otf fonts with translated
+	  hintmasks we did the wrong translation for vertical stems and got garbage
+	  results. -->
+	  平行移動したヒントマスクを含む、OTF フォントの参照のインラインコピーを出力する時、垂直ステムを間違った方法で平行移動しており、結果としてゴミが出力されていました。
+	<LI>
+<!--	  New command to allow user to enter X,Y coordinates of a point and have that
+	  point be selected. I want this for debugging. It might be useful generally. -->
+	  ユーザが点の X および Y 座標を入力するとその点が選択できるような新規コマンドを追加。私はデバッグのためにこれが欲しいのです。一般的にも有益だと思います。
+	<LI>
+<!--	  Fixed problems with type2 subroutines containing glyphs with conflicts. -->
+	  ヒントが衝突しているグリフを含む Type 2 サブルーチンに関する問題を修正。
+	<LI>
+<!--	  ReplaceWithReference had too large a fudge factor and found macron when it
+	  should have found macron.sc in minionpro-regular. -->
+	  ReplaceWithReference() の許容度が高すぎ、minionpro-regular で macron.sc を見つけるはずの所で macron を見つけてしまっていました。
+	<LI>
+<!--	  If an alternate/multiple subs had more than 30 components then we lost all
+	  those after 30 when generating opentype GSUB table. -->
+	  選択型置換または複数置換が 30 個以上の構成要素を含んでいる場合、OpenType の GSUB テーブル出力時に 30 番目以降の全ての情報を失っていました。
+	<LI>
+<!--	  Hmm. Sometimes least squares does give the answer we want for merge. So give
+	  it a try. -->
+	  うーむ。場合によっては最小自乗法を使った方が、フォントの併合時に我々にとって望ましい答えが出るようです。試しに使ってみましょう。
+	<LI>
+<!--	  Patch by kanou to fix some translation problem. -->
+	  翻訳上のいくつかの問題を解決する狩野からのパッチ。
+	<LI>
+<!--	  In the shape tools (round rect, ellipse): Instead of generating a quadratic
+	  shape at the start, generate a cubic shape and convert to quadratic. The
+	  convert routine now knows about how to find integer control points and such. -->
+	  図形ツール (角丸長方形、楕円) において: 最初から 2 次曲線の図形を出力するのではなく、3 次の図形を出力して 2 次に変換します。変換ルーチンは今や、どのようにして整数値の制御点などを見つけるかを知っています。
+	<LI>
+<!--	  Patch from Kanou to get more grid size values for looking at bitmaps. -->
+	  ビットマップ編集時のグリッドサイズの値を増やす狩野からのパッチ。
+	<LI>
+<!--	  If a glyph starts with a control point then ff would sometimes throw out
+	  the ttf instructions, thinking it wasn't numbered properly. -->
+	  グリフが制御点から始まる場合、ff はときどき、点番号が正しくつけられていない物と考えて TTF 命令を捨ててしまっていました。
+	<LI>
+<!--	  A merge in a quadratic font produced a straight line. Even when it shouldn't
+	  have. -->
+	  2 次フォントにフォントを併合すると直線に化けていました。それをやってはいけない場合ですらそうです。
+	<LI>
+<!--	  Change namelists to support non-ASCII glyph names. -->
+	  名前リストを非 ASCII のグリフ名をサポートするように変更。
+	<LI>
+<!--	  Oops. Some hinting scripting commands had a "b" prepended to their name by
+	  mistake. Sigh. From now on support both names. -->
+	  おっと。いくつかのヒントづけ用スクリプトコマンドは間違って名前の先頭に誤って "b" をつけていました。やれやれ。これからは両方の名前をサポートするようにします。
+	<LI>
+<!--	  When pasting a glyph with hints into an empty glyph, we shouldn't set the
+	  "in need of autohinting" flag. (Actually, we might should if the original
+	  copy were done in a glyph with out of date hints.... but that gets more
+	  complicated). -->
+	  ヒントつきのグリフを空のグリフに取り込んだ時には、"自動ヒントが必要" フラグをセットするべきではありませんでした。(実際には、オリジナルのコピーが古くなったヒントから得られた物ではないか調べるべきだと思いますが…それはずっと複雑です。)
+	<LI>
+<!--	  Patch to make loading bdf fonts more efficient. -->
+	  BDF フォントの読み込みをより効率的にするパッチ。
+	<LI>
+<!--	  Add Kanou's "fontview" font to the list of fonts searched by default for
+	  the fontview window. -->
+	  狩野の "fontview" フォントを、フォントビューウィンドウで探索するデフォルトフォントに追加。
+	<LI>
+<!--	  FF did not mark ghost hints as different from normal hints. -->
+	  FF は、ゴーストヒントを通常のヒントと区別していませんでした。
+	<LI>
+<!--	  Interpolating fonts broke when I did the encoding change last summer. -->
+	  エンコーディングの変更を去年の夏に行って以来、フォントの補間が壊れていました。
+	<LI>
+<!--	  Patch from Kanou to prevent the hash function from returning negative numbers.
+	  (and crashing) -->
+	  ハッシュ関数が負の値を返す (ことによりクラッシュする) のを避けるための狩野からのパッチ。
+	<LI>
+<!--	  Add a menu and a scripting command to compare two fonts. -->
+	  2 つのフォントを比較するためのメニューとスクリプトコマンドを追加。
+	<LI>
+<!--	  Oops. There's a stray underscore in a field in font info. -->
+	  おっと。フォント情報ダイアログに余分なアンダースコアがついたフィールド名がありました。
+	<LI>
+<!--	  Refresh font view(s) after changing glyph name/unicode in glyph info in case
+	  those are being displayed. -->
+	  グリフ情報ダイアログのグリフ名/Unicode 値を変更したときに、フォントビュー内で表示されている物があれば更新するように変更。
+	<LI>
+<!--	  If a name entered in the goto dlg was a single unicode char, then goto would
+	  treat it as such. Normally this is fine, but a user might use the underscore
+	  character (for example) as a glyph name and not assign it to U+005F. So check
+	  for the name too. -->
+	  移動ダイアログに入力された名前が 1 個の Unicode 文字である場合、その文字に移動するのだと解釈します。通常はこれで問題ありませんが、ユーザが (例えば) アンダースコアをグリフ名として使用し、それに U+005F を割り当てていない可能性があります。だからグリフ名一覧もチェックするようにしました。
+	<LI>
+<!--	  Rewrite the cubic-&gt;quadratic conversion code. It now looks much prettier
+	  and tries to position intermediate points on integer (or half integer) locations
+	  so there won't be unexpected rounding later. It's slightly less accurate
+	  though. -->
+	  3 次→ 2 次の変換コードを書き直し。コードの見栄えもずっと良くなり、思いがけない丸め誤差が発生しないように整数値 (または半整数値) にあたる中間位置に点を配置しようと試みるようになりました。しかしながら、やや精度が下がりました。
+	<LI>
+<!--	  Many changes to the postscript hinting code. -->
+	  PostScript のヒントづけコードに多数の変更を追加。
+	<LI>
+<!--	  If a glyph contained references but no alphabetic characters then Glyph Info
+	  would crash. -->
+	  グリフに参照が含まれていて、アルファベット文字が含まれていない場合、グリフ情報ダイアログがクラッシュしていました。
+	<LI>
+<!--	  Scripting command AskUser doesn't work unless FF_SCRIPT_IN_LATIN1 is set.
+	  Patch by Kanou. -->
+	  FF_SCRIPT_IN_LATIN1 が設定されていない場合、スクリプトコマンド AskUser() が動作していませんでした。狩野からのパッチ。
+	<LI>
+<!--	  In some error messages I ended a sentence with a comma. Make it a full stop. -->
+	  いくつかのエラーメッセージで、文末にコンマを使用していました。フルストップに変更。
+	<LI>
+<!--	  Patches from Kanou to make Japanese translation better. -->
+	  日本語訳を改善するための狩野からのパッチ。
+	<LI>
+<!--	  Kanou points out that the code which handles modifications to the unicode
+	  char textfield (in glyph info) complains about the wrong things and he provides
+	  a patch. -->
+	  狩野が、(グリフ情報ダイアログの) Unicode 文字の変更を扱うコードが間違った事柄に関して文句を言うことを指摘し、パッチを提供しました。
+	<LI>
+<!--	  Hand tool failed to scroll background images (probably failed on hints too). -->
+	  手のひらツール使用時に背景画像をスクロールしていませんでした (おそらくヒントもそうだったでしょう)
+	<LI>
+<!--	  When doing a copy splines with hintmask operation we neglected to refigure
+	  the spline after transforming the end points. This was ok since we never
+	  used that info - - except if the splines were quadratic and we needed to convert
+	  to cubic. So when generating a ps font from a quadratic database, and the
+	  font contained references with scaling/rotation/etc. then we'd get erroneous
+	  results. -->
+	  ヒントマスク操作を含むスプラインをコピーした時に、端点を変形した時にスプラインを再構成することを無視していました。その情報を使ったことは今まで一度もないのでそれは問題ないのですが——スプラインが 2 次で、それを 3 次に変換する必要があるときだけは別です。なので、2 次のフォントデータベースから PS フォントを出力する時には、拡大縮小/回転/その他 を伴う参照がフォントに含まれていたならば、間違った結果を得ることになっていたでしょう。
+	<LI>
+<!--	  In Find Problems, the Flipped Reference check could fail if the reference
+	  contained a contours which intersected (themselves or each other). -->
+	  (それ自身または相互に) 交差する輪郭を含む参照が存在する場合、問題点を発見 ダイアログの 反転した参照をチェック(B) のチェックが失敗する可能性がありました。
+	<LI>
+<!--	  Make ff aware of ExtraLight as a valid weight when setting a default value
+	  for the PS weight string. -->
+	  PS の Weight 文字列のデフォルト値の設定の際に、ff が "ExtraLight" を正しいウェイトの値として認識するようにしました。
+	<LI>
+<!--	  When the user clicked on a textfield with attached pulldown list, ff would
+	  get an event saying the first entry on the list had been chosen. This meant
+	  that the Tag dialog (used for new ligatures/substitutions/etc. would show
+	  the first tag in the list instead of blank. -->
+	  
+プルダウンリストが付随するテキストフィールド上をユーザがクリックすると、ff はリスト内の最初の項目が選択されたと言うイベントを受け取っていました。これにより、(新しい 合字/置換 などのために用いられる) タグ ダイアログが、空白ではなくリスト内の最初のタグを表示する現象が起こっていました。
+	<LI>
+<!--	  Include some glyph name synonems from Richard Kinch's TrueTeX list. -->
+	  Richard Kinch の TrueTeX メーリングリストへの投稿にあるいくつかのグリフ名の別名を取り込みました。
+	<LI>
+<!--	  Determination of whether a ghost hint is top (-20) or bottom (-21) should
+	  depend on the current contour, not on the glyph as a whole. -->
+	  ゴーストヒントが最上部 (-20) か最下部 (-21) かの決定は、現在の輪郭によって定まるべきであり、グリフ全体によって定まるべきではありません。
+	<LI>
+<!--	  If a glyph consists solely of references then add
+	  _&lt;ref-name-1&gt;_&lt;ref-name-2&gt;...&lt;ref-name-n&gt; to the list of
+	  possible names. Sometimes also add uniXXXXXXXX. -->
+	  あるグリフが参照のみから成り立っている場合、可能な名前のリストに _&lt;ref-name-1&gt;_&lt;ref-name-2&gt;...&lt;ref-name-n&gt; を追加するようにしました。いくつかの場合には unixXXXXXXXX も追加します。	  
+	<LI>
+<!--	  Kanou wants to translate some more strings. -->
+	  狩野がさらに多くの文字列を翻訳したがっています。
+	<LI>
+<!--	  Barry.SCHWARTZ wants to be able to reencode a font to compact from a script. -->
+	  Barry.SCHWARTZ がスクリプト内でのフォントのコンパクト化ができるようにすることを求めています。
+	<LI>
+<!--	  Barry.SCHWARTZ points out that my "cfg" files contain no newlines. Shows
+	  how much use they've received:-) -->
+	  Barry.SCHWARTZ は、私の "cfg" ファイル類が改行を含んでいないことを指摘し、それらが受け入れられればどれだけ便利かを示しています:-)。
+	<LI>
+<!--	  Barry.SCHWARTZ points out that when generating an afm file for an otf font
+	  only the first 256 characters were given encodings. -->
+	  Barry.SCHWARTZ は、OTF フォントとともに AFM ファイルの出力を行った時に、最初の 256 文字にしか符号値が指定されていないことを指摘しました。
+	<LI>
+<!--	  Simplify much improved. -->
+	  単純化処理をこれまでよりはるかに改良しました。
+	<LI>
+<!--	  Make simplify for quadratic splines aware of the peculiarities of truetype.
+	  So one simplification is to make a point interpolateable. And removing a
+	  point is not always good if it means points that were interpolateable become
+	  non-interpolateable. -->
+	  2 次スプラインの単純化が TrueType の特性を考慮するようにしました。それにより、点を補間可能にするようにするためのある単純化処理を行うようになりました。また、補間可能な点が補間可能でなくなってしまうことがあるので、点を削除するのが常に得策だとは限りません。
+	<LI>
+<!--	  After examining (and stealing with permission) Huw Davies's code in
+	  wine/tools/fnt2fon.c I believe I can now produce .fon files. -->
+	  wine/tools/fnt2fon.c の Huw Davies のコードをテストし (その後、流用の許可を得て)、今や .fon ファイルを出力できるとの確信を得ました。
+	<LI>
+<!--	  Add support for reading bitmap references (from an sfnt bitmap) -->
+	  (sfnt ビットマップからの) ビットマップ参照のサポートを追加。
+	<LI>
+<!--	  Patch by Kanou. cvknife didn't compile in one mode. -->
+	  狩野によるパッチ。cvknife.c が特定のモードでコンパイルできませんでした。
+	<LI>
+<!--	  Typo in an error message -->
+	  あるエラーメッセージの誤植。
+	<LI>
+<!--	  Add a command to show points of inflection (also change View-&gt;Mark Extrema
+	  to show where extrema occur on a spline if not at the endpoints) -->
+	  変曲点を表示するためのコマンドを追加 (また、表示(V)→変曲点を表示(M) を、スプラインの端点以外のどこに極大点があるかを表示するように変更)。
+	<LI>
+<!--	  Patch by Michal Nowakowski. Uninitialized variable in simplify dlg. -->
+	  Michal Nowakowski からのパッチ。単純化ダイアログの初期化されていない変数。
+	<LI>
+<!--	  glyph names for unencoded glyphs were always "uniFFFFFFFF" should be
+	  "NameMe-&lt;n&gt; broken by last summer's encoding changes. -->
+	  符号値を持たないグリフのグリフ名が "NameMe-&lt;n&gt;" でなければならないところが、昨夏の符号化方式の変更以来、常に "uniFFFFFFFF" になっていました。
+	<LI>
+<!--	  Werner wants CC (composite character) entries in afm for GPOS mark-to-base
+	  features. -->
+	  Werner は AFM ファイルの CC (複合文字) の項目を、マークから基底文字への位置指定を行う GPOS 機能のために必要としています。
+	<LI>
+<!--	  The switch to utf8 last summer broke font info-&gt;Size -->
+	  去年の夏に UTF8 に切替えた時に フォント情報→[サイズ] の表示が壊れていました。
+	<LI>
+<!--	  Allow users to ask for both 'GPOS' and old-style 'kern' tables. FontLab does
+	  this. The OpenType list is generally disapproving of the idea. -->
+	  ユーザが 'GPOS' と旧式の 'kern' テーブルの両方を出力できるようにしました。FontLab はこれができます。OpenType メーリングリストは一般的にこの考えに反対のようです。
+	<LI>
+<!--	  If we tried to put more than about 10000 kerning pairs into one old-style
+	  kerning sub-table then we'd overflow various shorts. So split it up after
+	  about 10000 kp into several different sub-tables. -->
+	  古い形式のカーニングサブテーブルにおよそ 10000 個を超えるカーニングペアを格納しようとすると、いろいろな short 型の変数がオーバーフローしていました。なので、いくつかの別々のサブテーブルにおよそ 10000 カーニングペアごとに区切ることにしました。
+	<LI>
+<!--	  Round to Int screwed up interpolated points. -->
+	  整数値への丸めを行うと、補間された点の情報が壊れていました。
+	<LI>
+<!--	  When generating a tfm file don't generate a width bigger than 16*em-size
+	  (even if the font says to) because TeX will throw it out. -->
+	  TFM ファイルの出力時に (たとえフォントに含まれていたとしても) 16*emサイズ より大きな幅を出力しないようにしました。TeX がそのようなファイルを撥ねてしまうからです。
+	<LI>
+<!--	  Alexey Kryukov's patch to fix an error message. -->
+	  エラーメッセージを修正する Alexey Kryukov からのパッチ。
+	<LI>
+<!--	  Printing a CID keyed truetype font to a pdf file produced a very odd ordering
+	  of glyphs (compacting some and omitting others and getting errors when it
+	  ran out of glyphs but asked for more). -->
+	  CID キー指定 TrueType フォントを PDF ファイルに印字する時、グリフの並び順が非常に奇妙なものになっていました (一部はコンパクト化され、一部は省略されていたので、グリフを使い尽くしてもまだグリフを要求されてしまい、エラーとなっていました)。
+	<LI>
+<!--	  Alexey Kryukov suggests repunctuating an error message. -->
+	  Alexey Kryukov はエラーメッセージの句読点修正を示唆しました。
+	<LI>
+<!--	  Johan Winge suggests an improvement to converting cubic splines to quadratic:
+	  If we end up using a line when looking at the spline as a whole, try breaking
+	  it at the point(s) of inflection first. It seems like a good idea. -->
+	  Johan Winge は、3 次から 2 次へのスプライン変換の改良を提案しました: スプライン全体を見る時に、最後が直線で終っている場合、変曲点での分割を試みる方法です。これはいい考えのように思います。
+	<LI>
+<!--	  Johan Winge also points out that I identify points as tangents when they
+	  should not be. This is because I use one measure of sloppiness no matter
+	  how close the cps are to the base point when determining colinear. It's probably
+	  best to have a variable measure depending on how far the cp is from the base
+	  point. -->
+	  Johan Winge は他にも、直線と曲線の接点として認識すべきではない点を節点にしてしまっていることを指摘しました。これは、線の傾きが同一方向かどうかを判定する時に、制御点の端点からの近さを考慮に入れずに許容誤差の測定を行っていたためです。おそらく、制御点が基点からどれだけ近いかによって、測定方法を変化させるのが最善の方法でしょう。
+	<LI>
+<!--	  Alexey Kryukov thinks Add Unencoded Slots should work in the compacted view
+	  by making the thing have a custom encoding. -->
+	  Alexey Kryukov の考えでは、符号値を割り当てない「エンコーディングスロットを追加(E)」をコンパクト表示でも実行できるようにし、カスタムエンコーディングに変換するべきです。
+	<LI>
+<!--	  Scripting reencode didn't get rid of the "compacted" mark. -->
+	  スクリプト関数 Reencode() は "コンパクト表示" マークを取り除いていませんでした。
+	<LI>
+<!--	  Ralf Stubner points out that I produce type1 charstrings which end in "seac
+	  endchar" when a simple "seac" is sufficient. He's right. -->
+	  Ralf Stubner は、Type1 charstring の最後で、単に "seac" で済む所に "seac endchar" を出力していると指摘しました。彼の言うとおりでした。
+	<LI>
+<!--	  When generating opentype tables in from a single sub-font of a cid-keyed
+	  font (ie. user asked for a ttf font generated from one sub-font) ff would
+	  crash. -->
+	  1 個の CID キー指定フォントのサブフォント 1 個だけから OpenType テーブルを出力しようとした時に (例えば、ユーザが 1 個のサブフォントから TTF フォントを出力するように指定した場合) FF はクラッシュしていました。
+	<LI>
+<!--	  We didn't hint bold fonts well (anything where stems were bigger than em-size/10) -->
+	  ボールドフォントにうまくヒントづけを行っていませんでした (ステムが emサイズ/10 より大きい場合つねに)
+	<LI>
+<!--	  When generating a type1 font with a glyph containing a reference that had
+	  to be unlinked, then the vertical stems in that reference would not be hinted. -->
+	  リンク解除を行う必要のある参照をもつグリフを含む Type1 フォントを出力するときは、その後にその参照に含まれる垂直ステムにはヒントづけするべきではありませんでした。
+	<LI>
+<!--	  When guessing points at which to attach hints in type1/2 read in we failed
+	  if the points were too widely spaced. Be a bit more lenient. -->
+	  Type1/2 の読み込み次に、ヒントを接続すべき位置にある点を推測する時に、点があまりに離れている時に失敗していました。寛大さを少し増やしました。
+	<LI>
+<!--	  SetCharName didn't check its flag value properly. -->
+	  SetCharName() が、フラグ値を正しく確認していませんでした。
+	<LI>
+<!--	  Uncompacting a font caused memory problems. -->
+	  フォントのコンパクト表示をとりやめるとメモリ参照の問題を起こしていました。
+	<LI>
+<!--	  Fix simple crash in metafont. -->
+	  メタフォント機能の単純なクラッシュを修正しました。
+	<LI>
+<!--	  When importing unencoded glyphs into an already existing font, we would sometimes
+	  fail to find the matching glyph (and would create a new one). -->
+	  符号値をもたないグリフを既存のフォントに取り込むとき、一致するグリフをときどき見つけ損ねて (それで、新しいグリフを作成して) いました。
+	<LI>
+<!--	  If a font contain an encoded glyph called ".notdef" and that glyph was not
+	  the first glyph, then type1 fonts had a .notdef glyph at a random place in
+	  the font which screwed up freetype's rasterizer in some modes (2.1.10 ftview
+	  failed, ftstring worked) Rather than figure out what's wrong with freetype,
+	  just always make notdef be first in the chars dictionary and then all is
+
+	  the font. Now freetype seems to renumber glyphs so .notdef is always glyph
+	  0 which fontforge did not expect and produced some strange results when
+	  rasterizing (tested on 2.1.10). Fix is simple: always make notdef be first 
+	  in the chars dictionary and then all is happy. -->
+	  フォントに ".notdef" という名前の符号値をもつグリフが含まれていて、そのグリフが最初のグリフではなかった場合、Type1 フォントは .notdef グリフをフォント内のランダムな位置に出力していて、それが原因となって FreeType のラスタライザがいくつかの特定のモード下でクラッシュしていました。FreeType は現在では .notdef が常にグリフ番号 0 になるように番号を振り直すようです (2.1.10 で確認)。修正は単純です: 常に .notdef が chars 辞書の最初のグリフになるようにすれば、みんな幸せでしょう。
+	<LI>
+<!--	  Add new scripting command to compare two glyphs. I want this for testsuites,
+	  other people might find a use for it. -->
+	  2 つのグリフを比較する新しいスクリプトコマンドを追加。テストスイート用のためにこれが欲しくなったのですが、他の人もこれを見れば役立つと思うでしょう。
+	<LI>
+<!--	  gniibe reports that the scripting function Export() produces bitmap images
+	  with the wrong format and provides a patch. -->
+	  g新部は、スクリプト関数 Export() でビットマップ画像を出力しようとすると、指定したフォーマットと違う画像が出力されることを指摘しました。
+      </UL>
+    <LI>
+<!--  9-Feb-2006 -->
+      2006年2月9日
+      <UL>
+	<LI>
+<!--	  Instead of refusing to do expand stroke/remove overlap for order2 fonts,
+	  why not convert the contours to order3, do the function and convert back. -->
+	  2 次フォントの線幅拡張/重複除去処理を拒否するのではなく、輪郭を 3 次に変換し、関数を適用してから逆変換してもいいではないですか。
+	<LI>
+<!--	  Once more we are numbering points badly. -->
+	  またもや点の番号づけを間違えていました。
+	<LI>
+<!--	  If we clear a glyph which is being referred to (and we don't unlink it first)
+	  then when we save it into an sfd file we get a reference to a glyph at orig_pos
+	  -1 (because the cleared glyph isn't stored in the sfd) which causes an error
+	  when reading it back in. -->
+	  よそから参照されているグリフを消去した場合 (かつ、それを最初に削除していない場合)、SFD ファイルへの保存時にorig_pos-1 にあるグリフへの参照を行い、(消去されたグリフが SFD に格納されていないので) 再読み込み時にエラーを起こしていました。
+	<LI>
+<!--	  If a copyright message were an exact multiple of 100 characters long, fontforge
+	  would screw up memory (and potentially crash) when reading it in from an
+	  sfd file. -->
+	  著作権表示の文字列の長さがぴったり 100 の倍数である場合、FontForge は SFD ファイルからの読み込み時にメモリを破壊して (おそらくクラッシュして) いました。
+	<LI>
+<!--	  The Merge/Simplify command (which Add Extrema now calls) had problems when
+	  the control points were very close to the base point so that the point was
+	  (to the human eye) a corner point. -->
+	  併合/単純化コマンド (今や AddExtrema() を呼び出すようになりました) は、制御点が母点に非常に近く、(人間の目には) 角の点のように見える場合の処理に問題がありました。
+	<LI>
+	  Add support for the r2l script N'Ko. MS says opentype will use script 'nko
+	  ', ISO says the tag should be 'nkoo'. Follow opentype.
+	  右から左に書く用字系の ン・コー文字のサポートを追加。MS は、OpenType は&lsquo;nko &rsquo;を使宇土言い、ISO はタグは&lsquo;nkoo&rsquo;であるべきだと言っています。OpenType に従います。
+	<LI>
+<!--	  Kanou tells me that Syriac &amp; Thaana are also r2l scripts and should be
+	  added to my list. -->
+	  シリア文字とターナ文字も右書きの用字系であり、私の作ったリストに追加すべきだと狩野が言いました。
+	<LI>
+<!--	  If FF was given multiple fonts on the command line the sizes of the font
+	  windows would jump around in a very peculiar fashion. -->
+	  FF に複数のフォントをコマンドラインで指定すると、フォントウィンドウのサイズがまったく類を見ない方法でジャンプしていました。
+	<LI>
+<!--	  Add the concept of a namelist. Users can specify what names they want for
+	  new glyphs, or can force an entire font into a new naming scheme. Changes
+	  to -->
+	  名前リストの概念を導入。ユーザは新しいグリフに望む名前を指定することができ、また、新しい名前づけの枠組みをフォント全体に適用することもできます。変更箇所は以下のとおり:
+	  <UL>
+	    <LI>
+<!--	      FontInfo -->
+	      フォント情報(I)...
+	    <LI>
+<!--	      Open -->
+	      開く(O)...
+	    <LI>
+<!--	      Generate (Family) -->
+	      フォント (ファミリー) を出力 (G/F)...
+	    <LI>
+<!--	      Preferences -->
+	      環境設定(E)...
+	    <LI>
+<!--	      and the Encoding menu. -->
+	      および、エンコーディング(N) メニューです。
+	    <LI>
+<!--	      New scripting functions: -->
+	      新規のスクリプト関数:
+	      <UL>
+		<LI>
+		  LoadNamelist(filename)
+		<LI>
+		  LoadNamelistDir([dir])
+		<LI>
+		  RenameGlyphs(namelist)
+		<LI>
+<!--		  Extended Generate (scripting) to take a namelist argument. -->
+		  (スクリプトの) Generate() 関数が namelist 引数を取れるように拡張。
+	      </UL>
+	  </UL>
+	<LI>
+<!--	  If users didn't have libuninameslist installed we were still generating spurious
+	  ligatures for numero and TM. (and others) -->
+	  ユーザが libuninameslist をインストールしていないと、numero と TM (およびその他) の見せかけの合字が作成されていました。
+	<LI>
+<!--	  KANOU points out that if you comment out a bdf glyph (with COMMENT) fontforge
+	  sort of reads it anyway. -->
+	  BDF グリフを (COMMENT を使って) コメントアウトしても、FontForge がなんらかの読み込み処理を行おうとすることを指摘しました。
+	<LI>
+<!--	  Kanou needs to distinquish between the script latin and the language. -->
+	  Latin に「ラテン文字」と「ラテン語」の区別を行う必要がありました。
+	<LI>
+<!--	  SplineRemoveAnnoyingExtrema1 got tweaked a little too much in attempting
+	  not to generate insane control points. -->
+	  SplineRemoveAnnoyingExtrema1() に、異常な制御点を生成しないように試みるごくわずかな調整を追加しました。
+      </UL>
+    <LI>
+<!--   25-Jan-2006 -->
+       2006年1月17日
+      <UL>
+	<LI>
+<!--	  If you try to create a bitmap only sfnt but provide pixelsizes for no valid
+	  bitmap strikes, the fontforge would crash. -->
+	  ビットマップのみの SFNT を作成する時にフォント内に含まれるビットマップサイズと一致しないピクセルサイズを指定すると、FontForge がクラッシュしていました。
+	<LI>
+<!--	  Chia points out that I should use the PIXEL_SIZE property to set a bdf font's
+	  pixelsize (instead of using font ascent+descent). -->
+	  BDF フォントのピクセルサイズを設定するのに (フォントの ASCENT+DESCENT ではなく) PIXEL_SIZE を使用するべきであることを Chia が指摘しました。
+	<LI>
+<!--	  Trying to rasterize a glyph with a coordinate of 1e7 caused a crash. -->
+	  1e7 を超える座標を含むグリフを生成しようとするとクラッシュしていました。
+	<LI>
+<!--	  The change to make Add Extrema remove points near the extrema failed to consider
+	  the possbility that some of those points might be corner. -->
+	  極大点の追加(X) が極大点の側の点を削除するように変更した時、それらの点のどれかが角の点である場合のことを考慮していませんでした。
+	<LI>
+<!--	  In Gentium Roman, when searching for bluevalues, the baseline is further
+	  than 1 standard deviation from the mean of glyph ymin. Change the range searched
+	  so that 0 is always included. -->
+	  Gentium Roman では、BlueValues 値を検索した時に、ベースラインがグリフの y 座標の平均値の標準偏差 1 以内に含まれていませんでした。範囲を変更し、0 が常に含まれるようにしました。
+	<LI>
+<!--	  In Font Info-&gt;PS Private, if we selected OtherBlues and pressed [Guess]
+	  it did not change the OtherBlues value. -->
+	  フォント情報→[PS Privatet辞書] で、OtherBlues を選択して [推測] ボタンを押した時に、OtherBlues 値が変更されていませんでした。
+	<LI>
+<!--	  The gettext patch change Histograms-&gt;Blue Values menu item into a line. -->
+	  gettext 対応パッチがメニュー項目 柱状グラフ→BlueValues を線に変更していました。
+	<LI>
+<!--	  When changing the order of a font, ff would ask if you minded losing the
+	  undoes. There's no point in asking the question if the font hasn't been modified
+	  (it has no undoes). -->
+	  フォントの次数を変更した時に、FF はアンドゥ情報を失うことを尋ねていました。フォントが変更されていない場合は尋ねる必要がありません。
+	<LI>
+<!--	  The Point Info dlg should enforce that curved points cps are colinear (so
+	  if the user changes one cp, the dlg should change the other to be in the
+	  opposite direction. -->
+	  点の情報ダイアログは曲線上の点の制御点が同方向であるように強制する必要がありました (つまり、ユーザが片方の制御点を変更したら、ダイアログはもう片方をその逆向きに変更する必要がありました)。
+	<LI>
+<!--	  There was a path though PointInfo that called SplineRefigure3, which meant
+	  that splines got marked as cubics even when they should have been quadratics. -->
+	  PointInfo() から SplineRefigure3() を呼ぶような経路がありました。つまり、スプラインが 2 次でなければならない場合でも 3 次であるとマークされてしまう場合があったということです。
+	<LI>
+<!--	  Using a rotated elliptical pen in expand stroke did not work -->
+	  輪郭の拡大処理で、傾いた楕円形のペンがうまく動いていませんでした。
+	<LI>
+<!--	  Add a homedir button to the file chooser dialogs. -->
+	  ファイル選択ダイアログにホームディレクトリボタンを追加。
+      </UL>
+<!--   17-Jan-2006 -->
+       2006年1月17日
+       <UL>
+ 	<LI>
+<!-- 	  Make the Import() scripting command accept {bdf,pcf}.gz files -->
+	  Import() スクリプトコマンドが {bdf,pcf}.gz ファイルを読み込めるように変更。
+ 	<LI>
+<!-- 	  Reading utf7 (ttf name) strings from an sfd file was broken if one of the
+ 	  characters had bit 15 (high bit) set and its position in the string mod 3
+ 	  was 1. -->
+	  SFD ファイルからの UTF-7 の (TTF 名) 文字列の読み込み処理が、ビット 15 (上位ビット) が立っている文字が位置 1 (mod 3) にある時に間違っていました。
+ 	<LI>
+<!-- 	  My horizontal line metrics in the sfnt bitmap strike header were incorrect -->
+	  SFNT ビットマップのストライクヘッダにある横書きの行メトリックが間違っていました。
+ 	<LI>
+<!-- 	  Use the horizontal line metrics (if they work) to set the ascent/descent
+ 	  of a bitmap strike. -->
+	  横書きの行メトリック (が役立つなら) を使ってビットマップストライクの高さ/深さを設定するようにしました。
+       </UL>
+    <LI>
+<!--  15-Jan-2006 -->
+      2006年1月15日
+      <UL>
+	<LI>
+<!--	  The change to fold all COMMENTS into one bdf property broke the sfnt 'BDF
+	  ' table routines. -->
+	  全ての COMMENT を 1 個の BDF 属性に折り畳む変更が、SFNT 内の 'BDF ' テーブルの処理ルーチンを壊していました。
+      </UL>
+    <LI>
+<!--  14-Jan-2006 -->
+      2006年1月15日
+      <UL>
+	<LI>
+<!--	  Change AddExtrema so that if an extremum is very close to an old point it
+	  will add the extremum and then remove the old point. -->
+	  AddExtrema を変更し、極値が古い点のごく近くにある場合、極値に点を追加して古い点を削除するようにしました。
+	<LI>
+<!--	  Redid how bdf properties were handled -->
+	  BDF 属性の扱いを書き直し。
+	  <UL>
+	    <LI>
+<!--	      I had the definitions of some properties slightly wrong -->
+	      いくつかの属性に対して、僅かに間違った定義を用いていました。
+	    <LI>
+<!--	      I was generating some obsolete properties -->
+	      いくつかの廃止された属性を出力していました。
+	    <LI>
+<!--	      When I generated CHARSET_ENCODING for iso8859 encodings I had an extraneous
+	      "-" in the value. -->
+	      CHARSET_ENCODING を ISO8859 の各種符号化方式で出力するとき、値に余分な "-" をつけていました。
+	    <LI>
+<!--	      retain the properties when loading a bdf, pcf font -->
+	      BDF, PCF フォントの読み込み時に属性を保持。
+	    <LI>
+<!--	      Add a dialog which gives user control over bdf properties -->
+	      BDF 属性を制御できるダイアログを追加。
+	    <LI>
+<!--	      design a 'BDF ' table for SFNT files which can contain bdf properties and
+	      make FontForge read and generate this table. -->
+	      BDF の属性を格納するための SFNT ファイル用の 'BDF ' テーブルを作成し、FontForge がこのテーブルを読み書きするようにしました。
+	  </UL>
+	<LI>
+<!--	  Ted Packard points out that I output "big metrics" in sfnts inconsistently.
+	  This patch should make them consistent and right. -->
+	  SFNT で "big metrics" を出力する条件判定に一貫性がないことを Ted Packard が指摘しました。個のパッチはそれを一貫してかつ正しく修正するはずです。
+	<LI>
+<!--	  Restore "compact" views to their old glory. Ie. they can now be uncompacted
+	  (and uncompaction happens automagically when generating a font). -->
+	  古き良き「コンパクト」表示を復活。つまり、コンパクト表示から直前の表示に戻せるようになりました (また、フォント生成時にコンパクト表示からの復元を自動的に行うようにしました)。
+	<LI>
+<!--	  When reading a GenTags: line from an sfd file stored with CRLF line terminators,
+	  the next line would be lost. -->
+	  GenTags: 行を、改行コードが CR+LF の SFD ファイルから読み込むときに、その次の行を失っていました。
+	<LI>
+<!--	  ff couldn't handle xrefs which were broken in bits in pdf files? -->
+	  ff は PDF ファイル内で分割されている xref テーブルを扱えなかったようです?
+	<LI>
+<!--	  When reading a ttf font from a pdf file we found no encoding info. This caused
+	  us to crash because various routines expected an encoding map. Add a dummy
+	  (Original) map if not exists. -->
+	  PDF ファイル内の TTF フォントを読み込むときにエンコーディング情報をうまく見つけられない場合には、多数のルーチンがエンコーディングマップがあることを想定しているので、それによってクラッシュが引き起こされていました。マップが見つからないときは ダミーの (オリジナル) マップを追加するようにしました。
+	<LI>
+<!--	  Wasn't numbering points in references properly. -->
+	  参照の中の点を正しく番号づけていませんでした。
+	<LI>
+<!--	  Gleep! Ever since the gettext code went in, the Generate fonts dlg has refused
+	  to generate "No Outline Font" and "No Bitmap Font". -->
+	  ウギャー!  gettext のコードを導入して以来、フォント出力ダイアログで「ビットマップフォント無し」と「アウトラインフォント無し」を選択できなくなっていました。
+	<LI>
+<!--	  Herbert Duerr from OpenOffice tells me that their OpenSymbol.ttf font when
+	  produced by fontforge does not work on Win98. This is because Win98 doesn't
+	  like the codepages bits ff produces and refuses to use any glyphs in the
+	  font. He submitted a patch to make ff produce a version 0 OS/2 table (with
+	  no codepage info) for this font. Win98 will accept it then. His patch was
+	  against an earlier version of ff and needed to be modified for the current
+	  version. -->
+	  OpenOffice の Herbert Duerr が、OpenSymbol.ttf フォントを FontForge で出力すると Win98 で動作しないと報告しました。これは、Win98 が ff の生成するコードページビットフィールドが気に食わず、フォント内の全グリフを使用するのを拒否しているせいでした。枯葉、FF が (コードページ情報を含まない) バージョン 0 の OS/2 テーブルを出力するようにするパッチを送りました。その場合、Win98 はそれを受け入れます。彼のパッチは以前の版に対する物だったので、最新版に当てるには修正の必要がありました。
+	<LI>
+<!--	  Patch by Raph Levien which finally shows me how to use FT_Outline_Get_Bitmap
+	  properly. -->
+	  Rach Levien からのパッチを見て、FT_Outline_Get_Bitmap を正しく利用する方法がとうとう分かりました。
+	<LI>
+<!--	  If the user has never called PrintSetup (or if the user has not called PrintSetup
+	  this session and has not loaded prefs), then fontforge will invode setpagedevice
+	  on a pagesize which will fit on either A4 or US-Letter. The PS manual says
+	  a printer should refuse such a size unless it has paper within 5 points of
+	  it. So on printers which follow the spec (not mine) nothing will print as
+	  it waits for paper. -->
+	  ユーザが PrintSetup を一度も呼んでいない場合 (またはユーザがこのセッションで PrintSetup を呼び出しておらず、かつ設定ファイルを読み込まないようにしているばあい), FontForge は A4 または US レターサイズに収まるように setpagedevice を呼び出します。PS マニュアルは、プリンタは、5 ポイント以内の誤差を持つ紙が存在しない場合、指定されたサイズを拒否するべきであるとしています。ですから、仕様に従うプリンタ (私のは違います) では、紙待ちをして何も印字されない結果となります。
+	  <P>
+<!--	  Now if the pagesize has not been set, don't specify a PageSize to setpagedevice. -->
+	  ページサイズが設定されていない場合、setpagedevice で PageSize を指定しないように変更しました。
+	<LI>
+<!--	  The PrintSetup scripting command should not require a font. -->
+	  スクリプトコマンド PrintSetup はフォントを開いていることを必須とするべきではありません。
+	<LI>
+<!--	  Add a mechanism so that users can prevent ff from making a point implicit.
+	  Useful in that point needs to be instructed. -->
+	  FF が点を暗黙の点に置き換えるのをユーザが禁止できるメカニズムを追加。その点に命令処理を施す場合に有益です。
+	<LI>
+<!--	  New copyright notices for 2006 -->
+	  2006 年になったので著作権表示を更新。
+	<LI>
+<!--	  Make the pen tool work better with quadratic splines (make it default to
+	  having control points which cause the point to be implicit). -->
+	  2 次スプラインでのペンツールの振舞いを改善 (点が暗黙の物となることができるように、デフォルトで制御点が存在するようにした)
+	<LI>
+<!--	  Order2 elipses were not drawn accurately. -->
+	  2 次曲線フォントで楕円が精確に描画されていませんでした。
+	<LI>
+<!--	  Point numbers sometimes didn't get properly renumbered after changes. If
+	  we have references &amp; splines in a (truetype) glyph then show the numbers
+	  as "?". -->
+	  変更を行った後、点番号の付け直しが正しく行われないことがときどきありました。1 個の (TrueType) グリフに参照とスプラインの両方が含まれている場合、番号が "?" で表示されます。
+	<LI>
+<!--	  When a charview displays numbered (truetype) points, then it shows all the
+	  control points. But the control points are not selectable. This is not a
+	  good thing, so make them selectable. -->
+	  charview が (TrueType の) 点番号を表示したとき、すべての制御点を同時に表示します。しかし制御点を選択することはできません。これは良い事ではないので、選択できるようにしました。
+	<LI>
+<!--	  The font display to pdf did not include a title at the top of each page. -->
+	  PDF へのフォント表示で、各ページの上欄にタイトルが入っていませんでした。
+	<LI>
+<!--	  Peter Denisevich points out that when we print something we say "%%Pages
+	  atend" instead of "%%Pages (atend)". And the latter is correct. -->
+	  印刷時に "%%Pages (atend)" ではなく "%%Pages atend" としていることを Peter Denisevich が指摘しました。前者が正しいのです。
+	<LI>
+<!--	  Werner points out that my type1 (and type1 cid) fonts contain a
+	  %%DocumentSuppliedResource line, and they should not. The next level up should
+	  do that when it includes the font. -->
+	  私の作った Type1 (および Type1 CID) フォントには %%DocumentSuppliedResource 行が含まれており、そうすべきではないことを Werner が指摘しました。それは後の段階で、フォントを取り込む時に追加すべき物です。
+	<LI>
+<!--	  Show .xpm files as images we support in import image dlg. We've always supported
+	  them, might as well show them. -->
+	  画像取り込みダイアログで、.xpm ファイルをサポート対象の画像として表示。それらは常にサポートされてきたので、その旨表示するべきです。
+	<LI>
+<!--	  Check the glyph class when deciding what anchor to use. -->
+	  どのアンカーを使用するかを決定する時にグリフクラスをチェック。
+	<LI>
+<!--	  Anshuman Pandey wants to be able to set the glyph's GDEF class. I've never
+	  understood why the default behavior wasn't good enough, but it's easy to
+	  do. -->
+	  Anshuman Pandey がグリフの GDEF クラスを設定できるように要望しました。デフォルトの振舞いが不十分であるのが何故かぜんぜん理解できませんでしたが、設定できるようにするのは簡単なことです。
+	<LI>
+<!--	  One of the fields in Glyph Info had some garbage initialization. -->
+	  グリフ情報ダイアログのフィールドの一つがゴミデータで初期化されていました。
+	<LI>
+<!--	  Add a default anchor point type to the AddAnchorPoint scripting command.
+	  FF will try to guess an appropriate value. -->
+	  AddAnchorPoint スクリプトコマンドにアンカー点タイプ default を追加。その場合、FF は適切な値を推測しようとします。	  
+	<LI>
+<!--	  Add some standard window sizes to the fontview window. I'm tired of having
+	  the windows sized to other people's standards whenever I review a bug. -->
+	  フォント表示ウィンドウに、幾つかの標準ウィンドウサイズを追加。バグを検証する時に、他の人の標準に合ったウィンドウを見るのが嫌になったのです。
+	<LI>
+<!--	  There was a path through expand stroke where a control point was marked as
+	  non-e xistant by mistake. -->
+	  輪郭拡張処理で、制御点が存在しないと誤って認識されるような処理の流れがありました。
+	<LI>
+<!--	  Expand Stroke would leave contours with the reversed orientation if it had
+	  to do a remove overlap internally. -->
+	  <CODE>輪郭を太らせる(B)</CODE> コマンドが内部的に重複除去処理を呼び出す必要がある場合、輪郭の無機が逆になる場合がありました。
+	<LI>
+<!--	  Oops. The routine to save the encoding prefs file could not handle an encoding
+	  plug-in. -->
+	  おっと。エンコーディングを設定ファイルに保存するルーチンがエンコーディングプラグインを考慮に入れていませんでした。
+	<LI>
+<!--	  KANOU points out that the origin pulldown list in the transform dlg was not
+	  being translated. -->
+	  変形ダイアログの原点プルダウンリストが翻訳されていないことを狩野が指摘しました。
+	<LI>
+<!--	  In the preference dlg all of the [...] file browsers had the title "Call
+	  Script" which isn't appropriate for most of them. -->
+	  環境設定ダイアログで [...] ファイルブラウザのすべてが "Call Script" というタイトルが付けられており、ほとんどの場合不適切でした。
+	<LI>
+<!--	  Typing .* and pressing [Filter] did not show hidden files in the file chooser. -->
+	  .* とタイプして [フィルタ] を押してもファイル選択ウィンドウに隠しファイルが表示されませんでした。
+	<LI>
+<!--	  the code to check for intersections failed to check if there were a crossover
+	  in the last tiny section of a spline before its end. -->
+	  交点をチェックするコードが、その終点の前の最後の小さな部分で交差が起こっているかどうかチェックできていませんでした。
+	<LI>
+<!--	  Was generating ofm files when creating bdf fonts. Seems unnecessary. -->
+	  BDF フォント作成時に OFM ファイルを出力していました。不要だと思います。
+	<LI>
+<!--	  Was producing a EBLC table with bad first/last values for first glyphs. -->
+	  最初のグリフの first/last 値が間違った EBLC テーブルを出力していました。
+	<LI>
+<!--	  Hmm. Not all systems have tzset. Add a configuration option for it. -->
+	  うーむ。すべてのシステムが tzset を持っているとは限らないのですね。これを検出する設定オプションをつけました。
+	<LI>
+<!--	  In scripting, a return within a loop sent ff into an infinite loop. -->
+	  スクリプト処理中にループ内で return すると ff を無限ループに陥れていました。
+	<LI>
+<!--	  Kanou's patch for adding a new flag to scripting Import, to clear out the
+	  layer first. -->
+	  スクリプト関数 Import() に、レイヤを最初にクリアするフラグを追加する狩野のパッチ。
+	<LI>
+<!--	  Patch from KANOU to add SetGlyphChanged scripting function. -->
+	  スクリプト関数 SetGlyphChanged() を追加する狩野によるパッチ。
+	<LI>
+<!--	  If an implied point became real, this fact was not reflected on the display
+	  until the user forced a point renumbering. -->
+	  暗黙の点が本物の点になった時、その点の再番号付けを強制するまでその事実が表示に反映されていませんでした。
+	<LI>
+<!--	  A mouse click in an empty metrics view references garbage memory - - And crashed
+	  Kanou's session. -->
+	  空のメトリックビューをマウスでクリックするとゴミメモリを参照して——狩野のセッションをクラッシュさせていました。
+	<LI>
+<!--	  Loading a large bitmap font left bits of the backmap of the encoding map
+	  uninitialized. -->
+	  大きなビットマップフォントを読み込むとエンコーディング対応表の逆変換表の最上位ビットが未初期化でした。
+	<LI>
+<!--	  Loading a pcf font caused a crash. -->
+          PCF フォントの読み込みでクラッシュを起こしていました。
+	<LI>
+<!--	  Moving the control points of an implied point should move the implied point.
+	  And we should indicate which points are implied so this behavior doesn't
+	  surprise. -->
+	  暗黙の点の制御点を移動するとその暗黙の点も移動することにするべきでした。どの点が暗黙の点であるかを示すことにしたので、この振舞いは思いがけないものではありません。
+	<LI>
+<!--	  Michal Nowakowski points out that renumbering points in a glyph should turn
+	  off point matching in references. -->
+	  点の番号をつけ直すと、参照に含まれる点の対応づけがずれることを Michal Nowakowski が指摘しました。
+	<LI>
+<!--	  Add support for bitmaps with vertical metrics. -->
+	  ビットマップの縦書きメトリックに対するサポートを追加。
+	<LI>
+<!--	  Wasn't storing the vendor id in the OS/2 table properly. -->
+	  ベンダ ID を OS/2 テーブルに正しく格納していませんでした。
+	<LI>
+<!--	  Rounding error present on PPC which was absent on *86 machines. -->
+	  *86 マシンに存在しない丸めエラーが PPC に存在しました。
+	<LI>
+<!--	  Werner would like pixel size info to show on the title of a charview when
+	  debugging. -->
+	  デバッグ中に charview のタイトルにピクセルサイズを表示したいと Werner が要望しました。
+	<LI>
+<!--	  Added a new menu command "Point-&gt;Center Between Control Points" for truetype. -->
+	  TrueType 用の新メニューコマンド“<CODE>点(<U>P</U>)</CODE>→<CODE>制御点の中間に移動(<U>B</U>)</CODE>”を追加。
+	<LI>
+<!--	  When manipulating menus with keys (rather than mouse) Werner found a crash. -->
+	  メニューを (マウスでなく) キーで操作している時にクラッシュが起こることを Werner が指摘しました。
+      </UL>
+    <LI>
+<!--  5-Dec-2005 -->
+      2005年12月5日
+      <UL>
+	<LI>
+<!--	  Creating the first bitmap view might cause a crash - - depending on how the
+	  linker organized memory. -->
+	  最初にビットマップビューを作成するとクラッシュしていました (リンカがどのようにメモリを構成しているかに依存します)。
+	<LI>
+<!--	  Loading an sfd file now checks to see if there are any glyphs with splines
+	  in them, and if there are not turns on the onlybitmaps flag. Someone pointed
+	  out that if you inadvertantly edit in the outline view - - even if it is nothing
+	  significant, then the font is forever after marked as outline. This isn't
+	  a perfect fix, but it will prevent the worst from happening. -->
+	  SFD ファイルの読み込み時に、スプラインが含まれる文字があるかどうかをチェックし、それがある場合は onlybitmaps フラグをオンにしないようにしました。誰かが指摘したところによると、アウトラインビューをうっかり編集してしまった場合——それが何も有効な変更を行っていないとしても、フォントは永遠にアウトラインフォントであると印づけられてしまいます。これは完璧な修正ではありませんが、ハプニングがあった時に最悪の状態になるのを避けることができます。
+      </UL>
+    <LI>
+<!--  1-Dec-2005 -->
+      2005年12月1日
+      <UL>
+	<LI>
+<!--	  Use GNU gettext rather than my nomen routines to handle translation of the
+	  UI.. -->
+	  UI 翻訳の取り扱いに、私が自作した nomen ルーチンでなく GNU gettext を用いるようにしました。
+	<LI>
+<!--	  Add support for plugins. -->
+	  プラグインのサポートを追加。
+	<LI>
+<!--	  I added a check in parsing tfm files to make sure I didn't read outside the
+	  bounds of the kern table. But the table size was expressed in ints (32 bit
+	  units), and my index was in bytes, so I frequently exceded it. -->
+	  TFM ファイルの解析に、kern テーブルの教会の外側から読み込みを行っていないことを確かめるためのチェックを追加しました。しかし、テーブルサイズは int 型 (32 ビット単位) で表されており、私はインデックスをバイトで表現していたので、それを超えることがありました。
+	<LI>
+<!--	  If we used Get Info on a reference in a ttf font, and that reference did
+	  NOT do point matching we would generate an inappropriate error. -->
+	  TTF フォント内の参照で <CODE>情報を得る</CODE> を使用したとき、その参照が点のマッチングを行わ<STRONG>なかった</STRONG>場合、不適切なエラーメッセージを出していました。
+	<LI>
+<!--	  My support for using endchar as seac in type2 fonts only worked in bare cff
+	  fonts, it did not work if the cff were inside an sfnt wrapper (opentype). -->
+	  Type2 フォント内で endchar を seac として使用するための処理は裸の CFF フォントでのみ動作しており、CFF が SFNT ラッパの中に含まれる (すなわち OpenType フォント) ときにはうまく動作していませんでした。
+	<LI>
+<!--	  I have decided that I will now store all postscript strings in utf8 (copyright,
+	  weight, familyname, etc.) They SHOULD all be ascii. But the occasional copyright
+	  mark would sneak in. We went into an infinite loop on one such because that
+	  was an illegal utf8 string. So fix a number of problems related to this. -->
+	  全ての PostScript 文字列 (著作権表示、ウェイト、ファミリー名など) を UTF-8 で保存することに決めました。これらは全て ASCII で<EM>書かなければなりません</em>。しかし、著作権記号が紛れ込むことはよくあります。これは UTF-8 文字列として正しくないために、今までは無限ループを引き起こす原因となっていました。そういうわけで、これに関する多数の問題が解決しました。
+	<LI>
+<!--	  Switch from using an internal routine to using freetype to rasterize b&amp;w
+	  bitmaps when debugging ttf instructions. -->
+	  TTF 命令デバッグ時の白黒 2 色のビットマップのラスタライズを内部ルーチンから FreeType に切替えました。
+	<LI>
+<!--	  Make the gridfit/debug settings sticky across invocations (store in prefs). -->
+	  グリッド合わせ/デバッグの設定を、次回プログラム終了時のために (環境設定ファイルに) 保存するようにしました。
+	<LI>
+<!--	  Add popup info showing the level of greyness in a truetype font being debugged
+	  in anti-alias mode. -->
+	  アンチエイリアスモードでデバッグされている TrueType フォントの灰色の濃淡を見るためのポップアップ情報ダイアログを追加。
+	<LI>
+<!--	  Werner suggests altering the dynamic range of anti-aliased rasters in the
+	  charview so that the outlines remain visible behind them. -->
+	  Werner の示唆により、charview 内でアンチエイリアス表示されているラスタ表示のダイナミックレンジを変更し、背景にあるアウトラインが透けて見えるようにしました。
+	<LI>
+<!--	  Make the background color of the debugger raster window configurable by the
+	  user -->
+	  デバッガのラスタウィンドウの背景色をユーザが変更可能に。
+	<LI>
+<!--	  If a curved point had no control point in one direction, then ff thought
+	  it had no direction and felt free to change it. It should inherit the direction
+	  from the other side of the point. This was even more confusing if the point
+	  went through a two step process, first simplifying one side into a line (losing
+	  the cp) then simplifying the line away (losing the direction). -->
+	  曲線上の点が、片方に制御点をもたないと、その時 ff はその点のそちら側の方向は不定であり、好きに変更してよい物と考えます。その方向は、その点のもう片方の向きを受け継ぐものとされます。その結果として、点をまず単純化により片側を直線に変更し (制御点が失われる)、次に線を単純化によって取り除く (方向が失われる) という 2 段階に分かれた処理によって混乱した結果となっていました。
+	<LI>
+<!--	  Use a better algorithm to indicate changed pixels. (in debug window) -->
+	  (デバッグウィンドウ内で) 変更されたピクセルを識別するためのアルゴリズムを改良。
+	<LI>
+<!--	  Screwed up View-&gt;Show Grid Fit... in Mono mode. -->
+	  白黒モードでの <CODE>表示(<U>V</U>)</CODE>→<CODE>グリッド合わせを表示(<U>W</U>)</CODE> が壊れていました。
+	<LI>
+<!--	  Werner wants to be able to see grey scale rasters while debugging truetype.
+	  He also points out that if the instruction before the end of instructions
+	  changes pixels, ff would leave them marked "changed" even after finishing
+	  the instructions. -->
+	  グレイスケールのラスタ表示を TrueType のデバッグ中に表示できるように Werner が要望しました。彼はまた、最後以外の命令がピクセル変更を行うと、ff は命令処理が終わっていないうちから 〔changed〕マークをつけていることを指摘しました。
+	<LI>
+<!--	  We were getting multiple error windows. -->
+	  エラーウィンドウが複数表示されていました。
+	<LI>
+<!--	  Don't allow users to add instructions to a glyph containing both a reference
+	  and contours. Or a glyph where a reference is scaled more than 200%. (tt
+	  doesn't allow these combinations so the references need to be copied inline) -->
+	  ユーザが、参照と輪郭の両方を含むグリフや、200% よりも拡大された参照を含むグリフに対して TrueType 命令を追加できないようにしました (TrueType ではこれらの組合せを使用できないので、参照はインラインでコピーしなければなりません)。
+	<LI>
+<!--	  Typo in remove overlap caused bad bug in feta26. Error introduced 15 Sept. -->
+	  重複除去処理の中の Typo がバグを引き起こしていました。エラーは9月15日に加わった物です。
+	<LI>
+<!--	  Further work on what makes a spline linear. -->
+	  スプラインを直線に変換する条件処理を追加。
+	<LI>
+<!--	  The utf7 output routine in sfd did not convert from utf8 properly. -->
+	  SFD ファイル内の UTF-7 出力ルーチンは、UTF-8 を正しく変換していませんでした。
+	<LI>
+<!--	  Panov has found yet another error in simplify. Be really exuberant about
+	  turning splines that trace out lines into lines. -->
+	  Panov は、単純化処理にまたエラーを発見しました。直線を描いているスプラインを直線に変換するのを本当に積極的にするようにしました。
+	<LI>
+<!--	  Panov finds another bug: -->
+	  Panov の報告した他のバグ:
+	  <UL>
+	    <LI>
+<!--	      If we change the unicode value of a glyph, then we also need to change 
+	    <LI>
+	      the unicode value of any references to that glyph.-->
+	      あるグリフの Unicode 値を変更すると、そのグリフへの全ての参照を変更する必要がある。
+	  </UL>
+	<LI>
+<!--	  Panov presents four more bugs: -->
+	  Panov が提示したさらに 4 つのバグ:
+	  <UL>
+	    <LI>
+<!--	      If an sfd file contains an unencoded glyph, it will crash -->
+	      SFD ファイルに符号値をもたないグリフが存在すると、クラッシュを引き起こす。
+	    <LI>
+<!--	      Force Encoding-&gt;Original will crash if there's a bdf font missing some
+	      characters (ie. the piecemeal display font) -->
+	      いくつかの文字が欠けている BDF フォント (つまり、部分的なディスプレイフォント) があると <CODE>エンコーディングを強制(<U>F</U>)</CODE>→<CODE>オリジナル</CODE> がクラッシュしていました。
+	    <LI>
+<!--	      Goto Dlg tried to free an uninit value -->
+	      <CODE>移動(<U>G</U>)</CODE> ダイアログが未初期化値を解放しようとしていました。
+	    <LI>
+<!--	      Goto Dlg contained a string initialized by latin1 rather than utf8. -->
+	      <CODE>移動(<U>G</U>)</CODE> ダイアログに、UTF-8 でなく Latin1 で初期化された文字列が含まれていました。
+	  </UL>
+	<LI>
+<!--	  Hmm. the changedsincelasthinted flag doesn't apply to truetype. The equivalent
+	  thing (I guess) is not having any instructions on a glyph with splines. -->
+	  うーん。changedsincelasthinted フラグは TrueType には当てはまらないようです。それに相当する (と思われる) のは、スプラインを含んでいるものの、命令が含まれていないグリフに該当します。
+	<LI>
+<!--	  Panov wants a way to build up arrays using easier syntax than: create array,
+	  assign each element. -->
+	  Panov の要望により、より簡便な構文 (配列を作成し各要素を代入する) で配列を構築する方法を追加。
+	<LI>
+<!--	  Sometimes we would get both an EUC-CN and a GB2312packed entry in the Encoding
+	  menu. -->
+	  時々、<CODE>エンコーディング(<U>E</U>)</CODE> メニューに EUC-CN と GB2312packed という項目が両方とも表示されることがありました。	  
+	<LI>
+<!--	  Create a plugin for GB12345, and treat it (in sfnt tables) as GB2312. -->
+	  GB12345 のためのプラグインを作成し、(SFNT テーブル内で) GB2312 と同様に扱えるようにしました。
+	<LI>
+<!--	  Add a new scripting funtion: NearlyLines to convert almost linear splines
+	  to linear. -->
+	  ほとんど直線に近いスプラインを直線に変換するスクリプト関数 NearlyLines() を追加。
+	<LI>
+<!--	  Tweak AddExtrema so that it doesn't create Extrema points which are too close
+	  to the endpoints. -->
+	  AddExtrema() を調整し、既存の端点に非常に近い極値を追加しないように変更しました。
+	<LI>
+<!--	  Didn't terminate an array of answer strings to a question dialog. -->
+	  質問ダイアログへの答えを収めた配列を終端していない箇所がありました。
+	<LI>
+<!--	  Fixed a crash in stem database. -->
+	  ステムデータベース内でのクラッシュを修正。
+      </UL>
+<!--  28-Oct-2005-->
+      2005年10月28日
+      <UL>
+	<LI>
+<!--	  More work on the mac install procdure. -->
+	  Mac のインストール手順に関する追加作業。
+	<LI>
+<!--	  Redo the install documentation on the website &amp; in the readmes -->
+	  Web サイトと README の類のインストール文書を書き直し。
+	<LI>
+<!--	  Add a hack to the directory browser so that on cygwin getting a directory
+	  listing of "/" will include the magic (fake) directory /cygdrive (which gives
+	  access to the rest of the PC) -->
+	  cygwin では、"/" をリストアップすると (実体の無い) 特殊ディレクトリ /cygdrive を含めるようにするようなハックをディレクトリブラウザへに追加 (これにより、PC でディスク全体へのアクセスが可能になります)。
+	<LI>
+<!--	  Add a new scripting funtion: NearlyLines to convert almost linear splines
+	  to linear. -->
+	  スクリプト関数 NearlyLines() を追加。ほとんど直線に近いスプラインを直線に変換します。
+	 <LI>
+<!--	  Tweak AddExtrema so that it doesn't create Extrema points which are too close
+	  to the endpoints. --
+	  AddExtrema() を小修正し、極値の点が端点にあまりに近すぎるときは追加しないようにしました。
+	<LI>
+<!--	  I was dumping all opentype ligatures into an ofm(tfm) file. But I should
+	  probably only add 'liga' and 'rlig' ligatures. -->
+	  今までは、すべての OpenType 合字を OFM (TFM) ファイルに書き出していました。しかし、おそらく 'liga' と 'rlig' 合字のみを追加するべきでしょう。
+	<LI>
+<!--	  Omega has a bug where it thinks 0 width glyphs do not exist. Which means
+	  it thinks none of the combining accents, etc. exist. So force the width of
+	  any zero width glyphs to be the smallest positive width. -->
+	  Omega には、幅 0 のグリフが存在しないと考えるバグがありました。その結果、結合アクセントなどをすべて存在しないと誤認することになります。そういうわけで、全ての 0 幅グリフを最小の正の値をもっているものと強制することにしました。
+	<LI>
+<!--	  When reading ttf/otf fonts, FF gave alternate substitutions (and multiple
+	  subs?) a tag of 0. -->
+	  TTF/OTF フォントを読み込むとき、FF は選択型置換 (および複数置換にも?) に 0 番目のタグを付与していました。
+	<LI>
+<!--	  Add two scripting routines to allow people to read &amp; write strings from
+	  and to files. One string per file. -->
+	  ファイルからの文字列を読み込み・書き出しを可能にするための 2 つのスクリプト処理ルーチンを追加しました。
+	<LI>
+<!--	  The ClearTable scripting command parsed the table's tag incorrectly. -->
+	  ClearTable() スクリプトコマンドにおけるテーブルタグの解析が間違っていました。
+      </UL>
+    <LI>
+<!--  23-Oct-2005-->
+      2005年10月23日
+      <UL>
+	<LI>
+<!--	  Try to make the Mac install a bit more mac-like by adding an entry to the
+	  X11 Applications menu rather than expecting users to start fontforge from
+	  the command line. -->
+	  FontForge をコマンドラインから起動させるのではなく、X11 Applications メニューに項目を追加することにより、Mac 版に Mac らしさをちょっと付け加えました。
+	<LI>
+<!--	  David Binderman points out an out of bounds array reference in cvexport which
+	  has been there for years. Gleep. -->
+	  数年前から  cvexport.c にあった範囲外の配列参照を David Binderman が指摘しました。うがっ。
+	<LI>
+<!--	  Add scripting commands for manipulating ttf instructions. -->
+	  TTF 命令を操作するためのいくつかのスクリプトコマンドを追加しました。
+	  <P>
+<!--	  I added the following new scripting functions: -->
+	  以下の新規スクリプト関数を追加:
+	  <UL>
+	    <LI>
+	      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SetMaxpValue("item-name",
+	      value)
+	    <LI>
+	      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GetMaxpValue("item-name")
+	    <LI>
+	      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ClearInstrs()
+	    <LI>
+	      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ClearTable(tag)
+	    <LI>
+	      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AddInstrs(thingamy,replace,instrs)
+	    <LI>
+	      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FindOrAddCvtIndex(value[,sign-matters])
+	    <LI>
+	      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ReplaceCvtAt(index,value)
+	    <LI>
+	      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GetCvtAt(index)
+	    <LI>
+	      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PrivateToCvt()
+	  </UL>
+	<LI>
+<!--	  Daniel Gillmor points out there is no way to set the OS/2 Width field from
+	  a script. He then provided a patch with two new functions which does this.
+	  I realize there is no way to set any of the OS/2 values (except panose),
+	  and there should be (and to retrieve them too). -->
+	  OS/2 Width フィールドをスクリプトから参照する方法がないことを Daniel Gillmor が指摘しました。彼はそれを行う 2 つの新しい関数を追加するパッチを提供しました。私は、(panose 以外の) OS/2 の値を設定する方法が無く、それ (と値を取り出す方法も) が用意されてあるべきだということに気づきました。
+	  <P>
+<!--	  I added the following new scripting functions: -->
+	  以下の新規スクリプト関数を追加:
+	  <UL>
+	    <LI>
+	      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SetOS2Value("item-name",
+	      value)
+	    <LI>
+	      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GetOS2Value("item-name")
+	    <LI>
+	      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SetPrivateValue("item-key","item-value")
+	    <LI>
+	      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GetPrivateValue("item-key")
+	    <LI>
+	      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HasPrivateValue("item-key")
+	    <LI>
+	      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RemovePrivateValue("item-key")
+	  </UL>
+	<LI>
+<!--	  A number of fixes for ofm files. -->
+	  OFM ファイルに関する多数の修正。
+	<LI>
+<!--	  When outputting mark-to-base lookups with multiple anchor classes, ff would
+	  put a base glyph in the coverage table several times if it was used by several
+	  mark classes. Bad. -->
+	  マークから基底グリフへの照合を複数のアンカークラスとともに出力するとき、それがいくつかの基底クラスから使用されていると ff は基底グリフを範囲テーブルに何回か出力していました。間違い。
+      </UL>
+    <LI>
+<!--  18-Oct-2005-->
+      2005年10月18日
+      <UL>
+	<LI>
+<!--	  KANOU points out that I was using too strict a rule for parsing svg polygons. -->
+	  SVG の polygon 要素の読み込みに厳格すぎていたことを狩野が指摘しました。
+	<LI>
+<!--	  OFM output was not working in fonts with lots of kerning combinations. -->
+	  多数のカーニングの組み合わせをもつフォントでは、OFM 出力が動いていませんでした。
+      </UL>
+    <LI>
+<!--  16-Oct-2005-->
+      2005年10月16日
+      <UL>
+	<LI>
+<!--	  A number of fixes for ofm files. -->
+	  OFM ファイルに関する多数の修正。
+	<LI>
+<!--	  Add default 'nukt' "ligature" substitutions to appropriate Devanagari characters -->
+	  'nukt'「合字」置換のデーヴァーナーガリー文字に対する適切なデフォルトを追加。
+      </UL>
+    <LI>
+<!--  15-Oct-2005-->
+      2005年10月15日
+      <UL>
+	<LI>
+<!--	  The patch to the routine determining what glyphs got output broke bitmap
+	  only fonts. -->
+	  どのグリフが出力されたかを決定するルーチンへのパッチは、ビットマップのみのフォントを破壊していました。
+	<LI>
+<!--	  Ofm files didn't contain ligatures. -->
+	  OFM ファイルには合字は含まれません。
+	<LI>
+<!--	  The ofm patch broke tfm output. -->
+	  OFM  パッチが TFM 出力を破壊していました。
+      </UL>
+    <LI>
+<!--  12-Oct-2005-->
+      2005年10月12日
+      <UL>
+	<LI>
+<!--	  Add support for generating &amp; parsing ofm files (I hope) -->
+	  OFM ファイルの出力と解析のサポートを追加 (できたと思います)
+	<LI>
+<!--	  If I tried to generate a font from an absolutely empty fontdb (ie. a new
+	  one) then I'd get a stupid error about how .notdef was at encoding -1 and
+	  this was a bad idea. -->
+	  完全に空の (つまり、新規作成直後の) フォントデータベースからフォントを出力しようとしたとき、「なぜ .notdef の符号位置が -1 なのか」という馬鹿げたエラーを出していましたが、これはよくないアイディアでした。
+	<LI>
+<!--	  Add 4 new information types to scripting GlyphInfo -->
+	  スクリプトの GlyphInfo 関数に 4 つの新しい情報型を追加。
+	  <DL>
+	    <DT>
+	      * LayerCount
+	    <DD>
+<!--	      Number of layers in glyph (usually 2) -->
+	      グリフ内のレイヤの個数 (ふつう 2)
+	    <DT>
+	      * RefCount
+	    <DD>
+<!--	      Number of refs in glyph -->
+	      グリフ内の参照の個数
+	    <DT>
+	      * RefNames
+	    <DD>
+<!--	      Returns an array of all reference names (may be 0 length) -->
+	      すべての参照名を含む配列を返します (長さ 0 になることもあります)
+	    <DT>
+	      * RefTransform
+	    <DD>
+<!--	      Returns an array of all reference transforms -->
+	      すべての参照の変換行列からなる配列を返します
+	  </DL>
+	<LI>
+<!--	  Don't mark glyphs with widths other than 1em as being worth outputting (require
+	  widthset). Used to use both (because in the early days, before pfaedit moved
+	  to sourceforge even, the widthset bit didn't exist). Now there are too many
+	  cases w here glyphs are created with a width other than 1em (marks, glyphs
+	  in monospace fonts (where the space is anything but 1em)). -->
+	  1em 以外の幅をもつグリフを、「出力に値する」とするのはやめました (widthset を必要とします)。以前は両方を使用していました (大昔、PfaEdit が sourceforge に移行するよりも昔には、widthset ビットは存在しなかったからです)。今となっては、で幅が 1 em でないグリフが作成される機会 (マークや、(幅が 1 em以外の任意の値を取る) 固定幅のフォントの場合) があまりにも多くなりすぎました。
+	<LI>
+<!--	  When printing a type3 pdf font, give it a name. Not required, but so what. -->
+	  Type3 PDF フォントを印字するときに名前をつけるようにしました。
+	<LI>
+<!--	  Patch from Michal Nowakowski. When editing truetype instructions using my
+	  prefix notation for numbers, there was a crash if a number needed a word
+	  (rather than a byte). -->
+	  Michal Nowakowski からのパッチ。私の考案した数字による前置記法で TrueType 命令を編集するとき、数字が (1 バイトではなく) 1 ワードを必要とするときにクラッシュしていました。
+	<LI>
+<!--	  Add some support for reading fonts out of a pdf file. -->
+	  PDF ファイルからのフォントの読み込みをいくつかサポート。
+	  <UL>
+	    <LI>
+<!--	      Limited support for pdf type3 (no images) -->
+	      PDF Type3 の限定されたサポート (画像を除く)
+	    <LI>
+<!--	      Only support (Hex, 85, Flate, RLE)Decode filters (no support for lzw, fax,
+	      JBIG, DCT) -->
+	      (Hex, 85, Flate, RLE の) 4 種のデコードフィルタのみをサポート (lzw, fax, JBIG, DCT のサポートは無し)。
+	  </UL>
+	<LI>
+<!--	  The routine to build the stem database (autohint) would set up a point database
+	  and then call a routine to convert all splines into a set of monotonics.
+	  But that routine could remove 0 length splines (and the points attached),
+	  which would mean our point db would be wrong. -->
+	  ステムデータベース (自動ヒント) を構築するためのルーチンは点データベースを準備し、それからすべてのスプラインを単調増加/減少する線の集合に変換するためのルーチンを呼び出します。しかしそのルーチンは長さ 0 のスプライン (と、それに付随する点) を削除してしまい、その結果点 DB が間違ったものになる可能性がありました。
+	<LI>
+<!--	  Stefan Wanger suggests some patches to fix memory leaks. -->
+	  メモリリークを修正するいくつかのパッチを Stefan Wagner が提案しました。
+	<LI>
+<!--	  Stefan Wanger gave me a type2 font which used type1 flex conventions (calling
+	  othersubrs, etc.) There is no othersubrs operator in type2, nor any place
+	  to store othersubrs subroutines. But it is easy enough to support, so why
+	  not. Warn that it's an illegal font, of course. -->
+	  (othersubrs を呼び出すなどの) Type1 の flex の慣習を使用している Type2 フォントを Stefan Wagner が送ってくれました。Type2 には othersubrs 演算子は無いし、othersubrs サブルーチンを格納する場所もありません。しかし、それをサポートするのは簡単なので、なぜしないことがあるでしょう。もちろん、それが不正なフォントである旨の警告はします。
+	<LI>
+<!--	  Stefan Wanger gave me a font containing the utf8 byte order mark in a fontname
+	  ( in a CFF Name Index). PostScript says FontNames are printable ASCII. But
+	  it's easy enough to skip over it. -->
+	  Stefan Wagner は (CFF 名前インデックス内の) フォント名に UTF-8 バイトオーダマークの入ったフォントを送ってくれました。PostScript は、FontName は ASCII の印字可能文字でなければならないとしていますが、読み飛ばすのは簡単なことです。
+	<LI>
+<!--	  Stepan Roh points out that in a monospace font, combining glyphs should default
+	  to the mono-width while in a proportional font they should default to 0 width
+	  (or perhaps 1 em-unit for compatability with old idiotic windows systems).
+	  Use the panose field to determine if a font is monospace. -->
+	  プロポーショナルフォントでは結合文字の幅のデフォルト値が 0 とする (さもなければ、古いお馬鹿な各種のウィンドウシステムとの互換性のために 1 em ユニットとする) べきであるのに対し、固定幅のフォントでは単一の幅をデフォルトとするべきであるという事実を Stepan Roh が指摘しました。フォントが固定幅か同かを判断するのには panose フィールドを使用します。
+  結合グリフの幅が
+	  <P>
+<!--	  Actually ALL glyphs in a monospace font should default to the mono-space
+	  width rather than 1em. -->
+	  実際には固定幅フォント内の す べ て の グリフは 1em ではなくて所定の固定幅をデフォルトとすべきです。
+	<LI>
+<!--	  New dialog: Hints-&gt;Edit 'maxp'... Gives user access to number of functions
+	  defined, the stack depth, storage usage, number of twilight points, which
+	  ff can't figure out for you. -->
+	  新しいダイアログ「ヒント→'maxp'を編集...」を追加。ユーザが定義された関数個数、スタックの深さ、ストレージの用法、トワイライトポイントの個数という ff が算出することのできない値にアクセスできます。
+	<LI>
+<!--	  Figured out how to make transparent images work on cygwin -->
+	  cygwin で透明画像がうまく動くようにする方法が分かりました。
+	<LI>
+<!--	  Michal Nowakowski points out that negative values are duplicated in cvt. -->
+	  Michal Nowakowski が、負の値が cvt 内で重複していることを指摘しました。
+	<LI>
+<!--	  Patch from Michal Nowakowski fixing crash when setting size of cvt table
+	  to 0. -->
+	  cvt テーブルのサイズを 0 にセットするとクラッシュするのを直すパッチを Michal Nowakowski が提供しました。
+      </UL>
+    <LI>
+<!--  29-Sept-2005-->
+      2005年9月29日
+      <UL>
+	<LI>
+<!--	  Add utf8 entry points for many (ucs2) routines. Minimal ability to draw non-BMP
+	  glyphs now with <A HREF="nonBMP/index.html">bdf fonts</A> with encodings:
+	  *-UnicodePlane-1 (for plane 1), *-UnicodePlane-2 (for plane 2), etc. -->
+	  多くの (ucs2) ルーチンに、utf8 入力を追加。BMP 外の面のグリフを *-UnicodePlane-1 (第 1 面)、*-UnicodePlane-2 (第 2 面) などの符号化方式の <A HREF="nonBMP/index.html">BDF フォントで</A>描画する最低限の機能を追加。
+	<LI>
+<!--	  Add a menu command to add values from the private dict into the cvt table
+	  (BlueValues, StemSnaps). -->
+	  Private 辞書からの値 (BlueValues, StemSnaps) を cvt テーブルに追加するコマンドを追加。
+	<LI>
+<!--	  The Edit cvt window usually failed to draw anything in itself when it popped
+	  up (subsequent refreshes were ok). -->
+	  「cvt を編集」ウィンドウは、ポップアップ直後に何かを描画しようとしたときに失敗していました (その後の再描画は正しくできていました)。
+	<LI>
+<!--	  Patch from Michal Nowakowski to improve memory usage in auto instr. -->
+	  自動命令づけコードのメモリ使用を改良するための Mical Nowakowski からのパッチ。
+	<LI>
+<!--	  Printing sample text was broken in fonts with no kerning classes. -->
+	  カーニングクラスを含まないフォントにおいて、サンプルテキストの印字が壊れていました。
+	<LI>
+<!--	  cygwin does very weird things with shared libaries, and we didn't support
+	  them at all. -->
+	  cygwin はとても変な共有ライブラリの扱いを行っており、それをまったくサポートしていませんでした。
+	<LI>
+<!--	  FontForge did not support the depreciated usage of endchar to mean (almost)
+	  seac in type2 charstrings. It should now. -->
+	  Type2 charstring 内の endchar が (ほとんど) seac を意味すると言う廃止された用法をサポートしていませんでした。今はしているはずです。
+	<LI>
+<!--	  os2 typo linegap was not read out of sfd files. -->
+	  OS/2 テーブルの「組版上の行間」の値が SFD ファイルか間読み込まれていませんでした。
+	<LI>
+<!--	  Display 'gai' files in the open dlg. -->
+	  フォントを開くダイアログで 'gai' ファイルを表示するようにしました。
+	<LI>
+<!--	  I got some mnemonics wrong. Fix 'em up. -->
+	  いくつかのニモニックを間違えていました。修正。
+	<LI>
+<!--	  bdftopcf will use the glyph encoded at 0 as the default glyph if there is
+	  no explicit DEFAULT_CHAR. It seems happy with a DEFAULT_CHAR of -1 to mean
+	  no default, so use that if we don't want glyph 0 to be the default. -->
+	  bdftopcf は、DEFAULT_CHAR が明示的に指定されていないときは符号値 0 をもつグリフをデフォルトグリフとして使用します。デフォルトが存在しないことを示すためには DEFAULT_CHAR を -1 とするとうまく動くようですので、グリフ 0 をデフォルトとしたくない場合にはそれを使うようにしました。
+	<LI>
+<!--	  when outputting bdf, fnt or pt3 bitmap fonts with no outline font generated,
+	  we'd get filenames like foo-*-13.bdf. Get rid of the "-*". -->
+	  BDF の出力時に、アウトラインフォントを出力せずに fnt または pt3 のビットマップフォントを出力した場合、foo-*-13.bdf のようなファイル名が使われていました。"-*" を削除しました。
+	<LI>
+<!--	  Support point numbering of composites even when not debugging. -->
+	  デバッグ以外のときにも複合グリフの点の番号づけをサポート。
+	<LI>
+<!--	  Michal Nowakowski points out that the cvt editor crashed if we changed the
+	  length of the table. -->
+	  cvt エディタが、テーブルの長さを変更したときにクラッシュすることを Michal Nowakowski が指摘しました。
+	<LI>
+<!--	  Provide two new scripting functions: -->
+	  新しいスクリプト関数を 2 個追加:
+	  <UL>
+	    <LI>
+	      MoveReference(xoff,yoff,[ref-name/ref-unicode]+)
+	    <LI>
+	      PositionReference(x,y,[ref-name/ref-unicode]+)
+	  </UL>
+	  <P>
+<!--	  These search all selected glyphs, looking for any references in those glyphs
+	  with the given name/unicode value, and then translating the reference by
+	  (xoff,yoff) or positioning the reference absolutely at (x,y). -->
+	  これらは選択中の全グリフから、指定されたグリフのどれかへの参照を含むグリフを検索し、見つかった参照を (xoff,yoff) だけ平行移動するか、その参照を絶対位置 (x,y) に配置するかのどちらかを行います。
+	<LI>
+<!--	  ff failed to read horizontal metrics properly from a type2 CFF CID font.
+	  In most cases this would be masked by the fact that ff would correct the
+	  bad width values by reading the hmtx table. But if one had a bare CFF font,
+	  or a 'gai' font where there is no external source of widths, ff would get
+	  things wrong. -->
+	  Type2 CFF CID フォントからの横書き用メトリックの読み込みが正しくありませんでした。ほとんどの場合、それは hmtx テーブルを読むことによって得られた間違った幅の値を FF が補正してしまうという事実によって隠蔽されていました。しかし裸の CFF フォントの場合、または幅に関する外部のソースの存在しない 'gai' フォントの場合、ff は失敗していました。
+	<LI>
+<!--	  Alexej Kryukov points out that most entries in the private dict should be
+	  scaled when we do a ScaleToEm. -->
+	  ScaleToEm を呼び出したときには Private 辞書内のほとんどの項目を拡大・縮小する必要があることを Alexej Kryukov が指摘しました。
+	<LI>
+<!--	  Fix a couple of problems with cid font display that "gai" fonts expose. -->
+	  "gai" フォントにより明らかになった CID フォント表示の 2 つの問題点を修正。
+	<LI>
+<!--	  Michal Nowakowski points out that I generated truetype instructions - - - and
+	  then forgot to attach them to the glyph. Whoops. -->
+	  Michal Nowakowski は、私の生成した TrueType 命令の問題点を指摘しました——さらに、それにグリフを添付し忘れていることも。ふんげあ。
+	<LI>
+<!--	  Loading extensible glyph information from a tfm file was broken by the encoding
+	  change. -->
+	  拡張可能なグリフ情報を TFM ファイルから読み込む処理が、エンコーディングの変更以来壊れていました。
+      </UL>
+    <LI>
+<!--  19-Sept-2005-->
+      2005年9月19日
+      <UL>
+	<LI>
+<!--	  ff did not read AAT classes (kerning classes, etc) properly. It read one
+	  extra element which could cause problems -->
+	  ff は AAT クラス (カーニングクラス等) を正しく読み込んでいませんでした。1 個余分に要素を読み込んでおり、問題を起こす可能性がありました。
+	<LI>
+<!--	  Cleanup svg output for kerning classes with no members. -->
+	  SVG 出力にメンバーを含まないカーニングクラスがあるときの処理を修正。
+	<LI>
+<!--	  Out of bounds array reference in OS2FigureCodePages caused a crash on the
+	  mac. -->
+	  OS2FigureCodePages 内で境界を外れた配列参照を行い、Mac でクラッシュしていました。
+	<LI>
+<!--	  When loading a type1 font we failed to set the unicode encoding on seac
+	  references. This probably broke lots of things, it certainly broke replace
+	  with reference. -->
+	  Type1 フォントの読み込み時に、seac 参照の Unicode 符号位置を正しく設定していませんでした。これはおそらくさまざまな処理を失敗させるでしょう。少なくとも「参照で置換」は間違いなく失敗します。
+	<LI>
+<!--	  Add a DefaultRoundToGrid scripting function to set the Round-to-Grid truetype
+	  reference bit (basically set it whenever we have a reference which isn't
+	  point matched). -->
+	  TrueType の参照に含まれる Round-to-Grid ビット (点がマッチしない参照がある場合は基本的に常にセットする) をセットするための DefaultRoundToGrid() スクリプト関数を追加。
+	<LI>
+<!--	  Add support for truetype point matching in references and anchor points -->
+	  参照およびアンカーポイントに含まれる TrueType 点のマッチ処理のサポートを追加。
+	<LI>
+<!--	  Improve the debugging heuristic that notices when we've jumpped to a new
+	  routine to work better with composites -->
+	  新しいルーチンにジャンプするときに注意を喚起するデバッグルーチンのヒューリスティックを、複合グリフでより良く動作するように改善。
+	<LI>
+<!--	  If I attempted to debug a glyph with no instructions there was a race condition
+	  and if the race was won one way, ff would hang. -->
+	  命令を含まないグリフをデバッグしようと試みたとき、競合状態が発生し、その競合が片方に優位であった場合に ff はハングしていました。
+	<LI>
+<!--	  We weren't numbering points in a composite. This was only obvious when we
+	  did a View-&gt;Show Grid Fit on a composite glyph. -->
+	  複合グリフ内の点に番号づけを行っていませんでした。これを見ることができるのは、複合グリフ上で「表示→グリッド合わせを表示」を行ったときだけでした。
+	<LI>
+<!--	  When debugging a composite glyph, ff forgot that some references are translated
+	  (or scaled or rotated), and failed to display this. -->
+	  複合グリフのデバッグ時に、ff はいくつかの参照が平行移動 (または拡大・縮小・回転) していることを忘れており、表示に失敗していました。
+	<LI>
+<!--	  FF failed to keep track of the truetype "RoundToGrid" bit which applies to
+	  references. -->
+	  FF は TrueType の参照に適用される "RoundToGrid" ビットの記録を保持するのに失敗していました。
+	<LI>
+<!--	  In the Points window of truetype debugging, if the penultimate point of a
+	  contour was interpolated, then the contour boundary was drawn in the wrong
+	  place. -->
+	  TrueType のデバッグ時に、ある輪郭の最後から 2 番目の点が内挿によって求められている場合、輪郭の境界が間違った位置に描画されていました。
+	<LI>
+<!--	  Use to store debugging dpi/pointsize in the charview. Werner suggests that
+	  it be global (so different glyphs will all share the same defaults). -->
+	  デバッグ時に、DPI/ポイントサイズを文字ビュー内に格納していました。Werner は、それをグローバルにする (つまり、異なるグリフがすべて同じデフォルトを共有する) ことを提案しました
+	<LI>
+<!--	  Some Unicode code blocks have moved (probably those which only in the pipeline
+	  or some such), and some others have been added to the pipeline. -->
+	  いくつかの Unicode コードブロックが (それらがパイプライン上にあっただけなのか、何らかの類似の理由により) 別の場所に移動し、別のいくつかがパイプラインに追加されました。
+      </UL>
+    <LI>
+<!--  15-Sept-2005-->
+      2005年9月15日
+      <UL>
+	<LI>
+<!--	  Can't use a subroutine to refer to a translated glyph which contains flex
+	  hints in type1 output. -->
+	  Type1 出力に含まれる flex ヒントを含むグリフを平行移動した物を参照するのにはサブルーチンは使用できません。
+	<LI>
+<!--	  Hide another problem with rounding errors in remove overlap. -->
+	  重複処理の、丸めエラーに伴う別の問題を隠しました。
+	<LI>
+<!--	  Don't produce multiple warnings about the local encoding. -->
+	  ローカルエンコーディングに関する警告を 1 個しか出さないようにしました。
+	<LI>
+<!--	  In quadratic fonts the Remove Overlap menu item is disabled, but if you use
+	  the hotkey the command is invoked (with disasterous results). -->
+	  2 次フォントでは、重複除去メニュー項目は表示しないようになっていますが、ホットキーを使うとコマンドが呼び出されて (その結果、破滅をもたらして) いました。
+	<LI>
+<!--	  Typo in point info code to determine whether a hint mask contains conflicts
+	  (matched vertical hints against horizontal ones) -->
+	  ヒントマスクが矛盾しているかどうかを決定するための点の情報検知コードにタイプミスがありました (垂直ヒントと水平ヒントをマッチさせていました)。
+      </UL>
+    <LI>
+<!--  12-Sept-2005-->
+      2005年9月12日
+      <UL>
+	<LI>
+<!--	  Added a scripting command DefaultUseMyMetrics() to set the use_my_metrics
+	  bit in old fonts. -->
+	  古いフォントに含まれるuse_my_metrics をセットするためのスクリプトコマンド DefaultUseMyMetrics() を追加。
+      </UL>
+    <LI>
+<!--  11-Sept-2005-->
+      2005年9月11日
+      <UL>
+	<LI>
+<!--	  &nbsp;&nbsp; When ff pastes refs from one font to another it tries to figure
+	  out the width of a glyph containing references from the width of what appears
+	  to be the base glyph. (because if you paste Aacute from one font to another,
+	  the size of the "A" glyph may be quite different in the new font. Using the
+	  width of the glyph in the original font would be wrong). -->
+	  FF が参照をあるフォントから別のフォントに貼り付けるとき、参照を含むグリフの幅を、基底グリフとなるグリフの幅から決定するようにしました。(なぜなら、Aacute をあるフォントから別のフォントに貼り付ける場合、"A" グリフの幅は新しいフォントでは全く個となる可能性があるからです。オリジナルのフォントの幅を使うと間違った結果となるでしょう)。
+	  <P>
+<!--	  There are two problems with this: -->
+	  これに伴う問題が 2 つあります:
+	  <OL>
+	    <LI>
+<!--	      It didn't take forward references into account, and would use the original
+	      width rather than the modified width of the reference. -->
+	      これは前方参照を考慮に入れず、参照の変更された幅ではなく、オリジナルの幅を使用します。
+	    <LI>
+<!--	      It would (probably) be confused by an Alphatonos where the width of Alphatonos
+	      is not the same as that of Alpha. -->
+	      Alphatonos の幅は Alpha の幅とは異なるので、(おそらく) Alphatonos では混乱が起こるでしょう。
+	  </OL>
+	  <P>
+<!--	  instead figure widths out after all pastes have completed, looking at the
+	  use_my_metrics bit to get things right. -->
+	  すべての貼り付け処理が完了した後に幅を操作するのではなく、物事を正しく行うために use_my_metrics を参照します。
+	<LI>
+<!--	  Handle forward references to glyphs which will be pasted into by the current
+	  command (used to work, broken by the encoding change) -->
+	  現在のコマンドによって貼り付けられるグリフへの前方参照を取り扱います (かつて動いていましたが、エンコーディング処理の変更により壊れていました)。
+	<LI>
+<!--	  Various fixes for pasting references from a font which has since been closed. -->
+	  既に閉じられたフォントからの参照を貼り付けるための多数の修正。
+	<LI>
+<!--	  Support the ttf "_USE_MY_METRICS" bit on composite glyphs. This entails: -->
+	  複合グリフにおける TTF の "_USE_MY_METRICS" ビットのサポート。これには以下の処理が伴います:
+	  <UL>
+	    <LI>
+<!--	      Retaining it when reading a truetype font -->
+	      TrueType フォントの読み込み時に値を保持
+	    <LI>
+<!--	      Setting properly when generating one -->
+	      出力時に適切な値を設定
+	    <LI>
+<!--	      Storing it in sfd files -->
+	      SFD ファイルに値を格納
+	    <LI>
+<!--	      Giving the user a way to set it with the Element-&gt;GetInfo command -->
+	      「エレメント(L)→情報を得る(I)」コマンドで変更方法をユーザに提供
+	  </UL>
+      </UL>
+    <LI>
+<!--  9-Sept-2005-->
+      2005年9月9日
+      <UL>
+	<LI>
+<!--	  ff crashed when given a bdf font with multiple glyphs with the same name -->
+	  FF は、複数のグリフが同じ名前をもつ BDF フォントを与えるとクラッシュしていました。
+	<LI>
+<!--	  Try to avoid generating bdf fonts with multiple glyphs with the same name.
+	  This happened when a single glyph was mapped to several encodings, a concept
+	  bdf doesn't support. Now when it looks like this will happen we rename the
+	  glyph. -->
+	  複数のグリフが同じ名前をもった BDF フォントの出力を避けようと試みるようにしました。これにより、1 個のグリフに複数の符号位置を割り当てるという、BDF がサポートしていない概念に伴って起こります。そのような事態を発見したときにはグリフ名を変更するようにしました。
+	<LI>
+<!--	  Uninitialized variable in dependant sub-menu (broken by encoding change) -->
+	  依存するサブメニュー内の未初期化変数 (符号化の変更以来壊れていました)。
+	<LI>
+<!--	  Pasting a reference into a font which did not contain the referred glyph
+	  did not give you the option of copying the original outlines any more. (broken
+	  by the encoding change) -->
+	  参照されたグリフを含んでいないフォントへ参照を貼り付けたとき、オリジナルのアウトラインをコピーすると言う選択肢が出力されなくなっていました (符号化方式の変更以来壊れていました)。
+	<LI>
+<!--	  Merging fonts where glyphs had multiple encodings caused crashes. -->
+	  グリフに重複符号化されたグリフを含むフォントを併合するとクラッシュしていました。
+	<LI>
+<!--	  I'm very old fashioned. I like having error messages on stderr. But far too
+	  many people don't see them there. I guess they invoke fontforge directly
+	  from X with stderr directed to some invisible console window. Well create
+	  a little window to contain warning messages about font errors (for instance
+	  when reading an otf font we might complain about glyphs out of bounds, etc.) -->
+	  私は非常に古風です。私はエラーメッセージを好んで stderr に出力していました。しかし、それらを見ない人がたくさんいます。おそらく、彼らは X からそれらを起動し、標準エラー出力がどこか見えないコンソールウィンドウに出力されているのでしょう。よし、フォントエラーに関する警告メッセージを出力するための小さなウィンドウを作ることにしましょう (例えば、OTF フォントを読み込むとき、範囲外のグリフについて文句を言うなどのため)。
+  
+	<LI>
+<!--	  Add support for postscript bitmap fonts. This means: -->
+	  PostScript ビットマップフォントのサポート。以下の修正が含まれます:
+	  <UL>
+	    <LI>
+<!--	      Ability to parse (simple forms of) the imagemask ps operator -->
+	      (単純な形の) imagemask PS 演算子を解析する機能
+	    <LI>
+<!--	      Code to detect that a type3 is a ps bitmap, and convert it into a normal
+	      bitmap font that people can edit. -->
+	      Type3 が PS ビットマップであることを検出し、それを人々が編集できる通常のビットマップに変換するためのコード
+	    <LI>
+<!--	      Bitmap output as a ps type3 font (using imagemask) -->
+	      ビットマップへの (imagemask を使用した) PS Type3 フォントへの書き出し。
+	    <LI>
+<!--	      Fixing a bug in my output routines which worked fine for images in eps files,
+	      but failed horribly if that same code was stuffed into a charproc and executed
+	      on demand. -->
+	      EPS ファイル内の画像に対しては正しく動いていたものの、同じコードが charproc に詰め込まれてオンデマンドで実行されたときに恐ろしい結果を招いていた、出力ルーチンのバグを修正。
+	  </UL>
+	<LI>
+	<LI>
+<!--	  ff could not handle an encoding specified as a simple array. (Not allowed
+	  in typ e1 spec, but obvious for a type3) -->
+	  FF は 1 個の単純配列として指定されたエンコーディングを扱えませんでした (Type1 の使用では許されませんが、Type3 では自明です)。
+	<LI>
+<!--	  And ff's handling of any type3s was broken by the encoding patch. -->
+	  また、エンコーディングパッチ以来、ff の Type3 処理は壊れていました。
+	<LI>
+<!--	  If a font contained fewer than 256 glyphs, then ff failed to load a format0
+	  cmap subtable properly. -->
+	  フォントが 256 個よりも少ないグリフしか含んでいない場合、ff は format 0 cmap サブテーブルを正しく出力できていませんでした。
+      </UL>
+    <LI>
+<!--  4-Sept-2005-->
+      2005年9月4日
+      <UL>
+	<LI>
+<!--	  In fontinfo, changed the tab "TTF Values" to be "OS/2", consolidated the
+	  Panose tab underneath it. Added many more fields, almost all of OS/2. -->
+	  フォント情報ダイアログの [TTF 値] を [OS/2] に名称変更し、その下に含まれていた [Panose] をタブに分離。更に多くのフィールドを追加し、OS/2 のほとんどすべてをカバーします。
+	<LI>
+<!--	  Fixed a number of uninitialized variables, at the instigation of Pavel Roskin. -->
+	  Pavel Roskin の教唆により、未初期化変数の数値を固定。
+	<LI>
+<!--	  Applied several patches from Pavel Roskin. -->
+	  Pavel Roskin よりのいくつかのパッチを適用。
+	<LI>
+<!--	  The scripting WorthOutputting command insisted on an argument, even when
+	  it should not have. -->
+	  WorthOutputting() スクリプトコマンドは、必要ない場合でも 1 個の引数を必要としていました。
+	<LI>
+<!--	  Scripting SetCharCnt command has been broken since the encoding change. -->
+	  SetCharCnt() コマンドはエンコーディングの変更以来壊れていました。
+      </UL>
+  </UL>
+  <P>
+<!--  <A HREF="oldchangelog.html">Earlier Changes </A><BR>-->
+  <A HREF="oldchangelog.html">これ以前の変更点</A><BR>
+<!--  <A HREF="pfaeditchangelog.html">Changes to PfaEdit (predecessor to
+  FontForge)</A>-->
+  <A HREF="pfaeditchangelog.html">PfaEdit (FontForge の旧名称) への変更点</A>
+</DIV>
+</BODY></HTML>
+  

@@ -1,0 +1,74 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 23-Mar-2005 -->
+  <!-- AP: Last modified: 23-Mar-2005 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>UniqueID and XUID</TITLE>-->
+    <TITLE>UniqueID と XUID</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+<BLOCKQUOTE>
+<!--
+  <PRE>From: Thomas Phinney of Adobe
+Subject: [OpenType] Why you don't need UniqueIDs
+Date: 	Fri, 04 Mar 2005 10:04:41 -0800
+</PRE>-->
+  <PRE>From: Adobe の Thomas Phinney
+Subject: [OpenType] UniqueIDs が不要な理由
+Date: 	Fri, 04 Mar 2005 10:04:41 -0800
+</PRE>
+  <P>
+<!--
+  Neither Type 1 nor OpenType CFF fonts require PostScript UniqueIDs. -->
+  Type 1 フォントも OpenType CFF フォントも PostScript UniqueID をつける必要はありません。
+  <P>
+<!--
+  Back in the mid-80s, when printing might be done on a 57K serial connection
+  and printers might have 8 MHz processors, the caching of device-generated
+  bitmaps enabled by UniqueIDs made a noticeable speed difference. With today's
+  connection bandwidths and printers, the printing speed difference was
+  insignificant in our tests (conducted around 2002), and certainly not enough
+  to outweigh the risks of collisions between UniqueIDs for different fonts
+  and the trouble of tracking the ID numbers. -->
+  80 年代半ばの、印刷が 57K シリアル接続で行われていて、プリンタに内蔵されていたプロセッサのクロックが 8 MHz 程度だった時代には、デバイスが生成したビットマップを UniqueID を指定することによってキャッシュできるようにするとスピードの差が実感できたでしょう。現在の接続バンド幅とプリンタにおいては、(2002 年に行われた) 我々のテストでは印刷速度の違いは僅かなものであり、どう考えても、異なるフォント間で UniqueID の衝突を起こすリスクと ID 番号の保守の手間に見合うほどの価値はありません。
+  <P>
+<!--
+  For these reasons, Adobe stopped using UniqueIDs (and XUIDs) in our own OpenType
+  CFF fonts. If we still made Type 1 fonts, we wouldn't use UniqueIDs for them,
+  either. -->
+  これらの理由により、Adobe は UniqueID (および XUID) を、自社製の OpenType CFF フォントで使用するのを止めました。もし我々が未だに Type 1 フォントを作っていたなら、それらでも UniqueID を使用するのを止めたことでしょう。
+  <P>
+<!--
+  You may of course continue to use UniqueIDs, it's just that they are not
+  necessary. -->
+  もちろん UniqueID を使い続けるのはあなたの自由です。単にそれは不要であるということをお知らせしているだけです。
+  <P>
+<!--
+  Regards, -->
+  敬具
+  <P>
+  T
+  <P>
+  <P>
+  Thomas W. Phinney<BR>
+  Program Manager<BR>
+  Fonts &amp; Core Technologies<BR>
+  Adobe Systems
+  <P>
+  <BLOCKQUOTE>
+<!--
+    C makes it easy to shoot yourself in the foot; <BR>
+    C++ makes it harder, but when you do, <BR>
+    it blows away your whole leg." <BR> -->
+    C は自分の脚を簡単に撃てるようにできている; <BR>
+    C++ ではそれほど簡単ではない。だが撃った時は、<BR>
+    脚全体を吹き飛ばしてしまう。"<BR>
+    - Bjarne Stroustrup
+  </BLOCKQUOTE>
+</BLOCKQUOTE>
+</DIV>
+</BODY></HTML>

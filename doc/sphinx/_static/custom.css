@@ -1,0 +1,71 @@
+.small {
+  font-size: 0.7em;
+}
+
+.clear-both {
+  clear: both;
+}
+
+.float-right, blockquote.epigraph {
+  float: right;
+  clear: right;
+  margin-left: 1em;
+  font-size: 0.7em;
+}
+
+.overflow-x-auto {
+  overflow-x: auto;
+}
+
+div.body {
+  min-width: inherit !important;
+}
+
+/*Workaround for https://github.com/sphinx-doc/sphinx/issues/7112
+  Can be removed once Sphinx 2.4.0 is released*/
+div.align-left>img {
+    clear: left;
+    float: left;
+    margin-right: 1em;
+}
+div.align-right>img {
+    clear: right;
+    float: right;
+    margin-left: 1em;
+}
+
+.nowrap { white-space: nowrap;}
+
+.flex-row { display: flex; }
+.flex-row .flex-col {
+  flex: 1;
+  margin: 0 0.25em;
+}
+.flex-container.flex-left>.flex-row { justify-content: left; }
+.flex-container.flex-center>.flex-row { justify-content: center; }
+.flex-container.flex-right>.flex-row { justify-content: right; }
+.flex-container.flex-top>.flex-row { align-items: start; }
+.flex-container.flex-middle>.flex-row { align-items: center; }
+.flex-container.flex-bottom>.flex-row { align-items: end; }
+.flex-col.flex-2 { flex: 2; }
+.flex-col.flex-3 { flex: 3; }
+.flex-col.flex-4 { flex: 4; }
+.flex-col.flex-5 { flex: 5; }
+.flex-col.flex-none { flex: none; }
+.flex-col>figure {
+  margin: auto;
+  padding: auto;
+}
+
+@media (max-width: 599px) {
+  .flex-row { display: block; }
+  .flex-container.flex-nobreak .flex-row { display: flex; }
+}
+
+.compact {
+  font-size: 0.75em;
+}
+
+table.compact th {
+  padding: 0;
+}

@@ -59,6 +59,7 @@ build_option(ENABLE_LIBREADLINE      AUTO ON  "Enables Readline support")
 build_option(ENABLE_LIBTIFF          AUTO ON  "Enables TIFF support")
 build_option(ENABLE_WOFF2            AUTO ON  "Enables WOFF2 support")
 
+build_option(ENABLE_DOCS             AUTO ON  "Enables building and installing documentation. Sphinx is required to build it.")
 build_option(ENABLE_CODE_COVERAGE    BOOL OFF "Build with code coverage support")
 build_option(ENABLE_DEBUG_RAW_POINTS BOOL OFF "Add a raw mode to the points window of the debugger")
 build_option(ENABLE_FONTFORGE_EXTRAS BOOL OFF "Builds programs from the contrib directory")
@@ -71,6 +72,9 @@ build_option(ENABLE_SANITIZER        ENUM "none" "Enables a sanitizer. Requires 
 build_option(ENABLE_FREETYPE_DEBUGGER PATH "" "Use FreeType's internal debugger within FontForge.\
  If enabling this option, this must be set to the path of the FreeType source.\
  The version of that source must match the version that FontForge will link to.")
+
+build_option(SPHINX_USE_VENV BOOL OFF "If building documentation and Sphinx\
+ is not installed, try to install and use it from a python3 venv.")
 
 build_option(REAL_TYPE ENUM "double" "Sets the floating point type used." "double" "float")
 build_option(THEME     ENUM "tango"  "Sets the GUI theme." "tango" "2012")
@@ -131,6 +135,7 @@ if(BUILD_SHARED_LIBS)
   set(Python3_USE_STATIC_LIBS FALSE)
 endif()
 find_package_auto(ENABLE_PYTHON_SCRIPTING Python3 3.3 COMPONENTS Development Interpreter)
+find_package_auto(ENABLE_DOCS             Sphinx) # Should come after ENABLE_PYTHON_SCRIPTING
 find_package_auto(ENABLE_LIBSPIRO         Libspiro)
 find_package_auto(ENABLE_LIBUNINAMESLIST  Libuninameslist)
 find_package_auto(ENABLE_LIBGIF           GIF)
@@ -170,7 +175,9 @@ if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()
 add_subdirectory(desktop)
-add_subdirectory(doc)
+if(ENABLE_DOCS AND Sphinx_FOUND)
+  add_subdirectory(doc)
+endif()
 add_subdirectory(po)
 add_subdirectory(share)
 if(APPLE)

@@ -201,7 +201,7 @@ static int glyph_e_h(GWindow gw, GEvent *event) {
 	gld->ret = NULL;
     } else if ( event->type == et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("justify.html#glyphs-dlg");
+	    help("ui/dialogs/justify.html", "#justify-glyphs-dlg");
 return( true );
 	}
 return( false );
@@ -398,7 +398,7 @@ static int lookup_e_h(GWindow gw, GEvent *event) {
 	gld->ret = NULL;
     } else if ( event->type == et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("justify.html#lookup-dlg");
+	    help("ui/dialogs/justify.html", "#justify-lookup-dlg");
 return( true );
 	}
 return( false );
@@ -718,7 +718,7 @@ static int langs_e_h(GWindow gw, GEvent *event) {
 	jd->ldone = true;
     } else if ( event->type == et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("justify.html#language-dlg");
+	    help("ui/dialogs/justify.html", "#justify-language-dlg");
 return( true );
 	}
 return( false );
@@ -917,7 +917,7 @@ static int jscripts_e_h(GWindow gw, GEvent *event) {
 	Jstf_Cancel(jd);
     } else if ( event->type == et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("justify.html");
+	    help("ui/dialogs/justify.html", NULL);
 return( true );
 	}
 return( false );

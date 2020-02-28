@@ -593,7 +593,7 @@ int ii_v_e_h(GWindow gw, GEvent *event) {
 	    /* All Done */
 	    ;
 	} else if ( event->u.chr.keysym == GK_Help || event->u.chr.keysym == GK_F1 ) {
-	    help("ttfinstrs.html");
+	    help("ui/dialogs/ttfinstrs.html", NULL);
 	}
       break;
       case et_mousemove: case et_mousedown: case et_mouseup:
@@ -630,7 +630,7 @@ static int iv_e_h(GWindow gw, GEvent *event) {
       break;
       case et_char:
 	if ( event->u.chr.keysym == GK_Help || event->u.chr.keysym == GK_F1 )
-	    help("ttfinstrs.html");
+	    help("ui/dialogs/ttfinstrs.html", NULL);
       break;
       case et_controlevent:
 	switch ( event->u.control.subtype ) {
@@ -1279,7 +1279,7 @@ static int sv_v_e_h(GWindow gw, GEvent *event) {
       break;
       case et_char:
 	if ( event->u.chr.keysym == GK_Help || event->u.chr.keysym == GK_F1 )
-	    help("ttfinstrs.html#cvt");
+	    help("ui/dialogs/ttfinstrs.html", "#ttfinstrs-cvt");
       break;
       case et_mousemove: case et_mousedown: case et_mouseup:
 	GGadgetEndPopup();
@@ -1346,7 +1346,7 @@ static int sv_e_h(GWindow gw, GEvent *event) {
       break;
       case et_char:
 	if ( event->u.chr.keysym == GK_Help || event->u.chr.keysym == GK_F1 )
-	    help("ttfinstrs.html#cvt");
+	    help("ui/dialogs/ttfinstrs.html", "#ttfinstrs-cvt");
       break;
       case et_controlevent:
 	switch ( event->u.control.subtype ) {
@@ -1691,7 +1691,7 @@ static int mp_e_h(GWindow gw, GEvent *event) {
     switch ( event->type ) {
       case et_char:
 	if ( event->u.chr.keysym == GK_Help || event->u.chr.keysym == GK_F1 )
-	    help("ttfinstrs.html#maxp");
+	    help("ui/dialogs/ttfinstrs.html", "#ttfinstrs-maxp");
 	else
 return( false );
       break;

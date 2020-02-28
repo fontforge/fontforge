@@ -1,0 +1,261 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 27-Jan-2003 -->
+  <!-- AP: Last modified: 11-Dec-2005 -->
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Untersuchung und Kontrolle von Metriken und Unterschneidungen</title>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+    Tutorial #5
+  </H1>
+    <ul>
+    <li>
+    <a href="editexample.html#FontCreate">Kreieren eines neuen Schriftsatzes</a>
+    </li><li>
+    <a href="editexample.html#CharCreate">Erzeugung eines Bildzeichens (Umrissverfolgung)</a>
+    </li><li>
+    <a href="editexample2.html#Navigating">Navigation zu weiteren Bildzeichen</a>
+    </li><li>
+    <a href="editexample2.html#Creating-o">Auf zum nächsten Bildzeichen (konsistente Richtungen)</a>
+    </li><li>
+    <a href="editexample3.html#consistent-stems">Konsistente Serifen und Stammbreiten</a>
+    </li><li>
+    <a href="editexample4.html#accents">Erzeugung akzentuierter Bildzeichen</a>
+    </li><li>
+      <a href="editexample4.html#ligature">Erzeugung einer Ligatur</a>
+    </li><li>
+    <a href="editexample5.html#metrics">Untersuchung von Metriken</a>
+      <ul>
+	<li>
+  <a href="editexample5.html#baseline">Setzen der Gundlinie zur Grundlinienteilung eines Schriftsatzes</a>
+      </li></ul>
+    </li><li>
+    <a href="editexample5.html#Kerning">Unterschneidung</a>
+    </li><li>
+    <a href="editexample6.html#Variants">Bildzeichenvarianten</a>
+    </li><li>
+    <a href="editexample6.html#Marks">Ankermarkierungen</a>
+    </li><li>
+      <a href="editexample6-5.html#Conditional">Bedingte Eigenschaften</a>
+    </li><li>
+      <a href="editexample7.html#checking">Überprüfen des Schriftsatzes</a>
+    </li><li>
+      <a href="editexample7.html#Bitmaps">Bitmaps</a>
+    </li><li>
+    <a href="editexample7.html#generating">Erzeugung</a>
+    </li><li>
+      <a href="editexample7.html#Families">Schriftsatzfamilien</a>
+    </li><li>
+      <a href="editexample7.html#summary">Fazit</a>
+    </li><li>
+    <a href="scriptnotes.html#Special">Bemerkungen zu verschiedenen Skripten</a>
+  </li></ul>
+  <h2>
+    <a name="metrics">Untersuchung</a> und Kontrolle von Metriken
+  </h2>
+  <p>
+  <img src="../../_images/sidebearings.png" WIDTH="111" HEIGHT="191" ALIGN="Right">
+    Nach der Erzeugung der Zeichenformen müssen als nächstes die Abstände
+    zwischen den Zeichen ermittelt werden. Der Abstand zwischen je zwei
+    Zeichen besteht aus zwei Komponenten, dem Raum nach dem ersten Zeichen
+    und dem Raum nach dem zweiten Zeichen. In Schriftsystemen die von links nach
+    rechts gelesen werden, heissen diese rechtsseitige Führungsschiene und linksseitige
+    Führungsschiene.
+  </p>
+  <p>
+    Die linksseitige Führungsschiene kann einfach verändert werden, indem mit
+    <code>Bearbeiten-&gt;Alles auswählen</code> (in der Umrissansicht)
+    alle Elemente ausgewählt und diese dann mit der Maus an die gewünschte
+    gezogen werden. Die rechtsseitige Führungsschiene kann eingestellt werden,
+    in dem man die Schrittweitenlinie auswählt und an die gewünschte
+    Position bringt.<br clear=all>
+  </p>
+  <p>
+    Allerdings ist es im allgemeinen besser, die Metriken nicht für jedes
+    einzelne Zeichen isoliert zu betrachten, sondern das Zeichen im Kontext
+    mit anderen Zeichen zu sehen und aus dieser Perspektive die Einstellungen
+    vorzunehmen.
+    Dazu wird der Befehl <code>Fenster-&gt;Öffne <A HREF="../../ui/mainviews/metricsview.html">Metrikfenster</a></code>
+    aufgerufen.<br>
+    <IMG src="../../_images/MetricsView.png" WIDTH="478" HEIGHT="323"><BR>
+    Alle Zeichen, die bei Aktivierung dieses Befehls in der Schrifsatzansicht
+    ausgewählt sind, werden auch in der Metrikansicht angezeigt.
+    Man kann die angezeigten Zeichen verändern, indem entweder das Eingabefeld
+    oben in der Ansicht verwendet wird, oder indem ein Zeichen aus der
+    Schriftsatzansicht in das Fenster gezogen wird.
+  </p>
+  <p>
+    In dieser Ansicht können die Zeichenmetriken angepasst werden, indem
+    die unteren Eingabefelder verwendet werden, alternativ kann ein Bildzeichen
+    ausgewählt und verschoben werden, um die linksseitige Führungsschiene anzupassen
+    bzw. die Breitenlinie verschoben werden, um die rechtsseitige Führungsschiene
+    zu verändern.
+  </p>
+  <p>
+    Um einen Schriftsatz im "Schreibmaschinenstil" zu erzeugen
+    (alle Zeichen haben die gleiche Breite), wird zunächst
+    <code>Bearbeiten-&gt;Alles auswählen</CODE> in der Schriftsatzansicht
+    ausgeführt und danach <code>Metriken-&gt;Breite setzen</CODE>.
+    Diese Aktion setzt die Breiten aller Zeichen auf den selben Wert.
+    Danach können mit <code>Metriken-&gt;In Breite zentrieren</CODE>
+    die linken und rechten Abstände angeglichen werden.
+  </p>
+  <p>
+    <i><img src="../../_images/autowidth.png" WIDTH="276" HEIGHT="268" ALIGN="Right"></i>
+    Falls dieser manuelle Vorgang zu kompliziert erscheint, kann auch
+    versucht werden, mit
+    <code><a href="../../ui/dialogs/autowidth.html#AutoWidth">Metriken-&gt;Autobreite</a></code>
+    automatisch Breiten an die Zeichen zu vergeben. Das Ergebnis genügt
+    vielleicht nicht professionellen Ansprüchen, liefert aber im allgemeinen
+    eine vernünftige Annäherung.
+  </p>
+  <h3>
+    <a name="Vertical">Vertikale</a> Metriken
+  </H3>
+  <p>
+    FontForge bietet Unterstützung für vertikale Metriken, die für
+    CJK-Schriften benötigt werden. Dazu muß FontForge mitgeteilt werden,
+    daß ein Font vertikale Metriken enthalten soll, dies geht mit
+    <code>Element-&gt;Fontinformation-&gt;Allgemein-&gt;Hat vertikale Metriken</code>.
+    Danach muss in jedem Umrisszeichen VMetriken in der Layerpalette
+    aktiviert werden.
+  </p>
+  <p>
+    Es sollte nun eine vertikale Schrittgrößenlinie unterhalb des Zeichens
+    sichtbar sein, die genauso verschoben werden kann wie die horizontale
+    Schrittweitenlinie.
+  </p>
+  <h3>
+    Setzen des <a name="baseline">Grundlinie</a>-zu-Grundlinie Abstands einer Schriftart.
+  </h3>
+  <p>
+    Man könnte meinen, daß es einen einfachen Weg gibt, diese sehr wichtige
+    Größe zu setzen - leider gibt es den nicht.
+    <dl>
+      <dt>
+      Für PostScript Typ1 Schriften (oder reine CFF Schriften)
+      <dd>
+        gibt es keinen Weg, diesen Wert zu setzen.<br>
+        überhaupt nicht, nie.<br>
+        In der traditionellen Typographie ist der Zeilenabstand 1em (was
+        in FontForge Anstieg + Abstieg des Zeichensatzes ist). Einige
+        Anwendungen verwenden machen Gebrauch davon. Andere Anwendungen
+        verwenden die Bounding-Box des des Zeichensatzes (die Summe aus
+        maximaler Anstiegshöhe und minimaler Abstiegstiefe) - ein sehr
+        schlechter, aber sehr gebräuchlicher Ansatz.
+      <dt>
+        Für TrueType oder OpenType Schriften
+      <dd>
+        Ist dies leider plattformabhängig
+      <dl>
+	    <dt>
+	      Mac
+	    <dd>
+      Auf einem Mac wird der Grundlinie-zu-Grundlinie Abstand wiederum durch die
+        Bounding-Box-Werte der Schriftart bestimmt, die in der 'hhea'-Tabelle
+        spezifiziert sind, ggf. durch eine Zeilenlücke modifiziert,
+        welche mit
+        <A HREF="../../ui/dialogs/fontinfo.html">Element-&gt;FontInfo-&gt;OS/2</A> gesetzt
+        werden kann.
+	    <DT>
+	    Windows
+	<DD>
+  Gemäß der OpenType Spezifikation wird der Grundlinie-zu-Grundlinie Abstand
+  durch die Werte des typografischen Anstiegs und Abstiegs der 'OS/2'-Tabelle
+  bestimmt. Diese können mit Hilfe von
+  <A HREF="../../ui/dialogs/fontinfo.html">Element-&gt;FontInfo-&gt;OS/2</A> gesetzt werden,
+  dürften aber normalerweise den Anstieg und Abstiegswerten von FontForge
+  entsprechen - diese summieren sich normalerweise zu 1em und entsprechen
+  der traditionellen ungeführten Standardeinstellung.<BR>
+  Auch diese Einstellung kann durch ein Zeilenlückenfeld modifiziert werden.<BR>
+  Leider arbeiten Windows-Programme selten standardkonform (was wahrscheinlich
+  niemanden überrascht) und im allgemeinen nutzen diese die Bounding-Box
+  der Schriftart, wie sie in den Win Anstieg-/Abstiegsfeldern der
+  'OS/2' spezifiert ist.
+	<DT>
+  Linux/Unix
+	<DD>
+    Hier gibt es vermutlich kein Standardverhalten, Unix-Applikationen
+    werden vermutlich eines der oben beschriebenen Verhalten implementieren.
+    </DL>
+  </DL>
+  <P>
+    Typografische Applikationen erlauben Benutzern, den Grundlinie-zu-Grundlinie
+    Abstand innerhalb der Anwendung einzustellen, so daß die Voreinstellung hier wahrscheinlich 
+    weniger relevant sein wird.
+  <H2>
+    <A NAME="Kerning">Unterschneidung</A>
+  </H2>
+  <P>
+    Wenn die Einstellungen der linken und rechten Führung sorgsam gewählt
+    wurden, kann die Schrift so gestaltet werden, daß die Abstände in fast allen
+    Situationen gut aussehen. Es gibt aber immer einige Fälle, die einfache Lösungen
+    erschweren.
+  <P>
+  So sind z.B. bei "<FONT FACE="helvetica">To</FONT>" oder
+  "<FONT FACE="helvetica">Av</FONT>" die Standardwerte ungeeignet.
+  Das "<FONT FACE="helvetica">o</FONT>" sieht besser aus, wenn es ein wenig mehr
+  nach links verschoben wird und ein wenig unter den oberen Balken des
+  "<FONT FACE="helvetica">T</FONT>" positioniert wird. Dies wird Unterschneidung
+  genannt, und wird für die paarweise Kontrolle von Zeichenabständen verwendet.
+  <TABLE BORDER CELLPADDING="2">
+    <CAPTION>
+      Unterschneidung
+    </CAPTION>
+    <TR>
+      <TD><IMG src="../../_images/To-unkerned.png" WIDTH="204" HEIGHT="323"></TD>
+      <TD><IMG src="../../_images/To-kerned.png" WIDTH="204" HEIGHT="323"></TD>
+    </TR>
+  </TABLE>
+  <P>
+    Im oben gezeigten Beispiel zeigt die linke Abbildung den nicht
+    unterschnittenen Text, die rechte den unterschnittenen Text.
+    Um ein unterschnittenes Paar zu erzeugen, wird einfach auf das
+    rechte Zeichen des Paares geklickt, die Linie zwischen den
+    beiden Zeichen (normalerweise für die horizontale Schrittweite)
+    sollte grün werden (und wird die unterschnittene Schrittweite).
+    Diese Linie kann vom Anwender verschoben werden, bis das Ergebnis
+    den Vorstellungen entspricht.
+  <P>
+  (Für einige Zeichenkombinationen ist es empfehlenswerter, eine
+  <A HREF="editexample4.html#ligature">Ligatur zu erzeugen</A> anstatt die
+  Zeichen zu unterschneiden)
+  <H3>
+  Unterschneidungsklassen
+  </H3>
+  <P>
+    Wenn es viele Zeichen mit ähnlichen Unterschneidungseigenschaften
+    gibt, können diese in 
+    <A HREF="../../ui/mainviews/metricsview.html#kernclass">Unterschneidungsklassen</A>
+    zusammengefasst werden (z.B. könnten A, &Agrave;, &Aacute;, &Acirc;,
+    &Acirc;, &Atilde; and &Auml; in der selben Unterschneidungsklasse
+    sein).
+  <H3>
+    <A NAME="VKern">Vertikale</A> Unterschneidung
+  </H3>
+  <P>
+    FontForge enthält entsprechende Unterstützung für vertikale Unterschneidung.
+    Es kann vertikale Unterschneidungsinformation von und nach TrueType, OpenType
+    und SVG Schriften gelesen und geschrieben werden. Es können vertikale
+    Unterschneidungsklassen erzeugt werden. Das Metrikfenster hat einen
+    vertikalen Modus in dem vertikale Unterschneidungspaare gesetzt werden
+    können. Schliesslich gibt es noch einen Befehl, mit dem horizontale
+    Unterschneidungsinformation in vertikal gedrehte Zeichen kopiert
+    werden kann (das bedeutet, wenn die Kombination "A" "V" horizontal
+    mit dem Wert -200 unterschnitten wurde, dann sollten "A.vert" und
+    "V.vert" vertikal mit dem Wert -200 unterschnitten werden.
+  <P>
+  (Vertikale Unterschneidung ist nur für Schriftarten verfügbar, die vertikale
+  Metriken haben)
+  <P>
+  <P>
+  <P ALIGN=Center>
+  -- <A HREF="editexample4.html">Vorherige Seite</A> -- <A HREF="../../index.html">Inhalt</A>
+  -- <A HREF="editexample6.html">Nächste Seite</A> --
+</DIV>
+</BODY></HTML>

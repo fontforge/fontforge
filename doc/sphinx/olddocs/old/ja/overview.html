@@ -1,0 +1,1263 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 6-Dec-2000 -->
+  <!-- AP: Last modified: 8-May-2006 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--
+  <TITLE>FontForge -- An outline font editor for PostScript&reg;, TrueType
+  and OpenType fonts</TITLE>
+-->
+  <TITLE>FontForge — PostScript&reg;, TrueType と OpenType フォントが編集できるアウトラインフォントエディタ</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+  <DIV id="in">
+<!--
+  <H1 Align=Center>
+    FontForge<BR>
+    <SMALL>An Outline Font Editor</SMALL><A HREF="ja/overview.html"><BR>
+    <IMG src="../../_images/Nisshoki-Japan.png" WIDTH="39" HEIGHT="26"></A>
+  </H1>
+  -->
+  <H1 Align=Center>
+    FontForge<BR>
+    <SMALL>アウトラインフォントエディタ</SMALL><A HREF="../../index.html"><BR>
+    <IMG src="../../_images/English.gif" WIDTH="39" HEIGHT="26"></A>
+    <A HREF="overview.html">
+    <IMG src="../../_images/Nisshoki-Japan.png" WIDTH="39" HEIGHT="26"></A>
+  </H1>
+<!--
+  <H2>
+    <I><IMG src="../../_images/FontForgeSplash.png" WIDTH="379" HEIGHT="375" ALT="Gaudiamus ligature!"
+	ALIGN="Right"></I>Table of Contents
+  </H2>
+  -->
+  <H2>
+    <I><IMG src="../../_images/FontForgeSplash.png" WIDTH="379" HEIGHT="375" ALT="喜びに合字よう!"
+	ALIGN="Right"></I>目次
+  </H2>
+  <UL>
+    <LI>
+<!--  <A HREF="#Overview">Overview</A> -->
+      <A HREF="#Overview">概要</A>
+      <UL>
+	<LI>
+<!--	  <A HREF="#Installing">Installing</A> -->
+	  <A HREF="#Installing">インストール</A>
+	<LI>
+<!--	  <A HREF="#Starting">Starting the program</A> -->
+	  <A HREF="#Starting">プログラムの起動法</A>
+	<LI>
+<!--	  <A HREF="#intro">Introductory concepts: fonts, splines, lines, points and
+	  paths</A> -->
+	  <A HREF="#intro">初歩的な概念: フォント、スプライン, 線分, 点とパス</A>
+	<LI>
+<!--	  <A HREF="#Hints">Hints</A> -->
+	  <A HREF="#Hints">ヒント</A>
+	<LI>
+<!--	  <A HREF="#References">References</A> -->
+	  <A HREF="#References">参照</A>
+	<LI>
+<!--	  <A HREF="#Scripts">Scripts</A> -->
+	  <A HREF="#Scripts">用字系</A>
+	<LI>
+<!--	  <A HREF="overview.html#Glyph-names">Glyph names &amp; Namelists</A> -->
+	  <A HREF="overview.html#Glyph-names">グリフ名と名前リスト</A>
+	<LI>
+<!--	  <A HREF="#Anchors">Anchor Points and Classes</A> -->
+	  <A HREF="#Anchors">アンカーポイントとアンカークラス</A>
+	<LI>
+<!--	  <A HREF="#FontView">Font View</A> -->
+	  <A HREF="#FontView">フォントビュー</A> <!-- 「フォント表示画面」のほうがいいか? -->
+	<LI>
+<!--	  <A HREF="#CharView">Outline glyph View</A> -->
+	  <A HREF="#CharView">アウトライングリフビュー</A>
+	<LI>
+<!--	  <A HREF="#BitmapView">Bitmap Glyph View</A> -->
+	  <A HREF="#BitmapView">ビットマップグリフビュー</A>
+	<LI>
+<!--	  <A HREF="#MetricsView">Metrics View</A> -->
+	  <A HREF="#MetricsView">メトリックビュー</A>
+      </UL>
+    <LI>
+<!--	  <A HREF="editexample.html">Example</A> -->
+	  <A HREF="editexample.html">例</A>
+      <UL>
+	<LI>
+<!--	  <A HREF="editexample.html">Tutorial</A> &amp; User Guide -->
+	  <A HREF="editexample.html">チュートリアル</A>とユーザガイド
+	<LI>
+<!--	  <A HREF="scriptnotes.html#Special">Special thoughts for special scripts</A> -->
+	  <A HREF="scriptnotes.html#Special">特別な用字系に対する特別な考慮点</A>
+      </UL>
+    <LI>
+<!--  <A HREF="fontview.html">Font View</A> -->
+      <A HREF="fontview.html">フォントビュー</A>
+      <UL>
+	<LI>
+<!--	  <A HREF="fontview.html#Encodings">Encodings</A> -->
+	  <A HREF="fontview.html#Encodings">エンコーディング</A>
+	<LI>
+	  <A HREF="fontview.html#Unicode">Unicode</A>
+	<LI>
+<!--	  <A HREF="fontview.html#CID">CID keyed fonts</A> -->
+	  <A HREF="fontview.html#CID">CID キー指定フォント</A>
+	<LI>
+<!--	  <A HREF="fontview.html#MM">Multiple Master fonts</A> -->
+	  <A HREF="fontview.html#MM">マルチプルマスターフォント</A>
+	<LI>
+<!--	  <A HREF="fontview.html#Vertical-Metrics">Vertical Metrics</A> -->
+	  <A HREF="fontview.html#Vertical-Metrics">縦書きメトリック</A>
+	<LI>
+<!--	  <A HREF="charview.html#Debugging">Debugging TrueType glyphs</A> -->
+	  <A HREF="charview.html#Debugging">TrueType グリフのデバッグ方法</A>
+      </UL>
+    <LI>
+<!--  <A HREF="charview.html">Outline Glyph View</A> -->
+      <A HREF="charview.html">アウトライングリフビュー</A>
+      <UL>
+	<LI>
+<!--	  <A HREF="charview.html#Layers">Layers</A> -->
+	  <A HREF="charview.html#Layers">レイヤ</A>
+	<LI>
+<!--	  <A HREF="charview.html#Tools">Tools</A> -->
+	  <A HREF="charview.html#Tools">ツール</A>
+	<LI>
+<!--	  <A HREF="charview.html#Vertical">Vertical view</A> -->
+	  <A HREF="charview.html#Vertical">縦書きビュー</A>
+	<LI>
+<!--	  <A HREF="charview.html#MM">Multiple Master </A> -->
+	  <A HREF="charview.html#MM">マルチプルマスター</A>
+      </UL>
+    <LI>
+<!--  <A HREF="bitmapview.html">Bitmap Glyph View</A> -->
+      <A HREF="bitmapview.html">ビットマップグリフビュー</A>
+      <UL>
+	<LI>
+<!--	  <A HREF="bitmapview.html#Layers">Layers</A> -->
+	  <A HREF="bitmapview.html#Layers">レイヤ</A>
+	<LI>
+<!--	  <A HREF="bitmapview.html#Tools">Tools</A> -->
+	  <A HREF="bitmapview.html#Tools">ツール</A>
+	<LI>
+<!--	  <A HREF="bitmapview.html#AA">Anti-Aliased Glyphs</A> -->
+	  <A HREF="bitmapview.html#AA">アンチエイリアス表示のグリフ</A>
+	<LI>
+<!--	  <A HREF="bitmapview.html#Shades">Shades</A> -->
+	  <A HREF="bitmapview.html#Shades">階調</A>
+      </UL>
+    <LI>
+<!--  <A HREF="metricsview.html">Metrics View</A> -->
+      <A HREF="metricsview.html">メトリックビュー</A>
+      <UL>
+	<LI>
+<!--	  <A HREF="metricsview.html#Entering">Entering non-ASCII characters</A> -->
+	  <A HREF="metricsview.html#Entering">非 ASCII 文字の入力法</A>
+      </UL>
+    <LI>
+<!--  <A HREF="filemenu.html">Menu Commands</A> -->
+      <A HREF="filemenu.html">メニューコマンド</A>
+      <UL>
+	<LI>
+<!--	  <A HREF="filemenu.html">File</A> -->
+	  <A HREF="filemenu.html">ファイル</A>
+	<LI>
+<!--	  <A HREF="editmenu.html">Edit</A> -->
+	  <A HREF="editmenu.html">編集</A>
+	<LI>
+<!--	  <A HREF="pointmenu.html">Points</A> -->
+	  <A HREF="pointmenu.html">点</A>
+	<LI>
+<!--	  <A HREF="elementmenu.html">Element</A> -->
+	  <A HREF="elementmenu.html">エレメント</A>
+	<LI>
+<!--	  <A HREF="hintsmenu.html">Hints</A> -->
+	  <A HREF="hintsmenu.html">ヒント</A>
+	<LI>
+<!--	  <A HREF="encodingmenu.html">Encoding</A> -->
+	  <A HREF="encodingmenu.html">エンコーディング</A>
+	<LI>
+<!--	  <A HREF="viewmenu.html">View</A> -->
+	  <A HREF="viewmenu.html">表示</A>
+	<LI>
+<!--	  <A HREF="metricsmenu.html">Metrics</A> -->
+	  <A HREF="metricsmenu.html">メトリック</A>
+	<LI>
+<!--	  <A HREF="cidmenu.html">CID</A> -->
+	  <A HREF="cidmenu.html">CID</A>
+	<LI>
+<!--	  <A HREF="mmmenu.html">MM</A> -->
+	  <A HREF="mmmenu.html">MM (マルチプルマスター)</A>
+	<LI>
+<!--	  <A HREF="windowmenu.html">Window</A> -->
+	  <A HREF="windowmenu.html">ウィンドウ</A>
+	<LI>
+<!--	  <A HREF="helpmenu.html">Help</A> -->
+	  <A HREF="helpmenu.html">ヘルプ</A>
+	<LI>
+<!--	  <A HREF="HotKeys.html">Hot Keys</A> -->
+	  <A HREF="HotKeys.html">ホットキー</A>
+      </UL>
+    <LI>
+<!--  <A HREF="scripting.html">Scripting</A> -->
+      <A HREF="scripting.html">スクリプト</A>
+    <LI>
+<!--  Appendices... -->
+      付録…
+      <UL>
+	<LI>
+<!--	  <A HREF="PfaEdit-TeX.html">Using FontForge with TeX</A> -->
+	  <A HREF="PfaEdit-TeX.html">FontForge を TeX で利用する方法</A>
+	<LI>
+<!--	  <A HREF="locale.html">Localization</A> -->
+	  <A HREF="locale.html">地域化</A>
+	<LI>
+<!--	  <A HREF="errrecovery.html">Error Recovery</A> -->
+	  <A HREF="errrecovery.html">エラー回復</A>
+	<LI>
+<!--	  <A HREF="xres.html">X Resources</A> -->
+	  <A HREF="xres.html">X リソース</A>
+	  <UL>
+	    <LI>
+<!--	      <A HREF="xres.html#Keyboards">Keyboards and Mice</A> -->
+	      <A HREF="xres.html#Keyboards">キーボードとマウス</A>
+	  </UL>
+	<LI>
+<!--	  <A HREF="cliargs.html">Command line arguments</A> -->
+	  <A HREF="cliargs.html">コマンドライン引数</A>
+	  <UL>
+	    <LI>
+<!--	      <A HREF="cliargs.html#Environment">Environment Variables</A> -->
+	      <A HREF="cliargs.html#Environment">環境変数</A>
+	  </UL>
+	<LI>
+<!--	  <A HREF="files.html">Files</A> -->
+	  <A HREF="files.html">ファイル</A>
+	<LI>
+<!--	  Internals -->
+	  内部構造
+	  <UL>
+	    <LI>
+<!--	      <A HREF="src.html">Source file overview</A> (out of date, but goes over the
+	      basics) -->
+	      <A HREF="src.html">ソースファイルの概要</A> (古びていますが基本は変わっていません)
+	    <LI>
+<!--	      <A HREF="sfdformat.html">Spline Font Database File Format</A> (also out of 
+	      date) -->
+	      <A HREF="sfdformat.html">Spline Font Database ファイルフォーマット</A> (これも時代遅れです)
+	    <LI>
+<!--	      <A HREF="bezier.html">PostScript &lt;-&gt; TrueType Conversions</A> -->
+	      <A HREF="bezier.html">PostScript から TrueType への変換</A>
+	    <LI>
+<!--	      <A HREF="corpchar.html">FontForge's use of the Unicode Private Use Area</A> -->
+	      <A HREF="corpchar.html">Unicode 私用領域の FontForge による使用法</A>
+	  </UL>
+	<LI>
+<!--	  <A HREF="sfds/index.html">Font samples</A> -->
+	  <A HREF="http://fontforge.sourceforge.net/sfds/index.html">フォントサンプル</A>
+      </UL>
+    <LI>
+<!--  <A HREF="faqFS.html">Frequently Asked Questions</A> -->
+      <A HREF="faqFS.html">よくある質問</A>
+    <LI>
+<!--  <A HREF="HotKeys.html">Hot Keys</A> -->
+      <A HREF="HotKeys.html">ホットキー一覧</A>
+    <LI>
+<!--  <A HREF="GlossaryFS.html">Typographical glossary</A> -->
+      <A HREF="GlossaryFS.html">タイポグラフィ用語辞典</A>
+    <LI>
+<!--  <A HREF="IndexFS.html">Index</A> -->
+      <A HREF="IndexFS.html">索引</A>
+    <LI>
+<!--  <A HREF="nvd.html">File List</A>-->
+      <A HREF="nvd.html">ファイルリスト</A>
+    <LI>
+<!--  <A HREF="bibliography.html">Bibliography</A> -->
+      <A HREF="bibliography.html">参照文献</A>
+    <LI>
+<!--  <A HREF="license.html">License and Copyright</A> -->
+      <A HREF="license.html">ライセンスと著作権</A>
+    <LI>
+<!--  <A HREF="nix-install.html">Download</A> -->
+      <A HREF="nix-install.html">ダウンロード</A>
+  </UL>
+  <H2>
+<!--See Also-->
+    参照
+  </H2>
+  <UL>
+    <LI>
+<!--  <A HREF="sfddiff.html">sfddiff man page</A> -->
+      <A HREF="sfddiff.html">sfddiff マニュアルページ</A>
+    <LI>
+<!--  <A HREF="acorn2sfd.html">acorn2sfd man page</A> -->
+      <A HREF="acorn2sfd.html">acorn2sfd マニュアルページ</A>
+  </UL>
+  <P>
+  <BLOCKQUOTE ID="lit">
+<!--Eeyore had <A NAME="three-sticks">three</A> sticks on the ground, and was
+    looking at them. Two of the sticks were touching at one end, but not at the
+    other, and the third stick was laid across them. Piglet thought that perhaps
+    it was a Trap of some kind. -->
+    イーヨーは、地面においてある<A NAME="three-sticks">三本</A>の棒をながめていました。二本は、かたほうのはしでぶつかっていて、もう一方のはしでは、はなれていました。そして、その二本の上に、もう一本の棒がのっていました。コブタは、きっとなにかの<b>わな</b>だろうと思いました。
+    <P>
+<!--``Oh, Eeyore,'' he began again, ``just - - -'' -->
+    「あのイーヨー。」と、コブタはもういちどいいました。「ぼく、ちょっと——」
+    <P>
+<!--``Is that little Piglet?'' said Eeyore, still looking hard at his
+    sticks. -->
+    「コブちゃんかな?」イーヨーは、まだ棒をながめながら、いいました。
+    <P>
+<!--``Yes, Eeyore, and I- - -'' -->
+    「ええ。イーヨー。ぼくね——」
+    <P>
+<!--``Do you know what this is?'' -->
+    「おまえ、これ、なんだか知っとるか?」
+    <P>
+<!--``No,'' said Piglet. -->
+    「いいえ。」
+    <P>
+<!--``It's an A.'' -->
+    「これは、A の字じゃ」
+    <P>
+<!--``Oh,'' said Piglet. -->
+    「ああ。」と、コブタがいいました。
+    <P>
+<!--``Not O, A,'' said Eeyore severely. -->
+    「アーじゃないぞ。エーじゃ。」イーヨーは、こわい声でいいました。
+    <P ALIGN=Right>
+<!-- - - A. A. Milne, 1928<BR>
+    The House At Pooh Corner</TD> -->
+    — A. A. ミルン, 1928 年<BR>
+    『プー横丁にたった家』<BR>
+    (石井桃子訳)</TD>
+  </BLOCKQUOTE>
+  <P>
+<!--
+  Font design can be a Trap, but I find it a rather pleasant one. Caveat utor. -->
+  フォントデザインは罠になることもありますが、かなり楽しいものであることを私は知っています。用心して遣ひませう。
+  
+  <H2>
+<!--<A NAME="Overview">Overview</A> -->
+    <A NAME="Overview">概要</A>
+  </H2>
+  <P>
+<!--
+  FontForge allows you to create and modify postscript, truetype and opentype
+  fonts. You can save fonts in many different outline formats, and generate
+  bitmaps. -->
+  FontForge を使うと PostScript, TrueType および OpenType フォントの作成・編集ができます。さまざまな種類のアウトラインフォントのフォーマットでフォントを保存することができ、ビットマップの生成が可能です。
+  <H3>
+<!--<A NAME="Installing">Installing</A> or building fontforge -->
+    FontForge の<A NAME="Installing">インストール</A>および構築方法
+  </H3>
+  <TABLE CELLSPACING="6" CELLPADDING="2">
+    <CAPTION>
+<!--  System specific install procedures-->
+      各システム固有のインストール手順:
+    </CAPTION>
+    <TR>
+      <TD><P ALIGN=Center>
+	<A HREF="nix-install.html">Unix/Linux</A></TD>
+      <TD>&nbsp; &nbsp; &nbsp; <A HREF="mac-install.html">Mac</A></TD>
+      <TD>&nbsp; &nbsp; &nbsp; <A HREF="ms-install.html">MS/Windows</A></TD>
+      <TD>&nbsp; &nbsp; &nbsp; <A HREF="vms-install.html">VMS</A></TD>
+<!--  <TD>&nbsp; &nbsp; &nbsp; <A HREF="source-build.html">from source</A></TD>-->
+      <TD>&nbsp; &nbsp; &nbsp; <A HREF="source-build.html">ソースからの構築方法</A></TD>
+<!--  <TD>&nbsp; &nbsp; &nbsp; <A HREF="uninstall.html">Uninstalling</A></TD> -->
+      <TD>&nbsp; &nbsp; &nbsp; <A HREF="uninstall.html">削除方法</A></TD>
+    </TR>
+  </TABLE>
+  <P>
+<!--
+  <A HREF="running.html">Running fontforge</A>-->
+  <A HREF="running.html">FontForge の起動方法</A>
+  <H3>
+<!--<A NAME="intro">Introductory</A> concepts: Fonts, Splines, Lines, Points
+    and Paths and the em-unit -->
+    <A NAME="intro">初歩的な</A> 概念: フォント、スプライン、線、点、パスと em ユニット
+  </H3>
+  <P>
+<!--
+  Most simply a font is a collection of glyphs. But computer fonts must contain
+  more than this, at the least they must also contain information on how to
+  map an input string of bytes into an output display of visual glyphs. This
+  mapping is called an encoding. Many fonts will also contain rules for how
+  adjacent glyphs should be arranged. For instance, in fonts for the latin
+  alphabet, there is often a rule saying that if "f" and "i" are adjacent then
+  a special glyph, a ligature of "f" and "i" should be used instead. Fonts
+  for latin letters generally do not require such rules (but can be enhanced
+  by them), fonts for other scripts like arabic require them. -->
+  単純化すると、フォントとはグリフを集めたものです。しかし、コンピュータフォントにはそれ以外の情報が必要です。最低でも、入力されたバイト列を目に見えるグリフ表示の出力に対応づけるための情報が必要です。この対応情報をエンコーディングと呼びます。多くのフォントには、隣接するグリフがどのように配置するかのルールも含まれています。例えば、ラテンアルファベットのフォントでは、“f”と“i”が隣接した時には、それらの代わりに特別なグリフである“f”と“i”の合字を出力するように指示するルールがしばしば含まれています。ラテンも時のフォントはそのようなルールを一般には必要としません (しかしそれらを含むように拡張することはできます) が、その他の用字系、例えばアラビア文字ではそれらは欠かせない物です。
+  <P>
+<!--
+  What's the difference between a character and a glyph? -->
+  文字とグリフはどう違うのか?
+  <P>
+<!--
+  A character is a concept and a glyph is a reification of that concept. The
+  letter "A" is a character, while<IMG src="../../_images/As.png" WIDTH="220" HEIGHT="33">
+  are all glyphs that represent an "A". In latin fonts there is often a single
+  glyph for every character and a single character for every glyph, but not
+  always - - in renaissance printing there were two glyphs for a lower-case
+  s, <IMG src="../../_images/short-long-s.png" WIDTH="17" HEIGHT="12">the short and the long
+  s. A ligature is an example of a glyph that represents two (or more) characters.
+  In arabic most of the letters (characters) have at least four different glyphs,
+  the appropriate glyph being determined by the letters around it. Here are
+  four forms of the arabic character "seen"
+  <IMG src="../../_images/arabic-seen.png" WIDTH="108" HEIGHT="17" ALIGN="Middle">. -->
+  文字というのは抽象的な概念であり、グリフはその概念を実体化した物です。“A”という字は 1 個の文字であり、その一方、<IMG src="../../_images/As.png" WIDTH="220" HEIGHT="33"> はすべてが、“A”を表現するグリフの一例です。ラテン文字のフォントでは、各文字ごとに 1 個のグリフが割り当てられていて、各グリフは 1 個の文字を表していますが、絶対にそうだとは限りません——ルネッサンス期の印刷では、小文字の s に短い s と 長い s の 2 つのグリフ <IMG src="../../_images/short-long-s.png" WIDTH="17" HEIGHT="12"> がありました。2 個 (以上) の文字を表現する 1 個のグリフの例としては、合字が挙げられます。アラビア文字では、ほとんどの文字は少なくとも 4 つの異なるグリフをおり、適切なグリフはその前後にある文字により決まります。アラビア文字の「シーン」という文字には 4 つの異なる形 <IMG src="../../_images/arabic-seen.png" WIDTH="108" HEIGHT="17" ALIGN="Middle"> があります。
+  <P>
+<!--
+  What is an outline font? What is a bitmap font? -->
+  アウトラインフォントとは何か? ビットマップフォントとは何か?
+  <P>
+<!--
+  Each glyph in a font has a shape and there are various ways of describing
+  that shape on a computer. Postscript and truetype fonts generally describe
+  the outline of the shape and then color in the interior of that outline,
+  this coloring process is called rasterizing. On the other hand a bitmap font
+  describes each glyph by drawing a picture of that character on a rectangular
+  grid of pixels. There is a third type, a stroked font, where each stem of
+  the glyph is represented by one line down the center of the stem, and the
+  line is later drawn with a certain width. Most of the time we will not deal
+  with stroked fonts directly (the <A HREF="elementmenu.html#Expand">Expand
+  Stroke</A> command can be used to turn them into outlines), but if you wish
+  to edit stroked fonts, see the section on
+  <A HREF="multilayer.html">multi-layered editing</A>. -->
+  フォント内の各グリフは 1 個の図形ですが、計算機上での図形の表現にはいろいろな方法があります。PostScript および TrueType 形式のフォントでは一般に、図形のアウトラインを描画してから、そのアウトラインの内部を塗りつぶします。この塗りつぶし処理のことを ラスタ化 (ラスタライズ) と言います。それに対して、ビットマップフォントはピクセル (画素) が長方形に並んだグリッドを塗りつぶして各グリフを表現しています。ストロークフォントという第 3 のタイプもあり、グリフの各ステム (画線) をその中心を通る線によって表現し、後でその線を所定の幅でなぞり描きします。ほとんどの場合、ストロークフォントを直接扱うことはしません (<A HREF="elementmenu.html#Expand"><CODE>輪郭を太らせる(<U>E</U>)...</CODE></A> コマンドを使うと、ストロークをアウトラインに変換することができます) が、ストロークフォントを編集したい場合には<A HREF="multilayer.html">複数レイヤ編集</A>のセクションを参照してください。
+  <TABLE BORDER CELLPADDING="2">
+    <TR VALIGN=Top>
+      <TD><P ALIGN=Center>
+	<I><IMG WIDTH="117" HEIGHT="201" src="../../_images/outlinechar.png"></I><BR>
+<!--    A glyph's outline</TD> -->
+	グリフのアウトライン</TD>
+      <TD><P ALIGN=Center>
+	<IMG src="../../_images/bitmapchar.png" WIDTH="117" HEIGHT="201"><BR>
+<!--    A glyph's bitmap</TD> -->
+	グリフのビットマップ</TD>
+      <TD><P ALIGN=Center>
+	<IMG src="../../_images/strokechar.png" WIDTH="208" HEIGHT="198"><BR>
+<!--    A stroked glyph<BR> -->
+	ストロークで表したグリフ<BR>
+<!--    (showing the equiv. outline in grey)</TD> -->
+	(灰色の線は等価なアウトライン)</TD>
+    </TR>
+  </TABLE>
+  <P>
+<!--
+  An outline is composed of a set of contours or paths. In the picture on the
+  above left the letter A is described by three different paths. The main one
+  is on the outside and the two smaller ones are internal. Each of these paths
+  is composed of a series of splines and line segments. FontForge can handle
+  cubic and quadratic splines. PostScript fonts use cubic splines, TrueType
+  fonts use quadratic. -->
+  1 本のアウトラインは、1 組の輪郭線 (パス) から構築されています。左上の図では文字 A が 3 本に分かれたパスによって記述されています。主要な 1 本が外側にあり、その内側に小さな 2 本のパスを含んでいます。これらの各パスはスプラインと線分を連ねて構築されています。FontForge は 3 次および 2 次のスプラインを取り扱うことができます。PostScript フォントは 3 次スプラインを、 TrueType フォントは 2 次スプラインを使用します。
+  <P>
+<!--
+  Each cubic <A NAME="spline">spline</A> is defined by four points, two of
+  which mark the end points of the spline and two more to describe the slope
+  of the spline at those end points. Here are <A HREF="bezier.html">two cubic
+  splines</A> with all their points shown: -->
+  各々の 3 次<A NAME="spline">スプライン</A>は、4 個の点によって定義され、そのうちの 2 個はスプラインの端点を示し、残りの 2 個はその端点におけるスプラインの傾きを示します。以下の例は、<A HREF="bezier.html">2 本の 3 次スプライン</A>とそのすべての点を表示したものです:
+  <P>
+  <IMG src="../../_images/splines.gif" WIDTH="172" HEIGHT="179" ALIGN="Left">
+  <P>
+<!--
+  The points which describe the slope are called control points. They are
+  represented here (and in fontforge) by little colored x's. Moving a control
+  point will change the shape of the spline, but it will not alter where the
+  spline begins or ends. -->
+  傾きを指定するための点は制御点 (control points) と呼ばれます。
+  それらはこの図では (FontForge でも同様に) 色のついた小さな×印で表されます。
+  制御点を動かすと、スプラインの形は変わりますが、スプラインの始まりと終わりの位置は変わりません。
+  <P>
+<!--
+  <IMG src="../../_images/pnts.gif" WIDTH="169" HEIGHT="165" ALIGN="Right">A series of splines
+  and lines are joined together to make a path. There are several possible
+  ways to make these joins as is shown in the example to the right. In each
+  case we have three points in approximately the same relative positions. The
+  three points are joined by splines or lines, but the type of joins alters
+  the appearance of the connections. -->
+  <IMG src="../../_images/pnts.gif" WIDTH="169" HEIGHT="165" ALIGN="Right">
+  スプラインと線分の列は、1 個のパスを構成するように順番に結合されます。
+  これらの結合を行うには、図に表したようないくつかの可能な方法があります。
+  これらのどの例でも、3 個の点の相対位置はほぼ同じになっています。
+  3 個の点はスプラインまたは直線によって結合していますが、そのタイプごとに結合部の形は変わります。
+  <P>
+<!--
+  In the first case there are no control points and the result is two straight
+  lines, in the second case there is a line and a curved spline which are tangent
+  at their point of intersection, in the third case there are two splines which
+  are again tangent at their point of intersection. The point of intersection
+  in the first case is called a corner point, and the incoming and outgoing
+  splines or lines may be in any orientation with respect to each other. This
+  is represented in fontforge by a square box. In the second case the point
+  of intersection is called a tangent point, it is represented by a triangle.
+  The third case is a curved point and is represented by a circle. -->
+  最初の例では制御点は存在せず、その結果は 2 本の直線となります。2 番目の例では 1 本の直線と、そこに接する点において等しい傾きを持つ曲線片が描かれています。3 番目の例では、2 本のスプラインが交点において上と同様に傾きを等しくしています。最初の例の合流点は角の点 (corner point) と呼ばれ、そこから出るスプラインとそこに入るスプラインの角度は任意の方向を取ることができます。これは FontForge では四角い箱で表されます。2 番目の例では合流点は接点 (tangent point) と呼ばれ、1 個の三角形で表されます。3 番目の例では合流点は円形で表されます。
+  <P>
+<!--
+  <IMG src="../../_images/quadraticspline.gif" WIDTH="127" HEIGHT="92" ALIGN="Left">FontForge
+  can also edit <A NAME="quadratic">quadratic</A> splines (the splines used
+  in truetype fonts), here there is only one control point and it controls
+  the slopes at both end-points. Because of this quadratic splines cannot bend
+  in as many ways as cubic splines (the first spline above left would need
+  at least two quadratic splines to draw), and you will often need more splines
+  to achieve the same curve. You can control whether a font contains cubic
+  or quadratic splines with the
+  <A HREF="fontinfo.html#PS-General">Element-&gt;Font Info </A>command.
+  -->
+  FontForge は (TrueType フォントで使用される) <A NAME="quadratic">2 次</A>のスプラインを編集することもできます。それには制御点は 1 個しかなく、両側の端点における傾きを制御します。2 次スプラインは 3 次スプラインほど自由に折り曲げることができないために (左上のスプラインを 2 次スプラインで表すには 2 本以上のスプラインに分ける必要があります) 同じ曲線を得るために、より多くのスプラインを必要とすることになるでしょう。フォントが 3 次スプラインを含むか、2 次スプラインを含むかは <A HREF="fontinfo.html#PS-General"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE></A> コマンドで制御することができます。
+  <IMG src="../../_images/quadraticspline.gif" WIDTH="127" HEIGHT="92" ALIGN="Left">
+  <P>
+<!--
+  A path is closed when it comes back and joins its start. All paths in an
+  outline font should be closed. Once a path is closed in may be said to have
+  a direction, essentially this may be thought of as "Was the path created
+  in a clockwise or a counter-clockwise fashion?" (this is actually a little
+  simplistic, if a path intersects itself, as in a figure 8, then the direction
+  cannot be described as either clockwise or counter-clockwise, but most paths
+  do not self-intersect (and paths in a font SHOULD not self-intersect) and
+  we will simplify our life by pretending that we can call paths clockwise
+  or counter). -->
+  パスは、最初の点に戻って来て結合した時に閉じられます。アウトラインフォントに含まれるすべてのパスは閉じていなくてはなりません。パスが閉じられたとき、それは向きを持っていると呼ぶことができます。それは本質的には「パスは時計回りに作られたか、それとも反時計回りに作られたか?」と考えることができます (この見方は実際には少し単純すぎます。もしパスが自己交差していて 8 の字形になっていたならば、その方向は時計回りとも反時計回りとも言い切れません。しかし殆どのパスは自己交差しません (フォント内のパスは自己交差するのは望ましくありません) から、私達はパスを時計回りまたは反時計回りと呼ぶことによって人生を簡単にすることにしましょう)。
+  <P>
+<!--
+  When time comes to draw our outline glyph we want to make dark everything
+  in the interior of the outline. But let's look at the outline of our A above.
+  We have two paths inside the main outline path, and we want the interior
+  of those two paths to be white rather than dark. How do we make this distinction?
+  We do it by the direction of the paths. Consider any point in the glyph.
+  If we draw an imaginary line from that point out to infinity (in any direction)
+  and count the number of times we cross a path, each time we cross a clockwise
+  path we add one to our count, each time we cross a counter clockwise path
+  we subtract one. If the result of our count is non-zero then we color the
+  point dark, otherwise we leave it white. So to make the A above work we make
+  the outer path be clockwise and the two inner ones be counter-clockwise (Things
+  could be done the other way around, but the convention is that the outer
+  path should be clockwise). -->
+  アウトライングリフを描画する時には、私たちはアウトラインの内側にある物すべてを黒く塗りたいわけです。でも上の A の字を見てください。主要なアウトラインパスの内側に 2 本のパスがあり、それら 2 本のパスの内側は黒ではなく白くしたいのです。どうやればこれらを区別することができるのでしょうか? パスの方向によって区別を行うのです。グリフ内の任意の点を考えましょう。その点から無限遠まで (任意の方向へ向けて) 想像上の直線を引き、その線がパスに交差する回数を数えるならば、時計回りのパスに交差するごとに回数に 1 を加え、反時計回りのパスに交差するごとに 1 を引きます。結果として得られた回数が 0 でなければその点を黒く塗り、そうでなければ白いままにしておきます。ですから、上の A の字がうまく動くようにするためには外側のパスを時計回りに、内側のパスを反時計回りに設定します (逆周りにしてもうまくいきますが、慣習として、外側のパスを時計回りにします)。
+  <P>
+<!--
+  All of these points (both the end points and the control points) are described
+  mathematically. Each point is positioned on a cartesian coordinate system
+  which has its origin on the glyph's base line (the line on which letters
+  without descenders rest). Most font formats expect coordinates to be integers
+  between -32768 and 32767, FontForge uses real numbers internally but (usually)
+  rounds to the nearest integer when generating a font file. -->
+  これらの点はすべて (端点と制御点のどちらも) 数学的に表現されています。各点は、グリフのベースライン (ディセンダーを持たない文字が置かれている線) を原点とするデカルト座標上に置かれています。ほとんどのフォントフォーマットは、座標値が -32768 から 32767 の間の整数値であることを仮定しています。FontForge は内部的には実数を使用していますが、フォントファイルの生成時には (通常は) 最も近い整数への丸めを行います。
+  <P>
+<!--
+  When displaying a font we use the word "<A NAME="em-unit">em</A>" to represent
+  the size of the font. If a font is displayed at 12points then 1em will be
+  12points. If the font is displayed at 18points then an em will be 18points.
+  (traditionally a 12 point font is one where the metal slugs are 12 points
+  tall - - or where the baseline to baseline spacing of unleaded text is 12
+  points, so an em was the size of the metal.). -->
+  私たちはフォントを表示するときには、フォントのサイズを表現するために“<A NAME="em-unit">em</A>”という単語を使います。あるフォントが 12 ポイントで表示されている場合、その時 1 em は 12 ポイントとなります。そのフォントが 18 ポイントで表示されると、em は 18 ポイントとなります。(伝統的には、12 ポイントのフォントは、字面の上下の高さが 12 ポイントある金属の塊を指していました——または、行間を空けずに組んだテキストのベースラインとベースラインの間隔が 12 ポイントのことを指していました。ですから、em は金物のサイズだったのです)。
+  <P>
+<!--
+  When designing an outline font, you can no longer think in terms of points
+  - - these fonts are scalable and can be any point-size. You must think in
+  terms of the em and fractions of the em. When you create a font you choose
+  how many internal units (called "em-units") to use to represent 1 em. In
+  most PostScript fonts there are 1000 units to the em, TrueType fonts often
+  have either 1024 or 2048 units to the em (you can choose any number you like
+  (well, as long as it is less than 32767), the numbers above are conventions
+  not requirements). -->
+  アウトラインフォントをデザインするときには、もはやポイント単位で物を考えるわけにはいきません——それらのフォントはスケーラブルであり、どんなポイントサイズにも拡大・縮小できるのです。em と em の分数で考える必要があります。フォントを作成したとき、1 em が内部的なサイズの単位 (これを“em ユニット”といいます) で何ユニットにあたるかを設定しなければなりません。ほとんどの PostScript フォントでは、em を 1000 ユニットとしており、TrueType フォントでは em を 1024 または 2048 ユニットのどちらかとするのが割合よく見られます (いくつでも好きな数値 (ただし、32767 より小さくなくてはなりません) を選択することができます。上記の数値は習慣的な物であり、必須事項ではありません)。
+  <P>
+<!--
+  Suppose you have a dash in a PostScript font, and that dash is 500 units
+  long, and the font has 1000 units to the em. Suppose a someone displays that
+  dash at 12 points. Then that dash will be drawn with a length of 500/1000
+  * 12 = 6 points. On a 72 dot per inch screen where a pixel is almost exactly
+  one point, the dash will be 6 pixels long. -->
+  ある PostScript フォントでダッシュ(‐) を作り、その幅を 500 ユニットに設定したときにそのフォントの em が 1000 ユニットだったとしましょう。誰かがそのダッシュを 12 ポイントで表示したときに、そのダッシュは 500/100 * 12 = 6 ポイントの長さをで描画されます。72 dpi, つまり 1 インチあたり 72 ドットの解像度をもつ画面では、1 ピクセルがほとんど正確に 1 ポイントとなるので、そのダッシュは 6 ピクセルの長さになるでしょう。
+  <P>
+<!--
+  <IMG src="../../_images/sidebearings.png" WIDTH="111" HEIGHT="191" ALIGN="Right">Every
+  glyph has its own co&ouml;rdinate system. The font's baseline (the line upon
+  which most latin glyphs will rest) is 0 in the vertical direction. The horizontal
+  origin is where the glyph will start being drawn (what is "drawn" will usually
+  be empty space for a short while -- as there is usually some space between
+  the origin and the edge of the glyph). This horizontal distance between the
+  origin and the leftmost edge of the glyph is called the left side bearing
+  (it may be negative, positive or zero). All glyphs have a width (sometimes
+  called an advance width), this is the distance from the origin of the current
+  glyph to the origin of the next. The distance between the right edge of the
+  glyph and the width is called the right side bearing. -->
+  <IMG src="../../_images/sidebearings.png" WIDTH="111" HEIGHT="191" ALIGN="Right">あらゆるグリフはそれ自身の座標系をもっています。フォントのベースライン (ほとんどのラテン文字の下端となる線) が垂直座標が 0 となる位置です。水平方向の原点は、グリフの描画が始まる点です (まず始めは何も「描画」されないのが普通です——なぜかと言うと、通常は原点とグリフの端との間にある程度の空白があるからです)。原点からグリフの左端へ向かうこの水平距離のことを左サイドベアリングと呼びます (これは 0 より小さい場合も、大きい場合も、ちょうど 0 の場合もあります)。すべてのグリフは幅を持っています (時には送り幅 (advance width) と呼ぶこともあります)。これは、現在のグリフの原点から次のグリフの原点までの移動量です。グリフの右端と横幅の間の距離を右サイドベアリングと呼びます。
+  <P>
+<!--
+  CJK text (Chinese, Japanese or Korean) can be written either vertically or
+  horizontally, and so CJK fonts usually have a vertical advance width as well
+  as the more common horizontal advance. -->
+  CJK (中国・日本・韓国) のテキストは縦にも横にも書くことができますので、CJK のフォントはほとんど常に備えている横書き用の送り幅に加えて、縦書き用の送り幅を含んでいるのが普通です。
+  <P>
+<!--
+  A glyph like "g" or "y" extends below the baseline, this is called a descender,
+  while a glyph like "k" or "l" extends above the x-height, this is called
+  an ascender. Most latin (and greek and cyrillic) fonts have certain standard
+  heights: the height of a lower case letter (without an ascender) is called
+  the x-height, the height of a capital letter is called the cap-height, the
+  height of the ascenders is called the ascender height (some, but not all,
+  fonts have the ascenders and capitals at the same approximate height). Usually
+  these will not be exactly the same for all glyphs, the letter "O" is usually
+  slightly taller than the letter "I", but they both are within the range of
+  the cap height for the font. -->
+  “g”や“y”のような文字のグリフにはベースラインよりも下に延びる部分があり、これをディセンダと呼びます。同様に、“k”や“l”のような文字のグリフには x ハイトより上に延びる部分があり、これはアセンダと呼びます。ほとんどのラテン (並びにギリシャ及びキリル) アルファベットのフォントはいくつかの標準の高さを持っています: (アセンダを持たない) 小文字の高さは x ハイトと呼ばれ、大文字の高さはキャップハイトと呼ばれます。アセンダの高さはアセンダハイトと呼ばれます (すべてではありませんが、多くのフォントはアセンダと大文字がほぼ同じ高さに並びます)。通常はこれらはすべてのグリフに対して正確に同じ値ではなく、文字“O”は通例文字“I”よりもわずかに高くなっていますが、どちらの高さも、そのフォントのキャップハイトの範囲内に収まっています。
+  <P>
+<!--
+  The font itself has an ascent and descent associated with it. In the old
+  days of metal type nothing could ascend above or descend below these values,
+  nowadays accents and ascenders may reach above the font-wide ascent and
+  descenders below the descent, but the concept is still a convenient one to
+  retain. It is true that in almost all cases the glyphs will not ascend above
+  or descend below the font-wide ascent and descent. The sum of the ascent
+  and descent is the size of the font. The point size of a piece of metal type
+  was determined by this value (essentially the height of the metal block holding
+  the glyph). In a postscript font the local coordinate system is independent
+  of the final size at which the font will be drawn. By convention in postscript
+  the sum of the ascent and descent is 1000 units, while in TrueType it is
+  usually a power of two, often 2048. -->
+  フォントそのものにも、それらに付随する高さ(アセント)と深さ(ディセント)が定められています。昔の金属活字では、あらゆる線はそれらの値より上や下にはみ出すことはできませんでした。現在ではアクセントやアセンダをフォントの高さより上に上げたり、ディセンダをフォントの深さよりも下に下げたりすることができますが、今でもこの概念を残しておくと便利です。ほとんどすべての場合、グリフはフォントの高さより上や深さより下にはみ出すことがないのは事実です。高さと深さの合計がフォントのサイズです。金属活字の一本のポイントサイズは、この値によって決まります (必然的に、字面を支えている金属のブロックの高さとなります)。PostScript フォントでは、フォント内部のローカル座標系は、フォントが描画される最終的なサイズに関係がありません。PostScript では慣習的に高さと深さの和を 1000 ユニットにすることになっています。TrueType では通常は 2 の冪乗の値 (多くは 2048) を使用します。
+  <H3>
+<!--<A NAME="PT">TrueType</A> vs. PostScript vs OpenType vs SVG fonts -->
+    <A NAME="PT">TrueType</A> 対 PostScript 対 OpenType フォント 対 SVG フォント
+  </H3>
+  <P>
+<!--
+  FontForge can produce many font types. What's the difference? -->
+  FontForge はさまざまなタイプのフォントを出力することができます。それらはどう違うのでしょうか?
+  <P>
+<!--
+  PostScript is based on a <A HREF="bezier.html">cubic spline</A> technology,
+  while TrueType is based on a <A HREF="bezier.html">quadratic</A> technology.
+  Cubic splines are generally easier to edit (more shapes are possible with
+  them). Any quadratic spline can be converted to a cubic spline with essentially
+  no loss. A cubic spline can be converted to a quadratic with arbitrary precision,
+  but there will be a slight loss of accuracy in most cases. This means it
+  is easy to convert TrueType outlines to PostScript outlines, harder to convert
+  PostScript to TrueType. -->
+  PostScript は <A HREF="bezier.html">3 次スプライン</A> 技術に基づいていますが、TrueType は <A HREF="bezier.html">2 次スプライン</A> 技術に基づいています。一般に、編集が行いやすいのは 3 次スプラインのほうです (より多様な形を表現することができる)。任意の 2 次スプラインは本質的に損失なしに 3 次スプラインに変換することができます。3 次スプラインは任意の精度で変換することができますが、ほとんどの場合はわずかな精度の低下があります。これは、TrueType のアウトラインを PostScript アウトラインに変換することは容易であるが、PostScript から TrueType に変換するのはより困難であることを意味します。
+  <P>
+<!--
+  Within FontForge a font may contain either cubic or quadratic splines. These
+  are converted to the appropriate format when a font is generated. -->
+  FontForge の内部では、フォントは 3 次または 2 次のスプラインを含むことができます。それらは、TrueType フォントが生成される時に適切なフォーマットに変換されます。
+  <P>
+<!--
+  The other major difference between the two is how they solve the problem
+  of drawing nice images at small pointsizes. PostScript calls this "Hinting",
+  while TrueType calls it "Instructing" a font. -->
+  これら二つの違いで主なものはほかに、小さなポイントサイズの時に美しい字形を得るという問題の解決方法があります。
+  PostScript ではこれを「ヒントづけ」と呼び、TrueType ではフォントへの「命令」と呼びます。
+  <H4>
+<!--What's OpenType? -->
+    OpenType とは何か?
+  </H4>
+  <P>
+<!--
+  Unfortunately the word "OpenType" has come to have several meanings. -->
+  残念なことに“OpenType”という単語には 2 つの意味があります。
+  <P>
+<!--
+  The first describes the spline format of the font. In this sense Open Type
+  is just a postscript font put into a truetype file format -- From the outside
+  it looks like a truetype font except that the outline descriptions are postscript
+  Type2 font descriptions rather than TrueType. -->
+  第 1 の意味としては、フォントのスプラインフォーマットのことです。この意味では、OpenType は単に PostScript フォントを TrueType フォントフォーマットに埋め込んだものにすぎません——外から見ると、アウトライン記述が TrueType で定められた方式でなく PostScript Type2 フォントを用いていることを除いては、TrueType フォントと同様に見えます。
+  <P>
+<!--
+  In a second sense of the word OpenType refers to a set of tables containing
+  advanced typographic information. These tables may be added to either fonts
+  specified with quadratic splines (truetype) or fonts with cubic splines. -->
+  第 2 の意味としては、OpenType という単語は高度な組版に関する情報を含む一連のテーブルのことを指します。これらのテーブルは、2 次スプライン (TrueType) で記述されたフォントにも、3 次スプラインで記述されたフォントにも追加することができます。
+  <P>
+<!--
+  Finally MS Windows uses an OpenType icon for a font if that font contains
+  a 'DSIG' (Digital Signature) table. -->
+  最後の意味として、MS Windows が OpenType アイコンを使って表示するのは &lsquo;DSIG&rsquo; (デジタル署名) テーブルを含むフォントの場合です。
+  <P>
+<!--
+  To make things even more confusing the OpenType specification includes the
+  old TrueType specification, so technically any TrueType font can be called
+  an OpenType font. -->
+  話を更にややこしくさせることには、OpenType の仕様には昔の TrueType の仕様が含まれているので、技術的には任意の TrueType フォントを OpenType フォントと呼ぶことができるのです。
+  <H4>
+<!--What's SVG? -->
+    SVG とは何か?
+  </H4>
+  <P>
+<!--
+  SVG (Scalable Vector Graphics) provides a relatively new font format, written
+  in an xml dialect. SVG fonts can be either cubic or quadratic (or can use
+  both, but FontForge is limited and will force a font to be either all cubic
+  or all quadratic). SVG allows for two different types of fonts, one corresponds
+  roughly to PostScript Type1 fonts, and the other, roughly to PostScript Type3
+  fonts (except that images are not allowed in svg fonts - - or I haven't figured
+  them out if they are). -->
+  SVG (Scalable Vector Graphics) では、XML の一方言で描かれた比較的新しいフォントフォーマットを提供しています。SVG フォントでは 3 次か 2 次の曲線を使用することができます (または両方を使用することもできますが、FontForge の機能制限で、フォント全体を 3 次か 2 次のどちらかに揃える必要があります)。SVG では 2 種類の異なる型のフォントが可能です。片方はほぼ PostScript Type1 フォントと同じで、もう片方は、ほぼ PostScript Type3 フォントと同じです (SVG フォントでは画像が使用できない点が異なります——使用できるとしても、私にはそうは読み取れませんでした)。
+  <H4>
+<!--What are Type3 fonts? -->
+    Type 3 フォントとは何か?
+  </H4>
+  <P>
+<!--
+  Back in the early days of PostScript, the Type1 format was proprietary, only
+  Adobe could make Type1 fonts, but anyone could make Type3 fonts. Type3 fonts
+  were unhinted, but could include any postscript command and so could produce
+  a wider range of pictures (multi-colored glyphs, stroked glyphs, glyphs based
+  on scaled images, etc.). Most of the time these extensions are unnecessary,
+  and the disadvantage of being unhinted is onerous. If you compile FontForge
+  with multilayer set you will be able to create type3 fonts. -->
+  PostScript の初期の頃の話ですが、Type1 フォーマットは商用のものであり、Adobe だけが Type1 フォントを作成することができましたが、Type3 フォントは誰でも作成できました。Type3 フォントにはヒント機能がありませんでしたが、任意の PostScript コマンドを含めることができたので、より広い範囲の図形 (複数色のグリフ、ストローク表示のグリフ、画像の拡大縮小によるグリフなど) を生成することができました。ほとんどの場合はこれらの拡張は不要で、ヒントが無いという欠点は煩わしいものでした。FontForge を複数レイヤー機能つきでコンパイルした場合、Type3 フォントを作成することができます。
+  <H4>
+<!--What are Type1 fonts? -->
+    Type 1 フォントとは何か?
+  </H4>
+  <P>
+<!--
+  These are the standard PostScript fonts. -->
+  それらは標準の PostScript フォントです。
+  <H4>
+<!--What are Type2 fonts? -->
+    Type 2 フォントとは何か?
+  </H4>
+  <P>
+<!--
+  These use a slightly different internal format to express the same information
+  as type1. -->
+  それらは、Type1 と同じ情報を表現するのに、僅かに異なる内部フォーマットを使用します。
+  <H3>
+<!--<A NAME="Hints">Hints</A>-->
+    <A NAME="Hints">ヒント</A>
+  </H3>
+  <P>
+<!--
+  At small pixel sizes, the process of drawing the interior of an outline font
+  is quite difficult to do well. Postscript and TrueType have different approaches
+  to the problem of providing extra information to the rasterizer about how
+  to draw small fonts. -->
+  小さなピクセルサイズでは、アウトラインフォントの内部を描画するプロセスをうまく処理するのは非常に困難です。PostScript と TrueType では、小さなフォントをどのように描画するかに関する情報をラスタライザに与える問題に対して異なるアプローチをとっています。
+  <TABLE BORDER CELLPADDING="2" ALIGN="Center">
+    <CAPTION>
+<!--  <SMALL>Rasterization improvements<BR>
+      from hinting TrueType.<BR>
+      18pt font rasterized by Windows<BR>
+      (scaled by a factor of 2)</SMALL> -->
+      <SMALL>TrueTypeへのヒント追加による<BR>
+      ラスタライズ処理の改良。<BR>
+      Windows でラスタライズした 18 ポイントの<BR>
+      フォント (拡大率 2 倍)
+    </CAPTION>
+    <TR>
+      <TD><P ALIGN=Center>
+	&nbsp;&nbsp;<IMG src="../../_images/HI.nohints.png" WIDTH="44" HEIGHT="28">&nbsp;&nbsp;<BR>
+<!--    no hints</TD> -->
+	ヒントなし</TD>
+      <TD><P ALIGN=Center>
+	&nbsp;&nbsp;<IMG src="../../_images/HI.hints.png" WIDTH="44" HEIGHT="28">&nbsp;&nbsp;<BR>
+<!--    hints</TD> -->
+	ヒントあり</TD>
+    </TR>
+  </TABLE>
+  <DL>
+    <DT>
+      <H4>
+	Postscript
+      </H4>
+    <DD>
+<!--
+      Adobe incorporated several different ways of providing hints for the rasterizer
+      about how things should be treated. The most obvious of these are the horizontal
+      and vertical stem hints.Each glyph has its own set of hints to tell the
+      rasterizer where to find stems. FontForge can usually figure out a reasonable
+      set of stem hints (a process called
+      <A HREF="hintsmenu.html#AutoHint">autohinting</A>), but some glyphs are too
+      complex for it and it can make bad choices. It also provides a mode for you
+      to override its choices. -->
+  Adobe ははラスタライザに、処理をどう行うかに関するヒントを与えるためのいくつかの異なる方法を取り込みました。それらのうち最も分かりやすいのは水平と垂直のステムヒントです。各グリフは、どこにステムがあるかをラスタライザに教えるため、そのグリフ独自のヒントの組を持っています。通常、FontForge は妥当なステムヒントの組を検出します (<A HREF="hintsmenu.html#AutoHint">自動ヒントづけ</A>と呼ばれる処理) が、一部のグリフは複雑すぎて、良くない選択をすることがあります。この選択を上書きできるようなモードも提供されています。
+      <P>
+<!--  Adobe also has a mechanism for handling dished serifs called flex hinting.
+      This means a curve that is only slightly deformed from the horizontal (or
+      vertical) will display as a line at small point sizes and as a curve at larger
+      ones. FontForge will use these when it seems appropriate. -->
+      Adobe の方式には、くぼんだセリフを扱う flex ヒントというものもあります。これは、水平線 (または垂直線) から僅かにずれているだけの曲線を、小さなポイントサイズでは直線として表示し、大きなサイズでは曲線として表示するというものです。FontForge は、適切だと判断した時にこれを使用します。
+      <P>
+<!--  The original version of hints did not allow them to overlap, this meant that
+      most serifs could not be described, Adobe then developed a mechanism called
+      hint substitution which allows for different sets of non-overlapping hints
+      to exist in different parts of the glyph. There are still shapes which cannot
+      be fully hinted, but hint substitution is an improvement. The
+      Hints-&gt;AutoHint command will figure out what stems overlap and where to
+      change the current set of hints. The Hints-&gt;Hint Substitution Pts command
+      will also figure where hint changes should occur, and the Hint Mask pane
+      of the Point Info dialog gives the user direct control over this. -->
+      ヒントの最初のバージョンでは、ヒント同士が重なり合うことはできませんでした。つまり、ほとんどのセリフを記述することができなかったということです。Adobe はその後、グリフの異なる部分ごとに重なり合わないヒントのセットを使用可能にする、ヒント置換というメカニズムを開発しました。これでも完全にヒントづけられない図形は存在しますが、ヒント置換は 1 つの改良でした。<CODE>ヒント(<U>I</U>)</CODE>→<CODE>自動ヒント(<U>H</U>)</CODE> コマンドは、ステムの重なり合いを検出し、現在のヒントセットをどう変えるべきかを表示します。<CODE>ヒント(<U>I</U>)</CODE>→<CODE>ヒントが置換する点(<U>S</U>)</CODE> コマンドも、どこでヒントの変更が起こるかを表示し、<CODE>[点の情報]</CODE> ダイアログの <CODE>[ヒントマスク]</CODE> タブでユーザがそれを直接制御できるようにします。
+      <P>
+<!--  Most recently Adobe has provide a means to control the counters, the spaces
+      between stems, in a glyph. The original Type1 description provided support
+      for the horizontal counters in "m" and the vertical counters in "E" but more
+      complex shapes could not be dealt with. Counter Hints (in a type1 font) may
+      only be used with non-latin (non-greek, non-cyrillic) glyph sets, in type2
+      (OpenType) things are a bit more complicated,. FontForge will generate counter
+      hints when appropriate. -->
+      だいぶ最近になって、Adobe はグリフ内のカウンタ (ステム間の空き) を制御する手段を提供しました。オリジナルの Type1 記法では、“m”の水平カウンタや“E”の垂直カウンタをサポートしていましたが、より複雑な形を取り扱うことはできませんでした。(Type1 フォントの) カウンタヒントは、非ラテン (ギリシャ・キリル) 文字のグリフセットでのみ使用することができます。Type2 (OpenType) フォントでは、事情はもう少し複雑です。FontForge は、適切だと判断した時にはカウンタヒントを生成します。
+      <P>
+<!--  Adobe provides some font-wide hinting mechanisms. The two most obvious are
+      the BlueValues and StemSnap settings in the
+      <A HREF="fontinfo.html#Private">private dictionary</A>. BlueValues provides
+      a list of vertical zones in which interesting things happen (so in a latin
+      font this might include the ascender height, the cap-height, the x-height,
+      the baseline and the descender height. At small point sizes everything within
+      one of these zones will snap to the same height, while at larger point sizes
+      the heights will be slightly different (for instance an "o" and an "x" usually
+      have slightly different heights, but displaying that at a small point size
+      would be ugly). Similarly the StemSnap variables specify standard stem widths
+      for the font. FontForge will try to guess reasonable values for these. It
+      also allows you to override these guesses and
+      <A HREF="fontinfo.html#Private">specify your own values</A>. For a more
+      comprehensible description of the private dictionary and what it can do,
+      look at
+      <A HREF="http://partners.adobe.com/asn/developer/PDFS/TN/T1_SPEC.PDF">Adobe's
+      Type1 font specification</A>.<BR> -->
+      Adobe はフォント単位のヒントづけ機能をいくつか提供しています。いちばん分かりやすい 2 つは、<A HREF="fontinfo.html#Private">プライベート辞書</A>に含まれる BlueValues と StemSnap 設定です。BlueValues は、興味ある事柄が起こる高さの範囲のリスト (ラテン文字のフォントでは、これはアセンダハイト、キャップハイト、x ハイト、ベースラインおよびディセンダハイトが含んでいるはずです) を提供します。小さなポイントサイズでは、これらの範囲に入ったすべてのものが同じ高さに揃えられます。それに対して、より大きなポイントサイズでは、高さにはわずかな差がつけられます (例えば、“o”と“x”は、通常わずかに異なる高さを持っていますが、小さなポイントサイズでその違いを表示すると汚く見えます)。同様に、StemSnap 変数は、フォントの標準的ステム幅を指定します。FontForge は、これらの適切な値を推測します。<A HREF="fontinfo.html#Private">自分で値を設定</A>することもでき、その場合はこの推測よりも優先して用いられます。プライベート辞書とその機能に関するより包括的な説明については、<A HREF="http://partners.adobe.com/asn/developer/PDFS/TN/T1_SPEC.PDF">Adobe のType1 フォントの仕様書</A>を参照してください。<BR>
+<!--  <A NAME="HintOrder">FontForge</A>'s
+      <A HREF="hintsmenu.html#AutoHint">AutoHint</A> command will work better if
+      the BlueValues have been set. So before running AutoHint go to
+      <A HREF="fontinfo.html#Private">Element-&gt; FontInfo-&gt; Private</A> to
+      set this array. After AutoHinting you should regenerate the StemSnaps (also
+      at Element-&gt; FontInfo-&gt; Private). -->
+      <A NAME="HintOrder">FontForge</A> の<A HREF="hintsmenu.html#AutoHint">自動ヒント</A>コマンドは、BlueValues が設定されているとより適切に動作します。ですから、自動ヒントづけを実行する前に、<A HREF="fontinfo.html#Private"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[PS Private辞書]</CODE></A>でこの配列に値を設定してください。
+  自動ヒントづけが終った後、StemSnap を再生成する必要があるでしょう (これも、<CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[PS Private辞書]</CODE>にあります)。
+    <DT>
+      <H4>
+<!--	<A NAME="TrueType">True</A> Type -->
+	<A NAME="TrueType">TrueType</A>
+      </H4>
+    <DD>
+      <TABLE ALIGN=Right>
+	<TR>
+	  <TD ALIGN=Center><IMG src="../../_images/GridFitM.png" WIDTH="246" HEIGHT="241"><BR>
+<!--	    Grid Fit M</TD> -->
+	    M のグリッド合わせ</TD>
+	</TR>
+      </TABLE>
+      <P>
+<!--  On the other hand, True Type says that figuring out what pixels to turn on
+      would be a lot simpler if only the points and the splines were in the right
+      place (ie. at pixel boundaries). And so True Type provides a set of instructions
+      that move points around until they are positioned appropriately for a given
+      size. -->
+      一方、TrueType では、どのピクセルが塗りつぶされるかを判定するのは、点とスプラインが正しい場所 (すなわちピクセル境界) だけに置かれたときにずっと単純になると言っています。
+  そのため、TrueType ではある与えられたサイズにおいて正しい位置になるまで点を移動するための命令のセットを用意しています。
+      <P>
+<!--  FontForge's hinting of True Type (properly called "instructing") is very
+      primitive, and is based on the stem hints also used by PostScript. It uses
+      these hints to determine which points to move and where to move them. It
+      also supports the concept of diagonal stems and hints them so they will have
+      approximately the same width. It does a little extra work, trying to detect
+      serifs that are attached to vertical stems and providing hints for them as
+      well. It also uses the equivalent of the PostScript BlueValues to generate
+      cvt entries that force glyphs to have the same height at small pointsizes. -->
+      FontForge の TrueType ヒントづけ (厳密に言えば「命令づけ」) の機能は非常に原始的で、PostScript でも用いられているステムヒントに基づいています。これらのヒントは、どのポイントをどこに移動するか決定するのに使います。それは直角方向ステムの概念をサポートし、それらにヒントづけを行ってそれらのステムがほぼ同じ幅をとるようにします。それに加えいくつかの追加の作業として、垂直ステムに接合したセリフを検出し、それにも同様にヒントづけを行います。ヒントづけ機能には、PostScript の BlueValues の等価物を、小さなポイントサイズでグリフを同じ高さに強制的に揃える cvt エントリを生成するのに使います。
+      <P>
+<!--  I am not happy with the instructions I generate for TrueType.-->
+      私は、TrueType 用に生成している命令の品質に満足していません。
+      <P>
+<!--  When FontForge reads in a TrueType font it will store the instructions used,
+      and when it next generates that font it will use those instructions -- provided
+      no significant change has happened to a glyph. -->
+      FontForge が TrueType フォントを読み込むとき、使用されている命令を格納します。次にそのフォントを出力する時には、それらの命令を用います——ただしそのグリフに感知できる変更が行われていないときに限ります。
+  </DL>
+  <P>
+<!--
+  Most of my <A HREF="hinting.html">hinting user interface</A> is designed
+  with PostScript fonts in mind. -->
+  私の作った<A HREF="hinting.html">ヒントづけのユーザインタフェース</A>は、PostScript フォントを念頭に置いて設計されています。
+  <H3>
+<!--<A NAME="References">References</A>-->
+    <A NAME="References">参照</A>
+  </H3>
+  <P>
+<!--
+  In addition to a set of outlines (splines) glyphs may be built out of references
+  to other glyphs. This is especially handy for the accented glyphs, "&agrave;"
+  can be made up of a reference to the "a" glyph and another reference to the
+  "`" glyph. This can result in significant space savings, and in ease of design
+  (if you change the "a" glyph after making a reference to it the "&agrave;"
+  glyph will automatically change to, whereas if you just copied the "a" you
+  would have to recopy it.-->
+  グリフは一組のアウトライン (スプライン) だけではなく、他のグリフへの参照によって組み立てることもできます。これによって特に、アクセントつきのグリフを手軽に作ることができます。例えば、“&agrave;”はグリフ“a”への参照と、別のグリフ“`”への参照から組み立てることができます。この結果として、大幅な容量の節約になり、デザイン作業が楽になります (グリフ“&agrave;”からグリフ“a”への参照を作成した後で“a”を変更した場合、その変更は自動的に反映されますが、“a”を単にコピーしただけだと、再コピーを行わなければなりません)。
+  <P>
+<!--
+  FontForge has three commands for manipulating references, and one higher
+  level command for building accented glyphs. The
+  <CODE><A HREF="editmenu.html#Reference">Edit-&gt;Copy Reference</A></CODE>
+  command will put a reference to the current glyph into the clipboard, which
+  a subsequent
+  <CODE><A HREF="editmenu.html#Paste">Edit-&gt;Paste</A></CODE> command will
+  install as a reference. The
+  <CODE><A HREF="editmenu.html#Unlink">Edit-&gt;Unlink Reference</A>
+  </CODE>command will turn a reference in a glyph into it's component splines.
+  The <CODE><A HREF="elementmenu.html#Info">Element-&gt;Get Info</A>
+  </CODE>command (when applied to a reference) will bring up a dialog showing
+  you what glyph is referred to, and allowing you to bring up an editing window
+  on that glyph. Finally the
+  <CODE><A HREF="elementmenu.html#Accented">Element-&gt;Build-&gt;Accented
+  Glyphs</A></CODE> command will figure out what glyphs should be refered to
+  to build this composite glyph, and then will make those references and position
+  them appropriately. So if "&agrave;" were selected and you did a
+  <A HREF="elementmenu.html#Accented"><CODE>Element-&gt;Build-&gt;Accented
+  Glyphs</CODE> </A>command, FontForge would make a reference to "a" and another
+  to "`", and place the accent above the letter, and centered on it. -->
+  FontForge は参照を取り扱う 3 種類のコマンドを持っており、アクセントつきグリフを作成するための、より高水準のコマンドを 1 個備えています。<CODE>編集(<U>E</U>)</CODE>→<CODE>参照をコピー(<U>O</U>)</CODE> コマンドは、現在のグリフへの参照をクリップボードにコピーし、次に <CODE>編集(<U>E</U>)</CODE>→<CODE>貼り付け(<U>P</U>)</CODE> コマンドを使えば参照を貼り付けることができます。<CODE>編集(<U>E</U>)</CODE>→<CODE>参照を解除(<U>N</U>)</CODE>コマンドは、別のグリフへの参照を、そのグリフを構成するスプラインに変換します。<CODE>エレメント(<U>L</U>)</CODE>→<CODE>情報を見る(<U>I</U>)</CODE> コマンドは、(参照に適用されたときは)どのグリフが参照されているかを示すダイアログを表示し、そこから、そのグリフに対する編集ウィンドウを呼び出すことができます。そのグリフへの参照を部品となるスプラインとして別のグリフに張り付けることができます。<CODE>エレメント(<U>L</U>)</CODE>→<CODE>組み立て(<U>U</U>)</CODE>→<CODE>アクセントつきグリフを構築(<U>B</U>)</CODE>コマンドは、この複合グリフを構築するのにどのグリフを参照するべきかを検出し、それからそれらのグリフへの参照を作成し、適切な位置に配置します。もし仮に“&agrave;”を選択し、<CODE>エレメント(<U>L</U>)</CODE>→<CODE>組み立て(<U>U</U>)</CODE>→<CODE>アクセントつきグリフを構築(<U>B</U>)</CODE> コマンドを実行した場合、FontForge は“a”への参照と“`”への参照を作成し、アクセントをグリフの上に置き、中央に揃えることになります。
+  <P>
+<!--
+  Sadly life is not quite that simple. The references FontForge uses internally
+  cannot always be converted into something equivalent in the output font.
+  Generally this causes no problems (it just makes the font a little bigger,
+  but it has implications for instructing TrueType, and, to a lesser extent,
+  hinting PostScript. Most people can ignore this, but if you are interested
+  <A HREF="ref-caveats.html">follow this link</A>.
+
+Both PostScript and TrueType place
+  restrictions on what kinds of glyphs may be referenced, worse they make different
+  restrictions. About the only restriction FontForge makes is that it won't
+  let you put a reference to a glyph inside itself. When generating a font,
+  if it finds a situation where it can't use a refered glyph as a reference
+  it will fix it up somehow, usually this means replacing it with the equivalent
+  outlines. -->
+  悲しいことに、人生はそれほど単純ではありません。FontForge が内部的に使用している参照は、常に出力フォントにそれと等価な何らかのデータとして出力できるとは限りません。一般にこれは問題とはなりません (単にフォントが少し大きくなるだけです) が、TrueType に対するヒントづけと、それより問題は少ないものの、 PostScript フォントへのヒントづけとに影響を与えます。ほとんどの方はこれを無視されて結構ですが、興味をお持ちの方は<A HREF="ref-caveats.html">このリンク</A>先をお読みください。
+  <P>
+  <H3>
+<!--<A NAME="Scripts">Scripts</A> -->
+    <A NAME="Scripts">用字系</A>
+  </H3>
+  <P>
+<!--
+  A script is a collection of letter shapes and rules for putting letters together.
+  For instance latin is a script consisting for the letters A-Z, written left
+  to right, along with a transformation from upper to lower case (in writing
+  since the middle ages), a few ligatures and rules for generating accents.
+  Arabic is a script consisting of its own character set, written right to
+  left, along with transformations for initial, medial, final and isolated
+  forms, many ligatures and rules for placing vowel marks. -->
+  用字系 (script) とは、文字の形と、文字を相互に組み立てるルールからなる 1 つの組のことです。例えば、ラテン文字は文字 A から Z までから成り、左から右に書かれ、(中世以来の書字法では) 大文字から小文字への変換が定められていて、少数の合字およびアクセント文字を生成するルールが存在する用字系です。アラビア文字は独自の文字セットからなり、右から左に書かれ、語頭形、語中形、語尾形および独立形の変換が定められていて、多数の合字および母音記号を配置するルールが定められている用字系です。
+  <H3>
+<!--<A NAME="Glyph-names">Glyph names &amp; Namelists</A> -->
+    <A NAME="Glyph-names">グリフ名と名前リスト</A>
+  </H3>
+  <P>
+<!--
+  Within fontforge every glyph will have a name. Generally the glyph name will
+  be something that provides information about what the glyph looks like so
+  the name for the glyph representing "9" is "nine". Adobe has established
+  a
+  <A HREF="http://partners.adobe.com/public/developer/en/opentype/aglfn13.txt">standard
+  for what names may be assigned to what glyphs</A>, and when producing a font
+  for general use it is best to stick to that standard (Acrobat uses the glyph
+  names and recognizes the standard ones. If you try and use "neuf" for "nine"
+  Acrobat will not recognize it and surprising things will fail). -->
+  FontForge 内部では、各グリフに名前がつけられています。一般に、グリフ名はそのグリフがどのように見えるかを表す情報を提供するものとなっており、例えば&ldquo;9&rdquo;を表すグリフは&ldquo;nine&rdquo;という名前です。Adobe は、<A HREF="http://partners.adobe.com/public/developer/en/opentype/aglfn13.txt">各グリフにどのような名前を割り当てるかを定めた標準</a>を定めており、一般的な用途のフォントを出力する時にはその標準を厳守するのが最良の方法です (Acrobat はグリフ名を使用しており、標準の名前を認識します。もし&ldquo;nine&rdquo;の代わりに&ldquo;neuf&rdquo;とつけても、Acrobatはそれを認識せず、驚くような事が起こるでしょう)。
+  <P>
+<!--
+  Adobe's standard provides reasonably mnemonic names for most latin and greek
+  glyphs (to English speakers anyway), some rather incomprehensible names for
+  cyrillic and hebrew (afiiXXXXX) and identifies most other glyphs by unicode
+  code point (uniXXXX). -->
+  Adobe の標準は、ほとんどのラテン文字とギリシャ文字のグリフにまあまあ覚えやすい名前をつけています (英語の話者にとっての話ではありますが) が、キリル文字とヘブライ文字に対してはほとんど訳の分からない名前 (afiiXXXXX) をつけており、その他のほとんどのグリフは Unicode の符合位置で識別 (uniXXXX) しています。
+  <P>
+<!--
+  If you are an english speaker and you are working with latin glyphs this
+  is fine and dandy. But if you are French you might wish that "adieresis"
+  were named "atr&eacute;ma" - - for that matter even if you are an English
+  speaker you might prefer it to be named "aumlaut". No matter who you are
+  you might prefer more mnemonic names for the code block you are working on.
+-->
+  あなたが英語の話者で、ラテン文字のグリフを作成しているなら、これは非常に便利でしょう。しかしあなたがフランス人で、&ldquo;adieresis&rdquo;には&ldquo;atr&eacute;ma&rdquo;という名前がついていてほしいのでしたら——この件に関しては、英語の話者でさえ、&ldquo;aumlaut&rdquo;という名前の方を好むかもしれません。あなたが何者であれ、自分が作業中のコードブロックにはより覚えやすい名前を好むことでしょう。
+  <P>
+<!--
+  FontForge has a concept called a
+  <A HREF="encodingmenu.html#namelist">namelist</A> each of which is simply
+  a mapping from unicode code point to name. Several namelists may be defined,
+  different lists may apply to different fonts and a font may be have all its
+  glyphs renamed from one namelist to another. -->
+  FontForge には<A HREF="encodingmenu.html#namelist">名前リスト</A>という概念があます。このリストの各項目は、Unicode の符合位置から名前への単純な対応づけです。いくつかの名前リストを定義することができ、異なるフォントには異なるリストを適用することができ、ある名前リストから別のリストに切替えることによって、フォントに含まれるすべてのグリフを改名することができます。
+  <P>
+<!--
+  Namelists can also help navigating in a font. Even if a list does not apply
+  to a given font its names may be used in the goto dialog to find glyphs.
+  So if you've loaded a french namelist you can search for "atr&eacute;ma"
+  and FontForge will show you the glyph "adieresis" or "uni00E4" or "aumlaut"
+  or whatever. -->
+  名前リストはフォント内を移動するのにも役立ちます。あるリストが現在のフォントに適用されていない場合でも、それに含まれる名前は、<CODE>移動(<U>G</U>)</CODE>ダイアログでグリフを探すのに使用することができます。ですから、フランス語の名前リストを読み込んであれば、グリフが&ldquo;adieresis&rdquo;と表示されていても、&ldquo;uni00E4&rdquo;または&ldquo;aumlaut&rdquo;でも、&ldquo;atr&eacute;ma&rdquo;を検索することができます。
+  <P>
+<!--
+  A few caveats: Adobe's glyph name standard expects all glyph names to be
+  in ASCII characters. Syntactically postscript permits a wider range of glyph
+  names, but if you use non-ASCII characters some rasterizers might have problems.
+  Best to keep these within fontforge. -->
+  2, 3 の警告: Adobe のグリフ名標準は、すべてのグリフ名が ASCII 文字であることを前提としています。構文的には PostScript はより広いグリフ名を受け付けることができますが、ASCII 以外の文字を使用した場合、いくつかのラスタライザでは問題が起こる可能性があります。
+  <H3>
+<!--<A NAME="Anchors">Anchor Points and Classes</A>-->
+    <A NAME="Anchors">アンカーポイントとアンカークラス</A>
+  </H3>
+  <P>
+<!--
+  Anchor points allow fine control of the positioning of two (or several) glyphs.
+  There are several different styles of attachment based on anchors: cursive,
+  mark to base, mark to ligature and mark to mark positioning. The first style
+  is used to join glyphs in flowing scripts (cursive) where the exit from one
+  glyph joins the entry point of the next. In the second style one of the glyphs
+  is the base glyph, and it will be positioned normally, the other glyph will
+  often be a diacritic or vowel mark and it will be positioned so that the
+  anchor points in each glyph are coincident. Mark to ligature behaves similarly
+  to mark to base except that there may be more that one attachment point for
+  the mark depending on which component of the ligature it is connected to.
+  Finally, mark to mark allows you to position two marks with respect to each
+  other (as you might need to do in vietnamese or hebrew where you may get
+  several marks for one glyph). -->
+  アンカーポイントを使うと 2 つ (またはそれ以上) のグリフの配置を細かく調節することができます。アンカーに基づいた接続のスタイルはいくつか異なるものがあります。筆記体、マークから基底グリフへ、マークから合字へ、そしてマークからマークへの位置指定です。最初のスタイルは、あるグリフから出る線が次のグリフの書き始めとなるような流麗な手書き文字 (筆記体) においてグリフ同士をつなぐためのものです。2 番目のスタイルでは、グリフ群の内の 1 つが基底グリフとなって通常通り配置され、残りのグリフが典型的にはダイアクリティックや母音記号として、各グリフのアンカーポイント同士が重なり合うように配置されます。マークから合字グリフへの接続は、マークから基底グリフへの接続と同様ですが、マークが接続するのが合字のどの要素かによってそれぞれ異なる複数のアンカーポイントをもつことができます。最後に、マークからマークへの位置指定を使用すると、2 個のマークを相互の位置関係によって指定することができます (ベトナム語やヘブライ文字など、複数のマークを 1 個のグリフに追加できる場合に必要となるでしょう)。
+  <P>
+<!--
+  That is badly said. Consider the following two glyphs and how they are joined
+  to make the final result: -->
+  以上の説明はあまり上手ではありません。ここで以下の 2 個のグリフを例に、それらが組み合わされてどのように最終的な結果をもたらすかを考えてみましょう:
+  <TABLE>
+    <TR>
+      <TD><IMG src="../../_images/a_with_anchor.png" WIDTH=104 HEIGHT=208></TD>
+      <TD>+</TD>
+      <TD><IMG src="../../_images/grave_with_anchor.png" WIDTH=66 HEIGHT=208></TD>
+      <TD>=&gt;</TD>
+      <TD><IMG src="../../_images/agrave_anchored.png" WIDTH=104 HEIGHT=208></TD>
+    </TR>
+  </TABLE>
+  <P>
+<!--
+  The grave accent has been raised and moved to the right so that its anchor
+  point is positioned where the anchor from "a" was. -->
+  グレーブアクセントは上にずらされてから右に移動し、そのアンカーポイントは“a”にあるアンカーポイントの位置に合わせられます。
+  <P>
+<!--
+  FontForge does not compose these glyphs (well, it can, but that's a completely
+  different area), instead it provides information with the
+  <A HREF="gposgsub.html">font</A> to a text layout program so that it can
+  do the composition. -->
+  FontForge はこれらのグリフの合成を行いません (できるにはできますが、それは全く別問題です)。代わりに、テキストレイアウトプログラムがグリフの合成を実行できるようにするための情報を<A HREF="gposgsub.html">フォントに</A>追加します。
+  <P>
+<!--
+  The example above is unlikely to be very useful since most latin fonts contain
+  pre-composed a-grave glyphs, but the same concepts apply to arabic and hebrew
+  where the number of variants is larger and the precomposed glyphs fewer. -->
+  ほとんどのラテン文字フォントは a グレーブの合成済みのグリフを含んでいるので上の例はあまり役に立たないでしょうが、同じ概念は、より多くの異体字グリフを含み、合成済みのグリフをあまり使わないアラビア文字やヘブライ文字のフォントにもあてはまります。
+  <P>
+<!--
+  That's roughly how anchor points are used. Now the mechanics. -->
+  以上が、アンカーポイントがどう使われるかの簡単な解説です。その機構についてこれから解説します。
+  <P>
+<!--
+  A font may contain a list of Anchor Classes which may be specified with the
+  <A HREF="fontinfo.html#Anchors">Element-&gt;Font Info dialog</A>. An anchor
+  class consists of a name (in the above example the class was called "Top"),
+  a tag, a set of scripts and languages to which it applies, and the type of
+  anchor. The tag is meaningful in the context of the
+  <A HREF="gposgsub.html">GPOS</A> table and unless you are working with indic
+  languages should probably be left as 'mark' for mark to base or mark to ligature
+  connections. For cursive connections, use the tag 'curs', and for mark to
+  mark connections use 'mkmk'. -->
+  フォントは、<A HREF="fontinfo.html#Anchors"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE></A>で指定可能なアンカークラスのリストを含むことができます。アンカークラスは名前 (上の例ではクラスは“Top”と呼ばれています)、タグ、スクリプトのセットとそれが適用される言語および、アンカーの型からなります。タグは <A HREF="gposgsub.html">GPOS</A> テーブルの文脈において意味を持ちます。インドの言語のフォントを作っているのでなければ、おそらくマークとして配置され、マークから基底文字またはマークから合字への接続位置の指定に用いられるでしょう。筆記体の接続のためには、タグ&lsquo;curs&rsquo;を使用し、マークからマークへの接続には&lsquo;mkmk&rsquo;を使用します。
+  <P>
+<!--
+  Cursive attachments are a little different from the other attachment types.
+  Each glyph has two attachment points, an entry and an exit (instead of just
+  the one shown in the mark to base example above). The text layout program
+  will attach the exit point of one glyph to the entry point of the next. -->
+  筆記体の接続は、その他の型の接続とは多少異なります。各グリフには開始と終了の 2 個の接続点があります (上記の、マークから基底グリフへの接続例で示したのとは異なります)。テキストレイアウトプログラムは、あるグリフの終了点をつぎのグリフの開始点に接続します。
+  <P>
+<!--
+  A glyph may contain several Anchor Points, but only one for each anchor class
+  (ligatures may have more than one for a class, and 'curs' classes should
+  have two). You may create a point with the
+  <A HREF="pointmenu.html#AddAnchor">Point-&gt;Add Anchor command</A>. You
+  must specify an anchor class, and whether this point is in a base glyph or
+  in a mark glyph, and a location. So in the example above the anchor point
+  in "a" has class "Top" and is a base glyph, while the anchor point in "grave"
+  also has class "Top" but is a mark glyph. There may be many base glyphs with
+  an anchor point named "Top" and many mark glyphs also with "Top" anchor points.
+  Any base glyph with a "Top" anchor point maybe composed with any mark glyph
+  with a "Top" anchor point. So instead of specifying the exact composed form
+  for all possible combinations we specify far fewer anchor points for the
+  same effect. -->
+  1 個のグリフが複数のアンカーポイントを含むことは可能ですが、各アンカークラスについて 1 個に限られます (ただし、合字グリフは 1 クラスあたり 2 個以上を含むことができ、&lsquo;curs&rsquo;クラスは 2 個含んでいる必要があります)。アンカーポイントは <CODE>点(<U>P</U>)</CODE>→<CODE>アンカーを追加(<U>A</U>)</CODE> コマンドで作成できます。このときアンカークラスを選択し、このアンカーポイントが基底グリフに対するものなのかマークグリフに対するものなのかを指定し、位置を決める必要があります。例えば上の例では、“a”のアンカーポイントはクラス“Top”をもち、基底グリフに対する物であり、一方“grave”のアンカーポイントもクラス“Top”ですが、マークグリフに対する物です。“Top”アンカーポイントをもつ基底グリフはすべて、“Top”アンカーポイントをもつマークグリフと合成することができます。それにより、すべての可能な組合せに対して正確な組合せ形を指定する代わりに、ずっと少ない個数のアンカーポイントで同じ効果を得ることができます。
+  <P>
+<!--
+  But life is not really that simple. Ligatures may need several anchor points
+  of the same class (one above each component for example). When you create
+  your anchor point you may say that it is to be in a ligature, in which case
+  you will also be asked for a ligature index -- a number running from 0 to
+  the number of components -1. This allows you to position several anchor points
+  with the same class. The text layout program will place the first mark over
+  the first anchor point, the second mark over the second and so on (this is
+  a gross simplification). -->
+  しかし本当は人生はそんなに単純ではありません。合字は同じクラスに属するアンカークラスがいくつか (例えば、合字を構成する各文字に 1 個) 必要になるでしょう。合字内にアンカーポイントを作成したいと場合がありますが、その場合には合字インデックス—— 0 から (合字の要素数 - 1) までの数値——について訊かれます。番号を指定することにより、同じクラスに属するいくつかのアンカーポイントを配置することができます。テキストレイアウトプログラムは最初のマークを最初のアンカーポイントに、2 番目のマークを 2 番目のアンカーポイントに、という具合に配置を行います (この説明は極度に単純化しています)。
+  <P>
+<!--
+  Finally you may need to position two marks based on the same anchor point,
+  for example the glyph <IMG src="../../_images/a_dieresis_macron.png" WIDTH=9 HEIGHT=14>
+  has a diaeresis and a macron over it. Both of which might normally be positioned
+  with the Top anchor class. Instead we define a special class for positioning
+  one mark with respect to another. When creating the anchor class specify
+  a tag of 'mkmk' (mark to mark) and call it something like "TopMark". When
+  you create a new anchor point for diaeresis you specify that it is a <EM>base
+  mark</EM> and you position it above the glyph, while the new anchor point
+  in macron should be of type mark and should be positioned at the same place
+  as the "Top" anchor point. Thus when given the sequence of glyphs "a diaeresis
+  macron" the text layout program should position "a" normally, position
+  "diaeresis" so that the its Top anchor point is where "a"'s is, and position
+  macron so that its TopMark anchor point is where "diaeresis"'s is. -->
+  最後に、2 個のマークを同じアンカーポイントに基づいて配置しなければならないこともあるでしょう。例えば、<IMG src="../../_images/a_dieresis_macron.png" WIDTH=9 HEIGHT=14> には、ダイエレシス(¨)とマクロン(￣) のグリフが上についています。これらは両方とも、通常は Top アンカークラスとして配置されるマークです。これに対しては、1 個のマークから別のマークへの位置を指定する特別のクラスを定義します。アンカークラスを作成するときに、クラス&lsquo;mkmk&rsquo;(マークからマークへ) のタグを指定し、例えば“TopMark”のように名前をつけてください。ダイエレシスに対するアンカーポイントを作成する時に、それが<EM>基底マーク</EM>であると指定し、それをグリフの上に配置します。ここで、マクロンに追加する新しいアンカーポイントはタイプ mark とし、“Top”アンカーポイントと同じ場所に置きます。このようにすれば、グリフシーケンス“a diaeresis macron”が入力された時、テキストレイアウトプログラムは a を通常通りの位置に並べ、ダイエレシスを、その Top アンカーポイントが“a”の Top アンカーポイントと一致する場所に配置し、最後にマクロンを、その TopMark アンカーポイントがダイエレシスの TopMark アンカーポイントと一致する場所に配置します。
+  <P>
+<!--
+  Anchor points may be selected, dragged, transformed, cut, copied and pasted. -->
+  アンカーポイントには選択、ドラッグ、座標変換、カット、コピーとペーストの操作を施すことができます。
+  <H3>
+<!--<A NAME="FontView">Font View</A>-->
+    <A NAME="FontView">フォントビュー</A>
+  </H3>
+  <P>
+<!--
+  The <A HREF="fontview.html">font view</A> displays all the glyphs in the
+  font (or all that will fit in the window). Every line has two parts, at the
+  top is a label, often small clear letters, underneath that, somewhat larger
+  is a 24 pixel rasterization of the font you have designed. As you edit a
+  glyph in an <A HREF="#CharView">outline glyph view</A> its small version
+  in the font view will change as you edit. -->
+  フォントビューは、フォント内のすべてのグリフ (またはウィンドウに収まるかぎりのグリフ) を表示します。各行は 2 つの部分からなり、上にくっきりした文字が小さく表示され、その下にあるやや大きな文字は、あなたがデザインしたフォントを 24 ピクセルでラスタライズしたものです。<A HREF="#CharView">アウトライングリフビュー</A>で文字を編集すると、そのグリフのフォントビュー内の小さな表示も編集を行うにつれて変更されます。
+  <P>
+<!--
+  Double-clicking on a glyph will bring up an outline glyph view of that glyph
+  which will allow you to edit it. -->
+  グリフをダブルクリックすると、そのグリフを編集可能なアウトライングリフビューが画面に表れます。
+  <P>
+<!--
+  Selecting several glyphs will allow you to apply various operations to all
+  of them, or to cut and paste them. -->
+  複数のグリフをセレクトすると、それらのグリフすべてにさまざまな操作を適用したり、それらをカット&amp;ペーストしたりが可能になります。
+  <P>
+  <IMG SRC="AmbrosiaFV.png" WIDTH="423" HEIGHT="234">
+  <P>
+<!--
+  Fonts do not need to be for the latin alphabet alone. Below is a view of
+  one of <A HREF="ftp://ftp.ipl.t.u-tokyo.ac.jp/Font/">Wadalab</A>'s public
+  domain Kanji fonts... -->
+  フォントは必ずしもラテンアルファベットだけを含むわけではありません。以下は、<A HREF="ftp://ftp.ipl.t.u-tokyo.ac.jp/Font/">和田研</A>のパブリックドメイン漢字フォントのうちの 1 つを表示したものです。
+  <P>
+  <IMG src="../../_images/kanjifont.png" WIDTH="423" HEIGHT="212">
+  <P>
+<!--
+  Another Wadalab font encapsulated in a CID keyed font -->
+  CID キー指定フォントとして 1 つにまとめた別の和田研フォントです。
+  <P>
+  <IMG src="../../_images/fontview-cid.png" WIDTH="573" HEIGHT="226">
+  <H3>
+<!--<A NAME="CharView">Outline Glyph View</A>-->
+    <A NAME="CharView">アウトライングリフビュー</A>
+  </H3>
+  <P>
+<!--
+  The <A HREF="charview.html">outline view</A> is probably the most complex
+  view in FontForge. This is where you actually edit the splines
+  (<A HREF="bezier.html">B&eacute;zier splines</A>) that make up your glyphs. -->
+  <A HREF="charview.html">アウトラインビュー</A>は、おそらく FontForge の最も複雑なビュー (データ表示・編集ウィンドウ) でしょう。これが、グリフを構成する スプライン (<A HREF="bezier.html">B&eacute;zier スプライン</A>) を実際に編集できる場所です。
+  <P>
+<!--
+  You may have a background image loaded into the view to help you trace out
+  the shape you are working on (it is displayed in grey). There are various
+  grid lines visible, some created by default (the baseline, the ascent line,
+  the descent line, and a line at x=0), you may add others yourself. -->
+  作りたい形をトレースする助けとなるように、背景画像をビューに表示させることができます (灰色で表示されています)。多数の格子状の線が画面に見えますが、そのうち一部 (ベースライン、アセントライン、ディセントラインおよび x=0 を表す線) はデフォルトで作成されたもので、その他のものは自分で追加することができます。
+  <P>
+<!--
+  There is a layer showing the glyph's hints. -->
+  グリフのヒントを表示するレイヤがあります。
+  <P>
+<!--
+  In the foreground are the splines and points of the glyph itself, and the
+  width line (you may adjust the glyph's width by moving this line). If a point
+  is selected then its control points will be displayed. -->
+  前面にあるのはグリフそのもののスプラインと点、それにグリフの幅を示す線 (この線を動かすことにより、グリフの幅を調整できます) です。点を選択しているときは、その制御点が表示されます。
+  <P>
+<!--
+  To the left of the main window (the image below shows them on the right,
+  that was just to keep them from crowding things, you can move them around)
+  are two palettes, one a palette of tools, and the other a palette controlling
+  what layers (foreground, background, grid, hints) are visible and editable. -->
+  メインウィンドウの左側に (下の図では右側に表示しています。単に邪魔にならないようにするためで、これは動かすことができます) 2 個のパレットがあります。1 つはツールパレットで、もう一つのパレットは、どのレイヤ (前面、背面、グリッド、ヒント) を表示・編集可能にするかを調節するためのパレットです。
+  <P>
+  <IMG SRC="charview2.png" WIDTH="544" HEIGHT="656">
+  <H3>
+<!--<A NAME="BitmapView">Bitmap View</A>-->
+    <A NAME="BitmapView">ビットマップビュー</A>
+  </H3>
+  <P>
+<!--
+  The <A HREF="bitmapview.html">bitmap view</A> is similar to the outline view
+  above. It also has a tools and layer palette. -->
+  <A HREF="bitmapview.html">ビットマップビュー</A>は、上記のアウトラインビューと似ています。ツールとレイヤパレットがある点も同様です。
+  <P>
+<!--
+  This allows you to edit bitmap versions of the outline glyphs you create
+  above. -->
+  これを使い、上で作成したアウトライングリフのビットマップ版を編集することができます。
+  <P>
+<!--
+  In the background is a small rendition of the outline, and in the foreground
+  are the bits of the image. You may make the program calculate which bits
+  should be set by pressing the "Recalculate button", the results usually need
+  to be tweaked by hand. In the upper left corner is a full sized image of
+  your bitmap glyph. -->
+  背面にあるのは、アウトラインを小さくレンダリングしたもので、前面にあるのはビットマップ像です。<CODE>[ビットマップの再計算]</CODE> ボタンを押すことにより、どのビットを塗りつぶすかをプログラムに計算させることができます。左上の角にはビットマップグリフをフルサイズで表示した画像があります。
+  <P>
+  <IMG SRC="BitmapView.png" WIDTH="271" HEIGHT="319">
+  <H3>
+<!--<A NAME="MetricsView">Metrics View</A>-->
+    <A NAME="MetricsView">メトリックビュー</A>
+  </H3>
+  <P>
+<!--
+  The <A HREF="metricsview.html">metrics view</A> allows you to see how the
+  glyphs look together. -->
+  <A HREF="metricsview.html">メトリックビュー</A>を使えば、グリフを並べたときにどうように見えるかを試すことができます。
+  <P>
+<!--
+  You can change the width and left/right bearings of glyph, either by dragging
+  in the upper part of the window or by entering an appropriate number in the
+  lower. -->
+  グリフの左/右サイドベアリングを、ウィンドウの上部をドラッグするか下の欄に適切な数値を入力するかの方法で変更することができます。
+  <P>
+<!--
+  You can also provide kerning information for any two adjacent glyphs. -->
+  隣接する任意の 2 個のグリフ間のカーニング情報を与えることもできます。
+  <P>
+  <IMG SRC="MetricsView.png" WIDTH="600" HEIGHT="331">
+  <P>
+<!--
+  <IMG SRC="VerticalMetrics.png" WIDTH="360" HEIGHT="700" ALIGN="Right">Note
+  that in Hebrew, or Arabic (or any other right to left alphabet) the glyphs
+  will start on the right and run to the left. While in CJK fonts you may want
+  to see things arranged vertically. -->
+  <IMG SRC="VerticalMetrics.png" WIDTH="360" HEIGHT="700" ALIGN="Right">ヘブル文字やアラビア文字 (その他すべての右から左へ表記するアルファベット) では、グリフは右から始まり左に向けて配置されることに注意してください。また、CJK フォントでは、グリフを縦に並べた時の表記を見たいと思うはずです。
+  <P>
+  <IMG src="../../_images/HebrewMetrics.png" WIDTH="511" HEIGHT="323">
+  <P>
+  <P>
+  <P ALIGN=Center>
+  — <A HREF="editexample.html">次</A> —
+</DIV>
+</BODY></HTML>

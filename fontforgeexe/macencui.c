@@ -354,7 +354,7 @@ static int name_e_h(GWindow gw, GEvent *event) {
 	    MacNameListFree(nd->changing);
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("prefs.html#Features");
+	    help("ui/dialogs/prefs.html", "#prefs-features");
 return( true );
 	}
 return( false );
@@ -714,7 +714,7 @@ static int set_e_h(GWindow gw, GEvent *event) {
 	    MacSettingListFree(sd->changing);
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("prefs.html#Settings");
+	    help("ui/dialogs/prefs.html", "#prefs-settings");
 return( true );
 	}
 return( false );
@@ -1013,7 +1013,7 @@ static int feat_e_h(GWindow gw, GEvent *event) {
 	MacNameListFree(GGadgetGetUserData(GWidgetGetControl(fd->gw,CID_NameList)));
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("prefs.html#Features");
+	    help("ui/dialogs/prefs.html", "#prefs-features");
 return( true );
 	}
 return( false );

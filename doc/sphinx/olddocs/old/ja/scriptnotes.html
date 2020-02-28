@@ -1,0 +1,316 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 27-Jan-2003 -->
+  <!-- AP: Last modified: 15-Jul-2006 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>Special thoughts for special scripts</TITLE>-->
+    <TITLE>特定の用字系において特に考慮すべき点</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+<!--Special thoughts for special scripts -->
+    特定の用字系において特に考慮すべき点
+  </H1>
+  <UL>
+    <LI>
+<!--  <A HREF="editexample.html#FontCreate">Font Creation</A>-->
+      <A HREF="editexample.html#FontCreate">フォントの作成</A>
+    <LI>
+<!--  <A HREF="editexample.html#CharCreate">Creating a glyph (tracing outlines)</A>-->
+      <A HREF="editexample.html#CharCreate">グリフの作成 (アウトラインのトレース) 法</A>
+    <LI>
+<!--  <A HREF="editexample2.html#Navigating">Navigating to other glyphs</A>-->
+      <A HREF="editexample2.html#Navigating">他のグリフの呼び出し方</A>
+    <LI>
+<!--  <A HREF="editexample2.html#Creating-o">On to the next glyph (consistent
+      directions)</A>-->
+      <A HREF="editexample2.html#Creating-o">次のグリフに関して (矛盾のないパスの向き)</A>
+    <LI>
+<!--  <A HREF="editexample3.html#consistent-stems">Consistent serifs and stem
+      widths</A>-->
+      <A HREF="editexample3.html#consistent-stems">統一のとれたセリフとステムの太さ</A>
+    <LI>
+<!--  <A HREF="editexample4.html#accents">Building accented glyphs</A>-->
+      <A HREF="editexample4.html#accents">アクセントつきグリフの組み立て方</A>
+    <LI>
+<!--  <A HREF="editexample4.html#ligature">Building a ligature</A>-->
+      <A HREF="editexample4.html#ligature">合字の組み立て方</A>
+    <LI>
+<!--  <A HREF="editexample5.html#metrics">Examining metrics</A>-->
+      <A HREF="editexample5.html#metrics">メトリックの確認法</A>
+    <LI>
+<!--  <A HREF="editexample5.html#Kerning">Kerning</A>-->
+      <A HREF="editexample5.html#Kerning">カーニング</A>
+    <LI>
+<!--  <A HREF="editexample6.html#Variants">Glyph variants</A>-->
+      <A HREF="editexample6.html#Variants">異体関係にあるグリフ</A>
+    <LI>
+<!--  <A HREF="editexample6.html#Marks">Anchoring marks</A>-->
+      <A HREF="editexample6.html#Marks">アンカーマーク</A>
+    <LI>
+<!--  <A HREF="editexample7.html#checking">Checking your font</A>-->
+      <A HREF="editexample7.html#checking">フォントのチェック法</A>
+    <LI>
+<!--  <A HREF="editexample7.html#generating">Generating it</A>-->
+      <A HREF="editexample7.html#Families">フォントファミリー</A>
+    <LI>
+<!--  <A HREF="editexample7.html#Families">Font Families</A>-->
+      <A HREF="editexample7.html#Families">フォントファミリー</A>
+    <LI>
+<!--  <A HREF="editexample7.html#summary">Final Summary</A>-->
+      <A HREF="editexample7.html#summary">最後のまとめ</A>
+    <LI>
+<!--  <A HREF="scriptnotes.html#Special">Notes on various scripts</A>-->
+      <A HREF="scriptnotes.html#Special">各種の用字系における注意点</A>
+  </UL>
+  <H2>
+<!--<A NAME="Special">Special </A>thoughts for special scripts -->
+    <A NAME="Special">特定の</A>用字系において特に考慮すべき点
+  </H2>
+  <P>
+<!--
+  <A HREF="http://www.microsoft.com/typography/specs/default.htm">Microsoft</A>
+  provides some information on what (opentype) features a word processor should
+  support by default for certain scripts. -->
+  <A HREF="http://www.microsoft.com/typography/specs/default.htm">Microsoft</A> は、ワードプロセッサが特定の用字系に対してデフォルトでどの (OpenType) 機能を用意するべきかに関するいくつかの情報を提供しています。
+  <P>
+<!--
+  <FONT COLOR="Red"><STRONG><BIG>Caveat:</BIG></STRONG></FONT> Just because
+  a feature is documented and looks useful does not mean Uniscribe will use
+  it for your script. Many Latin script fonts would like to use 'init', 'medi',
+  'calt', etc. but none of these features is turned on by Uniscribe for Latin. -->
+  <FONT COLOR="Red"><STRONG><BIG>警告:</BIG></STRONG></FONT> 機能が文書化されていて、有益そうに見えるからといって、Uniscribe が目的とする用字系でそれを使用するとは限りません。多くのラテン文字フォントは&lsquo;init&rsquo;, &lsquo;medi&rsquo;, &lsquo;calt&rsquo;などを必要としますが、Uniscribe においては、これらの機能はどれもラテン文字では使用可能になっていません。
+  <P>
+<!--
+  <FONT COLOR="Red"><STRONG><BIG>Caveat:</BIG></STRONG></FONT> Just because
+  Uniscribe supports a feature that does not mean any given application will.
+  Uniscribe (as of 2005) supports 'liga' for latin, but neither Word nor Office
+  does. -->
+  <FONT COLOR="Red"><STRONG><BIG>警告:</BIG></STRONG></FONT> Uniscribe がその機能をサポートしているからと言って、すべてのアプリケーションがそれを使用可能なわけではありません。 Uniscribe は (2005 年現在) ラテン文字で&lsquo;liga&rsquo;をサポートしていますが、Word も Office もそれを処理しません。
+  <P>
+<!--
+  <FONT COLOR="Red"><STRONG><BIG>Caveat:</BIG></STRONG></FONT> Uniscribe (MS
+  unicode text layout routines) may ignore either the GPOS or the GSUB table
+  depending on the script, and may even refuse to use the font at all if it
+  doesn't have the right stuff in GPOS/GSUB. A Hebrew font must have both a
+  GPOS and a GSUB. If it doesn't the font is not used. A latin font need not
+  have either, but if it doesn't have GSUB then GPOS won't be used. So now
+  if one table is present and the other isn't, FontForge will generate a dummy
+  version of the other. -->
+  <FONT COLOR="Red"><STRONG><BIG>注意:</BIG></STRONG></FONT> Uniscribe (MS の Unicode テキストレイアウトルーチン) は、用字系によっては GPOS または GSUBテーブルを無視することがあり、GPOS/GSUB に正しいデータが含まれていないとフォント全体の使用を拒絶することすらあります。ヘブライ文字のフォントは GPOS と GSUB の両方を含んでいなければなりません。それらが含まれていないとフォントは使用されません。ラテン文字のフォントはどちらも必要ありませんが、GSUB が含まれていないと GPOS は使用されません。ですから、今のところ、片方のテーブルが存在してもう片方が存在しないときには、FontForge はもう片方のダミー版を出力します。
+  <H3>
+<!--Latin -->
+    ラテン文字
+  </H3>
+  <P>
+<!--
+  Uniscribe supports the
+  <A HREF="http://www.microsoft.com/typography/OpenType%20Dev/standard/shaping.mspx">following
+  features</A> -->
+  Uniscribe は<A HREF="http://www.microsoft.com/typography/OpenType%20Dev/standard/shaping.mspx">以下の機能</A>をサポートします。
+  <P>
+<!--
+  There are not many special complications in latin. Latin fonts can generally
+  fit in a single byte encoding with no (or few) font tables. There are a plethora
+  of accented glyphs which could be built - - or you could use mark to base
+  positioning. Kerning should be generated for some glyph combinations. A few
+  ligatures need to be generated (the "f" ligatures: ff, fi, fl, ffi, ffl and
+  perhaps st). -->
+  ラテンアルファベットにおいては特に複雑な点はあまりありません。ラテン文字のフォントは一般的に 1 バイトエンコーディングに収まり、フォントテーブルはありません (あってもごく少数です)。
+  大量のアクセントつきグリフを組み立てる必要があります——またはマークから基底文字への位置指定を使用することができます。
+  幾つかのグリフの組み合わせについてカーニングを作成するべきでしょう。
+  いくつかの作成すべき合字 (“f”に関する ff, fi, fl, ffi, ffl や恐らく st も) があります。
+  <P>
+<!--
+  You may want to add a set of smallcaps. If you do, Adobe has reserved a block
+  in the private use area for latin small-caps. -->
+  1 組の小型大文字を追加したくなるかもしれません。
+  その場合、Adobe がラテンアルファベットの小型大文字のためのブロックを私用領域に予約しています。
+  <P>
+<!--
+  Some languages have specific requirements of their own -->
+  いくつかの言語には、その言語独特の要求事項があります。
+  <UL>
+    <LI>
+<!--
+  <A HREF="http://studweb.euv-frankfurt-o.de/twardoch/f/en/typo/ogonek/kreska.html">For
+      Polish</A>-->
+  <A HREF="http://studweb.euv-frankfurt-o.de/twardoch/f/en/typo/ogonek/kreska.html">ポーランド語について</A>
+  </UL>
+  <H3>
+<!--Greek -->
+    ギリシャ文字
+  </H3>
+  <P>
+<!--
+  Uniscribe supports the
+  <A HREF="http://www.microsoft.com/typography/OpenType%20Dev/standard/shaping.mspx">following
+  features</A> -->
+  Uniscribe は<A HREF="http://www.microsoft.com/typography/OpenType%20Dev/standard/shaping.mspx">以下の機能</A>をサポートしています。
+  <P>
+<!--
+  Greek also does not have many complications. Modern Greek fonts generally
+  fit in a single byte encoding. For modern greek are a few accented glyphs
+  that need to be built, while for polytonic greek there are many - - mark to
+  base &amp; mark to mark are options. Kerning should be generated. I am not
+  aware of any standard ligatures for modern greek (ancient greek had ligatures
+  and variants on some of the glyphs though).
+  ギリシャ文字もさほど複雑な点はありません。現代ギリシャ語のフォントは通常は 1 バイトエンコーディングに収まります。
+  現代ギリシャ語用フォントでは組み立てる必要があるアクセントつきグリフは少ししかありまえfんが、ポリトニコギリシャ語用には多数のグリフを用意する必要があります——またはマークから基底文字へ・マークからマークへの位置指定を使用することもできます。筆者は現代ギリシャ語において標準的な合字について詳しくありません (しかしながら、古代ギリシャ語にはいくつかのグリフについて異体関係にあるグリフと合字グリフが存在します)。
+  <P>
+<!--
+  Small caps are again an option, and I have reserved a block in the private
+  use area for them - - again this is depreciated. -->
+  ギリシャ文字でも、小型大文字を用いる選択が可能です。筆者は、そのためのブロックを私用領域に予約しています——これも廃止されました。
+  <H3>
+<!--Cyrillic -->
+    キリル文字
+  </H3>
+  <P>
+<!--
+  Uniscribe supports the
+  <A HREF="http://www.microsoft.com/typography/OpenType%20Dev/standard/shaping.mspx">following
+  features</A> -->
+  Uniscribe は<A HREF="http://www.microsoft.com/typography/OpenType%20Dev/standard/shaping.mspx">以下の機能</A>をサポートしています。
+  <P>
+<!--
+  Cyrillic fonts also fit in a single byte encoding. There are a few accented
+  glyphs. Kerning should be generated. I am not aware of any standard ligatures. -->
+  キリル文字のフォントも 1 バイトエンコーディングに収まります。少数のアクセントつきグリフがあります。カーニングも作成するべきです。筆者は標準的な合字について詳しくありません。
+  <P>
+<!--
+  Some languages need variant glyphs (specified with a 'loca' feature) -->
+  いくつかの言語は異なるグリフを必要とします (&lsquo;loca&rsquo;機能で指定します)
+  <UL>
+    <LI>
+<!--
+  <A HREF="http://jankojs.tripod.com/SerbianCyr.htm">Serbian/Macedonian</A>-->
+  <A HREF="http://jankojs.tripod.com/SerbianCyr.htm">セルビア語/マケドニア語</A>
+  </UL>
+  <H3>
+<!--Arabic -->
+    アラビア文字
+  </H3>
+  <P>
+<!--
+  Uniscribe supports the
+  <A HREF="http://www.microsoft.com/typography/OpenType%20Dev/arabic/shaping.mspx">following
+  features</A> -->
+  Uniscribe は<A HREF="http://www.microsoft.com/typography/OpenType%20Dev/arabic/shaping.mspx">以下の機能</A>をサポートしています。
+  <P>
+<!--
+  Arabic needs a complete set of initial, medial, final and isolated forms
+  - - Unicode has reserved space for these. Arabic also needs a vast set of
+  ligatures - - Unicode has reserved space for many, but I'd guess that extra
+  ligatures will be needed sometimes. Arabic also needs a set of mark (mark
+  to base, mark to ligature) attachments to position vowels above letters.
+  Arabic may need a glyph decomposition table. -->
+  アラビア文字は語頭、語中、語尾および独立形の完全なセットを必要とします— Unicode はこれらのための領域を予約しています。
+  また、アラビア文字は膨大な合字セットを必要とします——Unicode は多くの予約領域を設けていますが、ときにはそこに無い合字を必要とすることもあるように思います。
+  アラビア文字は母音記号を文字の上に配置するために 1 組のマーク (基底文字へのマーク、合字へのマーク) 接続位置を必要とするようです。
+  アラビア文字においては、グリフ分解テーブルも必要となるでしょう。
+  <P>
+<!--
+  I'm told that in good Arabic typography there need to be many more than 4
+  forms per glyph. I'm not sure how this should be supported. -->
+  筆者は、アラビア語の良質なタイポグラフィを実現するためには、1 グリフごとに 4 個より多くの字形が必要であることを教えられました。
+  どのようにこれをサポートするべきかについてはよく知りません。
+  <P>
+<!--
+  Right to left. -->
+  右から左へ書きます。
+  <H3>
+<!--Hebrew -->
+    ヘブライ文字
+  </H3>
+  <P>
+<!--
+  Uniscribe supports the
+  <A HREF="http://www.microsoft.com/typography/OpenType%20Dev/hebrew/shaping.mspx">following
+  features</A> -->
+  Uniscribe は<A HREF="http://www.microsoft.com/typography/OpenType%20Dev/hebrew/shaping.mspx">以下の機能</A>をサポートしています。
+  <P>
+<!--
+  Hebrew has a few final forms but no special tables are needed for these.
+  Hebrew may need kerning. Hebrew should have a set of mark (mark to base)
+  tables to position vowels over letters. Hebrew may need a glyph decomposition
+  table. I am not aware of any needed ligatures. -->
+  ヘブライ文字は複数の語尾形をもちますが、これらのための特別なテーブルは必要ありません。ヘブライ文字はカーニングを必要とするようです。ヘブライ文字は、母音記号を文字の上に配置するために 1 組のマーク (基底文字へのマーク) のテーブルを持っているべきです。ヘブライ文字はグリフ分解テーブルを必要とするでしょう。必要な合字については筆者は詳しくありません。
+  <P>
+<!--
+  Right to left -->
+  右から左へ書きます。
+  <H3>
+<!--Indic scripts -->
+    インド系の諸用字系
+  </H3>
+  <P>
+<!--
+  Uniscribe supports the
+  <A HREF="http://www.microsoft.com/typography/otfntdev/indicot/shaping.aspx">following
+  features</A> -->
+  Uniscribe は<A HREF="http://www.microsoft.com/typography/otfntdev/indicot/shaping.aspx">以下の機能</A>をサポートしています。
+  <P>
+<!--
+  Indic scripts need a set of ligatures. -->
+  インド系の各種用字系は一組の合字セットを必要とします。
+  <P>
+<!--
+  (they probably need a lot more but I'm not aware of what) -->
+  (これらはより多くの情報を必要とするでしょうが、私はそれに関して詳しくありません)
+  <H3>
+<!--Korean Hangul -->
+    ハングル
+  </H3>
+  <P>
+<!--
+  Uniscribe supports the
+  <A HREF="http://www.microsoft.com/typography/OpenType%20Dev/hangul/shaping.mspx">following
+  features</A> -->
+  Uniscribe は<A HREF="http://www.microsoft.com/typography/OpenType%20Dev/hangul/shaping.mspx">以下の機能</A>をサポートしています。
+  <P>
+<!--
+  The Hangul script consists of a set of syllables built out of a phonetic
+  alphabet. Generally fonts consist of a set of precomposed syllables. -->
+  ハングルは音素を表すアルファベットから組み立てられた音節文字のセットから構成されています。
+  一般的にフォントは組み立て済みの音節文字からなります。
+  <P>
+<!--
+  Complications are introduced by the massive combinatorial explosion of all
+  these syllables. These are eased in postscript by CID-keyed fonts. -->
+  複雑さは、これら全ての音節の膨大な組合せ的爆発が原因です。これは、PostScript では CID キー指定フォントによって緩和されます。
+  <P>
+<!--
+  Vertical writing and left to right writing are used, and some glyphs have
+  a different orientation when drawn vertically (parentheses for example).
+  -->
+  縦書きと、左から右への横書きが併用されます。いくつかのグリフ (例えば括弧) は縦書き時には異なる方向をもちます。
+  <H3>
+<!--Japanese and Chinese (and Korean Hanja) -->
+    日本語と中国語 (および韓国語の漢字)
+  </H3>
+  <P>
+<!--
+  MicroSoft does not describe these scripts (that I can find). -->
+  Microsoft は、(私の知る限り) これらの用字系について記述していません。
+  <P>
+<!--
+  Again a massive collection of glyphs is needed, and postscript uses CID keyed
+  fonts to deal with this. -->
+  これも膨大なグリフ集合が必要であり、PostScript では CID キー指定フォントを使ってこれを扱っています。
+  <P>
+<!--
+  Vertical writing and left to right writing are used, and some characters
+  have a different orientation when drawn vertically (parentheses for example).
+  -->
+  縦書きと左から右への横書きが併用されます。いくつかの文字 (例えば括弧) は縦書き時には異なる方向を持ちます。
+  <P>
+  <P ALIGN=Center>
+  — <A HREF="editexample7.html">前</A> — <A HREF="overview.html">目次</A>
+  — <A HREF="fontview.html">次</A> —
+</DIV>
+</BODY></HTML>

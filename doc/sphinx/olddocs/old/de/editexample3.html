@@ -1,0 +1,273 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Konsistente Serifen und Stammbreiten</title>
+    <link rel="icon" href="../../_static/fftype16.png">
+    <link rel="stylesheet" type="text/css" href="FontForge.css">
+  </head>
+  <body>
+  <div id="in">
+  <h1 align="center">
+    Tutorial #3
+  </h1>
+  <ul>
+    <li>
+    <a href="editexample.html#FontCreate">Kreieren eines neuen Schriftsatzes</a>
+    </li><li>
+    <a href="editexample.html#CharCreate">Erzeugung eines Bildzeichens (Umrissverfolgung)</a>
+    </li><li>
+    <a href="editexample2.html#Navigating">Navigation zu weiteren Bildzeichen</a>
+    </li><li>
+    <a href="editexample2.html#Creating-o">Auf zum nächsten Bildzeichen (konsistente
+      Richtungen)</a>
+    </li><li>
+    <a href="editexample3.html#consistent-stems">Konsistente Serifen und Stammbreiten</a>
+    </li><li>
+    <a href="editexample4.html#accents">Erzeugung akzentuierter Bildzeichen</a>
+    </li><li>
+      <a href="editexample4.html#ligature">Erzeugung einer Ligatur</a>
+    </li><li>
+    <a href="editexample5.html#metrics">Untersuchung von Metriken</a>
+      <ul>
+	<li>
+  <a href="editexample5.html#baseline">Setzen der Gundlinie zur Grundlinienteilung eines Schriftsatzes</a>
+      </li></ul>
+    </li><li>
+    <a href="editexample5.html#Kerning">Unterschneidung</a>
+    </li><li>
+    <a href="editexample6.html#Variants">Bildzeichenvarianten</a>
+    </li><li>
+    <a href="editexample6.html#Marks">Ankermarkierungen</a>
+    </li><li>
+      <a href="editexample6-5.html#Conditional">Bedingte Eigenschaften</a>
+    </li><li>
+      <a href="editexample7.html#checking">Überprüfen des Schriftsatzes</a>
+    </li><li>
+      <a href="editexample7.html#Bitmaps">Bitmaps</a>
+    </li><li>
+    <a href="editexample7.html#generating">Erzeugung</a>
+    </li><li>
+      <a href="editexample7.html#Families">Schriftsatzfamilien</a>
+    </li><li>
+      <a href="editexample7.html#summary">Fazit</a>
+    </li><li>
+    <a href="scriptnotes.html#Special">Bemerkungen zu verschiedenen Skripten</a>
+  </li></ul>
+  <h2>
+    <a name="consistent-stems">Kreieren </a> von Buchstaben mit konsistenter
+    Stammbreite, Serifen und Höhe.
+  </h2>
+  <p>
+    Viele lateinische (griechische, kyrillische) Schriftarten haben
+    <b>Serifen</b>, das sind spezielle Begrenzer am Ende von Stämmen, und
+    fast alle LGC Schriftarten verwenden lediglich eine geringe Anzahl
+    von Stammbreiten (z.B. sollten die vertikalen Stämme von "l" und "i"
+    normalerweise die gleiche Breite haben).
+  </p>
+  <p>
+    In FontForge gibt es leider keine einfache Möglichkeit, Konsistenz
+    zu erzwingen, es gibt aber einige Befehle, die dabei helfen,
+    diese zu überprüfen und Diskrepanzen zu entdecken.
+  </p>
+  <p>
+    In diesem Tutorial wird zunächst der Buchstabe "l" mit Hilfe der
+    bereits beschriebenen Methode erstellt, eine Bildvorlage zu importieren
+    und mit deren Hilfe dessen Umriss zu definieren.
+    <table border="1" cellpadding="2" width="600">
+      <tbody>
+      <tr valign="bottom">
+        <td width="140">
+          <p align="center">
+          <img src="../../_images/l1.png" height="153" width="35"></p>
+        </td>
+        <td width="140">
+          <img src="../../_images/l2.png" height="101" width="134">
+        </td>
+        <td width="140">
+          <img src="../../_images/l3.png" height="101" width="134">
+        </td>
+        <td width="140">
+          <img src="../../_images/l4.png" height="101" width="134">
+        </td>
+      </tr>
+      <tr valign="top">
+        <td>Die importierte Vorlage</td>
+        <td>
+          Mit Hilfe des Vergrößerungswerkzeugs wird der untere Serif
+          betrachtet, er ist links und rechts symmetrisch.
+        </td>
+        <td>Um die rechte Hälfte des Serifen wird ein Umriss gelegt.</td>
+        <td>
+          Der Umriss wird selektiert, mit Hilfe von 
+          <code>Bearbeiten -&gt; Kopieren</code> und
+          <code>Bearbeiten -&gt; Einfügen</code> ein Duplikat erstellt.
+          Dieses wird mit <code>Element -&gt; Transformieren</code>
+	        and der Auswahl von <code>Spiegeln</code>
+          (aus der Auswahlliste) bei aktivierter <code>Horizontal</code>-
+          Option gespiegelt.
+        </td>
+      </tr>
+      <tr valign="bottom">
+      <td><img src="../../_images/l5.png" height="101" width="134"></td>
+      <td><img src="../../_images/l6.png" height="101" width="134"></td>
+      <td><img src="../../_images/l7.png" height="101" width="134"></td>
+      <td><p align="center">
+        <img src="../../_images/l8.png" height="153" width="35"></p>
+      </td>
+    </tr>
+    <tr valign="top">
+      <td>
+        Der gespiegelte Serif wird nach links gezogen bis er auf der
+        linken Kante der Vorlage liegt.
+	    </td>
+      <td colspan="2">
+        Der Pfad wird deselektiert, einer der unteren Endpunkte eines
+        Serifen ausgewählt und auf den gegenüberliegenden Endpunkt
+        des anderen Serifen bewegt.
+	    </td>
+      <td>Der Rest der Zeichens wird nun gezeichnet.</td>
+    </tr>
+    <tr valign="bottom">
+      <td></td>
+      <td><img src="../../_images/l9.png" height="101" width="134"></td>
+      <td><img src="../../_images/l10.png" height="101" width="134"></td>
+      <td></td>
+    </tr>
+    <tr valign="top">
+      <td>
+        Zum Schluss werden noch zwei Schritte durchgeführt: die Messung der
+        Stammbreite und die Markierung der Höhe des "l".
+      </td>
+      <td>
+        Aus der Werkzeugleiste wird des Linealwerkzeug ausgewählt und
+        mit der Maus von einer Kante des Stamms zur anderen gezogen.
+        Aus diese Aktion hin erscheint ein kleines Fenster, dass in
+        diesem Beispiel eine Breite von 58 Einheiten anzeigt, die Richtung
+        beträgt 180°, es wurde -58 Einheiten horizontal und 0 Einheiten
+        vertikal gezogen.
+      </td>
+      <td>
+        In der Layerpalette wird nun die "Führung" Option ausgewählt
+        (welche den Führungs-Layer editierbar macht). Dann wird an
+        der Oberseite des "l" eine Linie gezogen, welche danach in allen
+        Zeichen des Schriftsatzes sichtbar ist und dessen Anstieg
+        markiert.
+      </td>
+      <td></td>
+    </tr>
+  </tbody></table>
+  </p>
+  <p>
+    In diesem Beispiel wird ein "i" erstellt. Dieses Zeichen ähnelt einem
+    kurzen "l" mit einem Punkt am oberen Ende, so dass der Umriss des
+    vorherigen Beispiels wiederverwendet werden kann. Hierzu wird der
+    Umriss des "l" in das Bearbeitungsfenster des "i" kopiert, es werden
+    automatisch die richtigen Stammbreiten und die Zeichenbreite gesetzt.
+    Das Kopieren kann entweder aus der Zeichensatzansicht (durch Selektion
+    des Rechtecks mit dem "l" und Auswahl des Befehls
+    <code>Bearbeiten-&gt;Kopieren</code>) oder aus der Umrissansicht
+    (mit Hilfe von <code>Bearbeiten-&gt;Auswahl-&gt;Alles auswählen</code>
+    und <code>Bearbeiten-&gt;Kopieren</code>) durchgeführt werden.
+    Analog kann das Einfügen entweder in der Schriftsatzansicht (durch
+    Selektion des "i" Feldes und Auswahl des Befehls
+    <code>Bearbeiten-&gt;Einfügen</code>) oder in der Umrissansicht (
+    durch Öffnen des Bildzeichens "i" und Ausführung des Befehls
+    <code>Bearbeiten-&gt;Einfügen</code>).
+  <table border="1" cellpadding="2" width="600">
+    <tbody><tr>
+      <td><p align="center">
+	<img src="../../_images/i1.png" height="170" width="50"></p></td>
+      <td><p align="center">
+	<img src="../../_images/i2.png" height="170" width="111"></p></td>
+      <td><p align="center">
+	<img src="../../_images/i3.png" height="170" width="111"></p></td>
+      <td><p align="center">
+	<img src="../../_images/i4.png" height="170" width="111"></p></td>
+    </tr>
+    <tr valign="top">
+      <td>
+        Importieren der Bildvorlage für "i" und Kopieren des
+        Umrisses für "l".</td>
+      <td>
+        Auswahl der Punkte des oberen Serifen für "l".
+      </td>
+      <td>
+        Die Auswahl wird nach unten gezogen, so daß sie
+        der Vorlage entspricht.
+      </td>
+      <td>
+        Der Führungs-Layer wird selektiert und eine Linie auf der
+        x-Höhe gezogen.
+      </td>
+    </tr>
+  </tbody></table>
+  </p>
+  <p>
+  <img src="../../_images/o5.png" align="right" height="101" width="85">
+    Bei einem Blick auf das in einem der vorherigen Schritte erstellte "o"
+    fällt auf, daß das Zeichen ein wenig über die Führungslinie für die
+    x-Höhe und ein wenig unter die Grundlinie ragt. Dieses Merkmal wird <b>Überschuss</b>
+    genannt und wird verwendet, um eine optische Illusion zu erzeugen. 
+    Eine Kurve sollte etwa 3% über die x-Höhe hinausgehen, damit es so
+    erscheint, als ob sie auf der x-Höhe liegen würde.<br clear="all">
+  </p>
+  <p>
+    Nun wird ein "k" erstellt. Hier wird wiederum erst eine entsprechende
+    Bildvorlage importiert und der Umriss eines "l" als Grundumriss
+    kopiert.
+  <table border="1" cellpadding="2" width="600">
+    <tbody><tr>
+      <td><p align="center">
+	<img src="../../_images/k1.png" height="151" width="87"></p></td>
+      <td><p align="center">
+	<img src="../../_images/k2.png" height="151" width="87"></p></td>
+      <td><p align="center">
+	<img src="../../_images/k3.png" height="151" width="87"></p></td>
+    </tr>
+    <tr valign="top">
+      <td>
+        Die Bildvorlage für "k" wird importiert und das Zeichen "l"
+        kopiert. Hier liegt die Linie für die x-Höhe (hoffentlich) genau
+        an der oberen Kante des "k". Die Breite des "l" entspricht nicht
+        der des "k", sie muss also angepasst werden, indem sie ausgewählt
+        und an die passende Position und auf die richtige Breite gezogen wird.
+	    </td>
+      <td>
+        Aus der Werkzeugpalette wird nun das Messerwerkzeug ausgewählt und
+        der Stamm der "l" Umrisses an den geeigneten Punkten für das
+        "k" zerteilt (s. Bild).
+	    </td>
+      <td>
+        Die Segmente zwischen den Schnittpunkten werden entfernt.
+        Ein einfacher Weg, dies zu tun ist, die Segmente zu selektieren
+        (welches implizit auch deren Endpunkte selektiert) und den
+        Befehl <code>Bearbeiten -&gt; Leeren</code> auszuführen.
+      </td>
+    </tr>
+    <tr>
+      <td><p align="center">
+	<img src="../../_images/k4.png" height="151" width="87"></p></td>
+      <td><p align="center">
+	<img src="../../_images/k5.png" height="151" width="87"></p></td>
+      <td><p align="center">
+	<img src="../../_images/k6.png" height="151" width="87"></p></td>
+    </tr>
+    <tr valign="top">
+      <td>
+        Die Endpunkte werden ausgewählt und mit Hilfe von
+        <code>Punkt -&gt; Eckpunkt</code> in Eckpunkte umgewandelt.
+      </td>
+      <td>Die äußere Kontur wird ergänzt.</td>
+      <td>
+        Die innere Kontur wird gezeichnet. Zum Abschluss 
+        <code>Bearbeiten -&gt; Auswahl -&gt; Alles auswählen</code> und
+        <code>Element -&gt; Richtung korrigieren</code> ausführen.
+      </td>
+    </tr>
+  </tbody></table>
+  </p><p>
+  </p><p align="center">
+  -- <a href="editexample2.html">Vorherige Seite</a> -- <a href="../../index.html">Inhalt</a>
+  -- <a href="editexample4.html">Nächste Seite</a> --
+</p></div>
+</body></html>

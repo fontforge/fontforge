@@ -1,0 +1,74 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 29-Sep-2005 -->
+  <!-- AP: Last modified: 29-Sep-2005 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>non BMP unicode bitmap fonts supported by FontForge</TITLE>-->
+    <TITLE>FontForge がサポートする BMP 外の Unicode ビットマップフォント</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+<P>
+<!--
+Ironically, FontForge is stuck in the dark ages when it comes to using fonts.
+It should be using libXft and gtk to get full unicode support. -->
+皮肉なことに、FontForge 自身がフォントを使うことにかけては暗黒時代の制約を受けています。Unicode の完全なサポートを得るためには libXft と gtk を使うようにする必要があるでしょう。
+<P>
+<!--
+It doesn't. It continues to use the old X bitmap interface which the X consortium
+isn't interested in extending beyond BMP (since libXft/gtk do this well and
+there is no point in redoing that for an obsolete interface). -->
+それはまだ実現されていません。FontForge は未だに、 X コンソーシアムが BMP を超えた拡張を行うことに興味を失った (libXft/gtk を使えばいいわけですし、古びたインターフェイスを作りなおすのは無意味ですから)、古い X のビットマップインターフェイスを使用しています。
+<P>
+<!--
+But I'd like to draw non-BMP characters at least in my font view. -->
+しかし私は、少なくともフォントビューでは BMP 外の文字を表示したいのです。
+<P>
+<!--
+To this end I have made FontForge recognize some non-standard encodings: -->
+この目的のために、FontForge が以下の非標準のエンコーディング名を認識できるようにしました:
+-*-*-*-*-*--*-*-*-*-*-*-UnicodePlane-{1,2,3,...16}
+<BLOCKQUOTE>
+  <PRE>-fontforge-planeone-medium-r-normal--13-120-75-75-p-101-unicodeplane-1
+</PRE>
+</BLOCKQUOTE>
+<P>
+<!--
+Is a font that fontforge will interpret as containing glyphs from plane 1
+(Supplementary Multilingual Plane) - - starting with Linear B glyphs. -->
+というのは、第 1 面 (補助多言語面, SMP) ——線文字 B で始まります——のグリフを含んでいる物と解釈するようなフォントです。
+<P>
+<!--
+As a proof of concept I've created a bdf font containing all the Linear B
+syllables, and not much of anything else (I am aware that the CODE200? fonts
+provide good glyphs for the non-bmp characters, but they are shareware so
+I can't just rasterize them and redistribute them). -->
+概念の検証のために、私は線文字 B の音節をすべてと、その他の文字を少々含む BDF フォントを作成しました (CODE 200? フォントが BMP 外の文字のよいグリフを提供していることは承知していますが、それらはシェアウェアですので、それを単にラスタライズして再配布するというわけにはいきません)。
+<P>
+<!--
+If anyone would like to submit glyphs to this font (or to putative similar
+ones for planes 2&amp;14) I'll try and coordinate that process. -->
+もし、このフォントに (または第 2 面から 14 面までの同様の物となるであろうフォントに) グリフを送付したい方がいらっしゃれば、私はその処理を試み、統合を行うつもりです。
+<UL>
+  <LI>
+<!--<A HREF="PlaneOne.sfd.bz2">PlaneOne.sfd</A> -->
+    <A HREF="http://fontforge.sourceforge.net/PlaneOne.sfd.bz2">PlaneOne.sfd</A>    
+  <LI>
+<!--<A HREF="PlaneOne-13.bdf.bz2">PlaneOne-13.bdf</A>-->
+    <A HREF="http://fontforge.sourceforge.net/PlaneOne-13.bdf.bz2">PlaneOne-13.bdf</A>
+  <LI>
+<!--<A HREF="toplane.c.bz2">toplane.c</A>-->
+    <A HREF="http://fontforge.sourceforge.net/toplane.c.bz2">toplane.c</A>
+</UL>
+<P>
+<!--
+The sfd file is encoded with a "full unicode" encoding. The program toplane.c
+will take a bdf containing one Unicode plane, figure out which plane it is,
+and reencode the font with the appropriate UnicodePlane mapping. -->
+SFD ファイルは「フルセットの Unicode」エンコーディングで符号化されています。プログラム toplane.c は Unicode のある面を含む BDF ファイルを 1 個とり、それがどの面であるかを検出し、フォントを適切な UnicodePlane マッピングにエンコーディング変換します。
+<P>
+</DIV>
+</BODY></HTML>

@@ -462,7 +462,7 @@ return;
 static void Stroke_Char(StrokeDlg *sd, GEvent *event) {
 
     if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	help("elementmenu.html#Expand");
+	help("ui/menus/elementmenu.html", "#elementmenu-expand");
 return;
     } else if ( event->u.chr.keysym == GK_Return ) {
 	_Stroke_OK(sd,false);
@@ -604,7 +604,7 @@ static int stroke_e_h(GWindow gw, GEvent *event) {
             break;
         case et_char:
             if (event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help) {
-                help("elementmenu.html#Expand");
+                help("ui/menus/elementmenu.html", "#elementmenu-expand");
                 return true;
             }
             return false;
@@ -2761,7 +2761,7 @@ static int layer_e_h(GWindow gw, GEvent *event) {
 	ld->done = true;
     } else if ( event->type == et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("multilayer.html#Layer");
+	    help("ui/dialogs/multilayer.html", "#multilayer-layer");
 return( true );
 	}
 return( false );

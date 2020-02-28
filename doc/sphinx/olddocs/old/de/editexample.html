@@ -1,0 +1,298 @@
+<html>
+  <head>
+    <!-- Created with AOLpress/2.0 -->
+    <!-- AP: Created on: 6-Dec-2000 -->
+    <!-- AP: Last modified: 19-Nov-2005 -->
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Schritt für Schritt zum eigenen Schriftsatz...</title>
+    <link rel="icon" href="../../_static/fftype16.png">
+    <link rel="stylesheet" type="text/css" href="FontForge.css">
+  </head>
+  <body>
+<div id="in">
+  <h1 align="center">
+    Tutorial<br>
+    <a href="../../tutorial/editexample.html"><img src="../../_images/English.gif" height="26" width="39"></a>
+    <a href="../ja/editexample.html"><img src="../../_images/Nisshoki-Japan.png" height="26" width="39"></a>
+  </h1>
+  <p>
+  <!--Dieses Tutorial liegt auch in einer <a href="../fontforge-tutorial.pdf">PDF-Version</a>
+  vor.--> Wenn Sie schrittweise nach dem Tutorial lernen möchten, sollte dieses
+  <a href="https://fontforge.org/downloads/tutorial.tgz">Archiv</a> alle benötigten Dateien
+  enthalten.<br>
+  Der Schwerpunkt liegt in diesem Tutorial nicht auf Ästhetik, sondern
+  in erster Linie auf dem Prinzip des Erstellungsvorgangs.
+  </p>
+    <ul>
+    <li>
+    <a href="editexample.html#FontCreate">Kreieren eines neuen Schriftsatzes</a>
+    </li><li>
+    <a href="editexample.html#CharCreate">Erzeugung eines Bildzeichens (Umrissverfolgung)</a>
+    </li><li>
+    <a href="editexample2.html#Navigating">Navigation zu weiteren Bildzeichen</a>
+    </li><li>
+    <a href="editexample2.html#Creating-o">Auf zum nächsten Bildzeichen (konsistente
+      Richtungen)</a>
+    </li><li>
+    <a href="editexample3.html#consistent-stems">Konsistente Serifen und Stammbreiten</a>
+    </li><li>
+    <a href="editexample4.html#accents">Erzeugung akzentuierter Bildzeichen</a>
+    </li><li>
+      <a href="editexample4.html#ligature">Erzeugung einer Ligatur</a>
+    </li><li>
+    <a href="editexample5.html#metrics">Untersuchung von Metriken</a>
+      <ul>
+	<li>
+  <a href="editexample5.html#baseline">Setzen der Gundlinie zur Grundlinienteilung eines Schriftsatzes</a>
+      </li></ul>
+    </li><li>
+    <a href="editexample5.html#Kerning">Unterschneidung</a>
+    </li><li>
+    <a href="editexample6.html#Variants">Bildzeichenvarianten</a>
+    </li><li>
+    <a href="editexample6.html#Marks">Ankermarkierungen</a>
+    </li><li>
+      <a href="editexample6-5.html#Conditional">Bedingte Eigenschaften</a>
+    </li><li>
+      <a href="editexample7.html#checking">Überprüfen des Schriftsatzes</a>
+    </li><li>
+      <a href="editexample7.html#Bitmaps">Bitmaps</a>
+    </li><li>
+    <a href="editexample7.html#generating">Erzeugung</a>
+    </li><li>
+      <a href="editexample7.html#Families">Schriftsatzfamilien</a>
+    </li><li>
+      <a href="editexample7.html#summary">Fazit</a>
+    </li><li>
+    <a href="scriptnotes.html#Special">Bemerkungen zu verschiedenen Skripten</a>
+  </li></ul>
+  <blockquote id="lit">
+    <b><small>NOBLEMAN:</small></b><small> </small>Now this is what I call
+    workmanship. There is nothing on earth more exquisite than a bonny book,
+    with well-placed columns of rich black writing in beautiful borders, and
+    illuminated pictures cunningly inset. But nowadays, instead of looking at
+    books, people read them. A book might as well be one of those orders for
+    bacon and bran that you are scribbling.
+    <p align="right">
+    -- Die heilige Johanna, 4. Szene<br>
+    George Bernard Shaw, 1924
+  </p></blockquote>
+  <h2>
+    <a name="FontCreate">Kreierung eines neuen Schriftsatzes</a>
+  </h2>
+
+  <p>
+    Eine Schriftart wird mit dem <code>Neu</code>-Befehl aus dem
+    <code>Datei</code>-
+    Menü erzeugt (alternativ kann beim Start der Kommandozeilenparameter
+    <kbd>-new</kbd> verwendet werden).
+  </p>
+  <p>
+    <img src="../../_images/newfont.png" height="189" width="419">
+  </p>
+  <p>
+    Mit Hilfe des Befehls
+    <code><a href="../../ui/dialogs/fontinfo.html">Zeichensatzinformation</a></code>
+    aus dem <code>Element</code>-Menü kann ein Name an die Schriftart vergeben
+    werden.
+    Derselbe Befehl dient auch zur Vergabe eines Copyright-Hinweises und der
+    Änderung von Anstieg und Abstieg (Die Summe dieser beiden bestimmt die
+    Größe des "Em"-Blocks der Schriftart, welche für Postscript-Schriften
+    per Konvention 1000 beträgt bzw. eine Quadratzahl [oft 2048 oder 4096]
+    bei TrueType- und 15000 bei Ikarus-Schriftarten).
+    <small>
+      (wenn beabsichtigt wird, eine TrueType-Schrift zu erstellen, kann
+      ausserdem optional die "Quadratischer Spline" Checkbox selektiert werden,
+      um das native TrueType-Format zu verwenden. Allerdings ist die
+      Bearbeitung in diesem Modus ein wenig schwieriger)
+    </small>
+  </p>
+  <p>
+    <img src="../../_images/fontinfo.png" height="494" HEIGHT="552">
+  </p>
+  <p>
+    Mit Hilfe des Befehls <code>Codierung-&gt;Neu Codieren</code> ist es möglich
+    vorzugeben, welche Zeichen im Schriftsatz enthalten sein sollen.
+    FontForge erzeugt Schriftsätze im allgemeinen in ISO-8859-1,
+    welches die (meisten der) in Westeuropa verwendeten Zeichen enthält
+    (lateinische Buchstaben, einige Buchstaben mit Azenten, Ziffern
+    und Symbole).
+  </p>
+  <h2>
+    <a name="CharCreate">Erzeugung eines Bildzeichens</a>
+  </h2>
+  <p>
+    Nach dem ein neuer Schriftsatz erzeugt wurde, kann mit der Bearbeitung
+    der Bildzeichen begonnen werden. Nach einem Doppelklick auf den
+    Eintrag "C" in der oberen Schriftsatzansicht sollte sich ein
+    leeres Umrissfenster für das Bildzeichen öffnen:
+  </p>
+  <p>
+  <img src="../../_images/C1.png" height="283" width="272">
+  </p>
+  <p>
+    Das Umrissfenster enthält zwei Werkzeugpaletten, die an dessen linken
+    Rand plaziert sind. Die obere Palette enthält Bearbeitungswerkzeuge
+    während die untere die Kontrolle über die Sichtbarkeit und 
+    Editierbarkeit der einzelnen Layer ermöglicht.
+  </p>
+  <p>
+    Der Vordergrund-Layer enthält den Umriss des Bildzeichens, der
+    Hintergrund-Layer kann Bilder oder Linienzeichnungen enhalten, die
+    als Zeichenhilfe oder Vorlage dienen können. Der Guide-Layer enthält
+    Hilfslinien,
+    die für den gesamten Schriftsatz gelten (z.B. die x-Höhe). Zu Beginn
+    sind alle Layer leer.
+  </p>
+  <p>
+    Dieses Fenster enthält ausserdem das interne Koordinatensystem des
+    Zeichens, dessen X- und Y-Achsen in hellgrau dargestellt werden.
+    Die schwarze Linie am rechten Rand des Fensters zeigt die Schrittweite
+    des Zeichens an. FontForge weist einem neuen Zeichen eine Schrittweite von
+    einem "em" (in Postscript sind dies üblicherweise 1000 Einheiten) zu.
+  </p>
+  <p>
+    Mit dem Befehl <code>Datei-&gt;Importieren</code> wird ein Bild des
+    zu erzeugenden Zeichens in den Hintergrundlayer gelesen. Es wird
+    automatisch so skaliert,
+    daß es der Höhe des "em"-Blocks entspricht.
+  </p>
+  <p>
+    <img src="../../_images/C2.png" height="283" width="272">
+  </p>
+  <p>
+    Der Hintergrund-Layer wird nun über die Layer-Palette als editierbar
+    markiert. Um die Größe des Bildes anzupassen, wird der Mauszeiger
+    an einer Kante des Bildes positioniert, und bei gedrückt gehaltener
+    Umschalttaste mit der linken Maustaste auf die gewünschten Maße
+    gezogen. Für dessen Positionierung
+    wird der Mauszeiger im dunklen Bereich des Bildes plaziert und
+    mit gedrückter linker Maustaste and die gewünschte Stelle bewegt.
+  </p>
+  <p>
+    <img src="../../_images/C3.png" height="283" width="272">
+  </p>
+  <p>
+    Wenn das 
+    <a href="http://sourceforge.net/projects/autotrace/">autotrace</a>
+    Werkzeug installiert ist, kannn mit Hilfe des Befehls
+    <code>Element-&gt;AutoTrace</code> automatisch ein Umriss aus
+    dem importierten Bild erzeugt werden. Ansonsten müssen die Punkte
+    vom Benutzer selbst hinzugefügt werden. Dazu wird der Vordergrund-Layer
+    als aktiv selektiert und aus der Werkzeugpalette der Kurvenpunkt
+    (das ist der gefüllte Kreis) Punkt ausgewählt.
+    Dann wird der Mauszeiger am Rand des
+    Bildes positioniert und per Mausklick ein Punkt hinzugefügt.
+    Am einfachsten ist es, Punkte an Stellen hinzuzufügen, an denen die
+    Kurve horizontal oder vertikal verläuft, an Ecken oder Stellen
+    an denen sich die Biegung ändert (dies tritt in Kurven wie z.B. "S"
+    auf, in denen sich die Kurve von links offen nach rechts offen
+    ändert). Wenn diese Regeln befolgt werden, arbeitet das "Hinting" besser.
+  </p>
+  <p>
+    <img src="../../_images/C4.png" height="283" width="272">
+  </p>
+  <p>
+    Es ist empfehlenswert, eine Kurve in Richtung des Uhrzeigersinns
+    einzugeben. So wird in diesem Beispiel der nächste Punkt an der
+    Oberseite des Bildes im flachen Teil hinzugefügt. Da die Form
+    an dieser Stelle gerade ist, sollte hier ein <b>Tangentenpunkt</b>
+    anstelle eines Kurvenpunktes verwendet werden (in der Werkzeugpalette
+    in Form eines kleinen Dreiecks dargestellt). Ein Tangentenpunkt
+    ermöglicht einen guten Übergang von einer Kurve in eine gerade Linie
+    weil die Kurve den Punkt auf der einen Seite mit der selben Steigung
+    verlässt, mit der die Linie auf der anderen Seite eingetreten ist.
+  </p>
+  <p>
+    <img src="../../_images/C5.png" height="283" width="272">
+  </p>
+  <p>
+    Im Augenblick gleicht die "Kurve" dem Bild noch in keinster Weise
+    diese wird im Laufe des Tutorials angepasst. Es ist zu beachten,
+    daß dem Tangentenpunkt ein zusätzlicher Kontrollpunkt zugeordnet wurde
+    (das kleine blaue x). Der nächste Punkt wird an die Stelle gesetzt, an
+    der die Vorlage abrupt die Richtung ändert. Hier eignen sich weder 
+    Kurven- noch Tangentenpunkte, stattdessen wird ein <b>Eckpunkt</b>
+    verwendet (das kleine Quadrat in der Werkzeugpalette).
+  </p>
+  <p>
+    <img src="../../_images/C6.png" height="283" width="272">
+  </p>
+  <p>
+    Wie zu sehen ist, ist der Kurvenverlauf der Vorlage schon etwas
+    ähnlicher. Es werden nun noch mehr Punkte hinzugefügt bis der
+    Pfad geschlossen werden kann.
+  </p>
+  <p>
+    <img src="../../_images/C7.png" height="283" width="272">
+  </p>
+  <p>
+    Der Pfad wird geschlossen, indem ein neuer Punkt über dem Startpunkt
+    der Kurve hinzugefügt wird.
+  </p>
+  <p>
+    <img src="../../_images/C8.png" height="283" width="272">
+  </p>
+  <p>
+    Nun sollte die Kurve so verändert werden, daß sie der Form der Vorlage
+    genauer entspricht. Hierzu müssen die Kontrollpunkte angepasst werden
+    (die blauen "x"). Um alle Kontrollpunkte sichtbar zu machen, sollte
+    bei aktiviertem Selektionswerzeug ein Doppelklick auf die Kurve gemacht
+    werden. Die Kontrollpunkte werden dann solange verschoben, bis die
+    Kurve dem Aussehen der Vorlage entspricht.
+  </p>
+  <p>
+    <img src="../../_images/C9.png" height="279" width="266">
+  </p>
+  <p>
+    Zum Schluß wird die Zeichenbreite gesetzt. Hierzu wird bei ausgewähltem
+    Selektionswerkzeug der Mauszeiger auf die Breitenlinie auf der rechten
+    Seite der Ansicht gesetzt und diese bei gedrückter Maustaste
+    an eine passende Stelle verschoben.
+  </p>
+  <p>
+    <img src="../../_images/C10.png" height="279" width="266">
+  </p>
+  <p>
+    Die Erstellung des Zeichens ist nun beendet.
+  </p>
+  <p>
+    Mathematisch Interessierte sollten ein Augenmerk auf die Koordinaten
+    in der linken oberen Ecke des Fensters werfen. Im allgemeinen können
+    Zeichen auch ohne deren Berücksichtigung erstellt werden, hier aber als
+    ergänzende Information:
+  </p>
+  <ul>
+    <li>
+      Jedes Zeichen hat sein eigenes Koordinatensystem.
+    </li>
+    <li>
+    Der vertikale Ursprung ist die Grundlinie des Zeichensatzes (die meisten
+      lateinischen Buchstaben liegen auf dieser Linie).
+    </li>
+    <li>
+      Der horizontale Ursprung ist die Stelle, bei der die Darstellung des
+      Zeichens beginnt. Im gezeigten Beispiel wird zunächst ein Leerraum
+      dargestellt, was relativ üblich ist. Dieser Leerraum (der Abstand
+      vom Ursprung bis zur linken Kante des Zeichens) wird 
+      "linke Führungsschiene" genannt.
+    </li>
+    <li>
+      Die Einheiten des Koordinatensystems werden durch die "em"-Größe des
+      Schriftsatzes bestimmt. Dies ist die Summe aus dem Anstieg und dem
+      Abstieg des Schriftsatzes. Im Beispiel beträgt der Anstieg 800 und
+      der Abstieg 200, die Aufstiegslinie (die Linie unmittelbar über dem
+      "C") liegt 800 Einheiten über der Grundlinie, während die Abstiegslinie
+      200 Einheiten darunter liegt.
+    </li>
+    <li>
+    Hieraus folgt, daß eine Position von [282, 408] (wie oben dargestellt)
+    bedeutet daß der Cursor sich 282 Einheiten rechts vom horizontalen
+    Ursprung und 408 Einheiten über der Grundlinie (oder auch in der Mitte
+    zwischen Grundlinie und Anstieg) befindet.
+  </li></ul>
+  <p align="center">
+    -- <a href="../../index.html">Vorherige Seite</a> -- <a href="../../index.html">Inhalt</a> --
+  <a href="editexample2.html">Nächste Seite</a> --
+  </p></div>
+</body></html>

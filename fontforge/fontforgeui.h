@@ -34,7 +34,7 @@
 #include "fontforgevw.h"
 #include "gprogress.h"
 
-extern void help(char *filename);
+extern void help(const char *filename, const char *section);
 
 # include "gdraw.h"
 # include "ggadget.h"

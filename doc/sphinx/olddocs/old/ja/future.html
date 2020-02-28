@@ -1,0 +1,84 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 7-Jul-2001 -->
+  <!-- AP: Last modified: 2-Jan-2005 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>Possible future improvements to FontForge</TITLE> -->
+    <TITLE>将来の FontForge の改良の可能性</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+<H2>
+<!--Currently under development-->
+    現在開発中
+</H2>
+<UL>
+  <LI>
+<!--Moving to the gtk-2 widget set. -->
+    gtk-2 ウィジェットセットへの移行
+    <UL>
+      <LI>
+<!--	Don't expect anything soon. I don't find this an interesting task. One widget
+	set is much like another, such a conversion is a lot of work and doesn't
+	involve any functional improvement. (Indeed I am currently ignoring this
+	because gdk is <EM>less</EM> capable of dealing with images than my own drawing
+	system - - at least in the ways that matter to me, and I don't want to rewrite
+	all my image code) -->
+	結果がすぐに得られると思わないでください。この作業はやってて楽しくないのです。ウィジェットセットはどれも同じような物で、この手の変換は多量の手間を必要とするくせに、機能的改良は何もないのです。(実を言えば、現在この課題を無視しています。なぜかというと、gdk は画像を扱う能力が私の自作描画システムよりも<EM>低機能</EM>だからです——少なくとも私が必要な物に関しては。また、自作の画像処理コードを全部書き直す気にはなれません)
+    </UL>
+  <LI>
+<!--A command that will allow you to (but this has been listed here for a couple
+    of years so don't expect anything much) -->
+    以下の操作が可能になるコマンド (ただし、これは 2 年以上もこのリストに載ったままなので、あまり期待しないでください)
+    <UL>
+      <LI>
+<!--	Make a character/font bolder -->
+	グリフ/フォントを太める
+      <LI>
+<!--	Extend or Condense a character/font -->
+	グリフ/フォントの幅を広める/狭める
+      <LI>
+<!--	Change the X-Height of a font -->
+	フォントの x ハイトを変更する
+      <LI>
+<!--	Regularize stem widths -->
+	ステムの幅を正規化する
+    </UL>
+</UL>
+<H2>
+<!--Musings-->
+    構想中
+</H2>
+<UL>
+  <LI>
+<!--multiple baseline support-->
+    複数ベースラインのサポート
+  <LI>
+<!--Vertical metrics in embedded ttf bitmaps-->
+    TTF の埋め込みビットマップにおける縦書きメトリック
+  <LI>
+<!--Better import of xfig files (a real X-Spline -&gt; B&eacute;zier spline
+    converter) -->
+    xfig ファイルのより優れた取り込み (本物の X-Spline→B&eacute;zierスプラインコンバータ)
+  <LI>
+<!--Mechanism for creating fonts with multiple instances of the same character,
+    each slightly different, coupled with a postscript routine which will for
+    each character in a string, pick a random version of that character to display.
+    An attempt to yield a slight non-uniformity to the font which may make its
+    output look more interesting. -->
+    同じ文字の複数の実体をもつフォントを作成するメカニズム。それぞれがわずかに異なっていて、文字列中の各文字に対してランダムなバージョンを表示用に選択する PostScript ルーチンが付属している。わずかな不均等性をフォントに持ち込む試みは、その出力をより興味深いものにするでしょう。
+  <LI>
+<!--A better way of aligning things. (need some form of grouping that is actually
+    useful) -->
+    別名を設定するより優れた方法。 (信に役立つ何らかのグループ化の方法が必要です)。
+</UL>
+<P>
+<!--
+Last updated: 12-Feb-2004 -->
+最終更新: 2004年2月12日
+<P>
+</DIV>
+</BODY></HTML>

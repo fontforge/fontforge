@@ -1,0 +1,144 @@
+ BODY { margin: 1em 1.5em 20em 1.5em; background: #ccc; color: #000; font: 91% serif }
+ BODY#menued { margin: 0 1.5em 20em 1.5em; background: #ccc; color: #000; font: 91% serif }
+ BODY#sidebar { margin: 3pt 3pt 3pt 3pt; background: #ccc; color: #000}
+ BODY#framed { margin: .5em 1em 4em 1em; background: #ccc; color: #000}
+ A:link { color: #333; text-decoration: underline }
+ A:visited { color: #333; text-decoration: underline }
+ A:hover { text-decoration: none; color: #000; background-color: #eee }
+ A:active { color: #5e0000 }
+ A { text-decoration: none }
+ #in { background: #fff; border: 1px solid #f00; padding: 1em; clear: both }
+ #in-cartouche { background-image: url("ffcartouche.png"); border: 1px solid #f00; padding: 1em }
+ #framed-in { background: #fff; border: 1px solid #f00; padding: 10px }
+ TABLE#lit { background: #ddf; color: #000; }
+ BLOCKQUOTE#lit { background: #ffd; color: #000; margin: 0em 5em 0em 5em; font: 80% serif; }
+ BLOCKQUOTE#lit P { margin: .3em 0em .3em 0em; }
+ BLOCKQUOTE PRE { background: #ffd; color: #000; }
+ BLOCKQUOTE#shell PRE { background: #ccf; color: #000; }
+ H1 { display: inline }
+ TABLE.module { background: #ddf }
+ TABLE.type { background: #ffd }
+ 
+ .warning {
+     background-color: red;
+     border: 1px solid black;
+ }
+
+.svgfig { 
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.imgfig { 
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+/* menubar, stolen and modified from the sourceforge stylesheet */
+.menucontainer li
+{
+	display: inline;
+	list-style: none;
+	font-size: 90%;
+	font-family: arial;
+}
+
+.menucontainer .menubar
+{
+	margin: .5em 0;
+	padding: 0;
+	z-index: 10000 !important;
+	position: relative;
+}
+
+.menucontainer li a
+{
+	background: #333 ;
+	color: #fff !important;
+	border: 1px solid #89a;
+	border-bottom: 1px solid #789;
+}
+
+.menucontainer li.menu a
+{
+	background: #333 url("menu_down.png") no-repeat right bottom;
+	padding-right: 14px !important;
+}
+
+.menucontainer ul { padding: .3em 0; }
+
+.menucontainer .menubar li
+{
+	float: left;
+	margin: 0 0 -1.1px .4em;
+	padding: 0;
+	position: relative;
+}
+.menucontainer .menubar li li { margin: 0; padding: 0 !important}
+.menucontainer .menubar li a
+{
+	display: block;
+	padding: .1em .4em;
+	text-decoration: none;
+}
+
+.menucontainer .menubar li a:hover
+{
+	background: #345;
+	color: #fff !important;
+	border: 1px solid #234;
+	border-bottom: 1px solid #345;
+}
+
+.menucontainer .menubar li.menu a:hover
+{
+	background: #345 url("menu_down.png") no-repeat right bottom;
+}
+
+.menucontainer li:hover ul a
+{
+	background: #345 !important;
+	color: #cde !important;
+	border-top: 1px solid #345 !important;
+	border-bottom: 1px solid #345 !important;
+	padding: .1em 0 .1em 20px !important;
+	font-weight: normal !important;
+	
+}
+
+.menucontainer .menubar ul
+{
+	background: #345;
+	border: 1px solid #234;
+	border-top: none;
+	list-style: none;
+	margin: 0;
+	position: absolute;
+	top: -999em;
+	left: 0px;
+	padding-top: .5em;
+	z-index: 10002 !important;
+}
+
+.menucontainer .menubar li:hover ul
+{
+	top: 1.45em;
+	width: 14em;
+}
+
+.menucontainer .menubar ul li { float: none; }
+
+.menucontainer .menubar ul a:hover
+{
+	background: #456;
+	color: #fff;
+}
+
+.zhtutorial span {  background-image: url("tutorial-zh_TW.png"); padding: 0 0 6px 40px; }
+.zhtutorial span:hover {  background-image: url("tutorial-zh_TW-hover.png"); padding: 0 0 6px 40px; }
+.jatutorial span {  background-image: url("tutorial-ja.png"); padding: 0 0 4px 117px; }
+.jatutorial span:hover {  background-image: url("tutorial-ja-hover.png"); padding: 0 0 4px 117px; }
+.jamanual span {  background-image: url("manual-ja.png"); padding: 0 0 4px 264px; }
+.jamanual span:hover {  background-image: url("manual-ja-hover.png"); padding: 0 0 4px 264px; }

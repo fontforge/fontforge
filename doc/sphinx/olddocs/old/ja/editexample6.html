@@ -1,0 +1,243 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 27-Jan-2003 -->
+  <!-- AP: Last modified: 21-Apr-2006 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>More advanced features, ligatures, mark positioning, glyph variants</TITLE>-->
+    <TITLE>より高度な機能、合字、マークによる位置決め, 異体関係にあるグリフ</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+<!--Tutorial #6 -->
+    チュートリアル (その 6)
+  </H1>
+  <UL>
+    <LI>
+<!--  <A HREF="editexample.html#FontCreate">Font Creation</A>-->
+      <A HREF="editexample.html#FontCreate">フォントの作成</A>
+    <LI>
+<!--  <A HREF="editexample.html#CharCreate">Creating a glyph (tracing outlines)</A>-->
+      <A HREF="editexample.html#CharCreate">グリフの作成 (アウトラインのトレース) 法</A>
+    <LI>
+<!--  <A HREF="editexample2.html#Navigating">Navigating to other glyphs</A>-->
+      <A HREF="editexample2.html#Navigating">他のグリフの呼び出し方</A>
+    <LI>
+<!--  <A HREF="editexample2.html#Creating-o">On to the next glyph (consistent
+      directions)</A>-->
+      <A HREF="editexample2.html#Creating-o">次のグリフに関して (矛盾のないパスの向き)</A>
+    <LI>
+<!--  <A HREF="editexample3.html#consistent-stems">Consistent serifs and stem
+      widths</A>-->
+      <A HREF="editexample3.html#consistent-stems">統一のとれたセリフとステムの太さ</A>
+    <LI>
+<!--  <A HREF="editexample4.html#accents">Building accented glyphs</A>
+      <A HREF="editexample4.html#accents">アクセントつきグリフの組み立て方</A>
+    <LI>
+<!--  <A HREF="editexample4.html#ligature">Building a ligature</A>-->
+      <A HREF="editexample4.html#ligature">合字の組み立て方</A>
+    <LI>
+<!--  <A HREF="editexample5.html#metrics">Examining metrics</A>-->
+      <A HREF="editexample5.html#metrics">メトリックの確認法</A>
+    <LI>
+<!--  <A HREF="editexample5.html#Kerning">Kerning</A>-->
+      <A HREF="editexample5.html#Kerning">カーニング</A>
+    <LI>
+<!--  <A HREF="editexample6.html#Variants">Glyph variants</A>-->
+      <A HREF="editexample6.html#Variants">異体関係にあるグリフ</A>
+      <UL>
+	<LI>
+<!--	  <A HREF="editexample6.html#Conditional">Conditional variants</A>-->
+	  <A HREF="editexample6.html#Conditional">条件つき異体字</A>
+      </UL>
+    <LI>
+<!--  <A HREF="editexample6.html#Marks">Anchoring marks</A>-->
+      <A HREF="editexample6.html#Marks">アンカーマーク</A>
+    <LI>
+<!--  <A HREF="editexample6-5.html#Conditional">Conditional features</A>-->
+      <A HREF="editexample6-5.html#Conditional">条件つき機能</A>
+    <LI>
+<!--  <A HREF="editexample7.html#checking">Checking your font</A>-->
+      <A HREF="editexample7.html#checking">フォントのチェック法</A>
+    <LI>
+<!--  <A HREF="editexample7.html#generating">Generating it</A>-->
+      <A HREF="editexample7.html#generating">フォントの出力方法</A>
+    <LI>
+<!--  <A HREF="editexample7.html#Families">Font Families</A>-->
+      <A HREF="editexample7.html#Families">フォントファミリー</A>
+    <LI>
+<!--  <A HREF="editexample7.html#summary">Final Summary</A>-->
+      <A HREF="editexample7.html#summary">最後のまとめ</A>
+    <LI>
+<!--  <A HREF="scripting-tutorial.html">Scripting Tutorial</A> -->
+      <A HREF="scripting-tutorial.html">スクリプト処理のチュートリアル</A>
+    <LI>
+<!--  <A HREF="scriptnotes.html#Special">Notes on various scripts</A>-->
+      <A HREF="scriptnotes.html#Special">各種の用字系における注意点</A>
+  </UL>
+  <H2>
+<!--<A NAME="Variants">Glyph</A> Variants -->
+    異体関係にある<A NAME="Variants">グリフ</A>
+  </H2>
+  <P>
+<!--
+  In many scripts glyphs have several variant glyphs. In latin the most obvious
+  example is that every letter has both an upper case and a lower case variant.
+  A more esoteric example would be that in renaissance times the long-s variant
+  (of s) was used initially and medially in a word, while the short-s was only
+  used at the end of a word. -->
+  多くの用字系では、あるグリフに対して異体関係にあるグリフがいくつか存在します。ラテンアルファベットでは、最も自明な例はすべての文字が大文字と小文字の異体を含むということです。より秘教的な例としては、ルネッサンスの時代には長い s という s の異体字が単語の頭と中間で用いられ、短い s は単語の終わりでしか用いられなかったというものがあります。
+  <P>
+<!--
+  Most Arabic glyphs have four variants (initial, medial, final and isolated). -->
+  ほとんどのアラビア文字は 4 種の異なる形 (語頭、語中、語尾および独立形) をもっています。
+  <P>
+<!--
+  The digits often have several variants: tabular digits (where all digits
+  have the same advance width so that tables of numbers don't look ragged),
+  proportional digits (where each digit has a width appropriate to its shape)
+  and old-style or lower case digits
+  (<IMG src="../../_images/lcdigits.png" WIDTH="76" HEIGHT="18" ALIGN="Middle">). -->
+  数字にはしばしば幾つかの異なる形が設けられることがあります: 表用数字 (すべての数字が同じ送り幅をもっていて、表の数値が不揃いに見えない), プロポーショナル数字 (各数字が、それにふさわしい幅をもつ) とオールドスタイル数字 (またの名を小文字数字) (<IMG src="../../_images/lcdigits.png" WIDTH="76" HEIGHT="18" ALIGN="Middle">) と呼ばれます。
+  <P>
+<!--
+  Some of these variants are built into the encodings (the upper and lower
+  case distinction is), but in other cases you should provide extra information
+  in the font so that the word processor can be aware of the variants (Arabic
+  is midway between the two, the various forms are in the encoding, but you
+  need to provide extra information as well). -->
+  これらの異体字のうちのいくつかは符号化された位置をもっています (大文字と小文字の区別はこれにあたります) が、その他の場合、フォントに追加情報を与え、ワードプロセッサが異体字の存在を知ることができるようにする必要があります (アラビア文字はこの二つの中間にあたり、多くの形がエンコーディングに含まれていますが、追加情報も同時に与える必要があります).
+  <P>
+<!--
+  Let us consider the case of the digits mentioned above. Assume that the glyph
+  called "one" contains the tabular variant of one, the glyph "one.prop" contains
+  the proportional variant and "one.oldstyle" contains the lower-case variant.
+  Then select "one" from the fontview,
+  <CODE><A HREF="charinfo.html#substitution">Element-&gt;Glyph Info</A></CODE>,
+  select the <CODE>Subs</CODE> tab and press the <CODE>[New] </CODE>button.
+  You should get another dialog. In the Components field, enter "one.prop",
+  select "Proportional Numbers" from the pull down list (it will turn into
+  "pnum"), and select the script set you are interested in (a script of 'latn'
+  and a language of 'dflt' will cover many cases). Then press
+  <CODE>[OK]</CODE>. -->
+  上で言及した数字の場合を考えましょう。“one”という名前のグリフが表用数字の 1 であり、“one.prop”というグリフがプロポーショナルな異体字を、“one.oldstyle" が小文字異体字を含んでいると仮定します。ここで、フォントビューから“one”を選択し、<A HREF="charinfo.html#substitution"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>グリフ情報(<U>I</U>)...</CODE></a> のダイアログで <CODE>[置換]</CODE> タブを開いて <CODE>[新規(<U>N</U>)...]</CODE> ボタンを押します。新しいダイアログが出てきますので、<CODE>構成要素</CODE> フィールドに“<CODE>one.prop</CODE>”と入力し、“<CODE>プロポーショナル数字</CODE>”を <CODE>タグ(<U>T</U>)</CODE> プルダウンリストから選択します (これは“<CODE>pnum</CODE>”となります)。それから興味のある用字系 (用字系&lsquo;latn&rsquo;と言語&lsquo;dflt&rsquo;は多くの場合にあてはまります) を選択します。最後に <CODE>[<U>O</U>K]</CODE> を押します。
+  <P>
+<!--
+  Some variant forms are built in to FontForge, and if you use
+  <CODE>Element-&gt;Typo. Features-&gt;Default ATT-&gt;(variant name)</CODE>,
+  FontForge may be able to automate this process for you. -->
+  幾つかの異体字は FontForge に組み込みで定義されているので、<CODE>エレメント(<U>L</U>)</CODE>→<CODE>組版機能(<U>Y</U>)</CODE>→<CODE>デフォルトのATT(<U>D</U>)</CODE>→<CODE>(異体字の分類名)</CODE> を選択すれば、FontForge がこの手順を自動化して行ってくれるでしょう。
+  <P>
+<!--
+  (Note: Type0, Type1 and Type3 PostScript fonts have no notation to handle
+  this. You need to be creating an OpenType or TrueType font for these variants
+  to be output). -->
+  (注意: Type0, Type1 および Type3 PostScript フォントにはこれを取り扱うデータ表現がありません。
+  これらの異体字を出力したければ、OpenType か TrueType フォントを作成する必要があります。)
+  <H3>
+<!--<A NAME="Conditional">Conditional</A> Variants -->
+    <A NAME="Conditional">条件つき</A>異体字
+  </H3>
+  <P>
+<!--
+  FontForge supports OpenType's Contextual Substitution and Chaining Contextual
+  Substitution sub-tables, and to a lesser extent, Apple's contextual glyph
+  substitution sub-table. This means that you can insert conditional variants
+  into your font. <A HREF="editexample6-5.html#Conditional">The next page</A>
+  ill go into this in greater detail. -->
+  FontForge は OpenType の条件つき置換および連鎖的条件つき置換サブテーブルをサポートしており、Apple の条件つきグリフ置換サブテーブルの機能の一部をサポートしています。これは、条件つきの異体字をフォントに含めることができると言うことを意味します。これについては<A HREF="editexample6-5.html#Conditional">次のページ</A>で詳しく解説します。
+  <H2>
+<!--<A NAME="Marks">Anchoring</A> marks -->
+    <A NAME="Marks">アンカー</A> マーク
+  </H2>
+  <P>
+<!--
+  Some scripts (Arabic, Hebrew) need vowel marks placed around the main text
+  glyphs. Other scripts (some variants of Latin and Greek) have so many possible
+  accent combinations that having preassembled glyphs for all combinations
+  is unwieldy. -->
+  いくつかの用字系 (アラビア, ヘブライなど) は主たるテキストグリフの回りに母音記号を置く必要があります。
+  その他の用字系 (ラテンとギリシャのいくつかの変種) は非常に多くの可能なアクセントの組み合わせを持っているので、すべての組み合わせをあらかじめ集めたグリフとして持っているのは非効率です。
+  <P>
+<!--
+  In OpenType (which includes MicroSoft's TrueType fonts) it is possible to
+  indicate on all base glyphs where marks should attach, and on all marks where
+  the base glyphs should attach. Thus one could put an anchor centered above
+  a capital-A indicating that all accents (acute, grave, umlaut, circumflex,
+  tilde, macron, ring, caron, ...) should attach there, and underneath all
+  the accents one could put another anchor so that when the two glyphs are
+  adjacent in the text the word-processor will know where to place the accent
+  so that it rides above the "A". -->
+  OpenType では (ここにはマイクロソフトの TrueType フォントも含まれます) すべての基底文字が接続するべきマークと、基底文字が接続するべきすべての文字を指定することが可能です。
+  ですから、大文字 A の上部中央に、すべてのアクセント (アキュート、グレーブ、ウムラウト、サーカムフレックス、リング、キャロン…) の接続するべき場所を指定する 1 個のアンカーと、すべてアクセントの下にそれぞれのアンカーを置くことができます。
+  そのため、2 個のグリフがテキスト内で隣り合って現れたときに、ワードプロセッサは“A”の上に重なるアクセントがどこに位置するのか知ることができます。
+  <TABLE>
+    <TR>
+      <TD><IMG src="../../_images/a_with_anchor.png" WIDTH=104 HEIGHT=208></TD>
+      <TD>+</TD>
+      <TD><IMG src="../../_images/grave_with_anchor.png" WIDTH=66 HEIGHT=208></TD>
+      <TD>=&gt;</TD>
+      <TD><IMG src="../../_images/agrave_anchored.png" WIDTH=104 HEIGHT=208></TD>
+    </TR>
+  </TABLE>
+  <P>
+<!--
+  Not all accents ride centered above the letter (the dot and ogonek ride below
+  the letter), so you may need more than one anchor for different styles of
+  attachment. -->
+  すべてのアクセントが文字の上部中央に重なるわけではありません (ドットとオゴネクは文字の下に重ねられます) ので、異なるスタイルの接続に対してはアンカーをもう一つ定義する必要があるでしょう。
+  <P>
+<!--
+  Finally some letters can have multiple attachments, unicode U+1EA4, for example,
+  is an A with a circumflex and an acute. Normally the circumflex and the acute
+  will attach at the same point, which would be ugly and confusing. Instead
+  we create a different kind of anchor, a mark to mark anchor, on the circumflex
+  and allow the acute accent to attach to that. -->
+  それに加え、幾つかの文字——例えば Unicode U+1EA4, サーカムフレックスとアキュートアクセントが一つずつついた A ——は複数の接続点をもつことができます。
+  このままではサーカムフレックスとアキュートは同じ点に接続し、醜悪で見づらいことになるでしょう。
+  その代わりに、異なる種類のアンカー (マークからマークへのアンカー) をサーカムフレックスの上に作成し、アキュートアクセントがそれに接続できるようにします。
+  <P>
+<!--
+  Before one can create an anchor in a glyph one must notify FontForge that
+  this font will have anchors. You must create an
+  <A HREF="overview.html#Anchors">anchor class</A> for each type of attachment
+  (thus in the case of A above with two types of attachments (one above and
+  one below) you would create two anchor classes. The
+  <CODE><A HREF="fontinfo.html#Anchors">Element-&gt;Font Info-&gt;Anchor
+  Classes</A> </CODE>dialog will allow you to do that. -->
+  まだグリフの中にアンカーを作成できるようになっていない場合は、まず、このフォントがアンカーを含んでいることを FontForge に知らせなければなりません。
+  接続のタイプごとにそれぞれ、<A HREF="overview.html#Anchors">アンカークラス</A> を作成する必要があります。
+  ですから上の例の二つの型の接続 (一つは上、一つは下) をもつ A の場合、二つのアンカークラスを作成することになるでしょう。
+  この作業は <A HREF="fontinfo.html#Anchors"><CODE>エレメント(<U>L</U>)</CODE>→<CODE>フォント情報(<U>F</U>)...</CODE>→<CODE>[アンカークラス]</A></CODE></A> ダイアログによって行えます。
+  <P>
+<!--
+  Then for each glyph in which an attachment will be made, you should first
+  click at the point where the anchor is to be created and then bring up the
+  <CODE><A HREF="pointmenu.html#AddAnchor">Point-&gt;Add Anchor</A></CODE>
+  dialog. -->
+  それから、接続点を作成するグリフの各々において、まずアンカーを作成する場所に配置した点をクリックし、次に <A HREF="pointmenu.html#AddAnchor"><CODE>点(<U>P</U>)</CODE>→<CODE>アンカーを追加(<U>A</U>)...</CODE></A> ダイアログを呼び出す必要があります。
+  <P>
+<!--
+  You can examine (and correct) how a glyph fits to any others that combine
+  with it by using the
+  <CODE><A HREF="metricsmenu.html#AnchorControl">Metrics-&gt;Anchor
+  Control...</A></CODE> command. -->
+  <CODE><A HREF="metricsmenu.html#AnchorControl">メトリック(<U>M</U>)</CODE>→<CODE>アンカーの制御(A)...</A></CODE> コマンドを使えば、そのグリフが、他のグリフと組み合わされるときにどのように嵌まり合うかを確かめることができます。
+  <P>
+<!--
+  <FONT COLOR="Red"><STRONG>A warning about mark attachments:</STRONG></FONT>
+  Not all software supports them. And even more confusing software may support
+  them for some scripts and not for others. -->
+  <FONT COLOR="Red"><STRONG>マークの接続に関する警告:</STRONG></FONT>
+  全てのソフトウェアがこれらをサポートしているわけではありません。
+  さらに紛らわしいことに、ソフトウェアが一部の用字系のみをサポートし、他をサポートしていないこともあります。
+  <P>
+  <P>
+  <P ALIGN=Center>
+  — <A HREF="editexample5.html">前</A> — <A HREF="overview.html">目次</A>
+  — <A HREF="editexample6-5.html">次</A> —
+</DIV>
+</BODY></HTML>

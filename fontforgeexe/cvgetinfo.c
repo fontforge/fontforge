@@ -310,7 +310,7 @@ static int gi_e_h(GWindow gw, GEvent *event) {
 	ci->done = true;
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("getinfo.html");
+	    help("ui/dialogs/getinfo.html", NULL);
 return( true );
 	}
 return( false );
@@ -1319,7 +1319,7 @@ static int ai_e_h(GWindow gw, GEvent *event) {
 	AI_DoCancel( GDrawGetUserData(gw));
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("getinfo.html");
+	    help("ui/dialogs/getinfo.html", NULL);
 return( true );
 	}
 return( false );
@@ -1886,7 +1886,7 @@ static int pi_e_h(GWindow gw, GEvent *event) {
 	PI_DoOk(GDrawGetUserData(gw));
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("getinfo.html");
+	    help("ui/dialogs/getinfo.html", NULL);
 return( true );
 	}
 return( false );
@@ -3480,7 +3480,7 @@ static int spi_e_h(GWindow gw, GEvent *event) {
 	PI_SpiroDoOk(GDrawGetUserData(gw));
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("getinfo.html");
+	    help("ui/dialogs/getinfo.html", NULL);
 return( true );
 	}
 return( false );

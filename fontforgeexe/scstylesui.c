@@ -128,7 +128,7 @@ static int style_e_h(GWindow gw, GEvent *event) {
 	ed->done = true;
     } else if ( event->type == et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("Styles.html");
+	    help("ui/dialogs/Styles.html", NULL);
 return( true );
 	}
 return( false );

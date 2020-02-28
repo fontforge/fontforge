@@ -333,7 +333,7 @@ static int trans_e_h(GWindow gw, GEvent *event) {
 	GDrawRaise(gw);
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("transform.html");
+	    help("ui/dialogs/transform.html", NULL);
 return( true );
 	}
 return( false );

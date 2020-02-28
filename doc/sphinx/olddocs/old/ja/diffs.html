@@ -1,0 +1,165 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 11-Apr-2001 -->
+  <!-- AP: Last modified: 16-Apr-2004 -->
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>Differences from Fontographer</TITLE> -->
+    <TITLE>Fontographer との相異点</TITLE>
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+<H2>
+<!--
+  Differences from
+  <A HREF="http://www.macromedia.com/software/fontographer/">Fontographer</A> -->
+  <A HREF="http://www.macromedia.com/software/fontographer/">Fontographer</A> との相異点
+</H2>
+<UL>
+  <LI>
+<!--FontForge supports OpenType-->
+    FontForge は OpenType をサポートしています。
+  <LI>
+<!--FontForge supports scripting-->
+    FontForge はスクリプト処理をサポートしています。
+  <LI>
+<!--FontForge understands GPOS/GSUB/GDEF tables as well as morx/prop/etc. -->
+    FontForge は morx/prep などのテーブルだけでなく、GPOS/GSUB/GDEF テーブルも解釈します。
+  <LI>
+<!--The font window can display the outline font at various pixelsizes-->
+    フォントウィンドウで、アウトラインフォントをさまざまなのピクセルサイズで表示することができます。
+  <LI>
+<!--The font window can display a bitmap font instead-->
+    フォントウィンドウには、ビットマップフォントも表示できます。
+    <UL>
+      <LI>
+<!--	(if it does then double clicking on a character will open a bitmap editor) -->
+	(ビットマップの表示時に文字をダブルクリックするとビットマップエディタを開きます)
+    </UL>
+  <LI>
+<!--The metrics window also lets you look at the bitmap fonts (but doesn't let
+    you change their metrics, except by changing those of the outline font). -->
+    メトリックウィンドウでもビットマップフォントを表示することができます (しかしここでは、アウトラインフォントのメトリックを変更しないとメトリックを変更できません)。
+  <LI>
+<!--Supports many more international standard encodings, allows you to create
+    your own encodings. Better unicode support. Can generate type0 fonts for
+    2byte encodings. Support for some 94x94 CJK encodings (like JISX208) -->
+    より多くの各国の標準エンコーディングをサポートし、自分自身でエンコーディングを作ることもできます。より優れた Unicode サポートがあります。2 バイトエンコーディング用には、Type0 フォントを出力することができます。いくつかの 94×94 文字の CJK エンコーディング (JIS X 0208 など) をサポートしています。
+  <LI>
+<!--There's a command to jump to any particular character in the font, outline
+    or bitmap windows. Characters may be entered by name, local encoding, ku
+    ten (for CJK fonts), and unicode name. -->
+    フォント内の特定の文字のどれにでも移動可能なコマンドがアウトラインおよびビットマップウィンドウで使用できます。文字は名前、ローカルエンコーディング、区点番号 (CJK フォントの場合) または Unicode 名として指定することもできます。
+  <LI>
+<!--If you change the width of a character then all that character's bitmaps
+    will automagically have their widths changed. Also if the character is used
+    as a reference in any other character, and that other character had the same
+    width then it's width will also be updated (as will the widths of any of
+    its bitmaps) -->
+    文字の幅を変更すると、その文字のすべてのビットマップも自動的に幅が変更されます。また、その文字が他のどれかの文字から参照として使われており、その参照している文字が変更した文字と同じ幅をもっている場合、参照している文字の幅も同時に更新されます (この場合も、すべてのビットマップの幅も同時に更新されます)。
+  <LI>
+<!--If you change the lbearing of a character (if you translate all elements
+    in the foreground of an outline character, and the translation is only in
+    the x direction) then all hints will also be translated, and if the character
+    is a letter, then any characters which depend on it will have all other elements
+    translated by the same amount. (So if you move the character "A" then the
+    reference to tilde in "&Atilde;" will be moved to correspond) -->
+    文字の左サイドベアリングを変更すると (あるアウトライン文字の前面に含まれる全要素を平行移動し、移動が X 軸方向のみに対して行われると) すべてのヒントが同時に平行移動し、その文字が単独文字である場合、それに依存する文字に含まれるすべての要素が同じ量だけ移動します。(それにより、文字 "A" を移動すると "&Atilde;" に含まれるチルダへの参照もそれに応じて移動することになります)。
+  <LI>
+<!--There's a command to build an <A NAME="accented">accented</A> character. -->
+    <A NAME="accented">アクセントつき</A> 文字を組み立てるコマンドがあります。
+    <P>
+<!--The base characters should already have been created. Select an accented
+    character (or several of them) in the font view and press <CODE>Build Accented
+    Chars </CODE>from the <CODE>Element</CODE> menu. -->
+    基底文字はあらかじめ作成しておく必要があります。アクセントつき文字 1 個 (またはいくつか) をフォントビューで選択し、<CODE>エレメント(L)</CODE> メニューの <CODE>アクセントつきグリフを構築(B)</CODE> を押してください。
+    <P>
+<!--Suppose you select &Agrave;, then Unicode says this is made up of the characters
+    0x0041 and 0x0300. Now 0x0300 is not present in most postscript fonts, but
+    it is sort of synonymous with either 0x02CB or 0x0060 which often are present.
+    Unicode also says that 0x0300 floats on top of and centered horizontally
+    over the base character. So... -->
+    例えば &Agrave; を押したとします。その場合、Unicode の規格によると、これは文字 0x0041 と 0x300 から構成されます。ここで、多くの PostScript フォントには 0x0300 は存在しませんが、この文字は、しばしば存在する 0x02CB または 0x0060 とある種同義の文字です。また、Unicode によると、0x0300 は基底文字の上、水平方向に中央に置かれますから…
+    <P>
+<!--A reference to "A" will be placed into "&Agrave;", and that character will
+    be given the same width as "A". Then a reference to "`" will be centered
+    on "A" and placed above it. Something similar will be done in any bitmaps. -->
+    "A" への参照が "&Agrave;" に置かれ、その文字には "A" と同じ幅が与えられます。それから "`" への参照が "A" の中央上部に置かれます。すべてのビットマップに対して、同じような何らかの処理が行われます。
+    <P>
+<!--Some Unicode characters contain more than one accent. Additional accents
+    will be treated similarly. This command can also be used to generate more
+    general composite characters. Unicode 0x2163 is the roman numeral IV and
+    this command may be used to build it. Greek capital Alpha looks exactly like
+    Latin capital A and can be created. On the other hand the oe ligature will
+    be replaced by an "o" followed by "e", so be a little careful. Some accents
+    (for example cedilla) are treated unexpectedly on certain letters (different
+    ways in different languages), so be careful of g-cedilla. &Aring; often merges
+    the ring into the top of the A, but here it will float above it. Be careful. -->
+    2 個以上のアクセントをもつ Unicode 文字がいくつかあります。追加のアクセントも同様に取り扱われます。このコマンドは、より一般的な複合文字を生成するのにも使用することができます。Unicode 0x2163 はローマ数字 IV であり、それを構築するのにこのコマンドを使うことができます。ギリシャ語の大文字アルファはラテン大文字 A と見掛け上まったく同じであるため、作成可能です。一方、oe 合字は "o" の後ろに "e" を並べたもので置き換えられるため、やや注意がひつようです。いくつかのアクセント (例えばセディラ) はいくつかの文字によって思いがけない扱いを受けます (言語によって扱いが違います) ので、g セディラには注意してください。&Aring; はしばしば A の上部とリングが融合しますが、このコマンドでは A の上に浮かんだ位置に配置されます。ご注意ください。
+    <P>
+<!--<FONT COLOR="Red"><STRONG><SMALL>NOTE:</SMALL></STRONG></FONT> My centering
+    algorithms attempt to guess what will look centered to the human eye (centering
+    it in the middle of the character will often not look centered). You should
+    examine all built characters and be prepared to adjust the accent.<BR>
+    The algorithms take some account of the italicangle. -->
+    <FONT COLOR="Red"><STRONG><SMALL>注意:</SMALL></STRONG></FONT> 拙作の中心揃えは、人間の目に中央揃えに見える位置を推測しようと試みています (文字の左右中心による中央揃えを行うと、中央揃えに見えない場合がしばしばあります)。構築したすべての文字を目で確かめ、アクセントを調節する準備をしておく必要があります。
+  <LI>
+<!--There's a merge font command. This is designed to allow you to build one
+    monster unicode font out of several smaller fonts. It will prompt for a font
+    to merge into the current one, and then will copy any characters which not
+    in the current font and put them there. Note both fonts must be properly
+    encoded. -->
+    <CODE>フォントの統合</CODE>コマンドが存在します。これは、いくつかの小さなフォントから 1 個の巨大 Unicode フォントを作成できるように設計されています。このコマンドは、現在のフォントに統合するフォントの名前を入力するように促し、そのフォントから、現在のフォントに含まれないすべての文字をコピーします。どちらのフォントのエンコーディングも適切なものである必要があることに注意してください。
+  <LI>
+<!--You can control what you want copy to copy in the font window. By default
+    if you select "A" then and press copy then it will copy the outline description
+    and all the bitmap descriptions for "A", so when you paste it, the bitmaps
+    will follow the outline. You can choose instead just to copy from the font
+    that is being displayed (which might be the outline font or might be a bitmap).
+    When you Paste, whatever is in the clipboard will be pasted. -->
+    フォントウィンドウでコピー操作を行ったとき、何をコピーするかを制御できます。デフォルトでは "A" を選択したときには、"A" のアウトライン記述とすべてのビットマップ記述をコピーしますが、表示されているフォントのみからコピーを行うように変更することもできます (アウトラインフォントまたはビットマップのどれでも可能です)。貼りつけを行うと、クリップボードにあるすべての物をペーストすることができます。
+    <P>
+<!--Transform sometimes will transform bitmaps, but not all transformations map
+    into bitmap transforms. -->
+    座標変換は場合によってはビットマップにも適用されますが、すべての座標変換がビットマップ変換に及ぶわけではありません。
+  <LI>
+<!--Most changes are preserved across crashes. -->
+    ほとんどの変更点はクラッシュ時にも保存されています。
+  <LI>
+<!--Right clicking in the character and bitmap windows will produce a menu of
+    tools -->
+    文字ウィンドウおよびビットマップウィンドウの上で右クリックすると、ツールメニューが出てきます。
+  <LI>
+<!--The bitmap window has a number of (not very useful) tools which fontographer
+    didn't include. They are only available from the menu (not from palettes) -->
+    ビットマップウィンドウには、Fontgrapher にない (あまり役に立たない) ツールが出てきます。それらはメニューからしか使用できません (パレット上からは使用できません)。
+    <UL>
+      <LI>
+<!--	Rectangle -->
+	長方形
+      <LI>
+<!--	Filled Rectangle -->
+	塗りつぶし長方形
+      <LI>
+<!--	Ellipse -->
+	楕円
+      <LI>
+<!--	Filled Ellipse -->
+	塗りつぶし楕円
+      <LI>
+<!--	Flip horizontal/vertical -->
+	水平/垂直方向に反転
+      <LI>
+<!--	Rotate 90&#176; Clockwise/Counter Clockwise -->
+	時計回り/反時計回りに 90°回転
+      <LI>
+<!--	Rotate 180&#176; -->
+	180°回転
+    </UL>
+</UL>
+<P ALIGN=Center>
+--- <A HREF="index.html">メイン</A> ---
+</DIV>
+</BODY></HTML>

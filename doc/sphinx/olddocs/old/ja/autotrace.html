@@ -1,0 +1,186 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 19-Feb-2004 -->
+  <!-- AP: Last modified: 13-Oct-2004 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>Autotracing bitmaps in FontForge</TITLE>-->
+    <TITLE>FontForge でビットマップを自動トレースする方法</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+<H1 ALIGN=Center>
+<!--Autotracing bitmaps in FontForge-->
+    FontForge でビットマップを自動トレースする方法
+</H1>
+<P>
+<!--
+FontForge does not have a native autotrace, but it will happily use the output
+of two freely available programs which do autotracing. These are: -->
+FontForge には自動トレース機能はありませんが、2 種類の無料で入手可能な自動トレースプログラムの出力を便利に使うことができます。その 2 種類は:
+<UL>
+  <LI>
+<!--Peter Selinger's <A HREF="http://potrace.sf.net/">potrace</A>-->
+    Peter Selinger の <A HREF="http://potrace.sf.net/">potrace</A> および
+  <LI>
+<!--Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
+    program</A><BR> -->
+    Martin Weber の <A HREF="http://sourceforge.net/projects/autotrace/">autotrace</a> プログラムです。<BR>
+<!--<FONT COLOR="Red"><STRONG>CAVEAT: </STRONG></FONT>Autotrace 2.8 changed its
+    argument conventions (around Dec 2001). New versions (after 15 Dec) of fontforge
+    will not work with autotrace2.7, old versions of fontforge will not work
+    with autotrace2.8. I see no way to make fontforge work with both or to detect
+    the current version...<BR> -->
+    <FONT COLOR="Red"><STRONG>警告: </STRONG></FONT>AutoTrace 2.8 はコマンドライン引数の用法を (2001年12月頃に) 変更しました。FontForge の新しいバージョン (2001年12月15日以降) は autotrace 2.7 では動作せず、FontForge の古いバージョンは autotrace 2.8 では動きません。FontForge がどちらでも動作するようにする方法も、現在のバージョンを検出する方法も見つかりませんでした……<BR>
+<!--<FONT COLOR="Red"><STRONG>CAVEAT2: </STRONG></FONT>I may not be loading the
+    results of autotrace properly in all cases (I do in my test cases, of course).
+    AutoTrace traces out both foreground and background regions, so I may sometimes
+    leave behind a lump which represents a background area. Just delete it if
+    it happens (and send me the image so I can fix things up). -->
+    <FONT COLOR="Red"><STRONG>警告 2: </STRONG></FONT>おそらく、場合によっては autotrace の出力が正しく読み込まれない場合があるでしょう (もちろん、私のテストケースでは正しく動いています)。AutoTrace は前面と背面の両方をトレースするので、ときたま背面領域を表す塊が下に残ることがあります。それが起こった場合は消せば問題なく使用できます (その後、その画像を送ってくだされば、その事態が起こらないように修正することができます)。
+</UL>
+<P>
+<!--
+You must download at least one of these, (and possibly build it), and install
+it somewhere along your PATH. -->
+これらのうち少なくともどちらか一つをダウンロード (おそらくビルドも) して、PATH で指定されたパスのどこかにインストールする必要があります。
+<P>
+<!--
+Having done that you must get an image into the background of the glyph(s)
+you want to autotrace. There are several ways of doing this: -->
+これが終わったら、自動トレースを行いたいグリフの背景に画像を読み込む必要があります。これを行うにはいくつかの方法があります:
+<DL>
+  <DT>
+<!--From a bitmap font -->
+    ビットマップフォントから
+  <DD>
+<!--If you want to autotrace a bitmap font then (from the FontView)-->
+    ビットマップフォントを自動トレースする場合、(フォントビューから) 以下の操作を行ってください。
+    <UL>
+      <LI>
+<!--	(You will probably want to start out with a new font, but you might not) -->
+	(おそらく、新しいフォントで作業を始めたいとお考えでしょうが、違うかもしれません)
+      <LI>
+<!--	File-&gt;Import -->
+	<CODE>ファイル(<U>F</U>)</CODE>→<CODE>取り込み(<U>I</U>)...</CODE>
+      <LI>
+<!--	select the bitmap font type (bdf, FON, embedded in a ttf file, TeX bitmap
+	(GF, PK), etc.) -->
+	ビットマップフォントのタイプ (BDF, FON, TTF ファイルに埋め込み、TeX ビットマップ (GF, PK) など) を選択する
+      <LI>
+<!--	turn on the <CODE>[*] As Background </CODE>flag -->
+	<CODE>[*] 背景として使用</CODE> フラグをオンにする
+      <LI>
+<!--	Select your font file -->
+	フォントファイルを選択する
+      <LI>
+<!--	This should place the bitmaps into the background of the glyphs in the font.
+	Nothing will be visible in the font view, but if you open up an outline glyph
+	view, you should see the bitmap version of the glyph as a grey background. -->
+	これにより、フォントの各グリフの背景にビットマップが配置されるはずです。フォントビューからは何も見えませんが、アウトライングリフビューを開けば、ビットマップ版のグリフが灰色の背景として表示されているはずです。
+    </UL>
+  <DT>
+<!--From the clipboard-->
+    クリップボードから
+  <DD>
+<!--If you have an application that supports sending image selections by mime
+    type (kde does this), then you should be able to copy the image in that
+    application and paste it into the appropriate glyph window in FontForge -->
+    選択された画像を MIME タイプを指定して送信する処理 (KDE はこれを行います) をサポートしているアプリケーションがあれば、そのアプリケーションで画像をコピーして、FontForge の適切なグリフウィンドウに貼りつけることができます。
+  <DT>
+<!--From an image file-->
+    画像ファイルから
+  <DD>
+<!--If you have a bitmap in an image (it works best if it IS a black and white
+    bitmap image, rather than a color image) -->
+    ビットマップ画像 (カラー画像よりも、白黒 2 値の画像の方がうまく処理できます) がある場合
+    <UL>
+      <LI>
+<!--	Open up an outline glyph view for the appropriate glyph -->
+	適切なグリフのアウトライングリフビューを開く
+      <LI>
+<!--	Make the Background layer active (this is usually not necessary) -->
+	背景レイヤーを有効にする (これは通常不要です)
+      <LI>
+<!--	File-&gt;Import -->
+	<CODE>ファイル(<U>F</U>)</CODE>→<CODE>取り込み(<U>I</U>)...</CODE>
+      <LI>
+<!--	select Format=Image (this will show you any image format that fontforge supports) -->
+	<CODE>フォーマット</CODE> として <CODE>画像</CODE> を選択する (FontForge がサポートする全ての画像フォーマットが表示されます)。
+      <LI>
+<!--	Select your file -->
+	ファイルを選択する
+      <LI>
+<!--	The image should now be visible in the background of this glyph -->
+	その画像が、このグリフの背景として表示されるはずです。
+    </UL>
+  <DT>
+<!--From multiple image files-->
+    複数の画像ファイルから
+  <DD>
+<!--If you have many images, you can load them with one command, but you must
+    name them appropriately. For example if your font contains unicode characters
+    U+0041 (LATIN CAPITAL LETTER A) through U+0049 (LATIN CAPITAL LETTER J) then
+    create files called "uni0041.png", "uni0042.png", ... "uni0049.png" containing
+    the images for the appropriate characters, then (from the Font View) -->
+    複数の画像ファイルがある場合、それらを 1 回のコマンドで読み込むことができますが、そのためには適切な名前をつけておかねばなりません。フォントに Unicode 文字 U+0041 (LATIN CAPITAL LETTER A) から U+0049 (LATIN CAPITAL LETTER J) までが含まれている場合、それぞれの文字の画像を含む“uni0041.png”,“uni0042.png”, …“uni0049.png”というファイルを作成して、それから
+    <UL>
+      <LI>
+<!--	Select the requisite glyphs -->
+	必要なグリフを選択する
+      <LI>
+<!--	File-&gt;Import -->
+	<CODE>ファイル(<U>F</U>)</CODE>→<CODE>取り込み(<U>I</U>)...</CODE>
+      <LI>
+<!--	select Format=Image template -->
+	フォーマット として 画像テンプレート を選択する
+      <LI>
+<!--	select the first of your images, "uni0041.png" -->
+	画像の最初のファイル“uni0041.png”を選択する
+      <LI>
+<!--	This should load all images that match that template ("uni*.png") into the
+	appropriate glyph slot -->
+	これにより、テンプレート (“uni*.png”) に一致するすべての画像を適切な個々のグリフに読み込みます。
+    </UL>
+</DL>
+<P>
+<!--
+Once you have background images in your font (and have installed an autotrace
+program) -->
+フォントの背景画像がフォントに含まれているなら (自動トレースプログラムがインストールされているなら)
+<UL>
+  <LI>
+<!--Select all the glyphs you wish to autotrace-->
+    自動トレースを行うグリフを選択する
+  <LI>
+<!--Element-&gt;Autotrace-->
+    <CODE>エレメント(<U>L</U>)</CODE>→<CODE>自動トレース(<U>R</U>)</CODE>
+</UL>
+<P>
+<!--
+This can take a while, so be patient. -->
+これにはしばらく時間がかかりますので、辛抱強くお待ちください。
+<P>
+<!--
+<FONT COLOR="Red"><STRONG>Warning: </STRONG></FONT>Unless you are working
+with a TeX bitmap font, you will most likely have an extremely low resolution
+image. Autotrace programs work better the more resolution you give them. -->
+<FONT COLOR="Red"><STRONG>警告: </STRONG></FONT>TeX のビットマップフォントを処理しているのでない限り、極端に低い解像度の画像を使用していることと思います。自動トレースを行うプログラムは、より高い解像度の方が上手に処理を行います。
+<P>
+<!--
+If you hold down the shift key when you invoke AutoTrace from the menu then
+you will be prompted for arguments to pass to it, if you do not hold down
+the shift key FontForge will use the same arguments it used last time.
+AutoTrace's arguments are described in "$ autotrace -help" or in the README
+file that came with the program. Please do not specify input/output files
+or formats. FontForge fills these in. -->
+Shift キーを押しながら、メニューから <CODE>自動トレース(<U>R</U>)</CODE> を選ぶとプログラムに与える引数を入力するように促されます。Shift キーを押していないと、FontForge は全開し要したのと同じ引数を使用します。AutoTrace の引数は“$ <CODE>autotrace -help</CODE>”で見ることができますし、プログラムに添付されている README ファイルにも書かれています。入出力ファイルやフォーマットを指定しないでください。それらは FontForge が割り当てます。
+<P>
+<P>
+<P ALIGN=Center>
+— <A HREF="elementmenu.html#AutoTrace">戻る</A> —
+<A HREF="overview.html">目次</A> —
+</DIV>
+</BODY></HTML>

@@ -1,0 +1,93 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 4-Sep-2002 -->
+  <!-- AP: Last modified: 13-Oct-2004 -->
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<!--<TITLE>Tile Path</TITLE>-->
+    <TITLE>パスのタイル敷き</TITLE>
+  <LINK REL="icon" href="../../_static/fftype16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+<H1 ALIGN=Center>
+<!--Tile Path-->
+    パスのタイル敷き
+</H1>
+<P>
+<!--
+The Tile Path command may be used to apply a repetative decoration to a font.
+A decoration is copied into the selection (this is the "tile") and the command
+is invoked on a glyph. All paths in that glyph will be replaced by the tile
+fit to the curve. -->
+<CODE>パスのタイル敷き(<U>P</U>)...</CODE> コマンドは、フォントに繰り返し模様の装飾を施すのに用いることができます。あらかじめ装飾模様を選択しておき (これを敷きつめる“タイル”として用います)、対象となるグリフ上でコマンドを起動します。そのグリフに含まれるすべてのパスは、タイルを曲線に沿わせたもので置き換えられます。
+<P>
+<!--
+Consider the following: -->
+以下の例を考えてみましょう:
+<TABLE BORDER CELLPADDING="2">
+  <TR ALIGN=Center>
+    <TD><IMG src="../../_images/tilepath-selection.png" WIDTH="64" HEIGHT="220"><BR>
+<!--  The tile</TD>-->
+      タイル</TD>
+    <TD><IMG src="../../_images/tilepath-orig.png" WIDTH="188" HEIGHT="220"><BR>
+<!--  Two paths to be tiled.</TD>-->
+      タイルが敷きつめられる 2 本のパス</TD>
+    <TD><IMG src="../../_images/tilepath-final.png" WIDTH="188" HEIGHT="220"><BR>
+<!--  The result.</TD>-->
+      結果。</TD>
+  </TR>
+</TABLE>
+<P>
+<!--
+The tile has been replicated (and warped) to follow the original contours. -->
+タイルはオリジナルの輪郭に沿って複製され (かつ撓ませられ) ます。
+<P>
+<IMG src="../../_images/TilePath.png" WIDTH="303" HEIGHT="148"><BR>
+<!--
+The Tile Path dialog gives you a few choices to control how the tile is placed.
+The tile can be either centered on the path, or be tangent to the left edge
+of the path (for a clockwise path, the left edge is outside the path), or
+be tangent to the right edge (for a clockwise path the right edge is inside
+the path). -->
+<CODE>パスのタイル敷き</CODE> ダイアログでは、どのようにタイルを敷くかに関して 2, 3 の選択を行うことができます。タイルはパスに中心揃えするか、またはパスの左端に接して並べるか (時計回りのパスの場合、左端はパスの外側になります)、またはパスの右端に接して並べるか (時計回りのパスの場合、右端はパスの内側になります) が選べます。
+<P>
+<!--
+You can also chose whether you want the tile to be tiled without scaling
+(in which case you will probably be left with a fraction of the tile at one
+end), tiled with scaling (the tile will be scaled so that it fits on the
+path an integral number of times), or simply scaled (in which case there
+will be exactly one tile and it will be scaled to be as long as the path. -->
+また、タイルを拡大/縮小しないで貼りつけるか (この場合おそらく、片方の端にタイルの断片が残ることになるでしょう)、拡大/縮小を伴った貼りつけを行うか (タイルはパスの整数倍にちょうど合うように拡大/縮小されます)、または単純に拡大/縮小するか (この場合、敷きつめられるのはちょうどタイル 1 個になり、タイルはパスの長さと一致するように拡大/縮小されます) が選択できます。
+<TABLE BORDER CELLPADDING="2">
+  <TR ALIGN=Center>
+    <TD><IMG src="../../_images/tilepath-left.png" WIDTH="153" HEIGHT="244"><BR>
+<!--  left (outside)</TD>-->
+      左側 (外側)</TD>
+    <TD><IMG src="../../_images/tilepath-center.png" WIDTH="153" HEIGHT="244"><BR>
+<!--  center</TD> -->
+      中央</TD>
+    <TD><IMG src="../../_images/tilepath-right.png" WIDTH="153" HEIGHT="244"><BR>
+<!--  right (inside)</TD>-->
+      右側 (内側)</TD>
+  </TR>
+  <TR ALIGN=Center>
+    <TD><IMG src="../../_images/tilepath-tile.png" WIDTH="77" HEIGHT="220"><BR>
+<!--  tile</TD>-->
+      タイル貼り
+    <TD><IMG src="../../_images/tilepath-ts.png" WIDTH="70" HEIGHT="220"><BR>
+<!--  tile &amp; scale</TD>-->
+      タイル貼りおよび拡大/縮小
+    <TD><IMG src="../../_images/tilepath-scale.png" WIDTH="74" HEIGHT="220"><BR>
+<!--  scale</TD> -->
+      拡大/縮小
+  </TR>
+</TABLE>
+<P>
+<P ALIGN=Center>
+— <A HREF="elementmenu.html">前</A> — <A HREF="overview.html">目次</A>
+— <A HREF="elementmenu.html">次</A> —
+<P>
+</DIV>
+</BODY></HTML>
