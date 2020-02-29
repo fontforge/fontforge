@@ -1768,6 +1768,11 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 	SFDDumpUTF7Str(sfd,sc->comment);
 	putc('\n',sfd);
     }
+	if(sc->openType_svg != NULL){
+		fprintf(sfd, "OpenType SVG: ");
+		SFDDumpUTF7Str(sfd,sc->opentype_svg);
+		putc('\n',sfd);
+	}
     if ( sc->user_decomp != NULL ) {
 	fprintf( sfd, "Decomposition: " );
 	char* temp_ud = u2utf8_copy(sc->user_decomp);
@@ -5987,6 +5992,8 @@ exit(1);
 	    sc->color = temp;
 	} else if ( strmatch(tok,"Comment:")==0 ) {
 	    sc->comment = SFDReadUTF7Str(sfd);
+	} else if ( strmatch(tok,"OpenType SVG:")==0 ){
+		sc->opentype_svg = SFDReadUTF7Str(sfd);
 	} else if ( strmatch(tok,"Decomposition:")==0 ) {
 	    char* decomp = SFDReadUTF7Str(sfd);
 	    sc->user_decomp = utf82u_copy(decomp);
