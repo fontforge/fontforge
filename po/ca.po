@@ -1,4 +1,4 @@
-# translation of ca.po to Català
+# translation of ca.po to CatalÃ 
 # (Catalan) Catalan User Interface strings for FontForge.
 # Copyright (C) 2011 by Rafael Ferran i Peralta
 # This file is distributed under the same license as the FontForge package.
@@ -6,6 +6,7 @@
 # Translators:
 # Rafael Ferran i Peralta <rferran@terra.es>, 2011-05-25 19:56+0200
 # Rafael Ferran i Peralta <rferran@terra.es>, 2012-09-07 19:02-0500
+# Adolfo Jayme, 2020
 #
 #
 msgid ""
@@ -14,15 +15,16 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-02-29 10:56+1100\n"
 "PO-Revision-Date: 2012-09-07 19:02-0500\n"
-"Last-Translator: Rafael Ferran i Peralta <rferran@terra.es>\n"
+"Last-Translator: Adolfo Jayme\n"
 "Language-Team: Catalan <kde-i18n-ca@kde.org>\n"
 "Language: ca\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n>1;X-Generator: Lokalize 1.0X-Generator: "
-"Lokalize 1.0\n"
-"X-Generator: Lokalize 1.0\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Crowdin-Project: fontforge\n"
+"X-Crowdin-Language: ca\n"
+"X-Crowdin-File: FontForge.pot\n"
 
 msgid "FontForge"
 msgstr ""
@@ -280,7 +282,7 @@ msgid "No _to All"
 msgstr "No a _tot"
 
 msgid "_No"
-msgstr "_No"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -390,9 +392,9 @@ msgstr ""
 msgid "Failed to write %s\n"
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "No glyph named %s, used as a pattern in %s\n"
-msgstr "No hi ha cap glif anomenat %s (utilitzat a %s)"
+msgstr ""
 
 msgid "Auto Hinting Font..."
 msgstr "Optimització automàtica..."
@@ -531,9 +533,9 @@ msgid ""
 "are handled."
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "No glyph named %s."
-msgstr "El nom del glif és erroni"
+msgstr ""
 
 #, c-format
 msgid "No CID named %s"
@@ -1741,7 +1743,7 @@ msgid "Lang|Hebrew"
 msgstr "Hebreu"
 
 msgid "Hindi"
-msgstr "Hindi"
+msgstr ""
 
 msgid "Hungarian"
 msgstr "Hongarès"
@@ -1750,7 +1752,7 @@ msgid "Italian"
 msgstr "Italià"
 
 msgid "Hiragana"
-msgstr "Hiragana"
+msgstr ""
 
 msgid "Katakana"
 msgstr ""
@@ -2299,10 +2301,10 @@ msgid "Optical Bounds"
 msgstr ""
 
 msgid "Ordinals"
-msgstr "Ordinals"
+msgstr ""
 
 msgid "Ornaments"
-msgstr "Ornaments"
+msgstr ""
 
 msgid "Proportional Alternate Metrics"
 msgstr ""
@@ -2618,7 +2620,7 @@ msgid "Brāhmī"
 msgstr ""
 
 msgid "Braille"
-msgstr "Braille"
+msgstr ""
 
 msgid "Script|Buginese"
 msgstr ""
@@ -2666,7 +2668,7 @@ msgid "Deseret (Mormon)"
 msgstr "Mormó"
 
 msgid "Devanagari"
-msgstr "Devanagari"
+msgstr ""
 
 msgid "Devanagari2"
 msgstr "Devanagari 2"
@@ -2711,7 +2713,7 @@ msgid "Gunjala Gondi"
 msgstr ""
 
 msgid "Gurmukhi"
-msgstr "Gurmukhi"
+msgstr ""
 
 msgid "Gurmukhi2"
 msgstr "Gurmukhi 2"
@@ -2720,7 +2722,7 @@ msgid "Hangul Jamo"
 msgstr "Hangul jamo"
 
 msgid "Hangul"
-msgstr "Hangul"
+msgstr ""
 
 msgid "Hanifi Rohingya"
 msgstr ""
@@ -2750,7 +2752,7 @@ msgid "Script|Javanese"
 msgstr "Javanès"
 
 msgid "Kaithi"
-msgstr "Kaithi"
+msgstr ""
 
 msgid "Script|Kannada"
 msgstr "Kannarès"
@@ -2759,7 +2761,7 @@ msgid "Script|Kannada2"
 msgstr "Kannarès 2"
 
 msgid "Kayah Li"
-msgstr "Kayah Li"
+msgstr ""
 
 msgid "Script|Kharosthi"
 msgstr ""
@@ -2836,13 +2838,11 @@ msgstr ""
 msgid "Mende Kikakui"
 msgstr ""
 
-#, fuzzy
 msgid "Meroitic Cursive"
-msgstr "Cursiva"
+msgstr ""
 
-#, fuzzy
 msgid "Meroitic Hieroglyphs"
-msgstr "Jeroglífics egipcis"
+msgstr ""
 
 msgid "Miao"
 msgstr ""
@@ -2860,13 +2860,13 @@ msgid "Multani"
 msgstr ""
 
 msgid "Musical"
-msgstr "Musical"
+msgstr ""
 
 msgid "Script|Myanmar"
 msgstr "Birmà (Myanmar)"
 
 msgid "N'Ko"
-msgstr "N'Ko"
+msgstr ""
 
 msgid "Nabataean"
 msgstr ""
@@ -2881,10 +2881,10 @@ msgid "Nushu"
 msgstr ""
 
 msgid "Ogham"
-msgstr "Ogham"
+msgstr ""
 
 msgid "Ol Chiki"
-msgstr "Ol Chiki"
+msgstr ""
 
 msgid "Old Hungarian"
 msgstr ""
@@ -2920,7 +2920,7 @@ msgid "Osage"
 msgstr ""
 
 msgid "Osmanya"
-msgstr "Osmanya"
+msgstr ""
 
 msgid "Pahawh Hmong"
 msgstr ""
@@ -2944,19 +2944,19 @@ msgid "Psalter Pahlavi"
 msgstr ""
 
 msgid "Rejang"
-msgstr "Rejang"
+msgstr ""
 
 msgid "Runic"
 msgstr "Rúnic"
 
 msgid "Saurashtra"
-msgstr "Saurashtra"
+msgstr ""
 
 msgid "Sharada"
 msgstr ""
 
 msgid "Shavian"
-msgstr "Shavian"
+msgstr ""
 
 msgid "Siddham"
 msgstr ""
@@ -2995,7 +2995,7 @@ msgid "Script|Tagbanwa"
 msgstr "Tagbanwa"
 
 msgid "Tai Le"
-msgstr "Tai Le"
+msgstr ""
 
 msgid "Tai Tham"
 msgstr ""
@@ -3022,7 +3022,7 @@ msgid "Script|Telugu2"
 msgstr "Telugu 2"
 
 msgid "Thaana"
-msgstr "Thaana"
+msgstr ""
 
 msgid "Script|Thai"
 msgstr "Tai"
@@ -3131,7 +3131,7 @@ msgid "_Horizontal"
 msgstr "_Horitzontal"
 
 msgid "_Vertical"
-msgstr "_Vertical"
+msgstr ""
 
 msgid "Is this horizontal or vertical kerning data?"
 msgstr ""
@@ -3452,10 +3452,10 @@ msgid "Kurdish"
 msgstr "Kurd"
 
 msgid "Kashmiri"
-msgstr "Kashmiri"
+msgstr ""
 
 msgid "Sindhi"
-msgstr "Sindhi"
+msgstr ""
 
 msgid "Lang|Tibetan"
 msgstr "Tibetà"
@@ -3464,7 +3464,7 @@ msgid "Nepali"
 msgstr "Nepalès"
 
 msgid "Marathi"
-msgstr "Marathi"
+msgstr ""
 
 msgid "Lang|Bengali"
 msgstr "Bengalí"
@@ -3528,13 +3528,13 @@ msgid "Lang|Amharic"
 msgstr "Amhàric"
 
 msgid "Tigrinya"
-msgstr "Tigrinya"
+msgstr ""
 
 msgid "Galla"
 msgstr ""
 
 msgid "Somali"
-msgstr "Somali"
+msgstr ""
 
 msgid "Swahili"
 msgstr "Suahili"
@@ -3552,7 +3552,7 @@ msgid "Malagasy"
 msgstr ""
 
 msgid "Esperanto"
-msgstr "Esperanto"
+msgstr ""
 
 msgid "Basque"
 msgstr "Basc"
@@ -3579,7 +3579,7 @@ msgid "Lang|Uighur"
 msgstr "Uigur"
 
 msgid "Dzongkha"
-msgstr "Dzongkha"
+msgstr ""
 
 msgid "Javanese (roman)"
 msgstr ""
@@ -3591,13 +3591,13 @@ msgid "Galician"
 msgstr "Gallec"
 
 msgid "Afrikaans"
-msgstr "Afrikaans"
+msgstr ""
 
 msgid "Breton"
 msgstr "Bretó"
 
 msgid "Inuktitut"
-msgstr "Inuktitut"
+msgstr ""
 
 msgid "Scottish Gaelic"
 msgstr ""
@@ -4298,9 +4298,8 @@ msgstr ""
 msgid "AGL without afii"
 msgstr "AGL sense «afii»"
 
-#, fuzzy
 msgid "AGL For New Fonts"
-msgstr "Tipus de lletra nou"
+msgstr ""
 
 msgid "Adobe Glyph List"
 msgstr "Llista de glifs d'Adobe (AGL)"
@@ -5919,9 +5918,8 @@ msgstr ""
 msgid "Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0\n"
 msgstr ""
 
-#, fuzzy
 msgid "Bad encoding information in 'cmap' table."
-msgstr "Edita les transformacions d'una subtaula de consulta."
+msgstr ""
 
 #, c-format
 msgid ""
@@ -5999,10 +5997,10 @@ msgid "\"Symbol\""
 msgstr ""
 
 msgid "Unicode"
-msgstr "Unicode"
+msgstr ""
 
 msgid "Apple"
-msgstr "Apple"
+msgstr ""
 
 msgid "ISO (Deprecated)"
 msgstr ""
@@ -6198,9 +6196,8 @@ msgid " Bad pairwise kerning table, ignored\n"
 msgstr ""
 
 #. GT: This continues a multi-line error message, hence the leading space
-#, fuzzy
 msgid " Bad kerning class table, ignored\n"
-msgstr "No hi ha cap taula d'interlletratge a %s\n"
+msgstr ""
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad cursive alignment table, ignored\n"
@@ -6229,13 +6226,11 @@ msgstr ""
 msgid "Bad ligature anchor count.\n"
 msgstr ""
 
-#, fuzzy
 msgid " Bad mark attachment table, ignored\n"
-msgstr "taula d'adjunció d'accent"
+msgstr ""
 
-#, fuzzy
 msgid " Bad simple positioning table, ignored\n"
-msgstr "taula de posicionament de glifs"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -6244,9 +6239,8 @@ msgid ""
 msgstr ""
 
 #. GT: This continues a multi-line error message, hence the leading space
-#, fuzzy
 msgid " Bad contextual table, ignored\n"
-msgstr "Màquina d'estats contextual del Mac"
+msgstr ""
 
 #, c-format
 msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)\n"
@@ -6274,9 +6268,8 @@ msgid "Bad count in contextual chaining sub-table.\n"
 msgstr ""
 
 #. GT: This continues a multi-line error message, hence the leading space
-#, fuzzy
 msgid " Bad contextual substitution table, ignored\n"
-msgstr "Substitució contextual"
+msgstr ""
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad contextual chaining substitution table, ignored\n"
@@ -6294,9 +6287,8 @@ msgstr ""
 msgid "End of file in context chaining subtable.\n"
 msgstr ""
 
-#, fuzzy
 msgid " Bad simple substitution table, ignored\n"
-msgstr "taula de substitució de glifs"
+msgstr ""
 
 #, c-format
 msgid "Bad substitution glyph: GID %d not less than %d\n"
@@ -6305,9 +6297,8 @@ msgstr ""
 msgid "Unexpected end of file in GSUB sub-table.\n"
 msgstr ""
 
-#, fuzzy
 msgid " Bad multiple substitution table, ignored\n"
-msgstr "taula de substitució de glifs"
+msgstr ""
 
 msgid ""
 "Coverage table specifies a different number of glyphs than the sub-table "
@@ -6582,17 +6573,17 @@ msgid ""
 "kerning pairs."
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Bad kern pair: glyphs %d & %d mustn't be negative\n"
-msgstr "L'interlletatge és erroni: els glifs %d i %d haurien de ser < %d\n"
+msgstr ""
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d must be less than %d\n"
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Bad kern pair: glyphs at %d & %d are null\n"
-msgstr "L'interlletatge és erroni: els glifs %d i %d haurien de ser < %d\n"
+msgstr ""
 
 #, c-format
 msgid "Kerning subtable 3 says the glyph count is %d, but maxp says %d\n"
@@ -6739,9 +6730,8 @@ msgid ""
 "table.\n"
 msgstr ""
 
-#, fuzzy
 msgid "Hmm, the 'avar' table is too long.\n"
-msgstr "La taula JSTF és massa llarga\n"
+msgstr ""
 
 msgid "Mismatched local and shared tuple flags.\n"
 msgstr ""
@@ -7128,9 +7118,9 @@ msgid ""
 "factor of 4"
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Can't open %s"
-msgstr "No es pot obrir %s"
+msgstr ""
 
 #, c-format
 msgid "Execution of script %s failed"
@@ -7404,13 +7394,13 @@ msgstr ""
 msgid "Image2 skipped as it uses an unsupported image type"
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Anchor Point with no class name: %s"
-msgstr "L'script no té associat cap nom de menú"
+msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Bad Anchor Point: %s"
-msgstr "Darrer punt d'àncora"
+msgstr ""
 
 msgid ""
 "Found an new style kerning pair inside a version 1 (or lower) sfd file.\n"
@@ -7431,9 +7421,9 @@ msgid ""
 "  bound to the width of %s which is %d.\n"
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to find NameList: %s"
-msgstr "No s'ha pogut trobar un identificador de càrrega"
+msgstr ""
 
 msgid "Missing Subtable definition found in chained context"
 msgstr ""
@@ -7514,10 +7504,10 @@ msgid ""
 msgstr ""
 
 msgid "Validating..."
-msgstr ""
+msgstr "S’està validant…"
 
 msgid "You changed the point numbering"
-msgstr ""
+msgstr "Heu canviat la numeració dels punts"
 
 #, c-format
 msgid "You have just changed the point numbering of glyph %s.%s%s%s"
@@ -7793,9 +7783,9 @@ msgstr ""
 msgid "Unknown type '%c' found in path specification\n"
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find Color Source with id %s."
-msgstr "No s'ha pogut enviar la sol·licitud a %s."
+msgstr ""
 
 #, c-format
 msgid "FontForge does not currently parse pattern Color Sources (%s)."
@@ -7824,9 +7814,9 @@ msgstr ""
 msgid "FontForge only supports embedded images in data: URIs\n"
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find clippath named %s."
-msgstr "No s'ha pogut trobar un fitxer de tipus de lletra anomenat %s\n"
+msgstr ""
 
 msgid "This font does not specify units-per-em\n"
 msgstr ""
@@ -8038,9 +8028,8 @@ msgstr ""
 msgid "Whoops, more names than subtables of lookup %s\n"
 msgstr ""
 
-#, fuzzy
 msgid "Whoops, more names than lookups\n"
-msgstr "Anomeneu la consulta"
+msgstr ""
 
 msgid "Bad data type in contour verb in 'PfEd'\n"
 msgstr ""
@@ -8059,9 +8048,8 @@ msgstr ""
 msgid "Whoops, bad spiro command %d\n"
 msgstr ""
 
-#, fuzzy
 msgid "Bad glyph reference in layer info.\n"
-msgstr "taula de referències dels glifs"
+msgstr ""
 
 msgid "Whoops, Ran out of spiros\n"
 msgstr ""
@@ -8178,9 +8166,8 @@ msgstr ""
 msgid "kerning.plist attempts to redefine a class kerning offset."
 msgstr ""
 
-#, fuzzy
 msgid "Can't find libxml2."
-msgstr "No es troba el MetaFont"
+msgstr ""
 
 msgid "Bad openTypeOS2type key: all bits are set. It will be ignored"
 msgstr ""
@@ -8275,24 +8262,23 @@ msgstr ""
 msgid "Syriac Supplement"
 msgstr ""
 
-#, fuzzy
 msgid "Arabic Extended-A"
-msgstr "Llatí ampliat A"
+msgstr ""
 
 msgid "Bengali"
 msgstr "Bengalí"
 
 msgid "Gujarati"
-msgstr "Gujarati"
+msgstr ""
 
 msgid "Oriya"
-msgstr "Oriya"
+msgstr ""
 
 msgid "Tamil"
 msgstr "Tàmil"
 
 msgid "Telugu"
-msgstr "Telugu"
+msgstr ""
 
 msgid "Kannada"
 msgstr "Kannarès"
@@ -8334,7 +8320,7 @@ msgid "Ethiopic Supplement"
 msgstr "Suplement etíop"
 
 msgid "Cherokee"
-msgstr "Cherokee"
+msgstr ""
 
 msgid "Unified Canadian Aboriginal Syllabics"
 msgstr "Síl·labes aborigens canadenques unificades"
@@ -8349,17 +8335,16 @@ msgid "Buhid"
 msgstr "Bugui"
 
 msgid "Tagbanwa"
-msgstr "Tagbanwa"
+msgstr ""
 
 msgid "Khmer"
-msgstr "Khmer"
+msgstr ""
 
 msgid "Mongolian"
 msgstr "Mongolès"
 
-#, fuzzy
 msgid "Unified Canadian Aboriginal Syllabics Extended"
-msgstr "Síl·labes aborigens canadenques unificades"
+msgstr ""
 
 msgid "Limbu"
 msgstr ""
@@ -8394,9 +8379,8 @@ msgstr ""
 msgid "Sundanese Supplement"
 msgstr ""
 
-#, fuzzy
 msgid "Vedic Extensions"
-msgstr "Extensions fonètiques"
+msgstr ""
 
 msgid "Phonetic Extensions"
 msgstr "Extensions fonètiques"
@@ -8431,9 +8415,8 @@ msgstr "Símbols monetaris"
 msgid "Combining Diacritical Marks for Symbols"
 msgstr "Combinació de marques diacrítiques per a símbols"
 
-#, fuzzy
 msgid "Combining Marks for Symbols"
-msgstr "Combinació de marques diacrítiques per a símbols"
+msgstr ""
 
 msgid "Letterlike Symbols"
 msgstr "Símbols semblants a lletres"
@@ -8453,9 +8436,8 @@ msgstr "Tècnics miscel·lanis"
 msgid "Miscellaneous Technical Symbols"
 msgstr "Miscel·lània de símbols tècnics"
 
-#, fuzzy
 msgid "Technical Symbols Misc."
-msgstr "Símbols musicals"
+msgstr ""
 
 msgid "Control Pictures"
 msgstr "Imatges de control"
@@ -8478,9 +8460,8 @@ msgstr "Formes geomètriques"
 msgid "Miscellaneous Symbols"
 msgstr "Símbols miscel·lanis"
 
-#, fuzzy
 msgid "Symbols Misc."
-msgstr "Símbols"
+msgstr ""
 
 msgid "Dingbats"
 msgstr "Dibuixos"
@@ -8494,16 +8475,14 @@ msgstr ""
 msgid "Miscellaneous Math Symbols-A"
 msgstr ""
 
-#, fuzzy
 msgid "Math Misc. Symbols-A"
-msgstr "Símbols musicals"
+msgstr ""
 
 msgid "Supplemental Arrows-A"
 msgstr ""
 
-#, fuzzy
 msgid "Arrows Supplement-A"
-msgstr "Suplement àrab"
+msgstr ""
 
 msgid "Braille Patterns"
 msgstr "Patrons Braille"
@@ -8511,9 +8490,8 @@ msgstr "Patrons Braille"
 msgid "Supplemental Arrows-B"
 msgstr ""
 
-#, fuzzy
 msgid "Arrows Supplement-B"
-msgstr "Suplement àrab"
+msgstr ""
 
 msgid "Miscellaneous Mathematical Symbols-B"
 msgstr ""
@@ -8521,9 +8499,8 @@ msgstr ""
 msgid "Miscellaneous Math Symbols-B"
 msgstr ""
 
-#, fuzzy
 msgid "Math Misc. Symbols-B"
-msgstr "Símbols musicals"
+msgstr ""
 
 msgid "Supplemental Mathematical Operators"
 msgstr ""
@@ -8531,9 +8508,8 @@ msgstr ""
 msgid "Supplemental Math Operators"
 msgstr ""
 
-#, fuzzy
 msgid "Math Operators Supplement"
-msgstr "Suplement etíop"
+msgstr ""
 
 msgid "Miscellaneous Symbols and Arrows"
 msgstr ""
@@ -8562,24 +8538,20 @@ msgstr ""
 msgid "Ethiopic Extended"
 msgstr ""
 
-#, fuzzy
 msgid "Cyrillic Extended-A"
-msgstr "Llatí ampliat A"
+msgstr ""
 
 msgid "Supplemental Punctuation"
 msgstr ""
 
-#, fuzzy
 msgid "Punctuation Supplement"
-msgstr "Suplement del Llatí 1"
+msgstr ""
 
-#, fuzzy
 msgid "CJK Radicals Supplement"
-msgstr "Suplement àrab"
+msgstr ""
 
-#, fuzzy
 msgid "Kangxi Radicals"
-msgstr "Radicals"
+msgstr ""
 
 msgid "Ideographic Description Characters"
 msgstr "Caràcters de descripció ideogràfica"
@@ -8647,9 +8619,8 @@ msgstr "Llatí ampliat D"
 msgid "Syloti Nagri"
 msgstr ""
 
-#, fuzzy
 msgid "Common Indic Number Forms"
-msgstr "Formes numèriques"
+msgstr ""
 
 msgid "Phags-pa"
 msgstr ""
@@ -8657,9 +8628,8 @@ msgstr ""
 msgid "Devanagari Extended"
 msgstr ""
 
-#, fuzzy
 msgid "Hangul Jamo Extended-A"
-msgstr "Llatí ampliat A"
+msgstr ""
 
 msgid "Javanese"
 msgstr ""
@@ -8670,17 +8640,14 @@ msgstr ""
 msgid "Cham"
 msgstr ""
 
-#, fuzzy
 msgid "Myanmar Extended-A"
-msgstr "Llatí ampliat A"
+msgstr ""
 
-#, fuzzy
 msgid "Meetei Mayek Extensions"
-msgstr "Extensions fonètiques"
+msgstr ""
 
-#, fuzzy
 msgid "Ethiopic Extended-A"
-msgstr "Llatí ampliat A"
+msgstr ""
 
 msgid "Latin Extended-E"
 msgstr ""
@@ -8691,9 +8658,8 @@ msgstr ""
 msgid "Hangul Syllables"
 msgstr "Síl·labes hangul"
 
-#, fuzzy
 msgid "Hangul Jamo Extended-B"
-msgstr "Llatí ampliat B"
+msgstr ""
 
 msgid "High Surrogates"
 msgstr ""
@@ -8746,9 +8712,8 @@ msgstr "Formes de presentació aràbiga - A"
 msgid "Variation Selectors"
 msgstr "Selectors de variacions"
 
-#, fuzzy
 msgid "Vertical Forms"
-msgstr "Formes terminals"
+msgstr ""
 
 msgid "Combining Half Marks"
 msgstr "Combinació de mitges marques"
@@ -8777,9 +8742,8 @@ msgstr ""
 msgid "Full Width Brackets"
 msgstr ""
 
-#, fuzzy
 msgid "CJK Half Width Forms"
-msgstr "Formes de compatibilitat CJK"
+msgstr ""
 
 msgid "Katakana Half Width Forms"
 msgstr ""
@@ -8865,9 +8829,8 @@ msgstr ""
 msgid "Avestan"
 msgstr ""
 
-#, fuzzy
 msgid "Rumi Numeral Symbols"
-msgstr "Símbols musicals"
+msgstr ""
 
 msgid "Elymaic"
 msgstr ""
@@ -8905,9 +8868,8 @@ msgstr ""
 msgid "Egyptian Hieroglyph Format Controls"
 msgstr ""
 
-#, fuzzy
 msgid "Bamum Supplement"
-msgstr "Suplement àrab"
+msgstr ""
 
 msgid "Ideographic Symbols and Punctuation"
 msgstr ""
@@ -8915,9 +8877,8 @@ msgstr ""
 msgid "Tangut Components"
 msgstr ""
 
-#, fuzzy
 msgid "Kana Supplement"
-msgstr "Suplement del Llatí 1"
+msgstr ""
 
 msgid "Kana Extended-A"
 msgstr ""
@@ -8943,9 +8904,8 @@ msgstr ""
 msgid "Tai Xuan Jing Symbols"
 msgstr "Símbols Tai Xuan Jing"
 
-#, fuzzy
 msgid "Counting Rod Numerals"
-msgstr "Numerals dels bastonets de comptar xinesos"
+msgstr ""
 
 msgid "Chinese Counting Rod Numerals"
 msgstr ""
@@ -8965,9 +8925,8 @@ msgstr ""
 msgid "Ottoman Siyaq Numbers"
 msgstr ""
 
-#, fuzzy
 msgid "Arabic Mathematical Alphabetic Symbols"
-msgstr "Símbols alfanumèrics matemàtics"
+msgstr ""
 
 msgid "Mahjong Tiles"
 msgstr "Fitxes del mahjong"
@@ -8978,13 +8937,11 @@ msgstr "Fitxes del dòmino"
 msgid "Playing Cards"
 msgstr ""
 
-#, fuzzy
 msgid "Enclosed Alphanumeric Supplement"
-msgstr "Alfanumèrics inclosos"
+msgstr ""
 
-#, fuzzy
 msgid "Enclosed Ideographic Supplement"
-msgstr "Suplement etíop"
+msgstr ""
 
 msgid "Miscellaneous Symbols and Pictographs"
 msgstr ""
@@ -8998,9 +8955,8 @@ msgstr ""
 msgid "Transport and Map Symbols"
 msgstr ""
 
-#, fuzzy
 msgid "Alchemical Symbols"
-msgstr "Símbols musicals"
+msgstr ""
 
 msgid "Geometric Shapes Extended"
 msgstr ""
@@ -9029,13 +8985,11 @@ msgstr "Pla ideogràfic suplementari"
 msgid "CJK Unified Ideographs Extension B"
 msgstr "Extensió B dels ideogrames unificats CJK"
 
-#, fuzzy
 msgid "CJK Unified Ideographs Extension C"
-msgstr "Extensió B dels ideogrames unificats CJK"
+msgstr ""
 
-#, fuzzy
 msgid "CJK Unified Ideographs Extension D"
-msgstr "Extensió B dels ideogrames unificats CJK"
+msgstr ""
 
 msgid "CJK Unified Ideographs Extension E"
 msgstr ""
@@ -9166,9 +9120,8 @@ msgstr ""
 msgid "WOFF compressed metadata section too large.\n"
 msgstr ""
 
-#, fuzzy
 msgid "Align Points"
-msgstr "Fes la mitj_ana dels punts"
+msgstr ""
 
 msgid "How to align these points?"
 msgstr ""
@@ -9183,10 +9136,10 @@ msgid "Coordinate along which to space"
 msgstr "Eix de la distribució"
 
 msgid "_X"
-msgstr "_X"
+msgstr ""
 
 msgid "_Y"
-msgstr "_Y"
+msgstr ""
 
 msgid "_Maximum distance between points in a region"
 msgstr "Distància _màxima entre els punts d'una zona"
@@ -9203,7 +9156,7 @@ msgstr ""
 "punt final"
 
 msgid "Bases"
-msgstr "Bases"
+msgstr ""
 
 msgid "Exits"
 msgstr "Sortides"
@@ -9240,7 +9193,7 @@ msgid "cursive exit"
 msgstr "sortida de cursiva"
 
 msgid "base"
-msgstr "base"
+msgstr ""
 
 msgid "Anchor Control"
 msgstr "Control d'àncora"
@@ -9499,43 +9452,43 @@ msgstr ""
 "de la llista de sota."
 
 msgid "hang"
-msgstr "hang"
+msgstr ""
 
 msgid "Indic (& Tibetan) hanging baseline"
 msgstr "Línia de base penjant de l'índic i el tibetà"
 
 msgid "icfb"
-msgstr "icfb"
+msgstr ""
 
 msgid "Ideographic character face bottom edge baseline"
 msgstr "Línia de base del peu del caràcter ideogràfic"
 
 msgid "icft"
-msgstr "icft"
+msgstr ""
 
 msgid "Ideographic character face top edge baseline"
 msgstr "Línia de base de la part de dalt del caràcter ideogràfic"
 
 msgid "ideo"
-msgstr "ideo"
+msgstr ""
 
 msgid "Ideographic em-box bottom edge baseline"
 msgstr "Línia de base de la base del contenidor ideogràfic"
 
 msgid "idtp"
-msgstr "idtp"
+msgstr ""
 
 msgid "Ideographic em-box top edge baseline"
 msgstr "Línia de base de la part de dalt del contenidor ideogràfic"
 
 msgid "math"
-msgstr "math"
+msgstr ""
 
 msgid "Mathematical centerline"
 msgstr "Línea central matemàtica"
 
 msgid "romn"
-msgstr "romn"
+msgstr ""
 
 msgid "Baseline used for Latin, Greek, Cyrillic text."
 msgstr "Línea de base usada en text llatí, grec i ciríl·lic"
@@ -9546,10 +9499,6 @@ msgid ""
 "in the font, and specify how to position glyphs in this\n"
 "script relative to all active baselines"
 msgstr ""
-"If any of the above baselines are active then you should\n"
-"specify which one is the default baseline for each script\n"
-"in the font, and specify how to position glyphs in this\n"
-"script relative to all active baselines"
 
 msgid "Set Extents"
 msgstr "Estableix les extensions"
@@ -9654,13 +9603,13 @@ msgstr ""
 
 #. GT: X is a coordinate
 msgid "X"
-msgstr "X"
+msgstr ""
 
 msgid "Win"
-msgstr "Win"
+msgstr ""
 
 msgid "Mac"
-msgstr "Mac"
+msgstr ""
 
 msgid "Use FreeType"
 msgstr "Usa el FreeType"
@@ -9864,9 +9813,8 @@ msgstr "C_opia la referència"
 msgid "_Paste"
 msgstr "Engan_xa"
 
-#, fuzzy
 msgid "C_lear"
-msgstr "Esborra"
+msgstr ""
 
 msgid "Select _All"
 msgstr "Seleccion_a-ho tot"
@@ -9977,7 +9925,7 @@ msgid "_Edit"
 msgstr "_Edita"
 
 msgid "E_lement"
-msgstr "E_lement"
+msgstr ""
 
 msgid "_View"
 msgstr "_Visualitza"
@@ -10010,7 +9958,7 @@ msgid "Mark"
 msgstr "Marca"
 
 msgid "Component"
-msgstr "Component"
+msgstr ""
 
 msgid "Color|Choose..."
 msgstr "Selector..."
@@ -10051,9 +9999,8 @@ msgstr "_Valor Unicode:"
 msgid "Bad Name"
 msgstr "Nom incorrecte"
 
-#, fuzzy
 msgid "Glyph names are limited to 31 characters"
-msgstr "Els noms dels glifs poden ser, com a màxim, de 31 caràcters."
+msgstr ""
 
 msgid "A glyph name may not start with a digit nor a full stop (period)"
 msgstr "Els noms dels glifs no poden començar ni amb un dígit ni amb un punt"
@@ -10265,7 +10212,7 @@ msgid "Replacement Glyph Names"
 msgstr "Noms dels glifs finals"
 
 msgid "∆x"
-msgstr "∆x"
+msgstr ""
 
 #. GT: "Adjust" here means Device Table based pixel adjustments, an OpenType
 #. GT: concept which allows small corrections for small pixel sizes where
@@ -10275,7 +10222,7 @@ msgid "Adjust"
 msgstr "Ajusta"
 
 msgid "∆y"
-msgstr "∆y"
+msgstr ""
 
 msgid "∆x_adv"
 msgstr ""
@@ -10581,10 +10528,10 @@ msgstr ""
 
 #. GT: X is a coordinate, the leading spaces help to align it
 msgid "  X"
-msgstr "  X"
+msgstr ""
 
 msgid "  Y"
-msgstr "  Y"
+msgstr ""
 
 msgid "Positionings"
 msgstr "Posicionaments"
@@ -10608,7 +10555,7 @@ msgid "Lig. Carets"
 msgstr "Separadors"
 
 msgid "Components"
-msgstr "Components"
+msgstr ""
 
 msgid "Counters"
 msgstr "Contrapunxons"
@@ -10820,11 +10767,10 @@ msgstr ""
 msgid "Dragging Comparison Outline Color"
 msgstr ""
 
-#, fuzzy
 msgid ""
 "The color used to draw the outline of the old spline when you are "
 "interactively modifying a glyph"
-msgstr "Color usat per ressaltar la nansa de sortida d'un node de corba"
+msgstr ""
 
 msgid ""
 "Only the alpha value is used and if non zero it will set the alpha channel "
@@ -10844,9 +10790,8 @@ msgstr ""
 msgid "The color of the line marking the advance width when it is selected"
 msgstr ""
 
-#, fuzzy
 msgid "Selected LBearing Color"
-msgstr "Color de fons seleccionat"
+msgstr ""
 
 msgid "The color of the line marking the left bearing when it is selected"
 msgstr ""
@@ -10925,13 +10870,11 @@ msgstr ""
 msgid "The color of the clip path"
 msgstr ""
 
-#, fuzzy
 msgid "Open Path Color"
-msgstr "Color de la nansa següent"
+msgstr ""
 
-#, fuzzy
 msgid "The color of the open path"
-msgstr "Color del node seleccionat"
+msgstr ""
 
 msgid "Background Image Color"
 msgstr ""
@@ -10946,13 +10889,11 @@ msgstr ""
 msgid "The color used to fill the outline if that mode is active"
 msgstr ""
 
-#, fuzzy
 msgid "Preview Fill Color"
-msgstr "Color de la nansa anterior"
+msgstr ""
 
-#, fuzzy
 msgid "The color used to fill the outline when in preview mode"
-msgstr "Color usat per ressaltar la nansa de sortida d'un node de corba"
+msgstr ""
 
 msgid "Trace Color"
 msgstr ""
@@ -11005,39 +10946,33 @@ msgstr ""
 msgid "Measure Tool Line Color"
 msgstr ""
 
-#, fuzzy
 msgid "The color used to draw the measure tool line."
-msgstr "Color usat per ressaltar la nansa de sortida d'un node de corba"
+msgstr ""
 
-#, fuzzy
 msgid "Measure Tool Point Color"
-msgstr "Color dels nodes extrems"
+msgstr ""
 
-#, fuzzy
 msgid "The color used to draw the measure tool points."
-msgstr "Color usat per ressaltar la nansa de sortida d'un node de corba"
+msgstr ""
 
 msgid "Measure Tool Point Snapped Color"
 msgstr ""
 
-#, fuzzy
 msgid "The color used to draw the measure tool points when snapped."
-msgstr "Color usat per ressaltar la nansa de sortida d'un node de corba"
+msgstr ""
 
 msgid "Measure Tool Canvas Number Color"
 msgstr ""
 
-#, fuzzy
 msgid "The color used to draw the measure tool numbers on the canvas."
-msgstr "Color usat per ressaltar la nansa de sortida d'un node de corba"
+msgstr ""
 
 msgid "Measure Tool Canvas Number Snapped Color"
 msgstr ""
 
-#, fuzzy
 msgid ""
 "The color used to draw the measure tool numbers on the canvas when snapped."
-msgstr "Color usat per ressaltar la nansa de sortida d'un node de corba"
+msgstr ""
 
 msgid "Measure Tool Windows Foreground Color"
 msgstr ""
@@ -11104,9 +11039,9 @@ msgstr "Guia"
 msgid "Active Layer: %s (%s)"
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Modes: "
-msgstr "Moderna"
+msgstr ""
 
 msgid "'fpgm'"
 msgstr ""
@@ -11280,9 +11215,8 @@ msgstr "Suprimeix el fons"
 msgid "points|_Merge"
 msgstr "Fusiona"
 
-#, fuzzy
 msgid "points|Merge to Line"
-msgstr "Fusiona"
+msgstr ""
 
 msgid "_Join"
 msgstr "Uneix"
@@ -11299,9 +11233,8 @@ msgstr "Copia l'ajust a la retícula"
 msgid "_Select"
 msgstr "_Selecciona"
 
-#, fuzzy
 msgid "Remo_ve Undoes..."
-msgstr "Elimina l'_historial de desfer"
+msgstr ""
 
 msgid "_Curve"
 msgstr "_Corba"
@@ -11368,9 +11301,8 @@ msgid "_Right Constraint"
 msgstr "Entrada a corba"
 
 #. GT: Align these points to their average position
-#, fuzzy
 msgid "_Align Points"
-msgstr "Fes la mitj_ana dels punts"
+msgstr ""
 
 msgid "_Space Points"
 msgstr "Di_stribueix els punts"
@@ -11688,13 +11620,11 @@ msgstr "_Lligadures"
 msgid "PointNumbers|_None"
 msgstr "Sense _numerar"
 
-#, fuzzy
 msgid "_TrueType"
-msgstr "TrueType"
+msgstr ""
 
-#, fuzzy
 msgid "_PostScript®"
-msgstr "PostScript®"
+msgstr ""
 
 msgid "_SVG"
 msgstr ""
@@ -11705,9 +11635,8 @@ msgstr ""
 msgid "Show _Grid Fit..."
 msgstr "Mostra la _retícula..."
 
-#, fuzzy
 msgid "Show _Grid Fit (Live Update)..."
-msgstr "Mostra la _retícula..."
+msgstr ""
 
 msgid "_Bigger Point Size"
 msgstr "Au_gmenta el cos"
@@ -11724,9 +11653,8 @@ msgstr "_Desactiva la retícula"
 msgid "_Points"
 msgstr "_Punts"
 
-#, fuzzy
 msgid "Control Points (Always_)"
-msgstr "Dades de la nansa"
+msgstr ""
 
 msgid "_Control Point Info"
 msgstr "Dades de la nansa"
@@ -11755,9 +11683,8 @@ msgstr "Noms de les referències"
 msgid "_Fill"
 msgstr "Emplenament"
 
-#, fuzzy
 msgid "Previe_w"
-msgstr "Previsualitza"
+msgstr ""
 
 msgid "Dragging Comparison Outline"
 msgstr ""
@@ -11840,9 +11767,8 @@ msgstr ""
 msgid "_Point"
 msgstr "_Punt"
 
-#, fuzzy
 msgid "Tools_2"
-msgstr "Eines"
+msgstr ""
 
 msgid "H_ints"
 msgstr "O_ptimització"
@@ -12102,10 +12028,10 @@ msgid "Dialog Type:"
 msgstr "Tipus de diàleg:"
 
 msgid "Simple"
-msgstr "Simple"
+msgstr ""
 
 msgid "Complex"
-msgstr "Complex"
+msgstr ""
 
 msgid "New Section"
 msgstr "Secció nova"
@@ -12162,7 +12088,7 @@ msgid "List of class names"
 msgstr "Llista de noms de classe"
 
 msgid "Classes"
-msgstr "Classes"
+msgstr ""
 
 msgid "<empty>"
 msgstr "<buid>"
@@ -12193,13 +12119,13 @@ msgid "Points"
 msgstr "Punts"
 
 msgid "Cvt"
-msgstr "Cvt"
+msgstr ""
 
 msgid "Raster"
 msgstr "Ràster"
 
 msgid "Gloss"
-msgstr "Gloss"
+msgstr ""
 
 msgid "Current Raster (TrueType)"
 msgstr "Ràster actual (TrueType)"
@@ -12220,7 +12146,7 @@ msgid "Twilight"
 msgstr "Penombra"
 
 msgid "Normal"
-msgstr "Normal"
+msgstr ""
 
 msgid "Current"
 msgstr "Actual"
@@ -12287,19 +12213,19 @@ msgid "Pixel size?"
 msgstr "Cos, en píxels?"
 
 msgid "EPS"
-msgstr "EPS"
+msgstr ""
 
 msgid "XFig"
-msgstr "XFig"
+msgstr ""
 
 msgid "SVG"
-msgstr "SVG"
+msgstr ""
 
 msgid "Glif"
-msgstr "Glif"
+msgstr ""
 
 msgid "PDF"
-msgstr "PDF"
+msgstr ""
 
 msgid "Raph's plate"
 msgstr ""
@@ -12308,7 +12234,7 @@ msgid "X Bitmap"
 msgstr "Mapa de bits X"
 
 msgid "BMP"
-msgstr "BMP"
+msgstr ""
 
 msgid "png"
 msgstr "PNG"
@@ -12316,9 +12242,8 @@ msgstr "PNG"
 msgid "X Pixmap"
 msgstr ""
 
-#, fuzzy
 msgid "C FontForge"
-msgstr "Fitxers SFD del FontForge"
+msgstr ""
 
 msgid "_Replace"
 msgstr "_Reemplaça"
@@ -12353,7 +12278,7 @@ msgid "Directory|_New"
 msgstr "_Nova"
 
 msgid "Format:"
-msgstr "Format:"
+msgstr ""
 
 msgid "Transformation Matrix"
 msgstr "Matriu de transformació"
@@ -12362,7 +12287,7 @@ msgid "Value out of range"
 msgstr "Valor fora de rang"
 
 msgid "_Base:"
-msgstr "_Base:"
+msgstr ""
 
 msgid "Ref:"
 msgstr "Ref.:"
@@ -12443,10 +12368,10 @@ msgid "Bounding Box:"
 msgstr "Caixa contenidora:"
 
 msgid "X:"
-msgstr "X:"
+msgstr ""
 
 msgid "Y:"
-msgstr "Y:"
+msgstr ""
 
 msgid "_Show"
 msgstr "Mo_stra"
@@ -12587,7 +12512,7 @@ msgid "Point Info"
 msgstr "Informació del punt"
 
 msgid "_Normal"
-msgstr "_Normal"
+msgstr ""
 
 msgid "_Interpolated"
 msgstr "_Interpolat"
@@ -12608,7 +12533,7 @@ msgid "Dist"
 msgstr "Distància"
 
 msgid "°"
-msgstr "°"
+msgstr ""
 
 msgid "Curvature: -0.00000000"
 msgstr "Curvatura: -0.00000000"
@@ -12643,13 +12568,13 @@ msgstr "Punt següent del contorn"
 #. GT: Y is a coordinate
 #. GT: Y is a coordinate, the leading spaces help to align it
 msgid "Y"
-msgstr "Y"
+msgstr ""
 
 msgid "Spiro Point Info"
 msgstr "Informació del punt Spiro"
 
 msgid "Dependents"
-msgstr "Dependents"
+msgstr ""
 
 msgid "Show"
 msgstr "Mostra"
@@ -12695,7 +12620,7 @@ msgid "_Anti-Aliased"
 msgstr "Antialiàsing"
 
 msgid "Base:"
-msgstr "Base:"
+msgstr ""
 
 msgid "Size:"
 msgstr "Mida/Cos:"
@@ -12781,16 +12706,16 @@ msgid "Raph's plate files"
 msgstr ""
 
 msgid "BDF"
-msgstr "BDF"
+msgstr ""
 
 msgid "TTF"
-msgstr "TTF"
+msgstr ""
 
 msgid "ΤεΧ Bitmap Fonts"
 msgstr "Tipus de mapa de bits del TeX"
 
 msgid "PCF (pmf)"
-msgstr "PCF (pmf)"
+msgstr ""
 
 msgid "Mac Bitmap"
 msgstr "Mapa de bits del Mac"
@@ -12799,7 +12724,7 @@ msgid "Win FON"
 msgstr "Fitxer FON de Windows"
 
 msgid "palm"
-msgstr "palm"
+msgstr ""
 
 msgid "Image Template"
 msgstr "Plantilla d'imatge"
@@ -12880,7 +12805,7 @@ msgid "Perform a perspective transformation on the selection"
 msgstr "Transforma la selecció amb perspectiva"
 
 msgid "Rotate the selection in 3D and project back to plane"
-msgstr "Gira en 3D la selecció i projecta-la de nou al pla"
+msgstr ""
 
 msgid "Polygon or Star"
 msgstr "Poligon/Estrella"
@@ -12931,7 +12856,7 @@ msgid "Perspecti_ve"
 msgstr "Perspecti_va"
 
 msgid "Rectan_gle"
-msgstr "Rectan_gle"
+msgstr ""
 
 msgid "Pol_ygon"
 msgstr "Poligon"
@@ -12946,10 +12871,10 @@ msgid "De_activate Spiro"
 msgstr "Desactiva l'Spiro"
 
 msgid "G_4"
-msgstr "G_4"
+msgstr ""
 
 msgid "G_2"
-msgstr "G_2"
+msgstr ""
 
 msgid "Lef_t"
 msgstr "Esquerra"
@@ -12976,7 +12901,7 @@ msgid "Radius:   "
 msgstr "Radi:"
 
 msgid "Angle:"
-msgstr "Angle:"
+msgstr ""
 
 msgid "C_enter"
 msgstr "C_entre"
@@ -12991,7 +12916,7 @@ msgid "Shape Type"
 msgstr "Tipus de forma"
 
 msgid "Regular"
-msgstr "Regular"
+msgstr ""
 
 msgid "Points:"
 msgstr "Punts:"
@@ -13003,7 +12928,7 @@ msgid "Center Out"
 msgstr "Del centre cap enfora"
 
 msgid "Rectangle"
-msgstr "Rectangle"
+msgstr ""
 
 msgid "Round Rectangle Radius"
 msgstr "Radi de les cantonades"
@@ -13059,7 +12984,7 @@ msgstr "Capes"
 
 #. GT: Abbreviation for "Visible"
 msgid "V"
-msgstr "V"
+msgstr ""
 
 msgid "Is Layer Visible?"
 msgstr "Activa/desactiva la visibilitat de la capa"
@@ -13070,9 +12995,8 @@ msgstr "Capa"
 msgid "Is Layer Editable?"
 msgstr "Activa/desactiva l'edició de la capa"
 
-#, fuzzy
 msgid "New Layer"
-msgstr "Capa nova..."
+msgstr ""
 
 msgid "Shift Contents To _First"
 msgstr ""
@@ -13086,17 +13010,14 @@ msgstr ""
 msgid "Shift Contents To _Last"
 msgstr ""
 
-#, fuzzy
 msgid "Make Foreground"
-msgstr "Primer pla"
+msgstr ""
 
-#, fuzzy
 msgid "Make Cubic"
-msgstr "Cúbiques"
+msgstr ""
 
-#, fuzzy
 msgid "Fill"
-msgstr "Emplenament"
+msgstr ""
 
 msgid "Show Cubic Column"
 msgstr ""
@@ -13104,13 +13025,11 @@ msgstr ""
 msgid "Show Fore/Back Column"
 msgstr ""
 
-#, fuzzy
 msgid "Make Background"
-msgstr "Com a fons"
+msgstr ""
 
-#, fuzzy
 msgid "Make Quadratic"
-msgstr "Quadràtiques"
+msgstr ""
 
 msgid "+"
 msgstr ""
@@ -13118,13 +13037,11 @@ msgstr ""
 msgid "-"
 msgstr ""
 
-#, fuzzy
 msgid "Delete the current layer"
-msgstr "Caràcter de supressió"
+msgstr ""
 
-#, fuzzy
 msgid "Add a new layer"
-msgstr "Hi ha massa capes"
+msgstr ""
 
 msgid "Type in new layer name"
 msgstr ""
@@ -13150,25 +13067,20 @@ msgstr ""
 msgid "Right Constraint"
 msgstr ""
 
-#, fuzzy
 msgid "Curve"
-msgstr "_Corba"
+msgstr ""
 
-#, fuzzy
 msgid "HVCurve"
-msgstr "Corba ortogonal"
+msgstr ""
 
-#, fuzzy
 msgid "Tangent"
-msgstr "Connexió"
+msgstr ""
 
-#, fuzzy
 msgid "Merge"
-msgstr "_Fusiona"
+msgstr ""
 
-#, fuzzy
 msgid "Merge to Line"
-msgstr "Fes una recta"
+msgstr ""
 
 msgid "Add a left \"tangent\" point"
 msgstr "Afegeix un put «tangent» per l'esquerra"
@@ -13182,24 +13094,20 @@ msgstr ""
 msgid "Make Clip Path"
 msgstr "Fes el camí de retall"
 
-#, fuzzy
 msgid "Make Line"
-msgstr "Fes una recta"
+msgstr ""
 
-#, fuzzy
 msgid "Make Arc"
-msgstr "Fes una corba"
+msgstr ""
 
-#, fuzzy
 msgid "Insert Point On Spline At..."
-msgstr "Inse_reix un punt al segment..."
+msgstr ""
 
 msgid "Name Point"
 msgstr ""
 
-#, fuzzy
 msgid "Name Contour"
-msgstr "Anome_na el traçat..."
+msgstr ""
 
 msgid "Bitmap"
 msgstr "Mapa de bits"
@@ -13264,7 +13172,7 @@ msgid "_Radius:"
 msgstr "_Radi:"
 
 msgid "3"
-msgstr "3"
+msgstr ""
 
 msgid "_Width:"
 msgstr "Amplada:"
@@ -13562,7 +13470,7 @@ msgid "Offset %"
 msgstr "% de desplaçament"
 
 msgid "Color"
-msgstr "Color"
+msgstr ""
 
 msgid "Opacity"
 msgstr "Opacitat"
@@ -14317,7 +14225,7 @@ msgid "Installable Font"
 msgstr "Es permet, a més, extreure i instal·lar"
 
 msgid "Serif"
-msgstr "Serif"
+msgstr ""
 
 msgid "Sans-Serif"
 msgstr "De pal sec"
@@ -14552,16 +14460,16 @@ msgid "OS2Version|Automatic"
 msgstr "Automàtica"
 
 msgid "1"
-msgstr "1"
+msgstr ""
 
 msgid "2"
-msgstr "2"
+msgstr ""
 
 msgid "4"
-msgstr "4"
+msgstr ""
 
 msgid "0"
-msgstr "0"
+msgstr ""
 
 msgid "PanoseFamily|Any"
 msgstr "Qualsevol"
@@ -15144,7 +15052,7 @@ msgid "Text and Background"
 msgstr "Text i fons"
 
 msgid "Collage"
-msgstr "Collage"
+msgstr ""
 
 msgid "Montage"
 msgstr "Muntatge"
@@ -15293,9 +15201,8 @@ msgstr "No és aplicable"
 msgid "Extended Collection"
 msgstr "Col·lecció ampliada"
 
-#, fuzzy
 msgid "Literals"
-msgstr "Només afanumèrica"
+msgstr ""
 
 msgid "No Lower Case"
 msgstr "Sense minúscules"
@@ -15325,7 +15232,7 @@ msgid "Music"
 msgstr "Música"
 
 msgid "Expert"
-msgstr "Expert"
+msgstr ""
 
 msgid "Patterns"
 msgstr "Motiu repetit"
@@ -15400,7 +15307,7 @@ msgid "_Arm Style"
 msgstr "Estil dels braços"
 
 msgid "_Contrast"
-msgstr "_Contrast"
+msgstr ""
 
 msgid "_Letterform"
 msgstr "Forma de les lletres"
@@ -15439,7 +15346,7 @@ msgid "_X-Ascent"
 msgstr "Ull superior"
 
 msgid "C_ontrast"
-msgstr "C_ontrast"
+msgstr ""
 
 msgid "Char. _Range"
 msgstr "Rang de caràcters"
@@ -15559,13 +15466,13 @@ msgid "Croatian Bosnia/Herzegovina"
 msgstr "Croat (Bòsnia i Hercegovina)"
 
 msgid "Divehi"
-msgstr "Divehi"
+msgstr ""
 
 msgid "Flemish (Belgian Dutch)"
 msgstr "Flamenc (neerlandès de Bèlgica)"
 
 msgid "Edo"
-msgstr "Edo"
+msgstr ""
 
 msgid "English (British)"
 msgstr "Anglès (Regne Unit)"
@@ -15712,19 +15619,19 @@ msgid "Ibibio"
 msgstr "Ibibio/Efik"
 
 msgid "Igbo"
-msgstr "Igbo"
+msgstr ""
 
 msgid "Italian Swiss"
 msgstr "Italià (Suïssa)"
 
 msgid "Kanuri"
-msgstr "Kanuri"
+msgstr ""
 
 msgid "Kashmiri (India)"
 msgstr "Caixmiri (Índia)"
 
 msgid "Konkani"
-msgstr "Konkani"
+msgstr ""
 
 msgid "Korean (Johab)"
 msgstr "Coreà (JOHAB)"
@@ -15739,10 +15646,10 @@ msgid "Malay (Brunei)"
 msgstr "Malai (Brunei)"
 
 msgid "Manipuri"
-msgstr "Manipuri"
+msgstr ""
 
 msgid "Maori"
-msgstr "Maori"
+msgstr ""
 
 msgid "Mongolian (Cyrillic)"
 msgstr "Mongol (Ciríl·lic)"
@@ -15757,14 +15664,13 @@ msgid "Norwegian (Nynorsk)"
 msgstr "Noruec (nynorsk)"
 
 msgid "Oromo"
-msgstr "Oromo"
+msgstr ""
 
 msgid "Papiamentu"
 msgstr "Papiament"
 
-#, fuzzy
 msgid "Portuguese (Portugal)"
-msgstr "Potuguès (Potugal)"
+msgstr ""
 
 msgid "Portuguese (Brasil)"
 msgstr "Portuguès (Brasil)"
@@ -15794,7 +15700,7 @@ msgid "Russian (Moldova)"
 msgstr "Rus (Moldàvia)"
 
 msgid "Sepedi"
-msgstr "Sepedi"
+msgstr ""
 
 msgid "Serbian (Cyrillic)"
 msgstr "Serbi (Ciríl·lic)"
@@ -15917,10 +15823,10 @@ msgid "Tigrinyan Eritrea"
 msgstr "Tigrinya (Eritrea)"
 
 msgid "Tsonga"
-msgstr "Tsonga"
+msgstr ""
 
 msgid "Tswana"
-msgstr "Tswana"
+msgstr ""
 
 msgid "Urdu (Pakistan)"
 msgstr "Urdú (Pakistan)"
@@ -15935,7 +15841,7 @@ msgid "Uzbek (Cyrillic)"
 msgstr "Usbec (Cirí·lic)"
 
 msgid "Venda"
-msgstr "Venda"
+msgstr ""
 
 msgid "Xhosa"
 msgstr "Xosa"
@@ -15947,13 +15853,13 @@ msgid "Yoruba"
 msgstr "Ioruba"
 
 msgid "Zulu"
-msgstr "Zulu"
+msgstr ""
 
 msgid "Styles (SubFamily)"
 msgstr "Estils (subfamília)"
 
 msgid "Copyright"
-msgstr "Copyright"
+msgstr ""
 
 msgid "Family"
 msgstr "Família"
@@ -16559,9 +16465,8 @@ msgstr "Inclinació de la cursiva: canvi horitzontal / unitat de canvi vertical"
 msgid "The amount of space between words when using this font"
 msgstr "Espai entre paraules"
 
-#, fuzzy
 msgid "The amount of stretchable space between words when using this font"
-msgstr "Ampliació màxima de l'espai entre paraules"
+msgstr ""
 
 msgid "The amount the space between words may shrink when using this font"
 msgstr "Encongiment màxim de l'espai entre paraules"
@@ -16601,9 +16506,8 @@ msgstr "El nombre hexadecimal és incorrecte"
 msgid "Bad hex number in %s"
 msgstr "El nombre hexadecimal és incorrecte a %s"
 
-#, fuzzy
 msgid "Font Information Dialog"
-msgstr "Informació del tipus de lletra %.90s"
+msgstr ""
 
 msgid "Bad Grid Fitting table"
 msgstr "La taula d'ajust a la retícula és incorrecta"
@@ -16755,19 +16659,13 @@ msgstr ""
 "Si heu indicat un identificador d'estil pel cos del disseny, aleshores heu "
 "d'indicar també un nom d'estil."
 
-#, fuzzy
 msgid ""
 "If you specify a style name for the design size, then you must specify a "
 "style id"
 msgstr ""
-"Si heu indicat un identificador d'estil pel cos del disseny, aleshores heu "
-"d'indicar també un nom d'estil."
 
-#, fuzzy
 msgid "If you specify a design size, it must be positive"
 msgstr ""
-"Si heu indicat un identificador d'estil pel cos del disseny, aleshores heu "
-"d'indicar també un nom d'estil."
 
 msgid ""
 "In the design size range, the bottom field must be less than the design size."
@@ -17280,7 +17178,7 @@ msgid " Same as Fontname"
 msgstr " El mateix que el nom del tipus de lletra"
 
 msgid "Copy_right:"
-msgstr "Copy_right:"
+msgstr ""
 
 msgid ""
 "This must be ASCII, so you may not use the copyright symbol (use (c) "
@@ -17570,7 +17468,7 @@ msgid "PanoseUse|Default"
 msgstr "Predeterminat"
 
 msgid "http://panose.com/"
-msgstr "http://panose.com/"
+msgstr ""
 
 msgid "Panose|_Family Kind"
 msgstr ""
@@ -17594,7 +17492,7 @@ msgid "Sub/Super"
 msgstr "Subíndexs i lletres volades"
 
 msgid "Panose"
-msgstr "Panose"
+msgstr ""
 
 msgid "Charsets"
 msgstr "Jocs de caràcters"
@@ -17912,7 +17810,7 @@ msgid "PS Names"
 msgstr "Noms PostScript"
 
 msgid "General"
-msgstr "General"
+msgstr ""
 
 msgid "PS UID"
 msgstr "Identificadors PostScript"
@@ -17921,7 +17819,7 @@ msgid "PS Private"
 msgstr "Diccionari privat PostScript"
 
 msgid "OS/2"
-msgstr "OS/2"
+msgstr ""
 
 msgid "TTF Names"
 msgstr "Noms TrueType/OpenType"
@@ -17954,7 +17852,7 @@ msgid "Mac Features"
 msgstr "Singularitats Mac"
 
 msgid "Dates"
-msgstr "Dates"
+msgstr ""
 
 msgid "TrueTypeName|New"
 msgstr "Nou"
@@ -18070,13 +17968,10 @@ msgstr ""
 "Estableix la selecció de la finestra principal\n"
 "amb els glifs coincidents."
 
-#, fuzzy
 msgid ""
 "Expand the selection of the font view to include\n"
 "all the glyphs which match"
 msgstr ""
-"Afegeix els glifs coincidents a la selecció\n"
-"de la finestra principal."
 
 msgid "Remove matching glyphs from the selection."
 msgstr "Suprimeix de la selecció els glifs coincidents."
@@ -18225,7 +18120,7 @@ msgid "_Build Syllables"
 msgstr "Construeix les síl·la_bes"
 
 msgid "_Hangul"
-msgstr "_Hangul"
+msgstr ""
 
 msgid "Save A_ll"
 msgstr "Desa-_ho tot"
@@ -18396,7 +18291,7 @@ msgid "_Name"
 msgstr "_Nom"
 
 msgid "_Unicode"
-msgstr "_Unicode"
+msgstr ""
 
 msgid "_Encoding Hex"
 msgstr "Codificació _hexadecimal"
@@ -18581,9 +18476,8 @@ msgstr "Caselles de _72 pixels"
 msgid "_96 pixel outline"
 msgstr "Caselles de _96 pixels"
 
-#, fuzzy
 msgid "_128 pixel outline"
-msgstr "Caselles de _48 pixels"
+msgstr ""
 
 msgid "_Fit to font bounding box"
 msgstr ""
@@ -18684,21 +18578,19 @@ msgid "E_ncoding"
 msgstr "C_odificació"
 
 msgid "_CID"
-msgstr "_CID"
+msgstr ""
 
 msgid "Color of the font used to display glyph information in the fontview"
 msgstr ""
 
-#, fuzzy
 msgid "Glyph Info Color"
-msgstr "Informació del glif"
+msgstr ""
 
 msgid "Color used to draw the foreground of empty slots"
 msgstr ""
 
-#, fuzzy
 msgid "Empty Slot FG Color"
-msgstr "Color de dibuix seleccionat"
+msgstr ""
 
 msgid "Color used to draw the background of selected glyphs"
 msgstr ""
@@ -18721,9 +18613,8 @@ msgstr ""
 msgid "Color used to mark glyphs that need hinting"
 msgstr ""
 
-#, fuzzy
 msgid "Hinting Needed Color"
-msgstr "Pendents d'optimització"
+msgstr ""
 
 msgid "Font Size"
 msgstr "Cos"
@@ -19005,11 +18896,10 @@ msgid ""
 "and any of its sub-groups"
 msgstr ""
 
-#, fuzzy
 msgid "Group"
 msgid_plural "Groups"
-msgstr[0] "Grup"
-msgstr[1] "Grup"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "No Groups"
 msgstr "No hi ha grups"
@@ -19279,9 +19169,8 @@ msgstr ""
 "Correcció a la taula de dispositiu:\n"
 "  (a la mida de visualització)"
 
-#, fuzzy
 msgid "Revert Kerning"
-msgstr "Interlletratge vertical"
+msgstr ""
 
 msgid ""
 "Resets the kerning offset and device table corrections to what they were "
@@ -19334,7 +19223,6 @@ msgstr ""
 msgid "_Touching"
 msgstr "Con_tacte"
 
-#, fuzzy
 msgid ""
 "Normally kerning is based on achieving a constant (optical)\n"
 "separation between glyphs, but occasionally it is desirable\n"
@@ -19342,10 +19230,6 @@ msgid ""
 "closest approach between two glyphs (So if the desired separ-\n"
 "ation is 0 then the glyphs will actually be touching."
 msgstr ""
-"Normalment, l'interlletrage intenta obtenir una separació òptica\n"
-"constant entre els glifs. De vegades, però, pot interessar obtenir\n"
-"una taula d'interlletratge basada en l'apropament màxim dels glifs.\n"
-"Si s'indica separació 0, els glifs estaran, de fet, en contacte."
 
 msgid "Only kern glyphs closer"
 msgstr "Només acosta els glifs"
@@ -19470,7 +19354,7 @@ msgid "Adyghe"
 msgstr ""
 
 msgid "Afar"
-msgstr "Afar"
+msgstr ""
 
 msgid "Agaw"
 msgstr ""
@@ -19527,13 +19411,13 @@ msgid "Belarussian"
 msgstr "Bielorús"
 
 msgid "Bemba"
-msgstr "Bemba"
+msgstr ""
 
 msgid "Bhili"
 msgstr ""
 
 msgid "Bhojpuri"
-msgstr "Bhojpuri"
+msgstr ""
 
 msgid "Bikol"
 msgstr ""
@@ -19554,7 +19438,7 @@ msgid "Balti"
 msgstr ""
 
 msgid "Bambara"
-msgstr "Bambara"
+msgstr ""
 
 msgid "Bamileke"
 msgstr ""
@@ -19575,7 +19459,7 @@ msgid "Beti"
 msgstr ""
 
 msgid "Cebuano"
-msgstr "Cebuano"
+msgstr ""
 
 msgid "Chechen"
 msgstr "Txetxè"
@@ -19587,13 +19471,13 @@ msgid "Chattisgarhi"
 msgstr ""
 
 msgid "Chichewa"
-msgstr "Chichewa"
+msgstr ""
 
 msgid "Chukchi"
 msgstr ""
 
 msgid "Chipewyan"
-msgstr "Chipewyan"
+msgstr ""
 
 msgid "Chuvash"
 msgstr "Txuvaix"
@@ -19608,7 +19492,7 @@ msgid "Corsican"
 msgstr "Cors"
 
 msgid "Cree"
-msgstr "Cree"
+msgstr ""
 
 msgid "Carrier"
 msgstr ""
@@ -19632,7 +19516,7 @@ msgid "German (Standard)"
 msgstr "Alemany (estàndard)"
 
 msgid "Dogri"
-msgstr "Dogri"
+msgstr ""
 
 msgid "Dhivehi (Obsolete)"
 msgstr "Divehi (obsolet)"
@@ -19674,7 +19558,7 @@ msgid "Even"
 msgstr ""
 
 msgid "Ewe"
-msgstr "Ewe"
+msgstr ""
 
 msgid "French Antillean"
 msgstr "Francès antillà"
@@ -19686,7 +19570,7 @@ msgid "Forest Nenets"
 msgstr ""
 
 msgid "Fon"
-msgstr "Fon"
+msgstr ""
 
 msgid "Faroese"
 msgstr ""
@@ -19758,7 +19642,7 @@ msgid "Hindko"
 msgstr ""
 
 msgid "Ho"
-msgstr "Ho"
+msgstr ""
 
 msgid "Harari"
 msgstr ""
@@ -19827,7 +19711,7 @@ msgid "Khowar"
 msgstr ""
 
 msgid "Kikuyu"
-msgstr "Kikuyu"
+msgstr ""
 
 msgid "Kisii"
 msgstr ""
@@ -19887,7 +19771,7 @@ msgid "Koorete"
 msgstr ""
 
 msgid "Khasi"
-msgstr "Khasi"
+msgstr ""
 
 msgid "Kildin Sami"
 msgstr ""
@@ -19935,7 +19819,7 @@ msgid "Lezgi"
 msgstr ""
 
 msgid "Lingala"
-msgstr "Lingala"
+msgstr ""
 
 msgid "Low Mari"
 msgstr ""
@@ -19965,7 +19849,7 @@ msgid "Luhya"
 msgstr ""
 
 msgid "Luo"
-msgstr "Luo"
+msgstr ""
 
 msgid "Majang"
 msgstr ""
@@ -19995,7 +19879,7 @@ msgid "Moose Cree"
 msgstr ""
 
 msgid "Mende"
-msgstr "Mende"
+msgstr ""
 
 msgid "Me'en"
 msgstr ""
@@ -20148,7 +20032,7 @@ msgid "Sadri"
 msgstr ""
 
 msgid "Santali"
-msgstr "Santali"
+msgstr ""
 
 msgid "Sayisi"
 msgstr ""
@@ -20160,7 +20044,7 @@ msgid "Selkup"
 msgstr ""
 
 msgid "Sango"
-msgstr "Sango"
+msgstr ""
 
 msgid "Shan"
 msgstr ""
@@ -20217,7 +20101,7 @@ msgid "Swadaya Aramaic"
 msgstr ""
 
 msgid "Swazi"
-msgstr "Swazi"
+msgstr ""
 
 msgid "Tabasaran"
 msgstr ""
@@ -20226,7 +20110,7 @@ msgid "TH-Cree"
 msgstr ""
 
 msgid "Tigre"
-msgstr "Tigre"
+msgstr ""
 
 msgid "Tahitian"
 msgstr "Tahitià"
@@ -20238,7 +20122,7 @@ msgid "Tundra Nenets"
 msgstr ""
 
 msgid "Tonga"
-msgstr "Tonga"
+msgstr ""
 
 msgid "Todo"
 msgstr ""
@@ -20253,7 +20137,7 @@ msgid "Tuvin"
 msgstr ""
 
 msgid "Twi"
-msgstr "Twi"
+msgstr ""
 
 msgid "Udmurt"
 msgstr ""
@@ -20265,7 +20149,7 @@ msgid "Uyghur"
 msgstr ""
 
 msgid "Wa"
-msgstr "Wa"
+msgstr ""
 
 msgid "Wagdi"
 msgstr ""
@@ -20576,9 +20460,8 @@ msgstr ""
 msgid "There are two entries for the same glyph (%.80s)"
 msgstr ""
 
-#, fuzzy
 msgid "Lookup Table Edit"
-msgstr "Subtaula de consulta:"
+msgstr ""
 
 #, c-format
 msgid "Lookup Subtable, %s"
@@ -20772,7 +20655,7 @@ msgid ""
 msgstr ""
 
 msgid "C_lasses"
-msgstr "C_lasses"
+msgstr ""
 
 msgid "_Pairs"
 msgstr "_Parells"
@@ -20932,7 +20815,7 @@ msgid "MacFeature|Default"
 msgstr "Predeterminades"
 
 msgid "Constants"
-msgstr "Constants"
+msgstr ""
 
 msgid "Sub/Superscript"
 msgstr "Lletres volades/Subíndexs"
@@ -20950,10 +20833,10 @@ msgid "Over/Underbars"
 msgstr "Ratlles superiors/inferiors"
 
 msgid "Radicals"
-msgstr "Radicals"
+msgstr ""
 
 msgid "Connectors"
-msgstr "Connectors"
+msgstr ""
 
 msgid "Top Accent Horiz. Pos"
 msgstr ""
@@ -21007,9 +20890,8 @@ msgstr "Superior esquerra"
 msgid "Bottom Right"
 msgstr "Inferior dreta"
 
-#, fuzzy
 msgid "Bottom Left"
-msgstr "Inferior esquerra"
+msgstr ""
 
 msgid "Glyph Construction"
 msgstr "Construcció de glif"
@@ -21069,7 +20951,7 @@ msgid "Graphical"
 msgstr "Gràfic"
 
 msgid "Textual"
-msgstr "Textual"
+msgstr ""
 
 msgid "Name:"
 msgstr "Nom:"
@@ -21137,9 +21019,8 @@ msgstr ""
 msgid "Point Size:"
 msgstr ""
 
-#, fuzzy
 msgid "Load _Word List..."
-msgstr "Mostra la _retícula..."
+msgstr ""
 
 msgid "_Inline"
 msgstr ""
@@ -21396,7 +21277,7 @@ msgid "Type of distortable font:"
 msgstr ""
 
 msgid "Adobe"
-msgstr "Adobe"
+msgstr ""
 
 msgid "Number of Axes:"
 msgstr "Nombre d'eixos:"
@@ -21510,13 +21391,13 @@ msgid "Bitmap Fonts"
 msgstr "Tipus de mapa de bits"
 
 msgid "PostScript"
-msgstr "PostScript"
+msgstr ""
 
 msgid "TrueType"
-msgstr "TrueType"
+msgstr ""
 
 msgid "OpenType"
-msgstr "OpenType"
+msgstr ""
 
 msgid "Type1"
 msgstr "Tipus 1"
@@ -21579,9 +21460,8 @@ msgstr "Sense canvis"
 msgid "Open Font"
 msgstr "Obre un tipus de lletra"
 
-#, fuzzy
 msgid "FreeTypeAAFillInOutlineView"
-msgstr "Usa el FreeType"
+msgstr ""
 
 msgid ""
 "When filling using freetype in the outline view,\n"
@@ -21715,11 +21595,9 @@ msgstr ""
 "Interpola els punts de control (nanses) entre els dos caps\n"
 "d'una corba quan un d'ells és desplaçat."
 
-#, fuzzy
 msgid "SnapDistanceMeasureTool"
-msgstr "Distància d'imant"
+msgstr ""
 
-#, fuzzy
 msgid ""
 "When the measure tool is active and when the mouse pointer is within this "
 "many pixels\n"
@@ -21727,9 +21605,6 @@ msgid ""
 "width, grid splines, etc.) the pointer will snap\n"
 "to that feature."
 msgstr ""
-"Distància mínima, en píxels, entre el punter i una\n"
-"àrea d'interès (línia de base, amplada, graella, etc.)\n"
-"dins la qual el punter serà atret per l'àrea."
 
 msgid ""
 "The maximum number of Undoes/Redoes stored in a glyph. Use -1 for infinite "
@@ -21745,9 +21620,8 @@ msgstr ""
 "Obre el diàleg d'interlletratge automàtic\n"
 "per a les subtaules d'interlletratge noves."
 
-#, fuzzy
 msgid "MetricsShiftSkip"
-msgstr "Mètrica"
+msgstr ""
 
 msgid ""
 "Number of units to increment/decrement a table value by in the metrics "
@@ -21774,9 +21648,8 @@ msgid ""
 "Have the measure tool show horizontal and vertical distances on the canvas."
 msgstr ""
 
-#, fuzzy
 msgid "MeasureToolShowHorizontalVertical"
-msgstr "Línies gairebé horitzontals/verticals"
+msgstr ""
 
 msgid "EditHandleSize"
 msgstr ""
@@ -21801,9 +21674,8 @@ msgid ""
 "Change requires a restart of fontforge."
 msgstr ""
 
-#, fuzzy
 msgid "ShowControlPointsAlways"
-msgstr "Predeterminada"
+msgstr ""
 
 msgid "Also enable preview mode when the space bar is pressed."
 msgstr ""
@@ -21999,7 +21871,7 @@ msgid "TT"
 msgstr "TrueType"
 
 msgid "Accents"
-msgstr "Accents"
+msgstr ""
 
 msgid "Apps"
 msgstr "Aplicacions externes"
@@ -22078,7 +21950,7 @@ msgid ""
 msgstr ""
 
 msgid "..."
-msgstr "..."
+msgstr ""
 
 msgid "On"
 msgstr "Actiu"
@@ -22113,13 +21985,11 @@ msgstr " "
 msgid "Features"
 msgstr "Singularitats"
 
-#, fuzzy
 msgid "Arrow Options"
-msgstr "Opcions"
+msgstr ""
 
-#, fuzzy
 msgid "Ruler Options"
-msgstr "Opcions"
+msgstr ""
 
 msgid "This reference has been flipped, so the paths in it are drawn backwards"
 msgstr ""
@@ -23289,7 +23159,7 @@ msgid "Type11 (CID 2)"
 msgstr "Tipus 11 (CID 2)"
 
 msgid "TrueType (Symbol)"
-msgstr "TrueType (Symbol)"
+msgstr ""
 
 msgid "TrueType (Resource)"
 msgstr "TrueType (recurs)"
@@ -23298,22 +23168,22 @@ msgid "TrueType (MacBin)"
 msgstr "TrueType (binari Mac)"
 
 msgid "TrueType (TTC)"
-msgstr "TrueType (TTC)"
+msgstr ""
 
 msgid "TrueType (Mac dfont)"
 msgstr "TrueType (dfont Mac)"
 
 msgid "OpenType (CFF)"
-msgstr "OpenType (CFF)"
+msgstr ""
 
 msgid "OpenType (Mac dfont)"
 msgstr "OpenType (dfont Mac)"
 
 msgid "OpenType CID"
-msgstr "OpenType CID"
+msgstr ""
 
 msgid "OpenType CID (dfont)"
-msgstr "OpenType CID (dfont)"
+msgstr ""
 
 msgid "SVG font"
 msgstr "Tipus de lletra SVG"
@@ -23373,7 +23243,7 @@ msgid "Options"
 msgstr "Opcions"
 
 msgid "PostScript®"
-msgstr "PostScript®"
+msgstr ""
 
 msgid "Do you want to round coordinates to integers (this saves space)?"
 msgstr "Arrodoneix les coordenades a valor enters (estalvia espai)."
@@ -23452,7 +23322,7 @@ msgstr ""
 "que el TeX necessita per instal·lar un tipus de lletra PostScript."
 
 msgid "SFNT"
-msgstr "SFNT"
+msgstr ""
 
 msgid "TrueType Hints"
 msgstr "Hints TrueType"
@@ -23775,9 +23645,8 @@ msgstr ""
 msgid "_Review"
 msgstr "_Revisa-ho"
 
-#, fuzzy
 msgid "_Generate"
-msgstr "Generació de tipus"
+msgstr ""
 
 msgid "Errors detected"
 msgstr "S'han detectat errors"
@@ -23794,17 +23663,11 @@ msgstr "Crea un directori..."
 msgid "Bad Mac Family"
 msgstr "La família Mac és incorrecta"
 
-#, fuzzy
 msgid ""
 "To generate a Mac family file, the current font must have plain (Normal, "
 "Regular, etc.) style, and there must be other open fonts with the same "
 "family name."
 msgstr ""
-"Per generar una família Mac, el tipus de lletra actual\n"
-"ha de ser d'estil rodona (Normal, Regular, etc.), i hi ha\n"
-"d'haver altre o altres fitxers oberts amb el mateix nom\n"
-"de família.Hi ha dos fitxers oberts amb el mateix nom de família\n"
-"i amb el mateix estil. %.30s i %.30s."
 
 #, c-format
 msgid ""
@@ -24575,13 +24438,12 @@ msgstr ""
 msgid "Undo information incomplete"
 msgstr ""
 
-#, fuzzy
 msgid "Bad undo"
-msgstr "La regla és incorrecta"
+msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "couldn't find the character %s"
-msgstr "No s'ha trobat el glif: %.70s"
+msgstr ""
 
 #, c-format
 msgid "Component %d %.30s (%d,%d)"
@@ -24632,7 +24494,7 @@ msgstr[1] ""
 msgid "Class"
 msgid_plural "Classes"
 msgstr[0] "Classe"
-msgstr[1] "Classes"
+msgstr[1] ""
 
 msgid "Lookahead Class"
 msgid_plural "Lookahead Classes"
@@ -24668,7 +24530,7 @@ msgid "Reverse Chaining Subs"
 msgstr ""
 
 msgid "classes"
-msgstr "classes"
+msgstr ""
 
 msgid "coverage"
 msgstr ""
@@ -24873,7 +24735,7 @@ msgid "White Space"
 msgstr "Espai en blanc"
 
 msgid "Neutral"
-msgstr "Neutral"
+msgstr ""
 
 msgid "<Unknown direction>"
 msgstr ""
@@ -25335,7 +25197,7 @@ msgid "Vertical Only"
 msgstr ""
 
 msgid "Final"
-msgstr "Final"
+msgstr ""
 
 msgid "First"
 msgstr "Primer"
@@ -25344,7 +25206,7 @@ msgid "Isolated"
 msgstr "Aïllat"
 
 msgid "Medial"
-msgstr "Medial"
+msgstr ""
 
 msgid "Bad Tile"
 msgstr ""
@@ -26805,13 +26667,11 @@ msgstr ""
 msgid "Darkest Border:"
 msgstr ""
 
-#, fuzzy
 msgid "Inner Border:"
-msgstr "Cantoneres"
+msgstr ""
 
-#, fuzzy
 msgid "Outer Border:"
-msgstr "L'ordre és incorrecte"
+msgstr ""
 
 msgid "Active Border:"
 msgstr ""
@@ -26900,13 +26760,11 @@ msgstr ""
 msgid "Tab Set"
 msgstr ""
 
-#, fuzzy
 msgid "VerticalTabSet"
-msgstr "_Vertical"
+msgstr ""
 
-#, fuzzy
 msgid "Vertical Tab Set"
-msgstr "Línies de base verticals"
+msgstr ""
 
 msgid "Text Field"
 msgstr "Camp de text"
@@ -26983,957 +26841,3 @@ msgstr ""
 #, c-format
 msgid "Reason:%s\n"
 msgstr ""
-
-#~ msgid "Private/Corporate Use"
-#~ msgstr "Ús privat/corporatiu"
-
-#~ msgid "OCR"
-#~ msgstr "ROC"
-
-#~ msgid "Aramaic"
-#~ msgstr "Arameu"
-
-#~ msgid ""
-#~ "Warning: This version of FontForge does not contain extended type3/svg "
-#~ "support\n"
-#~ " needed for this font.\n"
-#~ "Reconfigure with --with-type3.\n"
-#~ msgstr ""
-#~ "Avís: Aquest tipus de lletra necessita que el FontForge\n"
-#~ "tingui activada la compatibilitat amb el Tipus 3/SVG.\n"
-#~ "Heu de reconfigurar el programa amb l'opció «--with-type3».\n"
-
-#~ msgid ""
-#~ "Use the pango library for text (if available)\n"
-#~ "This makes for prettier and handles complex scripts.\n"
-#~ "But it can slow things down on older machines.\n"
-#~ "This applies to any windows created AFTER this is set.\n"
-#~ "Already existing windows will continue as they are."
-#~ msgstr ""
-#~ "Si està disponible, s'usarà el Pango per al text.\n"
-#~ "Això farà que es vegi millor i permetrà treballar\n"
-#~ "amb sistemes d'escriptura complexos però pot alentir\n"
-#~ "bastant els ordinadors antics.\n"
-#~ "Aquesta opció s'aplica a totes les finestres que s'obrin\n"
-#~ "després d'haver-la establert i no afecta les que estaven\n"
-#~ "obertes abans d'haver-ho fet."
-
-#~ msgid "UsePangoDrawing"
-#~ msgstr "Dibuixa amb el Pango"
-
-#~ msgid "Resets the kerning offset to what it was originally"
-#~ msgstr "Restaura el valor original del desplaçament de l'interlletratge."
-
-#~ msgid "Monospace Family"
-#~ msgstr "Família d'ample fix"
-
-#~ msgid "Sans-Serif Family"
-#~ msgstr "Família de pal sec"
-
-#~ msgid "Fraktur Family"
-#~ msgstr "Família fraktur"
-
-#~ msgid "Script Family"
-#~ msgstr "Família manuscrita"
-
-#~ msgid "Serif Family"
-#~ msgstr "Família serif"
-
-#~ msgid ""
-#~ "If you specify a style name for the design size, then you must specify a "
-#~ "style idIf you specify a design size, it must be positive"
-#~ msgstr ""
-#~ "Si heu indicat un nom d'estil pel cos del disseny, aleshores heu "
-#~ "d'indicar també un identificador d'estil.El valor del cos del disseny ha "
-#~ "de ser positiu"
-
-#~ msgid "Unassigned Bit 122"
-#~ msgstr "122è bit sense assignar"
-
-#~ msgid "Unassigned Bit 121"
-#~ msgstr "121è bit sense assignar"
-
-#~ msgid "Unassigned Bit 120"
-#~ msgstr "120è bit sense assignar"
-
-#~ msgid "Unassigned Bit 119"
-#~ msgstr "119è bit sense assignar"
-
-#~ msgid "Unassigned Bit 118"
-#~ msgstr "118è bit sense assignar"
-
-#~ msgid "Unassigned Bit 117"
-#~ msgstr "117è bit sense assignar"
-
-#~ msgid "Unassigned Bit 116"
-#~ msgstr "116è bit sense assignar"
-
-#~ msgid "Unassigned Bit 115"
-#~ msgstr "115è bit sense assignar"
-
-#~ msgid "Unassigned Bit 114"
-#~ msgstr "114è bit sense assignar"
-
-#~ msgid "Unassigned Bit 113"
-#~ msgstr "113è bit sense assignar"
-
-#~ msgid "Unassigned Bit 112"
-#~ msgstr "112è bit sense assignar"
-
-#~ msgid "Unassigned Bit 111"
-#~ msgstr "111è bit sense assignar"
-
-#~ msgid "Unassigned Bit 110"
-#~ msgstr "110è bit sense assignar"
-
-#~ msgid "Unassigned Bit 109"
-#~ msgstr "109è bit sense assignar"
-
-#~ msgid "Unassigned Bit 108"
-#~ msgstr "108è bit sense assignar"
-
-#~ msgid "Unassigned Bit 107"
-#~ msgstr "107è bit sense assignar"
-
-#~ msgid "Unassigned Bit 106"
-#~ msgstr "106è bit sense assignar"
-
-#~ msgid "Unassigned Bit 105"
-#~ msgstr "105è bit sense assignar"
-
-#~ msgid "Unassigned Bit 104"
-#~ msgstr "104è bit sense assignar"
-
-#~ msgid "Unassigned Bit 103"
-#~ msgstr "103è bit sense assignar"
-
-#~ msgid "Unassigned Bit 102"
-#~ msgstr "102è bit sense assignar"
-
-#~ msgid "Unassigned Bit 101"
-#~ msgstr "101è bit sense assignar"
-
-#~ msgid "Unassigned Bit 100"
-#~ msgstr "100è bit sense assignar"
-
-#~ msgid "Unassigned Bit 99"
-#~ msgstr "99è bit sense assignar"
-
-#~ msgid "Unassigned Bit 98"
-#~ msgstr "98è bit sense assignar"
-
-#~ msgid "Unassigned Bit 97"
-#~ msgstr "97è bit sense assignar"
-
-#~ msgid "Unassigned Bit 96"
-#~ msgstr "96è bit sense assignar"
-
-#~ msgid "Unassigned Bit 95"
-#~ msgstr "95è bit sense assignar"
-
-#~ msgid "Unassigned Bit 94"
-#~ msgstr "94è bit sense assignar"
-
-#~ msgid "Unassigned Bit 93"
-#~ msgstr "93è bit sense assignar"
-
-#~ msgid "Byzantine Musical Symbols/Musical Symbols"
-#~ msgstr "Símbols musicals bizantins i símbols musicals"
-
-#~ msgid "Unassigned Bit 58"
-#~ msgstr "58è bit sense assignar"
-
-#~ msgid "Enclosed CJK Leters and Months"
-#~ msgstr "Mesos i lletres CJK inclosos"
-
-#~ msgid "Unassigned Bit 53"
-#~ msgstr "53è bit sense assignar"
-
-#~ msgid "Unassigned Bit 27"
-#~ msgstr "27è bit sense assignar"
-
-#~ msgid "Unassigned Bit 14"
-#~ msgstr "14è bit sense assignar"
-
-#~ msgid "Unassigned Bit 12"
-#~ msgstr "12è bit sense assignar"
-
-#~ msgid "Cyrillic/Cyrillic Supplementary"
-#~ msgstr "Ciríl·lic/Ciríl·lic suplementari"
-
-#~ msgid "Unasigned Bit 8"
-#~ msgstr "8è bit sense assignar"
-
-#~ msgid "E"
-#~ msgstr "E"
-
-#~ msgid ""
-#~ "The size at which the current glyph is rasterized.\n"
-#~ "For small pixelsize you may want to use the magnification\n"
-#~ "factor below to get a clearer view."
-#~ msgstr ""
-#~ "La mida de la trama del glif actual.\n"
-#~ "Per a mides de píxel més petites, podeu usar el factor\n"
-#~ "d'ampliació, a baix, per veure-ho millor."
-
-#~ msgid ""
-#~ "If for some reason the font is deemed inappropriate\n"
-#~ "for a work environment."
-#~ msgstr ""
-#~ "Marqueu aquesta opció si, pel motiu que sigui, considereu\n"
-#~ "que el tipus de lletra no és apte per al seu ús en entorns\n"
-#~ "laborals de producció."
-
-#~ msgid "Not Safe for Work"
-#~ msgstr "No apte per producció"
-
-#~ msgid ""
-#~ "If you have already created a preview image of the font\n"
-#~ "then provide the pathspec here."
-#~ msgstr "Camí a una imatge de mostra creada prèviament"
-
-#~ msgid "No image will be uploaded."
-#~ msgstr "No es penjarà cap imatge."
-
-#~ msgid "No Preview"
-#~ msgstr "Sense previsualització"
-
-#~ msgid ""
-#~ "FontForge will generate a sample image for you\n"
-#~ "before uploading."
-#~ msgstr ""
-#~ "Abans de penjar el tipus de lletra, el FontForge\n"
-#~ "crearà una imatge de mostra."
-
-#~ msgid "Generated Image"
-#~ msgstr "S'ha generat la imatge"
-
-#~ msgid "An image of the font in use"
-#~ msgstr "Imatge del tipus de lletra actual."
-
-#~ msgid "Preview:"
-#~ msgstr "Previsualitza:"
-
-#~ msgid "Upload FONTLOG"
-#~ msgstr "Penja el FontLog"
-
-#~ msgid "Upload the license (as found in the list of truetype names)"
-#~ msgstr "Penja la llicència tal com apareix a la llista de noms TrueType."
-
-#~ msgid "Upload License"
-#~ msgstr "Penja la llicència"
-
-#~ msgid "Public Domain"
-#~ msgstr "Domini públic"
-
-#~ msgid ""
-#~ "The SIL Open Font License\n"
-#~ "Please see http://scripts.sil.org/OFL"
-#~ msgstr ""
-#~ "Llicència Open Font del SIL\n"
-#~ "Vegeu http://scripts.sil.org/OFL"
-
-#~ msgid "SIL"
-#~ msgstr "SIL"
-
-#~ msgid "License:"
-#~ msgstr "Llicència:"
-
-#~ msgid "A description of the font"
-#~ msgstr "Descripció del tipus de lletra."
-
-#~ msgid "Description:"
-#~ msgstr "Descripció:"
-
-#~ msgid ""
-#~ "A comma separated list of keywords that describe\n"
-#~ "the font to help others search for it.\n"
-#~ "You may use whatever keyword tags you desire.\n"
-#~ "Suggestions: serif, sans_serif, bold, italic, oblique,\n"
-#~ "extended, compressed, thin, demibold, black, outline,\n"
-#~ "regular, display, etc."
-#~ msgstr ""
-#~ "Llista de paraules clau descriptives del tipus de lletra,\n"
-#~ "que permeten a altra gent fer-se una idea de com és.\n"
-#~ "Podeu utilitzar qualsevol mena de paraula que cregueu\n"
-#~ "adequada i heu d'utilitzar comes per separar-les.\n"
-#~ "Exemples: amb_gracies, pal_sec, negreta, cursiva, inclinada,\n"
-#~ "ampla, estreta, fina, seminegra, extranegra, buidada, rodona,\n"
-#~ "poster, etc.\n"
-#~ "(En anglès: serif, sans_serif, bold, italic, oblique,\n"
-#~ "extended, compressed, thin, demibold, black, outline, regular,\n"
-#~ "display, etc)."
-
-#~ msgid ""
-#~ "A comma separated list of keywords that describe\n"
-#~ "the font to help others search for it.\n"
-#~ "You may use whatever keyword tags you desire.\n"
-#~ "Suggestions: serif, sans_serif, bold, italic, oblique,\n"
-#~ "extended, compressed, thin, demibold, black, outline, regular,\n"
-#~ "display, etc."
-#~ msgstr ""
-#~ "Llista de paraules clau descriptives del tipus de lletra,\n"
-#~ "que permeten a altra gent fer-se una idea de com és.\n"
-#~ "Podeu utilitzar qualsevol mena de paraula que cregueu\n"
-#~ "adequada i heu d'utilitzar comes per separar-les.\n"
-#~ "Exemples: amb_gracies, pal_sec, negreta, cursiva, inclinada,\n"
-#~ "ampla, estreta, fina, seminegra, extranegra, buidada, rodona,\n"
-#~ "poster, etc.\n"
-#~ "(En anglès: serif, sans_serif, bold, italic, oblique,\n"
-#~ "extended, compressed, thin, demibold, black, outline, regular,\n"
-#~ "display, etc)."
-
-#~ msgid "Keyword Tags:"
-#~ msgstr "Paraules clau:"
-
-#~ msgid ""
-#~ "Other artists involved in the design of this font.\n"
-#~ "Collaborators, etc."
-#~ msgstr ""
-#~ "Altra gent que ha participat en el disseny\n"
-#~ "del tipus de lletra, col·laboradors, etc."
-
-#~ msgid "Artists:"
-#~ msgstr "Dissenyat per:"
-
-#~ msgid "Font name to display on OFLib"
-#~ msgstr ""
-#~ "Nom amb què el tipus de lletra es mostrarà\n"
-#~ "a l'Open Font Library"
-
-#~ msgid "OFLib Name:"
-#~ msgstr "Nom a l'OFLib"
-
-#~ msgid ""
-#~ "FontForge will remember your username/password\n"
-#~ "by storing them as plain text (insecurely) in your preference file"
-#~ msgstr ""
-#~ "El FontForge recordarà el nom d'usuari i la contrasenya\n"
-#~ "desant-los com a text pla al vostre fitxer de preferències\n"
-#~ "Tingueu en compte que això pot ser un problema de seguretat."
-
-#~ msgid "Remember Me"
-#~ msgstr "Recorda-la"
-
-#~ msgid "Password on OFLib"
-#~ msgstr "Contrasenya de l'Open Font Library"
-
-#~ msgid "Password:"
-#~ msgstr "Contrasenya:"
-
-#~ msgid "Username on OFLib"
-#~ msgstr "Nom d'usuari de l'Open Font Library"
-
-#~ msgid "Username:"
-#~ msgstr "Nom d'usuari:"
-
-#~ msgid "Register"
-#~ msgstr "Registre"
-
-#~ msgid "Open Font Library"
-#~ msgstr "Open Font Library (OFLib)"
-
-#~ msgid ""
-#~ "Once you have a final version of your font\n"
-#~ "and if your font is licensed under the Open\n"
-#~ "Font License, then you might consider uploading\n"
-#~ "it to the Open Font Library. This is a website\n"
-#~ "of Free/Libre fonts.\n"
-#~ "\n"
-#~ "You must have previously registered with OFLib\n"
-#~ "and have a valid username/password there.\n"
-#~ "\n"
-#~ "Obviously you must be connected to the internet\n"
-#~ "for this to work."
-#~ msgstr ""
-#~ "L'Open Font Library és un web de tipografia lliure on,\n"
-#~ "si voleu, podeu penjar-hi el tipus de lletra quan el tingueu\n"
-#~ "enllestit, sempre que el publiqueu amb la llicència\n"
-#~ "Open Font License.\n"
-#~ "\n"
-#~ "Prèviament, heu de registrar-vos a l'Open Font Library\n"
-#~ "i obtenir un nom d'usuari i una contrasenya per entrar-hi.\n"
-#~ "\n"
-#~ "Si trieu aquesta opció, cal que tingueu connexió a Internet."
-
-#~ msgid "Upload to the"
-#~ msgstr "Penja'l a"
-
-#~ msgid ""
-#~ "The FONTLOG is a text file containing pertinent information\n"
-#~ "about the font including such things as its change history.\n"
-#~ "The SIL Open Font License highly recommends its use.\n"
-#~ "\n"
-#~ "If your font contains a FONTLOG (see the Element->Font Info)\n"
-#~ "and you check this box, then the internal FONTLOG will be\n"
-#~ "written to the file \"FONTLOG.txt\" in the same directory\n"
-#~ "as the font itself."
-#~ msgstr ""
-#~ "El FontLog és un fitxer de text que conté informació referent\n"
-#~ "al tipus de lletra, com ara l'historial de canvis.\n"
-#~ "La llicència Open Font del SIL recomana fermament el seu ús.\n"
-#~ "\n"
-#~ "Si seleccioneu aquesta opció i el vostre fitxer inclou un FontLog\n"
-#~ "(vegeu «Informació del tipus de lletra...» al menú «Element»),\n"
-#~ "es crearà un fitxer nou anomenat «FONTLOG.txt» amb una còpia del\n"
-#~ "FontLog intern, que es desarà al mateix directori on es desi\n"
-#~ "el tipus de lletra que s'estigui generant."
-
-#~ msgid "Output Font Log"
-#~ msgstr "Genera el FontLog"
-
-#~ msgid "Web Open Font"
-#~ msgstr "Web Open Font (WOF)"
-
-#, fuzzy
-#~ msgid "Collaboration"
-#~ msgstr "Separació"
-
-#~ msgid "Checking for new fonts"
-#~ msgstr "S'està comprovant si hi ha tipus de lletra nous"
-
-#~ msgid "Done"
-#~ msgstr "Fet"
-
-#~ msgid "Preview"
-#~ msgstr "Previsualitza"
-
-#~ msgid "Fonts on http://openfontlibrary.org/"
-#~ msgstr "Tipus de lletra a http://openfontlibrary.org/"
-
-#~ msgid "Search:"
-#~ msgstr "Cerca:"
-
-#~ msgid "Reverse"
-#~ msgstr "Inverteix"
-
-#~ msgid "Date"
-#~ msgstr "Data"
-
-#~ msgid "Sort by:"
-#~ msgstr "Ordena per:"
-
-#~ msgid "Browse the Open Font Library"
-#~ msgstr "Navega per l'Open Font Library"
-
-#~ msgid "Tag(s)"
-#~ msgstr "Etiquetes"
-
-#~ msgid "Show All"
-#~ msgstr "Mostra-ho tot"
-
-#~ msgid "PM"
-#~ msgstr "PM"
-
-#~ msgid "AM"
-#~ msgstr "AM"
-
-#~ msgid "Noon"
-#~ msgstr "migdia"
-
-#~ msgid "Midnight"
-#~ msgstr "mitjanit"
-
-#~ msgid "December"
-#~ msgstr "desembre"
-
-#~ msgid "November"
-#~ msgstr "novembre"
-
-#~ msgid "October"
-#~ msgstr "octubre"
-
-#~ msgid "September"
-#~ msgstr "setembre"
-
-#~ msgid "August"
-#~ msgstr "agost"
-
-#~ msgid "July"
-#~ msgstr "juliol"
-
-#~ msgid "June"
-#~ msgstr "juny"
-
-#~ msgid "May"
-#~ msgstr "maig"
-
-#~ msgid "April"
-#~ msgstr "abril"
-
-#~ msgid "March"
-#~ msgstr "març"
-
-#~ msgid "February"
-#~ msgstr "febrer"
-
-#~ msgid "January"
-#~ msgstr "gener"
-
-#, fuzzy
-#~ msgid "C_ollaborate"
-#~ msgstr "Collage"
-
-#~ msgid "_Fit to em"
-#~ msgstr "Ajusta al quadratí"
-
-#~ msgid "Browse web"
-#~ msgstr "Navega pel web"
-
-#~ msgid "Open Font Library..."
-#~ msgstr "Open Font Library..."
-
-#~ msgid "OFL website"
-#~ msgstr "Lloc web de l'OFL"
-
-#~ msgid "Add SIL "
-#~ msgstr "Afegeix SIL"
-
-#~ msgid "Panose|_Family"
-#~ msgstr "_Família"
-
-#~ msgid "Name table too big for windows"
-#~ msgstr "El nom de la taula és massa llarg"
-
-#~ msgid ""
-#~ "You should read the OFL and its FAQ \n"
-#~ "at http://scripts.sil.org/OFL.\n"
-#~ "If you are not very familiar with English,\n"
-#~ "please check if there is a translation of the \n"
-#~ "FAQ or an unofficial translation of the license \n"
-#~ "in your mother tongue or preferred language. \n"
-#~ "\n"
-#~ "Please fill in the copyright notice in the license\n"
-#~ "header along with any Reserved Font Name(s).\n"
-#~ "If you are branching from an existing font make sure\n"
-#~ "you have the right to do so and remember to add your\n"
-#~ "additional notice with any Reserved Font Name(s)."
-#~ msgstr ""
-#~ "Podeu llegir l'OFL (llicència de tipus de lletra obert) \n"
-#~ "i les seves PMF a http://scripts.sil.org/OFL.\n"
-#~ "Si no enteneu gaire l'anglès, mireu si hi ha la \n"
-#~ "traducció de les PMF i la traducció oficiosa de la \n"
-#~ "llicència en una altra llengua que entengueu més. \n"
-#~ "\n"
-#~ "Empleneu tant l'avís de copyright de la capçalera \n"
-#~ "de la llicència com els noms reservats del tipus de lletra. \n"
-#~ "Si esteu fent un derivat d'un tipus que ja existia, \n"
-#~ "assegureu-vos que teniu els drets per fer-ho i, si s'escau, \n"
-#~ "afegiu l'avís addicional amb els noms reservats."
-
-#~ msgid "Please read the OFL"
-#~ msgstr "Llegiu l'OFL"
-
-#~ msgid "Industry specific"
-#~ msgstr "Específic de la indústria"
-
-#~ msgid "Deco (E,M,S) Waco midline"
-#~ msgstr "Art Deco"
-
-#~ msgid "Drawn/Distressed"
-#~ msgstr "Dibuixat/Distorsionat"
-
-#~ msgid "Solid Fill"
-#~ msgstr "Emplenament llis"
-
-#~ msgid "Round/Open loops"
-#~ msgstr "Arrodonides / Llaços oberts"
-
-#~ msgid "Round/Closed loops"
-#~ msgstr "Arrodonides / Llaços tancats"
-
-#~ msgid "Round/No loops"
-#~ msgstr "Arrodonides / Sense llaços"
-
-#~ msgid "Tapered/Open loops"
-#~ msgstr "Esmolades / Llaços oberts"
-
-#~ msgid "Tapered/Closed loops"
-#~ msgstr "Esmolades / Llaços tancats"
-
-#~ msgid "Tapered/No loops"
-#~ msgstr "Esmolades / Sense llaços"
-
-#~ msgid "Sharp/Open loops"
-#~ msgstr "Sobtades / Llaços oberts"
-
-#~ msgid "Sharp/Closed loops"
-#~ msgstr "Sobtades / Llaços tancats"
-
-#~ msgid "Sharp/No loops"
-#~ msgstr "Sobtades / Sense Llaços"
-
-#~ msgid "None/Open loops"
-#~ msgstr "Cap / Llaços oberts"
-
-#~ msgid "None/Closed loops"
-#~ msgstr "Cap / Llaços tancats"
-
-#~ msgid "None/No loops"
-#~ msgstr "Cap / Sense llaços"
-
-#~ msgid "Felt Pen/Brush Tip"
-#~ msgstr "Retolador"
-
-#~ msgid "Nord"
-#~ msgstr "Extranegra"
-
-#~ msgid "Latin: Pictorial/Symbol"
-#~ msgstr "Llatí, simbòlica"
-
-#~ msgid "Latin: Text & Display"
-#~ msgstr "Llatí, textual"
-
-#~ msgid "EUC-GB12345"
-#~ msgstr "EUC-GB12345"
-
-#~ msgid "_Pressure:"
-#~ msgstr "_Pressió:"
-
-#, fuzzy
-#~ msgid "_Disconnect"
-#~ msgstr "Rodona sense lligar"
-
-#, fuzzy
-#~ msgid "_Reconnect"
-#~ msgstr "Connectors"
-
-#~ msgid "%1$.80s at %2$d from %3$.90s"
-#~ msgstr "Glif: %1$.80s - Codi: %2$d - Tipus: %3$.90s"
-
-#, fuzzy
-#~ msgid ""
-#~ "A few glyphs, like Aring, Ccedilla, Eogonek\n"
-#~ "are composed of two overlapping references.\n"
-#~ "Often it is desirable to retain the references\n"
-#~ "(so that changes made to the base glyph are\n"
-#~ "reflected in the composed glyph), but that\n"
-#~ "means you are stuck with overlapping contours.\n"
-#~ "This flag means that just before saving the\n"
-#~ "font, fontforge will unlink the references,\n"
-#~ "and run remove overlap on them, then just\n"
-#~ "after saving it will undo the operation\n"
-#~ "thereby retaining the references."
-#~ msgstr ""
-#~ "Uns quants glifs, com ara la c trencada, són\n"
-#~ "composicions de dues referències superposades.\n"
-#~ "Sovint és preferible mantenir les referències\n"
-#~ "per tal que les modificacions que es facin al\n"
-#~ "glif base també afectin el glif compost. Això,\n"
-#~ "però, implica tenir superposició de contorns.\n"
-#~ "Aquesta casella marcada indica al FontForge que\n"
-#~ "a l'hora de generar el tipus de lletra desenllaci\n"
-#~ "les referències i suprimeixi les superposicions i,\n"
-#~ "un cop generat, desfaci les operacions fetes de\n"
-#~ "manera que es conservin les referències."
-
-#~ msgid "Mark for Unlink, Remove Overlap Before Save"
-#~ msgstr "Desenllaça i elimina les superposicions"
-
-#~ msgid "Tag characters"
-#~ msgstr "Caràcters d'etiquetes"
-
-#~ msgid "Chinese counting rod numerals"
-#~ msgstr "Numerals dels bastonets de comptar xinesos"
-
-#~ msgid "Notational systems"
-#~ msgstr "Sistemes d'anotacions"
-
-#~ msgid "Large Asian Scripts"
-#~ msgstr "Alfabets asiàtics grans"
-
-#~ msgid "Sumerian pictograms"
-#~ msgstr "Pictogrames sumeris"
-
-#~ msgid "Egyptian and Mayan hieroglyphs"
-#~ msgstr "Jeroglífics egipcis i maies"
-
-#~ msgid "North American ideographs and pictograms"
-#~ msgstr "Ideogrames i pictogrames nord-americans"
-
-#~ msgid "Egyptian hieroglyphs"
-#~ msgstr "Jeroglífics egipcis"
-
-#~ msgid "Sumero-Akkadian Cuneiform"
-#~ msgstr "Cuneïforme sumeri accadi"
-
-#~ msgid "Bad glyph name"
-#~ msgstr "El nom del glif és erroni"
-
-#~ msgid "No"
-#~ msgstr "No"
-
-#~ msgid ""
-#~ "Windows has decided that fonts with 'name' tables bigger than 5K are\n"
-#~ "insecure and will refuse to load them. Don't ask me why they believe "
-#~ "this.\n"
-#~ "This font has a name table which is %d bytes and is bigger than this "
-#~ "limit.\n"
-#~ msgstr ""
-#~ "La taula de noms d'aquest tipus de lletra té una mida de %d bytes\n"
-#~ "i, per tant, supera el límit màxim de 5 kB imposat pel Windows.\n"
-
-#~ msgid ""
-#~ "The directory on your local system in which FontForge will search for "
-#~ "help\n"
-#~ "files.  If a file is not found there, then FontForge will look for it on "
-#~ "the net."
-#~ msgstr ""
-#~ "Directori local on es desen els fitxers d'ajuda del FontForge.\n"
-#~ "Si algun fitxer d'ajuda no és aquí, aleshores el FontForge el\n"
-#~ "cercarà a Internet."
-
-#~ msgid "HelpDir"
-#~ msgstr "Directori de l'ajuda"
-
-#~ msgid ""
-#~ "When FontForge starts up, it loads display related resources from a\n"
-#~ "property on the screen. Sometimes it is useful to be able to store\n"
-#~ "these resources in a file. These resources are only read at start\n"
-#~ "up, so changing this has no effect until the next time you start\n"
-#~ "FontForge."
-#~ msgstr ""
-#~ "Quan s'engega el FontForge, es carreguen els recursos relacionats\n"
-#~ "amb la visualizació en pantalla de diversos aspectes del programa.\n"
-#~ "Podeu configurar-los al vostre gust i desar-los en un fitxer extern.\n"
-#~ "Aquest requadre us permet triar quin fitxer de recursos voleu usar.\n"
-#~ "El fitxer només és llegeix en engegar, per tant, els canvis que hi\n"
-#~ "feu no tindran efecte fins que torneu a engegar el FontForge."
-
-#~ msgid "TeX Extension List"
-#~ msgstr "Llista d'extensió del TeX"
-
-#~ msgid "TeX Glyphlist"
-#~ msgstr "Llista de glifs del TeX"
-
-#~ msgid "FontForge can only upload to ftp URLs at the moment"
-#~ msgstr "Aquesta versió del FontForge només pot penjar dades a URL d'FTP."
-
-#~ msgid "FontForge only handles ftp and http URLs at the moment"
-#~ msgstr ""
-#~ "Aquesta versió del FontForge només pot gestionar URL d'FTP i d'HTTP."
-
-#~ msgid "Could not transmit data."
-#~ msgstr "No s'ha pogut transmetre les dades."
-
-#~ msgid "Could not transmit data"
-#~ msgstr "No s'ha pogut transmetre les dades"
-
-#~ msgid "Uploading font..."
-#~ msgstr "S'esta penjant el tipus de lletra..."
-
-#~ msgid "Could not find file."
-#~ msgstr "No s'ha trobat el fitxer."
-
-#~ msgid "FTP passive Data Connect failed\n"
-#~ msgstr "La connexió de dades passiva de l'FTP ha fallat\n"
-
-#~ msgid "Transmitting font..."
-#~ msgstr "S'està fent la transmissió del tipus de lletra..."
-
-#~ msgid "Bad Username/Password\n"
-#~ msgstr "El nom d'usuari o la contrasenya són incorrectes\n"
-
-#~ msgid "Logging in..."
-#~ msgstr "S'està iniciant la sessió..."
-
-#~ msgid "Got something else when expecting an ftp URL"
-#~ msgstr "S'ha rebut alguna cosa més que una URL d'FTP"
-
-#~ msgid "Uploading to %s"
-#~ msgstr "S'està penjant a %s"
-
-#~ msgid "Downloading file..."
-#~ msgstr "S'està baixant el fitxer..."
-
-#~ msgid "Requesting file..."
-#~ msgstr "S'està sol·licitant el fitxer..."
-
-#~ msgid "HTTP return code: %d."
-#~ msgstr "Codi de resposta HTTP: %d."
-
-#~ msgid "Could not download data."
-#~ msgstr "No s'han pogut baixar les dades."
-
-#~ msgid "Could not download data"
-#~ msgstr "No s'han pogut baixar les dades"
-
-#~ msgid "Downloading font..."
-#~ msgstr "S'està baixant el tipus de lletra..."
-
-#~ msgid "Could not send request to \"%s\"."
-#~ msgstr "No s'ha pogut enviar la sol·licitud a %s."
-
-#~ msgid "Could not send request"
-#~ msgstr "No s'ha pogut enviar la sol·licitud"
-
-#~ msgid "Requesting font..."
-#~ msgstr "S'està sol·licitant el tipus de lletra..."
-
-#~ msgid "Resolving host"
-#~ msgstr "S'està localitzant l'ordinador central..."
-
-#~ msgid "Font Download..."
-#~ msgstr "S'està baixant el tipus de lletra..."
-
-#~ msgid "Got something else when expecting an http URL"
-#~ msgstr "S'ha rebut alguna cosa més que una URL d'HTTP"
-
-#~ msgid "Could not parse URL"
-#~ msgstr "No s'ha pogut analitzar l'URL"
-
-#~ msgid "Downloading from %s"
-#~ msgstr "Baixant de %s"
-
-#~ msgid "Enter password for %s@%s"
-#~ msgstr "Introduiu la contradenya de %s@%s"
-
-#~ msgid "Password?"
-#~ msgstr "Contrasenya"
-
-#~ msgid "The preview file we just created can no longer be opened."
-#~ msgstr ""
-#~ "El fitxer de previsualització acabat de crear no es podrà llegir mai més"
-
-#~ msgid "Preview file vanished"
-#~ msgstr "El fitxer de previsualització ha desparegut"
-
-#~ msgid "Failed to find an upload id."
-#~ msgstr "No s'ha pogut trobar un identificador de càrrega"
-
-#~ msgid "The preview image we just created can no longer be opened."
-#~ msgstr ""
-#~ "La imatge de previsualització acabada de crear no es podrà obrir mai més."
-
-#~ msgid "Image file vanished"
-#~ msgstr "El fitxer d'imatge ha desaparegut"
-
-#~ msgid "The font file we just created can no longer be opened."
-#~ msgstr ""
-#~ "El fitxer de tipus de lletra acabat de crear no es podrà obrir mai més."
-
-#~ msgid "Font file vanished"
-#~ msgstr "El fitxer de tipus de lletra ha desparegut"
-
-#~ msgid "Could not read state."
-#~ msgstr "No s'ha pogut llegir l'estat."
-
-#~ msgid "Could not read state"
-#~ msgstr "No s'ha pogut llegir l'estat"
-
-#~ msgid "Could not log in."
-#~ msgstr "No s'ha pogut iniciar la sessió"
-
-#~ msgid "Login failed"
-#~ msgstr "L'inici de sessió ha fallat"
-
-#~ msgid ""
-#~ "Could not find \"%s\"\n"
-#~ "Are you connected to the internet?"
-#~ msgstr ""
-#~ "No s'ha pogut trobar %s\n"
-#~ "Comproveu que teniu connexió a Internet"
-
-#~ msgid "Could not find host"
-#~ msgstr "No s'ha pogut trobar l'ordinador central"
-
-#~ msgid "Server error code=%d"
-#~ msgstr "Codi d'error del servidor: %d"
-
-#~ msgid "Could not connect to \"%s\"."
-#~ msgstr "No s'ha pogut connectar amb %s"
-
-#~ msgid "Could not connect to host"
-#~ msgstr "No s'ha pogut connectar amb l'ordinador central"
-
-#~ msgid "Awaiting response"
-#~ msgstr "S'està esperant resposta"
-
-#~ msgid "Third"
-#~ msgstr "Tercer"
-
-#~ msgid "Second"
-#~ msgstr "Segon"
-
-#, fuzzy
-#~ msgid "Collab Client"
-#~ msgstr "Collage"
-
-#, fuzzy
-#~ msgid "Collab Server"
-#~ msgstr "Collage"
-
-#, fuzzy
-#~ msgid "Disconnected"
-#~ msgstr "Rodona sense lligar"
-
-#, fuzzy
-#~ msgid "Mahjong & Domino Tiles"
-#~ msgstr "Fitxes del mahjong"
-
-#, fuzzy
-#~ msgid "Sudanese"
-#~ msgstr "Sudanès"
-
-#, fuzzy
-#~ msgid "Cuneiform Numbers & Punctuation"
-#~ msgstr "Nombres cuneïformes"
-
-#~ msgid "Private Use (planes 15&16)"
-#~ msgstr "Ús privat (plans 15 i 16)"
-
-#~ msgid "Tagalog/Hanunno/Buhid/Tagbanwa"
-#~ msgstr "Tagal/Hanunno/Bugui/Tagbanwa"
-
-#~ msgid "Bopomofo & Extended"
-#~ msgstr "Bopomofo ampliat"
-
-#~ msgid "Katakana & Phonetic Extensions"
-#~ msgstr "Extensions fonètiques katakana"
-
-#, fuzzy
-#~ msgid "Mathematical Operators (Suppl. & Misc.)"
-#~ msgstr "Operadors matemàtics"
-
-#, fuzzy
-#~ msgid "Cyrillic & Supplement"
-#~ msgstr "Suplement ciríl·lic"
-
-#, fuzzy
-#~ msgid "Transport And Map Symbols"
-#~ msgstr "Símbols musicals bizantins"
-
-#, fuzzy
-#~ msgid "Miscellaneous Symbols And Pictographs"
-#~ msgstr "Símbols miscel·lanis"
-
-#~ msgid "Cuneiform and other Near Eastern Scripts"
-#~ msgstr "Cuneïforme i altres alfabets de l'orient proper"
-
-#~ msgid "African and other syllabic scripts"
-#~ msgstr "Africà i altres alfabets sil·làbics"
-
-#, fuzzy
-#~ msgid "Sundanese Extensions"
-#~ msgstr "Extensions fonètiques"
-
-#~ msgid "Tai Lu"
-#~ msgstr "Tai Lu"
-
-#~ msgid "Phaistos"
-#~ msgstr "Phaistos"
-
-#~ msgid "Script Style"
-#~ msgstr "Estil manuscrit"
-
-#~ msgid "Dipthongs (Obsolete)"
-#~ msgstr "Diftongs (obsolet)"
-
-#~ msgid "Drop Caps"
-#~ msgstr "Caplletres"
-
-#~ msgid "Character Variants 00"
-#~ msgstr "Variants de caràcter 00"
-
-#~ msgid "Ancient Ligatures"
-#~ msgstr "Lligadures antigues"

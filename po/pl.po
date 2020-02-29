@@ -1,8 +1,12 @@
 # translation of FontForge.po
 # (Polish) Polish User Interface strings for FontForge.
-# Copyright (C) 2006-2012 Michał Nowakowski
+# Copyright (C) 2006-2012 MichaÅ Nowakowski
 # Please contact fontforge-devel list to share any corrections.
 # This file is distributed under the same license as the FontForge package.
+#
+# Translators:
+# MichaÅ Nowakowski, 2006-2012
+# Adam Jagosz, 2019
 #
 msgid ""
 msgstr ""
@@ -10,14 +14,18 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-02-29 10:56+1100\n"
 "PO-Revision-Date: 2014-05-10 21:18+0200\n"
-"Last-Translator: Michał Nowakowski <miszka@limes.com.pl>\n"
+"Last-Translator: Adam Jagosz <adamjagosz@gmail.com>\n"
 "Language-Team: \n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
-"|| n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n"
+"%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n"
+"%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
+"X-Crowdin-Project: fontforge\n"
+"X-Crowdin-Language: pl\n"
+"X-Crowdin-File: FontForge.pot\n"
 
 msgid "FontForge"
 msgstr ""
@@ -257,7 +265,7 @@ msgid "Don't Warn Again"
 msgstr "Nie ostrzegaj ponownie"
 
 msgid "_OK"
-msgstr "_OK"
+msgstr ""
 
 msgid "Bad Reference"
 msgstr "Błędne odwołanie"
@@ -1860,7 +1868,7 @@ msgid "Czech"
 msgstr "czeski"
 
 msgid "Dutch"
-msgstr "duński"
+msgstr "holenderski"
 
 msgid "English"
 msgstr "angielski"
@@ -1887,10 +1895,10 @@ msgid "Italian"
 msgstr "włoski"
 
 msgid "Hiragana"
-msgstr "Hiragana"
+msgstr ""
 
 msgid "Katakana"
-msgstr "Katakana"
+msgstr ""
 
 msgid "Lithuanian"
 msgstr "litewski"
@@ -2889,7 +2897,7 @@ msgid "Script|Javanese"
 msgstr "jawajskie"
 
 msgid "Kaithi"
-msgstr "Kaithi"
+msgstr ""
 
 msgid "Script|Kannada"
 msgstr "kannada"
@@ -3081,7 +3089,7 @@ msgid "Psalter Pahlavi"
 msgstr ""
 
 msgid "Rejang"
-msgstr "Rejang"
+msgstr ""
 
 msgid "Runic"
 msgstr "runiczne"
@@ -4575,7 +4583,7 @@ msgid "No problems detected"
 msgstr "Nie znaleziono żadnych problemów"
 
 msgid "OK"
-msgstr "OK"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -6380,7 +6388,7 @@ msgid "Unicode 1.1"
 msgstr "Unikod 1.1"
 
 msgid "ISO 10646:1993"
-msgstr "ISO 10646:1993"
+msgstr ""
 
 msgid "Unicode 2.0+, BMP only"
 msgstr "Unikod 2.0+, tylko BMP"
@@ -6395,7 +6403,7 @@ msgid "Unicode"
 msgstr "Unikod"
 
 msgid "Apple"
-msgstr "Apple"
+msgstr ""
 
 msgid "ISO (Deprecated)"
 msgstr "ISO (przestarzałe)"
@@ -8943,16 +8951,16 @@ msgid "Tamil"
 msgstr "tamilski"
 
 msgid "Telugu"
-msgstr "Telugu"
+msgstr ""
 
 msgid "Kannada"
-msgstr "Kannada"
+msgstr ""
 
 msgid "Malayalam"
 msgstr "malajalam"
 
 msgid "Sinhala"
-msgstr "Sinhala"
+msgstr ""
 
 msgid "Thai"
 msgstr "tajski"
@@ -9030,7 +9038,7 @@ msgid "Sundanese"
 msgstr "sundajski"
 
 msgid "Batak"
-msgstr "Batak"
+msgstr ""
 
 msgid "Lepcha"
 msgstr "lepcha"
@@ -9501,7 +9509,7 @@ msgid "Elymaic"
 msgstr ""
 
 msgid "Brahmi"
-msgstr "Brahmi"
+msgstr ""
 
 msgid "Sinhala Archaic Numbers"
 msgstr ""
@@ -9802,10 +9810,10 @@ msgid "Coordinate along which to space"
 msgstr "Oś wzdłuż której rozmieszczać"
 
 msgid "_X"
-msgstr "_X"
+msgstr ""
 
 msgid "_Y"
-msgstr "_Y"
+msgstr ""
 
 msgid "_Maximum distance between points in a region"
 msgstr "_Maksymalna odległość między punktami części"
@@ -10116,43 +10124,43 @@ msgid ""
 msgstr "Wybierz tagi systemów linii podstawowych,które mają być obsługiwane:"
 
 msgid "hang"
-msgstr "hang"
+msgstr ""
 
 msgid "Indic (& Tibetan) hanging baseline"
 msgstr "Linia podstawowa pisma tybetańskiego i indyjskich"
 
 msgid "icfb"
-msgstr "icfb"
+msgstr ""
 
 msgid "Ideographic character face bottom edge baseline"
 msgstr "Linia podstawowa pism ideograficznych - wersja dolna brzegowa"
 
 msgid "icft"
-msgstr "icft"
+msgstr ""
 
 msgid "Ideographic character face top edge baseline"
 msgstr "Linia podstawowa pism ideograficznych - wersja górna brzegowa"
 
 msgid "ideo"
-msgstr "ideo"
+msgstr ""
 
 msgid "Ideographic em-box bottom edge baseline"
 msgstr "Linia podstawowa pism ideograficznych - wersja dolna"
 
 msgid "idtp"
-msgstr "idtp"
+msgstr ""
 
 msgid "Ideographic em-box top edge baseline"
 msgstr "Linia podstawowa pism ideograficznych - wersja górna"
 
 msgid "math"
-msgstr "math"
+msgstr ""
 
 msgid "Mathematical centerline"
 msgstr "Linia środkowa we wzorach matematycznych"
 
 msgid "romn"
-msgstr "romn"
+msgstr ""
 
 msgid "Baseline used for Latin, Greek, Cyrillic text."
 msgstr "Linia podstawowa pism opartych na łacińskim, cyrylicy i greckim."
@@ -10271,13 +10279,13 @@ msgstr "Rozmiary bitmap do usunięcia"
 
 #. GT: X is a coordinate
 msgid "X"
-msgstr "X"
+msgstr ""
 
 msgid "Win"
-msgstr "Win"
+msgstr ""
 
 msgid "Mac"
-msgstr "Mac"
+msgstr ""
 
 msgid "Use FreeType"
 msgstr "Użyj FreeType"
@@ -10593,7 +10601,7 @@ msgid "_Edit"
 msgstr "_Edycja"
 
 msgid "E_lement"
-msgstr "E_lement"
+msgstr ""
 
 msgid "_View"
 msgstr "_Widok"
@@ -10894,7 +10902,7 @@ msgid "Replacement Glyph Names"
 msgstr "Nazwy zamienników"
 
 msgid "∆x"
-msgstr "∆x"
+msgstr ""
 
 #. GT: "Adjust" here means Device Table based pixel adjustments, an OpenType
 #. GT: concept which allows small corrections for small pixel sizes where
@@ -10904,7 +10912,7 @@ msgid "Adjust"
 msgstr "Korekta"
 
 msgid "∆y"
-msgstr "∆y"
+msgstr ""
 
 msgid "∆x_adv"
 msgstr "∆szer"
@@ -10916,10 +10924,10 @@ msgid "Second Glyph Name"
 msgstr "Nazwa drugiego glifu"
 
 msgid "∆x #1"
-msgstr "∆x #1"
+msgstr ""
 
 msgid "∆y #1"
-msgstr "∆y #1"
+msgstr ""
 
 msgid "∆x_adv #1"
 msgstr "∆szer #1"
@@ -10928,10 +10936,10 @@ msgid "∆y_adv #1"
 msgstr "∆wys #1"
 
 msgid "∆x #2"
-msgstr "∆x #2"
+msgstr ""
 
 msgid "∆y #2"
-msgstr "∆y #2"
+msgstr ""
 
 msgid "∆x_adv #2"
 msgstr "∆szer #2"
@@ -11278,10 +11286,10 @@ msgstr "Prostokąt brzegowy:"
 
 #. GT: X is a coordinate, the leading spaces help to align it
 msgid "  X"
-msgstr "  X"
+msgstr ""
 
 msgid "  Y"
-msgstr "  Y"
+msgstr ""
 
 msgid "Positionings"
 msgstr "Pozycjonowanie"
@@ -11901,10 +11909,10 @@ msgid "Insert a point on the given spline at either..."
 msgstr "Wstaw na krzywej punkt o danej współrzędnej..."
 
 msgid "_X:"
-msgstr "_X:"
+msgstr ""
 
 msgid "_Y:"
-msgstr "_Y:"
+msgstr ""
 
 msgid "Anchor Class Name"
 msgstr "Nazwa klasy kotwic"
@@ -12426,13 +12434,13 @@ msgid "PointNumbers|_None"
 msgstr "_Brak"
 
 msgid "_TrueType"
-msgstr "_TrueType"
+msgstr ""
 
 msgid "_PostScript®"
-msgstr "_PostScript®"
+msgstr ""
 
 msgid "_SVG"
-msgstr "_SVG"
+msgstr ""
 
 msgid "P_ositions"
 msgstr "P_ozycje"
@@ -12580,7 +12588,7 @@ msgstr "_Hinting"
 
 #. GT: Here (and following) MM means "MultiMaster"
 msgid "MM"
-msgstr "MM"
+msgstr ""
 
 msgid "Outline View 2"
 msgstr "Widok glifu - ciąg dalszy"
@@ -13042,19 +13050,19 @@ msgid "Pixel size?"
 msgstr "Rozmiar w pikselach?"
 
 msgid "EPS"
-msgstr "EPS"
+msgstr ""
 
 msgid "XFig"
-msgstr "XFig"
+msgstr ""
 
 msgid "SVG"
-msgstr "SVG"
+msgstr ""
 
 msgid "Glif"
-msgstr "Glif"
+msgstr ""
 
 msgid "PDF"
-msgstr "PDF"
+msgstr ""
 
 msgid "Raph's plate"
 msgstr "plate (Spiro)"
@@ -13066,7 +13074,7 @@ msgid "BMP"
 msgstr "bmp"
 
 msgid "png"
-msgstr "png"
+msgstr ""
 
 msgid "X Pixmap"
 msgstr "Pixmapa X"
@@ -13107,7 +13115,7 @@ msgid "Directory|_New"
 msgstr "_Nowy"
 
 msgid "Format:"
-msgstr "Format:"
+msgstr ""
 
 msgid "Transformation Matrix"
 msgstr "Macierz przekształcenia"
@@ -13208,10 +13216,10 @@ msgid "Bounding Box:"
 msgstr "Prostokąt brzegowy:"
 
 msgid "X:"
-msgstr "X:"
+msgstr ""
 
 msgid "Y:"
-msgstr "Y:"
+msgstr ""
 
 msgid "_Show"
 msgstr "_Pokaż"
@@ -13373,13 +13381,13 @@ msgid "ControlPoint|Default"
 msgstr "Domyślny"
 
 msgid "Offset"
-msgstr "Offset"
+msgstr ""
 
 msgid "Dist"
 msgstr "Odl"
 
 msgid "°"
-msgstr "°"
+msgstr ""
 
 msgid "Curvature: -0.00000000"
 msgstr "Krzywizna: -0.00000000"
@@ -13417,7 +13425,7 @@ msgstr "Nast. na konturze"
 #. GT: Y is a coordinate
 #. GT: Y is a coordinate, the leading spaces help to align it
 msgid "Y"
-msgstr "Y"
+msgstr ""
 
 msgid "Spiro Point Info"
 msgstr "Właściwości punktu spiro"
@@ -13445,7 +13453,7 @@ msgid "Pointsize X"
 msgstr "Szer. w pkt."
 
 msgid "DPI"
-msgstr "DPI"
+msgstr ""
 
 msgid "Grid Fit Parameters"
 msgstr "Parametry rastra"
@@ -13457,7 +13465,7 @@ msgid "Scale X/Y the same"
 msgstr "Równe proporcje X/Y"
 
 msgid "_DPI:"
-msgstr "_DPI:"
+msgstr ""
 
 msgid "_Pointsize Y:"
 msgstr "_Wys. w pkt.:"
@@ -13565,16 +13573,16 @@ msgid "Raph's plate files"
 msgstr "plate (Spiro)"
 
 msgid "BDF"
-msgstr "BDF"
+msgstr ""
 
 msgid "TTF"
-msgstr "TTF"
+msgstr ""
 
 msgid "ΤεΧ Bitmap Fonts"
 msgstr "Fonty bitmapowe ΤεΧ-a"
 
 msgid "PCF (pmf)"
-msgstr "PCF (pmf)"
+msgstr ""
 
 msgid "Mac Bitmap"
 msgstr "Bitmapa macowa"
@@ -13664,7 +13672,7 @@ msgid "Perform a perspective transformation on the selection"
 msgstr "Przekształca zaznaczenie perspektywicznie"
 
 msgid "Rotate the selection in 3D and project back to plane"
-msgstr "Obraca zaznaczenie w 3D i rzutuje z powrotem na płaszczyznę"
+msgstr ""
 
 msgid "Polygon or Star"
 msgstr "Wielobok lub gwiazda"
@@ -13887,10 +13895,10 @@ msgid "Make Quadratic"
 msgstr "Krzywe stopnia 2 (TT)"
 
 msgid "+"
-msgstr "+"
+msgstr ""
 
 msgid "-"
-msgstr "-"
+msgstr ""
 
 msgid "Delete the current layer"
 msgstr "Usun bieżącą warstwę"
@@ -14027,7 +14035,7 @@ msgid "_Radius:"
 msgstr "P_romień:"
 
 msgid "3"
-msgstr "3"
+msgstr ""
 
 msgid "_Width:"
 msgstr "_Szerokość"
@@ -14333,7 +14341,7 @@ msgid "Opacity"
 msgstr "Krycie"
 
 msgid "Gradient"
-msgstr "Gradient"
+msgstr ""
 
 msgid ""
 "  A linear gradient is represented by a line drawn\n"
@@ -14482,7 +14490,7 @@ msgid "Inherited"
 msgstr "Dziedziczone"
 
 msgid "Gradient:"
-msgstr "Gradient:"
+msgstr ""
 
 msgid "Add"
 msgstr "Powiększ o:"
@@ -14794,7 +14802,7 @@ msgstr ""
 "fragmencie tekstu."
 
 msgid "Menu"
-msgstr "Menu"
+msgstr ""
 
 msgid "Specifies screen dots per inch"
 msgstr "Rozdzielczość ekranu w pikselach na cal"
@@ -14983,7 +14991,7 @@ msgid "Adobe Standard"
 msgstr "standardowe Adobe"
 
 msgid "Symbol"
-msgstr "Symbol"
+msgstr ""
 
 msgid "ΤεΧ Base (8r)"
 msgstr "ΤεΧ Podstawowe (8r)"
@@ -14995,13 +15003,13 @@ msgid "ISO 10646-1 (Unicode, Full)"
 msgstr "ISO 10646-1 (pełny Unikod)"
 
 msgid "SJIS (Kanji)"
-msgstr "SJIS (Kanji)"
+msgstr ""
 
 msgid "JIS 208 (Kanji)"
-msgstr "JIS 208 (Kanji)"
+msgstr ""
 
 msgid "JIS 212 (Kanji)"
-msgstr "JIS 212 (Kanji)"
+msgstr ""
 
 msgid "Wansung (Korean)"
 msgstr "Wansung (koreańskie)"
@@ -15143,9 +15151,8 @@ msgstr "Nie klasyfikuj"
 msgid "Old Style Serifs"
 msgstr "Antykwy renesansowe"
 
-#, fuzzy
 msgid "OSS Rounded Legibility"
-msgstr "AR Rounded Legibility"
+msgstr ""
 
 msgid "OSS Geralde"
 msgstr "AR francuskie"
@@ -15354,20 +15361,17 @@ msgstr "Pogrubiona kursywa"
 msgid "OS2Version|Automatic"
 msgstr "Automatycznie"
 
-# #: fontinfo.c:189
-# msgid "OS2Version|Automatic"
-# msgstr "Automatycznie"
 msgid "1"
-msgstr "1"
+msgstr ""
 
 msgid "2"
-msgstr "2"
+msgstr ""
 
 msgid "4"
-msgstr "4"
+msgstr ""
 
 msgid "0"
-msgstr "0"
+msgstr ""
 
 msgid "PanoseFamily|Any"
 msgstr "Jakikolwiek"
@@ -15613,9 +15617,8 @@ msgstr "Normalne/ścisłe"
 msgid "Normal/Weighted"
 msgstr "Normalne/ważone"
 
-#, fuzzy
 msgid "Normal/Boxed"
-msgstr "Normalne/boxed"
+msgstr ""
 
 msgid "Normal/Flattened"
 msgstr "Normalne/spłaszczone"
@@ -15635,9 +15638,8 @@ msgstr "Pochylone/ścisłe"
 msgid "Oblique/Weighted"
 msgstr "Pochylone/ważone"
 
-#, fuzzy
 msgid "Oblique/Boxed"
-msgstr "Pochylone/boxed"
+msgstr ""
 
 msgid "Oblique/Flattened"
 msgstr "Pochylone/spłaszczone"
@@ -15789,9 +15791,8 @@ msgstr "Nic nie pasuje"
 msgid "Roman Disconnected"
 msgstr "Proste rozłączne"
 
-#, fuzzy
 msgid "Roman Trailing"
-msgstr "Proste ciągnące się"
+msgstr ""
 
 msgid "Roman Connected"
 msgstr "Proste łączone"
@@ -15799,9 +15800,8 @@ msgstr "Proste łączone"
 msgid "Cursive Disconnected"
 msgstr "Pochyłe rozłączne"
 
-#, fuzzy
 msgid "Cursive Trailing"
-msgstr "Pochyłe ciągnące się"
+msgstr ""
 
 msgid "Cursive Connected"
 msgstr "Pochyłe łączone"
@@ -15809,9 +15809,8 @@ msgstr "Pochyłe łączone"
 msgid "Blackletter Disconnected"
 msgstr "Gotyckie rozłączne"
 
-#, fuzzy
 msgid "Blackletter Trailing"
-msgstr "Gotyckie ciągnące się"
+msgstr ""
 
 msgid "Blackletter Connected"
 msgstr "Gotyckie łączone"
@@ -16686,9 +16685,8 @@ msgstr "hiszpański (USA)"
 msgid "Spanish (Latin America)"
 msgstr "hiszpański (Ameryka łacińska)"
 
-#, fuzzy
 msgid "Sutu"
-msgstr "sutu"
+msgstr ""
 
 msgid "Swahili (Kenyan)"
 msgstr "Suahili (Kenia)"
@@ -18152,13 +18150,13 @@ msgid "Use XUID"
 msgstr "Użyj XUID"
 
 msgid "_XUID:"
-msgstr "_XUID:"
+msgstr ""
 
 msgid "Use UniqueID"
 msgstr "Użyj UniqueID"
 
 msgid "_UniqueID:"
-msgstr "_UniqueID:"
+msgstr ""
 
 msgid " _Em Size:"
 msgstr "_Wys. pola znaku:"
@@ -18266,7 +18264,7 @@ msgstr ""
 "globalne ustawienia hintingu dla danego fontu."
 
 msgid "_Histogram"
-msgstr "_Histogram"
+msgstr ""
 
 msgid "Histogram Dialog"
 msgstr "Okienko Histogramów"
@@ -18460,7 +18458,7 @@ msgid "PanoseUse|Default"
 msgstr "Domyślna"
 
 msgid "http://panose.com/"
-msgstr "http://panose.com/"
+msgstr ""
 
 msgid "Panose|_Family Kind"
 msgstr ""
@@ -18484,7 +18482,7 @@ msgid "Sub/Super"
 msgstr "Frakcje"
 
 msgid "Panose"
-msgstr "Panose"
+msgstr ""
 
 msgid "Charsets"
 msgstr "Zakresy znaków"
@@ -18573,7 +18571,7 @@ msgstr ""
 "OFL.txt.\n"
 
 msgid "scripts.sil.org/OFL"
-msgstr "scripts.sil.org/OFL"
+msgstr ""
 
 msgid ""
 "Click here for more information about the OFL (SIL Open Font License) \n"
@@ -18825,13 +18823,13 @@ msgid "General"
 msgstr "Ogólne"
 
 msgid "PS UID"
-msgstr "PS UID"
+msgstr ""
 
 msgid "PS Private"
 msgstr "PS prywatne"
 
 msgid "OS/2"
-msgstr "OS/2"
+msgstr ""
 
 msgid "TTF Names"
 msgstr "Dane TTF"
@@ -18843,10 +18841,10 @@ msgid "Grid Fitting"
 msgstr "Rastrowanie"
 
 msgid "ΤεΧ"
-msgstr "ΤεΧ"
+msgstr ""
 
 msgid "FONTLOG"
-msgstr "FONTLOG"
+msgstr ""
 
 msgid "Mark Classes"
 msgstr "Klasy diakrytycznych"
@@ -18858,7 +18856,7 @@ msgid "OpenType|Lookups"
 msgstr "Funkcje zecerskie"
 
 msgid "WOFF"
-msgstr "WOFF"
+msgstr ""
 
 msgid "Mac Features"
 msgstr "F. zecerskie Maca"
@@ -19583,7 +19581,7 @@ msgid "E_ncoding"
 msgstr "_Kodowanie"
 
 msgid "_CID"
-msgstr "_CID"
+msgstr ""
 
 msgid "Color of the font used to display glyph information in the fontview"
 msgstr "Kolor używany do rysowania opisów komórek glifów w widoku fontu"
@@ -19714,7 +19712,7 @@ msgid "Too Many Breakpoints"
 msgstr "Zbyt wiele punktów wstrzymania"
 
 msgid "Kerning"
-msgstr "Kerning"
+msgstr ""
 
 msgid ""
 "Do you want to retain kerning information from the selected font\n"
@@ -19924,6 +19922,7 @@ msgid_plural "Groups"
 msgstr[0] "Grupa"
 msgstr[1] "Grupy"
 msgstr[2] "Grup"
+msgstr[3] ""
 
 msgid "No Groups"
 msgstr "Brak grup"
@@ -19995,7 +19994,6 @@ msgstr "Zbyt mała próbka"
 msgid "HStem"
 msgstr "Poziome"
 
-# needed for title of vertical stems' histogram
 msgid "VStem"
 msgstr "pionowe"
 
@@ -20005,7 +20003,6 @@ msgstr "Strefy wyrównania"
 msgid "Sum Around:"
 msgstr "Szer. przedziałów:"
 
-# msgstr "Szerokość słupków:"
 msgid "Bar Width:"
 msgstr "Szer. słupków:"
 
@@ -20446,13 +20443,11 @@ msgstr "baule"
 msgid "Lang|Berber"
 msgstr "berberyjski"
 
-#, fuzzy
 msgid "Bench"
-msgstr "bench"
+msgstr ""
 
-#, fuzzy
 msgid "Bible Cree"
-msgstr "kri-bible*"
+msgstr ""
 
 msgid "Belarussian"
 msgstr "białoruski"
@@ -20676,9 +20671,8 @@ msgstr "harauti"
 msgid "Hawaiin"
 msgstr "hawajski"
 
-#, fuzzy
 msgid "Hammer-Banna"
-msgstr "hammer-banna"
+msgstr ""
 
 msgid "Hiligaynon"
 msgstr "hiligajnon"
@@ -20782,9 +20776,8 @@ msgstr "komo"
 msgid "Komso"
 msgstr "komso"
 
-#, fuzzy
 msgid "Kodagu"
-msgstr "kodagu"
+msgstr ""
 
 msgid "Korean Old Hangul"
 msgstr "koreański w starym hangyl"
@@ -20816,9 +20809,8 @@ msgstr "karaimski"
 msgid "Karen"
 msgstr "kareński"
 
-#, fuzzy
 msgid "Koorete"
-msgstr "koorete"
+msgstr ""
 
 msgid "Khasi"
 msgstr "khasi"
@@ -20829,9 +20821,8 @@ msgstr "lapoński z Półwyspu Kolskiego"
 msgid "Kui"
 msgstr "kui"
 
-#, fuzzy
 msgid "Kulvi"
-msgstr "kulvi"
+msgstr ""
 
 msgid "Kumyk"
 msgstr "kumycki"
@@ -20839,9 +20830,8 @@ msgstr "kumycki"
 msgid "Kurukh"
 msgstr "kurukh"
 
-#, fuzzy
 msgid "Kuy"
-msgstr "kuy"
+msgstr ""
 
 msgid "Koryak"
 msgstr "koriacki"
@@ -20849,9 +20839,8 @@ msgstr "koriacki"
 msgid "Ladin"
 msgstr "ladyński"
 
-#, fuzzy
 msgid "Lahuli"
-msgstr "lahuli"
+msgstr ""
 
 msgid "Lak"
 msgstr "lacki"
@@ -20880,9 +20869,8 @@ msgstr "maryjski łęgowy"
 msgid "Lang|Limbu"
 msgstr "limbu"
 
-#, fuzzy
 msgid "Lomwe"
-msgstr "lomwe"
+msgstr ""
 
 msgid "Lower Sorbian"
 msgstr "dolnołużycki"
@@ -20905,9 +20893,8 @@ msgstr "luhya"
 msgid "Luo"
 msgstr "luo"
 
-#, fuzzy
 msgid "Majang"
-msgstr "majang"
+msgstr ""
 
 msgid "Makua"
 msgstr "makua"
@@ -20942,9 +20929,8 @@ msgstr "me'en"
 msgid "Mizo"
 msgstr "mizo"
 
-#, fuzzy
 msgid "Male"
-msgstr "male"
+msgstr ""
 
 msgid "Malinke"
 msgstr "malinke"
@@ -20962,7 +20948,7 @@ msgid "Maninka"
 msgstr "malinke"
 
 msgid "Mohawk"
-msgstr "Mohawk"
+msgstr ""
 
 msgid "Moksha"
 msgstr "moksza"
@@ -20985,9 +20971,8 @@ msgstr "naga-asamski"
 msgid "Nanai"
 msgstr "nanajski"
 
-#, fuzzy
 msgid "Naskapi"
-msgstr "naskapi"
+msgstr ""
 
 msgid "N-Cree"
 msgstr "kri-N"
@@ -21007,9 +20992,8 @@ msgstr "nagari"
 msgid "Norway House Cree"
 msgstr "kri z Norway house*"
 
-#, fuzzy
 msgid "Nisi"
-msgstr "nisi"
+msgstr ""
 
 msgid "Niuean"
 msgstr "niue"
@@ -21032,9 +21016,8 @@ msgstr "nynorsk"
 msgid "Occitan"
 msgstr "oksytański"
 
-#, fuzzy
 msgid "Oji-Cree"
-msgstr "kri-oji*"
+msgstr ""
 
 msgid "Ojibway"
 msgstr "odżibwe (czipewejski, anishinabe)"
@@ -21063,9 +21046,8 @@ msgstr "palau"
 msgid "Provencal"
 msgstr "prowansalski"
 
-#, fuzzy
 msgid "Chin"
-msgstr "chin"
+msgstr ""
 
 msgid "Rajasthani"
 msgstr "Radźastani"
@@ -21076,9 +21058,8 @@ msgstr "kri-R"
 msgid "Russian Buriat"
 msgstr "buriacki"
 
-#, fuzzy
 msgid "Riang"
-msgstr "riang"
+msgstr ""
 
 msgid "Romany"
 msgstr "romski"
@@ -21089,20 +21070,17 @@ msgstr "rusiński"
 msgid "Ruanda"
 msgstr "ruanda"
 
-#, fuzzy
 msgid "Sadri"
-msgstr "sadri"
+msgstr ""
 
 msgid "Santali"
 msgstr "santali"
 
-#, fuzzy
 msgid "Sayisi"
-msgstr "sayisi"
+msgstr ""
 
-#, fuzzy
 msgid "Sekota"
-msgstr "sekota"
+msgstr ""
 
 msgid "Selkup"
 msgstr "selkupski"
@@ -21188,9 +21166,8 @@ msgstr "juracki tundrzański"
 msgid "Tonga"
 msgstr "tonga"
 
-#, fuzzy
 msgid "Todo"
-msgstr "todo"
+msgstr ""
 
 msgid "Turoyo Aramaic"
 msgstr "aramejski (turojo)"
@@ -21216,9 +21193,8 @@ msgstr "ujgurski"
 msgid "Wa"
 msgstr "wa"
 
-#, fuzzy
 msgid "Wagdi"
-msgstr "wagdi"
+msgstr ""
 
 msgid "West-Cree"
 msgstr "kri zachodni"
@@ -22432,7 +22408,7 @@ msgid "Type of distortable font:"
 msgstr "Typ fontu z wariantami:"
 
 msgid "Adobe"
-msgstr "Adobe"
+msgstr ""
 
 msgid "Number of Axes:"
 msgstr "Liczba osi interpolacji:"
@@ -22547,10 +22523,10 @@ msgid "PostScript"
 msgstr "PostScriptowe"
 
 msgid "TrueType"
-msgstr "TrueType"
+msgstr ""
 
 msgid "OpenType"
-msgstr "OpenType"
+msgstr ""
 
 msgid "Type1"
 msgstr "PS Type1"
@@ -22562,7 +22538,7 @@ msgid "Type3"
 msgstr "PS Type3"
 
 msgid "Unified Font Object"
-msgstr "Unified Font Object"
+msgstr ""
 
 msgid "FontForge's SFD"
 msgstr "Pliki FontForge (SFD)"
@@ -23182,7 +23158,7 @@ msgstr ""
 "pliku skryptu."
 
 msgid "..."
-msgstr "..."
+msgstr ""
 
 msgid "On"
 msgstr "Wł."
@@ -23383,7 +23359,7 @@ msgstr ""
 
 #, c-format
 msgid "U+%04x"
-msgstr "U+%04x"
+msgstr ""
 
 msgid ""
 "Two glyphs have the same name.\n"
@@ -23396,7 +23372,7 @@ msgstr ""
 
 #, c-format
 msgid "%.40s"
-msgstr "%.40s"
+msgstr ""
 
 #, c-format
 msgid "Found %1$.4g, expected %2$.4g"
@@ -24219,10 +24195,10 @@ msgid "Hints"
 msgstr "Hinty"
 
 msgid "ATT"
-msgstr "ATT"
+msgstr ""
 
 msgid "CID"
-msgstr "CID"
+msgstr ""
 
 msgid "BB"
 msgstr "Prostokąt brzegowy"
@@ -24514,10 +24490,10 @@ msgid "PS Type 1 (Multiple)"
 msgstr "PS typ 1 (wiele fontów)"
 
 msgid "PS Multiple Master(A)"
-msgstr "PS Multiple Master(A)"
+msgstr ""
 
 msgid "PS Multiple Master(B)"
-msgstr "PS Multiple Master(B)"
+msgstr ""
 
 msgid "PS Type 3"
 msgstr "PS typ 3"
@@ -24526,7 +24502,7 @@ msgid "PS Type 0"
 msgstr "PS typ 0"
 
 msgid "PS CID"
-msgstr "PS CID"
+msgstr ""
 
 #. GT: "CFF (Bare)" means a CFF font without the normal OpenType wrapper
 #. GT: CFF is a font format that normally lives inside an OpenType font
@@ -24545,7 +24521,7 @@ msgid "Type11 (CID 2)"
 msgstr "PS Type11 (CID 2)"
 
 msgid "TrueType (Symbol)"
-msgstr "TrueType (Symbol)"
+msgstr ""
 
 msgid "TrueType (Resource)"
 msgstr "TrueType (zasób)"
@@ -24554,22 +24530,22 @@ msgid "TrueType (MacBin)"
 msgstr "TrueType (binarny macowy)"
 
 msgid "TrueType (TTC)"
-msgstr "TrueType (TTC)"
+msgstr ""
 
 msgid "TrueType (Mac dfont)"
 msgstr "TrueType (macowy dfont)"
 
 msgid "OpenType (CFF)"
-msgstr "OpenType (CFF)"
+msgstr ""
 
 msgid "OpenType (Mac dfont)"
 msgstr "OpenType (macowy dfont)"
 
 msgid "OpenType CID"
-msgstr "OpenType CID"
+msgstr ""
 
 msgid "OpenType CID (dfont)"
-msgstr "OpenType CID (dfont)"
+msgstr ""
 
 msgid "SVG font"
 msgstr "Font SVG"
@@ -24629,7 +24605,7 @@ msgid "Options"
 msgstr "Opcje"
 
 msgid "PostScript®"
-msgstr "PostScript®"
+msgstr ""
 
 msgid "Do you want to round coordinates to integers (this saves space)?"
 msgstr ""
@@ -24705,7 +24681,7 @@ msgstr ""
 "fontów postscriptowych"
 
 msgid "SFNT"
-msgstr "SFNT"
+msgstr ""
 
 msgid "TrueType Hints"
 msgstr "Hinting"
@@ -25216,10 +25192,10 @@ msgid "Execute Script"
 msgstr "Wykonaj skrypt"
 
 msgid "_Python"
-msgstr "_Python"
+msgstr ""
 
 msgid "_FF"
-msgstr "_FF"
+msgstr ""
 
 msgid "C_all..."
 msgstr "Wywoł_aj..."
@@ -25431,7 +25407,7 @@ msgid "Separate ratios for horizontal and vertical stems"
 msgstr "Skaluj kreski pionowe inaczej, niż poziomie"
 
 msgid "% +"
-msgstr "% +"
+msgstr ""
 
 msgid "Activate diagonal stem processing"
 msgstr "Przekształć także kreski ukośne"
@@ -25481,7 +25457,7 @@ msgid "Vertical Scale:"
 msgstr "Skala w pionie:"
 
 msgid "%"
-msgstr "%"
+msgstr ""
 
 msgid "Vertical"
 msgstr "W pionie"
@@ -25517,13 +25493,13 @@ msgid "Embolden by:"
 msgstr "Pogrub o:"
 
 msgid "_LCG"
-msgstr "_LCG"
+msgstr ""
 
 msgid "Embolden as appropriate for Latin, Cyrillic and Greek scripts"
 msgstr "Tryb odpowiedni dla pism łacińskiego, greckiego i cyrylicy"
 
 msgid "_CJK"
-msgstr "_CJK"
+msgstr ""
 
 msgid "Embolden as appropriate for Chinese, Japanese, Korean scripts"
 msgstr "Tryb odpowiedni dla pism chińskiego, japońskiego i koreańskiego"
@@ -25951,7 +25927,7 @@ msgstr "Klasa diakrytyczna %.20s"
 
 #, c-format
 msgid "%.30s (%d,%d)"
-msgstr "%.30s (%d,%d)"
+msgstr ""
 
 #, c-format
 msgid "Entry (%d,%d)"
@@ -25975,18 +25951,21 @@ msgid_plural "Backtrack classes: "
 msgstr[0] "Klasa glifów poprzedzających: "
 msgstr[1] "Klasy glifów poprzedzających: "
 msgstr[2] "Klas glifów poprzedzających: "
+msgstr[3] ""
 
 msgid "Class"
 msgid_plural "Classes"
 msgstr[0] "Klasa"
 msgstr[1] "Klasy"
 msgstr[2] "Klas"
+msgstr[3] ""
 
 msgid "Lookahead Class"
 msgid_plural "Lookahead Classes"
 msgstr[0] "Klasa pasujących"
 msgstr[1] "Klasy pasujących"
 msgstr[2] "Klas pasujących"
+msgstr[3] ""
 
 #, c-format
 msgid "Back coverage %d: "
@@ -26089,51 +26068,39 @@ msgstr "Stan %4d bieżący: "
 msgid "Nested Substitution %.80s"
 msgstr "Zagnieżdżone podstawienie %.80s"
 
-# fuzzy
 msgid "Lookups Enabled for Expansion"
 msgstr "Włączane by rozbić wiersz"
 
-# fuzzy
 msgid "No Lookups Enabled for Expansion"
 msgstr "Brak włączanych by rozbić wiersz"
 
-# fuzzy
 msgid "Lookups Disabled for Expansion"
 msgstr "Wyłączane by rozbić wiersz"
 
-# fuzzy
 msgid "No Lookups Disabled for Expansion"
 msgstr "Brak wyłączanych by rozbić wiersz"
 
-# fuzzy
 msgid "Lookups Limiting Expansion"
 msgstr "Ograniczające rozbicie"
 
-# fuzzy
 msgid "No Lookups Limiting Expansion"
 msgstr "Brak ograniczających rozbicie"
 
-# fuzzy
 msgid "Lookups Enabled for Shrinkage"
 msgstr "Włączane by zbić wiersz"
 
-# fuzzy
 msgid "No Lookups Enabled for Shrinkage"
 msgstr "Brak włączanych by zbić wiersz"
 
-# fuzzy
 msgid "Lookups Disabled for Shrinkage"
 msgstr "Wyłączane by zbić wiersz"
 
-# fuzzy
 msgid "No Lookups Disabled for Shrinkage"
 msgstr "Brak wyłączanych by zbić wiersz"
 
-# fuzzy
 msgid "Lookups Limiting Shrinkage"
 msgstr "Ograniczające zbicie"
 
-# fuzzy
 msgid "No Lookups Limiting Shrinkage"
 msgstr "Brak ograniczających rozbicie"
 
@@ -26272,6 +26239,7 @@ msgid_plural "Horizontal: %d baselines"
 msgstr[0] "Poziomo: %d linia podstawowa"
 msgstr[1] "Poziomo: %d linie podstawowe"
 msgstr[2] "Poziomo: %d linii podstawowych"
+msgstr[3] ""
 
 #, c-format
 msgid "Vertical: %d baseline"
@@ -26279,6 +26247,7 @@ msgid_plural "Vertical: %d baselines"
 msgstr[0] "Pionowo: %d linia podstawowa"
 msgstr[1] "Pionowo: %d linie podstawowe"
 msgstr[2] "Pionowo: %d linii podstawowych"
+msgstr[3] ""
 
 msgid "'GDEF' Glyph Definition Table"
 msgstr "Tablica definicji glifów „GDEF”"
@@ -26540,49 +26509,49 @@ msgstr ""
 "Zachowaj go, zanim rozpoczniesz pracę."
 
 msgid "Ax => xA"
-msgstr "Ax => xA"
+msgstr ""
 
 msgid "xD => Dx"
-msgstr "xD => Dx"
+msgstr ""
 
 msgid "AxD => DxA"
-msgstr "AxD => DxA"
+msgstr ""
 
 msgid "ABx => xAB"
-msgstr "ABx => xAB"
+msgstr ""
 
 msgid "ABx => xBA"
-msgstr "ABx => xBA"
+msgstr ""
 
 msgid "xCD => CDx"
-msgstr "xCD => CDx"
+msgstr ""
 
 msgid "xCD => DCx"
-msgstr "xCD => DCx"
+msgstr ""
 
 msgid "AxCD => CDxA"
-msgstr "AxCD => CDxA"
+msgstr ""
 
 msgid "AxCD => DCxA"
-msgstr "AxCD => DCxA"
+msgstr ""
 
 msgid "ABxD => DxAB"
-msgstr "ABxD => DxAB"
+msgstr ""
 
 msgid "ABxD => DxBA"
-msgstr "ABxD => DxBA"
+msgstr ""
 
 msgid "ABxCD => CDxAB"
-msgstr "ABxCD => CDxAB"
+msgstr ""
 
 msgid "ABxCD => CDxBA"
-msgstr "ABxCD => CDxBA"
+msgstr ""
 
 msgid "ABxCD => DCxAB"
-msgstr "ABxCD => DCxAB"
+msgstr ""
 
 msgid "ABxCD => DCxBA"
-msgstr "ABxCD => DCxBA"
+msgstr ""
 
 #, c-format
 msgid "State %d,  %.40s"
@@ -28690,7 +28659,7 @@ msgid "Screen Width in Inches"
 msgstr "Szerokość ekranu [cale]"
 
 msgid "GDraw"
-msgstr "GDraw"
+msgstr ""
 
 msgid "General facts about the windowing system"
 msgstr "Ogólne ustawienia dla biblioteki graficznej programu."
@@ -28805,1535 +28774,3 @@ msgstr ""
 #, c-format
 msgid "Reason:%s\n"
 msgstr "Powód: %s\n"
-
-#~ msgid "Symbols Supplemental"
-#~ msgstr "dodatkowe symbole"
-
-#~ msgid "Math Supplemental Operators"
-#~ msgstr "dodatkowe operatory matematyczne"
-
-#~ msgid "Math Miscellaneous Symbols-B"
-#~ msgstr "różnorodne symbole matematyczne-B"
-
-#~ msgid "Arrows Supplemental-B"
-#~ msgstr "dodatkowe strzałki-B"
-
-#~ msgid "Arrows Supplemental-A"
-#~ msgstr "dodatkowe strzałki-A"
-
-#~ msgid "Math Miscellaneous Symbols-A"
-#~ msgstr "różnorodne symbole matematyczne-A"
-
-#~ msgid "Combining marks for Symbols"
-#~ msgstr "znaki składające dla symboli"
-
-#~ msgid "Lookahead class: "
-#~ msgid_plural "Lookahead classes: "
-#~ msgstr[0] "Klasa glifów następujących: "
-#~ msgstr[1] "Klasy glifów następujących: "
-#~ msgstr[2] "Klas glifów następujących: "
-
-#~ msgid ""
-#~ "%s had both contours and references, so the contours were moved into this "
-#~ "glyph, and the a reference to it was added in the original."
-#~ msgstr ""
-#~ "Glif %s zawierał jednocześnie kontury i odwołania. Przeniesiono kontury "
-#~ "do nowego glifu (tutaj) i odwołano się do niego."
-
-#~ msgid "Uniform scaling for stems on both axes"
-#~ msgstr "Skaluj grubości kresek pionowych i poziomych jednakowo"
-
-#~ msgid "Check subtitutions for empty chars"
-#~ msgstr "Szukaj podstawień pustymi glifami"
-
-#~ msgid "Hmm, the the 'avar' table is too long.\n"
-#~ msgstr "Hmm, tablica „avar” jest zbyt długa.\n"
-
-#~ msgid "Reached end of file when reading composit glyph\n"
-#~ msgstr "Nieoczekiwany koniec pliku przy czytaniu glifu kompozytowego.\n"
-
-#~ msgid "HintForGen"
-#~ msgstr "Hintuj tworzony font"
-
-#~ msgid "AutoHint before rasterizing"
-#~ msgstr ""
-#~ "Automatycznie hintuj wymagające\n"
-#~ "tego znaki przed rasteryzacją"
-
-#~ msgid ""
-#~ "FontForge will look at the glyphs selected in the font view\n"
-#~ "and guess at good kerning values for them"
-#~ msgstr ""
-#~ "FontForge przyjrzy się glifom wybranym w widoku fontu,\n"
-#~ "i obliczy dla nich sensowne wartości kerningu."
-
-#~ msgid "FontForge will auto kern the selected glyphs"
-#~ msgstr "Oblicz wartości kerningu dla wybranych glifów"
-
-#~ msgid ""
-#~ "Size (in points) of the font used to display information and glyph labels "
-#~ "in the fontview."
-#~ msgstr ""
-#~ "Stopień pisma (w punktach typograficznych) używany podczas rysowania "
-#~ "etykiet glifów oraz innych informacji w widoku fontu."
-
-#~ msgid "StyleName|_New..."
-#~ msgstr "_Nowa..."
-
-#~ msgid ""
-#~ "To create a new name, left click on the <New> button, and select a "
-#~ "locale.\n"
-#~ "To change the locale, left click on it.\n"
-#~ "To change the feature, left click on it.\n"
-#~ "To change the text, left click in it and then type.\n"
-#~ msgstr ""
-#~ "Aby dodać nową nazwę, należy kliknąć przycisk <Dodaj> i wybrać jej "
-#~ "język.\n"
-#~ "Aby zmienić język wartości, należy go kliknąć i wybrać inny,\n"
-#~ "Aby zmienić tag zestawu, należy go kliknąć i wybrać inny.\n"
-#~ "Aby zmienić nazwę, należy ją kliknąć i wpisać nową.\n"
-
-#~ msgid "Style Name"
-#~ msgstr "Nazwa stylu"
-
-#~ msgid ""
-#~ "This will change both StdVW and StemSnapV.\n"
-#~ "Do you want to continue?"
-#~ msgstr ""
-#~ "StdVW i StemSnapV ulegną zmianie.\n"
-#~ "Czy mimo to kontynuować?"
-
-#~ msgid ""
-#~ "This will change both StdHW and StemSnapH.\n"
-#~ "Do you want to continue?"
-#~ msgstr ""
-#~ "StdHW i StemSnapH ulegną zmianie.\n"
-#~ "Czy mimo to kontynuować?"
-
-#~ msgid ""
-#~ "This will change both BlueValues and OtherBlues.\n"
-#~ "Do you want to continue?"
-#~ msgstr ""
-#~ "BlueValues i OtherBlues ulegną zmianie.\n"
-#~ "Czy mimo to kontynuować?"
-
-#~ msgid ""
-#~ "Expected code.\n"
-#~ "Proceed anyway?"
-#~ msgstr ""
-#~ "Oczekiwano kodu.\n"
-#~ "Czy mimo to kontynuować?"
-
-#~ msgid "Key (in Private dictionary)"
-#~ msgstr "Klucz (w słowniku prywatnym)"
-
-#~ msgid "Byzantine Musical Symbols/Musical Symbols"
-#~ msgstr "bizantyjskie symbole muzyczne"
-
-#~ msgid "Enclosed CJK Leters and Months"
-#~ msgstr "obwiedzione litery i miesiące CJK"
-
-#~ msgid "Mathematical Operators (Supplementary & Misc."
-#~ msgstr "operatory matematyczne (dodatkowe i różne)"
-
-#~ msgid ""
-#~ "Reverse subsitute must have exactly one marked glyph and no lookups on "
-#~ "line %d of %s"
-#~ msgstr ""
-#~ "Podstawienie odwrotne musi mieć dokładnie jeden zaznaczony („'”) glif i "
-#~ "żadnych „lookup” - wiersz %d pliku %s"
-
-#~ msgid "Empty subsitute on line %d of %s"
-#~ msgstr "Puste podstawienie . Wiersz %d w pliku %s"
-
-#~ msgid "E"
-#~ msgstr "E"
-
-#~ msgid "Bad Lookahead Class Number"
-#~ msgstr "Błędny numer klasy glifów następujących"
-
-#~ msgid "Bad Backtrack Class Number"
-#~ msgstr "Błędny numer klasy glifów poprzedzających"
-
-#~ msgid ""
-#~ "There are no class numbers listed to be matched. There must be at least "
-#~ "one."
-#~ msgstr ""
-#~ "Nie wprowadzono żadnych numerów klas do dopasowania. Wymagany jest co "
-#~ "najmniej jeden."
-
-#~ msgid ""
-#~ "There are only %d classes in this class set, yet you are trying to use %d."
-#~ msgstr "W tym zbiorze jest tylko %d klas – nie można użyć klasy %d."
-
-#~ msgid "The list of class numbers should only contain digits and spaces"
-#~ msgstr "Lista numerów klas powinna zawierać tylko spacje i cyfry"
-
-#~ msgid "Bad Match Class Number"
-#~ msgstr "Błędny numer klasy pasującej"
-
-#~ msgid "Glyph _Name:"
-#~ msgstr "_Nazwa glifu:"
-
-#~ msgid ""
-#~ "Mark glyphs may not be specified with this type of lookup on line %d of %s"
-#~ msgstr ""
-#~ "Użycie błędnego typu w „lookup” do definicji znaków diakrytycznych w "
-#~ "wierszu %d pliku %s"
-
-#~ msgid ""
-#~ "Mark classes must either be exactly the same or contain no common glyphs\n"
-#~ " But the class on line %d of %s contains a match."
-#~ msgstr ""
-#~ "Klasy znaków diakrytycznych muszą albo być identyczne, albo nie mieć "
-#~ "wspólnych\n"
-#~ " glifów - tymczasem takie są w klasie . Wiersz %d w pliku %s."
-
-#~ msgid ""
-#~ "Mark to base anchor statements may only have one anchor on line %d of %s"
-#~ msgstr ""
-#~ "Deklaracje kotwic diakrytycznych względem podstawowych mogą zawierać "
-#~ "tylko jedną kotwicę; wiersz %d pliku %s"
-
-#~ msgid ""
-#~ "A mark glyph (or class of marks) must be specified here on line %d of %s"
-#~ msgstr ""
-#~ "Oczekiwano znaku diakrytycznego (lub klasy takich znaków) . Wiersz %d w "
-#~ "pliku %s"
-
-#~ msgid "Expected glyph name or class in mark statement on line %d of %s"
-#~ msgstr ""
-#~ "Oczekiwano nazwy glifu bądź klasy w instrukcji „mark” . Wiersz %d w pliku "
-#~ "%s"
-
-#~ msgid ""
-#~ "This file uses both the v1.6 and the v1.8 formats for mark classes on "
-#~ "line %d of %s"
-#~ msgstr ""
-#~ "W tym pliku użyto obu formatów (wersji 1.6 i 1.8) opisu klas znaków "
-#~ "diakrytycznych, . Wiersz %d w pliku %s"
-
-#~ msgid ""
-#~ "Warning: This version of FontForge does not contain extended type3/svg "
-#~ "support\n"
-#~ " needed for this font.\n"
-#~ "Reconfigure with --with-type3.\n"
-#~ msgstr ""
-#~ "Ostrzeżenie: ta wersja FontForge nie ma pełnej obsługi type3/svg "
-#~ "potrzebnej\n"
-#~ "do tego fontu. Zaleca się rekonfigurację z --with-type3 i ponowną "
-#~ "kompilację.\n"
-
-#~ msgid ""
-#~ "This version of FontForge does not support the imagemask operator.\n"
-#~ "For support configure --with-multilayer.\n"
-#~ msgstr ""
-#~ "Ta wersja FontForge nie obsługuje operatora imagemask.\n"
-#~ "Wymagana rekompilacja z --with-multilayer.\n"
-
-#~ msgid "Resets the kerning offset to what it was originally"
-#~ msgstr "Resetuje wartość kerningu do początkowej"
-
-#~ msgid "Subs"
-#~ msgstr "Podst."
-
-#~ msgid "Pair"
-#~ msgstr "Poz. par"
-
-#~ msgid ""
-#~ "The size at which the current glyph is rasterized.\n"
-#~ "For small pixelsize you may want to use the magnification\n"
-#~ "factor below to get a clearer view."
-#~ msgstr ""
-#~ "Rozmiar w jakim rastrowany będzie bieżący glif. Dla małych\n"
-#~ "rozmiarów może być konieczne użycie współczynnika powiększenia\n"
-#~ "w celu uzyskania czytelnego widoku."
-
-#~ msgid "Could not find the zlib library which is needed to understand WOFF"
-#~ msgstr "Nie znaleziono biblioteki zlib, koniecznej do obsługi fontów WOFF"
-
-#~ msgid "Kharosthi"
-#~ msgstr "kharosztni"
-
-#~ msgid "Kanqxi Radicals"
-#~ msgstr "klucze kanqxi"
-
-#~ msgid ""
-#~ "Use the pango library for text (if available)\n"
-#~ "This makes for prettier and handles complex scripts.\n"
-#~ "But it can slow things down on older machines.\n"
-#~ "This applies to any windows created AFTER this is set.\n"
-#~ "Already existing windows will continue as they are."
-#~ msgstr ""
-#~ "Użyj biblioteki graficznej pango do rastrowania tekstów interfejsu.\n"
-#~ "To zapewni wygładzanie znaków i obsługę złożonych systemów pism,\n"
-#~ "za cenę spowolnienia działania. Aby zmiany zostały zastosowane\n"
-#~ "do wszystkich okien programu, należy go zrestartować."
-
-#~ msgid "UsePangoDrawing"
-#~ msgstr "Używaj Pango"
-
-#~ msgid "Didn't understand \"%s"
-#~ msgstr "Nie zrozumiano \"%s"
-
-#~ msgid ""
-#~ "A comma separated list of font family names used to display small example "
-#~ "images of glyphs over the user designed glyphs\n"
-#~ "for characters in the unicode math region which are specified to be in a "
-#~ "monospace font"
-#~ msgstr ""
-#~ "Lista porozdzielanych przecinkami nazw krojów pism używanych do "
-#~ "wyświetlania etykiet obszaru unikodowego znaków matematycznych "
-#~ "wzorowanych na krojach stałej szerokości"
-
-#~ msgid "Monospace Family"
-#~ msgstr "Kroje stałej szerokości"
-
-#~ msgid ""
-#~ "A comma separated list of font family names used to display small example "
-#~ "images of glyphs over the user designed glyphs\n"
-#~ "for characters in the unicode math region which are specified to be in a "
-#~ "sans-serif font"
-#~ msgstr ""
-#~ "Lista porozdzielanych przecinkami nazw krojów pism używanych do "
-#~ "wyświetlania etykiet obszaru unikodowego znaków matematycznych "
-#~ "wzorowanych na krojach bezszeryfowych"
-
-#~ msgid "Sans-Serif Family"
-#~ msgstr "Kroje bezszeryfowe"
-
-#~ msgid ""
-#~ "A comma separated list of font family names used to display small example "
-#~ "images of glyphs over the user designed glyphs\n"
-#~ "for characters in the unicode math region which are specified to be in a "
-#~ "double struck font"
-#~ msgstr ""
-#~ "Lista porozdzielanych przecinkami nazw krojów pism używanych do "
-#~ "wyświetlania etykiet obszaru unikodowego znaków matematycznych "
-#~ "wzorowanych na krojach podwójnych"
-
-#~ msgid "Double Struck Family"
-#~ msgstr "Kroje podwójne"
-
-#~ msgid ""
-#~ "A comma separated list of font family names used to display small example "
-#~ "images of glyphs over the user designed glyphs\n"
-#~ "for characters in the unicode math region which are specified to be in a "
-#~ "fractur font"
-#~ msgstr ""
-#~ "Lista porozdzielanych przecinkami nazw krojów pism używanych do "
-#~ "wyświetlania etykiet obszaru unikodowego znaków matematycznych "
-#~ "wzorowanych na krojach gotyckich"
-
-#~ msgid "Fraktur Family"
-#~ msgstr "Kroje gotyckie"
-
-#~ msgid ""
-#~ "A comma separated list of font family names used to display small example "
-#~ "images of glyphs over the user designed glyphs\n"
-#~ "for characters in the unicode math region which are specified to be in a "
-#~ "script font"
-#~ msgstr ""
-#~ "Lista porozdzielanych przecinkami nazw krojów pism używanych do "
-#~ "wyświetlania etykiet obszaru unikodowego znaków matematycznych "
-#~ "wzorowanych na krojach pisanych"
-
-#~ msgid "Script Family"
-#~ msgstr "Kroje pisane"
-
-#~ msgid ""
-#~ "A comma separated list of font family names used to display small example "
-#~ "images of glyphs over the user designed glyphs\n"
-#~ "for characters in the unicode math region which are specified to be in a "
-#~ "serif font"
-#~ msgstr ""
-#~ "Lista porozdzielanych przecinkami nazw krojów pism używanych do "
-#~ "wyświetlania etykiet obszaru unikodowego znaków matematycznych "
-#~ "wzorowanych na krojach szeryfowych"
-
-#~ msgid "Serif Family"
-#~ msgstr "Kroje szeryfowe"
-
-#~ msgid "OCR"
-#~ msgstr "OCR"
-
-#~ msgid "This font does not specify unitsPerEm\n"
-#~ msgstr "W tym foncie nie określono wysokości pola znaku\n"
-
-#~ msgid "Bad contents.plist\n"
-#~ msgstr "Błędny contents.plist\n"
-
-#~ msgid "Bad glif file %s\n"
-#~ msgstr "Błędny plik glif %s\n"
-
-#~ msgid "Expected glyph file with format==1\n"
-#~ msgstr "Oczekiwano pliku glifu z format==1\n"
-
-#~ msgid "Leave X"
-#~ msgstr "Opuść X-y"
-
-#~ msgid ""
-#~ "A browser is probably running in the native Mac windowing system. You "
-#~ "must leave the X environment to view it. Try Cmd-Opt-A"
-#~ msgstr ""
-#~ "Przeglądarka internetowa pewnie działa w natywnym oknie Maca. Trzeba "
-#~ "opuścić środowisko X-ów aby jej użyć. Można spróbować Cmd-Opt-A"
-
-#~ msgid "Missing Glyph Name"
-#~ msgstr "Brakuje nazwy glifu"
-
-#~ msgid ""
-#~ "Glyph %.40s contains an overlapped region where two contours with "
-#~ "opposite orientations intersect. This will not be removed. In many cases "
-#~ "doing Element->Correct Direction before Remove Overlap will improve "
-#~ "matters."
-#~ msgstr ""
-#~ "W glif %.40s przecinają się przeciwnie skierowane kontury – przecięcie "
-#~ "nie zostanie usunięte. Często można to wcześniej poprawić (Element -> "
-#~ "Skieruj poprawnie)."
-
-#~ msgid ""
-#~ "As FontForge creates windows, it loads images for its menus\n"
-#~ "from files in a standard directory. You may change this to\n"
-#~ "point to a different directory to load a different icon set.\n"
-#~ "(If you want no icons at all, change to an empty directory).\n"
-#~ "This may not effect windows of a type that is already initialized,\n"
-#~ "restarting FontForge will fix that."
-#~ msgstr ""
-#~ "FontForge ładuje ikonki swoich menu z pewnego standardowego folderu.\n"
-#~ "Można je zmienić, wskazując folder z innymi (brak folderu oznacza\n"
-#~ "brak ikon). Zastosowanie zmian wymaga restartu FontForge."
-
-#~ msgid "PixmapDir"
-#~ msgstr "Folder ikon"
-
-#~ msgid ""
-#~ "The glyph named %.30s is mapped to U+%04X.\n"
-#~ "But its name indicates it should be mapped to U+%04X.\n"
-#~ "Would you like to retain the name in spite of this?"
-#~ msgstr ""
-#~ "Glif o nazwie %.30s ma przypisany numer unikodowy U+%04X,\n"
-#~ "jednak z nazwy wynika, że powinien mieć przypisany numer U+%04X.\n"
-#~ "Czy mimo to zachować nazwę?"
-
-#~ msgid ""
-#~ "The names 'alefmaksurainitialarabic' and 'alefmaksuramedialarabic' in the "
-#~ "Adobe Glyph List disagree with Unicode.  The use of these glyph names is "
-#~ "therefore discouraged.\n"
-#~ "Would you like to retain the name in spite of this?"
-#~ msgstr ""
-#~ "Nazwy „alefmaksurainitialarabic” i „alefmaksuramedialarabic” z listy "
-#~ "glifów Adobe są niezgodne z unicode. Z tego powodu zaleca się nie używać "
-#~ "ich.\n"
-#~ "Czy mimo to zachować je?"
-
-#~ msgid ""
-#~ "The glyph named %.30s is not mapped to any unicode code point. But its "
-#~ "name indicates it should be mapped to U+%04X.\n"
-#~ "Would you like to retain the name in spite of this?"
-#~ msgstr ""
-#~ "Glif o nazwie %.30s nie ma przypisanego numeru unikodowego,\n"
-#~ "jednak z nazwy wynika, że powinien mieć przypisany numer U+%04X.\n"
-#~ "Czy mimo to zachować nazwę?"
-
-#~ msgid "Bad glyph name"
-#~ msgstr "Błędna nazwa glifu"
-
-#~ msgid "No"
-#~ msgstr "Nie"
-
-#~ msgid ""
-#~ "Warning: Glyph %d is named %s which should mean it is mapped to\n"
-#~ " Unicode U+%04X, but Glyph %d already has that encoding.\n"
-#~ msgstr ""
-#~ "Ostrzeżenie: glif %d ma nazwę %s co oznacza że powinien mieć numer\n"
-#~ " unikodowy U+%04X, ale ten numer przypisano już glifowi %d.\n"
-
-#~ msgid "Warning: Glyph %d has the same name (%s) as Glyph %d\n"
-#~ msgstr "Ostrzeżenie: glif %d ma taką samą nazwę (%s) jak glif %d\n"
-
-#~ msgid ""
-#~ "Windows has decided that fonts with 'name' tables bigger than 5K are\n"
-#~ "insecure and will refuse to load them. Don't ask me why they believe "
-#~ "this.\n"
-#~ "This font has a name table which is %d bytes and is bigger than this "
-#~ "limit.\n"
-#~ msgstr ""
-#~ "Fonty o tablicy „name” większej niż 5KB nie są obsługiwane przez Windows\n"
-#~ "ze względów bezpieczeństwa. W tym foncie ta tablica ma objętość %d "
-#~ "bajtów,\n"
-#~ "czyli jest za duża.\n"
-
-#~ msgid "makePrintable(): unable to alloc memory"
-#~ msgstr "makePrintable(): alokacja pamieci nie powiodła się"
-
-#~ msgid ""
-#~ "Holding down the Alt (or Meta) key will speed up arrow key motion by this "
-#~ "factor"
-#~ msgstr ""
-#~ "Ile razy przyspieszyć kursor, jeśli wciśnięty jest klawisz Alt (Meta)."
-
-#~ msgid "TeX Extension List"
-#~ msgstr "Lista rozszerzona ΤεΧ-a"
-
-#~ msgid "TeX Glyphlist"
-#~ msgstr "Lista ΤεΧ-a"
-
-#~ msgid "The preview image we just created can no longer be opened."
-#~ msgstr "Utworzony przed chwilą obraz z podglądem nie daje się otworzyć."
-
-#~ msgid "Image file vanished"
-#~ msgstr "Plik z obrazkiem zniknął"
-
-#~ msgid "Name table too big for windows"
-#~ msgstr "Tablica „name” zbyt duża dla Windows"
-
-#~ msgid "EUC-GB12345"
-#~ msgstr "EUC-GB12345"
-
-#~ msgid "Third"
-#~ msgstr "Trzecie"
-
-#~ msgid "Second"
-#~ msgstr "Drugie"
-
-#~ msgid ""
-#~ "Press in this square with a wacom pressure sensitive tool\n"
-#~ "to set the pressure end-point"
-#~ msgstr ""
-#~ "Naciśnij wewnątrz tego kwadratu używając narzędzia wacom\n"
-#~ "czułego na siłę nacisku, aby ustalić wartość graniczną siły."
-
-#~ msgid "_Pressure:"
-#~ msgstr "N_acisk:"
-
-#~ msgid "Near (%f,%f) @t=%g"
-#~ msgstr "Blisko (%f, %f) @t=%g"
-
-#~ msgid "_Average Points"
-#~ msgstr "_Rozmieść wzdłuż osi"
-
-#~ msgid ""
-#~ "When inputting a name in the Save or SaveAs dialogs, FontForge can ensure "
-#~ "that the correct filename extension (SFD or SFDIR) is always used. This "
-#~ "prevents you from accidentally naming your source file with a binary "
-#~ "extension (such as .otf), out of habit."
-#~ msgstr ""
-#~ "FontForge może przypilnować, żeby w oknach zapisu pliku zostało użyte "
-#~ "właściwe rozszerzenie nazwy dla pliku źródłowego (SFD albo SFDIR). To "
-#~ "zapobiega przypadkowemu wpisaniu rozszerzenia któregoś z formatów "
-#~ "binarnych (np. OTF)."
-
-#~ msgid "EnsureCorrectSaveExtension"
-#~ msgstr "Pilnuj rozszerzeń nazw"
-
-#~ msgid ""
-#~ "The 'POST' type1 format is probably depreciated and may not work in "
-#~ "future version of the mac."
-#~ msgstr ""
-#~ "Format POST Type1 prawdopodobnie jako przestarzały nie zadziała na "
-#~ "przyszłych wersjach maców."
-
-#~ msgid ""
-#~ "You should read the OFL and its FAQ \n"
-#~ "at http://scripts.sil.org/OFL.\n"
-#~ "If you are not very familiar with English,\n"
-#~ "please check if there is a translation of the \n"
-#~ "FAQ or an unofficial translation of the license \n"
-#~ "in your mother tongue or preferred language. \n"
-#~ "\n"
-#~ "Please fill in the copyright notice in the license\n"
-#~ "header along with any Reserved Font Name(s).\n"
-#~ "If you are branching from an existing font make sure\n"
-#~ "you have the right to do so and remember to add your\n"
-#~ "additional notice with any Reserved Font Name(s)."
-#~ msgstr ""
-#~ "Zaleca się przeczytać treść licencji OFL o dotyczące jej FAQ,\n"
-#~ "osiągalne pod adresem: http://scripts.sil.org/OFL.\n"
-#~ "W razie trudności ze zrozumieniem angielskiego oryginału,\n"
-#~ "można się podeprzeć którymś z nieoficjalnych tłumaczeń.\n"
-#~ "\n"
-#~ "FontForge nie zna adresu e-mail ani strony domowej twórcy\n"
-#~ "fontu, trzeba to wprowadzić ręcznie. W nagłówku treści licencji\n"
-#~ "trzeba uzupełnić uwagi dotyczące praw autorskich oraz określić\n"
-#~ "Zastrzeżone Nazwy Fontu. Jeśli jednak jest to font opracowany\n"
-#~ "na podstawie innego, należy uzyskać pewność, że to dozwolone,\n"
-#~ "i dopisać te dane pod już istniejącymi w treści licencji."
-
-#~ msgid ""
-#~ "If for some reason the font is deemed inappropriate\n"
-#~ "for a work environment."
-#~ msgstr ""
-#~ "Wybrać, jeśli z jakichś przyczyn font wydaje\n"
-#~ "się nieodpowiedni do środowisk roboczych."
-
-#~ msgid "Not Safe for Work"
-#~ msgstr "Nie dla środowisk roboczych"
-
-#~ msgid ""
-#~ "If you have already created a preview image of the font\n"
-#~ "then provide the pathspec here."
-#~ msgstr ""
-#~ "Jeśli obraz podglądu został już przygotowany,\n"
-#~ "tu można wprowadzić ścieżkę do niego."
-
-#~ msgid "No image will be uploaded."
-#~ msgstr "Nie zostanie wysłany żaden obraz z podglądem."
-
-#~ msgid "No Preview"
-#~ msgstr "Brak podglądu"
-
-#~ msgid ""
-#~ "FontForge will generate a sample image for you\n"
-#~ "before uploading."
-#~ msgstr "Przed wysłaniem fontu, FontForge wygeneruje obraz podglądu."
-
-#~ msgid "Generated Image"
-#~ msgstr "Wygeneruj obraz"
-
-#~ msgid "An image of the font in use"
-#~ msgstr "Obraz fontu w użyciu"
-
-#~ msgid "Preview:"
-#~ msgstr "Podgląd:"
-
-#~ msgid "Upload FONTLOG"
-#~ msgstr "Wyślij plik FONTLOG"
-
-#~ msgid "Upload the license (as found in the list of truetype names)"
-#~ msgstr "Wysyła treść licencji (z danych TTF we właściwościach fontu)"
-
-#~ msgid "Upload License"
-#~ msgstr "Wyślij treść licencji"
-
-#~ msgid "Public Domain"
-#~ msgstr "W domenie publicznej"
-
-#~ msgid ""
-#~ "The SIL Open Font License\n"
-#~ "Please see http://scripts.sil.org/OFL"
-#~ msgstr ""
-#~ "SIL-owska licencja dla otwartych fontów\n"
-#~ "(OFL, Open Font License). Więcej pod adresem:\n"
-#~ "http://scripts.sil.org/OFL"
-
-#~ msgid "SIL"
-#~ msgstr "SIL"
-
-#~ msgid "License:"
-#~ msgstr "Licencja:"
-
-#~ msgid "A description of the font"
-#~ msgstr "Krótki opis fontu"
-
-#~ msgid "Description:"
-#~ msgstr "Opis:"
-
-#~ msgid ""
-#~ "A comma separated list of keywords that describe\n"
-#~ "the font to help others search for it.\n"
-#~ "You may use whatever keyword tags you desire.\n"
-#~ "Suggestions: serif, sans_serif, bold, italic, oblique,\n"
-#~ "extended, compressed, thin, demibold, black, outline,\n"
-#~ "regular, display, etc."
-#~ msgstr ""
-#~ "Lista porozdzielanych przecinkami słów kluczowych\n"
-#~ "opisujących ten font i ułatwiających innym ludziom\n"
-#~ "wyszukanie go.\n"
-#~ "Przykładowo: serif, sans_serif, bold, italic, oblique,\n"
-#~ "extended, compressed, thin, demibold, black, outline,\n"
-#~ "regular, display, etc."
-
-#~ msgid ""
-#~ "A comma separated list of keywords that describe\n"
-#~ "the font to help others search for it.\n"
-#~ "You may use whatever keyword tags you desire.\n"
-#~ "Suggestions: serif, sans_serif, bold, italic, oblique,\n"
-#~ "extended, compressed, thin, demibold, black, outline, regular,\n"
-#~ "display, etc."
-#~ msgstr ""
-#~ "Lista porozdzielanych przecinkami słów kluczowych\n"
-#~ "opisujących ten font i ułatwiających innym ludziom\n"
-#~ "wyszukanie go.\n"
-#~ "Przykładowo: serif, sans_serif, bold, italic, oblique,\n"
-#~ "extended, compressed, thin, demibold, black, outline,\n"
-#~ "regular, display, etc."
-
-#~ msgid "Keyword Tags:"
-#~ msgstr "Słowa kluczowe"
-
-#~ msgid ""
-#~ "Other artists involved in the design of this font.\n"
-#~ "Collaborators, etc."
-#~ msgstr "kto jeszcze był zaangażowany w tworzenie tego fontu?"
-
-#~ msgid "Artists:"
-#~ msgstr "Twórcy:"
-
-#~ msgid "Font name to display on OFLib"
-#~ msgstr "Nazwa pod jaką font zostanie dodany do Open Font Library"
-
-#~ msgid "OFLib Name:"
-#~ msgstr "Nazwa fontu"
-
-#~ msgid ""
-#~ "FontForge will remember your username/password\n"
-#~ "by storing them as plain text (insecurely) in your preference file"
-#~ msgstr ""
-#~ "FontForge zapamięta twoje login i hasło, zapisując je (czystym tekstem)\n"
-#~ "w pliku ustawień. To nie jest bezpieczne."
-
-#~ msgid "Remember Me"
-#~ msgstr "Zapamiętaj mnie"
-
-#~ msgid "Password on OFLib"
-#~ msgstr "Hasło do konta w Open Font Library"
-
-#~ msgid "Password:"
-#~ msgstr "Hasło"
-
-#~ msgid "Username on OFLib"
-#~ msgstr "Nazwa konta w Open Font Library"
-
-#~ msgid "Username:"
-#~ msgstr "Login:"
-
-#~ msgid "Register"
-#~ msgstr "Zarejestruj się"
-
-#~ msgid "Open Font Library"
-#~ msgstr "Open Font Library (Biblioteka Otwartych Fontów)"
-
-#~ msgid ""
-#~ "Once you have a final version of your font\n"
-#~ "and if your font is licensed under the Open\n"
-#~ "Font License, then you might consider uploading\n"
-#~ "it to the Open Font Library. This is a website\n"
-#~ "of Free/Libre fonts.\n"
-#~ "\n"
-#~ "You must have previously registered with OFLib\n"
-#~ "and have a valid username/password there.\n"
-#~ "\n"
-#~ "Obviously you must be connected to the internet\n"
-#~ "for this to work."
-#~ msgstr ""
-#~ "Gdy gotowa jest ostateczna wersja fontu i wybrano dla niego\n"
-#~ "licencję OFL (Open Font License), można rozważyć dodanie\n"
-#~ "go do Open Font Library (Biblioteki Otwartych Fontów).\n"
-#~ "\n"
-#~ "Należy się tam najpierw zarejestrować w celu otrzymania\n"
-#~ "osobistego loginu i hasła. Oczywiście konieczne jest\n"
-#~ "połączenie z Internetem."
-
-#~ msgid "Upload to the"
-#~ msgstr "Wyślij do"
-
-#~ msgid "Browse for a preview image"
-#~ msgstr "Ścieżka do pliku z podglądem"
-
-#~ msgid "Missing OFLib keywords"
-#~ msgstr "Brakuje słów kluczowych do Open Font Library"
-
-#~ msgid "Missing OFLib name"
-#~ msgstr "Brakuje nazwy fontu do Open Font Library"
-
-#~ msgid "Missing OFLib description"
-#~ msgstr "Brakuje opisu do Open Font Library"
-
-#~ msgid "Missing OFLib username"
-#~ msgstr "Brakuje nazwy użytkownika Open Font Library"
-
-#~ msgid "Missing OFLib password"
-#~ msgstr "Brakuje hasła do Open Font Library"
-
-#~ msgid "Bad OFLib upload"
-#~ msgstr "Błąd przy wysyłaniu do Open Font Library"
-
-#~ msgid ""
-#~ "PostScript and TrueType require that paths be drawn\n"
-#~ "in a clockwise direction. This lets you check that they\n"
-#~ "are.\n"
-#~ " Before doing this test insure that\n"
-#~ "no paths self-intersect"
-#~ msgstr ""
-#~ "Postscript i TrueType wymagają aby zewnętrzne kontury glifów\n"
-#~ "były rysowane zgodnie z kierunkiem ruchu wskazówek zegara.\n"
-#~ "Ta opcja pozwala się upewnić, czy to wymaganie jest spełnione.\n"
-#~ "Wcześniej jednak należy się upewnić, czy kontury nie przecinają się."
-
-#~ msgid "Checking server for additional fonts"
-#~ msgstr "Odpytywanie serwera o następne fonty"
-
-#~ msgid "Checking for new fonts"
-#~ msgstr "Sprawdzanie, czy są nowe fonty"
-
-#~ msgid "Done"
-#~ msgstr "Dość"
-
-#~ msgid "Preview"
-#~ msgstr "Podgląd"
-
-#~ msgid "Automatically download preview after selecting a font (be patient)"
-#~ msgstr ""
-#~ "Automatyczne ściąganie podglądu wybranego fontu (wymaga cierpliwości)"
-
-#~ msgid "Fonts on http://openfontlibrary.org/"
-#~ msgstr "Fonty z http://openfontlibrary.org/"
-
-#~ msgid "Search:"
-#~ msgstr "Szukaj:"
-
-#~ msgid "Reverse"
-#~ msgstr "Odwrotnie"
-
-#~ msgid "Date"
-#~ msgstr "Data"
-
-#~ msgid "Sort by:"
-#~ msgstr "Sortuj według:"
-
-#~ msgid "Browse the Open Font Library"
-#~ msgstr "Przeglądarka Open Font Library (Biblioteki Otwartych Fontów)"
-
-#~ msgid "Tag(s)"
-#~ msgstr "Tag(i)"
-
-#~ msgid "Show All"
-#~ msgstr "Pokaż wszystkie"
-
-#~ msgid "PM"
-#~ msgstr "po południu"
-
-#~ msgid "AM"
-#~ msgstr "przed południem"
-
-#~ msgid "Noon"
-#~ msgstr "wieczór"
-
-#~ msgid "Midnight"
-#~ msgstr "północ"
-
-#~ msgid "December"
-#~ msgstr "Grudzień"
-
-#~ msgid "November"
-#~ msgstr "Listopad"
-
-#~ msgid "October"
-#~ msgstr "Październik"
-
-#~ msgid "September"
-#~ msgstr "Wrzesień"
-
-#~ msgid "August"
-#~ msgstr "Sierpień"
-
-#~ msgid "July"
-#~ msgstr "Lipiec"
-
-#~ msgid "June"
-#~ msgstr "Czerwiec"
-
-#~ msgid "May"
-#~ msgstr "Maj"
-
-#~ msgid "April"
-#~ msgstr "Kwiecień"
-
-#~ msgid "March"
-#~ msgstr "Marzec"
-
-#~ msgid "February"
-#~ msgstr "Luty"
-
-#~ msgid "January"
-#~ msgstr "Styczeń"
-
-#~ msgid "_Fit to em"
-#~ msgstr "Dopasuj pola _znaków"
-
-#~ msgid "Browse web"
-#~ msgstr "Przeglądaj sieć"
-
-#~ msgid "Open Font Library..."
-#~ msgstr "Open Font Library..."
-
-#~ msgid ""
-#~ "I cannot find an unused anchor class\n"
-#~ "to assign a new point to. If you\n"
-#~ "wish a new anchor point you must\n"
-#~ "define a new anchor class with\n"
-#~ "Element->Font Info"
-#~ msgstr ""
-#~ "Nie znaleziono wolnej klasy kotwic.\n"
-#~ "Aby dodać kotwicę, trzeba wcześniej\n"
-#~ "utworzyć dla niej klasę w\n"
-#~ "Element -> Właściwości fontu"
-
-#~ msgid "Make a new anchor class"
-#~ msgstr "Utwórz nową klasę kotwic"
-
-#~ msgid "Mark for Unlink, Remove Overlap Before Save"
-#~ msgstr "Usuń przecięcia odwołań przed generacją fontu."
-
-#~ msgid "Downloading file..."
-#~ msgstr "Pobieranie pliku..."
-
-#~ msgid "Requesting file..."
-#~ msgstr "Żądanie pliku..."
-
-#~ msgid "The preview file we just created can no longer be opened."
-#~ msgstr "Utworzony przed chwilą plik z podglądem nie daje się otworzyć."
-
-#~ msgid "Preview file vanished"
-#~ msgstr "Plik z podglądem zniknął"
-
-#~ msgid "Failed to find an upload id."
-#~ msgstr "Serwer nie wyznaczył upload_id."
-
-#~ msgid "The font file we just created can no longer be opened."
-#~ msgstr "Wygenerowanego pliku fontu nie udało się otworzyć."
-
-#~ msgid "Font file vanished"
-#~ msgstr "Plik z fontem zniknął"
-
-#~ msgid "Could not read state."
-#~ msgstr "Nie udało się odczytać stanu."
-
-#~ msgid "Could not read state"
-#~ msgstr "Nie udało się odczytać stanu"
-
-#~ msgid "Could not log in."
-#~ msgstr "Nie udało się zalogować"
-
-#~ msgid "Login failed"
-#~ msgstr "Błąd logowania"
-
-#~ msgid "Looking for openfontlibrary.org"
-#~ msgstr "Łączenie z openfontlibrary.org"
-
-#~ msgid "Uploading to Open Font Library"
-#~ msgstr "Wysyłanie fontu do Open Font Library (Biblioteki Otwartych Fontów)"
-
-#~ msgid "Font Upload..."
-#~ msgstr "Wysyłanie fontu..."
-
-#~ msgid "Transmitting Meta Data..."
-#~ msgstr "Przesyłanie metadanych..."
-
-#~ msgid "Unexpected server return code=%d"
-#~ msgstr "Kod odpowiedzi: %d"
-
-#~ msgid "Unexpected server return"
-#~ msgstr "Nieoczekiwany kod odpowiedzi serwera"
-
-#~ msgid "Server error code=%d"
-#~ msgstr "Kod błędu: %d"
-
-#~ msgid "Error from openfontlibrary"
-#~ msgstr "Błąd po stronie openfontlibrary.org"
-
-#~ msgid "Transmitting %s..."
-#~ msgstr "Przesyłanie %s..."
-
-#~ msgid "The %s file we just created can no longer be opened."
-#~ msgstr "Utworzony przed chwilą plik %s nie daje się otworzyć."
-
-#~ msgid "File vanished"
-#~ msgstr "Plik zniknął"
-
-#~ msgid "Awaiting response"
-#~ msgstr "Oczekiwanie na odpowiedź"
-
-#~ msgid "Failed to find default for \"%s->shell->open->command\"\n"
-#~ msgstr ""
-#~ "Nie udało się określić wartości domyślnej dla „%s -> shell -> open -> "
-#~ "command”\n"
-
-#~ msgid "Failed to find \"%s->shell->open\"\n"
-#~ msgstr "Nie znaleziono „%s -> shell -> open”\n"
-
-#~ msgid "Failed to find \"%s->shell\"\n"
-#~ msgstr "Nie znaleziono „%s->shell”\n"
-
-#~ msgid "Failed to find program \"%s\"\n"
-#~ msgstr "Nie znaleziono programu „%s”\n"
-
-#~ msgid ""
-#~ "Failed to default value of exten \"%s\".\n"
-#~ " Error=%ld"
-#~ msgstr ""
-#~ "Nie udało się określić wartości domyślnej dla rozszerzenia „%s”.\n"
-#~ "Błąd=%ld"
-
-#~ msgid "Web Open Font"
-#~ msgstr "Web Open Font"
-
-#~ msgid "Collaboration"
-#~ msgstr "Sieć"
-
-#~ msgid ""
-#~ "The number of milliseconds that are allowed to pass between sending an "
-#~ "update to the server and hearing it sent back as a message to all "
-#~ "clients. The FontForge user interface may be unresponsive during this "
-#~ "time. A change requires a restart of FontForge. (default 2000 which is 2 "
-#~ "seconds)"
-#~ msgstr ""
-#~ "Czas w milisekundach, jaki dopuszcza się między wysłaniem serwerowi "
-#~ "współpracy komunikatu o zmianie a otrzymaniem go z powrotem jako "
-#~ "rozesłanego do wszystkich klientów. FontForge może w tym czasie nie "
-#~ "odpowiadać na działania użytkownika. Domyślna wartość to 2000 (dwie "
-#~ "sekundy)."
-
-#~ msgid "RoundTripMessageMaxTime"
-#~ msgstr "Czas oczekiwania na odpowiedź"
-
-#~ msgid ""
-#~ "The number of milliseconds to wait for a connection to the collaboration "
-#~ "server to happen. FontForge may be unresponsive during this session "
-#~ "connection time. (default 1000 which is 1 second)"
-#~ msgstr ""
-#~ "Czas oczekiwania w milisekundach, jaki dopuszcza się przy próbie "
-#~ "nawiązania połączenia z serwerem współpracy. FontForge może wtedy nie "
-#~ "odpowiadać na działania użytkownika. Domyślna wartość to 1000 (jedna "
-#~ "sekunda)."
-
-#~ msgid "SessionJoinTimeout"
-#~ msgstr "Czas oczekiwania na połączenie"
-
-#~ msgid "Use XOR based rubber lines."
-#~ msgstr "Czy rysować brzegi prostokata zaznaczenia za pomocą XOR?"
-
-#~ msgid "XORRubberLines"
-#~ msgstr "XOR-owanie zaznaczenia"
-
-#~ msgid "C_ollaborate"
-#~ msgstr "_Sieć"
-
-#~ msgid "Close local server"
-#~ msgstr "Wyłącz serwer lokalny"
-
-#~ msgid "_Connect to Session (ip:port)..."
-#~ msgstr "Połącz z sesją (_ip:port)..."
-
-#~ msgid "_Connect to Session..."
-#~ msgstr "_Połącz z sesją..."
-
-#~ msgid "_Start Session..."
-#~ msgstr "Rozpocznij _sesję..."
-
-#~ msgid "Select which servers you wish to close..."
-#~ msgstr "Wybierz serwery współpracy doz wyłączenia..."
-
-#~ msgid "Close Collab Server(s)"
-#~ msgstr "Wyłącz serwer(y) współpracy"
-
-#~ msgid "Select a collab server to connect to..."
-#~ msgstr "Wybierz serwer współpracy..."
-
-#~ msgid "Connect to Collab Server"
-#~ msgstr "Połącz z serwerem współpracy"
-
-#~ msgid ""
-#~ "The Font Information Dialog is not available in collaboration mode yet."
-#~ msgstr ""
-#~ "Okno właściwości fontu nie jest jeszcze dostępne w trybie współpracy "
-#~ "sieciowej."
-
-#~ msgid "Feature Not Available"
-#~ msgstr "Funkcja niedostępna"
-
-#~ msgid "Panose|_Family"
-#~ msgstr "_Rodzaj"
-
-#~ msgid "Industry specific"
-#~ msgstr "Przemysłowe"
-
-#~ msgid "Deco (E,M,S) Waco midline"
-#~ msgstr "Deco"
-
-#~ msgid "Drawn/Distressed"
-#~ msgstr "Odręczne/Zaburzone"
-
-#~ msgid "Solid Fill"
-#~ msgstr "Jednolite"
-
-#~ msgid "Round/Open loops"
-#~ msgstr "Ziarnem/z pętlami"
-
-#~ msgid "Round/Closed loops"
-#~ msgstr "Ziarnem/zlane pętle"
-
-#~ msgid "Round/No loops"
-#~ msgstr "Ziarnem/bez pętli"
-
-#~ msgid "Tapered/Open loops"
-#~ msgstr "Spiczaste/z pętlami"
-
-#~ msgid "Tapered/Closed loops"
-#~ msgstr "Spiczaste/zlane pętle"
-
-#~ msgid "Tapered/No loops"
-#~ msgstr "Spiczaste/bez pętli"
-
-#~ msgid "Sharp/Open loops"
-#~ msgstr "Obcięte/z pętlami"
-
-#~ msgid "Sharp/Closed loops"
-#~ msgstr "Obcięte/zlane pętle"
-
-#~ msgid "Sharp/No loops"
-#~ msgstr "Obcięte/bez pętli"
-
-#~ msgid "None/Open loops"
-#~ msgstr "Brak/z pętlami"
-
-#~ msgid "None/Closed loops"
-#~ msgstr "Brak/zlane pętle"
-
-#~ msgid "None/No loops"
-#~ msgstr "Brak/bez pętli"
-
-#~ msgid "Felt Pen/Brush Tip"
-#~ msgstr "Flamaster"
-
-#~ msgid "Nord"
-#~ msgstr "Pismo wyjątkowo grube"
-
-#~ msgid "Latin: Pictorial/Symbol"
-#~ msgstr "Łacińskie: symboliczne i obrazkowe"
-
-#~ msgid "Latin: Text & Display"
-#~ msgstr "Łacińskie: zwykłe"
-
-#~ msgid "No Font Snapshot received from the server"
-#~ msgstr "Nie otrzymano migawki fontu od serwera"
-
-#~ msgid "Failed to connect to server session at %s"
-#~ msgstr "Nie udało się podłączyć do sesji serwera %s"
-
-#~ msgid "FontForge Collaboration"
-#~ msgstr "Współpraca sieciowa"
-
-#~ msgid "Collab: Please ensure that UDP port 5670 is not firewalled."
-#~ msgstr ""
-#~ "Współpraca: upewnij się, że port 5670 UDP nie jest blokowany przez "
-#~ "frewall."
-
-#~ msgid "Collab: A beacon has not been received from the server"
-#~ msgstr "Współpraca: nie otrzymano sygnału od serwera"
-
-#~ msgid ""
-#~ "FontForge expected some input from the server by now.\n"
-#~ "Would you like to try to reconnect to the collaboration session?"
-#~ msgstr ""
-#~ "FontForge oczekiwał komunikatu z serwera, jeszcze go nie otrzymał.\n"
-#~ "Czy połączyć się ponownie?"
-
-#~ msgid "Network Issue"
-#~ msgstr "Problem z siecią"
-
-#~ msgid "_Disconnect"
-#~ msgstr "_Rozłącz"
-
-#~ msgid "_Reconnect"
-#~ msgstr "Połącz po_nownie"
-
-#~ msgid "WOFF2 is not supported yet."
-#~ msgstr "Format WOFF2 nie jest jeszcze obsługiwany."
-
-#~ msgid ""
-#~ "This version of fontforge cannot handle WOFF files. You need to recompile "
-#~ "it with libpng and zlib"
-#~ msgstr ""
-#~ "Fontforge musi być skompilowany z bibliotekami libpng i zlib, żeby "
-#~ "obsługiwać fonty WOFF."
-
-#~ msgid "WOFF not supported"
-#~ msgstr "Brak wsparcia dla formatu WOFF"
-
-#~ msgid "Tag characters"
-#~ msgstr "znaczniki"
-
-#~ msgid "Chinese counting rod numerals"
-#~ msgstr "chińskie cyfry patykowe"
-
-#~ msgid "Notational systems"
-#~ msgstr "systemy notacji"
-
-#~ msgid "Large Asian Scripts"
-#~ msgstr "duże pisma azjatyckie"
-
-#~ msgid "Sumerian pictograms"
-#~ msgstr "piktogramy sumeryjskie"
-
-#~ msgid "Egyptian and Mayan hieroglyphs"
-#~ msgstr "hieroglify Egipcjan i Majów"
-
-#~ msgid "North American ideographs and pictograms"
-#~ msgstr "ideogramy i piktogramy północnoamerykańskie"
-
-#~ msgid "Egyptian hieroglyphs"
-#~ msgstr "hieroglify egipskie"
-
-#~ msgid "Sumero-Akkadian Cuneiform"
-#~ msgstr "klinowe sumero-akadyjskie"
-
-#~ msgid "Expected glyph file with format==1"
-#~ msgstr "Oczekiwano pliku glifu w formacie 1"
-
-#~ msgid ""
-#~ "Lookup %s has an\n"
-#~ "offset bigger than 65535 bytes. This means\n"
-#~ "FontForge must use an extension lookup to output it.\n"
-#~ "Not all applications support extension lookups."
-#~ msgstr ""
-#~ "Przesunięcie pozycji (ang. „lookup”) %s przekracza 65535 bajtów.\n"
-#~ "To oznacza, że FontForge musi użyć formatu rozszerzonego.\n"
-#~ "Nie wszystkie programy będą umiały to odczytać."
-
-#~ msgid "Lookup potentially too big"
-#~ msgstr "Pozycja może być zbyt duża"
-
-#~ msgid "You may not save ufo directory to a remote location"
-#~ msgstr "Zdalny zapis folderów UFO nie jest obsługiwany"
-
-#~ msgid "Directory Not Remote"
-#~ msgstr "Nie można przesłać folderu"
-
-#~ msgid "You may not save a mac resource file to a remote location"
-#~ msgstr "Zdalny zapis zasobów macintoshowych nie jest obsługiwany."
-
-#~ msgid "Mac Resource Not Remote"
-#~ msgstr "Nie można przesłać zasobu"
-
-#~ msgid "%1$s is not in %2$.100s"
-#~ msgstr "W pliku %2$.100s nie ma fontu %1$s"
-
-#~ msgid "FontForge can only upload to ftp URLs at the moment"
-#~ msgstr "FontForge obecnie obsługuje wysyłanie tylko przez ftp"
-
-#~ msgid "FontForge only handles ftp and http URLs at the moment"
-#~ msgstr "FontForge obecnie obsługuje URL-e tylko http lub ftp"
-
-#~ msgid "Could not transmit data."
-#~ msgstr "Nie udało się przekazać danych."
-
-#~ msgid "Could not transmit data"
-#~ msgstr "Nie przesłano danych"
-
-#~ msgid "Uploading font..."
-#~ msgstr "Wysyłanie fontu..."
-
-#~ msgid "Could not find file."
-#~ msgstr "Nie znaleziono pliku."
-
-#~ msgid "FTP passive Data Connect failed\n"
-#~ msgstr "Nie udało się nawiązać pasywnego połączenia FTP\n"
-
-#~ msgid "Transmitting font..."
-#~ msgstr "Transmisja fontu..."
-
-#~ msgid "Bad Username/Password\n"
-#~ msgstr "Błędny użytkownik lub hasło\n"
-
-#~ msgid "Logging in..."
-#~ msgstr "Logowanie..."
-
-#~ msgid "Got something else when expecting an ftp URL"
-#~ msgstr "Oczekiwano adresu URL (ftp), otrzymano coś innego"
-
-#~ msgid "Uploading to %s"
-#~ msgstr "Wysyłanie do %s"
-
-#~ msgid "HTTP return code: %d."
-#~ msgstr "Odpowiedź serwera http: %d."
-
-#~ msgid "Could not download data."
-#~ msgstr "Nie udało się pobrać danych."
-
-#~ msgid "Could not download data"
-#~ msgstr "Nie pobrano danych"
-
-#~ msgid "Downloading font..."
-#~ msgstr "Pobieranie fontu..."
-
-#~ msgid "Could not send request to \"%s\"."
-#~ msgstr "Nie udało się wysłać żądania do „%s”."
-
-#~ msgid "Could not send request"
-#~ msgstr "Nie wysłano żądania"
-
-#~ msgid "Requesting font..."
-#~ msgstr "Żądanie fontu..."
-
-#~ msgid "Could not connect to \"%s\"."
-#~ msgstr "Nie udało się połączyć z „%s”."
-
-#~ msgid "Could not connect to host"
-#~ msgstr "Nie udało się połączyć z hostem"
-
-#~ msgid ""
-#~ "Could not find \"%s\"\n"
-#~ "Are you connected to the internet?"
-#~ msgstr ""
-#~ "Nie znaleziono w sieci hosta „%s”\n"
-#~ "Czy komputer jest podłączony do internetu?"
-
-#~ msgid "Could not find host"
-#~ msgstr "Nie znaleziono hosta"
-
-#~ msgid "Resolving host"
-#~ msgstr "Ustalanie adresu hosta"
-
-#~ msgid "Font Download..."
-#~ msgstr "Pobierz font..."
-
-#~ msgid "Got something else when expecting an http URL"
-#~ msgstr "Oczekiwano adresu URL (http), otrzymano coś innego"
-
-#~ msgid "Could not parse URL"
-#~ msgstr "Niezrozumiały URL"
-
-#~ msgid "Downloading from %s"
-#~ msgstr "Pobieranie z %s"
-
-#~ msgid "Enter password for %s@%s"
-#~ msgstr "Wprowadź hasło dla %s@%s"
-
-#~ msgid "Password?"
-#~ msgstr "Hasło?"
-
-#~ msgid "Reference to a non-existent glyph name on line %d of %s."
-#~ msgstr "Odwołanie do glifu o nieistniejącej nazwie . Wiersz %d w pliku %s."
-
-#~ msgid "Unknown Collab State!"
-#~ msgstr "Niezdefiniowany stan współpracy!"
-
-#~ msgid "Collab Client"
-#~ msgstr "Klient wspópłracy"
-
-#~ msgid "Collab Server"
-#~ msgstr "Serwer współpracy"
-
-#~ msgid "Disconnected"
-#~ msgstr "Rozłączono"
-
-#~ msgid "Flag0x10+"
-#~ msgstr "Flaga 0x10+"
-
-#~ msgid "No Browser"
-#~ msgstr "Nie znaleziono przeglądarki"
-
-#~ msgid ""
-#~ "Could not find a browser. Set the BROWSER environment variable to point "
-#~ "to one"
-#~ msgstr ""
-#~ "Nie znaleziono przeglądarki internetowej. Ustaw zmienną środowiskową "
-#~ "BROWSER na odpowiedni program"
-
-#~ msgid "Mahjong & Domino Tiles"
-#~ msgstr "Kafle do domino i madżonga"
-
-#~ msgid "Carian/Lycian/Lydian"
-#~ msgstr "Karyjski/Licyjski/Lidyjski"
-
-#~ msgid "Sudanese"
-#~ msgstr "sudański"
-
-#~ msgid "Cuneiform Numbers & Punctuation"
-#~ msgstr "Liczby i interpunkcja klinowe"
-
-#~ msgid "Linear B Syllabary/Ideograms, Agean Num."
-#~ msgstr "Pismo linearne B, liczby egejskie"
-
-#~ msgid "Private Use (planes 15&16)"
-#~ msgstr "do użytku prywatnego (obszary 15 i 16)"
-
-#~ msgid "Musical Symbols, Byzantine & Western"
-#~ msgstr "Symbole muzyczne, zachodnie i bizantyjskie"
-
-#~ msgid "Tagalog/Hanunno/Buhid/Tagbanwa"
-#~ msgstr "Tagalog/Hanunno/Buhid/Tagbanwa"
-
-#~ msgid "Bopomofo & Extended"
-#~ msgstr "Bopomofo i rozszerzenia"
-
-#~ msgid "Katakana & Phonetic Extensions"
-#~ msgstr "Katakana i rozszerzenia fonetyczne"
-
-#~ msgid "Mathematical Operators (Suppl. & Misc.)"
-#~ msgstr "Operatory matematyczne (różne i dodatkowe)"
-
-#~ msgid "Arrows (& Supplements A&B)"
-#~ msgstr "strzałki (i dodatki A i B)"
-
-#~ msgid "Cyrillic & Supplement"
-#~ msgstr "Grażdanka i uzupełnienia"
-
-#~ msgid "Remove External Contour"
-#~ msgstr "Usuń zewnętrzny kontur"
-
-#~ msgid "Remove Internal Contour"
-#~ msgstr "Usuń wewnętrzny kontur"
-
-#~ msgid ""
-#~ "A calligraphic pen or an eliptical pen has two widths\n"
-#~ "(which may be the same, giving a circular or square pen,\n"
-#~ "or different giving an eliptical or rectangular pen)."
-#~ msgstr ""
-#~ "Końcówka piórka kaligraficznego bądź eliptycznego ma dwa wymiary "
-#~ "szerokości\n"
-#~ "(które mogą być identyczne, dając w efekcie pióro kwadratowe bądź "
-#~ "okrągłe.)"
-
-#~ msgid "Minor Stroke _Height:"
-#~ msgstr "_Mniejsza szerokość kreski:"
-
-#~ msgid "Main Stroke _Width:"
-#~ msgstr "_Główna szerokość kreski:"
-
-#~ msgid "_Polygon"
-#~ msgstr "_Wielobok"
-
-#~ msgid ""
-#~ "Ca_lligraphic\n"
-#~ "(Rectangular)"
-#~ msgstr ""
-#~ "Ka_lligraficzne\n"
-#~ "(Prostokątne)"
-
-#~ msgid ""
-#~ "_Circular\n"
-#~ "(Elliptical)"
-#~ msgstr ""
-#~ "_Okrągłe\n"
-#~ "(Eliptyczne)"
-
-#~ msgid "Pen Type:"
-#~ msgstr "Typ pióra:"
-
-#~ msgid "Not a convex polygon"
-#~ msgstr "To nie jest wielobok wypukły"
-
-#~ msgid ""
-#~ "The selected vertex makes this a concave polygon. Please remove (Edit-"
-#~ ">Merge) it."
-#~ msgstr ""
-#~ "Kształt pióra musi być opisany wielobokiem wypukłym - a wskazany punkt "
-#~ "czyni go wklęsłym. Proszę go usunąć (Edycja -> Usuń punkty gładko)."
-
-#~ msgid ""
-#~ "There are at least 3 colinear vertices. Please remove (Edit->Merge) the "
-#~ "selected point."
-#~ msgstr ""
-#~ "Znaleziono trzy wierzchołki współliniowe - proszę usunąć wskazany punkt."
-
-#~ msgid "There aren't enough vertices to be a polygon."
-#~ msgstr "Zbyt mało wierzchołków, by był to wielobok wypukły."
-
-#~ msgid "This is a line; it must enclose some area."
-#~ msgstr ""
-#~ "Kształt pióra musi być opisany wielobokiem wypukłym - pojedyncza krawędź "
-#~ "nie wystarczy."
-
-#~ msgid "There are too many vertices on this polygon."
-#~ msgstr "Wielobok opisujący kształt pióra ma zbyt wiele wierzchołków."
-
-#~ msgid ""
-#~ "The selected spline has curved edges, but it must be a convex polygon "
-#~ "(with straight edges)."
-#~ msgstr ""
-#~ "Kształt pióra musi być opisany wielobokiem wypukłym - proszę wyprostować "
-#~ "krawędzie."
-
-#~ msgid "The selected contour is open, but it must be a convex polygon."
-#~ msgstr ""
-#~ "Kształt pióra musi być opisany wielobokiem wypukłym - proszę go zamknąć."
-
-#~ msgid "Transport And Map Symbols"
-#~ msgstr "symbole komunikacyjne i znaki na mapach"
-
-#~ msgid "Miscellaneous Symbols And Pictographs"
-#~ msgstr "różnorodne symbole i piktogramy"
-
-#~ msgid "Cuneiform and other Near Eastern Scripts"
-#~ msgstr "klinowe i inne bliskowschodnie"
-
-#~ msgid "African and other syllabic scripts"
-#~ msgstr "sylabariusze afrykańskie i inne"
-
-#~ msgid "Aegean numbers"
-#~ msgstr "liczby egejskie"
-
-#~ msgid "KataKana Half Width Forms"
-#~ msgstr "formy katakany ½ szerokości"
-
-#~ msgid "Arabic Presentation Forms B"
-#~ msgstr "arabskie formy prezentacyjne B"
-
-#~ msgid "Arabic Presentation Forms A"
-#~ msgstr "arabskie formy prezentacyjne A"
-
-#~ msgid "MicroSoft Symbol Area"
-#~ msgstr "obszar symboli Microsoftu"
-
-#~ msgid "Sundanese Extensions"
-#~ msgstr "rozszerzenia sundajskiego"
-
-#~ msgid "Some fragments did not join in %s"
-#~ msgstr "Niektórych fragmentów krzywych w glifie %s nieudało się połączyć."
-
-#~ msgid "Some fragments did not join"
-#~ msgstr "Błąd łączenia"
-
-#~ msgid "Cuneiform, Ugaritic"
-#~ msgstr "klinowe ugaryckie"
-
-#~ msgid "Tengwar"
-#~ msgstr "tengwar"
-
-#~ msgid "Tai Lu"
-#~ msgstr "tai lu"
-
-#~ msgid "Rongorongo"
-#~ msgstr "rongo-rongo"
-
-#~ msgid "Phaistos"
-#~ msgstr "faistos"
-
-#~ msgid "Script|Pahlavi"
-#~ msgstr "pahlawi"
-
-#~ msgid "Kharoṣṭhī"
-#~ msgstr "kharosztni"
-
-#~ msgid "Cypro-Minoan"
-#~ msgstr "cypryjsko-minojskie"
-
-#~ msgid "Cirth"
-#~ msgstr "cirth"
-
-#~ msgid "Bliss Symbolics"
-#~ msgstr "symbole Blissa"
-
-#~ msgid "Vertical Alternates (obs)"
-#~ msgstr "Alternatywne formy pionowe (przestarzałe)"
-
-#~ msgid "Script Style"
-#~ msgstr "Formy pisane"
-
-#~ msgid "Hanja to Hangul"
-#~ msgstr "Hanja na Hangyl"
-
-#~ msgid "Dipthongs (Obsolete)"
-#~ msgstr "Dyftongi (przestarzałe)"
-
-#~ msgid "Drop Caps"
-#~ msgstr "Inicjały wpuszczone"
-
-#~ msgid "Character Variants 00"
-#~ msgstr "Warianty znaków (00)"
-
-#~ msgid "Ancient Ligatures"
-#~ msgstr "Ligatury starożytne"
