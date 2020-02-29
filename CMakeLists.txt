@@ -8,7 +8,7 @@ if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
 endif()
 
 # Update the version for each new release
-project(fontforge VERSION 20190801 LANGUAGES C CXX)
+project(fontforge VERSION 20200314 LANGUAGES C CXX)
 
 # Add folder for custom cmake modules
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_SOURCE_DIR}/cmake/packages)
