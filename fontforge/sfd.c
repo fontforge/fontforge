@@ -1768,7 +1768,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 	SFDDumpUTF7Str(sfd,sc->comment);
 	putc('\n',sfd);
     }
-	if(sc->openType_svg != NULL){
+	if(sc->opentype_svg != NULL){
 		fprintf(sfd, "OpenType SVG: ");
 		SFDDumpUTF7Str(sfd,sc->opentype_svg);
 		putc('\n',sfd);
