@@ -1553,6 +1553,7 @@ typedef struct splinechar {
     DBounds tile_bounds;
     char * glif_name; // This stores the base name of the glyph when saved to U. F. O..
     unichar_t* user_decomp; // User decomposition for building this character
+    char *openType_svg; //Gathers data for creating temp SVG for Inkscape
 } SplineChar;
 
 #define TEX_UNDEF 0x7fff
