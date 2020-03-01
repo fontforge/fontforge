@@ -60,7 +60,7 @@ typedef struct {			/* Taken from spiro.h because I want */
 # define bigreal	double
 #endif
 
-#define extended	double
+#define extended    double
 	/* Solaris wants to define extended to be unsigned [3] unless we do this*/
 #define _EXTENDED
 
@@ -2634,6 +2634,14 @@ extern bool isSplinePointPartOfGuide( SplineFont *sf, SplinePoint *sp );
 
 
 extern void debug_printHint( StemInfo *h, char* msg );
+
+/**
+ * OpenType SVG interaction functions
+ * Definitions in Splinechar.c
+*/
+void SCOpenTypeSVGdlg(SplineChar* sc, int accessmode);
+void SCClearOpenTypeSVG(SplineChar* sc);
+void SCEditOpenTypeSVG();
 
 #if defined(_WIN32) || defined(__HAIKU__)
 #define BAD_LOCALE_HACK

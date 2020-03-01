@@ -46,6 +46,7 @@
 #include "ttf.h"
 #include "ustring.h"
 #include "utype.h"
+#include "svg.h"
 
 #include <locale.h>
 #include <math.h>
@@ -2744,4 +2745,39 @@ void SCRemoveVKern(SplineChar* sc) {
 	if( sc->parent->fv->cidmaster!=NULL )
 	    sc->parent->fv->cidmaster->changed = true;
     }
+}
+
+//MID_EditOpenTypeSVG 2323
+//MID_ClearOpenTypeSVG 2324
+void SCOpenTypeSVGdlg(SplineChar* sc, int accessmode){
+	printf("Hello from the SVG Dialogue");
+	if(accessmode == 2323){
+		SCEditOpenTypeSVG();
+	}
+	else if(accessmode == 2324){
+		SCClearOpenTypeSVG(sc);
+	}
+	else{
+		//We should never get here
+		return;
+	}
+}
+
+void SCClearOpenTypeSVG(SplineChar* sc){
+	printf("Hello from the SVG Clear\n");
+	if(sc==NULL){
+		return;
+	}
+	if(sc->opentype_svg != NULL){
+		free(sc->opentype_svg);
+		sc->opentype_svg = NULL;
+	}
+
+	return;
+}
+
+void SCEditOpenTypeSVG(){
+	printf("Hello from the SVG Edit\n");
+	GenerateOpenTypeSVG();
+	return;
 }

@@ -6599,6 +6599,8 @@ return( true );
 #define MID_AcceptableExtrema 2320
 #define MID_MakeArc	2321
 #define MID_ClipPath	2322
+#define MID_EditOpenTypeSVG 2323
+#define MID_ClearOpenTypeSVG 2324
 
 #define MID_AutoHint	2400
 #define MID_ClearHStem	2401
@@ -10738,6 +10740,11 @@ static void CVMenuBitmaps(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     BitmapDlg((FontView *) (cv->b.fv),cv->b.sc,mi->mid==MID_RemoveBitmaps?-1: (mi->mid==MID_AvailBitmaps) );
 }
 
+static void CVMenuOpenTypeSVG(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)){
+	CharView *cv = (CharView *) GDrawGetUserData(gw);
+	SCOpenTypeSVGdlg(cv, mi->mid);
+}
+
 static void cv_allistcheck(CharView *cv, struct gmenuitem *mi) {
     int selpoints = 0;
     SplinePointList *spl;
@@ -12006,6 +12013,9 @@ static GMenuItem2 ellist[] = {
     { { (unichar_t *) N_("Bitm_ap strikes Available..."), (GImage *) "elementbitmapsavail.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Bitmap strikes Available...|No Shortcut"), NULL, NULL, CVMenuBitmaps, MID_AvailBitmaps },
     { { (unichar_t *) N_("Regenerate _Bitmap Glyphs..."), (GImage *) "elementregenbitmaps.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Regenerate Bitmap Glyphs...|No Shortcut"), NULL, NULL, CVMenuBitmaps, MID_RegenBitmaps },
     { { (unichar_t *) N_("Remove Bitmap Glyphs..."), (GImage *) "elementremovebitmaps.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Remove Bitmap Glyphs...|No Shortcut"), NULL, NULL, CVMenuBitmaps, MID_RemoveBitmaps },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
+	{ { (unichar_t *) N_("Edit OpenType SVG..."), (GImage *) "elementseditopentypesvg.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Edit OpenType SVG...|No Shortcut"), NULL, NULL, CVMenuOpenTypeSVG, MID_EditOpenTypeSVG },
+	{ { (unichar_t *) N_("Clear OpenType SVG..."), (GImage *) "elementsclearopentypesvg.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Clear OpenType SVG...|No Shortcut"), NULL, NULL, CVMenuOpenTypeSVG, MID_ClearOpenTypeSVG },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("St_yles"), (GImage *) "elementstyles.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Styles|No Shortcut"), eflist, NULL, NULL, MID_Styles },
     { { (unichar_t *) N_("_Transformations"), (GImage *) "elementtransform.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Transformations|No Shortcut"), trlist, NULL, NULL, 0 },

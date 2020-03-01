@@ -18,5 +18,6 @@ extern SplineFont *SFReadSVGMem(char *data, int flags);
 extern SplineSet *SplinePointListInterpretSVG(char *filename, char *memory, int memlen, int em_size, int ascent, int is_stroked);
 extern void SFLSetOrder(SplineFont *sf, int layerdest, int order2);
 extern void SFSetOrder(SplineFont *sf, int order2);
+void GenerateOpenTypeSVG();
 
 #endif /* FONTFORGE_SVG_H */

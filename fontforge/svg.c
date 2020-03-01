@@ -60,6 +60,8 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
+#include <libxml/tree.h>
+#include <libxml/parser.h>
 
 /* ************************************************************************** */
 /* ****************************    SVG Output    **************************** */
@@ -3699,4 +3701,100 @@ return( SplinesFromEntities(ret,&flags,is_stroked));
 
 int HasSVG(void) {
 return( libxml_init_base());
+}
+
+char* opentypesvgeditor = NULL;
+
+void GenerateOpenTypeSVG(){
+	xmlDocPtr mysvg = NULL;
+	xmlNodePtr svgroot = NULL, defs = NULL, sodipodi = NULL, tempchild = NULL, tempchild2 = NULL, metadata = NULL, guide = NULL;
+	xmlDtdPtr dtd0 = NULL, dtd1 = NULL, dtd2 = NULL;
+
+	mysvg = xmlNewDoc(BAD_CAST "1.0");
+	dtd0 = xmlCreateIntSubset(mysvg, BAD_CAST "", "", BAD_CAST "http://www.w3.org/2000/svg");
+	dtd1 = xmlCreateIntSubset(mysvg, BAD_CAST "sodipodi", "", BAD_CAST "http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd");
+	dtd2 = xmlCreateIntSubset(mysvg, BAD_CAST "inkscape", "", BAD_CAST "http://www.inkscape.org/namespaces/inkscape");
+	svgroot = xmlNewNode(NULL, BAD_CAST "svg");
+	xmlDocSetRootElement(mysvg, svgroot);
+	//Hard coded node creation
+	//Please don't do this
+	//I am being very naughty
+	defs = xmlNewChild(svgroot, NULL,  BAD_CAST "defs", NULL);
+	xmlNewProp(svgroot,  BAD_CAST "id",  BAD_CAST "defs2");
+	
+	sodipodi = xmlNewChild(svgroot, NULL,  BAD_CAST "sodipodi:namedview", NULL);
+	xmlNewProp(sodipodi,  BAD_CAST "pagecolor",  BAD_CAST "#ffffff");
+	xmlNewProp(sodipodi,  BAD_CAST "bordercolor",  BAD_CAST "#666666");
+	xmlNewProp(sodipodi,  BAD_CAST "borderopacity",  BAD_CAST "1.0");
+	xmlNewProp(sodipodi,  BAD_CAST "inkscape:pageopacity",  BAD_CAST "0.0");
+	xmlNewProp(sodipodi,  BAD_CAST "inkscape:pageopacity",  BAD_CAST "2");
+	xmlNewProp(sodipodi,  BAD_CAST "inkscape:zoom",  BAD_CAST "1.4");
+	xmlNewProp(sodipodi,  BAD_CAST "inkscape:cx",  BAD_CAST "275.71429");
+	xmlNewProp(sodipodi,  BAD_CAST "inkscape:cy",  BAD_CAST "788.57143");
+	xmlNewProp(sodipodi,  BAD_CAST "inkscape:document-units",  BAD_CAST "mm");
+	xmlNewProp(sodipodi,  BAD_CAST "inkscape:current-layer",  BAD_CAST "layer3");
+	xmlNewProp(sodipodi,  BAD_CAST "showgrid",  BAD_CAST "false");
+	xmlNewProp(sodipodi,  BAD_CAST "showguides",  BAD_CAST "true");
+	xmlNewProp(sodipodi,  BAD_CAST "inkscape:guide-bbox",  BAD_CAST "true");
+	xmlNewProp(sodipodi,  BAD_CAST "inkscape:window-width",  BAD_CAST "2426");
+	xmlNewProp(sodipodi,  BAD_CAST "inkscape:window-height",  BAD_CAST "1329");
+	xmlNewProp(sodipodi,  BAD_CAST "inkscape:window-x",  BAD_CAST "134");
+	xmlNewProp(sodipodi,  BAD_CAST "inkscape:window-y",  BAD_CAST "55");
+	xmlNewProp(sodipodi,  BAD_CAST "inkscape:window-maximized",  BAD_CAST "1");
+	
+	tempchild = xmlNewChild(sodipodi, NULL,  BAD_CAST "sodipodi:guide", NULL);
+	xmlNewProp(tempchild,  BAD_CAST "position",  BAD_CAST "127.18899,259.48066");
+	xmlNewProp(tempchild,  BAD_CAST "orientation",  BAD_CAST "0,1");
+	xmlNewProp(tempchild,  BAD_CAST "id",  BAD_CAST "guide815");
+	xmlNewProp(tempchild,  BAD_CAST "inkscape:locked",  BAD_CAST "false");
+	tempchild = xmlNewChild(sodipodi, NULL,  BAD_CAST "sodipodi:guide", NULL);
+	xmlNewProp(tempchild,  BAD_CAST "position",  BAD_CAST "53.672618,248.33036");
+	xmlNewProp(tempchild,  BAD_CAST "orientation",  BAD_CAST "1,0");
+	xmlNewProp(tempchild,  BAD_CAST "id",  BAD_CAST "guide817");
+	xmlNewProp(tempchild,  BAD_CAST "inkscape:locked",  BAD_CAST "false");
+	tempchild = xmlNewChild(sodipodi, NULL,  BAD_CAST "sodipodi:guide", NULL);
+	xmlNewProp(tempchild,  BAD_CAST "position",  BAD_CAST "108.47916,203.54018");
+	xmlNewProp(tempchild,  BAD_CAST "orientation",  BAD_CAST "0,1");
+	xmlNewProp(tempchild,  BAD_CAST "id",  BAD_CAST "guide819");
+	xmlNewProp(tempchild,  BAD_CAST "inkscape:locked",  BAD_CAST "false");
+	tempchild = xmlNewChild(sodipodi, NULL,  BAD_CAST "sodipodi:guide", NULL);
+	xmlNewProp(tempchild,  BAD_CAST "position",  BAD_CAST "141.93006,245.11757");
+	xmlNewProp(tempchild,  BAD_CAST "orientation",  BAD_CAST "1,0");
+	xmlNewProp(tempchild,  BAD_CAST "id",  BAD_CAST "guide821");
+	xmlNewProp(tempchild,  BAD_CAST "inkscape:locked",  BAD_CAST "false");
+	
+	metadata = xmlNewChild(svgroot, NULL,  BAD_CAST "metadata", NULL);
+	xmlNewProp(metadata,  BAD_CAST "id",  BAD_CAST "metadata5");
+	tempchild = xmlNewChild(metadata, NULL,  BAD_CAST "rdf:RDF", NULL);
+	tempchild = xmlNewChild(tempchild, NULL,  BAD_CAST "cc:Work", NULL);
+	xmlNewProp(tempchild,  BAD_CAST "rdf:about",  BAD_CAST "");
+	xmlNewChild(tempchild,  BAD_CAST "dc:format",  BAD_CAST "image/svg+xml", NULL);
+	tempchild2 = xmlNewChild(tempchild, NULL, BAD_CAST "dc:type", NULL);
+	xmlNewProp(tempchild2,  BAD_CAST "rdf:resource",  BAD_CAST "http://purl.org/dc/dcmitype/StillImage");
+	xmlNewChild(tempchild, NULL, BAD_CAST "dc:title", "");
+
+	guide = xmlNewChild(svgroot, NULL,  BAD_CAST "g", NULL);
+	xmlNewProp(guide,  BAD_CAST "inkscape:label",  BAD_CAST "Layer 1");
+	xmlNewProp(guide,  BAD_CAST "inkscape:groupmode",  BAD_CAST "layer");
+	xmlNewProp(guide,  BAD_CAST "id",  BAD_CAST "layer1");
+	guide = xmlNewChild(svgroot, NULL,  BAD_CAST "g", NULL);
+	xmlNewProp(guide,  BAD_CAST "inkscape:groupmode",  BAD_CAST "layer");
+	xmlNewProp(guide,  BAD_CAST "id",  BAD_CAST "layer2");
+	xmlNewProp(guide,  BAD_CAST "inkscape:label",  BAD_CAST "Layer 2");
+	xmlNewProp(guide,  BAD_CAST "sodipodi:insensitive",  BAD_CAST "true");
+	guide = xmlNewChild(svgroot, NULL,  BAD_CAST "g", NULL);
+	xmlNewProp(guide,  BAD_CAST "inkscape:groupmode",  BAD_CAST "layer");
+	xmlNewProp(guide,  BAD_CAST "id",  BAD_CAST "layer3");
+	xmlNewProp(guide,  BAD_CAST "inkscape:label",  BAD_CAST "Layer 3");
+	xmlNewProp(guide,  BAD_CAST "style",  BAD_CAST "display:none");
+
+	char* command = malloc(sizeof(opentypesvgeditor) + sizeof("test.svg"));
+	strcpy(command, opentypesvgeditor);
+	FILE* fp = fopen("test.svg", "w+");
+	xmlDocDump(fp, mysvg);
+	fclose(fp);
+	strcat(command, " test.svg");
+	
+	system(command);
+	return;
 }

@@ -174,6 +174,7 @@ extern int bv_width;				/* in bitmapview.c */
 extern int bv_height;				/* in bitmapview.c */
 extern int ask_user_for_cmap;			/* in parsettf.c */
 extern int mvshowgrid;				/* in metricsview.c */
+extern char *opentypesvgeditor;		/* in svg.c */
 
 extern int rectelipse, polystar, regular_star;	/* from cvpalettes.c */
 extern int center_out[2];			/* from cvpalettes.c */
@@ -392,6 +393,7 @@ static struct prefs_list {
 	{ N_("MfAsk"), pr_bool, &mf_ask, NULL, NULL, '\0', NULL, 0, N_("Ask the user for mf commands each time mf is invoked") },
 	{ N_("MfClearBg"), pr_bool, &mf_clearbackgrounds, NULL, NULL, '\0', NULL, 0, N_("FontForge loads large images into the background of each glyph\nprior to autotracing them. You may retain those\nimages to look at after mf processing is complete, or\nremove them to save space") },
 	{ N_("MfShowErr"), pr_bool, &mf_showerrors, NULL, NULL, '\0', NULL, 0, N_("MetaFont (mf) generates lots of verbiage to stdout.\nMost of the time I find it an annoyance but it is\nimportant to see if something goes wrong.") },
+	{ N_("EFDtoEVG"), pr_string, &opentypesvgeditor, NULL, NULL, '\0', NULL, 0, N_("Please enter a file directory for your EVG") },
 	PREFS_LIST_EMPTY
 },
  fontinfo_list[] = {
