@@ -2888,7 +2888,9 @@ static Entity *EntityReverse(Entity *ent) {
 return( last );
 }
 
-static SplinePointList *SplinesFromLayers(SplineChar *sc,int *flags, int tostroke) {
+static SplinePointList *SplinesFromLayers(SplineChar *sc,
+                                          ImportParams *ip,
+                                          int tostroke) {
     int layer;
     SplinePointList *head=NULL, *last, *nlast, *temp, *each, *transed;
     StrokeInfo si;
@@ -2911,15 +2913,10 @@ static SplinePointList *SplinesFromLayers(SplineChar *sc,int *flags, int tostrok
 return( head );
     }
 
-    if ( *flags==-1 )
-	*flags = PsStrokeFlagsDlg();
-
-    if ( *flags & sf_correctdir ) {
+    if ( ip->correct_direction ) {
 	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) if ( sc->layers[layer].dofill )
 	    SplineSetsCorrect(sc->layers[layer].splines,&changed);
     }
-
-    handle_eraser = *flags & sf_handle_eraser;
 
     for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
 	if ( sc->layers[layer].dostroke ) {
@@ -2941,7 +2938,7 @@ return( head );
 	    temp = SplineSetStroke(transed,&si,sc->layers[layer].order2);
 	    temp = SplinePointListTransform(temp,transform,tpt_AllPoints);
 	    SplinePointListsFree(transed);
-	    if ( handle_eraser && sc->layers[layer].stroke_pen.brush.col==0xffffff ) {
+	    if ( ip->clip && sc->layers[layer].stroke_pen.brush.col==0xffffff ) {
 		head = EraseStroke(sc,head,temp);
 		last = head;
 		if ( last!=NULL )
@@ -2978,13 +2975,12 @@ return( head );
 void SFSplinesFromLayers(SplineFont *sf,int tostroke) {
     /* User has turned off multi-layer, flatten the font */
     int i, layer;
-    int flags= -1;
     Layer *new;
     CharViewBase *cv;
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	SplineChar *sc = sf->glyphs[i];
-	SplineSet *splines = SplinesFromLayers(sc,&flags,tostroke);
+	SplineSet *splines = SplinesFromLayers(sc,NULL,tostroke);
 	RefChar *head=NULL, *last=NULL;
 	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
 	    if ( head==NULL )
@@ -3075,7 +3071,8 @@ void EntityDefaultStrokeFill(Entity *ent) {
     }
 }
 
-SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_stroked) {
+SplinePointList *SplinesFromEntityChar(EntityChar *ec, ImportParams *ip,
+                                       int is_stroked) {
     Entity *ent, *next;
     SplinePointList *head=NULL, *last, *nlast, *temp, *each, *transed;
     StrokeInfo si;
@@ -3088,25 +3085,10 @@ SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_stroked)
 
     if ( !is_stroked ) {
 
-	if ( *flags==-1 ) {
-	    for ( ent=ec->splines; ent!=NULL; ent = ent->next ) {
-		if ( ent->type == et_splines &&
-			(ent->u.splines.fill.col==0xffffff ||
-			 /*ent->u.splines.clippath!=NULL ||*/
-			 (ent->u.splines.stroke_width!=0 && ent->u.splines.stroke.col!=0xffffffff))) {
-		    ask = true;
-	    break;
-		}
-	    }
-	    if ( ask )
-		*flags = PsStrokeFlagsDlg();
-	}
-
-	if ( *flags & sf_correctdir )		/* Will happen if flags still unset (-1) */
+	if ( ip->correct_direction )
 	    EntityCharCorrectDir(ec);
 
-	handle_eraser = *flags!=-1 && (*flags & sf_handle_eraser);
-	if ( handle_eraser )
+	if ( ip->clip )
 	    ec->splines = EntityReverse(ec->splines);
     }
 
@@ -3181,15 +3163,17 @@ SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_stroked)
 return( head );
 }
 
-SplinePointList *SplinesFromEntities(Entity *ent,int *flags,int is_stroked) {
+SplinePointList *SplinesFromEntities(Entity *ent, ImportParams *ip,
+                                     int is_stroked) {
     EntityChar ec;
 
     memset(&ec,'\0',sizeof(ec));
     ec.splines = ent;
-return( SplinesFromEntityChar(&ec,flags,is_stroked));
+    return SplinesFromEntityChar(&ec,ip,is_stroked);
 }
 
-SplinePointList *SplinePointListInterpretPS(FILE *ps,int flags,int is_stroked, int *width) {
+SplinePointList *SplinePointListInterpretPS(FILE *ps, ImportParams *ip,
+                                            int is_stroked, int *width) {
     EntityChar ec;
     SplineChar sc;
 
@@ -3200,7 +3184,7 @@ SplinePointList *SplinePointListInterpretPS(FILE *ps,int flags,int is_stroked, i
     InterpretPS(ps,NULL,&ec,NULL);
     if ( width!=NULL )
 	*width = ec.width;
-return( SplinesFromEntityChar(&ec,&flags,is_stroked));
+    return SplinesFromEntityChar(&ec,ip,is_stroked);
 }
 
 Entity *EntityInterpretPS(FILE *ps,int *width) {
@@ -3229,7 +3213,7 @@ return( NULL );
 return( cur );
 }
 
-static void SCInterpretPS(FILE *ps,SplineChar *sc) {
+static void SCInterpretPS(FILE *ps, SplineChar *sc) {
     EntityChar ec;
     real dval;
     char tokbuf[10];
@@ -3256,7 +3240,7 @@ static void SCInterpretPS(FILE *ps,SplineChar *sc) {
     _InterpretPS(&wrapper,&ec,NULL);
     sc->width = ec.width;
     sc->layer_cnt = 1;
-    SCAppendEntityLayers(sc,ec.splines);
+    SCAppendEntityLayers(sc,ec.splines,NULL);
     if ( sc->layer_cnt==1 ) ++sc->layer_cnt;
     sc->layers[ly_fore].refs = revrefs(ec.refs);
     free(wrapper.top);

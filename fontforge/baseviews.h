@@ -30,6 +30,7 @@
 
 #include "ffglib.h"
 #include "splinefont.h"
+#include "sd.h"
 
 #define free_with_debug(x) { fprintf(stderr,"%p FREE()\n",x); free(x); }
 

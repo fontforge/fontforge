@@ -1053,7 +1053,7 @@ return( ret );
 
 #define SVGMINLRPAD 10
 
-int _ExportSVG(FILE *svg,SplineChar *sc,int layer) {
+int _ExportSVG(FILE *svg,SplineChar *sc,int layer,ExportParams *ep) {
     char *end;
     int em_size, xstart, xend;
     DBounds b;
@@ -2820,7 +2820,7 @@ static void SVGParseGlyphBody(SplineChar *sc, xmlNodePtr glyph,int *flags) {
 	Entity *ent = SVGParseSVG(glyph,sc->parent->ascent+sc->parent->descent,
 		sc->parent->ascent);
 	sc->layer_cnt = 1;
-	SCAppendEntityLayers(sc,ent);
+	SCAppendEntityLayers(sc,ent,ImportParamsState());
 	if ( sc->layer_cnt==1 ) ++sc->layer_cnt;
 	else sc->parent->multilayer = true;
     }
@@ -3691,10 +3691,9 @@ return( NULL );
 return( ret );
 }
 
-SplineSet *SplinePointListInterpretSVG(char *filename,char *memory, int memlen,int em_size,int ascent,int is_stroked) {
+SplineSet *SplinePointListInterpretSVG(char *filename,char *memory, int memlen,int em_size,int ascent,int is_stroked, ImportParams *ip) {
     Entity *ret = EntityInterpretSVG(filename, memory, memlen, em_size, ascent);
-    int flags = -1;
-return( SplinesFromEntities(ret,&flags,is_stroked));
+    return SplinesFromEntities(ret, ip, is_stroked);
 }
 
 int HasSVG(void) {

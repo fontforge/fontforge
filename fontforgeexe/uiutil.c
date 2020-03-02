@@ -692,6 +692,7 @@ struct ui_interface gdraw_ui_interface = {
 
     UI_TTFNameIds,
     UI_MSLangString,
-    (int (*)(void)) Ps_StrokeFlagsDlg
+    _ImportParamsDlg,
+    _ExportParamsDlg
 };
 

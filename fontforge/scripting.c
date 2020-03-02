@@ -2310,8 +2310,12 @@ static void bBitmapsRegen(Context *c) {
 
 static void bImport(Context *c) {
     char *ext, *filename;
-    int format, back, ok, flags;
+    int flags, format, back, ok;
+    bool gclear = false;
     char *t; char *locfilename;
+    ImportParams ip;
+
+    InitImportParams(&ip);
 
     if ( c->a.argc<2 || c->a.argc>4 ) {
 	c->error = ce_wrongnumarg;
@@ -2336,7 +2340,7 @@ static void bImport(Context *c) {
 	if ( ext[0]!='p' || ext[1]!='k' )
 	    ScriptErrorString( c, "No extension in", filename);
     }
-    back = 0; flags = -1;
+    back = 0;
     if ( strmatch(ext,".bdf")==0 || strmatch(ext-4,".bdf.gz")==0 )
 	format = fv_bdf;
     else if ( strmatch(ext,".pcf")==0 || strmatch(ext-4,".pcf.gz")==0 )
@@ -2371,8 +2375,27 @@ static void bImport(Context *c) {
     }
     if ( c->a.argc>=3 )
 	back = c->a.vals[2].u.ival;
-    if ( c->a.argc>=4 )
+    if ( c->a.argc>=4 ) {
 	flags = c->a.vals[3].u.ival;
+	ip.erasers = !!(flags & 4);
+	ip.correct_direction = !!(flags & 8);
+	gclear = !!(flags & 16);
+	ip.clip = !!(flags & 32);
+	ip.scale = !!(flags & 64);
+	ip.simplify = !!(flags & 128);
+    }
+    if ( c->a.argc>=5 ) {
+	if ( c->a.vals[4].type==v_int )
+	    ip.default_joinlimit = c->a.vals[4].u.ival;
+	else
+	    ip.default_joinlimit = c->a.vals[4].u.fval;
+    }
+    if ( c->a.argc>=6 ) {
+	if ( c->a.vals[5].type==v_int )
+	    ip.accuracy_target = c->a.vals[5].u.ival;
+	else
+	    ip.accuracy_target = c->a.vals[5].u.fval;
+    }
     if ( format==fv_bdf )
 	ok = FVImportBDF(c->curfv,filename,false, back);
     else if ( format==fv_pcf )
@@ -2382,9 +2405,9 @@ static void bImport(Context *c) {
     else if ( format==fv_pk )
 	ok = FVImportBDF(c->curfv,filename,true, back);
     else if ( format==fv_image || format==fv_eps || format==fv_svg || format==fv_pdf )
-	ok = FVImportImages(c->curfv,filename,format,back,flags);
+	ok = FVImportImages(c->curfv,filename,format,back,gclear,&ip);
     else
-	ok = FVImportImageTemplate(c->curfv,filename,format,back,flags);
+	ok = FVImportImageTemplate(c->curfv,filename,format,back,gclear,&ip);
     free(filename);
     if ( !ok )
 	ScriptError(c,"Import failed" );
@@ -2470,7 +2493,7 @@ static void bExport(Context *c) {
     for ( i=0; i<c->curfv->map->enccount; ++i )
 	if ( c->curfv->selected[i] && (gid=c->curfv->map->map[i])!=-1 &&
 		SCWorthOutputting(c->curfv->sf->glyphs[gid]) )
-	    ScriptExport(c->curfv->sf,bdf,format,gid,format_spec,c->curfv->map);
+	    ScriptExport(c->curfv->sf,bdf,format,gid,format_spec,c->curfv->map,NULL); // XXX
     free(tmp);
 }
 
@@ -5079,7 +5102,7 @@ static void bESJoinCap(Context *c, int ci, int ji, StrokeInfo *sip, int rok) {
 	sip->cap = capmap[ci];
     if ( sip->cap==lc_square ) {
 	sip->cap = lc_butt;
-	sip->extendcap = 1;
+	sip->extendcap = 0.5;
     }
 
     if ( ji >= 0 && ji<=6 )

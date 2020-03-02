@@ -228,6 +228,8 @@ struct pen {
     DashType dashes[DASH_MAX];
 };
 
+#define JLIMIT_INHERIT (-1)
+
 struct spline;
 enum si_type { si_round, si_calligraphic, si_nib, si_centerline };
 /* If you change this structure you may need to update MakeStrokeDlg */
@@ -2459,8 +2461,6 @@ extern void SFUntickAll(SplineFont *sf);
 
 
 extern int HasUFO(void);
-extern void SCImportPS(SplineChar *sc,int layer,char *path,int doclear, int flags);
-extern void SCImportPDF(SplineChar *sc,int layer,char *path,int doclear, int flags);
 
 extern int _ExportGlif(FILE *glif,SplineChar *sc,int layer,int version);
 

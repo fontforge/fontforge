@@ -160,7 +160,7 @@ void SITranslatePSArgs(StrokeInfo *sip, enum linejoin lj, enum linecap lc) {
 	    break;
 	case lc_square:
 	    sip->cap = lc_butt;
-	    sip->extendcap = 1;
+	    sip->extendcap = 0.5;
 	    sip->ecrelative = true;
 	    break;
 	default:
