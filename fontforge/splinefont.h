@@ -228,7 +228,7 @@ struct pen {
     DashType dashes[DASH_MAX];
 };
 
-#define JLIMIT_INHERIT (-1)
+#define JLIMIT_INHERITED (-1)
 
 struct spline;
 enum si_type { si_round, si_calligraphic, si_nib, si_centerline };

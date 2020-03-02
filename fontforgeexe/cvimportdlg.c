@@ -270,7 +270,7 @@ void _ImportParamsDlg(ImportParams *ip) {
     GGadgetCreateData gcd[12], boxes[4], *hvarray[12][4], *barray[10];
     GTextInfo label[12];
     char accbuf[20], jlbuf[20];
-    int done = false, err;
+    int done = false, err = false;
     int k, he_k, cd_k, si_k, sc_k, cl_k, al_k;
 
     if ( no_windowing_ui )
@@ -476,8 +476,10 @@ void _ImportParamsDlg(ImportParams *ip) {
     ip->clip = GGadgetIsChecked(gcd[cl_k].ret);
     ip->scale = GGadgetIsChecked(gcd[sc_k].ret);
     ip->default_joinlimit = GetReal8(gw,CID_JoinLimitVal,_("Default Join Limit (PS/EPS/SVG):"),&err);
-    if ( err )
-	ip->default_joinlimit = JLIMIT_INHERIT;
+    if ( err ) {
+	ip->default_joinlimit = JLIMIT_INHERITED;
+	err = false;
+    }
     ip->accuracy_target = GetReal8(gw,CID_AccTar,_("Accuracy Target:"),&err);
     if ( err )
 	ip->accuracy_target = 0.25;

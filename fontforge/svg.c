@@ -1056,7 +1056,9 @@ return( ret );
 int _ExportSVG(FILE *svg,SplineChar *sc,int layer,ExportParams *ep) {
     char *end;
     int em_size, xstart, xend;
+    real trans[6] = { 1.0, 0.0, 0.0, 1.0, 0.0, 0.0 };
     DBounds b;
+    SplineChar *scc;
 
     SplineCharLayerFindBounds(sc,layer,&b);
     em_size = sc->parent->ascent+sc->parent->descent;
@@ -1081,17 +1083,29 @@ int _ExportSVG(FILE *svg,SplineChar *sc,int layer,ExportParams *ep) {
 	xend += SVGMINLRPAD; // Give glyphs ending near or past the advance width some extra space
     fprintf(svg, "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" viewBox=\"%d 0 %d %d\">\n",
 	    xstart, xend - xstart, (int) ceil(em_size));
-    fprintf(svg, "  <g transform=\"matrix(1 0 0 -1 0 %d)\">\n",
-	    sc->parent->ascent );
-    if ( sc->parent->multilayer || sc->parent->strokedfont || !svg_sc_any(sc,layer)) {
+    if ( ep->use_transform ) {
+	fprintf(svg, "  <g transform=\"matrix(1 0 0 -1 0 %d)\">\n",
+	        sc->parent->ascent );
+	scc = sc;
+    } else {
+	scc = SplineCharCopy(sc, sc->parent, NULL);
+	trans[3] = -1;
+	trans[5] = scc->parent->ascent;
+	FVTrans(scc->parent->fv,scc,trans,NULL,
+	        fvt_nopreserve|fvt_dontmovewidth|fvt_noupdate);
+    }
+    if ( scc->parent->multilayer || scc->parent->strokedfont || !svg_sc_any(scc,layer)) {
 	fprintf(svg, "   <g ");
 	end = "   </g>\n";
     } else {
 	fprintf(svg, "   <path fill=\"currentColor\"\n");
 	end = "   </path>\n";
     }
-    svg_scpathdump(svg,sc,end,layer);
-    fprintf(svg, "  </g>\n\n" );
+    svg_scpathdump(svg,scc,end,layer);
+    if ( ep->use_transform )
+	fprintf(svg, "  </g>\n\n" );
+    else
+	SplineCharFree(scc);
     fprintf(svg, "</svg>\n" );
 
     switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
@@ -2754,7 +2768,7 @@ return( NULL );
 return( eret );
 }
 
-static Entity *SVGParseSVG(xmlNodePtr svg,int em_size,int ascent) {
+static Entity *SVGParseSVG(xmlNodePtr svg,int em_size,int ascent,bool scale) {
     struct svg_state st;
     char *num, *end;
     double swidth,sheight,width=1,height=1;
@@ -2763,7 +2777,7 @@ static Entity *SVGParseSVG(xmlNodePtr svg,int em_size,int ascent) {
     st.lc = lc_inherited;
     st.lj = lj_inherited;
     st.linewidth = WIDTH_INHERITED;
-    st.miterlimit = 4.0; // SVG spec default
+    st.miterlimit = JLIMIT_INHERITED;
     st.fillcol = COLOR_INHERITED;
     st.strokecol = COLOR_INHERITED;
     st.currentColor = COLOR_INHERITED;
@@ -2795,12 +2809,12 @@ static Entity *SVGParseSVG(xmlNodePtr svg,int em_size,int ascent) {
 	sheight = strtod((char *) end+1,&end);
 	xmlFree(num);
 	if ( width>height ) {
-	    if ( swidth!=0 ) {
+	    if ( scale && swidth!=0 ) {
 		st.transform[0] *= em_size/swidth;
 		st.transform[3] *= em_size/swidth;
 	    }
 	} else {
-	    if ( sheight!=0 ) {
+	    if ( scale && sheight!=0 ) {
 		st.transform[0] *= em_size/sheight;
 		st.transform[3] *= em_size/sheight;
 	    }
@@ -2809,7 +2823,8 @@ static Entity *SVGParseSVG(xmlNodePtr svg,int em_size,int ascent) {
 return( _SVGParseSVG(svg,svg,&st));
 }
 
-static void SVGParseGlyphBody(SplineChar *sc, xmlNodePtr glyph,int *flags) {
+static void SVGParseGlyphBody(SplineChar *sc, xmlNodePtr glyph,
+                              ImportParams *ip) {
     xmlChar *path;
 
     path = xmlGetProp(glyph,(xmlChar *) "d");
@@ -2818,9 +2833,9 @@ static void SVGParseGlyphBody(SplineChar *sc, xmlNodePtr glyph,int *flags) {
 	xmlFree(path);
     } else {
 	Entity *ent = SVGParseSVG(glyph,sc->parent->ascent+sc->parent->descent,
-		sc->parent->ascent);
+		sc->parent->ascent,ip->scale);
 	sc->layer_cnt = 1;
-	SCAppendEntityLayers(sc,ent,ImportParamsState());
+	SCAppendEntityLayers(sc,ent,ip);
 	if ( sc->layer_cnt==1 ) ++sc->layer_cnt;
 	else sc->parent->multilayer = true;
     }
@@ -2898,16 +2913,18 @@ static SplineChar *SVGParseGlyphArgs(xmlNodePtr glyph,int defh, int defv,
 return( sc );
 }
 
-static SplineChar *SVGParseMissing(SplineFont *sf,xmlNodePtr notdef,int defh, int defv, int enc, int *flags) {
+static SplineChar *SVGParseMissing(SplineFont *sf,xmlNodePtr notdef,int defh,
+                                   int defv, int enc, ImportParams *ip) {
     SplineChar *sc = SVGParseGlyphArgs(notdef,defh,defv,sf);
     sc->parent = sf;
     sc->name = copy(".notdef");
     sc->unicodeenc = 0;
-    SVGParseGlyphBody(sc,notdef,flags);
+    SVGParseGlyphBody(sc,notdef,ip);
 return( sc );
 }
 
-static SplineChar *SVGParseGlyph(SplineFont *sf,xmlNodePtr glyph,int defh, int defv, int enc, int *flags) {
+static SplineChar *SVGParseGlyph(SplineFont *sf,xmlNodePtr glyph,int defh,
+                                 int defv, int enc, ImportParams *ip) {
     char buffer[400];
     SplineChar *sc = SVGParseGlyphArgs(glyph,defh,defv,sf);
     sc->parent = sf;
@@ -2918,7 +2935,7 @@ static SplineChar *SVGParseGlyph(SplineFont *sf,xmlNodePtr glyph,int defh, int d
 	} else
 	    sc->name = copy(StdGlyphName(buffer,sc->unicodeenc,ui_none,NULL));
     }
-    SVGParseGlyphBody(sc,glyph,flags);
+    SVGParseGlyphBody(sc,glyph,ip);
 return( sc );
 }
 
@@ -3145,14 +3162,19 @@ return;
 }
 
 static SplineFont *SVGParseFont(xmlNodePtr font) {
-    int cnt, flags = -1;
+    int cnt;
     xmlNodePtr kids;
     int defh=0, defv=0;
     int has_font_face = false;
     xmlChar *name;
     SplineFont *sf;
     EncMap *map;
+    ImportParams *ip = ImportParamsState();
+    bigreal tmpjl = ip->default_joinlimit;
     int i;
+
+    if ( tmpjl==JLIMIT_INHERITED )
+	ip->default_joinlimit = 4.0; // SVG default
 
     sf = SplineFontEmpty();
     name = xmlGetProp(font,(xmlChar *) "horiz-adv-x");
@@ -3190,6 +3212,7 @@ static SplineFont *SVGParseFont(xmlNodePtr font) {
 	    } else {
 		LogError( _("This font does not specify units-per-em\n") );
 		SplineFontFree(sf);
+		ip->default_joinlimit = tmpjl;
 return( NULL );
 	    }
 	    name = xmlGetProp(kids,(xmlChar *) "font-family");
@@ -3325,6 +3348,7 @@ return( NULL );
     if ( !has_font_face ) {
 	LogError( _("This font does not specify font-face\n") );
 	SplineFontFree(sf);
+	ip->default_joinlimit = tmpjl;
 return( NULL );
     }
     if ( sf->weight==NULL )
@@ -3350,14 +3374,14 @@ return( NULL );
     cnt = 0;
     for ( kids = font->children; kids!=NULL; kids=kids->next ) {
 	if ( xmlStrcmp(kids->name,(const xmlChar *) "missing-glyph")==0 ) {
-	    sf->glyphs[cnt] = SVGParseMissing(sf,kids,defh,defv,cnt,&flags);
+	    sf->glyphs[cnt] = SVGParseMissing(sf,kids,defh,defv,cnt,ip);
 	    if ( sf->glyphs[cnt]!=NULL ) {
 		sf->glyphs[cnt]->orig_pos = cnt;
 		cnt++;
 	    }
 	    ff_progress_next();
 	} else if ( xmlStrcmp(kids->name,(const xmlChar *) "glyph")==0 ) {
-	    sf->glyphs[cnt] = SVGParseGlyph(sf,kids,defh,defv,cnt,&flags);
+	    sf->glyphs[cnt] = SVGParseGlyph(sf,kids,defh,defv,cnt,ip);
 	    if ( sf->glyphs[cnt]!=NULL ) {
 		sf->glyphs[cnt]->orig_pos = cnt;
 		cnt++;
@@ -3386,7 +3410,7 @@ return( NULL );
     for ( i=0; i<sf->glyphcnt; ++i )
 	map->map[i] = map->backmap[i] = i;
     sf->map = map;
-
+    ip->default_joinlimit = tmpjl;
 return( sf );
 }
 
@@ -3647,7 +3671,8 @@ return( NULL );
 return( ret );
 }
 
-Entity *EntityInterpretSVG(char *filename,char *memory, int memlen,int em_size,int ascent) {
+Entity *EntityInterpretSVG(char *filename, char *memory, int memlen,
+                           int em_size, int ascent, bool scale) {
     xmlDocPtr doc;
     xmlNodePtr top;
     char oldloc[25];
@@ -3677,7 +3702,7 @@ return( NULL );
     strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
     oldloc[24]=0;
     setlocale(LC_NUMERIC,"C");
-    ret = SVGParseSVG(top,em_size,ascent);
+    ret = SVGParseSVG(top,em_size,ascent,scale);
     setlocale(LC_NUMERIC,oldloc);
     xmlFreeDoc(doc);
 
@@ -3692,8 +3717,14 @@ return( ret );
 }
 
 SplineSet *SplinePointListInterpretSVG(char *filename,char *memory, int memlen,int em_size,int ascent,int is_stroked, ImportParams *ip) {
-    Entity *ret = EntityInterpretSVG(filename, memory, memlen, em_size, ascent);
-    return SplinesFromEntities(ret, ip, is_stroked);
+    bigreal tmpjl = ip->default_joinlimit;
+    if ( tmpjl==JLIMIT_INHERITED )
+	ip->default_joinlimit = 4.0; // SVG default
+    Entity *ret = EntityInterpretSVG(filename, memory, memlen, em_size, ascent,
+                                     ip->scale);
+    SplineSet *r = SplinesFromEntities(ret, ip, is_stroked);
+    ip->default_joinlimit = tmpjl;
+    return r;
 }
 
 int HasSVG(void) {

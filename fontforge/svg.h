@@ -5,7 +5,8 @@
 #include "splinefont.h"
 
 extern char **NamesReadSVG(char *filename);
-extern Entity *EntityInterpretSVG(char *filename, char *memory, int memlen, int em_size, int ascent);
+extern Entity *EntityInterpretSVG(char *filename, char *memory, int memlen,
+                                  int em_size, int ascent, bool scale);
 extern int _ExportSVG(FILE *svg, SplineChar *sc, int layer, ExportParams *ep);
 extern int HasSVG(void);
 extern int SFFindOrder(SplineFont *sf);

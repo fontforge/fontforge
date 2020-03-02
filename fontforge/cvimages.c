@@ -65,7 +65,7 @@ void InitImportParams(ImportParams *ip) {
     ip->erasers = false;
     ip->scale = true;
     ip->accuracy_target = 0.25;
-    ip->default_joinlimit = JLIMIT_INHERIT;
+    ip->default_joinlimit = JLIMIT_INHERITED;
 }
 
 ImportParams *ImportParamsState() {
@@ -197,6 +197,7 @@ void SCImportPDFFile(SplineChar *sc,int layer,FILE *pdf,bool doclear,
                      ImportParams *ip) {
     SplinePointList *spl, *espl;
     SplineSet **head;
+    bigreal tmpjl = ip->default_joinlimit;
 
     if ( pdf==NULL )
 return;
@@ -204,7 +205,10 @@ return;
     if ( sc->parent->multilayer && layer>ly_back ) {
 	SCAppendEntityLayers(sc, EntityInterpretPDFPage(pdf,-1), ip);
     } else {
+	if ( tmpjl==JLIMIT_INHERITED )
+	    ip->default_joinlimit = 10.0; // PostScript default
 	spl = SplinesFromEntities(EntityInterpretPDFPage(pdf,-1),ip,sc->parent->strokedfont);
+	ip->default_joinlimit = tmpjl;
 	if ( spl==NULL ) {
 	    ff_post_error( _("Too Complex or Bad"), _("I'm sorry this file is too complex for me to understand (or is erroneous, or is empty)") );
 return;
@@ -354,7 +358,7 @@ void SCImportSVG(SplineChar *sc,int layer,char *path,char *memory, int memlen,
 	SCAppendEntityLayers(sc,
 	       EntityInterpretSVG(path,memory,memlen,
 	                          sc->parent->ascent+sc->parent->descent,
-	                          sc->parent->ascent), ip);
+	                          sc->parent->ascent,ip->scale), ip);
     } else {
 	spl = SplinePointListInterpretSVG(path,memory,memlen,
 	                                  sc->parent->ascent+sc->parent->descent,
@@ -987,11 +991,11 @@ void SCInsertImage(SplineChar *sc,GImage *image,real scale,real yoff,real xoff,
 
 void SCAddScaleImage(SplineChar *sc,GImage *image,bool doclear, int layer,
                      ImportParams *ip) {
-    double scale;
+    double scale = 1.0;
 
     image = ImageAlterClut(image);
-    // XXX
-    scale = (sc->parent->ascent+sc->parent->descent)/(real) GImageGetHeight(image);
+    if ( ip->scale )
+	scale = (sc->parent->ascent+sc->parent->descent)/(real) GImageGetHeight(image);
     if ( doclear ) {
 	ImageListsFree(sc->layers[layer].images);
 	sc->layers[layer].images = NULL;

@@ -762,7 +762,8 @@ void FVTrans(FontViewBase *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	/* Barry thinks rounding them is a bad idea. */
 	SCRound2Int(sc,fv->active_layer,1.0);
     }
-    SCCharChangedUpdate(sc,fv->active_layer);
+    if ( !(flags&fvt_noupdate) )
+	SCCharChangedUpdate(sc,fv->active_layer);
 }
 
 void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,

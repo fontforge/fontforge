@@ -42,6 +42,7 @@
 #include "utype.h"
 #include "views.h"		/* For CharViewBase */
 
+#include <assert.h>
 #include <locale.h>
 #include <math.h>
 #ifdef HAVE_IEEEFP_H
@@ -70,6 +71,12 @@ struct garbage {
     struct pskeyval *entries[GARBAGE_MAX];
     int16 cnts[GARBAGE_MAX];
 };
+
+static bigreal MinTransMag(real trans[6]) {
+    bigreal mx = sqrt(trans[0]*trans[0] + trans[1]*trans[1]);
+    bigreal my = sqrt(trans[2]*trans[2] + trans[3]*trans[3]);
+    return mx > my ? my : mx;
+}
 
 static void AddTok(GrowBuf *gb,char *buf,int islit) {
 
@@ -977,14 +984,14 @@ return(nsp);
 }
 
 static Entity *EntityCreate(SplinePointList *head,int linecap,int linejoin,
-	real linewidth, real *transform, SplineSet *clippath) {
+	real linewidth, real miterlimit, real *transform, SplineSet *clippath) {
     Entity *ent = calloc(1,sizeof(Entity));
     ent->type = et_splines;
     ent->u.splines.splines = head;
     ent->u.splines.cap = linecap;
     ent->u.splines.join = linejoin;
     ent->u.splines.stroke_width = linewidth;
-    ent->u.splines.miterlimit = 10; // PostScript Spec Default
+    ent->u.splines.miterlimit = miterlimit;
     ent->u.splines.fill.col = 0xffffffff;
     ent->u.splines.stroke.col = 0xffffffff;
     ent->u.splines.fill.opacity = 1.0;
@@ -1275,7 +1282,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
     struct graphicsstate {
 	real transform[6];
 	DBasePoint current;
-	real linewidth;
+	real linewidth, miterlimit;
 	int linecap, linejoin;
 	Color fore;
 	DashType dashes[DASH_MAX];
@@ -1287,7 +1294,8 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
     struct pskeydict dict;
     struct pskeyval *kv;
     Color fore=COLOR_INHERITED;
-    int linecap=lc_inherited, linejoin=lj_inherited; real linewidth=WIDTH_INHERITED;
+    int linecap=lc_inherited, linejoin=lj_inherited;
+    real linewidth=WIDTH_INHERITED, miterlimit=JLIMIT_INHERITED;
     DashType dashes[DASH_MAX];
     int dash_offset = 0;
     Entity *ent;
@@ -2412,10 +2420,11 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 		if ( tok==pt_stroke ) {
 		    ent->u.splines.cap = linecap; ent->u.splines.join = linejoin;
 		    ent->u.splines.stroke_width = linewidth;
+		    ent->u.splines.miterlimit = miterlimit;
 		    memcpy(ent->u.splines.transform,transform,sizeof(transform));
 		}
 	    } else {
-		ent = EntityCreate(head,linecap,linejoin,linewidth,transform,clippath);
+		ent = EntityCreate(head,linecap,linejoin,linewidth,miterlimit,transform,clippath);
 		ent->next = ec->splines;
 		ec->splines = ent;
 	    }
@@ -2460,6 +2469,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 		memcpy(gsaves[gsp].transform,transform,sizeof(transform));
 		gsaves[gsp].current = current;
 		gsaves[gsp].linewidth = linewidth;
+		gsaves[gsp].miterlimit = miterlimit;
 		gsaves[gsp].linecap = linecap;
 		gsaves[gsp].linejoin = linejoin;
 		gsaves[gsp].fore = fore;
@@ -2479,6 +2489,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 		memcpy(transform,gsaves[gsp].transform,sizeof(transform));
 		current = gsaves[gsp].current;
 		linewidth = gsaves[gsp].linewidth;
+		miterlimit = gsaves[gsp].miterlimit;
 		linecap = gsaves[gsp].linecap;
 		linejoin = gsaves[gsp].linejoin;
 		fore = gsaves[gsp].fore;
@@ -2520,14 +2531,13 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 	  case pt_currentmiterlimit:
 	    /* push 10.0 (default value). I don't handle this properly */
 	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
-		stack[sp].u.val = 10.0;
+		stack[sp].u.val = (miterlimit==JLIMIT_INHERITED?10.0:miterlimit);
 		stack[sp++].type = ps_num;
 	    }
 	  break;
 	  case pt_setmiterlimit:
-	    /* pop one item off stack */
-	    if ( sp>=1 )
-		--sp;
+	    if ( sp>=0 )
+		miterlimit = stack[--sp].u.val;
 	  break;
 	  case pt_currentpacking:
 	    /* push false (default value). I don't handle this properly */
@@ -2815,7 +2825,8 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
     }
     freestuff(stack,sp,&dict,&gb,&tofrees);
     if ( head!=NULL ) {
-	ent = EntityCreate(head,linecap,linejoin,linewidth,transform,clippath);
+	ent = EntityCreate(head,linecap,linejoin,linewidth,miterlimit,
+	                   transform,clippath);
 	ent->next = ec->splines;
 	ec->splines = ent;
     }
@@ -2895,7 +2906,6 @@ static SplinePointList *SplinesFromLayers(SplineChar *sc,
     SplinePointList *head=NULL, *last, *nlast, *temp, *each, *transed;
     StrokeInfo si;
     /*SplineSet *spl;*/
-    int handle_eraser;
     real inversetrans[6], transform[6];
     int changed;
 
@@ -2922,6 +2932,7 @@ return( head );
 	if ( sc->layers[layer].dostroke ) {
 	    InitializeStrokeInfo(&si);
 	    si.extrema = false;
+	    si.simplify = ip->simplify;
 	    SITranslatePSArgs(&si, sc->layers[layer].stroke_pen.linejoin,
 	                      sc->layers[layer].stroke_pen.linecap);
 	    si.width = sc->layers[layer].stroke_pen.width;
@@ -2930,15 +2941,21 @@ return( head );
 	    // These are OK as lc_butt and lj_miter are unchanged by SITra()
 	    if ( si.cap == lc_inherited ) si.cap = lc_butt;
 	    if ( si.join == lj_inherited ) si.join = lj_miter;
+	    // This is supposed to get temporarily set to a format-
+	    // specific default by the caller
+	    assert( ip->default_joinlimit!=JLIMIT_INHERITED );
+	    si.joinlimit = ip->default_joinlimit;
 	    memcpy(transform,sc->layers[layer].stroke_pen.trans,4*sizeof(real));
 	    transform[4] = transform[5] = 0;
 	    MatInverse(inversetrans,transform);
+	    si.accuracy_target = ip->accuracy_target*MinTransMag(inversetrans);
 	    transed = SplinePointListTransform(SplinePointListCopy(
 		    sc->layers[layer].splines),inversetrans,tpt_AllPoints);
 	    temp = SplineSetStroke(transed,&si,sc->layers[layer].order2);
 	    temp = SplinePointListTransform(temp,transform,tpt_AllPoints);
 	    SplinePointListsFree(transed);
-	    if ( ip->clip && sc->layers[layer].stroke_pen.brush.col==0xffffff ) {
+	    if (    ip->erasers
+	         && sc->layers[layer].stroke_pen.brush.col==0xffffff ) {
 		head = EraseStroke(sc,head,temp);
 		last = head;
 		if ( last!=NULL )
@@ -2953,7 +2970,7 @@ return( head );
 	    }
 	}
 	if ( sc->layers[layer].dofill ) {
-	    if ( handle_eraser && sc->layers[layer].fill_brush.col==0xffffff ) {
+	    if ( ip->erasers && sc->layers[layer].fill_brush.col==0xffffff ) {
 		head = EraseStroke(sc,head,sc->layers[layer].splines);
 		last = head;
 		if ( last!=NULL )
@@ -2977,10 +2994,14 @@ void SFSplinesFromLayers(SplineFont *sf,int tostroke) {
     int i, layer;
     Layer *new;
     CharViewBase *cv;
+    ImportParams *ip = ImportParamsState();
+    bigreal tmpjl = ip->default_joinlimit;
+    if ( tmpjl==JLIMIT_INHERITED )
+	ip->default_joinlimit = 10.0; // PostScript default
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	SplineChar *sc = sf->glyphs[i];
-	SplineSet *splines = SplinesFromLayers(sc,NULL,tostroke);
+	SplineSet *splines = SplinesFromLayers(sc,ip,tostroke);
 	RefChar *head=NULL, *last=NULL;
 	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
 	    if ( head==NULL )
@@ -3011,6 +3032,7 @@ void SFSplinesFromLayers(SplineFont *sf,int tostroke) {
 	}
     }
     SFReinstanciateRefs(sf);
+    ip->default_joinlimit = tmpjl;
 }
 
 void SFSetLayerWidthsStroked(SplineFont *sf, real strokewidth) {
@@ -3078,7 +3100,6 @@ SplinePointList *SplinesFromEntityChar(EntityChar *ec, ImportParams *ip,
     StrokeInfo si;
     real inversetrans[6];
     /*SplineSet *spl;*/
-    int handle_eraser = false;
     int ask = false;
 
     EntityDefaultStrokeFill(ec->splines);
@@ -3088,7 +3109,7 @@ SplinePointList *SplinesFromEntityChar(EntityChar *ec, ImportParams *ip,
 	if ( ip->correct_direction )
 	    EntityCharCorrectDir(ec);
 
-	if ( ip->clip )
+	if ( ip->erasers )
 	    ec->splines = EntityReverse(ec->splines);
     }
 
@@ -3111,21 +3132,29 @@ SplinePointList *SplinesFromEntityChar(EntityChar *ec, ImportParams *ip,
 		/*  no stroke */
 		InitializeStrokeInfo(&si);
 		si.extrema = false;
+		si.simplify = ip->simplify;
 		SITranslatePSArgs(&si, ent->u.splines.join, ent->u.splines.cap);
 		si.width = ent->u.splines.stroke_width;
-		si.joinlimit = ent->u.splines.miterlimit;
+		if ( ent->u.splines.miterlimit==JLIMIT_INHERITED ) {
+		    // This is supposed to get temporarily set to a format-
+		    // specific default by the caller
+		    assert( ip->default_joinlimit!=JLIMIT_INHERITED );
+		    si.joinlimit = ip->default_joinlimit;
+		} else
+		    si.joinlimit = ent->u.splines.miterlimit;
 		if ( ent->u.splines.stroke_width==WIDTH_INHERITED )
 		    si.width = 1.0;
 		// These are OK as lc_butt and lj_miter unchanged by SITra()
 		if ( si.cap == lc_inherited ) si.cap = lc_butt;
 		if ( si.join == lj_inherited ) si.join = lj_miter;
 		MatInverse(inversetrans,ent->u.splines.transform);
+		si.accuracy_target = ip->accuracy_target*MinTransMag(inversetrans);
 		transed = SplinePointListTransform(SplinePointListCopy(
 			ent->u.splines.splines),inversetrans,tpt_AllPoints);
 		temp = SplineSetStroke(transed, &si, false);
 		temp = SplinePointListTransform(temp,ent->u.splines.transform,tpt_AllPoints);
 		SplinePointListsFree(transed);
-		if ( handle_eraser && ent->u.splines.stroke.col==0xffffff ) {
+		if ( ip->erasers && ent->u.splines.stroke.col==0xffffff ) {
 		    head = EraseStroke(ec->sc,head,temp);
 		    last = head;
 		    if ( last!=NULL )
@@ -3142,7 +3171,7 @@ SplinePointList *SplinesFromEntityChar(EntityChar *ec, ImportParams *ip,
 	    /* If they have neither a stroke nor a fill, pretend they said fill */
 	    if ( ent->u.splines.fill.col==0xffffffff && ent->u.splines.stroke.col!=0xffffffff )
 		SplinePointListsFree(ent->u.splines.splines);
-	    else if ( handle_eraser && ent->u.splines.fill.col==0xffffff ) {
+	    else if ( ip->erasers && ent->u.splines.fill.col==0xffffff ) {
 		head = EraseStroke(ec->sc,head,ent->u.splines.splines);
 		last = head;
 		if ( last!=NULL )
@@ -3240,7 +3269,12 @@ static void SCInterpretPS(FILE *ps, SplineChar *sc) {
     _InterpretPS(&wrapper,&ec,NULL);
     sc->width = ec.width;
     sc->layer_cnt = 1;
-    SCAppendEntityLayers(sc,ec.splines,NULL);
+    ImportParams *ip = ImportParamsState();
+    bigreal tmpjl = ip->default_joinlimit;
+    if ( tmpjl==JLIMIT_INHERITED )
+	ip->default_joinlimit = 10.0; // PostScript default
+    SCAppendEntityLayers(sc,ec.splines,ImportParamsState());
+    ip->default_joinlimit = tmpjl;
     if ( sc->layer_cnt==1 ) ++sc->layer_cnt;
     sc->layers[ly_fore].refs = revrefs(ec.refs);
     free(wrapper.top);
