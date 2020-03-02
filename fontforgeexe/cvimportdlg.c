@@ -352,8 +352,8 @@ void _ImportParamsDlg(ImportParams *ip) {
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+15;
-    gcd[k].gd.flags = gg_enabled | gg_visible|
-	    (ip->clip?gg_cb_on:0);
+    gcd[k].gd.flags = gg_visible|
+	    (ip->clip?gg_cb_on:0); // | gg_enabled
     gcd[k++].creator = GCheckBoxCreate;
     hvarray[4][0] = &gcd[k-1];
     hvarray[4][1] = GCD_ColSpan;
