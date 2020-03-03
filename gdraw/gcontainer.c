@@ -110,7 +110,7 @@ return( NULL );
     td = (GTopLevelD *) (current_focus_window->widget_data);
     if ( td->gfocus!=NULL )
 return( td->gfocus->base );
-return( td->wfocus );
+    return NULL;
 }
 
 struct gfuncs *last_indicatedfocus_funcs;		/* !!!! Debug code */
@@ -153,7 +153,7 @@ return;
 	}
     }
     // We give focus to the desired gadget.
-    td->gfocus = g; td->wfocus = NULL;
+    td->gfocus = g;
     if ( top == current_focus_window && g->funcs->handle_focus!=NULL ) {
         // If the desired gadget has a focus handler, we construct an event and run it.
         memset(&e, 0, sizeof(GEvent));
@@ -516,13 +516,6 @@ static int _GWidget_TopLevel_Key(GWindow top, GWindow ew, GEvent *event) {
 	    handled = (topd->popupowner->funcs->handle_key)(topd->popupowner,event);
     } else if ( topd->gfocus!=NULL && topd->gfocus->funcs->handle_key )
 	handled = (topd->gfocus->funcs->handle_key)(topd->gfocus,event);
-    else if ( topd->wfocus!=NULL ) {
-	if ( topd->wfocus->widget_data==NULL ) {
-	    if ( topd->wfocus->eh!=NULL )
-		handled = (topd->wfocus->eh)(topd->wfocus,event);
-	} else if ( topd->wfocus->widget_data->e_h!=NULL )
-	    handled = (topd->wfocus->widget_data->e_h)(topd->wfocus,event);
-    }
     if ( !handled ) {
 	if ( ew->widget_data==NULL ) {
 	    if ( ew->eh!=NULL )
@@ -665,12 +658,6 @@ return( true );
 	if ( !gw->is_dying && td->gfocus!=NULL && td->gfocus->funcs->handle_focus!=NULL ) {
  { oldtd = td; oldgfocus = td->gfocus; }	/* Debug!!!! */
 	    (td->gfocus->funcs->handle_focus)(td->gfocus,event);
-	} else if ( !gw->is_dying && td->wfocus!=NULL ) {
-	    if ( td->wfocus->widget_data!=NULL ) {
-		if ( td->wfocus->widget_data->e_h!=NULL )
-		    (td->wfocus->widget_data->e_h)(td->wfocus,event);
-	    } else if ( td->wfocus->eh!=NULL )
-		(td->wfocus->eh)(td->wfocus,event);
 	}
 	if ( !gw->is_dying && td->e_h!=NULL )
 	    (td->e_h)(gw,event);
@@ -679,7 +666,16 @@ return( true );
 	GiveToAll((GContainerD *) td,event);
 return( true );
     } else if ( event->type == et_char || event->type == et_charup ) {
-return( _GWidget_TopLevel_Key(gw,gw,event));
+        // If this is not a nested event, redirect it at the window that
+        // contains the currently focused gadget.
+        if (!td->isnestedkey && td->gfocus && td->gfocus->base) {
+            td->isnestedkey = true;
+            ret = _GWidget_TopLevel_Key(gw, td->gfocus->base, event);
+            td->isnestedkey = false;
+        } else {
+            ret = _GWidget_TopLevel_Key(gw, gw, event);
+        }
+        return ret;
     } else if ( !gw->is_dying && event->type == et_resize ) {
 	GRect r;
 	if ( td->gmenubar!=NULL ) {
