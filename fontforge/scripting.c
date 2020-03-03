@@ -2317,13 +2317,13 @@ static void bImport(Context *c) {
 
     InitImportParams(&ip);
 
-    if ( c->a.argc<2 || c->a.argc>4 ) {
+    if ( c->a.argc<2 || c->a.argc>6 ) {
 	c->error = ce_wrongnumarg;
 	return;
     }
-    if ( c->a.vals[1].type!=v_str || \
-	(c->a.argc>=3 && c->a.vals[2].type!=v_int) || \
-	(c->a.argc==4 && c->a.vals[3].type!=v_int) ) {
+    if (   c->a.vals[1].type!=v_str
+	|| (c->a.argc>=3 && c->a.vals[2].type!=v_int)
+	|| (c->a.argc>=4 && c->a.vals[3].type!=v_int) ) {
 	c->error = ce_badargtype;
 	return;
     }
@@ -2387,7 +2387,7 @@ static void bImport(Context *c) {
 	if ( flags&128 )
 	    ip.simplify = false;
     }
-    if ( flags&256 ) {
+    if ( flags&256 || flags&512 ) {
 	ipp = ImportParamsState();
 	if ( flags&512 )
 	    ImportParamsDlg(ipp);
@@ -2447,7 +2447,7 @@ static void bExport(Context *c) {
 
     InitExportParams(&ep);
 
-    if ( c->a.argc!=2 && c->a.argc!=3 ) {
+    if ( c->a.argc<2 && c->a.argc>4 ) {
 	c->error = ce_wrongnumarg;
 	return;
     }
@@ -2500,7 +2500,7 @@ static void bExport(Context *c) {
 	flags = c->a.vals[3].u.ival;
 	ep.use_transform = !!(flags & 1);
     }
-    if ( flags&256 ) {
+    if ( flags&256 || flags&512 ) {
 	epp = ExportParamsState();
 	if ( flags&512 )
 	    ExportParamsDlg(epp);
