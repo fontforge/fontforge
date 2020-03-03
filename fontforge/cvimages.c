@@ -179,7 +179,7 @@ return;
     SCCharChangedUpdate(sc,layer);
 }
 
-void SCImportPS(SplineChar *sc,int layer,char *path,bool doclear, 
+void SCImportPS(SplineChar *sc,int layer,char *path,bool doclear,
                 ImportParams *ip) {
     FILE *ps = fopen(path,"r");
 
@@ -1089,7 +1089,7 @@ return( false );
 	    ff_post_error(_("Nothing Loaded"),_("Nothing Loaded"));
 return( false );
     }
-    
+
     tot = 0;
     while ( (entry=readdir(dir))!=NULL ) {
 	pt = strrchr(entry->d_name,'.');

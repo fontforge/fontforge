@@ -1754,7 +1754,7 @@ static PyObject *PyFF_askChoices(PyObject *UNUSED(self), PyObject *args, PyObjec
         return( NULL );
     }
 
-    if ( !PyArg_ParseTupleAndKeywords(args, kwargs, "esesO|OO", (char**) askChoices_keywords, 
+    if ( !PyArg_ParseTupleAndKeywords(args, kwargs, "esesO|OO", (char**) askChoices_keywords,
                                       "UTF-8", &title, "UTF-8", &quest, &answero, &defo, &multipleo) ) {
         PyErr_Format(PyExc_EnvironmentError, "Failed to parse arguments");
         return( NULL );
@@ -8569,7 +8569,7 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
                 "es|$pppppddpp", glyph_import_keywords, "UTF-8", &filename,
                 &ip.correct_direction, &ip.simplify, &ip.clip, &ip.erasers,
                 &ip.scale, &ip.accuracy_target, &jl_tmp, &use_system,
-		&ask_system) ) { 
+		&ask_system) ) {
 	PyErr_Clear();
 	if ( !PyArg_ParseTuple(args,"es|O","UTF-8",&filename, &flags) )
 	    return NULL;
@@ -8639,7 +8639,7 @@ return(NULL);
 Py_RETURN( self );
 }
 
-static char *glyph_export_keywords[] = { "filename", "layer", "pixelsize", 
+static char *glyph_export_keywords[] = { "filename", "layer", "pixelsize",
     "bitdepth", "usetransform", "usesystem", "asksystem", NULL };
 
 static PyObject *PyFFGlyph_export(PyObject *self, PyObject *args,
@@ -8657,11 +8657,11 @@ static PyObject *PyFFGlyph_export(PyObject *self, PyObject *args,
 
     InitExportParams(&ep);
 
-    if ( !PyArg_ParseTupleAndKeywords(args, keywds, "es|$Oiippp", 
+    if ( !PyArg_ParseTupleAndKeywords(args, keywds, "es|$Oiippp",
                                       glyph_export_keywords, "UTF-8", &filename,
                                       &layerobj, &pixels, &bits,
                                       &ep.use_transform, &use_system,
-                                      &ask_system) ) { 
+                                      &ask_system) ) {
 	PyErr_Clear();
 	if ( !PyArg_ParseTuple(args,"es|OO","UTF-8",&filename,&obj1,&obj2) )
 	    return NULL;

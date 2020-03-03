@@ -23,7 +23,7 @@ extern void SCImportFig(SplineChar *sc, int layer, char *path, bool doclear,
                         ImportParams *ip);
 extern void SCImportGlif(SplineChar *sc, int layer, char *path, char *memory,
                          int memlen, bool doclear, ImportParams *ip);
-extern void SCImportPDFFile(SplineChar *sc, int layer, FILE *pdf, bool doclear, 
+extern void SCImportPDFFile(SplineChar *sc, int layer, FILE *pdf, bool doclear,
                             ImportParams *ip);
 extern void SCImportPlateFile(SplineChar *sc, int layer, FILE *plate,
                               bool doclear, ImportParams *ip);

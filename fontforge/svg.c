@@ -1076,7 +1076,7 @@ int _ExportSVG(FILE *svg,SplineChar *sc,int layer,ExportParams *ep) {
     switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     fprintf(svg, "<?xml version=\"1.0\" standalone=\"no\"?>\n" );
     fprintf(svg, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\" >\n" );
-    // Adjust horizontal ViewBox to display entire glyph 
+    // Adjust horizontal ViewBox to display entire glyph
     xstart = floor(b.minx);
     if (xstart > SVGMINLRPAD)
 	xstart = 0; // Start from origin when sufficiently past it
@@ -1104,7 +1104,7 @@ int _ExportSVG(FILE *svg,SplineChar *sc,int layer,ExportParams *ep) {
 	    // there and back
 	    scc = sc;
 	    MatInverse(invtrans,trans);
-	    SplinePointListTransformExtended(scc->layers[layer].splines, trans, 
+	    SplinePointListTransformExtended(scc->layers[layer].splines, trans,
 	        tpt_AllPoints, tpmask_dontTrimValues);
 	}
     }
@@ -1323,7 +1323,7 @@ static void SVGTraceArc(SplineSet *cur,BasePoint *current,
 	// To convert start and end points to tangent angles it is easiest
 	// to average the angles from the foci to the point. That average
 	// is normal to the curve and therefore the tangent is 90 degrees
-	// CW for a CW contour. 
+	// CW for a CW contour.
 	if ( rx > ry )
 	    tmp = BPScale(ang, sqrt(rx*rx - ry*ry));
 	else
