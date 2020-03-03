@@ -368,7 +368,7 @@ static int svg_sc_any(SplineChar *sc,int layer) {
     int first, last;
 
     first = last = layer;
-    if ( sc->parent->multilayer )
+    if ( sc->parent!=NULL && sc->parent->multilayer )
 	last = sc->layer_cnt-1;
     any = false;
     for ( i=first; i<=last && !any; ++i ) {
@@ -664,7 +664,7 @@ static void svg_scpathdump(FILE *file, SplineChar *sc,const char *endpath,int la
 	/* I think a space is represented by leaving out the d (path) entirely*/
 	/*  rather than having d="" */
 	fputs(" />\n",file);
-    } else if ( sc->parent->strokedfont ) {
+    } else if ( sc->parent!=NULL && sc->parent->strokedfont ) {
 	/* Can't be done with a path, requires nested elements (I think) */
 	fprintf(file,">\n  <g stroke=\"currentColor\" stroke-width=\"%g\" fill=\"none\">\n", (double) sc->parent->strokewidth );
 	fprintf( file,"    <path d=\"");
@@ -675,7 +675,7 @@ static void svg_scpathdump(FILE *file, SplineChar *sc,const char *endpath,int la
 	putc('"',file);
 	fputs(" />\n  </g>\n",file);
 	fputs(endpath,file);
-    } else if ( !sc->parent->multilayer ) {
+    } else if ( sc->parent==NULL || !sc->parent->multilayer ) {
 	fprintf( file,"d=\"");
 	lineout = svg_pathdump(file,sc->layers[layer].splines,3,true,false);
 	for ( ref= sc->layers[layer].refs; ref!=NULL; ref=ref->next )
@@ -1055,16 +1055,22 @@ return( ret );
 
 int _ExportSVG(FILE *svg,SplineChar *sc,int layer,ExportParams *ep) {
     char *end;
-    int em_size, xstart, xend;
-    real trans[6] = { 1.0, 0.0, 0.0, 1.0, 0.0, 0.0 };
+    int em_size, xstart, xend, ascent;
+    real trans[6] = { 1.0, 0.0, 0.0, 1.0, 0.0, 0.0 }, invtrans[6];
     DBounds b;
     SplineChar *scc;
 
     SplineCharLayerFindBounds(sc,layer,&b);
-    em_size = sc->parent->ascent+sc->parent->descent;
-    if ( b.minx>0 ) b.minx=0;
-    if ( b.miny>-sc->parent->descent ) b.miny = -sc->parent->descent;
-    if ( b.maxy<em_size ) b.maxy = em_size;
+    if ( sc->parent!=NULL ) {
+	ascent = sc->parent->ascent;
+	em_size = ascent+sc->parent->descent;
+	if ( b.minx>0 ) b.minx=0;
+	if ( b.miny>-sc->parent->descent ) b.miny = -sc->parent->descent;
+	if ( b.maxy<em_size ) b.maxy = em_size;
+    } else {
+	ascent = b.maxy;
+	em_size = b.maxy-b.miny;
+    }
 
     locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
     switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
@@ -1084,17 +1090,28 @@ int _ExportSVG(FILE *svg,SplineChar *sc,int layer,ExportParams *ep) {
     fprintf(svg, "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" viewBox=\"%d 0 %d %d\">\n",
 	    xstart, xend - xstart, (int) ceil(em_size));
     if ( ep->use_transform ) {
-	fprintf(svg, "  <g transform=\"matrix(1 0 0 -1 0 %d)\">\n",
-	        sc->parent->ascent );
+	fprintf(svg, "  <g transform=\"matrix(1 0 0 -1 0 %d)\">\n", ascent );
 	scc = sc;
     } else {
-	scc = SplineCharCopy(sc, sc->parent, NULL);
 	trans[3] = -1;
-	trans[5] = scc->parent->ascent;
-	FVTrans(scc->parent->fv,scc,trans,NULL,
-	        fvt_nopreserve|fvt_dontmovewidth|fvt_noupdate);
+	trans[5] = ascent;
+	if (sc->parent!=NULL) {
+	    scc = SplineCharCopy(sc, sc->parent, NULL);
+	    FVTrans(scc->parent->fv,scc,trans,NULL,
+	            fvt_nopreserve|fvt_dontmovewidth|fvt_noupdate);
+	} else {
+	    // This is probably an isolated layer, so just transform the splines
+	    // there and back
+	    scc = sc;
+	    MatInverse(invtrans,trans);
+	    SplinePointListTransformExtended(scc->layers[layer].splines, trans, 
+	        tpt_AllPoints, tpmask_dontTrimValues);
+	}
     }
-    if ( scc->parent->multilayer || scc->parent->strokedfont || !svg_sc_any(scc,layer)) {
+    if (    scc->parent!=NULL
+         && (   scc->parent->multilayer
+             || scc->parent->strokedfont
+             || !svg_sc_any(scc,layer)) ) {
 	fprintf(svg, "   <g ");
 	end = "   </g>\n";
     } else {
@@ -1104,8 +1121,13 @@ int _ExportSVG(FILE *svg,SplineChar *sc,int layer,ExportParams *ep) {
     svg_scpathdump(svg,scc,end,layer);
     if ( ep->use_transform )
 	fprintf(svg, "  </g>\n\n" );
-    else
-	SplineCharFree(scc);
+    else {
+	if ( sc->parent )
+	    SplineCharFree(scc);
+	else
+	    SplinePointListTransformExtended(scc->layers[layer].splines,
+	        invtrans, tpt_AllPoints, tpmask_dontTrimValues);
+    }
     fprintf(svg, "</svg>\n" );
 
     switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.

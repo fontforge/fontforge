@@ -57,9 +57,6 @@ void InitExportParams(ExportParams *ep) {
     memset(ep, 0, sizeof(ExportParams));
 
     ep->initialized = true;
-    ep->shown_svg = false;
-
-    ep->use_transform = false;
 }
 
 ExportParams *ExportParamsState() {

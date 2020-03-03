@@ -66,13 +66,15 @@ static int expp_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	*(int *) GDrawGetUserData(gw) = true;
     } else if ( event->type == et_char ) {
+	/*
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("XXX");
-return( true );
+	    return( true );
 	}
-return( false );
+	*/
+	return( false );
     }
-return( true );
+    return( true );
 }
 
 void _ExportParamsDlg(ExportParams *ep) {

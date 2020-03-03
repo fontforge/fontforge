@@ -55,14 +55,10 @@ void InitImportParams(ImportParams *ip) {
     memset(ip, 0, sizeof(ImportParams));
 
     ip->initialized = true;
-    ip->shown_svg = false;
-    ip->shown_eps = false;
-    ip->shown_scale = false;
 
     ip->correct_direction = no_windowing_ui ? true : false;
     ip->simplify = true;
     ip->clip = true;
-    ip->erasers = false;
     ip->scale = true;
     ip->accuracy_target = 0.25;
     ip->default_joinlimit = JLIMIT_INHERITED;

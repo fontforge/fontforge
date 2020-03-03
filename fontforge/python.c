@@ -4708,7 +4708,7 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
 
 static int LayerArgToLayer(SplineFont *sf, PyObject* layerp);
 
-static char *layer_export_keywords[] = { "filename", "usetransform" "usesystem", "asksystem", NULL };
+static char *layer_export_keywords[] = { "filename", "usetransform", "usesystem", "asksystem", NULL };
 
 static PyObject *PyFFLayer_export(PyFF_Layer *self, PyObject *args,
                                   PyObject *keywds) {
@@ -4731,7 +4731,7 @@ static PyObject *PyFFLayer_export(PyFF_Layer *self, PyObject *args,
     locfilename = utf82def_copy(filename);
     PyMem_Free(filename);
 
-    if ( use_system ) {
+    if ( use_system || ask_system ) {
 	epp = ExportParamsState();
 	if ( ask_system )
 	    ExportParamsDlg(epp);
@@ -8541,7 +8541,7 @@ Py_RETURN( self );
 }
 
 static char *glyph_import_keywords[] = { "filename", "correctdir",
-    "simplify", "handle_clip", "handle_eraser", "scale", "accuracy_target",
+    "simplify", "handle_clip", "handle_eraser", "scale", "accuracy",
     "default_joinlimit", "usesystem", "asksystem", NULL };
 
 /* Legacy PostScript importing flags */
@@ -8567,7 +8567,7 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
 
     if ( !PyArg_ParseTupleAndKeywords(args, keywds,
                 "es|$pppppddpp", glyph_import_keywords, "UTF-8", &filename,
-                &ip.correct_direction, &ip.simplify, &ip.clip, &ip.clip,
+                &ip.correct_direction, &ip.simplify, &ip.clip, &ip.erasers,
                 &ip.scale, &ip.accuracy_target, &jl_tmp, &use_system,
 		&ask_system) ) { 
 	PyErr_Clear();
@@ -8592,7 +8592,7 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
 	return NULL;
     }
 
-    if ( use_system ) {
+    if ( use_system || ask_system ) {
 	ipp = ImportParamsState();
 	if ( ask_system )
 	    ImportParamsDlg(ipp);
@@ -8640,7 +8640,7 @@ Py_RETURN( self );
 }
 
 static char *glyph_export_keywords[] = { "filename", "layer", "pixelsize", 
-    "bitdepth", "usetransform" "usesystem", "asksystem", NULL };
+    "bitdepth", "usetransform", "usesystem", "asksystem", NULL };
 
 static PyObject *PyFFGlyph_export(PyObject *self, PyObject *args,
                                   PyObject *keywds) {
@@ -8669,7 +8669,7 @@ static PyObject *PyFFGlyph_export(PyObject *self, PyObject *args,
     locfilename = utf82def_copy(filename);
     PyMem_Free(filename);
 
-    if ( use_system ) {
+    if ( use_system || ask_system ) {
 	epp = ExportParamsState();
 	if ( ask_system )
 	    ExportParamsDlg(epp);

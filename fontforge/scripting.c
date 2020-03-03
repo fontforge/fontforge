@@ -2310,10 +2310,10 @@ static void bBitmapsRegen(Context *c) {
 
 static void bImport(Context *c) {
     char *ext, *filename;
-    int flags, format, back, ok;
+    int flags=0, format, back, ok;
     bool gclear = false;
     char *t; char *locfilename;
-    ImportParams ip;
+    ImportParams ip, *ipp;
 
     InitImportParams(&ip);
 
@@ -2380,10 +2380,20 @@ static void bImport(Context *c) {
 	ip.erasers = !!(flags & 4);
 	ip.correct_direction = !!(flags & 8);
 	gclear = !!(flags & 16);
-	ip.clip = !!(flags & 32);
-	ip.scale = !!(flags & 64);
-	ip.simplify = !!(flags & 128);
+	if ( flags&32 )
+	    ip.clip = false;
+	if ( flags&64 )
+	    ip.scale = false;
+	if ( flags&128 )
+	    ip.simplify = false;
     }
+    if ( flags&256 ) {
+	ipp = ImportParamsState();
+	if ( flags&512 )
+	    ImportParamsDlg(ipp);
+    } else
+	ipp = &ip;
+
     if ( c->a.argc>=5 ) {
 	if ( c->a.vals[4].type==v_int )
 	    ip.default_joinlimit = c->a.vals[4].u.ival;
@@ -2404,10 +2414,11 @@ static void bImport(Context *c) {
 	ok = FVImportMult(c->curfv,filename, back, bf_ttf);
     else if ( format==fv_pk )
 	ok = FVImportBDF(c->curfv,filename,true, back);
-    else if ( format==fv_image || format==fv_eps || format==fv_svg || format==fv_pdf )
-	ok = FVImportImages(c->curfv,filename,format,back,gclear,&ip);
+    else if (    format==fv_image || format==fv_eps || format==fv_svg
+              || format==fv_pdf )
+	ok = FVImportImages(c->curfv,filename,format,back,gclear,ipp);
     else
-	ok = FVImportImageTemplate(c->curfv,filename,format,back,gclear,&ip);
+	ok = FVImportImageTemplate(c->curfv,filename,format,back,gclear,ipp);
     free(filename);
     if ( !ok )
 	ScriptError(c,"Import failed" );
@@ -2427,17 +2438,22 @@ static void bWritePfm(Context *c) {
 #endif
 
 static void bExport(Context *c) {
-    int format,i, gid ;
+    int format, i, gid, flags=0;
     BDFFont *bdf;
     char *tmp, *pt, *format_spec;
     char buffer[20];
     char *t;
+    ExportParams ep, *epp;
+
+    InitExportParams(&ep);
 
     if ( c->a.argc!=2 && c->a.argc!=3 ) {
 	c->error = ce_wrongnumarg;
 	return;
     }
-    if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[2].type!=v_int) ) {
+    if (    c->a.vals[1].type!=v_str
+         || (c->a.argc>=3 && c->a.vals[2].type!=v_int)
+         || (c->a.argc==4 && c->a.vals[3].type!=v_int) ) {
 	c->error = ce_badargtype;
 	return;
     }
@@ -2475,11 +2491,22 @@ static void bExport(Context *c) {
     else
 	ScriptError( c, "Bad format (first arg must be eps/fig/xbm/bmp)");
 #endif
-    if (( format>=4 && c->a.argc!=3 ) || (format<4 && c->a.argc==3 )) {
+    if (( format>=4 && c->a.argc<3 )) {
 	c->error = ce_wrongnumarg;
 	free(tmp);
 	return;
     }
+    if ( c->a.argc==4 ) {
+	flags = c->a.vals[3].u.ival;
+	ep.use_transform = !!(flags & 1);
+    }
+    if ( flags&256 ) {
+	epp = ExportParamsState();
+	if ( flags&512 )
+	    ExportParamsDlg(epp);
+    } else
+	epp = &ep;
+
     bdf=NULL;
     if ( format>4 ) {
 	for ( bdf = c->curfv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
@@ -2493,7 +2520,8 @@ static void bExport(Context *c) {
     for ( i=0; i<c->curfv->map->enccount; ++i )
 	if ( c->curfv->selected[i] && (gid=c->curfv->map->map[i])!=-1 &&
 		SCWorthOutputting(c->curfv->sf->glyphs[gid]) )
-	    ScriptExport(c->curfv->sf,bdf,format,gid,format_spec,c->curfv->map,NULL); // XXX
+	    ScriptExport(c->curfv->sf,bdf,format,gid,format_spec,c->curfv->map,
+	                 epp);
     free(tmp);
 }
 

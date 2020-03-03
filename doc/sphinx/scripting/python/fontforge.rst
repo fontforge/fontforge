@@ -1207,10 +1207,27 @@ Layers may be compared to see if their contours are similar.
    Orients all contours so that external ones are clockwise and internal
    counter-clockwise. See also :meth:`contour.isClockwise()`.
 
-.. method:: layer.export(filename)
+.. method:: layer.export(filename[, KEYWORD])
 
    Exports the current layer (in outline format) to a file. The type of file is
    determined by the extension.
+
+   The following optional keywords modify the export process for various formats: 
+
+   .. object:: usetransform (boolean, default=False)
+
+      Flip the Y-axis of exported SVGs with a transform element rather than
+      modifying the individual Y values. 
+
+   .. object:: usesystem (boolean, default=False)
+
+      Ignore the above keyword settings and use the values set by the user
+      in the Import options dialog. 
+
+   .. object:: asksystem (boolean, default=False)
+
+      If the UI is present show the Import options dialog to the user
+      and use the chosen values (does nothing otherwise).
 
 .. method:: layer.exclude(excluded_layer)
 
@@ -2135,18 +2152,42 @@ must be created through the font.
    Removes the excluded area from the current glyph. Takes an argument which is
    a layer. See also :meth:`glyph.removeOverlap()` and :meth:`glyph.intersect()`.
 
-.. method:: glyph.export(filename[, pixelsize, bitdepth])
+.. method:: glyph.export(filename[, KEYWORD])
 
-   (bitmap images)
+   Creates a file with the specified name containing a representation of
+   the glyph. Uses the file's extension to determine output file type.
 
-.. method:: glyph.export(filename[, layer])
+   The following optional keywords modify the export process for various formats: 
 
-   (vector outlines)
+   .. object:: layer (string or integer, default=glyph.activeLayer)
 
-   Uses the file's extension to determine output file type. Exports outline
-   formats to the file. For bitmap formats it will rasterize the glyph and
-   output that. There are different optional arguments for rasterizing images
-   and for direct outline output. bitdepth must be 1 or 8.
+      For vector formats, the layer to export.
+
+   .. object:: pixelsize (integer, default=100)
+
+      For raster formats, the size of the image to output.
+
+   .. object:: bitdepth (integer, default=8)
+
+      For raster formats, the depth of the image to output. Must be 1 or 8.
+
+   .. object:: usetransform (boolean, default=False)
+
+      Flip the Y-axis of exported SVGs with a transform element rather than
+      modifying the individual Y values. 
+
+   .. object:: usesystem (boolean, default=False)
+
+      Ignore the above keyword settings and use the values set by the user
+      in the Import options dialog. 
+
+   .. object:: asksystem (boolean, default=False)
+
+      If the UI is present show the Import options dialog to the user
+      and use the chosen values (does nothing otherwise).
+
+   Note: The old positional layer/pixelsize,bitdepth calling conventions are
+   still supported but are not compatible with the other keyword parameters.
 
 .. method:: glyph.genericGlyphChange(stemType=<str>, thickThreshold=<double>, stemScale=<double>, stemAdd=<double>, stemHeightScale=<double>, stemHeightAdd=<double>, stemWidthScale=<double>, stemWidthAdd=<double>, thinStemScale=<double>, thinStemAdd=<double>, thickStemScale=<double>, thickStemAdd=<double>, processDiagonalStems=<boolean>, hCounterType=<str>, hCounterScale=<double>, hCounterAdd=<double>, lsbScale=<double>, lsbAdd=<double>, rsbScale=<double>, rsbAdd=<double>, vCounterType=<str>, vCounterScale=<double>, vCounterAdd=<double>, vScale=<double>, vMap=<tuple of tuples>)
 
@@ -2181,30 +2222,51 @@ must be created through the font.
    Ligature data will be followed by several strings each containing the name
    of a ligature component glyph.
 
-.. method:: glyph.importOutlines(filename, [flags])
+.. method:: glyph.importOutlines(filename, [KEYWORD])
 
    Uses the file's extension to determine behavior. Imports outline descriptions
    (eps, svg, glif files) into the forground layer. Imports image descriptions
-   (bmp, png, xbm, etc.) into the background layer. Optionally, flags can be
-   used to control PostScript import, it'll be ignored for other file types.
-   Flags is a tuple of the following strings
+   (bmp, png, xbm, etc.) into the background layer. The following optional keywords modify the import process for various formats:
 
-   .. object:: toobigwarn
+   .. object:: scale (boolean, default=True)
 
-      Supress warning window about too big stroke width
+      Scale imported images and SVGs to ascender height
 
-   .. object:: removeoverlap
+   .. object:: simplify (boolean, default=True)
 
-      When FontForge detects that an expanded stroke will self-intersect, then
-      setting this flag will cause it to try to make things nice by removing
-      the intersections
+      Run simplify on the output of stroked paths
 
-   .. object:: handle_eraser
+   .. object:: accuracy (float, default=0.25)
+
+      The minimum accuracy (in em-units) of stroked paths.
+
+   .. object:: default_joinlimit (float, default=-1)
+
+      Override the format's default miterlimit for stroked paths, which is
+      10.0 for PostScript and 4.0 for SVG. (Value -1 means "inherit" those
+      defaults.)
+
+   .. object:: handle_eraser (boolean, default=False)
 
       Certain programs use pens with white ink as erasers. When this flag is
-      set, FontForge will attempt to simulate that.
+      set FontForge will attempt to simulate that.
 
-   .. object:: correctdir
+   .. object:: correctdir (boolean, default=False)
+
+      Run "Correct direction" on (some) PostScript paths
+
+   .. object:: usesystem (boolean, default=False)
+
+      Ignore the above keyword settings and use the values set by the user
+      in the Import options dialog. 
+
+   .. object:: asksystem (boolean, default=False)
+
+      If the UI is present show the Import options dialog to the user
+      and use the chosen values (does nothing otherwise).
+
+   Note: The old PostScript correctdir/handle_eraser flag tuple is still 
+   supported but is not compatible with the other keywords. 
 
 .. method:: glyph.intersect()
 
