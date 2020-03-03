@@ -666,7 +666,16 @@ return( true );
 	GiveToAll((GContainerD *) td,event);
 return( true );
     } else if ( event->type == et_char || event->type == et_charup ) {
-return( _GWidget_TopLevel_Key(gw,gw,event));
+        // If this is not a nested event, redirect it at the window that
+        // contains the currently focused gadget.
+        if (!td->isnestedkey && td->gfocus && td->gfocus->base) {
+            td->isnestedkey = true;
+            ret = _GWidget_TopLevel_Key(gw, td->gfocus->base, event);
+            td->isnestedkey = false;
+        } else {
+            ret = _GWidget_TopLevel_Key(gw, gw, event);
+        }
+        return ret;
     } else if ( !gw->is_dying && event->type == et_resize ) {
 	GRect r;
 	if ( td->gmenubar!=NULL ) {

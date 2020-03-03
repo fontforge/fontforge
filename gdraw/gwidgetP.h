@@ -92,6 +92,7 @@ typedef struct gtopleveldata /* : GContainerD */{
     unsigned int ispalette: 1;
     unsigned int positioned_yet: 1;		/* only for top level palettes*/
     unsigned int isdocked: 1;			/* only for top level palettes*/
+    unsigned int isnestedkey: 1;		/* is this a nested key event*/
     unsigned int programmove: 10;
     struct ggadget *gadgets;
     struct gwidgetdata *widgets;		/* children */
