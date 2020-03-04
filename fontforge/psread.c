@@ -2536,7 +2536,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 	    }
 	  break;
 	  case pt_setmiterlimit:
-	    if ( sp>=0 )
+	    if ( sp>=1 )
 		miterlimit = stack[--sp].u.val;
 	  break;
 	  case pt_currentpacking:
