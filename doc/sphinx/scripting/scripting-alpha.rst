@@ -870,8 +870,7 @@ the fourth argument you must specify the second and third arguments too.
    If there is a third argument it must also be an integer and provides a set of
    flags:
 
-   * 1 => Flip the y-axis of exported SVGs with a transform element (instead of
-   rewriting values)
+   * 1 => Flip the y-axis of exported SVGs with a transform element (instead of rewriting values)
    * 256 => Use current Export dialog settings (other flags are ignored)
    * 512 => Present Export options dialog (if UI is enabled)
 
