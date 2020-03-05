@@ -3351,8 +3351,13 @@ return( NULL );
 	}
 	dicts[i] = readcfftopdict(ttf,fontnames!=NULL?fontnames[i]:NULL,
 		offsets[i+1]-offsets[i], info);
-	if ( parent_dict!=NULL && parent_dict->fontmatrix_set ) {
-	    MatMultiply(parent_dict->fontmatrix,dicts[i]->fontmatrix,dicts[i]->fontmatrix);
+	if (    parent_dict!=NULL
+	     && parent_dict->fontmatrix_set
+	     && dicts[i]->synthetic_base!=-1 ) {
+	    if ( dicts[i]->fontmatrix_set )
+		MatMultiply(parent_dict->fontmatrix,dicts[i]->fontmatrix,dicts[i]->fontmatrix);
+	    else
+		memcpy(dicts[i]->fontmatrix,parent_dict->fontmatrix,6*sizeof(real));
 	}
 	dicts[i]->cff_start = cff_start;
     }
