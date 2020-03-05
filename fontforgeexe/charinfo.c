@@ -837,7 +837,7 @@ static int CI_ProcessPosSubs(CharInfo *ci) {
     struct matrix_data *possub;
     char *buts[3];
     KernPair *kp, *kpprev, *kpnext;
-    PST *pst, *pstprev, *pstnext;
+    PST *pst, *pstprev, *pstnext, *lcpst=NULL;
 
     possub = GMatrixEditGet(GWidgetGetControl(ci->gw,CID_List+(pst_ligature-1)*100), &rows );
     cols = GMatrixEditGetColCnt(GWidgetGetControl(ci->gw,CID_List+(pst_ligature-1)*100) );
@@ -930,8 +930,31 @@ return( false );
     }
 
     /* If we get this far, then we didn't find any errors */
-    for ( pst = sc->possub; pst!=NULL; pst=pst->next )
-	pst->ticked = pst->type==pst_lcaret;
+    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
+	pst->ticked = false;
+	if ( pst->type==pst_lcaret )
+	    lcpst = pst;
+    }
+
+    // There is no dialog datastructure for the ligature carets, so copy them here
+    // The entry will be modified in _CI_OK when needed
+    for ( pst = ci->sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next )
+	;
+    if ( pst!=NULL ) {
+	if ( lcpst==NULL ) {
+	    lcpst = chunkalloc(sizeof(PST));
+	    lcpst->type = pst_lcaret;
+	    lcpst->next = sc->possub;
+	    sc->possub = lcpst;
+	}
+	if ( lcpst->u.lcaret.carets!=NULL )
+	    free(lcpst->u.lcaret.carets);
+	lcpst->u.lcaret.cnt = pst->u.lcaret.cnt;
+	lcpst->u.lcaret.carets = malloc(pst->u.lcaret.cnt*sizeof(int16));
+	memcpy(lcpst->u.lcaret.carets,pst->u.lcaret.carets,pst->u.lcaret.cnt*sizeof(int16));
+	lcpst->ticked = true;
+    }
+
     for ( isv=0; isv<2; ++isv )
 	for ( kp = isv ? sc->vkerns : sc->kerns; kp!=NULL; kp=kp->next )
 	    kp->kcid = 0;
