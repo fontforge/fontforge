@@ -1813,6 +1813,9 @@ the fourth argument you must specify the second and third arguments too.
      what the fstype setting is.
    * 4 => load all glyphs from the 'glyf' table of a ttc font (rather than only
      the glyphs used in the font picked).
+   * 8 => Report more error conditions
+   * 16 => Do not create a view window for this font even if the UI is active
+   * 32 => Retain all recognized font tables that do not have a native format
 
 .. function:: Ord(string[,pos])
 

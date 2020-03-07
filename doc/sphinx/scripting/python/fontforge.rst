@@ -444,10 +444,27 @@ Module functions
 
 .. function:: open(filename[, flags])
 
-   Opens a filename and returns the font it contains (if any). If the flags
-   argument is 4, then ff will load all glyphs in the 'glyf' table of a ttc file
-   (rather than just the glyphs used in the font picked). This will not load all
-   'glyf' tables though.
+   Opens a filename and returns the font it contains (if any). The optional ``flags`` argument can be string tuple or integer combination of the following flags:
+
+   .. object:: fstypepermitted (1)
+
+      The user has the appropriate license to examine the font no matter what the fstype setting is.
+
+   .. object:: allglyphsinttc (4)
+
+      Load all glyphs from the 'glyf' table of a ttc font (rather than only the glyphs used in the font picked).
+
+   .. object:: fontlint (8)
+
+      Report more error conditions.
+
+   .. object:: hidewindow (16)
+
+      Do not create a view window for this font even if the UI is active.
+
+   .. object:: alltables (32)
+
+      Retain all recognized font tables that do not have a native format.
 
 .. function:: parseTTInstrs(string)
 
