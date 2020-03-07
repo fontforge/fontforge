@@ -7123,7 +7123,7 @@ static void FVCreateInnards(FontView *fv,GRect *pos) {
     FVChangeDisplayFont(fv,bdf);
 }
 
-static FontView *FontView_Create(SplineFont *sf, int hide) {
+static FontView *FontView_Create(SplineFont *sf) {
     FontView *fv = (FontView *) __FontViewCreate(sf);
     GRect pos;
     GWindow gw;
@@ -7191,10 +7191,8 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     pos.x = 0; pos.y = fv->mbh+fv->infoh;
     FVCreateInnards(fv,&pos);
 
-    if ( !hide ) {
-	GDrawSetVisible(gw,true);
-	FontViewOpenKids(fv);
-    }
+    GDrawSetVisible(gw,true);
+    FontViewOpenKids(fv);
 return( fv );
 }
 
@@ -7212,7 +7210,7 @@ return( fv );
 }
 
 FontView *FontNew(void) {
-return( FontView_Create(SplineFontNew(),false));
+return( FontView_Create(SplineFontNew()));
 }
 
 static void FontView_Free(FontView *fv) {
@@ -7327,7 +7325,7 @@ static void FontView_Close(FontView *fv) {
 
 
 struct fv_interface gdraw_fv_interface = {
-    (FontViewBase *(*)(SplineFont *, int)) FontView_Create,
+    (FontViewBase *(*)(SplineFont *)) FontView_Create,
     (FontViewBase *(*)(SplineFont *)) __FontViewCreate,
     (void (*)(FontViewBase *)) FontView_Close,
     (void (*)(FontViewBase *)) FontView_Free,

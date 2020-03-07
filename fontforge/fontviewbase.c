@@ -1350,7 +1350,7 @@ FontViewBase *ViewPostScriptFont(const char *filename,int openflags) {
 return( NULL );
     if ( sf->fv==NULL && force_names_when_opening!=NULL )
 	SFRenameGlyphsToNamelist(sf,force_names_when_opening );
-return( FontViewCreate(sf,openflags&of_hidewindow));	/* Always make a new view now */
+return( FontViewCreate(sf));	/* Always make a new view now */
 }
 
 static int tester(SplineChar *sc, struct lookup_subtable *sub) {
@@ -1947,7 +1947,7 @@ static FontViewBase *_FontViewBaseCreate(SplineFont *sf) {
 return( fv );
 }
 
-static FontViewBase *FontViewBase_Create(SplineFont *sf,int UNUSED(hide)) {
+static FontViewBase *FontViewBase_Create(SplineFont *sf) {
     FontViewBase *fv = _FontViewBaseCreate(sf);
 return( fv );
 }

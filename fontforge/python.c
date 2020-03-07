@@ -1181,26 +1181,44 @@ static PyObject *PyFF_ActiveLayer(PyObject *UNUSED(self), PyObject *UNUSED(args)
 return( Py_BuildValue("i", layer_active_in_ui ));
 }
 
-static FontViewBase *SFAdd(SplineFont *sf,int hide) {
+static FontViewBase *SFAdd(SplineFont *sf) {
     if ( sf->fv!=NULL )
 	/* All done */;
     else if ( !no_windowing_ui )
-	FontViewCreate(sf,hide);
+	FontViewCreate(sf);
     else
 	FVAppend(_FontViewCreate(sf));
 return( sf->fv );
 }
 
-static PyObject *PyFF_OpenFont(PyObject *UNUSED(self), PyObject *args) {
+
+struct flaglist openflaglist[] = {
+    { "fstypepermitted", of_fstypepermitted },
+    { "allglyphsinttc", of_all_glyphs_in_ttc },
+    { "fontlint", of_fontlint },
+    { "alltables", of_all_tables },
+    FLAGLIST_EMPTY
+};
+
+static PyObject *PyFF_OpenFont(PyObject *UNUSED(self), PyObject *args) { 
     char *filename, *locfilename;
     int openflags = 0;
     SplineFont *sf;
+    PyObject *flagsobj = NULL;
 
-    if ( !PyArg_ParseTuple(args,"es|i", "UTF-8", &filename, &openflags ))
-return( NULL );
+    if ( !PyArg_ParseTuple(args,"es|O", "UTF-8", &filename, &flagsobj ))
+	return NULL;
     locfilename = utf82def_copy(filename);
     PyMem_Free(filename);
 
+    if ( flagsobj!=NULL && PyLong_Check(flagsobj) ) {
+	openflags = PyLong_AsLong(flagsobj);
+    } else if ( flagsobj!=NULL && PyTuple_Check(flagsobj) ) {
+	openflags = FlagsFromTuple(flagsobj, openflaglist, "open flag");
+    } else if ( flagsobj!=NULL ) {
+	PyErr_Format(PyExc_IndexError, "Flags must be specified as String Tuple or Int");
+	return NULL;
+    }
     /* The actual filename opened may be different from the one passed
      * to LoadSplineFont, so we can't report the filename on an
      * error.
@@ -1213,7 +1231,7 @@ return( NULL );
 return( NULL );
     }
     free(locfilename);
-return( PyFF_FontForFV_I( SFAdd( sf, openflags&of_hidewindow )));
+return( PyFF_FontForFV_I( SFAdd( sf )));
 }
 
 static PyObject *PyFF_FontsInFile(PyObject *UNUSED(self), PyObject *args) {
@@ -11573,7 +11591,7 @@ static PyObject *PyFF_Font_new(PyTypeObject *type, PyObject *UNUSED(args), PyObj
 
     self = (PyFF_Font *) (type->tp_alloc)(type,0);
     if ( self!=NULL ) {
-	self->fv = SFAdd(SplineFontNew(),false);
+	self->fv = SFAdd(SplineFontNew());
 	self->fv->python_fv_object = self;
     }
 return( (PyObject *) self );
@@ -16935,7 +16953,7 @@ return( NULL );
     free(locfilename);
     if ( sf->fv==NULL )
 	EncMapFree(sf->map);
-    newfv = SFAdd(InterpolateFont(fv->sf,sf,fraction, fv->map->enc ),false);
+    newfv = SFAdd(InterpolateFont(fv->sf,sf,fraction, fv->map->enc ));
 return( PyFF_FontForFV_I(newfv));
 }
 

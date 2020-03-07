@@ -345,7 +345,7 @@ static void MakeAppleBlend(FontView *fv,MMSet *mm,real *blends,real *normalized)
     sf->changed = true;
     EncMapFree(sf->map);
     sf->map = EncMapFromEncoding(sf,fv->b.map->enc);
-    FontViewCreate(sf,false);
+    FontViewCreate(sf);
 }
 
 struct mmcb {
@@ -1978,7 +1978,7 @@ continue;
     }
 
     if ( fv==NULL )
-	fv = (FontView *) FontViewCreate(setto->normal,false);
+	fv = (FontView *) FontViewCreate(setto->normal);
     if ( enc==NULL )
 	enc = default_encoding;
     FVReencode((FontViewBase *) fv,enc);

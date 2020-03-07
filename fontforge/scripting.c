@@ -1914,7 +1914,7 @@ static void bOpen(Context *c) {
 	if ( sf->fv!=NULL )
 	    /* All done */;
 	else if ( !no_windowing_ui )
-	    FontViewCreate(sf,openflags&of_hidewindow);
+	    FontViewCreate(sf);
 	else
 	    FVAppend(_FontViewCreate(sf));
 	c->curfv = sf->fv;
@@ -1942,7 +1942,7 @@ static void bSelectBitmap(Context *c) {
 
 static void bNew(Context *c) {
     if ( !no_windowing_ui )
-	c->curfv = FontViewCreate(SplineFontNew(),false);
+	c->curfv = FontViewCreate(SplineFontNew());
     else
 	c->curfv = FVAppend(_FontViewCreate(SplineFontNew()));
 }

@@ -111,7 +111,7 @@ return( false );
 	if ( (sf = SFRecoverFile(buffer,inquire,&inquire_state)) ) {
 	    any=true;
 	    if ( sf->fv==NULL )		/* Doesn't work, cli arguments not parsed yet */
-		FontViewCreate(sf,false);
+		FontViewCreate(sf);
 	    fprintf( stderr, " Done\n" );
 	}
     }
