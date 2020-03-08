@@ -490,7 +490,7 @@ void _ImportParamsDlg(ImportParams *ip) {
 
 static void ShowImportOptions(ImportParams *ip, int shown,
                               enum shown_params type) {
-    if ( !shown && !(ip->shown_mask & type) )
+    if ( !shown && (!(ip->shown_mask & type) || ip->show_always) )
 	_ImportParamsDlg(ip);
     ip->shown_mask = (ip->shown_mask & ~type) | type;
 }

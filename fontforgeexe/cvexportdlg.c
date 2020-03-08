@@ -193,7 +193,7 @@ void _ExportParamsDlg(ExportParams *ep) {
 
 static void ShowExportOptions(ExportParams *ep, int shown,
                               enum shown_params type) {
-    if ( !shown && !(ep->shown_mask & type) )
+    if ( !shown && (!(ep->shown_mask & type) || ep->show_always) )
 	_ExportParamsDlg(ep);
     ep->shown_mask = (ep->shown_mask & ~type) | type;
 }
