@@ -173,10 +173,16 @@ typedef struct retstack {
     real *stack;
 } RetStack;
 
+enum shown_params {
+    sp_svg = 1,
+    sp_eps = 2,
+    sp_scale = 4
+};
+
 typedef struct importparams {
     // Could be bits but the python interface would be annoying
     int initialized;
-    int shown_svg, shown_eps, shown_scale, show_always;
+    int shown_mask, show_always;
 
     int correct_direction;	// PS
     int simplify;
@@ -190,7 +196,7 @@ typedef struct importparams {
 typedef struct exportparams {
     // Could be bits but the python interface would be annoying
     int initialized;
-    int shown_svg, show_always;
+    int shown_mask, show_always;
 
     int use_transform;		// SVG
 } ExportParams;

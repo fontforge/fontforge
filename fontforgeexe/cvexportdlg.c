@@ -191,12 +191,11 @@ void _ExportParamsDlg(ExportParams *ep) {
     GDrawDestroyWindow(gw);
 }
 
-static void ShowExportOptions(ExportParams *ep, int shown, int type) {
-    if ( type==2 ) {
-	if ( !shown && (!ep->shown_svg || ep->show_always) )
-	    _ExportParamsDlg(ep);
-	ep->shown_svg = true;
-    }
+static void ShowExportOptions(ExportParams *ep, int shown,
+                              enum shown_params type) {
+    if ( !shown && !(ep->shown_mask & type) )
+	_ExportParamsDlg(ep);
+    ep->shown_mask = (ep->shown_mask & ~type) | type;
 }
 
 static int SB_OK(GGadget *g, GEvent *e) {
@@ -420,7 +419,7 @@ static void DoExport(struct gfc_data *d,unichar_t *path) {
 	good = ExportFig(temp,d->sc,d->layer);
     else if ( format==2 ) {
 	ExportParams *ep = ExportParamsState();
-	ShowExportOptions(ep, d->opts_shown, 2);
+	ShowExportOptions(ep, d->opts_shown, sp_svg);
 	good = ExportSVG(temp,d->sc,d->layer,ep);
     } else if ( format==3 )
 	good = ExportGlif(temp,d->sc,d->layer,3);

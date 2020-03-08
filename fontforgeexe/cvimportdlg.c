@@ -488,20 +488,11 @@ void _ImportParamsDlg(ImportParams *ip) {
     GDrawDestroyWindow(gw);
 }
 
-static void ShowImportOptions(ImportParams *ip, int shown, int type) {
-    if ( type==0 ) {
-	if ( !shown && (!ip->shown_scale || ip->show_always) )
-	    _ImportParamsDlg(ip);
-	ip->shown_scale = true;
-    } else if ( type==1 ) {
-	if ( !shown && (!ip->shown_eps || ip->show_always) )
-	    _ImportParamsDlg(ip);
-	ip->shown_eps = true;
-    } else if ( type==2 ) {
-	if ( !shown && (!ip->shown_svg || ip->show_always) )
-	    _ImportParamsDlg(ip);
-	ip->shown_svg = true;
-    }
+static void ShowImportOptions(ImportParams *ip, int shown,
+                              enum shown_params type) {
+    if ( !shown && !(ip->shown_mask & type) )
+	_ImportParamsDlg(ip);
+    ip->shown_mask = (ip->shown_mask & ~type) | type;
 }
 
 /****************************** Import picker *********************************/
@@ -592,28 +583,28 @@ return( true );
 	    else if ( format==fv_palm )
 		d->done = FVImportMult((FontViewBase *) d->fv,temp,toback,bf_palm);
 	    else if ( format==fv_image ) {
-		ShowImportOptions(ip, d->opts_shown, 0);
+		ShowImportOptions(ip, d->opts_shown, sp_scale);
 		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,true,ip);
 	    } else if ( format==fv_imgtemplate ) {
-		ShowImportOptions(ip, d->opts_shown, 0);
+		ShowImportOptions(ip, d->opts_shown, sp_scale);
 		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,true,ip);
 	    } else if ( format==fv_eps ) {
-		ShowImportOptions(ip, d->opts_shown, 1);
+		ShowImportOptions(ip, d->opts_shown, sp_eps);
 		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,true,ip);
 	    } else if ( format==fv_epstemplate ) {
-		ShowImportOptions(ip, d->opts_shown, 1);
+		ShowImportOptions(ip, d->opts_shown, sp_eps);
 		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,true,ip);
 	    } else if ( format==fv_pdf ) {
-		ShowImportOptions(ip, d->opts_shown, 1);
+		ShowImportOptions(ip, d->opts_shown, sp_eps);
 		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,true,ip);
 	    } else if ( format==fv_pdftemplate ) {
-		ShowImportOptions(ip, d->opts_shown, 1);
+		ShowImportOptions(ip, d->opts_shown, sp_eps);
 		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,true,ip);
 	    } else if ( format==fv_svg ) {
-		ShowImportOptions(ip, d->opts_shown, 2);
+		ShowImportOptions(ip, d->opts_shown, sp_svg);
 		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,true,ip);
 	    } else if ( format==fv_svgtemplate ) {
-		ShowImportOptions(ip, d->opts_shown, 2);
+		ShowImportOptions(ip, d->opts_shown, sp_svg);
 		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,true,ip);
 	    } else if ( format==fv_glif )
 		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,true,ip);
@@ -626,18 +617,18 @@ return( true );
 	else {
 	    d->done = true;
 	    if ( format==fv_image ) {
-		ShowImportOptions(ip, d->opts_shown, 0);
+		ShowImportOptions(ip, d->opts_shown, sp_scale);
 		ImportImage(d->cv,temp,ip);
 	    } else if ( format==fv_eps ) {
-		ShowImportOptions(ip, d->opts_shown, 1);
+		ShowImportOptions(ip, d->opts_shown, sp_eps);
 		ImportPS(d->cv,temp,ip);
 	    } else if ( format==fv_pdf ) {
-		ShowImportOptions(ip, d->opts_shown, 1);
+		ShowImportOptions(ip, d->opts_shown, sp_eps);
 		ImportPDF(d->cv,temp,ip);
 	    } else if ( format==fv_plate )
 		ImportPlate(d->cv,temp,ip);
 	    else if ( format==fv_svg ) {
-		ShowImportOptions(ip, d->opts_shown, 2);
+		ShowImportOptions(ip, d->opts_shown, sp_svg);
 		ImportSVG(d->cv,temp,ip);
 	    } else if ( format==fv_glif )
 		ImportGlif(d->cv,temp,ip);
