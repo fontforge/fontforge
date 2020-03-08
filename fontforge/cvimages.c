@@ -56,7 +56,7 @@ void InitImportParams(ImportParams *ip) {
 
     ip->initialized = true;
 
-    ip->correct_direction = no_windowing_ui ? true : false;
+    ip->correct_direction = true;
     ip->simplify = true;
     ip->clip = true;
     ip->scale = true;

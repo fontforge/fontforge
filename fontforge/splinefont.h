@@ -2421,10 +2421,6 @@ extern int BpColinear(BasePoint *first, BasePoint *mid, BasePoint *last);
 extern int BpWithin(BasePoint *first, BasePoint *mid, BasePoint *last);
     /* Colinear & between */
 
-enum psstrokeflags { /* sf_removeoverlap=2,*/ sf_handle_eraser=4,
-	sf_correctdir=8, sf_clearbeforeinput=16 };
-
-
 extern char *ToAbsolute(char *filename);
 
 # if HANYANG
