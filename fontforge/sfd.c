@@ -844,6 +844,16 @@ static void SFDDumpAnchorPoints(FILE *sfd,AnchorPoint *ap) {
     }
 }
 
+// This is a utility function, used only in this file, which dives deep into a
+// ImageList structure to figure out if it is supposed to be saved as a 
+// reference or not.
+static bool ImageListShouldReference(ImageList *il) {
+    GImage *image = il->image;
+    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    
+    return base->refdata.reference;
+}
+
 /* Run length encoding */
 /* We always start with a background pixel(1), each line is a series of counts */
 /*  we alternate background/foreground. If we can't represent an entire run */
@@ -1019,12 +1029,13 @@ void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, const char* keyPrefix, int 
 static void SFDDumpImage(FILE *sfd,ImageList *img) {
     GImage *image = img->image;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+
     struct enc85 enc;
     int rlelen;
     uint8 *rle;
     int i;
-
     rle = image2rle(base,&rlelen);
+
     fprintf(sfd, "Image: %d %d %d %d %d %x %g %g %g %g %d\n",
 	    (int) base->width, (int) base->height, base->image_type,
 	    (int) (base->image_type==it_true?3*base->width:base->bytes_per_line),
@@ -1077,6 +1088,18 @@ static void SFDDumpImage(FILE *sfd,ImageList *img) {
     }
     SFDEnc85EndEnc(&enc);
     fprintf(sfd,"\nEndImage\n" );
+}
+
+// This function should only be called if you know the image is a reference.
+static void SFDDumpImageReference(FILE *sfd,ImageList *img) {
+    GImage* image = img->image;
+    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    fprintf(sfd, "Image2: reference %g %g %g %g\n",
+        (double) img->xoff, (double) img->yoff, (double) img->xscale, (double) img->yscale );
+    SFDDumpUTF7Str(sfd, base->refdata.hash);
+    fprintf(sfd, "\n");
+    SFDDumpUTF7Str(sfd, base->refdata.filename);
+    fprintf(sfd, "\nEndImage2\n");
 }
 
 #ifndef _NO_LIBPNG
@@ -1687,12 +1710,16 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 		fprintf(sfd, "Layer: %d\n", i );
 	}
 	for ( img=sc->layers[i].images; img!=NULL; img=img->next )
+        if (ImageListShouldReference(img)) {
+            SFDDumpImageReference(sfd,img);
+        } else {
 #ifndef _NO_LIBPNG
         if (WritePNGInSFD)
 	    SFDDumpImagePNG(sfd,img);
         else
 #endif
-	    SFDDumpImage(sfd,img);
+            SFDDumpImage(sfd,img);
+        }
 	if ( sc->layers[i].splines!=NULL ) {
 	    fprintf(sfd, "SplineSet\n" );
 	    SFDDumpSplineSet(sfd,sc->layers[i].splines,sc->layers[i].order2);
@@ -3631,26 +3658,29 @@ static void rle2image(struct enc85 *dec,int rlelen,struct _GImage *base) {
     }
 }
 
-#ifndef _NO_LIBPNG
 
-enum MIME { UNKNOWN, PNG }; // We only understand PNG for now.
+enum Image2MIME { IM2_UNKNOWN, IM2_PNG, IM2_REFERENCE };
 
-enum MIME SFDGetImage2MIME(FILE *sfd) {
+enum Image2MIME SFDGetImage2MIME(FILE *sfd) {
     char mime[128];
 
     if ( !getname(sfd, mime) ) {
         IError("Failed to get a MIME type, file corrupt");
-        return UNKNOWN;
+        return IM2_UNKNOWN;
     }
 
-    if ( !(strmatch(mime, "image/png")==0) ) {
-        IError("MIME type received—%s—is not recognized", mime);
-        return UNKNOWN;
+    if ( strmatch(mime, "image/png")==0 ) {
+        return IM2_PNG;
     }
 
-    return PNG;
+    if ( strmatch(mime, "reference")==0 ) {
+        return IM2_REFERENCE;
+    }
+
+    return IM2_UNKNOWN;
 }
 
+#ifndef _NO_LIBPNG
 static ImageList *SFDGetImagePNG(FILE *sfd) {
     int pnglen;
     ImageList *img;
@@ -3695,6 +3725,62 @@ static ImageList *SFDGetImagePNG(FILE *sfd) {
     return img;
 }
 #endif
+
+static ImageList *SFDGetImageReference(FILE *sfd) {
+    ImageList *img = calloc(1,sizeof(ImageList));
+    int ch;
+
+    getreal(sfd,&img->xoff);
+    getreal(sfd,&img->yoff);
+    getreal(sfd,&img->xscale);
+    getreal(sfd,&img->yscale);
+
+    if (ch = nlgetc(sfd) != '\n') { ungetc(ch, sfd); free(img); return NULL; }
+
+    char* hex = SFDReadUTF7Str(sfd);
+
+    if (ch = nlgetc(sfd) != '\n') { ungetc(ch, sfd); free(img); free(hex); return NULL; }
+
+    char* fn_tmp = SFDReadUTF7Str(sfd);
+    char* fn = utf82def_copy(fn_tmp);
+    free(fn_tmp);
+
+    if (fn == NULL) {
+        IError(_("Expected filename which wasn't there, file corrupt"));
+        free(img); free(hex);
+        return NULL;
+    }
+
+    char* hn = FF_HashFile(fn);
+
+    if (hn == NULL) {
+        // Unfortunately GFileGetSize returns -1 for all errors, so we don't know which it is
+        IError(_("Failed to stat() file %s; missing? Bad permissions? Locale mismatch?"), fn);
+        free(img); free(fn); free(hex);
+        return NULL;
+    }
+
+    if (strcmp(hex,hn)!=0) LogError(_("Content of file %s no longer matches what it was when SFD file saved"), fn);
+
+    GImage* image = GImageRead(fn);
+
+    TRACE("SFDGetImageReference: Hex is %s and fn is %s\n", hex, fn);
+
+    if (image == NULL) {
+        IError(_("Failed to read image from file %s"), fn);
+        free(fn); free(hex); free(img);
+        return NULL;
+    }
+
+    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+
+    base->refdata.reference = true;
+    base->refdata.filename = fn;
+    base->refdata.hash = hex;
+
+    img->image=image;
+    return img;
+}
 
 static ImageList *SFDGetImage(FILE *sfd) {
     /* We've read the image token */
@@ -4344,8 +4430,8 @@ Undoes *SFDGetUndo( FILE *sfd, SplineChar *sc,
 	    if( !strmatch(tok,"Image2:"))
 	    {
 #ifndef _NO_LIBPNG
-		enum MIME mime = SFDGetImage2MIME(sfd);
-		if (mime == PNG) {
+		enum Image2MIME mime = SFDGetImage2MIME(sfd);
+		if (mime == IM2_PNG) {
 		    ImageList *img = SFDGetImagePNG(sfd);
 		    if (img != NULL) {
 			if ( !u->u.state.images )
@@ -4356,7 +4442,16 @@ Undoes *SFDGetUndo( FILE *sfd, SplineChar *sc,
 		    }
 		} else 
 #endif
-	    {
+        if (mime == IM2_REFERENCE) {
+		    ImageList *img = SFDGetImageReference(sfd);
+		    if (img != NULL) {
+			if ( !u->u.state.images )
+			    u->u.state.images = img;
+			else
+			    lasti->next = img;
+			lasti = img;
+		    }
+        } else {
 		LogError(_("Image2 skipped as it uses an unsupported image type"));
 		const char* im2_terminator[] = { "EndImage2", 0 };
 		SFDConsumeUntil(sfd, im2_terminator);
@@ -5727,9 +5822,9 @@ return( NULL );
 	    lasti = img;
 	    }
 	} else if ( strmatch(tok,"Image2:")==0 ) {
+	    enum Image2MIME mime = SFDGetImage2MIME(sfd);
 #ifndef _NO_LIBPNG
-	    enum MIME mime = SFDGetImage2MIME(sfd);
-	    if (mime == PNG) {
+	    if (mime == IM2_PNG) {
 		int ly = current_layer;
 		if ( !multilayer && !sc->layers[ly].background ) ly = ly_back;
 		img = SFDGetImagePNG(sfd);
@@ -5742,10 +5837,21 @@ return( NULL );
 		}
 	    } else
 #endif
-	    {
-	    LogError(_("Image2 skipped as it uses an unsupported image type"));
-	    const char* im2_terminator[] = { "EndImage2", 0 };
-	    SFDConsumeUntil(sfd, im2_terminator);
+        if (mime == IM2_REFERENCE) {
+		int ly = current_layer;
+		if ( !multilayer && !sc->layers[ly].background ) ly = ly_back;
+		img = SFDGetImageReference(sfd);
+		if (img != NULL) {
+		    if ( sc->layers[ly].images==NULL )
+			sc->layers[ly].images = img;
+		    else
+			lasti->next = img;
+		    lasti = img;
+		}
+        } else {
+            LogError(_("Image2 skipped as it uses an unsupported image type"));
+            const char* im2_terminator[] = { "EndImage2", 0 };
+            SFDConsumeUntil(sfd, im2_terminator);
 	    }
 	} else if ( strmatch(tok,"PickledData:")==0 ) {
 	    if (current_layer < sc->layer_cnt) {
@@ -9079,6 +9185,13 @@ static SplineFont *SFD_Read(char *filename,FILE *sfd, int fromdir) {
     }
     if ( sfd==NULL )
 return( NULL );
+
+    // We do this in case the current directory is not the SFD directory, so
+    // that references to images will be resolved correctly
+    char* cachedir = g_get_current_dir();
+    char* sfddir = GFileDirName(filename); 
+    chdir(sfddir);
+
     locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
     switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
     ff_progress_change_stages(2);
@@ -9108,6 +9221,7 @@ return( NULL );
 	}
     }
     fclose(sfd);
+    chdir(cachedir);
 return( sf );
 }
 

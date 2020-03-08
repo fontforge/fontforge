@@ -1139,3 +1139,25 @@ char *GFileDirName(const char *path) {
     return GFileDirNameEx(path, 0);
 }
 
+// If we have two files:
+// * /tmp/ex/test.sfd (file1)
+// * /tmp/ex/images/1.jpg (to_relative)
+//
+// The return is images/1.jpg
+char* GFileRelativize(char* file1, char* to_relative) {
+   GFile *gf_file1 = g_file_new_for_path(file1);
+   GFile *gf_file1_parent = g_file_get_parent(gf_file1);
+   GFile *gf_to_relative = g_file_new_for_path(to_relative);
+
+   char* ex = g_file_get_relative_path(gf_file1_parent, gf_to_relative);
+
+   g_object_unref(gf_file1);
+   g_object_unref(gf_file1_parent);
+   g_object_unref(gf_to_relative);
+
+   if (ex==NULL) {
+       // Impossible to relativize; use absolute path.
+       return copy(to_relative);
+   }
+   return ex;
+}

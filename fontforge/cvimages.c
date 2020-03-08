@@ -973,6 +973,9 @@ int FVImportImages(FontViewBase *fv,char *path,int format,int toback, int flags)
 		ff_post_error(_("Bad image file"),_("Bad image file: %.100s"),start);
 return(false);
 	    }
+        if (flags&sf_imagereferenceonly) {
+            GImageMakeReference(image->u.image, start, fv->sf->filename);
+        }
 	    ++tot;
 	    SCAddScaleImage(sc,image,true,toback?ly_back:ly_fore);
 	} else if ( format==fv_svg ) {
@@ -996,6 +999,7 @@ return(false);
 	if ( endpath==NULL )
     break;
 	start = endpath+1;
+    SCCharChangedUpdate(sc,toback?ly_back:ly_fore);
     }
     if ( tot==0 )
 	ff_post_error(_("Nothing Selected"),_("You must select a glyph before you can import an image into it"));

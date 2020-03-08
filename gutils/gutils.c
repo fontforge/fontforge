@@ -30,6 +30,8 @@
 #include "basics.h"
 #include "gutils.h"
 
+#include "gfile.h"
+#include "ustring.h"
 #include "ffglib.h"
 
 const char *GetAuthor(void) {
@@ -69,4 +71,30 @@ time_t GetST_MTime(struct stat s) {
 	}
 
 	return st_time;
+}
+
+char* FF_HashData(unsigned char* input, int len) {
+    GChecksum* gcs = g_checksum_new(G_CHECKSUM_SHA256);
+    g_checksum_update(gcs, input, len);
+    const char* gcs_cs = g_checksum_get_string(gcs);
+    char* cs = copy(gcs_cs);
+    g_checksum_free(gcs);
+    return cs;
+}
+
+// This function assumes def2utf8 has been called on its input!
+extern char* FF_HashFile(char* filename) {
+    off_t length = GFileGetSize(filename);
+
+    if (length <= 0) {
+        TRACE("FF_HashFile: stat() failed for %s\n", filename);
+        return NULL;
+    } 
+
+    char *contents = GFileReadAll(filename);
+
+    TRACE("Hashing %s of length %d...\n", filename, length);
+    char* cs = FF_HashData(contents, length);
+    free(contents);
+    return cs;
 }

@@ -82,8 +82,9 @@ static void ImportFig(CharView *cv,char *path) {
     SCImportFig(cv->b.sc,CVLayer((CharViewBase *) cv),path,false);
 }
 
-static void ImportImage(CharView *cv,char *path) {
+static void ImportImage(CharView *cv,char *path,bool reference) {
     GImage *image;
+    char* fn = copy(path);
     int layer;
 
     image = GImageRead(path);
@@ -91,6 +92,9 @@ static void ImportImage(CharView *cv,char *path) {
 	ff_post_error(_("Bad image file"),_("Bad image file: %.100s"), path);
 return;
     }
+
+    if (reference) GImageMakeReference(image->u.image, fn, cv->b.fv->sf->filename);
+
     layer = ly_back;
     if ( cv->b.drawmode!=dm_grid ) {
 	if ( cv->b.sc->parent->multilayer )
@@ -380,6 +384,7 @@ struct gfc_data {
     int ret;
     GGadget *gfc;
     GGadget *format;
+    GGadget *reference;
     GGadget *background;
     CharView *cv;
     BitmapView *bv;
@@ -438,6 +443,7 @@ return( true );
 	    last_lpos = lpos;
 	}
 	free(ret);
+    int ref = GGadgetIsChecked(d->reference);
 	if ( d->fv!=NULL ) {
 	    int toback = GGadgetIsChecked(d->background);
 	    if ( toback && strchr(temp,';')!=NULL && format<3 )
@@ -483,7 +489,7 @@ return( true );
 	else {
 	    d->done = true;
 	    if ( format==fv_image )
-		ImportImage(d->cv,temp);
+		ImportImage(d->cv,temp,ref);
 	    else if ( format==fv_eps )
 		ImportPS(d->cv,temp);
 	    else if ( format==fv_pdf )
@@ -588,8 +594,8 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[9], boxes[4], *varray[9], *harray[5], *buttons[10];
-    GTextInfo label[9];
+    GGadgetCreateData gcd[10], boxes[4], *varray[9], *harray[6], *buttons[10];
+    GTextInfo label[10];
     struct gfc_data d;
     int i, format, lpos;
     int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid, scalewid;
@@ -723,6 +729,13 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     gcd[5].gd.u.list[lpos].selected = true;
     harray[1] = &gcd[5];
 
+	label[7].text = (unichar_t *) _("Reference only");
+	label[7].text_is_1byte = true;
+	gcd[7].gd.label = &label[7];
+	gcd[7].gd.flags = gg_visible | gg_enabled;
+	gcd[7].gd.popup_msg = _("If checked, when you save your SFD, the image's data will not be saved in the file, only a path to the image will be saved.");
+	gcd[7].creator = GCheckBoxCreate;
+
     if ( fv!=NULL ) {
 	gcd[6].gd.pos.x = 185; gcd[6].gd.pos.y = gcd[5].gd.pos.y+4;
 	gcd[6].gd.flags = gg_visible | gg_enabled ;
@@ -732,9 +745,9 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 	label[6].text_is_1byte = true;
 	gcd[6].gd.label = &label[6];
 	gcd[6].creator = GCheckBoxCreate;
-	harray[2] = &gcd[6]; harray[3] = GCD_Glue; harray[4] = NULL;
+	harray[2] = &gcd[6]; harray[3] = &gcd[7]; harray[4] = GCD_Glue; harray[5] = NULL;
     } else {
-	harray[2] = GCD_Glue; harray[3] = NULL;
+	harray[2] = &gcd[7]; harray[3] = GCD_Glue; harray[4] = NULL;
     }
 
     boxes[2].gd.flags = gg_enabled|gg_visible;
@@ -771,6 +784,7 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     d.bv = bv;
     d.gfc = gcd[0].ret;
     d.format = gcd[5].ret;
+    d.reference = gcd[7].ret;
     if ( fv!=NULL )
 	d.background = gcd[6].ret;
 

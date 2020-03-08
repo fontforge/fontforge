@@ -140,8 +140,7 @@ extern char *GFileDirName(const char *path);
  **/
 extern char* getLibexecDir_NonWindows(void);
 
-
-
-
+extern char* GFileParent(char* path);
+extern char* GFileRelativize(char* file1, char* to_relative);
 
 #endif /* FONTFORGE_GFILE_H */

@@ -28,7 +28,9 @@
 #include <fontforge-config.h>
 
 #include "basics.h"
+#include "gfile.h"
 #include "gimage.h"
+#include "ustring.h"
 
 GImage *GImageCreate(enum image_type type, int32 width, int32 height) {
 /* Prepare to get a bitmap image. Cleanup and return NULL if not enough memory */
@@ -44,6 +46,9 @@ GImage *GImageCreate(enum image_type type, int32 width, int32 height) {
 	goto errorGImageCreate;
 
     gi->u.image = base;
+    base->refdata.reference = false;
+    base->refdata.filename = NULL;
+    base->refdata.hash = NULL;
     base->image_type = type;
     base->width = width;
     base->height = height;
@@ -69,6 +74,38 @@ errorGImageCreate:
     return( NULL );
 }
 
+// This makes a reference, and tries to make it relative _if possible_.
+// All functions that call this one use the SFD file path to figure out if it's relative or not, not the working directory!
+// That means that if you want relative paths in your SFD file, you should save it first (even via Python).
+extern bool GImageMakeReference(struct _GImage *base, char *to_file, char *relative_to) {
+    TRACE("Making reference to %s relative to %s\n", to_file, relative_to);
+    base->refdata.reference = true;
+    char* fn = def2utf8_copy(to_file);
+    char* relfn = def2utf8_copy(relative_to);
+    base->refdata.hash = FF_HashFile(fn);
+
+    char* relativized = NULL;
+
+    if (relative_to != NULL) {
+        relativized = GFileRelativize(relative_to, fn);
+    }
+
+    if (relativized != NULL) {
+        base->refdata.filename = relativized;
+    } else {
+        base->refdata.filename = fn;
+    }
+
+    return true;
+}
+
+extern bool GImageUnmakeReference(struct _GImage *base) {
+    base->refdata.reference = false;
+    free(base->refdata.filename);
+    base->refdata.filename = NULL;
+    free(base->refdata.hash);
+    base->refdata.hash = NULL;
+}
 
 GImage *_GImage_Create(enum image_type type, int32 width, int32 height) {
     GImage *gi;
@@ -112,11 +149,19 @@ void GImageDestroy(GImage *gi) {
 		free(gi->u.images[i]->clut);
 		free(gi->u.images[i]->data);
 		free(gi->u.images[i]);
+        if (gi->u.images[i]->refdata.reference) {
+            free(gi->u.images[i]->refdata.filename);
+            free(gi->u.images[i]->refdata.hash);
+        }
 	    }
 	    free(gi->u.images);
 	} else {
 	    free(gi->u.image->clut);
 	    free(gi->u.image->data);
+        if (gi->u.image->refdata.reference) {
+            free(gi->u.image->refdata.filename);
+            free(gi->u.image->refdata.hash);
+        }
 	    free(gi->u.image);
 	}
 	free(gi);
@@ -415,4 +460,53 @@ return( pixel==base->trans?~val:val );
 Color GImageGetPixelColor(GImage *image,int x, int y) {
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
 return( _GImageGetPixelColor(base,x,y));
+}
+
+// This function was moved from gimageclut.c, because libfontforge doesn't link with gdraw,
+// but GImageSame, in libfontforge, needs this function, and linking with gdraw is not 
+// acceptable for other contributors.
+int GImageSameClut(GClut *clut,GClut *nclut) {
+    static GClut dummy = { 2, true, COLOR_UNKNOWN, GCLUT_CLUT_EMPTY };
+    int i;
+    
+    dummy.clut[0] = COLOR_CREATE(0, 0, 0);
+    dummy.clut[1] = COLOR_CREATE(0xff, 0xff, 0xff);
+
+    if ( clut==nclut )
+return( true );
+    if ( clut==NULL )
+	clut = &dummy;
+    if ( nclut==NULL )
+	nclut = &dummy;
+    if ( clut->clut_len!=nclut->clut_len )
+return( false );
+    for ( i = 0; i<clut->clut_len; ++i )
+	if ( clut->clut[i]!=nclut->clut[i] )
+return( false );
+
+return( true );
+}
+
+// Is img1 the same image as img2? Used for linking references.
+bool GImageSame(GImage *img1, GImage *img2) {
+    struct _GImage *base1 = img1->list_len==0?
+	    img1->u.image:img1->u.images[0];
+
+    struct _GImage *base2 = img2->list_len==0?
+	    img2->u.image:img2->u.images[0];
+
+    int sameclut = GImageSameClut(base1->clut, base2->clut);
+    if (!sameclut) return false;
+
+    int datalen1 = base1->bytes_per_line * base1->height;
+    int datalen2 = base2->bytes_per_line * base2->height;
+
+    if (datalen1 != datalen2) return false;
+
+    // If the colors they use are the same and the number of pixels are too,
+    // check actual data.
+
+    if (memcmp(base1->data, base2->data, datalen1) != 0) return false;
+
+    return true;
 }

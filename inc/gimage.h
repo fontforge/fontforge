@@ -29,6 +29,7 @@
 #define FONTFORGE_GIMAGE_H
 
 #include "basics.h"
+#include "gutils.h"
 
 typedef uint32 Color;
 
@@ -86,6 +87,14 @@ typedef struct revcmap RevCMap;
 
 enum image_type { it_mono, it_bitmap=it_mono, it_index, it_true, it_rgba };
 
+// For images that are referred to by reference, not embedded in SFD.
+struct ReferenceData {
+    bool reference;
+    char* filename;
+    // This hash is a SHA256 hash in hex format
+    char* hash;
+};
+
 struct _GImage {
 /* Format: bitmaps are stored with the most significant bit first in byte units
 	    indexed    images are stored in byte units
@@ -100,6 +109,7 @@ struct _GImage {
     GClut *clut;
     Color trans;		/* PNG supports more than one transparent color, we don't */
 				/* for non-true color images this is the index, not a color */
+    struct ReferenceData refdata;
 };
 
 /* We deal with 1 bit, 8 bit and 32 bit images internal. 1 bit images may have*/
@@ -166,6 +176,9 @@ extern char *GImageNameFColour(Color col);
 extern Color GDrawColorDarken(Color col, int by);
 extern Color GDrawColorBrighten(Color col, int by);
 
+extern bool GImageMakeReference(struct _GImage *base, char *to_file, char *relative_to);
+extern bool GImageUnmakeReference(struct _GImage *base);
+
 extern int GImageWriteGImage(GImage *gi, char *filename);
 extern int GImageWrite_Bmp(GImage *gi, FILE *fp);
 extern int GImageWriteBmp(GImage *gi, char *filename);
@@ -193,6 +206,7 @@ extern GImage *GImageReadRas(char *filename);		/* Sun Raster */
 extern GImage *GImageReadRgb(char *filename);		/* SGI */
 extern GImage *GImageRead(char *filename);
 
+extern bool GImageSame(GImage *img1, GImage *img2);
 extern void GImageDrawRect(GImage *img,GRect *r,Color col);
 extern void GImageDrawImage(GImage *dest,GImage *src,GRect *junk,int x, int y);
 extern void GImageBlendOver(GImage *dest,GImage *src,GRect *from,int x, int y);
