@@ -1056,9 +1056,10 @@ return( ret );
 int _ExportSVG(FILE *svg,SplineChar *sc,int layer,ExportParams *ep) {
     char *end;
     int em_size, xstart, xend, ascent;
-    real trans[6] = { 1.0, 0.0, 0.0, 1.0, 0.0, 0.0 }, invtrans[6];
+    real trans[6] = { 1.0, 0.0, 0.0, 1.0, 0.0, 0.0 };
     DBounds b;
     SplineChar *scc;
+    SplineSet *orig;
 
     SplineCharLayerFindBounds(sc,layer,&b);
     if ( sc->parent!=NULL ) {
@@ -1102,10 +1103,11 @@ int _ExportSVG(FILE *svg,SplineChar *sc,int layer,ExportParams *ep) {
 	} else {
 	    // This is probably an isolated layer, so just transform the splines
 	    // there and back
+	    orig = sc->layers[layer].splines;
 	    scc = sc;
-	    MatInverse(invtrans,trans);
-	    SplinePointListTransformExtended(scc->layers[layer].splines, trans,
-	        tpt_AllPoints, tpmask_dontTrimValues);
+	    sc->layers[layer].splines = SplinePointListTransformExtended(
+	        SplinePointListCopy(scc->layers[layer].splines),
+	        trans, tpt_AllPoints, tpmask_dontTrimValues);
 	}
     }
     if (    scc->parent!=NULL
@@ -1124,9 +1126,10 @@ int _ExportSVG(FILE *svg,SplineChar *sc,int layer,ExportParams *ep) {
     else {
 	if ( sc->parent )
 	    SplineCharFree(scc);
-	else
-	    SplinePointListTransformExtended(scc->layers[layer].splines,
-	        invtrans, tpt_AllPoints, tpmask_dontTrimValues);
+	else {
+	    SplinePointListFree(sc->layers[layer].splines);
+	    sc->layers[layer].splines = orig;
+	}
     }
     fprintf(svg, "</svg>\n" );
 
