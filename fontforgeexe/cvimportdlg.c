@@ -492,7 +492,7 @@ static void ShowImportOptions(ImportParams *ip, int shown,
                               enum shown_params type) {
     if ( !shown && (!(ip->shown_mask & type) || ip->show_always) )
 	_ImportParamsDlg(ip);
-    ip->shown_mask = (ip->shown_mask & ~type) | type;
+    ip->shown_mask |= type;
 }
 
 /****************************** Import picker *********************************/
@@ -634,8 +634,9 @@ return( true );
 		ImportGlif(d->cv,temp,ip);
 	    else if ( format==fv_fig ) {
 		ImportFig(d->cv,temp,ip);
+	    }
 #ifndef _NO_PYTHON
-	    } else if ( format>=fv_pythonbase )
+	    else if ( format>=fv_pythonbase )
 		PyFF_SCImport(d->cv->b.sc,format-fv_pythonbase,temp,
 			CVLayer((CharViewBase *) d->cv), false);
 #endif
