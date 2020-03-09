@@ -1634,7 +1634,7 @@ return( NULL );
     _InterpretPdf(glyph_stream,pc,&ec);
     sc->width = ec.width;
     sc->layer_cnt = 1;
-    SCAppendEntityLayers(sc,ec.splines);
+    SCAppendEntityLayers(sc,ec.splines,ImportParamsState());
     if ( sc->layer_cnt==1 ) ++sc->layer_cnt;
 
     fclose(glyph_stream);

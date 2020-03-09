@@ -228,6 +228,8 @@ struct pen {
     DashType dashes[DASH_MAX];
 };
 
+#define JLIMIT_INHERITED (-1)
+
 struct spline;
 enum si_type { si_round, si_calligraphic, si_nib, si_centerline };
 /* If you change this structure you may need to update MakeStrokeDlg */
@@ -2419,10 +2421,6 @@ extern int BpColinear(BasePoint *first, BasePoint *mid, BasePoint *last);
 extern int BpWithin(BasePoint *first, BasePoint *mid, BasePoint *last);
     /* Colinear & between */
 
-enum psstrokeflags { /* sf_removeoverlap=2,*/ sf_handle_eraser=4,
-	sf_correctdir=8, sf_clearbeforeinput=16 };
-
-
 extern char *ToAbsolute(char *filename);
 
 # if HANYANG
@@ -2459,8 +2457,6 @@ extern void SFUntickAll(SplineFont *sf);
 
 
 extern int HasUFO(void);
-extern void SCImportPS(SplineChar *sc,int layer,char *path,int doclear, int flags);
-extern void SCImportPDF(SplineChar *sc,int layer,char *path,int doclear, int flags);
 
 extern int _ExportGlif(FILE *glif,SplineChar *sc,int layer,int version);
 

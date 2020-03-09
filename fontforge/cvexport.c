@@ -45,10 +45,28 @@
 #include "ustring.h"
 #include "utype.h"
 
+#include <assert.h>
 #include <locale.h>
 #include <math.h>
 #include <string.h>
 #include <time.h>
+
+void InitExportParams(ExportParams *ep) {
+    assert( ep!=NULL );
+
+    memset(ep, 0, sizeof(ExportParams));
+
+    ep->initialized = true;
+}
+
+ExportParams *ExportParamsState() {
+    static ExportParams eps;
+
+    if ( !eps.initialized )
+	InitExportParams(&eps);
+
+    return &eps;
+}
 
 static void EpsGeneratePreview(FILE *eps,SplineChar *sc,int layer,DBounds *b) {
     double scale, temp;
@@ -367,7 +385,7 @@ return(0);
 return( ret );
 }
 
-int ExportSVG(char *filename,SplineChar *sc,int layer) {
+int ExportSVG(char *filename,SplineChar *sc,int layer, ExportParams *ep) {
     FILE *svg;
     int ret;
 
@@ -375,7 +393,7 @@ int ExportSVG(char *filename,SplineChar *sc,int layer) {
     if ( svg==NULL ) {
 return(0);
     }
-    ret = _ExportSVG(svg,sc,layer);
+    ret = _ExportSVG(svg,sc,layer,ep);
     fclose(svg);
 return( ret );
 }
@@ -719,7 +737,7 @@ static void MakeExportName(char *buffer, int blen,char *format_spec,
 }
 
 void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int gid,
-	char *format_spec,EncMap *map) {
+                  char *format_spec,EncMap *map,ExportParams *ep) {
     char buffer[100];
     SplineChar *sc = sf->glyphs[gid];
     BDFChar *bc = bdf!=NULL ? bdf->glyphs[gid] : NULL;
@@ -735,7 +753,7 @@ return;
     else if ( format==1 )
 	good = ExportFig(buffer,sc,ly_fore);
     else if ( format==2 )
-	good = ExportSVG(buffer,sc,ly_fore);
+	good = ExportSVG(buffer,sc,ly_fore,ep);
     else if ( format==3 )
 	good = ExportGlif(buffer,sc,ly_fore,3);
     else if ( format==4 )

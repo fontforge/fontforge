@@ -1427,7 +1427,7 @@ return( copy(""));
     old_order2 = dummy.parent->layers[ly_fore].order2;
     dummy.parent->layers[ly_fore].order2 = cur->was_order2;
     dummy.layers[ly_fore].order2 = cur->was_order2;
-    _ExportSVG(svg,&dummy,ly_fore);
+    _ExportSVG(svg,&dummy,ly_fore,ExportParamsState());
     dummy.parent->layers[ly_fore].order2 = old_order2;
 
     for ( lcnt = ly_fore; lcnt<dummy.layer_cnt; ++lcnt )
@@ -2152,9 +2152,9 @@ return;
 	fwrite(paste,1,len,temp);
 	rewind(temp);
 	if ( type==4 || type==5 ) {	/* eps/ps */
-	    SCImportPSFile(sc,layer,temp,doclear,-1);
+	    SCImportPSFile(sc,layer,temp,doclear,ImportParamsState());
 	} else if ( type<=3 ) {
-	    SCImportSVG(sc,layer,NULL,paste,len,doclear);
+	    SCImportSVG(sc,layer,NULL,paste,len,doclear,ImportParamsState());
 	} else {
 #ifndef _NO_LIBPNG
 	    if ( type==6 )
@@ -2162,7 +2162,7 @@ return;
 	    else
 #endif
 		image = GImageRead_Bmp(temp);
-	    SCAddScaleImage(sc,image,doclear,layer);
+	    SCAddScaleImage(sc,image,doclear,layer,ImportParamsState());
 	}
 	fclose(temp);
     }

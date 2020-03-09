@@ -1282,7 +1282,8 @@ extern const char *UI_TTFNameIds(int id);
 extern const char *UI_MSLangString(int language);
 extern void FontInfoInit(void);
 extern void LookupUIInit(void);
-extern enum psstrokeflags Ps_StrokeFlagsDlg(void);
+extern void _ImportParamsDlg(ImportParams *ip);
+extern void _ExportParamsDlg(ExportParams *ep);
 extern struct cidmap *AskUserForCIDMap(void);
 
 extern void DefineGroups(struct fontview *fv);

@@ -173,4 +173,37 @@ typedef struct retstack {
     real *stack;
 } RetStack;
 
+enum shown_params {
+    sp_svg = 1,
+    sp_eps = 2,
+    sp_scale = 4
+};
+
+typedef struct importparams {
+    // Could be bits but the python interface would be annoying
+    int initialized;
+    int shown_mask, show_always;
+
+    int correct_direction;	// PS
+    int simplify;
+    int clip;			// SVG
+    int erasers;		// PS
+    int scale;			// Misc
+    bigreal accuracy_target;
+    bigreal default_joinlimit;
+} ImportParams;
+
+typedef struct exportparams {
+    // Could be bits but the python interface would be annoying
+    int initialized;
+    int shown_mask, show_always;
+
+    int use_transform;		// SVG
+} ExportParams;
+
+extern void InitImportParams(ImportParams *ip);
+extern ImportParams *ImportParamsState(void);
+extern void InitExportParams(ExportParams *ep);
+extern ExportParams *ExportParamsState(void);
+
 #endif /* FONTFORGE_SD_H */

@@ -41,6 +41,9 @@
 /* Basic, low-level UI routines for events we discover deep inside script code*/
 /* ************************************************************************** */
 
+struct importparams;
+struct exportparams;
+
 struct ui_interface {
    /* The following is used to post a fontforge internal error */
    /* currently it puts up a dlg displaying the error text */
@@ -124,9 +127,8 @@ struct ui_interface {
     const char *(*strid)(int);
     const char *(*mslang)(int);
 
-   /* pops up a dlg asking user whether to do remove overlap (and other stuff)*/
-   /*  when loading an eps file with strokes, etc. */
-    int (*stroke_flags)(void);
+    void (*import_dlg)(struct importparams *ip);
+    void (*export_dlg)(struct exportparams *ep);
 };
 extern struct ui_interface *ui_interface;
 
@@ -163,7 +165,8 @@ extern struct ui_interface *ui_interface;
 #define TTFNameIds			(ui_interface->strid)
 #define MSLangString			(ui_interface->mslang)
 
-#define PsStrokeFlagsDlg		(ui_interface->stroke_flags)
+#define ImportParamsDlg			(ui_interface->import_dlg)
+#define ExportParamsDlg			(ui_interface->export_dlg)
 
 void FF_SetUiInterface(struct ui_interface *uii);
 

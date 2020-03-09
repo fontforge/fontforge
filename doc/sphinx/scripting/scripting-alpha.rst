@@ -867,6 +867,13 @@ the fourth argument you must specify the second and third arguments too.
    ``(depth of the grey scale<<16) + pixel_size``, in most cases the depth will
    be 8.
 
+   If there is a third argument it must also be an integer and provides a set of
+   flags:
+
+   * 1 => Flip the y-axis of exported SVGs with a transform element (instead of rewriting values)
+   * 256 => Use current Export dialog settings (other flags are ignored)
+   * 512 => Present Export options dialog (if UI is enabled)
+
 .. function:: FileAccess(filename[,prot])
 
    Behaves like the unix access system call. Returns 0 if the file exists, -1 if
@@ -1361,13 +1368,24 @@ the fourth argument you must specify the second and third arguments too.
    or the background layer of the glyph.
 
    If there is a third argument it must also be an integer and provides a set of
-   flags controling the behavior of importing an EPS (and in one case SVG too)
-   file.
+   flags:
 
-   * 16 => remove anything currently present (works for SVG & EPS)
-   * 8 => correct direction
-   * 4 => attempt to handle TeX erasers (stroking with a white pen)
-   * 2 => remove overlap
+   * 4 => Attempt to handle PostScript erasers (stroking with a white pen)
+   * 8 => Correct direction (PostScript)
+   * 16 => Remove anything currently present (works for SVG & EPS)
+   * 64 => Don't scale images and SVGs to ascender height
+   * 128 => Don't simplify the output of stroked paths
+   * 256 => Use current Import dialog settings (other flags are ignored)
+   * 512 => Present Import options dialog (if UI is enabled)
+
+    When present the optional fourth argument must be a number; it overrides
+    the default miterlimit for PostScript (normally 10.0) and SVG (normally 
+    4.0) stroked paths. 
+
+    Similarly, the optional fifth argument must be a number and sets the 
+    accuracy, in em-units, of stroked and simplified paths. 
+
+.. 32 => Don't attempt to handle SVG clip-paths 
 
 .. function:: InFont(arg)
 

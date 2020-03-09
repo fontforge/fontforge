@@ -1754,7 +1754,7 @@ static PyObject *PyFF_askChoices(PyObject *UNUSED(self), PyObject *args, PyObjec
         return( NULL );
     }
 
-    if ( !PyArg_ParseTupleAndKeywords(args, kwargs, "esesO|OO", (char**) askChoices_keywords, 
+    if ( !PyArg_ParseTupleAndKeywords(args, kwargs, "esesO|OO", (char**) askChoices_keywords,
                                       "UTF-8", &title, "UTF-8", &quest, &answero, &defo, &multipleo) ) {
         PyErr_Format(PyExc_EnvironmentError, "Failed to parse arguments");
         return( NULL );
@@ -4679,7 +4679,7 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
     if ( c==lc_square ) {
 	c = lc_butt;
 	if ( si->extendcap!=0 )
-	    si->extendcap=1.0;
+	    si->extendcap=0.5;
     }
     si->cap = c;
     j = FlagsFromString(join,linejoin,"linejoin type");
@@ -4706,18 +4706,37 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
     return( 0 );
 }
 
-static PyObject *PyFFLayer_export(PyFF_Layer *self, PyObject *args) {
+static int LayerArgToLayer(SplineFont *sf, PyObject* layerp);
+
+static char *layer_export_keywords[] = { "filename", "usetransform", "usesystem", "asksystem", NULL };
+
+static PyObject *PyFFLayer_export(PyFF_Layer *self, PyObject *args,
+                                  PyObject *keywds) {
     char *filename;
     char *locfilename = NULL;
     char *pt;
     FILE *file;
     SplineChar sc;
     Layer dummylayers[2];
+    int use_system = false, ask_system = false;
+    ExportParams ep, *epp;
 
-    if ( !PyArg_ParseTuple(args,"es","UTF-8",&filename) )
-return( NULL );
+    InitExportParams(&ep);
+
+    if ( !PyArg_ParseTupleAndKeywords(args,keywds,"es|$ppp",
+                                      layer_export_keywords,"UTF-8",&filename,
+                                      &ep.use_transform, &use_system,
+                                      &ask_system) )
+	return( NULL );
     locfilename = utf82def_copy(filename);
     PyMem_Free(filename);
+
+    if ( use_system || ask_system ) {
+	epp = ExportParamsState();
+	if ( ask_system )
+	    ExportParamsDlg(epp);
+    } else
+	epp = &ep;
 
     pt = strrchr(locfilename,'.');
     if ( pt==NULL ) pt=locfilename;
@@ -4742,7 +4761,7 @@ return( NULL );
     else if ( strcasecmp(pt,".pdf")==0 )
 	_ExportPDF(file,&sc,ly_fore);
     else if ( strcasecmp(pt,".svg")==0 )
-	_ExportSVG(file,&sc,ly_fore);
+	_ExportSVG(file,&sc,ly_fore,epp);
     else if ( strcasecmp(pt,".glif")==0 )
 	_ExportGlif(file,&sc,ly_fore,3);
     else if ( strcasecmp(pt,".glif2")==0 )
@@ -5040,7 +5059,7 @@ static PyMethodDef PyFFLayer_methods[] = {
 	     "Orient a layer so that external contours are clockwise and internal counter clockwise." },
     {"reverseDirection", (PyCFunction)PyFFLayer_ReverseDirection, METH_NOARGS,
 	     "Reverse the orientation of each contour in the layer." },
-    {"export", (PyCFunction)PyFFLayer_export, METH_VARARGS,
+    {"export", (PyCFunction)PyFFLayer_export, METH_VARARGS | METH_KEYWORDS,
 	     "Exports the layer to a file" },
     {"stroke", (PyCFunction)PyFFLayer_Stroke, METH_VARARGS | METH_KEYWORDS,
 	     "Strokes the contours in a layer" },
@@ -8521,23 +8540,48 @@ return(NULL);
 Py_RETURN( self );
 }
 
-/* PostScript importing flags */
+static char *glyph_import_keywords[] = { "filename", "correctdir",
+    "simplify", "handle_clip", "handle_eraser", "scale", "accuracy",
+    "default_joinlimit", "usesystem", "asksystem", NULL };
+
+/* Legacy PostScript importing flags */
 static struct flaglist import_ps_flags[] = {
     { "toobigwarn", 0 },			/* Obsolete */
     { "removeoverlap", 0 },			/* Obsolete */
-    { "handle_eraser", sf_handle_eraser },
-    { "correctdir",  sf_correctdir },
+    { "handle_eraser", 1 },
+    { "correctdir",  2 },
     FLAGLIST_EMPTY /* Sentinel */
 };
 
-static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args) {
+static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
+                                  PyObject *keywds) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+    ImportParams ip, *ipp;
     char *filename;
     char *locfilename = NULL, *pt;
     PyObject *flags=NULL;
+    int psflags, use_system = false, ask_system = false;
+    bigreal jl_tmp = -1;
 
-    if ( !PyArg_ParseTuple(args,"es|O","UTF-8",&filename, &flags) )
-return( NULL );
+    InitImportParams(&ip);
+
+    if ( !PyArg_ParseTupleAndKeywords(args, keywds,
+                "es|$pppppddpp", glyph_import_keywords, "UTF-8", &filename,
+                &ip.correct_direction, &ip.simplify, &ip.clip, &ip.erasers,
+                &ip.scale, &ip.accuracy_target, &jl_tmp, &use_system,
+		&ask_system) ) {
+	PyErr_Clear();
+	if ( !PyArg_ParseTuple(args,"es|O","UTF-8",&filename, &flags) )
+	    return NULL;
+	psflags = FlagsFromTuple(flags, import_ps_flags,
+	                         "PostScript import flag");
+	if ( psflags==FLAG_UNKNOWN )
+	    return NULL;
+	if ( psflags & 1 )
+	    ip.erasers = true;
+	if ( psflags & 2 )
+	    ip.correct_direction = true;
+    }
     locfilename = utf82def_copy(filename);
     PyMem_Free(filename);
 
@@ -8545,25 +8589,27 @@ return( NULL );
     if ( access(locfilename,R_OK)!=0 ) {
 	PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
 	free(locfilename);
-return( NULL );
+	return NULL;
     }
+
+    if ( use_system || ask_system ) {
+	ipp = ImportParamsState();
+	if ( ask_system )
+	    ImportParamsDlg(ipp);
+    } else
+	ipp = &ip;
 
     pt = strrchr(locfilename,'.');
     if ( pt==NULL ) pt=locfilename;
 
     if ( strcasecmp(pt,".eps")==0 || strcasecmp(pt,".ps")==0 || strcasecmp(pt,".art")==0 ) {
-	int psflags = FlagsFromTuple(flags,import_ps_flags,"PostScript import flag");
-	if ( psflags==FLAG_UNKNOWN ) {
-	    free(locfilename);
-return( NULL );
-	}
-	SCImportPS(sc,((PyFF_Glyph *) self)->layer,locfilename,false,psflags);
+	SCImportPS(sc,((PyFF_Glyph *) self)->layer,locfilename,false,ipp);
     }
     else if ( strcasecmp(pt,".svg")==0 ) {
-	SCImportSVG(sc,((PyFF_Glyph *) self)->layer,locfilename,NULL,0,false);
+	SCImportSVG(sc,((PyFF_Glyph *) self)->layer,locfilename,NULL,0,false,ipp);
     }
     else if ( strcasecmp(pt,".glif")==0 ) {
-	SCImportGlif(sc,((PyFF_Glyph *) self)->layer,locfilename,NULL,0,false);
+	SCImportGlif(sc,((PyFF_Glyph *) self)->layer,locfilename,NULL,0,false,ipp);
     }
     else if ( strcasecmp(pt,".plate")==0 ) {
 	FILE *plate = fopen(locfilename,"r");
@@ -8573,7 +8619,7 @@ return( NULL );
 return( NULL );
 	}
 	else {
-	    SCImportPlateFile(sc,((PyFF_Glyph *) self)->layer,plate,false);
+	    SCImportPlateFile(sc,((PyFF_Glyph *) self)->layer,plate,false,ipp);
 	    fclose(plate);
 	}
     } /* else if ( strcasecmp(pt,".fig")==0 )*/
@@ -8587,28 +8633,48 @@ return(NULL);
 	}
 	if ( !sc->layers[ly].background )
 	    ly = ly_back;
-	SCAddScaleImage(sc,image,false,ly);
+	SCAddScaleImage(sc,image,false,ly,ipp);
     }
     free( locfilename );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFGlyph_export(PyObject *self, PyObject *args) {
+static char *glyph_export_keywords[] = { "filename", "layer", "pixelsize",
+    "bitdepth", "usetransform", "usesystem", "asksystem", NULL };
+
+static PyObject *PyFFGlyph_export(PyObject *self, PyObject *args,
+                                  PyObject *keywds) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     char *filename;
     char *locfilename = NULL;
     char *pt;
     int pixels=100, bits=8;
-    int format= -1;
+    int format=-1, use_system=false, ask_system=false;
     FILE *file;
     int layer = ((PyFF_Glyph *) self)->layer;
-    PyObject *foo, *bar;
-    char *layer_str = NULL;
+    PyObject *layerobj = NULL, *obj1=NULL, *obj2=NULL;
+    ExportParams ep, *epp;
 
-    if ( !PyArg_ParseTuple(args,"es|OO","UTF-8",&filename,&foo,&bar) )
-return( NULL );
+    InitExportParams(&ep);
+
+    if ( !PyArg_ParseTupleAndKeywords(args, keywds, "es|$Oiippp",
+                                      glyph_export_keywords, "UTF-8", &filename,
+                                      &layerobj, &pixels, &bits,
+                                      &ep.use_transform, &use_system,
+                                      &ask_system) ) {
+	PyErr_Clear();
+	if ( !PyArg_ParseTuple(args,"es|OO","UTF-8",&filename,&obj1,&obj2) )
+	    return NULL;
+    }
     locfilename = utf82def_copy(filename);
     PyMem_Free(filename);
+
+    if ( use_system || ask_system ) {
+	epp = ExportParamsState();
+	if ( ask_system )
+	    ExportParamsDlg(epp);
+    } else
+	epp = &ep;
 
     pt = strrchr(locfilename,'.');
     if ( pt==NULL ) pt=locfilename;
@@ -8620,9 +8686,21 @@ return( NULL );
 	format=2;
 
     if ( format!=-1 ) {
-	if ( !PyArg_ParseTuple(args,"O|ii",&foo,&pixels,&bits) ) {
-	    free(locfilename);
-return( NULL );
+	if ( obj1!=NULL ) {
+	    if ( PyLong_Check(obj1) ) {
+		pixels = PyLong_AsLong(obj1);
+	    } else {
+		free(locfilename);
+		return NULL;
+	    }
+	}
+	if ( obj2!=NULL ) {
+	    if ( PyLong_Check(obj2) ) {
+		bits = PyLong_AsLong(obj2);
+	    } else {
+		free(locfilename);
+		return NULL;
+	    }
 	}
 	if ( !ExportImage(locfilename,sc,layer,format,pixels,bits)) {
 	    PyErr_Format(PyExc_EnvironmentError, "Could not create image file \"%s\"", locfilename );
@@ -8637,18 +8715,12 @@ return( NULL );
 return( NULL );
 	}
 
-	if ( !PyArg_ParseTuple(args,"O|i",&foo,&layer) ) {
-	    PyErr_Clear();
-	    if ( !PyArg_ParseTuple(args,"O|s",&foo,&layer_str) ) {
+	if ( obj1!=NULL ) {
+	    layer = LayerArgToLayer(sc->parent, obj1);
+	    if ( layer==ly_none ) {
 		free(locfilename);
 		fclose(file);
-return( NULL );
-	    }
-	    layer = SFFindLayerIndexByName(sc->parent,layer_str);
-	    if ( layer<0 ) {
-		free(locfilename);
-		fclose(file);
-return( NULL );
+		return NULL;
 	    }
 	}
 	if ( layer<0 || layer>=sc->layer_cnt ) {
@@ -8663,7 +8735,7 @@ return( NULL );
 	else if ( strcasecmp(pt,".pdf")==0 )
 	    _ExportPDF(file,sc,layer);
 	else if ( strcasecmp(pt,".svg")==0 )
-	    _ExportSVG(file,sc,layer);
+	    _ExportSVG(file,sc,layer,epp);
 	else if ( strcasecmp(pt,".glif")==0 )
 	    _ExportGlif(file,sc,layer,3);
 	else if ( strcasecmp(pt,".glif2")==0 )
@@ -9674,10 +9746,10 @@ static PyMethodDef PyFF_Glyph_methods[] = {
     { "cluster", (PyCFunction) PyFFGlyph_Cluster, METH_VARARGS, "Cluster the points of a glyph towards common values" },
     { "correctDirection", (PyCFunction) PyFFGlyph_Correct, METH_NOARGS, "Orient a layer so that external contours are clockwise and internal counter clockwise." },
     { "exclude", (PyCFunction) PyFFGlyph_Exclude, METH_VARARGS, "Exclude the area of the argument (a layer) from the current glyph"},
-    { "export", PyFFGlyph_export, METH_VARARGS, "Export the glyph, the format is determined by the extension. (provide the filename of the image file)" },
+    { "export", (PyCFunction) PyFFGlyph_export, METH_VARARGS|METH_KEYWORDS, "Export the glyph, the format is determined by the extension. (provide the filename of the image file)" },
     { "genericGlyphChange", (PyCFunction) PyFFGlyph_genericGlyphChange, METH_VARARGS | METH_KEYWORDS, "Rather like changeWeight or condenseExtend, called 'Change Glyph' in UI"},
     { "getPosSub", PyFFGlyph_getPosSub, METH_VARARGS, "Gets position/substitution data from the glyph"},
-    { "importOutlines", PyFFGlyph_import, METH_VARARGS, "Import a background image or a foreground eps/svg/etc. (provide the filename of the image file)" },
+    { "importOutlines", (PyCFunction) PyFFGlyph_import, METH_VARARGS|METH_KEYWORDS, "Import a background image or a foreground eps/svg/etc. (provide the filename of the image file)" },
     { "intersect", (PyCFunction) PyFFGlyph_Intersect, METH_NOARGS, "Leaves the areas where the contours of a glyph overlap."},
     { "isWorthOutputting", (PyCFunction) PyFFGlyph_isWorthOutputting, METH_NOARGS, "Returns whether the glyph is worth outputting" },
     { "removeOverlap", (PyCFunction) PyFFGlyph_RemoveOverlap, METH_NOARGS, "Remove overlapping areas from a glyph"},

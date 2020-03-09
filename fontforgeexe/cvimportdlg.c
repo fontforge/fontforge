@@ -43,46 +43,49 @@
 #include <math.h>
 #include <sys/types.h>
 
-static void ImportPS(CharView *cv,char *path) {
+#define CID_AccTar       1000
+#define CID_JoinLimitVal 1001
+
+static void ImportPS(CharView *cv,char *path,ImportParams *ip) {
     FILE *ps = fopen(path,"r");
 
     if ( ps==NULL )
 return;
-    SCImportPSFile(cv->b.sc,CVLayer((CharViewBase *) cv),ps,false,-1);
+    SCImportPSFile(cv->b.sc,CVLayer((CharViewBase *) cv),ps,false,ip);
     fclose(ps);
 }
 
-static void ImportPDF(CharView *cv,char *path) {
+static void ImportPDF(CharView *cv,char *path,ImportParams *ip) {
     FILE *pdf = fopen(path,"r");
 
     if ( pdf==NULL )
 return;
-    SCImportPDFFile(cv->b.sc,CVLayer((CharViewBase *) cv),pdf,false,-1);
+    SCImportPDFFile(cv->b.sc,CVLayer((CharViewBase *) cv),pdf,false,ip);
     fclose(pdf);
 }
 
-static void ImportPlate(CharView *cv,char *path) {
+static void ImportPlate(CharView *cv,char *path,ImportParams *ip) {
     FILE *plate = fopen(path,"r");
 
     if ( plate==NULL )
 return;
-    SCImportPlateFile(cv->b.sc,CVLayer((CharViewBase *) cv),plate,false);
+    SCImportPlateFile(cv->b.sc,CVLayer((CharViewBase *) cv),plate,false,ip);
     fclose(plate);
 }
 
-static void ImportSVG(CharView *cv,char *path) {
-    SCImportSVG(cv->b.sc,CVLayer((CharViewBase *) cv),path,NULL,0,false);
+static void ImportSVG(CharView *cv,char *path,ImportParams *ip) {
+    SCImportSVG(cv->b.sc,CVLayer((CharViewBase *) cv),path,NULL,0,false,ip);
 }
 
-static void ImportGlif(CharView *cv,char *path) {
-    SCImportGlif(cv->b.sc,CVLayer((CharViewBase *) cv),path,NULL,0,false);
+static void ImportGlif(CharView *cv,char *path,ImportParams *ip) {
+    SCImportGlif(cv->b.sc,CVLayer((CharViewBase *) cv),path,NULL,0,false,ip);
 }
 
-static void ImportFig(CharView *cv,char *path) {
-    SCImportFig(cv->b.sc,CVLayer((CharViewBase *) cv),path,false);
+static void ImportFig(CharView *cv,char *path,ImportParams *ip) {
+    SCImportFig(cv->b.sc,CVLayer((CharViewBase *) cv),path,false,ip);
 }
 
-static void ImportImage(CharView *cv,char *path) {
+static void ImportImage(CharView *cv,char *path,ImportParams *ip) {
     GImage *image;
     int layer;
 
@@ -98,7 +101,7 @@ return;
 	else if ( cv->b.layerheads[cv->b.drawmode]->background )
 	    layer = CVLayer( (CharViewBase *) cv);
     }
-    SCAddScaleImage(cv->b.sc,image,false,layer);
+    SCAddScaleImage(cv->b.sc,image,false,layer,ip);
 }
 
 static int BVImportImage(BitmapView *bv,char *path) {
@@ -241,16 +244,13 @@ wildglif, wildgliftemplate,
 wildfig
 };
 
-#define PSSF_Width 220
-#define PSSF_Height 165
-
-static int PSSF_OK(GGadget *g, GEvent *e) {
+static int IMPP_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate )
 	*(int *) GDrawGetUserData(GGadgetGetWindow(g)) = true;
 return( true );
 }
 
-static int psstrokeflags_e_h(GWindow gw, GEvent *event) {
+static int impp_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	*(int *) GDrawGetUserData(gw) = true;
     } else if ( event->type == et_char ) {
@@ -263,18 +263,18 @@ return( false );
 return( true );
 }
 
-enum psstrokeflags Ps_StrokeFlagsDlg(void) {
-    static enum psstrokeflags oldflags = sf_correctdir/*|sf_removeoverlap|sf_handle_eraser*/;
+void _ImportParamsDlg(ImportParams *ip) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[11], boxes[4], *hvarray[7][2], *barray[10];
-    GTextInfo label[11];
-    int done = false;
-    int k, he_k, cd_k;
+    GGadgetCreateData gcd[12], boxes[4], *hvarray[12][4], *barray[10];
+    GTextInfo label[12];
+    char accbuf[20], jlbuf[20];
+    int done = false, err = false;
+    int k, he_k, cd_k, si_k, sc_k, cl_k, al_k;
 
     if ( no_windowing_ui )
-return( oldflags );
+	return;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
@@ -282,70 +282,178 @@ return( oldflags );
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("PS Interpretion");
+    wattrs.utf8_window_title = _("Import Parameters");
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
-    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,PSSF_Width));
-    pos.height = GDrawPointsToPixels(NULL,PSSF_Height);
-    gw = GDrawCreateTopWindow(NULL,&pos,psstrokeflags_e_h,&done,&wattrs);
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,200));
+    pos.height = GDrawPointsToPixels(NULL,200);
+    gw = GDrawCreateTopWindow(NULL,&pos,impp_e_h,&done,&wattrs);
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
     memset(&boxes,0,sizeof(boxes));
 
     k = 0;
-/* GT: The following strings should be concatenated together, the result */
-/* GT: translated, and then broken into lines by hand. I'm sure it would */
-/* GT: be better to specify this all as one string, but my widgets won't support */
-/* GT: that */
-    label[k].text = (unichar_t *) _("FontForge has some bugs in its remove overlap\n"
-				    "function which may cause you problems, so\n"
-				    "I give you the option of turning it off.\n"
-				    "Leave it on if possible though, it is useful.");
+    label[k].text = (unichar_t *) _("The following options influence how files are imported.\n"
+		                    "Most are specific to one or more formats.");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 6;
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
-    hvarray[0][0] = &gcd[k-1]; hvarray[0][1] = NULL;
+    hvarray[0][0] = &gcd[k-1];
+    hvarray[0][1] = GCD_ColSpan;
+    hvarray[0][2] = GCD_ColSpan;
+    hvarray[0][3] = NULL;
 
     cd_k = k;
-    label[k].text = (unichar_t *) _("_Correct Direction");
+    label[k].text = (unichar_t *) _("_Correct Direction (PS/EPS)");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+15;
-    gcd[k].gd.flags = gg_enabled | gg_visible | (oldflags&sf_correctdir?gg_cb_on:0);
+    gcd[k].gd.flags = gg_enabled | gg_visible | (ip->correct_direction?gg_cb_on:0);
     gcd[k++].creator = GCheckBoxCreate;
-    hvarray[1][0] = &gcd[k-1]; hvarray[1][1] = NULL;
+    hvarray[1][0] = &gcd[k-1];
+    hvarray[1][1] = GCD_ColSpan;
+    hvarray[1][2] = GCD_ColSpan;
+    hvarray[1][3] = NULL;
 
     he_k = k;
-    label[k].text = (unichar_t *) _("Handle Erasers");
+    label[k].text = (unichar_t *) _("Handle Erasers (PS/EPS)");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+15;
     gcd[k].gd.flags = gg_enabled | gg_visible|
-	    (oldflags&sf_handle_eraser?gg_cb_on:0);
-    gcd[k].gd.popup_msg = _("Certain programs use pens with white ink as erasers\nIf you select (blacken) this checkbox, FontForge will\nattempt to simulate that.");
+	    (ip->erasers?gg_cb_on:0);
+    gcd[k].gd.popup_msg = _("Certain programs use pens with white ink as erasers\nThis option attempts to simulate that effect.");
     gcd[k++].creator = GCheckBoxCreate;
-    hvarray[2][0] = &gcd[k-1]; hvarray[2][1] = NULL;
-    hvarray[3][0] = GCD_Glue; hvarray[3][1] = NULL;
+    hvarray[2][0] = &gcd[k-1];
+    hvarray[2][1] = GCD_ColSpan;
+    hvarray[2][2] = GCD_ColSpan;
+    hvarray[2][3] = NULL;
 
-    gcd[k].gd.pos.x = (PSSF_Width-GIntGetResource(_NUM_Buttonsize))/2; gcd[k].gd.pos.y = PSSF_Height-34;
+    si_k = k;
+    label[k].text = (unichar_t *) _("Simplify Stroke (SVG/PS/EPS)");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+15;
+    gcd[k].gd.flags = gg_enabled | gg_visible|
+	    (ip->simplify?gg_cb_on:0);
+    gcd[k].gd.popup_msg = _("Run Simplify after expanding stroked paths\nto reduce the number of points.");
+    gcd[k++].creator = GCheckBoxCreate;
+    hvarray[3][0] = &gcd[k-1];
+    hvarray[3][1] = GCD_ColSpan;
+    hvarray[3][2] = GCD_ColSpan;
+    hvarray[3][3] = NULL;
+
+    cl_k = k;
+    label[k].text = (unichar_t *) _("Use Clip-paths (SVG)");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+15;
+    gcd[k].gd.flags = gg_visible|
+	    (ip->clip?gg_cb_on:0); // | gg_enabled
+    gcd[k++].creator = GCheckBoxCreate;
+    hvarray[4][0] = &gcd[k-1];
+    hvarray[4][1] = GCD_ColSpan;
+    hvarray[4][2] = GCD_ColSpan;
+    hvarray[4][3] = NULL;
+
+    sc_k = k;
+    label[k].text = (unichar_t *) _("Scale to fit (Misc)");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+15;
+    gcd[k].gd.flags = gg_enabled | gg_visible|
+	    (ip->scale?gg_cb_on:0);
+    gcd[k++].creator = GCheckBoxCreate;
+    hvarray[5][0] = &gcd[k-1];
+    hvarray[5][1] = GCD_ColSpan;
+    hvarray[5][2] = GCD_ColSpan;
+    hvarray[5][3] = NULL;
+
+    label[k].text = (unichar_t *) _("Default Join Limit (PS/EPS/SVG):");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[6][0] = &gcd[k-1];
+
+    sprintf( jlbuf, "%g", (double) (ip->default_joinlimit) );
+    label[k].text = (unichar_t *) jlbuf;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_JoinLimitVal;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.popup_msg = _(
+      "The length limit for Miter and Arcs joins in units\n"
+      "of 1/2 stroke-width. Set to -1 to use the format-\n"
+      "specific limits of 10.0 for PostScript and 4.0 for SVG.");
+    gcd[k++].creator = GTextFieldCreate;
+    hvarray[6][1] = &gcd[k-1];
+    hvarray[6][2] = GCD_Glue;
+    hvarray[6][3] = NULL;
+
+    label[k].text = (unichar_t *) _("Accuracy _Target:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[7][0] = &gcd[k-1];
+
+    sprintf( accbuf, "%g", (double) (ip->accuracy_target) );
+    label[k].text = (unichar_t *) accbuf;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_AccTar;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.popup_msg = _(
+      "The Expand Stroke algorithm will attempt to be (at\n"
+      "least) this accurate, but there may be exceptions.");
+    gcd[k++].creator = GTextFieldCreate;
+    hvarray[7][1] = &gcd[k-1];
+    hvarray[7][2] = GCD_Glue;
+    hvarray[7][3] = NULL;
+
+    al_k = k;
+    label[k].text = (unichar_t *) _("_Always raise this dialog when importing");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible | (ip->show_always?gg_cb_on:0);
+    gcd[k++].creator = GCheckBoxCreate;
+    hvarray[8][0] = &gcd[k-1];
+    hvarray[8][1] = GCD_ColSpan;
+    hvarray[8][2] = GCD_ColSpan;
+    hvarray[8][3] = NULL;
+
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
     label[k].text = (unichar_t *) _("_OK");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.handle_controlevent = PSSF_OK;
+    gcd[k].gd.handle_controlevent = IMPP_OK;
     gcd[k++].creator = GButtonCreate;
-    barray[0] = GCD_Glue; barray[1] = &gcd[k-1]; barray[2] = GCD_Glue; barray[3] = NULL;
+    barray[0] = GCD_Glue;
+    barray[1] = &gcd[k-1];
+    barray[2] = GCD_Glue;
+    barray[3] = NULL;
 
     boxes[2].gd.flags = gg_enabled | gg_visible;
     boxes[2].gd.u.boxelements = barray;
     boxes[2].creator = GHBoxCreate;
-    hvarray[4][0] = &boxes[2]; hvarray[4][1] = NULL;
-    hvarray[5][0] = NULL;
+    hvarray[9][0] = GCD_Glue;
+    hvarray[9][1] = GCD_ColSpan;
+    hvarray[9][2] = GCD_ColSpan;
+    hvarray[9][3] = NULL;
+    hvarray[10][0] = &boxes[2];
+    hvarray[10][1] = GCD_ColSpan;
+    hvarray[10][2] = GCD_ColSpan;
+    hvarray[10][3] = NULL;
+    hvarray[11][0] = NULL;
 
     boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
     boxes[0].gd.flags = gg_enabled | gg_visible;
@@ -362,14 +470,29 @@ return( oldflags );
     while ( !done )
 	GDrawProcessOneEvent(NULL);
 
-    /* This dlg can't be cancelled */
-    oldflags = 0;
-    if ( GGadgetIsChecked(gcd[cd_k].ret) )
-	oldflags |= sf_correctdir;
-    if ( GGadgetIsChecked(gcd[he_k].ret) )
-	oldflags |= sf_handle_eraser;
+    ip->correct_direction = GGadgetIsChecked(gcd[cd_k].ret);
+    ip->erasers = GGadgetIsChecked(gcd[he_k].ret);
+    ip->simplify = GGadgetIsChecked(gcd[si_k].ret);
+    ip->clip = GGadgetIsChecked(gcd[cl_k].ret);
+    ip->scale = GGadgetIsChecked(gcd[sc_k].ret);
+    ip->default_joinlimit = GetReal8(gw,CID_JoinLimitVal,_("Default Join Limit (PS/EPS/SVG):"),&err);
+    if ( err ) {
+	ip->default_joinlimit = JLIMIT_INHERITED;
+	err = false;
+    }
+    ip->accuracy_target = GetReal8(gw,CID_AccTar,_("Accuracy Target:"),&err);
+    if ( err )
+	ip->accuracy_target = 0.25;
+    ip->show_always = GGadgetIsChecked(gcd[al_k].ret);
+
     GDrawDestroyWindow(gw);
-return( oldflags );
+}
+
+static void ShowImportOptions(ImportParams *ip, int shown,
+                              enum shown_params type) {
+    if ( !shown && (!(ip->shown_mask & type) || ip->show_always) )
+	_ImportParamsDlg(ip);
+    ip->shown_mask |= type;
 }
 
 /****************************** Import picker *********************************/
@@ -378,6 +501,7 @@ static int last_format, flast_format, last_lpos, flast_lpos;
 struct gfc_data {
     int done;
     int ret;
+    int opts_shown;
     GGadget *gfc;
     GGadget *format;
     GGadget *background;
@@ -426,6 +550,8 @@ static int GFD_ImportOk(GGadget *g, GEvent *e) {
 	int format = (intpt) (GGadgetGetListItemSelected(d->format)->userdata);
 	GGadget *tf;
 
+	ImportParams *ip = ImportParamsState();
+
 	GFileChooserGetChildren(d->gfc,NULL,NULL,&tf);
 	if ( *_GGadgetGetTitle(tf)=='\0' )
 return( true );
@@ -456,46 +582,59 @@ return( true );
 		d->done = FVImportMult((FontViewBase *) d->fv,temp,toback,bf_fon);
 	    else if ( format==fv_palm )
 		d->done = FVImportMult((FontViewBase *) d->fv,temp,toback,bf_palm);
-	    else if ( format==fv_image )
-		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,-1);
-	    else if ( format==fv_imgtemplate )
-		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,-1);
-	    else if ( format==fv_eps )
-		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,-1);
-	    else if ( format==fv_epstemplate )
-		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,-1);
-	    else if ( format==fv_pdf )
-		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,-1);
-	    else if ( format==fv_pdftemplate )
-		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,-1);
-	    else if ( format==fv_svg )
-		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,-1);
-	    else if ( format==fv_svgtemplate )
-		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,-1);
-	    else if ( format==fv_glif )
-		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,-1);
+	    else if ( format==fv_image ) {
+		ShowImportOptions(ip, d->opts_shown, sp_scale);
+		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,true,ip);
+	    } else if ( format==fv_imgtemplate ) {
+		ShowImportOptions(ip, d->opts_shown, sp_scale);
+		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,true,ip);
+	    } else if ( format==fv_eps ) {
+		ShowImportOptions(ip, d->opts_shown, sp_eps);
+		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,true,ip);
+	    } else if ( format==fv_epstemplate ) {
+		ShowImportOptions(ip, d->opts_shown, sp_eps);
+		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,true,ip);
+	    } else if ( format==fv_pdf ) {
+		ShowImportOptions(ip, d->opts_shown, sp_eps);
+		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,true,ip);
+	    } else if ( format==fv_pdftemplate ) {
+		ShowImportOptions(ip, d->opts_shown, sp_eps);
+		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,true,ip);
+	    } else if ( format==fv_svg ) {
+		ShowImportOptions(ip, d->opts_shown, sp_svg);
+		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,true,ip);
+	    } else if ( format==fv_svgtemplate ) {
+		ShowImportOptions(ip, d->opts_shown, sp_svg);
+		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,true,ip);
+	    } else if ( format==fv_glif )
+		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,true,ip);
 	    else if ( format==fv_gliftemplate )
-		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,-1);
+		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,true,ip);
 	    else if ( format>=fv_pythonbase )
-		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,-1);
+		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,true,ip);
 	} else if ( d->bv!=NULL )
 	    d->done = BVImportImage(d->bv,temp);
 	else {
 	    d->done = true;
-	    if ( format==fv_image )
-		ImportImage(d->cv,temp);
-	    else if ( format==fv_eps )
-		ImportPS(d->cv,temp);
-	    else if ( format==fv_pdf )
-		ImportPDF(d->cv,temp);
-	    else if ( format==fv_plate )
-		ImportPlate(d->cv,temp);
-	    else if ( format==fv_svg )
-		ImportSVG(d->cv,temp);
-	    else if ( format==fv_glif )
-		ImportGlif(d->cv,temp);
-	    else if ( format==fv_fig )
-		ImportFig(d->cv,temp);
+	    if ( format==fv_image ) {
+		ShowImportOptions(ip, d->opts_shown, sp_scale);
+		ImportImage(d->cv,temp,ip);
+	    } else if ( format==fv_eps ) {
+		ShowImportOptions(ip, d->opts_shown, sp_eps);
+		ImportPS(d->cv,temp,ip);
+	    } else if ( format==fv_pdf ) {
+		ShowImportOptions(ip, d->opts_shown, sp_eps);
+		ImportPDF(d->cv,temp,ip);
+	    } else if ( format==fv_plate )
+		ImportPlate(d->cv,temp,ip);
+	    else if ( format==fv_svg ) {
+		ShowImportOptions(ip, d->opts_shown, sp_svg);
+		ImportSVG(d->cv,temp,ip);
+	    } else if ( format==fv_glif )
+		ImportGlif(d->cv,temp,ip);
+	    else if ( format==fv_fig ) {
+		ImportFig(d->cv,temp,ip);
+	    }
 #ifndef _NO_PYTHON
 	    else if ( format>=fv_pythonbase )
 		PyFF_SCImport(d->cv->b.sc,format-fv_pythonbase,temp,
@@ -563,6 +702,16 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 return( true );
 }
 
+
+static int GFD_Options(GGadget *g, GEvent *e) {
+    if (    e->type==et_controlevent
+         && e->u.control.subtype == et_buttonactivate ) {
+	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	_ImportParamsDlg(ImportParamsState());
+	d->opts_shown = true;
+    }
+}
+
 static int e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	struct gfc_data *d = GDrawGetUserData(gw);
@@ -588,7 +737,7 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[9], boxes[4], *varray[9], *harray[5], *buttons[10];
+    GGadgetCreateData gcd[10], boxes[4], *varray[9], *harray[7], *buttons[10];
     GTextInfo label[9];
     struct gfc_data d;
     int i, format, lpos;
@@ -723,18 +872,26 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     gcd[5].gd.u.list[lpos].selected = true;
     harray[1] = &gcd[5];
 
+    gcd[6].gd.flags = gg_visible | gg_enabled;
+    label[6].text = (unichar_t *) _("_Options");
+    label[6].text_is_1byte = true;
+    label[6].text_in_resource = true;
+    gcd[6].gd.label = &label[6];
+    gcd[6].gd.handle_controlevent = GFD_Options;
+    gcd[6].creator = GButtonCreate;
+    harray[2] = &gcd[6]; harray[3] = GCD_Glue;
+
     if ( fv!=NULL ) {
-	gcd[6].gd.pos.x = 185; gcd[6].gd.pos.y = gcd[5].gd.pos.y+4;
-	gcd[6].gd.flags = gg_visible | gg_enabled ;
+	gcd[7].gd.flags = gg_visible | gg_enabled ;
 	if ( format==fv_pk || format==fv_image || format==fv_imgtemplate )
-	    gcd[6].gd.flags = gg_visible | gg_enabled | gg_cb_on;
-	label[6].text = (unichar_t *) _("As Background");
-	label[6].text_is_1byte = true;
-	gcd[6].gd.label = &label[6];
-	gcd[6].creator = GCheckBoxCreate;
-	harray[2] = &gcd[6]; harray[3] = GCD_Glue; harray[4] = NULL;
+	    gcd[7].gd.flags = gg_visible | gg_enabled | gg_cb_on;
+	label[7].text = (unichar_t *) _("As Background");
+	label[7].text_is_1byte = true;
+	gcd[7].gd.label = &label[7];
+	gcd[7].creator = GCheckBoxCreate;
+	harray[4] = &gcd[7]; harray[5] = GCD_Glue; harray[6] = NULL;
     } else {
-	harray[2] = GCD_Glue; harray[3] = NULL;
+	harray[4] = GCD_Glue; harray[5] = NULL;
     }
 
     boxes[2].gd.flags = gg_enabled|gg_visible;
@@ -772,7 +929,7 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     d.gfc = gcd[0].ret;
     d.format = gcd[5].ret;
     if ( fv!=NULL )
-	d.background = gcd[6].ret;
+	d.background = gcd[7].ret;
 
     if ( cur_formats!=formats && cur_formats!=fvformats )
 	GTextInfoListFree(cur_formats);

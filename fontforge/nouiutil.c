@@ -132,8 +132,10 @@ static int NOUI_alwaystrue(void) {
 return( true );
 }
 
-static int NOUI_DefaultStrokeFlags(void) {
-return( sf_correctdir );
+static void NOUI_import_params_dlg(struct importparams *ip) {
+}
+
+static void NOUI_export_params_dlg(struct exportparams *ep) {
 }
 
 static struct ui_interface noui_interface = {
@@ -168,8 +170,8 @@ static struct ui_interface noui_interface = {
 
     NOUI_TTFNameIds,
     NOUI_MSLangString,
-
-    NOUI_DefaultStrokeFlags
+    NOUI_import_params_dlg,
+    NOUI_export_params_dlg
 };
 struct ui_interface *ui_interface = &noui_interface;
 
