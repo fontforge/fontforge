@@ -460,7 +460,7 @@ Module functions
 
    .. object:: hidewindow (16)
 
-      Do not create a view window for this font even if the UI is active.
+      Do not create a view window for this font even if the UI is active. Note: This option supports efficient bulk processing of fonts in scripts run through the UI but using it can be tricky. Open fonts will be listed at the bottom of the "Window" menu but choosing them will have no effect. If some fonts are not closed you may need to "force-quit" the application using your OS.
 
    .. object:: alltables (32)
 
