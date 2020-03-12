@@ -6,28 +6,29 @@
 #
 # Translators:
 # Александр Прокудин, 2012-08-01 00:27+0400
-# Alexandre Prokoudine <alexandre.prokoudine@gmail.com>, 2016.
+# Alexandre Prokoudine <alexandre.prokoudine@gmail.com>, 2016-2020.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: fontforge 2.0.0_beta1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-02-29 10:56+1100\n"
-"PO-Revision-Date: 2016-04-17 18:40+0300\n"
+"PO-Revision-Date: 2020-03-12 08:50\n"
 "Last-Translator: Alexandre Prokoudine <alexandre.prokoudine@gmail.com>\n"
 "Language-Team: русский <>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
-"|| n%100>=20) ? 1 : 2);\n"
-"X-Poedit-Language: Russian\n"
-"X-Poedit-Country: RUSSIAN FEDERATION\n"
-"X-Generator: Gtranslator 2.91.7\n"
+"Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 "
+"&& n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 "
+"&& n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
+"X-Crowdin-Project: fontforge\n"
+"X-Crowdin-Language: ru\n"
+"X-Crowdin-File: FontForge.pot\n"
 
 msgid "FontForge"
-msgstr ""
+msgstr "FontForge"
 
 msgid "An outline font editor"
 msgstr "Редактор шрифтов"
@@ -54,11 +55,8 @@ msgstr ""
 msgid "Fontforge showing a glyph being edited"
 msgstr ""
 
-msgid "FontForge developers"
-msgstr ""
-
 msgid "Font Editor"
-msgstr ""
+msgstr "Редактор шрифтов"
 
 msgid "org.fontforge.FontForge"
 msgstr ""
@@ -241,13 +239,13 @@ msgstr ""
 
 #, c-format
 msgid "Bad image file, not a bitmap: %.100s"
-msgstr "Bad image file, not a bitmap: %.100s"
+msgstr ""
 
 msgid "Don't Warn Again"
 msgstr "Не предупреждать больше"
 
 msgid "_OK"
-msgstr "_OK"
+msgstr "_ОК"
 
 msgid "Bad Reference"
 msgstr "Неправильная ссылка"
@@ -372,9 +370,8 @@ msgstr "Попытка сделать глиф, который ссылаетс�
 msgid "Self-referential character"
 msgstr "Глиф со ссылкой на себя"
 
-#, fuzzy
 msgid "No selection\n"
-msgstr "Повернуть выделение"
+msgstr ""
 
 msgid "Bitmap Paste"
 msgstr "Вставить растр"
@@ -397,24 +394,20 @@ msgstr ""
 msgid "Auto Hinting Font..."
 msgstr "Автоинструктирование шрифта..."
 
-#, fuzzy
 msgid "Converting PostScript"
-msgstr "Преобразование Postscript"
+msgstr "Конвертирование PostScript"
 
 msgid "Saving PostScript Font"
 msgstr "Сохранение шрифта PostScript"
 
-#, fuzzy
 msgid "Outlining glyphs"
-msgstr "Чтение глифов"
+msgstr ""
 
-#, fuzzy
 msgid "Inlining glyphs"
-msgstr "Интерпретация глифов"
+msgstr ""
 
-#, fuzzy
 msgid "Shadowing glyphs"
-msgstr "Чтение глифов"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -435,17 +428,16 @@ msgid ""
 "This file contains an unnamed encoding, which cannot be named in a script"
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Please name encoding %d in this file"
-msgstr "Назовите %s кодировку этого файла"
+msgstr ""
 
-#, fuzzy
 msgid "couldn't write encodings file\n"
-msgstr "Не удалось открыть файл"
+msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Couldn't open cidmap file: %s"
-msgstr "Не удалось открыть файл %.200s"
+msgstr ""
 
 msgid "Missing cidmap file"
 msgstr ""
@@ -456,15 +448,14 @@ msgid ""
 "http://fontforge.sourceforge.net/cidmaps.tgz"
 msgstr ""
 
-#, fuzzy
 msgid "Bad cidmap file"
-msgstr "Неправильный файл изображения"
+msgstr ""
 
 msgid "_Search"
 msgstr "_Искать"
 
 msgid "_Use It"
-msgstr ""
+msgstr "_Использовать"
 
 #, c-format
 msgid ""
@@ -537,13 +528,13 @@ msgid ""
 "are handled."
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "No glyph named %s."
-msgstr "Нет справки с именем %s"
+msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "No CID named %s"
-msgstr "Нет справки с именем %s"
+msgstr ""
 
 #, c-format
 msgid "Unparseable include on line %d of %s"
@@ -765,9 +756,9 @@ msgstr "Справки должны быть определены перед и�
 msgid "Expected '>' in value record on line %d of %s"
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Expected a valid glyph/CID name on line %d of %s"
-msgstr "Ожидалось название в справке на строке %d из %s"
+msgstr ""
 
 #, c-format
 msgid "Expected glyph or glyphclass (after cursive) on line %d of %s"
@@ -961,17 +952,17 @@ msgstr ""
 msgid "Expected '}' on line %d of %s"
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Expected integer or list of integers after %s on line %d of %s"
-msgstr "Ожидалось ';' в конце утверждения в строке %d у %s"
+msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Expected comma or semicolon on line %d of %s"
-msgstr "Ожидался тэг в строке %d из %s"
+msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Expected class on line %d of %s"
-msgstr "Ожидался тэг в строке %d из %s"
+msgstr ""
 
 #, c-format
 msgid "Expected Attach or LigatureCaret or GlyphClassDef on line %d of %s"
@@ -1101,9 +1092,8 @@ msgstr "Упрощение..."
 msgid "Finding Substitution Points..."
 msgstr ""
 
-#, fuzzy
 msgid "Finding Counter Masks..."
-msgstr "Округление до целого..."
+msgstr ""
 
 msgid "Things could be better..."
 msgstr "Всё могло быть лучше"
@@ -1137,15 +1127,12 @@ msgstr "Заменить Å"
 msgid "_Revert"
 msgstr "_Восстановить"
 
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Font %1$.40s in file %2$.40s has been changed.\n"
 "Reverting the file will lose those changes.\n"
 "Is that what you want?"
 msgstr ""
-"Шрифт %1$.40s в файле %2$.40hs был изменён.\n"
-"Восстановление файла уничтожит все изменения.\n"
-"Это то чего вы хотите?"
 
 msgid "Font changed"
 msgstr "Шрифт был изменён"
@@ -1407,9 +1394,8 @@ msgstr "Не bdf файл"
 msgid "Not a bdf file %.200s"
 msgstr ""
 
-#, fuzzy
 msgid "Decompress Failed!"
-msgstr "Сбой при восстановлении"
+msgstr ""
 
 #, c-format
 msgid "Loading font from %.100s"
@@ -1428,9 +1414,8 @@ msgstr ""
 msgid "No Bitmap Font"
 msgstr ""
 
-#, fuzzy
 msgid "Outline Glyphs\n"
-msgstr "Все символы"
+msgstr ""
 
 msgid "Glyph Differences\n"
 msgstr ""
@@ -1531,9 +1516,8 @@ msgid ""
 "ppem is different in the two fonts, cowardly refusing to compare glyphs\n"
 msgstr ""
 
-#, fuzzy
 msgid "Bitmap Strikes\n"
-msgstr "Вставить растр"
+msgstr ""
 
 #, c-format
 msgid "Strike %d@%d\n"
@@ -1826,16 +1810,14 @@ msgstr "Композиция/декомпозиция глифа"
 msgid "Conjunct Form After Ro"
 msgstr ""
 
-#, fuzzy
 msgid "Conjunct Forms"
-msgstr "Просветы"
+msgstr ""
 
 msgid "Contextual Ligatures"
 msgstr "Контекстные лигатуры"
 
-#, fuzzy
 msgid "Centered CJK Punctuation"
-msgstr "Центр выделения"
+msgstr ""
 
 msgid "Capital Spacing"
 msgstr "Интервал прописных"
@@ -2147,115 +2129,115 @@ msgid "Drop Caps (Obsolete)"
 msgstr ""
 
 msgid "Distance"
-msgstr "Distance"
+msgstr ""
 
 msgid "Discretionary Ligatures"
-msgstr "Discretionary Ligatures"
+msgstr ""
 
 msgid "Denominators"
-msgstr "Denominators"
+msgstr ""
 
 msgid "Diphthongs (Obsolete)"
 msgstr ""
 
 msgid "Dotless Forms"
-msgstr "Dotless Forms"
+msgstr ""
 
 msgid "Expert Forms"
-msgstr "Expert Forms"
+msgstr ""
 
 msgid "Final Glyph On Line"
-msgstr "Final Glyph On Line"
+msgstr ""
 
 msgid "Terminal Forms #2"
-msgstr "Terminal Forms #2"
+msgstr ""
 
 msgid "Terminal Forms #3"
-msgstr "Terminal Forms #3"
+msgstr ""
 
 msgid "Terminal Forms"
-msgstr "Terminal Forms"
+msgstr ""
 
 msgid "Flattened Accents over Capitals"
-msgstr "Flattened Accents over Capitals"
+msgstr ""
 
 msgid "Diagonal Fractions"
-msgstr "Diagonal Fractions"
+msgstr ""
 
 msgid "Full Widths"
-msgstr "Full Widths"
+msgstr ""
 
 msgid "Half Forms"
-msgstr "Half Forms"
+msgstr ""
 
 msgid "Halant Forms"
-msgstr "Halant Forms"
+msgstr ""
 
 msgid "Alternative Half Widths"
-msgstr "Alternative Half Widths"
+msgstr ""
 
 msgid "Historical Forms"
-msgstr "Historical Forms"
+msgstr ""
 
 msgid "Horizontal Kana Alternatives"
-msgstr "Horizontal Kana Alternatives"
+msgstr ""
 
 msgid "Historic Ligatures"
-msgstr "Historic Ligatures"
+msgstr ""
 
 msgid "Hanja to Hangul (Deprecated)"
 msgstr ""
 
 msgid "Hojo (JIS X 0212-1990) Kanji Forms"
-msgstr "Hojo (JIS X 0212-1990) Kanji Forms"
+msgstr ""
 
 msgid "Half Widths"
-msgstr "Half Widths"
+msgstr ""
 
 msgid "Initial Forms"
 msgstr "Начальные формы"
 
 msgid "Isolated Forms"
-msgstr "Isolated Forms"
+msgstr ""
 
 msgid "Italics"
-msgstr "Italics"
+msgstr ""
 
 msgid "Justification Alternatives"
-msgstr "Justification Alternatives"
+msgstr ""
 
 msgid "Japanese Forms (Obsolete)"
-msgstr "Japanese Forms (Obsolete)"
+msgstr ""
 
 msgid "JIS2004 Forms"
-msgstr "JIS2004 Forms"
+msgstr ""
 
 msgid "JIS78 Forms"
-msgstr "JIS78 Forms"
+msgstr ""
 
 msgid "JIS83 Forms"
-msgstr "JIS83 Forms"
+msgstr ""
 
 msgid "JIS90 Forms"
-msgstr "JIS90 Forms"
+msgstr ""
 
 msgid "Horizontal Kerning"
-msgstr "Horizontal Kerning"
+msgstr ""
 
 msgid "Left Bounds"
-msgstr "Left Bounds"
+msgstr ""
 
 msgid "Standard Ligatures"
-msgstr "Standard Ligatures"
+msgstr ""
 
 msgid "Leading Jamo Forms"
-msgstr "Leading Jamo Forms"
+msgstr ""
 
 msgid "Lining Figures"
-msgstr "Lining Figures"
+msgstr ""
 
 msgid "Localized Forms"
-msgstr "Localized Forms"
+msgstr ""
 
 msgid "Left to Right Alternates"
 msgstr ""
@@ -2264,178 +2246,178 @@ msgid "Left to Right mirrored forms"
 msgstr ""
 
 msgid "Mark Positioning"
-msgstr "Mark Positioning"
+msgstr ""
 
 msgid "Medial Forms 2"
-msgstr "Medial Forms 2"
+msgstr ""
 
 msgid "Medial Forms"
-msgstr "Medial Forms"
+msgstr ""
 
 msgid "Mathematical Greek"
-msgstr "Mathematical Greek"
+msgstr ""
 
 msgid "Mark to Mark"
-msgstr "Mark to Mark"
+msgstr ""
 
 msgid "Mark Positioning via Substitution"
-msgstr "Mark Positioning via Substitution"
+msgstr ""
 
 msgid "Alternate Annotation Forms"
-msgstr "Alternate Annotation Forms"
+msgstr ""
 
 msgid "NLC Kanji Forms"
-msgstr "NLC Kanji Forms"
+msgstr ""
 
 msgid "Nukta Forms"
-msgstr "Nukta Forms"
+msgstr ""
 
 msgid "Numerators"
-msgstr "Numerators"
+msgstr ""
 
 msgid "Oldstyle Figures"
-msgstr "Oldstyle Figures"
+msgstr ""
 
 msgid "Optical Bounds"
-msgstr "Optical Bounds"
+msgstr ""
 
 msgid "Ordinals"
-msgstr "Ordinals"
+msgstr ""
 
 msgid "Ornaments"
-msgstr "Ornaments"
+msgstr ""
 
 msgid "Proportional Alternate Metrics"
-msgstr "Proportional Alternate Metrics"
+msgstr ""
 
 msgid "Lowercase to Petite Capitals"
-msgstr "Lowercase to Petite Capitals"
+msgstr ""
 
 msgid "Proportional Kana"
-msgstr "Proportional Kana"
+msgstr ""
 
 msgid "Proportional Numbers"
-msgstr "Proportional Numbers"
+msgstr ""
 
 msgid "Pre Base Forms"
-msgstr "Pre Base Forms"
+msgstr ""
 
 msgid "Pre Base Substitutions"
-msgstr "Pre Base Substitutions"
+msgstr ""
 
 msgid "Post Base Forms"
-msgstr "Post Base Forms"
+msgstr ""
 
 msgid "Post Base Substitutions"
-msgstr "Post Base Substitutions"
+msgstr ""
 
 msgid "Proportional Width"
-msgstr "Proportional Width"
+msgstr ""
 
 msgid "Quarter Widths"
-msgstr "Quarter Widths"
+msgstr ""
 
 msgid "Randomize"
-msgstr "Randomize"
+msgstr ""
 
 msgid "Required Contextual Alternates"
 msgstr ""
 
 msgid "Rakar Forms"
-msgstr "Rakar Forms"
+msgstr ""
 
 msgid "Required Ligatures"
-msgstr "Required Ligatures"
+msgstr ""
 
 msgid "Reph Form"
-msgstr "Reph Form"
+msgstr ""
 
 msgid "Right Bounds"
-msgstr "Right Bounds"
+msgstr ""
 
 msgid "Right to Left Alternates"
-msgstr "Right to Left Alternates"
+msgstr ""
 
 msgid "Right to Left mirrored forms"
-msgstr "Right to Left mirrored forms"
+msgstr ""
 
 msgid "Ruby Notational Forms"
-msgstr "Ruby Notational Forms"
+msgstr ""
 
 msgid "Required Variation Alternates"
 msgstr ""
 
 msgid "Stylistic Alternatives"
-msgstr "Stylistic Alternatives"
+msgstr ""
 
 msgid "Scientific Inferiors"
-msgstr "Scientific Inferiors"
+msgstr ""
 
 msgid "Lowercase to Small Capitals"
-msgstr "Lowercase to Small Capitals"
+msgstr ""
 
 msgid "Simplified Forms"
-msgstr "Simplified Forms"
+msgstr ""
 
 msgid "Style Set 1"
-msgstr "Style Set 1"
+msgstr ""
 
 msgid "Style Set 2"
-msgstr "Style Set 2"
+msgstr ""
 
 msgid "Style Set 3"
-msgstr "Style Set 3"
+msgstr ""
 
 msgid "Style Set 4"
-msgstr "Style Set 4"
+msgstr ""
 
 msgid "Style Set 5"
-msgstr "Style Set 5"
+msgstr ""
 
 msgid "Style Set 6"
-msgstr "Style Set 6"
+msgstr ""
 
 msgid "Style Set 7"
-msgstr "Style Set 7"
+msgstr ""
 
 msgid "Style Set 8"
-msgstr "Style Set 8"
+msgstr ""
 
 msgid "Style Set 9"
-msgstr "Style Set 9"
+msgstr ""
 
 msgid "Style Set 10"
-msgstr "Style Set 10"
+msgstr ""
 
 msgid "Style Set 11"
-msgstr "Style Set 11"
+msgstr ""
 
 msgid "Style Set 12"
-msgstr "Style Set 12"
+msgstr ""
 
 msgid "Style Set 13"
-msgstr "Style Set 13"
+msgstr ""
 
 msgid "Style Set 14"
-msgstr "Style Set 14"
+msgstr ""
 
 msgid "Style Set 15"
-msgstr "Style Set 15"
+msgstr ""
 
 msgid "Style Set 16"
-msgstr "Style Set 16"
+msgstr ""
 
 msgid "Style Set 17"
-msgstr "Style Set 17"
+msgstr ""
 
 msgid "Style Set 18"
-msgstr "Style Set 18"
+msgstr ""
 
 msgid "Style Set 19"
-msgstr "Style Set 19"
+msgstr ""
 
 msgid "Style Set 20"
-msgstr "Style Set 20"
+msgstr ""
 
 msgid "Math Script Style"
 msgstr ""
@@ -2450,64 +2432,64 @@ msgid "Superscript"
 msgstr "Верхний индекс"
 
 msgid "Swash"
-msgstr "Swash"
+msgstr ""
 
 msgid "Titling"
-msgstr "Titling"
+msgstr ""
 
 msgid "Trailing Jamo Forms"
-msgstr "Trailing Jamo Forms"
+msgstr ""
 
 msgid "Traditional Name Forms"
-msgstr "Traditional Name Forms"
+msgstr ""
 
 msgid "Tabular Numbers"
-msgstr "Tabular Numbers"
+msgstr ""
 
 msgid "Traditional Forms"
-msgstr "Traditional Forms"
+msgstr ""
 
 msgid "Third Widths"
-msgstr "Third Widths"
+msgstr ""
 
 msgid "Unicase"
-msgstr "Unicase"
+msgstr ""
 
 msgid "Alternate Vertical Metrics"
-msgstr "Alternate Vertical Metrics"
+msgstr ""
 
 msgid "Vattu Variants"
-msgstr "Vattu Variants"
+msgstr ""
 
 msgid "Vertical Alternates"
 msgstr ""
 
 msgid "Alternate Vertical Half Metrics"
-msgstr "Alternate Vertical Half Metrics"
+msgstr ""
 
 msgid "Vowel Jamo Forms"
-msgstr "Vowel Jamo Forms"
+msgstr ""
 
 msgid "Vertical Kana Alternates"
-msgstr "Vertical Kana Alternates"
+msgstr ""
 
 msgid "Vertical Kerning"
-msgstr "Vertical Kerning"
+msgstr ""
 
 msgid "Proportional Alternate Vertical Metrics"
-msgstr "Proportional Alternate Vertical Metrics"
+msgstr ""
 
 msgid "Vertical Rotation & Alternates"
-msgstr "Vertical Rotation & Alternates"
+msgstr ""
 
 msgid "Vertical Alternates for Rotation"
 msgstr ""
 
 msgid "Slashed Zero"
-msgstr "Slashed Zero"
+msgstr ""
 
 msgid "Required feature"
-msgstr "Required feature"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -2515,58 +2497,58 @@ msgid ""
 msgstr ""
 
 msgid "Multiple Substitution"
-msgstr "Multiple Substitution"
+msgstr ""
 
 msgid "Single Substitution"
-msgstr "Single Substitution"
+msgstr ""
 
 msgid "Undefined substitution"
-msgstr "Undefined substitution"
+msgstr ""
 
 msgid "Alternate Substitution"
-msgstr "Alternate Substitution"
+msgstr ""
 
 msgid "Contextual Substitution"
-msgstr "Contextual Substitution"
+msgstr ""
 
 msgid "Ligature Substitution"
-msgstr "Ligature Substitution"
+msgstr ""
 
 msgid "Contextual Chaining Substitution"
-msgstr "Contextual Chaining Substitution"
+msgstr ""
 
 msgid "Extension"
-msgstr "Extension"
+msgstr ""
 
 msgid "Reverse Contextual Chaining Substitution"
-msgstr "Reverse Contextual Chaining Substitution"
+msgstr ""
 
 msgid "Pairwise Positioning (kerning)"
-msgstr "Pairwise Positioning (kerning)"
+msgstr ""
 
 msgid "Single Positioning"
-msgstr "Single Positioning"
+msgstr ""
 
 msgid "Undefined positioning"
-msgstr "Undefined positioning"
+msgstr ""
 
 msgid "Cursive attachment"
-msgstr "Cursive attachment"
+msgstr ""
 
 msgid "Mark to base attachment"
-msgstr "Mark to base attachment"
+msgstr ""
 
 msgid "Mark to Ligature attachment"
-msgstr "Mark to Ligature attachment"
+msgstr ""
 
 msgid "Mark to Mark attachment"
-msgstr "Mark to Mark attachment"
+msgstr ""
 
 msgid "Contextual Chaining Positioning"
-msgstr "Contextual Chaining Positioning"
+msgstr ""
 
 msgid "Contextual Positioning"
-msgstr "Contextual Positioning"
+msgstr ""
 
 msgid "Adlam"
 msgstr ""
@@ -2594,9 +2576,8 @@ msgstr "Avestan"
 msgid "Script|Balinese"
 msgstr "Balinese"
 
-#, fuzzy
 msgid "Bamum"
-msgstr "Базовая линия"
+msgstr ""
 
 msgid "Bassa Vah"
 msgstr ""
@@ -2614,13 +2595,13 @@ msgid "Bhaiksuki"
 msgstr ""
 
 msgid "Bopomofo"
-msgstr "Bopomofo"
+msgstr ""
 
 msgid "Brāhmī"
-msgstr "Brāhmī"
+msgstr ""
 
 msgid "Braille"
-msgstr "Braille"
+msgstr ""
 
 msgid "Script|Buginese"
 msgstr "Buginese"
@@ -2629,13 +2610,13 @@ msgid "Script|Buhid"
 msgstr "Buhid"
 
 msgid "Byzantine Music"
-msgstr "Byzantine Music"
+msgstr ""
 
 msgid "Canadian Syllabics"
-msgstr "Canadian Syllabics"
+msgstr ""
 
 msgid "Carian"
-msgstr "Carian"
+msgstr ""
 
 msgid "Caucasian Albanian"
 msgstr ""
@@ -2650,28 +2631,28 @@ msgid "Script|Cherokee"
 msgstr "Cherokee"
 
 msgid "CJK Ideographic"
-msgstr "CJK Ideographic"
+msgstr ""
 
 msgid "Script|Coptic"
 msgstr "Coptic"
 
 msgid "Cypriot syllabary"
-msgstr "Cypriot syllabary"
+msgstr ""
 
 msgid "Cyrillic"
-msgstr "Cyrillic"
+msgstr ""
 
 msgid "Script|Default"
 msgstr "По умолчанию"
 
 msgid "Deseret (Mormon)"
-msgstr "Deseret (Mormon)"
+msgstr ""
 
 msgid "Devanagari"
 msgstr "Деванагари"
 
 msgid "Devanagari2"
-msgstr "Devanagari2"
+msgstr ""
 
 msgid "Dogra"
 msgstr ""
@@ -2716,13 +2697,13 @@ msgid "Gurmukhi"
 msgstr "Гурмухи"
 
 msgid "Gurmukhi2"
-msgstr "Gurmukhi2"
+msgstr ""
 
 msgid "Hangul Jamo"
 msgstr "Хангул Ямо"
 
 msgid "Hangul"
-msgstr "Hangul"
+msgstr ""
 
 msgid "Hanifi Rohingya"
 msgstr ""
@@ -2737,26 +2718,22 @@ msgid "Script|Hebrew"
 msgstr "Hebrew"
 
 msgid "Hiragana & Katakana"
-msgstr "Hiragana & Katakana"
+msgstr ""
 
-#, fuzzy
 msgid "Imperial Aramaic"
-msgstr "Арамейский (Палестина)"
+msgstr ""
 
-#, fuzzy
 msgid "Inscriptional Pahlavi"
-msgstr "Пехлевийский"
+msgstr ""
 
-#, fuzzy
 msgid "Inscriptional Parthian"
-msgstr "Пересекающиеся контуры"
+msgstr ""
 
 msgid "Script|Javanese"
 msgstr "Javanese"
 
-#, fuzzy
 msgid "Kaithi"
-msgstr "Кхароштхи"
+msgstr ""
 
 msgid "Script|Kannada"
 msgstr "Kannada"
@@ -2786,26 +2763,25 @@ msgid "Script|Latin"
 msgstr "Latin"
 
 msgid "Lepcha (Róng)"
-msgstr "Lepcha (Róng)"
+msgstr ""
 
 msgid "Script|Limbu"
 msgstr "Limbu"
 
 msgid "Linear A"
-msgstr "Linear A"
+msgstr ""
 
 msgid "Linear B"
-msgstr "Linear B"
+msgstr ""
 
-#, fuzzy
 msgid "Lisu"
-msgstr "Список"
+msgstr ""
 
 msgid "Lycian"
-msgstr "Lycian"
+msgstr ""
 
 msgid "Lydian"
-msgstr "Lydian"
+msgstr ""
 
 msgid "Mahajani"
 msgstr ""
@@ -2843,13 +2819,11 @@ msgstr ""
 msgid "Mende Kikakui"
 msgstr ""
 
-#, fuzzy
 msgid "Meroitic Cursive"
-msgstr "Курсивное размещение"
+msgstr ""
 
-#, fuzzy
 msgid "Meroitic Hieroglyphs"
-msgstr "Иероглифы Египта"
+msgstr ""
 
 msgid "Miao"
 msgstr ""
@@ -2867,7 +2841,7 @@ msgid "Multani"
 msgstr ""
 
 msgid "Musical"
-msgstr "Musical"
+msgstr ""
 
 msgid "Script|Myanmar"
 msgstr "Myanmar"
@@ -2878,9 +2852,8 @@ msgstr "Н'ко"
 msgid "Nabataean"
 msgstr ""
 
-#, fuzzy
 msgid "New Tai Lue"
-msgstr "Индекс используется"
+msgstr ""
 
 msgid "Newa"
 msgstr ""
@@ -2898,7 +2871,7 @@ msgid "Old Hungarian"
 msgstr ""
 
 msgid "Old Italic (Etruscan, Oscan, etc.)"
-msgstr "Old Italic (Etruscan, Oscan, etc.)"
+msgstr ""
 
 msgid "Old North Arabian"
 msgstr ""
@@ -2907,18 +2880,16 @@ msgid "Script|Old Permic"
 msgstr "Old Permic"
 
 msgid "Old Persian cuneiform"
-msgstr "Old Persian cuneiform"
+msgstr ""
 
 msgid "Old Sogdian"
 msgstr ""
 
-#, fuzzy
 msgid "Old South Arabian"
-msgstr "Английский (ЮАР)"
+msgstr ""
 
-#, fuzzy
 msgid "Old Turkic"
-msgstr "Этрусский"
+msgstr ""
 
 msgid "Script|Oriya"
 msgstr "Oriya"
@@ -2948,14 +2919,13 @@ msgid "Script|Phoenician"
 msgstr "Phoenician"
 
 msgid "Pollard Phonetic"
-msgstr "Pollard Phonetic"
+msgstr ""
 
 msgid "Psalter Pahlavi"
 msgstr ""
 
-#, fuzzy
 msgid "Rejang"
-msgstr "Вращение"
+msgstr ""
 
 msgid "Runic"
 msgstr "Руны"
@@ -3011,9 +2981,8 @@ msgstr "Тайский Ле"
 msgid "Tai Tham"
 msgstr ""
 
-#, fuzzy
 msgid "Tai Viet"
-msgstr "Тайский Ле"
+msgstr ""
 
 msgid "Takri"
 msgstr ""
@@ -3043,7 +3012,7 @@ msgid "Script|Tibetan"
 msgstr "Tibetan"
 
 msgid "Tifinagh (Berber)"
-msgstr "Tifinagh (Berber)"
+msgstr ""
 
 msgid "Tirhuta"
 msgstr ""
@@ -3079,35 +3048,35 @@ msgstr "Неизвестен"
 #. GT: In case that is needed
 #, c-format
 msgid "%s in %s lookup %d"
-msgstr "%s in %s lookup %d"
+msgstr ""
 
 #, c-format
 msgid "%s lookup %d"
-msgstr "%s lookup %d"
+msgstr ""
 
 #. GT: This string is used to generate a name for an OpenType lookup subtable.
 #. GT:  %s is the lookup name
 #, c-format
 msgid "%s subtable"
-msgstr "%s subtable"
+msgstr ""
 
 #. GT: This string is used to generate a name for an OpenType lookup subtable.
 #. GT:  %s is the lookup name, %d is the index of the subtable in the lookup
 #, c-format
 msgid "%s per glyph data %d"
-msgstr "%s per glyph data %d"
+msgstr ""
 
 #, c-format
 msgid "%s kerning class %d"
-msgstr "%s kerning class %d"
+msgstr ""
 
 #, c-format
 msgid "%s contextual %d"
-msgstr "%s contextual %d"
+msgstr ""
 
 #, c-format
 msgid "%s anchor %d"
-msgstr "%s anchor %d"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -3242,9 +3211,9 @@ msgid ""
 "directly"
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "There is no glyph named \"%s\" in the font."
-msgstr "Глифа с названием %s в шрифте нет"
+msgstr ""
 
 #, c-format
 msgid "%s is not a class name for the backtracking classes."
@@ -3258,9 +3227,8 @@ msgstr ""
 msgid "%s is not a class name for the forward classes."
 msgstr ""
 
-#, fuzzy
 msgid "Bad FPST format"
-msgstr "Некорректный шрифт"
+msgstr ""
 
 #, c-format
 msgid "Warning: %s(%s) is both extended and condensed. That's impossible.\n"
@@ -3288,9 +3256,9 @@ msgstr ""
 msgid "Out of memory\n"
 msgstr "Закончилась память\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "%s is not in %.100s"
-msgstr "Найти в %.100s"
+msgstr ""
 
 msgid "Not in Collection"
 msgstr "Не в коллекции"
@@ -3304,17 +3272,16 @@ msgstr "В этом файле несколько шрифтов, выберит
 msgid "Can't open temporary file for truetype output.\n"
 msgstr "Не удалось открыть временный файл для создания шрифта TrueType.\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "No kerning table for %s\n"
-msgstr "В %.200s керн. пары не найдены"
+msgstr ""
 
-#, fuzzy
 msgid "can't create temporary file\n"
-msgstr "Не удалось создать временный каталог"
+msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Couldn't find a font file named %s\n"
-msgstr "Не удалось открыть файл %.200s"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -3463,9 +3430,8 @@ msgstr "Курдский"
 msgid "Kashmiri"
 msgstr "Кашмири"
 
-#, fuzzy
 msgid "Sindhi"
-msgstr "Найти"
+msgstr ""
 
 msgid "Lang|Tibetan"
 msgstr "Тибетский"
@@ -3552,9 +3518,8 @@ msgstr "Суахили"
 msgid "Kinyarwanda/Ruanda"
 msgstr "Киньяруанда/Руанда"
 
-#, fuzzy
 msgid "Rundi"
-msgstr "Круглый"
+msgstr ""
 
 msgid "Nyanja/Chewa"
 msgstr ""
@@ -4120,9 +4085,8 @@ msgstr ""
 msgid "This glyph contains different kerning pairs in different instances"
 msgstr ""
 
-#, fuzzy
 msgid "Bad Multiple Master Font"
-msgstr "Сохранение множества шрифтов Postscript"
+msgstr ""
 
 msgid "Various errors occurred at the selected glyphs"
 msgstr ""
@@ -4252,7 +4216,7 @@ msgid "No problems detected"
 msgstr "Неполадок не обнаружено"
 
 msgid "OK"
-msgstr "OK"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -4310,9 +4274,8 @@ msgstr ""
 msgid "AGL without afii"
 msgstr "AGL без afii"
 
-#, fuzzy
 msgid "AGL For New Fonts"
-msgstr "Смешать в новый шрифт"
+msgstr ""
 
 msgid "Adobe Glyph List"
 msgstr "Список символов Adobe"
@@ -4454,9 +4417,8 @@ msgstr ""
 "должны преобразовываться согласно значению параметра\n"
 "NewFontsQuadratic."
 
-#, fuzzy
 msgid "PreferCJKEncodings"
-msgstr "Кодировка"
+msgstr ""
 
 msgid ""
 "When loading a truetype or opentype font which has both a unicode\n"
@@ -4989,16 +4951,14 @@ msgstr ""
 msgid "Unexpected density"
 msgstr "Неожиданная плотность"
 
-#, fuzzy
 msgid "Multiple-Density Font"
-msgstr "Сохранение множества шрифтов Postscript"
+msgstr ""
 
 msgid "High-Density Font"
 msgstr ""
 
-#, fuzzy
 msgid "Single and Multi-Density Fonts"
-msgstr "Сохранение множества шрифтов Postscript"
+msgstr ""
 
 msgid "Single and High-Density Fonts"
 msgstr ""
@@ -5273,9 +5233,8 @@ msgstr ""
 msgid "anchor point table"
 msgstr ""
 
-#, fuzzy
 msgid "axis variation table"
-msgstr "Не удалось создать список названий"
+msgstr ""
 
 msgid "Baseline table (OT version)"
 msgstr ""
@@ -5313,9 +5272,8 @@ msgstr ""
 msgid "character code mapping table"
 msgstr ""
 
-#, fuzzy
 msgid "CVT variation table"
-msgstr "Испанский традиционный"
+msgstr ""
 
 msgid "control value table"
 msgstr ""
@@ -5374,9 +5332,8 @@ msgstr "таблица атрибута глифа Graphite"
 msgid "Graphite glyph location in Glat table"
 msgstr ""
 
-#, fuzzy
 msgid "glyph outline table"
-msgstr "Символы слева"
+msgstr ""
 
 msgid "glyph positioning table"
 msgstr "таблица размещения глифов"
@@ -5396,9 +5353,8 @@ msgstr ""
 msgid "horizontal header table"
 msgstr ""
 
-#, fuzzy
 msgid "horizontal metrics table"
-msgstr "Создать инструкцию для гор.штриха"
+msgstr ""
 
 msgid "horizontal style table"
 msgstr ""
@@ -5427,9 +5383,8 @@ msgstr ""
 msgid "linear threshold table"
 msgstr ""
 
-#, fuzzy
 msgid "math table"
-msgstr "Неправильный файл изображения"
+msgstr ""
 
 msgid "maximum profile table"
 msgstr ""
@@ -5443,9 +5398,8 @@ msgstr ""
 msgid "Multi-Master table, obsolete"
 msgstr "таблица Multi-Master, устарела"
 
-#, fuzzy
 msgid "metamorphosis table"
-msgstr "Преобразование шрифта..."
+msgstr ""
 
 msgid "extended metamorphosis table"
 msgstr ""
@@ -5453,13 +5407,11 @@ msgstr ""
 msgid "metrics variations table"
 msgstr ""
 
-#, fuzzy
 msgid "name table"
-msgstr "Орнаменты"
+msgstr ""
 
-#, fuzzy
 msgid "optical bounds table"
-msgstr "Оптические границы"
+msgstr ""
 
 msgid "OS/2 and Windows specific metrics table"
 msgstr ""
@@ -5506,9 +5458,8 @@ msgstr ""
 msgid "Obsolete table for a type1 font"
 msgstr ""
 
-#, fuzzy
 msgid "vertical device metrics table"
-msgstr "Неправильный файл изображения"
+msgstr ""
 
 msgid "vertical header table"
 msgstr ""
@@ -5516,9 +5467,8 @@ msgstr ""
 msgid "vertical metrics table"
 msgstr "— таблица вертикальных метрик"
 
-#, fuzzy
 msgid "vertical origin table"
-msgstr "_Нач. коорд. по вертикали:"
+msgstr ""
 
 msgid "vertical metrics variations table"
 msgstr ""
@@ -5577,9 +5527,8 @@ msgstr ""
 "Это шрифт содержит как таблицу 'BASE', так и таблицу 'bsln'.\n"
 "  FontForge прочитает только одну из них ('BASE').\n"
 
-#, fuzzy
 msgid "Bad Glyph Count"
-msgstr "Символы слева"
+msgstr ""
 
 #, c-format
 msgid "Font file has bad glyph count field. maxp says: %d sizeof(loca)=>%d"
@@ -5590,9 +5539,8 @@ msgid ""
 "The fontname begins with the utf8 byte order sequence. This is illegal. %s"
 msgstr ""
 
-#, fuzzy
 msgid "A PostScript name may not be a number"
-msgstr "Название Postscript не должно быть числом"
+msgstr ""
 
 msgid "Bad Font Name"
 msgstr ""
@@ -5642,9 +5590,8 @@ msgstr ""
 msgid "Second _to All"
 msgstr ""
 
-#, fuzzy
 msgid "Use _Second"
-msgstr "Вторая"
+msgstr ""
 
 msgid "Multiple names for language"
 msgstr ""
@@ -5754,9 +5701,8 @@ msgstr "FontForge не поддерживает шрифты Chameleon\n"
 msgid "Unknown operator in %s: %x\n"
 msgstr "Неизвестный оператор в %s: %x\n"
 
-#, fuzzy
 msgid "End of file found when reading private dictionary.\n"
-msgstr "Конец файла при чтении справки в таблице %s"
+msgstr ""
 
 #, c-format
 msgid "No argument to operator %d in private dict\n"
@@ -5782,9 +5728,8 @@ msgstr ""
 msgid "Unexpected charset format in cff: %d\n"
 msgstr ""
 
-#, fuzzy
 msgid "Bad fdselect\n"
-msgstr "Неправильная ссылка"
+msgstr ""
 
 #, c-format
 msgid "Didn't understand format for fdselect %d\n"
@@ -5822,9 +5767,8 @@ msgstr ""
 msgid "Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0\n"
 msgstr ""
 
-#, fuzzy
 msgid "Bad encoding information in 'cmap' table."
-msgstr "Формат файлов с неправильной кодировкой"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -5884,13 +5828,13 @@ msgid "Script|Central European"
 msgstr "Central European"
 
 msgid "Unicode 1.0"
-msgstr "Unicode 1.0"
+msgstr ""
 
 msgid "Unicode 1.1"
-msgstr "Unicode 1.1"
+msgstr ""
 
 msgid "ISO 10646:1993"
-msgstr "ISO 10646:1993"
+msgstr ""
 
 msgid "Unicode 2.0+, BMP only"
 msgstr "Unicode 2.0+, только BMP"
@@ -5898,21 +5842,20 @@ msgstr "Unicode 2.0+, только BMP"
 msgid "Unicode 2.0+, all planes"
 msgstr ""
 
-#, fuzzy
 msgid "\"Symbol\""
-msgstr "Symbol"
+msgstr ""
 
 msgid "Unicode"
-msgstr "Unicode"
+msgstr ""
 
 msgid "Apple"
-msgstr "Apple"
+msgstr ""
 
 msgid "ISO (Deprecated)"
 msgstr "ISO (устарело)"
 
 msgid "MicroSoft"
-msgstr "MicroSoft"
+msgstr ""
 
 msgid "Custom"
 msgstr "Другой"
@@ -5992,10 +5935,10 @@ msgid "Unlikely length for table, so I'm ignoring it. %u\n"
 msgstr ""
 
 msgid "TTF 'glyf'"
-msgstr "TTF 'glyf'"
+msgstr ""
 
 msgid "OTF 'CFF '"
-msgstr "OTF 'CFF '"
+msgstr ""
 
 msgid ""
 "This font contains both a TrueType 'glyf' table and an OpenType 'CFF ' "
@@ -6043,9 +5986,8 @@ msgstr ""
 msgid "Class index out of range %d (must be <%d)\n"
 msgstr ""
 
-#, fuzzy
 msgid "GID out of range.\n"
-msgstr "Значение вне диапазона"
+msgstr ""
 
 msgid "coverage table extends beyond end of table\n"
 msgstr ""
@@ -6103,9 +6045,8 @@ msgid " Bad pairwise kerning table, ignored\n"
 msgstr ""
 
 #. GT: This continues a multi-line error message, hence the leading space
-#, fuzzy
 msgid " Bad kerning class table, ignored\n"
-msgstr "В %.200s керн. пары не найдены"
+msgstr ""
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad cursive alignment table, ignored\n"
@@ -6115,9 +6056,8 @@ msgstr ""
 msgid "Cursive-%d"
 msgstr ""
 
-#, fuzzy
 msgid "Bad mark table.\n"
-msgstr "Неправильный файл изображения"
+msgstr ""
 
 msgid "Class out of bounds in GPOS mark sub-table\n"
 msgstr ""
@@ -6126,9 +6066,8 @@ msgstr ""
 msgid "Class out of bounds in GPOS mark sub-table for mark %.30s\n"
 msgstr ""
 
-#, fuzzy
 msgid "Bad base table.\n"
-msgstr "Неправильный файл изображения"
+msgstr ""
 
 msgid "Bad ligature base table.\n"
 msgstr ""
@@ -6139,9 +6078,8 @@ msgstr ""
 msgid " Bad mark attachment table, ignored\n"
 msgstr ""
 
-#, fuzzy
 msgid " Bad simple positioning table, ignored\n"
-msgstr "таблица размещения глифов"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -6179,14 +6117,12 @@ msgid "Bad count in contextual chaining sub-table.\n"
 msgstr ""
 
 #. GT: This continues a multi-line error message, hence the leading space
-#, fuzzy
 msgid " Bad contextual substitution table, ignored\n"
-msgstr "Контекстная подстановка"
+msgstr ""
 
 #. GT: This continues a multi-line error message, hence the leading space
-#, fuzzy
 msgid " Bad contextual chaining substitution table, ignored\n"
-msgstr "Post Base Substitutions"
+msgstr ""
 
 msgid "End of file in context chaining sub-table.\n"
 msgstr ""
@@ -6200,9 +6136,8 @@ msgstr ""
 msgid "End of file in context chaining subtable.\n"
 msgstr ""
 
-#, fuzzy
 msgid " Bad simple substitution table, ignored\n"
-msgstr "таблица подстановки глифов"
+msgstr ""
 
 #, c-format
 msgid "Bad substitution glyph: GID %d not less than %d\n"
@@ -6211,9 +6146,8 @@ msgstr ""
 msgid "Unexpected end of file in GSUB sub-table.\n"
 msgstr ""
 
-#, fuzzy
 msgid " Bad multiple substitution table, ignored\n"
-msgstr "таблица подстановки глифов"
+msgstr ""
 
 msgid ""
 "Coverage table specifies a different number of glyphs than the sub-table "
@@ -6406,9 +6340,9 @@ msgstr ""
 #. GT: a statemachine. The %s is the name of the statemachine('s lookup)
 #. GT: and the %d is n, where this lookup is the n'th defined for this state
 #. GT: machine
-#, fuzzy, c-format
+#, c-format
 msgid "%s nested-substitutions %d"
-msgstr "Post Base Substitutions"
+msgstr ""
 
 msgid "subtable"
 msgstr ""
@@ -6436,9 +6370,9 @@ msgstr ""
 msgid "Invalid ligature offset\n"
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Attempt to make a ligature for glyph %d out of "
-msgstr "Попытка сделать символ, который ссылается сам на себя"
+msgstr ""
 
 #. GT: This is a reference to "Much Ado About Nothing". The string should read
 #. GT: "A ligature sub-table in Apple's 'mort'/'morx' table is too\ncomplex for me to understand. I shall give up on it.\nYour ligatures may not be complete."
@@ -6553,9 +6487,9 @@ msgstr ""
 msgid "JSTF extension max at priority %d #%d for %c%c%c%c in %c%c%c%c"
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "%s subtable %d"
-msgstr "Субтаблица"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -6596,9 +6530,8 @@ msgstr ""
 msgid "Didn't understand index format: %d\n"
 msgstr ""
 
-#, fuzzy
 msgid "Load Bitmap Fonts"
-msgstr "Без растрового"
+msgstr ""
 
 msgid ""
 "Do you want to load the bitmap fonts embedded in this true/open type file?\n"
@@ -6697,9 +6630,8 @@ msgstr "Не удалось открыть временный файл"
 msgid "Printing Font"
 msgstr "Печать шрифта"
 
-#, fuzzy
 msgid "Generating PostScript Font"
-msgstr "Создание шрифта Postscript"
+msgstr ""
 
 msgid "Failed to generate postscript font"
 msgstr "Не удалось создать шрифт postscript"
@@ -6710,13 +6642,13 @@ msgstr "Не удалось напечатать"
 msgid "Warning: Font contained no glyphs"
 msgstr "Предупреждение: в шрифтовом файле не было глифов"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to generate postscript in file %s"
-msgstr "Не удалось создать шрифт postscript"
+msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to open file %s for output"
-msgstr "Не удалось открыть временный файл"
+msgstr ""
 
 msgid "Can't back up with nothing on stack\n"
 msgstr ""
@@ -6744,9 +6676,8 @@ msgstr ""
 msgid "Key for a def must be a string or name literal\n"
 msgstr ""
 
-#, fuzzy
 msgid "Value out of bounds in spline.\n"
-msgstr "Значение вне диапазона"
+msgstr ""
 
 msgid "Unknown character after backslash in literal string.\n"
 msgstr ""
@@ -6784,9 +6715,8 @@ msgstr ""
 msgid "No mark in cleartomark\n"
 msgstr ""
 
-#, fuzzy
 msgid "Nothing on stack to print\n"
-msgstr "Нечего трассировать"
+msgstr ""
 
 #, c-format
 msgid "Warning: Unable to parse token %s, some features may be lost\n"
@@ -6899,13 +6829,13 @@ msgstr ""
 msgid "Pop stack underflow on pop in %s\n"
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Index out of range in %s\n"
-msgstr "Значение вне диапазона"
+msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "roll out of range in %s\n"
-msgstr "Значение вне диапазона"
+msgstr ""
 
 msgid "Type2 fonts do not support the Type1 setcurrentpoint operator"
 msgstr ""
@@ -7037,28 +6967,26 @@ msgid ""
 "factor of 4"
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Can't open %s"
-msgstr "Не удалось открыть %s\n"
+msgstr ""
 
 #, c-format
 msgid "Execution of script %s failed"
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Is not callable"
-msgstr "%s subtable"
+msgstr ""
 
 msgid "Saving AFM File"
 msgstr "Сохранение файла AFM"
 
-#, fuzzy
 msgid "Saving TFM File"
-msgstr "Сохранение файла AFM"
+msgstr ""
 
-#, fuzzy
 msgid "Saving OFM File"
-msgstr "Сохранение файла AFM"
+msgstr ""
 
 #, c-format
 msgid "Attempt to save a pixel size that has not been created (%d@%d)"
@@ -7097,9 +7025,8 @@ msgstr ""
 msgid "Afm Save Failed"
 msgstr "Сбой сохранения AFM"
 
-#, fuzzy
 msgid "Tfm Save Failed"
-msgstr "Сбой сохранения AFM"
+msgstr ""
 
 msgid "Bad Extension"
 msgstr "Некорректное расширение"
@@ -7110,9 +7037,8 @@ msgstr ""
 msgid "Saving font"
 msgstr "Сохранение шрифта"
 
-#, fuzzy
 msgid "Saving Multiple PostScript Fonts"
-msgstr "Сохранение множества шрифтов Postscript"
+msgstr ""
 
 msgid "Bad Drawing Operation"
 msgstr ""
@@ -7126,13 +7052,11 @@ msgstr ""
 msgid "Saving OpenType Font"
 msgstr "Сохранение шрифта OpenType"
 
-#, fuzzy
 msgid "Saving CID keyed font"
-msgstr "Сохранение шрифта CID"
+msgstr ""
 
-#, fuzzy
 msgid "Saving multi-master font"
-msgstr "Сохранение множества шрифтов Postscript"
+msgstr ""
 
 msgid "Saving SVG font"
 msgstr "Сохранение шрифта SVG"
@@ -7146,13 +7070,11 @@ msgstr ""
 msgid "Saving Unified Font Object 3"
 msgstr ""
 
-#, fuzzy
 msgid "Ofm Save Failed"
-msgstr "Сбой сохранения AFM"
+msgstr ""
 
-#, fuzzy
 msgid "FontLog Save Failed"
-msgstr "Сбой сохранения"
+msgstr ""
 
 msgid "Saving PFM File"
 msgstr "Сохранение файла PFM"
@@ -7243,9 +7165,8 @@ msgstr "Нижние и верхние индексы"
 msgid "Building sub/superscripts"
 msgstr ""
 
-#, fuzzy
 msgid "Generic change"
-msgstr "Общее"
+msgstr ""
 
 msgid "Changing glyphs"
 msgstr "Смена глифов"
@@ -7253,9 +7174,8 @@ msgstr "Смена глифов"
 msgid "Change Weight"
 msgstr "Смена насыщенности"
 
-#, fuzzy
 msgid "Changing glyph weights"
-msgstr "Смена глифов"
+msgstr ""
 
 msgid "Italic"
 msgstr "Курсив"
@@ -7279,9 +7199,8 @@ msgstr "Не найдено"
 msgid "The outlines of glyph %2$.30s were not found in the font %1$.60s"
 msgstr ""
 
-#, fuzzy
 msgid "Correcting References"
-msgstr "Открыть ссылку"
+msgstr ""
 
 msgid ""
 "Adding new glyphs and referring to them when a glyph contains a bad truetype "
@@ -7328,9 +7247,9 @@ msgstr ""
 msgid "Anchor Point with no class name: %s"
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Bad Anchor Point: %s"
-msgstr "Информация о якоре"
+msgstr ""
 
 msgid ""
 "Found an new style kerning pair inside a version 1 (or lower) sfd file.\n"
@@ -7339,9 +7258,8 @@ msgstr ""
 msgid "KernPair with no subtable name.\n"
 msgstr ""
 
-#, fuzzy
 msgid "Invalid glif name.\n"
-msgstr "Неправильно указанный язык"
+msgstr ""
 
 msgid "Interpreting Glyphs"
 msgstr "Интерпретация глифов"
@@ -7500,9 +7418,9 @@ msgstr "Запрошенный файл %.100s не существует"
 msgid "You do not have permission to read %.100s"
 msgstr "У вас нет прав на чтение %.100s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Couldn't open directory as a font: %s"
-msgstr "Не удалось создать каталог: %s"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -7656,9 +7574,8 @@ msgstr ""
 msgid "Warning: Accuracy target %lf less than minimum %lf, using %lf instead\n"
 msgstr ""
 
-#, fuzzy
 msgid "Stroking..."
-msgstr "Сохранение..."
+msgstr ""
 
 #, c-format
 msgid "Couldn't find referenced character \"%s\" in %s\n"
@@ -7727,9 +7644,9 @@ msgstr ""
 msgid "Unknown type '%c' found in path specification\n"
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find Color Source with id %s."
-msgstr "Не удалось отправить запрос в \"%s\"."
+msgstr ""
 
 #, c-format
 msgid "FontForge does not currently parse pattern Color Sources (%s)."
@@ -7739,9 +7656,9 @@ msgstr ""
 msgid "Color Source with id %s had an unexpected type %s."
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Bad hex color spec: %s\n"
-msgstr "Неправильный номер в "
+msgstr ""
 
 #, c-format
 msgid "Bad RGB color spec: %s\n"
@@ -7755,13 +7672,12 @@ msgstr ""
 msgid "Unsupported mime type in data URI: %s\n"
 msgstr ""
 
-#, fuzzy
 msgid "FontForge only supports embedded images in data: URIs\n"
-msgstr "FontForge не поддерживает шрифты type2 multiple master\n"
+msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find clippath named %s."
-msgstr "Не удалось открыть файл %.200s"
+msgstr ""
 
 msgid "This font does not specify units-per-em\n"
 msgstr ""
@@ -7785,9 +7701,8 @@ msgid ""
 "may not be useful."
 msgstr ""
 
-#, fuzzy
 msgid "Bad Point Numbering"
-msgstr "Неправильный номер в "
+msgstr ""
 
 #, c-format
 msgid ""
@@ -7820,9 +7735,8 @@ msgstr ""
 msgid "The font database does not contain a bitmap of size %d and depth %d"
 msgstr ""
 
-#, fuzzy
 msgid "No bitmap strikes"
-msgstr "Без растрового"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -7842,9 +7756,8 @@ msgstr ""
 msgid "Failed to open glyph to name map file for writing: %s\n"
 msgstr ""
 
-#, fuzzy
 msgid "No Encoded Glyphs"
-msgstr "Слишком мало символов"
+msgstr ""
 
 msgid ""
 "This font contains no glyphs with unicode encodings.\n"
@@ -7976,9 +7889,8 @@ msgstr ""
 msgid "Whoops, more names than subtables of lookup %s\n"
 msgstr ""
 
-#, fuzzy
 msgid "Whoops, more names than lookups\n"
-msgstr "Необходимо дать название этой справке"
+msgstr ""
 
 msgid "Bad data type in contour verb in 'PfEd'\n"
 msgstr ""
@@ -8014,9 +7926,9 @@ msgstr ""
 msgid "Error in WriteUFOLayer."
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Error clearing %s."
-msgstr "Произошла ошибка при записи в %s"
+msgstr ""
 
 #, c-format
 msgid "Unknown python type <%s> when reading UFO/GLIF lib data."
@@ -8037,9 +7949,8 @@ msgstr ""
 msgid "Expected glyph file with format==1 or 2"
 msgstr ""
 
-#, fuzzy
 msgid "Bad glyph name."
-msgstr "Некорректное название глифа"
+msgstr ""
 
 msgid "component with no base glyph"
 msgstr ""
@@ -8050,17 +7961,15 @@ msgstr ""
 msgid "The move point must be at the beginning of the contour.\n"
 msgstr ""
 
-#, fuzzy
 msgid "This spline set has no points.\n"
-msgstr "В этом файле PDF нет шрифтов"
+msgstr ""
 
-#, fuzzy
 msgid "Duplicate lib data.\n"
-msgstr "Повторение названия"
+msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Bad glif file %s"
-msgstr "Неправильный файл glif %s\n"
+msgstr ""
 
 msgid "There's a reference to a glyph with no name."
 msgstr ""
@@ -8112,23 +8021,20 @@ msgstr ""
 msgid "kerning.plist defines an offset between classes in different lookups."
 msgstr ""
 
-#, fuzzy
 msgid "There is a kerning class index error."
-msgstr "%s kerning class %d"
+msgstr ""
 
 msgid "kerning.plist attempts to redefine a class kerning offset."
 msgstr ""
 
-#, fuzzy
 msgid "Can't find libxml2."
-msgstr "Не удается найти libxml2.\n"
+msgstr ""
 
 msgid "Bad openTypeOS2type key: all bits are set. It will be ignored"
 msgstr ""
 
-#, fuzzy
 msgid "This font does not specify unitsPerEm, so we guess 1000."
-msgstr "В этом шрифте не указано число единиц на Em\n"
+msgstr ""
 
 msgid "No glyphs directory or no contents file"
 msgstr ""
@@ -8208,20 +8114,17 @@ msgstr ""
 msgid "Samaritan"
 msgstr ""
 
-#, fuzzy
 msgid "Samaritan, Punctuation"
-msgstr "Общая пунктуация"
+msgstr ""
 
-#, fuzzy
 msgid "Mandaic"
-msgstr "Mac"
+msgstr ""
 
 msgid "Syriac Supplement"
 msgstr ""
 
-#, fuzzy
 msgid "Arabic Extended-A"
-msgstr "Латиница, расширение А"
+msgstr ""
 
 msgid "Bengali"
 msgstr "Бенгальский"
@@ -8289,9 +8192,8 @@ msgstr ""
 msgid "Hanunóo"
 msgstr ""
 
-#, fuzzy
 msgid "Buhid"
-msgstr "Третья"
+msgstr ""
 
 msgid "Tagbanwa"
 msgstr ""
@@ -8317,16 +8219,14 @@ msgstr ""
 msgid "Combining Diacritical Marks Extended"
 msgstr ""
 
-#, fuzzy
 msgid "Balinese"
-msgstr "Базовая линия"
+msgstr ""
 
 msgid "Sundanese"
 msgstr ""
 
-#, fuzzy
 msgid "Batak"
-msgstr "Катакана"
+msgstr ""
 
 msgid "Lepcha"
 msgstr ""
@@ -8340,9 +8240,8 @@ msgstr ""
 msgid "Sundanese Supplement"
 msgstr ""
 
-#, fuzzy
 msgid "Vedic Extensions"
-msgstr "Фонетические расширения"
+msgstr ""
 
 msgid "Phonetic Extensions"
 msgstr "Фонетические расширения"
@@ -8377,9 +8276,8 @@ msgstr "Символы валют"
 msgid "Combining Diacritical Marks for Symbols"
 msgstr ""
 
-#, fuzzy
 msgid "Combining Marks for Symbols"
-msgstr "Игнорировать объединяющие знаки"
+msgstr ""
 
 msgid "Letterlike Symbols"
 msgstr "Буквообразные символы"
@@ -8399,9 +8297,8 @@ msgstr "Различные технические символы"
 msgid "Miscellaneous Technical Symbols"
 msgstr "Разные технические символы"
 
-#, fuzzy
 msgid "Technical Symbols Misc."
-msgstr "Музыкальные символы"
+msgstr ""
 
 msgid "Control Pictures"
 msgstr "Управляющие картинки"
@@ -8424,9 +8321,8 @@ msgstr "Геометрические фигуры"
 msgid "Miscellaneous Symbols"
 msgstr "Различные символы"
 
-#, fuzzy
 msgid "Symbols Misc."
-msgstr "Символьная"
+msgstr ""
 
 msgid "Dingbats"
 msgstr "Условные знаки"
@@ -8440,16 +8336,14 @@ msgstr ""
 msgid "Miscellaneous Math Symbols-A"
 msgstr ""
 
-#, fuzzy
 msgid "Math Misc. Symbols-A"
-msgstr "Музыкальные символы"
+msgstr ""
 
 msgid "Supplemental Arrows-A"
 msgstr ""
 
-#, fuzzy
 msgid "Arrows Supplement-A"
-msgstr "Стрелки (и дополнения A и B)"
+msgstr ""
 
 msgid "Braille Patterns"
 msgstr "Азбука Брейля"
@@ -8457,9 +8351,8 @@ msgstr "Азбука Брейля"
 msgid "Supplemental Arrows-B"
 msgstr ""
 
-#, fuzzy
 msgid "Arrows Supplement-B"
-msgstr "Стрелки (и дополнения A и B)"
+msgstr ""
 
 msgid "Miscellaneous Mathematical Symbols-B"
 msgstr ""
@@ -8467,9 +8360,8 @@ msgstr ""
 msgid "Miscellaneous Math Symbols-B"
 msgstr ""
 
-#, fuzzy
 msgid "Math Misc. Symbols-B"
-msgstr "Музыкальные символы"
+msgstr ""
 
 msgid "Supplemental Mathematical Operators"
 msgstr ""
@@ -8477,9 +8369,8 @@ msgstr ""
 msgid "Supplemental Math Operators"
 msgstr ""
 
-#, fuzzy
 msgid "Math Operators Supplement"
-msgstr "Математические операторы (дополнительные и прочие)"
+msgstr ""
 
 msgid "Miscellaneous Symbols and Arrows"
 msgstr ""
@@ -8487,9 +8378,8 @@ msgstr ""
 msgid "Supplemental Symbols and Arrows"
 msgstr ""
 
-#, fuzzy
 msgid "Symbols and Arrows Supplement"
-msgstr "Стрелки (и дополнения A и B)"
+msgstr ""
 
 msgid "Alphabetic Extended"
 msgstr ""
@@ -8509,24 +8399,20 @@ msgstr ""
 msgid "Ethiopic Extended"
 msgstr "Эфиопский расширенный"
 
-#, fuzzy
 msgid "Cyrillic Extended-A"
-msgstr "Кириллический расширенный-B"
+msgstr ""
 
 msgid "Supplemental Punctuation"
 msgstr "Знаки препинания, дополнение"
 
-#, fuzzy
 msgid "Punctuation Supplement"
-msgstr "Латиница, дополнение 1"
+msgstr ""
 
-#, fuzzy
 msgid "CJK Radicals Supplement"
-msgstr "Кириллица, дополнение"
+msgstr ""
 
-#, fuzzy
 msgid "Kangxi Radicals"
-msgstr "Корни И"
+msgstr ""
 
 msgid "Ideographic Description Characters"
 msgstr ""
@@ -8594,9 +8480,8 @@ msgstr "Латиница, расширение D"
 msgid "Syloti Nagri"
 msgstr ""
 
-#, fuzzy
 msgid "Common Indic Number Forms"
-msgstr "Числовые формы"
+msgstr ""
 
 msgid "Phags-pa"
 msgstr ""
@@ -8604,13 +8489,11 @@ msgstr ""
 msgid "Devanagari Extended"
 msgstr "Деванагари, расширение"
 
-#, fuzzy
 msgid "Hangul Jamo Extended-A"
-msgstr "Латиница, расширение А"
+msgstr ""
 
-#, fuzzy
 msgid "Javanese"
-msgstr "Японский"
+msgstr ""
 
 msgid "Myanmar Extended-B"
 msgstr ""
@@ -8618,17 +8501,14 @@ msgstr ""
 msgid "Cham"
 msgstr ""
 
-#, fuzzy
 msgid "Myanmar Extended-A"
-msgstr "Латиница, расширение А"
+msgstr ""
 
-#, fuzzy
 msgid "Meetei Mayek Extensions"
-msgstr "Фонетические расширения"
+msgstr ""
 
-#, fuzzy
 msgid "Ethiopic Extended-A"
-msgstr "Эфиопский расширенный"
+msgstr ""
 
 msgid "Latin Extended-E"
 msgstr ""
@@ -8639,9 +8519,8 @@ msgstr ""
 msgid "Hangul Syllables"
 msgstr "Слоги Хангул"
 
-#, fuzzy
 msgid "Hangul Jamo Extended-B"
-msgstr "Латиница, расширение А"
+msgstr ""
 
 msgid "High Surrogates"
 msgstr ""
@@ -8694,9 +8573,8 @@ msgstr "Арабские формы представления A"
 msgid "Variation Selectors"
 msgstr ""
 
-#, fuzzy
 msgid "Vertical Forms"
-msgstr "Вертикальные формы"
+msgstr ""
 
 msgid "Combining Half Marks"
 msgstr ""
@@ -8722,13 +8600,11 @@ msgstr ""
 msgid "Latin Full Width Forms"
 msgstr ""
 
-#, fuzzy
 msgid "Full Width Brackets"
-msgstr "Full Widths"
+msgstr ""
 
-#, fuzzy
 msgid "CJK Half Width Forms"
-msgstr "Half Widths"
+msgstr ""
 
 msgid "Katakana Half Width Forms"
 msgstr ""
@@ -8808,24 +8684,20 @@ msgstr "Кипрское письмо"
 msgid "Phoenician"
 msgstr "Финикийский"
 
-#, fuzzy
 msgid "Kharoshthi"
-msgstr "Кхароштхи"
+msgstr ""
 
-#, fuzzy
 msgid "Avestan"
-msgstr "Авестийская"
+msgstr ""
 
-#, fuzzy
 msgid "Rumi Numeral Symbols"
-msgstr "Музыкальные символы"
+msgstr ""
 
 msgid "Elymaic"
 msgstr ""
 
-#, fuzzy
 msgid "Brahmi"
-msgstr "Брауи"
+msgstr ""
 
 msgid "Sinhala Archaic Numbers"
 msgstr ""
@@ -8857,9 +8729,8 @@ msgstr ""
 msgid "Egyptian Hieroglyph Format Controls"
 msgstr ""
 
-#, fuzzy
 msgid "Bamum Supplement"
-msgstr "Латиница, дополнение 1"
+msgstr ""
 
 msgid "Ideographic Symbols and Punctuation"
 msgstr ""
@@ -8867,9 +8738,8 @@ msgstr ""
 msgid "Tangut Components"
 msgstr ""
 
-#, fuzzy
 msgid "Kana Supplement"
-msgstr "Латиница, дополнение 1"
+msgstr ""
 
 msgid "Kana Extended-A"
 msgstr ""
@@ -8895,9 +8765,8 @@ msgstr ""
 msgid "Tai Xuan Jing Symbols"
 msgstr ""
 
-#, fuzzy
 msgid "Counting Rod Numerals"
-msgstr "Китайские счетные палочки"
+msgstr ""
 
 msgid "Chinese Counting Rod Numerals"
 msgstr ""
@@ -8917,9 +8786,8 @@ msgstr ""
 msgid "Ottoman Siyaq Numbers"
 msgstr ""
 
-#, fuzzy
 msgid "Arabic Mathematical Alphabetic Symbols"
-msgstr "Математические алфавитно-цифровые символы"
+msgstr ""
 
 msgid "Mahjong Tiles"
 msgstr "Кости для игры в маджонг"
@@ -8930,13 +8798,11 @@ msgstr "Кости для игры в домино"
 msgid "Playing Cards"
 msgstr ""
 
-#, fuzzy
 msgid "Enclosed Alphanumeric Supplement"
-msgstr "Алфавитно-цифровые символы в рамке"
+msgstr ""
 
-#, fuzzy
 msgid "Enclosed Ideographic Supplement"
-msgstr "Грузинский, дополнение"
+msgstr ""
 
 msgid "Miscellaneous Symbols and Pictographs"
 msgstr ""
@@ -8950,9 +8816,8 @@ msgstr ""
 msgid "Transport and Map Symbols"
 msgstr ""
 
-#, fuzzy
 msgid "Alchemical Symbols"
-msgstr "Музыкальные символы"
+msgstr ""
 
 msgid "Geometric Shapes Extended"
 msgstr ""
@@ -8981,13 +8846,11 @@ msgstr ""
 msgid "CJK Unified Ideographs Extension B"
 msgstr ""
 
-#, fuzzy
 msgid "CJK Unified Ideographs Extension C"
-msgstr "CJK, объединенные идеограммы, расширение A"
+msgstr ""
 
-#, fuzzy
 msgid "CJK Unified Ideographs Extension D"
-msgstr "CJK, объединенные идеограммы, расширение A"
+msgstr ""
 
 msgid "CJK Unified Ideographs Extension E"
 msgstr ""
@@ -9013,9 +8876,8 @@ msgstr ""
 msgid "Variation Selectors Supplement"
 msgstr ""
 
-#, fuzzy
 msgid "Variation Selectors B"
-msgstr "Испанский традиционный"
+msgstr ""
 
 msgid "Supplementary Private Use Area-A"
 msgstr "Дополнительная область пользователя А"
@@ -9098,9 +8960,8 @@ msgstr ""
 msgid "Bad WOFF header, a field which must be 0 is not."
 msgstr ""
 
-#, fuzzy
 msgid "Could not open temporary file."
-msgstr "Не удалось открыть временный файл\n"
+msgstr ""
 
 #, c-format
 msgid "Invalid compressed table length for '%c%c%c%c'."
@@ -9120,9 +8981,8 @@ msgstr ""
 msgid "WOFF compressed metadata section too large.\n"
 msgstr ""
 
-#, fuzzy
 msgid "Align Points"
-msgstr "_Усредненное положение точек"
+msgstr ""
 
 msgid "How to align these points?"
 msgstr ""
@@ -9137,10 +8997,10 @@ msgid "Coordinate along which to space"
 msgstr "По какой оси координат выравнивать"
 
 msgid "_X"
-msgstr "_X"
+msgstr ""
 
 msgid "_Y"
-msgstr "_Y"
+msgstr ""
 
 msgid "_Maximum distance between points in a region"
 msgstr "_Макс. расстояние между точками области"
@@ -9565,13 +9425,13 @@ msgstr ""
 
 #. GT: X is a coordinate
 msgid "X"
-msgstr "X"
+msgstr ""
 
 msgid "Win"
-msgstr "Win"
+msgstr ""
 
 msgid "Mac"
-msgstr "Mac"
+msgstr ""
 
 msgid "Use FreeType"
 msgstr "Использовать FreeType"
@@ -10161,7 +10021,7 @@ msgid "Replacement Glyph Names"
 msgstr "Новые названия глифов"
 
 msgid "∆x"
-msgstr "∆x"
+msgstr ""
 
 #. GT: "Adjust" here means Device Table based pixel adjustments, an OpenType
 #. GT: concept which allows small corrections for small pixel sizes where
@@ -10171,40 +10031,40 @@ msgid "Adjust"
 msgstr ""
 
 msgid "∆y"
-msgstr "∆y"
+msgstr ""
 
 msgid "∆x_adv"
-msgstr "∆x_adv"
+msgstr ""
 
 msgid "∆y_adv"
-msgstr "∆y_adv"
+msgstr ""
 
 msgid "Second Glyph Name"
 msgstr "Второе название глифа"
 
 msgid "∆x #1"
-msgstr "∆x #1"
+msgstr ""
 
 msgid "∆y #1"
-msgstr "∆y #1"
+msgstr ""
 
 msgid "∆x_adv #1"
-msgstr "∆x_adv #1"
+msgstr ""
 
 msgid "∆y_adv #1"
-msgstr "∆y_adv #1"
+msgstr ""
 
 msgid "∆x #2"
-msgstr "∆x #2"
+msgstr ""
 
 msgid "∆y #2"
-msgstr "∆y #2"
+msgstr ""
 
 msgid "∆x_adv #2"
-msgstr "∆x_adv #2"
+msgstr ""
 
 msgid "∆y_adv #2"
-msgstr "∆y_adv #2"
+msgstr ""
 
 msgid "false"
 msgstr ""
@@ -10429,9 +10289,8 @@ msgstr ""
 msgid "Ligature Caret Count:"
 msgstr ""
 
-#, fuzzy
 msgid "Variant Glyphs:"
-msgstr "Чтение глифов"
+msgstr ""
 
 msgid ""
 "A list of the names of pre defined glyphs which represent\n"
@@ -10478,10 +10337,10 @@ msgstr ""
 
 #. GT: X is a coordinate, the leading spaces help to align it
 msgid "  X"
-msgstr "  X"
+msgstr ""
 
 msgid "  Y"
-msgstr "  Y"
+msgstr ""
 
 msgid "Positionings"
 msgstr "Размещения"
@@ -10521,9 +10380,8 @@ msgstr "Верт. варианты"
 msgid "Horiz. Variants"
 msgstr "Гор. варианты"
 
-#, fuzzy
 msgid "Tile Size"
-msgstr "Размер керна"
+msgstr ""
 
 msgid "< _Prev"
 msgstr "< _Пред."
@@ -10579,16 +10437,14 @@ msgstr ""
 msgid "First Point Color"
 msgstr "Цвет первой точки"
 
-#, fuzzy
 msgid "The color of the point which is the start of a contour"
-msgstr "Координата У выделенной точки близка к cap height"
+msgstr ""
 
 msgid "Selected Point Color"
 msgstr "Цвет выбранной точки"
 
-#, fuzzy
 msgid "The color of a selected point"
-msgstr "Координата У выделенной точки близка к xheight"
+msgstr ""
 
 msgid "Selected Point Width"
 msgstr "Ширина выбранной точки"
@@ -10632,9 +10488,8 @@ msgstr ""
 msgid "Selected CP Color"
 msgstr "Цвет выбранной КТ"
 
-#, fuzzy
 msgid "The color used to draw a selected control point of an on-curve point"
-msgstr "Две выделенные точки -- концы открытого контура"
+msgstr ""
 
 msgid "Coordinate Line Color"
 msgstr ""
@@ -10648,18 +10503,16 @@ msgstr ""
 msgid "Hint Label Color"
 msgstr ""
 
-#, fuzzy
 msgid "Blue Values Color"
-msgstr "Значение"
+msgstr ""
 
 msgid ""
 "The color used to mark blue zones in the blue values entry of the private "
 "dictionary"
 msgstr ""
 
-#, fuzzy
 msgid "Family Blue Color"
-msgstr "Гарнитура"
+msgstr ""
 
 msgid ""
 "The color used to mark blue zones in the family blues entry of the private "
@@ -10726,27 +10579,23 @@ msgid ""
 "for the Dragging Comparison Outline spline"
 msgstr ""
 
-#, fuzzy
 msgid "The color of the line marking the advance width"
-msgstr "Координата У выделенной точки близка к ascender height"
+msgstr ""
 
 msgid "Width Color"
 msgstr "Цвет ширины"
 
-#, fuzzy
 msgid "Selected Width Color"
-msgstr "Выбрать по цвету"
+msgstr ""
 
 msgid "The color of the line marking the advance width when it is selected"
 msgstr ""
 
-#, fuzzy
 msgid "Selected LBearing Color"
-msgstr "Цвет фона:"
+msgstr ""
 
-#, fuzzy
 msgid "The color of the line marking the left bearing when it is selected"
-msgstr "Координата У выделенной точки близка к ascender height"
+msgstr ""
 
 msgid "Grid Fit Width Color"
 msgstr ""
@@ -10760,9 +10609,8 @@ msgstr ""
 msgid "The color of the line(s) marking ligature carets"
 msgstr ""
 
-#, fuzzy
 msgid "Anchor Color"
-msgstr "Якорь потерян"
+msgstr ""
 
 msgid "The color of anchor stars"
 msgstr ""
@@ -10778,21 +10626,17 @@ msgstr ""
 msgid "Template Color"
 msgstr ""
 
-#, fuzzy
 msgid "Old Outline Color"
-msgstr "Без контурного"
+msgstr ""
 
-#, fuzzy
 msgid "Original Color"
-msgstr "Исходная координата Y"
+msgstr ""
 
-#, fuzzy
 msgid "Guide Layer Color"
-msgstr "Преобразовать слой _направляющих"
+msgstr ""
 
-#, fuzzy
 msgid "Grid Fit Color"
-msgstr "П_иксельная сетка"
+msgstr ""
 
 msgid "The color of grid-fit outlines"
 msgstr ""
@@ -10809,21 +10653,17 @@ msgstr "Цвет активного слоя"
 msgid "The color of outlines in the active layer"
 msgstr ""
 
-#, fuzzy
 msgid "Inactive Thick Layer Color"
-msgstr "Цвет активного слоя"
+msgstr ""
 
-#, fuzzy
 msgid "The color of thick outlines in inactive layers"
-msgstr "Координата У выделенной точки близка к ascender height"
+msgstr ""
 
-#, fuzzy
 msgid "Active Thick Layer Color"
-msgstr "Цвет активного слоя"
+msgstr ""
 
-#, fuzzy
 msgid "The color of thick outlines in the active layer"
-msgstr "Координата У выделенной точки близка к ascender height"
+msgstr ""
 
 msgid "Clip Path Color"
 msgstr "Цвет обтравочного контура"
@@ -10831,13 +10671,11 @@ msgstr "Цвет обтравочного контура"
 msgid "The color of the clip path"
 msgstr ""
 
-#, fuzzy
 msgid "Open Path Color"
-msgstr "Цвет обтравочного контура"
+msgstr ""
 
-#, fuzzy
 msgid "The color of the open path"
-msgstr "Координата У выделенной точки близка к ascender height"
+msgstr ""
 
 msgid "Background Image Color"
 msgstr "Цвет фонового изображения"
@@ -10852,20 +10690,17 @@ msgstr "Цвет заливки"
 msgid "The color used to fill the outline if that mode is active"
 msgstr ""
 
-#, fuzzy
 msgid "Preview Fill Color"
-msgstr "Цвет заливки"
+msgstr ""
 
 msgid "The color used to fill the outline when in preview mode"
 msgstr ""
 
-#, fuzzy
 msgid "Trace Color"
-msgstr "Сохранить цвета"
+msgstr ""
 
-#, fuzzy
 msgid "Raster Color"
-msgstr "Сохранить цвета"
+msgstr ""
 
 msgid "The color of grid-fit (and other) raster blocks"
 msgstr ""
@@ -10878,18 +10713,16 @@ msgid ""
 "when an instruction moves a point)"
 msgstr ""
 
-#, fuzzy
 msgid "Raster Old Color"
-msgstr "Цвет:"
+msgstr ""
 
 msgid ""
 "The color of raster blocks which have just been turned off (in the debugger "
 "when an instruction moves a point)"
 msgstr ""
 
-#, fuzzy
 msgid "Raster Grid Color"
-msgstr "Цвет:"
+msgstr ""
 
 msgid "Raster Dark Color"
 msgstr ""
@@ -10899,9 +10732,8 @@ msgid ""
 "fully covered."
 msgstr ""
 
-#, fuzzy
 msgid "Delta Grid Color"
-msgstr "Цвет:"
+msgstr ""
 
 msgid "Indicates a notable grid pixel when suggesting deltas."
 msgstr ""
@@ -10912,35 +10744,29 @@ msgstr ""
 msgid "The color used to draw the large tick marks in rulers."
 msgstr ""
 
-#, fuzzy
 msgid "Measure Tool Line Color"
-msgstr "Только _кернинг"
+msgstr ""
 
-#, fuzzy
 msgid "The color used to draw the measure tool line."
-msgstr "Цвет пометки выделенного глифа"
+msgstr ""
 
-#, fuzzy
 msgid "Measure Tool Point Color"
-msgstr "Цвет точки экстремума"
+msgstr ""
 
-#, fuzzy
 msgid "The color used to draw the measure tool points."
-msgstr "Цвет пометки выделенного глифа"
+msgstr ""
 
 msgid "Measure Tool Point Snapped Color"
 msgstr ""
 
-#, fuzzy
 msgid "The color used to draw the measure tool points when snapped."
-msgstr "Две выделенные точки -- концы открытого контура"
+msgstr ""
 
 msgid "Measure Tool Canvas Number Color"
 msgstr ""
 
-#, fuzzy
 msgid "The color used to draw the measure tool numbers on the canvas."
-msgstr "Две выделенные точки -- концы открытого контура"
+msgstr ""
 
 msgid "Measure Tool Canvas Number Snapped Color"
 msgstr ""
@@ -10961,9 +10787,8 @@ msgstr ""
 msgid "The measure tool window background color."
 msgstr ""
 
-#, fuzzy
 msgid "Base"
-msgstr "Основание X"
+msgstr ""
 
 msgid "Entry"
 msgstr "Запись"
@@ -10988,9 +10813,9 @@ msgstr ""
 #. GT: $2 is the glyph's encoding
 #. GT: $3 is the font name
 #. GT: $4 is the changed flag ('*' for the changed items)
-#, fuzzy, c-format
+#, c-format
 msgid "%1$.80s at %2$d from %3$.90s%4$s"
-msgstr "%1$.80s в %2$d кеглем %3$d из %4$.80s"
+msgstr ""
 
 msgid ""
 "This glyph should display spiro points, but unfortunately this version of "
@@ -11017,13 +10842,13 @@ msgstr ""
 msgid "Guide"
 msgstr "Направляющие"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Active Layer: %s (%s)"
-msgstr "Цвет активного слоя"
+msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Modes: "
-msgstr "Модерн"
+msgstr ""
 
 msgid "'fpgm'"
 msgstr ""
@@ -11080,10 +10905,10 @@ msgid "Insert a point on the given spline at either..."
 msgstr "Вставить точку в текущий сплайн по координатам"
 
 msgid "_X:"
-msgstr "_X:"
+msgstr ""
 
 msgid "_Y:"
-msgstr "_Y:"
+msgstr ""
 
 msgid "Anchor Class Name"
 msgstr ""
@@ -11119,9 +10944,8 @@ msgstr "_Экспортировать..."
 msgid "Revert Gl_yph"
 msgstr "Восстановить си_мвол"
 
-#, fuzzy
 msgid "Load Word List..."
-msgstr "Загрузить кодировку..."
+msgstr ""
 
 msgid "_Print..."
 msgstr "_Печать..."
@@ -11198,9 +11022,8 @@ msgstr "Очистить _фон"
 msgid "points|_Merge"
 msgstr "_Объединить"
 
-#, fuzzy
 msgid "points|Merge to Line"
-msgstr "_Объединить"
+msgstr ""
 
 msgid "_Join"
 msgstr "_Соединить"
@@ -11285,9 +11108,8 @@ msgid "_Right Constraint"
 msgstr "_Правая ограничительная"
 
 #. GT: Align these points to their average position
-#, fuzzy
 msgid "_Align Points"
-msgstr "_Усредненное положение точек"
+msgstr ""
 
 msgid "_Space Points"
 msgstr "_Равное расстояние между точками"
@@ -11424,9 +11246,8 @@ msgstr "_Расширить обводку…"
 msgid "Tile _Path..."
 msgstr ""
 
-#, fuzzy
 msgid "Tile Pattern..."
-msgstr "Шаблон замены:"
+msgstr ""
 
 msgid "O_verlap"
 msgstr "Пересе_чения"
@@ -11529,9 +11350,9 @@ msgstr "Просмотреть _хинты..."
 
 #. GT: In the next few lines the "%s" is the name of an anchor class, and the
 #. GT: rest of the string identifies the type of the anchor
-#, fuzzy, c-format
+#, c-format
 msgid "%s at ligature pos %d"
-msgstr "Выбрать лигатуру для просмотра"
+msgstr ""
 
 #, c-format
 msgid "%s exit"
@@ -11594,13 +11415,11 @@ msgstr "К_ернинговые пары"
 msgid "_Anchored Pairs"
 msgstr "С_цепленные пары"
 
-#, fuzzy
 msgid "_Anchor Control..."
-msgstr "Информация о якоре"
+msgstr ""
 
-#, fuzzy
 msgid "Anchor _Glyph at Point"
-msgstr "Информация о якоре"
+msgstr ""
 
 msgid "_Ligatures"
 msgstr "_Лигатуры"
@@ -11608,27 +11427,23 @@ msgstr "_Лигатуры"
 msgid "PointNumbers|_None"
 msgstr "_Нет"
 
-#, fuzzy
 msgid "_TrueType"
-msgstr "TrueType"
+msgstr ""
 
-#, fuzzy
 msgid "_PostScript®"
-msgstr "PostScript®"
+msgstr ""
 
 msgid "_SVG"
-msgstr "_SVG"
+msgstr ""
 
-#, fuzzy
 msgid "P_ositions"
-msgstr "Размещения"
+msgstr ""
 
 msgid "Show _Grid Fit..."
 msgstr "_Показать пиксельную сетку..."
 
-#, fuzzy
 msgid "Show _Grid Fit (Live Update)..."
-msgstr "_Показать пиксельную сетку..."
+msgstr ""
 
 msgid "_Bigger Point Size"
 msgstr "_Больший размер пункта"
@@ -11675,20 +11490,17 @@ msgstr "Названия ссылок"
 msgid "_Fill"
 msgstr "_Заливку"
 
-#, fuzzy
 msgid "Previe_w"
-msgstr "Просмотреть"
+msgstr ""
 
-#, fuzzy
 msgid "Dragging Comparison Outline"
-msgstr "Сравнить _контуры"
+msgstr ""
 
 msgid "Pale_ttes"
 msgstr "_Палитры"
 
-#, fuzzy
 msgid "_Glyph Tabs"
-msgstr "Названия символов в PS"
+msgstr ""
 
 msgid "_Rulers"
 msgstr "_Линейки"
@@ -11703,14 +11515,12 @@ msgid "_Diagonal Hints"
 msgstr "_Диагональные хинты"
 
 #. GT: You might not want to translate this, it's a keyword in PostScript font files
-#, fuzzy
 msgid "_BlueValues"
-msgstr "Значение"
+msgstr ""
 
 #. GT: You might not want to translate this, it's a keyword in PostScript font files
-#, fuzzy
 msgid "FamilyBl_ues"
-msgstr "Гарнитура"
+msgstr ""
 
 msgid "_Anchors"
 msgstr "_Якоря"
@@ -11718,13 +11528,11 @@ msgstr "_Якоря"
 msgid "Debug Raster Cha_nges"
 msgstr ""
 
-#, fuzzy
 msgid "Hori_zontal Metric Lines"
-msgstr "Создать инструкцию для гор.штриха"
+msgstr ""
 
-#, fuzzy
 msgid "Vertical _Metric Lines"
-msgstr "Нет вертикальных метрик"
+msgstr ""
 
 msgid "Snap Outlines to Pi_xel Grid"
 msgstr ""
@@ -11766,16 +11574,15 @@ msgstr ""
 msgid "_Point"
 msgstr "_Точка"
 
-#, fuzzy
 msgid "Tools_2"
-msgstr "Инструменты"
+msgstr ""
 
 msgid "H_ints"
 msgstr "_Хинты"
 
 #. GT: Here (and following) MM means "MultiMaster"
 msgid "MM"
-msgstr "MM"
+msgstr ""
 
 msgid "Outline View 2"
 msgstr "Каркасное отображение 2"
@@ -11804,13 +11611,11 @@ msgstr "Выбрать лигатуру для просмотра"
 msgid "Kern Pair Closeup"
 msgstr "Кернинг пары"
 
-#, fuzzy
 msgid "Anchor Control for Base"
-msgstr "Информация о якоре"
+msgstr ""
 
-#, fuzzy
 msgid "Anchor Control for Mark"
-msgstr "Информация о якоре"
+msgstr ""
 
 msgid "Anchored Pairs"
 msgstr "Сцепленные пары"
@@ -11825,9 +11630,8 @@ msgstr "Сортировать по:"
 msgid "%.*s is not a valid class name (or number)"
 msgstr ""
 
-#, fuzzy
 msgid "Bad Class"
-msgstr "По классам"
+msgstr ""
 
 msgid "No Sequence/Lookups"
 msgstr "Нет последовательности/справок"
@@ -11862,9 +11666,8 @@ msgstr "Должно быть хотя бы одно контекстное пр
 msgid "Missing rules"
 msgstr "Отсутствуют правила"
 
-#, fuzzy
 msgid "Bad Coverage Table"
-msgstr "Неправильный файл изображения"
+msgstr ""
 
 msgid "There must be at least one match coverage table"
 msgstr ""
@@ -11882,29 +11685,25 @@ msgstr ""
 msgid "Replacement mismatch"
 msgstr ""
 
-#, fuzzy
 msgid "Bad rule"
-msgstr "Неправильный файл xfig"
+msgstr ""
 
 msgid "Warning"
 msgstr "Внимание"
 
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s\n"
 "Proceed anyway?"
 msgstr ""
-"Ожидался массив.\n"
-"Всё равно продолжить?"
 
 msgid ""
 "In a Reverse Chaining Substitution there must be exactly one coverage table "
 "with replacements"
 msgstr ""
 
-#, fuzzy
 msgid "Bad Sections"
-msgstr "Некорректное выделение"
+msgstr ""
 
 msgid ""
 "The sections specified do not make sense. All lookups must lie in the middle "
@@ -11916,9 +11715,8 @@ msgid ""
 "Proceed anyway?"
 msgstr ""
 
-#, fuzzy
 msgid "Bad class name"
-msgstr "Некорректное название глифа"
+msgstr ""
 
 msgid "No spaces allowed in class names."
 msgstr ""
@@ -11928,20 +11726,18 @@ msgid ""
 "of classes_simple."
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "The class name, %s, is already in use."
-msgstr "Этот параметр уже используется"
+msgstr ""
 
-#, fuzzy
 msgid "Section|Continue"
-msgstr "Продолжить"
+msgstr ""
 
 msgid "Section|Start"
 msgstr ""
 
-#, fuzzy
 msgid "Class|Name"
-msgstr "Название класса:"
+msgstr ""
 
 msgid "Glyphs in the class"
 msgstr "Глифы в классе"
@@ -11964,9 +11760,8 @@ msgstr ""
 msgid "Section"
 msgstr ""
 
-#, fuzzy
 msgid "Replacement glyphs"
-msgstr "Новые названия глифов"
+msgstr ""
 
 msgid "Edit Contextual Position"
 msgstr "Изменить контекстное размещение"
@@ -11977,9 +11772,8 @@ msgstr "Изменить контекстную подстановку"
 msgid "Edit Chaining Position"
 msgstr ""
 
-#, fuzzy
 msgid "Edit Chaining Substitution"
-msgstr "Post Base Substitutions"
+msgstr ""
 
 msgid "Edit Reverse Chaining Substitution"
 msgstr ""
@@ -11993,20 +11787,17 @@ msgstr "Создать контекстную подстановку"
 msgid "New Chaining Position"
 msgstr ""
 
-#, fuzzy
 msgid "New Chaining Substitution"
-msgstr "Post Base Substitutions"
+msgstr ""
 
 msgid "New Reverse Chaining Substitution"
 msgstr ""
 
-#, fuzzy
 msgid "Add Lookup"
-msgstr "_Добавить справку"
+msgstr ""
 
-#, fuzzy
 msgid "Remove Lookup"
-msgstr "Нет справок"
+msgstr ""
 
 msgid ""
 "OpenType Contextual or Chaining subtables may be in one\n"
@@ -12036,32 +11827,26 @@ msgid ""
 " or a more complex form which gives you full control."
 msgstr ""
 
-#, fuzzy
 msgid "Dialog Type:"
-msgstr "Тип шрифта:"
+msgstr ""
 
 msgid "Simple"
 msgstr ""
 
-#, fuzzy
 msgid "Complex"
-msgstr "Компонент"
+msgstr ""
 
-#, fuzzy
 msgid "New Section"
-msgstr "Повернуть выделение"
+msgstr ""
 
-#, fuzzy
 msgid "Set From Selection"
-msgstr "Центр выделения"
+msgstr ""
 
-#, fuzzy
 msgid "Set this glyph list from a selection."
-msgstr "Удалить совпадающие глифы из выделения"
+msgstr ""
 
-#, fuzzy
 msgid "An ordered list of lookups and positions"
-msgstr "Список названий справок"
+msgstr ""
 
 msgid "Match"
 msgstr "Совпадение"
@@ -12081,9 +11866,8 @@ msgstr "Подстановки"
 msgid "A coverage table:"
 msgstr "Таблица охвата:"
 
-#, fuzzy
 msgid "A list of coverage tables:"
-msgstr "Таблица охвата:"
+msgstr ""
 
 msgid "Same as Match Classes"
 msgstr ""
@@ -12103,9 +11887,8 @@ msgstr ""
 msgid "Ahead Classes"
 msgstr ""
 
-#, fuzzy
 msgid "List of class names"
-msgstr "Список названий глифов"
+msgstr ""
 
 msgid "Classes"
 msgstr "Классы"
@@ -12126,13 +11909,11 @@ msgstr ""
 msgid "Watch Points not supported in glyphs with references"
 msgstr ""
 
-#, fuzzy
 msgid "Registers"
-msgstr "Реестр CID:"
+msgstr ""
 
-#, fuzzy
 msgid "Stack"
-msgstr "Звезда"
+msgstr ""
 
 msgid "Storage"
 msgstr ""
@@ -12155,13 +11936,11 @@ msgstr ""
 msgid "Registers (TrueType)"
 msgstr ""
 
-#, fuzzy
 msgid "Stack (TrueType)"
-msgstr "Сохранение шрифта TrueType"
+msgstr ""
 
-#, fuzzy
 msgid "Storage (TrueType)"
-msgstr "Сохранение шрифта TrueType"
+msgstr ""
 
 msgid "Points (TrueType)"
 msgstr ""
@@ -12169,13 +11948,11 @@ msgstr ""
 msgid "Twilight"
 msgstr ""
 
-#, fuzzy
 msgid "Normal"
-msgstr "Формат:"
+msgstr ""
 
-#, fuzzy
 msgid "Current"
-msgstr "Текущий символ"
+msgstr ""
 
 msgid "Points|Original"
 msgstr ""
@@ -12189,9 +11966,8 @@ msgstr ""
 msgid "Em Units"
 msgstr ""
 
-#, fuzzy
 msgid "Transformed"
-msgstr "Изменён:"
+msgstr ""
 
 msgid "Instructions out of date"
 msgstr "Инструкции устарели"
@@ -12227,6 +12003,27 @@ msgstr ""
 msgid "Instruction Gloss (TrueType)"
 msgstr ""
 
+msgid "Export Options"
+msgstr ""
+
+msgid ""
+"The following options influence how glyphs are exported.\n"
+"Most are specific to one or more formats."
+msgstr ""
+
+msgid "_Use Transform (SVG)"
+msgstr ""
+
+msgid ""
+"FontForge previously exported glyphs using a SVG\n"
+"transform element to flip the Y-axis rather\n"
+"than changing the individual values. This option\n"
+"reverts to that convention."
+msgstr ""
+
+msgid "_Always raise this dialog when exporting"
+msgstr ""
+
 msgid "Bits/Pixel:"
 msgstr ""
 
@@ -12237,19 +12034,19 @@ msgid "Pixel size?"
 msgstr ""
 
 msgid "EPS"
-msgstr "EPS"
+msgstr ""
 
 msgid "XFig"
-msgstr "XFig"
+msgstr ""
 
 msgid "SVG"
-msgstr "SVG"
+msgstr ""
 
 msgid "Glif"
-msgstr "Glif"
+msgstr ""
 
 msgid "PDF"
-msgstr "PDF"
+msgstr ""
 
 msgid "Raph's plate"
 msgstr "Файлы plate Рафа Левьена"
@@ -12258,18 +12055,16 @@ msgid "X Bitmap"
 msgstr "Растр X"
 
 msgid "BMP"
-msgstr "BMP"
+msgstr ""
 
-#, fuzzy
 msgid "png"
-msgstr "Интервал"
+msgstr ""
 
 msgid "X Pixmap"
 msgstr ""
 
-#, fuzzy
 msgid "C FontForge"
-msgstr "Файлы SFD из FontForge"
+msgstr ""
 
 msgid "_Replace"
 msgstr "_Заменить"
@@ -12303,6 +12098,9 @@ msgstr "_Фильтр"
 msgid "Directory|_New"
 msgstr "Создать _каталог"
 
+msgid "_Options"
+msgstr ""
+
 msgid "Format:"
 msgstr "Формат:"
 
@@ -12324,9 +12122,8 @@ msgstr ""
 msgid "Both points must be specified, or neither"
 msgstr ""
 
-#, fuzzy
 msgid "Couldn't find base point"
-msgstr "Не удалось найти символ"
+msgstr ""
 
 msgid "Couldn't find point in reference"
 msgstr ""
@@ -12394,10 +12191,10 @@ msgid "Bounding Box:"
 msgstr "Площадка (BB):"
 
 msgid "X:"
-msgstr "X:"
+msgstr ""
 
 msgid "Y:"
-msgstr "Y:"
+msgstr ""
 
 msgid "_Show"
 msgstr "_Показать"
@@ -12485,9 +12282,8 @@ msgstr ""
 msgid "AnchorPoint|_New"
 msgstr "_Создать"
 
-#, fuzzy
 msgid "AnchorClass|New _Class"
-msgstr "Якоря"
+msgstr ""
 
 #, c-format
 msgid "Curvature: %g"
@@ -12508,17 +12304,14 @@ msgstr "След. КТ X"
 msgid "Next CP Y"
 msgstr "След. КТ Y"
 
-#, fuzzy
 msgid "Next CP Dist"
-msgstr "След. КТ X"
+msgstr ""
 
-#, fuzzy
 msgid "Next CP Angle"
-msgstr "След. КТ X"
+msgstr ""
 
-#, fuzzy
 msgid "Prev CP Dist"
-msgstr "Пред. КТ X"
+msgstr ""
 
 msgid "Prev CP X"
 msgstr "Пред. КТ X"
@@ -12526,9 +12319,8 @@ msgstr "Пред. КТ X"
 msgid "Prev CP Y"
 msgstr "Пред. КТ Y"
 
-#, fuzzy
 msgid "Prev CP Angle"
-msgstr "Пред. КТ X"
+msgstr ""
 
 msgid "Overlapped Hints"
 msgstr "Перекрывающиеся хинты"
@@ -12564,7 +12356,7 @@ msgid "Dist"
 msgstr "Расстояние"
 
 msgid "°"
-msgstr "°"
+msgstr ""
 
 msgid "Curvature: -0.00000000"
 msgstr "Искривление: -0.00000000"
@@ -12599,7 +12391,7 @@ msgstr "Следующая на контуре"
 #. GT: Y is a coordinate
 #. GT: Y is a coordinate, the leading spaces help to align it
 msgid "Y"
-msgstr "Y"
+msgstr ""
 
 msgid "Spiro Point Info"
 msgstr "О точке Spiro"
@@ -12627,7 +12419,7 @@ msgid "Pointsize X"
 msgstr "Размер по X"
 
 msgid "DPI"
-msgstr "DPI"
+msgstr ""
 
 msgid "Grid Fit Parameters"
 msgstr "Параметры пиксельной сетки"
@@ -12639,7 +12431,7 @@ msgid "Scale X/Y the same"
 msgstr "Одинаково масштабировать X/Y"
 
 msgid "_DPI:"
-msgstr "_DPI:"
+msgstr ""
 
 msgid "_Pointsize Y:"
 msgstr "_Размер точки по Y:"
@@ -12704,31 +12496,61 @@ msgstr "Создать хинт горизонтального штриха"
 msgid "Create Vertical Stem Hint"
 msgstr "Создать хинт вертикального штриха"
 
-msgid "PS Interpretion"
-msgstr "Интерпретация PS"
-
-#. GT: The following strings should be concatenated together, the result
-#. GT: translated, and then broken into lines by hand. I'm sure it would
-#. GT: be better to specify this all as one string, but my widgets won't support
-#. GT: that
-msgid ""
-"FontForge has some bugs in its remove overlap\n"
-"function which may cause you problems, so\n"
-"I give you the option of turning it off.\n"
-"Leave it on if possible though, it is useful."
+msgid "Import Parameters"
 msgstr ""
 
-msgid "Handle Erasers"
+msgid ""
+"The following options influence how files are imported.\n"
+"Most are specific to one or more formats."
+msgstr ""
+
+msgid "_Correct Direction (PS/EPS)"
+msgstr ""
+
+msgid "Handle Erasers (PS/EPS)"
 msgstr ""
 
 msgid ""
 "Certain programs use pens with white ink as erasers\n"
-"If you select (blacken) this checkbox, FontForge will\n"
-"attempt to simulate that."
+"This option attempts to simulate that effect."
 msgstr ""
-"В некоторых программах вместо ластика используется\n"
-"перо с белыми чернилами. Если вы включите эту функцию,\n"
-"FontForge попытается имитировать это."
+
+msgid "Simplify Stroke (SVG/PS/EPS)"
+msgstr ""
+
+msgid ""
+"Run Simplify after expanding stroked paths\n"
+"to reduce the number of points."
+msgstr ""
+
+msgid "Use Clip-paths (SVG)"
+msgstr ""
+
+msgid "Scale to fit (Misc)"
+msgstr ""
+
+msgid "Default Join Limit (PS/EPS/SVG):"
+msgstr ""
+
+msgid ""
+"The length limit for Miter and Arcs joins in units\n"
+"of 1/2 stroke-width. Set to -1 to use the format-\n"
+"specific limits of 10.0 for PostScript and 4.0 for SVG."
+msgstr ""
+
+msgid "Accuracy _Target:"
+msgstr ""
+
+msgid ""
+"The Expand Stroke algorithm will attempt to be (at\n"
+"least) this accurate, but there may be exceptions."
+msgstr ""
+
+msgid "_Always raise this dialog when importing"
+msgstr ""
+
+msgid "Accuracy Target:"
+msgstr ""
 
 msgid "Image"
 msgstr "Изображение"
@@ -12740,23 +12562,22 @@ msgid "Raph's plate files"
 msgstr "Файлы plate Рафа Левьена"
 
 msgid "BDF"
-msgstr "BDF"
+msgstr ""
 
 msgid "TTF"
-msgstr "TTF"
+msgstr ""
 
 msgid "ΤεΧ Bitmap Fonts"
 msgstr "Растровые шрифты ΤεΧ"
 
 msgid "PCF (pmf)"
-msgstr "PCF (pmf)"
+msgstr ""
 
 msgid "Mac Bitmap"
-msgstr "Mac Bitmap"
+msgstr ""
 
-#, fuzzy
 msgid "Win FON"
-msgstr "Win"
+msgstr ""
 
 msgid "palm"
 msgstr ""
@@ -12840,7 +12661,7 @@ msgid "Perform a perspective transformation on the selection"
 msgstr "Выполнить преобразование выделения в перспективе"
 
 msgid "Rotate the selection in 3D and project back to plane"
-msgstr "Повернуть выделение в 3D и спроецировать обратно на плоскость"
+msgstr ""
 
 msgid "Polygon or Star"
 msgstr "Многоугольн. или звезда"
@@ -12906,18 +12727,16 @@ msgid "De_activate Spiro"
 msgstr "В_ыключить Спиро"
 
 msgid "G_4"
-msgstr "G_4"
+msgstr ""
 
 msgid "G_2"
-msgstr "G_2"
+msgstr ""
 
-#, fuzzy
 msgid "Lef_t"
-msgstr "С_лева"
+msgstr ""
 
-#, fuzzy
 msgid "Rig_ht"
-msgstr "С_права"
+msgstr ""
 
 #. GT: Foreground, make it short
 msgid "F_ore"
@@ -13069,10 +12888,10 @@ msgid "Make Quadratic"
 msgstr "Поменять на квадратичные сплайны"
 
 msgid "+"
-msgstr "+"
+msgstr ""
 
 msgid "-"
-msgstr "-"
+msgstr ""
 
 msgid "Delete the current layer"
 msgstr "Удалить текущий слой"
@@ -13104,25 +12923,20 @@ msgstr ""
 msgid "Right Constraint"
 msgstr ""
 
-#, fuzzy
 msgid "Curve"
-msgstr "_Кривая"
+msgstr ""
 
-#, fuzzy
 msgid "HVCurve"
-msgstr "_Кривая"
+msgstr ""
 
-#, fuzzy
 msgid "Tangent"
-msgstr "_Касательная"
+msgstr ""
 
-#, fuzzy
 msgid "Merge"
-msgstr "О_бъединить"
+msgstr ""
 
-#, fuzzy
 msgid "Merge to Line"
-msgstr "Объединение шрифтов"
+msgstr ""
 
 msgid "Add a left \"tangent\" point"
 msgstr "Добавить левую точку касательной"
@@ -13130,32 +12944,26 @@ msgstr "Добавить левую точку касательной"
 msgid "Add a right \"tangent\" point"
 msgstr "Добавить правую точку касательной"
 
-#, fuzzy
 msgid "Name Point..."
-msgstr "_Следующая точка"
+msgstr ""
 
 msgid "Make Clip Path"
 msgstr "Создать обтравочный контур"
 
-#, fuzzy
 msgid "Make Line"
-msgstr "Сделать _прямым отрезком"
+msgstr ""
 
-#, fuzzy
 msgid "Make Arc"
-msgstr "Сделать _дугой"
+msgstr ""
 
-#, fuzzy
 msgid "Insert Point On Spline At..."
-msgstr "_Вставить точку в сплайн..."
+msgstr ""
 
-#, fuzzy
 msgid "Name Point"
-msgstr "_Следующая точка"
+msgstr ""
 
-#, fuzzy
 msgid "Name Contour"
-msgstr "_Дать имя контуру"
+msgstr ""
 
 msgid "Bitmap"
 msgstr "Растр"
@@ -13216,7 +13024,7 @@ msgid "_Radius:"
 msgstr "_Радиус:"
 
 msgid "3"
-msgstr "3"
+msgstr ""
 
 msgid "_Width:"
 msgstr "_Ширина:"
@@ -13299,16 +13107,14 @@ msgstr "Предыдущая КТ"
 msgid "No Slope"
 msgstr "Без наклона"
 
-#, fuzzy
 msgid "No References"
-msgstr "_Скопировать ссылку"
+msgstr ""
 
 msgid "No references allowed in a pen."
 msgstr ""
 
-#, fuzzy
 msgid "Nothing specified"
-msgstr "Ничего не выбрано"
+msgstr ""
 
 msgid "Please draw a convex polygon in the drawing area."
 msgstr ""
@@ -13332,9 +13138,6 @@ msgid "Join Limit:"
 msgstr ""
 
 msgid "Extend Cap:"
-msgstr ""
-
-msgid "Accuracy Target:"
 msgstr ""
 
 msgid "Removing both the internal and the external contours makes no sense"
@@ -13425,9 +13228,6 @@ msgid "as _Length"
 msgstr ""
 
 msgid "* Nib _Span"
-msgstr ""
-
-msgid "Accuracy _Target:"
 msgstr ""
 
 msgid ""
@@ -13625,13 +13425,11 @@ msgstr "Скосить:"
 msgid "Translate By"
 msgstr "Переместить на"
 
-#, fuzzy
 msgid "Transform:"
-msgstr "Изменён:"
+msgstr ""
 
-#, fuzzy
 msgid "Bad Color"
-msgstr "Цвет:"
+msgstr ""
 
 msgid "Opacity:"
 msgstr "Непрозрачность:"
@@ -13658,13 +13456,11 @@ msgstr "Градиент:"
 msgid "Add"
 msgstr "Добавить"
 
-#, fuzzy
 msgid "Edit"
-msgstr "_Правка"
+msgstr ""
 
-#, fuzzy
 msgid "Pattern:"
-msgstr "Шаблон поиска:"
+msgstr ""
 
 msgid "Stroke"
 msgstr "Обводка"
@@ -13682,9 +13478,8 @@ msgid ""
 "draw the next 10, and so on."
 msgstr ""
 
-#, fuzzy
 msgid "_Transform Pen:"
-msgstr "Изменён:"
+msgstr ""
 
 msgid "Line Cap"
 msgstr "Конец линии"
@@ -13725,21 +13520,17 @@ msgstr "FreeType недоступен"
 msgid "FreeType unavailable."
 msgstr "FreeType недоступен."
 
-#, fuzzy
 msgid "Unexpected error"
-msgstr "Неожиданное число"
+msgstr ""
 
-#, fuzzy
 msgid "Nothing found"
-msgstr "Ничего не загружено"
+msgstr ""
 
-#, fuzzy
 msgid "Nothng found."
-msgstr "Не найдено"
+msgstr ""
 
-#, fuzzy
 msgid "No FreeType"
-msgstr "Использовать FreeType"
+msgstr ""
 
 msgid "You must install the freetype library before using this command."
 msgstr ""
@@ -13749,18 +13540,16 @@ msgid ""
 "interpreter."
 msgstr ""
 
-#, fuzzy
 msgid "No Instructions"
-msgstr "Самопересечений нет"
+msgstr ""
 
 msgid ""
 "This glyph has no instructions. Adding instructions (a DELTA) may change its "
 "rasterization significantly."
 msgstr ""
 
-#, fuzzy
 msgid "Not quadratic"
-msgstr "Квадратичные сплайны"
+msgstr ""
 
 msgid "This must be a truetype layer."
 msgstr ""
@@ -13781,34 +13570,28 @@ msgid "Rasterize at sizes:"
 msgstr "Растеризовать в кеглях:"
 
 msgid "DPI:"
-msgstr "DPI:"
+msgstr ""
 
-#, fuzzy
 msgid "Proximity:"
-msgstr "_Предельная ошибка:"
+msgstr ""
 
-#, fuzzy
 msgid "pixels"
-msgstr "%d пикселов"
+msgstr ""
 
 msgid "This may take a while. Please be patient..."
 msgstr "Это может занять некоторое время. Будьте терпеливы..."
 
-#, fuzzy
 msgid "Glyph, Size, Point"
-msgstr "Глифа нет в шрифте"
+msgstr ""
 
-#, fuzzy
 msgid "Glyph, Point, Size"
-msgstr "_Размер (pt):"
+msgstr ""
 
-#, fuzzy
 msgid "Size, Glyph, Point"
-msgstr "Размер точек"
+msgstr ""
 
-#, fuzzy
 msgid "Sort|Alphabetic"
-msgstr "В _алфавитном порядке"
+msgstr ""
 
 msgid "Glyph Order"
 msgstr "Порядок глифов"
@@ -13936,9 +13719,8 @@ msgid ""
 "    freetype's. Only as last resort"
 msgstr ""
 
-#, fuzzy
 msgid "nohints"
-msgstr "Точки"
+msgstr ""
 
 msgid ""
 "Select some text, then use this list to specify\n"
@@ -14044,16 +13826,14 @@ msgstr ""
 msgid "_Insert"
 msgstr "_Вставить"
 
-#, fuzzy
 msgid "Outline Width"
-msgstr "Контур"
+msgstr ""
 
 msgid "_Gap:"
 msgstr "_Интервал:"
 
-#, fuzzy
 msgid "Inline"
-msgstr "Разыменовать"
+msgstr ""
 
 msgid "Outline Width:"
 msgstr "Ширина контура:"
@@ -14131,25 +13911,25 @@ msgid "ISO 8859-11 (Thai)"
 msgstr "ISO 8859-11 (Тайский)"
 
 msgid "Macintosh Latin"
-msgstr "Macintosh Latin"
+msgstr ""
 
 msgid "Windows Latin (\"ANSI\")"
 msgstr "Латиница Windows (ANSI)"
 
 msgid "Adobe Standard"
-msgstr "Adobe Standard"
+msgstr ""
 
 msgid "Symbol"
-msgstr "Symbol"
+msgstr ""
 
 msgid "ΤεΧ Base (8r)"
-msgstr "ΤεΧ Base (8r)"
+msgstr ""
 
 msgid "ISO 10646-1 (Unicode, BMP)"
-msgstr "ISO 10646-1 (Unicode, BMP)"
+msgstr ""
 
 msgid "ISO 10646-1 (Unicode, Full)"
-msgstr "ISO 10646-1 (Unicode, Full)"
+msgstr ""
 
 msgid "SJIS (Kanji)"
 msgstr "SJIS (Кандзи)"
@@ -14172,9 +13952,8 @@ msgstr "Johab (Корейский)"
 msgid "GB 2312 (Simp. Chinese)"
 msgstr "GB 2312 (Упрощ. китайский)"
 
-#, fuzzy
 msgid "EUC GB 2312 (Chinese)"
-msgstr "GB 2312 (Упрощ. китайский)"
+msgstr ""
 
 msgid "Big5 (Trad. Chinese)"
 msgstr "Big5 (Китайский)"
@@ -14195,9 +13974,8 @@ msgstr ""
 msgid "MacStyles|Italic"
 msgstr ""
 
-#, fuzzy
 msgid "MacStyles|Condense"
-msgstr "Сжатый"
+msgstr ""
 
 msgid "MacStyles|Expand"
 msgstr ""
@@ -14344,9 +14122,8 @@ msgstr ""
 msgid "Modern Serifs"
 msgstr ""
 
-#, fuzzy
 msgid "MS Italian"
-msgstr "Швейцарский итальянский"
+msgstr ""
 
 msgid "MS Script"
 msgstr "MS Рукописная"
@@ -14360,13 +14137,11 @@ msgstr ""
 msgid "CS Clarendon"
 msgstr ""
 
-#, fuzzy
 msgid "CS Modern"
-msgstr "Испанский современный"
+msgstr ""
 
-#, fuzzy
 msgid "CS Traditional"
-msgstr "Испанский традиционный"
+msgstr ""
 
 msgid "CS Newspaper"
 msgstr ""
@@ -14407,9 +14182,8 @@ msgstr ""
 msgid "Freeform Serifs"
 msgstr ""
 
-#, fuzzy
 msgid "FS Modern"
-msgstr "Испанский современный"
+msgstr ""
 
 msgid "FS Miscellaneous"
 msgstr ""
@@ -14435,9 +14209,8 @@ msgstr ""
 msgid "Sans-Serif|SS Typewriter Gothic"
 msgstr ""
 
-#, fuzzy
 msgid "Sans-Serif|SS Matrix"
-msgstr "Без засечек"
+msgstr ""
 
 msgid "Sans-Serif|SS Miscellaneous"
 msgstr ""
@@ -14511,24 +14284,23 @@ msgstr "Нет"
 msgid "Bold"
 msgstr "Жирный"
 
-#, fuzzy
 msgid "Bold Italic"
-msgstr "Этрусский"
+msgstr ""
 
 msgid "OS2Version|Automatic"
 msgstr "Автоматически"
 
 msgid "1"
-msgstr "1"
+msgstr ""
 
 msgid "2"
-msgstr "2"
+msgstr ""
 
 msgid "4"
-msgstr "4"
+msgstr ""
 
 msgid "0"
-msgstr "0"
+msgstr ""
 
 msgid "PanoseFamily|Any"
 msgstr "Любой вариант"
@@ -14546,9 +14318,8 @@ msgstr ""
 msgid "cursive|Latin: Handwritten"
 msgstr ""
 
-#, fuzzy
 msgid "Latin: Decorative"
-msgstr "Декоративная"
+msgstr ""
 
 msgid "Latin: Pictorial and Symbol"
 msgstr ""
@@ -14592,9 +14363,8 @@ msgstr "Нормальные"
 msgid "Obtuse Sans"
 msgstr "Тупоугольные"
 
-#, fuzzy
 msgid "Perpendicular Sans"
-msgstr "Перпендикулярные"
+msgstr ""
 
 msgid "Flared"
 msgstr "Расширяющиеся"
@@ -14701,9 +14471,8 @@ msgstr "Любой вариант"
 msgid "PanoseStrokeVariation|No Fit"
 msgstr "Всё остальное"
 
-#, fuzzy
 msgid "No Variation"
-msgstr "_Изменение штриха:"
+msgstr ""
 
 msgid "Gradual/Diagonal"
 msgstr "Постепенное, диагональное"
@@ -14726,9 +14495,8 @@ msgstr "Резкое, горизонтальное"
 msgid "Instant/Vertical"
 msgstr "Постоянное, вертикальное"
 
-#, fuzzy
 msgid "Instant/Horizontal"
-msgstr "По горизонтали"
+msgstr ""
 
 msgid "PanoseArmStyle|Any"
 msgstr "Любой вариант"
@@ -14886,13 +14654,11 @@ msgstr "Любой вариант"
 msgid "PanoseTool|No Fit"
 msgstr "Нет подходящего варианта"
 
-#, fuzzy
 msgid "Flat Nib"
-msgstr "Фильтр"
+msgstr ""
 
-#, fuzzy
 msgid "Pressure Point"
-msgstr "П_редыдущая точка"
+msgstr ""
 
 msgid "Engraved"
 msgstr ""
@@ -14912,17 +14678,14 @@ msgstr ""
 msgid "Wild Brush - Drips a lot"
 msgstr ""
 
-#, fuzzy
 msgid "PanoseSpacing|Any"
-msgstr "Любой вариант"
+msgstr ""
 
-#, fuzzy
 msgid "PanoseSpacing|No Fit"
-msgstr "Всё остальное"
+msgstr ""
 
-#, fuzzy
 msgid "Proportional Spaced"
-msgstr "_Пропорции"
+msgstr ""
 
 msgid "PanoseAspectRatio|Any"
 msgstr "Любой вариант"
@@ -14933,21 +14696,17 @@ msgstr "Нет подходящего варианта"
 msgid "Very Low"
 msgstr "Очень низкий"
 
-#, fuzzy
 msgid "Low"
-msgstr "Лаосский"
+msgstr ""
 
-#, fuzzy
 msgid "Medium Low"
-msgstr "Средний"
+msgstr ""
 
-#, fuzzy
 msgid "Medium High"
-msgstr "Средний"
+msgstr ""
 
-#, fuzzy
 msgid "High"
-msgstr "Высокий марийский"
+msgstr ""
 
 msgid "Very High"
 msgstr "Очень высокий"
@@ -14961,24 +14720,20 @@ msgstr "Нет подходящего варианта"
 msgid "Roman Disconnected"
 msgstr ""
 
-#, fuzzy
 msgid "Roman Trailing"
-msgstr "Румынский"
+msgstr ""
 
 msgid "Roman Connected"
 msgstr ""
 
-#, fuzzy
 msgid "Cursive Disconnected"
-msgstr "Курсивное размещение"
+msgstr ""
 
-#, fuzzy
 msgid "Cursive Trailing"
-msgstr "Курсивное размещение"
+msgstr ""
 
-#, fuzzy
 msgid "Cursive Connected"
-msgstr "Курсивное размещение"
+msgstr ""
 
 msgid "Blackletter Disconnected"
 msgstr ""
@@ -14989,13 +14744,11 @@ msgstr ""
 msgid "Blackletter Connected"
 msgstr ""
 
-#, fuzzy
 msgid "PanoseForm|Any"
-msgstr "Любой вариант"
+msgstr ""
 
-#, fuzzy
 msgid "PanoseForm|No Fit"
-msgstr "Все остальное"
+msgstr ""
 
 msgid "Upright/No Wrapping"
 msgstr ""
@@ -15009,9 +14762,8 @@ msgstr ""
 msgid "Upright/Extreme Wrapping"
 msgstr ""
 
-#, fuzzy
 msgid "Oblique/No Wrapping"
-msgstr "Наклонный, утяжеленный"
+msgstr ""
 
 msgid "Oblique/Some Wrapping"
 msgstr ""
@@ -15022,17 +14774,14 @@ msgstr ""
 msgid "Oblique/Extreme Wrapping"
 msgstr ""
 
-#, fuzzy
 msgid "Exaggerated/No Wrapping"
-msgstr "Резко расширяющиеся"
+msgstr ""
 
-#, fuzzy
 msgid "Exaggerated/Some Wrapping"
-msgstr "Резко расширяющиеся"
+msgstr ""
 
-#, fuzzy
 msgid "Exaggerated/More Wrapping"
-msgstr "Резко расширяющиеся"
+msgstr ""
 
 msgid "Exaggerated/Extreme Wrapping"
 msgstr ""
@@ -15085,25 +14834,20 @@ msgstr "Любой вариант"
 msgid "PanoseXAscent|No Fit"
 msgstr "Нет подходящего варианта"
 
-#, fuzzy
 msgid "PanoseXAscent|Very Low"
-msgstr "Очень низкий"
+msgstr ""
 
-#, fuzzy
 msgid "PanoseXAscent|Low"
-msgstr "Низкий"
+msgstr ""
 
-#, fuzzy
 msgid "PanoseXAscent|Medium"
-msgstr "Средний"
+msgstr ""
 
-#, fuzzy
 msgid "PanoseXAscent|High"
-msgstr "Высокий"
+msgstr ""
 
-#, fuzzy
 msgid "PanoseXAscent|Very High"
-msgstr "Очень высокий"
+msgstr ""
 
 msgid "PanoseClass|Any"
 msgstr "Любой вариант"
@@ -15111,25 +14855,20 @@ msgstr "Любой вариант"
 msgid "PanoseClass|No Fit"
 msgstr "Нет подходящего варианта"
 
-#, fuzzy
 msgid "Derivative"
-msgstr "Декоративная"
+msgstr ""
 
-#, fuzzy
 msgid "Non-standard Topology"
-msgstr "Нестандартный размер \"Em\""
+msgstr ""
 
-#, fuzzy
 msgid "Non-standard Elements"
-msgstr "Нестандартный размер \"Em\""
+msgstr ""
 
-#, fuzzy
 msgid "Non-standard Aspect"
-msgstr "Нестандартный размер \"Em\""
+msgstr ""
 
-#, fuzzy
 msgid "Initials"
-msgstr "Начальные формы"
+msgstr ""
 
 msgid "Cartoon"
 msgstr ""
@@ -15137,13 +14876,11 @@ msgstr ""
 msgid "Picture Stems"
 msgstr ""
 
-#, fuzzy
 msgid "Ornamented"
-msgstr "Орнаменты"
+msgstr ""
 
-#, fuzzy
 msgid "Text and Background"
-msgstr "Очистить _фон"
+msgstr ""
 
 msgid "Collage"
 msgstr ""
@@ -15157,17 +14894,14 @@ msgstr "Любой вариант"
 msgid "PanoseAspect|No Fit"
 msgstr "Нет подходящего варианта"
 
-#, fuzzy
 msgid "Super Condensed"
-msgstr "Очень сжатый"
+msgstr ""
 
-#, fuzzy
 msgid "Extended"
-msgstr "Параметры"
+msgstr ""
 
-#, fuzzy
 msgid "Very Extended"
-msgstr "Очень расширенный"
+msgstr ""
 
 msgid "Super Extended"
 msgstr ""
@@ -15181,13 +14915,11 @@ msgstr ""
 msgid "Horizontal High"
 msgstr ""
 
-#, fuzzy
 msgid "Broken"
-msgstr "Обводка"
+msgstr ""
 
-#, fuzzy
 msgid "PanoseSerifVariant|Any"
-msgstr "Любой вариант"
+msgstr ""
 
 msgid "PanoseSerifVariant|No Fit"
 msgstr "Нет подходящего варианта"
@@ -15195,13 +14927,11 @@ msgstr "Нет подходящего варианта"
 msgid "Oval"
 msgstr ""
 
-#, fuzzy
 msgid "PanoseSerivfs|Script"
-msgstr "Прямоугольные"
+msgstr ""
 
-#, fuzzy
 msgid "PanoseTreatment|Any"
-msgstr "Любой вариант"
+msgstr ""
 
 msgid "PanoseTreatment|No Fit"
 msgstr "Нет подходящего варианта"
@@ -15209,13 +14939,11 @@ msgstr "Нет подходящего варианта"
 msgid "Standard Solid Fill"
 msgstr ""
 
-#, fuzzy
 msgid "No Fill"
-msgstr "_Заливку"
+msgstr ""
 
-#, fuzzy
 msgid "Patterned Fill"
-msgstr "Шаблон поиска:"
+msgstr ""
 
 msgid "Complex Fill"
 msgstr ""
@@ -15232,17 +14960,14 @@ msgstr "Любой вариант"
 msgid "PanoseLining|No Fit"
 msgstr "Нет подходящего варианта"
 
-#, fuzzy
 msgid "PanoseLining|None"
-msgstr "Нет"
+msgstr ""
 
-#, fuzzy
 msgid "PanoseLining|Inline"
-msgstr "Любой вариант"
+msgstr ""
 
-#, fuzzy
 msgid "PanoseLining|Outline"
-msgstr "Сохранение контуров"
+msgstr ""
 
 msgid "PanoseLining|Engraved (Multiple Lines)"
 msgstr ""
@@ -15256,35 +14981,29 @@ msgstr ""
 msgid "PanoseLining|Backdrop"
 msgstr ""
 
-#, fuzzy
 msgid "Standard"
-msgstr "Adobe Standard"
+msgstr ""
 
-#, fuzzy
 msgid "Square"
-msgstr "К_вадратный"
+msgstr ""
 
-#, fuzzy
 msgid "Multiple Segment"
-msgstr "Сохранение множества шрифтов Postscript"
+msgstr ""
 
 msgid "Deco (E,M,S) Waco Midline"
 msgstr ""
 
-#, fuzzy
 msgid "Uneven Weighting"
-msgstr "Смена насыщенности"
+msgstr ""
 
 msgid "Diverse Arms"
 msgstr ""
 
-#, fuzzy
 msgid "Diverse Forms"
-msgstr "Изолированные формы"
+msgstr ""
 
-#, fuzzy
 msgid "Lombardic Forms"
-msgstr "Числовые формы"
+msgstr ""
 
 msgid "Upper Case in Lower Case"
 msgstr ""
@@ -15298,32 +15017,26 @@ msgstr ""
 msgid "Cursive"
 msgstr "Курсив"
 
-#, fuzzy
 msgid "Blackletter"
-msgstr "Черный"
+msgstr ""
 
 msgid "Swash Variance"
 msgstr ""
 
-#, fuzzy
 msgid "PanoseCharRange|Any"
-msgstr "Любой вариант"
+msgstr ""
 
-#, fuzzy
 msgid "PanoseCharRange|No Fit"
-msgstr "Все остальное"
+msgstr ""
 
-#, fuzzy
 msgid "Extended Collection"
-msgstr "Не в коллекции"
+msgstr ""
 
-#, fuzzy
 msgid "Literals"
-msgstr "Буквы:"
+msgstr ""
 
-#, fuzzy
 msgid "No Lower Case"
-msgstr "Нижний регистр"
+msgstr ""
 
 msgid "Small Caps"
 msgstr "Капитель"
@@ -15337,32 +15050,26 @@ msgstr "Нет подходящего варианта"
 msgid "Montages"
 msgstr ""
 
-#, fuzzy
 msgid "Pictures"
-msgstr "Лигатуры"
+msgstr ""
 
-#, fuzzy
 msgid "Shapes"
-msgstr "Тип формы"
+msgstr ""
 
-#, fuzzy
 msgid "Scientific"
-msgstr "Научные подстрочные знаки"
+msgstr ""
 
 msgid "Music"
 msgstr ""
 
-#, fuzzy
 msgid "Expert"
-msgstr "Экспертные формы"
+msgstr ""
 
-#, fuzzy
 msgid "Patterns"
-msgstr "Шаблон поиска:"
+msgstr ""
 
-#, fuzzy
 msgid "Borders"
-msgstr "Ширина полосок:"
+msgstr ""
 
 msgid "Icons"
 msgstr ""
@@ -15394,41 +15101,32 @@ msgstr "Узкий"
 msgid "Very Narrow"
 msgstr "Очень узкий"
 
-#, fuzzy
 msgid "Class10"
-msgstr "Класс 0"
+msgstr ""
 
-#, fuzzy
 msgid "Class2"
-msgstr "Классы"
+msgstr ""
 
-#, fuzzy
 msgid "Class3"
-msgstr "Классы"
+msgstr ""
 
-#, fuzzy
 msgid "Class4"
-msgstr "Классы"
+msgstr ""
 
-#, fuzzy
 msgid "Class5"
-msgstr "Классы"
+msgstr ""
 
-#, fuzzy
 msgid "Class6"
-msgstr "Классы"
+msgstr ""
 
-#, fuzzy
 msgid "Class7"
-msgstr "Классы"
+msgstr ""
 
-#, fuzzy
 msgid "Class8"
-msgstr "Классы"
+msgstr ""
 
-#, fuzzy
 msgid "Class9"
-msgstr "Классы"
+msgstr ""
 
 msgid "Panose|_Weight"
 msgstr "_Насыщенность:"
@@ -15460,55 +15158,44 @@ msgstr "_Рост строчных:"
 msgid "F_inials"
 msgstr ""
 
-#, fuzzy
 msgid "F_orm"
-msgstr "_Передний план"
+msgstr ""
 
-#, fuzzy
 msgid "_Aspect Ratio"
-msgstr "Ко_эфф. высоты:"
+msgstr ""
 
-#, fuzzy
 msgid "_Spacing"
-msgstr "Интервал"
+msgstr ""
 
-#, fuzzy
 msgid "_Tool"
-msgstr "И_нструменты"
+msgstr ""
 
-#, fuzzy
 msgid "_Topology"
-msgstr "Вв_ерх"
+msgstr ""
 
-#, fuzzy
 msgid "_X-Ascent"
-msgstr "_Верхние выносные:"
+msgstr ""
 
-#, fuzzy
 msgid "C_ontrast"
-msgstr "_Контраст:"
+msgstr ""
 
-#, fuzzy
 msgid "Char. _Range"
-msgstr "Некорректный диапазон"
+msgstr ""
 
-#, fuzzy
 msgid "T_reatment"
-msgstr "_Элемент"
+msgstr ""
 
 msgid "_Aspect"
 msgstr ""
 
-#, fuzzy
 msgid "_Class"
-msgstr "Классы"
+msgstr ""
 
 msgid "_Lining"
 msgstr ""
 
-#, fuzzy
 msgid "_Serif Variant"
-msgstr "Верт. варианты"
+msgstr ""
 
 msgid "AR: Char 119"
 msgstr ""
@@ -15579,9 +15266,8 @@ msgstr "Арабский (Катар)"
 msgid "Azeri (Latin)"
 msgstr ""
 
-#, fuzzy
 msgid "Azeri (Cyrillic)"
-msgstr "KOI8-R (Кириллица)"
+msgstr ""
 
 msgid "Bengali Bangladesh"
 msgstr "Бенгальский (Бангладеш)"
@@ -15730,9 +15416,8 @@ msgstr "Французский (Северная Африка)"
 msgid "Frisian"
 msgstr "Фризский"
 
-#, fuzzy
 msgid "Fulfulde"
-msgstr "Полное название"
+msgstr ""
 
 msgid "Gaelic (Scottish)"
 msgstr "Гэльский (Шотландия)"
@@ -16014,7 +15699,7 @@ msgid "Fullname"
 msgstr "Полное название"
 
 msgid "UniqueID"
-msgstr "UniqueID"
+msgstr ""
 
 msgid "Version"
 msgstr "Версия"
@@ -16167,7 +15852,7 @@ msgid "Unassigned Bit 127"
 msgstr "Неназначенный бит 127"
 
 msgid "1252, Latin-1"
-msgstr "1252, Latin-1"
+msgstr ""
 
 msgid "1250, Latin-2 (Eastern Europe)"
 msgstr "1250, Latin-2 (Восточная Европа)"
@@ -16253,16 +15938,14 @@ msgstr "Зарезервированный бит 27"
 msgid "Reserved Bit 28"
 msgstr "Зарезервированный бит 28"
 
-#, fuzzy
 msgid "Mac Roman"
-msgstr "Mac Bitmap"
+msgstr ""
 
 msgid "OEM Charset"
 msgstr ""
 
-#, fuzzy
 msgid "Symbol Charset"
-msgstr "Symbol"
+msgstr ""
 
 msgid "Reserved Bit 32"
 msgstr "Зарезервированный бит 32"
@@ -16343,7 +16026,7 @@ msgid "855, IBM Cyrillic; primarily Russian"
 msgstr ""
 
 msgid "852, Latin 2"
-msgstr "852, Latin 2"
+msgstr ""
 
 msgid "775, MS-DOS Baltic"
 msgstr ""
@@ -16399,9 +16082,8 @@ msgstr ""
 msgid "Grid Fit w/ Sym-Smooth"
 msgstr ""
 
-#, fuzzy
 msgid "Gasp|For Pixels Per EM <= Value"
-msgstr "Пикселов на em"
+msgstr ""
 
 msgid "Gasp|Grid Fit"
 msgstr ""
@@ -16439,9 +16121,8 @@ msgstr "Тип"
 msgid "Orig layer"
 msgstr ""
 
-#, fuzzy
 msgid "Set Name"
-msgstr "Название стиля"
+msgstr ""
 
 msgid "Glyphs in the set"
 msgstr "Глифы в наборе"
@@ -16477,13 +16158,11 @@ msgid ""
 "Which usually begins with a \"{\" and ends with a \"}\"."
 msgstr ""
 
-#, fuzzy
 msgid "Expected number."
-msgstr "Неожиданное число"
+msgstr ""
 
-#, fuzzy
 msgid "No Name"
-msgstr "Не переименовывать"
+msgstr ""
 
 msgid "Please specify a name for this mark class or set"
 msgstr ""
@@ -16498,17 +16177,15 @@ msgstr "Повторение названия"
 msgid "This name was previously used to identify mark class/set #%d."
 msgstr ""
 
-#, fuzzy
 msgid "Mark Class was in use"
-msgstr "_Сглаживать"
+msgstr ""
 
 #, c-format
 msgid "This mark class (%s) was used in lookup %s"
 msgstr ""
 
-#, fuzzy
 msgid "Mark Set was in use"
-msgstr "Размещение отметки"
+msgstr ""
 
 #, c-format
 msgid "This mark set (%s) was used in lookup %s"
@@ -16644,9 +16321,8 @@ msgstr ""
 "Величина дополнительного пробела в конце каждого предложения\n"
 "или пробел в математической формуле."
 
-#, fuzzy
 msgid "Duplicate StyleSet Name"
-msgstr "Повторение названия"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -16655,17 +16331,15 @@ msgid ""
 "%.80s"
 msgstr ""
 
-#, fuzzy
 msgid "Bad hex number"
-msgstr "Неправильный номер в "
+msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Bad hex number in %s"
-msgstr "Неправильный номер в "
+msgstr ""
 
-#, fuzzy
 msgid "Font Information Dialog"
-msgstr "Информация о шрифте %.90s"
+msgstr ""
 
 msgid "Bad Grid Fitting table"
 msgstr ""
@@ -16673,33 +16347,29 @@ msgstr ""
 msgid "The 'gasp' (Grid Fit) table must end with a pixel entry of 65535"
 msgstr ""
 
-#, fuzzy
 msgid "Bad Copyright"
-msgstr "Авторские права"
+msgstr ""
 
 msgid ""
 "Copyright text (in the Names pane) must be entirely ASCII. So, use (c) "
 "instead of ©."
 msgstr ""
 
-#, fuzzy
 msgid "Bad Human Fontname"
-msgstr "То же, что и у имени файла"
+msgstr ""
 
 msgid ""
 "The human-readable fontname text (in the Names pane) must be entirely ASCII."
 msgstr ""
 
-#, fuzzy
 msgid "Bad Weight"
-msgstr "Н_асыщенность:"
+msgstr ""
 
 msgid "The weight text (in the Names pane) must be entirely ASCII."
 msgstr ""
 
-#, fuzzy
 msgid "Bad Version"
-msgstr "Версия"
+msgstr ""
 
 msgid "The version text (in the Names pane) must be entirely ASCII."
 msgstr ""
@@ -16718,9 +16388,8 @@ msgid ""
 "Is this really your intent?"
 msgstr ""
 
-#, fuzzy
 msgid "Removing instructions cannot be UNDONE!"
-msgstr "Удаление инструкций не может быть отменено!"
+msgstr ""
 
 msgid ""
 "You are about to change the last quadratic\n"
@@ -16774,9 +16443,8 @@ msgstr "Вв_ерх"
 msgid "Style _ID:"
 msgstr "_ID стиля:"
 
-#, fuzzy
 msgid "Bad Design Size Info"
-msgstr "Задуманный кегль шрифта:"
+msgstr ""
 
 msgid ""
 "If the design size is 0, then all other fields on that pane must be zero (or "
@@ -16842,9 +16510,8 @@ msgstr "_Класс насыщенности:"
 msgid "HHead _Line Gap:"
 msgstr ""
 
-#, fuzzy
 msgid "Typo Line _Gap:"
-msgstr "Конец линии"
+msgstr ""
 
 msgid "VHead _Column Spacing:"
 msgstr ""
@@ -16888,9 +16555,8 @@ msgstr ""
 msgid "Ca_pital Height:"
 msgstr "В_ысота прописных:"
 
-#, fuzzy
 msgid "_X Height:"
-msgstr "_Высота:"
+msgstr ""
 
 msgid "Strikeout"
 msgstr "Вычеркнутый"
@@ -16934,15 +16600,11 @@ msgstr "Сохранить"
 msgid "Change UniqueID?"
 msgstr "Изменить UniqueID?"
 
-#, fuzzy
 msgid ""
 "You have changed this font's name without changing the UniqueID (or XUID).\n"
 "This is probably not a good idea, would you like me to\n"
 "generate a random new value?"
 msgstr ""
-"Вы изменили название этого шрифта не изменяя его UniqueID (или XUID).\n"
-"Возможно это ошибка. Хотите, чтобы FontForge\n"
-"сгенерировал случайное новое значение?"
 
 msgid "Win Ascent Offset:"
 msgstr ""
@@ -17310,13 +16972,13 @@ msgid "Use XUID"
 msgstr "Использовать XUID"
 
 msgid "_XUID:"
-msgstr "_XUID:"
+msgstr ""
 
 msgid "Use UniqueID"
 msgstr "Использовать UniqueID"
 
 msgid "_UniqueID:"
-msgstr "_UniqueID:"
+msgstr ""
 
 msgid " _Em Size:"
 msgstr "_Размер Em:"
@@ -17339,9 +17001,8 @@ msgstr "Список названий:"
 msgid "Font Type:"
 msgstr "Тип шрифта:"
 
-#, fuzzy
 msgid "_Outline Font"
-msgstr "Без контурного"
+msgstr ""
 
 msgid "_Type3 Multi Layered Font"
 msgstr "Многослойный шрифт _Type3"
@@ -17413,9 +17074,8 @@ msgid ""
 "The 'Private' dictionary only applies to PostScript fonts."
 msgstr ""
 
-#, fuzzy
 msgid "_Histogram"
-msgstr "Гистограммы"
+msgstr ""
 
 msgid "Histogram Dialog"
 msgstr "Диалог гистограммы"
@@ -17453,17 +17113,12 @@ msgstr ""
 msgid "Only Embed Bitmaps"
 msgstr "Встраивать только растр"
 
-#, fuzzy
 msgid ""
 "Only Bitmaps may be embedded.\n"
 "Outline descriptions may not be\n"
 "(if font file contains no bitmaps\n"
 "then nothing may be embedded)."
 msgstr ""
-"Только растровые шрифты могут быть встроены,\n"
-"а описания контуров -- нет.\n"
-"(Если файл шрифта не содержит растровых вариантов\n"
-"то ничего не может быть встроено)"
 
 msgid "Vendor ID:"
 msgstr "ID производителя:"
@@ -17480,9 +17135,8 @@ msgid ""
 "meanings have been redefined."
 msgstr ""
 
-#, fuzzy
 msgid "Style Map:"
-msgstr "Название стиля:"
+msgstr ""
 
 msgid ""
 "MS needs to know whether a font family's members differ\n"
@@ -17508,9 +17162,8 @@ msgid ""
 "things below the baseline"
 msgstr ""
 
-#, fuzzy
 msgid "Is Offset"
-msgstr "Смещение"
+msgstr ""
 
 msgid "Really use Typo metrics"
 msgstr ""
@@ -17602,7 +17255,7 @@ msgid "Sub/Super"
 msgstr "Верхний/нижний индекс"
 
 msgid "Panose"
-msgstr "Panose"
+msgstr ""
 
 msgid "Charsets"
 msgstr "Кодировки"
@@ -17657,9 +17310,8 @@ msgstr ""
 #. GT: English (possibly translating it in parentheses). I believe there
 #. GT: are legal reasons for this.
 #. GT: So "Añadir SIL Open Font License (licencia de fuentes libres)"
-#, fuzzy
 msgid "Add OFL"
-msgstr "Добавить SIL "
+msgstr ""
 
 msgid ""
 "Click here to add the OFL metadata to your own font in the License and "
@@ -17671,16 +17323,10 @@ msgstr ""
 msgid "scripts.sil.org/OFL"
 msgstr ""
 
-#, fuzzy
 msgid ""
 "Click here for more information about the OFL (SIL Open Font License) \n"
 "including the corresponding FAQ. \n"
 msgstr ""
-"\n"
-"Щелкните для перехода на http://scripts.sil.org/OFL,\n"
-"чтобы узнать всё об Open Font License\n"
-"и прочитать ответы на часто задаваемые вопросы.\n"
-"\n"
 
 msgid ""
 "The OpenType Style Set features ('ss01'-'ss20') may\n"
@@ -17866,9 +17512,8 @@ msgstr ""
 "Если вы хотите установить область охвата Unicode в OS/2,\n"
 "перейдите к панели"
 
-#, fuzzy
 msgid "OS/2 -> Charsets"
-msgstr "Кодировки"
+msgstr ""
 
 msgid "Include Empty Blocks"
 msgstr "Включая незаполненные блоки"
@@ -17879,21 +17524,20 @@ msgid ""
 "in the range but aren't."
 msgstr ""
 
-#, fuzzy
 msgid "PS Names"
-msgstr "Названия AMS"
+msgstr ""
 
 msgid "General"
 msgstr "Общие"
 
 msgid "PS UID"
-msgstr "PS UID"
+msgstr ""
 
 msgid "PS Private"
 msgstr "PS Приватное"
 
 msgid "OS/2"
-msgstr "OS/2"
+msgstr ""
 
 msgid "TTF Names"
 msgstr "Названия TTF"
@@ -17905,10 +17549,10 @@ msgid "Grid Fitting"
 msgstr "Пиксельная сетка"
 
 msgid "ΤεΧ"
-msgstr "ΤεΧ"
+msgstr ""
 
 msgid "FONTLOG"
-msgstr "FONTLOG"
+msgstr ""
 
 msgid "Mark Classes"
 msgstr ""
@@ -17934,9 +17578,8 @@ msgstr ""
 msgid "gaspTableEntry|New"
 msgstr ""
 
-#, fuzzy
 msgid "PSPrivateDictKey|New"
-msgstr "Приватный ключ"
+msgstr ""
 
 msgid "_Don't Save"
 msgstr "_Не сохранять"
@@ -18010,24 +17653,21 @@ msgstr ""
 msgid "Select by Script"
 msgstr "Выбрать по сценарию"
 
-#, fuzzy
 msgid "All glyphs"
-msgstr "Все символы"
+msgstr ""
 
 msgid "Set the selection of the font view to all glyphs in the script."
 msgstr ""
 
-#, fuzzy
 msgid "Only upper case"
-msgstr "Верхний регистр"
+msgstr ""
 
 msgid ""
 "Set the selection of the font view to any upper case glyphs in the script."
 msgstr ""
 
-#, fuzzy
 msgid "Only lower case"
-msgstr "Нижний регистр"
+msgstr ""
 
 msgid ""
 "Set the selection of the font view to any lower case glyphs in the script."
@@ -18046,13 +17686,11 @@ msgstr ""
 msgid "Remove matching glyphs from the selection."
 msgstr "Удалить совпадающие глифы из выделения"
 
-#, fuzzy
 msgid "Logical And with Selection"
-msgstr "Масштабировать выделение"
+msgstr ""
 
-#, fuzzy
 msgid "Remove glyphs which do not match from the selection."
-msgstr "Введите название символа в шрифте"
+msgstr ""
 
 msgid "No Script"
 msgstr ""
@@ -18066,9 +17704,8 @@ msgstr ""
 msgid "Scripts are 4 letter tags"
 msgstr ""
 
-#, fuzzy
 msgid "Select by Name"
-msgstr "Выбрать по цвету"
+msgstr ""
 
 msgid ""
 "Enter either a wildcard pattern (to match glyph names)\n"
@@ -18132,9 +17769,8 @@ msgstr "Растровое увеличение..."
 msgid "Please specify a bitmap magnification factor."
 msgstr "Укажите коэффициент растрового увеличения"
 
-#, fuzzy
 msgid "Compact"
-msgstr "Сжатый"
+msgstr ""
 
 msgid "Find an adobe CMap file..."
 msgstr "Укажите файл Adobe CMap..."
@@ -18296,9 +17932,8 @@ msgstr "_Горизонтальные линии шрифта..."
 msgid "_Vertical Baselines..."
 msgstr "_Вертикальные линии шрифта..."
 
-#, fuzzy
 msgid "_Justification..."
-msgstr "_Подстановки..."
+msgstr ""
 
 msgid "Show _Dependent"
 msgstr "Показать _зависимые"
@@ -18346,7 +17981,7 @@ msgid "_Name"
 msgstr "_Название"
 
 msgid "_Unicode"
-msgstr "_Unicode"
+msgstr ""
 
 msgid "_Encoding Hex"
 msgstr "Hex _кодировки"
@@ -18511,9 +18146,8 @@ msgstr "Показать _вертикальные метрики..."
 msgid "32x8 cell window"
 msgstr "Окно 32×8 ячеек"
 
-#, fuzzy
 msgid "_16x4 cell window"
-msgstr "Окно 1_6×4 ячейки"
+msgstr ""
 
 msgid "_8x2  cell window"
 msgstr "Окно 8×2 ячейки"
@@ -18533,9 +18167,8 @@ msgstr "Контур _72 точки"
 msgid "_96 pixel outline"
 msgstr "Контур _96 точек"
 
-#, fuzzy
 msgid "_128 pixel outline"
-msgstr "Контур _48 точек"
+msgstr ""
 
 msgid "_Fit to font bounding box"
 msgstr ""
@@ -18636,22 +18269,19 @@ msgid "E_ncoding"
 msgstr "_Кодировка"
 
 msgid "_CID"
-msgstr "_CID"
+msgstr ""
 
 msgid "Color of the font used to display glyph information in the fontview"
 msgstr ""
 
-#, fuzzy
 msgid "Glyph Info Color"
-msgstr "Информация о символе"
+msgstr ""
 
-#, fuzzy
 msgid "Color used to draw the foreground of empty slots"
-msgstr "Цвет пометки выделенного глифа"
+msgstr ""
 
-#, fuzzy
 msgid "Empty Slot FG Color"
-msgstr "Цвет переднего плана:"
+msgstr ""
 
 msgid "Color used to draw the background of selected glyphs"
 msgstr ""
@@ -18671,13 +18301,11 @@ msgstr "Цвет изменившегося глифа:"
 msgid "Color used to mark a changed glyph"
 msgstr ""
 
-#, fuzzy
 msgid "Color used to mark glyphs that need hinting"
-msgstr "Цвет пометки выделенного глифа"
+msgstr ""
 
-#, fuzzy
 msgid "Hinting Needed Color"
-msgstr "_Не имеющие хинтов"
+msgstr ""
 
 msgid "Font Size"
 msgstr "Кегль шрифта:"
@@ -18715,9 +18343,8 @@ msgstr "Основное окно"
 msgid "This is the main fontforge window displaying a font"
 msgstr "Основное окно FontForge со всеми глифами шрифта"
 
-#, fuzzy
 msgid "Glyph Set by Selection"
-msgstr "_Применить к выделению"
+msgstr ""
 
 msgid ""
 "Select glyphs in the font view above.\n"
@@ -18756,9 +18383,8 @@ msgstr ""
 msgid "Watched Cvt Change"
 msgstr ""
 
-#, fuzzy
 msgid "Too Many Breakpoints"
-msgstr "Слишком много компонент"
+msgstr ""
 
 msgid "Kerning"
 msgstr "Кернинг"
@@ -18847,9 +18473,8 @@ msgstr ""
 msgid "Scale Width By:"
 msgstr "Увеличить ширину на:"
 
-#, fuzzy
 msgid "Advance Width does not change."
-msgstr "Установить ширину:"
+msgstr ""
 
 msgid "Left Side Bearing does not change."
 msgstr "Левая граница не меняется."
@@ -18887,9 +18512,8 @@ msgstr "Переход"
 msgid "Enter the name of a glyph in the font"
 msgstr "Введите название символа в шрифте"
 
-#, fuzzy
 msgid "Merge into selection"
-msgstr "Ограничить выделение"
+msgstr ""
 
 msgid "Select by Color"
 msgstr "Выбрать по цвету"
@@ -18967,6 +18591,7 @@ msgid_plural "Groups"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 msgid "No Groups"
 msgstr "Нет групп"
@@ -19062,17 +18687,14 @@ msgstr ""
 msgid "Shrink Max Lookups"
 msgstr ""
 
-#, fuzzy
 msgid "Extenders"
-msgstr "Параметры"
+msgstr ""
 
-#, fuzzy
 msgid "Language info"
-msgstr "Язык"
+msgstr ""
 
-#, fuzzy
 msgid "Hidden"
-msgstr "С_крыть"
+msgstr ""
 
 msgid "Extender Glyphs (kashidas, etc.)"
 msgstr ""
@@ -19127,20 +18749,17 @@ msgstr ""
 msgid "Language|New"
 msgstr "Новый"
 
-#, fuzzy
 msgid "Justified Scripts"
-msgstr "Рукописная"
+msgstr ""
 
 msgid "A list of scripts with special justification needs"
 msgstr ""
 
-#, fuzzy
 msgid "Script|New"
-msgstr "Иврит"
+msgstr ""
 
-#, fuzzy
 msgid "Min Kern"
-msgstr "Размер керна"
+msgstr ""
 
 msgid "No lookup selected"
 msgstr "Ни одна справка не выбрана"
@@ -19155,17 +18774,14 @@ msgstr "Класс 0"
 msgid "The kerning values for class 0 (\"Everything Else\") should always be 0"
 msgstr ""
 
-#, fuzzy
 msgid "AutoKern Row"
-msgstr "Автокернинг"
+msgstr ""
 
-#, fuzzy
 msgid "AutoKern Column"
-msgstr "Автокернинг"
+msgstr ""
 
-#, fuzzy
 msgid "AutoKern All"
-msgstr "Автокернинг"
+msgstr ""
 
 msgid "Clear"
 msgstr "Очистить"
@@ -19188,13 +18804,12 @@ msgid "Second Class %d\n"
 msgstr "Второй класс %d\n"
 
 #. GT: Short form of {Everything Else}, might use universal? U+2200
-#, fuzzy
 msgid "{All}"
-msgstr "Все"
+msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "The font does not contain a glyph named %s."
-msgstr "В этом шрифте нет глифа под названием \"%.40s\""
+msgstr ""
 
 msgid "From the _other class"
 msgstr ""
@@ -19324,9 +18939,8 @@ msgstr "Разница"
 msgid "The layers do not match"
 msgstr "Эти слои не совпадают"
 
-#, fuzzy
 msgid "Error Bound"
-msgstr "Не найдено"
+msgstr ""
 
 msgid "Compare Layers"
 msgstr "Сравнение слоёв"
@@ -19362,43 +18976,43 @@ msgid "Lookup Type|Unspecified"
 msgstr "Не указан"
 
 msgid "Reverse Chaining Substitution"
-msgstr "Reverse Chaining Substitution"
+msgstr ""
 
 msgid "Mac Indic State Machine"
-msgstr "Mac Indic State Machine"
+msgstr ""
 
 msgid "Mac Contextual State Machine"
-msgstr "Mac Contextual State Machine"
+msgstr ""
 
 msgid "Mac Insertion State Machine"
-msgstr "Mac Insertion State Machine"
+msgstr ""
 
 msgid "Single Position"
-msgstr "Single Position"
+msgstr ""
 
 msgid "Pair Position (kerning)"
-msgstr "Pair Position (kerning)"
+msgstr ""
 
 msgid "Cursive Position"
-msgstr "Cursive Position"
+msgstr ""
 
 msgid "Mark to Base Position"
-msgstr "Mark to Base Position"
+msgstr ""
 
 msgid "Mark to Ligature Position"
-msgstr "Mark to Ligature Position"
+msgstr ""
 
 msgid "Mark to Mark Position"
-msgstr "Mark to Mark Position"
+msgstr ""
 
 msgid "Contextual Position"
-msgstr "Contextual Position"
+msgstr ""
 
 msgid "Contextual Chaining Position"
-msgstr "Contextual Chaining Position"
+msgstr ""
 
 msgid "Mac Kerning State Machine"
-msgstr "Mac Kerning State Machine"
+msgstr ""
 
 msgid "Abaza"
 msgstr "Абазинский"
@@ -19413,22 +19027,22 @@ msgid "Afar"
 msgstr "Афарский"
 
 msgid "Agaw"
-msgstr "Agaw"
+msgstr ""
 
 msgid "Alsatian"
-msgstr "Alsatian"
+msgstr ""
 
 msgid "Altai"
 msgstr "Алтайский"
 
 msgid "Americanist IPA"
-msgstr "Americanist IPA"
+msgstr ""
 
 msgid "Aari"
-msgstr "Aari"
+msgstr ""
 
 msgid "Arakanese"
-msgstr "Arakanese"
+msgstr ""
 
 msgid "Athapaskan"
 msgstr "Атапаскский"
@@ -19440,19 +19054,19 @@ msgid "Awadhi"
 msgstr "Авадхи"
 
 msgid "Azeri"
-msgstr "Azeri"
+msgstr ""
 
 msgid "Badaga"
-msgstr "Badaga"
+msgstr ""
 
 msgid "Baghelkhandi"
-msgstr "Baghelkhandi"
+msgstr ""
 
 msgid "Balkar"
-msgstr "Balkar"
+msgstr ""
 
 msgid "Baule"
-msgstr "Baule"
+msgstr ""
 
 msgid "Lang|Berber"
 msgstr "Берберский"
@@ -19487,13 +19101,11 @@ msgstr ""
 msgid "Balochi"
 msgstr ""
 
-#, fuzzy
 msgid "Balante"
-msgstr "Базовая линия"
+msgstr ""
 
-#, fuzzy
 msgid "Balti"
-msgstr "Базовая линия"
+msgstr ""
 
 msgid "Bambara"
 msgstr ""
@@ -19591,9 +19203,8 @@ msgstr ""
 msgid "Dinka"
 msgstr ""
 
-#, fuzzy
 msgid "Dari"
-msgstr "Звезда"
+msgstr ""
 
 msgid "Dungan"
 msgstr ""
@@ -19622,21 +19233,17 @@ msgstr "Эве"
 msgid "French Antillean"
 msgstr "Французский (Антильские о-ва)"
 
-#, fuzzy
 msgid "Fijian"
-msgstr "Найти"
+msgstr ""
 
-#, fuzzy
 msgid "Forest Nenets"
-msgstr "Забыть об этом"
+msgstr ""
 
-#, fuzzy
 msgid "Fon"
-msgstr "Обнаружено "
+msgstr ""
 
-#, fuzzy
 msgid "Faroese"
-msgstr "Panose"
+msgstr ""
 
 msgid "French (Standard)"
 msgstr "Французский (Обычный)"
@@ -19953,9 +19560,8 @@ msgstr ""
 msgid "Male"
 msgstr ""
 
-#, fuzzy
 msgid "Malinke"
-msgstr "Базовая линия"
+msgstr ""
 
 msgid "Malayalam Reformed"
 msgstr "Малаялам (реформированный)"
@@ -19966,9 +19572,8 @@ msgstr ""
 msgid "Lang|Mongolian"
 msgstr "Монгольский"
 
-#, fuzzy
 msgid "Maninka"
-msgstr "Разыменовать"
+msgstr ""
 
 msgid "Mohawk"
 msgstr "Язык племени могавков"
@@ -20009,9 +19614,8 @@ msgstr ""
 msgid "Newari"
 msgstr "Неварский"
 
-#, fuzzy
 msgid "Nagari"
-msgstr "Возле"
+msgstr ""
 
 msgid "Norway House Cree"
 msgstr ""
@@ -20082,23 +19686,20 @@ msgstr ""
 msgid "Russian Buriat"
 msgstr "Бурятский (русский)"
 
-#, fuzzy
 msgid "Riang"
-msgstr "Вращение"
+msgstr ""
 
 msgid "Romany"
 msgstr "Цыганский"
 
-#, fuzzy
 msgid "Rusyn"
-msgstr "Круглый"
+msgstr ""
 
 msgid "Ruanda"
 msgstr "Руанда"
 
-#, fuzzy
 msgid "Sadri"
-msgstr "Звезда"
+msgstr ""
 
 msgid "Santali"
 msgstr ""
@@ -20106,16 +19707,14 @@ msgstr ""
 msgid "Sayisi"
 msgstr ""
 
-#, fuzzy
 msgid "Sekota"
-msgstr "Звезда"
+msgstr ""
 
 msgid "Selkup"
 msgstr ""
 
-#, fuzzy
 msgid "Sango"
-msgstr "Интервал"
+msgstr ""
 
 msgid "Shan"
 msgstr ""
@@ -20138,9 +19737,8 @@ msgstr ""
 msgid "Samoan"
 msgstr "Язык жителей о-вов Самоа"
 
-#, fuzzy
 msgid "Sena"
-msgstr "Вторая"
+msgstr ""
 
 msgid "Soninke"
 msgstr ""
@@ -20154,9 +19752,8 @@ msgstr "Сото"
 msgid "Saraiki"
 msgstr ""
 
-#, fuzzy
 msgid "Serer"
-msgstr "С засечками"
+msgstr ""
 
 msgid "South Slavey"
 msgstr "_Не сохранять"
@@ -20164,9 +19761,8 @@ msgstr "_Не сохранять"
 msgid "Southern Sami"
 msgstr ""
 
-#, fuzzy
 msgid "Suri"
-msgstr "С засечками"
+msgstr ""
 
 msgid "Svan"
 msgstr ""
@@ -20201,9 +19797,8 @@ msgstr "Тонга"
 msgid "Todo"
 msgstr ""
 
-#, fuzzy
 msgid "Turoyo Aramaic"
-msgstr "Попробовать ещё"
+msgstr ""
 
 msgid "Tulu"
 msgstr ""
@@ -20430,9 +20025,8 @@ msgstr "Игнорировать объединяющие знаки"
 
 #. GT: Process is a verb here and Mark is a noun.
 #. GT: Marks of the given mark class are to be processed
-#, fuzzy
 msgid "Mark Class:"
-msgstr "_Сглаживать"
+msgstr ""
 
 #. GT: Mark is a noun here and Set is also a noun.
 msgid "Mark Set:"
@@ -20453,9 +20047,8 @@ msgid ""
 "different lookup subtable (%.80s)"
 msgstr ""
 
-#, fuzzy
 msgid "Name used twice"
-msgstr "Индекс используется"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -20476,13 +20069,11 @@ msgstr ""
 msgid "Anchor classes in subtable %.80s"
 msgstr ""
 
-#, fuzzy
 msgid "New Anchor Class"
-msgstr "Якоря"
+msgstr ""
 
-#, fuzzy
 msgid "Base Glyph Name"
-msgstr "Названия символов в PS"
+msgstr ""
 
 msgid "Ligature Glyph Name"
 msgstr "Название глифа лигатуры"
@@ -20509,9 +20100,8 @@ msgid ""
 "yet. Was this intentional?"
 msgstr ""
 
-#, fuzzy
 msgid "Duplicate data"
-msgstr "Повторение названия"
+msgstr ""
 
 #, c-format
 msgid "There are two entries for the same glyph set (%.80s and %.80s)"
@@ -20521,9 +20111,8 @@ msgstr ""
 msgid "There are two entries for the same glyph (%.80s)"
 msgstr "Обнаружены две записи для одного глифа (%.80s)"
 
-#, fuzzy
 msgid "Lookup Table Edit"
-msgstr "Субтаблица справки:"
+msgstr ""
 
 #, c-format
 msgid "Lookup Subtable, %s"
@@ -20538,9 +20127,8 @@ msgstr ""
 msgid "Sort this display based on the unicode code of the glyph"
 msgstr ""
 
-#, fuzzy
 msgid "_By Base Char"
-msgstr "Под отметкой основы"
+msgstr ""
 
 msgid ""
 "Sort first using the base glyph (if any).\n"
@@ -20566,9 +20154,8 @@ msgstr ""
 msgid "_Populate"
 msgstr "_Заполнить"
 
-#, fuzzy
 msgid "Auto_Kern"
-msgstr "Автокернинг"
+msgstr ""
 
 msgid ""
 "For each script to which this lookup applies, look at all pairs of\n"
@@ -20584,9 +20171,8 @@ msgstr ""
 msgid "_Add Selected"
 msgstr "_Добавить выбранные"
 
-#, fuzzy
 msgid "_AutoKern Selected"
-msgstr "_Добавить выбранные"
+msgstr ""
 
 msgid "Add kerning info between all pairs of selected glyphs"
 msgstr ""
@@ -20609,13 +20195,11 @@ msgstr ""
 msgid "Remove all \"empty\" entries -- those with no replacement glyphs"
 msgstr ""
 
-#, fuzzy
 msgid "Remove All"
-msgstr "_Восстановить все"
+msgstr ""
 
-#, fuzzy
 msgid "Remove all entries."
-msgstr "_Удалить все кернинговые пары"
+msgstr ""
 
 msgid "_Default Using Suffix:"
 msgstr ""
@@ -20663,9 +20247,8 @@ msgstr ""
 msgid "Select glyphs for the second part of the kern pair"
 msgstr ""
 
-#, fuzzy
 msgid "No selection"
-msgstr "Повернуть выделение"
+msgstr ""
 
 msgid ""
 "Please select some glyphs in the font views at the bottom of the dialog for "
@@ -20821,9 +20404,8 @@ msgstr ""
 msgid "Append to it"
 msgstr ""
 
-#, fuzzy
 msgid "Replace it"
-msgstr "Заменить"
+msgstr ""
 
 msgid "Optionally, add this mapping to the lookup subtable:"
 msgstr ""
@@ -20882,9 +20464,8 @@ msgstr "Верхние/нижние индексы"
 msgid "Limits"
 msgstr "Пределы"
 
-#, fuzzy
 msgid "Stacks"
-msgstr "Звезда"
+msgstr ""
 
 msgid "Fractions"
 msgstr "Дроби"
@@ -20914,9 +20495,8 @@ msgstr ""
 msgid "Height/Kern Data"
 msgstr ""
 
-#, fuzzy
 msgid "Kern"
-msgstr "Размер керна"
+msgstr ""
 
 msgid "Height Adjusts"
 msgstr ""
@@ -20933,9 +20513,8 @@ msgstr ""
 msgid "Math Kern"
 msgstr ""
 
-#, fuzzy
 msgid "Vert. Construction"
-msgstr "Вертикальные дроби"
+msgstr ""
 
 msgid "Hor. Variants"
 msgstr ""
@@ -20952,16 +20531,14 @@ msgstr "Верхний левый"
 msgid "Bottom Right"
 msgstr "Нижний правый"
 
-#, fuzzy
 msgid "Bottom Left"
-msgstr "Нижняя зона"
+msgstr ""
 
 msgid "Glyph Construction"
 msgstr ""
 
-#, fuzzy
 msgid "Bad device table"
-msgstr "Неправильный файл изображения"
+msgstr ""
 
 #, c-format
 msgid "Bad device table for %s"
@@ -21040,9 +20617,8 @@ msgstr "Керн:"
 msgid "VKern:"
 msgstr ""
 
-#, fuzzy
 msgid "_Alter Class"
-msgstr "_Сглаживать"
+msgstr ""
 
 msgid "_Create Pair"
 msgstr "_Создать пару..."
@@ -21072,25 +20648,20 @@ msgstr "Метрики ширины для %.50s"
 msgid "Metrics For %.50s"
 msgstr ""
 
-#, fuzzy
 msgid "Point Size"
-msgstr "_Размер (pt):"
+msgstr ""
 
-#, fuzzy
 msgid "Number out of range"
-msgstr "Значение вне диапазона"
+msgstr ""
 
-#, fuzzy
 msgid "Set Point Size"
-msgstr "Указать _размер точек экрана"
+msgstr ""
 
-#, fuzzy
 msgid "Point Size:"
-msgstr "_Размер (pt):"
+msgstr ""
 
-#, fuzzy
 msgid "Load _Word List..."
-msgstr "Загрузить кодировку..."
+msgstr ""
 
 msgid "_Inline"
 msgstr ""
@@ -21131,9 +20702,8 @@ msgstr "Показать _сетку"
 msgid "Render using Hinting"
 msgstr ""
 
-#, fuzzy
 msgid "Size set from _Window"
-msgstr "Открыть _метрики"
+msgstr ""
 
 msgid "Set Point _Size"
 msgstr "Указать _размер точек экрана"
@@ -21141,9 +20711,8 @@ msgstr "Указать _размер точек экрана"
 msgid "_Kerning only"
 msgstr "Только _кернинг"
 
-#, fuzzy
 msgid "_Advance Width only"
-msgstr "Установить ширину:"
+msgstr ""
 
 msgid "_Both"
 msgstr "_Оба"
@@ -21151,9 +20720,8 @@ msgstr "_Оба"
 msgid "_Window Type"
 msgstr "Тип _окна"
 
-#, fuzzy
 msgid "Advance Width Col"
-msgstr "Установить ширину:"
+msgstr ""
 
 msgid "Color used to draw the advance width line of a glyph"
 msgstr ""
@@ -21161,30 +20729,26 @@ msgstr ""
 msgid "Color used to draw the italic advance width line of a glyph"
 msgstr ""
 
-#, fuzzy
 msgid "Italic Advance Col"
-msgstr "Вертикальные дроби"
+msgstr ""
 
 msgid "Color used to draw the kerning line"
 msgstr ""
 
-#, fuzzy
 msgid "Kern Line Color"
-msgstr "Только _кернинг"
+msgstr ""
 
 msgid "Color used to draw the left side bearing"
 msgstr ""
 
-#, fuzzy
 msgid "Side Bearing Color"
-msgstr "_Боковые границы"
+msgstr ""
 
 msgid "Color used to mark the selected glyph"
 msgstr "Цвет пометки выделенного глифа"
 
-#, fuzzy
 msgid "Selected Glyph Col"
-msgstr "Выбранные символы"
+msgstr ""
 
 msgid "MetricsView"
 msgstr "Просмотр метрик"
@@ -21222,9 +20786,8 @@ msgstr ""
 msgid "Blend to New Font"
 msgstr "Смешать в новый шрифт"
 
-#, fuzzy
 msgid "MM Change Def Weights"
-msgstr "Создать инструкцию..."
+msgstr ""
 
 msgid "You may change the default instance of this font"
 msgstr ""
@@ -21260,9 +20823,9 @@ msgstr "Именованные стили"
 msgid "Bad Axis"
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Bad Number in %s"
-msgstr "Неправильный номер в "
+msgstr ""
 
 #, c-format
 msgid "Wrong number of entries in %s"
@@ -21275,9 +20838,8 @@ msgstr ""
 msgid "Font|New"
 msgstr "Создать"
 
-#, fuzzy
 msgid "Force Bold Threshold:"
-msgstr "Предел:"
+msgstr ""
 
 msgid "Please set the Axis Type field"
 msgstr ""
@@ -21356,7 +20918,7 @@ msgid "Type of distortable font:"
 msgstr "Тип искажаемого шрифта:"
 
 msgid "Adobe"
-msgstr "Adobe"
+msgstr ""
 
 msgid "Number of Axes:"
 msgstr "Число осей:"
@@ -21462,22 +21024,22 @@ msgid "PostScript"
 msgstr "Postscript"
 
 msgid "TrueType"
-msgstr "TrueType"
+msgstr ""
 
 msgid "OpenType"
-msgstr "OpenType"
+msgstr ""
 
 msgid "Type1"
-msgstr "Type1"
+msgstr ""
 
 msgid "Type2"
-msgstr "Type2"
+msgstr ""
 
 msgid "Type3"
-msgstr "Type3"
+msgstr ""
 
 msgid "Unified Font Object"
-msgstr "Unified Font Object"
+msgstr ""
 
 msgid "FontForge's SFD"
 msgstr "Файлы SFD из FontForge"
@@ -21526,9 +21088,8 @@ msgstr "Не переименовывать"
 msgid "Open Font"
 msgstr "Открытие шрифта"
 
-#, fuzzy
 msgid "FreeTypeAAFillInOutlineView"
-msgstr "Использовать FreeType"
+msgstr ""
 
 msgid ""
 "When filling using freetype in the outline view,\n"
@@ -21644,9 +21205,8 @@ msgid ""
 "key will enable Preview mode as long as the key is held."
 msgstr ""
 
-#, fuzzy
 msgid "InterpolateCPsOnMotion"
-msgstr "Интерполяция шрифтов"
+msgstr ""
 
 msgid ""
 "When moving one end point of a spline but not the other\n"
@@ -21670,16 +21230,14 @@ msgid ""
 "(but watch RAM consumption and use the Edit menu's Remove Undoes as needed)"
 msgstr ""
 
-#, fuzzy
 msgid "AutoKernDialog"
-msgstr "Автокернинг"
+msgstr ""
 
 msgid "Open AutoKern dialog for new kerning subtables"
 msgstr ""
 
-#, fuzzy
 msgid "MetricsShiftSkip"
-msgstr "Метрики"
+msgstr ""
 
 msgid ""
 "Number of units to increment/decrement a table value by in the metrics "
@@ -21702,18 +21260,15 @@ msgid ""
 "apparent."
 msgstr ""
 
-#, fuzzy
 msgid ""
 "Have the measure tool show horizontal and vertical distances on the canvas."
-msgstr "Раздельные соотношения для горизонтальных и вертикальных штрихов"
+msgstr ""
 
-#, fuzzy
 msgid "MeasureToolShowHorizontalVertical"
-msgstr "Края почти _горизонтальны/вертикальны"
+msgstr ""
 
-#, fuzzy
 msgid "EditHandleSize"
-msgstr "Размер керна"
+msgstr ""
 
 msgid ""
 "The size of the handles showing control points and other interesting points "
@@ -21735,9 +21290,8 @@ msgid ""
 "Change requires a restart of fontforge."
 msgstr ""
 
-#, fuzzy
 msgid "ShowControlPointsAlways"
-msgstr "По умолчанию"
+msgstr ""
 
 msgid "Also enable preview mode when the space bar is pressed."
 msgstr ""
@@ -21745,9 +21299,8 @@ msgstr ""
 msgid "ShowFillWithSpace"
 msgstr ""
 
-#, fuzzy
 msgid "OutlineThickness"
-msgstr "Каркасное отображение"
+msgstr ""
 
 msgid ""
 "Setting above 1 will cause a thick outline to be drawn for glyph paths\n"
@@ -21818,13 +21371,11 @@ msgstr ""
 msgid "Generate instructions for diagonal stem hints."
 msgstr ""
 
-#, fuzzy
 msgid "InstructDiagonalStems"
-msgstr "Очистить инструкции"
+msgstr ""
 
-#, fuzzy
 msgid "InstructSerifs"
-msgstr "Очистить инструкции"
+msgstr ""
 
 msgid ""
 "Try to detect serifs and other elements protruding from base stems and "
@@ -21842,13 +21393,11 @@ msgid ""
 "instructions."
 msgstr ""
 
-#, fuzzy
 msgid "InterpolateStrongPoints"
-msgstr "Интерполяция шрифтов"
+msgstr ""
 
-#, fuzzy
 msgid "CounterControl"
-msgstr "Якорь потерян"
+msgstr ""
 
 msgid ""
 "Make sure similar or equal counters remain the same in gridfitted outlines.\n"
@@ -22005,7 +21554,7 @@ msgstr ""
 "Кнопка \"...\" позволяет выбрать файл сценария."
 
 msgid "..."
-msgstr "..."
+msgstr ""
 
 msgid "On"
 msgstr "Вкл"
@@ -22040,13 +21589,11 @@ msgstr " "
 msgid "Features"
 msgstr "Функции"
 
-#, fuzzy
 msgid "Arrow Options"
-msgstr "Параметры"
+msgstr ""
 
-#, fuzzy
 msgid "Ruler Options"
-msgstr "Параметры"
+msgstr ""
 
 msgid "This reference has been flipped, so the paths in it are drawn backwards"
 msgstr ""
@@ -22081,13 +21628,11 @@ msgstr "Выбранная точка находится рядом с хинт�
 msgid "The x coord of the selected point is near the specified value"
 msgstr "Координата X выделенной точки близка к указанной величине"
 
-#, fuzzy
 msgid "The selected point is not at integral coordinates"
-msgstr "Выделенный отрезок почти горизонтален"
+msgstr ""
 
-#, fuzzy
 msgid "The selected point does not have integral control points"
-msgstr "У выделенной кривой нет точки в экстремуме"
+msgstr ""
 
 msgid "The selected point is near a horizontal stem hint"
 msgstr "Выбранная точка находится рядом с хинтом горизонтального штриха"
@@ -22198,7 +21743,7 @@ msgstr ""
 
 #, c-format
 msgid "U+%04x"
-msgstr "U+%04x"
+msgstr ""
 
 msgid ""
 "Two glyphs have the same name.\n"
@@ -22208,7 +21753,7 @@ msgstr ""
 
 #, c-format
 msgid "%.40s"
-msgstr "%.40s"
+msgstr ""
 
 #, c-format
 msgid "Found %1$.4g, expected %2$.4g"
@@ -22266,14 +21811,12 @@ msgstr "Две выделенные точки — концы открытого
 msgid "The paths that make up this glyph intersect one another"
 msgstr "Создающие этот глиф контуры пересекаются"
 
-#, fuzzy
 msgid "The selected point is too far from the origin"
-msgstr "Выделенный отрезок почти горизонтален"
+msgstr ""
 
-#, fuzzy
 msgid ""
 "The selected points (or the intermediate control points) are too far apart"
-msgstr "У выделенной кривой нет точки в экстремуме"
+msgstr ""
 
 msgid "The selected points are too close to each other"
 msgstr "Выделенные точки расположены слишком близко друг к другу"
@@ -22281,9 +21824,8 @@ msgstr "Выделенные точки расположены слишком б
 msgid "This hint does not control any points"
 msgstr "Эта инструкция не управляет ни одной точкой"
 
-#, fuzzy
 msgid "The hint mask of the selected point contains overlapping hints"
-msgstr "Контрольная точка слева от выделенной точки почти горизонтальна"
+msgstr ""
 
 msgid "There are no hint masks in this layer but there are overlapping hints."
 msgstr ""
@@ -22425,9 +21967,8 @@ msgstr "%1$s из субтаблицы %2$.50s справки"
 msgid "Kerning Class"
 msgstr "Класс кернинга"
 
-#, fuzzy
 msgid "Vertical Kerning Class"
-msgstr "Вертикальные дроби"
+msgstr ""
 
 msgid "Check for missing glyph names"
 msgstr " Проверять отсутствие имен глифов"
@@ -22466,9 +22007,8 @@ msgstr ""
 msgid "_Skip"
 msgstr "_Пропустить"
 
-#, fuzzy
 msgid "Missing Script"
-msgstr "Отсутствует растр"
+msgstr ""
 
 msgid "This blank outline glyph has an unexpected bitmap version"
 msgstr ""
@@ -22485,13 +22025,11 @@ msgstr "_Y возле¹"
 msgid "Hint _Width Near¹"
 msgstr ""
 
-#, fuzzy
 msgid "Advance Width not"
-msgstr "Установить ширину:"
+msgstr ""
 
-#, fuzzy
 msgid "Vertical Advance not"
-msgstr "Вертикальные дроби"
+msgstr ""
 
 msgid "Bounding box above"
 msgstr ""
@@ -22660,9 +22198,8 @@ msgid ""
 "twice as many control points)"
 msgstr ""
 
-#, fuzzy
 msgid "Check _flipped references"
-msgstr "Зеркальная ссылка"
+msgstr ""
 
 msgid ""
 "PostScript and TrueType require that paths be drawn\n"
@@ -22824,17 +22361,15 @@ msgstr ""
 msgid "Are there any glyph's whose bounding boxes extend below this number?"
 msgstr ""
 
-#, fuzzy
 msgid "Glyph BB Right Of"
-msgstr "Символы справа"
+msgstr ""
 
 msgid ""
 "Are there any glyphs whose bounding boxes extend to the right of this number?"
 msgstr ""
 
-#, fuzzy
 msgid "Glyph BB Left Of"
-msgstr "Символы слева"
+msgstr ""
 
 msgid ""
 "Are there any glyph's whose bounding boxes extend to the left of this number?"
@@ -22873,9 +22408,8 @@ msgid ""
 "does not match any glyph in the font"
 msgstr ""
 
-#, fuzzy
 msgid "Check for missing _scripts in features"
-msgstr "Проверить отсутствие _экстремумов"
+msgstr ""
 
 msgid ""
 "In every lookup that uses a glyph, check that at\n"
@@ -22911,13 +22445,13 @@ msgid "Hints"
 msgstr "Хинты"
 
 msgid "ATT"
-msgstr "ATT"
+msgstr ""
 
 msgid "CID"
-msgstr "CID"
+msgstr ""
 
 msgid "BB"
-msgstr "BB"
+msgstr ""
 
 msgid "Random"
 msgstr "Разное"
@@ -22940,9 +22474,8 @@ msgstr "Самопересечения"
 msgid "Wrong Direction"
 msgstr "Неправильное направление"
 
-#, fuzzy
 msgid "Flipped References"
-msgstr "Зеркальная ссылка"
+msgstr ""
 
 msgid "Missing Points at Extrema"
 msgstr "Отсутствующие точки в экстремумах"
@@ -22962,20 +22495,17 @@ msgstr "Некорректное название символа"
 msgid "Distance between adjacent points is too big"
 msgstr "Расстояние между соседними точками слишком велико"
 
-#, fuzzy
 msgid "Non-integral coordinates"
-msgstr "Выделенный отрезок почти горизонтален"
+msgstr ""
 
 msgid "Contains anchor points for some, but not all, classes in a subtable"
 msgstr ""
 
-#, fuzzy
 msgid "There is another glyph in the font with this name"
-msgstr "Глифа с названием %s в шрифте нет"
+msgstr ""
 
-#, fuzzy
 msgid "There is another glyph in the font with this unicode code point"
-msgstr "Глифа с названием %s в шрифте нет"
+msgstr ""
 
 msgid "Glyph contains overlapped hints (in the same hintmask)"
 msgstr ""
@@ -23114,9 +22644,8 @@ msgstr "Удалить пересечения"
 msgid "Mark for Overlap fix before Save"
 msgstr ""
 
-#, fuzzy
 msgid "Inline Flipped References"
-msgstr "Зеркальная ссылка"
+msgstr ""
 
 msgid "Correct Direction"
 msgstr "Исправить направление"
@@ -23130,9 +22659,8 @@ msgstr "Добавить все экстремумы"
 msgid "Simplify"
 msgstr "Упрощение"
 
-#, fuzzy
 msgid "Revalidate All"
-msgstr "Заменить все"
+msgstr ""
 
 msgid "Revalidate"
 msgstr ""
@@ -23152,9 +22680,8 @@ msgstr "Попробовать исправить символы с"
 msgid "Passed Validation"
 msgstr "Проверка пройдена"
 
-#, fuzzy
 msgid "Thinking..."
-msgstr "Преобразование..."
+msgstr ""
 
 #. GT: "Private" is a keyword (sort of) in PostScript. Perhaps it
 #. GT: should remain untranslated?
@@ -23164,9 +22691,8 @@ msgstr "Частный словарь"
 msgid "Ignore"
 msgstr ""
 
-#, fuzzy
 msgid "Report as Error"
-msgstr "Ошибка разбора"
+msgstr ""
 
 msgid "Not sure if this is an error..."
 msgstr "Нет уверенности в том, что это ошибка..."
@@ -23186,7 +22712,7 @@ msgid "Return from enabling function for menu item %s must be boolean"
 msgstr ""
 
 msgid "PS Type 1 (Ascii)"
-msgstr "PS Type 1 (Ascii)"
+msgstr ""
 
 msgid "PS Type 1 (Binary)"
 msgstr "PS Type 1 (двоичный)"
@@ -23201,19 +22727,19 @@ msgid "PS Type 1 (Multiple)"
 msgstr ""
 
 msgid "PS Multiple Master(A)"
-msgstr "PS Multiple Master(A)"
+msgstr ""
 
 msgid "PS Multiple Master(B)"
-msgstr "PS Multiple Master(B)"
+msgstr ""
 
 msgid "PS Type 3"
-msgstr "PS Type 3"
+msgstr ""
 
 msgid "PS Type 0"
-msgstr "PS Type 0"
+msgstr ""
 
 msgid "PS CID"
-msgstr "PS CID"
+msgstr ""
 
 #. GT: "CFF (Bare)" means a CFF font without the normal OpenType wrapper
 #. GT: CFF is a font format that normally lives inside an OpenType font
@@ -23226,7 +22752,7 @@ msgid "CFF CID (Bare)"
 msgstr ""
 
 msgid "Type42"
-msgstr "Type42"
+msgstr ""
 
 msgid "Type11 (CID 2)"
 msgstr ""
@@ -23238,28 +22764,25 @@ msgid "TrueType (Resource)"
 msgstr ""
 
 msgid "TrueType (MacBin)"
-msgstr "TrueType (MacBin)"
+msgstr ""
 
 msgid "TrueType (TTC)"
-msgstr "TrueType (TTC)"
+msgstr ""
 
-#, fuzzy
 msgid "TrueType (Mac dfont)"
-msgstr "Сохранение шрифта TrueType"
+msgstr ""
 
 msgid "OpenType (CFF)"
-msgstr "OpenType (CFF)"
+msgstr ""
 
-#, fuzzy
 msgid "OpenType (Mac dfont)"
-msgstr "Сохранение шрифта OpenType"
+msgstr ""
 
 msgid "OpenType CID"
-msgstr "OpenType CID"
+msgstr ""
 
-#, fuzzy
 msgid "OpenType CID (dfont)"
-msgstr "Сохранение шрифта OpenType"
+msgstr ""
 
 msgid "SVG font"
 msgstr "Шрифт SVG"
@@ -23295,13 +22818,13 @@ msgid "X11 bitmap only sfnt (otb)"
 msgstr ""
 
 msgid "NFNT (Resource)"
-msgstr "NFNT (Resource)"
+msgstr ""
 
 msgid "NFNT (MacBin)"
-msgstr "NFNT (MacBin)"
+msgstr ""
 
 msgid "Win FNT"
-msgstr "Win FNT"
+msgstr ""
 
 msgid "Palm OS Bitmap"
 msgstr "Растр Palm OS"
@@ -23319,7 +22842,7 @@ msgid "Options"
 msgstr "Параметры"
 
 msgid "PostScript®"
-msgstr "PostScript®"
+msgstr ""
 
 msgid "Do you want to round coordinates to integers (this saves space)?"
 msgstr "Вы хотите округлить координаты (для сохранения места)?"
@@ -23336,9 +22859,8 @@ msgstr "Должен ли файл шрифта содержать flex-хинт
 msgid "Hint Substitution"
 msgstr "Подстановка хинтов"
 
-#, fuzzy
 msgid "Do you want the font file to do hint substitution?"
-msgstr "Хотите, чтобы файл шрифта содержал названия каждого символа в шрифте?"
+msgstr ""
 
 msgid "First 256"
 msgstr "Первые 256"
@@ -23390,7 +22912,7 @@ msgstr ""
 "PostScript®."
 
 msgid "SFNT"
-msgstr "SFNT"
+msgstr ""
 
 msgid "TrueType Hints"
 msgstr "Инструкции TrueType"
@@ -23543,9 +23065,8 @@ msgid ""
 "as the font itself."
 msgstr ""
 
-#, fuzzy
 msgid "Prefer native kerning"
-msgstr "Сохранять кернинг при переносе"
+msgstr ""
 
 msgid ""
 "Use native kerning structures (instead of a feature file) even when this "
@@ -23798,7 +23319,7 @@ msgid "Execute Script"
 msgstr "Выполнить сценарий"
 
 msgid "_Python"
-msgstr "_Python"
+msgstr ""
 
 msgid "_FF"
 msgstr ""
@@ -23815,9 +23336,8 @@ msgstr ""
 msgid "Side Bearing Expansion Factor"
 msgstr ""
 
-#, fuzzy
 msgid "Side Bearing Addition"
-msgstr "Установить лев.границу:"
+msgstr ""
 
 msgid "Condense/Extend"
 msgstr "Сжатие или расширение"
@@ -23843,9 +23363,8 @@ msgstr ""
 msgid "Horizontal Stem Height Scale"
 msgstr "Масштаб высоты горизонт. штрихов"
 
-#, fuzzy
 msgid "Horizontal Stem Height Add"
-msgstr "Создать инструкцию для гор.штриха"
+msgstr ""
 
 msgid "Threshold between Thin and Thick Stems"
 msgstr ""
@@ -23853,38 +23372,32 @@ msgstr ""
 msgid "Vertical Stem Width Scale"
 msgstr "Масштаб ширины верт. штрихов"
 
-#, fuzzy
 msgid "Vertical Stem Width Add"
-msgstr "Создать инструкцию для верт.штриха"
+msgstr ""
 
 msgid "Stem threshold should be positive"
 msgstr ""
 
-#, fuzzy
 msgid "Unlikely stem threshold"
-msgstr "Вертикальные дроби"
+msgstr ""
 
 msgid "Scale factors must be between 3 and 1000 percent"
 msgstr ""
 
-#, fuzzy
 msgid "Unlikely scale factor"
-msgstr "Вертикальные дроби"
+msgstr ""
 
-#, fuzzy
 msgid "Bad stem add"
-msgstr "Неправильная ссылка"
+msgstr ""
 
-#, fuzzy
 msgid "Bad tag"
-msgstr "Неправильная ссылка"
+msgstr ""
 
 msgid "Feature tags are limited to 4 letters"
 msgstr ""
 
-#, fuzzy
 msgid "Missing glyph extension"
-msgstr "Отсутствует название символа"
+msgstr ""
 
 msgid "You must specify a glyph extension"
 msgstr ""
@@ -23904,21 +23417,17 @@ msgstr "Масштабирование горизонтальных просве
 msgid "Horizontal Counter Add"
 msgstr ""
 
-#, fuzzy
 msgid "Left Side Bearing Scale"
-msgstr "Установить лев.границу:"
+msgstr ""
 
-#, fuzzy
 msgid "Left Side Bearing Add"
-msgstr "Установить лев.границу:"
+msgstr ""
 
-#, fuzzy
 msgid "Right Side Bearing Scale"
-msgstr "Показать _границы краёв"
+msgstr ""
 
-#, fuzzy
 msgid "Right Side Bearing Add"
-msgstr "Показать _границы краёв"
+msgstr ""
 
 msgid "Vertical Scale"
 msgstr "Вертикальное масштабирование"
@@ -23926,30 +23435,26 @@ msgstr "Вертикальное масштабирование"
 msgid "Vertical Counter Scale"
 msgstr "Масштабирование вертикальных просветов"
 
-#, fuzzy
 msgid "Vertical Counter Add"
-msgstr "Вертикальные формы"
+msgstr ""
 
 msgid "Width of Vertical Stems:"
 msgstr "Ширина горизонтальных штрихов:"
 
-#, fuzzy
 msgid "Width/Height of Thick Stems:"
-msgstr "Ширина горизонтальных штрихов:"
+msgstr ""
 
 msgid "Height of Horizontal Stems:"
 msgstr "Высота горизонтальных штрихов:"
 
-#, fuzzy
 msgid "Width/Height of Thin Stems:"
-msgstr "Высота горизонтальных штрихов:"
+msgstr ""
 
 msgid "Original Y Position"
 msgstr "Исходная координата Y"
 
-#, fuzzy
 msgid "Extent"
-msgstr "Параметры"
+msgstr ""
 
 msgid "Resultant Y Position"
 msgstr "Исходная координата Y"
@@ -23976,9 +23481,8 @@ msgstr ""
 "(или использует готовый)\n"
 "символ с именем \"a.sc\" и скопирует измененную копию глифа \"A\" в \"a.sc\"."
 
-#, fuzzy
 msgid "Feature Tag:"
-msgstr "Лигатура"
+msgstr ""
 
 msgid "Glyph Extension:"
 msgstr "Расширение символа:"
@@ -23989,17 +23493,12 @@ msgstr "Смещение по вертикали:"
 msgid "Introduction"
 msgstr "Введение"
 
-#, fuzzy
 msgid ""
 "Unlike most commands this one does not work directly on the\n"
 "selected glyphs. Instead, if you select an \"A\" (or an \"a\")\n"
 "FontForge will create (or reuse) a glyph named \"a.sc\", and\n"
 "it will copy a modified version of the \"A\" glyph into \"a.sc\"."
 msgstr ""
-"В отличие от большинства команд эта не работает напрямую\n"
-"с выделенными символами. Вместо этого, если вы выделили\n"
-"символ \"A\" или \"a\", FontForge создаст новый (или использует\n"
-"готовый) символ \"a.sc\", куда будет скопирована измененная версия \"A\"."
 
 msgid "Petite Caps"
 msgstr ""
@@ -24030,7 +23529,7 @@ msgid "Separate ratios for horizontal and vertical stems"
 msgstr "Раздельные соотношения для горизонтальных и вертикальных штрихов"
 
 msgid "% +"
-msgstr "% +"
+msgstr ""
 
 msgid "Activate diagonal stem processing"
 msgstr "Обрабатывать диагональные штрихи"
@@ -24078,7 +23577,7 @@ msgid "Vertical Scale:"
 msgstr "Масштаб по вертикали:"
 
 msgid "%"
-msgstr "%"
+msgstr ""
 
 msgid "Vertical"
 msgstr "По вертикали"
@@ -24120,7 +23619,7 @@ msgid "Embolden as appropriate for Latin, Cyrillic and Greek scripts"
 msgstr "Смена насыщенности, подходящая для латиницы, кириллицы и греческого"
 
 msgid "_CJK"
-msgstr "_CJK"
+msgstr ""
 
 msgid "Embolden as appropriate for Chinese, Japanese, Korean scripts"
 msgstr "Смена насыщенности, подходящая для китайского, японского и корейского"
@@ -24234,13 +23733,11 @@ msgstr "Преобразовать диагональные засечки"
 msgid "When serifs are removed (as first two in \"m\"), replace with:"
 msgstr "Удаленные засечки (как первые две в \"m\") заменить на:"
 
-#, fuzzy
 msgid "Flat"
-msgstr "Фильтр"
+msgstr ""
 
-#, fuzzy
 msgid "Slanted"
-msgstr "Базовая линия"
+msgstr ""
 
 msgid "Pen Slanted"
 msgstr ""
@@ -24328,13 +23825,11 @@ msgstr "Найти след."
 msgid "Match Fuzziness:"
 msgstr "Нечеткость совпадения:"
 
-#, fuzzy
 msgid "Bad search pattern"
-msgstr "Шаблон поиска:"
+msgstr ""
 
-#, fuzzy
 msgid "Nothing to match."
-msgstr "Нечего трассировать"
+msgstr ""
 
 msgid ""
 "When \"Endpoints specify minimum length and direction only\" is checked, the "
@@ -24347,9 +23842,8 @@ msgid ""
 "(otherwise there is nothing to match)."
 msgstr ""
 
-#, fuzzy
 msgid "Bad replace pattern"
-msgstr "Шаблон замены:"
+msgstr ""
 
 msgid ""
 "When \"Endpoints specify minimum length and direction only\" is checked, the "
@@ -24378,13 +23872,11 @@ msgid ""
 "Should I remove the reference?"
 msgstr ""
 
-#, fuzzy
 msgid "Replace Pattern"
-msgstr "Шаблон замены:"
+msgstr ""
 
-#, fuzzy
 msgid "Search Pattern"
-msgstr "Шаблон поиска:"
+msgstr ""
 
 msgid "Allow:"
 msgstr "Разрешить:"
@@ -24454,16 +23946,14 @@ msgstr "В шрифте нет символов"
 msgid "Insert random text in the specified script"
 msgstr ""
 
-#, fuzzy
 msgid "Text from script"
-msgstr "Нет компонентов"
+msgstr ""
 
 msgid "Save"
 msgstr "Сохранить"
 
-#, fuzzy
 msgid "Save Image"
-msgstr "Сбой сохранения"
+msgstr ""
 
 msgid "_Save As..."
 msgstr "Сохранить _как..."
@@ -24484,28 +23974,25 @@ msgstr ""
 msgid "Undo information incomplete"
 msgstr ""
 
-#, fuzzy
 msgid "Bad undo"
-msgstr "Неправильный файл xfig"
+msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "couldn't find the character %s"
-msgstr "Не удалось найти символ: %.70s"
+msgstr ""
 
 #, c-format
 msgid "Component %d %.30s (%d,%d)"
 msgstr "Компонент %d %.30s (%d,%d)"
 
-#, fuzzy
 msgid "Base Glyphs"
-msgstr "Все символы"
+msgstr ""
 
 msgid "Base Ligatures"
 msgstr "Базовые лигатуры"
 
-#, fuzzy
 msgid "Base Marks"
-msgstr "Над отметкой основы"
+msgstr ""
 
 msgid "Empty"
 msgstr ""
@@ -24516,7 +24003,7 @@ msgstr ""
 
 #, c-format
 msgid "%.30s (%d,%d)"
-msgstr "%.30s (%d,%d)"
+msgstr ""
 
 #, c-format
 msgid "Entry (%d,%d)"
@@ -24540,18 +24027,21 @@ msgid_plural "Backtrack classes: "
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 msgid "Class"
 msgid_plural "Classes"
 msgstr[0] "класс"
 msgstr[1] "класса"
 msgstr[2] "классов"
+msgstr[3] ""
 
 msgid "Lookahead Class"
 msgid_plural "Lookahead Classes"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #, c-format
 msgid "Back coverage %d: "
@@ -24572,9 +24062,8 @@ msgstr ""
 msgid "Replacement: "
 msgstr "Замена:"
 
-#, fuzzy
 msgid "Chaining Positioning"
-msgstr "Размещение отметки"
+msgstr ""
 
 msgid "Chaining Substitution"
 msgstr ""
@@ -24588,9 +24077,8 @@ msgstr ""
 msgid "coverage"
 msgstr "Охват"
 
-#, fuzzy
 msgid "glyphs"
-msgstr "Все символы"
+msgstr ""
 
 #. GT: There are various broad classes of lookups here and the first string
 #. GT: describes those: "Contextual Positioning", Contextual Substitution", etc.
@@ -24630,9 +24118,8 @@ msgstr ""
 msgid "Glyph Insertion"
 msgstr ""
 
-#, fuzzy
 msgid "Kern by State"
-msgstr "Размер керна"
+msgstr ""
 
 #. GT: You're in a state machine, and this is describing the %4d'th state of
 #. GT: that machine. From the state the next state will be a list of
@@ -24660,9 +24147,8 @@ msgstr ""
 msgid "Lookups Enabled for Expansion"
 msgstr ""
 
-#, fuzzy
 msgid "No Lookups Enabled for Expansion"
-msgstr "Символы не выбраны."
+msgstr ""
 
 msgid "Lookups Disabled for Expansion"
 msgstr ""
@@ -24698,13 +24184,11 @@ msgstr ""
 msgid "Priority: %d"
 msgstr ""
 
-#, fuzzy
 msgid "No Extender Glyphs"
-msgstr "Слишком мало символов"
+msgstr ""
 
-#, fuzzy
 msgid "Extender Glyphs"
-msgstr "Слишком мало символов"
+msgstr ""
 
 msgid "Not classified"
 msgstr ""
@@ -24748,17 +24232,16 @@ msgstr ""
 msgid "All glyphs have the same baseline"
 msgstr ""
 
-#, fuzzy
 msgid "Per glyph baseline data"
-msgstr "Символы слева"
+msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "  Left Bound=%d"
-msgstr "Левые границы"
+msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "  Right Bound=%d"
-msgstr "Правые границы"
+msgstr ""
 
 msgid "Strong Left to Right"
 msgstr ""
@@ -24824,12 +24307,13 @@ msgstr ""
 msgid "'BASE' Baseline Table"
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Horizontal: %d baseline"
 msgid_plural "Horizontal: %d baselines"
-msgstr[0] "Создать инструкцию для гор.штриха"
-msgstr[1] "Создать инструкцию для гор.штриха"
-msgstr[2] "Создать инструкцию для гор.штриха"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #, c-format
 msgid "Vertical: %d baseline"
@@ -24837,6 +24321,7 @@ msgid_plural "Vertical: %d baselines"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 msgid "'GDEF' Glyph Definition Table"
 msgstr ""
@@ -24847,16 +24332,14 @@ msgstr ""
 msgid "'GSUB' Glyph Substitution Table"
 msgstr ""
 
-#, fuzzy
 msgid "'JSTF' Justification Table"
-msgstr "Улучшающие выключку варианты"
+msgstr ""
 
 msgid "Apple Advanced Typography"
 msgstr ""
 
-#, fuzzy
 msgid "'bsln' Horizontal Baseline Table"
-msgstr "Создать инструкцию для гор.штриха"
+msgstr ""
 
 msgid "'kern' Horizontal Kerning Table"
 msgstr ""
@@ -24867,9 +24350,8 @@ msgstr ""
 msgid "'morx' Glyph Extended Metamorphosis Table"
 msgstr ""
 
-#, fuzzy
 msgid "'opbd' Optical Bounds Table"
-msgstr "Оптические границы"
+msgstr ""
 
 msgid "'prop' Glyph Properties Table"
 msgstr ""
@@ -24988,9 +24470,8 @@ msgstr "Лигатуры и прочее"
 msgid "_Error Limit:"
 msgstr "_Предельная ошибка:"
 
-#, fuzzy
 msgid "Bump Size"
-msgstr "Размер \"_Em\":"
+msgstr ""
 
 msgid "Line length max"
 msgstr "Максимальная длина линии"
@@ -25080,9 +24561,8 @@ msgstr "В начале было Слово..."
 msgid "fontology recapitulates file-ogeny"
 msgstr ""
 
-#, fuzzy
 msgid "Recovery Complete"
-msgstr "Восстановление сеанса"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -25091,57 +24571,56 @@ msgid ""
 msgstr ""
 
 msgid "Ax => xA"
-msgstr "Ax => xA"
+msgstr ""
 
 msgid "xD => Dx"
-msgstr "xD => Dx"
+msgstr ""
 
 msgid "AxD => DxA"
-msgstr "AxD => DxA"
+msgstr ""
 
 msgid "ABx => xAB"
-msgstr "ABx => xAB"
+msgstr ""
 
 msgid "ABx => xBA"
-msgstr "ABx => xBA"
+msgstr ""
 
 msgid "xCD => CDx"
-msgstr "xCD => CDx"
+msgstr ""
 
 msgid "xCD => DCx"
-msgstr "xCD => DCx"
+msgstr ""
 
 msgid "AxCD => CDxA"
-msgstr "AxCD => CDxA"
+msgstr ""
 
 msgid "AxCD => DCxA"
-msgstr "AxCD => DCxA"
+msgstr ""
 
 msgid "ABxD => DxAB"
-msgstr "ABxD => DxAB"
+msgstr ""
 
 msgid "ABxD => DxBA"
-msgstr "ABxD => DxBA"
+msgstr ""
 
 msgid "ABxCD => CDxAB"
-msgstr "ABxCD => CDxAB"
+msgstr ""
 
 msgid "ABxCD => CDxBA"
-msgstr "ABxCD => CDxBA"
+msgstr ""
 
 msgid "ABxCD => DCxAB"
-msgstr "ABxCD => DCxAB"
+msgstr ""
 
 msgid "ABxCD => DCxBA"
-msgstr "ABxCD => DCxBA"
+msgstr ""
 
 #, c-format
 msgid "State %d,  %.40s"
 msgstr ""
 
-#, fuzzy
 msgid "Next State:"
-msgstr "След. КТ:"
+msgstr ""
 
 msgid "Kern Values:"
 msgstr "Значения кернинга:"
@@ -25183,25 +24662,20 @@ msgstr ""
 msgid "Advance To Next Glyph"
 msgstr ""
 
-#, fuzzy
 msgid "Push Current Glyph"
-msgstr "Текущий символ"
+msgstr ""
 
-#, fuzzy
 msgid "Mark Current Glyph"
-msgstr "Текущий символ"
+msgstr ""
 
-#, fuzzy
 msgid "Mark Current Glyph As First"
-msgstr "Текущий символ"
+msgstr ""
 
-#, fuzzy
 msgid "Mark Current Glyph As Last"
-msgstr "Текущий символ"
+msgstr ""
 
-#, fuzzy
 msgid "Current Glyph Is Kashida Like"
-msgstr "Текущий символ"
+msgstr ""
 
 msgid "Marked Glyph Is Kashida Like"
 msgstr ""
@@ -25221,9 +24695,8 @@ msgstr ""
 msgid "Mark Subs:"
 msgstr ""
 
-#, fuzzy
 msgid "Current Subs:"
-msgstr "Текущий символ"
+msgstr ""
 
 msgid "_Up↑"
 msgstr "_Вверх↑"
@@ -25264,9 +24737,8 @@ msgstr ""
 msgid "{End of Text}"
 msgstr ""
 
-#, fuzzy
 msgid "{Deleted Glyph}"
-msgstr "Выбранные символы"
+msgstr ""
 
 msgid "{End of Line}"
 msgstr ""
@@ -25274,9 +24746,8 @@ msgstr ""
 msgid "Vertical Only"
 msgstr "Только по вертикали"
 
-#, fuzzy
 msgid "Final"
-msgstr "Найти"
+msgstr ""
 
 msgid "First"
 msgstr "Первый"
@@ -25287,9 +24758,8 @@ msgstr ""
 msgid "Medial"
 msgstr ""
 
-#, fuzzy
 msgid "Bad Tile"
-msgstr "Неправильный файл xfig"
+msgstr ""
 
 msgid "You must specify an isolated (or medial) tile"
 msgstr ""
@@ -25351,17 +24821,14 @@ msgstr ""
 msgid "The selection should be scaled so that it will cover the path's length"
 msgstr ""
 
-#, fuzzy
 msgid "X Repeat Count"
-msgstr "Заменить"
+msgstr ""
 
-#, fuzzy
 msgid "Y Repeat Count"
-msgstr "Заменить"
+msgstr ""
 
-#, fuzzy
 msgid "Bad Pattern Size"
-msgstr "Размер керна"
+msgstr ""
 
 msgid "The pattern size (width & height) must be a positive number"
 msgstr ""
@@ -25369,24 +24836,20 @@ msgstr ""
 msgid "The repeat counts must be positive numbers"
 msgstr ""
 
-#, fuzzy
 msgid "Bad Pattern"
-msgstr "Шаблон замены:"
+msgstr ""
 
 msgid "You must specify a pattern"
 msgstr ""
 
-#, fuzzy
 msgid "Pattern"
-msgstr "Шаблон поиска:"
+msgstr ""
 
-#, fuzzy
 msgid "Pattern Size:"
-msgstr "Шаблон поиска:"
+msgstr ""
 
-#, fuzzy
 msgid "Repeat Counts:"
-msgstr "Создание шрифтов"
+msgstr ""
 
 msgid "Do Nothing"
 msgstr "Ничего не делать"
@@ -26223,9 +25686,8 @@ msgstr "Ошибка разбора"
 msgid "<instrs inherited>"
 msgstr ""
 
-#, fuzzy
 msgid "<no instrs>"
-msgstr "Точки"
+msgstr ""
 
 msgid "<return>"
 msgstr ""
@@ -26254,9 +25716,8 @@ msgstr "Изменить длину"
 msgid "How many entries should there be in the cvt table?"
 msgstr ""
 
-#, fuzzy
 msgid "Index"
-msgstr "_Содержание"
+msgstr ""
 
 msgid "Instructions were changed"
 msgstr ""
@@ -26294,7 +25755,7 @@ msgid "Max _Stack Depth:"
 msgstr ""
 
 msgid "_FDEF"
-msgstr "_FDEF"
+msgstr ""
 
 msgid "_IDEFs"
 msgstr "_IDEF"
@@ -26421,15 +25882,14 @@ msgstr ""
 msgid "Text Image Skip"
 msgstr ""
 
-#, fuzzy
 msgid "Image Path"
-msgstr "Изображение"
+msgstr ""
 
 msgid "List of directories to search for images, separated by colons"
 msgstr ""
 
 msgid "GGadget"
-msgstr "GGadget"
+msgstr ""
 
 msgid ""
 "This is an \"abstract\" gadget. It will never appear on the screen\n"
@@ -26466,9 +25926,8 @@ msgstr "Всплывающие подсказки к элементам инте
 msgid "Image used for enabled listmarks (overrides the box)"
 msgstr ""
 
-#, fuzzy
 msgid "Disabled Image"
-msgstr "Сбой сохранения"
+msgstr ""
 
 msgid "Image used for disabled listmarks (overrides the box)"
 msgstr ""
@@ -26479,13 +25938,10 @@ msgstr ""
 msgid "List Mark"
 msgstr "Метка списка"
 
-#, fuzzy
 msgid ""
 "This is the mark that differentiates ComboBoxes and ListButtons\n"
 "from TextFields and normal Buttons."
 msgstr ""
-"Это метка, которая позволяет отличать раскрывающиеся списки\n"
-" и кнопки списков от текстовых полей и обычных кнопок."
 
 msgid "Line"
 msgstr "Линия"
@@ -26573,27 +26029,23 @@ msgid ""
 "or to use an abbreviation (for instance \"Cnt-\")"
 msgstr ""
 
-#, fuzzy
 msgid "Text color for progress windows"
-msgstr "Цвет текста всплывающих подсказок"
+msgstr ""
 
-#, fuzzy
 msgid "Color used to draw the progress bar"
-msgstr "Цвет пометки выделенного глифа"
+msgstr ""
 
 msgid "Color|FillColor"
 msgstr "Цвет заливки"
 
-#, fuzzy
 msgid "Background color for progress windows"
-msgstr "Цвет фона всплывающих подсказок"
+msgstr ""
 
 msgid "Progress"
 msgstr "Прогресс"
 
-#, fuzzy
 msgid "Progress Bars"
-msgstr "Прогресс"
+msgstr ""
 
 msgid "Radio Button"
 msgstr ""
@@ -26644,9 +26096,8 @@ msgstr ""
 msgid "The mark showing a checkbox is off (up, not selected)"
 msgstr ""
 
-#, fuzzy
 msgid "Bad font"
-msgstr "Неправильная ссылка"
+msgstr ""
 
 msgid "Bad font specification"
 msgstr "_Y"
@@ -26664,9 +26115,9 @@ msgstr "Сохранить имя этого файла в параметрах 
 msgid "Save Resource file as..."
 msgstr "Сохранить ресурсный файл как..."
 
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to open %s for output"
-msgstr "Не удалось открыть временный файл"
+msgstr ""
 
 msgid "Open failed"
 msgstr "Не удалось открыть файл"
@@ -26681,13 +26132,11 @@ msgstr ""
 msgid "Write failed"
 msgstr "Не удалось выполнить запись"
 
-#, fuzzy
 msgid "Border Width"
-msgstr "Ширина полосок:"
+msgstr ""
 
-#, fuzzy
 msgid "Padding"
-msgstr "Загрузка..."
+msgstr ""
 
 msgid "Radius"
 msgstr "Радиус"
@@ -26766,13 +26215,11 @@ msgstr "Темная граница:"
 msgid "Darkest Border:"
 msgstr "Самая темная граница:"
 
-#, fuzzy
 msgid "Inner Border:"
-msgstr "Темная граница:"
+msgstr ""
 
-#, fuzzy
 msgid "Outer Border:"
-msgstr "Яркая граница:"
+msgstr ""
 
 msgid "Active Border:"
 msgstr "Активная граница:"
@@ -26786,9 +26233,8 @@ msgstr "Форма рамки:"
 msgid "Border Width:"
 msgstr "Толщина границы:"
 
-#, fuzzy
 msgid "Padding:"
-msgstr "Загрузка..."
+msgstr ""
 
 msgid "Radius:"
 msgstr "Радиус:"
@@ -26856,24 +26302,20 @@ msgstr "Полоса прокрутки"
 msgid "SB Thumb"
 msgstr ""
 
-#, fuzzy
 msgid "Scroll Bar Thumb"
-msgstr "Прокрутить растр"
+msgstr ""
 
-#, fuzzy
 msgid "TabSet"
-msgstr "Тибетский"
+msgstr ""
 
 msgid "Tab Set"
 msgstr ""
 
-#, fuzzy
 msgid "VerticalTabSet"
-msgstr "По вертикали"
+msgstr ""
 
-#, fuzzy
 msgid "Vertical Tab Set"
-msgstr "Вертикальное масштабирование"
+msgstr ""
 
 msgid "Text Field"
 msgstr "Текстовое поле"
@@ -26931,17 +26373,17 @@ msgstr "55"
 msgid "GGadget|ScaleFactor|100"
 msgstr "100"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Cannot find your hotkey definition file!\n"
-msgstr "Не удалось создать шрифт postscript"
+msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to open hotkey definition file: %s\n"
-msgstr "Не удалось создать шрифт postscript"
+msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to open your hotkey definition file for updates.\n"
-msgstr "Не удалось открыть временный файл"
+msgstr ""
 
 #, c-format
 msgid "Failed to rename the new hotkeys file over your old one!\n"
@@ -26950,918 +26392,3 @@ msgstr ""
 #, c-format
 msgid "Reason:%s\n"
 msgstr "Причина:%s\n"
-
-#~ msgid "D_PI:"
-#~ msgstr "D_PI:"
-
-#~ msgid "Undeciphered scripts"
-#~ msgstr "Нерасшифрованные системы письменности"
-
-#~ msgid "Brahmic scripts"
-#~ msgstr "Брахманские письменности"
-
-#, fuzzy
-#~ msgid "Class 2: {Deleted Glyph}"
-#~ msgstr "Выбранные символы"
-
-#, fuzzy
-#~ msgid "Set Pixel Size"
-#~ msgstr "Размер пиксела"
-
-#~ msgid "Edit..."
-#~ msgstr "Изменить..."
-
-#~ msgid "Auto _Kern..."
-#~ msgstr "А_втокернинг..."
-
-#~ msgid "Mark|_New..."
-#~ msgstr "_Создать..."
-
-#~ msgid "Lookup|_New"
-#~ msgstr "_Создать"
-
-#, fuzzy
-#~ msgid "Add Standard Class:"
-#~ msgstr "Adobe Standard"
-
-#~ msgid "Class|_New"
-#~ msgstr "_Создать"
-
-#~ msgid "Sequence Position:"
-#~ msgstr "Позиция в последовательности:"
-
-#~ msgid "Sequence Number:"
-#~ msgstr "Номер последовательности:"
-
-#~ msgid "Sequence/Lookup"
-#~ msgstr "Последовательность/Справка"
-
-#~ msgid "0-9"
-#~ msgstr "0-9"
-
-#~ msgid ""
-#~ "Browse for a file containing a list of kerning pairs\n"
-#~ "two characters per line. FontForge will only check\n"
-#~ "those pairs for kerning info."
-#~ msgstr ""
-#~ "Выбор файла содержащего список керн.пар\n"
-#~ "по два символа в строке. FontForge будет проверять\n"
-#~ "только эти пары."
-
-#~ msgid "_Browse..."
-#~ msgstr "_Просмотреть..."
-
-#~ msgid "Glyphs on Left"
-#~ msgstr "Символы слева"
-
-#~ msgid "Enter two glyph ranges to be adjusted."
-#~ msgstr "Введите два корректируемых диапазона символов."
-
-#~ msgid "Load Kern Pairs"
-#~ msgstr "Загрузить керн. пары"
-
-#~ msgid "No glyphs selected."
-#~ msgstr "Символы не выбраны."
-
-#~ msgid ""
-#~ "You must select a lookup subtable in which to store the kerning pairs"
-#~ msgstr "Необходимо выбрать субтаблицу справки для хранения кернинговых пар"
-
-#~ msgid "Total Kerns:"
-#~ msgstr "Всего пар:"
-
-#~ msgid "Threshold:"
-#~ msgstr "Предел:"
-
-#~ msgid "ЂЄ-ІЈ-ЋЏ-ИК-Яа-ик-яђє-іј-ћџ.,:;-"
-#~ msgstr "ЂЄ-ІЈ-ЋЏ-ИК-Яа-ик-яђє-іј-ћџ.,:;-"
-
-#~ msgid "а-ик-яђє-іј-ћџ.,:;-"
-#~ msgstr "а-ик-яђє-іј-ћџ.,:;-"
-
-#~ msgid "Α-ΡΣ-Ωα-ω.,:;-"
-#~ msgstr "Α-ΡΣ-Ωα-ω.,:;-"
-
-#~ msgid "α-ω.,:;-"
-#~ msgstr "α-ω.,:;-"
-
-#~ msgid "A-Za-z.,:;-"
-#~ msgstr "A-Za-z.,:;-"
-
-#~ msgid "a-z.,:;-"
-#~ msgstr "a-z.,:;-"
-
-#~ msgid "A-Za-z"
-#~ msgstr "A-Za-z"
-
-#~ msgid "Selected"
-#~ msgstr "Выбранные"
-
-#~ msgid "ЂЄ-ІЈ-ЋЏ-ИК-Яа-ик-яђє-іј-ћџ"
-#~ msgstr "ЂЄ-ІЈ-ЋЏ-ИК-Яа-ик-яђє-іј-ћџ"
-
-#~ msgid "Α-ΡΣ-Ωα-ω"
-#~ msgstr "Α-ΡΣ-Ωα-ω"
-
-#~ msgid "A-Za-z0-9"
-#~ msgstr "A-Za-z0-9"
-
-#~ msgid ""
-#~ "The stroke width is so big that the generated path\n"
-#~ "may intersect itself in %.100s"
-#~ msgstr ""
-#~ "Толщина обводки так велика, что созданный контур\n"
-#~ "может пересечь сам себя в символе %.100s"
-
-#~ msgid "Bad Stroke"
-#~ msgstr "Некорректное значение обводки"
-
-#~ msgid "Names"
-#~ msgstr "Названия"
-
-#~ msgid "CJK Compatability Forms"
-#~ msgstr "CJK, формы для совместимости"
-
-#~ msgid "CJK Compatability Ideographs"
-#~ msgstr "CJK, идеограммы для совместимости"
-
-#~ msgid "Saving Postscript Font"
-#~ msgstr "Сохранение шрифта Postscript"
-
-#~ msgid "_Ellipse"
-#~ msgstr "_Эллипс"
-
-#~ msgid "_Stroke"
-#~ msgstr "_Штрих"
-
-#, fuzzy
-#~ msgid "Elipse"
-#~ msgstr "Эллипс"
-
-#~ msgid "Acceptable"
-#~ msgstr "Приемлемый"
-
-#~ msgid "Erroneous"
-#~ msgstr "Ошибочный"
-
-#~ msgid "AutoHint before rasterizing"
-#~ msgstr "Автоинструктирование перед растрированием"
-
-#, fuzzy
-#~ msgid "FontForge will auto kern the selected glyphs"
-#~ msgstr "Цвет пометки выделенного глифа"
-
-#~ msgid "StyleName|_New..."
-#~ msgstr "_Создать..."
-
-#~ msgid "_Hist."
-#~ msgstr "_Гистограмма"
-
-#~ msgid "Style Name"
-#~ msgstr "Название стиля"
-
-#~ msgid "Key (in Private dictionary)"
-#~ msgstr "Ключ (в приватном словаре)"
-
-#~ msgid "Unassigned Bit 122"
-#~ msgstr "Неназначенный бит 122"
-
-#~ msgid "Unassigned Bit 121"
-#~ msgstr "Неназначенный бит 121"
-
-#~ msgid "Unassigned Bit 120"
-#~ msgstr "Неназначенный бит 120"
-
-#~ msgid "Unassigned Bit 119"
-#~ msgstr "Неназначенный бит 119"
-
-#~ msgid "Unassigned Bit 118"
-#~ msgstr "Неназначенный бит 118"
-
-#~ msgid "Unassigned Bit 117"
-#~ msgstr "Неназначенный бит 117"
-
-#~ msgid "Unassigned Bit 116"
-#~ msgstr "Неназначенный бит 116"
-
-#~ msgid "Unassigned Bit 115"
-#~ msgstr "Неназначенный бит 115"
-
-#~ msgid "Unassigned Bit 114"
-#~ msgstr "Неназначенный бит 114"
-
-#~ msgid "Unassigned Bit 113"
-#~ msgstr "Неназначенный бит 113"
-
-#~ msgid "Unassigned Bit 112"
-#~ msgstr "Неназначенный бит 112"
-
-#~ msgid "Unassigned Bit 111"
-#~ msgstr "Неназначенный бит 111"
-
-#~ msgid "Unassigned Bit 110"
-#~ msgstr "Неназначенный бит 110"
-
-#~ msgid "Unassigned Bit 109"
-#~ msgstr "Неназначенный бит 109"
-
-#~ msgid "Unassigned Bit 108"
-#~ msgstr "Неназначенный бит 108"
-
-#~ msgid "Unassigned Bit 107"
-#~ msgstr "Неназначенный бит 107"
-
-#~ msgid "Unassigned Bit 106"
-#~ msgstr "Неназначенный бит 106"
-
-#~ msgid "Unassigned Bit 105"
-#~ msgstr "Неназначенный бит 105"
-
-#~ msgid "Unassigned Bit 104"
-#~ msgstr "Неназначенный бит 104"
-
-#~ msgid "Unassigned Bit 103"
-#~ msgstr "Неназначенный бит 103"
-
-#~ msgid "Unassigned Bit 102"
-#~ msgstr "Неназначенный бит 102"
-
-#~ msgid "Unassigned Bit 101"
-#~ msgstr "Неназначенный бит 101"
-
-#~ msgid "Unassigned Bit 100"
-#~ msgstr "Неназначенный бит 100"
-
-#~ msgid "Unassigned Bit 99"
-#~ msgstr "Неназначенный бит 99"
-
-#~ msgid "Unassigned Bit 98"
-#~ msgstr "Неназначенный бит 98"
-
-#~ msgid "Unassigned Bit 97"
-#~ msgstr "Неназначенный бит 97"
-
-#~ msgid "Unassigned Bit 96"
-#~ msgstr "Неназначенный бит 96"
-
-#~ msgid "Unassigned Bit 95"
-#~ msgstr "Неназначенный бит 95"
-
-#~ msgid "Unassigned Bit 94"
-#~ msgstr "Неназначенный бит 94"
-
-#~ msgid "Unassigned Bit 93"
-#~ msgstr "Неназначенный бит 93"
-
-#~ msgid "Byzantine Musical Symbols/Musical Symbols"
-#~ msgstr "Византийская нотная грамота/Нотная грамота"
-
-#~ msgid "Unassigned Bit 58"
-#~ msgstr "Неназначенный бит 58"
-
-#~ msgid "Enclosed CJK Leters and Months"
-#~ msgstr "Знаки и месяца CJK в рамке"
-
-#~ msgid "Unassigned Bit 53"
-#~ msgstr "Неназначенный бит 53"
-
-#~ msgid "Unassigned Bit 27"
-#~ msgstr "Неназначенный бит 27"
-
-#~ msgid "Unassigned Bit 14"
-#~ msgstr "Неназначенный бит 14"
-
-#~ msgid "Unassigned Bit 12"
-#~ msgstr "Неназначенный бит 12"
-
-#~ msgid "Unasigned Bit 8"
-#~ msgstr "Неназначенный бит 8"
-
-#~ msgid "Pictorial"
-#~ msgstr "Картиночная"
-
-#~ msgid "Pahlavi"
-#~ msgstr "Пехлеви"
-
-#~ msgid "Aramaic"
-#~ msgstr "Арамейский"
-
-#~ msgid "E"
-#~ msgstr "Р"
-
-#~ msgid "Kharosthi"
-#~ msgstr "Кхароштхи"
-
-#~ msgid ""
-#~ "Use the pango library for text (if available)\n"
-#~ "This makes for prettier and handles complex scripts.\n"
-#~ "But it can slow things down on older machines.\n"
-#~ "This applies to any windows created AFTER this is set.\n"
-#~ "Already existing windows will continue as they are."
-#~ msgstr ""
-#~ "Использовать библиотеку Pango (если она доступна)\n"
-#~ "для поддержки сложных письменностей.\n"
-#~ "Изменение параметра вступит в силу только для\n"
-#~ "вновь открываемых окон программы."
-
-#~ msgid "UsePangoDrawing"
-#~ msgstr "Использовать Pango"
-
-#~ msgid "Monospace Family"
-#~ msgstr "Моноширинная гарнитура:"
-
-#~ msgid "Sans-Serif Family"
-#~ msgstr "Гротескная гарнитура:"
-
-#~ msgid "Fraktur Family"
-#~ msgstr "Фрактурная гарнитура:"
-
-#~ msgid "Script Family"
-#~ msgstr "Рукописная гарнитура:"
-
-#~ msgid "Serif Family"
-#~ msgstr "Гарнитура с засечками:"
-
-#~ msgid "Subs"
-#~ msgstr "Подстановки"
-
-#~ msgid "Pair"
-#~ msgstr "Пара"
-
-#~ msgid "Missing Glyph Name"
-#~ msgstr "Отсутствует название символа"
-
-#~ msgid ""
-#~ "If for some reason the font is deemed inappropriate\n"
-#~ "for a work environment."
-#~ msgstr ""
-#~ "Если по тем или иным причинам шрифт\n"
-#~ "не рекомендован для использования в работе."
-
-#~ msgid "Not Safe for Work"
-#~ msgstr "Шрифт небезопасен для работы"
-
-#~ msgid ""
-#~ "If you have already created a preview image of the font\n"
-#~ "then provide the pathspec here."
-#~ msgstr "Если вы уже создали файл образца сами, укажите его здесь."
-
-#~ msgid "No image will be uploaded."
-#~ msgstr "Файл образца не будет закачан на сервер"
-
-#~ msgid "No Preview"
-#~ msgstr "Без предпросмотра"
-
-#~ msgid ""
-#~ "FontForge will generate a sample image for you\n"
-#~ "before uploading."
-#~ msgstr "FontForge сам создаст файл образца перед закачкой на сервер."
-
-#~ msgid "Generated Image"
-#~ msgstr "Созданное изображение"
-
-#~ msgid "An image of the font in use"
-#~ msgstr "Файл с образцом используемого шрифта"
-
-#~ msgid "Preview:"
-#~ msgstr "Файл предпросмотра:"
-
-#~ msgid "Upload FONTLOG"
-#~ msgstr "Закачать FONTLOG"
-
-#~ msgid "Upload the license (as found in the list of truetype names)"
-#~ msgstr "Закачать лицензию (по списку в именах TrueType)"
-
-#~ msgid "Upload License"
-#~ msgstr "Закачать текст лицензии"
-
-#~ msgid "Public Domain"
-#~ msgstr "Публичное достояние"
-
-#~ msgid ""
-#~ "The SIL Open Font License\n"
-#~ "Please see http://scripts.sil.org/OFL"
-#~ msgstr ""
-#~ "SIL Open Font License\n"
-#~ "См. http://scripts.sil.org/OFL"
-
-#~ msgid "SIL"
-#~ msgstr "SIL"
-
-#~ msgid "License:"
-#~ msgstr "Лицензия:"
-
-#~ msgid "A description of the font"
-#~ msgstr "Описание шрифта"
-
-#~ msgid "Description:"
-#~ msgstr "Описание:"
-
-#~ msgid "Keyword Tags:"
-#~ msgstr "Ключевые слова:"
-
-#~ msgid ""
-#~ "Other artists involved in the design of this font.\n"
-#~ "Collaborators, etc."
-#~ msgstr "Иные дизайнеры, вовлеченные в создание этого шрифта."
-
-#~ msgid "Artists:"
-#~ msgstr "Авторы:"
-
-#~ msgid "OFLib Name:"
-#~ msgstr "Название на OFLib:"
-
-#~ msgid "Remember Me"
-#~ msgstr "Запомнить меня"
-
-#~ msgid "Password on OFLib"
-#~ msgstr "Пароль на OFLB"
-
-#~ msgid "Password:"
-#~ msgstr "Пароль:"
-
-#~ msgid "Username on OFLib"
-#~ msgstr "Имя пользователя OFLB"
-
-#~ msgid "Username:"
-#~ msgstr "Пользователь:"
-
-#~ msgid "Register"
-#~ msgstr "Зарегистрироваться"
-
-#~ msgid "Open Font Library"
-#~ msgstr "Open Font Library"
-
-#~ msgid "Upload to the"
-#~ msgstr "Закачать на"
-
-#~ msgid "Output Font Log"
-#~ msgstr "Создать журнал изменений"
-
-#~ msgid "Checking server for additional fonts"
-#~ msgstr "Проверка сервера на наличие дополнительных шрифтов"
-
-#~ msgid "Checking for new fonts"
-#~ msgstr "Проверка на наличие новых шрифтов"
-
-#~ msgid "Done"
-#~ msgstr "Закрыть"
-
-#~ msgid "Preview"
-#~ msgstr "Просмотреть"
-
-#~ msgid "Automatically download preview after selecting a font (be patient)"
-#~ msgstr "Автоматически скачивать миниатюру после выбора шрифта (терпение!)"
-
-#~ msgid "Fonts on http://openfontlibrary.org/"
-#~ msgstr "Шрифты на http://openfontlibrary.org"
-
-#~ msgid "Search:"
-#~ msgstr "Искать:"
-
-#~ msgid "Reverse"
-#~ msgstr "В обратном порядке"
-
-#~ msgid "Date"
-#~ msgstr "Дата"
-
-#~ msgid "Sort by:"
-#~ msgstr "Сортировать по:"
-
-#~ msgid "Browse the Open Font Library"
-#~ msgstr "Просмотр Open Font Library"
-
-#~ msgid "Tag(s)"
-#~ msgstr "Метка"
-
-#~ msgid "Show All"
-#~ msgstr "Показать все"
-
-#~ msgid "PM"
-#~ msgstr "PM"
-
-#~ msgid "AM"
-#~ msgstr "AM"
-
-#~ msgid "Noon"
-#~ msgstr "Полдень"
-
-#~ msgid "Midnight"
-#~ msgstr "Полночь"
-
-#~ msgid "December"
-#~ msgstr "Декабрь"
-
-#~ msgid "November"
-#~ msgstr "Ноябрь"
-
-#~ msgid "October"
-#~ msgstr "Октябрь"
-
-#~ msgid "September"
-#~ msgstr "Сентябрь"
-
-#~ msgid "August"
-#~ msgstr "Август"
-
-#~ msgid "July"
-#~ msgstr "Июль"
-
-#~ msgid "June"
-#~ msgstr "Июнь"
-
-#~ msgid "May"
-#~ msgstr "Май"
-
-#~ msgid "April"
-#~ msgstr "Апрель"
-
-#~ msgid "March"
-#~ msgstr "Март"
-
-#~ msgid "February"
-#~ msgstr "Февраль"
-
-#~ msgid "January"
-#~ msgstr "Январь"
-
-#~ msgid "_Fit to em"
-#~ msgstr "_Заполнить до em"
-
-#~ msgid "Browse web"
-#~ msgstr "Сетевые шрифтовые библиотеки"
-
-#~ msgid "Open Font Library..."
-#~ msgstr "Open Font Library..."
-
-#~ msgid "OFL website"
-#~ msgstr "Сайт OFL"
-
-#~ msgid "Please read the OFL"
-#~ msgstr "Прочитайте текст OFL"
-
-#~ msgid "EUC-GB12345"
-#~ msgstr "EUC-GB12345"
-
-#~ msgid "_Pressure:"
-#~ msgstr "_Нажим:"
-
-#~ msgid "Near (%f,%f) @t=%g"
-#~ msgstr "Около (%f,%f) @t=%g"
-
-#~ msgid "No"
-#~ msgstr "Нет"
-
-#~ msgid "HelpDir"
-#~ msgstr "Каталог со справкой"
-
-#~ msgid "TeX Extension List"
-#~ msgstr "Список расширений TeX"
-
-#~ msgid "TeX Glyphlist"
-#~ msgstr "Список глифов TeX"
-
-#~ msgid "Downloading file..."
-#~ msgstr "Загружается файл..."
-
-#~ msgid "Requesting file..."
-#~ msgstr "Запрашивается файл..."
-
-#, fuzzy
-#~ msgid "Preview file vanished"
-#~ msgstr "Файл шрифта исчез"
-
-#, fuzzy
-#~ msgid "Image file vanished"
-#~ msgstr "Файл шрифта исчез"
-
-#~ msgid "Font file vanished"
-#~ msgstr "Файл шрифта исчез"
-
-#~ msgid "Could not read state."
-#~ msgstr "Не удалось считать состояние."
-
-#~ msgid "Could not read state"
-#~ msgstr "Не удалось считать состояние"
-
-#~ msgid "Could not log in."
-#~ msgstr "Не удалось авторизоваться"
-
-#~ msgid "Login failed"
-#~ msgstr "Не удалось авторизоваться"
-
-#~ msgid "Looking for openfontlibrary.org"
-#~ msgstr "Выполняется поиск openfontlibrary.org"
-
-#~ msgid "Uploading to Open Font Library"
-#~ msgstr "Закачивание на Open Font Library"
-
-#~ msgid "Font Upload..."
-#~ msgstr "Закачать шрифт..."
-
-#~ msgid "Transmitting Meta Data..."
-#~ msgstr "Выполняется передача метаданных..."
-
-#~ msgid "Transmitting %s..."
-#~ msgstr "Выполняется передача %s..."
-
-#~ msgid "File vanished"
-#~ msgstr "Файл исчез"
-
-#~ msgid "Please name the %dth encoding in this file"
-#~ msgstr "Назовите %d-ую кодировку этого файла"
-
-#~ msgid "Third"
-#~ msgstr "Третья"
-
-#~ msgid "Second"
-#~ msgstr "Вторая"
-
-#~ msgid "Web Open Font"
-#~ msgstr "Web Open Font"
-
-#, fuzzy
-#~ msgid "Collaboration"
-#~ msgstr "_Комбинации"
-
-#, fuzzy
-#~ msgid "Feature Not Available"
-#~ msgstr "Файл с функциями?"
-
-#~ msgid "Panose|_Family"
-#~ msgstr "_Гарнитура:"
-
-#~ msgid "Nord"
-#~ msgstr "Нордический"
-
-#, fuzzy
-#~ msgid "Latin: Pictorial/Symbol"
-#~ msgstr "Византийская нотная грамота"
-
-#, fuzzy
-#~ msgid "Latin: Text & Display"
-#~ msgstr "Текстовая"
-
-#, fuzzy
-#~ msgid "_Disconnect"
-#~ msgstr "Курсивное размещение"
-
-#~ msgid "Chinese counting rod numerals"
-#~ msgstr "Китайские счетные палочки"
-
-#~ msgid "Notational systems"
-#~ msgstr "Нотные грамоты"
-
-#~ msgid "Sumerian pictograms"
-#~ msgstr "Шумерское пиктографическое письмо"
-
-#~ msgid "Egyptian and Mayan hieroglyphs"
-#~ msgstr "Иероглифы Египта и народности майя"
-
-#~ msgid "North American ideographs and pictograms"
-#~ msgstr "Североамериканские идеографы и пиктограммы"
-
-#~ msgid "Egyptian hieroglyphs"
-#~ msgstr "Иероглифы Египта"
-
-#~ msgid "Sumero-Akkadian Cuneiform"
-#~ msgstr "Шумеро-аккадская клинопись"
-
-#~ msgid "Lookup potentially too big"
-#~ msgstr "Эта справка может оказаться слишком большой"
-
-#~ msgid "Directory Not Remote"
-#~ msgstr "Каталог не удаленный"
-
-#~ msgid "%1$s is not in %2$.100s"
-#~ msgstr "%1$s находится не в %2$.100s"
-
-#~ msgid "Could not transmit data."
-#~ msgstr "Не удалось передать данные."
-
-#~ msgid "Could not transmit data"
-#~ msgstr "Не удалось передать данные"
-
-#~ msgid "Uploading font..."
-#~ msgstr "Закачивается шрифт..."
-
-#~ msgid "Could not find file."
-#~ msgstr "Не удалось найти файл."
-
-#~ msgid "FTP passive Data Connect failed\n"
-#~ msgstr "Не удалось установить пассивное соединение по FTP\n"
-
-#~ msgid "Transmitting font..."
-#~ msgstr "Передача шрифта..."
-
-#~ msgid "Bad Username/Password\n"
-#~ msgstr "Некорректно введено имя пользователя или пароль\n"
-
-#~ msgid "Logging in..."
-#~ msgstr "Авторизация..."
-
-#~ msgid "Uploading to %s"
-#~ msgstr "Закачка на %s"
-
-#~ msgid "HTTP return code: %d."
-#~ msgstr "Код возврата HTTP: %d."
-
-#~ msgid "Could not download data."
-#~ msgstr "Не удалось загрузить данные."
-
-#~ msgid "Could not download data"
-#~ msgstr "Не удалось загрузить данные"
-
-#~ msgid "Downloading font..."
-#~ msgstr "Загружается шрифт..."
-
-#~ msgid "Could not send request to \"%s\"."
-#~ msgstr "Не удалось отправить запрос в \"%s\"."
-
-#~ msgid "Could not send request"
-#~ msgstr "Не удалось отправить запрос"
-
-#, fuzzy
-#~ msgid "Requesting font..."
-#~ msgstr "Автоинструктирование шрифта..."
-
-#~ msgid "Could not connect to \"%s\"."
-#~ msgstr "Не удалось соединиться с \"%s\"."
-
-#~ msgid "Could not connect to host"
-#~ msgstr "Не удалось соединиться с узлом"
-
-#~ msgid ""
-#~ "Could not find \"%s\"\n"
-#~ "Are you connected to the internet?"
-#~ msgstr ""
-#~ "Не удалось найти \"%s\"\n"
-#~ "Установлено ли подключение к Интернету?"
-
-#~ msgid "Could not find host"
-#~ msgstr "Не удалось найти узел"
-
-#, fuzzy
-#~ msgid "Font Download..."
-#~ msgstr "Закачать шрифт..."
-
-#~ msgid "Could not parse URL"
-#~ msgstr "Не удалось разобрать URL"
-
-#~ msgid "Downloading from %s"
-#~ msgstr "Загрузка шрифта из %s"
-
-#~ msgid "Password?"
-#~ msgstr "Пароль?"
-
-#, fuzzy
-#~ msgid "Reference to a non-existent glyph name on line %d of %s."
-#~ msgstr "Отсутствует название в строке %d у %s"
-
-#~ msgid "Disconnected"
-#~ msgstr "Соединение прекращено"
-
-#, fuzzy
-#~ msgid "Mahjong & Domino Tiles"
-#~ msgstr "Кости для игры в маджонг"
-
-#, fuzzy
-#~ msgid "Sudanese"
-#~ msgstr "Сунданский"
-
-#, fuzzy
-#~ msgid "Cuneiform Numbers & Punctuation"
-#~ msgstr "Клинописные числа"
-
-#, fuzzy
-#~ msgid "Linear B Syllabary/Ideograms, Agean Num."
-#~ msgstr "Линейное слоговое письмо Б"
-
-#~ msgid "Tagalog/Hanunno/Buhid/Tagbanwa"
-#~ msgstr "Тагалог"
-
-#~ msgid "Katakana & Phonetic Extensions"
-#~ msgstr "Катакана и фонетические расширения"
-
-#, fuzzy
-#~ msgid "Mathematical Operators (Suppl. & Misc.)"
-#~ msgstr "Математические операторы (дополнительные и прочие)"
-
-#~ msgid "Arrows (& Supplements A&B)"
-#~ msgstr "Стрелки (и дополнения A и B)"
-
-#, fuzzy
-#~ msgid "Cyrillic & Supplement"
-#~ msgstr "Кириллица, дополнение"
-
-#~ msgid "Remove External Contour"
-#~ msgstr "Удалить внешние контуры"
-
-#~ msgid "Remove Internal Contour"
-#~ msgstr "Удалить внутренние контуры"
-
-#~ msgid "Minor Stroke _Height:"
-#~ msgstr "Высота _неосновного штриха:"
-
-#~ msgid "Main Stroke _Width:"
-#~ msgstr "_Ширина основного штриха:"
-
-#~ msgid "_Polygon"
-#~ msgstr "_Многоугольник"
-
-#~ msgid ""
-#~ "Ca_lligraphic\n"
-#~ "(Rectangular)"
-#~ msgstr ""
-#~ "_Каллиграфическая\n"
-#~ "(Прямоугольная)"
-
-#~ msgid ""
-#~ "_Circular\n"
-#~ "(Elliptical)"
-#~ msgstr ""
-#~ "_Круглая\n"
-#~ "(Эллиптическая)"
-
-#~ msgid "Pen Type:"
-#~ msgstr "Тип ручки:"
-
-#, fuzzy
-#~ msgid "There are too many vertices on this polygon."
-#~ msgstr "Обнаружены две записи для одного глифа (%.80s)"
-
-#, fuzzy
-#~ msgid "Transport And Map Symbols"
-#~ msgstr "Византийская нотная грамота"
-
-#, fuzzy
-#~ msgid "Miscellaneous Symbols And Pictographs"
-#~ msgstr "Различные символы"
-
-#~ msgid "Cuneiform and other Near Eastern Scripts"
-#~ msgstr "Клинопись и другие ближневосточные письменности"
-
-#~ msgid "Aegean numbers"
-#~ msgstr "Эгейские цифры"
-
-#~ msgid "Arabic Presentation Forms B"
-#~ msgstr "Арабские формы представления Б"
-
-#~ msgid "Arabic Presentation Forms A"
-#~ msgstr "Арабские формы представления А"
-
-#, fuzzy
-#~ msgid "Sundanese Extensions"
-#~ msgstr "Фонетические расширения"
-
-#, fuzzy
-#~ msgid "Invalid stroke parameters"
-#~ msgstr "Параметры пиксельной сетки"
-
-#~ msgid "Cuneiform, Ugaritic"
-#~ msgstr "Cuneiform, Ugaritic"
-
-#~ msgid "Tengwar"
-#~ msgstr "Tengwar"
-
-#~ msgid "Tai Lu"
-#~ msgstr "Tai Lu"
-
-#~ msgid "Rongorongo"
-#~ msgstr "Rongorongo"
-
-#~ msgid "Phaistos"
-#~ msgstr "Phaistos"
-
-#~ msgid "Script|Pahlavi"
-#~ msgstr "Pahlavi"
-
-#~ msgid "Kharoṣṭhī"
-#~ msgstr "Кхароштхи"
-
-#~ msgid "Cypro-Minoan"
-#~ msgstr "Cypro-Minoan"
-
-#~ msgid "Cirth"
-#~ msgstr "Cirth"
-
-#~ msgid "Bliss Symbolics"
-#~ msgstr "Bliss Symbolics"
-
-#~ msgid "Vertical Alternates (obs)"
-#~ msgstr "Vertical Alternates (obs)"
-
-#~ msgid "Script Style"
-#~ msgstr "Script Style"
-
-#~ msgid "Hanja to Hangul"
-#~ msgstr "Hanja to Hangul"
-
-#~ msgid "Dipthongs (Obsolete)"
-#~ msgstr "Dipthongs (Obsolete)"
-
-#~ msgid "Drop Caps"
-#~ msgstr "Буквица"
-
-#~ msgid "Ancient Ligatures"
-#~ msgstr "Древние лигатуры"

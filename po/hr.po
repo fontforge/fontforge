@@ -4,7 +4,7 @@
 # George Williams, <pfaedit@users.sourceforge.net>, 2006.
 #
 # Translators:
-# Milo Ivir <mail@milotype.de>, 2019.
+# Milo Ivir <mail@milotype.de>, 2019-2020.
 #
 #
 msgid ""
@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-02-29 10:56+1100\n"
-"PO-Revision-Date: 2019-07-30 01:35+0200\n"
+"PO-Revision-Date: 2020-03-12 08:50\n"
 "Last-Translator: Milo Ivir <mail@milotype.de>\n"
 "Language-Team: \n"
 "Language: hr\n"
@@ -62,9 +62,6 @@ msgstr ""
 
 msgid "Fontforge showing a glyph being edited"
 msgstr "Fontforge prikazuje uređivanje grafema"
-
-msgid "FontForge developers"
-msgstr ""
 
 msgid "Font Editor"
 msgstr "Font editor"
@@ -2566,10 +2563,10 @@ msgid "Style Set 20"
 msgstr "Stilski skup 20"
 
 msgid "Math Script Style"
-msgstr ""
+msgstr "Matematički stil pisma"
 
 msgid "Stretching Glyph Decomposition"
-msgstr ""
+msgstr "Širenje rastavljanja grafema"
 
 msgid "Subscript"
 msgstr "Indeks"
@@ -8266,6 +8263,8 @@ msgstr ""
 
 msgid "Warning: Unrecognized or unsupported cap type, defaulting to 'nib'.\n"
 msgstr ""
+"Upozorenje: neprepoznat ili nepodržan vrh linija, postavlja se na naliv "
+"pero.\n"
 
 msgid "Warning: No stroke output for contour\n"
 msgstr ""
@@ -8979,7 +8978,7 @@ msgid "Limbu"
 msgstr "Limbu"
 
 msgid "Khmer Symbols"
-msgstr "Khmer simboli"
+msgstr "Kmerski simboli"
 
 msgid "Buginese"
 msgstr "Buginezno"
@@ -9132,7 +9131,7 @@ msgid "Math Misc. Symbols-B"
 msgstr "Matematički razni simboli-B"
 
 msgid "Supplemental Mathematical Operators"
-msgstr "Dopunjene matematički operatori"
+msgstr "Dopunjeni matematički operatori"
 
 msgid "Supplemental Math Operators"
 msgstr "Dopunjene matematički operatori"
@@ -9495,7 +9494,7 @@ msgid "Early Dynastic Cuneiform"
 msgstr "Klinasto ranih dinasitija"
 
 msgid "Egyptian Hieroglyph Format Controls"
-msgstr ""
+msgstr "Kontrolni znakovi egipatskih hijeroglifa"
 
 msgid "Bamum Supplement"
 msgstr "Bamum, dopuna"
@@ -9552,7 +9551,7 @@ msgid "Indic Siyaq Numbers"
 msgstr "Indijske Siyaq brojke"
 
 msgid "Ottoman Siyaq Numbers"
-msgstr ""
+msgstr "Otomansko sijački brojevi"
 
 msgid "Arabic Mathematical Alphabetic Symbols"
 msgstr "Arapski matematički alfanumerički simboli"
@@ -13014,6 +13013,27 @@ msgstr "Izađi iz ispravljača grešaka"
 msgid "Instruction Gloss (TrueType)"
 msgstr "Glosar za instrukcije (TrueType)"
 
+msgid "Export Options"
+msgstr ""
+
+msgid ""
+"The following options influence how glyphs are exported.\n"
+"Most are specific to one or more formats."
+msgstr ""
+
+msgid "_Use Transform (SVG)"
+msgstr ""
+
+msgid ""
+"FontForge previously exported glyphs using a SVG\n"
+"transform element to flip the Y-axis rather\n"
+"than changing the individual values. This option\n"
+"reverts to that convention."
+msgstr ""
+
+msgid "_Always raise this dialog when exporting"
+msgstr ""
+
 msgid "Bits/Pixel:"
 msgstr "Bitova po pikselu:"
 
@@ -13087,6 +13107,9 @@ msgstr "_Filtar"
 
 msgid "Directory|_New"
 msgstr "_Nova"
+
+msgid "_Options"
+msgstr ""
 
 msgid "Format:"
 msgstr "Format:"
@@ -13512,35 +13535,61 @@ msgstr "Stvori kontrolu za vodoravni potez"
 msgid "Create Vertical Stem Hint"
 msgstr "Stvori kontrolu za uspravni potez"
 
-msgid "PS Interpretion"
-msgstr "PS interpretacija"
-
-#. GT: The following strings should be concatenated together, the result
-#. GT: translated, and then broken into lines by hand. I'm sure it would
-#. GT: be better to specify this all as one string, but my widgets won't support
-#. GT: that
-msgid ""
-"FontForge has some bugs in its remove overlap\n"
-"function which may cause you problems, so\n"
-"I give you the option of turning it off.\n"
-"Leave it on if possible though, it is useful."
+msgid "Import Parameters"
 msgstr ""
-"FontForge ima neke greške u svojoj funkciji za\n"
-"uklanjanje preklapanja kontura, što može prouzročiti\n"
-"probleme, stoga je moguće isključiti tu funkciju.\n"
-"Po mogućnosti je ostavi aktiviranom, jer je korisna."
 
-msgid "Handle Erasers"
-msgstr "Brisači ručaka"
+msgid ""
+"The following options influence how files are imported.\n"
+"Most are specific to one or more formats."
+msgstr ""
+
+msgid "_Correct Direction (PS/EPS)"
+msgstr ""
+
+msgid "Handle Erasers (PS/EPS)"
+msgstr ""
 
 msgid ""
 "Certain programs use pens with white ink as erasers\n"
-"If you select (blacken) this checkbox, FontForge will\n"
-"attempt to simulate that."
+"This option attempts to simulate that effect."
 msgstr ""
-"Neki programi koriste olovke s bijelom tintom kao gumice\n"
-"za brisanje. Ako odabereš ovaj potvrdni okvir, Fontove će\n"
-"pokušati to simulirati."
+
+msgid "Simplify Stroke (SVG/PS/EPS)"
+msgstr ""
+
+msgid ""
+"Run Simplify after expanding stroked paths\n"
+"to reduce the number of points."
+msgstr ""
+
+msgid "Use Clip-paths (SVG)"
+msgstr ""
+
+msgid "Scale to fit (Misc)"
+msgstr ""
+
+msgid "Default Join Limit (PS/EPS/SVG):"
+msgstr ""
+
+msgid ""
+"The length limit for Miter and Arcs joins in units\n"
+"of 1/2 stroke-width. Set to -1 to use the format-\n"
+"specific limits of 10.0 for PostScript and 4.0 for SVG."
+msgstr ""
+
+msgid "Accuracy _Target:"
+msgstr "Točnost _cilja:"
+
+msgid ""
+"The Expand Stroke algorithm will attempt to be (at\n"
+"least) this accurate, but there may be exceptions."
+msgstr ""
+
+msgid "_Always raise this dialog when importing"
+msgstr ""
+
+msgid "Accuracy Target:"
+msgstr "Točnost cilja:"
 
 msgid "Image"
 msgstr "Slika"
@@ -13651,7 +13700,7 @@ msgid "Perform a perspective transformation on the selection"
 msgstr "Izradi perspektivnu transformaciju na odabir"
 
 msgid "Rotate the selection in 3D and project back to plane"
-msgstr ""
+msgstr "Rotiraj odabir u 3D i projiciraj ga natrag na plohu"
 
 msgid "Polygon or Star"
 msgstr "Poligon ili zvijezda"
@@ -14113,7 +14162,7 @@ msgid "Please draw a convex polygon in the drawing area."
 msgstr "Nacrtaj konveksni poligon u području za crtanje."
 
 msgid "Nib shape not valid"
-msgstr ""
+msgstr "Oblik naliv pera nije ispravan"
 
 msgid "Stroke _Width:"
 msgstr "_Širina poteza:"
@@ -14128,13 +14177,10 @@ msgid "Pen _Angle:"
 msgstr "_Nagib pera:"
 
 msgid "Join Limit:"
-msgstr ""
+msgstr "Ograničenje spoja:"
 
 msgid "Extend Cap:"
-msgstr ""
-
-msgid "Accuracy Target:"
-msgstr ""
+msgstr "Proširi vrh linije:"
 
 msgid "Removing both the internal and the external contours makes no sense"
 msgstr "Uklanjanje unutarnjih i vanjskih kontura nema smisla"
@@ -14147,45 +14193,54 @@ msgid "Freehand"
 msgstr "Prostoručna"
 
 msgid "Nib Type:"
-msgstr ""
+msgstr "Vrsta naliv pera:"
 
 msgid "_Circular (Elliptical)"
 msgstr ""
+"_Krug\n"
+"(eliptično)"
 
 msgid "Ca_lligraphic (Rectangular)"
 msgstr ""
+"K_aligrafija\n"
+"(pravokutno)"
 
 msgid "Conve_x (Polygonal)"
-msgstr ""
+msgstr "Konveksno (višekutno)"
 
 msgid "_Don't Expand"
 msgstr "_Ne proširuj"
 
 msgid "Major Axis (_Width):"
-msgstr ""
+msgstr "Glavna os (širi_na):"
 
 msgid "Minor Axis (_Height):"
-msgstr ""
+msgstr "Sporedna os (_visina):"
 
 msgid ""
 "A calligraphic pen or an elliptical pen has two widths\n"
 "(which may be the same, giving a circular or square pen,\n"
 "or different giving an eliptical or rectangular pen)."
 msgstr ""
+"Kaligrafska ili eliptična naliv pera imaju dvije širine\n"
+"(širina može biti ista za kružna ili kvadratična nalivpera\n"
+"ili različita za eliptična ili pravokutna nalivpera)."
 
 msgid "Ni_b Angle:"
-msgstr ""
+msgstr "U_košenost naliv pera:"
 
 msgid ""
 "A Convex nib will also be rotated by this amount\n"
 "although this is not displayed in the dialog."
 msgstr ""
+"Konveksno naliv pero će se također rotirati ovoliko,\n"
+"mada se to ne prikazuje u dijalogu."
 
 msgid "Line Cap:"
-msgstr ""
+msgstr "Vrh linija:"
 
 msgid "_Nib"
-msgstr ""
+msgstr "_Naliv pero"
 
 msgid "_Butt"
 msgstr "_Ravni vrh"
@@ -14197,93 +14252,92 @@ msgid "Be_vel"
 msgstr "_Zarezani spoj"
 
 msgid "Line Join:"
-msgstr ""
+msgstr "Spoj linija:"
 
 msgid "Ni_b"
-msgstr ""
+msgstr "_Naliv pero"
 
 msgid "B_evel"
-msgstr ""
+msgstr "Zar_ezani spoj"
 
 msgid "Round"
 msgstr "Zaokruži"
 
 msgid "Arcs"
-msgstr ""
+msgstr "Lukovi"
 
 msgid "_Miter"
 msgstr "K_utni spoj"
 
 msgid "Miter Cli_p"
-msgstr ""
+msgstr "Isječak kutnog s_poja"
 
 msgid "_Join Limit:"
-msgstr ""
+msgstr "_Ograničenje spoja:"
 
 msgid "as _Length"
-msgstr ""
+msgstr "kao _duljina"
 
 msgid "* Nib _Span"
-msgstr ""
-
-msgid "Accuracy _Target:"
-msgstr ""
+msgstr "* Ra_spon naliv pera"
 
 msgid ""
 "The stroke algorithm will attempt to be (at least)\n"
 "this accurate, but there may be exceptions."
 msgstr ""
+"Algoritam poteza će pokušati biti (barem)\n"
+"ovoliko točno, međutim moguće su iznimke."
 
 msgid "_Extend Cap:"
-msgstr ""
+msgstr "_Proširi vrh linije:"
 
 msgid "as Len_gth"
-msgstr ""
+msgstr "kao _duljina"
 
 msgid "* Cap Widt_h"
-msgstr ""
+msgstr "* Širina _verzala"
 
 msgid "Remove Overlap:"
-msgstr ""
+msgstr "Ukloni preklapanja:"
 
 msgid "By La_yer"
-msgstr ""
+msgstr "Po _sloju"
 
 msgid "By Con_tour"
-msgstr ""
+msgstr "Po kon_turi"
 
 msgid "N_one (Debug)"
-msgstr ""
+msgstr "Nijedn_o (ispravi greške)"
 
 msgid "Contours (from closed):"
-msgstr ""
+msgstr "Konture (od zatvorenih):"
 
 msgid "Both"
-msgstr ""
+msgstr "Oboje"
 
 msgid "External Only"
-msgstr ""
+msgstr "Samo vanjski"
 
 msgid "Internal Only"
-msgstr ""
+msgstr "Samo unutarnji"
 
 msgid "Arcs Clip:"
-msgstr ""
+msgstr "Isječak luka:"
 
 msgid "Auto"
 msgstr "Automatski"
 
 msgid "SVG 2"
-msgstr ""
+msgstr "SVG 2"
 
 msgid "Ratio"
-msgstr ""
+msgstr "Omjer"
 
 msgid "S_implify"
-msgstr ""
+msgstr "Pojednostavn_i"
 
 msgid "A_dd Extrema"
-msgstr ""
+msgstr "Do_daj ekstreme"
 
 msgid "_Apply"
 msgstr "_Primijeni"
@@ -16821,28 +16875,28 @@ msgid "WWS Subfamily"
 msgstr "WWS pod-obitelj"
 
 msgid "IPA Ext & Phonetic Ext (& Supplement)"
-msgstr ""
+msgstr "IPA proširenje i fonetičko proširenje (i nadopuna)"
 
 msgid "Modifier Letters & Modifier Tone Letters"
-msgstr ""
+msgstr "Modifikatorska slova i modifikatorska slova intonacije"
 
 msgid "Combining Diacritical Marks (& Supplement)"
-msgstr ""
+msgstr "Spojni dijakritički znakovi (i dopuna)"
 
 msgid "Cyrillic (& Supplement & Ext A/B)"
-msgstr ""
+msgstr "Ćirilica (i dopuna i prošireno-A/B)"
 
 msgid "Arabic (& Supplement)"
-msgstr ""
+msgstr "Arapsko (i dopuna)"
 
 msgid "Georgian (& Supplement)"
-msgstr ""
+msgstr "Gruzijsko (i dopuna)"
 
 msgid "Latin Extended Additional/C/D"
-msgstr ""
+msgstr "Latinica proširena, dodatno/C/D"
 
 msgid "General/Supplemental Punctuation"
-msgstr ""
+msgstr "Opće/dopunjene interpunkcije"
 
 msgid "Subscripts and Superscripts"
 msgstr "Eksponenti i indeksi"
@@ -16851,61 +16905,64 @@ msgid "Numeric Forms"
 msgstr "Oblici brojaka"
 
 msgid "Arrows & Sup Arrows A/B & Misc Arrows"
-msgstr ""
+msgstr "Strelice i dopunjene strelice A/B i razne strelice"
 
 msgid "Math Operators & Sup Math Operators & Misc Math Symbols A/B"
 msgstr ""
+"Matematički operatori i dopunjeni matematički operatori i razni matematički "
+"simboli A/B"
 
 msgid "Katakana (& Phonetic Extensions)"
-msgstr ""
+msgstr "Katakana (i fonetska proširenja)"
 
 msgid "Bopomofo (& Extended)"
-msgstr ""
+msgstr "Bopomofo (i prošireno)"
 
 msgid "Non-Basic Multilingual Plane"
 msgstr "Ploča višejezičnih ne-osnovnih znakova"
 
 msgid "CJK (& Ext A/B) & CJK Radicals Sup & Kangxi & IDC & Kanbun"
-msgstr ""
+msgstr "KJK (i prođirenje A/B) i KJK radikali dopuna i Kangxi i IDC i Kanbun"
 
 msgid "CJK Strokes & CJK Compat Ideographs (& Sup)"
-msgstr ""
+msgstr "KJK potezi i KJK kompatibilni ideogrami (i dopuna)"
 
 msgid "Vertical Forms & CJK Compatibility Forms"
-msgstr ""
+msgstr "Uspravni oblici i KJK kompatibilni oblici"
 
 msgid "Ethiopic (& Supplement/Extended)"
-msgstr ""
+msgstr "Etiopsko (i dopuna/prošireno)"
 
 msgid "Khmer & Khmer Symbols"
-msgstr ""
+msgstr "Khmersko i Khmerski simboli"
 
 msgid "Yi Syllables/Radicals"
 msgstr "Yi slogovi/radikali"
 
 msgid "Tagalog/Hanunoo/Buhid/Tagbanwa"
-msgstr ""
+msgstr "Tagalog/Hanunno/Buhid/Tagbanwa"
 
 msgid "Byzantine Music & Music & Ancient Greek Music"
 msgstr ""
+"Bizantski muzički simboli i muzički simboli i stari grčki muzički simboli"
 
 msgid "Supplementary Private Use Area A/B"
-msgstr ""
+msgstr "Dopunsko područje za privatnu upotrebu A/B"
 
 msgid "Variation Selectors (& Supplement)"
-msgstr ""
+msgstr "Selektori varijacije (i dopuna)"
 
 msgid "Linear B Syllabary/Ideograms & Aegean Numbers"
-msgstr ""
+msgstr "Linearni B slogovni/ideogrami i egejski brojevi"
 
 msgid "Cuneiform (& Numbers and Punctuation)"
-msgstr ""
+msgstr "Klinasto pismo (i brojke i interpunkcija)"
 
 msgid "Lycian/Carian/Lydian"
-msgstr ""
+msgstr "Licijski/Karijski/Lidijski"
 
 msgid "Mahjong/Domino Tiles"
-msgstr ""
+msgstr "Mahjong/domino pločice"
 
 msgid "Unassigned Bit 123"
 msgstr "Nedodijeljeni bit 123"
