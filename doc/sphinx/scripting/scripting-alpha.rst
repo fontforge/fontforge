@@ -1831,6 +1831,18 @@ the fourth argument you must specify the second and third arguments too.
      what the fstype setting is.
    * 4 => load all glyphs from the 'glyf' table of a ttc font (rather than only
      the glyphs used in the font picked).
+   * 8 => Report more error conditions
+   * 16 => Do not create a view window for this font even if the UI is active.
+
+     .. note::
+
+        This option supports efficient bulk processing of fonts in scripts
+        run through the UI but using it can be tricky. Open fonts will be listed
+        at the bottom of the "Window" menu but choosing them will have no effect.
+
+        If some fonts are not closed you may need to "force-quit" the
+        application using your OS.
+   * 32 => Retain all recognized font tables that do not have a native format
 
 .. function:: Ord(string[,pos])
 
@@ -2727,9 +2739,9 @@ the fourth argument you must specify the second and third arguments too.
    Compares the two strings ignoring case, returns zero if the two are equal, a
    negative number if str1<str2 and a positive number if str1>str2. It can
    execute with no current font.
-   
+
    .. note::
-   
+
       There is no Strcmp function because that is done with relational operators
       when applied to two strings.
 

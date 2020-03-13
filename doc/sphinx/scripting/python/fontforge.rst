@@ -325,18 +325,18 @@ Module functions
 
    Returns n for FontForge internal table Unicode ``val=Ligature[n]``. If val
    does not exist in table, then return -1. Can execute with no current font.
-   
+
    .. note::
-      
+
       Count depends on chart version built into FontForge.
 
 .. function:: ucLigChartGetNxt(n)
 
    Returns FontForge internal table Unicode Ligature[n]. Return -1 if ``n<0``
    or ``n>=ucLigChartGetCnt()``. It can execute with no current font.
-   
+
    .. note::
-      
+
       Count depends on chart version built into FontForge.
 
 .. function:: ucOFracChartGetCnt()
@@ -345,7 +345,7 @@ Module functions
    described by www.unicode.org. It can execute with no current font.
 
    .. note::
-      
+
       Count depends on chart version built into FontForge.
 
 .. function:: ucOFracChartGetLoc(val)
@@ -354,7 +354,7 @@ Module functions
    val does not exist in table, then return -1. Can execute with no current font.
 
    .. note::
-      
+
       Count depends on chart version built into FontForge.
 
 .. function:: ucOFracChartGetNxt(n)
@@ -363,34 +363,34 @@ Module functions
    if ``n<0`` or ``n>=ucOFracChartGetCnt()``. Can execute with no current font.
 
    .. note::
-      
+
       Count depends on chart version built into FontForge.
 
 .. function:: ucVulChartGetCnt()
 
    Returns total count of Vulgar Fractions found in the Unicode chart as
    described by www.unicode.org. It can execute with no current font.
-   
+
    .. note::
-      
+
       Count depends on chart version built into FontForge.
 
 .. function:: ucVulChartGetLoc(val)
 
    Returns n for FontForge internal table Unicode ``val=VulgarFraction[n]``. If
    val does not exist in table, then return -1. Can execute with no current font.
-   
+
    .. note::
-      
+
       Count depends on chart version built into FontForge.
 
 .. function:: ucVulChartGetNxt(n)
 
    Returns FontForge internal table Unicode Vulgar Fraction[n]. Returns -1 if
    n<0 or ``n>=ucVulChartGetCnt()``. Can execute with no current font.
-   
+
    .. note::
-      
+
       Count depends on chart version built into FontForge.
 
 .. function:: SpiroVersion()
@@ -444,16 +444,46 @@ Module functions
 
 .. function:: open(filename[, flags])
 
-   Opens a filename and returns the font it contains (if any). If the flags
-   argument is 4, then ff will load all glyphs in the 'glyf' table of a ttc file
-   (rather than just the glyphs used in the font picked). This will not load all
-   'glyf' tables though.
+   Opens a filename and returns the font it contains (if any). The optional
+   ``flags`` argument can be string tuple or integer combination of the
+   following flags:
+
+   .. object:: fstypepermitted (1)
+
+      The user has the appropriate license to examine the font no matter what
+      the fstype setting is.
+
+   .. object:: allglyphsinttc (4)
+
+      Load all glyphs from the 'glyf' table of a ttc font (rather than only the
+      glyphs used in the font picked).
+
+   .. object:: fontlint (8)
+
+      Report more error conditions.
+
+   .. object:: hidewindow (16)
+
+      Do not create a view window for this font even if the UI is active.
+
+      .. note::
+
+         This option supports efficient bulk processing of fonts in scripts run
+         through the UI but using it can be tricky. Open fonts will be listed at
+         the bottom of the "Window" menu but choosing them will have no effect.
+
+         If some fonts are not closed you may need to "force-quit" the
+         application using your OS.
+
+   .. object:: alltables (32)
+
+      Retain all recognized font tables that do not have a native format.
 
 .. function:: parseTTInstrs(string)
 
    Returns a binary string each byte of which corresponds to a truetype
    instruction. The input string should contain a set of instruction names as ::
-   
+
       "SRP0 MIRP[min,rnd,black]"
 
 .. function:: unParseTTInstrs(sequence)
@@ -827,34 +857,34 @@ Contour
 A contour is a collection of points. A contour may be either based on cubic or
 quadratic splines.
 
-If based on cubic splines there should be either 0 or 2 off-curve points 
-between every two on-curve points. If there are no off-curve points then 
-we have a line between those two points. If there are 2 off-curve points 
-we have a cubic bezier curve between the two end points. 
+If based on cubic splines there should be either 0 or 2 off-curve points
+between every two on-curve points. If there are no off-curve points then
+we have a line between those two points. If there are 2 off-curve points
+we have a cubic bezier curve between the two end points.
 
-If based on quadratic splines things are more complex. Again, two 
-adjacent on-curve points yield a line between those points. Two on-curve 
-points with an off-curve point between them yields a quadratic bezier 
-curve. However if there are two adjacent off-curve points then an 
-on-curve point will be interpolated between them. (This should be 
-familiar to anyone who has read the truetype 'glyf' table docs). 
+If based on quadratic splines things are more complex. Again, two
+adjacent on-curve points yield a line between those points. Two on-curve
+points with an off-curve point between them yields a quadratic bezier
+curve. However if there are two adjacent off-curve points then an
+on-curve point will be interpolated between them. (This should be
+familiar to anyone who has read the truetype 'glyf' table docs).
 
 For examples of what these splines can look like see the
-:doc:`section on bezier curves </techref/bezier>`. 
+:doc:`section on bezier curves </techref/bezier>`.
 
-A contour may be open in which case it is just a long wiggly line, or 
-closed when it is more like a circle with an inside and an outside. 
-Unless you are making stroked fonts all your contours should eventually 
-be closed. 
+A contour may be open in which case it is just a long wiggly line, or
+closed when it is more like a circle with an inside and an outside.
+Unless you are making stroked fonts all your contours should eventually
+be closed.
 
-Contours may also be expressed in terms of Raph Levien's spiro points. 
-This is an alternate representation for the contour, and is not always 
-available (Only if :func:`fontforge.hasSpiro()` is ``True``. If 
-available the spiro member will return a tuple of spiro control points, 
-while assigning to this member will change the shape of the contour to 
-match the new spiros. 
+Contours may also be expressed in terms of Raph Levien's spiro points.
+This is an alternate representation for the contour, and is not always
+available (Only if :func:`fontforge.hasSpiro()` is ``True``. If
+available the spiro member will return a tuple of spiro control points,
+while assigning to this member will change the shape of the contour to
+match the new spiros.
 
-Two contours may be compared to see if they describe similar paths. 
+Two contours may be compared to see if they describe similar paths.
 
 
 
@@ -878,12 +908,12 @@ Two contours may be compared to see if they describe similar paths.
 
 .. attribute:: contour.spiros
 
-   This is an alternate representation of a curve. This member is only 
-   available if :meth:`fontforge.hasSpiro()` is ``True``. Returns a tuple 
-   of spiro control points. Each of these is itself a tuple of four 
-   elements; an x,y location, a type field, and a set of flags. The type 
-   field takes on values (which are predefined constants in the 
-   :mod:`fontforge` module): 
+   This is an alternate representation of a curve. This member is only
+   available if :meth:`fontforge.hasSpiro()` is ``True``. Returns a tuple
+   of spiro control points. Each of these is itself a tuple of four
+   elements; an x,y location, a type field, and a set of flags. The type
+   field takes on values (which are predefined constants in the
+   :mod:`fontforge` module):
 
 
 
@@ -2128,7 +2158,7 @@ must be created through the font.
       new_width = c_factor * old_width + c_add
 
    If present the ``correct`` argument allows you to specify whether you want
-   to correct for the italic angle before condensing the glyph. 
+   to correct for the italic angle before condensing the glyph.
    (it defaults to``True``)
 
 .. method:: glyph.clear([layer])
@@ -3566,7 +3596,7 @@ This type may not be pickled.
 
       If present, and if this is a string, then each time the font is loaded
       from an sfd file, this string will be passed to the python interpreter.
-      
+
       .. note::
 
          This is a string, not a function.
@@ -3850,7 +3880,7 @@ This type may not be pickled.
 
 .. attribute:: font.woffMetadata
 
-   Any metadata associated with a woff file. This is a utf8 string containing 
+   Any metadata associated with a woff file. This is a utf8 string containing
    unparsed xml.
 
 .. attribute:: font.xHeight
@@ -3985,7 +4015,7 @@ This type may not be pickled.
 
    The remaining arguments are optional, keyword arguments.
 
-   * ``afterSubtable=``, if present this should be followed by a string, the 
+   * ``afterSubtable=``, if present this should be followed by a string, the
      name of a subtable after which this one is to be placed in the lookup. If
      not specified this subtable will be first in the lookup.
    * ``bclasses=, fclasses=, mclasses=`` these three arguments specify sets of
@@ -4057,7 +4087,7 @@ This type may not be pickled.
       section.
 
    .. warning::
-   
+
       This format has some limitations, if there are multiple lookups they
       will be applied in textual order (First lookup in the string is the first
       one applied). This limitation is also present in Adobe's feature files so
@@ -4074,7 +4104,7 @@ This type may not be pickled.
 
    The outlines of the new glyph will be based on the outlines of the
    upper-case variant of the letter. These will then be scaled so that a glyph
-   which was ``capheight`` high will now be ``scheight`` high, and so that 
+   which was ``capheight`` high will now be ``scheight`` high, and so that
    stems which were ``ucstem`` wide will be ``lcstem`` wide. Normally the ratio
    of stem heights is the same as the ratio of stem widths, but you may change
    that with ``stem_height_factor``.
@@ -4459,14 +4489,14 @@ This type may not be pickled.
 
    If ``vCounterType`` is omitted, or is the string "mapped", then certain
    zones on the glyph may be placed at new (or the same) locations -- similar
-   to BlueValues. So you can specify a zone for the baseline, one for the 
+   to BlueValues. So you can specify a zone for the baseline, one for the
    x-height and another for the top of capitals and ascenders (and perhaps a
    fourth for descenders). Each such zone is specified by the ``vMap`` argument
    which is a tuple of 3-tuples, each 3-tuple specifying a zone with: Original
    location, original width, and final location.
-   
+
    .. note::
-   
+
       No default value is providedfor this argument you must figure out all the
       values yourself.
 
@@ -4517,7 +4547,7 @@ This type may not be pickled.
    tuple of strings, and the third, another string.
 
    It will search the other font for the named lookup(s) and import it into the
-   current font. (Contextual lookups which invoke other lookups will have any 
+   current font. (Contextual lookups which invoke other lookups will have any
    nested lookups imported as well).
 
    Lookups will be imported in the order listed. If a before-name is specified,
@@ -4674,7 +4704,7 @@ This type may not be pickled.
    If you use (uni,name) to specify a name, set uni to -1.
 
    .. warning::
-   
+
       This frees FontForge's storage to this glyph. If you have any python
       references to that storage they will be looking at garbage. This does not
       go through the usual python reference mechanism.
@@ -4689,7 +4719,7 @@ This type may not be pickled.
    Reloads the font from the disk.
 
    .. warning::
-   
+
       If you have any references to glyphs which live in the font those
       references will no longer be valid, and using them will cause crashes.
       This is very un-python-like.
@@ -4699,9 +4729,9 @@ This type may not be pickled.
    Reloads the font from the backup file on the disk.
 
    .. warning::
-      
+
       If you have any references to glyphs which live in the font those
-      references will no longer be valid, and using them will cause crashes. 
+      references will no longer be valid, and using them will cause crashes.
       This is very un-python-like.
 
 .. method:: font.save([filename])

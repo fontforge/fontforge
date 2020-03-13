@@ -1191,16 +1191,35 @@ static FontViewBase *SFAdd(SplineFont *sf,int hide) {
 return( sf->fv );
 }
 
-static PyObject *PyFF_OpenFont(PyObject *UNUSED(self), PyObject *args) {
+
+struct flaglist openflaglist[] = {
+    { "fstypepermitted", of_fstypepermitted },
+    { "allglyphsinttc", of_all_glyphs_in_ttc },
+    { "fontlint", of_fontlint },
+    { "hidewindow", of_hidewindow },
+    { "alltables", of_all_tables },
+    FLAGLIST_EMPTY
+};
+
+static PyObject *PyFF_OpenFont(PyObject *UNUSED(self), PyObject *args) { 
     char *filename, *locfilename;
     int openflags = 0;
     SplineFont *sf;
+    PyObject *flagsobj = NULL;
 
-    if ( !PyArg_ParseTuple(args,"es|i", "UTF-8", &filename, &openflags ))
-return( NULL );
+    if ( !PyArg_ParseTuple(args,"es|O", "UTF-8", &filename, &flagsobj ))
+	return NULL;
     locfilename = utf82def_copy(filename);
     PyMem_Free(filename);
 
+    if ( flagsobj!=NULL && PyLong_Check(flagsobj) ) {
+	openflags = PyLong_AsLong(flagsobj);
+    } else if ( flagsobj!=NULL && PyTuple_Check(flagsobj) ) {
+	openflags = FlagsFromTuple(flagsobj, openflaglist, "open flag");
+    } else if ( flagsobj!=NULL ) {
+	PyErr_Format(PyExc_IndexError, "Flags must be specified as String Tuple or Int");
+	return NULL;
+    }
     /* The actual filename opened may be different from the one passed
      * to LoadSplineFont, so we can't report the filename on an
      * error.

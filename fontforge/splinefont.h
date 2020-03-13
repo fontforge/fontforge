@@ -2049,7 +2049,7 @@ enum ttf_flags {
     ttf_flag_nomacnames        = 1 << 30  // Don't autogenerate mac name entries
 };
 enum ttc_flags { ttc_flag_trymerge=0x1, ttc_flag_cff=0x2 };
-enum openflags { of_fstypepermitted=1, of_askcmap=2, of_all_glyphs_in_ttc=4,
+enum openflags { of_fstypepermitted=1, /*of_askcmap=2,*/ of_all_glyphs_in_ttc=4,
 	of_fontlint=8, of_hidewindow=0x10, of_all_tables=0x20 };
 enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,
 		    ps_flag_nohints = 0x40000, ps_flag_restrict256=0x80000,
