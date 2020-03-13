@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-02-29 10:56+1100\n"
-"PO-Revision-Date: 2020-03-12 08:50\n"
+"PO-Revision-Date: 2020-03-13 07:27\n"
 "Last-Translator: Milo Ivir <mail@milotype.de>\n"
 "Language-Team: \n"
 "Language: hr\n"
@@ -6432,7 +6432,7 @@ msgstr ""
 
 #, c-format
 msgid "Warning: gid %d larger than glyph_cnt %d, skipping\n"
-msgstr ""
+msgstr "Upozorenje: gid %d je veći od glyph_cnt %d, preskaće se\n"
 
 msgid "Bad font: Encoding data out of range.\n"
 msgstr "Neispravni font: Podaci o kodiranju su izvan raspona.\n"
@@ -8205,61 +8205,77 @@ msgid "Value exceeds tfm limitations"
 msgstr "Vrijednost prekoračuje tfm ograničenja"
 
 msgid "The contour winds counter-clockwise; a nib must wind clockwise."
-msgstr ""
+msgstr "Smjer konture je nalijevo; smjer naliv pera mora biti nadesno."
 
 msgid ""
 "The contour bends or curves counter-clockwise at the selected point; all on-"
 "curve points must bend or curve clockwise."
 msgstr ""
+"Kontura se savija ili zakreće nalijevo pri odabranoj točci; sve točke na "
+"krivulji moraju se savijati ili zakretati nadesno."
 
 msgid ""
 "The selected point is on a line; all on-curve points must bend or curve "
 "clockwise."
 msgstr ""
+"Odabrana točka nalazi se na liniji; sve točke na krivulji moraju se savijati "
+"ili zakretati nadesno."
 
 msgid "A nib must have at least three on-curve points."
-msgstr ""
+msgstr "Naliv pero mora imati barem tri točke na krivulji."
 
 msgid "The contour is quadratic; a nib must be a cubic contour."
-msgstr ""
+msgstr "Kontura je kvadratična; naliv pero mora biti kubična kontura."
 
 msgid "The contour is open; a nib must be closed."
-msgstr ""
+msgstr "Kontura je otvorena; naliv pero mora biti zatvoreno."
 
 msgid ""
 "The selected point is the start of a 'tiny' spline; splines that small may "
 "cause inaccurate calculations."
 msgstr ""
+"Odabrana točka je početak \"sitne\" krivulje; takve male krivulje mogu "
+"prouzročiti probleme u izračunavanju."
 
 msgid ""
 "The selected point starts a spline with one control point; nib splines need "
 "a defined slope at both points."
 msgstr ""
+"Odabrana točka započinje krivulju s jednom kontrolnom točkom; krivulje naliv "
+"pera moraju imati definiran nagib na objema točkama."
 
 msgid ""
 "The selected control point's position violates Rule 1 (see documentation)."
 msgstr ""
+"Pozicija odabrane kontrolne točke krši Pravilo br. 1 (pogledaj "
+"dokumentaciju)."
 
 msgid ""
 "The selected control point's position violates Rule 2 (see documentation)."
 msgstr ""
+"Pozicija odabrane kontrolne točke krši Pravilo br. 2 (pogledaj "
+"dokumentaciju)."
 
 msgid ""
 "The selected control point's position violates Rule 3 (see documentation)."
 msgstr ""
+"Pozicija odabrane kontrolne točke krši Pravilo br. 3 (pogledaj "
+"dokumentaciju)."
 
 msgid "The contour intersects itself; a nib must non-intersecting."
-msgstr ""
+msgstr "Kontura se samo-presjeca; naliv pero se ne smije presijecati."
 
 msgid "Unrecognized nib shape error."
-msgstr ""
+msgstr "Neprepoznata greška oblika naliv pera."
 
 #, c-format
 msgid "Warning: Coordinate diff %lf greater than margin %lf\n"
-msgstr ""
+msgstr "Upozorenje: Razlika koordinate %lf veća je od margine %lf\n"
 
 msgid "Warning: Unrecognized or unsupported join type, defaulting to 'nib'.\n"
 msgstr ""
+"Upozorenje: neprepoznata ili nepodržana vrsta spoja, postavlja se na naliv "
+"pero.\n"
 
 msgid "Warning: Unrecognized or unsupported cap type, defaulting to 'nib'.\n"
 msgstr ""
@@ -8267,26 +8283,29 @@ msgstr ""
 "pero.\n"
 
 msgid "Warning: No stroke output for contour\n"
-msgstr ""
+msgstr "Upozorenje: Nema rezultata poteza za konturu\n"
 
 msgid "Warning: Contour end did not close\n"
-msgstr ""
+msgstr "Upozorenje: Kraj konture se nije zatvorio\n"
 
 msgid "Warning: Contour start did not close\n"
-msgstr ""
+msgstr "Upozorenje: Početak konture se nije zatvorio\n"
 
 msgid "Warning: Can't identify contour direction, assuming clockwise\n"
 msgstr ""
+"Upozorenje: Nije moguće utvrditi smjer konture, pretpostavlja se nadesno\n"
 
 msgid "Warning: Left contour did not close\n"
-msgstr ""
+msgstr "Upozorenje: Lijeva kontura se nije zatvorila\n"
 
 msgid "Warning: Right contour did not close\n"
-msgstr ""
+msgstr "Upozorenje: Desna kontura se nije zatvorila\n"
 
 #, c-format
 msgid "Warning: Accuracy target %lf less than minimum %lf, using %lf instead\n"
 msgstr ""
+"Upozorenje: Ciljana točnost %lf manja je od minimalne %lf, umjesto toga se "
+"koristi %lf\n"
 
 msgid "Stroking..."
 msgstr "Potezanje …"
@@ -13014,15 +13033,17 @@ msgid "Instruction Gloss (TrueType)"
 msgstr "Glosar za instrukcije (TrueType)"
 
 msgid "Export Options"
-msgstr ""
+msgstr "Opcije za izvoz"
 
 msgid ""
 "The following options influence how glyphs are exported.\n"
 "Most are specific to one or more formats."
 msgstr ""
+"Sljedeće opcije utječu na način izvoza grafema.\n"
+"Većina ih je specifična za jedan ili više formata."
 
 msgid "_Use Transform (SVG)"
-msgstr ""
+msgstr "_Koristi \"transform\" (SVG)"
 
 msgid ""
 "FontForge previously exported glyphs using a SVG\n"
@@ -13030,9 +13051,13 @@ msgid ""
 "than changing the individual values. This option\n"
 "reverts to that convention."
 msgstr ""
+"FontForge je prije izvozio grafeme koristeći \n"
+"SVG-ov \"transform\"-element za okretanje osi Y,\n"
+"umjesto mijenja pojedinačnih vrijednosti. \n"
+"Ova opcija vraća tu konvenciju."
 
 msgid "_Always raise this dialog when exporting"
-msgstr ""
+msgstr "_Uvijek prikaži ovaj dijalog prilikom izvoza"
 
 msgid "Bits/Pixel:"
 msgstr "Bitova po pikselu:"
@@ -13109,7 +13134,7 @@ msgid "Directory|_New"
 msgstr "_Nova"
 
 msgid "_Options"
-msgstr ""
+msgstr "_Opcije"
 
 msgid "Format:"
 msgstr "Format:"
@@ -13536,46 +13561,55 @@ msgid "Create Vertical Stem Hint"
 msgstr "Stvori kontrolu za uspravni potez"
 
 msgid "Import Parameters"
-msgstr ""
+msgstr "Uvezi parametre"
 
 msgid ""
 "The following options influence how files are imported.\n"
 "Most are specific to one or more formats."
 msgstr ""
+"Sljedeće opcije utječu na način uvoza grafema.\n"
+"Većina ih je specifična za jedan ili više formata."
 
 msgid "_Correct Direction (PS/EPS)"
-msgstr ""
+msgstr "_Ispravi smjer (PS/EPS)"
 
 msgid "Handle Erasers (PS/EPS)"
-msgstr ""
+msgstr "Rukovanje brisačem (PS/EPS)"
 
 msgid ""
 "Certain programs use pens with white ink as erasers\n"
 "This option attempts to simulate that effect."
 msgstr ""
+"Neki programi koriste olovke s bijelom tintom kao gumice za brisanje\n"
+"Ova opcija pokušava simulirati taj efekt."
 
 msgid "Simplify Stroke (SVG/PS/EPS)"
-msgstr ""
+msgstr "Pojednostavni potez (SVG/PS/EPS)"
 
 msgid ""
 "Run Simplify after expanding stroked paths\n"
 "to reduce the number of points."
 msgstr ""
+"Pokreni „Pojednostavni” nakon proširivanja staza\n"
+"kako bi se smanjio broj točaka."
 
 msgid "Use Clip-paths (SVG)"
-msgstr ""
+msgstr "Koristi Clip-paths (SVG)"
 
 msgid "Scale to fit (Misc)"
-msgstr ""
+msgstr "Skaliraj tako da paše (razno)"
 
 msgid "Default Join Limit (PS/EPS/SVG):"
-msgstr ""
+msgstr "Standardna granica spoja (PS/EPS/SVG):"
 
 msgid ""
 "The length limit for Miter and Arcs joins in units\n"
 "of 1/2 stroke-width. Set to -1 to use the format-\n"
 "specific limits of 10.0 for PostScript and 4.0 for SVG."
 msgstr ""
+"Ograničenje duljine kutnog spoja i spojeva lukova u jedinicama\n"
+"od po pola širine poteza. Postavi na -1 za korištenje ograničenja\n"
+"formata od 10,0 za PostScript i 4,0 za SVG."
 
 msgid "Accuracy _Target:"
 msgstr "Točnost _cilja:"
@@ -13584,9 +13618,11 @@ msgid ""
 "The Expand Stroke algorithm will attempt to be (at\n"
 "least) this accurate, but there may be exceptions."
 msgstr ""
+"Algoritam širenja poteza pokušat će biti (barem)\n"
+"ovoliko točan, međutim moguće su iznimke."
 
 msgid "_Always raise this dialog when importing"
-msgstr ""
+msgstr "_Uvijek prikaži ovaj dijalog prilikom uvoza"
 
 msgid "Accuracy Target:"
 msgstr "Točnost cilja:"
@@ -14206,7 +14242,7 @@ msgstr ""
 "(pravokutno)"
 
 msgid "Conve_x (Polygonal)"
-msgstr "Konveksno (višekutno)"
+msgstr "Konve_ksno (višekutno)"
 
 msgid "_Don't Expand"
 msgstr "_Ne proširuj"
@@ -20541,7 +20577,7 @@ msgid "Balkar"
 msgstr "Balkarski"
 
 msgid "Baule"
-msgstr ""
+msgstr "Baule"
 
 msgid "Lang|Berber"
 msgstr "Berberski"
@@ -20610,19 +20646,19 @@ msgid "Chechen"
 msgstr "Čečenski"
 
 msgid "Chaha Gurage"
-msgstr ""
+msgstr "Chaha Gurage"
 
 msgid "Chattisgarhi"
-msgstr ""
+msgstr "Chattisgarhi"
 
 msgid "Chichewa"
-msgstr ""
+msgstr "Chichewa"
 
 msgid "Chukchi"
 msgstr "Čukčijski"
 
 msgid "Chipewyan"
-msgstr ""
+msgstr "Chipewyan"
 
 msgid "Chuvash"
 msgstr "Čuvaški"
@@ -20640,7 +20676,7 @@ msgid "Cree"
 msgstr "Cree"
 
 msgid "Carrier"
-msgstr ""
+msgstr "Carrier"
 
 msgid "Crimean Tatar"
 msgstr "Krimski tatarski"
@@ -20649,7 +20685,7 @@ msgid "Church Slavonic"
 msgstr "Crkvenoslavenski"
 
 msgid "Dargwa"
-msgstr ""
+msgstr "Dargwa"
 
 msgid "Lang|Default"
 msgstr "Zadani"
@@ -20664,22 +20700,22 @@ msgid "Dogri"
 msgstr "Dogri"
 
 msgid "Dhivehi (Obsolete)"
-msgstr ""
+msgstr "Dhivehi (zastarjelo)"
 
 msgid "Dhivehi"
-msgstr ""
+msgstr "Dhivehi"
 
 msgid "Djerma"
 msgstr "Zarma"
 
 msgid "Dangme"
-msgstr ""
+msgstr "Dangme"
 
 msgid "Dinka"
 msgstr "Dinka"
 
 msgid "Dari"
-msgstr ""
+msgstr "Dari"
 
 msgid "Dungan"
 msgstr "Dunganski"
@@ -20712,10 +20748,10 @@ msgid "Fijian"
 msgstr "Fidžijski"
 
 msgid "Forest Nenets"
-msgstr ""
+msgstr "Forest Nenets"
 
 msgid "Fon"
-msgstr ""
+msgstr "Fon"
 
 msgid "Faroese"
 msgstr "Ferojski"
@@ -20727,13 +20763,13 @@ msgid "Friulian"
 msgstr "Furlanski"
 
 msgid "Futa"
-msgstr ""
+msgstr "Futa"
 
 msgid "Fulani"
-msgstr ""
+msgstr "Fulani"
 
 msgid "Ga"
-msgstr ""
+msgstr "Ga"
 
 msgid "Gaelic"
 msgstr "Keltski"
@@ -20742,19 +20778,19 @@ msgid "Gagauz"
 msgstr "Gagauski"
 
 msgid "Garshuni"
-msgstr ""
+msgstr "Garshuni"
 
 msgid "Garhwali"
-msgstr ""
+msgstr "Garhwali"
 
 msgid "Lang|Ge'ez"
 msgstr "Ge’ez"
 
 msgid "Gilyak"
-msgstr ""
+msgstr "Gilyak"
 
 msgid "Gumuz"
-msgstr ""
+msgstr "Gumuz"
 
 msgid "Gondi"
 msgstr "Gondi"
@@ -20766,37 +20802,37 @@ msgid "Haitian"
 msgstr "Haićanski"
 
 msgid "Halam"
-msgstr ""
+msgstr "Halam"
 
 msgid "Harauti"
-msgstr ""
+msgstr "Harauti"
 
 msgid "Hawaiin"
 msgstr "Havajski"
 
 msgid "Hammer-Banna"
-msgstr ""
+msgstr "Hammer-Banna"
 
 msgid "Hiligaynon"
-msgstr ""
+msgstr "Hiligaynon"
 
 msgid "High Mari"
-msgstr ""
+msgstr "Visoki Mari"
 
 msgid "Hindko"
-msgstr ""
+msgstr "Hindko"
 
 msgid "Ho"
-msgstr ""
+msgstr "Ho"
 
 msgid "Harari"
-msgstr ""
+msgstr "Harari"
 
 msgid "Ijo"
-msgstr ""
+msgstr "Ijo"
 
 msgid "Ilokano"
-msgstr ""
+msgstr "Ilokano"
 
 msgid "Ingush"
 msgstr "Inguški"
@@ -20811,37 +20847,37 @@ msgid "Irish Traditional"
 msgstr "Irski tradicionalni"
 
 msgid "Inari Sami"
-msgstr ""
+msgstr "Inari Sami (Laponski)"
 
 msgid "Lang|Javanese"
 msgstr "Javanski"
 
 msgid "Judezmo"
-msgstr ""
+msgstr "Judezmo"
 
 msgid "Jula"
-msgstr ""
+msgstr "Jula"
 
 msgid "Kabardian"
 msgstr "Kabardinski"
 
 msgid "Kachchi"
-msgstr ""
+msgstr "Kachchi"
 
 msgid "Kalenjin"
-msgstr ""
+msgstr "Kalenjin"
 
 msgid "Karachay"
-msgstr ""
+msgstr "Karachay"
 
 msgid "Kebena"
-msgstr ""
+msgstr "Kebena"
 
 msgid "Khutsuri Georgian"
 msgstr "Khutsuri Gruzijski"
 
 msgid "Khakass"
-msgstr ""
+msgstr "Hakaski"
 
 msgid "Khanty-Kazim"
 msgstr "Hantski-Kazim"
@@ -20853,34 +20889,34 @@ msgid "Khanty-Vakhi"
 msgstr "Hantski-Vak"
 
 msgid "Khowar"
-msgstr ""
+msgstr "Khowar"
 
 msgid "Kikuyu"
-msgstr ""
+msgstr "Kikuyu"
 
 msgid "Kisii"
-msgstr ""
+msgstr "Kisii"
 
 msgid "Kokni"
-msgstr ""
+msgstr "Kokni"
 
 msgid "Kalmyk"
-msgstr ""
+msgstr "Kalmyk"
 
 msgid "Kamba"
-msgstr ""
+msgstr "Kamba"
 
 msgid "Kumaoni"
-msgstr ""
+msgstr "Kumaoni"
 
 msgid "Komo"
-msgstr ""
+msgstr "Komo"
 
 msgid "Komso"
-msgstr ""
+msgstr "Komso"
 
 msgid "Kodagu"
-msgstr ""
+msgstr "Kodagu"
 
 msgid "Korean Old Hangul"
 msgstr "Korejski staro-hangulski"
@@ -20889,133 +20925,133 @@ msgid "Kikongo"
 msgstr "Kikongški"
 
 msgid "Komi-Permyak"
-msgstr ""
+msgstr "Komi-Permyak"
 
 msgid "Komi-Zyrian"
-msgstr ""
+msgstr "Komi-Zyrian"
 
 msgid "Kpelle"
-msgstr ""
+msgstr "Kpelle"
 
 msgid "Krio"
-msgstr ""
+msgstr "Krio"
 
 msgid "Karakalpak"
-msgstr ""
+msgstr "Karakalpak"
 
 msgid "Karelian"
-msgstr ""
+msgstr "Karelski"
 
 msgid "Karaim"
-msgstr ""
+msgstr "Karaim"
 
 msgid "Karen"
-msgstr ""
+msgstr "Karen"
 
 msgid "Koorete"
-msgstr ""
+msgstr "Koorete"
 
 msgid "Khasi"
-msgstr ""
+msgstr "Khasi"
 
 msgid "Kildin Sami"
-msgstr ""
+msgstr "Kildin Sami"
 
 msgid "Kui"
-msgstr ""
+msgstr "Kui"
 
 msgid "Kulvi"
-msgstr ""
+msgstr "Kulvi"
 
 msgid "Kumyk"
-msgstr ""
+msgstr "Kumyk"
 
 msgid "Kurukh"
-msgstr ""
+msgstr "Kuruški"
 
 msgid "Kuy"
-msgstr ""
+msgstr "Kuy"
 
 msgid "Koryak"
-msgstr ""
+msgstr "Korjački"
 
 msgid "Ladin"
-msgstr ""
+msgstr "Ladinski"
 
 msgid "Lahuli"
-msgstr ""
+msgstr "Lahuli"
 
 msgid "Lak"
-msgstr ""
+msgstr "Lak"
 
 msgid "Lambani"
-msgstr ""
+msgstr "Lambani"
 
 msgid "Laz"
-msgstr ""
+msgstr "Laz"
 
 msgid "L-Cree"
 msgstr "Cree-L"
 
 msgid "Ladakhi"
-msgstr ""
+msgstr "Ladakhi"
 
 msgid "Lezgi"
-msgstr ""
+msgstr "Lezgi"
 
 msgid "Lingala"
 msgstr "Lingalaški"
 
 msgid "Low Mari"
-msgstr ""
+msgstr "Niski Mari"
 
 msgid "Lang|Limbu"
 msgstr "Limbu"
 
 msgid "Lomwe"
-msgstr ""
+msgstr "Lomwe"
 
 msgid "Lower Sorbian"
 msgstr "Lužičkosrpski, donji"
 
 msgid "Lule Sami"
-msgstr ""
+msgstr "Lule Sami (Laponski)"
 
 msgid "Luxembourgish"
 msgstr "Luksemburgški"
 
 msgid "Luba"
-msgstr ""
+msgstr "Luba"
 
 msgid "Luganda"
 msgstr "Lugandski"
 
 msgid "Luhya"
-msgstr ""
+msgstr "Luhya"
 
 msgid "Luo"
-msgstr ""
+msgstr "Luo"
 
 msgid "Majang"
-msgstr ""
+msgstr "Majang"
 
 msgid "Makua"
-msgstr ""
+msgstr "Makua"
 
 msgid "Malayalam Traditional"
 msgstr "Malajalam, tradicionalni"
 
 msgid "Mansi"
-msgstr ""
+msgstr "Mansi"
 
 msgid "Mapudungun"
-msgstr ""
+msgstr "Mapudungun"
 
 msgid "Marwari"
-msgstr ""
+msgstr "Marwari"
 
 msgid "Mbundu"
-msgstr ""
+msgstr "Mbundu"
 
 msgid "Lang|Manchu"
 msgstr "Mandžurski"
@@ -21027,22 +21063,22 @@ msgid "Mende"
 msgstr "Mende"
 
 msgid "Me'en"
-msgstr ""
+msgstr "Me'en"
 
 msgid "Mizo"
-msgstr ""
+msgstr "Mizo"
 
 msgid "Male"
-msgstr ""
+msgstr "Male"
 
 msgid "Malinke"
-msgstr ""
+msgstr "Malinke"
 
 msgid "Malayalam Reformed"
 msgstr "Malajalam, reformirani"
 
 msgid "Mandinka"
-msgstr ""
+msgstr "Mandinka"
 
 msgid "Lang|Mongolian"
 msgstr "Mongolski"
@@ -21066,46 +21102,46 @@ msgid "Maithili"
 msgstr "Maithilski"
 
 msgid "Mundari"
-msgstr ""
+msgstr "Mundari"
 
 msgid "Naga-Assamese"
-msgstr ""
+msgstr "Naga-Assamese"
 
 msgid "Nanai"
-msgstr ""
+msgstr "Nanai"
 
 msgid "Naskapi"
-msgstr ""
+msgstr "Naskapi"
 
 msgid "N-Cree"
 msgstr "Cree-N"
 
 msgid "Ndebele"
-msgstr ""
+msgstr "Ndebele"
 
 msgid "Ndonga"
-msgstr ""
+msgstr "Ndonga"
 
 msgid "Newari"
-msgstr ""
+msgstr "Newari"
 
 msgid "Nagari"
-msgstr ""
+msgstr "Nagari"
 
 msgid "Norway House Cree"
 msgstr "Cree sjeverna kuća"
 
 msgid "Nisi"
-msgstr ""
+msgstr "Nisi"
 
 msgid "Niuean"
-msgstr ""
+msgstr "Niuean"
 
 msgid "Nkole"
-msgstr ""
+msgstr "Nkole"
 
 msgid "Nogai"
-msgstr ""
+msgstr "Nogai"
 
 msgid "Northern Sami"
 msgstr "Sjeverno samski"
@@ -21123,7 +21159,7 @@ msgid "Oji-Cree"
 msgstr "Cree-Oji"
 
 msgid "Ojibway"
-msgstr ""
+msgstr "Ojibway"
 
 msgid "Ossetian"
 msgstr "Osetijski"
@@ -21132,10 +21168,10 @@ msgid "Palestinian Aramaic"
 msgstr "Palestinski aramejski"
 
 msgid "Pali"
-msgstr ""
+msgstr "Pali"
 
 msgid "Palpa"
-msgstr ""
+msgstr "Palpa"
 
 msgid "Polytonic Greek"
 msgstr "Grčki, višeglasni"
@@ -21144,13 +21180,13 @@ msgid "Pilipino (Filipino)"
 msgstr "Filipinski (Filipini)"
 
 msgid "Palaung"
-msgstr ""
+msgstr "Palaung"
 
 msgid "Provencal"
-msgstr ""
+msgstr "Provansalski"
 
 msgid "Chin"
-msgstr ""
+msgstr "Chin"
 
 msgid "Rajasthani"
 msgstr "Radžastanski"
@@ -21162,7 +21198,7 @@ msgid "Russian Buriat"
 msgstr "Ruski burjatski"
 
 msgid "Riang"
-msgstr ""
+msgstr "Riang"
 
 msgid "Romany"
 msgstr "Romski"
@@ -21174,73 +21210,73 @@ msgid "Ruanda"
 msgstr "Rwanda"
 
 msgid "Sadri"
-msgstr ""
+msgstr "Sadri"
 
 msgid "Santali"
-msgstr ""
+msgstr "Santali"
 
 msgid "Sayisi"
-msgstr ""
+msgstr "Sayisi"
 
 msgid "Sekota"
-msgstr ""
+msgstr "Sekota"
 
 msgid "Selkup"
-msgstr ""
+msgstr "Selkup"
 
 msgid "Sango"
-msgstr ""
+msgstr "Sango"
 
 msgid "Shan"
 msgstr "Shanski"
 
 msgid "Sibe"
-msgstr ""
+msgstr "Sibe"
 
 msgid "Sidamo"
-msgstr ""
+msgstr "Sidamo"
 
 msgid "Silte Gurage"
-msgstr ""
+msgstr "Silte Gurage"
 
 msgid "Skolt Sami"
-msgstr ""
+msgstr "Skolt Sami"
 
 msgid "Slavey"
-msgstr ""
+msgstr "Slavey"
 
 msgid "Samoan"
 msgstr "Samoanski"
 
 msgid "Sena"
-msgstr ""
+msgstr "Sena"
 
 msgid "Soninke"
-msgstr ""
+msgstr "Soninke"
 
 msgid "Sodo Gurage"
-msgstr ""
+msgstr "Sodo Gurage"
 
 msgid "Sotho"
-msgstr ""
+msgstr "Sotho"
 
 msgid "Saraiki"
-msgstr ""
+msgstr "Saraiki"
 
 msgid "Serer"
-msgstr ""
+msgstr "Serer"
 
 msgid "South Slavey"
-msgstr ""
+msgstr "South Slavey"
 
 msgid "Southern Sami"
 msgstr "Sami (južni)"
 
 msgid "Suri"
-msgstr ""
+msgstr "Suri"
 
 msgid "Svan"
-msgstr ""
+msgstr "Svan"
 
 msgid "Swadaya Aramaic"
 msgstr "Swadaya aramejski"
@@ -21249,43 +21285,43 @@ msgid "Swazi"
 msgstr "Swati"
 
 msgid "Tabasaran"
-msgstr ""
+msgstr "Tabasaran"
 
 msgid "TH-Cree"
 msgstr "Cree-TH"
 
 msgid "Tigre"
-msgstr ""
+msgstr "Tigre"
 
 msgid "Tahitian"
 msgstr "Tahićanski"
 
 msgid "Temne"
-msgstr ""
+msgstr "Temne"
 
 msgid "Tundra Nenets"
-msgstr ""
+msgstr "Tundra Nenets"
 
 msgid "Tonga"
-msgstr ""
+msgstr "Tonga"
 
 msgid "Todo"
-msgstr ""
+msgstr "Todo"
 
 msgid "Turoyo Aramaic"
 msgstr "Turoyo aramejski"
 
 msgid "Tulu"
-msgstr ""
+msgstr "Tulu"
 
 msgid "Tuvin"
-msgstr ""
+msgstr "Tuvin"
 
 msgid "Twi"
-msgstr ""
+msgstr "Twi"
 
 msgid "Udmurt"
-msgstr ""
+msgstr "Udmurt"
 
 msgid "Upper Sorbian"
 msgstr "Lužičkosrpski, gornji"
@@ -21294,19 +21330,19 @@ msgid "Uyghur"
 msgstr "Ujgurski"
 
 msgid "Wa"
-msgstr ""
+msgstr "Wa"
 
 msgid "Wagdi"
-msgstr ""
+msgstr "Wagdi"
 
 msgid "West-Cree"
 msgstr "Cree zapadni"
 
 msgid "Wolof"
-msgstr ""
+msgstr "Wolof"
 
 msgid "Tai Lue"
-msgstr ""
+msgstr "Tai Lue"
 
 msgid "Yakut"
 msgstr "Jakutski"
@@ -22835,6 +22871,11 @@ msgid ""
 "Enabling GlyphAutoGoto will disable the shortcut where holding just the ` "
 "key will enable Preview mode as long as the key is held."
 msgstr ""
+"Upisom normalnog znaka u prozoru pogleda grafema, mijenja se prozor na "
+"prikaz tog znak.\n"
+"Aktiviranjem „Automatski prijelaz na grafem”, deaktivirat će prečac, kojim "
+"se držanjem tipke ` aktivira modus pregleda dok god se tipka drži "
+"pritisnutom."
 
 msgid "InterpolateCPsOnMotion"
 msgstr "Interpoliraj kontrolne točke prilikom premještanja"
