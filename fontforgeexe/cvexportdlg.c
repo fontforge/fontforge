@@ -550,7 +550,9 @@ static int GFD_Options(GGadget *g, GEvent *e) {
         struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	_ExportParamsDlg(ExportParamsState());
 	d->opts_shown = true;
+	return true;
     }
+    return false;
 }
 
 static int GFD_NewDir(GGadget *g, GEvent *e) {
