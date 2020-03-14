@@ -41,7 +41,7 @@ function(_find_sphinx)
 endfunction()
 
 function(_sphinx_from_venv)
-  find_package(Python3 3.3 COMPONENTS Development)
+  find_package(Python3 3.3 COMPONENTS Interpreter)
   if(NOT Python3_Interpreter_FOUND)
     message(STATUS "Python3 not found, skipping")
     return()
