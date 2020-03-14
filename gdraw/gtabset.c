@@ -510,7 +510,7 @@ return( true );
     } else if ( event->type == et_mousemove ) {
 return( true );
     } else {
-	int i, sel= -1, l;
+	int i = -1, sel= -1, l;
 	if ( event->u.mouse.y < gts->g.r.y ||
 		( !gts->vertical && event->u.mouse.y >= gts->g.inner.y ) ||
 		( gts->vertical && event->u.mouse.x >= gts->g.inner.x ))

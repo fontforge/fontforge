@@ -1217,6 +1217,7 @@ static PyObject *PyFF_OpenFont(PyObject *UNUSED(self), PyObject *args) {
     } else if ( flagsobj!=NULL && PyTuple_Check(flagsobj) ) {
 	openflags = FlagsFromTuple(flagsobj, openflaglist, "open flag");
     } else if ( flagsobj!=NULL ) {
+	free(locfilename);
 	PyErr_Format(PyExc_IndexError, "Flags must be specified as String Tuple or Int");
 	return NULL;
     }
@@ -9635,8 +9636,9 @@ static PyObject* PyFF_Glyph_BoundsAt(PyCFunction bounds_func, PyFF_Glyph *self, 
             ss = ss->next;
             if (!PyTuple_Check(temp)) {
                 continue;
+            } else if (!PyArg_ParseTuple(temp, "dd", &tnmin, &tnmax)) {
+                continue;
             }
-            PyArg_ParseTuple(temp, "dd", &tnmin, &tnmax);
             if (tnmin < nmin || !set) nmin = tnmin;
             if (tnmax > nmax || !set) nmax = tnmax;
             set = true;
