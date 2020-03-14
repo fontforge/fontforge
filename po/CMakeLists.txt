@@ -37,6 +37,7 @@ foreach(_lang ${_langs})
     VERBATIM
   )
   add_custom_command(OUTPUT "${_full}"
+    COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/full"
     COMMAND "${GETTEXT_MSGMERGE_EXECUTABLE}" -N "${_input}" -F "${CMAKE_CURRENT_BINARY_DIR}/FontForge.pot" -o "${_full}"
     DEPENDS "${_input}" potfiles
     VERBATIM
@@ -47,7 +48,7 @@ foreach(_lang ${_langs})
 endforeach()
 
 add_custom_target(pofiles ALL DEPENDS ${_outputs})
-add_custom_target(fullpo ALL DEPENDS ${_fulls})
+add_custom_target(fullpo DEPENDS ${_fulls})
 
 if(ENABLE_MAINTAINER_TOOLS)
   add_executable(toengb toengb.c)
