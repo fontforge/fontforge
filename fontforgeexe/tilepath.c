@@ -571,7 +571,7 @@ static void AdjustPoint(TD *td,Spline *spline,bigreal t, FitPoint *to) {
 	} else {
 	    bigreal s=(dy1*dx2/dy2-dx1);
 	    if ( s>-.00001 && s<.00001 ) {	/* essentially parallel */
-		to->p.x = x1; to->y = y1;
+		to->p.x = x1; to->p.y = y1;
 	    } else {
 		bigreal t1 = (x1-x2- dx2/dy2*(y1-y2))/s;
 		to->p.x = x1 + dx1*t1;
@@ -610,7 +610,7 @@ static SplinePoint *TDMakePoint(TD *td,Spline *old,real t) {
 
     AdjustPoint(td,old,t,&fp);
     new = chunkalloc(sizeof(SplinePoint));
-    new->me.x = tp.p.x; new->me.y = tp.p.y;
+    new->me.x = fp.p.x; new->me.y = fp.p.y;
     new->nextcp = new->me;
     new->prevcp = new->me;
     new->nonextcp = new->noprevcp = true;
