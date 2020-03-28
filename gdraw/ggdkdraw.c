@@ -40,6 +40,10 @@
 #include <assert.h>
 #include <math.h>
 
+#ifdef GDK_WINDOWING_WIN32
+#  include <gdk/gdkwin32.h>
+#endif
+
 // Forward declarations
 static void GGDKDrawCancelTimer(GTimer *timer);
 static void GGDKDrawDestroyWindow(GWindow w);
@@ -126,6 +130,10 @@ static bool _GGDKDraw_TransmitSelection(GGDKDisplay *gdisp, GdkEventSelection *e
             targets[i++] = ((GGDKSelectionData *)ptr->data)->type_atom;
             ptr = ptr->next;
         }
+
+#ifdef GDK_WINDOWING_WIN32
+        gdk_win32_selection_add_targets(e->window, e->selection, i, targets);
+#endif
 
         gdk_property_change(requestor, e->property, gdk_atom_intern_static_string("ATOM"),
                             32, GDK_PROP_MODE_REPLACE, (const guchar *)targets, i);
