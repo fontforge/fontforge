@@ -8104,7 +8104,9 @@ bool SFD_GetFontMetaData( FILE *sfd,
     }
     else if ( strmatch(tok,"StyleMap:")==0 )
     {
-    gethex(sfd,(uint32 *)&sf->pfminfo.stylemap);
+	uint32 u;
+	gethex(sfd,&u);
+	sf->pfminfo.stylemap = u;
     }
     /* Legacy attribute for StyleMap. Deprecated. */
     else if ( strmatch(tok,"OS2StyleName:")==0 )
