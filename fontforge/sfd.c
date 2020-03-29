@@ -3475,6 +3475,7 @@ return( pt!=tokbuf?1:ch==EOF?-1: 0 );
 static int gethex(FILE *sfd, uint32 *val) {
     char tokbuf[100]; int ch;
     char *pt=tokbuf, *end = tokbuf+100-2;
+    uint32 u;
 
     while ( isspace(ch = nlgetc(sfd)));
     if ( ch=='#' )
@@ -3498,7 +3499,8 @@ static int gethex(FILE *sfd, uint32 *val) {
     }
     *pt='\0';
     ungetc(ch,sfd);
-    *val = strtoul(tokbuf,NULL,16);
+    u = strtoul(tokbuf,NULL,16);
+    memcpy(val, &u, sizeof(u));
 return( pt!=tokbuf?1:ch==EOF?-1: 0 );
 }
 
