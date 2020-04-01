@@ -675,6 +675,7 @@ static int _IndexForUTanVec(NibCorner *nc, int n, BasePoint ut, int nci_hint) {
 	                         nc[N_NEXTI(n, nci)].utv[NC_IN_IDX],
 	                         false) )
 		break;
+    assert(nci < n);
     return nci;
 }
 

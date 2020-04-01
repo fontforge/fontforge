@@ -1290,7 +1290,7 @@ static void SVGTraceArc(SplineSet *cur,BasePoint *current,
 	double x,double y,double rx,double ry,double axisrot,
 	int large_arc,int sweep) {
     BasePoint ang, ut_fm, ut_to, c, foc1, foc2, tmp;
-    double x1p, y1p, fd;
+    double x1p, y1p, fd, sqdiff;
     double lambda, factor;
     double cxp, cyp, cx, cy;
     SplinePoint *sp;
@@ -1327,10 +1327,11 @@ static void SVGTraceArc(SplineSet *cur,BasePoint *current,
 	// to average the angles from the foci to the point. That average
 	// is normal to the curve and therefore the tangent is 90 degrees
 	// CW for a CW contour.
-	if ( rx > ry )
-	    tmp = BPScale(ang, sqrt(rx*rx - ry*ry));
+	sqdiff = rx*rx - ry*ry;
+	if ( sqdiff > 0 )
+	    tmp = BPScale(ang, sqrt(sqdiff));
 	else
-	    tmp = BPScale(BP90CW(ang), sqrt(ry*ry - rx*rx));
+	    tmp = BPScale(BP90CW(ang), sqrt(-sqdiff));
 	foc1 = BPAdd(c, tmp);
 	foc2 = BPSub(c, tmp);
 
