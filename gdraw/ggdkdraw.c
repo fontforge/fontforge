@@ -40,8 +40,11 @@
 #include <assert.h>
 #include <math.h>
 
+// HACK HACK HACK
 #ifdef GDK_WINDOWING_WIN32
+#  define GDK_COMPILATION
 #  include <gdk/gdkwin32.h>
+#  undef GDK_COMPILATION
 #endif
 
 // Forward declarations
@@ -132,6 +135,7 @@ static bool _GGDKDraw_TransmitSelection(GGDKDisplay *gdisp, GdkEventSelection *e
         }
 
 #ifdef GDK_WINDOWING_WIN32
+        gdk_win32_selection_clear_targets(gdk_window_get_display(e->window), e->selection);
         gdk_win32_selection_add_targets(e->window, e->selection, i, targets);
 #endif
 
