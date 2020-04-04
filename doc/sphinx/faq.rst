@@ -689,6 +689,15 @@ Random questions
    FontForge requires a color (or grey-scale) monitor -- black & white will not
    suffice.
 
+   On Windows, FontForge is built with msys2/mingw-w64. As such, the minimum
+   supported version of Windows depends on what FontForge's dependent libraries
+   support. At the time of writing, this is Windows 7 or newer.
+
+   On Mac, the bundle is built with Homebrew, which supports the last three
+   versions. This means that the bundle is also tied with this support scheme,
+   so at the time of writing, the minimum supported version is macOS 10.13
+   (High Sierra).
+
 .. _faq.excessive-memory:
 
 **Why does FontForge use so much memory?**
