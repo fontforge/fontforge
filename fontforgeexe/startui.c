@@ -149,7 +149,6 @@ static void _dousage(void) {
     printf( "\t-help\t\t\t (displays this message, and exits)\n" );
     printf( "\t-docs\t\t\t (displays this message, invokes a browser)\n\t\t\t\t (Using the BROWSER environment variable)\n" );
     printf( "\t-version\t\t (prints the version of fontforge and exits)\n" );
-    printf( "\t-library-status\t (prints information about optional libraries\n\t\t\t\t and exits)\n" );
 #ifndef _NO_PYTHON
     printf( "\t-lang=py\t\t use python for scripts (may precede -script)\n" );
 #endif
