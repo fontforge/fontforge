@@ -14,6 +14,9 @@ endif()
 target_link_libraries(fontforge_pyhook PRIVATE fontforge)
 target_link_libraries(psMat_pyhook PRIVATE fontforge)
 
+target_link_libraries(fontforge_pyhook PRIVATE Python3::Module)
+target_link_libraries(psMat_pyhook PRIVATE Python3::Module)
+
 # FindPython3 provides Python3_SITEARCH, but this is an absolute path
 # So do it ourselves, getting the prefix-relative path instead
 if(NOT DEFINED PYHOOK_INSTALL_DIR)
