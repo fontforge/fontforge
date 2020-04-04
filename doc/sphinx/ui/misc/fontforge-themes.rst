@@ -4,7 +4,7 @@ FontForge color schemes
 The following are some suggestions for color schemes. You simply copy these into
 your ~/.Xdefaults file and then run
 
-.. code-block::
+.. code-block:: default
    :name: fontforge-themes.shell
 
    $ xrdb ~/.Xdefaults

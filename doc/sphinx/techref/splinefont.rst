@@ -195,7 +195,7 @@ The bounding box of a :ref:`Spline <splinefont.Spline>`,
 :ref:`SplineChar <splinefont.SplineChar>`, :ref:`RefChar <splinefont.RefChar>`,
 :ref:`Image <splinefont.ImageList>`, or whatever else needs a bounding box.
 
-.. code-block::
+.. code-block:: default
    :name: splinefont.BDFFloat
 
    typedef struct bdffloat {
@@ -206,7 +206,7 @@ The bounding box of a :ref:`Spline <splinefont.Spline>`,
 
 The floating selection in a :ref:`BDFChar <splinefont.BDFChar>`.
 
-.. code-block::
+.. code-block:: default
    :name: splinefont.Undoes
 
    typedef struct undoes {
@@ -277,7 +277,7 @@ both the splines and the bitmaps of a character.
 ut_mult is used when doing a copy from the FontView where you are copying more
 than one character.
 
-.. code-block::
+.. code-block:: default
    :name: splinefont.BDFChar
 
    typedef struct bdfchar {
@@ -318,7 +318,7 @@ represented by a byte rather than a bit. There is a clut for this in the BDFFont
 The last thing in the BDFChar is a (/an optional) floating selection. Only
 present if the user has made a selection or done a paste or something like that.
 
-.. code-block::
+.. code-block:: default
    :name: splinefont.BDFFont
 
    typedef struct bdffont {
@@ -345,7 +345,7 @@ contains a count of the number of entries in the array, and then the array
 itself. Currently the number of entries here is always 16, but that could
 change.
 
-.. code-block::
+.. code-block:: default
    :name: splinefont.SplinePoint
 
    enum pointtype { pt_curve, pt_corner, pt_tangent };
@@ -405,7 +405,7 @@ drawing it. They are cached so they don't need to be regenerated each time.
 There's a different set of lines for every scale (as there is a different amount
 of visible detail). They get freed and regenerated if the Spline changes.
 
-.. code-block::
+.. code-block:: default
    :name: splinefont.Spline
 
    typedef struct spline1d {
@@ -439,7 +439,7 @@ some are used in other places too.
 The Spline1D structures give the equations for the x and y coordinates
 respectively (splines[0] is for x, splines[1] is for y).
 
-.. code-block::
+.. code-block:: default
    :name: splinefont.SplinePointList
 
    typedef struct splinepointlist {
@@ -463,7 +463,7 @@ to). A SplinePointList is a connected path. There are three cases:
 Generally a series of paths will make up a character, and they are linked
 together on the next field.
 
-.. code-block::
+.. code-block:: default
    :name: splinefont.RefChar
 
    typedef struct refchar {
@@ -498,7 +498,7 @@ themselves). The selected field indicates that the reference is selected. The bb
 field provides a transformed bounding box. And the sc field points to the
 SplineChar we are referring to.
 
-.. code-block::
+.. code-block:: default
    :name: splinefont.KernPair
 
    typedef struct kernpair {
@@ -514,7 +514,7 @@ offset between them (or rather the difference from what their respective left
 and right bearings would lead you to believe it should be). Next points to the
 next kernpair.
 
-.. code-block::
+.. code-block:: default
    :name: splinefont.Hints
 
    typedef struct hints {
@@ -532,7 +532,7 @@ y space) of where the stem starts, and width is how long it is. Width may be
 negative (in which case base is where the stem ends). Next points to the next
 hint for the character.
 
-.. code-block::
+.. code-block:: default
    :name: splinefont.ImageList
 
    typedef struct imagelist {
@@ -551,7 +551,7 @@ not support any other transformations on images). The bounding box is after the
 transformations have been applied. The next field points to the next image, and
 selected indicates whether this one is selected or not.
 
-.. code-block::
+.. code-block:: default
    :name: splinefont.SplineChar
 
    typedef struct splinechar {
@@ -623,7 +623,7 @@ follow this one. For instance the combination "VA" might need kerning, then the
 SplineChar representing "V" would have a pointer to a
 :ref:`KernPair <splinefont.KernPair>` with data on "A".
 
-.. code-block::
+.. code-block:: default
    :name: splinefont.SplineFont
 
    typedef struct splinefont {

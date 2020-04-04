@@ -68,6 +68,9 @@ html_extra_path = ['olddocs']
 # Don't copy source rst files into the output
 html_copy_source = False
 
+# Set the main page
+master_doc = 'index'
+
 # Custom roles must be in the prolog, not the epilog!
 rst_prolog = '''
 .. role:: small
