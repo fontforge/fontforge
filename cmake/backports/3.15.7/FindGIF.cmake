@@ -5,7 +5,7 @@
 FindGIF
 -------
 
-This finds the GIF library (giflib)
+This finds the Graphics Interchange Format (GIF) library (``giflib``)
 
 Imported targets
 ^^^^^^^^^^^^^^^^
@@ -13,7 +13,7 @@ Imported targets
 This module defines the following :prop_tgt:`IMPORTED` target:
 
 ``GIF::GIF``
-  The giflib library, if found.
+  The ``giflib`` library, if found.
 
 Result variables
 ^^^^^^^^^^^^^^^^

@@ -12,9 +12,9 @@ project(fontforge VERSION 20200314 LANGUAGES C CXX)
 
 # Add folder for custom cmake modules
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_SOURCE_DIR}/cmake/packages)
-if(${CMAKE_VERSION} VERSION_LESS "3.14")
+if(${CMAKE_VERSION} VERSION_LESS "3.15.7")
   # This could be more targeted, but keep it simple
-  list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/backports/3.14.5)
+  list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/backports/3.15.7)
 endif()
 
 # Include any required modules
