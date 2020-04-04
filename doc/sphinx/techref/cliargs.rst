@@ -117,12 +117,6 @@ FontForge recognizes the following options:
    Opens the last sfd file closed. If used more than once will open the last
    several sfd files.
 
-.. option:: -library-status
-
-   Writes info about the status of optional libraries to stderr. Including:
-   Whether the library exists on this system, whether ff can use it, and an URL
-   from which the library can be found.
-
 .. option:: -new
 
    Creates a new font.
