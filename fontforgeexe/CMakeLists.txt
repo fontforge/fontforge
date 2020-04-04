@@ -104,6 +104,10 @@ else()
   target_sources(fontforgeexe PRIVATE startnoui.c)
 endif()
 
+if(ENABLE_PYTHON_SCRIPTING_RESULT)
+  target_link_libraries(fontforgeexe PRIVATE Python3::Python)
+endif()
+
 target_link_libraries(fontforgeexe PRIVATE fontforge Iconv::Iconv MathLib::MathLib)
 install(TARGETS fontforgeexe RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
