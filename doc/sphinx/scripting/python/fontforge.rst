@@ -1365,6 +1365,7 @@ Layers may be compared to see if their contours are similar.
             layer.stroke("calligraphic", width, height, angle[, FLAGS])
             layer.stroke("polygon", contour[, FLAGS])
    (Legacy interface)
+   :noindex:
 
 .. method:: layer.stroke("circular", width  [, CAP, JOIN, ANGLE, KEYWORD])
             layer.stroke("elliptical", width, minor_width  [, ANGLE, CAP, JOIN, KEYWORD])
@@ -2458,6 +2459,7 @@ must be created through the font.
             glyph.stroke("calligraphic", width, height, angle[, FLAGS])
             glyph.stroke("polygon", contour[, FLAGS])
    (Legacy interface)
+   :noindex:
 
 .. method:: glyph.stroke("circular", width[, CAP, JOIN, ANGLE, KEYWORD])
             glyph.stroke("elliptical", width, minor_width[, ANGLE, CAP, JOIN, KEYWORD])
@@ -4786,21 +4788,6 @@ See the :class:`selection` type for how to alter the selection.
    Extrema should be marked by on-curve points. If a curve in any selected
    glyph lacks a point at a significant extremum this command will add one.
 
-.. method:: font.addSmallCaps()
-
-   For all selected upper or lower case letters in the latin, greek and
-   cyrillic scripts this will try to create a small caps version of that glyph
-   in a new glyph slot.
-
-   So if you select "A" (or "a") then a glyph "a.sc" will be created (if "a.sc"
-   already exists, it will be reused, and its current contents cleared).
-
-   The contents of "a.sc" will be based on the upper case variant of this glyph
-   (and that variant must be present for the command to work). FontForge will
-   also create two lookups (unless appropriate ones already exist) one, bound
-   to the feature 'c2sc' will map upper case letters to small caps, the other,
-   bound to feature 'smcp' will map lower case letters to small caps.
-
 .. method:: font.autoHint()
 
    Generates PostScript hints for all selected glyphs.
@@ -4993,6 +4980,7 @@ See the :class:`selection` type for how to alter the selection.
             font.stroke("calligraphic", width, height, angle[, FLAGS])
             font.stroke("polygon", contour[, FLAGS])
    (Legacy interface)
+   :noindex:
 
 .. method:: font.stroke("circular", width[, CAP, JOIN, ANGLE, KEYWORD])
             font.stroke("elliptical", width, minor_width[, ANGLE, CAP, JOIN, KEYWORD])
