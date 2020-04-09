@@ -798,13 +798,12 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid, int encuni, int vs
     if ( sc->comment!=NULL ) {
 		fprintf( file, "\n<!--\n%s\n-->\n",sc->comment );
     }
-    fprintf(file,"    <glyph glyph-name=\"%s\" ",sc->name );
 
     char *ligature = GetLigature(sc);
 
-    if ( ligature!=NULL ) {
-	    fprintf(file,"unicode=\"%s\" ", ligature);
-    } else if ( encuni!=-1 && encuni<0x110000 ) {
+    fprintf(file,"    <glyph glyph-name=\"%s\" ", ligature == NULL ? sc->name : ligature);
+
+    if ( encuni!=-1 && encuni<0x110000 ) {
 		if ( encuni!=0x9 &&
 			encuni!=0xa &&
 			encuni!=0xd &&
