@@ -2499,6 +2499,8 @@ static void bExport(Context *c) {
     if ( c->a.argc==4 ) {
 	flags = c->a.vals[3].u.ival;
 	ep.use_transform = !!(flags & 1);
+	ep.no_fillcolor = !!(flags & 2);
+	ep.no_padding = !!(flags & 4);
     }
     if ( flags&256 || flags&512 ) {
 	epp = ExportParamsState();

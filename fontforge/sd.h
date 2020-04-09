@@ -198,7 +198,9 @@ typedef struct exportparams {
     int initialized;
     int shown_mask, show_always;
 
-    int use_transform;		// SVG
+    int use_transform;      // SVG
+    int no_fillcolor;       // SVG
+    int no_padding;		    // SVG
 } ExportParams;
 
 extern void InitImportParams(ImportParams *ip);

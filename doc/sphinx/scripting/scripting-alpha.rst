@@ -871,6 +871,8 @@ the fourth argument you must specify the second and third arguments too.
    flags:
 
    * 1 => Flip the y-axis of exported SVGs with a transform element (instead of rewriting values)
+   * 2 => Disable fill property for path
+   * 4 => Disable viewBox adjustment (useful for icons font)
    * 256 => Use current Export dialog settings (other flags are ignored)
    * 512 => Present Export options dialog (if UI is enabled)
 

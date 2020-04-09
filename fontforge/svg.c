@@ -1055,11 +1055,13 @@ return( ret );
 
 int _ExportSVG(FILE *svg,SplineChar *sc,int layer,ExportParams *ep) {
     char *end;
-    int em_size, xstart, xend, ascent;
+    int em_size, xstart, xend, ascent, padding;
     real trans[6] = { 1.0, 0.0, 0.0, 1.0, 0.0, 0.0 };
     DBounds b;
     SplineChar *scc;
     SplineSet *orig;
+
+    padding = ep->no_padding ? 0 : SVGMINLRPAD;
 
     SplineCharLayerFindBounds(sc,layer,&b);
     if ( sc->parent!=NULL ) {
@@ -1079,15 +1081,15 @@ int _ExportSVG(FILE *svg,SplineChar *sc,int layer,ExportParams *ep) {
     fprintf(svg, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\" >\n" );
     // Adjust horizontal ViewBox to display entire glyph
     xstart = floor(b.minx);
-    if (xstart > SVGMINLRPAD)
+    if (xstart > padding)
 	xstart = 0; // Start from origin when sufficiently past it
     else
-	xstart -= SVGMINLRPAD; // Give glyphs starting near or before the origin some extra space
+	xstart -= padding; // Give glyphs starting near or before the origin some extra space
     xend = ceil(b.maxx);
-    if (xend < ceil(sc->width) - SVGMINLRPAD)
+    if (xend < ceil(sc->width) - padding)
 	xend = ceil(sc->width); // End at the advance width when sufficiently short of it
     else
-	xend += SVGMINLRPAD; // Give glyphs ending near or past the advance width some extra space
+	xend += padding; // Give glyphs ending near or past the advance width some extra space
     fprintf(svg, "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" viewBox=\"%d 0 %d %d\">\n",
 	    xstart, xend - xstart, (int) ceil(em_size));
     if ( ep->use_transform ) {
@@ -1117,7 +1119,10 @@ int _ExportSVG(FILE *svg,SplineChar *sc,int layer,ExportParams *ep) {
 	fprintf(svg, "   <g ");
 	end = "   </g>\n";
     } else {
-	fprintf(svg, "   <path fill=\"currentColor\"\n");
+	fprintf(svg, "   <path "); 
+    if ( !ep->no_fillcolor ) {
+    	fprintf(svg, "fill=\"currentColor\"\n");
+    }
 	end = "   </path>\n";
     }
     svg_scpathdump(svg,scc,end,layer);
