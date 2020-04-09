@@ -703,7 +703,7 @@ static void MakeExportName(char *buffer, int blen,char *format_spec,
 	    ch = *format_spec++;
 	    if ((bend = buffer+40)>end ) bend = end;
 	    if ( ch=='n' || ch=='N' ) {
-            pt=sc->name
+            pt=sc->name;
             if (ch=='N') {
                 char *ligature = GetLigature(sc);
                 if (ligature != NULL) {
