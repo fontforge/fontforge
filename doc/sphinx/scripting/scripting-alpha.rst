@@ -853,6 +853,8 @@ the fourth argument you must specify the second and third arguments too.
 
    * ``%n`` -- inserts the glyph name (or the first 40 characters of it for long
      names)
+   * ``%N`` -- inserts the ligature name if present in glyph, 
+     or the glyph name if not (or the first 40 characters)
    * ``%f`` -- inserts the font name (or the first 40 characters)
    * ``%e`` -- inserts the glyph's encoding as a decimal integer
    * ``%u`` -- inserts the glyph's unicode code point in lower case hex

@@ -702,17 +702,24 @@ static void MakeExportName(char *buffer, int blen,char *format_spec,
 	    ++format_spec;
 	    ch = *format_spec++;
 	    if ((bend = buffer+40)>end ) bend = end;
-	    if ( ch=='n' ) {
+	    if ( ch=='n' || ch=='N' ) {
+            pt=sc->name
+            if (ch=='N') {
+                char *ligature = GetLigature(sc);
+                if (ligature != NULL) {
+                    pt = ligature;
+                }
+            }
 #if defined( __CygWin ) || defined(__Mac)
 		/* Windows file systems are not case conscious */
 		/*  nor is the default mac filesystem */
-		for ( pt=sc->name; *pt!='\0' && buffer<bend; ) {
+		for ( ; *pt!='\0' && buffer<bend; ) {
 		    if ( isupper( *pt ))
 			*buffer++ = '$';
 		    *buffer++ = *pt++;
 		}
 #else
-		for ( pt=sc->name; *pt!='\0' && buffer<bend; )
+		for ( ; *pt!='\0' && buffer<bend; )
 		    *buffer++ = *pt++;
 #endif
 	    } else if ( ch=='f' ) {
@@ -726,10 +733,10 @@ static void MakeExportName(char *buffer, int blen,char *format_spec,
 		for ( pt=unicode; *pt!='\0' && buffer<bend; )
 		    *buffer++ = *pt++;
 	    } else if ( ch=='e' ) {
-		sprintf( unicode,"%d", (int) map->backmap[sc->orig_pos] );
-		for ( pt=unicode; *pt!='\0' && buffer<bend; )
-		    *buffer++ = *pt++;
-	    } else
+        sprintf( unicode,"%d", (int) map->backmap[sc->orig_pos] );
+        for ( pt=unicode; *pt!='\0' && buffer<bend; )
+            *buffer++ = *pt++;
+        } else
 		*buffer++ = ch;
 	}
     }
