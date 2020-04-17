@@ -6722,24 +6722,24 @@ static void bCIDSetFontNames(Context *c) {
 }
 
 static void bCIDFlatten(Context *c) {
-    SplineFont *sf = c->curfv->sf;
+    SplineFont *cidmaster = c->curfv->cidmaster;
 
-    if ( sf->cidmaster==NULL )
-	ScriptErrorString( c, "Not a cid-keyed font", sf->fontname );
+    if ( cidmaster==NULL )
+	ScriptErrorString( c, "Not a cid-keyed font", c->curfv->sf->fontname );
 
-    SFFlatten(&(sf->cidmaster));
+    SFFlatten(&cidmaster);
 }
 
 static void bCIDFlattenByCMap(Context *c) {
-    SplineFont *sf = c->curfv->sf;
+    SplineFont *cidmaster = c->curfv->cidmaster;
     char *t; char *locfilename;
 
-    if ( sf->cidmaster==NULL )
-	ScriptErrorString( c, "Not a cid-keyed font", sf->fontname );
+    if ( cidmaster==NULL )
+	ScriptErrorString( c, "Not a cid-keyed font", c->curfv->sf->fontname );
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
     locfilename = utf82def_copy(t);
-    if ( !SFFlattenByCMap(&sf,locfilename))
+    if ( !SFFlattenByCMap(&cidmaster,locfilename))
 	ScriptErrorString( c, "Can't find (or can't parse) cmap file",c->a.vals[1].u.sval);
     free(t); free(locfilename);
 }
