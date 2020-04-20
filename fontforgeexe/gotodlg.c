@@ -91,7 +91,10 @@ static int Goto_OK(GGadget *g, GEvent *e) {
 	gw = GGadgetGetWindow(g);
 	d = GDrawGetUserData(gw);
 	ret = GGadgetGetTitle8(GWidgetGetControl(gw,CID_Name));
-	if ( d->ranges!=NULL ) {
+	d->ret = NameToEncoding(d->sf,d->map,ret);
+	if ( d->ret<0 || (d->ret>=d->map->enccount && d->sf->cidmaster==NULL ))
+	    d->ret = -1;
+	if ( d->ret==-1 && d->ranges!=NULL ) {
 	    for ( i=0; d->ranges[i].text!=NULL; ++i ) {
 		if ( strcmp(ret,(char *) d->ranges[i].text)==0 ) {
 		    d->ret = (intpt) d->ranges[i].userdata;
@@ -100,13 +103,7 @@ static int Goto_OK(GGadget *g, GEvent *e) {
 	    }
 	}
 	if ( d->ret==-1 ) {
-	    d->ret = NameToEncoding(d->sf,d->map,ret);
-	    if ( d->ret<0 || (d->ret>=d->map->enccount && d->sf->cidmaster==NULL ))
-		d->ret = -1;
-	    if ( d->ret==-1 ) {
-		ff_post_notice(_("Goto"),_("Could not find the glyph: %.70s"),ret);
-	    } else
-		d->done = true;
+	    ff_post_notice(_("Goto"),_("Could not find the glyph: %.70s"),ret);
 	} else
 	    d->done = true;
 	free(ret);
