@@ -795,7 +795,7 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid, int encuni, int vs
     int i, c;
 
     if ( sc->comment!=NULL ) {
-		fprintf( file, "\n<!--\n%s\n-->\n",sc->comment );
+	fprintf( file, "\n<!--\n%s\n-->\n",sc->comment );
     }
     fprintf(file,"    <glyph glyph-name=\"%s\" ",sc->name );
 
