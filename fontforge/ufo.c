@@ -2200,10 +2200,6 @@ return( NULL );
 return( NULL );
 }
 
-static int libxml_init_base() {
-return( true );
-}
-
 static xmlNodePtr FindNode(xmlNodePtr kids,char *name) {
     while ( kids!=NULL ) {
 	if ( xmlStrcmp(kids->name,(const xmlChar *) name)== 0 )
@@ -3984,11 +3980,6 @@ SplineFont *SFReadUFO(char *basedir, int flags) {
     char *end;
     int as = -1, ds= -1, em= -1;
 
-    if ( !libxml_init_base()) {
-	LogError(_("Can't find libxml2."));
-return( NULL );
-    }
-
     sf = SplineFontEmpty();
     SFDefaultOS2Info(&sf->pfminfo, sf, ""); // We set the default pfm values.
     sf->pfminfo.pfmset = 1; // We flag the pfminfo as present since we expect the U. F. O. to set any desired values.
@@ -4551,10 +4542,6 @@ SplineSet *SplinePointListInterpretGlif(SplineFont *sf,char *filename,char *memo
     SplineChar *sc;
     SplineSet *ss;
 
-    if ( !libxml_init_base()) {
-	LogError(_("Can't find libxml2."));
-return( NULL );
-    }
     if ( filename!=NULL )
 	doc = xmlParseFile(filename);
     else
@@ -4575,8 +4562,4 @@ return( NULL );
     sc->layers[ly_fore].splines = NULL;
     SplineCharFree(sc);
 return( ss );
-}
-
-int HasUFO(void) {
-return( libxml_init_base());
 }

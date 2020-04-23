@@ -73,6 +73,7 @@ extern void PasteRemoveAnchorClass(SplineFont *sf, AnchorClass *dying);
 extern void PasteRemoveSFAnchors(SplineFont *sf);
 extern void PasteToBC(BDFChar *bc, int pixelsize, int depth);
 extern void PasteToCV(CharViewBase *cv);
+extern int  SCClipboardHasPasteableContents(void);
 extern void SCCopyLookupData(SplineChar *sc);
 extern void SCCopyWidth(SplineChar *sc, enum undotype ut);
 extern void SCDoRedo(SplineChar *sc, int layer);

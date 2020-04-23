@@ -2456,8 +2456,6 @@ extern void RevertedGlyphReferenceFixup(SplineChar *sc, SplineFont *sf);
 extern void SFUntickAll(SplineFont *sf);
 
 
-extern int HasUFO(void);
-
 extern int _ExportGlif(FILE *glif,SplineChar *sc,int layer,int version);
 
 extern void SCCopyWidth(SplineChar *sc,enum undotype);
