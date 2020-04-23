@@ -733,10 +733,10 @@ static void MakeExportName(char *buffer, int blen,char *format_spec,
 		for ( pt=unicode; *pt!='\0' && buffer<bend; )
 		    *buffer++ = *pt++;
 	    } else if ( ch=='e' ) {
-        sprintf( unicode,"%d", (int) map->backmap[sc->orig_pos] );
-        for ( pt=unicode; *pt!='\0' && buffer<bend; )
-            *buffer++ = *pt++;
-        } else
+		sprintf( unicode,"%d", (int) map->backmap[sc->orig_pos] );
+		for ( pt=unicode; *pt!='\0' && buffer<bend; )
+		    *buffer++ = *pt++;
+	    } else
 		*buffer++ = ch;
 	}
     }

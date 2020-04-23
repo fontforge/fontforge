@@ -766,7 +766,6 @@ SplineChar *SCHasSubs(SplineChar *sc, uint32 tag) {
 	if ( pst->type==pst_substitution &&
 		FeatureTagInFeatureScriptList(tag,pst->subtable->lookup->features) )
 return( SFGetChar(sc->parent,-1,pst->u.subs.variant));
-
     }
 return( NULL );
 }
@@ -805,36 +804,35 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid, int encuni, int vs
     if ( ligature!=NULL ) {
 	    fprintf(file,"unicode=\"%s\" ", ligature);
     } else if ( encuni!=-1 && encuni<0x110000 ) {
-		if ( encuni!=0x9 &&
-			encuni!=0xa &&
-			encuni!=0xd &&
-			!(encuni>=0x20 && encuni<=0xd7ff) &&
-			!(encuni>=0xe000 && encuni<=0xfffd) &&
-			!(encuni>=0x10000 && encuni<=0x10ffff) )
-		    /* Not allowed in XML */;
-		else if ( (encuni>=0x7f && encuni<=0x84) ||
-			  (encuni>=0x86 && encuni<=0x9f) ||
-			  (encuni>=0xfdd0 && encuni<=0xfddf) ||
-			  (encuni&0xffff)==0xfffe ||
-			  (encuni&0xffff)==0xffff )
-		    /* Not recommended in XML */;
-		else if ( encuni>=32 && encuni<127 &&
-			encuni!='"' && encuni!='&' &&
-			encuni!='<' && encuni!='>' )
-		    fprintf( file, "unicode=\"%c\" ", encuni);
-		else if ( encuni<0x10000 &&
-			( isarabisolated(encuni) || isarabinitial(encuni) || isarabmedial(encuni) || isarabfinal(encuni) ) &&
-			unicode_alternates[encuni>>8]!=NULL &&
-			(alt = unicode_alternates[encuni>>8][encuni&0xff])!=NULL &&
-			alt[1]=='\0' )
-		    /* For arabic forms use the base representation in the 0600 block */
-		    fprintf( file, "unicode=\"&#x%x;\" ", alt[0]);
-		else if ( vs!=-1 )
-		    fprintf( file, "unicode=\"&#x%x;\" ", vs);
-		else
-		    fprintf( file, "unicode=\"&#x%x;\" ", encuni);
+	if ( encuni!=0x9 &&
+		encuni!=0xa &&
+		encuni!=0xd &&
+		!(encuni>=0x20 && encuni<=0xd7ff) &&
+		!(encuni>=0xe000 && encuni<=0xfffd) &&
+		!(encuni>=0x10000 && encuni<=0x10ffff) )
+	    /* Not allowed in XML */;
+	else if ( (encuni>=0x7f && encuni<=0x84) ||
+		  (encuni>=0x86 && encuni<=0x9f) ||
+		  (encuni>=0xfdd0 && encuni<=0xfddf) ||
+		  (encuni&0xffff)==0xfffe ||
+		  (encuni&0xffff)==0xffff )
+	    /* Not recommended in XML */;
+	else if ( encuni>=32 && encuni<127 &&
+		encuni!='"' && encuni!='&' &&
+		encuni!='<' && encuni!='>' )
+	    fprintf( file, "unicode=\"%c\" ", encuni);
+	else if ( encuni<0x10000 &&
+		( isarabisolated(encuni) || isarabinitial(encuni) || isarabmedial(encuni) || isarabfinal(encuni) ) &&
+		unicode_alternates[encuni>>8]!=NULL &&
+		(alt = unicode_alternates[encuni>>8][encuni&0xff])!=NULL &&
+		alt[1]=='\0' )
+	    /* For arabic forms use the base representation in the 0600 block */
+	    fprintf( file, "unicode=\"&#x%x;\" ", alt[0]);
+	else if ( vs!=-1 )
+	    fprintf( file, "unicode=\"&#x%x;\" ", vs);
+	else
+	    fprintf( file, "unicode=\"&#x%x;\" ", encuni);
     }
-
     if ( sc->width!=defwid )
 	fprintf( file, "horiz-adv-x=\"%d\" ", sc->width );
     if ( sc->parent->hasvmetrics && sc->vwidth!=sc->parent->ascent+sc->parent->descent )
