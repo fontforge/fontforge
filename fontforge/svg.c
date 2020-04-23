@@ -770,18 +770,29 @@ return( SFGetChar(sc->parent,-1,pst->u.subs.variant));
 return( NULL );
 }
 
+#define LIGATURE_MAXLEN 150
+
 char *GetLigature(SplineChar *sc) {
     PST *best = HasLigature(sc);
     if ( best != NULL ) {
     	int32 univals[50];
-        char *buf = "";
-        int i, c;
+        char buf[LIGATURE_MAXLEN] = "";
+        char buf2[15];
+        int i, c, r, n = 0;
+
 		c = LigCnt(sc->parent,best,univals,sizeof(univals)/sizeof(univals[0]));
 		for ( i=0; i<c; ++i ) {
-		    if ( (univals[i]>='A' && univals[i]<='Z') ||  (univals[i]>='a' && univals[i]<='z') || (univals[i] >= '0' && univals[i] <= '9') || univals[i] == '_' || univals[i] == '-')
-		    	asprintf(&buf,"%s%c", buf, univals[i]);
-		    else
-		    	asprintf(&buf, "%s&#x%x;", buf, (unsigned int) univals[i]);
+		    if ( (univals[i]>='A' && univals[i]<='Z') || (univals[i]>='a' && univals[i]<='z') || (univals[i] >= '0' && univals[i] <= '9') || univals[i] == '_' || univals[i] == '-') {
+		    	r = sprintf(buf2, "%c", univals[i]);
+		    } else {
+		    	r = sprintf(buf2, "&#x%x;", (unsigned int) univals[i]);
+		    }
+		    n = LIGATURE_MAXLEN - strlen(buf) - 1;
+		    if (r > 0 && n >= r) {
+		        strncat(buf, buf2, n);
+		    } else {
+		        break;
+		    }
 		}
         return (  copy(buf)  );
     }
