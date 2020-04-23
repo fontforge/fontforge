@@ -9123,16 +9123,7 @@ static void cv_edlistcheck(CharView *cv, struct gmenuitem *mi) {
 	    mi->ti.disabled = cv->b.gridfit==NULL;
 	  break;
 	  case MID_Paste:
-	    mi->ti.disabled = !CopyContainsSomething() &&
-#ifndef _NO_LIBPNG
-		    !GDrawSelectionHasType(cv->gw,sn_clipboard,"image/png") &&
-#endif
-		    !GDrawSelectionHasType(cv->gw,sn_clipboard,"image/svg+xml") &&
-		    !GDrawSelectionHasType(cv->gw,sn_clipboard,"image/svg-xml") &&
-		    !GDrawSelectionHasType(cv->gw,sn_clipboard,"image/svg") &&
-		    !GDrawSelectionHasType(cv->gw,sn_clipboard,"image/bmp") &&
-		    !GDrawSelectionHasType(cv->gw,sn_clipboard,"image/eps") &&
-		    !GDrawSelectionHasType(cv->gw,sn_clipboard,"image/ps");
+	    mi->ti.disabled = !CopyContainsSomething() && !SCClipboardHasPasteableContents();
 	  break;
 	  case MID_Undo:
 	    mi->ti.disabled = cv->b.layerheads[cv->b.drawmode]->undoes==NULL;

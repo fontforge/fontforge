@@ -2107,43 +2107,52 @@ static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
     }
 }
 
+static const char* SCGetPasteableClipboardType(int* type) {
+    static const char* mimes[] = {
+        "image/svg+xml",
+        "image/svg-xml",
+        "image/svg",
+        "image/x-inkscape-svg",
+        "image/eps",
+        "image/ps",
+#ifndef _NO_LIBPNG
+        "image/png",
+#endif
+        "image/bmp",
+        NULL
+    };
+
+    if (no_windowing_ui) {
+        return NULL;
+    }
+
+    for (int tp = 0; mimes[tp]; ++tp) {
+        if (ClipboardHasType(mimes[tp])) {
+            if (type) {
+                *type = tp;
+            }
+            return mimes[tp];
+        }
+    }
+    return NULL;
+}
+
+int SCClipboardHasPasteableContents(void) {
+    return SCGetPasteableClipboardType(NULL) != NULL;
+}
+
 static void SCCheckXClipboard(SplineChar *sc,int layer,int doclear) {
     int type; int32 len;
+    const char *mime;
     char *paste;
     FILE *temp;
     GImage *image;
-    int sx=0, s_x=0;
 
-    if ( no_windowing_ui )
-return;
-    type = 0;
-    /* SVG is a better format (than eps) if we've got it because it doesn't */
-    /*  force conversion of quadratic to cubic and back */
-    if ( HasSVG() && ((sx = ClipboardHasType("image/svg+xml")) ||
-			(s_x = ClipboardHasType("image/svg-xml")) ||
-			ClipboardHasType("image/svg")) )
-	type = sx ? 1 : s_x ? 2 : 3;
-    else
-    if ( ClipboardHasType("image/eps") )
-	type = 4;
-    else if ( ClipboardHasType("image/ps") )
-	type = 5;
-#ifndef _NO_LIBPNG
-    else if ( ClipboardHasType("image/png") )
-	type = 6;
-#endif
-    else if ( ClipboardHasType("image/bmp") )
-	type = 7;
+    if ((mime = SCGetPasteableClipboardType(&type)) == NULL) {
+        return;
+    }
 
-    if ( type==0 )
-return;
-
-    paste = ClipboardRequest(type==1?"image/svg+xml":
-		type==2?"image/svg-xml":
-		type==3?"image/svg":
-		type==4?"image/eps":
-		type==5?"image/ps":
-		type==6?"image/png":"image/bmp",&len);
+    paste = ClipboardRequest(mime, &len);
     if ( paste==NULL )
 return;
 
@@ -3067,7 +3076,6 @@ return;
 	if ( paster->u.state.anchor!=NULL && !cvsc->searcherdummy )
 	    APMerge(cvsc,paster->u.state.anchor);
 	if ( paster->u.state.refs!=NULL && cv->drawmode!=dm_grid ) {
-	    RefChar *last=NULL;
 	    RefChar *new, *refs;
 	    SplineChar *sc;
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
@@ -3838,7 +3846,7 @@ static void _PasteAnchorClassManip(SplineFont *sf,AnchorClass *into,AnchorClass 
 	    if ( temp->u.composit.state==NULL )
 	break;
 	    temp = temp->u.composit.state;
-	    /* Fall through */;
+	    /* Fall through */
 	  case ut_state: case ut_statehint: case ut_statename:
 	    if ( temp->copied_from!=sf )
 return;
