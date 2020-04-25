@@ -90,7 +90,7 @@ static int comparespline(Spline *ps, Spline *ttf, real tmin, real tmax, real err
     else if ( ps->to->me.x<bb.minx ) bb.minx = ps->to->me.x;
     if ( ps->to->me.y>bb.maxy ) bb.maxy = ps->to->me.y;
     else if ( ps->to->me.y<bb.miny ) bb.miny = ps->to->me.y;
-    for ( t=.1; t<1; t+= .1 ) {
+    for ( t=.1; t<0.99; t+= .1 ) {
 	d = (ttf->splines[0].b*t+ttf->splines[0].c)*t+ttf->splines[0].d;
 	o = (ttf->splines[1].b*t+ttf->splines[1].c)*t+ttf->splines[1].d;
 	if ( d<bb.minx || d>bb.maxx || o<bb.miny || o>bb.maxy )
