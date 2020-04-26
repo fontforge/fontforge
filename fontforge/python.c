@@ -760,7 +760,7 @@ static PyObject *PyFF_UnicodeAnnotationFromLib(PyObject *UNUSED(self), PyObject 
     char *temp;
     long val;
 
-    if ( !PyArg_ParseTuple(args,"|i",&val) )
+    if ( !PyArg_ParseTuple(args,"|l",&val) )
 	return( NULL );
 
     if ( (temp=unicode_annot(val))==NULL ) {
@@ -777,7 +777,7 @@ static PyObject *PyFF_UnicodeNameFromLib(PyObject *UNUSED(self), PyObject *args)
     char *temp;
     long val;
 
-    if ( !PyArg_ParseTuple(args,"|i",&val) )
+    if ( !PyArg_ParseTuple(args,"|l",&val) )
 	return( NULL );
 
     if ( (temp=unicode_name(val))==NULL ) {
@@ -798,10 +798,10 @@ static PyObject *PyFF_UnicodeBlockStartFromLib(PyObject *UNUSED(self), PyObject 
 /* Use this function with UnicodeBlockNameFromLib(n) & UnicodeBlockEndFromLib(n). */
     long val;
 
-    if ( !PyArg_ParseTuple(args,"|i",&val) )
+    if ( !PyArg_ParseTuple(args,"|l",&val) )
 	return( NULL );
 
-    return( Py_BuildValue("i", unicode_block_start(val)) );
+    return( Py_BuildValue("l", (long)unicode_block_start(val)) );
 }
 
 static PyObject *PyFF_UnicodeBlockEndFromLib(PyObject *UNUSED(self), PyObject *args) {
@@ -809,10 +809,10 @@ static PyObject *PyFF_UnicodeBlockEndFromLib(PyObject *UNUSED(self), PyObject *a
 /* Use this function with UnicodeBlockStartFromLib(n), UnicodeBlockNameFromLib(n) */
     long val;
 
-    if ( !PyArg_ParseTuple(args,"|i",&val) )
+    if ( !PyArg_ParseTuple(args,"|l",&val) )
 	return( NULL );
 
-    return( Py_BuildValue("i", unicode_block_end(val)) );
+    return( Py_BuildValue("l", (long)unicode_block_end(val)) );
 }
 
 static PyObject *PyFF_UnicodeBlockNameFromLib(PyObject *UNUSED(self), PyObject *args) {
@@ -822,7 +822,7 @@ static PyObject *PyFF_UnicodeBlockNameFromLib(PyObject *UNUSED(self), PyObject *
     char *temp;
     long val;
 
-    if ( !PyArg_ParseTuple(args,"|i",&val) )
+    if ( !PyArg_ParseTuple(args,"|l",&val) )
 	return( NULL );
 
     if ( (temp=unicode_block_name(val))==NULL ) {
@@ -853,24 +853,24 @@ static PyObject *PyFF_UnicodeNames2GetCntFromLib(PyObject *UNUSED(self), PyObjec
 static PyObject *PyFF_UnicodeNames2GetNxtFromLib(PyObject *UNUSED(self), PyObject *args) {
     long val;
 
-    if ( !PyArg_ParseTuple(args,"|i",&val) )
+    if ( !PyArg_ParseTuple(args,"|l",&val) )
 	return( NULL );
-    return( Py_BuildValue("i", unicode_names2getUtabLoc(val)) );
+    return( Py_BuildValue("l", (long)unicode_names2getUtabLoc(val)) );
 }
 
 static PyObject *PyFF_UnicodeNames2NxtUniFromLib(PyObject *UNUSED(self), PyObject *args) {
     long val;
 
-    if ( !PyArg_ParseTuple(args,"|i",&val) )
+    if ( !PyArg_ParseTuple(args,"|l",&val) )
 	return( NULL );
-    return( Py_BuildValue("i", unicode_names2valFrmTab(val)) );
+    return( Py_BuildValue("l", (long)unicode_names2valFrmTab(val)) );
 }
 
 static PyObject *PyFF_UnicodeNames2FrmTabFromLib(PyObject *UNUSED(self), PyObject *args) {
     long val;
     char *temp;
 
-    if ( !PyArg_ParseTuple(args,"|i",&val) )
+    if ( !PyArg_ParseTuple(args,"|l",&val) )
 	return( NULL );
     if ( (temp=unicode_name2FrmTab(val))==NULL ) {
 	return Py_BuildValue("s", "");
@@ -883,7 +883,7 @@ static PyObject *PyFF_UnicodeNames2FromLib(PyObject *UNUSED(self), PyObject *arg
     long val;
     char *temp;
 
-    if ( !PyArg_ParseTuple(args,"|i",&val) )
+    if ( !PyArg_ParseTuple(args,"|l",&val) )
 	return( NULL );
     if ( (temp=unicode_name2(val))==NULL ) {
 	return Py_BuildValue("s", "");
@@ -899,7 +899,7 @@ static PyObject *PyFF_UnicodeNames2FromLib(PyObject *UNUSED(self), PyObject *arg
 static PyObject *PyFF_isligature(PyObject *UNUSED(self), PyObject *args) {
     long codepoint;
 
-    if ( !PyArg_ParseTuple(args,"|i",&codepoint) )
+    if ( !PyArg_ParseTuple(args,"|l",&codepoint) )
 	return( NULL );
 
     return( Py_BuildValue("i", is_LIGATURE(codepoint)==0?1:0) );
@@ -908,7 +908,7 @@ static PyObject *PyFF_isligature(PyObject *UNUSED(self), PyObject *args) {
 static PyObject *PyFF_isvulgarfraction(PyObject *UNUSED(self), PyObject *args) {
     long codepoint;
 
-    if ( !PyArg_ParseTuple(args,"|i",&codepoint) )
+    if ( !PyArg_ParseTuple(args,"|l",&codepoint) )
 	return( NULL );
 
     return( Py_BuildValue("i", is_VULGAR_FRACTION(codepoint)==0?1:0) );
@@ -917,7 +917,7 @@ static PyObject *PyFF_isvulgarfraction(PyObject *UNUSED(self), PyObject *args) {
 static PyObject *PyFF_isotherfraction(PyObject *UNUSED(self), PyObject *args) {
     long codepoint;
 
-    if ( !PyArg_ParseTuple(args,"|i",&codepoint) )
+    if ( !PyArg_ParseTuple(args,"|l",&codepoint) )
 	return( NULL );
 
     return( Py_BuildValue("i", is_OTHER_FRACTION(codepoint)==0?1:0) );
@@ -926,7 +926,7 @@ static PyObject *PyFF_isotherfraction(PyObject *UNUSED(self), PyObject *args) {
 static PyObject *PyFF_isfraction(PyObject *UNUSED(self), PyObject *args) {
     long codepoint;
 
-    if ( !PyArg_ParseTuple(args,"|i",&codepoint) )
+    if ( !PyArg_ParseTuple(args,"|l",&codepoint) )
 	return( NULL );
 
     return( Py_BuildValue("i", (is_VULGAR_FRACTION(codepoint)==0 || \
@@ -957,28 +957,28 @@ static PyObject *PyFF_FracChartGetCnt(PyObject *UNUSED(self), PyObject *UNUSED(a
 static PyObject *PyFF_LigChartGetNxt(PyObject *UNUSED(self), PyObject *args) {
     long val;
 
-    if ( !PyArg_ParseTuple(args,"|i",&val) )
+    if ( !PyArg_ParseTuple(args,"|l",&val) )
 	return( NULL );
 
-    return( Py_BuildValue("i", Ligature_get_U(val)) );
+    return( Py_BuildValue("l", (long)Ligature_get_U(val)) );
 }
 
 static PyObject *PyFF_VulChartGetNxt(PyObject *UNUSED(self), PyObject *args) {
     long val;
 
-    if ( !PyArg_ParseTuple(args,"|i",&val) )
+    if ( !PyArg_ParseTuple(args,"|l",&val) )
 	return( NULL );
 
-    return( Py_BuildValue("i", VulgFrac_get_U(val)) );
+    return( Py_BuildValue("l", (long)VulgFrac_get_U(val)) );
 }
 
 static PyObject *PyFF_OFracChartGetNxt(PyObject *UNUSED(self), PyObject *args) {
     long val;
 
-    if ( !PyArg_ParseTuple(args,"|i",&val) )
+    if ( !PyArg_ParseTuple(args,"|l",&val) )
 	return( NULL );
 
-    return( Py_BuildValue("i", Fraction_get_U(val)) );
+    return( Py_BuildValue("l", (long)Fraction_get_U(val)) );
 }
 
 /* If you have a unicode ligature, or fraction, these routines return loc n. */
@@ -987,7 +987,7 @@ static PyObject *PyFF_OFracChartGetNxt(PyObject *UNUSED(self), PyObject *args) {
 static PyObject *PyFF_LigChartGetLoc(PyObject *UNUSED(self), PyObject *args) {
     long codepoint;
 
-    if ( !PyArg_ParseTuple(args,"|i",&codepoint) )
+    if ( !PyArg_ParseTuple(args,"|l",&codepoint) )
 	return( NULL );
 
     return( Py_BuildValue("i", Ligature_find_N(codepoint)) );
@@ -996,7 +996,7 @@ static PyObject *PyFF_LigChartGetLoc(PyObject *UNUSED(self), PyObject *args) {
 static PyObject *PyFF_VulChartGetLoc(PyObject *UNUSED(self), PyObject *args) {
     long codepoint;
 
-    if ( !PyArg_ParseTuple(args,"|i",&codepoint) )
+    if ( !PyArg_ParseTuple(args,"|l",&codepoint) )
 	return( NULL );
 
     return( Py_BuildValue("i", VulgFrac_find_N(codepoint)) );
@@ -1005,7 +1005,7 @@ static PyObject *PyFF_VulChartGetLoc(PyObject *UNUSED(self), PyObject *args) {
 static PyObject *PyFF_OFracChartGetLoc(PyObject *UNUSED(self), PyObject *args) {
     long codepoint;
 
-    if ( !PyArg_ParseTuple(args,"|i",&codepoint) )
+    if ( !PyArg_ParseTuple(args,"|l",&codepoint) )
 	return( NULL );
 
     return( Py_BuildValue("i", Fraction_find_N(codepoint)) );
@@ -1066,7 +1066,7 @@ static PyObject *PyFF_LigChartGetAltVal(PyObject *UNUSED(self), PyObject *args) 
 
     if ( !PyArg_ParseTuple(args,"ll",&nthCode, &altN) )
 	return( NULL );
-    return( Py_BuildValue("i", Ligature_alt_getV(nthCode,altN)) );
+    return( Py_BuildValue("l", (long)Ligature_alt_getV(nthCode,altN)) );
 }
 
 static PyObject *PyFF_LigChartUGetAltVal(PyObject *UNUSED(self), PyObject *args) {
@@ -1074,7 +1074,7 @@ static PyObject *PyFF_LigChartUGetAltVal(PyObject *UNUSED(self), PyObject *args)
 
     if ( !PyArg_ParseTuple(args,"ll",&nthCode, &altN) )
 	return( NULL );
-    return( Py_BuildValue("i", LigatureU_alt_getV(nthCode,altN)) );
+    return( Py_BuildValue("l", (long)LigatureU_alt_getV(nthCode,altN)) );
 }
 
 static PyObject *PyFF_VulChartGetAltVal(PyObject *UNUSED(self), PyObject *args) {
@@ -1082,7 +1082,7 @@ static PyObject *PyFF_VulChartGetAltVal(PyObject *UNUSED(self), PyObject *args) 
 
     if ( !PyArg_ParseTuple(args,"ll",&nthCode, &altN) )
 	return( NULL );
-    return( Py_BuildValue("i", VulgFrac_alt_getV(nthCode,altN)) );
+    return( Py_BuildValue("l", (long)VulgFrac_alt_getV(nthCode,altN)) );
 }
 
 static PyObject *PyFF_VulChartUGetAltVal(PyObject *UNUSED(self), PyObject *args) {
@@ -1090,7 +1090,7 @@ static PyObject *PyFF_VulChartUGetAltVal(PyObject *UNUSED(self), PyObject *args)
 
     if ( !PyArg_ParseTuple(args,"ll",&nthCode, &altN) )
 	return( NULL );
-    return( Py_BuildValue("i", VulgFracU_alt_getV(nthCode,altN)) );
+    return( Py_BuildValue("l", (long)VulgFracU_alt_getV(nthCode,altN)) );
 }
 
 static PyObject *PyFF_OFracChartGetAltVal(PyObject *UNUSED(self), PyObject *args) {
@@ -1098,7 +1098,7 @@ static PyObject *PyFF_OFracChartGetAltVal(PyObject *UNUSED(self), PyObject *args
 
     if ( !PyArg_ParseTuple(args,"ll",&nthCode, &altN) )
 	return( NULL );
-    return( Py_BuildValue("i", Fraction_alt_getV(nthCode,altN)) );
+    return( Py_BuildValue("l", (long)Fraction_alt_getV(nthCode,altN)) );
 }
 
 static PyObject *PyFF_OFracChartUGetAltVal(PyObject *UNUSED(self), PyObject *args) {
@@ -1106,7 +1106,7 @@ static PyObject *PyFF_OFracChartUGetAltVal(PyObject *UNUSED(self), PyObject *arg
 
     if ( !PyArg_ParseTuple(args,"ll",&nthCode, &altN) )
 	return( NULL );
-    return( Py_BuildValue("i", FractionU_alt_getV(nthCode,altN)) );
+    return( Py_BuildValue("l", (long)FractionU_alt_getV(nthCode,altN)) );
 }
 
 static PyObject *PyFF_Version(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
@@ -1542,8 +1542,8 @@ return( ret );
 }
 
 static PyObject *PyFF_scriptFromUnicode(PyObject *UNUSED(self), PyObject *args) {
-    long u;
-    if ( !PyArg_ParseTuple(args,"i",&u) )
+    unsigned long u;
+    if ( !PyArg_ParseTuple(args,"k",&u) )
 	return( NULL );
 
     uint32 script = ScriptFromUnicode(u, NULL);
