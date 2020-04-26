@@ -60,7 +60,7 @@ int use_second_indic_scripts = false;
 /* scripts (for opentype) that I understand */
     /* see also list in lookups.c mapping script tags to friendly names */
 
-static uint32 scripts[][59] = {
+static uint32 scripts[][61] = {
 /* Adlam */	{ CHR('a','d','l','m'), 0x1e900, 0x1e95f },
 /* Ahom */	{ CHR('a','h','o','m'), 0x11700, 0x1173f },
 /* Anatolian */	{ CHR('h','l','u','w'), 0x14400, 0x1467f },
