@@ -1970,6 +1970,8 @@ return( NULL );
     ff = strtol(pt,NULL,10);
     if ( !pdf_findobject(pc,ff) || !pdf_readdict(pc) )
   goto fail;
+    if ( type==3 && (pt=PSDictHasEntry(&pc->pdfdict, "Subtype"))!=NULL && strcmp(pt, "/OpenType")==0 )
+	type = 2;
     file = pdf_defilterstream(pc);
     if ( file==NULL )
 return( NULL );
@@ -1992,6 +1994,8 @@ return( NULL );
 	sf = _CFFParse(file,len,pc->fontnames[font_num]);
     }
     fclose(file);
+    if (sf == NULL)
+	goto fail;
     /* Don't attempt to parse CMaps for Type 1 fonts: they already have glyph names */
     /* which are usually more meaningful */
     if (pc->cmapobjs[font_num] != -1 && type > 1)
