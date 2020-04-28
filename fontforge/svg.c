@@ -814,6 +814,7 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid, int encuni, int vs
 
     if ( ligature!=NULL ) {
 	    fprintf(file,"unicode=\"%s\" ", ligature);
+	    free(ligature);
     } else if ( encuni!=-1 && encuni<0x110000 ) {
 	if ( encuni!=0x9 &&
 		encuni!=0xa &&

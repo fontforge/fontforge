@@ -691,7 +691,7 @@ return( ret );
 static void MakeExportName(char *buffer, int blen,char *format_spec,
 	SplineChar *sc, EncMap *map) {
     char *end = buffer+blen-3;
-    char *pt, *bend;
+    char *pt, *bend, *ligature;
     char unicode[8];
     int ch;
 
@@ -705,7 +705,7 @@ static void MakeExportName(char *buffer, int blen,char *format_spec,
 	    if ( ch=='n' || ch=='N' ) {
             pt=sc->name;
             if (ch=='N') {
-                char *ligature = GetLigature(sc);
+                ligature = GetLigature(sc);
                 if (ligature != NULL) {
                     pt = ligature;
                 }
@@ -722,6 +722,9 @@ static void MakeExportName(char *buffer, int blen,char *format_spec,
 		for ( ; *pt!='\0' && buffer<bend; )
 		    *buffer++ = *pt++;
 #endif
+        if (ligature != NULL) {
+            free(ligature);
+        }
 	    } else if ( ch=='f' ) {
 		for ( pt=sc->parent->fontname; *pt!='\0' && buffer<bend; )
 		    *buffer++ = *pt++;
