@@ -777,24 +777,28 @@ char *GetLigature(SplineChar *sc) {
     if ( best != NULL ) {
     	int32 univals[50];
         char buf[LIGATURE_MAXLEN] = "";
-        char buf2[15];
-        int i, c, r, n = 0;
-
+        int i, c, r, stored, remain;
+        stored = 0;
 		c = LigCnt(sc->parent,best,univals,sizeof(univals)/sizeof(univals[0]));
+
 		for ( i=0; i<c; ++i ) {
+		    remain = LIGATURE_MAXLEN - stored;
 		    if ( (univals[i]>='A' && univals[i]<='Z') || (univals[i]>='a' && univals[i]<='z') || (univals[i] >= '0' && univals[i] <= '9') || univals[i] == '_' || univals[i] == '-') {
-		    	r = sprintf(buf2, "%c", univals[i]);
+		        r = snprintf( buf + stored, remain, "%c", univals[i] );
 		    } else {
-		    	r = sprintf(buf2, "&#x%x;", (unsigned int) univals[i]);
+                r = snprintf( buf + stored, remain, "&#x%x;", (unsigned int) univals[i] );
 		    }
-		    n = LIGATURE_MAXLEN - strlen(buf) - 1;
-		    if (r > 0 && n >= r) {
-		        strncat(buf, buf2, n);
-		    } else {
-		        break;
-		    }
+
+            if ( r < 0 || r >= remain) {
+               if ((r - remain) > 0) {
+       		       snprintf( buf + stored, remain, "");
+               }
+       		   break;
+            }
+
+            stored += r;
 		}
-        return (  copy(buf)  );
+        return ( copy(buf) );
     }
     return ( NULL );
 }
