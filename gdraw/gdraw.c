@@ -32,7 +32,7 @@
 #include "gkeysym.h"
 #include "ustring.h"
 
-#if __Mac || __FreeBSD__ || __NetBSD__ || __OpenBSD__ || __DragonFly__
+#if __Mac
 #  include <sys/select.h>
 #endif
 
@@ -1076,7 +1076,7 @@ GDrawRemoveReadFD( GDisplay *gdisp,
 
 void MacServiceReadFDs()
 {
-#if (!defined(__MINGW32__))&&(!defined(__CYGWIN__))
+#if __Mac
     int ret = 0;
     
     GDisplay *gdisp = GDrawGetDisplayOfWindow(0);
