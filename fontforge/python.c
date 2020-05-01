@@ -14750,28 +14750,28 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFFont_cidFlatten(PyFF_Font *self, PyObject *UNUSED(args)) {
-    SplineFont *sf;
+    SplineFont *cidmaster;
 
     if ( CheckIfFontClosed(self) )
 return (NULL);
-    sf = self->fv->sf;
-    if ( sf->cidmaster==NULL ) {
+    cidmaster = self->fv->cidmaster;
+    if ( cidmaster==NULL ) {
 	PyErr_Format(PyExc_EnvironmentError,"This font is not a CID keyed font." );
 return( NULL );
     }
 
-    SFFlatten(&(sf->cidmaster));
+    SFFlatten(&cidmaster);
 Py_RETURN( self );
 }
 
 static PyObject *PyFFFont_cidFlattenByCMap(PyFF_Font *self,PyObject *args) {
-    SplineFont *sf;
+    SplineFont *cidmaster;
     char *locfilename;
 
     if ( CheckIfFontClosed(self) )
 return (NULL);
-    sf = self->fv->sf;
-    if ( sf->cidmaster==NULL ) {
+    cidmaster = self->fv->cidmaster;
+    if ( cidmaster==NULL ) {
 	PyErr_Format(PyExc_EnvironmentError,"This font is not a CID keyed font." );
 return( NULL );
     }
@@ -14779,7 +14779,7 @@ return( NULL );
     if ( !PyArg_ParseTuple(args,"s", &locfilename ))
 return( NULL );
 
-    if ( !SFFlattenByCMap(&sf,locfilename)) {
+    if ( !SFFlattenByCMap(&cidmaster,locfilename)) {
 	PyErr_Format(PyExc_EnvironmentError,"Can't find (or can't parse) cmap file: %s", locfilename);
 return( NULL );
     }

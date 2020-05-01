@@ -23,13 +23,13 @@ Typographical glossary
       Both Hebrew and Arabic have optional vowel marks and are called "impure"
       abjads. Ancient Phoenician had nothing but consonants and is a "pure" abjad.
 
-      See Also: :term:`alphabet`,
-      :term:`abugida`, :term:`syllabary` and
+      See Also: :term:`Alphabet`,
+      :term:`Abugida`, :term:`Syllabary` and
       the relevant `Wikipedia article <http://en.wikipedia.org/wiki/Abjad>`__.
 
    Abugida
-      An abugida is somewhere in between an :term:`alphabet` and
-      a :term:`syllabary`. The Indic writing systems are
+      An abugida is somewhere in between an :term:`alphabet <Alphabet>` and
+      a :term:`syllabary <Syllabary>`. The Indic writing systems are
       probably the best known abugidas.
 
       In most abugidas there are independant glyphs for the consonants, and each
@@ -45,8 +45,8 @@ Typographical glossary
       An abugida differs from an abjad in that vowels (other than the default) must
       be marked in the abugida.
 
-      See Also: :term:`alphabet`, :term:`abjad`,
-      :term:`syllabary` and the relevant
+      See Also: :term:`Alphabet`, :term:`Abjad`,
+      :term:`Syllabary` and the relevant
       `Wikipedia article <http://en.wikipedia.org/wiki/Abugida>`__.
 
    Advance Width
@@ -62,8 +62,8 @@ Typographical glossary
       vowels alike -- and (in theory anyway) all phonemes in a word will be marked
       by an appropriate glyph.
 
-      See Also: :term:`abjad`, :term:`abugida`,
-      :term:`syllabary` and the relevant
+      See Also: :term:`Abjad`, :term:`Abugida`,
+      :term:`Syllabary` and the relevant
       `Wikipedia article <http://en.wikipedia.org/wiki/Alphabet>`__.
 
    Apple Advanced Typography
@@ -83,7 +83,7 @@ Typographical glossary
 
    Ascent
       In traditional typography the ascent of a font was the distance from the top
-      of a block of type to the :term:`baseline`.
+      of a block of type to the :term:`baseline <Baseline>`.
 
       Its precise meaning in modern typography seems to vary with different
       definers.
@@ -127,7 +127,7 @@ Typographical glossary
    Black letter
       Any of various type families based on medieval handwriting.
 
-      See also :term:`gothic`.
+      See also :term:`Gothic`.
 
    BMP
    Basic Multilingual Plane
@@ -142,13 +142,13 @@ Typographical glossary
         (0xE0000-0xEFFFF)
 
    Bold
-      A common font :term:`style`. The stems of the glyphs are
+      A common font :term:`style <Style>`. The stems of the glyphs are
       wider than in the normal font, giving the letters a darker impression. Bold
       is one of the few :term:`LGC` styles that translate readily to
       other scripts.
 
    Bopomofo
-      A (modern~1911) Chinese (Mandarin) :term:`alphabet` used
+      A (modern~1911) Chinese (Mandarin) :term:`alphabet <Alphabet>` used
       to provide phonetic transliteration of Han ideographs in dictionaries.
 
    Boustrophedon
@@ -158,7 +158,7 @@ Typographical glossary
       Writing "as the ox plows", that is alternating between left to right and
       right to left writing directions. Early alphabets (Old Canaanite, and the
       very early greek writings (and, surprisingly,
-      :term:`fuþark`)) used this. Often the right to left glyphs
+      :term:`Fuþark`)) used this. Often the right to left glyphs
       would be mirrors of the left to right ones. As far as I know, no modern
       writing system uses this method (nor does OpenType have any support for it).
       See Also :term:`Bidi`.
@@ -181,7 +181,7 @@ Typographical glossary
 
    Character
       A character is a Platonic ideal reified into at least one
-      :term:`glyph`. For example the letter "s" is a character
+      :term:`glyph <Glyph>`. For example the letter "s" is a character
       which is reified into several different glyphs: "S", "s", "*s*", long-s, etc.
       Note that these glyphs can look fairly different from each other, however
       although the glyph for an integral sign might be the same as the long-s
@@ -232,7 +232,7 @@ Typographical glossary
 
    Descent
       In traditional typography the descent of a font was the distance from the
-      bottom of a block of type to the :term:`baseline`.
+      bottom of a block of type to the :term:`baseline <Baseline>`.
 
       Its precise meaning in modern typography seems to vary with different
       definers.
@@ -248,7 +248,7 @@ Typographical glossary
       :ref:`anchored marks <anchorcontrol.DeviceTable>`.
 
    Didot point
-      The European :term:`point`. 62 :sup:`2`/:small:`3` points per
+      The European :term:`point <Point>`. 62 :sup:`2`/:small:`3` points per
       23.566mm ( 2.66pt/mm or 67.55pt/inch ). There is also a "metric" didiot
       point: .4mm.
 
@@ -275,7 +275,7 @@ Typographical glossary
 
    Encoding
       An encoding is a mapping from a set of bytes onto a
-      :term:`character set`. It is what determines which
+      :term:`character set <Character set>`. It is what determines which
       byte sequence represents which character. The words "encoding" and "character
       set" are often used synonymously. The specification for ASCII specifies both
       a character set and an encoding. But CJK character sets often have multiple
@@ -293,7 +293,7 @@ Typographical glossary
       two sounds associated with it, but it does, see also
       :term:`Thorn`)
 
-   Even-Odd Fill rule
+   Even-Odd Fill Rule
       To determine if a pixel should be
       :ref:`filled using this rule <editexample2.even-odd-non-zero>`, draw a line from the
       pixel to infinity (in any direction) then count the number of times contours
@@ -332,7 +332,7 @@ Typographical glossary
    Font
       A collection of :term:`glyphs <Glyph>`, generally with at least one
       glyph associated with each character in the font's
-      :term:`character set`, often with an encoding.
+      :term:`character set <Character set>`, often with an encoding.
 
       A font contains much of the information needed to turn a sequence of bytes
       into a set of pictures representing the characters specified by those bytes.
@@ -342,8 +342,8 @@ Typographical glossary
       different font for each point-size.
 
    Font Family, or just Family
-      A collection of related :term:`font`\ s. Often including plain,
-      italic and bold :term:`style`\ s.
+      A collection of related :term:`font <Font>`\ s. Often including plain,
+      italic and bold :term:`style <Style>`\ s.
 
    FontForge
       This.
@@ -356,7 +356,7 @@ Typographical glossary
    Fractur
       The old black letter writing style used in Germany up until world war II.
 
-      See also :term:`gothic`.
+      See also :term:`Gothic`.
 
    Fuþark
    Futhark
@@ -430,7 +430,7 @@ Typographical glossary
       China.
 
    Hangul
-      The Korean :term:`syllabary`. The only syllabary (that
+      The Korean :term:`Syllabary`. The only syllabary (that
       I'm aware of anway) based on an alphabet -- the letters of the alphabet never
       appear alone, but only as groups of two or three making up a syllable.
 
@@ -439,11 +439,11 @@ Typographical glossary
 
    Hints
       These are described in detail in :ref:`the main manual <overview.Hints>`.
-      They help the rasterizer to draw a :term:`glyph` well at
+      They help the rasterizer to draw a :term:`glyph <Glyph>` well at
       small pointsizes.
 
    Hint Masks
-      At any given point on a contour :term:`hints` may not
+      At any given point on a contour :term:`hints <Hints>` may not
       :term:`conflict <Conflicting hints>`. However different points in a
       glyph may need conflicting hints. So every now and then a contour will change
       which hints are active. Each list of active hints is called a hint mask.
@@ -457,7 +457,7 @@ Typographical glossary
       Generally used to mean Han (Chinese) characters.
 
    Italic
-      A slanted :term:`style` of a font, generally used for
+      A slanted :term:`style <Style>` of a font, generally used for
       emphasis.
 
       Italic differs from :term:`Oblique` in that the
@@ -498,7 +498,7 @@ Typographical glossary
       to it.
 
    Kern pair
-      A pair of glyphs for which :term:`kerning` information has
+      A pair of glyphs for which :term:`kerning <Kerning>` information has
       been specified.
 
    Kerning by classes
@@ -541,9 +541,9 @@ Typographical glossary
 
    Manyogana
       An early Japanese script, ancestral to both
-      :term:`hiragana` and :term:`katakana`.
+      :term:`Hiragana` and :term:`Katakana`.
       `Manyogana <http://en.wikipedia.org/wiki/Manyogana>`__ used
-      :term:`kanji` for their phontic sounds, and over the years
+      :term:`Kanji` for their phontic sounds, and over the years
       these kanji were simplified into hiragana and katahana.
 
    Metal Type
@@ -622,7 +622,7 @@ Typographical glossary
       :doc:`here for the tables used by FontForge </techref/TrueOpenTables>`.
 
    Oblique
-      A slanted :term:`style` of a font, generally used for
+      A slanted :term:`style <Style>` of a font, generally used for
       emphasis.
 
       Oblique differs from :term:`Italic` in that the
@@ -695,7 +695,7 @@ Typographical glossary
       `See Caslon's type specimen sheet on Wikipedia. <http://en.wikipedia.org/wiki/Alphabet>`__
 
    Pica point
-      The Anglo-American :term:`point`. With 72.27 points per inch
+      The Anglo-American :term:`point <Point>`. With 72.27 points per inch
       ( 2.85pt /mm ).
 
    Point
@@ -708,7 +708,7 @@ Typographical glossary
       points per inch, 2.86pt/mm).
 
       The didiot and pica points were so arranged that text at a given point-size
-      would have approximately the same :term:`cap-height` in
+      would have approximately the same :term:`cap-height <Cap-height>` in
       both systems, the didot point would have extra white-space above the capitals
       to contain the accents present in most non-English Latin based scripts.
 
@@ -757,7 +757,7 @@ Typographical glossary
         again only allows a 1 byte encoding, but the OpenType wrapper extends this to
         provide more complex encoding types.
       * Type 3 -- This format allows full postscript within the font, but it means
-        that no :term:`hints` are allowed, so these fonts will not
+        that no :term:`hints <Hints>` are allowed, so these fonts will not
         look as nice at small point-sizes. Also most (screen) rasterizers are
         incapable of dealing with them. A type 3 font is limited to a one byte
         encoding (ie. only 256 glyphs may be encoded).
@@ -922,13 +922,13 @@ Typographical glossary
    Style
       There are various conventional variants of a font. In probably any writing
       system the thickness of the stems of the glyphs may be varied, this is called
-      the :term:`weight` of a font. Common weights are normal and
+      the :term:`weight <Weight>` of a font. Common weights are normal and
       bold.
 
-      In :term:`LGC` alphabets an :term:`italic` (or
-      :term:`oblique`) style has arisen and is used for emphasis.
+      In :term:`LGC` alphabets an :term:`italic <Italic>` (or
+      :term:`oblique <Oblique>`) style has arisen and is used for emphasis.
 
-      Fonts are often compressed into a :term:`condensed`
+      Fonts are often compressed into a :term:`condensed <Condensed>`
       style, or expanded out into an :term:`extended style <Extended>`.
 
       Various other styles are in occasional use: underline, overstrike, outline,
@@ -945,7 +945,7 @@ Typographical glossary
       tend to be bigger than alphabets (Japanese KataKana requires about 60
       different characters, while the Korean Hangul requires tens of thousands).
 
-      See Also: :term:`abjad`, :term:`abugida`, :term:`alphabet` and the relevant
+      See Also: :term:`Abjad`, :term:`Abugida`, :term:`Alphabet` and the relevant
       `Wikipedia article <http://en.wikipedia.org/wiki/S%20yllabary>`__.
 
    TeX
@@ -1061,7 +1061,7 @@ Typographical glossary
 
    Width
       This is a slightly ambiguous term and is sometimes used to mean the
-      :term:`advance width` (the distance from the start of
+      :term:`advance width <Advance Width>` (the distance from the start of
       this glyph to the start of the next glyph), and sometimes used to mean the
       distance from the left side bearing to the right side bearing.
 

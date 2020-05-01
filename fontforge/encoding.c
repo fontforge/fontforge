@@ -2414,18 +2414,18 @@ void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int base
 	    map->backmap[gid] = -1;
 	}
     } else {
-	gid = baseenc;
-	if ( baseenc+1>=sf->glyphmax )
-	    sf->glyphs = realloc(sf->glyphs,(sf->glyphmax = baseenc+10)*sizeof(SplineChar *));
-	if ( baseenc>=sf->glyphcnt ) {
-	    memset(sf->glyphs+sf->glyphcnt,0,(baseenc+1-sf->glyphcnt)*sizeof(SplineChar *));
-	    sf->glyphcnt = baseenc+1;
+	gid = baseenc < 0 ? sf->glyphcnt : baseenc;
+	if ( gid+1>=sf->glyphmax )
+	    sf->glyphs = realloc(sf->glyphs,(sf->glyphmax = gid+10)*sizeof(SplineChar *));
+	if ( gid>=sf->glyphcnt ) {
+	    memset(sf->glyphs+sf->glyphcnt,0,(gid+1-sf->glyphcnt)*sizeof(SplineChar *));
+	    sf->glyphcnt = gid+1;
 	    for ( bdf = sf->cidmaster->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-		if ( baseenc+1>=bdf->glyphmax )
-		    bdf->glyphs = realloc(bdf->glyphs,(bdf->glyphmax=baseenc+10)*sizeof(BDFChar *));
-		if ( baseenc+1>bdf->glyphcnt ) {
-		    memset(bdf->glyphs+bdf->glyphcnt,0,(baseenc+1-bdf->glyphcnt)*sizeof(BDFChar *));
-		    bdf->glyphcnt = baseenc+1;
+		if ( gid+1>=bdf->glyphmax )
+		    bdf->glyphs = realloc(bdf->glyphs,(bdf->glyphmax=gid+10)*sizeof(BDFChar *));
+		if ( gid+1>bdf->glyphcnt ) {
+		    memset(bdf->glyphs+bdf->glyphcnt,0,(gid+1-bdf->glyphcnt)*sizeof(BDFChar *));
+		    bdf->glyphcnt = gid+1;
 		}
 	    }
 	    for ( fv=sf->fv; fv!=NULL; fv = fv->nextsame ) if ( fv->sf==sf ) {

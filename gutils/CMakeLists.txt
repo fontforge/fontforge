@@ -37,6 +37,7 @@ if(BUILD_SHARED_LIBS)
   set_property(TARGET gutils PROPERTY POSITION_INDEPENDENT_CODE ON)
 endif()
 
+list(APPEND gutils_LIBRARIES Intl::Intl)
 if(ENABLE_LIBGIF_RESULT)
   list(APPEND gutils_LIBRARIES GIF::GIF)
 endif()
