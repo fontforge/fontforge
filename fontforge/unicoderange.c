@@ -193,19 +193,9 @@ struct unicoderange unicoderange[] = {
     { N_("Enclosed CJK Letters and Months"), 0x3200, 0x32ff, ASFIRST, true, 0, 0 },
     {  N_("CJK Enclosed Letters and Months"), 0x3200, 0x32ff, ASFIRST, false, 0, 0 },
     { N_("CJK Compatibility"), 0x3300, 0x33ff, ASFIRST, true, 0, 0 },
-    { N_("CJK Unified Ideographs Extension A"), 0x3400, 0x4db5, ASFIRST, true, 0, 0 },
+    { N_("CJK Unified Ideographs Extension A"), 0x3400, 0x4dbf, ASFIRST, true, 0, 0 },
     { N_("Yijing Hexagram Symbols"), 0x4dc0, 0x4dff, ASFIRST, true, 0, 0 },
-    { N_("CJK Unified Ideographs"), 0x4e00, 0x9fef, ASFIRST, true, 0, 0 },
-    /* 2018jun19, Unihan database
-     * 0x3400..0x4db5, v3.0 (extensions)
-     * 0x4e00..0x9fa5, v1.1
-     * 0x9fa6..0x9fbb, v4.1
-     * 0x9fbc..0x9fc3, v5.1
-     * 0x9fc4..0x9fcb, v5.2
-     * 0x9fcc..0x9fcc, v6.1
-     * 0x9fcd..0x9fd5, v8.0
-     * 0x9fd6..0x9fea, v10.0
-     * 0x9feb..0x9fef, v5.1 */
+    { N_("CJK Unified Ideographs"), 0x4e00, 0x9ffc, ASFIRST, true, 0, 0 },
     { N_("Yi Syllables"), 0xa000, 0xa48f, ASFIRST, true, 0, 0 },
     {  N_("Yi"), 0xa000, 0xa48f, ASFIRST, false, 0, 0 },
     { N_("Yi Radicals"), 0xa490, 0xa4cf, ASFIRST, true, 0, 0 },
@@ -250,17 +240,6 @@ struct unicoderange unicoderange[] = {
     { N_("Microsoft Symbol Area"), 0xf000, 0xf0ff, 0xf020, false, 0, 0 },
     { N_("Corporate Use"), 0xf500, 0xf8ff, 0xf730, false, 0, 0 },
     { N_("CJK Compatibility Ideographs"), 0xf900, 0xfaff, ASFIRST, true, 0, 0 },
-    /* 2018jun19, Unihan database
-     * 0xf900..0xfa2d, v1.1
-     *   N.B., 12 code points in this range (U+FA0E,U+FA0F,U+FA11,U+FA13,U+FA14,
-     *   U+FA1F,U+FA21,U+FA23,U+FA24,U+FA27,U+FA28, and U+FA29) lack a canonical
-     *   Decomposition_Mapping value in UnicodeData.txt and so are not true CJK
-     *   Compatibility Ideographs. These twelve characters should be treated as
-     *   proper CJK Unified Ideographs.
-     * 0xfa2e..0xfa2f, v6.1
-     * 0xfa30..0xfa6a, v3.2
-     * 0xfa6b..0xfa6d, v5.2
-     * 0xfa70..0xfad9, v4.1 */
     { N_("Alphabetic Presentation Forms"), 0xfb00, 0xfb4f, ASFIRST, true, 0, 0 },
     { N_("Latin Ligatures"), 0xfb00, 0xfb06, ASFIRST, true, 0, 0 },
     { N_("Armenian Ligatures"), 0xfb13, 0xfb17, ASFIRST, true, 0, 0 },
@@ -333,8 +312,10 @@ struct unicoderange unicoderange[] = {
     { N_("Old Hungarian"), 0x10c80, 0x10cff, ASFIRST, true, 0, 0 },
     { N_("Hanifi Rohingya"), 0x10d00, 0x10d3f, ASFIRST, true, 0, 0 },
     { N_("Rumi Numeral Symbols"), 0x10e60, 0x10e7f, ASFIRST, true, 0, 0 },
+    { N_("Yezidi"), 0x10e80, 0x10ebf, ASFIRST, true, 0, 0 },
     { N_("Old Sogdian"), 0x10f00, 0x10f2f, ASFIRST, true, 0, 0 },
     { N_("Sogdian"), 0x10f30, 0x10f6f, ASFIRST, true, 0, 0 },
+    { N_("Chorasmian"), 0x10fb0, 0x10fdf, ASFIRST, true, 0, 0 },
     { N_("Elymaic"), 0x10fe0, 0x10fff, ASFIRST, true, 0, 0 },
     /*{ N_("Brahmic scripts"), 0x11000, 0x11fff, ASFIRST, false, 0, 0 },*/
     { N_("Brahmi"), 0x11000, 0x1107f, ASFIRST, true, 0, 0 },
@@ -357,6 +338,7 @@ struct unicoderange unicoderange[] = {
     { N_("Ahom"), 0x11700, 0x1173f, ASFIRST, true, 0, 0 },
     { N_("Dogra"), 0x11800, 0x1184f, ASFIRST, true, 0, 0 },
     { N_("Warang Citi"), 0x118a0, 0x118ff, ASFIRST, true, 0, 0 },
+    { N_("Dives Akuru"), 0x11900, 0x1195f, ASFIRST, true, 0, 0 },
     { N_("Nandinagari"), 0x119a0, 0x119ff, ASFIRST, true, 0, 0 },
     { N_("Zanabazar Square"), 0x11a00, 0x11a4f, ASFIRST, true, 0, 0 },
     { N_("Soyombo"), 0x11a50, 0x11aaf, ASFIRST, true, 0, 0 },
@@ -366,6 +348,7 @@ struct unicoderange unicoderange[] = {
     { N_("Masaram Gondi"), 0x11d00, 0x11d5f, ASFIRST, true, 0, 0 },
     { N_("Gunjala Gondi"), 0x11d60, 0x11daf, ASFIRST, true, 0, 0 },
     { N_("Makasar"), 0x11ee0, 0x11eff, ASFIRST, true, 0, 0 },
+    { N_("Lisu Supplement"), 0x11fb0, 0x11fbf, ASFIRST, true, 0, 0 },
     { N_("Tamil Supplement"), 0x11fc0, 0x11fff, ASFIRST, true, 0, 0 },
     { N_("Cuneiform and other ancient scripts"), 0x12000, 0x12fff, ASFIRST, false, 0, 0 },
     { N_("Cuneiform"), 0x12000, 0x123ff, ASFIRST, true, 0, 0 },
@@ -386,6 +369,8 @@ struct unicoderange unicoderange[] = {
 //    { N_("Large Asian Scripts"), 0x17000, 0x1b5ff, ASFIRST, true, 0, 0 },
     { N_("Tangut"), 0x17000, 0x187f7, ASFIRST, true, 0, 0 },
     { N_("Tangut Components"), 0x18800, 0x18aff, ASFIRST, true, 0, 0 },
+    { N_("Khitan Small Script"), 0x18b00, 0x18cff, ASFIRST, true, 0, 0 },
+    { N_("Tangut Supplement"), 0x18d00, 0x18d08, ASFIRST, true, 0, 0 },
     { N_("Kana Supplement"), 0x1b000, 0x1b0ff, ASFIRST, true, 0, 0 },
     { N_("Kana Extended-A"), 0x1b100, 0x1b12f, ASFIRST, true, 0, 0 },
     { N_("Small Kana Extension"), 0x1b130, 0x1b16f, ASFIRST, true, 0, 0 },
@@ -425,26 +410,27 @@ struct unicoderange unicoderange[] = {
     { N_("Supplemental Symbols and Pictographs"), 0x1f900, 0x1f9ff, ASFIRST, true, 0, 0 },
     { N_("Chess Symbols"), 0x1fa00, 0x1fa6f, ASFIRST, true, 0, 0 },
     { N_("Symbols and Pictographs Extended-A"), 0x1fa70, 0x1faff, ASFIRST, true, 0, 0 },
-    { N_("Unassigned"), 0x1ff80, 0x1ffff, ASFIRST, true, 0, 0 },
+    { N_("Symbols for Legacy Computing"), 0x1fb00, 0x1fbff, ASFIRST, true, 0, 0 },
 /* End of SMP, Start of SIP */
     { N_("Unicode Supplementary Ideographic Plane"), 0x20000, 0x2ffff, ASFIRST, false, 0, 0 },
     {  N_("Supplementary Ideographic Plane"), 0x20000, 0x2ffff, ASFIRST, 2, 0, 0 },
-    /* 2018jun19, Unihan database, B=v3.1,C=v5.2,D=v6.0,E=v8.0, F=v10.0, Supplement=v3.1 */
-    { N_("CJK Unified Ideographs Extension B"), 0x20000, 0x2a6d6, ASFIRST, true, 0, 0 },
+    { N_("CJK Unified Ideographs Extension B"), 0x20000, 0x2a6dd, ASFIRST, true, 0, 0 },
     { N_("CJK Unified Ideographs Extension C"), 0x2a700, 0x2b734, ASFIRST, true, 0, 0 },
     { N_("CJK Unified Ideographs Extension D"), 0x2b740, 0x2b81d, ASFIRST, true, 0, 0 },
     { N_("CJK Unified Ideographs Extension E"), 0x2b820, 0x2ceaf, ASFIRST, true, 0, 0 },
     { N_("CJK Unified Ideographs Extension F"), 0x2ceb0, 0x2ebe0, ASFIRST, true, 0, 0 },
     { N_("CJK Compatibility Ideographs Supplement"), 0x2f800, 0x2fa1f, ASFIRST, true, 0, 0 },
-    { N_("Unassigned"), 0x2ff80, 0x2ffff, ASFIRST, 2, 1, 0 },
-/* End of SIP, Start of SSP */
+/* End of SIP, Start of TIP */
+    { N_("Unicode Tertiary Ideographic Plane"), 0x30000, 0x3ffff, ASFIRST, false, 0, 0 },
+    {  N_("Tertiary Ideographic Plane"), 0x30000, 0x3ffff, ASFIRST, 2, 0, 0 },
+    { N_("CJK Unified Ideographs Extension G"), 0x30000, 0x3134a, ASFIRST, true, 0, 0 },
+/* End of TIP, Start of SSP */
     { N_("Unicode Supplementary Special-purpose Plane"), 0xe0000, 0xeffff, ASFIRST, false, 0, 0 },
     {  N_("Supplementary Special-purpose Plane"), 0xe0000, 0xeffff, ASFIRST, 2, 0, 0 },
     { N_("Tags"), 0xe0000, 0xe007f, ASFIRST, true, 0, 0 },
     {  N_("Tag Characters"), 0xe0000, 0xe007f, ASFIRST, false, 0, 0 },
     { N_("Variation Selectors Supplement"), 0xe0100, 0xe01ef, ASFIRST, true, 0, 0 },
     {  N_("Variation Selectors B"), 0xe0100, 0xe01ef, ASFIRST, false, 0, 0 },
-    { N_("Unassigned"), 0xeff80, 0xeffff, ASFIRST, 2, 1, 0 },
 /* End of SSP */
     { N_("Supplementary Private Use Area-A"), 0xf0000, 0xfffff, ASFIRST, 2, 0, 0 },
     { N_("Supplementary Private Use Area-B"), 0x100000,0x10fffd, ASFIRST, 2, 0, 0 },
