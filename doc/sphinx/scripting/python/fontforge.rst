@@ -4373,6 +4373,10 @@ This type may not be pickled.
       output an empty DSIG table so MS will mark a font with .ttf extension as
       an OpenType font.
 
+   .. object:: no-FFTM-table
+
+      Do not generate an 'FFTM' table
+
    .. object:: TeX-table
 
       Include a 'TeX ' table in an ttf/otf file
