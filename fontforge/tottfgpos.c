@@ -44,7 +44,7 @@
 #include "utype.h"
 
 int coverageformatsallowed=3;
-int use_second_indic_scripts = false;
+int use_second_indic_scripts = true;
 
 #include "ttf.h"
 
