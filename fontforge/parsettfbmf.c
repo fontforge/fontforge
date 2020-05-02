@@ -521,8 +521,8 @@ void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info,int onlyone) {
 	sizes[j].numIndexSubTables = getlong(ttf);
 	if ( /* colorRef = */ getlong(ttf)!=0 )
 	    good = false;
-	sizes[j].ascent = getc(ttf);
-	sizes[j].descent = getc(ttf);
+	sizes[j].ascent = (int8)getc(ttf);
+	sizes[j].descent = (int8)getc(ttf);
 	for ( k=0; k<12-2; ++k ) getc(ttf);	/* Horizontal Line Metrics */
 	for ( k=0; k<12; ++k ) getc(ttf);	/* Vertical   Line Metrics */
 	sizes[j].firstglyph = getushort(ttf);
