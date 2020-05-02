@@ -5243,6 +5243,8 @@ static void _CV_CharChangedUpdate(CharView *cv,int changed) {
 	/* If we changed the grid then any character needs to know it */
 	FVRedrawAllCharViewsSF(cv->b.sc->parent);
     }
+    if ( cv->showpointnumbers || cv->show_ft_results )
+	SCNumberPoints(cv->b.sc, cvlayer);
     cv->recentchange = false;
     cv->p.sp = NULL;		/* Might have been deleted */
 }
@@ -9247,7 +9249,6 @@ return;
 	    if ( first == NULL ) first = spline;
 	}
     }
-    SCNumberPoints(cv->b.sc,CVLayer((CharViewBase *) cv));
     CVCharChangedUpdate(&cv->b);
 }
 
