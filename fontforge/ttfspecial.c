@@ -1244,7 +1244,7 @@ return;
 	    current->me.x = (current->prevcp.x + ss->first->nextcp.x)/2;
 	    current->me.y = (current->prevcp.y + ss->first->nextcp.y)/2;
 	}
-	if ( current->me.x==ss->first->me.x && current->me.y==ss->first->me.y ) {
+	if ( current != ss->first && current->me.x==ss->first->me.x && current->me.y==ss->first->me.y ) {
 	    current->prev->to = ss->first;
 	    ss->first->prev = current->prev;
 	    ss->first->prevcp = current->prevcp;
