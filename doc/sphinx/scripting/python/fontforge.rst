@@ -888,7 +888,7 @@ Two contours may be compared to see if they describe similar paths.
 
 
 
-.. class:: contour()
+.. class:: contour(is_quadratic=False)
 
    Creates a new contour.
 
