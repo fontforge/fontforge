@@ -333,24 +333,31 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
 		++b.x; ++b.y; b.width -= 2; b.height -= 2;
 		GDrawDrawRect(pixmap,&b,0x008000);
 	    }
+
+	    // Keep centering consistent to bdfc->width. If base.width!=bdfc->width,
+	    // the bitmap has likely been run through BCCompressBitmap. In this
+	    // case, bdfc->xmin should represent the true offset from the origin
+	    // to the first used column.
+	    int xwidth = (bdfc->width != base.width) ? bdfc->width - bdfc->xmin*2 : base.width;
+
 	    /* I assume that the bitmap image matches the bounding*/
 	    /*  box. In some bitmap fonts the bitmap has white space on the*/
 	    /*  right. This can throw off the centering algorithem */
 	    if ( fv->magnify>1 ) {
 		GDrawDrawImageMagnified(pixmap,&gi,NULL,
-			j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2,
+			j*fv->cbw+(fv->cbw-1-fv->magnify*xwidth)/2,
 			i*fv->cbh+fv->lab_height+1+fv->magnify*(fv->show->ascent-bdfc->ymax),
 			fv->magnify*base.width,fv->magnify*base.height);
 	    } else if ( (GDrawHasCairo(pixmap)&gc_alpha) && base.image_type==it_index ) {
 		GDrawDrawGlyph(pixmap,&gi,NULL,
-			j*fv->cbw+(fv->cbw-1-base.width)/2,
+			j*fv->cbw+(fv->cbw-1-xwidth)/2,
 			i*fv->cbh+fv->lab_height+1+fv->show->ascent-bdfc->ymax);
 	    } else
 		GDrawDrawImage(pixmap,&gi,NULL,
-			j*fv->cbw+(fv->cbw-1-base.width)/2,
+			j*fv->cbw+(fv->cbw-1-xwidth)/2,
 			i*fv->cbh+fv->lab_height+1+fv->show->ascent-bdfc->ymax);
 	    if ( fv->showhmetrics ) {
-		int x1, x0 = j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2- bdfc->xmin*fv->magnify;
+		int x1, x0 = j*fv->cbw+(fv->cbw-1-fv->magnify*xwidth)/2- bdfc->xmin*fv->magnify;
 		/* Draw advance width & horizontal origin */
 		if ( fv->showhmetrics&fvm_origin )
 		    GDrawDrawLine(pixmap,x0,i*fv->cbh+fv->lab_height+yorg-3,x0,
@@ -364,7 +371,7 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
 			    (i+1)*fv->cbh-2,METRICS_ADVANCE);
 	    }
 	    if ( fv->showvmetrics ) {
-		int x0 = j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2- bdfc->xmin*fv->magnify
+		int x0 = j*fv->cbw+(fv->cbw-1-fv->magnify*xwidth)/2- bdfc->xmin*fv->magnify
 			+ fv->magnify*fv->show->pixelsize/2;
 		int y0 = i*fv->cbh+fv->lab_height+yorg;
 		int yvw = y0 + fv->magnify*sc->vwidth*fv->show->pixelsize/em;
