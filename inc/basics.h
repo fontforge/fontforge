@@ -67,9 +67,9 @@ typedef uint32 unichar_t;
 /* A macro to print a string for debug purposes
  */
 #ifndef NDEBUG
-#define TRACE(...) printf(__VA_ARGS__)
+#define TRACE(...) fprintf(stderr, __VA_ARGS__)
 #else
-#define TRACE(...)
+#define TRACE(...) while(0)
 #endif
 
 /* assert() with an otherwise unused variable

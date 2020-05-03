@@ -665,6 +665,8 @@ char *u2utf8_copyn(const unichar_t *ubuf,int len) {
 
     if ( pt2 )
 	pt = pt2;
+    else
+	TRACE("u2utf8_copyn: truncated on invalid char 0x%x\n", ubuf[-1]);
 
     *pt = '\0';
     return( utf8buf );
