@@ -2039,7 +2039,6 @@ enum ttf_flags {
     ttf_flag_TeXtable          = 1 <<  7,
     ttf_flag_ofm               = 1 <<  8,
     ttf_flag_oldkern           = 1 <<  9, // never set in conjunction with applemode
-    ttf_flag_noFFTMtable       = 1 << 10,
     ttf_flag_pfed_lookupnames  = 1 << 11,
     ttf_flag_pfed_guides       = 1 << 12,
     ttf_flag_pfed_layers       = 1 << 13,
