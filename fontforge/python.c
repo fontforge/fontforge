@@ -16668,7 +16668,6 @@ struct flaglist gen_flags[] = {
     { "symbol", fm_flag_symbol },
     { "dummy-dsig", fm_flag_dummyDSIG },
     { "dummy-DSIG", fm_flag_dummyDSIG },
-    { "no-FFTM-table", fm_flag_nofftm },
     { "tfm", fm_flag_tfm },
     { "no-flex", fm_flag_noflex },
     { "no-hints", fm_flag_nottfhints },

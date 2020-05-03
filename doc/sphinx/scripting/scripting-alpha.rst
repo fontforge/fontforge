@@ -1037,7 +1037,6 @@ the fourth argument you must specify the second and third arguments too.
      set with OpenType (GPOS/GSUB) tables and without Apple tables.
    * fmflags&0x2000 => use a symbol cmap entry (same as .sym.ttf, except you can
      now specify a filename ending in .ttf)
-   * fmflags&0x8000 => do not generate an 'FFTM' table
    * fmflags&0x10000 => generate a tfm file
    * fmflags&0x40000 => do not do flex hints
    * fmflags&0x80000 => do not include postscript hints

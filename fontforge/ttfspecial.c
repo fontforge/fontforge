@@ -2232,9 +2232,6 @@ return;
 int ttf_fftm_dump(SplineFont *sf,struct alltabs *at) {
     int32 results[2];
 
-    if ( at->gi.flags & ttf_flag_noFFTMtable )
-	return false;
-
     at->fftmf = GFileTmpfile();
 
     putlong(at->fftmf,0x00000001);	/* Version */
