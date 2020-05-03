@@ -5868,7 +5868,7 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 		    use_utf8 = true;
 			*pt = '\0'; // We terminate the string in case the appendage (?) fails.
 		    pt = utf8_idpb(pt,uni,0);
-		    if (pt) *pt = '\0'; else fprintf(stderr, "Invalid Unicode alert.\n");
+		    if (pt) *pt = '\0'; else TRACE("Invalid Unicode alert.\n");
 		} else {
 		    char *pt = strchr(sc->name,'.');
 		    buf[0] = '?';

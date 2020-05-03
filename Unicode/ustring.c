@@ -655,18 +655,21 @@ char *u2utf8_copy(const unichar_t *ubuf) {
 
 char *u2utf8_copyn(const unichar_t *ubuf,int len) {
 /* Make a utf8 string copy of unichar string ubuf[0..len] */
-    char *utf8buf, *pt;
+    char *utf8buf, *pt, *pt2;
 
     if ( ubuf==NULL || len<=0 || (utf8buf=pt=(char *)malloc(len*6+1))==NULL )
 	return( NULL );
 
-    while ( (pt=utf8_idpb(pt,*ubuf++,0)) && --len );
-    if ( pt ) {
-	*pt = '\0';
-	return( utf8buf );
-    }
-    free( utf8buf );
-    return( NULL );
+    while ( (pt2=utf8_idpb(pt,*ubuf++,0)) && --len )
+	pt = pt2;
+
+    if ( pt2 )
+	pt = pt2;
+    else
+	TRACE("u2utf8_copyn: truncated on invalid char 0x%x\n", ubuf[-1]);
+
+    *pt = '\0';
+    return( utf8buf );
 }
 
 int32 utf8_ildb(const char **_text) {
