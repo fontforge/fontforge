@@ -847,8 +847,8 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.cid = CID_TTF_TeXTable;
     gcd[k++].creator = GCheckBoxCreate;
     hvarray2[37] = &gcd[k-1]; hvarray2[38] = GCD_ColSpan; hvarray2[39] = NULL;
-    hvarray2[41] = GCD_Glue; hvarray2[42] = GCD_Glue; hvarray2[43] = NULL;
-    hvarray2[44] = NULL;
+    hvarray2[40] = GCD_Glue; hvarray2[41] = GCD_Glue; hvarray2[42] = NULL;
+    hvarray2[43] = NULL;
 
     boxes[3].gd.flags = gg_enabled|gg_visible;
     boxes[3].gd.u.boxelements = hvarray2;
