@@ -1185,6 +1185,7 @@ int GenerateScript(SplineFont *sf,char *filename,const char *bitmaptype, int fmf
 		    old_sfnt_flags |= ttf_flag_oldkern;
 		if ( fmflags&fm_flag_symbol ) old_sfnt_flags |= ttf_flag_symbol;
 		if ( fmflags&fm_flag_dummyDSIG ) old_sfnt_flags |= ttf_flag_dummyDSIG;
+		if ( fmflags&fm_flag_nofftm ) old_sfnt_flags |= ttf_flag_noFFTMtable;
 		if ( fmflags&fm_flag_pfed_lookups ) old_sfnt_flags |= ttf_flag_pfed_lookupnames;
 		if ( fmflags&fm_flag_pfed_guides ) old_sfnt_flags |= ttf_flag_pfed_guides;
 		if ( fmflags&fm_flag_pfed_layers ) old_sfnt_flags |= ttf_flag_pfed_layers;
@@ -1229,6 +1230,7 @@ int GenerateScript(SplineFont *sf,char *filename,const char *bitmaptype, int fmf
 		old_sfnt_flags |= ttf_flag_oldkern;
 	    if ( fmflags&fm_flag_symbol ) old_sfnt_flags |= ttf_flag_symbol;
 	    if ( fmflags&fm_flag_dummyDSIG ) old_sfnt_flags |= ttf_flag_dummyDSIG;
+	    if ( fmflags&fm_flag_nofftm ) old_sfnt_flags |= ttf_flag_noFFTMtable;
 	    if ( fmflags&fm_flag_pfed_lookups ) old_sfnt_flags |= ttf_flag_pfed_lookupnames;
 	    if ( fmflags&fm_flag_pfed_guides ) old_sfnt_flags |= ttf_flag_pfed_guides;
 	    if ( fmflags&fm_flag_pfed_layers ) old_sfnt_flags |= ttf_flag_pfed_layers;
