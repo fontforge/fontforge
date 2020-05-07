@@ -1,0 +1,84 @@
+SplineFontDB: 3.2
+FontName: Untitled1
+FullName: Untitled1
+FamilyName: Untitled1
+Weight: Regular
+Copyright: Copyright (c) 2020, osboxes.org
+UComments: "2020-5-2: Created with FontForge (http://fontforge.org)"
+Version: 001.000
+ItalicAngle: 0
+UnderlinePosition: -100
+UnderlineWidth: 50
+Ascent: 800
+Descent: 200
+InvalidEm: 0
+LayerCount: 2
+Layer: 0 0 "Back" 1
+Layer: 1 0 "Fore" 0
+XUID: [1021 1008 1889163070 14054716]
+OS2Version: 0
+OS2_WeightWidthSlopeOnly: 0
+OS2_UseTypoMetrics: 1
+CreationTime: 1588401444
+ModificationTime: 1588822564
+OS2TypoAscent: 0
+OS2TypoAOffset: 1
+OS2TypoDescent: 0
+OS2TypoDOffset: 1
+OS2TypoLinegap: 0
+OS2WinAscent: 0
+OS2WinAOffset: 1
+OS2WinDescent: 0
+OS2WinDOffset: 1
+HheadAscent: 0
+HheadAOffset: 1
+HheadDescent: 0
+HheadDOffset: 1
+OS2Vendor: 'PfEd'
+DEI: 91125
+Encoding: ISO8859-1
+UnicodeInterp: none
+NameList: AGL For New Fonts
+DisplaySize: -48
+AntiAlias: 1
+FitToEm: 0
+WinInfo: 64 16 4
+BeginChars: 256 2
+
+StartChar: A
+Encoding: 65 65 0
+Width: 1000
+Flags: HW
+LayerCount: 2
+Fore
+SplineSet
+70 378 m 25
+ 70 378 181 631 316 729 c 28
+ 376 773 502 693 502 693 c 25
+ 448 528 l 25
+ 583 123 l 25
+ 148 93 l 25
+ 322 309 l 25
+ 70 378 l 25
+EndSplineSet
+EndChar
+
+StartChar: B
+Encoding: 66 66 1
+Width: 1000
+Flags: HW
+LayerCount: 2
+Fore
+SplineSet
+70 378 m 25
+ 70 378 181 631 316 729 c 28
+ 376 773 502 693 502 693 c 25
+ 448 528 l 25
+ 583 123 l 25
+ 148 93 l 25
+ 322 309 l 25
+ 70 378 l 25
+EndSplineSet
+EndChar
+EndChars
+EndSplineFont
