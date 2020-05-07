@@ -1267,6 +1267,56 @@ return;
 /* *************************** Font Interpolation *************************** */
 /******************************************************************************/
 
+/* In variable fonts, and MM fonts before them, "compatibility" between
+ * contours is needed to acheive a good (or any) result.
+ *
+ * FontForge has no such limitation, and will force contours to be compatible,
+ * then interpolate those. Usually, the result looks horrible.
+ *
+ * So, since the user is probably using this feature to test variable fonts,
+ * ask them if they even want FontForge to force compatibility. */
+bool InterpolationSanity(SplineSet* base, SplineSet *other, int order2) {
+    SplineSet *bss=NULL, *oss=NULL;
+    int bmcc = 0, omcc = 0;
+
+    if (base == NULL || other == NULL) return false;
+
+    // Count contours...
+    for ( bss = base; bss != NULL; bss=bss->next ) bmcc++;
+    for ( oss = other; oss != NULL; oss=oss->next ) omcc++;
+
+    if (bmcc != omcc) {
+        LogError(_("Incompatible contour counts: %d vs %d."), bmcc, omcc);
+        return false;
+    }
+
+    // An empty glyph is compatible.
+    if (bmcc == 0) return true;
+
+    SplinePoint* sp;
+    int contour_count = 0;
+    for ( bss = base, oss = other; bss!=NULL; bss=bss->next, oss=oss->next, contour_count++ ) {
+        if (SplinePointListIsClockwise(bss) != SplinePointListIsClockwise(oss)) {
+            LogError(_("Incompatible contour directionality (contour %d)"), contour_count);
+            return false;
+        }
+
+        SplineSet *btemp = SplinePointListCopy1(bss);
+        SplineSet *otemp = SplinePointListCopy1(oss);
+        int bpnum = SplineSetNumberPoints(bss, order2);
+        int opnum = SplineSetNumberPoints(oss, order2);
+        SplinePointListFree(btemp);
+        SplinePointListFree(otemp);
+
+        if (bpnum != opnum) {
+            LogError(_("Incompatible point counts: %d vs %d (countour %d)"), bpnum, opnum, contour_count);
+            return false;
+        }
+    }
+
+    return true;
+}
+
 static RefChar *InterpRefs(RefChar *base, RefChar *other, real amount, SplineChar *sc) {
     RefChar *head=NULL, *last=NULL, *cur;
     RefChar *test;
@@ -1612,7 +1662,7 @@ static void InterpFixupRefChars(SplineFont *sf) {
 }
 
 SplineFont *InterpolateFont(SplineFont *base, SplineFont *other, real amount,
-	Encoding *enc) {
+	Encoding *enc, bool only_compatible) {
     SplineFont *new;
     int i, index, lc;
 
@@ -1647,6 +1697,11 @@ return( NULL );
 	new->layers[i].order2 = base->layers[i].order2;
     }
     for ( i=0; i<base->glyphcnt; ++i ) if ( base->glyphs[i]!=NULL ) {
+	if (!InterpolationSanity(base->glyphs[i]->layers[ly_fore].splines, other->glyphs[i]->layers[ly_fore].splines,
+	                         base->glyphs[i]->layers[ly_fore].order2)) {
+		LogError(_("Glyph %s is incompatible."), base->glyphs[i]->name);
+		if (only_compatible) continue;
+	}
 	index = SFFindExistingSlot(other,base->glyphs[i]->unicodeenc,base->glyphs[i]->name);
 	if ( index!=-1 && other->glyphs[index]!=NULL ) {
 	    _SplineCharInterpolate(new,i,base->glyphs[i],other->glyphs[index],amount);

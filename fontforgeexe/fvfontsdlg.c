@@ -116,7 +116,7 @@ struct mf_data {
     GGadget *other;
     GGadget *amount;
 };
-#define CID_Preserve	1001
+#define CID_Preserve	1000
 
 static int MF_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -287,11 +287,13 @@ return;
     free(filename);
     if ( sf==NULL )
 return;
-    FontViewCreate(InterpolateFont(fv->b.sf,sf,amount,fv->b.map->enc),false);
+    FontViewCreate(InterpolateFont(fv->b.sf,sf,amount,fv->b.map->enc,false),false);
 }
 
-#define CID_Amount	1000
+#define CID_Amount	1001
+#define CID_OnlyCompat	1002
 static double last_amount=50;
+static bool only_compatible=false;
 
 static int IF_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -306,6 +308,7 @@ static int IF_OK(GGadget *g, GEvent *e) {
 	if ( err )
 return( true );
 	last_amount = amount;
+	only_compatible = GGadgetIsChecked(GWidgetGetControl(gw,CID_OnlyCompat));
 	for ( i=0, fv=fv_list; fv!=NULL; fv=(FontView *) (fv->b.next) ) {
 	    if ( fv==d->fv )
 	continue;
@@ -315,8 +318,10 @@ return( true );
 	}
 	if ( fv==NULL )
 	    InterAskFilename(d->fv,last_amount/100.0);
-	else
-	    FontViewCreate(InterpolateFont(d->fv->b.sf,fv->b.sf,last_amount/100.0,d->fv->b.map->enc),false);
+	else {
+	    SplineFont* interpolated = InterpolateFont(d->fv->b.sf,fv->b.sf,last_amount/100.0,d->fv->b.map->enc,only_compatible);
+	    if (interpolated != NULL) FontViewCreate(interpolated, false);
+	}
 	d->done = true;
     }
 return( true );
@@ -326,8 +331,8 @@ void FVInterpolateFonts(FontView *fv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[8];
-    GTextInfo label[8];
+    GGadgetCreateData gcd[9];
+    GTextInfo label[9];
     struct mf_data d;
     char buffer[80]; char buf2[30];
 
@@ -341,7 +346,7 @@ void FVInterpolateFonts(FontView *fv) {
     wattrs.utf8_window_title = _("Interpolate Fonts");
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,200));
-    pos.height = GDrawPointsToPixels(NULL,118);
+    pos.height = GDrawPointsToPixels(NULL,138);
     gw = GDrawCreateTopWindow(NULL,&pos,mv_e_h,&d,&wattrs);
 
     memset(&label,0,sizeof(label));
@@ -399,26 +404,38 @@ void FVInterpolateFonts(FontView *fv) {
     gcd[4].creator = GLabelCreate;
 
     gcd[5].gd.pos.x = 15-3; gcd[5].gd.pos.y = 85-3;
-    gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
-    gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[5].text = (unichar_t *) _("_OK");
+    gcd[5].gd.flags = gg_visible | gg_enabled;
+    if (only_compatible) gcd[5].gd.flags |= gg_cb_on;
+    label[5].text = (unichar_t *) _("Only compatible _glyphs");
     label[5].text_is_1byte = true;
     label[5].text_in_resource = true;
-    gcd[5].gd.mnemonic = 'O';
     gcd[5].gd.label = &label[5];
-    gcd[5].gd.handle_controlevent = IF_OK;
-    gcd[5].creator = GButtonCreate;
+    gcd[5].gd.mnemonic = 'g';
+    gcd[5].gd.popup_msg = _("If the Fore layer's contour numbers, directions, or point numbers don't match, do not put the glyph in the new font.");
+    gcd[5].gd.cid = CID_OnlyCompat;
+    gcd[5].creator = GCheckBoxCreate;
 
-    gcd[6].gd.pos.x = -15; gcd[6].gd.pos.y = 85;
+    gcd[6].gd.pos.x = 15-3; gcd[6].gd.pos.y = 100-3;
     gcd[6].gd.pos.width = -1; gcd[6].gd.pos.height = 0;
-    gcd[6].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[6].text = (unichar_t *) _("_Cancel");
+    gcd[6].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[6].text = (unichar_t *) _("_OK");
     label[6].text_is_1byte = true;
     label[6].text_in_resource = true;
+    gcd[6].gd.mnemonic = 'O';
     gcd[6].gd.label = &label[6];
-    gcd[6].gd.mnemonic = 'C';
-    gcd[6].gd.handle_controlevent = MF_Cancel;
+    gcd[6].gd.handle_controlevent = IF_OK;
     gcd[6].creator = GButtonCreate;
+
+    gcd[7].gd.pos.x = -15; gcd[7].gd.pos.y = 100-3;
+    gcd[7].gd.pos.width = -1; gcd[7].gd.pos.height = 0;
+    gcd[7].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[7].text = (unichar_t *) _("_Cancel");
+    label[7].text_is_1byte = true;
+    label[7].text_in_resource = true;
+    gcd[7].gd.label = &label[7];
+    gcd[7].gd.mnemonic = 'C';
+    gcd[7].gd.handle_controlevent = MF_Cancel;
+    gcd[7].creator = GButtonCreate;
 
     GGadgetsCreate(gw,gcd);
 

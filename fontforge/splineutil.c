@@ -7953,3 +7953,19 @@ bigreal DistanceBetweenPoints( BasePoint *p1, BasePoint *p2 )
     t = sqrt( t );
     return t;
 }
+
+int SplineSetNumberPoints(SplineSet *ss, int order2) {
+    int pnum=0;
+    if ( order2 ) {
+        return SSTtfNumberPoints(ss);
+    } else {
+        for ( SplinePoint *sp = ss->first; ; ) {
+            pnum++;
+            if ( sp->next==NULL ) break;
+            if ( !sp->nonextcp || !sp->next->to->noprevcp ) pnum += 2;
+            sp = sp->next->to;
+            if ( sp==ss->first ) break;
+        }
+    }
+    return pnum;
+}

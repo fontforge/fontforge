@@ -5755,7 +5755,7 @@ static void bInterpolateFonts(Context *c) {
 	ScriptErrorString(c,"Can't find font", c->a.vals[2].u.sval);
     if ( sf->fv==NULL )
 	EncMapFree(sf->map);
-    c->curfv = FVAppend(_FontViewCreate(InterpolateFont(c->curfv->sf,sf,(double)percent/100.0, c->curfv->map->enc )));
+    c->curfv = FVAppend(_FontViewCreate(InterpolateFont(c->curfv->sf, sf, (double)percent/100.0, c->curfv->map->enc, false)));
 }
 
 static void bDefaultUseMyMetrics(Context *c) {

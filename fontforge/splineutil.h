@@ -89,6 +89,7 @@ extern SplinePointList *SplinePointListRemoveSelected(SplineChar *sc, SplinePoin
 extern SplinePointList *SplinePointListShift(SplinePointList *base, real xoff, enum transformPointType allpoints);
 extern SplinePointList *SplinePointListSpiroTransform(SplinePointList *base, real transform[6], int allpoints);
 extern SplinePointList *SplinePointListTransformExtended(SplinePointList *base, real transform[6], enum transformPointType tpt, enum transformPointMask tpmask);
+extern int SplineSetNumberPoints(SplineSet *ss, int order2);
 
 extern SplinePoint *SplineBisect(Spline *spline, extended t);
 extern SplinePoint *SplinePointCreate(real x, real y);

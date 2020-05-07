@@ -4921,11 +4921,11 @@ Py_RETURN( self );
 
 static PyObject *PyFFLayer_interpolateNewLayer(PyFF_Layer *self, PyObject *args) {
     double amount;
-    PyObject *obj;
+    PyObject *obj, *stricto=NULL;
     SplineSet *ss, *otherss, *newss;
     SplineChar dummy;
 
-    if ( !PyArg_ParseTuple(args,"Od", &obj, &amount ) )
+    if ( !PyArg_ParseTuple(args,"Od|O", &obj, &amount, &stricto ) )
 return( NULL );
     if ( !PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(obj)) ) {
 	PyErr_Format(PyExc_TypeError, "Value must be a (FontForge) Layer");
@@ -4937,6 +4937,14 @@ return( NULL );
 
     ss = SSFromLayer(self);
     otherss = SSFromLayer((PyFF_Layer *) obj);
+    bool sane = true;
+    if (stricto != NULL && PyObject_IsTrue(stricto)) {
+	sane = InterpolationSanity(ss, otherss, self->is_quadratic);
+    }
+    if (!sane) {
+	PyErr_Format(PyExc_ValueError, "Attempted to interpolate incompatible layers in strict mode");
+return( NULL );
+    }
     newss = SplineSetsInterpolate(ss,otherss,amount,&dummy);
     obj = (PyObject *) LayerFromSS(newss,NULL);
     SplinePointListsFree(ss);
@@ -17016,14 +17024,16 @@ static PyObject *PyFFFont_InterpolateFonts(PyFF_Font *self, PyObject *args) {
     char *locfilename = NULL;
     FontViewBase *fv, *newfv;
     SplineFont *sf;
-    int openflags=0;
     double fraction;
+    int openflags=0;
+    PyObject* tempo=NULL;
 
     if ( CheckIfFontClosed(self) )
 return (NULL);
     fv = self->fv;
-    if ( !PyArg_ParseTuple(args,"des|i",&fraction,"UTF-8",&filename, &openflags) )
+    if ( !PyArg_ParseTuple(args,"des|iO",&fraction,"UTF-8",&filename, &openflags, &tempo) )
 return( NULL );
+    bool only_compatible = (tempo != NULL && PyObject_IsTrue(tempo));
     locfilename = utf82def_copy(filename);
     PyMem_Free(filename);
     sf = LoadSplineFont(locfilename,openflags);
@@ -17035,7 +17045,7 @@ return( NULL );
     free(locfilename);
     if ( sf->fv==NULL )
 	EncMapFree(sf->map);
-    newfv = SFAdd(InterpolateFont(fv->sf,sf,fraction, fv->map->enc ),false);
+    newfv = SFAdd(InterpolateFont(fv->sf,sf,fraction, fv->map->enc, only_compatible), false);
 return( PyFF_FontForFV_I(newfv));
 }
 
@@ -17105,16 +17115,16 @@ return( PySC_From_SC_I( sc ));
 static PyObject *PyFFFont_CreateInterpolatedGlyph(PyFF_Font *self, PyObject *args) {
     FontViewBase *fv;
     SplineFont *sf;
-    PyObject *from, *to;
+    PyObject *from, *to, *stricto=NULL;
     double by;
-    SplineChar *sc;
+    SplineChar *sc, *fromsc, *tosc;
     int baseenc;
 
     if ( CheckIfFontClosed(self) )
 return (NULL);
     fv = self->fv;
     sf = fv->sf;
-    if ( !PyArg_ParseTuple(args,"OOd",&from,&to,&by) )
+    if ( !PyArg_ParseTuple(args,"OOd|O",&from,&to,&by,&stricto) )
 return( NULL );
     if ( !PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(from)) ||
          !PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(to))) {
@@ -17123,6 +17133,18 @@ return( NULL );
     }
     if ( SFGetChar(fv->sf,((PyFF_Glyph *) from)->sc->unicodeenc,((PyFF_Glyph *) from)->sc->name)!=NULL ) {
 	PyErr_Format(PyExc_EnvironmentError, "This glyph already exists in the font");
+return( NULL );
+    }
+
+    fromsc = ((PyFF_Glyph *) from)->sc;
+    tosc = ((PyFF_Glyph *) to)->sc;
+
+    bool sane = true;
+    if (stricto != NULL && PyObject_IsTrue(stricto)) {
+	sane = InterpolationSanity(fromsc->layers[ly_fore].splines, tosc->layers[ly_fore].splines, fromsc->layers[ly_fore].order2);
+    }
+    if (!sane) {
+	PyErr_Format(PyExc_ValueError, "Attempted to interpolate incompatible glyphs in strict mode");
 return( NULL );
     }
 
