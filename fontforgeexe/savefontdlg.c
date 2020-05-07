@@ -99,6 +99,7 @@ static int nfnt_warned = false, post_warned = false;
 #define CID_TTF_DummyDSIG	1117
 #define CID_NativeKern		1118
 #define CID_TTF_OldKernMappedOnly 1119
+#define CID_TTF_FFTMTable	1120
 
 struct gfc_data {
     int done;
@@ -345,6 +346,8 @@ return( false );
 		    d->sfnt_flags |= ttf_flag_pfed_guides;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdLayers)) )
 		    d->sfnt_flags |= ttf_flag_pfed_layers;
+		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_FFTMTable)) )
+		    d->sfnt_flags |= ttf_flag_noFFTMtable;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_TeXTable)) )
 		    d->sfnt_flags |= ttf_flag_TeXtable;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_GlyphMap)) )
@@ -402,6 +405,8 @@ return( false );
 		    d->psotb_flags |= ttf_flag_pfed_guides;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdLayers)) )
 		    d->psotb_flags |= ttf_flag_pfed_layers;
+		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_FFTMTable)) )
+		    d->psotb_flags |= ttf_flag_noFFTMtable;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_TeXTable)) )
 		    d->psotb_flags |= ttf_flag_TeXtable;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_GlyphMap)) )
@@ -463,6 +468,8 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_PfEdLookups),flags&ttf_flag_pfed_lookupnames);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_PfEdGuides),flags&ttf_flag_pfed_guides);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_PfEdLayers),flags&ttf_flag_pfed_layers);
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_FFTMTable),
+	    which!=0 && !(flags&ttf_flag_noFFTMtable));
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_TeXTable),flags&ttf_flag_TeXtable);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_GlyphMap),flags&ttf_flag_glyphmap);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OldKern),
@@ -500,6 +507,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEdGuides),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEdColors),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEdLayers),which!=0);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_FFTMTable), which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_TeXTable),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_GlyphMap),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_OFM),which!=0);
@@ -517,10 +525,10 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     int k,fontlog_k,group,group2;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[35];
-    GTextInfo label[35];
+    GGadgetCreateData gcd[36];
+    GTextInfo label[36];
     GRect pos;
-    GGadgetCreateData *hvarray1[21], *hvarray2[42], *hvarray3[8], *harray[7], *varray[11];
+    GGadgetCreateData *hvarray1[21], *hvarray2[44], *hvarray3[8], *harray[7], *varray[11];
     GGadgetCreateData boxes[6];
 
     d->sod_done = false;
@@ -822,15 +830,25 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
 
     gcd[k].gd.pos.x = gcd[k-3].gd.pos.x; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y;
     gcd[k].gd.flags = gg_visible;
+    label[k].text = (unichar_t *) _("FFTM Table");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.popup_msg = _("The FFTM table is an extension to the TrueType format\nand contains a series of timestamps defined by FontForge\n");
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_TTF_FFTMTable;
+    gcd[k++].creator = GCheckBoxCreate;
+    hvarray2[32] = &gcd[k-1]; hvarray2[33] = GCD_ColSpan; hvarray2[34] = NULL;
+
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
+    gcd[k].gd.flags = gg_visible;
     label[k].text = (unichar_t *) _("TeX Table");
     label[k].text_is_1byte = true;
     gcd[k].gd.popup_msg = _("The TeX table is an extension to the TrueType format\nand the various data you would expect to find in\na tfm file (that isn't already stored elsewhere\nin the ttf file)\n");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_TeXTable;
     gcd[k++].creator = GCheckBoxCreate;
-    hvarray2[32] = &gcd[k-1]; hvarray2[33] = GCD_ColSpan; hvarray2[34] = NULL;
-    hvarray2[37] = GCD_Glue; hvarray2[38] = GCD_Glue; hvarray2[39] = NULL;
-    hvarray2[40] = NULL;
+    hvarray2[37] = &gcd[k-1]; hvarray2[38] = GCD_ColSpan; hvarray2[39] = NULL;
+    hvarray2[40] = GCD_Glue; hvarray2[41] = GCD_Glue; hvarray2[42] = NULL;
+    hvarray2[43] = NULL;
 
     boxes[3].gd.flags = gg_enabled|gg_visible;
     boxes[3].gd.u.boxelements = hvarray2;
