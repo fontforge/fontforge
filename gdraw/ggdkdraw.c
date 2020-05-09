@@ -1481,6 +1481,9 @@ static void GGDKDrawSetVisible(GWindow w, int show) {
         _GGDKDraw_OnFakedConfigure(gw);
 #endif
         gdk_window_show(gw->w);
+        if (gw->restrict_input_to_me && gw->transient_owner == NULL && gw->display->mru_windows->length > 0) {
+            GGDKDrawSetTransientFor((GWindow)gw, (GWindow) - 1);
+        }
     } else {
         GGDKDrawSetTransientFor((GWindow)gw, NULL);
         gdk_window_hide(gw->w);
