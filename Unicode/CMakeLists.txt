@@ -4,7 +4,6 @@ add_library(gunicode OBJECT
   ArabicForms.c
   char.c
   combiners.h
-  gwwiconv.c
   is_Ligature_data.h
   is_Ligature.c
   memory.c

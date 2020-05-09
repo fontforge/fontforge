@@ -58,7 +58,6 @@ function(fontforge_generate_config template destination)
   check_symbol_exists(nl_langinfo "langinfo.h" HAVE_NL_LANGINFO)
 
   # These are hard requirements/unsupported, should get rid of these
-  set(HAVE_ICONV_H 1)
   set(HAVE_LIBINTL_H 1)
   set(_NO_LIBUNICODENAMES 1)
 

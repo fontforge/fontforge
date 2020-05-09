@@ -63,8 +63,6 @@
 
 #cmakedefine HAVE_EXECINFO_H 1
 
-#cmakedefine HAVE_ICONV_H 1
-
 #cmakedefine HAVE_LIBINTL_H 1
 
 #cmakedefine HAVE_IEEEFP_H 1

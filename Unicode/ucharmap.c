@@ -34,9 +34,7 @@
 #include "utype.h"
 
 int local_encoding = e_iso8859_1;
-#if HAVE_ICONV_H
 char *iconv_local_encoding_name = NULL;
-#endif
 
 static int bad_enc_warn = false;
 
@@ -322,7 +320,6 @@ return( u2encoding_strncpy(to,ufrom,n,e_iso8859_1));
 return( to );
 }
 
-#if HAVE_ICONV_H
 static char *old_local_name=NULL;
 static iconv_t to_unicode=(iconv_t) (-1), from_unicode=(iconv_t) (-1);
 static iconv_t to_utf8=(iconv_t) (-1), from_utf8=(iconv_t) (-1);
@@ -417,10 +414,8 @@ return( false );
     }
 return( true );
 }
-#endif
 
 unichar_t *def2u_strncpy(unichar_t *uto, const char *from, size_t n) {
-#if HAVE_ICONV_H
     if ( my_iconv_setup() ) {
 	size_t in_left = n, out_left = sizeof(unichar_t)*n;
 	char *cto = (char *) uto;
@@ -431,12 +426,10 @@ unichar_t *def2u_strncpy(unichar_t *uto, const char *from, size_t n) {
 	if ( cto<((char *) uto)+4*n) *cto++ = '\0';
 return( uto );
     }
-#endif
 return( encoding2u_strncpy(uto,from,n,local_encoding));
 }
 
 char *u2def_strncpy(char *to, const unichar_t *ufrom, size_t n) {
-#if HAVE_ICONV_H
     if ( my_iconv_setup() ) {
 	size_t in_left = sizeof(unichar_t)*n, out_left = n;
 	char *cfrom = (char *) ufrom, *cto=to;
@@ -447,7 +440,6 @@ char *u2def_strncpy(char *to, const unichar_t *ufrom, size_t n) {
 	if ( cto<to+n ) *cto++ = '\0';
 return( to );
     }
-#endif
 return( u2encoding_strncpy(to,ufrom,n,local_encoding));
 }
 
@@ -459,7 +451,6 @@ unichar_t *def2u_copy(const char *from) {
     len = strlen(from);
     uto = (unichar_t *) malloc((len+1)*sizeof(unichar_t));
     if ( uto==NULL ) return( NULL );
-#if HAVE_ICONV_H
     if ( my_iconv_setup() ) {
 	size_t in_left = len, out_left = sizeof(unichar_t)*len;
 	char *cto = (char *) uto;
@@ -470,7 +461,6 @@ unichar_t *def2u_copy(const char *from) {
 	*cto++ = '\0';
 	return( uto );
     }
-#endif
     ret = encoding2u_strncpy(uto,from,len,local_encoding);
     if ( ret==NULL )
 	free( uto );
@@ -485,7 +475,6 @@ char *u2def_copy(const unichar_t *ufrom) {
 
     if ( ufrom==NULL ) return( NULL );
     len = u_strlen(ufrom);
-#if HAVE_ICONV_H
     if ( my_iconv_setup() ) {
 	size_t in_left = sizeof(unichar_t)*len, out_left = 3*len;
 	char *cfrom = (char *) ufrom, *cto;
@@ -498,7 +487,6 @@ char *u2def_copy(const unichar_t *ufrom) {
 	*cto++ = '\0';
 	return( to );
     }
-#endif
     if ( local_encoding==e_utf8 )
 	len *= 3;
     if ( local_encoding>=e_first2byte )
@@ -524,7 +512,6 @@ char *def2utf8_copy(const char *from) {
 
     if ( from==NULL ) return( NULL );
     len = strlen(from);
-#if HAVE_ICONV_H
     if ( my_iconv_setup() ) {
 	size_t in_left = len, out_left = 3*(len+1);
 	char *cto = (char *) malloc(3*(len+1)), *cret = cto;
@@ -536,7 +523,6 @@ char *def2utf8_copy(const char *from) {
 	*cto++ = '\0';
 	return( cret );
     }
-#endif
     uto = (unichar_t *) malloc(sizeof(unichar_t)*(len+1));
     if ( uto==NULL ) return( NULL );
     temp = encoding2u_strncpy(uto,from,len,local_encoding);
@@ -557,7 +543,6 @@ char *utf82def_copy(const char *ufrom) {
 
     if ( ufrom==NULL ) return( NULL );
     len = strlen(ufrom);
-#if HAVE_ICONV_H
     if ( my_iconv_setup() ) {
 	size_t in_left = len, out_left = 3*len;
 	char *cfrom = (char *) ufrom, *cto, *to;
@@ -570,7 +555,6 @@ char *utf82def_copy(const char *ufrom) {
 	*cto++ = '\0';
 	return( to );
     }
-#endif
     if ( local_encoding==e_utf8 ) return( copy( ufrom )); /* Well, that's easy */
     u2from = utf82u_copy(ufrom);
     ret = u2def_copy(u2from);

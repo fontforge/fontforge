@@ -28,12 +28,9 @@
 #ifndef FONTFORGE_CHARSET_H
 #define FONTFORGE_CHARSET_H
 
-#if HAVE_ICONV_H
-# include <iconv.h>
+#include "gwwiconv.h"
+
 extern char *iconv_local_encoding_name;
-#else
-# include "gwwiconv.h"		/* My fake iconv based on encodings in gdraw/gunicode */
-#endif
 
 /* ASCII is ISO 646, except the ISO version admits national alternatives */
 enum encoding { e_usascii, e_iso646_no, e_iso646_se, e_iso8859_1,

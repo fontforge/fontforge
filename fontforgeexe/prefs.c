@@ -898,13 +898,11 @@ static int encmatch(const char *enc,int subok) {
 
     int i;
     char buffer[80];
-#if HAVE_ICONV_H
     static char *last_complaint;
 
     iconv_t test;
     free(iconv_local_encoding_name);
     iconv_local_encoding_name= NULL;
-#endif
 
     if ( strchr(enc,'@')!=NULL && strlen(enc)<sizeof(buffer)-1 ) {
 	strcpy(buffer,enc);
@@ -921,7 +919,6 @@ return( encs[i].enc );
 	    if ( strstrmatch(enc,encs[i].name)!=NULL )
 return( encs[i].enc );
 
-#if HAVE_ICONV_H
 	/* I only try to use iconv if the encoding doesn't match one I support*/
 	/*  loading iconv unicode data takes a while */
 	test = iconv_open(enc,FindUnicharName());
@@ -940,9 +937,6 @@ return( encs[i].enc );
 	    iconv_local_encoding_name= copy(enc);
 	    iconv_close(test);
 	}
-#else
-	fprintf( stderr, "FontForge does not support your encoding (%s), it will pretend the local encoding is latin1\n", enc );
-#endif
 
 return( e_iso8859_1 );
     }
