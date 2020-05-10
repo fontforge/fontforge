@@ -19,7 +19,7 @@ extern SplineChar *SFGetChar(SplineFont *sf, int unienc, const char *name);
 extern SplineChar *SFGetOrMakeCharFromUnicodeBasic(SplineFont *sf, int ch);
 extern SplineChar *SFHashName(SplineFont *sf, const char *name);
 extern SplineChar *SplineCharCopy(SplineChar *sc, SplineFont *into, struct sfmergecontext *mc);
-extern bool InterpolationSanity(SplineSet* base, SplineSet *other, int order2);
+extern bool InterpolationSanity(SplineSet *base, SplineSet *other, int order2, char *prefix);
 extern SplineChar *SplineCharInterpolate(SplineChar *base, SplineChar *other, real amount, SplineFont *newfont);
 extern SplineFont *InterpolateFont(SplineFont *base, SplineFont *other, real amount, Encoding *enc, bool only_compatible);
 extern SplineSet *SplineSetsInterpolate(SplineSet *base, SplineSet *other, real amount, SplineChar *sc);

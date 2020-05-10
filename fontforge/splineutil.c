@@ -7957,7 +7957,9 @@ bigreal DistanceBetweenPoints( BasePoint *p1, BasePoint *p2 )
 int SplineSetNumberPoints(SplineSet *ss, int order2) {
     int pnum=0;
     if ( order2 ) {
-        return SSTtfNumberPoints(ss);
+        SplineSet *temp = SplinePointListCopy1(ss);
+        pnum = SSTtfNumberPoints(ss);
+        SplinePointListFree(temp);
     } else {
         for ( SplinePoint *sp = ss->first; ; ) {
             pnum++;

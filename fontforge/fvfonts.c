@@ -1275,9 +1275,10 @@ return;
  *
  * So, since the user is probably using this feature to test variable fonts,
  * ask them if they even want FontForge to force compatibility. */
-bool InterpolationSanity(SplineSet* base, SplineSet *other, int order2) {
+bool InterpolationSanity(SplineSet* base, SplineSet *other, int order2, char* prefix) {
     SplineSet *bss=NULL, *oss=NULL;
     int bmcc = 0, omcc = 0;
+    bool ret = true;
 
     if (base == NULL || other == NULL) return false;
 
@@ -1285,36 +1286,65 @@ bool InterpolationSanity(SplineSet* base, SplineSet *other, int order2) {
     for ( bss = base; bss != NULL; bss=bss->next ) bmcc++;
     for ( oss = other; oss != NULL; oss=oss->next ) omcc++;
 
-    if (bmcc != omcc) {
-        LogError(_("Incompatible contour counts: %d vs %d."), bmcc, omcc);
-        return false;
-    }
-
     // An empty glyph is compatible.
-    if (bmcc == 0) return true;
+    if (bmcc == 0 && omcc == 0) return true;
+
+    if (prefix == NULL) prefix = "";
+    else prefix = smprintf(_("Glyph %s: "), prefix);
+
+    if (bmcc != omcc) {
+        LogError(_("%sIncompatible contour counts: %d vs %d."), prefix, bmcc, omcc);
+        ret = false;
+    }
 
     SplinePoint* sp;
-    int contour_count = 0;
+    int contour_count = 1;
     for ( bss = base, oss = other; bss!=NULL; bss=bss->next, oss=oss->next, contour_count++ ) {
-        if (SplinePointListIsClockwise(bss) != SplinePointListIsClockwise(oss)) {
-            LogError(_("Incompatible contour directionality (contour %d)"), contour_count);
-            return false;
+        if (!ret) break;
+        int bicw = SplinePointListIsClockwise(bss), oicw = SplinePointListIsClockwise(oss);
+
+        if (bicw == -1 || oicw == -1)
+            TRACE(_("%sInterpolationSanity: Assuming self-intersecting contour %d to be sane"), prefix, contour_count);
+        else if (bicw != oicw) {
+            LogError(_("%sIncompatible contour directionality (contour %d)"), prefix, contour_count);
+            ret = false;
         }
 
-        SplineSet *btemp = SplinePointListCopy1(bss);
-        SplineSet *otemp = SplinePointListCopy1(oss);
         int bpnum = SplineSetNumberPoints(bss, order2);
         int opnum = SplineSetNumberPoints(oss, order2);
-        SplinePointListFree(btemp);
-        SplinePointListFree(otemp);
-
         if (bpnum != opnum) {
-            LogError(_("Incompatible point counts: %d vs %d (countour %d)"), bpnum, opnum, contour_count);
-            return false;
+            LogError(_("%sIncompatible point counts: %d vs %d (countour %d)"), prefix, bpnum, opnum, contour_count);
+            ret = false;
+        }
+
+        int segment_count = 1;
+        for ( SplinePoint *bsp=bss->first, *osp=oss->first; ; segment_count++ ) {
+            bool bnonextpt = bsp->next==NULL;
+            bool ononextpt = osp->next==NULL;
+            if (bnonextpt != ononextpt) {
+                char* missingnextpt = bnonextpt ? _("base") : _("other");
+                LogError(_("%sWe expected another point in the %s spline after segment %d"), prefix, missingnextpt, segment_count);
+                ret = false; break;
+            }
+            bool bcurve = ( !bsp->nonextcp || (!bnonextpt && !bsp->next->to->noprevcp) );
+            bool ocurve = ( !osp->nonextcp || (!ononextpt && !osp->next->to->noprevcp) );
+            if ( bcurve != ocurve ) {
+                char* wrongpttype = bcurve ? _("base") : _("other");
+                LogError(_("%sSegment %d in the %s spline is a curve when it should be a line"), prefix, segment_count, wrongpttype);
+                ret = false; break;
+            }
+            if ( bnonextpt ) break;
+            bsp = bsp->next->to;
+            osp = osp->next->to;
+            if ( bsp==bss->first && osp==oss->first ) break;
+            else if ( bsp==bss->first || osp==oss->first ) {
+                ret = false; break;
+            }
         }
     }
 
-    return true;
+    if (prefix[0] != '\0') free(prefix);
+    return ret;
 }
 
 static RefChar *InterpRefs(RefChar *base, RefChar *other, real amount, SplineChar *sc) {
@@ -1414,7 +1444,6 @@ return( cur );
 return( cur );
 	}
 	if ( bp->next == NULL || bp->next->to==base->first ) {
-	    LogError( _("In character %s, there are too few points on a path in the base\n"), sc->name);
 	    if ( bp->next!=NULL ) {
 		if ( bp->next->order2 ) {
 		    cur->last->nextcp.x = cur->first->prevcp.x = (cur->last->nextcp.x+cur->first->prevcp.x)/2;
@@ -1425,7 +1454,6 @@ return( cur );
 	    }
 return( cur );
 	} else if ( op->next==NULL || op->next->to==other->first ) {
-	    LogError( _("In character %s, there are too many points on a path in the base\n"), sc->name);
 	    while ( bp->next!=NULL && bp->next->to!=base->first ) {
 		bp = bp->next->to;
 		InterpPoint(cur,bp,op,amount);
@@ -1698,10 +1726,7 @@ return( NULL );
     }
     for ( i=0; i<base->glyphcnt; ++i ) if ( base->glyphs[i]!=NULL ) {
 	if (!InterpolationSanity(base->glyphs[i]->layers[ly_fore].splines, other->glyphs[i]->layers[ly_fore].splines,
-	                         base->glyphs[i]->layers[ly_fore].order2)) {
-		LogError(_("Glyph %s is incompatible."), base->glyphs[i]->name);
-		if (only_compatible) continue;
-	}
+	                         base->glyphs[i]->layers[ly_fore].order2, base->glyphs[i]->name) && only_compatible) continue;
 	index = SFFindExistingSlot(other,base->glyphs[i]->unicodeenc,base->glyphs[i]->name);
 	if ( index!=-1 && other->glyphs[index]!=NULL ) {
 	    _SplineCharInterpolate(new,i,base->glyphs[i],other->glyphs[index],amount);
