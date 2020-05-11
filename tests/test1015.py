@@ -20,4 +20,4 @@ f3 = f1.interpolateFonts(0.5, sys.argv[2], 0, True)
 assert len(list(f3.glyphs())) == 1
 
 f4 = f1.interpolateFonts(0.5, sys.argv[2], 0, False)
-assert len(list(f4.glyphs())) == 2
+assert len(list(f4.glyphs())) == 3
