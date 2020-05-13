@@ -1,0 +1,10 @@
+extraction:
+  python:
+    python_setup:
+      version: "3"
+  cpp:
+    configure:
+      command:
+      - "mkdir _lgtm_build_dir && cd _lgtm_build_dir"
+      - "cmake .. -DENABLE_DOCS=no"
+
