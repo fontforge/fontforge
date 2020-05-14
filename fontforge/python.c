@@ -101,6 +101,7 @@
 /* Some Python 3+ APIs use C wide characters (wchar_t) */
 #define NEED_WIDE_CHAR 1
 #define PY3OR2(a, b) a
+// This returns internal buffer of _b, which will go away. Remember to do `out = copy(out)` as needed.
 #define PYGETSTR(in, out, fail) PyObject *_b = PyUnicode_AsUTF8String(in); if (!_b) return fail; out = PyBytes_AsString(_b)
 #define ENDPYGETSTR() Py_DECREF(_b)
 #else
@@ -219,42 +220,6 @@ static wchar_t *copy_to_wide_string(const char *s) {
     return ws;
 }
 #endif /* NEED_WIDE_CHAR */
-
-
-/* AnyPyString_to_UTF8() -- Takes a Python string object and returns a
- * newly-alloced C-string that is UTF-8 encoded.  Accepts either 'str' or
- * 'unicode' in Python 2, and just 'str' in Python 3 (which is a
- * unicode).  See macro ANYSTRING_CHECK() in ffpython.h.
- *
- * Returns NULL on error and sets Python exception.
- */
-char* AnyPyString_to_UTF8( PyObject* obj ) {
-    char * s = NULL;
-    if ( PyUnicode_Check(obj) ) {
-	PyObject *bytes = PyUnicode_AsUTF8String(obj);
-	if ( bytes!=NULL ) {
-	    s = copy( PY3OR2(PyBytes_AsString, PyString_AS_STRING) (bytes) );
-	    Py_DECREF(bytes);
-	}
-    }
-#if PY_MAJOR_VERSION <= 2
-    else if ( PyString_Check(obj) ) {
-	PyObject *utf8str = PyString_AsEncodedObject(obj, "UTF-8", NULL);
-	if ( utf8str!=NULL ) {
-	    s = copy(PyString_AS_STRING(utf8str));
-	    Py_DECREF(utf8str);
-	}
-    }
-#endif
-    else {
-#if PY_MAJOR_VERSION >= 3
-	PyErr_Format(PyExc_TypeError, "Expected a string");
-#else
-	PyErr_Format(PyExc_TypeError, "Expected a string ('unicode' or UTF-8 encoded 'str')");
-#endif
-    }
-    return s;
-}
 
 
 static struct flaglist sfnt_name_str_ids[];
@@ -7474,7 +7439,7 @@ static PyObject *PyFF_Glyph_get_user_decomp(PyFF_Glyph *self, void *UNUSED(closu
 }
 
 static int PyFF_Glyph_set_user_decomp(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
-    PyObject *temp;
+    char *temp;
     unichar_t *udbuf;
 
     if (value == Py_None) {
@@ -7483,15 +7448,10 @@ static int PyFF_Glyph_set_user_decomp(PyFF_Glyph *self,PyObject *value, void *UN
         return 0;
     }
 
-    if ( PyUnicode_Check(value)) {
-        /* Need to force utf8 encoding rather than accepting the "default" */
-        /*  which would happen if we treated unicode as a string */
-        temp = PyUnicode_AsUTF8String(value);
-        udbuf = utf82u_copy(PyBytes_AsString(temp));
-        Py_DECREF(temp);
-    } else {
-        udbuf = utf82u_copy(PyBytes_AsString(value));
-    }
+    PYGETSTR(value, temp, -1);
+    udbuf = utf82u_copy(temp);
+    Py_DECREF(temp);
+    ENDPYGETSTR();
 
     if ( udbuf==NULL ) return -1;
 
@@ -7516,16 +7476,11 @@ return( PyUnicode_DecodeUTF8(self->sc->comment,strlen(self->sc->comment),NULL));
 
 static int PyFF_Glyph_set_comment(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     char *newv;
-    PyObject *temp;
 
-    if ( PyUnicode_Check(value)) {
-	/* Need to force utf8 encoding rather than accepting the "default" */
-	/*  which would happen if we treated unicode as a string */
-	temp = PyUnicode_AsUTF8String(value);
-	newv = copy( PyBytes_AsString(temp));
-	Py_DECREF(temp);
-    } else
-	newv = copy( PyBytes_AsString(value));
+    PYGETSTR(value, newv, -1);
+    newv = copy(newv);
+    ENDPYGETSTR();
+
     if ( newv==NULL )
 return( -1 );
     free(self->sc->comment);
@@ -7730,14 +7685,9 @@ static char *GlyphListToStr(PyObject *value) {
 	PyErr_Format(PyExc_TypeError, "Value must be a sequence" );
 return( NULL );
     }
-    if ( PyBytes_Check(value)) {
-	str = PyBytes_AsString(value);
-#if PY_MAJOR_VERSION >= 3
-    } else if ( PyUnicode_Check(value)) {
-	value = PyUnicode_AsUTF8String(value);
-	str = PyBytes_AsString(value);
-	Py_DECREF(value);
-#endif
+    if ( ANYSTRING_CHECK(value) ) {
+	PYGETSTR(value, str, NULL);
+	ENDPYGETSTR();
     } else {
 	cnt = PySequence_Size(value);
 	len = 0;
@@ -7800,7 +7750,10 @@ return( NULL );
 	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(obj)) ) {
 	    parts[i].component = copy( ((PyFF_Glyph *) obj)->sc->name );
 	} else if ( ANYSTRING_CHECK(obj) ) {
-	    parts[i].component = AnyPyString_to_UTF8(obj);
+	    char* temp;
+	    PYGETSTR(obj, temp, NULL);
+	    parts[i].component = copy(temp);
+	    ENDPYGETSTR();
 	} else if ( PyTuple_Check(obj) && PyTuple_Size(obj)>0 &&
 		    PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(PyTuple_GetItem(obj,0))) ) {
 	    PyObject *g;
@@ -12352,14 +12305,11 @@ return( -1 );
     }
     if ( value == Py_None )
 	newv = NULL;
-    else if ( PyUnicode_Check(value)) {
-	/* Need to force utf8 encoding rather than accepting the "default" */
-	/*  which would happen if we treated unicode as a string */
-	temp = PyUnicode_AsUTF8String(value);
-	newv = copy( PyBytes_AsString(temp));
-	Py_DECREF(temp);
-    } else
-	newv = copy( PyBytes_AsString(value));
+
+    PYGETSTR(value, newv, -1);
+    newv = copy(newv);
+    ENDPYGETSTR();
+
     if ( newv==NULL && value!=Py_None )
 return( -1 );
     oldpos = (char **) (((char *) sf) + offset );
@@ -12389,7 +12339,6 @@ return( _PyFF_Font_set_str_null(self->fv->cidmaster,value,str,offset));
 static int PyFF_Font_set_str(PyFF_Font *self,PyObject *value,
 			     char *str,int offset) {
     char *newv, **oldpos;
-    PyObject *temp;
 
     if ( CheckIfFontClosed(self) )
 return(-1);
@@ -12397,14 +12346,11 @@ return(-1);
 	PyErr_Format(PyExc_TypeError, "Cannot delete the %s", str);
 return( -1 );
     }
-    if ( PyUnicode_Check(value)) {
-	/* Need to force utf8 encoding rather than accepting the "default" */
-	/*  which would happen if we treated unicode as a string */
-	temp = PyUnicode_AsUTF8String(value);
-	newv = copy( PyBytes_AsString(temp));
-	Py_DECREF(temp);
-    } else
-	newv = copy( PyBytes_AsString(value));
+
+    PYGETSTR(value, newv, -1);
+    newv = copy(newv);
+    ENDPYGETSTR();
+
     if ( newv==NULL )
 return( -1 );
     oldpos = (char **) (((char *) (self->fv->sf)) + offset );
@@ -13342,7 +13288,6 @@ return( Py_BuildValue("s",buf));
 static int PyFF_Font_set_OS2_vendor(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     SplineFont *sf;
     char *newv;
-    PyObject *temp;
 
     if ( CheckIfFontClosed(self) )
 return (-1);
@@ -13351,18 +13296,11 @@ return (-1);
 	PyErr_Format(PyExc_TypeError, "Cannot delete vendor" );
 return( -1 );
     }
-    if ( PyUnicode_Check(value)) {
-	/* Need to force utf8 encoding rather than accepting the "default" */
-	/*  which would happen if we treated unicode as a string */
-	temp = PyUnicode_AsUTF8String(value);
-	newv = PyBytes_AsString(temp);
-	Py_DECREF(temp);
-    } else
-	newv = PyBytes_AsString(value);
-    if ( newv==NULL )
-return( -1 );
+
+    PYGETSTR(value, newv, -1);
 
     if ( strlen( newv )>4 ) {
+	ENDPYGETSTR();
 	PyErr_Format(PyExc_TypeError, "OS2 vendor is limited to 4 characters" );
 return( -1 );
     }
@@ -13372,6 +13310,7 @@ return( -1 );
     sf->pfminfo.os2_vendor[2] = newv[2];
     sf->pfminfo.os2_vendor[3] = newv[3];
     sf->pfminfo.panose_set = true;
+    ENDPYGETSTR();
 return( 0 );
 }
 
@@ -20004,12 +19943,10 @@ return;
 	 (obj = PyMapping_GetItemString(sf->python_persistent,(char *)"initScriptString"))!=NULL &&
 	 STRING_CHECK(obj)) {
 	char *str = NULL;
-#if PY_MAJOR_VERSION >= 3
-	PyObject *_b = PyUnicode_AsUTF8String(obj); if (_b) str = PyBytes_AsString(_b);
-#else
-	str = PyBytes_AsString(obj);
-#endif
+	PYGETSTR(obj, str, );
 	PyRun_SimpleString(str);
+	ENDPYGETSTR();
+	free(str);
     }
     Py_XDECREF(obj);
 
