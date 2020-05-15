@@ -4943,7 +4943,8 @@ return( NULL );
 	    PyErr_Format(PyExc_ValueError, "Attempted to interpolate layers of incompatible order in strict mode");
 return( NULL );
 	}
-	sane = InterpolationSanity(ss, otherss, self->is_quadratic, NULL);
+	// Note: References not part of our API, so wouldn't be interpolated, so we don't check them.
+	sane = InterpolationSanity(ss, otherss, self->is_quadratic, NULL, NULL, NULL);
     }
     if (!sane) {
 	PyErr_Format(PyExc_ValueError, "Attempted to interpolate incompatible layers in strict mode");
@@ -17143,20 +17144,7 @@ return( NULL );
     fromsc = ((PyFF_Glyph *) from)->sc;
     tosc = ((PyFF_Glyph *) to)->sc;
 
-    bool sane = true;
-    if (stricto != NULL && PyObject_IsTrue(stricto)) {
-	if (fromsc->layers[ly_fore].order2 != tosc->layers[ly_fore].order2) {
-	    PyErr_Format(PyExc_ValueError, "Interpolation would attempt to interpolate a quadratic spline with a cubic one");
-return( NULL );
-	}
-	sane = InterpolationSanity(fromsc->layers[ly_fore].splines, tosc->layers[ly_fore].splines, fromsc->layers[ly_fore].order2, fromsc->name);
-    }
-    if (!sane) {
-	PyErr_Format(PyExc_ValueError, "Attempted to interpolate incompatible glyphs in strict mode");
-return( NULL );
-    }
-
-    sc = SplineCharInterpolate(((PyFF_Glyph *) from)->sc,((PyFF_Glyph *) to)->sc,by, sf);
+    sc = SplineCharInterpolate( ((PyFF_Glyph *) from)->sc, ((PyFF_Glyph *) to)->sc, by, sf, (stricto != NULL && PyObject_IsTrue(stricto)) );
     if ( sc==NULL ) {
 	PyErr_Format(PyExc_EnvironmentError, "Interpolation failed");
 return( NULL );

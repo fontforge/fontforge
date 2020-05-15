@@ -20,7 +20,7 @@ OS2Version: 0
 OS2_WeightWidthSlopeOnly: 0
 OS2_UseTypoMetrics: 1
 CreationTime: 1588401444
-ModificationTime: 1589194129
+ModificationTime: 1589525275
 OS2TypoAscent: 0
 OS2TypoAOffset: 1
 OS2TypoDescent: 0
@@ -37,13 +37,14 @@ HheadDOffset: 1
 OS2Vendor: 'PfEd'
 DEI: 91125
 Encoding: ISO8859-1
+Compacted: 1
 UnicodeInterp: none
 NameList: AGL For New Fonts
 DisplaySize: -48
 AntiAlias: 1
 FitToEm: 0
-WinInfo: 64 16 4
-BeginChars: 256 3
+WinInfo: 0 16 4
+BeginChars: 256 6
 
 StartChar: A
 Encoding: 65 65 0
@@ -84,7 +85,7 @@ EndChar
 StartChar: C
 Encoding: 67 67 2
 Width: 1000
-Flags: HWO
+Flags: HW
 LayerCount: 2
 Fore
 SplineSet
@@ -96,6 +97,31 @@ SplineSet
  466 141 l 9
  664 291 l 1049
 EndSplineSet
+EndChar
+
+StartChar: Agrave
+Encoding: 192 192 3
+Width: 1000
+Flags: HW
+LayerCount: 2
+Fore
+Refer: 0 65 N 1 0 0 1 0 0 2
+EndChar
+
+StartChar: space
+Encoding: 32 32 4
+Width: 595
+Flags: W
+LayerCount: 2
+EndChar
+
+StartChar: Ccedilla
+Encoding: 199 199 5
+Width: 1000
+Flags: HW
+LayerCount: 2
+Fore
+Refer: 1 66 N 1 0 0 1 0 0 2
 EndChar
 EndChars
 EndSplineFont
