@@ -20,7 +20,7 @@ OS2Version: 0
 OS2_WeightWidthSlopeOnly: 0
 OS2_UseTypoMetrics: 1
 CreationTime: 1588401444
-ModificationTime: 1589525187
+ModificationTime: 1589527003
 OS2TypoAscent: 0
 OS2TypoAOffset: 1
 OS2TypoDescent: 0
@@ -37,14 +37,13 @@ HheadDOffset: 1
 OS2Vendor: 'PfEd'
 DEI: 91125
 Encoding: ISO8859-1
-Compacted: 1
 UnicodeInterp: none
 NameList: AGL For New Fonts
 DisplaySize: -48
 AntiAlias: 1
 FitToEm: 0
-WinInfo: 0 16 4
-BeginChars: 256 6
+WinInfo: 48 16 4
+BeginChars: 256 7
 
 StartChar: A
 Encoding: 65 65 0
@@ -124,6 +123,21 @@ Encoding: 32 32 5
 Width: 999
 Flags: W
 LayerCount: 2
+EndChar
+
+StartChar: D
+Encoding: 68 68 6
+Width: 1000
+Flags: HO
+LayerCount: 2
+Fore
+SplineSet
+796 144 m 5
+ 184 144 l 1
+ 184 621 l 1
+ 796 621 l 1
+ 796 144 l 5
+EndSplineSet
 EndChar
 EndChars
 EndSplineFont

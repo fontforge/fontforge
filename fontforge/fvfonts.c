@@ -1339,7 +1339,7 @@ bool InterpolationSanity(SplineSet *base, SplineSet *other, int order2, RefChar*
     for ( bss = base; bss != NULL; bss=bss->next ) bmcc++;
     for ( oss = other; oss != NULL; oss=oss->next ) omcc++;
 
-    if (prefix == NULL) {
+    if (glyphname == NULL) {
         prefix = "";
     } else {
         prefix = smprintf(_("Glyph %s: "), glyphname);
@@ -1368,6 +1368,12 @@ bool InterpolationSanity(SplineSet *base, SplineSet *other, int order2, RefChar*
             ret = false;
         }
 
+        if ( (bss->first->prev == NULL) != (oss->first->prev == NULL) ) {
+            char* openness = bss->first->prev == NULL ? _("closed") : _("open");
+            LogError(_("%sBase spline (contour %d) should be %s but it's not"), prefix, contour_count, openness);
+            ret = false;
+        }
+
         int segment_count = 1;
         for ( SplinePoint *bsp=bss->first, *osp=oss->first; ; segment_count++ ) {
             bool bcurve = ( !bsp->nonextcp || (bsp->next!=NULL && !bsp->next->to->noprevcp) );
@@ -1379,27 +1385,29 @@ bool InterpolationSanity(SplineSet *base, SplineSet *other, int order2, RefChar*
                 ret = false;
             }
 
-            if ( bsp->next==NULL && osp->next==NULL ) break;
+            bool bnonextpt = ( bsp->next==NULL || bsp->next->to==bss->first );
+            bool ononextpt = ( osp->next==NULL || osp->next->to==oss->first );
 
-            if ( bsp->next!=NULL ) bsp = bsp->next->to;
-            if ( osp->next!=NULL ) osp = osp->next->to;
+            if ( bnonextpt && ononextpt ) 
+                  break;
 
-            if ( bsp==bss->first && osp==oss->first ) break;
-
-            if ( bsp->next==NULL || osp->next==NULL || bsp==bss->first || osp==oss->first ) {
-                char* problemspline = ( bsp->next==NULL || bsp==bss->first ) ? _("base") : _("other");
+            if ( bnonextpt != ononextpt ) {
+                char* problemspline = bnonextpt ? _("base") : _("other");
                 int extras = 0;
 
-                if ( osp->next==NULL || osp==oss->first ) {
-                    for ( ; bsp->next!=NULL && bsp!=bss->first; bsp=bsp->next->to, extras++ );
+                if ( ononextpt ) {
+                    for ( ; bsp->next!=NULL && bsp->next->to==bss->first; bsp=bsp->next->to, extras++ );
                 } else if ( bsp->next==NULL || bsp==bss->first ) {
-                    for ( ; osp->next!=NULL && osp!=oss->first; osp=osp->next->to, extras++ );
+                    for ( ; osp->next!=NULL && osp->next->to!=bss->first; osp=osp->next->to, extras++ );
                 }
 
                 LogError(_("%sThe %s spline has %d point(s) too many after segment %d"),
                          prefix, problemspline, extras, segment_count);
                 ret = false; break;
             }
+
+            bsp = bsp->next->to;
+            osp = osp->next->to;
         }
     }
 
