@@ -35,17 +35,12 @@ add_library(gdraw STATIC
   ghvbox.c
   gimageclut.c
   gimagecvt.c
-  gimagepsdraw.c
-  gimagewriteeps.c
   gimagexdraw.c
   gkeysym.c
   glist.c
   gmatrixedit.c
   gmenu.c
   gprogress.c
-  gpsdraw.c
-  gpsdrawP.h
-  gpstxtinit.c
   gradio.c
   gresedit.c
   gresource.c

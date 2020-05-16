@@ -168,7 +168,6 @@ typedef struct ggdkdisplay { /* :GDisplay */
     void *semaphore;
     struct font_state *fontstate;
     int16 res;
-    int16 scale_screen_by;
     GGDKWindow groot;
     Color def_background, def_foreground;
     uint16 mykey_state;
