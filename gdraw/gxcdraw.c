@@ -717,9 +717,6 @@ void _GXCDraw_Image( GXWindow gw, GImage *image, GRect *src, int32 x, int32 y) {
     gw->cairo_state.fore_col = COLOR_UNKNOWN;
 }
 
-void _GXCDraw_TileImage( GXWindow gw, GImage *image, GRect *src, int32 x, int32 y) {
-}
-
 /* What we really want to do is use the grey levels as an alpha channel */
 void _GXCDraw_Glyph( GXWindow gw, GImage *image, GRect *src, int32 x, int32 y) {
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
@@ -849,16 +846,6 @@ enum gcairo_flags _GXCDraw_CairoCapabilities( GXWindow gw) {
     enum gcairo_flags flags = gc_all;
 
 return( flags );
-}
-/* ************************************************************************** */
-/* **************************** Synchronization ***************************** */
-/* ************************************************************************** */
-void _GXCDraw_Flush(GXWindow gw) {
-    cairo_surface_flush(gw->cs);
-}
-
-void _GXCDraw_DirtyRect(GXWindow gw,double x, double y, double width, double height) {
-    cairo_surface_mark_dirty_rectangle(gw->cs,x,y,width,height);
 }
 #else
 int _GXCDraw_hasCairo(void) {

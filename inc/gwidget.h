@@ -75,7 +75,6 @@ void GWidgetNextFocus(GWindow);
 void GWidgetPrevFocus(GWindow);
 void GWidgetRequestVisiblePalette(GWindow palette,int visible);
 void GWidgetHidePalettes(void);
-void GWidgetReparentWindow(GWindow child,GWindow newparent, int x,int y);
 
 struct ggadget *GWidgetGetControl(GWindow gw, int cid);
 struct ggadget *_GWidgetGetGadgets(GWindow gw);

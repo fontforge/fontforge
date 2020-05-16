@@ -708,13 +708,6 @@ static void GXDrawInit(GDisplay *gdisp) {
     _GXDraw_InitFonts((GXDisplay *) gdisp);
 }
 
-static void GXDrawTerm(GDisplay *gdisp) {
-}
-
-static void *GXDrawNativeDisplay(GDisplay *gdisp) {
-return( ((GXDisplay *) gdisp)->display );
-}
-
 static GGC *_GXDraw_NewGGC() {
     GGC *ggc = calloc(1,sizeof(GGC));
     ggc->clip.width = ggc->clip.height = 0x7fff;
@@ -1143,16 +1136,6 @@ return( true );
 return( false );
 }
 
-static void GXDrawSetWindowBorder(GWindow w,int width,Color col) {
-    GXWindow gw = (GXWindow) w;
-
-    if ( width>=0 )
-	XSetWindowBorderWidth(gw->display->display,gw->w,width);
-    if ( col!=COLOR_DEFAULT )
-	XSetWindowBorder(gw->display->display,gw->w,
-		_GXDraw_GetScreenPixel(gw->display,col));
-}
-
 static void GXDrawSetWindowBackground(GWindow w,Color col) {
     GXWindow gw = (GXWindow) w;
 
@@ -1220,14 +1203,6 @@ static void _GXDraw_CleanUpWindow( GWindow w ) {
     free(gw->ggc);
     memset(gw,'\0',sizeof(*gw));
     free(gw);
-}
-
-static void GXDrawReparentWindow(GWindow child,GWindow newparent, int x,int y) {
-    GXWindow gchild = (GXWindow) child, gpar = (GXWindow) newparent;
-    GXDisplay *gdisp = gchild->display;
-    /* Gnome won't let me reparent a top level window */
-    /* It only pays attention to override-redirect if the window hasn't been mapped */
-    XReparentWindow(gdisp->display,gchild->w,gpar->w,x,y);
 }
 
 static void GXDrawSetVisible(GWindow w, int visible) {
@@ -1607,9 +1582,6 @@ static void GXDrawBeep(GDisplay *gdisp) {
     XBell(((GXDisplay *) gdisp)->display,80);
 }
 
-static void GXDrawFlush(GDisplay *gdisp) {
-    XFlush(((GXDisplay *) gdisp)->display);
-}
 /* ************************************************************************** */
 /* **************************** Draw Routines ******************************* */
 /* ************************************************************************** */
@@ -1629,11 +1601,6 @@ void _GXDraw_SetClipFunc(GXDisplay *gdisp, GGC *mine) {
 	clip.height = mine->clip.height;
 	XSetClipRectangles(gdisp->display,gcs->gc,0,0,&clip,1,YXBanded);
 	gcs->clip = mine->clip;
-    }
-    if ( mine->copy_through_sub_windows != gcs->copy_through_sub_windows ) {
-	vals.subwindow_mode = mine->copy_through_sub_windows?IncludeInferiors:ClipByChildren;
-	mask |= GCSubwindowMode;
-	gcs->copy_through_sub_windows = mine->copy_through_sub_windows;
     }
     if ( mask!=0 )
 	XChangeGC(gdisp->display,gcs->gc,mask,&vals);
@@ -2281,38 +2248,6 @@ static void _GXDraw_Pixmap( GWindow _w, GWindow _pixmap, GRect *src, int32 x, in
     }
 }
 
-static void _GXDraw_TilePixmap( GWindow _w, GWindow _pixmap, GRect *src, int32 x, int32 y) {
-    GXWindow gw = (GXWindow) _w, pixmap = (GXWindow) _pixmap;
-    GXDisplay *gdisp = gw->display;
-    GRect old;
-    int i,j;
-
-    GDrawPushClip(_w,src,&old);
-    GXDrawSetcolfunc(gdisp,gw->ggc);
-    for ( i=y; i<gw->ggc->clip.y+gw->ggc->clip.height; i+=pixmap->pos.height ) {
-	if ( i+pixmap->pos.height<gw->ggc->clip.y )
-    continue;
-	for ( j=x; j<gw->ggc->clip.x+gw->ggc->clip.width; j+=pixmap->pos.width ) {
-	    if ( j+pixmap->pos.width<gw->ggc->clip.x )
-	continue;
-	    if ( pixmap->ggc->bitmap_col ) {
-		XCopyPlane(gdisp->display,((GXWindow) pixmap)->w,gw->w,gdisp->gcstate[1].gc,
-			0,0,  pixmap->pos.width, pixmap->pos.height,
-			j,i,1);
-#ifndef _NO_LIBCAIRO
-	    } else if ( gw->usecairo ) {
-		_GXCDraw_CopyArea(pixmap,gw,&pixmap->pos,j,i);
-#endif
-	    } else {
-		XCopyArea(gdisp->display,((GXWindow) pixmap)->w,gw->w,gdisp->gcstate[0].gc,
-			0,0,  pixmap->pos.width, pixmap->pos.height,
-			j,i);
-	    }
-	}
-    }
-    GDrawPopClip(_w,&old);
-}
-
 static void GXDrawFontMetrics( GWindow w,GFont *fi,int *as, int *ds, int *ld) {
     _GXPDraw_FontMetrics(w, fi, as, ds, ld);
 }
@@ -2583,47 +2518,6 @@ static void GXDrawCancelTimer(GTimer *timer) {
 	free(timer);
 }
 
-static void GXDrawSyncThread(GDisplay *gd, void (*func)(void *), void *data) {
-#ifdef HAVE_PTHREAD_H
-    GXDisplay *gdisp = (GXDisplay *) gd;
-    struct things_to_do *ttd;
-
-    pthread_mutex_lock(&gdisp->xthread.sync_mutex);
-    if ( gdisp->xthread.sync_sock==-1 ) {
-	#if !defined(__MINGW32__)
-	int sv[2];
-	socketpair(PF_UNIX,SOCK_DGRAM,0,sv);
-	gdisp->xthread.sync_sock = sv[0];
-	gdisp->xthread.send_sock = sv[1];
-	#endif
-    }
-    if ( func==NULL ) {
-	/* what's the point in calling this routine with no function? */
-	/*  it sets things up so that the event loop is prepared to be */
-	/*  stopped by the new socket. (otherwise it doesn't stop till */
-	/*  it gets its next event. ie. if the eventloop is entered with */
-	/*  sync_sock==-1 it won't wait on it, but next time it's entered*/
-	/*  it won't be -1. This just allows us to make that condition */
-	/*  true a little earlier */
-    } else {
-	for ( ttd=gdisp->xthread.things_to_do; ttd!=NULL &&
-		(ttd->func!=func || ttd->data!=data); ttd = ttd->next );
-	if ( ttd==NULL ) {
-	    ttd = malloc(sizeof(struct things_to_do));
-	    if ( gdisp->xthread.things_to_do==NULL )
-		send(gdisp->xthread.send_sock," ",1,0);
-	    ttd->func = func;
-	    ttd->data = data;
-	    ttd->next = gdisp->xthread.things_to_do;
-	    gdisp->xthread.things_to_do = ttd;
-	}
-    }
-    pthread_mutex_unlock(&gdisp->xthread.sync_mutex);
-#else
-    (func)(data);
-#endif
-}
-
 static int GXDrawProcessTimerEvent(GXDisplay *gdisp,GTimer *timer) {
     struct gevent gevent;
     GWindow o;
@@ -2750,22 +2644,6 @@ return;
 		fd = gdisp->wacom_fd;
 	}
 #endif
-
-	for( idx = 0; idx < gdisp->fd_callbacks_last; ++idx )
-	{
-	    fd_callback_t* cb = &gdisp->fd_callbacks[ idx ];
-	    FD_SET( cb->fd, &read );
-	    fd = MAX( fd, cb->fd );
-	}
-	
-	ret = select(fd+1,&read,&write,&except,timeout);
-
-	for( idx = 0; idx < gdisp->fd_callbacks_last; ++idx )
-	{
-	    fd_callback_t* cb = &gdisp->fd_callbacks[ idx ];
-	    if( FD_ISSET(cb->fd,&read))
-		cb->callback( cb->fd, cb->udata );
-	}
     }
 }
 
@@ -3187,16 +3065,6 @@ return;
       break;
       case PropertyNotify:
 	gdisp->last_event_time = event->xproperty.time;
-      break;
-      case ReparentNotify:
-	if ( event->xreparent.parent==gdisp->root ) {
-	    gw->parent = (GWindow) (gdisp->groot);
-	    gw->is_toplevel = true;
-	} else if ( XFindContext(gdisp->display,event->xreparent.parent,gdisp->mycontext,(void *) &ret)==0 ) {
-	    GWindow gparent = (GWindow) ret;
-	    gw->parent = gparent;
-	    gw->is_toplevel = (GXWindow) gparent==gdisp->groot;
-	}
       break;
       case MappingNotify:
 	XRefreshKeyboardMapping((XMappingEvent *) event);
@@ -3726,22 +3594,6 @@ return( false );
 		fd = gdisp->wacom_fd;
 	}
 #endif
-
-	for( idx = 0; idx < gdisp->fd_callbacks_last; ++idx )
-	{
-	    fd_callback_t* cb = &gdisp->fd_callbacks[ idx ];
-	    FD_SET( cb->fd, &read );
-	    fd = MAX( fd, cb->fd );
-	}
-	
-	ret = select(fd+1,&read,&write,&except,&offset);
-
-	for( idx = 0; idx < gdisp->fd_callbacks_last; ++idx )
-	{
-	    fd_callback_t* cb = &gdisp->fd_callbacks[ idx ];
-	    if( FD_ISSET(cb->fd,&read))
-		cb->callback( cb->fd, cb->udata );
-	}
     }
 }
 
@@ -4204,8 +4056,6 @@ static void GXResourceInit(GXDisplay *gdisp,char *programname) {
 
 static struct displayfuncs xfuncs = {
     GXDrawInit,
-    GXDrawTerm,
-    GXDrawNativeDisplay,
 
     GXDrawSetDefaultIcon,
 
@@ -4218,11 +4068,9 @@ static struct displayfuncs xfuncs = {
     GXDestroyCursor,
     GXNativeWindowExists,
     GXDrawSetZoom,
-    GXDrawSetWindowBorder,
     GXDrawSetWindowBackground,
     GXSetDither,
 
-    GXDrawReparentWindow,
     GXDrawSetVisible,
     GXDrawMove,
     GXDrawTrueMove,
@@ -4245,7 +4093,6 @@ static struct displayfuncs xfuncs = {
     GXDrawTranslateCoordinates,
 
     GXDrawBeep,
-    GXDrawFlush,
 
     GXDrawPushClip,
     GXDrawPopClip,
@@ -4266,12 +4113,9 @@ static struct displayfuncs xfuncs = {
     GXDrawScroll,
 
     _GXDraw_Image,
-    _GXDraw_TileImage,
     _GXDraw_Glyph,
     _GXDraw_ImageMagnified,
-    _GXDraw_CopyScreenToImage,
     _GXDraw_Pixmap,
-    _GXDraw_TilePixmap,
 
     GXDrawCreateInputContext,
     GXDrawSetGIC,
@@ -4300,8 +4144,6 @@ static struct displayfuncs xfuncs = {
 
     GXDrawRequestTimer,
     GXDrawCancelTimer,
-
-    GXDrawSyncThread,
 
     GXDrawFontMetrics,
 

@@ -135,19 +135,8 @@ struct gtimer {
     unsigned int active: 1;
 };
 
-typedef struct fd_callback_struct
-{
-    int    fd;
-    void*  udata;
-    void (*callback)(int fd, void* udata );
-    
-} fd_callback_t;
-
-enum { gdisplay_fd_callbacks_size = 64 };
-
 struct gdisplay {
     struct displayfuncs *funcs;
-    void *semaphore;				/* To lock the display against multiple threads */
     struct font_state *fontstate;
     int16 res;
     GWindow groot;
@@ -155,8 +144,6 @@ struct gdisplay {
     uint16 mykey_state;
     uint16 mykey_keysym;
     uint16 mykey_mask;
-    fd_callback_t fd_callbacks[ gdisplay_fd_callbacks_size ];
-    int fd_callbacks_last;
     unsigned int mykeybuild: 1;
     unsigned int default_visual: 1;
     unsigned int do_dithering: 1;
@@ -185,8 +172,6 @@ struct font_data;
 
 struct displayfuncs {
     void (*init)(GDisplay *);
-    void (*term)(GDisplay *);
-    void *(*nativeDisplay)(GDisplay *);
 
     void (*setDefaultIcon)(GWindow);
 
@@ -199,11 +184,9 @@ struct displayfuncs {
     void (*destroyCursor)(GDisplay *,GCursor);
     int (*nativeWindowExists)(GDisplay *,void *native_window);
     void (*setZoom)(GWindow,GRect *size,enum gzoom_flags flags);
-    void (*setWindowBorder)(GWindow,int width,Color);
     void (*setWindowBackground)(GWindow,Color);
     int (*setDither)(GDisplay *,int);
 
-    void (*reparentWindow)(GWindow,GWindow,int,int);
     void (*setVisible)(GWindow,int);
     void (*move)(GWindow,int32,int32);
     void (*trueMove)(GWindow,int32,int32);
@@ -226,7 +209,6 @@ struct displayfuncs {
     void (*translateCoordinates)(GWindow from, GWindow to, GPoint *pt);
 
     void (*beep)(GDisplay *);
-    void (*flush)(GDisplay *);
 
     void (*pushClip)(GWindow, GRect *rct, GRect *old);
     void (*popClip)(GWindow, GRect *old);
@@ -247,12 +229,9 @@ struct displayfuncs {
     void (*scroll)(GWindow, GRect *rect, int32 hor, int32 vert);
 
     void (*drawImage)(GWindow, GImage *, GRect *src, int32 x, int32 y);
-    void (*tileImage)(GWindow, GImage *, GRect *src, int32 x, int32 y);
     void (*drawGlyph)(GWindow, GImage *, GRect *src, int32 x, int32 y);
     void (*drawImageMag)(GWindow, GImage *, GRect *src, int32 x, int32 y, int32 width, int32 height);
-    GImage *(*copyScreenToImage)(GWindow, GRect *rect);
     void (*drawPixmap)(GWindow, GWindow, GRect *src, int32 x, int32 y);
-    void (*tilePixmap)(GWindow, GWindow, GRect *src, int32 x, int32 y);
 
     GIC *(*createInputContext)(GWindow, enum gic_style);
     void (*setGIC)(GWindow, GIC *, int x, int y);
@@ -283,8 +262,6 @@ struct displayfuncs {
 
     GTimer *(*requestTimer)(GWindow w,int32 time_from_now,int32 frequency, void *userdata);
     void (*cancelTimer)(GTimer *timer);
-
-    void (*syncThread)(GDisplay *gd, void (*func)(void *), void *data);
 
     void (*getFontMetrics)(GWindow,GFont *,int *,int *,int *);
 

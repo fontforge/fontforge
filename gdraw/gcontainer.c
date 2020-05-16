@@ -1103,24 +1103,6 @@ return;
     }
 }
 
-void GWidgetReparentWindow(GWindow child,GWindow newparent, int x,int y) {
-    if ( !child->is_toplevel ) {
-	GWindow oldparent, gadgetparent;
-	for ( oldparent = child; oldparent->parent!=NULL && !oldparent->is_toplevel; oldparent=oldparent->parent );
-	if ( oldparent!=child ) {
-	    GTopLevelD *td = (GTopLevelD *) (oldparent->widget_data);
-	    if ( td->gfocus!=NULL ) {
-		for ( gadgetparent = td->gfocus->base;
-			gadgetparent!=child &&
-			gadgetparent!=NULL; gadgetparent = gadgetparent->parent );
-		if ( gadgetparent==child )
-		    td->gfocus = NULL;
-	    }
-	}
-    }
-    GDrawReparentWindow(child,newparent,x,y);
-}
-
 GIC *GWidgetCreateInputContext(GWindow w,enum gic_style def_style) {
     GWidgetD *wd = (GWidgetD *) (w->widget_data);
 

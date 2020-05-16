@@ -384,35 +384,3 @@ Color GImageGetPixelRGBA(GImage *image,int x, int y) {
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
 return( _GImageGetPixelRGBA(base,x,y));
 }
-
-/* This routine is now obsolete. I include it for compatability. See GImageGetPixelRGBA */
-Color _GImageGetPixelColor(struct _GImage *base,int x, int y) {
-    Color val;
-
-    if ( base->image_type==it_rgba ) {
-	val = ((uint32*) (base->data + y*base->bytes_per_line))[x] ;
-return( val==base->trans?~val:val );
-    } else if ( base->image_type==it_true ) {
-	val = ((uint32*) (base->data + y*base->bytes_per_line))[x] ;
-return( val==base->trans?~val:val );
-    } else if ( base->image_type==it_index ) {
-	uint8 pixel = ((uint8*) (base->data + y*base->bytes_per_line))[x];
-	val = base->clut->clut[pixel];
-return( pixel==base->trans?~val:val );
-    } else {
-	uint8 pixel = (((uint8*) (base->data + y*base->bytes_per_line))[x>>3]&(1<<(7-(x&7))) )?1:0;
-	if ( base->clut==NULL ) {
-	    if ( pixel )
-		val = COLOR_CREATE(0xff,0xff,0xff);
-	    else
-		val = COLOR_CREATE(0,0,0);
-	} else
-	    val = base->clut->clut[pixel];
-return( pixel==base->trans?~val:val );
-    }
-}
-
-Color GImageGetPixelColor(GImage *image,int x, int y) {
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-return( _GImageGetPixelColor(base,x,y));
-}

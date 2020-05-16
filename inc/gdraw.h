@@ -33,8 +33,6 @@
 
 enum font_style { fs_none, fs_italic=1, fs_smallcaps=2, fs_condensed=4, fs_extended=8, fs_vertical=16 };
 enum font_type { ft_unknown, ft_serif, ft_sans, ft_mono, ft_cursive, ft_max };
-enum text_mods { tm_none, tm_upper=1, tm_lower=2, tm_initialcaps=4, tm_showsofthyphen=8 };
-enum text_lines { tl_none, tl_under=1, tl_strike=2, tl_over=4, tl_dash=8 };
 
 typedef struct {
     const unichar_t *family_name;	/* may be more than one */
@@ -50,11 +48,9 @@ typedef struct ginput_context GIC;
 
 typedef struct ggc {
     struct gwindow *w;
-    int32 xor_base;
     Color fg;
     Color bg;
     GRect clip;
-    unsigned int copy_through_sub_windows: 1;
     unsigned int bitmap_col: 1;			/* window is mapped for bitmap */
     int16 skip_len, dash_len;
     int16 line_width;
@@ -282,10 +278,7 @@ extern GDisplay *screen_display;
 
 extern void GDrawDestroyDisplays(void);
 extern void GDrawCreateDisplays(char *displayname,char *programname);
-extern void *GDrawNativeDisplay(GDisplay *);
-extern void GDrawTerm(GDisplay *disp);
 
-extern int GDrawGetRes(GWindow gw);
 extern int GDrawPointsToPixels(GWindow gw,int points);
 extern int GDrawPixelsToPoints(GWindow gw,int pixels);
 
@@ -300,7 +293,6 @@ extern void GDrawDestroyWindow(GWindow w);
 extern void GDrawDestroyCursor(GDisplay *gdisp, GCursor ct);
 extern int  GDrawNativeWindowExists(GDisplay *gdisp, void *native);
 extern void GDrawSetZoom(GWindow w, GRect *zoomsize, enum gzoom_flags);
-extern void GDrawSetWindowBorder(GWindow w, int width, Color color);
 extern void GDrawSetWindowBackground(GWindow w, Color color);
 
 /**
@@ -320,7 +312,6 @@ extern void  GDrawSetWindowTypeName(GWindow w, char* name);
  */
 extern char* GDrawGetWindowTypeName(GWindow w);
 extern int  GDrawSetDither(GDisplay *gdisp, int dither);
-extern void GDrawReparentWindow(GWindow child,GWindow newparent, int x,int y);
 extern void GDrawSetVisible(GWindow w, int visible);
 extern int  GDrawIsVisible(GWindow w);
 extern void GDrawTrueMove(GWindow w, int32 x, int32 y);
@@ -364,9 +355,7 @@ extern void GDrawPopClip(GWindow w, GRect *old);
 extern void GDrawPushClipOnly(GWindow w);
 extern void GDrawClipPreserve(GWindow w);
 extern GGC *GDrawGetWindowGGC(GWindow w);
-extern void GDrawSetCopyMode(GWindow w);
 extern void GDrawSetDifferenceMode(GWindow w);
-extern void GDrawSetCopyThroughSubWindows(GWindow w,int16 through);
 extern void GDrawSetDashedLine(GWindow w,int16 dash_len, int16 skip_len, int16 off);
 extern void GDrawSetStippled(GWindow w,int16 ts, int32 yoff,int32 xoff);
 extern void GDrawSetLineWidth(GWindow w,int16 width);
@@ -411,10 +400,7 @@ extern void GDrawDrawGlyph(GWindow w, GImage *img, GRect *src, int32 x, int32 y)
 extern void GDrawDrawScaledImage(GWindow w, GImage *img, int32 x, int32 y);
 extern void GDrawDrawImageMagnified(GWindow w, GImage *img, GRect *src, int32 x, int32 y,
 	int32 width, int32 height);
-extern void GDrawTileImage(GWindow w, GImage *img, GRect *src, int32 x, int32 y);
 extern void GDrawDrawPixmap(GWindow w, GWindow pixmap, GRect *src, int32 x, int32 y);
-extern void GDrawTilePixmap(GWindow w, GWindow pixmap, GRect *src, int32 x, int32 y);
-extern GImage *GDrawCopyScreenToImage(GWindow w, GRect *rect);
 
 extern void GDrawGrabSelection(GWindow w,enum selnames sel);
 extern void GDrawAddSelectionType(GWindow w,enum selnames sel,char *type,
@@ -442,78 +428,6 @@ extern void GDrawPostDragEvent(GWindow gw,GEvent *e,enum event_type);
 extern GTimer *GDrawRequestTimer(GWindow w,int32 time_from_now,int32 frequency,
 	void *userdata);
 extern void GDrawCancelTimer(GTimer *timer);
-
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-//
-// Windowless timers used for background activities
-//
-
-/**
- * Callback which will be called at a nominated frequency with a given
- * userdata pointer.
- */
-typedef void (* BackgroundTimerFunc )(void*);
-
-/**
- * Internal bookkeeping for windowless timers. They are currently
- * windowed timers on the inside but we spare the user from creating
- * the window, keeping track of it, and having to deal with an event
- * handling function which tries to get back a nominated userdata
- * pointer from all that jazz.
- */
-typedef struct BackgroundTimerstruct
-{
-    // takes userdata as arg1
-    BackgroundTimerFunc func;
-
-    // the userdata pointer that should be passed to func
-    void *userdata;
-
-    // the internal hidden window used to actually get the timer events
-    GWindow w;
-
-    // the GDraw timer associated with the above window
-    GTimer* timer;
-
-    // how often to fire the timer
-    int32 BackgroundTimerMS;
-} BackgroundTimer_t;
-
-/**
- * Create a new windowless timer which will be fired every
- * BackgroundTimerMS milliseconds and call func with the supplied
- * userdata.
- */
-BackgroundTimer_t*
-BackgroundTimer_new( int32 BackgroundTimerMS, 
-		     BackgroundTimerFunc func,
-		     void *userdata );
-
-/**
- * Remove a windowless background timer freeing any resources
- * associated with it.
- */
-void BackgroundTimer_remove( BackgroundTimer_t* t );
-
-/**
- * Make sure the timer fires at it's desired time from now(). For
- * example, if a timer will fire every 2 seconds and is about to fire
- * in a few ms from now, calling touch() will make it fire 2 seconds
- * from now instead.
- *
- * This way if you have a timer which is to handle background issues
- * if something doesn't happen in a scheduled amount of time, you can
- * touch() the timer to make sure it fires again after the full
- * elapsed time instead of having it fire too soon.
- */
-void BackgroundTimer_touch( BackgroundTimer_t* t );
-
-////////////////////////////////////////////////////////////////////////////////
-
-
-extern void GDrawSyncThread(GDisplay *gd, void (*func)(void *), void *data);
 
 extern void GDrawSetBuildCharHooks(void (*hook)(GDisplay *), void (*inshook)(GDisplay *,unichar_t));
 
@@ -550,19 +464,5 @@ extern void GDrawError(const char *fmt,...);
 
 extern int GImageGetScaledWidth(GWindow gw, GImage *img);
 extern int GImageGetScaledHeight(GWindow gw, GImage *img);
-
-extern void GDrawAddReadFD( GDisplay *disp,
-			    int fd, void* udata,
-			    void (*callback)(int fd, void* udata ));
-extern void GDrawRemoveReadFD( GDisplay *disp,
-			       int fd, void* udata );
-
-/**
- * The Mac OSX build doesn't use the same core event loop as the
- * Linux/X build. So inside the timer we can use this to double check
- * if any fds that we should monitor for input have changed and if so
- * service their messages.
- */
-extern void MacServiceReadFDs(void);
 
 #endif /* FONTFORGE_GDRAW_H */

@@ -53,9 +53,6 @@ extern void _GXCDraw_PathStroke(GWindow w,Color col);
 extern void _GXCDraw_PathFill(GWindow w,Color col);
 extern void _GXCDraw_PathFillAndStroke(GWindow w,Color fillcol, Color strokecol);
 
-extern void _GXCDraw_Flush(GXWindow gw);
-extern void _GXCDraw_DirtyRect(GXWindow gw,double x, double y, double width, double height);
-
 #include "fontP.h"
 #endif
 extern void _GXPDraw_NewWindow(GXWindow nw);

@@ -138,31 +138,16 @@ extern void GImageDestroy(GImage *gi);
 extern GImage *GImageCreateAnimation(GImage **images, int n);
 extern GImage *GImageAddImageBefore(GImage *dest, GImage *src, int pos);
 
-extern GImage *GImageBaseGetSub(struct _GImage *base, enum image_type it, GRect *src, GClut *nclut, RevCMap *rev);
-extern GImage *GImageGetSub(GImage *image,enum image_type it, GRect *src, GClut *nclut, RevCMap *rev);
-extern int GImageInsertToBase(struct _GImage *tobase, GImage *from, GRect *src, RevCMap *rev,
-	int to_x, int to_y, enum pastetrans_type ptt );
-extern int GImageInsert(GImage *to, GImage *from, GRect *src, RevCMap *rev,
-	int to_x, int to_y, enum pastetrans_type ptt );
-extern Color _GImageGetPixelColor(struct _GImage *base,int x, int y);	/* Obsolete */
-extern Color GImageGetPixelColor(GImage *base,int x, int y);		/* Obsolete */
 extern Color GImageGetPixelRGBA(GImage *base,int x, int y);
 extern int GImageGetWidth(GImage *);
 extern int GImageGetHeight(GImage *);
 extern void *GImageGetUserData(GImage *img);
 extern void GImageSetUserData(GImage *img,void *userdata);
-extern void GImageResize(struct _GImage *tobase, struct _GImage *fbase,
-	GRect *src, RevCMap *rev);
-extern GImage *GImageResize32(GImage *from, GRect *src, int width, int height, Color trans);
-extern GImage *GImageResizeSame(GImage *from, GRect *src, int width, int height, RevCMap *rev);
 extern RevCMap *GClutReverse(GClut *clut,int side_size);
 void GClut_RevCMapFree(RevCMap *rev);
 extern GClut *GImageFindCLUT(GImage *image,GClut *clut,int clutmax);
-extern int GImageSameClut(GClut *clut,GClut *nclut);
 extern int GImageGreyClut(GClut *clut);
-extern Color GImageColourFName(unichar_t *name);
 extern Color _GImage_ColourFName(char *name);
-extern char *GImageNameFColour(Color col);
 extern Color GDrawColorDarken(Color col, int by);
 extern Color GDrawColorBrighten(Color col, int by);
 
@@ -175,7 +160,6 @@ extern int GImageWriteXbm(GImage *gi, char *filename);
 extern GImage *GImageReadXbm(char *filename);
 extern int GImageWriteXpm(GImage *gi, char *filename);
 extern GImage *GImageReadXpm(char *filename);
-extern int GImageWriteEps(GImage *gi, char *filename);
 extern GImage *GImageReadTiff(char *filename);
 extern GImage *GImageReadJpeg(char *filename);
 extern GImage *GImageRead_Jpeg(FILE *fp);
