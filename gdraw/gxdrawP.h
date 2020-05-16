@@ -256,7 +256,6 @@ typedef struct gxdisplay /* : GDisplay */ {
     void *semaphore;				/* To lock the display against multiple threads */
     struct font_state *fontstate;
     int16 res;
-    int16 scale_screen_by;			/* When converting screen pixels to printer pixels: multiply by this then divide by 16 */
     GXWindow groot;
     Color def_background, def_foreground;
     uint16 mykey_state;

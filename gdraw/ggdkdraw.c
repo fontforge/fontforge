@@ -2344,23 +2344,6 @@ static void GGDKDrawSyncThread(GDisplay *UNUSED(gdisp), void (*func)(void *), vo
     Log(LOGDEBUG, " "); // For some shitty gio impl. Ignore ignore ignore!
 }
 
-
-static GWindow GGDKDrawPrinterStartJob(GDisplay *UNUSED(gdisp), void *UNUSED(user_data), GPrinterAttrs *UNUSED(attrs)) {
-    Log(LOGERR, " ");
-    assert(false);
-}
-
-static void GGDKDrawPrinterNextPage(GWindow UNUSED(w)) {
-    Log(LOGERR, " ");
-    assert(false);
-}
-
-static int GGDKDrawPrinterEndJob(GWindow UNUSED(w), int UNUSED(cancel)) {
-    Log(LOGERR, " ");
-    assert(false);
-}
-
-
 // Our function VTable
 static struct displayfuncs gdkfuncs = {
     GGDKDrawInit,
@@ -2463,10 +2446,6 @@ static struct displayfuncs gdkfuncs = {
 
     GGDKDrawSyncThread,
 
-    GGDKDrawPrinterStartJob,
-    GGDKDrawPrinterNextPage,
-    GGDKDrawPrinterEndJob,
-
     GGDKDrawGetFontMetrics,
 
     GGDKDrawHasCairo,
@@ -2549,7 +2528,6 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *UNUSED(programname)) 
 #endif
 
     gdisp->main_loop = g_main_loop_new(NULL, true);
-    gdisp->scale_screen_by = 1; //Does nothing
     gdisp->bs.double_time = 200;
     gdisp->bs.double_wiggle = 3;
     gdisp->sel_notify_timeout = 2; // 2 second timeout

@@ -150,7 +150,6 @@ struct gdisplay {
     void *semaphore;				/* To lock the display against multiple threads */
     struct font_state *fontstate;
     int16 res;
-    int16 scale_screen_by;			/* When converting screen pixels to printer pixels */
     GWindow groot;
     Color def_background, def_foreground;
     uint16 mykey_state;
@@ -287,10 +286,6 @@ struct displayfuncs {
 
     void (*syncThread)(GDisplay *gd, void (*func)(void *), void *data);
 
-    GWindow (*startJob)(GDisplay *gdisp,void *user_data,GPrinterAttrs *attrs);
-    void (*nextPage)(GWindow w);
-    int (*endJob)(GWindow w,int cancel);
-
     void (*getFontMetrics)(GWindow,GFont *,int *,int *,int *);
 
     enum gcairo_flags (*hasCairo)(GWindow w);
@@ -331,8 +326,6 @@ extern void _GXDraw_DestroyDisplay(GDisplay * gdisp);
 extern GDisplay *_GXDraw_CreateDisplay(char *displayname,char *programname);
 extern void _GGDKDraw_DestroyDisplay(GDisplay *disp);
 extern GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *programname);
-extern void _GPSDraw_DestroyDisplay(GDisplay *gdisp);
-extern GDisplay *_GPSDraw_CreateDisplay(void);
 extern void _GDraw_InitError(GDisplay *);
 extern void _GDraw_ComposeChars(GDisplay *gdisp,GEvent *gevent);
 

@@ -4202,20 +4202,6 @@ static void GXResourceInit(GXDisplay *gdisp,char *programname) {
     gdisp->twobmouse_win = tbf;
 }
 
-static GWindow GXPrinterStartJob(GDisplay *gdisp,void *user_data,GPrinterAttrs *attrs) {
-    fprintf(stderr, "Invalid call to GPrinterStartJob on X display\n" );
-return( NULL );
-}
-
-static void GXPrinterNextPage(GWindow w) {
-    fprintf(stderr, "Invalid call to GPrinterNextPage on X display\n" );
-}
-
-static int GXPrinterEndJob(GWindow w,int cancel) {
-    fprintf(stderr, "Invalid call to GPrinterEndJob on X display\n" );
-return( false );
-}
-
 static struct displayfuncs xfuncs = {
     GXDrawInit,
     GXDrawTerm,
@@ -4317,10 +4303,6 @@ static struct displayfuncs xfuncs = {
 
     GXDrawSyncThread,
 
-    GXPrinterStartJob,
-    GXPrinterNextPage,
-    GXPrinterEndJob,
-
     GXDrawFontMetrics,
 
     GXDrawHasCairo,
@@ -4421,7 +4403,6 @@ return( NULL );
     gdisp->virtualRoot = BadAlloc;
     gdisp->res = (25.4*WidthOfScreen(DefaultScreenOfDisplay(display)))/
 	    WidthMMOfScreen(DefaultScreenOfDisplay(display));
-    gdisp->scale_screen_by = 1;
     gdisp->mykey_keysym = XK_F12;
     gdisp->mykey_mask = 0;
     gdisp->do_dithering = true;
