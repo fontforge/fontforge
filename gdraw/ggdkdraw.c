@@ -1438,11 +1438,6 @@ static void GGDKDrawSetZoom(GWindow UNUSED(gw), GRect *UNUSED(size), enum gzoom_
     // Not implemented.
 }
 
-// Not possible?
-static void GGDKDrawSetWindowBorder(GWindow UNUSED(gw), int UNUSED(width), Color UNUSED(gcol)) {
-    Log(LOGWARN, "GGDKDrawSetWindowBorder unimplemented!");
-}
-
 static void GGDKDrawSetWindowBackground(GWindow w, Color gcol) {
     Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;
@@ -1460,10 +1455,6 @@ G_GNUC_END_IGNORE_DEPRECATIONS
 static int GGDKDrawSetDither(GDisplay *UNUSED(gdisp), int UNUSED(set)) {
     // Not implemented; does nothing.
     return false;
-}
-
-static void GGDKDrawReparentWindow(GWindow child, GWindow newparent, int x, int y) {
-    Log(LOGERR, "GGDKDrawReparentWindow called: Reparenting should NOT be used!");
 }
 
 static void GGDKDrawSetVisible(GWindow w, int show) {
@@ -1778,11 +1769,6 @@ static void GGDKDrawTranslateCoordinates(GWindow from, GWindow to, GPoint *pt) {
 static void GGDKDrawBeep(GDisplay *gdisp) {
     //Log(LOGDEBUG, " ");
     gdk_display_beep(((GGDKDisplay *)gdisp)->display);
-}
-
-static void GGDKDrawFlush(GDisplay *gdisp) {
-    //Log(LOGDEBUG, " ");
-    gdk_display_flush(((GGDKDisplay *)gdisp)->display);
 }
 
 static void GGDKDrawScroll(GWindow w, GRect *rect, int32 hor, int32 vert) {
@@ -2339,16 +2325,9 @@ static void GGDKDrawCancelTimer(GTimer *timer) {
     GGDKDRAW_DECREF(gtimer, _GGDKDraw_OnTimerDestroyed);
 }
 
-
-static void GGDKDrawSyncThread(GDisplay *UNUSED(gdisp), void (*func)(void *), void *UNUSED(data)) {
-    Log(LOGDEBUG, " "); // For some shitty gio impl. Ignore ignore ignore!
-}
-
 // Our function VTable
 static struct displayfuncs gdkfuncs = {
     GGDKDrawInit,
-    NULL, // GGDKDrawTerm,
-    NULL, // GGDKDrawNativeDisplay,
 
     GGDKDrawSetDefaultIcon,
 
@@ -2361,11 +2340,9 @@ static struct displayfuncs gdkfuncs = {
     GGDKDrawDestroyCursor,
     GGDKDrawNativeWindowExists, //Not sure what this is meant to do...
     GGDKDrawSetZoom,
-    GGDKDrawSetWindowBorder,
     GGDKDrawSetWindowBackground,
     GGDKDrawSetDither,
 
-    GGDKDrawReparentWindow,
     GGDKDrawSetVisible,
     GGDKDrawMove,
     GGDKDrawTrueMove,
@@ -2388,7 +2365,6 @@ static struct displayfuncs gdkfuncs = {
     GGDKDrawTranslateCoordinates,
 
     GGDKDrawBeep,
-    GGDKDrawFlush,
 
     GGDKDrawPushClip,
     GGDKDrawPopClip,
@@ -2409,12 +2385,9 @@ static struct displayfuncs gdkfuncs = {
     GGDKDrawScroll,
 
     GGDKDrawDrawImage,
-    NULL, // GGDKDrawTileImage - Unused function
     GGDKDrawDrawGlyph,
     GGDKDrawDrawImageMagnified,
-    NULL, // GGDKDrawCopyScreenToImage - Unused function
     GGDKDrawDrawPixmap,
-    NULL, // GGDKDrawTilePixmap - Unused function
 
     GGDKDrawCreateInputContext,
     GGDKDrawSetGIC,
@@ -2444,8 +2417,6 @@ static struct displayfuncs gdkfuncs = {
     GGDKDrawRequestTimer,
     GGDKDrawCancelTimer,
 
-    GGDKDrawSyncThread,
-
     GGDKDrawGetFontMetrics,
 
     GGDKDrawHasCairo,
@@ -2456,7 +2427,7 @@ static struct displayfuncs gdkfuncs = {
     GGDKDrawPathCurveTo,
     GGDKDrawPathStroke,
     GGDKDrawPathFill,
-    GGDKDrawPathFillAndStroke,
+    GGDKDrawPathFillAndStroke, // Currently unused
 
     GGDKDrawLayoutInit,
     GGDKDrawLayoutDraw,

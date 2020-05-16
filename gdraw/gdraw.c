@@ -44,19 +44,6 @@ GDisplay *screen_display = NULL;
 void (*_GDraw_BuildCharHook)(GDisplay *) = NULL;
 void (*_GDraw_InsCharHook)(GDisplay *,unichar_t) = NULL;
 
-void GDrawTerm(GDisplay *disp) {
-    (disp->funcs->term)(disp);
-}
-
-int GDrawGetRes(GWindow gw) {
-    if ( gw==NULL ) {
-	if ( screen_display==NULL )
-return( 100 );
-	gw = screen_display->groot;
-    }
-return( gw->display->res );
-}
-
 int GDrawPointsToPixels(GWindow gw,int points) {
     if ( gw==NULL ) {
 	if ( screen_display==NULL )
@@ -127,17 +114,9 @@ void GDrawSetWindowBackground(GWindow w,Color col) {
     (w->display->funcs->setWindowBackground)(w,col);
 }
 
-void GDrawSetWindowBorder(GWindow w,int width,Color col) {
-    (w->display->funcs->setWindowBorder)(w,width,col);
-}
-
 int GDrawSetDither(GDisplay *gdisp, int dither) {
     if ( gdisp==NULL ) gdisp = screen_display;
 return( (gdisp->funcs->setDither)(gdisp,dither) );
-}
-
-void GDrawReparentWindow(GWindow child, GWindow parent, int x, int y) {
-    (child->display->funcs->reparentWindow)(child,parent,x,y);
 }
 
 void GDrawSetVisible(GWindow w, int visible) {
@@ -322,11 +301,6 @@ void GDrawBeep(GDisplay *gdisp) {
     (gdisp->funcs->beep)(gdisp);
 }
 
-void GDrawFlush(GDisplay *gdisp) {
-    if ( gdisp==NULL ) gdisp = screen_display;
-    (gdisp->funcs->flush)(gdisp);
-}
-
 void GDrawGetClip(GWindow w, GRect *ret) {
     *ret = w->ggc->clip;
 }
@@ -367,10 +341,6 @@ return( w->ggc );
 
 void GDrawSetDifferenceMode(GWindow w) {
     (w->display->funcs->setDifferenceMode)(w);
-}
-
-void GDrawSetCopyThroughSubWindows(GWindow w,int16 through) {
-    w->ggc->copy_through_sub_windows = through;
 }
 
 void GDrawSetDashedLine(GWindow w,int16 dash_len, int16 skip_len, int16 off) {
@@ -536,22 +506,9 @@ void GDrawDrawGlyph(GWindow w, GImage *img, GRect *src, int32 x, int32 y) {
     (w->display->funcs->drawGlyph)(w,img,src,x,y);
 }
 
-/* We got an expose event for the src rectangle. The image is supposed to be */
-/*  tiled across the window starting at (x,y) and continuing at least to the */
-/*  limit of the expose event. Figure out how to draw what bits of the image */
-/*  where and how many times */
-void GDrawTileImage(GWindow w, GImage *img, GRect *src, int32 x, int32 y) {
-    (w->display->funcs->tileImage)(w,img,src,x,y);
-}
-
 /* same as drawImage except with pixmaps */
 void GDrawDrawPixmap(GWindow w, GWindow pixmap, GRect *src, int32 x, int32 y) {
     (w->display->funcs->drawPixmap)(w,pixmap,src,x,y);
-}
-
-/* same as tileImage except with pixmaps */
-void GDrawTilePixmap(GWindow w, GWindow pixmap, GRect *src, int32 x, int32 y) {
-    (w->display->funcs->tilePixmap)(w,pixmap,src,x,y);
 }
 
 /* We assume the full image is drawn starting at (x,y) and scaled to (width,height) */
@@ -583,15 +540,6 @@ void GDrawDrawImageMagnified(GWindow w, GImage *img, GRect *dest, int32 x, int32
 	dest = &temp;
     }
     (w->display->funcs->drawImageMag)(w,img,dest,x,y, width, height);
-}
-
-GImage *GDrawCopyScreenToImage(GWindow w, GRect *rect) {
-    GRect temp;
-    if ( rect==NULL ) {
-	temp.x = 0; temp.y = 0; temp.width = w->pos.width; temp.height = w->pos.height;
-	rect = &temp;
-    }
-return( (w->display->funcs->copyScreenToImage)(w,rect) );
 }
 
 void GDrawWindowFontMetrics(GWindow w,FontInstance *fi,int *as, int *ds, int *ld) {
@@ -808,13 +756,6 @@ return;
     (gdisp->funcs->cancelTimer)(timer);
 }
 
-void GDrawSyncThread(GDisplay *gdisp, void (*func)(void *), void *data) {
-    if ( gdisp==NULL )
-	gdisp = screen_display;
-    if (gdisp != NULL)
-    (gdisp->funcs->syncThread)(gdisp,func,data);
-}
-
 int GDrawRequestDeviceEvents(GWindow w,int devcnt,struct gdeveventmask *de) {
 return( (w->display->funcs->requestDeviceEvents)(w,devcnt,de) );
 }
@@ -932,213 +873,3 @@ void GDrawCreateDisplays(char *displayname,char *programname) {
 exit(1);
     }
 }
-
-void *GDrawNativeDisplay(GDisplay *gdisp) {
-    if ( gdisp==NULL )
-	gdisp=screen_display;
-    if ( gdisp==NULL )
-return( NULL );
-
-return( (gdisp->funcs->nativeDisplay)(gdisp) );
-}
-
-
-void
-GDrawAddReadFD( GDisplay *gdisp,
-		int fd, void* udata,
-		void (*callback)(int fd, void* udata ))
-{
-    if ( !gdisp )
-    {
-	gdisp=screen_display;
-    }
-    
-    if( !gdisp )
-    {
-	// collab code being called from python scripted fontforge.
-	GDrawCreateDisplays( 0, "fontforge");
-	gdisp=screen_display;
-    }
-    
-    if( gdisp->fd_callbacks_last >= gdisplay_fd_callbacks_size )
-    {
-	fprintf(stderr,"Error: FontForge has attempted to add more read FDs than it is equipt to handle\n");
-	fprintf(stderr," Please report this error!\n");
-	return;
-    }
-    
-    fd_callback_t* cb = &gdisp->fd_callbacks[ gdisp->fd_callbacks_last ];
-    gdisp->fd_callbacks_last++;
-
-    cb->fd = fd;
-    cb->udata = udata;
-    cb->callback = callback;
-}
-
-static void
-fd_callback_clear( fd_callback_t* cb )
-{
-    cb->fd = 0;
-    cb->callback = 0;
-    cb->udata = 0;
-}
-
-
-void
-GDrawRemoveReadFD( GDisplay *gdisp,
-		   int fd, void* udata )
-{
-    if ( gdisp==NULL )
-	gdisp=screen_display;
-    if( !fd )
-	return;
-    
-    int idx = 0;
-    for( idx = 0; idx < gdisplay_fd_callbacks_size; ++idx )
-    {
-	fd_callback_t* cb = &gdisp->fd_callbacks[ idx ];
-	if( cb->fd == fd )
-	{
-	    if( idx+1 >= gdisp->fd_callbacks_last )
-	    {
-		gdisp->fd_callbacks_last--;
-		fd_callback_clear( cb );
-		return;
-	    }
-	    gdisp->fd_callbacks_last--;
-	    fd_callback_t* last = &gdisp->fd_callbacks[ gdisp->fd_callbacks_last ];
-	    memcpy( cb, last, sizeof(fd_callback_t) );
-	    fd_callback_clear( last );
-	    return;
-	}
-    }
-}
-
-
-
-#ifndef MAX
-#define MAX(x,y)   (((x) > (y)) ? (x) : (y))
-#endif
-				   
-/* void MacServiceZeroMQFDs() */
-/* { */
-/*     int ret = 0; */
-    
-/*     GDisplay *gdisp = GDrawGetDisplayOfWindow(0); */
-/*     int fd = 0; */
-/*     fd_set read, write, except; */
-/*     FD_ZERO(&read); FD_ZERO(&write); FD_ZERO(&except); */
-/*     struct timeval timeout; */
-/*     timeout.tv_sec = 0; */
-/*     timeout.tv_usec = 1; */
-
-/*     if( gdisp->zeromq_fd > 0 ) */
-/*     { */
-/* 	FD_SET(gdisp->zeromq_fd,&read); */
-/* 	fd = MAX( fd, gdisp->zeromq_fd ); */
-/*     } */
-/*     if( fd > 0 ) */
-/* 	ret = select(fd+1,&read,&write,&except,&timeout); */
-
-/*     if( FD_ISSET(gdisp->zeromq_fd,&read)) */
-/*     { */
-/* 	gdisp->zeromq_fd_callback( gdisp->zeromq_fd, gdisp->zeromq_datas ); */
-/*     } */
-/* } */
-
-
-void MacServiceReadFDs()
-{
-#if __Mac
-    int ret = 0;
-    
-    GDisplay *gdisp = GDrawGetDisplayOfWindow(0);
-    int fd = 0;
-    fd_set read, write, except;
-    FD_ZERO(&read); FD_ZERO(&write); FD_ZERO(&except);
-    struct timeval timeout;
-    timeout.tv_sec = 0;
-    timeout.tv_usec = 1;
-
-    int idx = 0;
-    for( idx = 0; idx < gdisp->fd_callbacks_last; ++idx )
-    {
-	fd_callback_t* cb = &gdisp->fd_callbacks[ idx ];
-	FD_SET(cb->fd,&read);
-	fd = MAX( fd, cb->fd );
-    }
-    
-    if( fd > 0 )
-	ret = select(fd+1,&read,&write,&except,&timeout);
-
-    for( idx = 0; idx < gdisp->fd_callbacks_last; ++idx )
-    {
-	fd_callback_t* cb = &gdisp->fd_callbacks[ idx ];
-	if( FD_ISSET(cb->fd,&read))
-	    cb->callback( cb->fd, cb->udata );
-    }
-#endif
-}
-
-
-
-static int BackgroundTimer_eh( GWindow w, GEvent* ev )
-{
-    if ( ev->type == et_timer )
-    {
-	BackgroundTimer_t* bgt = (BackgroundTimer_t*)ev->u.timer.userdata;
-	bgt->func( bgt->userdata );
-    }
-    return 0;
-}
-
-
-BackgroundTimer_t*
-BackgroundTimer_new( int32 BackgroundTimerMS, 
-		     BackgroundTimerFunc func,
-		     void *userdata )
-{
-    BackgroundTimer_t* ret = calloc( 1, sizeof(BackgroundTimer_t) );
-    ret->func = func;
-    ret->userdata = userdata;
-    ret->BackgroundTimerMS = BackgroundTimerMS;
-    
-    GWindowAttrs wattrs;
-    memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_isdlg|wam_positioned;
-    wattrs.event_masks = ~(1<<et_charup);
-    wattrs.is_dlg = true;
-    wattrs.positioned = true;
-    wattrs.utf8_window_title = "Timer Window";
-    GRect pos;
-    pos.width = 10;
-    pos.height = 10;
-    pos.x = 0;
-    pos.y = 0;
-    
-    GWindow w = GDrawCreateTopWindow( 0, &pos,
-				      BackgroundTimer_eh, ret, &wattrs );
-    ret->timer = GDrawRequestTimer( w, BackgroundTimerMS, BackgroundTimerMS, ret );
-    ret->w = w;
-    return ret;
-}
-
-void BackgroundTimer_remove( BackgroundTimer_t* t )
-{
-    if( !t )
-	return;
-
-    GDrawCancelTimer( t->timer );
-    GDrawDestroyWindow( t->w );
-    free(t);
-}
-
-void BackgroundTimer_touch( BackgroundTimer_t* t )
-{
-    if( !t )
-	return;
-    
-    GDrawCancelTimer( t->timer );
-    t->timer = GDrawRequestTimer( t->w, t->BackgroundTimerMS, t->BackgroundTimerMS, t );
-}
-
