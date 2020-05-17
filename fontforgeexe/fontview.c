@@ -501,10 +501,6 @@ static void FVReselect(FontView *fv, int newpos) {
 	}
     }
     fv->end_pos = newpos;
-    if ( newpos>=0 && newpos<fv->b.map->enccount && (i = fv->b.map->map[newpos])!=-1 &&
-	    fv->b.sf->glyphs[i]!=NULL &&
-	    fv->b.sf->glyphs[i]->unicodeenc>=0 && fv->b.sf->glyphs[i]->unicodeenc<0x10000 )
-	GInsCharSetChar(fv->b.sf->glyphs[i]->unicodeenc);
 }
 
 static void FVFlattenAllBitmapSelections(FontView *fv) {

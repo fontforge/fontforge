@@ -146,10 +146,6 @@ extern struct hslrgba GWidgetColorA(const char *title,struct hslrgba *defcol,str
 #define gwwv_save_filename(tit,def,filter)		GWidgetSaveAsFile8(tit,def,filter,NULL,NULL)
 #define gwwv_save_filename_with_gadget(tit,def,filter,gcd)		GWidgetSaveAsFileWithGadget8(tit,def,filter,NULL,NULL,NULL,gcd)
 
-void GWidgetCreateInsChar(void);	/* takes input even when a modal dlg is active */
-		/* but is not modal itself */
-void GInsCharSetChar(unichar_t ch);	/* Sets current selection in ins char dlg */
-
 extern GIC *GWidgetCreateInputContext(GWindow w,enum gic_style def_style);
 extern GIC *GWidgetGetInputContext(GWindow w);
 

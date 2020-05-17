@@ -169,10 +169,6 @@ typedef struct ggdkdisplay { /* :GDisplay */
     int16 res;
     GGDKWindow groot;
     Color def_background, def_foreground;
-    uint16 mykey_state;
-    uint16 mykey_keysym;
-    uint16 mykey_mask;
-    unsigned int mykeybuild: 1;
     unsigned int default_visual: 1;
     unsigned int do_dithering: 1;
     unsigned int focusfollowsmouse: 1;

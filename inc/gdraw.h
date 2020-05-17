@@ -419,8 +419,6 @@ extern GTimer *GDrawRequestTimer(GWindow w,int32 time_from_now,int32 frequency,
 	void *userdata);
 extern void GDrawCancelTimer(GTimer *timer);
 
-extern void GDrawSetBuildCharHooks(void (*hook)(GDisplay *), void (*inshook)(GDisplay *,unichar_t));
-
 extern int GDrawRequestDeviceEvents(GWindow w,int devcnt,struct gdeveventmask *de);
 
 extern enum gcairo_flags GDrawHasCairo(GWindow w);

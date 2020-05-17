@@ -2717,16 +2717,6 @@ return;
 	    else if ( keysym<=XKEYSYM_TOP && keysym>=0 )
 		keysym = gdraw_xkeysym_2_unicode[keysym];
 	    gevent.u.chr.keysym = keysym;
-	    if ( keysym==gdisp->mykey_keysym &&
-		    (event->xkey.state&(ControlMask|Mod1Mask))==gdisp->mykey_mask ) {
-		gdisp->mykeybuild = !gdisp->mykeybuild;
-		gdisp->mykey_state = 0;
-		gevent.u.chr.chars[0] = '\0';
-		gevent.u.chr.keysym = '\0';
-		if ( !gdisp->mykeybuild && _GDraw_BuildCharHook!=NULL )
-		    (_GDraw_BuildCharHook)((GDisplay *) gdisp);
-	    } else if ( gdisp->mykeybuild )
-		_GDraw_ComposeChars((GDisplay *) gdisp,&gevent);
 	} else {
 	    /* XLookupKeysym doesn't do shifts for us (or I don't know how to use the index arg to make it) */
 	    len = XLookupString((XKeyEvent *) event,charbuf,sizeof(charbuf),&keysym,&gdisp->buildingkeys);
@@ -4135,8 +4125,6 @@ return( NULL );
     gdisp->virtualRoot = BadAlloc;
     gdisp->res = (25.4*WidthOfScreen(DefaultScreenOfDisplay(display)))/
 	    WidthMMOfScreen(DefaultScreenOfDisplay(display));
-    gdisp->mykey_keysym = XK_F12;
-    gdisp->mykey_mask = 0;
     gdisp->do_dithering = true;
     gdisp->desired_vc = gdisp->desired_depth = -1;
 

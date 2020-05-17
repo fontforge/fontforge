@@ -41,8 +41,6 @@
 */
 
 GDisplay *screen_display = NULL;
-void (*_GDraw_BuildCharHook)(GDisplay *) = NULL;
-void (*_GDraw_InsCharHook)(GDisplay *,unichar_t) = NULL;
 
 int GDrawPointsToPixels(GWindow gw,int points) {
     if ( gw==NULL ) {
@@ -718,90 +716,6 @@ return;
 
 int GDrawRequestDeviceEvents(GWindow w,int devcnt,struct gdeveventmask *de) {
 return( (w->display->funcs->requestDeviceEvents)(w,devcnt,de) );
-}
-
-void GDrawSetBuildCharHooks(void (*hook)(GDisplay *),void (*inshook)(GDisplay *,unichar_t)) {
-    _GDraw_BuildCharHook = hook;
-    _GDraw_InsCharHook = inshook;
-}
-
-/* We are in compose characters mode. The gdisp->mykey_state argument tells us*/
-/*  how many accent keys have been pressed. When we finally get a non-accent */
-/*  we try to look through our rules for composing letters given this set of */
-/*  accents and this base character. If we find something, great, install it */
-/*  and return. If there's nothing then see if we get anywhere by removing */
-/*  one of the accents (if so use it, but continue with the remain accent in */
-/*  the state). Finally we use the base character followed by all the accents */
-/*  left unaccounted for in the mask */
-void _GDraw_ComposeChars(GDisplay *gdisp,GEvent *gevent) {
-    unichar_t ch = gevent->u.chr.keysym;
-    struct gchr_transform *strt = NULL, *trans, *end=NULL;
-    extern struct gchr_lookup _gdraw_chrlookup[];
-    extern struct gchr_accents _gdraw_accents[];
-    extern uint32 _gdraw_chrs_ctlmask, _gdraw_chrs_metamask, _gdraw_chrs_any;
-    int i,mask;
-    unichar_t hold[_GD_EVT_CHRLEN], *pt, *ept, *hpt;
-    uint32 mykey_state = gdisp->mykey_state;
-
-    if ( gevent->u.chr.chars[0]=='\0' )		/* ignore things like the shift key */
-return;
-    if ( gevent->u.chr.keysym==GK_Escape ) {
-	gevent->u.chr.chars[0] = '\0';
-	gevent->u.chr.keysym = '\0';
-	gdisp->mykeybuild = false;
-return;
-    }
-    if ( gevent->u.chr.state&ksm_control )
-	mykey_state |= _gdraw_chrs_ctlmask;
-    if ( gevent->u.chr.state&ksm_meta )
-	mykey_state |= _gdraw_chrs_metamask;
-    if ( ch>' ' && ch<0x7f ) {
-	for ( trans = strt = _gdraw_chrlookup[ch-' '].transtab, end=trans+_gdraw_chrlookup[ch-' '].cnt;
-		trans<end; ++trans ) {
-	    if ( trans->oldstate==mykey_state ) {
-		gdisp->mykey_state = trans->newstate;
-		if ( trans->resch=='\0' )
-		    u_strcpy(gevent->u.chr.chars,gevent->u.chr.chars+1);
-		else {
-		    gevent->u.chr.chars[0] = trans->resch;
-		    gdisp->mykeybuild = false;
-		}
-return;
-	    } else if ( trans->oldstate==_gdraw_chrs_any ) {
-		gdisp->mykey_state |= trans->newstate;
-		u_strcpy(gevent->u.chr.chars,gevent->u.chr.chars+1);
-return;
-	    }
-	}
-    }
-
-    GDrawBeep(gdisp);
-    if ( mykey_state==0 || mykey_state==0x8000000 )
-return;
-    u_strcpy(hold,gevent->u.chr.chars+1);
-    if ( strt!=NULL ) for ( mask=0x1; mask<0x8000000; mask<<=1 ) {
-	if ( (mykey_state&~mask)== 0 )
-    break;			/* otherwise dotabove a gives us ae */
-	for ( trans=strt; trans<end; ++trans ) {
-	    if ( trans->oldstate==(mykey_state&~mask) && trans->resch!='\0' ) {
-		mykey_state = mask;
-		gevent->u.chr.chars[0] = trans->resch;
-    goto break_2_loops;
-	    }
-	}
-    }
-    break_2_loops:;
-    pt = gevent->u.chr.chars+1; ept = gevent->u.chr.chars+_GD_EVT_CHRLEN-1;
-    for ( i=0; _gdraw_accents[i].accent!=0 && pt<ept; ++i ) {
-	if ( (_gdraw_accents[i].mask&mykey_state)==_gdraw_accents[i].mask ) {
-	    *pt++ = _gdraw_accents[i].accent;
-	    mykey_state &= ~_gdraw_accents[i].mask;
-	}
-    }
-    for ( hpt = hold; pt<ept && *hpt!='\0'; )
-	*pt++ = *hpt++;
-    *pt = '\0';
-    gdisp->mykeybuild = false;
 }
 
 void GDrawDestroyDisplays() {

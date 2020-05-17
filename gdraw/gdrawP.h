@@ -141,10 +141,6 @@ struct gdisplay {
     int16 res;
     GWindow groot;
     Color def_background, def_foreground;
-    uint16 mykey_state;
-    uint16 mykey_keysym;
-    uint16 mykey_mask;
-    unsigned int mykeybuild: 1;
     unsigned int default_visual: 1;
     unsigned int do_dithering: 1;
     unsigned int focusfollowsmouse: 1;
@@ -299,8 +295,5 @@ extern void _GDraw_ComposeChars(GDisplay *gdisp,GEvent *gevent);
 extern void _GDraw_getimageclut(struct _GImage *base, struct gcol *clut);
 extern const GCol *_GImage_GetIndexedPixel(Color col,RevCMap *rev);
 extern const GCol *_GImage_GetIndexedPixelPrecise(Color col,RevCMap *rev);
-
-extern void (*_GDraw_BuildCharHook)(GDisplay *);
-extern void (*_GDraw_InsCharHook)(GDisplay *,unichar_t);
 
 #endif /* FONTFORGE_GDRAWP_H */

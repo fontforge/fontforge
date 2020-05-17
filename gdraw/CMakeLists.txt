@@ -12,11 +12,9 @@ add_library(gdraw STATIC
   fontP.h
   gaskdlg.c
   gbuttons.c
-  gchardlg.c
   gcolor.c
   gcontainer.c
   gdrawable.c
-  gdrawbuildchars.c
   gdraw.c
   gdrawerror.c
   gdrawgimage.c
