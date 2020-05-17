@@ -1,6 +1,8 @@
 build/
+out/
 
 .vscode/
+.vs/
 
 .DS_Store
 .DS_Store?
