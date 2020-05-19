@@ -1748,7 +1748,8 @@ static void RenameClass(struct contextchaindlg *ccd,char *old,char *new,int sect
 	}
     } else {
 	for ( i=0; i<rows; ++i ) {
-	    char* end_back = NULL, * end_match = NULL;
+	    char *end_back = NULL;
+	    char *end_match = NULL;
 	    char *oldrule = classrules[cols*i+0].u.md_str;
 	    char *newrule;
 	    for ( pt=last_name=oldrule; *pt; ) {
