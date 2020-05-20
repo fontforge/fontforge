@@ -6295,7 +6295,7 @@ return;
 		    if ( sf->glyphs[i]->unicodeenc==event->u.chr.keysym )
 	    break;
 	    }
-	    if ( i!=-1 )
+	    if ( i<sf->glyphcnt )
 		enc = fv->b.map->backmap[i];
 	}
 	if ( enc<fv->b.map->enccount && enc!=-1 )
