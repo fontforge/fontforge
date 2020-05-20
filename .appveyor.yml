@@ -30,19 +30,16 @@ clone_depth: 10
 #  - 'C:\msys64\var\cache\pacman\pkg'
 install:
   - git clone --depth=1 --branch=master https://github.com/fontforge/fontforgebuilds.git
-# These steps will update msys2 to the latest version
-# Run unconditionally if builds fail because of pacman not installing dependencies due to version conflicts
   - >-
-    if "%APPVEYOR_REPO_BRANCH:~0,8%"=="release/" (
     move C:\msys64 C:\msys64_old &&
-    curl -ko msys2.tar.xz http://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-20190524.tar.xz &&
+    curl -kLo msys2.tar.xz https://github.com/msys2/msys2-installer/releases/download/nightly-x86_64/msys2-base-x86_64-latest.tar.xz &&
     7z x -so msys2.tar.xz | 7z x -si -ttar &&
     move msys64 C:\ && del msys2.tar.xz &&
-    call %MBASH% "ls" &&
-    call %MBASH% "pacman -Syuu --noconfirm" &&
-    call %MBASH% "pacman -Suu --noconfirm" &&
-    call %MBASH% "pacman -Suu --noconfirm" )
-    else call %MBASH% "pacman -Syuu --noconfirm"
+    call %MBASH% "ls
+  - call %MBASH% "pacman -Syuu --noconfirm"
+  - taskkill /f /fi "MODULES eq msys-2.0.dll" || exit /b 0
+  - call %MBASH% "pacman -Suu --noconfirm"
+  - call %MBASH% "pacman -Suu --noconfirm" 
   - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds; exec 0</dev/null; ./ffbuild.sh --appveyor --depsonly"
 build_script:
   - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds; exec 0</dev/null; ./ffbuild.sh --appveyor"
