@@ -1735,7 +1735,7 @@ static void RenameClass(struct contextchaindlg *ccd,char *old,char *new,int sect
     GGadget *gclassrules = GWidgetGetControl(ccd->classes_simple,CID_CList_Simple);
     struct matrix_data *classrules = GMatrixEditGet(gclassrules,&rows);
     int cols = GMatrixEditGetColCnt(gclassrules);
-    char *end_back=NULL, *end_match=NULL, *pt, *last_name, *temp;
+    char *pt, *last_name, *temp;
     int ch;
 
     if ( sections==0x7 ) {
@@ -1748,6 +1748,8 @@ static void RenameClass(struct contextchaindlg *ccd,char *old,char *new,int sect
 	}
     } else {
 	for ( i=0; i<rows; ++i ) {
+	    char *end_back = NULL;
+	    char *end_match = NULL;
 	    char *oldrule = classrules[cols*i+0].u.md_str;
 	    char *newrule;
 	    for ( pt=last_name=oldrule; *pt; ) {
