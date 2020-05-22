@@ -2575,20 +2575,29 @@ G_GNUC_END_IGNORE_DEPRECATIONS
 
 void _GGDKDraw_DestroyDisplay(GDisplay *disp) {
     GGDKDisplay *gdisp = (GGDKDisplay *)(disp);
+    guint window_count = g_hash_table_size(gdisp->windows);
 
     // Indicate we're dying...
     gdisp->is_dying = true;
 
     // Destroy remaining windows
-    if (g_hash_table_size(gdisp->windows) > 0) {
+    if (window_count > 0) {
         Log(LOGINFO, "Windows left allocated - forcibly freeing!");
+
+        // Note that windows are destroyed in random order. When a window is
+        // destroyed, it decrements its parent reference count, so we need a
+        // large enough count to keep it around until we're ready to destroy it
+        GHashTableIter iter;
+        GGDKWindow gw;
+        g_hash_table_iter_init(&iter, gdisp->windows);
+        while (g_hash_table_iter_next(&iter, (void **)&gw, NULL)) {
+            gw->reference_count = window_count + 2;
+        }
         while (g_hash_table_size(gdisp->windows) > 0) {
-            GHashTableIter iter;
-            GGDKWindow gw;
             g_hash_table_iter_init(&iter, gdisp->windows);
             if (g_hash_table_iter_next(&iter, (void **)&gw, NULL)) {
                 Log(LOGINFO, "Forcibly destroying window (%p:%s)", gw, gw->window_title);
-                gw->reference_count = 2;
+                assert(gw->reference_count >= 2);
                 GGDKDrawDestroyWindow((GWindow)gw);
                 _GGDKDraw_OnWindowDestroyed(gw);
             }
