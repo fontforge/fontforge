@@ -88,13 +88,13 @@ return;
 	Py_DECREF(arglist);
 	if ( result==NULL )
 	    /* Oh. An error. How fun. See below */;
-	else if ( !PyInt_Check(result)) {
+	else if ( !PyLong_Check(result)) {
 	    char *menu_item_name = u2utf8_copy(mi->ti.text);
 	    LogError(_("Return from enabling function for menu item %s must be boolean"), menu_item_name );
 	    free( menu_item_name );
 	    mi->ti.disabled = true;
 	} else
-	    mi->ti.disabled = PyInt_AsLong(result)==0;
+	    mi->ti.disabled = PyLong_AsLong(result)==0;
 	Py_XDECREF(result);
 	if ( PyErr_Occurred()!=NULL )
 	    PyErr_Print();
@@ -228,16 +228,12 @@ static void InsertSubMenus(PyObject *args,GMenuItem2 **mn, int is_cv) {
     if ( PyTuple_GetItem(args,4)==Py_None )
 	shortcut_str = NULL;
     else {
-#if PY_MAJOR_VERSION >= 3
         PyObject *obj = PyUnicode_AsUTF8String(PyTuple_GetItem(args,4));
         shortcut_str = PyBytes_AsString(obj);
-#else /* PY_MAJOR_VERSION >= 3 */
-        shortcut_str = PyBytes_AsString(PyTuple_GetItem(args,4));
-#endif /* PY_MAJOR_VERSION >= 3 */
     }
 
     for ( i=5; i<cnt; ++i ) {
-        PyObject *submenu_utf8 = PYBYTES_UTF8(PyTuple_GetItem(args,i));
+        PyObject *submenu_utf8 = PyUnicode_AsUTF8String(PyTuple_GetItem(args,i));
 	unichar_t *submenuu = utf82u_copy( PyBytes_AsString(submenu_utf8) );
 	Py_DECREF(submenu_utf8);
 
@@ -310,7 +306,6 @@ return( NULL );
 return( NULL );
 	}
 	if ( PyTuple_GetItem(args,4)!=Py_None ) {
-#if PY_MAJOR_VERSION >= 3
         PyObject *obj = PyUnicode_AsUTF8String(PyTuple_GetItem(args,4));
         if ( obj==NULL )
 return( NULL );
@@ -320,14 +315,9 @@ return( NULL );
 return( NULL );
         }
         Py_DECREF( obj );
-#else /* PY_MAJOR_VERSION >= 3 */
-	    char *shortcut_str = PyBytes_AsString(PyTuple_GetItem(args,4));
-	    if ( shortcut_str==NULL )
-return( NULL );
-#endif /* PY_MAJOR_VERSION >= 3 */
 	}
 	for ( i=5; i<cnt; ++i ) {
-        utf8_name = PYBYTES_UTF8(PyTuple_GetItem(args,i));
+        utf8_name = PyUnicode_AsUTF8String(PyTuple_GetItem(args,i));
 	    if ( utf8_name==NULL )
 return( NULL );
 	    Py_DECREF(utf8_name);

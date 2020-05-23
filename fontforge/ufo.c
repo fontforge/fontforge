@@ -704,7 +704,7 @@ static int PyObjDumpable(PyObject *value, int has_lists) {
 return( true ); // Note that this means two different things depending upon has_lists.
     if ( PyList_Check(value))
 return( true );
-    if ( PyInt_Check(value))
+    if ( PyLong_Check(value))
 return( true );
     if ( PyFloat_Check(value))
 return( true );
@@ -756,8 +756,8 @@ xmlNodePtr PyObjectToXML( PyObject *value, int has_lists ) {
         childtmp = xmlNewNode(NULL, BAD_CAST "false"); // "<false/>"
     else if ( value==Py_None )
         childtmp = xmlNewNode(NULL, BAD_CAST "none");  // "<none/>"
-    else if (PyInt_Check(value)) {
-        childtmp = xmlNewNodeInteger(NULL, BAD_CAST "integer", PyInt_AsLong(value)); // Create an integer node.
+    else if (PyLong_Check(value)) {
+        childtmp = xmlNewNodeInteger(NULL, BAD_CAST "integer", PyLong_AsLong(value)); // Create an integer node.
         // "<integer>%ld</integer>"
     } else if (PyFloat_Check(value)) {
         childtmp = xmlNewNode(NULL, BAD_CAST "real");
