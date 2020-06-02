@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <assert.h>
 #include <fontforge-config.h>
 
 #include "gdraw.h"
@@ -36,6 +37,26 @@
 #include "gwidgetP.h"
 #include "ustring.h"
 #include "utype.h"
+#ifdef WIN32
+#include <windows.h>
+
+// Returns "CDQ" if C:\, D:\ and Q:\ are available.
+// This could probably be put in fsys.c, but we don't need it anywhere else,
+// and shouldn't ever.
+static unsigned int WIN32_DRIVES_MAXLEN = 26;
+static char* _DriveLetters() {
+    int idx = -1;
+    char* ret = calloc(WIN32_DRIVES_MAXLEN,sizeof(char));
+    DWORD drives = GetLogicalDrives();
+    assert(drives > 0);
+    for (int d = 0; d < WIN32_DRIVES_MAXLEN; d++) {
+        if ( (drives&(1 << d)) ) {
+            ret[++idx] = 'A'+d;
+        }
+    }
+    return ret;
+}
+#endif
 
 /* This isn't really a gadget, it's just a collection of gadgets with some glue*/
 /*  to make them work together. Therefore there are no expose routines here, */
@@ -423,7 +444,12 @@ static void GFileChooserErrorDir(GIOControl *gc) {
 static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
     GTextInfo **ti=NULL;
     int cnt, tot=0;
+#ifdef _WIN32
+    char* drives = _DriveLetters();
+    int dcnt = strlen(drives);
+#endif
     unichar_t *pt, *ept, *freeme;
+    unichar_t *origdir = dir;
 
     dir = u_GFileNormalize(dir);
     while ( 1 ) {
@@ -460,6 +486,26 @@ static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
 	ti = malloc((cnt+1)*sizeof(GTextInfo *));
 	tot = cnt-1;
     }
+
+#ifdef _WIN32
+    ti = realloc(ti, (dcnt+cnt+1)*sizeof(GTextInfo *));
+    for (char* c = drives; *c != '\0'; c++) {
+        // Don't put the root twice if we're already on it
+        unichar_t buffer[1025];
+        if (*c == toupper(u_GFileGetAbsoluteName(dir,buffer,sizeof(buffer)/sizeof(unichar_t))[0])) continue;
+
+        ti[cnt] = calloc(1,sizeof(GTextInfo));
+        unichar_t* utemp = calloc(3,sizeof(unichar_t));
+        utemp[0] = *c; utemp[1] = ':'; //utemp[2] = '\\'; // utemp[3] = 0;
+        ti[cnt]->text = utemp;
+        ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
+        // We don't want to add a new field to GTextInfo as it's used in a lot of places.
+        // This is the next best thing AFAICT.
+        ti[cnt]->userdata = (void*)1;
+        cnt++;
+    }
+    free(drives);
+#endif
     ti[cnt] = calloc(1,sizeof(GTextInfo));
 
     GGadgetSetList(&gfc->directories->g,ti,false);
@@ -622,10 +668,13 @@ static unichar_t *GFileChooserGetCurDir(GFileChooser *gfc,int dirindex) {
 	dirindex = 0;
     dirindex = dirindex;
 
-    for ( j=len-1, cnt=0; j>=dirindex; --j )
+    for ( j=len-1, cnt=0; j>=dirindex; --j ) {
+    if (ti[j]->userdata != NULL) continue;
 	cnt += u_strlen(ti[j]->text)+1;
+    }
     pt = dir = malloc((cnt+1)*sizeof(unichar_t));
     for ( j=len-1; j>=dirindex; --j ) {
+    if (ti[j]->userdata != NULL) continue;
 	u_strcpy(pt,ti[j]->text);
 	pt += u_strlen(pt);
 	if ( pt[-1]!='/' )
@@ -635,23 +684,40 @@ static unichar_t *GFileChooserGetCurDir(GFileChooser *gfc,int dirindex) {
 return( dir );
 }
 
+static void GFileChooserRefresh(GFileChooser *gfc) {
+    unichar_t *dir;
+
+    dir = GFileChooserGetCurDir(gfc,-1);
+    GFileChooserScanDir(gfc,dir);
+    free(dir);
+}
+
+static void GFileChooserSetTitle(GGadget *g,const unichar_t *tit);
+
 /* Handle events from the directory dropdown list */
 static int GFileChooserDListChanged(GGadget *pl,GEvent *e) {
     GFileChooser *gfc;
-    int i; /*int32 len;*/
+    int i;
     unichar_t *dir;
-    /*GTextInfo **ti;*/
 
     if ( e->type!=et_controlevent || e->u.control.subtype!=et_listselected )
 return( true );
     i = GGadgetGetFirstListSelectedItem(pl);
     if ( i==-1 )
 return(true);
-    /*ti = GGadgetGetList(pl,&len);*/
+    gfc = (GFileChooser *) GGadgetGetUserData(pl);
+#ifdef _WIN32
+    int len;
+    GTextInfo **ti;
+    ti = GGadgetGetList(pl,&len);
+    if (ti[i]->userdata != NULL) {
+        GFileChooserSetTitle((GGadget*)gfc, ti[i]->text);
+        GFileChooserRefresh(gfc);
+return( true );
+    }
+#endif
     if ( i==0 )		/* Nothing changed */
 return( true );
-
-    gfc = (GFileChooser *) GGadgetGetUserData(pl);
     dir = GFileChooserGetCurDir(gfc,i);
     GFileChooserScanDir(gfc,dir);
     free(dir);
@@ -839,11 +905,7 @@ static void GFCDirsSeparateToggle(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void GFCRefresh(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     GFileChooser *gfc = (GFileChooser *) (mi->ti.userdata);
-    unichar_t *dir;
-
-    dir = GFileChooserGetCurDir(gfc,-1);
-    GFileChooserScanDir(gfc,dir);
-    free(dir);
+    GFileChooserRefresh(gfc);
 }
 
 static int GFileChooserHome(GGadget *g, GEvent *e) {
