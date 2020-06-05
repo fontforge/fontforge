@@ -46,7 +46,7 @@
 static unsigned int WIN32_DRIVES_MAXLEN = 26;
 static char* _DriveLetters() {
     int idx = -1;
-    char* ret = calloc(WIN32_DRIVES_MAXLEN,sizeof(char));
+    char* ret = calloc(WIN32_DRIVES_MAXLEN+1,sizeof(char));
     DWORD drives = GetLogicalDrives();
     assert(drives > 0);
     for (int d = 0; d < WIN32_DRIVES_MAXLEN; d++) {
@@ -489,10 +489,13 @@ static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
 
 #ifdef _WIN32
     ti = realloc(ti, (dcnt+cnt+1)*sizeof(GTextInfo *));
+
+    unichar_t buffer[1025];
+    // Find "root" (e.g. C) and...
+    char win32root = toupper(u_GFileGetAbsoluteName(dir,buffer,sizeof(buffer)/sizeof(unichar_t))[0]);
     for (char* c = drives; *c != '\0'; c++) {
-        // Don't put the root twice if we're already on it
-        unichar_t buffer[1025];
-        if (*c == toupper(u_GFileGetAbsoluteName(dir,buffer,sizeof(buffer)/sizeof(unichar_t))[0])) continue;
+        // ...don't put the root twice if we're already on it.
+        if (*c == win32root) continue;
 
         ti[cnt] = calloc(1,sizeof(GTextInfo));
         unichar_t* utemp = calloc(3,sizeof(unichar_t));
@@ -665,20 +668,22 @@ static unichar_t *GFileChooserGetCurDir(GFileChooser *gfc,int dirindex) {
 
     ti = GGadgetGetList(&gfc->directories->g,&len);
     if ( dirindex==-1 )
-	dirindex = 0;
+        dirindex = 0;
     dirindex = dirindex;
 
-    for ( j=len-1, cnt=0; j>=dirindex; --j ) {
-    if (ti[j]->userdata != NULL) continue;
-	cnt += u_strlen(ti[j]->text)+1;
+    for ( j=len-1,cnt=0; j>=dirindex; --j ) {
+        if (ti[j]->userdata != NULL) 
+            continue;
+        cnt += u_strlen(ti[j]->text)+1;
     }
     pt = dir = malloc((cnt+1)*sizeof(unichar_t));
     for ( j=len-1; j>=dirindex; --j ) {
-    if (ti[j]->userdata != NULL) continue;
-	u_strcpy(pt,ti[j]->text);
-	pt += u_strlen(pt);
-	if ( pt[-1]!='/' )
-	    *pt++ = '/';
+        if (ti[j]->userdata != NULL) 
+            continue;
+        u_strcpy(pt,ti[j]->text);
+        pt += u_strlen(pt);
+        if ( pt[-1]!='/' )
+            *pt++ = '/';
     }
     *pt = '\0';
 return( dir );
