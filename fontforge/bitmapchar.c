@@ -372,6 +372,7 @@ void SFReplaceFontnameBDFProps(SplineFont *sf) {
 		    BDFPropReplace(bdf,"FONT",buffer2);
 		}
 	    }
+	    free(bpt);
 	}
     }
 }
