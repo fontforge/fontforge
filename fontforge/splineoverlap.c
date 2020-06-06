@@ -3490,7 +3490,7 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 
     while ( base!=NULL ) {
 	ssnext = base->next;
-	for ( sp=base->first; ; ) {
+	for ( sp=base->first; !( base == NULL || sp==base->first ); ) {
 	    if ( sp->next==NULL )
 	break;
 	    nsp = sp->next->to;
@@ -3587,10 +3587,10 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 	    }
 	    // Remember that we may have deleted base and nulled nsp previously.
 	    sp = nsp; // Increment sp, possibly to NULL.
-	    // If we are at the end of the contour or have deleted it, the job is done.
-	    if ( base == NULL || sp==base->first )
-		break;
 	}
+	// If we are at the end of the contour or have deleted it, the job is done.
+	if ( base == NULL || sp==base->first )
+	    break;
 	if ( sp && sp->prev!=NULL && !sp->noprevcp ) {
 	    int refigure = false;
 	    if ( sp->me.x-sp->prevcp.x>-error && sp->me.x-sp->prevcp.x<error ) {
