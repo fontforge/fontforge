@@ -3510,6 +3510,7 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 			    prev->next = ssnext;
 			base = NULL;
 			nsp = NULL;
+			sp = NULL;
 			break;
 		    } else {
 			// We want to remove the spline following sp.
