@@ -449,7 +449,6 @@ static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
     int dcnt = strlen(drives);
 #endif
     unichar_t *pt, *ept, *freeme;
-    unichar_t *origdir = dir;
 
     dir = u_GFileNormalize(dir);
     while ( 1 ) {
@@ -490,12 +489,9 @@ static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
 #ifdef _WIN32
     ti = realloc(ti, (dcnt+cnt+1)*sizeof(GTextInfo *));
 
-    unichar_t buffer[1025];
-    // Find "root" (e.g. C) and...
-    char win32root = toupper(u_GFileGetAbsoluteName(dir,buffer,sizeof(buffer)/sizeof(unichar_t))[0]);
     for (char* c = drives; *c != '\0'; c++) {
-        // ...don't put the root twice if we're already on it.
-        if (*c == win32root) continue;
+        // Don't put the root twice if we're already on it.
+        if (*c == toupper(dir[0])) continue;
 
         ti[cnt] = calloc(1,sizeof(GTextInfo));
         unichar_t* utemp = calloc(3,sizeof(unichar_t));
