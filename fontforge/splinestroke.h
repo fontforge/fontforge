@@ -21,7 +21,7 @@ enum ShapeType {
 
 extern StrokeInfo *CVFreeHandInfo();
 extern StrokeInfo *CVStrokeInfo();
-extern int ConvexNibID(char *tok);
+extern int ConvexNibID(const char *tok);
 extern int StrokeSetConvex(SplineSet *ss, int toknum);
 extern SplineSet *StrokeGetConvex(int toknum, int cpy);
 extern enum ShapeType NibIsValid(SplineSet *);

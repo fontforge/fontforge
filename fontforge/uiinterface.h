@@ -82,7 +82,7 @@ struct ui_interface {
 
     /* Multiple things can be selected, sel is an in/out parameter, one byte */
     /*  per entry in the choice array. 0=> not selected, 1=>selected */
-    int (*choose_multiple)(char *title, const char **choices,char *sel,
+    int (*choose_multiple)(const char *title, const char **choices, char *sel,
 	    int cnt, char *buts[2], const char *question,...);
 
    /* Here we want a string. We are passed a default answer (or NULL) */

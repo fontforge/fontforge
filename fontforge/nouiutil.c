@@ -91,7 +91,7 @@ static int NOUI_choose(const char *title, const char **choices,int cnt, int def,
 return( def );
 }
 
-static int NOUI_choose_multiple(char *title, const char **choices,char *sel,
+static int NOUI_choose_multiple(const char *title, const char **choices, char *sel,
 	int cnt, char *buts[2], const char *question,...) {
 return( -1 );
 }

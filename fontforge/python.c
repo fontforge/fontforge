@@ -94,9 +94,6 @@
 #include <unistd.h>
 #include <wchar.h>
 
-// This returns internal buffer of _b, which will go away. Remember to do `out = copy(out)` as needed.
-#define PYGETSTR(in, out, fail) out = (char*)PyUnicode_AsUTF8(in); if (!out) return fail;
-
 extern int old_sfnt_flags;
 extern int prefRevisionsToRetain;
 
@@ -349,7 +346,7 @@ return( i );
 int FlagsFromTuple(PyObject *tuple,struct flaglist *flags, const char *flagkind) {
     int ret = 0,temp;
     int i;
-    char *str = NULL;
+    const char *str = NULL;
     PyObject *obj;
 
     if ( flagkind == NULL )
@@ -360,9 +357,10 @@ int FlagsFromTuple(PyObject *tuple,struct flaglist *flags, const char *flagkind)
 return( 0 );
     /* Might just be one string, might be a tuple (or any sequence) of strings */
     if ( PyUnicode_Check(tuple)) {
-	PYGETSTR(tuple, str, FLAG_UNKNOWN);
-        i = FlagsFromString(str,flags,flagkind);
-        return i;
+        if ((str = PyUnicode_AsUTF8(tuple)) == NULL) {
+            return FLAG_UNKNOWN;
+        }
+        return FlagsFromString(str,flags,flagkind);
     } else if ( PySequence_Check(tuple)) {
 	ret = 0;
 	for ( i=0; i<PySequence_Size(tuple); ++i ) {
@@ -372,8 +370,9 @@ return( 0 );
 	    if ( !PyUnicode_Check(obj)) {
 		PyErr_Format(PyExc_TypeError, "Bad %s list, must consist of strings only", flagkind);
 return( FLAG_UNKNOWN );
+	    } else if ((str = PyUnicode_AsUTF8(obj)) == NULL) {
+		return FLAG_UNKNOWN;
 	    }
-	    PYGETSTR(obj, str, FLAG_UNKNOWN);
             temp = FlagsFromString(str,flags,flagkind);
 	    if ( temp==FLAG_UNKNOWN )
 return( FLAG_UNKNOWN );
@@ -420,7 +419,7 @@ void PyFF_Glyph_Set_Layer(SplineChar *sc,int layer) {
 }
 
 #define BAD_TAG ((uint32)0xffffffff)
-static uint32 StrToTag(char *tag_name, int *was_mac) {
+static uint32 StrToTag(const char *tag_name, int *was_mac) {
     uint8 foo[4];
     int feat, set;
 
@@ -460,12 +459,8 @@ return( (foo[0]<<24) | (foo[1]<<16) | (foo[2]<<8) | foo[3] );
 }
 
 static uint32 StrObjToTag(PyObject *obj, int *was_mac) {
-    char *str;
-    uint32 r;
-
-    PYGETSTR(obj, str, BAD_TAG);
-    r = StrToTag(str, was_mac);
-    return r;
+    const char *str = PyUnicode_AsUTF8(obj);
+    return str ? StrToTag(str, was_mac) : BAD_TAG;
 }
 
 static PyObject *TagToPythonString(uint32 tag,int ismac) {
@@ -514,7 +509,7 @@ static PyObject *PyFF_SetPrefs(PyObject *UNUSED(self), PyObject *args) {
 	val.type = v_int;
     else {
 	PyErr_Clear();
-	if ( PyArg_ParseTuple(args,"ses",&prefname,"UTF-8", &val.u.sval) )
+	if ( PyArg_ParseTuple(args,"ss",&prefname, &val.u.sval) )
 	    val.type = v_str;
 	else {
 	    PyErr_Clear();
@@ -528,7 +523,6 @@ return( NULL );
 
     bool succeeded = SetPrefs((char *) prefname,&val,NULL);
     if (val.type == v_str && val.u.sval) {
-        PyMem_Free(val.u.sval);
         val.u.sval = NULL;
     }
 
@@ -624,11 +618,10 @@ static PyObject *PyFF_UnicodeFromName(PyObject *UNUSED(self), PyObject *args) {
     char *name;
     PyObject *ret;
 
-    if ( !PyArg_ParseTuple(args,"es", "UTF-8", &name ))
+    if ( !PyArg_ParseTuple(args,"s", &name ))
 return( NULL );
 
     ret = Py_BuildValue("i", UniFromName((char *) name, ui_none,&custom));
-    PyMem_Free(name);
 return( ret );
 }
 
@@ -1119,10 +1112,9 @@ static PyObject *PyFF_OpenFont(PyObject *UNUSED(self), PyObject *args) {
     SplineFont *sf;
     PyObject *flagsobj = NULL;
 
-    if ( !PyArg_ParseTuple(args,"es|O", "UTF-8", &filename, &flagsobj ))
+    if ( !PyArg_ParseTuple(args,"s|O", &filename, &flagsobj ))
 	return NULL;
     locfilename = utf82def_copy(filename);
-    PyMem_Free(filename);
 
     if ( flagsobj!=NULL && PyLong_Check(flagsobj) ) {
 	openflags = PyLong_AsLong(flagsobj);
@@ -1155,10 +1147,9 @@ static PyObject *PyFF_FontsInFile(PyObject *UNUSED(self), PyObject *args) {
     char **ret;
     int cnt, i;
 
-    if ( !PyArg_ParseTuple(args,"es","UTF-8",&filename) )
+    if ( !PyArg_ParseTuple(args,"s",&filename) )
 return( NULL );
     locfilename = utf82def_copy(filename);
-    PyMem_Free(filename);
     ret = GetFontNames(locfilename, 1);
     free(locfilename);
     cnt = 0;
@@ -1337,22 +1328,20 @@ static PyObject *PyFF_registerImportExport(PyObject *UNUSED(self), PyObject *arg
     char *name, *exten, *exten_list=NULL;
     /* I'm assuming the extensions are in ASCII so no conversion will be needed*/
 
-    if ( !PyArg_ParseTuple(args,"OOOess|s", &import, &export, &data,
-	    "UTF-8", &name, &exten, &exten_list ))
+    if ( !PyArg_ParseTuple(args,"OOOss|s", &import, &export, &data,
+	    &name, &exten, &exten_list ))
 return( NULL );
     if ( import==Py_None && export==Py_None )
 Py_RETURN_NONE;			/* Well, that was pointless */
     if ( import==Py_None )
 	import=NULL;
     else if ( !PyCallable_Check(import) ) {
-	PyMem_Free(name);
 	PyErr_Format(PyExc_TypeError, "First argument is not callable" );
 return( NULL );
     }
     if ( export==Py_None )
 	export=NULL;
     else if ( !PyCallable_Check(export) ) {
-	PyMem_Free(name);
 	PyErr_Format(PyExc_TypeError, "Second argument is not callable" );
 return( NULL );
     }
@@ -1464,10 +1453,9 @@ static PyObject *PyFF_scriptFromUnicode(PyObject *UNUSED(self), PyObject *args) 
 
 static PyObject *PyFF_logError(PyObject *UNUSED(self), PyObject *args) {
     char *msg;
-    if ( !PyArg_ParseTuple(args,"es","UTF-8", &msg) )
+    if ( !PyArg_ParseTuple(args,"s", &msg) )
 return( NULL );
     LogError(msg);
-    PyMem_Free(msg);
 Py_RETURN_NONE;
 }
 
@@ -1477,22 +1465,18 @@ static bool showPythonErrors = 1;
 
 static PyObject *PyFF_postError(PyObject *UNUSED(self), PyObject *args) {
     char *msg, *title;
-    if ( !PyArg_ParseTuple(args,"eses","UTF-8", &title, "UTF-8", &msg) )
+    if ( !PyArg_ParseTuple(args,"ss", &title, &msg) )
 return( NULL );
     if( showPythonErrors )
         ff_post_error(title,msg);		/* Prints to stderr if no ui */
-    PyMem_Free(title);
-    PyMem_Free(msg);
 Py_RETURN_NONE;
 }
 
 static PyObject *PyFF_postNotice(PyObject *UNUSED(self), PyObject *args) {
     char *msg, *title;
-    if ( !PyArg_ParseTuple(args,"eses","UTF-8", &title, "UTF-8", &msg) )
+    if ( !PyArg_ParseTuple(args,"ss", &title, &msg) )
 return( NULL );
     ff_post_notice(title,msg);		/* Prints to stderr if no ui */
-    PyMem_Free(title);
-    PyMem_Free(msg);
 Py_RETURN_NONE;
 }
 
@@ -1506,12 +1490,10 @@ static PyObject *PyFF_openFilename(PyObject *UNUSED(self), PyObject *args) {
 return( NULL );
     }
 
-    if ( !PyArg_ParseTuple(args,"es|ess","UTF-8", &title, "UTF-8", &def, &filter) )
+    if ( !PyArg_ParseTuple(args,"s|ss", &title, &def, &filter) )
 return( NULL );
 
     ret = ff_open_filename(title,def,filter);
-    PyMem_Free(title);
-    PyMem_Free(def);
     if ( ret==NULL )
 Py_RETURN_NONE;
     reto = PyUnicode_DecodeUTF8(ret,strlen(ret),NULL);
@@ -1529,12 +1511,10 @@ static PyObject *PyFF_saveFilename(PyObject *UNUSED(self), PyObject *args) {
 return( NULL );
     }
 
-    if ( !PyArg_ParseTuple(args,"es|ess","UTF-8", &title, "UTF-8", &def, &filter) )
+    if ( !PyArg_ParseTuple(args,"s|ss", &title, &def, &filter) )
 return( NULL );
 
     ret = ff_save_filename(title,def,filter);
-    PyMem_Free(title);
-    PyMem_Free(def);
     if ( ret==NULL )
 Py_RETURN_NONE;
     reto = PyUnicode_DecodeUTF8(ret,strlen(ret),NULL);
@@ -1544,7 +1524,7 @@ return( reto );
 
 int NibCheck(SplineSet *ss);
 
-int PyFF_ConvexNibID(char *tok) {
+int PyFF_ConvexNibID(const char *tok) {
    int r = ConvexNibID(tok);
    if ( r==-1 )
 	PyErr_Format(PyExc_TypeError, "Unrecognized convex nib context name" );
@@ -1599,12 +1579,14 @@ static PyObject *PyFF_setConvexNib(PyObject *UNUSED(self), PyObject *args) {
 }
 
 static PyObject *PyFF_getConvexNib(PyObject *UNUSED(self), PyObject *args) {
-    char *tok;
+    const char *tok;
     int toknum;
     SplineSet *ss;
     PyFF_Layer *l;
 
-    PYGETSTR(args, tok, NULL);
+    if ((tok = PyUnicode_AsUTF8(args)) == NULL) {
+        return NULL;
+    }
     toknum = PyFF_ConvexNibID(tok);
     if ( toknum==-1 )
 	return NULL;
@@ -1618,7 +1600,7 @@ static PyObject *PyFF_getConvexNib(PyObject *UNUSED(self), PyObject *args) {
 }
 
 static PyObject *PyFF_ask(PyObject *UNUSED(self), PyObject *args) {
-    char *title=NULL,*quest=NULL, **answers;
+    const char *title=NULL,*quest=NULL, **answers;
     int def=0, cancel=-1, cnt;
     PyObject *answero;
     int i, ret;
@@ -1628,50 +1610,42 @@ static PyObject *PyFF_ask(PyObject *UNUSED(self), PyObject *args) {
 return( NULL );
     }
 
-    if ( !PyArg_ParseTuple(args,"esesO|ii","UTF-8", &title, "UTF-8", &quest, &answero, &def, &cancel) )
+    if ( !PyArg_ParseTuple(args,"ssO|ii", &title, &quest, &answero, &def, &cancel) )
 return( NULL );
     if ( !PySequence_Check(answero) || PyUnicode_Check(answero)) {
 	PyErr_Format(PyExc_TypeError, "Expected a tuple of strings for the third argument");
-	PyMem_Free(title);
-	PyMem_Free(quest);
 return( NULL );
     }
     cnt = PySequence_Size(answero);
-    answers = calloc(cnt+1, sizeof(char *));
+    answers = calloc(cnt+1, sizeof(const char *));
     if ( cancel==-1 )
 	cancel = cnt-1;
     if ( cancel<0 || cancel>=cnt || def<0 || def>=cnt ) {
 	PyErr_Format(PyExc_ValueError, "Value out of bounds for 4th or 5th argument");
-	PyMem_Free(title);
-	PyMem_Free(quest);
 	free(answers);
 return( NULL );
     }
     for ( i=0; i<cnt; ++i ) {
-        PyObject *utf8_name = PyUnicode_AsUTF8String(PySequence_GetItem(answero,i));
-	if ( utf8_name==NULL ) {
-	    PyMem_Free(title);
-	    PyMem_Free(quest);
-	    FreeStringArray( i, answers );
-return( NULL );
-	}
-	answers[i] = copy(PyBytes_AsString(utf8_name));
-	Py_DECREF(utf8_name);
+        PyObject *item = PySequence_GetItem(answero, i);
+        answers[i] = PyUnicode_AsUTF8(item);
+        Py_XDECREF(item);
+        if (answers[i] == NULL) {
+            free(answers);
+            return NULL;
+        }
     }
     answers[cnt] = NULL;
 
-    ret = ff_ask(title,(const char **) answers,def,cancel,quest);
-    PyMem_Free(title);
-    PyMem_Free(quest);
-    FreeStringArray( cnt, answers );
+    ret = ff_ask(title,answers,def,cancel,quest);
+    free(answers);
 return( Py_BuildValue("i",ret));
 }
 
 static const char *askChoices_keywords[] = { "title", "question", "answers", "default", "multiple", NULL };
 
 static PyObject *PyFF_askChoices(PyObject *UNUSED(self), PyObject *args, PyObject *kwargs) {
-    char *title=NULL, *quest=NULL;
-    char **answers; // receives answers written into `answero`
+    const char *title=NULL, *quest=NULL;
+    const char **answers; // receives answers written into `answero`
     PyObject* defo = NULL; // default answer index, or tuple of len cnt
     int def = 0; // default index, only used if not multianswer
     int cnt; // number of answers
@@ -1685,8 +1659,8 @@ static PyObject *PyFF_askChoices(PyObject *UNUSED(self), PyObject *args, PyObjec
         return( NULL );
     }
 
-    if ( !PyArg_ParseTupleAndKeywords(args, kwargs, "esesO|OO", (char**) askChoices_keywords,
-                                      "UTF-8", &title, "UTF-8", &quest, &answero, &defo, &multipleo) ) {
+    if ( !PyArg_ParseTupleAndKeywords(args, kwargs, "ssO|OO", (char**) askChoices_keywords,
+                                      &title, &quest, &answero, &defo, &multipleo) ) {
         PyErr_Format(PyExc_EnvironmentError, "Failed to parse arguments");
         return( NULL );
     }
@@ -1695,8 +1669,6 @@ static PyObject *PyFF_askChoices(PyObject *UNUSED(self), PyObject *args, PyObjec
 
     if ( !PySequence_Check(answero) || PyUnicode_Check(answero)) {
         PyErr_Format(PyExc_TypeError, "Expected a tuple of strings for the third argument");
-        PyMem_Free(title);
-        PyMem_Free(quest);
         return( NULL );
     }
 
@@ -1708,7 +1680,7 @@ static PyObject *PyFF_askChoices(PyObject *UNUSED(self), PyObject *args, PyObjec
             def = (int)PyLong_AsLong(defo);
             if ( def<0 || def>=cnt ) {
                 PyErr_Format(PyExc_ValueError, "Value out of bounds for 4th argument");
-                PyMem_Free(title); PyMem_Free(quest); PyMem_Free(sel);
+                free(sel);
                 return( NULL );
             }
             if (multiple) {
@@ -1718,17 +1690,17 @@ static PyObject *PyFF_askChoices(PyObject *UNUSED(self), PyObject *args, PyObjec
             int dcnt = PySequence_Size(defo);
             if (dcnt != cnt) {
                 PyErr_Format(PyExc_ValueError, "Expected tuple/list of %d items, got %d items", cnt, dcnt );
-                PyMem_Free(title); PyMem_Free(quest); PyMem_Free(sel);
+                free(sel);
                 return( NULL );
             }
             bool def_set = false;
             for (int i = 0; i < cnt; i++) {
                 PyObject* temp = PyTuple_GetItem(defo, i);
                 sel[i] = PyObject_IsTrue(temp);
-                if (!multiple && PyObject_IsTrue(temp)) {
+                if (!multiple && sel[i]) {
                     if (def_set) {
                         PyErr_Format(PyExc_ValueError, "`multiple` False, only expected 1 True in `default`" );
-                        PyMem_Free(title); PyMem_Free(quest); PyMem_Free(sel);
+                        free(sel);
                         return( NULL );
                     }
                     def = i;
@@ -1737,21 +1709,21 @@ static PyObject *PyFF_askChoices(PyObject *UNUSED(self), PyObject *args, PyObjec
             }
         } else {
             PyErr_Format(PyExc_TypeError, "4th argument must be a tuple or integer" );
-            PyMem_Free(title); PyMem_Free(quest); PyMem_Free(sel);
+            free(sel);
             return( NULL );
         }
     }
 
-    answers = calloc(cnt+1, sizeof(char *));
+    answers = calloc(cnt+1, sizeof(const char *));
     for ( int i=0; i<cnt; ++i ) {
-        PyObject *utf8_name = PyUnicode_AsUTF8String(PySequence_GetItem(answero,i));
-        if ( utf8_name==NULL ) {
-            PyMem_Free(title); PyMem_Free(quest); PyMem_Free(sel);
-            FreeStringArray( i, answers );
-            return( NULL );
+        PyObject *temp = PySequence_GetItem(answero,i);
+        answers[i] = PyUnicode_AsUTF8(temp);
+        Py_XDECREF(temp);
+        if (answers[i] == NULL) {
+            free(answers);
+            free(sel);
+            return NULL;
         }
-        answers[i] = copy(PyBytes_AsString(utf8_name));
-        Py_DECREF(utf8_name);
     }
     answers[cnt] = NULL;
 
@@ -1759,18 +1731,18 @@ static PyObject *PyFF_askChoices(PyObject *UNUSED(self), PyObject *args, PyObjec
     if (multiple) {
         char* buts[2] = {_("OK"), _("Cancel")};
         reto = PyTuple_New(cnt);
-        ret = ff_choose_multiple(title, (const char **) answers, sel, cnt, buts, quest);
+        ret = ff_choose_multiple(title, answers, sel, cnt, buts, quest);
         for (int i = 0; i < cnt; i++) {
             PyObject* o = (sel[i] == 1) ? Py_True : Py_False;
             PyTuple_SetItem(reto, i, o);
             Py_INCREF(o); // prevents crash on finalize
         }
     } else {
-        ret = ff_choose(title, (const char **) answers, cnt, def, quest);
+        ret = ff_choose(title, answers, cnt, def, quest);
     }
 
-    PyMem_Free(title); PyMem_Free(quest); PyMem_Free(sel);
-    FreeStringArray(cnt, answers);
+    free(sel);
+    free(answers);
 
     if (multiple) {
         return ( reto );
@@ -1788,13 +1760,10 @@ static PyObject *PyFF_askString(PyObject *UNUSED(self), PyObject *args) {
 return( NULL );
     }
 
-    if ( !PyArg_ParseTuple(args,"eses|es","UTF-8", &title, "UTF-8", &quest, "UTF-8", &def) )
+    if ( !PyArg_ParseTuple(args,"ss|s", &title, &quest, &def) )
 return( NULL );
 
     ret = ff_ask_string(title,def,quest);
-    PyMem_Free(title);
-    PyMem_Free(quest);
-    PyMem_Free(def);
     if ( ret==NULL )
 Py_RETURN_NONE;
     reto = Py_BuildValue("s",ret);
@@ -1973,16 +1942,18 @@ static PyObject *PyFFPoint_get_name(PyFF_Point *self, void *UNUSED(closure)) {
 }
 
 static int PyFFPoint_set_name(PyFF_Point *self,PyObject *value, void *UNUSED(closure)) {
-    if (self->name != NULL) {
-	free(self->name);
-	self->name = NULL;
+    if (value == Py_None) {
+        free(self->name);
+        self->name = NULL;
+    } else {
+        char *name = copy(PyUnicode_AsUTF8(value));
+        if (name == NULL) {
+            return -1;
+        }
+        free(self->name);
+        self->name = name;
     }
-    if ( value!=Py_None ) {
-	char *name;
-	PYGETSTR(value, name, -1);
-	self->name = copy(name);
-    }
-return( 0 );
+    return 0;
 }
 
 static PyObject *PyFFPoint_richcompare(PyObject *a, PyObject *b, int op) {
@@ -2489,14 +2460,18 @@ return( Py_BuildValue("s", self->name ));
 }
 
 static int PyFF_Contour_set_name(PyFF_Contour *self,PyObject *value, void *UNUSED(closure)) {
-
-    free(self->name);
-    if ( value==Py_None )
-	self->name = NULL;
-    else {
-	PYGETSTR(value, self->name, -1);
+    if (value == Py_None) {
+        free(self->name);
+        self->name = NULL;
+    } else {
+        char *name = copy(PyUnicode_AsUTF8(value));
+        if (name == NULL) {
+            return -1;
+        }
+        free(self->name);
+        self->name = name;
     }
-return( 0 );
+    return 0;
 }
 
 static PyGetSetDef PyFFContour_getset[] = {
@@ -4448,17 +4423,13 @@ static char *strokebkey_conv[]
     = { "type", "contour", "flags", NULL };
 
 static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
-    char *str, *type, *cap="nib", *join="nib", *rostring="layer";
-    char *acstring="auto";
+    char *type, *cap="nib", *join="nib", *rostring="layer",  *acstring="auto";
+    const char *str;
     int c, j, f, r, a, toknum;
     PyObject *flagtuple=NULL;
     PyObject *nib=NULL;
 
-    if ( !PySequence_Check(args) ) {
-	PyErr_Format(PyExc_TypeError, "Expected a sequence");
-	return( -1 );
-    }
-    if ( PySequence_Size(args)==0 ) {
+    if ( PyTuple_Size(args)==0 ) {
 	PyErr_Format(PyExc_TypeError, "Expected a name of a pen type");
 	return( -1 );
     }
@@ -4468,9 +4439,8 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
     // Verify expected defaults
     assert( si->rmov==srmov_layer && si->cap==lc_nib && si->join==lj_nib );
 
-    PYGETSTR(PySequence_GetItem(args,0), str, -1);
-    if ( str==NULL ) {
-	return( -1 );
+    if ((str = PyUnicode_AsUTF8(PyTuple_GetItem(args, 0))) == NULL) {
+        return -1;
     }
     if ( strcmp(str, "circular")==0 ) {
 	si->stroke_type = si_round;
@@ -4561,7 +4531,9 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
                 return( -1 );
             }
 	} else if ( PyUnicode_Check(nib) ) {
-	    PYGETSTR(nib, str, -1);
+	    if ((str = PyUnicode_AsUTF8(nib)) == NULL) {
+		return -1;
+	    }
 	    toknum = PyFF_ConvexNibID(str);
 	    if ( toknum==-1 )
 		return -1;
@@ -4637,13 +4609,12 @@ static PyObject *PyFFLayer_export(PyFF_Layer *self, PyObject *args,
 
     InitExportParams(&ep);
 
-    if ( !PyArg_ParseTupleAndKeywords(args,keywds,"es|$ppp",
-                                      layer_export_keywords,"UTF-8",&filename,
+    if ( !PyArg_ParseTupleAndKeywords(args,keywds,"s|$ppp",
+                                      layer_export_keywords,&filename,
                                       &ep.use_transform, &use_system,
                                       &ask_system) )
 	return( NULL );
     locfilename = utf82def_copy(filename);
-    PyMem_Free(filename);
 
     if ( use_system || ask_system ) {
 	epp = ExportParamsState();
@@ -5938,7 +5909,7 @@ static int PyFF_Glyph_set_a_layer(PyFF_Glyph *self,PyObject *value, void *vli) {
 	return PyFF_Glyph_CSetLayer(self, value, (int)(size_t)vli, pconvert_flag_all|pconvert_flag_by_geom);
 }
 
-static int SFFindLayerIndexByName(SplineFont *sf,char *name) {
+static int SFFindLayerIndexByName(SplineFont *sf,const char *name) {
     int l;
 
     if ( name!=NULL ) {
@@ -6092,8 +6063,10 @@ static PyObject *LayerFromLayerIndex( SplineChar *sc, PyObject *index ) {
     int layer;
 
     if ( PyUnicode_Check(index)) {
-	char *name;
-	PYGETSTR(index, name, NULL);
+	const char *name = PyUnicode_AsUTF8(index);
+	if (name == NULL) {
+	    return NULL;
+	}
 	layer = SFFindLayerIndexByName(sc->parent,name);
 	if ( layer<0 )
 return( NULL );
@@ -6116,8 +6089,10 @@ static int PyFF_LayerArrayIndexAssign( PyObject *self, PyObject *index, PyObject
     int layer;
 
     if ( PyUnicode_Check(index)) {
-	char *name;
-	PYGETSTR(index, name, -1);
+	const char *name = PyUnicode_AsUTF8(index);
+	if (name == NULL) {
+	    return -1;
+	}
 	layer = SFFindLayerIndexByName(sc->parent,name);
 	if ( layer<0 )
 return( -1 );
@@ -6230,8 +6205,10 @@ static PyObject *PyFF_RefArrayIndex( PyObject *self, PyObject *index ) {
     int layer;
 
     if ( PyUnicode_Check(index)) {
-	char *name;
-	PYGETSTR(index, name, NULL);
+	const char *name = PyUnicode_AsUTF8(index);
+	if (name == NULL) {
+	    return NULL;
+	}
 	layer = SFFindLayerIndexByName(sc->parent,name);
 	if ( layer<0 )
 return( NULL );
@@ -6249,8 +6226,10 @@ static int PyFF_RefArrayIndexAssign( PyObject *self, PyObject *index, PyObject *
     int layer;
 
     if ( PyUnicode_Check(index)) {
-	char *name;
-	PYGETSTR(index, name, -1);
+	const char *name = PyUnicode_AsUTF8(index);
+	if (name == NULL) {
+	    return -1;
+	}
 	layer = SFFindLayerIndexByName(sc->parent,name);
 	if ( layer<0 )
 return( -1 );
@@ -6648,8 +6627,10 @@ static int PyFF_Glyph_set_activeLayer(PyFF_Glyph *self,PyObject *value, void *UN
     if ( PyLong_Check(value) )
 	layer = PyLong_AsLong(value);
     else if ( PyUnicode_Check(value)) {
-	char *name;
-	PYGETSTR(value, name, -1);
+	const char *name = PyUnicode_AsUTF8(value);
+	if (name == NULL) {
+	    return -1;
+	}
 	layer = SFFindLayerIndexByName(self->sc->parent,name);
 	if ( layer<0 )
 return( -1 );
@@ -6671,10 +6652,9 @@ return( Py_BuildValue("s", self->sc->name ));
 
 static int PyFF_Glyph_set_glyphname(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     FontViewBase *fvs;
-    char *str;
-    PYGETSTR(value, str, -1);
-    if ( str==NULL ) {
-return( -1 );
+    const char *str = PyUnicode_AsUTF8(value);
+    if (str == NULL) {
+        return -1;
     }
 
     SFGlyphRenameFixup(self->sc->parent,self->sc->name,str,false);
@@ -6701,11 +6681,9 @@ return( Py_BuildValue("i", map->backmap[sc->orig_pos] ));
 }
 
 static PyObject *PyFF_Glyph_get_codepoint(PyFF_Glyph *self, void *UNUSED(closure)) {
-    char s[32];
     if ( self->sc==NULL || self->sc->unicodeenc < 0 )
 Py_RETURN_NONE;
-    snprintf(s,sizeof(s),"U+%04X",self->sc->unicodeenc);
-return( PyUnicode_FromString(s) );
+    return PyUnicode_FromFormat("U+%04X", self->sc->unicodeenc);
 }
 
 static PyObject *PyFF_Glyph_get_unicode(PyFF_Glyph *self, void *UNUSED(closure)) {
@@ -7156,13 +7134,11 @@ return( Py_BuildValue("s", glyphclasses[self->sc->glyph_class].name ));
 
 static int PyFF_Glyph_set_glyphclass(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int gc;
-    char *glyphclassname;
+    const char *glyphclassname = PyUnicode_AsUTF8(value);
 
-    if ( !PyUnicode_Check(value)) {
-	PyErr_Format(PyExc_TypeError,"Expected glyph class name string");
-        return( -1 );
+    if (glyphclassname == NULL) {
+        return -1;
     }
-    PYGETSTR(value, glyphclassname, -1);
     gc = FlagsFromString(glyphclassname,glyphclasses,"glyph class");
     if ( gc==FLAG_UNKNOWN )
         return( -1 );
@@ -7357,18 +7333,18 @@ static PyObject *PyFF_Glyph_get_user_decomp(PyFF_Glyph *self, void *UNUSED(closu
 }
 
 static int PyFF_Glyph_set_user_decomp(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
-    char *temp;
+    const char *temp;
     unichar_t *udbuf;
 
     if (value == Py_None) {
         if (self->sc->user_decomp != NULL) { free(self->sc->user_decomp); }
         self->sc->user_decomp = NULL;
         return 0;
+    } else if ((temp = PyUnicode_AsUTF8(value)) == NULL) {
+        return -1;
     }
 
-    PYGETSTR(value, temp, -1);
     udbuf = utf82u_copy(temp);
-    Py_DECREF(temp);
 
     if ( udbuf==NULL ) return -1;
 
@@ -7392,11 +7368,7 @@ return( PyUnicode_DecodeUTF8(self->sc->comment,strlen(self->sc->comment),NULL));
 }
 
 static int PyFF_Glyph_set_comment(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
-    char *newv;
-
-    PYGETSTR(value, newv, -1);
-    newv = copy(newv);
-
+    char *newv = copy(PyUnicode_AsUTF8(value));
     if ( newv==NULL )
 return( -1 );
     free(self->sc->comment);
@@ -7602,7 +7574,7 @@ static char *GlyphListToStr(PyObject *value) {
 return( NULL );
     }
     if ( PyUnicode_Check(value) ) {
-	PYGETSTR(value, str, NULL);
+        str = copy(PyUnicode_AsUTF8(value));
     } else {
 	cnt = PySequence_Size(value);
 	len = 0;
@@ -7612,9 +7584,11 @@ return( NULL );
 		PyFF_Glyph *g = (PyFF_Glyph *) obj;
 		len += strlen(g->sc->name) + 1;
 	    } else {
+		Py_XDECREF(obj);
 		PyErr_Format(PyExc_TypeError, "Must be a sequence of glyphs" );
 return( NULL );
 	    }
+	    Py_DECREF(obj);
 	}
 	pt = str = malloc(len+1);
 	for ( i=0; i<cnt; ++i ) {
@@ -7624,10 +7598,29 @@ return( NULL );
 	    pt += strlen(g->sc->name);
 	    strcpy(pt," ");
 	    pt += 1;
+	    Py_DECREF(obj);
 	}
 	if ( pt>str ) pt[-1] = '\0';
     }
 return( str );
+}
+
+static void FreeGVPartsList(struct gv_part* parts, int cnt) {
+    if (parts == NULL) {
+        return;
+    }
+    while (--cnt >= 0) {
+        free(parts[cnt].component);
+    }
+    free(parts);
+}
+
+static void FreeGVParts(struct glyphvariants *gv) {
+    if (gv != NULL && gv->part_cnt != 0) {
+        FreeGVPartsList(gv->parts, gv->part_cnt);
+        gv->part_cnt = 0;
+        gv->parts = NULL;
+    }
 }
 
 static PyObject *BuildComponentTuple(struct glyphvariants *gv) {
@@ -7651,29 +7644,34 @@ return( tuple );
 static struct gv_part *ParseComponentTuple(PyObject *tuple,int *_cnt) {
     int i, cnt;
     struct gv_part *parts;
+    PyObject *seq = PySequence_Fast(tuple, "Must be a tuple or a list");
 
-    if ( !PyTuple_Check(tuple) && !PyList_Check(tuple)) {
-	PyErr_Format(PyExc_TypeError, "Must be a tuple or list" );
-return( NULL );
+    if (seq == NULL) {
+        return NULL;
     }
-    *_cnt = cnt = PySequence_Size(tuple);
+
+    *_cnt = cnt = PySequence_Fast_GET_SIZE(seq);
     parts = calloc(cnt+1,sizeof(struct gv_part));
     for ( i=0; i<cnt; ++i ) {
-	PyObject *obj = PySequence_GetItem(tuple,i);
+	PyObject *obj = PySequence_Fast_GET_ITEM(seq, i);
 	int extender=0, start=0, end=0, full=0;
 	char *glyphName;
 	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(obj)) ) {
 	    parts[i].component = copy( ((PyFF_Glyph *) obj)->sc->name );
 	} else if ( PyUnicode_Check(obj) ) {
-	    char* temp;
-	    PYGETSTR(obj, temp, NULL);
-	    parts[i].component = copy(temp);
+	    char* temp = copy(PyUnicode_AsUTF8(obj));
+	    if (temp == NULL) {
+	        FreeGVPartsList(parts, i);
+	        Py_DECREF(seq);
+	        return NULL;
+	    }
+	    parts[i].component = temp;
 	} else if ( PyTuple_Check(obj) && PyTuple_Size(obj)>0 &&
 		    PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(PyTuple_GetItem(obj,0))) ) {
 	    PyObject *g;
-	    if ( !PyArg_ParseTuple(obj,"O|iiii", &g,
-		    &extender, &start, &end, &full )) {
-		free(parts);
+	    if ( !PyArg_ParseTuple(obj,"O|iiii", &g, &extender, &start, &end, &full )) {
+		Py_DECREF(seq);
+		FreeGVPartsList(parts, i);
 return( NULL );
 	    }
 	    parts[i].component = copy(((PyFF_Glyph *) g)->sc->name);
@@ -7681,7 +7679,8 @@ return( NULL );
 		&extender, &start, &end, &full )) {
 	    parts[i].component = copy(glyphName);
 	} else {
-            free(parts);
+        Py_DECREF(seq);
+        FreeGVPartsList(parts, i);
 return( NULL );
         }
 	parts[i].is_extender = extender;
@@ -7689,19 +7688,8 @@ return( NULL );
 	parts[i].endConnectorLength = end;
 	parts[i].fullAdvance = full;
     }
+    Py_DECREF(seq);
 return( parts );
-}
-
-static void FreeGVParts(struct glyphvariants *gv) {
-    int i;
-
-    if ( gv==NULL || gv->part_cnt==0 )
-return;
-    for ( i=0; i<gv->part_cnt ; ++i )
-	free(gv->parts[i].component);
-    free(gv->parts);
-    gv->part_cnt = 0;
-    gv->parts = NULL;
 }
 
 static PyObject *PyFF_Glyph_get_horizontalCIC(PyFF_Glyph *self, void *UNUSED(closure)) {
@@ -7750,20 +7738,18 @@ return( Py_BuildValue("s", self->sc->vert_variants->variants ));
 }
 
 static int PyFF_Glyph_set_verticalVariants(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
-    char *str=NULL;
-
     if ( value == Py_None ) {
 	if ( self->sc->vert_variants!=NULL ) {
 	    free(self->sc->vert_variants->variants);
 	    self->sc->vert_variants->variants=NULL;
 	}
     } else {
-	str = GlyphListToStr(value);
+	char *str = GlyphListToStr(value);
 	if ( str==NULL )
 return( -1 );
 	if ( self->sc->vert_variants == NULL )
 	    self->sc->vert_variants = chunkalloc(sizeof(struct glyphvariants));
-	self->sc->vert_variants->variants = copy(str);
+	self->sc->vert_variants->variants = str;
     }
 return( 0 );
 }
@@ -7776,20 +7762,18 @@ return( Py_BuildValue("s", self->sc->horiz_variants->variants ));
 }
 
 static int PyFF_Glyph_set_horizontalVariants(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
-    char *str=NULL;
-
     if ( value == Py_None ) {
 	if ( self->sc->horiz_variants!=NULL ) {
 	    free(self->sc->horiz_variants->variants);
 	    self->sc->horiz_variants->variants=NULL;
 	}
     } else {
-	str = GlyphListToStr(value);
+	char *str = GlyphListToStr(value);
 	if ( str==NULL )
 return( -1 );
 	if ( self->sc->horiz_variants == NULL )
 	    self->sc->horiz_variants = chunkalloc(sizeof(struct glyphvariants));
-	self->sc->horiz_variants->variants = copy(str);
+	self->sc->horiz_variants->variants = str;
     }
 return( 0 );
 }
@@ -8453,12 +8437,12 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
     InitImportParams(&ip);
 
     if ( !PyArg_ParseTupleAndKeywords(args, keywds,
-                "es|$pppppddpp", glyph_import_keywords, "UTF-8", &filename,
+                "s|$pppppddpp", glyph_import_keywords, &filename,
                 &ip.correct_direction, &ip.simplify, &ip.clip, &ip.erasers,
                 &ip.scale, &ip.accuracy_target, &jl_tmp, &use_system,
 		&ask_system) ) {
 	PyErr_Clear();
-	if ( !PyArg_ParseTuple(args,"es|O","UTF-8",&filename, &flags) )
+	if ( !PyArg_ParseTuple(args,"s|O",&filename, &flags) )
 	    return NULL;
 	psflags = FlagsFromTuple(flags, import_ps_flags,
 	                         "PostScript import flag");
@@ -8470,7 +8454,6 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
 	    ip.correct_direction = true;
     }
     locfilename = utf82def_copy(filename);
-    PyMem_Free(filename);
 
     /* Check if the file exists and is readable */
     if ( access(locfilename,R_OK)!=0 ) {
@@ -8544,17 +8527,16 @@ static PyObject *PyFFGlyph_export(PyObject *self, PyObject *args,
 
     InitExportParams(&ep);
 
-    if ( !PyArg_ParseTupleAndKeywords(args, keywds, "es|$Oiippp",
-                                      glyph_export_keywords, "UTF-8", &filename,
+    if ( !PyArg_ParseTupleAndKeywords(args, keywds, "s|$Oiippp",
+                                      glyph_export_keywords, &filename,
                                       &layerobj, &pixels, &bits,
                                       &ep.use_transform, &use_system,
                                       &ask_system) ) {
 	PyErr_Clear();
-	if ( !PyArg_ParseTuple(args,"es|OO","UTF-8",&filename,&obj1,&obj2) )
+	if ( !PyArg_ParseTuple(args,"s|OO",&filename,&obj1,&obj2) )
 	    return NULL;
     }
     locfilename = utf82def_copy(filename);
-    PyMem_Free(filename);
 
     if ( use_system || ask_system ) {
 	epp = ExportParamsState();
@@ -8710,19 +8692,19 @@ return( tuple );
 
 static char *GlyphNamesFromTuple(PyObject *glyphs) {
     int cnt, len, deltalen;
-    char *str=NULL, *ret, *pt;
+    const char *str;
+    char *ret, *pt;
     int i;
 
     /* if called with a string, assume already in output format and return */
     if ( PyUnicode_Check(glyphs)) {
-	PYGETSTR(glyphs, str, NULL);
-	str = copy(str);
-        if ( strlen(str)==0 ) {
-            free(str);
+        if ((str = PyUnicode_AsUTF8(glyphs)) == NULL) {
+            return NULL;
+        } else if (str[0] == '\0') {
 	    PyErr_Format(PyExc_TypeError,"Glyph name strings may not be empty");
             return( NULL );
         }
-        return str;
+        return copy(str);
     }
 
     if ( !PyTuple_Check(glyphs) && !PyList_Check(glyphs)) {
@@ -8738,13 +8720,15 @@ static char *GlyphNamesFromTuple(PyObject *glyphs) {
 	    deltalen = strlen(sc->name);
             Py_DECREF(aglyph);
 	} else if ( PyUnicode_Check(aglyph)) {
-            free(str);
-            PYGETSTR(aglyph, str, NULL);
-            str = copy(str);
+            str = PyUnicode_AsUTF8(aglyph);
+            if (str == NULL) {
+                Py_DECREF(aglyph);
+                return NULL;
+            }
             deltalen = strlen(str);
             Py_DECREF(aglyph);
         } else {
-            Py_DECREF(aglyph);
+            Py_XDECREF(aglyph);
 	    PyErr_Format(PyExc_TypeError,"Expected tuple of glyph names");
             return( NULL );
 	}
@@ -8760,23 +8744,23 @@ static char *GlyphNamesFromTuple(PyObject *glyphs) {
 	PyObject *aglyph = PySequence_GetItem(glyphs,i);
 	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(aglyph)) ) {
 	    SplineChar *sc = ((PyFF_Glyph *) aglyph)->sc;
-	    free(str);
-	    str = copy(sc->name);
-            Py_DECREF(aglyph);
+	    str = sc->name;
 	} else {
-            free(str);
-            PYGETSTR(aglyph, str, NULL);
-            str = copy(str);
-            Py_DECREF(aglyph);
-        }
+        str = PyUnicode_AsUTF8(aglyph);
+    }
+    if (str == NULL) {
+        Py_DECREF(aglyph);
+        free(ret);
+        return NULL;
+    }
 	strcpy(pt,str);
+	Py_DECREF(aglyph);
 	pt += strlen(pt);
 	*pt++ = ' ';
     }
     if ( pt!=ret )
 	--pt;
     *pt = '\0';
-    free(str);
     return( ret );
 }
 
@@ -8820,7 +8804,9 @@ return( NULL );
     }
     if ( PyUnicode_Check(glyphs)) {
 	/* A string of glyph names */
-	PYGETSTR(glyphs, str, NULL);
+	if ((str = copy(PyUnicode_AsUTF8(glyphs))) == NULL) {
+	    return NULL;
+	}
 	cnt = 0;
 	for ( pt=str; *pt==' '; ++pt );
 	while ( *pt!='\0' ) {
@@ -8829,6 +8815,7 @@ return( NULL );
 	    while ( *pt==' ' ) ++pt;
 	}
 	if ( cnt==0 ) {
+        free(str);
 return( calloc(1,sizeof(SplineChar *)));
 	}
 
@@ -8842,6 +8829,7 @@ return( calloc(1,sizeof(SplineChar *)));
 	    sc = SFGetChar(sf,-1,start);
 	    if ( sc==NULL ) {
 		PyErr_Format(PyExc_TypeError,"String, %s, is not the name of a glyph in the expected font.", start );
+                free(str);
                 free(ret);
 return( NULL );
 	    }
@@ -8850,6 +8838,7 @@ return( NULL );
 	    while ( *pt==' ' ) ++pt;
 	}
 	ret[cnt] = NULL;
+    free(str);
 return( ret );
     }
 
@@ -8870,8 +8859,7 @@ return(NULL );
 return( NULL );
 	    }
 	} else {
-	    PYGETSTR(aglyph, str, NULL);
-	    if ( str==NULL ) {
+	    if ((str = (char*)PyUnicode_AsUTF8(aglyph)) == NULL ) { // FIXME: Free aglyph
 		PyErr_Format(PyExc_TypeError,"Expected a name of a glyph in the expected font." );
                 free(ret);
 return( NULL );
@@ -9056,7 +9044,7 @@ static PyObject *PyFFGlyph_addPosSub(PyObject *self, PyObject *args) {
     SplineFont *sf = sc->parent, *sf_sl = sf;
     PST temp, *pst, *old=NULL, *prev=NULL;
     struct lookup_subtable *sub;
-    char *subname, *other;
+    const char *subname, *other;
     KernPair *kp, *kpold=NULL, *kpprev=NULL;
     PyObject *others;
 
@@ -9069,7 +9057,12 @@ static PyObject *PyFFGlyph_addPosSub(PyObject *self, PyObject *args) {
 	PyErr_Format(PyExc_TypeError,"The first argument must be a subtable name");
 return( NULL );
     }
-    PYGETSTR(PySequence_GetItem(args,0), subname, NULL);
+    others = PySequence_GetItem(args, 0);
+    subname = PyUnicode_AsUTF8(others);
+    Py_XDECREF(others);
+    if (subname == NULL) {
+        return NULL;
+    }
     sub = SFFindLookupSubtable(sf,subname);
     if ( sub==NULL ) {
 	PyErr_Format(PyExc_KeyError, "Unknown lookup subtable: %s",subname);
@@ -9182,7 +9175,7 @@ return( NULL );
 	    PyErr_Format(PyExc_KeyError, "Unexpected lookup type: %s",sub->lookup->lookup_name);
 return( NULL );
 	}
-	temp.u.subs.variant = other;
+	temp.u.subs.variant = (char*)other; // other holds rv from GlyphNamesFromTuple
     }
     if ( old!=NULL ) {
 	switch ( sub->lookup->lookup_type ) {
@@ -9425,8 +9418,10 @@ static int LayerArgToLayer(SplineFont *sf, PyObject* layerp) {
     int layeri;
 
     if ( PyUnicode_Check(layerp)) {
-        char *name;
-        PYGETSTR(layerp, name, ly_none);
+        const char *name = PyUnicode_AsUTF8(layerp);
+        if (name == NULL) {
+            return ly_none;
+        }
         layeri = SFFindLayerIndexByName(sf, name);
         if ( layeri<0 ) {
             PyErr_Format(PyExc_ValueError, "Requested layer '%s' not found", name);
@@ -9559,25 +9554,20 @@ return( ret );
 }
 
 static PyObject *PyFFGlyph_setLayer(PyFF_Glyph *self, PyObject *args) {
-	int arglen = PySequence_Size(args);
-	PyObject *layer, *index;
+	PyObject *layer, *index, *flagsobj = NULL;
 	int layeri, flags = 0;
 
-	if (arglen < 2 || arglen > 3) {
+	if (!PyArg_ParseTuple(args, "OO|O", &layer, &index, &flagsobj)) {
 		PyErr_Format(PyExc_ValueError, "Must be called with a layer, a layer identifier, and an optional flags tuple" );
 		return NULL;
-	}
-
-	layer = PySequence_GetItem(args,0);
-	if ( ! (PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(layer)) || PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(layer)) ) ) {
+	} else if ( ! (PyType_IsSubtype(&PyFF_LayerType, Py_TYPE(layer)) || PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(layer)) ) ) {
 		PyErr_Format(PyExc_ValueError, "First argument must be a layer or contour" );
 		return NULL;
-	}
-
-	index = PySequence_GetItem(args,1);
-	if ( PyUnicode_Check(index)) {
-		char *name;
-		PYGETSTR(index, name, NULL);
+	} else if ( PyUnicode_Check(index)) {
+		const char *name = PyUnicode_AsUTF8(index);
+		if (name == NULL) {
+			return NULL;
+		}
 		layeri = SFFindLayerIndexByName(self->sc->parent,name);
 		if ( layeri<0 ) {
 			PyErr_Format(PyExc_ValueError, "Layer '%s' not found", name);
@@ -9589,8 +9579,8 @@ static PyObject *PyFFGlyph_setLayer(PyFF_Glyph *self, PyObject *args) {
 		PyErr_Format(PyExc_TypeError, "Index must be a layer name or index" );
 		return NULL;
 	}
-	if ( arglen>2 ) {
-		flags = FlagsFromTuple( PySequence_GetItem(args,2),pconvertflags,"Point Conversion flags");
+	if ( flagsobj != NULL ) {
+		flags = FlagsFromTuple(flagsobj,pconvertflags,"Point Conversion flags");
 	}
 	flags = CheckPConvertFlags(flags, pconvert_flag_all|pconvert_flag_by_geom);
 	if ( flags < 0 )
@@ -10230,8 +10220,10 @@ static int SelIndex(PyObject *arg, FontViewBase *fv, int ints_as_unicode) {
     int enc;
 
     if ( PyUnicode_Check(arg)) {
-	char *name;
-	PYGETSTR(arg, name, -1);
+	const char *name = PyUnicode_AsUTF8(arg);
+	if (name == NULL) {
+	    return -1;
+	}
 	enc = SFFindSlot(fv->sf, fv->map, -1, name );
     } else if ( PyLong_Check(arg)) {
 	enc = PyLong_AsLong(arg);
@@ -10573,13 +10565,14 @@ return( Py_BuildValue("s",self->sf->layers[self->layer].name));
 }
 
 static int PyFF_LayerInfo_set_name(PyFF_LayerInfo *self,PyObject *value, void *UNUSED(closure)) {
-    if ( PyUnicode_Check(value)) {
-	free( self->sf->layers[self->layer].name );
-	self->sf->layers[self->layer].name = copy(PyBytes_AsString(value));
-return(0);
+    char *name = copy(PyUnicode_AsUTF8(value));
+    if (!name) {
+        PyErr_Format(PyExc_TypeError,"Expected layer name");
+        return -1;
     }
-    PyErr_Format(PyExc_TypeError,"Expected layer name");
-return( -1 );
+    free(self->sf->layers[self->layer].name);
+    self->sf->layers[self->layer].name = name;
+    return 0;
 }
 
 static PyObject *PyFF_LayerInfo_get_order2(PyFF_LayerInfo *self, void *UNUSED(closure)) {
@@ -10725,8 +10718,10 @@ static PyObject *PyFF_LayerInfoArrayIndex( PyObject *self, PyObject *index ) {
     PyFF_LayerInfo *li;
 
     if ( PyUnicode_Check(index)) {
-	char *name;
-	PYGETSTR(index, name, NULL);
+	const char *name = PyUnicode_AsUTF8(index);
+	if (name == NULL) {
+	    return NULL;
+	}
 	layer = SFFindLayerIndexByName(sf,name);
 	if ( layer<0 )
 return( NULL );
@@ -10752,8 +10747,10 @@ static int PyFF_LayerInfoArrayIndexAssign( PyObject *self, PyObject *index, PyOb
     char *name;
 
     if ( PyUnicode_Check(index)) {
-	char *name;
-	PYGETSTR(index, name, -1);
+	const char *name = PyUnicode_AsUTF8(index);
+	if (name == NULL) {
+	    return -1;
+	}
 	layer = SFFindLayerIndexByName(sf,name);
 	if ( layer<0 )
 return( -1 );
@@ -11139,8 +11136,10 @@ static PyObject *PyFF_PrivateIndex( PyObject *self, PyObject *index ) {
     PyObject *tuple;
 
     if ( PyUnicode_Check(index)) {
-	char *name;
-	PYGETSTR(index, name, NULL);
+	const char *name = PyUnicode_AsUTF8(index);
+	if (name == NULL) {
+	    return NULL;
+	}
 	if ( private!=NULL )
 	    value = PSDictHasEntry(private,name);
     } else {
@@ -11186,26 +11185,30 @@ return( Py_BuildValue("s",value));
 static int PyFF_PrivateIndexAssign( PyObject *self, PyObject *index, PyObject *value ) {
     SplineFont *sf = ((PyFF_Private *) self)->sf;
     struct psdict *private = sf->private;
-    char *string, *freeme=NULL;
+    const char *string, *name;
+    char *freeme = NULL;
     char buffer[40];
 
     if ( PyUnicode_Check(value)) {
-	PYGETSTR(value, string, -1);
-        string = freeme = copy(string);
+        string = PyUnicode_AsUTF8(value);
+        if (string == NULL) {
+            return -1;
+        }
     } else if ( PyFloat_Check(value)) {
-	double temp = PyFloat_AsDouble(value);
-	sprintf(buffer,"%g",temp);
-	string = buffer;
+        string = buffer;
+        g_ascii_formatd(buffer, sizeof(buffer), "%g", PyFloat_AsDouble(value));
     } else if ( PyLong_Check(value)) {
-	int temp = PyLong_AsLong(value);
-	sprintf(buffer,"%d",temp);
-	string = buffer;
+        string = buffer;
+        snprintf(buffer, sizeof(buffer), "%ld", PyLong_AsLong(value));
     } else if ( PySequence_Check(value)) {
-	int i; char *pt;
-	pt = string = freeme = malloc(PySequence_Size(value)*21+4);
+	char *pt;
+	int i, size = PySequence_Size(value);
+	string = pt = freeme = malloc(size*21+4);
 	*pt++ = '[';
-	for ( i=0; i<PySequence_Size(value); ++i ) {
-	    sprintf( pt, "%g", PyFloat_AsDouble(PySequence_GetItem(value,i)));
+	for ( i=0; i<size; ++i ) {
+	    PyObject *obj = PySequence_GetItem(value, i);
+	    g_ascii_formatd(pt, 21, "%g", PyFloat_AsDouble(obj));
+	    Py_DECREF(obj);
 	    pt += strlen(pt);
 	    *pt++ = ' ';
 	}
@@ -11216,20 +11219,17 @@ static int PyFF_PrivateIndexAssign( PyObject *self, PyObject *index, PyObject *v
         return( -1 );
     }
 
-    if ( PyUnicode_Check(index)) {
-	char *name;
-	if ( private==NULL )
-	    sf->private = private = calloc(1,sizeof(struct psdict));
-	PYGETSTR(index, name, -1);
-	PSDictChangeEntry(private,name,string);
-    } else {
-        if ( freeme!=NULL)
-            free(freeme);
-	PyErr_Format(PyExc_TypeError, "Private dictionary index must be a string" );
-        return( -1 );
-    }
-    if ( freeme!=NULL)
+    name = PyUnicode_AsUTF8(index);
+    if (name == NULL) {
+        PyErr_Format(PyExc_TypeError, "Private dictionary index must be a string" );
         free(freeme);
+        return -1;
+    } else if (private == NULL) {
+        sf->private = private = calloc(1,sizeof(struct psdict));
+    }
+
+    PSDictChangeEntry(private,name,string);
+    free(freeme);
     return( 0 );
 }
 
@@ -11612,66 +11612,74 @@ return( tuple );
 }
 
 static int SetSFNTName(SplineFont *sf,PyObject *tuple,struct ttflangname *english) {
-    char *lang_str, *strid_str, *string;
+    const char *lang_str, *strid_str, *string;
     int lang, strid;
     PyObject *val;
     struct ttflangname *names;
 
-    if ( !PySequence_Check(tuple)) {
-	PyErr_Format(PyExc_TypeError, "sfnt_name must be a tuple" );
-return(0);
-    }
     if ( PySequence_Size(tuple)!=3 ) {
-	PyErr_Format(PyExc_TypeError, "sfnt_name tuple must consist of three strings" );
+	PyErr_Format(PyExc_TypeError, "sfnt_name must be a tuples of three strings" );
 return(0);
     }
 
     val = PySequence_GetItem(tuple,0);
     if ( PyUnicode_Check(val) ) {
-	PYGETSTR(val, lang_str, 0);
-	lang = FlagsFromString(lang_str,sfnt_name_mslangs,"language");
-	if ( lang==FLAG_UNKNOWN ) {
-return( 0 );
-	}
+        if ((lang_str = PyUnicode_AsUTF8(val)) != NULL) {
+            lang = FlagsFromString(lang_str,sfnt_name_mslangs,"language");
+        }
+        if (lang_str == NULL || lang == FLAG_UNKNOWN) {
+            Py_DECREF(val);
+            return 0;
+        }
     } else if ( PyLong_Check(val))
 	lang = PyLong_AsLong(val);
     else {
+	Py_XDECREF(val);
 	PyErr_Format(PyExc_TypeError, "Language must be a string or an integer" );
 return( 0 );
     }
+    Py_DECREF(val);
 
     val = PySequence_GetItem(tuple,1);
     if ( PyUnicode_Check(val) ) {
-	PYGETSTR(val, strid_str, 0);
-	strid = FlagsFromString(strid_str,sfnt_name_str_ids,"string id");
-	if ( strid==FLAG_UNKNOWN ) {
-return( 0 );
-	}
+        if ((strid_str = PyUnicode_AsUTF8(val)) != NULL) {
+            strid = FlagsFromString(strid_str,sfnt_name_str_ids,"string id");
+        }
+        if (strid_str == NULL || strid == FLAG_UNKNOWN) {
+            Py_DECREF(val);
+            return 0;
+        }
     } else if ( PyLong_Check(val))
 	strid = PyLong_AsLong(val);
     else {
+	Py_XDECREF(val);
 	PyErr_Format(PyExc_TypeError, "String-id must be a string or an integer" );
 return( 0 );
     }
+    Py_DECREF(val);
 
     for ( names=sf->names; names!=NULL; names=names->next )
 	if ( names->lang==lang )
     break;
 
-    if ( PySequence_GetItem(tuple,2)==Py_None ) {
+    val = PySequence_GetItem(tuple, 2);
+    if ( val==Py_None ) {
 	if ( names!=NULL ) {
 	    free( names->names[strid] );
 	    names->names[strid] = NULL;
 	}
+	Py_DECREF(val);
 return( 1 );
     }
 
-    PYGETSTR(PySequence_GetItem(tuple,2), string, 0);
+    string = PyUnicode_AsUTF8(val);
     if ( string==NULL ) {
+	Py_XDECREF(val);
 return( 0 );
     }
     if ( lang==0x409 && english!=NULL && english->names[strid]!=NULL &&
          strcmp(string,english->names[strid])==0 ) {
+	Py_DECREF(val);
 return( 1 );	/* If they set it to the default, there's nothing to do */
     }
 
@@ -11683,6 +11691,7 @@ return( 1 );	/* If they set it to the default, there's nothing to do */
     }
     free(names->names[strid]);
     names->names[strid] = copy( string );
+    Py_DECREF(val);
 return( 1 );
 }
 
@@ -12001,8 +12010,10 @@ return(-1);
     if ( PyLong_Check(value) )
 	layer = PyLong_AsLong(value);
     else if ( PyUnicode_Check(value)) {
-	char *name;
-	PYGETSTR(value, name, -1);
+	const char *name = PyUnicode_AsUTF8(value);
+	if (name == NULL) {
+	    return -1;
+	}
 	layer = SFFindLayerIndexByName(self->fv->sf,name);
 	if ( layer<0 )
 return( -1 );
@@ -12188,11 +12199,7 @@ static int _PyFF_Font_set_str_null(SplineFont *sf,PyObject *value,
 	PyErr_Format(PyExc_TypeError, "Cannot delete the %s", str);
 return( -1 );
     }
-    if ( value == Py_None )
-	newv = NULL;
-
-    PYGETSTR(value, newv, -1);
-    newv = copy(newv);
+    newv = (value == Py_None) ? NULL : copy(PyUnicode_AsUTF8(value));
 
     if ( newv==NULL && value!=Py_None )
 return( -1 );
@@ -12231,8 +12238,7 @@ return(-1);
 return( -1 );
     }
 
-    PYGETSTR(value, newv, -1);
-    newv = copy(newv);
+    newv = copy(PyUnicode_AsUTF8(value));
 
     if ( newv==NULL )
 return( -1 );
@@ -13170,7 +13176,7 @@ return( Py_BuildValue("s",buf));
 
 static int PyFF_Font_set_OS2_vendor(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     SplineFont *sf;
-    char *newv;
+    const char *newv;
 
     if ( CheckIfFontClosed(self) )
 return (-1);
@@ -13178,19 +13184,16 @@ return (-1);
     if ( value==NULL ) {
 	PyErr_Format(PyExc_TypeError, "Cannot delete vendor" );
 return( -1 );
+    } else if ((newv = PyUnicode_AsUTF8(value)) == NULL) {
+        return -1;
     }
-
-    PYGETSTR(value, newv, -1);
 
     if ( strlen( newv )>4 ) {
 	PyErr_Format(PyExc_TypeError, "OS2 vendor is limited to 4 characters" );
 return( -1 );
     }
     SFDefaultOS2(sf);
-    sf->pfminfo.os2_vendor[0] = newv[0];
-    sf->pfminfo.os2_vendor[1] = newv[1];
-    sf->pfminfo.os2_vendor[2] = newv[2];
-    sf->pfminfo.os2_vendor[3] = newv[3];
+    strncpy(sf->pfminfo.os2_vendor, newv, 4);
     sf->pfminfo.panose_set = true;
 return( 0 );
 }
@@ -13268,7 +13271,7 @@ static int PyFF_Font_set_size_feature(PyFF_Font *self,PyObject *value,
     SplineFont *sf;
     int i;
     struct otfname *head, *last, *cur;
-    char *string;
+    const char *string;
 
     if ( CheckIfFontClosed(self) )
 return (-1);
@@ -13280,8 +13283,8 @@ return( 0 );
     }
     /* If they only specify a design size, we won't require that it be a tuple */
     /*  if it is in a tuple, remove it and treat as a single value */
-    if ( PySequence_Check(value) && PySequence_Size(value)==1 )
-	value = PySequence_GetItem(value,0);
+    if ( PyTuple_Size(value)==1 )
+	value = PyTuple_GetItem(value,0);
     if ( PyFloat_Check(value) || PyLong_Check(value)) {
 	if ( PyFloat_Check(value))
 	    temp = PyFloat_AsDouble(value);
@@ -13321,41 +13324,41 @@ return( -1 );
 	         (PySequence_Size(subtuple) != 2) ) {
 	    PyErr_Format(PyExc_TypeError, "Value must be a tuple of a language name and string" );
 	    OtfNameListFree(head);
+	    Py_XDECREF(subtuple);
 return( -1 );
 	}
 	val = PySequence_GetItem(subtuple,0);
 	if ( PyUnicode_Check(val) ) {
-	    char *lang_str;
-	    PYGETSTR(val, lang_str, -1);
-	    lang = FlagsFromString(lang_str,sfnt_name_mslangs,"language");
-            Py_DECREF(val);
-	    if ( lang==FLAG_UNKNOWN ) {
-                OtfNameListFree(head);
-return( -1 );
+	    if ((string = PyUnicode_AsUTF8(val)) != NULL) {
+		lang = FlagsFromString(string,sfnt_name_mslangs,"language");
+	    }
+	    if (string == NULL || lang == FLAG_UNKNOWN) {
+		Py_DECREF(val);
+		Py_DECREF(subtuple);
+		OtfNameListFree(head);
+		return -1;
 	    }
 	} else if ( PyLong_Check(val)) {
 	    lang = PyLong_AsLong(val);
-            Py_DECREF(val);
-        } else {
-            Py_DECREF(val);
+	} else {
+	    Py_XDECREF(val);
+	    Py_DECREF(subtuple);
 	    PyErr_Format(PyExc_TypeError, "Language must be a string or an integer");
 	    OtfNameListFree(head);
 return( -1 );
 	}
+	Py_DECREF(val);
 	val = PySequence_GetItem(subtuple,1);
-	if ( PyUnicode_Check(val) ) {
-	    char *other_str;
-	    PYGETSTR(val, other_str, -1);
-	    string = copy(other_str);
-            Py_DECREF(val);
-	} else {
-            Py_DECREF(val);
-	    PyErr_Format(PyExc_TypeError, "Name must be a string");
+	string = copy(PyUnicode_AsUTF8(val));
+	Py_XDECREF(val);
+	Py_DECREF(subtuple);
+	if (string == NULL) {
 	    OtfNameListFree(head);
-            return( -1 );
+	    PyErr_Format(PyExc_TypeError, "Name must be a string");
+	    return -1;
 	}
 	cur = chunkalloc(sizeof( struct otfname ));
-	cur->name = string;
+	cur->name = (char*)string; // last assignment to string was a copy
 	cur->lang = lang;
 	cur->next = NULL;
 	if ( head==NULL )
@@ -13422,8 +13425,10 @@ return (-1);
 return( -1 );
     }
     if ( PyUnicode_Check(value)) {
-	char *name;
-	PYGETSTR(value, name, -1);
+	const char *name = PyUnicode_AsUTF8(value);
+	if (name == NULL) {
+	    return -1;
+	}
 	for ( i=cidmaster->subfontcnt-1; i>=0 && strcmp(name,cidmaster->subfonts[i]->fontname)!=0; ++i );
 	if ( i<0 ) {
 	    PyErr_Format(PyExc_EnvironmentError, "No subfont named %s", name);
@@ -13481,7 +13486,7 @@ return( Py_BuildValue("s", self->fv->map->enc->enc_name));
 }
 
 static int PyFF_Font_set_encoding(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
-    char *encname;
+    const char *encname;
     int ret;
 
     if ( CheckIfFontClosed(self) )
@@ -13489,10 +13494,8 @@ return (-1);
     if ( value==NULL ) {
 	PyErr_Format(PyExc_TypeError, "Cannot delete encoding field" );
 return( -1 );
-    }
-    PYGETSTR(value, encname, -1);
-    if ( PyErr_Occurred()!=NULL ) {
-return( -1 );
+    } else if ((encname = PyUnicode_AsUTF8(value)) == NULL) {
+        return -1;
     }
     ret = SFReencode(self->fv->sf, encname, 0);
     if ( ret==-1 )
@@ -14355,7 +14358,9 @@ return( NULL );
 	icnt = PySequence_Size(tuple);
 	instrs = malloc(icnt);
 	for ( i=0; i<icnt; ++i ) {
-	    instrs[i] = PyLong_AsLong(PySequence_GetItem(tuple,i));
+	    PyObject *val = PySequence_GetItem(tuple, i);
+	    instrs[i] = PyLong_AsLong(val);
+	    Py_XDECREF(val);
 	    if ( PyErr_Occurred()) {
 		free(instrs);
 return( NULL );
@@ -14386,11 +14391,10 @@ static PyObject *PyFFFont_importBitmaps(PyFF_Font *self,PyObject *args) {
     if ( CheckIfFontClosed(self) )
 return (NULL);
     fv = self->fv;
-    if ( !PyArg_ParseTuple(args,"es|i","UTF-8",&filename,
+    if ( !PyArg_ParseTuple(args,"s|i",&filename,
 	    &to_background) )
 return( NULL );
     locfilename = utf82def_copy(filename);
-    PyMem_Free(filename);
 
     ext = strrchr(locfilename,'.');
     if ( ext==NULL ) {
@@ -14461,10 +14465,9 @@ static PyObject *PyFFFont_compareFonts(PyFF_Font *self,PyObject *args) {
 
     if ( CheckIfFontClosed(self) )
 return (NULL);
-    if ( !PyArg_ParseTuple(args,"OesO", &other, "UTF-8", &filename, &flagstuple ))
+    if ( !PyArg_ParseTuple(args,"OsO", &other, &filename, &flagstuple ))
 return( NULL );
     locfilename = utf82def_copy(filename);
-    PyMem_Free(filename);
 
     if ( !PyType_IsSubtype(&PyFF_FontType, Py_TYPE(other)) ) {
 	PyErr_Format(PyExc_TypeError,"First argument must be a fontforge font");
@@ -14846,10 +14849,12 @@ return( -1 );
     *class_strs = cls = malloc(cnt*sizeof(char *));
     for ( i=0; i<cnt; ++i ) {
 	PyObject *thingy = PySequence_GetItem(classes,i);
-	if ( i==0 && thingy==Py_None )
+	if ( i==0 && thingy==Py_None ) {
 	    cls[i] = NULL;
-	else {
+	    Py_DECREF(thingy);
+	} else {
 	    cls[i] = GlyphNamesFromTuple(thingy);
+	    Py_XDECREF(thingy);
 	    if ( cls[i]==NULL )
 return( -1 );
 	}
@@ -14993,12 +14998,12 @@ return (NULL);
     if ( CheckIfFontClosed(self) )
 return (NULL);
     fv = self->fv;
-    if ( (acnt = PySequence_Size(args))<4 ) {
+    if ( (acnt = PyTuple_Size(args))<4 ) {
 	PyErr_Format(PyExc_EnvironmentError, "Too few arguments.");
 return( NULL );
     }
-    arg3 = PySequence_GetItem(args,2);
-    arg4 = PySequence_GetItem(args,3);
+    arg3 = PyTuple_GetItem(args,2);
+    arg4 = PyTuple_GetItem(args,3);
     do_autokern = true;
     if ( !PyLong_Check(arg3)) {
 	if ( !PyArg_ParseTuple(args,"ssOOO|s", &lookup, &subtable, &class1s, &class2s,
@@ -15006,7 +15011,7 @@ return( NULL );
 return( NULL );
 	do_autokern = false;
     } else if ( !PyLong_Check(arg4) && !PyFloat_Check(arg4)) {
-	PyObject *arg7 = acnt>=7 ? PySequence_GetItem(args,6) : NULL;
+	PyObject *arg7 = acnt>=7 ? PyTuple_GetItem(args,6) : NULL;
 	if ( arg7!=NULL && (PyLong_Check(arg7))) {
 	    if ( !PyArg_ParseTuple(args,"ssiOO|iis", &lookup, &subtable,
 		    &separation, &class1s, &class2s,
@@ -15019,8 +15024,8 @@ return( NULL );
 return( NULL );
 	}
     } else if ( acnt>5 &&
-	    (arg5=PySequence_GetItem(args,4)) && PySequence_Check(arg5) ) {
-	PyObject *arg8 = acnt>=8 ? PySequence_GetItem(args,7) : NULL;
+	    (arg5=PyTuple_GetItem(args,4)) && PyTuple_Check(arg5) ) {
+	PyObject *arg8 = acnt>=8 ? PyTuple_GetItem(args,7) : NULL;
 	if ( arg8!=NULL && (PyLong_Check(arg8))) {
 	    if ( !PyArg_ParseTuple(args,"ssidOO|iis", &lookup, &subtable,
 		    &separation, &class_error_distance, &list1, &list2,
@@ -15033,7 +15038,7 @@ return( NULL );
 return( NULL );
 	}
     } else {
-	PyObject *arg6 = acnt>=6 ? PySequence_GetItem(args,5) : NULL;
+	PyObject *arg6 = acnt>=6 ? PyTuple_GetItem(args,5) : NULL;
 	if ( arg6!=NULL && (PyLong_Check(arg6))) {
 	    if ( !PyArg_ParseTuple(args,"ssid|iis", &lookup, &subtable,
 		    &separation, &class_error_distance,
@@ -15261,7 +15266,7 @@ static PyObject *PyFFFont_autoKern(PyFF_Font *self, PyObject *args, PyObject *ke
 return (NULL);
     fv = self->fv;
     sf = fv->sf;
-    if ( PySequence_Size(args)==2 ) {
+    if ( PyTuple_Size(args)==2 ) {
 	if ( !PyArg_ParseTupleAndKeywords(args, keywds, "si|iiii", (char **)ak_keywords1,
 		&subtablename, &separation, &minkern, &touch, &onlyCloser, &height))
 return( NULL );
@@ -15459,11 +15464,10 @@ static struct flaglist lookup_flags[] = {
 };
 
 static int ParseLookupFlagsItem(SplineFont *sf,PyObject *flagstr) {
-    char *str;
+    const char *str;
     int i;
 
-    PYGETSTR(flagstr, str, -1);
-    if ( str==NULL ) {
+    if ((str = PyUnicode_AsUTF8(flagstr)) == NULL) {
 	return( -1 );
     }
     for ( i=0; lookup_flags[i].name!=NULL; ++i )
@@ -15496,7 +15500,9 @@ return( ParseLookupFlagsItem(sf,flagtuple));
     if ( cnt==-1 )
 return( -1 );
     for ( i=0; i<cnt; ++i ) {
-	temp = ParseLookupFlagsItem(sf,PySequence_GetItem(flagtuple,i));
+	PyObject *obj = PySequence_GetItem(flagtuple,i);
+	temp = ParseLookupFlagsItem(sf,obj);
+	Py_XDECREF(obj);
 	if ( temp==-1 )
 return( -1 );
 	flags |= temp;
@@ -15700,7 +15706,7 @@ static PyObject *PyFFFont_importLookups(PyFF_Font *self, PyObject *args) {
     SplineFont *othersf;
     PyObject *lookup_list;
     PyFF_Font *otherfont;
-    char *lookup_str, *before_str=NULL;
+    const char *lookup_str, *before_str=NULL;
     OTLookup *otl, *before, **list;
     int i;
 
@@ -15723,7 +15729,9 @@ return (NULL);
     if ( before_str!=NULL )
 	before = SFFindLookup(sf,before_str);
     if ( PyUnicode_Check(lookup_list)) {
-	PYGETSTR(lookup_list, lookup_str, NULL);
+	if ((lookup_str = PyUnicode_AsUTF8(lookup_list)) == NULL) {
+	    return NULL;
+	}
 	otl = SFFindLookup(othersf,lookup_str);
 	if ( otl==NULL ) {
 	    PyErr_Format(PyExc_EnvironmentError, "No lookup named %s exists in %s.", lookup_str, othersf->fontname );
@@ -15736,13 +15744,13 @@ return( NULL );
 	list = calloc(subcnt+1,sizeof(OTLookup *));
 	for ( i=0; i<subcnt; ++i ) {
 	    PyObject *str = PySequence_GetItem(lookup_list,i);
-	    if ( !PyUnicode_Check(str)) {
-		PyErr_Format(PyExc_TypeError, "Unexpected type" );
+	    if ((lookup_str = PyUnicode_AsUTF8(str)) == NULL) {
+		Py_DECREF(str);
 		free(list);
-return( NULL );
+		return NULL;
 	    }
-	    PYGETSTR(str, lookup_str, NULL);
 	    otl = SFFindLookup(othersf,lookup_str);
+	    Py_DECREF(str);
 	    if ( otl==NULL ) {
 		PyErr_Format(PyExc_EnvironmentError, "No lookup named %s exists in %s.", lookup_str, othersf->fontname );
 		free(list);
@@ -16335,14 +16343,13 @@ static PyObject *PyFFFont_Save(PyFF_Font *self, PyObject *args) {
 	return(NULL);
     fv = self->fv;
 
-    if ( !PyArg_ParseTuple(args,"|esi", "UTF-8", &filename, &localRevisionsToRetain ))
+    if ( !PyArg_ParseTuple(args,"|si", &filename, &localRevisionsToRetain ))
         return( NULL );
 
     if ( filename!=NULL )
     {
 	/* Save As - Filename was provided */
 	locfilename = utf82def_copy(filename);
-	PyMem_Free(filename);
 
 	pt = strrchr(locfilename,'.');
 	if ( pt!=NULL && strmatch(pt,".sfdir")==0 )
@@ -16509,12 +16516,12 @@ static PyObject *PyFFFont_Generate(PyFF_Font *self, PyObject *args, PyObject *ke
 return (NULL);
     fv = self->fv;
     layer = fv->active_layer;
-    if ( !PyArg_ParseTupleAndKeywords(args, keywds, "es|sOissi", (char **)gen_keywords,
-	    "UTF-8",&filename, &bitmaptype, &flags, &resolution, &subfontdirectory,
+    if ( !PyArg_ParseTupleAndKeywords(args, keywds, "s|sOissi", (char **)gen_keywords,
+	    &filename, &bitmaptype, &flags, &resolution, &subfontdirectory,
 	    &namelist, &layer) ) {
 	PyErr_Clear();
-	if ( !PyArg_ParseTupleAndKeywords(args, keywds, "es|sOisss", (char **)gen_keywords,
-		"UTF-8",&filename, &bitmaptype, &flags, &resolution, &subfontdirectory,
+	if ( !PyArg_ParseTupleAndKeywords(args, keywds, "s|sOisss", (char **)gen_keywords,
+		&filename, &bitmaptype, &flags, &resolution, &subfontdirectory,
 		&namelist, &layer_str) )
 return( NULL );
 	layer = SFFindLayerIndexByName(fv->sf,layer_str);
@@ -16550,7 +16557,6 @@ return( NULL );
 	}
     }
     locfilename = utf82def_copy(filename);
-    PyMem_Free(filename);
     if ( !GenerateScript(fv->sf,locfilename,bitmaptype,iflags,resolution,subfontdirectory,
 	    NULL,fv->normal==NULL?fv->map:fv->normal,rename_to,layer) ) {
 	PyErr_Format(PyExc_EnvironmentError, "Font generation failed");
@@ -16615,12 +16621,12 @@ static PyObject *PyFFFont_GenerateTTC(PyFF_Font *self, PyObject *args, PyObject 
 return(NULL);
     fv = self->fv;
 
-    if ( !PyArg_ParseTupleAndKeywords(args, keywds, "esO|sOOsi", (char **)genttc_keywords,
-	    "UTF-8",&filename, &others, &bitmaptype, &flags, &ttcflags,
+    if ( !PyArg_ParseTupleAndKeywords(args, keywds, "sO|sOOsi", (char **)genttc_keywords,
+	    &filename, &others, &bitmaptype, &flags, &ttcflags,
 	    &namelist, &layer) ) {
 	PyErr_Clear();
-	if ( !PyArg_ParseTupleAndKeywords(args, keywds, "esO|sOOss", (char **)genttc_keywords,
-		"UTF-8",&filename, &others, &bitmaptype, &flags, &ttcflags,
+	if ( !PyArg_ParseTupleAndKeywords(args, keywds, "sO|sOOss", (char **)genttc_keywords,
+		&filename, &others, &bitmaptype, &flags, &ttcflags,
 		&namelist, &layer_str) )
 return( NULL );
 	layer = SFFindLayerIndexByName(fv->sf,layer_str);
@@ -16706,7 +16712,6 @@ return( NULL );
     }
 
     locfilename = utf82def_copy(filename);
-    PyMem_Free(filename);
 
     if ( !WriteTTC(locfilename,head,ff_ttc,bf,iflags,layer,ittcflags)) {
 	PyErr_Format(PyExc_EnvironmentError, "Font generation failed");
@@ -16731,10 +16736,9 @@ static PyObject *PyFFFont_GenerateFeature(PyFF_Font *self, PyObject *args) {
     if ( CheckIfFontClosed(self) )
 return (NULL);
     fv = self->fv;
-    if ( !PyArg_ParseTuple(args,"es|s","UTF-8",&filename,&lookup_name) )
+    if ( !PyArg_ParseTuple(args,"s|s",&filename,&lookup_name) )
 return( NULL );
     locfilename = utf82def_copy(filename);
-    PyMem_Free(filename);
 
     if ( lookup_name!=NULL ) {
 	otl = SFFindLookup(fv->sf,lookup_name);
@@ -16771,10 +16775,9 @@ static PyObject *PyFFFont_MergeKern(PyFF_Font *self, PyObject *args) {
     if ( CheckIfFontClosed(self) )
 return (NULL);
     fv = self->fv;
-    if ( !PyArg_ParseTuple(args,"es","UTF-8",&filename) )
+    if ( !PyArg_ParseTuple(args,"s",&filename) )
 return( NULL );
     locfilename = utf82def_copy(filename);
-    PyMem_Free(filename);
 
     if ( !LoadKerningDataFromMetricsFile(fv->sf,locfilename,fv->map)) {
 	PyErr_Format(PyExc_EnvironmentError, "No metrics data found");
@@ -16795,7 +16798,7 @@ static PyObject *PyFFFont_MergeFonts(PyFF_Font *self, PyObject *args) {
     if ( CheckIfFontClosed(self) )
 return (NULL);
     fv = self->fv;
-    if ( !PyArg_ParseTuple(args,"es|ii","UTF-8",&filename,
+    if ( !PyArg_ParseTuple(args,"s|ii",&filename,
 	    &preserveCrossFontKerning, &openflags) ) {
 	PyFF_Font *other;
 	PyErr_Clear();
@@ -16805,7 +16808,6 @@ return( NULL );
 	sf = other->fv->sf;
     } else {
 	locfilename = utf82def_copy(filename);
-	PyMem_Free(filename);
 	sf = LoadSplineFont(locfilename,openflags);
 	if ( sf==NULL ) {
 	    PyErr_Format(PyExc_EnvironmentError, "No font found in file \"%s\"", locfilename);
@@ -16831,10 +16833,9 @@ static PyObject *PyFFFont_InterpolateFonts(PyFF_Font *self, PyObject *args) {
     if ( CheckIfFontClosed(self) )
 return (NULL);
     fv = self->fv;
-    if ( !PyArg_ParseTuple(args,"des|i",&fraction,"UTF-8",&filename, &openflags) )
+    if ( !PyArg_ParseTuple(args,"ds|i",&fraction,&filename, &openflags) )
 return( NULL );
     locfilename = utf82def_copy(filename);
-    PyMem_Free(filename);
     sf = LoadSplineFont(locfilename,openflags);
     if ( sf==NULL ) {
 	PyErr_Format(PyExc_EnvironmentError, "No font found in file \"%s\"", locfilename);
@@ -18131,8 +18132,10 @@ static PyObject *PyFF_FontIndex( PyObject *object, PyObject *index ) {
     fv = self->fv;
     sf = fv->sf;
     if ( PyUnicode_Check(index)) {
-	char *name;
-	PYGETSTR(index, name, NULL);
+	const char *name = PyUnicode_AsUTF8(index);
+	if (name == NULL) {
+	    return NULL;
+	}
 	sc = SFGetChar(sf,-1,name);
     } else if ( PyLong_Check(index)) {
 	int pos = PyLong_AsLong(index), gid;
@@ -18164,8 +18167,10 @@ static int PyFF_FontContains( PyObject *object, PyObject *index ) {
     fv = self->fv;
     sf = fv->sf;
     if ( PyUnicode_Check(index)) {
-	char *name;
-        PYGETSTR(index, name, 0);
+	const char *name = PyUnicode_AsUTF8(index);
+	if (name == NULL) {
+	    return 0;
+	}
 	sc = SFGetChar(sf,-1,name);
     } else if ( PyLong_Check(index)) {
 	int pos = PyLong_AsLong(index), gid;
@@ -19461,26 +19466,20 @@ static wchar_t ** copy_argv(char *arg0, int argc ,char **argv) {
 /* ************************************************************************** */
 
 static void SetPythonModuleMetadata( PyObject *module ) {
-    char ver[200];
-    char isodate[32];
     PyObject* pyver;
     PyObject* pydate;
     time_t dt = FONTFORGE_MODTIME_RAW;
     struct tm* modtime = gmtime(&dt);
 
     /* Make __version__ string */
-    snprintf(ver, sizeof(ver), "%s git:%s",
+    pyver = PyUnicode_FromFormat("%s git:%s",
 	     FONTFORGE_VERSION,
 	     FONTFORGE_GIT_VERSION );
-    pyver = PyUnicode_FromString(ver);
-    Py_INCREF(pyver);
     PyModule_AddObject(module, "__version__", pyver);
 
     /* Make __date__ string */
-    snprintf(isodate, sizeof(isodate), "%04d-%02d-%02d",
+    pydate = PyUnicode_FromFormat("%04d-%02d-%02d",
 	     modtime->tm_year+1900, modtime->tm_mon+1, modtime->tm_mday );
-    pydate = PyUnicode_FromString(isodate);
-    Py_INCREF(pydate);
     PyModule_AddObject(module, "__date__", pydate);
 }
 
@@ -19759,10 +19758,12 @@ return;
 	 PyMapping_HasKeyString(sf->python_persistent,(char *)"initScriptString") &&
 	 (obj = PyMapping_GetItemString(sf->python_persistent,(char *)"initScriptString"))!=NULL &&
 	 PyUnicode_Check(obj)) {
-	char *str = NULL;
-	PYGETSTR(obj, str, );
+	const char *str = PyUnicode_AsUTF8(obj);
+	if (str == NULL) {
+	    Py_DECREF(obj);
+	    return;
+	}
 	PyRun_SimpleString(str);
-	free(str);
     }
     Py_XDECREF(obj);
 
