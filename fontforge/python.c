@@ -97,8 +97,6 @@
 extern int old_sfnt_flags;
 extern int prefRevisionsToRetain;
 
-PyMODINIT_FUNC fontforge_python_init(const char* modulename);
-
 /* ========== MODULE DEFINITIONS ========== */
 /* The following types are used to define Python Modules.  For every
  * module, you must create a 'module_definition' structure describing
@@ -145,7 +143,7 @@ typedef struct {
      */
     struct {
 	PyObject *module;
-	PyMODINIT_FUNC (*modinit_func)(void);
+	PyObject* (*modinit_func)(void);
 	PyModuleDef pymod_def;
     } runtime;
 } module_definition;
@@ -19179,8 +19177,6 @@ static int AddPythonTypesToModule( PyObject *module, python_type_info* typelist 
 PyMODINIT_FUNC CreatePyModule_##name(void) {\
     return CreatePyModule(&module_def_##name);\
 }
-#define ff_fixmod(name) \
-    module_def_##name.runtime.modinit_func = CreatePyModule_##name
 
 /* ===== MODULE REGISTRY -- LIST OF ALL PYTHON MODULES ===== */
 static module_definition * all_modules[] = {
@@ -19193,14 +19189,9 @@ ff_crmod(fontforge)
 ff_crmod(psMat)
 ff_crmod(ff_internals)
 
-static void fixup_module_definitions(void) {
-    ff_fixmod(fontforge);
-    ff_fixmod(psMat);
-    ff_fixmod(ff_internals);
-}
-/* ===== END MODULE REGISTRY ===== */
-
 #define NUM_MODULES (sizeof(all_modules) / sizeof(module_definition *))
+
+/* ===== END MODULE REGISTRY ===== */
 
 
 static const char *spiro_names[] = { "spiroG4", "spiroG2", "spiroCorner",
@@ -19285,7 +19276,7 @@ static PyObject* CreatePyModule( module_definition *mdef ) {
     mdef->runtime.pymod_def.m_doc = mdef->docstring;
     mdef->runtime.pymod_def.m_methods = mdef->methods;
     mdef->runtime.pymod_def.m_size = -1;
-#if PY_MINOR_VERSION >= 5
+#if PY_MAJOR_VERSION > 3 || PY_MINOR_VERSION >= 5
     mdef->runtime.pymod_def.m_slots = NULL;
 #else
     mdef->runtime.pymod_def.m_reload = NULL;
@@ -19342,7 +19333,10 @@ static void RegisterAllPyModules(void) {
      * NOTE: This should only be called from the embedded python,
      *       when used from the pyhook, we can't (or shouldn't) do this
      */
-    fixup_module_definitions();
+    module_def_fontforge.runtime.modinit_func = CreatePyModule_fontforge;
+    module_def_psMat.runtime.modinit_func = CreatePyModule_psMat;
+    module_def_ff_internals.runtime.modinit_func = CreatePyModule_ff_internals;
+
     for ( unsigned i=0; i<NUM_MODULES; i++ ) {
 	PyImport_AppendInittab( all_modules[i]->module_name,
 				all_modules[i]->runtime.modinit_func );
@@ -19636,10 +19630,11 @@ static GPtrArray *default_pyinit_dirs(void) {
     GPtrArray *pathlist;
     const char *sharedir;
     const char *userdir;
-    char subdir[] = "python3";
+    char subdir[16];
     char *buffer;
 
     pathlist = g_ptr_array_new_with_free_func(free);
+    snprintf(subdir, sizeof(subdir), "python%d", PY_MAJOR_VERSION);
 
     sharedir = getFontForgeShareDir();
     userdir = getFontForgeUserDir(Config);
