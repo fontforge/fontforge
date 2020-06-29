@@ -28,7 +28,8 @@ current status.
 explicitly specified.
 
 ``set_default_rpath`` sets the default RPATH to be used on platforms
-that support it.
+that support it. Can only be called after GNUInstallDirs has been
+included.
 
 ``enable_sanitizer`` checks if the specified sanitizer is supported,
 and adds the required compiler flags to enable it if so. If unsupported,
@@ -100,11 +101,11 @@ function(set_default_build_type default_build_type)
 endfunction()
 
 function(set_default_rpath)
-  list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" _present)
+  list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_LIBDIR}" _present)
   if(_present LESS 0)
-    list(FIND CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib" _present)
+    list(FIND CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_LIBDIR}" _present)
     if(_present LESS 0)
-      list(APPEND CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+      list(APPEND CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_LIBDIR}")
     endif()
   endif()
   if(APPLE)
