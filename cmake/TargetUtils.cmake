@@ -102,6 +102,7 @@ function(set_supported_compiler_flags dst cxxdst)
           message(STATUS "  Flag is unsupported: ${_arg}")
         endif()
         unset(_supported_flag CACHE)
+        unset(_supported_flag)
       endforeach()
     endmacro()
 
