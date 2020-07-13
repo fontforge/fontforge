@@ -5258,7 +5258,7 @@ return( sub );
 	    _("Add a subtable to which lookup?"));
     if ( ans==-1 )
 	found = NULL;
-    else if ( ans==cnt )
+    else if ( ans==cnt-1 )
 	found = CreateAndSortNewLookupOfType(sf,lookup_type);
     else {
 	found = NULL;
