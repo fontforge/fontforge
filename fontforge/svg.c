@@ -1301,14 +1301,18 @@ static void SVGTraceArc(SplineSet *cur,BasePoint *current,
 	y1p =-ang.y*(current->x-x)/2 + ang.x*(current->y-y)/2;
 	/* Correct for bad radii */
 	lambda = x1p*x1p/(rx*rx) + y1p*y1p/(ry*ry);
-	if ( lambda>1 ) {
+	if ( lambda>=1 ) {
 	   lambda = sqrt(lambda);
 	   rx *= lambda;
 	   ry *= lambda;
 	   cxp = cyp = 0;
 	} else {
 	    factor = rx*rx*ry*ry - rx*rx*y1p*y1p - ry*ry*x1p*x1p;
-	    factor = sqrt(factor/(rx*rx*y1p*y1p+ry*ry*x1p*x1p));
+	    factor = factor/(rx*rx*y1p*y1p+ry*ry*x1p*x1p);
+	    if (factor < 0) // Ideally the lambda check will prevent this, but ...
+		factor = 0;
+	    else
+		factor = sqrt(factor);
 	    // This part of the center calculation deals with large_arc
 	    // leaving sweep as a parameter to SSAppendArc
 	    if ( large_arc==sweep )

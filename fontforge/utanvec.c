@@ -34,10 +34,12 @@
 #include <math.h>
 #include <assert.h>
 
-#define UTMARGIN (1e-8)
-#define UTSOFTMARGIN (1e-5)
+#define UTMARGIN (1e-7)     // Arrived at through testing
+#define UTSOFTMARGIN (1e-5) // Fallback margin for some cases
 #define BPNEAR(bp1, bp2) BPWithin(bp1, bp2, UTMARGIN)
-#define UTRETRY (UTMARGIN/10.0)
+#define UTRETRY (1e-9)      // Amount of "t" to walk back from the 
+                            // ends of degenerate splines to find
+                            // a slope.
 
 BasePoint MakeUTanVec(bigreal x, bigreal y) {
     BasePoint ret = { 0.0, 0.0 };
