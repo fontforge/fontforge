@@ -48,7 +48,6 @@ function(fontforge_generate_config template destination)
     set(__Mac 1)
   elseif(CYGWIN)
     set(__CygWin 1)
-    set(_BrokenBitmapImages 1)
     set(_ModKeysAutoRepeat 1)
   endif()
 

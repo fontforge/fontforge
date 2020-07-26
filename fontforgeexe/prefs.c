@@ -580,9 +580,11 @@ static void ProcessFileChooserPrefs(void) {
 	b[i++] = uc_copy("/System/Library/Fonts/");
 #endif
 #if __CygWin
-	b[i++] = uc_copy("/cygdrive/c/Windows/Fonts/");
-#endif
+	b[i++] = uc_copy("/usr/share/fonts/");
+	b[i++] = uc_copy("/usr/share/X11/fonts/");
+#else
 	b[i++] = uc_copy("/usr/X11R6/lib/X11/fonts/");
+#endif
 	b[i++] = NULL;
 	GFileChooserSetBookmarks(b);
     } else {
