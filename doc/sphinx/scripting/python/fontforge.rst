@@ -1274,11 +1274,14 @@ Layers may be compared to see if their contours are similar.
    Removes overlapping areas. See also :meth:`layer.intersect()` and
    :meth:`layer.exclude()`.
 
-.. method:: layer.interpolateNewLayer(other_layer, amount)
+.. method:: layer.interpolateNewLayer(other_layer, amount[, strict])
 
    Creates (and returns) a new layer which contains splines interpolated from
    the current layer and the first argument. If amount is 0 the result will
    look like the current layer, if 1 then like the first argument.
+
+   If strict is ``True``, layers will not be interpolated unless they have the
+   same contour/point numbers and contour directions.
 
 .. method:: layer.round([factor])
 
@@ -4265,12 +4268,15 @@ This type may not be pickled.
    returned. If the optional name parameter is included and differs from its
    current name then the character is also renamed.
 
-.. method:: font.createInterpolatedGlyph(glyph1, glyph2, amount)
+.. method:: font.createInterpolatedGlyph(glyph1, glyph2, amount[, strict])
 
    Create (and return) a glyph with the same unicode code point as glyph1.
    The glyph may not already exist. The contents of the glyph will be formed
    by interpolating between glyph1 and glyph2. If amount==0 the result will
    look like glyph1, or 1 then like glyph2.
+
+   If strict is ``True``, glyphs will not be interpolated unless they have the
+   same contour/point numbers and contour directions.
 
 .. method:: font.createMappedChar(enc)
             font.createMappedChar(name)
@@ -4560,10 +4566,11 @@ This type may not be pickled.
    then it is looked up in the current font and all lookups will be added
    before it, if not specified lookups will appear at the end of the list.
 
-.. method:: font.interpolateFonts(fraction, filename)
+.. method:: font.interpolateFonts(fraction, filename[, only_compatible])
 
    Interpolates a font between the current font and the font contained in
-   filename.
+   filename. If only_compatible is ``True``, glyphs will not be interpolated
+   unless they have the same contour/point numbers and contour directions.
 
 .. method:: font.isKerningClass(subtable_name)
 

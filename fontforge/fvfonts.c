@@ -1267,10 +1267,13 @@ return;
 /* *************************** Font Interpolation *************************** */
 /******************************************************************************/
 
-static RefChar *InterpRefs(RefChar *base, RefChar *other, real amount, SplineChar *sc) {
+static RefChar *InterpRefs(RefChar *base, RefChar *other, real amount, char *glyphname, bool check_only) {
     RefChar *head=NULL, *last=NULL, *cur;
-    RefChar *test;
+    RefChar *test, *temp=NULL;
     int i;
+
+    // We need something to return for check_only
+    temp = base == NULL ? other : base;
 
     for ( test = other; test!=NULL; test=test->next )
 	test->checked = false;
@@ -1280,33 +1283,136 @@ static RefChar *InterpRefs(RefChar *base, RefChar *other, real amount, SplineCha
 	    if ( test->checked )
 		/* Do nothing */;
 	    else if ( test->unicode_enc==base->unicode_enc &&
-		    (test->unicode_enc!=-1 || strcmp(test->sc->name,base->sc->name)==0 ) )
+		    (test->unicode_enc!=-1 || strcmp(test->sc->name,base->sc->name)==0 ) ) {
 	break;
+	}
 	}
 	if ( test!=NULL ) {
 	    test->checked = true;
-	    cur = RefCharCreate();
-	    free(cur->layers);
-	    *cur = *base;
-	    cur->orig_pos = cur->sc->orig_pos;
-	    for ( i=0; i<6; ++i )
-		cur->transform[i] = base->transform[i] + amount*(other->transform[i]-base->transform[i]);
-	    cur->layers = NULL;
-	    cur->layer_cnt = 0;
-	    cur->checked = false;
-	    if ( head==NULL )
-		head = cur;
-	    else
-		last->next = cur;
-	    last = cur;
-	} else
-	    LogError( _("In character %s, could not find reference to %s\n"),
-		    sc->name, base->sc->name );
+	    if ( !check_only ) {
+		cur = RefCharCreate();
+		free(cur->layers);
+		*cur = *base;
+		cur->orig_pos = cur->sc->orig_pos;
+		for ( i=0; i<6; ++i )
+			cur->transform[i] = base->transform[i] + amount*(other->transform[i]-base->transform[i]);
+		cur->layers = NULL;
+		cur->layer_cnt = 0;
+		cur->checked = false;
+		if ( head==NULL )
+			head = cur;
+		else
+			last->next = cur;
+		last = cur;
+	    }
+	} else {
+	    LogError( _("Glyph %s: could not find reference to %s\n"),
+		    glyphname, base->sc->name );
+	    if ( check_only ) return ( NULL );
+	}
 	base = base->next;
 	if ( test==other && other!=NULL )
 	    other = other->next;
     }
+
+// If check_only, doesn't matter as long as it's not NULL, as if using check_only only NULL/non-NULL matters
+if ( check_only ) 
+    return ( temp );
 return( head );
+}
+
+/* In variable fonts, and MM fonts before them, "compatibility" between
+ * contours is needed to acheive a good (or any) result.
+ *
+ * FontForge has no such limitation, and will force contours to be compatible,
+ * then interpolate those. Usually, the result looks horrible.
+ *
+ * So, since the user is probably using this feature to test variable fonts,
+ * ask them if they even want FontForge to force compatibility. */
+bool InterpolationSanity(SplineSet *base, SplineSet *other, int order2, RefChar* brc, RefChar* orc, char* glyphname) {
+    SplineSet *bss=NULL, *oss=NULL;
+    char* prefix;
+    int bmcc = 0, omcc = 0;
+    bool ret = true;
+
+    // Count contours...
+    for ( bss = base; bss != NULL; bss=bss->next ) bmcc++;
+    for ( oss = other; oss != NULL; oss=oss->next ) omcc++;
+
+    if (glyphname == NULL) {
+        prefix = "";
+    } else {
+        prefix = smprintf(_("Glyph %s: "), glyphname);
+    }
+
+    if ( brc != NULL || orc != NULL ) {
+        RefChar *temp = InterpRefs(brc, orc, 0.5, glyphname, true);
+        ret = temp != NULL;
+    }
+
+    if (bmcc != omcc) {
+        LogError(_("%sIncompatible contour counts: %d vs %d."), prefix, bmcc, omcc);
+        ret = false;
+    }
+
+    SplinePoint* sp;
+    int contour_count = 1;
+    for ( bss = base, oss = other; bss!=NULL; bss=bss->next, oss=oss->next, contour_count++ ) {
+        if (!ret) break;
+        int bicw = SplinePointListIsClockwise(bss), oicw = SplinePointListIsClockwise(oss);
+
+        if (bicw == -1 || oicw == -1)
+            TRACE(_("%sInterpolationSanity: Assuming contour %d of undefined direction to be sane\n"), prefix, contour_count);
+        else if (bicw != oicw) {
+            LogError(_("%sIncompatible contour directionality (contour %d)"), prefix, contour_count);
+            ret = false;
+        }
+
+        if ( (bss->first->prev == NULL) != (oss->first->prev == NULL) ) {
+            char* openness = bss->first->prev == NULL ? _("closed") : _("open");
+            LogError(_("%sBase spline (contour %d) should be %s but it's not"), prefix, contour_count, openness);
+            ret = false;
+        }
+
+        int segment_count = 1;
+        for ( SplinePoint *bsp=bss->first, *osp=oss->first; ; segment_count++ ) {
+            bool bcurve = ( !bsp->nonextcp || (bsp->next!=NULL && !bsp->next->to->noprevcp) );
+            bool ocurve = ( !osp->nonextcp || (osp->next!=NULL && !osp->next->to->noprevcp) );
+
+            if ( bcurve != ocurve ) {
+                char* wrongpttype = bcurve ? _("base") : _("other");
+                LogError(_("%sSegment %d in the %s spline is a curve when it should be a line"), prefix, segment_count, wrongpttype);
+                ret = false;
+            }
+
+            bool bnonextpt = ( bsp->next==NULL || bsp->next->to==bss->first );
+            bool ononextpt = ( osp->next==NULL || osp->next->to==oss->first );
+
+            if ( bnonextpt && ononextpt ) 
+                  break;
+
+            if ( bnonextpt != ononextpt ) {
+                char* problemspline = bnonextpt ? _("base") : _("other");
+                int extras = 0;
+
+                if ( ononextpt ) {
+                    for ( ; bsp->next!=NULL && bsp->next->to==bss->first; bsp=bsp->next->to, extras++ );
+                } else if ( bsp->next==NULL || bsp==bss->first ) {
+                    for ( ; osp->next!=NULL && osp->next->to!=bss->first; osp=osp->next->to, extras++ );
+                }
+
+                LogError(_("%sThe %s spline has %d point(s) too many after segment %d"),
+                         prefix, problemspline, extras, segment_count);
+                ret = false; break;
+            }
+
+            bsp = bsp->next->to;
+            osp = osp->next->to;
+        }
+    }
+
+    if (prefix[0] != '\0') free(prefix);
+    return ret;
 }
 
 static void InterpPoint(SplineSet *cur, SplinePoint *base, SplinePoint *other, real amount ) {
@@ -1364,7 +1470,7 @@ return( cur );
 return( cur );
 	}
 	if ( bp->next == NULL || bp->next->to==base->first ) {
-	    LogError( _("In character %s, there are too few points on a path in the base\n"), sc->name);
+	    TRACE("InterpSplineSet: In glyph %s, there are too few points on a path in the base\n", sc->name);
 	    if ( bp->next!=NULL ) {
 		if ( bp->next->order2 ) {
 		    cur->last->nextcp.x = cur->first->prevcp.x = (cur->last->nextcp.x+cur->first->prevcp.x)/2;
@@ -1375,7 +1481,7 @@ return( cur );
 	    }
 return( cur );
 	} else if ( op->next==NULL || op->next->to==other->first ) {
-	    LogError( _("In character %s, there are too many points on a path in the base\n"), sc->name);
+	    TRACE("InterpSplineSet: In glyph %s, there are too many points on a path in the base\n", sc->name);
 	    while ( bp->next!=NULL && bp->next->to!=base->first ) {
 		bp = bp->next->to;
 		InterpPoint(cur,bp,op,amount);
@@ -1522,13 +1628,13 @@ static void LayerInterpolate(Layer *to,Layer *base,Layer *other,real amount,Spli
 	LogError(_("Different stroke patterns in layer %d of %s\n"), lc, sc->name );
 
     to->splines = SplineSetsInterpolate(base->splines,other->splines,amount,sc);
-    to->refs = InterpRefs(base->refs,other->refs,amount,sc);
+    to->refs = InterpRefs(base->refs,other->refs,amount,sc->name,false);
     if ( base->images!=NULL || other->images!=NULL )
 	LogError(_("I can't even imagine how to attempt to interpolate images in layer %d of %s\n"), lc, sc->name );
 }
 
 SplineChar *SplineCharInterpolate(SplineChar *base, SplineChar *other,
-	real amount, SplineFont *newfont) {
+	real amount, SplineFont *newfont, bool only_compatible) {
     SplineChar *sc;
     int i;
 
@@ -1565,8 +1671,20 @@ return( NULL );
 	for ( i=0; i<sc->layer_cnt; ++i ) {
 	    if ( i>=base->layer_cnt || i>= other->layer_cnt )
 	break;
+	    if ( only_compatible ) {
+		char* prefix = smprintf("%s (layer %d)", base->name, i);
+		if ( !InterpolationSanity(base->layers[i].splines, other->layers[i].splines, base->layers[i].order2,
+					  base->layers[i].refs, other->layers[i].refs, prefix) ) {
+		    TRACE("InterpolationSanity: %s deemed insane\n",prefix);
+		    SplineCharFree(sc);
+		    sc = NULL;
+		}
+		free(prefix);
+		if ( sc == NULL )
+		    return NULL;
+	    }
 	    sc->layers[i].splines = SplineSetsInterpolate(base->layers[i].splines,other->layers[i].splines,amount,sc);
-	    sc->layers[i].refs = InterpRefs(base->layers[i].refs,other->layers[i].refs,amount,sc);
+	    sc->layers[i].refs = InterpRefs(base->layers[i].refs,other->layers[i].refs,amount,sc->name,false);
 	}
     }
     sc->changedsincelasthinted = true;
@@ -1575,10 +1693,10 @@ return( NULL );
 return( sc );
 }
 
-static void _SplineCharInterpolate(SplineFont *new, int orig_pos, SplineChar *base, SplineChar *other, real amount) {
+static void _SplineCharInterpolate(SplineFont *new, int orig_pos, SplineChar *base, SplineChar *other, real amount, bool only_compatible) {
     SplineChar *sc;
 
-    sc = SplineCharInterpolate(base,other,amount,new);
+    sc = SplineCharInterpolate(base,other,amount,new,only_compatible);
     if ( sc==NULL )
 return;
     sc->orig_pos = orig_pos;
@@ -1612,7 +1730,7 @@ static void InterpFixupRefChars(SplineFont *sf) {
 }
 
 SplineFont *InterpolateFont(SplineFont *base, SplineFont *other, real amount,
-	Encoding *enc) {
+	Encoding *enc, bool only_compatible) {
     SplineFont *new;
     int i, index, lc;
 
@@ -1649,7 +1767,7 @@ return( NULL );
     for ( i=0; i<base->glyphcnt; ++i ) if ( base->glyphs[i]!=NULL ) {
 	index = SFFindExistingSlot(other,base->glyphs[i]->unicodeenc,base->glyphs[i]->name);
 	if ( index!=-1 && other->glyphs[index]!=NULL ) {
-	    _SplineCharInterpolate(new,i,base->glyphs[i],other->glyphs[index],amount);
+	    _SplineCharInterpolate(new,i,base->glyphs[i],other->glyphs[index],amount,only_compatible);
 	    if ( new->glyphs[i]!=NULL )
 		new->glyphs[i]->kerns = InterpKerns(base->glyphs[i]->kerns,
 			other->glyphs[index]->kerns,amount,new,new->glyphs[i]);

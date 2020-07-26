@@ -1,0 +1,143 @@
+SplineFontDB: 3.2
+FontName: Untitled1
+FullName: Untitled1
+FamilyName: Untitled1
+Weight: Regular
+Copyright: Copyright (c) 2020, osboxes.org
+UComments: "2020-5-2: Created with FontForge (http://fontforge.org)"
+Version: 001.000
+ItalicAngle: 0
+UnderlinePosition: -100
+UnderlineWidth: 50
+Ascent: 800
+Descent: 200
+InvalidEm: 0
+LayerCount: 2
+Layer: 0 0 "Back" 1
+Layer: 1 0 "Fore" 0
+XUID: [1021 1008 1889163070 14054716]
+OS2Version: 0
+OS2_WeightWidthSlopeOnly: 0
+OS2_UseTypoMetrics: 1
+CreationTime: 1588401444
+ModificationTime: 1589527003
+OS2TypoAscent: 0
+OS2TypoAOffset: 1
+OS2TypoDescent: 0
+OS2TypoDOffset: 1
+OS2TypoLinegap: 0
+OS2WinAscent: 0
+OS2WinAOffset: 1
+OS2WinDescent: 0
+OS2WinDOffset: 1
+HheadAscent: 0
+HheadAOffset: 1
+HheadDescent: 0
+HheadDOffset: 1
+OS2Vendor: 'PfEd'
+DEI: 91125
+Encoding: ISO8859-1
+UnicodeInterp: none
+NameList: AGL For New Fonts
+DisplaySize: -48
+AntiAlias: 1
+FitToEm: 0
+WinInfo: 48 16 4
+BeginChars: 256 7
+
+StartChar: A
+Encoding: 65 65 0
+Width: 1000
+Flags: HW
+LayerCount: 2
+Fore
+SplineSet
+70 378 m 17
+ 107.690479541 463.905299962 227.680197612 664.886365673 316 729 c 8
+ 376 773 502 693 502 693 c 25
+ 448 528 l 25
+ 583 123 l 25
+ 148 93 l 25
+ 322 309 l 25
+ 70 378 l 17
+EndSplineSet
+EndChar
+
+StartChar: B
+Encoding: 66 66 1
+Width: 1000
+Flags: HW
+LayerCount: 2
+Fore
+SplineSet
+70 378 m 17
+ 70 378 99.2958666908 444.773461917 146.09134077 522.999997298 c 0
+ 190.384076215 597.042782517 250.354629251 681.346323456 316 729 c 8
+ 376 773 502 693 502 693 c 25
+ 448 528 l 25
+ 583 123 l 17
+ 481 115.965517241 l 1
+ 409 111 l 1
+ 331 105.620689655 l 5
+ 148 93 l 9
+ 322 309 l 25
+ 70 378 l 17
+EndSplineSet
+EndChar
+
+StartChar: C
+Encoding: 67 67 2
+Width: 1000
+Flags: H
+LayerCount: 2
+Fore
+SplineSet
+532 732 m 29
+ 280 750 l 29
+ 130 429 l 29
+ 466 141 l 29
+ 664 291 l 1053
+EndSplineSet
+EndChar
+
+StartChar: Agrave
+Encoding: 192 192 3
+Width: 1000
+Flags: HW
+LayerCount: 2
+Fore
+Refer: 0 65 N 1 0 0 1 0 0 2
+EndChar
+
+StartChar: Ccedilla
+Encoding: 199 199 4
+Width: 1000
+Flags: HW
+LayerCount: 2
+Fore
+Refer: 2 67 N 1 0 0 1 0 0 2
+EndChar
+
+StartChar: space
+Encoding: 32 32 5
+Width: 999
+Flags: W
+LayerCount: 2
+EndChar
+
+StartChar: D
+Encoding: 68 68 6
+Width: 1000
+Flags: HO
+LayerCount: 2
+Fore
+SplineSet
+796 144 m 5
+ 184 144 l 1
+ 184 621 l 1
+ 796 621 l 1
+ 796 144 l 5
+EndSplineSet
+EndChar
+EndChars
+EndSplineFont
