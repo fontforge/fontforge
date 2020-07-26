@@ -217,8 +217,10 @@ endif()
 set_property(SOURCE splineoverlap.c APPEND PROPERTY COMPILE_OPTIONS ${FONTFORGE_EXTRA_CFLAGS})
 
 set_property(TARGET fontforge PROPERTY VERSION 4)
-if(WIN32 AND BUILD_SHARED_LIBS)
+if(BUILD_SHARED_LIBS)
+  if(WIN32 OR CYGWIN)
     target_link_options(fontforge PRIVATE -Wl,--export-all-symbols) # FIXME
+  endif()
 endif()
 
 # This is pretty bad...
@@ -271,7 +273,7 @@ endif()
 
 # No dev package -> no need to install if static
 if(BUILD_SHARED_LIBS)
-  if(WIN32)
+  if(WIN32 OR CYGWIN)
     install(TARGETS fontforge RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
   else()
     install(TARGETS fontforge RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
