@@ -454,7 +454,7 @@ return(false);
 	    event->u.chr.keysym == GK_BackTab || event->u.chr.keysym == GK_Escape )
 return( false );
 
-    if (event->u.chr.chars[0]==' ' ) {
+    if (event->type == et_char && event->u.chr.chars[0]==' ' ) {
 	GRadioChanged(gr);
 	_ggadget_redraw(g);
 return( true );
