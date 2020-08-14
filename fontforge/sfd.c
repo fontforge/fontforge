@@ -4843,7 +4843,7 @@ return;
     }
     if ( enc>=map->enccount )
 	map->enccount = enc+1;
-    if ( enc!=-1 )
+    if ( enc>-1 )
 	map->map[enc] = orig_pos;
 }
 
