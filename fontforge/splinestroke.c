@@ -181,7 +181,7 @@ void SITranslatePSArgs(StrokeInfo *sip, enum linejoin lj, enum linecap lc) {
 
 static SplineSet *convex_nibs[CONVEX_SLOTS];
 
-int ConvexNibID(char *tok) {
+int ConvexNibID(const char *tok) {
     if ( tok!=NULL ) {
 	if ( strcmp(tok, "default")==0 )
 	    return 0;

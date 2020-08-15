@@ -65,7 +65,7 @@ extern int ScriptInFeatureScriptList(uint32 script, FeatureScriptLangList *fl);
 extern int VerticalKernFeature(SplineFont *sf, OTLookup *otl, int ask);
 extern OTLookup *NewAALTLookup(SplineFont *sf, struct sllk *sllk, int sllk_cnt, int i);
 extern OTLookup *OTLookupCopyInto(SplineFont *into_sf, SplineFont *from_sf, OTLookup *from_otl);
-extern OTLookup *SFFindLookup(SplineFont *sf, char *name);
+extern OTLookup *SFFindLookup(SplineFont *sf, const char *name);
 extern OTLookup **SFLookupsInScriptLangFeature(SplineFont *sf, int gpos, uint32 script, uint32 lang, uint32 feature);
 extern SplineChar **SFGlyphsWithLigatureinLookup(SplineFont *sf, struct lookup_subtable *subtable);
 extern SplineChar **SFGlyphsWithPSTinSubtable(SplineFont *sf, struct lookup_subtable *subtable);

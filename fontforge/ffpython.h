@@ -40,36 +40,6 @@
 #undef real
 #pragma pop_macro("real")
 
-/*********** PYTHON 3 **********/
-#if PY_MAJOR_VERSION >= 3
-
-#define PyInt_Check    PyLong_Check
-#define PyInt_AsLong   PyLong_AsLong
-#define PyInt_FromLong PyLong_FromLong
-
-#define ANYSTRING_CHECK(obj) (PyUnicode_Check(obj))
-#define STRING_CHECK   PyUnicode_Check
-#define STRING_TO_PY   PyUnicode_FromString
-#define DECODE_UTF8(s, size, errors) PyUnicode_DecodeUTF8(s, size, errors)
-#define PYBYTES_UTF8(str)            PyUnicode_AsUTF8String(str)
-#define STRING_FROM_FORMAT           PyUnicode_FromFormat
-
-#define PICKLE "pickle"
-
-#else /* PY_MAJOR_VERSION >= 3 */
-/*********** PYTHON 2 **********/
-
-#define ANYSTRING_CHECK(obj) ( PyUnicode_Check(obj) || PyString_Check(obj) )
-#define STRING_CHECK   PyBytes_Check
-#define STRING_TO_PY   PyBytes_FromString
-#define DECODE_UTF8(s, size, errors) PyString_Decode(s, size, "UTF-8", errors)
-#define PYBYTES_UTF8(str)            PyString_AsEncodedObject(str, "UTF-8", NULL)
-#define STRING_FROM_FORMAT           PyBytes_FromFormat
-
-#define PICKLE "cPickle"
-
-#endif /* PY_MAJOR_VERSION >= 3 */
-
 /*********** Common **********/
 #ifndef Py_TYPE
 #define Py_TYPE(ob) (((PyObject*)(ob))->ob_type)
@@ -79,10 +49,6 @@
 #define Py_TYPENAME(ob) (((PyObject*)(ob))->ob_type->tp_name)
 #endif
 
-#if !defined( Py_RETURN_NONE )
-/* Not defined before 2.4 */
-# define Py_RETURN_NONE		return( Py_INCREF(Py_None), Py_None )
-#endif
 #define Py_RETURN(self)		return( Py_INCREF((PyObject *) (self)), (PyObject *) (self) )
 
 #ifndef PyMODINIT_FUNC	/* declarations for DLL import/export */
@@ -94,15 +60,12 @@
         PyObject_HEAD_INIT(type) size,
 #endif
 
-
-extern char* AnyPyString_to_UTF8( PyObject* );
-
 extern SplineChar *sc_active_in_ui;
 extern FontViewBase *fv_active_in_ui;
 extern int layer_active_in_ui;
 
 extern void FfPy_Replace_MenuItemStub(PyObject *(*func)(PyObject *,PyObject *));
-extern int PyFF_ConvexNibID(char *);
+extern int PyFF_ConvexNibID(const char *);
 extern PyObject *PySC_From_SC(SplineChar *sc);
 extern PyObject *PyFV_From_FV(FontViewBase *fv);
 extern int FlagsFromTuple(PyObject *tuple,struct flaglist *flags,const char *flagkind);

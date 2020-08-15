@@ -2437,7 +2437,7 @@ extern void SFSetModTime(SplineFont *sf);
 
 
 
-extern struct lookup_subtable *SFFindLookupSubtable(SplineFont *sf,char *name);
+extern struct lookup_subtable *SFFindLookupSubtable(SplineFont *sf,const char *name);
 extern int FeatureTagInFeatureScriptList(uint32 tag, FeatureScriptLangList *fl);
 
 extern void SplinePointRound(SplinePoint *,real);

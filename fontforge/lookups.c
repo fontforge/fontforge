@@ -1289,7 +1289,7 @@ void SFRemoveLookup(SplineFont *sf,OTLookup *otl,int remove_acs) {
     OTLookupFree(otl);
 }
 
-struct lookup_subtable *SFFindLookupSubtable(SplineFont *sf,char *name) {
+struct lookup_subtable *SFFindLookupSubtable(SplineFont *sf,const char *name) {
     int isgpos;
     OTLookup *otl;
     struct lookup_subtable *sub;
@@ -1310,13 +1310,13 @@ return( sub );
 return( NULL );
 }
 
-struct lookup_subtable *SFFindLookupSubtableAndFreeName(SplineFont *sf,char *name) {
+struct lookup_subtable *SFFindLookupSubtableAndFreeName(SplineFont *sf, char *name) {
     struct lookup_subtable *sub = SFFindLookupSubtable(sf,name);
     free(name);
 return( sub );
 }
 
-OTLookup *SFFindLookup(SplineFont *sf,char *name) {
+OTLookup *SFFindLookup(SplineFont *sf,const char *name) {
     int isgpos;
     OTLookup *otl;
 
