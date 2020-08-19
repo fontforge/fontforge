@@ -4701,8 +4701,6 @@ static void GrowBufferAddClass(GrowBuf *gb,int class_n,char **classnames, int cl
 int GlyphNameCnt(const char *pt) {
     int cnt = 0;
 
-    /* Avoid a segfault if something is done wrong. */
-    if (!pt) { return 0; }
     while ( *pt ) {
 	while ( isspace( *pt )) ++pt;
 	if ( *pt=='\0' )
