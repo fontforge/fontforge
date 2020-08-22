@@ -2441,7 +2441,10 @@ static void dumpg___ContextChainCoverage(FILE *lfile,SplineFont *sf,
     if ( fpst->format==pst_reversecoverage && fpst->rules[0].u.rcoverage.always1!=1 )
 	IError("Bad input count in reverse coverage lookup" );
 
-    putshort(lfile,3);		/* Sub format 3 => coverage */
+    if ( fpst->format==pst_reversecoverage )
+	putshort(lfile, 1);	/* reverse coverage is format 1 */
+    else
+	putshort(lfile,3);	/* Sub format 3 => coverage */
     for ( l=lc=0; l<fpst->rules[0].lookup_cnt; ++l )
 	if ( fpst->rules[0].lookups[l].lookup->lookup_index!=-1 )
 	    ++lc;
@@ -2490,12 +2493,15 @@ static void dumpg___ContextChainCoverage(FILE *lfile,SplineFont *sf,
 		    putshort(lfile,fpst->rules[0].lookups[i].seq);
 		    putshort(lfile,fpst->rules[0].lookups[i].lookup->lookup_index);
 		}
-	} else {		/* reverse coverage */
+	}
+	if ( fpst->format==pst_reversecoverage ) {
+	    /* reverse coverage */
 	    glyphs = SFGlyphsFromNames(sf,fpst->rules[0].u.rcoverage.replacements);
 	    for ( i=0; glyphs[i]!=0; ++i );
 	    putshort(lfile,i);
 	    for ( i=0; glyphs[i]!=0; ++i )
 		putshort(lfile,glyphs[i]->ttf_glyph);
+	    free(glyphs);
 	}
 	for ( i=0; i<fpst->rules[0].u.coverage.ncnt; ++i ) {
 	    uint32 pos = ftell(lfile);

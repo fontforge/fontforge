@@ -4910,6 +4910,8 @@ return( smprintf( _("Unterminated coverage table, starting at: %.20s..."), start
 		if ( cnt==0 )
 return( smprintf( _("Replacements must follow the coverage table to which they apply: %s"), start-4 ));
 		ch = *end; *end = '\0';
+		/* Must back up one! */
+		cnt--;
 		parsed[cnt].replacements = copy(start);
 		*end = ch;
 		rcnt = GlyphNameCnt(parsed[cnt].replacements);
@@ -4929,8 +4931,9 @@ return( smprintf( _("Replacements must follow the coverage table to which they a
 		    parsed[cnt].replacements = newr;
 		} else
 return( smprintf( _("There must be as many replacement glyphs as there are match glyphs: %s => %s"),
-		    parsed[cnt].entity, parsed[cnt].replacements));
-    continue;
+		  parsed[cnt].entity, parsed[cnt].replacements));
+		// And advance back to where we were
+		cnt++;
 	    }
 	} else if ( *start!='@' && *start!='<' && !(*start=='=' && start[1]=='>') ) {
 	    /* Just a normal glyph or class name. (If we expect a coverage table we'll treat it as a table with one glyph) */
@@ -4943,8 +4946,9 @@ return( smprintf( _("There must be as many replacement glyphs as there are match
 return( smprintf( _("No replacement lists may be specified in this contextual lookup, use a nested lookup instead, starting at: %.20s..."), lpt ));
 	    if ( do_replacements )
 return( smprintf( _("Only one replacement list may be specified in a reverse contextual chaining lookup, starting at: %.20s..."), lpt ));
-	    do_replacements = true;
+	    do_replacements = 1;
 	    lpt += 2;
+	    continue;
 	} else {
 	    /* A lookup invocation */
 	    if ( fpst->format==pst_reversecoverage )
@@ -4992,12 +4996,18 @@ return( ret );
 	}
 	/* We get here on glyph/class names and coverage tables */
 	/*  not on lookup invocations */
-	ch = *end; *end='\0';
-	if ( cnt>=max )
-	    parsed = realloc(parsed,(max+=200)*sizeof(MatchStr));
-	memset(&parsed[cnt],'\0',sizeof(MatchStr));
-	parsed[cnt++].entity = copy(start);
-	*end = ch;
+	/* BUT!  Don't do this if we just finished replacements! */
+	if (do_replacements == 2) {
+	    do_replacements = 3;
+	}
+	else {
+	    ch = *end; *end='\0';
+	    if ( cnt>=max )
+		parsed = realloc(parsed,(max+=200)*sizeof(MatchStr));
+	    memset(&parsed[cnt],'\0',sizeof(MatchStr));
+	    parsed[cnt++].entity = copy(start);
+	    *end = ch;
+	}
     }
 
     if ( cnt==0 )

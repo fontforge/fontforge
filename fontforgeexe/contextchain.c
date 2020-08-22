@@ -1184,6 +1184,8 @@ return;
 			ff_post_error(_("Bad Coverage Table"),_("In a Reverse Chaining Substitution there must be exactly one coverage table with replacements"));
 return;
 		    }
+		    /* There is only this one line of replacements to add. */
+		    dummy.u.rcoverage.replacements = GlyphNameListDeUnicode( old[cols*i+1].u.md_str );
 		}
 	    }
 	    if ( first==-1 ) {
