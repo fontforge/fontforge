@@ -3180,7 +3180,8 @@ This type may not be pickled.
 .. attribute:: font.encoding
 
    The name of the current encoding. Setting it will change the encoding used
-   for indexing
+   for indexing. To compact the encoding, first set it to your desired encoding
+   (e.g. ``UnicodeBMP``), then set it to ``compacted``.
 
 .. attribute:: font.familyname
 
