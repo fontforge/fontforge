@@ -103,24 +103,24 @@ bezctx_ff_quadto(bezctx *z, double xm, double ym, double x3, double y3, int poin
 		nancheck(bc);
 		xm = ym = x3 = y3 = 0;
 	    }
-	    if ( (sp=pointon?SplinePointCreate(x3,y3):SplinePointCreate(xm,ym))!=NULL ) {
-	  	  if(pointon){
+	    if ( (sp=pointoncurve?SplinePointCreate(x3,y3):SplinePointCreate(xm,ym))!=NULL ) {
+	  	  if(pointoncurve){
 		bc->ss->last->nextcp.x = x3;
 		bc->ss->last->nextcp.y = y3;
-		bc->ss->last->nonextcp = pointon; //Now determines whether it is on-curve (1) or off-curve (0)
+		bc->ss->last->nonextcp = pointoncurve; //Now determines whether it is on-curve (1) or off-curve (0)
 		sp->prevcp.x = x3; 
 		sp->prevcp.y = x3;
-		sp->noprevcp = pointon; //Now determines whether it is on-curve (1) or off-curve (0)
+		sp->noprevcp = pointoncurve; //Now determines whether it is on-curve (1) or off-curve (0)
 		if ( SplineMake3(bc->ss->last,sp)!=NULL )
 		    bc->ss->last = sp;
 		  }
 		  else{
 		bc->ss->last->nextcp.x = xm;
 		bc->ss->last->nextcp.y = ym;
-		bc->ss->last->nonextcp = pointon; //Now determines whether it is on-curve (1) or off-curve (0)
+		bc->ss->last->nonextcp = pointoncurve; //Now determines whether it is on-curve (1) or off-curve (0)
 		sp->prevcp.x = xm;
 		sp->prevcp.y = ym;
-		sp->noprevcp = pointon; //Now determines whether it is on-curve (1) or off-curve (0)
+		sp->noprevcp = pointoncurve; //Now determines whether it is on-curve (1) or off-curve (0)
 		if ( SplineMake3(bc->ss->last,sp)!=NULL )
 		    bc->ss->last = sp;
 		  }
