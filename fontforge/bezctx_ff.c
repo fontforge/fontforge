@@ -91,8 +91,42 @@ static void bezctx_ff_lineto(bezctx *z, double x, double y) {
 
 /* This could create a quadratic spline, except FontForge only is prepared */
 /* to deal with cubics, so convert the quadratic into the equivalent cubic */
+/* If NewTrueTypeModeEnabled, FontForge is prepared for TrueType. */
 static void
-bezctx_ff_quadto(bezctx *z, double xm, double ym, double x3, double y3) {
+bezctx_ff_quadto(bezctx *z, double xm, double ym, double x3, double y3, int pointoncurve) {
+    if(NewTrueTypeModeEnabled){
+    
+	    bezctx_ff *bc = (bezctx_ff *)z;
+	    SplinePoint *sp;
+
+	    if ( !isfinite(xm) || !isfinite(ym) || !isfinite(x3) || !isfinite(y3)) {
+		nancheck(bc);
+		xm = ym = x3 = y3 = 0;
+	    }
+	    if ( (sp=pointon?SplinePointCreate(x3,y3):SplinePointCreate(xm,ym))!=NULL ) {
+	  	  if(pointon){
+		bc->ss->last->nextcp.x = x3;
+		bc->ss->last->nextcp.y = y3;
+		bc->ss->last->nonextcp = pointon; //Now determines whether it is on-curve (1) or off-curve (0)
+		sp->prevcp.x = x3; 
+		sp->prevcp.y = x3;
+		sp->noprevcp = pointon; //Now determines whether it is on-curve (1) or off-curve (0)
+		if ( SplineMake3(bc->ss->last,sp)!=NULL )
+		    bc->ss->last = sp;
+		  }
+		  else{
+		bc->ss->last->nextcp.x = xm;
+		bc->ss->last->nextcp.y = ym;
+		bc->ss->last->nonextcp = pointon; //Now determines whether it is on-curve (1) or off-curve (0)
+		sp->prevcp.x = xm;
+		sp->prevcp.y = ym;
+		sp->noprevcp = pointon; //Now determines whether it is on-curve (1) or off-curve (0)
+		if ( SplineMake3(bc->ss->last,sp)!=NULL )
+		    bc->ss->last = sp;
+		  }
+	    }
+    }
+    else{
     bezctx_ff *bc = (bezctx_ff *)z;
     double x0, y0;
     double x1, y1;
@@ -118,6 +152,7 @@ bezctx_ff_quadto(bezctx *z, double xm, double ym, double x3, double y3) {
 	sp->noprevcp = false;
 	if ( SplineMake3(bc->ss->last,sp)!=NULL )
 	    bc->ss->last = sp;
+    }
     }
 }
 
