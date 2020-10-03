@@ -9239,13 +9239,12 @@ int ret;
     switch(ret){
         case 0:{
             #include "savefont.c"
-            WriteTTFFont(asfd,sf,oldformatstate,sizes,bmap,
-flags,map,layer);
+            WriteTTFFont((char*)asfd,sf,0,(int32 *)asfd,0,0,(EncMap *)0,0);
             return NewTrueTypeModeEnabled;
         }
         case 1:{
             #include "bezctx_ff.c"
-            bezctx_ff_quadto(sf, 0, 0, 0, 0, 0);
+            bezctx_ff_quadto((bezctx*)sf, 0, 0, 0, 0);
 		NewTrueTypeModeEnabled = 0;
             break;
         }
@@ -9258,13 +9257,12 @@ flags,map,layer);
     switch(ret){
         case 0:{
             #include "savefont.c"
-            WriteTTFFont(asfd,sf,oldformatstate,sizes,bmap,
-flags,map,layer);
+            WriteTTFFont((char*)asfd,sf,0,(int32 *)asfd,0,0,(EncMap *)0,0);
             return NewTrueTypeModeEnabled;
         }
         case 1:{
             #include "bezctx_ff.c"
-            bezctx_ff_quadto(sf, 0, 0, 0, 0, 0);
+            bezctx_ff_quadto((bezctx*)sf, 0, 0, 0, 0);
 		NewTrueTypeModeEnabled = 0;
             break;
         }
