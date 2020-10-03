@@ -166,4 +166,5 @@
 /*                                                                            */
 /* #define FONTFORGE_CONFIG_PS_REFS_GET_SUBRS                                 */
 
+int NewTrueTypeModeEnabled = 1;
 #endif /* FONTFORGE_CONFIG_H */
