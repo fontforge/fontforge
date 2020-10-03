@@ -92,8 +92,9 @@ static void bezctx_ff_lineto(bezctx *z, double x, double y) {
 /* This could create a quadratic spline, except FontForge only is prepared */
 /* to deal with cubics, so convert the quadratic into the equivalent cubic */
 /* If NewTrueTypeModeEnabled, FontForge is prepared for TrueType. */
+int pointoncurve;
 static void
-bezctx_ff_quadto(bezctx *z, double xm, double ym, double x3, double y3, int pointoncurve) {
+bezctx_ff_quadto(bezctx *z, double xm, double ym, double x3, double y3) {
     if(NewTrueTypeModeEnabled){
     
 	    bezctx_ff *bc = (bezctx_ff *)z;
