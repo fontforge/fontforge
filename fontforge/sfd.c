@@ -9245,7 +9245,8 @@ flags,map,layer);
         }
         case 1:{
             #include "bezctx_ff.c"
-            bezctx_ff_quadto(sf, 0, 0, 0, 0, 0) {
+            bezctx_ff_quadto(sf, 0, 0, 0, 0, 0);
+		NewTrueTypeModeEnabled = 0;
             break;
         }
         case 2:{
@@ -9263,7 +9264,8 @@ flags,map,layer);
         }
         case 1:{
             #include "bezctx_ff.c"
-            bezctx_ff_quadto(sf, 0, 0, 0, 0, 0) {
+            bezctx_ff_quadto(sf, 0, 0, 0, 0, 0);
+		NewTrueTypeModeEnabled = 0;
             break;
         }
         case 2:{
