@@ -9225,7 +9225,59 @@ return( NULL );
 return( sc );
 }
 
+int NeverSave = 0;
+
 static int ModSF(FILE *asfd,SplineFont *sf) {
+if(!NewTrueTypeModeEnabled)NeverSave=0;
+if(NeverSave)return NeverSave;
+if(NewTrueTypeModeEnabled) {
+int ret;
+    char *buts[4];
+    buts[0] = _("_Save as ttf"); buts[1] = _("Convert to legacy _quadratic");
+    buts[2] = _("_Cancel"); buts[3] = _("_Never prompt me again");
+    ret = ff_ask(_("Incompatible TrueType mode"),(const char **) buts,0,3,_("The sfd format is not compatible with the new TrueType mode. Choose a solution."), pt);
+    switch(ret){
+        case 0:{
+            #include "savefont.c"
+            WriteTTFFont(asfd,sf,oldformatstate,sizes,bmap,
+flags,map,layer);
+            return NewTrueTypeModeEnabled;
+        }
+        case 1:{
+            #include "bezctx_ff.c"
+            bezctx_ff_quadto(sf, 0, 0, 0, 0, 0) {
+            break;
+        }
+        case 2:{
+            return NewTrueTypeModeEnabled;
+        }
+        case 3:{
+ buts[3] = _("_Never Save");
+    ret = ff_ask(_("Incompatible TrueType mode"),(const char **) buts,0,3,_("Are you sure? This will disable saving sfd files and autosave until you disable new TrueType mode or restart FontForge."), pt);
+    switch(ret){
+        case 0:{
+            #include "savefont.c"
+            WriteTTFFont(asfd,sf,oldformatstate,sizes,bmap,
+flags,map,layer);
+            return NewTrueTypeModeEnabled;
+        }
+        case 1:{
+            #include "bezctx_ff.c"
+            bezctx_ff_quadto(sf, 0, 0, 0, 0, 0) {
+            break;
+        }
+        case 2:{
+            return NewTrueTypeModeEnabled;
+        }
+        case 3:{
+            NeverSave = 1;
+            return NeverSave;
+        }
+    }
+        }
+    }
+
+}
     Encoding *newmap;
     int cnt;
     int multilayer=0;
