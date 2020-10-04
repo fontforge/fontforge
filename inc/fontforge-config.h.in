@@ -167,4 +167,6 @@
 /* #define FONTFORGE_CONFIG_PS_REFS_GET_SUBRS                                 */
 
 int NewTrueTypeModeEnabled = 1;
+
+int pointoncurve;
 #endif /* FONTFORGE_CONFIG_H */
