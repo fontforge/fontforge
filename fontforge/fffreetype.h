@@ -39,7 +39,9 @@
 #endif
 
 #if defined(FREETYPE_HAS_DEBUGGER)
-# include <internal/internal.h>
+#if FREETYPE_MAJOR == 2 && (FREETYPE_MINOR < 10 || (FREETYPE_MINOR == 10 && FREETYPE_PATCH < 3))
+#  include <internal/internal.h>
+# endif
 # include <ttdriver.h>
 # include <ttinterp.h>
 # include <ttobjs.h>
