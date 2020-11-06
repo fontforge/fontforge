@@ -1797,9 +1797,9 @@ return;
 			// But a file exceeding it is probably garbage.
 			// If appropriate, double the size of the mapping table.
 			tmappings = calloc(2 * mappings_length,sizeof(long));
+			if (tmappings == NULL) goto fail;
 			memcpy(tmappings, mappings, mappings_length);
 			mappings_length *= 2;
-			if (tmappings == NULL) goto fail;
 			free(mappings);
 			mappings = tmappings;
 		    }
