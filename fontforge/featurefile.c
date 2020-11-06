@@ -938,11 +938,6 @@ static void dump_contextpst(FILE *out,SplineFont *sf,struct lookup_subtable *sub
     FPST *fpst = sub->fpst;
     int i,j,k;
 
-    if ( fpst->format==pst_reversecoverage ) {
-	IError( "I can find no documentation on how to describe reverse context chaining lookups. Lookup %s will be skipped.",
-		sub->lookup->lookup_name );
-return;
-    }
     if ( fpst->format==pst_class ) {
 	if ( fpst->nclass!=NULL ) {
 	    for ( i=0; i<fpst->nccnt; ++i ) {
@@ -996,8 +991,10 @@ return;
 	if ( sub->lookup->lookup_type>=gpos_start )
 	    fprintf( out, r->lookup_cnt==0 ? "    ignore pos " : "    pos " );
 	else if ( sub->lookup->lookup_type==gsub_reversecchain )
-	    fprintf( out, r->lookup_cnt==0 ? "    ignore reversesub " : "    reversesub " );
-	else
+	    fprintf( out, !r->u.rcoverage.replacements
+                     || !r->u.rcoverage.replacements[0] ?
+                     "    ignore reversesub " : "    reversesub " );
+        else
 	    fprintf( out, r->lookup_cnt==0 ? "    ignore sub " : "    sub " );
 	if ( fpst->format==pst_class ) {
 	    dump_contextpstclass(out,sf,sub,r,r->lookup_cnt==0);
