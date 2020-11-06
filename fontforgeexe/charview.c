@@ -9812,7 +9812,8 @@ static void _CVMenuOverlap(CharView *cv,enum overlap_type ot) {
     if ( cv->b.sc->inspiro && hasspiro()) {
 	// Detection is not implemented for Spiro, so just clear them.
 	// TODO: Detect point survival in Spiro mode.
-	cv->p.sp = cv->lastselpt = NULL; cv->p.spiro = cv->lastselcp = NULL;
+	cv->p.sp = cv->lastselpt = NULL;
+	cv->p.spiro = cv->lastselcp = NULL;
     } else {
 	// Check whether the last selected point is still in the spline set.
 	// If not, remove the reference to it.
