@@ -9808,6 +9808,19 @@ static void _CVMenuOverlap(CharView *cv,enum overlap_type ot) {
 	cv->b.sc->md = NULL;
     }
     cv->b.layerheads[cv->b.drawmode]->splines = SplineSetRemoveOverlap(cv->b.sc,cv->b.layerheads[cv->b.drawmode]->splines,ot);
+    // Check for removal of last selected points.
+    if ( cv->b.sc->inspiro && hasspiro()) {
+	// Detection is not implemented for Spiro, so just clear them.
+	// TODO: Detect point survival in Spiro mode.
+	cv->lastselpt = NULL; cv->lastselcp = NULL;
+    } else {
+	// Check whether the last selected point is still in the spline set.
+	// If not, remove the reference to it.
+	if (cv->lastselpt != NULL &&
+	        !SplinePointListContainsPoint(cv->b.layerheads[cv->b.drawmode]->splines, cv->lastselpt))
+	     cv->lastselpt = NULL;
+	cv->lastselcp = NULL;
+    }
     CVCharChangedUpdate(&cv->b);
 }
 
