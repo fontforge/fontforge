@@ -42,7 +42,9 @@ extern GBox _ggadget_Default_Box;
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-#include <internal/internal.h>
+#if FREETYPE_MAJOR == 2 && (FREETYPE_MINOR < 10 || (FREETYPE_MINOR == 10 && FREETYPE_PATCH < 3))
+# include <internal/internal.h>
+#endif
 #include <ttinterp.h>
 
 #define PPEMX(exc)	((exc)->size->root.metrics.x_ppem)
