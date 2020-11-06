@@ -1752,6 +1752,8 @@ static void pdf_getcmap(struct pdfcontext *pc, SplineFont *basesf, int font_num)
     FILE *file;
     int i, j, gid, start, end, uni, cur=0, nuni, nhex, nchars, lo, *uvals;
     long *mappings = NULL;
+    long *tmappings = NULL;
+    long tmap;
     char tok[200], *ccval, prevtok[200]="";
     SplineFont *sf = basesf->subfontcnt > 0 ? basesf->subfonts[0] : basesf;
 
@@ -1762,13 +1764,13 @@ return;
 return;
     rewind(file);
 
-    mappings = calloc(sf->glyphcnt,sizeof(long));
+    long mappings_length = sf->glyphcnt;
+    mappings = calloc(mappings_length,sizeof(long));
     while ( pdf_getprotectedtok(file,tok) >= 0 ) {
 	if ( strcmp(tok,"beginbfchar") == 0 && sscanf(prevtok,"%d",&nchars)) {
 	    for (i=0; i<nchars; i++) {
 		if (pdf_skip_brackets(file,tok) >= 0 && sscanf(tok,"%x",&gid) &&
-		    pdf_skip_brackets(file,tok) >= 0 && sscanf(tok,"%lx",&mappings[cur])) {
-
+		    pdf_skip_brackets(file,tok) >= 0 && sscanf(tok,"%lx",&tmap)) {
 		    /* Values we store in the 'mappings' array are just unique identifiers, */
 		    /* so they should not necessarily correspond to any valid Unicode codepoints. */
 		    /* In order to get the real Unicode value mapped to a glyph we should parse the */
@@ -1790,7 +1792,22 @@ return;
 			    uvals[nuni++] = lo;
 			ccval += 4;
 		    }
-		    add_mapping(basesf, mappings, uvals, nuni, gid, pc->cmap_from_cid[font_num], cur);
+		    if (cur >= mappings_length && mappings_length <= 0x10000) {
+			// The limit is arbitrary.
+			// But a file exceeding it is probably garbage.
+			// If appropriate, double the size of the mapping table.
+			tmappings = calloc(2 * mappings_length,sizeof(long));
+			if (tmappings == NULL) goto fail;
+			memcpy(tmappings, mappings, mappings_length);
+			mappings_length *= 2;
+			free(mappings);
+			mappings = tmappings;
+		    }
+		    if (cur < mappings_length) {
+		        mappings[cur] = tmap;
+		        add_mapping(basesf, mappings, uvals, nuni, gid, pc->cmap_from_cid[font_num], cur);
+		        cur++;
+		    }
 		    free(uvals);
 		    cur++;
 		} else
