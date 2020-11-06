@@ -2026,7 +2026,7 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
     }
 
 //    TRACE("menubarcheckkey(e2)\n");
-    if ( event->u.chr.keysym==GK_Menu )
+    if ( event->u.chr.keysym==GK_Menu && most_recent_popup_menu==NULL )
 	GMenuCreatePopupMenu(event->w,event, mb->mi);
 
     return( false );
