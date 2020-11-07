@@ -43771,4 +43771,4 @@ static struct _GImage splashimage0_base = {
     0xffffffff
 };
 
-GImage splashimage = { 0, { &splashimage0_base }, NULL };
+GImage splashimage_legacy = { 0, { &splashimage0_base }, NULL };
