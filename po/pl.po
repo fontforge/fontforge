@@ -10,13 +10,13 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: FontForge 20080828\n"
+"Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-29 10:56+1100\n"
-"PO-Revision-Date: 2014-05-10 21:18+0200\n"
+"POT-Creation-Date: 2020-11-07 04:37+0000\n"
+"PO-Revision-Date: 2020-11-07 04:36\n"
 "Last-Translator: Adam Jagosz <adamjagosz@gmail.com>\n"
-"Language-Team: \n"
-"Language: pl\n"
+"Language-Team: Polish\n"
+"Language: pl_PL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -24,11 +24,13 @@ msgstr ""
 "%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n"
 "%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
 "X-Crowdin-Project: fontforge\n"
+"X-Crowdin-Project-ID: 368599\n"
 "X-Crowdin-Language: pl\n"
 "X-Crowdin-File: FontForge.pot\n"
+"X-Crowdin-File-ID: 2\n"
 
 msgid "FontForge"
-msgstr ""
+msgstr "FontForge"
 
 msgid "An outline font editor"
 msgstr "Edytor fontów"
@@ -53,9 +55,6 @@ msgid ""
 msgstr ""
 
 msgid "Fontforge showing a glyph being edited"
-msgstr ""
-
-msgid "FontForge developers"
 msgstr ""
 
 msgid "Font Editor"
@@ -8449,9 +8448,6 @@ msgstr "Ten font nie zawiera nazwy kroju\n"
 msgid "This file contains no SVG fonts.\n"
 msgstr "Ten plik nie zawiera fontów SVG.\n"
 
-msgid "Can't find libxml2.\n"
-msgstr "Nie znaleziono libxml2.\n"
-
 #, c-format
 msgid "%s does not contain an <svg> element at the top\n"
 msgstr "Brakuje korzenia <svg> w drzewie elementów w %s\n"
@@ -8836,9 +8832,6 @@ msgid "kerning.plist attempts to redefine a class kerning offset."
 msgstr ""
 "W pliku kerning.plist napotkano powtarzająca się definicję przesunięcia tej "
 "samej klasy kerningu."
-
-msgid "Can't find libxml2."
-msgstr "Nie znaleziono biblioteki libxml2."
 
 msgid "Bad openTypeOS2type key: all bits are set. It will be ignored"
 msgstr ""
@@ -9505,6 +9498,12 @@ msgstr "awestyjski"
 msgid "Rumi Numeral Symbols"
 msgstr "symbole liczbowe Rumi"
 
+msgid "Yezidi"
+msgstr ""
+
+msgid "Chorasmian"
+msgstr ""
+
 msgid "Elymaic"
 msgstr ""
 
@@ -9517,7 +9516,13 @@ msgstr ""
 msgid "Mongolian Supplement"
 msgstr ""
 
+msgid "Dives Akuru"
+msgstr ""
+
 msgid "Nandinagari"
+msgstr ""
+
+msgid "Lisu Supplement"
 msgstr ""
 
 msgid "Tamil Supplement"
@@ -9548,6 +9553,12 @@ msgid "Ideographic Symbols and Punctuation"
 msgstr ""
 
 msgid "Tangut Components"
+msgstr ""
+
+msgid "Khitan Small Script"
+msgstr ""
+
+msgid "Tangut Supplement"
 msgstr ""
 
 msgid "Kana Supplement"
@@ -9646,7 +9657,7 @@ msgstr ""
 msgid "Symbols and Pictographs Extended-A"
 msgstr ""
 
-msgid "Unassigned"
+msgid "Symbols for Legacy Computing"
 msgstr ""
 
 msgid "Unicode Supplementary Ideographic Plane"
@@ -9672,6 +9683,15 @@ msgstr ""
 
 msgid "CJK Compatibility Ideographs Supplement"
 msgstr "dodatkowe ideogramy zgodności dla CJK"
+
+msgid "Unicode Tertiary Ideographic Plane"
+msgstr ""
+
+msgid "Tertiary Ideographic Plane"
+msgstr ""
+
+msgid "CJK Unified Ideographs Extension G"
+msgstr ""
 
 msgid "Unicode Supplementary Special-purpose Plane"
 msgstr "dodatkowy obszar specjalnego przeznaczenia Unikodu"
@@ -13040,6 +13060,27 @@ msgstr "Wyjdź z debuggera"
 msgid "Instruction Gloss (TrueType)"
 msgstr "Słownik instrukcji TrueType"
 
+msgid "Export Options"
+msgstr ""
+
+msgid ""
+"The following options influence how glyphs are exported.\n"
+"Most are specific to one or more formats."
+msgstr ""
+
+msgid "_Use Transform (SVG)"
+msgstr ""
+
+msgid ""
+"FontForge previously exported glyphs using a SVG\n"
+"transform element to flip the Y-axis rather\n"
+"than changing the individual values. This option\n"
+"reverts to that convention."
+msgstr ""
+
+msgid "_Always raise this dialog when exporting"
+msgstr ""
+
 msgid "Bits/Pixel:"
 msgstr "Bity na piksel:"
 
@@ -13113,6 +13154,9 @@ msgstr "_Filtruj"
 
 msgid "Directory|_New"
 msgstr "_Nowy"
+
+msgid "_Options"
+msgstr ""
 
 msgid "Format:"
 msgstr ""
@@ -13534,34 +13578,61 @@ msgstr "Dodaj hint poziomy"
 msgid "Create Vertical Stem Hint"
 msgstr "Dodaj hint pionowy"
 
-msgid "PS Interpretion"
-msgstr "Interpretacja PS"
-
-#. GT: The following strings should be concatenated together, the result
-#. GT: translated, and then broken into lines by hand. I'm sure it would
-#. GT: be better to specify this all as one string, but my widgets won't support
-#. GT: that
-msgid ""
-"FontForge has some bugs in its remove overlap\n"
-"function which may cause you problems, so\n"
-"I give you the option of turning it off.\n"
-"Leave it on if possible though, it is useful."
+msgid "Import Parameters"
 msgstr ""
-"FontForge ma błędy w funkcji zajmującej się\n"
-"zachodzącymi na siebie kształtami, więc\n"
-"czasem trzeba ją wyłączyć. Kiedy jednak\n"
-"nie sprawia kłopotów, warto mieć ją włączoną."
 
-msgid "Handle Erasers"
-msgstr "Obsługuj gumkowanie"
+msgid ""
+"The following options influence how files are imported.\n"
+"Most are specific to one or more formats."
+msgstr ""
+
+msgid "_Correct Direction (PS/EPS)"
+msgstr ""
+
+msgid "Handle Erasers (PS/EPS)"
+msgstr ""
 
 msgid ""
 "Certain programs use pens with white ink as erasers\n"
-"If you select (blacken) this checkbox, FontForge will\n"
-"attempt to simulate that."
+"This option attempts to simulate that effect."
 msgstr ""
-"Pewne programy używają pociągnięć piórem w kolorze tła\n"
-"jako gumki – FontForge spróbuje to zasymulować."
+
+msgid "Simplify Stroke (SVG/PS/EPS)"
+msgstr ""
+
+msgid ""
+"Run Simplify after expanding stroked paths\n"
+"to reduce the number of points."
+msgstr ""
+
+msgid "Use Clip-paths (SVG)"
+msgstr ""
+
+msgid "Scale to fit (Misc)"
+msgstr ""
+
+msgid "Default Join Limit (PS/EPS/SVG):"
+msgstr ""
+
+msgid ""
+"The length limit for Miter and Arcs joins in units\n"
+"of 1/2 stroke-width. Set to -1 to use the format-\n"
+"specific limits of 10.0 for PostScript and 4.0 for SVG."
+msgstr ""
+
+msgid "Accuracy _Target:"
+msgstr ""
+
+msgid ""
+"The Expand Stroke algorithm will attempt to be (at\n"
+"least) this accurate, but there may be exceptions."
+msgstr ""
+
+msgid "_Always raise this dialog when importing"
+msgstr ""
+
+msgid "Accuracy Target:"
+msgstr ""
 
 msgid "Image"
 msgstr "Obraz"
@@ -14152,9 +14223,6 @@ msgstr ""
 msgid "Extend Cap:"
 msgstr ""
 
-msgid "Accuracy Target:"
-msgstr ""
-
 msgid "Removing both the internal and the external contours makes no sense"
 msgstr "Usuwanie obu wynikowych konturów nie ma sensu"
 
@@ -14243,9 +14311,6 @@ msgid "as _Length"
 msgstr ""
 
 msgid "* Nib _Span"
-msgstr ""
-
-msgid "Accuracy _Target:"
 msgstr ""
 
 msgid ""
@@ -20392,6 +20457,12 @@ msgstr "abazyński"
 msgid "Abkhazian"
 msgstr "abhazyjskie"
 
+msgid "Acholi"
+msgstr ""
+
+msgid "Achi"
+msgstr ""
+
 msgid "Adyghe"
 msgstr "adygejski"
 
@@ -20401,20 +20472,35 @@ msgstr "afar"
 msgid "Agaw"
 msgstr "agaw"
 
+msgid "Aiton"
+msgstr ""
+
+msgid "Akan"
+msgstr ""
+
 msgid "Alsatian"
 msgstr "alzacki"
 
 msgid "Altai"
 msgstr "ałtajski"
 
+msgid "Anglo-Saxon"
+msgstr ""
+
 msgid "Americanist IPA"
 msgstr "Amerykańska wersja IPA"
+
+msgid "Aragonese"
+msgstr ""
 
 msgid "Aari"
 msgstr "aari"
 
 msgid "Arakanese"
 msgstr "arakański"
+
+msgid "Asturian"
+msgstr ""
 
 msgid "Athapaskan"
 msgstr "atabaski"
@@ -20425,11 +20511,17 @@ msgstr "awar"
 msgid "Awadhi"
 msgstr "awadhi"
 
+msgid "Torki"
+msgstr ""
+
 msgid "Azeri"
 msgstr "azerski"
 
 msgid "Badaga"
 msgstr "badaga"
+
+msgid "Banda"
+msgstr ""
 
 msgid "Baghelkhandi"
 msgstr "baghelkhandi"
@@ -20437,8 +20529,17 @@ msgstr "baghelkhandi"
 msgid "Balkar"
 msgstr "bałkarski"
 
+msgid "Lang|Balinese"
+msgstr ""
+
+msgid "Bavarian"
+msgstr ""
+
 msgid "Baule"
 msgstr "baule"
+
+msgid "Batak Toba"
+msgstr ""
 
 msgid "Lang|Berber"
 msgstr "berberyjski"
@@ -20449,11 +20550,20 @@ msgstr ""
 msgid "Bible Cree"
 msgstr ""
 
+msgid "Bandjalang"
+msgstr ""
+
 msgid "Belarussian"
 msgstr "białoruski"
 
 msgid "Bemba"
 msgstr "bemba"
+
+msgid "Haryanvi"
+msgstr ""
+
+msgid "Bagri"
+msgstr ""
 
 msgid "Bhili"
 msgstr "bhili"
@@ -20467,11 +20577,20 @@ msgstr "bikol"
 msgid "Bilen"
 msgstr "blin"
 
+msgid "Bislama"
+msgstr ""
+
+msgid "Kanauji"
+msgstr ""
+
 msgid "Blackfoot"
 msgstr "Czarnych stóp (Siksika)"
 
 msgid "Balochi"
 msgstr "beludżi"
+
+msgid "Pa'o Karen"
+msgstr ""
 
 msgid "Balante"
 msgstr "balundu"
@@ -20488,20 +20607,53 @@ msgstr "bamileke"
 msgid "Bosnian"
 msgstr "bośniacki"
 
+msgid "Bishnupriya Manipuri"
+msgstr ""
+
 msgid "Brahui"
 msgstr "brahui"
 
 msgid "Braj Bhasha"
 msgstr "braj"
 
+msgid "Bodo"
+msgstr ""
+
 msgid "Bashkir"
 msgstr "baszkirski"
+
+msgid "Burushaski"
+msgstr ""
 
 msgid "Beti"
 msgstr "beti"
 
+msgid "Batak Simalungun"
+msgstr ""
+
+msgid "Lang|Buginese"
+msgstr ""
+
+msgid "Medumba"
+msgstr ""
+
+msgid "Kaqchikel"
+msgstr ""
+
+msgid "Zamboanga Chavacano"
+msgstr ""
+
+msgid "Chinantec"
+msgstr ""
+
 msgid "Cebuano"
 msgstr "cebuański"
+
+msgid "Chiga"
+msgstr ""
+
+msgid "Chamorro"
+msgstr ""
 
 msgid "Chechen"
 msgstr "czeczeński"
@@ -20518,11 +20670,26 @@ msgstr "chichewa"
 msgid "Chukchi"
 msgstr "czukocki"
 
+msgid "Chuukese"
+msgstr ""
+
+msgid "Choctaw"
+msgstr ""
+
 msgid "Chipewyan"
 msgstr "odżibwe (czipewejski, anishinabe)"
 
 msgid "Chuvash"
 msgstr "czuwaski"
+
+msgid "Cheyenne"
+msgstr ""
+
+msgid "Lang|Western Cham"
+msgstr ""
+
+msgid "Eastern Cham"
+msgstr ""
 
 msgid "Comorian"
 msgstr "komoryjski"
@@ -20530,8 +20697,14 @@ msgstr "komoryjski"
 msgid "Lang|Coptic"
 msgstr "koptyjski"
 
+msgid "Cornish"
+msgstr ""
+
 msgid "Corsican"
 msgstr "Korsykański"
+
+msgid "Creoles"
+msgstr ""
 
 msgid "Cree"
 msgstr "kri"
@@ -20542,26 +20715,44 @@ msgstr "dakelh (carrier)"
 msgid "Crimean Tatar"
 msgstr "Tatarów krymskich"
 
+msgid "Kashubian"
+msgstr ""
+
 msgid "Church Slavonic"
 msgstr "cerkiewnosłowiański"
+
+msgid "Chittagonian"
+msgstr ""
+
+msgid "San Blas Kuna"
+msgstr ""
 
 msgid "Dargwa"
 msgstr "dargwa"
 
-msgid "Lang|Default"
-msgstr "domyślny"
+msgid "Dayi"
+msgstr ""
 
 msgid "Woods Cree"
 msgstr "kri leśny"
 
-msgid "German (Standard)"
-msgstr "niemiecki (standardowy)"
+msgid "Lang|Default"
+msgstr "domyślny"
+
+msgid "Dogri (individual language)"
+msgstr ""
 
 msgid "Dogri"
 msgstr "dogri"
 
+msgid "Dhangu"
+msgstr ""
+
 msgid "Dhivehi (Obsolete)"
 msgstr "Dhivehi (Przestarzałe)"
+
+msgid "Dimli"
+msgstr ""
 
 msgid "Dhivehi"
 msgstr "malediwski"
@@ -20569,14 +20760,23 @@ msgstr "malediwski"
 msgid "Djerma"
 msgstr "dżerma"
 
+msgid "Djambarrpuyngu"
+msgstr ""
+
 msgid "Dangme"
 msgstr "dangme"
+
+msgid "Dan"
+msgstr ""
 
 msgid "Dinka"
 msgstr "dinka"
 
 msgid "Dari"
 msgstr "dari (perski)"
+
+msgid "Dhuwal"
+msgstr ""
 
 msgid "Dungan"
 msgstr "dungański"
@@ -20590,8 +20790,14 @@ msgstr "kri wschodni"
 msgid "Efik"
 msgstr "efik"
 
+msgid "Eastern Maninkakan"
+msgstr ""
+
 msgid "Erzya"
 msgstr "erzja"
+
+msgid "Central Yupik"
+msgstr ""
 
 msgid "Evenki"
 msgstr "ewenkijski"
@@ -20605,8 +20811,17 @@ msgstr "ewe"
 msgid "French Antillean"
 msgstr "francuski (Antyle)"
 
+msgid "Fang"
+msgstr ""
+
+msgid "Fanti"
+msgstr ""
+
 msgid "Fijian"
 msgstr "fidżyjski"
+
+msgid "Fe'fe'"
+msgstr ""
 
 msgid "Forest Nenets"
 msgstr "juracki leśny"
@@ -20617,11 +20832,14 @@ msgstr "fon"
 msgid "Faroese"
 msgstr "farerski"
 
-msgid "French (Standard)"
-msgstr "francuski (standardowy)"
+msgid "Cajun French"
+msgstr ""
 
 msgid "Friulian"
 msgstr "friulski"
+
+msgid "Arpitan"
+msgstr ""
 
 msgid "Futa"
 msgstr "ful"
@@ -20629,11 +20847,11 @@ msgstr "ful"
 msgid "Fulani"
 msgstr "ful"
 
+msgid "Nigerian Fulfulde"
+msgstr ""
+
 msgid "Ga"
 msgstr "ga"
-
-msgid "Gaelic"
-msgstr "gaelic"
 
 msgid "Gagauz"
 msgstr "gagauski"
@@ -20647,17 +20865,44 @@ msgstr "garhwali"
 msgid "Lang|Ge'ez"
 msgstr "gyyz"
 
+msgid "Githabul"
+msgstr ""
+
 msgid "Gilyak"
 msgstr "niwchijski"
 
+msgid "Kiribati"
+msgstr ""
+
+msgid "Kpelle (Guinea)"
+msgstr ""
+
+msgid "Gilaki"
+msgstr ""
+
 msgid "Gumuz"
 msgstr "gumuz"
+
+msgid "Gumatj"
+msgstr ""
+
+msgid "Gogo"
+msgstr ""
 
 msgid "Gondi"
 msgstr "gondi"
 
 msgid "Garo"
 msgstr "garo"
+
+msgid "Wayuu"
+msgstr ""
+
+msgid "Gupapuyngu"
+msgstr ""
+
+msgid "Gusii"
+msgstr ""
 
 msgid "Haitian"
 msgstr "haitański"
@@ -20668,10 +20913,16 @@ msgstr "halam"
 msgid "Harauti"
 msgstr "harauti"
 
-msgid "Hawaiin"
-msgstr "hawajski"
+msgid "Haya"
+msgstr ""
+
+msgid "Hazaragi"
+msgstr ""
 
 msgid "Hammer-Banna"
+msgstr ""
+
+msgid "Herero"
 msgstr ""
 
 msgid "Hiligaynon"
@@ -20679,6 +20930,12 @@ msgstr "hiligajnon"
 
 msgid "High Mari"
 msgstr "maryjski górski"
+
+msgid "Hmong"
+msgstr ""
+
+msgid "Hiri Motu"
+msgstr ""
 
 msgid "Hindko"
 msgstr "hindko"
@@ -20689,14 +20946,32 @@ msgstr "ho"
 msgid "Harari"
 msgstr "harari"
 
+msgid "Eastern Armenian"
+msgstr ""
+
+msgid "Iban"
+msgstr ""
+
+msgid "Ido"
+msgstr ""
+
 msgid "Ijo"
 msgstr "ijo"
+
+msgid "Interlingue"
+msgstr ""
 
 msgid "Ilokano"
 msgstr "iloko"
 
+msgid "Interlingua"
+msgstr ""
+
 msgid "Ingush"
 msgstr "inguski"
+
+msgid "Inupiat"
+msgstr ""
 
 msgid "IPA usage"
 msgstr "Znaki używane w IPA"
@@ -20710,8 +20985,17 @@ msgstr "irlandzki tradycyjny"
 msgid "Inari Sami"
 msgstr "lapoński z Inari"
 
+msgid "Jamaican Creole"
+msgstr ""
+
 msgid "Lang|Javanese"
 msgstr "jawajski"
+
+msgid "Lojban"
+msgstr ""
+
+msgid "Krymchak"
+msgstr ""
 
 msgid "Judezmo"
 msgstr "ladino (dżudezmo)"
@@ -20722,6 +21006,9 @@ msgstr "djula"
 msgid "Kabardian"
 msgstr "kabardyjski"
 
+msgid "Kabyle"
+msgstr ""
+
 msgid "Kachchi"
 msgstr "kekczi"
 
@@ -20731,8 +21018,17 @@ msgstr "kalendżin"
 msgid "Karachay"
 msgstr "karaczajski"
 
+msgid "Makonde"
+msgstr ""
+
+msgid "Kabuverdianu"
+msgstr ""
+
 msgid "Kebena"
 msgstr "kebena"
+
+msgid "Kekchi"
+msgstr ""
 
 msgid "Khutsuri Georgian"
 msgstr "gruziński (khutsuri)"
@@ -20746,6 +21042,9 @@ msgstr "chantyjski-kazim"
 msgid "Khanty-Shurishkar"
 msgstr "chantyjski-szuriszkar"
 
+msgid "Khamti Shan"
+msgstr ""
+
 msgid "Khanty-Vakhi"
 msgstr "chantyjski-vakhi"
 
@@ -20757,6 +21056,18 @@ msgstr "kikuju"
 
 msgid "Kisii"
 msgstr "kissi"
+
+msgid "Kirmanjki"
+msgstr ""
+
+msgid "Southern Kiwai"
+msgstr ""
+
+msgid "Eastern Pwo Karen"
+msgstr ""
+
+msgid "Bumthangkha"
+msgstr ""
 
 msgid "Kokni"
 msgstr "konkani"
@@ -20776,17 +21087,29 @@ msgstr "komo"
 msgid "Komso"
 msgstr "komso"
 
+msgid "Khorasani Turkic"
+msgstr ""
+
 msgid "Kodagu"
 msgstr ""
 
 msgid "Korean Old Hangul"
 msgstr "koreański w starym hangyl"
 
+msgid "Komi"
+msgstr ""
+
 msgid "Kikongo"
 msgstr "kikongo"
 
+msgid "Kongo"
+msgstr ""
+
 msgid "Komi-Permyak"
 msgstr "komi permiacki"
+
+msgid "Kosraean"
+msgstr ""
 
 msgid "Komi-Zyrian"
 msgstr "komi zyriański"
@@ -20812,11 +21135,20 @@ msgstr "kareński"
 msgid "Koorete"
 msgstr ""
 
+msgid "Ripuarian"
+msgstr ""
+
 msgid "Khasi"
 msgstr "khasi"
 
 msgid "Kildin Sami"
 msgstr "lapoński z Półwyspu Kolskiego"
+
+msgid "S'gaw Karen"
+msgstr ""
+
+msgid "Kuanyama"
+msgstr ""
 
 msgid "Kui"
 msgstr "kui"
@@ -20835,6 +21167,9 @@ msgstr ""
 
 msgid "Koryak"
 msgstr "koriacki"
+
+msgid "Western Kayah"
+msgstr ""
 
 msgid "Ladin"
 msgstr "ladyński"
@@ -20860,8 +21195,23 @@ msgstr "ladakhi"
 msgid "Lezgi"
 msgstr "lezgiński"
 
+msgid "Ligurian"
+msgstr ""
+
+msgid "Limburgish"
+msgstr ""
+
 msgid "Lingala"
 msgstr "lingala"
+
+msgid "Lang|Lisu"
+msgstr ""
+
+msgid "Lampung"
+msgstr ""
+
+msgid "Laki"
+msgstr ""
 
 msgid "Low Mari"
 msgstr "maryjski łęgowy"
@@ -20869,7 +21219,16 @@ msgstr "maryjski łęgowy"
 msgid "Lang|Limbu"
 msgstr "limbu"
 
+msgid "Lombard"
+msgstr ""
+
 msgid "Lomwe"
+msgstr ""
+
+msgid "Lang|Loma"
+msgstr ""
+
+msgid "Luri"
 msgstr ""
 
 msgid "Lower Sorbian"
@@ -20881,8 +21240,11 @@ msgstr "lapoński z Luleå"
 msgid "Luxembourgish"
 msgstr "luksemburski"
 
-msgid "Luba"
-msgstr "luba"
+msgid "Luba-Lulua"
+msgstr ""
+
+msgid "Luba-Katanga"
+msgstr ""
 
 msgid "Luganda"
 msgstr "luganda"
@@ -20893,6 +21255,15 @@ msgstr "luhya"
 msgid "Luo"
 msgstr "luo"
 
+msgid "Madura"
+msgstr ""
+
+msgid "Magahi"
+msgstr ""
+
+msgid "Marshallese"
+msgstr ""
+
 msgid "Majang"
 msgstr ""
 
@@ -20901,6 +21272,9 @@ msgstr "makua"
 
 msgid "Malayalam Traditional"
 msgstr "malajalam (tradycyjny)"
+
+msgid "Mam"
+msgstr ""
 
 msgid "Mansi"
 msgstr "mansyjski"
@@ -20914,6 +21288,9 @@ msgstr "marwari"
 msgid "Mbundu"
 msgstr "mbundu (kimbundu)"
 
+msgid "Mbo"
+msgstr ""
+
 msgid "Lang|Manchu"
 msgstr "mandżurski"
 
@@ -20923,11 +21300,32 @@ msgstr "kri Moose"
 msgid "Mende"
 msgstr "mende"
 
+msgid "Mandar"
+msgstr ""
+
 msgid "Me'en"
 msgstr "me'en"
 
+msgid "Meru"
+msgstr ""
+
+msgid "Pattani Malay"
+msgstr ""
+
+msgid "Morisyen"
+msgstr ""
+
+msgid "Minangkabau"
+msgstr ""
+
 msgid "Mizo"
 msgstr "mizo"
+
+msgid "Lang|Makasar"
+msgstr ""
+
+msgid "Kituba"
+msgstr ""
 
 msgid "Male"
 msgstr ""
@@ -20959,19 +21357,49 @@ msgstr "mon"
 msgid "Moroccan"
 msgstr "marokański"
 
+msgid "Mossi"
+msgstr ""
+
 msgid "Maithili"
 msgstr "maithili"
 
 msgid "Mundari"
 msgstr "mundari"
 
+msgid "Muscogee"
+msgstr ""
+
+msgid "Mirandese"
+msgstr ""
+
+msgid "Hmong Daw"
+msgstr ""
+
+msgid "Lang|Mayan"
+msgstr ""
+
+msgid "Mazanderani"
+msgstr ""
+
 msgid "Naga-Assamese"
 msgstr "naga-asamski"
+
+msgid "Nahuatl"
+msgstr ""
 
 msgid "Nanai"
 msgstr "nanajski"
 
+msgid "Neapolitan"
+msgstr ""
+
 msgid "Naskapi"
+msgstr ""
+
+msgid "Nauruan"
+msgstr ""
+
+msgid "Navajo"
 msgstr ""
 
 msgid "N-Cree"
@@ -20980,11 +21408,20 @@ msgstr "kri-N"
 msgid "Ndebele"
 msgstr "ndebele"
 
+msgid "Ndau"
+msgstr ""
+
 msgid "Ndonga"
 msgstr "ndonga"
 
+msgid "Low Saxon"
+msgstr ""
+
 msgid "Newari"
 msgstr "newarski"
+
+msgid "Ngbaka"
+msgstr ""
 
 msgid "Nagari"
 msgstr "nagari"
@@ -21001,17 +21438,32 @@ msgstr "niue"
 msgid "Nkole"
 msgstr "ankole"
 
+msgid "Nimadi"
+msgstr ""
+
 msgid "Nogai"
 msgstr "nogajski"
+
+msgid "Novial"
+msgstr ""
 
 msgid "Northern Sami"
 msgstr "lapoński północny"
 
+msgid "Northern Sotho"
+msgstr ""
+
 msgid "Northern Tai"
 msgstr "tajski północny"
 
+msgid "Nyamwezi"
+msgstr ""
+
 msgid "Nynorsk"
 msgstr "nynorsk"
+
+msgid "Mbembe Tigon"
+msgstr ""
 
 msgid "Occitan"
 msgstr "oksytański"
@@ -21028,14 +21480,38 @@ msgstr "osetyjski"
 msgid "Palestinian Aramaic"
 msgstr "aramejski (Palestyńa)"
 
+msgid "Pangasinan"
+msgstr ""
+
 msgid "Pali"
 msgstr "pali"
+
+msgid "Pampangan"
+msgstr ""
 
 msgid "Palpa"
 msgstr "palpa"
 
+msgid "Palauan"
+msgstr ""
+
+msgid "Bouyei"
+msgstr ""
+
+msgid "Picard"
+msgstr ""
+
+msgid "Pennsylvania German"
+msgstr ""
+
 msgid "Polytonic Greek"
 msgstr "grecki politoniczny"
+
+msgid "Phake"
+msgstr ""
+
+msgid "Norfolk"
+msgstr ""
 
 msgid "Pilipino (Filipino)"
 msgstr "filipiński"
@@ -21043,22 +21519,67 @@ msgstr "filipiński"
 msgid "Palaung"
 msgstr "palau"
 
+msgid "Piemontese"
+msgstr ""
+
+msgid "Western Panjabi"
+msgstr ""
+
+msgid "Pocomchi"
+msgstr ""
+
+msgid "Pohnpeian"
+msgstr ""
+
 msgid "Provencal"
 msgstr "prowansalski"
 
+msgid "Western Pwo Karen"
+msgstr ""
+
 msgid "Chin"
+msgstr ""
+
+msgid "K'iche'"
+msgstr ""
+
+msgid "Quechua (Bolivia)"
+msgstr ""
+
+msgid "Quechua (Ecuador)"
+msgstr ""
+
+msgid "Quechua (Peru)"
 msgstr ""
 
 msgid "Rajasthani"
 msgstr "Radźastani"
 
-msgid "R-Cree"
-msgstr "kri-R"
+msgid "Rarotongan"
+msgstr ""
 
 msgid "Russian Buriat"
 msgstr "buriacki"
 
+msgid "R-Cree"
+msgstr "kri-R"
+
 msgid "Riang"
+msgstr ""
+
+msgid "Tarifit"
+msgstr ""
+
+msgid "Ritarungo"
+msgstr ""
+
+msgid "Arakwal"
+msgstr ""
+
+msgid "Romansh"
+msgstr ""
+
+msgid "Vlax Romani"
 msgstr ""
 
 msgid "Romany"
@@ -21067,10 +21588,19 @@ msgstr "romski"
 msgid "Rusyn"
 msgstr "rusiński"
 
+msgid "Rotuman"
+msgstr ""
+
 msgid "Ruanda"
 msgstr "ruanda"
 
+msgid "Aromanian"
+msgstr ""
+
 msgid "Sadri"
+msgstr ""
+
+msgid "Sasak"
 msgstr ""
 
 msgid "Santali"
@@ -21079,14 +21609,32 @@ msgstr "santali"
 msgid "Sayisi"
 msgstr ""
 
+msgid "Sicilian"
+msgstr ""
+
+msgid "Scots"
+msgstr ""
+
+msgid "North Slavey"
+msgstr ""
+
 msgid "Sekota"
 msgstr ""
 
 msgid "Selkup"
 msgstr "selkupski"
 
+msgid "Old Irish"
+msgstr ""
+
 msgid "Sango"
 msgstr "sango"
+
+msgid "Samogitian"
+msgstr ""
+
+msgid "Tachelhit"
+msgstr ""
 
 msgid "Shan"
 msgstr "szan"
@@ -21112,14 +21660,23 @@ msgstr "samoański"
 msgid "Sena"
 msgstr "sena"
 
+msgid "Shona"
+msgstr ""
+
 msgid "Soninke"
 msgstr "soninke"
 
 msgid "Sodo Gurage"
 msgstr "sodo"
 
-msgid "Sotho"
-msgstr "sotho"
+msgid "Songe"
+msgstr ""
+
+msgid "Southern Sotho"
+msgstr ""
+
+msgid "Sardinian"
+msgstr ""
 
 msgid "Saraiki"
 msgstr "saraiki"
@@ -21133,6 +21690,15 @@ msgstr "slewi południowy"
 msgid "Southern Sami"
 msgstr "lapoński południowy"
 
+msgid "Saterland Frisian"
+msgstr ""
+
+msgid "Sukuma"
+msgstr ""
+
+msgid "Lang|Sundanese"
+msgstr ""
+
 msgid "Suri"
 msgstr "suri"
 
@@ -21145,17 +21711,47 @@ msgstr "aramejski (swadaja)"
 msgid "Swazi"
 msgstr "suazi"
 
+msgid "Upper Saxon"
+msgstr ""
+
+msgid "Sylheti"
+msgstr ""
+
+msgid "Syriac (Estrangela)"
+msgstr ""
+
+msgid "Syriac (Western script)"
+msgstr ""
+
+msgid "Syriac (Eastern script)"
+msgstr ""
+
+msgid "Silesian"
+msgstr ""
+
 msgid "Tabasaran"
 msgstr "tabasarański"
 
 msgid "TH-Cree"
 msgstr "kri-TH"
 
+msgid "Dehong Dai"
+msgstr ""
+
+msgid "Tetum"
+msgstr ""
+
 msgid "Tigre"
 msgstr "tigre"
 
 msgid "Tahitian"
 msgstr "tahitański"
+
+msgid "Tiv"
+msgstr ""
+
+msgid "Tamashek"
+msgstr ""
 
 msgid "Temne"
 msgstr "temne"
@@ -21169,8 +21765,20 @@ msgstr "tonga"
 msgid "Todo"
 msgstr ""
 
+msgid "Toma"
+msgstr ""
+
+msgid "Tok Pisin"
+msgstr ""
+
+msgid "Tshangla"
+msgstr ""
+
 msgid "Turoyo Aramaic"
 msgstr "aramejski (turojo)"
+
+msgid "Tumbuka"
+msgstr ""
 
 msgid "Tulu"
 msgstr "tulu"
@@ -21178,11 +21786,26 @@ msgstr "tulu"
 msgid "Tuvin"
 msgstr "tuwiński"
 
+msgid "Tuvalu"
+msgstr ""
+
 msgid "Twi"
 msgstr "twi"
 
+msgid "Tày"
+msgstr ""
+
+msgid "Tamazight"
+msgstr ""
+
+msgid "Tzotzil"
+msgstr ""
+
 msgid "Udmurt"
 msgstr "udmurcki"
+
+msgid "Umbundu"
+msgstr ""
 
 msgid "Upper Sorbian"
 msgstr "górnołużycki"
@@ -21190,10 +21813,22 @@ msgstr "górnołużycki"
 msgid "Uyghur"
 msgstr "ujgurski"
 
+msgid "Venetian"
+msgstr ""
+
+msgid "Volapük"
+msgstr ""
+
+msgid "Võro"
+msgstr ""
+
 msgid "Wa"
 msgstr "wa"
 
 msgid "Wagdi"
+msgstr ""
+
+msgid "Waray-Waray"
 msgstr ""
 
 msgid "West-Cree"
@@ -21202,11 +21837,35 @@ msgstr "kri zachodni"
 msgid "Wolof"
 msgstr "wolof"
 
+msgid "Walloon"
+msgstr ""
+
+msgid "Mewati"
+msgstr ""
+
 msgid "Tai Lue"
 msgstr "tai lu"
 
+msgid "Minjangbal"
+msgstr ""
+
+msgid "Khengkha"
+msgstr ""
+
+msgid "Soga"
+msgstr ""
+
+msgid "Kpelle (Liberia)"
+msgstr ""
+
 msgid "Yakut"
 msgstr "jakucki"
+
+msgid "Yao"
+msgstr ""
+
+msgid "Yapese"
+msgstr ""
 
 msgid "Y-Cree"
 msgstr "kri-Y"
@@ -21216,6 +21875,15 @@ msgstr "yi klasyczny"
 
 msgid "Yi Modern"
 msgstr "yi współczesny"
+
+msgid "Zealandic"
+msgstr ""
+
+msgid "Standard Moroccan Tamazight"
+msgstr ""
+
+msgid "Zhuang"
+msgstr ""
 
 msgid "Chinese Hong Kong"
 msgstr "chiński hongkoński"
@@ -21231,6 +21899,9 @@ msgstr "chiński tradycyjny"
 
 msgid "Zande"
 msgstr "zande"
+
+msgid "Zazaki"
+msgstr ""
 
 msgid "Language(s)"
 msgstr "Języki"
@@ -24842,6 +25513,14 @@ msgstr ""
 "Zachowuje zawartość warstw tła i spiro w tablicy PfEd.\n"
 "Jeśli font truetype jest generowany z krzywych stopnia 3\n"
 "(postscriptowych), one także zostaną zachowane."
+
+msgid "FFTM Table"
+msgstr ""
+
+msgid ""
+"The FFTM table is an extension to the TrueType format\n"
+"and contains a series of timestamps defined by FontForge\n"
+msgstr ""
 
 msgid "TeX Table"
 msgstr "Tablica TeX"

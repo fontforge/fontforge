@@ -6,17 +6,22 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-29 10:56+1100\n"
-"PO-Revision-Date: 2016-09-10 10:42+0300\n"
+"POT-Creation-Date: 2020-11-07 04:37+0000\n"
+"PO-Revision-Date: 2020-11-07 04:36\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
-"Language-Team: Ukrainian <kde-i18n-uk@kde.org>\n"
-"Language: uk\n"
+"Language-Team: Ukrainian\n"
+"Language: uk_UA\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=n==1 ? 3 : n%10==1 && n%100!=11 ? 0 : n"
-"%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Lokalize 1.5\n"
+"Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 "
+"&& n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 "
+"&& n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
+"X-Crowdin-Project: fontforge\n"
+"X-Crowdin-Project-ID: 368599\n"
+"X-Crowdin-Language: uk\n"
+"X-Crowdin-File: FontForge.pot\n"
+"X-Crowdin-File-ID: 2\n"
 
 msgid "FontForge"
 msgstr ""
@@ -48,9 +53,6 @@ msgid ""
 msgstr ""
 
 msgid "Fontforge showing a glyph being edited"
-msgstr ""
-
-msgid "FontForge developers"
 msgstr ""
 
 msgid "Font Editor"
@@ -1954,7 +1956,6 @@ msgstr "Центрована ієрогліфічна пунктуація"
 msgid "Capital Spacing"
 msgstr "Інтервали між великими літерами"
 
-# http://en.wikipedia.org/wiki/List_of_typographic_features
 msgid "Contextual Swash"
 msgstr "Контекстуальне доповнення"
 
@@ -6411,13 +6412,13 @@ msgid "Script|Central European"
 msgstr "Центральноєвропейська"
 
 msgid "Unicode 1.0"
-msgstr "Unicode 1.0"
+msgstr ""
 
 msgid "Unicode 1.1"
-msgstr "Unicode 1.1"
+msgstr ""
 
 msgid "ISO 10646:1993"
-msgstr "ISO 10646:1993"
+msgstr ""
 
 msgid "Unicode 2.0+, BMP only"
 msgstr "Unicode 2.0+, лише BMP"
@@ -6426,19 +6427,19 @@ msgid "Unicode 2.0+, all planes"
 msgstr "Unicode 2.0+, всі частини"
 
 msgid "\"Symbol\""
-msgstr "\"Symbol\""
+msgstr ""
 
 msgid "Unicode"
-msgstr "Unicode"
+msgstr ""
 
 msgid "Apple"
-msgstr "Apple"
+msgstr ""
 
 msgid "ISO (Deprecated)"
 msgstr "ISO (застаріла)"
 
 msgid "MicroSoft"
-msgstr "MicroSoft"
+msgstr ""
 
 msgid "Custom"
 msgstr "Нетиповий"
@@ -8500,9 +8501,6 @@ msgstr "У цьому шрифті не вказано нарису шрифту
 msgid "This file contains no SVG fonts.\n"
 msgstr "У цьому файлі не міститься шрифтів SVG.\n"
 
-msgid "Can't find libxml2.\n"
-msgstr "Не вдалося знайти libxml2.\n"
-
 #, c-format
 msgid "%s does not contain an <svg> element at the top\n"
 msgstr "%s не містить елемента <svg> у верхній частині\n"
@@ -8883,9 +8881,6 @@ msgstr "Помилка індексування класу кернінґу."
 
 msgid "kerning.plist attempts to redefine a class kerning offset."
 msgstr "kerning.plist намагається перевизначити відступ класу кернінґу."
-
-msgid "Can't find libxml2."
-msgstr "Не вдалося знайти libxml2."
 
 msgid "Bad openTypeOS2type key: all bits are set. It will be ignored"
 msgstr ""
@@ -9552,6 +9547,12 @@ msgstr "Авестанська"
 msgid "Rumi Numeral Symbols"
 msgstr "Числові символи румі"
 
+msgid "Yezidi"
+msgstr ""
+
+msgid "Chorasmian"
+msgstr ""
+
 msgid "Elymaic"
 msgstr ""
 
@@ -9564,7 +9565,13 @@ msgstr ""
 msgid "Mongolian Supplement"
 msgstr ""
 
+msgid "Dives Akuru"
+msgstr ""
+
 msgid "Nandinagari"
+msgstr ""
+
+msgid "Lisu Supplement"
 msgstr ""
 
 msgid "Tamil Supplement"
@@ -9595,6 +9602,12 @@ msgid "Ideographic Symbols and Punctuation"
 msgstr ""
 
 msgid "Tangut Components"
+msgstr ""
+
+msgid "Khitan Small Script"
+msgstr ""
+
+msgid "Tangut Supplement"
 msgstr ""
 
 msgid "Kana Supplement"
@@ -9693,7 +9706,7 @@ msgstr ""
 msgid "Symbols and Pictographs Extended-A"
 msgstr ""
 
-msgid "Unassigned"
+msgid "Symbols for Legacy Computing"
 msgstr ""
 
 msgid "Unicode Supplementary Ideographic Plane"
@@ -9719,6 +9732,15 @@ msgstr ""
 
 msgid "CJK Compatibility Ideographs Supplement"
 msgstr "Додаткові ієрогліфічні ідеограми для сумісності"
+
+msgid "Unicode Tertiary Ideographic Plane"
+msgstr ""
+
+msgid "Tertiary Ideographic Plane"
+msgstr ""
+
+msgid "CJK Unified Ideographs Extension G"
+msgstr ""
 
 msgid "Unicode Supplementary Special-purpose Plane"
 msgstr "Додаткова область особливого призначення Unicode"
@@ -9862,10 +9884,10 @@ msgid "Coordinate along which to space"
 msgstr "Координата, вздовж якої додається проміжок"
 
 msgid "_X"
-msgstr "_X"
+msgstr ""
 
 msgid "_Y"
-msgstr "_Y"
+msgstr ""
 
 msgid "_Maximum distance between points in a region"
 msgstr "_Максимальна відстань між точками у області"
@@ -10188,43 +10210,43 @@ msgstr ""
 "ви вкажете дані."
 
 msgid "hang"
-msgstr "hang"
+msgstr ""
 
 msgid "Indic (& Tibetan) hanging baseline"
 msgstr "Індійська (і тибетська) лінія підвішування символів"
 
 msgid "icfb"
-msgstr "icfb"
+msgstr ""
 
 msgid "Ideographic character face bottom edge baseline"
 msgstr "Лінія нижнього краю основної частини ідеографічних символів"
 
 msgid "icft"
-msgstr "icft"
+msgstr ""
 
 msgid "Ideographic character face top edge baseline"
 msgstr "Лінія верхнього краю основної частини ідеографічних символів"
 
 msgid "ideo"
-msgstr "ideo"
+msgstr ""
 
 msgid "Ideographic em-box bottom edge baseline"
 msgstr "Лінія нижнього краю рамки, вирівняної за em, ідеографічних символів"
 
 msgid "idtp"
-msgstr "idtp"
+msgstr ""
 
 msgid "Ideographic em-box top edge baseline"
 msgstr "Лінія верхнього краю рамки, вирівняної за em, ідеографічних символів"
 
 msgid "math"
-msgstr "math"
+msgstr ""
 
 msgid "Mathematical centerline"
 msgstr "Математична центральна лінія"
 
 msgid "romn"
-msgstr "romn"
+msgstr ""
 
 msgid "Baseline used for Latin, Greek, Cyrillic text."
 msgstr "Лінія шрифту для латинських, грецьких та кириличних писемностей."
@@ -10343,13 +10365,13 @@ msgstr "Вкажіть розміри растрів, які слід вилуч
 
 #. GT: X is a coordinate
 msgid "X"
-msgstr "X"
+msgstr ""
 
 msgid "Win"
-msgstr "Win"
+msgstr ""
 
 msgid "Mac"
-msgstr "Mac"
+msgstr ""
 
 msgid "Use FreeType"
 msgstr "Використовувати FreeType"
@@ -10970,7 +10992,7 @@ msgid "Replacement Glyph Names"
 msgstr "Назви гліфів-замінників"
 
 msgid "∆x"
-msgstr "∆x"
+msgstr ""
 
 #. GT: "Adjust" here means Device Table based pixel adjustments, an OpenType
 #. GT: concept which allows small corrections for small pixel sizes where
@@ -10980,7 +11002,7 @@ msgid "Adjust"
 msgstr "Скоригувати"
 
 msgid "∆y"
-msgstr "∆y"
+msgstr ""
 
 msgid "∆x_adv"
 msgstr "∆x_дод"
@@ -11365,10 +11387,10 @@ msgstr "Обмежувальна рамка плитки:"
 
 #. GT: X is a coordinate, the leading spaces help to align it
 msgid "  X"
-msgstr "  X"
+msgstr ""
 
 msgid "  Y"
-msgstr "  Y"
+msgstr ""
 
 msgid "Positionings"
 msgstr "Розташування"
@@ -11936,10 +11958,10 @@ msgid "Modes: "
 msgstr "Режими: "
 
 msgid "'fpgm'"
-msgstr "'fpgm'"
+msgstr ""
 
 msgid "'prep'"
-msgstr "'prep'"
+msgstr ""
 
 msgid "Not Guides"
 msgstr "Не напрямні"
@@ -11992,10 +12014,10 @@ msgid "Insert a point on the given spline at either..."
 msgstr "Вставити точку на вказаний сплайн за координатами…"
 
 msgid "_X:"
-msgstr "_X:"
+msgstr ""
 
 msgid "_Y:"
-msgstr "_Y:"
+msgstr ""
 
 msgid "Anchor Class Name"
 msgstr "Назва класу прив’язки"
@@ -12516,13 +12538,13 @@ msgid "PointNumbers|_None"
 msgstr "_Немає"
 
 msgid "_TrueType"
-msgstr "_TrueType"
+msgstr ""
 
 msgid "_PostScript®"
-msgstr "_PostScript®"
+msgstr ""
 
 msgid "_SVG"
-msgstr "_SVG"
+msgstr ""
 
 msgid "P_ositions"
 msgstr "Р_озташування"
@@ -12608,7 +12630,7 @@ msgstr "С_ині значення"
 
 #. GT: You might not want to translate this, it's a keyword in PostScript font files
 msgid "FamilyBl_ues"
-msgstr "FamilyBl_ues"
+msgstr ""
 
 msgid "_Anchors"
 msgstr "П_рив’язки"
@@ -13130,6 +13152,27 @@ msgstr "Вийти з режиму зневаджування"
 msgid "Instruction Gloss (TrueType)"
 msgstr "Глосарій інструкцій (TrueType)"
 
+msgid "Export Options"
+msgstr ""
+
+msgid ""
+"The following options influence how glyphs are exported.\n"
+"Most are specific to one or more formats."
+msgstr ""
+
+msgid "_Use Transform (SVG)"
+msgstr ""
+
+msgid ""
+"FontForge previously exported glyphs using a SVG\n"
+"transform element to flip the Y-axis rather\n"
+"than changing the individual values. This option\n"
+"reverts to that convention."
+msgstr ""
+
+msgid "_Always raise this dialog when exporting"
+msgstr ""
+
 msgid "Bits/Pixel:"
 msgstr "Бітів на піксель:"
 
@@ -13140,37 +13183,37 @@ msgid "Pixel size?"
 msgstr "Розмір пікселя?"
 
 msgid "EPS"
-msgstr "EPS"
+msgstr ""
 
 msgid "XFig"
-msgstr "XFig"
+msgstr ""
 
 msgid "SVG"
-msgstr "SVG"
+msgstr ""
 
 msgid "Glif"
-msgstr "Glif"
+msgstr ""
 
 msgid "PDF"
-msgstr "PDF"
+msgstr ""
 
 msgid "Raph's plate"
 msgstr "Файли plate Рафа Левьєна"
 
 msgid "X Bitmap"
-msgstr "X Bitmap"
+msgstr ""
 
 msgid "BMP"
-msgstr "BMP"
+msgstr ""
 
 msgid "png"
-msgstr "png"
+msgstr ""
 
 msgid "X Pixmap"
-msgstr "X Pixmap"
+msgstr ""
 
 msgid "C FontForge"
-msgstr "C FontForge"
+msgstr ""
 
 msgid "_Replace"
 msgstr "За_мінити"
@@ -13203,6 +13246,9 @@ msgstr "_Фільтр"
 
 msgid "Directory|_New"
 msgstr "С_творити"
+
+msgid "_Options"
+msgstr ""
 
 msgid "Format:"
 msgstr "Формат:"
@@ -13310,10 +13356,10 @@ msgid "Bounding Box:"
 msgstr "Обмежувальна рамка:"
 
 msgid "X:"
-msgstr "X:"
+msgstr ""
 
 msgid "Y:"
-msgstr "Y:"
+msgstr ""
 
 msgid "_Show"
 msgstr "Пок_азати"
@@ -13482,7 +13528,7 @@ msgid "Dist"
 msgstr "Відст."
 
 msgid "°"
-msgstr "°"
+msgstr ""
 
 msgid "Curvature: -0.00000000"
 msgstr "Кривина: -0.00000000"
@@ -13520,7 +13566,7 @@ msgstr "Наступна на контурі"
 #. GT: Y is a coordinate
 #. GT: Y is a coordinate, the leading spaces help to align it
 msgid "Y"
-msgstr "Y"
+msgstr ""
 
 msgid "Spiro Point Info"
 msgstr "Відомості щодо точки Spiro"
@@ -13631,35 +13677,61 @@ msgstr "Створити гінт горизонтального штриха"
 msgid "Create Vertical Stem Hint"
 msgstr "Створити гінт вертикального штриха"
 
-msgid "PS Interpretion"
-msgstr "Інтерпретація PS"
-
-#. GT: The following strings should be concatenated together, the result
-#. GT: translated, and then broken into lines by hand. I'm sure it would
-#. GT: be better to specify this all as one string, but my widgets won't support
-#. GT: that
-msgid ""
-"FontForge has some bugs in its remove overlap\n"
-"function which may cause you problems, so\n"
-"I give you the option of turning it off.\n"
-"Leave it on if possible though, it is useful."
+msgid "Import Parameters"
 msgstr ""
-"У функції вилучення перекриття FontForge є\n"
-"декілька вад, які можуть призвести до проблем,\n"
-"отже ви можете вимкнути її.\n"
-"Але не вимикайте функцію без причини, вона може бути корисною."
 
-msgid "Handle Erasers"
-msgstr "Обробка гумок"
+msgid ""
+"The following options influence how files are imported.\n"
+"Most are specific to one or more formats."
+msgstr ""
+
+msgid "_Correct Direction (PS/EPS)"
+msgstr ""
+
+msgid "Handle Erasers (PS/EPS)"
+msgstr ""
 
 msgid ""
 "Certain programs use pens with white ink as erasers\n"
-"If you select (blacken) this checkbox, FontForge will\n"
-"attempt to simulate that."
+"This option attempts to simulate that effect."
 msgstr ""
-"У деяких програмах замість гумок використовують пензлі\n"
-"з «білим» чорнилом. Якщо ви позначите цей пункт, FontForge\n"
-"спробує імітувати цю поведінку."
+
+msgid "Simplify Stroke (SVG/PS/EPS)"
+msgstr ""
+
+msgid ""
+"Run Simplify after expanding stroked paths\n"
+"to reduce the number of points."
+msgstr ""
+
+msgid "Use Clip-paths (SVG)"
+msgstr ""
+
+msgid "Scale to fit (Misc)"
+msgstr ""
+
+msgid "Default Join Limit (PS/EPS/SVG):"
+msgstr ""
+
+msgid ""
+"The length limit for Miter and Arcs joins in units\n"
+"of 1/2 stroke-width. Set to -1 to use the format-\n"
+"specific limits of 10.0 for PostScript and 4.0 for SVG."
+msgstr ""
+
+msgid "Accuracy _Target:"
+msgstr ""
+
+msgid ""
+"The Expand Stroke algorithm will attempt to be (at\n"
+"least) this accurate, but there may be exceptions."
+msgstr ""
+
+msgid "_Always raise this dialog when importing"
+msgstr ""
+
+msgid "Accuracy Target:"
+msgstr ""
 
 msgid "Image"
 msgstr "Зображення"
@@ -13671,25 +13743,25 @@ msgid "Raph's plate files"
 msgstr "Файли plate Рафа Левьєна"
 
 msgid "BDF"
-msgstr "BDF"
+msgstr ""
 
 msgid "TTF"
-msgstr "TTF"
+msgstr ""
 
 msgid "ΤεΧ Bitmap Fonts"
 msgstr "Растрові шрифти ΤεΧ"
 
 msgid "PCF (pmf)"
-msgstr "PCF (pmf)"
+msgstr ""
 
 msgid "Mac Bitmap"
-msgstr "Mac Bitmap"
+msgstr ""
 
 msgid "Win FON"
-msgstr "Win FON"
+msgstr ""
 
 msgid "palm"
-msgstr "palm"
+msgstr ""
 
 msgid "Image Template"
 msgstr "Шаблон у зображенні"
@@ -13773,7 +13845,6 @@ msgstr "Виконати перетворення перспективи поз�
 
 msgid "Rotate the selection in 3D and project back to plane"
 msgstr ""
-"Обертати позначений фрагмент у просторі з наступним проектуванням на площину"
 
 msgid "Polygon or Star"
 msgstr "Багатокутник або зірка"
@@ -13839,10 +13910,10 @@ msgid "De_activate Spiro"
 msgstr "Ви_мкнути Spiro"
 
 msgid "G_4"
-msgstr "G_4"
+msgstr ""
 
 msgid "G_2"
-msgstr "G_2"
+msgstr ""
 
 msgid "Lef_t"
 msgstr "Л_іва"
@@ -13999,10 +14070,10 @@ msgid "Make Quadratic"
 msgstr "Зробити квадратичним"
 
 msgid "+"
-msgstr "+"
+msgstr ""
 
 msgid "-"
-msgstr "-"
+msgstr ""
 
 msgid "Delete the current layer"
 msgstr "Вилучити поточний шар"
@@ -14139,7 +14210,7 @@ msgid "_Radius:"
 msgstr "_Радіус:"
 
 msgid "3"
-msgstr "3"
+msgstr ""
 
 msgid "_Width:"
 msgstr "_Ширина:"
@@ -14255,9 +14326,6 @@ msgstr ""
 msgid "Extend Cap:"
 msgstr ""
 
-msgid "Accuracy Target:"
-msgstr ""
-
 msgid "Removing both the internal and the external contours makes no sense"
 msgstr ""
 "Одночасне вилучення внутрішнього і зовнішнього контурів позбавлене сенсу"
@@ -14347,9 +14415,6 @@ msgid "as _Length"
 msgstr ""
 
 msgid "* Nib _Span"
-msgstr ""
-
-msgid "Accuracy _Target:"
 msgstr ""
 
 msgid ""
@@ -15075,31 +15140,31 @@ msgid "Encoding|Glyph Order"
 msgstr "Порядок гліфів"
 
 msgid "ISO 8859-1  (Latin1)"
-msgstr "ISO 8859-1  (Latin1)"
+msgstr ""
 
 msgid "ISO 8859-15  (Latin0)"
-msgstr "ISO 8859-15  (Latin0)"
+msgstr ""
 
 msgid "ISO 8859-2  (Latin2)"
-msgstr "ISO 8859-2  (Latin2)"
+msgstr ""
 
 msgid "ISO 8859-3  (Latin3)"
-msgstr "ISO 8859-3  (Latin3)"
+msgstr ""
 
 msgid "ISO 8859-4  (Latin4)"
-msgstr "ISO 8859-4  (Latin4)"
+msgstr ""
 
 msgid "ISO 8859-9  (Latin5)"
-msgstr "ISO 8859-9  (Latin5)"
+msgstr ""
 
 msgid "ISO 8859-10  (Latin6)"
-msgstr "ISO 8859-10  (Latin6)"
+msgstr ""
 
 msgid "ISO 8859-13  (Latin7)"
-msgstr "ISO 8859-13  (Latin7)"
+msgstr ""
 
 msgid "ISO 8859-14  (Latin8)"
-msgstr "ISO 8859-14  (Latin8)"
+msgstr ""
 
 msgid "ISO 8859-16  (Latin10)"
 msgstr ""
@@ -15123,13 +15188,13 @@ msgid "ISO 8859-11 (Thai)"
 msgstr "ISO 8859-11 (тайська)"
 
 msgid "Macintosh Latin"
-msgstr "Macintosh Latin"
+msgstr ""
 
 msgid "Windows Latin (\"ANSI\")"
-msgstr "Windows Latin (\"ANSI\")"
+msgstr ""
 
 msgid "Adobe Standard"
-msgstr "Adobe Standard"
+msgstr ""
 
 msgid "Symbol"
 msgstr "Символи"
@@ -15138,7 +15203,7 @@ msgid "ΤεΧ Base (8r)"
 msgstr "Базовий ΤεΧ (8r)"
 
 msgid "ISO 10646-1 (Unicode, BMP)"
-msgstr "ISO 10646-1 (Unicode, BMP)"
+msgstr ""
 
 msgid "ISO 10646-1 (Unicode, Full)"
 msgstr "ISO 10646-1 (Unicode, повністю)"
@@ -15371,7 +15436,7 @@ msgid "CS Miscellaneous"
 msgstr "CS-інший"
 
 msgid "Slab Serifs"
-msgstr "Slab Serifs"
+msgstr ""
 
 msgid "Slab Serifs|SS Monotone"
 msgstr "SS-монотон"
@@ -15503,16 +15568,16 @@ msgid "OS2Version|Automatic"
 msgstr "Автоматична"
 
 msgid "1"
-msgstr "1"
+msgstr ""
 
 msgid "2"
-msgstr "2"
+msgstr ""
 
 msgid "4"
-msgstr "4"
+msgstr ""
 
 msgid "0"
-msgstr "0"
+msgstr ""
 
 msgid "PanoseFamily|Any"
 msgstr "Будь-яка"
@@ -16230,7 +16295,7 @@ msgid "Cursive"
 msgstr "Курсив"
 
 msgid "Blackletter"
-msgstr "Blackletter"
+msgstr ""
 
 msgid "Swash Variance"
 msgstr "Варіативність розплескування"
@@ -17238,7 +17303,7 @@ msgid "855, IBM Cyrillic; primarily Russian"
 msgstr "855, IBM-кирилиця; в основному російська"
 
 msgid "852, Latin 2"
-msgstr "852, Latin 2"
+msgstr ""
 
 msgid "775, MS-DOS Baltic"
 msgstr "775, MS-DOS-балтійська"
@@ -18325,13 +18390,13 @@ msgid "Use XUID"
 msgstr "Використовувати XUID"
 
 msgid "_XUID:"
-msgstr "_XUID:"
+msgstr ""
 
 msgid "Use UniqueID"
 msgstr "Використовувати UniqueID"
 
 msgid "_UniqueID:"
-msgstr "_UniqueID:"
+msgstr ""
 
 msgid " _Em Size:"
 msgstr " _Розмір em:"
@@ -18653,7 +18718,7 @@ msgid "PanoseUse|Default"
 msgstr "Типове"
 
 msgid "http://panose.com/"
-msgstr "http://panose.com/"
+msgstr ""
 
 msgid "Panose|_Family Kind"
 msgstr ""
@@ -18677,7 +18742,7 @@ msgid "Sub/Super"
 msgstr "Нижній/Верхній"
 
 msgid "Panose"
-msgstr "Panose"
+msgstr ""
 
 msgid "Charsets"
 msgstr "Кодування"
@@ -18771,7 +18836,7 @@ msgstr ""
 "з OFL.txt. \n"
 
 msgid "scripts.sil.org/OFL"
-msgstr "scripts.sil.org/OFL"
+msgstr ""
 
 msgid ""
 "Click here for more information about the OFL (SIL Open Font License) \n"
@@ -19045,7 +19110,7 @@ msgid "PS Private"
 msgstr "Приватне PS"
 
 msgid "OS/2"
-msgstr "OS/2"
+msgstr ""
 
 msgid "TTF Names"
 msgstr "Назви TTF"
@@ -19057,10 +19122,10 @@ msgid "Grid Fitting"
 msgstr "Піксельна сітка"
 
 msgid "ΤεΧ"
-msgstr "ΤεΧ"
+msgstr ""
 
 msgid "FONTLOG"
-msgstr "FONTLOG"
+msgstr ""
 
 msgid "Mark Classes"
 msgstr "Класи позначок"
@@ -19072,7 +19137,7 @@ msgid "OpenType|Lookups"
 msgstr "Фільтрування"
 
 msgid "WOFF"
-msgstr "WOFF"
+msgstr ""
 
 msgid "Mac Features"
 msgstr "Модифікації Mac"
@@ -19511,7 +19576,7 @@ msgid "_Name"
 msgstr "_Назва"
 
 msgid "_Unicode"
-msgstr "_Unicode"
+msgstr ""
 
 msgid "_Encoding Hex"
 msgstr "Шістнадцяткові _кодування"
@@ -19806,7 +19871,7 @@ msgid "E_ncoding"
 msgstr "_Кодування"
 
 msgid "_CID"
-msgstr "_CID"
+msgstr ""
 
 msgid "Color of the font used to display glyph information in the fontview"
 msgstr ""
@@ -20628,6 +20693,12 @@ msgstr "Абазинська"
 msgid "Abkhazian"
 msgstr "Абхазька"
 
+msgid "Acholi"
+msgstr ""
+
+msgid "Achi"
+msgstr ""
+
 msgid "Adyghe"
 msgstr "Адигейська"
 
@@ -20637,20 +20708,35 @@ msgstr "Афар"
 msgid "Agaw"
 msgstr "Агав"
 
+msgid "Aiton"
+msgstr ""
+
+msgid "Akan"
+msgstr ""
+
 msgid "Alsatian"
 msgstr "Ельзаська"
 
 msgid "Altai"
 msgstr "Алтайська"
 
+msgid "Anglo-Saxon"
+msgstr ""
+
 msgid "Americanist IPA"
 msgstr "Американська фонетична транскрипція"
+
+msgid "Aragonese"
+msgstr ""
 
 msgid "Aari"
 msgstr "Арі"
 
 msgid "Arakanese"
 msgstr "Араканійська"
+
+msgid "Asturian"
+msgstr ""
 
 msgid "Athapaskan"
 msgstr "Атапаська"
@@ -20661,11 +20747,17 @@ msgstr "Аварська"
 msgid "Awadhi"
 msgstr "Авадхі"
 
+msgid "Torki"
+msgstr ""
+
 msgid "Azeri"
 msgstr "Азербайджанська"
 
 msgid "Badaga"
 msgstr "Бадага"
+
+msgid "Banda"
+msgstr ""
 
 msgid "Baghelkhandi"
 msgstr "Багхелі"
@@ -20673,8 +20765,17 @@ msgstr "Багхелі"
 msgid "Balkar"
 msgstr "Балкарська"
 
+msgid "Lang|Balinese"
+msgstr ""
+
+msgid "Bavarian"
+msgstr ""
+
 msgid "Baule"
 msgstr "Бауле"
+
+msgid "Batak Toba"
+msgstr ""
 
 msgid "Lang|Berber"
 msgstr "Берберська"
@@ -20685,11 +20786,20 @@ msgstr "Бенчська"
 msgid "Bible Cree"
 msgstr "Крі (біблійна)"
 
+msgid "Bandjalang"
+msgstr ""
+
 msgid "Belarussian"
 msgstr "Білоруська"
 
 msgid "Bemba"
 msgstr "Бемба"
+
+msgid "Haryanvi"
+msgstr ""
+
+msgid "Bagri"
+msgstr ""
 
 msgid "Bhili"
 msgstr "Бгілі"
@@ -20703,11 +20813,20 @@ msgstr "Бікольська"
 msgid "Bilen"
 msgstr "Білін"
 
+msgid "Bislama"
+msgstr ""
+
+msgid "Kanauji"
+msgstr ""
+
 msgid "Blackfoot"
 msgstr "Мова чорноногих"
 
 msgid "Balochi"
 msgstr "Белізька"
+
+msgid "Pa'o Karen"
+msgstr ""
 
 msgid "Balante"
 msgstr "Баланте"
@@ -20724,20 +20843,53 @@ msgstr "Бамілеке"
 msgid "Bosnian"
 msgstr "Боснійська"
 
+msgid "Bishnupriya Manipuri"
+msgstr ""
+
 msgid "Brahui"
 msgstr "Брауї"
 
 msgid "Braj Bhasha"
 msgstr "Брадж-бгаша"
 
+msgid "Bodo"
+msgstr ""
+
 msgid "Bashkir"
 msgstr "Башкирська"
+
+msgid "Burushaski"
+msgstr ""
 
 msgid "Beti"
 msgstr "Беті"
 
+msgid "Batak Simalungun"
+msgstr ""
+
+msgid "Lang|Buginese"
+msgstr ""
+
+msgid "Medumba"
+msgstr ""
+
+msgid "Kaqchikel"
+msgstr ""
+
+msgid "Zamboanga Chavacano"
+msgstr ""
+
+msgid "Chinantec"
+msgstr ""
+
 msgid "Cebuano"
 msgstr "Себуано"
+
+msgid "Chiga"
+msgstr ""
+
+msgid "Chamorro"
+msgstr ""
 
 msgid "Chechen"
 msgstr "Чеченська"
@@ -20754,11 +20906,26 @@ msgstr "Чічеванська"
 msgid "Chukchi"
 msgstr "Чукотська"
 
+msgid "Chuukese"
+msgstr ""
+
+msgid "Choctaw"
+msgstr ""
+
 msgid "Chipewyan"
 msgstr "Чипевьян"
 
 msgid "Chuvash"
 msgstr "Чуваська"
+
+msgid "Cheyenne"
+msgstr ""
+
+msgid "Lang|Western Cham"
+msgstr ""
+
+msgid "Eastern Cham"
+msgstr ""
 
 msgid "Comorian"
 msgstr "Коморська"
@@ -20766,8 +20933,14 @@ msgstr "Коморська"
 msgid "Lang|Coptic"
 msgstr "Коптська"
 
+msgid "Cornish"
+msgstr ""
+
 msgid "Corsican"
 msgstr "Корсиканська"
+
+msgid "Creoles"
+msgstr ""
 
 msgid "Cree"
 msgstr "Крі"
@@ -20778,26 +20951,44 @@ msgstr "Карієр"
 msgid "Crimean Tatar"
 msgstr "Кримськотатарська"
 
+msgid "Kashubian"
+msgstr ""
+
 msgid "Church Slavonic"
 msgstr "Церковнослов’янська"
+
+msgid "Chittagonian"
+msgstr ""
+
+msgid "San Blas Kuna"
+msgstr ""
 
 msgid "Dargwa"
 msgstr "Даргва"
 
-msgid "Lang|Default"
-msgstr "Типова"
+msgid "Dayi"
+msgstr ""
 
 msgid "Woods Cree"
 msgstr "Крі (лісова)"
 
-msgid "German (Standard)"
-msgstr "Німецька (стандартна)"
+msgid "Lang|Default"
+msgstr "Типова"
+
+msgid "Dogri (individual language)"
+msgstr ""
 
 msgid "Dogri"
 msgstr "Догрі"
 
+msgid "Dhangu"
+msgstr ""
+
 msgid "Dhivehi (Obsolete)"
 msgstr "Мальдівська (застаріла)"
+
+msgid "Dimli"
+msgstr ""
 
 msgid "Dhivehi"
 msgstr "Мальдівська"
@@ -20805,14 +20996,23 @@ msgstr "Мальдівська"
 msgid "Djerma"
 msgstr "Джерма"
 
+msgid "Djambarrpuyngu"
+msgstr ""
+
 msgid "Dangme"
 msgstr "Дангбе"
+
+msgid "Dan"
+msgstr ""
 
 msgid "Dinka"
 msgstr "Дінка"
 
 msgid "Dari"
 msgstr "Дарі"
+
+msgid "Dhuwal"
+msgstr ""
 
 msgid "Dungan"
 msgstr "Дунганська"
@@ -20826,8 +21026,14 @@ msgstr "Східна крі"
 msgid "Efik"
 msgstr "Ефік"
 
+msgid "Eastern Maninkakan"
+msgstr ""
+
 msgid "Erzya"
 msgstr "Ерзянська"
+
+msgid "Central Yupik"
+msgstr ""
 
 msgid "Evenki"
 msgstr "Евенкійська"
@@ -20841,8 +21047,17 @@ msgstr "Еве"
 msgid "French Antillean"
 msgstr "Французька (Антильські острови)"
 
+msgid "Fang"
+msgstr ""
+
+msgid "Fanti"
+msgstr ""
+
 msgid "Fijian"
 msgstr "Фіджійська"
+
+msgid "Fe'fe'"
+msgstr ""
 
 msgid "Forest Nenets"
 msgstr "Ненецька (тайга)"
@@ -20853,11 +21068,14 @@ msgstr "Фон"
 msgid "Faroese"
 msgstr "Фарерська"
 
-msgid "French (Standard)"
-msgstr "Французька (стандартна)"
+msgid "Cajun French"
+msgstr ""
 
 msgid "Friulian"
 msgstr "Фріульська"
+
+msgid "Arpitan"
+msgstr ""
 
 msgid "Futa"
 msgstr "Фута"
@@ -20865,11 +21083,11 @@ msgstr "Фута"
 msgid "Fulani"
 msgstr "Фулані"
 
+msgid "Nigerian Fulfulde"
+msgstr ""
+
 msgid "Ga"
 msgstr "Га"
-
-msgid "Gaelic"
-msgstr "Гаельська"
 
 msgid "Gagauz"
 msgstr "Гагаузька"
@@ -20883,17 +21101,44 @@ msgstr "Гархвалі"
 msgid "Lang|Ge'ez"
 msgstr "Геез"
 
+msgid "Githabul"
+msgstr ""
+
 msgid "Gilyak"
 msgstr "Нівхська"
 
+msgid "Kiribati"
+msgstr ""
+
+msgid "Kpelle (Guinea)"
+msgstr ""
+
+msgid "Gilaki"
+msgstr ""
+
 msgid "Gumuz"
 msgstr "Гумуз"
+
+msgid "Gumatj"
+msgstr ""
+
+msgid "Gogo"
+msgstr ""
 
 msgid "Gondi"
 msgstr "Гонді"
 
 msgid "Garo"
 msgstr "Гаро"
+
+msgid "Wayuu"
+msgstr ""
+
+msgid "Gupapuyngu"
+msgstr ""
+
+msgid "Gusii"
+msgstr ""
 
 msgid "Haitian"
 msgstr "Гаїтянська"
@@ -20904,17 +21149,29 @@ msgstr "Галам"
 msgid "Harauti"
 msgstr "Гарауті"
 
-msgid "Hawaiin"
-msgstr "Гавайська"
+msgid "Haya"
+msgstr ""
+
+msgid "Hazaragi"
+msgstr ""
 
 msgid "Hammer-Banna"
 msgstr "Хаммер-Банна"
+
+msgid "Herero"
+msgstr ""
 
 msgid "Hiligaynon"
 msgstr "Хілігайнон"
 
 msgid "High Mari"
 msgstr "Верхньомарійська"
+
+msgid "Hmong"
+msgstr ""
+
+msgid "Hiri Motu"
+msgstr ""
 
 msgid "Hindko"
 msgstr "Гіндко"
@@ -20925,14 +21182,32 @@ msgstr "Хо"
 msgid "Harari"
 msgstr "Харарі"
 
+msgid "Eastern Armenian"
+msgstr ""
+
+msgid "Iban"
+msgstr ""
+
+msgid "Ido"
+msgstr ""
+
 msgid "Ijo"
 msgstr "Іджо"
+
+msgid "Interlingue"
+msgstr ""
 
 msgid "Ilokano"
 msgstr "Ілоканська"
 
+msgid "Interlingua"
+msgstr ""
+
 msgid "Ingush"
 msgstr "Інгушська"
+
+msgid "Inupiat"
+msgstr ""
 
 msgid "IPA usage"
 msgstr "Область МФА"
@@ -20946,8 +21221,17 @@ msgstr "Ірландська традиційна"
 msgid "Inari Sami"
 msgstr "Інарісаамська"
 
+msgid "Jamaican Creole"
+msgstr ""
+
 msgid "Lang|Javanese"
 msgstr "Яванська"
+
+msgid "Lojban"
+msgstr ""
+
+msgid "Krymchak"
+msgstr ""
 
 msgid "Judezmo"
 msgstr "Сефардська"
@@ -20958,6 +21242,9 @@ msgstr "Дьюла"
 msgid "Kabardian"
 msgstr "Кабардінська"
 
+msgid "Kabyle"
+msgstr ""
+
 msgid "Kachchi"
 msgstr "Качинська"
 
@@ -20967,8 +21254,17 @@ msgstr "Календжин"
 msgid "Karachay"
 msgstr "Карачаєво-балкарська"
 
+msgid "Makonde"
+msgstr ""
+
+msgid "Kabuverdianu"
+msgstr ""
+
 msgid "Kebena"
 msgstr "Кебена"
+
+msgid "Kekchi"
+msgstr ""
 
 msgid "Khutsuri Georgian"
 msgstr "Грузинська (хуцурі)"
@@ -20982,6 +21278,9 @@ msgstr "Ханти (казимська)"
 msgid "Khanty-Shurishkar"
 msgstr "Ханти (шурішкарська)"
 
+msgid "Khamti Shan"
+msgstr ""
+
 msgid "Khanty-Vakhi"
 msgstr "Ханти (вакхійська)"
 
@@ -20993,6 +21292,18 @@ msgstr "Кікуйю"
 
 msgid "Kisii"
 msgstr "Кісіі"
+
+msgid "Kirmanjki"
+msgstr ""
+
+msgid "Southern Kiwai"
+msgstr ""
+
+msgid "Eastern Pwo Karen"
+msgstr ""
+
+msgid "Bumthangkha"
+msgstr ""
 
 msgid "Kokni"
 msgstr "Кокані"
@@ -21012,17 +21323,29 @@ msgstr "Комо"
 msgid "Komso"
 msgstr "Комсо"
 
+msgid "Khorasani Turkic"
+msgstr ""
+
 msgid "Kodagu"
 msgstr "Кодагу"
 
 msgid "Korean Old Hangul"
 msgstr "Корейська (старий хангиль)"
 
+msgid "Komi"
+msgstr ""
+
 msgid "Kikongo"
 msgstr "Кіконго"
 
+msgid "Kongo"
+msgstr ""
+
 msgid "Komi-Permyak"
 msgstr "Комі (перм’яцька)"
+
+msgid "Kosraean"
+msgstr ""
 
 msgid "Komi-Zyrian"
 msgstr "Комі (зирянська)"
@@ -21048,11 +21371,20 @@ msgstr "Каренська"
 msgid "Koorete"
 msgstr "Кооретська"
 
+msgid "Ripuarian"
+msgstr ""
+
 msgid "Khasi"
 msgstr "Кхасі"
 
 msgid "Kildin Sami"
 msgstr "Кільдинська саамська"
+
+msgid "S'gaw Karen"
+msgstr ""
+
+msgid "Kuanyama"
+msgstr ""
 
 msgid "Kui"
 msgstr "Куі"
@@ -21071,6 +21403,9 @@ msgstr "Куї"
 
 msgid "Koryak"
 msgstr "Корякська"
+
+msgid "Western Kayah"
+msgstr ""
 
 msgid "Ladin"
 msgstr "Ладінська"
@@ -21096,8 +21431,23 @@ msgstr "Ладакхська"
 msgid "Lezgi"
 msgstr "Лезгінська"
 
+msgid "Ligurian"
+msgstr ""
+
+msgid "Limburgish"
+msgstr ""
+
 msgid "Lingala"
 msgstr "Лінгала"
+
+msgid "Lang|Lisu"
+msgstr ""
+
+msgid "Lampung"
+msgstr ""
+
+msgid "Laki"
+msgstr ""
 
 msgid "Low Mari"
 msgstr "Нижньомарійська"
@@ -21105,8 +21455,17 @@ msgstr "Нижньомарійська"
 msgid "Lang|Limbu"
 msgstr "Лімбу"
 
+msgid "Lombard"
+msgstr ""
+
 msgid "Lomwe"
 msgstr "Ломве"
+
+msgid "Lang|Loma"
+msgstr ""
+
+msgid "Luri"
+msgstr ""
 
 msgid "Lower Sorbian"
 msgstr "Нижньолужицька"
@@ -21117,8 +21476,11 @@ msgstr "Лулесаамська"
 msgid "Luxembourgish"
 msgstr "Люксембурзька"
 
-msgid "Luba"
-msgstr "Луба"
+msgid "Luba-Lulua"
+msgstr ""
+
+msgid "Luba-Katanga"
+msgstr ""
 
 msgid "Luganda"
 msgstr "Луганда"
@@ -21129,6 +21491,15 @@ msgstr "Лух’я"
 msgid "Luo"
 msgstr "Луо"
 
+msgid "Madura"
+msgstr ""
+
+msgid "Magahi"
+msgstr ""
+
+msgid "Marshallese"
+msgstr ""
+
 msgid "Majang"
 msgstr "Маджанг"
 
@@ -21137,6 +21508,9 @@ msgstr "Макуа"
 
 msgid "Malayalam Traditional"
 msgstr "Малаяламська традиційна"
+
+msgid "Mam"
+msgstr ""
 
 msgid "Mansi"
 msgstr "Мансі"
@@ -21150,6 +21524,9 @@ msgstr "Марварі"
 msgid "Mbundu"
 msgstr "Мбунду"
 
+msgid "Mbo"
+msgstr ""
+
 msgid "Lang|Manchu"
 msgstr "Манчжурська"
 
@@ -21159,11 +21536,32 @@ msgstr "Крі (лосина)"
 msgid "Mende"
 msgstr "Менде"
 
+msgid "Mandar"
+msgstr ""
+
 msgid "Me'en"
 msgstr "Меенська"
 
+msgid "Meru"
+msgstr ""
+
+msgid "Pattani Malay"
+msgstr ""
+
+msgid "Morisyen"
+msgstr ""
+
+msgid "Minangkabau"
+msgstr ""
+
 msgid "Mizo"
 msgstr "Мізо"
+
+msgid "Lang|Makasar"
+msgstr ""
+
+msgid "Kituba"
+msgstr ""
 
 msgid "Male"
 msgstr "Мале"
@@ -21195,20 +21593,50 @@ msgstr "Мон"
 msgid "Moroccan"
 msgstr "Марокканська"
 
+msgid "Mossi"
+msgstr ""
+
 msgid "Maithili"
 msgstr "Майтхілі"
 
 msgid "Mundari"
 msgstr "Мундарі"
 
+msgid "Muscogee"
+msgstr ""
+
+msgid "Mirandese"
+msgstr ""
+
+msgid "Hmong Daw"
+msgstr ""
+
+msgid "Lang|Mayan"
+msgstr ""
+
+msgid "Mazanderani"
+msgstr ""
+
 msgid "Naga-Assamese"
 msgstr "Нага (асамська)"
+
+msgid "Nahuatl"
+msgstr ""
 
 msgid "Nanai"
 msgstr "Нанайська"
 
+msgid "Neapolitan"
+msgstr ""
+
 msgid "Naskapi"
 msgstr "Наскапі"
+
+msgid "Nauruan"
+msgstr ""
+
+msgid "Navajo"
+msgstr ""
 
 msgid "N-Cree"
 msgstr "Крі (N)"
@@ -21216,11 +21644,20 @@ msgstr "Крі (N)"
 msgid "Ndebele"
 msgstr "Ндебеле"
 
+msgid "Ndau"
+msgstr ""
+
 msgid "Ndonga"
 msgstr "Ндонга"
 
+msgid "Low Saxon"
+msgstr ""
+
 msgid "Newari"
 msgstr "Неварська"
+
+msgid "Ngbaka"
+msgstr ""
 
 msgid "Nagari"
 msgstr "Нагарі"
@@ -21237,17 +21674,32 @@ msgstr "Ніуе"
 msgid "Nkole"
 msgstr "Анколе"
 
+msgid "Nimadi"
+msgstr ""
+
 msgid "Nogai"
 msgstr "Ногайська"
+
+msgid "Novial"
+msgstr ""
 
 msgid "Northern Sami"
 msgstr "Північносаамська"
 
+msgid "Northern Sotho"
+msgstr ""
+
 msgid "Northern Tai"
 msgstr "Північна тайська"
 
+msgid "Nyamwezi"
+msgstr ""
+
 msgid "Nynorsk"
 msgstr "Нюноршк"
+
+msgid "Mbembe Tigon"
+msgstr ""
 
 msgid "Occitan"
 msgstr "Оксітанська"
@@ -21264,14 +21716,38 @@ msgstr "Осетинська"
 msgid "Palestinian Aramaic"
 msgstr "Палестинська арамейська"
 
+msgid "Pangasinan"
+msgstr ""
+
 msgid "Pali"
 msgstr "Палі"
+
+msgid "Pampangan"
+msgstr ""
 
 msgid "Palpa"
 msgstr "Палпа"
 
+msgid "Palauan"
+msgstr ""
+
+msgid "Bouyei"
+msgstr ""
+
+msgid "Picard"
+msgstr ""
+
+msgid "Pennsylvania German"
+msgstr ""
+
 msgid "Polytonic Greek"
 msgstr "Політонічна грецька"
+
+msgid "Phake"
+msgstr ""
+
+msgid "Norfolk"
+msgstr ""
 
 msgid "Pilipino (Filipino)"
 msgstr "Філіппінська"
@@ -21279,23 +21755,68 @@ msgstr "Філіппінська"
 msgid "Palaung"
 msgstr "Палаунг"
 
+msgid "Piemontese"
+msgstr ""
+
+msgid "Western Panjabi"
+msgstr ""
+
+msgid "Pocomchi"
+msgstr ""
+
+msgid "Pohnpeian"
+msgstr ""
+
 msgid "Provencal"
 msgstr "Провансальська"
+
+msgid "Western Pwo Karen"
+msgstr ""
 
 msgid "Chin"
 msgstr "Чин"
 
+msgid "K'iche'"
+msgstr ""
+
+msgid "Quechua (Bolivia)"
+msgstr ""
+
+msgid "Quechua (Ecuador)"
+msgstr ""
+
+msgid "Quechua (Peru)"
+msgstr ""
+
 msgid "Rajasthani"
 msgstr "Раджастхані"
 
-msgid "R-Cree"
-msgstr "Крі (R)"
+msgid "Rarotongan"
+msgstr ""
 
 msgid "Russian Buriat"
 msgstr "Бурятська (Росія)"
 
+msgid "R-Cree"
+msgstr "Крі (R)"
+
 msgid "Riang"
 msgstr "Ріанг"
+
+msgid "Tarifit"
+msgstr ""
+
+msgid "Ritarungo"
+msgstr ""
+
+msgid "Arakwal"
+msgstr ""
+
+msgid "Romansh"
+msgstr ""
+
+msgid "Vlax Romani"
+msgstr ""
 
 msgid "Romany"
 msgstr "Ромська"
@@ -21303,11 +21824,20 @@ msgstr "Ромська"
 msgid "Rusyn"
 msgstr "Русинська"
 
+msgid "Rotuman"
+msgstr ""
+
 msgid "Ruanda"
 msgstr "Руанда"
 
+msgid "Aromanian"
+msgstr ""
+
 msgid "Sadri"
 msgstr "Садрі"
+
+msgid "Sasak"
+msgstr ""
 
 msgid "Santali"
 msgstr "Санталі"
@@ -21315,14 +21845,32 @@ msgstr "Санталі"
 msgid "Sayisi"
 msgstr "Саїсі"
 
+msgid "Sicilian"
+msgstr ""
+
+msgid "Scots"
+msgstr ""
+
+msgid "North Slavey"
+msgstr ""
+
 msgid "Sekota"
 msgstr "Секота"
 
 msgid "Selkup"
 msgstr "Селькупська"
 
+msgid "Old Irish"
+msgstr ""
+
 msgid "Sango"
 msgstr "Санго"
+
+msgid "Samogitian"
+msgstr ""
+
+msgid "Tachelhit"
+msgstr ""
 
 msgid "Shan"
 msgstr "Шан"
@@ -21348,14 +21896,23 @@ msgstr "Самоанська"
 msgid "Sena"
 msgstr "Сена"
 
+msgid "Shona"
+msgstr ""
+
 msgid "Soninke"
 msgstr "Сонікійська"
 
 msgid "Sodo Gurage"
 msgstr "Содо (гураге)"
 
-msgid "Sotho"
-msgstr "Сото"
+msgid "Songe"
+msgstr ""
+
+msgid "Southern Sotho"
+msgstr ""
+
+msgid "Sardinian"
+msgstr ""
 
 msgid "Saraiki"
 msgstr "Сараїкі"
@@ -21369,6 +21926,15 @@ msgstr "Південна слейві"
 msgid "Southern Sami"
 msgstr "Південносаамська"
 
+msgid "Saterland Frisian"
+msgstr ""
+
+msgid "Sukuma"
+msgstr ""
+
+msgid "Lang|Sundanese"
+msgstr ""
+
 msgid "Suri"
 msgstr "Сурі"
 
@@ -21381,17 +21947,47 @@ msgstr "Асирійська новоарамейська"
 msgid "Swazi"
 msgstr "Свазі"
 
+msgid "Upper Saxon"
+msgstr ""
+
+msgid "Sylheti"
+msgstr ""
+
+msgid "Syriac (Estrangela)"
+msgstr ""
+
+msgid "Syriac (Western script)"
+msgstr ""
+
+msgid "Syriac (Eastern script)"
+msgstr ""
+
+msgid "Silesian"
+msgstr ""
+
 msgid "Tabasaran"
 msgstr "Табасаранська"
 
 msgid "TH-Cree"
 msgstr "Крі (TH)"
 
+msgid "Dehong Dai"
+msgstr ""
+
+msgid "Tetum"
+msgstr ""
+
 msgid "Tigre"
 msgstr "Тігре"
 
 msgid "Tahitian"
 msgstr "Таїтянська"
+
+msgid "Tiv"
+msgstr ""
+
+msgid "Tamashek"
+msgstr ""
 
 msgid "Temne"
 msgstr "Темне"
@@ -21405,8 +22001,20 @@ msgstr "Тонга"
 msgid "Todo"
 msgstr "Тодо"
 
+msgid "Toma"
+msgstr ""
+
+msgid "Tok Pisin"
+msgstr ""
+
+msgid "Tshangla"
+msgstr ""
+
 msgid "Turoyo Aramaic"
 msgstr "Туройо (арамейська)"
+
+msgid "Tumbuka"
+msgstr ""
 
 msgid "Tulu"
 msgstr "Тулу"
@@ -21414,11 +22022,26 @@ msgstr "Тулу"
 msgid "Tuvin"
 msgstr "Тувинська"
 
+msgid "Tuvalu"
+msgstr ""
+
 msgid "Twi"
 msgstr "Тві"
 
+msgid "Tày"
+msgstr ""
+
+msgid "Tamazight"
+msgstr ""
+
+msgid "Tzotzil"
+msgstr ""
+
 msgid "Udmurt"
 msgstr "Удмуртська"
+
+msgid "Umbundu"
+msgstr ""
 
 msgid "Upper Sorbian"
 msgstr "Верхньолужицька"
@@ -21426,11 +22049,23 @@ msgstr "Верхньолужицька"
 msgid "Uyghur"
 msgstr "Уйгурська"
 
+msgid "Venetian"
+msgstr ""
+
+msgid "Volapük"
+msgstr ""
+
+msgid "Võro"
+msgstr ""
+
 msgid "Wa"
 msgstr "Ва"
 
 msgid "Wagdi"
 msgstr "Ваґді"
+
+msgid "Waray-Waray"
+msgstr ""
 
 msgid "West-Cree"
 msgstr "Західна крі"
@@ -21438,11 +22073,35 @@ msgstr "Західна крі"
 msgid "Wolof"
 msgstr "Волоф"
 
+msgid "Walloon"
+msgstr ""
+
+msgid "Mewati"
+msgstr ""
+
 msgid "Tai Lue"
 msgstr "Тай лі"
 
+msgid "Minjangbal"
+msgstr ""
+
+msgid "Khengkha"
+msgstr ""
+
+msgid "Soga"
+msgstr ""
+
+msgid "Kpelle (Liberia)"
+msgstr ""
+
 msgid "Yakut"
 msgstr "Якутська"
+
+msgid "Yao"
+msgstr ""
+
+msgid "Yapese"
+msgstr ""
 
 msgid "Y-Cree"
 msgstr "Крі (Y)"
@@ -21452,6 +22111,15 @@ msgstr "Ї (класична)"
 
 msgid "Yi Modern"
 msgstr "Ї (сучасна)"
+
+msgid "Zealandic"
+msgstr ""
+
+msgid "Standard Moroccan Tamazight"
+msgstr ""
+
+msgid "Zhuang"
+msgstr ""
 
 msgid "Chinese Hong Kong"
 msgstr "Китайська (Гонконг)"
@@ -21467,6 +22135,9 @@ msgstr "Китайська (традиційна)"
 
 msgid "Zande"
 msgstr "Занді"
+
+msgid "Zazaki"
+msgstr ""
 
 msgid "Language(s)"
 msgstr "Мови"
@@ -22633,7 +23304,7 @@ msgid "Type of distortable font:"
 msgstr "Тип викривленого шрифту:"
 
 msgid "Adobe"
-msgstr "Adobe"
+msgstr ""
 
 msgid "Number of Axes:"
 msgstr "Кількість осей:"
@@ -22746,25 +23417,25 @@ msgid "Bitmap Fonts"
 msgstr "Растрові шрифти"
 
 msgid "PostScript"
-msgstr "PostScript"
+msgstr ""
 
 msgid "TrueType"
-msgstr "TrueType"
+msgstr ""
 
 msgid "OpenType"
-msgstr "OpenType"
+msgstr ""
 
 msgid "Type1"
-msgstr "Type1"
+msgstr ""
 
 msgid "Type2"
-msgstr "Type2"
+msgstr ""
 
 msgid "Type3"
-msgstr "Type3"
+msgstr ""
 
 msgid "Unified Font Object"
-msgstr "Unified Font Object"
+msgstr ""
 
 msgid "FontForge's SFD"
 msgstr "Файл SFD FontForge"
@@ -23324,7 +23995,7 @@ msgid "Synchronize"
 msgstr "Синхронізація"
 
 msgid "TT"
-msgstr "TT"
+msgstr ""
 
 msgid "Accents"
 msgstr "Акценти"
@@ -23643,7 +24314,7 @@ msgstr ""
 
 #, c-format
 msgid "U+%04x"
-msgstr "U+%04x"
+msgstr ""
 
 msgid ""
 "Two glyphs have the same name.\n"
@@ -23656,7 +24327,7 @@ msgstr ""
 
 #, c-format
 msgid "%.40s"
-msgstr "%.40s"
+msgstr ""
 
 #, c-format
 msgid "Found %1$.4g, expected %2$.4g"
@@ -24523,13 +25194,13 @@ msgid "Hints"
 msgstr "Гінти"
 
 msgid "ATT"
-msgstr "ATT"
+msgstr ""
 
 msgid "CID"
-msgstr "CID"
+msgstr ""
 
 msgid "BB"
-msgstr "BB"
+msgstr ""
 
 msgid "Random"
 msgstr "Випадковий"
@@ -24810,7 +25481,7 @@ msgid "PS Type 1 (Resource)"
 msgstr "PS Type 1 (ресурс)"
 
 msgid "PS Type 1 (MacBin)"
-msgstr "PS Type 1 (MacBin)"
+msgstr ""
 
 msgid "PS Type 1 (Multiple)"
 msgstr "PS Type 1 (декілька)"
@@ -24822,13 +25493,13 @@ msgid "PS Multiple Master(B)"
 msgstr "Багатоосновний PS (B)"
 
 msgid "PS Type 3"
-msgstr "PS Type 3"
+msgstr ""
 
 msgid "PS Type 0"
-msgstr "PS Type 0"
+msgstr ""
 
 msgid "PS CID"
-msgstr "PS CID"
+msgstr ""
 
 #. GT: "CFF (Bare)" means a CFF font without the normal OpenType wrapper
 #. GT: CFF is a font format that normally lives inside an OpenType font
@@ -24841,10 +25512,10 @@ msgid "CFF CID (Bare)"
 msgstr "CFF CID (рідкісний)"
 
 msgid "Type42"
-msgstr "Type42"
+msgstr ""
 
 msgid "Type11 (CID 2)"
-msgstr "Type11 (CID 2)"
+msgstr ""
 
 msgid "TrueType (Symbol)"
 msgstr "TrueType (символи)"
@@ -24853,25 +25524,25 @@ msgid "TrueType (Resource)"
 msgstr "TrueType (ресурс)"
 
 msgid "TrueType (MacBin)"
-msgstr "TrueType (MacBin)"
+msgstr ""
 
 msgid "TrueType (TTC)"
-msgstr "TrueType (TTC)"
+msgstr ""
 
 msgid "TrueType (Mac dfont)"
-msgstr "TrueType (Mac dfont)"
+msgstr ""
 
 msgid "OpenType (CFF)"
-msgstr "OpenType (CFF)"
+msgstr ""
 
 msgid "OpenType (Mac dfont)"
-msgstr "OpenType (Mac dfont)"
+msgstr ""
 
 msgid "OpenType CID"
-msgstr "OpenType CID"
+msgstr ""
 
 msgid "OpenType CID (dfont)"
-msgstr "OpenType CID (dfont)"
+msgstr ""
 
 msgid "SVG font"
 msgstr "Шрифт SVG"
@@ -24910,10 +25581,10 @@ msgid "NFNT (Resource)"
 msgstr "NFNT (ресурс)"
 
 msgid "NFNT (MacBin)"
-msgstr "NFNT (MacBin)"
+msgstr ""
 
 msgid "Win FNT"
-msgstr "Win FNT"
+msgstr ""
 
 msgid "Palm OS Bitmap"
 msgstr "Растровий Palm OS"
@@ -24931,7 +25602,7 @@ msgid "Options"
 msgstr "Параметри"
 
 msgid "PostScript®"
-msgstr "PostScript®"
+msgstr ""
 
 msgid "Do you want to round coordinates to integers (this saves space)?"
 msgstr ""
@@ -25010,7 +25681,7 @@ msgstr ""
 "PostScript®."
 
 msgid "SFNT"
-msgstr "SFNT"
+msgstr ""
 
 msgid "TrueType Hints"
 msgstr "Гінти TrueType"
@@ -25169,6 +25840,14 @@ msgstr ""
 "Зберегти всі шари тла і spiro. Крім того,\n"
 "якщо дані виводяться до шрифту truetype, з бази\n"
 "даних кубічних сплайнів, зберегти кубічні сплайни."
+
+msgid "FFTM Table"
+msgstr ""
+
+msgid ""
+"The FFTM table is an extension to the TrueType format\n"
+"and contains a series of timestamps defined by FontForge\n"
+msgstr ""
 
 msgid "TeX Table"
 msgstr "Таблиця TeX"
@@ -25537,10 +26216,10 @@ msgid "Execute Script"
 msgstr "Виконати скрипт"
 
 msgid "_Python"
-msgstr "_Python"
+msgstr ""
 
 msgid "_FF"
-msgstr "_FF"
+msgstr ""
 
 msgid "C_all..."
 msgstr "Ви_кликати…"
@@ -25756,7 +26435,7 @@ msgid "Separate ratios for horizontal and vertical stems"
 msgstr "Окремі значення для горизонтальних і вертикальних основних штрихів"
 
 msgid "% +"
-msgstr "% +"
+msgstr ""
 
 msgid "Activate diagonal stem processing"
 msgstr "Задіяти обробку діагональних штрихів"
@@ -25806,7 +26485,7 @@ msgid "Vertical Scale:"
 msgstr "Масштаб за вертикаллю:"
 
 msgid "%"
-msgstr "%"
+msgstr ""
 
 msgid "Vertical"
 msgstr "Вертикаль"
@@ -26281,7 +26960,7 @@ msgstr "Клас позначок %.20s"
 
 #, c-format
 msgid "%.30s (%d,%d)"
-msgstr "%.30s (%d,%d)"
+msgstr ""
 
 #, c-format
 msgid "Entry (%d,%d)"
@@ -26616,7 +27295,7 @@ msgid "'JSTF' Justification Table"
 msgstr "Таблиця вирівнювання «JSTF»"
 
 msgid "Apple Advanced Typography"
-msgstr "Apple Advanced Typography"
+msgstr ""
 
 msgid "'bsln' Horizontal Baseline Table"
 msgstr "Таблиця горизонтальних ліній шрифту «bsln»"
@@ -26847,7 +27526,7 @@ msgstr ""
 
 #. GT: This is a pun on the old latin drinking song "Gaudeamus igature!"
 msgid "Gaudeamus Ligature!"
-msgstr "Gaudeamus Ligature!"
+msgstr ""
 
 #. GT: Spoof on the bible
 msgid "In the beginning was the letter..."
@@ -26869,49 +27548,49 @@ msgstr ""
 "Щоб продовжити над ним роботу, вам слід зберегти ваш файл."
 
 msgid "Ax => xA"
-msgstr "Ax => xA"
+msgstr ""
 
 msgid "xD => Dx"
-msgstr "xD => Dx"
+msgstr ""
 
 msgid "AxD => DxA"
-msgstr "AxD => DxA"
+msgstr ""
 
 msgid "ABx => xAB"
-msgstr "ABx => xAB"
+msgstr ""
 
 msgid "ABx => xBA"
-msgstr "ABx => xBA"
+msgstr ""
 
 msgid "xCD => CDx"
-msgstr "xCD => CDx"
+msgstr ""
 
 msgid "xCD => DCx"
-msgstr "xCD => DCx"
+msgstr ""
 
 msgid "AxCD => CDxA"
-msgstr "AxCD => CDxA"
+msgstr ""
 
 msgid "AxCD => DCxA"
-msgstr "AxCD => DCxA"
+msgstr ""
 
 msgid "ABxD => DxAB"
-msgstr "ABxD => DxAB"
+msgstr ""
 
 msgid "ABxD => DxBA"
-msgstr "ABxD => DxBA"
+msgstr ""
 
 msgid "ABxCD => CDxAB"
-msgstr "ABxCD => CDxAB"
+msgstr ""
 
 msgid "ABxCD => CDxBA"
-msgstr "ABxCD => CDxBA"
+msgstr ""
 
 msgid "ABxCD => DCxAB"
-msgstr "ABxCD => DCxAB"
+msgstr ""
 
 msgid "ABxCD => DCxBA"
-msgstr "ABxCD => DCxBA"
+msgstr ""
 
 #, c-format
 msgid "State %d,  %.40s"
@@ -28488,7 +29167,7 @@ msgid "Max _Stack Depth:"
 msgstr "Макс. _глибина стеку:"
 
 msgid "_FDEF"
-msgstr "_FDEF"
+msgstr ""
 
 msgid "_IDEFs"
 msgstr "_IDEF"
@@ -28627,7 +29306,7 @@ msgstr ""
 "двокрапками"
 
 msgid "GGadget"
-msgstr "GGadget"
+msgstr ""
 
 msgid ""
 "This is an \"abstract\" gadget. It will never appear on the screen\n"
@@ -28940,7 +29619,7 @@ msgstr "Градієнт тла"
 
 #. GT: "I." is an abreviation for "Inherits"
 msgid "I."
-msgstr "I."
+msgstr ""
 
 msgid "Normal Text Color:"
 msgstr "Колір звичайного тексту:"
@@ -29043,7 +29722,7 @@ msgid "Screen Width in Inches"
 msgstr "Ширина екрана у дюймах"
 
 msgid "GDraw"
-msgstr "GDraw"
+msgstr ""
 
 msgid "General facts about the windowing system"
 msgstr "Загальні відомості щодо системи керування вікнами"
@@ -29162,1650 +29841,3 @@ msgstr ""
 #, c-format
 msgid "Reason:%s\n"
 msgstr "Причина: %s\n"
-
-#~ msgid "Combining half marks"
-#~ msgstr "Комбіновані позначки половинок"
-
-#~ msgid "Private/Corporate Use"
-#~ msgstr "Приватне/Корпоративне використання"
-
-#~ msgid "CJK Radicals"
-#~ msgstr "Ієрогліфи-радикали"
-
-#~ msgid "Math Supplemental Operators"
-#~ msgstr "Математичні додаткові оператори"
-
-#~ msgid "New Tai Lu"
-#~ msgstr "Нова тай лі"
-
-#~ msgid "Pahlavi"
-#~ msgstr "Пехлевійська"
-
-#~ msgid "Aramaic"
-#~ msgstr "Арамейська"
-
-#~ msgid "StyleName|_New..."
-#~ msgstr "С_творити…"
-
-#~ msgid "Style Name"
-#~ msgstr "Назва стилю"
-
-#~ msgid "Unassigned Bit 122"
-#~ msgstr "Непризначений біт 122"
-
-#~ msgid "Unassigned Bit 121"
-#~ msgstr "Непризначений біт 121"
-
-#~ msgid "Unassigned Bit 120"
-#~ msgstr "Непризначений біт 120"
-
-#~ msgid "Unassigned Bit 119"
-#~ msgstr "Непризначений біт 119"
-
-#~ msgid "Unassigned Bit 118"
-#~ msgstr "Непризначений біт 118"
-
-#~ msgid "Unassigned Bit 117"
-#~ msgstr "Непризначений біт 117"
-
-#~ msgid "Unassigned Bit 116"
-#~ msgstr "Непризначений біт 116"
-
-#~ msgid "Unassigned Bit 115"
-#~ msgstr "Непризначений біт 115"
-
-#~ msgid "Unassigned Bit 114"
-#~ msgstr "Непризначений біт 114"
-
-#~ msgid "Unassigned Bit 113"
-#~ msgstr "Непризначений біт 113"
-
-#~ msgid "Unassigned Bit 112"
-#~ msgstr "Непризначений біт 112"
-
-#~ msgid "Unassigned Bit 111"
-#~ msgstr "Непризначений біт 111"
-
-#~ msgid "Unassigned Bit 110"
-#~ msgstr "Непризначений біт 110"
-
-#~ msgid "Unassigned Bit 109"
-#~ msgstr "Непризначений біт 9"
-
-#~ msgid "Unassigned Bit 108"
-#~ msgstr "Непризначений біт 108"
-
-#~ msgid "Unassigned Bit 107"
-#~ msgstr "Непризначений біт 107"
-
-#~ msgid "Unassigned Bit 106"
-#~ msgstr "Непризначений біт 106"
-
-#~ msgid "Unassigned Bit 105"
-#~ msgstr "Непризначений біт 105"
-
-#~ msgid "Unassigned Bit 104"
-#~ msgstr "Непризначений біт 104"
-
-#~ msgid "Unassigned Bit 103"
-#~ msgstr "Непризначений біт 103"
-
-#~ msgid "Unassigned Bit 102"
-#~ msgstr "Непризначений біт 102"
-
-#~ msgid "Unassigned Bit 101"
-#~ msgstr "Непризначений біт 101"
-
-#~ msgid "Unassigned Bit 100"
-#~ msgstr "Непризначений біт 100"
-
-#~ msgid "Unassigned Bit 99"
-#~ msgstr "Непризначений біт 99"
-
-#~ msgid "Unassigned Bit 98"
-#~ msgstr "Непризначений біт 98"
-
-#~ msgid "Unassigned Bit 97"
-#~ msgstr "Непризначений біт 97"
-
-#~ msgid "Unassigned Bit 96"
-#~ msgstr "Непризначений біт 96"
-
-#~ msgid "Unassigned Bit 95"
-#~ msgstr "Непризначений біт 95"
-
-#~ msgid "Unassigned Bit 94"
-#~ msgstr "Непризначений біт 94"
-
-#~ msgid "Unassigned Bit 93"
-#~ msgstr "Непризначений біт 93"
-
-#~ msgid "Byzantine Musical Symbols/Musical Symbols"
-#~ msgstr "Візантійські музичні символи/Музичні символи"
-
-#~ msgid "Unassigned Bit 58"
-#~ msgstr "Непризначений біт 58"
-
-#~ msgid "Enclosed CJK Leters and Months"
-#~ msgstr "Вкладені ієрогліфи і назви місяців"
-
-#~ msgid "Unassigned Bit 53"
-#~ msgstr "Непризначений біт 53"
-
-#~ msgid "Unassigned Bit 27"
-#~ msgstr "Непризначений біт 27"
-
-#~ msgid "Unassigned Bit 14"
-#~ msgstr "Непризначений біт 14"
-
-#~ msgid "Unassigned Bit 12"
-#~ msgstr "Непризначений біт 12"
-
-#~ msgid "Cyrillic/Cyrillic Supplementary"
-#~ msgstr "Кирилиця з додатками"
-
-#~ msgid "Unasigned Bit 8"
-#~ msgstr "Непризначений біт 8"
-
-#~ msgid "Bad Lookahead Class Number"
-#~ msgstr "Помилковий номер класу пошуку з випередженням"
-
-#~ msgid "Bad Backtrack Class Number"
-#~ msgstr "Помилковий номер класу зворотного пошуку"
-
-#~ msgid ""
-#~ "There are no class numbers listed to be matched. There must be at least "
-#~ "one."
-#~ msgstr ""
-#~ "Не вказано списку номерів класів для встановлення відповідності. Слід "
-#~ "вказати принаймні один список."
-
-#~ msgid ""
-#~ "There are only %d classes in this class set, yet you are trying to use %d."
-#~ msgstr ""
-#~ "У цьому наборі класів є лише %d класів, але ви намагаєтеся скористатися "
-#~ "класом %d."
-
-#~ msgid "The list of class numbers should only contain digits and spaces"
-#~ msgstr "У списку номерів класів можуть міститися лише цифри і пробіли"
-
-#~ msgid "Bad Match Class Number"
-#~ msgstr "Помилковий номер класу відповідності"
-
-#~ msgid "E"
-#~ msgstr "Р"
-
-#~ msgid "Could not find the zlib library which is needed to understand WOFF"
-#~ msgstr "Не вдалося виявити бібліотеку zlib, яка потрібна для обробки WOFF"
-
-#~ msgid "Kharosthi"
-#~ msgstr "Карошті"
-
-#~ msgid ""
-#~ "Hmm. This system has a libspiro, but it doesn't contain the entry points\n"
-#~ "fontforge needs. Must be something else.\n"
-#~ msgstr ""
-#~ "У цій системі є libspiro, але у ньому немає точок входу, потрібних "
-#~ "fontforge.\n"
-#~ "Має бути щось інше.\n"
-
-#~ msgid "Bad SFD Version number %.1f"
-#~ msgstr "Помилковий номер версії SFD, %.1f"
-
-#~ msgid ""
-#~ "Warning: This version of FontForge does not contain extended type3/svg "
-#~ "support\n"
-#~ " needed for this font.\n"
-#~ "Reconfigure with --with-type3.\n"
-#~ msgstr ""
-#~ "Попередження: у цій версії FontForge не передбачено розширеної підтримки "
-#~ "type3/svg,\n"
-#~ " потрібної для роботи з цим шрифтом.\n"
-#~ "Вам слід використати параметр налаштування збирання --with-type3.\n"
-
-#~ msgid ""
-#~ "This version of FontForge does not support the imagemask operator.\n"
-#~ "For support configure --with-multilayer.\n"
-#~ msgstr ""
-#~ "У цій версії FontForge не передбачено підтримки оператора imagemask.\n"
-#~ "Підтримку можна увімкнути за допомогою параметра скрипту configure --with-"
-#~ "multilayer.\n"
-
-#~ msgid ""
-#~ "Use the pango library for text (if available)\n"
-#~ "This makes for prettier and handles complex scripts.\n"
-#~ "But it can slow things down on older machines.\n"
-#~ "This applies to any windows created AFTER this is set.\n"
-#~ "Already existing windows will continue as they are."
-#~ msgstr ""
-#~ "Використовувати для показу тексту бібліотеку pango (у разі доступності)\n"
-#~ "Це зробить показ і обробку складних писемностей кращою.\n"
-#~ "Але використання бібліотеки може уповільнити роботу на застарілих\n"
-#~ "комп’ютерах. Все це стосується вікон програми, створених ПІСЛЯ\n"
-#~ "встановлення цього параметра. Вже створені вікна не змінюватимуться."
-
-#~ msgid "UsePangoDrawing"
-#~ msgstr "Використовувати можливості Pango"
-
-#~ msgid "Resets the kerning offset to what it was originally"
-#~ msgstr "Відновлює початкове значення відступу кернінґу"
-
-#~ msgid ""
-#~ "A comma separated list of font family names used to display small example "
-#~ "images of glyphs over the user designed glyphs\n"
-#~ "for characters in the unicode math region which are specified to be in a "
-#~ "monospace font"
-#~ msgstr ""
-#~ "Відокремлений комами список назв гарнітур шрифтів, які буде використано "
-#~ "для показу малих зразкових зображень гліфів над створеними користувачем "
-#~ "гліфами\n"
-#~ "для символів у діапазоні математичних символів Unicode, які вказано для "
-#~ "включення до моноширинного шрифту"
-
-#~ msgid "Monospace Family"
-#~ msgstr "Моноширинна гарнітура"
-
-#~ msgid ""
-#~ "A comma separated list of font family names used to display small example "
-#~ "images of glyphs over the user designed glyphs\n"
-#~ "for characters in the unicode math region which are specified to be in a "
-#~ "sans-serif font"
-#~ msgstr ""
-#~ "Відокремлений комами список назв гарнітур шрифтів, які буде використано "
-#~ "для показу малих зразкових зображень гліфів над створеними користувачем "
-#~ "гліфами\n"
-#~ "для символів у діапазоні математичних символів Unicode, які вказано для "
-#~ "включення до рубленого (без засічок) шрифту"
-
-#~ msgid "Sans-Serif Family"
-#~ msgstr "Рублена гарнітура"
-
-#~ msgid ""
-#~ "A comma separated list of font family names used to display small example "
-#~ "images of glyphs over the user designed glyphs\n"
-#~ "for characters in the unicode math region which are specified to be in a "
-#~ "double struck font"
-#~ msgstr ""
-#~ "Відокремлений комами список назв гарнітур шрифтів, які буде використано "
-#~ "для показу малих зразкових зображень гліфів над створеними користувачем "
-#~ "гліфами\n"
-#~ "для символів у діапазоні математичних символів Unicode, які вказано для "
-#~ "включення до шрифту з подвійним штрихуванням"
-
-#~ msgid "Double Struck Family"
-#~ msgstr "Гарнітура подвійного штрихування"
-
-#~ msgid ""
-#~ "A comma separated list of font family names used to display small example "
-#~ "images of glyphs over the user designed glyphs\n"
-#~ "for characters in the unicode math region which are specified to be in a "
-#~ "fractur font"
-#~ msgstr ""
-#~ "Відокремлений комами список назв гарнітур шрифтів, які буде використано "
-#~ "для показу малих зразкових зображень гліфів над створеними користувачем "
-#~ "гліфами\n"
-#~ "для символів у діапазоні математичних символів Unicode, які вказано для "
-#~ "включення до готичного шрифту"
-
-#~ msgid "Fraktur Family"
-#~ msgstr "Фрактурна гарнітура"
-
-#~ msgid ""
-#~ "A comma separated list of font family names used to display small example "
-#~ "images of glyphs over the user designed glyphs\n"
-#~ "for characters in the unicode math region which are specified to be in a "
-#~ "script font"
-#~ msgstr ""
-#~ "Відокремлений комами список назв гарнітур шрифтів, які буде використано "
-#~ "для показу малих зразкових зображень гліфів над створеними користувачем "
-#~ "гліфами\n"
-#~ "для символів у діапазоні математичних символів Unicode, які вказано для "
-#~ "включення до рукописного шрифту"
-
-#~ msgid "Script Family"
-#~ msgstr "Рукописна гарнітура"
-
-#~ msgid ""
-#~ "A comma separated list of font family names used to display small example "
-#~ "images of glyphs over the user designed glyphs\n"
-#~ "for characters in the unicode math region which are specified to be in a "
-#~ "serif font"
-#~ msgstr ""
-#~ "Відокремлений комами список назв гарнітур шрифтів, які буде використано "
-#~ "для показу малих зразкових зображень гліфів над створеними користувачем "
-#~ "гліфами\n"
-#~ "для символів у діапазоні математичних символів Unicode, які вказано для "
-#~ "включення до шрифту з засічками"
-
-#~ msgid "Serif Family"
-#~ msgstr "Гарнітура з засічками"
-
-#~ msgid ""
-#~ "Mark glyphs may not be specified with this type of lookup on line %d of %s"
-#~ msgstr ""
-#~ "Гліфи позначок не можна вказувати за допомогою цього типу фільтрування, "
-#~ "рядок %d %s"
-
-#~ msgid ""
-#~ "Mark classes must either be exactly the same or contain no common glyphs\n"
-#~ " But the class on line %d of %s contains a match."
-#~ msgstr ""
-#~ "Класи позначок мають бути або тотожними, або не містити спільних гліфів.\n"
-#~ " У класі рядка %d %s знайдено спільний гліф."
-
-#~ msgid ""
-#~ "Mark to base anchor statements may only have one anchor on line %d of %s"
-#~ msgstr ""
-#~ "Позначка команд основної прив’язки може мати лише одну прив’язку, рядок "
-#~ "%d %s"
-
-#~ msgid ""
-#~ "A mark glyph (or class of marks) must be specified here on line %d of %s"
-#~ msgstr "Гліф позначки (або клас позначок) має бути вказано у рядку %d %s"
-
-#~ msgid "Expected glyph name or class in mark statement on line %d of %s"
-#~ msgstr ""
-#~ "Не вистачає назви гліфа або класу у інструкції позначки, рядок %d %s"
-
-#~ msgid ""
-#~ "This file uses both the v1.6 and the v1.8 formats for mark classes on "
-#~ "line %d of %s"
-#~ msgstr ""
-#~ "У цьому файлі використано формати версій 1.6 і 1.8 для класів позначок "
-#~ "одночасно, рядок %d %s"
-
-#~ msgid "Subs"
-#~ msgstr "Підстановки"
-
-#~ msgid "Pair"
-#~ msgstr "Пара"
-
-#~ msgid ""
-#~ "The size at which the current glyph is rasterized.\n"
-#~ "For small pixelsize you may want to use the magnification\n"
-#~ "factor below to get a clearer view."
-#~ msgstr ""
-#~ "Розмір, до якого буде виконано растеризацію поточного гліфа.\n"
-#~ "Якщо розмір пікселів незначний, варто скористатися коефіцієнтом\n"
-#~ "збільшення (нижче) для покращення якості зображення."
-
-#~ msgid "OCR"
-#~ msgstr "ОРС"
-
-#~ msgid ""
-#~ "Please make sure you have saved the font before you close the server. "
-#~ "Closing the server will force all clients which might be connected to it "
-#~ "to also disconnect. Really close the local server"
-#~ msgstr ""
-#~ "Будь ласка, перш ніж завершувати роботу сервера, збережіть дані вашого "
-#~ "шрифту. Завершення роботи сервера призведе до від’єднання всіх з’єднаних "
-#~ "з ним клієнтів. Завершити роботу локального сервера?"
-
-#~ msgid "Close Server"
-#~ msgstr "Закрити сервер"
-
-#~ msgid ""
-#~ "A browser is probably running in the native Mac windowing system. You "
-#~ "must leave the X environment to view it. Try Cmd-Opt-A"
-#~ msgstr ""
-#~ "Ймовірно, переглядач запущено у рідній системі керування вікнами Mac. Щоб "
-#~ "побачити його, слід вийти з середовища X. Спробуйте натиснути комбінацію "
-#~ "клавіш Cmd-Opt-A."
-
-#~ msgid "Leave X"
-#~ msgstr "Вийти з X"
-
-#~ msgid "Missing Glyph Name"
-#~ msgstr "Не вказано назви гліфа"
-
-#~ msgid ""
-#~ "As FontForge creates windows, it loads images for its menus\n"
-#~ "from files in a standard directory. You may change this to\n"
-#~ "point to a different directory to load a different icon set.\n"
-#~ "(If you want no icons at all, change to an empty directory).\n"
-#~ "This may not effect windows of a type that is already initialized,\n"
-#~ "restarting FontForge will fix that."
-#~ msgstr ""
-#~ "Під час створення вікон FontForge програма завантажує\n"
-#~ "зображення для своїх меню з файлів у стандартному каталозі.\n"
-#~ "Ви можете змінити каталог на інший, щоб програма завантажувала\n"
-#~ "інший набір піктограм. (Якщо піктограми вам не потрібні,\n"
-#~ "вкажіть порожній каталог.) Зміна каталогу не зможе вплинути на\n"
-#~ "всі вікна, які вже було ініціалізовано. Піктограми буде\n"
-#~ "змінено після перезапуску FontForge."
-
-#~ msgid "PixmapDir"
-#~ msgstr "Каталог растрових зображень"
-
-#~ msgid ""
-#~ "Windows has decided that fonts with 'name' tables\n"
-#~ "bigger than 5K are insecure and will refuse to load\n"
-#~ "them. Don't ask me why they believe this.\n"
-#~ "This font will have a 'name' table bigger than that."
-#~ msgstr ""
-#~ "Windows вважає, що шрифти з таблицями «name» розміром,\n"
-#~ "що перевищує 5 кБ є небезпечними, і відмовляється\n"
-#~ "їх завантажувати. Не питайте мене, чому це так.\n"
-#~ "У цьому шрифті таблиця «name» має розмір, що перевищує\n"
-#~ "5 кБ."
-
-#~ msgid "Name table too big for windows"
-#~ msgstr "Таблиця назв є занадто великою для windows"
-
-#~ msgid "EUC-GB12345"
-#~ msgstr "EUC-GB12345"
-
-#~ msgid ""
-#~ "Press in this square with a wacom pressure sensitive tool\n"
-#~ "to set the pressure end-point"
-#~ msgstr ""
-#~ "Натисніть цей квадратик стилусом wacom, щоб встановити\n"
-#~ "контрольну точку сенсорного пристрою."
-
-#~ msgid "_Pressure:"
-#~ msgstr "_Натиск:"
-
-#~ msgid "Near (%f,%f) @t=%g"
-#~ msgstr "Поблизу (%f,%f) @t=%g"
-
-#~ msgid ""
-#~ "Glyph %.40s contains an overlapped region where two contours with "
-#~ "opposite orientations intersect. This will not be removed. In many cases "
-#~ "doing Element->Correct Direction before Remove Overlap will improve "
-#~ "matters."
-#~ msgstr ""
-#~ "У гліфі %.40s міститься область перекриття, де перетинаються два контури "
-#~ "з протилежними напрямками. Такі області слід усувати. Здебільшого, "
-#~ "достатньо скористатися пунктом меню «Елемент -> Виправити напрямок» до "
-#~ "використання дії «Вилучити перекриття»."
-
-#~ msgid ""
-#~ "The glyph named %.30s is mapped to U+%04X.\n"
-#~ "But its name indicates it should be mapped to U+%04X.\n"
-#~ "Would you like to retain the name in spite of this?"
-#~ msgstr ""
-#~ "Гліф з назвою %.30s відображено до U+%04X.\n"
-#~ "Але згідно до його назви, гліф слід відобразити до U+%04X.\n"
-#~ "Бажаєте зберегти назву попри це?"
-
-#~ msgid ""
-#~ "The names 'alefmaksurainitialarabic' and 'alefmaksuramedialarabic' in the "
-#~ "Adobe Glyph List disagree with Unicode.  The use of these glyph names is "
-#~ "therefore discouraged.\n"
-#~ "Would you like to retain the name in spite of this?"
-#~ msgstr ""
-#~ "Назви «alefmaksurainitialarabic» та «alefmaksuramedialarabic» у списку "
-#~ "гліфів Adobe не узгоджуються з Unicode. Через це, такими назвами не слід "
-#~ "користуватися.\n"
-#~ "Хочете зберегти назву попри це?"
-
-#~ msgid ""
-#~ "The glyph named %.30s is not mapped to any unicode code point. But its "
-#~ "name indicates it should be mapped to U+%04X.\n"
-#~ "Would you like to retain the name in spite of this?"
-#~ msgstr ""
-#~ "Гліф з назвою %.30s не відображено до жодного з діапазонів Unicode.\n"
-#~ "Але згідно до його назви, гліф слід відобразити до U+%04X.\n"
-#~ "Бажаєте зберегти назву попри це?"
-
-#~ msgid ""
-#~ "The glyph named %.30s is not mapped to any unicode code point.\n"
-#~ "But its name indicates it should be mapped to U+%04X.\n"
-#~ msgstr ""
-#~ "Гліф з назвою %.30s не відображено на жодну з кодових точок Unicode.\n"
-#~ "Але згідно до його назви, гліф слід відобразити до U+%04X.\n"
-
-#~ msgid "No"
-#~ msgstr "Ні"
-
-#~ msgid ""
-#~ "Warning: Glyph %d is named %s which should mean it is mapped to\n"
-#~ " Unicode U+%04X, but Glyph %d already has that encoding.\n"
-#~ msgstr ""
-#~ "Попередження: гліф %d має назву %s, що означає, що гліф має бути "
-#~ "відображено на\n"
-#~ " Unicode U+%04X, але там уже є гліф %d з відповідним кодуванням.\n"
-
-#~ msgid ""
-#~ "Windows has decided that fonts with 'name' tables bigger than 5K are\n"
-#~ "insecure and will refuse to load them. Don't ask me why they believe "
-#~ "this.\n"
-#~ "This font has a name table which is %d bytes and is bigger than this "
-#~ "limit.\n"
-#~ msgstr ""
-#~ "Windows вважає, що шрифти з таблицями «name» розміром,\n"
-#~ "що перевищує 5 кБ є небезпечними, і відмовляється\n"
-#~ "їх завантажувати. Не питайте мене, чому це так.\n"
-#~ "У цьому шрифті таблиця «name» має розмір %d байтів,\n"
-#~ "що перевищує це обмеження.\n"
-
-#~ msgid "makePrintable(): unable to alloc memory"
-#~ msgstr "makePrintable(): не вдалося отримати місце у пам’яті"
-
-#~ msgid "TeX Extension List"
-#~ msgstr "Список розширень TeX"
-
-#~ msgid "TeX Glyphlist"
-#~ msgstr "Список гліфів TeX"
-
-#~ msgid "The preview image we just created can no longer be opened."
-#~ msgstr ""
-#~ "Файл зображення попереднього перегляду, який було щойно створено, вже не "
-#~ "можна відкрити."
-
-#~ msgid "Image file vanished"
-#~ msgstr "Файл зображення зник"
-
-#~ msgid "This version of FontForge expects freetype 2.3.4 or less."
-#~ msgstr ""
-#~ "Для роботи у цій версії FontForge слід встановити freetype 2.3.4 або "
-#~ "старішу версію."
-
-#~ msgid "Please name the %dth encoding in this file"
-#~ msgstr "Вкажіть назву %d-го кодування цього файла"
-
-#~ msgid "Third"
-#~ msgstr "Третє"
-
-#~ msgid "Second"
-#~ msgstr "Друге"
-
-#~ msgid ""
-#~ "When inputting a name in the Save or SaveAs dialogs, FontForge can ensure "
-#~ "that the correct filename extension (SFD or SFDIR) is always used. This "
-#~ "prevents you from accidentally naming your source file with a binary "
-#~ "extension (such as .otf), out of habit."
-#~ msgstr ""
-#~ "Під час введення назв файлів у діалогових вікнах збереження FontForge "
-#~ "може забезпечити використання належного суфікса назви файла (SFD або "
-#~ "SFDIR). Таким чином, можна запобігти випадковому використанню у назвах "
-#~ "суфіксів бінарних форматів (зокрема .otf)."
-
-#~ msgid "EnsureCorrectSaveExtension"
-#~ msgstr "Належний суфікс під час збереження"
-
-#~ msgid "Stop Webfont server"
-#~ msgstr "Зупинити роботу сервера Webfont"
-
-#~ msgid "Start Webfont server"
-#~ msgstr "Запустити сервер Webfont"
-
-#~ msgid ""
-#~ "If for some reason the font is deemed inappropriate\n"
-#~ "for a work environment."
-#~ msgstr ""
-#~ "Якщо з певних причин шрифт не рекомендовано для\n"
-#~ "робочого середовища."
-
-#~ msgid "Not Safe for Work"
-#~ msgstr "Небезпечний для роботи"
-
-#~ msgid ""
-#~ "If you have already created a preview image of the font\n"
-#~ "then provide the pathspec here."
-#~ msgstr ""
-#~ "Якщо ви вже створили зображення попереднього перегляду шрифту,\n"
-#~ "вкажіть тут адресу цього зображення."
-
-#~ msgid "No image will be uploaded."
-#~ msgstr "Жодних зображень вивантажено не буде."
-
-#~ msgid "No Preview"
-#~ msgstr "Без перегляду"
-
-#~ msgid ""
-#~ "FontForge will generate a sample image for you\n"
-#~ "before uploading."
-#~ msgstr ""
-#~ "FontForge створить зображення зі зразком\n"
-#~ "перед вивантаженням."
-
-#~ msgid "Generated Image"
-#~ msgstr "Створене зображення"
-
-#~ msgid "An image of the font in use"
-#~ msgstr "Файл зображення використаного шрифту"
-
-#~ msgid "Preview:"
-#~ msgstr "Перегляд:"
-
-#~ msgid "Upload FONTLOG"
-#~ msgstr "Вивантажити FONTLOG"
-
-#~ msgid "Upload the license (as found in the list of truetype names)"
-#~ msgstr "Вивантажити ліцензію (яку буде взято зі списку назв truetype)"
-
-#~ msgid "Upload License"
-#~ msgstr "Вивантажити текст ліцензії"
-
-#~ msgid "Public Domain"
-#~ msgstr "Public Domain"
-
-#~ msgid ""
-#~ "The SIL Open Font License\n"
-#~ "Please see http://scripts.sil.org/OFL"
-#~ msgstr ""
-#~ "SIL Open Font License\n"
-#~ "Див. http://scripts.sil.org/OFL"
-
-#~ msgid "SIL"
-#~ msgstr "SIL"
-
-#~ msgid "License:"
-#~ msgstr "Ліцензія:"
-
-#~ msgid "A description of the font"
-#~ msgstr "Опис шрифту"
-
-#~ msgid "Description:"
-#~ msgstr "Опис:"
-
-#~ msgid ""
-#~ "A comma separated list of keywords that describe\n"
-#~ "the font to help others search for it.\n"
-#~ "You may use whatever keyword tags you desire.\n"
-#~ "Suggestions: serif, sans_serif, bold, italic, oblique,\n"
-#~ "extended, compressed, thin, demibold, black, outline,\n"
-#~ "regular, display, etc."
-#~ msgstr ""
-#~ "Список ключових слів, відокремлених комами,\n"
-#~ "який описуватиме шрифт і полегшуватиме його пошук.\n"
-#~ "Ви можете вказати будь-які ключові слова.\n"
-#~ "Пропозиції: serif, sans_serif, bold, italic, oblique,\n"
-#~ "extended, compressed, thin, demibold, black, outline,\n"
-#~ "regular, display тощо."
-
-#~ msgid ""
-#~ "A comma separated list of keywords that describe\n"
-#~ "the font to help others search for it.\n"
-#~ "You may use whatever keyword tags you desire.\n"
-#~ "Suggestions: serif, sans_serif, bold, italic, oblique,\n"
-#~ "extended, compressed, thin, demibold, black, outline, regular,\n"
-#~ "display, etc."
-#~ msgstr ""
-#~ "Список ключових слів, відокремлених комами,\n"
-#~ "який описуватиме шрифт і полегшуватиме його пошук.\n"
-#~ "Ви можете вказати будь-які ключові слова.\n"
-#~ "Пропозиції: serif, sans_serif, bold, italic, oblique,\n"
-#~ "extended, compressed, thin, demibold, black, outline, regular,\n"
-#~ "display тощо."
-
-#~ msgid "Keyword Tags:"
-#~ msgstr "Ключові слова:"
-
-#~ msgid ""
-#~ "Other artists involved in the design of this font.\n"
-#~ "Collaborators, etc."
-#~ msgstr ""
-#~ "Інші розробники дизайну цього шрифту.\n"
-#~ "Учасники розробки тощо."
-
-#~ msgid "Artists:"
-#~ msgstr "Художники:"
-
-#~ msgid "Font name to display on OFLib"
-#~ msgstr "Назва шрифту, яку буде показано на сайті OFLib"
-
-#~ msgid "OFLib Name:"
-#~ msgstr "Назва OFLib:"
-
-#~ msgid ""
-#~ "FontForge will remember your username/password\n"
-#~ "by storing them as plain text (insecurely) in your preference file"
-#~ msgstr ""
-#~ "FontForge запам’ятає ваше ім’я користувача і пароль.\n"
-#~ "Ці дані буде збережено у форматі звичайного тексту у файлі налаштувань"
-
-#~ msgid "Remember Me"
-#~ msgstr "Запам’ятати мене"
-
-#~ msgid "Password on OFLib"
-#~ msgstr "Пароль до OFLib"
-
-#~ msgid "Password:"
-#~ msgstr "Пароль:"
-
-#~ msgid "Username on OFLib"
-#~ msgstr "Ім’я користувача OFLib"
-
-#~ msgid "Username:"
-#~ msgstr "Користувач:"
-
-#~ msgid "Register"
-#~ msgstr "Зареєструватись"
-
-#~ msgid "Open Font Library"
-#~ msgstr "Open Font Library"
-
-#~ msgid ""
-#~ "Once you have a final version of your font\n"
-#~ "and if your font is licensed under the Open\n"
-#~ "Font License, then you might consider uploading\n"
-#~ "it to the Open Font Library. This is a website\n"
-#~ "of Free/Libre fonts.\n"
-#~ "\n"
-#~ "You must have previously registered with OFLib\n"
-#~ "and have a valid username/password there.\n"
-#~ "\n"
-#~ "Obviously you must be connected to the internet\n"
-#~ "for this to work."
-#~ msgstr ""
-#~ "Щойно роботу над шрифтом буде завершено, якщо\n"
-#~ "умови ліцензування описано Open Font License,\n"
-#~ "ви можете вивантажити шрифт до бібліотеки\n"
-#~ "вільних шрифтів, Open Font Library. У цій\n"
-#~ "бібліотеці зберігаються лише вільні шрифти.\n"
-#~ "\n"
-#~ "Для початку, вам слід зареєструватися на\n"
-#~ "OFLib, щоб у вас були дані щодо назви\n"
-#~ "і пароля до вашого облікового запису.\n"
-#~ "\n"
-#~ "Звичайно ж, для вивантаження даних вам також\n"
-#~ "знадобиться придатне до використання з’єднання\n"
-#~ "з інтернетом."
-
-#~ msgid "Upload to the"
-#~ msgstr "Вивантажити на"
-
-#~ msgid "Browse for a preview image"
-#~ msgstr "Вибрати зображення перегляду"
-
-#~ msgid "Missing OFLib keywords"
-#~ msgstr "Не вистачає ключових слів OFLib"
-
-#~ msgid "Missing OFLib name"
-#~ msgstr "Не вистачає назви OFLib"
-
-#~ msgid "Missing OFLib description"
-#~ msgstr "Не вистачає опису OFLib"
-
-#~ msgid "Missing OFLib username"
-#~ msgstr "Не вистачає імені користувача OFLib"
-
-#~ msgid "Missing OFLib password"
-#~ msgstr "Не вистачає пароля OFLib"
-
-#~ msgid "Bad OFLib upload"
-#~ msgstr "Помилкове вивантаження OFLib"
-
-#~ msgid "Output Font Log"
-#~ msgstr "Створити журнал шрифту"
-
-#~ msgid "Checking server for additional fonts"
-#~ msgstr "Пошук додаткових шрифтів на сервері"
-
-#~ msgid "Checking for new fonts"
-#~ msgstr "Пошук нових шрифтів"
-
-#~ msgid "Done"
-#~ msgstr "Завершити"
-
-#~ msgid "Preview"
-#~ msgstr "Переглянути"
-
-#~ msgid "Automatically download preview after selecting a font (be patient)"
-#~ msgstr ""
-#~ "Автоматично звантажувати зображення попереднього перегляду після вибору "
-#~ "шрифту (терпіння!)"
-
-#~ msgid "Fonts on http://openfontlibrary.org/"
-#~ msgstr "Шрифти з http://openfontlibrary.org/"
-
-#~ msgid "Search:"
-#~ msgstr "Шукати:"
-
-#~ msgid "Reverse"
-#~ msgstr "У зворотному порядку"
-
-#~ msgid "Date"
-#~ msgstr "датою"
-
-#~ msgid "Sort by:"
-#~ msgstr "Впорядкувати за:"
-
-#~ msgid "Browse the Open Font Library"
-#~ msgstr "Перегляд Open Font Library"
-
-#~ msgid "Tag(s)"
-#~ msgstr "Мітки"
-
-#~ msgid "Show All"
-#~ msgstr "Показувати всі"
-
-#~ msgid "PM"
-#~ msgstr "ПО"
-
-#~ msgid "AM"
-#~ msgstr "ДО"
-
-#~ msgid "Noon"
-#~ msgstr "Полудень"
-
-#~ msgid "Midnight"
-#~ msgstr "Північ"
-
-#~ msgid "December"
-#~ msgstr "грудень"
-
-#~ msgid "November"
-#~ msgstr "листопад"
-
-#~ msgid "October"
-#~ msgstr "жовтень"
-
-#~ msgid "September"
-#~ msgstr "вересень"
-
-#~ msgid "August"
-#~ msgstr "серпень"
-
-#~ msgid "July"
-#~ msgstr "липень"
-
-#~ msgid "June"
-#~ msgstr "червень"
-
-#~ msgid "May"
-#~ msgstr "травень"
-
-#~ msgid "April"
-#~ msgstr "квітень"
-
-#~ msgid "March"
-#~ msgstr "березень"
-
-#~ msgid "February"
-#~ msgstr "лютий"
-
-#~ msgid "January"
-#~ msgstr "січень"
-
-#~ msgid "_Fit to em"
-#~ msgstr "_Відповідно до em"
-
-#~ msgid "Browse web"
-#~ msgstr "Інтернет-бібліотеки"
-
-#~ msgid "Open Font Library..."
-#~ msgstr "Open Font Library…"
-
-#~ msgid "OFL website"
-#~ msgstr "Веб-сайт OFL"
-
-#~ msgid ""
-#~ "The SIL Open Font License (OFL) is designed for free/libre/open font "
-#~ "projects.\n"
-#~ "Most other FLOSS licenses are designed for conventional software and are "
-#~ "problematic for fonts.\n"
-#~ "The OFL is a community-approved license and is well-suited for releasing "
-#~ "fonts to be freely \n"
-#~ "used, studied, copied, modified, embedded, merged and distributed while "
-#~ "maintaining artistic integrity.\n"
-#~ "You are encouraged you to use it if you can.\n"
-#~ "\n"
-#~ "For more details about the OFL - and the corresponding FAQ - see http://"
-#~ "scripts.sil.org/OFL \n"
-#~ "\n"
-#~ "Simply press this button to add the OFL metadata to your font.\n"
-#~ "\n"
-#~ msgstr ""
-#~ "Open Font License (OFL) SIL розроблено для проектів зі створення вільних "
-#~ "шрифтів.\n"
-#~ "Більшість ліцензійних угод FLOSS розроблено для відповідного програмного "
-#~ "забезпечення, вони непридатні для шрифтів.\n"
-#~ "OFL є узгодженими спільнотою ліцензійними умовами, які добре пасують до "
-#~ "випусків шрифтів, які можна \n"
-#~ "вільно використовувати, вивчати, копіювати, змінювати, об’єднувати та "
-#~ "поширювати без порушення художньої цілісності.\n"
-#~ "Ми радимо вам скористатися саме цими умовами.\n"
-#~ "\n"
-#~ "Докладніші відомості та відповідний список питань з відповідями можна "
-#~ "знайти на http://scripts.sil.org/OFL \n"
-#~ "\n"
-#~ "Просто натисніть цю кнопку, щоб додати метадані OFL до вашого шрифту.\n"
-#~ "\n"
-
-#~ msgid ""
-#~ "You should read the OFL and its FAQ \n"
-#~ "at http://scripts.sil.org/OFL.\n"
-#~ "If you are not very familiar with English,\n"
-#~ "please check if there is a translation of the \n"
-#~ "FAQ or an unofficial translation of the license \n"
-#~ "in your mother tongue or preferred language. \n"
-#~ "\n"
-#~ "Please fill in the copyright notice in the license\n"
-#~ "header along with any Reserved Font Name(s).\n"
-#~ "If you are branching from an existing font make sure\n"
-#~ "you have the right to do so and remember to add your\n"
-#~ "additional notice with any Reserved Font Name(s)."
-#~ msgstr ""
-#~ "Вам слід прочитати OFL і відповіді на питання \n"
-#~ "на сторінці http://scripts.sil.org/OFL.\n"
-#~ "Якщо ви знаєте англійську недостатньо добре,\n"
-#~ "спробуйте знайти переклад відповідей на питання \n"
-#~ "або неофіційний переклад ліцензії вашою мовою \n"
-#~ "або бажаною вам мовою. \n"
-#~ "\n"
-#~ "Будь ласка, заповніть повідомлення щодо ліцензії\n"
-#~ "у заголовку ліцензії і вкажіть будь-які\n"
-#~ "зарезервовані назви шрифтів. Якщо ви створюєте\n"
-#~ "варіант вже створеного шрифту, переконайтеся, що ви\n"
-#~ "маєте право це робити, і впишіть додаткове\n"
-#~ "повідомлення щодо всіх зарезервованих назв шрифтів."
-
-#~ msgid "Please read the OFL"
-#~ msgstr "Будь ласка, ознайомтеся з OFL"
-
-#~ msgid ""
-#~ "I cannot find an unused anchor class\n"
-#~ "to assign a new point to. If you\n"
-#~ "wish a new anchor point you must\n"
-#~ "define a new anchor class with\n"
-#~ "Element->Font Info"
-#~ msgstr ""
-#~ "Не вдалося знайти невикористаний клас\n"
-#~ "фіксаторів для призначення нової точки.\n"
-#~ "Якщо вам потрібен новий фіксатор,\n"
-#~ "вам слід визначити новий клас фіксаторів\n"
-#~ "за допомогою пункту меню «Елемент->Відомості щодо шрифту»"
-
-#~ msgid "Make a new anchor class"
-#~ msgstr "Створити клас прив’язок"
-
-#~ msgid ""
-#~ "The directory on your local system in which FontForge will search for "
-#~ "help\n"
-#~ "files.  If a file is not found there, then FontForge will look for it on "
-#~ "the net."
-#~ msgstr ""
-#~ "Каталог у вашій локальній системі, у якому FontForge шукатиме файли "
-#~ "довідки.\n"
-#~ "Якщо файл не буде там знайдено, FontForge шукатиме цей файл у інтернеті."
-
-#~ msgid "HelpDir"
-#~ msgstr "Каталог довідки"
-
-#~ msgid ""
-#~ "When FontForge starts up, it loads display related resources from a\n"
-#~ "property on the screen. Sometimes it is useful to be able to store\n"
-#~ "these resources in a file. These resources are only read at start\n"
-#~ "up, so changing this has no effect until the next time you start\n"
-#~ "FontForge."
-#~ msgstr ""
-#~ "Під час запуску FontForge завантажує пов’язані з показом ресурси з\n"
-#~ "властивості на екран. Іноді ресурси корисно зберігати у файлі. Ці\n"
-#~ "ресурси читаються лише під час запуску, отже зміна не матиме\n"
-#~ "значення до наступного запуску FontForge."
-
-#~ msgid "Downloading file..."
-#~ msgstr "Звантаження файла…"
-
-#~ msgid "Requesting file..."
-#~ msgstr "Запит щодо файла…"
-
-#~ msgid "The preview file we just created can no longer be opened."
-#~ msgstr ""
-#~ "Файл попереднього перегляду, який було щойно створено, вже не можна "
-#~ "відкрити."
-
-#~ msgid "Preview file vanished"
-#~ msgstr "Файл попереднього перегляду зник"
-
-#~ msgid "Failed to find an upload id."
-#~ msgstr "Не вдалося визначити ідентифікатор вивантаження."
-
-#~ msgid "The font file we just created can no longer be opened."
-#~ msgstr "Файл шрифту, який було щойно створено, вже не можна відкрити."
-
-#~ msgid "Font file vanished"
-#~ msgstr "Файл шрифту зник"
-
-#~ msgid "Could not read state."
-#~ msgstr "Не вдалося прочитати стан."
-
-#~ msgid "Could not read state"
-#~ msgstr "Не вдалося прочитати стан"
-
-#~ msgid "Could not log in."
-#~ msgstr "Не вдалося увійти до системи."
-
-#~ msgid "Login failed"
-#~ msgstr "Невдала спроба увійти"
-
-#~ msgid "Looking for openfontlibrary.org"
-#~ msgstr "Пошук openfontlibrary.org"
-
-#~ msgid "Uploading to Open Font Library"
-#~ msgstr "Вивантаження до Open Font Library"
-
-#~ msgid "Font Upload..."
-#~ msgstr "Вивантажити шрифт…"
-
-#~ msgid "Transmitting Meta Data..."
-#~ msgstr "Передавання метаданих…"
-
-#~ msgid "Unexpected server return code=%d"
-#~ msgstr "Неочікувана відповідь сервера, код=%d"
-
-#~ msgid "Unexpected server return"
-#~ msgstr "Неочікувана відповідь сервера"
-
-#~ msgid "Server error code=%d"
-#~ msgstr "Помилка сервера код=%d"
-
-#~ msgid "Error from openfontlibrary"
-#~ msgstr "Помилка openfontlibrary"
-
-#~ msgid "Transmitting %s..."
-#~ msgstr "Передавання %s…"
-
-#~ msgid "The %s file we just created can no longer be opened."
-#~ msgstr "Файл %s, який було щойно створено, вже не можна відкрити."
-
-#~ msgid "File vanished"
-#~ msgstr "Файл зник"
-
-#~ msgid "Awaiting response"
-#~ msgstr "Очікування на відповідь"
-
-#~ msgid "Failed to find default for \"%s->shell->open->command\"\n"
-#~ msgstr ""
-#~ "Не вдалося знайти типового значення для «%s->shell->open->command»\n"
-
-#~ msgid "Failed to find \"%s->shell->open\"\n"
-#~ msgstr "Не вдалося знайти «%s->shell->open»\n"
-
-#~ msgid "Failed to find \"%s->shell\"\n"
-#~ msgstr "Не вдалося знайти «%s->shell»\n"
-
-#~ msgid "Failed to find program \"%s\"\n"
-#~ msgstr "Не вдалося знайти програму «%s»\n"
-
-#~ msgid ""
-#~ "Failed to default value of exten \"%s\".\n"
-#~ " Error=%ld"
-#~ msgstr ""
-#~ "Не вдалося встановити типове значення розширення «%s».\n"
-#~ " Помилка=%ld"
-
-#~ msgid "Web Open Font"
-#~ msgstr "Відкритий інтернет-шрифт"
-
-#~ msgid "Collaboration"
-#~ msgstr "Спільна робота"
-
-#~ msgid ""
-#~ "The number of milliseconds that are allowed to pass between sending an "
-#~ "update to the server and hearing it sent back as a message to all "
-#~ "clients. The FontForge user interface may be unresponsive during this "
-#~ "time. A change requires a restart of FontForge. (default 2000 which is 2 "
-#~ "seconds)"
-#~ msgstr ""
-#~ "Кількість мілісекунд, яка може минути між надсиланням оновлення на сервер "
-#~ "та повідомлення про те, що дані надіслано усім клієнтам. Протягом цього "
-#~ "часу інтерфейс FontForge може бути заморожено. Для набуття чинності "
-#~ "зміненим значенням слід перезапустити FontForge. (Типове значення — 2000 "
-#~ "або 2 секунди)"
-
-#~ msgid "RoundTripMessageMaxTime"
-#~ msgstr "Макс. час розсилання повідомлення"
-
-#~ msgid ""
-#~ "The number of milliseconds to wait for a connection to the collaboration "
-#~ "server to happen. FontForge may be unresponsive during this session "
-#~ "connection time. (default 1000 which is 1 second)"
-#~ msgstr ""
-#~ "Час у мілісекундах, потрібний на встановлення з’єднання з сервером "
-#~ "спільної роботи. Протягом встановлення з’єднання інтерфейс FontForge може "
-#~ "бути заморожено. (Типове значення — 1000 або 1 секунда)"
-
-#~ msgid "SessionJoinTimeout"
-#~ msgstr "Час очікування на долучення до сеансу"
-
-#~ msgid "Use XOR based rubber lines."
-#~ msgstr "Лінії змінної довжини на основі XOR."
-
-#~ msgid "XORRubberLines"
-#~ msgstr "XOR-лінії змінної довжини"
-
-#~ msgid "C_ollaborate"
-#~ msgstr "С_пільна робота"
-
-#~ msgid "Close local server"
-#~ msgstr "Закрити локальний сервер"
-
-#~ msgid "_Connect to Session (ip:port)..."
-#~ msgstr "_Приєднатися до сеансу (IP:порт)…"
-
-#~ msgid "_Connect to Session..."
-#~ msgstr "_Приєднатися до сеансу…"
-
-#~ msgid "_Start Session..."
-#~ msgstr "_Розпочати сеанс…"
-
-#~ msgid "Select which servers you wish to close..."
-#~ msgstr "Виберіть сервери, зв’язок з якими слід розірвати…"
-
-#~ msgid "Close Collab Server(s)"
-#~ msgstr "Завершити роботу серверів Collab"
-
-#~ msgid "Select a collab server to connect to..."
-#~ msgstr "Виберіть сервер спільної роботи для з’єднання…"
-
-#~ msgid "Connect to Collab Server"
-#~ msgstr "З’єднатися із сервером Collab"
-
-#~ msgid ""
-#~ "The Font Information Dialog is not available in collaboration mode yet."
-#~ msgstr ""
-#~ "У режимі співпраці ще не передбачено роботи із діалоговим вікном даних "
-#~ "щодо шрифту."
-
-#~ msgid "Feature Not Available"
-#~ msgstr "Можливість недоступна"
-
-#~ msgid "Panose|_Family"
-#~ msgstr "_Гарнітура"
-
-#~ msgid "Industry specific"
-#~ msgstr "Специфічного призначення"
-
-#~ msgid "Deco (E,M,S) Waco midline"
-#~ msgstr "Декоративний (E,M,S) з заниженням (завищенням) середніх ліній"
-
-#~ msgid "Drawn/Distressed"
-#~ msgstr "Мальовані/Неповні"
-
-#~ msgid "Solid Fill"
-#~ msgstr "Суцільне заповнення"
-
-#~ msgid "Round/Open loops"
-#~ msgstr "Округлий/Незамкнені цикли"
-
-#~ msgid "Round/Closed loops"
-#~ msgstr "Округлий/Замкнені цикли"
-
-#~ msgid "Round/No loops"
-#~ msgstr "Округлий/Без циклів"
-
-#~ msgid "Tapered/Open loops"
-#~ msgstr "Загострений/Незамкнені цикли"
-
-#~ msgid "Tapered/Closed loops"
-#~ msgstr "Загострений/Замкнені цикли"
-
-#~ msgid "Tapered/No loops"
-#~ msgstr "Загострений/Без циклів"
-
-#~ msgid "Sharp/Open loops"
-#~ msgstr "Гострий/Незамкнені цикли"
-
-#~ msgid "Sharp/Closed loops"
-#~ msgstr "Гострий/Замкнені цикли"
-
-#~ msgid "Sharp/No loops"
-#~ msgstr "Гострий/Без циклів"
-
-#~ msgid "None/Open loops"
-#~ msgstr "Немає/Незамкнені цикли"
-
-#~ msgid "None/Closed loops"
-#~ msgstr "Немає/Замкнені цикли"
-
-#~ msgid "None/No loops"
-#~ msgstr "Немає/Без циклів"
-
-#~ msgid "Felt Pen/Brush Tip"
-#~ msgstr "Фломастер/Кінчик пензля"
-
-#~ msgid "Nord"
-#~ msgstr "Нордичний"
-
-#~ msgid "Latin: Pictorial/Symbol"
-#~ msgstr "Латиниця: піктограми і символи"
-
-#~ msgid "Latin: Text & Display"
-#~ msgstr "Латиниця: текст"
-
-#~ msgid "No Font Snapshot received from the server"
-#~ msgstr "Не вдалося отримати знімок шрифту з сервера"
-
-#~ msgid "Failed to connect to server session at %s"
-#~ msgstr "Не вдалося встановити з’єднання з сеансом сервера на порті %s"
-
-#~ msgid "FontForge Collaboration"
-#~ msgstr "Спільна робота у FontForge"
-
-#~ msgid "Collab: Please ensure that UDP port 5670 is not firewalled."
-#~ msgstr ""
-#~ "Співпраця: будь ласка, переконайтеся, що порт UDP 5670 не закрито "
-#~ "брандмауером."
-
-#~ msgid "Collab: A beacon has not been received from the server"
-#~ msgstr "Співпраця: не отримано сигналу від сервера"
-
-#~ msgid "collabclient_notifySessionLeaving: cc was NULL"
-#~ msgstr "collabclient_notifySessionLeaving: cc дорівнювало NULL"
-
-#~ msgid ""
-#~ "FontForge expected some input from the server by now.\n"
-#~ "Would you like to try to reconnect to the collaboration session?"
-#~ msgstr ""
-#~ "FontForge вже мало бути отримано якісь вхідні дані від сервера.\n"
-#~ "Хочете повторити спробу з’єднатися з сеансом спільної роботи?"
-
-#~ msgid "Network Issue"
-#~ msgstr "Проблеми з мережею"
-
-#~ msgid "_Disconnect"
-#~ msgstr "_Від’єднатися"
-
-#~ msgid "_Reconnect"
-#~ msgstr "_Повторно з’єднатися"
-
-#~ msgid "WOFF2 is not supported yet."
-#~ msgstr "Підтримки WOFF2 ще не передбачено."
-
-#~ msgid ""
-#~ "This version of fontforge cannot handle WOFF files. You need to recompile "
-#~ "it with libpng and zlib"
-#~ msgstr ""
-#~ "Ця версія FontForge не здатна обробляти файли WOFF. Вам слід повторно "
-#~ "зібрати програму з підтримкою libpng і zlib."
-
-#~ msgid "WOFF not supported"
-#~ msgstr "Підтримки WOFF не передбачено"
-
-#~ msgid "Tag characters"
-#~ msgstr "Символи міток"
-
-#~ msgid "Chinese counting rod numerals"
-#~ msgstr "Китайські числа з паличок для лічби"
-
-#~ msgid "Notational systems"
-#~ msgstr "Системи позначень"
-
-#~ msgid "Large Asian Scripts"
-#~ msgstr "Великі азійські писемності"
-
-#~ msgid "Sumerian pictograms"
-#~ msgstr "Шумерські піктограми"
-
-#~ msgid "Egyptian and Mayan hieroglyphs"
-#~ msgstr "Єгипетські ієрогліфи і ієрогліфи майя"
-
-#~ msgid "North American ideographs and pictograms"
-#~ msgstr "Північноамериканські ідеограми та піктограми"
-
-#~ msgid "Egyptian hieroglyphs"
-#~ msgstr "Єгипетська ієрогліфічна"
-
-#~ msgid "Sumero-Akkadian Cuneiform"
-#~ msgstr "Шумеро-акадські символи, клинопис"
-
-#~ msgid ""
-#~ "Lookup %s has an\n"
-#~ "offset bigger than 65535 bytes. This means\n"
-#~ "FontForge must use an extension lookup to output it.\n"
-#~ "Not all applications support extension lookups."
-#~ msgstr ""
-#~ "Відступ фільтрування %s\n"
-#~ "перевищує 65535 байтів. Це означає, що\n"
-#~ "FontForge має використовувати розширення для його\n"
-#~ "виведення. Підтримку розширених фільтрувань передбачено\n"
-#~ "не у всіх програмах."
-
-#~ msgid "Lookup potentially too big"
-#~ msgstr "Фільтрування може виявитися занадто великим"
-
-#~ msgid "You may not save ufo directory to a remote location"
-#~ msgstr "Ви не можете зберігати каталоги ufo за віддаленими адресами"
-
-#~ msgid "Directory Not Remote"
-#~ msgstr "Каталог не є віддаленим"
-
-#~ msgid "You may not save a mac resource file to a remote location"
-#~ msgstr "Ви не зможете зберегти файл ресурсу mac за віддаленою адресою"
-
-#~ msgid "Mac Resource Not Remote"
-#~ msgstr "Ресурси Mac не можуть бути віддаленими"
-
-#~ msgid "%1$s is not in %2$.100s"
-#~ msgstr "%1$s немає у %2$.100s"
-
-#~ msgid "FontForge can only upload to ftp URLs at the moment"
-#~ msgstr ""
-#~ "Поточна версія FontForge здатна вивантажувати дані лише на адреси ftp"
-
-#~ msgid "FontForge only handles ftp and http URLs at the moment"
-#~ msgstr "Поточна версія FontForge може працювати лише з адресами ftp і http"
-
-#~ msgid "Could not transmit data."
-#~ msgstr "Не вдалося передати дані."
-
-#~ msgid "Could not transmit data"
-#~ msgstr "Не вдалося передати дані"
-
-#~ msgid "Uploading font..."
-#~ msgstr "Вивантаження шрифту…"
-
-#~ msgid "Could not find file."
-#~ msgstr "Не вдалось знайти файл."
-
-#~ msgid "FTP passive Data Connect failed\n"
-#~ msgstr ""
-#~ "Спроба встановлення пасивного з’єднання з FTP для отримання даних зазнала "
-#~ "невдачі\n"
-
-#~ msgid "Transmitting font..."
-#~ msgstr "Передавання даних шрифту…"
-
-#~ msgid "Bad Username/Password\n"
-#~ msgstr "Помилкова комбінація користувач/пароль\n"
-
-#~ msgid "Logging in..."
-#~ msgstr "Вхід до системи…"
-
-#~ msgid "Got something else when expecting an ftp URL"
-#~ msgstr "Замість очікуваної адреси ftp отримано якісь інші дані"
-
-#~ msgid "Uploading to %s"
-#~ msgstr "Вивантаження на %s"
-
-#~ msgid "HTTP return code: %d."
-#~ msgstr "Код, повернутий HTTP: %d."
-
-#~ msgid "Could not download data."
-#~ msgstr "Не вдалося звантажити дані."
-
-#~ msgid "Could not download data"
-#~ msgstr "Не вдалося звантажити дані"
-
-#~ msgid "Downloading font..."
-#~ msgstr "Звантаження шрифту…"
-
-#~ msgid "Could not send request to \"%s\"."
-#~ msgstr "Не вдалося надіслати запит до «%s»."
-
-#~ msgid "Could not send request"
-#~ msgstr "Не вдалося надіслати запит"
-
-#~ msgid "Requesting font..."
-#~ msgstr "Запит щодо шрифту…"
-
-#~ msgid "Could not connect to \"%s\"."
-#~ msgstr "Не вдалося з’єднатися з «%s»"
-
-#~ msgid "Could not connect to host"
-#~ msgstr "Не вдалося з’єднатися з вузлом"
-
-#~ msgid ""
-#~ "Could not find \"%s\"\n"
-#~ "Are you connected to the internet?"
-#~ msgstr ""
-#~ "Не вдалося знайти «%s»\n"
-#~ "Чи з’єднано вашу систему з інтернетом?"
-
-#~ msgid "Could not find host"
-#~ msgstr "Не вдалося знайти вузол"
-
-#~ msgid "Resolving host"
-#~ msgstr "Визначення адреси вузла"
-
-#~ msgid "Font Download..."
-#~ msgstr "Звантажити шрифт…"
-
-#~ msgid "Got something else when expecting an http URL"
-#~ msgstr "Замість очікуваної адреси http отримано якісь інші дані"
-
-#~ msgid "Could not parse URL"
-#~ msgstr "Не вдалося обробити адресу"
-
-#~ msgid "Downloading from %s"
-#~ msgstr "Звантаження шрифту з %s"
-
-#~ msgid "Enter password for %s@%s"
-#~ msgstr "Введіть пароль до %s@%s"
-
-#~ msgid "Password?"
-#~ msgstr "Пароль?"
-
-#~ msgid "Reference to a non-existent glyph name on line %d of %s."
-#~ msgstr "Посилання на назву гліфа, якої не існує, рядок %d %s"
-
-#~ msgid "Unknown Collab State!"
-#~ msgstr "Невідомий стан Collab!"
-
-#~ msgid "Collab Client"
-#~ msgstr "Клієнт Collab"
-
-#~ msgid "Collab Server"
-#~ msgstr "Сервер Collab"
-
-#~ msgid "Disconnected"
-#~ msgstr "Від’єднано"
-
-#~ msgid "Flag0x10+"
-#~ msgstr "Flag0x10+"
-
-#~ msgid "No Browser"
-#~ msgstr "Немає переглядача"
-
-#~ msgid ""
-#~ "Could not find a browser. Set the BROWSER environment variable to point "
-#~ "to one"
-#~ msgstr ""
-#~ "Не вдалося знайти переглядача. Встановіть змінну середовища BROWSER у "
-#~ "значення, що вказує на переглядач"
-
-#~ msgid "Mahjong & Domino Tiles"
-#~ msgstr "Плитки маджонґ і доміно"
-
-#~ msgid "Carian/Lycian/Lydian"
-#~ msgstr "Карійська/Лікійська/Лідійська"
-
-#~ msgid "Sudanese"
-#~ msgstr "Суданська"
-
-#~ msgid "Cuneiform Numbers & Punctuation"
-#~ msgstr "Клинописні числа і пунктуація"
-
-#~ msgid "Linear B Syllabary/Ideograms, Agean Num."
-#~ msgstr "Лінійна писемність B, склади, агейські числа"
-
-#~ msgid "Private Use (planes 15&16)"
-#~ msgstr "Приватне використання (області 15 і 16)"
-
-#~ msgid "Musical Symbols, Byzantine & Western"
-#~ msgstr "Музичні символи, візантійські і західні"
-
-#~ msgid "Tagalog/Hanunno/Buhid/Tagbanwa"
-#~ msgstr "Тагалог/Ханунно/Бухід/Таґбанва"
-
-#~ msgid "Bopomofo & Extended"
-#~ msgstr "Додаткові бопомофо"
-
-#~ msgid "Katakana & Phonetic Extensions"
-#~ msgstr "Фонетичні розширення катакани"
-
-#~ msgid "Mathematical Operators (Suppl. & Misc.)"
-#~ msgstr "Математичні оператори (додаткові та інші)"
-
-#~ msgid "Arrows (& Supplements A&B)"
-#~ msgstr "Стрілки (з додатками A і B)"
-
-#~ msgid "Cyrillic & Supplement"
-#~ msgstr "Додаткова кирилиця"
-
-#~ msgid "Remove External Contour"
-#~ msgstr "Вилучити зовнішній контур"
-
-#~ msgid "Remove Internal Contour"
-#~ msgstr "Вилучити внутрішній контур"
-
-#~ msgid ""
-#~ "A calligraphic pen or an eliptical pen has two widths\n"
-#~ "(which may be the same, giving a circular or square pen,\n"
-#~ "or different giving an eliptical or rectangular pen)."
-#~ msgstr ""
-#~ "Для каліграфічного та еліптичного пера передбачено дві товщини\n"
-#~ "(які можуть мати однакові значення, якщо перо є круглим\n"
-#~ "або квадратним, або різні значення, якщо перо є еліптичним або\n"
-#~ "прямокутним)."
-
-#~ msgid "Minor Stroke _Height:"
-#~ msgstr "Найменша тов_щина штриха:"
-
-#~ msgid "Main Stroke _Width:"
-#~ msgstr "Основна _товщина штриха:"
-
-#~ msgid "_Polygon"
-#~ msgstr "_Багатокутне"
-
-#~ msgid ""
-#~ "Ca_lligraphic\n"
-#~ "(Rectangular)"
-#~ msgstr ""
-#~ "Ка_ліграфічне\n"
-#~ "(Прямокутне)"
-
-#~ msgid ""
-#~ "_Circular\n"
-#~ "(Elliptical)"
-#~ msgstr ""
-#~ "_Округле\n"
-#~ "(Еліптичне)"
-
-#~ msgid "Pen Type:"
-#~ msgstr "Тип пера:"
-
-#~ msgid "Not a convex polygon"
-#~ msgstr "Багатокутник не є опуклим"
-
-#~ msgid ""
-#~ "The selected vertex makes this a concave polygon. Please remove (Edit-"
-#~ ">Merge) it."
-#~ msgstr ""
-#~ "Позначена вершина робить багатокутник увігнутим. Будь ласка, вилучіть її "
-#~ "за допомогою пункту меню Зміни -> Приєднати."
-
-#~ msgid ""
-#~ "There are at least 3 colinear vertices. Please remove (Edit->Merge) the "
-#~ "selected point."
-#~ msgstr ""
-#~ "Існує принаймні 3 колінеарні вершини. Будь ласка, вилучіть (Зміни -> "
-#~ "Приєднати) позначену точку."
-
-#~ msgid "There aren't enough vertices to be a polygon."
-#~ msgstr "У багатокутника недостатньо вершин."
-
-#~ msgid "This is a line; it must enclose some area."
-#~ msgstr "Це лінія, вона має обмежувати певну область."
-
-#~ msgid "There are too many vertices on this polygon."
-#~ msgstr "У цього багатокутника занадто багато вершин."
-
-#~ msgid ""
-#~ "The selected spline has curved edges, but it must be a convex polygon "
-#~ "(with straight edges)."
-#~ msgstr ""
-#~ "Позначений сплайн має викривлені сторони, а він має бути опуклим "
-#~ "багатокутником (з прямими сторонами)."
-
-#~ msgid "The selected contour is open, but it must be a convex polygon."
-#~ msgstr ""
-#~ "Позначений контур є незамкненим, хоча контуром має бути опуклий "
-#~ "багатокутник."
-
-#~ msgid "Transport And Map Symbols"
-#~ msgstr "Символи транспортних схем і карт"
-
-#~ msgid "Miscellaneous Symbols And Pictographs"
-#~ msgstr "Різні символи та піктограми"
-
-#~ msgid "Cuneiform and other Near Eastern Scripts"
-#~ msgstr "Клинопис та інші близькосхідні писемності"
-
-#~ msgid "African and other syllabic scripts"
-#~ msgstr "Африканські та інші силабічні писемності"
-
-#~ msgid "Aegean numbers"
-#~ msgstr "Егейські числа"
-
-#~ msgid "KataKana Half Width Forms"
-#~ msgstr "Форми напівширини катакани"
-
-#~ msgid "Arabic Presentation Forms B"
-#~ msgstr "Форми відтворення арабської B"
-
-#~ msgid "Arabic Presentation Forms A"
-#~ msgstr "Форми відтворення арабської A"
-
-#~ msgid "MicroSoft Symbol Area"
-#~ msgstr "Область символів MicroSoft"
-
-#~ msgid "Sundanese Extensions"
-#~ msgstr "Суданські розширення"
-
-#~ msgid "Stroke resolution is zero"
-#~ msgstr "Роздільність штриха нульова"
-
-#~ msgid "Invalid stroke parameters"
-#~ msgstr "Некоректні параметри штриха"
-
-#~ msgid "Some fragments did not join in %s"
-#~ msgstr "У %s не з’єдналися деякі з фрагментів"
-
-#~ msgid "Some fragments did not join"
-#~ msgstr "Деякі фрагменти не з’єдналися"
-
-#~ msgid "Cuneiform, Ugaritic"
-#~ msgstr "Угаритська, клинопис"
-
-#~ msgid "Tengwar"
-#~ msgstr "Тенгварська"
-
-#~ msgid "Tai Lu"
-#~ msgstr "Тай лі"
-
-#~ msgid "Rongorongo"
-#~ msgstr "Ронгоронго"
-
-#~ msgid "Phaistos"
-#~ msgstr "Фестська"
-
-#~ msgid "Script|Pahlavi"
-#~ msgstr "Пехлеві"
-
-#~ msgid "Kharoṣṭhī"
-#~ msgstr "Карошті"
-
-#~ msgid "Cypro-Minoan"
-#~ msgstr "Кіпро-мінойська"
-
-#~ msgid "Cirth"
-#~ msgstr "Кіртська"
-
-#~ msgid "Bliss Symbolics"
-#~ msgstr "Бліс-символіка"
-
-#~ msgid "Vertical Alternates (obs)"
-#~ msgstr "Вертикальні альтернативи (obs)"
-
-#~ msgid "Script Style"
-#~ msgstr "Рукописний стиль"
-
-#~ msgid "Hanja to Hangul"
-#~ msgstr "Ханья у хангилі"
-
-#~ msgid "Dipthongs (Obsolete)"
-#~ msgstr "Дифтонги (застарілі)"
-
-#~ msgid "Drop Caps"
-#~ msgstr "Буквиця"
-
-#~ msgid "Character Variants 00"
-#~ msgstr "Варіанти символів 00"
-
-#~ msgid "Ancient Ligatures"
-#~ msgstr "Давні лігатури"
