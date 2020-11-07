@@ -1,4 +1,5 @@
 build/
+contrib/admintools/splashimage.c
 
 .vscode/
 .vs/
