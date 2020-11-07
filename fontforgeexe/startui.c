@@ -203,7 +203,8 @@ static void InsCharHook(GDisplay *gd,unichar_t ch) {
     GInsCharSetChar(ch);
 }
 
-extern GImage splashimage;
+extern GImage splashimage_legacy;
+static GImage *splashimagep;
 static GWindow splashw;
 static GTimer *autosave_timer, *splasht;
 static GFont *splash_font, *splash_italic, *splash_mono;
@@ -211,11 +212,19 @@ static int as,fh, linecnt;
 static unichar_t msg[546];
 static unichar_t *lines[32], *is, *ie;
 
+static void SplashImageInit() {
+    if (splashimagep == NULL)
+        splashimagep = GGadgetImageCache("splash2020.png");
+    if (splashimagep == NULL)
+	splashimagep = &splashimage_legacy;
+    return;
+}
+
 void ShowAboutScreen(void) {
     static int first=1;
 
     if ( first ) {
-	GDrawResize(splashw,splashimage.u.image->width,splashimage.u.image->height+linecnt*fh);
+	GDrawResize(splashw,splashimagep->u.image->width,splashimagep->u.image->height+linecnt*fh);
 	first = false;
     }
     
@@ -229,6 +238,8 @@ void ShowAboutScreen(void) {
 static void SplashLayout() {
     unichar_t *start, *pt, *lastspace;
 
+    SplashImageInit();
+
     u_strcpy(msg, utf82u_copy("As he drew closer to completing his book on Renaissance printing (The Craft of Printing and the Publication of Shakespeare’s Works), George Williams IV suggested that his son, George Williams V, write a chapter on computer typography. FontForge—previously called PfaEdit—was his response."));
 
     GDrawSetFont(splashw,splash_font);
@@ -238,7 +249,7 @@ static void SplashLayout() {
 	lastspace = NULL;
 	for ( pt=start; ; ++pt ) {
 	    if ( *pt==' ' || *pt=='\0' ) {
-		if ( GDrawGetTextWidth(splashw,start,pt-start)<splashimage.u.image->width-10 )
+		if ( GDrawGetTextWidth(splashw,start,pt-start)<splashimagep->u.image->width-10 )
 		    lastspace = pt;
 		else
 	break;
@@ -614,10 +625,10 @@ static int splash_e_h(GWindow gw, GEvent *event) {
       break;
       case et_expose:
 	GDrawPushClip(gw,&event->u.expose.rect,&old);
-	GDrawDrawImage(gw,&splashimage,NULL,0,0);
-	if ((event->u.expose.rect.y+event->u.expose.rect.height) > splashimage.u.image->height) {
+	GDrawDrawImage(gw,splashimagep,NULL,0,0);
+	if ((event->u.expose.rect.y+event->u.expose.rect.height) > splashimagep->u.image->height) {
 	    GDrawSetFont(gw,splash_font);
-	    y = splashimage.u.image->height + as + fh/2;
+	    y = splashimagep->u.image->height + as + fh/2;
 	    for ( i=1; i<linecnt; ++i ) {
 	    // The number 10 comes from lines[linecnt] created in the function SplashLayout. It refers
 	    // to the line at which we want to make the font monospace. If you add or remove a line, 
@@ -647,8 +658,8 @@ static int splash_e_h(GWindow gw, GEvent *event) {
 	// the splash from being displayed properly unless a resize occurs.
 	// So this forces a resize to make it display properly...
 	GDrawGetSize(gw, &old);
-	if (old.height < splashimage.u.image->height) {
-	    GDrawResize(gw,splashimage.u.image->width,splashimage.u.image->height);
+	if (old.height < splashimagep->u.image->height) {
+	    GDrawResize(gw,splashimagep->u.image->width,splashimagep->u.image->height);
 	}
 	break;
       case et_timer:
@@ -1258,8 +1269,9 @@ int fontforge_main( int argc, char **argv ) {
     wattrs.is_dlg = !listen_to_apple_events;
 #endif
     pos.x = pos.y = 200;
-    pos.width = splashimage.u.image->width;
-    pos.height = splashimage.u.image->height-1; // See splash_e_h:et_map
+    SplashImageInit();
+    pos.width = splashimagep->u.image->width;
+    pos.height = splashimagep->u.image->height-1; // See splash_e_h:et_map
     GDrawBindSelection(NULL,sn_user1,"FontForge");
     if ( unique && GDrawSelectionOwned(NULL,sn_user1)) {
 	/* Different event handler, not a dialog */

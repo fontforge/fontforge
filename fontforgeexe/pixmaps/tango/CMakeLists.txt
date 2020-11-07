@@ -83,6 +83,8 @@ install(FILES
 
   charviewicon.xbm fontview2.xbm logo.xbm
 
+  splash2019.png splash2020.png
+
   Cantarell-BoldOblique.ttf Cantarell-Bold.ttf Cantarell-Oblique.ttf Cantarell-Regular.ttf
   Inconsolata-Bold.ttf Inconsolata-Regular.ttf
 
