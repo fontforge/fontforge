@@ -33,6 +33,7 @@ extern Spline *PathFindDistance(SplineSet *path, bigreal d, bigreal *_t);
 extern SplineSet *SplineCharRemoveTiny(SplineChar *sc, SplineSet *head);
 extern SplineSet *SplineCharSimplify(SplineChar *sc, SplineSet *head, struct simplifyinfo *smpl);
 extern SplineSet *SplineSetBindToPath(SplineSet *ss, int doscale, int glyph_as_unit, int align, real offset, SplineSet *path);
+extern SplineSet *_SplineSetJoin(SplineSet *start, int doall, real fudge, int *changed, int doLoops);
 extern SplineSet *SplineSetJoin(SplineSet *start, int doall, real fudge, int *changed);
 extern SplineSet *SplineSetReverse(SplineSet *spl);
 extern SplineSet *SplineSetsAntiCorrect(SplineSet *base);
