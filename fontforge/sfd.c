@@ -807,6 +807,9 @@ return;
 static void SFDDumpValDevTab(FILE *sfd,ValDevTab *adjust) {
     if ( adjust==NULL )
 return;
+    if ( !( adjust->xadjust.corrections || adjust->yadjust.corrections || adjust->xadv.corrections || adjust->yadv.corrections ) )
+return;
+
     fprintf( sfd, " [ddx=" ); SFDDumpDeviceTable(sfd,&adjust->xadjust);
     fprintf( sfd, " ddy=" ); SFDDumpDeviceTable(sfd,&adjust->yadjust);
     fprintf( sfd, " ddh=" ); SFDDumpDeviceTable(sfd,&adjust->xadv);
