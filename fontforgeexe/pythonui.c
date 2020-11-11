@@ -213,7 +213,7 @@ return( fvpy_menu_cnt++ );
     }
 }
 
-static void InsertSubMenus(PyObject *args,GMenuItem2 **mn, int is_cv) {
+static void InsertSubMenus(PyObject *args,GMenuItem2 **mn, int is_cv, unichar_t* mnemonic) {
     int i, j, cnt;
     PyObject *func, *check, *data;
     char *shortcut_str = NULL;
@@ -232,6 +232,9 @@ static void InsertSubMenus(PyObject *args,GMenuItem2 **mn, int is_cv) {
 
     for ( i=5; i<cnt; ++i ) {
 	unichar_t *submenuu = utf82u_copy(PyUnicode_AsUTF8(PyTuple_GetItem(args, i)));
+	for (unichar_t* p = submenuu; *p != '\0'; p++) {
+	    if (*p == '_') *p = 0x200B; // zero-width space
+	}
 
 	j = 0;
 	if ( *mn != NULL ) {
@@ -250,10 +253,14 @@ static void InsertSubMenus(PyObject *args,GMenuItem2 **mn, int is_cv) {
 	if ( mmn[j].ti.text==NULL ) {
 	    mmn[j].ti.text = submenuu;
 	    mmn[j].ti.fg = mmn[j].ti.bg = COLOR_DEFAULT;
+	    // 0xFFFF means mnemonic unset
+	    mmn[j].ti.mnemonic = mnemonic[i-5] == 0xFFFF ? 0 : mnemonic[i-5];
+	    // If in first or middle submenu
 	    if ( i!=cnt-1 ) {
 		mmn[j].mid = -1;
 		mmn[j].moveto = is_cv ? cvpy_tllistcheck : fvpy_tllistcheck;
 		mn = &mmn[j].sub;
+	    // If at end of tree
 	    } else {
 		mmn[j].shortcut = shortcut_str;
 		mmn[j].invoke = is_cv ? cvpy_menuactivate : fvpy_menuactivate;
@@ -275,13 +282,31 @@ static void InsertSubMenus(PyObject *args,GMenuItem2 **mn, int is_cv) {
     }
 }
 
+int append_mnemonic(PyObject* in, unichar_t* mnemonic) {
+    // Special non-character character (per Unicode Standard)
+    unichar_t temp[2] = {0xFFFF, '\0'};
+    int idx = 0;
+    for (const char* p = PyUnicode_AsUTF8(in); *p != '\0'; p++) {
+	if (*p == '_' && *(p+1) != '\0') {
+	    temp[0] = *(p+1);
+	    u_strcat(mnemonic, temp);
+	    return idx;
+	}
+	idx++;
+    }
+    u_strcat(mnemonic, temp);
+    return -1;
+}
+
 /* (function,check_enabled,data,(char/font),shortcut_str,{sub-menu,}menu-name) */
-static PyObject *PyFF_registerMenuItem(PyObject *self, PyObject *args) {
+static PyObject *PyFF_registerMenuItem(PyObject *self, PyObject *args, PyObject *kwargs) {
     int i, cnt;
     int flags;
+    unichar_t* mnemonic;
 
     if ( !no_windowing_ui ) {
 	cnt = PyTuple_Size(args);
+	mnemonic = calloc(cnt, sizeof(unichar_t));
 	if ( cnt<6 ) {
 	    PyErr_Format(PyExc_TypeError, "Too few arguments");
 return( NULL );
@@ -300,20 +325,27 @@ return( NULL );
 	    PyErr_Format(PyExc_ValueError, "Unknown window for menu" );
 return( NULL );
 	}
+	PyObject* temp_u;
 	if ( PyTuple_GetItem(args,4)!=Py_None ) {
-	    if (PyUnicode_AsUTF8(PyTuple_GetItem(args, 4)) == NULL) {
+	    if ((temp_u = PyTuple_GetItem(args, 4)) == NULL) {
 		return NULL;
+	    } else {
+		append_mnemonic(temp_u, mnemonic);
 	    }
 	}
 	for ( i=5; i<cnt; ++i ) {
-	    if (PyUnicode_AsUTF8(PyTuple_GetItem(args, i)) == NULL) {
+	    if ((temp_u = PyTuple_GetItem(args, i)) == NULL) {
 		return NULL;
+	    } else {
+		append_mnemonic(temp_u, mnemonic);
 	    }
 	}
 	if ( flags&menu_fv )
-	    InsertSubMenus(args,&fvpy_menu,false );
+	    InsertSubMenus(args,&fvpy_menu,false,mnemonic);
 	if ( flags&menu_cv )
-	    InsertSubMenus(args,&cvpy_menu,true );
+	    InsertSubMenus(args,&cvpy_menu,true,mnemonic);
+
+	free(mnemonic);
     }
 
 Py_RETURN_NONE;
