@@ -2288,6 +2288,10 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
 		    left = SplineSetRemoveOverlap(NULL,left,over_remove);
 		// Open paths don't always produce clockwise output
 		is_ccw_mid = SplinePointListIsClockwise(left);
+		if ( is_ccw_mid==0 && left->next==NULL ) {
+		    SplineSetReverse(left);
+		    is_ccw_mid=1;
+		}
 		if ( is_ccw_mid==-1 && c->rmov!=srmov_none ) {
 		    assert( c->rmov!=srmov_contour );
 		    left = SplineSetRemoveOverlap(NULL,left,over_remove);
@@ -2297,8 +2301,6 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
 		    LogError( _("Warning: Can't identify contour direction, "
 		                "assuming clockwise\n") );
 		}
-		if ( is_ccw_mid==0 )
-		    SplineSetReverse(left);
 	    }
 	}
 	cur = left;
