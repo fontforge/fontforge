@@ -1529,6 +1529,7 @@ return(NULL);
 	fvs->sf = new;
 	FVSetTitle(fvs);
     }
+    cidmaster->anchor = NULL;
     FontViewReformatAll(new);
     SplineFontFree(cidmaster);
 return( new );
