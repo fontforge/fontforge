@@ -3891,7 +3891,7 @@ SplineSet *SplineSetsCorrect(SplineSet *base,int *changed) {
 
 /* Give up if we are given unreasonable values (ie. if rounding errors might screw us up) */
     if ( es.mmin<1e5 && es.mmax>-1e5 && es.omin<1e5 && es.omax>-1e5 ) {
-	es.cnt = (int) (es.mmax-es.mmin) + 1;
+	es.cnt = (int)ceil(es.mmax-es.mmin) + 1;
 	es.edges = calloc(es.cnt,sizeof(Edge *));
 	es.interesting = calloc(es.cnt,sizeof(char));
 	es.sc = NULL;
