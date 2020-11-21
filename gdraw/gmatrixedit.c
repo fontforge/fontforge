@@ -1392,7 +1392,7 @@ static void GMatrixEdit_StartSubGadgets(GMatrixEdit *gme,int r, int c,GEvent *ev
 	gme->wasnew = true;
     }
 
-    if ( c==gme->cols || r>=gme->rows || gme->col_data[c].disabled )
+    if ( c<0 || r<0 || c==gme->cols || r>=gme->rows || gme->col_data[c].disabled )
 return;
     oldr = gme->active_row;
     gme->active_col = c; gme->active_row = r;
