@@ -1,0 +1,179 @@
+name: CI
+on:
+  push:
+    branches: [ master, releases/** ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  linux:
+    runs-on: ${{ matrix.os }}
+    env:
+      PYTHON: python3.9
+    strategy:
+      matrix:
+        os: ["ubuntu-latest"]
+        target: ["NoUI", "Debug"]
+        include:
+          - os: ubuntu-16.04
+            target: Release
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: repo
+      - name: Restore cached custom dependencies
+        id: cache-dependencies
+        uses: actions/cache@v2
+        with:
+          path: deps/install
+          key: ${{ matrix.os }}-deps-${{ hashFiles('repo/.github/workflows/scripts/setup_linux_deps.sh') }}
+      - name: Install dependencies and setup env vars
+        run: ${{ github.workspace }}/repo/.github/workflows/scripts/setup_linux_deps.sh
+      - name: Build FontForge
+        working-directory: repo
+        run: |
+          FFCONFIG="-DCMAKE_INSTALL_PREFIX=$PREFIX -DENABLE_FONTFORGE_EXTRAS=ON -DENABLE_FREETYPE_DEBUGGER=$DEPSPREFIX/freetype"
+          if [ "${{ matrix.target }}" == "Debug" ]; then
+            FFCONFIG="$FFCONFIG -DENABLE_X11=ON -DENABLE_CODE_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug -DENABLE_DOCS=ON -DSPHINX_USE_VENV=ON"
+          elif [ "${{ matrix.target }}" == "NoUI" ]; then
+            FFCONFIG="$FFCONFIG -DENABLE_GUI=OFF -DENABLE_PYTHON_SCRIPTING=OFF"
+          fi
+          mkdir build && pushd build && cmake -GNinja $FFCONFIG .. && popd
+          ninja -C build all potfiles install
+      - name: Run FontForge tests
+        run: CTEST_PARALLEL_LEVEL=100 ninja -C repo/build check
+      - name: Build dist bundle
+        if: matrix.target == 'NoUI'
+        run: ninja -C repo/build dist
+      - name: Run pyhook smoke test
+        if: matrix.target != 'NoUI'
+        run: $PYTHON repo/tests/pyhook_smoketest.py
+      - name: Build AppImage
+        if: matrix.target == 'Release'
+        working-directory: repo/build
+        run: |
+          DESTDIR=appdir cmake -DCMAKE_INSTALL_PREFIX=/usr -P cmake_install.cmake
+          ../.github/workflows/scripts/ffappimagebuild.sh appdir $GITHUB_SHA
+      - name: Update Potfile for Crowdin
+        if: matrix.target == 'Release' && github.ref == 'refs/heads/master' && github.repository == 'fontforge/fontforge' && github.event_name == 'push'
+        working-directory: repo
+        env:
+          CROWDIN_API_KEY: ${{ secrets.CROWDIN_API_KEY }}
+        run: java -jar $DEPSPREFIX/crowdin-cli.jar -c .crowdin.yml upload
+      - name: Push to Coveralls
+        if: matrix.target == 'Debug' && github.repository == 'fontforge/fontforge'
+        working-directory: repo
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $PYTHON -m pip install --user --upgrade cpp-coveralls
+          coveralls -b build --gcov-options '\-bulp'
+      - name: Push AppImage to Bintray
+        if: matrix.target == 'Release' && github.ref == 'refs/heads/master' && github.repository == 'fontforge/fontforge' && github.event_name == 'push'
+        working-directory: repo/build
+        run: |
+          BINTRAY_URL=https://api.bintray.com/content/fontforge/fontforge/fontforge-travis/$(date +appimage-ci-%Y-%m-%d)
+          ls -1 FontForge-*-x86_64.AppImage | head -n1 | xargs -I{} curl --fail -T {} -ufontforge-ci-bot:${{ secrets.BINTRAY_TOKEN }} $BINTRAY_URL/{}
+          curl --fail -X POST -ufontforge-ci-bot:${{ secrets.BINTRAY_TOKEN }} $BINTRAY_URL/publish
+      - name: Dist archive artifact
+        uses: actions/upload-artifact@v2
+        if: matrix.target == 'NoUI'
+        with:
+          name: dist-archive
+          path: repo/build/fontforge-*.tar.xz
+      - name: AppImage artifact
+        uses: actions/upload-artifact@v2
+        if: matrix.target == 'Release'
+        with:
+          name: appimage
+          path: repo/build/FontForge-*-x86_64.AppImage
+  mac:
+    runs-on: macos-latest
+    env:
+      PYTHON: python3
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: repo
+      - name: Install dependencies
+        run: |
+          # Disable fc-cache on fontconfig install. Because it's slow.
+          sed -i.bak '/fc-cache/d' "$(brew --prefix)/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/fontconfig.rb"
+          brew install pkg-config ruby cmake ninja
+          brew install cairo coreutils fontconfig gettext giflib gtk+3 jpeg libpng libspiro libtiff libtool libuninameslist python@3 wget woff2
+          PREFIX=$GITHUB_WORKSPACE/target
+          echo "PREFIX=$PREFIX" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig:/usr/local/opt/libffi/lib/pkgconfig" >> $GITHUB_ENV
+          echo "PATH=/usr/local/opt/ruby/bin:/usr/local/opt/gettext/bin:$PATH" >> $GITHUB_ENV
+          echo "PYTHONPATH=$PYTHONPATH:$PREFIX/$($PYTHON -c "import distutils.sysconfig as sc; print(sc.get_python_lib(prefix='', plat_specific=True,standard_lib=False))")" >> $GITHUB_ENV
+      - name: Build FontForge
+        working-directory: repo
+        run: |
+          FFCONFIG="-DCMAKE_INSTALL_PREFIX=$PREFIX -DENABLE_FONTFORGE_EXTRAS=ON -DCMAKE_FIND_ROOT_PATH=/usr/local/opt/gettext"
+          mkdir build && pushd build && cmake -GNinja $FFCONFIG .. && popd
+          ninja -C build install
+      - name: Run FontForge tests
+        working-directory: repo
+        run: CTEST_PARALLEL_LEVEL=100 ninja -C build check
+      - name: Run pyhook smoke test
+        working-directory: repo
+        run: $PYTHON tests/pyhook_smoketest.py
+      - name: Build App Bundle
+        working-directory: repo/build
+        run: ninja macbundle
+      - name: Push App Bundle to Bintray
+        if: matrix.TARGET == 'Release' && github.ref == 'refs/heads/master' && github.repository == 'fontforge/fontforge' && github.event_name == 'push'
+        working-directory: repo/build/osx
+        run: |
+          BINTRAY_URL=https://api.bintray.com/content/fontforge/fontforge/fontforge-travis/$(date +mac-ci-%Y-%m-%d)
+          ls -1 FontForge-*.dmg | head -n1 | xargs -I{} curl --fail -T {} -ufontforge-ci-bot:${{ secrets.BINTRAY_TOKEN }} $BINTRAY_URL/{}
+          curl --fail -X POST -ufontforge-ci-bot:${{ secrets.BINTRAY_TOKEN }} $BINTRAY_URL/publish
+      - name: App Bundle artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: appbundle
+          path: repo/build/osx/FontForge-*.dmg
+  windows:
+    runs-on: windows-latest
+    env:
+      MSYS2_FC_CACHE_SKIP: true
+    strategy:
+      matrix:
+        arch: ["MINGW32", "MINGW64"]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: repo
+      - name: Checkout FontForgeBuilds
+        uses: actions/checkout@v2
+        with:
+          repository: fontforge/fontforgebuilds
+          path: fontforgebuilds
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.arch }}
+          update: true
+          install: git
+      - name: Run FontForgeBulds initialisation
+        working-directory: fontforgebuilds
+        shell: msys2 {0}
+        run: ./ffbuild.sh --github-actions --depsonly
+      - name: Run FontForgeBuilds
+        working-directory: fontforgebuilds
+        shell: msys2 {0}
+        run: |
+          ./ffbuild.sh --github-actions
+          FFPATH=`cygpath -m "$GITHUB_WORKSPACE/repo"` ./make-portable-package.sh ci
+      - name: Run InnoSetup
+        if: github.ref == 'refs/heads/master'
+        working-directory: fontforgebuilds/fontforge-setup
+        run: iscc -Qp fontforgesetup.iss -DMSYSTEM=${{ matrix.arch }}
+      - name: Build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.arch }}
+          path: |
+            fontforgebuilds/*.7z
+            fontforgebuilds/fontforge-setup/*.exe

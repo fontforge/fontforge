@@ -1,0 +1,48 @@
+name: Coverity Scan
+on: ["workflow_dispatch"]
+env:
+  PYTHON: python3.9
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: repo
+      - name: Download Coverity Build Tool
+        run: |
+          wget -q https://scan.coverity.com/download/cxx/linux64 --post-data "token=$TOKEN&project=fontforge" -O cov-analysis-linux64.tar.gz
+          mkdir cov-analysis-linux64
+          tar xzf cov-analysis-linux64.tar.gz --strip 1 -C cov-analysis-linux64
+          echo "PATH=$(pwd)/cov-analysis-linux64/bin:$PATH" >> $GITHUB_ENV
+        env:
+          TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+      - name: Restore cached custom dependencies
+        id: cache-dependencies
+        uses: actions/cache@v2
+        with:
+          path: deps/install
+          key: ${{ matrix.os }}-deps-${{ hashFiles('repo/.github/workflows/scripts/setup_linux_deps.sh') }}
+      - name: Install dependencies and setup env vars
+        run: ${{ github.workspace }}/repo/.github/workflows/scripts/setup_linux_deps.sh
+      - name: Build FontForge with Coverity
+        working-directory: repo
+        run: |
+          FFCONFIG="-DCMAKE_INSTALL_PREFIX=$PREFIX -DENABLE_FONTFORGE_EXTRAS=ON -DENABLE_FREETYPE_DEBUGGER=$DEPSPREFIX/freetype"
+          mkdir build && pushd build
+          cmake -GNinja $FFCONFIG ..
+          cov-build --dir cov-int ninja
+      - name: Submit the result to Coverity Scan
+        working-directory: repo/build
+        run: |
+          tar czvf fontforge.tgz cov-int
+          curl \
+            --form project=fontforge \
+            --form token=$TOKEN \
+            --form email=jtanx_blackhole@outlook.com \
+            --form file=@fontforge.tgz \
+            --form version=${{ github.job }} \
+            --form description${{ github.sha }} \
+            https://scan.coverity.com/builds?project=fontforge
+        env:
+          TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}

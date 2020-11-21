@@ -19,7 +19,7 @@ add_custom_target(macbundle
   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_CURRENT_BINARY_DIR}/Info.plist" "FontForge.app/Contents/Info.plist"
   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_CURRENT_BINARY_DIR}/InfoPlist.string" "FontForge.app/Contents/Resources/English.lproj/InfoPlist.string"
   COMMAND "${CMAKE_COMMAND}" "-DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/FontForge.app/Contents/Resources/opt/local" -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
-  COMMAND "${CMAKE_SOURCE_DIR}/travis-scripts/ffosxbuild.sh" "${CMAKE_CURRENT_BINARY_DIR}/FontForge.app" "${FONTFORGE_GIT_VERSION}"
+  COMMAND "${CMAKE_SOURCE_DIR}/.github/workflows/scripts/ffosxbuild.sh" "${CMAKE_CURRENT_BINARY_DIR}/FontForge.app" "${FONTFORGE_GIT_VERSION}"
   WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
   VERBATIM
   USES_TERMINAL

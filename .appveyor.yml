@@ -1,3 +1,4 @@
+image: Visual Studio 2019
 platform:
   - x64
 branches:
@@ -44,7 +45,7 @@ install:
 build_script:
   - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds; exec 0</dev/null; ./ffbuild.sh --appveyor"
   - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds; exec 0</dev/null; FFPATH=`cygpath -m $APPVEYOR_BUILD_FOLDER` ./make-portable-package.sh appveyor"
-  - if "%APPVEYOR_REPO_BRANCH:~0,8%"=="release/" cd "%APPVEYOR_BUILD_FOLDER%/fontforgebuilds/fontforge-setup" && "C:\Program Files (x86)\Inno Setup 5\ISCC.exe" -Qp fontforgesetup.iss
+  - if "%APPVEYOR_REPO_BRANCH:~0,8%"=="release/" cd "%APPVEYOR_BUILD_FOLDER%/fontforgebuilds/fontforge-setup" && "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" -Qp fontforgesetup.iss
 test: off
 artifacts:
   - path: fontforgebuilds\*-appveyor.7z

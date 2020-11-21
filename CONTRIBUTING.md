@@ -17,17 +17,17 @@ written, due to limited code review resources.
 
 ### How To Contribute, Step by Step
 
-Contribute directly to the codebase using GitHub's Pull Requests. 
+Contribute directly to the codebase using GitHub's Pull Requests.
 See [Github Guides](https://guides.github.com/) to learn more, but the basic process is:
 
 - Fork the [FontForge repository](https://github.com/fontforge/fontforge) from GitHub.
 - Commit your changes locally using `git`, and push them to your personal fork.
 - From the main page of your fork, click on the green “Fork” button in order to submit a Pull
   Request.
-- Your pull request will be tested via [Travis CI](https://travis-ci.org/) to automatically indicate that your changes do not prevent compilation. FontForge is a big program, so Travis can easily take over 20 minutes to confirm your changes are buildable. Please be patient. More details about using Travis are below.
-- If it reports back that there are problems, you can follow the "Details" link to check the log report for your pull request to see what the problem was. 
+- Your pull request will be tested via [GitHub Actions](https://github.com/features/actions) to automatically indicate that your changes do not prevent compilation. FontForge is a big program, so it can easily take over 20 minutes to confirm your changes are buildable. Please be patient. More details about CI are below.
+- If it reports back that there are problems, you can follow the "Details" link to check the log report for your pull request to see what the problem was.
 
-FontForge supports Python `>=` 3.3 and is fully compatible with Python 3 through at least version 3.7.
+FontForge supports Python `>=` 3.3 and is fully compatible with Python 3 through at least version 3.9.
 
 ### Coding Style
 
@@ -50,19 +50,18 @@ Various areas of the codebase have been worked on by different people in recent 
 * Feature: Python interface - Skef Iterum (skef)
 * Crashes: Frank Trampe, Adrien Tetar (adrientetar)
 
-### Accessing Travis and Appveyor Build Archives
+### Accessing CI Build Archives
 
 After each push request `Appveyor` will attempt to build and package
 a Windows installer. When that build is successful it can be accessed
 by following the `Appveyor` "Details" link and choosing the "Artifacts"
-tab. 
+tab.
 
 Note: `Appveyor` builds with the `FF_PORTABLE` flag, which changes various
-initialization and configuration search paths. 
+initialization and configuration search paths.
 
-The Travis system also attempts to build a Mac OS X application and a
-Linux Appimage. When those builds are successful they can be downloaded
-from:
+CI via Github Actions also builds a Mac OS X bundle and a Linux AppImage.
+When those builds are successful they can be downloaded from:
 
     https://dl.bintray.com/fontforge/fontforge/
 
@@ -90,8 +89,8 @@ You might want to pull down some old unicode bitmap fonts.
 
 A Debian source package consists of a source tarball (with specific metadata) and several accompanying files and allows one to build a product in a neutral build environment.
 
-A source package is specific to the distribution (but not the architecture) that it targets. 
-The most common build target is currently Ubuntu Xenial, a long-term support release with Launchpad build support. A binary package built on and for Xenial (usually) also installs and runs on later versions of Ubuntu. 
+A source package is specific to the distribution (but not the architecture) that it targets.
+The most common build target is currently Ubuntu Xenial, a long-term support release with Launchpad build support. A binary package built on and for Xenial (usually) also installs and runs on later versions of Ubuntu.
 
 The first step is to obtain a dist tarball. To generate this from git sources, change into the source directory and run
 
@@ -133,7 +132,7 @@ One can then copy the binary packages from Xenial to other Ubuntu versions via t
 
 See [here](https://help.launchpad.net/Packaging/PPA) for more information about Launchpad.
 
-One can also build a binary package from the source package locally. 
+One can also build a binary package from the source package locally.
 Simply extract the `tar.gz` file generated from `make deb-src` into a new directory, enter the directory, and run `debuild`.
 
 ### Building a Red Hat source package (.rpm)
@@ -171,4 +170,4 @@ make macbundle
 
 This will create a `FontForge.app` in the `osx` subdirectory of your build directory.
 
-This relies on `travis-scripts/ffosxbuild.sh` to make the bundle. It has been tested to work with Homebrew and the GDK backend.
+This relies on [`ffosxbuild.sh`](.github/workflows/scripts/ffosxbuild.sh) to make the bundle. It has been tested to work with Homebrew and the GDK backend.
