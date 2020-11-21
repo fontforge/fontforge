@@ -2334,8 +2334,8 @@ return( true );
 return( false );
 }
 
-SplineSet *_SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed,
-                          int doLoops) {
+SplineSet *SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed,
+                         int doloops) {
     SplineSet *spl, *spl2, *prev;
     /* Few special cases for spiros here because the start and end points */
     /*  will be the same for spiros and beziers. We just need to fixup spiros */
@@ -2345,7 +2345,7 @@ SplineSet *_SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed,
     for ( spl=start; spl!=NULL; spl=spl->next ) {
 	if ( spl->first->prev==NULL &&
 		(doall || PointListIsSelected(spl)) ) {
-	    if ( doLoops && SplineSetMakeLoop(spl,fudge) ) {
+	    if ( doloops && SplineSetMakeLoop(spl,fudge) ) {
 		*changed = true;
 	    } else {
 		prev = NULL;
@@ -2411,10 +2411,6 @@ SplineSet *_SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed,
 	}
     }
 return(start);
-}
-
-SplineSet *SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed) {
-    return _SplineSetJoin(start, doall, fudge, changed, true);
 }
 
 SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head) {

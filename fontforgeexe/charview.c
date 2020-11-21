@@ -8701,7 +8701,7 @@ static void _CVJoin(CharView *cv) {
 
     CVAnySel(cv,&anyp,NULL,NULL,NULL);
     CVPreserveState(&cv->b);
-    cv->b.layerheads[cv->b.drawmode]->splines = SplineSetJoin(cv->b.layerheads[cv->b.drawmode]->splines,!anyp,joinsnap/tab->scale,&changed);
+    cv->b.layerheads[cv->b.drawmode]->splines = SplineSetJoin(cv->b.layerheads[cv->b.drawmode]->splines,!anyp,joinsnap/tab->scale,&changed,true);
     if ( changed )
 	CVCharChangedUpdate(&cv->b);
 }
