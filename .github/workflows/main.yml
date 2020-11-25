@@ -61,14 +61,6 @@ jobs:
         env:
           CROWDIN_API_KEY: ${{ secrets.CROWDIN_API_KEY }}
         run: java -jar $DEPSPREFIX/crowdin-cli.jar -c .crowdin.yml upload
-      - name: Push to Coveralls
-        if: matrix.target == 'Debug' && github.repository == 'fontforge/fontforge'
-        working-directory: repo
-        env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          $PYTHON -m pip install --user --upgrade cpp-coveralls
-          coveralls -b build --gcov-options '\-bulp'
       - name: Push AppImage to Bintray
         if: matrix.target == 'Release' && github.ref == 'refs/heads/master' && github.repository == 'fontforge/fontforge' && github.event_name == 'push'
         working-directory: repo/build
