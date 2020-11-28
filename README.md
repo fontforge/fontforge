@@ -20,6 +20,6 @@ The bug tracker is for _reporting bugs_, not for asking questions. Please direct
 
 [`INSTALL.md`](INSTALL.md) &mdash; developer instructions to build from source
 
-[`.travis.yml`](.travis.yml) &mdash; a list of installation dependencies
+[`setup_linux_deps.sh`](.github/workflows/scripts/setup_linux_deps.sh) &mdash; a list of installation dependencies
 
 [`CONTRIBUTING.md`](CONTRIBUTING.md) &mdash; contributing guidelines

@@ -35,9 +35,9 @@ if(NOT DEFINED Gcov_FOUND)
   cmake_push_check_state(RESET)
 
   set(Gcov_COMPILE_DEFINITIONS "-g;-O0;-fprofile-arcs;-ftest-coverage" CACHE STRING "Gcov compiler flags")
-  set(Gcov_LINK_OPTIONS "-lgcov" CACHE STRING "Gcov link flags")
+  set(Gcov_LIBRARIES "gcov" CACHE STRING "Gcov libraries")
   set(CMAKE_REQUIRED_FLAGS ${Gcov_COMPILE_DEFINITIONS})
-  set(CMAKE_REQUIRED_LINK_OPTIONS "${Gcov_LINK_OPTIONS}")
+  set(CMAKE_REQUIRED_LIBRARIES "${Gcov_LIBRARIES}")
   check_c_source_compiles("int main() {return 0;}" Gcov_FOUND)
   cmake_pop_check_state()
 endif()
@@ -47,15 +47,11 @@ find_package_handle_standard_args(
   REQUIRED_VARS
     Gcov_FOUND
     Gcov_COMPILE_DEFINITIONS
-    Gcov_LINK_OPTIONS
+    Gcov_LIBRARIES
 )
 
 if(Gcov_FOUND AND NOT TARGET Gcov::Gcov)
   add_library(Gcov::Gcov INTERFACE IMPORTED)
   set_property(TARGET Gcov::Gcov PROPERTY INTERFACE_COMPILE_OPTIONS "${Gcov_COMPILE_DEFINITIONS}")
-  if(${CMAKE_VERSION} VERSION_LESS "3.13")
-    set_property(TARGET Gcov::Gcov PROPERTY INTERFACE_LINK_LIBRARIES "${Gcov_LINK_OPTIONS}")
-  else()
-    set_property(TARGET Gcov::Gcov PROPERTY INTERFACE_LINK_OPTIONS "${Gcov_LINK_OPTIONS}")
-  endif()
+  set_property(TARGET Gcov::Gcov PROPERTY INTERFACE_LINK_LIBRARIES "${Gcov_LIBRARIES}")
 endif()

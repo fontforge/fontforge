@@ -41,18 +41,8 @@ fi
 
 export PATH=$(readlink -f ./squashfs-root/usr/bin):$PATH
 rm $APPDIR/AppRun
-install -m 755 $SCRIPT_BASE/../Packaging/AppDir/AppRun $APPDIR/AppRun # custom AppRun
-./squashfs-root/usr/bin/appimagetool -g $APPDIR/
+install -m 755 $SCRIPT_BASE/../../../Packaging/AppDir/AppRun $APPDIR/AppRun # custom AppRun
+ARCH=x86_64 ./squashfs-root/usr/bin/appimagetool -g $APPDIR/
 find $APPDIR -executable -type f -exec ldd {} \; | grep " => /usr" | cut -d " " -f 2-3 | sort | uniq
 
 mv FontForge*.AppImage FontForge-$(date +%Y-%m-%d)-$VERSION-x86_64.AppImage
-
-if [ ! -z "$CI" ]; then
-    # Update the bintray descriptor... sigh. If this fails, then oh well, no bintray
-    echo "Updating the bintray descriptor..."
-    BINTRAY_DESCRIPTOR=$SCRIPT_BASE/bintray_descriptor.json
-    sed -i "s/ciXXXX/$(date +appimage-ci-%Y-%m-%d)/g" $BINTRAY_DESCRIPTOR || true
-    sed -i "s/releaseXXXX/$(date +%Y-%m-%d)/g" $BINTRAY_DESCRIPTOR || true
-    echo "Bintray descriptor:"
-    cat $BINTRAY_DESCRIPTOR
-fi
