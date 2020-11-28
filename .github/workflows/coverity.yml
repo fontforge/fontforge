@@ -11,7 +11,7 @@ jobs:
           path: repo
       - name: Download Coverity Build Tool
         run: |
-          wget -q https://scan.coverity.com/download/cxx/linux64 --post-data "token=$TOKEN&project=fontforge" -O cov-analysis-linux64.tar.gz
+          wget https://scan.coverity.com/download/cxx/linux64 --post-data "token=$TOKEN&project=fontforge%2Ffontforge" -O cov-analysis-linux64.tar.gz
           mkdir cov-analysis-linux64
           tar xzf cov-analysis-linux64.tar.gz --strip 1 -C cov-analysis-linux64
           echo "PATH=$(pwd)/cov-analysis-linux64/bin:$PATH" >> $GITHUB_ENV
@@ -41,8 +41,8 @@ jobs:
             --form token=$TOKEN \
             --form email=jtanx_blackhole@outlook.com \
             --form file=@fontforge.tgz \
-            --form version=${{ github.job }} \
-            --form description${{ github.sha }} \
-            https://scan.coverity.com/builds?project=fontforge
+            --form version=${{ github.sha }} \
+            --form description="FontForge" \
+            https://scan.coverity.com/builds?project=fontforge%2Ffontforge
         env:
           TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
