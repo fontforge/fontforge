@@ -115,7 +115,7 @@ jobs:
         working-directory: repo/build
         run: ninja macbundle
       - name: Push App Bundle to Bintray
-        if: matrix.TARGET == 'Release' && github.ref == 'refs/heads/master' && github.repository == 'fontforge/fontforge' && github.event_name == 'push'
+        if: matrix.target == 'Release' && github.ref == 'refs/heads/master' && github.repository == 'fontforge/fontforge' && github.event_name == 'push'
         working-directory: repo/build/osx
         run: |
           BINTRAY_URL=https://api.bintray.com/content/fontforge/fontforge/fontforge-travis/$(date +mac-ci-%Y-%m-%d)
