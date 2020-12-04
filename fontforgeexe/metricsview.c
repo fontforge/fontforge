@@ -2539,7 +2539,7 @@ return;
 return;
     SCPreserveLayer(mv->glyphs[i].sc, mv->layer, false);
     mv->glyphs[i].sc->layers[mv->layer].splines =
-        SplineSetJoin(mv->glyphs[i].sc->layers[mv->layer].splines, true, joinsnap, &changed);
+        SplineSetJoin(mv->glyphs[i].sc->layers[mv->layer].splines, true, joinsnap, &changed, true);
     if ( changed )
         SCCharChangedUpdate(mv->glyphs[i].sc, mv->layer);
 }

@@ -2275,12 +2275,12 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
 	SplineSetReverse(right);
 	left->next = right;
 	right = NULL;
-	SplineSetJoin(left, true, FIXUP_MARGIN*c->log_maxdim, &closed);
+	SplineSetJoin(left, true, FIXUP_MARGIN*c->log_maxdim, &closed, false);
 	if ( !closed )
 	     LogError( _("Warning: Contour end did not close\n") );
 	else {
 	    HandleCap(c, left, ss->first->me, ut_ini, left->first->me, false);
-	    SplineSetJoin(left, true, FIXUP_MARGIN*c->log_maxdim, &closed);
+	    SplineSetJoin(left, true, FIXUP_MARGIN*c->log_maxdim, &closed, true);
 	    if ( !closed )
 		LogError( _("Warning: Contour start did not close\n") );
 	    else {
@@ -2312,7 +2312,7 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
 	    HandleJoin(c, ss->first->next, left, ss->first->me, &no,
 	               is_ccw_ini, ut_endlast, was_ccw, false);
             left = SplineSetJoin(left, true, FIXUP_MARGIN*c->log_maxdim,
-	                         &closed);
+	                         &closed, true);
 	    if ( !closed )
 		LogError( _("Warning: Left contour did not close\n") );
 	    else if ( c->rmov==srmov_contour )
@@ -2325,7 +2325,7 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
 	    HandleJoin(c, ss->first->next, right, ss->first->me, &no,
 	               is_ccw_ini, ut_endlast, was_ccw, true);
             right = SplineSetJoin(right, true, FIXUP_MARGIN*c->log_maxdim,
-	                          &closed);
+	                          &closed, true);
 	    if ( !closed )
 		LogError( _("Warning: Right contour did not close\n") );
 	    else {

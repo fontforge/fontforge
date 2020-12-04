@@ -320,7 +320,7 @@ return;
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
 	    (gid = fv->map->map[i])!=-1 && sf->glyphs[gid]!=NULL ) {
 	SCPreserveLayer(sf->glyphs[gid],fv->active_layer,false);
-	sf->glyphs[gid]->layers[fv->active_layer].splines = SplineSetJoin(sf->glyphs[gid]->layers[fv->active_layer].splines,true,joinsnap,&changed);
+	sf->glyphs[gid]->layers[fv->active_layer].splines = SplineSetJoin(sf->glyphs[gid]->layers[fv->active_layer].splines,true,joinsnap,&changed,true);
 	if ( changed )
 	    SCCharChangedUpdate(sf->glyphs[gid],fv->active_layer);
     }
