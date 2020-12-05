@@ -2297,7 +2297,7 @@ static Intersection *FindIntersections(Monotonic **ms, enum overlap_type ot) {
 	continue;		/* Can't intersect since they don't have overlapping bounding boxes */
 	    // ValidateMonotonic(m1); ValidateMonotonic(m2);
 	    if ( CoincidentIntersect(m1,m2,pts,t1s,t2s) ) {
-		// If the splines are nearly coincident , we add up to 4 preintersections with the close flag.
+		// If the splines are nearly coincident, we add up to 4 preintersections with the close flag.
 		for ( i=0; i<4 && t1s[i]!=-1; ++i ) {
 		    if ( t1s[i]>=m1->tstart && t1s[i]<=m1->tend &&
 			    t2s[i]>=m2->tstart && t2s[i]<=m2->tend ) {
@@ -2305,8 +2305,11 @@ static Intersection *FindIntersections(Monotonic **ms, enum overlap_type ot) {
 		    }
 		}
 	    } else if ( m1->s->knownlinear || m2->s->knownlinear ) {
-		// We add the intersections for non-coincident splines.
-		// Why we limit to 4 intersections is beyond me.
+		// The splines are non-coincident and linear.
+		// We look for all intersections between the splines.
+		// Assignment to specific monotonics happens in TurnPreInter2Inter.
+		// SplinesIntersect returns a maximum of four intersections.
+		// That is okay if one spline is linear. Otherwise, there may be more.
 		if ( SplinesIntersect(m1->s,m2->s,pts,t1s,t2s)>0 )
 		    for ( i=0; i<4 && t1s[i]!=-1; ++i ) {
 			if ( t1s[i]>=m1->tstart && t1s[i]<=m1->tend &&
@@ -2586,7 +2589,8 @@ static Intersection *TryHarderWhenClose(int which, Monotonic **space,int cnt, In
 			    m2 = m2->next;
 			ilist = SplitMonotonicsAt(m1,m2,which,high,ilist);
 		    }
-		    if ( (&m1->xup)[which]!=(&m2->xup)[which] ) {
+		    if ( (&m1->xup)[which]!=(&m2->xup)[which] &&
+			!m1->mutual_collapse && !m2->mutual_collapse ) {
 			/* the two monotonics cancel each other out */
 			/* (they are close together, and go in opposite directions) */
 			m1->mutual_collapse = m1->isunneeded = true;
