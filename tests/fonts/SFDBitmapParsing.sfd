@@ -1,0 +1,74 @@
+SplineFontDB: 3.2
+OnlyBitmaps: 1
+BeginChars: 2 2
+
+StartChar: A
+Encoding: 65 65 0
+Width: 1000
+Flags: W
+LayerCount: 2
+EndChar
+StartChar: B
+Encoding: 66 66 1
+Width: 1000
+Flags: W
+LayerCount: 2
+EndChar
+StartChar: C
+Encoding: 67 67 2
+Width: 1000
+Flags: W
+LayerCount: 2
+EndChar
+StartChar: D
+Encoding: 68 68 2
+Width: 1000
+Flags: W
+LayerCount: 2
+EndChar
+StartChar: E
+Encoding: 69 69 3
+Width: 1000
+Flags: W
+LayerCount: 2
+EndChar
+EndChars
+BitmapFont: 12 1 10 2 1
+BDFChar: 0 65 12 0 0 0 0
+z
+BDFChar: 1 66 12 0 0 0 0
+z
+BDFChar: 1000000 70 12 0 0 0 0
+z
+BDFRefChar: 0 0 0 0 N
+BDFRefChar: 0 1 0 0 N
+BDFRefChar: 0 -1 0 0 N
+BDFRefChar: 0 1000000 0 0 N
+BDFRefChar: 0 -1000000 0 0 N
+BDFRefChar: -1 0 0 0 N
+BDFRefChar: -1 1 0 0 N
+BDFRefChar: -1 -1 0 0 N
+BDFRefChar: -1 1000000 0 0 N
+BDFRefChar: -1 -1000000 0 0 N
+BDFRefChar: -1000000 0 0 0 N
+BDFRefChar: -1000000 1 0 0 N
+BDFRefChar: -1000000 -1 0 0 N
+BDFRefChar: -1000000 1000000 0 0 N
+BDFRefChar: -1000000 -1000 0 0 N
+BDFRefChar: 1000000 0 0 0 N
+BDFRefChar: 1000000 1 0 0 N
+BDFRefChar: 1000000 -1 0 0 N
+BDFRefChar: 1000000 1000000 0 0 N
+BDFRefChar: 1000000 -1000000 0 0 N
+BDFRefChar: 2 0 0 0 N
+BDFRefChar: 2 1 0 0 N
+BDFRefChar: 2 -1 0 0 N
+BDFRefChar: 2 1000000 0 0 N
+BDFRefChar: 2 -1000000 0 0 N
+BDFRefChar: 1 0 0 0 N
+BDFRefChar: 1 1 0 0 N
+BDFRefChar: 1 -1 0 0 N
+BDFRefChar: 1 1000000 0 0 N
+BDFRefChar: 1 -1000000 0 0 N
+EndBitmapFont
+EndSplineFont
