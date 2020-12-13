@@ -3162,10 +3162,10 @@ void CVSetLayer(CharView *cv,int layer) {
 /* Check if a key press corresponds to a mnemonic the palette knows about. */
 int CVPaletteMnemonicCheck(GEvent *event) {
     static struct strmatch { char *str; int cid; } strmatch[] = {
-/* GT: Foreground, make it short */
-	{ N_("F_ore"), CID_EFore },
 /* GT: Background, make it short */
 	{ N_("_Back"), CID_EBack },
+/* GT: Foreground, make it short */
+	{ N_("F_ore"), CID_EFore },
 /* GT: Guide layer, make it short */
 	{ N_("_Guide"), CID_EGrid },
 	{ NULL, 0 }
