@@ -3266,10 +3266,7 @@ static int GFI_AddOFL(GGadget *g, GEvent *e) {
 	int rows;
 	struct matrix_data *tns, *newtns;
 	int i,j,k,l,m, extras, len;
-	char *all, *pt, **data;
-	char buffer[1024], *bpt;
-	const char *author = GetAuthor();
-	char *reservedname, *fallback;
+	char *all, *pt, **data, *bpt;
 	time_t now;
 	struct tm *tm;
 
@@ -3296,34 +3293,14 @@ static int GFI_AddOFL(GGadget *g, GEvent *e) {
 		    newtns[j*3+1].u.md_ival = ofl_str_lang_data[i].strid;
 		    newtns[j*3+0].u.md_ival = ofl_str_lang_data[i].lang;
 		    data = ofl_str_lang_data[i].data;
-		    reservedname = fallback = NULL;
-		    for ( m=0; m<rows; ++m ) {
-			if ( newtns[j*3+1].u.md_ival==ttf_family ) {
-			    if ( newtns[j*3+0].u.md_ival==0x409 )
-				fallback = newtns[3*j+2].u.md_str;
-			    else if ( newtns[j*3+0].u.md_ival==ofl_str_lang_data[i].lang )
-				reservedname = newtns[3*j+2].u.md_str;
-			}
-		    }
-		    if ( reservedname==NULL )
-			reservedname = fallback;
-		    if ( reservedname==NULL )
-			reservedname = d->sf->familyname;
 		    for ( m=0; m<2; ++m ) {
 			len = 0;
 			for ( l=0; data[l]!=NULL; ++l ) {
-			    if ( l==0 ) {
-				sprintf( buffer, data[l], tm->tm_year+1900, author );
-			        bpt = buffer;
-			    } else if ( l==1 ) {
-				sprintf( buffer, data[l], reservedname );
-			        bpt = buffer;
-			    } else
-				bpt = data[l];
+			    bpt = data[l];
 			    if ( m ) {
 				strcpy( pt, bpt );
-			        pt += strlen( bpt );
-			        *pt++ = '\n';
+				pt += strlen( bpt );
+				*pt++ = '\n';
 			    } else
 				len += strlen( bpt ) + 1;		/* for a new line */
 			}
@@ -3346,8 +3323,8 @@ static int GFI_AddOFL(GGadget *g, GEvent *e) {
 	    "The OFL is a community-approved software license designed for libre/open font projects. \n"
 	    "Fonts under the OFL can be used, studied, copied, modified, embedded, merged and redistributed while giving authors enough control and artistic integrity. For more details including an FAQ see http://scripts.sil.org/OFL. \n\n"
 	    "This font metadata will help users, designers and distribution channels to know who you are, how to contact you and what rights you are granting. \n" 
-        "When releasing modified versions, remember to add your additional notice, including any extra Reserved Font Name(s). \n\n" 
-	    "Have fun designing open fonts!" ));
+	    "When releasing modified versions, remember to add your additional notice, including any extra Reserved Font Name(s). FontForge used to add RFN's by default, but no longer does, as they are used by a minority of OFL fonts and FontForge's RFN's were often legally invalid. Please see the official SIL FAQ and FontForge GitHub issue №4434 for more information. \n\n"
+	    "Have fun designing open fonts! 🔣🔧🥳" ));
     }
 return( true );
 }
