@@ -4388,13 +4388,13 @@ return;
 	ugcd[0].gd.label = &ulabel[0];
 	ugcd[0].gd.pos.x = 5; ugcd[0].gd.pos.y = 5+4; 
 	ugcd[0].gd.flags = gg_enabled|gg_visible;
-	ugcd[0].gd.mnemonic = 'N';
+	ugcd[0].gd.mnemonic = 'y';
 	ugcd[0].creator = GLabelCreate;
 	uhvarray[0] = &ugcd[0];
 
 	ugcd[1].gd.pos.x = 85; ugcd[1].gd.pos.y = 5;
 	ugcd[1].gd.flags = gg_enabled|gg_visible;
-	ugcd[1].gd.mnemonic = 'N';
+	ugcd[1].gd.mnemonic = 'y';
 	ugcd[1].gd.cid = CID_UName;
 	ugcd[1].creator = GListFieldCreate;
 	ugcd[1].data = (void *) (-2);
