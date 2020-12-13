@@ -231,7 +231,9 @@ static void InsertSubMenus(PyObject *args,GMenuItem2 **mn, int is_cv, unichar_t*
     }
 
     for ( i=5; i<cnt; ++i ) {
-	unichar_t *submenuu = utf82u_copy(PyUnicode_AsUTF8(PyTuple_GetItem(args, i)));
+	// 0xFFFF means mnemonic unset
+	unichar_t t_mnemonic = mnemonic[i-5] == 0xFFFF ? 0 : mnemonic[i-5];
+	unichar_t *submenuu = utf82u_mncopy(PyUnicode_AsUTF8(PyTuple_GetItem(args, i)), &t_mnemonic);
 	for (unichar_t* p = submenuu; *p != '\0'; p++) {
 	    if (*p == '_') *p = 0x200B; // zero-width space
 	}
@@ -253,8 +255,7 @@ static void InsertSubMenus(PyObject *args,GMenuItem2 **mn, int is_cv, unichar_t*
 	if ( mmn[j].ti.text==NULL ) {
 	    mmn[j].ti.text = submenuu;
 	    mmn[j].ti.fg = mmn[j].ti.bg = COLOR_DEFAULT;
-	    // 0xFFFF means mnemonic unset
-	    mmn[j].ti.mnemonic = mnemonic[i-5] == 0xFFFF ? 0 : mnemonic[i-5];
+	    mmn[j].ti.mnemonic = t_mnemonic;
 	    // If in first or middle submenu
 	    if ( i!=cnt-1 ) {
 		mmn[j].mid = -1;
