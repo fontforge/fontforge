@@ -1394,15 +1394,11 @@ static void GGDKDrawDestroyWindow(GWindow w) {
             // is destroyed, but they *are* when it's first hidden...
             GDrawSetVisible((GWindow)gw, false);
 
-            // HACK! Reparent all windows transient to this
-            // If they were truly transient in the normal sense, they would just be
-            // destroyed when this window goes away
+            // Delete all transient references to this window
             for (int i = ((int)gw->display->transient_stack->len) - 1; i >= 0; --i) {
                 GGDKWindow tw = (GGDKWindow)gw->display->transient_stack->pdata[i];
                 if (tw->transient_owner == gw) {
-                    Log(LOGWARN, "Resetting transient owner on %p(%s) as %p(%s) is dying",
-                        tw, tw->window_title, gw, gw->window_title);
-                    GGDKDrawSetTransientFor((GWindow)tw, (GWindow)-1);
+                    GGDKDrawSetTransientFor((GWindow)tw, NULL);
                 }
             }
         }
@@ -1589,7 +1585,7 @@ static void GGDKDrawSetTransientFor(GWindow transient, GWindow owner) {
 
     if (ow != NULL) {
         gdk_window_set_transient_for(gw->w, ow->w);
-        gdk_window_set_modal_hint(gw->w, true);
+        gdk_window_set_modal_hint(gw->w, gw->restrict_input_to_me || gdisp->restrict_count > 0);
         gw->istransient = true;
         g_ptr_array_add(gdisp->transient_stack, gw);
         if (gw->restrict_input_to_me) {
