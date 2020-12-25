@@ -723,25 +723,6 @@ void GGDKDrawSetDifferenceMode(GWindow w) {
     cairo_set_antialias(gw->cc, CAIRO_ANTIALIAS_NONE);
 }
 
-
-void GGDKDrawClear(GWindow w, GRect *rect) {
-    //Log(LOGDEBUG, " ");
-    GGDKWindow gw = (GGDKWindow)w;
-    _GGDKDraw_CheckAutoPaint(gw);
-    GRect temp, *r = rect, old;
-    if (r == NULL) {
-        temp = gw->pos;
-        temp.x = temp.y = 0;
-        r = &temp;
-    }
-    GGDKDrawPushClip((GWindow)gw, r, &old);
-    cairo_set_source_rgba(gw->cc, COLOR_RED(gw->ggc->bg) / 255.,
-                          COLOR_GREEN(gw->ggc->bg) / 255.,
-                          COLOR_BLUE(gw->ggc->bg) / 255., 1.0);
-    cairo_paint(gw->cc);
-    GGDKDrawPopClip((GWindow)gw, &old);
-}
-
 void GGDKDrawDrawLine(GWindow w, int32 x, int32 y, int32 xend, int32 yend, Color col) {
     //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;

@@ -207,7 +207,6 @@ struct displayfuncs {
 
     void (*setDifferenceMode)(GWindow);
 
-    void (*clear)(GWindow,GRect *);
     void (*drawLine)(GWindow, int32 x,int32 y, int32 xend,int32 yend, Color col);
     void (*drawArrow)(GWindow, int32 x,int32 y, int32 xend,int32 yend, int16 arrows, Color col); /* arrows&1 => arrow at start, &2 => at end */
     void (*drawRect)(GWindow, GRect *rect, Color col);

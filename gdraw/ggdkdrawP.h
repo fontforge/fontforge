@@ -288,7 +288,6 @@ cairo_region_t *_GGDKDraw_ExcludeChildRegions(GGDKWindow gw, cairo_region_t *r, 
 void GGDKDrawPushClip(GWindow w, GRect *rct, GRect *old);
 void GGDKDrawPopClip(GWindow gw, GRect *old);
 void GGDKDrawSetDifferenceMode(GWindow gw);
-void GGDKDrawClear(GWindow gw, GRect *rect);
 void GGDKDrawDrawLine(GWindow w, int32 x, int32 y, int32 xend, int32 yend, Color col);
 void GGDKDrawDrawArrow(GWindow gw, int32 x, int32 y, int32 xend, int32 yend, int16 arrows, Color col);
 void GGDKDrawDrawRect(GWindow gw, GRect *rect, Color col);
@@ -303,7 +302,7 @@ void GGDKDrawDrawImage(GWindow gw, GImage *gimg, GRect *src, int32 x, int32 y);
 void GGDKDrawDrawGlyph(GWindow gw, GImage *gimg, GRect *src, int32 x, int32 y);
 void GGDKDrawDrawImageMagnified(GWindow gw, GImage *gimg, GRect *src, int32 x, int32 y, int32 width, int32 height);
 
-void    GGDKDrawDrawPixmap(GWindow gw1, GWindow gw2, GRect *src, int32 x, int32 y);
+void GGDKDrawDrawPixmap(GWindow gw1, GWindow gw2, GRect *src, int32 x, int32 y);
 
 enum gcairo_flags GGDKDrawHasCairo(GWindow w);
 

@@ -2318,7 +2318,6 @@ static struct displayfuncs gdkfuncs = {
 
     GGDKDrawSetDifferenceMode,
 
-    GGDKDrawClear,
     GGDKDrawDrawLine,
     GGDKDrawDrawArrow,
     GGDKDrawDrawRect,

@@ -4000,7 +4000,6 @@ static struct displayfuncs xfuncs = {
 
     GXDrawSetDifferenceMode,
 
-    GXDrawClear,
     GXDrawDrawLine,
     GXDrawDrawArrow,
     GXDrawDrawRect,

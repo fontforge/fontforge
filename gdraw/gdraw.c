@@ -347,10 +347,6 @@ void GDrawSetBackground(GWindow w,Color col) {
     w->ggc->bg = col;
 }
 
-void GDrawClear(GWindow w, GRect *rect) {
-    (w->display->funcs->clear)(w,rect);
-}
-
 void GDrawDrawLine(GWindow w, int32 x,int32 y, int32 xend,int32 yend, Color col) {
     if ( col!=COLOR_UNKNOWN )
 	(w->display->funcs->drawLine)(w,x,y,xend,yend,col);
