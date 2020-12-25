@@ -659,7 +659,6 @@ void CVReviewHints(CharView *cv) {
 	GTextFieldSelect(GWidgetGetControl(gw,CID_Base),0,-1);
     }
 
-    GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
     while ( !hd.done )
 	GDrawProcessOneEvent(NULL);
@@ -887,7 +886,6 @@ void CVCreateHint(CharView *cv,int ishstem,int preservehints) {
     GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_Base));
     GTextFieldSelect(GWidgetGetControl(gw,CID_Base),0,-1);
 
-    GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
     while ( !chd.done )
 	GDrawProcessOneEvent(NULL);

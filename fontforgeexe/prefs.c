@@ -2564,7 +2564,6 @@ void DoPrefs(void) {
 	free(plabels[k]);
     }
 
-    GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
     while ( !p.done )
 	GDrawProcessOneEvent(NULL);

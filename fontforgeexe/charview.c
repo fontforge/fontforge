@@ -9061,7 +9061,6 @@ static char* getValueFromUser( CharView *cv, const char* windowTitle, const char
     GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_getValueFromUser));
     GTextFieldSelect(GWidgetGetControl(gw,CID_getValueFromUser),0,-1);
 
-    GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
     while ( !DATA.done )
 	GDrawProcessOneEvent(NULL);
@@ -12677,7 +12676,6 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
     cv->ft_dpi = 72; cv->ft_pointsizex = cv->ft_pointsizey = 12.0;
     cv->ft_ppemx = cv->ft_ppemy = 12;
 
-    /*GWidgetHidePalettes();*/
     /*cv->tools = CVMakeTools(cv);*/
     /*cv->layers = CVMakeLayers(cv);*/
 

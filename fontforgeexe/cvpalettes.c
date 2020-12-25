@@ -757,7 +757,6 @@ static int Ask(char *rb1, char *rb2, int rb, char *lab, float *val, int *co,
     d.reg = gcd[6].ret;
     d.pts = gcd[7].ret;
 
-    GWidgetHidePalettes();
     GDrawSetVisible(d.gw,true);
     while ( !d.done )
 	GDrawProcessOneEvent(NULL);

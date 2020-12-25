@@ -834,7 +834,6 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	}
     }
 
-    GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
     while ( !td.done )
 	GDrawProcessOneEvent(NULL);

@@ -42,15 +42,6 @@ static GWindow current_focus_window, previous_focus_window, last_input_window;
     /* So... we set current focus window when a window gains the focus, and */
     /*  at the same time we set the previous focus window to the last window */
     /*  that got input. NOT to the old current_focus_window (which might be junk) */
-static GWindow last_paletted_focus_window = NULL;
-
-static int broken_palettes = true;
-static int widgets_initted = false;
-
-static void gwidget_init(void) {
-    broken_palettes = GResourceFindBool("GWidget.BrokenPalettes",broken_palettes);
-    widgets_initted = true;
-}
 
 GWindow GWindowGetCurrentFocusTopWindow(void) {
 return( current_focus_window );
@@ -482,27 +473,9 @@ static int _GWidget_TopLevel_Key(GWindow top, GWindow ew, GEvent *event) {
     if ( !top->is_popup )
 	last_input_window = top;
 
-    /* If the palette has the focus, and it usually will under kde, then */
-    /*  give the event to the main window if the cursor is outside of the palette */
-    if ( topd->ispalette ) {
-	if ( event->u.chr.x<-2 || event->u.chr.x>top->pos.width+2 ||
-		event->u.chr.y<-2 || event->u.chr.y>top->pos.height+2 ) {
-	    GPoint p;
-	    topd = topd->owner;
-	    p.x = event->u.chr.x; p.y = event->u.chr.y;
-	    GDrawTranslateCoordinates(ew,topd->w,&p);
-	    event->u.chr.x = p.x; event->u.chr.y = p.y;
-	    ew = top = topd->w;
-	    event->w = top;
-	}
-    }
     /* Check for mnemonics and shortcuts */
     if ( event->type == et_char && !GKeysymIsModifier(event->u.chr.keysym) ) {
 	handled = GMenuPopupCheckKey(event);
-	if ( topd->ispalette ) {
-	    if ( !(handled = GMenuBarCheckKey(top,topd->owner->gmenubar,event)) )
-		handled = GWidgetCheckMn((GContainerD *) topd->owner,event);
-	}
 	if ( !handled )
 	    if ( !(handled = GMenuBarCheckKey(top,topd->gmenubar,event)) )
 		handled = GWidgetCheckMn((GContainerD *) topd,event);
@@ -590,21 +563,6 @@ static int GiveToAll(GContainerD *wd, GEvent *event) {
 return( true );
 }
 
-static void ManagePalettesVis(GTopLevelD *td, int is_visible ) {
-    GTopLevelD *palette;
-
-    if ( td->w!=last_paletted_focus_window )
-return;
-    for ( palette=td->palettes; palette!=NULL; palette = palette->nextp ) {
-	if ( is_visible && palette->w->visible_request )
-	    GDrawSetVisible(palette->w,true);
-	else if ( !is_visible && palette->w->visible_request ) {
-	    GDrawSetVisible(palette->w,false);
-	    palette->w->visible_request = true;
-	}
-    }
-}
-
 static GTopLevelD *oldtd = NULL;
 static GGadget *oldgfocus = NULL;
 
@@ -630,30 +588,6 @@ return( true );
 	    }
 	} else if ( current_focus_window==gw ) {
 	    current_focus_window = NULL;
-	}
-	if ( !td->ispalette && gw->is_visible && event->u.focus.gained_focus && !gw->is_dying ) {
-	    GWindow dlg = GDrawGetRedirectWindow(NULL);
-	    if ( dlg==NULL || dlg==gw ) {
-		/* If top level window loses the focus all its palettes go invisible */
-		/* if it gains focus then all palettes that are supposed to be vis */
-		/*  become visible */
-		/* But not if we've got an active dialog */
-		GTopLevelD *palette;
-		if ( last_paletted_focus_window!=NULL && !last_paletted_focus_window->is_dying ) {
-		    GTopLevelD *lpfw_td = (GTopLevelD *) (last_paletted_focus_window->widget_data);
-		    for ( palette=lpfw_td->palettes; palette!=NULL; palette = palette->nextp ) {
-			if ( !palette->w->is_visible && palette->w->visible_request ) {
-			    GDrawSetVisible(palette->w,false);
-			    palette->w->visible_request = true;
-			}
-		    }
-		}
-		for ( palette=td->palettes; palette!=NULL; palette = palette->nextp ) {
-		    if ( !palette->w->is_visible && palette->w->visible_request )
-			GDrawSetVisible(palette->w,true);
-		}
-		last_paletted_focus_window = gw;
-	    }
 	}
 	if ( !gw->is_dying && td->gfocus!=NULL && td->gfocus->funcs->handle_focus!=NULL ) {
  { oldtd = td; oldgfocus = td->gfocus; }	/* Debug!!!! */
@@ -683,62 +617,6 @@ return( true );
 	    GGadgetResize(td->gmenubar,event->u.resize.size.width,r.height);
 	    GGadgetRedraw(td->gmenubar);
 	} /* status line, toolbar, etc. */
-	if ( td->palettes!=NULL && event->u.resize.moved ) {
-	    GTopLevelD *palette;
-	    for ( palette=td->palettes; palette!=NULL; palette = palette->nextp ) {
-		if ( !broken_palettes || !palette->positioned_yet ) {
-		    int x = gw->pos.x + palette->owner_off_x,
-			y = gw->pos.y + palette->owner_off_y;
-		    if ( x<0 ) x=0;
-		    if ( y<0 ) y=0;
-		    if ( x+palette->w->pos.width>GDrawGetRoot(NULL)->pos.width )
-			x = GDrawGetRoot(NULL)->pos.width-palette->w->pos.width;
-		    if ( y+palette->w->pos.height>GDrawGetRoot(NULL)->pos.height )
-			y = GDrawGetRoot(NULL)->pos.height-palette->w->pos.height;
-		    ++palette->programmove;
-		    if ( gw->is_visible )
-			GDrawTrueMove(palette->w, x, y);
-		    else
-			GDrawMove(palette->w, x, y);
-		    palette->positioned_yet = true;
-		}
-	    }
-	}
-	if ( td->ispalette ) {
-	    if ( td->programmove>0 )
-		--td->programmove;
-	    else {
-		td->owner_off_x = gw->pos.x - td->owner->w->pos.x;
-		td->owner_off_y = gw->pos.y - td->owner->w->pos.y;
-	    }
-	}
-    } else if ( event->type == et_close && td->ispalette ) {
-	GDrawSetVisible(gw,false);
-return( true );
-    } else if ( !gw->is_dying && event->type == et_visibility ) {
-	if ( broken_palettes )
-	    /* Do Nothing */;
-	else if ( td->ispalette && event->u.visibility.state!=vs_unobscured ) {
-	    if ( !GDrawIsAbove(gw,td->owner->w))
-		GDrawRaiseAbove(gw,td->owner->w);
-	}
-    } else if ( !gw->is_dying && event->type == et_map && !td->ispalette ) {
-	/* If top level window goes invisible all its palettes follow */
-	/* if it goes visible then all palettes that are supposed to be vis */
-	/*  follow */
-	ManagePalettesVis(td, event->u.map.is_visible );
-    }
-    if ( event->type == et_destroy ) {
-	if ( td->palettes!=NULL ) {
-	    struct gtopleveldata *palettes, *next;
-	    for ( palettes=td->palettes; palettes!=NULL; palettes = next ) {
-		next = palettes->nextp;
-		GDrawDestroyWindow(palettes->w);
-	    }
-	    /* Palettes must die before our widget data are freed */
-	    GDrawSync(GDrawGetDisplayOfWindow(gw));
-	    GDrawProcessPendingEvents(GDrawGetDisplayOfWindow(gw));
-	}
     }
     ret = _GWidget_Container_eh(gw,event);
     if ( event->type == et_destroy ) {
@@ -748,8 +626,6 @@ return( true );
 	    previous_focus_window = NULL;
 	if ( gw==last_input_window )
 	    last_input_window = NULL;
-	if ( gw==last_paletted_focus_window )
-	    last_paletted_focus_window = NULL;
 	ret = true;
     }
 return( ret );
@@ -763,8 +639,6 @@ static void MakeContainerWidget(GWindow gw) {
 
     if ( gw->widget_data!=NULL )
 	GDrawIError( "Attempt to make a window into a widget twice");
-    if ( !widgets_initted )
-	gwidget_init();
     if ( gw->parent==NULL || gw->is_toplevel )
 	gd = calloc(1,sizeof(struct gtopleveldata));
     else
@@ -962,73 +836,6 @@ GWindow GWidgetCreateSubWindow(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *
 return( gw );
 }
 
-/* Palettes follow their owners when the owner moves around the screen */
-/*  Palettes go invisible when the owner does, and become visible again when it does */
-/*  Palettes are always on top of their owner */
-/*  Palettes go invisible when the owner loses focus, and become visible when it gains focus */
-GWindow GWidgetCreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs) {
-    GWindow gw;
-    GPoint pt, base;
-    GRect newpos, ownerpos, screensize;
-    struct gtopleveldata *gd, *od;
-    GWindow root;
-
-    if ( !w->is_toplevel )
-return( false );
-
-    pt.x = pos->x; pt.y = pos->y;
-    root = GDrawGetRoot(w->display);
-    GDrawGetSize(w,&ownerpos);
-    GDrawGetSize(root,&screensize);
-    GDrawTranslateCoordinates(w,root,&pt);
-    base.x = base.y = 0;
-    GDrawTranslateCoordinates(w,root,&base);
-    if ( pt.x<0 ) {
-	if ( base.x+ownerpos.width+20+pos->width+20 > screensize.width )
-	    pt.x=0;
-	else
-	    pt.x = base.x+ownerpos.width+20;
-    }
-    if ( pt.y<0 ) pt.y=0;
-    if ( pt.x+pos->width>root->pos.width )
-	pt.x = root->pos.width-pos->width;
-    if ( pt.y+pos->height>root->pos.height )
-	pt.y = root->pos.height-pos->height;
-
-    newpos.x = pt.x; newpos.y = pt.y; newpos.width = pos->width; newpos.height = pos->height;
-    wattrs->event_masks |= (1<<et_visibility);
-    if ( !(wattrs->mask&wam_transient)) {
-	wattrs->mask |= wam_transient;
-	wattrs->transient = GWidgetGetTopWidget(w);
-    }
-    if ( broken_palettes ) {
-	wattrs->mask |= wam_positioned;
-	wattrs->positioned = true;
-    }
-    gw = GDrawCreateTopWindow(w->display,&newpos,eh,user_data,wattrs);
-    MakeContainerWidget(gw);
-    if ( w->widget_data==NULL )
-	MakeContainerWidget(w);
-    od = (struct gtopleveldata *) (w->widget_data);
-    gd = (struct gtopleveldata *) (gw->widget_data);
-    gd->nextp = od->palettes;
-    gd->owner = od;
-    od->palettes = gd;
-    gd->ispalette = true;
-    gd->owner_off_x = pos->x; gd->owner_off_y = pos->y;
-return( gw );
-}
-
-void GWidgetRequestVisiblePalette(GWindow palette,int visible) {
-    GTopLevelD *td = (GTopLevelD *) (palette->widget_data);
-
-    if ( td->owner!=NULL ) {
-	palette->visible_request = visible;
-	if ( td->owner->w == last_paletted_focus_window )
-	    GDrawSetVisible(palette,visible);
-    }
-}
-
 GGadget *GWidgetGetControl(GWindow gw, int cid) {
     GGadget *gadget;
     GContainerD *gd = (GContainerD *) (gw->widget_data);
@@ -1087,20 +894,6 @@ void GWidgetSetEH(GWindow gw, GDrawEH e_h ) {
 	gw->eh = e_h;
     else
 	gw->widget_data->e_h = e_h;
-}
-
-void GWidgetHidePalettes(void) {
-    GTopLevelD *td, *palette;
-
-    if ( last_paletted_focus_window==NULL )
-return;
-    td = (GTopLevelD *) (last_paletted_focus_window->widget_data);
-    for ( palette=td->palettes; palette!=NULL; palette = palette->nextp ) {
-	if ( palette->w->visible_request ) {
-	    GDrawSetVisible(palette->w,false);
-	    palette->w->visible_request = true;
-	}
-    }
 }
 
 GIC *GWidgetCreateInputContext(GWindow w,enum gic_style def_style) {

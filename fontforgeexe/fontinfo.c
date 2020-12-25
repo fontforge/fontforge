@@ -10865,7 +10865,6 @@ return;
 
     GHVBoxFitWindow(mb[0].ret);
 
-    GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
 
     if ( sync ) {

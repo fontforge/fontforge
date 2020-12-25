@@ -404,7 +404,6 @@ void CVFtPpemDlg(CharView *cv,int debug) {
     GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_PointSize));
     GTextFieldSelect(GWidgetGetControl(gw,CID_PointSize),0,-1);
 
-    GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
     while ( !fsd.done )
 	GDrawProcessOneEvent(NULL);

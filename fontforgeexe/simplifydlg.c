@@ -460,7 +460,6 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     GHVBoxSetExpandableCol(boxes[6].ret,gb_expandgluesame);
     GHVBoxFitWindow(boxes[0].ret);
 
-    GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
     while ( !sim.done )
 	GDrawProcessOneEvent(NULL);

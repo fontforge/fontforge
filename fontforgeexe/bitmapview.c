@@ -2441,7 +2441,6 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
     bv->showing_tool = ( bc->refs == NULL ) ? bvt_pencil : bvt_pointer;
     bv->pressed_tool = bv->pressed_display = bv->active_tool = bvt_none;
 
-    /*GWidgetHidePalettes();*/
     /*bv->tools = BVMakeTools(bv);*/
     /*bv->layers = BVMakeLayers(bv);*/
 

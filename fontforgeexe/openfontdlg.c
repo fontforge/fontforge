@@ -817,7 +817,6 @@ static unichar_t *FVOpenFont(char *title, const char *defaultfile, bool mult, bo
     }
     GGadgetSetTitle8(gcd[0].ret,defaultfile);
 
-    GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
     while ( !d.done )
 	GDrawProcessOneEvent(NULL);
