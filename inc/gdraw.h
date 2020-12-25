@@ -332,7 +332,6 @@ extern char *GDrawGetWindowTitle8(GWindow w);
 extern void GDrawSetTransientFor(GWindow transient,GWindow owner);
 extern void GDrawSetCursor(GWindow w, GCursor ct);
 extern GCursor GDrawGetCursor(GWindow w);
-extern GWindow GDrawGetRedirectWindow(GDisplay *gd);
 extern GWindow GDrawGetParentWindow(GWindow gw);
 extern int GDrawWindowIsAncestor(GWindow ancester, GWindow descendent);
 extern void GDrawSetUserData(GWindow gw, void *ud);

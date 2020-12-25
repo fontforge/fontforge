@@ -207,11 +207,6 @@ GCursor GDrawGetCursor(GWindow w) {
 return( (w->display->funcs->getCursor)(w) );
 }
 
-GWindow GDrawGetRedirectWindow(GDisplay *gd) {
-    if ( gd==NULL ) gd = screen_display;
-return( (gd->funcs->getRedirectWindow)(gd) );
-}
-
 void GDrawTranslateCoordinates(GWindow from,GWindow to, GPoint *pt) {
     GDisplay *gd;
     if ( from!=NULL )

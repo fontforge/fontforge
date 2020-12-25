@@ -1372,15 +1372,6 @@ static GCursor GXDrawGetCursor(GWindow w) {
 return( gw->cursor );
 }
 
-static GWindow GXDrawGetRedirectWindow(GDisplay *gd) {
-    GXDisplay *gdisp = (GXDisplay *) gd;
-
-    if ( gdisp->input==NULL )
-return( NULL );
-
-return( gdisp->input->cur_dlg );
-}
-
 static void GXDrawGetPointerPosition(GWindow w, GEvent *ret) {
     GXWindow gw = (GXWindow) w;
     Display *display = gw->display->display;
@@ -4000,7 +3991,6 @@ static struct displayfuncs xfuncs = {
     GXDrawGetPointerWindow,
     GXDrawSetCursor,
     GXDrawGetCursor,
-    GXDrawGetRedirectWindow,
     GXDrawTranslateCoordinates,
 
     GXDrawBeep,

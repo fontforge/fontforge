@@ -1697,12 +1697,6 @@ static GCursor GGDKDrawGetCursor(GWindow gw) {
     return ((GGDKWindow)gw)->current_cursor;
 }
 
-static GWindow GGDKDrawGetRedirectWindow(GDisplay *UNUSED(gdisp)) {
-    //Log(LOGDEBUG, " ");
-    // Not implemented.
-    return NULL;
-}
-
 static void GGDKDrawTranslateCoordinates(GWindow from, GWindow to, GPoint *pt) {
     //Log(LOGDEBUG, " ");
     GGDKWindow gfrom = (GGDKWindow)from, gto = (GGDKWindow)to;
@@ -2315,7 +2309,6 @@ static struct displayfuncs gdkfuncs = {
     GGDKDrawGetPointerWindow,
     GGDKDrawSetCursor,
     GGDKDrawGetCursor,
-    GGDKDrawGetRedirectWindow,
     GGDKDrawTranslateCoordinates,
 
     GGDKDrawBeep,

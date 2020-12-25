@@ -198,7 +198,6 @@ struct displayfuncs {
     GWindow (*getPointerWindow)(GWindow);
     void (*setCursor)(GWindow, GCursor);
     GCursor (*getCursor)(GWindow);
-    GWindow (*getRedirectWindow)(GDisplay *gd);
     void (*translateCoordinates)(GWindow from, GWindow to, GPoint *pt);
 
     void (*beep)(GDisplay *);
