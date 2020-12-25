@@ -1323,17 +1323,6 @@ static int error(Display *disp, XErrorEvent *err) {
 return( 1 );
 }
 
-static void GXDrawSetWindowTitles(GWindow w, const unichar_t *title, const unichar_t *icontit) {
-    GXWindow gw = (GXWindow) w;
-    Display *display = gw->display->display;
-    char *ipt, *tpt;
-
-    XmbSetWMProperties(display,gw->w,(tpt = u2def_copy(title)),
-			(ipt = u2def_copy(icontit)),
-			NULL,0,NULL,NULL,NULL);
-    free(ipt); free(tpt);
-}
-
 static void GXDrawSetWindowTitles8(GWindow w, const char *title, const char *icontit) {
     GXWindow gw = (GXWindow) w;
     Display *display = gw->display->display;
@@ -4004,9 +3993,7 @@ static struct displayfuncs xfuncs = {
     GXDrawResize,
     GXDrawMoveResize,
     GXDrawRaise,
-    GXDrawSetWindowTitles,
     GXDrawSetWindowTitles8,
-    GXDrawGetWindowTitle,
     GXDrawGetWindowTitle8,
     GXDrawSetTransientFor,
     GXDrawGetPointerPosition,

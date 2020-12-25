@@ -3566,7 +3566,7 @@ static void FVMenuHistograms(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)
 
 
 static void FontViewSetTitle(FontView *fv) {
-    unichar_t *title, *ititle, *temp;
+    char *title;
     char *file=NULL;
     char *enc;
     int len;
@@ -3586,27 +3586,22 @@ return;
     }
     if ( file!=NULL )
 	len += 2+strlen(file);
-    title = malloc((len+1)*sizeof(unichar_t));
-    uc_strcpy(title,"");
-    uc_strcat(title,fv->b.sf->fontname);
+    title = malloc((len+1)*sizeof(char));
+    strcpy(title,fv->b.sf->fontname);
     if ( fv->b.sf->changed )
-	uc_strcat(title,"*");
+	strcat(title,"*");
     if ( file!=NULL ) {
-	uc_strcat(title,"  ");
-	temp = def2u_copy(GFileNameTail(file));
-	u_strcat(title,temp);
-	free(temp);
+	strcat(title,"  ");
+    strcat(title, GFileNameTail(file));
     }
-    uc_strcat(title, " (" );
-    if ( fv->b.normal ) { utf82u_strcat(title,_("Compact")); uc_strcat(title," "); }
-    uc_strcat(title,enc);
-    uc_strcat(title, ")" );
+    strcat(title, " (" );
+    if ( fv->b.normal ) { strcat(title,_("Compact")); strcat(title," "); }
+    strcat(title,enc);
+    strcat(title, ")" );
     free(enc);
 
-    ititle = uc_copy(fv->b.sf->fontname);
-    GDrawSetWindowTitles(fv->gw,title,ititle);
+    GDrawSetWindowTitles8(fv->gw,title,fv->b.sf->fontname);
     free(title);
-    free(ititle);
 }
 
 void FVTitleUpdate(FontViewBase *fv)

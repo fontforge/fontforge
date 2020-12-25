@@ -191,9 +191,7 @@ struct displayfuncs {
     void (*resize)(GWindow,int32,int32);
     void (*moveResize)(GWindow,int32,int32,int32,int32);
     void (*raise)(GWindow);
-    void (*setWindowTitles)(GWindow, const unichar_t *title, const unichar_t *icontitle);
     void (*setWindowTitles8)(GWindow, const char *title, const char *icontitle);
-    unichar_t *(*getWindowTitle)(GWindow);
     char *(*getWindowTitle8)(GWindow);
     void (*setTransientFor)(GWindow, GWindow);
     void (*getPointerPos)(GWindow,GEvent *);

@@ -1545,21 +1545,7 @@ static void GGDKDrawSetWindowTitles8(GWindow w, const char *title, const char *U
     }
 }
 
-static void GGDKDrawSetWindowTitles(GWindow gw, const unichar_t *title, const unichar_t *UNUSED(icontitle)) {
-    Log(LOGDEBUG, " ");
-    char *str = u2utf8_copy(title);
-    if (str != NULL) {
-        GGDKDrawSetWindowTitles8(gw, str, NULL);
-        free(str);
-    }
-}
-
 // Sigh. GDK doesn't provide a way to get the window title...
-static unichar_t *GGDKDrawGetWindowTitle(GWindow gw) {
-    Log(LOGDEBUG, " "); // assert(false);
-    return utf82u_copy(((GGDKWindow)gw)->window_title);
-}
-
 static char *GGDKDrawGetWindowTitle8(GWindow gw) {
     Log(LOGDEBUG, " ");
     return copy(((GGDKWindow)gw)->window_title);
@@ -2322,9 +2308,7 @@ static struct displayfuncs gdkfuncs = {
     GGDKDrawResize,
     GGDKDrawMoveResize,
     GGDKDrawRaise,
-    GGDKDrawSetWindowTitles,
     GGDKDrawSetWindowTitles8,
-    GGDKDrawGetWindowTitle,
     GGDKDrawGetWindowTitle8,
     GGDKDrawSetTransientFor,
     GGDKDrawGetPointerPosition,
