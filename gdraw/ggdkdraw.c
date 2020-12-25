@@ -1533,24 +1533,6 @@ static void GGDKDrawRaise(GWindow w) {
     }
 }
 
-static void GGDKDrawRaiseAbove(GWindow gw1, GWindow gw2) {
-    Log(LOGDEBUG, " ");
-    _GGDKDraw_CleanupAutoPaint(((GGDKWindow)gw1)->display);
-    gdk_window_restack(((GGDKWindow)gw1)->w, ((GGDKWindow)gw2)->w, true);
-    if (!gw1->is_toplevel) {
-        _GGDKDraw_FakeConfigureEvent((GGDKWindow)gw1);
-    }
-    if (!gw2->is_toplevel) {
-        _GGDKDraw_FakeConfigureEvent((GGDKWindow)gw2);
-    }
-}
-
-// Only used once in gcontainer - force it to call GDrawRaiseAbove
-static int GGDKDrawIsAbove(GWindow UNUSED(gw1), GWindow UNUSED(gw2)) {
-    Log(LOGDEBUG, " ");
-    return false;
-}
-
 static void GGDKDrawLower(GWindow gw) {
     Log(LOGDEBUG, " ");
     _GGDKDraw_CleanupAutoPaint(((GGDKWindow)gw)->display);
@@ -2349,8 +2331,6 @@ static struct displayfuncs gdkfuncs = {
     GGDKDrawResize,
     GGDKDrawMoveResize,
     GGDKDrawRaise,
-    GGDKDrawRaiseAbove,
-    GGDKDrawIsAbove,
     GGDKDrawLower,
     GGDKDrawSetWindowTitles,
     GGDKDrawSetWindowTitles8,

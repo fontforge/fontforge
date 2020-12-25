@@ -327,8 +327,6 @@ extern void GDrawSetEH(GWindow w,GDrawEH e_h);
 extern void GDrawGetPointerPosition(GWindow w, GEvent *mouse);
 extern GWindow GDrawGetPointerWindow(GWindow w);
 extern void GDrawRaise(GWindow w);
-extern void GDrawRaiseAbove(GWindow w,GWindow below);
-extern int  GDrawIsAbove(GWindow w,GWindow other);
 extern void GDrawLower(GWindow w);
 extern void GDrawSetWindowTitles(GWindow w, const unichar_t *title, const unichar_t *icontit);
 extern void GDrawSetWindowTitles8(GWindow w, const char *title, const char *icontit);

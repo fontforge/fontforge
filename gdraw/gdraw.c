@@ -187,14 +187,6 @@ void GDrawRaise(GWindow w) {
     (w->display->funcs->raise)(w);
 }
 
-void GDrawRaiseAbove(GWindow w,GWindow below) {
-    (w->display->funcs->raiseAbove)(w,below);
-}
-
-int GDrawIsAbove(GWindow w,GWindow other) {
-return( (w->display->funcs->isAbove)(w,other) );
-}
-
 void GDrawLower(GWindow w) {
     (w->display->funcs->lower)(w);
 }

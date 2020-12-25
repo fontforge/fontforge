@@ -1317,77 +1317,10 @@ static void GXDrawRaise(GWindow w) {
 static GXDisplay *edisp;
 static int error(Display *disp, XErrorEvent *err) {
     /* Under twm I get a bad match, under kde a bad window? */
-    if ( err->error_code == BadMatch || err->error_code == BadWindow ) {
-	if ( edisp!=NULL ) edisp->wm_breaks_raiseabove = true;
-    } else {
+    if ( err->error_code != BadMatch && err->error_code != BadWindow ) {
 	myerrorhandler(disp,err);
     }
 return( 1 );
-}
-
-static void GXDrawRaiseAbove(GWindow w,GWindow below) {
-    GXWindow gw = (GXWindow) w, gbelow = (GXWindow) below;
-    Window gxw = gw->w, gxbelow = gbelow->w;
-    GXDisplay *gdisp = gw->display;
-    XWindowChanges ch;
-
-    /* Sometimes we get a BadWindow error here for no good reason */
-    XSync(gdisp->display,false);
-    GDrawProcessPendingEvents((GDisplay *) gdisp);
-    XSetErrorHandler(/*gdisp->display,*/error);
-    if ( !gdisp->wm_raiseabove_tested ) {
-	edisp = gdisp;
-    } else
-	edisp = NULL;
- retry:
-    if ( gdisp->wm_breaks_raiseabove ) {
-	/* If we do this code in gnome it breaks things */
-	/* if we don't do it in twm it breaks things. Sigh */
-	if ( gw->is_toplevel )
-	    gxw = GetParentissimus(gw);
-	if ( gbelow->is_toplevel )
-	    gxbelow = GetParentissimus(gbelow);
-    }
-    ch.sibling = gxbelow;
-    ch.stack_mode = Above;
-    XConfigureWindow(gdisp->display,gxw,CWSibling|CWStackMode,&ch);
-    XSync(gdisp->display,false);
-    GDrawProcessPendingEvents((GDisplay *) gdisp);
-    if ( !gdisp->wm_raiseabove_tested ) {
-	gdisp->wm_raiseabove_tested = true;
-	if ( gdisp->wm_breaks_raiseabove )
- goto retry;
-    }
-    XSetErrorHandler(/*gdisp->display,*/myerrorhandler);
-}
-
-static int GXDrawIsAbove(GWindow w,GWindow other) {
-    GXWindow gw = (GXWindow) w, gother = (GXWindow) other;
-    Window gxw = gw->w, gxother = gother->w, parent;
-    GXDisplay *gdisp = (GXDisplay *) (gw->display);
-    Window par, *children, root;
-    unsigned int nkids; int i;
-
-    if ( gw->is_toplevel && gother->is_toplevel ) {
-	gxw = GetParentissimus(gw);
-	gxother = GetParentissimus(gother);
-	parent = gdisp->root;
-    } else if ( gw->parent!=gother->parent )
-return( -1 );			/* Incommensurate */
-    else
-	parent = gw->parent->w;
-
-    XQueryTree(gdisp->display,parent,&root,&par,&children,&nkids);
-    /* bottom-most child is children[0], topmost is children[nkids-1] */
-    for ( i=nkids-1; i>=0; --i ) {
-	if ( children[i] == gxw )
-return( true );
-	if ( children[i] == gxother )
-return( false );
-    }
-    if ( children )
-	XFree(children);
-return( -1 );
 }
 
 static void GXDrawLower(GWindow w) {
@@ -4077,8 +4010,6 @@ static struct displayfuncs xfuncs = {
     GXDrawResize,
     GXDrawMoveResize,
     GXDrawRaise,
-    GXDrawRaiseAbove,
-    GXDrawIsAbove,
     GXDrawLower,
     GXDrawSetWindowTitles,
     GXDrawSetWindowTitles8,

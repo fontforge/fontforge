@@ -149,8 +149,6 @@ struct gdisplay {
     unsigned int do_dithering: 1;
     unsigned int focusfollowsmouse: 1;
     unsigned int top_offsets_set: 1;
-    unsigned int wm_breaks_raiseabove: 1;
-    unsigned int wm_raiseabove_tested: 1;
     unsigned int endian_mismatch: 1;
     unsigned int macosx_cmd: 1;		/* if set then map state=0x20 to control */
     unsigned int twobmouse_win: 1;	/* if set then map state=0x40 to mouse button 2 */
@@ -193,8 +191,6 @@ struct displayfuncs {
     void (*resize)(GWindow,int32,int32);
     void (*moveResize)(GWindow,int32,int32,int32,int32);
     void (*raise)(GWindow);
-    void (*raiseAbove)(GWindow,GWindow);
-    int  (*isAbove)(GWindow,GWindow);
     void (*lower)(GWindow);
     void (*setWindowTitles)(GWindow, const unichar_t *title, const unichar_t *icontitle);
     void (*setWindowTitles8)(GWindow, const char *title, const char *icontitle);
