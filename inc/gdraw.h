@@ -412,7 +412,6 @@ extern void GDrawSync(GDisplay *gdisp);
 extern void GDrawForceUpdate(GWindow w);
 extern void GDrawProcessOneEvent(GDisplay *disp);
 extern void GDrawProcessPendingEvents(GDisplay *disp);
-extern void GDrawProcessWindowEvents(GWindow w);
 extern void GDrawSkipMouseMoveEvents(GWindow w,GEvent *last);
 extern void GDrawEventLoop(GDisplay *disp);
 extern void GDrawPostEvent(GEvent *e);

@@ -2131,14 +2131,6 @@ static void GGDKDrawProcessPendingEvents(GDisplay *gdisp) {
     }
 }
 
-static void GGDKDrawProcessWindowEvents(GWindow w) {
-    Log(LOGWARN, "This function SHOULD NOT BE CALLED! Will likely not do as expected! Window: %p", w);
-
-    if (w != NULL)  {
-        GGDKDrawProcessPendingEvents(w->display);
-    }
-}
-
 static void GGDKDrawProcessOneEvent(GDisplay *gdisp) {
     //Log(LOGDEBUG, " ");
     GMainContext *ctx = g_main_loop_get_context(((GGDKDisplay *)gdisp)->main_loop);
@@ -2353,7 +2345,6 @@ static struct displayfuncs gdkfuncs = {
     GGDKDrawSync,
     GGDKDrawSkipMouseMoveEvents,
     GGDKDrawProcessPendingEvents,
-    GGDKDrawProcessWindowEvents,
     GGDKDrawProcessOneEvent,
     GGDKDrawEventLoop,
     GGDKDrawPostEvent,

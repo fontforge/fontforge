@@ -3128,15 +3128,6 @@ static void GXDrawProcessPendingEvents(GDisplay *gdisp) {
 	dispatchEvent((GXDisplay *) gdisp, &event);
 }
 
-static void GXDrawProcessWindowEvents(GWindow w) {
-    XEvent event;
-    GXWindow gw = (GXWindow) w;
-    Display *display = gw->display->display;
-
-    while ( XCheckIfEvent(display,&event,windowevents,(char *) (gw->w)))
-	dispatchEvent(gw->display, &event);
-}
-
 static void GXDrawSync(GDisplay *gdisp) {
     XSync(((GXDisplay *) gdisp)->display,false);
 }
@@ -4035,7 +4026,6 @@ static struct displayfuncs xfuncs = {
     GXDrawSync,
     GXDrawSkipMouseMoveEvents,
     GXDrawProcessPendingEvents,
-    GXDrawProcessWindowEvents,
     GXDrawProcessOneEvent,
     GXDrawEventLoop,
     GXDrawPostEvent,

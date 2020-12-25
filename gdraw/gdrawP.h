@@ -244,7 +244,6 @@ struct displayfuncs {
     void (*sync)(GDisplay *);
     void (*skipMouseMoveEvents)(GWindow, GEvent *);
     void (*processPendingEvents)(GDisplay *);
-    void (*processWindowEvents)(GWindow);
     void (*processOneEvent)(GDisplay *);
     void (*eventLoop)(GDisplay *);
     void (*postEvent)(GEvent *e);
