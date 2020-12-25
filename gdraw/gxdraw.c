@@ -1323,12 +1323,6 @@ static int error(Display *disp, XErrorEvent *err) {
 return( 1 );
 }
 
-static void GXDrawLower(GWindow w) {
-    GXWindow gw = (GXWindow) w;
-
-    XLowerWindow(gw->display->display,gw->w);
-}
-
 static void GXDrawSetWindowTitles(GWindow w, const unichar_t *title, const unichar_t *icontit) {
     GXWindow gw = (GXWindow) w;
     Display *display = gw->display->display;
@@ -4010,7 +4004,6 @@ static struct displayfuncs xfuncs = {
     GXDrawResize,
     GXDrawMoveResize,
     GXDrawRaise,
-    GXDrawLower,
     GXDrawSetWindowTitles,
     GXDrawSetWindowTitles8,
     GXDrawGetWindowTitle,

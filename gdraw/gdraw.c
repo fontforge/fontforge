@@ -187,10 +187,6 @@ void GDrawRaise(GWindow w) {
     (w->display->funcs->raise)(w);
 }
 
-void GDrawLower(GWindow w) {
-    (w->display->funcs->lower)(w);
-}
-
 void GDrawSetWindowTitles(GWindow w, const unichar_t *title, const unichar_t *icontit) {
     (w->display->funcs->setWindowTitles)(w,title,icontit);
 }

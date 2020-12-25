@@ -1533,15 +1533,6 @@ static void GGDKDrawRaise(GWindow w) {
     }
 }
 
-static void GGDKDrawLower(GWindow gw) {
-    Log(LOGDEBUG, " ");
-    _GGDKDraw_CleanupAutoPaint(((GGDKWindow)gw)->display);
-    gdk_window_lower(((GGDKWindow)gw)->w);
-    if (!gw->is_toplevel) {
-        _GGDKDraw_FakeConfigureEvent((GGDKWindow)gw);
-    }
-}
-
 // Icon title is ignored.
 static void GGDKDrawSetWindowTitles8(GWindow w, const char *title, const char *UNUSED(icontitle)) {
     Log(LOGDEBUG, " ");// assert(false);
@@ -2331,7 +2322,6 @@ static struct displayfuncs gdkfuncs = {
     GGDKDrawResize,
     GGDKDrawMoveResize,
     GGDKDrawRaise,
-    GGDKDrawLower,
     GGDKDrawSetWindowTitles,
     GGDKDrawSetWindowTitles8,
     GGDKDrawGetWindowTitle,
