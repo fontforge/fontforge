@@ -81,7 +81,7 @@ static int handlefont(char *filename,int which,FILE *ttc,int offset) {
 	pt = outfile + strlen(outfile);
     sprintf( pt, "_%02d.ttf", which );
 
-    ttf = fopen( outfile,"wb");
+    ttf = fopen( outfile,"w+b");
     if ( ttf==NULL ) {
 	fprintf( stderr, "Failed to open %s for output.\n", outfile );
 	return( -3 );
