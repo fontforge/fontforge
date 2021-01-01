@@ -17884,6 +17884,7 @@ static PyObject *PyFFFont_correctDirection(PyFF_Font *self, PyObject *UNUSED(arg
     int checkrefs = true;
     RefChar *ref;
     SplineChar *sc;
+    RefChar *next;
 
     if ( CheckIfFontClosed(self) )
 return (NULL);
@@ -17893,14 +17894,18 @@ return (NULL);
     for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && (sc=sf->glyphs[gid])!=NULL && fv->selected[i] ) {
 	changed = refchanged = false;
 	if ( checkrefs ) {
-	    for ( ref=sc->layers[self->fv->active_layer].refs; ref!=NULL; ref=ref->next ) {
+	    for ( ref=sc->layers[self->fv->active_layer].refs; ref!=NULL; ) {
 		if ( ref->transform[0]*ref->transform[3]<0 ||
 			(ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
 		    if ( !refchanged ) {
 			refchanged = true;
 			SCPreserveLayer(sc,self->fv->active_layer,false);
 		    }
+		    next = ref->next;
 		    SCRefToSplines(sc,ref,self->fv->active_layer);
+		    ref = next;
+		} else {
+		    ref=ref->next;
 		}
 	    }
 	}
