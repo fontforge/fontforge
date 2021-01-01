@@ -34,9 +34,6 @@
 
 static char *ofl_eng[] = {
 /* sil.org license by Authors Nicolas Spalinger & Victor Gaultney, 2007feb26 */
-    "Copyright (c) %1$d, %2$s (<URL|email>),",	/* <Date> <Copyright Holder> */
-    "with Reserved Font Name %s.",		/* <Font Family Name> */
-    "",
     "This Font Software is licensed under the SIL Open Font License, Version 1.1.",
     "This license is copied below, and is also available with a FAQ at:",
     "http://scripts.sil.org/OFL",
