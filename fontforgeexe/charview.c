@@ -3469,9 +3469,6 @@ return( icon );
 
 static int CVCurEnc(CharView *cv)
 {
-    if ( cv->map_of_enc == ((FontView *) (cv->b.fv))->b.map && cv->enc!=-1 )
-        return( cv->enc );
-
     return( ((FontView *) (cv->b.fv))->b.map->backmap[cv->b.sc->orig_pos] );
 }
 
