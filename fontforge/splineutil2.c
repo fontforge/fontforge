@@ -1,5 +1,5 @@
 /* -*- coding: utf-8 -*- */
-/* Copyright (C) 2000-2012 by George Williams */
+/* Copyright (C) 2000-2012 by George Williams, 2021 by Linus Romer */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -776,7 +776,7 @@ void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint *to,int
     fp = SplinesFigureFPsBetween(from,to,&tot);
 
     if ( type==1 )
-	ApproximateSplineFromPointsSlopes(from,to,fp,tot-1,order2);
+	ApproximateSplineFromPointsSlopesAccurate(from,to,fp,tot-1,order2,true); /* changed by Linus Romer */
     else
 	ApproximateSplineFromPoints(from,to,fp,tot-1,order2);
 
