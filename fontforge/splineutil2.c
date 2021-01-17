@@ -776,7 +776,7 @@ void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint *to,int
     fp = SplinesFigureFPsBetween(from,to,&tot);
 
     if ( type==1 )
-	ApproximateSplineFromPointsSlopesAccurate(from,to,fp,tot-1,order2,true); /* changed by Linus Romer */
+	_ApproximateSplineFromPointsSlopes(from,to,fp,tot-1,order2,true); /* changed by Linus Romer */
     else
 	ApproximateSplineFromPoints(from,to,fp,tot-1,order2);
 
