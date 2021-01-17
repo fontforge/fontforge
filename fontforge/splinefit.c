@@ -733,7 +733,7 @@ return( SplineMake3(from,to));
     }
     /* This is the generic case, where a generic part is approximated by a cubic */
     /* bezier spline. */
-	if (is_accurate) { /* More accurate but slower function by Linus Romer */
+    if (is_accurate) { /* More accurate but slower function by Linus Romer */
 	bigreal best_error = 1e30;
 	bigreal t,error,errorsum,dist;
 	BasePoint prevcp,coeff1,coeff2,coeff3;
@@ -742,7 +742,7 @@ return( SplineMake3(from,to));
 	BasePoint approx[99]; /* The 99 points on the approximate cubic bezier */
 	/* We make 2 runs: The first run to narrow the variation range, the second run to finetune */
 	/* The optimal length of the two handles are determined by brute force. */
-	for (int run=0; run<2; ++run) { 
+	for (int run=0; run<2; ++run) {
 		for (int fromhandle=((run==0)?1:-29); fromhandle<=((run==0)?60:29); ++fromhandle) {
 			for (int tohandle=((run==0)?1:-29); tohandle<=((run==0)?60:29); ++tohandle) {
 				nextcp.x = from->me.x+ftlen*fromunit.x*( (run==0)?fromhandle:best_fromhandle+fromhandle/30.0 )/60.0;
@@ -770,7 +770,7 @@ return( SplineMake3(from,to));
 					/* Above we have just initialized the error and */
 					/* now we are going through the remaining 98 of */
 					/* 99 points on the approximate cubic bezier: */
-					for (int j=1; j<99; ++j) { 
+					for (int j=1; j<99; ++j) {
 						dist = (mid[i].p.x-approx[j].x)*(mid[i].p.x-approx[j].x)
 						+(mid[i].p.y-approx[j].y)*(mid[i].p.y-approx[j].y);
 						if (dist < error)
@@ -792,13 +792,12 @@ return( SplineMake3(from,to));
 			}
 		}
 	}
-return( SplineMake3(from,to));	
-	}
-	else { /* original and fast function */
-	pt_pf_x = to->me.x - from->me.x;
-	pt_pf_y = to->me.y - from->me.y;
-	consts[0] = consts[1] = rt_terms[0] = rt_terms[1] = rf_terms[0] = rf_terms[1] = 0;
-	for ( i=0; i<cnt; ++i ) {
+	return( SplineMake3(from,to));
+    } else { /* original and fast function */
+    pt_pf_x = to->me.x - from->me.x;
+    pt_pf_y = to->me.y - from->me.y;
+    consts[0] = consts[1] = rt_terms[0] = rt_terms[1] = rf_terms[0] = rf_terms[1] = 0;
+    for ( i=0; i<cnt; ++i ) {
 	bigreal t = mid[i].t, t2 = t*t, t3=t2*t;
 	bigreal factor_from = t-2*t2+t3;
 	bigreal factor_to = t2-t3;
@@ -817,117 +816,117 @@ return( SplineMake3(from,to));
 	rf_terms[1] += factor_to*( -tounit.x*rf_term_x + -tounit.y*rf_term_y);
 	rt_terms[0] += factor_from*( fromunit.x*rt_term_x + fromunit.y*rt_term_y);
 	rt_terms[1] += factor_to*( -tounit.x*rt_term_x + -tounit.y*rt_term_y);
-	}
+    }
 
  /* I've only seen singular matrices (determinant==0) when cnt==1 */
  /* but even with cnt==1 the determinant is usually non-0 (16 times out of 17)*/
-	determinant = (rt_terms[0]*rf_terms[1]-rt_terms[1]*rf_terms[0]);
-	if ( determinant!=0 ) {
+    determinant = (rt_terms[0]*rf_terms[1]-rt_terms[1]*rf_terms[0]);
+    if ( determinant!=0 ) {
 	bigreal rt, rf;
 	rt = (consts[1]*rf_terms[0]-consts[0]*rf_terms[1])/determinant;
 	if ( rf_terms[0]!=0 )
-		rf = -(consts[0]+rt*rt_terms[0])/rf_terms[0];
+	    rf = -(consts[0]+rt*rt_terms[0])/rf_terms[0];
 	else /* if ( rf_terms[1]!=0 ) This can't happen, otherwise the determinant would be 0 */
-		rf = -(consts[1]+rt*rt_terms[1])/rf_terms[1];
+	    rf = -(consts[1]+rt*rt_terms[1])/rf_terms[1];
 	/* If we get bad values (ones that point diametrically opposed to what*/
 	/*  we need), then fix that factor at 0, and see what we get for the */
 	/*  other */
 	if ( rf>=0 && rt>0 && rf_terms[0]!=0 &&
 		(rf = -consts[0]/rf_terms[0])>0 ) {
-		rt = 0;
+	    rt = 0;
 	} else if ( rf<0 && rt<=0 && rt_terms[1]!=0 &&
 		(rt = -consts[1]/rt_terms[1])<0 ) {
-		rf = 0;
+	    rf = 0;
 	}
 	if ( rt<=0 && rf>=0 ) {
-		from->nextcp.x = from->me.x + rf*fromunit.x;
-		from->nextcp.y = from->me.y + rf*fromunit.y;
-		to->prevcp.x = to->me.x - rt*tounit.x;
-		to->prevcp.y = to->me.y - rt*tounit.y;
-		from->nonextcp = rf==0;
-		to->noprevcp = rt==0;
+	    from->nextcp.x = from->me.x + rf*fromunit.x;
+	    from->nextcp.y = from->me.y + rf*fromunit.y;
+	    to->prevcp.x = to->me.x - rt*tounit.x;
+	    to->prevcp.y = to->me.y - rt*tounit.y;
+	    from->nonextcp = rf==0;
+	    to->noprevcp = rt==0;
 return( SplineMake3(from,to));
 	}
-	}
+    }
 
-	trylen = (to->me.x-from->me.x)*fromunit.x + (to->me.y-from->me.y)*fromunit.y;
-	if ( trylen>flen ) flen = trylen;
+    trylen = (to->me.x-from->me.x)*fromunit.x + (to->me.y-from->me.y)*fromunit.y;
+    if ( trylen>flen ) flen = trylen;
 
-	trylen = (from->me.x-to->me.x)*tounit.x + (from->me.y-to->me.y)*tounit.y;
-	if ( trylen>tlen ) tlen = trylen;
+    trylen = (from->me.x-to->me.x)*tounit.x + (from->me.y-to->me.y)*tounit.y;
+    if ( trylen>tlen ) tlen = trylen;
 
-	for ( i=0; i<cnt; ++i ) {
+    for ( i=0; i<cnt; ++i ) {
 	trylen = (mid[i].p.x-from->me.x)*fromunit.x + (mid[i].p.y-from->me.y)*fromunit.y;
 	if ( trylen>flen ) flen = trylen;
 	trylen = (mid[i].p.x-to->me.x)*tounit.x + (mid[i].p.y-to->me.y)*tounit.y;
 	if ( trylen>tlen ) tlen = trylen;
-	}
+    }
 
-	fdotft = fromunit.x*ftunit.x + fromunit.y*ftunit.y;
-	fmax = fdotft>0 ? ftlen/fdotft : 1e10;
-	tdotft = -tounit.x*ftunit.x - tounit.y*ftunit.y;
-	tmax = tdotft>0 ? ftlen/tdotft : 1e10;
-	/* At fmax, tmax the control points will stretch beyond the other endpoint*/
-	/*  when projected along the line between the two endpoints */
+    fdotft = fromunit.x*ftunit.x + fromunit.y*ftunit.y;
+    fmax = fdotft>0 ? ftlen/fdotft : 1e10;
+    tdotft = -tounit.x*ftunit.x - tounit.y*ftunit.y;
+    tmax = tdotft>0 ? ftlen/tdotft : 1e10;
+    /* At fmax, tmax the control points will stretch beyond the other endpoint*/
+    /*  when projected along the line between the two endpoints */
 
-	db.base = from->me;
-	db.unit = ftunit;
-	db.len = ftlen;
-	ApproxBounds(&b,mid,cnt,&db);
+    db.base = from->me;
+    db.unit = ftunit;
+    db.len = ftlen;
+    ApproxBounds(&b,mid,cnt,&db);
 
-	for ( k=0; k<TRY_CNT; ++k ) {
+    for ( k=0; k<TRY_CNT; ++k ) {
 	bestdiff[k] = 1e20;
 	besti[k] = -1; bestj[k] = -1;
-	}
-	fdiff = flen/DECIMATION;
-	tdiff = tlen/DECIMATION;
-	from->nextcp = from->me;
-	from->nonextcp = false;
-	to->noprevcp = false;
-	memset(&temp,0,sizeof(Spline));
-	temp.from = from; temp.to = to;
-	for ( i=1; i<DECIMATION; ++i ) {
+    }
+    fdiff = flen/DECIMATION;
+    tdiff = tlen/DECIMATION;
+    from->nextcp = from->me;
+    from->nonextcp = false;
+    to->noprevcp = false;
+    memset(&temp,0,sizeof(Spline));
+    temp.from = from; temp.to = to;
+    for ( i=1; i<DECIMATION; ++i ) {
 	from->nextcp.x += fdiff*fromunit.x; from->nextcp.y += fdiff*fromunit.y;
 	to->prevcp = to->me;
 	for ( j=1; j<DECIMATION; ++j ) {
-		to->prevcp.x += tdiff*tounit.x; to->prevcp.y += tdiff*tounit.y;
-		SplineRefigure(&temp);
-		curdiff = SigmaDeltas(&temp,mid,cnt,&b,&db);
-		for ( k=0; k<TRY_CNT; ++k ) {
+	    to->prevcp.x += tdiff*tounit.x; to->prevcp.y += tdiff*tounit.y;
+	    SplineRefigure(&temp);
+	    curdiff = SigmaDeltas(&temp,mid,cnt,&b,&db);
+	    for ( k=0; k<TRY_CNT; ++k ) {
 		if ( curdiff<bestdiff[k] ) {
-			for ( l=TRY_CNT-1; l>k; --l ) {
+		    for ( l=TRY_CNT-1; l>k; --l ) {
 			bestdiff[l] = bestdiff[l-1];
 			besti[l] = besti[l-1];
 			bestj[l] = bestj[l-1];
-			}
-			bestdiff[k] = curdiff;
-			besti[k] = i; bestj[k]=j;
-		break;
+		    }
+		    bestdiff[k] = curdiff;
+		    besti[k] = i; bestj[k]=j;
+	    break;
 		}
-		}
+	    }
 	}
-	}
+    }
 
-	finaldiff = 1e20;
-	offn_ = offp_ = -1;
-	spline = SplineMake(from,to,false);
-	for ( k=-1; k<TRY_CNT; ++k ) {
+    finaldiff = 1e20;
+    offn_ = offp_ = -1;
+    spline = SplineMake(from,to,false);
+    for ( k=-1; k<TRY_CNT; ++k ) {
 	if ( k<0 ) {
-		BasePoint nextcp, prevcp;
-		bigreal temp1, temp2;
-		int ret = _ApproximateSplineFromPoints(from,to,mid,cnt,&nextcp,&prevcp,false);
-		/* sometimes least squares gives us the right answer */
-		if ( !(ret&1) || !(ret&2))
-	continue;
-		temp1 = (prevcp.x-to->me.x)*tounit.x + (prevcp.y-to->me.y)*tounit.y;
-		temp2 = (nextcp.x-from->me.x)*fromunit.x + (nextcp.y-from->me.y)*fromunit.y;
-		if ( temp1<=0 || temp2<=0 )		/* A nice solution... but the control points are diametrically opposed to what they should be */
-	continue;
-		tlen = temp1; flen = temp2;
+	    BasePoint nextcp, prevcp;
+	    bigreal temp1, temp2;
+	    int ret = _ApproximateSplineFromPoints(from,to,mid,cnt,&nextcp,&prevcp,false);
+	    /* sometimes least squares gives us the right answer */
+	    if ( !(ret&1) || !(ret&2))
+    continue;
+	    temp1 = (prevcp.x-to->me.x)*tounit.x + (prevcp.y-to->me.y)*tounit.y;
+	    temp2 = (nextcp.x-from->me.x)*fromunit.x + (nextcp.y-from->me.y)*fromunit.y;
+	    if ( temp1<=0 || temp2<=0 )		/* A nice solution... but the control points are diametrically opposed to what they should be */
+    continue;
+	    tlen = temp1; flen = temp2;
 	} else {
-		if ( bestj[k]<0 || besti[k]<0 )
-	continue;
-		tlen = bestj[k]*tdiff; flen = besti[k]*fdiff;
+	    if ( bestj[k]<0 || besti[k]<0 )
+    continue;
+	    tlen = bestj[k]*tdiff; flen = besti[k]*fdiff;
 	}
 	to->prevcp.x = to->me.x + tlen*tounit.x; to->prevcp.y = to->me.y + tlen*tounit.y;
 	from->nextcp.x = from->me.x + flen*fromunit.x; from->nextcp.y = from->me.y + flen*fromunit.y;
@@ -940,99 +939,99 @@ return( SplineMake3(from,to));
 	curdiff = SigmaDeltas(spline,mid,cnt,&b,&db);
 	totcnt = 0;
 	for (;;) {
-		bigreal fadiff, fsdiff;
-		bigreal tadiff, tsdiff;
+	    bigreal fadiff, fsdiff;
+	    bigreal tadiff, tsdiff;
 
-		from->nextcp.x = from->me.x + (offn+incrn)*fromunit.x; from->nextcp.y = from->me.y + (offn+incrn)*fromunit.y;
-		to->prevcp.x = to->me.x + offp*tounit.x; to->prevcp.y = to->me.y + offp*tounit.y;
-		SplineRefigure(spline);
-		fadiff = SigmaDeltas(spline,mid,cnt,&b,&db);
-		from->nextcp.x = from->me.x + (offn-incrn)*fromunit.x; from->nextcp.y = from->me.y + (offn-incrn)*fromunit.y;
-		SplineRefigure(spline);
-		fsdiff = SigmaDeltas(spline,mid,cnt,&b,&db);
-		from->nextcp.x = from->me.x + offn*fromunit.x; from->nextcp.y = from->me.y + offn*fromunit.y;
-		if ( offn-incrn<=0 )
+	    from->nextcp.x = from->me.x + (offn+incrn)*fromunit.x; from->nextcp.y = from->me.y + (offn+incrn)*fromunit.y;
+	    to->prevcp.x = to->me.x + offp*tounit.x; to->prevcp.y = to->me.y + offp*tounit.y;
+	    SplineRefigure(spline);
+	    fadiff = SigmaDeltas(spline,mid,cnt,&b,&db);
+	    from->nextcp.x = from->me.x + (offn-incrn)*fromunit.x; from->nextcp.y = from->me.y + (offn-incrn)*fromunit.y;
+	    SplineRefigure(spline);
+	    fsdiff = SigmaDeltas(spline,mid,cnt,&b,&db);
+	    from->nextcp.x = from->me.x + offn*fromunit.x; from->nextcp.y = from->me.y + offn*fromunit.y;
+	    if ( offn-incrn<=0 )
 		fsdiff += 1e10;
 
-		to->prevcp.x = to->me.x + (offp+incrp)*tounit.x; to->prevcp.y = to->me.y + (offp+incrp)*tounit.y;
-		SplineRefigure(spline);
-		tadiff = SigmaDeltas(spline,mid,cnt,&b,&db);
-		to->prevcp.x = to->me.x + (offp-incrp)*tounit.x; to->prevcp.y = to->me.y + (offp-incrp)*tounit.y;
-		SplineRefigure(spline);
-		tsdiff = SigmaDeltas(spline,mid,cnt,&b,&db);
-		to->prevcp.x = to->me.x + offp*tounit.x; to->prevcp.y = to->me.y + offp*tounit.y;
-		if ( offp-incrp<=0 )
+	    to->prevcp.x = to->me.x + (offp+incrp)*tounit.x; to->prevcp.y = to->me.y + (offp+incrp)*tounit.y;
+	    SplineRefigure(spline);
+	    tadiff = SigmaDeltas(spline,mid,cnt,&b,&db);
+	    to->prevcp.x = to->me.x + (offp-incrp)*tounit.x; to->prevcp.y = to->me.y + (offp-incrp)*tounit.y;
+	    SplineRefigure(spline);
+	    tsdiff = SigmaDeltas(spline,mid,cnt,&b,&db);
+	    to->prevcp.x = to->me.x + offp*tounit.x; to->prevcp.y = to->me.y + offp*tounit.y;
+	    if ( offp-incrp<=0 )
 		tsdiff += 1e10;
 
-		if ( offn>=incrn && fsdiff<curdiff &&
-			(fsdiff<fadiff && fsdiff<tsdiff && fsdiff<tadiff)) {
+	    if ( offn>=incrn && fsdiff<curdiff &&
+		    (fsdiff<fadiff && fsdiff<tsdiff && fsdiff<tadiff)) {
 		offn -= incrn;
 		if ( bettern>0 )
-			incrn /= 2;
+		    incrn /= 2;
 		bettern = -1;
 		nocnt = 0;
 		curdiff = fsdiff;
-		} else if ( offn+incrn<fmax && fadiff<curdiff &&
-			(fadiff<=fsdiff && fadiff<tsdiff && fadiff<tadiff)) {
+	    } else if ( offn+incrn<fmax && fadiff<curdiff &&
+		    (fadiff<=fsdiff && fadiff<tsdiff && fadiff<tadiff)) {
 		offn += incrn;
 		if ( bettern<0 )
-			incrn /= 2;
+		    incrn /= 2;
 		bettern = 1;
 		nocnt = 0;
 		curdiff = fadiff;
-		} else if ( offp>=incrp && tsdiff<curdiff &&
-			(tsdiff<=fsdiff && tsdiff<=fadiff && tsdiff<tadiff)) {
+	    } else if ( offp>=incrp && tsdiff<curdiff &&
+		    (tsdiff<=fsdiff && tsdiff<=fadiff && tsdiff<tadiff)) {
 		offp -= incrp;
 		if ( betterp>0 )
-			incrp /= 2;
+		    incrp /= 2;
 		betterp = -1;
 		nocnt = 0;
 		curdiff = tsdiff;
-		} else if ( offp+incrp<tmax && tadiff<curdiff &&
-			(tadiff<=fsdiff && tadiff<=fadiff && tadiff<=tsdiff)) {
+	    } else if ( offp+incrp<tmax && tadiff<curdiff &&
+		    (tadiff<=fsdiff && tadiff<=fadiff && tadiff<=tsdiff)) {
 		offp += incrp;
 		if ( betterp<0 )
-			incrp /= 2;
+		    incrp /= 2;
 		betterp = 1;
 		nocnt = 0;
 		curdiff = tadiff;
-		} else {
+	    } else {
 		if ( ++nocnt > 6 )
 	break;
 		incrn /= 2;
 		incrp /= 2;
-		}
-		if ( curdiff<1 )
+	    }
+	    if ( curdiff<1 )
 	break;
-		if ( incrp<tdiff/1024 || incrn<fdiff/1024 )
+	    if ( incrp<tdiff/1024 || incrn<fdiff/1024 )
 	break;
-		if ( ++totcnt>200 )
+	    if ( ++totcnt>200 )
 	break;
-		if ( offn<0 || offp<0 ) {
+	    if ( offn<0 || offp<0 ) {
 		IError("Approximation got inverse control points");
 	break;
-		}
+	    }
 	}
 	if ( curdiff<finaldiff ) {
-		finaldiff = curdiff;
-		offn_ = offn;
-		offp_ = offp;
+	    finaldiff = curdiff;
+	    offn_ = offn;
+	    offp_ = offp;
 	}
-	}
+    }
 
-	to->noprevcp = offp_==0;
-	from->nonextcp = offn_==0;
-	to->prevcp.x = to->me.x + offp_*tounit.x; to->prevcp.y = to->me.y + offp_*tounit.y;
-	from->nextcp.x = from->me.x + offn_*fromunit.x; from->nextcp.y = from->me.y + offn_*fromunit.y;
-	/* I used to check for a spline very close to linear (and if so, make it */
-	/*  linear). But in when stroking a path with an eliptical pen we transform*/
-	/*  the coordinate system and our normal definitions of "close to linear" */
-	/*  don't apply */
-	/*TestForLinear(from,to);*/
-	SplineRefigure(spline);
-	
+    to->noprevcp = offp_==0;
+    from->nonextcp = offn_==0;
+    to->prevcp.x = to->me.x + offp_*tounit.x; to->prevcp.y = to->me.y + offp_*tounit.y;
+    from->nextcp.x = from->me.x + offn_*fromunit.x; from->nextcp.y = from->me.y + offn_*fromunit.y;
+    /* I used to check for a spline very close to linear (and if so, make it */
+    /*  linear). But in when stroking a path with an eliptical pen we transform*/
+    /*  the coordinate system and our normal definitions of "close to linear" */
+    /*  don't apply */
+    /*TestForLinear(from,to);*/
+    SplineRefigure(spline);
+
 return( spline );
-	}
+    }
 }
 #undef TRY_CNT
 #undef DECIMATION
