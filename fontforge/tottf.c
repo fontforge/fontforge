@@ -4505,11 +4505,18 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
     /* We always want a format 4 2byte unicode encoding map */
     /* But if it's symbol, only include encodings 0xff20 - 0xffff */
     int *avail = malloc(65536*sizeof(int32));
-    int i,j,l, d, first_delta, last_delta, cur_delta_val, slen;
+    int i,j,l, d, first_delta, last_delta, slen;
     int curseg=0, segcnt, segmax=SEGMAXINC, cnt=0, mapcnt=0;
-    struct cmapseg { int32 start, end, delta, mapoff; int16 use_delta; } *cmapseg;
     SplineChar *sc;
     FILE *format4 = NULL;
+    /* the cmapseg elements are written as shorts. We keep them
+       larger and signed here to avoid hiding bad calculations
+       from the putshort error message.
+
+       cur_delta_val, in contrast, is a signed short to yield
+       the right modulo 65336 arithmetic values. */
+    int16 cur_delta_val;
+    struct cmapseg { int32 start, end, delta, mapoff, use_delta; } *cmapseg;
 
     memset(avail,0xff,65536*sizeof(int32));
     if ( map->enc->is_unicodebmp || map->enc->is_unicodefull ) { int gid;
@@ -4570,12 +4577,13 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
 	    cmapseg = realloc(cmapseg, segmax*sizeof(struct cmapseg));
 	    memset(cmapseg+curseg+2, 0, SEGMAXINC*sizeof(struct cmapseg));
 	}
-	if ( avail[i]!=-1 ) {
+	if ( avail[i]!=-1 ) { // Have a glyph for the slot
 	    if ( cmapseg[curseg].start==-1 ) {
 		first_delta = cmapseg[curseg].start = i;
 		cur_delta_val = avail[i]-i;
 	    } else {
 		if ( first_delta==-1 || avail[i]-i != cur_delta_val ) {
+		    // We've seen a blank slot or the delta doesn't match
 		    if ( cmapseg[curseg].use_delta ) {
 			cmapseg[curseg].delta = cur_delta_val;
 			curseg++;
@@ -4585,58 +4593,55 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
 			cur_delta_val = avail[i]-i;
 			first_delta = i;
 		    }
-		} else if (    first_delta!=-1 && i-first_delta>SEGBREAKEVEN
-		            && cur_delta_val>=-32768 && cur_delta_val<=32767 ) {
+		} else if ( first_delta!=-1 && i-first_delta>SEGBREAKEVEN ) {
 		    if ( first_delta==cmapseg[curseg].start ) {
 			cmapseg[curseg].use_delta = true;
 			cmapseg[curseg].delta = cur_delta_val;
 		    } else {
-			// Split and backtrack
+			/* Split and calc parameters of already visited
+			   slots by backtracking. (Because we're splitting
+			   out delta-compatible series and avoiding long
+			   blank sequences with SEGBREAKEVEN this is 
+			   likely to terminate after a few iterations.)*/
 			cmapseg[curseg].end = -1;
 			cmapseg[curseg].use_delta = true;
 			for (j=first_delta-1; j>=cmapseg[curseg].start; --j) {
 			    if ( avail[j]!=-1 && cmapseg[curseg].end==-1 ) {
 				cmapseg[curseg].end = j;
-				cmapseg[curseg].delta = avail[j]-j;
+				cmapseg[curseg].delta = (int16) avail[j]-j;
 			    } else if (    cmapseg[curseg].end!=-1
 			                && (   avail[j]==-1
 			                    || cmapseg[curseg].delta!=avail[j]-j )) {
 				cmapseg[curseg].use_delta = false;
 				cmapseg[curseg].delta = 0;
+				break;
 			    }
-			}
-			if ( !(cmapseg[curseg].delta>=-32768 && cmapseg[curseg].delta<=32767) ) {
-			    cmapseg[curseg].use_delta = false;
-			    cmapseg[curseg].delta = 0;
 			}
 			if ( !cmapseg[curseg].use_delta ) {
 			    cmapseg[curseg].mapoff = mapcnt;
-			    // count up space for map.
 			    mapcnt += cmapseg[curseg].end - cmapseg[curseg].start + 1;
 			}
 			curseg++;
 			cmapseg[curseg].start = first_delta;
 			cmapseg[curseg].delta = cur_delta_val;
-			cmapseg[curseg].use_delta = cur_delta_val>=-32768 && cur_delta_val<=32767;
+			cmapseg[curseg].use_delta = true;
 		    }
 		}
 	    }
 	    cmapseg[curseg].end = i;
-	} else {
+	} else { // Don't have a glyph for the slot
 	    /* If this segment is directly mapped or the last encoded glyph was
 	       more than SEGBREAKEVEN slots ago, start a new segment */
 	    if ( first_delta!=-1 )
 		last_delta = first_delta;
 	    if ( cmapseg[curseg].start!=-1 &&
 	         (cmapseg[curseg].use_delta || i-cmapseg[curseg].end>SEGBREAKEVEN+1) ) {
-		if (    last_delta==cmapseg[curseg].start
-		     && cur_delta_val>=-32768 && cur_delta_val<=32767) {
+		if ( last_delta==cmapseg[curseg].start ) {
 		    cmapseg[curseg].use_delta = true;
 		    cmapseg[curseg].delta = cur_delta_val;
 		}
 		if ( !cmapseg[curseg].use_delta ) {
 		    cmapseg[curseg].mapoff = mapcnt;
-		    // count up space for map.
 		    mapcnt += cmapseg[curseg].end - cmapseg[curseg].start + 1;
 		}
 		curseg++;
@@ -4647,8 +4652,7 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
     }
     // Finalize last segment
     if ( cmapseg[curseg].start!=-1 ) {
-	if (    first_delta==cmapseg[curseg].start
-	     && cur_delta_val>=-32768 && cur_delta_val<=32767) {
+	if ( first_delta==cmapseg[curseg].start ) {
 	    cmapseg[curseg].use_delta = true;
 	} else {
 	    cmapseg[curseg].mapoff = mapcnt;
@@ -4663,9 +4667,10 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
 
     segcnt = curseg+1;
 
+    /*
     for (i=0; i<segcnt; i++) {
 	printf(" start: %d, end: %d, delta: %d, rangeoff: %d\n", (int)cmapseg[i].start, (int)cmapseg[i].end, (int)cmapseg[i].delta, (int)cmapseg[i].mapoff);
-    }
+    } */
     slen = (8+4*segcnt+mapcnt)*sizeof(int16);
     if ( slen>=0xFFFF ) { // No room for table
 	free(avail);
@@ -4689,10 +4694,7 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
     for ( i=0; i<segcnt; ++i )
 	putshort(format4,cmapseg[i].start);
     for ( i=0; i<segcnt; ++i )
-	if (cmapseg[i].use_delta)
-	    putshort(format4,cmapseg[i].delta);
-	else
-	    putshort(format4,0);
+	putshort(format4,cmapseg[i].delta);
     for ( i=0; i<segcnt; ++i )
 	if (cmapseg[i].use_delta)
 	    putshort(format4,0);
