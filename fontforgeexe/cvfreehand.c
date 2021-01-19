@@ -576,7 +576,7 @@ static SplineSet *TraceCurve(CharView *cv) {
 	else {
 	    TraceFigureCPs(last,cur,base,pt);
 	    if ( !last->nonextcp && !cur->noprevcp )
-		ApproximateSplineFromPointsSlopes(last,cur,mids+base->num+1,pt->num-base->num-1,false);
+		ApproximateSplineFromPointsSlopes(last,cur,mids+base->num+1,pt->num-base->num-1,false,false);
 	    else {
 		last->nonextcp = false; cur->noprevcp=false;
 		ApproximateSplineFromPoints(last,cur,mids+base->num+1,pt->num-base->num-1,false);

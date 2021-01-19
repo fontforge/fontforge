@@ -613,7 +613,7 @@ static void SplineSetNLTrans(SplineSet *ss, struct expr_context *c,
 		else
 		    /* We transformed the slopes carefully, and I hope correctly */
 		    /* This should give smoother joins that the above function */
-		    ApproximateSplineFromPointsSlopes(last,next,mids,20,false);
+		    ApproximateSplineFromPointsSlopes(last,next,mids,20,false,false);
 	    } else
 		SplineMake3(last,next);
 	    last = next;

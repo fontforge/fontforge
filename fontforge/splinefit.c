@@ -572,7 +572,7 @@ static void ApproxBounds(DBounds *b, FitPoint *mid, int cnt, struct dotbounds *d
 /*  improve it further yet */
 #define TRY_CNT		2
 #define DECIMATION	5
-Spline *_ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
+Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
 	FitPoint *mid, int cnt, int order2, int is_accurate) {
     BasePoint tounit, fromunit, ftunit;
     bigreal flen,tlen,ftlen,dot;
@@ -1036,11 +1036,6 @@ return( spline );
 #undef TRY_CNT
 #undef DECIMATION
 
-Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
-	FitPoint *mid, int cnt, int order2) {
-	return _ApproximateSplineFromPointsSlopes(from,to,mid,cnt,order2,false);
-}
-
 SplinePoint *_ApproximateSplineSetFromGen(SplinePoint *from, SplinePoint *to,
                                           bigreal start_t, bigreal end_t,
                                           bigreal toler, int toler_is_sumsq,
@@ -1073,7 +1068,7 @@ SplinePoint *_ApproximateSplineSetFromGen(SplinePoint *from, SplinePoint *to,
     to->prevcp.x = to->me.x - fp[cnt-1].ut.x;
     to->prevcp.y = to->me.y - fp[cnt-1].ut.y;
     to->noprevcp = false;
-    ApproximateSplineFromPointsSlopes(from,to,fp+1,cnt-2,order2);
+    ApproximateSplineFromPointsSlopes(from,to,fp+1,cnt-2,order2,false);
 
     for ( i=0; i<cnt; ++i ) {
 	d = SplineMinDistanceToPoint(from->next, &fp[i].p);

@@ -43,8 +43,6 @@ typedef struct fitpoint {
 extern Spline *ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
                                            FitPoint *mid, int cnt, int order2);
 extern Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
-                                                 FitPoint *mid, int cnt, int order2);
-extern Spline *_ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
                                 FitPoint *mid, int cnt, int order2, int is_accurate);
 
 /* ApproximateSplineSetFromGen() fits a one or more splines to data
