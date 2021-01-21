@@ -4558,6 +4558,30 @@ static int PickCMap(struct cmap_encs *cmap_encs,int enccnt,int def) {
 return( ret );
 }
 
+/* This doesn't worry about putting the most appropriate encoding
+   in sc->unicodeenc because (in theory) NameConsistancyCheck()
+   will swap it in. */
+static void addttfencoding(SplineChar *sc, int unc) {
+    struct altuni *alt;
+    if ( unc==-1 ) {
+	return;
+    } else if (sc->unicodeenc==-1 || sc->unicodeenc==unc) {
+	sc->unicodeenc = unc;
+	return;
+    } else {
+	// Check for duplicates
+	for (alt = sc->altuni; alt!=NULL; alt = alt->next)
+	    if ( alt->unienc==unc )
+		return;
+	alt = chunkalloc(sizeof(struct altuni));
+	alt->unienc = unc;
+	alt->vs = -1;
+	alt->fid = 0;
+	alt->next = sc->altuni;
+	sc->altuni = alt;
+    }
+}
+
 /* 'cmap' table: readttfcmap */
 static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     int i,j, def, unicode_cmap, unicode4_cmap, dcnt, dcmap_cnt, dc;
@@ -4760,7 +4784,7 @@ return;
 			if ( map!=NULL )
 			    map->map[i] = table[i];
 			if ( dounicode && trans!=NULL )
-			    info->chars[table[i]]->unicodeenc = trans[i];
+			    addttfencoding(info->chars[table[i]], trans[i]);
 		    }
 		} else if ( table[i]<info->glyph_cnt && info->chars[table[i]]!=NULL )
 		    info->inuse[table[i]] = 1;
@@ -4823,8 +4847,8 @@ return;
 				}
 			    } else {
 				if ( uenc!=-1 && dounicode ) used[uenc] = true;
-				if ( dounicode && info->chars[(uint16) (j+delta[i])]->unicodeenc==-1 )
-				    info->chars[(uint16) (j+delta[i])]->unicodeenc = uenc;
+				if ( dounicode )
+				    addttfencoding(info->chars[(uint16) (j+delta[i])], uenc);
 			        if ( map!=NULL && lenc<map->enccount )
 				    map->map[lenc] = (uint16) (j+delta[i]);
 			    }
@@ -4873,8 +4897,8 @@ return;
 				    }
 				} else {
 				    if ( uenc!=-1 && dounicode ) used[uenc] = true;
-				    if ( dounicode && info->chars[index]->unicodeenc==-1 )
-					info->chars[index]->unicodeenc = uenc;
+				    if ( dounicode )
+					addttfencoding(info->chars[index], uenc);
 				    if ( map!=NULL && lenc<map->enccount )
 					map->map[lenc] = index;
 				}
@@ -4911,7 +4935,7 @@ return;
 		    int gid = getushort(ttf);
 		    if ( dounicode ) {
 			if ( gid<info->glyph_cnt ) {
-			    info->chars[gid]->unicodeenc = trans!=NULL ? trans[first+i] : first+i;
+			    addttfencoding(info->chars[gid], trans!=NULL ? trans[first+i] : first+i);
 			    if ( map!=NULL && first+i < map->enccount )
 				map->map[first+i] = gid;
 			} else
@@ -4968,8 +4992,8 @@ return;
 			    /* Do Nothing */;
 			else {
 			    int lenc = modenc(i,mod);
-			    if ( dounicode && info->chars[index]->unicodeenc==-1 )
-				info->chars[index]->unicodeenc = i;
+			    if ( dounicode )
+				addttfencoding(info->chars[index], i);
 			    if ( map!=NULL && lenc<map->enccount )
 				map->map[lenc] = index;
 			}
@@ -4990,8 +5014,8 @@ return;
 			    else if ( info->chars[index]==NULL )
 				/* Do Nothing */;
 			    else {
-				if ( dounicode && info->chars[index]->unicodeenc==-1 )
-				    info->chars[index]->unicodeenc = umodenc(enc,mod,info);
+				if ( dounicode )
+				    addttfencoding(info->chars[index], umodenc(enc,mod,info));
 				if ( map!=NULL && lenc<map->enccount )
 				    map->map[lenc] = index;
 			    }
@@ -5024,8 +5048,8 @@ return;
 		    for ( i=start; i<=end; ++i ) {
 			int uenc = ((i>>16)-0xd800)*0x400 + (i&0xffff)-0xdc00 + 0x10000;
 			sc = info->chars[startglyph+i-start];
-			if ( dounicode && sc->unicodeenc==-1 )
-			    sc->unicodeenc = uenc;
+			if ( dounicode )
+			    addttfencoding(sc, uenc);
 			if ( map!=NULL && sc->unicodeenc < map->enccount )
 			    map->map[uenc] = startglyph+i-start;
 		    }
@@ -5046,7 +5070,7 @@ return;
 		for ( i=0; i<count; ++i ) {
 		    int gid = getushort(ttf);
 		    if ( dounicode )
-			info->chars[gid]->unicodeenc = first+i;
+			addttfencoding(info->chars[gid], first+i);
 		    if ( map!=NULL && first+i < map->enccount )
 			map->map[first+i] = gid;
 		}
@@ -5076,7 +5100,7 @@ return;
 		    break;
 			} else {
 			    if ( dounicode )
-				info->chars[startglyph+i-start]->unicodeenc = i;
+				addttfencoding(info->chars[startglyph+i-start], i);
 			    if ( map!=NULL && i < map->enccount )
 				map->map[i] = startglyph+i-start;
 			}
