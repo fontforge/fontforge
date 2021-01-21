@@ -4542,12 +4542,16 @@ return( ret );
    will swap it in. */
 static void addttfencoding(SplineChar *sc, int unc) {
     struct altuni *alt;
-    if ( unc==-1 )
+    if ( unc==-1 ) {
 	return;
-    // This doesn't check for duplication but it easily could
-    if (sc->unicodeenc!=-1) {
+    } else if (sc->unicodeenc==-1 || sc->unicodeenc==unc) {
 	sc->unicodeenc = unc;
+	return;
     } else {
+	// Check for duplicates
+	for (alt = sc->altuni; alt!=NULL; alt = alt->next)
+	    if ( alt->unienc==unc )
+		return;
 	alt = chunkalloc(sizeof(struct altuni));
 	alt->unienc = unc;
 	alt->vs = -1;
