@@ -4537,6 +4537,9 @@ static int PickCMap(struct cmap_encs *cmap_encs,int enccnt,int def) {
 return( ret );
 }
 
+/* This doesn't worry about putting the most appropriate encoding
+   in sc->unicodeenc because (in theory) NameConsistancyCheck()
+   will swap it in. */
 static void addttfencoding(SplineChar *sc, int unc) {
     struct altuni *alt;
     if ( unc==-1 )
