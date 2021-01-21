@@ -4593,7 +4593,7 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
 			cur_delta_val = avail[i]-i;
 			first_delta = i;
 		    }
-		} else if ( first_delta!=-1 && i-first_delta>SEGBREAKEVEN ) {
+		} else if ( first_delta!=-1 && i-first_delta>=SEGBREAKEVEN ) {
 		    if ( first_delta==cmapseg[curseg].start ) {
 			cmapseg[curseg].use_delta = true;
 			cmapseg[curseg].delta = cur_delta_val;
@@ -4606,12 +4606,13 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
 			cmapseg[curseg].end = -1;
 			cmapseg[curseg].use_delta = true;
 			for (j=first_delta-1; j>=cmapseg[curseg].start; --j) {
+			    int16 jd = avail[j]-j;
 			    if ( avail[j]!=-1 && cmapseg[curseg].end==-1 ) {
 				cmapseg[curseg].end = j;
-				cmapseg[curseg].delta = (int16) avail[j]-j;
+				cmapseg[curseg].delta = jd;
 			    } else if (    cmapseg[curseg].end!=-1
 			                && (   avail[j]==-1
-			                    || cmapseg[curseg].delta!=avail[j]-j )) {
+			                    || cmapseg[curseg].delta!=jd )) {
 				cmapseg[curseg].use_delta = false;
 				cmapseg[curseg].delta = 0;
 				break;
@@ -4635,7 +4636,7 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
 	    if ( first_delta!=-1 )
 		last_delta = first_delta;
 	    if ( cmapseg[curseg].start!=-1 &&
-	         (cmapseg[curseg].use_delta || i-cmapseg[curseg].end>SEGBREAKEVEN+1) ) {
+	         (cmapseg[curseg].use_delta || i-cmapseg[curseg].end>=SEGBREAKEVEN) ) {
 		if ( last_delta==cmapseg[curseg].start ) {
 		    cmapseg[curseg].use_delta = true;
 		    cmapseg[curseg].delta = cur_delta_val;
