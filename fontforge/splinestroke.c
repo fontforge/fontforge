@@ -418,6 +418,7 @@ static void SplineSetLineTo(SplineSet *cur, BasePoint xy) {
 static SplineSet *SplineContourOuterCCWRemoveOverlap(SplineSet *ss) {
     DBounds b;
     SplineSet *ss_tmp, *ss_last = NULL;
+    int trash;
 
     SplineSetQuickBounds(ss,&b);
     b.minx -= 100;
@@ -434,6 +435,7 @@ static SplineSet *SplineContourOuterCCWRemoveOverlap(SplineSet *ss) {
     ss_tmp->last = ss_tmp->first;
     ss->next = ss_tmp;
     ss=SplineSetRemoveOverlap(NULL,ss,over_remove);
+    SplineSetsCorrect(ss, &trash);
     for ( ss_tmp=ss; ss_tmp!=NULL; ss_last=ss_tmp, ss_tmp=ss_tmp->next ) {
 	if ( ss_tmp->first->me.x==b.minx || ss_tmp->first->me.x==b.maxx ) {
 	    if ( ss_last==NULL )
@@ -2172,7 +2174,7 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
     BasePoint ut_ini = BPUNINIT, ut_start, ut_mid, ut_endlast;
     BasePoint sxy;
     bigreal last_t, t;
-    int is_right, linear, curved, on_cusp;
+    int is_right, linear, curved, on_cusp, trash;
     int is_ccw_ini = false, is_ccw_start, is_ccw_mid, was_ccw = false;
     int closed = ss->first->prev!=NULL;
 
@@ -2284,22 +2286,24 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
 	    if ( !closed )
 		LogError( _("Warning: Contour start did not close\n") );
 	    else {
-		if ( c->rmov==srmov_contour )
+		if ( c->rmov==srmov_contour ) {
 		    left = SplineSetRemoveOverlap(NULL,left,over_remove);
-		// Open paths don't always produce clockwise output
-		is_ccw_mid = SplinePointListIsClockwise(left);
-		if ( is_ccw_mid==0 && left->next==NULL ) {
-		    SplineSetReverse(left);
-		    is_ccw_mid=1;
-		}
-		if ( is_ccw_mid==-1 && c->rmov!=srmov_none ) {
-		    assert( c->rmov!=srmov_contour );
-		    left = SplineSetRemoveOverlap(NULL,left,over_remove);
+		    SplineSetsCorrect(left, &trash);
+		} else {
 		    is_ccw_mid = SplinePointListIsClockwise(left);
-		}
-		if ( is_ccw_mid==-1 ) {
-		    LogError( _("Warning: Can't identify contour direction, "
-		                "assuming clockwise\n") );
+		    if ( is_ccw_mid==0 && left->next==NULL ) {
+			SplineSetReverse(left);
+			is_ccw_mid=1;
+		    }
+		    if ( is_ccw_mid==-1 && c->rmov!=srmov_none ) {
+			left = SplineSetRemoveOverlap(NULL,left,over_remove);
+			SplineSetsCorrect(left, &trash);
+			is_ccw_mid = SplinePointListIsClockwise(left);
+		    }
+		    if ( is_ccw_mid==-1 ) {
+			LogError( _("Warning: Can't identify contour"
+			            " direction, assuming clockwise\n") );
+		    }
 		}
 	    }
 	}
@@ -2315,8 +2319,10 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
 	                         &closed, true);
 	    if ( !closed )
 		LogError( _("Warning: Left contour did not close\n") );
-	    else if ( c->rmov==srmov_contour )
+	    else if ( c->rmov==srmov_contour ) {
 		left = SplineSetRemoveOverlap(NULL,left,over_remove);
+		SplineSetsCorrect(left, &trash);
+	    }
 	    cur = left;
 	    left = NULL;
 	}
