@@ -100,11 +100,6 @@ void GDrawSetZoom(GWindow w,GRect *zoom, enum gzoom_flags flags) {
     (w->display->funcs->setZoom)(w,zoom,flags);
 }
 
-void GDrawDestroyCursor(GDisplay *gdisp, GCursor ct) {
-    if ( gdisp==NULL ) gdisp = screen_display;
-    (gdisp->funcs->destroyCursor)(gdisp,ct);
-}
-
 int GDrawNativeWindowExists(GDisplay *gdisp, void *native) {
     if ( gdisp==NULL ) gdisp = screen_display;
 return( (gdisp->funcs->nativeWindowExists)(gdisp,native) );
@@ -280,14 +275,6 @@ void GDrawGetClip(GWindow w, GRect *ret) {
     *ret = w->ggc->clip;
 }
 
-void GDrawSetClip(GWindow w, GRect *rct) {
-    if ( rct==NULL ) {
-	w->ggc->clip.x = w->ggc->clip.y = 0;
-	w->ggc->clip.width = w->ggc->clip.height = 0x7fff;
-    } else
-	w->ggc->clip = *rct;
-}
-
 void GDrawPushClip(GWindow w, GRect *rct, GRect *old) {
     (w->display->funcs->pushClip)(w,rct,old);
 }
@@ -307,11 +294,6 @@ void GDrawClipPreserve(GWindow w)
 
 void GDrawPopClip(GWindow w, GRect *old) {
     (w->display->funcs->popClip)(w,old);
-}
-
-
-GGC *GDrawGetWindowGGC(GWindow w) {
-return( w->ggc );
 }
 
 void GDrawSetDifferenceMode(GWindow w) {
@@ -336,11 +318,6 @@ void GDrawSetLineWidth(GWindow w,int16 width) {
 int16 GDrawGetLineWidth( GWindow w ) 
 {
     return w->ggc->line_width;
-}
-
-
-void GDrawSetForeground(GWindow w,Color col) {
-    w->ggc->fg = col;
 }
 
 void GDrawSetBackground(GWindow w,Color col) {

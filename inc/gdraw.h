@@ -290,7 +290,6 @@ extern GWindow GDrawCreateBitmap(GDisplay *gdisp, uint16 width, uint16 height, u
 extern GCursor GDrawCreateCursor(GWindow src,GWindow mask,Color fg,Color bg,
 	int16 x, int16 y );
 extern void GDrawDestroyWindow(GWindow w);
-extern void GDrawDestroyCursor(GDisplay *gdisp, GCursor ct);
 extern int  GDrawNativeWindowExists(GDisplay *gdisp, void *native);
 extern void GDrawSetZoom(GWindow w, GRect *zoomsize, enum gzoom_flags);
 extern void GDrawSetWindowBackground(GWindow w, Color color);
@@ -343,19 +342,16 @@ extern void GDrawBeep(GDisplay *gdisp);
 extern void GDrawFlush(GDisplay *gdisp);
 
 extern void GDrawGetClip(GWindow w, GRect *ret);
-extern void GDrawSetClip(GWindow w, GRect *rct);
 extern void GDrawPushClip(GWindow w, GRect *rct, GRect *old);
 extern void GDrawPopClip(GWindow w, GRect *old);
 extern void GDrawPushClipOnly(GWindow w);
 extern void GDrawClipPreserve(GWindow w);
-extern GGC *GDrawGetWindowGGC(GWindow w);
 extern void GDrawSetDifferenceMode(GWindow w);
 extern void GDrawSetDashedLine(GWindow w,int16 dash_len, int16 skip_len, int16 off);
 extern void GDrawSetStippled(GWindow w,int16 ts, int32 yoff,int32 xoff);
 extern void GDrawSetLineWidth(GWindow w,int16 width);
 extern int16 GDrawGetLineWidth( GWindow w );
 
-extern void GDrawSetForeground(GWindow w,Color col);
 extern void GDrawSetBackground(GWindow w,Color col);
 
 extern GFont *GDrawSetFont(GWindow gw, GFont *fi);
