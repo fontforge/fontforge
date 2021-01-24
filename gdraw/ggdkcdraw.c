@@ -605,6 +605,9 @@ cairo_region_t *_GGDKDraw_ExcludeChildRegions(GGDKWindow gw, cairo_region_t *r, 
         }
     } else if (force) {
         reg = gdk_window_get_clip_region(gw->w);
+        if (r != NULL) {
+            cairo_region_intersect(reg, r);
+        }
     }
 
     return reg;
