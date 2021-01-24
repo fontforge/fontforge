@@ -1382,6 +1382,23 @@ return;
     GDrawSetGIC(gt->g.base,gt->gic,gt->g.inner.x+x,gt->g.inner.y+y+gt->as);
 }
 
+static void gt_request_redraw_cursor(GWindow pixmap, GTextField *gt) {
+    GRect clip;
+    int x, y;
+
+    gt_cursor_pos(gt,&x,&y);
+
+    if ( x<0 || x>=gt->g.inner.width )
+return;
+
+    clip.x = gt->g.inner.x + x;
+    clip.y = gt->g.inner.y + y;
+    clip.width = 1;
+    clip.height = gt->fh + 1;
+
+    GDrawRequestExpose(pixmap, &clip, false);
+}
+
 static void gt_draw_cursor(GWindow pixmap, GTextField *gt) {
     GRect old;
     int x, y;
@@ -1392,14 +1409,8 @@ return;
 
     if ( x<0 || x>=gt->g.inner.width )
 return;
-    GDrawPushClip(pixmap,&gt->g.inner,&old);
-    GDrawSetDifferenceMode(pixmap);
-    GDrawSetFont(pixmap,gt->font);
-    GDrawSetLineWidth(pixmap,0);
     GDrawDrawLine(pixmap,gt->g.inner.x+x,gt->g.inner.y+y,
-	    gt->g.inner.x+x,gt->g.inner.y+y+gt->fh,
-	    COLOR_WHITE);
-    GDrawPopClip(pixmap,&old);
+	    gt->g.inner.x+x,gt->g.inner.y+y+gt->fh, 0);
 }
 
 static void GTextFieldDrawDDCursor(GTextField *gt, int pos) {
@@ -1845,10 +1856,7 @@ return( false );
 	gt->hidden_cursor = true;
 	_GWidget_SetGrabGadget(g);	/* so that we get the next mouse movement to turn the cursor on */
     }
-    if( gt->cursor_on ) {	/* undraw the blinky text cursor if it is drawn */
-	gt_draw_cursor(g->base, gt);
-	gt->cursor_on = false;
-    }
+    gt->cursor_on = false; // Hide the cursor
 
     switch ( GTextFieldDoChange(gt,event)) {
       case 4:
@@ -1910,14 +1918,9 @@ static int gtextfield_timer(GGadget *g, GEvent *event) {
 
     if ( !g->takes_input || (g->state!=gs_enabled && g->state!=gs_active && g->state!=gs_focused ))
 return(false);
-    if ( gt->cursor == event->u.timer.timer ) {
-	if ( gt->cursor_on ) {
-	    gt_draw_cursor(g->base, gt);
-	    gt->cursor_on = false;
-	} else {
-	    gt->cursor_on = true;
-	    gt_draw_cursor(g->base, gt);
-	}
+    if ( gt->cursor == event->u.timer.timer && gt->sel_start == gt->sel_end ) {
+	gt->cursor_on = !gt->cursor_on;
+	gt_request_redraw_cursor(g->base, gt);
 return( true );
     }
     if ( gt->numeric_scroll == event->u.timer.timer ) {
