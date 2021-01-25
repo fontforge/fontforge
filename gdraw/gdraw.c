@@ -271,6 +271,22 @@ void GDrawBeep(GDisplay *gdisp) {
     (gdisp->funcs->beep)(gdisp);
 }
 
+bool GDrawClipContains(const GWindow w, const GRect *other, bool rev) {
+    const GRect *parent = rev ? other : &w->ggc->clip;
+    const GRect *child = rev ? &w->ggc->clip : other;
+    return child->x >= parent->x &&
+        (child->x + child->width) <= (parent->x + parent->width) &&
+        child->y >= parent->y &&
+        (child->y + child->height) <= (parent->y + parent->height);
+}
+
+bool GDrawClipOverlaps(const GWindow w, const GRect *other) {
+    return w->ggc->clip.x < (other->x + other->width) &&
+        (w->ggc->clip.x + w->ggc->clip.width) > other->x &&
+        w->ggc->clip.y < (other->y + other->height) &&
+        (w->ggc->clip.y + w->ggc->clip.height) > other->y;
+}
+
 void GDrawGetClip(GWindow w, GRect *ret) {
     *ret = w->ggc->clip;
 }

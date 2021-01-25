@@ -341,6 +341,8 @@ extern int32 GDrawEventInWindow(GWindow inme,GEvent *event);
 extern void GDrawBeep(GDisplay *gdisp);
 extern void GDrawFlush(GDisplay *gdisp);
 
+extern bool GDrawClipContains(const GWindow w, const GRect *other, bool rev);
+extern bool GDrawClipOverlaps(const GWindow w, const GRect *other);
 extern void GDrawGetClip(GWindow w, GRect *ret);
 extern void GDrawPushClip(GWindow w, GRect *rct, GRect *old);
 extern void GDrawPopClip(GWindow w, GRect *old);

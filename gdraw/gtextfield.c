@@ -1486,7 +1486,7 @@ static void GTextFieldDrawLine(GWindow pixmap, GTextField *gt, int line, Color f
 static int gtextfield_expose(GWindow pixmap, GGadget *g, GEvent *event) {
     GTextField *gt = (GTextField *) g;
     GListField *ge = (GListField *) g;
-    GRect old1, old2, *r = &g->r;
+    GRect old1, old2, old3, *r = &g->r;
     Color fg;
     int ll,i, last;
     GRect unpadded_inner;
@@ -1497,17 +1497,28 @@ return( false );
 
     if ( gt->listfield || gt->numericfield ) r = &ge->fieldrect;
 
-    GDrawPushClip(pixmap,r,&old1);
-
-    GBoxDrawBackground(pixmap,r,g->box,
-	    g->state==gs_enabled? gs_pressedactive: g->state,false);
-    GBoxDrawBorder(pixmap,r,g->box,g->state,false);
-
     unpadded_inner = g->inner;
     pad = GDrawPointsToPixels(g->base,g->box->padding);
     unpadded_inner.x -= pad; unpadded_inner.y -= pad;
     unpadded_inner.width += 2*pad; unpadded_inner.height += 2*pad;
-    GDrawPushClip(pixmap,&unpadded_inner,&old2);
+
+    GDrawPushClip(pixmap,&event->u.expose.rect, &old1);
+    GDrawPushClip(pixmap,r,&old2);
+    if (!GDrawClipContains(pixmap, &unpadded_inner, true)) {
+        GBoxDrawBackground(pixmap,r,g->box,
+            g->state==gs_enabled? gs_pressedactive: g->state,false);
+        GBoxDrawBorder(pixmap,r,g->box,g->state,false);
+    } else {
+        // It's clipped enough that the border shape doesn't matter, so do a rect fill for speed
+        enum border_shape old = g->box->border_shape;
+        g->box->border_shape = bs_rect;
+        GBoxDrawBackground(pixmap,r,g->box,
+           g->state==gs_enabled? gs_pressedactive: g->state,false);
+        g->box->border_shape = old;
+    }
+
+    GDrawPushClip(pixmap,&unpadded_inner,&old3);
+    GDrawGetClip(pixmap,&unpadded_inner);
     GDrawSetFont(pixmap,gt->font);
 
     fg = g->state==gs_disabled?g->box->disabled_foreground:
@@ -1526,17 +1537,26 @@ return( false );
 		GTextFieldDrawLineSel(pixmap,gt,i);
 	}
     }
-    for ( i=gt->loff_top; i<gt->loff_top+last && gt->lines[i]!=-1; ++i )
-	GTextFieldDrawLine(pixmap,gt,i,fg);
+    for ( i=gt->loff_top; i<gt->loff_top+last && gt->lines[i]!=-1; ++i ) {
+        int y = gt->g.inner.y+(i-gt->loff_top)*gt->fh+1;
+        if (unpadded_inner.y < (y+gt->fh-1) && unpadded_inner.y + unpadded_inner.height > y) {
+            GTextFieldDrawLine(pixmap,gt,i,fg);
+        }
+    }
 
-    GDrawPopClip(pixmap,&old2);
-    GDrawPopClip(pixmap,&old1);
     gt_draw_cursor(pixmap, gt);
+    GDrawPopClip(pixmap,&old3);
+    GDrawPopClip(pixmap,&old2);
+
+    if (!GDrawClipOverlaps(pixmap, &ge->buttonrect)) {
+        GDrawPopClip(pixmap,&old1);
+        return true;
+    }
 
     if ( gt->listfield ) {
 	int marklen = GDrawPointsToPixels(pixmap,_GListMarkSize);
 
-	GDrawPushClip(pixmap,&ge->buttonrect,&old1);
+	GDrawPushClip(pixmap,&ge->buttonrect,&old2);
 
 	GBoxDrawBackground(pixmap,&ge->buttonrect,&glistfieldmenu_box,
 		g->state==gs_enabled? gs_pressedactive: g->state,false);
@@ -1547,7 +1567,7 @@ return( false );
 		g->inner.y,
 		g->inner.height,
 		g->state);
-	GDrawPopClip(pixmap,&old1);
+	GDrawPopClip(pixmap,&old2);
     } else if ( gt->numericfield ) {
 	int y, w;
 	int half;
@@ -1579,6 +1599,7 @@ return( false );
 	pts[3] = pts[0];
 	GDrawFillPoly(pixmap,pts,3,fg);
     }
+    GDrawPopClip(pixmap,&old1);
 return( true );
 }
 
