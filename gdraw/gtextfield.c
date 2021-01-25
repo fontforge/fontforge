@@ -1382,6 +1382,11 @@ return;
     GDrawSetGIC(gt->g.base,gt->gic,gt->g.inner.x+x,gt->g.inner.y+y+gt->as);
 }
 
+static void gt_set_dd_cursor(GTextField *gt, int pos) {
+    gt->has_dd_cursor = true;
+    gt->dd_cursor_pos = pos;
+}
+
 static void gt_request_redraw_cursor(GWindow pixmap, GTextField *gt) {
     GRect clip;
     int x, y;
@@ -1401,7 +1406,23 @@ return;
 
 static void gt_draw_cursor(GWindow pixmap, GTextField *gt) {
     GRect old;
-    int x, y;
+    int x, y, l;
+
+    if (gt->has_dd_cursor) {
+        gt->has_dd_cursor = false;
+        l = GTextFieldFindLine(gt, gt->dd_cursor_pos);
+        if (l < gt->loff_top || l >= gt->loff_top + (gt->g.inner.height/gt->fh))
+            return;
+        _gt_cursor_pos(gt,gt->dd_cursor_pos,&x,&y);
+        if (x < 0 || x >= gt->g.inner.width)
+            return;
+        GDrawSetLineWidth(gt->g.base,0);
+        GDrawSetDashedLine(gt->g.base,2,2,0);
+        GDrawDrawLine(gt->g.base,gt->g.inner.x+x,gt->g.inner.y+y,
+            gt->g.inner.x+x,gt->g.inner.y+y+gt->fh,0);
+        GDrawSetDashedLine(gt->g.base,0,0,0);
+        return;
+    }
 
     if ( !gt->cursor_on || gt->sel_start != gt->sel_end )
 return;
@@ -1411,31 +1432,6 @@ return;
 return;
     GDrawDrawLine(pixmap,gt->g.inner.x+x,gt->g.inner.y+y,
 	    gt->g.inner.x+x,gt->g.inner.y+y+gt->fh, 0);
-}
-
-static void GTextFieldDrawDDCursor(GTextField *gt, int pos) {
-    GRect old;
-    int x, y, l;
-
-    l = GTextFieldFindLine(gt,pos);
-    if ( l<gt->loff_top || l>=gt->loff_top + (gt->g.inner.height/gt->fh))
-return;
-    _gt_cursor_pos(gt,pos,&x,&y);
-    if ( x<0 || x>=gt->g.inner.width )
-return;
-
-    GDrawPushClip(gt->g.base,&gt->g.inner,&old);
-    GDrawSetDifferenceMode(gt->g.base);
-    GDrawSetFont(gt->g.base,gt->font);
-    GDrawSetLineWidth(gt->g.base,0);
-    GDrawSetDashedLine(gt->g.base,2,2,0);
-    GDrawDrawLine(gt->g.base,gt->g.inner.x+x,gt->g.inner.y+y,
-	    gt->g.inner.x+x,gt->g.inner.y+y+gt->fh,
-	    COLOR_WHITE);
-    GDrawPopClip(gt->g.base,&old);
-    GDrawSetDashedLine(gt->g.base,0,0,0);
-    gt->has_dd_cursor = !gt->has_dd_cursor;
-    gt->dd_cursor_pos = pos;
 }
 
 static void GTextFieldDrawLineSel(GWindow pixmap, GTextField *gt, int line ) {
@@ -1613,14 +1609,10 @@ return( true );
 }
 
 static int GTextFieldDoDrop(GTextField *gt,GEvent *event,int endpos) {
-
-    if ( gt->has_dd_cursor )
-	GTextFieldDrawDDCursor(gt,gt->dd_cursor_pos);
-
     if ( event->type == et_mousemove ) {
 	if ( GGadgetInnerWithin(&gt->g,event->u.mouse.x,event->u.mouse.y) ) {
 	    if ( endpos<gt->sel_start || endpos>=gt->sel_end )
-		GTextFieldDrawDDCursor(gt,endpos);
+		gt_set_dd_cursor(gt, endpos);
 	} else if ( !GGadgetWithin(&gt->g,event->u.mouse.x,event->u.mouse.y) ) {
 	    GDrawPostDragEvent(gt->g.base,event,et_drag);
 	}
@@ -1672,8 +1664,8 @@ static int GTextFieldDoDrop(GTextField *gt,GEvent *event,int endpos) {
 	}
 	gt->drag_and_drop = false;
 	GDrawSetCursor(gt->g.base,gt->old_cursor);
-	_ggadget_redraw(&gt->g);
     }
+    _ggadget_redraw(&gt->g);
 return( false );
 }
     
@@ -1995,8 +1987,6 @@ static int gtextfield_sel(GGadget *g, GEvent *event) {
         return( false );
     }
 
-    if ( gt->has_dd_cursor )
-	GTextFieldDrawDDCursor(gt,gt->dd_cursor_pos);
     GDrawSetFont(g->base,gt->font);
     i = (event->u.drag_drop.y-g->inner.y)/gt->fh + gt->loff_top;
     if ( !gt->multi_line ) i = 0;
@@ -2005,7 +1995,7 @@ static int gtextfield_sel(GGadget *g, GEvent *event) {
     else
 	end = GTextFieldGetPtFromPos(gt,i,event->u.drag_drop.x);
     if ( event->type == et_drag ) {
-	GTextFieldDrawDDCursor(gt,end-gt->text);
+	gt_set_dd_cursor(gt, end - gt->text);
     } else if ( event->type == et_dragout ) {
 	/* this event exists simply to clear the dd cursor line. We've done */
 	/*  that already */ 
@@ -2014,10 +2004,10 @@ static int gtextfield_sel(GGadget *g, GEvent *event) {
 	GTextFieldPaste(gt,sn_drag_and_drop);
 	GTextField_Show(gt,gt->sel_start);
 	GTextFieldChanged(gt,-1);
-	_ggadget_redraw(&gt->g);
     } else
 return( false );
 
+    _ggadget_redraw(&gt->g);
 return( true );
 }
 
