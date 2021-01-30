@@ -6728,7 +6728,7 @@ return( ret );
 static int PyFF_Glyph_set_altuni(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int cnt, i;
     struct altuni *head, *last=NULL, *cur;
-    int uni, vs, fid;
+    int uni, vs, fid, bmp_compat=true;
     PyObject *obj;
     FontViewBase *fvs;
 
@@ -6754,6 +6754,8 @@ return( -1 );
 	    else
 		last->next = cur;
 	    last = cur;
+	    if (uni > 0xFFFF)
+		bmp_compat = false;
 	}
     }
 
@@ -6761,8 +6763,10 @@ return( -1 );
     self->sc->altuni = head;
 
     for ( fvs=self->sc->parent->fv; fvs!=NULL; fvs=fvs->nextsame ) {
-	fvs->map->enc = &custom;
-	FVSetTitle(fvs);
+	if ( !IsUnicodeEncoding(fvs->map->enc, bmp_compat) ) {
+	    fvs->map->enc = &custom;
+	    FVSetTitle(fvs);
+	} // XXX else rebuild map? 
     }
 
     return( 0 );
