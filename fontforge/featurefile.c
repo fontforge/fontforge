@@ -4978,7 +4978,9 @@ static int fea_LookupSwitch(struct parseState *tok) {
 	fea_TokenMustBe(tok,tk_char,';');
       break;
       case tk_char:
-	if ( tok->tokbuf[0]=='}' )
+	if ( tok->tokbuf[0]==';' ) // lone semicolon, see GitHub issue №4600
+return( 1 );
+	else if ( tok->tokbuf[0]=='}' )
 return( 2 );
 	/* Fall through */
       default:
