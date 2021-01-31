@@ -3792,9 +3792,9 @@ void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf) {
 	dummy->names[ttf_fullname] = utf8_verify_copy(sf->fullname);
     if ( dummy->names[ttf_version]==NULL || *dummy->names[ttf_version]=='\0' ) {
 	if ( sf->subfontcnt!=0 )
-	    sprintf( buffer, "Version %f ", (double)sf->cidversion );
+	    sprintf( buffer, "Version %f", (double)sf->cidversion );
 	else if ( sf->version!=NULL )
-	    sprintf(buffer,"Version %.20s ", sf->version);
+	    sprintf(buffer,"Version %.20s", sf->version);
 	else
 	    strcpy(buffer,"Version 1.0" );
 	dummy->names[ttf_version] = copy(buffer);
