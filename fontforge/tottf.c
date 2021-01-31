@@ -4560,8 +4560,8 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
 
       cmapseg[curseg].use_delta starts false indicating
       the range map will be used, is set to true when
-      there are no discontinuities within 9 slots of
-      .start.
+      there are no discontinuities within SEGBREAKEVEN
+      slots of .start.
     */
     cmapseg = malloc(segmax*sizeof(struct cmapseg));
     memset(cmapseg, 0, segmax*sizeof(struct cmapseg));
@@ -4601,18 +4601,20 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
 			/* Split and calc parameters of already visited
 			   slots by backtracking. (Because we're splitting
 			   out delta-compatible series and avoiding long
-			   blank sequences with SEGBREAKEVEN this is 
+			   blank sequences with SEGBREAKEVEN this is
 			   likely to terminate after a few iterations.)*/
 			cmapseg[curseg].end = -1;
 			cmapseg[curseg].use_delta = true;
 			for (j=first_delta-1; j>=cmapseg[curseg].start; --j) {
 			    int16 jd = avail[j]-j;
 			    if ( avail[j]!=-1 && cmapseg[curseg].end==-1 ) {
+				// This is the end of the backtracked segment
 				cmapseg[curseg].end = j;
 				cmapseg[curseg].delta = jd;
 			    } else if (    cmapseg[curseg].end!=-1
 			                && (   avail[j]==-1
 			                    || cmapseg[curseg].delta!=jd )) {
+				// Mismatching delta, so use mapping for seg
 				cmapseg[curseg].use_delta = false;
 				cmapseg[curseg].delta = 0;
 				break;
@@ -4630,11 +4632,11 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
 		}
 	    }
 	    cmapseg[curseg].end = i;
-	} else { // Don't have a glyph for the slot
-	    /* If this segment is directly mapped or the last encoded glyph was
-	       more than SEGBREAKEVEN slots ago, start a new segment */
+	} else { // Don't have a glyph for this slot
 	    if ( first_delta!=-1 )
 		last_delta = first_delta;
+	    /* If this segment is directly mapped or the last encoded glyph was
+	       more than SEGBREAKEVEN slots ago, start a new segment */
 	    if ( cmapseg[curseg].start!=-1 &&
 	         (cmapseg[curseg].use_delta || i-cmapseg[curseg].end>=SEGBREAKEVEN) ) {
 		if ( last_delta==cmapseg[curseg].start ) {
@@ -4651,7 +4653,7 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
 	    first_delta = -1;
 	}
     }
-    // Finalize last segment
+    // Finalize last true segment
     if ( cmapseg[curseg].start!=-1 ) {
 	if ( first_delta==cmapseg[curseg].start ) {
 	    cmapseg[curseg].use_delta = true;
@@ -4684,7 +4686,7 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
     putshort(format4,4);		/* format */
     putshort(format4,slen);
     putshort(format4,0);		/* language/version */
-    putshort(format4,2*segcnt);	/* segcnt */
+    putshort(format4,2*segcnt);		/* segcnt */
     for ( j=0,i=1; i<=segcnt; i<<=1, ++j );
     putshort(format4,i);		/* 2*2^floor(log2(segcnt)) */
     putshort(format4,j-1);
