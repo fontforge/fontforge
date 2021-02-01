@@ -856,7 +856,7 @@ static uint16 _WinLangFromMac[] = {
 	0x459,		/* Sindhi */
 	0xffff,		/* Tibetan */
 	0x461,		/* Nepali */
-	0x43b,		/* Sanskrit */
+	0x44f,		/* Sanskrit */
 	0x44e,		/* Marathi */
 	0x445,		/* Bengali */
 	0x44d,		/* Assamese */
