@@ -2319,12 +2319,8 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
 	                         &closed, true);
 	    if ( !closed )
 		LogError( _("Warning: Left contour did not close\n") );
-	    else if ( c->rmov==srmov_contour ) {
-		left = SplineSetRemoveOverlap(NULL,left,over_remove);
-		SplineSetsCorrect(left, &trash);
-	    }
+
 	    cur = left;
-	    left = NULL;
 	}
 	if ( right!=NULL ) {
 	    CalcNibOffset(c, ut_ini, true, &no, -1);
@@ -2336,15 +2332,20 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
 		LogError( _("Warning: Right contour did not close\n") );
 	    else {
 		SplineSetReverse(right);
-		if ( c->rmov!=srmov_none )
-		    // Need to do this for either srmov_contour or srmov_layer
-		    right = SplineContourOuterCCWRemoveOverlap(right);
 	    }
 	    if ( cur != NULL ) {
 		cur->next = right;
 	    } else
 		cur = right;
 	    right = NULL;
+	}
+	if ( c->rmov==srmov_contour ) {
+	    if ( left!=NULL ) {
+		cur = SplineSetRemoveOverlap(NULL,cur,over_remove);
+		SplineSetsCorrect(cur, &trash);
+		left = NULL;
+	    } else
+		cur = SplineContourOuterCCWRemoveOverlap(cur);
 	}
     }
     return cur;
