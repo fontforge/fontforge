@@ -4090,6 +4090,9 @@ return( -1 );
 		++l_ccw_cnt;
 	    if ( (cw_cnt + l_cw_cnt)!=0 && (ccw_cnt + l_ccw_cnt)!=0 ) {
 		((SplineSet *) spl)->next = next;
+		free(el.ordered);
+		free(el.ends);
+		ElFreeEI(&el);
 		return( -1 );
 	    }
 	    winding = apt->up?1:-1;
