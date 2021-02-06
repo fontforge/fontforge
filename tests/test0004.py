@@ -2,7 +2,7 @@
 
 import sys, fontforge
 
-assert fontforge.scriptFromUnicode(ord('ᜈ')) == "tagl"
+assert fontforge.scriptFromUnicode(ord('ᜈ')) == "tglg"
 assert fontforge.scriptFromUnicode(ord('Q')) == "latn"
 assert fontforge.scriptFromUnicode(ord('θ')) == "grek"
 assert fontforge.scriptFromUnicode(ord('Щ')) == "cyrl"
