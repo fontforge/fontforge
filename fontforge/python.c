@@ -19994,7 +19994,7 @@ static struct flaglist sfnt_name_mslangs[] = {
     { "Russian", 0x419},
     { "Russian (Moldova)", 0x819},
     { "Sami (Lappish)", 0x43b},
-    { "Sanskrit", 0x43b},
+    { "Sanskrit", 0x44f},
     { "Sepedi", 0x46c},
     { "Serbian (Cyrillic)", 0xc1a},
     { "Serbian (Latin)", 0x81a},
