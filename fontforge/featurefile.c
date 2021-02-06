@@ -1405,7 +1405,11 @@ return;					/* No support for apple "lookups" */
 			    fprintf( out, "    sub " );
 			    dump_glyphname(out,sc);
 			    fprintf( out, " by " );
-			    dump_glyphnamelist(out,sf,pst->u.subs.variant );
+			    if (*(pst->u.subs.variant) != '\0') {
+				dump_glyphnamelist(out,sf,pst->u.subs.variant );
+			    } else {
+				fprintf( out, "NULL" ); // really possible! see GH: №4618
+			    }
 			    fprintf( out,";\n" );
 			  break;
 			  case gsub_alternate:
@@ -4399,7 +4403,7 @@ static struct feat_item *fea_process_sub_multiple(struct parseState *tok,
 	len += strlen(g->name_or_class);
 	mult[len++] = ' ';
     }
-    mult[len-1] = '\0';
+    mult[len>1?len-1:0] = '\0';
     item = chunkalloc(sizeof(struct feat_item));
     item->type = ft_pst;
     item->next = sofar;
@@ -4732,14 +4736,27 @@ static void fea_ParseSubstitute(struct parseState *tok) {
 	    }
 	} else if ( cnt>=1 && tok->type==tk_by ) {
 	    rpl = fea_ParseMarkedGlyphs(tok,false,false,false);
-	    if ( rpl==NULL ) {
+
+	    // It's okay to advance the token like this because all the valid possible
+	    // replacements already got read into rpl above
+	    //
+	    // tok only gets passed into the fea_process_sub_(single|multiple|ligature)
+	    // functions for error reporting puroposes
+	    fea_ParseTok(tok);
+	    bool next_is_null = tok->type == tk_NULL;
+	    if ( !next_is_null )
+		fea_UnParseTok(tok);
+
+	    if ( rpl==NULL && !next_is_null ) {
 		LogError(_("No substitution specified on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 		++tok->err_count;
-	    } else if ( rpl->has_marks ) {
+	    } else if ( !next_is_null && rpl->has_marks ) {
 		LogError(_("No marked glyphs allowed in replacement on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 		++tok->err_count;
 	    } else {
-		if ( cnt==1 && rpl->next==NULL ) {
+		if (next_is_null) {
+		    tok->sofar = fea_process_sub_multiple(tok,glyphs,NULL,tok->sofar);
+		} else if ( cnt==1 && rpl->next==NULL ) {
 		    tok->sofar = fea_process_sub_single(tok,glyphs,rpl,tok->sofar);
 		} else if ( cnt==1 && glyphs->is_name && rpl->next!=NULL && rpl->is_name ) {
 		    /* Multiple substitution */

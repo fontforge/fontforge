@@ -4276,11 +4276,6 @@ return( true );
 		start = psts[cols*r+1].u.md_str;
 		if ( start==NULL ) start="";
 		while ( *start== ' ' ) ++start;
-		if ( *start=='\0' ) {
-		    ff_post_error( _("Missing glyph name"),_("You must specify a replacement glyph for %s"),
-			    psts[cols*r+0].u.md_str );
-return( true );
-		}
 		/* Replacements which aren't in the font */
 		while ( *start ) {
 		    for ( pt=start; *pt!='\0' && *pt!=' ' && *pt!='('; ++pt );
