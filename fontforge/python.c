@@ -1289,7 +1289,7 @@ return;
     PyTuple_SetItem(arglist,1,glyph);
     PyTuple_SetItem(arglist,2,PyUnicode_DecodeUTF8(filename,strlen(filename),NULL));
     PyTuple_SetItem(arglist,3,Py_BuildValue("i",toback));
-    result = PyEval_CallObject(py_ie[ie_index].import, arglist);
+    result = PyObject_CallObject(py_ie[ie_index].import, arglist);
     Py_DECREF(arglist);
     Py_XDECREF(result);
     if ( PyErr_Occurred()!=NULL )
@@ -1312,7 +1312,7 @@ return;
     PyTuple_SetItem(arglist,1,glyph);
     PyTuple_SetItem(arglist,2,PyUnicode_DecodeUTF8(filename,strlen(filename),NULL));
     PyTuple_SetItem(arglist,2,PyUnicode_DecodeUTF8(filename,strlen(filename),NULL));
-    result = PyEval_CallObject(py_ie[ie_index].export, arglist);
+    result = PyObject_CallObject(py_ie[ie_index].export, arglist);
     Py_DECREF(arglist);
     Py_XDECREF(result);
     if ( PyErr_Occurred()!=NULL )
@@ -1410,7 +1410,7 @@ static void python_call_onClosingFunctions_fe( gpointer data, gpointer udata )
     {
 	PyObject *arglist, *result;
 	arglist = PyTuple_New(0);
-	result = PyEval_CallObject( func, arglist);
+	result = PyObject_CallObject( func, arglist);
 	if ( !result )
 	{ // error
 	}
@@ -3496,7 +3496,7 @@ return;
 	Py_DECREF(func);
 return;
     }
-    result = PyEval_CallObject(func, args_tuple);
+    result = PyObject_CallObject(func, args_tuple);
     Py_DECREF(args_tuple);
     Py_XDECREF(result);
     Py_DECREF(func);
@@ -18660,7 +18660,7 @@ return( -1 );
 	PyTuple_SetItem(arglist,3,PyFF_GlyphSeparationArg);
 	Py_XINCREF(PyFF_GlyphSeparationArg);
     }
-    result = PyEval_CallObject(PyFF_GlyphSeparationHook, arglist);
+    result = PyObject_CallObject(PyFF_GlyphSeparationHook, arglist);
     Py_DECREF(arglist);
     if ( PyErr_Occurred()!=NULL ) {
 	PyErr_Print();
@@ -19019,7 +19019,7 @@ char *PyFF_PickleMeToString(void *pydata) {
     Py_XINCREF(pyobj);
     PyTuple_SetItem(arglist,0,pyobj);
     PyTuple_SetItem(arglist,1,Py_BuildValue("i",0));	/* ASCII protocol */
-    result = PyEval_CallObject(pickler, arglist);
+    result = PyObject_CallObject(pickler, arglist);
     Py_DECREF(arglist);
     if ( result!=NULL )
 	ret = copy(PyBytes_AsString(result));
@@ -19038,7 +19038,7 @@ void *PyFF_UnPickleMeToObjects(char *str) {
     PyFF_PicklerInit();
     arglist = PyTuple_New(1);
     PyTuple_SetItem(arglist,0,Py_BuildValue("y",str)); /* Bytes/String object */
-    result = PyEval_CallObject(unpickler, arglist);
+    result = PyObject_CallObject(unpickler, arglist);
     Py_DECREF(arglist);
     if ( PyErr_Occurred()!=NULL ) {
 	PyErr_Print();
@@ -19732,7 +19732,7 @@ return;
 	PyTuple_SetItem(arglist,i,arg);
     }
     va_end(ap);
-    result = PyEval_CallObject(func, arglist);
+    result = PyObject_CallObject(func, arglist);
     Py_DECREF(arglist);
     Py_XDECREF(result);
     if ( PyErr_Occurred()!=NULL )
