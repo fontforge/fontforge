@@ -533,6 +533,7 @@ char *_GFile_find_program_dir(char *prog) {
 	free(tmppath);
     }
 #else
+    char* buf = NULL;
     if ( (pt = strrchr(prog,'/'))!=NULL )
 	program_dir = copyn(prog,pt-prog);
     else if ( (path = getenv("PATH"))!=NULL ) {
@@ -552,6 +553,10 @@ char *_GFile_find_program_dir(char *prog) {
 		program_dir = copy(path);
 	}
     }
+	if ( (buf = realpath(program_dir, NULL)) ) {
+	   free(program_dir);
+	   program_dir = buf;
+	}
 #endif
 
     if ( program_dir==NULL )
