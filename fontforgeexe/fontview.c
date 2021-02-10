@@ -1698,7 +1698,7 @@ const uint8 mergefunc[] = {
 };
 
 static enum merge_type SelMergeType(GEvent *e) {
-    if ( e->type!=et_mouseup )
+    if ( e==NULL || e->type!=et_mouseup )
 return( mt_set );
 
 return( ((e->u.mouse.state&ksm_shift)?mt_merge:0) |
