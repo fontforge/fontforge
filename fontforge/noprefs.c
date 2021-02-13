@@ -121,6 +121,9 @@ static float snapdistance=3.5;
 static int stop_at_join=0;
 static int updateflex=0;				/* in charview.c */
 static int ask_user_for_resolution=1;
+#ifndef _NO_LIBPNG
+extern int WritePNGInSFD;
+#endif
 static int default_fv_showhmetrics=0;	/* in fontview */
 static int default_fv_showvmetrics=0;	/* in fontview */
 static int default_fv_glyphlabel=0;	/* in fontview */
@@ -164,6 +167,9 @@ static int home_char = 'A';
 static int compact_font_on_open=0;
 static int aa_pixelsize;			/* from anchorsaway.c */
 
+extern float OpenTypeLoadHintEqualityTolerance;  /* autohint.c */
+extern float GenerateHintWidthEqualityTolerance; /* splinesave.c */
+
 static int gfc_showhidden, gfc_dirplace;
 static char *gfc_bookmarks=NULL;
 static char *pixmapdir=NULL;
@@ -193,6 +199,7 @@ static struct prefs_list {
     { N_("PreferCJKEncodings"), pr_bool, &prefer_cjk_encodings, NULL, NULL, 'C', NULL, 0, N_("When loading a truetype or opentype font which has both a unicode\nand a CJK encoding table, use this flag to specify which\nshould be loaded for the font.") },
     { N_("AskUserForCMap"), pr_bool, &ask_user_for_cmap, NULL, NULL, 'O', NULL, 0, N_("When loading a font in sfnt format (TrueType, OpenType, etc.),\nask the user to specify which cmap to use initially.") },
     { N_("PreserveTables"), pr_string, &SaveTablesPref, NULL, NULL, 'P', NULL, 0, N_("Enter a list of 4 letter table tags, separated by commas.\nFontForge will make a binary copy of these tables when it\nloads a True/OpenType font, and will output them (unchanged)\nwhen it generates the font. Do not include table tags which\nFontForge thinks it understands.") },
+    { N_("OpenTypeLoadHintEqualityTolerance"), pr_real, &OpenTypeLoadHintEqualityTolerance, NULL, NULL, '\0', NULL, 0, N_( "When importing an OpenType font, for the purposes of hinting spline points might not exactly match boundaries. For example, a point might be -0.0002 instead of exactly 0\nThis setting gives the user some control over this allowing a small tolerance value to be fed into the OpenType loading code.\nComparisons are then not performed for raw equality but for equality within tolerance (e.g., values within the range -0.0002 to 0.0002 will be considered equal to 0 when figuring out hints).") },
     { N_("ItalicConstrained"), pr_bool, &ItalicConstrained, NULL, NULL, '\0', NULL, 0, N_("In the Outline View, the Shift key constrains motion to be parallel to the ItalicAngle rather than constraining it to be vertical.") },
     { N_("SnapToInt"), pr_bool, &snaptoint, NULL, NULL, '\0', NULL, 0, N_("When the user clicks in the editing window, round the location to the nearest integers.") },
     { N_("JoinSnap"), pr_real, &joinsnap, NULL, NULL, '\0', NULL, 0, N_("The Edit->Join command will join points which are this close together\nA value of 0 means they must be coincident") },
@@ -221,6 +228,10 @@ static struct prefs_list {
     { N_("XUID-Base"), pr_string, &xuid, NULL, NULL, 'X', NULL, 0, N_("If specified this should be a space separated list of integers each\nless than 16777216 which uniquely identify your organization\nFontForge will generate a random number for the final component.") },
     { N_("AskBDFResolution"), pr_bool, &ask_user_for_resolution, NULL, NULL, 'B', NULL, 0, N_("When generating a set of BDF fonts ask the user\nto specify the screen resolution of the fonts\notherwise FontForge will guess depending on the pixel size.") },
     { N_("AutoHint"), pr_bool, &autohint_before_generate, NULL, NULL, 'H', NULL, 0, N_("AutoHint changed glyphs before generating a font") },
+#ifndef _NO_LIBPNG
+    { N_("WritePNGInSFD"), pr_bool, &WritePNGInSFD, NULL, NULL, 'B', NULL, 0, N_("If your SFD contains images, write them as PNG; this results in smaller SFDs; but was not supported in FontForge versions compiled before July 2019, so older FontForge versions cannot read them.") },
+#endif
+    { N_("GenerateHintWidthEqualityTolerance"), pr_real, &GenerateHintWidthEqualityTolerance, NULL, NULL, '\0', NULL, 0, N_( "When generating a font, ignore slight rounding errors for hints that should be at the top or bottom of the glyph. For example, you might like to set this to 0.02 so that 19.999 will be considered 20. But only for the hint width value.") },
     { N_("HintBoundingBoxes"), pr_bool, &hint_bounding_boxes, NULL, NULL, '\0', NULL, 0, N_("FontForge will place vertical or horizontal hints to describe the bounding boxes of suitable glyphs.") },
     { N_("HintDiagonalEnds"), pr_bool, &hint_diagonal_ends, NULL, NULL, '\0', NULL, 0, N_("FontForge will place vertical or horizontal hints at the ends of diagonal stems.") },
     { N_("HintDiagonalInter"), pr_bool, &hint_diagonal_intersections, NULL, NULL, '\0', NULL, 0, N_("FontForge will place vertical or horizontal hints at the intersections of diagonal stems.") },
