@@ -7,7 +7,7 @@
 import sys, fontforge
 font = fontforge.open( sys.argv[1] )
 font.selection.all()
-if ( !font.isWorthOutputting() ):
+if ( not font.isWorthOutputting() ):
     raise ValueError("Wrong return from fontforge.fonts after selection.all")
 
 font.selection.none()
@@ -28,7 +28,7 @@ if ( font.isWorthOutputting() ):
     raise ValueError("Wrong return from fontforge.fonts after selecting unused slot")
 
 font.selection.all()
-if ( !font.isWorthOutputting() ):
+if ( not font.isWorthOutputting() ):
     raise ValueError("Wrong return from fontforge.fonts after 2nd selection.all")
 
 font.selection.none()
@@ -40,7 +40,7 @@ if ( font.isWorthOutputting() ):
     raise ValueError("Wrong return from fontforge.fonts after 2nd unused slot")
 
 font.selection.select("accidentals.sharp")
-if ( !font.isWorthOutputting() ):
+if ( not font.isWorthOutputting() ):
     raise ValueError("Wrong return from fontforge.fonts after used named slot")
 
 font.selection.none()
