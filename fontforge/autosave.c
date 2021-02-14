@@ -52,36 +52,37 @@ int AutoSaveFrequency=5;
 # include <pwd.h>
 #endif
 
-static char *getAutoDirName(char *buffer) {
-    char *dir=getFontForgeUserDir(Config);
+static char *getAutoDirName() {
+    char *buffer, *dir=getFontForgeUserDir(Config);
 
     if ( dir!=NULL ) {
-        sprintf(buffer,"%s/autosave", dir);
+        buffer = smprintf("%s/autosave", dir);
         free(dir);
         if ( access(buffer,F_OK)==-1 )
             if ( GFileMkDir(buffer, 0755)==-1 )
                 return( NULL );
-        dir = copy(buffer);
-    }
-    return( dir );
+        return buffer;
+    } else
+	return NULL;
 }
 
 static void MakeAutoSaveName(SplineFont *sf) {
-    char buffer[1025];
-    char *autosavedir;
+    char *autosavedir, *buffer;
     static int cnt=0;
 
     if ( sf->autosavename )
 return;
-    autosavedir = getAutoDirName(buffer);
+    autosavedir = getAutoDirName();
     if ( autosavedir==NULL )
 return;
     while ( 1 ) {
-	sprintf( buffer, "%s/auto%06x-%d.asfd", autosavedir, getpid(), ++cnt );
+	buffer = smprintf("%s/auto%06x-%d.asfd", autosavedir, getpid(), ++cnt);
 	if ( access(buffer,F_OK)==-1 ) {
 	    sf->autosavename = copy(buffer);
             free(autosavedir);
 return;
+	} else {
+	    free(buffer);
 	}
     }
 }
@@ -89,7 +90,7 @@ return;
 
 int DoAutoRecoveryExtended(int inquire)
 {
-    char buffer[1025];
+    char *buffer;
     char *recoverdir = getAutoDirName(buffer);
     DIR *dir;
     struct dirent *entry;
@@ -106,7 +107,7 @@ return( false );
     while ( (entry=readdir(dir))!=NULL ) {
 	if ( strcmp(entry->d_name,".")==0 || strcmp(entry->d_name,"..")==0 )
     continue;
-	sprintf(buffer,"%s/%s",recoverdir,entry->d_name);
+	buffer = smprintf("%s/%s",recoverdir,entry->d_name);
 	fprintf( stderr, "Recovering from %s... ", buffer);
 	if ( (sf = SFRecoverFile(buffer,inquire,&inquire_state)) ) {
 	    any=true;
@@ -114,6 +115,7 @@ return( false );
 		FontViewCreate(sf,false);
 	    fprintf( stderr, " Done\n" );
 	}
+	free(buffer);
     }
     free(recoverdir);
     closedir(dir);
@@ -127,8 +129,8 @@ int DoAutoRecovery(int inquire )
 
 
 void CleanAutoRecovery(void) {
-    char buffer[1025];
-    char *recoverdir = getAutoDirName(buffer);
+    char *buffer;
+    char *recoverdir = getAutoDirName();
     DIR *dir;
     struct dirent *entry;
 
@@ -141,11 +143,12 @@ return;
     while ( (entry=readdir(dir))!=NULL ) {
 	if ( strcmp(entry->d_name,".")==0 || strcmp(entry->d_name,"..")==0 )
     continue;
-	sprintf(buffer,"%s/%s",recoverdir,entry->d_name);
+	buffer = smprintf("%s/%s",recoverdir,entry->d_name);
 	if ( unlink(buffer)!=0 ) {
 	    fprintf( stderr, "Failed to clean " );
 	    perror(buffer);
 	}
+	free(buffer);
     }
     free(recoverdir);
     closedir(dir);

@@ -119,7 +119,6 @@ static int unique = 0;
 #else
     static int listen_to_apple_events = false;
 #endif
-static bool ProcessPythonInitFiles = 1;
 
 static void _dousage(void) {
     printf( "fontforge [options] [fontfiles]\n" );
@@ -921,6 +920,8 @@ int fontforge_main( int argc, char **argv ) {
     int recover=2;
     int any;
     int next_recent=0;
+    int run_python_init_files = false;
+    int import_python_plugins = false;
     GRect pos;
     GWindowAttrs wattrs;
     char *display = NULL;
@@ -1235,8 +1236,10 @@ int fontforge_main( int argc, char **argv ) {
     for ( i=1; i<argc; ++i ) {
 	char *pt = argv[i];
 
-	if ( !strcmp(pt,"-SkipPythonInitFiles")) {
-	    ProcessPythonInitFiles = 0;
+	if ( strcmp(pt,"-SkipPythonInitFiles")==0 ) {
+	    run_python_init_files = false;
+	} else if ( strcmp(pt,"-SkipPythonPlugins")==0 ) {
+	    import_python_plugins = false;
 	}
     }
     
@@ -1247,8 +1250,7 @@ int fontforge_main( int argc, char **argv ) {
 #endif
 
 #ifndef _NO_PYTHON
-    if( ProcessPythonInitFiles )
-	PyFF_ProcessInitFiles();
+    PyFF_ProcessInitFiles(run_python_init_files, import_python_plugins);
 #endif
 
     /* the splash screen used not to have a title bar (wam_nodecor) */
@@ -1339,7 +1341,8 @@ exit( 0 );
 	    MenuNewComposition(NULL,NULL,NULL);
 	    any = 1;
 #  endif
-	} else if ( !strcmp(pt,"-SkipPythonInitFiles")) {
+	} else if ( strcmp(pt,"-SkipPythonInitFiles")==0 ||
+	            strcmp(pt,"-SkipPythonPlugins")==0 ) {
 	    // already handled above.
 	} else if ( strcmp(pt,"-last")==0 ) {
 	    if ( next_recent<RECENT_MAX && RecentFiles[next_recent]!=NULL )

@@ -56,6 +56,7 @@
 #include "namelist.h"
 #include "nonlineartrans.h"
 #include "othersubrs.h"
+#include "plugin.h"
 #include "print.h"
 #include "psread.h"
 #include "savefont.h"
@@ -1019,7 +1020,7 @@ return( Py_BuildValue("s", FONTFORGE_VERSION ));
 
 static PyObject *PyFF_RunInitScripts(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
     InitializePythonMainNamespace();
-    PyFF_ProcessInitFiles();
+    PyFF_ProcessInitFiles(true, false);
 Py_RETURN_NONE;
 }
 
@@ -19398,7 +19399,8 @@ static wchar_t ** copy_argv(char *arg0, int argc ,char **argv);
  * options up to and including the '-script' option, but while
  * preserving argv[0].
  */
-_Noreturn void PyFF_Main(int argc,char **argv,int start) {
+_Noreturn void PyFF_Main(int argc,char **argv,int start, int no_inits,
+                         int no_plugins) {
     char *arg;
     wchar_t **newargv;
     int newargc;
@@ -19407,7 +19409,7 @@ _Noreturn void PyFF_Main(int argc,char **argv,int start) {
     no_windowing_ui = running_script = true;
 
     FontForge_InitializeEmbeddedPython();
-    PyFF_ProcessInitFiles();
+    PyFF_ProcessInitFiles(no_inits, no_plugins);
 
     /* Skip '-script' option */
     arg = argv[start];
@@ -19501,11 +19503,11 @@ static void AddSpiroConstants( PyObject *module ) {
 }
 
 
-_Noreturn void PyFF_Stdin(void) {
+_Noreturn void PyFF_Stdin(int no_inits, int no_plugins) {
     no_windowing_ui = running_script = true;
 
     FontForge_InitializeEmbeddedPython();
-    PyFF_ProcessInitFiles();
+    PyFF_ProcessInitFiles(no_inits, no_plugins);
 
     if ( isatty(fileno(stdin)))
 	PyRun_InteractiveLoop(stdin,"<stdin>");
@@ -19679,12 +19681,15 @@ static GPtrArray *default_pyinit_dirs(void) {
     return pathlist;
 }
 
-void PyFF_ProcessInitFiles(void) {
+void PyFF_ProcessInitFiles(int no_inits, int no_plugins) {
     static int done = false;
     GPtrArray *dpath;
 
-    if ( done )
-return;
+    PyFF_ImportPlugins(no_plugins);
+
+    if ( done || no_inits ) // Idempotency, I presume
+	return;
+
     dpath = default_pyinit_dirs();
     for (guint i = 0; i < dpath->len; ++i ) {
 	LoadFilesInPythonInitDir( (char*)dpath->pdata[i] );

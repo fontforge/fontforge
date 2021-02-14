@@ -29,6 +29,8 @@
 #define FONTFORGE_FFPYTHON_H
 
 #include "flaglist.h"
+#include "splinefont.h"
+#include "views.h"
 
 #pragma push_macro("real")
 #undef real
