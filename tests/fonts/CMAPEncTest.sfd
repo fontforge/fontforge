@@ -4,7 +4,7 @@ FullName: CMAP Encoding Test
 FamilyName: CMAPEncTest
 Weight: Regular
 Copyright: Copyright (c) 2021, Unknown
-UComments: "2021-1-31: Created with FontForge (http://fontforge.org)"
+UComments: "Glyph outlines 0-9 and A-F are from Libertinus Mono, Copyright Khaled Hosny, Philipp H. Poll, and others. SIL 1.0 License"
 Version: 001.000
 ItalicAngle: 0
 UnderlinePosition: -100
@@ -36,6 +36,7 @@ HheadDescent: 0
 HheadDOffset: 1
 OS2Vendor: 'PfEd'
 DEI: 91125
+LangName: 1033 "" "" "" "" "" "" "" "" "Khaled Hosny" "Philipp H. Poll" "" "https://github.com/khaledhosny/libertinus" "http://www.linuxlibertine.org" "This Font Software is licensed under the SIL Open Font License, Version 1.1." "http://scripts.sil.org/OFL"
 Encoding: UnicodeBmp
 UnicodeInterp: none
 NameList: AGL For New Fonts
