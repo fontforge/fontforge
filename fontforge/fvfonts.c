@@ -762,7 +762,7 @@ int SFFindSlot(SplineFont *sf, EncMap *map, int unienc, const char *name ) {
 			SCUniMatch(sf->glyphs[pos],unienc) )
 	break;
 	}
-    } else if ( unienc!=-1 &&
+    } else if ( unienc>=0 &&
 	    ((unienc<0x10000 && map->enc->is_unicodebmp) ||
 	     (unienc<0x110000 && map->enc->is_unicodefull))) {
 	 index = unienc;
