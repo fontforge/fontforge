@@ -61,6 +61,7 @@
 
 extern int _GScrollBar_Width;
 extern GBox _ggadget_Default_Box;
+extern GTextInfo *GTextInfoCopy(GTextInfo *ti);
 #define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
 #define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
 
@@ -2509,36 +2510,34 @@ static struct otfname *OtfNameFromStyleNames(GGadget *me) {
 return( head );
 }
 
-void GListMoveSelected(GGadget *list,int offset) {
-    int32 len; int i,j;
-    GTextInfo **old, **new;
+void GListMoveOneSelected(GGadget *list,int offset) {
+    int32 len;
+    int i, pos = -1;
+    GTextInfo **old, **new, *tmp;
 
     old = GGadgetGetList(list,&len);
     new = calloc(len+1,sizeof(GTextInfo *));
-    j = (offset<0 ) ? 0 : len-1;
-    for ( i=0; i<len; ++i ) if ( old[i]->selected ) {
-	if ( offset==0x80000000 || offset==0x7fffffff )
-	    /* Do Nothing */;
-	else if ( offset<0 ) {
-	    if ( (j= i+offset)<0 ) j=0;
-	    while ( new[j] ) ++j;
-	} else {
-	    if ( (j= i+offset)>=len ) j=len-1;
-	    while ( new[j] ) --j;
-	}
-	new[j] = malloc(sizeof(GTextInfo));
-	*new[j] = *old[i];
-	new[j]->text = u_copy(new[j]->text);
-	if ( offset<0 ) ++j; else --j;
-    }
-    for ( i=j=0; i<len; ++i ) if ( !old[i]->selected ) {
-	while ( new[j] ) ++j;
-	new[j] = malloc(sizeof(GTextInfo));
-	*new[j] = *old[i];
-	new[j]->text = u_copy(new[j]->text);
-	++j;
+    for ( i=0; i<len; i++ ) {
+	if ( old[i]->selected )
+	    pos = i;
+	new[i] = GTextInfoCopy(old[i]);
     }
     new[len] = calloc(1,sizeof(GTextInfo));
+    if ( pos==-1 || pos==offset ) {
+	GGadgetSetList(list,new,false);
+	return;
+    }
+    if ( offset > pos ) {
+	tmp = new[pos];
+	for ( i = pos; i < offset; ++i )
+	    new[i] = new[i+1];
+	new[offset] = tmp;
+    } else {
+	tmp = new[pos];
+	for ( i = pos; i > offset; --i )
+	    new[i] = new[i-1];
+	new[offset] = tmp;
+    }
     GGadgetSetList(list,new,false);
 }
 

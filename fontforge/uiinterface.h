@@ -129,6 +129,7 @@ struct ui_interface {
 
     void (*import_dlg)(struct importparams *ip);
     void (*export_dlg)(struct exportparams *ep);
+    void (*plugin_dlg)(void);
 };
 extern struct ui_interface *ui_interface;
 
@@ -167,6 +168,7 @@ extern struct ui_interface *ui_interface;
 
 #define ImportParamsDlg			(ui_interface->import_dlg)
 #define ExportParamsDlg			(ui_interface->export_dlg)
+#define PluginDlg			(ui_interface->plugin_dlg)
 
 void FF_SetUiInterface(struct ui_interface *uii);
 
