@@ -142,7 +142,7 @@ int UniFromName(const char *name,enum uni_interp interp,Encoding *encname) {
 	if ( *end )
 	    i = -1;
 	_recognizePUA = true;
-    } else if ( name[0]=='u' && strlen(name)>=5 ) {
+    } else if ( name[0]=='u' && (strlen(name)==5 || strlen(name)==6)) {
 	i = strtol(name+1,&end,16);
 	if ( *end )
 	    i = -1;
