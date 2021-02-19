@@ -48,9 +48,10 @@
 #define CID_MoreInfo     1010
 #define CID_Web          1011
 #define CID_Conf         1012
-#define CID_PluginList   1013
-#define CID_OK           1014
-#define CID_Cancel       1015
+#define CID_Revert       1013
+#define CID_PluginList   1015
+#define CID_OK           1016
+#define CID_Cancel       1017
 
 static int pluginfo_e_h(GWindow gw, GEvent *e) {
     int *done = (int *) GDrawGetUserData(gw);
@@ -455,6 +456,8 @@ static int PLUG_PluginOp(GGadget *g, GEvent *e) {
 	    help(pe->package_url, NULL);
     } else if ( cid==CID_Conf ) {
 	pluginDoPreferences(pe);
+    } else if ( cid==CID_Revert ) {
+	FigurePluginList(d);
     }
     return true;
 }
@@ -463,9 +466,9 @@ void _PluginDlg(void) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[19], boxes[6], *vert[5], *horiz[3], *tradio[6], *sbuttons[14],
+    GGadgetCreateData gcd[22], boxes[6], *vert[5], *horiz[3], *tradio[6], *sbuttons[17],
                       *bbuttons[9];
-    GTextInfo label[19];
+    GTextInfo label[22];
     int k;
     struct plg_data d = { NULL, false };
 
@@ -649,8 +652,22 @@ void _PluginDlg(void) {
     gcd[k++].creator = GButtonCreate;
     sbuttons[11] = &gcd[k-1];
 
-    sbuttons[12] = GCD_Glue;
-    sbuttons[13] = NULL;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k++].creator = GLineCreate;
+    sbuttons[12] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) _("Re_vert List");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.cid = CID_Revert;
+    gcd[k].gd.handle_controlevent = PLUG_PluginOp;
+    gcd[k++].creator = GButtonCreate;
+    sbuttons[13] = &gcd[k-1];
+
+    sbuttons[14] = GCD_Glue;
+    sbuttons[15] = NULL;
 
     boxes[3].gd.flags = gg_enabled|gg_visible;
     boxes[3].gd.u.boxelements = sbuttons;
@@ -712,7 +729,7 @@ void _PluginDlg(void) {
 
     GGadgetsCreate(gw, boxes);
     GHVBoxSetExpandableRow(boxes[0].ret,1);
-    GHVBoxSetExpandableRow(boxes[3].ret,12);
+    GHVBoxSetExpandableRow(boxes[3].ret,15);
     GHVBoxSetExpandableCol(boxes[4].ret,0);
     GHVBoxFitWindow(boxes[0].ret);
 
@@ -725,6 +742,10 @@ void _PluginDlg(void) {
 	GDrawProcessOneEvent(NULL);
 
     GDrawDestroyWindow(gw);
+}
+
+void MenuPlug(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+    PluginDlg();
 }
 
 #endif // _NO_PYTHON

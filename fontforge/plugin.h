@@ -1,10 +1,12 @@
 #ifndef FONTFORGE_PLUGIN_H
 #define FONTFORGE_PLUGIN_H
 
+#ifndef _NO_PYTHON
+
 #include "ffglib.h"
 #include "ffpython.h"
 
-extern int do_plugins;
+extern int use_plugins;
 
 enum plugin_startup_mode_type { sm_ask, sm_off, sm_on };
 extern enum plugin_startup_mode_type plugin_startup_mode;
@@ -30,4 +32,5 @@ void pluginDoPreferences(PluginEntry *);
 
 extern void PyFF_ImportPlugins(int no_import);
 
-#endif /* FONTFORGE_PLUGIN_H */
+#endif // _NO_PYTHON
+#endif // FONTFORGE_PLUGIN_H

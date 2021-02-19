@@ -1285,7 +1285,9 @@ extern void FontInfoInit(void);
 extern void LookupUIInit(void);
 extern void _ImportParamsDlg(ImportParams *ip);
 extern void _ExportParamsDlg(ExportParams *ep);
+#ifndef _NO_PYTHON
 extern void _PluginDlg(void);
+#endif
 extern struct cidmap *AskUserForCIDMap(void);
 
 extern void DefineGroups(struct fontview *fv);

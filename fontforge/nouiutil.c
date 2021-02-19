@@ -138,8 +138,10 @@ static void NOUI_import_params_dlg(struct importparams *ip) {
 static void NOUI_export_params_dlg(struct exportparams *ep) {
 }
 
-static void NOUI_params_dlg(void) {
+#ifndef _NO_PYTHON
+static void NOUI_plugin_dlg(void) {
 }
+#endif
 
 static struct ui_interface noui_interface = {
     NOUI_IError,
@@ -174,8 +176,10 @@ static struct ui_interface noui_interface = {
     NOUI_TTFNameIds,
     NOUI_MSLangString,
     NOUI_import_params_dlg,
-    NOUI_export_params_dlg,
-    NOUI_params_dlg
+    NOUI_export_params_dlg
+#ifndef _NO_PYTHON
+    ,NOUI_plugin_dlg
+#endif
 };
 struct ui_interface *ui_interface = &noui_interface;
 

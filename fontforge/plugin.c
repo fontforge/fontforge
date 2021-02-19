@@ -34,7 +34,7 @@
 #include "gfile.h"
 #include "uiinterface.h"
 
-int do_plugins = true;
+int use_plugins = true; // Prefs variable
 
 enum plugin_startup_mode_type plugin_startup_mode = sm_ask;
 GList_Glib *plugin_data = NULL;
@@ -45,12 +45,14 @@ void FreePluginEntry(PluginEntry *pe) {
     free(pe->summary);
     free(pe->package_url);
     free(pe->module_name);
-    if (pe->pyobj != NULL)
+    if ( pe->pyobj != NULL )
 	Py_DECREF(pe->pyobj);
+    if ( pe->entrypoint!=NULL )
+	Py_DECREF(pe->entrypoint);
     free(pe);
 }
 
-PluginEntry *NewPluginEntry(char *name, char *modname, char *url,
+static PluginEntry *NewPluginEntry(char *name, char *modname, char *url,
                             enum plugin_startup_mode_type sm) {
     PluginEntry *pe = malloc(sizeof(PluginEntry));
     pe->name = name;
@@ -60,6 +62,7 @@ PluginEntry *NewPluginEntry(char *name, char *modname, char *url,
     pe->package_url = url;
     pe->startup_mode = sm;
     pe->pyobj = NULL;
+    pe->entrypoint = NULL;
     pe->is_present = false;
     pe->is_well_formed = true;
     pe->has_prefs = false;
@@ -101,15 +104,15 @@ char *pluginStartupModeString(enum plugin_startup_mode_type sm, int global) {
 	    return "Off";
 	else if ( sm==sm_on )
 	    return "On";
-	else if ( global ) 
+	else
 	    return "Ask";
     } else {
 	if ( sm==sm_off )
 	    return _("Off");
 	else if ( sm==sm_on )
 	    return _("On");
-	else if ( global ) 
-	    return _("Ask");
+	else
+	    return _("New");
     }
 }
 
@@ -141,7 +144,7 @@ void SavePluginConfig() {
 	    continue; // Don't save merely discovered plugin config
 	g_key_file_set_string(conf, pe->name, "Module name", pe->module_name);
 	g_key_file_set_string(conf, pe->name, "Active", pluginStartupModeString(pe->startup_mode, true));
-	if ( pe->package_url!= NULL )
+	if ( pe->package_url!=NULL )
 	    g_key_file_set_string(conf, pe->name, "URL", pe->package_url);
     }
 
@@ -199,7 +202,7 @@ static void LoadPluginConfig() {
 
 void LoadPlugin(PluginEntry *pe) {
     PyObject *str, *tmp, *tmp2;
-    if ( !pe->is_present || pe->pyobj!=NULL || pe->entrypoint==NULL )
+    if ( !use_plugins || !pe->is_present || pe->pyobj!=NULL || pe->entrypoint==NULL )
 	return;
     str = PyUnicode_FromString("load");
     pe->pyobj = PyObject_CallMethodNoArgs(pe->entrypoint, str);
@@ -235,6 +238,17 @@ void LoadPlugin(PluginEntry *pe) {
     }
     Py_DECREF(pe->entrypoint);
     pe->entrypoint=NULL;
+}
+
+static void ReimportPlugins() {
+    GList_Glib *i;
+    if ( !use_plugins )
+	return;
+    for ( i=plugin_data; i!=NULL; i=i->next ) {
+	PluginEntry *pe = (PluginEntry *)i->data;
+	if ( pe->is_present && pe->pyobj==NULL )
+	    LoadPlugin(pe);
+    }
 }
 
 static bool DiscoverPlugins(int no_import) {
@@ -289,6 +303,8 @@ static bool DiscoverPlugins(int no_import) {
 	Py_DECREF(tmp);
 	Py_DECREF(tmp2);
 	pe->is_present = true;
+	if ( pe->entrypoint!=NULL )
+	    Py_DECREF(pe->entrypoint);
 	pe->entrypoint = entrypoint;
 	// Extract project URL from package data
 	PyObject *dist = PyObject_GetAttrString(entrypoint, "dist");
@@ -301,12 +317,21 @@ static bool DiscoverPlugins(int no_import) {
 		    tmp = PyUnicode_AsASCIIString(str);
 		    char *metaline = PyBytes_AsString(tmp);
 		    // printf("%s\n", metaline);
-		    if ( strncmp(metaline, "Home-page: ", 11)==0 )
+		    if ( strncmp(metaline, "Home-page: ", 11)==0 ) {
+			if ( pe->package_url!=NULL )
+			    free(pe->package_url);
 			pe->package_url = copy(metaline+11);
-		    else if ( strncmp(metaline, "Name: ", 6)==0 )
+		    }
+		    else if ( strncmp(metaline, "Name: ", 6)==0 ) {
+			if ( pe->package_name!=NULL )
+			    free(pe->package_name);
 			pe->package_name = copy(metaline+6);
-		    else if ( strncmp(metaline, "Summary: ", 9)==0 )
+		    }
+		    else if ( strncmp(metaline, "Summary: ", 9)==0 ) {
+			if ( pe->summary!=NULL )
+			    free(pe->summary);
 			pe->summary = copy(metaline+9);
+		    }
 		    Py_DECREF(str);
 		    Py_DECREF(tmp);
 		}
@@ -319,7 +344,7 @@ static bool DiscoverPlugins(int no_import) {
 	    do_ask = true;
 	Py_DECREF(dist);
     }
-    if (PyErr_Occurred())
+    if ( PyErr_Occurred() )
 	PyErr_Print();
     Py_DECREF(iter);
     Py_DECREF(getmetastr);
@@ -328,24 +353,25 @@ static bool DiscoverPlugins(int no_import) {
 }
 
 void PyFF_ImportPlugins(int no_import) {
-    static int done = 0;
+    static int attempted_plugin_load = false;
 
-    if ( done==1 )
+    if ( !use_plugins )
 	return;
 
-    if ( done==0 ) {
+    if ( !attempted_plugin_load ) {
 	LoadPluginConfig();
-    }
-    if ( done==0 || (done==-1 && !no_import) ) {
 	if ( DiscoverPlugins(no_import) )
 	    PluginDlg();
-	SavePluginConfig();
+	attempted_plugin_load = true;
+    } else if ( !no_import ) {
+	ReimportPlugins();
     }
-    done = no_import ? -1 : 1;
+
+    SavePluginConfig();
 }
 
 void pluginDoPreferences(PluginEntry *pe) {
-    if ( pe->pyobj==NULL || !pe->has_prefs )
+    if ( !use_plugins || pe->pyobj==NULL || !pe->has_prefs )
 	return;
 
     PyObject *tmp = PyObject_GetAttrString(pe->pyobj, "fontforge_plugin_config");

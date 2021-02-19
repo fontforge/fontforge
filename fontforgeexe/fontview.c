@@ -978,12 +978,6 @@ void MenuXRes(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED
     DoXRes();
 }
 
-#ifndef _NO_PYTHON
-void MenuPlug(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    PluginDlg();
-}
-#endif
-
 void MenuSaveAll(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     FontView *fv;
 
