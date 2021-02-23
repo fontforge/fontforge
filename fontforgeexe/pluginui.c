@@ -35,6 +35,8 @@
 
 #include "assert.h"
 
+extern GTextInfo *GTextInfoCopy(GTextInfo *ti);
+
 #define CID_SmOn         1000
 #define CID_SmOff        1001
 #define CID_SmAsk        1002
@@ -46,9 +48,10 @@
 #define CID_Disable      1008
 #define CID_Delete       1009
 #define CID_MoreInfo     1010
-#define CID_Web          1011
-#define CID_Conf         1012
-#define CID_Revert       1013
+#define CID_Load         1011
+#define CID_Web          1012
+#define CID_Conf         1013
+#define CID_Revert       1014
 #define CID_PluginList   1015
 #define CID_OK           1016
 #define CID_Cancel       1017
@@ -73,8 +76,8 @@ static void PluginInfoDlg(PluginEntry *pe) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[12], boxes[4], *hvgrid[6][4], *okgrid[7], *mgrid[3];
-    GTextInfo label[12];
+    GGadgetCreateData gcd[14], boxes[4], *hvgrid[7][4], *okgrid[7], *mgrid[3];
+    GTextInfo label[14];
     int done = false, k;
 
     if ( no_windowing_ui )
@@ -90,6 +93,7 @@ static void PluginInfoDlg(PluginEntry *pe) {
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GDrawPointsToPixels(NULL,GGadgetScale(400));
+    pos.height = 0;
     gw = GDrawCreateTopWindow(NULL,&pos,pluginfo_e_h,&done,&wattrs);
 
     memset(&gcd,0,sizeof(gcd));
@@ -149,7 +153,7 @@ static void PluginInfoDlg(PluginEntry *pe) {
     hvgrid[2][2] = GCD_ColSpan;
     hvgrid[2][3] = NULL;
 
-    label[k].text = (unichar_t *) _("Package URL:");
+    label[k].text = (unichar_t *) _("'attrs' (if any):");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
@@ -157,7 +161,7 @@ static void PluginInfoDlg(PluginEntry *pe) {
     gcd[k++].creator = GLabelCreate;
     hvgrid[3][0] = &gcd[k-1];
 
-    label[k].text = (unichar_t *) (pe->package_url==NULL ? "[Unknown]" : pe->package_url);
+    label[k].text = (unichar_t *) pe->attrs;
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_enabled | gg_visible;
@@ -166,7 +170,7 @@ static void PluginInfoDlg(PluginEntry *pe) {
     hvgrid[3][2] = GCD_ColSpan;
     hvgrid[3][3] = NULL;
 
-    label[k].text = (unichar_t *) _("Summary:");
+    label[k].text = (unichar_t *) _("Package URL:");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
@@ -174,7 +178,7 @@ static void PluginInfoDlg(PluginEntry *pe) {
     gcd[k++].creator = GLabelCreate;
     hvgrid[4][0] = &gcd[k-1];
 
-    label[k].text = (unichar_t *) (pe->summary==NULL ? "[Unknown]" : pe->summary);
+    label[k].text = (unichar_t *) (pe->package_url==NULL ? "[Unknown]" : pe->package_url);
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_enabled | gg_visible;
@@ -183,7 +187,24 @@ static void PluginInfoDlg(PluginEntry *pe) {
     hvgrid[4][2] = GCD_ColSpan;
     hvgrid[4][3] = NULL;
 
-    hvgrid[5][0] = NULL;
+    label[k].text = (unichar_t *) _("Summary:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    hvgrid[5][0] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) (pe->summary==NULL ? "[Unknown]" : pe->summary);
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    hvgrid[5][1] = &gcd[k-1];
+    hvgrid[5][2] = GCD_ColSpan;
+    hvgrid[5][3] = NULL;
+
+    hvgrid[6][0] = NULL;
 
     boxes[2].gd.flags = gg_enabled|gg_visible;
     boxes[2].gd.u.boxelements = hvgrid[0];
@@ -218,6 +239,7 @@ static void PluginInfoDlg(PluginEntry *pe) {
     boxes[0].creator = GVBoxCreate;
 
     GGadgetsCreate(gw, boxes);
+    GHVBoxSetPadding(boxes[2].ret, 5, 6);
     GHVBoxFitWindow(boxes[0].ret);
 
     GDrawSetVisible(gw, true);
@@ -234,7 +256,7 @@ struct plg_data {
 };
 
 static int PLUG_OK(GGadget *g, GEvent *e) {
-    int changed = false, do_notice=false, len, i;
+    int len, i;
     GList_Glib *l;
     struct plg_data *d = (struct plg_data *) GDrawGetUserData(GGadgetGetWindow(g));
 
@@ -244,31 +266,19 @@ static int PLUG_OK(GGadget *g, GEvent *e) {
 
     for (l = plugin_data; l!=NULL; l = l->next) {
 	PluginEntry *pe = (PluginEntry *) l->data;
-	if ( pe->startup_mode!=pe->new_mode )
-	    changed = true;
-	if ( pe->new_mode==sm_on && pe->is_present && pe->startup_mode!=sm_on )
-	    do_notice = true;
-	// Delete entries not in CID_PluginList
 	if ( !pe->is_present && pe->new_mode==sm_ask )
 	    FreePluginEntry(pe);
     }
 
-    if ( do_notice )
-	ff_post_notice(_("Loading and Reordering Plugins"),_("Newly activated plugins will be loaded now, while\nany reordreing will take effect when FontForge is restarted."));
-
-    if ( changed ) {
-	g_list_free(g_steal_pointer(&plugin_data)); // Won't free ->data elements
-	GGadget *list = GWidgetGetControl(d->gw, CID_PluginList);
-	GTextInfo **ti = GGadgetGetList(list, &len);
-	for (i = 0; i < len; ++i) {
-	    PluginEntry *pe = (PluginEntry *) ti[i]->userdata;
-	    if ( pe->new_mode==sm_on && pe->is_present && pe->startup_mode!=sm_on )
-		LoadPlugin(pe);
-	    pe->startup_mode = pe->new_mode;
-	    plugin_data = g_list_append(plugin_data, pe);
-	}
-	SavePluginConfig();
+    g_list_free(g_steal_pointer(&plugin_data)); // Won't free ->data elements
+    GGadget *list = GWidgetGetControl(d->gw, CID_PluginList);
+    GTextInfo **ti = GGadgetGetList(list, &len);
+    for (i = 0; i < len; ++i) {
+	PluginEntry *pe = (PluginEntry *) ti[i]->userdata;
+	pe->startup_mode = pe->new_mode;
+	plugin_data = g_list_append(plugin_data, pe);
     }
+    SavePluginConfig();
 
     enum plugin_startup_mode_type sm = sm_ask;
     if ( GGadgetIsChecked(GWidgetGetControl(d->gw, CID_SmOn)) )
@@ -302,24 +312,22 @@ static int plug_e_h(GWindow gw, GEvent *e) {
 }
 
 static unichar_t *pluginDescString(PluginEntry *pe, int *has_err) {
-    char *str, *csm, *nsm=NULL, *err=NULL;
+    char *str, *csm, *nsm=NULL, *info=NULL;
 
-    csm = pluginStartupModeString(pe->startup_mode, false);
+    csm = _(pluginStartupModeString(pe->startup_mode, false));
     if ( pe->startup_mode != pe->new_mode )
-	nsm = pluginStartupModeString(pe->new_mode, false);
-    err = pluginErrorString(pe);
+	nsm = _(pluginStartupModeString(pe->new_mode, false));
+    info = _(pluginInfoString(pe, true, has_err));
 
-    if ( err!=NULL && nsm!=NULL )
-	str = smprintf("%s (%s -> %s) [%s]", pe->name, csm, nsm, err);
-    else if ( err!=NULL && nsm==NULL )
-	str = smprintf("%s (%s) [%s]", pe->name, csm, err);
-    else if ( err==NULL && nsm!=NULL )
+    if ( info!=NULL && nsm!=NULL )
+	str = smprintf("%s (%s -> %s) [%s]", pe->name, csm, nsm, info);
+    else if ( info!=NULL && nsm==NULL )
+	str = smprintf("%s (%s) [%s]", pe->name, csm, info);
+    else if ( info==NULL && nsm!=NULL )
 	str = smprintf("%s (%s -> %s)", pe->name, csm, nsm);
     else 
 	str = smprintf("%s (%s)", pe->name, csm);
     unichar_t *r = utf82u_copy(str);
-    if ( has_err!=NULL )
-	*has_err = err!=NULL;
     free(str);
     return r;
 }
@@ -361,8 +369,9 @@ static void PLUG_EnableButtons(struct plg_data *d) {
     GGadgetSetEnabled(GWidgetGetControl(d->gw, CID_Bottom), pe && pos<len-1);
     GGadgetSetEnabled(GWidgetGetControl(d->gw, CID_Enable), pe && pe->new_mode!=sm_on);
     GGadgetSetEnabled(GWidgetGetControl(d->gw, CID_Disable), pe && pe->new_mode!=sm_off);
-    GGadgetSetEnabled(GWidgetGetControl(d->gw, CID_Delete), pe!=NULL);
+    GGadgetSetEnabled(GWidgetGetControl(d->gw, CID_Delete), pe && pe->new_mode!=sm_ask);
     GGadgetSetEnabled(GWidgetGetControl(d->gw, CID_MoreInfo), pe!=NULL);
+    GGadgetSetEnabled(GWidgetGetControl(d->gw, CID_Load), pe && pe->entrypoint!=NULL);
     GGadgetSetEnabled(GWidgetGetControl(d->gw, CID_Web), pe && pe->package_url!=NULL);
     GGadgetSetEnabled(GWidgetGetControl(d->gw, CID_Conf), pe && pe->has_prefs);
 }
@@ -370,6 +379,37 @@ static void PLUG_EnableButtons(struct plg_data *d) {
 static int PLUG_PluginListChange(GGadget *g, GEvent *e) {
     struct plg_data *d = GDrawGetUserData(GGadgetGetWindow(g));
     PLUG_EnableButtons(d);
+}
+
+void GListMoveOneSelected(GGadget *list,int offset) {
+    int32 len;
+    int i, pos = -1;
+    GTextInfo **old, **new, *tmp;
+
+    old = GGadgetGetList(list,&len);
+    new = calloc(len+1,sizeof(GTextInfo *));
+    for ( i=0; i<len; i++ ) {
+	if ( old[i]->selected )
+	    pos = i;
+	new[i] = GTextInfoCopy(old[i]);
+    }
+    new[len] = calloc(1,sizeof(GTextInfo));
+    if ( pos==-1 || pos==offset ) {
+	GGadgetSetList(list,new,false);
+	return;
+    }
+    if ( offset > pos ) {
+	tmp = new[pos];
+	for ( i = pos; i < offset; ++i )
+	    new[i] = new[i+1];
+	new[offset] = tmp;
+    } else {
+	tmp = new[pos];
+	for ( i = pos; i > offset; --i )
+	    new[i] = new[i-1];
+	new[offset] = tmp;
+    }
+    GGadgetSetList(list,new,false);
 }
 
 static int PLUG_PluginListOrder(GGadget *g, GEvent *e) {
@@ -451,6 +491,12 @@ static int PLUG_PluginOp(GGadget *g, GEvent *e) {
     	PLUG_EnableButtons(d);
     } else if ( cid==CID_MoreInfo ) {
 	PluginInfoDlg(pe);
+    } else if ( cid==CID_Load ) {
+	if ( pe->entrypoint!=NULL ) {
+	    LoadPlugin(pe);
+	    ResetPluginText(i);
+	    PLUG_EnableButtons(d);
+	}
     } else if ( cid==CID_Web ) {
 	if ( pe->package_url!=NULL )
 	    help(pe->package_url, NULL);
@@ -466,15 +512,31 @@ void _PluginDlg(void) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[22], boxes[6], *vert[5], *horiz[3], *tradio[6], *sbuttons[17],
+    GGadgetCreateData gcd[24], boxes[6], *vert[5], *horiz[3], *tradio[6], *sbuttons[17],
                       *bbuttons[9];
-    GTextInfo label[22];
-    int k;
+    GTextInfo label[24];
+    int k, msg;
     struct plg_data d = { NULL, false };
 
     if ( no_windowing_ui )
 	return;
 
+    if ( !attempted_plugin_load ) {
+	static char *buts[3];
+	if ( !use_plugins ) {
+	    buts[0] = _("_Ok");
+	    buts[2] = NULL;
+	    ff_ask(_("Plugins off in preferences"),(const char **) buts,0,0,_("The UsePlugins preferences option is currently off.\nFontForge will not load plugin configuration or\nattempt discovery unless that option is on."));
+	} else {
+	    buts[0] = _("_Yes");
+	    buts[1] = _("_No");
+	    buts[2] = NULL;
+	    int ans = ff_ask(_("Initialize Plugins?"),(const char **) buts,0,1,_("FontForge has not yet attempted to load Plugins\nDo you want it to do that now?"));
+	    if ( ans==0 )
+		PyFF_ProcessInitFiles(false, true);
+	}
+    }
+	
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
@@ -484,6 +546,7 @@ void _PluginDlg(void) {
     wattrs.utf8_window_title = _("Plugin Configuration");
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
+    pos.width = pos.height = 0;
     d.gw = gw = GDrawCreateTopWindow(NULL,&pos,plug_e_h,&d,&wattrs);
 
     memset(&label,0,sizeof(label));
@@ -543,6 +606,14 @@ void _PluginDlg(void) {
     boxes[2].gd.flags = gg_enabled|gg_visible;
     boxes[2].gd.u.boxelements = tradio;
     boxes[2].creator = GHBoxCreate;
+
+    msg = k;
+    label[k].text = (unichar_t *) _("Plugins can be Loaded and Configured now.\nOther changes will take effect at next restart.");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 6;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
 
     label[k].text = (unichar_t *) _("_Top");
     label[k].text_is_1byte = true;
@@ -632,6 +703,16 @@ void _PluginDlg(void) {
     gcd[k++].creator = GButtonCreate;
     sbuttons[9] = &gcd[k-1];
 
+    label[k].text = (unichar_t *) _("_Load");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.cid = CID_Load;
+    gcd[k].gd.handle_controlevent = PLUG_PluginOp;
+    gcd[k++].creator = GButtonCreate;
+    sbuttons[10] = &gcd[k-1];
+
     label[k].text = (unichar_t *) _("Open _Web Page");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
@@ -640,7 +721,7 @@ void _PluginDlg(void) {
     gcd[k].gd.cid = CID_Web;
     gcd[k].gd.handle_controlevent = PLUG_PluginOp;
     gcd[k++].creator = GButtonCreate;
-    sbuttons[10] = &gcd[k-1];
+    sbuttons[11] = &gcd[k-1];
 
     label[k].text = (unichar_t *) _("_Configure");
     label[k].text_is_1byte = true;
@@ -650,11 +731,11 @@ void _PluginDlg(void) {
     gcd[k].gd.cid = CID_Conf;
     gcd[k].gd.handle_controlevent = PLUG_PluginOp;
     gcd[k++].creator = GButtonCreate;
-    sbuttons[11] = &gcd[k-1];
+    sbuttons[12] = &gcd[k-1];
 
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLineCreate;
-    sbuttons[12] = &gcd[k-1];
+    sbuttons[13] = &gcd[k-1];
 
     label[k].text = (unichar_t *) _("Re_vert List");
     label[k].text_is_1byte = true;
@@ -664,10 +745,10 @@ void _PluginDlg(void) {
     gcd[k].gd.cid = CID_Revert;
     gcd[k].gd.handle_controlevent = PLUG_PluginOp;
     gcd[k++].creator = GButtonCreate;
-    sbuttons[13] = &gcd[k-1];
+    sbuttons[14] = &gcd[k-1];
 
-    sbuttons[14] = GCD_Glue;
-    sbuttons[15] = NULL;
+    sbuttons[15] = GCD_Glue;
+    sbuttons[16] = NULL;
 
     boxes[3].gd.flags = gg_enabled|gg_visible;
     boxes[3].gd.u.boxelements = sbuttons;
@@ -719,18 +800,21 @@ void _PluginDlg(void) {
     boxes[5].creator = GHBoxCreate;
 
     vert[0] = &boxes[2];
-    vert[1] = &boxes[4];
-    vert[2] = &boxes[5];
-    vert[3] = NULL;
+    vert[1] = &gcd[msg];
+    vert[2] = &boxes[4];
+    vert[3] = &boxes[5];
+    vert[4] = NULL;
 
     boxes[0].gd.flags = gg_enabled|gg_visible;
     boxes[0].gd.u.boxelements = vert;
     boxes[0].creator = GVBoxCreate;
 
     GGadgetsCreate(gw, boxes);
-    GHVBoxSetExpandableRow(boxes[0].ret,1);
+    GHVBoxSetExpandableRow(boxes[0].ret,2);
     GHVBoxSetExpandableRow(boxes[3].ret,15);
     GHVBoxSetExpandableCol(boxes[4].ret,0);
+    GHVBoxSetPadding(boxes[0].ret, 0, 10);
+    GHVBoxSetPadding(boxes[4].ret, 10, 0);
     GHVBoxFitWindow(boxes[0].ret);
 
     FigurePluginList(&d);

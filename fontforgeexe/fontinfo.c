@@ -61,7 +61,6 @@
 
 extern int _GScrollBar_Width;
 extern GBox _ggadget_Default_Box;
-extern GTextInfo *GTextInfoCopy(GTextInfo *ti);
 #define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
 #define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
 
@@ -2508,37 +2507,6 @@ static struct otfname *OtfNameFromStyleNames(GGadget *me) {
 	last = cur;
     }
 return( head );
-}
-
-void GListMoveOneSelected(GGadget *list,int offset) {
-    int32 len;
-    int i, pos = -1;
-    GTextInfo **old, **new, *tmp;
-
-    old = GGadgetGetList(list,&len);
-    new = calloc(len+1,sizeof(GTextInfo *));
-    for ( i=0; i<len; i++ ) {
-	if ( old[i]->selected )
-	    pos = i;
-	new[i] = GTextInfoCopy(old[i]);
-    }
-    new[len] = calloc(1,sizeof(GTextInfo));
-    if ( pos==-1 || pos==offset ) {
-	GGadgetSetList(list,new,false);
-	return;
-    }
-    if ( offset > pos ) {
-	tmp = new[pos];
-	for ( i = pos; i < offset; ++i )
-	    new[i] = new[i+1];
-	new[offset] = tmp;
-    } else {
-	tmp = new[pos];
-	for ( i = pos; i > offset; --i )
-	    new[i] = new[i-1];
-	new[offset] = tmp;
-    }
-    GGadgetSetList(list,new,false);
 }
 
 void GListDelSelected(GGadget *list) {

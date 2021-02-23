@@ -920,8 +920,8 @@ int fontforge_main( int argc, char **argv ) {
     int recover=2;
     int any;
     int next_recent=0;
-    int run_python_init_files = false;
-    int import_python_plugins = false;
+    int run_python_init_files = true;
+    int import_python_plugins = true;
     GRect pos;
     GWindowAttrs wattrs;
     char *display = NULL;

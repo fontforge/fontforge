@@ -7,12 +7,13 @@
 #include "ffpython.h"
 
 extern int use_plugins;
+extern int attempted_plugin_load;
 
 enum plugin_startup_mode_type { sm_ask, sm_off, sm_on };
 extern enum plugin_startup_mode_type plugin_startup_mode;
 
 typedef struct plugin_entry {
-    char *name, *package_name, *module_name;
+    char *name, *package_name, *module_name, *attrs;
     char *summary, *package_url;
     enum plugin_startup_mode_type startup_mode, new_mode;
     PyObject *pyobj, *entrypoint;
@@ -23,14 +24,16 @@ extern GList_Glib *plugin_data;
 
 void FreePluginEntry(PluginEntry *pe);
 char *pluginStartupModeString(enum plugin_startup_mode_type sm, int global);
-char *pluginErrorString(PluginEntry *);
+char *pluginInfoString(PluginEntry *pe, int do_new, int *is_err);
 void *getPluginStartupMode(void);
 void setPluginStartupMode(void *);
 void LoadPlugin(PluginEntry *pe);
 void SavePluginConfig();
 void pluginDoPreferences(PluginEntry *);
 
-extern void PyFF_ImportPlugins(int no_import);
+extern void PyFF_ImportPlugins(int do_import);
+extern PyObject *PyFF_GetPluginInfo(PyObject *, PyObject *);
+extern PyObject *PyFF_ConfigurePlugins(PyObject *, PyObject *);
 
 #endif // _NO_PYTHON
 #endif // FONTFORGE_PLUGIN_H

@@ -35,6 +35,7 @@
 #include "uiinterface.h"
 
 int use_plugins = true; // Prefs variable
+int attempted_plugin_load = false;
 
 enum plugin_startup_mode_type plugin_startup_mode = sm_ask;
 GList_Glib *plugin_data = NULL;
@@ -45,6 +46,7 @@ void FreePluginEntry(PluginEntry *pe) {
     free(pe->summary);
     free(pe->package_url);
     free(pe->module_name);
+    free(pe->attrs);
     if ( pe->pyobj != NULL )
 	Py_DECREF(pe->pyobj);
     if ( pe->entrypoint!=NULL )
@@ -52,13 +54,14 @@ void FreePluginEntry(PluginEntry *pe) {
     free(pe);
 }
 
-static PluginEntry *NewPluginEntry(char *name, char *modname, char *url,
+static PluginEntry *NewPluginEntry(char *name, char *pkgname, char *modname, char *url,
                             enum plugin_startup_mode_type sm) {
     PluginEntry *pe = malloc(sizeof(PluginEntry));
     pe->name = name;
-    pe->package_name = NULL;
+    pe->package_name = pkgname;
     pe->summary = NULL;
     pe->module_name = modname;
+    pe->attrs = NULL;
     pe->package_url = url;
     pe->startup_mode = sm;
     pe->pyobj = NULL;
@@ -85,35 +88,35 @@ static char *getPluginDirName() {
     return buf;
 }
 
-char *pluginErrorString(PluginEntry *pe) {
+char *pluginInfoString(PluginEntry *pe, int do_new, int *is_err) {
+   enum plugin_startup_mode_type sm = do_new ? pe->new_mode : pe->startup_mode;
+   int err = true;
+   char *r = NULL;
    if ( !pe->is_present )
-	return _("Not Found");
-   else if ( pe->startup_mode!=sm_on )
-	return NULL;
-   else if ( pe->is_present && pe->pyobj==NULL )
-	return _("Couldn't Load");
+	r = N_("Not Found");
+   else if ( sm!=sm_on )
+	err = false;
+   else if ( pe->is_present && pe->pyobj==NULL && pe->entrypoint==NULL )
+	r = N_("Couldn't Load");
    else if ( pe->pyobj!=NULL && !pe->is_well_formed )
-	return _("Couldn't Start");
-   else
-	return NULL;
+	r = N_("Couldn't Start");
+   else if ( pe->entrypoint!=NULL ) {
+	r = N_("Unloaded");
+	err = false;
+   } else
+	err = false;
+   if ( is_err!=NULL )
+	*is_err = err;
+   return r;
 }
 
 char *pluginStartupModeString(enum plugin_startup_mode_type sm, int global) {
-    if ( global ) {
-	if ( sm==sm_off )
-	    return "Off";
-	else if ( sm==sm_on )
-	    return "On";
-	else
-	    return "Ask";
-    } else {
-	if ( sm==sm_off )
-	    return _("Off");
-	else if ( sm==sm_on )
-	    return _("On");
-	else
-	    return _("New");
-    }
+    if ( sm==sm_off )
+	return N_("Off");
+    else if ( sm==sm_on )
+	return N_("On");
+    else
+	return global ? N_("Ask") : N_("New");
 }
 
 
@@ -142,8 +145,9 @@ void SavePluginConfig() {
 	PluginEntry *pe = (PluginEntry *) i->data;
 	if ( pe->startup_mode==sm_ask )
 	    continue; // Don't save merely discovered plugin config
+	g_key_file_set_string(conf, pe->name, "Package name", pe->package_name);
 	g_key_file_set_string(conf, pe->name, "Module name", pe->module_name);
-	g_key_file_set_string(conf, pe->name, "Active", pluginStartupModeString(pe->startup_mode, true));
+	g_key_file_set_string(conf, pe->name, "Active", pluginStartupModeString(pe->startup_mode, false));
 	if ( pe->package_url!=NULL )
 	    g_key_file_set_string(conf, pe->name, "URL", pe->package_url);
     }
@@ -186,9 +190,10 @@ static void LoadPluginConfig() {
 		    LogError(_("No module name for '%s' in plugin config -- skipping.\n"), groups[i]);
 		    continue;
 		}
+		char *pkgname = g_key_file_get_string(conf, groups[i], "Package name", NULL);
 		char *sm_string = g_key_file_get_string(conf, groups[i], "Active", NULL);
 		char *url = g_key_file_get_string(conf, groups[i], "URL", NULL);
-		PluginEntry *pe = NewPluginEntry(copy(groups[i]), modname, url, pluginStartupModeFromString(sm_string));
+		PluginEntry *pe = NewPluginEntry(copy(groups[i]), pkgname, modname, url, pluginStartupModeFromString(sm_string));
 		free(sm_string);
 		plugin_data = g_list_append(plugin_data, pe);
 	    }
@@ -205,12 +210,19 @@ void LoadPlugin(PluginEntry *pe) {
     if ( !use_plugins || !pe->is_present || pe->pyobj!=NULL || pe->entrypoint==NULL )
 	return;
     str = PyUnicode_FromString("load");
-    pe->pyobj = PyObject_CallMethodNoArgs(pe->entrypoint, str);
+    pe->pyobj = PyObject_CallMethodObjArgs(pe->entrypoint, str, NULL);
     Py_DECREF(str);
     if ( pe->pyobj!=NULL ) {
 	tmp = PyObject_GetAttrString(pe->pyobj, "fontforge_plugin_init");
 	if ( tmp!=NULL && PyFunction_Check(tmp) ) {
-	    tmp2 = PyObject_CallNoArgs(tmp);
+	    PyObject *args = PyTuple_New(0);
+	    PyObject *kwargs = PyDict_New();
+	    char *b1=getPluginDirName(), *b2 = smprintf("%s/%s", b1, pe->name);
+	    PyObject *dstr = PyUnicode_FromString(b2);
+	    free(b1);
+	    free(b2);
+	    PyDict_SetItemString(kwargs, "preferences_path", dstr);
+	    tmp2 = PyObject_Call(tmp, args, kwargs);
 	    if ( tmp2==NULL ) {
 		LogError( _("Skipping plugin %s: module '%s': Error calling 'fontforge_plugin_init' function\n"), pe->name, pe->module_name);
 		PyErr_Print();
@@ -218,6 +230,9 @@ void LoadPlugin(PluginEntry *pe) {
 		pe->is_well_formed = true;
 		Py_DECREF(tmp2);
 	    }
+	    Py_DECREF(dstr);
+	    Py_DECREF(kwargs);
+	    Py_DECREF(args);
 	    Py_DECREF(tmp);
 	} else {
 	    LogError( _("Skipping plugin %s: module '%s': Lacks 'fontforge_plugin_init' function\n"), pe->name, pe->module_name);
@@ -251,9 +266,9 @@ static void ReimportPlugins() {
     }
 }
 
-static bool DiscoverPlugins(int no_import) {
+static bool DiscoverPlugins(int do_import) {
     int do_ask = false;
-    PyObject *str, *str2, *str3, *iter, *tmp, *tmp2, *entrypoint;
+    PyObject *str, *str2, *iter, *tmp, *tmp2, *entrypoint;
     PyObject *pkgres = PyImport_ImportModule("pkg_resources");
     if ( pkgres==NULL || !PyObject_HasAttrString(pkgres, "iter_entry_points") ) {
 	LogError(_("Core python package 'pkg_resources' not found: Cannot discover plugins\n"));
@@ -261,7 +276,7 @@ static bool DiscoverPlugins(int no_import) {
     }
     str = PyUnicode_FromString("iter_entry_points");
     str2 = PyUnicode_FromString("fontforge_plugin");
-    iter = PyObject_CallMethodOneArg(pkgres, str, str2);
+    iter = PyObject_CallMethodObjArgs(pkgres, str, str2, NULL);
     if ( !PyIter_Check(iter) ) {
 	LogError(_("Could not iterate 'fontforge_plugin' entry points.\n"));
 	return false;
@@ -273,16 +288,22 @@ static bool DiscoverPlugins(int no_import) {
     while ( (entrypoint = PyIter_Next(iter)) ) {
 	// Find name and module_name
 	str = PyObject_GetAttrString(entrypoint, "name");
-	if ( str==NULL )
-	    continue;
-	str2 = PyObject_GetAttrString(entrypoint, "module_name");
-	if ( str2==NULL ) {
-	    Py_DECREF(str);
+	tmp = PyUnicode_AsASCIIString(str);
+	if ( tmp==NULL ) {
+	    Py_XDECREF(str);
+	    PyErr_Clear();
 	    continue;
 	}
-	tmp = PyUnicode_AsASCIIString(str);
-	char *name = PyBytes_AsString(tmp);
+	str2 = PyObject_GetAttrString(entrypoint, "module_name");
 	tmp2 = PyUnicode_AsASCIIString(str2);
+	if ( str2==NULL ) {
+	    Py_XDECREF(str);
+	    Py_XDECREF(tmp);
+	    Py_XDECREF(str2);
+	    PyErr_Clear();
+	    continue;
+	}
+	char *name = PyBytes_AsString(tmp);
 	char *modname = PyBytes_AsString(tmp2);
 	// Find entry in current list or add entry to end
 	GList_Glib *i;
@@ -295,13 +316,26 @@ static bool DiscoverPlugins(int no_import) {
 	if ( i!=NULL && pe->pyobj!=NULL ) // Already loaded
 	    continue;
 	if ( i==NULL ) {
-	    pe = NewPluginEntry(copy(name), copy(modname), NULL, plugin_startup_mode);
+	    pe = NewPluginEntry(copy(name), NULL, copy(modname), NULL, plugin_startup_mode);
 	    plugin_data = g_list_append(plugin_data, pe);
 	}
 	Py_DECREF(str);
 	Py_DECREF(str2);
 	Py_DECREF(tmp);
 	Py_DECREF(tmp2);
+	str = PyObject_GetAttrString(entrypoint, "attrs");
+	if ( str==NULL ) {
+	    PyErr_Clear();
+	} else {
+	    if ( pe->attrs )
+		free(pe->attrs);
+	    tmp = PyUnicode_AsASCIIString(str);
+	    if ( tmp!=NULL )
+		pe->attrs = copy(PyBytes_AsString(tmp));
+	    else
+		pe->attrs = NULL;
+	    Py_XDECREF(tmp);
+	}
 	pe->is_present = true;
 	if ( pe->entrypoint!=NULL )
 	    Py_DECREF(pe->entrypoint);
@@ -310,7 +344,7 @@ static bool DiscoverPlugins(int no_import) {
 	PyObject *dist = PyObject_GetAttrString(entrypoint, "dist");
 	if ( dist!=NULL ) {
 	    tmp = PyObject_GetAttrString(dist, "PKG_INFO");
-	    tmp2 = PyObject_CallMethodOneArg(dist, getmetastr, tmp);
+	    tmp2 = PyObject_CallMethodObjArgs(dist, getmetastr, tmp, NULL);
 	    Py_DECREF(tmp);
 	    if ( PyIter_Check(tmp2) ) {
 		while ( (str = PyIter_Next(tmp2)) ) {
@@ -338,9 +372,9 @@ static bool DiscoverPlugins(int no_import) {
 	    }
 	    Py_DECREF(tmp2);
 	}
-	if ( !no_import && pe->startup_mode==sm_on ) {
+	if ( do_import && pe->startup_mode==sm_on ) {
 	    LoadPlugin(pe);
-	} else if ( !no_import && pe->startup_mode==sm_ask )
+	} else if ( do_import && pe->startup_mode==sm_ask )
 	    do_ask = true;
 	Py_DECREF(dist);
     }
@@ -350,24 +384,6 @@ static bool DiscoverPlugins(int no_import) {
     Py_DECREF(getmetastr);
     Py_DECREF(pkgres);
     return do_ask;
-}
-
-void PyFF_ImportPlugins(int no_import) {
-    static int attempted_plugin_load = false;
-
-    if ( !use_plugins )
-	return;
-
-    if ( !attempted_plugin_load ) {
-	LoadPluginConfig();
-	if ( DiscoverPlugins(no_import) )
-	    PluginDlg();
-	attempted_plugin_load = true;
-    } else if ( !no_import ) {
-	ReimportPlugins();
-    }
-
-    SavePluginConfig();
 }
 
 void pluginDoPreferences(PluginEntry *pe) {
@@ -383,8 +399,122 @@ void pluginDoPreferences(PluginEntry *pe) {
 	Py_DECREF(tmp);
 	return;
     }
-    PyObject_CallNoArgs(tmp);
+    PyObject_CallFunctionObjArgs(tmp, NULL);
     Py_DECREF(tmp);
+}
+
+void PyFF_ImportPlugins(int do_import) {
+
+    if ( !use_plugins )
+	return;
+
+    if ( !attempted_plugin_load ) {
+	LoadPluginConfig();
+	if ( DiscoverPlugins(do_import) )
+	    PluginDlg();
+	attempted_plugin_load = true;
+    } else if ( do_import ) {
+	ReimportPlugins();
+    }
+
+    SavePluginConfig();
+}
+
+extern PyObject *PyFF_GetPluginInfo(PyObject *UNUSED(noself), PyObject *UNUSED(args)) {
+    PyObject *r, *t;
+    GList_Glib *l;
+    PluginEntry *pe;
+
+    r = PyList_New(0);
+
+    for (l = plugin_data; l!=NULL; l = l->next) {
+	pe = (PluginEntry *) l->data;
+	t = Py_BuildValue("ssssssOss", pe->name,
+	                  pluginStartupModeString(pe->startup_mode, false),
+	                  pluginInfoString(pe, false, NULL),
+			  pe->package_name,
+			  pe->module_name,
+			  pe->attrs,
+			  pe->has_prefs ? Py_True : Py_False,
+			  pe->package_url,
+			  pe->summary);
+	PyList_Append(r, t);
+    }
+    return r;
+}
+
+extern PyObject *PyFF_ConfigurePlugins(PyObject *UNUSED(noself), PyObject *args) {
+    PyObject *iter = NULL, *item;
+    GList_Glib *l, *nl = NULL;
+    PluginEntry *pe;
+    int type_error = false;
+    if ( args!=NULL || PyTuple_Check(args) || PyTuple_Size(args)==1 ) {
+	PyObject *l = PyTuple_GetItem(args, 0);
+	if ( l!=NULL )
+	    iter = PyObject_GetIter(l);
+    }
+
+    if ( iter!=NULL ) {
+	for (l = plugin_data; l!=NULL; l = l->next) {
+	    pe = (PluginEntry *) l->data;
+	    pe->new_mode = sm_ask;
+	}
+	while ( item = PyIter_Next(iter) ) {
+	    if ( !PyTuple_Check(item) || PyTuple_Size(item) < 2 ) {
+		type_error = true;
+		break;
+	    }
+	    PyObject *nameobj = PyTuple_GetItem(item, 0), *smobj = PyTuple_GetItem(item, 1);
+	    if ( !PyUnicode_Check(nameobj) || !PyUnicode_Check(smobj) ) {
+		type_error = true;
+		break;
+	    }
+	    PyObject *name = PyUnicode_AsASCIIString(nameobj);
+	    char *namestr = PyBytes_AsString(name);
+	    for (l = plugin_data; l!=NULL; l = l->next) {
+		pe = (PluginEntry *) l->data;
+		if ( strcasecmp(namestr, pe->name)==0 )
+		    break;
+	    }
+	    if ( l==NULL ) {
+		PyErr_Format(PyExc_ValueError, _("'%s' is not the name of a currently known plugin"), namestr);
+		g_list_free(g_steal_pointer(&nl));
+		Py_DECREF(name);
+		return NULL;
+	    }
+	    nl = g_list_append(nl, pe);
+	    PyObject *sm = PyUnicode_AsASCIIString(smobj);
+	    pe->new_mode = pluginStartupModeFromString(PyBytes_AsString(sm));
+	    if ( pe->new_mode==sm_ask ) {
+		PyErr_Format(PyExc_ValueError, _("Startup mode '%s' (for plugin '%s') must be 'on' or 'off'. (To set a discovered plugin to 'new' omit it from the list.)"), PyBytes_AsString(sm), namestr);
+		g_list_free(g_steal_pointer(&nl));
+		Py_DECREF(name);
+		Py_DECREF(sm);
+		return NULL;
+	    }
+	}
+    } else
+	type_error = true;
+
+    if ( type_error ) {
+	PyErr_Format(PyExc_TypeError, _("The single parameter to this method must be an iterable object (such as a list) where each item is a tuple with a plugin name as its first element and 'on' or 'off' as its second element."));
+	return NULL;
+    }
+    for (l = plugin_data; l!=NULL; l = l->next) {
+	pe = (PluginEntry *) l->data;
+	pe->startup_mode = pe->new_mode;
+	if ( pe->new_mode==sm_ask ) {
+	    if ( pe->is_present ) {
+		nl = g_list_append(nl, pe);
+	    } else
+		FreePluginEntry(pe);
+	}
+    }
+    g_list_free(plugin_data);
+    plugin_data = nl;
+    SavePluginConfig();
+
+    return Py_None;
 }
 
 #endif // _NO_PYTHON
