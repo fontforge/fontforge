@@ -25,9 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _NO_PYTHON
-
 #include <fontforge-config.h>
+
+#ifndef _NO_PYTHON
 
 #include "fontforgeui.h"
 #include "gkeysym.h"

@@ -260,7 +260,9 @@ static struct prefs_list {
     { "CoverageFormatsAllowed", pr_int, &coverageformatsallowed, NULL, NULL, '\0', NULL, 1, NULL },
     { "ForceNamesWhenOpening", pr_namelist, &force_names_when_opening, NULL, NULL, '\0', NULL, 1, NULL },
     { "ForceNamesWhenSaving", pr_namelist, &force_names_when_saving, NULL, NULL, '\0', NULL, 1, NULL },
+#ifndef _NO_PYTHON
     { "PluginStartupMode", pr_string, NULL, &getPluginStartupMode, &setPluginStartupMode, '\0', NULL, 1, NULL },
+#endif
     { NULL, 0, NULL, NULL, NULL, '\0', NULL, 0, NULL } /* Sentinel */
 },
 extras[] = {
