@@ -17,6 +17,7 @@ Technical References
    techref/cliargs
    techref/splinefont
    techref/SuggestDeltas
+   techref/plugins
    techref/stroke
    techref/BDFGrey
    techref/PfaEdit-TeX

@@ -405,6 +405,84 @@ Module functions
 
    Returns FontForge's version number. This will be a large number like 20070406.
 
+.. function:: loadPlugins()
+
+   Discovers and loads FontForge python plugins according to the current 
+   configuration, if not already loaded. This is primarily intended when
+   importing FontForge into a python process but can also be when loading
+   is delayed by the ``-SkipPythonInitFiles`` command-line flag.
+
+.. function:: getPluginInfo()
+
+   Returns a list of nine element tuples describing configured and/or discovered
+   plugins. Configured plugins are listed first in loading order followed by
+   any newly discovered plugins. The tuples elements correspond to:
+
+   .. object:: Name
+
+      The name of the plugin as defined by its author.
+
+   .. object:: Load status
+
+      "On" if the plugin is enabled, "Off" if it is disabled, "New" if the 
+      ``PluginStartupMode`` preference (edited in the 
+      :doc:`"Configure Plugins..." dialog </techref/plugins>`) is set to "Ask".
+
+   .. object:: Information string
+
+      "Not Found" if the plugin is configured but was not discovered.
+      "Couldn't Load" if the plugin was discovered and its load status is
+      "On" but the relevant module could not be imported. "Couldn't Start"
+      if the module could be imported but the initialization function 
+      was missing or returned an error. "Unloaded" if the plugin was discovered
+      and its load status is "On" but loading has not been attempted (most
+      likely because of a configuration change or startup flag). ``None`` 
+      if the plugin was discovered but has load status "Off" or New" or if
+      it was loaded successfully.
+
+   .. object:: Package name
+
+      The name of the Python package containing the plugin.
+
+   .. object:: Module name
+
+      The name of the Python module carrying the initialization function.
+
+   .. object:: "attrs"
+
+      Additional sub-objects or properties of the module needed to pick
+      out the location of the initialization function (if any).
+
+   .. object:: Has preferences
+
+      A boolean indicating whether the plugin has configurable preferences.
+
+   .. object:: Package URL
+
+      The "Home-page" URL listed in the package, if any.
+
+   .. object:: Summary
+
+      The "Summary" line in the package's metadata with a brief description
+      of the plugin.
+
+   Some of these entries will be ``None`` if the plugin has not been loaded
+   and a few more will be ``None`` if the plugin was not discovered.
+
+.. function:: configurePlugins([List of tuples])
+
+   This method allows plugins to be reconfigured using the Python API. It
+   accepts a list (or any other iterable object) of tuples similar to those
+   provided by ``getPluginInfo()`` except that only the first two fields are
+   examined. The first field must contain the name of a known (currently
+   configured or discovered) plugin.  The second must be "On" or "Off". The
+   configuration will be updated to correspond to the listed plugins in the 
+   specified order.
+
+   If a plugin that was not discovered is missing from the list it will be
+   removed from the configuration. Any missing but discovered plugins will 
+   be added to the end of the configuration list with load status "New".
+
 .. function:: runInitScripts()
 
    Runs the system or user initialization scripts, if not already run. This is

@@ -559,7 +559,7 @@ void _PluginDlg(void) {
     memset(&boxes,0,sizeof(boxes));
 
     k = 0;
-    label[k].text = (unichar_t *) _("New Plugins are:");
+    label[k].text = (unichar_t *) _("PluginStartupMode:");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
