@@ -84,7 +84,7 @@ return;
 	Py_XINCREF(owner);
 	PyTuple_SetItem(arglist,0,menu_data[mi->mid].data);
 	PyTuple_SetItem(arglist,1,owner);
-	result = PyEval_CallObject(menu_data[mi->mid].check_enabled, arglist);
+	result = PyObject_CallObject(menu_data[mi->mid].check_enabled, arglist);
 	Py_DECREF(arglist);
 	if ( result==NULL )
 	    /* Oh. An error. How fun. See below */;
@@ -119,7 +119,7 @@ return;
     Py_XINCREF(owner);
     PyTuple_SetItem(arglist,0,menu_data[mi->mid].data);
     PyTuple_SetItem(arglist,1,owner);
-    result = PyEval_CallObject(menu_data[mi->mid].func, arglist);
+    result = PyObject_CallObject(menu_data[mi->mid].func, arglist);
     Py_DECREF(arglist);
     Py_XDECREF(result);
     if ( PyErr_Occurred()!=NULL )
