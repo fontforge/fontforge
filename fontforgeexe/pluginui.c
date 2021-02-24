@@ -390,6 +390,7 @@ static void PLUG_EnableButtons(struct plg_data *d) {
 static int PLUG_PluginListChange(GGadget *g, GEvent *e) {
     struct plg_data *d = GDrawGetUserData(GGadgetGetWindow(g));
     PLUG_EnableButtons(d);
+    return true;
 }
 
 void GListMoveOneSelected(GGadget *list, int offset) {
