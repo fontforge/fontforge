@@ -814,7 +814,9 @@ sphinx/techref/macformats.rst
 sphinx/techref/non-standard.rst
 sphinx/techref/palmfonts.rst
 sphinx/techref/pcf-format.rst
+sphinx/techref/plugins.rst
 sphinx/techref/pfaeditmath.rst
+sphinx/techref/pyextend.rst
 sphinx/techref/ref-caveats.rst
 sphinx/techref/selections.rst
 sphinx/techref/sfdchangelog.rst

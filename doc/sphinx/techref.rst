@@ -17,8 +17,8 @@ Technical References
    techref/cliargs
    techref/splinefont
    techref/SuggestDeltas
-   techref/plugins
    techref/stroke
+   techref/pyextend
    techref/BDFGrey
    techref/PfaEdit-TeX
    techref/pfaeditmath
@@ -27,6 +27,7 @@ Technical References
    techref/featurefile
    techref/non-standard
    techref/palmfonts
+   techref/plugins
    techref/bitmaponlysfnt
    techref/sfdformat
    techref/pcf-format
