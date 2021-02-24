@@ -116,7 +116,7 @@ int fontforge_main( int argc, char **argv ) {
     bind_textdomain_codeset("FontForge","UTF-8");
     bindtextdomain("FontForge", getLocaleDir());
     textdomain("FontForge");
-    for ( i=1; i<argc; ++i ) {
+    for ( int i=1; i<argc; ++i ) {
 	pt = argv[i];
 
 	if ( strcmp(pt,"-SkipPythonInitFiles")==0 ) {
