@@ -1517,10 +1517,12 @@ This type may not be pickled.
    Ends the contour without closing it. This is only relevant if you are
    stroking contours.
 
-.. method:: glyphPen.addComponent(glyph_name, transform)
+.. method:: glyphPen.addComponent(glyph_name[, transform, selected])
 
    Adds a reference (a component) to the glyph. The PostScript transformation
-   matrix is a 6 element tuple.
+   matrix is a 6 element tuple (with a default of the identity transformation).
+   When ``selected`` is true the reference will be marked as selected in the
+   UI and related API calls.
 
 
 Glyph
@@ -1776,8 +1778,10 @@ must be created through the font.
 
 .. attribute:: glyph.references
 
-   A tuple of tuples containing glyph-name and a transformation matrix for each
-   reference in the foreground. See also :attr:`glyph.foreground` and :attr:`glyph.layerrefs`.
+   A tuple of tuples containing, for each reference in the foreground, a
+   glyph-name, a transformation matrix, and whether the reference is currently
+   selected. When assigning to the object the matrix and ``selected`` values
+   are optional. See also :attr:`glyph.foreground` and :attr:`glyph.layerrefs`.
 
 .. attribute:: glyph.right_side_bearing
 
@@ -2041,10 +2045,11 @@ must be created through the font.
       As above but also merge away on-curve points which are very close to,
       but not on, an added extremum
 
-.. method:: glyph.addReference(glyph_name[, transform])
+.. method:: glyph.addReference(glyph_name[, transform, selected])
 
    Adds a reference to the specified glyph into the current glyph. Optionally
-   specifying a transformation matrix
+   specifying a transformation matrix and whether the reference is to be
+   marked selected in the UI and related API calls.
 
 .. method:: glyph.addHint(is_vertical, start, width)
 

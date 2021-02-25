@@ -5695,9 +5695,9 @@ static PyObject *PyFFGlyphPen_addComponent(PyObject *self, PyObject *args) {
     int layer = ((PyFF_GlyphPen *) self)->layer;
     real transform[6];
     SplineChar *rsc;
-    double m[6];
+    double m[6] = {1.0,0.0,0.0,1.0,0.0,0.0};
     char *str;
-    int j;
+    int j, selected=false;
 
     if ( !((PyFF_GlyphPen *) self)->ended ) {
 	PyErr_Format(PyExc_EnvironmentError, "The addComponent operator may not be called while drawing a contour");
@@ -5706,10 +5706,8 @@ return( NULL );
     if ( ((PyFF_GlyphPen *) self)->replace )
 	GlyphClear(self);
 
-    memset(m,0,sizeof(m));
-    m[0] = m[3] = 1;
-    if ( !PyArg_ParseTuple(args,"s|(dddddd)",&str,
-	    &m[0], &m[1], &m[2], &m[3], &m[4], &m[5]) )
+    if ( !PyArg_ParseTuple(args,"s|(dddddd)p",&str,
+	    &m[0], &m[1], &m[2], &m[3], &m[4], &m[5], &selected) )
 return( NULL );
     rsc = SFGetChar(sc->parent,-1,str);
     if ( rsc==NULL ) {
@@ -5718,7 +5716,8 @@ return( NULL );
     }
     for ( j=0; j<6; ++j )
 	transform[j] = m[j];
-    _SCAddRef(sc,rsc,layer,transform);
+    _SCAddRef(sc,rsc,layer,transform,selected);
+    SCCharChangedUpdate(sc,layer);
 
 Py_RETURN( self );
 }
@@ -5791,8 +5790,7 @@ static PyTypeObject PyFF_GlyphPenType = {
 /* Glyph Utilities */
 /* ************************************************************************** */
 
-static PyObject *PyFF_Glyph_get_layer_references(PyFF_Glyph *self, void *UNUSED(closure),
-	int layer) {
+static PyObject *PyFF_Glyph_get_layer_references(PyFF_Glyph *self, int layer) {
     RefChar *ref;
     int cnt;
     SplineChar *sc = self->sc;
@@ -5801,15 +5799,16 @@ static PyObject *PyFF_Glyph_get_layer_references(PyFF_Glyph *self, void *UNUSED(
     for ( ref=sc->layers[layer].refs, cnt=0; ref!=NULL; ++cnt, ref=ref->next );
     tuple = PyTuple_New(cnt);
     for ( ref=sc->layers[layer].refs, cnt=0; ref!=NULL; ++cnt, ref=ref->next )
-	PyTuple_SET_ITEM(tuple,cnt,Py_BuildValue("(s(dddddd))", ref->sc->name,
+	PyTuple_SET_ITEM(tuple,cnt,Py_BuildValue("(s(dddddd)O)", ref->sc->name,
 		ref->transform[0], ref->transform[1], ref->transform[2],
-		ref->transform[3], ref->transform[4], ref->transform[5]));
+		ref->transform[3], ref->transform[4], ref->transform[5],
+		ref->selected ? Py_True : Py_False));
 return( tuple );
 }
 
 static int PyFF_Glyph_set_layer_references(PyFF_Glyph *self,PyObject *value,
-	void *UNUSED(closure), int layer) {
-    int i, j, cnt;
+	int layer) {
+    int i, j, cnt, selected;
     double m[6];
     real transform[6];
     char *str;
@@ -5828,8 +5827,11 @@ return( -1 );
     }
     sc->layers[layer].refs = NULL;
     for ( i=0; i<cnt; ++i ) {
-	if ( !PyArg_ParseTuple(PySequence_GetItem(value,i),"s(dddddd)",&str,
-		&m[0], &m[1], &m[2], &m[3], &m[4], &m[5]) )
+	m[1] = m[2] = m[4] = m[5] = 0.0;
+	m[0] = m[3] = 1.0;
+	selected = false;
+	if ( !PyArg_ParseTuple(PySequence_GetItem(value,i),"s|(dddddd)p",&str,
+		&m[0], &m[1], &m[2], &m[3], &m[4], &m[5], &selected) )
 return( -1 );
 	rsc = SFGetChar(sf,-1,str);
 	if ( rsc==NULL ) {
@@ -5838,8 +5840,9 @@ return( -1 );
 	}
 	for ( j=0; j<6; ++j )
 	    transform[j] = m[j];
-	_SCAddRef(sc,rsc,layer,transform);
+	_SCAddRef(sc,rsc,layer,transform,selected);
     }
+    SCCharChangedUpdate(sc,layer);
 return( 0 );
 }
 
@@ -6216,7 +6219,7 @@ return( NULL );
 	PyErr_Format(PyExc_TypeError, "Index must be a layer name or index" );
 return( NULL );
     }
-return( PyFF_Glyph_get_layer_references((PyFF_Glyph *) PySC_From_SC(sc),NULL,layer));
+return( PyFF_Glyph_get_layer_references((PyFF_Glyph *) PySC_From_SC(sc),layer));
 }
 
 static int PyFF_RefArrayIndexAssign( PyObject *self, PyObject *index, PyObject *value ) {
@@ -6237,7 +6240,7 @@ return( -1 );
 	PyErr_Format(PyExc_TypeError, "Index must be a layer name or index" );
 return( -1 );
     }
-return( PyFF_Glyph_set_layer_references((PyFF_Glyph *) PySC_From_SC(sc),value,NULL,layer));
+return( PyFF_Glyph_set_layer_references((PyFF_Glyph *) PySC_From_SC(sc),value,layer));
 }
 
 static PyMappingMethods PyFF_RefArrayMapping = {
@@ -7056,11 +7059,11 @@ Py_RETURN_NONE;
 }
 
 static PyObject *PyFF_Glyph_get_references(PyFF_Glyph *self, void *closure) {
-return( PyFF_Glyph_get_layer_references(self,closure,self->layer));
+return( PyFF_Glyph_get_layer_references(self,self->layer));
 }
 
 static int PyFF_Glyph_set_references(PyFF_Glyph *self,PyObject *value, void *closure) {
-return( PyFF_Glyph_set_layer_references(self,value,closure,self->layer));
+return( PyFF_Glyph_set_layer_references(self,value,self->layer));
 }
 
 static PyObject *PyFF_Glyph_get_layerrefs(PyFF_Glyph *self, void *UNUSED(closure)) {
@@ -8203,17 +8206,15 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyph_AddReference(PyObject *self, PyObject *args) {
-    double m[6];
+    double m[6] = {1.0,0.0,0.0,1.0,0.0,0.0};
     real transform[6];
     char *str;
     SplineChar *sc = ((PyFF_Glyph *) self)->sc, *rsc;
     SplineFont *sf = sc->parent;
-    int j;
+    int j, selected=false;
 
-    memset(m,0,sizeof(m));
-    m[0] = m[3] = 1;
-    if ( !PyArg_ParseTuple(args,"s|(dddddd)",&str,
-	    &m[0], &m[1], &m[2], &m[3], &m[4], &m[5]) )
+    if ( !PyArg_ParseTuple(args,"s|(dddddd)p",&str,
+	    &m[0], &m[1], &m[2], &m[3], &m[4], &m[5], &selected) )
 return( NULL );
     rsc = SFGetChar(sf,-1,str);
     if ( rsc==NULL ) {
@@ -8222,7 +8223,7 @@ return( NULL );
     }
     for ( j=0; j<6; ++j )
 	transform[j] = m[j];
-    _SCAddRef(sc,rsc,((PyFF_Glyph *) self)->layer,transform);
+    _SCAddRef(sc,rsc,((PyFF_Glyph *) self)->layer,transform,selected);
     SCCharChangedUpdate(sc,((PyFF_Glyph *) self)->layer);
 
 Py_RETURN( self );
