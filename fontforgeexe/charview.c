@@ -5385,7 +5385,9 @@ return;
 	p.cx = p.spiro->x;
 	p.cy = p.spiro->y;
     } else {
-	CVDoSnaps(cv,&fs);
+	// Require some movement before snapping objects with the pointer tool
+	if ( !RealNear(cv->info.x,cv->p.cx) || !RealNear(cv->info.y,cv->p.cy) )
+	    CVDoSnaps(cv,&fs);
     }
     cx = (p.cx -cv->p.cx) / tab->scale;
     cy = (p.cy - cv->p.cy) / tab->scale;
