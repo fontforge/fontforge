@@ -284,6 +284,8 @@ static void ReimportPlugins() {
 
 static bool DiscoverPlugins(int do_import) {
     int do_ask = false;
+    PluginEntry *pe;
+    GList_Glib *i;
     PyObject *str, *str2, *iter, *tmp, *tmp2, *entrypoint;
     PyObject *pkgres = PyImport_ImportModule("pkg_resources");
     if (pkgres == NULL || !PyObject_HasAttrString(pkgres, "iter_entry_points")) {
@@ -322,8 +324,7 @@ static bool DiscoverPlugins(int do_import) {
         char *name = PyBytes_AsString(tmp);
         char *modname = PyBytes_AsString(tmp2);
         // Find entry in current list or add entry to end
-        GList_Glib *i;
-        PluginEntry *pe = NULL;
+        pe = NULL;
         for (i = plugin_data; i != NULL; i = i->next) {
             pe = (PluginEntry *)i->data;
             if (strcmp(name, pe->name) == 0 && strcmp(modname, pe->module_name) == 0) {
@@ -403,6 +404,12 @@ static bool DiscoverPlugins(int do_import) {
     }
     if (PyErr_Occurred()) {
         PyErr_Print();
+    }
+    for (i = plugin_data; i != NULL; i = i->next) {
+        pe = (PluginEntry *)i->data;
+        if ( !pe->is_present && pe->startup_mode == sm_on ) {
+            LogError(_("Warning: Enabled Plugin '%s' was not discovered\n"), pe->name);
+        }
     }
     Py_DECREF(iter);
     Py_DECREF(getmetastr);

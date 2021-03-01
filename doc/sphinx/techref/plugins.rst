@@ -27,9 +27,9 @@ dialog (also under the File menu), which can be set to "On", "Off", or
 plugins is automatically loaded. When set to "Off" it is not loaded
 until you decide to Enable it in the same dialog. When set to "Ask" the
 dialog will appear on startup whenever a new plugin is discovered so that
-you can decide whether to use it. Which value makes the most sense for
-you will depend on how much control you have over what packages are installed
-in your python path.
+you can decide whether or not to use it. Which value makes the most sense for
+you will depend on the degree of control you have over what packages are
+installed in your python path.
 
 Enabling and Disabling Plugins
 ------------------------------
@@ -47,13 +47,31 @@ Finally, if a plugin has its own preferences you can set those with the
 "Configure" button (which is disabled otherwise). The content of preferences
 and the process of setting them will vary by plugin.
 
+Loading Plugins For Scripts
+---------------------------
+
+When a script is run with FontForge directly using the ``-script`` flag each
+enabled and discovered plugin will be loaded before control is passed off to
+the script (unless the ``-SkipPythonPlugins`` flag is also specified).
+In contrast, running a python script with the ``python`` command and importing
+the ``fontforge`` module will not cause plugins to be loaded. If you have a
+script that needs the functionality of a plugin (perhaps because it adds a
+new font export format) you must load the plugins explicitly by calling
+``fontforge.loadPlugins()``. Calling this function when plugins are already
+loaded should be harmless.
+
 Troubleshooting
 ---------------
 
-The FontForge project has no control over who can make a plugin and at
+The FontForge project has no control over who can make a plugin. At
 some point you may install one that causes problems, potentially even
 preventing you from successfully running FontForge. One work-around for
-that situation is to run FontForge with the "-SkipPythonPlugins" flag.
+that situation is to run FontForge with the ``-SkipPythonPlugins`` flag.
 When started with that flag FontForge will still "discover" plugins but
 will not automatically load them. You can then open the "Configure Plugins..."
 dialog, Disable the misbehaving plugin, and restart the program.
+
+When an individual plugin is present but cannot be loaded there will be
+relevant warnings logged on startup or when a load is attemped via the dialog
+or the python API. There will also be a warning for each *enabled* plugin
+that is not discovered.
