@@ -27,6 +27,7 @@
  */
 
 #include <fontforge-config.h>
+#include <assert.h>
 
 #include "namelist.h"
 
@@ -171,7 +172,7 @@ int UniFromName(const char *name,enum uni_interp interp,Encoding *encname) {
     }
     if ( !_recognizePUA && i>=0xe000 && i<=0xf8ff )
 	i = -1;
-g_assert( i >= -1 );
+    assert( i >= -1 );
 return( i );
 }
 
