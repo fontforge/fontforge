@@ -691,7 +691,7 @@ Not a very useful example.
 
 .. function:: askString(title, question, [def_string])
 
-   Allows you to as the user a question for which a string is the answer.
+   Allows you to ask the user a question for which a string is the answer.
 
    The first argument is the dialog's title, the second is the question to be
    asked, the third is optional and specified a default answer.
@@ -701,7 +701,21 @@ Not a very useful example.
 
    Throws an exception if there is no user interface.
 
+.. function:: askMulti(title, specification)
 
+   This method raises a dialog with multiple questions for the user, optionally
+   organized into separate tabs.  The answers can be choices (similar to
+   :func:`fontforge.askChoices()`) a string (similar to
+   :func:`fontforge.askString()`) an existing filename (similar to
+   :func:`fontforge.openFilename()`) or a save filename (similar to
+   :func:`fontforge.saveFilename()`.
+
+   Due to the variety of potential ``specification`` parameters this facility is
+   explained in a separate :doc:`document </techref/askmulti>`.
+
+   The method throws an exception if there is no user interface or the
+   specification is not valid. Otherwise it either returns a dictionary of answers
+   or ``None`` if the user chose "Cancel" or closed the dialog without choosing "OK".
 
 Point
 -----
@@ -1640,7 +1654,7 @@ must be created through the font.
 .. attribute:: glyph.layers
 
    A dictionary like object containing the layers of the glyph. It may be
-   indexed by either a layer name, or an integer between 0 and
+   indexed by either a layer name or an integer between 0 and
    ``glyph.layer_cnt-1`` to produce a :class:`layer` object. Layer 0 is the
    background layer. Layer 1 is the foreground layer.
 
@@ -2113,6 +2127,18 @@ must be created through the font.
    Orients all contours so that external ones are clockwise and internal
    counter-clockwise.
 
+.. method:: glyph.doUndoLayer([layer, redo])
+
+   When ``redo`` is False this method is equivalent to the "Undo" UI menu item.
+   It restores the last preserved layer state discarding the current state.
+   When ``redo`` is True it is equivalent to "Redo".  You may omit the
+   ``layer`` parameter, in which case the currently active layer will be used.
+   Otherwise it must either be a layer name or an integer between 0 and
+   ``glyph.layer_cnt-1``.
+
+   ``doUndoLayer`` is normally used in conjunction with
+   :meth:`glyph.preserveLayerAsUndo()`
+
 .. method:: glyph.exclude(excluded_layer)
 
    Removes the excluded area from the current glyph. Takes an argument which is
@@ -2247,11 +2273,12 @@ must be created through the font.
 
 .. method:: glyph.preserveLayerAsUndo([layer, dohints])
 
-   Normally undo handling is turned off during python scripting. If you wish
-   you may tell fontforge to preserve the current state of a layer so that
-   whatever you do later can be undone by the user. You may omit the layer
-   parameter (in which case the currently active layer will be used). You may
-   also request that hints be preserved (they are not, by default).
+   Normally undo handling is turned off during python scripting. This method
+   preserves the current state of a layer so that whatever you do after can be
+   undone by the user. You may omit the ``layer`` parameter, in which case the
+   currently active layer will be used. Otherwise it must either be a layer name
+   or an integer between 0 and ``glyph.layer_cnt-1``. When ``dohints`` is True
+   then hints will also be preserved (they are not by default).
 
 .. method:: glyph.removeOverlap()
 

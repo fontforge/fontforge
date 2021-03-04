@@ -37,6 +37,7 @@
 
 #include "dlist.h"
 #include "ggadget.h"
+#include "multidialog.h"
 #include "search.h"
 
 
@@ -1287,6 +1288,7 @@ extern void _ExportParamsDlg(ExportParams *ep);
 #ifndef _NO_PYTHON
 extern void _PluginDlg(void);
 #endif
+extern int UI_Ask_Multi(const char *title, MultiDlgSpec *spec);
 extern struct cidmap *AskUserForCIDMap(void);
 
 extern void DefineGroups(struct fontview *fv);

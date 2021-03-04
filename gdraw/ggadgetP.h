@@ -272,6 +272,26 @@ typedef struct glist {
     void (*popup_callback)(GGadget *g,int pos);
 } GList;
 
+typedef struct gscroll1box {
+    GGadget g;
+    int32 count;
+    int32 sbsize;
+    int32 minsize, oppoatmin;
+    int32 subwidth, subheight;
+    int32 oppoatcur; // Not subwidth/height because the scroll bar can add size
+    int32 pad;
+    int32 scrollchange;
+    int32 offset;    // wrt scrolling
+    GGadget **children;
+    GGadget *sb;
+    unsigned int vertical: 1;
+    unsigned int always_show_sb: 1;
+    unsigned int sized_for_sb: 1;
+    unsigned int align_flow_labels: 1;
+    enum gg_flags just;
+    GWindow nested;
+} GScroll1Box;
+
 typedef struct gtextfield {
     GGadget g;
     unsigned int cursor_on: 1;
@@ -416,6 +436,17 @@ typedef struct ghvbox {
     GGadget *label;
     int label_height;
 } GHVBox;
+
+typedef struct gflowbox {
+    GGadget g;
+    int count;
+    int hpad, vpad, lpad;		/* Internal padding */
+    int label_size;
+    enum gg_flags just;
+    unsigned int vertical: 1;
+    GGadget **children;
+    GGadget *label;
+} GFlowBox;
 
 struct col_data {
     enum me_type me_type;
@@ -571,6 +602,7 @@ extern int GTextInfoArrayCount(GTextInfo **ti);
 extern int GTextInfoCompare(GTextInfo *ti1, GTextInfo *ti2);
 extern int GMenuItemArrayMask(GMenuItem *mi);
 extern int GMenuItemArrayAnyUnmasked(GMenuItem *mi);
+extern void _GFlowBoxGetDesiredSize(GGadget *g, GRect *outer, GRect *inner, int squashed, int ignore_des);
 
 extern GGadget *_GGadget_Create(GGadget *g, struct gwindow *base, GGadgetData *gd,void *data, GBox *def);
 extern void _GGadget_FinalPosition(GGadget *g, struct gwindow *base, GGadgetData *gd);
@@ -590,6 +622,7 @@ extern GResInfo ggadget_ri, listmark_ri;
 extern GResInfo *_GGadgetRIHead(void), *_GButtonRIHead(void), *_GTextFieldRIHead(void);
 extern GResInfo *_GRadioRIHead(void), *_GScrollBarRIHead(void), *_GLineRIHead(void);
 extern GResInfo *_GMenuRIHead(void), *_GTabSetRIHead(void), *_GHVBoxRIHead(void);
+extern GResInfo *_GFlowBoxRIHead(void), *_GScroll1BoxRIHead(void);
 extern GResInfo *_GListRIHead(void), *_GMatrixEditRIHead(void), *_GDrawableRIHead(void);
 extern GResInfo *_GProgressRIHead(void);
 

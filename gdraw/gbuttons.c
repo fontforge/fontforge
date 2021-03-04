@@ -1041,6 +1041,8 @@ static GLabel *_GLabelCreate(GLabel *gl, struct gwindow *base, GGadgetData *gd,v
 	else
 	    gl->label = u_copy(gd->label->text);
 	gl->image = gd->label->image;
+	if ( gd->mnemonic )
+	    gl->g.mnemonic = gd->mnemonic;
     }
     gl->shiftonpress = shift_on_press;
     GLabelFit(gl);
