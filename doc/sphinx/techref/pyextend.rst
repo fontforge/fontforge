@@ -429,7 +429,7 @@ specific parameters. It has two parts:
    which is a function defined on the same module or object as
    ``fontforge_plugin_init``. If a plugin defines that function it will be
    called when a user presses the "Configure" button in the Plugin dialog.
-   If it does *not* define that function the button will be disabled.
+   If ``fontforge_plugin_init`` is *not* defined the button will be disabled.
 
 Beyond this API it is entirely up to the plugin to store, retrieve, and offer
 configuration choices to the user. Until FontForge provides more dialog choices

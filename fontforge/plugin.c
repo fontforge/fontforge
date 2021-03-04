@@ -276,7 +276,7 @@ static void ReimportPlugins() {
     }
     for (i = plugin_data; i != NULL; i = i->next) {
         PluginEntry *pe = (PluginEntry *)i->data;
-        if (pe->is_present && pe->pyobj == NULL) {
+        if (pe->startup_mode == sm_on && pe->is_present && pe->pyobj == NULL) {
             LoadPlugin(pe);
         }
     }
