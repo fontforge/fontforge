@@ -60,12 +60,12 @@ void FreePluginEntry(PluginEntry *pe) {
 static PluginEntry *NewPluginEntry(char *name, char *pkgname, char *modname, char *url,
                                    enum plugin_startup_mode_type sm) {
     PluginEntry *pe = malloc(sizeof(PluginEntry));
-    pe->name = name;
-    pe->package_name = pkgname;
+    pe->name = copy(name);
+    pe->package_name = copy(pkgname);
     pe->summary = NULL;
-    pe->module_name = modname;
+    pe->module_name = copy(modname);
     pe->attrs = NULL;
-    pe->package_url = url;
+    pe->package_url = copy(url);
     pe->startup_mode = sm;
     pe->pyobj = NULL;
     pe->entrypoint = NULL;
@@ -204,8 +204,10 @@ static void LoadPluginConfig() {
                 char *pkgname = g_key_file_get_string(conf, groups[i], "Package name", NULL);
                 char *sm_string = g_key_file_get_string(conf, groups[i], "Active", NULL);
                 char *url = g_key_file_get_string(conf, groups[i], "URL", NULL);
-                PluginEntry *pe = NewPluginEntry(copy(groups[i]), pkgname, modname, url, pluginStartupModeFromString(sm_string));
-                free(sm_string);
+                PluginEntry *pe = NewPluginEntry(groups[i], pkgname, modname, url, pluginStartupModeFromString(sm_string));
+		g_free(pkgname);
+		g_free(sm_string);
+		g_free(url);
                 plugin_data = g_list_append(plugin_data, pe);
             }
             g_strfreev(groups);
@@ -306,14 +308,14 @@ static bool DiscoverPlugins(int do_import) {
     while ((entrypoint = PyIter_Next(iter))) {
         // Find name and module_name
         str = PyObject_GetAttrString(entrypoint, "name");
-        tmp = PyUnicode_AsASCIIString(str);
+        tmp = PyUnicode_AsUTF8String(str);
         if (tmp == NULL) {
             Py_XDECREF(str);
             PyErr_Clear();
             continue;
         }
         str2 = PyObject_GetAttrString(entrypoint, "module_name");
-        tmp2 = PyUnicode_AsASCIIString(str2);
+        tmp2 = PyUnicode_AsUTF8String(str2);
         if (str2 == NULL) {
             Py_XDECREF(str);
             Py_XDECREF(tmp);
@@ -335,7 +337,7 @@ static bool DiscoverPlugins(int do_import) {
             continue;
         }
         if (i == NULL) {
-            pe = NewPluginEntry(copy(name), NULL, copy(modname), NULL, plugin_startup_mode);
+            pe = NewPluginEntry(name, NULL, modname, NULL, plugin_startup_mode);
             plugin_data = g_list_append(plugin_data, pe);
         }
         Py_DECREF(str);
@@ -349,7 +351,7 @@ static bool DiscoverPlugins(int do_import) {
             if (pe->attrs) {
                 free(pe->attrs);
             }
-            tmp = PyUnicode_AsASCIIString(str);
+            tmp = PyUnicode_AsUTF8String(str);
             if (tmp != NULL) {
                 pe->attrs = copy(PyBytes_AsString(tmp));
             } else {
@@ -370,7 +372,7 @@ static bool DiscoverPlugins(int do_import) {
             Py_DECREF(tmp);
             if (PyIter_Check(tmp2)) {
                 while ((str = PyIter_Next(tmp2))) {
-                    tmp = PyUnicode_AsASCIIString(str);
+                    tmp = PyUnicode_AsUTF8String(str);
                     char *metaline = PyBytes_AsString(tmp);
                     // printf("%s\n", metaline);
                     if (strncmp(metaline, "Home-page: ", 11) == 0) {
@@ -443,10 +445,10 @@ void PyFF_ImportPlugins(int do_import) {
 
     if (!attempted_plugin_load) {
         LoadPluginConfig();
-        if (DiscoverPlugins(do_import)) {
-            PluginDlg();
-        }
+        int ask = DiscoverPlugins(do_import);
         attempted_plugin_load = true;
+	if (ask)
+            PluginDlg();
     } else if (do_import) {
         ReimportPlugins();
     }
@@ -504,7 +506,7 @@ extern PyObject *PyFF_ConfigurePlugins(PyObject *UNUSED(noself), PyObject *args)
                 type_error = true;
                 break;
             }
-            PyObject *name = PyUnicode_AsASCIIString(nameobj);
+            PyObject *name = PyUnicode_AsUTF8String(nameobj);
             char *namestr = PyBytes_AsString(name);
             for (l = plugin_data; l != NULL; l = l->next) {
                 pe = (PluginEntry *) l->data;
@@ -519,7 +521,7 @@ extern PyObject *PyFF_ConfigurePlugins(PyObject *UNUSED(noself), PyObject *args)
                 return NULL;
             }
             nl = g_list_append(nl, pe);
-            PyObject *sm = PyUnicode_AsASCIIString(smobj);
+            PyObject *sm = PyUnicode_AsUTF8String(smobj);
             pe->new_mode = pluginStartupModeFromString(PyBytes_AsString(sm));
             if (pe->new_mode == sm_ask) {
                 PyErr_Format(PyExc_ValueError, _("Startup mode '%s' (for plugin '%s') must be 'on' or 'off'. (To set a discovered plugin to 'new' omit it from the list.)"), PyBytes_AsString(sm), namestr);

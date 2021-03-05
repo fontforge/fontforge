@@ -10979,9 +10979,9 @@ return;
 	if ( *pt=='-' && pt[1]=='-' && pt[2]!='\0' ) ++pt;
 	if ( strcmp(pt,"-nosplash")==0 || strcmp(pt,"-quiet")==0 )
 	    /* Skip it */;
-	else if ( strcmp(pt,"-SkipPythonInitFiles")==0 )
+	else if ( strcmp(pt,"-SkipPythonInitFiles")==0 || strcmp(pt,"-skippyfile")==0 )
 	    run_python_init_files = false;
-	else if ( strcmp(pt,"-SkipPythonPlugins")==0 )
+	else if ( strcmp(pt,"-skippyplug")==0 )
 	    import_python_plugins = false;
 	else if ( strcmp(pt,"-lang=py")==0 )
 	    is_python = true;

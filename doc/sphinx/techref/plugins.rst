@@ -52,7 +52,7 @@ Loading Plugins For Scripts
 
 When a script is run with FontForge directly using the ``-script`` flag each
 enabled and discovered plugin will be loaded before control is passed off to
-the script (unless the ``-SkipPythonPlugins`` flag is also specified).
+the script (unless the ``-skippyplug`` flag is also specified).
 In contrast, running a python script with the ``python`` command and importing
 the ``fontforge`` module will not cause plugins to be loaded. If you have a
 script that needs the functionality of a plugin (perhaps because it adds a
@@ -66,7 +66,7 @@ Troubleshooting
 The FontForge project has no control over who can make a plugin. At
 some point you may install one that causes problems, potentially even
 preventing you from successfully running FontForge. One work-around for
-that situation is to run FontForge with the ``-SkipPythonPlugins`` flag.
+that situation is to run FontForge with the ``-skippyplug`` flag.
 When started with that flag FontForge will still "discover" plugins but
 will not automatically load them. You can then open the "Configure Plugins..."
 dialog, Disable the misbehaving plugin, and restart the program.

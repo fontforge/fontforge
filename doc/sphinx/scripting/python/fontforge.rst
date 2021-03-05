@@ -410,7 +410,7 @@ Module functions
    Discovers and loads FontForge python plugins according to the current 
    configuration, if not already loaded. This is primarily intended when
    importing FontForge into a python process but can also be when loading
-   is delayed by the ``-SkipPythonInitFiles`` command-line flag.
+   is delayed by the ``-skippyplug`` command-line flag.
 
 .. function:: getPluginInfo()
 
