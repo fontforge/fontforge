@@ -57,7 +57,8 @@ void FreePluginEntry(PluginEntry *pe) {
     free(pe);
 }
 
-static PluginEntry *NewPluginEntry(char *name, char *pkgname, char *modname, char *url,
+static PluginEntry *NewPluginEntry(const char *name, const char *pkgname,
+                                   const char *modname, const char *url,
                                    enum plugin_startup_mode_type sm) {
     PluginEntry *pe = malloc(sizeof(PluginEntry));
     pe->name = copy(name);
@@ -127,7 +128,7 @@ char *pluginStartupModeString(enum plugin_startup_mode_type sm, int global) {
 }
 
 
-static enum plugin_startup_mode_type pluginStartupModeFromString(char *modestr) {
+static enum plugin_startup_mode_type pluginStartupModeFromString(const char *modestr) {
     if (modestr == NULL) {
         return sm_ask;
     } else if (strcasecmp(modestr, "off") == 0) {
@@ -308,23 +309,20 @@ static bool DiscoverPlugins(int do_import) {
     while ((entrypoint = PyIter_Next(iter))) {
         // Find name and module_name
         str = PyObject_GetAttrString(entrypoint, "name");
-        tmp = PyUnicode_AsUTF8String(str);
-        if (tmp == NULL) {
+        const char *name = PyUnicode_AsUTF8(str);
+        if (name == NULL) {
             Py_XDECREF(str);
             PyErr_Clear();
             continue;
         }
         str2 = PyObject_GetAttrString(entrypoint, "module_name");
-        tmp2 = PyUnicode_AsUTF8String(str2);
-        if (str2 == NULL) {
+        const char *modname = PyUnicode_AsUTF8(str2);
+        if (modname == NULL) {
             Py_XDECREF(str);
-            Py_XDECREF(tmp);
             Py_XDECREF(str2);
             PyErr_Clear();
             continue;
         }
-        char *name = PyBytes_AsString(tmp);
-        char *modname = PyBytes_AsString(tmp2);
         // Find entry in current list or add entry to end
         pe = NULL;
         for (i = plugin_data; i != NULL; i = i->next) {
@@ -342,8 +340,6 @@ static bool DiscoverPlugins(int do_import) {
         }
         Py_DECREF(str);
         Py_DECREF(str2);
-        Py_DECREF(tmp);
-        Py_DECREF(tmp2);
         str = PyObject_GetAttrString(entrypoint, "attrs");
         if (str == NULL) {
             PyErr_Clear();
@@ -351,18 +347,12 @@ static bool DiscoverPlugins(int do_import) {
             if (pe->attrs) {
                 free(pe->attrs);
             }
-            tmp = PyUnicode_AsUTF8String(str);
-            if (tmp != NULL) {
-                pe->attrs = copy(PyBytes_AsString(tmp));
-            } else {
-                pe->attrs = NULL;
-            }
-            Py_XDECREF(tmp);
+            const char *attrs = PyUnicode_AsUTF8(str);
+	    pe->attrs = attrs!=NULL ? copy(attrs) : NULL;
         }
+	Py_XDECREF(str);
         pe->is_present = true;
-        if (pe->entrypoint != NULL) {
-            Py_DECREF(pe->entrypoint);
-        }
+        Py_XDECREF(pe->entrypoint);
         pe->entrypoint = entrypoint;
         // Extract project URL from package data
         PyObject *dist = PyObject_GetAttrString(entrypoint, "dist");
@@ -372,8 +362,7 @@ static bool DiscoverPlugins(int do_import) {
             Py_DECREF(tmp);
             if (PyIter_Check(tmp2)) {
                 while ((str = PyIter_Next(tmp2))) {
-                    tmp = PyUnicode_AsUTF8String(str);
-                    char *metaline = PyBytes_AsString(tmp);
+                    const char *metaline = PyUnicode_AsUTF8(str);
                     // printf("%s\n", metaline);
                     if (strncmp(metaline, "Home-page: ", 11) == 0) {
                         if (pe->package_url != NULL) {
@@ -392,7 +381,6 @@ static bool DiscoverPlugins(int do_import) {
                         pe->summary = copy(metaline + 9);
                     }
                     Py_DECREF(str);
-                    Py_DECREF(tmp);
                 }
             }
             Py_DECREF(tmp2);
@@ -506,8 +494,7 @@ extern PyObject *PyFF_ConfigurePlugins(PyObject *UNUSED(noself), PyObject *args)
                 type_error = true;
                 break;
             }
-            PyObject *name = PyUnicode_AsUTF8String(nameobj);
-            char *namestr = PyBytes_AsString(name);
+            const char *namestr = PyUnicode_AsUTF8(nameobj);
             for (l = plugin_data; l != NULL; l = l->next) {
                 pe = (PluginEntry *) l->data;
                 if (strcasecmp(namestr, pe->name) == 0) {
@@ -517,17 +504,13 @@ extern PyObject *PyFF_ConfigurePlugins(PyObject *UNUSED(noself), PyObject *args)
             if (l == NULL) {
                 PyErr_Format(PyExc_ValueError, _("'%s' is not the name of a currently known plugin"), namestr);
                 g_list_free(g_steal_pointer(&nl));
-                Py_DECREF(name);
                 return NULL;
             }
             nl = g_list_append(nl, pe);
-            PyObject *sm = PyUnicode_AsUTF8String(smobj);
-            pe->new_mode = pluginStartupModeFromString(PyBytes_AsString(sm));
+            pe->new_mode = pluginStartupModeFromString(PyUnicode_AsUTF8(smobj));
             if (pe->new_mode == sm_ask) {
-                PyErr_Format(PyExc_ValueError, _("Startup mode '%s' (for plugin '%s') must be 'on' or 'off'. (To set a discovered plugin to 'new' omit it from the list.)"), PyBytes_AsString(sm), namestr);
+                PyErr_Format(PyExc_ValueError, _("Startup mode '%s' (for plugin '%s') must be 'on' or 'off'. (To set a discovered plugin to 'new' omit it from the list.)"), PyUnicode_AsUTF8(smobj), namestr);
                 g_list_free(g_steal_pointer(&nl));
-                Py_DECREF(name);
-                Py_DECREF(sm);
                 return NULL;
             }
         }
