@@ -206,9 +206,9 @@ static void LoadPluginConfig() {
                 char *sm_string = g_key_file_get_string(conf, groups[i], "Active", NULL);
                 char *url = g_key_file_get_string(conf, groups[i], "URL", NULL);
                 PluginEntry *pe = NewPluginEntry(groups[i], pkgname, modname, url, pluginStartupModeFromString(sm_string));
-		g_free(pkgname);
-		g_free(sm_string);
-		g_free(url);
+                g_free(pkgname);
+                g_free(sm_string);
+                g_free(url);
                 plugin_data = g_list_append(plugin_data, pe);
             }
             g_strfreev(groups);
@@ -348,9 +348,9 @@ static bool DiscoverPlugins(int do_import) {
                 free(pe->attrs);
             }
             const char *attrs = PyUnicode_AsUTF8(str);
-	    pe->attrs = attrs!=NULL ? copy(attrs) : NULL;
+            pe->attrs = attrs != NULL ? copy(attrs) : NULL;
         }
-	Py_XDECREF(str);
+        Py_XDECREF(str);
         pe->is_present = true;
         Py_XDECREF(pe->entrypoint);
         pe->entrypoint = entrypoint;
@@ -397,7 +397,7 @@ static bool DiscoverPlugins(int do_import) {
     }
     for (i = plugin_data; i != NULL; i = i->next) {
         pe = (PluginEntry *)i->data;
-        if ( !pe->is_present && pe->startup_mode == sm_on ) {
+        if (!pe->is_present && pe->startup_mode == sm_on) {
             LogError(_("Warning: Enabled Plugin '%s' was not discovered\n"), pe->name);
         }
     }
@@ -435,8 +435,9 @@ void PyFF_ImportPlugins(int do_import) {
         LoadPluginConfig();
         int ask = DiscoverPlugins(do_import);
         attempted_plugin_load = true;
-	if (ask)
+        if (ask) {
             PluginDlg();
+        }
     } else if (do_import) {
         ReimportPlugins();
     }
@@ -445,7 +446,7 @@ void PyFF_ImportPlugins(int do_import) {
 }
 
 extern PyObject *PyFF_GetPluginInfo(PyObject *UNUSED(noself), PyObject *UNUSED(args)) {
-    PyObject *r, *t;
+    PyObject *r, *tmp, *entry;
     GList_Glib *l;
     PluginEntry *pe;
 
@@ -453,16 +454,26 @@ extern PyObject *PyFF_GetPluginInfo(PyObject *UNUSED(noself), PyObject *UNUSED(a
 
     for (l = plugin_data; l != NULL; l = l->next) {
         pe = (PluginEntry *) l->data;
-        t = Py_BuildValue("ssssssOss", pe->name,
-                          pluginStartupModeString(pe->startup_mode, false),
-                          pluginInfoString(pe, false, NULL),
-                          pe->package_name,
-                          pe->module_name,
-                          pe->attrs,
-                          pe->has_prefs ? Py_True : Py_False,
-                          pe->package_url,
-                          pe->summary);
-        PyList_Append(r, t);
+        entry = PyDict_New();
+	tmp = PyUnicode_FromString(pe->name);
+        PyDict_SetItemString(entry, "name", tmp);
+	tmp = PyUnicode_FromString(pluginStartupModeString(pe->startup_mode, false));
+        PyDict_SetItemString(entry, "enabled", tmp);
+	char *is = pluginInfoString(pe, false, NULL);
+	tmp = is ? PyUnicode_FromString(is) : Py_None;
+        PyDict_SetItemString(entry, "status", tmp);
+        tmp = pe->package_name ? PyUnicode_FromString(pe->package_name) : Py_None;
+        PyDict_SetItemString(entry, "package_name", tmp);
+        tmp = pe->module_name ? PyUnicode_FromString(pe->module_name) : Py_None;
+        PyDict_SetItemString(entry, "module_name", tmp);
+        tmp = pe->attrs ? PyUnicode_FromString(pe->attrs) : Py_None;
+        PyDict_SetItemString(entry, "attrs", tmp);
+        PyDict_SetItemString(entry, "prefs", pe->has_prefs ? Py_True : Py_False);
+        tmp = pe->package_url ? PyUnicode_FromString(pe->package_url) : Py_None;
+        PyDict_SetItemString(entry, "package_url", tmp);
+        tmp = pe->summary ? PyUnicode_FromString(pe->summary) : Py_None;
+        PyDict_SetItemString(entry, "summary", tmp);
+        PyList_Append(r, entry);
     }
     return r;
 }
@@ -485,12 +496,12 @@ extern PyObject *PyFF_ConfigurePlugins(PyObject *UNUSED(noself), PyObject *args)
             pe->new_mode = sm_ask;
         }
         while (item = PyIter_Next(iter)) {
-            if (!PyTuple_Check(item) || PyTuple_Size(item) < 2) {
+            if (!PyDict_Check(item)) {
                 type_error = true;
                 break;
             }
-            PyObject *nameobj = PyTuple_GetItem(item, 0), *smobj = PyTuple_GetItem(item, 1);
-            if (!PyUnicode_Check(nameobj) || !PyUnicode_Check(smobj)) {
+            PyObject *nameobj = PyDict_GetItemString(item, "name");
+            if (nameobj == NULL || !PyUnicode_Check(nameobj)) {
                 type_error = true;
                 break;
             }
@@ -507,6 +518,7 @@ extern PyObject *PyFF_ConfigurePlugins(PyObject *UNUSED(noself), PyObject *args)
                 return NULL;
             }
             nl = g_list_append(nl, pe);
+            PyObject *smobj = PyDict_GetItemString(item, "enabled");
             pe->new_mode = pluginStartupModeFromString(PyUnicode_AsUTF8(smobj));
             if (pe->new_mode == sm_ask) {
                 PyErr_Format(PyExc_ValueError, _("Startup mode '%s' (for plugin '%s') must be 'on' or 'off'. (To set a discovered plugin to 'new' omit it from the list.)"), PyUnicode_AsUTF8(smobj), namestr);

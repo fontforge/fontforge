@@ -414,21 +414,20 @@ Module functions
 
 .. function:: getPluginInfo()
 
-   Returns a list of nine element tuples describing configured and/or discovered
+   Returns a list of dictionary objects describing configured and/or discovered
    plugins. Configured plugins are listed first in loading order followed by
-   any newly discovered plugins. The tuples elements correspond to:
+   any newly discovered plugins. Each dictionary object will have the keys:
 
-   .. object:: Name
+   .. object:: name
 
       The name of the plugin as defined by its author.
 
-   .. object:: Load status
+   .. object:: enabled
 
       "On" if the plugin is enabled, "Off" if it is disabled, "New" if the 
-      ``PluginStartupMode`` preference (edited in the 
-      :doc:`"Configure Plugins..." dialog </techref/plugins>`) is set to "Ask".
+      user has not yet configured this plugin.
 
-   .. object:: Information string
+   .. object:: status
 
       "Not Found" if the plugin is configured but was not discovered.
       "Couldn't Load" if the plugin was discovered and its load status is
@@ -440,46 +439,46 @@ Module functions
       if the plugin was discovered but has load status "Off" or New" or if
       it was loaded successfully.
 
-   .. object:: Package name
+   .. object:: package_name
 
       The name of the Python package containing the plugin.
 
-   .. object:: Module name
+   .. object:: module_name
 
       The name of the Python module carrying the initialization function.
 
-   .. object:: "attrs"
+   .. object:: attrs
 
       Additional sub-objects or properties of the module needed to pick
       out the location of the initialization function (if any).
 
-   .. object:: Has preferences
+   .. object:: prefs
 
       A boolean indicating whether the plugin has configurable preferences.
 
-   .. object:: Package URL
+   .. object:: package_url
 
       The "Home-page" URL listed in the package, if any.
 
-   .. object:: Summary
+   .. object:: summary
 
       The "Summary" line in the package's metadata with a brief description
       of the plugin.
 
-   Some of these entries will be ``None`` if the plugin has not been loaded
+   Some of these values will be ``None`` if the plugin has not been loaded
    and a few more will be ``None`` if the plugin was not discovered.
 
-.. function:: configurePlugins([List of tuples])
+.. function:: configurePlugins([List of dictionaries])
 
    This method allows plugins to be reconfigured using the Python API. It
-   accepts a list (or any other iterable object) of tuples similar to those
-   provided by ``getPluginInfo()`` except that only the first two fields are
-   examined. The first field must contain the name of a known (currently
-   configured or discovered) plugin.  The second must be "On" or "Off". The
-   configuration will be updated to correspond to the listed plugins in the 
-   specified order.
+   accepts a list (or any other iterable object) of dictionaries similar to
+   those provided by ``getPluginInfo()`` except that only the ``name`` and
+   ``enabled`` fields are examined. The ``name`` value must be the name of a
+   known (currently configured or discovered) plugin.  The ``enabled`` value
+   must be "On" or "Off". The configuration will be updated to correspond to
+   the listed plugins in the specified order.
 
-   If a plugin that was not discovered is missing from the list it will be
+   If a plugin that was *not* discovered is missing from the list it will be
    removed from the configuration. Any missing but discovered plugins will 
    be added to the end of the configuration list with load status "New".
 
