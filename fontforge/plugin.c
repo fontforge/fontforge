@@ -446,7 +446,7 @@ void PyFF_ImportPlugins(int do_import) {
 }
 
 extern PyObject *PyFF_GetPluginInfo(PyObject *UNUSED(noself), PyObject *UNUSED(args)) {
-    PyObject *r, *tmp, *entry;
+    PyObject *r, *d;
     GList_Glib *l;
     PluginEntry *pe;
 
@@ -454,26 +454,16 @@ extern PyObject *PyFF_GetPluginInfo(PyObject *UNUSED(noself), PyObject *UNUSED(a
 
     for (l = plugin_data; l != NULL; l = l->next) {
         pe = (PluginEntry *) l->data;
-        entry = PyDict_New();
-	tmp = PyUnicode_FromString(pe->name);
-        PyDict_SetItemString(entry, "name", tmp);
-	tmp = PyUnicode_FromString(pluginStartupModeString(pe->startup_mode, false));
-        PyDict_SetItemString(entry, "enabled", tmp);
-	char *is = pluginInfoString(pe, false, NULL);
-	tmp = is ? PyUnicode_FromString(is) : Py_None;
-        PyDict_SetItemString(entry, "status", tmp);
-        tmp = pe->package_name ? PyUnicode_FromString(pe->package_name) : Py_None;
-        PyDict_SetItemString(entry, "package_name", tmp);
-        tmp = pe->module_name ? PyUnicode_FromString(pe->module_name) : Py_None;
-        PyDict_SetItemString(entry, "module_name", tmp);
-        tmp = pe->attrs ? PyUnicode_FromString(pe->attrs) : Py_None;
-        PyDict_SetItemString(entry, "attrs", tmp);
-        PyDict_SetItemString(entry, "prefs", pe->has_prefs ? Py_True : Py_False);
-        tmp = pe->package_url ? PyUnicode_FromString(pe->package_url) : Py_None;
-        PyDict_SetItemString(entry, "package_url", tmp);
-        tmp = pe->summary ? PyUnicode_FromString(pe->summary) : Py_None;
-        PyDict_SetItemString(entry, "summary", tmp);
-        PyList_Append(r, entry);
+        d = Py_BuildValue("{s:s,s:s,s:s,s:s,s:s,s:s,s:O,s:s,s:s}", "name", pe->name,
+                          "enabled", pluginStartupModeString(pe->startup_mode, false),
+                          "status", pluginInfoString(pe, false, NULL),
+                          "package_name", pe->package_name,
+                          "module_name", pe->module_name,
+                          "attrs", pe->attrs,
+                          "prefs", pe->has_prefs ? Py_True : Py_False,
+                          "package_url", pe->package_url,
+                          "summary", pe->summary);
+        PyList_Append(r, d);
     }
     return r;
 }
