@@ -1634,18 +1634,6 @@ static void GXDrawClipPreserve(GWindow w)
 #endif
 }
 
-static void GXDrawSetDifferenceMode(GWindow w) {
-#ifndef _NO_LIBCAIRO
-    if (((GXWindow) w)->usecairo) {
-        _GXCDraw_SetDifferenceMode((GXWindow)w);
-    } else
-#endif
-    {
-        GXDisplay *gdisp = ((GXWindow) w)->display; ;
-        XSetFunction(gdisp->display, gdisp->gcstate[((GXWindow) w)->ggc->bitmap_col].gc, GXxor);
-    }
-}
-
 static void GXDrawPushClip(GWindow w, GRect *rct, GRect *old) {
     /* return the current clip, and intersect the current clip with the desired */
     /*  clip to get the new */
@@ -3978,8 +3966,6 @@ static struct displayfuncs xfuncs = {
 
     GXDrawPushClip,
     GXDrawPopClip,
-
-    GXDrawSetDifferenceMode,
 
     GXDrawDrawLine,
     GXDrawDrawArrow,

@@ -2304,8 +2304,6 @@ static struct displayfuncs gdkfuncs = {
     GGDKDrawPushClip,
     GGDKDrawPopClip,
 
-    GGDKDrawSetDifferenceMode,
-
     GGDKDrawDrawLine,
     GGDKDrawDrawArrow,
     GGDKDrawDrawRect,

@@ -717,15 +717,6 @@ void GGDKDrawPopClip(GWindow w, GRect *old) {
     }
 }
 
-
-void GGDKDrawSetDifferenceMode(GWindow w) {
-    //Log(LOGDEBUG, " ");
-    GGDKWindow gw = (GGDKWindow)w;
-    _GGDKDraw_CheckAutoPaint(gw);
-    cairo_set_operator(gw->cc, CAIRO_OPERATOR_DIFFERENCE);
-    cairo_set_antialias(gw->cc, CAIRO_ANTIALIAS_NONE);
-}
-
 void GGDKDrawDrawLine(GWindow w, int32 x, int32 y, int32 xend, int32 yend, Color col) {
     //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow)w;

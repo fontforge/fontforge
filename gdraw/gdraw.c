@@ -310,10 +310,6 @@ void GDrawPopClip(GWindow w, GRect *old) {
     (w->display->funcs->popClip)(w,old);
 }
 
-void GDrawSetDifferenceMode(GWindow w) {
-    (w->display->funcs->setDifferenceMode)(w);
-}
-
 void GDrawSetDashedLine(GWindow w,int16 dash_len, int16 skip_len, int16 off) {
     w->ggc->dash_offset = off;
     w->ggc->dash_len = dash_len;
