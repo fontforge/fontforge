@@ -20,7 +20,6 @@ add_library(gdraw STATIC
   gdrawgimage.c
   gdrawP.h
   gdrawtxt.c
-  gdrawtxtinit.c
   gfilechooser.c
   gfiledlg.c
   ggadgetP.h

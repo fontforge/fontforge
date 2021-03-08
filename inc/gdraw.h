@@ -28,7 +28,6 @@
 #ifndef FONTFORGE_GDRAW_H
 #define FONTFORGE_GDRAW_H
 
-#include "charset.h"
 #include "gimage.h"
 
 enum font_style { fs_none, fs_italic=1, fs_smallcaps=2, fs_condensed=4, fs_extended=8, fs_vertical=16 };

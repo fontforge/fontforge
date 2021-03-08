@@ -67,10 +67,6 @@
 
 #cmakedefine HAVE_IEEEFP_H 1
 
-#cmakedefine HAVE_LANGINFO_H 1
-
-#cmakedefine HAVE_NL_LANGINFO 1
-
 
 /* FontForge configurable options */
 

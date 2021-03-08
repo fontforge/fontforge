@@ -46,8 +46,6 @@ typedef struct gresstruct {
 
 
 extern char *GResourceProgramName;
-extern int local_encoding;
-extern char *iconv_local_encoding_name;
 
 void GResourceSetProg(char *prog);
 void GResourceAddResourceFile(char *filename,char *prog,int warn);
