@@ -7548,11 +7548,13 @@ return( Py_BuildValue("i", self->sc->color ));
 
 static int PyFF_Glyph_set_color(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int val;
+    SplineChar *sc = self->sc;
 
     val = PyLong_AsLong(value);
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
-    self->sc->color = val;
+    sc->color = val;
+    SCCharChangedUpdate(sc,ly_none);
 return( 0 );
 }
 
