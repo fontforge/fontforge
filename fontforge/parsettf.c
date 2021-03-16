@@ -3323,7 +3323,7 @@ static void readcffprivate(FILE *ttf, struct topdicts *td, struct ttfinfo *info)
 	}
     }
 
-    if ( td->subrsoff!=-1 ) {
+    if ( td->subrsoff>0 ) {
 	fseek(ttf,td->cff_start+td->private_offset+td->subrsoff,SEEK_SET);
 	readcffsubrs(ttf,&td->local_subrs,info);
     }
@@ -3863,6 +3863,14 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
     memset(&pscontext,0,sizeof(pscontext));
 
     cffinfofillup(info, dict, strings, scnt );
+    if (info->cidregistry == NULL || info->ordering == NULL) {
+        LogError(_("ROS was missing from CID font"));
+        if (info->cidregistry == NULL)
+            info->cidregistry = copy("");
+        if (info->ordering == NULL)
+            info->ordering = copy("");
+        info->bad_cff = true;
+    }
 
     /* We'll set the encmap later */
     /*info->map = encmap = EncMapNew(info->glyph_cnt,info->glyph_cnt,&custom);*/
@@ -3976,15 +3984,15 @@ return( 0 );
     strings = readcfffontnames(ttf,&scnt,info);
     readcffsubrs(ttf,&gsubs,info );
     /* Can be many fonts here. Only decompose the one */
-    if ( dicts[which]->charstringsoff!=-1 ) {
+    if ( dicts[which]->charstringsoff>0 ) {
 	fseek(ttf,info->cff_start+dicts[which]->charstringsoff,SEEK_SET);
 	readcffsubrs(ttf,&dicts[which]->glyphs,info);
     }
-    if ( dicts[which]->private_offset!=-1 )
+    if ( dicts[which]->private_offset>0 )
 	readcffprivate(ttf,dicts[which],info);
     if ( dicts[which]->charsetoff!=-1 )
 	readcffset(ttf,dicts[which],info);
-    if ( dicts[which]->fdarrayoff==-1 )
+    if ( dicts[which]->fdarrayoff<=0 )
 	cfffigure(info,dicts[which],strings,scnt,&gsubs);
     else {
 	fseek(ttf,info->cff_start+dicts[which]->fdarrayoff,SEEK_SET);
@@ -3993,7 +4001,7 @@ return( 0 );
 	    fseek(ttf,info->cff_start+dicts[which]->fdselectoff,SEEK_SET);
 	    fdselect = readfdselect(ttf,dicts[which]->glyphs.cnt,info);
 	    for ( j=0; subdicts[j]!=NULL; ++j ) {
-		if ( subdicts[j]->private_offset!=-1 )
+		if ( subdicts[j]->private_offset>0 )
 		    readcffprivate(ttf,subdicts[j],info);
 		if ( subdicts[j]->charsetoff!=-1 )
 		    readcffset(ttf,subdicts[j],info);
@@ -4007,7 +4015,7 @@ return( 0 );
     if ( dicts[which]->encodingoff!=-1 )
 	readcffenc(ttf,dicts[which],info,strings,scnt);
 
-    if ( dicts[which]->fdarrayoff==-1 ) {
+    if ( dicts[which]->fdarrayoff<=0 ) {
 	for ( i=0; i<info->glyph_cnt ; ++i )
 	    if ( info->chars[i]!=NULL )
 		info->chars[i]->orig_pos = i;
