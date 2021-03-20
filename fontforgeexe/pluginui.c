@@ -380,7 +380,7 @@ static void PLUG_EnableButtons(struct plg_data *d) {
     GGadgetSetEnabled(GWidgetGetControl(d->gw, CID_Bottom), pe && pos < len - 1);
     GGadgetSetEnabled(GWidgetGetControl(d->gw, CID_Enable), pe && pe->new_mode != sm_on);
     GGadgetSetEnabled(GWidgetGetControl(d->gw, CID_Disable), pe && pe->new_mode != sm_off);
-    GGadgetSetEnabled(GWidgetGetControl(d->gw, CID_Delete), pe && pe->new_mode != sm_ask);
+    GGadgetSetEnabled(GWidgetGetControl(d->gw, CID_Delete), pe && !pe->is_present);
     GGadgetSetEnabled(GWidgetGetControl(d->gw, CID_MoreInfo), pe != NULL);
     GGadgetSetEnabled(GWidgetGetControl(d->gw, CID_Load), pe && pe->entrypoint != NULL);
     GGadgetSetEnabled(GWidgetGetControl(d->gw, CID_Web), pe && pe->package_url != NULL);
@@ -483,7 +483,16 @@ static int PLUG_PluginOp(GGadget *g, GEvent *e) {
     int cid = GGadgetGetCid(g);
 
     if (cid == CID_Enable) {
-        pe->new_mode = sm_on;
+	static char *buts[4];
+	buts[0] = _("_Yes");
+	buts[1] = _("_No");
+	buts[2] = _("_Cancel");
+	buts[3] = NULL;
+	int ans = ff_ask(_("Load Plugin?"), (const char **) buts, 0, 2, _("The plugin will be loaded in the order at the next restart\nof FontForge. You can also load it now. Would you like to?"));
+	if ( ans==0 || ans==1)
+            pe->new_mode = sm_on;
+	if ( ans==0 )
+            LoadPlugin(pe);
         ResetPluginText(i);
         PLUG_EnableButtons(d);
     } else if (cid == CID_Disable) {
@@ -492,23 +501,8 @@ static int PLUG_PluginOp(GGadget *g, GEvent *e) {
         PLUG_EnableButtons(d);
     } else if (cid == CID_Delete) {
         pe->new_mode = sm_ask;
-        if (!pe->is_present) {
+        if (!pe->is_present)
             GListDelSelected(list);
-        } else {
-            char *buts[4];
-            buts[0] = _("_Delete");
-            buts[1] = _("D_eactivate"), buts[2] = _("_Cancel");
-            buts[3] = NULL;
-            int ans = ff_ask(_("Deleting Found Plugin"), (const char **) buts, 1, 2, _("Because this plugin is currently\ndiscoverable deleting it will just\nplace it back on the 'ask' list.\nWould you like to deactivate it instead?")) == 1;
-            if (ans == 1) {
-                pe->new_mode = sm_off;
-                ResetPluginText(i);
-            } else if (ans == 0) {
-                pe->new_mode = sm_ask;
-                ResetPluginText(i);
-                GListMoveOneSelected(list, len - 1);
-            }
-        }
         PLUG_EnableButtons(d);
     } else if (cid == CID_MoreInfo) {
         PluginInfoDlg(pe);
@@ -548,7 +542,7 @@ void _PluginDlg(void) {
         static char *buts[3];
         if (!use_plugins) {
             buts[0] = _("_Ok");
-            buts[2] = NULL;
+	    buts[1] = NULL;
             ff_ask(_("Plugins off in preferences"), (const char **) buts, 0, 0, _("The UsePlugins preferences option is currently off.\nFontForge will not load plugin configuration or\nattempt discovery unless that option is on."));
         } else {
             buts[0] = _("_Yes");
