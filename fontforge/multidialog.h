@@ -43,8 +43,8 @@ struct multi_dlg_question;
 
 typedef struct multi_dlg_answer {
     void *tag;
-    int is_default: 1;
-    int is_checked: 1;
+    unsigned int is_default: 1;
+    unsigned int is_checked: 1;
     char *name;
     struct multi_dlg_question *question;
 } MultiDlgAnswer;
@@ -53,9 +53,9 @@ typedef struct multi_dlg_question {
     void *tag;
     enum multi_dlg_question_type type;
     int answer_len;
-    int multiple: 1;
-    int checks: 1;
-    int align: 1;
+    unsigned int multiple: 1;
+    unsigned int checks: 1;
+    unsigned int align: 1;
     char *label, *dflt, *filter, *str_answer;
     MultiDlgAnswer *answers;
 } MultiDlgQuestion;

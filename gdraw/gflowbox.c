@@ -292,9 +292,9 @@ static void GFlowBoxResize(GGadget *g, int32 width, int32 height) {
     }
 
     for (c = 0; c < fb->count; ++c) {
-        GGadget *g = fb->children[c];
+        GGadget *cg = fb->children[c];
         struct childsizedata *cs = si.childsize + c;
-        if (g == GG_Pad10) {
+        if (cg == GG_Pad10) {
             continue;
         }
         if (fb->vertical) {
@@ -308,10 +308,10 @@ static void GFlowBoxResize(GGadget *g, int32 width, int32 height) {
             cw = cs->size;
             ch = cs->opposize;
         }
-        if (g->state != gs_invisible) {
-            GGadgetResize(g, cw, ch);
+        if (cg->state != gs_invisible) {
+            GGadgetResize(cg, cw, ch);
         }
-        GGadgetMove(g, fb->g.inner.x + x, fb->g.inner.y + y);
+        GGadgetMove(cg, fb->g.inner.x + x, fb->g.inner.y + y);
     }
 
     if (!fb->vertical && fb->label != NULL) {

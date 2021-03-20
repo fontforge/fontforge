@@ -218,13 +218,21 @@ void _GScroll1BoxGetDesiredSize(GGadget *g, GRect *outer, GRect *inner, int big)
     int width = 0, height = 0, c, flowlabelsize = 0, t;
     GRect rect;
 
+    if (s1b->align_flow_labels) {
+        for (c = 0; c < s1b->count; ++c)
+            if (GGadgetIsGFlowBox(s1b->children[c])) {
+		t = GFlowBoxGetLabelSize(s1b->children[c]);
+		if (flowlabelsize < t)
+		    flowlabelsize = t;
+	    }
+        for (c = 0; c < s1b->count; ++c)
+            if (GGadgetIsGFlowBox(s1b->children[c]))
+                GFlowBoxSetLabelSize(s1b->children[c], flowlabelsize);
+    }
+
     for (c = 0; c < s1b->count; ++c) {
         if (GGadgetIsGFlowBox(s1b->children[c])) {
             _GFlowBoxGetDesiredSize(s1b->children[c], &rect, NULL, !big, true);
-            t = GFlowBoxGetLabelSize(s1b->children[c]);
-            if (flowlabelsize < t) {
-                flowlabelsize = t;
-            }
         } else {
             GGadgetGetDesiredSize(s1b->children[c], &rect, NULL);
         }
@@ -246,11 +254,6 @@ void _GScroll1BoxGetDesiredSize(GGadget *g, GRect *outer, GRect *inner, int big)
             }
         }
     }
-    if (s1b->align_flow_labels)
-        for (c = 0; c < s1b->count; ++c)
-            if (GGadgetIsGFlowBox(s1b->children[c])) {
-                GFlowBoxSetLabelSize(s1b->children[c], flowlabelsize);
-            }
 
     if (!big) {
         GGadgetGetDesiredSize(s1b->sb, &rect, NULL);
