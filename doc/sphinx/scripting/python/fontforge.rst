@@ -407,7 +407,7 @@ Module functions
 
 .. function:: loadPlugins()
 
-   Discovers and loads FontForge python plugins according to the current 
+   Discovers and loads FontForge python plugins according to the current
    configuration, if not already loaded. This is primarily intended when
    importing FontForge into a python process but can also be when loading
    is delayed by the ``-skippyplug`` command-line flag.
@@ -424,7 +424,7 @@ Module functions
 
    .. object:: enabled
 
-      "On" if the plugin is enabled, "Off" if it is disabled, "New" if the 
+      "On" if the plugin is enabled, "Off" if it is disabled, "New" if the
       user has not yet configured this plugin.
 
    .. object:: status
@@ -432,10 +432,10 @@ Module functions
       "Not Found" if the plugin is configured but was not discovered.
       "Couldn't Load" if the plugin was discovered and its load status is
       "On" but the relevant module could not be imported. "Couldn't Start"
-      if the module could be imported but the initialization function 
+      if the module could be imported but the initialization function
       was missing or returned an error. "Unloaded" if the plugin was discovered
       and its load status is "On" but loading has not been attempted (most
-      likely because of a configuration change or startup flag). ``None`` 
+      likely because of a configuration change or startup flag). ``None``
       if the plugin was discovered but has load status "Off" or New" or if
       it was loaded successfully.
 
@@ -479,7 +479,7 @@ Module functions
    the listed plugins in the specified order.
 
    If a plugin that was *not* discovered is missing from the list it will be
-   removed from the configuration. Any missing but discovered plugins will 
+   removed from the configuration. Any missing but discovered plugins will
    be added to the end of the configuration list with load status "New".
 
 .. function:: runInitScripts()
@@ -1319,17 +1319,17 @@ Layers may be compared to see if their contours are similar.
    Exports the current layer (in outline format) to a file. The type of file is
    determined by the extension.
 
-   The following optional keywords modify the export process for various formats: 
+   The following optional keywords modify the export process for various formats:
 
    .. object:: usetransform (boolean, default=False)
 
       Flip the Y-axis of exported SVGs with a transform element rather than
-      modifying the individual Y values. 
+      modifying the individual Y values.
 
    .. object:: usesystem (boolean, default=False)
 
       Ignore the above keyword settings and use the values set by the user
-      in the Import options dialog. 
+      in the Import options dialog.
 
    .. object:: asksystem (boolean, default=False)
 
@@ -2265,7 +2265,7 @@ must be created through the font.
    Creates a file with the specified name containing a representation of
    the glyph. Uses the file's extension to determine output file type.
 
-   The following optional keywords modify the export process for various formats: 
+   The following optional keywords modify the export process for various formats:
 
    .. object:: layer (string or integer, default=glyph.activeLayer)
 
@@ -2282,12 +2282,12 @@ must be created through the font.
    .. object:: usetransform (boolean, default=False)
 
       Flip the Y-axis of exported SVGs with a transform element rather than
-      modifying the individual Y values. 
+      modifying the individual Y values.
 
    .. object:: usesystem (boolean, default=False)
 
       Ignore the above keyword settings and use the values set by the user
-      in the Import options dialog. 
+      in the Import options dialog.
 
    .. object:: asksystem (boolean, default=False)
 
@@ -2366,15 +2366,15 @@ must be created through the font.
    .. object:: usesystem (boolean, default=False)
 
       Ignore the above keyword settings and use the values set by the user
-      in the Import options dialog. 
+      in the Import options dialog.
 
    .. object:: asksystem (boolean, default=False)
 
       If the UI is present show the Import options dialog to the user
       and use the chosen values (does nothing otherwise).
 
-   Note: The old PostScript correctdir/handle_eraser flag tuple is still 
-   supported but is not compatible with the other keywords. 
+   Note: The old PostScript correctdir/handle_eraser flag tuple is still
+   supported but is not compatible with the other keywords.
 
 .. method:: glyph.intersect()
 

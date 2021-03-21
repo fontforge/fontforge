@@ -165,7 +165,7 @@ FontForge recognizes the following options:
 
 .. option:: -skippyfile
 
-   Do not execute python init scripts. These can be run later using the 
+   Do not execute python init scripts. These can be run later using the
    :py:meth:`fontforge.runInitScripts` Python method.
 
 .. option:: -skippyplug
