@@ -527,7 +527,7 @@ static struct prefs_list {
 	{ "XUID-Base", pr_string, &xuid, NULL, NULL, 'X', NULL, 0, N_("If specified this should be a space separated list of integers each\nless than 16777216 which uniquely identify your organization\nFontForge will generate a random number for the final component.") }, /* Obsolete */
 	{ "ShowKerningPane", pr_int, (int *) &show_kerning_pane_in_class, NULL, NULL, '\0', NULL, 1, NULL },
 #ifndef _NO_PYTHON
-	{ "PluginStartupMode", pr_string, NULL, &getPluginStartupMode, &setPluginStartupMode, '\0', NULL, 1, NULL },
+	{ "PluginStartupMode", pr_string, NULL, &GetPluginStartupMode, &SetPluginStartupMode, '\0', NULL, 1, NULL },
 #endif
 	PREFS_LIST_EMPTY
 },

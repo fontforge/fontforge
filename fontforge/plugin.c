@@ -76,7 +76,7 @@ static PluginEntry *NewPluginEntry(const char *name, const char *pkgname,
     return pe;
 }
 
-static char *getPluginDirName() {
+static char *GetPluginDirName() {
     char *buf, *dir = getFontForgeUserDir(Config);
 
     if (dir == NULL) {
@@ -93,7 +93,7 @@ static char *getPluginDirName() {
     return buf;
 }
 
-char *pluginInfoString(PluginEntry *pe, int do_new, int *is_err) {
+char *PluginInfoString(PluginEntry *pe, int do_new, int *is_err) {
     enum plugin_startup_mode_type sm = do_new ? pe->new_mode : pe->startup_mode;
     int err = true;
     char *r = NULL;
@@ -117,7 +117,7 @@ char *pluginInfoString(PluginEntry *pe, int do_new, int *is_err) {
     return r;
 }
 
-char *pluginStartupModeString(enum plugin_startup_mode_type sm, int global) {
+char *PluginStartupModeString(enum plugin_startup_mode_type sm, int global) {
     if (sm == sm_off) {
         return N_("Off");
     } else if (sm == sm_on) {
@@ -128,7 +128,7 @@ char *pluginStartupModeString(enum plugin_startup_mode_type sm, int global) {
 }
 
 
-static enum plugin_startup_mode_type pluginStartupModeFromString(const char *modestr) {
+static enum plugin_startup_mode_type PluginStartupModeFromString(const char *modestr) {
     if (modestr == NULL) {
         return sm_ask;
     } else if (strcasecmp(modestr, "off") == 0) {
@@ -140,12 +140,12 @@ static enum plugin_startup_mode_type pluginStartupModeFromString(const char *mod
     }
 }
 
-void *getPluginStartupMode() {
-    return copy(pluginStartupModeString(plugin_startup_mode, true));
+void *GetPluginStartupMode() {
+    return copy(PluginStartupModeString(plugin_startup_mode, true));
 }
 
-void setPluginStartupMode(void *modevoid) {
-    plugin_startup_mode = pluginStartupModeFromString((char *)modevoid);
+void SetPluginStartupMode(void *modevoid) {
+    plugin_startup_mode = PluginStartupModeFromString((char *)modevoid);
 }
 
 void SavePluginConfig() {
@@ -157,13 +157,13 @@ void SavePluginConfig() {
         }
         g_key_file_set_string(conf, pe->name, "Package name", pe->package_name);
         g_key_file_set_string(conf, pe->name, "Module name", pe->module_name);
-        g_key_file_set_string(conf, pe->name, "Active", pluginStartupModeString(pe->startup_mode, false));
+        g_key_file_set_string(conf, pe->name, "Active", PluginStartupModeString(pe->startup_mode, false));
         if (pe->package_url != NULL) {
             g_key_file_set_string(conf, pe->name, "URL", pe->package_url);
         }
     }
 
-    char *pdir = getPluginDirName();
+    char *pdir = GetPluginDirName();
     if (pdir != NULL) {
         char *fname = smprintf("%s/plugin_config.ini", pdir);
         GError *gerror = NULL;
@@ -183,7 +183,7 @@ static void LoadPluginConfig() {
     gchar **groups;
     gsize glen;
 
-    char *pdir = getPluginDirName();
+    char *pdir = GetPluginDirName();
     if (pdir != NULL) {
         char *fname = smprintf("%s/plugin_config.ini", pdir);
         GError *gerror = NULL;
@@ -205,7 +205,7 @@ static void LoadPluginConfig() {
                 char *pkgname = g_key_file_get_string(conf, groups[i], "Package name", NULL);
                 char *sm_string = g_key_file_get_string(conf, groups[i], "Active", NULL);
                 char *url = g_key_file_get_string(conf, groups[i], "URL", NULL);
-                PluginEntry *pe = NewPluginEntry(groups[i], pkgname, modname, url, pluginStartupModeFromString(sm_string));
+                PluginEntry *pe = NewPluginEntry(groups[i], pkgname, modname, url, PluginStartupModeFromString(sm_string));
                 g_free(pkgname);
                 g_free(sm_string);
                 g_free(url);
@@ -232,7 +232,7 @@ void LoadPlugin(PluginEntry *pe) {
         if (tmp != NULL && PyFunction_Check(tmp)) {
             PyObject *args = PyTuple_New(0);
             PyObject *kwargs = PyDict_New();
-            char *b1 = getPluginDirName(), *b2 = smprintf("%s/%s", b1, pe->name);
+            char *b1 = GetPluginDirName(), *b2 = smprintf("%s/%s", b1, pe->name);
             PyObject *dstr = PyUnicode_FromString(b2);
             free(b1);
             free(b2);
@@ -407,7 +407,7 @@ static bool DiscoverPlugins(int do_import) {
     return do_ask;
 }
 
-void pluginDoPreferences(PluginEntry *pe) {
+void PluginDoPreferences(PluginEntry *pe) {
     if (!use_plugins || pe->pyobj == NULL || !pe->has_prefs) {
         return;
     }
@@ -455,8 +455,8 @@ extern PyObject *PyFF_GetPluginInfo(PyObject *UNUSED(noself), PyObject *UNUSED(a
     for (l = plugin_data; l != NULL; l = l->next) {
         pe = (PluginEntry *) l->data;
         d = Py_BuildValue("{s:s,s:s,s:s,s:s,s:s,s:s,s:O,s:s,s:s}", "name", pe->name,
-                          "enabled", pluginStartupModeString(pe->startup_mode, false),
-                          "status", pluginInfoString(pe, false, NULL),
+                          "enabled", PluginStartupModeString(pe->startup_mode, false),
+                          "status", PluginInfoString(pe, false, NULL),
                           "package_name", pe->package_name,
                           "module_name", pe->module_name,
                           "attrs", pe->attrs,
@@ -509,7 +509,7 @@ extern PyObject *PyFF_ConfigurePlugins(PyObject *UNUSED(noself), PyObject *args)
             }
             nl = g_list_append(nl, pe);
             PyObject *smobj = PyDict_GetItemString(item, "enabled");
-            pe->new_mode = pluginStartupModeFromString(PyUnicode_AsUTF8(smobj));
+            pe->new_mode = PluginStartupModeFromString(PyUnicode_AsUTF8(smobj));
             if (pe->new_mode == sm_ask) {
                 PyErr_Format(PyExc_ValueError, _("Startup mode '%s' (for plugin '%s') must be 'on' or 'off'. (To set a discovered plugin to 'new' omit it from the list.)"), PyUnicode_AsUTF8(smobj), namestr);
                 g_list_free(g_steal_pointer(&nl));

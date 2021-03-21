@@ -23,13 +23,13 @@ typedef struct plugin_entry {
 extern GList_Glib *plugin_data;
 
 void FreePluginEntry(PluginEntry *pe);
-char *pluginStartupModeString(enum plugin_startup_mode_type sm, int global);
-char *pluginInfoString(PluginEntry *pe, int do_new, int *is_err);
-void *getPluginStartupMode(void);
-void setPluginStartupMode(void *);
+char *PluginStartupModeString(enum plugin_startup_mode_type sm, int global);
+char *PluginInfoString(PluginEntry *pe, int do_new, int *is_err);
+void *GetPluginStartupMode(void);
+void SetPluginStartupMode(void *);
 void LoadPlugin(PluginEntry *pe);
 void SavePluginConfig();
-void pluginDoPreferences(PluginEntry *);
+void PluginDoPreferences(PluginEntry *);
 
 extern void PyFF_ImportPlugins(int do_import);
 extern PyObject *PyFF_GetPluginInfo(PyObject *, PyObject *);

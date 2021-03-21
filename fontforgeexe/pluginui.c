@@ -313,7 +313,10 @@ static int plug_e_h(GWindow gw, GEvent *e) {
     if (e->type == et_close) {
         d->done = true;
     } else if (e->type == et_char) {
-        ; // XXX deal with help
+        if ( e->u.chr.keysym == GK_F1 || e->u.chr.keysym == GK_Help ) {
+            help("techref/plugin.html", NULL);
+	    return( true );
+	}
     }
     return true;
 }
@@ -321,11 +324,11 @@ static int plug_e_h(GWindow gw, GEvent *e) {
 static unichar_t *pluginDescString(PluginEntry *pe, int *has_err) {
     char *str, *csm, *nsm = NULL, *info = NULL;
 
-    csm = _(pluginStartupModeString(pe->startup_mode, false));
+    csm = _(PluginStartupModeString(pe->startup_mode, false));
     if (pe->startup_mode != pe->new_mode) {
-        nsm = _(pluginStartupModeString(pe->new_mode, false));
+        nsm = _(PluginStartupModeString(pe->new_mode, false));
     }
-    info = _(pluginInfoString(pe, true, has_err));
+    info = _(PluginInfoString(pe, true, has_err));
 
     if (info != NULL && nsm != NULL) {
         str = smprintf("%s (%s -> %s) [%s]", pe->name, csm, nsm, info);
@@ -517,7 +520,7 @@ static int PLUG_PluginOp(GGadget *g, GEvent *e) {
             help(pe->package_url, NULL);
         }
     } else if (cid == CID_Conf) {
-        pluginDoPreferences(pe);
+        PluginDoPreferences(pe);
     } else if (cid == CID_Revert) {
         FigurePluginList(d);
     }
