@@ -20,7 +20,7 @@ There are four question types, corresponding to the single-question
 :py:func:`fontforge.openFilename()`, and :py:func:`fontforge.saveFilename()`
 dialog methods. Each individual question is specified as a dictionary. 
 
-All question types use the keys ````type````, ````question````, ````tag```` and ``align``. The
+All question types use the keys ``type``, ``question````, ``tag`` and ``align``. The
 ``type`` value specifies the type of question as outlined below. 
 
 The value corresponding to ``question`` is the label string, which is displayed
