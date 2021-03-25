@@ -4244,8 +4244,6 @@ return( -1 );
         // Apart from these, cp932 is a strict superset of sjis
         if (enc == '\\')
             enc = 0xa5; /* Yen */
-        else if (enc == 0x7e)
-            enc = 0x7e; /* Tilde */
         else {
             static Encoding* ed;
             if (!ed) {
