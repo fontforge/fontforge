@@ -216,7 +216,7 @@ static char *SetMnemonicSuffix(const char*menu_string, unichar_t c) {
 	--i;
     if ( *(r+i)==')' ) {
 	--i;
-	if ( *(r+i)>0 && *(r+i)<128 ) {
+	if ( *(r+i)>0 ) {
 	    --i;
 	    if ( *(r+i)=='(' ) {
 		--i;
