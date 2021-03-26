@@ -9,6 +9,7 @@
 fontforge \- create, modify, and view font files
 .SH SYNOPSIS
 .BR fontforge
+[\fB\-allglyphs\fP]
 [\fB\-c\fP\ \fIstring\fP]
 [\fB\-cmap\fP\ \fImaptype\fP]
 [\fB\-depth\fP\ \fIpixeld\fP]
@@ -17,11 +18,16 @@ fontforge \- create, modify, and view font files
 [\fB\-lang\fP=py]
 [\fB\-help\fP]
 [\fB\-keyboard\fP\ \fIktype\fP]
+[\fB\-last\fP]
 [\fB\-new\fP]
 [\fB\-nosplash\fP]
+[\fB\-quiet\fP]
 [\fB\-recover\fP\ \fImode\fP]
 [\fB\-script\fP\ \fIfile\fP]
+[\fB\-skippyfile\fP]
+[\fB\-skippyplug\fP]
 [\fB\-sync\fP]
+[\fB\-unique\fP]
 [\fB\-usage\fP]
 [\fB\-vc\fP\ \fIclass\fP]
 [\fB\-version\fP]
@@ -163,6 +169,12 @@ only be used with fontforge's own scripting language, not with Python.
 .B \-c \fIscript-string\fP
 Executes argument as scripting commands.  Must be the first option.
 All other arguments are passed to the script.
+.TP
+.B \-skippyfile
+Do not execute Python init scripts when initialiszing.
+.TP
+.B \-skippyplug
+Do not load (enabled) Python plugins when initialiszing.
 .SH EXAMPLE
 Sample usage:
 .PP

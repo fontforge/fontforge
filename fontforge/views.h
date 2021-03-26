@@ -810,6 +810,7 @@ extern FontView *FontNew(void);
 extern void _MenuWarnings(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void MenuPrefs(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuXRes(GWindow base,struct gmenuitem *mi,GEvent *e);
+extern void MenuPlug(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuSaveAll(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuHelp(GWindow base,struct gmenuitem *mi,GEvent *e);
@@ -837,7 +838,7 @@ extern GTextInfo *SFLangList(SplineFont *sf,int addfinal,SplineChar *default_scr
 extern GTextInfo **SFLangArray(SplineFont *sf,int addfinal);
 extern int  ScriptLangList(SplineFont *sf,GGadget *list,int sli);
 extern void GListDelSelected(GGadget *list);
-extern void GListMoveSelected(GGadget *list,int offset);
+extern void GListMoveOneSelected(GGadget *list,int offset);
 extern GTextInfo *GListChangeLine(GGadget *list,int pos, const unichar_t *line);
 extern GTextInfo *GListAppendLine(GGadget *list,const unichar_t *line,int select);
 extern GTextInfo *GListChangeLine8(GGadget *list,int pos, const char *line);
@@ -1284,6 +1285,9 @@ extern void FontInfoInit(void);
 extern void LookupUIInit(void);
 extern void _ImportParamsDlg(ImportParams *ip);
 extern void _ExportParamsDlg(ExportParams *ep);
+#ifndef _NO_PYTHON
+extern void _PluginDlg(void);
+#endif
 extern struct cidmap *AskUserForCIDMap(void);
 
 extern void DefineGroups(struct fontview *fv);

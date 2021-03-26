@@ -448,6 +448,7 @@ sphinx/images/phi-hints-filled.png
 sphinx/images/phi-hints-outline.png
 sphinx/images/phi-nohints-filled.png
 sphinx/images/phi-nohints-outline.png
+sphinx/images/plugdlg.png
 sphinx/images/pnts.gif
 sphinx/images/pointinfo-interp.png
 sphinx/images/pointinfo.png
@@ -815,6 +816,8 @@ sphinx/techref/non-standard.rst
 sphinx/techref/palmfonts.rst
 sphinx/techref/pcf-format.rst
 sphinx/techref/pfaeditmath.rst
+sphinx/techref/plugins.rst
+sphinx/techref/pyextend.rst
 sphinx/techref/ref-caveats.rst
 sphinx/techref/selections.rst
 sphinx/techref/sfdchangelog.rst

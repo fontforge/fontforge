@@ -10968,6 +10968,8 @@ return( def_py );
 
 static void _CheckIsScript(int argc, char *argv[]) {
     int i, is_python = DefaultLangPython();
+    int run_python_init_files = true;
+    int import_python_plugins = true;
     char *pt;
 
     if ( argc==1 )
@@ -10977,6 +10979,10 @@ return;
 	if ( *pt=='-' && pt[1]=='-' && pt[2]!='\0' ) ++pt;
 	if ( strcmp(pt,"-nosplash")==0 || strcmp(pt,"-quiet")==0 )
 	    /* Skip it */;
+	else if ( strcmp(pt,"-SkipPythonInitFiles")==0 || strcmp(pt,"-skippyfile")==0 )
+	    run_python_init_files = false;
+	else if ( strcmp(pt,"-skippyplug")==0 )
+	    import_python_plugins = false;
 	else if ( strcmp(pt,"-lang=py")==0 )
 	    is_python = true;
 	else if ( strcmp(pt,"-lang=ff")==0 || strcmp(pt,"-lang=pe")==0 )
@@ -10988,11 +10994,11 @@ return;
 	} else if ( strcmp(argv[i],"-")==0 ) {	/* Someone thought that, of course, "-" meant read from a script. I guess it makes no sense with anything else... */
 #if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
 	    if ( is_python )
-		PyFF_Stdin();
+		PyFF_Stdin(run_python_init_files, import_python_plugins);
 	    else
 		ProcessNativeScript(argc, argv,stdin);
 #elif !defined(_NO_PYTHON)
-	    PyFF_Stdin();
+	    PyFF_Stdin(run_python_init_files, import_python_plugins);
 #elif !defined(_NO_FFSCRIPT)
 	    ProcessNativeScript(argc, argv,stdin);
 #endif
@@ -11004,11 +11010,11 @@ return;
 	    if ( is_python ) {
                 if (strcmp(argv[i],"-c") == 0) /* Make command-line args and Fontforge module more conveniently available for command-line scripts */
                     argv[i + 1] = smprintf("from sys import argv; from fontforge import *; %s", argv[i + 1]);
-		PyFF_Main(argc,argv,i);
+		PyFF_Main(argc,argv,i,run_python_init_files, import_python_plugins);
 	    } else
 		ProcessNativeScript(argc, argv,NULL);
 #elif !defined(_NO_PYTHON)
-	    PyFF_Main(argc,argv,i);
+	    PyFF_Main(argc,argv,i,run_python_init_files, import_python_plugins);
 #elif !defined(_NO_FFSCRIPT)
 	    ProcessNativeScript(argc, argv,NULL);
 #endif
@@ -11025,11 +11031,11 @@ return;
 		if ( is_python==-1 )
 		    is_python = PythonLangFromExt(argv[i]);
 		if ( is_python )
-		    PyFF_Main(argc,argv,i);
+		    PyFF_Main(argc,argv,i,run_python_init_files, import_python_plugins);
 		else
 		    ProcessNativeScript(argc, argv,NULL);
 #elif !defined(_NO_PYTHON)
-		PyFF_Main(argc,argv,i);
+		PyFF_Main(argc,argv,i,run_python_init_files, import_python_plugins);
 #elif !defined(_NO_FFSCRIPT)
 		ProcessNativeScript(argc, argv,NULL);
 #endif

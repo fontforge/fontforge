@@ -56,6 +56,7 @@
 #include "namelist.h"
 #include "nonlineartrans.h"
 #include "othersubrs.h"
+#include "plugin.h"
 #include "print.h"
 #include "psread.h"
 #include "savefont.h"
@@ -1019,7 +1020,13 @@ return( Py_BuildValue("s", FONTFORGE_VERSION ));
 
 static PyObject *PyFF_RunInitScripts(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
     InitializePythonMainNamespace();
-    PyFF_ProcessInitFiles();
+    PyFF_ProcessInitFiles(true, false);
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFF_LoadPlugins(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
+    InitializePythonMainNamespace();
+    PyFF_ProcessInitFiles(false, true);
 Py_RETURN_NONE;
 }
 
@@ -18777,6 +18784,9 @@ PyMethodDef module_fontforge_methods[] = {
     { "ucOFracChartUGetAltVal", PyFF_OFracChartUGetAltVal, METH_VARARGS, "Return internal Alternate value for given unicode Other_Fraction value" },
     { "version", PyFF_Version, METH_NOARGS, "Returns a string containing the current version of FontForge, as 20061116" },
     { "runInitScripts", PyFF_RunInitScripts, METH_NOARGS, "Run the system and user initialization scripts, if not already run" },
+    { "loadPlugins", PyFF_LoadPlugins, METH_NOARGS, "Load and initialize any active plugins not already initialized." },
+    { "getPluginInfo", PyFF_GetPluginInfo, METH_NOARGS, "Returns an ordered list of tuples with configuration and other information about each discovered or recorded plugin." },
+    { "configurePlugins", PyFF_ConfigurePlugins, METH_VARARGS, "Change the order of or enable/disable plugins." },
     { "scriptPath", PyFF_GetScriptPath, METH_NOARGS, "Returns a list of the directories searched for scripts"},
     { "userConfigPath", PyFF_GetUserConfigPath, METH_NOARGS, "Returns the path to the user's FontForge configuration directory, which should be writable."},
     { "fonts", PyFF_FontTuple, METH_NOARGS, "Returns a tuple of all loaded fonts" },
@@ -19401,7 +19411,8 @@ static wchar_t ** copy_argv(char *arg0, int argc ,char **argv);
  * options up to and including the '-script' option, but while
  * preserving argv[0].
  */
-_Noreturn void PyFF_Main(int argc,char **argv,int start) {
+_Noreturn void PyFF_Main(int argc,char **argv,int start, int do_inits,
+                         int do_plugins) {
     char *arg;
     wchar_t **newargv;
     int newargc;
@@ -19410,7 +19421,7 @@ _Noreturn void PyFF_Main(int argc,char **argv,int start) {
     no_windowing_ui = running_script = true;
 
     FontForge_InitializeEmbeddedPython();
-    PyFF_ProcessInitFiles();
+    PyFF_ProcessInitFiles(do_inits, do_plugins);
 
     /* Skip '-script' option */
     arg = argv[start];
@@ -19504,11 +19515,11 @@ static void AddSpiroConstants( PyObject *module ) {
 }
 
 
-_Noreturn void PyFF_Stdin(void) {
+_Noreturn void PyFF_Stdin(int do_inits, int do_plugins) {
     no_windowing_ui = running_script = true;
 
     FontForge_InitializeEmbeddedPython();
-    PyFF_ProcessInitFiles();
+    PyFF_ProcessInitFiles(do_inits, do_plugins);
 
     if ( isatty(fileno(stdin)))
 	PyRun_InteractiveLoop(stdin,"<stdin>");
@@ -19682,12 +19693,15 @@ static GPtrArray *default_pyinit_dirs(void) {
     return pathlist;
 }
 
-void PyFF_ProcessInitFiles(void) {
+void PyFF_ProcessInitFiles(int do_inits, int do_plugins) {
     static int done = false;
     GPtrArray *dpath;
 
-    if ( done )
-return;
+    PyFF_ImportPlugins(do_plugins);
+
+    if ( done || !do_inits ) // Idempotency, I presume
+	return;
+
     dpath = default_pyinit_dirs();
     for (guint i = 0; i < dpath->len; ++i ) {
 	LoadFilesInPythonInitDir( (char*)dpath->pdata[i] );

@@ -40,6 +40,7 @@
 #include "groups.h"
 #include "macenc.h"
 #include "namelist.h"
+#include "plugin.h"
 #include "othersubrs.h"
 #include "prefs.h"
 #include "sfd.h"
@@ -314,6 +315,9 @@ static struct prefs_list {
 	{ N_("RevisionsToRetain"), pr_int, &prefRevisionsToRetain, NULL, NULL, '\0', NULL, 0, N_( "When Saving, keep this number of previous versions of the file. file.sfd-01 will be the last saved file, file.sfd-02 will be the file saved before that, and so on. If you set this to 0 then no revisions will be retained.") },
 	{ N_("UndoRedoLimitToSave"), pr_int, &UndoRedoLimitToSave, NULL, NULL, '\0', NULL, 0, N_( "The number of undo and redo operations which will be saved in sfd files.\nIf you set this to 0 undo/redo information is not saved to sfd files.\nIf set to -1 then all available undo/redo information is saved without limit.") },
 	{ N_("WarnScriptUnsaved"), pr_bool, &warn_script_unsaved, NULL, NULL, '\0', NULL, 0, N_( "Whether or not to warn you if you have an unsaved script in the «Execute Script» dialog.") },
+#ifndef _NO_PYTHON
+	{ N_("UsePlugins"), pr_bool, &use_plugins, NULL, NULL, '\0', NULL, 0, N_( "Whether or not to try to discover and import Python plugins.") },
+#endif
 	PREFS_LIST_EMPTY
 },
   new_list[] = {
@@ -522,6 +526,9 @@ static struct prefs_list {
 	{ "CV_CB2Tool", pr_int, (int *) &cv_cb2_tool, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "XUID-Base", pr_string, &xuid, NULL, NULL, 'X', NULL, 0, N_("If specified this should be a space separated list of integers each\nless than 16777216 which uniquely identify your organization\nFontForge will generate a random number for the final component.") }, /* Obsolete */
 	{ "ShowKerningPane", pr_int, (int *) &show_kerning_pane_in_class, NULL, NULL, '\0', NULL, 1, NULL },
+#ifndef _NO_PYTHON
+	{ "PluginStartupMode", pr_string, NULL, &GetPluginStartupMode, &SetPluginStartupMode, '\0', NULL, 1, NULL },
+#endif
 	PREFS_LIST_EMPTY
 },
  oldnames[] = {

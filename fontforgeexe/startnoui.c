@@ -53,12 +53,14 @@ extern uninm_blocks_db blocks_db;
 static void _doscriptusage(void) {
     printf( "fontforge [options]\n" );
     printf( "\t-usage\t\t\t (displays this message, and exits)\n" );
-    printf( "\t-help\t\t\t (displays this message, invokes a browser)\n\t\t\t\t  (Using the BROWSER environment variable)\n" );
+    printf( "\t-help\t\t\t (displays this message, invokes a browser\n\t\t\t\t  using the BROWSER environment variable)\n" );
     printf( "\t-version\t\t (prints the version of fontforge and exits)\n" );
-    printf( "\t-lang=py\t\t use python to execute scripts\n" );
-    printf( "\t-lang=ff\t\t use fontforge's old language to execute scripts\n" );
+    printf( "\t-lang=py\t\t (use python to execute scripts\n" );
+    printf( "\t-lang=ff\t\t (use fontforge's native language to\n\t\t\t\t  execute scripts)\n" );
     printf( "\t-script scriptfile\t (executes scriptfile)\n" );
     printf( "\t-c script-string\t (executes the argument as scripting cmds)\n" );
+    printf( "\t-skippyfile\t\t (do not execute python init scripts)\n" );
+    printf( "\t-skippyplug\t\t (do not load python plugins)\n" );
     printf( "\n" );
     printf( "If no scriptfile/string is given (or if it's \"-\") FontForge will read stdin\n" );
     printf( "FontForge will read postscript (pfa, pfb, ps, cid), opentype (otf),\n" );
@@ -85,6 +87,9 @@ exit(0);
 int fontforge_main( int argc, char **argv ) {
     time_t tm = FONTFORGE_MODTIME_RAW;
     struct tm* modtime = gmtime(&tm);
+    int run_python_init_files = true;
+    int import_python_plugins = true;
+    char *pt;
 
     fprintf( stderr, "Copyright (c) 2000-%d. See AUTHORS for Contributors.\n", modtime->tm_year+1900 );
     fprintf( stderr, " License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n" );
@@ -113,6 +118,15 @@ int fontforge_main( int argc, char **argv ) {
     bind_textdomain_codeset("FontForge","UTF-8");
     bindtextdomain("FontForge", getLocaleDir());
     textdomain("FontForge");
+    for ( int i=1; i<argc; ++i ) {
+	pt = argv[i];
+
+	if ( strcmp(pt,"-SkipPythonInitFiles")==0 || strcmp(pt,"-skippyfile")==0 ) {
+	    run_python_init_files = false;
+	} else if ( strcmp(pt,"-skippyplug")==0 ) {
+	    import_python_plugins = false;
+	}
+    }
 
     if ( default_encoding==NULL )
 	default_encoding=FindOrMakeEncoding("ISO8859-1");
@@ -120,7 +134,7 @@ int fontforge_main( int argc, char **argv ) {
 	default_encoding=&custom;	/* In case iconv is broken */
     CheckIsScript(argc,argv);		/* Will run the script and exit if it is a script */
     if ( argc==2 ) {
-	char *pt = argv[1];
+	pt = argv[1];
 	if ( *pt=='-' && pt[1]=='-' && pt[2]!='\0') ++pt;
 	if ( strcmp(pt,"-usage")==0 )
 	    doscriptusage();
@@ -132,7 +146,7 @@ int fontforge_main( int argc, char **argv ) {
 #  if defined(_NO_PYTHON)
     ProcessNativeScript(argc, argv,stdin);
 #  else
-    PyFF_Stdin();
+    PyFF_Stdin(run_python_init_files, import_python_plugins);
 #  endif
 
 #ifndef _NO_LIBUNICODENAMES

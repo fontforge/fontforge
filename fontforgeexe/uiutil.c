@@ -694,5 +694,8 @@ struct ui_interface gdraw_ui_interface = {
     UI_MSLangString,
     _ImportParamsDlg,
     _ExportParamsDlg
+#ifndef _NO_PYTHON
+    ,_PluginDlg
+#endif
 };
 

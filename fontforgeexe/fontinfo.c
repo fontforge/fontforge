@@ -2509,39 +2509,6 @@ static struct otfname *OtfNameFromStyleNames(GGadget *me) {
 return( head );
 }
 
-void GListMoveSelected(GGadget *list,int offset) {
-    int32 len; int i,j;
-    GTextInfo **old, **new;
-
-    old = GGadgetGetList(list,&len);
-    new = calloc(len+1,sizeof(GTextInfo *));
-    j = (offset<0 ) ? 0 : len-1;
-    for ( i=0; i<len; ++i ) if ( old[i]->selected ) {
-	if ( offset==0x80000000 || offset==0x7fffffff )
-	    /* Do Nothing */;
-	else if ( offset<0 ) {
-	    if ( (j= i+offset)<0 ) j=0;
-	    while ( new[j] ) ++j;
-	} else {
-	    if ( (j= i+offset)>=len ) j=len-1;
-	    while ( new[j] ) --j;
-	}
-	new[j] = malloc(sizeof(GTextInfo));
-	*new[j] = *old[i];
-	new[j]->text = u_copy(new[j]->text);
-	if ( offset<0 ) ++j; else --j;
-    }
-    for ( i=j=0; i<len; ++i ) if ( !old[i]->selected ) {
-	while ( new[j] ) ++j;
-	new[j] = malloc(sizeof(GTextInfo));
-	*new[j] = *old[i];
-	new[j]->text = u_copy(new[j]->text);
-	++j;
-    }
-    new[len] = calloc(1,sizeof(GTextInfo));
-    GGadgetSetList(list,new,false);
-}
-
 void GListDelSelected(GGadget *list) {
     int32 len; int i,j;
     GTextInfo **old, **new;

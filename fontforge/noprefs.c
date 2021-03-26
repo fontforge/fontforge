@@ -36,6 +36,7 @@
 #include "groups.h"
 #include "macenc.h"
 #include "namelist.h"
+#include "plugin.h"
 #include "othersubrs.h"
 #include "sfd.h"
 #include "splineutil.h"
@@ -237,6 +238,9 @@ static struct prefs_list {
     { N_("HintDiagonalInter"), pr_bool, &hint_diagonal_intersections, NULL, NULL, '\0', NULL, 0, N_("FontForge will place vertical or horizontal hints at the intersections of diagonal stems.") },
     { N_("DetectDiagonalStems"), pr_bool, &detect_diagonal_stems, NULL, NULL, '\0', NULL, 0, N_("FontForge will generate diagonal stem hints, which then can be used by the AutoInstr command.") },
     { N_("UseNewIndicScripts"), pr_bool, &use_second_indic_scripts, NULL, NULL, 'C', NULL, 0, N_("MS has changed (in August 2006) the inner workings of their Indic shaping\nengine, and to disambiguate this change has created a parallel set of script\ntags (generally ending in '2') for Indic writing systems. If you are working\nwith the new system set this flag, if you are working with the old unset it.\n(if you aren't doing Indic work, this flag is irrelevant).") },
+#ifndef _NO_PYTHON
+    { N_("UsePlugins"), pr_bool, &use_plugins, NULL, NULL, '\0', NULL, 0, N_( "Whether or not to try to discover and import Python plugins.") },
+#endif
     { "AntiAlias", pr_bool, &default_fv_antialias, NULL, NULL, '\0', NULL, 1, NULL },
     { "DefaultFVSize", pr_int, &default_fv_font_size, NULL, NULL, 'S', NULL, 1, NULL },
     { "DefaultFVRowCount", pr_int, &default_fv_row_count, NULL, NULL, 'S', NULL, 1, NULL },
@@ -256,6 +260,9 @@ static struct prefs_list {
     { "CoverageFormatsAllowed", pr_int, &coverageformatsallowed, NULL, NULL, '\0', NULL, 1, NULL },
     { "ForceNamesWhenOpening", pr_namelist, &force_names_when_opening, NULL, NULL, '\0', NULL, 1, NULL },
     { "ForceNamesWhenSaving", pr_namelist, &force_names_when_saving, NULL, NULL, '\0', NULL, 1, NULL },
+#ifndef _NO_PYTHON
+    { "PluginStartupMode", pr_string, NULL, &GetPluginStartupMode, &SetPluginStartupMode, '\0', NULL, 1, NULL },
+#endif
     { NULL, 0, NULL, NULL, NULL, '\0', NULL, 0, NULL } /* Sentinel */
 },
 extras[] = {

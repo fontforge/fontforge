@@ -60,6 +60,7 @@ if(ENABLE_GUI)
     mmdlg.c
     nonlineartransui.c
     openfontdlg.c
+    pluginui.c
     prefs.c
     problems.c
     pythonui.c

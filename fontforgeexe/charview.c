@@ -11764,6 +11764,9 @@ static GMenuItem2 fllist[] = {
 #endif
     { { (unichar_t *) N_("Pr_eferences..."), (GImage *) "fileprefs.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Preferences...|No Shortcut"), NULL, NULL, MenuPrefs, 0 },
     { { (unichar_t *) N_("_X Resource Editor..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("X Resource Editor...|No Shortcut"), NULL, NULL, MenuXRes, 0 },
+#if !defined(_NO_PYTHON)
+    { { (unichar_t *) N_("Config_ure Plugins..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'u' }, H_("Configure Plugins...|No Shortcut"), NULL, NULL, MenuPlug, 0 },
+#endif
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("_Quit"), (GImage *) "filequit.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'Q' }, H_("Quit|No Shortcut"), NULL, NULL, MenuExit, MID_Quit },
     GMENUITEM2_EMPTY
