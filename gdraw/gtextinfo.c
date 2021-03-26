@@ -976,14 +976,16 @@ return(0);
     }
 }
 
-void HotkeyParse( Hotkey* hk, const char *shortcut ) {
+int HotkeyParse( Hotkey* hk, const char *shortcut ) {
     char *pt;
     const char *sh;
     int mask, temp, i;
 
-    hk->state  = 0;
-    hk->keysym = 0;
-    strncpy( hk->text, shortcut, HOTKEY_TEXT_MAX_SIZE );
+    if ( hk!=NULL ) {
+	hk->state  = 0;
+	hk->keysym = 0;
+	strncpy( hk->text, shortcut, HOTKEY_TEXT_MAX_SIZE );
+    }
 
     sh = dgettext(shortcut_domain,shortcut);
     /* shortcut might be "Open|Ctl+O" meaning the Open menu item is bound to ^O */
@@ -998,7 +1000,7 @@ void HotkeyParse( Hotkey* hk, const char *shortcut ) {
     if ( pt!=NULL )
 	sh = pt+1;
     if ( *sh=='\0' || strcmp(sh,"No Shortcut")==0 || strcmp(sh,"None")==0 )
-	return;
+	return true;
 
     initmods();
 
@@ -1019,25 +1021,32 @@ void HotkeyParse( Hotkey* hk, const char *shortcut ) {
 	else if ( sscanf( sh, "0x%x", &temp)==1 )
 	    mask |= temp;
 	else {
-	    fprintf( stderr, "Could not parse short cut: %s\n", shortcut );
-	    return;
+	    fprintf(stderr, "Could not parse short cut: %s\n", shortcut );
+	    return false;
 	}
 	sh = pt+1;
     }
-    hk->state = mask;
+    if ( hk!=NULL )
+	hk->state = mask;
     for ( i=0; i<0x100; ++i ) {
 	if ( GDrawKeysyms[i]!=NULL && uc_strcmp(GDrawKeysyms[i],sh)==0 ) {
-	    hk->keysym = 0xff00 + i;
+	    if ( hk!=NULL )
+		hk->keysym = 0xff00 + i;
 	    break;
 	}
     }
     if ( i==0x100 ) {
-	hk->keysym = utf8_ildb((const char **) &sh);
+	char tmp = utf8_ildb((const char **) &sh);
+	if ( hk!=NULL ) 
+	    hk->keysym = tmp;
 	if ( *sh!='\0' ) {
-	    fprintf( stderr, "Unexpected characters at end of short cut: %s\n", shortcut );
-	    return;
+	    fprintf(stderr, "Unexpected characters at end of short cut: %s  %c\n", shortcut, *sh );
+	    return false;
 	}
     }
+
+    if ( hk==NULL )
+	return true;
     //
     // The user really means lower case keys unless they have
     // given the "shift" modifier too. Like: Ctl+Shft+L
@@ -1056,7 +1065,7 @@ void HotkeyParse( Hotkey* hk, const char *shortcut ) {
 	}
 #endif
     }
-
+    return true;
 //    fprintf(stderr,"HotkeyParse(end) spec:%d hk->state:%d hk->keysym:%d shortcut:%s\n", GK_Special, hk->state, hk->keysym, shortcut );
 }
 

@@ -1196,7 +1196,7 @@ void python_call_onClosingFunctions()
 /* ************************ User Interface routines ************************* */
 /* ************************************************************************** */
 
-static PyObject *PyFF_registerMenuItemStub(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
+static PyObject *PyFF_registerMenuItemStub(PyObject *UNUSED(self), PyObject *UNUSED(args), PyObject *UNUSED(kwargs)) {
 //    printf("PyFF_registerMenuItemStub()\n");
     /* This is a stub which will be replaced when we've got a UI */
 Py_RETURN_NONE;
@@ -18966,7 +18966,7 @@ PyMethodDef module_fontforge_methods[] = {
     /* Access to the User Interface ... if any */
     { "hasUserInterface", PyFF_hasUserInterface, METH_NOARGS, "Returns whether this fontforge session has a user interface (True if it has opened windows) or is just running a script (False)"},
     { "registerImportExport", PyFF_registerImportExport, METH_VARARGS, "Adds an import/export spline conversion module"},
-    { "registerMenuItem", PyFF_registerMenuItemStub, METH_VARARGS, "Adds a menu item (which runs a python script) to the font or glyph (or both) windows -- in the Tools menu"},
+    { "registerMenuItem", (PyCFunction)PyFF_registerMenuItemStub, METH_VARARGS | METH_KEYWORDS, "Adds a menu item (which runs a python script) to the font or glyph (or both) windows -- in the Tools menu"},
     { "getConvexNib", PyFF_getConvexNib, METH_VARARGS, "Sets the specified 'Convex' to the layer/contour argument."},
     { "setConvexNib", PyFF_setConvexNib, METH_VARARGS, "Returns the specified 'Convex' nib as a layer."},
     { "logWarning", PyFF_logError, METH_VARARGS, "Adds a non-fatal message to the Warnings window"},
