@@ -52,7 +52,7 @@ int AutoSaveFrequency=5;
 # include <pwd.h>
 #endif
 
-static char *getAutoDirName() {
+static char *getAutoDirName(void) {
     char *buffer, *dir=getFontForgeUserDir(Config);
 
     if ( dir!=NULL ) {
@@ -91,7 +91,7 @@ return;
 int DoAutoRecoveryExtended(int inquire)
 {
     char *buffer;
-    char *recoverdir = getAutoDirName(buffer);
+    char *recoverdir = getAutoDirName();
     DIR *dir;
     struct dirent *entry;
     int any = false;
